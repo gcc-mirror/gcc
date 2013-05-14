@@ -26,7 +26,7 @@
 
 2013-04-04  Gerald Pfeifer  <gerald@pfeifer.com>
 
-	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.q
+	* doc/xml/manual/allocator.xml: Adjust link to Dr.Dobb's article.
 
 	* doc/xml/manual/appendix_contributing.xml: Adjust link to GNU
 	Coding Standards.
@@ -59,7 +59,6 @@
 	* testsuite/23_containers/array/tuple_interface/
 	tuple_element_debug_neg.cc: Adjust dg-error line number.
 
->>>>>>> .r197495
 2013-03-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/55977 (partial, std::vector and std::deque bits)
