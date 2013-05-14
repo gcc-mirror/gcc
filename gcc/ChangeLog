@@ -1,3 +1,8 @@
+2013-05-14  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
+
+	* config/rl78/rl78.md(mulsi3_g13): Add additional 'nop' required
+	in multiply-accumulate mode.
+
 2013-05-13  Guozhi Wei  <carrot@google.com>
 
 	* dwarf2asm.c (dw2_output_indirect_constant_1): Mark new decl STATIC.
