@@ -1,3 +1,9 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57251
+	* expr.c (expand_expr_real_2) <case WIDEN_MULT_EXPR>: Handle
+	the case when both op0 and op1 have VOIDmode.
+
 2013-05-14  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* config/rl78/rl78.md(mulsi3_g13): Add additional 'nop' required

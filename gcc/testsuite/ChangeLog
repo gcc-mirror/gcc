@@ -1,3 +1,8 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57251
+	* gcc.dg/torture/pr57251.c: New test.
+
 2013-05-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/57264
