@@ -134,6 +134,44 @@ along with GCC; see the file COPYING3.  If not see
 #define eligible_for_annul_false(INSN, SLOTS, TRIAL, FLAGS) 0
 #endif
 
+
+/* First, some functions that were used before GCC got a control flow graph.
+   These functions are now only used here in reorg.c, and have therefore
+   been moved here to avoid inadvertent misuse elsewhere in the compiler.  */
+
+/* Return the last label to mark the same position as LABEL.  Return LABEL
+   itself if it is null or any return rtx.  */
+
+static rtx
+skip_consecutive_labels (rtx label)
+{
+  rtx insn;
+
+  if (label && ANY_RETURN_P (label))
+    return label;
+
+  for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
+    if (LABEL_P (insn))
+      label = insn;
+
+  return label;
+}
+
+/* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
+   and REG_CC_USER notes so we can find it.  */
+
+static void
+link_cc0_insns (rtx insn)
+{
+  rtx user = next_nonnote_insn (insn);
+
+  if (NONJUMP_INSN_P (user) && GET_CODE (PATTERN (user)) == SEQUENCE)
+    user = XVECEXP (PATTERN (user), 0, 0);
+
+  add_reg_note (user, REG_CC_SETTER, insn);
+  add_reg_note (insn, REG_CC_USER, user);
+}
+
 /* Insns which have delay slots that have not yet been filled.  */
 
 static struct obstack unfilled_slots_obstack;

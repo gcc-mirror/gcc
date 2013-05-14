@@ -1,3 +1,12 @@
+2013-05-14  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* rtl.h (next_label, skip_consecutive_labels, link_cc0_insns):
+	Remove prototypes.
+	* emit-rtl.c (next_label): Remove unused function.
+	(skip_consecutive_labels, link_cc0_insns): Move to ...
+	* reorg.c (skip_consecutive_labels, link_cc0_insns): ... here, the
+	only place where these functions are used, and make them static.
+
 2013-05-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (fold_negate_expr): Handle vectors.
