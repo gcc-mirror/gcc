@@ -1,3 +1,10 @@
+2013-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56998
+	* semantics.c (potential_constant_expression_1): Make sure the
+	called function is potentially constant.
+	* call.c (null_ptr_cst_p): Revert earlier change.
+
 2013-05-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56998
