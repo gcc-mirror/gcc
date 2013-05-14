@@ -1,3 +1,18 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* expmed.c (expand_shift_1): Canonicalize rotates by
+	constant bitsize / 2 to bitsize - 1.
+	* simplify-rt.x (simplify_binary_operation_1) <case ROTATE,
+	case ROTATERT>: Likewise.
+
+	Revert:
+	2013-05-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.md (rotateinv): New code attr.
+	(*<rotate_insn><mode>3_1, *<rotate_insn>si3_1_zext,
+	*<rotate_insn>qi3_1_slp): Emit rorl %eax instead of
+	roll $31, %eax, etc.
+
 2013-05-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57235
