@@ -8324,7 +8324,10 @@ avr_encode_section_info (tree decl, rtx rtl, int new_decl_p)
       && SYMBOL_REF == GET_CODE (XEXP (rtl, 0)))
    {
       rtx sym = XEXP (rtl, 0);
-      addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (decl));
+      tree type = TREE_TYPE (decl);
+      if (type == error_mark_node)
+	return;
+      addr_space_t as = TYPE_ADDR_SPACE (type);
 
       /* PSTR strings are in generic space but located in flash:
          patch address space.  */

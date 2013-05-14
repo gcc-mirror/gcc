@@ -1,3 +1,8 @@
+2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* testsuite/gcc.c-torture/compile/limits-externdecl.c [target avr-*-*]:
+        Expect "size of array is too large" error.
+
 2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/fstack-protector-strong.c (alloca): Declare.

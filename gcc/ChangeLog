@@ -1,3 +1,8 @@
+2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* config/avr/avr.c (avr_encode_section_info): Bail out if the type
+        is error_mark_node.
+
 2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/57261
