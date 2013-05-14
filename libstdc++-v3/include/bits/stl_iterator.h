@@ -63,7 +63,7 @@
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 #include <bits/move.h>
-#include <ext/cast.h>
+#include <bits/ptr_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -736,9 +736,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __normal_iterator<typename _Container::pointer, _Container>
       _M_const_cast() const
-      { return __normal_iterator<typename _Container::pointer, _Container>
-	  (__gnu_cxx::__const_pointer_cast<typename _Container::pointer>
-	   (_M_current)); }
+      {
+#if __cplusplus >= 201103L
+	using _PTraits = std::pointer_traits<typename _Container::pointer>;
+	return __normal_iterator<typename _Container::pointer, _Container>
+	  (_PTraits::pointer_to(const_cast<typename _PTraits::element_type&>
+				(*_M_current)));
+#else
+        return __normal_iterator<typename _Container::pointer, _Container>
+	  (const_cast<typename _Container::pointer>(_M_current));
+#endif
+      }
 
       // Forward iterator requirements
       reference
