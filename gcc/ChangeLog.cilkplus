@@ -1,0 +1,27 @@
+2013-05-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (C_COMMON_OBJS): Depend on c-family/c-cilkplus.o.
+	(c-cilkplus.o): New dependency.
+
+c-family/
+	* c-cilkplus.c: New.
+	* c-pragma.c (init_pragma): Register "simd" pragma.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_CILK_SIMD enum.
+	(enum pragma_cilk_clause): New.
+	* c.opt (fcilkplus): New flag.
+
+c/
+	* c-parser.c (c_parser_pragma): Add case for PRAGMA_CILK_SIMD.
+	(c_parser_cilk_verify_simd): New.
+	(c_parser_cilk_clause_vectorlength): New.
+	(c_parser_cilk_clause_linear): New.
+	(c_parser_cilk_clause_name): New.
+	(c_parser_cilk_all_clauses): New.
+	(c_parser_cilk_for_statement): New.
+	(c_parser_cilk_simd_construct): New.
+	* c-tree.h (c_finish_cilk_simd_loop): Protoize.
+	(c_finish_cilk_clauses): Same.
+	* c-typeck.c (c_finish_bc_stmt): Add case for _Cilk_for loops.
+
+testsuite/
+	* gcc.dg/cilk-plus: New directory and associated infrastructure.
