@@ -1,3 +1,10 @@
+2013-05-14  Evgeniy Stepanov  <eugenis@google.com>
+
+	* src/c++11/system_error.cc (generic_category_instance): Add
+	initializer.
+	(system_category_instance): Likewise.
+	* src/c++11/future.cc (__fec): Likewise.
+
 2013-05-08  Andoni Morales Alastruey <ylatuya@gmail.com>
 
 	PR libstdc++/57212
