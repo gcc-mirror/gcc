@@ -1,3 +1,9 @@
+2013-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53903
+	* method.c (defaulted_late_check): Check for compatible exception
+	specification out of class explicitly defaulted functions too.
+
 2013-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56998
