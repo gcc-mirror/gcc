@@ -1,3 +1,8 @@
+2013-05-14  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
+
+	* gcc.dg/torture/alias-1.c: Add dg-require-effective-target
+	scheduling.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/57274
