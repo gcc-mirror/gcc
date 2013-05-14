@@ -1,3 +1,9 @@
+2013-05-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57235
+	* tree-eh.c (sink_clobbers): Give up for successors with
+	multiple predecessors and no virtual uses.
+
 2013-05-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sp64-elf.h (CPP_SUBTARGET_SPEC): Delete.
