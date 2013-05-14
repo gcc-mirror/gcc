@@ -1,3 +1,10 @@
+2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/57261
+	* configure.ac (gcc_cv_ld_as_needed): Disable before Solaris 11
+	and Solaris 11+/x86 with gld.
+	* configure: Regenerate.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* expmed.c (expand_shift_1): Canonicalize rotates by
