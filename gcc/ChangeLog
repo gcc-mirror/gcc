@@ -1,3 +1,7 @@
+2013-05-14  Mike Stump  <mikestump@comcast.net>
+
+	* web.c (union_match_dups): Also check DF_REF_REAL_LOC.
+
 2013-05-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* resource.h (struct resources): Remove unch_memory member.
