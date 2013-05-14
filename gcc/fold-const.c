@@ -12423,13 +12423,13 @@ fold_binary_loc (location_t loc,
       prec = element_precision (type);
 
       /* Turn (a OP c1) OP c2 into a OP (c1+c2).  */
-      if (TREE_CODE (op0) == code && host_integerp (arg1, false)
+      if (TREE_CODE (op0) == code && host_integerp (arg1, true)
 	  && TREE_INT_CST_LOW (arg1) < prec
-	  && host_integerp (TREE_OPERAND (arg0, 1), false)
+	  && host_integerp (TREE_OPERAND (arg0, 1), true)
 	  && TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1)) < prec)
 	{
-	  HOST_WIDE_INT low = (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
-			       + TREE_INT_CST_LOW (arg1));
+	  unsigned int low = (TREE_INT_CST_LOW (TREE_OPERAND (arg0, 1))
+			      + TREE_INT_CST_LOW (arg1));
 
 	  /* Deal with a OP (c1 + c2) being undefined but (a OP c1) OP c2
 	     being well defined.  */

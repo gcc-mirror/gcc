@@ -1,3 +1,10 @@
+2013-05-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR bootstrap/57266
+	* fold-const.c (fold_binary_loc) <shift>: Use an unsigned
+	variable for the shift amount. Check that we shift by non-negative
+	amounts.
+
 2013-05-14  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	PR target/42017
