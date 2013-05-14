@@ -1,3 +1,8 @@
+2013-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/57274
+	* c-c++-common/Wsequence-point-1.c: New test.
+
 2013-05-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* g++.dg/ext/vector22.C: New testcase.
