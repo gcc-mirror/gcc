@@ -1,3 +1,17 @@
+2013-05-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (fold_negate_expr): Handle vectors.
+	(fold_truth_not_expr): Make it static.
+	(fold_invert_truthvalue): New static function.
+	(invert_truthvalue_loc): Handle vectors. Do not call
+	fold_truth_not_expr directly.
+	(fold_unary_loc) <BIT_NOT_EXPR>: Handle comparisons.
+	<TRUTH_NOT_EXPR>: Do not cast to boolean.
+	(fold_comparison): Handle vector constants.
+	(fold_binary_loc) <TRUTH_XOR_EXPR>: Remove redundant code.
+	(fold_ternary_loc) <VEC_COND_EXPR>: Adapt more COND_EXPR optimizations.
+	* tree.h (fold_truth_not_expr): Remove declaration.
+
 2013-05-14  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md
