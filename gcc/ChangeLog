@@ -1,5 +1,10 @@
 2013-05-15  Teresa Johnson  <tejohnson@google.com>
 
+	* loop-unroll.c (report_unroll_peel): Check decision before
+	emitting unroll/peel message.
+
+2013-05-15  Teresa Johnson  <tejohnson@google.com>
+
 	* function.h (has_bb_partition): New rtl_data flag.
 	(bb_reorder_complete): Ditto.
 	* cfgcleanup.c (try_crossjump_to_edge): Check for has_bb_partition
