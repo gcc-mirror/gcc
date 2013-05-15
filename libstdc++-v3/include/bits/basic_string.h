@@ -2764,10 +2764,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Stores characters from @a __is into @a __str until @a __delim is
    *  found, the end of the stream is encountered, or str.max_size()
-   *  is reached.  If is.width() is non-zero, that is the limit on the
-   *  number of characters stored into @a __str.  Any previous
-   *  contents of @a __str are erased.  If @a __delim was encountered,
-   *  it is extracted but not stored into @a __str.
+   *  is reached.  Any previous contents of @a __str are erased.  If
+   *  @a __delim is encountered, it is extracted but not stored into
+   *  @a __str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     basic_istream<_CharT, _Traits>&
@@ -2782,10 +2781,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  Stores characters from is into @a __str until &apos;\n&apos; is
    *  found, the end of the stream is encountered, or str.max_size()
-   *  is reached.  If __is.width() is non-zero, that is the limit on
-   *  the number of characters stored into @a __str.  Any previous
-   *  contents of @a __str are erased.  If end of line was
-   *  encountered, it is extracted but not stored into @a __str.
+   *  is reached.  Any previous contents of @a __str are erased.  If
+   *  end of line is encountered, it is extracted but not stored into
+   *  @a __str.
    */
   template<typename _CharT, typename _Traits, typename _Alloc>
     inline basic_istream<_CharT, _Traits>&
