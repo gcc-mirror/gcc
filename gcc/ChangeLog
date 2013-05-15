@@ -1,3 +1,11 @@
+2013-05-15  Leif Ekblad  <leif@rdos.net>
+
+	* config/i386/i386.c (ix86_decompose_address): Use
+	DEFAULT_TLS_SEG_REG to access TLS segment register.
+	* config/i386/i386.h (DEFAULT_TLS_SEG_REG): New define.
+	* config/i386/rdos.h (DEFAULT_TLS_SEG_REG): Ditto.
+	(TARGET_TLS_DIRECT_SEG_REFS_DEFAULT): Ditto.
+
 2013-05-15  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR target/57260

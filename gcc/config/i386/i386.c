@@ -11698,7 +11698,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
 	      if (XINT (op, 1) == UNSPEC_TP
 	          && TARGET_TLS_DIRECT_SEG_REFS
 	          && seg == SEG_DEFAULT)
-		seg = TARGET_64BIT ? SEG_FS : SEG_GS;
+		seg = DEFAULT_TLS_SEG_REG;
 	      else
 		return 0;
 	      break;
@@ -13650,7 +13650,7 @@ ix86_delegitimize_tls_address (rtx orig_x)
   if (GET_CODE (x) != PLUS || GET_MODE (x) != Pmode)
     return orig_x;
   if (ix86_decompose_address (x, &addr) == 0
-      || addr.seg != (TARGET_64BIT ? SEG_FS : SEG_GS)
+      || addr.seg != DEFAULT_TLS_SEG_REG
       || addr.disp == NULL_RTX
       || GET_CODE (addr.disp) != CONST)
     return orig_x;
