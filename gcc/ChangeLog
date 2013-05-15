@@ -1,3 +1,9 @@
+2013-05-15  Andreas Schwab  <schwab@suse.de>
+
+	* config/m68k/m68k.md (*rotlhi3_lowpart, *rotlqi3_lowpart): Name
+	for rotlhi3+1 and rotlqi3+1, resp.  Fix reference to non-existing
+	third operand.
+
 2013-05-15  Teresa Johnson  <tejohnson@google.com>
 
 	* loop-unroll.c (report_unroll_peel): Check decision before
