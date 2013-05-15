@@ -227,13 +227,16 @@ lto_symtab_resolve_replaceable_p (symtab_node e)
 }
 
 /* Return true, if the symbol E should be resolved by lto-symtab.
-   Those are all real symbols that are not static (we handle renaming
-   of static later in partitioning).  */
+   Those are all external symbols and all real symbols that are not static (we
+   handle renaming of static later in partitioning).  */
 
 static bool
 lto_symtab_symbol_p (symtab_node e)
 {
-  if (!TREE_PUBLIC (e->symbol.decl))
+  if (!TREE_PUBLIC (e->symbol.decl) && !DECL_EXTERNAL (e->symbol.decl))
+    return false;
+  /* weakrefs are really static variables that are made external by a hack.  */
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (e->symbol.decl)))
     return false;
   return symtab_real_symbol_p (e);
 }
@@ -528,10 +531,19 @@ lto_symtab_merge_decls (void)
   symtab_initialize_asm_name_hash ();
 
   FOR_EACH_SYMBOL (node)
-    if (TREE_PUBLIC (node->symbol.decl)
-	&& node->symbol.next_sharing_asm_name
-	&& !node->symbol.previous_sharing_asm_name)
-    lto_symtab_merge_decls_1 (node);
+    if (lto_symtab_symbol_p (node)
+	&& node->symbol.next_sharing_asm_name)
+      {
+        symtab_node n;
+
+	/* To avoid duplicated work, see if this is first real symbol in the
+	   chain.  */
+	for (n = node->symbol.previous_sharing_asm_name;
+	     n && !lto_symtab_symbol_p (n); n = n->symbol.previous_sharing_asm_name)
+	  ;
+	if (!n)
+          lto_symtab_merge_decls_1 (node);
+      }
 }
 
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
@@ -574,7 +586,7 @@ lto_symtab_merge_cgraph_nodes (void)
 
   if (!flag_ltrans)
     FOR_EACH_SYMBOL (node)
-      if (TREE_PUBLIC (node->symbol.decl)
+      if (lto_symtab_symbol_p (node)
 	  && node->symbol.next_sharing_asm_name
 	  && !node->symbol.previous_sharing_asm_name)
         lto_symtab_merge_cgraph_nodes_1 (node);
@@ -602,7 +614,7 @@ lto_symtab_prevailing_decl (tree decl)
   symtab_node ret;
 
   /* Builtins and local symbols are their own prevailing decl.  */
-  if (!TREE_PUBLIC (decl) || is_builtin_fn (decl))
+  if ((!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl)) || is_builtin_fn (decl))
     return decl;
 
   /* DECL_ABSTRACTs are their own prevailng decl.  */
@@ -612,6 +624,11 @@ lto_symtab_prevailing_decl (tree decl)
   /* Likewise builtins are their own prevailing decl.  This preserves
      non-builtin vs. builtin uses from compile-time.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
+    return decl;
+
+  /* As an anoying special cases weakrefs are really static variables with
+     EXTERNAL flag.  */
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return decl;
 
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */

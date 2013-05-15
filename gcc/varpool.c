@@ -86,6 +86,10 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
     fprintf (f, " finalized");
   if (node->output)
     fprintf (f, " output");
+  if (TREE_READONLY (node->symbol.decl))
+    fprintf (f, " read-only");
+  if (const_value_known_p (node->symbol.decl))
+    fprintf (f, " const-value-known");
   fprintf (f, "\n");
 }
 

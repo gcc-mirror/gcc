@@ -1,3 +1,9 @@
+2013-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/attr-weakref-1_0.c: New testcase.
+	* gcc.dg/lto/attr-weakref-1_1.c: New testcase.
+	* gcc.dg/lto/attr-weakref-1_2.c: New testcase.
+
 2013-05-14  Senthil Kumar Selvaraj  <senthil_kumar.selvaraj@atmel.com>
 
 	* gcc.dg/torture/alias-1.c: Add dg-require-effective-target

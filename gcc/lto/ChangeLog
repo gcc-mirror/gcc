@@ -1,3 +1,12 @@
+2013-05-15  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/57038
+	PR lto/47375
+	* lto-partition.c (get_symbol_class): Fix weakrefs.
+	(lto_balanced_map): Fix weakrefs.
+	(privatize_symbol_name): Remove unnecesary label.
+	(rename_statics): Handle weakrefs as statics.
+
 2013-05-09  Jan Hubicka  <jh@suse.cz>
 	    Richard Biener  <rguenther@suse.de>
 

@@ -1,3 +1,14 @@
+2013-05-15  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/57038
+	PR lto/47375
+	* lto-symtab.c (lto_symtab_symbol_p): Add external symbol; weakrefs are
+	not external.
+	(lto_symtab_merge_decls): Fix thinko when dealing with non-lto_symtab decls.
+	(lto_symtab_merge_cgraph_nodes): Use lto_symtab_symbol_p.
+	(lto_symtab_prevailing_decl): Get int sync with lto_symtab_symbol_p.
+	* varpool.c (dump_varpool_node): Dump more flags.
+
 2013-05-15  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (processor_alias_table): Add instruction
