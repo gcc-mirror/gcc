@@ -1,3 +1,10 @@
+2013-05-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator): Fix
+	rendering of std::tr1 unordered containers iterator.
+	(StdHashtableIterator): New, render std unordered containers iterator.
+	* testsuite/libstdc++-prettyprinters/tr1.cc: New.
+
 2013-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/basic_string.h (getline): Fix doxygen comments.
