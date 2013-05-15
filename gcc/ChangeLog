@@ -1,3 +1,19 @@
+2013-05-15  Teresa Johnson  <tejohnson@google.com>
+
+	* function.h (has_bb_partition): New rtl_data flag.
+	(bb_reorder_complete): Ditto.
+	* cfgcleanup.c (try_crossjump_to_edge): Check for has_bb_partition
+	instead of flag_reorder_blocks_and_partition.
+	* cfgrtl.c (verify_hot_cold_block_grouping): Moved from bb-reorder.c,
+	with some enhancements.
+	(rtl_verify_flow_info_1): Call verify_hot_cold_block_grouping.
+	* bb-reorder.c (connect_traces): Check for has_bb_partition
+	instead of flag_reorder_blocks_and_partition.
+	(verify_hot_cold_block_grouping): Moved to cfgrtl.c.
+	(reorder_basic_blocks): Set bb_reorder_complete flag, remove call to
+	verify_hot_cold_block_grouping.
+	(partition_hot_cold_basic_blocks): Set has_bb_partition.
+
 2013-05-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/19599

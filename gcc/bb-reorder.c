@@ -1053,7 +1053,7 @@ connect_traces (int n_traces, struct trace *traces)
   current_partition = BB_PARTITION (traces[0].first);
   two_passes = false;
 
-  if (flag_reorder_blocks_and_partition)
+  if (crtl->has_bb_partition)
     for (i = 0; i < n_traces && !two_passes; i++)
       if (BB_PARTITION (traces[0].first)
 	  != BB_PARTITION (traces[i].first))
@@ -1262,7 +1262,7 @@ connect_traces (int n_traces, struct trace *traces)
 		      }
 		  }
 
-	      if (flag_reorder_blocks_and_partition)
+	      if (crtl->has_bb_partition)
 		try_copy = false;
 
 	      /* Copy tiny blocks always; copy larger blocks only when the
@@ -2068,43 +2068,6 @@ add_reg_crossing_jump_notes (void)
 	add_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
 }
 
-/* Verify, in the basic block chain, that there is at most one switch
-   between hot/cold partitions. This is modelled on
-   rtl_verify_flow_info_1, but it cannot go inside that function
-   because this condition will not be true until after
-   reorder_basic_blocks is called.  */
-
-static void
-verify_hot_cold_block_grouping (void)
-{
-  basic_block bb;
-  int err = 0;
-  bool switched_sections = false;
-  int current_partition = 0;
-
-  FOR_EACH_BB (bb)
-    {
-      if (!current_partition)
-	current_partition = BB_PARTITION (bb);
-      if (BB_PARTITION (bb) != current_partition)
-	{
-	  if (switched_sections)
-	    {
-	      error ("multiple hot/cold transitions found (bb %i)",
-		     bb->index);
-	      err = 1;
-	    }
-	  else
-	    {
-	      switched_sections = true;
-	      current_partition = BB_PARTITION (bb);
-	    }
-	}
-    }
-
-  gcc_assert(!err);
-}
-
 /* Reorder basic blocks.  The main entry point to this file.  FLAGS is
    the set of flags to pass to cfg_layout_initialize().  */
 
@@ -2157,8 +2120,9 @@ reorder_basic_blocks (void)
       dump_flow_info (dump_file, dump_flags);
     }
 
-  if (flag_reorder_blocks_and_partition)
-    verify_hot_cold_block_grouping ();
+  /* Signal that rtl_verify_flow_info_1 can now verify that there
+     is at most one switch between hot/cold sections.  */
+  crtl->bb_reorder_complete = true;
 }
 
 /* Determine which partition the first basic block in the function
@@ -2502,6 +2466,8 @@ partition_hot_cold_basic_blocks (void)
   crossing_edges = find_rarely_executed_basic_blocks_and_crossing_edges ();
   if (!crossing_edges.exists ())
     return 0;
+
+  crtl->has_bb_partition = true;
 
   /* Make sure the source of any crossing edge ends in a jump and the
      destination of any crossing edge has a label.  */

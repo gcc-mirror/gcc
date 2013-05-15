@@ -2058,6 +2058,44 @@ get_last_bb_insn (basic_block bb)
 
   return end;
 }
+
+/* Verify, in the basic block chain, that there is at most one switch
+   between hot/cold partitions. This condition will not be true until
+   after reorder_basic_blocks is called.  */
+
+static void
+verify_hot_cold_block_grouping (void)
+{
+  basic_block bb;
+  int err = 0;
+  bool switched_sections = false;
+  int current_partition = BB_UNPARTITIONED;
+
+  if (!crtl->bb_reorder_complete)
+    return;
+
+  FOR_EACH_BB (bb)
+    {
+      if (current_partition != BB_UNPARTITIONED
+          && BB_PARTITION (bb) != current_partition)
+	{
+	  if (switched_sections)
+	    {
+	      error ("multiple hot/cold transitions found (bb %i)",
+		     bb->index);
+	      err = 1;
+	    }
+	  else
+            switched_sections = true;
+
+          if (!crtl->has_bb_partition)
+            error ("partition found but function partition flag not set");
+	}
+      current_partition = BB_PARTITION (bb);
+    }
+
+  gcc_assert(!err);
+}
 
 /* Verify the CFG and RTL consistency common for both underlying RTL and
    cfglayout RTL.
@@ -2072,6 +2110,7 @@ get_last_bb_insn (basic_block bb)
      and NOTE_INSN_BASIC_BLOCK
    - verify that no fall_thru edge crosses hot/cold partition boundaries
    - verify that there are no pending RTL branch predictions
+   - verify that there is a single hot/cold partition boundary after bbro
 
    In future it can be extended check a lot of other stuff as well
    (reachability of basic blocks, life information, etc. etc.).  */
@@ -2322,6 +2361,8 @@ rtl_verify_flow_info_1 (void)
 	      }
 	  }
     }
+
+  verify_hot_cold_block_grouping();
 
   /* Clean up.  */
   return err;
