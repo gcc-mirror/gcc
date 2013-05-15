@@ -1,3 +1,10 @@
+2013-05-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/57260
+	* config/mips/mips.c (mips_function_ok_for_sibcall): Don't allow
+	sibling calls to functions that would normally be lazily bound,
+	unless $gp is call-clobbered.
+
 2013-05-15  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (iy86_option_override_internal): Update
