@@ -1,3 +1,14 @@
+2013-05-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (iy86_option_override_internal): Update
+	processor_alias_table for missing PTA_PRFCHW and PTA_FXSR flags.  Add
+	PTA_POPCNT to corei7 entry and remove PTA_SSE from athlon-4 entry.
+	Do not enable SSE prefetch on non-SSE 3dNow! targets.  Enable
+	TARGET_PRFCHW for TARGET_3DNOW targets.
+	* config/i386/i386.md (prefetch): Enable for TARGET_PRFCHW instead
+	of TARGET_3DNOW.
+	(*prefetch_3dnow): Enable for TARGET_PRFCHW only.
+
 2013-05-15  Andreas Schwab  <schwab@suse.de>
 
 	* config/m68k/m68k.md (*rotlhi3_lowpart, *rotlqi3_lowpart): Name
@@ -132,9 +143,10 @@
 
 	PR lto/57038
 	PR lto/47375
-	* lto-symtab.c (lto_symtab_symbol_p): Add external symbol; weakrefs are
-	not external.
-	(lto_symtab_merge_decls): Fix thinko when dealing with non-lto_symtab decls.
+	* lto-symtab.c (lto_symtab_symbol_p): Add external symbol;
+	weakrefs are not external.
+	(lto_symtab_merge_decls): Fix thinko when dealing with
+	non-lto_symtab decls.
 	(lto_symtab_merge_cgraph_nodes): Use lto_symtab_symbol_p.
 	(lto_symtab_prevailing_decl): Get int sync with lto_symtab_symbol_p.
 	* varpool.c (dump_varpool_node): Dump more flags.
@@ -225,7 +237,7 @@
 2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* config/avr/avr.c (avr_encode_section_info): Bail out if the type
-        is error_mark_node.
+	is error_mark_node.
 
 2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -279,11 +291,9 @@
 
 	PR target/56975
 	* config/i386/cygming.h (TARGET_PECOFF): Define as true.
-	* config/i386/i386.h (TARGET_PECOFF): Define by default
-	as false.
+	* config/i386/i386.h (TARGET_PECOFF): Define by default as false.
 	(PIC_OFFSET_TABLE_REGNUM): Use TARGET_PECOFF.
-	* config/i386/i386.c (ix86_option_override_internal):
-	Likewise.
+	* config/i386/i386.c (ix86_option_override_internal): Likewise.
 	(ix86_expand_prologue): Likewise.
 	(ix86_expand_split_stack_prologue): Likewise.
 	(legitimate_pic_address_disp_p): Likewise.
@@ -313,8 +323,9 @@
 
 	* mode-switching.c (optimize_mode_switching): Set correct RTL profile.
 	* config/i386/i386.c (ix86_compute_frame_layout,
-	ix86_expand_epilogue, emit_i387_cw_initialization, ix86_expand_vector_move_misalign,
-	ix86_fp_comparison_strategy, ix86_local_alignment): Fix use of size/speed predicates.
+	ix86_expand_epilogue, emit_i387_cw_initialization,
+	ix86_expand_vector_move_misalign, ix86_fp_comparison_strategy,
+	ix86_local_alignment): Fix use of size/speed predicates.
 
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
@@ -367,7 +378,7 @@
 
 2013-05-13  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
-	* config/i386/i386.c (processor_target_table): Modified default 
+	* config/i386/i386.c (processor_target_table): Modified default
 	alignment values for AMD BD and BT architectures.
 
 2013-05-13  Marc Glisse  <marc.glisse@inria.fr>
