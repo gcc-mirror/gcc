@@ -1,3 +1,14 @@
+2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31952
+	* g++.dg/parse/pr31952-1.C: New.
+	* g++.dg/parse/pr31952-2.C: Likewise.
+	* g++.dg/parse/pr31952-3.C: Likewise.
+
+	* g++.dg/parse/pr18770.C: Adjust dg-errors to dg-messages.
+	* g++.old-deja/g++.jason/cond.C: Likewise.
+	* g++.dg/cpp0x/range-for5.C: Likewise.
+
 2013-05-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/19599
