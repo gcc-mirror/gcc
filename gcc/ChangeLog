@@ -1,3 +1,8 @@
+2013-05-15  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (processor_alias_table): Add instruction
+	FSGSBASE for AMD bdver3 architecture.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.c (warn_deprecated_use): Print file:line using locus color.
