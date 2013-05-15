@@ -1,3 +1,9 @@
+2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31952
+	* name-lookup.c (pushdecl_maybe_friend_1): Diagnose illegal
+	redeclarations.
+
 2013-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57243
