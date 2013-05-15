@@ -1,3 +1,26 @@
+2013-05-15  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_transform_loop): Use MSG_NOTE instead
+	of MSG_OPTIMIZED_LOCATIONS.
+	* tree-vect-slp.c (vect_make_slp_decision): Likewise.
+	(vect_slp_transform_bb): Indicate location in MSG_OPTIMIZED_LOCATIONS
+	message.
+	* tree-vectorizer.c (vectorize_loops): Use MSG_NOTE instead
+	of MSG_OPTIMIZED_LOCATIONS.
+	(execute_vect_slp): Likewise.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_loop_bound): Likewise.
+	(vect_create_cond_for_alias_checks): Likewise.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Likewise.
+	(vect_recog_widen_mult_pattern): Likewise.
+	(vect_recog_widen_sum_pattern): Likewise.
+	(vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_widen_shift_pattern): Likewise.
+	(vect_recog_vector_vector_shift_pattern): Likewise.
+	(vect_recog_divmod_pattern): Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+	(vect_recog_bool_pattern): Likewise.
+	(vect_pattern_recog_1): Likewise.
+
 2013-05-15  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (ipa_make_edge_direct_to_target): Redirect calls to
