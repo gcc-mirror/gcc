@@ -446,6 +446,15 @@ struct GTY(()) rtl_data {
      sched2) and is useful only if the port defines LEAF_REGISTERS.  */
   bool uses_only_leaf_regs;
 
+  /* Nonzero if the function being compiled has undergone hot/cold partitioning
+     (under flag_reorder_blocks_and_partition) and has at least one cold
+     block.  */
+  bool has_bb_partition;
+
+  /* Nonzero if the function being compiled has completed the bb reordering
+     pass.  */
+  bool bb_reorder_complete;
+
   /* Like regs_ever_live, but 1 if a reg is set or clobbered from an
      asm.  Unlike regs_ever_live, elements of this array corresponding
      to eliminable regs (like the frame pointer) are set if an asm
