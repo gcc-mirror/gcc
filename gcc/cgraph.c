@@ -1049,8 +1049,8 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
   if (cgraph_dump_file)
     {
       fprintf (cgraph_dump_file, "updating call of %s/%i -> %s/%i: ",
-	       xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
-	       xstrdup (cgraph_node_name (e->callee)), e->callee->uid);
+	       xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
+	       xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
       print_gimple_stmt (cgraph_dump_file, e->call_stmt, 0, dump_flags);
       if (e->callee->clone.combined_args_to_skip)
 	{
@@ -2644,11 +2644,12 @@ cgraph_get_create_real_symbol_node (tree decl)
       if (dump_file)
 	fprintf (dump_file, "Introduced new external node "
 		 "(%s/%i) and turned into root of the clone tree.\n",
-		 xstrdup (cgraph_node_name (node)), node->uid);
+		 xstrdup (cgraph_node_name (node)), node->symbol.order);
     }
   else if (dump_file)
     fprintf (dump_file, "Introduced new external node "
-	     "(%s/%i).\n", xstrdup (cgraph_node_name (node)), node->uid);
+	     "(%s/%i).\n", xstrdup (cgraph_node_name (node)),
+	     node->symbol.order);
   return node;
 }
 #include "gt-cgraph.h"
