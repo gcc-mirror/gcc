@@ -1044,7 +1044,7 @@ pure_const_read_summary (void)
 		  int flags = flags_from_decl_or_type (node->symbol.decl);
 		  fprintf (dump_file, "Read info for %s/%i ",
 			   cgraph_node_name (node),
-			   node->uid);
+			   node->symbol.order);
 		  if (flags & ECF_CONST)
 		    fprintf (dump_file, " const");
 		  if (flags & ECF_PURE)
@@ -1143,7 +1143,7 @@ propagate_pure_const (void)
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  Visiting %s/%i state:%s looping %i\n",
 		     cgraph_node_name (w),
-		     w->uid,
+		     w->symbol.order,
 		     pure_const_names[w_l->pure_const_state],
 		     w_l->looping);
 
@@ -1190,7 +1190,7 @@ propagate_pure_const (void)
 		  fprintf (dump_file,
 			   "    Call to %s/%i",
 			   cgraph_node_name (e->callee),
-			   e->callee->uid);
+			   e->callee->symbol.order);
 		}
 	      if (avail > AVAIL_OVERWRITABLE)
 		{

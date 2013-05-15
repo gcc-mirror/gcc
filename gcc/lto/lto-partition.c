@@ -691,8 +691,10 @@ lto_balanced_map (void)
 	  best_total_size = total_size;
 	}
       if (cgraph_dump_file)
-	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i best %i/%i, step %i\n", i,
-		 cgraph_node_name (order[i]), order[i]->uid, partition->insns, cost, internal,
+	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i "
+		 "best %i/%i, step %i\n", i,
+		 cgraph_node_name (order[i]), order[i]->symbol.order,
+		 partition->insns, cost, internal,
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
 	 start new partition.  */

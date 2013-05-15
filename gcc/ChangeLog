@@ -1,3 +1,50 @@
+2013-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (ipa_print_node_jump_functions): Print symbol order in
+	header, print symbol order instead of node uid, print more information
+	about indirect edge targets.
+	(ipa_make_edge_direct_to_target): Print symbol order instead of node
+	uids.
+	(ipa_make_edge_direct_to_target): Likewise.
+	(remove_described_reference): Likewise.
+	(propagate_controlled_uses): Likewise.
+	(ipa_print_node_params): Also print symbol order.
+	(ipcp_transform_function): Print symbol order instead of node uids.
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Likewise.
+	(cgraph_get_create_real_symbol_node): Likewise.
+	* ipa-cp.c (print_lattice): Likewise.
+	(print_all_lattices): Likewise.
+	(determine_versionability): Likewise.
+	(initialize_node_lattices): Likewise.
+	(estimate_local_effects): Likewise.
+	(update_profiling_info): Likewise.
+	(create_specialized_node): Likewise.
+	(perhaps_add_new_callers): Likewise.
+	(decide_about_value): Likewise.
+	(decide_whether_version_node): Likewise.
+	(identify_dead_nodes): Likewise.
+	* ipa-inline-analysis.c (dump_inline_edge_summary): Likewise.
+	(dump_inline_summary): Likewise.
+	(estimate_node_size_and_time): Likewise.
+	(inline_analyze_function): Likewise.
+	* ipa-inline.c (report_inline_failed_reason): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(edge_badness): Likewise.
+	(update_edge_key): Likewise.
+	(inline_small_functions): Likewise.  Add dumping of order to two other
+	dumps.
+	* ipa-pure-const.c (pure_const_read_summary): Print symbol order
+	instead of node uids.
+	(propagate_pure_const): Likewise.
+	(propagate_pure_const): Likewise.
+	* ipa-utils.c (dump_cgraph_node_set): Likewise.
+	* lto-cgraph.c (input_node): Explicitly specify we dump uid.
+	* lto-symtab.c (lto_cgraph_replace_node): Print symbol order instead
+	of node uids.
+	* tree-pretty-print.c (dump_function_header): Likewise.
+	* tree-sra.c (convert_callers_for_node): Dump in traditional format.
+	Print symbol order instead of node uids.
+
 2013-05-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c (s390_register_move_cost): Don't impose the

@@ -982,7 +982,7 @@ input_node (struct lto_file_decl_data *file_data,
      functions, they are expected to be read more than once.  */
   if (node->symbol.aux && !DECL_BUILT_IN (node->symbol.decl))
     internal_error ("bytecode stream: found multiple instances of cgraph "
-		    "node %d", node->uid);
+		    "node with uid %d", node->uid);
 
   bp = streamer_read_bitpack (ib);
   input_overwrite_node (file_data, node, tag, &bp);

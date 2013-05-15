@@ -1,3 +1,8 @@
+2013-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Print symbol order instead
+	of node uids.
+
 2013-05-15  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/57038
