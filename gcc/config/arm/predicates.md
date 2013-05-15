@@ -635,3 +635,7 @@
 (define_predicate "mem_noofs_operand"
   (and (match_code "mem")
        (match_code "reg" "0")))
+
+(define_predicate "call_insn_operand"
+  (ior (match_code "symbol_ref")
+       (match_operand 0 "s_register_operand")))

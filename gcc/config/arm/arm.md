@@ -8889,7 +8889,7 @@
          (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && arm_arch5"
+  "TARGET_ARM && arm_arch5 && !SIBLING_CALL_P (insn)"
   "blx%?\\t%0"
   [(set_attr "type" "call")]
 )
@@ -8899,7 +8899,7 @@
          (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5"
+  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
   "*
   return output_call (operands);
   "
@@ -8918,7 +8918,7 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5"
+  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
   "*
   return output_call_mem (operands);
   "
@@ -8931,7 +8931,7 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB1 && arm_arch5"
+  "TARGET_THUMB1 && arm_arch5 && !SIBLING_CALL_P (insn)"
   "blx\\t%0"
   [(set_attr "length" "2")
    (set_attr "type" "call")]
@@ -8942,7 +8942,7 @@
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB1 && !arm_arch5"
+  "TARGET_THUMB1 && !arm_arch5 && !SIBLING_CALL_P (insn)"
   "*
   {
     if (!TARGET_CALLER_INTERWORKING)
@@ -9001,7 +9001,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && arm_arch5"
+  "TARGET_ARM && arm_arch5 && !SIBLING_CALL_P (insn)"
   "blx%?\\t%1"
   [(set_attr "type" "call")]
 )
@@ -9012,7 +9012,7 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5"
+  "TARGET_ARM && !arm_arch5 && !SIBLING_CALL_P (insn)"
   "*
   return output_call (&operands[1]);
   "
@@ -9028,7 +9028,8 @@
 	      (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_ARM && !arm_arch5 && (!CONSTANT_ADDRESS_P (XEXP (operands[1], 0)))"
+  "TARGET_ARM && !arm_arch5 && (!CONSTANT_ADDRESS_P (XEXP (operands[1], 0)))
+   && !SIBLING_CALL_P (insn)"
   "*
   return output_call_mem (&operands[1]);
   "
@@ -9078,6 +9079,7 @@
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_32BIT
+   && !SIBLING_CALL_P (insn)
    && (GET_CODE (operands[0]) == SYMBOL_REF)
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[0]))"
   "*
@@ -9094,6 +9096,7 @@
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
   "TARGET_32BIT
+   && !SIBLING_CALL_P (insn)
    && (GET_CODE (operands[1]) == SYMBOL_REF)
    && !arm_is_long_call_p (SYMBOL_REF_DECL (operands[1]))"
   "*
@@ -9139,6 +9142,10 @@
   "TARGET_32BIT"
   "
   {
+    if (!REG_P (XEXP (operands[0], 0))
+       && (GET_CODE (XEXP (operands[0], 0)) != SYMBOL_REF))
+     XEXP (operands[0], 0) = force_reg (SImode, XEXP (operands[0], 0));
+
     if (operands[2] == NULL_RTX)
       operands[2] = const0_rtx;
   }"
@@ -9153,32 +9160,52 @@
   "TARGET_32BIT"
   "
   {
+    if (!REG_P (XEXP (operands[1], 0)) &&
+       (GET_CODE (XEXP (operands[1],0)) != SYMBOL_REF))
+     XEXP (operands[1], 0) = force_reg (SImode, XEXP (operands[1], 0));
+
     if (operands[3] == NULL_RTX)
       operands[3] = const0_rtx;
   }"
 )
 
 (define_insn "*sibcall_insn"
- [(call (mem:SI (match_operand:SI 0 "" "X"))
+ [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "Cs,Ss"))
 	(match_operand 1 "" ""))
   (return)
   (use (match_operand 2 "" ""))]
-  "TARGET_32BIT && GET_CODE (operands[0]) == SYMBOL_REF"
+  "TARGET_32BIT && SIBLING_CALL_P (insn)"
   "*
-  return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
+  if (which_alternative == 1)
+    return NEED_PLT_RELOC ? \"b%?\\t%a0(PLT)\" : \"b%?\\t%a0\";
+  else
+    {
+      if (arm_arch5 || arm_arch4t)
+	return \" bx\\t%0\\t%@ indirect register sibling call\";
+      else
+	return \"mov%?\\t%|pc, %0\\t%@ indirect register sibling call\";
+    }
   "
   [(set_attr "type" "call")]
 )
 
 (define_insn "*sibcall_value_insn"
- [(set (match_operand 0 "" "")
-       (call (mem:SI (match_operand:SI 1 "" "X"))
+ [(set (match_operand 0 "s_register_operand" "")
+       (call (mem:SI (match_operand:SI 1 "call_insn_operand" "Cs,Ss"))
 	     (match_operand 2 "" "")))
   (return)
   (use (match_operand 3 "" ""))]
-  "TARGET_32BIT && GET_CODE (operands[1]) == SYMBOL_REF"
+  "TARGET_32BIT && SIBLING_CALL_P (insn)"
   "*
-  return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
+  if (which_alternative == 1)
+   return NEED_PLT_RELOC ? \"b%?\\t%a1(PLT)\" : \"b%?\\t%a1\";
+  else
+    {
+      if (arm_arch5 || arm_arch4t)
+	return \"bx\\t%1\";
+      else
+	return \"mov%?\\t%|pc, %1\\t@ indirect sibling call \";
+    }
   "
   [(set_attr "type" "call")]
 )
