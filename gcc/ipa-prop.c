@@ -2200,6 +2200,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 {
   struct cgraph_node *callee;
   struct inline_edge_summary *es = inline_edge_summary (ie);
+  bool unreachable = false;
 
   if (TREE_CODE (target) == ADDR_EXPR)
     target = TREE_OPERAND (target, 0);
@@ -2210,12 +2211,17 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered direct call to non-function"
-				" in %s/%i.\n",
+				" in %s/%i, making it unreachable.\n",
 		     cgraph_node_name (ie->caller), ie->caller->symbol.order);
-	  return NULL;
+	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	  callee = cgraph_get_create_node (target);
+	  unreachable = true;
 	}
+      else
+	callee = cgraph_get_node (target);
     }
-  callee = cgraph_get_node (target);
+  else
+    callee = cgraph_get_node (target);
 
   /* Because may-edges are not explicitely represented and vtable may be external,
      we may create the first reference to the object in the unit.  */
@@ -2252,7 +2258,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 			 - eni_size_weights.call_cost);
   es->call_stmt_time -= (eni_time_weights.indirect_call_cost
 			 - eni_time_weights.call_cost);
-  if (dump_file)
+  if (dump_file && !unreachable)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
 	       "(%s/%i -> %s/%i), for stmt ",

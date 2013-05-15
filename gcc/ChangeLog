@@ -1,5 +1,12 @@
 2013-05-15  Martin Jambor  <mjambor@suse.cz>
 
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Redirect calls to
+	non-functions to builtin_unreachable.
+	* ipa-inline-transform.c (inline_call): Do not assert estimates were
+	correct when new direct edges were discovered.
+
+2013-05-15  Martin Jambor  <mjambor@suse.cz>
+
 	* ipa-prop.c (ipa_print_node_jump_functions): Print symbol order in
 	header, print symbol order instead of node uid, print more information
 	about indirect edge targets.
