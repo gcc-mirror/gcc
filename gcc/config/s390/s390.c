@@ -2432,11 +2432,13 @@ static int
 s390_register_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
                          reg_class_t from, reg_class_t to)
 {
-/* On s390, copy between fprs and gprs is expensive.  */
-  if ((reg_classes_intersect_p (from, GENERAL_REGS)
-       && reg_classes_intersect_p (to, FP_REGS))
-      || (reg_classes_intersect_p (from, FP_REGS)
-	  && reg_classes_intersect_p (to, GENERAL_REGS)))
+  /* On s390, copy between fprs and gprs is expensive as long as no
+     ldgr/lgdr can be used.  */
+  if ((!TARGET_Z10 || GET_MODE_SIZE (mode) != 8)
+      && ((reg_classes_intersect_p (from, GENERAL_REGS)
+	   && reg_classes_intersect_p (to, FP_REGS))
+	  || (reg_classes_intersect_p (from, FP_REGS)
+	      && reg_classes_intersect_p (to, GENERAL_REGS))))
     return 10;
 
   return 1;

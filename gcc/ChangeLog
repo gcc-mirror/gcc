@@ -1,3 +1,8 @@
+2013-05-15  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c (s390_register_move_cost): Don't impose the
+	FPR<->GPR move cost penalty if ldgr/lgdr can be used.
+
 2013-05-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57275
