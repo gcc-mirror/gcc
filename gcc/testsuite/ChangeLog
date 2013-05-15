@@ -1,3 +1,9 @@
+2013-05-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/19599
+	* gcc.target/arm/pr40887.c: Adjust testcase.
+	* gcc.target/arm/pr19599.c: New test.
+
 2013-05-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57275

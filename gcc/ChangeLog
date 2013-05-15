@@ -1,3 +1,18 @@
+2013-05-15  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/19599
+	* config/arm/predicates.md (call_insn_operand): New predicate.
+	* config/arm/constraints.md ("Cs", "Ss"):  New constraints.
+	* config/arm/arm.md (*call_insn, *call_value_insn): Match only
+	if insn is not a tail call.
+	(*sibcall_insn, *sibcall_value_insn): Adjust for tailcalling through
+	registers.
+	* config/arm/arm.h (enum reg_class): New caller save register class.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	* config/arm/arm.c (arm_function_ok_for_sibcall): Allow tailcalling
+	without decls.
+
 2013-05-15  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_transform_loop): Use MSG_NOTE instead
