@@ -1,5 +1,11 @@
 2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* name-lookup.c (pushdecl_maybe_friend_1): Replace pairs of
+	warning_at and permerror with warning_at/inform and permerror/
+	inform, respectively.
+
+2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/31952
 	* name-lookup.c (pushdecl_maybe_friend_1): Diagnose illegal
 	redeclarations.

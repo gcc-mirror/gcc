@@ -1,5 +1,13 @@
 2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* g++.dg/cpp0x/lambda/lambda-shadow1.C: Replace dg-warnings with
+	dg-messages.
+	* g++.dg/warn/Wshadow-1.C: Likewise.
+	* g++.dg/warn/Wshadow-6.C: Likewise.
+	* g++.dg/warn/Wshadow-7.C: Likewise.
+
+2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/31952
 	* g++.dg/parse/pr31952-1.C: New.
 	* g++.dg/parse/pr31952-2.C: Likewise.
