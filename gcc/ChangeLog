@@ -1,3 +1,9 @@
+2013-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57275
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Fix
+	return value for fail to do runtime alias checks for gather loads.
+
 2013-05-15  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/57038

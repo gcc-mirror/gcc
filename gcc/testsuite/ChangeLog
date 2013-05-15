@@ -1,3 +1,8 @@
+2013-05-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57275
+	* gcc.target/i386/pr57275.c: New testcase.
+
 2013-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/lto/attr-weakref-1_0.c: New testcase.
