@@ -269,7 +269,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 				 DR_REF (drb));
 	    }
-	  return false;
+	  return true;
 	}
 
       if (dump_enabled_p ())
@@ -305,7 +305,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
 				 DR_REF (drb));
 	    }
-	  return false;
+	  return true;
 	}
 
       if (dump_enabled_p ())
