@@ -943,8 +943,10 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
-	      permerror (input_location, "type mismatch with previous external decl of %q#D", x);
-	      permerror (input_location, "previous external decl of %q+#D", decl);
+	      if (permerror (input_location, "type mismatch with previous "
+			     "external decl of %q#D", x))
+		inform (input_location, "previous external decl of %q+#D",
+			decl);
 	    }
 	}
 
@@ -1161,19 +1163,23 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 
 	      if (warn_shadow && !nowarn)
 		{
+		  bool warned;
+
 		  if (TREE_CODE (oldlocal) == PARM_DECL)
-		    warning_at (input_location, OPT_Wshadow,
+		    warned = warning_at (input_location, OPT_Wshadow,
 				"declaration of %q#D shadows a parameter", x);
 		  else if (is_capture_proxy (oldlocal))
-		    warning_at (input_location, OPT_Wshadow,
+		    warned = warning_at (input_location, OPT_Wshadow,
 				"declaration of %qD shadows a lambda capture",
 				x);
 		  else
-		    warning_at (input_location, OPT_Wshadow,
+		    warned = warning_at (input_location, OPT_Wshadow,
 				"declaration of %qD shadows a previous local",
 				x);
-		   warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
-			       "shadowed declaration is here");
+
+		  if (warned)
+		    inform (DECL_SOURCE_LOCATION (oldlocal),
+			    "shadowed declaration is here");
 		}
 	    }
 
@@ -1213,10 +1219,11 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
                                    || TREE_CODE (x) == TYPE_DECL))))
 		/* XXX shadow warnings in outer-more namespaces */
 		{
-		  warning_at (input_location, OPT_Wshadow,
-			      "declaration of %qD shadows a global declaration", x);
-		  warning_at (DECL_SOURCE_LOCATION (oldglobal), OPT_Wshadow,
-			      "shadowed declaration is here");
+		  if (warning_at (input_location, OPT_Wshadow,
+				  "declaration of %qD shadows a "
+				  "global declaration", x))
+		    inform (DECL_SOURCE_LOCATION (oldglobal),
+			    "shadowed declaration is here");
 		}
 	    }
 	}

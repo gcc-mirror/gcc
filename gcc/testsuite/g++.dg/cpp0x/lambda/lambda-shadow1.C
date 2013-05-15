@@ -2,7 +2,7 @@
 // { dg-options "-std=c++11 -Wshadow" }
 
 int main() {
-  int x = 1;			  // { dg-warning "shadowed" }
+  int x = 1;			  // { dg-message "shadowed" }
   auto const lambda = [](int x) { // { dg-warning "shadows" }
     return x;
   };
