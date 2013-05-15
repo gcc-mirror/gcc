@@ -6995,6 +6995,15 @@ mips_function_ok_for_sibcall (tree decl, tree exp ATTRIBUTE_UNUSED)
       && mips_call_may_need_jalx_p (decl))
     return false;
 
+  /* Sibling calls should not prevent lazy binding.  Lazy-binding stubs
+     require $gp to be valid on entry, so sibcalls can only use stubs
+     if $gp is call-clobbered.  */
+  if (decl
+      && TARGET_CALL_SAVED_GP
+      && !TARGET_ABICALLS_PIC0
+      && !targetm.binds_local_p (decl))
+    return false;
+
   /* Otherwise OK.  */
   return true;
 }
