@@ -1,3 +1,7 @@
+2013-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/basic_string.h (getline): Fix doxygen comments.
+
 2013-05-14  Evgeniy Stepanov  <eugenis@google.com>
 
 	* src/c++11/system_error.cc (generic_category_instance): Add
