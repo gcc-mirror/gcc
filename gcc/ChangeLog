@@ -1,3 +1,9 @@
+2013-05-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/57286
+	* fold-const.c (fold_ternary_loc) <VEC_COND_EXPR>: Disable some
+	transformations to avoid an infinite loop.
+
 2013-05-16  Marek Polacek  <polacek@redhat.com>
 
 	* tree-scalar-evolution.c (scev_const_prop): Add more dumps.
