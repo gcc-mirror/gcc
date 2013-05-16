@@ -1,3 +1,8 @@
+2013-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/56782 - Regression with empty pack expansions
+	* g++.dg/cpp0x/variadic142.C: New test file.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/57274
