@@ -1,3 +1,8 @@
+2013-05-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Obsolete *-*-solaris2.9*.
+	* doc/install.texi (Specific, *-*-solaris2*): Document it.
+
 2013-05-16  Richard Biener  <rguenther@suse.de>
 
 	* passes.c (init_optimization_passes): Move pass_parallelize_loops
