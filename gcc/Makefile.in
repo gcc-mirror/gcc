@@ -235,6 +235,13 @@ LINKER = $(CC)
 LINKER_FLAGS = $(CFLAGS)
 endif
 
+# Like LINKER, but use a mutex for serializing front end links.
+ifeq (@DO_LINK_MUTEX@,true)
+LLINKER = $(SHELL) $(srcdir)/lock-and-run.sh linkfe.lck $(LINKER)
+else
+LLINKER = $(LINKER)
+endif
+
 # -------------------------------------------
 # Programs which operate on the build machine
 # -------------------------------------------
@@ -4529,6 +4536,8 @@ mostlyclean: lang.mostlyclean
 	-rm -f gtype.state
 # Delete genchecksum outputs
 	-rm -f *-checksum.c
+# Delete lock-and-run bits
+	-rm -rf linkfe.lck lock-stamp.*
 
 # Delete all files made by compilation
 # that don't exist in the distribution.

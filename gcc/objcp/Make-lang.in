@@ -72,7 +72,7 @@ cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 cc1objplus-checksum.o : cc1objplus-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Objective C++ language specific files.
