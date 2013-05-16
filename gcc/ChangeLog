@@ -1,3 +1,8 @@
+2013-05-16  Richard Biener  <rguenther@suse.de>
+
+	* passes.c (init_optimization_passes): Move pass_parallelize_loops
+	earlier, after GRAPHITE transforms and IV canonicalization.
+
 2013-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (extract_omp_for_data): For collapsed loops,
