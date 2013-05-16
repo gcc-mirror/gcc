@@ -4421,6 +4421,64 @@
    (set_attr "predicable" "yes")
    (set_attr "type" "store1")])
 
+;; Unaligned double-word load and store.
+;; Split after reload into two unaligned single-word accesses.
+;; It prevents lower_subreg from splitting some other aligned
+;; double-word accesses too early. Used for internal memcpy.
+
+(define_insn_and_split "unaligned_loaddi"
+  [(set (match_operand:DI 0 "s_register_operand" "=l,r")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "o,o")]
+		   UNSPEC_UNALIGNED_LOAD))]
+  "unaligned_access && TARGET_32BIT"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_UNALIGNED_LOAD))
+   (set (match_dup 2) (unspec:SI [(match_dup 3)] UNSPEC_UNALIGNED_LOAD))]
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+
+    /* If the first destination register overlaps with the base address,
+       swap the order in which the loads are emitted.  */
+    if (reg_overlap_mentioned_p (operands[0], operands[1]))
+      {
+        rtx tmp = operands[1];
+        operands[1] = operands[3];
+        operands[3] = tmp;
+        tmp = operands[0];
+        operands[0] = operands[2];
+        operands[2] = tmp;
+      }
+  }
+  [(set_attr "arch" "t2,any")
+   (set_attr "length" "4,8")
+   (set_attr "predicable" "yes")
+   (set_attr "type" "load2")])
+
+(define_insn_and_split "unaligned_storedi"
+  [(set (match_operand:DI 0 "memory_operand" "=o,o")
+	(unspec:DI [(match_operand:DI 1 "s_register_operand" "l,r")]
+		   UNSPEC_UNALIGNED_STORE))]
+  "unaligned_access && TARGET_32BIT"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_UNALIGNED_STORE))
+   (set (match_dup 2) (unspec:SI [(match_dup 3)] UNSPEC_UNALIGNED_STORE))]
+  {
+    operands[2] = gen_highpart (SImode, operands[0]);
+    operands[0] = gen_lowpart (SImode, operands[0]);
+    operands[3] = gen_highpart (SImode, operands[1]);
+    operands[1] = gen_lowpart (SImode, operands[1]);
+  }
+  [(set_attr "arch" "t2,any")
+   (set_attr "length" "4,8")
+   (set_attr "predicable" "yes")
+   (set_attr "type" "store2")])
+
+
 (define_insn "*extv_reg"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(sign_extract:SI (match_operand:SI 1 "s_register_operand" "r")
@@ -7374,10 +7432,18 @@
    (match_operand:BLK 1 "general_operand" "")
    (match_operand:SI 2 "const_int_operand" "")
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_EITHER"
+  ""
   "
   if (TARGET_32BIT)
     {
+      if (TARGET_LDRD && current_tune->prefer_ldrd_strd
+          && !optimize_function_for_size_p (cfun))
+        {
+          if (gen_movmem_ldrd_strd (operands))
+            DONE;
+          FAIL;
+        }
+
       if (arm_gen_movmemqi (operands))
         DONE;
       FAIL;
