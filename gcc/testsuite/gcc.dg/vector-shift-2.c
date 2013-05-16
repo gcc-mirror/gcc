@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fdump-tree-ccp1" } */
 
-typedef unsigned vec __attribute__ ((vector_size (16)));
+typedef unsigned vec __attribute__ ((vector_size (4*sizeof(int))));
 void
 f (vec *a)
 {

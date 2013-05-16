@@ -14211,6 +14211,12 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 				    fold_convert_loc (loc, type,
 						      TREE_OPERAND (arg0, 0)));
 
+      /* Disable the transformations below for vectors, since
+	 fold_binary_op_with_conditional_arg may undo them immediately,
+	 yielding an infinite loop.  */
+      if (code == VEC_COND_EXPR)
+	return NULL_TREE;
+
       /* Convert A ? B : 0 into A && B if A and B are truth values.  */
       if (integer_zerop (op2)
 	  && truth_value_p (TREE_CODE (arg0))
