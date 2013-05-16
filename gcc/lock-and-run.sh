@@ -1,11 +1,14 @@
 #! /bin/sh
 # Shell-based mutex using mkdir.
 
-lockdir=$1 prog=$2; shift 2 || exit 1
-count=0
+lockdir="$1" prog="$2"; shift 2 || exit 1
+
 # Remember when we started trying to acquire the lock.
+count=0
 touch lock-stamp.$$
+
 trap 'rm -r "$lockdir" lock-stamp.$$' 0
+
 until mkdir "$lockdir" 2>/dev/null; do
     # Say something periodically so the user knows what's up.
     if [ `expr $count % 30` = 0 ]; then
@@ -24,6 +27,8 @@ until mkdir "$lockdir" 2>/dev/null; do
     sleep 1
     count=`expr $count + 1`
 done
+
 echo $prog "$@"
 $prog "$@"
+
 # The trap runs on exit.
