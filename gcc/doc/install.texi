@@ -4068,8 +4068,10 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Support for Solaris 8 has removed in GCC 4.8.  Support for Solaris 7 has
-been removed in GCC 4.6.
+Support for Solaris 9 has been obsoleted in GCC 4.9, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.10.  Support for Solaris 8 has removed in GCC 4.8.
+Support for Solaris 7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and
