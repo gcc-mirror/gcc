@@ -1,3 +1,11 @@
+2013-05-16  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm-protos.h (gen_movmem_ldrd_strd): New declaration.
+	* config/arm/arm.c (next_consecutive_mem): New function.
+	(gen_movmem_ldrd_strd): Likewise.
+	* config/arm/arm.md (movmemqi): Update condition and code.
+	(unaligned_loaddi, unaligned_storedi): New patterns.
+
 2013-05-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Obsolete *-*-solaris2.9*.

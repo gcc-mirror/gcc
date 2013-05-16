@@ -1,3 +1,9 @@
+2013-05-16  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* gcc.target/arm/unaligned-memcpy-2.c: Adjust expected output.
+	* gcc.target/arm/unaligned-memcpy-3.c: Likewise.
+	* gcc.target/arm/unaligned-memcpy-4.c: Likewise.
+
 2013-05-16  Nathan Sidwell  <nathan@codesourcery.com>
 
 	* gcc.dg/visibility-21.c: New.
