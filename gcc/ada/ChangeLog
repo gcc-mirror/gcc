@@ -1,3 +1,7 @@
+2013-05-16  Jason Merrill  <jason@redhat.com>
+
+	* gcc-interface/Make-lang.in (gnat1$(exeext)): Use link mutex.
+
 2013-05-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR ada/57188

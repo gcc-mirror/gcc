@@ -68,7 +68,7 @@ cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 cc1obj-checksum.o : cc1obj-checksum.c $(CONFIG_H) $(SYSTEM_H)
 
 cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) $(LIBDEPS)
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o \
 	      $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
