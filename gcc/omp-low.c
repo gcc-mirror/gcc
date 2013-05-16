@@ -398,11 +398,16 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 
       if (collapse_count && *collapse_count == NULL)
 	{
-	  if ((i == 0 || count != NULL_TREE)
-	      && TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE
-	      && TREE_CONSTANT (loop->n1)
-	      && TREE_CONSTANT (loop->n2)
-	      && TREE_CODE (loop->step) == INTEGER_CST)
+	  t = fold_binary (loop->cond_code, boolean_type_node,
+			   fold_convert (TREE_TYPE (loop->v), loop->n1),
+			   fold_convert (TREE_TYPE (loop->v), loop->n2));
+	  if (t && integer_zerop (t))
+	    count = build_zero_cst (long_long_unsigned_type_node);
+	  else if ((i == 0 || count != NULL_TREE)
+		   && TREE_CODE (TREE_TYPE (loop->v)) == INTEGER_TYPE
+		   && TREE_CONSTANT (loop->n1)
+		   && TREE_CONSTANT (loop->n2)
+		   && TREE_CODE (loop->step) == INTEGER_CST)
 	    {
 	      tree itype = TREE_TYPE (loop->v);
 
@@ -435,7 +440,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	      if (TREE_CODE (count) != INTEGER_CST)
 		count = NULL_TREE;
 	    }
-	  else
+	  else if (count && !integer_zerop (count))
 	    count = NULL_TREE;
 	}
     }
@@ -3384,6 +3389,25 @@ optimize_omp_library_calls (gimple entry_stmt)
       }
 }
 
+/* Callback for expand_omp_build_assign.  Return non-NULL if *tp needs to be
+   regimplified.  */
+
+static tree
+expand_omp_regimplify_p (tree *tp, int *walk_subtrees, void *)
+{
+  tree t = *tp;
+
+  /* Any variable with DECL_VALUE_EXPR needs to be regimplified.  */
+  if (TREE_CODE (t) == VAR_DECL && DECL_HAS_VALUE_EXPR_P (t))
+    return t;
+
+  if (TREE_CODE (t) == ADDR_EXPR)
+    recompute_tree_invariant_for_addr_expr (t);
+
+  *walk_subtrees = !TYPE_P (t) && !DECL_P (t);
+  return NULL_TREE;
+}
+
 /* Expand the OpenMP parallel or task directive starting at REGION.  */
 
 static void
@@ -3656,22 +3680,29 @@ expand_omp_taskreg (struct omp_region *region)
 
     we generate pseudocode
 
+	if (__builtin_expect (N32 cond3 N31, 0)) goto Z0;
 	if (cond3 is <)
 	  adj = STEP3 - 1;
 	else
 	  adj = STEP3 + 1;
 	count3 = (adj + N32 - N31) / STEP3;
+	if (__builtin_expect (N22 cond2 N21, 0)) goto Z0;
 	if (cond2 is <)
 	  adj = STEP2 - 1;
 	else
 	  adj = STEP2 + 1;
 	count2 = (adj + N22 - N21) / STEP2;
+	if (__builtin_expect (N12 cond1 N11, 0)) goto Z0;
 	if (cond1 is <)
 	  adj = STEP1 - 1;
 	else
 	  adj = STEP1 + 1;
 	count1 = (adj + N12 - N11) / STEP1;
 	count = count1 * count2 * count3;
+	goto Z1;
+    Z0:
+	count = 0;
+    Z1:
 	more = GOMP_loop_foo_start (0, count, 1, CHUNK, &istart0, &iend0);
 	if (more) goto L0; else goto L3;
     L0:
@@ -3779,6 +3810,9 @@ expand_omp_for_generic (struct omp_region *region,
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
   if (fd->collapse > 1)
     {
+      basic_block zero_iter_bb = NULL;
+      int first_zero_iter = -1;
+
       /* collapsed loops need work for expansion in SSA form.  */
       gcc_assert (!gimple_in_ssa_p (cfun));
       counts = (tree *) alloca (fd->collapse * sizeof (tree));
@@ -3786,6 +3820,51 @@ expand_omp_for_generic (struct omp_region *region,
 	{
 	  tree itype = TREE_TYPE (fd->loops[i].v);
 
+	  if (SSA_VAR_P (fd->loop.n2)
+	      && ((t = fold_binary (fd->loops[i].cond_code, boolean_type_node,
+				    fold_convert (itype, fd->loops[i].n1),
+				    fold_convert (itype, fd->loops[i].n2)))
+		  == NULL_TREE || !integer_onep (t)))
+	    {
+	      tree n1, n2;
+	      n1 = fold_convert (itype, unshare_expr (fd->loops[i].n1));
+	      n1 = force_gimple_operand_gsi (&gsi, n1, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      n2 = fold_convert (itype, unshare_expr (fd->loops[i].n2));
+	      n2 = force_gimple_operand_gsi (&gsi, n2, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      stmt = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
+					NULL_TREE, NULL_TREE);
+	      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+	      if (walk_tree (gimple_cond_lhs_ptr (stmt),
+			     expand_omp_regimplify_p, NULL, NULL)
+		  || walk_tree (gimple_cond_rhs_ptr (stmt),
+				expand_omp_regimplify_p, NULL, NULL))
+		{
+		  gsi = gsi_for_stmt (stmt);
+		  gimple_regimplify_operands (stmt, &gsi);
+		}
+	      e = split_block (entry_bb, stmt);
+	      if (zero_iter_bb == NULL)
+		{
+		  first_zero_iter = i;
+		  zero_iter_bb = create_empty_bb (entry_bb);
+		  if (current_loops)
+		    add_bb_to_loop (zero_iter_bb, entry_bb->loop_father);
+		  gsi = gsi_after_labels (zero_iter_bb);
+		  stmt = gimple_build_assign (fd->loop.n2,
+					      build_zero_cst (type));
+		  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		  set_immediate_dominator (CDI_DOMINATORS, zero_iter_bb,
+					   entry_bb);
+		}
+	      ne = make_edge (entry_bb, zero_iter_bb, EDGE_FALSE_VALUE);
+	      ne->probability = REG_BR_PROB_BASE / 2000 - 1;
+	      e->flags = EDGE_TRUE_VALUE;
+	      e->probability = REG_BR_PROB_BASE - ne->probability;
+	      entry_bb = e->dest;
+	      gsi = gsi_last_bb (entry_bb);
+	    }
 	  if (POINTER_TYPE_P (itype))
 	    itype = signed_type_for (itype);
 	  t = build_int_cst (itype, (fd->loops[i].cond_code == LT_EXPR
@@ -3829,6 +3908,23 @@ expand_omp_for_generic (struct omp_region *region,
 	      stmt = gimple_build_assign (fd->loop.n2, t);
 	      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 	    }
+	}
+      if (zero_iter_bb)
+	{
+	  /* Some counts[i] vars might be uninitialized if
+	     some loop has zero iterations.  But the body shouldn't
+	     be executed in that case, so just avoid uninit warnings.  */
+	  for (i = first_zero_iter; i < fd->collapse; i++)
+	    if (SSA_VAR_P (counts[i]))
+	      TREE_NO_WARNING (counts[i]) = 1;
+	  gsi_prev (&gsi);
+	  e = split_block (entry_bb, gsi_stmt (gsi));
+	  entry_bb = e->dest;
+	  make_edge (zero_iter_bb, entry_bb, EDGE_FALLTHRU);
+	  gsi = gsi_last_bb (entry_bb);
+	  set_immediate_dominator (CDI_DOMINATORS, entry_bb,
+				   get_immediate_dominator (CDI_DOMINATORS,
+							    zero_iter_bb));
 	}
     }
   if (in_combined_parallel)
@@ -4149,6 +4245,7 @@ expand_omp_for_generic (struct omp_region *region,
 
    where COND is "<" or ">", we generate pseudocode
 
+	if ((__typeof (V)) -1 > 0 && N2 cond N1) goto L2;
 	if (cond is <)
 	  adj = STEP - 1;
 	else
@@ -4208,6 +4305,50 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   /* Iteration space partitioning goes in ENTRY_BB.  */
   gsi = gsi_last_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
+
+  t = fold_binary (fd->loop.cond_code, boolean_type_node,
+		   fold_convert (type, fd->loop.n1),
+		   fold_convert (type, fd->loop.n2));
+  if (TYPE_UNSIGNED (type)
+      && (t == NULL_TREE || !integer_onep (t)))
+    {
+      tree n1, n2;
+      n1 = fold_convert (type, unshare_expr (fd->loop.n1));
+      n1 = force_gimple_operand_gsi (&gsi, n1, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      n2 = fold_convert (type, unshare_expr (fd->loop.n2));
+      n2 = force_gimple_operand_gsi (&gsi, n2, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      stmt = gimple_build_cond (fd->loop.cond_code, n1, n2,
+				NULL_TREE, NULL_TREE);
+      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+      if (walk_tree (gimple_cond_lhs_ptr (stmt),
+		     expand_omp_regimplify_p, NULL, NULL)
+	  || walk_tree (gimple_cond_rhs_ptr (stmt),
+			expand_omp_regimplify_p, NULL, NULL))
+	{
+	  gsi = gsi_for_stmt (stmt);
+	  gimple_regimplify_operands (stmt, &gsi);
+	}
+      ep = split_block (entry_bb, stmt);
+      ep->flags = EDGE_TRUE_VALUE;
+      entry_bb = ep->dest;
+      ep->probability = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
+      ep = make_edge (ep->src, fin_bb, EDGE_FALSE_VALUE);
+      ep->probability = REG_BR_PROB_BASE / 2000 - 1;
+      if (gimple_in_ssa_p (cfun))
+	{
+	  int dest_idx = find_edge (entry_bb, fin_bb)->dest_idx;
+	  for (gsi = gsi_start_phis (fin_bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple phi = gsi_stmt (gsi);
+	      add_phi_arg (phi, gimple_phi_arg_def (phi, dest_idx),
+			   ep, UNKNOWN_LOCATION);
+	    }
+	}
+      gsi = gsi_last_bb (entry_bb);
+    }
 
   t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS), 0);
   t = fold_convert (itype, t);
@@ -4370,6 +4511,7 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 
    where COND is "<" or ">", we generate pseudocode
 
+	if ((__typeof (V)) -1 > 0 && N2 cond N1) goto L2;
 	if (cond is <)
 	  adj = STEP - 1;
 	else
@@ -4434,6 +4576,50 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   /* Trip and adjustment setup goes in ENTRY_BB.  */
   si = gsi_last_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_FOR);
+
+  t = fold_binary (fd->loop.cond_code, boolean_type_node,
+		   fold_convert (type, fd->loop.n1),
+		   fold_convert (type, fd->loop.n2));
+  if (TYPE_UNSIGNED (type)
+      && (t == NULL_TREE || !integer_onep (t)))
+    {
+      tree n1, n2;
+      n1 = fold_convert (type, unshare_expr (fd->loop.n1));
+      n1 = force_gimple_operand_gsi (&si, n1, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      n2 = fold_convert (type, unshare_expr (fd->loop.n2));
+      n2 = force_gimple_operand_gsi (&si, n2, true, NULL_TREE,
+				     true, GSI_SAME_STMT);
+      stmt = gimple_build_cond (fd->loop.cond_code, n1, n2,
+				NULL_TREE, NULL_TREE);
+      gsi_insert_before (&si, stmt, GSI_SAME_STMT);
+      if (walk_tree (gimple_cond_lhs_ptr (stmt),
+		     expand_omp_regimplify_p, NULL, NULL)
+	  || walk_tree (gimple_cond_rhs_ptr (stmt),
+			expand_omp_regimplify_p, NULL, NULL))
+	{
+	  si = gsi_for_stmt (stmt);
+	  gimple_regimplify_operands (stmt, &si);
+	}
+      se = split_block (entry_bb, stmt);
+      se->flags = EDGE_TRUE_VALUE;
+      entry_bb = se->dest;
+      se->probability = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
+      se = make_edge (se->src, fin_bb, EDGE_FALSE_VALUE);
+      se->probability = REG_BR_PROB_BASE / 2000 - 1;
+      if (gimple_in_ssa_p (cfun))
+	{
+	  int dest_idx = find_edge (entry_bb, fin_bb)->dest_idx;
+	  for (si = gsi_start_phis (fin_bb);
+	       !gsi_end_p (si); gsi_next (&si))
+	    {
+	      gimple phi = gsi_stmt (si);
+	      add_phi_arg (phi, gimple_phi_arg_def (phi, dest_idx),
+			   se, UNKNOWN_LOCATION);
+	    }
+	}
+      si = gsi_last_bb (entry_bb);
+    }
 
   t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS), 0);
   t = fold_convert (itype, t);
