@@ -11,7 +11,7 @@ void f(vec*a,vec*b){
 */
 void g(vec*a,vec*b){
   *a=(*a)?(*a<*a):-1;
-// *b=(*b)?-1:(*b<*b);
+  *b=(*b)?-1:(*b<*b);
 }
 void h(vec*a){
   *a=(~*a==5);
