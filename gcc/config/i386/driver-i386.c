@@ -517,7 +517,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (!arch)
     {
-      if (vendor == signature_AMD_ebx)
+      if (vendor == signature_AMD_ebx
+	  || vendor == signature_CENTAUR_ebx)
 	cache = detect_caches_amd (ext_level);
       else if (vendor == signature_INTEL_ebx)
 	{
@@ -559,6 +560,32 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_K6;
       else
 	processor = PROCESSOR_PENTIUM;
+    }
+  else if (vendor == signature_CENTAUR_ebx)
+    {
+      if (arch)
+	{
+	  if (family == 6)
+	    {
+	      if (model > 9)
+		/* Use the default detection procedure.  */
+		processor = PROCESSOR_GENERIC32;
+	      else if (model == 9)
+		cpu = "c3-2";
+	      else if (model >= 6)
+		cpu = "c3";
+	      else
+		/* We have no idea.  */
+		processor = PROCESSOR_GENERIC32;
+	    }
+	  else if (has_3dnow)
+	    cpu = "winchip2";
+	  else if (has_mmx)
+	    cpu = "winchip2-c6";
+	  else
+	    /* We have no idea.  */
+	    processor = PROCESSOR_GENERIC32;
+	}
     }
   else
     {
