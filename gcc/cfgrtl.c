@@ -2063,7 +2063,7 @@ get_last_bb_insn (basic_block bb)
    between hot/cold partitions. This condition will not be true until
    after reorder_basic_blocks is called.  */
 
-static void
+static int
 verify_hot_cold_block_grouping (void)
 {
   basic_block bb;
@@ -2072,7 +2072,7 @@ verify_hot_cold_block_grouping (void)
   int current_partition = BB_UNPARTITIONED;
 
   if (!crtl->bb_reorder_complete)
-    return;
+    return err;
 
   FOR_EACH_BB (bb)
     {
@@ -2094,81 +2094,28 @@ verify_hot_cold_block_grouping (void)
       current_partition = BB_PARTITION (bb);
     }
 
-  gcc_assert(!err);
+  return err;
 }
 
-/* Verify the CFG and RTL consistency common for both underlying RTL and
-   cfglayout RTL.
 
-   Currently it does following checks:
-
-   - overlapping of basic blocks
-   - insns with wrong BLOCK_FOR_INSN pointers
-   - headers of basic blocks (the NOTE_INSN_BASIC_BLOCK note)
-   - tails of basic blocks (ensure that boundary is necessary)
-   - scans body of the basic block for JUMP_INSN, CODE_LABEL
-     and NOTE_INSN_BASIC_BLOCK
-   - verify that no fall_thru edge crosses hot/cold partition boundaries
-   - verify that there are no pending RTL branch predictions
-   - verify that there is a single hot/cold partition boundary after bbro
-
-   In future it can be extended check a lot of other stuff as well
-   (reachability of basic blocks, life information, etc. etc.).  */
+/* Perform several checks on the edges out of each block, such as
+   the consistency of the branch probabilities, the correctness
+   of hot/cold partition crossing edges, and the number of expected
+   successor edges.  */
 
 static int
-rtl_verify_flow_info_1 (void)
+rtl_verify_edges (void)
 {
-  rtx x;
   int err = 0;
   basic_block bb;
 
-  /* Check the general integrity of the basic blocks.  */
-  FOR_EACH_BB_REVERSE (bb)
-    {
-      rtx insn;
-
-      if (!(bb->flags & BB_RTL))
-	{
-	  error ("BB_RTL flag not set for block %d", bb->index);
-	  err = 1;
-	}
-
-      FOR_BB_INSNS (bb, insn)
-	if (BLOCK_FOR_INSN (insn) != bb)
-	  {
-	    error ("insn %d basic block pointer is %d, should be %d",
-		   INSN_UID (insn),
-		   BLOCK_FOR_INSN (insn) ? BLOCK_FOR_INSN (insn)->index : 0,
-		   bb->index);
-	    err = 1;
-	  }
-
-      for (insn = BB_HEADER (bb); insn; insn = NEXT_INSN (insn))
-	if (!BARRIER_P (insn)
-	    && BLOCK_FOR_INSN (insn) != NULL)
-	  {
-	    error ("insn %d in header of bb %d has non-NULL basic block",
-		   INSN_UID (insn), bb->index);
-	    err = 1;
-	  }
-      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
-	if (!BARRIER_P (insn)
-	    && BLOCK_FOR_INSN (insn) != NULL)
-	  {
-	    error ("insn %d in footer of bb %d has non-NULL basic block",
-		   INSN_UID (insn), bb->index);
-	    err = 1;
-	  }
-    }
-
-  /* Now check the basic blocks (boundaries etc.) */
   FOR_EACH_BB_REVERSE (bb)
     {
       int n_fallthru = 0, n_branch = 0, n_abnormal_call = 0, n_sibcall = 0;
       int n_eh = 0, n_abnormal = 0;
       edge e, fallthru = NULL;
-      rtx note;
       edge_iterator ei;
+      rtx note;
 
       if (JUMP_P (BB_END (bb))
 	  && (note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX))
@@ -2183,6 +2130,7 @@ rtl_verify_flow_info_1 (void)
 	      err = 1;
 	    }
 	}
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
 	  bool is_crossing;
@@ -2296,26 +2244,26 @@ rtl_verify_flow_info_1 (void)
 	  error ("abnormal edges for no purpose in bb %i", bb->index);
 	  err = 1;
 	}
+    }
 
-      for (x = BB_HEAD (bb); x != NEXT_INSN (BB_END (bb)); x = NEXT_INSN (x))
-	/* We may have a barrier inside a basic block before dead code
-	   elimination.  There is no BLOCK_FOR_INSN field in a barrier.  */
-	if (!BARRIER_P (x) && BLOCK_FOR_INSN (x) != bb)
-	  {
-	    debug_rtx (x);
-	    if (! BLOCK_FOR_INSN (x))
-	      error
-		("insn %d inside basic block %d but block_for_insn is NULL",
-		 INSN_UID (x), bb->index);
-	    else
-	      error
-		("insn %d inside basic block %d but block_for_insn is %i",
-		 INSN_UID (x), bb->index, BLOCK_FOR_INSN (x)->index);
+  /* Clean up.  */
+  return err;
+}
 
-	    err = 1;
-	  }
+/* Checks on the instructions within blocks. Currently checks that each
+   block starts with a basic block note, and that basic block notes and
+   control flow jumps are not found in the middle of the block.  */
 
-      /* OK pointers are correct.  Now check the header of basic
+static int
+rtl_verify_bb_insns (void)
+{
+  rtx x;
+  int err = 0;
+  basic_block bb;
+
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      /* Now check the header of basic
 	 block.  It ought to contain optional CODE_LABEL followed
 	 by NOTE_BASIC_BLOCK.  */
       x = BB_HEAD (bb);
@@ -2362,7 +2310,57 @@ rtl_verify_flow_info_1 (void)
 	  }
     }
 
-  verify_hot_cold_block_grouping();
+  /* Clean up.  */
+  return err;
+}
+
+/* Verify that block pointers for instructions in basic blocks, headers and
+   footers are set appropriately.  */
+
+static int
+rtl_verify_bb_pointers (void)
+{
+  int err = 0;
+  basic_block bb;
+
+  /* Check the general integrity of the basic blocks.  */
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      rtx insn;
+
+      if (!(bb->flags & BB_RTL))
+	{
+	  error ("BB_RTL flag not set for block %d", bb->index);
+	  err = 1;
+	}
+
+      FOR_BB_INSNS (bb, insn)
+	if (BLOCK_FOR_INSN (insn) != bb)
+	  {
+	    error ("insn %d basic block pointer is %d, should be %d",
+		   INSN_UID (insn),
+		   BLOCK_FOR_INSN (insn) ? BLOCK_FOR_INSN (insn)->index : 0,
+		   bb->index);
+	    err = 1;
+	  }
+
+      for (insn = BB_HEADER (bb); insn; insn = NEXT_INSN (insn))
+	if (!BARRIER_P (insn)
+	    && BLOCK_FOR_INSN (insn) != NULL)
+	  {
+	    error ("insn %d in header of bb %d has non-NULL basic block",
+		   INSN_UID (insn), bb->index);
+	    err = 1;
+	  }
+      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
+	if (!BARRIER_P (insn)
+	    && BLOCK_FOR_INSN (insn) != NULL)
+	  {
+	    error ("insn %d in footer of bb %d has non-NULL basic block",
+		   INSN_UID (insn), bb->index);
+	    err = 1;
+	  }
+    }
 
   /* Clean up.  */
   return err;
@@ -2372,31 +2370,54 @@ rtl_verify_flow_info_1 (void)
    cfglayout RTL.
 
    Currently it does following checks:
-   - all checks of rtl_verify_flow_info_1
-   - test head/end pointers
-   - check that all insns are in the basic blocks
-     (except the switch handling code, barriers and notes)
-   - check that all returns are followed by barriers
-   - check that all fallthru edge points to the adjacent blocks.  */
+
+   - overlapping of basic blocks
+   - insns with wrong BLOCK_FOR_INSN pointers
+   - headers of basic blocks (the NOTE_INSN_BASIC_BLOCK note)
+   - tails of basic blocks (ensure that boundary is necessary)
+   - scans body of the basic block for JUMP_INSN, CODE_LABEL
+     and NOTE_INSN_BASIC_BLOCK
+   - verify that no fall_thru edge crosses hot/cold partition boundaries
+   - verify that there are no pending RTL branch predictions
+   - verify that there is a single hot/cold partition boundary after bbro
+
+   In future it can be extended check a lot of other stuff as well
+   (reachability of basic blocks, life information, etc. etc.).  */
 
 static int
-rtl_verify_flow_info (void)
+rtl_verify_flow_info_1 (void)
+{
+  int err = 0;
+
+  err |= rtl_verify_bb_pointers ();
+
+  err |= rtl_verify_bb_insns ();
+
+  err |= rtl_verify_edges ();
+
+  err |= verify_hot_cold_block_grouping();
+
+  return err;
+}
+
+/* Walk the instruction chain and verify that bb head/end pointers
+  are correct, and that instructions are in exactly one bb and have
+  correct block pointers.  */
+
+static int
+rtl_verify_bb_insn_chain (void)
 {
   basic_block bb;
-  int err = rtl_verify_flow_info_1 ();
+  int err = 0;
   rtx x;
   rtx last_head = get_last_insn ();
   basic_block *bb_info;
-  int num_bb_notes;
-  const rtx rtx_first = get_insns ();
-  basic_block last_bb_seen = ENTRY_BLOCK_PTR, curr_bb = NULL;
   const int max_uid = get_max_uid ();
 
   bb_info = XCNEWVEC (basic_block, max_uid);
 
   FOR_EACH_BB_REVERSE (bb)
     {
-      edge e;
       rtx head = BB_HEAD (bb);
       rtx end = BB_END (bb);
 
@@ -2406,14 +2427,14 @@ rtl_verify_flow_info (void)
 	  if (x == end)
 	    break;
 
-	  /* And that the code outside of basic blocks has NULL bb field.  */
-	if (!BARRIER_P (x)
-	    && BLOCK_FOR_INSN (x) != NULL)
-	  {
-	    error ("insn %d outside of basic blocks has non-NULL bb field",
-		   INSN_UID (x));
-	    err = 1;
-	  }
+            /* And that the code outside of basic blocks has NULL bb field.  */
+          if (!BARRIER_P (x)
+              && BLOCK_FOR_INSN (x) != NULL)
+            {
+              error ("insn %d outside of basic blocks has non-NULL bb field",
+                     INSN_UID (x));
+              err = 1;
+            }
 	}
 
       if (!x)
@@ -2449,6 +2470,37 @@ rtl_verify_flow_info (void)
 	}
 
       last_head = PREV_INSN (x);
+    }
+
+  for (x = last_head; x != NULL_RTX; x = PREV_INSN (x))
+    {
+      /* Check that the code before the first basic block has NULL
+	 bb field.  */
+      if (!BARRIER_P (x)
+	  && BLOCK_FOR_INSN (x) != NULL)
+	{
+	  error ("insn %d outside of basic blocks has non-NULL bb field",
+		 INSN_UID (x));
+	  err = 1;
+	}
+    }
+  free (bb_info);
+
+  return err;
+}
+
+/* Verify that fallthru edges point to adjacent blocks in layout order and
+   that barriers exist after non-fallthru blocks.  */
+
+static int
+rtl_verify_fallthru (void)
+{
+  basic_block bb;
+  int err = 0;
+
+  FOR_EACH_BB_REVERSE (bb)
+    {
+      edge e;
 
       e = find_fallthru_edge (bb->succs);
       if (!e)
@@ -2493,19 +2545,22 @@ rtl_verify_flow_info (void)
 	}
     }
 
-  for (x = last_head; x != NULL_RTX; x = PREV_INSN (x))
-    {
-      /* Check that the code before the first basic block has NULL
-	 bb field.  */
-      if (!BARRIER_P (x)
-	  && BLOCK_FOR_INSN (x) != NULL)
-	{
-	  error ("insn %d outside of basic blocks has non-NULL bb field",
-		 INSN_UID (x));
-	  err = 1;
-	}
-    }
-  free (bb_info);
+   return err;
+}
+
+/* Verify that blocks are laid out in consecutive order. While walking the
+   instructions, verify that all expected instructions are inside the basic
+   blocks, and that all returns are followed by barriers.  */
+
+static int
+rtl_verify_bb_layout (void)
+{
+  basic_block bb;
+  int err = 0;
+  rtx x;
+  int num_bb_notes;
+  const rtx rtx_first = get_insns ();
+  basic_block last_bb_seen = ENTRY_BLOCK_PTR, curr_bb = NULL;
 
   num_bb_notes = 0;
   last_bb_seen = ENTRY_BLOCK_PTR;
@@ -2549,6 +2604,7 @@ rtl_verify_flow_info (void)
 	  && returnjump_p (x) && ! condjump_p (x)
 	  && ! (next_nonnote_insn (x) && BARRIER_P (next_nonnote_insn (x))))
 	    fatal_insn ("return not followed by barrier", x);
+
       if (curr_bb && x == BB_END (curr_bb))
 	curr_bb = NULL;
     }
@@ -2559,6 +2615,34 @@ rtl_verify_flow_info (void)
        num_bb_notes, n_basic_blocks);
 
    return err;
+}
+
+/* Verify the CFG and RTL consistency common for both underlying RTL and
+   cfglayout RTL, plus consistency checks specific to linearized RTL mode.
+
+   Currently it does following checks:
+   - all checks of rtl_verify_flow_info_1
+   - test head/end pointers
+   - check that blocks are laid out in consecutive order
+   - check that all insns are in the basic blocks
+     (except the switch handling code, barriers and notes)
+   - check that all returns are followed by barriers
+   - check that all fallthru edge points to the adjacent blocks.  */
+
+static int
+rtl_verify_flow_info (void)
+{
+  int err = 0;
+
+  err |= rtl_verify_flow_info_1 ();
+
+  err |= rtl_verify_bb_insn_chain ();
+
+  err |= rtl_verify_fallthru ();
+
+  err |= rtl_verify_bb_layout ();
+
+  return err;
 }
 
 /* Assume that the preceding pass has possibly eliminated jump instructions

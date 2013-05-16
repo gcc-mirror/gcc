@@ -1,3 +1,15 @@
+2013-05-16  Teresa Johnson  <tejohnson@google.com>
+
+	* cfgrtl.c (verify_hot_cold_block_grouping): Return err.
+	(rtl_verify_edges): New function.
+	(rtl_verify_bb_insns): Ditto.
+	(rtl_verify_bb_pointers): Ditto.
+	(rtl_verify_bb_insn_chain): Ditto.
+	(rtl_verify_fallthru): Ditto.
+	(rtl_verify_bb_layout): Ditto.
+	(rtl_verify_flow_info_1): Outline checks into new functions.
+	(rtl_verify_flow_info): Ditto.
+
 2013-05-16  Steve Ellcey  <sellcey@imgtec.com>
 
 	* cfghooks.c (copy_bbs): Add update_dominance argument.
