@@ -6580,9 +6580,9 @@ default_use_anchors_for_symbol_p (const_rtx symbol)
   decl = SYMBOL_REF_DECL (symbol);
   if (decl && DECL_P (decl))
     {
-      /* Don't use section anchors for decls that might be defined by
-	 other modules.  */
-      if (!targetm.binds_local_p (decl))
+      /* Don't use section anchors for decls that might be defined or
+	 usurped by other modules.  */
+      if (TREE_PUBLIC (decl) && !decl_binds_to_current_def_p (decl))
 	return false;
 
       /* Don't use section anchors for decls that will be placed in a
