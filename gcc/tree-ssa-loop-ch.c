@@ -197,7 +197,8 @@ copy_loop_headers (void)
       entry = loop_preheader_edge (loop);
 
       propagate_threaded_block_debug_into (exit->dest, entry->dest);
-      if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs))
+      if (!gimple_duplicate_sese_region (entry, exit, bbs, n_bbs, copied_bbs,
+					 true))
 	{
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;

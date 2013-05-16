@@ -5686,16 +5686,19 @@ add_phi_args_after_copy (basic_block *region_copy, unsigned n_region,
    inside region is live over the other exit edges of the region.  All entry
    edges to the region must go to ENTRY->dest.  The edge ENTRY is redirected
    to the duplicate of the region.  Dominance and loop information is
-   updated, but not the SSA web.  The new basic blocks are stored to
-   REGION_COPY in the same order as they had in REGION, provided that
-   REGION_COPY is not NULL.
+   updated if UPDATE_DOMINANCE is true, but not the SSA web.  If
+   UPDATE_DOMINANCE is false then we assume that the caller will update the
+   dominance information after calling this function.  The new basic
+   blocks are stored to REGION_COPY in the same order as they had in REGION,
+   provided that REGION_COPY is not NULL.
    The function returns false if it is unable to copy the region,
    true otherwise.  */
 
 bool
 gimple_duplicate_sese_region (edge entry, edge exit,
 			    basic_block *region, unsigned n_region,
-			    basic_block *region_copy)
+			    basic_block *region_copy,
+			    bool update_dominance)
 {
   unsigned i;
   bool free_region_copy = false, copying_header = false;
@@ -5749,12 +5752,15 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       free_region_copy = true;
     }
 
-  /* Record blocks outside the region that are dominated by something
-     inside.  */
-  doms.create (0);
   initialize_original_copy_tables ();
 
-  doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
+  /* Record blocks outside the region that are dominated by something
+     inside.  */
+  if (update_dominance)
+    {
+      doms.create (0);
+      doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
+    }
 
   if (entry->dest->count)
     {
@@ -5778,7 +5784,7 @@ gimple_duplicate_sese_region (edge entry, edge exit,
     }
 
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
-	    split_edge_bb_loc (entry));
+	    split_edge_bb_loc (entry), update_dominance);
   if (total_count)
     {
       scale_bbs_frequencies_gcov_type (region, n_region,
@@ -5809,10 +5815,13 @@ gimple_duplicate_sese_region (edge entry, edge exit,
      for entry block and its copy.  Anything that is outside of the
      region, but was dominated by something inside needs recounting as
      well.  */
-  set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
-  doms.safe_push (get_bb_original (entry->dest));
-  iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  doms.release ();
+  if (update_dominance)
+    {
+      set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
+      doms.safe_push (get_bb_original (entry->dest));
+      iterate_fix_dominators (CDI_DOMINATORS, doms, false);
+      doms.release ();
+    }
 
   /* Add the other PHI node arguments.  */
   add_phi_args_after_copy (region_copy, n_region, NULL);
@@ -5944,7 +5953,7 @@ gimple_duplicate_sese_tail (edge entry ATTRIBUTE_UNUSED, edge exit ATTRIBUTE_UNU
     }
 
   copy_bbs (region, n_region, region_copy, exits, 2, nexits, orig_loop,
-	    split_edge_bb_loc (exit));
+	    split_edge_bb_loc (exit), true);
   if (total_count)
     {
       scale_bbs_frequencies_gcov_type (region, n_region,

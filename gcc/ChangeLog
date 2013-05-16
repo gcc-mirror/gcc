@@ -1,3 +1,17 @@
+2013-05-16  Steve Ellcey  <sellcey@imgtec.com>
+
+	* cfghooks.c (copy_bbs): Add update_dominance argument.
+	* cfghooks.h (copy_bbs): Update prototype.
+	* tree-cfg.c (gimple_duplicate_sese_region):
+	Add update_dominance argument.
+	* tree-flow.h (gimple_duplicate_sese_region): Update prototype.
+	* tree-ssa-loop-ch.c (copy_loop_headers): Update
+	gimple_duplicate_sese_region call.
+	* tree-vect-loop-manip.c (slpeel_tree_duplicate_loop_to_edge_cfg):
+	Update copy_bbs call.
+	* cfgloopmanip.c (duplicate_loop_to_header_edge): Ditto.
+	* trans-mem.c (ipa_uninstrument_transaction): Ditto.
+
 2013-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vectorizer.h (NUM_PATTERNS): Increment.

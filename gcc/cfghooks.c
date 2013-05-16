@@ -1282,12 +1282,17 @@ end:
 
 /* Duplicates N basic blocks stored in array BBS.  Newly created basic blocks
    are placed into array NEW_BBS in the same order.  Edges from basic blocks
-   in BBS are also duplicated and copies of those of them
-   that lead into BBS are redirected to appropriate newly created block.  The
-   function assigns bbs into loops (copy of basic block bb is assigned to
-   bb->loop_father->copy loop, so this must be set up correctly in advance)
-   and updates dominators locally (LOOPS structure that contains the information
-   about dominators is passed to enable this).
+   in BBS are also duplicated and copies of those that lead into BBS are
+   redirected to appropriate newly created block.  The function assigns bbs
+   into loops (copy of basic block bb is assigned to bb->loop_father->copy
+   loop, so this must be set up correctly in advance)
+
+   If UPDATE_DOMINANCE is true then this function updates dominators locally
+   (LOOPS structure that contains the information about dominators is passed
+   to enable this), otherwise it does not update the dominator information
+   and it assumed that the caller will do this, perhaps by destroying and
+   recreating it instead of trying to do an incremental update like this
+   function does when update_dominance is true.
 
    BASE is the superloop to that basic block belongs; if its header or latch
    is copied, we do not set the new blocks as header or latch.
@@ -1301,7 +1306,7 @@ end:
 void
 copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 	  edge *edges, unsigned num_edges, edge *new_edges,
-	  struct loop *base, basic_block after)
+	  struct loop *base, basic_block after, bool update_dominance)
 {
   unsigned i, j;
   basic_block bb, new_bb, dom_bb;
@@ -1327,16 +1332,19 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
     }
 
   /* Set dominators.  */
-  for (i = 0; i < n; i++)
+  if (update_dominance)
     {
-      bb = bbs[i];
-      new_bb = new_bbs[i];
-
-      dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
-      if (dom_bb->flags & BB_DUPLICATED)
+      for (i = 0; i < n; i++)
 	{
-	  dom_bb = get_bb_copy (dom_bb);
-	  set_immediate_dominator (CDI_DOMINATORS, new_bb, dom_bb);
+	  bb = bbs[i];
+	  new_bb = new_bbs[i];
+
+	  dom_bb = get_immediate_dominator (CDI_DOMINATORS, bb);
+	  if (dom_bb->flags & BB_DUPLICATED)
+	    {
+	      dom_bb = get_bb_copy (dom_bb);
+	      set_immediate_dominator (CDI_DOMINATORS, new_bb, dom_bb);
+	    }
 	}
     }
 

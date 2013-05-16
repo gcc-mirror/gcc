@@ -735,7 +735,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop, edge e)
 
   copy_bbs (bbs, loop->num_nodes + 1, new_bbs,
 	    &exit, 1, &new_exit, NULL,
-	    e->src);
+	    e->src, true);
   basic_block new_preheader = new_bbs[loop->num_nodes];
 
   add_phi_args_after_copy (new_bbs, loop->num_nodes + 1, NULL);

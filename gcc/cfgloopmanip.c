@@ -1300,7 +1300,7 @@ duplicate_loop_to_header_edge (struct loop *loop, edge e,
 
       /* Copy bbs.  */
       copy_bbs (bbs, n, new_bbs, spec_edges, 2, new_spec_edges, loop,
-		place_after);
+		place_after, true);
       place_after = new_spec_edges[SE_LATCH]->src;
 
       if (flags & DLTHE_RECORD_COPY_NUMBER)
