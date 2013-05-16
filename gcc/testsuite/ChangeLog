@@ -1,3 +1,12 @@
+2013-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/rotate-3.c: New test.
+	* gcc.target/i386/rotate-3a.c: New test.
+	* gcc.target/i386/rotate-4.c: New test.
+	* gcc.target/i386/rotate-4a.c: New test.
+	* gcc.target/i386/rotate-5.c: New test.
+	* gcc.target/i386/rotate-5a.c: New test.
+
 2013-05-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/visibility-21.c: Require section_anchors.

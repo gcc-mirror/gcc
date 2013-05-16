@@ -50,6 +50,7 @@ static gimple vect_recog_over_widening_pattern (vec<gimple> *, tree *,
                                                  tree *);
 static gimple vect_recog_widen_shift_pattern (vec<gimple> *,
 	                                tree *, tree *);
+static gimple vect_recog_rotate_pattern (vec<gimple> *, tree *, tree *);
 static gimple vect_recog_vector_vector_shift_pattern (vec<gimple> *,
 						      tree *, tree *);
 static gimple vect_recog_divmod_pattern (vec<gimple> *,
@@ -64,6 +65,7 @@ static vect_recog_func_ptr vect_vect_recog_func_ptrs[NUM_PATTERNS] = {
 	vect_recog_pow_pattern,
 	vect_recog_widen_shift_pattern,
 	vect_recog_over_widening_pattern,
+	vect_recog_rotate_pattern,
 	vect_recog_vector_vector_shift_pattern,
 	vect_recog_divmod_pattern,
 	vect_recog_mixed_size_cond_pattern,
@@ -1443,6 +1445,218 @@ vect_recog_widen_shift_pattern (vec<gimple> *stmts,
   var = vect_recog_temp_ssa_var (type, NULL);
   pattern_stmt =
     gimple_build_assign_with_ops (WIDEN_LSHIFT_EXPR, var, oprnd0, oprnd1);
+
+  if (dump_enabled_p ())
+    dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
+
+  stmts->safe_push (last_stmt);
+  return pattern_stmt;
+}
+
+/* Detect a rotate pattern wouldn't be otherwise vectorized:
+
+   type a_t, b_t, c_t;
+
+   S0 a_t = b_t r<< c_t;
+
+  Input/Output:
+
+  * STMTS: Contains a stmt from which the pattern search begins,
+    i.e. the shift/rotate stmt.  The original stmt (S0) is replaced
+    with a sequence:
+
+   S1 d_t = -c_t;
+   S2 e_t = d_t & (B - 1);
+   S3 f_t = b_t << c_t;
+   S4 g_t = b_t >> e_t;
+   S0 a_t = f_t | g_t;
+
+    where B is element bitsize of type.
+
+  Output:
+
+  * TYPE_IN: The type of the input arguments to the pattern.
+
+  * TYPE_OUT: The type of the output of this pattern.
+
+  * Return value: A new stmt that will be used to replace the rotate
+    S0 stmt.  */
+
+static gimple
+vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
+{
+  gimple last_stmt = stmts->pop ();
+  tree oprnd0, oprnd1, lhs, var, var1, var2, vectype, type, stype, def, def2;
+  gimple pattern_stmt, def_stmt;
+  enum tree_code rhs_code;
+  stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
+  loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
+  bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
+  enum vect_def_type dt;
+  optab optab1, optab2;
+
+  if (!is_gimple_assign (last_stmt))
+    return NULL;
+
+  rhs_code = gimple_assign_rhs_code (last_stmt);
+  switch (rhs_code)
+    {
+    case LROTATE_EXPR:
+    case RROTATE_EXPR:
+      break;
+    default:
+      return NULL;
+    }
+
+  if (STMT_VINFO_IN_PATTERN_P (stmt_vinfo))
+    return NULL;
+
+  lhs = gimple_assign_lhs (last_stmt);
+  oprnd0 = gimple_assign_rhs1 (last_stmt);
+  type = TREE_TYPE (oprnd0);
+  oprnd1 = gimple_assign_rhs2 (last_stmt);
+  if (TREE_CODE (oprnd0) != SSA_NAME
+      || TYPE_PRECISION (TREE_TYPE (lhs)) != TYPE_PRECISION (type)
+      || !INTEGRAL_TYPE_P (type)
+      || !TYPE_UNSIGNED (type))
+    return NULL;
+
+  if (!vect_is_simple_use (oprnd1, last_stmt, loop_vinfo, bb_vinfo, &def_stmt,
+			   &def, &dt))
+    return NULL;
+
+  if (dt != vect_internal_def
+      && dt != vect_constant_def
+      && dt != vect_external_def)
+    return NULL;
+
+  vectype = get_vectype_for_scalar_type (type);
+  if (vectype == NULL_TREE)
+    return NULL;
+
+  /* If vector/vector or vector/scalar rotate is supported by the target,
+     don't do anything here.  */
+  optab1 = optab_for_tree_code (rhs_code, vectype, optab_vector);
+  if (optab1
+      && optab_handler (optab1, TYPE_MODE (vectype)) != CODE_FOR_nothing)
+    return NULL;
+
+  if (bb_vinfo != NULL || dt != vect_internal_def)
+    {
+      optab2 = optab_for_tree_code (rhs_code, vectype, optab_scalar);
+      if (optab2
+	  && optab_handler (optab2, TYPE_MODE (vectype)) != CODE_FOR_nothing)
+	return NULL;
+    }
+
+  /* If vector/vector or vector/scalar shifts aren't supported by the target,
+     don't do anything here either.  */
+  optab1 = optab_for_tree_code (LSHIFT_EXPR, vectype, optab_vector);
+  optab2 = optab_for_tree_code (RSHIFT_EXPR, vectype, optab_vector);
+  if (!optab1
+      || optab_handler (optab1, TYPE_MODE (vectype)) == CODE_FOR_nothing
+      || !optab2
+      || optab_handler (optab2, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+    {
+      if (bb_vinfo == NULL && dt == vect_internal_def)
+	return NULL;
+      optab1 = optab_for_tree_code (LSHIFT_EXPR, vectype, optab_scalar);
+      optab2 = optab_for_tree_code (RSHIFT_EXPR, vectype, optab_scalar);
+      if (!optab1
+	  || optab_handler (optab1, TYPE_MODE (vectype)) == CODE_FOR_nothing
+	  || !optab2
+	  || optab_handler (optab2, TYPE_MODE (vectype)) == CODE_FOR_nothing)
+	return NULL;
+    }
+
+  *type_in = vectype;
+  *type_out = vectype;
+  if (*type_in == NULL_TREE)
+    return NULL;
+
+  def = NULL_TREE;
+  if (TREE_CODE (oprnd1) == INTEGER_CST
+      || TYPE_MODE (TREE_TYPE (oprnd1)) == TYPE_MODE (type))
+    def = oprnd1;
+  else if (def_stmt && gimple_assign_cast_p (def_stmt))
+    {
+      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+      if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (type)
+	  && TYPE_PRECISION (TREE_TYPE (rhs1))
+	     == TYPE_PRECISION (type))
+	def = rhs1;
+    }
+
+  STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo) = NULL;
+  if (def == NULL_TREE)
+    {
+      def = vect_recog_temp_ssa_var (type, NULL);
+      def_stmt = gimple_build_assign_with_ops (NOP_EXPR, def, oprnd1,
+					       NULL_TREE);
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
+    }
+  stype = TREE_TYPE (def);
+
+  if (TREE_CODE (def) == INTEGER_CST)
+    {
+      if (!host_integerp (def, 1)
+	  || (unsigned HOST_WIDE_INT) tree_low_cst (def, 1)
+	     >= GET_MODE_PRECISION (TYPE_MODE (type))
+	  || integer_zerop (def))
+	return NULL;
+      def2 = build_int_cst (stype,
+			    GET_MODE_PRECISION (TYPE_MODE (type))
+			    - tree_low_cst (def, 1));
+    }
+  else
+    {
+      tree vecstype = get_vectype_for_scalar_type (stype);
+      stmt_vec_info def_stmt_vinfo;
+
+      if (vecstype == NULL_TREE)
+	return NULL;
+      def2 = vect_recog_temp_ssa_var (stype, NULL);
+      def_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, def2, def,
+					       NULL_TREE);
+      def_stmt_vinfo
+	= new_stmt_vec_info (def_stmt, loop_vinfo, bb_vinfo);
+      set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
+      STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
+
+      def2 = vect_recog_temp_ssa_var (stype, NULL);
+      tree mask
+	= build_int_cst (stype, GET_MODE_PRECISION (TYPE_MODE (stype)) - 1);
+      def_stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, def2,
+					       gimple_assign_lhs (def_stmt),
+					       mask);
+      def_stmt_vinfo
+	= new_stmt_vec_info (def_stmt, loop_vinfo, bb_vinfo);
+      set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
+      STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
+      append_pattern_def_seq (stmt_vinfo, def_stmt);
+    }
+
+  var1 = vect_recog_temp_ssa_var (type, NULL);
+  def_stmt = gimple_build_assign_with_ops (rhs_code == LROTATE_EXPR
+					   ? LSHIFT_EXPR : RSHIFT_EXPR,
+					   var1, oprnd0, def);
+  append_pattern_def_seq (stmt_vinfo, def_stmt);
+
+  var2 = vect_recog_temp_ssa_var (type, NULL);
+  def_stmt = gimple_build_assign_with_ops (rhs_code == LROTATE_EXPR
+					   ? RSHIFT_EXPR : LSHIFT_EXPR,
+					   var2, oprnd0, def2);
+  append_pattern_def_seq (stmt_vinfo, def_stmt);
+
+  /* Pattern detected.  */
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "vect_recog_rotate_pattern: detected: ");
+
+  /* Pattern supported.  Create a stmt to be used to replace the pattern.  */
+  var = vect_recog_temp_ssa_var (type, NULL);
+  pattern_stmt = gimple_build_assign_with_ops (BIT_IOR_EXPR, var, var1, var2);
 
   if (dump_enabled_p ())
     dump_gimple_stmt_loc (MSG_NOTE, vect_location, TDF_SLIM, pattern_stmt, 0);
