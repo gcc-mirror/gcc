@@ -1,3 +1,10 @@
+2013-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vectorizer.h (NUM_PATTERNS): Increment.
+	* tree-vect-patterns.c (vect_vect_recog_func_ptrs): Add
+	vect_recog_rotate_pattern.
+	(vect_recog_rotate_pattern): New function.
+
 2013-05-16  Jason Merrill  <jason@redhat.com>
 
 	* Makefile.in (LLINKER): New variable.
