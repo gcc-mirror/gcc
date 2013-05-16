@@ -157,6 +157,7 @@ skip_consecutive_labels (rtx label)
   return label;
 }
 
+#ifdef HAVE_cc0
 /* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
    and REG_CC_USER notes so we can find it.  */
 
@@ -171,6 +172,7 @@ link_cc0_insns (rtx insn)
   add_reg_note (user, REG_CC_SETTER, insn);
   add_reg_note (insn, REG_CC_USER, user);
 }
+#endif
 
 /* Insns which have delay slots that have not yet been filled.  */
 
