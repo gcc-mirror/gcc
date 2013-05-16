@@ -518,7 +518,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
   if (!arch)
     {
       if (vendor == signature_AMD_ebx
-	  || vendor == signature_CENTAUR_ebx)
+	  || vendor == signature_CENTAUR_ebx
+	  || vendor == signature_CYRIX_ebx
+	  || vendor == signature_NSC_ebx
+	  || vendor == signature_TM2_ebx)
 	cache = detect_caches_amd (ext_level);
       else if (vendor == signature_INTEL_ebx)
 	{
@@ -565,8 +568,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
     {
       if (arch)
 	{
-	  if (family == 6)
+	  switch (family)
 	    {
+	    case 6:
 	      if (model > 9)
 		/* Use the default detection procedure.  */
 		processor = PROCESSOR_GENERIC32;
@@ -575,16 +579,20 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	      else if (model >= 6)
 		cpu = "c3";
 	      else
-		/* We have no idea.  */
 		processor = PROCESSOR_GENERIC32;
+	      break;
+	    case 5:
+	      if (has_3dnow)
+		cpu = "winchip2";
+	      else if (has_mmx)
+		cpu = "winchip2-c6";
+	      else
+		processor = PROCESSOR_GENERIC32;
+	      break;
+	    default:
+	      /* We have no idea.  */
+	      processor = PROCESSOR_GENERIC32;
 	    }
-	  else if (has_3dnow)
-	    cpu = "winchip2";
-	  else if (has_mmx)
-	    cpu = "winchip2-c6";
-	  else
-	    /* We have no idea.  */
-	    processor = PROCESSOR_GENERIC32;
 	}
     }
   else
