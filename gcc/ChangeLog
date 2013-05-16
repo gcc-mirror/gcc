@@ -128,9 +128,8 @@
 
 	* config/i386/i386.c (ix86_option_override_internal): Update
 	processor_alias_table for missing PTA_PRFCHW and PTA_FXSR flags.  Add
-	PTA_POPCNT to corei7 entry and remove PTA_SSE from athlon-4 entry.
-	Do not enable SSE prefetch on non-SSE 3dNow! targets.  Enable
-	TARGET_PRFCHW for TARGET_3DNOW targets.
+	PTA_POPCNT to corei7 entry. Do not enable SSE prefetch on
+	non-SSE 3dNow! targets.  Enable TARGET_PRFCHW for TARGET_3DNOW targets.
 	* config/i386/i386.md (prefetch): Enable for TARGET_PRFCHW instead
 	of TARGET_3DNOW.
 	(*prefetch_3dnow): Enable for TARGET_PRFCHW only.
