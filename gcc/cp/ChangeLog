@@ -1,3 +1,9 @@
+2013-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/18126
+	* parser.c (cp_parser_sizeof_operand): As a GNU Extension, parse
+	correctly sizeof compound-literal; update comments.
+
 2013-05-16  Marc Glisse  <marc.glisse@inria.fr>
 
 	* call.c (build_conditional_expr_1): Use cp_build_binary_op

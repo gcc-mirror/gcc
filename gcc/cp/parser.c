@@ -6591,6 +6591,9 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
      __real__ cast-expression
      __imag__ cast-expression
      && identifier
+     sizeof ( type-id ) { initializer-list , [opt] }
+     alignof ( type-id ) { initializer-list , [opt] } [C++0x]
+     __alignof__ ( type-id ) { initializer-list , [opt] }
 
    ADDRESS_P is true iff the unary-expression is appearing as the
    operand of the `&' operator.   CAST_P is true if this expression is
@@ -13968,6 +13971,7 @@ cp_parser_type_specifier (cp_parser* parser,
      __int128
      __typeof__ unary-expression
      __typeof__ ( type-id )
+     __typeof__ ( type-id ) { initializer-list , [opt] }
 
    Returns the indicated TYPE_DECL.  If DECL_SPECS is not NULL, it is
    appropriately updated.  */
@@ -22988,21 +22992,44 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
      construction.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
     {
-      tree type;
-      bool saved_in_type_id_in_expr_p;
+      tree type = NULL_TREE;
+      bool compound_literal_p;
 
       /* We can't be sure yet whether we're looking at a type-id or an
 	 expression.  */
       cp_parser_parse_tentatively (parser);
       /* Consume the `('.  */
       cp_lexer_consume_token (parser->lexer);
-      /* Parse the type-id.  */
-      saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
-      parser->in_type_id_in_expr_p = true;
-      type = cp_parser_type_id (parser);
-      parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
-      /* Now, look for the trailing `)'.  */
-      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+      /* Note: as a GNU Extension, compound literals are considered
+	 postfix-expressions as they are in C99, so they are valid
+	 arguments to sizeof.  See comment in cp_parser_cast_expression
+	 for details.  */
+      cp_lexer_save_tokens (parser->lexer);
+      /* Skip tokens until the next token is a closing parenthesis.
+	 If we find the closing `)', and the next token is a `{', then
+	 we are looking at a compound-literal.  */
+      compound_literal_p
+	= (cp_parser_skip_to_closing_parenthesis (parser, false, false,
+						  /*consume_paren=*/true)
+	   && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE));
+      /* Roll back the tokens we skipped.  */
+      cp_lexer_rollback_tokens (parser->lexer);
+      /* If we were looking at a compound-literal, simulate an error
+	 so that the call to cp_parser_parse_definitely below will
+	 fail.  */
+      if (compound_literal_p)
+	cp_parser_simulate_error (parser);
+      else
+	{
+	  bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+	  parser->in_type_id_in_expr_p = true;
+	  /* Look for the type-id.  */
+	  type = cp_parser_type_id (parser);
+	  /* Look for the closing `)'.  */
+	  cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+	  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
+	}
+
       /* If all went well, then we're done.  */
       if (cp_parser_parse_definitely (parser))
 	{
