@@ -1,3 +1,8 @@
+2013-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/18126
+	* g++.dg/ext/sizeof-complit.C: New.
+
 2013-05-17  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/strlenopt-25.c: New test.
