@@ -1,3 +1,8 @@
+2013-05-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-alias.c (stmt_kills_ref_p_1): Properly compare
+	MEM_REF offsets.
+
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.c (SANITIZER_SPEC): Reject -fsanitize=address -fsanitize=thread
