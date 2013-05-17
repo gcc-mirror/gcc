@@ -10859,8 +10859,7 @@ c_finish_omp_clauses (tree clauses)
 	    bitmap_set_bit (&lastprivate_head, DECL_UID (t));
 	  break;
 
-	case OMP_CLAUSE_ALIGNED: 
-	  name = "aligned";
+	case OMP_CLAUSE_ALIGNED:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
 	    {
@@ -10880,7 +10879,6 @@ c_finish_omp_clauses (tree clauses)
 	  break;
 
 	case OMP_CLAUSE_DEPEND:
-	  name = "depend";
 	  t = OMP_CLAUSE_DECL (c);
 	  /* FIXME: depend clause argument may be also array section.  */
 	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
@@ -10892,11 +10890,8 @@ c_finish_omp_clauses (tree clauses)
 	  break;
 
 	case OMP_CLAUSE_MAP:
-	  name = "map";
 	case OMP_CLAUSE_TO:
-	  name = "to";
 	case OMP_CLAUSE_FROM:
-	  name = "from";
 	  t = OMP_CLAUSE_DECL (c);
 	  /* FIXME: map clause argument may be also array section.  */
 	  if (TREE_CODE (t) != VAR_DECL && TREE_CODE (t) != PARM_DECL)
@@ -10916,7 +10911,6 @@ c_finish_omp_clauses (tree clauses)
 	  break;
 
 	case OMP_CLAUSE_UNIFORM:
-	  name = "uniform";
 	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) != PARM_DECL)
 	    {
@@ -10931,87 +10925,26 @@ c_finish_omp_clauses (tree clauses)
 	  break;
 
 	case OMP_CLAUSE_IF:
-	  name = "if";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_NUM_THREADS:
-	  name = "num_threads";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_SCHEDULE:
-	  name = "schedule";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_NOWAIT:
-	  name = "nowait"; 
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_ORDERED:
-	  name = "ordered";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_DEFAULT:
-	  name = "default";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_UNTIED:
-	  name = "untied";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_COLLAPSE:
-	  name = "collapse";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_FINAL:
-	  name = "final";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_MERGEABLE:
-	  name = "mergeable";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_SAFELEN:
-	  name = "safelen";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_SIMDLEN:
-	  name = "simdlen";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_DEVICE:
-	  name = "device";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_DIST_SCHEDULE:
-	  name = "dist_schedule";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_INBRANCH:
-	  name = "inbranch";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_NOTINBRANCH:
-	  name = "notinbranch";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_PARALLEL:
-	  name = "parallel"; 
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_FOR:
-	  name = "for";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_SECTIONS:
-	  name = "sections";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_TASKGROUP:
-	  name = "taskgroup";
-	  pc = &OMP_CLAUSE_CHAIN (c);
-	  continue;
 	case OMP_CLAUSE_PROC_BIND:
-	  name = "proc_bind";
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
