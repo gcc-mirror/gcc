@@ -1,3 +1,8 @@
+2013-05-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR testsuite/57313
+	* gcc.dg/binop-xor3.c: Restrict to platforms known to work (x86).
+
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57281
