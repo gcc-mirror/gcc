@@ -133,9 +133,10 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
       entry = type == OP_IN ? use_entry : def_entry;
       for (; *ref; ref++)
 	{
-	  if (DF_REF_LOC (*ref) == recog_data.operand_loc[op])
+	  rtx *l = DF_REF_LOC (*ref);
+	  if (l == recog_data.operand_loc[op])
 	    break;
-	  if (DF_REF_REAL_LOC (*ref) == recog_data.operand_loc[op])
+	  if (l && DF_REF_REAL_LOC (*ref) == recog_data.operand_loc[op])
 	    break;
 	}
 
@@ -143,9 +144,10 @@ union_match_dups (rtx insn, struct web_entry *def_entry,
 	{
 	  for (ref = use_link, entry = use_entry; *ref; ref++)
 	    {
-	      if (DF_REF_LOC (*ref) == recog_data.operand_loc[op])
+	      rtx *l = DF_REF_LOC (*ref);
+	      if (l == recog_data.operand_loc[op])
 		break;
-	      if (DF_REF_REAL_LOC (*ref) == recog_data.operand_loc[op])
+	      if (l && DF_REF_REAL_LOC (*ref) == recog_data.operand_loc[op])
 		break;
 	    }
 	}
