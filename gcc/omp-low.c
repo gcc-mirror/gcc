@@ -4960,6 +4960,8 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   edge e, ne;
   tree *counts = NULL;
   int i;
+  tree safelen = find_omp_clause (gimple_omp_for_clauses (fd->for_stmt),
+				  OMP_CLAUSE_SAFELEN);
 
   type = TREE_TYPE (fd->loop.v);
   entry_bb = region->entry;
@@ -5157,6 +5159,34 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   set_immediate_dominator (CDI_DOMINATORS, l1_bb, entry_bb);
   set_immediate_dominator (CDI_DOMINATORS, l2_bb, l1_bb);
   set_immediate_dominator (CDI_DOMINATORS, l0_bb, l1_bb);
+
+  if (!broken_loop)
+    {
+      struct loop *loop = alloc_loop ();
+      loop->header = l1_bb;
+      loop->latch = e->dest;
+      add_loop (loop, l1_bb->loop_father);
+      if (safelen == NULL_TREE)
+	loop->safelen = INT_MAX;
+      else
+	{
+	  safelen = OMP_CLAUSE_SAFELEN_EXPR (safelen);
+	  if (!host_integerp (safelen, 1)
+	      || (unsigned HOST_WIDE_INT) tree_low_cst (safelen, 1)
+		 > INT_MAX)
+	    loop->safelen = INT_MAX;
+	  else
+	    loop->safelen = tree_low_cst (safelen, 1);
+	}
+      /* If not -fno-tree-vectorize, hint that we want to vectorize
+	 the loop.  */
+      if (flag_tree_vectorize
+	  || !global_options_set.x_flag_tree_vectorize)
+	{
+	  loop->force_vect = true;
+	  cfun->has_force_vect_loops = true;
+	}
+    }
 }
 
 
