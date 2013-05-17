@@ -1,3 +1,11 @@
+2013-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57281
+	PR rtl-optimization/57300
+	* config/i386/i386.md (extendsidi2_1 dead reg splitter): Remove.
+	(extendsidi2_1 peephole2s): Add instead 2 new peephole2s, that undo
+	what the other splitter did if the registers are dead.
+
 2013-05-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-alias.c (stmt_kills_ref_p_1): Properly compare
