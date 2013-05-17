@@ -766,7 +766,7 @@ lto_balanced_map (void)
       with symbols defined out of the LTO world.
 */
 
-static void
+static bool
 privatize_symbol_name (symtab_node node)
 {
   tree decl = node->symbol.decl;
@@ -781,7 +781,7 @@ privatize_symbol_name (symtab_node node)
 	fprintf (cgraph_dump_file,
 		"Not privatizing symbol name: %s. It privatized already.\n",
 		name);
-      return;
+      return false;
     }
   /* Avoid mangling of already mangled clones. 
      ???  should have a flag whether a symbol has a 'private' name already,
@@ -793,7 +793,7 @@ privatize_symbol_name (symtab_node node)
 	fprintf (cgraph_dump_file,
 		"Not privatizing symbol name: %s. Has unique name.\n",
 		name);
-      return;
+      return false;
     }
   change_decl_assembler_name (decl, clone_function_name (decl, "lto_priv"));
   if (node->symbol.lto_file_data)
@@ -804,6 +804,7 @@ privatize_symbol_name (symtab_node node)
     fprintf (cgraph_dump_file,
 	    "Privatizing symbol name: %s -> %s\n",
 	    name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+  return true;
 }
 
 /* Promote variable VNODE to be static.  */
@@ -906,11 +907,12 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
 	&& (!encoder
 	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
       {
-        privatize_symbol_name (s);
-	/* Re-start from beggining since we do not know how many symbols changed a name.  */
-	s = symtab_node_for_asm (name);
+        if (privatize_symbol_name (s))
+	  /* Re-start from beggining since we do not know how many symbols changed a name.  */
+	  s = symtab_node_for_asm (name);
+        else s = s->symbol.next_sharing_asm_name;
       }
-   else s = s->symbol.next_sharing_asm_name;
+    else s = s->symbol.next_sharing_asm_name;
 }
 
 /* Find out all static decls that need to be promoted to global because
