@@ -350,7 +350,10 @@ detect_caches_intel (bool xeon_mp, unsigned max_level,
 enum vendor_signatures
 {
   SIG_INTEL =	0x756e6547 /* Genu */,
-  SIG_AMD =	0x68747541 /* Auth */
+  SIG_AMD =	0x68747541 /* Auth */,
+  SIG_CENTAUR =	0x746e6543 /* Cent */,
+  SIG_CYRIX =	0x69727943 /* Cyri */,
+  SIG_NSC =	0x646f6547 /* Geod */
 };
 
 enum processor_signatures
@@ -510,7 +513,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 
   if (!arch)
     {
-      if (vendor == SIG_AMD)
+      if (vendor == SIG_AMD
+	  || vendor == SIG_CENTAUR
+	  || vendor == SIG_CYRIX
+	  || vendor == SIG_NSC)
 	cache = detect_caches_amd (ext_level);
       else if (vendor == SIG_INTEL)
 	{
@@ -548,6 +554,37 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_K6;
       else
 	processor = PROCESSOR_PENTIUM;
+    }
+  else if (vendor == SIG_CENTAUR)
+    {
+      if (arch)
+	{
+	  switch (family)
+	    {
+	    case 6:
+	      if (model > 9)
+		/* Use the default detection procedure.  */
+		processor = PROCESSOR_GENERIC32;
+	      else if (model == 9)
+		cpu = "c3-2";
+	      else if (model >= 6)
+		cpu = "c3";
+	      else
+		processor = PROCESSOR_GENERIC32;
+	      break;
+	    case 5:
+	      if (has_3dnow)
+		cpu = "winchip2";
+	      else if (has_mmx)
+		cpu = "winchip2-c6";
+	      else
+		processor = PROCESSOR_GENERIC32;
+	      break;
+	    default:
+	      /* We have no idea.  */
+	      processor = PROCESSOR_GENERIC32;
+	    }
+	}
     }
   else
     {
