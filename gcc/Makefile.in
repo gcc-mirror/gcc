@@ -3068,7 +3068,7 @@ tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TM_H) coretypes.h $(GIMPLE_H) $(CFGLOOP_H) \
     $(TREE_PASS_H) $(FLAGS_H) $(EXPR_H) $(BASIC_BLOCK_H) \
     $(GGC_H) $(OBSTACK_H) $(PARAMS_H) $(CPPLIB_H) $(PARAMS_H) \
-    $(GIMPLE_PRETTY_PRINT_H) langhooks.h
+    $(GIMPLE_PRETTY_PRINT_H) langhooks.h $(OPTABS_H)
 tree-complex.o : tree-complex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
     $(TM_H) $(FLAGS_H) $(TREE_FLOW_H) $(TREE_HASHER_H) $(GIMPLE_H) \
     $(CFGLOOP_H) tree-iterator.h $(TREE_PASS_H) tree-ssa-propagate.h
