@@ -1,3 +1,12 @@
+2013-05-17  Marek Polacek  <polacek@redhat.com>
+
+	* tree-ssa-strlen.c (handle_char_store): Don't invalidate
+	cached length when doing non-zero store of storing '\0' to
+	'\0'.
+
+	* gcc.dg/strlenopt-25.c: New test.
+	* gcc.dg/strlenopt-26.c: Likewise.
+
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-patterns.c (vect_recog_rotate_pattern): For
