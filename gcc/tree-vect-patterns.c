@@ -1494,6 +1494,7 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_vinfo);
   enum vect_def_type dt;
   optab optab1, optab2;
+  edge ext_def = NULL;
 
   if (!is_gimple_assign (last_stmt))
     return NULL;
@@ -1574,6 +1575,21 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
   if (*type_in == NULL_TREE)
     return NULL;
 
+  if (dt == vect_external_def
+      && TREE_CODE (oprnd1) == SSA_NAME
+      && loop_vinfo)
+    {
+      struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+      ext_def = loop_preheader_edge (loop);
+      if (!SSA_NAME_IS_DEFAULT_DEF (oprnd1))
+	{
+	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (oprnd1));
+	  if (bb == NULL
+	      || !dominated_by_p (CDI_DOMINATORS, ext_def->dest, bb))
+	    ext_def = NULL;
+	}
+    }
+
   def = NULL_TREE;
   if (TREE_CODE (oprnd1) == INTEGER_CST
       || TYPE_MODE (TREE_TYPE (oprnd1)) == TYPE_MODE (type))
@@ -1593,7 +1609,14 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
       def = vect_recog_temp_ssa_var (type, NULL);
       def_stmt = gimple_build_assign_with_ops (NOP_EXPR, def, oprnd1,
 					       NULL_TREE);
-      append_pattern_def_seq (stmt_vinfo, def_stmt);
+      if (ext_def)
+	{
+	  basic_block new_bb
+	    = gsi_insert_on_edge_immediate (ext_def, def_stmt);
+	  gcc_assert (!new_bb);
+	}
+      else
+	append_pattern_def_seq (stmt_vinfo, def_stmt);
     }
   stype = TREE_TYPE (def);
 
@@ -1618,11 +1641,19 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
       def2 = vect_recog_temp_ssa_var (stype, NULL);
       def_stmt = gimple_build_assign_with_ops (NEGATE_EXPR, def2, def,
 					       NULL_TREE);
-      def_stmt_vinfo
-	= new_stmt_vec_info (def_stmt, loop_vinfo, bb_vinfo);
-      set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
-      STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
-      append_pattern_def_seq (stmt_vinfo, def_stmt);
+      if (ext_def)
+	{
+	  basic_block new_bb
+	    = gsi_insert_on_edge_immediate (ext_def, def_stmt);
+	  gcc_assert (!new_bb);
+	}
+      else
+	{
+	  def_stmt_vinfo = new_stmt_vec_info (def_stmt, loop_vinfo, bb_vinfo);
+	  set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
+	  STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
+	}
 
       def2 = vect_recog_temp_ssa_var (stype, NULL);
       tree mask
@@ -1630,11 +1661,19 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
       def_stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, def2,
 					       gimple_assign_lhs (def_stmt),
 					       mask);
-      def_stmt_vinfo
-	= new_stmt_vec_info (def_stmt, loop_vinfo, bb_vinfo);
-      set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
-      STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
-      append_pattern_def_seq (stmt_vinfo, def_stmt);
+      if (ext_def)
+	{
+	  basic_block new_bb
+	    = gsi_insert_on_edge_immediate (ext_def, def_stmt);
+	  gcc_assert (!new_bb);
+	}
+      else
+	{
+	  def_stmt_vinfo = new_stmt_vec_info (def_stmt, loop_vinfo, bb_vinfo);
+	  set_vinfo_for_stmt (def_stmt, def_stmt_vinfo);
+	  STMT_VINFO_VECTYPE (def_stmt_vinfo) = vecstype;
+	  append_pattern_def_seq (stmt_vinfo, def_stmt);
+	}
     }
 
   var1 = vect_recog_temp_ssa_var (type, NULL);
