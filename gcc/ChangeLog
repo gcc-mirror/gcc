@@ -1,3 +1,14 @@
+2013-05-16  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (rl78_attribute_table): Add naked.
+	(rl78_is_naked_func): New function.
+	(rl78_expand_prologue): Skip prologue generation for naked
+	functions.
+	(rl78_expand_epilogue): Skip epilogue generation for naked
+	functions.
+	* doc/extend.texi (naked): Add RL78 to the list of processors
+	that supports this attribute.
+
 2013-05-16  Jeff Law  <law@redhat.com>
 
 	* Makefile.in (tree-switch-conversion.o): Depend on $(OPTABS_H).
