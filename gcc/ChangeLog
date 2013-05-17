@@ -1,5 +1,6 @@
 2013-05-17  Mike Stump  <mikestump@comcast.net>
 
+	PR rtl-optimization/57304
 	* web.c (union_match_dups): Ensure that DF_REF_LOC exists before
 	accessing DF_REF_REAL_LOC.
 
