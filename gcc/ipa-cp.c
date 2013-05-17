@@ -3213,7 +3213,10 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
 	      if (item->value
 		  && item->offset == av->offset
 		  && values_equal_for_ipcp_p (item->value, av->value))
-		found = true;
+		{
+		  found = true;
+		  break;
+		}
 	    if (!found)
 	      {
 		values.release();
