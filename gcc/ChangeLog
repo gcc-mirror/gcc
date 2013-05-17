@@ -1,3 +1,10 @@
+2013-05-17  Po-Chun Chang  <pchang9@cs.wisc.edu>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57276
+	* ipa-cp.c (cgraph_edge_brings_all_agg_vals_for_node): Break when a
+	value that corresponds to the given aggval is found in values vector.
+
 2013-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Pass mmx, 3dnow,
