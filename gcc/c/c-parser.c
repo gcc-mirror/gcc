@@ -11961,7 +11961,7 @@ c_parser_cilk_all_clauses (c_parser *parser)
 	  break;
 	case PRAGMA_CILK_CLAUSE_REDUCTION:
 	  /* Use the OpenMP counterpart.  */
-	  clauses = c_parser_omp_clause_reduction (parser, clauses);
+	  clauses = c_parser_omp_clause_reduction (parser, clauses, false);
 	  break;
 	default:
 	  c_parser_error (parser, "expected %<#pragma simd%> clause");
@@ -12023,7 +12023,7 @@ c_parser_cilk_for_statement (c_parser *parser, enum rid for_keyword,
   if (c_parser_next_tokens_start_declaration (parser))
     {
       c_parser_declaration_or_fndef (parser, true, false, false,
-				     false, false, NULL);
+				     false, false, NULL, vNULL);
       decl = check_for_loop_decls (loc, flag_isoc99);
       if (decl == NULL)
 	goto error_init;
