@@ -1,3 +1,8 @@
+2013-05-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Pass mmx, 3dnow,
+	sse, sse2, sse3, ssse3 and sse4a flags to options.
+
 2013-05-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype-state.c: (s_expr_writer): New class, to handle
@@ -107,9 +112,8 @@
 
 2013-05-17  Marek Polacek  <polacek@redhat.com>
 
-	* tree-ssa-strlen.c (handle_char_store): Don't invalidate
-	cached length when doing non-zero store of storing '\0' to
-	'\0'.
+	* tree-ssa-strlen.c (handle_char_store): Don't invalidate cached
+	length when doing non-zero store of storing '\0' to '\0'.
 
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
