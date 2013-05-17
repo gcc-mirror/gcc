@@ -716,7 +716,8 @@ proper position among the other output files.  */
 #ifndef SANITIZER_SPEC
 #define SANITIZER_SPEC "\
 %{!nostdlib:%{!nodefaultlibs:%{fsanitize=address:" LIBASAN_SPEC "\
-    %{static:%ecannot specify -static with -fsanitize=address}}\
+    %{static:%ecannot specify -static with -fsanitize=address}\
+    %{fsanitize=thread:%e-fsanitize=address is incompatible with -fsanitize=thread}}\
     %{fsanitize=thread:" LIBTSAN_SPEC "\
     %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}}}"
 #endif

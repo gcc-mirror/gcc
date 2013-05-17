@@ -1,5 +1,8 @@
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.c (SANITIZER_SPEC): Reject -fsanitize=address -fsanitize=thread
+	linking.
+
 	PR tree-optimization/57051
 	* fold-const.c (const_binop) <case VEC_LSHIFT_EXPR,
 	case VEC_RSHIFT_EXPR>: Fix BYTES_BIG_ENDIAN handling.
