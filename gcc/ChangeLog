@@ -1,3 +1,11 @@
+2013-05-17  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes): Resolve cross module
+	weakrefs.
+	* cgraph.c (dump_cgraph_node): Do not ice on unresolved alias.
+	* cgraphunit.c (handle_alias_pairs): Store target of unresolved weakrefs.
+	(output_weakrefs): Update.
+
 2013-05-17  Po-Chun Chang  <pchang9@cs.wisc.edu>
 	    Martin Jambor  <mjambor@suse.cz>
 

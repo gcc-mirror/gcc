@@ -1558,7 +1558,7 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	       (int)node->thunk.virtual_value,
 	       (int)node->thunk.virtual_offset_p);
     }
-  if (node->alias && node->thunk.alias)
+  if (node->alias && node->thunk.alias && DECL_P (node->thunk.alias))
     {
       fprintf (f, "  Alias of %s",
 	       lang_hooks.decl_printable_name (node->thunk.alias, 2));
