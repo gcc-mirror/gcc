@@ -593,13 +593,67 @@ lto_symtab_merge_cgraph_nodes (void)
 
   FOR_EACH_FUNCTION (cnode)
     {
+      /* Resolve weakrefs to symbol defined in other unit.  */
+      if (!cnode->analyzed && cnode->thunk.alias && !DECL_P (cnode->thunk.alias))
+	{
+	  symtab_node node = symtab_node_for_asm (cnode->thunk.alias);
+	  if (node && is_a <cgraph_node> (node))
+	    {
+	      struct cgraph_node *n;
+
+	      for (n = cgraph (node); n && n->alias;
+		   n = n->analyzed ? cgraph_alias_aliased_node (n) : NULL)
+		if (n == cnode)
+		  {
+		    error ("function %q+D part of alias cycle", cnode->symbol.decl);
+		    cnode->alias = false;
+		    break;
+		  }
+	      if (cnode->alias)
+		{
+		  cgraph_create_function_alias (cnode->symbol.decl, node->symbol.decl);
+		  ipa_record_reference ((symtab_node)cnode, (symtab_node)node,
+					IPA_REF_ALIAS, NULL);
+		  cnode->analyzed = true;
+		}
+	    }
+	  else if (node)
+	    error ("%q+D alias in between function and variable is not supported", cnode->symbol.decl);
+	}
       if ((cnode->thunk.thunk_p || cnode->alias)
-	  && cnode->thunk.alias)
+	  && cnode->thunk.alias && DECL_P (cnode->thunk.alias))
         cnode->thunk.alias = lto_symtab_prevailing_decl (cnode->thunk.alias);
       cnode->symbol.aux = NULL;
     }
   FOR_EACH_VARIABLE (vnode)
     {
+      /* Resolve weakrefs to symbol defined in other unit.  */
+      if (!vnode->analyzed && vnode->alias_of && !DECL_P (vnode->alias_of))
+	{
+	  symtab_node node = symtab_node_for_asm (vnode->alias_of);
+	  if (node && is_a <cgraph_node> (node))
+	    {
+	      struct varpool_node *n;
+
+	      for (n = varpool (node); n && n->alias;
+		   n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
+		if (n == vnode)
+		  {
+		    error ("function %q+D part of alias cycle", vnode->symbol.decl);
+		    vnode->alias = false;
+		    break;
+		  }
+	      if (vnode->alias)
+		{
+		  varpool_create_variable_alias (vnode->symbol.decl, node->symbol.decl);
+		  ipa_record_reference ((symtab_node)vnode, (symtab_node)node,
+					IPA_REF_ALIAS, NULL);
+		  vnode->analyzed = true;
+		}
+	    }
+	  else if (node)
+	    error ("%q+D alias in between function and variable is not supported", vnode->symbol.decl);
+	}
       if (vnode->alias_of)
         vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
       vnode->symbol.aux = NULL;
