@@ -1,3 +1,11 @@
+2013-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_pow_int_overload): Update comment.
+	Change guard to match <cmath>.
+	* fixincl.x: Regenerate.
+	* tests/base/iso/math_iso.h [SOLARIS_POW_INT_OVERLOAD_CHECK]:
+	Matching change.
+
 2013-05-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (aix_null): New.

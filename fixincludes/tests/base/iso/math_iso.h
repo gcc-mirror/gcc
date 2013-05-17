@@ -10,7 +10,7 @@
 
 
 #if defined( SOLARIS_POW_INT_OVERLOAD_CHECK )
-#ifndef __GXX_EXPERIMENTAL_CXX0X__
+#if __cplusplus < 201103L
 	inline long double pow(long double __X, int __Y) { return
 		__powl(__X, (long double) (__Y)); }
 #endif
