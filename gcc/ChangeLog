@@ -1,5 +1,10 @@
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): For
+	vect_external_def oprnd1 with loop_vinfo, try to emit
+	optional cast, negation and and stmts on the loop preheader
+	edge instead of into the pattern def seq.
+
 	PR tree-optimization/57051
 	* fold-const.c (const_binop) <case VEC_LSHIFT_EXPR,
 	case VEC_RSHIFT_EXPR>: Fix BYTES_BIG_ENDIAN handling.

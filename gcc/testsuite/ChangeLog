@@ -1,3 +1,11 @@
+2013-05-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/rotate-4.c: Compile only with -mavx
+	instead of -mavx2, require only avx instead of avx2.
+	* gcc.target/i386/rotate-4a.c: Include avx-check.h instead
+	of avx2-check.h and turn into an avx runtime test instead of
+	avx2 runtime test.
+
 2013-05-16  Marc Glisse  <marc.glisse@inria.fr>
 
 	* g++.dg/ext/vector22.C: Uncomment working test.

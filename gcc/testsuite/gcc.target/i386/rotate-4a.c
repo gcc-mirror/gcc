@@ -1,14 +1,14 @@
 /* { dg-do run } */
-/* { dg-require-effective-target avx2 } */
-/* { dg-options "-O3 -mavx2" } */
+/* { dg-require-effective-target avx } */
+/* { dg-options "-O3 -mavx" } */
 
-#include "avx2-check.h"
+#include "avx-check.h"
 
 #include "rotate-4.c"
 
 static void
 __attribute__((noinline))
-avx2_test (void)
+avx_test (void)
 {
   int i;
   for (i = 0; i < 1024; i++)
