@@ -179,7 +179,7 @@ extern int which_alternative;
 
 /* The following vectors hold the results from insn_extract.  */
 
-struct Recog_data
+struct recog_data_d
 {
   /* It is very tempting to make the 5 operand related arrays into a
      structure and index on that.  However, to be source compatible
@@ -245,7 +245,7 @@ struct Recog_data
   rtx insn;
 };
 
-extern struct Recog_data recog_data;
+extern struct recog_data_d recog_data;
 
 /* Contains a vector of operand_alternative structures for every operand.
    Set up by preprocess_constraints.  */
