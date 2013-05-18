@@ -1,5 +1,9 @@
 2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* doc/xml/manual/status_cxx2011.xml: Fix markup error.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/utility (exchange): Define.
 	* testsuite/20_util/exchange/1.cc: New.
 
