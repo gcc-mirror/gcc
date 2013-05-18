@@ -1,5 +1,20 @@
 2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/unique_ptr.h (make_unique): Declare inline.
+	(unique_ptr<T[],D>::reset()): Combine two overloads into one.
+	(default_delete, unique_ptr): Add doxygen comments.
+	* include/bits/shared_ptr_base.h: Improve doxygen comments.
+	* include/bits/shared_ptr.h: Likewise.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line
+	number.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Fix markup error.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* doc/xml/manual/status_cxx2011.xml: Fix markup error.
 
 2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
