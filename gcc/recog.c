@@ -70,7 +70,7 @@ static rtx split_insn (rtx);
 
 int volatile_ok;
 
-struct Recog_data recog_data;
+struct recog_data_d recog_data;
 
 /* Contains a vector of operand_alternative structures for every operand.
    Set up by preprocess_constraints.  */

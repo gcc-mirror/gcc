@@ -895,7 +895,7 @@ can_reload_into (rtx in, int regno, enum machine_mode mode)
 {
   rtx dst, test_insn;
   int r = 0;
-  struct Recog_data save_recog_data;
+  struct recog_data_d save_recog_data;
 
   /* For matching constraints, we often get notional input reloads where
      we want to use the original register as the reload register.  I.e.
