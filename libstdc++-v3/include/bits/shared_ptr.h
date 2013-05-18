@@ -60,7 +60,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  /// 2.2.3.7 shared_ptr I/O
+  /// 20.7.2.2.11 shared_ptr I/O
   template<typename _Ch, typename _Tr, typename _Tp, _Lock_policy _Lp>
     inline std::basic_ostream<_Ch, _Tr>&
     operator<<(std::basic_ostream<_Ch, _Tr>& __os,
@@ -70,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __os;
     }
 
-  /// 2.2.3.10 shared_ptr get_deleter (experimental)
+  /// 20.7.2.2.10 shared_ptr get_deleter
   template<typename _Del, typename _Tp, _Lock_policy _Lp>
     inline _Del*
     get_deleter(const __shared_ptr<_Tp, _Lp>& __p) noexcept

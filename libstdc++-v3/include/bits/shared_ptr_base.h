@@ -1204,13 +1204,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public _Sp_less<__shared_ptr<_Tp, _Lp>>
     { };
 
-  // 2.2.3.8 shared_ptr specialized algorithms.
+  // 20.7.2.2.8 shared_ptr specialized algorithms.
   template<typename _Tp, _Lock_policy _Lp>
     inline void
     swap(__shared_ptr<_Tp, _Lp>& __a, __shared_ptr<_Tp, _Lp>& __b) noexcept
     { __a.swap(__b); }
 
-  // 2.2.3.9 shared_ptr casts
+  // 20.7.2.2.9 shared_ptr casts
 
   // The seemingly equivalent code:
   // shared_ptr<_Tp, _Lp>(static_cast<_Tp*>(__r.get()))
