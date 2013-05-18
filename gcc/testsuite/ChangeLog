@@ -1,3 +1,7 @@
+2013-05-17   Easwaran Raman  <eraman@google.com>
+
+	* gcc.dg/tree-ssa/reassoc-28.c: New testcase.
+
 2013-05-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR testsuite/57313
