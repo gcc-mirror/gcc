@@ -1,3 +1,17 @@
+2013-05-17   Easwaran Raman  <eraman@google.com>
+
+	* tree-ssa-reassoc.c (find_insert_point): New function.
+	(insert_stmt_after): Likewise.
+	(get_def_stmt): Likewise.
+	(ensure_ops_are_available): Likewise.
+	(not_dominated_by): Likewise.
+	(rewrite_expr_tree): Do not move statements beyond what is
+	necessary. Remove call to swap_ops_for_binary_stmt...
+	(reassociate_bb): ... and move it here.
+	(build_and_add_sum): Assign UIDs for new statements.
+	(linearize_expr): Likewise.
+	(do_reassoc): Renumber gimple statement UIDs.
+
 2013-05-17  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_symtab_merge_cgraph_nodes): Resolve cross module
@@ -156,6 +170,7 @@
 
 	* Makefile.in (tree-switch-conversion.o): Depend on $(OPTABS_H).
 
+>>>>>>> .r199043
 2013-05-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Determine
