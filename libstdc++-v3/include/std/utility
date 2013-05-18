@@ -152,6 +152,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     get(const std::pair<_Tp1, _Tp2>& __in) noexcept
     { return __pair_get<_Int>::__const_get(__in); }
 
+#if __cplusplus > 201103L
+  /// Assign @p __new_val to @p __obj and return its previous value.
+  template <class _Tp, class _Up = _Tp>
+    inline _Tp
+    exchange(_Tp& __obj, _Up&& __new_val)
+    {
+      _Tp __old_val = std::move(__obj);
+      __obj = std::forward<_Up>(__new_val);
+      return __old_val;
+    }
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
