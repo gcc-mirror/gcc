@@ -1,5 +1,9 @@
 2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/typeindex (type_index::name()): LWG 2144: Add noexcept.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/unique_ptr.h (make_unique): Declare inline.
 	(unique_ptr<T[],D>::reset()): Combine two overloads into one.
 	(default_delete, unique_ptr): Add doxygen comments.
