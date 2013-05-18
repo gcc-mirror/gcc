@@ -1,3 +1,8 @@
+2013-05-17  Julian Brown  <julian@codesourcery.com>
+
+	* gcse.c (compute_ld_motion_mems): If a non-simple MEM is
+	found in a REG_EQUAL note, invalidate it.
+
 2013-05-17   Easwaran Raman  <eraman@google.com>
 
 	* tree-ssa-reassoc.c (find_insert_point): New function.
