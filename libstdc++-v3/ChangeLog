@@ -1,3 +1,7 @@
+2013-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* Revert last commit.
+
 2013-05-19  Matthias Klose  <doko@ubuntu.com>
 
 	* include/Makefile.am (bits_headers): Remove ${bits_host_headers}.
