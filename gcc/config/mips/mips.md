@@ -407,7 +407,6 @@
 ;; Is this an extended instruction in mips16 mode?
 (define_attr "extended_mips16" "no,yes"
   (if_then_else (ior (eq_attr "move_type" "sll0")
-		     (eq_attr "type" "branch")
 		     (eq_attr "jal" "direct"))
 		(const_string "yes")
 		(const_string "no")))
@@ -585,10 +584,6 @@
 		 (match_test "Pmode == SImode")
 		 (const_int 32)
 		 ] (const_int 48))
-
-	  (and (eq_attr "extended_mips16" "yes")
-	       (match_test "TARGET_MIPS16"))
-	  (const_int 8)
 
 	  ;; "Ghost" instructions occupy no space.
 	  (eq_attr "type" "ghost")
