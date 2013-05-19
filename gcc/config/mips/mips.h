@@ -2439,6 +2439,14 @@ typedef struct mips_args {
 #define BRANCH_COST(speed_p, predictable_p) mips_branch_cost
 #define LOGICAL_OP_NON_SHORT_CIRCUIT 0
 
+/* The MIPS port has several functions that return an instruction count.
+   Multiplying the count by this value gives the number of bytes that
+   the instructions occupy.  */
+#define BASE_INSN_LENGTH (TARGET_MIPS16 ? 2 : 4)
+
+/* The length of a NOP in bytes.  */
+#define NOP_INSN_LENGTH (TARGET_COMPRESSION ? 2 : 4)
+
 /* If defined, modifies the length assigned to instruction INSN as a
    function of the context in which it is used.  LENGTH is an lvalue
    that contains the initially computed length of the insn and should

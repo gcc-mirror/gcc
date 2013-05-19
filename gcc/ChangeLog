@@ -1,5 +1,25 @@
 2013-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* config/mips/mips.h (BASE_INSN_LENGTH, NOP_INSN_LENGTH): New macros.
+	* config/mips/mips.c (mips_symbol_insns, mips_address_insns)
+	(mips_const_insns, mips_split_const_insns, mips_load_store_insns)
+	(mips_idiv_insns): Update the comments to say that the returned
+	instruction counts are in units of BASE_INSN_LENGTH.
+	(mips_adjust_insn_length): Multiply the mips_load_label_num_insns
+	by BASE_INSN_LENGTH rather than 4.  Add the jump separately,
+	using 2 rather than 4 as the length of indirect MIPS16 and
+	microMIPS jumps.  Use NOP_INSN_LENGTH rather than 4 as the
+	length of a NOP.  Don't divide MIPS16 lengths by 2.
+	(mips16_split_long_branches): Assume a branch is long if the
+	length is greater than 4 rather than 8.
+	* config/mips/mips.md (length): Give MIPS16 lengths directly,
+	rather than multiplying them by 2.  Multiply instruction counts
+	by BASE_INSN_LENGTH rather than 4.
+	(*jump_mips16, tls_get_tp_mips16_<mode>)
+	(*tls_get_tp_mips16_call_<mode>): Divide lengths by 2.
+
+2013-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* config/mips/mips.md (extended_mips16): Remove branch case.
 	(length): Remove duplicated extended_mips16 test.
 

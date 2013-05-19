@@ -2007,7 +2007,7 @@ mips_symbol_insns_1 (enum mips_symbol_type type, enum machine_mode mode)
    values of mode MODE to or from addresses of type TYPE.  Return 0 if
    the given type of symbol is not valid in addresses.
 
-   In both cases, treat extended MIPS16 instructions as two instructions.  */
+   In both cases, instruction counts are based off BASE_INSN_LENGTH.  */
 
 static int
 mips_symbol_insns (enum mips_symbol_type type, enum machine_mode mode)
@@ -2334,12 +2334,11 @@ mips16_unextended_reference_p (enum machine_mode mode, rtx base,
 }
 
 /* Return the number of instructions needed to load or store a value
-   of mode MODE at address X.  Return 0 if X isn't valid for MODE.
+   of mode MODE at address X, assuming that BASE_INSN_LENGTH is the
+   length of one instruction.  Return 0 if X isn't valid for MODE.
    Assume that multiword moves may need to be split into word moves
    if MIGHT_SPLIT_P, otherwise assume that a single load or store is
-   enough.
-
-   For MIPS16 code, count extended instructions as two instructions.  */
+   enough.  */
 
 int
 mips_address_insns (rtx x, enum machine_mode mode, bool might_split_p)
@@ -2441,7 +2440,8 @@ umips_12bit_offset_address_p (rtx x, enum machine_mode mode)
 	  && UMIPS_12BIT_OFFSET_P (INTVAL (addr.offset)));
 }
 
-/* Return the number of instructions needed to load constant X.
+/* Return the number of instructions needed to load constant X,
+   assuming that BASE_INSN_LENGTH is the length of one instruction.
    Return 0 if X isn't a valid constant.  */
 
 int
@@ -2524,7 +2524,8 @@ mips_const_insns (rtx x)
 
 /* X is a doubleword constant that can be handled by splitting it into
    two words and loading each word separately.  Return the number of
-   instructions required to do this.  */
+   instructions required to do this, assuming that BASE_INSN_LENGTH
+   is the length of one instruction.  */
 
 int
 mips_split_const_insns (rtx x)
@@ -2538,8 +2539,8 @@ mips_split_const_insns (rtx x)
 }
 
 /* Return the number of instructions needed to implement INSN,
-   given that it loads from or stores to MEM.  Count extended
-   MIPS16 instructions as two instructions.  */
+   given that it loads from or stores to MEM.  Assume that
+   BASE_INSN_LENGTH is the length of one instruction.  */
 
 int
 mips_load_store_insns (rtx mem, rtx insn)
@@ -2563,7 +2564,8 @@ mips_load_store_insns (rtx mem, rtx insn)
   return mips_address_insns (XEXP (mem, 0), mode, might_split_p);
 }
 
-/* Return the number of instructions needed for an integer division.  */
+/* Return the number of instructions needed for an integer division,
+   assuming that BASE_INSN_LENGTH is the length of one instruction.  */
 
 int
 mips_idiv_insns (void)
@@ -12273,16 +12275,18 @@ mips_adjust_insn_length (rtx insn, int length)
 	 is a conditional branch.  */
       length = simplejump_p (insn) ? 0 : 8;
 
-      /* Load the label into $AT and jump to it.  Ignore the delay
-	 slot of the jump.  */
-      length += 4 * mips_load_label_num_insns() + 4;
+      /* Add the size of a load into $AT.  */
+      length += BASE_INSN_LENGTH * mips_load_label_num_insns ();
+
+      /* Add the length of an indirect jump, ignoring the delay slot.  */
+      length += TARGET_COMPRESSION ? 2 : 4;
     }
 
   /* A unconditional jump has an unfilled delay slot if it is not part
      of a sequence.  A conditional jump normally has a delay slot, but
      does not on MIPS16.  */
   if (CALL_P (insn) || (TARGET_MIPS16 ? simplejump_p (insn) : JUMP_P (insn)))
-    length += 4;
+    length += TARGET_MIPS16 ? 2 : 4;
 
   /* See how many nops might be needed to avoid hardware hazards.  */
   if (!cfun->machine->ignore_hazard_length_p && INSN_CODE (insn) >= 0)
@@ -12292,19 +12296,13 @@ mips_adjust_insn_length (rtx insn, int length)
 	break;
 
       case HAZARD_DELAY:
-	length += 4;
+	length += NOP_INSN_LENGTH;
 	break;
 
       case HAZARD_HILO:
-	length += 8;
+	length += NOP_INSN_LENGTH * 2;
 	break;
       }
-
-  /* In order to make it easier to share MIPS16 and non-MIPS16 patterns,
-     the .md file length attributes are 4-based for both modes.
-     Adjust the MIPS16 ones here.  */
-  if (TARGET_MIPS16)
-    length /= 2;
 
   return length;
 }
@@ -16201,7 +16199,7 @@ mips16_split_long_branches (void)
       something_changed = false;
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	if (JUMP_P (insn)
-	    && get_attr_length (insn) > 8
+	    && get_attr_length (insn) > 4
 	    && (any_condjump_p (insn) || any_uncondjump_p (insn)))
 	  {
 	    rtx old_label, new_label, temp, saved_temp;
