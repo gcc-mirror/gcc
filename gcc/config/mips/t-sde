@@ -27,9 +27,11 @@ else
 MULTILIB_EXCLUSIONS := !mips32r2/mfp64
 endif
 
-# Don't build 64-bit MIPS16 multilibs.
+# Don't build 64-bit MIPS16 and microMIPS multilibs.
 ifneq ($(filter MIPS_ISA_DEFAULT=6%,$(tm_defines)),)
 MULTILIB_EXCLUSIONS += !mips32/!mips32r2/mips16
+MULTILIB_EXCLUSIONS += !mips32/!mips32r2/mmicromips
 else
 MULTILIB_EXCLUSIONS += mips64/mips16 mips64r2/mips16
+MULTILIB_EXCLUSIONS += mips64/mmicromips mips64r2/mmicromips
 endif
