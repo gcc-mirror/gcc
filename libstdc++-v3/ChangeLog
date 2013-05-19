@@ -1,3 +1,19 @@
+2013-05-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple (get): Implement N3670.
+	* include/std/utility (get): Likewise.
+	* testsuite/20_util/pair/get.cc: Move to ...
+	* testsuite/20_util/pair/astuple/get.cc: Here.
+	* testsuite/20_util/pair/astuple/astuple.cc: New.
+	* testsuite/20_util/pair/astuple/constexpr_get.cc: New.
+	* testsuite/20_util/pair/astuple/constexpr_get_by_type.cc: New.
+	* testsuite/20_util/pair/astuple/get_by_type.cc: New.
+	* testsuite/20_util/pair/astuple/get_by_type_neg.cc: New.
+	* testsuite/20_util/pair/astuple/get_neg.cc: New.
+	* testsuite/20_util/tuple/element_access/constexpr_get_by_type.cc: New.
+	* testsuite/20_util/tuple/element_access/get2_by_type.cc: New.
+	* testsuite/20_util/tuple/element_access/get_by_type.cc: New.
+
 2013-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* Revert last commit.

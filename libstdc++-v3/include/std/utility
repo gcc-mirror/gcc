@@ -153,8 +153,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __pair_get<_Int>::__const_get(__in); }
 
 #if __cplusplus > 201103L
+  template <typename _Tp, typename _Up>
+    constexpr _Tp&
+    get(pair<_Tp, _Up>& __p) noexcept
+    { return __p.first; }
+
+  template <typename _Tp, typename _Up>
+    constexpr const _Tp&
+    get(const pair<_Tp, _Up>& __p) noexcept
+    { return __p.first; }
+
+  template <typename _Tp, typename _Up>
+    constexpr _Tp&&
+    get(pair<_Tp, _Up>&& __p) noexcept
+    { return std::move(__p.first); }
+
+  template <typename _Tp, typename _Up>
+    constexpr _Tp&
+    get(pair<_Up, _Tp>& __p) noexcept
+    { return __p.second; }
+
+  template <typename _Tp, typename _Up>
+    constexpr const _Tp&
+    get(const pair<_Up, _Tp>& __p) noexcept
+    { return __p.second; }
+
+  template <typename _Tp, typename _Up>
+    constexpr _Tp&&
+    get(pair<_Up, _Tp>&& __p) noexcept
+    { return std::move(__p.second); }
+
   /// Assign @p __new_val to @p __obj and return its previous value.
-  template <class _Tp, class _Up = _Tp>
+  template <typename _Tp, typename _Up = _Tp>
     inline _Tp
     exchange(_Tp& __obj, _Up&& __new_val)
     {
