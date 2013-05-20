@@ -1,3 +1,8 @@
+2013-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57175
+	* typeck.c (check_return_expr): Reverse the alignment comparison.
+
 2013-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/18126

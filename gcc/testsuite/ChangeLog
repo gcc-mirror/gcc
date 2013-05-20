@@ -1,3 +1,8 @@
+2013-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57175
+	* g++.dg/pr57175.C: New testcase.
+
 2013-05-17   Easwaran Raman  <eraman@google.com>
 
 	* gcc.dg/tree-ssa/reassoc-28.c: New testcase.
