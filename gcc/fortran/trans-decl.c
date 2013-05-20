@@ -1643,7 +1643,8 @@ gfc_get_extern_function_decl (gfc_symbol * sym)
 
   /* See if this is an external procedure from the same file.  If so,
      return the backend_decl.  */
-  gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->name);
+  gsym =  gfc_find_gsymbol (gfc_gsym_root, sym->binding_label
+					   ? sym->binding_label : sym->name);
 
   if ((!sym->attr.use_assoc || sym->attr.if_source != IFSRC_DECL)
       && !sym->backend_decl
