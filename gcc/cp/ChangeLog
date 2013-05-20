@@ -1,5 +1,9 @@
 2013-05-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57016
+	* pt.c (instantiation_dependent_r) [TRAIT_EXPR]: Only check type2
+	if there is one.
+
 	PR c++/57102
 	* decl.c (fndecl_declared_return_type): Also look in
 	DECL_SAVED_FUNCTION_DATA.
