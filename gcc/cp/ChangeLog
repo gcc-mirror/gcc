@@ -1,3 +1,9 @@
+2013-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57317
+	* decl2.c (determine_visibility): Use PRIMARY_TEMPLATE_P to decide
+	whether a template has its own args.
+
 2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57327
