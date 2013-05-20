@@ -1,6 +1,17 @@
 2013-05-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48858
+	PR fortran/55465
+	* decl.c (add_global_entry): Add sym_name.
+	* parse.c (add_global_procedure): Ditto.
+	* resolve.c (resolve_bind_c_derived_types): Handle multiple decl for
+	a procedure.
+	(resolve_global_procedure): Handle gsym->ns pointing to a module.
+	* trans-decl.c (gfc_get_extern_function_decl): Ditto.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
 	* decl.c (add_global_entry): Use nonbinding name
 	only for F2003 or if no binding label exists.
 	(gfc_match_entry): Update calls.

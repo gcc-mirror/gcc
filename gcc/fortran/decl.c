@@ -5375,6 +5375,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub)
       else
 	{
 	  s->type = type;
+	  s->sym_name = name;
 	  s->where = gfc_current_locus;
 	  s->defined = 1;
 	  s->ns = gfc_current_ns;
@@ -5396,6 +5397,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub)
       else
 	{
 	  s->type = type;
+	  s->sym_name = name;
 	  s->binding_label = binding_label;
 	  s->where = gfc_current_locus;
 	  s->defined = 1;
