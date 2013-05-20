@@ -1,5 +1,10 @@
 2013-05-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57319
+	* class.c (vbase_has_user_provided_move_assign): New.
+	* method.c (synthesized_method_walk): Check it.
+	* cp-tree.h: Declare it.
+
 	PR c++/57325
 	* tree.c (build_cplus_array_type): Copy layout info if element
 	type is complete.
