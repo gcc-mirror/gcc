@@ -1,5 +1,9 @@
 2013-05-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57325
+	* tree.c (build_cplus_array_type): Copy layout info if element
+	type is complete.
+
 	PR c++/57317
 	* decl2.c (determine_visibility): Use PRIMARY_TEMPLATE_P to decide
 	whether a template has its own args.
