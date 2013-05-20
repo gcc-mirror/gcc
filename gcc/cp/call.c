@@ -5418,7 +5418,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case BIT_AND_EXPR:
     case BIT_IOR_EXPR:
     case BIT_XOR_EXPR:
-      return cp_build_binary_op (input_location, code, arg1, arg2, complain);
+      return cp_build_binary_op (loc, code, arg1, arg2, complain);
 
     case UNARY_PLUS_EXPR:
     case NEGATE_EXPR:

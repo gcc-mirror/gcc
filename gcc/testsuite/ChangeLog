@@ -1,5 +1,11 @@
 2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/23608
+	* g++.dg/warn/Wsign-compare-6.C: New.
+	* g++.dg/warn/Wdouble-promotion.C: Adjust.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/57327
 	* g++.dg/template/error50.C: New.
 

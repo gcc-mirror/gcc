@@ -1,3 +1,8 @@
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/23608
+	* call.c (build_new_op_1): Propagate loc to cp_build_binary_op.
+
 2013-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57317

@@ -5,7 +5,7 @@
 
 /* Some targets do not provide <complex.h> so we define I ourselves.  */
 #define I 1.0iF
-#define ID ((_Complex double)I) // { dg-warning "implicit" }
+#define ID ((_Complex double)I)
 
 float f;
 double d;
@@ -36,7 +36,7 @@ usual_arithmetic_conversions(void)
 
   local_cf = cf + 1.0;       /* { dg-warning "implicit" } */
   local_cf = cf - d;         /* { dg-warning "implicit" } */
-  local_cf = cf + 1.0 * ID;  /* { dg-message "in expansion of macro 'ID'" } */
+  local_cf = cf + 1.0 * ID;  /* { dg-warning "implicit" } */
   local_cf = cf - cd;        /* { dg-warning "implicit" } */
   
   local_f = i ? f : d;       /* { dg-warning "implicit" } */
