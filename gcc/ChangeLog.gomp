@@ -1,3 +1,9 @@
+2013-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (expand_omp_simd): For collapse > 1 loops,
+	if some loop condition might be not true initially, add runtime
+	test and skip the whole loop.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* cfgloop.h (struct loop): Add safelen and force_vect fields.

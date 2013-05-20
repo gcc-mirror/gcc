@@ -5120,7 +5120,7 @@ static void
 expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 {
   tree type, t;
-  basic_block entry_bb, cont_bb, exit_bb, l0_bb, l1_bb, l2_bb;
+  basic_block entry_bb, cont_bb, exit_bb, l0_bb, l1_bb, l2_bb, l2_dom_bb;
   gimple_stmt_iterator gsi;
   gimple stmt;
   bool broken_loop = region->cont == NULL;
@@ -5151,6 +5151,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       l2_bb = single_succ (l1_bb);
     }
   exit_bb = region->exit;
+  l2_dom_bb = l1_bb;
 
   gsi = gsi_last_bb (entry_bb);
 
@@ -5164,6 +5165,41 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	{
 	  tree itype = TREE_TYPE (fd->loops[i].v);
 
+	  if (SSA_VAR_P (fd->loop.n2)
+	      && ((t = fold_binary (fd->loops[i].cond_code, boolean_type_node,
+				    fold_convert (itype, fd->loops[i].n1),
+				    fold_convert (itype, fd->loops[i].n2)))
+		  == NULL_TREE || !integer_onep (t)))
+	    {
+	      tree n1, n2;
+	      n1 = fold_convert (itype, unshare_expr (fd->loops[i].n1));
+	      n1 = force_gimple_operand_gsi (&gsi, n1, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      n2 = fold_convert (itype, unshare_expr (fd->loops[i].n2));
+	      n2 = force_gimple_operand_gsi (&gsi, n2, true, NULL_TREE,
+					     true, GSI_SAME_STMT);
+	      stmt = gimple_build_cond (fd->loops[i].cond_code, n1, n2,
+					NULL_TREE, NULL_TREE);
+	      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+	      if (walk_tree (gimple_cond_lhs_ptr (stmt),
+			     expand_omp_regimplify_p, NULL, NULL)
+		  || walk_tree (gimple_cond_rhs_ptr (stmt),
+				expand_omp_regimplify_p, NULL, NULL))
+		{
+		  gsi = gsi_for_stmt (stmt);
+		  gimple_regimplify_operands (stmt, &gsi);
+		}
+	      e = split_block (entry_bb, stmt);
+	      ne = make_edge (entry_bb, l2_bb, EDGE_FALSE_VALUE);
+	      ne->probability = REG_BR_PROB_BASE / 2000 - 1;
+	      e->flags = EDGE_TRUE_VALUE;
+	      e->probability = REG_BR_PROB_BASE - ne->probability;
+	      if (l2_dom_bb == l1_bb)
+		l2_dom_bb = entry_bb;
+	      entry_bb = e->dest;
+	      e = BRANCH_EDGE (entry_bb);
+	      gsi = gsi_last_bb (entry_bb);
+	    }
 	  if (POINTER_TYPE_P (itype))
 	    itype = signed_type_for (itype);
 	  t = build_int_cst (itype, (fd->loops[i].cond_code == LT_EXPR
@@ -5324,7 +5360,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
   ne->probability = REG_BR_PROB_BASE / 8;
 
   set_immediate_dominator (CDI_DOMINATORS, l1_bb, entry_bb);
-  set_immediate_dominator (CDI_DOMINATORS, l2_bb, l1_bb);
+  set_immediate_dominator (CDI_DOMINATORS, l2_bb, l2_dom_bb);
   set_immediate_dominator (CDI_DOMINATORS, l0_bb, l1_bb);
 
   if (!broken_loop)
