@@ -1,3 +1,8 @@
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/10207
+	* g++.dg/ext/complit13.C: New.
+
 2013-05-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/57175
