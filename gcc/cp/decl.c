@@ -14417,10 +14417,15 @@ fndecl_declared_return_type (tree fn)
 {
   fn = STRIP_TEMPLATE (fn);
   if (FNDECL_USED_AUTO (fn))
-    return (DECL_STRUCT_FUNCTION (fn)->language
-	    ->x_auto_return_pattern);
-  else
-    return TREE_TYPE (TREE_TYPE (fn));
+    {
+      struct language_function *f = NULL;
+      if (DECL_STRUCT_FUNCTION (fn))
+	f = DECL_STRUCT_FUNCTION (fn)->language;
+      if (f == NULL)
+	f = DECL_SAVED_FUNCTION_DATA (fn);
+      return f->x_auto_return_pattern;
+    }
+  return TREE_TYPE (TREE_TYPE (fn));
 }
 
 /* Returns true iff DECL was declared with an auto return type and it has
