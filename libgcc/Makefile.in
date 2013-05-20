@@ -121,7 +121,8 @@ installcheck:
 .PHONY: all clean
 
 clean:
-	-rm -f config.h libgcc_tm.h stamp-h stmp-ldirs libgcc.map
+	-rm -f config.h libgcc_tm.h libgcc.map
+	-rm -f libgcc_tm.stamp stamp-h stmp-ldirs
 	-rm -f *$(objext)
 	-rm -f *.dep
 	-rm -f *.a
