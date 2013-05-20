@@ -17844,8 +17844,9 @@ cp_parser_parameter_declaration (cp_parser *parser,
 				&declares_class_or_enum);
 
   /* Complain about missing 'typename' or other invalid type names.  */
-  if (!decl_specifiers.any_type_specifiers_p)
-    cp_parser_parse_and_diagnose_invalid_type_name (parser);
+  if (!decl_specifiers.any_type_specifiers_p
+      && cp_parser_parse_and_diagnose_invalid_type_name (parser))
+    decl_specifiers.type = error_mark_node;
 
   /* If an error occurred, there's no reason to attempt to parse the
      rest of the declaration.  */

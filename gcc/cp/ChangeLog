@@ -1,3 +1,9 @@
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/12288
+	* parser.c (cp_parser_parameter_declaration): Check return value
+	of cp_parser_parse_and_diagnose_invalid_type_name.
+
 2013-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57319
