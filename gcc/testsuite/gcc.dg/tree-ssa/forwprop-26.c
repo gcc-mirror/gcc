@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-forwprop1" } */
+/* { dg-options "-O2 -fdump-tree-forwprop1 -fno-short-enums" } */
 
 union tree_node;
 typedef union tree_node *tree;

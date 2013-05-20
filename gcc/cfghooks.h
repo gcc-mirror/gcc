@@ -201,7 +201,7 @@ extern void lv_add_condition_to_bb (basic_block, basic_block, basic_block,
 extern bool can_copy_bbs_p (basic_block *, unsigned);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      edge *, unsigned, edge *, struct loop *,
-		      basic_block);
+		      basic_block, bool);
 
 void account_profile_record (struct profile_record *, int);
 

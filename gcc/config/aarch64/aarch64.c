@@ -704,31 +704,35 @@ aarch64_split_simd_move (rtx dst, rtx src)
 
   if (REG_P (dst) && REG_P (src))
     {
+      rtx (*gen) (rtx, rtx);
+
       gcc_assert (VECTOR_MODE_P (src_mode));
 
       switch (src_mode)
 	{
 	case V16QImode:
-	  emit_insn (gen_aarch64_simd_movv16qi (dst, src));
+	  gen = gen_aarch64_split_simd_movv16qi;
 	  break;
 	case V8HImode:
-	  emit_insn (gen_aarch64_simd_movv8hi (dst, src));
+	  gen = gen_aarch64_split_simd_movv8hi;
 	  break;
 	case V4SImode:
-	  emit_insn (gen_aarch64_simd_movv4si (dst, src));
+	  gen = gen_aarch64_split_simd_movv4si;
 	  break;
 	case V2DImode:
-	  emit_insn (gen_aarch64_simd_movv2di (dst, src));
+	  gen = gen_aarch64_split_simd_movv2di;
 	  break;
 	case V4SFmode:
-	  emit_insn (gen_aarch64_simd_movv4sf (dst, src));
+	  gen = gen_aarch64_split_simd_movv4sf;
 	  break;
 	case V2DFmode:
-	  emit_insn (gen_aarch64_simd_movv2df (dst, src));
+	  gen = gen_aarch64_split_simd_movv2df;
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
+
+      emit_insn (gen (dst, src));
       return;
     }
 }

@@ -1293,6 +1293,11 @@ opposite effect.  If neither option is specified, the configure script
 will try to guess whether the @code{.init_array} and
 @code{.fini_array} sections are supported and, if they are, use them.
 
+@item --enable-link-mutex
+When building GCC, use a mutex to avoid linking the compilers for
+multiple languages at the same time, to avoid thrashing on build
+systems with limited free memory.  The default is not to use such a mutex.
+
 @item --enable-maintainer-mode
 The build rules that regenerate the Autoconf and Automake output files as
 well as the GCC master message catalog @file{gcc.pot} are normally
@@ -4068,8 +4073,10 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @heading @anchor{x-x-solaris2}*-*-solaris2*
 
-Support for Solaris 8 has removed in GCC 4.8.  Support for Solaris 7 has
-been removed in GCC 4.6.
+Support for Solaris 9 has been obsoleted in GCC 4.9, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 4.10.  Support for Solaris 8 has removed in GCC 4.8.
+Support for Solaris 7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and

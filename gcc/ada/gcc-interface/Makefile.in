@@ -1098,7 +1098,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
 endif
 
 # x86 and x86-64 solaris
-ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %86 %x86_64 %amd64 solaris2%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \

@@ -65,11 +65,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// error_category
   class error_category
   {
-  protected:
-    error_category() noexcept;
-
   public:
-    virtual ~error_category() noexcept;
+#ifdef _GLIBCXX_COMPATIBILITY_CXX0X
+    error_category() noexcept;
+#else
+    constexpr error_category() noexcept = default;
+#endif
+
+    virtual ~error_category();
 
     error_category(const error_category&) = delete;
     error_category& operator=(const error_category&) = delete;

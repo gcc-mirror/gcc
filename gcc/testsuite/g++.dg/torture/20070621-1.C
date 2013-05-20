@@ -1,3 +1,4 @@
+// { dg-do compile }
 /* Reduced from libstdc++-v3/testsuite/25_algorithms/equal/1.cc
 
 1.2.ii: In function 'void test1()':

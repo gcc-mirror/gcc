@@ -4,10 +4,10 @@
 // { dg-options "-std=c++0x -Wshadow" }
 
 struct S {};
-int f1(int x)   // { dg-warning "shadowed declaration" }
+int f1(int x)   // { dg-message "shadowed declaration" }
 {
  int t = 0;
- int m = 0;     // { dg-warning "shadowed declaration" }
+ int m = 0;     // { dg-message "shadowed declaration" }
  [&t] (int x) { // { dg-warning "shadows a parameter" }
    int m = 1;   // { dg-warning "shadows a previous local" }
    t = t + x + m;
@@ -18,9 +18,9 @@ int f1(int x)   // { dg-warning "shadowed declaration" }
 void f2(struct S i, int j) {
   struct A {
     struct S x;
-    void g(struct S i) { // { dg-warning "shadowed declaration" }
+    void g(struct S i) { // { dg-message "shadowed declaration" }
 	  struct S x;    // { dg-warning "shadows a member of" }
-	  struct S y;    // { dg-warning "shadowed declaration" }
+	  struct S y;    // { dg-message "shadowed declaration" }
 	  int t;
 	   [&t](struct S i){   // { dg-warning "shadows a parameter" }
 		 int j = 1;    // { dg-bogus "shadows" }
@@ -33,7 +33,7 @@ void f2(struct S i, int j) {
 
 void f3(int i) {
  [=]{
-   int j = i;			// { dg-warning "shadowed declaration" }
+   int j = i;			// { dg-message "shadowed declaration" }
    int i;			// { dg-warning "shadows a lambda capture" }
    i = 1;
  };
@@ -42,7 +42,7 @@ void f3(int i) {
 template <class T>
 void f4(int i) {
  [=]{
-   int j = i;			// { dg-warning "shadowed declaration" }
+   int j = i;			// { dg-message "shadowed declaration" }
    int i;			// { dg-warning "shadows a lambda capture" }
    i = 1;
  };

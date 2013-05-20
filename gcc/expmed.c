@@ -2122,6 +2122,20 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 	op1 = SUBREG_REG (op1);
     }
 
+  /* Canonicalize rotates by constant amount.  If op1 is bitsize / 2,
+     prefer left rotation, if op1 is from bitsize / 2 + 1 to
+     bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
+     amount instead.  */
+  if (rotate
+      && CONST_INT_P (op1)
+      && IN_RANGE (INTVAL (op1), GET_MODE_BITSIZE (mode) / 2 + left,
+		   GET_MODE_BITSIZE (mode) - 1))
+    {
+      op1 = GEN_INT (GET_MODE_BITSIZE (mode) - INTVAL (op1));
+      left = !left;
+      code = left ? LROTATE_EXPR : RROTATE_EXPR;
+    }
+
   if (op1 == const0_rtx)
     return shifted;
 
@@ -2166,7 +2180,8 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 	    {
 	      /* If we have been unable to open-code this by a rotation,
 		 do it as the IOR of two shifts.  I.e., to rotate A
-		 by N bits, compute (A << N) | ((unsigned) A >> (C - N))
+		 by N bits, compute
+		 (A << N) | ((unsigned) A >> ((-N) & (C - 1)))
 		 where C is the bitsize of A.
 
 		 It is theoretically possible that the target machine might
@@ -2181,14 +2196,22 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 	      rtx temp1;
 
 	      new_amount = op1;
-	      if (CONST_INT_P (op1))
+	      if (op1 == const0_rtx)
+		return shifted;
+	      else if (CONST_INT_P (op1))
 		other_amount = GEN_INT (GET_MODE_BITSIZE (mode)
 					- INTVAL (op1));
 	      else
-		other_amount
-		  = simplify_gen_binary (MINUS, GET_MODE (op1),
-					 GEN_INT (GET_MODE_PRECISION (mode)),
-					 op1);
+		{
+		  other_amount
+		    = simplify_gen_unary (NEG, GET_MODE (op1),
+					  op1, GET_MODE (op1));
+		  other_amount
+		    = simplify_gen_binary (AND, GET_MODE (op1),
+					   other_amount,
+					   GEN_INT (GET_MODE_PRECISION (mode)
+						    - 1));
+		}
 
 	      shifted = force_reg (mode, shifted);
 

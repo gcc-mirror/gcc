@@ -943,8 +943,10 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 	      && TREE_CODE (decl) == TREE_CODE (x)
 	      && !same_type_p (TREE_TYPE (x), TREE_TYPE (decl)))
 	    {
-	      permerror (input_location, "type mismatch with previous external decl of %q#D", x);
-	      permerror (input_location, "previous external decl of %q+#D", decl);
+	      if (permerror (input_location, "type mismatch with previous "
+			     "external decl of %q#D", x))
+		inform (input_location, "previous external decl of %q+#D",
+			decl);
 	    }
 	}
 
@@ -1131,24 +1133,53 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
 			   || oldscope->kind == sk_for))
 		{
 		  error ("redeclaration of %q#D", x);
-		  error ("%q+#D previously declared here", oldlocal);
+		  inform (input_location, "%q+#D previously declared here",
+			  oldlocal);
+		  nowarn = true;
+		}
+	      /* C++11:
+		 3.3.3/3:  The name declared in an exception-declaration (...)
+		 shall not be redeclared in the outermost block of the handler.
+		 3.3.3/2:  A parameter name shall not be redeclared (...) in
+		 the outermost block of any handler associated with a
+		 function-try-block.
+		 3.4.1/15: The function parameter names shall not be redeclared
+		 in the exception-declaration nor in the outermost block of a
+		 handler for the function-try-block.  */
+	      else if ((VAR_P (oldlocal)
+			&& oldscope == current_binding_level->level_chain
+			&& oldscope->kind == sk_catch)
+		       || (TREE_CODE (oldlocal) == PARM_DECL
+			   && (current_binding_level->kind == sk_catch
+			       || (current_binding_level->level_chain->kind
+				   == sk_catch))
+			   && in_function_try_handler))
+		{
+		  if (permerror (input_location, "redeclaration of %q#D", x))
+		    inform (input_location, "%q+#D previously declared here",
+			    oldlocal);
+		  nowarn = true;
 		}
 
 	      if (warn_shadow && !nowarn)
 		{
+		  bool warned;
+
 		  if (TREE_CODE (oldlocal) == PARM_DECL)
-		    warning_at (input_location, OPT_Wshadow,
+		    warned = warning_at (input_location, OPT_Wshadow,
 				"declaration of %q#D shadows a parameter", x);
 		  else if (is_capture_proxy (oldlocal))
-		    warning_at (input_location, OPT_Wshadow,
+		    warned = warning_at (input_location, OPT_Wshadow,
 				"declaration of %qD shadows a lambda capture",
 				x);
 		  else
-		    warning_at (input_location, OPT_Wshadow,
+		    warned = warning_at (input_location, OPT_Wshadow,
 				"declaration of %qD shadows a previous local",
 				x);
-		   warning_at (DECL_SOURCE_LOCATION (oldlocal), OPT_Wshadow,
-			       "shadowed declaration is here");
+
+		  if (warned)
+		    inform (DECL_SOURCE_LOCATION (oldlocal),
+			    "shadowed declaration is here");
 		}
 	    }
 
@@ -1188,10 +1219,11 @@ pushdecl_maybe_friend_1 (tree x, bool is_friend)
                                    || TREE_CODE (x) == TYPE_DECL))))
 		/* XXX shadow warnings in outer-more namespaces */
 		{
-		  warning_at (input_location, OPT_Wshadow,
-			      "declaration of %qD shadows a global declaration", x);
-		  warning_at (DECL_SOURCE_LOCATION (oldglobal), OPT_Wshadow,
-			      "shadowed declaration is here");
+		  if (warning_at (input_location, OPT_Wshadow,
+				  "declaration of %qD shadows a "
+				  "global declaration", x))
+		    inform (DECL_SOURCE_LOCATION (oldglobal),
+			    "shadowed declaration is here");
 		}
 	    }
 	}

@@ -1475,6 +1475,7 @@ init_optimization_passes (void)
 	      NEXT_PASS (pass_dce_loop);
 	    }
 	  NEXT_PASS (pass_iv_canon);
+	  NEXT_PASS (pass_parallelize_loops);
 	  NEXT_PASS (pass_if_conversion);
 	  NEXT_PASS (pass_vectorize);
 	    {
@@ -1484,7 +1485,6 @@ init_optimization_passes (void)
           NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_complete_unroll);
 	  NEXT_PASS (pass_slp_vectorize);
-	  NEXT_PASS (pass_parallelize_loops);
 	  NEXT_PASS (pass_loop_prefetch);
 	  NEXT_PASS (pass_iv_optimize);
 	  NEXT_PASS (pass_lim);

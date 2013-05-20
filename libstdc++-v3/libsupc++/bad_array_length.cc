@@ -23,14 +23,13 @@
 
 #include <new>
 
-namespace std {
+namespace std 
+{
 
 bad_array_length::~bad_array_length() _GLIBCXX_USE_NOEXCEPT { }
 
 const char*
 bad_array_length::what() const _GLIBCXX_USE_NOEXCEPT
-{
-  return "std::bad_array_length";
-}
+{ return "std::bad_array_length"; }
 
 } // namespace std

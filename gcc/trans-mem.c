@@ -3978,7 +3978,8 @@ ipa_uninstrument_transaction (struct tm_region *region,
   int n = queue.length ();
   basic_block *new_bbs = XNEWVEC (basic_block, n);
 
-  copy_bbs (queue.address (), n, new_bbs, NULL, 0, NULL, NULL, transaction_bb);
+  copy_bbs (queue.address (), n, new_bbs, NULL, 0, NULL, NULL, transaction_bb,
+	    true);
   edge e = make_edge (transaction_bb, new_bbs[0], EDGE_TM_UNINSTRUMENTED);
   add_phi_args_after_copy (new_bbs, n, e);
 

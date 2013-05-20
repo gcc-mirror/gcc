@@ -621,8 +621,16 @@ class StdStringPrinter:
 
 class Tr1HashtableIterator:
     def __init__ (self, hash):
-        self.node = hash['_M_bbegin']['_M_node']['_M_nxt']
-        self.node_type = find_type(hash.type, '__node_type').pointer()
+        self.buckets = hash['_M_buckets']
+        self.bucket = 0
+        self.bucket_count = hash['_M_bucket_count']
+        self.node_type = find_type(hash.type, '_Node').pointer()
+        self.node = 0
+        while self.bucket != self.bucket_count:
+            self.node = self.buckets[self.bucket]
+            if self.node:
+                break
+            self.bucket = self.bucket + 1        
 
     def __iter__ (self):
         return self
@@ -632,8 +640,32 @@ class Tr1HashtableIterator:
             raise StopIteration
         node = self.node.cast(self.node_type)
         result = node.dereference()['_M_v']
-        self.node = node.dereference()['_M_nxt']
+        self.node = node.dereference()['_M_next'];
+        if self.node == 0:
+            self.bucket = self.bucket + 1
+            while self.bucket != self.bucket_count:
+                self.node = self.buckets[self.bucket]
+                if self.node:
+                    break
+                self.bucket = self.bucket + 1
         return result
+
+class StdHashtableIterator:
+    def __init__(self, hash):
+        self.node = hash['_M_bbegin']['_M_node']['_M_nxt']
+        self.node_type = find_type(hash.type, '__node_type').pointer()
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.node == 0:
+            raise StopIteration
+        elt = self.node.cast(self.node_type).dereference()
+        self.node = elt['_M_nxt']
+        valptr = elt['_M_storage'].address
+        valptr = valptr.cast(elt.type.template_argument(0).pointer())
+        return valptr.dereference()
 
 class Tr1UnorderedSetPrinter:
     "Print a tr1::unordered_set"
@@ -656,7 +688,9 @@ class Tr1UnorderedSetPrinter:
 
     def children (self):
         counter = itertools.imap (self.format_count, itertools.count())
-        return itertools.izip (counter, Tr1HashtableIterator (self.hashtable()))
+        if self.typename.startswith('std::tr1'):
+            return itertools.izip (counter, Tr1HashtableIterator (self.hashtable()))
+        return itertools.izip (counter, StdHashtableIterator (self.hashtable()))
 
 class Tr1UnorderedMapPrinter:
     "Print a tr1::unordered_map"
@@ -690,9 +724,14 @@ class Tr1UnorderedMapPrinter:
     def children (self):
         counter = itertools.imap (self.format_count, itertools.count())
         # Map over the hash table and flatten the result.
-        data = self.flatten (itertools.imap (self.format_one, Tr1HashtableIterator (self.hashtable())))
+        if self.typename.startswith('std::tr1'):
+            data = self.flatten (itertools.imap (self.format_one, Tr1HashtableIterator (self.hashtable())))
+            # Zip the two iterators together.
+            return itertools.izip (counter, data)
+        data = self.flatten (itertools.imap (self.format_one, StdHashtableIterator (self.hashtable())))
         # Zip the two iterators together.
         return itertools.izip (counter, data)
+        
 
     def display_hint (self):
         return 'map'

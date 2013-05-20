@@ -2135,10 +2135,10 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
    (X << (int) Y) OP (X >> (int) (B - Y))
    ((T) ((T2) X << Y)) OP ((T) ((T2) X >> (B - Y)))
    ((T) ((T2) X << (int) Y)) OP ((T) ((T2) X >> (int) (B - Y)))
-   (X << Y) OP (X >> ((-Y) & (B - 1)))
-   (X << (int) Y) OP (X >> (int) ((-Y) & (B - 1)))
-   ((T) ((T2) X << Y)) OP ((T) ((T2) X >> ((-Y) & (B - 1))))
-   ((T) ((T2) X << (int) Y)) OP ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
+   (X << Y) | (X >> ((-Y) & (B - 1)))
+   (X << (int) Y) | (X >> (int) ((-Y) & (B - 1)))
+   ((T) ((T2) X << Y)) | ((T) ((T2) X >> ((-Y) & (B - 1))))
+   ((T) ((T2) X << (int) Y)) | ((T) ((T2) X >> (int) ((-Y) & (B - 1))))
 
    and transform these into:
    X r<< CNT1
@@ -2293,7 +2293,8 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		 && host_integerp (cdef_arg2[i], 0)
 		 && tree_low_cst (cdef_arg2[i], 0)
 		    == TYPE_PRECISION (rtype) - 1
-		 && TREE_CODE (cdef_arg1[i]) == SSA_NAME)
+		 && TREE_CODE (cdef_arg1[i]) == SSA_NAME
+		 && gimple_assign_rhs_code (stmt) == BIT_IOR_EXPR)
 	  {
 	    tree tem;
 	    enum tree_code code;

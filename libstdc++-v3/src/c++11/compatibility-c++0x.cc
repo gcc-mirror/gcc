@@ -119,6 +119,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
     };
     constexpr bool system_clock::is_monotonic;
   } // namespace chrono
+
+  // gcc-4.9.0
+  // LWG 2145 changes this constructor to constexpr i.e. inline
+  error_category::error_category() noexcept = default;
 }
 
 #endif

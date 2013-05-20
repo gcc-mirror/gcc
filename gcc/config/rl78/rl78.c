@@ -499,6 +499,8 @@ const struct attribute_spec rl78_attribute_table[] =
     false },
   { "brk_interrupt",  0, 0, true, false, false, rl78_handle_func_attribute,
     false },
+  { "naked",          0, 0, true, false, false, rl78_handle_func_attribute,
+    false },
   { NULL,             0, 0, false, false, false, NULL, false }
 };
 
@@ -825,6 +827,12 @@ rl78_initial_elimination_offset (int from, int to)
   return rv;
 }
 
+static int
+rl78_is_naked_func (void)
+{
+  return (lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE);
+}
+
 /* Expand the function prologue (from the prologue pattern).  */
 void
 rl78_expand_prologue (void)
@@ -832,6 +840,9 @@ rl78_expand_prologue (void)
   int i, fs;
   rtx sp = gen_rtx_REG (HImode, STACK_POINTER_REGNUM);
   int rb = 0;
+
+  if (rl78_is_naked_func ())
+    return;
 
   if (!cfun->machine->computed)
     rl78_compute_frame_info ();
@@ -876,6 +887,9 @@ rl78_expand_epilogue (void)
   int i, fs;
   rtx sp = gen_rtx_REG (HImode, STACK_POINTER_REGNUM);
   int rb = 0;
+
+  if (rl78_is_naked_func ())
+    return;
 
   if (frame_pointer_needed)
     {

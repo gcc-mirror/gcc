@@ -1,18 +1,18 @@
 // PR c++/44128
 // { dg-options "-Wshadow" }
 
-typedef long My_ssize_t;  // { dg-warning "shadowed declaration" }
-typedef int Foo;          // { dg-warning "shadowed declaration" }
+typedef long My_ssize_t;  // { dg-message "shadowed declaration" }
+typedef int Foo;          // { dg-message "shadowed declaration" }
 struct Bar1 {             // { dg-bogus "shadowed declaration" }
   int a;
 };
-struct Bar2 {             // { dg-warning "shadowed declaration" }
+struct Bar2 {             // { dg-message "shadowed declaration" }
   int a;
 };
 
 void func() {
   typedef int My_ssize_t; // { dg-warning "shadows a global" }
-  typedef char My_Num;    // { dg-warning "shadowed declaration" }
+  typedef char My_Num;    // { dg-message "shadowed declaration" }
   {
     typedef short My_Num; // { dg-warning "shadows a previous local" }
   }
@@ -21,7 +21,7 @@ void func() {
   struct Bar2 {           // { dg-warning "shadows a global" }
     int a;
   };
-  struct Bar3 {           // { dg-warning "shadowed declaration" }
+  struct Bar3 {           // { dg-message "shadowed declaration" }
     int a;
   };
   struct Bar4 {           // { dg-bogus "shadowed declaration" }

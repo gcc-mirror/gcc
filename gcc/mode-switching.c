@@ -667,10 +667,12 @@ optimize_mode_switching (void)
 
 	      REG_SET_TO_HARD_REG_SET (live_at_edge, df_get_live_out (src_bb));
 
+	      rtl_profile_for_edge (eg);
 	      start_sequence ();
 	      EMIT_MODE_SET (entity_map[j], mode, live_at_edge);
 	      mode_set = get_insns ();
 	      end_sequence ();
+	      default_rtl_profile ();
 
 	      /* Do not bother to insert empty sequence.  */
 	      if (mode_set == NULL_RTX)
@@ -713,6 +715,7 @@ optimize_mode_switching (void)
 		{
 		  rtx mode_set;
 
+		  rtl_profile_for_bb (bb);
 		  start_sequence ();
 		  EMIT_MODE_SET (entity_map[j], ptr->mode, ptr->regs_live);
 		  mode_set = get_insns ();
@@ -727,6 +730,8 @@ optimize_mode_switching (void)
 		      else
 			emit_insn_before (mode_set, ptr->insn_ptr);
 		    }
+
+		  default_rtl_profile ();
 		}
 
 	      free (ptr);

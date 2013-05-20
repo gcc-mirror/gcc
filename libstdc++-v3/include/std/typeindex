@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return _M_target->hash_code(); }
 
     const char*
-    name() const
+    name() const noexcept
     { return _M_target->name(); }
 
   private:

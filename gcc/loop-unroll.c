@@ -212,6 +212,9 @@ report_unroll_peel (struct loop *loop, location_t locus)
   int niters = 0;
   int report_flags = MSG_OPTIMIZED_LOCATIONS | TDF_RTL | TDF_DETAILS;
 
+  if (loop->lpt_decision.decision == LPT_NONE)
+    return;
+
   if (!dump_enabled_p ())
     return;
 

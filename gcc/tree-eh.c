@@ -3312,6 +3312,7 @@ sink_clobbers (basic_block bb)
   gimple_stmt_iterator gsi, dgsi;
   basic_block succbb;
   bool any_clobbers = false;
+  unsigned todo = 0;
 
   /* Only optimize if BB has a single EH successor and
      all predecessor edges are EH too.  */
@@ -3410,9 +3411,22 @@ sink_clobbers (basic_block bb)
 	  SET_USE (PHI_ARG_DEF_PTR_FROM_EDGE (vphi, succe), gimple_vuse (stmt));
 	  SET_USE (gimple_vuse_op (stmt), vuse);
 	}
+      /* If there isn't a single predecessor but no virtual PHI node
+         arrange for virtual operands to be renamed.  */
+      else if (gimple_vuse_op (stmt) != NULL_USE_OPERAND_P
+	       && !single_pred_p (succbb))
+	{
+	  /* In this case there will be no use of the VDEF of this stmt. 
+	     ???  Unless this is a secondary opportunity and we have not
+	     removed unreachable blocks yet, so we cannot assert this.  
+	     Which also means we will end up renaming too many times.  */
+	  SET_USE (gimple_vuse_op (stmt), gimple_vop (cfun));
+	  mark_virtual_operands_for_renaming (cfun);
+	  todo |= TODO_update_ssa_only_virtuals;
+	}
     }
 
-  return 0;
+  return todo;
 }
 
 /* At the end of inlining, we can lower EH_DISPATCH.  Return true when 

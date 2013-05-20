@@ -100,7 +100,7 @@ jvspec.o-warn = -Wno-error
 jc1$(exeext): $(JAVA_OBJS) $(BACKEND) $(C_STUB_OBJS) \
                 $(LIBDEPS) attribs.o
 	rm -f $@
-	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 		$(JAVA_OBJS) $(C_STUB_OBJS) \
 		$(BACKEND) $(ZLIB) $(LIBICONV) $(LIBS) attribs.o $(BACKENDLIBS)
 

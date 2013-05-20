@@ -1,3 +1,99 @@
+2013-05-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/tuple (get): Implement N3670.
+	* include/std/utility (get): Likewise.
+	* testsuite/20_util/pair/get.cc: Move to ...
+	* testsuite/20_util/pair/astuple/get.cc: Here.
+	* testsuite/20_util/pair/astuple/astuple.cc: New.
+	* testsuite/20_util/pair/astuple/constexpr_get.cc: New.
+	* testsuite/20_util/pair/astuple/constexpr_get_by_type.cc: New.
+	* testsuite/20_util/pair/astuple/get_by_type.cc: New.
+	* testsuite/20_util/pair/astuple/get_by_type_neg.cc: New.
+	* testsuite/20_util/pair/astuple/get_neg.cc: New.
+	* testsuite/20_util/tuple/element_access/constexpr_get_by_type.cc: New.
+	* testsuite/20_util/tuple/element_access/get2_by_type.cc: New.
+	* testsuite/20_util/tuple/element_access/get_by_type.cc: New.
+
+2013-05-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* Revert last commit.
+
+2013-05-19  Matthias Klose  <doko@ubuntu.com>
+
+	* include/Makefile.am (bits_headers): Remove ${bits_host_headers}.
+	(ext_headers): Remove ${ext_host_headers}.
+	(stamp-${host_alias}): Create ${host_builddir}/../ext.
+	(stamp-host): Link ${bits_host_headers} and ${ext_host_headers}.
+	(install-headers): Install ${bits_host_headers} and ${ext_host_headers}.
+	* include/Makefile.in: Regenerate.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/system_error (error_category::error_category()): LWG
+	2145: Declare public and constexpr.
+	* src/c++11/system_error.cc (error_category::error_category()): Move
+	definition to ...
+	* src/c++11/compatibility-c++0x.cc: Here.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/typeindex (type_index::name()): LWG 2144: Add noexcept.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr.h (make_unique): Declare inline.
+	(unique_ptr<T[],D>::reset()): Combine two overloads into one.
+	(default_delete, unique_ptr): Add doxygen comments.
+	* include/bits/shared_ptr_base.h: Improve doxygen comments.
+	* include/bits/shared_ptr.h: Likewise.
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust dg-error line
+	number.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Likewise.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Fix markup error.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Fix markup error.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/utility (exchange): Define.
+	* testsuite/20_util/exchange/1.cc: New.
+
+2013-05-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/unique_ptr.h (make_unique): Define.
+	* testsuite/20_util/unique_ptr/creation/single.cc: New.
+	* testsuite/20_util/unique_ptr/creation/array.cc: New.
+	* testsuite/20_util/unique_ptr/creation/array_neg.cc: New.
+
+2013-05-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* python/libstdcxx/v6/printers.py (Tr1HashtableIterator): Fix
+	rendering of std::tr1 unordered containers iterator.
+	(StdHashtableIterator): New, render std unordered containers iterator.
+	* testsuite/libstdc++-prettyprinters/tr1.cc: New.
+
+2013-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/basic_string.h (getline): Fix doxygen comments.
+
+2013-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_iterator.h (__normal_iterator<>::_M_const_cast):
+	Use std::pointer_traits.
+
+2013-05-13  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* libsupc++/Makefile.am (sources): Add bad_array_length.cc,
+	bad_array_new.cc.
+	* libsupc++/Makefile.in: Regenerate.
+	* libsupc++/bad_array_length.cc: Tweak.
+	* libsupc++/bad_array_new.cc: Tweak.
+
 2013-05-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/54577
