@@ -1,3 +1,9 @@
+2013-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57102
+	* decl.c (fndecl_declared_return_type): Also look in
+	DECL_SAVED_FUNCTION_DATA.
+
 2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/12288
