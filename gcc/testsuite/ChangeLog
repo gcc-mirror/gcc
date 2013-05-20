@@ -1,6 +1,23 @@
 2013-05-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48858
+	PR fortran/55465
+	* gfortran.dg/binding_label_tests_10_main.f03: Update dg-error.
+	* gfortran.dg/binding_label_tests_11_main.f03: Ditto.
+	* gfortran.dg/binding_label_tests_13_main.f03: Ditto.
+	* gfortran.dg/binding_label_tests_3.f03: Ditto.
+	* gfortran.dg/binding_label_tests_4.f03: Ditto.
+	* gfortran.dg/binding_label_tests_5.f03: Ditto.
+	* gfortran.dg/binding_label_tests_6.f03: Ditto.
+	* gfortran.dg/binding_label_tests_7.f03: Ditto.
+	* gfortran.dg/binding_label_tests_8.f03: Ditto.
+	* gfortran.dg/c_loc_tests_12.f03: Fix test case.
+	* gfortran.dg/binding_label_tests_24.f90: New.
+	* gfortran.dg/binding_label_tests_25.f90: New.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
 	* gfortran.dg/binding_label_tests_17.f90: New.
 	* gfortran.dg/binding_label_tests_18.f90: New.
 	* gfortran.dg/binding_label_tests_19.f90: New.

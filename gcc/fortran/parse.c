@@ -4359,10 +4359,15 @@ add_global_procedure (bool sub)
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN
 	      && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
-	gfc_global_used(s, NULL);
+	{
+	  gfc_global_used (s, NULL);
+	  /* Silence follow-up errors.  */
+	  gfc_new_block->binding_label = NULL;
+	}
       else
 	{
 	  s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+	  s->sym_name = gfc_new_block->name;
 	  s->where = gfc_current_locus;
 	  s->defined = 1;
 	  s->ns = gfc_current_ns;
@@ -4379,10 +4384,15 @@ add_global_procedure (bool sub)
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN
 	      && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
-	gfc_global_used(s, NULL);
+	{
+	  gfc_global_used (s, NULL);
+	  /* Silence follow-up errors.  */
+	  gfc_new_block->binding_label = NULL;
+	}
       else
 	{
 	  s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+	  s->sym_name = gfc_new_block->name;
 	  s->binding_label = gfc_new_block->binding_label;
 	  s->where = gfc_current_locus;
 	  s->defined = 1;

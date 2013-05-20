@@ -2389,6 +2389,11 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	}
 
       def_sym = gsym->ns->proc_name;
+
+      /* This can happen if a binding name has been specified.  */
+      if (gsym->binding_label && gsym->sym_name != def_sym->name)
+	gfc_find_symbol (gsym->sym_name, gsym->ns, 0, &def_sym);
+
       if (def_sym->attr.entry_master)
 	{
 	  gfc_entry_list *entry;
@@ -10023,90 +10028,91 @@ resolve_bind_c_derived_types (gfc_symbol *derived_sym)
 
 
 /* Verify that any binding labels used in a given namespace do not collide
-   with the names or binding labels of any global symbols.  */
+   with the names or binding labels of any global symbols.  Multiple INTERFACE
+   for the same procedure are permitted.  */
 
 static void
 gfc_verify_binding_labels (gfc_symbol *sym)
 {
-  int has_error = 0;
+  gfc_gsymbol *gsym;
+  const char *module;
 
-  if (sym != NULL && sym->attr.is_bind_c && sym->attr.is_iso_c == 0
-      && sym->attr.flavor != FL_DERIVED && sym->binding_label)
+  if (!sym || !sym->attr.is_bind_c || sym->attr.is_iso_c
+      || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
+    return;
+
+  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+
+  if (sym->module)
+    module = sym->module;
+  else if (sym->ns && sym->ns->proc_name
+	   && sym->ns->proc_name->attr.flavor == FL_MODULE)
+    module = sym->ns->proc_name->name;
+  else if (sym->ns && sym->ns->parent
+	   && sym->ns && sym->ns->parent->proc_name
+	   && sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
+    module = sym->ns->parent->proc_name->name;
+  else
+    module = NULL;
+
+  if (!gsym
+      || (!gsym->defined
+	  && (gsym->type == GSYM_FUNCTION || gsym->type == GSYM_SUBROUTINE)))
     {
-      gfc_gsymbol *bind_c_sym;
-
-      bind_c_sym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
-      if (bind_c_sym != NULL
-          && strcmp (bind_c_sym->name, sym->binding_label) == 0)
-        {
-          if (sym->attr.if_source == IFSRC_DECL
-              && (bind_c_sym->type != GSYM_SUBROUTINE
-                  && bind_c_sym->type != GSYM_FUNCTION)
-              && ((sym->attr.contained == 1
-                   && strcmp (bind_c_sym->sym_name, sym->name) != 0)
-                  || (sym->attr.use_assoc == 1
-                      && (strcmp (bind_c_sym->mod_name, sym->module) != 0))))
-            {
-              /* Make sure global procedures don't collide with anything.  */
-              gfc_error ("Binding label '%s' at %L collides with the global "
-                         "entity '%s' at %L", sym->binding_label,
-                         &(sym->declared_at), bind_c_sym->name,
-                         &(bind_c_sym->where));
-              has_error = 1;
-            }
-          else if (sym->attr.contained == 0
-                   && (sym->attr.if_source == IFSRC_IFBODY
-                       && sym->attr.flavor == FL_PROCEDURE)
-                   && (bind_c_sym->sym_name != NULL
-                       && strcmp (bind_c_sym->sym_name, sym->name) != 0))
-            {
-              /* Make sure procedures in interface bodies don't collide.  */
-              gfc_error ("Binding label '%s' in interface body at %L collides "
-                         "with the global entity '%s' at %L",
-                         sym->binding_label,
-                         &(sym->declared_at), bind_c_sym->name,
-                         &(bind_c_sym->where));
-              has_error = 1;
-            }
-          else if (sym->attr.contained == 0
-                   && sym->attr.if_source == IFSRC_UNKNOWN)
-	    if ((sym->attr.use_assoc && bind_c_sym->mod_name
-		 && strcmp (bind_c_sym->mod_name, sym->module) != 0)
-		|| sym->attr.use_assoc == 0)
-              {
-                gfc_error ("Binding label '%s' at %L collides with global "
-                           "entity '%s' at %L", sym->binding_label,
-                           &(sym->declared_at), bind_c_sym->name,
-                           &(bind_c_sym->where));
-                has_error = 1;
-              }
-
-          if (has_error != 0)
-	    /* Clear the binding label to prevent checking multiple times.  */
-	    sym->binding_label = NULL;
-        }
-      else if (bind_c_sym == NULL)
-	{
-	  bind_c_sym = gfc_get_gsymbol (sym->binding_label);
-	  bind_c_sym->where = sym->declared_at;
-	  bind_c_sym->sym_name = sym->name;
-
-          if (sym->attr.use_assoc == 1)
-            bind_c_sym->mod_name = sym->module;
-          else
-            if (sym->ns->proc_name != NULL)
-              bind_c_sym->mod_name = sym->ns->proc_name->name;
-
-          if (sym->attr.contained == 0)
-            {
-              if (sym->attr.subroutine)
-                bind_c_sym->type = GSYM_SUBROUTINE;
-              else if (sym->attr.function)
-                bind_c_sym->type = GSYM_FUNCTION;
-            }
-        }
+      if (!gsym)
+	gsym = gfc_get_gsymbol (sym->binding_label);
+      gsym->where = sym->declared_at;
+      gsym->sym_name = sym->name;
+      gsym->binding_label = sym->binding_label;
+      gsym->binding_label = sym->binding_label;
+      gsym->ns = sym->ns;
+      gsym->mod_name = module;
+      if (sym->attr.function)
+        gsym->type = GSYM_FUNCTION;
+      else if (sym->attr.subroutine)
+	gsym->type = GSYM_SUBROUTINE;
+      /* Mark as variable/procedure as defined, unless its an INTERFACE.  */
+      gsym->defined = sym->attr.if_source != IFSRC_IFBODY;
+      return;
     }
-  return;
+
+  if (sym->attr.flavor == FL_VARIABLE && gsym->type != GSYM_UNKNOWN)
+    {
+      gfc_error ("Variable %s with binding label %s at %L uses the same global "
+		 "identifier as entity at %L", sym->name,
+		 sym->binding_label, &sym->declared_at, &gsym->where);
+      /* Clear the binding label to prevent checking multiple times.  */
+      sym->binding_label = NULL;
+
+    }
+  else if (sym->attr.flavor == FL_VARIABLE
+	   && (strcmp (module, gsym->mod_name) != 0
+	       || strcmp (sym->name, gsym->sym_name) != 0))
+    {
+      /* This can only happen if the variable is defined in a module - if it
+	 isn't the same module, reject it.  */
+      gfc_error ("Variable %s from module %s with binding label %s at %L uses "
+		 "the same global identifier as entity at %L from module %s",
+		 sym->name, module, sym->binding_label,
+		 &sym->declared_at, &gsym->where, gsym->mod_name);
+      sym->binding_label = NULL;
+    }
+  else if ((sym->attr.function || sym->attr.subroutine)
+	   && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
+	       || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
+	   && sym != gsym->ns->proc_name
+	   && (strcmp (gsym->sym_name, sym->name) != 0
+	       || module != gsym->mod_name
+	       || (module && strcmp (module, gsym->mod_name) != 0)))
+    {
+      /* Print an error if the procdure is defined multiple times; we have to
+	 exclude references to the same procedure via module association or
+	 multiple checks for the same procedure.  */
+      gfc_error ("Procedure %s with binding label %s at %L uses the same "
+		 "global identifier as entity at %L", sym->name,
+		 sym->binding_label, &sym->declared_at, &gsym->where);
+      sym->binding_label = NULL;
+    }
 }
 
 
