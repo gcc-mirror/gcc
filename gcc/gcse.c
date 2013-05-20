@@ -3894,6 +3894,8 @@ compute_ld_motion_mems (void)
 		{
 		  rtx src = SET_SRC (PATTERN (insn));
 		  rtx dest = SET_DEST (PATTERN (insn));
+		  rtx note = find_reg_equal_equiv_note (insn);
+		  rtx src_eq;
 
 		  /* Check for a simple LOAD...  */
 		  if (MEM_P (src) && simple_mem (src))
@@ -3909,6 +3911,15 @@ compute_ld_motion_mems (void)
 		      /* Make sure there isn't a buried load somewhere.  */
 		      invalidate_any_buried_refs (src);
 		    }
+
+		  if (note != 0 && REG_NOTE_KIND (note) == REG_EQUAL)
+		    src_eq = XEXP (note, 0);
+		  else
+		    src_eq = NULL_RTX;
+
+		  if (src_eq != NULL_RTX
+		      && !(MEM_P (src_eq) && simple_mem (src_eq)))
+		    invalidate_any_buried_refs (src_eq);
 
 		  /* Check for stores. Don't worry about aliased ones, they
 		     will block any movement we might do later. We only care

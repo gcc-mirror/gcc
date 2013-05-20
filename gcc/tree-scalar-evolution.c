@@ -3385,12 +3385,24 @@ scev_const_prop (void)
 		 to be turned into n %= 45.  */
 	      || expression_expensive_p (def))
 	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+	          fprintf (dump_file, "not replacing:\n  ");
+	          print_gimple_stmt (dump_file, phi, 0, 0);
+	          fprintf (dump_file, "\n");
+		}
 	      gsi_next (&psi);
 	      continue;
 	    }
 
 	  /* Eliminate the PHI node and replace it by a computation outside
 	     the loop.  */
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "\nfinal value replacement:\n  ");
+	      print_gimple_stmt (dump_file, phi, 0, 0);
+	      fprintf (dump_file, "  with\n  ");
+	    }
 	  def = unshare_expr (def);
 	  remove_phi_node (&psi, false);
 
@@ -3398,6 +3410,11 @@ scev_const_prop (void)
       					  true, GSI_SAME_STMT);
 	  ass = gimple_build_assign (rslt, def);
 	  gsi_insert_before (&bsi, ass, GSI_SAME_STMT);
+	  if (dump_file)
+	    {
+	      print_gimple_stmt (dump_file, ass, 0, 0);
+	      fprintf (dump_file, "\n");
+	    }
 	}
     }
   return 0;

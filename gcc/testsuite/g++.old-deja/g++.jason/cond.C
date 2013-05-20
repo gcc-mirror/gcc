@@ -6,7 +6,7 @@ int main()
 {
   float i;
   
-  if (int i = 1)		// { dg-error "previously" }
+  if (int i = 1)		// { dg-message "previously" }
     {
       char i;			// { dg-error "redeclaration" } 
       char j;
@@ -17,17 +17,17 @@ int main()
       char j;
     }
 
-  while (int i = 0)		// { dg-error "previously" }
+  while (int i = 0)		// { dg-message "previously" }
     {
       int i;			// { dg-error "redeclaration" }
     }
 
-  for (; int i = 0; )		// { dg-error "previously" }
+  for (; int i = 0; )		// { dg-message "previously" }
     {
       int i;			// { dg-error "redeclaration" }
     }
 
-  switch (int i = 0)		// { dg-error "previously" }
+  switch (int i = 0)		// { dg-message "previously" }
     {
     default:
       int i;			// { dg-error "redeclaration" } 

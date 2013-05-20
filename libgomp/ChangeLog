@@ -1,3 +1,12 @@
+2013-05-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/loop-13.c: New test.
+	* testsuite/libgomp.c/loop-14.c: New test.
+	* testsuite/libgomp.c/loop-15.c: New test.
+	* testsuite/libgomp.c++/loop-13.C: New test.
+	* testsuite/libgomp.c++/loop-14.C: New test.
+	* testsuite/libgomp.c++/loop-15.C: New test.
+
 2013-02-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/56217

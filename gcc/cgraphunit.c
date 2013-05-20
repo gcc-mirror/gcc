@@ -1069,9 +1069,17 @@ handle_alias_pairs (void)
       if (!target_node && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)) != NULL)
 	{
 	  if (TREE_CODE (p->decl) == FUNCTION_DECL)
-	    cgraph_get_create_node (p->decl)->alias = true;
+	    {
+	      struct cgraph_node *anode = cgraph_get_create_node (p->decl);
+	      anode->alias = true;
+	      anode->thunk.alias = p->target;
+	    }
 	  else
-	    varpool_get_node (p->decl)->alias = true;
+	    {
+	      struct varpool_node *anode = varpool_get_node (p->decl);
+	      anode->alias = true;
+	      anode->alias_of = p->target;
+	    }
 	  DECL_EXTERNAL (p->decl) = 1;
 	  alias_pairs->unordered_remove (i);
 	  continue;
@@ -1939,14 +1947,14 @@ output_weakrefs (void)
         && !TREE_ASM_WRITTEN (node->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
       do_assemble_alias (node->symbol.decl,
-		         node->thunk.alias ? DECL_ASSEMBLER_NAME (node->thunk.alias)
+		         node->thunk.alias && DECL_P (node->thunk.alias) ? DECL_ASSEMBLER_NAME (node->thunk.alias)
 		         : get_alias_symbol (node->symbol.decl));
   FOR_EACH_VARIABLE (vnode)
     if (vnode->alias && DECL_EXTERNAL (vnode->symbol.decl)
         && !TREE_ASM_WRITTEN (vnode->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
       do_assemble_alias (vnode->symbol.decl,
-		         vnode->alias_of ? DECL_ASSEMBLER_NAME (vnode->alias_of)
+		         vnode->alias_of && DECL_P (vnode->alias_of) ? DECL_ASSEMBLER_NAME (vnode->alias_of)
 		         : get_alias_symbol (vnode->symbol.decl));
 }
 

@@ -134,6 +134,46 @@ along with GCC; see the file COPYING3.  If not see
 #define eligible_for_annul_false(INSN, SLOTS, TRIAL, FLAGS) 0
 #endif
 
+
+/* First, some functions that were used before GCC got a control flow graph.
+   These functions are now only used here in reorg.c, and have therefore
+   been moved here to avoid inadvertent misuse elsewhere in the compiler.  */
+
+/* Return the last label to mark the same position as LABEL.  Return LABEL
+   itself if it is null or any return rtx.  */
+
+static rtx
+skip_consecutive_labels (rtx label)
+{
+  rtx insn;
+
+  if (label && ANY_RETURN_P (label))
+    return label;
+
+  for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
+    if (LABEL_P (insn))
+      label = insn;
+
+  return label;
+}
+
+#ifdef HAVE_cc0
+/* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
+   and REG_CC_USER notes so we can find it.  */
+
+static void
+link_cc0_insns (rtx insn)
+{
+  rtx user = next_nonnote_insn (insn);
+
+  if (NONJUMP_INSN_P (user) && GET_CODE (PATTERN (user)) == SEQUENCE)
+    user = XVECEXP (PATTERN (user), 0, 0);
+
+  add_reg_note (user, REG_CC_SETTER, insn);
+  add_reg_note (insn, REG_CC_USER, user);
+}
+#endif
+
 /* Insns which have delay slots that have not yet been filled.  */
 
 static struct obstack unfilled_slots_obstack;
@@ -276,7 +316,6 @@ static int
 resource_conflicts_p (struct resources *res1, struct resources *res2)
 {
   if ((res1->cc && res2->cc) || (res1->memory && res2->memory)
-      || (res1->unch_memory && res2->unch_memory)
       || res1->volatil || res2->volatil)
     return 1;
 
@@ -1542,7 +1581,6 @@ redundant_insn (rtx insn, rtx target, rtx delay_list)
   /* Insns we pass may not set either NEEDED or SET, so merge them for
      simpler tests.  */
   needed.memory |= set.memory;
-  needed.unch_memory |= set.unch_memory;
   IOR_HARD_REG_SET (needed.regs, set.regs);
 
   /* This insn isn't redundant if it conflicts with an insn that either is

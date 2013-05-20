@@ -1,3 +1,28 @@
+2013-05-15  Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (privatize_symbol_name): Return true when
+	privatizing happened.
+	(rename_statics): Do not go into infinite loop when privatizing
+	is not needed.
+
+2013-05-16  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in ($(LTO_EXE)): Use link mutex.
+
+2013-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	* lto-partition.c (lto_balanced_map): Print symbol order instead
+	of node uids.
+
+2013-05-15  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/57038
+	PR lto/47375
+	* lto-partition.c (get_symbol_class): Fix weakrefs.
+	(lto_balanced_map): Fix weakrefs.
+	(privatize_symbol_name): Remove unnecesary label.
+	(rename_statics): Handle weakrefs as statics.
+
 2013-05-09  Jan Hubicka  <jh@suse.cz>
 	    Richard Biener  <rguenther@suse.de>
 

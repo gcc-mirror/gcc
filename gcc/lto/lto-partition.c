@@ -59,6 +59,10 @@ get_symbol_class (symtab_node node)
   if (cnode && cnode->global.inlined_to)
     return SYMBOL_DUPLICATE;
 
+  /* Weakref aliases are always duplicated.  */
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+    return SYMBOL_DUPLICATE;
+
   /* External declarations are external.  */
   if (DECL_EXTERNAL (node->symbol.decl))
     return SYMBOL_EXTERNAL;
@@ -78,10 +82,6 @@ get_symbol_class (symtab_node node)
      with body streamed, so clone can me materialized).  */
   else if (!cgraph (node)->analyzed)
     return SYMBOL_EXTERNAL;
-
-  /* Weakref aliases are always duplicated.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
-    return SYMBOL_DUPLICATE;
 
   /* Comdats are duplicated to every use unless they are keyed.
      Those do not need duplication.  */
@@ -561,7 +561,8 @@ lto_balanced_map (void)
 
 	      last_visited_node++;
 
-	      gcc_assert (node->analyzed);
+	      gcc_assert (node->analyzed
+			  || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)));
 
 	      /* Compute boundary cost of callgraph edges.  */
 	      for (edge = node->callees; edge; edge = edge->next_callee)
@@ -690,8 +691,10 @@ lto_balanced_map (void)
 	  best_total_size = total_size;
 	}
       if (cgraph_dump_file)
-	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i best %i/%i, step %i\n", i,
-		 cgraph_node_name (order[i]), order[i]->uid, partition->insns, cost, internal,
+	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i "
+		 "best %i/%i, step %i\n", i,
+		 cgraph_node_name (order[i]), order[i]->symbol.order,
+		 partition->insns, cost, internal,
 		 best_cost, best_internal, best_i);
       /* Partition is too large, unwind into step when best cost was reached and
 	 start new partition.  */
@@ -763,12 +766,11 @@ lto_balanced_map (void)
       with symbols defined out of the LTO world.
 */
 
-static void
+static bool
 privatize_symbol_name (symtab_node node)
 {
   tree decl = node->symbol.decl;
   const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-  char *label;
 
   /* Our renaming machinery do not handle more than one change of assembler name.
      We should not need more than one anyway.  */
@@ -779,7 +781,7 @@ privatize_symbol_name (symtab_node node)
 	fprintf (cgraph_dump_file,
 		"Not privatizing symbol name: %s. It privatized already.\n",
 		name);
-      return;
+      return false;
     }
   /* Avoid mangling of already mangled clones. 
      ???  should have a flag whether a symbol has a 'private' name already,
@@ -791,9 +793,8 @@ privatize_symbol_name (symtab_node node)
 	fprintf (cgraph_dump_file,
 		"Not privatizing symbol name: %s. Has unique name.\n",
 		name);
-      return;
+      return false;
     }
-  ASM_FORMAT_PRIVATE_NAME (label, name, DECL_UID (decl));
   change_decl_assembler_name (decl, clone_function_name (decl, "lto_priv"));
   if (node->symbol.lto_file_data)
     lto_record_renamed_decl (node->symbol.lto_file_data, name,
@@ -803,6 +804,7 @@ privatize_symbol_name (symtab_node node)
     fprintf (cgraph_dump_file,
 	    "Privatizing symbol name: %s -> %s\n",
 	    name, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
+  return true;
 }
 
 /* Promote variable VNODE to be static.  */
@@ -869,7 +871,8 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
 	 once this is fixed.  */
         || DECL_EXTERNAL (node->symbol.decl)
         || !symtab_real_symbol_p (node))
-       && !may_need_named_section_p (encoder, node))
+       && !may_need_named_section_p (encoder, node)
+       && !lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
     return;
 
   /* Now walk symbols sharing the same name and see if there are any conflicts.
@@ -894,19 +897,22 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */
   for (s = symtab_node_for_asm (name); s;)
-    if (!s->symbol.externally_visible
+    if ((!s->symbol.externally_visible
+	 || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
 	&& ((symtab_real_symbol_p (s)
-             && !DECL_EXTERNAL (node->symbol.decl)
+             && (!DECL_EXTERNAL (node->symbol.decl)
+	         || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
 	     && !TREE_PUBLIC (node->symbol.decl))
  	    || may_need_named_section_p (encoder, s))
 	&& (!encoder
 	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
       {
-        privatize_symbol_name (s);
-	/* Re-start from beggining since we do not know how many symbols changed a name.  */
-	s = symtab_node_for_asm (name);
+        if (privatize_symbol_name (s))
+	  /* Re-start from beggining since we do not know how many symbols changed a name.  */
+	  s = symtab_node_for_asm (name);
+        else s = s->symbol.next_sharing_asm_name;
       }
-   else s = s->symbol.next_sharing_asm_name;
+    else s = s->symbol.next_sharing_asm_name;
 }
 
 /* Find out all static decls that need to be promoted to global because

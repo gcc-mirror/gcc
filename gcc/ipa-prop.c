@@ -265,34 +265,45 @@ void
 ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 {
   struct cgraph_edge *cs;
-  int i;
 
-  fprintf (f, "  Jump functions of caller  %s:\n", cgraph_node_name (node));
+  fprintf (f, "  Jump functions of caller  %s/%i:\n", cgraph_node_name (node),
+	   node->symbol.order);
   for (cs = node->callees; cs; cs = cs->next_callee)
     {
       if (!ipa_edge_args_info_available_for_edge_p (cs))
 	continue;
 
       fprintf (f, "    callsite  %s/%i -> %s/%i : \n",
-	       xstrdup (cgraph_node_name (node)), node->uid,
-	       xstrdup (cgraph_node_name (cs->callee)), cs->callee->uid);
+	       xstrdup (cgraph_node_name (node)), node->symbol.order,
+	       xstrdup (cgraph_node_name (cs->callee)),
+	       cs->callee->symbol.order);
       ipa_print_node_jump_functions_for_edge (f, cs);
     }
 
-  for (cs = node->indirect_calls, i = 0; cs; cs = cs->next_callee, i++)
+  for (cs = node->indirect_calls; cs; cs = cs->next_callee)
     {
+      struct cgraph_indirect_call_info *ii;
       if (!ipa_edge_args_info_available_for_edge_p (cs))
 	continue;
 
+      ii = cs->indirect_info;
+      if (ii->agg_contents)
+	fprintf (f, "    indirect aggregate callsite, calling param %i, "
+		 "offset " HOST_WIDE_INT_PRINT_DEC ", %s",
+		 ii->param_index, ii->offset,
+		 ii->by_ref ? "by reference" : "by_value");
+      else
+	fprintf (f, "    indirect %s callsite, calling param %i",
+		 ii->polymorphic ? "polymorphic" : "simple", ii->param_index);
+
       if (cs->call_stmt)
 	{
-	  fprintf (f, "    indirect callsite %d for stmt ", i);
+	  fprintf (f, ", for stmt ");
 	  print_gimple_stmt (f, cs->call_stmt, 0, TDF_SLIM);
 	}
       else
-	fprintf (f, "    indirect callsite %d :\n", i);
+	fprintf (f, "\n");
       ipa_print_node_jump_functions_for_edge (f, cs);
-
     }
 }
 
@@ -2189,6 +2200,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 {
   struct cgraph_node *callee;
   struct inline_edge_summary *es = inline_edge_summary (ie);
+  bool unreachable = false;
 
   if (TREE_CODE (target) == ADDR_EXPR)
     target = TREE_OPERAND (target, 0);
@@ -2199,12 +2211,17 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered direct call to non-function"
-				" in (%s/%i).\n",
-		     cgraph_node_name (ie->caller), ie->caller->uid);
-	  return NULL;
+				" in %s/%i, making it unreachable.\n",
+		     cgraph_node_name (ie->caller), ie->caller->symbol.order);
+	  target = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+	  callee = cgraph_get_create_node (target);
+	  unreachable = true;
 	}
+      else
+	callee = cgraph_get_node (target);
     }
-  callee = cgraph_get_node (target);
+  else
+    callee = cgraph_get_node (target);
 
   /* Because may-edges are not explicitely represented and vtable may be external,
      we may create the first reference to the object in the unit.  */
@@ -2221,8 +2238,10 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
 		     "(%s/%i -> %s/%i) but can not refer to it. Giving up.\n",
-		     xstrdup (cgraph_node_name (ie->caller)), ie->caller->uid,
-		     xstrdup (cgraph_node_name (ie->callee)), ie->callee->uid);
+		     xstrdup (cgraph_node_name (ie->caller)),
+		     ie->caller->symbol.order,
+		     xstrdup (cgraph_node_name (ie->callee)),
+		     ie->callee->symbol.order);
 	  return NULL;
 	}
       callee = cgraph_get_create_real_symbol_node (target);
@@ -2239,13 +2258,15 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 			 - eni_size_weights.call_cost);
   es->call_stmt_time -= (eni_time_weights.indirect_call_cost
 			 - eni_time_weights.call_cost);
-  if (dump_file)
+  if (dump_file && !unreachable)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
 	       "(%s/%i -> %s/%i), for stmt ",
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
-	       xstrdup (cgraph_node_name (ie->caller)), ie->caller->uid,
-	       xstrdup (cgraph_node_name (ie->callee)), ie->callee->uid);
+	       xstrdup (cgraph_node_name (ie->caller)),
+	       ie->caller->symbol.order,
+	       xstrdup (cgraph_node_name (ie->callee)),
+	       ie->callee->symbol.order);
       if (ie->call_stmt)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
@@ -2298,7 +2319,7 @@ remove_described_reference (symtab_node symbol, struct ipa_cst_ref_desc *rdesc)
   if (dump_file)
     fprintf (dump_file, "ipa-prop: Removed a reference from %s/%i to %s.\n",
 	     xstrdup (cgraph_node_name (origin->caller)),
-	     origin->caller->uid, xstrdup (symtab_node_name (symbol)));
+	     origin->caller->symbol.order, xstrdup (symtab_node_name (symbol)));
 }
 
 /* If JFUNC has a reference description with refcount different from
@@ -2568,8 +2589,8 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 		    fprintf (dump_file, "ipa-prop: Removing cloning-created "
 			     "reference from %s/%i to %s/%i.\n",
 			     xstrdup (cgraph_node_name (new_root)),
-			     new_root->uid,
-			     xstrdup (cgraph_node_name (n)), n->uid);
+			     new_root->symbol.order,
+			     xstrdup (cgraph_node_name (n)), n->symbol.order);
 		  ipa_remove_reference (ref);
 		}
 	    }
@@ -2608,9 +2629,9 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 				     "cloning-created reference "
 				     "from %s/%i to %s/%i.\n",
 				     xstrdup (cgraph_node_name (clone)),
-				     clone->uid,
+				     clone->symbol.order,
 				     xstrdup (cgraph_node_name (n)),
-				     n->uid);
+				     n->symbol.order);
 			  ipa_remove_reference (ref);
 			}
 		      clone = clone->callers->caller;
@@ -2957,8 +2978,8 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
   if (!node->analyzed)
     return;
   info = IPA_NODE_REF (node);
-  fprintf (f, "  function  %s parameter descriptors:\n",
-	   cgraph_node_name (node));
+  fprintf (f, "  function  %s/%i parameter descriptors:\n",
+	   cgraph_node_name (node), node->symbol.order);
   count = ipa_get_param_count (info);
   for (i = 0; i < count; i++)
     {
@@ -4200,7 +4221,7 @@ ipcp_transform_function (struct cgraph_node *node)
 
   if (dump_file)
     fprintf (dump_file, "Modification phase of node %s/%i\n",
-	     cgraph_node_name (node), node->uid);
+	     cgraph_node_name (node), node->symbol.order);
 
   aggval = ipa_get_agg_replacements_for_node (node);
   if (!aggval)

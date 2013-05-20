@@ -4797,10 +4797,11 @@ convert_callers_for_node (struct cgraph_node *node,
       push_cfun (DECL_STRUCT_FUNCTION (cs->caller->symbol.decl));
 
       if (dump_file)
-	fprintf (dump_file, "Adjusting call (%i -> %i) %s -> %s\n",
-		 cs->caller->uid, cs->callee->uid,
+	fprintf (dump_file, "Adjusting call %s/%i -> %s/%i\n",
 		 xstrdup (cgraph_node_name (cs->caller)),
-		 xstrdup (cgraph_node_name (cs->callee)));
+		 cs->caller->symbol.order,
+		 xstrdup (cgraph_node_name (cs->callee)),
+		 cs->callee->symbol.order);
 
       ipa_modify_call_arguments (cs, cs->call_stmt, *adjustments);
 

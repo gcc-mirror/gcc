@@ -18,8 +18,8 @@ struct status			// { dg-bogus "shadowed declaration" }
   }
 };
 
-int decl1;			// { dg-warning "shadowed declaration" }
-int decl2;			// { dg-warning "shadowed declaration" }
+int decl1;			// { dg-message "shadowed declaration" }
+int decl2;			// { dg-message "shadowed declaration" }
 void foo (struct status &status,// { dg-bogus "shadows a global decl" }
 	  double decl1)		// { dg-warning "shadows a global decl" }
 {
@@ -34,7 +34,7 @@ void status::foo2 ()
 {
   int member;			// { dg-warning "shadows a member" }
   int decl2;			// { dg-warning "shadows a global decl" }
-  int local;			// { dg-warning "shadowed declaration" }
+  int local;			// { dg-message "shadowed declaration" }
   {
     int local;			// { dg-warning "shadows a previous local" }
   }

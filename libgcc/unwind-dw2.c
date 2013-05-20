@@ -59,6 +59,35 @@
 #define DWARF_REG_TO_UNWIND_COLUMN(REGNO) (REGNO)
 #endif
 
+/* ??? For the public function interfaces, we tend to gcc_assert that the
+   column numbers are in range.  For the dwarf2 unwind info this does happen,
+   although so far in a case that doesn't actually matter.
+
+   See PR49146, in which a call from x86_64 ms abi to x86_64 unix abi stores
+   the call-saved xmm registers and annotates them.  We havn't bothered
+   providing support for the xmm registers for the x86_64 port primarily
+   because the 64-bit windows targets don't use dwarf2 unwind, using sjlj or
+   SEH instead.  Adding the support for unix targets would generally be a
+   waste.  However, some runtime libraries supplied with ICC do contain such
+   an unorthodox transition, as well as the unwind info to match.  This loss
+   of register restoration doesn't matter in practice, because the exception
+   is caught in the native unix abi, where all of the xmm registers are 
+   call clobbered.
+
+   Ideally, we'd record some bit to notice when we're failing to restore some
+   register recorded in the unwind info, but to do that we need annotation on
+   the unix->ms abi edge, so that we know when the register data may be
+   discarded.  And since this edge is also within the ICC library, we're
+   unlikely to be able to get the new annotation.
+
+   Barring a magic solution to restore the ms abi defined 128-bit xmm registers
+   (as distictly opposed to the full runtime width) without causing extra
+   overhead for normal unix abis, the best solution seems to be to simply
+   ignore unwind data for unknown columns.  */
+
+#define UNWIND_COLUMN_IN_RANGE(x) \
+    __builtin_expect((x) <= DWARF_FRAME_REGISTERS, 1)
+
 #ifdef REG_VALUE_IN_UNWIND_CONTEXT
 typedef _Unwind_Word _Unwind_Context_Reg_Val;
 
@@ -939,14 +968,19 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  reg = insn & 0x3f;
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Sword) utmp * fs->data_align;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_OFFSET;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.reg[reg].loc.offset = offset;
+	    }
 	}
       else if ((insn & 0xc0) == DW_CFA_restore)
 	{
 	  reg = insn & 0x3f;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_UNSAVED;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    fs->regs.reg[reg].how = REG_UNSAVED;
 	}
       else switch (insn)
 	{
@@ -977,26 +1011,35 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Sword) utmp * fs->data_align;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_OFFSET;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.reg[reg].loc.offset = offset;
+	    }
 	  break;
 
 	case DW_CFA_restore_extended:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  /* FIXME, this is wrong; the CIE might have said that the
 	     register was saved somewhere.  */
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNSAVED;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    fs->regs.reg[reg].how = REG_UNSAVED;
 	  break;
 
 	case DW_CFA_same_value:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNSAVED;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    fs->regs.reg[reg].how = REG_UNSAVED;
 	  break;
 
 	case DW_CFA_undefined:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN(reg)].how = REG_UNDEFINED;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    fs->regs.reg[reg].how = REG_UNDEFINED;
 	  break;
 
 	case DW_CFA_nop:
@@ -1007,9 +1050,12 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	    _uleb128_t reg2;
 	    insn_ptr = read_uleb128 (insn_ptr, &reg);
 	    insn_ptr = read_uleb128 (insn_ptr, &reg2);
-	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_SAVED_REG;
-	    fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.reg =
-	      (_Unwind_Word)reg2;
+	    reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	    if (UNWIND_COLUMN_IN_RANGE (reg))
+	      {
+	        fs->regs.reg[reg].how = REG_SAVED_REG;
+	        fs->regs.reg[reg].loc.reg = (_Unwind_Word)reg2;
+	      }
 	  }
 	  break;
 
@@ -1067,8 +1113,12 @@ execute_cfa_program (const unsigned char *insn_ptr,
 
 	case DW_CFA_expression:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how = REG_SAVED_EXP;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.exp = insn_ptr;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_EXP;
+	      fs->regs.reg[reg].loc.exp = insn_ptr;
+	    }
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  insn_ptr += utmp;
 	  break;
@@ -1078,9 +1128,12 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
 	  offset = stmp * fs->data_align;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_OFFSET;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.reg[reg].loc.offset = offset;
+	    }
 	  break;
 
 	case DW_CFA_def_cfa_sf:
@@ -1103,25 +1156,34 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Sword) utmp * fs->data_align;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_VAL_OFFSET;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_VAL_OFFSET;
+	      fs->regs.reg[reg].loc.offset = offset;
+	    }
 	  break;
 
 	case DW_CFA_val_offset_sf:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_sleb128 (insn_ptr, &stmp);
 	  offset = stmp * fs->data_align;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_VAL_OFFSET;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = offset;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_VAL_OFFSET;
+	      fs->regs.reg[reg].loc.offset = offset;
+	    }
 	  break;
 
 	case DW_CFA_val_expression:
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_VAL_EXP;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.exp = insn_ptr;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_VAL_EXP;
+	      fs->regs.reg[reg].loc.exp = insn_ptr;
+	    }
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  insn_ptr += utmp;
 	  break;
@@ -1147,9 +1209,12 @@ execute_cfa_program (const unsigned char *insn_ptr,
 	  insn_ptr = read_uleb128 (insn_ptr, &reg);
 	  insn_ptr = read_uleb128 (insn_ptr, &utmp);
 	  offset = (_Unwind_Word) utmp * fs->data_align;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].how
-	    = REG_SAVED_OFFSET;
-	  fs->regs.reg[DWARF_REG_TO_UNWIND_COLUMN (reg)].loc.offset = -offset;
+	  reg = DWARF_REG_TO_UNWIND_COLUMN (reg);
+	  if (UNWIND_COLUMN_IN_RANGE (reg))
+	    {
+	      fs->regs.reg[reg].how = REG_SAVED_OFFSET;
+	      fs->regs.reg[reg].loc.offset = -offset;
+	    }
 	  break;
 
 	default:

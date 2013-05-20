@@ -3332,56 +3332,8 @@ prev_active_insn (rtx insn)
 
   return insn;
 }
-
-/* Return the next CODE_LABEL after the insn INSN, or 0 if there is none.  */
-
-rtx
-next_label (rtx insn)
-{
-  while (insn)
-    {
-      insn = NEXT_INSN (insn);
-      if (insn == 0 || LABEL_P (insn))
-	break;
-    }
-
-  return insn;
-}
-
-/* Return the last label to mark the same position as LABEL.  Return LABEL
-   itself if it is null or any return rtx.  */
-
-rtx
-skip_consecutive_labels (rtx label)
-{
-  rtx insn;
-
-  if (label && ANY_RETURN_P (label))
-    return label;
-
-  for (insn = label; insn != 0 && !INSN_P (insn); insn = NEXT_INSN (insn))
-    if (LABEL_P (insn))
-      label = insn;
-
-  return label;
-}
 
 #ifdef HAVE_cc0
-/* INSN uses CC0 and is being moved into a delay slot.  Set up REG_CC_SETTER
-   and REG_CC_USER notes so we can find it.  */
-
-void
-link_cc0_insns (rtx insn)
-{
-  rtx user = next_nonnote_insn (insn);
-
-  if (NONJUMP_INSN_P (user) && GET_CODE (PATTERN (user)) == SEQUENCE)
-    user = XVECEXP (PATTERN (user), 0, 0);
-
-  add_reg_note (user, REG_CC_SETTER, insn);
-  add_reg_note (insn, REG_CC_USER, user);
-}
-
 /* Return the next insn that uses CC0 after INSN, which is assumed to
    set it.  This is the inverse of prev_cc0_setter (i.e., prev_cc0_setter
    applied to the result of this function should yield INSN).

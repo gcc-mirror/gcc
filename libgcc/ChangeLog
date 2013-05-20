@@ -1,3 +1,9 @@
+2013-05-17  Richard Henderson  <rth@redhat.com>
+
+	PR target/49146
+	* unwind-dw2.c (UNWIND_COLUMN_IN_RANGE): New macro.
+	(execute_cfa_program): Use it when storing to fs->regs.
+
 2013-05-08  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/cygming-crtbegin.c (__register_frame_info): Make weak.

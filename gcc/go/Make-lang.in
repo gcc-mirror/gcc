@@ -76,7 +76,7 @@ GO_OBJS = \
 	go/unsafe.o
 
 go1$(exeext): $(GO_OBJS) attribs.o $(BACKEND) $(LIBDEPS)
-	+$(CXX) $(ALL_CXXFLAGS) $(LDFLAGS) -o $@ \
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	      $(GO_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 
 # Documentation.

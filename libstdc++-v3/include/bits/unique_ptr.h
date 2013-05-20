@@ -49,16 +49,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename> class auto_ptr;
 #endif
 
-  /// Primary template, default_delete.
+  /// Primary template of default_delete, used by unique_ptr
   template<typename _Tp>
     struct default_delete
     {
+      /// Default constructor
       constexpr default_delete() noexcept = default;
 
+      /** @brief Converting constructor.
+       *
+       * Allows conversion from a deleter for arrays of another type, @p _Up,
+       * only if @p _Up* is convertible to @p _Tp*.
+       */
       template<typename _Up, typename = typename
 	       enable_if<is_convertible<_Up*, _Tp*>::value>::type>
         default_delete(const default_delete<_Up>&) noexcept { }
 
+      /// Calls @c delete @p __ptr
       void
       operator()(_Tp* __ptr) const
       {
@@ -70,7 +77,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // DR 740 - omit specialization for array objects with a compile time length
-  /// Specialization, default_delete.
+  /// Specialization for arrays, default_delete.
   template<typename _Tp>
     struct default_delete<_Tp[]>
     {
@@ -85,12 +92,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __not_<is_same<__remove_cv<_Tp>, __remove_cv<_Up>>> >;
 
     public:
+      /// Default constructor
       constexpr default_delete() noexcept = default;
 
+      /** @brief Converting constructor.
+       *
+       * Allows conversion from a deleter for arrays of another type, such as
+       * a const-qualified version of @p _Tp.
+       *
+       * Conversions from types derived from @c _Tp are not allowed because
+       * it is unsafe to @c delete[] an array of derived types through a
+       * pointer to the base type.
+       */
       template<typename _Up, typename = typename
 	       enable_if<!__is_derived_Tp<_Up>::value>::type>
         default_delete(const default_delete<_Up[]>&) noexcept { }
 
+      /// Calls @c delete[] @p __ptr
       void
       operator()(_Tp* __ptr) const
       {
@@ -132,34 +150,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Dp                       deleter_type;
 
       // Constructors.
+
+      /// Default constructor, creates a unique_ptr that owns nothing.
       constexpr unique_ptr() noexcept
       : _M_t()
       { static_assert(!is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
+      /** Takes ownership of a pointer.
+       *
+       * @param __p  A pointer to an object of @c element_type
+       *
+       * The deleter will be value-initialized.
+       */
       explicit
       unique_ptr(pointer __p) noexcept
       : _M_t(__p, deleter_type())
       { static_assert(!is_pointer<deleter_type>::value,
 		     "constructed with null function pointer deleter"); }
 
+      /** Takes ownership of a pointer.
+       *
+       * @param __p  A pointer to an object of @c element_type
+       * @param __d  A reference to a deleter.
+       *
+       * The deleter will be initialized with @p __d
+       */
       unique_ptr(pointer __p,
 	  typename conditional<is_reference<deleter_type>::value,
 	    deleter_type, const deleter_type&>::type __d) noexcept
       : _M_t(__p, __d) { }
 
+      /** Takes ownership of a pointer.
+       *
+       * @param __p  A pointer to an object of @c element_type
+       * @param __d  An rvalue reference to a deleter.
+       *
+       * The deleter will be initialized with @p std::move(__d)
+       */
       unique_ptr(pointer __p,
 	  typename remove_reference<deleter_type>::type&& __d) noexcept
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!std::is_reference<deleter_type>::value,
 		      "rvalue deleter bound to reference"); }
 
+      /// Creates a unique_ptr that owns nothing.
       constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
 
       // Move constructors.
+
+      /// Move constructor.
       unique_ptr(unique_ptr&& __u) noexcept
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
+      /** @brief Converting constructor from another type
+       *
+       * Requires that the pointer owned by @p __u is convertible to the
+       * type of pointer owned by this object, @p __u does not own an array,
+       * and @p __u has a compatible deleter type.
+       */
       template<typename _Up, typename _Ep, typename = _Require<
 	       is_convertible<typename unique_ptr<_Up, _Ep>::pointer, pointer>,
 	       __not_<is_array<_Up>>,
@@ -171,12 +220,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
 #if _GLIBCXX_USE_DEPRECATED
+      /// Converting constructor from @c auto_ptr
       template<typename _Up, typename = _Require<
 	       is_convertible<_Up*, _Tp*>, is_same<_Dp, default_delete<_Tp>>>>
 	unique_ptr(auto_ptr<_Up>&& __u) noexcept;
 #endif
 
-      // Destructor.
+      /// Destructor, invokes the deleter if the stored pointer is not null.
       ~unique_ptr() noexcept
       {
 	auto& __ptr = std::get<0>(_M_t);
@@ -186,6 +236,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // Assignment.
+
+      /** @brief Move assignment operator.
+       *
+       * @param __u  The object to transfer ownership from.
+       *
+       * Invokes the deleter first if this object owns a pointer.
+       */
       unique_ptr&
       operator=(unique_ptr&& __u) noexcept
       {
@@ -194,6 +251,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      /** @brief Assignment from another type.
+       *
+       * @param __u  The object to transfer ownership from, which owns a
+       *             convertible pointer to a non-array object.
+       *
+       * Invokes the deleter first if this object owns a pointer.
+       */
       template<typename _Up, typename _Ep>
 	typename enable_if< __and_<
 	  is_convertible<typename unique_ptr<_Up, _Ep>::pointer, pointer>,
@@ -207,6 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
+      /// Reset the %unique_ptr to empty, invoking the deleter if necessary.
       unique_ptr&
       operator=(nullptr_t) noexcept
       {
@@ -215,6 +280,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // Observers.
+
+      /// Dereference the stored pointer.
       typename add_lvalue_reference<element_type>::type
       operator*() const
       {
@@ -222,6 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *get();
       }
 
+      /// Return the stored pointer.
       pointer
       operator->() const noexcept
       {
@@ -229,22 +297,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return get();
       }
 
+      /// Return the stored pointer.
       pointer
       get() const noexcept
       { return std::get<0>(_M_t); }
 
+      /// Return a reference to the stored deleter.
       deleter_type&
       get_deleter() noexcept
       { return std::get<1>(_M_t); }
 
+      /// Return a reference to the stored deleter.
       const deleter_type&
       get_deleter() const noexcept
       { return std::get<1>(_M_t); }
 
+      /// Return @c true if the stored pointer is not null.
       explicit operator bool() const noexcept
       { return get() == pointer() ? false : true; }
 
       // Modifiers.
+
+      /// Release ownership of any stored pointer.
       pointer
       release() noexcept
       {
@@ -253,6 +327,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __p;
       }
 
+      /** @brief Replace the stored pointer.
+       *
+       * @param __p  The new pointer to store.
+       *
+       * The deleter will be invoked if a pointer is already owned.
+       */
       void
       reset(pointer __p = pointer()) noexcept
       {
@@ -262,6 +342,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  get_deleter()(__p);
       }
 
+      /// Exchange the pointer and deleter with another object.
       void
       swap(unique_ptr& __u) noexcept
       {
@@ -326,37 +407,61 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Dp                       deleter_type;
 
       // Constructors.
+
+      /// Default constructor, creates a unique_ptr that owns nothing.
       constexpr unique_ptr() noexcept
       : _M_t()
       { static_assert(!std::is_pointer<deleter_type>::value,
 		      "constructed with null function pointer deleter"); }
 
+      /** Takes ownership of a pointer.
+       *
+       * @param __p  A pointer to an array of @c element_type
+       *
+       * The deleter will be value-initialized.
+       */
       explicit
       unique_ptr(pointer __p) noexcept
       : _M_t(__p, deleter_type())
       { static_assert(!is_pointer<deleter_type>::value,
 		      "constructed with null function pointer deleter"); }
 
+      // Disable construction from convertible pointer types.
       template<typename _Up, typename = _Require<is_pointer<pointer>,
 	       is_convertible<_Up*, pointer>, __is_derived_Tp<_Up>>>
 	explicit
 	unique_ptr(_Up* __p) = delete;
 
+      /** Takes ownership of a pointer.
+       *
+       * @param __p  A pointer to an array of @c element_type
+       * @param __d  A reference to a deleter.
+       *
+       * The deleter will be initialized with @p __d
+       */
       unique_ptr(pointer __p,
 	  typename conditional<is_reference<deleter_type>::value,
 	      deleter_type, const deleter_type&>::type __d) noexcept
       : _M_t(__p, __d) { }
 
+      /** Takes ownership of a pointer.
+       *
+       * @param __p  A pointer to an array of @c element_type
+       * @param __d  A reference to a deleter.
+       *
+       * The deleter will be initialized with @p std::move(__d)
+       */
       unique_ptr(pointer __p, typename
 		 remove_reference<deleter_type>::type&& __d) noexcept
       : _M_t(std::move(__p), std::move(__d))
       { static_assert(!is_reference<deleter_type>::value,
 		      "rvalue deleter bound to reference"); }
 
-      // Move constructor.
+      /// Move constructor.
       unique_ptr(unique_ptr&& __u) noexcept
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
+      /// Creates a unique_ptr that owns nothing.
       constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
 
       template<typename _Up, typename _Ep,
@@ -369,7 +474,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_t(__u.release(), std::forward<_Ep>(__u.get_deleter()))
 	{ }
 
-      // Destructor.
+      /// Destructor, invokes the deleter if the stored pointer is not null.
       ~unique_ptr()
       {
 	auto& __ptr = std::get<0>(_M_t);
@@ -379,6 +484,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // Assignment.
+
+      /** @brief Move assignment operator.
+       *
+       * @param __u  The object to transfer ownership from.
+       *
+       * Invokes the deleter first if this object owns a pointer.
+       */
       unique_ptr&
       operator=(unique_ptr&& __u) noexcept
       {
@@ -387,6 +499,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      /** @brief Assignment from another type.
+       *
+       * @param __u  The object to transfer ownership from, which owns a
+       *             convertible pointer to an array object.
+       *
+       * Invokes the deleter first if this object owns a pointer.
+       */
       template<typename _Up, typename _Ep>
 	typename
 	enable_if<__safe_conversion<_Up, _Ep>::value, unique_ptr&>::type
@@ -397,6 +516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
+      /// Reset the %unique_ptr to empty, invoking the deleter if necessary.
       unique_ptr&
       operator=(nullptr_t) noexcept
       {
@@ -405,6 +525,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // Observers.
+
+      /// Access an element of owned array.
       typename std::add_lvalue_reference<element_type>::type
       operator[](size_t __i) const
       {
@@ -412,22 +534,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return get()[__i];
       }
 
+      /// Return the stored pointer.
       pointer
       get() const noexcept
       { return std::get<0>(_M_t); }
 
+      /// Return a reference to the stored deleter.
       deleter_type&
       get_deleter() noexcept
       { return std::get<1>(_M_t); }
 
+      /// Return a reference to the stored deleter.
       const deleter_type&
       get_deleter() const noexcept
       { return std::get<1>(_M_t); }
 
+      /// Return @c true if the stored pointer is not null.
       explicit operator bool() const noexcept
       { return get() == pointer() ? false : true; }
 
       // Modifiers.
+
+      /// Release ownership of any stored pointer.
       pointer
       release() noexcept
       {
@@ -436,12 +564,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __p;
       }
 
+      /** @brief Replace the stored pointer.
+       *
+       * @param __p  The new pointer to store.
+       *
+       * The deleter will be invoked if a pointer is already owned.
+       */
       void
-      reset() noexcept
-      { reset(pointer()); }
-
-      void
-      reset(pointer __p) noexcept
+      reset(pointer __p = pointer()) noexcept
       {
 	using std::swap;
 	swap(std::get<0>(_M_t), __p);
@@ -449,10 +579,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  get_deleter()(__p);
       }
 
+      // Disable resetting from convertible pointer types.
       template<typename _Up, typename = _Require<is_pointer<pointer>,
 	       is_convertible<_Up*, pointer>, __is_derived_Tp<_Up>>>
 	void reset(_Up*) = delete;
 
+      /// Exchange the pointer and deleter with another object.
       void
       swap(unique_ptr& __u) noexcept
       {
@@ -471,6 +603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   conditional<is_reference<deleter_type>::value,
 		   deleter_type, const deleter_type&>::type) = delete;
 
+      // Disable construction from convertible pointer types.
       template<typename _Up, typename = _Require<is_pointer<pointer>,
 	       is_convertible<_Up*, pointer>, __is_derived_Tp<_Up>>>
 	unique_ptr(_Up*, typename
@@ -606,6 +739,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::hash<typename _UP::pointer>()(__u.get());
       }
     };
+
+#if __cplusplus > 201103L
+  template<typename _Tp>
+    struct _MakeUniq
+    { typedef unique_ptr<_Tp> __single_object; };
+
+  template<typename _Tp>
+    struct _MakeUniq<_Tp[]>
+    { typedef unique_ptr<_Tp[]> __array; };
+
+  template<typename _Tp, size_t _Bound>
+    struct _MakeUniq<_Tp[_Bound]>
+    { struct __invalid_type { }; };
+
+  /// std::make_unique for single objects
+  template<typename _Tp, typename... _Args>
+    inline typename _MakeUniq<_Tp>::__single_object
+    make_unique(_Args&&... __args)
+    { return unique_ptr<_Tp>(new _Tp(std::forward<_Args>(__args)...)); }
+
+  /// std::make_unique for arrays of unknown bound
+  template<typename _Tp>
+    inline typename _MakeUniq<_Tp>::__array
+    make_unique(size_t __num)
+    { return unique_ptr<_Tp>(new typename remove_extent<_Tp>::type[__num]()); }
+
+  /// Disable std::make_unique for arrays of known bound
+  template<typename _Tp, typename... _Args>
+    inline typename _MakeUniq<_Tp>::__invalid_type
+    make_unique(_Args&&...) = delete;
+#endif
 
   // @} group pointer_abstractions
 

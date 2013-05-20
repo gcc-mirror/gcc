@@ -465,7 +465,7 @@ dump_cgraph_node_set (FILE *f, cgraph_node_set set)
   for (iter = csi_start (set); !csi_end_p (iter); csi_next (&iter))
     {
       struct cgraph_node *node = csi_node (iter);
-      fprintf (f, " %s/%i", cgraph_node_name (node), node->uid);
+      fprintf (f, " %s/%i", cgraph_node_name (node), node->symbol.order);
     }
   fprintf (f, "\n");
 }
