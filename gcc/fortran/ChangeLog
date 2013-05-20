@@ -1,6 +1,20 @@
 2013-05-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48858
+	* decl.c (add_global_entry): Use nonbinding name
+	only for F2003 or if no binding label exists.
+	(gfc_match_entry): Update calls.
+	* parse.c (gfc_global_used): Improve error message.
+	(add_global_procedure): Use nonbinding name
+	only for F2003 or if no binding label exists.
+	(gfc_parse_file): Update call.
+	* resolve.c (resolve_global_procedure): Use binding
+	name when available.
+	* trans-decl.c (gfc_get_extern_function_decl): Ditto.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
 	* decl.c (gfc_match_bind_c_stmt): Add gfc_notify_std.
 	* match.c (gfc_match_common): Don't add commons to gsym.
 	* resolve.c (resolve_common_blocks): Add to gsym and
