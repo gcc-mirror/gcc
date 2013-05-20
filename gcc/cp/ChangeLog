@@ -1,5 +1,10 @@
 2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/57327
+	* pt.c (unify_no_common_base): Swap arg and parm arguments to inform.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/10207
 	* parser.c (cp_parser_postfix_expression): Use cp_parser_braced_list
 	instead of cp_parser_initializer_list for compound-literals.
