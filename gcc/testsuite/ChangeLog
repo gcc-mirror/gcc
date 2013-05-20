@@ -1,3 +1,14 @@
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* gfortran.dg/test_common_binding_labels.f03: Update dg-error.
+	* gfortran.dg/test_common_binding_labels_2_main.f03: Ditto.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Ditto.
+	* gfortran.dg/common_18.f90: New.
+	* gfortran.dg/common_19.f90: New.
+	* gfortran.dg/common_20.f90: New.
+	* gfortran.dg/common_21.f90: New.
+
 2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/12288

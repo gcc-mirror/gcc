@@ -4208,6 +4208,9 @@ gfc_match_bind_c_stmt (void)
 
   if (found_match == MATCH_YES)
     {
+      if (!gfc_notify_std (GFC_STD_F2003, "BIND(C) statement at %C"))
+	return MATCH_ERROR;
+
       /* Look for the :: now, but it is not required.  */
       gfc_match (" :: ");
 

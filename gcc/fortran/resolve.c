@@ -947,6 +947,7 @@ static void
 resolve_common_blocks (gfc_symtree *common_root)
 {
   gfc_symbol *sym;
+  gfc_gsymbol * gsym;
 
   if (common_root == NULL)
     return;
@@ -957,6 +958,84 @@ resolve_common_blocks (gfc_symtree *common_root)
     resolve_common_blocks (common_root->right);
 
   resolve_common_vars (common_root->n.common->head, true);
+
+  /* The common name is a global name - in Fortran 2003 also if it has a
+     C binding name, since Fortran 2008 only the C binding name is a global
+     identifier.  */
+  if (!common_root->n.common->binding_label
+      || gfc_notification_std (GFC_STD_F2008))
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root,
+			       common_root->n.common->name);
+
+      if (gsym && gfc_notification_std (GFC_STD_F2008)
+	  && gsym->type == GSYM_COMMON
+	  && ((common_root->n.common->binding_label
+	       && (!gsym->binding_label
+		   || strcmp (common_root->n.common->binding_label,
+			      gsym->binding_label) != 0))
+	      || (!common_root->n.common->binding_label
+		  && gsym->binding_label)))
+	{
+	  gfc_error ("In Fortran 2003 COMMON '%s' block at %L is a global "
+		     "identifier and must thus have the same binding name "
+		     "as the same-named COMMON block at %L: %s vs %s",
+		     common_root->n.common->name, &common_root->n.common->where,
+		     &gsym->where,
+		     common_root->n.common->binding_label
+		     ? common_root->n.common->binding_label : "(blank)",
+		     gsym->binding_label ? gsym->binding_label : "(blank)");
+	  return;
+	}
+
+      if (gsym && gsym->type != GSYM_COMMON
+	  && !common_root->n.common->binding_label)
+	{
+	  gfc_error ("COMMON block '%s' at %L uses the same global identifier "
+		     "as entity at %L",
+		     common_root->n.common->name, &common_root->n.common->where,
+		     &gsym->where);
+	  return;
+	}
+      if (gsym && gsym->type != GSYM_COMMON)
+	{
+	  gfc_error ("Fortran 2008: COMMON block '%s' with binding label at "
+		     "%L sharing the identifier with global non-COMMON-block "
+		     "entity at %L", common_root->n.common->name,
+		     &common_root->n.common->where, &gsym->where);
+	  return;
+	}
+      if (!gsym)
+	{
+	  gsym = gfc_get_gsymbol (common_root->n.common->name);
+	  gsym->type = GSYM_COMMON;
+	  gsym->where = common_root->n.common->where;
+	  gsym->defined = 1;
+	}
+      gsym->used = 1;
+    }
+
+  if (common_root->n.common->binding_label)
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root,
+			       common_root->n.common->binding_label);
+      if (gsym && gsym->type != GSYM_COMMON)
+	{
+	  gfc_error ("COMMON block at %L with binding label %s uses the same "
+		     "global identifier as entity at %L",
+		     &common_root->n.common->where,
+		     common_root->n.common->binding_label, &gsym->where);
+	  return;
+	}
+      if (!gsym)
+	{
+	  gsym = gfc_get_gsymbol (common_root->n.common->binding_label);
+	  gsym->type = GSYM_COMMON;
+	  gsym->where = common_root->n.common->where;
+	  gsym->defined = 1;
+	}
+      gsym->used = 1;
+    }
 
   gfc_find_symbol (common_root->name, gfc_current_ns, 0, &sym);
   if (sym == NULL)
@@ -9929,103 +10008,6 @@ resolve_values (gfc_symbol *sym)
 }
 
 
-/* Verify the binding labels for common blocks that are BIND(C).  The label
-   for a BIND(C) common block must be identical in all scoping units in which
-   the common block is declared.  Further, the binding label can not collide
-   with any other global entity in the program.  */
-
-static void
-resolve_bind_c_comms (gfc_symtree *comm_block_tree)
-{
-  if (comm_block_tree->n.common->is_bind_c == 1)
-    {
-      gfc_gsymbol *binding_label_gsym;
-      gfc_gsymbol *comm_name_gsym;
-      const char * bind_label = comm_block_tree->n.common->binding_label
-	? comm_block_tree->n.common->binding_label : "";
-
-      /* See if a global symbol exists by the common block's name.  It may
-         be NULL if the common block is use-associated.  */
-      comm_name_gsym = gfc_find_gsymbol (gfc_gsym_root,
-                                         comm_block_tree->n.common->name);
-      if (comm_name_gsym != NULL && comm_name_gsym->type != GSYM_COMMON)
-        gfc_error ("Binding label '%s' for common block '%s' at %L collides "
-                   "with the global entity '%s' at %L",
-                   bind_label,
-                   comm_block_tree->n.common->name,
-                   &(comm_block_tree->n.common->where),
-                   comm_name_gsym->name, &(comm_name_gsym->where));
-      else if (comm_name_gsym != NULL
-	       && strcmp (comm_name_gsym->name,
-			  comm_block_tree->n.common->name) == 0)
-        {
-          /* TODO: Need to make sure the fields of gfc_gsymbol are initialized
-             as expected.  */
-          if (comm_name_gsym->binding_label == NULL)
-            /* No binding label for common block stored yet; save this one.  */
-            comm_name_gsym->binding_label = bind_label;
-          else if (strcmp (comm_name_gsym->binding_label, bind_label) != 0)
-              {
-                /* Common block names match but binding labels do not.  */
-                gfc_error ("Binding label '%s' for common block '%s' at %L "
-                           "does not match the binding label '%s' for common "
-                           "block '%s' at %L",
-                           bind_label,
-                           comm_block_tree->n.common->name,
-                           &(comm_block_tree->n.common->where),
-                           comm_name_gsym->binding_label,
-                           comm_name_gsym->name,
-                           &(comm_name_gsym->where));
-                return;
-              }
-        }
-
-      /* There is no binding label (NAME="") so we have nothing further to
-         check and nothing to add as a global symbol for the label.  */
-      if (!comm_block_tree->n.common->binding_label)
-        return;
-
-      binding_label_gsym =
-        gfc_find_gsymbol (gfc_gsym_root,
-                          comm_block_tree->n.common->binding_label);
-      if (binding_label_gsym == NULL)
-        {
-          /* Need to make a global symbol for the binding label to prevent
-             it from colliding with another.  */
-          binding_label_gsym =
-            gfc_get_gsymbol (comm_block_tree->n.common->binding_label);
-          binding_label_gsym->sym_name = comm_block_tree->n.common->name;
-          binding_label_gsym->type = GSYM_COMMON;
-        }
-      else
-        {
-          /* If comm_name_gsym is NULL, the name common block is use
-             associated and the name could be colliding.  */
-          if (binding_label_gsym->type != GSYM_COMMON)
-            gfc_error ("Binding label '%s' for common block '%s' at %L "
-                       "collides with the global entity '%s' at %L",
-                       comm_block_tree->n.common->binding_label,
-                       comm_block_tree->n.common->name,
-                       &(comm_block_tree->n.common->where),
-                       binding_label_gsym->name,
-                       &(binding_label_gsym->where));
-          else if (comm_name_gsym != NULL
-		   && (strcmp (binding_label_gsym->name,
-			       comm_name_gsym->binding_label) != 0)
-		   && (strcmp (binding_label_gsym->sym_name,
-			       comm_name_gsym->name) != 0))
-            gfc_error ("Binding label '%s' for common block '%s' at %L "
-                       "collides with global entity '%s' at %L",
-                       binding_label_gsym->name, binding_label_gsym->sym_name,
-                       &(comm_block_tree->n.common->where),
-                       comm_name_gsym->name, &(comm_name_gsym->where));
-        }
-    }
-
-  return;
-}
-
-
 /* Verify any BIND(C) derived types in the namespace so we can report errors
    for them once, rather than for each variable declared of that type.  */
 
@@ -14424,9 +14406,6 @@ resolve_types (gfc_namespace *ns)
   gfc_traverse_ns (ns, gfc_formalize_init_value);
 
   gfc_traverse_ns (ns, gfc_verify_binding_labels);
-
-  if (ns->common_root != NULL)
-    gfc_traverse_symtree (ns->common_root, resolve_bind_c_comms);
 
   for (eq = ns->equiv; eq; eq = eq->next)
     resolve_equivalence (eq);
