@@ -1,3 +1,10 @@
+2013-05-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57336
+	* include/std/functional (__invoke): Do not form function types with
+	abstract return type.
+	* testsuite/20_util/reference_wrapper/invoke-3.cc: New.
+
 2013-05-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/tuple (get): Implement N3670.
