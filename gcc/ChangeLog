@@ -1,3 +1,9 @@
+2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57303
+	* tree-ssa-sink.c (statement_sink_location): Improve killing
+	stmt detection and properly handle self-assignments.
+
 2013-05-21  Christian Bruel  <christian.bruel@st.com>
 
         * dwarf2out.c (multiple_reg_loc_descriptor): Use dbx_reg_number for
