@@ -10612,25 +10612,27 @@ static dw_loc_descr_ref
 multiple_reg_loc_descriptor (rtx rtl, rtx regs,
 			     enum var_init_status initialized)
 {
-  int nregs, size, i;
-  unsigned reg;
+  int size, i;
   dw_loc_descr_ref loc_result = NULL;
-
-  reg = REGNO (rtl);
-#ifdef LEAF_REG_REMAP
-  if (crtl->uses_only_leaf_regs)
-    {
-      int leaf_reg = LEAF_REG_REMAP (reg);
-      if (leaf_reg != -1)
-	reg = (unsigned) leaf_reg;
-    }
-#endif
-  gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
-  nregs = hard_regno_nregs[REGNO (rtl)][GET_MODE (rtl)];
 
   /* Simple, contiguous registers.  */
   if (regs == NULL_RTX)
     {
+      unsigned reg = REGNO (rtl);
+      int nregs;
+
+#ifdef LEAF_REG_REMAP
+      if (crtl->uses_only_leaf_regs)
+	{
+	  int leaf_reg = LEAF_REG_REMAP (reg);
+	  if (leaf_reg != -1)
+	    reg = (unsigned) leaf_reg;
+	}
+#endif
+
+      gcc_assert ((unsigned) DBX_REGISTER_NUMBER (reg) == dbx_reg_number (rtl));
+      nregs = hard_regno_nregs[REGNO (rtl)][GET_MODE (rtl)];
+
       size = GET_MODE_SIZE (GET_MODE (rtl)) / nregs;
 
       loc_result = NULL;
@@ -10658,10 +10660,9 @@ multiple_reg_loc_descriptor (rtx rtl, rtx regs,
     {
       dw_loc_descr_ref t;
 
-      t = one_reg_loc_descriptor (REGNO (XVECEXP (regs, 0, i)),
+      t = one_reg_loc_descriptor (dbx_reg_number (XVECEXP (regs, 0, i)),
 				  VAR_INIT_STATUS_INITIALIZED);
       add_loc_descr (&loc_result, t);
-      size = GET_MODE_SIZE (GET_MODE (XVECEXP (regs, 0, 0)));
       add_loc_descr_op_piece (&loc_result, size);
     }
 
