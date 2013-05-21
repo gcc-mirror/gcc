@@ -1,3 +1,9 @@
+2013-05-21  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57322
+	* (build_and_add_sum): If a BB is empty, set the UID of the statement
+	added to the BB to be 1.
+
 2013-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57331
@@ -46,6 +52,7 @@
 	* config/sh/sh.md (fmasf4): Remove empty constraints strings.
 	(*fmasf4, *fmasf4_media): New insns.
 
+>>>>>>> .r199151
 2013-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (BASE_INSN_LENGTH, NOP_INSN_LENGTH): New macros.
