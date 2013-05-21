@@ -257,8 +257,10 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 
 	  /* Look for reasons why we might optimize this stmt away. */
 
+	  if (gimple_has_side_effects (stmt))
+	    ;
 	  /* Exit conditional.  */
-	  if (exit && body[i] == exit->src
+	  else if (exit && body[i] == exit->src
 		   && stmt == last_stmt (exit->src))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
