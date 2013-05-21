@@ -1,3 +1,9 @@
+2013-05-21  Christian Bruel  <christian.bruel@st.com>
+
+        * dwarf2out.c (multiple_reg_loc_descriptor): Use dbx_reg_number for
+        spanning registers. LEAF_REG_REMAP is supported only for contiguous
+	registers. Set register size out of the PARALLEL loop.
+
 2013-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/56547
