@@ -1,3 +1,11 @@
+2013-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2013-05-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sp64-elf.h (CPP_SUBTARGET_SPEC): Delete.
+	* config/sparc/openbsd64.h (CPP_SUBTARGET_SPEC): Likewise.
+
 2013-05-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57281
