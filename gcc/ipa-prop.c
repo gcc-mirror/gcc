@@ -3849,9 +3849,9 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
     info->uses_analysis_done = true;
   info->node_enqueued = false;
   for (k = 0; k < ipa_get_param_count (info); k++)
-    ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
-  for (k = 0; k < ipa_get_param_count (info); k++)
     ipa_set_param_used (info, k, bp_unpack_value (&bp, 1));
+  for (k = 0; k < ipa_get_param_count (info); k++)
+    ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);
