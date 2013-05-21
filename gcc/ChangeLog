@@ -1,3 +1,9 @@
+2013-05-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/57289
+	* ipa-prop.c (ipa_read_node_info): Process param_used and
+	controlled_uses in the same order as when writing.
+
 2013-05-21  Magnus Granberg  <baldrick@free.fr>
 
 	PR plugins/56754
