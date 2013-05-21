@@ -14,7 +14,7 @@
 2013-05-21  Magnus Granberg  <baldrick@free.fr>
 
 	PR plugins/56754
-	* Makefile.in (PLUGIN_HEADERS): Add TARGET_H
+	* Makefile.in (PLUGIN_HEADERS): Add $(TARGET_H).
 
 2013-05-21  Richard Biener  <rguenther@suse.de>
 
