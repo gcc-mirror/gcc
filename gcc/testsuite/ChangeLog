@@ -1,3 +1,12 @@
+2013-05-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57035
+	* gfortran.dg/assumed_type_5.f90: New.
+	* gfortran.dg/assumed_rank_1.f90: Comment invalid statement.
+	* gfortran.dg/assumed_rank_2.f90: Ditto.
+	* gfortran.dg/assumed_type_3.f90: Update dg-error.
+	* gfortran.dg/no_arg_check_3.f90: Ditto.
+
 2013-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57331

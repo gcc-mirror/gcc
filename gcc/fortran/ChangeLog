@@ -1,3 +1,11 @@
+2013-05-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57035
+	* intrinsic.c (do_check): Add contraint check for
+	NO_ARG_CHECK, assumed rank and assumed type.
+	* gfortran.texi (NO_ARG_CHECK): Minor wording change,
+	allow PRESENT intrinsic.
+
 2013-05-20  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/48858

@@ -2694,17 +2694,18 @@ with this attribute actual arguments of any type and kind (similar to
 @code{TYPE(*)}), scalars and arrays of any rank (no equivalent
 in Fortran standard) are accepted.  As with @code{TYPE(*)}, the argument
 is unlimited polymorphic and no type information is available.
-Additionally, the same restrictions apply, i.e. the argument may only be
-passed to dummy arguments with the @code{NO_ARG_CHECK} attribute and as
-argument to the @code{C_LOC} intrinsic function of the @code{ISO_C_BINDING}
-module.
+Additionally, the argument may only be passed to dummy arguments
+with the @code{NO_ARG_CHECK} attribute and as argument to the
+@code{PRESENT} intrinsic function and to @code{C_LOC} of the
+@code{ISO_C_BINDING} module.
 
 Variables with @code{NO_ARG_CHECK} attribute shall be of assumed-type
-(@code{TYPE(*)}; recommended) or of an intrinsic numeric type; they
-shall not have the @code{ALLOCATE}, @code{CODIMENSION}, @code{INTENT(OUT)},
-@code{POINTER} or @code{VALUE} attribute; furthermore, they shall be
-either scalar or of assumed-size (@code{dimension(*)}). As @code{TYPE(*)},
-the @code{NO_ARG_CHECK} attribute requires an explicit interface.
+(@code{TYPE(*)}; recommended) or of type @code{INTEGER}, @code{LOGICAL},
+@code{REAL} or @code{COMPLEX}. They shall not have the @code{ALLOCATE},
+@code{CODIMENSION}, @code{INTENT(OUT)}, @code{POINTER} or @code{VALUE}
+attribute; furthermore, they shall be either scalar or of assumed-size
+(@code{dimension(*)}). As @code{TYPE(*)}, the @code{NO_ARG_CHECK} attribute
+requires an explicit interface.
 
 @itemize
 @item @code{NO_ARG_CHECK} -- disable the type, kind and rank checking
