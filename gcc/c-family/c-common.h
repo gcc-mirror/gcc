@@ -521,6 +521,11 @@ struct GTY(()) c_language_function {
 
 #define building_stmt_list_p() (stmt_list_stack && !stmt_list_stack->is_empty())
 
+/* In c-cilkplus.c */
+extern tree c_finish_cilk_simd_loop (location_t, tree, tree, tree, tree,
+				     tree, tree);
+extern tree c_finish_cilk_clauses (tree);
+
 /* Language-specific hooks.  */
 
 /* If non-NULL, this function is called after a precompile header file
