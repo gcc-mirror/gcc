@@ -1165,8 +1165,12 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
   if ((!op1def || gimple_nop_p (op1def))
       && (!op2def || gimple_nop_p (op2def)))
     {
+      gimple first_stmt;
+      unsigned uid;
       gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
-      gimple_set_uid (sum, gimple_uid (gsi_stmt (gsi)));
+      first_stmt = gsi_stmt (gsi);
+      uid = first_stmt ? gimple_uid (first_stmt) : 1;
+      gimple_set_uid (sum, uid);
       gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
     }
   else if ((!op1def || gimple_nop_p (op1def))

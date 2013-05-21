@@ -1,3 +1,8 @@
+2013-05-21  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57322
+	* gcc.dg/tree-ssa/reassoc-29.c: New testcase.
+
 2013-05-21  Graham Stott  <graham.stott@btinternet.com>
 
 	* lib/scanasm.exp (dg-function-on-line): Make MIPS targets match
@@ -105,7 +110,7 @@
 	PR c++/57175
 	* g++.dg/pr57175.C: New testcase.
 
-2013-05-17   Easwaran Raman  <eraman@google.com>
+2013-05-17  Easwaran Raman  <eraman@google.com>
 
 	* gcc.dg/tree-ssa/reassoc-28.c: New testcase.
 
