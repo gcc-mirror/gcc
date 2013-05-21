@@ -1,3 +1,10 @@
+2013-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57331
+	* tree-vrp.c (simplify_cond_using_ranges): Don't optimize
+	comparison of conversion from pointer type to integral type
+	with integer.
+
 2013-05-21  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/57289
