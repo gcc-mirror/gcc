@@ -1,3 +1,13 @@
+2013-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_conditional_expr_1): Add location_t parameter.
+	(build_conditional_expr): Likewise.
+	* typeck.c (rationalize_conditional_expr, cp_build_array_ref,
+	get_member_function_from_ptrfunc, build_x_conditional_expr,
+	cp_build_modify_expr): Update.
+	* init.c (build_new_1): Likewise.
+	* cp-tree.h: Update declaration.
+
 2013-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57016

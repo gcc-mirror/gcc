@@ -4969,7 +4969,7 @@ extern bool pragma_java_exceptions;
 /* in call.c */
 extern bool check_dtor_name			(tree, tree);
 
-extern tree build_conditional_expr		(tree, tree, tree, 
+extern tree build_conditional_expr		(location_t, tree, tree, tree, 
                                                  tsubst_flags_t);
 extern tree build_addr_func			(tree, tsubst_flags_t);
 extern void set_flags_from_callee		(tree);

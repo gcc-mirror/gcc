@@ -2141,7 +2141,8 @@ rationalize_conditional_expr (enum tree_code code, tree t,
       gcc_assert (!TREE_SIDE_EFFECTS (op0)
 		  && !TREE_SIDE_EFFECTS (op1));
       return
-	build_conditional_expr (build_x_binary_op (input_location,
+	build_conditional_expr (EXPR_LOC_OR_HERE (t),
+				build_x_binary_op (EXPR_LOC_OR_HERE (t),
 						   (TREE_CODE (t) == MIN_EXPR
 						    ? LE_EXPR : GE_EXPR),
 						   op0, TREE_CODE (op0),
@@ -2154,7 +2155,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
     }
 
   return
-    build_conditional_expr (TREE_OPERAND (t, 0),
+    build_conditional_expr (EXPR_LOC_OR_HERE (t), TREE_OPERAND (t, 0),
 			    cp_build_unary_op (code, TREE_OPERAND (t, 1), 0,
                                                complain),
 			    cp_build_unary_op (code, TREE_OPERAND (t, 2), 0,
@@ -3024,7 +3025,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 
     case COND_EXPR:
       ret = build_conditional_expr
-	      (TREE_OPERAND (array, 0),
+	       (loc, TREE_OPERAND (array, 0),
 	       cp_build_array_ref (loc, TREE_OPERAND (array, 1), idx,
 				   complain),
 	       cp_build_array_ref (loc, TREE_OPERAND (array, 2), idx,
@@ -3306,7 +3307,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 		     cp_build_addr_expr (e2, complain));
 
       e2 = fold_convert (TREE_TYPE (e3), e2);
-      e1 = build_conditional_expr (e1, e2, e3, complain);
+      e1 = build_conditional_expr (input_location, e1, e2, e3, complain);
       if (e1 == error_mark_node)
 	return error_mark_node;
 
@@ -5902,7 +5903,7 @@ build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2,
       op2 = build_non_dependent_expr (op2);
     }
 
-  expr = build_conditional_expr (ifexp, op1, op2, complain);
+  expr = build_conditional_expr (loc, ifexp, op1, op2, complain);
   if (processing_template_decl && expr != error_mark_node
       && TREE_CODE (expr) != VEC_COND_EXPR)
     {
@@ -7152,7 +7153,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	  return error_mark_node;
 
 	cond = build_conditional_expr
-	  (TREE_OPERAND (lhs, 0),
+	  (input_location, TREE_OPERAND (lhs, 0),
 	   cp_build_modify_expr (TREE_OPERAND (lhs, 1),
 				 modifycode, rhs, complain),
 	   cp_build_modify_expr (TREE_OPERAND (lhs, 2),
