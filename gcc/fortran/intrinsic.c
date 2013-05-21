@@ -182,9 +182,65 @@ static bool
 do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 {
   gfc_expr *a1, *a2, *a3, *a4, *a5;
+  gfc_actual_arglist *a;
 
   if (arg == NULL)
     return (*specific->check.f0) ();
+
+  /* Check TS29113, C407b for assumed type and C535b for assumed-rank,
+     and a likewise check for NO_ARG_CHECK.  */
+  for (a = arg; a; a = a->next)
+    {
+      if (!a->expr)
+	continue;
+
+      if (a->expr->expr_type == EXPR_VARIABLE
+	  && (a->expr->symtree->n.sym->attr.ext_attr
+	      & (1 << EXT_ATTR_NO_ARG_CHECK))
+	  && specific->id != GFC_ISYM_C_LOC
+	  && specific->id != GFC_ISYM_PRESENT)
+	{
+	  gfc_error ("Variable with NO_ARG_CHECK attribute at %L is only "
+		     "permitted as argument to the intrinsic functions "
+		     "C_LOC and PRESENT", &a->expr->where);
+	  return false;
+	}
+      else if (a->expr->ts.type == BT_ASSUMED
+	       && specific->id != GFC_ISYM_LBOUND
+	       && specific->id != GFC_ISYM_PRESENT
+	       && specific->id != GFC_ISYM_RANK
+	       && specific->id != GFC_ISYM_SHAPE
+	       && specific->id != GFC_ISYM_SIZE
+	       && specific->id != GFC_ISYM_UBOUND
+	       && specific->id != GFC_ISYM_C_LOC)
+	{
+	  gfc_error ("Assumed-type argument at %L is not permitted as actual"
+		     " argument to the intrinsic %s", &a->expr->where,
+		     gfc_current_intrinsic);
+	  return false;
+	}
+      else if (a->expr->ts.type == BT_ASSUMED && a != arg)
+	{
+	  gfc_error ("Assumed-type argument at %L is only permitted as "
+		     "first actual argument to the intrinsic %s",
+		     &a->expr->where, gfc_current_intrinsic);
+	  return false;
+	}
+      if (a->expr->rank == -1 && !specific->inquiry)
+	{
+	  gfc_error ("Assumed-rank argument at %L is only permitted as actual "
+		     "argument to intrinsic inquiry functions",
+		     &a->expr->where);
+	  return false;
+	}
+      if (a->expr->rank == -1 && arg != a)
+	{
+	  gfc_error ("Assumed-rank argument at %L is only permitted as first "
+		     "actual argument to the intrinsic inquiry function %s",
+		     &a->expr->where, gfc_current_intrinsic);
+	  return false;
+	}
+    }
 
   a1 = arg->expr;
   arg = arg->next;
