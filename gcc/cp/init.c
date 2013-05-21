@@ -2900,8 +2900,8 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 					   NE_EXPR, alloc_node,
 					   nullptr_node,
 					   complain);
-	  rval = build_conditional_expr (ifexp, rval, alloc_node, 
-                                         complain);
+	  rval = build_conditional_expr (input_location, ifexp, rval,
+					 alloc_node, complain);
 	}
 
       /* Perform the allocation before anything else, so that ALLOC_NODE
