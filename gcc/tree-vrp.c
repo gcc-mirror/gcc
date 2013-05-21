@@ -8661,7 +8661,8 @@ simplify_cond_using_ranges (gimple stmt)
 
       innerop = gimple_assign_rhs1 (def_stmt);
 
-      if (TREE_CODE (innerop) == SSA_NAME)
+      if (TREE_CODE (innerop) == SSA_NAME
+	  && !POINTER_TYPE_P (TREE_TYPE (innerop)))
 	{
 	  value_range_t *vr = get_value_range (innerop);
 
