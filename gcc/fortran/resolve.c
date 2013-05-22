@@ -9254,7 +9254,7 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   gfc_array_ref *aref;
   gfc_ref *ref;
 
-  sprintf (name, "DA@%d", serial++);
+  sprintf (name, "DA" GFC_PREFIX("%d"), serial++);
   gfc_get_sym_tree (name, ns, &tmp, false);
   gfc_add_type (tmp->n.sym, &e->ts, NULL);
 
