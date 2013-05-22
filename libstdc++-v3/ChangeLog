@@ -1,3 +1,10 @@
+2013-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add KIND=auto to
+	enable features if target OS is known to support them.
+	* configure.ac (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Default to 'auto'.
+	* configure: Regenerate.
+
 2013-05-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/57336
