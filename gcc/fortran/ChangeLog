@@ -1,3 +1,10 @@
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57338
+	* intrinsic.c (do_check): Move some checks to ...
+	(do_ts29113_check): ... this new function.
+	(check_specific, gfc_intrinsic_sub_interface): Call it.
+
 2013-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsic.texi (RANDOM_SEED): Improve example.
@@ -5,7 +12,7 @@
 2013-05-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57035
-	* intrinsic.c (do_check): Add contraint check for
+	* intrinsic.c (do_check): Add constraint check for
 	NO_ARG_CHECK, assumed rank and assumed type.
 	* gfortran.texi (NO_ARG_CHECK): Minor wording change,
 	allow PRESENT intrinsic.
