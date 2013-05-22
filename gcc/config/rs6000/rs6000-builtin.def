@@ -30,7 +30,7 @@
    RS6000_BUILTIN_A -- ABS builtins
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_E -- SPE EVSEL builtins.
-   RS6000_BUILTIN_P -- Altivec and VSX predicate builtins
+   RS6000_BUILTIN_P -- Altivec, VSX, Power8 vector predicate builtins
    RS6000_BUILTIN_Q -- Paired floating point VSX predicate builtins
    RS6000_BUILTIN_S -- SPE predicate builtins
    RS6000_BUILTIN_X -- special builtins
@@ -299,6 +299,108 @@
 		    RS6000_BTM_VSX,			/* MASK */	\
 		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
 		     | RS6000_BTC_SPECIAL),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+/* Power8 vector convenience macros.  */
+/* For the instructions that are encoded as altivec instructions use
+   __builtin_altivec_ as the builtin name.  */
+#define BU_P8V_AV_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P8V_AV_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P8V_AV_P(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_P (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_altivec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_PREDICATE),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+/* For the instructions encoded as VSX instructions use __builtin_vsx as the
+   builtin name.  */
+#define BU_P8V_VSX_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (P8V_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vsx_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_P8V_OVERLOAD_1(ENUM, NAME)					\
+  RS6000_BUILTIN_1 (P8V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_P8V_OVERLOAD_2(ENUM, NAME)					\
+  RS6000_BUILTIN_2 (P8V_BUILTIN_VEC_ ## ENUM,		/* ENUM */	\
+		    "__builtin_vec_" NAME,		/* NAME */	\
+		    RS6000_BTM_P8_VECTOR,		/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+/* Crypto convenience macros.  */
+#define BU_CRYPTO_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_CRYPTO_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_2 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_CRYPTO_3(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_3 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_CRYPTO_OVERLOAD_1(ENUM, NAME)				\
+  RS6000_BUILTIN_1 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_CRYPTO_OVERLOAD_2(ENUM, NAME)				\
+  RS6000_BUILTIN_2 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_nothing)			/* ICODE */
+
+#define BU_CRYPTO_OVERLOAD_3(ENUM, NAME)				\
+  RS6000_BUILTIN_3 (CRYPTO_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_crypto_" NAME,		/* NAME */	\
+		    RS6000_BTM_CRYPTO,			/* MASK */	\
+		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
 /* SPE convenience macros.  */
@@ -1012,7 +1114,7 @@ BU_VSX_1 (XVTSQRTSP_FG,	      "xvtsqrtsp_fg",	CONST,	vsx_tsqrtv4sf2_fg)
 BU_VSX_1 (XVRESP,	      "xvresp",		CONST,	vsx_frev4sf2)
 
 BU_VSX_1 (XSCVDPSP,	      "xscvdpsp",	CONST,	vsx_xscvdpsp)
-BU_VSX_1 (XSCVSPDP,	      "xscvspdp",	CONST,	vsx_xscvdpsp)
+BU_VSX_1 (XSCVSPDP,	      "xscvspdp",	CONST,	vsx_xscvspdp)
 BU_VSX_1 (XVCVDPSP,	      "xvcvdpsp",	CONST,	vsx_xvcvdpsp)
 BU_VSX_1 (XVCVSPDP,	      "xvcvspdp",	CONST,	vsx_xvcvspdp)
 BU_VSX_1 (XSTSQRTDP_FE,	      "xstsqrtdp_fe",	CONST,	vsx_tsqrtdf2_fe)
@@ -1131,6 +1233,35 @@ BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
+
+/* 1 argument crypto functions.  */
+BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
+
+/* 2 argument crypto functions.  */
+BU_CRYPTO_2 (VCIPHER,		"vcipher",	  CONST, crypto_vcipher)
+BU_CRYPTO_2 (VCIPHERLAST,	"vcipherlast",	  CONST, crypto_vcipherlast)
+BU_CRYPTO_2 (VNCIPHER,		"vncipher",	  CONST, crypto_vncipher)
+BU_CRYPTO_2 (VNCIPHERLAST,	"vncipherlast",	  CONST, crypto_vncipherlast)
+BU_CRYPTO_2 (VPMSUMB,		"vpmsumb",	  CONST, crypto_vpmsumb)
+BU_CRYPTO_2 (VPMSUMH,		"vpmsumh",	  CONST, crypto_vpmsumh)
+BU_CRYPTO_2 (VPMSUMW,		"vpmsumw",	  CONST, crypto_vpmsumw)
+BU_CRYPTO_2 (VPMSUMD,		"vpmsumd",	  CONST, crypto_vpmsumd)
+
+/* 3 argument crypto functions.  */
+BU_CRYPTO_3 (VPERMXOR_V2DI,	"vpermxor_v2di",  CONST, crypto_vpermxor_v2di)
+BU_CRYPTO_3 (VPERMXOR_V4SI,	"vpermxor_v4si",  CONST, crypto_vpermxor_v4si)
+BU_CRYPTO_3 (VPERMXOR_V8HI,	"vpermxor_v8hi",  CONST, crypto_vpermxor_v8hi)
+BU_CRYPTO_3 (VPERMXOR_V16QI,	"vpermxor_v16qi", CONST, crypto_vpermxor_v16qi)
+BU_CRYPTO_3 (VSHASIGMAW,	"vshasigmaw",	  CONST, crypto_vshasigmaw)
+BU_CRYPTO_3 (VSHASIGMAD,	"vshasigmad",	  CONST, crypto_vshasigmad)
+
+/* 2 argument crypto overloaded functions.  */
+BU_CRYPTO_OVERLOAD_2 (VPMSUM,	 "vpmsum")
+
+/* 3 argument crypto overloaded functions.  */
+BU_CRYPTO_OVERLOAD_3 (VPERMXOR,	 "vpermxor")
+BU_CRYPTO_OVERLOAD_3 (VSHASIGMA, "vshasigma")
+
 
 /* 3 argument paired floating point builtins.  */
 BU_PAIRED_3 (MSUB,            "msub",           FP, 	fmsv2sf4)

@@ -315,6 +315,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR6X");
   if ((flags & OPTION_MASK_POPCNTD) != 0)
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
+  if ((flags & OPTION_MASK_DIRECT_MOVE) != 0)
+    rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR8");
   if ((flags & OPTION_MASK_SOFT_FLOAT) != 0)
     rs6000_define_or_undefine_macro (define_p, "_SOFT_FLOAT");
   if ((flags & OPTION_MASK_RECIP_PRECISION) != 0)
@@ -331,6 +333,10 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     }
   if ((flags & OPTION_MASK_VSX) != 0)
     rs6000_define_or_undefine_macro (define_p, "__VSX__");
+  if ((flags & OPTION_MASK_P8_VECTOR) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__POWER8_VECTOR__");
+  if ((flags & OPTION_MASK_CRYPTO) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__CRYPTO__");
 
   /* options from the builtin masks.  */
   if ((bu_mask & RS6000_BTM_SPE) != 0)
@@ -3377,6 +3383,40 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
   { ALTIVEC_BUILTIN_VEC_VCMPGE_P, VSX_BUILTIN_XVCMPGEDP_P,
     RS6000_BTI_INTSI, RS6000_BTI_INTSI, RS6000_BTI_V2DF, RS6000_BTI_V2DF },
 
+  /* Crypto builtins.  */
+  { CRYPTO_BUILTIN_VPERMXOR, CRYPTO_BUILTIN_VPERMXOR_V16QI,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI },
+  { CRYPTO_BUILTIN_VPERMXOR, CRYPTO_BUILTIN_VPERMXOR_V8HI,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI },
+  { CRYPTO_BUILTIN_VPERMXOR, CRYPTO_BUILTIN_VPERMXOR_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI },
+  { CRYPTO_BUILTIN_VPERMXOR, CRYPTO_BUILTIN_VPERMXOR_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI },
+
+  { CRYPTO_BUILTIN_VPMSUM, CRYPTO_BUILTIN_VPMSUMB,
+    RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI,
+    RS6000_BTI_unsigned_V16QI, 0 },
+  { CRYPTO_BUILTIN_VPMSUM, CRYPTO_BUILTIN_VPMSUMH,
+    RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI,
+    RS6000_BTI_unsigned_V8HI, 0 },
+  { CRYPTO_BUILTIN_VPMSUM, CRYPTO_BUILTIN_VPMSUMW,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_unsigned_V4SI, 0 },
+  { CRYPTO_BUILTIN_VPMSUM, CRYPTO_BUILTIN_VPMSUMD,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_unsigned_V2DI, 0 },
+
+  { CRYPTO_BUILTIN_VSHASIGMA, CRYPTO_BUILTIN_VSHASIGMAW,
+    RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V4SI,
+    RS6000_BTI_INTSI, RS6000_BTI_INTSI },
+  { CRYPTO_BUILTIN_VSHASIGMA, CRYPTO_BUILTIN_VSHASIGMAD,
+    RS6000_BTI_unsigned_V2DI, RS6000_BTI_unsigned_V2DI,
+    RS6000_BTI_INTSI, RS6000_BTI_INTSI },
+
   { (enum rs6000_builtins) 0, (enum rs6000_builtins) 0, 0, 0, 0, 0 }
 };
 
@@ -3824,7 +3864,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	&& (desc->op2 == RS6000_BTI_NOT_OPAQUE
 	    || rs6000_builtin_type_compatible (types[1], desc->op2))
 	&& (desc->op3 == RS6000_BTI_NOT_OPAQUE
-	    || rs6000_builtin_type_compatible (types[2], desc->op3)))
+	    || rs6000_builtin_type_compatible (types[2], desc->op3))
+	&& rs6000_builtin_decls[desc->overloaded_code] != NULL_TREE)
       return altivec_build_resolved_builtin (args, n, desc);
 
  bad:

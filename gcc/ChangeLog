@@ -1,3 +1,163 @@
+2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions): Add
+	documentation for the power8 crypto builtins.
+
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add crypto.md.
+
+	* config/rs6000/rs6000-builtin.def (BU_P8V_AV_1): Add support
+	macros for defining power8 builtin functions.
+	(BU_P8V_AV_2): Likewise.
+	(BU_P8V_AV_P): Likewise.
+	(BU_P8V_VSX_1): Likewise.
+	(BU_P8V_OVERLOAD_1): Likewise.
+	(BU_P8V_OVERLOAD_2): Likewise.
+	(BU_CRYPTO_1): Likewise.
+	(BU_CRYPTO_2): Likewise.
+	(BU_CRYPTO_3): Likewise.
+	(BU_CRYPTO_OVERLOAD_1): Likewise.
+	(BU_CRYPTO_OVERLOAD_2): Likewise.
+	(XSCVSPDP): Fix typo, point to the correct instruction.
+	(VCIPHER): Add power8 crypto builtins.
+	(VCIPHERLAST): Likewise.
+	(VNCIPHER): Likewise.
+	(VNCIPHERLAST): Likewise.
+	(VPMSUMB): Likewise.
+	(VPMSUMH): Likewise.
+	(VPMSUMW): Likewise.
+	(VPERMXOR_V2DI): Likewise.
+	(VPERMXOR_V4SI: Likewise.
+	(VPERMXOR_V8HI: Likewise.
+	(VPERMXOR_V16QI: Likewise.
+	(VSHASIGMAW): Likewise.
+	(VSHASIGMAD): Likewise.
+	(VPMSUM): Likewise.
+	(VPERMXOR): Likewise.
+	(VSHASIGMA): Likewise.
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__CRYPTO__ if the crypto instructions are available.
+	(altivec_overloaded_builtins): Add support for overloaded power8
+	builtins.
+
+	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Add
+	support for power8 crypto builtins.
+	(builtin_function_type): Likewise.
+	(altivec_init_builtins): Add support for builtins that take vector
+	long long (V2DI) arguments.
+
+	* config/rs6000/crypto.md: New file, define power8 crypto
+	instructions.
+
+2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi (Option Summary): Add power8 options.
+	(RS/6000 and PowerPC Options): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Update to use
+	constraints.md instead of rs6000.h.  Reorder w* constraints.  Add
+	wm, wn, wr documentation.
+
+	* gcc/config/rs6000/constraints.md (wm): New constraint for VSX
+	registers if direct move instructions are enabled.
+	(wn): New constraint for no registers.
+	(wq): New constraint for quad word even GPR registers.
+	(wr): New constraint if 64-bit instructions are enabled.
+	(wv): New constraint if power8 vector instructions are enabled.
+	(wQ): New constraint for quad word memory locations.
+
+	* gcc/config/rs6000/predicates.md (const_0_to_15_operand): New
+	constraint for 0..15 for crypto instructions.
+	(gpc_reg_operand): If VSX allow registers in VSX registers as well
+	as GPR and floating point registers.
+	(int_reg_operand): New predicate to match only GPR registers.
+	(base_reg_operand): New predicate to match base registers.
+	(quad_int_reg_operand): New predicate to match even GPR registers
+	for quad memory operations.
+	(vsx_reg_or_cint_operand): New predicate to allow vector logical
+	operations in both GPR and VSX registers.
+	(quad_memory_operand): New predicate for quad memory operations.
+	(reg_or_indexed_operand): New predicate for direct move support.
+
+	* gcc/config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED):
+	Inherit from ISA_2_4_MASKS, not ISA_2_2_MASKS.
+	(ISA_2_7_MASKS_SERVER): New mask for ISA 2.07 (i.e. power8).
+	(POWERPC_MASKS): Add power8 options.
+	(power8 cpu): Use ISA_2_7_MASKS_SERVER instead of specifying the
+	various options.
+
+	* gcc/config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Define _ARCH_PWR8 and __POWER8_VECTOR__ for power8.
+
+	* gcc/config/rs6000/rs6000.opt (-mvsx-timode): Add documentation.
+	(-mpower8-fusion): New power8 options.
+	(-mpower8-fusion-sign): Likewise.
+	(-mpower8-vector): Likewise.
+	(-mcrypto): Likewise.
+	(-mdirect-move): Likewise.
+	(-mquad-memory): Likewise.
+
+	* gcc/config/rs6000/rs6000.c (power8_cost): Initial definition for
+	power8.
+	(rs6000_hard_regno_mode_ok): Make PTImode only match even GPR
+	registers.
+	(rs6000_debug_reg_print): Print the base register class if
+	-mdebug=reg.
+	(rs6000_debug_vector_unit): Add p8_vector.
+	(rs6000_debug_reg_global): If -mdebug=reg, print power8 constraint
+	definitions.  Also print fusion state.
+	(rs6000_init_hard_regno_mode_ok): Set up power8 constraints.
+	(rs6000_builtin_mask_calculate): Add power8 builtin support.
+	(rs6000_option_override_internal): Add support for power8.
+	(rs6000_common_init_builtins): Add debugging for skipped builtins
+	if -mdebug=builtin.
+	(rs6000_adjust_cost): Add power8 support.
+	(rs6000_issue_rate): Likewise.
+	(insn_must_be_first_in_group): Likewise.
+	(insn_must_be_last_in_group): Likewise.
+	(force_new_group): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_opt_masks): Likewise.
+
+	* config/rs6000/rs6000.h (ASM_CPU_POWER8_SPEC): If we don't have a
+	power8 capable assembler, default to power7 options.
+	(TARGET_DIRECT_MOVE): Likewise.
+	(TARGET_CRYPTO): Likewise.
+	(TARGET_P8_VECTOR): Likewise.
+	(VECTOR_UNIT_P8_VECTOR_P): Define power8 vector support.
+	(VECTOR_UNIT_VSX_OR_P8_VECTOR_P): Likewise.
+	(VECTOR_MEM_P8_VECTOR_P): Likewise.
+	(VECTOR_MEM_VSX_OR_P8_VECTOR_P): Likewise.
+	(VECTOR_MEM_ALTIVEC_OR_VSX_P): Likewise.
+	(TARGET_XSCVDPSPN): Likewise.
+	(TARGET_XSCVSPDPN): Likewsie.
+	(TARGET_SYNC_HI_QI): Likewise.
+	(TARGET_SYNC_TI): Likewise.
+	(MASK_CRYPTO): Likewise.
+	(MASK_DIRECT_MOVE): Likewise.
+	(MASK_P8_FUSION): Likewise.
+	(MASK_P8_VECTOR): Likewise.
+	(REG_ALLOC_ORDER): Move fr13 to be lower in priority so that the
+	TFmode temporary used by some of the direct move instructions to
+	get two FP temporary registers does not force creation of a stack
+	frame.
+	(VLOGICAL_REGNO_P): Allow vector logical operations in GPRs.
+	(MODES_TIEABLE_P): Move the VSX tests above the Altivec tests so
+	that any VSX registers are tieable, even if they are also an
+	Altivec vector mode.
+	(r6000_reg_class_enum): Add wm, wr, wv constraints.
+	(RS6000_BTM_P8_VECTOR): Power8 builtin support.
+	(RS6000_BTM_CRYPTO): Likewise.
+	(RS6000_BTM_COMMON): Likewise.
+
+	* config/rs6000/rs6000.md (cpu attribute): Add power8.
+	* config/rs6000/rs6000-opts.h (PROCESSOR_POWER8): Likewise.
+	(enum rs6000_vector): Add power8 vector support.
+
 2013-05-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/19599
