@@ -1,3 +1,8 @@
+2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57352
+	* g++.dg/parse/crash62.C: New.
+
 2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>
