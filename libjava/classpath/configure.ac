@@ -317,6 +317,26 @@ dnl defined to the same value for all multilibs.  We define toolexeclibdir
 dnl so that we can refer to the multilib installation directories from
 dnl classpath's build files.
 dnl -----------------------------------------------------------
+case ${host_alias} in
+  "") host_noncanonical=${build_noncanonical} ;;
+  *) host_noncanonical=${host_alias} ;;
+esac
+case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
+esac
+AC_SUBST(target_noncanonical)
+
+AC_ARG_ENABLE(version-specific-runtime-libs,
+  AS_HELP_STRING([--enable-version-specific-runtime-libs],    
+                 [specify that runtime libraries should be installed in a compiler-specific directory]),
+    [case "$enableval" in
+      yes) version_specific_libs=yes ;;
+      no)  version_specific_libs=no ;;
+      *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+     esac],
+    [version_specific_libs=no]
+)
 CLASSPATH_TOOLEXECLIBDIR
 
 dnl -----------------------------------------------------------

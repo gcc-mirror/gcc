@@ -941,7 +941,7 @@ CORE_PACKAGE_SOURCE_FILES_LO = $(filter-out $(LOWER_PACKAGE_FILES_LO),$(ALL_PACK
 @BUILD_SUBLIBS_FALSE@LIBJAVA_CORE_EXTRA = 
 @BUILD_SUBLIBS_TRUE@LIBJAVA_CORE_EXTRA = @LIBGCJ_SUBLIB_CORE_EXTRA_DEPS@
 dbexec_LTLIBRARIES = libjvm.la
-pkgconfigdir = $(libdir)/pkgconfig
+pkgconfigdir = $(toolexeclibdir)/pkgconfig
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar \
 	$(am__append_5)

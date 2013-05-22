@@ -746,6 +746,9 @@ CREATE_JNI_HEADERS_TRUE
 glibjdir
 nativeexeclibdir
 toolexeclibdir
+toolexecmainlibdir
+toolexecdir
+target_noncanonical
 CREATE_GJDOC_FALSE
 CREATE_GJDOC_TRUE
 CREATE_PLUGIN_FALSE
@@ -899,6 +902,7 @@ enable_qt_peer
 enable_plugin
 enable_gmp
 enable_gjdoc
+enable_version_specific_runtime_libs
 with_native_libdir
 with_glibj_dir
 with_antlr_jar
@@ -1616,6 +1620,9 @@ Optional Features:
                           (disabled by --disable-gmp) default=yes
   --disable-gjdoc         compile GJDoc (disabled by --disable-gjdoc)
                           default=yes
+  --enable-version-specific-runtime-libs
+                          specify that runtime libraries should be installed
+                          in a compiler-specific directory
   --enable-regen-headers  automatically regenerate JNI headers default=yes if
                           headers don't exist
   --enable-regen-gjdoc-parser
@@ -5520,12 +5527,58 @@ else
 fi
 
 
+case ${host_alias} in
+  "") host_noncanonical=${build_noncanonical} ;;
+  *) host_noncanonical=${host_alias} ;;
+esac
+case ${target_alias} in
+  "") target_noncanonical=${host_noncanonical} ;;
+  *) target_noncanonical=${target_alias} ;;
+esac
 
-  multi_os_directory=`$CC -print-multi-os-directory`
-  case $multi_os_directory in
-    .) toolexeclibdir=${libdir} ;; # Avoid trailing /.
-    *) toolexeclibdir=${libdir}/${multi_os_directory} ;;
+
+# Check whether --enable-version-specific-runtime-libs was given.
+if test "${enable_version_specific_runtime_libs+set}" = set; then :
+  enableval=$enable_version_specific_runtime_libs; case "$enableval" in
+      yes) version_specific_libs=yes ;;
+      no)  version_specific_libs=no ;;
+      *)   as_fn_error "Unknown argument to enable/disable version-specific libs" "$LINENO" 5;;
+     esac
+else
+  version_specific_libs=no
+
+fi
+
+
+  case ${version_specific_libs} in
+    yes)
+      # Need the gcc compiler version to know where to install libraries
+      # and header files if --enable-version-specific-runtime-libs option
+      # is selected.
+      includedir='$(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include/'
+      toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
+      toolexecmainlibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+      toolexeclibdir=$toolexecmainlibdir
+      ;;
+    no)
+      if test -n "$with_cross_host" &&
+         test x"$with_cross_host" != x"no"; then
+        # Install a library built with a cross compiler in tooldir, not libdir.
+        toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+        toolexecmainlibdir='$(toolexecdir)/lib'
+      else
+        toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+        toolexecmainlibdir='$(libdir)'
+      fi
+      multi_os_directory=`$CC -print-multi-os-directory`
+      case $multi_os_directory in
+        .) toolexeclibdir=$toolexecmainlibdir ;; # Avoid trailing /.
+        *) toolexeclibdir=$toolexecmainlibdir/$multi_os_directory ;;
+      esac
+      ;;
   esac
+
+
 
 
 
@@ -11820,7 +11873,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11823 "configure"
+#line 11876 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11926,7 +11979,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11929 "configure"
+#line 11982 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -24046,7 +24099,7 @@ else
 JAVA_TEST=Object.java
 CLASS_TEST=Object.class
 cat << \EOF > $JAVA_TEST
-/* #line 24049 "configure" */
+/* #line 24102 "configure" */
 package java.lang;
 
 public class Object
@@ -24139,7 +24192,7 @@ EOF
 if uudecode$EXEEXT Test.uue; then
         ac_cv_prog_uudecode_base64=yes
 else
-        echo "configure: 24142: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
+        echo "configure: 24195: uudecode had trouble decoding base 64 file 'Test.uue'" >&5
         echo "configure: failed file was:" >&5
         cat Test.uue >&5
         ac_cv_prog_uudecode_base64=no
@@ -24167,7 +24220,7 @@ JAVA_TEST=Test.java
 CLASS_TEST=Test.class
 TEST=Test
 cat << \EOF > $JAVA_TEST
-/* [#]line 24170 "configure" */
+/* [#]line 24223 "configure" */
 public class Test {
 public static void main (String args[]) {
         System.exit (0);
@@ -24375,7 +24428,7 @@ if test "x${use_glibj_zip}" = xfalse || \
   JAVA_TEST=Test.java
   CLASS_TEST=Test.class
   cat << \EOF > $JAVA_TEST
-  /* #line 24378 "configure" */
+  /* #line 24431 "configure" */
   public class Test
   {
     public static void main(String args)
