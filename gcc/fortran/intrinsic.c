@@ -174,21 +174,14 @@ find_char_conv (gfc_typespec *from, gfc_typespec *to)
 }
 
 
-/* Interface to the check functions.  We break apart an argument list
-   and call the proper check function rather than forcing each
-   function to manipulate the argument list.  */
+/* Check TS29113, C407b for assumed type and C535b for assumed-rank,
+   and a likewise check for NO_ARG_CHECK.  */
 
 static bool
-do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
+do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 {
-  gfc_expr *a1, *a2, *a3, *a4, *a5;
   gfc_actual_arglist *a;
 
-  if (arg == NULL)
-    return (*specific->check.f0) ();
-
-  /* Check TS29113, C407b for assumed type and C535b for assumed-rank,
-     and a likewise check for NO_ARG_CHECK.  */
   for (a = arg; a; a = a->next)
     {
       if (!a->expr)
@@ -241,6 +234,22 @@ do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
 	  return false;
 	}
     }
+
+  return true;
+}
+
+
+/* Interface to the check functions.  We break apart an argument list
+   and call the proper check function rather than forcing each
+   function to manipulate the argument list.  */
+
+static bool
+do_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
+{
+  gfc_expr *a1, *a2, *a3, *a4, *a5;
+
+  if (arg == NULL)
+    return (*specific->check.f0) ();
 
   a1 = arg->expr;
   arg = arg->next;
@@ -4038,9 +4047,16 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
       || specific->check.f1m == gfc_check_min_max_integer
       || specific->check.f1m == gfc_check_min_max_real
       || specific->check.f1m == gfc_check_min_max_double)
-    return (*specific->check.f1m) (*ap);
+    {
+      if (!do_ts29113_check (specific, *ap))
+	return false;
+      return (*specific->check.f1m) (*ap);
+    }
 
   if (!sort_actual (specific->name, ap, specific->formal, &expr->where))
+    return false;
+
+  if (!do_ts29113_check (specific, *ap))
     return false;
 
   if (specific->check.f3ml == gfc_check_minloc_maxloc)
@@ -4350,6 +4366,9 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   init_arglist (isym);
 
   if (!sort_actual (name, &c->ext.actual, isym->formal, &c->loc))
+    goto fail;
+
+  if (!do_ts29113_check (isym, c->ext.actual))
     goto fail;
 
   if (isym->check.f1 != NULL)
