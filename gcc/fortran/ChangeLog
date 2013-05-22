@@ -1,5 +1,10 @@
 2013-05-22  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/57364
+	* resolve.c (get_temp_from_expr): Commit created sym.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57338
 	* intrinsic.c (do_check): Move some checks to ...
 	(do_ts29113_check): ... this new function.
