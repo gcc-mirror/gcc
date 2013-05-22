@@ -1,3 +1,13 @@
+2013-05-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/56033
+	* testsuite/libffi.call/cls_struct_va1.c (test_fn): Cast resp to
+	ffi_arg *.
+	* testsuite/libffi.call/cls_uint_va.c (cls_ret_T_fn): Likewise.
+	* testsuite/libffi.call/va_1.c (main): Change res to ffi_arg.
+	* testsuite/libffi.call/va_struct1.c (main): Likewise.
+
 2013-03-22  Kai Tietz  <ktietz@redhat.com>
 
 	* src/x86/win64.S: Make use of ffi_closure_win64_inner
