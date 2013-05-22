@@ -1068,6 +1068,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 	= gimple_call_copy_skip_args (e->call_stmt,
 				      e->callee->clone.combined_args_to_skip);
       gimple_call_set_fndecl (new_stmt, e->callee->symbol.decl);
+      gimple_call_set_fntype (new_stmt, gimple_call_fntype (e->call_stmt));
 
       if (gimple_vdef (new_stmt)
 	  && TREE_CODE (gimple_vdef (new_stmt)) == SSA_NAME)
