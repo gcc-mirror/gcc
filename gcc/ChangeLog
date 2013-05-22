@@ -1,3 +1,7 @@
+2013-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (MALLOC_ABI_ALIGNMENT): New #define.
+
 2013-05-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57349
