@@ -1864,13 +1864,19 @@ defaultable_fn_check (tree fn)
     }
   else
     {
-      tree t = FUNCTION_FIRST_USER_PARMTYPE (fn);
-      for (; t && t != void_list_node; t = TREE_CHAIN (t))
+      for (tree t = FUNCTION_FIRST_USER_PARMTYPE (fn);
+	   t && t != void_list_node; t = TREE_CHAIN (t))
 	if (TREE_PURPOSE (t))
 	  {
 	    error ("defaulted function %q+D with default argument", fn);
 	    break;
 	  }
+
+      /* Avoid do_warn_unused_parameter warnings.  */
+      for (tree p = FUNCTION_FIRST_USER_PARM (fn); p; p = DECL_CHAIN (p))
+	if (DECL_NAME (p))
+	  TREE_NO_WARNING (p) = 1;
+
       if (TYPE_BEING_DEFINED (DECL_CONTEXT (fn)))
 	/* Defer checking.  */;
       else if (!processing_template_decl)
