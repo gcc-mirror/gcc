@@ -1,3 +1,9 @@
+2013-05-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57356
+	* config/i386/i386.md (*movti_internal_rex64): Emit movaps/movups
+	for non-sse2 targets.  Simplify mode attribute calculation.
+
 2013-05-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
