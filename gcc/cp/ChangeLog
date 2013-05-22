@@ -1,3 +1,9 @@
+2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57211
+	* method.c (defaultable_fn_check): Avoid do_warn_unused_parameter
+	warnings about defaulted functions.
+
 2013-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (build_conditional_expr_1): Add location_t parameter.
