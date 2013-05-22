@@ -1,3 +1,7 @@
+2013-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi (RANDOM_SEED): Improve example.
+
 2013-05-07  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
