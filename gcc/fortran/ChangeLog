@@ -1,5 +1,10 @@
 2013-05-22  Tobias Burnus  <burnus@net-b.de>
 
+	* resolve.c (get_temp_from_expr): Change mangling to
+	start always with a _.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
 	* resolve.c (get_temp_from_expr): Fix temp var mangling.
 
 2013-05-22  Tobias Burnus  <burnus@net-b.de>
