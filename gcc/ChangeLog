@@ -1,3 +1,8 @@
+2013-05-22  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* read-rtl.c (copy_rtx_for_iterators): Continue applying iterators
+	while it has any effect.
+
 2013-05-21  Easwaran Raman  <eraman@google.com>
 
 	PR tree-optimization/57322
