@@ -1,3 +1,8 @@
+2013-05-22  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* recog.c (offsettable_address_addr_space_p): Fix calculation of
+	address mode.  Move pointer mode initialization to the same place.
+
 2013-05-22  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
 
 	* read-rtl.c (copy_rtx_for_iterators): Continue applying iterators
