@@ -1,3 +1,9 @@
+2013-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57349
+	* profile.c (branch_prob): Do not split blocks that are
+	abnormally receiving from ECF_RETURNS_TWICE functions.
+
 2013-05-22  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* recog.c (offsettable_address_addr_space_p): Fix calculation of
