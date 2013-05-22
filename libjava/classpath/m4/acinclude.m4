@@ -249,11 +249,35 @@ dnl GCJ LOCAL: Calculate toolexeclibdir
 dnl -----------------------------------------------------------
 AC_DEFUN([CLASSPATH_TOOLEXECLIBDIR],
 [
-  multi_os_directory=`$CC -print-multi-os-directory`
-  case $multi_os_directory in
-    .) toolexeclibdir=${libdir} ;; # Avoid trailing /.
-    *) toolexeclibdir=${libdir}/${multi_os_directory} ;;
+  case ${version_specific_libs} in
+    yes)
+      # Need the gcc compiler version to know where to install libraries
+      # and header files if --enable-version-specific-runtime-libs option
+      # is selected.
+      includedir='$(libdir)/gcc/$(target_noncanonical)/$(gcc_version)/include/'
+      toolexecdir='$(libdir)/gcc/$(target_noncanonical)'
+      toolexecmainlibdir='$(toolexecdir)/$(gcc_version)$(MULTISUBDIR)'
+      toolexeclibdir=$toolexecmainlibdir
+      ;;
+    no)
+      if test -n "$with_cross_host" &&
+         test x"$with_cross_host" != x"no"; then
+        # Install a library built with a cross compiler in tooldir, not libdir.
+        toolexecdir='$(exec_prefix)/$(target_noncanonical)'
+        toolexecmainlibdir='$(toolexecdir)/lib'
+      else
+        toolexecdir='$(libdir)/gcc-lib/$(target_noncanonical)'
+        toolexecmainlibdir='$(libdir)'
+      fi
+      multi_os_directory=`$CC -print-multi-os-directory`
+      case $multi_os_directory in
+        .) toolexeclibdir=$toolexecmainlibdir ;; # Avoid trailing /.
+        *) toolexeclibdir=$toolexecmainlibdir/$multi_os_directory ;;
+      esac
+      ;;
   esac
+  AC_SUBST(toolexecdir)
+  AC_SUBST(toolexecmainlibdir)
   AC_SUBST(toolexeclibdir)
 ])
 

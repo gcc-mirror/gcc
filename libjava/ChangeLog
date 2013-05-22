@@ -1,3 +1,15 @@
+2013-05-22  Mark Mitchell  <mark@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* configure.ac (dbexecdir): Base on $(toolexeclibdir), not
+	$(libdir).
+	* Makefile.am (pkgconfigdir): Likewise.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* gcj/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2013-04-16  Andreas Schwab  <schwab@suse.de>
 
 	* configure.host: Add support for aarch64.

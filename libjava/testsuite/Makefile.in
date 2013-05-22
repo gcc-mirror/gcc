@@ -49,6 +49,7 @@ am__aclocal_m4_deps = $(top_srcdir)/libltdl/acinclude.m4 \
 	$(top_srcdir)/../config/lib-ld.m4 \
 	$(top_srcdir)/../config/lib-link.m4 \
 	$(top_srcdir)/../config/lib-prefix.m4 \
+	$(top_srcdir)/../config/libstdc++-raw-cxx.m4 \
 	$(top_srcdir)/../config/lthostflags.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
@@ -177,6 +178,8 @@ LIBMATHSPEC = @LIBMATHSPEC@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBSTDCXXSPEC = @LIBSTDCXXSPEC@
+LIBSTDCXX_RAW_CXX_CXXFLAGS = @LIBSTDCXX_RAW_CXX_CXXFLAGS@
+LIBSTDCXX_RAW_CXX_LDFLAGS = @LIBSTDCXX_RAW_CXX_LDFLAGS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
