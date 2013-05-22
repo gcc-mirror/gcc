@@ -1,3 +1,11 @@
+2013-05-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/19599
+	PR target/57340
+	* config/arm/arm.c (any_sibcall_uses_r3): Rename to ..
+	(any_sibcall_could_use_r3): this and handle indirect calls.
+	(arm_get_frame_offsets): Rename use of any_sibcall_uses_r3.
+
 2013-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.h (MALLOC_ABI_ALIGNMENT): New #define.
