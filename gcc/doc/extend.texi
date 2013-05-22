@@ -13937,6 +13937,66 @@ if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} built-in functions always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
 
+If the cryptographic instructions are enabled (@option{-mcrypto} or
+@option{-mcpu=power8}), the following builtins are enabled.
+
+@smallexample
+vector unsigned long long __builtin_crypto_vsbox (vector unsigned long long);
+
+vector unsigned long long __builtin_crypto_vcipher (vector unsigned long long,
+                                                    vector unsigned long long);
+
+vector unsigned long long __builtin_crypto_vcipherlast
+                                     (vector unsigned long long,
+                                      vector unsigned long long);
+
+vector unsigned long long __builtin_crypto_vncipher (vector unsigned long long,
+                                                     vector unsigned long long);
+
+vector unsigned long long __builtin_crypto_vncipherlast
+                                     (vector unsigned long long,
+                                      vector unsigned long long);
+
+vector unsigned char __builtin_crypto_vpermxor (vector unsigned char,
+                                                vector unsigned char,
+                                                vector unsigned char);
+
+vector unsigned short __builtin_crypto_vpermxor (vector unsigned short,
+                                                 vector unsigned short,
+                                                 vector unsigned short);
+
+vector unsigned int __builtin_crypto_vpermxor (vector unsigned int,
+                                               vector unsigned int,
+                                               vector unsigned int);
+
+vector unsigned long long __builtin_crypto_vpermxor (vector unsigned long long,
+                                                     vector unsigned long long,
+                                                     vector unsigned long long);
+
+vector unsigned char __builtin_crypto_vpmsumb (vector unsigned char,
+                                               vector unsigned char);
+
+vector unsigned short __builtin_crypto_vpmsumb (vector unsigned short,
+                                                vector unsigned short);
+
+vector unsigned int __builtin_crypto_vpmsumb (vector unsigned int,
+                                              vector unsigned int);
+
+vector unsigned long long __builtin_crypto_vpmsumb (vector unsigned long long,
+                                                    vector unsigned long long);
+
+vector unsigned long long __builtin_crypto_vshasigmad
+                               (vector unsigned long long, int, int);
+
+vector unsigned int __builtin_crypto_vshasigmaw (vector unsigned int,
+                                                 int, int);
+@end smallexample
+
+The second argument to the @var{__builtin_crypto_vshasigmad} and
+@var{__builtin_crypto_vshasigmaw} builtin functions must be a constant
+integer that is 0 or 1.  The third argument to these builtin functions
+must be a constant integer in the range of 0 to 15.
+
 @node RX Built-in Functions
 @subsection RX Built-in Functions
 GCC supports some of the RX instructions which cannot be expressed in
