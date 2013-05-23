@@ -1,5 +1,11 @@
 2013-05-22  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56930
+	* call.c (convert_like_real): Use cp_convert_and_check.
+	* cvt.c (cp_convert_and_check): Use maybe_constant_value.
+	* semantics.c (cxx_eval_constant_expression): Handle LTGT_EXPR.
+	(potential_constant_expression_1): Handle OMP_ATOMIC*.
+
 	PR c++/56915
 	* semantics.c (maybe_add_lambda_conv_op): Give up if the call op
 	isn't defined.
