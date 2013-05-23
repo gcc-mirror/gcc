@@ -1711,9 +1711,6 @@ Floating point constant zero
 @item Z
 Integer constant zero
 
-@item Usa
-An absolute symbolic address
-
 @item Ush
 The high part (bits 12 and upwards) of the pc-relative address of a symbol
 within 4GB of the instruction
