@@ -11785,4 +11785,21 @@ warn_deprecated_use (tree node, tree attr)
     }
 }
 
+/* Return true if REF has a COMPONENT_REF with a bit-field field declaration
+   somewhere in it.  */
+
+bool
+contains_bitfld_component_ref_p (const_tree ref)
+{
+  while (handled_component_p (ref))
+    {
+      if (TREE_CODE (ref) == COMPONENT_REF
+          && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
+        return true;
+      ref = TREE_OPERAND (ref, 0);
+    }
+
+  return false;
+}
+
 #include "gt-tree.h"

@@ -1,3 +1,12 @@
+2013-05-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57347
+	* tree.h (contains_bitfld_component_ref_p): Declare.
+	* tree-sra.c (contains_bitfld_comp_ref_p): Move...
+	* tree.c (contains_bitfld_component_ref_p): ...here.  Adjust its caller.
+	* ipa-prop.c (determine_known_aggregate_parts): Check that LHS does
+	not access a bit-field.  Assert all final offsets are byte-aligned.
+
 2013-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57380
