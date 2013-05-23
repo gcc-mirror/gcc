@@ -1,3 +1,7 @@
+2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/vect-clz.c: New file.
+
 2013-05-22  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/57347

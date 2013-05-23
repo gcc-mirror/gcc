@@ -1611,6 +1611,15 @@
   DONE;
 })
 
+(define_insn "clz<mode>2"
+ [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
+       (clz:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")))]
+ "TARGET_SIMD"
+ "clz\\t%0.<Vtype>, %1.<Vtype>"
+ [(set_attr "simd_type" "simd_cls")
+  (set_attr "simd_mode" "<MODE>")]
+)
+
 ;; 'across lanes' max and min ops.
 
 (define_insn "reduc_<maxmin_uns>_<mode>"
