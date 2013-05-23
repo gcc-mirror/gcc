@@ -1,3 +1,9 @@
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/57341
+	* ira.c (validate_equiv_mem_from_store): Use anti_dependence
+	instead of true_dependence.
+
 2013-05-22  David Malcolm  <dmalcolm@redhat.com>
 
 	* bb-reorder.c (branch_threshold): make const
