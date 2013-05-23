@@ -1,3 +1,13 @@
+2013-05-23  Matthias Klose  <doko@ubuntu.com>
+
+	* include/Makefile.am (bits_headers): Remove ${bits_host_headers}.
+	(ext_headers): Remove ${ext_host_headers}.
+	(stamp-${host_alias}): Create ${host_builddir}/../ext.
+	(stamp-host): Link ${bits_host_headers} and ${ext_host_headers}.
+	(install-headers): Install ${bits_host_headers} and ${ext_host_headers}.
+	* include/Makefile.in: Regenerate.
+	* include/ext/random: Include ext/opt_random.h.
+
 2013-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add KIND=auto to
