@@ -1,3 +1,10 @@
+2013-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57379
+	* config/alpha/alpha.md (unspec): Add UNSPEC_XFLT_COMPARE.
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Construct
+	REG_EQUAL note as UNSPEC_XFLT_COMPARE unspec.
+
 2013-05-23  Christian Bruel  <christian.bruel@st.com>
 
 	PR debug/57351
@@ -31,7 +38,8 @@
 	PR middle-end/57347
 	* tree.h (contains_bitfld_component_ref_p): Declare.
 	* tree-sra.c (contains_bitfld_comp_ref_p): Move...
-	* tree.c (contains_bitfld_component_ref_p): ...here.  Adjust its caller.
+	* tree.c (contains_bitfld_component_ref_p): ...here.  Adjust its
+	caller.
 	* ipa-prop.c (determine_known_aggregate_parts): Check that LHS does
 	not access a bit-field.  Assert all final offsets are byte-aligned.
 
@@ -57,9 +65,8 @@
 2013-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/57344
-	* expmed.c (store_split_bit_field): If op0 is a REG or
-	SUBREG of a REG, don't lower unit.  Handle unit not being
-	always BITS_PER_WORD.
+	* expmed.c (store_split_bit_field): If op0 is a REG or SUBREG of a REG,
+	don't lower unit.  Handle unit not being always BITS_PER_WORD.
 
 2013-05-23  Richard Biener  <rguenther@suse.de>
 
@@ -179,8 +186,7 @@
 	power8.
 	(rs6000_hard_regno_mode_ok): Make PTImode only match even GPR
 	registers.
-	(rs6000_debug_reg_print): Print the base register class if
-	-mdebug=reg.
+	(rs6000_debug_reg_print): Print the base register class if -mdebug=reg.
 	(rs6000_debug_vector_unit): Add p8_vector.
 	(rs6000_debug_reg_global): If -mdebug=reg, print power8 constraint
 	definitions.  Also print fusion state.
@@ -215,10 +221,9 @@
 	(MASK_DIRECT_MOVE): Likewise.
 	(MASK_P8_FUSION): Likewise.
 	(MASK_P8_VECTOR): Likewise.
-	(REG_ALLOC_ORDER): Move fr13 to be lower in priority so that the
-	TFmode temporary used by some of the direct move instructions to
-	get two FP temporary registers does not force creation of a stack
-	frame.
+	(REG_ALLOC_ORDER): Move fr13 to be lower in priority so that the TFmode
+	temporary used by some of the direct move instructions to get two FP
+	temporary registers does not force creation of a stack frame.
 	(VLOGICAL_REGNO_P): Allow vector logical operations in GPRs.
 	(MODES_TIEABLE_P): Move the VSX tests above the Altivec tests so
 	that any VSX registers are tieable, even if they are also an
@@ -269,9 +274,8 @@
 2013-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57331
-	* tree-vrp.c (simplify_cond_using_ranges): Don't optimize
-	comparison of conversion from pointer type to integral type
-	with integer.
+	* tree-vrp.c (simplify_cond_using_ranges): Don't optimize comparison
+	of conversion from pointer type to integral type with integer.
 
 2013-05-21  Martin Jambor  <mjambor@suse.cz>
 
