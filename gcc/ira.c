@@ -2520,7 +2520,7 @@ validate_equiv_mem_from_store (rtx dest, const_rtx set ATTRIBUTE_UNUSED,
   if ((REG_P (dest)
        && reg_overlap_mentioned_p (dest, equiv_mem))
       || (MEM_P (dest)
-	  && true_dependence (dest, VOIDmode, equiv_mem)))
+	  && anti_dependence (equiv_mem, dest)))
     equiv_mem_modified = 1;
 }
 

@@ -1,3 +1,8 @@
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/57341
+	* gcc.dg/torture/pr57341.c: New testcase.
+
 2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57352
