@@ -1,3 +1,8 @@
+2013-05-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR debug/57351
+	* gcc.dg/debug/pr57351.c: New test
+
 2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect-clz.c: New file.
