@@ -1,3 +1,10 @@
+2013-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57344
+	* expmed.c (store_split_bit_field): If op0 is a REG or
+	SUBREG of a REG, don't lower unit.  Handle unit not being
+	always BITS_PER_WORD.
+
 2013-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/57341
