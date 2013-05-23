@@ -1,3 +1,8 @@
+2013-05-22  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57347
+	* gcc.dg/ipa/pr57347.c: New test.
+
 2013-05-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57380
