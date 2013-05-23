@@ -1769,8 +1769,10 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
     {
     case REF_QUAL_RVALUE:
       FUNCTION_RVALUE_QUALIFIED (t) = 1;
-      /* Intentional fall through */
+      FUNCTION_REF_QUALIFIED (t) = 1;
+      break;
     case REF_QUAL_LVALUE:
+      FUNCTION_RVALUE_QUALIFIED (t) = 0;
       FUNCTION_REF_QUALIFIED (t) = 1;
       break;
     default:
