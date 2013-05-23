@@ -6,7 +6,7 @@
 	(aarch64_builtin_vectorized_function): Handler for BUILT_IN_CLZ.
 	* config/aarch64/aarch-simd-builtins.def: Entry for CLZ.
 
-2013-05-22  Martin Jambor  <mjambor@suse.cz>
+2013-05-23  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/57347
 	* tree.h (contains_bitfld_component_ref_p): Declare.
