@@ -1,3 +1,8 @@
+2013-05-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR debug/57351
+	* config/arm/arm.c (arm_dwarf_register_span): Do not use dbx number.
+
 2013-05-23  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
 	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
 

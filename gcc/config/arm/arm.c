@@ -25878,9 +25878,8 @@ arm_dwarf_register_span (rtx rtl)
 
   nregs = GET_MODE_SIZE (GET_MODE (rtl)) / 8;
   p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs));
-  regno = (regno - FIRST_VFP_REGNUM) / 2;
   for (i = 0; i < nregs; i++)
-    XVECEXP (p, 0, i) = gen_rtx_REG (DImode, 256 + regno + i);
+    XVECEXP (p, 0, i) = gen_rtx_REG (DImode, regno + i);
 
   return p;
 }
