@@ -1,3 +1,9 @@
+2013-05-23  Richard Henderson  <rth@redhat.com>
+
+	PR target/56742
+	* config/i386/i386.c (ix86_seh_fixup_eh_fallthru): New.
+	(ix86_reorg): Call it.
+
 2013-05-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/57379
