@@ -9784,6 +9784,13 @@ maybe_add_lambda_conv_op (tree type)
   if (processing_template_decl)
     return;
 
+  if (DECL_INITIAL (callop) == NULL_TREE)
+    {
+      /* If the op() wasn't instantiated due to errors, give up.  */
+      gcc_assert (errorcount || sorrycount);
+      return;
+    }
+
   stattype = build_function_type (TREE_TYPE (TREE_TYPE (callop)),
 				  FUNCTION_ARG_CHAIN (callop));
 
