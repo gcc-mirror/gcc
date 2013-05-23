@@ -1,3 +1,9 @@
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57381
+	* fold-const.c (operand_equal_p): Compare FIELD_DECLs with
+	OEP_CONSTANT_ADDRESS_OF retained.
+
 2013-05-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/57344
