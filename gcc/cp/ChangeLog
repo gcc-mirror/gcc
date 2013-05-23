@@ -1,3 +1,9 @@
+2013-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56915
+	* semantics.c (maybe_add_lambda_conv_op): Give up if the call op
+	isn't defined.
+
 2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57352
