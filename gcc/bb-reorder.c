@@ -123,10 +123,10 @@ struct target_bb_reorder *this_target_bb_reorder = &default_target_bb_reorder;
   (this_target_bb_reorder->x_uncond_jump_length)
 
 /* Branch thresholds in thousandths (per mille) of the REG_BR_PROB_BASE.  */
-static int branch_threshold[N_ROUNDS] = {400, 200, 100, 0, 0};
+static const int branch_threshold[N_ROUNDS] = {400, 200, 100, 0, 0};
 
 /* Exec thresholds in thousandths (per mille) of the frequency of bb 0.  */
-static int exec_threshold[N_ROUNDS] = {500, 200, 50, 0, 0};
+static const int exec_threshold[N_ROUNDS] = {500, 200, 50, 0, 0};
 
 /* If edge frequency is lower than DUPLICATION_THRESHOLD per mille of entry
    block the edge destination is not duplicated while connecting traces.  */
