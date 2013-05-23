@@ -1,3 +1,9 @@
+2013-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57388
+	* tree.c (build_ref_qualified_type): Clear
+	FUNCTION_RVALUE_QUALIFIED for lvalue ref-qualifier.
+
 2013-05-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56930
