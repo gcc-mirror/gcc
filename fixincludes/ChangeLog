@@ -1,3 +1,9 @@
+2013-05-23  Alexander Ivchenko <alexander.ivchenko@intel.com>
+
+	* inclhack.def (complier_h_tradcpp): New.
+	* fixincl.x: Rebuilt.
+	* tests/base/linux/compiler.h: New.
+
 2013-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* inclhack.def (solaris_pow_int_overload): Update comment.
