@@ -1,3 +1,11 @@
+2013-05-23  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_mov_operand_p): Define.
+	* config/aarch64/aarch64.c (aarch64_mov_operand_p): Define.
+	* config/aarch64/predicates.md (aarch64_const_address): Remove.
+	(aarch64_mov_operand): Use aarch64_mov_operand_p.
+
 2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
 
 	* config/aarch64/aarch64-simd.md (clzv4si2): Support for CLZ
