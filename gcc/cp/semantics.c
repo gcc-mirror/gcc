@@ -8045,6 +8045,7 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
     case UNGT_EXPR:
     case UNGE_EXPR:
     case UNEQ_EXPR:
+    case LTGT_EXPR:
     case RANGE_EXPR:
     case COMPLEX_EXPR:
       r = cxx_eval_binary_expression (call, t, allow_non_constant, addr,
@@ -8620,6 +8621,10 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case THROW_EXPR:
     case MODIFY_EXPR:
     case MODOP_EXPR:
+    case OMP_ATOMIC:
+    case OMP_ATOMIC_READ:
+    case OMP_ATOMIC_CAPTURE_OLD:
+    case OMP_ATOMIC_CAPTURE_NEW:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
     case OBJ_TYPE_REF:
