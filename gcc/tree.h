@@ -5949,6 +5949,7 @@ extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern bool contains_bitfld_component_ref_p (const_tree);
 
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);

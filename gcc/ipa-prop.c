@@ -1268,7 +1268,9 @@ determine_known_aggregate_parts (gimple call, tree arg,
 
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
-      if (!is_gimple_reg_type (rhs))
+      if (!is_gimple_reg_type (rhs)
+	  || TREE_CODE (lhs) == BIT_FIELD_REF
+	  || contains_bitfld_component_ref_p (lhs))
 	break;
 
       lhs_base = get_ref_base_and_extent (lhs, &lhs_offset, &lhs_size,
@@ -1359,6 +1361,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	    {
 	      struct ipa_agg_jf_item item;
 	      item.offset = list->offset - arg_offset;
+	      gcc_assert ((item.offset % BITS_PER_UNIT) == 0);
 	      item.value = unshare_expr_without_location (list->constant);
 	      jfunc->agg.items->quick_push (item);
 	    }
