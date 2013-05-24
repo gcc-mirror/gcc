@@ -1,3 +1,9 @@
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19618
+	* class.c (check_bitfield_decl): Warn for bool and enum bitfields
+	with width exceeding the type.
+
 2013-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57391

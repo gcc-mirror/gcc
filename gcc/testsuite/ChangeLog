@@ -1,3 +1,8 @@
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19618
+	* g++.dg/expr/bitfield12.C: New.
+
 2013-05-24  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/57124
