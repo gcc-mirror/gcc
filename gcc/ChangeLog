@@ -1,3 +1,9 @@
+2013-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57287
+	* tree-ssa-uninit.c (compute_uninit_opnds_pos): Disregard
+	all SSA names that occur in abnormal PHIs.
+
 2013-05-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	PR tree-ssa/57385
