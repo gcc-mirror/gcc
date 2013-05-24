@@ -1,3 +1,7 @@
+2013-05-24  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* download_prerequisites: Download isl and cloog conditionally.
+
 2013-05-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* repro_fail: filter out "-ignore SIGHUP" from the spawn lines
