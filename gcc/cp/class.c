@@ -3140,9 +3140,12 @@ check_bitfield_decl (tree field)
 	  error ("zero width for bit-field %q+D", field);
 	  w = error_mark_node;
 	}
-      else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
-	       && TREE_CODE (type) != ENUMERAL_TYPE
-	       && TREE_CODE (type) != BOOLEAN_TYPE)
+      else if ((TREE_CODE (type) != ENUMERAL_TYPE
+		&& TREE_CODE (type) != BOOLEAN_TYPE
+		&& compare_tree_int (w, TYPE_PRECISION (type)) > 0)
+	       || ((TREE_CODE (type) == ENUMERAL_TYPE
+		    || TREE_CODE (type) == BOOLEAN_TYPE)
+		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
 	warning (0, "width of %q+D exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > (compare_tree_int
