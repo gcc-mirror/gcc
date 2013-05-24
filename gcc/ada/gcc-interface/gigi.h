@@ -502,7 +502,13 @@ extern tree get_block_jmpbuf_decl (void);
    for location information and flag propagation.  */
 extern void gnat_pushdecl (tree decl, Node_Id gnat_node);
 
+/* Initialize the GCC support for exception handling.  */
 extern void gnat_init_gcc_eh (void);
+
+/* Initialize the GCC support for floating-point operations.  */
+extern void gnat_init_gcc_fp (void);
+
+/* Install the builtin functions we might need.  */
 extern void gnat_install_builtins (void);
 
 /* Return an integer type with the number of bits of precision given by

@@ -677,6 +677,9 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   if (Exception_Mechanism == Back_End_Exceptions)
     gnat_init_gcc_eh ();
 
+  /* Initialize the GCC support for FP operations.  */
+  gnat_init_gcc_fp ();
+
   /* Now translate the compilation unit proper.  */
   Compilation_Unit_to_gnu (gnat_root);
 
