@@ -1,3 +1,9 @@
+2013-05-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57124
+	* gcc.c-torture/execute/pr57124.c: New test.
+	* gcc.c-torture/execute/pr57124.x: Set -fno-strict-overflow.
+
 2013-05-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/57294
