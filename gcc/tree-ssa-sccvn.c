@@ -1211,6 +1211,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	      == TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0->op0))))
 	  && GET_MODE_CLASS (TYPE_MODE (op->type)) == MODE_INT
 	  && GET_MODE_SIZE (TYPE_MODE (op->type)) == 1
+	  && tree_int_cst_sgn (op->op0) >= 0
 	  && compare_tree_int (op->op0, TREE_STRING_LENGTH (arg0->op0)) < 0)
 	return build_int_cst_type (op->type,
 				   (TREE_STRING_POINTER (arg0->op0)
