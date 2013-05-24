@@ -4130,7 +4130,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	tree gnu_stub_type = NULL_TREE, gnu_stub_name = NULL_TREE;
 	tree gnu_ext_name = create_concat_name (gnat_entity, NULL);
 	Entity_Id gnat_param;
-	bool inline_flag = Is_Inlined (gnat_entity);
+	enum inline_status_t inline_status
+	  = Has_Pragma_No_Inline (gnat_entity)
+	    ? is_suppressed
+	    : (Is_Inlined (gnat_entity) ? is_enabled : is_disabled);
 	bool public_flag = Is_Public (gnat_entity) || imported_p;
 	bool extern_flag
 	  = (Is_Public (gnat_entity) && !definition) || imported_p;
@@ -4686,15 +4689,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	    gnu_decl
 	      = create_subprog_decl (gnu_entity_name, gnu_ext_name, gnu_type,
-				     gnu_param_list, inline_flag, public_flag,
-				     extern_flag, artificial_flag, attr_list,
-				     gnat_entity);
+				     gnu_param_list, inline_status,
+				     public_flag, extern_flag, artificial_flag,
+				     attr_list, gnat_entity);
 	    if (has_stub)
 	      {
 		tree gnu_stub_decl
 		  = create_subprog_decl (gnu_entity_name, gnu_stub_name,
 					 gnu_stub_type, gnu_stub_param_list,
-					 inline_flag, true, extern_flag,
+					 inline_status, true, extern_flag,
 					 false, attr_list, gnat_entity);
 		SET_DECL_FUNCTION_STUB (gnu_decl, gnu_stub_decl);
 	      }
@@ -5427,7 +5430,7 @@ get_minimal_subprog_decl (Entity_Id gnat_entity)
 
   return
     create_subprog_decl (gnu_entity_name, gnu_ext_name, void_ftype, NULL_TREE,
-			 false, true, true, true, attr_list, gnat_entity);
+			 is_disabled, true, true, true, attr_list, gnat_entity);
 }
 
 /* Return whether the E_Subprogram_Type/E_Function/E_Procedure GNAT_ENTITY is

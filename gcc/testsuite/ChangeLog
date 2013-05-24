@@ -1,3 +1,10 @@
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/noinline1.ads: New test.
+	* gnat.dg/noinline2.ad[sb]: Likewise.
+	* gnat.dg/specs/noinline3.ads: Likewise.
+	* gnat.dg/specs/noinline3_pkg.ad[sb]: New helper.
+
 2013-05-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	PR tree-ssa/57385
