@@ -1,3 +1,19 @@
+2013-05-24  Dehao Chen  <dehao@google.com>
+
+	* gcc/testsuite/gcc.dg/debug/dwarf2/discriminator.c: New Testcase.
+	* gcc/tree-cfg.c (locus_descrim_hasher::hash): Change discrminator
+	hash function.
+	(locus_descrim_hasher::equal): Likewise.
+	(build_gimple_cfg): New discrminator assignmnet algorithm
+	(make_edges): Likewise.
+	(next_discriminator_for_locus): Likewise.
+	(same_line_p): Likewise.
+	(assign_discriminators): Likewise.
+	(make_cond_expr_edges): Likewise.
+	(make_gimple_switch_edges): Likewise.
+	(make_goto_expr_edges): Likewise.
+	(make_gimple_asm_edges): Likewise.
+
 2013-05-24  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_print_operand): Change the
