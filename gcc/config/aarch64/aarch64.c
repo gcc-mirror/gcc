@@ -3428,13 +3428,13 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       break;
 
     case 'X':
-      /* Print integer constant in hex.  */
+      /* Print bottom 16 bits of integer constant in hex.  */
       if (GET_CODE (x) != CONST_INT)
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "0x%wx", UINTVAL (x));
+      asm_fprintf (f, "0x%wx", UINTVAL (x) & 0xffff);
       break;
 
     case 'w':
