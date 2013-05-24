@@ -7776,37 +7776,32 @@ non_const_var_error (tree r)
     }
 }
 
-/* Evaluate VEC_PERM_EXPR (v1, v2, mask).  */
+/* Subroutine of cxx_eval_constant_expression.
+   Like cxx_eval_unary_expression, except for trinary expressions.  */
+
 static tree
-cxx_eval_vec_perm_expr (const constexpr_call *call, tree t, 
-			bool allow_non_constant, bool addr,
-			bool *non_constant_p, bool *overflow_p)
+cxx_eval_trinary_expression (const constexpr_call *call, tree t,
+			     bool allow_non_constant, bool addr,
+			     bool *non_constant_p, bool *overflow_p)
 {
   int i;
   tree args[3];
   tree val;
-  tree elttype = TREE_TYPE (t);
 
   for (i = 0; i < 3; i++)
     {
       args[i] = cxx_eval_constant_expression (call, TREE_OPERAND (t, i),
 					      allow_non_constant, addr,
 					      non_constant_p, overflow_p);
-      if (*non_constant_p)
-      	goto fail;
+      VERIFY_CONSTANT (args[i]);
     }
 
-  gcc_assert (TREE_CODE (TREE_TYPE (args[0])) == VECTOR_TYPE);
-  gcc_assert (TREE_CODE (TREE_TYPE (args[1])) == VECTOR_TYPE);
-  gcc_assert (TREE_CODE (TREE_TYPE (args[2])) == VECTOR_TYPE);
-
-  val = fold_ternary_loc (EXPR_LOCATION (t), VEC_PERM_EXPR, elttype, 
+  val = fold_ternary_loc (EXPR_LOCATION (t), TREE_CODE (t), TREE_TYPE (t),
 			  args[0], args[1], args[2]);
-  if (val != NULL_TREE)
-    return val;
-
- fail:
-  return t;
+  if (val == NULL_TREE)
+    return t;
+  VERIFY_CONSTANT (val);
+  return val;
 }
 
 /* Attempt to reduce the expression T to a constant value.
@@ -8106,9 +8101,10 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 			     non_constant_p, overflow_p);
       break;
 
+    case FMA_EXPR:
     case VEC_PERM_EXPR:
-      r = cxx_eval_vec_perm_expr (call, t, allow_non_constant, addr,
-				  non_constant_p, overflow_p);
+      r = cxx_eval_trinary_expression (call, t, allow_non_constant, addr,
+				       non_constant_p, overflow_p);
       break;
 
     case CONVERT_EXPR:
