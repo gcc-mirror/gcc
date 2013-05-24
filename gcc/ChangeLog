@@ -1,3 +1,8 @@
+2013-05-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR debug/56950
+	* haifa-sched.c (sched_extend_bb): Ignore DEBUG_INSNs.
+
 2013-05-24  Nathan Sidwell  <nathan@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
