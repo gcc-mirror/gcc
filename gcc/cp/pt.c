@@ -20367,8 +20367,7 @@ any_template_arguments_need_structural_equality_p (tree args)
 
 	      if (error_operand_p (arg))
 		return true;
-	      else if (TREE_CODE (arg) == TEMPLATE_DECL
-		       || TREE_CODE (arg) == TEMPLATE_TEMPLATE_PARM)
+	      else if (TREE_CODE (arg) == TEMPLATE_DECL)
 		continue;
 	      else if (TYPE_P (arg) && TYPE_STRUCTURAL_EQUALITY_P (arg))
 		return true;

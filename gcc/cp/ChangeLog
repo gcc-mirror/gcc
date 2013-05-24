@@ -1,3 +1,9 @@
+2013-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56971
+	* pt.c (any_template_arguments_need_structural_equality_p): A
+	TEMPLATE_TEMPLATE_PARM can require structural type comparison.
+
 2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/19618
