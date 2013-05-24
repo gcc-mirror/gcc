@@ -157,8 +157,8 @@
 
 2013-05-22  David Malcolm  <dmalcolm@redhat.com>
 
-	* bb-reorder.c (branch_threshold): make const
-	(exec_threshold): ditto
+	* bb-reorder.c (branch_threshold): Make const.
+	(exec_threshold): Ditto.
 
 2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>

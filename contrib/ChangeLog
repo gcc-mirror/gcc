@@ -4,7 +4,7 @@
 
 2013-05-21  David Malcolm  <dmalcolm@redhat.com>
 
-	* repro_fail: filter out "-ignore SIGHUP" from the spawn lines
+	* repro_fail: Filter out "-ignore SIGHUP" from the spawn lines.
 
 2013-05-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
