@@ -1,5 +1,9 @@
 2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/derived_type4.adb: New test.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/builtin-bswap-6.c: New test.
 	* gcc.dg/builtin-bswap-7.c: Likewise.
 	* gcc.dg/builtin-bswap-8.c: Likewise.
