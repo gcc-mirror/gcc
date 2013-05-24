@@ -1,3 +1,9 @@
+2013-05-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR tree-ssa/57385
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Check
+	that index is not negative.
+
 2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/55177

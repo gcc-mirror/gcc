@@ -1,3 +1,8 @@
+2013-05-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR tree-ssa/57385
+	* gcc.dg/tree-ssa/pr57385.c: New test.
+
 2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/derived_type4.adb: New test.
