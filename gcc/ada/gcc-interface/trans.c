@@ -212,7 +212,7 @@ typedef struct range_check_info_d *range_check_info;
 
 /* Structure used to record information for a loop.  */
 struct GTY(()) loop_info_d {
-  tree label;
+  tree stmt;
   tree loop_var;
   vec<range_check_info, va_gc> *checks;
 };
@@ -1189,8 +1189,8 @@ Pragma_to_gnu (Node_Id gnat_node)
   tree gnu_result = alloc_stmt_list ();
   Node_Id gnat_temp;
 
-  /* Check for (and ignore) unrecognized pragma and do nothing if we are just
-     annotating types.  */
+  /* Do nothing if we are just annotating types and check for (and ignore)
+     unrecognized pragmas.  */
   if (type_annotate_only
       || !Is_Pragma_Name (Chars (Pragma_Identifier (gnat_node))))
     return gnu_result;
@@ -1249,6 +1249,37 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  ASM_VOLATILE_P (gnu_expr) = 1;
 	  set_expr_location_from_node (gnu_expr, gnat_node);
 	  append_to_statement_list (gnu_expr, &gnu_result);
+	}
+      break;
+
+    case Pragma_Loop_Optimize:
+      for (gnat_temp = First (Pragma_Argument_Associations (gnat_node));
+	   Present (gnat_temp);
+	   gnat_temp = Next (gnat_temp))
+	{
+	  tree gnu_loop_stmt = gnu_loop_stack ->last ()->stmt;
+
+	  switch (Chars (Expression (gnat_temp)))
+	    {
+	    case Name_No_Unroll:
+	      LOOP_STMT_NO_UNROLL (gnu_loop_stmt) = 1;
+	      break;
+
+	    case Name_Unroll:
+	      LOOP_STMT_UNROLL (gnu_loop_stmt) = 1;
+	      break;
+
+	    case Name_No_Vector:
+	      LOOP_STMT_NO_VECTOR (gnu_loop_stmt) = 1;
+	      break;
+
+	    case Name_Vector:
+	      LOOP_STMT_VECTOR (gnu_loop_stmt) = 1;
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
 	}
       break;
 
@@ -1362,6 +1393,9 @@ Pragma_to_gnu (Node_Id gnat_node)
 				CL_Ada, &handlers, &global_options,
 				&global_options_set, global_dc);
       }
+      break;
+
+    default:
       break;
     }
 
@@ -2424,8 +2458,8 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 		 &DECL_SOURCE_LOCATION (gnu_loop_label));
   LOOP_STMT_LABEL (gnu_loop_stmt) = gnu_loop_label;
 
-  /* Save the label so that a corresponding N_Exit_Statement can find it.  */
-  gnu_loop_info->label = gnu_loop_label;
+  /* Save the statement for later reuse.  */
+  gnu_loop_info->stmt = gnu_loop_stmt;
 
   /* Set the condition under which the loop must keep going.
      For the case "LOOP .... END LOOP;" the condition is always true.  */
@@ -6370,7 +6404,7 @@ gnat_to_gnu (Node_Id gnat_node)
 		   ? gnat_to_gnu (Condition (gnat_node)) : NULL_TREE),
 		  (Present (Name (gnat_node))
 		   ? get_gnu_tree (Entity (Name (gnat_node)))
-		   : gnu_loop_stack->last ()->label));
+		   : LOOP_STMT_LABEL (gnu_loop_stack->last ()->stmt)));
       break;
 
     case N_Simple_Return_Statement:
