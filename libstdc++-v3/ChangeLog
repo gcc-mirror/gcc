@@ -1,3 +1,8 @@
+2013-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/os/solaris/solaris2.9/os_defines.h [!CLOCK_MONOTONIC]
+	(CLOCK_MONOTONIC): Define.
+
 2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/type_traits.h (__is_null_pointer): Add std::nullptr_t
