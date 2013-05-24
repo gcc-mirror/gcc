@@ -36,6 +36,8 @@
 #include "gimple.h"
 #include "bitmap.h"
 #include "cgraph.h"
+#include "diagnostic.h"
+#include "opts.h"
 #include "target.h"
 #include "common/common-target.h"
 
@@ -1184,8 +1186,8 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 static tree
 Pragma_to_gnu (Node_Id gnat_node)
 {
-  Node_Id gnat_temp;
   tree gnu_result = alloc_stmt_list ();
+  Node_Id gnat_temp;
 
   /* Check for (and ignore) unrecognized pragma and do nothing if we are just
      annotating types.  */
@@ -1277,6 +1279,89 @@ Pragma_to_gnu (Node_Id gnat_node)
     case Pragma_Reviewable:
       if (write_symbols == NO_DEBUG)
 	post_error ("must specify -g?", gnat_node);
+      break;
+
+    case Pragma_Warnings:
+      {
+	Node_Id gnat_expr;
+	/* Preserve the location of the pragma.  */
+	const location_t location = input_location;
+	struct cl_option_handlers handlers;
+	unsigned int option_index;
+	diagnostic_t kind;
+	bool imply;
+
+	gnat_temp = First (Pragma_Argument_Associations (gnat_node));
+
+	/* This is the String form: pragma Warnings (String).  */
+	if (Nkind (Expression (gnat_temp)) == N_String_Literal)
+	  {
+	    kind = DK_WARNING;
+	    gnat_expr = Expression (gnat_temp);
+	    imply = true;
+	  }
+
+	/* This is the On/Off form: pragma Warnings (On | Off [,String]).  */
+	else if (Nkind (Expression (gnat_temp)) == N_Identifier)
+	  {
+	    switch (Chars (Expression (gnat_temp)))
+	      {
+		case Name_Off:
+		  kind = DK_IGNORED;
+		  break;
+
+		case Name_On:
+		  kind = DK_WARNING;
+		  break;
+
+		default:
+		  gcc_unreachable ();
+	      }
+
+	    if (Present (Next (gnat_temp)))
+	      {
+		/* pragma Warnings (On | Off, Name) is handled differently.  */
+		if (Nkind (Expression (Next (gnat_temp))) != N_String_Literal)
+		  break;
+
+	        gnat_expr = Expression (Next (gnat_temp));
+	      }
+	    else
+	      gnat_expr = Empty;
+
+	    imply = false;
+	  }
+
+	else
+	  gcc_unreachable ();
+
+	/* This is the same implementation as in the C family of compilers.  */
+	if (Present (gnat_expr))
+	  {
+	    tree gnu_expr = gnat_to_gnu (gnat_expr);
+	    const char *opt_string = TREE_STRING_POINTER (gnu_expr);
+	    const int len = TREE_STRING_LENGTH (gnu_expr);
+	    if (len < 3 || opt_string[0] != '-' || opt_string[1] != 'W')
+	      break;
+	    for (option_index = 0;
+		 option_index < cl_options_count;
+		 option_index++)
+	      if (strcmp (cl_options[option_index].opt_text, opt_string) == 0)
+		break;
+	    if (option_index == cl_options_count)
+	      {
+		post_error ("unknown -W switch", gnat_node);
+		break;
+	      }
+	  }
+	else
+	  option_index = 0;
+
+	set_default_handlers (&handlers);
+	control_warning_option (option_index, (int) kind, imply, location,
+				CL_Ada, &handlers, &global_options,
+				&global_options_set, global_dc);
+      }
       break;
     }
 
