@@ -72,3 +72,4 @@ void ipa_clone_referring (symtab_node, struct ipa_ref_list *);
 bool ipa_ref_cannot_lead_to_return (struct ipa_ref *);
 bool ipa_ref_has_aliases_p (struct ipa_ref_list *);
 struct ipa_ref * ipa_find_reference (symtab_node, symtab_node, gimple);
+void ipa_remove_stmt_references (symtab_node, gimple);

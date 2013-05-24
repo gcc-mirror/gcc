@@ -1,3 +1,8 @@
+2013-05-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57294
+	* gcc.dg/ipa/pr57294.c: New test.
+
 2013-05-24  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c

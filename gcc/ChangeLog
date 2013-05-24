@@ -1,3 +1,17 @@
+2013-05-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57294
+	* cgraph.h (ipa_record_stmt_references): Declare.
+	* cgraphbuild.c (ipa_record_stmt_references): New function.
+	(build_cgraph_edges): Use ipa_record_stmt_references.
+	(rebuild_cgraph_edges): Likewise.
+	(cgraph_rebuild_references): Likewise.
+	* ipa-prop.c (ipa_modify_call_arguments): Discard references
+	associated with the old statement and build references from the
+	newly built statements.
+	* ipa-ref.c (ipa_remove_stmt_references): New function.
+	* ipa-ref.h (ipa_remove_stmt_references): Declare.
+
 2013-05-24  Vladimir Makarov  <vmakarov@redhat.com>
 
         * lra-constraints.c (emit_spill_move): Use smaller mode for
