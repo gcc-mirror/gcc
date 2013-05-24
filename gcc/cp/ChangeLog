@@ -1,5 +1,9 @@
 2013-05-24  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57388
+	* tree.c (build_ref_qualified_type): Clear
+	FUNCTION_RVALUE_QUALIFIED for lvalue ref-qualifier.
+
 	PR c++/57016
 	* pt.c (instantiation_dependent_r) [TRAIT_EXPR]: Only check type2
 	if there is one.
