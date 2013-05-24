@@ -1,3 +1,11 @@
+2013-05-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57124
+	* tree-vrp.c (simplify_cond_using_ranges): Only simplify a
+	conversion feeding a condition if the range has an overflow
+	if -fstrict-overflow.  Add warnings for when we do make the
+	transformation.
+
 2013-05-24  Dehao Chen  <dehao@google.com>
 
 	* gcc/tree-cfg.c (locus_discrim_map): Fix the typo.
