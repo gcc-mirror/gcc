@@ -705,6 +705,7 @@ unsigned int rebuild_cgraph_edges (void);
 void cgraph_rebuild_references (void);
 int compute_call_stmt_bb_frequency (tree, basic_block bb);
 void record_references_in_initializer (tree, bool);
+void ipa_record_stmt_references (struct cgraph_node *, gimple);
 
 /* In ipa.c  */
 bool symtab_remove_unreachable_nodes (bool, FILE *);

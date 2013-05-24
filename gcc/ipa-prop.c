@@ -3219,18 +3219,22 @@ void
 ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 			   ipa_parm_adjustment_vec adjustments)
 {
+  struct cgraph_node *current_node = cgraph_get_node (current_function_decl);
   vec<tree> vargs;
   vec<tree, va_gc> **debug_args = NULL;
   gimple new_stmt;
-  gimple_stmt_iterator gsi;
+  gimple_stmt_iterator gsi, prev_gsi;
   tree callee_decl;
   int i, len;
 
   len = adjustments.length ();
   vargs.create (len);
   callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->symbol.decl;
+  ipa_remove_stmt_references ((symtab_node) current_node, stmt);
 
   gsi = gsi_for_stmt (stmt);
+  prev_gsi = gsi;
+  gsi_prev (&prev_gsi);
   for (i = 0; i < len; i++)
     {
       struct ipa_parm_adjustment *adj;
@@ -3425,6 +3429,14 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
   gsi_replace (&gsi, new_stmt, true);
   if (cs)
     cgraph_set_call_stmt (cs, new_stmt);
+  do
+    {
+      ipa_record_stmt_references (current_node, gsi_stmt (gsi));
+      gsi_prev (&gsi);
+    }
+  while ((gsi_end_p (prev_gsi) && !gsi_end_p (gsi))
+	 || (!gsi_end_p (prev_gsi) && gsi_stmt (gsi) == gsi_stmt (prev_gsi)));
+
   update_ssa (TODO_update_ssa);
   free_dominance_info (CDI_DOMINATORS);
 }
