@@ -813,6 +813,9 @@
 /* Defined if clock_gettime has monotonic clock support. */
 #undef _GLIBCXX_USE_CLOCK_MONOTONIC
 
+/* Defined if clock_gettime syscall has monotonic and realtime clock support. */
+#undef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+
 /* Defined if clock_gettime has realtime clock support. */
 #undef _GLIBCXX_USE_CLOCK_REALTIME
 
