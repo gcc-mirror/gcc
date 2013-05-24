@@ -1,3 +1,10 @@
+2013-05-24  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Change the
+	X format specifier to only display bottom 16 bits.
+	* config/aarch64/aarch64.md (insv_imm<mode>): Allow any size of
+	immediate to match for operand 2, since it will be masked.
+
 2013-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57287
