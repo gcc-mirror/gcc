@@ -600,6 +600,7 @@ ac_includes_default="\
 ac_header_list=
 ac_func_list=
 ac_c_werror_flag=
+ac_c_werror_flag=
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
@@ -12333,7 +12334,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12336 "configure"
+#line 12337 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12439,7 +12440,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12442 "configure"
+#line 12443 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -25720,14 +25721,18 @@ $as_echo "#define HAVE_FLOAT128 1" >>confdefs.h
 
 
                                 ac_xsave_c_werror_flag=$ac_c_werror_flag
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed works" >&5
-$as_echo_n "checking whether --as-needed works... " >&6; }
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --as-needed/-z ignore works" >&5
+$as_echo_n "checking whether --as-needed/-z ignore works... " >&6; }
 if test "${libgfor_cv_have_as_needed+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
+      # Test for native Solaris options first.
+      # No whitespace after -z to pass it through -Wl.
+      libgfor_cv_as_needed_option="-zignore"
+      libgfor_cv_no_as_needed_option="-zrecord"
       save_LDFLAGS="$LDFLAGS"
-      LDFLAGS="$LDFLAGS -Wl,--as-needed -lm -Wl,--no-as-needed"
+      LDFLAGS="$LDFLAGS -Wl,$libgfor_cv_as_needed_option -lm -Wl,$libgfor_cv_no_as_needed_option"
       libgfor_cv_have_as_needed=no
 
 ac_c_werror_flag=yes
@@ -25753,6 +25758,37 @@ fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
       LDFLAGS="$save_LDFLAGS"
+      if test "x$libgfor_cv_have_as_needed" = xno; then
+	libgfor_cv_as_needed_option="--as-needed"
+	libgfor_cv_no_as_needed_option="--no-as-needed"
+	save_LDFLAGS="$LDFLAGS"
+	LDFLAGS="$LDFLAGS -Wl,$libgfor_cv_as_needed_option -lm -Wl,$libgfor_cv_no_as_needed_option"
+	libgfor_cv_have_as_needed=no
+
+ac_c_werror_flag=yes
+	if test x$gcc_no_link = xyes; then
+  as_fn_error "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgfor_cv_have_as_needed=yes
+else
+  libgfor_cv_have_as_needed=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+	LDFLAGS="$save_LDFLAGS"
+      fi
       ac_c_werror_flag=$ac_xsave_c_werror_flag
 
 fi
@@ -25760,7 +25796,7 @@ fi
 $as_echo "$libgfor_cv_have_as_needed" >&6; }
 
         if test "x$libgfor_cv_have_as_needed" = xyes; then
-      LIBQUADSPEC="%{static-libgfortran:--as-needed} -lquadmath %{static-libgfortran:--no-as-needed}"
+      LIBQUADSPEC="%{static-libgfortran:$libgfor_cv_as_needed_option} -lquadmath %{static-libgfortran:$libgfor_cv_no_as_needed_option}"
     else
       LIBQUADSPEC="-lquadmath"
     fi
