@@ -1,3 +1,10 @@
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/type_traits.h (__is_null_pointer): Add std::nullptr_t
+	overload.
+
+	* include/bits/cpp_type_traits.h (__is_fundamental): Remove, unused.
+
 2013-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/c++11/chrono.cc: If _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL,
