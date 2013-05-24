@@ -327,14 +327,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   //
-  // A fundamental type is `void' or and arithmetic type
-  //
-  template<typename _Tp>
-    struct __is_fundamental
-    : public __traitor<__is_void<_Tp>, __is_arithmetic<_Tp> >
-    { };
-
-  //
   // A scalar type is an arithmetic type or a pointer type
   // 
   template<typename _Tp>
