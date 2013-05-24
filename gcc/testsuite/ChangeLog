@@ -1,3 +1,10 @@
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-bswap-6.c: New test.
+	* gcc.dg/builtin-bswap-7.c: Likewise.
+	* gcc.dg/builtin-bswap-8.c: Likewise.
+	* gcc.dg/builtin-bswap-9.c: Likewise.
+
 2013-05-23  Christian Bruel  <christian.bruel@st.com>
 
 	PR debug/57351
