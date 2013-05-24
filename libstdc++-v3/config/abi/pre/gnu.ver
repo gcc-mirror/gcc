@@ -1303,9 +1303,6 @@ GLIBCXX_3.4.17 {
     _ZN11__gnu_debug25_Safe_local_iterator_base9_M_attachEPNS_19_Safe_sequence_baseEb;
     _ZN11__gnu_debug25_Safe_local_iterator_base9_M_detachEv;
 
-    # std::chrono::steady_clock::now()
-    _ZNSt6chrono12steady_clock3nowEv;
-
     # std::numeric_limits<__int128> and <unsigned __int128>
     _ZNSt14numeric_limitsInE*;
     _ZNSt14numeric_limitsIoE*;
@@ -1322,6 +1319,12 @@ GLIBCXX_3.4.17 {
     _ZNSt13__future_base19_Async_state_commonD0Ev;
     _ZNSt13__future_base19_Async_state_commonD1Ev;
     _ZNSt13__future_base19_Async_state_commonD2Ev;
+
+#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
+   # GLIBCXX_ABI compatibility only.
+    # std::chrono::steady_clock::now()
+    _ZNSt6chrono12steady_clock3nowEv;
+#endif
 
 } GLIBCXX_3.4.16;
 
@@ -1343,6 +1346,13 @@ GLIBCXX_3.4.18 {
     _ZNKSt17bad_function_call4whatEv;
 
 } GLIBCXX_3.4.17;
+
+GLIBCXX_3.4.19 {
+
+    # std::chrono::steady_clock::now()
+    _ZNSt6chrono12steady_clock3nowEv;
+
+} GLIBCXX_3.4.18;
 
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {

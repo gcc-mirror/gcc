@@ -22,7 +22,20 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#include <bits/c++config.h>
+
+#ifndef _GLIBCXX_USE_CLOCK_MONOTONIC
+// If !_GLIBCXX_USE_CLOCK_MONOTONIC, std::chrono::steady_clock
+// is just a typedef to std::chrono::system_clock, for ABI compatibility
+// force it not to be a typedef now and export it anyway.  Programs
+// using the headers where it is a typedef will actually just use
+// std::chrono::system_clock instead, and this remains here just as a fallback.
+#define _GLIBCXX_USE_CLOCK_MONOTONIC
 #include <chrono>
+#undef _GLIBCXX_USE_CLOCK_MONOTONIC
+#else
+#include <chrono>
+#endif
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
@@ -32,13 +45,18 @@
      defined(_GLIBCXX_USE_GETTIMEOFDAY)
 #include <sys/time.h>
 #endif
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+#include <unistd.h>
+#include <sys/syscall.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
   namespace chrono
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
- 
+
+#ifndef _GLIBCXX_COMPATIBILITY_CXX0X
     constexpr bool system_clock::is_steady;
 
     system_clock::time_point
@@ -47,7 +65,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef _GLIBCXX_USE_CLOCK_REALTIME
       timespec tp;
       // -EINVAL, -EFAULT
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+      syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
+#else
       clock_gettime(CLOCK_REALTIME, &tp);
+#endif
       return time_point(duration(chrono::seconds(tp.tv_sec)
 				 + chrono::nanoseconds(tp.tv_nsec)));
 #elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
@@ -61,20 +83,35 @@ namespace std _GLIBCXX_VISIBILITY(default)
       return system_clock::from_time_t(__sec);
 #endif
     }
+#endif
     
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
+#ifndef _GLIBCXX_COMPATIBILITY_CXX0X
     constexpr bool steady_clock::is_steady;
+#endif
 
+#if defined(_GLIBCXX_SYMVER_GNU) && defined(_GLIBCXX_SHARED) \
+    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE) \
+    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT) \
+    && !defined(_GLIBCXX_COMPATIBILITY_CXX0X)
+    __attribute__((__weak__))
+#endif
     steady_clock::time_point
     steady_clock::now() noexcept
     {
+#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
       timespec tp;
       // -EINVAL, -EFAULT
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+      syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
+#else
       clock_gettime(CLOCK_MONOTONIC, &tp);
+#endif
       return time_point(duration(chrono::seconds(tp.tv_sec)
 				 + chrono::nanoseconds(tp.tv_nsec)));
-    }
+#else
+      return time_point(system_clock::now().time_since_epoch());
 #endif
+    }
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
