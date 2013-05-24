@@ -1,3 +1,11 @@
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/55177
+	* simplify-rtx.c (simplify_unary_operation_1) <NOT>: Deal with BSWAP.
+	(simplify_byte_swapping_operation): New.
+	(simplify_binary_operation_1): Call it for AND, IOR and XOR.
+	(simplify_relational_operation_1): Deal with BSWAP.
+
 2013-05-23  Richard Henderson  <rth@redhat.com>
 
 	PR target/56742
