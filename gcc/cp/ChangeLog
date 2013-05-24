@@ -1,3 +1,9 @@
+2013-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57391
+	* semantics.c (cxx_eval_constant_expression): Handle FMA_EXPR.
+	(cxx_eval_trinary_expression): Rename from cxx_eval_vec_perm_expr.
+
 2013-05-23  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57388
