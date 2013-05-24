@@ -4,7 +4,7 @@
 #include <arm_neon.h>
 
 /* Used to force a variable to a SIMD register.  */
-#define force_simd(V1)   asm volatile ("mov %d0, %d1"		\
+#define force_simd(V1)   asm volatile ("mov %d0, %1.d[0]"	\
 	   : "=w"(V1)						\
 	   : "w"(V1)						\
 	   : /* No clobbers */);
@@ -228,13 +228,13 @@ test_vdups_lane_u32 (uint32x4_t a)
 int64x1_t
 test_vdupd_lane_s64 (int64x2_t a)
 {
-  return vdupd_lane_s64 (a, 2);
+  return vdupd_lane_s64 (a, 1);
 }
 
 uint64x1_t
 test_vdupd_lane_u64 (uint64x2_t a)
 {
-  return vdupd_lane_u64 (a, 2);
+  return vdupd_lane_u64 (a, 1);
 }
 
 /* { dg-final { scan-assembler-times "\\tcmtst\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 } } */

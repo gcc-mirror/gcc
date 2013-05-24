@@ -1,3 +1,10 @@
+2013-05-24  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c
+	(force_simd): Use a valid instruction.
+	(test_vdupd_lane_s64): Pass a valid lane argument.
+	(test_vdupd_lane_u64): Likewise.
+
 2013-05-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57287
