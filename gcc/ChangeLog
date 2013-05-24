@@ -1,3 +1,14 @@
+2013-05-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * lra-constraints.c (emit_spill_move): Use smaller mode for
+	mem-mem moves.
+        (check_and_process_move): Consider mem-reg moves for secondary
+	too.
+        (curr_insn_transform): Don't lose insns emitted before for
+	secondary memory moves.
+	(inherit_in_ebb): Mark defined reg.  Add usage only if it is not a
+	reg set up in the current insn.
+
 2013-05-24  Dehao Chen  <dehao@google.com>
 
 	* gcc/testsuite/gcc.dg/debug/dwarf2/discriminator.c: New Testcase.

@@ -859,10 +859,20 @@ emit_spill_move (bool to_p, rtx mem_pseudo, rtx val)
 {
   if (GET_MODE (mem_pseudo) != GET_MODE (val))
     {
-      val = gen_rtx_SUBREG (GET_MODE (mem_pseudo),
-			    GET_CODE (val) == SUBREG ? SUBREG_REG (val) : val,
-			    0);
-      LRA_SUBREG_P (val) = 1;
+      lra_assert (GET_MODE_SIZE (GET_MODE (mem_pseudo))
+		  >= GET_MODE_SIZE (GET_MODE (val)));
+      if (! MEM_P (val))
+	{
+	  val = gen_rtx_SUBREG (GET_MODE (mem_pseudo),
+				GET_CODE (val) == SUBREG ? SUBREG_REG (val) : val,
+				0);
+	  LRA_SUBREG_P (val) = 1;
+	}
+      else
+	{
+	  mem_pseudo = gen_lowpart_SUBREG (GET_MODE (val), mem_pseudo);
+	  LRA_SUBREG_P (mem_pseudo) = 1;
+	}
     }
   return (to_p
 	  ? gen_move_insn (mem_pseudo, val)
@@ -890,7 +900,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
     dreg = SUBREG_REG (dest);
   if (GET_CODE (src) == SUBREG)
     sreg = SUBREG_REG (src);
-  if (! REG_P (dreg) || ! REG_P (sreg))
+  if (! (REG_P (dreg) || MEM_P (dreg)) || ! (REG_P (sreg) || MEM_P (sreg)))
     return false;
   sclass = dclass = NO_REGS;
   if (REG_P (dreg))
@@ -911,14 +921,22 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
   if (sclass == ALL_REGS)
     /* See comments above.  */
     return false;
+  if (sclass == NO_REGS && dclass == NO_REGS)
+    return false;
 #ifdef SECONDARY_MEMORY_NEEDED
-  if (dclass != NO_REGS && sclass != NO_REGS
-      && SECONDARY_MEMORY_NEEDED (sclass, dclass, GET_MODE (src)))
+  if (SECONDARY_MEMORY_NEEDED (sclass, dclass, GET_MODE (src))
+#ifdef SECONDARY_MEMORY_NEEDED_MODE
+      && ((sclass != NO_REGS && dclass != NO_REGS)
+	  || GET_MODE (src) != SECONDARY_MEMORY_NEEDED_MODE (GET_MODE (src)))
+#endif
+      )
     {
       *sec_mem_p = true;
       return false;
     }
 #endif
+  if (! REG_P (dreg) || ! REG_P (sreg))
+    return false;
   sri.prev_sri = NULL;
   sri.icode = CODE_FOR_nothing;
   sri.extra_cost = 0;
@@ -3006,16 +3024,22 @@ curr_insn_transform (void)
 	  /* If the target says specifically to use another mode for
 	     secondary memory moves we can not reuse the original
 	     insn.  */
-         after = emit_spill_move (false, new_reg, dest);
-         lra_process_new_insns (curr_insn, NULL_RTX, after,
-                                "Inserting the sec. move");
-         before = emit_spill_move (true, new_reg, src);
-         lra_process_new_insns (curr_insn, before, NULL_RTX, "Changing on");
-         lra_set_insn_deleted (curr_insn);
-       }
+	  after = emit_spill_move (false, new_reg, dest);
+	  lra_process_new_insns (curr_insn, NULL_RTX, after,
+				 "Inserting the sec. move");
+	  /* We may have non null BEFORE here (e.g. after address
+	     processing.  */
+	  push_to_sequence (before);
+	  before = emit_spill_move (true, new_reg, src);
+	  emit_insn (before);
+	  before = get_insns ();
+	  end_sequence ();
+	  lra_process_new_insns (curr_insn, before, NULL_RTX, "Changing on");
+	  lra_set_insn_deleted (curr_insn);
+	}
       else if (dest == rld)
-       {
-         *curr_id->operand_loc[0] = new_reg;
+        {
+	  *curr_id->operand_loc[0] = new_reg;
 	  after = emit_spill_move (false, new_reg, dest);
 	  lra_process_new_insns (curr_insn, NULL_RTX, after,
 				 "Inserting the sec. move");
@@ -3023,7 +3047,12 @@ curr_insn_transform (void)
       else
 	{
 	  *curr_id->operand_loc[1] = new_reg;
+	  /* See comments above.  */
+	  push_to_sequence (before);
 	  before = emit_spill_move (true, new_reg, src);
+	  emit_insn (before);
+	  before = get_insns ();
+	  end_sequence ();
 	  lra_process_new_insns (curr_insn, before, NULL_RTX,
 				 "Inserting the sec. move");
 	}
@@ -3823,7 +3852,9 @@ struct usage_insns
 {
   /* If the value is equal to CURR_USAGE_INSNS_CHECK, then the member
      value INSNS is valid.  The insns is chain of optional debug insns
-     and a finishing non-debug insn using the corresponding reg.  */
+     and a finishing non-debug insn using the corresponding reg.  The
+     value is also used to mark the registers which are set up in the
+     current insn.  The negated insn uid is used for this.  */
   int check;
   /* Value of global reloads_num at the last insn in INSNS.  */
   int reloads_num;
@@ -4796,14 +4827,15 @@ inherit_in_ebb (rtx head, rtx tail)
 			&& (dst_regno < FIRST_PSEUDO_REGISTER
 			    || reg_renumber[dst_regno] >= 0)))
 		  {
-		    /* Invalidate.  */
+		    /* Invalidate and mark definitions.  */
 		    if (dst_regno >= FIRST_PSEUDO_REGISTER)
-		      usage_insns[dst_regno].check = 0;
+		      usage_insns[dst_regno].check = -(int) INSN_UID (curr_insn);
 		    else
 		      {
 			nregs = hard_regno_nregs[dst_regno][reg->biggest_mode];
 			for (i = 0; i < nregs; i++)
-			  usage_insns[dst_regno + i].check = 0;
+			  usage_insns[dst_regno + i].check
+			    = -(int) INSN_UID (curr_insn);
 		      }
 		  }
 	      }
@@ -4864,8 +4896,10 @@ inherit_in_ebb (rtx head, rtx tail)
 			    = usage_insns[src_regno].insns) != NULL_RTX
 			&& NONDEBUG_INSN_P (curr_insn))
 		      add_to_inherit (src_regno, next_usage_insns);
-		    else
-		      /* Add usages.  */
+		    else if (usage_insns[src_regno].check
+			     != -(int) INSN_UID (curr_insn))
+                      /* Add usages but only if the reg is not set up
+                         in the same insn.  */
 		      add_next_usage_insn (src_regno, curr_insn, reloads_num);
 		  }
 		else if (src_regno < FIRST_PSEUDO_REGISTER
