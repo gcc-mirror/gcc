@@ -91,7 +91,7 @@ struct locus_discrim_map
 
 /* Hashtable helpers.  */
 
-struct locus_descrim_hasher : typed_free_remove <locus_discrim_map>
+struct locus_discrim_hasher : typed_free_remove <locus_discrim_map>
 {
   typedef locus_discrim_map value_type;
   typedef locus_discrim_map compare_type;
@@ -103,7 +103,7 @@ struct locus_descrim_hasher : typed_free_remove <locus_discrim_map>
    a hash table entry that maps a location_t to a discriminator.  */
 
 inline hashval_t
-locus_descrim_hasher::hash (const value_type *item)
+locus_discrim_hasher::hash (const value_type *item)
 {
   return LOCATION_LINE (item->locus);
 }
@@ -112,12 +112,12 @@ locus_descrim_hasher::hash (const value_type *item)
    point to the two hash table entries to compare.  */
 
 inline bool
-locus_descrim_hasher::equal (const value_type *a, const compare_type *b)
+locus_discrim_hasher::equal (const value_type *a, const compare_type *b)
 {
   return LOCATION_LINE (a->locus) == LOCATION_LINE (b->locus);
 }
 
-static hash_table <locus_descrim_hasher> discriminator_per_locus;
+static hash_table <locus_discrim_hasher> discriminator_per_locus;
 
 /* Basic blocks and flowgraphs.  */
 static void make_blocks (gimple_seq);
