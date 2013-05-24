@@ -2913,10 +2913,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       {
 	Node_Id full_definition = Declaration_Node (gnat_entity);
 	Node_Id record_definition = Type_Definition (full_definition);
+	Node_Id gnat_constr;
 	Entity_Id gnat_field;
-	tree gnu_field, gnu_field_list = NULL_TREE, gnu_get_parent;
+	tree gnu_field, gnu_field_list = NULL_TREE;
+	tree gnu_get_parent;
 	/* Set PACKED in keeping with gnat_to_gnu_field.  */
-	int packed
+	const int packed
 	  = Is_Packed (gnat_entity)
 	    ? 1
 	    : Component_Alignment (gnat_entity) == Calign_Storage_Unit
@@ -2926,13 +2928,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		     && Known_RM_Size (gnat_entity)))
 		? -2
 		: 0;
-	bool has_discr = Has_Discriminants (gnat_entity);
-	bool has_rep = Has_Specified_Layout (gnat_entity);
-	bool all_rep = has_rep;
-	bool is_extension
+	const bool has_discr = Has_Discriminants (gnat_entity);
+	const bool has_rep = Has_Specified_Layout (gnat_entity);
+	const bool is_extension
 	  = (Is_Tagged_Type (gnat_entity)
 	     && Nkind (record_definition) == N_Derived_Type_Definition);
-	bool is_unchecked_union = Is_Unchecked_Union (gnat_entity);
+	const bool is_unchecked_union = Is_Unchecked_Union (gnat_entity);
+	bool all_rep = has_rep;
 
 	/* See if all fields have a rep clause.  Stop when we find one
 	   that doesn't.  */
@@ -3170,6 +3172,51 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  gnu_field_list = gnu_field;
 		}
 	    }
+
+	/* If we have a derived untagged type that renames discriminants in
+	   the root type, the (stored) discriminants are a just copy of the
+	   discriminants of the root type.  This means that any constraints
+	   added by the renaming in the derivation are disregarded as far
+	   as the layout of the derived type is concerned.  To rescue them,
+	   we change the type of the (stored) discriminants to a subtype
+	   with the bounds of the type of the visible discriminants.  */
+	if (has_discr
+	    && !is_extension
+	    && Stored_Constraint (gnat_entity) != No_Elist)
+	  for (gnat_constr = First_Elmt (Stored_Constraint (gnat_entity));
+	       gnat_constr != No_Elmt;
+	       gnat_constr = Next_Elmt (gnat_constr))
+	    if (Nkind (Node (gnat_constr)) == N_Identifier
+		/* Ignore access discriminants.  */
+		&& !Is_Access_Type (Etype (Node (gnat_constr)))
+		&& Ekind (Entity (Node (gnat_constr))) == E_Discriminant)
+	      {
+		Entity_Id gnat_discr = Entity (Node (gnat_constr));
+		tree gnu_discr_type = gnat_to_gnu_type (Etype (gnat_discr));
+		tree gnu_ref
+		  = gnat_to_gnu_entity (Original_Record_Component (gnat_discr),
+					NULL_TREE, 0);
+
+		/* GNU_REF must be an expression using a PLACEHOLDER_EXPR built
+		   just above for one of the stored discriminants.  */
+		gcc_assert (TREE_TYPE (TREE_OPERAND (gnu_ref, 0)) == gnu_type);
+
+		if (gnu_discr_type != TREE_TYPE (gnu_ref))
+		  {
+		    const unsigned prec = TYPE_PRECISION (TREE_TYPE (gnu_ref));
+		    tree gnu_subtype
+		      = TYPE_UNSIGNED (TREE_TYPE (gnu_ref))
+		        ? make_unsigned_type (prec) : make_signed_type (prec);
+		    TREE_TYPE (gnu_subtype) = TREE_TYPE (gnu_ref);
+		    TYPE_EXTRA_SUBTYPE_P (gnu_subtype) = 1;
+		    SET_TYPE_RM_MIN_VALUE (gnu_subtype,
+					   TYPE_MIN_VALUE (gnu_discr_type));
+		    SET_TYPE_RM_MAX_VALUE (gnu_subtype,
+					   TYPE_MAX_VALUE (gnu_discr_type));
+		    TREE_TYPE (gnu_ref)
+		      = TREE_TYPE (TREE_OPERAND (gnu_ref, 1)) = gnu_subtype;
+		  }
+	      }
 
 	/* Add the fields into the record type and finish it up.  */
 	components_to_record (gnu_type, Component_List (record_definition),
@@ -5969,7 +6016,7 @@ elaborate_entity (Entity_Id gnat_entity)
 	       Present (gnat_field);
 	       gnat_field = Next_Discriminant (gnat_field),
 	       gnat_discriminant_expr = Next_Elmt (gnat_discriminant_expr))
-	    /* ??? For now, ignore access discriminants.  */
+	    /* Ignore access discriminants.  */
 	    if (!Is_Access_Type (Etype (Node (gnat_discriminant_expr))))
 	      elaborate_expression (Node (gnat_discriminant_expr),
 				    gnat_entity, get_entity_name (gnat_field),
@@ -7623,20 +7670,20 @@ build_subst_list (Entity_Id gnat_subtype, Entity_Id gnat_type, bool definition)
 {
   vec<subst_pair> gnu_list = vNULL;
   Entity_Id gnat_discrim;
-  Node_Id gnat_value;
+  Node_Id gnat_constr;
 
   for (gnat_discrim = First_Stored_Discriminant (gnat_type),
-       gnat_value = First_Elmt (Stored_Constraint (gnat_subtype));
+       gnat_constr = First_Elmt (Stored_Constraint (gnat_subtype));
        Present (gnat_discrim);
        gnat_discrim = Next_Stored_Discriminant (gnat_discrim),
-       gnat_value = Next_Elmt (gnat_value))
+       gnat_constr = Next_Elmt (gnat_constr))
     /* Ignore access discriminants.  */
-    if (!Is_Access_Type (Etype (Node (gnat_value))))
+    if (!Is_Access_Type (Etype (Node (gnat_constr))))
       {
 	tree gnu_field = gnat_to_gnu_field_decl (gnat_discrim);
 	tree replacement = convert (TREE_TYPE (gnu_field),
 				    elaborate_expression
-				    (Node (gnat_value), gnat_subtype,
+				    (Node (gnat_constr), gnat_subtype,
 				     get_entity_name (gnat_discrim),
 				     definition, true, false));
 	subst_pair s = {gnu_field, replacement};
