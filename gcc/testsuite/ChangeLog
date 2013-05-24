@@ -1,3 +1,13 @@
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26572
+	* g++.dg/template/error51.C: New.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25503
+	* g++.dg/template/bitfield2.C: New.
+
 2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/noinline1.ads: New test.
