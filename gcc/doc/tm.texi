@@ -6765,7 +6765,7 @@ Deallocate internal data in target scheduling context pointed to by @var{tc}.
 Deallocate a store for target scheduling context pointed to by @var{tc}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, int @var{request}, rtx *@var{new_pat})
+@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, unsigned int @var{dep_status}, rtx *@var{new_pat})
 This hook is called by the insn scheduler when @var{insn} has only
 speculative dependencies and therefore can be scheduled speculatively.
 The hook is used to check if the pattern of @var{insn} has a speculative
@@ -6776,13 +6776,13 @@ speculation.  If the return value equals 1 then @var{new_pat} is assigned
 the generated speculative pattern.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_NEEDS_BLOCK_P (int @var{dep_status})
+@deftypefn {Target Hook} bool TARGET_SCHED_NEEDS_BLOCK_P (unsigned int @var{dep_status})
 This hook is called by the insn scheduler during generation of recovery code
 for @var{insn}.  It should return @code{true}, if the corresponding check
 instruction should branch to recovery code, or @code{false} otherwise.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, int @var{mutate_p})
+@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, unsigned int @var{ds})
 This hook is called by the insn scheduler to generate a pattern for recovery
 check instruction.  If @var{mutate_p} is zero, then @var{insn} is a
 speculative instruction for which the check should be generated.
