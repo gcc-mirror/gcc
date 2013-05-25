@@ -1,3 +1,9 @@
+2013-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25666
+	* decl2.c (check_classfn): Check for destructors declared as member
+	templates.
+
 2013-05-24  Jason Merrill  <jason@redhat.com>
 
 	PR c++/56971
