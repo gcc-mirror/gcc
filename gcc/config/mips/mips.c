@@ -1426,6 +1426,16 @@ mips_merge_decl_attributes (tree olddecl, tree newdecl)
   return merge_attributes (DECL_ATTRIBUTES (olddecl),
 			   DECL_ATTRIBUTES (newdecl));
 }
+
+/* Implement TARGET_CAN_INLINE_P.  */
+
+static bool
+mips_can_inline_p (tree caller, tree callee)
+{
+  if (mips_get_compress_mode (callee) != mips_get_compress_mode (caller))
+    return false;
+  return default_target_can_inline_p (caller, callee);
+}
 
 /* If X is a PLUS of a CONST_INT, return the two terms in *BASE_PTR
    and *OFFSET_PTR.  Return X in *BASE_PTR and 0 in *OFFSET_PTR otherwise.  */
@@ -18600,6 +18610,8 @@ mips_expand_vec_minmax (rtx target, rtx op0, rtx op1,
 #define TARGET_INSERT_ATTRIBUTES mips_insert_attributes
 #undef TARGET_MERGE_DECL_ATTRIBUTES
 #define TARGET_MERGE_DECL_ATTRIBUTES mips_merge_decl_attributes
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P mips_can_inline_p
 #undef TARGET_SET_CURRENT_FUNCTION
 #define TARGET_SET_CURRENT_FUNCTION mips_set_current_function
 
