@@ -1,6 +1,7 @@
-/* { dg-do compile { target arm*-*-* alpha*-*-* ia64*-*-* x86_64-*-* s390x-*-* powerpc*-*-* rs6000-*-* } } */
+/* { dg-do compile { target arm*-*-* alpha*-*-* i?86-*-* powerpc*-*-* rs6000-*-* x86_64-*-* s390*-*-* } } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-options "-O -fdump-rtl-combine" } */
+/* { dg-options "-O -fdump-rtl-combine -march=z900" { target s390-*-* } } */
 
 #include <stdint.h>
 
