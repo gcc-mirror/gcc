@@ -1320,11 +1320,8 @@ GLIBCXX_3.4.17 {
     _ZNSt13__future_base19_Async_state_commonD1Ev;
     _ZNSt13__future_base19_Async_state_commonD2Ev;
 
-#ifdef HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT
-   # GLIBCXX_ABI compatibility only.
     # std::chrono::steady_clock::now()
     _ZNSt6chrono12steady_clock3nowEv;
-#endif
 
 } GLIBCXX_3.4.16;
 
@@ -1349,8 +1346,11 @@ GLIBCXX_3.4.18 {
 
 GLIBCXX_3.4.19 {
 
-    # std::chrono::steady_clock::now()
-    _ZNSt6chrono12steady_clock3nowEv;
+    # chrono second generation
+    _ZNSt6chrono3_V212steady_clock3nowEv;
+    _ZNSt6chrono3_V212steady_clock9is_steadyE;
+    _ZNSt6chrono3_V212system_clock3nowEv;
+    _ZNSt6chrono3_V212system_clock9is_steadyE;
 
 } GLIBCXX_3.4.18;
 
