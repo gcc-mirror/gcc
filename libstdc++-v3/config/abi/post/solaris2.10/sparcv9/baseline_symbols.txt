@@ -1566,6 +1566,8 @@ FUNC:_ZNSt15_List_node_base7_M_hookEPS_@@GLIBCXX_3.4.14
 FUNC:_ZNSt15_List_node_base7reverseEv@@GLIBCXX_3.4
 FUNC:_ZNSt15_List_node_base8transferEPS_S0_@@GLIBCXX_3.4
 FUNC:_ZNSt15_List_node_base9_M_unhookEv@@GLIBCXX_3.4.14
+FUNC:_ZNSt6chrono3_V212steady_clock3nowEv@@GLIBCXX_3.4.19
+FUNC:_ZNSt6chrono3_V212system_clock3nowEv@@GLIBCXX_3.4.19
 FUNC:_ZNSt15__exception_ptr13exception_ptr4swapERS0_@@CXXABI_1.3.3
 FUNC:_ZNSt15__exception_ptr13exception_ptrC1EMS0_FvvE@@CXXABI_1.3.3
 FUNC:_ZNSt15__exception_ptr13exception_ptrC1ERKS0_@@CXXABI_1.3.3
@@ -2915,6 +2917,8 @@ OBJECT:1:_ZNSt21__numeric_limits_base9is_iec559E@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_moduloE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_signedE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt6chrono12system_clock12is_monotonicE@@GLIBCXX_3.4.11
+OBJECT:1:_ZNSt6chrono3_V212steady_clock9is_steadyE@@GLIBCXX_3.4.19
+OBJECT:1:_ZNSt6chrono3_V212system_clock9is_steadyE@@GLIBCXX_3.4.19
 OBJECT:1:_ZSt7nothrow@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIcE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIwE@@GLIBCXX_3.4

@@ -22,37 +22,68 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#define _GLIBCXX_COMPATIBILITY_CXX0X
 #include <bits/c++config.h>
 
-#if defined(_GLIBCXX_SYMVER_GNU) && defined(_GLIBCXX_SHARED) \
-    && defined(_GLIBCXX_HAVE_AS_SYMVER_DIRECTIVE)\
-    && defined(_GLIBCXX_HAVE_SYMVER_SYMBOL_RENAMING_RUNTIME_SUPPORT)
+#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-#define steady_clock steady_clockXX
-#include "chrono.cc"
-
-// The rename syntax for default exported names is
-//   asm (".symver name1,exportedname@GLIBCXX_3.4.17")
-//   asm (".symver name2,exportedname@@GLIBCXX_3.4.19")
-// In the future, GLIBCXX_ABI > 6 should remove all uses of
-// _GLIBCXX_*_SYMVER macros in this file.
-
-#define _GLIBCXX_3_4_17_SYMVER(XXname, name) \
-   extern "C" void \
-   _X##name() \
-   __attribute__ ((alias(#XXname))); \
-   asm (".symver " "_X" #name "," #name "@GLIBCXX_3.4.17");
-
-#define _GLIBCXX_3_4_19_SYMVER(XXname, name) \
-   extern "C" void \
-   _Y##name() \
-   __attribute__ ((alias(#XXname))); \
-   asm (".symver " "_Y" #name  "," #name "@@GLIBCXX_3.4.19");
-
-_GLIBCXX_3_4_17_SYMVER(_ZNSt6chrono14steady_clockXX3nowEv,
-		       _ZNSt6chrono12steady_clock3nowEv)
-_GLIBCXX_3_4_19_SYMVER(_ZNSt6chrono14steady_clockXX3nowEv,
-		       _ZNSt6chrono12steady_clock3nowEv)
-
+#ifdef _GLIBCXX_USE_GETTIMEOFDAY
+#include <sys/time.h>
 #endif
+
+#define system_clock system_clockXX
+#define steady_clock steady_clockXX
+#include <chrono>
+#undef system_clock
+#undef steady_clock
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+  namespace chrono
+  {
+  _GLIBCXX_BEGIN_NAMESPACE_VERSION
+ 
+    // NB: Default configuration was no realtime.
+    struct system_clock
+    {
+#ifdef _GLIBCXX_USE_GETTIMEOFDAY
+      typedef chrono::microseconds    				duration;
+#else
+      typedef chrono::seconds	      				duration;
+#endif
+
+      typedef duration::rep    					rep;
+      typedef duration::period 					period;
+      typedef chrono::time_point<system_clock, duration> 	time_point;
+
+      static_assert(system_clock::duration::min()
+		    < system_clock::duration::zero(),
+		    "a clock's minimum duration cannot be less than its epoch");
+
+      static constexpr bool is_steady = false;
+
+      static time_point
+      now() noexcept;
+    };
+
+    constexpr bool system_clock::is_steady;
+
+    system_clock::time_point
+    system_clock::now() noexcept
+    {
+#ifdef _GLIBCXX_USE_GETTIMEOFDAY
+      timeval tv;
+      // EINVAL, EFAULT
+      gettimeofday(&tv, 0);
+      return time_point(duration(chrono::seconds(tv.tv_sec)
+				 + chrono::microseconds(tv.tv_usec)));
+#else
+      std::time_t __sec = std::time(0);
+      return system_clock::from_time_t(__sec);
+#endif
+    }
+
+  _GLIBCXX_END_NAMESPACE_VERSION
+  } // namespace chrono
+} // namespace std
+
+#endif // _GLIBCXX_USE_C99_STDINT_TR1
