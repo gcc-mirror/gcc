@@ -780,7 +780,7 @@ DEFHOOK_UNDOC
  "Given the current cost, @var{cost}, of an insn, @var{insn}, calculate and\
  return a new cost based on its relationship to @var{dep_insn} through the\
  dependence of weakness @var{dw}.  The default is to make no adjustment.",
- int, (rtx insn, int dep_type1, rtx dep_insn, int cost, int dw), NULL)
+ int, (rtx insn, int dep_type1, rtx dep_insn, int cost, unsigned int dw), NULL)
 
 /* The following member value is a pointer to a function called
    by the insn scheduler. This hook is called to notify the backend
@@ -835,7 +835,7 @@ DEFHOOK
 DEFHOOK
 (speculate_insn,
  "",
- int, (rtx insn, int request, rtx *new_pat), NULL)
+ int, (rtx insn, unsigned int dep_status, rtx *new_pat), NULL)
 
 /* The following member value is a pointer to a function called
    by the insn scheduler.  It should return true if the check instruction
@@ -843,20 +843,19 @@ DEFHOOK
 DEFHOOK
 (needs_block_p,
  "",
- bool, (int dep_status), NULL)
+ bool, (unsigned int dep_status), NULL)
 
 /* The following member value is a pointer to a function called
    by the insn scheduler.  It should return a pattern for the check
    instruction.
    The first parameter is a speculative instruction, the second parameter
    is the label of the corresponding recovery block (or null, if it is a
-   simple check).  If the mutation of the check is requested (e.g. from
-   ld.c to chk.a), the third parameter is true - in this case the first
-   parameter is the previous check.  */
+   simple check).  The third parameter is the kind of speculation that
+   is being performed.  */
 DEFHOOK
 (gen_spec_check,
  "",
- rtx, (rtx insn, rtx label, int mutate_p), NULL)
+ rtx, (rtx insn, rtx label, unsigned int ds), NULL)
 
 /* The following member value is a pointer to a function controlling
    what insns from the ready insn queue will be considered for the
@@ -880,12 +879,12 @@ DEFHOOK
 DEFHOOK_UNDOC
 (get_insn_spec_ds,
  "Return speculation types of instruction @var{insn}.",
- int, (rtx insn), NULL)
+ unsigned int, (rtx insn), NULL)
 
 DEFHOOK_UNDOC
 (get_insn_checked_ds,
  "Return speculation types that are checked for instruction @var{insn}",
- int, (rtx insn), NULL)
+ unsigned int, (rtx insn), NULL)
 
 DEFHOOK_UNDOC
 (skip_rtx_p,

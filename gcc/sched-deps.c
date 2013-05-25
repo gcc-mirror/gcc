@@ -4170,8 +4170,9 @@ add_dependence_1 (rtx insn, rtx elem, enum reg_note dep_type)
     cur_insn = NULL;
 }
 
-/* Return weakness of speculative type TYPE in the dep_status DS.  */
-dw_t
+/* Return weakness of speculative type TYPE in the dep_status DS,
+   without checking to prevent ICEs on malformed input.  */
+static dw_t
 get_dep_weak_1 (ds_t ds, ds_t type)
 {
   ds = ds & type;
@@ -4188,6 +4189,7 @@ get_dep_weak_1 (ds_t ds, ds_t type)
   return (dw_t) ds;
 }
 
+/* Return weakness of speculative type TYPE in the dep_status DS.  */
 dw_t
 get_dep_weak (ds_t ds, ds_t type)
 {

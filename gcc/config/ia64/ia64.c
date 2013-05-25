@@ -170,7 +170,7 @@ static ds_t ia64_get_insn_spec_ds (rtx);
 static ds_t ia64_get_insn_checked_ds (rtx);
 static bool ia64_skip_rtx_p (const_rtx);
 static int ia64_speculate_insn (rtx, ds_t, rtx *);
-static bool ia64_needs_block_p (int);
+static bool ia64_needs_block_p (ds_t);
 static rtx ia64_gen_spec_check (rtx, rtx, ds_t);
 static int ia64_spec_check_p (rtx);
 static int ia64_spec_check_src_p (rtx);
@@ -8341,9 +8341,7 @@ ia64_needs_block_p (ds_t ts)
   return !(mflag_sched_spec_control_ldc && mflag_sched_spec_ldc);
 }
 
-/* Generate (or regenerate, if (MUTATE_P)) recovery check for INSN.
-   If (LABEL != 0 || MUTATE_P), generate branchy recovery check.
-   Otherwise, generate a simple check.  */
+/* Generate (or regenerate) a recovery check for INSN.  */
 static rtx
 ia64_gen_spec_check (rtx insn, rtx label, ds_t ds)
 {

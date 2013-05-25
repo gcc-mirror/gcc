@@ -1,3 +1,17 @@
+2013-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-int.h (ds_t, dw_t): Make unsigned int.
+	Fix documentation that describes how all the ds_t bits are used.
+	Reserve the last bit for delayed-branch scheduling.
+	(BITS_PER_DEP_STATUS): Move to ds_t typedef.
+	(BITS_PER_DEP_WEAK): Fix definition and documentation.
+	(gen_dep_weak_1): Remove prototype.
+	* sched-deps.c (get_dep_weak_1): Make static.
+	* target.def (speculate_insn, needs_block_p, gen_spec_check,
+	get_insn_spec_ds, get_insn_checked_ds): Adjust hook prototypes.
+	* doc/tm.texi: Regenerate.
+	* config/ia64/ia64.c (ia64_needs_block_p): Update prototype.
+
 2013-05-24  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR debug/56950
