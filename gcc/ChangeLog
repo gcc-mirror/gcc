@@ -1,5 +1,15 @@
 2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	PR target/53916
+	* config/mips/constraints.md (kl): New constraint.
+	* config/mips/mips.md (divmod<mode>4, udivmod<mode>4): Delete.
+	(divmod<mode>4_internal): Rename to divmod<mode>4.  Use "kl" as the
+	constraint for operand 0.  Split after CSE for MIPS16.  Emit a move
+	from LO for MIPS16.
+	(udivmod<mode>4_internal): Likewise udivmod<mode>4.
+
+2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	PR target/55777
 	* config/mips/mips.c (mips_can_inline_p): New function.
 	(TARGET_CAN_INLINE_P): Define.
