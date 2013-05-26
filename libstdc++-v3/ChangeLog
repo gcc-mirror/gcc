@@ -1,3 +1,36 @@
+2013-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/chrono: Wrap clocks in inline namespace _V2.
+	* src/c++11/chrono.cc: Same.
+	* src/c++11/compatibility-chrono.cc: Revert to previous chrono.cc
+	file, with default configure macros selected.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.19): Use symbols from inline
+	namespace.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Fix up.
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Regenerated.
+
 2013-05-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* src/c++11/chrono.cc: If _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL,

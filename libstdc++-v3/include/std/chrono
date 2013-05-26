@@ -686,17 +686,35 @@ _GLIBCXX_END_NAMESPACE_VERSION
 		 const time_point<_Clock, _Dur2>& __rhs)
       { return !(__lhs < __rhs); }
 
-    /// system_clock
-    struct system_clock
-    {
-#ifdef _GLIBCXX_USE_CLOCK_REALTIME
-      typedef chrono::nanoseconds     				duration;
-#elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
-      typedef chrono::microseconds    				duration;
-#else
-      typedef chrono::seconds	      				duration;
-#endif
 
+    // Clocks. 
+
+    // Why nanosecond resolution as the default?  
+    // Why have std::system_clock always count in the higest
+    // resolution (ie nanoseconds), even if on some OSes the low 3
+    // or 9 decimal digits will be always zero? This allows later
+    // implementations to change the system_clock::now()
+    // implementation any time to provide better resolution without
+    // changing function signature or units.
+
+    // To support the (forward) evolution of the library's defined
+    // clocks, wrap inside inline namespace so that the current
+    // defintions of system_clock, steady_clock, and
+    // high_resolution_clock types are uniquely mangled. This way, new
+    // code can use the latests clocks, while the library can contain
+    // compatibility definitions for previous versions.  At some
+    // point, when these clocks settle down, the inlined namespaces
+    // can be removed.  XXX GLIBCXX_ABI Deprecated
+    inline namespace _V2 {
+
+    /**
+     *  @brief System clock.
+     *
+     *  Time returned represents wall time from the system-wide clock.
+    */
+     struct system_clock
+    {
+      typedef chrono::nanoseconds     				duration;
       typedef duration::rep    					rep;
       typedef duration::period 					period;
       typedef chrono::time_point<system_clock, duration> 	time_point;
@@ -727,8 +745,12 @@ _GLIBCXX_END_NAMESPACE_VERSION
       }
     };
 
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    /// steady_clock
+
+    /**
+     *  @brief Monotonic clock
+     *
+     *  Time returned has the property of only increasing at a uniform rate.
+    */
     struct steady_clock
     {
       typedef chrono::nanoseconds 				duration;
@@ -741,11 +763,18 @@ _GLIBCXX_END_NAMESPACE_VERSION
       static time_point
       now() noexcept;
     };
-#else
-    typedef system_clock steady_clock;
-#endif
 
-    typedef system_clock high_resolution_clock;
+
+    /**
+     *  @brief Highest-resolution clock
+     *
+     *  This is the clock "with the shortest tick period." Alias to
+     *  std::system_clock until higher-than-nanosecond definitions
+     *  become feasible.
+    */
+    using high_resolution_clock = system_clock;
+
+  } // end inline namespace _V2
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
