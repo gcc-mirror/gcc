@@ -1,5 +1,9 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/last_bit.ads: New test.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/specs/machine_attribute.ads: New test.
 
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>

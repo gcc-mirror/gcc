@@ -1,5 +1,10 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Last_Bit>: Add kludge
+	to avoid generating an overflow for -1.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (create_type_decl): Adjust prototype.
 	(create_label_decl): Complete prototype.
 	(process_attributes): Declare.
