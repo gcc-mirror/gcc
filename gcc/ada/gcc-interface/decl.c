@@ -288,7 +288,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
      If we are defining the node, we should not have already processed it.
      In that case, we will abort below when we try to save a new GCC tree
      for this object.  We also need to handle the case of getting a dummy
-     type when a Full_View exists.  */
+     type when a Full_View exists but be careful so as not to trigger its
+     premature elaboration.  */
   if ((!definition || (is_type && imported_p))
       && present_gnu_tree (gnat_entity))
     {
@@ -297,7 +298,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       if (TREE_CODE (gnu_decl) == TYPE_DECL
 	  && TYPE_IS_DUMMY_P (TREE_TYPE (gnu_decl))
 	  && IN (kind, Incomplete_Or_Private_Kind)
-	  && Present (Full_View (gnat_entity)))
+	  && Present (Full_View (gnat_entity))
+	  && (present_gnu_tree (Full_View (gnat_entity))
+	      || No (Freeze_Node (Full_View (gnat_entity)))))
 	{
 	  gnu_decl
 	    = gnat_to_gnu_entity (Full_View (gnat_entity), NULL_TREE, 0);

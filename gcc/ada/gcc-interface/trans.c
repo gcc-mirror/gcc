@@ -8723,7 +8723,7 @@ process_type (Entity_Id gnat_entity)
   if (Present (Freeze_Node (gnat_entity))
       || (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
 	  && Present (Full_View (gnat_entity))
-	  && Freeze_Node (Full_View (gnat_entity))
+	  && Present (Freeze_Node (Full_View (gnat_entity)))
 	  && !present_gnu_tree (Full_View (gnat_entity))))
     {
       elaborate_entity (gnat_entity);
