@@ -1,3 +1,8 @@
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Always build the
+	UNC variable for aliased objects with unconstrained nominal subtype.
+
 2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (gnat_init_gcc_fp): Declare.

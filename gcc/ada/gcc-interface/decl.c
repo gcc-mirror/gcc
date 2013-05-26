@@ -1411,26 +1411,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	       just above, we have nothing to do here.  */
 	    if (!TYPE_IS_THIN_POINTER_P (gnu_type))
 	      {
-	        gnu_size = NULL_TREE;
-		used_by_ref = true;
+		tree gnu_unc_var
+		   = create_var_decl (concat_name (gnu_entity_name, "UNC"),
+				      NULL_TREE, gnu_type, gnu_expr,
+				      const_flag, Is_Public (gnat_entity),
+				      imported_p || !definition, static_p,
+				      NULL, gnat_entity);
+		gnu_expr
+		  = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_unc_var);
+		TREE_CONSTANT (gnu_expr) = 1;
 
-		if (definition && !imported_p)
-		  {
-		    tree gnu_unc_var
-		      = create_var_decl (concat_name (gnu_entity_name, "UNC"),
-					 NULL_TREE, gnu_type, gnu_expr,
-					 const_flag, Is_Public (gnat_entity),
-					 false, static_p, NULL, gnat_entity);
-		    gnu_expr
-		      = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_unc_var);
-		    TREE_CONSTANT (gnu_expr) = 1;
-		    const_flag = true;
-		  }
-		else
-		  {
-		    gnu_expr = NULL_TREE;
-		    const_flag = false;
-		  }
+		gnu_size = NULL_TREE;
+		used_by_ref = true;
+		const_flag = true;
 	      }
 
 	    gnu_type
