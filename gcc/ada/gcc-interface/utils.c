@@ -653,11 +653,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
    starting bit position so that it is aligned to ALIGN bits, and leaving at
    least ROOM bytes free before the field.  BASE_ALIGN is the alignment the
-   record is guaranteed to get.  */
+   record is guaranteed to get.  GNAT_NODE is used for the position of the
+   associated TYPE_DECL.  */
 
 tree
 make_aligning_type (tree type, unsigned int align, tree size,
-		    unsigned int base_align, int room)
+		    unsigned int base_align, int room, Node_Id gnat_node)
 {
   /* We will be crafting a record type with one field at a position set to be
      the next multiple of ALIGN past record'address + room bytes.  We use a
@@ -739,7 +740,7 @@ make_aligning_type (tree type, unsigned int align, tree size,
 
   /* Declare it now since it will never be declared otherwise.  This is
      necessary to ensure that its subtrees are properly marked.  */
-  create_type_decl (name, record_type, NULL, true, false, Empty);
+  create_type_decl (name, record_type, NULL, true, false, gnat_node);
 
   return record_type;
 }

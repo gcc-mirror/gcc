@@ -123,9 +123,10 @@ extern bool is_cplusplus_method (Entity_Id gnat_entity);
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
     starting bit position so that it is aligned to ALIGN bits, and leaving at
     least ROOM bytes free before the field.  BASE_ALIGN is the alignment the
-    record is guaranteed to get.  */
+    record is guaranteed to get.  GNAT_NODE is used for the position of the
+    associated TYPE_DECL.  */
 extern tree make_aligning_type (tree type, unsigned int align, tree size,
-				unsigned int base_align, int room);
+				unsigned int base_align, int room, Node_Id);
 
 /* TYPE is a RECORD_TYPE, UNION_TYPE or QUAL_UNION_TYPE that is being used
    as the field type of a packed record if IN_RECORD is true, or as the

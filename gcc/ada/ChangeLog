@@ -1,5 +1,13 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (make_aligning_type): Adjust prototype.
+	* gcc-interface/utils.c (make_aligning_type): Take GNAT_NODE parameter
+	for the position of the associated TYPE_DECL.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust call to above.
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Likewise.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not prematurely
 	elaborate the full view of a type with a freeze node.
 	* gcc-interface/trans.c (process_type): Add explicit predicate.
