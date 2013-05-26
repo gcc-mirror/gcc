@@ -1,5 +1,10 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c: (gnat_to_gnu_entity): In ASIS mode, do not
+	check that access types have a set size.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (vinfo_t): New type and associated vector.
 	(components_to_record): Change return type to bool.
 	Lay out the variants in two passes.  Do not force a specific layout for
