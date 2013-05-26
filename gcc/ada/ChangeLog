@@ -1,5 +1,15 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (vinfo_t): New type and associated vector.
+	(components_to_record): Change return type to bool.
+	Lay out the variants in two passes.  Do not force a specific layout for
+	the variant part if the variants do not have a representation clause.
+	Take the alignment of the variant part into account when laying out
+	variants without rep clause in a record type with a partial rep clause.
+	(create_rep_part): Do not set the position of the field.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Last_Bit>: Add kludge
 	to avoid generating an overflow for -1.
 
