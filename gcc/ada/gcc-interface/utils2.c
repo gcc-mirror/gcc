@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -2101,7 +2101,8 @@ maybe_wrap_malloc (tree data_size, tree data_type, Node_Id gnat_node)
     = ((data_align > system_allocator_alignment)
        ? make_aligning_type (data_type, data_align, data_size,
 			     system_allocator_alignment,
-			     POINTER_SIZE / BITS_PER_UNIT)
+			     POINTER_SIZE / BITS_PER_UNIT,
+			     gnat_node)
        : NULL_TREE);
 
   tree size_to_malloc

@@ -1368,7 +1368,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    tree gnu_new_type
 	      = make_aligning_type (gnu_type, TYPE_ALIGN (gnu_type),
 				    TYPE_SIZE_UNIT (gnu_type),
-				    BIGGEST_ALIGNMENT, 0);
+				    BIGGEST_ALIGNMENT, 0, gnat_entity);
 	    tree gnu_new_var
 	      = create_var_decl (create_concat_name (gnat_entity, "ALIGN"),
 				 NULL_TREE, gnu_new_type, NULL_TREE, false,
