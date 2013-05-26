@@ -1,5 +1,9 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/machine_attribute.ads: New test.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/incomplete3.ad[sb]: New test.
 
 2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>

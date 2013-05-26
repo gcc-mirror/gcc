@@ -1,5 +1,38 @@
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (create_type_decl): Adjust prototype.
+	(create_label_decl): Complete prototype.
+	(process_attributes): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust multiple calls to
+	create_type_decl throughout.
+	<E_Enumeration_Type>: Do the layout of the type manually and call
+	process_attributes on it.  Reindent.
+	<E_Enumeration_Subtype>: Minor tweak.
+	<E_Floating_Point_Subtype>: Reindent.
+	<E_Array_Subtype>: Call process_attributes on the array type built
+	for a packed array type.
+	<E_Record_Type>: Call process_attributes on the type.
+	<E_Record_Subtype>: Likewise.
+	<E_Access_Type>: Likewise.
+	<E_Subprogram_Type>: Likewise.
+	Likewise for all types at the end of the processing.
+	* gcc-interface/utils.c (make_aligning_type): Adjust call to
+	create_type_decl.
+	(maybe_pad_type): Likewise.
+	(create_index_type): Likewise.
+	(create_type_decl): Remove attr_list parameter and associated code.
+	(create_var_decl_1): Call process_attributes on the variable.
+	(process_attributes): Take a pointer to the object and add in_place
+	and gnat_node parameters and adjust throughout.
+	<ATTR_MACHINE_ATTRIBUTE>: Pass ATTR_FLAG_TYPE_IN_PLACE only on demand
+	and set the input location.
+	Zap the attribute list at the end.
+	(create_subprog_decl): Call process_attributes on the subprogram.
+	(build_unc_object_type): Adjust call to create_type_decl.
+	(handle_vector_type_attribute): Remove dead code.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/gigi.h (make_aligning_type): Adjust prototype.
 	* gcc-interface/utils.c (make_aligning_type): Take GNAT_NODE parameter
 	for the position of the associated TYPE_DECL.
