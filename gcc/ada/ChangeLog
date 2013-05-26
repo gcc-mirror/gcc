@@ -1,3 +1,8 @@
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Last_Bit>: Add kludge
+	to avoid generating an overflow for -1.
+
 2013-05-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/56474

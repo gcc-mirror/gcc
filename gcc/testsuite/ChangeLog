@@ -1,3 +1,7 @@
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/last_bit.ads: New test.
+
 2013-05-24  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	Backport from mainline
