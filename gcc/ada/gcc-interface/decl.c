@@ -311,8 +311,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       return gnu_decl;
     }
 
-  /* If this is a numeric or enumeral type, or an access type, a nonzero
-     Esize must be specified unless it was specified by the programmer.  */
+  /* If this is a numeric or enumeral type, or an access type, a nonzero Esize
+     must be specified unless it was specified by the programmer.  Exceptions
+     are for access-to-protected-subprogram types and all access subtypes, as
+     another GNAT type is used to lay out the GCC type for them.  */
   gcc_assert (!Unknown_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
 	      || (!IN (kind, Numeric_Kind)
@@ -320,7 +322,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		  && (!IN (kind, Access_Kind)
 		      || kind == E_Access_Protected_Subprogram_Type
 		      || kind == E_Anonymous_Access_Protected_Subprogram_Type
-		      || kind == E_Access_Subtype)));
+		      || kind == E_Access_Subtype
+		      || type_annotate_only)));
 
   /* The RM size must be specified for all discrete and fixed-point types.  */
   gcc_assert (!(IN (kind, Discrete_Or_Fixed_Point_Kind)
