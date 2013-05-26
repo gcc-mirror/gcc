@@ -1901,14 +1901,19 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	    gnu_result = bitsize_int (bitpos % BITS_PER_UNIT);
 	    gnu_result = size_binop (PLUS_EXPR, gnu_result,
 				     TYPE_SIZE (TREE_TYPE (gnu_prefix)));
-	    gnu_result = size_binop (MINUS_EXPR, gnu_result,
-				     bitsize_one_node);
+	    /* ??? Avoid a large unsigned result that will overflow when
+	       converted to the signed universal_integer.  */
+	    if (integer_zerop (gnu_result))
+	      gnu_result = integer_minus_one_node;
+	    else
+	      gnu_result
+		= size_binop (MINUS_EXPR, gnu_result, bitsize_one_node);
 	    break;
 
 	  case Attr_Bit_Position:
 	    gnu_result = gnu_field_bitpos;
 	    break;
-		}
+	  }
 
 	/* If this has a PLACEHOLDER_EXPR, qualify it by the object we are
 	   handling.  */
