@@ -1,3 +1,9 @@
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57396
+	* tree-affine.c (double_int_constant_multiple_p): Properly
+	return false for val == 0 and div != 0.
+
 2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h: Use #elif in preprocessor conditions.

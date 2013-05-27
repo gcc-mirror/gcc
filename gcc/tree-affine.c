@@ -736,11 +736,10 @@ free_affine_expand_cache (struct pointer_map_t **cache)
 }
 
 /* If VAL != CST * DIV for any constant CST, returns false.
-   Otherwise, if VAL != 0 (and hence CST != 0), and *MULT_SET is true,
-   additionally compares CST and MULT, and if they are different,
-   returns false.  Finally, if neither of these two cases occur,
-   true is returned, and if CST != 0, CST is stored to MULT and
-   MULT_SET is set to true.  */
+   Otherwise, if *MULT_SET is true, additionally compares CST and MULT,
+   and if they are different, returns false.  Finally, if neither of these
+   two cases occur, true is returned, and CST is stored to MULT and MULT_SET
+   is set to true.  */
 
 static bool
 double_int_constant_multiple_p (double_int val, double_int div,
@@ -749,7 +748,13 @@ double_int_constant_multiple_p (double_int val, double_int div,
   double_int rem, cst;
 
   if (val.is_zero ())
-    return true;
+    {
+      if (*mult_set && !mult->is_zero ())
+	return false;
+      *mult_set = true;
+      *mult = double_int_zero;
+      return true;
+    }
 
   if (div.is_zero ())
     return false;
