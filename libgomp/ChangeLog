@@ -1,3 +1,17 @@
+2013-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57423
+	* libgomp.texi (omp_set_dynamic, omp_set_nested, omp_set_nested,
+	omp_set_num_threads, omp_init_lock, omp_set_lock, omp_test_lock,
+	omp_unset_lock, omp_destroy_lock, omp_init_nest_lock,
+	omp_set_nest_lock, omp_test_nest_lock, omp_unset_nest_lock,
+	omp_destroy_nest_lock): Correct arguments to match the one in
+	the OpenMP spec.
+	* omp_lib.f90.in (omp_init_lock, omp_init_nest_lock, omp_destroy_lock
+	omp_destroy_nest_lock, omp_set_lock, omp_set_nest_lock, omp_unset_lock,
+	omp_unset_nest_lock, omp_set_dynamic, omp_set_nested,
+	omp_set_num_threads, omp_test_lock, omp_test_nest_lock): Ditto.
+
 2013-05-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/loop-13.c: New test.
