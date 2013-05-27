@@ -1046,7 +1046,8 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
     return false;
 
   /* See if this intrinsic is allowed in the current standard.  */
-  if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc))
+  if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc)
+      && !sym->attr.artificial)
     {
       if (sym->attr.proc == PROC_UNKNOWN
 	  && gfc_option.warn_intrinsics_std)
