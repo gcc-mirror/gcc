@@ -1,3 +1,8 @@
+2013-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (gfc_build_intrinsic_call): Make symbol as attr.artificial.
+	* intrinsic.c (gfc_is_intrinsic): Disable std check for those.
+
 2013-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (get_temp_from_expr): Change mangling to
