@@ -13330,6 +13330,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case OMP_SECTIONS:
     case OMP_SINGLE:
+    case OMP_TEAMS:
+    case OMP_TARGET_DATA:
+    case OMP_TARGET:
       tmp = tsubst_omp_clauses (OMP_CLAUSES (t), false,
 				args, complain, in_decl);
       stmt = push_stmt_list ();
@@ -13338,6 +13341,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
       t = copy_node (t);
       OMP_BODY (t) = stmt;
+      OMP_CLAUSES (t) = tmp;
+      add_stmt (t);
+      break;
+
+    case OMP_TARGET_UPDATE:
+      tmp = tsubst_omp_clauses (OMP_TARGET_UPDATE_CLAUSES (t), false,
+				args, complain, in_decl);
+      t = copy_node (t);
       OMP_CLAUSES (t) = tmp;
       add_stmt (t);
       break;

@@ -2347,6 +2347,27 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "#pragma omp distribute");
       goto dump_omp_loop;
 
+    case OMP_TEAMS:
+      pp_string (buffer, "#pragma omp teams");
+      dump_omp_clauses (buffer, OMP_TEAMS_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_TARGET_DATA:
+      pp_string (buffer, "#pragma omp target data");
+      dump_omp_clauses (buffer, OMP_TARGET_DATA_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_TARGET:
+      pp_string (buffer, "#pragma omp target");
+      dump_omp_clauses (buffer, OMP_TARGET_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_TARGET_UPDATE:
+      pp_string (buffer, "#pragma omp target update");
+      dump_omp_clauses (buffer, OMP_TARGET_UPDATE_CLAUSES (node), spc, flags);
+      is_expr = false;
+      break;
+
     dump_omp_loop:
       dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 

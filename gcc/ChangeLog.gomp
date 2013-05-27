@@ -1,3 +1,71 @@
+2013-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.def (OMP_TEAMS, OMP_TARGET_DATA, OMP_TARGET,
+	OMP_TARGET_UPDATE): New tree codes.
+	* tree-cfg.c (make_edges): Handle GIMPLE_OMP_TARGET
+	and GIMPLE_OMP_TEAMS.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_DIST_SCHEDULE.
+	* gimple-low.c (lower_stmt): Handle GIMPLE_OMP_TARGET
+	and GIMPLE_OMP_TEAMS.
+	* tree.h (OMP_TEAMS_BODY, OMP_TEAMS_CLAUSES, OMP_TARGET_DATA_BODY,
+	OMP_TARGET_DATA_CLAUSES, OMP_TARGET_BODY, OMP_TARGET_CLAUSES,
+	OMP_TARGET_UPDATE_CLAUSES): Define.
+ 	* tree-nested.c (convert_nonlocal_reference_stmt,
+	convert_local_reference_stmt, convert_gimple_call): Handle
+	GIMPLE_OMP_TARGET and GIMPLE_OMP_TEAMS.
+	* tree-inline.c (estimate_num_insns): Likewise.
+	(remap_gimple_stmt): Likewise.  Adjust gimple_build_omp_for
+	caller.
+	* gimple.def: Adjust comments describing OMP_CLAUSEs.
+	(GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS): New GIMPLE stmts.
+	* tree-parloops.c (create_parallel_loop): Adjust gimple_build_omp_for
+	caller.
+	* tree-pretty-print.c (dump_generic_node): Handle OMP_TEAMS,
+	OMP_TARGET, OMP_TARGET_DATA and OMP_TARGET_UPDATE.
+	* gimple.h (GF_OMP_TARGET_KIND_MASK, GF_OMP_TARGET_KIND_REGION,
+	GF_OMP_TARGET_KIND_DATA, GF_OMP_TARGET_KIND_UPDATE): New.
+	(gimple_build_omp_for): Add kind argument to prototype.
+	(gimple_build_omp_target, gimple_build_omp_teams): New prototypes.
+	(gimple_has_substatements): Handle GIMPLE_OMP_TARGET and
+	GIMPLE_OMP_TEAMS.
+	(gimple_omp_subcode): Change GIMPLE_OMP_SINGLE to GIMPLE_OMP_TEAMS.
+	(gimple_omp_target_clauses, gimple_omp_target_clauses_ptr,
+	gimple_omp_target_set_clauses, gimple_omp_target_kind,
+	gimple_omp_target_set_kind, gimple_omp_teams_clauses,
+	gimple_omp_teams_clauses_ptr, gimple_omp_teams_set_clauses): New
+	inline functions.
+	(gimple_return_set_retval): Handle GIMPLE_OMP_TARGET and
+	GIMPLE_OMP_TEAMS.
+	* gimple.c (gimple_build_omp_for): Add kind argument, call
+	gimple_omp_for_set_kind.
+	(gimple_build_omp_target, gimple_build_omp_teams): New functions.
+	(walk_gimple_op, walk_gimple_stmt, gimple_copy): Handle
+	GIMPLE_OMP_TARGET and GIMPLE_OMP_TEAMS.
+	* gimple-pretty-print.c (dump_gimple_omp_target,
+	dump_gimple_omp_teams): New functions.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_TARGET and GIMPLE_OMP_TEAMS.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP.
+	(enum omp_region_type): Add ORT_TEAMS, ORT_TARGET and ORT_TARGET_DATA.
+	(omp_add_variable): Add temporary assertions.
+	(omp_notice_threadprivate_variable): Complain if threadprivate vars
+	appear in target region.
+	(omp_notice_variable): ORT_TARGET, ORT_TARGET_DATA and ORT_TEAMS
+	handling.
+	(omp_check_private): Ignore ORT_TARGET and ORT_TARGET_DATA regions.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_MAP, OMP_CLAUSE_TO,
+	OMP_CLAUSE_FROM, OMP_CLAUSE_NUM_TEAMS, OMP_CLAUSE_DIST_SCHEDULE
+	and OMP_CLAUSE_DEVICE.
+	(gimplify_adjust_omp_clauses): Likewise.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_MAP.  Fix up
+	check for privatization by also testing for GOVD_LINEAR.
+	(gimplify_omp_for): Adjust gimple_build_omp_for caller.
+	Clear *expr_p.
+	(gimplify_omp_workshare): Handle also OMP_TARGET, OMP_TARGET_DATA
+	and OMP_TEAMS.  Clear *expr_p.
+	(gimplify_omp_target_update): New function.
+	(gimplify_expr): Handle OMP_TARGET, OMP_TARGET_DATA, OMP_TARGET_UPDATE
+	and OMP_TEAMS.
+
 2013-05-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (expand_omp_simd): For collapse > 1 loops,

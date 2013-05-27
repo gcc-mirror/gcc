@@ -57,10 +57,11 @@ enum gimplify_omp_var_data
   GOVD_LASTPRIVATE = 32,
   GOVD_REDUCTION = 64,
   GOVD_LOCAL = 128,
-  GOVD_DEBUG_PRIVATE = 256,
-  GOVD_PRIVATE_OUTER_REF = 512,
-  GOVD_LINEAR = 1024,
-  GOVD_ALIGNED = 2048,
+  GOVD_MAP = 256,
+  GOVD_DEBUG_PRIVATE = 512,
+  GOVD_PRIVATE_OUTER_REF = 1024,
+  GOVD_LINEAR = 2048,
+  GOVD_ALIGNED = 4096,
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
 			   | GOVD_LOCAL)
@@ -74,7 +75,10 @@ enum omp_region_type
   ORT_PARALLEL = 2,
   ORT_COMBINED_PARALLEL = 3,
   ORT_TASK = 4,
-  ORT_UNTIED_TASK = 5
+  ORT_UNTIED_TASK = 5,
+  ORT_TEAMS = 8,
+  ORT_TARGET_DATA = 16,
+  ORT_TARGET = 32
 };
 
 struct gimplify_omp_ctx
@@ -5829,6 +5833,9 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
      the parameters of the type.  */
   if (DECL_SIZE (decl) && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
     {
+      /* To be handled later.  */
+      gcc_assert ((flags & GOVD_MAP) == 0);
+
       /* Add the pointer replacement variable as PRIVATE if the variable
 	 replacement is private, else FIRSTPRIVATE since we'll need the
 	 address of the original variable either for SHARED, or for the
@@ -5870,6 +5877,9 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
     }
   else if (lang_hooks.decls.omp_privatize_by_reference (decl))
     {
+      /* To be handled later.  */
+      gcc_assert ((flags & GOVD_MAP) == 0);
+
       gcc_assert ((flags & GOVD_LOCAL) == 0);
       omp_firstprivatize_type_sizes (ctx, TREE_TYPE (decl));
 
@@ -5896,6 +5906,22 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
 				   tree decl2)
 {
   splay_tree_node n;
+  struct gimplify_omp_ctx *octx;
+
+  for (octx = ctx; octx; octx = octx->outer_context)
+    if (octx->region_type == ORT_TARGET)
+      {
+	n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
+	if (n == NULL)
+	  {
+	    error ("threadprivate variable %qE used in target region",
+		   DECL_NAME (decl));
+	    error_at (octx->location, "enclosing target region");
+	    splay_tree_insert (octx->variables, (splay_tree_key)decl, 0);
+	  }
+	if (decl2)
+	  splay_tree_insert (octx->variables, (splay_tree_key)decl2, 0);
+      }
 
   if (ctx->region_type != ORT_UNTIED_TASK)
     return false;
@@ -5944,13 +5970,24 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
     }
 
   n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
+  if (ctx->region_type == ORT_TARGET)
+    {
+      if (n == NULL)
+	omp_add_variable (ctx, decl, GOVD_MAP | flags);
+      else
+	n->value |= flags;
+      ret = lang_hooks.decls.omp_disregard_value_expr (decl, true);
+      goto do_outer;
+    }
+
   if (n == NULL)
     {
       enum omp_clause_default_kind default_kind, kind;
       struct gimplify_omp_ctx *octx;
 
       if (ctx->region_type == ORT_WORKSHARE
-	  || ctx->region_type == ORT_SIMD)
+	  || ctx->region_type == ORT_SIMD
+	  || ctx->region_type == ORT_TARGET_DATA)
 	goto do_outer;
 
       /* ??? Some compiler-generated variables (like SAVE_EXPRs) could be
@@ -5964,12 +6001,24 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
       switch (default_kind)
 	{
 	case OMP_CLAUSE_DEFAULT_NONE:
-	  error ("%qE not specified in enclosing parallel",
-		 DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
 	  if ((ctx->region_type & ORT_TASK) != 0)
-	    error_at (ctx->location, "enclosing task");
+	    {
+	      error ("%qE not specified in enclosing task",
+		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
+	      error_at (ctx->location, "enclosing task");
+	    }
+	  else if (ctx->region_type == ORT_TEAMS)
+	    {
+	      error ("%qE not specified in enclosing teams construct",
+		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
+	      error_at (ctx->location, "enclosing teams construct");
+	    }
 	  else
-	    error_at (ctx->location, "enclosing parallel");
+	    {
+	      error ("%qE not specified in enclosing parallel",
+		     DECL_NAME (lang_hooks.decls.omp_report_decl (decl)));
+	      error_at (ctx->location, "enclosing parallel");
+	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_DEFAULT_SHARED:
 	  flags |= GOVD_SHARED;
@@ -5989,13 +6038,15 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	    {
 	      splay_tree_node n2;
 
+	      if ((octx->region_type & (ORT_TARGET_DATA | ORT_TARGET)) != 0)
+		continue;
 	      n2 = splay_tree_lookup (octx->variables, (splay_tree_key) decl);
 	      if (n2 && (n2->value & GOVD_DATA_SHARE_CLASS) != GOVD_SHARED)
 		{
 		  flags |= GOVD_FIRSTPRIVATE;
 		  break;
 		}
-	      if ((octx->region_type & ORT_PARALLEL) != 0)
+	      if ((octx->region_type & (ORT_PARALLEL | ORT_TEAMS)) != 0)
 		break;
 	    }
 	  if (flags & GOVD_FIRSTPRIVATE)
@@ -6137,6 +6188,9 @@ omp_check_private (struct gimplify_omp_ctx *ctx, tree decl)
 		 /* References might be private, but might be shared too.  */
 		 || lang_hooks.decls.omp_privatize_by_reference (decl));
 
+      if ((ctx->region_type & (ORT_TARGET | ORT_TARGET_DATA)) != 0)
+	continue;
+
       n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
       if (n != NULL)
 	return (n->value & GOVD_SHARED) == 0;
@@ -6204,6 +6258,20 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  flags = GOVD_LINEAR | GOVD_EXPLICIT;
 	  goto do_add;
+	case OMP_CLAUSE_MAP:
+	  flags = GOVD_MAP | GOVD_EXPLICIT;
+	  notice_outer = false;
+	  goto do_add;
+
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (error_operand_p (decl))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  goto do_notice;
 
 	do_add:
 	  decl = OMP_CLAUSE_DECL (c);
@@ -6292,6 +6360,9 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_NUM_THREADS:
+	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	case OMP_CLAUSE_DEVICE:
 	  if (gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
 			     is_gimple_val, fb_rvalue) == GS_ERROR)
 	    remove = true;
@@ -6357,12 +6428,40 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
       gcc_assert ((flags & GOVD_DATA_SHARE_CLASS) == GOVD_PRIVATE);
       private_debug = true;
     }
+  else if (flags & GOVD_MAP)
+    private_debug = false;
   else
     private_debug
       = lang_hooks.decls.omp_private_debug_clause (decl,
 						   !!(flags & GOVD_SHARED));
   if (private_debug)
     code = OMP_CLAUSE_PRIVATE;
+  else if (flags & GOVD_MAP)
+    {
+      /* If decl is already in the enclosing device data environment,
+	 the spec says that it should just be used and no init/assignment
+	 should be done.  If there was any privatization in between though,
+	 it means that original decl might be in the enclosing device data
+	 environment, but the privatized might not.  */
+      struct gimplify_omp_ctx *ctx;
+      for (ctx = gimplify_omp_ctxp->outer_context;
+	   ctx; ctx = ctx->outer_context)
+	{
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  if (n == NULL)
+	    continue;
+	  if (ctx->region_type == ORT_TARGET_DATA)
+	    {
+	      if ((n->value & GOVD_MAP) != 0)
+		return 0;
+	    }
+	  else if ((n->value & (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE
+				| GOVD_PRIVATE | GOVD_REDUCTION
+				| GOVD_LINEAR)) != 0)
+	    break;
+	}
+      code = OMP_CLAUSE_MAP;
+    }
   else if (flags & GOVD_SHARED)
     {
       if (is_global_var (decl))
@@ -6373,7 +6472,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	      splay_tree_node on
 		= splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
 	      if (on && (on->value & (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE
-				      | GOVD_PRIVATE | GOVD_REDUCTION)) != 0)
+				      | GOVD_PRIVATE | GOVD_REDUCTION
+				      | GOVD_LINEAR)) != 0)
 		break;
 	      ctx = ctx->outer_context;
 	    }
@@ -6400,6 +6500,8 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
     OMP_CLAUSE_PRIVATE_DEBUG (clause) = 1;
   else if (code == OMP_CLAUSE_PRIVATE && (flags & GOVD_PRIVATE_OUTER_REF))
     OMP_CLAUSE_PRIVATE_OUTER_REF (clause) = 1;
+  else if (code == OMP_CLAUSE_MAP)
+    OMP_CLAUSE_MAP_KIND (clause) = OMP_CLAUSE_MAP_TOFROM;
   *list_p = clause;
   lang_hooks.decls.omp_finish_clause (clause);
 
@@ -6517,11 +6619,47 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	    }
 	  break;
 
+	case OMP_CLAUSE_MAP:
+	  decl = OMP_CLAUSE_DECL (c);
+	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	  remove = false;
+	  if (ctx->region_type == ORT_TARGET && !(n->value & GOVD_SEEN))
+	    remove = true;
+	  else
+	    {
+	      /* If decl is already in the enclosing device data environment,
+		 the spec says that it should just be used and no init/assignment
+		 should be done.  If there was any privatization in between though,
+		 it means that original decl might be in the enclosing device data
+		 environment, but the privatized might not.  */
+	      struct gimplify_omp_ctx *octx;
+	      for (octx = ctx->outer_context; octx; octx = octx->outer_context)
+		{
+		  n = splay_tree_lookup (octx->variables,
+					 (splay_tree_key) decl);
+		  if (n == NULL)
+		    continue;
+		  if (octx->region_type == ORT_TARGET_DATA)
+		    {
+		      if ((n->value & GOVD_MAP) != 0)
+			remove = true;
+		    }
+		  else if ((n->value & (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE
+					| GOVD_PRIVATE | GOVD_REDUCTION
+					| GOVD_LINEAR)) != 0)
+		    break;
+		}
+	    }
+	  break;
+
 	case OMP_CLAUSE_REDUCTION:
 	case OMP_CLAUSE_COPYIN:
 	case OMP_CLAUSE_COPYPRIVATE:
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
+	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_DIST_SCHEDULE:
+	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_NOWAIT:
 	case OMP_CLAUSE_ORDERED:
@@ -6532,6 +6670,8 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PROC_BIND:
 	case OMP_CLAUSE_SAFELEN:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_FROM:
 	  break;
 
 	default:
@@ -6847,25 +6987,19 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   gimplify_adjust_omp_clauses (&OMP_FOR_CLAUSES (for_stmt));
 
-  gfor = gimple_build_omp_for (for_body, OMP_FOR_CLAUSES (for_stmt),
-			       TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)),
-			       for_pre_body);
+  int kind;
   switch (TREE_CODE (for_stmt))
     {
-    case OMP_FOR:
-      break;
-    case OMP_SIMD:
-      gimple_omp_for_set_kind (gfor, GF_OMP_FOR_KIND_SIMD);
-      break;
-    case OMP_FOR_SIMD:
-      gimple_omp_for_set_kind (gfor, GF_OMP_FOR_KIND_FOR_SIMD);
-      break;
-    case OMP_DISTRIBUTE:
-      gimple_omp_for_set_kind (gfor, GF_OMP_FOR_KIND_DISTRIBUTE);
-      break;
+    case OMP_FOR: kind = GF_OMP_FOR_KIND_FOR; break;
+    case OMP_SIMD: kind = GF_OMP_FOR_KIND_SIMD; break;
+    case OMP_FOR_SIMD: kind = GF_OMP_FOR_KIND_FOR_SIMD; break;
+    case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     default:
       gcc_unreachable ();
     }
+  gfor = gimple_build_omp_for (for_body, kind, OMP_FOR_CLAUSES (for_stmt),
+			       TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)),
+			       for_pre_body);
 
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
     {
@@ -6880,11 +7014,15 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     }
 
   gimplify_seq_add_stmt (pre_p, gfor);
-  return ret == GS_ALL_DONE ? GS_ALL_DONE : GS_ERROR;
+  if (ret != GS_ALL_DONE)
+    return GS_ERROR;
+  *expr_p = NULL_TREE;
+  return GS_ALL_DONE;
 }
 
-/* Gimplify the gross structure of other OpenMP worksharing constructs.
-   In particular, OMP_SECTIONS and OMP_SINGLE.  */
+/* Gimplify the gross structure of other OpenMP constructs.
+   In particular, OMP_SECTIONS, OMP_SINGLE, OMP_TARGET, OMP_TARGET_DATA
+   and OMP_TEAMS.  */
 
 static void
 gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
@@ -6892,19 +7030,72 @@ gimplify_omp_workshare (tree *expr_p, gimple_seq *pre_p)
   tree expr = *expr_p;
   gimple stmt;
   gimple_seq body = NULL;
+  enum omp_region_type ort = ORT_WORKSHARE;
 
-  gimplify_scan_omp_clauses (&OMP_CLAUSES (expr), pre_p, ORT_WORKSHARE);
+  switch (TREE_CODE (expr))
+    {
+    case OMP_SECTIONS:
+    case OMP_SINGLE:
+      break;
+    case OMP_TARGET:
+      ort = ORT_TARGET;
+      break;
+    case OMP_TARGET_DATA:
+      ort = ORT_TARGET_DATA;
+      break;
+    case OMP_TEAMS:
+      ort = ORT_TEAMS;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  gimplify_scan_omp_clauses (&OMP_CLAUSES (expr), pre_p, ort);
   gimplify_and_add (OMP_BODY (expr), &body);
   gimplify_adjust_omp_clauses (&OMP_CLAUSES (expr));
 
-  if (TREE_CODE (expr) == OMP_SECTIONS)
-    stmt = gimple_build_omp_sections (body, OMP_CLAUSES (expr));
-  else if (TREE_CODE (expr) == OMP_SINGLE)
-    stmt = gimple_build_omp_single (body, OMP_CLAUSES (expr));
-  else
-    gcc_unreachable ();
+  switch (TREE_CODE (expr))
+    {
+    case OMP_SECTIONS:
+      stmt = gimple_build_omp_sections (body, OMP_CLAUSES (expr));
+      break;
+    case OMP_SINGLE:
+      stmt = gimple_build_omp_single (body, OMP_CLAUSES (expr));
+      break;
+    case OMP_TARGET:
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_REGION,
+				      OMP_CLAUSES (expr));
+      break;
+    case OMP_TARGET_DATA:
+      stmt = gimple_build_omp_target (body, GF_OMP_TARGET_KIND_DATA,
+				      OMP_CLAUSES (expr));
+      break;
+    case OMP_TEAMS:
+      stmt = gimple_build_omp_teams (body, OMP_CLAUSES (expr));
+      break;
+    default:
+      gcc_unreachable ();
+    }
 
   gimplify_seq_add_stmt (pre_p, stmt);
+  *expr_p = NULL_TREE;
+}
+
+/* Gimplify the gross structure of OpenMP target update construct.  */
+
+static void
+gimplify_omp_target_update (tree *expr_p, gimple_seq *pre_p)
+{
+  tree expr = *expr_p;
+  gimple stmt;
+
+  gimplify_scan_omp_clauses (&OMP_TARGET_UPDATE_CLAUSES (expr), pre_p,
+			     ORT_WORKSHARE);
+  gimplify_adjust_omp_clauses (&OMP_TARGET_UPDATE_CLAUSES (expr));
+  stmt = gimple_build_omp_target (NULL, GF_OMP_TARGET_KIND_UPDATE,
+				  OMP_TARGET_UPDATE_CLAUSES (expr));
+
+  gimplify_seq_add_stmt (pre_p, stmt);
+  *expr_p = NULL_TREE;
 }
 
 /* A subroutine of gimplify_omp_atomic.  The front end is supposed to have
@@ -7811,7 +8002,15 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_SECTIONS:
 	case OMP_SINGLE:
+	case OMP_TARGET:
+	case OMP_TARGET_DATA:
+	case OMP_TEAMS:
 	  gimplify_omp_workshare (expr_p, pre_p);
+	  ret = GS_ALL_DONE;
+	  break;
+
+	case OMP_TARGET_UPDATE:
+	  gimplify_omp_target_update (expr_p, pre_p);
 	  ret = GS_ALL_DONE;
 	  break;
 

@@ -26823,22 +26823,7 @@ cp_parser_omp_clause_cancelkind (cp_parser * /*parser*/,
 				 enum omp_clause_code code,
 				 tree list, location_t location)
 {
-  tree c;
-
-  for (c = list; c; c = OMP_CLAUSE_CHAIN (c))
-    switch (OMP_CLAUSE_CODE (c))
-      {
-      case OMP_CLAUSE_PARALLEL:
-      case OMP_CLAUSE_FOR:
-      case OMP_CLAUSE_SECTIONS:
-      case OMP_CLAUSE_TASKGROUP:
-	error_at (location, "only one of %<parallel%>, %<for%>, %<sections%> "
-			    "and %<taskgroup%> clauses can be specified");
-	break;
-      default:
-	break;
-      }
-  c = build_omp_clause (location, code);
+  tree c = build_omp_clause (location, code);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 }
@@ -27260,7 +27245,6 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 
       token = cp_lexer_peek_token (parser->lexer);
       c_kind = cp_parser_omp_clause_name (parser);
-      first = false;
 
       switch (c_kind)
 	{
@@ -27359,31 +27343,48 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_cancelkind (parser, OMP_CLAUSE_PARALLEL,
 						     clauses, token->location);
 	  c_name = "parallel";
+	  if (!first)
+	    {
+	     clause_not_first:
+	      error_at (token->location, "%qs must be the first clause of %qs",
+			c_name, where);
+	      clauses = prev;
+	    }
 	  break;
 	case PRAGMA_OMP_CLAUSE_FOR:
 	  clauses = cp_parser_omp_clause_cancelkind (parser, OMP_CLAUSE_FOR,
 						     clauses, token->location);
 	  c_name = "for";
+	  if (!first)
+	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_SECTIONS:
 	  clauses = cp_parser_omp_clause_cancelkind (parser, OMP_CLAUSE_SECTIONS,
 						     clauses, token->location);
 	  c_name = "sections";
+	  if (!first)
+	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_TASKGROUP:
 	  clauses = cp_parser_omp_clause_cancelkind (parser, OMP_CLAUSE_TASKGROUP,
 						     clauses, token->location);
 	  c_name = "taskgroup";
+	  if (!first)
+	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_TO:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO,
 					    clauses);
 	  c_name = "to";
+	  if (!first)
+	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_FROM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_FROM,
 					    clauses);
 	  c_name = "from";
+	  if (!first)
+	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNIFORM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_UNIFORM,
@@ -27440,6 +27441,8 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  cp_parser_error (parser, "expected %<#pragma omp%> clause");
 	  goto saw_error;
 	}
+
+      first = false;
 
       if (((mask >> c_kind) & 1) == 0)
 	{
@@ -29013,6 +29016,180 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok)
 }
 
 /* OpenMP 4.0:
+   # pragma omp teams teams-clause[optseq] new-line
+     structured-block  */
+
+#define OMP_TEAMS_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SHARED)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULT))
+
+static tree
+cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok)
+{
+  tree stmt = make_node (OMP_TEAMS);
+  TREE_TYPE (stmt) = void_type_node;
+
+  OMP_TEAMS_CLAUSES (stmt)
+    = cp_parser_omp_all_clauses (parser, OMP_TEAMS_CLAUSE_MASK,
+				 "#pragma omp teams", pragma_tok);
+  OMP_TEAMS_BODY (stmt) = cp_parser_omp_structured_block (parser);
+
+  return add_stmt (stmt);
+}
+
+/* OpenMP 4.0:
+   # pragma omp target data target-data-clause[optseq] new-line
+     structured-block  */
+
+#define OMP_TARGET_DATA_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF))
+
+static tree
+cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok)
+{
+  tree stmt = make_node (OMP_TARGET_DATA);
+  TREE_TYPE (stmt) = void_type_node;
+
+  OMP_TARGET_DATA_CLAUSES (stmt)
+    = cp_parser_omp_all_clauses (parser, OMP_TARGET_DATA_CLAUSE_MASK,
+				 "#pragma omp target data", pragma_tok);
+  OMP_TARGET_DATA_BODY (stmt) = cp_parser_omp_structured_block (parser);
+
+  SET_EXPR_LOCATION (stmt, pragma_tok->location);
+  return add_stmt (stmt);
+}
+
+/* OpenMP 4.0:
+   # pragma omp target update target-update-clause[optseq] new-line */
+
+#define OMP_TARGET_UPDATE_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FROM)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TO)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF))
+
+static bool
+cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
+			     enum pragma_context context)
+{
+  if (context == pragma_stmt)
+    {
+      error_at (pragma_tok->location,
+		"%<#pragma omp target update%> may only be "
+		"used in compound statements");
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return false;
+    }
+
+  tree clauses
+    = cp_parser_omp_all_clauses (parser, OMP_TARGET_UPDATE_CLAUSE_MASK,
+				 "#pragma omp target update", pragma_tok);
+  if (find_omp_clause (clauses, OMP_CLAUSE_TO) == NULL_TREE
+      && find_omp_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
+    {
+      error_at (pragma_tok->location,
+		"%<#pragma omp target update must contain either "
+		"%<from%> or %<to%> clauses");
+      return false;
+    }
+
+  tree stmt = make_node (OMP_TARGET_UPDATE);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_TARGET_UPDATE_CLAUSES (stmt) = clauses;
+  SET_EXPR_LOCATION (stmt, pragma_tok->location);
+  add_stmt (stmt);
+  return false;
+}
+
+/* OpenMP 4.0:
+   # pragma omp target target-clause[optseq] new-line
+     structured-block  */
+
+#define OMP_TARGET_CLAUSE_MASK					\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF))
+
+static bool
+cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
+		      enum pragma_context context)
+{
+  if (context != pragma_stmt && context != pragma_compound)
+    {
+      cp_parser_error (parser, "expected declaration specifiers");
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return false;
+    }
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      if (strcmp (p, "data") == 0)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_parser_omp_target_data (parser, pragma_tok);
+	  return true;
+	}
+      else if (strcmp (p, "update") == 0)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  return cp_parser_omp_target_update (parser, pragma_tok, context);
+	}
+    }
+
+  tree stmt = make_node (OMP_TARGET);
+  TREE_TYPE (stmt) = void_type_node;
+
+  OMP_TARGET_CLAUSES (stmt)
+    = cp_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
+				 "#pragma omp target", pragma_tok);
+  OMP_TARGET_BODY (stmt) = cp_parser_omp_structured_block (parser);
+
+  SET_EXPR_LOCATION (stmt, pragma_tok->location);
+  add_stmt (stmt);
+  return true;
+}
+
+/* OpenMP 4.0:
+   #pragma omp distribute distribute-clause[optseq] new-line
+     for-loop  */
+
+#define OMP_DISTRIBUTE_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+
+static tree
+cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok)
+{
+  tree clauses, sb, ret;
+  unsigned int save;
+
+  clauses = cp_parser_omp_all_clauses (parser, OMP_DISTRIBUTE_CLAUSE_MASK,
+				       "#pragma omp distribute", pragma_tok);
+
+  sb = begin_omp_structured_block ();
+  save = cp_parser_begin_omp_structured_block (parser);
+
+  ret = cp_parser_omp_for_loop (parser, OMP_DISTRIBUTE, clauses, NULL);
+
+  cp_parser_end_omp_structured_block (parser, save);
+  add_stmt (finish_omp_structured_block (sb));
+
+  return ret;
+}
+
+/* OpenMP 4.0:
    # pragma omp declare simd declare-simd-clauses[optseq] new-line  */
 
 #define OMP_DECLARE_SIMD_CLAUSE_MASK				\
@@ -29112,6 +29289,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
     case PRAGMA_OMP_CRITICAL:
       stmt = cp_parser_omp_critical (parser, pragma_tok);
       break;
+    case PRAGMA_OMP_DISTRIBUTE:
+      stmt = cp_parser_omp_distribute (parser, pragma_tok);
+      break;
     case PRAGMA_OMP_FOR:
       stmt = cp_parser_omp_for (parser, pragma_tok);
       break;
@@ -29139,6 +29319,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
     case PRAGMA_OMP_TASKGROUP:
       cp_parser_omp_taskgroup (parser, pragma_tok);
       return;
+    case PRAGMA_OMP_TEAMS:
+      stmt = cp_parser_omp_teams (parser, pragma_tok);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -29609,6 +29792,7 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
 
     case PRAGMA_OMP_ATOMIC:
     case PRAGMA_OMP_CRITICAL:
+    case PRAGMA_OMP_DISTRIBUTE:
     case PRAGMA_OMP_FOR:
     case PRAGMA_OMP_MASTER:
     case PRAGMA_OMP_ORDERED:
@@ -29618,10 +29802,14 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
     case PRAGMA_OMP_SINGLE:
     case PRAGMA_OMP_TASK:
     case PRAGMA_OMP_TASKGROUP:
+    case PRAGMA_OMP_TEAMS:
       if (context != pragma_stmt && context != pragma_compound)
 	goto bad_stmt;
       cp_parser_omp_construct (parser, pragma_tok);
       return true;
+
+    case PRAGMA_OMP_TARGET:
+      return cp_parser_omp_target (parser, pragma_tok, context);
 
     case PRAGMA_OMP_SECTION:
       error_at (pragma_tok->location, 
