@@ -1,5 +1,11 @@
 2013-05-27  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/57412
+	* omp-low.c (expand_omp_atomic_pipeline): Use the correct latch
+	block for the new loop.
+
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57343
 	* tree-ssa-loop-niter.c (number_of_iterations_ne_max): Do not
 	use multiple_of_p if not TYPE_OVERFLOW_UNDEFINED.
