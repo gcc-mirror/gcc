@@ -1,3 +1,16 @@
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	PR middle-end/57381
+	* fold-const.c (operand_equal_p): Compare FIELD_DECLs with
+	OEP_CONSTANT_ADDRESS_OF retained.
+
+	PR tree-optimization/57417
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Fix test
+	for unchanged base.
+	(set_ssa_val_to): Compare addresses using
+	get_addr_base_and_unit_offset.
+
 2013-05-27  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/56833

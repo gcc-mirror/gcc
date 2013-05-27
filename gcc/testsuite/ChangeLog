@@ -1,5 +1,10 @@
 2013-05-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/57417
+	* gcc.dg/torture/pr57417.c: New testcase.
+
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57396
 	* gfortran.fortran-torture/execute/pr57396.f90: New testcase.
 
