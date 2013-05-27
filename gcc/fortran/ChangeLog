@@ -1,3 +1,9 @@
+2013-05-27  Bud Davis  <jmdavis@link.com>
+
+	PR fortran/50405
+	* resolve.c (resolve_formal_arglist): Detect error when an argument
+	has the same name as the function.
+
 2013-05-27  Tobias Burnus  <burnus@net-b.de>
 
 	* expr.c (gfc_build_intrinsic_call): Make symbol as attr.artificial.

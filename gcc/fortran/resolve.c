@@ -306,6 +306,14 @@ resolve_formal_arglist (gfc_symbol *proc)
 	       && !resolve_procedure_interface (sym))
 	return;
 
+      if (strcmp (proc->name, sym->name) == 0)
+        {
+          gfc_error ("Self-referential argument "
+                     "'%s' at %L is not allowed", sym->name,
+                     &proc->declared_at);
+          return;
+        }
+
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	resolve_formal_arglist (sym);
 
