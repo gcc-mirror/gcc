@@ -1611,6 +1611,15 @@
   DONE;
 })
 
+(define_insn "clz<mode>2"
+ [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
+       (clz:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "w")))]
+ "TARGET_SIMD"
+ "clz\\t%0.<Vtype>, %1.<Vtype>"
+ [(set_attr "simd_type" "simd_cls")
+  (set_attr "simd_mode" "<MODE>")]
+)
+
 ;; 'across lanes' max and min ops.
 
 (define_insn "reduc_<maxmin_uns>_<mode>"
@@ -3280,7 +3289,8 @@
 	  (COMPARISONS:DI
 	    (match_operand:DI 1 "register_operand" "w,w,r")
 	    (match_operand:DI 2 "aarch64_simd_reg_or_zero" "w,ZDz,r")
-	  )))]
+	  )))
+     (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "@
   cm<n_optab>\t%d0, %d<cmp_1>, %d<cmp_2>
@@ -3291,15 +3301,7 @@
       happening in the 'w' constraint cases.  */
    && GP_REGNUM_P (REGNO (operands[0]))
    && GP_REGNUM_P (REGNO (operands[1]))"
-  [(set (reg:CC CC_REGNUM)
-    (compare:CC
-      (match_dup 1)
-      (match_dup 2)))
-  (set (match_dup 0)
-    (neg:DI
-      (COMPARISONS:DI
-	(match_operand 3 "cc_register" "")
-	(const_int 0))))]
+  [(const_int 0)]
   {
     enum machine_mode mode = SELECT_CC_MODE (<CMP>, operands[1], operands[2]);
     rtx cc_reg = aarch64_gen_compare_reg (<CMP>, operands[1], operands[2]);
@@ -3332,7 +3334,8 @@
 	  (UCOMPARISONS:DI
 	    (match_operand:DI 1 "register_operand" "w,r")
 	    (match_operand:DI 2 "aarch64_simd_reg_or_zero" "w,r")
-	  )))]
+	  )))
+    (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "@
   cm<n_optab>\t%d0, %d<cmp_1>, %d<cmp_2>
@@ -3342,17 +3345,9 @@
       happening in the 'w' constraint cases.  */
    && GP_REGNUM_P (REGNO (operands[0]))
    && GP_REGNUM_P (REGNO (operands[1]))"
-  [(set (reg:CC CC_REGNUM)
-    (compare:CC
-      (match_dup 1)
-      (match_dup 2)))
-  (set (match_dup 0)
-    (neg:DI
-      (UCOMPARISONS:DI
-	(match_operand 3 "cc_register" "")
-	(const_int 0))))]
+  [(const_int 0)]
   {
-    enum machine_mode mode = SELECT_CC_MODE (<CMP>, operands[1], operands[2]);
+    enum machine_mode mode = CCmode;
     rtx cc_reg = aarch64_gen_compare_reg (<CMP>, operands[1], operands[2]);
     rtx comparison = gen_rtx_<CMP> (mode, operands[1], operands[2]);
     emit_insn (gen_cstoredi_neg (operands[0], comparison, cc_reg));
@@ -3385,7 +3380,8 @@
 	    (and:DI
 	      (match_operand:DI 1 "register_operand" "w,r")
 	      (match_operand:DI 2 "register_operand" "w,r"))
-	    (const_int 0))))]
+	    (const_int 0))))
+    (clobber (reg:CC CC_REGNUM))]
   "TARGET_SIMD"
   "@
   cmtst\t%d0, %d1, %d2
@@ -3395,16 +3391,7 @@
       happening in the 'w' constraint cases.  */
    && GP_REGNUM_P (REGNO (operands[0]))
    && GP_REGNUM_P (REGNO (operands[1]))"
-   [(set (reg:CC_NZ CC_REGNUM)
-	(compare:CC_NZ
-	 (and:DI (match_dup 1)
-		  (match_dup 2))
-	 (const_int 0)))
-  (set (match_dup 0)
-    (neg:DI
-      (ne:DI
-	(match_operand 3 "cc_register" "")
-	(const_int 0))))]
+  [(const_int 0)]
   {
     rtx and_tree = gen_rtx_AND (DImode, operands[1], operands[2]);
     enum machine_mode mode = SELECT_CC_MODE (NE, and_tree, const0_rtx);

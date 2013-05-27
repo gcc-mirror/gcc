@@ -1327,7 +1327,9 @@ determine_known_aggregate_parts (gimple call, tree arg,
 
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
-      if (!is_gimple_reg_type (rhs))
+      if (!is_gimple_reg_type (rhs)
+	  || TREE_CODE (lhs) == BIT_FIELD_REF
+	  || contains_bitfld_component_ref_p (lhs))
 	break;
 
       lhs_base = get_ref_base_and_extent (lhs, &lhs_offset, &lhs_size,
@@ -1418,6 +1420,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	    {
 	      struct ipa_agg_jf_item item;
 	      item.offset = list->offset - arg_offset;
+	      gcc_assert ((item.offset % BITS_PER_UNIT) == 0);
 	      item.value = unshare_expr_without_location (list->constant);
 	      jfunc->agg.items->quick_push (item);
 	    }
@@ -3216,18 +3219,22 @@ void
 ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 			   ipa_parm_adjustment_vec adjustments)
 {
+  struct cgraph_node *current_node = cgraph_get_node (current_function_decl);
   vec<tree> vargs;
   vec<tree, va_gc> **debug_args = NULL;
   gimple new_stmt;
-  gimple_stmt_iterator gsi;
+  gimple_stmt_iterator gsi, prev_gsi;
   tree callee_decl;
   int i, len;
 
   len = adjustments.length ();
   vargs.create (len);
   callee_decl = !cs ? gimple_call_fndecl (stmt) : cs->callee->symbol.decl;
+  ipa_remove_stmt_references ((symtab_node) current_node, stmt);
 
   gsi = gsi_for_stmt (stmt);
+  prev_gsi = gsi;
+  gsi_prev (&prev_gsi);
   for (i = 0; i < len; i++)
     {
       struct ipa_parm_adjustment *adj;
@@ -3422,6 +3429,14 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
   gsi_replace (&gsi, new_stmt, true);
   if (cs)
     cgraph_set_call_stmt (cs, new_stmt);
+  do
+    {
+      ipa_record_stmt_references (current_node, gsi_stmt (gsi));
+      gsi_prev (&gsi);
+    }
+  while ((gsi_end_p (prev_gsi) && !gsi_end_p (gsi))
+	 || (!gsi_end_p (prev_gsi) && gsi_stmt (gsi) == gsi_stmt (prev_gsi)));
+
   update_ssa (TODO_update_ssa);
   free_dominance_info (CDI_DOMINATORS);
 }
@@ -3849,9 +3864,9 @@ ipa_read_node_info (struct lto_input_block *ib, struct cgraph_node *node,
     info->uses_analysis_done = true;
   info->node_enqueued = false;
   for (k = 0; k < ipa_get_param_count (info); k++)
-    ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
-  for (k = 0; k < ipa_get_param_count (info); k++)
     ipa_set_param_used (info, k, bp_unpack_value (&bp, 1));
+  for (k = 0; k < ipa_get_param_count (info); k++)
+    ipa_set_controlled_uses (info, k, streamer_read_hwi (ib));
   for (e = node->callees; e; e = e->next_callee)
     {
       struct ipa_edge_args *args = IPA_EDGE_REF (e);

@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
    is examined for still-unused equivalence conditions.  We create a
    block for each merged equivalence list.  */
 
+#include <map>
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -116,7 +117,10 @@ typedef struct segment_info
 } segment_info;
 
 static segment_info * current_segment;
-static gfc_namespace *gfc_common_ns = NULL;
+
+/* Store decl of all common blocks in this translation unit; the first
+   tree is the identifier.  */
+static std::map<tree, tree> gfc_map_of_all_commons;
 
 
 /* Make a segment_info based on a symbol.  */
@@ -374,15 +378,11 @@ build_equiv_decl (tree union_type, bool is_init, bool is_saved)
 static tree
 build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 {
-  gfc_symbol *common_sym;
-  tree decl;
+  tree decl, identifier;
 
-  /* Create a namespace to store symbols for common blocks.  */
-  if (gfc_common_ns == NULL)
-    gfc_common_ns = gfc_get_namespace (NULL, 0);
-
-  gfc_get_symbol (com->name, gfc_common_ns, &common_sym);
-  decl = common_sym->backend_decl;
+  identifier = gfc_sym_mangled_common_id (com);
+  decl = gfc_map_of_all_commons.count(identifier)
+	 ? gfc_map_of_all_commons[identifier] : NULL_TREE;
 
   /* Update the size of this common block as needed.  */
   if (decl != NULL_TREE)
@@ -419,9 +419,15 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
   /* If there is no backend_decl for the common block, build it.  */
   if (decl == NULL_TREE)
     {
-      decl = build_decl (input_location,
-			 VAR_DECL, get_identifier (com->name), union_type);
-      gfc_set_decl_assembler_name (decl, gfc_sym_mangled_common_id (com));
+      if (com->is_bind_c == 1 && com->binding_label)
+	decl = build_decl (input_location, VAR_DECL, identifier, union_type);
+      else
+	{
+	  decl = build_decl (input_location, VAR_DECL, get_identifier (com->name),
+			     union_type);
+	  gfc_set_decl_assembler_name (decl, identifier);
+	}
+
       TREE_PUBLIC (decl) = 1;
       TREE_STATIC (decl) = 1;
       DECL_IGNORED_P (decl) = 1;
@@ -449,7 +455,7 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 
       /* Place the back end declaration for this common block in
          GLOBAL_BINDING_LEVEL.  */
-      common_sym->backend_decl = pushdecl_top_level (decl);
+      gfc_map_of_all_commons[identifier] = pushdecl_top_level (decl);
     }
 
   /* Has no initial values.  */

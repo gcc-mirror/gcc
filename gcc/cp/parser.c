@@ -5719,7 +5719,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	if (cp_parser_allow_gnu_extensions_p (parser)
 	    && cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
 	  {
-	    vec<constructor_elt, va_gc> *initializer_list = NULL;
+	    tree initializer = NULL_TREE;
 	    bool saved_in_type_id_in_expr_p;
 
 	    cp_parser_parse_tentatively (parser);
@@ -5732,21 +5732,19 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
 	    /* Look for the `)'.  */
 	    cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
-	    /* Look for the `{'.  */
-	    cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE);
 	    /* If things aren't going well, there's no need to
 	       keep going.  */
 	    if (!cp_parser_error_occurred (parser))
 	      {
-		bool non_constant_p;
-		/* Parse the initializer-list.  */
-		initializer_list
-		  = cp_parser_initializer_list (parser, &non_constant_p);
-		/* Allow a trailing `,'.  */
-		if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
-		  cp_lexer_consume_token (parser->lexer);
-		/* Look for the final `}'.  */
-		cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
+		if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+		  {
+		    bool non_constant_p;
+		    /* Parse the brace-enclosed initializer list.  */
+		    initializer = cp_parser_braced_list (parser,
+							 &non_constant_p);
+		  }
+		else
+		  cp_parser_simulate_error (parser);
 	      }
 	    /* If that worked, we're definitely looking at a
 	       compound-literal expression.  */
@@ -5754,7 +5752,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	      {
 		/* Warn the user that a compound literal is not
 		   allowed in standard C++.  */
-		pedwarn (input_location, OPT_Wpedantic, "ISO C++ forbids compound-literals");
+		pedwarn (input_location, OPT_Wpedantic,
+			 "ISO C++ forbids compound-literals");
 		/* For simplicity, we disallow compound literals in
 		   constant-expressions.  We could
 		   allow compound literals of integer type, whose
@@ -5772,10 +5771,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  }
 		/* Form the representation of the compound-literal.  */
 		postfix_expression
-		  = (finish_compound_literal
-		     (type, build_constructor (init_list_type_node,
-					       initializer_list),
-		      tf_warning_or_error));
+		  = finish_compound_literal (type, initializer,
+					     tf_warning_or_error);
 		break;
 	      }
 	  }
@@ -11718,13 +11715,22 @@ cp_parser_conversion_type_id (cp_parser* parser)
   cp_decl_specifier_seq type_specifiers;
   cp_declarator *declarator;
   tree type_specified;
+  const char *saved_message;
 
   /* Parse the attributes.  */
   attributes = cp_parser_attributes_opt (parser);
+
+  saved_message = parser->type_definition_forbidden_message;
+  parser->type_definition_forbidden_message
+    = G_("types may not be defined in a conversion-type-id");
+
   /* Parse the type-specifiers.  */
   cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				/*is_trailing_return=*/false,
 				&type_specifiers);
+
+  parser->type_definition_forbidden_message = saved_message;
+
   /* If that didn't work, stop.  */
   if (type_specifiers.type == error_mark_node)
     return error_mark_node;
@@ -17847,8 +17853,9 @@ cp_parser_parameter_declaration (cp_parser *parser,
 				&declares_class_or_enum);
 
   /* Complain about missing 'typename' or other invalid type names.  */
-  if (!decl_specifiers.any_type_specifiers_p)
-    cp_parser_parse_and_diagnose_invalid_type_name (parser);
+  if (!decl_specifiers.any_type_specifiers_p
+      && cp_parser_parse_and_diagnose_invalid_type_name (parser))
+    decl_specifiers.type = error_mark_node;
 
   /* If an error occurred, there's no reason to attempt to parse the
      rest of the declaration.  */

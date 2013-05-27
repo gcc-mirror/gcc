@@ -858,7 +858,6 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
       /* (not (ashiftrt foo C)) where C is the number of bits in FOO
 	 minus 1 is (ge foo (const_int 0)) if STORE_FLAG_VALUE is -1,
 	 so we can perform the above simplification.  */
-
       if (STORE_FLAG_VALUE == -1
 	  && GET_CODE (op) == ASHIFTRT
 	  && GET_CODE (XEXP (op, 1))
@@ -890,7 +889,6 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 	 with negating logical insns (and-not, nand, etc.).  If result has
 	 only one NOT, put it first, since that is how the patterns are
 	 coded.  */
-
       if (GET_CODE (op) == IOR || GET_CODE (op) == AND)
 	{
 	  rtx in1 = XEXP (op, 0), in2 = XEXP (op, 1);
@@ -912,6 +910,13 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
 	  return gen_rtx_fmt_ee (GET_CODE (op) == IOR ? AND : IOR,
 				 mode, in1, in2);
+	}
+
+      /* (not (bswap x)) -> (bswap (not x)).  */
+      if (GET_CODE (op) == BSWAP)
+	{
+	  rtx x = simplify_gen_unary (NOT, mode, XEXP (op, 0), mode);
+	  return simplify_gen_unary (BSWAP, mode, x, mode);
 	}
       break;
 
@@ -2050,6 +2055,36 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
   return NULL_RTX;
 }
 
+/* Subroutine of simplify_binary_operation to simplify a binary operation
+   CODE that can commute with byte swapping, with result mode MODE and
+   operating on OP0 and OP1.  CODE is currently one of AND, IOR or XOR.
+   Return zero if no simplification or canonicalization is possible.  */
+
+static rtx
+simplify_byte_swapping_operation (enum rtx_code code, enum machine_mode mode,
+				  rtx op0, rtx op1)
+{
+  rtx tem;
+
+  /* (op (bswap x) C1)) -> (bswap (op x C2)) with C2 swapped.  */
+  if (GET_CODE (op0) == BSWAP
+      && (CONST_INT_P (op1) || CONST_DOUBLE_AS_INT_P (op1)))
+    {
+      tem = simplify_gen_binary (code, mode, XEXP (op0, 0),
+				 simplify_gen_unary (BSWAP, mode, op1, mode));
+      return simplify_gen_unary (BSWAP, mode, tem, mode);
+    }
+
+  /* (op (bswap x) (bswap y)) -> (bswap (op x y)).  */
+  if (GET_CODE (op0) == BSWAP && GET_CODE (op1) == BSWAP)
+    {
+      tem = simplify_gen_binary (code, mode, XEXP (op0, 0), XEXP (op1, 0));
+      return simplify_gen_unary (BSWAP, mode, tem, mode);
+    }
+
+  return NULL_RTX;
+}
+
 /* Subroutine of simplify_binary_operation to simplify a commutative,
    associative binary operation CODE with result mode MODE, operating
    on OP0 and OP1.  CODE is currently one of PLUS, MULT, AND, IOR, XOR,
@@ -2791,6 +2826,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 					XEXP (op0, 1));
         }
 
+      tem = simplify_byte_swapping_operation (code, mode, op0, op1);
+      if (tem)
+	return tem;
+
       tem = simplify_associative_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -2933,6 +2972,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && COMPARISON_P (op0)
 	  && (reversed = reversed_comparison (op0, mode)))
 	return reversed;
+
+      tem = simplify_byte_swapping_operation (code, mode, op0, op1);
+      if (tem)
+	return tem;
 
       tem = simplify_associative_operation (code, mode, op0, op1);
       if (tem)
@@ -3115,6 +3158,10 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && GET_CODE (XEXP (op0, 0)) == NOT
 	  && op1 == XEXP (XEXP (op0, 0), 0))
 	return simplify_gen_binary (AND, mode, op1, XEXP (op0, 1));
+
+      tem = simplify_byte_swapping_operation (code, mode, op0, op1);
+      if (tem)
+	return tem;
 
       tem = simplify_associative_operation (code, mode, op0, op1);
       if (tem)
@@ -4763,6 +4810,21 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
     return simplify_gen_relational (code, mode, cmp_mode, XEXP (op0, 0),
 				    simplify_gen_binary (XOR, cmp_mode,
 							 XEXP (op0, 1), op1));
+
+  /* (eq/ne (bswap x) C1) simplifies to (eq/ne x C2) with C2 swapped.  */
+  if ((code == EQ || code == NE)
+      && GET_CODE (op0) == BSWAP
+      && (CONST_INT_P (op1) || CONST_DOUBLE_AS_INT_P (op1)))
+    return simplify_gen_relational (code, mode, cmp_mode, XEXP (op0, 0),
+				    simplify_gen_unary (BSWAP, cmp_mode,
+							op1, cmp_mode));
+
+  /* (eq/ne (bswap x) (bswap y)) simplifies to (eq/ne x y).  */
+  if ((code == EQ || code == NE)
+      && GET_CODE (op0) == BSWAP
+      && GET_CODE (op1) == BSWAP)
+    return simplify_gen_relational (code, mode, cmp_mode,
+				    XEXP (op0, 0), XEXP (op1, 0));
 
   if (op0code == POPCOUNT && op1 == const0_rtx)
     switch (code)

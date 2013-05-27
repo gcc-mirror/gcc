@@ -215,3 +215,17 @@ ipa_find_reference (symtab_node referring_node, symtab_node referred_node,
       return r;
   return NULL;
 }
+
+/* Remove all references from REFERRING_NODE that are associated with statement
+   STMT.  */
+
+void
+ipa_remove_stmt_references (symtab_node referring_node, gimple stmt)
+{
+  struct ipa_ref *r = NULL;
+  int i;
+
+  FOR_EACH_VEC_SAFE_ELT (referring_node->symbol.ref_list.references, i, r)
+    if (r->stmt == stmt)
+      ipa_remove_reference (r);
+}

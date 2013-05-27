@@ -23,7 +23,7 @@ program test2
   interface
     subroutine sub1(argv) bind(c)
       import
-      type(c_ptr) :: argv
+      type(c_ptr), intent(in) :: argv
     end subroutine sub1
   end interface
   call sub1(c_loc(argv))

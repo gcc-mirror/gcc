@@ -6,7 +6,7 @@
  *                                                                          *
  *                           C Implementation File                          *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -346,9 +346,7 @@ gnat_init (void)
   return true;
 }
 
-/* If we are using the GCC mechanism to process exception handling, we
-   have to register the personality routine for Ada and to initialize
-   various language dependent hooks.  */
+/* Initialize the GCC support for exception handling.  */
 
 void
 gnat_init_gcc_eh (void)
@@ -379,6 +377,28 @@ gnat_init_gcc_eh (void)
   flag_non_call_exceptions = 1;
 
   init_eh ();
+}
+
+/* Initialize the GCC support for floating-point operations.  */
+
+void
+gnat_init_gcc_fp (void)
+{
+  /* Disable FP optimizations that ignore the signedness of zero if
+     S'Signed_Zeros is True, but don't override the user if not.  */
+  if (Signed_Zeros_On_Target)
+    flag_signed_zeros = 1;
+  else if (!global_options_set.x_flag_signed_zeros)
+    flag_signed_zeros = 0;
+
+  /* Assume that FP operations can trap if S'Machine_Overflow is True,
+     but don't override the user if not.
+
+     ??? Alpha/VMS enables FP traps without declaring it.  */
+  if (Machine_Overflows_On_Target || TARGET_ABI_OPEN_VMS)
+    flag_trapping_math = 1;
+  else if (!global_options_set.x_flag_trapping_math)
+    flag_trapping_math = 0;
 }
 
 /* Print language-specific items in declaration NODE.  */

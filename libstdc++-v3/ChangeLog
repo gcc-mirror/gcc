@@ -1,3 +1,113 @@
+2013-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/chrono: Wrap clocks in inline namespace _V2.
+	* src/c++11/chrono.cc: Same.
+	* src/c++11/compatibility-chrono.cc: Revert to previous chrono.cc
+	file, with default configure macros selected.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.19): Use symbols from inline
+	namespace.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Fix up.
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Regenerated.
+
+2013-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/os/solaris/solaris2.9/os_defines.h [!CLOCK_MONOTONIC]
+	(CLOCK_MONOTONIC): Define.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/type_traits.h (__is_null_pointer): Add std::nullptr_t
+	overload.
+
+	* include/bits/cpp_type_traits.h (__is_fundamental): Remove, unused.
+
+2013-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/c++11/chrono.cc: If _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL,
+	include unistd.h and sys/syscall.h.  If _GLIBCXX_COMPATIBILITY_CXX0X,
+	don't define system_clock::is_steady, system_clock::now() and
+	steady_clock::is_steady.
+	(std::chrono::system_clock::now()): If
+	_GLIBCXX_USE_CLOCK_GETTIME_SYSCALL, call
+	syscall (SYS_clock_gettime, ...) instead of clock_gettime (...).
+	(std::chrono::system_clock::now()): Likewise.  Add weak attribute
+	if _GLIBCXX_COMPATIBILITY_CXX0X and compatibility-chrono.cc will
+	be non-empty.
+	* src/Makefile.am (cxx11_sources): Add compatibility-chrono.cc.
+	(compatibility-chrono.lo, compatibility-chrono.o): New goals.
+	* src/c++11/compatibility-chrono.cc: New file.
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): On linux*, check for
+	syscall (SYS_clock_gettime, CLOCK_MONOTONIC, &tp).
+	* testsuite/util/testsuite_abi.cc (check_version): Add
+	GLIBCXX_3.4.20 version and make it the latest.
+	* config/abi/pre/gnu.ver (_ZNSt6chrono12steady_clock3nowEv): Export
+	also @@GLIBCXX_3.4.19.  Move all symbols so far added for GCC 4.9 to
+	@@GLIBCXX_3.4.20 instead.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Regenerated.
+	* config.h.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* configure: Regenerated.
+
+2013-05-23  Matthias Klose  <doko@ubuntu.com>
+
+	* include/Makefile.am (bits_headers): Remove ${bits_host_headers}.
+	(ext_headers): Remove ${ext_host_headers}.
+	(stamp-${host_alias}): Create ${host_builddir}/../ext.
+	(stamp-host): Link ${bits_host_headers} and ${ext_host_headers}.
+	(install-headers): Install ${bits_host_headers} and ${ext_host_headers}.
+	* include/Makefile.in: Regenerate.
+	* include/ext/random: Include ext/opt_random.h.
+
+2013-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add KIND=auto to
+	enable features if target OS is known to support them.
+	* configure.ac (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Default to 'auto'.
+	* configure: Regenerate.
+
+2013-05-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57336
+	* include/std/functional (__invoke): Do not form function types with
+	abstract return type.
+	* testsuite/20_util/reference_wrapper/invoke-3.cc: New.
+
 2013-05-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/tuple (get): Implement N3670.

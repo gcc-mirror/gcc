@@ -3428,13 +3428,13 @@ aarch64_print_operand (FILE *f, rtx x, char code)
       break;
 
     case 'X':
-      /* Print integer constant in hex.  */
+      /* Print bottom 16 bits of integer constant in hex.  */
       if (GET_CODE (x) != CONST_INT)
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
 	  return;
 	}
-      asm_fprintf (f, "0x%wx", UINTVAL (x));
+      asm_fprintf (f, "0x%wx", UINTVAL (x) & 0xffff);
       break;
 
     case 'w':
@@ -6453,6 +6453,25 @@ aarch64_simd_imm_scalar_p (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
     }
 
   return true;
+}
+
+bool
+aarch64_mov_operand_p (rtx x,
+		       enum aarch64_symbol_context context ATTRIBUTE_UNUSED,
+		       enum machine_mode mode)
+{
+
+  if (GET_CODE (x) == HIGH
+      && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
+    return true;
+
+  if (CONST_INT_P (x) && aarch64_move_imm (INTVAL (x), mode))
+    return true;
+
+  if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
+    return true;
+
+  return false;
 }
 
 /* Return a const_int vector of VAL.  */

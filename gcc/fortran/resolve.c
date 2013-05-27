@@ -947,6 +947,7 @@ static void
 resolve_common_blocks (gfc_symtree *common_root)
 {
   gfc_symbol *sym;
+  gfc_gsymbol * gsym;
 
   if (common_root == NULL)
     return;
@@ -957,6 +958,84 @@ resolve_common_blocks (gfc_symtree *common_root)
     resolve_common_blocks (common_root->right);
 
   resolve_common_vars (common_root->n.common->head, true);
+
+  /* The common name is a global name - in Fortran 2003 also if it has a
+     C binding name, since Fortran 2008 only the C binding name is a global
+     identifier.  */
+  if (!common_root->n.common->binding_label
+      || gfc_notification_std (GFC_STD_F2008))
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root,
+			       common_root->n.common->name);
+
+      if (gsym && gfc_notification_std (GFC_STD_F2008)
+	  && gsym->type == GSYM_COMMON
+	  && ((common_root->n.common->binding_label
+	       && (!gsym->binding_label
+		   || strcmp (common_root->n.common->binding_label,
+			      gsym->binding_label) != 0))
+	      || (!common_root->n.common->binding_label
+		  && gsym->binding_label)))
+	{
+	  gfc_error ("In Fortran 2003 COMMON '%s' block at %L is a global "
+		     "identifier and must thus have the same binding name "
+		     "as the same-named COMMON block at %L: %s vs %s",
+		     common_root->n.common->name, &common_root->n.common->where,
+		     &gsym->where,
+		     common_root->n.common->binding_label
+		     ? common_root->n.common->binding_label : "(blank)",
+		     gsym->binding_label ? gsym->binding_label : "(blank)");
+	  return;
+	}
+
+      if (gsym && gsym->type != GSYM_COMMON
+	  && !common_root->n.common->binding_label)
+	{
+	  gfc_error ("COMMON block '%s' at %L uses the same global identifier "
+		     "as entity at %L",
+		     common_root->n.common->name, &common_root->n.common->where,
+		     &gsym->where);
+	  return;
+	}
+      if (gsym && gsym->type != GSYM_COMMON)
+	{
+	  gfc_error ("Fortran 2008: COMMON block '%s' with binding label at "
+		     "%L sharing the identifier with global non-COMMON-block "
+		     "entity at %L", common_root->n.common->name,
+		     &common_root->n.common->where, &gsym->where);
+	  return;
+	}
+      if (!gsym)
+	{
+	  gsym = gfc_get_gsymbol (common_root->n.common->name);
+	  gsym->type = GSYM_COMMON;
+	  gsym->where = common_root->n.common->where;
+	  gsym->defined = 1;
+	}
+      gsym->used = 1;
+    }
+
+  if (common_root->n.common->binding_label)
+    {
+      gsym = gfc_find_gsymbol (gfc_gsym_root,
+			       common_root->n.common->binding_label);
+      if (gsym && gsym->type != GSYM_COMMON)
+	{
+	  gfc_error ("COMMON block at %L with binding label %s uses the same "
+		     "global identifier as entity at %L",
+		     &common_root->n.common->where,
+		     common_root->n.common->binding_label, &gsym->where);
+	  return;
+	}
+      if (!gsym)
+	{
+	  gsym = gfc_get_gsymbol (common_root->n.common->binding_label);
+	  gsym->type = GSYM_COMMON;
+	  gsym->where = common_root->n.common->where;
+	  gsym->defined = 1;
+	}
+      gsym->used = 1;
+    }
 
   gfc_find_symbol (common_root->name, gfc_current_ns, 0, &sym);
   if (sym == NULL)
@@ -2254,7 +2333,7 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 
   type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 
-  gsym = gfc_get_gsymbol (sym->name);
+  gsym = gfc_get_gsymbol (sym->binding_label ? sym->binding_label : sym->name);
 
   if ((gsym->type != GSYM_UNKNOWN && gsym->type != type))
     gfc_global_used (gsym, where);
@@ -2310,6 +2389,11 @@ resolve_global_procedure (gfc_symbol *sym, locus *where,
 	}
 
       def_sym = gsym->ns->proc_name;
+
+      /* This can happen if a binding name has been specified.  */
+      if (gsym->binding_label && gsym->sym_name != def_sym->name)
+	gfc_find_symbol (gsym->sym_name, gsym->ns, 0, &def_sym);
+
       if (def_sym->attr.entry_master)
 	{
 	  gfc_entry_list *entry;
@@ -9170,7 +9254,7 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
   gfc_array_ref *aref;
   gfc_ref *ref;
 
-  sprintf (name, "DA@%d", serial++);
+  sprintf (name, GFC_PREFIX("DA%d"), serial++);
   gfc_get_sym_tree (name, ns, &tmp, false);
   gfc_add_type (tmp->n.sym, &e->ts, NULL);
 
@@ -9216,6 +9300,7 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
 
   gfc_set_sym_referenced (tmp->n.sym);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
+  gfc_commit_symbol (tmp->n.sym);
   e = gfc_lval_expr_from_sym (tmp->n.sym);
 
   /* Should the lhs be a section, use its array ref for the
@@ -9929,103 +10014,6 @@ resolve_values (gfc_symbol *sym)
 }
 
 
-/* Verify the binding labels for common blocks that are BIND(C).  The label
-   for a BIND(C) common block must be identical in all scoping units in which
-   the common block is declared.  Further, the binding label can not collide
-   with any other global entity in the program.  */
-
-static void
-resolve_bind_c_comms (gfc_symtree *comm_block_tree)
-{
-  if (comm_block_tree->n.common->is_bind_c == 1)
-    {
-      gfc_gsymbol *binding_label_gsym;
-      gfc_gsymbol *comm_name_gsym;
-      const char * bind_label = comm_block_tree->n.common->binding_label
-	? comm_block_tree->n.common->binding_label : "";
-
-      /* See if a global symbol exists by the common block's name.  It may
-         be NULL if the common block is use-associated.  */
-      comm_name_gsym = gfc_find_gsymbol (gfc_gsym_root,
-                                         comm_block_tree->n.common->name);
-      if (comm_name_gsym != NULL && comm_name_gsym->type != GSYM_COMMON)
-        gfc_error ("Binding label '%s' for common block '%s' at %L collides "
-                   "with the global entity '%s' at %L",
-                   bind_label,
-                   comm_block_tree->n.common->name,
-                   &(comm_block_tree->n.common->where),
-                   comm_name_gsym->name, &(comm_name_gsym->where));
-      else if (comm_name_gsym != NULL
-	       && strcmp (comm_name_gsym->name,
-			  comm_block_tree->n.common->name) == 0)
-        {
-          /* TODO: Need to make sure the fields of gfc_gsymbol are initialized
-             as expected.  */
-          if (comm_name_gsym->binding_label == NULL)
-            /* No binding label for common block stored yet; save this one.  */
-            comm_name_gsym->binding_label = bind_label;
-          else if (strcmp (comm_name_gsym->binding_label, bind_label) != 0)
-              {
-                /* Common block names match but binding labels do not.  */
-                gfc_error ("Binding label '%s' for common block '%s' at %L "
-                           "does not match the binding label '%s' for common "
-                           "block '%s' at %L",
-                           bind_label,
-                           comm_block_tree->n.common->name,
-                           &(comm_block_tree->n.common->where),
-                           comm_name_gsym->binding_label,
-                           comm_name_gsym->name,
-                           &(comm_name_gsym->where));
-                return;
-              }
-        }
-
-      /* There is no binding label (NAME="") so we have nothing further to
-         check and nothing to add as a global symbol for the label.  */
-      if (!comm_block_tree->n.common->binding_label)
-        return;
-
-      binding_label_gsym =
-        gfc_find_gsymbol (gfc_gsym_root,
-                          comm_block_tree->n.common->binding_label);
-      if (binding_label_gsym == NULL)
-        {
-          /* Need to make a global symbol for the binding label to prevent
-             it from colliding with another.  */
-          binding_label_gsym =
-            gfc_get_gsymbol (comm_block_tree->n.common->binding_label);
-          binding_label_gsym->sym_name = comm_block_tree->n.common->name;
-          binding_label_gsym->type = GSYM_COMMON;
-        }
-      else
-        {
-          /* If comm_name_gsym is NULL, the name common block is use
-             associated and the name could be colliding.  */
-          if (binding_label_gsym->type != GSYM_COMMON)
-            gfc_error ("Binding label '%s' for common block '%s' at %L "
-                       "collides with the global entity '%s' at %L",
-                       comm_block_tree->n.common->binding_label,
-                       comm_block_tree->n.common->name,
-                       &(comm_block_tree->n.common->where),
-                       binding_label_gsym->name,
-                       &(binding_label_gsym->where));
-          else if (comm_name_gsym != NULL
-		   && (strcmp (binding_label_gsym->name,
-			       comm_name_gsym->binding_label) != 0)
-		   && (strcmp (binding_label_gsym->sym_name,
-			       comm_name_gsym->name) != 0))
-            gfc_error ("Binding label '%s' for common block '%s' at %L "
-                       "collides with global entity '%s' at %L",
-                       binding_label_gsym->name, binding_label_gsym->sym_name,
-                       &(comm_block_tree->n.common->where),
-                       comm_name_gsym->name, &(comm_name_gsym->where));
-        }
-    }
-
-  return;
-}
-
-
 /* Verify any BIND(C) derived types in the namespace so we can report errors
    for them once, rather than for each variable declared of that type.  */
 
@@ -10041,90 +10029,91 @@ resolve_bind_c_derived_types (gfc_symbol *derived_sym)
 
 
 /* Verify that any binding labels used in a given namespace do not collide
-   with the names or binding labels of any global symbols.  */
+   with the names or binding labels of any global symbols.  Multiple INTERFACE
+   for the same procedure are permitted.  */
 
 static void
 gfc_verify_binding_labels (gfc_symbol *sym)
 {
-  int has_error = 0;
+  gfc_gsymbol *gsym;
+  const char *module;
 
-  if (sym != NULL && sym->attr.is_bind_c && sym->attr.is_iso_c == 0
-      && sym->attr.flavor != FL_DERIVED && sym->binding_label)
+  if (!sym || !sym->attr.is_bind_c || sym->attr.is_iso_c
+      || sym->attr.flavor == FL_DERIVED || !sym->binding_label)
+    return;
+
+  gsym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
+
+  if (sym->module)
+    module = sym->module;
+  else if (sym->ns && sym->ns->proc_name
+	   && sym->ns->proc_name->attr.flavor == FL_MODULE)
+    module = sym->ns->proc_name->name;
+  else if (sym->ns && sym->ns->parent
+	   && sym->ns && sym->ns->parent->proc_name
+	   && sym->ns->parent->proc_name->attr.flavor == FL_MODULE)
+    module = sym->ns->parent->proc_name->name;
+  else
+    module = NULL;
+
+  if (!gsym
+      || (!gsym->defined
+	  && (gsym->type == GSYM_FUNCTION || gsym->type == GSYM_SUBROUTINE)))
     {
-      gfc_gsymbol *bind_c_sym;
-
-      bind_c_sym = gfc_find_gsymbol (gfc_gsym_root, sym->binding_label);
-      if (bind_c_sym != NULL
-          && strcmp (bind_c_sym->name, sym->binding_label) == 0)
-        {
-          if (sym->attr.if_source == IFSRC_DECL
-              && (bind_c_sym->type != GSYM_SUBROUTINE
-                  && bind_c_sym->type != GSYM_FUNCTION)
-              && ((sym->attr.contained == 1
-                   && strcmp (bind_c_sym->sym_name, sym->name) != 0)
-                  || (sym->attr.use_assoc == 1
-                      && (strcmp (bind_c_sym->mod_name, sym->module) != 0))))
-            {
-              /* Make sure global procedures don't collide with anything.  */
-              gfc_error ("Binding label '%s' at %L collides with the global "
-                         "entity '%s' at %L", sym->binding_label,
-                         &(sym->declared_at), bind_c_sym->name,
-                         &(bind_c_sym->where));
-              has_error = 1;
-            }
-          else if (sym->attr.contained == 0
-                   && (sym->attr.if_source == IFSRC_IFBODY
-                       && sym->attr.flavor == FL_PROCEDURE)
-                   && (bind_c_sym->sym_name != NULL
-                       && strcmp (bind_c_sym->sym_name, sym->name) != 0))
-            {
-              /* Make sure procedures in interface bodies don't collide.  */
-              gfc_error ("Binding label '%s' in interface body at %L collides "
-                         "with the global entity '%s' at %L",
-                         sym->binding_label,
-                         &(sym->declared_at), bind_c_sym->name,
-                         &(bind_c_sym->where));
-              has_error = 1;
-            }
-          else if (sym->attr.contained == 0
-                   && sym->attr.if_source == IFSRC_UNKNOWN)
-	    if ((sym->attr.use_assoc && bind_c_sym->mod_name
-		 && strcmp (bind_c_sym->mod_name, sym->module) != 0)
-		|| sym->attr.use_assoc == 0)
-              {
-                gfc_error ("Binding label '%s' at %L collides with global "
-                           "entity '%s' at %L", sym->binding_label,
-                           &(sym->declared_at), bind_c_sym->name,
-                           &(bind_c_sym->where));
-                has_error = 1;
-              }
-
-          if (has_error != 0)
-	    /* Clear the binding label to prevent checking multiple times.  */
-	    sym->binding_label = NULL;
-        }
-      else if (bind_c_sym == NULL)
-	{
-	  bind_c_sym = gfc_get_gsymbol (sym->binding_label);
-	  bind_c_sym->where = sym->declared_at;
-	  bind_c_sym->sym_name = sym->name;
-
-          if (sym->attr.use_assoc == 1)
-            bind_c_sym->mod_name = sym->module;
-          else
-            if (sym->ns->proc_name != NULL)
-              bind_c_sym->mod_name = sym->ns->proc_name->name;
-
-          if (sym->attr.contained == 0)
-            {
-              if (sym->attr.subroutine)
-                bind_c_sym->type = GSYM_SUBROUTINE;
-              else if (sym->attr.function)
-                bind_c_sym->type = GSYM_FUNCTION;
-            }
-        }
+      if (!gsym)
+	gsym = gfc_get_gsymbol (sym->binding_label);
+      gsym->where = sym->declared_at;
+      gsym->sym_name = sym->name;
+      gsym->binding_label = sym->binding_label;
+      gsym->binding_label = sym->binding_label;
+      gsym->ns = sym->ns;
+      gsym->mod_name = module;
+      if (sym->attr.function)
+        gsym->type = GSYM_FUNCTION;
+      else if (sym->attr.subroutine)
+	gsym->type = GSYM_SUBROUTINE;
+      /* Mark as variable/procedure as defined, unless its an INTERFACE.  */
+      gsym->defined = sym->attr.if_source != IFSRC_IFBODY;
+      return;
     }
-  return;
+
+  if (sym->attr.flavor == FL_VARIABLE && gsym->type != GSYM_UNKNOWN)
+    {
+      gfc_error ("Variable %s with binding label %s at %L uses the same global "
+		 "identifier as entity at %L", sym->name,
+		 sym->binding_label, &sym->declared_at, &gsym->where);
+      /* Clear the binding label to prevent checking multiple times.  */
+      sym->binding_label = NULL;
+
+    }
+  else if (sym->attr.flavor == FL_VARIABLE
+	   && (strcmp (module, gsym->mod_name) != 0
+	       || strcmp (sym->name, gsym->sym_name) != 0))
+    {
+      /* This can only happen if the variable is defined in a module - if it
+	 isn't the same module, reject it.  */
+      gfc_error ("Variable %s from module %s with binding label %s at %L uses "
+		 "the same global identifier as entity at %L from module %s",
+		 sym->name, module, sym->binding_label,
+		 &sym->declared_at, &gsym->where, gsym->mod_name);
+      sym->binding_label = NULL;
+    }
+  else if ((sym->attr.function || sym->attr.subroutine)
+	   && ((gsym->type != GSYM_SUBROUTINE && gsym->type != GSYM_FUNCTION)
+	       || (gsym->defined && sym->attr.if_source != IFSRC_IFBODY))
+	   && sym != gsym->ns->proc_name
+	   && (strcmp (gsym->sym_name, sym->name) != 0
+	       || module != gsym->mod_name
+	       || (module && strcmp (module, gsym->mod_name) != 0)))
+    {
+      /* Print an error if the procdure is defined multiple times; we have to
+	 exclude references to the same procedure via module association or
+	 multiple checks for the same procedure.  */
+      gfc_error ("Procedure %s with binding label %s at %L uses the same "
+		 "global identifier as entity at %L", sym->name,
+		 sym->binding_label, &sym->declared_at, &gsym->where);
+      sym->binding_label = NULL;
+    }
 }
 
 
@@ -14424,9 +14413,6 @@ resolve_types (gfc_namespace *ns)
   gfc_traverse_ns (ns, gfc_formalize_init_value);
 
   gfc_traverse_ns (ns, gfc_verify_binding_labels);
-
-  if (ns->common_root != NULL)
-    gfc_traverse_symtree (ns->common_root, resolve_bind_c_comms);
 
   for (eq = ns->equiv; eq; eq = eq->next)
     resolve_equivalence (eq);

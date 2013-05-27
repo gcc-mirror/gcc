@@ -1,8 +1,8 @@
 // PR c++/25638
 
-struct A { ~A(); }; // { dg-error "candidate" }  
+struct A { ~A(); };
 
 struct B : A
 {
-  template<int> friend A::~A(); // { dg-error "match" }
+  template<int> friend A::~A(); // { dg-error "member template" }
 };

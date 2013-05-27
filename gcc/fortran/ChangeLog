@@ -1,3 +1,74 @@
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (get_temp_from_expr): Change mangling to
+	start always with a _.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (get_temp_from_expr): Fix temp var mangling.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57364
+	* resolve.c (get_temp_from_expr): Commit created sym.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57338
+	* intrinsic.c (do_check): Move some checks to ...
+	(do_ts29113_check): ... this new function.
+	(check_specific, gfc_intrinsic_sub_interface): Call it.
+
+2013-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi (RANDOM_SEED): Improve example.
+
+2013-05-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57035
+	* intrinsic.c (do_check): Add constraint check for
+	NO_ARG_CHECK, assumed rank and assumed type.
+	* gfortran.texi (NO_ARG_CHECK): Minor wording change,
+	allow PRESENT intrinsic.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/55465
+	* decl.c (add_global_entry): Add sym_name.
+	* parse.c (add_global_procedure): Ditto.
+	* resolve.c (resolve_bind_c_derived_types): Handle multiple decl for
+	a procedure.
+	(resolve_global_procedure): Handle gsym->ns pointing to a module.
+	* trans-decl.c (gfc_get_extern_function_decl): Ditto.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* decl.c (add_global_entry): Use nonbinding name
+	only for F2003 or if no binding label exists.
+	(gfc_match_entry): Update calls.
+	* parse.c (gfc_global_used): Improve error message.
+	(add_global_procedure): Use nonbinding name
+	only for F2003 or if no binding label exists.
+	(gfc_parse_file): Update call.
+	* resolve.c (resolve_global_procedure): Use binding
+	name when available.
+	* trans-decl.c (gfc_get_extern_function_decl): Ditto.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* decl.c (gfc_match_bind_c_stmt): Add gfc_notify_std.
+	* match.c (gfc_match_common): Don't add commons to gsym.
+	* resolve.c (resolve_common_blocks): Add to gsym and
+	add checks.
+	(resolve_bind_c_comms): Remove.
+	(resolve_types): Remove call to the latter.
+	* trans-common.c (gfc_common_ns): Remove static var.
+	(gfc_map_of_all_commons): Add static var.
+	(build_common_decl): Correctly handle binding label.
+
 2013-05-16  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (f951$(exeext)): Use link mutex.

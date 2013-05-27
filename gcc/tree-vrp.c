@@ -8661,7 +8661,8 @@ simplify_cond_using_ranges (gimple stmt)
 
       innerop = gimple_assign_rhs1 (def_stmt);
 
-      if (TREE_CODE (innerop) == SSA_NAME)
+      if (TREE_CODE (innerop) == SSA_NAME
+	  && !POINTER_TYPE_P (TREE_TYPE (innerop)))
 	{
 	  value_range_t *vr = get_value_range (innerop);
 
@@ -8669,8 +8670,32 @@ simplify_cond_using_ranges (gimple stmt)
 	      && range_fits_type_p (vr,
 				    TYPE_PRECISION (TREE_TYPE (op0)),
 				    TYPE_UNSIGNED (TREE_TYPE (op0)))
-	      && int_fits_type_p (op1, TREE_TYPE (innerop)))
+	      && int_fits_type_p (op1, TREE_TYPE (innerop))
+	      /* The range must not have overflowed, or if it did overflow
+		 we must not be wrapping/trapping overflow and optimizing
+		 with strict overflow semantics.  */
+	      && ((!is_negative_overflow_infinity (vr->min)
+	           && !is_positive_overflow_infinity (vr->max))
+		  || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (innerop))))
 	    {
+	      /* If the range overflowed and the user has asked for warnings
+		 when strict overflow semantics were used to optimize code,
+		 issue an appropriate warning.  */
+	      if ((is_negative_overflow_infinity (vr->min)
+		   || is_positive_overflow_infinity (vr->max))
+		  && issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_CONDITIONAL))
+		{
+		  location_t location;
+
+		  if (!gimple_has_location (stmt))
+		    location = input_location;
+		  else
+		    location = gimple_location (stmt);
+		  warning_at (location, OPT_Wstrict_overflow,
+		      "assuming signed overflow does not occur when "
+		      "simplifying conditional");
+		}
+
 	      tree newconst = fold_convert (TREE_TYPE (innerop), op1);
 	      gimple_cond_set_lhs (stmt, innerop);
 	      gimple_cond_set_rhs (stmt, newconst);

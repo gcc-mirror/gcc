@@ -2998,23 +2998,6 @@ get_repl_default_def_ssa_name (struct access *racc)
   return get_or_create_ssa_default_def (cfun, racc->replacement_decl);
 }
 
-/* Return true if REF has a COMPONENT_REF with a bit-field field declaration
-   somewhere in it.  */
-
-static inline bool
-contains_bitfld_comp_ref_p (const_tree ref)
-{
-  while (handled_component_p (ref))
-    {
-      if (TREE_CODE (ref) == COMPONENT_REF
-          && DECL_BIT_FIELD (TREE_OPERAND (ref, 1)))
-        return true;
-      ref = TREE_OPERAND (ref, 0);
-    }
-
-  return false;
-}
-
 /* Return true if REF has an VIEW_CONVERT_EXPR or a COMPONENT_REF with a
    bit-field field declaration somewhere in it.  */
 
@@ -3110,7 +3093,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	     ???  This should move to fold_stmt which we simply should
 	     call after building a VIEW_CONVERT_EXPR here.  */
 	  if (AGGREGATE_TYPE_P (TREE_TYPE (lhs))
-	      && !contains_bitfld_comp_ref_p (lhs))
+	      && !contains_bitfld_component_ref_p (lhs))
 	    {
 	      lhs = build_ref_for_model (loc, lhs, 0, racc, gsi, false);
 	      gimple_assign_set_lhs (*stmt, lhs);

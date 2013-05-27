@@ -4232,8 +4232,12 @@ gfc_global_used (gfc_gsymbol *sym, locus *where)
       name = NULL;
     }
 
-  gfc_error("Global name '%s' at %L is already being used as a %s at %L",
-	      sym->name, where, name, &sym->where);
+  if (sym->binding_label)
+    gfc_error ("Global binding name '%s' at %L is already being used as a %s "
+	       "at %L", sym->binding_label, where, name, &sym->where);
+  else
+    gfc_error ("Global name '%s' at %L is already being used as a %s at %L",
+	       sym->name, where, name, &sym->where);
 }
 
 
@@ -4342,22 +4346,58 @@ loop:
 /* Add a procedure name to the global symbol table.  */
 
 static void
-add_global_procedure (int sub)
+add_global_procedure (bool sub)
 {
   gfc_gsymbol *s;
 
-  s = gfc_get_gsymbol(gfc_new_block->name);
-
-  if (s->defined
-      || (s->type != GSYM_UNKNOWN
-	  && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
-    gfc_global_used(s, NULL);
-  else
+  /* Only in Fortran 2003: For procedures with a binding label also the Fortran
+     name is a global identifier.  */
+  if (!gfc_new_block->binding_label || gfc_notification_std (GFC_STD_F2008))
     {
-      s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
-      s->where = gfc_current_locus;
-      s->defined = 1;
-      s->ns = gfc_current_ns;
+      s = gfc_get_gsymbol (gfc_new_block->name);
+
+      if (s->defined
+	  || (s->type != GSYM_UNKNOWN
+	      && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
+	{
+	  gfc_global_used (s, NULL);
+	  /* Silence follow-up errors.  */
+	  gfc_new_block->binding_label = NULL;
+	}
+      else
+	{
+	  s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+	  s->sym_name = gfc_new_block->name;
+	  s->where = gfc_current_locus;
+	  s->defined = 1;
+	  s->ns = gfc_current_ns;
+	}
+    }
+
+  /* Don't add the symbol multiple times.  */
+  if (gfc_new_block->binding_label
+      && (!gfc_notification_std (GFC_STD_F2008)
+          || strcmp (gfc_new_block->name, gfc_new_block->binding_label) != 0))
+    {
+      s = gfc_get_gsymbol (gfc_new_block->binding_label);
+
+      if (s->defined
+	  || (s->type != GSYM_UNKNOWN
+	      && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
+	{
+	  gfc_global_used (s, NULL);
+	  /* Silence follow-up errors.  */
+	  gfc_new_block->binding_label = NULL;
+	}
+      else
+	{
+	  s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
+	  s->sym_name = gfc_new_block->name;
+	  s->binding_label = gfc_new_block->binding_label;
+	  s->where = gfc_current_locus;
+	  s->defined = 1;
+	  s->ns = gfc_current_ns;
+	}
     }
 }
 
@@ -4556,7 +4596,7 @@ loop:
       break;
 
     case ST_SUBROUTINE:
-      add_global_procedure (1);
+      add_global_procedure (true);
       push_state (&s, COMP_SUBROUTINE, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);
@@ -4564,7 +4604,7 @@ loop:
       break;
 
     case ST_FUNCTION:
-      add_global_procedure (0);
+      add_global_procedure (false);
       push_state (&s, COMP_FUNCTION, gfc_new_block);
       accept_statement (st);
       parse_progunit (ST_NONE);

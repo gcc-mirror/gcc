@@ -75,11 +75,6 @@
   "Integer constant zero."
   (match_test "op == const0_rtx"))
 
-(define_constraint "Usa"
-  "A constraint that matches an absolute symbolic address."
-  (and (match_code "const,symbol_ref")
-       (match_test "aarch64_symbolic_address_p (op)")))
-
 (define_constraint "Ush"
   "A constraint that matches an absolute symbolic address high part."
   (and (match_code "high")

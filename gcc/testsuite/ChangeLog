@@ -1,9 +1,290 @@
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57396
+	* gfortran.fortran-torture/execute/pr57396.f90: New testcase.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/last_bit.ads: New test.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/machine_attribute.ads: New test.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/incomplete3.ad[sb]: New test.
+
+2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/53916
+	* gcc.target/mips/div-13.c: New test.
+
+2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/55777
+	* gcc.target/mips/mips16-attributes-5.c,
+	* gcc.target/mips/mips16-attributes-6.c: New tests.
+
+2013-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-bswap-6.c: Use same options as optimize-bswapsi-1.c.
+	* gcc.dg/builtin-bswap-8.c: Likewise.
+
+2013-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52216
+	* g++.dg/cpp0x/new1.C: New.
+
+2013-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25666
+	* g++.dg/parse/dtor16.C: New.
+	* g++.dg/parse/dtor6.C: Adjust.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19618
+	* g++.dg/expr/bitfield12.C: New.
+
+2013-05-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57124
+	* gcc.c-torture/execute/pr57124.c: New test.
+	* gcc.c-torture/execute/pr57124.x: Set -fno-strict-overflow.
+
+2013-05-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57294
+	* gcc.dg/ipa/pr57294.c: New test.
+
+2013-05-24  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c
+	(force_simd): Use a valid instruction.
+	(test_vdupd_lane_s64): Pass a valid lane argument.
+	(test_vdupd_lane_u64): Likewise.
+
+2013-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57287
+	* gcc.dg/pr57287.c: New testcase.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/26572
+	* g++.dg/template/error51.C: New.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25503
+	* g++.dg/template/bitfield2.C: New.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/noinline1.ads: New test.
+	* gnat.dg/noinline2.ad[sb]: Likewise.
+	* gnat.dg/specs/noinline3.ads: Likewise.
+	* gnat.dg/specs/noinline3_pkg.ad[sb]: New helper.
+
+2013-05-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR tree-ssa/57385
+	* gcc.dg/tree-ssa/pr57385.c: New test.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type4.adb: New test.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-bswap-6.c: New test.
+	* gcc.dg/builtin-bswap-7.c: Likewise.
+	* gcc.dg/builtin-bswap-8.c: Likewise.
+	* gcc.dg/builtin-bswap-9.c: Likewise.
+
+2013-05-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR debug/57351
+	* gcc.dg/debug/pr57351.c: New test
+
+2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/vect-clz.c: New file.
+
+2013-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57347
+	* gcc.dg/ipa/pr57347.c: New test.
+
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57380
+	* g++.dg/tree-ssa/pr57380.C: New testcase.
+
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57381
+	* gcc.dg/torture/pr57381.c: New testcase.
+
+2013-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57344
+	* gcc.c-torture/execute/pr57344-1.c: New test.
+	* gcc.c-torture/execute/pr57344-2.c: New test.
+	* gcc.c-torture/execute/pr57344-3.c: New test.
+	* gcc.c-torture/execute/pr57344-4.c: New test.
+
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/57341
+	* gcc.dg/torture/pr57341.c: New testcase.
+
+2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57352
+	* g++.dg/parse/crash62.C: New.
+
+2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/crypto-builtin-1.c: New file, test for power8
+	crypto builtins.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57364
+	* gfortran.dg/defined_assignment_6.f90: New.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57338
+	* gfortran.dg/assumed_type_6.f90: New.
+
+2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57211
+	* g++.dg/cpp0x/Wunused-parm.C: New.
+
+2013-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/explicit3.C: Add column in dg-error strings.
+	* g++.dg/warn/Wdouble-promotion.C: Likewise.
+
+2013-05-21  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57322
+	* gcc.dg/tree-ssa/reassoc-29.c: New testcase.
+
+2013-05-21  Graham Stott  <graham.stott@btinternet.com>
+
+	* lib/scanasm.exp (dg-function-on-line): Make MIPS targets match
+	.set (no)?micromips
+
+2013-05-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57035
+	* gfortran.dg/assumed_type_5.f90: New.
+	* gfortran.dg/assumed_rank_1.f90: Comment invalid statement.
+	* gfortran.dg/assumed_rank_2.f90: Ditto.
+	* gfortran.dg/assumed_type_3.f90: Update dg-error.
+	* gfortran.dg/no_arg_check_3.f90: Ditto.
+
+2013-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57331
+	* gcc.c-torture/compile/pr57331.c: New test.
+
+2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57330
+	* gcc.dg/torture/pr57330.c: New testcase.
+
+2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57303
+	* gcc.dg/torture/pr57303.c: New testcase.
+
+2013-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57321
+	* gcc.c-torture/execute/pr57321.c: New test.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/55465
+	* gfortran.dg/binding_label_tests_10_main.f03: Update dg-error.
+	* gfortran.dg/binding_label_tests_11_main.f03: Ditto.
+	* gfortran.dg/binding_label_tests_13_main.f03: Ditto.
+	* gfortran.dg/binding_label_tests_3.f03: Ditto.
+	* gfortran.dg/binding_label_tests_4.f03: Ditto.
+	* gfortran.dg/binding_label_tests_5.f03: Ditto.
+	* gfortran.dg/binding_label_tests_6.f03: Ditto.
+	* gfortran.dg/binding_label_tests_7.f03: Ditto.
+	* gfortran.dg/binding_label_tests_8.f03: Ditto.
+	* gfortran.dg/c_loc_tests_12.f03: Fix test case.
+	* gfortran.dg/binding_label_tests_24.f90: New.
+	* gfortran.dg/binding_label_tests_25.f90: New.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* gfortran.dg/binding_label_tests_17.f90: New.
+	* gfortran.dg/binding_label_tests_18.f90: New.
+	* gfortran.dg/binding_label_tests_19.f90: New.
+	* gfortran.dg/binding_label_tests_20.f90: New.
+	* gfortran.dg/binding_label_tests_21.f90: New.
+	* gfortran.dg/binding_label_tests_22.f90: New.
+	* gfortran.dg/binding_label_tests_23.f90: New.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* gfortran.dg/test_common_binding_labels.f03: Update dg-error.
+	* gfortran.dg/test_common_binding_labels_2_main.f03: Ditto.
+	* gfortran.dg/test_common_binding_labels_3_main.f03: Ditto.
+	* gfortran.dg/common_18.f90: New.
+	* gfortran.dg/common_19.f90: New.
+	* gfortran.dg/common_20.f90: New.
+	* gfortran.dg/common_21.f90: New.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/12288
+	* g++.dg/parse/error52.C: New.
+	* g++.dg/parse/error3.C: Adjust.
+	* g++.dg/parse/error36.C: Likewise.
+
+2013-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/56547
+	* gcc.target/sh/pr56547-1.c: New.
+	* gcc.target/sh/pr56547-2.c: New.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/23608
+	* g++.dg/warn/Wsign-compare-6.C: New.
+	* g++.dg/warn/Wdouble-promotion.C: Adjust.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57327
+	* g++.dg/template/error50.C: New.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/10207
+	* g++.dg/ext/complit13.C: New.
+
 2013-05-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/57175
 	* g++.dg/pr57175.C: New testcase.
 
-2013-05-17   Easwaran Raman  <eraman@google.com>
+2013-05-17  Easwaran Raman  <eraman@google.com>
 
 	* gcc.dg/tree-ssa/reassoc-28.c: New testcase.
 

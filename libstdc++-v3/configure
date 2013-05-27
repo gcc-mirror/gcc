@@ -1559,7 +1559,7 @@ Optional Features:
                           enable extern template [default=yes]
   --enable-werror         turns on -Werror [default=yes]
   --enable-libstdcxx-time[=KIND]
-                          use KIND for check type [default=no]
+                          use KIND for check type [default=auto]
   --enable-tls            Use thread-local storage [default=yes]
   --disable-rpath         do not hardcode runtime library paths
   --enable-linux-futex    use the Linux futex system call [default=default]
@@ -19343,11 +19343,8 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 # For clock_gettime, nanosleep and sched_yield support.
-# NB: The default is [no], because otherwise it requires linking.
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime, nanosleep and sched_yield" >&5
-$as_echo_n "checking for clock_gettime, nanosleep and sched_yield... " >&6; }
    # Check whether --enable-libstdcxx-time was given.
 if test "${enable_libstdcxx_time+set}" = set; then :
   enableval=$enable_libstdcxx_time;
@@ -19357,7 +19354,7 @@ if test "${enable_libstdcxx_time+set}" = set; then :
 	  	        esac
 
 else
-  enable_libstdcxx_time=no
+  enable_libstdcxx_time=auto
 fi
 
 
@@ -19375,10 +19372,74 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
   ac_has_clock_monotonic=no
   ac_has_clock_realtime=no
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libstdcxx_time" >&5
-$as_echo "$enable_libstdcxx_time" >&6; }
+  ac_has_nanosleep=no
+  ac_has_sched_yield=no
 
-  if test x"$enable_libstdcxx_time" != x"no"; then
+  if test x"$enable_libstdcxx_time" = x"auto"; then
+
+    case "${target_os}" in
+      cygwin*)
+        ac_has_nanosleep=yes
+        ;;
+      darwin*)
+        ac_has_nanosleep=yes
+        ac_has_sched_yield=yes
+        ;;
+      gnu* | linux* | kfreebsd*-gnu | knetbsd*-gnu)
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for at least GNU libc 2.17" >&5
+$as_echo_n "checking for at least GNU libc 2.17... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <features.h>
+int
+main ()
+{
+
+          #if ! __GLIBC_PREREQ(2, 17)
+          #error
+          #endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  glibcxx_glibc217=yes
+else
+  glibcxx_glibc217=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_glibc217" >&5
+$as_echo "$glibcxx_glibc217" >&6; }
+
+        if test x"$glibcxx_glibc217" = x"yes"; then
+          ac_has_clock_monotonic=yes
+          ac_has_clock_realtime=yes
+        fi
+        ac_has_nanosleep=yes
+        ac_has_sched_yield=yes
+        ;;
+      freebsd*|netbsd*)
+        ac_has_clock_monotonic=yes
+        ac_has_clock_realtime=yes
+        ac_has_nanosleep=yes
+        ac_has_sched_yield=yes
+        ;;
+      openbsd*)
+        ac_has_clock_monotonic=yes
+        ac_has_clock_realtime=yes
+        ac_has_nanosleep=yes
+        ;;
+      solaris*)
+        GLIBCXX_LIBS="$GLIBCXX_LIBS -lrt"
+        ac_has_clock_monotonic=yes
+        ac_has_clock_realtime=yes
+        ac_has_nanosleep=yes
+        ac_has_sched_yield=yes
+        ;;
+    esac
+
+  elif test x"$enable_libstdcxx_time" != x"no"; then
 
     if test x"$enable_libstdcxx_time" = x"rt"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing clock_gettime" >&5
@@ -19692,22 +19753,16 @@ fi
     case "$ac_cv_search_sched_yield" in
       -lposix4*)
       GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
-
-$as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
-
+      ac_has_sched_yield=yes
       ;;
       -lrt*)
       if test x"$enable_libstdcxx_time" = x"rt"; then
 	GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
-
-$as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
-
+        ac_has_sched_yield=yes
       fi
       ;;
       *)
-
-$as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
-
+      ac_has_sched_yield=yes
       ;;
     esac
 
@@ -19828,6 +19883,48 @@ $as_echo "$ac_has_nanosleep" >&6; }
     fi
   fi
 
+  if test x"$ac_has_clock_monotonic" != x"yes"; then
+    case ${target_os} in
+      linux*)
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime syscall" >&5
+$as_echo_n "checking for clock_gettime syscall... " >&6; }
+	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <unistd.h>
+	   #include <time.h>
+	   #include <sys/syscall.h>
+
+int
+main ()
+{
+#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
+	    timespec tp;
+	   #endif
+	   syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
+	   syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_has_clock_monotonic_syscall=yes
+else
+  ac_has_clock_monotonic_syscall=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_has_clock_monotonic_syscall" >&5
+$as_echo "$ac_has_clock_monotonic_syscall" >&6; }
+	if test x"$ac_has_clock_monotonic_syscall" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL 1" >>confdefs.h
+
+	  ac_has_clock_monotonic=yes
+	  ac_has_clock_realtime=yes
+	fi;;
+    esac
+  fi
+
   if test x"$ac_has_clock_monotonic" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_CLOCK_MONOTONIC 1" >>confdefs.h
@@ -19837,6 +19934,12 @@ $as_echo "#define _GLIBCXX_USE_CLOCK_MONOTONIC 1" >>confdefs.h
   if test x"$ac_has_clock_realtime" = x"yes"; then
 
 $as_echo "#define _GLIBCXX_USE_CLOCK_REALTIME 1" >>confdefs.h
+
+  fi
+
+  if test x"$ac_has_sched_yield" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
 
   fi
 

@@ -92,7 +92,7 @@
 #ifdef HAVE_AS_POWER8
 #define ASM_CPU_POWER8_SPEC "-mpower8"
 #else
-#define ASM_CPU_POWER8_SPEC "-mpower4 -maltivec"
+#define ASM_CPU_POWER8_SPEC ASM_CPU_POWER7_SPEC
 #endif
 
 #ifdef HAVE_AS_DCI
@@ -164,6 +164,7 @@
 %{mcpu=e6500: -me6500} \
 %{maltivec: -maltivec} \
 %{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: %(asm_cpu_power7)}} \
+%{mpower8-vector|mcrypto|mdirect-move: %{!mcpu*: %(asm_cpu_power8)}} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
@@ -277,6 +278,19 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_POPCNTD 0
 #endif
 
+/* Define the ISA 2.07 flags as 0 if the target assembler does not support the
+   waitasecond instruction.  Allow -mpower8-fusion, since it does not add new
+   instructions.  */
+
+#ifndef HAVE_AS_POWER8
+#undef  TARGET_DIRECT_MOVE
+#undef  TARGET_CRYPTO
+#undef  TARGET_P8_VECTOR
+#define TARGET_DIRECT_MOVE 0
+#define TARGET_CRYPTO 0
+#define TARGET_P8_VECTOR 0
+#endif
+
 /* Define TARGET_LWSYNC_INSTRUCTION if the assembler knows about lwsync.  If
    not, generate the lwsync code as an integer constant.  */
 #ifdef HAVE_AS_LWSYNC
@@ -386,6 +400,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_DEBUG_TARGET	(rs6000_debug & MASK_DEBUG_TARGET)
 #define TARGET_DEBUG_BUILTIN	(rs6000_debug & MASK_DEBUG_BUILTIN)
 
+/* Describe the vector unit used for arithmetic operations.  */
 extern enum rs6000_vector rs6000_vector_unit[];
 
 #define VECTOR_UNIT_NONE_P(MODE)			\
@@ -394,12 +409,25 @@ extern enum rs6000_vector rs6000_vector_unit[];
 #define VECTOR_UNIT_VSX_P(MODE)				\
   (rs6000_vector_unit[(MODE)] == VECTOR_VSX)
 
+#define VECTOR_UNIT_P8_VECTOR_P(MODE)			\
+  (rs6000_vector_unit[(MODE)] == VECTOR_P8_VECTOR)
+
 #define VECTOR_UNIT_ALTIVEC_P(MODE)			\
   (rs6000_vector_unit[(MODE)] == VECTOR_ALTIVEC)
 
+#define VECTOR_UNIT_VSX_OR_P8_VECTOR_P(MODE)		\
+  (IN_RANGE ((int)rs6000_vector_unit[(MODE)],		\
+	     (int)VECTOR_VSX,				\
+	     (int)VECTOR_P8_VECTOR))
+
+/* VECTOR_UNIT_ALTIVEC_OR_VSX_P is used in places where we are using either
+   altivec (VMX) or VSX vector instructions.  P8 vector support is upwards
+   compatible, so allow it as well, rather than changing all of the uses of the
+   macro.  */
 #define VECTOR_UNIT_ALTIVEC_OR_VSX_P(MODE)		\
-  (rs6000_vector_unit[(MODE)] == VECTOR_ALTIVEC 	\
-   || rs6000_vector_unit[(MODE)] == VECTOR_VSX)
+  (IN_RANGE ((int)rs6000_vector_unit[(MODE)],		\
+	     (int)VECTOR_ALTIVEC,			\
+	     (int)VECTOR_P8_VECTOR))
 
 /* Describe whether to use VSX loads or Altivec loads.  For now, just use the
    same unit as the vector unit we are using, but we may want to migrate to
@@ -412,12 +440,21 @@ extern enum rs6000_vector rs6000_vector_mem[];
 #define VECTOR_MEM_VSX_P(MODE)				\
   (rs6000_vector_mem[(MODE)] == VECTOR_VSX)
 
+#define VECTOR_MEM_P8_VECTOR_P(MODE)			\
+  (rs6000_vector_mem[(MODE)] == VECTOR_VSX)
+
 #define VECTOR_MEM_ALTIVEC_P(MODE)			\
   (rs6000_vector_mem[(MODE)] == VECTOR_ALTIVEC)
 
+#define VECTOR_MEM_VSX_OR_P8_VECTOR_P(MODE)		\
+  (IN_RANGE ((int)rs6000_vector_mem[(MODE)],		\
+	     (int)VECTOR_VSX,				\
+	     (int)VECTOR_P8_VECTOR))
+
 #define VECTOR_MEM_ALTIVEC_OR_VSX_P(MODE)		\
-  (rs6000_vector_mem[(MODE)] == VECTOR_ALTIVEC 	\
-   || rs6000_vector_mem[(MODE)] == VECTOR_VSX)
+  (IN_RANGE ((int)rs6000_vector_mem[(MODE)],		\
+	     (int)VECTOR_ALTIVEC,			\
+	     (int)VECTOR_P8_VECTOR))
 
 /* Return the alignment of a given vector type, which is set based on the
    vector unit use.  VSX for instance can load 32 or 64 bit aligned words
@@ -479,6 +516,15 @@ extern int rs6000_vector_align[];
 #define TARGET_FCTIDUZ	TARGET_POPCNTD
 #define TARGET_FCTIWUZ	TARGET_POPCNTD
 
+#define TARGET_XSCVDPSPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
+#define TARGET_XSCVSPDPN	(TARGET_DIRECT_MOVE || TARGET_P8_VECTOR)
+
+/* Byte/char syncs were added as phased in for ISA 2.06B, but are not present
+   in power7, so conditionalize them on p8 features.  TImode syncs need quad
+   memory support.  */
+#define TARGET_SYNC_HI_QI	(TARGET_QUAD_MEMORY || TARGET_DIRECT_MOVE)
+#define TARGET_SYNC_TI		TARGET_QUAD_MEMORY
+
 /* Power7 has both 32-bit load and store integer for the FPRs, so we don't need
    to allocate the SDmode stack slot to get the value into the proper location
    in the register.  */
@@ -489,10 +535,13 @@ extern int rs6000_vector_align[];
    OPTION_MASK_<xxx> back into MASK_<xxx>.  */
 #define MASK_ALTIVEC			OPTION_MASK_ALTIVEC
 #define MASK_CMPB			OPTION_MASK_CMPB
+#define MASK_CRYPTO			OPTION_MASK_CRYPTO
 #define MASK_DFP			OPTION_MASK_DFP
+#define MASK_DIRECT_MOVE		OPTION_MASK_DIRECT_MOVE
 #define MASK_DLMZB			OPTION_MASK_DLMZB
 #define MASK_EABI			OPTION_MASK_EABI
 #define MASK_FPRND			OPTION_MASK_FPRND
+#define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
 #define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
 #define MASK_ISEL			OPTION_MASK_ISEL
 #define MASK_MFCRF			OPTION_MASK_MFCRF
@@ -500,6 +549,7 @@ extern int rs6000_vector_align[];
 #define MASK_MULHW			OPTION_MASK_MULHW
 #define MASK_MULTIPLE			OPTION_MASK_MULTIPLE
 #define MASK_NO_UPDATE			OPTION_MASK_NO_UPDATE
+#define MASK_P8_VECTOR			OPTION_MASK_P8_VECTOR
 #define MASK_POPCNTB			OPTION_MASK_POPCNTB
 #define MASK_POPCNTD			OPTION_MASK_POPCNTD
 #define MASK_PPC_GFXOPT			OPTION_MASK_PPC_GFXOPT
@@ -1002,7 +1052,9 @@ extern unsigned rs6000_pointer_size;
 
 #define REG_ALLOC_ORDER						\
   {32,								\
-   45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34,		\
+   /* move fr13 (ie 45) later, so if we need TFmode, it does */	\
+   /* not use fr14 which is a saved register.  */		\
+   44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 45,		\
    33,								\
    63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51,		\
    50, 49, 48, 47, 46,						\
@@ -1062,8 +1114,14 @@ extern unsigned rs6000_pointer_size;
 #define VINT_REGNO_P(N) ALTIVEC_REGNO_P (N)
 
 /* Alternate name for any vector register supporting logical operations, no
-   matter which instruction set(s) are available.  */
-#define VLOGICAL_REGNO_P(N) VFLOAT_REGNO_P (N)
+   matter which instruction set(s) are available.  Under VSX, we allow GPRs as
+   well as vector registers on 64-bit systems.  We don't allow 32-bit systems,
+   due to the number of registers involved, and the number of instructions to
+   load/store the values..  */
+#define VLOGICAL_REGNO_P(N)						\
+  (ALTIVEC_REGNO_P (N)							\
+   || (TARGET_VSX && FP_REGNO_P (N))					\
+   || (TARGET_VSX && TARGET_POWERPC64 && INT_REGNO_P (N)))
 
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.  */
@@ -1124,7 +1182,7 @@ extern unsigned rs6000_pointer_size;
    when one has mode MODE1 and one has mode MODE2.
    If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
    for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
+#define MODES_TIEABLE_P(MODE1, MODE2)		\
   (SCALAR_FLOAT_MODE_P (MODE1)			\
    ? SCALAR_FLOAT_MODE_P (MODE2)		\
    : SCALAR_FLOAT_MODE_P (MODE2)		\
@@ -1137,14 +1195,14 @@ extern unsigned rs6000_pointer_size;
    ? SPE_VECTOR_MODE (MODE2)			\
    : SPE_VECTOR_MODE (MODE2)			\
    ? SPE_VECTOR_MODE (MODE1)			\
-   : ALTIVEC_VECTOR_MODE (MODE1)		\
-   ? ALTIVEC_VECTOR_MODE (MODE2)		\
-   : ALTIVEC_VECTOR_MODE (MODE2)		\
-   ? ALTIVEC_VECTOR_MODE (MODE1)		\
    : ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
    ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
    : ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
    ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
+   : ALTIVEC_VECTOR_MODE (MODE1)		\
+   ? ALTIVEC_VECTOR_MODE (MODE2)		\
+   : ALTIVEC_VECTOR_MODE (MODE2)		\
+   ? ALTIVEC_VECTOR_MODE (MODE1)		\
    : 1)
 
 /* Post-reload, we can't use any new AltiVec registers, as we already
@@ -1337,8 +1395,11 @@ enum r6000_reg_class_enum {
   RS6000_CONSTRAINT_wg,		/* FPR register for -mmfpgpr */
   RS6000_CONSTRAINT_wf,		/* VSX register for V4SF */
   RS6000_CONSTRAINT_wl,		/* FPR register for LFIWAX */
+  RS6000_CONSTRAINT_wm,		/* VSX register for direct move */
+  RS6000_CONSTRAINT_wr,		/* GPR register if 64-bit  */
   RS6000_CONSTRAINT_ws,		/* VSX register for DF */
   RS6000_CONSTRAINT_wt,		/* VSX register for TImode */
+  RS6000_CONSTRAINT_wv,		/* Altivec register for power8 vector */
   RS6000_CONSTRAINT_wx,		/* FPR register for STFIWX */
   RS6000_CONSTRAINT_wz,		/* FPR register for LFIWZX */
   RS6000_CONSTRAINT_MAX
@@ -2297,6 +2358,13 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* How to align the given loop. */
 #define LOOP_ALIGN(LABEL)  rs6000_loop_align(LABEL)
 
+/* Alignment guaranteed by __builtin_malloc.  */
+/* FIXME:  128-bit alignment is guaranteed by glibc for TARGET_64BIT.
+   However, specifying the stronger guarantee currently leads to
+   a regression in SPEC CPU2006 437.leslie3d.  The stronger
+   guarantee should be implemented here once that's fixed.  */
+#define MALLOC_ABI_ALIGNMENT (64)
+
 /* Pick up the return address upon entry to a procedure. Used for
    dwarf2 unwind information.  This also enables the table driven
    mechanism.  */
@@ -2365,6 +2433,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_ALWAYS	0		/* Always enabled.  */
 #define RS6000_BTM_ALTIVEC	MASK_ALTIVEC	/* VMX/altivec vectors.  */
 #define RS6000_BTM_VSX		MASK_VSX	/* VSX (vector/scalar).  */
+#define RS6000_BTM_P8_VECTOR	MASK_P8_VECTOR	/* ISA 2.07 vector.  */
+#define RS6000_BTM_CRYPTO	MASK_CRYPTO	/* crypto funcs.  */
 #define RS6000_BTM_SPE		MASK_STRING	/* E500 */
 #define RS6000_BTM_PAIRED	MASK_MULHW	/* 750CL paired insns.  */
 #define RS6000_BTM_FRE		MASK_POPCNTB	/* FRE instruction.  */
@@ -2376,6 +2446,8 @@ extern int frame_pointer_needed;
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
+				 | RS6000_BTM_P8_VECTOR			\
+				 | RS6000_BTM_CRYPTO			\
 				 | RS6000_BTM_FRE			\
 				 | RS6000_BTM_FRES			\
 				 | RS6000_BTM_FRSQRTE			\

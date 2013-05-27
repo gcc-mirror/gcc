@@ -198,8 +198,7 @@ GLIBCXX_COMPUTE_STDIO_INTEGER_CONSTANTS
 GLIBCXX_CHECK_GETTIMEOFDAY
 
 # For clock_gettime, nanosleep and sched_yield support.
-# NB: The default is [no], because otherwise it requires linking.
-GLIBCXX_ENABLE_LIBSTDCXX_TIME([no])
+GLIBCXX_ENABLE_LIBSTDCXX_TIME
 
 AC_LC_MESSAGES
 

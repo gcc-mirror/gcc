@@ -1402,12 +1402,12 @@ init_optimization_passes (void)
       NEXT_PASS (pass_ccp);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
+      NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
-      NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_fre);
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_merge_phi);

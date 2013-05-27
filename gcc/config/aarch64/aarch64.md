@@ -829,8 +829,8 @@
 )
 
 (define_insn "*movdi_aarch64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,*w,m,  m,r,  r,  *w, r,*w,w")
-	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,m, m,rZ,*w,Usa,Ush,rZ,*w,*w,Dd"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,k,r,r,r,*w,m,  m,r,r,  *w, r,*w,w")
+	(match_operand:DI 1 "aarch64_mov_operand"  " r,r,k,N,m, m,rZ,*w,S,Ush,rZ,*w,*w,Dd"))]
   "(register_operand (operands[0], DImode)
     || aarch64_reg_or_zero (operands[1], DImode))"
   "@
@@ -858,9 +858,8 @@
 			  (const_int 16)
 			  (match_operand:GPI 1 "const_int_operand" "n"))
 	(match_operand:GPI 2 "const_int_operand" "n"))]
-  "INTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
-   && INTVAL (operands[1]) % 16 == 0
-   && UINTVAL (operands[2]) <= 0xffff"
+  "UINTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
+   && UINTVAL (operands[1]) % 16 == 0"
   "movk\\t%<w>0, %X2, lsl %1"
   [(set_attr "v8type" "movk")
    (set_attr "mode" "<MODE>")]

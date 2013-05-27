@@ -1,3 +1,462 @@
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57396
+	* tree-affine.c (double_int_constant_multiple_p): Properly
+	return false for val == 0 and div != 0.
+
+2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.h: Use #elif in preprocessor conditions.
+
+2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/53916
+	* config/mips/constraints.md (kl): New constraint.
+	* config/mips/mips.md (divmod<mode>4, udivmod<mode>4): Delete.
+	(divmod<mode>4_internal): Rename to divmod<mode>4.  Use "kl" as the
+	constraint for operand 0.  Split after CSE for MIPS16.  Emit a move
+	from LO for MIPS16.
+	(udivmod<mode>4_internal): Likewise udivmod<mode>4.
+
+2013-05-25  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/55777
+	* config/mips/mips.c (mips_can_inline_p): New function.
+	(TARGET_CAN_INLINE_P): Define.
+
+2013-05-25  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* sched-int.h (ds_t, dw_t): Make unsigned int.
+	Fix documentation that describes how all the ds_t bits are used.
+	Reserve the last bit for delayed-branch scheduling.
+	(BITS_PER_DEP_STATUS): Move to ds_t typedef.
+	(BITS_PER_DEP_WEAK): Fix definition and documentation.
+	(gen_dep_weak_1): Remove prototype.
+	* sched-deps.c (get_dep_weak_1): Make static.
+	* target.def (speculate_insn, needs_block_p, gen_spec_check,
+	get_insn_spec_ds, get_insn_checked_ds): Adjust hook prototypes.
+	* doc/tm.texi: Regenerate.
+	* config/ia64/ia64.c (ia64_needs_block_p): Update prototype.
+
+2013-05-24  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR debug/56950
+	* haifa-sched.c (sched_extend_bb): Ignore DEBUG_INSNs.
+
+2013-05-24  Nathan Sidwell  <nathan@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config.gcc (powerpc-*): Allow native for with-cpu.
+
+2013-05-24  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57124
+	* tree-vrp.c (simplify_cond_using_ranges): Only simplify a
+	conversion feeding a condition if the range has an overflow
+	if -fstrict-overflow.  Add warnings for when we do make the
+	transformation.
+
+2013-05-24  Dehao Chen  <dehao@google.com>
+
+	* gcc/tree-cfg.c (locus_discrim_map): Fix the typo.
+	(locus_discrim_hasher): Likewise.
+	(locus_discrim_hasher::hash): Likewise.
+	(locus_discrim_hasher::equal): Likewise.
+
+2013-05-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57294
+	* cgraph.h (ipa_record_stmt_references): Declare.
+	* cgraphbuild.c (ipa_record_stmt_references): New function.
+	(build_cgraph_edges): Use ipa_record_stmt_references.
+	(rebuild_cgraph_edges): Likewise.
+	(cgraph_rebuild_references): Likewise.
+	* ipa-prop.c (ipa_modify_call_arguments): Discard references
+	associated with the old statement and build references from the
+	newly built statements.
+	* ipa-ref.c (ipa_remove_stmt_references): New function.
+	* ipa-ref.h (ipa_remove_stmt_references): Declare.
+
+2013-05-24  Vladimir Makarov  <vmakarov@redhat.com>
+
+        * lra-constraints.c (emit_spill_move): Use smaller mode for
+	mem-mem moves.
+        (check_and_process_move): Consider mem-reg moves for secondary
+	too.
+        (curr_insn_transform): Don't lose insns emitted before for
+	secondary memory moves.
+	(inherit_in_ebb): Mark defined reg.  Add usage only if it is not a
+	reg set up in the current insn.
+
+2013-05-24  Dehao Chen  <dehao@google.com>
+
+	* gcc/testsuite/gcc.dg/debug/dwarf2/discriminator.c: New Testcase.
+	* gcc/tree-cfg.c (locus_descrim_hasher::hash): Change discrminator
+	hash function.
+	(locus_descrim_hasher::equal): Likewise.
+	(build_gimple_cfg): New discrminator assignmnet algorithm
+	(make_edges): Likewise.
+	(next_discriminator_for_locus): Likewise.
+	(same_line_p): Likewise.
+	(assign_discriminators): Likewise.
+	(make_cond_expr_edges): Likewise.
+	(make_gimple_switch_edges): Likewise.
+	(make_goto_expr_edges): Likewise.
+	(make_gimple_asm_edges): Likewise.
+
+2013-05-24  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_print_operand): Change the
+	X format specifier to only display bottom 16 bits.
+	* config/aarch64/aarch64.md (insv_imm<mode>): Allow any size of
+	immediate to match for operand 2, since it will be masked.
+
+2013-05-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57287
+	* tree-ssa-uninit.c (compute_uninit_opnds_pos): Disregard
+	all SSA names that occur in abnormal PHIs.
+
+2013-05-24  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	PR tree-ssa/57385
+	* tree-ssa-sccvn.c (fully_constant_vn_reference_p): Check
+	that index is not negative.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/55177
+	* simplify-rtx.c (simplify_unary_operation_1) <NOT>: Deal with BSWAP.
+	(simplify_byte_swapping_operation): New.
+	(simplify_binary_operation_1): Call it for AND, IOR and XOR.
+	(simplify_relational_operation_1): Deal with BSWAP.
+
+2013-05-23  Richard Henderson  <rth@redhat.com>
+
+	PR target/56742
+	* config/i386/i386.c (ix86_seh_fixup_eh_fallthru): New.
+	(ix86_reorg): Call it.
+
+2013-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57379
+	* config/alpha/alpha.md (unspec): Add UNSPEC_XFLT_COMPARE.
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Construct
+	REG_EQUAL note as UNSPEC_XFLT_COMPARE unspec.
+
+2013-05-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR debug/57351
+	* config/arm/arm.c (arm_dwarf_register_span): Do not use dbx number.
+
+2013-05-23  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.md (*movdi_aarch64): Replace Usa with S.
+	* config/aarch64/constraints.md (Usa): Remove.
+	* doc/md.texi (AArch64 Usa): Remove.
+
+2013-05-23  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_mov_operand_p): Define.
+	* config/aarch64/aarch64.c (aarch64_mov_operand_p): Define.
+	* config/aarch64/predicates.md (aarch64_const_address): Remove.
+	(aarch64_mov_operand): Use aarch64_mov_operand_p.
+
+2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
+
+	* config/aarch64/aarch64-simd.md (clzv4si2): Support for CLZ
+	instruction (AdvSIMD).
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Handler for BUILT_IN_CLZ.
+	* config/aarch64/aarch-simd-builtins.def: Entry for CLZ.
+
+2013-05-23  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57347
+	* tree.h (contains_bitfld_component_ref_p): Declare.
+	* tree-sra.c (contains_bitfld_comp_ref_p): Move...
+	* tree.c (contains_bitfld_component_ref_p): ...here.  Adjust its
+	caller.
+	* ipa-prop.c (determine_known_aggregate_parts): Check that LHS does
+	not access a bit-field.  Assert all final offsets are byte-aligned.
+
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57380
+	* tree-ssa-phiprop.c (propagate_with_phi): Do not require at
+	least one invariant or re-used load.
+	* passes.c (init_optimization_passes): Move pass_phiprop before
+	pass_forwprop.
+
+2013-05-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_cm<optab>di): Add clobber of CC_REGNUM to unsplit pattern.
+
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57381
+	* fold-const.c (operand_equal_p): Compare FIELD_DECLs with
+	OEP_CONSTANT_ADDRESS_OF retained.
+
+2013-05-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/57344
+	* expmed.c (store_split_bit_field): If op0 is a REG or SUBREG of a REG,
+	don't lower unit.  Handle unit not being always BITS_PER_WORD.
+
+2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/57341
+	* ira.c (validate_equiv_mem_from_store): Use anti_dependence
+	instead of true_dependence.
+
+2013-05-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* bb-reorder.c (branch_threshold): Make const.
+	(exec_threshold): Ditto.
+
+2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions): Add
+	documentation for the power8 crypto builtins.
+
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add crypto.md.
+
+	* config/rs6000/rs6000-builtin.def (BU_P8V_AV_1): Add support
+	macros for defining power8 builtin functions.
+	(BU_P8V_AV_2): Likewise.
+	(BU_P8V_AV_P): Likewise.
+	(BU_P8V_VSX_1): Likewise.
+	(BU_P8V_OVERLOAD_1): Likewise.
+	(BU_P8V_OVERLOAD_2): Likewise.
+	(BU_CRYPTO_1): Likewise.
+	(BU_CRYPTO_2): Likewise.
+	(BU_CRYPTO_3): Likewise.
+	(BU_CRYPTO_OVERLOAD_1): Likewise.
+	(BU_CRYPTO_OVERLOAD_2): Likewise.
+	(XSCVSPDP): Fix typo, point to the correct instruction.
+	(VCIPHER): Add power8 crypto builtins.
+	(VCIPHERLAST): Likewise.
+	(VNCIPHER): Likewise.
+	(VNCIPHERLAST): Likewise.
+	(VPMSUMB): Likewise.
+	(VPMSUMH): Likewise.
+	(VPMSUMW): Likewise.
+	(VPERMXOR_V2DI): Likewise.
+	(VPERMXOR_V4SI: Likewise.
+	(VPERMXOR_V8HI: Likewise.
+	(VPERMXOR_V16QI: Likewise.
+	(VSHASIGMAW): Likewise.
+	(VSHASIGMAD): Likewise.
+	(VPMSUM): Likewise.
+	(VPERMXOR): Likewise.
+	(VSHASIGMA): Likewise.
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__CRYPTO__ if the crypto instructions are available.
+	(altivec_overloaded_builtins): Add support for overloaded power8
+	builtins.
+
+	* config/rs6000/rs6000.c (rs6000_expand_ternop_builtin): Add
+	support for power8 crypto builtins.
+	(builtin_function_type): Likewise.
+	(altivec_init_builtins): Add support for builtins that take vector
+	long long (V2DI) arguments.
+
+	* config/rs6000/crypto.md: New file, define power8 crypto
+	instructions.
+
+2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* doc/invoke.texi (Option Summary): Add power8 options.
+	(RS/6000 and PowerPC Options): Likewise.
+
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Update to use
+	constraints.md instead of rs6000.h.  Reorder w* constraints.  Add
+	wm, wn, wr documentation.
+
+	* gcc/config/rs6000/constraints.md (wm): New constraint for VSX
+	registers if direct move instructions are enabled.
+	(wn): New constraint for no registers.
+	(wq): New constraint for quad word even GPR registers.
+	(wr): New constraint if 64-bit instructions are enabled.
+	(wv): New constraint if power8 vector instructions are enabled.
+	(wQ): New constraint for quad word memory locations.
+
+	* gcc/config/rs6000/predicates.md (const_0_to_15_operand): New
+	constraint for 0..15 for crypto instructions.
+	(gpc_reg_operand): If VSX allow registers in VSX registers as well
+	as GPR and floating point registers.
+	(int_reg_operand): New predicate to match only GPR registers.
+	(base_reg_operand): New predicate to match base registers.
+	(quad_int_reg_operand): New predicate to match even GPR registers
+	for quad memory operations.
+	(vsx_reg_or_cint_operand): New predicate to allow vector logical
+	operations in both GPR and VSX registers.
+	(quad_memory_operand): New predicate for quad memory operations.
+	(reg_or_indexed_operand): New predicate for direct move support.
+
+	* gcc/config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED):
+	Inherit from ISA_2_4_MASKS, not ISA_2_2_MASKS.
+	(ISA_2_7_MASKS_SERVER): New mask for ISA 2.07 (i.e. power8).
+	(POWERPC_MASKS): Add power8 options.
+	(power8 cpu): Use ISA_2_7_MASKS_SERVER instead of specifying the
+	various options.
+
+	* gcc/config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	Define _ARCH_PWR8 and __POWER8_VECTOR__ for power8.
+
+	* gcc/config/rs6000/rs6000.opt (-mvsx-timode): Add documentation.
+	(-mpower8-fusion): New power8 options.
+	(-mpower8-fusion-sign): Likewise.
+	(-mpower8-vector): Likewise.
+	(-mcrypto): Likewise.
+	(-mdirect-move): Likewise.
+	(-mquad-memory): Likewise.
+
+	* gcc/config/rs6000/rs6000.c (power8_cost): Initial definition for
+	power8.
+	(rs6000_hard_regno_mode_ok): Make PTImode only match even GPR
+	registers.
+	(rs6000_debug_reg_print): Print the base register class if -mdebug=reg.
+	(rs6000_debug_vector_unit): Add p8_vector.
+	(rs6000_debug_reg_global): If -mdebug=reg, print power8 constraint
+	definitions.  Also print fusion state.
+	(rs6000_init_hard_regno_mode_ok): Set up power8 constraints.
+	(rs6000_builtin_mask_calculate): Add power8 builtin support.
+	(rs6000_option_override_internal): Add support for power8.
+	(rs6000_common_init_builtins): Add debugging for skipped builtins
+	if -mdebug=builtin.
+	(rs6000_adjust_cost): Add power8 support.
+	(rs6000_issue_rate): Likewise.
+	(insn_must_be_first_in_group): Likewise.
+	(insn_must_be_last_in_group): Likewise.
+	(force_new_group): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_opt_masks): Likewise.
+
+	* config/rs6000/rs6000.h (ASM_CPU_POWER8_SPEC): If we don't have a
+	power8 capable assembler, default to power7 options.
+	(TARGET_DIRECT_MOVE): Likewise.
+	(TARGET_CRYPTO): Likewise.
+	(TARGET_P8_VECTOR): Likewise.
+	(VECTOR_UNIT_P8_VECTOR_P): Define power8 vector support.
+	(VECTOR_UNIT_VSX_OR_P8_VECTOR_P): Likewise.
+	(VECTOR_MEM_P8_VECTOR_P): Likewise.
+	(VECTOR_MEM_VSX_OR_P8_VECTOR_P): Likewise.
+	(VECTOR_MEM_ALTIVEC_OR_VSX_P): Likewise.
+	(TARGET_XSCVDPSPN): Likewise.
+	(TARGET_XSCVSPDPN): Likewsie.
+	(TARGET_SYNC_HI_QI): Likewise.
+	(TARGET_SYNC_TI): Likewise.
+	(MASK_CRYPTO): Likewise.
+	(MASK_DIRECT_MOVE): Likewise.
+	(MASK_P8_FUSION): Likewise.
+	(MASK_P8_VECTOR): Likewise.
+	(REG_ALLOC_ORDER): Move fr13 to be lower in priority so that the TFmode
+	temporary used by some of the direct move instructions to get two FP
+	temporary registers does not force creation of a stack frame.
+	(VLOGICAL_REGNO_P): Allow vector logical operations in GPRs.
+	(MODES_TIEABLE_P): Move the VSX tests above the Altivec tests so
+	that any VSX registers are tieable, even if they are also an
+	Altivec vector mode.
+	(r6000_reg_class_enum): Add wm, wr, wv constraints.
+	(RS6000_BTM_P8_VECTOR): Power8 builtin support.
+	(RS6000_BTM_CRYPTO): Likewise.
+	(RS6000_BTM_COMMON): Likewise.
+
+	* config/rs6000/rs6000.md (cpu attribute): Add power8.
+	* config/rs6000/rs6000-opts.h (PROCESSOR_POWER8): Likewise.
+	(enum rs6000_vector): Add power8 vector support.
+
+2013-05-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/19599
+	PR target/57340
+	* config/arm/arm.c (any_sibcall_uses_r3): Rename to ..
+	(any_sibcall_could_use_r3): this and handle indirect calls.
+	(arm_get_frame_offsets): Rename use of any_sibcall_uses_r3.
+
+2013-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (MALLOC_ABI_ALIGNMENT): New #define.
+
+2013-05-22  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57349
+	* profile.c (branch_prob): Do not split blocks that are
+	abnormally receiving from ECF_RETURNS_TWICE functions.
+
+2013-05-22  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* recog.c (offsettable_address_addr_space_p): Fix calculation of
+	address mode.  Move pointer mode initialization to the same place.
+
+2013-05-22  Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* read-rtl.c (copy_rtx_for_iterators): Continue applying iterators
+	while it has any effect.
+
+2013-05-21  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57322
+	* (build_and_add_sum): If a BB is empty, set the UID of the statement
+	added to the BB to be 1.
+
+2013-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57331
+	* tree-vrp.c (simplify_cond_using_ranges): Don't optimize comparison
+	of conversion from pointer type to integral type with integer.
+
+2013-05-21  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/57289
+	* ipa-prop.c (ipa_read_node_info): Process param_used and
+	controlled_uses in the same order as when writing.
+
+2013-05-21  Magnus Granberg  <baldrick@free.fr>
+
+	PR plugins/56754
+	* Makefile.in (PLUGIN_HEADERS): Add $(TARGET_H).
+
+2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57318
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Do not
+	estimate stmts with side-effects as likely eliminated.
+
+2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57330
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Properly
+	preserve the call stmts fntype.
+
+2013-05-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57303
+	* tree-ssa-sink.c (statement_sink_location): Improve killing
+	stmt detection and properly handle self-assignments.
+
+2013-05-21  Christian Bruel  <christian.bruel@st.com>
+
+        * dwarf2out.c (multiple_reg_loc_descriptor): Use dbx_reg_number for
+        spanning registers. LEAF_REG_REMAP is supported only for contiguous
+	registers. Set register size out of the PARALLEL loop.
+
+2013-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/56547
+	* config/sh/sh.md (fmasf4): Remove empty constraints strings.
+	(*fmasf4, *fmasf4_media): New insns.
+
 2013-05-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.h (BASE_INSN_LENGTH, NOP_INSN_LENGTH): New macros.

@@ -3535,7 +3535,7 @@ case "${target}" in
 				tm_defines="${tm_defines} CONFIG_PPC405CR"
 				eval "with_$which=405"
 				;;
-			"" | common \
+			"" | common | native \
 			| power | power[2345678] | power6x | powerpc | powerpc64 \
 			| rios | rios1 | rios2 | rsc | rsc1 | rs64a \
 			| 401 | 403 | 405 | 405fp | 440 | 440fp | 464 | 464fp \

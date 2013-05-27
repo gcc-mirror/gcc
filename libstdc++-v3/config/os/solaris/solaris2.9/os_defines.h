@@ -35,5 +35,10 @@
 #define __CORRECT_ISO_CPP_WCHAR_H_PROTO
 #endif
 
+/* Solaris 9 uses the non-standard CLOCK_HIGHRES instead.  */
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC CLOCK_HIGHRES
+#endif
+
 #endif
 

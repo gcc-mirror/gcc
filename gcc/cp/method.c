@@ -1353,7 +1353,8 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
       if (diag && assign_p && move_p
 	  && BINFO_VIRTUAL_P (base_binfo)
 	  && rval && TREE_CODE (rval) == FUNCTION_DECL
-	  && move_fn_p (rval) && !trivial_fn_p (rval))
+	  && move_fn_p (rval) && !trivial_fn_p (rval)
+	  && vbase_has_user_provided_move_assign (basetype))
 	warning (OPT_Wvirtual_move_assign,
 		 "defaulted move assignment for %qT calls a non-trivial "
 		 "move assignment operator for virtual base %qT",
@@ -1863,13 +1864,19 @@ defaultable_fn_check (tree fn)
     }
   else
     {
-      tree t = FUNCTION_FIRST_USER_PARMTYPE (fn);
-      for (; t && t != void_list_node; t = TREE_CHAIN (t))
+      for (tree t = FUNCTION_FIRST_USER_PARMTYPE (fn);
+	   t && t != void_list_node; t = TREE_CHAIN (t))
 	if (TREE_PURPOSE (t))
 	  {
 	    error ("defaulted function %q+D with default argument", fn);
 	    break;
 	  }
+
+      /* Avoid do_warn_unused_parameter warnings.  */
+      for (tree p = FUNCTION_FIRST_USER_PARM (fn); p; p = DECL_CHAIN (p))
+	if (DECL_NAME (p))
+	  TREE_NO_WARNING (p) = 1;
+
       if (TYPE_BEING_DEFINED (DECL_CONTEXT (fn)))
 	/* Defer checking.  */;
       else if (!processing_template_decl)

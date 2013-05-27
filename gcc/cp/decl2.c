@@ -646,6 +646,15 @@ check_classfn (tree ctype, tree function, tree template_parms)
   /* OK, is this a definition of a member template?  */
   is_template = (template_parms != NULL_TREE);
 
+  /* [temp.mem]
+
+     A destructor shall not be a member template.  */
+  if (DECL_DESTRUCTOR_P (function) && is_template)
+    {
+      error ("destructor %qD declared as member template", function);
+      return error_mark_node;
+    }
+
   /* We must enter the scope here, because conversion operators are
      named by target type, and type equivalence relies on typenames
      resolving within the scope of CTYPE.  */
@@ -2210,9 +2219,6 @@ determine_visibility (tree decl)
 	      && !lookup_attribute ("visibility", attribs))
 	    {
 	      int depth = TMPL_ARGS_DEPTH (args);
-	      int class_depth = 0;
-	      if (class_type && CLASSTYPE_TEMPLATE_INFO (class_type))
-		class_depth = TMPL_ARGS_DEPTH (CLASSTYPE_TI_ARGS (class_type));
 	      if (DECL_VISIBILITY_SPECIFIED (decl))
 		{
 		  /* A class template member with explicit visibility
@@ -2225,7 +2231,7 @@ determine_visibility (tree decl)
 		      constrain_visibility_for_template (decl, lev);
 		    }
 		}
-	      else if (depth > class_depth)
+	      else if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo)))
 		/* Limit visibility based on its template arguments.  */
 		constrain_visibility_for_template (decl, args);
 	    }

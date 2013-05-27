@@ -3140,9 +3140,12 @@ check_bitfield_decl (tree field)
 	  error ("zero width for bit-field %q+D", field);
 	  w = error_mark_node;
 	}
-      else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
-	       && TREE_CODE (type) != ENUMERAL_TYPE
-	       && TREE_CODE (type) != BOOLEAN_TYPE)
+      else if ((TREE_CODE (type) != ENUMERAL_TYPE
+		&& TREE_CODE (type) != BOOLEAN_TYPE
+		&& compare_tree_int (w, TYPE_PRECISION (type)) > 0)
+	       || ((TREE_CODE (type) == ENUMERAL_TYPE
+		    || TREE_CODE (type) == BOOLEAN_TYPE)
+		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
 	warning (0, "width of %q+D exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > (compare_tree_int
@@ -4828,6 +4831,44 @@ type_has_user_provided_default_constructor (tree t)
 	return true;
     }
 
+  return false;
+}
+
+/* TYPE is being used as a virtual base, and has a non-trivial move
+   assignment.  Return true if this is due to there being a user-provided
+   move assignment in TYPE or one of its subobjects; if there isn't, then
+   multiple move assignment can't cause any harm.  */
+
+bool
+vbase_has_user_provided_move_assign (tree type)
+{
+  /* Does the type itself have a user-provided move assignment operator?  */
+  for (tree fns
+	 = lookup_fnfields_slot_nolazy (type, ansi_assopname (NOP_EXPR));
+       fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (move_fn_p (fn) && user_provided_p (fn))
+	return true;
+    }
+
+  /* Do any of its bases?  */
+  tree binfo = TYPE_BINFO (type);
+  tree base_binfo;
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    if (vbase_has_user_provided_move_assign (BINFO_TYPE (base_binfo)))
+      return true;
+
+  /* Or non-static data members?  */
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && CLASS_TYPE_P (TREE_TYPE (field))
+	  && vbase_has_user_provided_move_assign (TREE_TYPE (field)))
+	return true;
+    }
+
+  /* Seems not.  */
   return false;
 }
 
