@@ -1645,14 +1645,22 @@ reload_combine_note_use (rtx *xp, rtx insn, int ruid, rtx containing_mem)
    later disable any optimization that would cross it.
    reg_offset[n] / reg_base_reg[n] / reg_symbol_ref[n] / reg_mode[n]
    are only valid if reg_set_luid[n] is greater than
-   move2add_last_label_luid.  */
+   move2add_last_label_luid.
+   For a set that established a new (potential) base register with
+   non-constant value, we use move2add_luid from the place where the
+   setting insn is encountered; registers based off that base then
+   get the same reg_set_luid.  Constants all get
+   move2add_last_label_luid + 1 as their reg_set_luid.  */
 static int reg_set_luid[FIRST_PSEUDO_REGISTER];
 
 /* If reg_base_reg[n] is negative, register n has been set to
    reg_offset[n] or reg_symbol_ref[n] + reg_offset[n] in mode reg_mode[n].
    If reg_base_reg[n] is non-negative, register n has been set to the
    sum of reg_offset[n] and the value of register reg_base_reg[n]
-   before reg_set_luid[n], calculated in mode reg_mode[n] .  */
+   before reg_set_luid[n], calculated in mode reg_mode[n] .
+   For multi-hard-register registers, all but the first one are
+   recorded as BLKmode in reg_mode.  Setting reg_mode to VOIDmode
+   marks it as invalid.  */
 static HOST_WIDE_INT reg_offset[FIRST_PSEUDO_REGISTER];
 static int reg_base_reg[FIRST_PSEUDO_REGISTER];
 static rtx reg_symbol_ref[FIRST_PSEUDO_REGISTER];
@@ -1673,6 +1681,60 @@ static int move2add_last_label_luid;
   (GET_MODE_SIZE (OUTMODE) == GET_MODE_SIZE (INMODE) \
    || (GET_MODE_SIZE (OUTMODE) <= GET_MODE_SIZE (INMODE) \
        && TRULY_NOOP_TRUNCATION_MODES_P (OUTMODE, INMODE)))
+
+/* Record that REG is being set to a value with the mode of REG.  */
+
+static void
+move2add_record_mode (rtx reg)
+{
+  int regno, nregs;
+  enum machine_mode mode = GET_MODE (reg);
+
+  if (GET_CODE (reg) == SUBREG)
+    {
+      regno = subreg_regno (reg);
+      nregs = subreg_nregs (reg);
+    }
+  else if (REG_P (reg))
+    {
+      regno = REGNO (reg);
+      nregs = hard_regno_nregs[regno][mode];
+    }
+  else
+    gcc_unreachable ();
+  for (int i = nregs - 1; i > 0; i--)
+    reg_mode[regno + i] = BLKmode;
+  reg_mode[regno] = mode;
+}
+
+/* Record that REG is being set to the sum of SYM and OFF.  */
+
+static void
+move2add_record_sym_value (rtx reg, rtx sym, rtx off)
+{
+  int regno = REGNO (reg);
+
+  move2add_record_mode (reg);
+  reg_set_luid[regno] = move2add_luid;
+  reg_base_reg[regno] = -1;
+  reg_symbol_ref[regno] = sym;
+  reg_offset[regno] = INTVAL (off);
+}
+
+/* Check if REGNO contains a valid value in MODE.  */
+
+static bool
+move2add_valid_value_p (int regno, enum machine_mode mode)
+{
+  if (reg_set_luid[regno] <= move2add_last_label_luid
+      || !MODES_OK_FOR_MOVE2ADD (mode, reg_mode[regno]))
+    return false;
+
+  for (int i = hard_regno_nregs[regno][mode] - 1; i > 0; i--)
+    if (reg_mode[regno + i] != BLKmode)
+      return false;
+  return true;
+}
 
 /* This function is called with INSN that sets REG to (SYM + OFF),
    while REG is known to already have value (SYM + offset).
@@ -1749,11 +1811,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
 	    }
 	}
     }
-  reg_set_luid[regno] = move2add_luid;
-  reg_base_reg[regno] = -1;
-  reg_mode[regno] = GET_MODE (reg);
-  reg_symbol_ref[regno] = sym;
-  reg_offset[regno] = INTVAL (off);
+  move2add_record_sym_value (reg, sym, off);
   return changed;
 }
 
@@ -1787,8 +1845,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
   SET_SRC (pat) = plus_expr;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (reg_set_luid[i] > move2add_last_label_luid
-	&& reg_mode[i] == GET_MODE (reg)
+    if (move2add_valid_value_p (i, GET_MODE (reg))
 	&& reg_base_reg[i] < 0
 	&& reg_symbol_ref[i] != NULL_RTX
 	&& rtx_equal_p (sym, reg_symbol_ref[i]))
@@ -1836,10 +1893,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx insn)
 	changed = true;
     }
   reg_set_luid[regno] = move2add_luid;
-  reg_base_reg[regno] = -1;
-  reg_mode[regno] = GET_MODE (reg);
-  reg_symbol_ref[regno] = sym;
-  reg_offset[regno] = INTVAL (off);
+  move2add_record_sym_value (reg, sym, off);
   return changed;
 }
 
@@ -1890,8 +1944,7 @@ reload_cse_move2add (rtx first)
 
 	  /* Check if we have valid information on the contents of this
 	     register in the mode of REG.  */
-	  if (reg_set_luid[regno] > move2add_last_label_luid
-	      && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg), reg_mode[regno])
+	  if (move2add_valid_value_p (regno, GET_MODE (reg))
               && dbg_cnt (cse2_move2add))
 	    {
 	      /* Try to transform (set (REGX) (CONST_INT A))
@@ -1928,8 +1981,7 @@ reload_cse_move2add (rtx first)
 	      else if (REG_P (src)
 		       && reg_set_luid[regno] == reg_set_luid[REGNO (src)]
 		       && reg_base_reg[regno] == reg_base_reg[REGNO (src)]
-		       && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg),
-						 reg_mode[REGNO (src)]))
+		       && move2add_valid_value_p (REGNO (src), GET_MODE (reg)))
 		{
 		  rtx next = next_nonnote_nondebug_insn (insn);
 		  rtx set = NULL_RTX;
@@ -1982,10 +2034,10 @@ reload_cse_move2add (rtx first)
 			delete_insn (insn);
 		      changed |= success;
 		      insn = next;
-		      reg_mode[regno] = GET_MODE (reg);
-		      reg_offset[regno] =
-			trunc_int_for_mode (added_offset + base_offset,
-					    GET_MODE (reg));
+		      move2add_record_mode (reg);
+		      reg_offset[regno]
+			= trunc_int_for_mode (added_offset + base_offset,
+					      GET_MODE (reg));
 		      continue;
 		    }
 		}
@@ -2021,8 +2073,7 @@ reload_cse_move2add (rtx first)
 
 	      /* If the reg already contains the value which is sum of
 		 sym and some constant value, we can use an add2 insn.  */
-	      if (reg_set_luid[regno] > move2add_last_label_luid
-		  && MODES_OK_FOR_MOVE2ADD (GET_MODE (reg), reg_mode[regno])
+	      if (move2add_valid_value_p (regno, GET_MODE (reg))
 		  && reg_base_reg[regno] < 0
 		  && reg_symbol_ref[regno] != NULL_RTX
 		  && rtx_equal_p (sym, reg_symbol_ref[regno]))
@@ -2045,7 +2096,10 @@ reload_cse_move2add (rtx first)
 	      /* Reset the information about this register.  */
 	      int regno = REGNO (XEXP (note, 0));
 	      if (regno < FIRST_PSEUDO_REGISTER)
-		reg_set_luid[regno] = 0;
+		{
+		  move2add_record_mode (XEXP (note, 0));
+		  reg_mode[regno] = VOIDmode;
+		}
 	    }
 	}
       note_stores (PATTERN (insn), move2add_note_store, insn);
@@ -2082,7 +2136,7 @@ reload_cse_move2add (rtx first)
 	    {
 	      if (call_used_regs[i])
 		/* Reset the information about this register.  */
-		reg_set_luid[i] = 0;
+		reg_mode[i] = VOIDmode;
 	    }
 	}
     }
@@ -2099,19 +2153,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 {
   rtx insn = (rtx) data;
   unsigned int regno = 0;
-  unsigned int nregs = 0;
-  unsigned int i;
   enum machine_mode mode = GET_MODE (dst);
-
-  if (GET_CODE (dst) == SUBREG)
-    {
-      regno = subreg_regno_offset (REGNO (SUBREG_REG (dst)),
-				   GET_MODE (SUBREG_REG (dst)),
-				   SUBREG_BYTE (dst),
-				   GET_MODE (dst));
-      nregs = subreg_nregs (dst);
-      dst = SUBREG_REG (dst);
-    }
 
   /* Some targets do argument pushes without adding REG_INC notes.  */
 
@@ -2120,27 +2162,28 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
       dst = XEXP (dst, 0);
       if (GET_CODE (dst) == PRE_INC || GET_CODE (dst) == POST_INC
 	  || GET_CODE (dst) == PRE_DEC || GET_CODE (dst) == POST_DEC)
-	reg_set_luid[REGNO (XEXP (dst, 0))] = 0;
+	reg_mode[REGNO (XEXP (dst, 0))] = VOIDmode;
       return;
     }
-  if (!REG_P (dst))
+
+  if (GET_CODE (dst) == SUBREG)
+    regno = subreg_regno (dst);
+  else if (REG_P (dst))
+    regno = REGNO (dst);
+  else
     return;
 
-  regno += REGNO (dst);
-  if (!nregs)
-    nregs = hard_regno_nregs[regno][mode];
-
-  if (SCALAR_INT_MODE_P (GET_MODE (dst))
-      && nregs == 1 && GET_CODE (set) == SET)
+  if (SCALAR_INT_MODE_P (mode)
+      && GET_CODE (set) == SET)
     {
       rtx note, sym = NULL_RTX;
-      HOST_WIDE_INT off;
+      rtx off;
 
       note = find_reg_equal_equiv_note (insn);
       if (note && GET_CODE (XEXP (note, 0)) == SYMBOL_REF)
 	{
 	  sym = XEXP (note, 0);
-	  off = 0;
+	  off = const0_rtx;
 	}
       else if (note && GET_CODE (XEXP (note, 0)) == CONST
 	       && GET_CODE (XEXP (XEXP (note, 0), 0)) == PLUS
@@ -2148,22 +2191,18 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	       && CONST_INT_P (XEXP (XEXP (XEXP (note, 0), 0), 1)))
 	{
 	  sym = XEXP (XEXP (XEXP (note, 0), 0), 0);
-	  off = INTVAL (XEXP (XEXP (XEXP (note, 0), 0), 1));
+	  off = XEXP (XEXP (XEXP (note, 0), 0), 1);
 	}
 
       if (sym != NULL_RTX)
 	{
-	  reg_base_reg[regno] = -1;
-	  reg_symbol_ref[regno] = sym;
-	  reg_offset[regno] = off;
-	  reg_mode[regno] = mode;
-	  reg_set_luid[regno] = move2add_luid;
+	  move2add_record_sym_value (dst, sym, off);
 	  return;
 	}
     }
 
-  if (SCALAR_INT_MODE_P (GET_MODE (dst))
-      && nregs == 1 && GET_CODE (set) == SET
+  if (SCALAR_INT_MODE_P (mode)
+      && GET_CODE (set) == SET
       && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
       && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
     {
@@ -2171,9 +2210,6 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
       rtx base_reg;
       HOST_WIDE_INT offset;
       int base_regno;
-      /* This may be different from mode, if SET_DEST (set) is a
-	 SUBREG.  */
-      enum machine_mode dst_mode = GET_MODE (dst);
 
       switch (GET_CODE (src))
 	{
@@ -2185,20 +2221,14 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	      if (CONST_INT_P (XEXP (src, 1)))
 		offset = INTVAL (XEXP (src, 1));
 	      else if (REG_P (XEXP (src, 1))
-		       && (reg_set_luid[REGNO (XEXP (src, 1))]
-			   > move2add_last_label_luid)
-		       && (MODES_OK_FOR_MOVE2ADD
-			   (dst_mode, reg_mode[REGNO (XEXP (src, 1))])))
+		       && move2add_valid_value_p (REGNO (XEXP (src, 1)), mode))
 		{
 		  if (reg_base_reg[REGNO (XEXP (src, 1))] < 0
 		      && reg_symbol_ref[REGNO (XEXP (src, 1))] == NULL_RTX)
 		    offset = reg_offset[REGNO (XEXP (src, 1))];
 		  /* Maybe the first register is known to be a
 		     constant.  */
-		  else if (reg_set_luid[REGNO (base_reg)]
-			   > move2add_last_label_luid
-			   && (MODES_OK_FOR_MOVE2ADD
-			       (dst_mode, reg_mode[REGNO (base_reg)]))
+		  else if (move2add_valid_value_p (REGNO (base_reg), mode)
 			   && reg_base_reg[REGNO (base_reg)] < 0
 			   && reg_symbol_ref[REGNO (base_reg)] == NULL_RTX)
 		    {
@@ -2228,33 +2258,26 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	  reg_offset[regno] = INTVAL (SET_SRC (set));
 	  /* We assign the same luid to all registers set to constants.  */
 	  reg_set_luid[regno] = move2add_last_label_luid + 1;
-	  reg_mode[regno] = mode;
+	  move2add_record_mode (dst);
 	  return;
 
 	default:
-	invalidate:
-	  /* Invalidate the contents of the register.  */
-	  reg_set_luid[regno] = 0;
-	  return;
+	  goto invalidate;
 	}
 
       base_regno = REGNO (base_reg);
       /* If information about the base register is not valid, set it
 	 up as a new base register, pretending its value is known
 	 starting from the current insn.  */
-      if (reg_set_luid[base_regno] <= move2add_last_label_luid)
+      if (!move2add_valid_value_p (base_regno, mode))
 	{
 	  reg_base_reg[base_regno] = base_regno;
 	  reg_symbol_ref[base_regno] = NULL_RTX;
 	  reg_offset[base_regno] = 0;
 	  reg_set_luid[base_regno] = move2add_luid;
-	  reg_mode[base_regno] = mode;
+	  gcc_assert (GET_MODE (base_reg) == mode);
+	  move2add_record_mode (base_reg);
 	}
-      else if (! MODES_OK_FOR_MOVE2ADD (dst_mode,
-					reg_mode[base_regno]))
-	goto invalidate;
-
-      reg_mode[regno] = mode;
 
       /* Copy base information from our base register.  */
       reg_set_luid[regno] = reg_set_luid[base_regno];
@@ -2262,17 +2285,17 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
       reg_symbol_ref[regno] = reg_symbol_ref[base_regno];
 
       /* Compute the sum of the offsets or constants.  */
-      reg_offset[regno] = trunc_int_for_mode (offset
-					      + reg_offset[base_regno],
-					      dst_mode);
+      reg_offset[regno]
+	= trunc_int_for_mode (offset + reg_offset[base_regno], mode);
+
+      move2add_record_mode (dst);
     }
   else
     {
-      unsigned int endregno = regno + nregs;
-
-      for (i = regno; i < endregno; i++)
-	/* Reset the information about this register.  */
-	reg_set_luid[i] = 0;
+    invalidate:
+      /* Invalidate the contents of the register.  */
+      move2add_record_mode (dst);
+      reg_mode[regno] = VOIDmode;
     }
 }
 
