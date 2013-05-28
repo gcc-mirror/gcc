@@ -1,3 +1,13 @@
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate
+	polymorphic arrays for allocatable intent(out) dummies.
+	(gfc_reset_vptr): New function, moved from trans-stmt.c
+	and extended.
+	* trans-stmt.c (reset_vptr): Remove.
+	(gfc_trans_deallocate): Update calls.
+	* trans.h (gfc_reset_vptr): New prototype.
+
 2013-05-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/57435
