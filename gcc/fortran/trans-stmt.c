@@ -5349,30 +5349,6 @@ gfc_trans_allocate (gfc_code * code)
 }
 
 
-/* Reset the vptr after deallocation.  */
-
-static void
-reset_vptr (stmtblock_t *block, gfc_expr *e)
-{
-  gfc_expr *rhs, *lhs = gfc_copy_expr (e);
-  gfc_symbol *vtab;
-  tree tmp;
-
-  if (UNLIMITED_POLY (e))
-    rhs = gfc_get_null_expr (NULL);
-  else
-    {
-      vtab = gfc_find_derived_vtab (e->ts.u.derived);
-      rhs = gfc_lval_expr_from_sym (vtab);
-    }
-  gfc_add_vptr_component (lhs);
-  tmp = gfc_trans_pointer_assignment (lhs, rhs);
-  gfc_add_expr_to_block (block, tmp);
-  gfc_free_expr (lhs);
-  gfc_free_expr (rhs);
-}
-
-
 /* Translate a DEALLOCATE statement.  */
 
 tree
@@ -5453,8 +5429,8 @@ gfc_trans_deallocate (gfc_code *code)
 	  tmp = gfc_array_deallocate (se.expr, pstat, errmsg, errlen,
 				      label_finish, expr);
 	  gfc_add_expr_to_block (&se.pre, tmp);
-	  if (UNLIMITED_POLY (al->expr))
-	    reset_vptr (&se.pre, al->expr);
+	  if (al->expr->ts.type == BT_CLASS)
+	    gfc_reset_vptr (&se.pre, al->expr);
 	}
       else
 	{
@@ -5469,7 +5445,7 @@ gfc_trans_deallocate (gfc_code *code)
 	  gfc_add_expr_to_block (&se.pre, tmp);
 
 	  if (al->expr->ts.type == BT_CLASS)
-	    reset_vptr (&se.pre, al->expr);
+	    gfc_reset_vptr (&se.pre, al->expr);
 	}
 
       if (code->expr1)
