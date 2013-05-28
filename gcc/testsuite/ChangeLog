@@ -1,5 +1,10 @@
 2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/builtin-bswap-8.c: Compile at -O2.
+	* gcc.dg/builtin-bswap-9.c: Likewise.
+
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.target/sparc/bmaskbshuf.c: Remove superfluous options.
 
 2013-05-27  Richard Biener  <rguenther@suse.de>
