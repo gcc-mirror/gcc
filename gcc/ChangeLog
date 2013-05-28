@@ -1,3 +1,8 @@
+2013-05-28  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57439
+	* postreload.c (move2add_use_add2_insn): Use gen_lowpart_common.
+
 2013-05-28  Easwaran Raman  <eraman@google.com>
 
 	PR tree-optimization/57337
