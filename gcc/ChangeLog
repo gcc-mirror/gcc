@@ -176,7 +176,7 @@
 
 2013-05-24  Dehao Chen  <dehao@google.com>
 
-	* gcc/tree-cfg.c (locus_discrim_map): Fix the typo.
+	* tree-cfg.c (locus_discrim_map): Fix the typo.
 	(locus_discrim_hasher): Likewise.
 	(locus_discrim_hasher::hash): Likewise.
 	(locus_discrim_hasher::equal): Likewise.
@@ -208,11 +208,11 @@
 
 2013-05-24  Dehao Chen  <dehao@google.com>
 
-	* gcc/testsuite/gcc.dg/debug/dwarf2/discriminator.c: New Testcase.
-	* gcc/tree-cfg.c (locus_descrim_hasher::hash): Change discrminator
+	* testsuite/gcc.dg/debug/dwarf2/discriminator.c: New Testcase.
+	* tree-cfg.c (locus_descrim_hasher::hash): Change discriminator
 	hash function.
 	(locus_descrim_hasher::equal): Likewise.
-	(build_gimple_cfg): New discrminator assignmnet algorithm
+	(build_gimple_cfg): New discriminator assignment algorithm.
 	(make_edges): Likewise.
 	(next_discriminator_for_locus): Likewise.
 	(same_line_p): Likewise.
