@@ -1,5 +1,14 @@
 2013-05-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37336
+	* gfortran.dg/finalize_11.f90: New.
+	* gfortran.dg/finalize_4.f03: Remove dg-error.
+	* gfortran.dg/finalize_5.f03: Ditto.
+	* gfortran.dg/finalize_6.f03: Ditto.
+	* gfortran.dg/finalize_7.f03: Ditto.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
 	* gfortran.dg/class_array_16.f90: New.
 
 2013-05-28  Tobias Burnus  <burnus@net-b.de>

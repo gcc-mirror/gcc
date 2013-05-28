@@ -11241,10 +11241,6 @@ error:
 		 " defined at %L, suggest also scalar one",
 		 derived->name, &derived->declared_at);
 
-  /* TODO:  Remove this error when finalization is finished.  */
-  gfc_error ("Finalization at %L is not yet implemented",
-	     &derived->declared_at);
-
   gfc_find_derived_vtab (derived);
   return result;
 }

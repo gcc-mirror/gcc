@@ -1,5 +1,10 @@
 2013-05-28  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37336
+	* resolve.c (gfc_resolve_finalizers): Remove not implemented error.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-expr.c (gfc_conv_procedure_call): Deallocate
 	polymorphic arrays for allocatable intent(out) dummies.
 	(gfc_reset_vptr): New function, moved from trans-stmt.c
