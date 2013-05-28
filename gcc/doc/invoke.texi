@@ -1799,6 +1799,17 @@ Program Interface v3.0 @w{@uref{http://www.openmp.org/}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
+@item -fcilkplus
+@opindex fcilkplus
+@cindex Enable Cilk Plus
+Enable the usage of Cilk Language extension features for C/C++.  When the flag
+@option{-fcilkplus} is specified, all the Cilk Plus components are converted 
+to the appropriate C/C++ code.  The present implementation follows ABI version 
+0.9.  There are four major parts to Cilk Plus language 
+extension: Array Notations, Cilk Keywords, SIMD annotations and elemental 
+functions.  Detailed information about Cilk Plus can be found at 
+@w{@uref{http://www.cilkplus.org}}. 
+
 @item -fgnu-tm
 @opindex fgnu-tm
 When the option @option{-fgnu-tm} is specified, the compiler

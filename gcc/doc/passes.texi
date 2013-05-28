@@ -17,6 +17,7 @@ where near complete.
 
 @menu
 * Parsing pass::         The language front end turns text into bits.
+* Cilk Plus Transformation:: Transform Cilk Plus Code to equivalent C/C++.
 * Gimplification pass::  The bits are turned into something we can optimize.
 * Pass manager::         Sequencing the optimization passes.
 * Tree SSA passes::      Optimizations on a high-level representation.
@@ -100,6 +101,36 @@ that is more descriptive than "rest_of".
 
 The middle-end will, at its option, emit the function and data
 definitions immediately or queue them for later processing.
+
+@node Cilk Plus Transformation
+@section Cilk Plus Transformation
+@cindex CILK_PLUS
+
+If Cilk Plus generation (flag @option{-fcilkplus}) is enabled, all the Cilk 
+Plus code is transformed into equivalent C and C++ functions.  Majority of this 
+transformation occurs toward the end of the parsing and right before the 
+gimplification pass.  
+
+These are the major components to the Cilk Plus language extension:
+@itemize @bullet
+@item Array Notations:
+During parsing phase, all the array notation specific information is stored in 
+@code{ARRAY_NOTATION_REF} tree using the function 
+@code{c_parser_array_notation}.  During the end of parsing, we check the entire
+function to see if there are any array notation specific code (using the 
+function @code{contains_array_notation_expr}).  If this function returns 
+true, then we expand them using either @code{expand_array_notation_exprs} or
+@code{build_array_notation_expr}.  For the cases where array notations are 
+inside conditions, they are transformed using the function 
+@code{fix_conditional_array_notations}.  The C language-specific routines are 
+located in @file{c/c-array-notation.c} and the equivalent C++ routines are in 
+file @file{cp/cp-array-notation.c}.  Common routines such as functions to 
+initialize builtin functions are stored in @file{array-notation-common.c}.
+@end itemize
+
+Detailed information about Cilk Plus and language specification is provided in 
+@w{@uref{http://www.cilkplus.org/}}.  It is worth mentioning that the current 
+implementation follows ABI 0.9.
 
 @node Gimplification pass
 @section Gimplification pass

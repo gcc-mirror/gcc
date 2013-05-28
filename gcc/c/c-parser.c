@@ -1216,6 +1216,8 @@ static void c_parser_objc_at_dynamic_declaration (c_parser *);
 static bool c_parser_objc_diagnose_bad_element_prefix
   (c_parser *, struct c_declspecs *);
 
+static tree c_parser_array_notation (location_t, c_parser *, tree, tree);
+
 /* Parse a translation unit (C90 6.7, C99 6.9).
 
    translation-unit:
@@ -3067,6 +3069,15 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	      dimen = NULL_TREE;
 	      star_seen = false;
 	    }
+	  else if (flag_enable_cilkplus
+		   && c_parser_next_token_is (parser, CPP_COLON))
+	    {
+	      dimen = error_mark_node;
+	      star_seen = false;
+	      error_at (c_parser_peek_token (parser)->location,
+			"array notations cannot be used in declaration");
+	      c_parser_consume_token (parser);
+	    }   
 	  else if (c_parser_next_token_is (parser, CPP_MULT))
 	    {
 	      if (c_parser_peek_2nd_token (parser)->type == CPP_CLOSE_SQUARE)
@@ -3089,6 +3100,14 @@ c_parser_direct_declarator_inner (c_parser *parser, bool id_present,
 	}
       if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
 	c_parser_consume_token (parser);
+      else if (flag_enable_cilkplus
+	       && c_parser_next_token_is (parser, CPP_COLON))
+	{
+	  error_at (c_parser_peek_token (parser)->location,
+		    "array notations cannot be used in declaration");
+	  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+	  return NULL;
+	}
       else
 	{
 	  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
@@ -4071,6 +4090,10 @@ c_parser_compound_statement (c_parser *parser)
     }
   stmt = c_begin_compound_stmt (true);
   c_parser_compound_statement_nostart (parser);
+
+  /* If the compound stmt contains array notations, then we expand them.  */
+  if (flag_enable_cilkplus && contains_array_notation_expr (stmt))
+    stmt = expand_array_notation_exprs (stmt);
   return c_end_compound_stmt (brace_loc, stmt, true);
 }
 
@@ -4714,6 +4737,7 @@ c_parser_if_statement (c_parser *parser)
   bool first_if = false;
   tree first_body, second_body;
   bool in_if_block;
+  tree if_stmt;
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_IF));
   c_parser_consume_token (parser);
@@ -4732,7 +4756,12 @@ c_parser_if_statement (c_parser *parser)
   else
     second_body = NULL_TREE;
   c_finish_if_stmt (loc, cond, first_body, second_body, first_if);
-  add_stmt (c_end_compound_stmt (loc, block, flag_isoc99));
+  if_stmt = c_end_compound_stmt (loc, block, flag_isoc99);
+
+  /* If the if statement contains array notations, then we expand them.  */
+  if (flag_enable_cilkplus && contains_array_notation_expr (if_stmt))
+    if_stmt = fix_conditional_array_notations (if_stmt);
+  add_stmt (if_stmt);
 }
 
 /* Parse a switch statement (C90 6.6.4, C99 6.8.4).
@@ -4754,6 +4783,13 @@ c_parser_switch_statement (c_parser *parser)
     {
       switch_cond_loc = c_parser_peek_token (parser)->location;
       expr = c_parser_expression (parser).value;
+      if (flag_enable_cilkplus && contains_array_notation_expr (expr))
+	{
+	  error_at (switch_cond_loc,
+		    "array notations cannot be used as a condition for switch "
+		    "statement");
+	  expr = error_mark_node;
+	}
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
     }
   else
@@ -4793,6 +4829,12 @@ c_parser_while_statement (c_parser *parser)
   block = c_begin_compound_stmt (flag_isoc99);
   loc = c_parser_peek_token (parser)->location;
   cond = c_parser_paren_condition (parser);
+  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+    {
+      error_at (loc, "array notations cannot be used as a condition for while "
+		"statement");
+      cond = error_mark_node;
+    }
   save_break = c_break_label;
   c_break_label = NULL_TREE;
   save_cont = c_cont_label;
@@ -4834,6 +4876,13 @@ c_parser_do_statement (c_parser *parser)
   new_cont = c_cont_label;
   c_cont_label = save_cont;
   cond = c_parser_paren_condition (parser);
+  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+    {
+      error_at (loc, "array notations cannot be used as a condition for a "
+		"do-while statement");
+      cond = error_mark_node;
+    }
+
   if (!c_parser_require (parser, CPP_SEMICOLON, "expected %<;%>"))
     c_parser_skip_to_end_of_block_or_statement (parser);
   c_finish_loop (loc, cond, NULL, body, new_break, new_cont, false);
@@ -5009,7 +5058,14 @@ c_parser_for_statement (c_parser *parser)
 	  else
 	    {
 	      cond = c_parser_condition (parser);
-	      c_parser_skip_until_found (parser, CPP_SEMICOLON, "expected %<;%>");
+	      if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+		{
+		  error_at (loc, "array notations cannot be used in a "
+			    "condition for a for-loop");
+		  cond = error_mark_node;
+		}
+	      c_parser_skip_until_found (parser, CPP_SEMICOLON,
+					 "expected %<;%>");
 	    }
 	}
       /* Parse the increment expression (the third expression in a
@@ -5388,9 +5444,21 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
   exp_location = c_parser_peek_token (parser)->location;
   rhs = c_parser_expr_no_commas (parser, NULL);
   rhs = default_function_array_read_conversion (exp_location, rhs);
-  ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
-				 code, exp_location, rhs.value,
-				 rhs.original_type);
+  
+  /* The line below is where the statement has the form:
+     A = B, where A and B contain array notation exprs. So this is where
+     we handle those.  */
+  if (flag_enable_cilkplus
+      && (contains_array_notation_expr (lhs.value)
+	  || contains_array_notation_expr (rhs.value)))
+    ret.value = build_array_notation_expr (op_location, lhs.value,
+					   lhs.original_type, code,
+					   exp_location, rhs.value,
+					   rhs.original_type);
+  else
+    ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
+				   code, exp_location, rhs.value,
+				   rhs.original_type);
   if (code == NOP_EXPR)
     ret.original_code = MODIFY_EXPR;
   else
@@ -5870,14 +5938,28 @@ c_parser_unary_expression (c_parser *parser)
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_read_conversion (exp_loc, op);
-      return parser_build_unary_op (op_loc, PREINCREMENT_EXPR, op);
+
+      /* If there is array notations in op, we expand them.  */
+      if (flag_enable_cilkplus && TREE_CODE (op.value) == ARRAY_NOTATION_REF)
+	return fix_array_notation_expr (exp_loc, PREINCREMENT_EXPR, op);
+      else
+	{
+	  op = default_function_array_read_conversion (exp_loc, op);
+	  return parser_build_unary_op (op_loc, PREINCREMENT_EXPR, op);
+	}
     case CPP_MINUS_MINUS:
       c_parser_consume_token (parser);
       exp_loc = c_parser_peek_token (parser)->location;
       op = c_parser_cast_expression (parser, NULL);
-      op = default_function_array_read_conversion (exp_loc, op);
-      return parser_build_unary_op (op_loc, PREDECREMENT_EXPR, op);
+      
+      /* If there is array notations in op, we expand them.  */
+      if (flag_enable_cilkplus && TREE_CODE (op.value) == ARRAY_NOTATION_REF)
+	return fix_array_notation_expr (exp_loc, PREDECREMENT_EXPR, op);
+      else
+	{
+	  op = default_function_array_read_conversion (exp_loc, op);
+	  return parser_build_unary_op (op_loc, PREDECREMENT_EXPR, op);
+	}
     case CPP_AND:
       c_parser_consume_token (parser);
       op = c_parser_cast_expression (parser, NULL);
@@ -6880,10 +6962,36 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_OPEN_SQUARE:
 	  /* Array reference.  */
 	  c_parser_consume_token (parser);
-	  idx = c_parser_expression (parser).value;
-	  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
-				     "expected %<]%>");
-	  expr.value = build_array_ref (op_loc, expr.value, idx);
+	  if (flag_enable_cilkplus
+	      && c_parser_peek_token (parser)->type == CPP_COLON)
+	    /* If we are here, then we have something like this:
+	       Array [ : ]
+	    */
+	    expr.value = c_parser_array_notation (expr_loc, parser, NULL_TREE,
+						  expr.value);
+	  else
+	    {	      
+	      idx = c_parser_expression (parser).value;
+	      /* Here we have 3 options:
+		 1. Array [EXPR] -- Normal Array call.
+		 2. Array [EXPR : EXPR] -- Array notation without stride.
+		 3. Array [EXPR : EXPR : EXPR] -- Array notation with stride.
+
+		 For 1, we just handle it just like a normal array expression.
+		 For 2 and 3 we handle it like we handle array notations.  The
+		 idx value we have above becomes the initial/start index.
+	      */
+	      if (flag_enable_cilkplus
+		  && c_parser_peek_token (parser)->type == CPP_COLON)
+		expr.value = c_parser_array_notation (expr_loc, parser, idx, 
+						      expr.value);
+	      else
+		{
+		  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
+					     "expected %<]%>");
+		  expr.value = build_array_ref (op_loc, expr.value, idx);
+		}
+	    }
 	  expr.original_code = ERROR_MARK;
 	  expr.original_type = NULL;
 	  break;
@@ -6991,18 +7099,32 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	case CPP_PLUS_PLUS:
 	  /* Postincrement.  */
 	  c_parser_consume_token (parser);
-	  expr = default_function_array_read_conversion (expr_loc, expr);
-	  expr.value = build_unary_op (op_loc,
-				       POSTINCREMENT_EXPR, expr.value, 0);
+	  /* If the expressions have array notations, we expand them.  */
+	  if (flag_enable_cilkplus
+	      && TREE_CODE (expr.value) == ARRAY_NOTATION_REF)
+	    expr = fix_array_notation_expr (expr_loc, POSTINCREMENT_EXPR, expr);
+	  else
+	    {
+	      expr = default_function_array_read_conversion (expr_loc, expr);
+	      expr.value = build_unary_op (op_loc,
+					   POSTINCREMENT_EXPR, expr.value, 0);
+	    }
 	  expr.original_code = ERROR_MARK;
 	  expr.original_type = NULL;
 	  break;
 	case CPP_MINUS_MINUS:
 	  /* Postdecrement.  */
 	  c_parser_consume_token (parser);
-	  expr = default_function_array_read_conversion (expr_loc, expr);
-	  expr.value = build_unary_op (op_loc,
-				       POSTDECREMENT_EXPR, expr.value, 0);
+	  /* If the expressions have array notations, we expand them.  */
+	  if (flag_enable_cilkplus
+	      && TREE_CODE (expr.value) == ARRAY_NOTATION_REF)
+	    expr = fix_array_notation_expr (expr_loc, POSTDECREMENT_EXPR, expr);
+	  else
+	    {
+	      expr = default_function_array_read_conversion (expr_loc, expr);
+	      expr.value = build_unary_op (op_loc,
+					   POSTDECREMENT_EXPR, expr.value, 0);
+	    }
 	  expr.original_code = ERROR_MARK;
 	  expr.original_type = NULL;
 	  break;
@@ -10886,6 +11008,173 @@ c_parse_file (void)
 
   c_parser_translation_unit (the_parser);
   the_parser = NULL;
+}
+
+/* This function parses Cilk Plus array notation.  The starting index is
+   passed in INITIAL_INDEX and the array name is passes in ARRAY_VALUE.  The
+   return value of this function is a tree_node called VALUE_TREE of type
+   ARRAY_NOTATION_REF.  */
+
+static tree 
+c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index, 
+			 tree array_value)
+{
+  c_token *token = NULL;
+  tree start_index = NULL_TREE, end_index = NULL_TREE, stride = NULL_TREE;
+  tree value_tree = NULL_TREE, type = NULL_TREE, array_type = NULL_TREE;
+  tree array_type_domain = NULL_TREE; 
+
+  if (array_value == error_mark_node)
+    {
+      /* No need to continue.  If either of these 2 were true, then an error
+	 must be emitted already.  Thus, no need to emit them twice.  */
+      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+      return error_mark_node;
+    }
+  
+  array_type = TREE_TYPE (array_value);
+  gcc_assert (array_type);
+  type = TREE_TYPE (array_type);
+  token = c_parser_peek_token (parser);
+   
+  if (token->type == CPP_EOF)
+    {
+      c_parser_error (parser, "expected %<:%> or numeral");
+      return value_tree;
+    }
+  else if (token->type == CPP_COLON)
+    {
+      if (!initial_index)
+	{
+	  /* If we are here, then we have a case like this A[:].  */
+	  c_parser_consume_token (parser);
+	  if (TREE_CODE (array_type) == POINTER_TYPE)
+	    {
+	      error_at (loc, "start-index and length fields necessary for "
+			"using array notations in pointers");
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+	      return error_mark_node;
+	    }
+	  if (TREE_CODE (array_type) == FUNCTION_TYPE)
+	    {
+	      error_at (loc, "array notations cannot be used with function "
+			"type");
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+	      return error_mark_node;
+	    }
+	  if (TREE_CODE (array_type) == ARRAY_TYPE)
+	    {
+	      tree subtype = TREE_TYPE (array_type);
+	      while (subtype && TREE_CODE (subtype) == POINTER_TYPE)
+		{
+		  /* Now this could be a function pointer.  Find them and
+		     give out an error.  */
+		  subtype = TREE_TYPE (subtype);
+		  if (subtype && TREE_CODE (subtype) == FUNCTION_TYPE)
+		    {
+		      error_at (loc, "array notations cannot be used with "
+				"function pointer arrays");
+		      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
+						 NULL);
+		      return error_mark_node;
+		    }
+		}
+	    }
+	  array_type_domain = TYPE_DOMAIN (array_type);
+
+	  if (!array_type_domain)
+	    {
+	      error_at (loc, "start-index and length fields necessary for "
+			"using array notations in dimensionless arrays");
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+	      return error_mark_node;
+	    }
+
+	  start_index = TYPE_MINVAL (array_type_domain);
+	  start_index = fold_build1 (CONVERT_EXPR, ptrdiff_type_node,
+				     start_index);
+	  if (!TYPE_MAXVAL (array_type_domain)
+	      || !TREE_CONSTANT (TYPE_MAXVAL (array_type_domain)))
+	    {
+	      error_at (loc, "start-index and length fields necessary for "
+			"using array notations in variable-length arrays");
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+	      return error_mark_node;
+	    }
+	  end_index = TYPE_MAXVAL (array_type_domain);
+	  end_index = fold_build2 (PLUS_EXPR, TREE_TYPE (end_index),
+				   end_index, integer_one_node);
+	  end_index = fold_build1 (CONVERT_EXPR, ptrdiff_type_node, end_index);
+	  stride = build_int_cst (integer_type_node, 1);
+	  stride = fold_build1 (CONVERT_EXPR, ptrdiff_type_node, stride);
+	}
+      else if (initial_index != error_mark_node)
+	{
+	  /* If we are here, then there should be 2 possibilities:
+	     1. Array [EXPR : EXPR]
+	     2. Array [EXPR : EXPR : EXPR]
+	  */
+	  start_index = initial_index;
+
+	  if (TREE_CODE (array_type) == FUNCTION_TYPE)
+	    {
+	      error_at (loc, "array notations cannot be used with function "
+			"type");
+	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
+	      return error_mark_node;
+	    }
+	  if (TREE_CODE (array_type) == ARRAY_TYPE
+	      || TREE_CODE (array_type) == POINTER_TYPE)
+	    {
+	      tree subtype = TREE_TYPE (array_type);
+	      while (subtype
+		     && (TREE_CODE (subtype) == POINTER_TYPE
+			 || TREE_CODE (subtype) == ARRAY_TYPE))
+		{
+		  /* Now this could be a function pointer.  Find them and
+		     give out an error.  */
+		  subtype = TREE_TYPE (subtype);
+		  if (subtype && TREE_CODE (subtype) == FUNCTION_TYPE)
+		    {
+		      error_at (loc, "array notations cannot be used with "
+				"function pointer arrays");
+		      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
+						 NULL);
+		      return error_mark_node;
+		    }
+		}
+	    }
+	  c_parser_consume_token (parser); /* consume the ':' */
+	  end_index = c_parser_expression (parser).value;
+	  if (!end_index || end_index == error_mark_node)
+	    {
+	      c_parser_skip_to_end_of_block_or_statement (parser);
+	      return error_mark_node;
+	    }
+	  if (c_parser_peek_token (parser)->type == CPP_COLON)
+	    {
+	      c_parser_consume_token (parser);
+	      stride = c_parser_expression (parser).value;
+	      if (!stride || stride == error_mark_node)
+		{
+		  c_parser_skip_to_end_of_block_or_statement (parser);
+		  return error_mark_node;
+		}
+	    }
+	}
+      else
+	c_parser_error (parser, "expected array notation expression");
+    }
+  else
+    c_parser_error (parser, "expected array notation expression");
+  
+  c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, "expected %<]%>");
+
+  value_tree = build_array_notation_ref (loc, array_value, start_index,
+					 end_index, stride, type);
+  if (value_tree != error_mark_node)
+    SET_EXPR_LOCATION (value_tree, loc);
+  return value_tree;
 }
 
 #include "gt-c-c-parser.h"

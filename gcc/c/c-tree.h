@@ -668,4 +668,7 @@ extern void c_write_global_declarations (void);
 extern void pedwarn_c90 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 extern void pedwarn_c99 (location_t, int opt, const char *, ...) ATTRIBUTE_GCC_DIAG(3,4);
 
+/* In c-array-notation.c */
+enum built_in_function is_cilkplus_reduce_builtin (tree);
+
 #endif /* ! GCC_C_TREE_H */
