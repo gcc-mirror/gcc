@@ -1,3 +1,7 @@
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/fp_exception.adb: New test.
+
 2013-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56787
