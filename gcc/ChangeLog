@@ -1,3 +1,11 @@
+2013-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57411
+	* tree-ssa-copy.c (may_propagate_copy): Cannot propagate
+	virtual operands.
+	* tree-ssa-dom.c (eliminate_const_or_copy): Special-case
+	virtual operand propagation.
+
 2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_expand_vec_perm_bmask): Use %g0 as

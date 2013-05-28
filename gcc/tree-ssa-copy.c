@@ -73,14 +73,10 @@ may_propagate_copy (tree dest, tree orig)
   if (!useless_type_conversion_p (type_d, type_o))
     return false;
 
-  /* Propagating virtual operands is always ok.  */
+  /* Generally propagating virtual operands is not ok as that may
+     create overlapping life-ranges.  */
   if (TREE_CODE (dest) == SSA_NAME && virtual_operand_p (dest))
-    {
-      /* But only between virtual operands.  */
-      gcc_assert (TREE_CODE (orig) == SSA_NAME && virtual_operand_p (orig));
-
-      return true;
-    }
+    return false;
 
   /* Anything else is OK.  */
   return true;
