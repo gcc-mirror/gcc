@@ -936,7 +936,7 @@ See RS/6000 and PowerPC Options.
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
 -mcbcond -mno-cbcond @gol
 -mfmaf  -mno-fmaf  -mpopc  -mno-popc @gol
--mfix-at697f}
+-mfix-at697f -mfix-ut699}
 
 @emph{SPU Options}
 @gccoptlist{-mwarn-reloc -merror-reloc @gol
@@ -19449,6 +19449,11 @@ later.
 @opindex mfix-at697f
 Enable the documented workaround for the single erratum of the Atmel AT697F
 processor (which corresponds to erratum #13 of the AT697E processor).
+
+@item -mfix-ut699
+@opindex mfix-ut699
+Enable the documented workarounds for the floating-point errata of the UT699
+processor.
 @end table
 
 These @samp{-m} options are supported in addition to the above
