@@ -1794,8 +1794,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx insn)
 		  && ((reg_offset[regno] & ~GET_MODE_MASK (narrow_mode))
 		      == (INTVAL (off) & ~GET_MODE_MASK (narrow_mode))))
 		{
-		  rtx narrow_reg = gen_rtx_REG (narrow_mode,
-						REGNO (reg));
+		  rtx narrow_reg = gen_lowpart_common (narrow_mode, reg);
 		  rtx narrow_src = gen_int_mode (INTVAL (off),
 						 narrow_mode);
 		  rtx new_set
