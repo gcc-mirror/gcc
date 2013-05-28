@@ -10,9 +10,9 @@ MODULE final_type
   TYPE :: mytype
     INTEGER :: fooarr(42)
     REAL :: foobar
-  CONTAINS ! { dg-error "Fortran 2003" }
-    FINAL :: finalize_single ! { dg-error "Fortran 2003" }
-  END TYPE mytype
+  CONTAINS ! { dg-error "Fortran 2003: CONTAINS block in derived type definition" }
+    FINAL :: finalize_single ! { dg-error "Fortran 2003: FINAL procedure declaration|FINAL procedure 'finalize_single' at .1. is not a SUBROUTINE" }
+  END TYPE mytype ! { dg-error "Fortran 2008: Derived type definition at .1. with empty CONTAINS section" }
 
 CONTAINS
 
@@ -28,6 +28,3 @@ PROGRAM finalizer
   IMPLICIT NONE
   ! Do nothing
 END PROGRAM finalizer
-
-! TODO: Remove this once finalization is implemented.
-! { dg-excess-errors "not yet implemented" }
