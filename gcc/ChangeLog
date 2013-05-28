@@ -1,3 +1,10 @@
+2013-05-28  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57337
+	* tree-ssa-reassoc.c (appears_later_in_bb): New function.
+	(find_insert_point): Correctly identify the insertion point
+	when two statements with the same UID is compared.
+
 2013-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/56787
@@ -464,6 +471,7 @@
 	* config/rs6000/rs6000-opts.h (PROCESSOR_POWER8): Likewise.
 	(enum rs6000_vector): Add power8 vector support.
 
+>>>>>>> .r199383
 2013-05-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/19599
@@ -495,8 +503,8 @@
 2013-05-21  Easwaran Raman  <eraman@google.com>
 
 	PR tree-optimization/57322
-	* (build_and_add_sum): If a BB is empty, set the UID of the statement
-	added to the BB to be 1.
+	* tree-ssa-reassoc.c (build_and_add_sum): If a BB is empty, set the
+	UID of the statement added to the BB to be 1.
 
 2013-05-21  Jakub Jelinek  <jakub@redhat.com>
 
