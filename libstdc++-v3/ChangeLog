@@ -1,3 +1,8 @@
+2013-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerate.
+
 2013-05-24  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/std/chrono: Wrap clocks in inline namespace _V2.
