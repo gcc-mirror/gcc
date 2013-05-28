@@ -1,3 +1,9 @@
+2013-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* src/c++11/compatibility-chrono.cc (steady_clock::now()): If
+	!_GLIBCXX_USE_GETTIMEOFDAY perform conversion inline instead of
+	calling non-existent from_time_t.
+
 2013-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
