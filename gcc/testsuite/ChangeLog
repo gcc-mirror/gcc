@@ -1,3 +1,8 @@
+2013-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56787
+	* gcc.dg/vect/pr56787.c: New testcase.
+
 2013-05-28  Janus Weil  <janus@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 

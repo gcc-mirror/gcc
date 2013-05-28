@@ -1,3 +1,13 @@
+2013-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56787
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Drop clobbers
+	from the list of data references.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Skip
+	clobbers.
+	(vect_analyze_loop_operations): Likewise.
+	(vect_transform_loop): Remove clobbers.
+
 2013-05-28  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-cfg.c (verify_expr): Verify that BIT_FIELD_REFs, IMAGPART_EXPRs
