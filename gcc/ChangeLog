@@ -1,3 +1,7 @@
+2013-05-28  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips-cpus.def (mips32r2): Change processor type.
+
 2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* doc/extend.texi (C Extensions): Added documentation about Cilk Plus
