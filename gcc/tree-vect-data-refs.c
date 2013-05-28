@@ -2861,6 +2861,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       bool gather = false;
       int vf;
 
+again:
       if (!dr || !DR_REF (dr))
         {
           if (dump_enabled_p ())
@@ -2871,6 +2872,19 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
 
       stmt = DR_STMT (dr);
       stmt_info = vinfo_for_stmt (stmt);
+
+      /* Discard clobbers from the dataref vector.  We will remove
+         clobber stmts during vectorization.  */
+      if (gimple_clobber_p (stmt))
+	{
+	  if (i == datarefs.length () - 1)
+	    {
+	      datarefs.pop ();
+	      break;
+	    }
+	  datarefs[i] = datarefs.pop ();
+	  goto again;
+	}
 
       /* Check that analysis of the data-ref succeeded.  */
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
