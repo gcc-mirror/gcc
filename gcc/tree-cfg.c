@@ -2668,10 +2668,17 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case BIT_FIELD_REF:
+      if (!is_gimple_reg_type (TREE_TYPE (t)))
+	{
+	  error ("non-scalar BIT_FIELD_REF, IMAGPART_EXPR or REALPART_EXPR");
+	  return t;
+	}
+
+      /* Fall-through.  */
     case COMPONENT_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-    case BIT_FIELD_REF:
     case VIEW_CONVERT_EXPR:
       /* We have a nest of references.  Verify that each of the operands
 	 that determine where to reference is either a constant or a variable,
