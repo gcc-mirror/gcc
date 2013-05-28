@@ -249,7 +249,12 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
   fs->regs.reg[8].how = REG_SAVED_OFFSET;
   fs->regs.reg[8].loc.offset = (long)&mctx->gregs[EIP] - new_cfa;
   fs->retaddr_column = 8;
-  fs->signal_frame = 1;
+
+  /* SIGFPE for IEEE-754 exceptions is delivered after the faulting insn
+     rather than before it, so don't set fs->signal_frame in that case.
+     We test whether the ES field of the Status Register is zero.  */
+  if ((mctx->fpregs.fp_reg_set.fpchip_state.status & 0x80) == 0)
+    fs->signal_frame = 1;
 
   return _URC_NO_REASON;
 }
