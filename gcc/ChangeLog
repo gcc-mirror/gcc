@@ -1,5 +1,12 @@
 2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/sparc/sparc.c (sparc_expand_vec_perm_bmask): Use %g0 as
+	destination register for bmasksi_vis.
+	(vector_init_bshuffle): Likewise.
+	* config/sparc/sparc.md (vec_perm_constv8qi): Likewise.
+
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* doc/invoke.texi (SPARC Options): Document -mfix-ut699.
 	* builtins.c (expand_builtin_mathfn) <BUILT_IN_SQRT>: Try to widen the
 	mode if the instruction isn't available in the original mode.

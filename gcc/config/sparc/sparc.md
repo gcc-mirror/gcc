@@ -8589,7 +8589,7 @@
     mask |= (INTVAL (XVECEXP (sel, 0, i)) & 0xf) << (28 - i*4);
   sel = force_reg (SImode, gen_int_mode (mask, SImode));
 
-  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, const0_rtx));
+  emit_insn (gen_bmasksi_vis (gen_rtx_REG (SImode, 0), sel, const0_rtx));
   emit_insn (gen_bshufflev8qi_vis (operands[0], operands[1], operands[2]));
   DONE;
 })
