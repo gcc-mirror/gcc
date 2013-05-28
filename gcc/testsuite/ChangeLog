@@ -1,3 +1,45 @@
+2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/array_test1.c: New test.
+	* c-c++-common/cilk-plus/AN/array_test2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/array_test_ND.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather-scatter-errors.c: Likewise.
+	* c-c++-common/cilk-plus/AN/if_test.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c: Likewise.
+	* c-c++-common/cilk-plus/AN/decl-ptr-colon.c: Likewise.
+	* c-c++-common/cilk-plus/AN/dimensionless-arrays.c: Likewise.
+	* c-c++-common/cilk-plus/AN/fn_ptr.c: Likewise.
+	* c-c++-common/cilk-plus/AN/fp_triplet_values.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather-scatter.c: Likewise.
+	* c-c++-common/cilk-plus/AN/misc.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c: Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch.c: Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch3.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_reduce_max_min_ind.c: Likewise.
+	* c-c++-common/cilk-plus/AN/tst_lngth.c: Likewise.
+	* c-c++-common/cilk-plus/AN/vla.c: Likewise.
+	* c-c++-common/cilk-plus/AN/an-if.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_fn_custom.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c: Likewise.
+	* c-c++-common/cilk-plus/AN/comma_exp.c: Likewise.
+	* c-c++-common/cilk-plus/AN/conditional.c: Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once.c: Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather_scatter.c: Likewise.
+	* c-c++-common/cilk-plus/AN/n-ptr-test.c: Likewise.
+	* c-c++-common/cilk-plus/AN/side-effects-1.c: Likewise.
+	* c-c++-common/cilk-plus/AN/test_builtin_return.c: Likewise.
+	* c-c++-common/cilk-plus/AN/test_sec_limits.c: Likewise.
+	* gcc.dg/cilk-plus/cilk-plus.exp: New script.
+
 2013-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336

@@ -1,3 +1,17 @@
+2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* doc/extend.texi (C Extensions): Added documentation about Cilk Plus
+	array notation built-in reduction functions.
+	* doc/passes.texi (Passes): Added documentation about changes done
+	for Cilk Plus.
+	* doc/invoke.texi (C Dialect Options): Added documentation about
+	the -fcilkplus flag.
+	* Makefile.in (C_COMMON_OBJS): Added c-family/array-notation-common.o.
+	(BUILTINS_DEF): Depend on cilkplus.def.
+	* builtins.def: Include cilkplus.def.  Define DEF_CILKPLUS_BUILTIN.
+	* builtin-types.def: Define BT_FN_INT_PTR_PTR_PTR.
+	* cilkplus.def: New file.
+
 2013-05-28  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/57439
