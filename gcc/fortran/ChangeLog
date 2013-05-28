@@ -1,3 +1,9 @@
+2013-05-28  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57217
+	* interface.c (check_dummy_characteristics): Symmetrize type check.
+
 2013-05-27  Bud Davis  <jmdavis@link.com>
 
 	PR fortran/50405
