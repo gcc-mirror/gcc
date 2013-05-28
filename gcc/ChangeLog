@@ -1,3 +1,19 @@
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC Options): Document -mfix-ut699.
+	* builtins.c (expand_builtin_mathfn) <BUILT_IN_SQRT>: Try to widen the
+	mode if the instruction isn't available in the original mode.
+	* config/sparc/sparc.opt (mfix-ut699): New option.
+	* config/sparc/sparc.md (muldf3_extend): Disable if -mfix-ut699.
+	(divdf3): Turn into expander.
+	(divdf3_nofix): New insn.
+	(divdf3_fix): Likewise.
+	(divsf3): Disable if -mfix-ut699.
+	(sqrtdf2): Turn into expander.
+	(sqrtdf2_nofix): New insn.
+	(sqrtdf2_fix): Likewise.
+	(sqrtsf2): Disable if -mfix-ut699.
+
 2013-05-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57412
