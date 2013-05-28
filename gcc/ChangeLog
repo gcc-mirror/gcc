@@ -1,3 +1,8 @@
+2013-05-28  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-cfg.c (verify_expr): Verify that BIT_FIELD_REFs, IMAGPART_EXPRs
+	and REALPART_EXPRs have scalar type.
+
 2013-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57411
