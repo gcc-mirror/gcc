@@ -1803,7 +1803,7 @@ import_export_class (tree ctype)
 static bool
 var_finalized_p (tree var)
 {
-  return varpool_node_for_decl (var)->finalized;
+  return varpool_node_for_decl (var)->symbol.definition;
 }
 
 /* DECL is a VAR_DECL or FUNCTION_DECL which, for whatever reason,
@@ -4202,7 +4202,7 @@ cp_write_global_declarations (void)
 
 	      node = cgraph_get_node (decl);
 	      if (node->same_body_alias)
-		node = cgraph_alias_aliased_node (node);
+		node = cgraph_alias_target (node);
 
 	      cgraph_for_node_and_aliases (node, clear_decl_external,
 					   NULL, true);
@@ -4224,7 +4224,7 @@ cp_write_global_declarations (void)
 	  if (!DECL_EXTERNAL (decl)
 	      && decl_needed_p (decl)
 	      && !TREE_ASM_WRITTEN (decl)
-	      && !cgraph_get_node (decl)->local.finalized)
+	      && !cgraph_get_node (decl)->symbol.definition)
 	    {
 	      /* We will output the function; no longer consider it in this
 		 loop.  */

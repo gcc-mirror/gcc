@@ -58,6 +58,19 @@ void
 varpool_remove_node (struct varpool_node *node)
 {
   symtab_unregister_node ((symtab_node)node);
+
+  /* Because we remove references from external functions before final compilation,
+     we may end up removing useful constructors.
+     FIXME: We probably want to trace boundaries better.  */
+  if (!const_value_known_p (node->symbol.decl))
+    varpool_remove_initializer (node);
+  ggc_free (node);
+}
+
+/* Renove node initializer when it is no longer needed.  */
+void
+varpool_remove_initializer (struct varpool_node *node)
+{
   if (DECL_INITIAL (node->symbol.decl)
       && !DECL_IN_CONSTANT_POOL (node->symbol.decl)
       /* Keep vtables for BINFO folding.  */
@@ -65,7 +78,6 @@ varpool_remove_node (struct varpool_node *node)
       /* FIXME: http://gcc.gnu.org/PR55395 */
       && debug_info_level == DINFO_LEVEL_NONE)
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
-  ggc_free (node);
 }
 
 /* Dump given cgraph node.  */
@@ -80,10 +92,6 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
   fprintf (f, "  Varpool flags:");
   if (DECL_INITIAL (node->symbol.decl))
     fprintf (f, " initialized");
-  if (node->analyzed)
-    fprintf (f, " analyzed");
-  if (node->finalized)
-    fprintf (f, " finalized");
   if (node->output)
     fprintf (f, " output");
   if (TREE_READONLY (node->symbol.decl))
@@ -117,9 +125,9 @@ struct varpool_node *
 varpool_node_for_asm (tree asmname)
 {
   if (symtab_node node = symtab_node_for_asm (asmname))
-    if (varpool_node *vnode = dyn_cast <varpool_node> (node))
-      return vnode;
-  return NULL;
+    return dyn_cast <varpool_node> (node);
+  else
+    return NULL;
 }
 
 /* Determine if variable DECL is needed.  That is, visible to something
@@ -205,12 +213,12 @@ enum availability
 cgraph_variable_initializer_availability (struct varpool_node *node)
 {
   gcc_assert (cgraph_function_flags_ready);
-  if (!node->finalized)
+  if (!node->symbol.definition)
     return AVAIL_NOT_AVAILABLE;
   if (!TREE_PUBLIC (node->symbol.decl))
     return AVAIL_AVAILABLE;
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
-     care of at least two notable extensions - the COMDAT variables
+     care of at least one notable extension - the COMDAT variables
      used to share template instantiations in C++.  */
   if (!decl_replaceable_p (node->symbol.decl))
     return AVAIL_OVERWRITABLE;
@@ -225,24 +233,24 @@ varpool_analyze_node (struct varpool_node *node)
   /* When reading back varpool at LTO time, we re-construct the queue in order
      to have "needed" list right by inserting all needed nodes into varpool.
      We however don't want to re-analyze already analyzed nodes.  */
-  if (!node->analyzed)
+  if (!node->symbol.analyzed)
     {
       gcc_assert (!in_lto_p || cgraph_function_flags_ready);
       /* Compute the alignment early so function body expanders are
 	 already informed about increased alignment.  */
       align_variable (decl, 0);
     }
-  if (node->alias && node->alias_of)
+  if (node->symbol.alias && node->alias_of)
     {
       struct varpool_node *tgt = varpool_node_for_decl (node->alias_of);
       struct varpool_node *n;
 
-      for (n = tgt; n && n->alias;
-	   n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
+      for (n = tgt; n && n->symbol.alias;
+	   n = n->symbol.analyzed ? varpool_alias_target (n) : NULL)
 	if (n == node)
 	  {
 	    error ("variable %q+D part of alias cycle", node->symbol.decl);
-	    node->alias = false;
+	    node->symbol.alias = false;
 	    continue;
 	  }
       if (!vec_safe_length (node->symbol.ref_list.references))
@@ -257,8 +265,8 @@ varpool_analyze_node (struct varpool_node *node)
 	}
     }
   else if (DECL_INITIAL (decl))
-    record_references_in_initializer (decl, node->analyzed);
-  node->analyzed = true;
+    record_references_in_initializer (decl, node->symbol.analyzed);
+  node->symbol.analyzed = true;
 }
 
 /* Assemble thunks and aliases associated to NODE.  */
@@ -287,7 +295,7 @@ varpool_assemble_decl (struct varpool_node *node)
 
   /* Aliases are outout when their target is produced or by
      output_weakrefs.  */
-  if (node->alias)
+  if (node->symbol.alias)
     return false;
 
   /* Constant pool is output from RTL land when the reference
@@ -316,7 +324,7 @@ varpool_assemble_decl (struct varpool_node *node)
     {
       assemble_variable (decl, 0, 1, 0);
       gcc_assert (TREE_ASM_WRITTEN (decl));
-      node->finalized = 1;
+      node->symbol.definition = true;
       assemble_aliases (node);
       return true;
     }
@@ -357,7 +365,7 @@ varpool_remove_unreferenced_decls (void)
     fprintf (cgraph_dump_file, "Trivially needed variables:");
   FOR_EACH_DEFINED_VARIABLE (node)
     {
-      if (node->analyzed
+      if (node->symbol.analyzed
 	  && (!varpool_can_remove_if_no_refs (node)
 	      /* We just expanded all function bodies.  See if any of
 		 them needed the variable.  */
@@ -381,7 +389,7 @@ varpool_remove_unreferenced_decls (void)
 	       next = next->symbol.same_comdat_group)
 	    {
 	      varpool_node *vnext = dyn_cast <varpool_node> (next);
-	      if (vnext && vnext->analyzed)
+	      if (vnext && vnext->symbol.analyzed)
 		enqueue_node (vnext, &first);
 	    }
 	}
@@ -390,8 +398,8 @@ varpool_remove_unreferenced_decls (void)
 	  varpool_node *vnode = dyn_cast <varpool_node> (ref->referred);
 	  if (vnode
 	      && (!DECL_EXTERNAL (ref->referred->symbol.decl)
-		  || vnode->alias)
-	      && vnode->analyzed)
+		  || vnode->symbol.alias)
+	      && vnode->symbol.analyzed)
 	    enqueue_node (vnode, &first);
 	}
     }
@@ -419,7 +427,7 @@ void
 varpool_finalize_named_section_flags (struct varpool_node *node)
 {
   if (!TREE_ASM_WRITTEN (node->symbol.decl)
-      && !node->alias
+      && !node->symbol.alias
       && !node->symbol.in_other_partition
       && !DECL_EXTERNAL (node->symbol.decl)
       && TREE_CODE (node->symbol.decl) == VAR_DECL
@@ -484,8 +492,8 @@ varpool_create_variable_alias (tree alias, tree decl)
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
   gcc_assert (TREE_CODE (alias) == VAR_DECL);
   alias_node = varpool_node_for_decl (alias);
-  alias_node->alias = 1;
-  alias_node->finalized = 1;
+  alias_node->symbol.alias = true;
+  alias_node->symbol.definition = true;
   alias_node->alias_of = decl;
 
   /* Extra name alias mechanizm creates aliases really late

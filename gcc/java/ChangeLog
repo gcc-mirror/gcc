@@ -1,3 +1,7 @@
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (java_mark_decl_local): Update for new symtab flags.
+
 2013-05-22  Matthias Klose  <doko@ubuntu.com>
 
 	* jvspec.c (jvgenmain_spec): Add %I to cc1 call.

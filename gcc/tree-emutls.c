@@ -704,15 +704,15 @@ create_emultls_var (struct varpool_node *var, void *data)
   cvar = varpool_get_node (cdecl);
   control_vars.quick_push (cvar);
 
-  if (!var->alias)
+  if (!var->symbol.alias)
     {
       /* Make sure the COMMON block control variable gets initialized.
 	 Note that there's no point in doing this for aliases; we only
 	 need to do this once for the main variable.  */
       emutls_common_1 (var->symbol.decl, cdecl, (tree *)data);
     }
-  if (var->alias && !var->alias_of)
-    cvar->alias = true;
+  if (var->symbol.alias && !var->alias_of)
+    cvar->symbol.alias = true;
 
   /* Indicate that the value of the TLS variable may be found elsewhere,
      preventing the variable from re-appearing in the GIMPLE.  We cheat
@@ -743,7 +743,7 @@ ipa_lower_emutls (void)
 	gcc_checking_assert (TREE_STATIC (var->symbol.decl)
 			     || DECL_EXTERNAL (var->symbol.decl));
 	varpool_node_set_add (tls_vars, var);
-	if (var->alias && var->analyzed)
+	if (var->symbol.alias && var->symbol.definition)
 	  varpool_node_set_add (tls_vars, varpool_variable_node (var, NULL));
       }
 
@@ -767,9 +767,9 @@ ipa_lower_emutls (void)
     {
       var = tls_vars->nodes[i];
 
-      if (var->alias && !var->alias_of)
+      if (var->symbol.alias && !var->alias_of)
 	any_aliases = true;
-      else if (!var->alias)
+      else if (!var->symbol.alias)
 	varpool_for_node_and_aliases (var, create_emultls_var, &ctor_body, true);
     }
 

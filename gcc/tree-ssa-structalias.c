@@ -2874,7 +2874,7 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
       && (TREE_STATIC (t) || DECL_EXTERNAL (t)))
     {
       struct varpool_node *node = varpool_get_node (t);
-      if (node && node->alias)
+      if (node && node->symbol.alias && node->symbol.analyzed)
 	{
 	  node = varpool_variable_node (node, NULL);
 	  t = node->symbol.decl;
@@ -5751,7 +5751,7 @@ create_variable_info_for (tree decl, const char *name)
 	  /* If this is a global variable with an initializer and we are in
 	     IPA mode generate constraints for it.  */
 	  if (DECL_INITIAL (decl)
-	      && vnode->analyzed)
+	      && vnode->symbol.definition)
 	    {
 	      vec<ce_s> rhsc = vNULL;
 	      struct constraint_expr lhs, *rhsp;
@@ -7023,7 +7023,8 @@ struct pt_solution ipa_escaped_pt
 static bool
 associate_varinfo_to_alias (struct cgraph_node *node, void *data)
 {
-  if (node->alias || node->thunk.thunk_p)
+  if ((node->symbol.alias || node->thunk.thunk_p)
+      && node->symbol.analyzed)
     insert_vi_for_tree (node->symbol.decl, (varinfo_t)data);
   return false;
 }
@@ -7066,7 +7067,7 @@ ipa_pta_execute (void)
   /* Create constraints for global variables and their initializers.  */
   FOR_EACH_VARIABLE (var)
     {
-      if (var->alias)
+      if (var->symbol.alias && var->symbol.analyzed)
 	continue;
 
       get_vi_for_tree (var->symbol.decl);

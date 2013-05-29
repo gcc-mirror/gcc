@@ -563,10 +563,10 @@ cgraph_create_function_alias (tree alias, tree decl)
   gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
   gcc_assert (TREE_CODE (alias) == FUNCTION_DECL);
   alias_node = cgraph_get_create_node (alias);
-  gcc_assert (!alias_node->local.finalized);
+  gcc_assert (!alias_node->symbol.definition);
   alias_node->thunk.alias = decl;
-  alias_node->local.finalized = true;
-  alias_node->alias = 1;
+  alias_node->symbol.definition = true;
+  alias_node->symbol.alias = true;
   return alias_node;
 }
 
@@ -613,8 +613,8 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   node = cgraph_get_node (alias);
   if (node)
     {
-      gcc_assert (node->local.finalized);
-      gcc_assert (!node->alias);
+      gcc_assert (node->symbol.definition);
+      gcc_assert (!node->symbol.alias);
       gcc_assert (!node->thunk.thunk_p);
       cgraph_remove_node (node);
     }
@@ -629,7 +629,7 @@ cgraph_add_thunk (struct cgraph_node *decl_node ATTRIBUTE_UNUSED,
   node->thunk.virtual_offset_p = virtual_offset != NULL;
   node->thunk.alias = real_alias;
   node->thunk.thunk_p = true;
-  node->local.finalized = true;
+  node->symbol.definition = true;
 
   return node;
 }
@@ -1384,7 +1384,7 @@ cgraph_remove_node (struct cgraph_node *node)
 	  && (cgraph_global_info_ready
 	      && (TREE_ASM_WRITTEN (n->symbol.decl)
 		  || DECL_EXTERNAL (n->symbol.decl)
-		  || !n->analyzed
+		  || !n->symbol.analyzed
 		  || n->symbol.in_other_partition))))
     cgraph_release_function_body (node);
 
@@ -1521,8 +1521,6 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	     cgraph_availability_names [cgraph_function_body_availability (node)]);
 
   fprintf (f, "  Function flags:");
-  if (node->analyzed)
-    fprintf (f, " analyzed");
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
 	     (HOST_WIDEST_INT)node->count);
@@ -1534,16 +1532,12 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, " process");
   if (node->local.local)
     fprintf (f, " local");
-  if (node->local.finalized)
-    fprintf (f, " finalized");
   if (node->local.redefined_extern_inline)
     fprintf (f, " redefined_extern_inline");
   if (node->only_called_at_startup)
     fprintf (f, " only_called_at_startup");
   if (node->only_called_at_exit)
     fprintf (f, " only_called_at_exit");
-  else if (node->alias)
-    fprintf (f, " alias");
   if (node->tm_clone)
     fprintf (f, " tm_clone");
 
@@ -1559,7 +1553,8 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 	       (int)node->thunk.virtual_value,
 	       (int)node->thunk.virtual_offset_p);
     }
-  if (node->alias && node->thunk.alias && DECL_P (node->thunk.alias))
+  if (node->symbol.alias && node->thunk.alias
+      && DECL_P (node->thunk.alias))
     {
       fprintf (f, "  Alias of %s",
 	       lang_hooks.decl_printable_name (node->thunk.alias, 2));
@@ -1676,7 +1671,7 @@ cgraph_function_body_availability (struct cgraph_node *node)
 {
   enum availability avail;
   gcc_assert (cgraph_function_flags_ready);
-  if (!node->analyzed)
+  if (!node->symbol.analyzed)
     avail = AVAIL_NOT_AVAILABLE;
   else if (node->local.local)
     avail = AVAIL_LOCAL;
@@ -1983,7 +1978,7 @@ cgraph_propagate_frequency (struct cgraph_node *node)
 
   if (!node->local.local)
     return false;
-  gcc_assert (node->analyzed);
+  gcc_assert (node->symbol.analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
 
@@ -2342,6 +2337,11 @@ verify_cgraph_node (struct cgraph_node *node)
       error ("inline clone in same comdat group list");
       error_found = true;
     }
+  if (!node->symbol.definition && node->local.local)
+    {
+      error ("local symbols must be defined");
+      error_found = true;
+    }
   if (node->global.inlined_to && node->symbol.externally_visible)
     {
       error ("externally visible inline clone");
@@ -2455,7 +2455,7 @@ verify_cgraph_node (struct cgraph_node *node)
       error_found = true;
     }
 
-  if (node->analyzed && node->alias)
+  if (node->symbol.analyzed && node->symbol.alias)
     {
       bool ref_found = false;
       int i;
@@ -2486,7 +2486,7 @@ verify_cgraph_node (struct cgraph_node *node)
 	    error_found = true;
 	  }
     }
-  if (node->analyzed && node->thunk.thunk_p)
+  if (node->symbol.analyzed && node->thunk.thunk_p)
     {
       if (!node->callees)
 	{
@@ -2504,7 +2504,7 @@ verify_cgraph_node (struct cgraph_node *node)
           error_found = true;
         }
     }
-  else if (node->analyzed && gimple_has_body_p (node->symbol.decl)
+  else if (node->symbol.analyzed && gimple_has_body_p (node->symbol.decl)
            && !TREE_ASM_WRITTEN (node->symbol.decl)
            && (!DECL_EXTERNAL (node->symbol.decl) || node->global.inlined_to)
            && !flag_wpa)
@@ -2653,4 +2653,32 @@ cgraph_get_create_real_symbol_node (tree decl)
 	     node->symbol.order);
   return node;
 }
+
+
+/* Given NODE, walk the alias chain to return the function NODE is alias of.
+   Walk through thunk, too.
+   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+
+struct cgraph_node *
+cgraph_function_node (struct cgraph_node *node, enum availability *availability)
+{
+  do
+    {
+      node = cgraph_function_or_thunk_node (node, availability);
+      if (node->thunk.thunk_p)
+	{
+	  node = node->callees->callee;
+	  if (availability)
+	    {
+	      enum availability a;
+	      a = cgraph_function_body_availability (node);
+	      if (a < *availability)
+		*availability = a;
+	    }
+	  node = cgraph_function_or_thunk_node (node, availability);
+	}
+    } while (node && node->thunk.thunk_p);
+  return node;
+}
+
 #include "gt-cgraph.h"

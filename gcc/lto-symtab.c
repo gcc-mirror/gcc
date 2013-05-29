@@ -91,8 +91,8 @@ static void
 lto_varpool_replace_node (struct varpool_node *vnode,
 			  struct varpool_node *prevailing_node)
 {
-  gcc_assert (!vnode->finalized || prevailing_node->finalized);
-  gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
+  gcc_assert (!vnode->symbol.definition || prevailing_node->symbol.definition);
+  gcc_assert (!vnode->symbol.analyzed || prevailing_node->symbol.analyzed);
 
   ipa_clone_referring ((symtab_node)prevailing_node, &vnode->symbol.ref_list);
 
@@ -255,14 +255,7 @@ lto_symtab_resolve_can_prevail_p (symtab_node e)
   if (DECL_EXTERNAL (e->symbol.decl))
     return false;
 
-  /* For functions we need a non-discarded body.  */
-  if (TREE_CODE (e->symbol.decl) == FUNCTION_DECL)
-    return (cgraph (e)->analyzed);
-
-  else if (TREE_CODE (e->symbol.decl) == VAR_DECL)
-    return varpool (e)->finalized;
-
-  gcc_unreachable ();
+  return e->symbol.definition;
 }
 
 /* Resolve the symbol with the candidates in the chain *SLOT and store
@@ -594,33 +587,33 @@ lto_symtab_merge_cgraph_nodes (void)
   FOR_EACH_FUNCTION (cnode)
     {
       /* Resolve weakrefs to symbol defined in other unit.  */
-      if (!cnode->analyzed && cnode->thunk.alias && !DECL_P (cnode->thunk.alias))
+      if (!cnode->symbol.analyzed && cnode->thunk.alias && !DECL_P (cnode->thunk.alias))
 	{
 	  symtab_node node = symtab_node_for_asm (cnode->thunk.alias);
 	  if (node && is_a <cgraph_node> (node))
 	    {
 	      struct cgraph_node *n;
 
-	      for (n = cgraph (node); n && n->alias;
-		   n = n->analyzed ? cgraph_alias_aliased_node (n) : NULL)
+	      for (n = cgraph (node); n && n->symbol.alias;
+		   n = n->symbol.analyzed ? cgraph_alias_target (n) : NULL)
 		if (n == cnode)
 		  {
 		    error ("function %q+D part of alias cycle", cnode->symbol.decl);
-		    cnode->alias = false;
+		    cnode->symbol.alias = false;
 		    break;
 		  }
-	      if (cnode->alias)
+	      if (cnode->symbol.alias)
 		{
 		  cgraph_create_function_alias (cnode->symbol.decl, node->symbol.decl);
 		  ipa_record_reference ((symtab_node)cnode, (symtab_node)node,
 					IPA_REF_ALIAS, NULL);
-		  cnode->analyzed = true;
+		  cnode->symbol.analyzed = true;
 		}
 	    }
 	  else if (node)
 	    error ("%q+D alias in between function and variable is not supported", cnode->symbol.decl);
 	}
-      if ((cnode->thunk.thunk_p || cnode->alias)
+      if ((cnode->thunk.thunk_p || cnode->symbol.alias)
 	  && cnode->thunk.alias && DECL_P (cnode->thunk.alias))
         cnode->thunk.alias = lto_symtab_prevailing_decl (cnode->thunk.alias);
       cnode->symbol.aux = NULL;
@@ -628,33 +621,33 @@ lto_symtab_merge_cgraph_nodes (void)
   FOR_EACH_VARIABLE (vnode)
     {
       /* Resolve weakrefs to symbol defined in other unit.  */
-      if (!vnode->analyzed && vnode->alias_of && !DECL_P (vnode->alias_of))
+      if (!vnode->symbol.analyzed && vnode->alias_of && !DECL_P (vnode->alias_of))
 	{
 	  symtab_node node = symtab_node_for_asm (vnode->alias_of);
 	  if (node && is_a <cgraph_node> (node))
 	    {
 	      struct varpool_node *n;
 
-	      for (n = varpool (node); n && n->alias;
-		   n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
+	      for (n = varpool (node); n && n->symbol.alias;
+		   n = n->symbol.analyzed ? varpool_alias_target (n) : NULL)
 		if (n == vnode)
 		  {
 		    error ("function %q+D part of alias cycle", vnode->symbol.decl);
-		    vnode->alias = false;
+		    vnode->symbol.alias = false;
 		    break;
 		  }
-	      if (vnode->alias)
+	      if (vnode->symbol.alias)
 		{
 		  varpool_create_variable_alias (vnode->symbol.decl, node->symbol.decl);
 		  ipa_record_reference ((symtab_node)vnode, (symtab_node)node,
 					IPA_REF_ALIAS, NULL);
-		  vnode->analyzed = true;
+		  vnode->symbol.analyzed = true;
 		}
 	    }
 	  else if (node)
 	    error ("%q+D alias in between function and variable is not supported", vnode->symbol.decl);
 	}
-      if (vnode->alias_of)
+      if (vnode->symbol.alias && DECL_P (vnode->alias_of))
         vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
       vnode->symbol.aux = NULL;
     }

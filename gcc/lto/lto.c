@@ -166,7 +166,7 @@ has_analyzed_clone_p (struct cgraph_node *node)
   if (node)
     while (node != orig)
       {
-	if (node->analyzed)
+	if (node->symbol.analyzed)
 	  return true;
 	if (node->clones)
 	  node = node->clones;
@@ -196,7 +196,8 @@ lto_materialize_function (struct cgraph_node *node)
   decl = node->symbol.decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
-  if (cgraph_function_with_gimple_body_p (node) || has_analyzed_clone_p (node))
+  if ((cgraph_function_with_gimple_body_p (node) && node->symbol.analyzed)
+      || has_analyzed_clone_p (node))
     {
       /* Clones don't need to be read.  */
       if (node->clone_of)

@@ -473,9 +473,15 @@ dump_symtab_base (FILE *f, symtab_node node)
 	   node->symbol.order,
 	   symtab_node_name (node));
   dump_addr (f, " @", (void *)node);
-  fprintf (f, "\n  Type: %s\n", symtab_type_names[node->symbol.type]);
-  fprintf (f, "  Visibility:");
+  fprintf (f, "\n  Type: %s", symtab_type_names[node->symbol.type]);
 
+  if (node->symbol.definition)
+    fprintf (f, " definition");
+  if (node->symbol.analyzed)
+    fprintf (f, " analyzed");
+  if (node->symbol.alias)
+    fprintf (f, " alias");
+  fprintf (f, "\n  Visibility:");
   if (node->symbol.in_other_partition)
     fprintf (f, " in_other_partition");
   if (node->symbol.used_from_other_partition)
@@ -653,6 +659,12 @@ verify_symtab_base (symtab_node node)
       && node->symbol.previous_sharing_asm_name->symbol.next_sharing_asm_name != node)
     {
       error ("double linked list of assembler names corrupted");
+      error_found = true;
+    }
+  if (node->symbol.analyzed && !node->symbol.definition)
+    {
+      error ("node is analyzed byt it is not a definition");
+      error_found = true;
     }
   if (node->symbol.same_comdat_group)
     {
@@ -782,5 +794,41 @@ symtab_make_decl_local (tree decl)
     return;
 
   SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
+}
+
+/* Given NODE, walk the alias chain to return the symbol NODE is alias of.
+   If NODE is not an alias, return NODE.
+   When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
+
+symtab_node
+symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
+{
+  if (availability)
+    {
+      if (is_a <cgraph_node> (node))
+        *availability = cgraph_function_body_availability (cgraph (node));
+      else
+        *availability = cgraph_variable_initializer_availability (varpool (node));
+    }
+  while (node)
+    {
+      if (node->symbol.alias && node->symbol.analyzed)
+	node = symtab_alias_target (node);
+      else
+	return node;
+      if (node && availability)
+	{
+	  enum availability a;
+	  if (is_a <cgraph_node> (node))
+	    a = cgraph_function_body_availability (cgraph (node));
+	  else
+	    a = cgraph_variable_initializer_availability (varpool (node));
+	  if (a < *availability)
+	    *availability = a;
+	}
+    }
+  if (availability)
+    *availability = AVAIL_NOT_AVAILABLE;
+  return NULL;
 }
 #include "gt-symtab.h"
