@@ -2888,7 +2888,7 @@ appears_later_in_bb (gimple stmt1, gimple stmt2)
       else if (stmt == stmt2)
         return stmt2;
     }
-  gcc_unreachable ();
+  return stmt1;
 }
 
 /* Find the statement after which STMT must be moved so that the

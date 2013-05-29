@@ -1,3 +1,9 @@
+2013-05-29  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57442
+	* tree-ssa-reassoc.c (appears_later_in_bb): Return correct value
+	when control exits the main loop.
+
 2013-05-29  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
 
 	* rx/rx.h (TARGET_CPU_CPP_BUILTINS): Add macros for RX100, RX200,
