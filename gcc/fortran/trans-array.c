@@ -300,7 +300,11 @@ gfc_conv_descriptor_token (tree desc)
   gcc_assert (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE);
   gcc_assert (gfc_option.coarray == GFC_FCOARRAY_LIB);
   field = gfc_advance_chain (TYPE_FIELDS (type), CAF_TOKEN_FIELD);
-  gcc_assert (field != NULL_TREE && TREE_TYPE (field) == prvoid_type_node);
+
+  /* Should be a restricted pointer - except in the finalization wrapper.  */
+  gcc_assert (field != NULL_TREE
+	      && (TREE_TYPE (field) == prvoid_type_node
+		  || TREE_TYPE (field) == pvoid_type_node));
 
   return fold_build3_loc (input_location, COMPONENT_REF, TREE_TYPE (field),
 			  desc, field, NULL_TREE);
@@ -5222,18 +5226,6 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   gfc_add_expr_to_block (&se->pre, tmp);
 
-  if (expr->ts.type == BT_CLASS)
-    {
-      tmp = build_int_cst (unsigned_char_type_node, 0);
-      /* With class objects, it is best to play safe and null the
-	 memory because we cannot know if dynamic types have allocatable
-	 components or not.  */
-      tmp = build_call_expr_loc (input_location,
-				 builtin_decl_explicit (BUILT_IN_MEMSET),
-				 3, pointer, tmp,  size);
-      gfc_add_expr_to_block (&se->pre, tmp);
-    }
-
   /* Update the array descriptors. */
   if (dimension)
     gfc_conv_descriptor_offset_set (&set_descriptor_block, se->expr, offset);
@@ -7699,6 +7691,10 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 		{
 		  nelems = gfc_conv_descriptor_size (src_data,
 						     CLASS_DATA (c)->as->rank);
+		  size = fold_build2_loc (input_location, MULT_EXPR,
+					  size_type_node, size,
+					  fold_convert (size_type_node,
+							nelems));
 		  src_data = gfc_conv_descriptor_data_get (src_data);
 		  dst_data = gfc_conv_descriptor_data_get (dst_data);
 		}
@@ -7707,11 +7703,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	      gfc_init_block (&tmpblock);
 
-	      /* We need to use CALLOC as _copy might try to free allocatable
-		 components of the destination.  */
-	      ftn_tree = builtin_decl_explicit (BUILT_IN_CALLOC);
-              tmp = build_call_expr_loc (input_location, ftn_tree, 2, nelems,
-					 size);
+	      ftn_tree = builtin_decl_explicit (BUILT_IN_MALLOC);
+	      tmp = build_call_expr_loc (input_location, ftn_tree, 1, size);
 	      gfc_add_modify (&tmpblock, dst_data,
 			      fold_convert (TREE_TYPE (dst_data), tmp));
 
