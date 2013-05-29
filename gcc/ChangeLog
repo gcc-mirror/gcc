@@ -1,3 +1,9 @@
+2013-05-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/57441
+	* gimple-ssa-strength-reduction.c (analyze_candidates_and_replace):
+	Don't limit size of incr_vec to number of candidates.
+
 2013-05-29  Steve Ellcey  <sellcey@imgtec.com>
 
 	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add micromips

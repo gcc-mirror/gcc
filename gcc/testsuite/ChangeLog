@@ -1,3 +1,8 @@
+2013-05-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/57441
+	* gcc.c-torture/compile/pr57441.c: New.
+
 2013-05-29  Dehao Chen  <dehao@google.com>
 
 	PR testsuite/57413
