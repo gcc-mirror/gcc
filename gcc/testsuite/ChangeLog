@@ -1,3 +1,8 @@
+2013-05-29  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57442
+	* gcc.dg/tree-ssa/reassoc-30.c: New testcase.
+
 2013-05-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/57441
