@@ -524,6 +524,10 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	return;
       }
 
+    case SYMBOL_TINY_ABSOLUTE:
+      emit_insn (gen_rtx_SET (Pmode, dest, imm));
+      return;
+
     case SYMBOL_SMALL_GOT:
       {
 	rtx tmp_reg = dest;
@@ -826,6 +830,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 
         case SYMBOL_SMALL_TPREL:
 	case SYMBOL_SMALL_ABSOLUTE:
+	case SYMBOL_TINY_ABSOLUTE:
 	  aarch64_load_symref_appropriately (dest, imm, sty);
 	  return;
 
@@ -5030,6 +5035,8 @@ aarch64_classify_symbol (rtx x,
 
 	case AARCH64_CMODEL_TINY_PIC:
 	case AARCH64_CMODEL_TINY:
+	  return SYMBOL_TINY_ABSOLUTE;
+
 	case AARCH64_CMODEL_SMALL_PIC:
 	case AARCH64_CMODEL_SMALL:
 	  return SYMBOL_SMALL_ABSOLUTE;
@@ -5051,6 +5058,10 @@ aarch64_classify_symbol (rtx x,
       switch (aarch64_cmodel)
 	{
 	case AARCH64_CMODEL_TINY:
+	  if (SYMBOL_REF_WEAK (x))
+	    return SYMBOL_FORCE_TO_MEM;
+	  return SYMBOL_TINY_ABSOLUTE;
+
 	case AARCH64_CMODEL_SMALL:
 	  if (SYMBOL_REF_WEAK (x))
 	    return SYMBOL_FORCE_TO_MEM;
@@ -6444,10 +6455,9 @@ aarch64_simd_imm_scalar_p (rtx x, enum machine_mode mode ATTRIBUTE_UNUSED)
 
 bool
 aarch64_mov_operand_p (rtx x,
-		       enum aarch64_symbol_context context ATTRIBUTE_UNUSED,
+		       enum aarch64_symbol_context context,
 		       enum machine_mode mode)
 {
-
   if (GET_CODE (x) == HIGH
       && aarch64_valid_symref (XEXP (x, 0), GET_MODE (XEXP (x, 0))))
     return true;
@@ -6458,7 +6468,8 @@ aarch64_mov_operand_p (rtx x,
   if (GET_CODE (x) == SYMBOL_REF && mode == DImode && CONSTANT_ADDRESS_P (x))
     return true;
 
-  return false;
+  return aarch64_classify_symbolic_expression (x, context)
+    == SYMBOL_TINY_ABSOLUTE;
 }
 
 /* Return a const_int vector of VAL.  */
