@@ -321,6 +321,26 @@
 #define vec_vsx_st __builtin_vec_vsx_st
 #endif
 
+#ifdef _ARCH_PWR8
+/* Vector additions added in ISA 2.07.  */
+#define vec_vaddudm __builtin_vec_vaddudm
+#define vec_vmaxsd __builtin_vec_vmaxsd
+#define vec_vmaxud __builtin_vec_vmaxud
+#define vec_vminsd __builtin_vec_vminsd
+#define vec_vminud __builtin_vec_vminud
+#define vec_vpksdss __builtin_vec_vpksdss
+#define vec_vpksdus __builtin_vec_vpksdus
+#define vec_vpkudum __builtin_vec_vpkudum
+#define vec_vpkudus __builtin_vec_vpkudus
+#define vec_vrld __builtin_vec_vrld
+#define vec_vsld __builtin_vec_vsld
+#define vec_vsrad __builtin_vec_vsrad
+#define vec_vsrd __builtin_vec_vsrd
+#define vec_vsubudm __builtin_vec_vsubudm
+#define vec_vupkhsw __builtin_vec_vupkhsw
+#define vec_vupklsw __builtin_vec_vupklsw
+#endif
+
 /* Predicates.
    For C++, we use templates in order to allow non-parenthesized arguments.
    For C, instead, we use macros since non-parenthesized arguments were

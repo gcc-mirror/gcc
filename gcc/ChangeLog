@@ -1,3 +1,164 @@
+2013-05-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* config/rs6000/vector.md (VEC_I): Add support for new power8 V2DI
+	instructions.
+	(VEC_A): Likewise.
+	(VEC_C): Likewise.
+	(vrotl<mode>3): Likewise.
+	(vashl<mode>3): Likewise.
+	(vlshr<mode>3): Likewise.
+	(vashr<mode>3): Likewise.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	support for power8 V2DI builtins.
+
+	* config/rs6000/rs6000-builtin.def (abs_v2di): Add support for
+	power8 V2DI builtins.
+	(vupkhsw): Likewise.
+	(vupklsw): Likewise.
+	(vaddudm): Likewise.
+	(vminsd): Likewise.
+	(vmaxsd): Likewise.
+	(vminud): Likewise.
+	(vmaxud): Likewise.
+	(vpkudum): Likewise.
+	(vpksdss): Likewise.
+	(vpkudus): Likewise.
+	(vpksdus): Likewise.
+	(vrld): Likewise.
+	(vsld): Likewise.
+	(vsrd): Likewise.
+	(vsrad): Likewise.
+	(vsubudm): Likewise.
+	(vcmpequd): Likewise.
+	(vcmpgtsd): Likewise.
+	(vcmpgtud): Likewise.
+	(vcmpequd_p): Likewise.
+	(vcmpgtsd_p): Likewise.
+	(vcmpgtud_p): Likewise.
+	(vupkhsw): Likewise.
+	(vupklsw): Likewise.
+	(vaddudm): Likewise.
+	(vmaxsd): Likewise.
+	(vmaxud): Likewise.
+	(vminsd): Likewise.
+	(vminud): Likewise.
+	(vpksdss): Likewise.
+	(vpksdus): Likewise.
+	(vpkudum): Likewise.
+	(vpkudus): Likewise.
+	(vrld): Likewise.
+	(vsld): Likewise.
+	(vsrad): Likewise.
+	(vsrd): Likewise.
+	(vsubudm): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Add
+	support for power8 V2DI instructions.
+
+	* config/rs6000/altivec.md (UNSPEC_VPKUHUM): Add support for
+	power8 V2DI instructions.  Combine pack and unpack insns to use an
+	iterator for each mode.  Check whether a particular mode supports
+	Altivec instructions instead of just checking TARGET_ALTIVEC.
+	(UNSPEC_VPKUWUM): Likewise.
+	(UNSPEC_VPKSHSS): Likewise.
+	(UNSPEC_VPKSWSS): Likewise.
+	(UNSPEC_VPKUHUS): Likewise.
+	(UNSPEC_VPKSHUS): Likewise.
+	(UNSPEC_VPKUWUS): Likewise.
+	(UNSPEC_VPKSWUS): Likewise.
+	(UNSPEC_VPACK_SIGN_SIGN_SAT): Likewise.
+	(UNSPEC_VPACK_SIGN_UNS_SAT): Likewise.
+	(UNSPEC_VPACK_UNS_UNS_SAT): Likewise.
+	(UNSPEC_VPACK_UNS_UNS_MOD): Likewise.
+	(UNSPEC_VUPKHSB): Likewise.
+	(UNSPEC_VUNPACK_HI_SIGN): Likewise.
+	(UNSPEC_VUNPACK_LO_SIGN): Likewise.
+	(UNSPEC_VUPKHSH): Likewise.
+	(UNSPEC_VUPKLSB): Likewise.
+	(UNSPEC_VUPKLSH): Likewise.
+	(VI2): Likewise.
+	(VI_char): Likewise.
+	(VI_scalar): Likewise.
+	(VI_unit): Likewise.
+	(VP): Likewise.
+	(VP_small): Likewise.
+	(VP_small_lc): Likewise.
+	(VU_char): Likewise.
+	(add<mode>3): Likewise.
+	(altivec_vaddcuw): Likewise.
+	(altivec_vaddu<VI_char>s): Likewise.
+	(altivec_vadds<VI_char>s): Likewise.
+	(sub<mode>3): Likewise.
+	(altivec_vsubcuw): Likewise.
+	(altivec_vsubu<VI_char>s): Likewise.
+	(altivec_vsubs<VI_char>s): Likewise.
+	(altivec_vavgs<VI_char>): Likewise.
+	(altivec_vcmpbfp): Likewise.
+	(altivec_eq<mode>): Likewise.
+	(altivec_gt<mode>): Likewise.
+	(altivec_gtu<mode>): Likewise.
+	(umax<mode>3): Likewise.
+	(smax<mode>3): Likewise.
+	(umin<mode>3): Likewise.
+	(smin<mode>3): Likewise.
+	(altivec_vpkuhum): Likewise.
+	(altivec_vpkuwum): Likewise.
+	(altivec_vpkshss): Likewise.
+	(altivec_vpkswss): Likewise.
+	(altivec_vpkuhus): Likewise.
+	(altivec_vpkshus): Likewise.
+	(altivec_vpkuwus): Likewise.
+	(altivec_vpkswus): Likewise.
+	(altivec_vpks<VI_char>ss): Likewise.
+	(altivec_vpks<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>um): Likewise.
+	(altivec_vrl<VI_char>): Likewise.
+	(altivec_vsl<VI_char>): Likewise.
+	(altivec_vsr<VI_char>): Likewise.
+	(altivec_vsra<VI_char>): Likewise.
+	(altivec_vsldoi_<mode>): Likewise.
+	(altivec_vupkhsb): Likewise.
+	(altivec_vupkhs<VU_char>): Likewise.
+	(altivec_vupkls<VU_char>): Likewise.
+	(altivec_vupkhsh): Likewise.
+	(altivec_vupklsb): Likewise.
+	(altivec_vupklsh): Likewise.
+	(altivec_vcmpequ<VI_char>_p): Likewise.
+	(altivec_vcmpgts<VI_char>_p): Likewise.
+	(altivec_vcmpgtu<VI_char>_p): Likewise.
+	(abs<mode>2): Likewise.
+	(vec_unpacks_hi_v16qi): Likewise.
+	(vec_unpacks_hi_v8hi): Likewise.
+	(vec_unpacks_lo_v16qi): Likewise.
+	(vec_unpacks_hi_<VP_small_lc>): Likewise.
+	(vec_unpacks_lo_v8hi): Likewise.
+	(vec_unpacks_lo_<VP_small_lc>): Likewise.
+	(vec_pack_trunc_v8h): Likewise.
+	(vec_pack_trunc_v4si): Likewise.
+	(vec_pack_trunc_<mode>): Likewise.
+
+	* config/rs6000/altivec.h (vec_vaddudm): Add defines for power8
+	V2DI builtins.
+	(vec_vmaxsd): Likewise.
+	(vec_vmaxud): Likewise.
+	(vec_vminsd): Likewise.
+	(vec_vminud): Likewise.
+	(vec_vpksdss): Likewise.
+	(vec_vpksdus): Likewise.
+	(vec_vpkudum): Likewise.
+	(vec_vpkudus): Likewise.
+	(vec_vrld): Likewise.
+	(vec_vsld): Likewise.
+	(vec_vsrad): Likewise.
+	(vec_vsrd): Likewise.
+	(vec_vsubudm): Likewise.
+	(vec_vupkhsw): Likewise.
+	(vec_vupklsw): Likewise.
+
 2013-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (symtab_node_base): Add definition, alias and analyzed
