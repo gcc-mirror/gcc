@@ -1,3 +1,9 @@
+2013-05-29  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Remove comment.
+	Refactor if/switch.  Replace gcc_assert with if.
+
 2013-05-29  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (initial_ix86_tune_features): Enable

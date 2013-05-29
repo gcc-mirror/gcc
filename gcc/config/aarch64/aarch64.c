@@ -5016,6 +5016,7 @@ aarch64_classify_tls_symbol (rtx x)
 
 /* Return the method that should be used to access SYMBOL_REF or
    LABEL_REF X in context CONTEXT.  */
+
 enum aarch64_symbol_type
 aarch64_classify_symbol (rtx x,
 			 enum aarch64_symbol_context context ATTRIBUTE_UNUSED)
@@ -5038,48 +5039,34 @@ aarch64_classify_symbol (rtx x,
 	}
     }
 
-  gcc_assert (GET_CODE (x) == SYMBOL_REF);
-
-  switch (aarch64_cmodel)
+  if (GET_CODE (x) == SYMBOL_REF)
     {
-    case AARCH64_CMODEL_LARGE:
-      return SYMBOL_FORCE_TO_MEM;
-
-    case AARCH64_CMODEL_TINY:
-    case AARCH64_CMODEL_SMALL:
-
-      /* This is needed to get DFmode, TImode constants to be loaded off
-         the constant pool.  Is it necessary to dump TImode values into
-         the constant pool.  We don't handle TImode constant loads properly
-         yet and hence need to use the constant pool.  */
-      if (CONSTANT_POOL_ADDRESS_P (x))
+      if (aarch64_cmodel == AARCH64_CMODEL_LARGE
+	  || CONSTANT_POOL_ADDRESS_P (x))
 	return SYMBOL_FORCE_TO_MEM;
 
       if (aarch64_tls_symbol_p (x))
 	return aarch64_classify_tls_symbol (x);
 
-      if (SYMBOL_REF_WEAK (x))
-	return SYMBOL_FORCE_TO_MEM;
+      switch (aarch64_cmodel)
+	{
+	case AARCH64_CMODEL_TINY:
+	case AARCH64_CMODEL_SMALL:
+	  if (SYMBOL_REF_WEAK (x))
+	    return SYMBOL_FORCE_TO_MEM;
+	  return SYMBOL_SMALL_ABSOLUTE;
 
-      return SYMBOL_SMALL_ABSOLUTE;
+	case AARCH64_CMODEL_TINY_PIC:
+	case AARCH64_CMODEL_SMALL_PIC:
+	  if (!aarch64_symbol_binds_local_p (x))
+	    return SYMBOL_SMALL_GOT;
+	  return SYMBOL_SMALL_ABSOLUTE;
 
-    case AARCH64_CMODEL_TINY_PIC:
-    case AARCH64_CMODEL_SMALL_PIC:
-
-      if (CONSTANT_POOL_ADDRESS_P (x))
-	return SYMBOL_FORCE_TO_MEM;
-
-      if (aarch64_tls_symbol_p (x))
-	return aarch64_classify_tls_symbol (x);
-
-      if (!aarch64_symbol_binds_local_p (x))
-	return SYMBOL_SMALL_GOT;
-
-      return SYMBOL_SMALL_ABSOLUTE;
-
-    default:
-      gcc_unreachable ();
+	default:
+	  gcc_unreachable ();
+	}
     }
+
   /* By default push everything into the constant pool.  */
   return SYMBOL_FORCE_TO_MEM;
 }
