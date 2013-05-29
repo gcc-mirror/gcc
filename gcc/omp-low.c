@@ -224,6 +224,8 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
   struct omp_for_data_loop dummy_loop;
   location_t loc = gimple_location (for_stmt);
   bool non_ws = gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_SIMD;
+  bool distribute = gimple_omp_for_kind (for_stmt)
+		    == GF_OMP_FOR_KIND_DISTRIBUTE;
 
   fd->for_stmt = for_stmt;
   fd->pre = NULL;
@@ -233,7 +235,8 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
   else
     fd->loops = &fd->loop;
 
-  fd->have_nowait = fd->have_ordered = false;
+  fd->have_nowait = distribute;
+  fd->have_ordered = false;
   fd->sched_kind = OMP_CLAUSE_SCHEDULE_STATIC;
   fd->chunk_size = NULL_TREE;
   collapse_iter = NULL;
@@ -249,8 +252,13 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	fd->have_ordered = true;
 	break;
       case OMP_CLAUSE_SCHEDULE:
+	gcc_assert (!distribute);
 	fd->sched_kind = OMP_CLAUSE_SCHEDULE_KIND (t);
 	fd->chunk_size = OMP_CLAUSE_SCHEDULE_CHUNK_EXPR (t);
+	break;
+      case OMP_CLAUSE_DIST_SCHEDULE:
+	gcc_assert (distribute);
+	fd->chunk_size = OMP_CLAUSE_DIST_SCHEDULE_CHUNK_EXPR (t);
 	break;
       case OMP_CLAUSE_COLLAPSE:
 	if (fd->collapse > 1)
@@ -1903,7 +1911,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 	return true;
       if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
 	{
-	  if (ctx == NULL || gimple_code (ctx->stmt) != GIMPLE_OMP_TEAMS)
+	  if (ctx != NULL && gimple_code (ctx->stmt) != GIMPLE_OMP_TEAMS)
 	    {
 	      error_at (gimple_location (stmt),
 			"distribute construct must be closely nested inside "
@@ -4527,6 +4535,8 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   gimple_stmt_iterator gsi;
   gimple stmt;
   edge ep;
+  enum built_in_function get_num_threads = BUILT_IN_OMP_GET_NUM_THREADS;
+  enum built_in_function get_thread_num = BUILT_IN_OMP_GET_THREAD_NUM;
 
   itype = type = TREE_TYPE (fd->loop.v);
   if (POINTER_TYPE_P (type))
@@ -4546,6 +4556,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
   /* Iteration space partitioning goes in ENTRY_BB.  */
   gsi = gsi_last_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (gsi)) == GIMPLE_OMP_FOR);
+
+  if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
+    {
+      get_num_threads = BUILT_IN_OMP_GET_NUM_TEAMS;
+      get_thread_num = BUILT_IN_OMP_GET_TEAM_NUM;
+    }
 
   t = fold_binary (fd->loop.cond_code, boolean_type_node,
 		   fold_convert (type, fd->loop.n1),
@@ -4591,12 +4607,12 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       gsi = gsi_last_bb (entry_bb);
     }
 
-  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS), 0);
+  t = build_call_expr (builtin_decl_explicit (get_num_threads), 0);
   t = fold_convert (itype, t);
   nthreads = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
 
-  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM), 0);
+  t = build_call_expr (builtin_decl_explicit (get_thread_num), 0);
   t = fold_convert (itype, t);
   threadid = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
@@ -4798,6 +4814,8 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   gimple_stmt_iterator si;
   gimple stmt;
   edge se;
+  enum built_in_function get_num_threads = BUILT_IN_OMP_GET_NUM_THREADS;
+  enum built_in_function get_thread_num = BUILT_IN_OMP_GET_THREAD_NUM;
 
   itype = type = TREE_TYPE (fd->loop.v);
   if (POINTER_TYPE_P (type))
@@ -4822,6 +4840,12 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
   /* Trip and adjustment setup goes in ENTRY_BB.  */
   si = gsi_last_bb (entry_bb);
   gcc_assert (gimple_code (gsi_stmt (si)) == GIMPLE_OMP_FOR);
+
+  if (gimple_omp_for_kind (fd->for_stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
+    {
+      get_num_threads = BUILT_IN_OMP_GET_NUM_TEAMS;
+      get_thread_num = BUILT_IN_OMP_GET_TEAM_NUM;
+    }
 
   t = fold_binary (fd->loop.cond_code, boolean_type_node,
 		   fold_convert (type, fd->loop.n1),
@@ -4867,12 +4891,12 @@ expand_omp_for_static_chunk (struct omp_region *region, struct omp_for_data *fd)
       si = gsi_last_bb (entry_bb);
     }
 
-  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_NUM_THREADS), 0);
+  t = build_call_expr (builtin_decl_explicit (get_num_threads), 0);
   t = fold_convert (itype, t);
   nthreads = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
 
-  t = build_call_expr (builtin_decl_explicit (BUILT_IN_OMP_GET_THREAD_NUM), 0);
+  t = build_call_expr (builtin_decl_explicit (get_thread_num), 0);
   t = fold_convert (itype, t);
   threadid = force_gimple_operand_gsi (&si, t, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
@@ -5488,6 +5512,10 @@ expand_omp_for (struct omp_region *region)
     {
       int fn_index, start_ix, next_ix;
 
+      /* FIXME: expand_omp_for_static_*chunk needs to handle
+	 collapse > 1 for distribute.  */
+      gcc_assert (gimple_omp_for_kind (fd.for_stmt)
+		  != GF_OMP_FOR_KIND_DISTRIBUTE);
       if (fd.chunk_size == NULL
 	  && fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC)
 	fd.chunk_size = integer_zero_node;

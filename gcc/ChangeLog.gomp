@@ -1,5 +1,13 @@
 2013-05-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-builtins.def (BUILT_IN_OMP_GET_TEAM_NUM,
+	BUILT_IN_OMP_GET_NUM_TEAMS): New built-ins.
+	* omp-low.c (extract_omp_for_data, expand_omp_for_static_nochunk,
+	expand_omp_for_static_chunk): Handle #pragma omp distribute.
+	(expand_omp_for): Add assertion for non-finished distribute collapse
+	> 1 support.
+	(check_omp_nesting_restrictions): Allow orphaned distribute construct.
+
 	* omp-low.c (check_omp_nesting_restrictions): Add some
 	accelerator related nesting restrictions.
 	(scan_omp_1_stmt): Call check_omp_nesting_restrictions
