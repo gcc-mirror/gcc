@@ -1300,6 +1300,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
+  NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
   *p = NULL;
 
@@ -1312,7 +1313,6 @@ init_optimization_passes (void)
       struct opt_pass **p = &pass_early_local_passes.pass.sub;
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_init_datastructures);
-      NEXT_PASS (pass_expand_omp);
 
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_early_warn_uninitialized);
