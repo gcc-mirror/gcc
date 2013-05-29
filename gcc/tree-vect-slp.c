@@ -1904,7 +1904,8 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
    update LIFE according to uses of NODE.  */
 
 static unsigned
-vect_bb_slp_scalar_cost (slp_tree node, vec<bool, va_stack> life)
+vect_bb_slp_scalar_cost (basic_block bb,
+			 slp_tree node, vec<bool, va_stack> life)
 {
   unsigned scalar_cost = 0;
   unsigned i;
@@ -1931,7 +1932,7 @@ vect_bb_slp_scalar_cost (slp_tree node, vec<bool, va_stack> life)
 	  imm_use_iterator use_iter;
 	  gimple use_stmt;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
-	    if (!vinfo_for_stmt (use_stmt)
+	    if (gimple_bb (use_stmt) != bb
 		|| !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (use_stmt)))
 	      {
 		life[i] = true;
@@ -1956,7 +1957,7 @@ vect_bb_slp_scalar_cost (slp_tree node, vec<bool, va_stack> life)
     }
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    scalar_cost += vect_bb_slp_scalar_cost (child, life);
+    scalar_cost += vect_bb_slp_scalar_cost (bb, child, life);
 
   return scalar_cost;
 }
@@ -1995,7 +1996,8 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
       vec<bool, va_stack> life;
       vec_stack_alloc (bool, life, SLP_INSTANCE_GROUP_SIZE (instance));
       life.quick_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
-      scalar_cost += vect_bb_slp_scalar_cost (SLP_INSTANCE_TREE (instance),
+      scalar_cost += vect_bb_slp_scalar_cost (BB_VINFO_BB (bb_vinfo),
+					      SLP_INSTANCE_TREE (instance),
 					      life);
       life.release ();
     }
