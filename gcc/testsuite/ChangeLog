@@ -1,3 +1,8 @@
+2013-05-29  Dehao Chen  <dehao@google.com>
+
+	PR testsuite/57413
+	* gcc.dg/debug/dwarf2/discriminator.c: Restrict the test to linux-gnu.
+
 2013-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
