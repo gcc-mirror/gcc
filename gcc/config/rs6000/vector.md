@@ -24,13 +24,13 @@
 
 
 ;; Vector int modes
-(define_mode_iterator VEC_I [V16QI V8HI V4SI])
+(define_mode_iterator VEC_I [V16QI V8HI V4SI V2DI])
 
 ;; Vector float modes
 (define_mode_iterator VEC_F [V4SF V2DF])
 
 ;; Vector arithmetic modes
-(define_mode_iterator VEC_A [V16QI V8HI V4SI V4SF V2DF])
+(define_mode_iterator VEC_A [V16QI V8HI V4SI V2DI V4SF V2DF])
 
 ;; Vector modes that need alginment via permutes
 (define_mode_iterator VEC_K [V16QI V8HI V4SI V4SF])
@@ -45,7 +45,7 @@
 (define_mode_iterator VEC_N [V4SI V4SF V2DI V2DF])
 
 ;; Vector comparison modes
-(define_mode_iterator VEC_C [V16QI V8HI V4SI V4SF V2DF])
+(define_mode_iterator VEC_C [V16QI V8HI V4SI V2DI V4SF V2DF])
 
 ;; Vector init/extract modes
 (define_mode_iterator VEC_E [V16QI V8HI V4SI V2DI V4SF V2DF])
@@ -1074,7 +1074,7 @@
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(rotate:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 		      (match_operand:VEC_I 2 "vint_operand" "")))]
-  "TARGET_ALTIVEC"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Expanders for arithmetic shift left on each vector element
@@ -1082,7 +1082,7 @@
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(ashift:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 		      (match_operand:VEC_I 2 "vint_operand" "")))]
-  "TARGET_ALTIVEC"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Expanders for logical shift right on each vector element
@@ -1090,7 +1090,7 @@
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(lshiftrt:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 			(match_operand:VEC_I 2 "vint_operand" "")))]
-  "TARGET_ALTIVEC"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Expanders for arithmetic shift right on each vector element
@@ -1098,7 +1098,7 @@
   [(set (match_operand:VEC_I 0 "vint_operand" "")
 	(ashiftrt:VEC_I (match_operand:VEC_I 1 "vint_operand" "")
 			(match_operand:VEC_I 2 "vint_operand" "")))]
-  "TARGET_ALTIVEC"
+  "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
   "")
 
 ;; Vector reduction expanders for VSX

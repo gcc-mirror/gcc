@@ -2226,12 +2226,13 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	}
     }
 
-  /* V2DImode, only allow under VSX, which can do V2DI insert/splat/extract.
-     Altivec doesn't have 64-bit support.  */
+  /* V2DImode, full mode depends on ISA 2.07 vector mode.  Allow under VSX to
+     do insert/splat/extract.  Altivec doesn't have 64-bit integer support.  */
   if (TARGET_VSX)
     {
       rs6000_vector_mem[V2DImode] = VECTOR_VSX;
-      rs6000_vector_unit[V2DImode] = VECTOR_NONE;
+      rs6000_vector_unit[V2DImode]
+	= (TARGET_P8_VECTOR) ? VECTOR_P8_VECTOR : VECTOR_NONE;
       rs6000_vector_align[V2DImode] = align64;
     }
 

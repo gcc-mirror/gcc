@@ -30,7 +30,7 @@
    RS6000_BUILTIN_A -- ABS builtins
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_E -- SPE EVSEL builtins.
-   RS6000_BUILTIN_P -- Altivec, VSX, Power8 vector predicate builtins
+   RS6000_BUILTIN_P -- Altivec, VSX, ISA 2.07 vector predicate builtins
    RS6000_BUILTIN_Q -- Paired floating point VSX predicate builtins
    RS6000_BUILTIN_S -- SPE predicate builtins
    RS6000_BUILTIN_X -- special builtins
@@ -301,7 +301,7 @@
 		     | RS6000_BTC_SPECIAL),				\
 		    CODE_FOR_nothing)			/* ICODE */
 
-/* Power8 vector convenience macros.  */
+/* ISA 2.07 (power8) vector convenience macros.  */
 /* For the instructions that are encoded as altivec instructions use
    __builtin_altivec_ as the builtin name.  */
 #define BU_P8V_AV_1(ENUM, NAME, ATTR, ICODE)				\
@@ -1233,6 +1233,58 @@ BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
+
+/* 1 argument altivec instructions added in ISA 2.07.  */
+BU_P8V_AV_1 (ABS_V2DI,	      "abs_v2di",	CONST,	absv2di2)
+BU_P8V_AV_1 (VUPKHSW,	      "vupkhsw",	CONST,	altivec_vupkhsw)
+BU_P8V_AV_1 (VUPKLSW,	      "vupklsw",	CONST,	altivec_vupklsw)
+
+/* 2 argument altivec instructions added in ISA 2.07.  */
+BU_P8V_AV_2 (VADDUDM,		"vaddudm",	CONST,	addv2di3)
+BU_P8V_AV_2 (VMINSD,		"vminsd",	CONST,	sminv2di3)
+BU_P8V_AV_2 (VMAXSD,		"vmaxsd",	CONST,	smaxv2di3)
+BU_P8V_AV_2 (VMINUD,		"vminud",	CONST,	uminv2di3)
+BU_P8V_AV_2 (VMAXUD,		"vmaxud",	CONST,	umaxv2di3)
+BU_P8V_AV_2 (VPKUDUM,		"vpkudum",	CONST,	altivec_vpkudum)
+BU_P8V_AV_2 (VPKSDSS,		"vpksdss",	CONST,	altivec_vpksdss)
+BU_P8V_AV_2 (VPKUDUS,		"vpkudus",	CONST,	altivec_vpkudus)
+BU_P8V_AV_2 (VPKSDUS,		"vpksdus",	CONST,	altivec_vpkswus)
+BU_P8V_AV_2 (VRLD,		"vrld",		CONST,	vrotlv2di3)
+BU_P8V_AV_2 (VSLD,		"vsld",		CONST,	vashlv2di3)
+BU_P8V_AV_2 (VSRD,		"vsrd",		CONST,	vlshrv2di3)
+BU_P8V_AV_2 (VSRAD,		"vsrad",	CONST,	vashrv2di3)
+BU_P8V_AV_2 (VSUBUDM,		"vsubudm",	CONST,	subv2di3)
+
+/* Vector comparison instructions added in ISA 2.07.  */
+BU_P8V_AV_2 (VCMPEQUD,		"vcmpequd",	CONST,	vector_eqv2di)
+BU_P8V_AV_2 (VCMPGTSD,		"vcmpgtsd",	CONST,	vector_gtv2di)
+BU_P8V_AV_2 (VCMPGTUD,		"vcmpgtud",	CONST,	vector_gtuv2di)
+
+/* Vector comparison predicate instructions added in ISA 2.07.  */
+BU_P8V_AV_P (VCMPEQUD_P,	"vcmpequd_p",	CONST,	vector_eq_v2di_p)
+BU_P8V_AV_P (VCMPGTSD_P,	"vcmpgtsd_p",	CONST,	vector_gt_v2di_p)
+BU_P8V_AV_P (VCMPGTUD_P,	"vcmpgtud_p",	CONST,	vector_gtu_v2di_p)
+
+/* ISA 2.07 vector overloaded 1 argument functions.  */
+BU_P8V_OVERLOAD_1 (VUPKHSW,	"vupkhsw")
+BU_P8V_OVERLOAD_1 (VUPKLSW,	"vupklsw")
+
+/* ISA 2.07 vector overloaded 2 argument functions.  */
+BU_P8V_OVERLOAD_2 (VADDUDM,	"vaddudm")
+BU_P8V_OVERLOAD_2 (VMAXSD,	"vmaxsd")
+BU_P8V_OVERLOAD_2 (VMAXUD,	"vmaxud")
+BU_P8V_OVERLOAD_2 (VMINSD,	"vminsd")
+BU_P8V_OVERLOAD_2 (VMINUD,	"vminud")
+BU_P8V_OVERLOAD_2 (VPKSDSS,	"vpksdss")
+BU_P8V_OVERLOAD_2 (VPKSDUS,	"vpksdus")
+BU_P8V_OVERLOAD_2 (VPKUDUM,	"vpkudum")
+BU_P8V_OVERLOAD_2 (VPKUDUS,	"vpkudus")
+BU_P8V_OVERLOAD_2 (VRLD,	"vrld")
+BU_P8V_OVERLOAD_2 (VSLD,	"vsld")
+BU_P8V_OVERLOAD_2 (VSRAD,	"vsrad")
+BU_P8V_OVERLOAD_2 (VSRD,	"vsrd")
+BU_P8V_OVERLOAD_2 (VSUBUDM,	"vsubudm")
+
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)
