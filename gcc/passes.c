@@ -718,7 +718,7 @@ dump_passes (void)
 
   create_pass_tab();
 
-  FOR_EACH_DEFINED_FUNCTION (n)
+  FOR_EACH_FUNCTION (n)
     if (DECL_STRUCT_FUNCTION (n->symbol.decl))
       {
 	node = n;
