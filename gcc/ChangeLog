@@ -1,5 +1,13 @@
 2013-05-29  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Guard vinfo
+	access on whether the use is in the BB we currently try to
+	vectorize.
+	(vect_bb_vectorization_profitable_p): Pass the BB we currently
+	vectorize to vect_bb_slp_scalar_cost.
+
+2013-05-29  Richard Biener  <rguenther@suse.de>
+
 	* tree-vect-slp.c (vect_bb_slp_scalar_cost): New function
 	computing scalar cost offsetted by stmts that are kept live
 	by scalar uses.
