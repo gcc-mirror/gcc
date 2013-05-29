@@ -1,5 +1,122 @@
 2013-05-29  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (symtab_node_base): Add definition, alias and analyzed
+	flags; reorder rest of fields in more consistent way.
+	(varpool_node): Remove analyzed, finalized and alias.
+	(cgraph_ndoe): Likewise.
+	(symtab_alias_ultimate_target): New function.
+	(cgraph_function_node): Move offline.
+	(cgraph_reset_node): Declare.
+	(cgraph_comdat_can_be_unshared_p): Remove.
+	(varpool_remove_initializer): Declare.
+	(varpool_first_defined_variable, varpool_next_defined_variable
+	cgraph_first_defined_function, cgraph_next_defined_function): Update.
+	(cgraph_function_with_gimple_body_p): Update.
+	(varpool_all_refs_explicit_p): Update.
+	(symtab_alias_target): New function.
+	(cgraph_alias_aliased_node, varpool_alias_aliased_node): Rename to ...
+	(cgraph_alias_target, varpool_alias_target): .. this one; simplify.
+	(cgraph_function_or_thunk_node): Simplify using symtab_alias_ultimate_target.
+	(varpool_variable_node): Likewise.
+	* cgraph.c (cgraph_create_function_alias): Update.
+	(cgraph_add_thunk): Update.
+	(cgraph_remove_node): Update.
+	(dump_cgraph_node): Do not dump removed flags.
+	(cgraph_function_body_availability): Update.
+	(cgraph_propagate_frequency): Update.
+	(verify_cgraph_node): Check sanity of local flag.
+	(cgraph_function_node): Move here from cgraph.h; revamp for
+	cgraph_function_or_thunk_node.
+	* lto-symtab.c (lto_varpool_replace_node): Update.
+	(lto_symtab_resolve_can_prevail_p): Update.
+	(lto_symtab_merge_cgraph_nodes): Update.
+	* ipa-cp.c (determine_versionability, initialize_node_lattices,
+	propagate_constants_accross_call, devirtualization_time_bonus,
+	ipcp_propagate_stage): Update.
+	* tree-emutls.c (create_emultls_var, ipa_lower_emutls): Update.
+	* ipa-inline-transform.c (clone_inlined_nodes, preserve_function_body_p): Update.
+	* ipa-reference.c (propagate): Update.
+	(write_node_summary_p): Update.
+	* toplev.c (wrapup_global_declaration_2): Update.
+	* cgraphunit.c (cgraph_analyze_function): Rename to ...
+	(analyze_function) ... this one.
+	(cgraph_process_new_functions): Update.
+	(cgraph_reset_node): Export.
+	(cgraph_finalize_function): Update.
+	(cgraph_add_new_function): Update.
+	(process_function_and_variable_attributes): Update.
+	(varpool_finalize_decl): Update.
+	(symbol_finalized): Remove.
+	(symbol_finalized_and_needed): Rename to ...
+	(symbol_defined_and_needed): ... update.
+	(cgraph_analyze_functions): Update.
+	(handle_alias_pairs): Update.
+	(mark_functions_to_output): Update.
+	(assemble_thunk): Update.
+	(output_in_order): Update.
+	(output_weakrefs): Update.
+	(finalize_compilation_unit): Update.
+	* lto-cgraph.c (reachable_from_other_partition_p, lto_output_node,
+	lto_output_varpool_node, compute_ltrans_boundary, input_overwrite_node,
+	input_node, input_varpool_node): Update.
+	* dbxout.c (dbxout_expand_expr): Update.
+	* cgraphclones.c (cgraph_clone_node): Update.
+	(cgraph_copy_node_for_versioning): Update.
+	(cgraph_materialize_clone): Update.
+	(cgraph_materialize_all_clones): Update.
+	* ipa-pure-const.c (analyze_function, pure_const_write_summary,
+	propagate_pure_const, propagate_nothrow): Update.
+	* lto-streamer-out.c (lto_output, write_symbol): Update.
+	* ipa-utils.c (ipa_reverse_postorder): Update.
+	* ipa-inline.c (can_inline_edge_p): Update.
+	(update_caller_keys, ipa_inline): Update.
+	* dwarf2out.c (reference_to_unused,
+	premark_types_used_by_global_vars_helper): Update.
+	* tree-eh.c (tree_could_trap_p): Update.
+	* ipa-split.c (consider_split, execute_split_functions): Update.
+	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p,
+	 has_addr_references_p): Update;
+	move ahead in file for better readability.
+	(process_references): Simplify.
+	(symtab_remove_unreachable_nodes): Update; cleanup way function/var
+	bodies are removed.
+	(cgraph_comdat_can_be_unshared_p): Make static.
+	(cgraph_externally_visible_p): Update.
+	(varpool_externally_visible_p): Update.
+	(function_and_variable_visibility): Update.
+	* trans-mem.c (get_cg_data, ipa_tm_mayenterirr_function,
+	ipa_tm_mark_force_output_node): Update.
+	* ipa-inline-analysis.c (dump_inline_summary, initialize_inline_failed,
+	estimate_edge_devirt_benefit, inline_generate_summary,
+	inline_write_summary): Update.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Update.
+	* ipa-prop.c (ipa_compute_jump_functions): Update.
+	(ipa_print_node_params, ipa_prop_read_section, ipa_update_after_lto_read,
+	read_replacements_section): Update.
+	* varasm.c (mark_decl_referenced): Update.
+	(assemble_alias, dump_tm_clone_pairs): Update.
+	* tree-inline.c (copy_bb): Update.
+	(estimate_num_insns, optimize_inline_calls, tree_function_versioning):
+	Update.
+	* symtab.c (dump_symtab_base): Print new flags.
+	(verify_symtab_base): Verify new flags.
+	(symtab_alias_ultimate_target): New function.
+	* tree-ssa-structalias.c (get_constraint_for_ssa_var,
+	create_variable_info_for, associate_varinfo_to_alias, ipa_pta_execute):
+	Update.
+	* passes.c (ipa_write_summaries, ipa_write_optimization_summaries): Update.
+	* i386.c (ix86_get_function_versions_dispatcher,
+	ix86_generate_version_dispatcher_body): Update.
+	(fold_builtin_cpu): Use varpool_add_new_variable.
+	* varpool.c (varpool_remove_initializer): Break out from ...
+	(varpool_remove_node): ... this one.
+	(dump_varpool_node, varpool_node_for_asm,
+	cgraph_variable_initializer_availability, varpool_analyze_node,
+	varpool_assemble_decl, varpool_remove_unreferenced_decls,
+	varpool_finalize_named_section_flags, varpool_create_variable_alias): Update
+
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
 	* passes.c (init_optimization_passes): Move OMP expansion into lowering.
 
 2013-05-29  Easwaran Raman  <eraman@google.com>

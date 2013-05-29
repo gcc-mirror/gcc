@@ -440,14 +440,14 @@ determine_versionability (struct cgraph_node *node)
   /* There are a number of generic reasons functions cannot be versioned.  We
      also cannot remove parameters if there are type attributes such as fnspec
      present.  */
-  if (node->alias || node->thunk.thunk_p)
+  if (node->symbol.alias || node->thunk.thunk_p)
     reason = "alias or thunk";
   else if (!node->local.versionable)
     reason = "not a tree_versionable_function";
   else if (cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE)
     reason = "insufficient body availability";
 
-  if (reason && dump_file && !node->alias && !node->thunk.thunk_p)
+  if (reason && dump_file && !node->symbol.alias && !node->thunk.thunk_p)
     fprintf (dump_file, "Function %s/%i is not versionable, reason: %s.\n",
 	     cgraph_node_name (node), node->symbol.order, reason);
 
@@ -727,7 +727,7 @@ initialize_node_lattices (struct cgraph_node *node)
 	    set_all_contains_variable (plats);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS)
-	  && !node->alias && !node->thunk.thunk_p)
+	  && !node->symbol.alias && !node->thunk.thunk_p)
 	fprintf (dump_file, "Marking all lattices of %s/%i as %s\n",
 		 cgraph_node_name (node), node->symbol.order,
 		 disable ? "BOTTOM" : "VARIABLE");
@@ -1418,7 +1418,7 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
   int i, args_count, parms_count;
 
   callee = cgraph_function_node (cs->callee, &availability);
-  if (!callee->analyzed)
+  if (!callee->symbol.definition)
     return false;
   gcc_checking_assert (cgraph_function_with_gimple_body_p (callee));
   callee_info = IPA_NODE_REF (callee);
@@ -1431,8 +1431,8 @@ propagate_constants_accross_call (struct cgraph_edge *cs)
      parameter.  However, we might need to uncover a thunk from below a series
      of aliases first.  */
   alias_or_thunk = cs->callee;
-  while (alias_or_thunk->alias)
-    alias_or_thunk = cgraph_alias_aliased_node (alias_or_thunk);
+  while (alias_or_thunk->symbol.alias)
+    alias_or_thunk = cgraph_alias_target (alias_or_thunk);
   if (alias_or_thunk->thunk.thunk_p)
     {
       ret |= set_all_contains_variable (ipa_get_parm_lattices (callee_info,
@@ -1601,7 +1601,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
       /* Only bare minimum benefit for clearly un-inlineable targets.  */
       res += 1;
       callee = cgraph_get_node (target);
-      if (!callee || !callee->analyzed)
+      if (!callee || !callee->symbol.definition)
 	continue;
       isummary = inline_summary (callee);
       if (!isummary->inlinable)
@@ -2231,9 +2231,10 @@ ipcp_propagate_stage (struct topo_info *topo)
 				   ipa_get_param_count (info));
 	initialize_node_lattices (node);
       }
+    if (node->symbol.definition && !node->symbol.alias)
+      overall_size += inline_summary (node)->self_size;
     if (node->count > max_count)
       max_count = node->count;
-    overall_size += inline_summary (node)->self_size;
   }
 
   max_new_size = overall_size;

@@ -29468,7 +29468,7 @@ ix86_get_function_versions_dispatcher (void *decl)
       dispatcher_version_info
 	= insert_new_cgraph_node_version (dispatcher_node);
       dispatcher_version_info->next = default_version_info;
-      dispatcher_node->local.finalized = 1;
+      dispatcher_node->symbol.definition = 1;
 
       /* Set the dispatcher for all the versions.  */
       it_v = default_version_info;
@@ -29623,7 +29623,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
   default_ver_decl = node_version_info->next->this_node->symbol.decl;
 
   /* node is going to be an alias, so remove the finalized bit.  */
-  node->local.finalized = false;
+  node->symbol.definition = false;
 
   resolver_decl = make_resolver_func (default_ver_decl,
 				      node->symbol.decl, &empty_bb);
@@ -29816,6 +29816,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
   tree __processor_model_type = build_processor_model_struct ();
   tree __cpu_model_var = make_var_decl (__processor_model_type,
 					"__cpu_model");
+
+
+  varpool_add_new_variable (__cpu_model_var);
 
   gcc_assert ((args != NULL) && (*args != NULL));
 

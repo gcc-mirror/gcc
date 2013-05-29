@@ -2492,12 +2492,12 @@ ipa_write_summaries (void)
 	  renumber_gimple_stmt_uids ();
 	  pop_cfun ();
 	}
-      if (node->analyzed)
+      if (node->symbol.definition)
         lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
     }
 
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if ((!vnode->alias || vnode->alias_of))
+    if ((!vnode->symbol.alias || vnode->alias_of))
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
 
   ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
@@ -2564,7 +2564,7 @@ ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
 
 	 For functions newly born at WPA stage we need to initialize
 	 the uids here.  */
-      if (node->analyzed
+      if (node->symbol.definition
 	  && gimple_has_body_p (node->symbol.decl))
 	{
 	  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));

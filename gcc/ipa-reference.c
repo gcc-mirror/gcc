@@ -684,7 +684,7 @@ propagate (void)
 	|| TREE_ADDRESSABLE (vnode->symbol.decl)
 	|| TREE_READONLY (vnode->symbol.decl)
 	|| !is_proper_for_analysis (vnode->symbol.decl)
-	|| !vnode->analyzed)
+	|| !vnode->symbol.definition)
       bitmap_clear_bit (all_module_statics, DECL_UID (vnode->symbol.decl));
 
   /* Forget info we collected "just for fun" on variables that turned out to be
@@ -716,7 +716,7 @@ propagate (void)
       bool write_all = false;
 
       node = order[i];
-      if (node->alias)
+      if (node->symbol.alias)
 	continue;
 
       node_info = get_reference_vars_info (node);
@@ -794,7 +794,7 @@ propagate (void)
 	  struct cgraph_node *w;
 
 	  node = order[i];
-	  if (node->alias)
+	  if (node->symbol.alias)
 	    continue;
 
 	  fprintf (dump_file,
@@ -835,7 +835,7 @@ propagate (void)
       ipa_reference_optimization_summary_t opt;
 
       node_info = get_reference_vars_info (node);
-      if (!node->alias
+      if (!node->symbol.alias
 	  && (cgraph_function_body_availability (node) > AVAIL_OVERWRITABLE
 	      || (flags_from_decl_or_type (node->symbol.decl) & ECF_LEAF)))
 	{
@@ -894,7 +894,7 @@ write_node_summary_p (struct cgraph_node *node,
   ipa_reference_optimization_summary_t info;
 
   /* See if we have (non-empty) info.  */
-  if (!node->analyzed || node->global.inlined_to)
+  if (!node->symbol.definition || node->global.inlined_to)
     return false;
   info = get_reference_optimization_summary (node);
   if (!info || (bitmap_empty_p (info->statics_not_read)

@@ -1,3 +1,9 @@
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (has_analyzed_clone_p, lto_materialize_function): Update for new symtab
+	flags.
+	* lto-partition.c (get_symbol_class, lto_balanced_map): Likewise.
+
 2013-05-15  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (privatize_symbol_name): Return true when

@@ -1,3 +1,8 @@
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (cp_fix_function_decl_p): Update for new symtab flags.
+	* decl2.c )var_finalized_p, cp_write_global_declarations): Likewise.
+
 2013-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/25666

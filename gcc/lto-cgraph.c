@@ -320,7 +320,7 @@ bool
 reachable_from_other_partition_p (struct cgraph_node *node, lto_symtab_encoder_t encoder)
 {
   struct cgraph_edge *e;
-  if (!node->analyzed)
+  if (!node->symbol.definition)
     return false;
   if (node->global.inlined_to)
     return false;
@@ -380,7 +380,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 
   boundary_p = !lto_symtab_encoder_in_partition_p (encoder, (symtab_node)node);
 
-  if (node->analyzed && !boundary_p)
+  if (node->symbol.analyzed && !boundary_p)
     tag = LTO_symtab_analyzed_node;
   else
     tag = LTO_symtab_unavail_node;
@@ -399,7 +399,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
      Cherry-picked nodes:  These are nodes we pulled from other
      translation units into SET during IPA-inlining.  We make them as
      local static nodes to prevent clashes with other local statics.  */
-  if (boundary_p && node->analyzed && !DECL_EXTERNAL (node->symbol.decl))
+  if (boundary_p && node->symbol.analyzed && !DECL_EXTERNAL (node->symbol.decl))
     {
       /* Inline clones can not be part of boundary.  
          gcc_assert (!node->global.inlined_to);  
@@ -463,7 +463,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->local.local, 1);
   bp_pack_value (&bp, node->symbol.externally_visible, 1);
-  bp_pack_value (&bp, node->local.finalized, 1);
+  bp_pack_value (&bp, node->symbol.definition, 1);
   bp_pack_value (&bp, node->local.versionable, 1);
   bp_pack_value (&bp, node->local.can_change_signature, 1);
   bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
@@ -485,7 +485,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
      defined in other unit, we may use the info on aliases to resolve 
      symbol1 != symbol2 type tests that we can do only for locally defined objects
      otherwise.  */
-  bp_pack_value (&bp, node->alias && (!boundary_p || DECL_EXTERNAL (node->symbol.decl)), 1);
+  bp_pack_value (&bp, node->symbol.alias && (!boundary_p || DECL_EXTERNAL (node->symbol.decl)), 1);
   bp_pack_value (&bp, node->frequency, 2);
   bp_pack_value (&bp, node->only_called_at_startup, 1);
   bp_pack_value (&bp, node->only_called_at_exit, 1);
@@ -504,8 +504,8 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
     }
-  if ((node->alias || node->thunk.thunk_p)
-      && (!boundary_p || (node->alias && DECL_EXTERNAL (node->symbol.decl))))
+  if ((node->symbol.alias || node->thunk.thunk_p)
+      && (!boundary_p || (node->symbol.alias && DECL_EXTERNAL (node->symbol.decl))))
     {
       streamer_write_hwi_in_range (ob->main_stream, 0, 1,
 					node->thunk.alias != NULL);
@@ -522,7 +522,7 @@ static void
 lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node *node,
 			 lto_symtab_encoder_t encoder)
 {
-  bool boundary_p = (node->analyzed
+  bool boundary_p = (node->symbol.definition
 		     && !lto_symtab_encoder_in_partition_p (encoder, (symtab_node)node));
   struct bitpack_d bp;
   int ref;
@@ -535,10 +535,10 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   bp_pack_value (&bp, node->symbol.externally_visible, 1);
   bp_pack_value (&bp, node->symbol.force_output, 1);
   bp_pack_value (&bp, node->symbol.unique_name, 1);
-  bp_pack_value (&bp, node->finalized, 1);
-  bp_pack_value (&bp, node->alias, 1);
+  bp_pack_value (&bp, node->symbol.definition, 1);
+  bp_pack_value (&bp, node->symbol.alias, 1);
   bp_pack_value (&bp, node->alias_of != NULL, 1);
-  gcc_assert (node->finalized || !node->analyzed);
+  gcc_assert (node->symbol.definition || !node->symbol.analyzed);
   /* Constant pool initializers can be de-unified into individual ltrans units.
      FIXME: Alternatively at -Os we may want to avoid generating for them the local
      labels and share them across LTRANS partitions.  */
@@ -551,7 +551,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
     }
   else
     {
-      bp_pack_value (&bp, node->analyzed
+      bp_pack_value (&bp, node->symbol.definition
 		     && referenced_from_other_partition_p (&node->symbol.ref_list,
 							   encoder), 1);
       bp_pack_value (&bp, boundary_p && !DECL_EXTERNAL (node->symbol.decl), 1);
@@ -756,7 +756,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
        !lsei_end_p (lsei); lsei_next_variable_in_partition (&lsei))
     {
       struct varpool_node *vnode = lsei_varpool_node (lsei);
-      gcc_assert (!vnode->alias || vnode->alias_of);
+      gcc_assert (!vnode->symbol.alias || vnode->alias_of);
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
       add_references (encoder, &vnode->symbol.ref_list);
@@ -883,7 +883,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
 
   node->local.local = bp_unpack_value (bp, 1);
   node->symbol.externally_visible = bp_unpack_value (bp, 1);
-  node->local.finalized = bp_unpack_value (bp, 1);
+  node->symbol.definition = bp_unpack_value (bp, 1);
   node->local.versionable = bp_unpack_value (bp, 1);
   node->local.can_change_signature = bp_unpack_value (bp, 1);
   node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
@@ -893,7 +893,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->abstract_and_needed = bp_unpack_value (bp, 1);
   node->symbol.used_from_other_partition = bp_unpack_value (bp, 1);
   node->lowered = bp_unpack_value (bp, 1);
-  node->analyzed = tag == LTO_symtab_analyzed_node;
+  node->symbol.analyzed = tag == LTO_symtab_analyzed_node;
   node->symbol.in_other_partition = bp_unpack_value (bp, 1);
   if (node->symbol.in_other_partition
       /* Avoid updating decl when we are seeing just inline clone.
@@ -909,7 +909,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
       DECL_EXTERNAL (node->symbol.decl) = 1;
       TREE_STATIC (node->symbol.decl) = 0;
     }
-  node->alias = bp_unpack_value (bp, 1);
+  node->symbol.alias = bp_unpack_value (bp, 1);
   node->frequency = (enum node_frequency)bp_unpack_value (bp, 2);
   node->only_called_at_startup = bp_unpack_value (bp, 1);
   node->only_called_at_exit = bp_unpack_value (bp, 1);
@@ -1004,7 +1004,7 @@ input_node (struct lto_file_decl_data *file_data,
       node->thunk.virtual_value = virtual_value;
       node->thunk.virtual_offset_p = (type & 4);
     }
-  if (node->thunk.thunk_p || node->alias)
+  if (node->thunk.thunk_p || node->symbol.alias)
     {
       if (streamer_read_hwi_in_range (ib, "alias nonzero flag", 0, 1))
 	{
@@ -1044,12 +1044,12 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->symbol.externally_visible = bp_unpack_value (&bp, 1);
   node->symbol.force_output = bp_unpack_value (&bp, 1);
   node->symbol.unique_name = bp_unpack_value (&bp, 1);
-  node->finalized = bp_unpack_value (&bp, 1);
-  node->alias = bp_unpack_value (&bp, 1);
+  node->symbol.definition = bp_unpack_value (&bp, 1);
+  node->symbol.alias = bp_unpack_value (&bp, 1);
   non_null_aliasof = bp_unpack_value (&bp, 1);
   node->symbol.used_from_other_partition = bp_unpack_value (&bp, 1);
   node->symbol.in_other_partition = bp_unpack_value (&bp, 1);
-  node->analyzed = (node->finalized && (!node->alias || !node->symbol.in_other_partition)); 
+  node->symbol.analyzed = (node->symbol.definition && (!node->symbol.alias || !node->symbol.in_other_partition)); 
   if (node->symbol.in_other_partition)
     {
       DECL_EXTERNAL (node->symbol.decl) = 1;

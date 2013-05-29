@@ -738,7 +738,7 @@ analyze_function (struct cgraph_node *fn, bool ipa)
 		    flags_from_decl_or_type (fn->symbol.decl),
 		    cgraph_node_cannot_return (fn));
 
-  if (fn->thunk.thunk_p || fn->alias)
+  if (fn->thunk.thunk_p || fn->symbol.alias)
     {
       /* Thunk gets propagated through, so nothing interesting happens.  */
       gcc_assert (ipa);
@@ -951,7 +951,7 @@ pure_const_write_summary (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      if (node->analyzed && has_function_state (node))
+      if (node->symbol.definition && has_function_state (node))
 	count++;
     }
 
@@ -962,7 +962,7 @@ pure_const_write_summary (void)
        lsei_next_function_in_partition (&lsei))
     {
       node = lsei_cgraph_node (lsei);
-      if (node->analyzed && has_function_state (node))
+      if (node->symbol.definition && has_function_state (node))
 	{
 	  struct bitpack_d bp;
 	  funct_state fs;
@@ -1124,7 +1124,7 @@ propagate_pure_const (void)
       int count = 0;
       node = order[i];
 
-      if (node->alias)
+      if (node->symbol.alias)
 	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1394,7 +1394,7 @@ propagate_nothrow (void)
       bool can_throw = false;
       node = order[i];
 
-      if (node->alias)
+      if (node->symbol.alias)
 	continue;
 
       /* Find the worst state for any node in the cycle.  */

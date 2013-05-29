@@ -153,7 +153,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	     cgraph_remove_unreachable_functions gets rid of them.  */
 	  gcc_assert (!e->callee->global.inlined_to);
           symtab_dissolve_same_comdat_group_list ((symtab_node) e->callee);
-	  if (e->callee->analyzed && !DECL_EXTERNAL (e->callee->symbol.decl))
+	  if (e->callee->symbol.definition && !DECL_EXTERNAL (e->callee->symbol.decl))
 	    {
 	      if (overall_size)
 	        *overall_size -= inline_summary (e->callee)->size;
@@ -236,7 +236,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	  if (!alias->callers
 	      && can_remove_node_now_p (alias, e))
 	    {
-	      next_alias = cgraph_alias_aliased_node (alias);
+	      next_alias = cgraph_alias_target (alias);
 	      cgraph_remove_node (alias);
 	      alias = next_alias;
 	    }
@@ -381,7 +381,7 @@ static bool
 preserve_function_body_p (struct cgraph_node *node)
 {
   gcc_assert (cgraph_global_info_ready);
-  gcc_assert (!node->alias && !node->thunk.thunk_p);
+  gcc_assert (!node->symbol.alias && !node->thunk.thunk_p);
 
   /* Look if there is any clone around.  */
   if (node->clones)

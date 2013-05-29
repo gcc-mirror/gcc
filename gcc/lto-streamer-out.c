@@ -1013,7 +1013,7 @@ lto_output (void)
       cgraph_node *node = dyn_cast <cgraph_node> (snode);
       if (node
 	  && lto_symtab_encoder_encode_body_p (encoder, node)
-	  && !node->alias
+	  && !node->symbol.alias
 	  && !node->thunk.thunk_p)
 	{
 #ifdef ENABLE_CHECKING
@@ -1243,10 +1243,10 @@ write_symbol (struct streamer_tree_cache_d *cache,
 
       /* When something is defined, it should have node attached.  */
       gcc_assert (alias || TREE_CODE (t) != VAR_DECL
-		  || varpool_get_node (t)->finalized);
+		  || varpool_get_node (t)->symbol.definition);
       gcc_assert (alias || TREE_CODE (t) != FUNCTION_DECL
 		  || (cgraph_get_node (t)
-		      && cgraph_get_node (t)->analyzed));
+		      && cgraph_get_node (t)->symbol.definition));
     }
 
   /* Imitate what default_elf_asm_output_external do.
