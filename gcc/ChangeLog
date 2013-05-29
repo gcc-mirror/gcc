@@ -1,3 +1,8 @@
+2013-05-29  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-cfg.c (verify_expr): Verify that BIT_FIELD_REF, REALPART_EXPR
+	and IMAGPART_EXPR do not occur within other handled_components.
+
 2013-05-29  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Guard vinfo
