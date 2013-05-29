@@ -1,3 +1,8 @@
+2013-05-29  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (initial_ix86_tune_features): Enable
+	FP Reassociation for AMD bdver1 and bdver2.
+
 2013-05-29  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-cfg.c (verify_expr): Verify that BIT_FIELD_REF, REALPART_EXPR
