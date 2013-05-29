@@ -5071,16 +5071,6 @@ gfc_trans_allocate (gfc_code * code)
 	      tmp = gfc_nullify_alloc_comp (expr->ts.u.derived, tmp, 0);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
-	  else if (al->expr->ts.type == BT_CLASS)
-	    {
-	      /* With class objects, it is best to play safe and null the
-		 memory because we cannot know if dynamic types have allocatable
-		 components or not.  */
-	      tmp = build_call_expr_loc (input_location,
-					 builtin_decl_explicit (BUILT_IN_MEMSET),
-					 3, se.expr, integer_zero_node,  memsz);
-	      gfc_add_expr_to_block (&se.pre, tmp);
-	    }
 	}
 
       gfc_add_block_to_block (&block, &se.pre);

@@ -1,3 +1,9 @@
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/auto_dealloc_2.f90: Update _free count in the dump.
+	* gfortran.dg/class_19.f03: Ditto.
+
 2013-05-29  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/vect/bb-slp-32.c: New testcase.

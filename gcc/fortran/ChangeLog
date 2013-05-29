@@ -1,6 +1,23 @@
 2013-05-28  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
+	* class.c (finalize_component): Fix coarray array refs.
+	(generate_finalization_wrapper): Only gfc_convert_type_warn
+	when the kind value is different.
+	(gfc_find_intrinsic_vtab): _copy's dst is now intent(inout).
+	(gfc_find_derived_vtab): Ditto. Enable finalization-wrapper
+	generation.
+	* module.c (MOD_VERSION): Bump.
+	(gfc_dump_module, gfc_use_module): Remove empty line in .mod.
+	* trans-array.c (gfc_conv_descriptor_token): Accept nonrestricted
+	void pointer.
+	(gfc_array_allocate, structure_alloc_comps): Don't nullify for
+	BT_CLASS allocations.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
 	* resolve.c (gfc_resolve_finalizers): Remove not implemented error.
 
 2013-05-28  Tobias Burnus  <burnus@net-b.de>

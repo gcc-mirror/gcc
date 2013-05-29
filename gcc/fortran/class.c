@@ -832,17 +832,18 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   ref->u.c.component = comp;
   e->ts = comp->ts;
 
-  if (comp->attr.dimension
+  if (comp->attr.dimension || comp->attr.codimension
       || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
-	  && CLASS_DATA (comp)->attr.dimension))
+	  && (CLASS_DATA (comp)->attr.dimension
+	      || CLASS_DATA (comp)->attr.codimension)))
     {
       ref->next = gfc_get_ref ();
       ref->next->type = REF_ARRAY;
-      ref->next->u.ar.type = AR_FULL;
       ref->next->u.ar.dimen = 0;
       ref->next->u.ar.as = comp->ts.type == BT_CLASS ? CLASS_DATA (comp)->as
 							: comp->as;
       e->rank = ref->next->u.ar.as->rank;
+      ref->next->u.ar.type = e->rank ? AR_FULL : AR_ELEMENT;
     }
 
   /* Call DEALLOCATE (comp, stat=ignore).  */
@@ -1640,7 +1641,8 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
   rank = gfc_build_intrinsic_call (sub_ns, GFC_ISYM_RANK, "rank",
 				   gfc_current_locus, 1,
 				   gfc_lval_expr_from_sym (array));
-  gfc_convert_type (rank, &idx->ts, 2);
+  if (rank->ts.kind != idx->ts.kind)
+    gfc_convert_type_warn (rank, &idx->ts, 2, 0);
 
   /* Create is_contiguous variable.  */
   gfc_get_symbol ("is_contiguous", sub_ns, &is_contiguous);
@@ -2363,7 +2365,7 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		  dst->attr.flavor = FL_VARIABLE;
 		  dst->attr.dummy = 1;
 		  dst->attr.artificial = 1;
-		  dst->attr.intent = INTENT_OUT;
+		  dst->attr.intent = INTENT_INOUT;
 		  gfc_set_sym_referenced (dst);
 		  copy->formal->next = gfc_get_formal_arglist ();
 		  copy->formal->next->sym = dst;
@@ -2382,9 +2384,6 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 		 components and the calls to finalization subroutines.
 		 Note: The actual wrapper function can only be generated
 		 at resolution time.  */
-	    /* FIXME: Enable ABI-breaking "_final" generation.  */
-	    if (0)
-	    {
 	      if (!gfc_add_component (vtype, "_final", &c))
 		goto cleanup;
 	      c->attr.proc_pointer = 1;
@@ -2392,7 +2391,6 @@ gfc_find_derived_vtab (gfc_symbol *derived)
 	      c->tb = XCNEW (gfc_typebound_proc);
 	      c->tb->ppc = 1;
 	      generate_finalization_wrapper (derived, ns, tname, c);
-	    }
 
 	      /* Add procedure pointers for type-bound procedures.  */
 	      if (!derived->attr.unlimited_polymorphic)
@@ -2651,7 +2649,7 @@ gfc_find_intrinsic_vtab (gfc_typespec *ts)
 	      dst->ts.kind = ts->kind;
 	      dst->attr.flavor = FL_VARIABLE;
 	      dst->attr.dummy = 1;
-	      dst->attr.intent = INTENT_OUT;
+	      dst->attr.intent = INTENT_INOUT;
 	      gfc_set_sym_referenced (dst);
 	      copy->formal->next = gfc_get_formal_arglist ();
 	      copy->formal->next->sym = dst;
