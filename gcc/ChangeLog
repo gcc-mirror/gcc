@@ -1,3 +1,15 @@
+2013-05-29  Steve Ellcey  <sellcey@imgtec.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add micromips
+	and mips16 directories.
+	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Add micromips and
+	mips16.
+	(MULTILIB_DIRNAMES): Ditto.
+	(MULTILIB_EXCEPTIONS): Add new exceptions.
+	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Add micromips.
+	(MULTILIB_DIRNAMES): Ditto.
+	(MULTILIB_EXCEPTIONS): Add new exceptions.
+
 2012-05-29  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
 	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
