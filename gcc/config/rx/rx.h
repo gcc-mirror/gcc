@@ -29,9 +29,22 @@
           builtin_define ("__RX610__");		\
           builtin_assert ("machine=RX610");	\
 	}					\
-     else					\
-        builtin_assert ("machine=RX600");	\
-      						\
+      else if (rx_cpu_type == RX100)		\
+	{					\
+          builtin_define ("__RX100__");		\
+          builtin_assert ("machine=RX100");	\
+	}					\
+      else if (rx_cpu_type == RX200)		\
+	{					\
+          builtin_define ("__RX200__");		\
+          builtin_assert ("machine=RX200");	\
+        }					\
+      else if (rx_cpu_type == RX600)		\
+        {					\
+          builtin_define ("__RX600__");		\
+          builtin_assert ("machine=RX600");	\
+        }					\
+						\
       if (TARGET_BIG_ENDIAN_DATA)		\
 	builtin_define ("__RX_BIG_ENDIAN__");	\
       else					\
@@ -60,6 +73,7 @@
 #undef  CC1_SPEC
 #define CC1_SPEC "\
   %{mas100-syntax:%{gdwarf*:%e-mas100-syntax is incompatible with -gdwarf}} \
+  %{mcpu=rx100:%{fpu:%erx100 cpu does not have FPU hardware}} \
   %{mcpu=rx200:%{fpu:%erx200 cpu does not have FPU hardware}}"
 
 #undef  STARTFILE_SPEC

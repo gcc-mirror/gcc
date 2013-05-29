@@ -30,7 +30,7 @@
 ;; then all operations on doubles have to be handled by
 ;; library functions.
 (define_mode_iterator register_modes
-  [(SF "ALLOW_RX_FPU_INSNS") (SI "") (HI "") (QI "")])
+  [(SF "") (SI "") (HI "") (QI "")])
 
 (define_constants
   [
@@ -2620,4 +2620,22 @@
 	    (const:SI (unspec:SI [(match_operand:SI 1)] UNSPEC_PID_ADDR)))]
   ""
   ""
+)
+
+(define_insn "movdi"
+  [(set:DI (match_operand:DI 0 "nonimmediate_operand" "=rm")
+	   (match_operand:DI 1 "general_operand"      "rmi"))]
+  "TARGET_ENABLE_LRA || 1"
+  { return rx_gen_move_template (operands, false); }
+  [(set_attr "length" "16")
+   (set_attr "timings" "22")]
+)
+
+(define_insn "movdf"
+  [(set:DF (match_operand:DF 0 "nonimmediate_operand" "=rm")
+	   (match_operand:DF 1 "general_operand"      "rmi"))]
+  "TARGET_ENABLE_LRA || 1"
+  { return rx_gen_move_template (operands, false); }
+  [(set_attr "length" "16")
+   (set_attr "timings" "22")]
 )

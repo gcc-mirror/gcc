@@ -1,3 +1,13 @@
+2013-05-29  Sandeep Kumar Singh  <Sandeep.Singh2@kpitcummins.com>
+
+	* rx/rx.h (TARGET_CPU_CPP_BUILTINS): Add macros for RX100, RX200,
+	and RX600.
+	* rx/rx.opt: Add macro for rx100 with string rx100 and value
+	RX100.
+	* rx/rx-opts.h (rx_cpu_types): Add new cpu type rx100.
+	* rx/t-rx: Add rx100 under multi library matches option for nofpu
+	option.
+
 2013-05-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/57441
