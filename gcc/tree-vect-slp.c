@@ -1898,6 +1898,69 @@ vect_slp_analyze_operations (bb_vec_info bb_vinfo)
   return true;
 }
 
+
+/* Compute the scalar cost of the SLP node NODE and its children
+   and return it.  Do not account defs that are marked in LIFE and
+   update LIFE according to uses of NODE.  */
+
+static unsigned
+vect_bb_slp_scalar_cost (slp_tree node, vec<bool, va_stack> life)
+{
+  unsigned scalar_cost = 0;
+  unsigned i;
+  gimple stmt;
+  slp_tree child;
+
+  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt)
+    {
+      unsigned stmt_cost;
+      ssa_op_iter op_iter;
+      def_operand_p def_p;
+      stmt_vec_info stmt_info;
+
+      if (life[i])
+	continue;
+
+      /* If there is a non-vectorized use of the defs then the scalar
+         stmt is kept live in which case we do not account it or any
+	 required defs in the SLP children in the scalar cost.  This
+	 way we make the vectorization more costly when compared to
+	 the scalar cost.  */
+      FOR_EACH_SSA_DEF_OPERAND (def_p, stmt, op_iter, SSA_OP_DEF)
+	{
+	  imm_use_iterator use_iter;
+	  gimple use_stmt;
+	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
+	    if (!vinfo_for_stmt (use_stmt)
+		|| !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (use_stmt)))
+	      {
+		life[i] = true;
+		BREAK_FROM_IMM_USE_STMT (use_iter);
+	      }
+	}
+      if (life[i])
+	continue;
+
+      stmt_info = vinfo_for_stmt (stmt);
+      if (STMT_VINFO_DATA_REF (stmt_info))
+        {
+          if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
+            stmt_cost = vect_get_stmt_cost (scalar_load);
+          else
+            stmt_cost = vect_get_stmt_cost (scalar_store);
+        }
+      else
+        stmt_cost = vect_get_stmt_cost (scalar_stmt);
+
+      scalar_cost += stmt_cost;
+    }
+
+  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
+    scalar_cost += vect_bb_slp_scalar_cost (child, life);
+
+  return scalar_cost;
+}
+
 /* Check if vectorization of the basic block is profitable.  */
 
 static bool
@@ -1908,10 +1971,6 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
   int i, j;
   unsigned int vec_inside_cost = 0, vec_outside_cost = 0, scalar_cost = 0;
   unsigned int vec_prologue_cost = 0, vec_epilogue_cost = 0;
-  unsigned int stmt_cost;
-  gimple stmt;
-  gimple_stmt_iterator si;
-  basic_block bb = BB_VINFO_BB (bb_vinfo);
   void *target_cost_data = BB_VINFO_TARGET_COST_DATA (bb_vinfo);
   stmt_vec_info stmt_info = NULL;
   stmt_vector_for_cost body_cost_vec;
@@ -1931,26 +1990,14 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo)
     }
 
   /* Calculate scalar cost.  */
-  for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
+  FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
-      stmt = gsi_stmt (si);
-      stmt_info = vinfo_for_stmt (stmt);
-
-      if (!stmt_info || !STMT_VINFO_VECTORIZABLE (stmt_info)
-          || !PURE_SLP_STMT (stmt_info))
-        continue;
-
-      if (STMT_VINFO_DATA_REF (stmt_info))
-        {
-          if (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
-            stmt_cost = vect_get_stmt_cost (scalar_load);
-          else
-            stmt_cost = vect_get_stmt_cost (scalar_store);
-        }
-      else
-        stmt_cost = vect_get_stmt_cost (scalar_stmt);
-
-      scalar_cost += stmt_cost;
+      vec<bool, va_stack> life;
+      vec_stack_alloc (bool, life, SLP_INSTANCE_GROUP_SIZE (instance));
+      life.quick_grow_cleared (SLP_INSTANCE_GROUP_SIZE (instance));
+      scalar_cost += vect_bb_slp_scalar_cost (SLP_INSTANCE_TREE (instance),
+					      life);
+      life.release ();
     }
 
   /* Complete the target-specific cost calculation.  */
