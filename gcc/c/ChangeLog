@@ -1,3 +1,9 @@
+2013-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/57450
+	* c-array-notation.c (length_mismatch_in_expr_p): Use absu_hwi.
+	(build_array_notation_expr): Likewise.
+
 2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-typeck.c (build_array_ref): Added a check to see if array's
