@@ -1264,6 +1264,78 @@ dump_gimple_omp_single (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
 }
 
+/* Dump a GIMPLE_OMP_TARGET tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_target (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  const char *kind;
+  switch (gimple_omp_target_kind (gs))
+    {
+    case GF_OMP_TARGET_KIND_REGION:
+      kind = "";
+      break;
+    case GF_OMP_TARGET_KIND_DATA:
+      kind = " data";
+      break;
+    case GF_OMP_TARGET_KIND_UPDATE:
+      kind = " update";
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
+		       kind, gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp target");
+      pp_string (buffer, kind);
+      dump_omp_clauses (buffer, gimple_omp_target_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
+    }
+}
+
+/* Dump a GIMPLE_OMP_TEAMS tuple on the pretty_printer BUFFER.  */
+
+static void
+dump_gimple_omp_teams (pretty_printer *buffer, gimple gs, int spc, int flags)
+{
+  if (flags & TDF_RAW)
+    {
+      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
+		       gimple_omp_body (gs));
+      dump_omp_clauses (buffer, gimple_omp_teams_clauses (gs), spc, flags);
+      dump_gimple_fmt (buffer, spc, flags, " >");
+    }
+  else
+    {
+      pp_string (buffer, "#pragma omp teams");
+      dump_omp_clauses (buffer, gimple_omp_teams_clauses (gs), spc, flags);
+      if (!gimple_seq_empty_p (gimple_omp_body (gs)))
+	{
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '{');
+	  pp_newline (buffer);
+	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
+	  newline_and_indent (buffer, spc + 2);
+	  pp_character (buffer, '}');
+	}
+    }
+}
+
 /* Dump a GIMPLE_OMP_SECTIONS tuple on the pretty_printer BUFFER.  */
 
 static void
@@ -2036,6 +2108,14 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
 
     case GIMPLE_OMP_SINGLE:
       dump_gimple_omp_single (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_TARGET:
+      dump_gimple_omp_target (buffer, gs, spc, flags);
+      break;
+
+    case GIMPLE_OMP_TEAMS:
+      dump_gimple_omp_teams (buffer, gs, spc, flags);
       break;
 
     case GIMPLE_OMP_RETURN:

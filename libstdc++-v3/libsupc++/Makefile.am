@@ -48,6 +48,8 @@ sources = \
 	atexit_arm.cc \
 	atexit_thread.cc \
 	bad_alloc.cc \
+	bad_array_length.cc \
+	bad_array_new.cc \
 	bad_cast.cc \
 	bad_typeid.cc \
 	class_type_info.cc \
@@ -107,6 +109,21 @@ cp-demangle.o: cp-demangle.c
 
 
 # Use special rules for the C++11 sources so that the proper flags are passed.
+bad_array_length.lo: bad_array_length.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+bad_array_length.o: bad_array_length.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+bad_array_new.lo: bad_array_new.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+bad_array_new.o: bad_array_new.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+eh_aux_runtime.lo: eh_aux_runtime.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+eh_aux_runtime.o: eh_aux_runtime.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
 eh_ptr.lo: eh_ptr.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 eh_ptr.o: eh_ptr.cc

@@ -444,6 +444,8 @@ lower_stmt (gimple_stmt_iterator *gsi, struct lower_data *data)
 
     case GIMPLE_OMP_PARALLEL:
     case GIMPLE_OMP_TASK:
+    case GIMPLE_OMP_TARGET:
+    case GIMPLE_OMP_TEAMS:
       data->cannot_fallthru = false;
       lower_omp_directive (gsi, data);
       data->cannot_fallthru = false;

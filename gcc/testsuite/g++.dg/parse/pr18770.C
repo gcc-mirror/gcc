@@ -11,7 +11,7 @@ extern int j;
 void
 e0 (void)
 {
-  for (int i = 0;	// { dg-error "previously declared here" "prev" }
+  for (int i = 0;	// { dg-message "previously declared here" "prev" }
        i < 10; ++i)
     {
       int i = 2;	// { dg-error "redeclaration" "redecl" }
@@ -24,7 +24,7 @@ e1 (void)
 {
   int i;
   for (i = 0;
-       int k = j; i++)	// { dg-error "previously declared here" "prev" }
+       int k = j; i++)	// { dg-message "previously declared here" "prev" }
     {
       int k = 2;	// { dg-error "redeclaration" "redecl" }
       foo (k);
@@ -34,7 +34,7 @@ e1 (void)
 void
 e2 (void)
 {
-  if (int i = 1)	// { dg-error "previously declared here" "prev" }
+  if (int i = 1)	// { dg-message "previously declared here" "prev" }
     {
       int i = 2;	// { dg-error "redeclaration" "redecl" }
       foo (i);
@@ -44,7 +44,7 @@ e2 (void)
 void
 e3 (void)
 {
-  if (int i = 1)	// { dg-error "previously declared here" "prev" }
+  if (int i = 1)	// { dg-message "previously declared here" "prev" }
     {
       foo (i);
     }
@@ -58,7 +58,7 @@ e3 (void)
 void
 e4 (void)
 {
-  while (int i = 1)	// { dg-error "previously declared here" "prev" }
+  while (int i = 1)	// { dg-message "previously declared here" "prev" }
     {
       int i = 2;	// { dg-error "redeclaration" "redecl" }
       foo (i);
@@ -68,7 +68,7 @@ e4 (void)
 void
 e5 (void)
 {
-  switch (int i = j)	// { dg-error "previously declared here" "prev" }
+  switch (int i = j)	// { dg-message "previously declared here" "prev" }
     {
     int i;		// { dg-error "redeclaration" "redecl" }
     default:

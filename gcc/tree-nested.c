@@ -1291,6 +1291,22 @@ convert_nonlocal_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       info->suppress_expansion = save_suppress;
       break;
 
+    case GIMPLE_OMP_TARGET:
+      save_suppress = info->suppress_expansion;
+      convert_nonlocal_omp_clauses (gimple_omp_target_clauses_ptr (stmt), wi);
+      walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
+		 info, gimple_omp_body_ptr (stmt));
+      info->suppress_expansion = save_suppress;
+      break;
+
+    case GIMPLE_OMP_TEAMS:
+      save_suppress = info->suppress_expansion;
+      convert_nonlocal_omp_clauses (gimple_omp_teams_clauses_ptr (stmt), wi);
+      walk_body (convert_nonlocal_reference_stmt, convert_nonlocal_reference_op,
+		 info, gimple_omp_body_ptr (stmt));
+      info->suppress_expansion = save_suppress;
+      break;
+
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
@@ -1714,6 +1730,22 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
       info->suppress_expansion = save_suppress;
       break;
 
+    case GIMPLE_OMP_TARGET:
+      save_suppress = info->suppress_expansion;
+      convert_local_omp_clauses (gimple_omp_target_clauses_ptr (stmt), wi);
+      walk_body (convert_local_reference_stmt, convert_local_reference_op,
+		 info, gimple_omp_body_ptr (stmt));
+      info->suppress_expansion = save_suppress;
+      break;
+
+    case GIMPLE_OMP_TEAMS:
+      save_suppress = info->suppress_expansion;
+      convert_local_omp_clauses (gimple_omp_teams_clauses_ptr (stmt), wi);
+      walk_body (convert_local_reference_stmt, convert_local_reference_op,
+		 info, gimple_omp_body_ptr (stmt));
+      info->suppress_expansion = save_suppress;
+      break;
+
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
@@ -2071,6 +2103,8 @@ convert_gimple_call (gimple_stmt_iterator *gsi, bool *handled_ops_p,
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SECTION:
     case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_TARGET:
+    case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_MASTER:
     case GIMPLE_OMP_ORDERED:
     case GIMPLE_OMP_CRITICAL:

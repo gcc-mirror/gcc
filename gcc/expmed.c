@@ -2122,6 +2122,20 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 	op1 = SUBREG_REG (op1);
     }
 
+  /* Canonicalize rotates by constant amount.  If op1 is bitsize / 2,
+     prefer left rotation, if op1 is from bitsize / 2 + 1 to
+     bitsize - 1, use other direction of rotate with 1 .. bitsize / 2 - 1
+     amount instead.  */
+  if (rotate
+      && CONST_INT_P (op1)
+      && IN_RANGE (INTVAL (op1), GET_MODE_BITSIZE (mode) / 2 + left,
+		   GET_MODE_BITSIZE (mode) - 1))
+    {
+      op1 = GEN_INT (GET_MODE_BITSIZE (mode) - INTVAL (op1));
+      left = !left;
+      code = left ? LROTATE_EXPR : RROTATE_EXPR;
+    }
+
   if (op1 == const0_rtx)
     return shifted;
 

@@ -5788,8 +5788,11 @@ vect_transform_loop (loop_vec_info loop_vinfo)
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location, "LOOP VECTORIZED.");
-  if (loop->inner && dump_enabled_p ())
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-		     "OUTER LOOP VECTORIZED.");
+    {
+      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+		       "LOOP VECTORIZED\n");
+      if (loop->inner)
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "OUTER LOOP VECTORIZED\n");
+    }
 }

@@ -185,6 +185,7 @@ endif
 GCC_LINKERFLAGS = $(filter-out -Werror, $(ALL_LINKERFLAGS))
 
 GCC_LINK=$(LINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
+GCC_LLINK=$(LLINKER) $(GCC_LINKERFLAGS) $(LDFLAGS)
 
 # Lists of files for various purposes.
 
@@ -562,7 +563,8 @@ TARGET_ADA_SRCS =
 # Since the RTL should be built with the latest compiler, remove the
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 gnat1$(exeext): $(TARGET_ADA_SRCS) $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a $(LIBDEPS)
-	+$(GCC_LINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)
+	+$(GCC_LLINK) -o $@ $(GNAT1_OBJS) $(ADA_BACKEND) \
+	  libcommon-target.a $(LIBS) $(SYSLIBS) $(BACKENDLIBS) $(CFLAGS)
 	$(RM) stamp-gnatlib2-rts stamp-tools
 
 gnatbind$(exeext): ada/b_gnatb.o $(CONFIG_H) $(GNATBIND_OBJS) ggc-none.o libcommon-target.a $(LIBDEPS)

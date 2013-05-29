@@ -96,6 +96,9 @@
 (define_register_constraint "c" "CC_REG"
  "@internal The condition code register.")
 
+(define_register_constraint "Cs" "CALLER_SAVE_REGS"
+ "@internal The caller save registers.  Useful for sibcalls.")
+
 (define_constraint "I"
  "In ARM/Thumb-2 state a constant that can be used as an immediate value in a
   Data Processing instruction.  In Thumb-1 state a constant in the range
@@ -400,3 +403,9 @@
 ;; Additionally, we used to have a Q constraint in Thumb state, but
 ;; this wasn't really a valid memory constraint.  Again, all uses of
 ;; this now seem to have been removed.
+
+(define_constraint "Ss"
+ "@internal
+  Ss is a symbol reference."
+ (match_code "symbol_ref")
+)

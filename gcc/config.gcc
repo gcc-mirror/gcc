@@ -246,6 +246,7 @@ md_file=
 case ${target} in
    picochip-*				\
  | score-*				\
+ | *-*-solaris2.9*			\
  )
     if test "x$enable_obsolete" != xyes; then
       echo "*** Configuration ${target} is obsolete." >&2

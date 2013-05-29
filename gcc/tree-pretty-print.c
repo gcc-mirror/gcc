@@ -2347,6 +2347,27 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
       pp_string (buffer, "#pragma omp distribute");
       goto dump_omp_loop;
 
+    case OMP_TEAMS:
+      pp_string (buffer, "#pragma omp teams");
+      dump_omp_clauses (buffer, OMP_TEAMS_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_TARGET_DATA:
+      pp_string (buffer, "#pragma omp target data");
+      dump_omp_clauses (buffer, OMP_TARGET_DATA_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_TARGET:
+      pp_string (buffer, "#pragma omp target");
+      dump_omp_clauses (buffer, OMP_TARGET_CLAUSES (node), spc, flags);
+      goto dump_omp_body;
+
+    case OMP_TARGET_UPDATE:
+      pp_string (buffer, "#pragma omp target update");
+      dump_omp_clauses (buffer, OMP_TARGET_UPDATE_CLAUSES (node), spc, flags);
+      is_expr = false;
+      break;
+
     dump_omp_loop:
       dump_omp_clauses (buffer, OMP_FOR_CLAUSES (node), spc, flags);
 
@@ -3325,7 +3346,7 @@ dump_function_header (FILE *dump_file, tree fdecl, int flags)
     fprintf (dump_file, ", decl_uid=%d", DECL_UID (fdecl));
   if (node)
     {
-      fprintf (dump_file, ", cgraph_uid=%d)%s\n\n", node->uid,
+      fprintf (dump_file, ", symbol_order=%d)%s\n\n", node->symbol.order,
                node->frequency == NODE_FREQUENCY_HOT
                ? " (hot)"
                : node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED

@@ -2002,8 +2002,8 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	  if (TREE_CODE (base) == MEM_REF && TREE_CODE (ref->base) == MEM_REF
 	      && TREE_OPERAND (base, 0) == TREE_OPERAND (ref->base, 0))
 	    {
-	      if (!tree_int_cst_equal (TREE_OPERAND (base, 0),
-				       TREE_OPERAND (ref->base, 0)))
+	      if (!tree_int_cst_equal (TREE_OPERAND (base, 1),
+				       TREE_OPERAND (ref->base, 1)))
 		{
 		  double_int off1 = mem_ref_offset (base);
 		  off1 = off1.lshift (BITS_PER_UNIT == 8

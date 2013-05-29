@@ -260,7 +260,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
 #ifdef ENABLE_CHECKING
   /* Verify that estimated growth match real growth.  Allow off-by-one
      error due to INLINE_SIZE_SCALE roudoff errors.  */
-  gcc_assert (!update_overall_summary || !overall_size
+  gcc_assert (!update_overall_summary || !overall_size || new_edges_found
 	      || abs (estimated_growth - (new_size - old_size)) <= 1
 	      /* FIXME: a hack.  Edges with false predicate are accounted
 		 wrong, we should remove them from callgraph.  */

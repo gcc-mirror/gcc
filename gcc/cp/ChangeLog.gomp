@@ -1,3 +1,21 @@
+2013-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_cancelkind): Remove diagnostics.
+	(cp_parser_omp_all_clauses): Require that OMP_CLAUSE_{TO,FROM}
+	and OMP_CLAUSE_{PARALLEL,FOR,SECTIONS,TASKGROUP} must be first in
+	the list of clauses.
+	(OMP_TEAMS_CLAUSE_MASK, OMP_TARGET_CLAUSE_MASK,
+	OMP_TARGET_DATA_CLAUSE_MASK, OMP_TARGET_UPDATE_CLAUSE_MASK,
+	OMP_DISTRIBUTE_CLAUSE_MASK): Define.
+	(cp_parser_omp_teams, cp_parser_omp_target, cp_parser_omp_target_data,
+	cp_parser_omp_target_update, cp_parser_omp_distribute): New functions.
+	(cp_parser_omp_construct): Handle PRAGMA_OMP_DISTRIBUTE and
+	PRAGMA_OMP_TEAMS.
+	(cp_parser_pragma): Handle PRAGMA_OMP_DISTRIBUTE, PRAGMA_OMP_TEAMS
+	and PRAGMA_OMP_TARGET.
+	* pt.c (tsubst_expr): Handle OMP_TEAMS, OMP_TARGET, OMP_TARGET_DATA
+	and OMP_TARGET_UPDATE.
+
 2013-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (cp_decl_specifier_seq): Add omp_declare_simd_clauses

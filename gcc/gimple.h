@@ -115,6 +115,10 @@ enum gf_mask {
     GF_OMP_FOR_KIND_SIMD	= 1 << 0,
     GF_OMP_FOR_KIND_FOR_SIMD	= 2 << 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 3 << 0,
+    GF_OMP_TARGET_KIND_MASK	= 3 << 0,
+    GF_OMP_TARGET_KIND_REGION	= 0 << 0,
+    GF_OMP_TARGET_KIND_DATA	= 1 << 0,
+    GF_OMP_TARGET_KIND_UPDATE	= 2 << 0,
 
     /* True on an GIMPLE_OMP_RETURN statement if the return does not require
        a thread synchronization via some sort of barrier.  The exact barrier
@@ -618,7 +622,7 @@ struct GTY(()) gimple_statement_omp_continue {
   tree control_use;
 };
 
-/* GIMPLE_OMP_SINGLE */
+/* GIMPLE_OMP_SINGLE, GIMPLE_OMP_TARGET, GIMPLE_OMP_TEAMS */
 
 struct GTY(()) gimple_statement_omp_single {
   /* [ WORD 1-7 ]  */
@@ -805,7 +809,7 @@ gimple gimple_build_switch_nlabels (unsigned, tree, tree);
 gimple gimple_build_switch (tree, tree, vec<tree> );
 gimple gimple_build_omp_parallel (gimple_seq, tree, tree, tree);
 gimple gimple_build_omp_task (gimple_seq, tree, tree, tree, tree, tree, tree);
-gimple gimple_build_omp_for (gimple_seq, tree, size_t, gimple_seq);
+gimple gimple_build_omp_for (gimple_seq, int, tree, size_t, gimple_seq);
 gimple gimple_build_omp_critical (gimple_seq, tree);
 gimple gimple_build_omp_section (gimple_seq);
 gimple gimple_build_omp_continue (tree, tree);
@@ -815,6 +819,8 @@ gimple gimple_build_omp_ordered (gimple_seq);
 gimple gimple_build_omp_sections (gimple_seq, tree);
 gimple gimple_build_omp_sections_switch (void);
 gimple gimple_build_omp_single (gimple_seq, tree);
+gimple gimple_build_omp_target (gimple_seq, int, tree);
+gimple gimple_build_omp_teams (gimple_seq, tree);
 gimple gimple_build_cdt (tree, tree);
 gimple gimple_build_omp_atomic_load (tree, tree);
 gimple gimple_build_omp_atomic_store (tree);
@@ -1264,6 +1270,8 @@ gimple_has_substatements (gimple g)
     case GIMPLE_OMP_TASK:
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
+    case GIMPLE_OMP_TARGET:
+    case GIMPLE_OMP_TEAMS:
     case GIMPLE_OMP_CRITICAL:
     case GIMPLE_WITH_CLEANUP_EXPR:
     case GIMPLE_TRANSACTION:
@@ -1691,7 +1699,7 @@ static inline unsigned
 gimple_omp_subcode (const_gimple s)
 {
   gcc_gimple_checking_assert (gimple_code (s) >= GIMPLE_OMP_ATOMIC_LOAD
-	      && gimple_code (s) <= GIMPLE_OMP_SINGLE);
+	      && gimple_code (s) <= GIMPLE_OMP_TEAMS);
   return s->gsbase.subcode;
 }
 
@@ -4604,6 +4612,87 @@ gimple_omp_single_set_clauses (gimple gs, tree clauses)
 }
 
 
+/* Return the clauses associated with OMP_TARGET GS.  */
+
+static inline tree
+gimple_omp_target_clauses (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return gs->gimple_omp_single.clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP_TARGET GS.  */
+
+static inline tree *
+gimple_omp_target_clauses_ptr (gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  return &gs->gimple_omp_single.clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP_TARGET GS.  */
+
+static inline void
+gimple_omp_target_set_clauses (gimple gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TARGET);
+  gs->gimple_omp_single.clauses = clauses;
+}
+
+
+/* Return the kind of OMP target statemement.  */
+
+static inline int
+gimple_omp_target_kind (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TARGET);
+  return (gimple_omp_subcode (g) & GF_OMP_TARGET_KIND_MASK);
+}
+
+
+/* Set the OMP target kind.  */
+
+static inline void
+gimple_omp_target_set_kind (gimple g, int kind)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_TARGET);
+  g->gsbase.subcode = (g->gsbase.subcode & ~GF_OMP_TARGET_KIND_MASK)
+		      | (kind & GF_OMP_TARGET_KIND_MASK);
+}
+
+
+/* Return the clauses associated with OMP_TEAMS GS.  */
+
+static inline tree
+gimple_omp_teams_clauses (const_gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TEAMS);
+  return gs->gimple_omp_single.clauses;
+}
+
+
+/* Return a pointer to the clauses associated with OMP_TEAMS GS.  */
+
+static inline tree *
+gimple_omp_teams_clauses_ptr (gimple gs)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TEAMS);
+  return &gs->gimple_omp_single.clauses;
+}
+
+
+/* Set CLAUSES to be the clauses associated with OMP_TEAMS GS.  */
+
+static inline void
+gimple_omp_teams_set_clauses (gimple gs, tree clauses)
+{
+  GIMPLE_CHECK (gs, GIMPLE_OMP_TEAMS);
+  gs->gimple_omp_single.clauses = clauses;
+}
+
+
 /* Return the clauses associated with OMP_SECTIONS GS.  */
 
 static inline tree
@@ -4946,6 +5035,8 @@ gimple_return_set_retval (gimple gs, tree retval)
     case GIMPLE_OMP_SECTIONS:			\
     case GIMPLE_OMP_SECTIONS_SWITCH:		\
     case GIMPLE_OMP_SINGLE:			\
+    case GIMPLE_OMP_TARGET:			\
+    case GIMPLE_OMP_TEAMS:			\
     case GIMPLE_OMP_SECTION:			\
     case GIMPLE_OMP_MASTER:			\
     case GIMPLE_OMP_ORDERED:			\

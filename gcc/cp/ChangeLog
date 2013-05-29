@@ -1,3 +1,99 @@
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57327
+	* pt.c (unify_no_common_base): Swap arg and parm arguments to inform.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/10207
+	* parser.c (cp_parser_postfix_expression): Use cp_parser_braced_list
+	instead of cp_parser_initializer_list for compound-literals.
+
+2013-05-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57175
+	* typeck.c (check_return_expr): Reverse the alignment comparison.
+
+2013-05-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/18126
+	* parser.c (cp_parser_sizeof_operand): As a GNU Extension, parse
+	correctly sizeof compound-literal; update comments.
+
+2013-05-16  Marc Glisse  <marc.glisse@inria.fr>
+
+	* call.c (build_conditional_expr_1): Use cp_build_binary_op
+	instead of directly calling fold_build2.
+
+2013-05-16  Jason Merrill  <jason@redhat.com>
+
+	* Make-lang.in (cc1plus$(exeext)): Use link mutex.
+
+	PR c++/57279
+	* decl.c (grokdeclarator): Allow member function qualifiers in
+	TYPENAME context in C++11 mode.
+
+2013-05-16  Dodji Seketeli  <dodji@redhat.com>
+
+	PR c++/56782 - Regression with empty pack expansions
+	* pt.c (use_pack_expansion_extra_args_p): When at least a
+	parameter pack has an empty argument pack, and another parameter
+	pack has no argument pack at all, use the PACK_EXPANSION_EXTRA
+	mechanism.
+
+2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.c (pushdecl_maybe_friend_1): Replace pairs of
+	warning_at and permerror with warning_at/inform and permerror/
+	inform, respectively.
+
+2013-05-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/31952
+	* name-lookup.c (pushdecl_maybe_friend_1): Diagnose illegal
+	redeclarations.
+
+2013-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57243
+	* parser.c (cp_parser_range_for): Call complete_type.
+
+	PR c++/57041
+	* pt.c (tsubst_copy_and_build): Don't recur into a designator.
+
+2013-05-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53903
+	* method.c (defaulted_late_check): Check for compatible exception
+	specification out of class explicitly defaulted functions too.
+
+2013-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56998
+	* semantics.c (potential_constant_expression_1): Make sure the
+	called function is potentially constant.
+	* call.c (null_ptr_cst_p): Revert earlier change.
+
+2013-05-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56998
+	* call.c (null_ptr_cst_p): An expression with side-effects can't
+	be a C++03 null pointer constant.
+
+	PR c++/57041
+	* decl.c (reshape_init_class): Handle error_mark_node.
+
+	PR c++/57254
+	* typeck.c (merge_types): Propagate ref-qualifier
+	in METHOD_TYPE case.
+
+	PR c++/57253
+	* decl.c (grokdeclarator): Apply ref-qualifier
+	in the TYPENAME case.
+
+	PR c++/57252
+	* decl.c (decls_match): Compare ref-qualifiers.
+
 2013-05-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57196

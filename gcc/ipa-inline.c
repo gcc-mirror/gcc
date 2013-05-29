@@ -218,8 +218,8 @@ report_inline_failed_reason (struct cgraph_edge *e)
   if (dump_file)
     {
       fprintf (dump_file, "  not inlinable: %s/%i -> %s/%i, %s\n",
-	       xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
-	       xstrdup (cgraph_node_name (e->callee)), e->callee->uid,
+	       xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
+	       xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order,
 	       cgraph_inline_failed_string (e->inline_failed));
     }
 }
@@ -424,8 +424,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "call is cold and code would grow by %i\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
-		     xstrdup (cgraph_node_name (callee)), callee->uid,
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (callee)), callee->symbol.order,
 		     growth);
 	  want_inline = false;
 	}
@@ -434,8 +435,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	  if (dump_file)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "growth %i exceeds --param early-inlining-insns\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
-		     xstrdup (cgraph_node_name (callee)), callee->uid,
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (callee)), callee->symbol.order,
 		     growth);
 	  want_inline = false;
 	}
@@ -446,8 +448,9 @@ want_early_inline_function_p (struct cgraph_edge *e)
 	    fprintf (dump_file, "  will not early inline: %s/%i->%s/%i, "
 		     "growth %i exceeds --param early-inlining-insns "
 		     "divided by number of calls\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->uid,
-		     xstrdup (cgraph_node_name (callee)), callee->uid,
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (callee)), callee->symbol.order,
 		     growth);
 	  want_inline = false;
 	}
@@ -851,9 +854,9 @@ edge_badness (struct cgraph_edge *edge, bool dump)
     {
       fprintf (dump_file, "    Badness calculation for %s/%i -> %s/%i\n",
 	       xstrdup (cgraph_node_name (edge->caller)),
-	       edge->caller->uid,
+	       edge->caller->symbol.order,
 	       xstrdup (cgraph_node_name (callee)),
-	       edge->callee->uid);
+	       edge->callee->symbol.order);
       fprintf (dump_file, "      size growth %i, time %i ",
 	       growth,
 	       edge_time);
@@ -1002,9 +1005,9 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	      fprintf (dump_file,
 		       "  decreasing badness %s/%i -> %s/%i, %i to %i\n",
 		       xstrdup (cgraph_node_name (edge->caller)),
-		       edge->caller->uid,
+		       edge->caller->symbol.order,
 		       xstrdup (cgraph_node_name (edge->callee)),
-		       edge->callee->uid,
+		       edge->callee->symbol.order,
 		       (int)n->key,
 		       badness);
 	    }
@@ -1019,9 +1022,9 @@ update_edge_key (fibheap_t heap, struct cgraph_edge *edge)
 	   fprintf (dump_file,
 		    "  enqueuing call %s/%i -> %s/%i, badness %i\n",
 		    xstrdup (cgraph_node_name (edge->caller)),
-		    edge->caller->uid,
+		    edge->caller->symbol.order,
 		    xstrdup (cgraph_node_name (edge->callee)),
-		    edge->callee->uid,
+		    edge->callee->symbol.order,
 		    badness);
 	 }
       edge->aux = fibheap_insert (heap, badness, edge);
@@ -1465,7 +1468,7 @@ inline_small_functions (void)
       {
 	if (dump_file)
 	  fprintf (dump_file, "Enqueueing calls of %s/%i.\n",
-		   cgraph_node_name (node), node->uid);
+		   cgraph_node_name (node), node->symbol.order);
 
 	for (edge = node->callers; edge; edge = edge->next_caller)
 	  if (edge->inline_failed
@@ -1524,14 +1527,14 @@ inline_small_functions (void)
       if (dump_file)
 	{
 	  fprintf (dump_file,
-		   "\nConsidering %s with %i size\n",
-		   cgraph_node_name (callee),
+		   "\nConsidering %s/%i with %i size\n",
+		   cgraph_node_name (callee), callee->symbol.order,
 		   inline_summary (callee)->size);
 	  fprintf (dump_file,
-		   " to be inlined into %s in %s:%i\n"
+		   " to be inlined into %s/%i in %s:%i\n"
 		   " Estimated growth after inlined into all is %+i insns.\n"
 		   " Estimated badness is %i, frequency %.2f.\n",
-		   cgraph_node_name (edge->caller),
+		   cgraph_node_name (edge->caller), edge->caller->symbol.order,
 		   flag_wpa ? "unknown"
 		   : gimple_filename ((const_gimple) edge->call_stmt),
 		   flag_wpa ? -1
