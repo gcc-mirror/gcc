@@ -1,3 +1,8 @@
+2013-05-29  Teresa Johnson  <tejohnson@google.com>
+
+	* passes.c (dump_passes): Use FOR_EACH_FUNCTION since
+	functions are not yet marked as defined.
+
 2013-05-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>
