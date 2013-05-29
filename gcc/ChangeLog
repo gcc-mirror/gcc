@@ -1,3 +1,7 @@
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* passes.c (init_optimization_passes): Move OMP expansion into lowering.
+
 2013-05-29  Easwaran Raman  <eraman@google.com>
 
 	PR tree-optimization/57442
