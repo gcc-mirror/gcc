@@ -1,3 +1,16 @@
+2012-05-29  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_symbol_type): Define
+	SYMBOL_TINY_ABSOLUTE.
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately): Handle
+	SYMBOL_TINY_ABSOLUTE.
+	(aarch64_expand_mov_immediate): Likewise.
+	(aarch64_classify_symbol): Likewise.
+	(aarch64_mov_operand_p): Remove ATTRIBUTE_UNUSED.
+	Permit SYMBOL_TINY_ABSOLUTE.
+	* config/aarch64/predicates.md (aarch64_mov_operand): Permit CONST.
+
 2013-05-29  Chris Schlumberger-Socha <chris.schlumberger-socha@arm.com>
 	    Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
