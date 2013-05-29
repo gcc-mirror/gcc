@@ -116,7 +116,7 @@ length_mismatch_in_expr_p (location_t loc, tree **list, size_t x, size_t y)
 		{
 		  l_node = int_cst_value (list[ii][jj]);
 		  l_start = int_cst_value (start);
-		  if (abs (l_start) != abs (l_node))
+		  if (absu_hwi (l_start) != absu_hwi (l_node))
 		    {
 		      error_at (loc, "length mismatch in expression");
 		      return true;
@@ -1561,7 +1561,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
       HOST_WIDE_INT r_length = int_cst_value (rhs_length[0][0]);
       /* Length can be negative or positive.  As long as the magnitude is OK,
 	 then the array notation is valid.  */
-      if (abs (l_length) != abs (r_length))
+      if (absu_hwi (l_length) != absu_hwi (r_length))
 	{
 	  error_at (location, "length mismatch between LHS and RHS");
 	  pop_stmt_list (an_init);
