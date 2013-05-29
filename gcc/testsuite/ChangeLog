@@ -1,3 +1,7 @@
+2013-05-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-32.c: New testcase.
+
 2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/array_test1.c: New test.

@@ -1,3 +1,11 @@
+2013-05-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): New function
+	computing scalar cost offsetted by stmts that are kept live
+	by scalar uses.
+	(vect_bb_vectorization_profitable_p): Use vect_bb_slp_scalar_cost
+	for computation of scalar cost.
+
 2013-05-28  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips-cpus.def (mips32r2): Change processor type.
