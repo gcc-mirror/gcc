@@ -102,6 +102,9 @@ static GTY(()) vec<tree, va_gc> *no_linkage_decls;
 
 int at_eof;
 
+/* If non-zero, implicit "omp declare target" attribute is added into the
+   attribute lists.  */
+int current_omp_declare_target_attribute;
 
 
 /* Return a member function type (a METHOD_TYPE), given FNTYPE (a
@@ -1330,6 +1333,27 @@ cp_check_const_attributes (tree attributes)
     }
 }
 
+/* Return true if TYPE is an OpenMP mappable type.  */
+static bool
+cp_omp_mappable_type (tree type)
+{
+  /* Mappable type has to be complete.  */
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    return false;
+  /* A mappable type cannot contain virtual members.  */
+  if (CLASS_TYPE_P (type) && CLASSTYPE_VTABLES (type))
+    return false;
+  /* All data members must be non-static.  */
+  if (CLASS_TYPE_P (type))
+    {
+      tree field;
+      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+	if (TREE_CODE (field) == VAR_DECL)
+	  return false;
+    }
+  return true;
+}
+
 /* Like decl_attributes, but handle C++ complexity.  */
 
 void
@@ -1338,6 +1362,30 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
   if (*decl == NULL_TREE || *decl == void_type_node
       || *decl == error_mark_node)
     return;
+
+  /* Add implicit "omp declare target" attribute if requested.  */
+  if (current_omp_declare_target_attribute
+      && (TREE_CODE (*decl) == VAR_DECL
+	  || TREE_CODE (*decl) == FUNCTION_DECL))
+    {
+      if (TREE_CODE (*decl) == VAR_DECL
+	  && RECORD_OR_UNION_CODE_P (TREE_CODE (CP_DECL_CONTEXT (*decl))))
+	error ("%q+D static data member inside of declare target directive",
+	       *decl);
+      else if (TREE_CODE (*decl) == VAR_DECL
+	       && (TREE_CODE (CP_DECL_CONTEXT (*decl)) == FUNCTION_DECL
+		   || (current_function_decl && !DECL_EXTERNAL (*decl))))
+	error ("%q+D in block scope inside of declare target directive",
+	       *decl);
+      else if (!processing_template_decl
+	       && TREE_CODE (*decl) == VAR_DECL
+	       && !cp_omp_mappable_type (TREE_TYPE (*decl)))
+	error ("%q+D in declare target directive does not have mappable type",
+	       *decl);
+      else
+	attributes = tree_cons (get_identifier ("omp declare target"),
+				NULL_TREE, attributes);
+    }
 
   if (processing_template_decl)
     {

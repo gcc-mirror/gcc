@@ -1,3 +1,13 @@
+2013-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (check_omp_nesting_restrictions): Add some
+	accelerator related nesting restrictions.
+	(scan_omp_1_stmt): Call check_omp_nesting_restrictions
+	even for GOMP_taskgroup_{start,end}.
+	* gimplify.c (omp_notice_threadprivate_variable): Fix a typo.
+	(gimplify_body): For functions with "omp declare target" attribute
+	add ORT_TARGET region around the body.
+
 2013-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree.def (OMP_TEAMS, OMP_TARGET_DATA, OMP_TARGET,

@@ -5911,7 +5911,7 @@ omp_notice_threadprivate_variable (struct gimplify_omp_ctx *ctx, tree decl,
   for (octx = ctx; octx; octx = octx->outer_context)
     if (octx->region_type == ORT_TARGET)
       {
-	n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
+	n = splay_tree_lookup (octx->variables, (splay_tree_key)decl);
 	if (n == NULL)
 	  {
 	    error ("threadprivate variable %qE used in target region",
@@ -8587,6 +8587,13 @@ gimplify_body (tree fndecl, bool do_parms)
   gcc_assert (gimplify_ctxp == NULL);
   push_gimplify_context (&gctx);
 
+  if (flag_openmp)
+    {
+      gcc_assert (gimplify_omp_ctxp == NULL);
+      if (lookup_attribute ("omp declare target", DECL_ATTRIBUTES (fndecl)))
+	gimplify_omp_ctxp = new_omp_context (ORT_TARGET);
+    }
+
   /* Unshare most shared trees in the body and in that of any nested functions.
      It would seem we don't have to do this for nested functions because
      they are supposed to be output and then the outer function gimplified
@@ -8647,6 +8654,12 @@ gimplify_body (tree fndecl, bool do_parms)
     {
       pointer_set_destroy (nonlocal_vlas);
       nonlocal_vlas = NULL;
+    }
+
+  if (flag_openmp && gimplify_omp_ctxp)
+    {
+      delete_omp_context (gimplify_omp_ctxp);
+      gimplify_omp_ctxp = NULL;
     }
 
   pop_gimplify_context (outer_bind);

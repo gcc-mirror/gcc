@@ -1864,20 +1864,54 @@ scan_omp_single (gimple stmt, omp_context *outer_ctx)
 static bool
 check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 {
-  if (ctx != NULL
-      && gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-      && (gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD
-	  || gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_FOR_SIMD))
+  if (ctx != NULL)
     {
-      error_at (gimple_location (stmt),
-		"OpenMP constructs may not be nested inside simd region");
-      return false;
+      if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+	  && (gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD
+	      || gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_FOR_SIMD))
+	{
+	  error_at (gimple_location (stmt),
+		    "OpenMP constructs may not be nested inside simd region");
+	  return false;
+	}
+      else if (gimple_code (ctx->stmt) == GIMPLE_OMP_TEAMS)
+	{
+	  if ((gimple_code (stmt) != GIMPLE_OMP_FOR
+	       || gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_DISTRIBUTE)
+	      && gimple_code (stmt) != GIMPLE_OMP_PARALLEL)
+	    {
+	      error_at (gimple_location (stmt),
+			"only distribute or parallel constructs are allowed to "
+			"be closely nested inside teams construct");
+	      return false;
+	    }
+	}
+      else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+	       && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_DISTRIBUTE
+	       && gimple_code (stmt) != GIMPLE_OMP_PARALLEL)
+	{
+	  error_at (gimple_location (stmt),
+		    "only parallel constructs are allowed to "
+		    "be closely nested inside distribute construct");
+	  return false;
+	}
     }
   switch (gimple_code (stmt))
     {
     case GIMPLE_OMP_FOR:
       if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD)
 	return true;
+      if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
+	{
+	  if (ctx == NULL || gimple_code (ctx->stmt) != GIMPLE_OMP_TEAMS)
+	    {
+	      error_at (gimple_location (stmt),
+			"distribute construct must be closely nested inside "
+			"teams construct");
+	      return false;
+	    }
+	  return true;
+	}
       /* FALLTHRU */
     case GIMPLE_OMP_SECTIONS:
     case GIMPLE_OMP_SINGLE:
@@ -1973,6 +2007,17 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
 	    return false;
 	  }
       break;
+    case GIMPLE_OMP_TEAMS:
+      if (ctx == NULL
+	  || gimple_code (ctx->stmt) != GIMPLE_OMP_TARGET
+	  || gimple_omp_target_kind (ctx->stmt) != GF_OMP_TARGET_KIND_REGION)
+	{
+	  error_at (gimple_location (stmt),
+		    "teams construct not closely nested inside of target "
+		    "region");
+	  return false;
+	}
+      break;
     default:
       break;
     }
@@ -2062,6 +2107,8 @@ scan_omp_1_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	      case BUILT_IN_GOMP_CANCELLATION_POINT:
 	      case BUILT_IN_GOMP_TASKYIELD:
 	      case BUILT_IN_GOMP_TASKWAIT:
+	      case BUILT_IN_GOMP_TASKGROUP_START:
+	      case BUILT_IN_GOMP_TASKGROUP_END:
 		remove = !check_omp_nesting_restrictions (stmt, ctx);
 		break;
 	      default:

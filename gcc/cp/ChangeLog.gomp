@@ -1,3 +1,17 @@
+2013-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_declare_target,
+	cp_parser_omp_end_declare_target): New functions.
+	(cp_parser_omp_declare): For target keyword call
+	cp_parser_omp_declare_target.
+	(cp_parser_pragma): Handle PRAGMA_OMP_END_DECLARE_TARGET.
+	* cp-tree.h (current_omp_declare_target_attribute): Declare.
+	* decl2.c (current_omp_declare_target_attribute): New variable.
+	(cp_omp_mappable_type): New function.
+	(cplus_decl_attributes): Handle addition of "omp declare target"
+	attribute for decls in #pragma omp declare target region.  Complain
+	for invalid uses.
+
 2013-05-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_clause_cancelkind): Remove diagnostics.
