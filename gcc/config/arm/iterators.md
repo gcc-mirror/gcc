@@ -496,3 +496,11 @@
 (define_int_attr nvrint_variant [(UNSPEC_NVRINTZ "z") (UNSPEC_NVRINTP "p")
                                 (UNSPEC_NVRINTA "a") (UNSPEC_NVRINTM "m")
                                 (UNSPEC_NVRINTX "x") (UNSPEC_NVRINTN "n")])
+;; Both kinds of return insn.
+(define_code_iterator returns [return simple_return])
+(define_code_attr return_str [(return "") (simple_return "simple_")])
+(define_code_attr return_simple_p [(return "false") (simple_return "true")])
+(define_code_attr return_cond_false [(return " && USE_RETURN_INSN (FALSE)")
+                               (simple_return " && use_simple_return_p ()")])
+(define_code_attr return_cond_true [(return " && USE_RETURN_INSN (TRUE)")
+                               (simple_return " && use_simple_return_p ()")])

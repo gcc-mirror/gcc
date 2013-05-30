@@ -2169,6 +2169,14 @@ arm_option_override (void)
                          global_options.x_param_values,
                          global_options_set.x_param_values);
 
+  /* Disable shrink-wrap when optimizing function for size, since it tends to
+     generate additional returns.  */
+  if (optimize_function_for_size_p (cfun) && TARGET_THUMB2)
+    flag_shrink_wrap = false;
+  /* TBD: Dwarf info for apcs frame is not handled yet.  */
+  if (TARGET_APCS_FRAME)
+    flag_shrink_wrap = false;
+
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
 }
@@ -2516,6 +2524,18 @@ use_return_insn (int iscond, rtx sibling)
 	return 0;
 
   return 1;
+}
+
+/* Return TRUE if we should try to use a simple_return insn, i.e. perform
+   shrink-wrapping if possible.  This is the case if we need to emit a
+   prologue, which we can test by looking at the offsets.  */
+bool
+use_simple_return_p (void)
+{
+  arm_stack_offsets *offsets;
+
+  offsets = arm_get_frame_offsets ();
+  return offsets->outgoing_args != 0;
 }
 
 /* Return TRUE if int I is a valid immediate ARM constant.  */
@@ -24035,7 +24055,7 @@ thumb1_expand_prologue (void)
    all we really need to check here is if single register is to be
    returned, or multiple register return.  */
 void
-thumb2_expand_return (void)
+thumb2_expand_return (bool simple_return)
 {
   int i, num_regs;
   unsigned long saved_regs_mask;
@@ -24048,7 +24068,7 @@ thumb2_expand_return (void)
     if (saved_regs_mask & (1 << i))
       num_regs++;
 
-  if (saved_regs_mask)
+  if (!simple_return && saved_regs_mask)
     {
       if (num_regs == 1)
         {

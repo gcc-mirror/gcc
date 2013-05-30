@@ -9276,17 +9276,17 @@
   [(set_attr "type" "call")]
 )
 
-(define_expand "return"
-  [(return)]
+(define_expand "<return_str>return"
+  [(returns)]
   "(TARGET_ARM || (TARGET_THUMB2
                    && ARM_FUNC_TYPE (arm_current_func_type ()) == ARM_FT_NORMAL
                    && !IS_STACKALIGN (arm_current_func_type ())))
-    && USE_RETURN_INSN (FALSE)"
+    <return_cond_false>"
   "
   {
     if (TARGET_THUMB2)
       {
-        thumb2_expand_return ();
+        thumb2_expand_return (<return_simple_p>);
         DONE;
       }
   }
@@ -9311,13 +9311,13 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*cond_return"
+(define_insn "*cond_<return_str>return"
   [(set (pc)
         (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
-                      (return)
+                      (returns)
                       (pc)))]
-  "TARGET_ARM && USE_RETURN_INSN (TRUE)"
+  "TARGET_ARM  <return_cond_true>"
   "*
   {
     if (arm_ccfsm_state == 2)
@@ -9325,20 +9325,21 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (operands[0], true, false, false);
+    return output_return_instruction (operands[0], true, false,
+				      <return_simple_p>);
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
    (set_attr "type" "load1")]
 )
 
-(define_insn "*cond_return_inverted"
+(define_insn "*cond_<return_str>return_inverted"
   [(set (pc)
         (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (pc)
-		      (return)))]
-  "TARGET_ARM && USE_RETURN_INSN (TRUE)"
+		      (returns)))]
+  "TARGET_ARM <return_cond_true>"
   "*
   {
     if (arm_ccfsm_state == 2)
@@ -9346,7 +9347,8 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (operands[0], true, true, false);
+    return output_return_instruction (operands[0], true, true,
+				      <return_simple_p>);
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
