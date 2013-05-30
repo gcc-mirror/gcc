@@ -1,6 +1,13 @@
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR middle-end/57073
+	* tree-ssa-math-opts.c (execute_cse_sincos): Optimize
+	powi (-1.0, k) to (k & 1) ? -1.0 : 1.0.
+
 2013-05-30  Steven Bosscher  <steven@gcc.gnu.org>
 
-       * rtlanal.c (tablejump_p): Expect table and label to be adjacent.
+	* rtlanal.c (tablejump_p): Expect table and label to be adjacent.
 
 2013-05-30  Vladimir Makarov  <vmakarov@redhat.com>
 
