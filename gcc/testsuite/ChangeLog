@@ -1,3 +1,8 @@
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/57073
+	* gfortran.dg/power_6.f90: New.
+
 2013-05-30  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/insv_1.c: New test.
