@@ -1,3 +1,8 @@
+2013-05-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54189
+	* resolve.c (check_assumed_size_reference): Check for e->ref.
+
 2013-05-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57458
