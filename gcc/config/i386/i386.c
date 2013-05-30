@@ -42812,6 +42812,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY ix86_register_priority
 
+#undef TARGET_REGISTER_USAGE_LEVELING_P
+#define TARGET_REGISTER_USAGE_LEVELING_P hook_bool_void_true
+
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ix86_legitimate_constant_p
 

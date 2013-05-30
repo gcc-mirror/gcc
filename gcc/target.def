@@ -2444,6 +2444,21 @@ DEFHOOK
  int, (int),
  default_register_priority)
 
+/* Return true if we need register usage leveling.  */
+DEFHOOK
+(register_usage_leveling_p,
+ "A target hook which returns true if we need register usage leveling.\
+  That means if a few hard registers are equally good for the\
+  assignment, we choose the least used hard register.  The register\
+  usage leveling may be profitable for some targets.  Don't use the\
+  usage leveling for targets with conditional execution or targets\
+  with big register files as it hurts if-conversion and cross-jumping\
+  optimizations.\
+  \
+  The default version of this target hook returns always false.",
+ bool, (void),
+ default_register_usage_leveling_p)
+
 /* Return true if maximal address displacement can be different.  */
 DEFHOOK
 (different_addr_displacement_p,
