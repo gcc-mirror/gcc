@@ -1,3 +1,11 @@
+2013-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52377
+	* class.c (common_enclosing_class): New.
+	* cp-tree.h: Declare it.
+	* init.c (sort_mem_initializers): Don't splice out a union member
+	with an NSDMI.
+
 2013-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (cp_fix_function_decl_p): Update for new symtab flags.
