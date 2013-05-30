@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic-core.h"
 #include "ggc.h"
-#include "hashtab.h"
+#include "hash-table.h"
 
 tree solaris_pending_aligns, solaris_pending_inits, solaris_pending_finis;
 
@@ -157,10 +157,6 @@ solaris_assemble_visibility (tree decl, int vis ATTRIBUTE_UNUSED)
 #endif
 }
 
-/* Hash table of group signature symbols.  */
-
-static htab_t solaris_comdat_htab;
-
 /* Group section information entry stored in solaris_comdat_htab.  */
 
 typedef struct comdat_entry
@@ -171,24 +167,33 @@ typedef struct comdat_entry
   const char *sig;
 } comdat_entry;
 
-/* Helper routines for maintaining solaris_comdat_htab.  */
+/* Helpers for maintaining solaris_comdat_htab.  */
 
-static hashval_t
-comdat_hash (const void *p)
+struct comdat_entry_hasher : typed_noop_remove <comdat_entry>
 {
-  const comdat_entry *entry = (const comdat_entry *) p;
+  typedef comdat_entry value_type;
+  typedef comdat_entry compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
 
+inline hashval_t
+comdat_entry_hasher::hash (const value_type *entry)
+{
   return htab_hash_string (entry->sig);
 }
 
-static int
-comdat_eq (const void *p1, const void *p2)
+inline bool
+comdat_entry_hasher::equal (const value_type *entry1,
+			    const compare_type *entry2)
 {
-  const comdat_entry *entry1 = (const comdat_entry *) p1;
-  const comdat_entry *entry2 = (const comdat_entry *) p2;
-
   return strcmp (entry1->sig, entry2->sig) == 0;
 }
+
+/* Hash table of group signature symbols.  */
+
+static hash_table <comdat_entry_hasher> solaris_comdat_htab;
 
 /* Output assembly to switch to COMDAT group section NAME with attributes
    FLAGS and group signature symbol DECL, using Sun as syntax.  */
@@ -229,12 +234,11 @@ solaris_elf_asm_comdat_section (const char *name, unsigned int flags, tree decl)
      identify the missing ones without changing the affected frontents,
      remember the signature symbols and emit those not marked
      TREE_SYMBOL_REFERENCED in solaris_file_end.  */
-  if (solaris_comdat_htab == NULL)
-    solaris_comdat_htab = htab_create_alloc (37, comdat_hash, comdat_eq, NULL,
-					     xcalloc, free);
+  if (!solaris_comdat_htab.is_created ())
+    solaris_comdat_htab.create (37);
 
   entry.sig = signature;
-  slot = (comdat_entry **) htab_find_slot (solaris_comdat_htab, &entry, INSERT);
+  slot = solaris_comdat_htab.find_slot (&entry, INSERT);
 
   if (*slot == NULL)
     {
@@ -250,10 +254,11 @@ solaris_elf_asm_comdat_section (const char *name, unsigned int flags, tree decl)
 
 /* Define unreferenced COMDAT group signature symbol corresponding to SLOT.  */
 
-static int
-solaris_define_comdat_signature (void **slot, void *aux ATTRIBUTE_UNUSED)
+int
+solaris_define_comdat_signature (comdat_entry **slot,
+				 void *aux ATTRIBUTE_UNUSED)
 {
-  comdat_entry *entry = *(comdat_entry **) slot;
+  comdat_entry *entry = *slot;
   tree decl = entry->decl;
 
   if (TREE_CODE (decl) != IDENTIFIER_NODE)
@@ -277,10 +282,10 @@ solaris_define_comdat_signature (void **slot, void *aux ATTRIBUTE_UNUSED)
 void
 solaris_file_end (void)
 {
-  if (solaris_comdat_htab == NULL)
+  if (!solaris_comdat_htab.is_created ())
     return;
 
-  htab_traverse (solaris_comdat_htab, solaris_define_comdat_signature, NULL);
+  solaris_comdat_htab.traverse <void *, solaris_define_comdat_signature> (NULL);
 }
 
 void
