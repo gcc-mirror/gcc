@@ -1,3 +1,12 @@
+2013-05-30  Bernd Schmidt  <bernds@codesourcery.com>
+	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/arm-protos.h: Add and update function protos.
+	* config/arm/arm.c (use_simple_return_p): New added.
+	(thumb2_expand_return): Check simple_return flag.
+	* config/arm/arm.md: Add simple_return and conditional simple_return.
+	* config/arm/iterators.md: Add iterator for return and simple_return.
+
 2013-05-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* config/arm/arm.c (arm_add_cfa_adjust_cfa_note): New added.
