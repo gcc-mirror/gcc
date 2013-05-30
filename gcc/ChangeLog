@@ -1,3 +1,7 @@
+2013-05-30  Steven Bosscher  <steven@gcc.gnu.org>
+
+       * rtlanal.c (tablejump_p): Expect table and label to be adjacent.
+
 2013-05-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* target.def (register_usage_leveling_p): New hook.
