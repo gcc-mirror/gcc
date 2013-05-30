@@ -1726,9 +1726,26 @@ move2add_record_sym_value (rtx reg, rtx sym, rtx off)
 static bool
 move2add_valid_value_p (int regno, enum machine_mode mode)
 {
-  if (reg_set_luid[regno] <= move2add_last_label_luid
-      || !MODES_OK_FOR_MOVE2ADD (mode, reg_mode[regno]))
+  if (reg_set_luid[regno] <= move2add_last_label_luid)
     return false;
+
+  if (mode != reg_mode[regno])
+    {
+      if (!MODES_OK_FOR_MOVE2ADD (mode, reg_mode[regno]))
+	return false;
+      /* The value loaded into regno in reg_mode[regno] is also valid in
+	 mode after truncation only if (REG:mode regno) is the lowpart of
+	 (REG:reg_mode[regno] regno).  Now, for big endian, the starting
+	 regno of the lowpart might be different.  */
+      int s_off = subreg_lowpart_offset (mode, reg_mode[regno]);
+      s_off = subreg_regno_offset (regno, reg_mode[regno], s_off, mode);
+      if (s_off != 0)
+	/* We could in principle adjust regno, check reg_mode[regno] to be
+	   BLKmode, and return s_off to the caller (vs. -1 for failure),
+	   but we currently have no callers that could make use of this
+	   information.  */
+	return false;
+    }
 
   for (int i = hard_regno_nregs[regno][mode] - 1; i > 0; i--)
     if (reg_mode[regno + i] != BLKmode)
