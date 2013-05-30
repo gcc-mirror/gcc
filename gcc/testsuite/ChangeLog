@@ -1,3 +1,8 @@
+2013-05-30  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Add aarch64*-*-* to the
+	dg-skip-if "No stabs".
+
 2013-05-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54189
