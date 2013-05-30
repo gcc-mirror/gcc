@@ -1,3 +1,10 @@
+2013-05-30  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57439
+	* postreload.c (move2add_valid_value_p): Check that we have
+	a zero subreg_regno_offset when accessing the register in
+	the requested mode.
+
 2013-05-30  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
 	    Igor Zamyatin  <igor.zamyatin@intel.com>
 
