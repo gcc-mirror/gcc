@@ -1,3 +1,31 @@
+2013-05-29  Lawrence Crowl  <crowl@google.com>
+
+	* config/arm/t-arm: Update for below.
+
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base::libcall_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* config/i386/t-cygming: Update for below.
+
+	* config/i386/t-interix: Update for below.
+
+	* config/i386/winnt.c (i386_pe_section_type_flags::htab):
+	Change type to hash_table.  Update dependent calls and types.
+	(i386_find_on_wrapper_list::wrappers): Likewise.
+
+	* config/ia64/t-ia64: Update for below.
+
+	* config/ia64/ia64.c (bundle_state_table):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* config/mips/mips.c (mips_reorg_process_insns::htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* config/sol2.c (solaris_comdat_htab):
+	Change type to hash_table.  Update dependent calls and types.
+
+	* config/t-sol2: Update for above.
+
 2013-05-29  Teresa Johnson  <tejohnson@google.com>
 
 	* passes.c (dump_passes): Use FOR_EACH_FUNCTION since
@@ -860,7 +888,6 @@
 	* config/rs6000/rs6000-opts.h (PROCESSOR_POWER8): Likewise.
 	(enum rs6000_vector): Add power8 vector support.
 
->>>>>>> .r199383
 2013-05-22  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	PR target/19599

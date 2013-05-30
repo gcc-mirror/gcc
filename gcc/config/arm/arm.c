@@ -23,6 +23,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
@@ -3816,36 +3817,48 @@ arm_function_value(const_tree type, const_tree func,
   return arm_libcall_value_1 (mode);
 }
 
-static int
-libcall_eq (const void *p1, const void *p2)
+/* libcall hashtable helpers.  */
+
+struct libcall_hasher : typed_noop_remove <rtx_def>
 {
-  return rtx_equal_p ((const_rtx) p1, (const_rtx) p2);
+  typedef rtx_def value_type;
+  typedef rtx_def compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+inline bool
+libcall_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  return rtx_equal_p (p1, p2);
 }
 
-static hashval_t
-libcall_hash (const void *p1)
+inline hashval_t
+libcall_hasher::hash (const value_type *p1)
 {
-  return hash_rtx ((const_rtx) p1, VOIDmode, NULL, NULL, FALSE);
+  return hash_rtx (p1, VOIDmode, NULL, NULL, FALSE);
 }
+
+typedef hash_table <libcall_hasher> libcall_table_type;
 
 static void
-add_libcall (htab_t htab, rtx libcall)
+add_libcall (libcall_table_type htab, rtx libcall)
 {
-  *htab_find_slot (htab, libcall, INSERT) = libcall;
+  *htab.find_slot (libcall, INSERT) = libcall;
 }
 
 static bool
 arm_libcall_uses_aapcs_base (const_rtx libcall)
 {
   static bool init_done = false;
-  static htab_t libcall_htab;
+  static libcall_table_type libcall_htab;
 
   if (!init_done)
     {
       init_done = true;
 
-      libcall_htab = htab_create (31, libcall_hash, libcall_eq,
-				  NULL);
+      libcall_htab.create (31);
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (sfloat_optab, SFmode, SImode));
       add_libcall (libcall_htab,
@@ -3904,7 +3917,7 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 							DFmode));
     }
 
-  return libcall && htab_find (libcall_htab, libcall) != NULL;
+  return libcall && libcall_htab.find (libcall) != NULL;
 }
 
 static rtx
