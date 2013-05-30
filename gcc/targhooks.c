@@ -859,6 +859,12 @@ default_register_priority (int hard_regno ATTRIBUTE_UNUSED)
 }
 
 extern bool
+default_register_usage_leveling_p (void)
+{
+  return false;
+}
+
+extern bool
 default_different_addr_displacement_p (void)
 {
   return false;

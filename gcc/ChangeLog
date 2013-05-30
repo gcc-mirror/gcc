@@ -1,3 +1,13 @@
+2013-05-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* target.def (register_usage_leveling_p): New hook.
+	* targhooks.c (default_register_usage_leveling_p): New.
+	* targhooks.h (default_register_usage_leveling_p): New prototype.
+	* lra-assigns.c (register_usage_leveling_p): Use the hook.
+	* doc/tm.texi.in (TARGET_REGISTER_USAGE_LEVELING_P): New hook.
+	* doc/tm.texi: Update.
+	* config/i386/i386.c (TARGET_REGISTER_USAGE_LEVELING_P): Define.
+
 2013-05-30  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (insv<mode>): New define_expand.
