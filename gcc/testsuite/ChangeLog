@@ -1,3 +1,7 @@
+2013-05-30  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/insv_1.c: New test.
+
 2013-05-30  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* g++.dg/cpp0x/alias-decl-debug-0.C: Add aarch64*-*-* to the
