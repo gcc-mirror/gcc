@@ -50,6 +50,7 @@ enum processor_vendor
 enum processor_types
 {
   INTEL_ATOM = 1,
+  INTEL_SLM,
   INTEL_CORE2,
   INTEL_COREI7,
   AMDFAM10H,
