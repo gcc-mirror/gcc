@@ -1,3 +1,12 @@
+2013-05-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/arm.c (arm_add_cfa_adjust_cfa_note): New added.
+	(arm_emit_multi_reg_pop): Add REG_CFA_ADJUST_CFA notes.
+	(arm_emit_vfp_multi_reg_pop): Likewise.
+	(thumb2_emit_ldrd_pop): Likewise.
+	(arm_expand_epilogue): Add misc REG_CFA notes.
+	(arm_unwind_emit): Skip REG_CFA_ADJUST_CFA and REG_CFA_RESTORE.
+
 2013-05-29  Lawrence Crowl  <crowl@google.com>
 
 	* config/arm/t-arm: Update for below.
