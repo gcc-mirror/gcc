@@ -1,3 +1,7 @@
+2013-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (arm% androideabi): Robustify.
+
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c: (gnat_to_gnu_entity): In ASIS mode, do not
