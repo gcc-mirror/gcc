@@ -1,5 +1,9 @@
 2013-05-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57404
+	* cp-lang.c (cp_classify_record): Handle structs without
+	TYPE_LANG_SPECIFIC.
+
 	PR c++/52377
 	* class.c (common_enclosing_class): New.
 	* cp-tree.h: Declare it.
