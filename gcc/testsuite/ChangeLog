@@ -1,3 +1,8 @@
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57458
+	* gfortran.dg/assumed_rank_13.f90: New.
+
 2013-05-29  Easwaran Raman  <eraman@google.com>
 
 	PR tree-optimization/57442
@@ -13,7 +18,7 @@
 	PR testsuite/57413
 	* gcc.dg/debug/dwarf2/discriminator.c: Restrict the test to linux-gnu.
 
-2013-05-28  Tobias Burnus  <burnus@net-b.de>
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
 	* gfortran.dg/auto_dealloc_2.f90: Update _free count in the dump.
@@ -65,7 +70,7 @@
 	* c-c++-common/cilk-plus/AN/test_sec_limits.c: Likewise.
 	* gcc.dg/cilk-plus/cilk-plus.exp: New script.
 
-2013-05-28  Tobias Burnus  <burnus@net-b.de>
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
 	* gfortran.dg/finalize_11.f90: New.

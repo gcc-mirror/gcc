@@ -1,4 +1,10 @@
-2013-05-28  Tobias Burnus  <burnus@net-b.de>
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57458
+	* interface.c (compare_parameter): Update C1239/C1240 constraint
+	check for assumed-rank/TS29113.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
 	* class.c (finalize_component): Fix coarray array refs.
@@ -15,7 +21,7 @@
 	BT_CLASS allocations.
 	* trans-stmt.c (gfc_trans_allocate): Ditto.
 
-2013-05-28  Tobias Burnus  <burnus@net-b.de>
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
 	* resolve.c (gfc_resolve_finalizers): Remove not implemented error.

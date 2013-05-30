@@ -2031,14 +2031,15 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
          || actual->symtree->n.sym->attr.volatile_)
       &&  (formal->attr.asynchronous || formal->attr.volatile_)
       && actual->rank && !gfc_is_simply_contiguous (actual, true)
-      && ((formal->as->type != AS_ASSUMED_SHAPE && !formal->attr.pointer)
+      && ((formal->as->type != AS_ASSUMED_SHAPE
+	   && formal->as->type != AS_ASSUMED_RANK && !formal->attr.pointer)
 	  || formal->attr.contiguous))
     {
       if (where)
-	gfc_error ("Dummy argument '%s' has to be a pointer or assumed-shape "
-		   "array without CONTIGUOUS attribute - as actual argument at"
-		   " %L is not simply contiguous and both are ASYNCHRONOUS "
-		   "or VOLATILE", formal->name, &actual->where);
+	gfc_error ("Dummy argument '%s' has to be a pointer, assumed-shape or "
+		   "assumed-rank array without CONTIGUOUS attribute - as actual"
+		   " argument at %L is not simply contiguous and both are "
+		   "ASYNCHRONOUS or VOLATILE", formal->name, &actual->where);
       return 0;
     }
 
