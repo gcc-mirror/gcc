@@ -149,6 +149,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__atom");
       def_or_undef (parse_in, "__atom__");
       break;
+    case PROCESSOR_SLM:
+      def_or_undef (parse_in, "__slm");
+      def_or_undef (parse_in, "__slm__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -240,6 +244,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_ATOM:
       def_or_undef (parse_in, "__tune_atom__");
+      break;
+    case PROCESSOR_SLM:
+      def_or_undef (parse_in, "__tune_slm__");
       break;
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:

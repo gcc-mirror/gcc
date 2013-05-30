@@ -1,3 +1,39 @@
+2013-05-30  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	Silvermont (SLM) architecture pipeline model, tuning and
+	insn selection.
+	* config.gcc: Add slm config options and target.
+
+	* config/i386/slm.md: New.
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Check movbe.
+
+	* gcc/config/i386/i386-c.c (ix86_target_macros_internal):  New case
+	PROCESSOR_SLM.
+	(ix86_target_macros_internal): Likewise.
+
+	* gcc/config/i386/i386.c (slm_cost): New cost.
+	(m_SLM): New macro flag.
+	(initial_ix86_tune_features): Set m_SLM.
+	(x86_accumulate_outgoing_args): Likewise.
+	(x86_arch_always_fancy_math_387): Likewise.
+	(processor_target_table): Add slm cost.
+	(cpu_names): Add slm cpu name.
+	(x86_option_override_internal): Set SLM ISA.
+	(ix86_issue_rate): New case PROCESSOR_SLM.
+	(ia32_multipass_dfa_lookahead): Likewise.
+	(fold_builtin_cpu): Add slm.
+
+	* config/i386/i386.h (TARGET_SLM): New target macro.
+	(target_cpu_default): Add TARGET_CPU_DEFAULT_slm.
+	(processor_type): Add PROCESSOR_SLM.
+
+	* config/i386/i386.md (cpu): Add new value "slm".
+	(slm.md): Include slm.md.
+
+	* libgcc/config/i386/cpuinfo.c (INTEL_SLM): New enum value.
+
 2013-05-30  Bernd Schmidt  <bernds@codesourcery.com>
 	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
