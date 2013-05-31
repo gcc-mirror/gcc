@@ -6195,8 +6195,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
   if (convs->check_narrowing)
     check_narrowing (totype, expr);
 
-  if (issue_conversion_warnings && (complain & tf_warning))
-    expr = convert_and_check (totype, expr);
+  if (issue_conversion_warnings)
+    expr = cp_convert_and_check (totype, expr, complain);
   else
     expr = convert (totype, expr);
 

@@ -620,6 +620,9 @@ cp_convert_and_check (tree type, tree expr, tsubst_flags_t complain)
 
   if (TREE_TYPE (expr) == type)
     return expr;
+
+  if (TREE_CODE (expr) == SIZEOF_EXPR)
+    expr = maybe_constant_value (expr);
   
   result = cp_convert (type, expr, complain);
 
