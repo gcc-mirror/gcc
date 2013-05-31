@@ -1932,7 +1932,8 @@ vect_bb_slp_scalar_cost (basic_block bb,
 	  imm_use_iterator use_iter;
 	  gimple use_stmt;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, DEF_FROM_PTR (def_p))
-	    if (gimple_bb (use_stmt) != bb
+	    if (gimple_code (use_stmt) == GIMPLE_PHI
+		|| gimple_bb (use_stmt) != bb
 		|| !STMT_VINFO_VECTORIZABLE (vinfo_for_stmt (use_stmt)))
 	      {
 		life[i] = true;
