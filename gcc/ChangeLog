@@ -1,3 +1,29 @@
+2013-05-31  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
+	    Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	Silvermont (SLM) architecture performance tuning.
+	* config/i386/i386.h (enum ix86_tune_indices): Add
+	X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS.
+	(TARGET_SPLIT_MEM_OPND_FOR_FP_CONVERTS): New define.
+
+	* config/i386/i386.c (initial_ix86_tune_features)
+	<X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS>: Initialize.
+	(ix86_lea_outperforms): Handle Silvermont tuning.
+	(ix86_avoid_lea_for_add): Add new argument to ix86_lea_outperforms
+	call.
+	(ix86_use_lea_for_mov): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_lea_for_add_ok): Likewise.
+	(exact_dependency_1): New function.
+	(exact_store_load_dependency): Likewise.
+	(ix86_adjust_cost): Handle Silvermont tuning.
+	(do_reoder_for_imul): Likewise.
+	(swap_top_of_ready_list): New function.
+	(ix86_sched_reorder): Changed to handle Silvermont tuning.
+
+	* config/i386/i386.md (peepholes that split memory operand in fp
+	converts): New.
+
 2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
@@ -718,11 +744,11 @@
 
 2013-05-24  Vladimir Makarov  <vmakarov@redhat.com>
 
-        * lra-constraints.c (emit_spill_move): Use smaller mode for
+	* lra-constraints.c (emit_spill_move): Use smaller mode for
 	mem-mem moves.
-        (check_and_process_move): Consider mem-reg moves for secondary
+	(check_and_process_move): Consider mem-reg moves for secondary
 	too.
-        (curr_insn_transform): Don't lose insns emitted before for
+	(curr_insn_transform): Don't lose insns emitted before for
 	secondary memory moves.
 	(inherit_in_ebb): Mark defined reg.  Add usage only if it is not a
 	reg set up in the current insn.
@@ -1085,8 +1111,8 @@
 
 2013-05-21  Christian Bruel  <christian.bruel@st.com>
 
-        * dwarf2out.c (multiple_reg_loc_descriptor): Use dbx_reg_number for
-        spanning registers. LEAF_REG_REMAP is supported only for contiguous
+	* dwarf2out.c (multiple_reg_loc_descriptor): Use dbx_reg_number for
+	spanning registers. LEAF_REG_REMAP is supported only for contiguous
 	registers. Set register size out of the PARALLEL loop.
 
 2013-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
