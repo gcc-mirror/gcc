@@ -1,5 +1,9 @@
 2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* gcc.target/arm/pr56184.C: Add -fno-short-enums.
+
+2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* g++.old-deja/g++.robertl/eb76.C: Add -fno-short-enums.
 
 2013-05-31  Balaji V. Iyer  <balaji.v.iyer@intel.com>
