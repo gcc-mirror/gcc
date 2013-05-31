@@ -1,3 +1,7 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
 2013-04-11  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/linux-atomic.c (SUBWORD_SYNC_OP, SUBWORD_VAL_CAS)
