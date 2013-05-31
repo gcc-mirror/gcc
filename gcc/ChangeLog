@@ -1,5 +1,13 @@
 2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* config/rs6000/predicates.md (rs6000_cbranch_operator): Accept some
+	unordered comparison operators when -fno-trapping-math is in effect
+	on the e500.
+	* config/rs6000/rs6000.c (rs6000_generate_compare): Remove dead code
+	and implement unordered comparison operators properly on the e500.
+
+2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* simplify-rtx.c (simplify_byte_swapping_operation): Use proper macro
 	for constant scalar integers.
 	(simplify_relational_operation_1): Likewise.
