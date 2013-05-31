@@ -1,3 +1,10 @@
+2013-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57478
+	PR tree-optimization/57453
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Uses in PHI nodes
+	are life as well.
+
 2013-05-31  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
 
 	* config/rl78/rl78.md (mulqi3,mulhi3): New define_expands.
