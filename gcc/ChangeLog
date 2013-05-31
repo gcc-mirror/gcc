@@ -719,7 +719,6 @@
 
 2013-05-24  Dehao Chen  <dehao@google.com>
 
-	* testsuite/gcc.dg/debug/dwarf2/discriminator.c: New Testcase.
 	* tree-cfg.c (locus_descrim_hasher::hash): Change discriminator
 	hash function.
 	(locus_descrim_hasher::equal): Likewise.
