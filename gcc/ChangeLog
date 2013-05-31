@@ -1,3 +1,9 @@
+2013-05-31  Dinar Temirbulatov  <dinar@kugelworks.com>
+
+	PR rtl-optimization/57268
+	* sched-deps.c (sched_analyze_2): Flush dependence lists if
+	the sum of the read and write lists exceeds MAX_PENDING_LIST_LENGTH.
+
 2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/predicates.md (rs6000_cbranch_operator): Accept some
