@@ -1,5 +1,10 @@
 2013-05-31  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57319
+	* class.c (vbase_has_user_provided_move_assign): New.
+	* method.c (synthesized_method_walk): Check it.
+	* cp-tree.h: Declare it.
+
 	PR c++/56930
 	* call.c (convert_like_real): Use cp_convert_and_check.
 	* cvt.c (cp_convert_and_check): Use maybe_constant_value.
