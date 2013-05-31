@@ -1,5 +1,10 @@
 2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_load_symref_appropriately):
+	Remove un-necessary braces.
+
+2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_classify_symbol):
 	Use SYMBOL_TINY_ABSOLUTE for AARCH64_CMODEL_TINY_PIC.
 
