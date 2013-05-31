@@ -1,5 +1,10 @@
 2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* ada/acats/floatstore.lst: New.
+	* ada/acats/run_all.sh: Process it.
+
+2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.target/powerpc/e500-ord-1.c: New test.
 	* gcc.target/powerpc/e500-ord-2.c: Likewise.
 	* gcc.target/powerpc/e500-unord-1.c: Likewise.
