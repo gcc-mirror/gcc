@@ -1,3 +1,9 @@
+2013-05-31  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-opts.h (enum processor_type): Reorder.
+	* config/rs6000/rs6000.md (cpu): Reorder.  Split long line.
+	Fix comment.
+
 2013-05-31  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
 	    Igor Zamyatin  <igor.zamyatin@intel.com>
 
