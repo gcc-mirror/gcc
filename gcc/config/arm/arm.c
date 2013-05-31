@@ -2677,6 +2677,7 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
   switch (code)
     {
     case AND:
+    case IOR:
       return (const_ok_for_op (hi_val, code) || hi_val == 0xFFFFFFFF)
               && (const_ok_for_op (lo_val, code) || lo_val == 0xFFFFFFFF);
     case PLUS:

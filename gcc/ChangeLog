@@ -1,3 +1,15 @@
+2013-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56315
+	* config/arm/arm.c (const_ok_for_dimode_op): Handle IOR.
+	* config/arm/arm.md (*iordi3_insn): Change to insn_and_split.
+	* config/arm/neon.md (iordi3_neon): Remove.
+	(neon_vorr<mode>): Generate iordi3 instead of iordi3_neon.
+	* config/arm/predicates.md (imm_for_neon_logic_operand):
+	Move to earlier in the file.
+	(neon_logic_op2): Likewise.
+	(arm_iordi_operand_neon): New predicate.
+
 2013-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57478
