@@ -1,3 +1,9 @@
+2013-05-31  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57478
+	PR tree-optimization/57453
+	* gcc.dg/torture/pr57478.c: New test.
+
 2013-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57456
