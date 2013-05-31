@@ -508,18 +508,23 @@ gfc_compare_types (gfc_typespec *ts1, gfc_typespec *ts2)
 }
 
 
-/* Given two symbols that are formal arguments, compare their ranks
-   and types.  Returns nonzero if they have the same rank and type,
-   zero otherwise.  */
+static int
+compare_type (gfc_symbol *s1, gfc_symbol *s2)
+{
+  if (s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+    return 1;
+
+  return gfc_compare_types (&s1->ts, &s2->ts) || s2->ts.type == BT_ASSUMED;
+}
+
 
 static int
-compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
+compare_rank (gfc_symbol *s1, gfc_symbol *s2)
 {
   gfc_array_spec *as1, *as2;
   int r1, r2;
 
-  if (s1->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK)
-      || s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
+  if (s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
     return 1;
 
   as1 = (s1->ts.type == BT_CLASS) ? CLASS_DATA (s1)->as : s1->as;
@@ -528,13 +533,21 @@ compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
   r1 = as1 ? as1->rank : 0;
   r2 = as2 ? as2->rank : 0;
 
-  if (r1 != r2
-      && (!as1 || as1->type != AS_ASSUMED_RANK)
-      && (!as2 || as2->type != AS_ASSUMED_RANK))
+  if (r1 != r2 && (!as2 || as2->type != AS_ASSUMED_RANK))
     return 0;			/* Ranks differ.  */
 
-  return gfc_compare_types (&s1->ts, &s2->ts)
-	 || s1->ts.type == BT_ASSUMED || s2->ts.type == BT_ASSUMED;
+  return 1;
+}
+
+
+/* Given two symbols that are formal arguments, compare their ranks
+   and types.  Returns nonzero if they have the same rank and type,
+   zero otherwise.  */
+
+static int
+compare_type_rank (gfc_symbol *s1, gfc_symbol *s2)
+{
+  return compare_type (s1, s2) && compare_rank (s1, s2);
 }
 
 
@@ -1019,6 +1032,15 @@ generic_correspondence (gfc_formal_arglist *f1, gfc_formal_arglist *f2,
 }
 
 
+static int
+symbol_rank (gfc_symbol *sym)
+{
+  gfc_array_spec *as;
+  as = (sym->ts.type == BT_CLASS) ? CLASS_DATA (sym)->as : sym->as;
+  return as ? as->rank : 0;
+}
+
+
 /* Check if the characteristics of two dummy arguments match,
    cf. F08:12.3.2.  */
 
@@ -1030,12 +1052,20 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     return s1 == s2 ? true : false;
 
   /* Check type and rank.  */
-  if (type_must_agree &&
-      (!compare_type_rank (s1, s2) || !compare_type_rank (s2, s1)))
+  if (type_must_agree)
     {
-      snprintf (errmsg, err_len, "Type/rank mismatch in argument '%s'",
-		s1->name);
-      return false;
+      if (!compare_type (s1, s2) || !compare_type (s2, s1))
+	{
+	  snprintf (errmsg, err_len, "Type mismatch in argument '%s' (%s/%s)",
+		    s1->name, gfc_typename (&s1->ts), gfc_typename (&s2->ts));
+	  return false;
+	}
+      if (!compare_rank (s1, s2))
+	{
+	  snprintf (errmsg, err_len, "Rank mismatch in argument '%s' (%i/%i)",
+		    s1->name, symbol_rank (s1), symbol_rank (s2));
+	  return false;
+	}
     }
 
   /* Check INTENT.  */
@@ -1203,9 +1233,16 @@ check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     return true;
 
   /* Check type and rank.  */
-  if (!compare_type_rank (r1, r2))
+  if (!compare_type (r1, r2))
     {
-      snprintf (errmsg, err_len, "Type/rank mismatch in function result");
+      snprintf (errmsg, err_len, "Type mismatch in function result (%s/%s)",
+		gfc_typename (&r1->ts), gfc_typename (&r2->ts));
+      return false;
+    }
+  if (!compare_rank (r1, r2))
+    {
+      snprintf (errmsg, err_len, "Rank mismatch in function result (%i/%i)",
+		symbol_rank (r1), symbol_rank (r2));
       return false;
     }
 
@@ -1437,13 +1474,26 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 					      errmsg, err_len))
 	      return 0;
 	  }
-	else if (!compare_type_rank (f2->sym, f1->sym))
+	else
 	  {
 	    /* Only check type and rank.  */
-	    if (errmsg != NULL)
-	      snprintf (errmsg, err_len, "Type/rank mismatch in argument '%s'",
-			f1->sym->name);
-	    return 0;
+	    if (!compare_type (f2->sym, f1->sym))
+	      {
+		if (errmsg != NULL)
+		  snprintf (errmsg, err_len, "Type mismatch in argument '%s' "
+			    "(%s/%s)", f1->sym->name,
+			    gfc_typename (&f1->sym->ts),
+			    gfc_typename (&f2->sym->ts));
+		return 0;
+	      }
+	    if (!compare_rank (f2->sym, f1->sym))
+	      {
+		if (errmsg != NULL)
+		  snprintf (errmsg, err_len, "Rank mismatch in argument '%s' "
+			    "(%i/%i)", f1->sym->name, symbol_rank (f1->sym),
+			    symbol_rank (f2->sym));
+		return 0;
+	      }
 	  }
 next:
 	f1 = f1->next;
@@ -1743,16 +1793,6 @@ gfc_check_interfaces (gfc_namespace *ns)
 
 done:
   gfc_current_ns = old_ns;
-}
-
-
-static int
-symbol_rank (gfc_symbol *sym)
-{
-  if (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)
-    return CLASS_DATA (sym)->as->rank;
-
-  return (sym->as == NULL) ? 0 : sym->as->rank;
 }
 
 
