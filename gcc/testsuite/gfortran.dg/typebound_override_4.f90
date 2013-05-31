@@ -22,7 +22,7 @@ module r_mod
   implicit none
   type, extends(base_type) :: r_type
   contains
-    procedure, pass(map)  :: clone    => r_clone   ! { dg-error "Type/rank mismatch in argument" }
+    procedure, pass(map)  :: clone    => r_clone   ! { dg-error "Type mismatch in argument" }
   end type
 contains
   subroutine  r_clone(map,mapout)

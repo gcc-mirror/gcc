@@ -59,12 +59,27 @@ gfc_pop_suppress_errors (void)
 }
 
 
+static int
+get_terminal_width (void)
+{
+  const char *p = getenv ("COLUMNS");
+  if (p)
+    {
+      int value = atoi (p);
+      if (value > 0)
+	return value;
+    }
+  /* Use a reasonable default.  */
+  return 80;
+}
+
+
 /* Per-file error initialization.  */
 
 void
 gfc_error_init_1 (void)
 {
-  terminal_width = gfc_terminal_width ();
+  terminal_width = get_terminal_width ();
   errors = 0;
   warnings = 0;
   buffer_flag = 0;

@@ -1,3 +1,17 @@
+2013-05-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54190
+	PR fortran/57217
+	* gfortran.h (gfc_terminal_width): Remove prototype.
+	* error.c (get_terminal_width): Moved here from misc.c. Renamed.
+	Try to determine terminal width from environment variable.
+	* interface.c (compare_type, compare_rank): New functions. Fix assumed
+	type/rank handling.
+	(compare_type_rank, check_dummy_characteristics,
+	check_result_characteristics, gfc_compare_interfaces): Use them.
+	(symbol_rank): Slightly modified and moved.
+	* misc.c (gfc_terminal_width): Moved to error.c.
+
 2013-05-30  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54189
