@@ -5068,6 +5068,10 @@ aarch64_classify_symbol (rtx x,
 	  return SYMBOL_SMALL_ABSOLUTE;
 
 	case AARCH64_CMODEL_TINY_PIC:
+	  if (!aarch64_symbol_binds_local_p (x))
+	    return SYMBOL_SMALL_GOT;
+	  return SYMBOL_TINY_ABSOLUTE;
+
 	case AARCH64_CMODEL_SMALL_PIC:
 	  if (!aarch64_symbol_binds_local_p (x))
 	    return SYMBOL_SMALL_GOT;
