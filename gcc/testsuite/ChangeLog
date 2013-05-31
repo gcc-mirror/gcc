@@ -1,3 +1,8 @@
+2013-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56315
+	* gcc.target/arm/iordi3-opt.c: New test.
+
 2013-05-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54190
