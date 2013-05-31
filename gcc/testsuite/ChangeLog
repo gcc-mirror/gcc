@@ -1,3 +1,10 @@
+2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/powerpc/e500-ord-1.c: New test.
+	* gcc.target/powerpc/e500-ord-2.c: Likewise.
+	* gcc.target/powerpc/e500-unord-1.c: Likewise.
+	* gcc.target/powerpc/e500-unord-2.c: Likewise.
+
 2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* g++.dg/torture/pr54684.C: Add -fno-short-enums.
