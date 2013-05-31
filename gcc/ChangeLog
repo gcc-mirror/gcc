@@ -1735,7 +1735,7 @@
 
 	* expmed.c (expand_shift_1): Canonicalize rotates by
 	constant bitsize / 2 to bitsize - 1.
-	* simplify-rt.x (simplify_binary_operation_1) <case ROTATE,
+	* simplify-rtx.c (simplify_binary_operation_1) <case ROTATE,
 	case ROTATERT>: Likewise.
 
 	Revert:
