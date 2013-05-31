@@ -1,3 +1,9 @@
+2013-05-31  Richard Henderson  <rth@redhat.com>
+
+	PR target/56742
+	* config/i386/i386.c (ix86_seh_fixup_eh_fallthru): New.
+	(ix86_reorg): Call it.
+
 2012-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* BASE-VER: Set to 4.8.2.
