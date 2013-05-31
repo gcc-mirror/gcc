@@ -1,5 +1,9 @@
 2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* g++.dg/torture/pr54684.C: Add -fno-short-enums.
+
+2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* gcc.target/arm/pr56184.C: Add -fno-short-enums.
 
 2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
