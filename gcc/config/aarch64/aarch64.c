@@ -532,9 +532,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
       {
 	rtx tmp_reg = dest;
 	if (can_create_pseudo_p ())
-	  {
-	    tmp_reg =  gen_reg_rtx (Pmode);
-	  }
+	  tmp_reg =  gen_reg_rtx (Pmode);
 	emit_move_insn (tmp_reg, gen_rtx_HIGH (Pmode, imm));
 	emit_insn (gen_ldr_got_small (dest, tmp_reg, imm));
 	return;
