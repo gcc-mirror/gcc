@@ -1,3 +1,7 @@
+2013-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/shrink-wrap-alloca.c: Use __builtin_alloca.
+
 2013-05-31  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57478
