@@ -1,3 +1,9 @@
+2013-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/57073
+	* tree-ssa-math-opts.c (execute_cse_sincos): Move check
+	further up.
+
 2013-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/56315
