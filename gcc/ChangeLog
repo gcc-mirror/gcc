@@ -1,3 +1,8 @@
+2013-05-31  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
+
+	* config/rl78/rl78.md (mulqi3,mulhi3): New define_expands.
+	(*mulqi3_rl78,*mulhi3_rl78,*mulhi3_g13): New define_insns.
+
 2013-05-30  Tobias Burnus  <burnus@net-b.de>
 	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
