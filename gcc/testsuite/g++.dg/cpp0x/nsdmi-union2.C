@@ -1,5 +1,5 @@
 // PR c++/52377
-// { dg-do run { target c++11 } }
+// { dg-require-effective-target c++11 }
 
 union A				// { dg-error "multiple" }
 {
