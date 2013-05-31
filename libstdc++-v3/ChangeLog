@@ -1,3 +1,7 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
 2013-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* src/c++11/compatibility-chrono.cc (steady_clock::now()): If
