@@ -2067,8 +2067,7 @@ simplify_byte_swapping_operation (enum rtx_code code, enum machine_mode mode,
   rtx tem;
 
   /* (op (bswap x) C1)) -> (bswap (op x C2)) with C2 swapped.  */
-  if (GET_CODE (op0) == BSWAP
-      && (CONST_INT_P (op1) || CONST_DOUBLE_AS_INT_P (op1)))
+  if (GET_CODE (op0) == BSWAP && CONST_SCALAR_INT_P (op1))
     {
       tem = simplify_gen_binary (code, mode, XEXP (op0, 0),
 				 simplify_gen_unary (BSWAP, mode, op1, mode));
@@ -4814,7 +4813,7 @@ simplify_relational_operation_1 (enum rtx_code code, enum machine_mode mode,
   /* (eq/ne (bswap x) C1) simplifies to (eq/ne x C2) with C2 swapped.  */
   if ((code == EQ || code == NE)
       && GET_CODE (op0) == BSWAP
-      && (CONST_INT_P (op1) || CONST_DOUBLE_AS_INT_P (op1)))
+      && CONST_SCALAR_INT_P (op1))
     return simplify_gen_relational (code, mode, cmp_mode, XEXP (op0, 0),
 				    simplify_gen_unary (BSWAP, cmp_mode,
 							op1, cmp_mode));

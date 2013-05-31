@@ -1,3 +1,9 @@
+2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* simplify-rtx.c (simplify_byte_swapping_operation): Use proper macro
+	for constant scalar integers.
+	(simplify_relational_operation_1): Likewise.
+
 2013-05-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000-opts.h (enum processor_type): Reorder.
