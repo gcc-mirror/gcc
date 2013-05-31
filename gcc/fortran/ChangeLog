@@ -1,3 +1,12 @@
+2013-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57456
+	* trans-array.c (gfc_array_init_size): Use passed type spec,
+	when available.
+	(gfc_array_allocate): Pass typespec on.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+	* trans-stmt.c (gfc_trans_allocate): Pass typespec on.
+
 2013-05-31  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/54190

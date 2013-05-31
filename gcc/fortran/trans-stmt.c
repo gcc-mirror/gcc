@@ -4925,7 +4925,7 @@ gfc_trans_allocate (gfc_code * code)
 
       nelems = NULL_TREE;
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen, label_finish,
-			       memsz, &nelems, code->expr3))
+			       memsz, &nelems, code->expr3, &code->ext.alloc.ts))
 	{
 	  bool unlimited_char;
 
