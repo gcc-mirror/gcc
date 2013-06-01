@@ -1,3 +1,10 @@
+2013-06-01  Dinar Temirbulatov  <dinar@kugelworks.com>
+
+	Revert
+	PR rtl-optimization/57268
+	* sched-deps.c (sched_analyze_2): Flush dependence lists if
+	the sum of the read and write lists exceeds MAX_PENDING_LIST_LENGTH.
+
 2013-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	Partially reverted:
