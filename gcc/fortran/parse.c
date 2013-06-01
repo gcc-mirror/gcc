@@ -4270,11 +4270,11 @@ parse_block_data (void)
       s = gfc_get_gsymbol (gfc_new_block->name);
       if (s->defined
 	  || (s->type != GSYM_UNKNOWN && s->type != GSYM_BLOCK_DATA))
-       gfc_global_used(s, NULL);
+       gfc_global_used (s, &gfc_new_block->declared_at);
       else
        {
 	 s->type = GSYM_BLOCK_DATA;
-	 s->where = gfc_current_locus;
+	 s->where = gfc_new_block->declared_at;
 	 s->defined = 1;
        }
     }
@@ -4302,11 +4302,11 @@ parse_module (void)
 
   s = gfc_get_gsymbol (gfc_new_block->name);
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_MODULE))
-    gfc_global_used(s, NULL);
+    gfc_global_used (s, &gfc_new_block->declared_at);
   else
     {
       s->type = GSYM_MODULE;
-      s->where = gfc_current_locus;
+      s->where = gfc_new_block->declared_at;
       s->defined = 1;
     }
 
@@ -4360,7 +4360,7 @@ add_global_procedure (bool sub)
 	  || (s->type != GSYM_UNKNOWN
 	      && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
 	{
-	  gfc_global_used (s, NULL);
+	  gfc_global_used (s, &gfc_new_block->declared_at);
 	  /* Silence follow-up errors.  */
 	  gfc_new_block->binding_label = NULL;
 	}
@@ -4368,7 +4368,7 @@ add_global_procedure (bool sub)
 	{
 	  s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 	  s->sym_name = gfc_new_block->name;
-	  s->where = gfc_current_locus;
+	  s->where = gfc_new_block->declared_at;
 	  s->defined = 1;
 	  s->ns = gfc_current_ns;
 	}
@@ -4385,7 +4385,7 @@ add_global_procedure (bool sub)
 	  || (s->type != GSYM_UNKNOWN
 	      && s->type != (sub ? GSYM_SUBROUTINE : GSYM_FUNCTION)))
 	{
-	  gfc_global_used (s, NULL);
+	  gfc_global_used (s, &gfc_new_block->declared_at);
 	  /* Silence follow-up errors.  */
 	  gfc_new_block->binding_label = NULL;
 	}
@@ -4394,7 +4394,7 @@ add_global_procedure (bool sub)
 	  s->type = sub ? GSYM_SUBROUTINE : GSYM_FUNCTION;
 	  s->sym_name = gfc_new_block->name;
 	  s->binding_label = gfc_new_block->binding_label;
-	  s->where = gfc_current_locus;
+	  s->where = gfc_new_block->declared_at;
 	  s->defined = 1;
 	  s->ns = gfc_current_ns;
 	}
@@ -4414,11 +4414,11 @@ add_global_program (void)
   s = gfc_get_gsymbol (gfc_new_block->name);
 
   if (s->defined || (s->type != GSYM_UNKNOWN && s->type != GSYM_PROGRAM))
-    gfc_global_used(s, NULL);
+    gfc_global_used (s, &gfc_new_block->declared_at);
   else
     {
       s->type = GSYM_PROGRAM;
-      s->where = gfc_current_locus;
+      s->where = gfc_new_block->declared_at;
       s->defined = 1;
       s->ns = gfc_current_ns;
     }

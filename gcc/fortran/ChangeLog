@@ -1,3 +1,11 @@
+2013-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c (add_global_entry): Take locus.
+	(gfc_match_entry): Update call.
+	(gfc_match_end): Better error location.
+	* parse.c (parse_block_data, parse_module, add_global_procedure,
+	add_global_program): Use better locus data.
+
 2013-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57456
