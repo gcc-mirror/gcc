@@ -1,5 +1,10 @@
 2013-06-01  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/57467
+	* passes.c (for_per_function): Skip unanalyzed functions.
+
+2013-06-01  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Rename to ...
 	(lto_symtab_merge_symbols_1): ... this one.
 	(lto_symtab_merge_cgraph_nodes): Rename to ...
