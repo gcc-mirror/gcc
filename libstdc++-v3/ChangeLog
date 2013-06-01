@@ -1,3 +1,19 @@
+2013-05-30  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3642 - User-defined Literals for Standard Library Types
+	* include/bits/parse_numbers.h: New.
+	* include/std/chrono: Add duration literal operators.
+	* include/bits/basic_string.h: Add string literal operators.
+	* include/Makefile.in: Add parse_numbers.h.
+	* include/Makefile.am: Ditto.
+	* testsuite/20_util/duration/literals/values.cc: New.
+	* testsuite/20_util/duration/literals/types.cc: New.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Adjust.
+	* testsuite/21_strings/basic_string/literals/values.cc: New.
+	* testsuite/21_strings/basic_string/literals/types.cc: New.
+
 2013-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* src/c++11/compatibility-chrono.cc (steady_clock::now()): If
