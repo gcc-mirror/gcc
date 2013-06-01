@@ -542,7 +542,7 @@ lto_symtab_merge_decls (void)
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
 
 static void
-lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
+lto_symtab_merge_symbols_1 (symtab_node prevailing)
 {
   symtab_node e, next;
 
@@ -568,88 +568,32 @@ lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
    lto_symtab_merge_decls.  */
 
 void
-lto_symtab_merge_cgraph_nodes (void)
+lto_symtab_merge_symbols (void)
 {
-  struct cgraph_node *cnode;
-  struct varpool_node *vnode;
   symtab_node node;
 
-  /* Populate assembler name hash.   */
-  symtab_initialize_asm_name_hash ();
-
   if (!flag_ltrans)
-    FOR_EACH_SYMBOL (node)
-      if (lto_symtab_symbol_p (node)
-	  && node->symbol.next_sharing_asm_name
-	  && !node->symbol.previous_sharing_asm_name)
-        lto_symtab_merge_cgraph_nodes_1 (node);
-
-  FOR_EACH_FUNCTION (cnode)
     {
-      /* Resolve weakrefs to symbol defined in other unit.  */
-      if (!cnode->symbol.analyzed && cnode->thunk.alias && !DECL_P (cnode->thunk.alias))
-	{
-	  symtab_node node = symtab_node_for_asm (cnode->thunk.alias);
-	  if (node && is_a <cgraph_node> (node))
-	    {
-	      struct cgraph_node *n;
+      symtab_initialize_asm_name_hash ();
 
-	      for (n = cgraph (node); n && n->symbol.alias;
-		   n = n->symbol.analyzed ? cgraph_alias_target (n) : NULL)
-		if (n == cnode)
-		  {
-		    error ("function %q+D part of alias cycle", cnode->symbol.decl);
-		    cnode->symbol.alias = false;
-		    break;
-		  }
-	      if (cnode->symbol.alias)
-		{
-		  cgraph_create_function_alias (cnode->symbol.decl, node->symbol.decl);
-		  ipa_record_reference ((symtab_node)cnode, (symtab_node)node,
-					IPA_REF_ALIAS, NULL);
-		  cnode->symbol.analyzed = true;
-		}
-	    }
-	  else if (node)
-	    error ("%q+D alias in between function and variable is not supported", cnode->symbol.decl);
-	}
-      if ((cnode->thunk.thunk_p || cnode->symbol.alias)
-	  && cnode->thunk.alias && DECL_P (cnode->thunk.alias))
-        cnode->thunk.alias = lto_symtab_prevailing_decl (cnode->thunk.alias);
-      cnode->symbol.aux = NULL;
-    }
-  FOR_EACH_VARIABLE (vnode)
-    {
-      /* Resolve weakrefs to symbol defined in other unit.  */
-      if (!vnode->symbol.analyzed && vnode->alias_of && !DECL_P (vnode->alias_of))
-	{
-	  symtab_node node = symtab_node_for_asm (vnode->alias_of);
-	  if (node && is_a <cgraph_node> (node))
-	    {
-	      struct varpool_node *n;
+      /* Do the actual merging.  */
+      FOR_EACH_SYMBOL (node)
+	if (lto_symtab_symbol_p (node)
+	    && node->symbol.next_sharing_asm_name
+	    && !node->symbol.previous_sharing_asm_name)
+	  lto_symtab_merge_symbols_1 (node);
 
-	      for (n = varpool (node); n && n->symbol.alias;
-		   n = n->symbol.analyzed ? varpool_alias_target (n) : NULL)
-		if (n == vnode)
-		  {
-		    error ("function %q+D part of alias cycle", vnode->symbol.decl);
-		    vnode->symbol.alias = false;
-		    break;
-		  }
-	      if (vnode->symbol.alias)
-		{
-		  varpool_create_variable_alias (vnode->symbol.decl, node->symbol.decl);
-		  ipa_record_reference ((symtab_node)vnode, (symtab_node)node,
-					IPA_REF_ALIAS, NULL);
-		  vnode->symbol.analyzed = true;
-		}
+      /* Resolve weakref aliases whose target are now in the compilation unit.  */
+      FOR_EACH_SYMBOL (node)
+	{
+	  if (!node->symbol.analyzed && node->symbol.alias_target)
+	    {
+	      symtab_node tgt = symtab_node_for_asm (node->symbol.alias_target);
+	      if (tgt)
+		symtab_resolve_alias (node, tgt);
 	    }
-	  else if (node)
-	    error ("%q+D alias in between function and variable is not supported", vnode->symbol.decl);
+	  node->symbol.aux = NULL;
 	}
-      if (vnode->symbol.alias && DECL_P (vnode->alias_of))
-        vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
-      vnode->symbol.aux = NULL;
     }
 }
 

@@ -1,3 +1,8 @@
+2013-06-01  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (cp_write_global_declarations): Replace same_body_alias
+	by symbol.cpp_implicit_alias.
+
 2013-05-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57404

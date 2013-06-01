@@ -231,8 +231,7 @@ cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
   /* Double check that no one output the function into assembly file
      early.  */
   gcc_checking_assert (!DECL_ASSEMBLER_NAME_SET_P (decl)
-	               || (node->thunk.thunk_p || node->same_body_alias)
-	               ||  !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)));
+	               || !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)));
 
 
   /* Keep constructors, destructors and virtual functions.  */
@@ -370,6 +369,8 @@ cgraph_reset_node (struct cgraph_node *node)
   memset (&node->rtl, 0, sizeof (node->rtl));
   node->symbol.analyzed = false;
   node->symbol.definition = false;
+  node->symbol.alias = false;
+  node->symbol.cpp_implicit_alias = false;
 
   cgraph_node_remove_callees (node);
   ipa_remove_all_references (&node->symbol.ref_list);
@@ -426,7 +427,7 @@ cgraph_finalize_function (tree decl, bool nested)
      in the original implementation and it is unclear whether we want
      to change the behavior here.  */
   if ((!optimize
-       && !node->same_body_alias
+       && !node->symbol.cpp_implicit_alias
        && !DECL_DISREGARD_INLINE_LIMITS (decl)
        && !DECL_DECLARED_INLINE_P (decl)
        && !(DECL_CONTEXT (decl)
@@ -573,22 +574,6 @@ output_asm_statements (void)
   asm_nodes = NULL;
 }
 
-/* C++ FE sometimes change linkage flags after producing same body aliases.  */
-void
-fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target, tree alias)
-{
-  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (alias);
-  if (TREE_PUBLIC (node->symbol.decl))
-    {
-      DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (alias);
-      DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (alias);
-      DECL_COMDAT_GROUP (node->symbol.decl) = DECL_COMDAT_GROUP (alias);
-      if (DECL_ONE_ONLY (alias)
-	  && !node->symbol.same_comdat_group)
-	symtab_add_to_same_comdat_group ((symtab_node)node, (symtab_node)target);
-    }
-}
-
 /* Analyze the function scheduled to be output.  */
 static void
 analyze_function (struct cgraph_node *node)
@@ -597,39 +582,14 @@ analyze_function (struct cgraph_node *node)
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
 
-  if (node->symbol.alias && node->thunk.alias)
-    {
-      struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
-      struct cgraph_node *n;
-
-      for (n = tgt; n && n->symbol.alias;
-	   n = n->symbol.analyzed ? cgraph_alias_target (n) : NULL)
-	if (n == node)
-	  {
-	    error ("function %q+D part of alias cycle", node->symbol.decl);
-	    node->symbol.alias = false;
-	    input_location = saved_loc;
-	    return;
-	  }
-      if (!vec_safe_length (node->symbol.ref_list.references))
-        ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
-			      IPA_REF_ALIAS, NULL);
-      if (node->same_body_alias)
-	{ 
-	  DECL_DECLARED_INLINE_P (node->symbol.decl)
-	     = DECL_DECLARED_INLINE_P (node->thunk.alias);
-	  DECL_DISREGARD_INLINE_LIMITS (node->symbol.decl)
-	     = DECL_DISREGARD_INLINE_LIMITS (node->thunk.alias);
-	  fixup_same_cpp_alias_visibility ((symtab_node) node, (symtab_node) tgt, node->thunk.alias);
-	}
-
-      if (node->symbol.address_taken)
-	cgraph_mark_address_taken_node (cgraph_alias_target (node));
-    }
+  if (node->symbol.alias)
+    symtab_resolve_alias
+       ((symtab_node) node, (symtab_node) cgraph_get_node (node->symbol.alias_target));
   else if (node->thunk.thunk_p)
     {
       cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
 			  NULL, 0, CGRAPH_FREQ_BASE);
+      node->thunk.alias = NULL;
     }
   else if (node->dispatcher_function)
     {
@@ -693,16 +653,12 @@ analyze_function (struct cgraph_node *node)
 void
 cgraph_process_same_body_aliases (void)
 {
-  struct cgraph_node *node;
-  FOR_EACH_FUNCTION (node)
-    if (node->same_body_alias
-	&& !vec_safe_length (node->symbol.ref_list.references))
-      {
-        struct cgraph_node *tgt = cgraph_get_node (node->thunk.alias);
-        ipa_record_reference ((symtab_node)node, (symtab_node)tgt,
-			      IPA_REF_ALIAS, NULL);
-      }
-  same_body_aliases_done = true;
+  symtab_node node;
+  FOR_EACH_SYMBOL (node)
+    if (node->symbol.cpp_implicit_alias && !node->symbol.analyzed)
+      symtab_resolve_alias (node,
+			    symtab_get_node (node->symbol.alias_target));
+  cpp_implicit_aliases_done = true;
 }
 
 /* Process attributes common for vars and functions.  */
@@ -890,6 +846,13 @@ analyze_functions (void)
   bitmap_obstack_initialize (NULL);
   cgraph_state = CGRAPH_STATE_CONSTRUCTION;
 
+  /* Ugly, but the fixup can not happen at a time same body alias is created;
+     C++ FE is confused about the COMDAT groups being right.  */
+  if (cpp_implicit_aliases_done)
+    FOR_EACH_SYMBOL (node)
+      if (node->symbol.cpp_implicit_alias)
+	  fixup_same_cpp_alias_visibility (node, symtab_alias_target (node));
+
   /* Analysis adds static variables that in turn adds references to new functions.
      So we need to iterate the process until it stabilize.  */
   while (changed)
@@ -940,7 +903,7 @@ analyze_functions (void)
 	      and later using weak alias attribute to kill its body.
 	      See gcc.c-torture/compile/20011119-1.c  */
 	      if (!DECL_STRUCT_FUNCTION (decl)
-		  && (!cnode->symbol.alias || !cnode->thunk.alias)
+		  && !cnode->symbol.alias
 		  && !cnode->thunk.thunk_p
 		  && !cnode->dispatcher_function)
 		{
@@ -970,7 +933,7 @@ analyze_functions (void)
 	  else
 	    {
 	      varpool_node *vnode = dyn_cast <varpool_node> (node);
-	      if (vnode && vnode->symbol.definition)
+	      if (vnode && vnode->symbol.definition && !vnode->symbol.analyzed)
 		varpool_analyze_node (vnode);
 	    }
 
@@ -1016,7 +979,7 @@ analyze_functions (void)
 	  tree decl = node->symbol.decl;
 
 	  if (cnode->symbol.definition && !gimple_has_body_p (decl)
-	      && (!cnode->symbol.alias || !cnode->thunk.alias)
+	      && !cnode->symbol.alias
 	      && !cnode->thunk.thunk_p)
 	    cgraph_reset_node (cnode);
 
@@ -1057,17 +1020,11 @@ handle_alias_pairs (void)
 	 to later output the weakref pseudo op into asm file.  */
       if (!target_node && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)) != NULL)
 	{
-	  if (TREE_CODE (p->decl) == FUNCTION_DECL)
+	  symtab_node node = symtab_get_node (p->decl);
+	  if (node)
 	    {
-	      struct cgraph_node *anode = cgraph_get_create_node (p->decl);
-	      anode->symbol.alias = true;
-	      anode->thunk.alias = p->target;
-	    }
-	  else
-	    {
-	      struct varpool_node *anode = varpool_get_node (p->decl);
-	      anode->symbol.alias = true;
-	      anode->alias_of = p->target;
+	      node->symbol.alias_target = p->target;
+	      node->symbol.alias = true;
 	    }
 	  DECL_EXTERNAL (p->decl) = 1;
 	  alias_pairs->unordered_remove (i);
@@ -1380,7 +1337,7 @@ assemble_thunk (struct cgraph_node *node)
   HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
   HOST_WIDE_INT virtual_value = node->thunk.virtual_value;
   tree virtual_offset = NULL;
-  tree alias = node->thunk.alias;
+  tree alias = node->callees->callee->symbol.decl;
   tree thunk_fndecl = node->symbol.decl;
   tree a = DECL_ARGUMENTS (thunk_fndecl);
 
@@ -1581,15 +1538,15 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
     if (ref->use == IPA_REF_ALIAS)
       {
 	struct cgraph_node *alias = ipa_ref_referring_node (ref);
-        bool saved_written = TREE_ASM_WRITTEN (alias->thunk.alias);
+        bool saved_written = TREE_ASM_WRITTEN (node->symbol.decl);
 
 	/* Force assemble_alias to really output the alias this time instead
 	   of buffering it in same alias pairs.  */
-	TREE_ASM_WRITTEN (alias->thunk.alias) = 1;
+	TREE_ASM_WRITTEN (node->symbol.decl) = 1;
 	do_assemble_alias (alias->symbol.decl,
-			   DECL_ASSEMBLER_NAME (alias->thunk.alias));
+			   DECL_ASSEMBLER_NAME (node->symbol.decl));
 	assemble_thunks_and_aliases (alias);
-	TREE_ASM_WRITTEN (alias->thunk.alias) = saved_written;
+	TREE_ASM_WRITTEN (node->symbol.decl) = saved_written;
       }
 }
 
@@ -1929,22 +1886,32 @@ get_alias_symbol (tree decl)
 static void
 output_weakrefs (void)
 {
-  struct cgraph_node *node;
-  struct varpool_node *vnode;
-  FOR_EACH_FUNCTION (node)
+  symtab_node node;
+  FOR_EACH_SYMBOL (node)
     if (node->symbol.alias && DECL_EXTERNAL (node->symbol.decl)
         && !TREE_ASM_WRITTEN (node->symbol.decl)
 	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
-      do_assemble_alias (node->symbol.decl,
-		         node->thunk.alias && DECL_P (node->thunk.alias) ? DECL_ASSEMBLER_NAME (node->thunk.alias)
-		         : get_alias_symbol (node->symbol.decl));
-  FOR_EACH_VARIABLE (vnode)
-    if (vnode->symbol.alias && DECL_EXTERNAL (vnode->symbol.decl)
-        && !TREE_ASM_WRITTEN (vnode->symbol.decl)
-	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (vnode->symbol.decl)))
-      do_assemble_alias (vnode->symbol.decl,
-		         vnode->alias_of && DECL_P (vnode->alias_of) ? DECL_ASSEMBLER_NAME (vnode->alias_of)
-		         : get_alias_symbol (vnode->symbol.decl));
+      {
+	tree target;
+
+	/* Weakrefs are special by not requiring target definition in current
+	   compilation unit.  It is thus bit hard to work out what we want to
+	   alias.
+	   When alias target is defined, we need to fetch it from symtab reference,
+	   otherwise it is pointed to by alias_target.  */
+	if (node->symbol.alias_target)
+	  target = (DECL_P (node->symbol.alias_target)
+		    ? DECL_ASSEMBLER_NAME (node->symbol.alias_target)
+		    : node->symbol.alias_target);
+	else if (node->symbol.analyzed)
+	  target = DECL_ASSEMBLER_NAME (symtab_alias_target (node)->symbol.decl);
+	else
+	  {
+	    gcc_unreachable ();
+	    target = get_alias_symbol (node->symbol.decl);
+	  }
+        do_assemble_alias (node->symbol.decl, target);
+      }
 }
 
 /* Initialize callgraph dump file.  */

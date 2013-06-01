@@ -699,7 +699,9 @@ create_emultls_var (struct varpool_node *var, void *data)
   tree cdecl;
   struct varpool_node *cvar;
 
-  cdecl = new_emutls_decl (var->symbol.decl, var->alias_of);
+  cdecl = new_emutls_decl (var->symbol.decl,
+			   var->symbol.alias && var->symbol.analyzed
+			   ? varpool_alias_target (var)->symbol.decl : NULL);
 
   cvar = varpool_get_node (cdecl);
   control_vars.quick_push (cvar);
@@ -711,7 +713,7 @@ create_emultls_var (struct varpool_node *var, void *data)
 	 need to do this once for the main variable.  */
       emutls_common_1 (var->symbol.decl, cdecl, (tree *)data);
     }
-  if (var->symbol.alias && !var->alias_of)
+  if (var->symbol.alias && !var->symbol.analyzed)
     cvar->symbol.alias = true;
 
   /* Indicate that the value of the TLS variable may be found elsewhere,
@@ -767,7 +769,7 @@ ipa_lower_emutls (void)
     {
       var = tls_vars->nodes[i];
 
-      if (var->symbol.alias && !var->alias_of)
+      if (var->symbol.alias && !var->symbol.analyzed)
 	any_aliases = true;
       else if (!var->symbol.alias)
 	varpool_for_node_and_aliases (var, create_emultls_var, &ctor_body, true);

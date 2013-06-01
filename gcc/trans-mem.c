@@ -3933,7 +3933,7 @@ get_cg_data (struct cgraph_node **node, bool traverse_aliases)
   struct tm_ipa_cg_data *d;
 
   if (traverse_aliases && (*node)->symbol.alias)
-    *node = cgraph_get_node ((*node)->thunk.alias);
+    *node = cgraph_alias_target (*node);
 
   d = (struct tm_ipa_cg_data *) (*node)->symbol.aux;
 
@@ -4699,7 +4699,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   tree old_decl, new_decl, tm_name;
   struct cgraph_node *new_node;
 
-  if (!node->same_body_alias)
+  if (!node->symbol.cpp_implicit_alias)
     return false;
 
   old_decl = node->symbol.decl;
@@ -5369,7 +5369,7 @@ ipa_tm_execute (void)
       bool doit = false;
 
       node = tm_callees[i];
-      if (node->same_body_alias)
+      if (node->symbol.cpp_implicit_alias)
 	continue;
 
       a = cgraph_function_body_availability (node);

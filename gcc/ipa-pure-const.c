@@ -1110,7 +1110,7 @@ propagate_pure_const (void)
   if (dump_file)
     {
       dump_cgraph (dump_file);
-      ipa_print_order(dump_file, "reduced", order, order_pos);
+      ipa_print_order (dump_file, "reduced", order, order_pos);
     }
 
   /* Propagate the local information through the call graph to produce

@@ -139,8 +139,7 @@ process_references (struct ipa_ref_list *list,
       symtab_node node = ref->referred;
 
       if (node->symbol.definition
-	  && (!DECL_EXTERNAL (node->symbol.decl)
-	      || node->symbol.alias
+	  && ((!DECL_EXTERNAL (node->symbol.decl) || node->symbol.alias)
 	      || (before_inlining_p
 		  /* We use variable constructors during late complation for
 		     constant folding.  Keep references alive so partitioning
@@ -297,7 +296,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 		  if (e->callee->symbol.definition
 		      && (!e->inline_failed
 			  || !DECL_EXTERNAL (e->callee->symbol.decl)
-			  || cnode->symbol.alias
+			  || e->callee->symbol.alias
 			  || before_inlining_p))
 		    pointer_set_insert (reachable, e->callee);
 		  enqueue_node ((symtab_node) e->callee, &first, reachable);
