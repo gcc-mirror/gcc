@@ -30,5 +30,5 @@ program test
   deallocate(y)
 end
 
-! { dg-final { scan-tree-dump-times "__builtin_malloc (40);" 0 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc \\(40\\);" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }
