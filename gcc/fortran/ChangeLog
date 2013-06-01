@@ -1,3 +1,9 @@
+2013-06-01  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	* error.c (get_terminal_width): Only limit the width if we're
+	outputting to a terminal. Try to determine width via ioctl.
+
 2013-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	* decl.c (add_global_entry): Take locus.
