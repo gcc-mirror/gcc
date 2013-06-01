@@ -1,3 +1,9 @@
+2013-06-01  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57217
+	* interface.c (check_dummy_characteristics): Symmetrize type check.
+
 2013-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* intrinsic.texi (RANDOM_SEED): Improve example.

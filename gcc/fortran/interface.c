@@ -987,7 +987,8 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 			     bool type_must_agree, char *errmsg, int err_len)
 {
   /* Check type and rank.  */
-  if (type_must_agree && !compare_type_rank (s2, s1))
+  if (type_must_agree &&
+      (!compare_type_rank (s1, s2) || !compare_type_rank (s2, s1)))
     {
       if (errmsg != NULL)
 	snprintf (errmsg, err_len, "Type/rank mismatch in argument '%s'",
