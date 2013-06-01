@@ -129,7 +129,7 @@ static GTY(()) struct cgraph_node *free_nodes;
 static GTY(()) struct cgraph_edge *free_edges;
 
 /* Did procss_same_body_aliases run?  */
-bool same_body_aliases_done;
+bool cpp_implicit_aliases_done;
 
 /* Map a cgraph_node to cgraph_function_version_info using this htab.
    The cgraph_function_version_info has a THIS_NODE field that is the
@@ -556,15 +556,16 @@ cgraph_get_create_node (tree decl)
    the function body is associated with (not necessarily cgraph_node (DECL).  */
 
 struct cgraph_node *
-cgraph_create_function_alias (tree alias, tree decl)
+cgraph_create_function_alias (tree alias, tree target)
 {
   struct cgraph_node *alias_node;
 
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL);
+  gcc_assert (TREE_CODE (target) == FUNCTION_DECL
+	      || TREE_CODE (target) == IDENTIFIER_NODE);
   gcc_assert (TREE_CODE (alias) == FUNCTION_DECL);
   alias_node = cgraph_get_create_node (alias);
   gcc_assert (!alias_node->symbol.definition);
-  alias_node->thunk.alias = decl;
+  alias_node->symbol.alias_target = target;
   alias_node->symbol.definition = true;
   alias_node->symbol.alias = true;
   return alias_node;
@@ -589,10 +590,10 @@ cgraph_same_body_alias (struct cgraph_node *decl_node ATTRIBUTE_UNUSED, tree ali
     return NULL;
 
   n = cgraph_create_function_alias (alias, decl);
-  n->same_body_alias = true;
-  if (same_body_aliases_done)
-    ipa_record_reference ((symtab_node)n, (symtab_node)cgraph_get_node (decl),
-			  IPA_REF_ALIAS, NULL);
+  n->symbol.cpp_implicit_alias = true;
+  if (cpp_implicit_aliases_done)
+    symtab_resolve_alias ((symtab_node)n,
+			  (symtab_node)cgraph_get_node (decl));
   return n;
 }
 
@@ -1545,10 +1546,13 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
 
   if (node->thunk.thunk_p)
     {
-      fprintf (f, "  Thunk of %s (asm: %s) fixed offset %i virtual value %i has "
+      fprintf (f, "  Thunk");
+      if (node->thunk.alias)
+        fprintf (f, "  of %s (asm: %s)",
+	         lang_hooks.decl_printable_name (node->thunk.alias, 2),
+	         IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->thunk.alias)));
+      fprintf (f, " fixed offset %i virtual value %i has "
 	       "virtual offset %i)\n",
-	       lang_hooks.decl_printable_name (node->thunk.alias, 2),
-	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (node->thunk.alias)),
 	       (int)node->thunk.fixed_offset,
 	       (int)node->thunk.virtual_value,
 	       (int)node->thunk.virtual_offset_p);
@@ -2288,17 +2292,11 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
     return false;
   node = cgraph_function_or_thunk_node (node, NULL);
 
-  if ((e->callee->former_clone_of != node->symbol.decl
-       && (!node->same_body_alias
-	   || e->callee->former_clone_of != node->thunk.alias))
+  if (e->callee->former_clone_of != node->symbol.decl
       /* IPA-CP sometimes redirect edge to clone and then back to the former
 	 function.  This ping-pong has to go, eventually.  */
       && (node != cgraph_function_or_thunk_node (e->callee, NULL))
-      && !clone_of_p (node, e->callee)
-      /* If decl is a same body alias of some other decl, allow e->callee to be
-	 a clone of a clone of that other decl too.  */
-      && (!node->same_body_alias
-	  || !clone_of_p (cgraph_get_node (node->thunk.alias), e->callee)))
+      && !clone_of_p (cgraph_function_or_thunk_node (node, NULL), e->callee))
     return true;
   else
     return false;

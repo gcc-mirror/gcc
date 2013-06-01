@@ -481,6 +481,14 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " analyzed");
   if (node->symbol.alias)
     fprintf (f, " alias");
+  if (node->symbol.cpp_implicit_alias)
+    fprintf (f, " cpp_implicit_alias");
+  if (node->symbol.alias_target)
+    fprintf (f, " target:%s",
+	     DECL_P (node->symbol.alias_target) 
+	     ? IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME
+				     (node->symbol.alias_target))
+	     : IDENTIFIER_POINTER (node->symbol.alias_target));
   fprintf (f, "\n  Visibility:");
   if (node->symbol.in_other_partition)
     fprintf (f, " in_other_partition");
@@ -666,6 +674,17 @@ verify_symtab_base (symtab_node node)
       error ("node is analyzed byt it is not a definition");
       error_found = true;
     }
+  if (node->symbol.cpp_implicit_alias && !node->symbol.alias)
+    {
+      error ("node is alias but not implicit alias");
+      error_found = true;
+    }
+  if (node->symbol.alias && !node->symbol.definition
+      && !lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+    {
+      error ("node is alias but not definition");
+      error_found = true;
+    }
   if (node->symbol.same_comdat_group)
     {
       symtab_node n = node->symbol.same_comdat_group;
@@ -757,6 +776,7 @@ symtab_used_from_object_file_p (symtab_node node)
 
 /* Make DECL local.  FIXME: We shouldn't need to mess with rtl this early,
    but other code such as notice_global_symbol generates rtl.  */
+
 void
 symtab_make_decl_local (tree decl)
 {
@@ -796,6 +816,17 @@ symtab_make_decl_local (tree decl)
   SYMBOL_REF_WEAK (symbol) = DECL_WEAK (decl);
 }
 
+/* Return availability of NODE.  */
+
+enum availability
+symtab_node_availability (symtab_node node)
+{
+  if (is_a <cgraph_node> (node))
+    return cgraph_function_body_availability (cgraph (node));
+  else
+    return cgraph_variable_initializer_availability (varpool (node));
+}
+
 /* Given NODE, walk the alias chain to return the symbol NODE is alias of.
    If NODE is not an alias, return NODE.
    When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
@@ -804,12 +835,7 @@ symtab_node
 symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
 {
   if (availability)
-    {
-      if (is_a <cgraph_node> (node))
-        *availability = cgraph_function_body_availability (cgraph (node));
-      else
-        *availability = cgraph_variable_initializer_availability (varpool (node));
-    }
+    *availability = symtab_node_availability (node);
   while (node)
     {
       if (node->symbol.alias && node->symbol.analyzed)
@@ -818,11 +844,7 @@ symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
 	return node;
       if (node && availability)
 	{
-	  enum availability a;
-	  if (is_a <cgraph_node> (node))
-	    a = cgraph_function_body_availability (cgraph (node));
-	  else
-	    a = cgraph_variable_initializer_availability (varpool (node));
+	  enum availability a = symtab_node_availability (node);
 	  if (a < *availability)
 	    *availability = a;
 	}
@@ -830,5 +852,94 @@ symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
   if (availability)
     *availability = AVAIL_NOT_AVAILABLE;
   return NULL;
+}
+
+/* C++ FE sometimes change linkage flags after producing same body aliases.
+
+   FIXME: C++ produce implicit aliases for virtual functions and vtables that
+   are obviously equivalent.  The way it is doing so is however somewhat
+   kludgy and interferes with the visibility code. As a result we need to
+   copy the visibility from the target to get things right.  */
+
+void
+fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target)
+{
+  if (is_a <cgraph_node> (node))
+    {
+      DECL_DECLARED_INLINE_P (node->symbol.decl)
+	 = DECL_DECLARED_INLINE_P (target->symbol.decl);
+      DECL_DISREGARD_INLINE_LIMITS (node->symbol.decl)
+	 = DECL_DISREGARD_INLINE_LIMITS (target->symbol.decl);
+    }
+  /* FIXME: It is not really clear why those flags should not be copied for
+     functions, too.  */
+  else
+    {
+      DECL_WEAK (node->symbol.decl) = DECL_WEAK (target->symbol.decl);
+      DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (target->symbol.decl);
+      DECL_VISIBILITY (node->symbol.decl) = DECL_VISIBILITY (target->symbol.decl);
+    }
+  DECL_VIRTUAL_P (node->symbol.decl) = DECL_VIRTUAL_P (target->symbol.decl);
+  if (TREE_PUBLIC (node->symbol.decl))
+    {
+      DECL_EXTERNAL (node->symbol.decl) = DECL_EXTERNAL (target->symbol.decl);
+      DECL_COMDAT (node->symbol.decl) = DECL_COMDAT (target->symbol.decl);
+      DECL_COMDAT_GROUP (node->symbol.decl)
+	 = DECL_COMDAT_GROUP (target->symbol.decl);
+      if (DECL_ONE_ONLY (target->symbol.decl)
+	  && !node->symbol.same_comdat_group)
+	symtab_add_to_same_comdat_group ((symtab_node)node, (symtab_node)target);
+    }
+  node->symbol.externally_visible = target->symbol.externally_visible;
+}
+
+/* Add reference recording that NODE is alias of TARGET.
+   The function can fail in the case of aliasing cycles; in this case
+   it returns false.  */
+
+bool
+symtab_resolve_alias (symtab_node node, symtab_node target)
+{
+  symtab_node n;
+
+  gcc_assert (!node->symbol.analyzed
+	      && !vec_safe_length (node->symbol.ref_list.references));
+
+  /* Never let cycles to creep into the symbol table alias references;
+     those will make alias walkers to be infinite.  */
+  for (n = target; n && n->symbol.alias;
+       n = n->symbol.analyzed ? symtab_alias_target (n) : NULL)
+    if (n == node)
+       {
+	 if (is_a <cgraph_node> (node))
+           error ("function %q+D part of alias cycle", node->symbol.decl);
+         else if (is_a <varpool_node> (node))
+           error ("variable %q+D part of alias cycle", node->symbol.decl);
+	 else
+	   gcc_unreachable ();
+	 node->symbol.alias = false;
+	 return false;
+       }
+
+  /* "analyze" the node - i.e. mark the reference.  */
+  node->symbol.definition = true;
+  node->symbol.alias = true;
+  node->symbol.analyzed = true;
+  ipa_record_reference (node, target, IPA_REF_ALIAS, NULL);
+
+  /* Alias targets become reudndant after alias is resolved into an reference.
+     We do not want to keep it around or we would have to mind updating them
+     when renaming symbols.  */
+  node->symbol.alias_target = NULL;
+  DECL_ATTRIBUTES (node->symbol.decl)
+     = remove_attribute ("alias", DECL_ATTRIBUTES (node->symbol.decl));
+
+  if (node->symbol.cpp_implicit_alias && cgraph_state >= CGRAPH_STATE_CONSTRUCTION)
+    fixup_same_cpp_alias_visibility (node, target);
+
+  /* If alias has address taken, so does the target.  */
+  if (node->symbol.address_taken)
+    symtab_alias_ultimate_target (target, NULL)->symbol.address_taken = true;
+  return true;
 }
 #include "gt-symtab.h"

@@ -1,3 +1,70 @@
+2013-06-01  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_cgraph_nodes_1): Rename to ...
+	(lto_symtab_merge_symbols_1): ... this one.
+	(lto_symtab_merge_cgraph_nodes): Rename to ...
+	(lto_symtab_merge_symbols): ... this one; simplify.
+	* cgraph.c (same_body_aliases_done): Rename to ...
+	(cpp_implicit_aliases_done): ... this one.
+	(cgraph_create_function_alias): Update.
+	(cgraph_same_body_alias): Update.
+	(dump_cgraph_node): Remove alias dumping; simplify
+	thunk dumping.
+	(verify_edge_corresponds_to_fndecl): Simplify.
+	* cgraph.h (symtab_node_base): Add cpp_implicit_alias,
+	alias_target.
+	(cgraph_node): Remove same_body_alias.
+	(varpool_node): Remove alias_of and extra_name_alias.
+	(same_body_aliases_done): Rename to ..
+	(cpp_implicit_aliases_done): ... this one.
+	(symtab_alias_ultimate_target): Add default parameter.
+	(symtab_resolve_alias): New function.
+	(fixup_same_cpp_alias_visibility): Declare.
+	(cgraph_function_node): Add default parameter.
+	(cgraph_node_asm_name): Likewise.
+	(cgraph_function_or_thunk_node): Add default parameter; do
+	not ICE when it is NULL.
+	(varpool_variable_node): Likewise.
+	* tree-emutls.c (create_emultls_var): Update.
+	(ipa_lower_emutls): Update.
+	* cgraphunit.c (cgraph_decide_is_function_needed): Update.
+	(cgraph_reset_node): Reset alias info.
+	(cgraph_finalize_function): Update.
+	(fixup_same_cpp_alias_visibility): Move to symtab.c.
+	(analyze_function): Simplify.
+	(cgraph_process_same_body_aliases): Simplify.
+	(analyze_functions): Fixup same body aliases.
+	(handle_alias_pairs): Simplify.
+	(assemble_thunk): Update.
+	(assemble_thunks_and_aliases): Update.
+	(output_weakrefs): Rewrite.
+	* lto-cgraph.c (lto_output_node): Rewrite alias handling.
+	(lto_output_varpool_node): Likewise.
+	(compute_ltrans_boundary): Remve assert.
+	(get_alias_symbol): New functoin.
+	(input_node): Rewrite alias handling.
+	(input_varpool_node): Likewise.
+	* ipa-pure-const.c (propagate_pure_const): Fix formating.
+	* ipa.c (process_references): Handle weakrefs correctly.
+	(symtab_remove_unreachable_nodes): Likewise.
+	* trans-mem.c (get_cg_data): Update.
+	(ipa_tm_create_version_alias): Update.
+	(ipa_tm_execute): Update.
+	* symtab.c (dump_symtab_base): Dump aliases.
+	(verify_symtab_base): Verify aliases.
+	(symtab_node_availability): New function.
+	(symtab_alias_ultimate_target): Simplify.
+	(fixup_same_cpp_alias_visibility): Move here from cgraphunit.c;
+	handle all the fixup cases.
+	(symtab_resolve_alias): New function.
+	* passes.c (ipa_write_summaries): Handle weakrefs.
+	* varpool.c (varpool_analyze_node): Simplify.
+	(assemble_aliases): Update.
+	(varpool_create_variable_alias): Simplify.
+	(varpool_extra_name_alias): Simplify.
+	* lto-streamer.h (lto_symtab_merge_cgraph_nodes): Rename to...
+	(lto_symtab_merge_symbols): ... this one.
+
 2013-06-01  Dinar Temirbulatov  <dinar@kugelworks.com>
 
 	Revert

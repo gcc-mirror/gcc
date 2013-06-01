@@ -56,6 +56,13 @@ struct GTY(()) symtab_node_base
   /* True when symbol is an alias.  
      Set by assemble_alias.  */
   unsigned alias : 1;
+  /* C++ frontend produce same body aliases and extra name aliases for
+     virutal functions and vtables that are obviously equivalent.
+     Those aliases are bit special, especially because C++ frontend
+     visibility code is so ugly it can not get them right at first time
+     and their visibility needs to be copied from their "masters" at
+     the end of parsing.  */
+  unsigned cpp_implicit_alias : 1;
   /* Set once the definition was analyzed.  The list of references and
      other properties are built during analysis.  */
   unsigned analyzed : 1;
@@ -118,6 +125,11 @@ struct GTY(()) symtab_node_base
 
   /* Vectors of referring and referenced entities.  */
   struct ipa_ref_list ref_list;
+
+  /* Alias target. May be either DECL pointer or ASSEMBLER_NAME pointer
+     depending to what was known to frontend on the creation time.
+     Once alias is resolved, this pointer become NULL.  */
+  tree alias_target;
 
   /* File stream where this node is being written to.  */
   struct lto_file_decl_data * lto_file_data;
@@ -291,8 +303,6 @@ struct GTY(()) cgraph_node {
   /* Set once the function has been instantiated and its callee
      lists created.  */
   unsigned process : 1;
-  /* Set for aliases created as C++ same body aliases.  */
-  unsigned same_body_alias : 1;
   /* How commonly executed the node is.  Initialized during branch
      probabilities pass.  */
   ENUM_BITFIELD (node_frequency) frequency : 2;
@@ -478,12 +488,9 @@ typedef struct cgraph_edge *cgraph_edge_p;
 
 struct GTY(()) varpool_node {
   struct symtab_node_base symbol;
-  /* For aliases points to declaration DECL is alias of.  */
-  tree alias_of;
 
   /* Set when variable is scheduled to be assembled.  */
   unsigned output : 1;
-  unsigned extra_name_alias : 1;
 };
 
 /* Every top level asm statement is put into a asm_node.  */
@@ -553,7 +560,7 @@ extern cgraph_node_set cgraph_new_nodes;
 
 extern GTY(()) struct asm_node *asm_nodes;
 extern GTY(()) int symtab_order;
-extern bool same_body_aliases_done;
+extern bool cpp_implicit_aliases_done;
 
 /* In symtab.c  */
 void symtab_register_node (symtab_node);
@@ -576,7 +583,10 @@ void verify_symtab_node (symtab_node);
 bool verify_symtab_base (symtab_node);
 bool symtab_used_from_object_file_p (symtab_node);
 void symtab_make_decl_local (tree);
-symtab_node symtab_alias_ultimate_target (symtab_node, enum availability *);
+symtab_node symtab_alias_ultimate_target (symtab_node,
+					  enum availability *avail = NULL);
+bool symtab_resolve_alias (symtab_node node, symtab_node target);
+void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -672,7 +682,8 @@ struct cgraph_2node_hook_list *cgraph_add_node_duplication_hook (cgraph_2node_ho
 void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
-struct cgraph_node * cgraph_function_node (struct cgraph_node *, enum availability *);
+struct cgraph_node * cgraph_function_node (struct cgraph_node *,
+					   enum availability *avail = NULL);
 
 /* In cgraphunit.c  */
 struct asm_node *add_asm_node (tree);
@@ -822,7 +833,7 @@ varpool_get_node (const_tree decl)
 
 /* Return asm name of cgraph node.  */
 static inline const char *
-cgraph_node_asm_name(struct cgraph_node *node)
+cgraph_node_asm_name (struct cgraph_node *node)
 {
   return symtab_node_asm_name ((symtab_node)node);
 }
@@ -1258,12 +1269,14 @@ varpool_alias_target (struct varpool_node *n)
    When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
 
 static inline struct cgraph_node *
-cgraph_function_or_thunk_node (struct cgraph_node *node, enum availability *availability)
+cgraph_function_or_thunk_node (struct cgraph_node *node,
+			       enum availability *availability = NULL)
 {
   struct cgraph_node *n;
 
-  n = dyn_cast <cgraph_node> (symtab_alias_ultimate_target ((symtab_node)node, availability));
-  if (!n)
+  n = dyn_cast <cgraph_node> (symtab_alias_ultimate_target ((symtab_node)node,
+							    availability));
+  if (!n && availability)
     *availability = AVAIL_NOT_AVAILABLE;
   return n;
 }
@@ -1272,12 +1285,14 @@ cgraph_function_or_thunk_node (struct cgraph_node *node, enum availability *avai
    When AVAILABILITY is non-NULL, get minimal availability in the chain.  */
 
 static inline struct varpool_node *
-varpool_variable_node (struct varpool_node *node, enum availability *availability)
+varpool_variable_node (struct varpool_node *node,
+		       enum availability *availability = NULL)
 {
   struct varpool_node *n;
 
-  n = dyn_cast <varpool_node> (symtab_alias_ultimate_target ((symtab_node)node, availability));
-  if (!n)
+  n = dyn_cast <varpool_node> (symtab_alias_ultimate_target ((symtab_node)node,
+							     availability));
+  if (!n && availability)
     *availability = AVAIL_NOT_AVAILABLE;
   return n;
 }

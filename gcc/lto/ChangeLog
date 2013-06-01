@@ -1,3 +1,9 @@
+2013-06-01  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Simplify dumping; Replace
+	lto_symtab_merge_cgraph_nodes by lto_symtab_merge_symbols.
+	(do_whole_program_analysis): Update dumping.
+
 2013-05-29  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (has_analyzed_clone_p, lto_materialize_function): Update for new symtab

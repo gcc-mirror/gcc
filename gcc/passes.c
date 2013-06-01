@@ -2461,6 +2461,7 @@ ipa_write_summaries (void)
   lto_symtab_encoder_t encoder;
   int i, order_pos;
   struct varpool_node *vnode;
+  struct cgraph_node *node;
   struct cgraph_node **order;
 
   if (!flag_generate_lto || seen_error ())
@@ -2496,9 +2497,11 @@ ipa_write_summaries (void)
         lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
     }
 
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (node->symbol.alias)
+      lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if ((!vnode->symbol.alias || vnode->alias_of))
-      lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
+    lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
 
   ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
 

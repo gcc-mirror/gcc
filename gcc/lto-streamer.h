@@ -898,7 +898,7 @@ lto_symtab_encoder_t compute_ltrans_boundary (lto_symtab_encoder_t encoder);
 
 /* In lto-symtab.c.  */
 extern void lto_symtab_merge_decls (void);
-extern void lto_symtab_merge_cgraph_nodes (void);
+extern void lto_symtab_merge_symbols (void);
 extern tree lto_symtab_prevailing_decl (tree decl);
 extern GTY(()) vec<tree, va_gc> *lto_global_var_decls;
 
