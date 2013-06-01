@@ -1996,6 +1996,32 @@ compile (void)
   bitmap_obstack_release (NULL);
   mark_functions_to_output ();
 
+  /* When weakref support is missing, we autmatically translate all
+     references to NODE to references to its ultimate alias target.
+     The renaming mechanizm uses flag IDENTIFIER_TRANSPARENT_ALIAS and
+     TREE_CHAIN.
+
+     Set up this mapping before we output any assembler but once we are sure
+     that all symbol renaming is done.
+
+     FIXME: All this uglyness can go away if we just do renaming at gimple
+     level by physically rewritting the IL.  At the moment we can only redirect
+     calls, so we need infrastructure for renaming references as well.  */
+#ifndef ASM_OUTPUT_WEAKREF
+  symtab_node node;
+
+  FOR_EACH_SYMBOL (node)
+    if (node->symbol.alias
+	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+      {
+	IDENTIFIER_TRANSPARENT_ALIAS
+	   (DECL_ASSEMBLER_NAME (node->symbol.decl)) = 1;
+	TREE_CHAIN (DECL_ASSEMBLER_NAME (node->symbol.decl))
+	   = (node->symbol.alias_target ? node->symbol.alias_target
+	      : DECL_ASSEMBLER_NAME (symtab_alias_target (node)->symbol.decl));
+      }
+#endif
+
   cgraph_state = CGRAPH_STATE_EXPANSION;
   if (!flag_toplevel_reorder)
     output_in_order ();
