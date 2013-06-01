@@ -1447,9 +1447,6 @@ execute_cse_sincos (void)
 		  arg1 = gimple_call_arg (stmt, 1);
 		  loc = gimple_location (stmt);
 
-		  if (!host_integerp (arg1, 0))
-		    break;
-
 		  if (real_minus_onep (arg0))
 		    {
                       tree t0, t1, cond, one, minus_one;
@@ -1477,6 +1474,9 @@ execute_cse_sincos (void)
 		    }
 		  else
 		    {
+		      if (!host_integerp (arg1, 0))
+			break;
+
 		      n = TREE_INT_CST_LOW (arg1);
 		      result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
 		    }
