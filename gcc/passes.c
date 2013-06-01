@@ -1709,7 +1709,7 @@ do_per_function (void (*callback) (void *data), void *data)
     {
       struct cgraph_node *node;
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (gimple_has_body_p (node->symbol.decl)
+	if (node->symbol.analyzed && gimple_has_body_p (node->symbol.decl)
 	    && (!node->clone_of || node->symbol.decl != node->clone_of->symbol.decl))
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
