@@ -5354,7 +5354,8 @@ cleanup:
    to return false upon finding an existing global entry.  */
 
 static bool
-add_global_entry (const char *name, const char *binding_label, bool sub)
+add_global_entry (const char *name, const char *binding_label, bool sub,
+		  locus *where)
 {
   gfc_gsymbol *s;
   enum gfc_symbol_type type;
@@ -5369,14 +5370,14 @@ add_global_entry (const char *name, const char *binding_label, bool sub)
 
       if (s->defined || (s->type != GSYM_UNKNOWN && s->type != type))
 	{
-	  gfc_global_used(s, NULL);
+	  gfc_global_used (s, where);
 	  return false;
 	}
       else
 	{
 	  s->type = type;
 	  s->sym_name = name;
-	  s->where = gfc_current_locus;
+	  s->where = *where;
 	  s->defined = 1;
 	  s->ns = gfc_current_ns;
 	}
@@ -5391,7 +5392,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub)
 
       if (s->defined || (s->type != GSYM_UNKNOWN && s->type != type))
 	{
-	  gfc_global_used(s, NULL);
+	  gfc_global_used (s, where);
 	  return false;
 	}
       else
@@ -5399,7 +5400,7 @@ add_global_entry (const char *name, const char *binding_label, bool sub)
 	  s->type = type;
 	  s->sym_name = name;
 	  s->binding_label = binding_label;
-	  s->where = gfc_current_locus;
+	  s->where = *where;
 	  s->defined = 1;
 	  s->ns = gfc_current_ns;
 	}
@@ -5528,6 +5529,7 @@ gfc_match_entry (void)
 
   /* Check what next non-whitespace character is so we can tell if there
      is the required parens if we have a BIND(C).  */
+  old_loc = gfc_current_locus;
   gfc_gobble_whitespace ();
   peek_char = gfc_peek_ascii_char ();
 
@@ -5555,7 +5557,8 @@ gfc_match_entry (void)
 	}
 
       if (!gfc_current_ns->parent
-	  && !add_global_entry (name, entry->binding_label, true))
+	  && !add_global_entry (name, entry->binding_label, true,
+				&old_loc))
 	return MATCH_ERROR;
 
       /* An entry in a subroutine.  */
@@ -5574,7 +5577,6 @@ gfc_match_entry (void)
 	    ENTRY f() RESULT (r)
 	 can't be written as
 	    ENTRY f RESULT (r).  */
-      old_loc = gfc_current_locus;
       if (gfc_match_eos () == MATCH_YES)
 	{
 	  gfc_current_locus = old_loc;
@@ -5624,7 +5626,8 @@ gfc_match_entry (void)
 	}
 
       if (!gfc_current_ns->parent
-	  && !add_global_entry (name, entry->binding_label, false))
+	  && !add_global_entry (name, entry->binding_label, false,
+				&old_loc))
 	return MATCH_ERROR;
     }
 
@@ -6108,6 +6111,7 @@ gfc_match_end (gfc_statement *st)
       goto cleanup;
     }
 
+  old_loc = gfc_current_locus;
   if (gfc_match_eos () == MATCH_YES)
     {
       if (!eos_ok && (*st == ST_END_SUBROUTINE || *st == ST_END_FUNCTION))
@@ -6131,10 +6135,12 @@ gfc_match_end (gfc_statement *st)
   /* Verify that we've got the sort of end-block that we're expecting.  */
   if (gfc_match (target) != MATCH_YES)
     {
-      gfc_error ("Expecting %s statement at %C", gfc_ascii_statement (*st));
+      gfc_error ("Expecting %s statement at %L", gfc_ascii_statement (*st),
+		 &old_loc);
       goto cleanup;
     }
 
+  old_loc = gfc_current_locus;
   /* If we're at the end, make sure a block name wasn't required.  */
   if (gfc_match_eos () == MATCH_YES)
     {
@@ -6147,8 +6153,8 @@ gfc_match_end (gfc_statement *st)
       if (!block_name)
 	return MATCH_YES;
 
-      gfc_error ("Expected block name of '%s' in %s statement at %C",
-		 block_name, gfc_ascii_statement (*st));
+      gfc_error ("Expected block name of '%s' in %s statement at %L",
+		 block_name, gfc_ascii_statement (*st), &old_loc);
 
       return MATCH_ERROR;
     }
