@@ -5560,13 +5560,6 @@ assemble_alias (tree decl, tree target)
 
       if (alias == target)
 	error ("weakref %q+D ultimately targets itself", decl);
-      else
-	{
-#ifndef ASM_OUTPUT_WEAKREF
-	  IDENTIFIER_TRANSPARENT_ALIAS (alias) = 1;
-	  TREE_CHAIN (alias) = target;
-#endif
-	}
       if (TREE_PUBLIC (decl))
 	error ("weakref %q+D must have static linkage", decl);
     }
