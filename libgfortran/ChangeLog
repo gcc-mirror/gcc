@@ -1,3 +1,11 @@
+2013-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57496
+	* io/write_float.def (ISFINITE2Q, ISFINITE2, ISFINITE2L, ISFINITE,
+	SIGNBIT2Q, SIGNBIT2, SIGNBIT2L, SIGNBIT, ISNAN2Q, ISNAN2, ISNAN2L,
+	ISNAN): New macros.
+	(output_float_FMT_G_,WRITE_FLOAT): Use them.
+
 2013-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* acinclude.m4 (libgfor_cv_have_as_needed): Check for -z ignore, too.
@@ -19,25 +27,25 @@
 
 2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        * intrinsics/system_clock (gf_gettime_mono): Use variable
-        resolution for fractional seconds argument.
-        (system_clock_4): Simplify, update for gf_gettime_mono change.
-        (system_clock_8): Likewise.
+	* intrinsics/system_clock (gf_gettime_mono): Use variable
+	resolution for fractional seconds argument.
+	(system_clock_4): Simplify, update for gf_gettime_mono change.
+	(system_clock_8): Likewise.
 
 2013-04-29  Janne Blomqvist  <jb@gcc.gnu.org>
 
-        PR fortran/56981
-        * io/transfer.c (next_record_w_unf): First fix head marker, then
-        write tail.
-        (next_record): Call flush_if_unbuffered.
-        * io/unix.c (struct unix_stream): Add field unbuffered.
-        (flush_if_unbuffered): New function.
-        (fd_to_stream): New argument.
-        (open_external): Fix fd_to_stream call.
-        (input_stream): Likewise.
-        (output_stream): Likewise.
-        (error_stream): Likewise.
-        * io/unix.h (flush_if_unbuffered): New prototype.
+	PR fortran/56981
+	* io/transfer.c (next_record_w_unf): First fix head marker, then
+	write tail.
+	(next_record): Call flush_if_unbuffered.
+	* io/unix.c (struct unix_stream): Add field unbuffered.
+	(flush_if_unbuffered): New function.
+	(fd_to_stream): New argument.
+	(open_external): Fix fd_to_stream call.
+	(input_stream): Likewise.
+	(output_stream): Likewise.
+	(error_stream): Likewise.
+	* io/unix.h (flush_if_unbuffered): New prototype.
 
 2013-04-28  Janne Blomqvist  <jb@gcc.gnu.org>
 
