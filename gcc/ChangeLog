@@ -1,3 +1,16 @@
+2013-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57268
+	* sched-deps.c (sched_analyze_2): Don't flush_pedning_lists
+	if DEBUG_INSN_P (insn).
+
+	Reapply
+	2013-05-31  Dinar Temirbulatov  <dinar@kugelworks.com>
+
+	PR rtl-optimization/57268
+	* sched-deps.c (sched_analyze_2): Flush dependence lists if
+	the sum of the read and write lists exceeds MAX_PENDING_LIST_LENGTH.
+
 2013-06-03  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
 
 	* config/i386/i386.c (ix86_lea_outperforms): Fix formatting.
