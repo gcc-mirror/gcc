@@ -1,3 +1,105 @@
+2013-06-01  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	* error.c (get_terminal_width): Only limit the width if we're
+	outputting to a terminal. Try to determine width via ioctl.
+
+2013-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c (add_global_entry): Take locus.
+	(gfc_match_entry): Update call.
+	(gfc_match_end): Better error location.
+	* parse.c (parse_block_data, parse_module, add_global_procedure,
+	add_global_program): Use better locus data.
+
+2013-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57456
+	* trans-array.c (gfc_array_init_size): Use passed type spec,
+	when available.
+	(gfc_array_allocate): Pass typespec on.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+	* trans-stmt.c (gfc_trans_allocate): Pass typespec on.
+
+2013-05-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54190
+	PR fortran/57217
+	* gfortran.h (gfc_terminal_width): Remove prototype.
+	* error.c (get_terminal_width): Moved here from misc.c. Renamed.
+	Try to determine terminal width from environment variable.
+	* interface.c (compare_type, compare_rank): New functions. Fix assumed
+	type/rank handling.
+	(compare_type_rank, check_dummy_characteristics,
+	check_result_characteristics, gfc_compare_interfaces): Use them.
+	(symbol_rank): Slightly modified and moved.
+	* misc.c (gfc_terminal_width): Moved to error.c.
+
+2013-05-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54189
+	* resolve.c (check_assumed_size_reference): Check for e->ref.
+
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57458
+	* interface.c (compare_parameter): Update C1239/C1240 constraint
+	check for assumed-rank/TS29113.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* class.c (finalize_component): Fix coarray array refs.
+	(generate_finalization_wrapper): Only gfc_convert_type_warn
+	when the kind value is different.
+	(gfc_find_intrinsic_vtab): _copy's dst is now intent(inout).
+	(gfc_find_derived_vtab): Ditto. Enable finalization-wrapper
+	generation.
+	* module.c (MOD_VERSION): Bump.
+	(gfc_dump_module, gfc_use_module): Remove empty line in .mod.
+	* trans-array.c (gfc_conv_descriptor_token): Accept nonrestricted
+	void pointer.
+	(gfc_array_allocate, structure_alloc_comps): Don't nullify for
+	BT_CLASS allocations.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* resolve.c (gfc_resolve_finalizers): Remove not implemented error.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate
+	polymorphic arrays for allocatable intent(out) dummies.
+	(gfc_reset_vptr): New function, moved from trans-stmt.c
+	and extended.
+	* trans-stmt.c (reset_vptr): Remove.
+	(gfc_trans_deallocate): Update calls.
+	* trans.h (gfc_reset_vptr): New prototype.
+
+2013-05-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/57435
+	* module.c (check_for_ambiguous): Avoid null pointer deref.
+
+2013-05-28  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57217
+	* interface.c (check_dummy_characteristics): Symmetrize type check.
+
+2013-05-27  Bud Davis  <jmdavis@link.com>
+
+	PR fortran/50405
+	* resolve.c (resolve_formal_arglist): Detect error when an argument
+	has the same name as the function.
+
+2013-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (gfc_build_intrinsic_call): Make symbol as attr.artificial.
+	* intrinsic.c (gfc_is_intrinsic): Disable std check for those.
+
 2013-05-22  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (get_temp_from_expr): Change mangling to

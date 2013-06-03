@@ -1,3 +1,9 @@
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sol2-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Do not set
+	fs->signal_frame for SIGFPE raised for IEEE-754 exceptions.
+	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Likewise.
+
 2013-05-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.host (powerpc-*-elf*): Add rs6000/t-savresfgpr to tmake_file.

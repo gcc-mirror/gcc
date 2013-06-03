@@ -995,7 +995,7 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 endif
 
-ifeq ($(strip $(filter-out arm% linux-androideabi,$(arch) $(osys)-$(word 4,$(targ)))),)
+ifeq ($(strip $(filter-out arm% androideabi,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \

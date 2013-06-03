@@ -856,25 +856,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename... _TElements, typename... _UElements>
-    inline constexpr bool
+    constexpr bool
     operator!=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__t == __u); }
 
   template<typename... _TElements, typename... _UElements>
-    inline constexpr bool
+    constexpr bool
     operator>(const tuple<_TElements...>& __t,
 	      const tuple<_UElements...>& __u)
     { return __u < __t; }
 
   template<typename... _TElements, typename... _UElements>
-    inline constexpr bool
+    constexpr bool
     operator<=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__u < __t); }
 
   template<typename... _TElements, typename... _UElements>
-    inline constexpr bool
+    constexpr bool
     operator>=(const tuple<_TElements...>& __t,
 	       const tuple<_UElements...>& __u)
     { return !(__t < __u); }

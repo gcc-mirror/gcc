@@ -166,7 +166,7 @@
 })
 
 (define_predicate "aarch64_mov_operand"
-  (and (match_code "reg,subreg,mem,const_int,symbol_ref,high")
+  (and (match_code "reg,subreg,mem,const,const_int,symbol_ref,label_ref,high")
        (ior (match_operand 0 "register_operand")
 	    (ior (match_operand 0 "memory_operand")
 		 (match_test "aarch64_mov_operand_p (op, SYMBOL_CONTEXT_ADR, mode)")))))

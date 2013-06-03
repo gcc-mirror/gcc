@@ -2580,7 +2580,7 @@ tree_could_trap_p (tree expr)
       /* Assume that accesses to weak functions may trap, unless we know
 	 they are certainly defined in current TU or in some other
 	 LTO partition.  */
-      if (DECL_WEAK (expr))
+      if (DECL_WEAK (expr) && !DECL_COMDAT (expr))
 	{
 	  struct cgraph_node *node;
 	  if (!DECL_EXTERNAL (expr))
@@ -2596,7 +2596,7 @@ tree_could_trap_p (tree expr)
       /* Assume that accesses to weak vars may trap, unless we know
 	 they are certainly defined in current TU or in some other
 	 LTO partition.  */
-      if (DECL_WEAK (expr))
+      if (DECL_WEAK (expr) && !DECL_COMDAT (expr))
 	{
 	  struct varpool_node *node;
 	  if (!DECL_EXTERNAL (expr))

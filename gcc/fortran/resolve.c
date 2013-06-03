@@ -306,6 +306,14 @@ resolve_formal_arglist (gfc_symbol *proc)
 	       && !resolve_procedure_interface (sym))
 	return;
 
+      if (strcmp (proc->name, sym->name) == 0)
+        {
+          gfc_error ("Self-referential argument "
+                     "'%s' at %L is not allowed", sym->name,
+                     &proc->declared_at);
+          return;
+        }
+
       if (sym->attr.if_source != IFSRC_UNKNOWN)
 	resolve_formal_arglist (sym);
 
@@ -1451,7 +1459,7 @@ check_assumed_size_reference (gfc_symbol *sym, gfc_expr *e)
 
   /* FIXME: The comparison "e->ref->u.ar.type == AR_FULL" is wrong.
      What should it be?  */
-  if ((e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
+  if (e->ref && (e->ref->u.ar.end[e->ref->u.ar.as->rank - 1] == NULL)
 	  && (e->ref->u.ar.as->type == AS_ASSUMED_SIZE)
 	       && (e->ref->u.ar.type == AR_FULL))
     {
@@ -11232,10 +11240,6 @@ error:
     gfc_warning ("Only array FINAL procedures declared for derived type '%s'"
 		 " defined at %L, suggest also scalar one",
 		 derived->name, &derived->declared_at);
-
-  /* TODO:  Remove this error when finalization is finished.  */
-  gfc_error ("Finalization at %L is not yet implemented",
-	     &derived->declared_at);
 
   gfc_find_derived_vtab (derived);
   return result;

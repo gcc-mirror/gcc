@@ -914,13 +914,12 @@ sort_mem_initializers (tree t, tree mem_inits)
      Here we also splice out uninitialized union members.  */
   if (uses_unions_p)
     {
-      tree last_field = NULL_TREE;
+      tree *last_p = NULL;
       tree *p;
       for (p = &sorted_inits; *p; )
 	{
 	  tree field;
 	  tree ctx;
-	  int done;
 
 	  init = *p;
 
@@ -940,22 +939,25 @@ sort_mem_initializers (tree t, tree mem_inits)
 	  for (ctx = DECL_CONTEXT (field);
 	       !same_type_p (ctx, t);
 	       ctx = TYPE_CONTEXT (ctx))
-	    if (TREE_CODE (ctx) == UNION_TYPE)
+	    if (TREE_CODE (ctx) == UNION_TYPE
+		|| !ANON_AGGR_TYPE_P (ctx))
 	      break;
 	  /* If this field is not a member of a union, skip it.  */
 	  if (TREE_CODE (ctx) != UNION_TYPE)
 	    goto next;
 
-	  /* If this union member has no explicit initializer, splice
-	     it out.  */
-	  if (!TREE_VALUE (init))
+	  /* If this union member has no explicit initializer and no NSDMI,
+	     splice it out.  */
+	  if (TREE_VALUE (init) || DECL_INITIAL (field))
+	    /* OK.  */;
+	  else
 	    goto splice;
 
 	  /* It's only an error if we have two initializers for the same
 	     union type.  */
-	  if (!last_field)
+	  if (!last_p)
 	    {
-	      last_field = field;
+	      last_p = p;
 	      goto next;
 	    }
 
@@ -967,41 +969,23 @@ sort_mem_initializers (tree t, tree mem_inits)
 	       union { struct { int i; int j; }; };
 
 	     initializing both `i' and `j' makes sense.  */
-	  ctx = DECL_CONTEXT (field);
-	  done = 0;
-	  do
+	  ctx = common_enclosing_class (DECL_CONTEXT (field),
+					DECL_CONTEXT (TREE_PURPOSE (*last_p)));
+
+	  if (ctx && TREE_CODE (ctx) == UNION_TYPE)
 	    {
-	      tree last_ctx;
-
-	      last_ctx = DECL_CONTEXT (last_field);
-	      while (1)
-		{
-		  if (same_type_p (last_ctx, ctx))
-		    {
-		      if (TREE_CODE (ctx) == UNION_TYPE)
-			error_at (DECL_SOURCE_LOCATION (current_function_decl),
-				  "initializations for multiple members of %qT",
-				  last_ctx);
-		      done = 1;
-		      break;
-		    }
-
-		  if (same_type_p (last_ctx, t))
-		    break;
-
-		  last_ctx = TYPE_CONTEXT (last_ctx);
-		}
-
-	      /* If we've reached the outermost class, then we're
-		 done.  */
-	      if (same_type_p (ctx, t))
-		break;
-
-	      ctx = TYPE_CONTEXT (ctx);
+	      /* A mem-initializer hides an NSDMI.  */
+	      if (TREE_VALUE (init) && !TREE_VALUE (*last_p))
+		*last_p = TREE_CHAIN (*last_p);
+	      else if (TREE_VALUE (*last_p) && !TREE_VALUE (init))
+		goto splice;
+	      else
+		error_at (DECL_SOURCE_LOCATION (current_function_decl),
+			  "initializations for multiple members of %qT",
+			  ctx);
 	    }
-	  while (!done);
 
-	  last_field = field;
+	  last_p = p;
 
 	next:
 	  p = &TREE_CHAIN (*p);

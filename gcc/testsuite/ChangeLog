@@ -1,3 +1,241 @@
+2013-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57456
+	* gfortran.dg/class_array_17.f90: New.
+
+2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/floatstore.lst: New.
+	* ada/acats/run_all.sh: Process it.
+
+2013-05-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/powerpc/e500-ord-1.c: New test.
+	* gcc.target/powerpc/e500-ord-2.c: Likewise.
+	* gcc.target/powerpc/e500-unord-1.c: Likewise.
+	* gcc.target/powerpc/e500-unord-2.c: Likewise.
+
+2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* g++.dg/torture/pr54684.C: Add -fno-short-enums.
+
+2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.target/arm/pr56184.C: Add -fno-short-enums.
+
+2013-05-31  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* g++.old-deja/g++.robertl/eb76.C: Add -fno-short-enums.
+
+2013-05-31  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57452
+	* c-c++-common/cilk-plus/AN/if_test.c: Fixed out of bounds issue in
+	test-case.
+
+2013-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/shrink-wrap-alloca.c: Use __builtin_alloca.
+
+2013-05-31  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57478
+	PR tree-optimization/57453
+	* gcc.dg/torture/pr57478.c: New test.
+
+2013-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57456
+	* gfortran.dg/class_array_17.f90: New.
+
+2013-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56315
+	* gcc.target/arm/iordi3-opt.c: New test.
+
+2013-05-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54190
+	PR fortran/57217
+	* gfortran.dg/dummy_procedure_5.f90: Modified error message.
+	* gfortran.dg/interface_26.f90: Ditto.
+	* gfortran.dg/proc_ptr_11.f90: Ditto.
+	* gfortran.dg/proc_ptr_15.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_20.f90: Ditto.
+	* gfortran.dg/proc_ptr_comp_33.f90: Ditto.
+	* gfortran.dg/proc_ptr_result_5.f90: Ditto.
+	* gfortran.dg/typebound_override_1.f90: Ditto.
+	* gfortran.dg/typebound_override_4.f90: Ditto.
+	* gfortran.dg/typebound_proc_6.f03: Ditto.
+	* gfortran.dg/assumed_type_7.f90: New test.
+	* gfortran.dg/typebound_override_5.f90: New test.
+	* gfortran.dg/typebound_override_6.f90: New test.
+	* gfortran.dg/typebound_override_7.f90: New test.
+
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR middle-end/57073
+	* gfortran.dg/power_6.f90: New.
+
+2013-05-30  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/insv_1.c: New test.
+
+2013-05-30  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* g++.dg/cpp0x/alias-decl-debug-0.C: Add aarch64*-*-* to the
+	dg-skip-if "No stabs".
+
+2013-05-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54189
+	* gfortran.dg/assumed_size_1.f90: New.
+
+2013-05-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.dg/shrink-wrap-alloca.c: New added.
+	* gcc.dg/shrink-wrap-pretend.c: New added.
+	* gcc.dg/shrink-wrap-sibcall.c: New added.
+
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57458
+	* gfortran.dg/assumed_rank_13.f90: New.
+
+2013-05-29  Easwaran Raman  <eraman@google.com>
+
+	PR tree-optimization/57442
+	* gcc.dg/tree-ssa/reassoc-30.c: New testcase.
+
+2013-05-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/57441
+	* gcc.c-torture/compile/pr57441.c: New.
+
+2013-05-29  Dehao Chen  <dehao@google.com>
+
+	PR testsuite/57413
+	* gcc.dg/debug/dwarf2/discriminator.c: Restrict the test to linux-gnu.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/auto_dealloc_2.f90: Update _free count in the dump.
+	* gfortran.dg/class_19.f03: Ditto.
+
+2013-05-29  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-32.c: New testcase.
+
+2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/array_test1.c: New test.
+	* c-c++-common/cilk-plus/AN/array_test2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/array_test_ND.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather-scatter-errors.c: Likewise.
+	* c-c++-common/cilk-plus/AN/if_test.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c: Likewise.
+	* c-c++-common/cilk-plus/AN/decl-ptr-colon.c: Likewise.
+	* c-c++-common/cilk-plus/AN/dimensionless-arrays.c: Likewise.
+	* c-c++-common/cilk-plus/AN/fn_ptr.c: Likewise.
+	* c-c++-common/cilk-plus/AN/fp_triplet_values.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather-scatter.c: Likewise.
+	* c-c++-common/cilk-plus/AN/misc.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c: Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c: Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch.c: Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch3.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_reduce_max_min_ind.c: Likewise.
+	* c-c++-common/cilk-plus/AN/tst_lngth.c: Likewise.
+	* c-c++-common/cilk-plus/AN/vla.c: Likewise.
+	* c-c++-common/cilk-plus/AN/an-if.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_fn_custom.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c: Likewise.
+	* c-c++-common/cilk-plus/AN/comma_exp.c: Likewise.
+	* c-c++-common/cilk-plus/AN/conditional.c: Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once.c: Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather_scatter.c: Likewise.
+	* c-c++-common/cilk-plus/AN/n-ptr-test.c: Likewise.
+	* c-c++-common/cilk-plus/AN/side-effects-1.c: Likewise.
+	* c-c++-common/cilk-plus/AN/test_builtin_return.c: Likewise.
+	* c-c++-common/cilk-plus/AN/test_sec_limits.c: Likewise.
+	* gcc.dg/cilk-plus/cilk-plus.exp: New script.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/finalize_11.f90: New.
+	* gfortran.dg/finalize_4.f03: Remove dg-error.
+	* gfortran.dg/finalize_5.f03: Ditto.
+	* gfortran.dg/finalize_6.f03: Ditto.
+	* gfortran.dg/finalize_7.f03: Ditto.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/class_array_16.f90: New.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57435
+	* testsuite/gfortran.dg/use_29.f90: New.
+
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/fp_exception.adb: New test.
+
+2013-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56787
+	* gcc.dg/vect/pr56787.c: New testcase.
+
+2013-05-28  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57217
+	* gfortran.dg/typebound_override_4.f90: New.
+
+2013-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57411
+	* g++.dg/opt/pr57411.C: New testcase.
+
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/builtin-bswap-8.c: Compile at -O2.
+	* gcc.dg/builtin-bswap-9.c: Likewise.
+
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/bmaskbshuf.c: Remove superfluous options.
+
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57412
+	* gcc.dg/gomp/pr57412.c: New testcase.
+
+2013-05-27  Bud Davis  <jmdavis@link.com>
+
+	PR fortran/50405
+	* gfortran.dg/stfunc_8.f90: New.
+
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57343
+	* gcc.dg/torture/pr57343.c: New testcase.
+
+2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57417
+	* gcc.dg/torture/pr57417.c: New testcase.
+
 2013-05-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57396
@@ -57,6 +295,10 @@
 
 	PR tree-optimization/57294
 	* gcc.dg/ipa/pr57294.c: New test.
+
+2013-05-24  Dehao Chen  <dehao@google.com>
+
+	* gcc.dg/debug/dwarf2/discriminator.c: New Testcase.
 
 2013-05-24  Ian Bolton  <ian.bolton@arm.com>
 

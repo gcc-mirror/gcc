@@ -28,7 +28,7 @@ MULTILIB_DIRNAMES   =  64-bit-double  no-fpu-libs   big-endian-data   pid
 # MULTILIB_OPTIONS    += mgcc-abi
 # MULTILIB_DIRNAMES   +=  gcc-abi
 
-MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200
+MULTILIB_MATCHES    = nofpu=mnofpu  nofpu=mcpu?rx200  nofpu=mcpu?rx100
 
 MULTILIB_EXCEPTIONS =
 MULTILIB_EXTRA_OPTS = 

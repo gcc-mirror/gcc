@@ -1351,7 +1351,7 @@ dump_inline_edge_summary (FILE *f, int indent, struct cgraph_node *node,
 void
 dump_inline_summary (FILE *f, struct cgraph_node *node)
 {
-  if (node->analyzed)
+  if (node->symbol.definition)
     {
       struct inline_summary *s = inline_summary (node);
       size_time_entry *e;
@@ -1427,7 +1427,7 @@ initialize_inline_failed (struct cgraph_edge *e)
 
   if (e->indirect_unknown_callee)
     e->inline_failed = CIF_INDIRECT_UNKNOWN_CALL;
-  else if (!callee->analyzed)
+  else if (!callee->symbol.definition)
     e->inline_failed = CIF_BODY_NOT_AVAILABLE;
   else if (callee->local.redefined_extern_inline)
     e->inline_failed = CIF_REDEFINED_EXTERN_INLINE;
@@ -2765,7 +2765,7 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   gcc_checking_assert (*size >= 0);
 
   callee = cgraph_get_node (target);
-  if (!callee || !callee->analyzed)
+  if (!callee || !callee->symbol.definition)
     return false;
   isummary = inline_summary (callee);
   return isummary->inlinable;
@@ -3683,7 +3683,7 @@ inline_generate_summary (void)
   inline_free_summary ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->alias)
+    if (!node->symbol.alias)
       inline_analyze_function (node);
 }
 
@@ -3917,7 +3917,7 @@ inline_write_summary (void)
     {
       symtab_node snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
-      if (cnode && cnode->analyzed)
+      if (cnode && cnode->symbol.definition && !cnode->symbol.alias)
 	count++;
     }
   streamer_write_uhwi (ob, count);
@@ -3926,7 +3926,7 @@ inline_write_summary (void)
     {
       symtab_node snode = lto_symtab_encoder_deref (encoder, i);
       cgraph_node *cnode = dyn_cast <cgraph_node> (snode);
-      if (cnode && (node = cnode)->analyzed)
+      if (cnode && (node = cnode)->symbol.definition && !node->symbol.alias)
 	{
 	  struct inline_summary *info = inline_summary (node);
 	  struct bitpack_d bp;

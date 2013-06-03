@@ -2866,6 +2866,31 @@ not_dominated_by (gimple a, gimple b)
 
 }
 
+/* Among STMT1 and STMT2, return the statement that appears later. Both
+   statements are in same BB and have the same UID.  */
+
+static gimple
+appears_later_in_bb (gimple stmt1, gimple stmt2)
+{
+  unsigned uid = gimple_uid (stmt1);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt1);
+  gsi_next (&gsi);
+  if (gsi_end_p (gsi))
+    return stmt1;
+  for (; !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple stmt = gsi_stmt (gsi);
+
+      /* If STMT has a different UID than STMT1 and we haven't seen
+         STMT2 during traversal, we know STMT1 appears later.  */
+      if (gimple_uid (stmt) != uid)
+        return stmt1;
+      else if (stmt == stmt2)
+        return stmt2;
+    }
+  return stmt1;
+}
+
 /* Find the statement after which STMT must be moved so that the
    dependency from DEP_STMT to STMT is maintained.  */
 
@@ -2875,7 +2900,11 @@ find_insert_point (gimple stmt, gimple dep_stmt)
   gimple insert_stmt = stmt;
   if (dep_stmt == NULL)
     return stmt;
-  if (not_dominated_by (insert_stmt, dep_stmt))
+  if (gimple_uid (insert_stmt) == gimple_uid (dep_stmt)
+      && gimple_bb (insert_stmt) == gimple_bb (dep_stmt)
+      && insert_stmt != dep_stmt)
+    insert_stmt = appears_later_in_bb (insert_stmt, dep_stmt);
+  else if (not_dominated_by (insert_stmt, dep_stmt))
     insert_stmt = dep_stmt;
   return insert_stmt;
 }

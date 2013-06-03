@@ -61,6 +61,9 @@ Enum(rx_cpu_types) String(rx200) Value(RX200)
 EnumValue
 Enum(rx_cpu_types) String(rx600) Value(RX600)
 
+EnumValue
+Enum(rx_cpu_types) String(rx100) Value(RX100)
+
 ;---------------------------------------------------
 
 mbig-endian-data
@@ -132,3 +135,7 @@ Enable the use of the old, broken, ABI where all stacked function arguments are 
 mrx-abi
 Target RejectNegative Report InverseMask(GCC_ABI)
 Enable the use the standard RX ABI where all stacked function arguments are naturally aligned.  This is the default.
+
+mlra
+Target Report Mask(ENABLE_LRA)
+Enable the use of the LRA register allocator.

@@ -82,6 +82,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * x86 specific memory model extensions for transactional memory:: x86 memory models.
 * Object Size Checking:: Built-in functions for limited buffer overflow
                         checking.
+* Cilk Plus Builtins::  Built-in functions for the Cilk Plus language extension.
 * Other Builtins::      Other built-in functions.
 * Target Builtins::     Built-in functions specific to particular targets.
 * Target Format Checks:: Format checks specific to particular targets.
@@ -8788,6 +8789,32 @@ Similar to @code{__builtin_bswap32}, except the argument and return types
 are 64 bit.
 @end deftypefn
 
+@node Cilk Plus Builtins
+@section Cilk Plus C/C++ language extension Built-in Functions.
+
+GCC provides support for the following built-in reduction funtions if Cilk Plus
+is enabled. Cilk Plus can be enabled using the @option{-fcilkplus} flag.
+
+@itemize @bullet
+@item __sec_implicit_index
+@item __sec_reduce
+@item __sec_reduce_add
+@item __sec_reduce_all_nonzero
+@item __sec_reduce_all_zero
+@item __sec_reduce_any_nonzero
+@item __sec_reduce_any_zero
+@item __sec_reduce_max
+@item __sec_reduce_min
+@item __sec_reduce_max_ind
+@item __sec_reduce_min_ind
+@item __sec_reduce_mul
+@item __sec_reduce_mutating
+@end itemize
+
+Further details and examples about these built-in functions are described 
+in the Cilk Plus language manual which can be found at 
+@uref{http://www.cilkplus.org}.
+
 @node Target Builtins
 @section Built-in Functions Specific to Particular Target Machines
 
@@ -13936,6 +13963,143 @@ generate the AltiVec @samp{LVX} and @samp{STVX} instructions even
 if the VSX instruction set is available.  The @samp{vec_vsx_ld} and
 @samp{vec_vsx_st} built-in functions always generate the VSX @samp{LXVD2X},
 @samp{LXVW4X}, @samp{STXVD2X}, and @samp{STXVW4X} instructions.
+
+If the ISA 2.07 additions to the vector/scalar (power8-vector)
+instruction set is available, the following additional functions are
+available for both 32-bit and 64-bit targets.  For 64-bit targets, you
+can use @var{vector long} instead of @var{vector long long},
+@var{vector bool long} instead of @var{vector bool long long}, and
+@var{vector unsigned long} instead of @var{vector unsigned long long}.
+
+@smallexample
+vector long long vec_abs (vector long long);
+
+vector long long vec_add (vector long long, vector long long);
+vector unsigned long long vec_add (vector unsigned long long,
+                                   vector unsigned long long);
+
+int vec_all_eq (vector long long, vector long long);
+int vec_all_ge (vector long long, vector long long);
+int vec_all_gt (vector long long, vector long long);
+int vec_all_le (vector long long, vector long long);
+int vec_all_lt (vector long long, vector long long);
+int vec_all_ne (vector long long, vector long long);
+int vec_any_eq (vector long long, vector long long);
+int vec_any_ge (vector long long, vector long long);
+int vec_any_gt (vector long long, vector long long);
+int vec_any_le (vector long long, vector long long);
+int vec_any_lt (vector long long, vector long long);
+int vec_any_ne (vector long long, vector long long);
+
+vector long long vec_max (vector long long, vector long long);
+vector unsigned long long vec_max (vector unsigned long long,
+                                   vector unsigned long long);
+
+vector long long vec_min (vector long long, vector long long);
+vector unsigned long long vec_min (vector unsigned long long,
+                                   vector unsigned long long);
+
+vector int vec_pack (vector long long, vector long long);
+vector unsigned int vec_pack (vector unsigned long long,
+                              vector unsigned long long);
+vector bool int vec_pack (vector bool long long, vector bool long long);
+
+vector int vec_packs (vector long long, vector long long);
+vector unsigned int vec_packs (vector unsigned long long,
+                               vector unsigned long long);
+
+vector unsigned int vec_packsu (vector long long, vector long long);
+
+vector long long vec_rl (vector long long,
+                         vector unsigned long long);
+vector long long vec_rl (vector unsigned long long,
+                         vector unsigned long long);
+
+vector long long vec_sl (vector long long, vector unsigned long long);
+vector long long vec_sl (vector unsigned long long,
+                         vector unsigned long long);
+
+vector long long vec_sr (vector long long, vector unsigned long long);
+vector unsigned long long char vec_sr (vector unsigned long long,
+                                       vector unsigned long long);
+
+vector long long vec_sra (vector long long, vector unsigned long long);
+vector unsigned long long vec_sra (vector unsigned long long,
+                                   vector unsigned long long);
+
+vector long long vec_sub (vector long long, vector long long);
+vector unsigned long long vec_sub (vector unsigned long long,
+                                   vector unsigned long long);
+
+vector long long vec_unpackh (vector int);
+vector unsigned long long vec_unpackh (vector unsigned int);
+
+vector long long vec_unpackl (vector int);
+vector unsigned long long vec_unpackl (vector unsigned int);
+
+vector long long vec_vaddudm (vector long long, vector long long);
+vector long long vec_vaddudm (vector bool long long, vector long long);
+vector long long vec_vaddudm (vector long long, vector bool long long);
+vector unsigned long long vec_vaddudm (vector unsigned long long,
+                                       vector unsigned long long);
+vector unsigned long long vec_vaddudm (vector bool unsigned long long,
+                                       vector unsigned long long);
+vector unsigned long long vec_vaddudm (vector unsigned long long,
+                                       vector bool unsigned long long);
+
+vector long long vec_vmaxsd (vector long long, vector long long);
+
+vector unsigned long long vec_vmaxud (vector unsigned long long,
+                                      unsigned vector long long);
+
+vector long long vec_vminsd (vector long long, vector long long);
+
+vector unsigned long long vec_vminud (vector long long,
+                                      vector long long);
+
+vector int vec_vpksdss (vector long long, vector long long);
+vector unsigned int vec_vpksdss (vector long long, vector long long);
+
+vector unsigned int vec_vpkudus (vector unsigned long long,
+                                 vector unsigned long long);
+
+vector int vec_vpkudum (vector long long, vector long long);
+vector unsigned int vec_vpkudum (vector unsigned long long,
+                                 vector unsigned long long);
+vector bool int vec_vpkudum (vector bool long long, vector bool long long);
+
+vector long long vec_vrld (vector long long, vector unsigned long long);
+vector unsigned long long vec_vrld (vector unsigned long long,
+                                    vector unsigned long long);
+
+vector long long vec_vsld (vector long long, vector unsigned long long);
+vector long long vec_vsld (vector unsigned long long,
+                           vector unsigned long long);
+
+vector long long vec_vsrad (vector long long, vector unsigned long long);
+vector unsigned long long vec_vsrad (vector unsigned long long,
+                                     vector unsigned long long);
+
+vector long long vec_vsrd (vector long long, vector unsigned long long);
+vector unsigned long long char vec_vsrd (vector unsigned long long,
+                                         vector unsigned long long);
+
+vector long long vec_vsubudm (vector long long, vector long long);
+vector long long vec_vsubudm (vector bool long long, vector long long);
+vector long long vec_vsubudm (vector long long, vector bool long long);
+vector unsigned long long vec_vsubudm (vector unsigned long long,
+                                       vector unsigned long long);
+vector unsigned long long vec_vsubudm (vector bool long long,
+                                       vector unsigned long long);
+vector unsigned long long vec_vsubudm (vector unsigned long long,
+                                       vector bool long long);
+
+vector long long vec_vupkhsw (vector int);
+vector unsigned long long vec_vupkhsw (vector unsigned int);
+
+vector long long vec_vupklsw (vector int);
+vector unsigned long long vec_vupklsw (vector int);
+@end smallexample
 
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.

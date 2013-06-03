@@ -1121,9 +1121,16 @@
 						   GET_MODE (XEXP (op, 0))),
 			  1"))))
 
+;; Return 1 if OP is a valid comparison operator for "cbranch" instructions.
+;; If we're assuming that FP operations cannot generate user-visible traps,
+;; then on e500 we can use the ordered-signaling instructions to implement
+;; the unordered-quiet FP comparison predicates modulo a reversal.
 (define_predicate "rs6000_cbranch_operator"
   (if_then_else (match_test "TARGET_HARD_FLOAT && !TARGET_FPRS")
-		(match_operand 0 "ordered_comparison_operator")
+		(if_then_else (match_test "flag_trapping_math")
+			      (match_operand 0 "ordered_comparison_operator")
+			      (ior (match_operand 0 "ordered_comparison_operator")
+				   (match_code ("unlt,unle,ungt,unge"))))
 		(match_operand 0 "comparison_operator")))
 
 ;; Return 1 if OP is a comparison operation that is valid for an SCC insn --

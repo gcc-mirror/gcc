@@ -287,7 +287,7 @@ ipa_reverse_postorder (struct cgraph_node **order)
 	  && (pass
 	      || (!node->symbol.address_taken
 		  && !node->global.inlined_to
-		  && !node->alias && !node->thunk.thunk_p
+		  && !node->symbol.alias && !node->thunk.thunk_p
 		  && !cgraph_only_called_directly_p (node))))
 	{
 	  stack_size = 0;

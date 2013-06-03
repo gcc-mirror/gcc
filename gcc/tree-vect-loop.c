@@ -270,8 +270,9 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	  gcc_assert (stmt_info);
 
 	  /* Skip stmts which do not need to be vectorized.  */
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && !STMT_VINFO_LIVE_P (stmt_info))
+	  if ((!STMT_VINFO_RELEVANT_P (stmt_info)
+	       && !STMT_VINFO_LIVE_P (stmt_info))
+	      || gimple_clobber_p (stmt))
             {
               if (STMT_VINFO_IN_PATTERN_P (stmt_info)
                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
@@ -1431,7 +1432,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
           gimple stmt = gsi_stmt (si);
-	  if (!vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
+	  if (!gimple_clobber_p (stmt)
+	      && !vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;
         }
     } /* bbs */
@@ -5595,7 +5597,17 @@ vect_transform_loop (loop_vec_info loop_vinfo)
           if (transform_pattern_stmt)
 	    stmt = pattern_stmt;
           else
-            stmt = gsi_stmt (si);
+	    {
+	      stmt = gsi_stmt (si);
+	      /* During vectorization remove existing clobber stmts.  */
+	      if (gimple_clobber_p (stmt))
+		{
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&si, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	    }
 
 	  if (dump_enabled_p ())
 	    {

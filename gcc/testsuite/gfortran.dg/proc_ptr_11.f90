@@ -40,11 +40,11 @@ program bsp
   p2 => p1
   p1 => p2
 
-  p1 => abs   ! { dg-error "Type/rank mismatch in function result" }
-  p2 => abs   ! { dg-error "Type/rank mismatch in function result" }
+  p1 => abs   ! { dg-error "Type mismatch in function result" }
+  p2 => abs   ! { dg-error "Type mismatch in function result" }
 
   p3 => dsin
-  p3 => sin   ! { dg-error "Type/rank mismatch in function result" }
+  p3 => sin   ! { dg-error "Type mismatch in function result" }
 
   contains
 

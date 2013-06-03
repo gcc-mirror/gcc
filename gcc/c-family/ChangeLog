@@ -1,3 +1,24 @@
+2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-common.c (c_define_builtins): When cilkplus is enabled, the
+	function array_notation_init_builtins is called.
+	(c_common_init_ts): Added ARRAY_NOTATION_REF as typed.
+	* c-common.def (ARRAY_NOTATION_REF): New tree.
+	* c-common.h (build_array_notation_expr): New function declaration.
+	(build_array_notation_ref): Likewise.
+	(extract_sec_implicit_index_arg): New extern declaration.
+	(is_sec_implicit_index_fn): Likewise.
+	(ARRAY_NOTATION_CHECK): New define.
+	(ARRAY_NOTATION_ARRAY): Likewise.
+	(ARRAY_NOTATION_START): Likewise.
+	(ARRAY_NOTATION_LENGTH): Likewise.
+	(ARRAY_NOTATION_STRIDE): Likewise.
+	* c-pretty-print.c (pp_c_postifix_expression): Added a new case for
+	ARRAY_NOTATION_REF.
+	(pp_c_expression): Likewise.
+	* c.opt (flag_enable_cilkplus): New flag.
+	* array-notation-common.c: New file.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/57274

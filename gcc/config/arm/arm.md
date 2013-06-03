@@ -2997,14 +2997,47 @@
   ""
 )
 
-(define_insn "*iordi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
-	(ior:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
-		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
-  "#"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")]
+(define_insn_and_split "*iordi3_insn"
+  [(set (match_operand:DI         0 "s_register_operand"     "=w,w ,&r,&r,&r,&r,?w,?w")
+	(ior:DI (match_operand:DI 1 "s_register_operand"     "%w,0 ,0 ,r ,0 ,r ,w ,0")
+		(match_operand:DI 2 "arm_iordi_operand_neon" "w ,Dl,r ,r ,De,De,w ,Dl")))]
+  "TARGET_32BIT && !TARGET_IWMMXT"
+  {
+  switch (which_alternative)
+    {
+    case 0: /* fall through */
+    case 6: return "vorr\t%P0, %P1, %P2";
+    case 1: /* fall through */
+    case 7: return neon_output_logic_immediate ("vorr", &operands[2],
+		     DImode, 0, VALID_NEON_QREG_MODE (DImode));
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+      return "#";
+    default: gcc_unreachable ();
+    }
+  }
+  "TARGET_32BIT && !TARGET_IWMMXT && reload_completed
+   && !(IS_VFP_REGNUM (REGNO (operands[0])))"
+  [(set (match_dup 3) (match_dup 4))
+   (set (match_dup 5) (match_dup 6))]
+  "
+  {
+    operands[3] = gen_lowpart (SImode, operands[0]);
+    operands[5] = gen_highpart (SImode, operands[0]);
+
+    operands[4] = simplify_gen_binary (IOR, SImode,
+                                           gen_lowpart (SImode, operands[1]),
+                                           gen_lowpart (SImode, operands[2]));
+    operands[6] = simplify_gen_binary (IOR, SImode,
+                                           gen_highpart (SImode, operands[1]),
+                                           gen_highpart_mode (SImode, DImode, operands[2]));
+
+  }"
+  [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,*,*,neon_int_1,neon_int_1")
+   (set_attr "length" "*,*,8,8,8,8,8,8")
+   (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
 )
 
 (define_insn "*iordi_zesidi_di"
@@ -9276,17 +9309,17 @@
   [(set_attr "type" "call")]
 )
 
-(define_expand "return"
-  [(return)]
+(define_expand "<return_str>return"
+  [(returns)]
   "(TARGET_ARM || (TARGET_THUMB2
                    && ARM_FUNC_TYPE (arm_current_func_type ()) == ARM_FT_NORMAL
                    && !IS_STACKALIGN (arm_current_func_type ())))
-    && USE_RETURN_INSN (FALSE)"
+    <return_cond_false>"
   "
   {
     if (TARGET_THUMB2)
       {
-        thumb2_expand_return ();
+        thumb2_expand_return (<return_simple_p>);
         DONE;
       }
   }
@@ -9311,13 +9344,13 @@
    (set_attr "predicable" "yes")]
 )
 
-(define_insn "*cond_return"
+(define_insn "*cond_<return_str>return"
   [(set (pc)
         (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
-                      (return)
+                      (returns)
                       (pc)))]
-  "TARGET_ARM && USE_RETURN_INSN (TRUE)"
+  "TARGET_ARM  <return_cond_true>"
   "*
   {
     if (arm_ccfsm_state == 2)
@@ -9325,20 +9358,21 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (operands[0], true, false, false);
+    return output_return_instruction (operands[0], true, false,
+				      <return_simple_p>);
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
    (set_attr "type" "load1")]
 )
 
-(define_insn "*cond_return_inverted"
+(define_insn "*cond_<return_str>return_inverted"
   [(set (pc)
         (if_then_else (match_operator 0 "arm_comparison_operator"
 		       [(match_operand 1 "cc_register" "") (const_int 0)])
                       (pc)
-		      (return)))]
-  "TARGET_ARM && USE_RETURN_INSN (TRUE)"
+		      (returns)))]
+  "TARGET_ARM <return_cond_true>"
   "*
   {
     if (arm_ccfsm_state == 2)
@@ -9346,7 +9380,8 @@
         arm_ccfsm_state += 2;
         return \"\";
       }
-    return output_return_instruction (operands[0], true, true, false);
+    return output_return_instruction (operands[0], true, true,
+				      <return_simple_p>);
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")

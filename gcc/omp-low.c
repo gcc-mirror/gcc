@@ -5665,7 +5665,7 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
 
   struct loop *loop = alloc_loop ();
   loop->header = loop_header;
-  loop->latch = loop_header;
+  loop->latch = store_bb;
   add_loop (loop, loop_header->loop_father);
 
   if (gimple_in_ssa_p (cfun))

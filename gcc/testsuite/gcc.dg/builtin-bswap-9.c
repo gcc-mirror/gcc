@@ -1,7 +1,7 @@
 /* { dg-do compile { target arm*-*-* alpha*-*-* ia64*-*-* x86_64-*-* s390x-*-* powerpc*-*-* rs6000-*-* } } */
 /* { dg-require-effective-target stdint_types } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O -fdump-rtl-combine" } */
+/* { dg-options "-O2 -fdump-rtl-combine" } */
 
 #include <stdint.h>
 

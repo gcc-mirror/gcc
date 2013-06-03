@@ -3932,8 +3932,8 @@ get_cg_data (struct cgraph_node **node, bool traverse_aliases)
 {
   struct tm_ipa_cg_data *d;
 
-  if (traverse_aliases && (*node)->alias)
-    *node = cgraph_get_node ((*node)->thunk.alias);
+  if (traverse_aliases && (*node)->symbol.alias)
+    *node = cgraph_alias_target (*node);
 
   d = (struct tm_ipa_cg_data *) (*node)->symbol.aux;
 
@@ -4518,7 +4518,7 @@ ipa_tm_mayenterirr_function (struct cgraph_node *node)
   /* Recurse on the main body for aliases.  In general, this will
      result in one of the bits above being set so that we will not
      have to recurse next time.  */
-  if (node->alias)
+  if (node->symbol.alias)
     return ipa_tm_mayenterirr_function (cgraph_get_node (node->thunk.alias));
 
   /* What remains is unmarked local functions without items that force
@@ -4678,9 +4678,7 @@ static inline void
 ipa_tm_mark_force_output_node (struct cgraph_node *node)
 {
   cgraph_mark_force_output_node (node);
-  /* ??? function_and_variable_visibility will reset
-     the needed bit, without actually checking.  */
-  node->analyzed = 1;
+  node->symbol.analyzed = true;
 }
 
 /* Callback data for ipa_tm_create_version_alias.  */
@@ -4701,7 +4699,7 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   tree old_decl, new_decl, tm_name;
   struct cgraph_node *new_node;
 
-  if (!node->same_body_alias)
+  if (!node->symbol.cpp_implicit_alias)
     return false;
 
   old_decl = node->symbol.decl;
@@ -5250,7 +5248,7 @@ ipa_tm_execute (void)
 	    {
 	      /* If this is an alias, make sure its base is queued as well.
 		 we need not scan the callees now, as the base will do.  */
-	      if (node->alias)
+	      if (node->symbol.alias)
 		{
 		  node = cgraph_get_node (node->thunk.alias);
 		  d = get_cg_data (&node, true);
@@ -5371,7 +5369,7 @@ ipa_tm_execute (void)
       bool doit = false;
 
       node = tm_callees[i];
-      if (node->same_body_alias)
+      if (node->symbol.cpp_implicit_alias)
 	continue;
 
       a = cgraph_function_body_availability (node);
@@ -5393,7 +5391,7 @@ ipa_tm_execute (void)
   for (i = 0; i < tm_callees.length (); ++i)
     {
       node = tm_callees[i];
-      if (node->analyzed)
+      if (node->symbol.analyzed)
 	{
 	  d = get_cg_data (&node, true);
 	  if (d->clone)

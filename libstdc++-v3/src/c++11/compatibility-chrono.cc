@@ -78,7 +78,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 				 + chrono::microseconds(tv.tv_usec)));
 #else
       std::time_t __sec = std::time(0);
-      return system_clock::from_time_t(__sec);
+      // This is the conversion done by system_clock::from_time_t(__sec)
+      typedef chrono::time_point<system_clock, seconds>	__from;
+      return time_point_cast<system_clock::duration>
+	     (__from(chrono::seconds(__sec)));
 #endif
     }
 

@@ -2226,12 +2226,13 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	}
     }
 
-  /* V2DImode, only allow under VSX, which can do V2DI insert/splat/extract.
-     Altivec doesn't have 64-bit support.  */
+  /* V2DImode, full mode depends on ISA 2.07 vector mode.  Allow under VSX to
+     do insert/splat/extract.  Altivec doesn't have 64-bit integer support.  */
   if (TARGET_VSX)
     {
       rs6000_vector_mem[V2DImode] = VECTOR_VSX;
-      rs6000_vector_unit[V2DImode] = VECTOR_NONE;
+      rs6000_vector_unit[V2DImode]
+	= (TARGET_P8_VECTOR) ? VECTOR_P8_VECTOR : VECTOR_NONE;
       rs6000_vector_align[V2DImode] = align64;
     }
 
@@ -16102,16 +16103,41 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
     {
       rtx cmp, or_result, compare_result2;
       enum machine_mode op_mode = GET_MODE (op0);
+      bool reverse_p;
 
       if (op_mode == VOIDmode)
 	op_mode = GET_MODE (op1);
+
+      /* First reverse the condition codes that aren't directly supported.  */
+      switch (code)
+	{
+	  case NE:
+	  case UNLT:
+	  case UNLE:
+	  case UNGT:
+	  case UNGE:
+	    code = reverse_condition_maybe_unordered (code);
+	    reverse_p = true;
+	    break;
+
+	  case EQ:
+	  case LT:
+	  case LE:
+	  case GT:
+	  case GE:
+	    reverse_p = false;
+	    break;
+
+	  default:
+	    gcc_unreachable ();
+	}
 
       /* The E500 FP compare instructions toggle the GT bit (CR bit 1) only.
 	 This explains the following mess.  */
 
       switch (code)
 	{
-	case EQ: case UNEQ: case NE: case LTGT:
+	case EQ:
 	  switch (op_mode)
 	    {
 	    case SFmode:
@@ -16137,7 +16163,8 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 	    }
 	  break;
 
-	case GT: case GTU: case UNGT: case UNGE: case GE: case GEU:
+	case GT:
+	case GE:
 	  switch (op_mode)
 	    {
 	    case SFmode:
@@ -16163,7 +16190,8 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 	    }
 	  break;
 
-	case LT: case LTU: case UNLT: case UNLE: case LE: case LEU:
+	case LT: 
+	case LE:
 	  switch (op_mode)
 	    {
 	    case SFmode:
@@ -16188,23 +16216,15 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 	      gcc_unreachable ();
 	    }
 	  break;
+
         default:
           gcc_unreachable ();
 	}
 
       /* Synthesize LE and GE from LT/GT || EQ.  */
-      if (code == LE || code == GE || code == LEU || code == GEU)
+      if (code == LE || code == GE)
 	{
 	  emit_insn (cmp);
-
-	  switch (code)
-	    {
-	    case LE: code = LT; break;
-	    case GE: code = GT; break;
-	    case LEU: code = LT; break;
-	    case GEU: code = GT; break;
-	    default: gcc_unreachable ();
-	    }
 
 	  compare_result2 = gen_reg_rtx (CCFPmode);
 
@@ -16232,22 +16252,17 @@ rs6000_generate_compare (rtx cmp, enum machine_mode mode)
 	    default:
 	      gcc_unreachable ();
 	    }
+
 	  emit_insn (cmp);
 
 	  /* OR them together.  */
 	  or_result = gen_reg_rtx (CCFPmode);
 	  cmp = gen_e500_cr_ior_compare (or_result, compare_result,
-					   compare_result2);
+					 compare_result2);
 	  compare_result = or_result;
-	  code = EQ;
 	}
-      else
-	{
-	  if (code == NE || code == LTGT)
-	    code = NE;
-	  else
-	    code = EQ;
-	}
+
+      code = reverse_p ? NE : EQ;
 
       emit_insn (cmp);
     }

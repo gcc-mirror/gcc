@@ -1,3 +1,51 @@
+2013-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/57450
+	* c-array-notation.c (length_mismatch_in_expr_p): Use absu_hwi.
+	(build_array_notation_expr): Likewise.
+
+2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-typeck.c (build_array_ref): Added a check to see if array's
+	index is greater than one.  If true, then emit an error.
+	(build_function_call_vec): Exclude error reporting and checking
+	for builtin array-notation functions.
+	(convert_arguments): Likewise.
+	(c_finish_return): Added a check for array notations as a return
+	expression.  If true, then emit an error.
+	(c_finish_loop): Added a check for array notations in a loop
+	condition.  If true then emit an error.
+	(lvalue_p): Added a ARRAY_NOTATION_REF case.
+	(build_binary_op): Added a check for array notation expr inside
+	op1 and op0.  If present, we call another function to find correct
+	type.
+	* Make-lang.in (C_AND_OBJC_OBJS): Added c-array-notation.o.
+	* c-parser.c (c_parser_compound_statement): Check if array
+	notation code is used in tree, if so, then transform them into
+	appropriate C code.
+	(c_parser_expr_no_commas): Check if array notation is used in LHS
+	or RHS, if so, then build array notation expression instead of
+	regular modify.
+	(c_parser_postfix_expression_after_primary): Added a check for
+	colon(s) after square braces, if so then handle it like an array
+	notation.  Also, break up array notations in unary op if found.
+	(c_parser_direct_declarator_inner): Added a check for array
+	notation.
+	(c_parser_compound_statement): Added a check for array notation in
+	a stmt.  If one is present, then expand array notation expr.
+	(c_parser_if_statement): Likewise.
+	(c_parser_switch_statement): Added a check for array notations in
+	a switch statement's condition.  If true, then output an error.
+	(c_parser_while_statement): Similarly, but for a while.
+	(c_parser_do_statement): Similarly, but for a do-while.
+	(c_parser_for_statement): Similarly, but for a for-loop.
+	(c_parser_unary_expression): Check if array notation is used in a
+	pre-increment or pre-decrement expression.  If true, then expand
+	them.
+	(c_parser_array_notation): New function.
+	* c-array-notation.c: New file.
+	* c-tree.h (is_cilkplus_reduce_builtin): Protoize.
+	
 2013-05-23  Mike Stump  <mikestump@comcast.net>
 
 	* c-typeck.c (convert_for_assignment): Handle references to memory

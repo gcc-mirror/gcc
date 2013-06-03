@@ -847,8 +847,12 @@ fbuiltin-
 C UPC ObjC C++ ObjC++ Joined
 
 fcanonical-system-headers
-C ObjC C++ ObjC++
+C UPC Objc C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
+
+fcilkplus
+C UPC Objc C++ ObjC++ LTO Report Var(flag_enable_cilkplus) Init(0)
+Enable Cilk Plus
 
 fcheck-new
 C++ ObjC++ Var(flag_check_new)

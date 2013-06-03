@@ -189,7 +189,8 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
       new_node->next_nested = new_node->origin->nested;
       new_node->origin->nested = new_node;
     }
-  new_node->analyzed = n->analyzed;
+  new_node->symbol.analyzed = n->symbol.analyzed;
+  new_node->symbol.definition = n->symbol.definition;
   new_node->local = n->local;
   new_node->symbol.externally_visible = false;
   new_node->local.local = true;
@@ -638,10 +639,11 @@ cgraph_copy_node_for_versioning (struct cgraph_node *old_version,
 
    new_version = cgraph_create_node (new_decl);
 
-   new_version->analyzed = old_version->analyzed;
+   new_version->symbol.analyzed = old_version->symbol.analyzed;
+   new_version->symbol.definition = old_version->symbol.definition;
    new_version->local = old_version->local;
    new_version->symbol.externally_visible = false;
-   new_version->local.local = old_version->analyzed;
+   new_version->local.local = new_version->symbol.definition;
    new_version->global = old_version->global;
    new_version->rtl = old_version->rtl;
    new_version->count = old_version->count;
@@ -791,7 +793,7 @@ cgraph_materialize_clone (struct cgraph_node *node)
     node->clone_of->clones = node->next_sibling_clone;
   node->next_sibling_clone = NULL;
   node->prev_sibling_clone = NULL;
-  if (!node->clone_of->analyzed && !node->clone_of->clones)
+  if (!node->clone_of->symbol.analyzed && !node->clone_of->clones)
     {
       cgraph_release_function_body (node->clone_of);
       cgraph_node_remove_callees (node->clone_of);
@@ -874,7 +876,7 @@ cgraph_materialize_all_clones (void)
 	}
     }
   FOR_EACH_FUNCTION (node)
-    if (!node->analyzed && node->callees)
+    if (!node->symbol.analyzed && node->callees)
       cgraph_node_remove_callees (node);
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Materialization Call site updates done.\n");

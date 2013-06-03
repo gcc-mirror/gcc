@@ -25,5 +25,5 @@ contains
 
 end program 
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 3 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 5 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

@@ -9259,4 +9259,30 @@ publicly_uniquely_derived_p (tree parent, tree type)
   return base && base != error_mark_node;
 }
 
+/* CTX1 and CTX2 are declaration contexts.  Return the innermost common
+   class between them, if any.  */
+
+tree
+common_enclosing_class (tree ctx1, tree ctx2)
+{
+  if (!TYPE_P (ctx1) || !TYPE_P (ctx2))
+    return NULL_TREE;
+  gcc_assert (ctx1 == TYPE_MAIN_VARIANT (ctx1)
+	      && ctx2 == TYPE_MAIN_VARIANT (ctx2));
+  if (ctx1 == ctx2)
+    return ctx1;
+  for (tree t = ctx1; TYPE_P (t); t = TYPE_CONTEXT (t))
+    TYPE_MARKED_P (t) = true;
+  tree found = NULL_TREE;
+  for (tree t = ctx2; TYPE_P (t); t = TYPE_CONTEXT (t))
+    if (TYPE_MARKED_P (t))
+      {
+	found = t;
+	break;
+      }
+  for (tree t = ctx1; TYPE_P (t); t = TYPE_CONTEXT (t))
+    TYPE_MARKED_P (t) = false;
+  return found;
+}
+
 #include "gt-cp-class.h"

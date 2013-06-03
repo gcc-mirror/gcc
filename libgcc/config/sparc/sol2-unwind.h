@@ -403,7 +403,12 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
   fs->retaddr_column = 0;
   fs->regs.reg[0].how = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = (long)shifted_ra_location - new_cfa;
-  fs->signal_frame = 1;
+
+  /* SIGFPE for IEEE-754 exceptions is delivered after the faulting insn
+     rather than before it, so don't set fs->signal_frame in that case.
+     We test whether the cexc field of the FSR is zero.  */
+  if ((mctx->fpregs.fpu_fsr & 0x1f) == 0)
+    fs->signal_frame = 1;
 
   return _URC_NO_REASON;
 }

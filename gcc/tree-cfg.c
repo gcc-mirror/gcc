@@ -2668,10 +2668,45 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
+    case BIT_FIELD_REF:
+      if (!is_gimple_reg_type (TREE_TYPE (t)))
+	{
+	  error ("non-scalar BIT_FIELD_REF, IMAGPART_EXPR or REALPART_EXPR");
+	  return t;
+	}
+
+      if (TREE_CODE (t) == BIT_FIELD_REF)
+	{
+	  if (!host_integerp (TREE_OPERAND (t, 1), 1)
+	      || !host_integerp (TREE_OPERAND (t, 2), 1))
+	    {
+	      error ("invalid position or size operand to BIT_FIELD_REF");
+	      return t;
+	    }
+	  if (INTEGRAL_TYPE_P (TREE_TYPE (t))
+	      && (TYPE_PRECISION (TREE_TYPE (t))
+		  != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
+	    {
+	      error ("integral result type precision does not match "
+		     "field size of BIT_FIELD_REF");
+	      return t;
+	    }
+	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+		   && TYPE_MODE (TREE_TYPE (t)) != BLKmode
+		   && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
+		       != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
+	    {
+	      error ("mode precision of non-integral result does not "
+		     "match field size of BIT_FIELD_REF");
+	      return t;
+	    }
+	}
+      t = TREE_OPERAND (t, 0);
+
+      /* Fall-through.  */
     case COMPONENT_REF:
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
-    case BIT_FIELD_REF:
     case VIEW_CONVERT_EXPR:
       /* We have a nest of references.  Verify that each of the operands
 	 that determine where to reference is either a constant or a variable,
@@ -2690,32 +2725,13 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	      if (TREE_OPERAND (t, 3))
 		CHECK_OP (3, "invalid array stride");
 	    }
-	  else if (TREE_CODE (t) == BIT_FIELD_REF)
+	  else if (TREE_CODE (t) == BIT_FIELD_REF
+		   || TREE_CODE (t) == REALPART_EXPR
+		   || TREE_CODE (t) == IMAGPART_EXPR)
 	    {
-	      if (!host_integerp (TREE_OPERAND (t, 1), 1)
-		  || !host_integerp (TREE_OPERAND (t, 2), 1))
-		{
-		  error ("invalid position or size operand to BIT_FIELD_REF");
-		  return t;
-		}
-	      if (INTEGRAL_TYPE_P (TREE_TYPE (t))
-		  && (TYPE_PRECISION (TREE_TYPE (t))
-		      != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
-		{
-		  error ("integral result type precision does not match "
-			 "field size of BIT_FIELD_REF");
-		  return t;
-		}
-	      else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
-		       && !AGGREGATE_TYPE_P (TREE_TYPE (t))
-		       && TYPE_MODE (TREE_TYPE (t)) != BLKmode
-		       && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
-			   != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
-		{
-		  error ("mode precision of non-integral result does not "
-			 "match field size of BIT_FIELD_REF");
-		  return t;
-		}
+	      error ("non-top-level BIT_FIELD_REF, IMAGPART_EXPR or "
+		     "REALPART_EXPR");
+	      return t;
 	    }
 
 	  t = TREE_OPERAND (t, 0);

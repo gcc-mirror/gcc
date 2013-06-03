@@ -74,13 +74,13 @@ get_symbol_class (symtab_node node)
          objects that can not be duplicated across partitions.  */
       if (DECL_IN_CONSTANT_POOL (node->symbol.decl))
 	return SYMBOL_DUPLICATE;
-      gcc_checking_assert (vnode->analyzed);
+      gcc_checking_assert (vnode->symbol.definition);
     }
   /* Functions that are cloned may stay in callgraph even if they are unused.
      Handle them as external; compute_ltrans_boundary take care to make
      proper things to happen (i.e. to make them appear in the boundary but
      with body streamed, so clone can me materialized).  */
-  else if (!cgraph (node)->analyzed)
+  else if (!cgraph (node)->symbol.definition)
     return SYMBOL_EXTERNAL;
 
   /* Comdats are duplicated to every use unless they are keyed.
@@ -561,12 +561,12 @@ lto_balanced_map (void)
 
 	      last_visited_node++;
 
-	      gcc_assert (node->analyzed
+	      gcc_assert (node->symbol.definition
 			  || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)));
 
 	      /* Compute boundary cost of callgraph edges.  */
 	      for (edge = node->callees; edge; edge = edge->next_callee)
-		if (edge->callee->analyzed)
+		if (edge->callee->symbol.definition)
 		  {
 		    int edge_cost = edge->frequency;
 		    int index;
@@ -587,7 +587,7 @@ lto_balanced_map (void)
 		  int edge_cost = edge->frequency;
 		  int index;
 
-		  gcc_assert (edge->caller->analyzed);
+		  gcc_assert (edge->caller->symbol.definition);
 		  if (!edge_cost)
 		    edge_cost = 1;
 		  gcc_assert (edge_cost > 0);
@@ -614,7 +614,7 @@ lto_balanced_map (void)
 		int index;
 
 		vnode = ipa_ref_varpool_node (ref);
-		if (!vnode->finalized)
+		if (!vnode->symbol.definition)
 		  continue;
 		if (!symbol_partitioned_p ((symtab_node) vnode) && flag_toplevel_reorder
 		    && get_symbol_class ((symtab_node) vnode) == SYMBOL_PARTITION)
@@ -632,7 +632,7 @@ lto_balanced_map (void)
 		int index;
 
 		node = ipa_ref_node (ref);
-		if (!node->analyzed)
+		if (!node->symbol.definition)
 		  continue;
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   (symtab_node)node);
@@ -648,7 +648,7 @@ lto_balanced_map (void)
 		int index;
 
 		vnode = ipa_ref_referring_varpool_node (ref);
-		gcc_assert (vnode->finalized);
+		gcc_assert (vnode->symbol.definition);
 		if (!symbol_partitioned_p ((symtab_node) vnode) && flag_toplevel_reorder
 		    && get_symbol_class ((symtab_node) vnode) == SYMBOL_PARTITION)
 		  add_symbol_to_partition (partition, (symtab_node) vnode);
@@ -665,7 +665,7 @@ lto_balanced_map (void)
 		int index;
 
 		node = ipa_ref_referring_node (ref);
-		gcc_assert (node->analyzed);
+		gcc_assert (node->symbol.definition);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   (symtab_node)node);
 		if (index != LCC_NOT_FOUND
