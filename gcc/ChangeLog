@@ -1,3 +1,17 @@
+2013-06-03  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
+
+	* config/i386/i386.c (ix86_lea_outperforms): Fix formatting.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(exact_dependency_1): Likewise.
+	(ix86_adjust_cost): Likewise.
+	(swap_top_of_ready_list): Fix formatting and !reload_completed check
+	removed.
+	(do_reorder_for_imul): Fix typo, formatting and
+	!reload_completed check removed.
+	(ix86_sched_reorder): Fix typo and formatting.
+	(fold_builtin_cpu): Move M_INTEL_SLM at the end of processor types
+	list.
+
 2013-06-03  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64.md (*movdi_aarch64): Define "simd" attribute.
@@ -268,8 +282,6 @@
 
 	* config/i386/i386.md (cpu): Add new value "slm".
 	(slm.md): Include slm.md.
-
-	* libgcc/config/i386/cpuinfo.c (INTEL_SLM): New enum value.
 
 2013-05-30  Bernd Schmidt  <bernds@codesourcery.com>
 	    Zhenqiang Chen  <zhenqiang.chen@linaro.org>
