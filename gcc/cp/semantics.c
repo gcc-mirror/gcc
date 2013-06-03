@@ -1778,8 +1778,9 @@ finish_qualified_id_expr (tree qualifying_class,
   if (error_operand_p (expr))
     return error_mark_node;
 
-  if (DECL_P (expr) || BASELINK_P (expr))
-    mark_used (expr);
+  if ((DECL_P (expr) || BASELINK_P (expr))
+      && !mark_used (expr, complain))
+    return error_mark_node;
 
   if (template_p)
     check_template_keyword (expr);

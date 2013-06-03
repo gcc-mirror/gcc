@@ -4499,7 +4499,7 @@ possibly_inlined_p (tree decl)
    wrong, true otherwise.  */
 
 bool
-mark_used (tree decl)
+mark_used (tree decl, tsubst_flags_t complain)
 {
   /* If DECL is a BASELINK for a single function, then treat it just
      like the DECL for the function.  Otherwise, if the BASELINK is
@@ -4537,9 +4537,12 @@ mark_used (tree decl)
 	      return false;
 	    }
 	}
-      error ("use of deleted function %qD", decl);
-      if (!maybe_explain_implicit_delete (decl))
-	error_at (DECL_SOURCE_LOCATION (decl), "declared here");
+      if (complain & tf_error)
+	{
+	  error ("use of deleted function %qD", decl);
+	  if (!maybe_explain_implicit_delete (decl))
+	    inform (DECL_SOURCE_LOCATION (decl), "declared here");
+	}
       return false;
     }
 
@@ -4552,7 +4555,8 @@ mark_used (tree decl)
     {
       if (!processing_template_decl && type_uses_auto (TREE_TYPE (decl)))
 	{
-	  error ("use of %qD before deduction of %<auto%>", decl);
+	  if (complain & tf_error)
+	    error ("use of %qD before deduction of %<auto%>", decl);
 	  return false;
 	}
       return true;
@@ -4699,6 +4703,12 @@ mark_used (tree decl)
     }
 
   return true;
+}
+
+bool
+mark_used (tree decl)
+{
+  return mark_used (decl, tf_warning_or_error);
 }
 
 #include "gt-cp-decl2.h"
