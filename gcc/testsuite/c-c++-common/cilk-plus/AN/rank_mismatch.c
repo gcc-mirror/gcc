@@ -1,7 +1,10 @@
 /* { dg-do compile } */
-/* { dg-options "-fcilkplus" } */
+/* { dg-options "-fcilkplus -w" } */
 
-int main (int argc, char **argv)
+/* We use -w because in the first error, there will be a warning of setting an
+   integer to a pointer.  Just ignore it to expose the rank mismatch error.  */
+
+int main (void)
 {
   int x = 0;
   int array[10][10], array2[10];

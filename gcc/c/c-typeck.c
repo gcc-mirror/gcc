@@ -8983,6 +8983,34 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 {
   tree stmt;
 
+  /* If the condition has array notations, then the rank of the then_block and
+     else_block must be either 0 or be equal to the rank of the condition.  If
+     the condition does not have array notations then break them up as it is
+     broken up in a normal expression.  */
+  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+    {
+      size_t then_rank = 0, cond_rank = 0, else_rank = 0;
+      if (!find_rank (if_locus, cond, cond, true, &cond_rank))
+	return;
+      if (then_block
+	  && !find_rank (if_locus, then_block, then_block, true, &then_rank))
+	return;
+      if (else_block
+	  && !find_rank (if_locus, else_block, else_block, true, &else_rank)) 
+	return;
+      if (cond_rank != then_rank && then_rank != 0)
+	{
+	  error_at (if_locus, "rank-mismatch between if-statement%'s condition"
+		    " and the then-block");
+	  return;
+	}
+      else if (cond_rank != else_rank && else_rank != 0)
+	{
+	  error_at (if_locus, "rank-mismatch between if-statement%'s condition"
+		    " and the else-block");
+	  return;
+	}
+    }
   /* Diagnose an ambiguous else if if-then-else is nested inside if-then.  */
   if (warn_parentheses && nested_if && else_block == NULL)
     {

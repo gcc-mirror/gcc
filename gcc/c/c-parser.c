@@ -1756,6 +1756,8 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= c_parser_peek_token (parser)->location;
       fnbody = c_parser_compound_statement (parser);
+      if (flag_enable_cilkplus && contains_array_notation_expr (fnbody))
+	fnbody = expand_array_notation_exprs (fnbody);
       if (nested)
 	{
 	  tree decl = current_function_decl;
@@ -5445,20 +5447,9 @@ c_parser_expr_no_commas (c_parser *parser, struct c_expr *after)
   rhs = c_parser_expr_no_commas (parser, NULL);
   rhs = default_function_array_read_conversion (exp_location, rhs);
   
-  /* The line below is where the statement has the form:
-     A = B, where A and B contain array notation exprs. So this is where
-     we handle those.  */
-  if (flag_enable_cilkplus
-      && (contains_array_notation_expr (lhs.value)
-	  || contains_array_notation_expr (rhs.value)))
-    ret.value = build_array_notation_expr (op_location, lhs.value,
-					   lhs.original_type, code,
-					   exp_location, rhs.value,
-					   rhs.original_type);
-  else
-    ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
-				   code, exp_location, rhs.value,
-				   rhs.original_type);
+  ret.value = build_modify_expr (op_location, lhs.value, lhs.original_type,
+				 code, exp_location, rhs.value,
+				 rhs.original_type);
   if (code == NOP_EXPR)
     ret.original_code = MODIFY_EXPR;
   else

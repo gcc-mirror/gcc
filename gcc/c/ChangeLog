@@ -1,5 +1,18 @@
 2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
+	* c-typeck.c (c_finish_if_stmt): Added a check to see if the rank of the
+	condition of the if-statement matches the rank of else-block and then-
+	block when array notations are used.
+	* c-parser.c (c_parser_declaration_or_fndef): Expanded array notation
+	expression after the entire function body is parsed.
+	(c_parser_expr_no_commas): Delayed creating array notation expressions
+	to the end of function parsing.
+	* c-array-notation.c (fix_conditional_array_notations_1): Expanded the
+	whole if-statement instead of just the condition.
+	(expand_array_notation_exprs): Added MODIFY_EXPR case.	
+
+2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
 	PR c/57474
 	* c-array-notation.c (build_array_notation_expr): Initialized rhs_length
 	array to NULL_TREE if they are unused.  Also added a check for the
