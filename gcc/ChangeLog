@@ -1,3 +1,9 @@
+2013-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (output_constant) <CONSTRUCTOR>: Minor formatting tweak.
+	<STRING_CST>: Likewise.
+	<VECTOR_CST>: Likewise.
+
 2013-06-01  Janus Weil  <janus@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 
