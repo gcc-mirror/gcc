@@ -1,3 +1,46 @@
+2013-06-03  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/vect/bb-slp-31.c: Update vect dump message.
+	* gcc.dg/vect/bb-slp-14.c: Ditto.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Ditto.
+	* gcc.dg/vect/bb-slp-23.c: Ditto.
+	* gcc.dg/vect/bb-slp-15.c: Ditto.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Ditto.
+	* gcc.dg/vect/bb-slp-24.c: Ditto.
+	* gcc.dg/vect/bb-slp-16.c: Ditto.
+	* gcc.dg/vect/bb-slp-25.c: Ditto.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Ditto.
+	* gcc.dg/vect/bb-slp-17.c: Ditto.
+	* gcc.dg/vect/bb-slp-1.c: Ditto.
+	* gcc.dg/vect/bb-slp-26.c: Ditto.
+	* gcc.dg/vect/bb-slp-18.c: Ditto.
+	* gcc.dg/vect/bb-slp-2.c: Ditto.
+	* gcc.dg/vect/no-tree-reassoc-bb-slp-12.c: Ditto.
+	* gcc.dg/vect/bb-slp-27.c: Ditto.
+	* gcc.dg/vect/bb-slp-19.c: Ditto.
+	* gcc.dg/vect/bb-slp-3.c: Ditto.
+	* gcc.dg/vect/bb-slp-28.c: Ditto.
+	* gcc.dg/vect/bb-slp-4.c: Ditto.
+	* gcc.dg/vect/bb-slp-29.c: Ditto.
+	* gcc.dg/vect/bb-slp-5.c: Ditto.
+	* gcc.dg/vect/bb-slp-6.c: Ditto.
+	* gcc.dg/vect/bb-slp-8a.c: Ditto.
+	* gcc.dg/vect/bb-slp-7.c: Ditto.
+	* gcc.dg/vect/bb-slp-8b.c: Ditto.
+	* gcc.dg/vect/bb-slp-8.c: Ditto.
+	* gcc.dg/vect/bb-slp-9.c: Ditto.
+	* gcc.dg/vect/bb-slp-10.c: Ditto.
+	* gcc.dg/vect/bb-slp-11.c: Ditto.
+	* gcc.dg/vect/bb-slp-20.c: Ditto.
+	* gcc.dg/vect/bb-slp-cond-1.c: Ditto.
+	* gcc.dg/vect/bb-slp-21.c: Ditto.
+	* gcc.dg/vect/bb-slp-30.c: Ditto.
+	* gcc.dg/vect/bb-slp-13.c: Ditto.
+	* gcc.dg/vect/bb-slp-22.c: Ditto.
+	* g++.dg/vect/slp-pr50413.cc: Ditto.
+	* g++.dg/vect/slp-pr56812.cc: Ditto.
+	* g++.dg/vect/slp-pr50819.cc: Ditto.
+
 2013-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57456

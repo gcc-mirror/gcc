@@ -1,3 +1,16 @@
+2013-06-03  Teresa Johnson  <tejohnson@google.com>
+
+	* dumpfile.c (opt_info_switch_p): Change -fopt-info
+	default to -fopt-info=optimized instead of all.
+	* doc/invoke.texi: Ditto.
+	* tree-vectorizer.c (vectorize_loops): Emit loop vectorization
+	success under MSG_OPTIMIZED_LOCATIONS, and use dump_printf_loc.
+	(execute_vect_slp): Emit BB vectorization success under
+	MSG_OPTIMIZED_LOCATIONS.
+	* tree-vect-slp.c (vect_slp_transform_bb): Change
+	MSG_OPTIMIZED_LOCATIONS to MSG_NOTE.
+	* tree-vect-loop.c (vect_transform_loop): Ditto.
+
 2013-06-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57415
