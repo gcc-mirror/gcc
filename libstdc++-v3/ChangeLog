@@ -1,8 +1,14 @@
+2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57419
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust.
+
 2013-06-01  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
-	include/std/chrono: Collapse redundant 'inline' from 'inline constexpr'.
-	include/std/tuple: Ditto.
-	include/bits/move.h: Ditto.
+	* include/std/chrono: Collapse redundant 'inline' from 'inline
+	constexpr'.
+	* include/std/tuple: Ditto.
+	* include/bits/move.h: Ditto.
 
 2013-05-30  Ed Smith-Rowland  <3dw4rd@verizon.net>
 

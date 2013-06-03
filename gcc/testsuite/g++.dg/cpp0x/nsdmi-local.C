@@ -3,6 +3,6 @@
 
 int main()
 {
-    int q = 1;				 // { dg-error "declared here" }
+    int q = 1;				 // { dg-message "declared here" }
     struct test { int x = q; } instance; // { dg-error "local variable" }
 }

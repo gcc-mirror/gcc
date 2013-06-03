@@ -1,3 +1,26 @@
+2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57419
+	* g++.dg/cpp0x/sfinae46.C: New.
+	* g++.dg/cpp0x/defaulted13.C: Adjust.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp0x/defaulted26.C: Likewise.
+	* g++.dg/cpp0x/defaulted3.C: Likewise.
+	* g++.dg/cpp0x/error1.C: Likewise.
+	* g++.dg/cpp0x/implicit1.C: Likewise.
+	* g++.dg/cpp0x/implicit11.C: Likewise.
+	* g++.dg/cpp0x/inh-ctor13.C: Likewise.
+	* g++.dg/cpp0x/initlist47.C: Likewise.
+	* g++.dg/cpp0x/initlist9.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-errloc.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-errloc2.C: Likewise.
+	* g++.dg/cpp0x/nsdmi-local.C: Likewise.
+	* g++.dg/cpp0x/union4.C: Likewise.
+	* g++.dg/template/crash108.C: Likewise.
+	* g++.dg/template/crash41.C: Likewise.
+	* g++.old-deja/g++.jason/local.C: Likewise.
+	* g++.old-deja/g++.law/visibility3.C: Likewise.
+
 2013-06-03  Teresa Johnson  <tejohnson@google.com>
 
 	* gcc.dg/vect/bb-slp-31.c: Update vect dump message.
