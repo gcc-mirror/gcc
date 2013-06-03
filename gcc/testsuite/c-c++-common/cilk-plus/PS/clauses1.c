@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -fcilkplus -Werror -Wunknown-pragmas" } */
+/* { dg-options "-O3 -std=c99 -Werror -Wunknown-pragmas" } */
 
 volatile int *a, *b;
 

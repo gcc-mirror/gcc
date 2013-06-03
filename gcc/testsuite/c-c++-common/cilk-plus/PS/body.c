@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcilkplus -fopenmp" } */
+/* { dg-options "-O3 -fopenmp" } */
 
 int *a, *b, c;
 void *jmpbuf[10];

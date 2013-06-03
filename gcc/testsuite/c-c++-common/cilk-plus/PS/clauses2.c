@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -fcilkplus -fdump-tree-original" } */
+/* { dg-options "-O3 -std=c99 -fdump-tree-original" } */
 
 volatile int *a, *b;
 

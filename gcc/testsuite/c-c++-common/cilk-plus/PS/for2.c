@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -fcilkplus" } */
+/* { dg-options "-O3 -std=c99" } */
 
 // Test storage classes in the initialization of a <#pragma simd> for
 // loop.

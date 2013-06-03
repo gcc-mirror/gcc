@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcilkplus" } */
+/* { dg-options "-O3" } */
 
 volatile int *a, *b, N;
 typedef int tint;

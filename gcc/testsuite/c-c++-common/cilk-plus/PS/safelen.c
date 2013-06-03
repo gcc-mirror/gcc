@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcilkplus -fdump-tree-gimple" } */
+/* { dg-options "-O3 -fdump-tree-gimple" } */
 
 int *a, *b;
 

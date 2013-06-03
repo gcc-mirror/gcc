@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fcilkplus" } */
+/* { dg-options "-O3" } */
 
 #pragma simd		/* { dg-error "must be inside a function" } */
 
