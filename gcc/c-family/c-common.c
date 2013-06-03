@@ -370,6 +370,8 @@ static tree handle_no_split_stack_attribute (tree *, tree, tree, int, bool *);
 static tree handle_fnspec_attribute (tree *, tree, tree, int, bool *);
 static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int,
 					       bool *);
+static tree handle_omp_declare_target_attribute (tree *, tree, tree, int,
+						 bool *);
 
 static void check_function_nonnull (tree, int, tree *);
 static void check_nonnull_arg (void *, tree, unsigned HOST_WIDE_INT);
@@ -742,6 +744,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_fnspec_attribute, false },
   { "omp declare simd",       0, -1, true,  false, false,
 			      handle_omp_declare_simd_attribute, false },
+  { "omp declare target",     0, 0, true, false, false,
+			      handle_omp_declare_target_attribute, false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -7963,6 +7967,15 @@ handle_fnspec_attribute (tree *node ATTRIBUTE_UNUSED, tree ARG_UNUSED (name),
 
 static tree
 handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *)
+{
+  return NULL_TREE;
+}
+
+/* Handle an "omp declare target" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_omp_declare_target_attribute (tree *, tree, tree, int, bool *)
 {
   return NULL_TREE;
 }

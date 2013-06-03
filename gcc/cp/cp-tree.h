@@ -4428,6 +4428,10 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 
 extern int at_eof;
 
+/* If non-zero, implicit "omp declare target" attribute is added into the
+   attribute lists.  */
+extern GTY(()) int current_omp_declare_target_attribute;
+
 /* A list of namespace-scope objects which have constructors or
    destructors which reside in the global scope.  The decl is stored
    in the TREE_VALUE slot and the initializer is stored in the

@@ -1,3 +1,9 @@
+2013-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.c (c_common_attribute_table): Add "omp declare target"
+	attribute.
+	(handle_omp_declare_target_attribute): New function.
+
 2013-05-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_common_attribute_table): Add "omp declare simd"
