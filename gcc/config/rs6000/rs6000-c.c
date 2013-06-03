@@ -3822,11 +3822,20 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       TREE_USED (decl) = 1;
       TREE_TYPE (decl) = arg1_type;
       TREE_READONLY (decl) = TYPE_READONLY (arg1_type);
-      DECL_INITIAL (decl) = arg1;
-      stmt = build1 (DECL_EXPR, arg1_type, decl);
-      TREE_ADDRESSABLE (decl) = 1;
-      SET_EXPR_LOCATION (stmt, loc);
-      stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
+      if (c_dialect_cxx ())
+	{
+	  stmt = build4 (TARGET_EXPR, arg1_type, decl, arg1,
+			 NULL_TREE, NULL_TREE);
+	  SET_EXPR_LOCATION (stmt, loc);
+	}
+      else
+	{
+	  DECL_INITIAL (decl) = arg1;
+	  stmt = build1 (DECL_EXPR, arg1_type, decl);
+	  TREE_ADDRESSABLE (decl) = 1;
+	  SET_EXPR_LOCATION (stmt, loc);
+	  stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
+	}
 
       innerptrtype = build_pointer_type (arg1_inner_type);
 
@@ -3901,11 +3910,20 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       TREE_USED (decl) = 1;
       TREE_TYPE (decl) = arg1_type;
       TREE_READONLY (decl) = TYPE_READONLY (arg1_type);
-      DECL_INITIAL (decl) = arg1;
-      stmt = build1 (DECL_EXPR, arg1_type, decl);
-      TREE_ADDRESSABLE (decl) = 1;
-      SET_EXPR_LOCATION (stmt, loc);
-      stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
+      if (c_dialect_cxx ())
+	{
+	  stmt = build4 (TARGET_EXPR, arg1_type, decl, arg1,
+			 NULL_TREE, NULL_TREE);
+	  SET_EXPR_LOCATION (stmt, loc);
+	}
+      else
+	{
+	  DECL_INITIAL (decl) = arg1;
+	  stmt = build1 (DECL_EXPR, arg1_type, decl);
+	  TREE_ADDRESSABLE (decl) = 1;
+	  SET_EXPR_LOCATION (stmt, loc);
+	  stmt = build1 (COMPOUND_LITERAL_EXPR, arg1_type, stmt);
+	}
 
       innerptrtype = build_pointer_type (arg1_inner_type);
 
