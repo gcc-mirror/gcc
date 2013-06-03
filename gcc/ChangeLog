@@ -1,3 +1,9 @@
+2013-06-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57415
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Use TARGET_EXPR for C++.
+
 2013-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57268
