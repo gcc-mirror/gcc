@@ -4612,28 +4612,21 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
       switch (TREE_CODE (exp))
 	{
 	case CONSTRUCTOR:
-	    output_constructor (exp, size, align, NULL);
+	  output_constructor (exp, size, align, NULL);
 	  return;
 	case STRING_CST:
-	  thissize = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp),
-			  size);
+	  thissize
+	    = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp), size);
 	  assemble_string (TREE_STRING_POINTER (exp), thissize);
 	  break;
-
 	case VECTOR_CST:
 	  {
-	    int elt_size;
-	    unsigned int i, nalign;
-	    enum machine_mode inner;
-
-	    inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
-	    nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
-
-	    elt_size = GET_MODE_SIZE (inner);
-
+	    enum machine_mode inner = TYPE_MODE (TREE_TYPE (TREE_TYPE (exp)));
+	    unsigned int nalign = MIN (align, GET_MODE_ALIGNMENT (inner));
+	    int elt_size = GET_MODE_SIZE (inner);
 	    output_constant (VECTOR_CST_ELT (exp, 0), elt_size, align);
 	    thissize = elt_size;
-	    for (i = 1; i < VECTOR_CST_NELTS (exp); ++i)
+	    for (unsigned int i = 1; i < VECTOR_CST_NELTS (exp); i++)
 	      {
 		output_constant (VECTOR_CST_ELT (exp, i), elt_size, nalign);
 		thissize += elt_size;
