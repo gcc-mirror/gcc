@@ -1,3 +1,10 @@
+2013-06-03  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config.gcc (mipsisa64sr71k-*-elf*, mipsisa64sb1-*-elf*)
+	(mipsisa64sb1el-*-elf*, mips64-*-elf*, mips64el-*-elf*)
+	(mips64orion-*-elf*, mips64orionel-*-elf*): Remove
+	target_cpu_default setting.
+
 2013-06-03  Teresa Johnson  <tejohnson@google.com>
 
 	* dumpfile.c (opt_info_switch_p): Change -fopt-info
