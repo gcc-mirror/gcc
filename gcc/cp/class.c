@@ -1354,11 +1354,11 @@ find_abi_tags_r (tree *tp, int */*walk_subtrees*/, void *data)
   return NULL_TREE;
 }
 
-/* Check that class T has all the abi tags that subobject SUBOB has, or
-   warn if not.  */
+/* Set IDENTIFIER_MARKED on all the ABI tags on T and its (transitively
+   complete) template arguments.  */
 
 static void
-check_abi_tags (tree t, tree subob)
+mark_type_abi_tags (tree t, bool val)
 {
   tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (t));
   if (attributes)
@@ -1368,25 +1368,41 @@ check_abi_tags (tree t, tree subob)
 	{
 	  tree tag = TREE_VALUE (list);
 	  tree id = get_identifier (TREE_STRING_POINTER (tag));
-	  IDENTIFIER_MARKED (id) = true;
+	  IDENTIFIER_MARKED (id) = val;
 	}
     }
+
+  /* Also mark ABI tags from template arguments.  */
+  if (CLASSTYPE_TEMPLATE_INFO (t))
+    {
+      tree args = CLASSTYPE_TI_ARGS (t);
+      for (int i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
+	{
+	  tree level = TMPL_ARGS_LEVEL (args, i+1);
+	  for (int j = 0; j < TREE_VEC_LENGTH (level); ++j)
+	    {
+	      tree arg = TREE_VEC_ELT (level, j);
+	      if (CLASS_TYPE_P (arg))
+		mark_type_abi_tags (arg, val);
+	    }
+	}
+    }
+}
+
+/* Check that class T has all the abi tags that subobject SUBOB has, or
+   warn if not.  */
+
+static void
+check_abi_tags (tree t, tree subob)
+{
+  mark_type_abi_tags (t, true);
 
   tree subtype = TYPE_P (subob) ? subob : TREE_TYPE (subob);
   struct abi_tag_data data = { t, subob };
 
   cp_walk_tree_without_duplicates (&subtype, find_abi_tags_r, &data);
 
-  if (attributes)
-    {
-      for (tree list = TREE_VALUE (attributes); list;
-	   list = TREE_CHAIN (list))
-	{
-	  tree tag = TREE_VALUE (list);
-	  tree id = get_identifier (TREE_STRING_POINTER (tag));
-	  IDENTIFIER_MARKED (id) = false;
-	}
-    }
+  mark_type_abi_tags (t, false);
 }
 
 /* Run through the base classes of T, updating CANT_HAVE_CONST_CTOR_P,
