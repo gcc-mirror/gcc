@@ -1541,7 +1541,10 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
 	}
       else
 	for (jj = 0; jj < rhs_rank; jj++)
-	  rhs_vector[ii][jj] = false;
+	  { 
+	    rhs_vector[ii][jj] = false;
+	    rhs_length[ii][jj] = NULL_TREE;
+	  }
     }
 
   if (length_mismatch_in_expr_p (EXPR_LOCATION (lhs), lhs_length,
@@ -1555,6 +1558,7 @@ build_array_notation_expr (location_t location, tree lhs, tree lhs_origtype,
 
   if (lhs_list_size > 0 && rhs_list_size > 0 && lhs_rank > 0 && rhs_rank > 0
       && TREE_CODE (lhs_length[0][0]) == INTEGER_CST
+      && rhs_length[0][0]
       && TREE_CODE (rhs_length[0][0]) == INTEGER_CST)
     {
       HOST_WIDE_INT l_length = int_cst_value (lhs_length[0][0]);
