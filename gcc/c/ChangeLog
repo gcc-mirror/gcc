@@ -1,3 +1,10 @@
+2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57474
+	* c-array-notation.c (build_array_notation_expr): Initialized rhs_length
+	array to NULL_TREE if they are unused.  Also added a check for the
+	field to be NULL before its fields are used in future.
+	
 2013-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/57450
