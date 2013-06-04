@@ -28,10 +28,12 @@ end type t4
 end module m
 
 use m
+block ! Start new scoping unit as otherwise the vars are implicitly SAVEd
 type(t1) :: na1, a1, aa1(:)
 type(t2) :: na2, a2, aa2(:)
 type(t3) :: na3, a3, aa3(:)
 type(t4) :: na4, a4, aa4(:)
+
 allocatable :: a1, a2, a3, a4, aa1, aa2, aa3,aa4
 
 if(allocated(a1)) call abort()
@@ -47,6 +49,7 @@ if(allocated(na1%b1)) call abort()
 if(allocated(na2%b2)) call abort()
 if(allocated(na3%b3)) call abort()
 if(allocated(na4%b4)) call abort()
+end block
 end
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 32 "original" } }

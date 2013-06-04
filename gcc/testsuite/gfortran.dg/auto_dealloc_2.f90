@@ -11,11 +11,12 @@ type :: t
   integer, allocatable :: i(:)
 end type
 
+block ! New block as the main program implies SAVE
 type(t) :: a
 
 call init(a)
 call init(a)
-
+end block
 contains
 
   subroutine init(x)

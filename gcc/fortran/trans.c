@@ -838,6 +838,223 @@ gfc_call_free (tree var)
 }
 
 
+/* Build a call to a FINAL procedure, which finalizes "var".  */
+
+static tree
+gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
+		      bool fini_coarray, gfc_expr *class_size)
+{
+  stmtblock_t block;
+  gfc_se se;
+  tree final_fndecl, array, size, tmp;
+  symbol_attribute attr;
+
+  gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
+  gcc_assert (var);
+
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr (&se, final_wrapper);
+  final_fndecl = se.expr;
+  if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
+    final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
+
+  if (ts.type == BT_DERIVED)
+    {
+      tree elem_size;
+
+      gcc_assert (!class_size);
+      elem_size = gfc_typenode_for_spec (&ts);
+      elem_size = TYPE_SIZE_UNIT (elem_size);
+      size = fold_convert (gfc_array_index_type, elem_size);
+
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      if (var->rank)
+	{
+	  se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&se, var);
+	  array = se.expr;
+	}
+      else
+	{
+	  gfc_conv_expr (&se, var);
+	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
+	  array = se.expr;
+
+	  /* No copy back needed, hence set attr's allocatable/pointer
+	     to zero.  */
+	  gfc_clear_attr (&attr);
+	  gfc_init_se (&se, NULL);
+	  array = gfc_conv_scalar_to_descriptor (&se, array, attr);
+	  gcc_assert (se.post.head == NULL_TREE);
+	}
+    }
+  else
+    {
+      gfc_expr *array_expr;
+      gcc_assert (class_size);
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, class_size);
+      gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
+      size = se.expr;
+
+      array_expr = gfc_copy_expr (var);
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      if (array_expr->rank)
+	{
+	  gfc_add_class_array_ref (array_expr);
+	  se.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&se, array_expr);
+	  array = se.expr;
+	}
+      else
+	{
+	  gfc_add_data_component (array_expr);
+	  gfc_conv_expr (&se, array_expr);
+	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
+	  array = se.expr;
+	  if (TREE_CODE (array) == ADDR_EXPR
+	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
+	    tmp = TREE_OPERAND (array, 0);
+
+	  if (!gfc_is_coarray (array_expr))
+	    {
+	      /* No copy back needed, hence set attr's allocatable/pointer
+		 to zero.  */
+	      gfc_clear_attr (&attr);
+	      gfc_init_se (&se, NULL);
+	      array = gfc_conv_scalar_to_descriptor (&se, array, attr);
+	    }
+	  gcc_assert (se.post.head == NULL_TREE);
+	}
+      gfc_free_expr (array_expr);
+    }
+
+  if (!POINTER_TYPE_P (TREE_TYPE (array)))
+    array = gfc_build_addr_expr (NULL, array);
+
+  gfc_start_block (&block);
+  gfc_add_block_to_block (&block, &se.pre);
+  tmp = build_call_expr_loc (input_location,
+			     final_fndecl, 3, array,
+			     size, fini_coarray ? boolean_true_node
+						: boolean_false_node);
+  gfc_add_block_to_block (&block, &se.post);
+  gfc_add_expr_to_block (&block, tmp);
+  return gfc_finish_block (&block);
+}
+
+
+/* Add a call to the finalizer, using the passed *expr. Returns
+   true when a finalizer call has been inserted.  */
+
+bool
+gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2)
+{
+  tree tmp;
+  gfc_ref *ref;
+  gfc_expr *expr;
+  gfc_expr *final_expr = NULL;
+  gfc_expr *elem_size = NULL;
+  bool has_finalizer = false;
+
+  if (!expr2 || (expr2->ts.type != BT_DERIVED && expr2->ts.type != BT_CLASS))
+    return false;
+
+  if (expr2->ts.type == BT_DERIVED)
+    {
+      gfc_is_finalizable (expr2->ts.u.derived, &final_expr);
+      if (!final_expr)
+        return false;
+    }
+
+  /* If we have a class array, we need go back to the class
+     container. */
+  expr = gfc_copy_expr (expr2);
+
+  if (expr->ref && expr->ref->next && !expr->ref->next->next
+      && expr->ref->next->type == REF_ARRAY
+      && expr->ref->type == REF_COMPONENT
+      && strcmp (expr->ref->u.c.component->name, "_data") == 0)
+    {
+      gfc_free_ref_list (expr->ref);
+      expr->ref = NULL;
+    }
+  else
+    for (ref = expr->ref; ref; ref = ref->next)
+      if (ref->next && ref->next->next && !ref->next->next->next
+         && ref->next->next->type == REF_ARRAY
+         && ref->next->type == REF_COMPONENT
+         && strcmp (ref->next->u.c.component->name, "_data") == 0)
+       {
+         gfc_free_ref_list (ref->next);
+         ref->next = NULL;
+       }
+
+  if (expr->ts.type == BT_CLASS)
+    {
+      has_finalizer = gfc_is_finalizable (expr->ts.u.derived, NULL);
+
+      if (!expr2->rank && !expr2->ref && CLASS_DATA (expr2->symtree->n.sym)->as)
+	expr->rank = CLASS_DATA (expr2->symtree->n.sym)->as->rank;
+
+      final_expr = gfc_copy_expr (expr);
+      gfc_add_vptr_component (final_expr);
+      gfc_add_component_ref (final_expr, "_final");
+
+      elem_size = gfc_copy_expr (expr);
+      gfc_add_vptr_component (elem_size);
+      gfc_add_component_ref (elem_size, "_size");
+    }
+
+  gcc_assert (final_expr->expr_type == EXPR_VARIABLE);
+
+  tmp = gfc_build_final_call (expr->ts, final_expr, expr,
+			      false, elem_size);
+
+  if (expr->ts.type == BT_CLASS && !has_finalizer)
+    {
+      tree cond;
+      gfc_se se;
+
+      gfc_init_se (&se, NULL);
+      se.want_pointer = 1;
+      gfc_conv_expr (&se, final_expr);
+      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			      se.expr, build_int_cst (TREE_TYPE (se.expr), 0));
+
+      /* For CLASS(*) not only sym->_vtab->_final can be NULL
+	 but already sym->_vtab itself.  */
+      if (UNLIMITED_POLY (expr))
+	{
+	  tree cond2;
+	  gfc_expr *vptr_expr;
+
+	  vptr_expr = gfc_copy_expr (expr);
+	  gfc_add_vptr_component (vptr_expr);
+
+	  gfc_init_se (&se, NULL);
+	  se.want_pointer = 1;
+	  gfc_conv_expr (&se, vptr_expr);
+	  gfc_free_expr (vptr_expr);
+
+	  cond2 = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+				   se.expr,
+				   build_int_cst (TREE_TYPE (se.expr), 0));
+	  cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+				  boolean_type_node, cond2, cond);
+	}
+
+      tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+			     cond, tmp, build_empty_stmt (input_location));
+    }
+
+  gfc_add_expr_to_block (block, tmp);
+
+  return true;
+}
+
 
 /* User-deallocate; we emit the code directly from the front-end, and the
    logic is the same as the previous library function:
@@ -930,6 +1147,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 
   /* When POINTER is not NULL, we free it.  */
   gfc_start_block (&non_null);
+  gfc_add_finalizer_call (&non_null, expr);
   if (!coarray || gfc_option.coarray != GFC_FCOARRAY_LIB)
     {
       tmp = build_call_expr_loc (input_location,
@@ -1022,125 +1240,6 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg,
 }
 
 
-/* Build a call to a FINAL procedure, which finalizes "var".  */
-
-tree
-gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
-		      bool fini_coarray, gfc_expr *class_size)
-{
-  stmtblock_t block;
-  gfc_se se;
-  tree final_fndecl, array, size, tmp;
-  symbol_attribute attr;
-
-  gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
-  gcc_assert (var);
-
-  gfc_init_se (&se, NULL);
-  gfc_conv_expr (&se, final_wrapper);
-  final_fndecl = se.expr;
-  if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
-    final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
-
-  attr = gfc_expr_attr (var);
-
-  if (ts.type == BT_DERIVED)
-    {
-      tree elem_size;
-
-      gcc_assert (!class_size);
-      elem_size = gfc_typenode_for_spec (&ts);
-      elem_size = TYPE_SIZE_UNIT (elem_size);
-      size = fold_convert (gfc_array_index_type, elem_size);
-
-      gfc_init_se (&se, NULL);
-      se.want_pointer = 1;
-      if (var->rank || attr.dimension
-	  || (attr.codimension && attr.allocatable
-	      && gfc_option.coarray == GFC_FCOARRAY_LIB))
-	{
-	  if (var->rank == 0)
-	    se.want_coarray = 1;
-	  se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&se, var);
-	  array = se.expr;
-	  if (!POINTER_TYPE_P (TREE_TYPE (array)))
-	    array = gfc_build_addr_expr (NULL, array);
-	}
-      else
-	{
-	  gfc_clear_attr (&attr);
-	  gfc_conv_expr (&se, var);
-	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
-	  array = se.expr;
-	  if (TREE_CODE (array) == ADDR_EXPR
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
-	    tmp = TREE_OPERAND (array, 0);
-
-	  gfc_init_se (&se, NULL);
-	  array = gfc_conv_scalar_to_descriptor (&se, array, attr);
-	  array = gfc_build_addr_expr (NULL, array);
-	  gcc_assert (se.post.head == NULL_TREE);
-	}
-    }
-  else
-    {
-      gfc_expr *array_expr;
-      gcc_assert (class_size);
-      gfc_init_se (&se, NULL);
-      gfc_conv_expr (&se, class_size);
-      gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
-      size = se.expr;
-
-      array_expr = gfc_copy_expr (var);
-      gfc_init_se (&se, NULL);
-      se.want_pointer = 1;
-      if (array_expr->rank || attr.dimension
-	  || (attr.codimension && attr.allocatable
-	      && gfc_option.coarray == GFC_FCOARRAY_LIB))
-	{
-	  gfc_add_class_array_ref (array_expr);
-	  if (array_expr->rank == 0)
-	    se.want_coarray = 1;
-	  se.descriptor_only = 1;
-	  gfc_conv_expr_descriptor (&se, array_expr);
-	  array = se.expr;
-	  if (! POINTER_TYPE_P (TREE_TYPE (array)))
-	    array = gfc_build_addr_expr (NULL, array);
-	}
-      else
-	{
-	  gfc_clear_attr (&attr);
-	  gfc_add_data_component (array_expr);
-	  gfc_conv_expr (&se, array_expr);
-	  gcc_assert (se.pre.head == NULL_TREE && se.post.head == NULL_TREE);
-	  array = se.expr;
-	  if (TREE_CODE (array) == ADDR_EXPR
-	      && POINTER_TYPE_P (TREE_TYPE (TREE_OPERAND (array, 0))))
-	    tmp = TREE_OPERAND (array, 0);
-
-	  /* attr: Argument is neither a pointer/allocatable,
-	     i.e. no copy back needed */
-	  gfc_init_se (&se, NULL);
-	  array = gfc_conv_scalar_to_descriptor (&se, array, attr);
-	  array = gfc_build_addr_expr (NULL, array);
-	  gcc_assert (se.post.head == NULL_TREE);
-	}
-      gfc_free_expr (array_expr);
-    }
-
-  gfc_start_block (&block);
-  gfc_add_block_to_block (&block, &se.pre);
-  tmp = build_call_expr_loc (input_location,
-			     final_fndecl, 3, array,
-			     size, fini_coarray ? boolean_true_node
-						: boolean_false_node);
-  gfc_add_block_to_block (&block, &se.post);
-  gfc_add_expr_to_block (&block, tmp);
-  return gfc_finish_block (&block);
-}
-
-
 /* Generate code for deallocation of allocatable scalars (variables or
    components). Before the object itself is freed, any allocatable
    subcomponents are being deallocated.  */
@@ -1151,6 +1250,7 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, bool can_fail,
 {
   stmtblock_t null, non_null;
   tree cond, tmp, error;
+  bool finalizable;
 
   cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node, pointer,
 			  build_int_cst (TREE_TYPE (pointer), 0));
@@ -1195,18 +1295,11 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, bool can_fail,
   gfc_start_block (&non_null);
 
   /* Free allocatable components.  */
-  if (ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
+  finalizable = gfc_add_finalizer_call (&non_null, expr);
+  if (!finalizable && ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
     {
       tmp = build_fold_indirect_ref_loc (input_location, pointer);
       tmp = gfc_deallocate_alloc_comp (ts.u.derived, tmp, 0);
-      gfc_add_expr_to_block (&non_null, tmp);
-    }
-  else if (ts.type == BT_CLASS
-	   && ts.u.derived->components->ts.u.derived->attr.alloc_comp)
-    {
-      tmp = build_fold_indirect_ref_loc (input_location, pointer);
-      tmp = gfc_deallocate_alloc_comp (ts.u.derived->components->ts.u.derived,
-				       tmp, 0);
       gfc_add_expr_to_block (&non_null, tmp);
     }
 

@@ -3872,7 +3872,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
 	      /* Deallocate when leaving the scope. Nullifying is not
 		 needed.  */
-	      if (!sym->attr.result && !sym->attr.dummy)
+	      if (!sym->attr.result && !sym->attr.dummy
+		  && !sym->ns->proc_name->attr.is_main_program)
 		{
 		  if (sym->ts.type == BT_CLASS
 		      && CLASS_DATA (sym)->attr.codimension)

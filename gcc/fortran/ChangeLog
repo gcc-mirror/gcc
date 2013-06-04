@@ -1,3 +1,25 @@
+2013-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans.h (gfc_build_final_call): Remove prototype.
+	(gfc_add_finalizer_call): Add prototype.
+	* trans-array.c (gfc_trans_dealloc_allocated): Support finalization.
+	(structure_alloc_comps): Update caller.
+	(gfc_trans_deferred_array): Call finalizer.
+	* trans-array.h (gfc_trans_dealloc_allocated): Update prototype.
+	* trans-decl.c (gfc_trans_deferred_vars): Don't deallocate/finalize
+	variables of the main program.
+	* trans-expr.c (gfc_conv_procedure_call): Support finalization.
+	* trans-openmp.c (gfc_omp_clause_dtor,
+	gfc_trans_omp_array_reduction): Update calls.
+	* trans-stmt.c (gfc_trans_deallocate): Avoid double deallocation
+	of alloc components.
+	* trans.c (gfc_add_finalizer_call): New function.
+	(gfc_deallocate_with_status,
+	gfc_deallocate_scalar_with_status): Call it
+	(gfc_build_final_call): Fix handling of scalar coarrays,
+	move up in the file and make static.
+
 2013-06-01  Janus Weil  <janus@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

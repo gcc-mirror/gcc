@@ -4274,10 +4274,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      if (e->ts.type == BT_CLASS)
 			ptr = gfc_class_data_get (ptr);
 
-		      tmp = gfc_deallocate_with_status (ptr, NULL_TREE,
-							NULL_TREE, NULL_TREE,
-							NULL_TREE, true, NULL,
-							false);
+		      tmp = gfc_deallocate_scalar_with_status (ptr, NULL_TREE,
+							       true, e, e->ts);
 		      gfc_add_expr_to_block (&block, tmp);
 		      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
 					     void_type_node, ptr,
@@ -4409,8 +4407,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  else
 		    tmp = gfc_finish_block (&block);
 
-		      gfc_add_expr_to_block (&se->pre, tmp);
-}
+		  gfc_add_expr_to_block (&se->pre, tmp);
+		}
 
 	      /* The conversion does not repackage the reference to a class
 	         array - _data descriptor.  */
@@ -4511,7 +4509,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		{
 		  tmp = build_fold_indirect_ref_loc (input_location,
 						     parmse.expr);
-		  tmp = gfc_trans_dealloc_allocated (tmp, false);
+		  tmp = gfc_trans_dealloc_allocated (tmp, false, e);
 		  if (fsym->attr.optional
 		      && e->expr_type == EXPR_VARIABLE
 		      && e->symtree->n.sym->attr.optional)

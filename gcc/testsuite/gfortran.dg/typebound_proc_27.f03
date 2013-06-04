@@ -33,6 +33,7 @@ program prog
 
   use m
 
+ block ! Start new scoping unit as PROGRAM implies SAVE
   type(tx) :: this
   type(tx), target :: that
   type(tx), pointer :: p
@@ -64,6 +65,7 @@ program prog
   !print *,this%i
   if(any (this%i /= [8, 9])) call abort()
 
+ end block
 end program prog
 
 !
