@@ -1,3 +1,11 @@
+2013-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57364
+	* gfortran.dg/defined_assignment_6.f90: New.
+
 2013-05-31  Janus Weil  <janus@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
