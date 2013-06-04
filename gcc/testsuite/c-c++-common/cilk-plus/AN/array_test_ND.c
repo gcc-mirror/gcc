@@ -2,28 +2,21 @@
 /* { dg-options "-fcilkplus" } */
 
 #include <stdlib.h>
-int main2(int argc, char **argv);
-int main(int argc, char **argv)
+int main2(char **argv);
+int main(void)
 {
-  int x = 0;
-  if (argc == 1)
-    {
-      const char *array[] = {"a.out", "10", "15"};	     
-      x = main2 (3, (char **)array);
-    }
-  else if (argc == 3)
-    x = main2 (argc, argv);
-  else
-    return 1;
-      
+  int x = 0; 
+  const char *array[] = {"a.out", "10", "15"};	     
+  x = main2 ((char **)array);
   return x;
 }
 
-int main2(int argc, char **argv)
+int main2(char **argv)
 {  
   int array[10][15], ii = 0, jj = 0,x = 0, z= 1 , y = 10 ;
   int array_2[10][15];
- 
+  int argc = 3;
+  __asm volatile ("" : "+r" (argc));
 
   for (ii = 0; ii < 10; ii++) {
     for (jj = 0; jj< 15; jj++) {

@@ -2,10 +2,12 @@
 /* { dg-options "-fcilkplus" } */
 
 #include <stdlib.h>
-int main(int argc, char **argv)
+int main(void)
 {
+  int argc = 1;
   short array[1000], array2[1000], *array3, cond[1000], ii = 0;
 
+  __asm volatile ("" : "+r" (argc));
   for (ii = 0; ii < 1000; ii++) {
     cond[ii] = 1;
     array[ii] = 1000;

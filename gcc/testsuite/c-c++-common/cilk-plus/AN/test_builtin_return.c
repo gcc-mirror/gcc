@@ -28,11 +28,13 @@ int func4 (int *a1, int *a2)
 {
   return a1[NUMBER-1] * (__sec_reduce_add (a1[0:NUMBER] * a2[0:NUMBER]) + a2[0] + a2[1] + a2[3])/a1[NUMBER-2];
 }
-int main(int argc, char **argv)
+int main(void)
 {
   int array[NUMBER], array2[NUMBER];
   int return_value = 0;
   int ii = 0;
+  int argc = 1;
+  __asm volatile ("" : "+r" (argc));
   for (ii = 0; ii < NUMBER; ii++)
     {
       array[ii] = argc; /* This should calculate to 1.  */

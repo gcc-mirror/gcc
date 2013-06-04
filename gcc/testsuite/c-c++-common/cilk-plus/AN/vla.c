@@ -5,8 +5,10 @@ int func (int x)
 {
   return x++;
 }
-int main(int argc, char **argv)
+int main(void)
 {
+  int argc = 1;
+  __asm volatile ("" : "+r" (argc));
   int array[argc];
 
   array[:] = 5; /* { dg-error "start-index and length fields necessary for using array notations in variable-length arrays." }  */
