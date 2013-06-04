@@ -103,8 +103,6 @@ static bool aarch64_vfp_is_call_or_return_candidate (enum machine_mode,
 static void aarch64_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
-static bool aarch64_simd_valid_immediate (rtx, enum machine_mode, int, rtx *,
-					 int *, unsigned char *, int *, int *);
 static bool aarch64_vector_mode_supported_p (enum machine_mode);
 static unsigned bit_count (unsigned HOST_WIDE_INT);
 static bool aarch64_const_vec_all_same_int_p (rtx,
@@ -6145,7 +6143,7 @@ aarch64_vect_float_const_representable_p (rtx x)
 }
 
 /* Return true for valid and false for invalid.  */
-static bool
+bool
 aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
 			      rtx *modconst, int *elementwidth,
 			      unsigned char *elementchar,
@@ -6349,45 +6347,6 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
 #undef CHECK
 }
 
-/* Return TRUE if rtx X is legal for use as either a AdvSIMD MOVI instruction
-   (or, implicitly, MVNI) immediate.  Write back width per element
-   to *ELEMENTWIDTH, and a modified constant (whatever should be output
-   for a MOVI instruction) in *MODCONST.  */
-int
-aarch64_simd_immediate_valid_for_move (rtx op, enum machine_mode mode,
-				       rtx *modconst, int *elementwidth,
-				       unsigned char *elementchar,
-				       int *mvn, int *shift)
-{
-  rtx tmpconst;
-  int tmpwidth;
-  unsigned char tmpwidthc;
-  int tmpmvn = 0, tmpshift = 0;
-  bool retval = aarch64_simd_valid_immediate (op, mode, 0, &tmpconst,
-					     &tmpwidth, &tmpwidthc,
-					     &tmpmvn, &tmpshift);
-
-  if (!retval)
-    return 0;
-
-  if (modconst)
-    *modconst = tmpconst;
-
-  if (elementwidth)
-    *elementwidth = tmpwidth;
-
-  if (elementchar)
-    *elementchar = tmpwidthc;
-
-  if (mvn)
-    *mvn = tmpmvn;
-
-  if (shift)
-    *shift = tmpshift;
-
-  return 1;
-}
-
 static bool
 aarch64_const_vec_all_same_int_p (rtx x,
 				  HOST_WIDE_INT minval,
@@ -6492,9 +6451,8 @@ aarch64_simd_scalar_immediate_valid_for_move (rtx op, enum machine_mode mode)
   gcc_assert (!VECTOR_MODE_P (mode));
   vmode = aarch64_preferred_simd_mode (mode);
   rtx op_v = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (op));
-  int retval = aarch64_simd_immediate_valid_for_move (op_v, vmode, 0,
-						      NULL, NULL, NULL, NULL);
-  return retval;
+  return aarch64_simd_valid_immediate (op_v, vmode, 0, NULL,
+				       NULL, NULL, NULL, NULL);
 }
 
 /* Construct and return a PARALLEL RTX vector.  */
@@ -6722,8 +6680,8 @@ aarch64_simd_make_constant (rtx vals)
     gcc_unreachable ();
 
   if (const_vec != NULL_RTX
-      && aarch64_simd_immediate_valid_for_move (const_vec, mode, NULL, NULL,
-						NULL, NULL, NULL))
+      && aarch64_simd_valid_immediate (const_vec, mode, 0, NULL,
+				       NULL, NULL, NULL, NULL))
     /* Load using MOVI/MVNI.  */
     return const_vec;
   else if ((const_dup = aarch64_simd_dup_constant (vals)) != NULL_RTX)
@@ -7285,7 +7243,7 @@ aarch64_output_simd_mov_immediate (rtx *const_vector,
 				   enum machine_mode mode,
 				   unsigned width)
 {
-  int is_valid;
+  bool is_valid;
   unsigned char widthc;
   int lane_width_bits;
   static char templ[40];
@@ -7293,10 +7251,14 @@ aarch64_output_simd_mov_immediate (rtx *const_vector,
   const char *mnemonic;
   unsigned int lane_count = 0;
 
+/* This will return true to show const_vector is legal for use as either
+   a AdvSIMD MOVI instruction (or, implicitly, MVNI) immediate.  It
+   writes back various values via the int pointers and it modifies the
+   operand pointed to by CONST_VECTOR in-place, if required.  */
   is_valid =
-    aarch64_simd_immediate_valid_for_move (*const_vector, mode,
-					   const_vector, &lane_width_bits,
-					   &widthc, &mvn, &shift);
+    aarch64_simd_valid_immediate (*const_vector, mode, 0,
+				  const_vector, &lane_width_bits,
+				  &widthc, &mvn, &shift);
   gcc_assert (is_valid);
 
   mode = GET_MODE_INNER (mode);
