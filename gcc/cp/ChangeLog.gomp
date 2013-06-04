@@ -1,3 +1,13 @@
+2013-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (handle_omp_array_sections_1, handle_omp_array_sections):
+	New functions.
+	(finish_omp_clauses): Handle array sections on
+	OMP_CLAUSE_{MAP,TO,FROM,DEPEND}.  If not array sections, mark the decl
+	addressable.
+	* parser.c (cp_parser_omp_var_list_no_open): Parse array sections
+	on OMP_CLAUSE_{MAP,TO,FROM,DEPEND} clauses.
+
 2013-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_declare_target,

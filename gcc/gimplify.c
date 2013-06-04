@@ -6258,17 +6258,76 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  flags = GOVD_LINEAR | GOVD_EXPLICIT;
 	  goto do_add;
+
 	case OMP_CLAUSE_MAP:
+	  if (OMP_CLAUSE_SIZE (c)
+	      && gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
+				NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  decl = OMP_CLAUSE_DECL (c);
+	  if (!DECL_P (decl))
+	    {
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p,
+				 NULL, is_gimple_lvalue, fb_lvalue)
+		  == GS_ERROR)
+		{
+		  remove = true;
+		  break;
+		}
+	      break;
+	    }
 	  flags = GOVD_MAP | GOVD_EXPLICIT;
 	  notice_outer = false;
 	  goto do_add;
 
+	case OMP_CLAUSE_DEPEND:
+	  if (TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPOUND_EXPR)
+	    {
+	      gimplify_expr (&TREE_OPERAND (OMP_CLAUSE_DECL (c), 0), pre_p,
+			     NULL, is_gimple_val, fb_rvalue);
+	      OMP_CLAUSE_DECL (c) = TREE_OPERAND (OMP_CLAUSE_DECL (c), 1);
+	    }
+	  if (error_operand_p (OMP_CLAUSE_DECL (c)))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  OMP_CLAUSE_DECL (c) = build_fold_addr_expr (OMP_CLAUSE_DECL (c));
+	  if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+			     is_gimple_val, fb_rvalue) == GS_ERROR)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  break;
+
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	  if (OMP_CLAUSE_SIZE (c)
+	      && gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
+				NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+	    {
+	      remove = true;
+	      break;
+	    }
 	  decl = OMP_CLAUSE_DECL (c);
 	  if (error_operand_p (decl))
 	    {
 	      remove = true;
+	      break;
+	    }
+	  if (!DECL_P (decl))
+	    {
+	      if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p,
+				 NULL, is_gimple_lvalue, fb_lvalue)
+		  == GS_ERROR)
+		{
+		  remove = true;
+		  break;
+		}
 	      break;
 	    }
 	  goto do_notice;
@@ -6621,8 +6680,9 @@ gimplify_adjust_omp_clauses (tree *list_p)
 
 	case OMP_CLAUSE_MAP:
 	  decl = OMP_CLAUSE_DECL (c);
+	  if (!DECL_P (decl))
+	    break;
 	  n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
-	  remove = false;
 	  if (ctx->region_type == ORT_TARGET && !(n->value & GOVD_SEEN))
 	    remove = true;
 	  else
@@ -6672,6 +6732,7 @@ gimplify_adjust_omp_clauses (tree *list_p)
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE_DEPEND:
 	  break;
 
 	default:

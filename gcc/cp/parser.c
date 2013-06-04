@@ -26303,12 +26303,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 					  /*declarator_p=*/false,
 					  /*optional_p=*/false);
 	  if (name == error_mark_node)
-	    {
-	      if (colon)
-		parser->colon_corrects_to_scope_p
-		  = saved_colon_corrects_to_scope_p;
-	      goto skip_comma;
-	    }
+	    goto skip_comma;
 
 	  decl = cp_parser_lookup_name_simple (parser, name, token->location);
 	}
@@ -26317,6 +26312,42 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 				     token->location);
       else if (kind != 0)
 	{
+	  switch (kind)
+	    {
+	    case OMP_CLAUSE_MAP:
+	    case OMP_CLAUSE_FROM:
+	    case OMP_CLAUSE_TO:
+	    case OMP_CLAUSE_DEPEND:
+	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
+		{
+		  tree low_bound = NULL_TREE, length = NULL_TREE;
+
+		  parser->colon_corrects_to_scope_p = false;
+		  cp_lexer_consume_token (parser->lexer);
+		  if (!cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+		    low_bound = cp_parser_expression (parser, /*cast_p=*/false,
+						      NULL);
+		  if (!colon)
+		    parser->colon_corrects_to_scope_p
+		      = saved_colon_corrects_to_scope_p;
+		  /* Look for `:'.  */
+		  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+		    goto skip_comma;
+		  if (!cp_lexer_next_token_is (parser->lexer,
+					       CPP_CLOSE_SQUARE))
+		    length = cp_parser_expression (parser, /*cast_p=*/false,
+						   NULL);
+		  /* Look for the closing `]'.  */
+		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
+					  RT_CLOSE_SQUARE))
+		    goto skip_comma;
+		  decl = tree_cons (low_bound, length, decl);
+		}
+	      break;
+	    default:
+	      break;
+	    }
+
 	  tree u = build_omp_clause (token->location, kind);
 	  OMP_CLAUSE_DECL (u) = decl;
 	  OMP_CLAUSE_CHAIN (u) = list;
@@ -26348,6 +26379,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
       /* Try to resync to an unnested comma.  Copied from
 	 cp_parser_parenthesized_expression_list.  */
     skip_comma:
+      if (colon)
+	parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
       ending = cp_parser_skip_to_closing_parenthesis (parser,
 						      /*recovering=*/true,
 						      /*or_comma=*/true,

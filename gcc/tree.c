@@ -238,10 +238,10 @@ unsigned const char omp_clause_num_ops[] =
   2, /* OMP_CLAUSE_LINEAR  */
   2, /* OMP_CLAUSE_ALIGNED  */
   1, /* OMP_CLAUSE_DEPEND  */
-  1, /* OMP_CLAUSE_FROM  */
-  1, /* OMP_CLAUSE_TO  */
   1, /* OMP_CLAUSE_UNIFORM  */
-  1, /* OMP_CLAUSE_MAP  */
+  2, /* OMP_CLAUSE_FROM  */
+  2, /* OMP_CLAUSE_TO  */
+  2, /* OMP_CLAUSE_MAP  */
   1, /* OMP_CLAUSE_IF  */
   1, /* OMP_CLAUSE_NUM_THREADS  */
   1, /* OMP_CLAUSE_SCHEDULE  */
@@ -279,9 +279,9 @@ const char * const omp_clause_code_name[] =
   "linear",
   "aligned",
   "depend",
+  "uniform",
   "from",
   "to",
-  "uniform",
   "map",
   "if",
   "num_threads",
@@ -11011,11 +11011,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_SCHEDULE:
-	case OMP_CLAUSE_FROM:
-	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
-	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
@@ -11053,6 +11050,9 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 
 	case OMP_CLAUSE_ALIGNED:
 	case OMP_CLAUSE_LINEAR:
+	case OMP_CLAUSE_FROM:
+	case OMP_CLAUSE_TO:
+	case OMP_CLAUSE_MAP:
 	  WALK_SUBTREE (OMP_CLAUSE_DECL (*tp));
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 1));
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));

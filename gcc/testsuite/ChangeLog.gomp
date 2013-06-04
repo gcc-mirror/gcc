@@ -1,3 +1,11 @@
+2013-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/depend-1.C: New test.
+	* g++.dg/gomp/depend-2.C: New test.
+	* c-c++-common/gomp/depend-1.c: New test.
+	* c-c++-common/gomp/depend-2.c: New test.
+	* c-c++-common/gomp/map-1.c: New test.
+
 2013-05-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/declare-simd-1.c: New test.

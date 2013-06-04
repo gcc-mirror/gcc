@@ -314,12 +314,6 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
     case OMP_CLAUSE_COPYPRIVATE:
       name = "copyprivate";
       goto print_remap;
-    case OMP_CLAUSE_FROM:
-      name = "from";
-      goto print_remap;
-    case OMP_CLAUSE_TO:
-      name = "to";
-      goto print_remap;
     case OMP_CLAUSE_UNIFORM:
       name = "uniform";
       goto print_remap;
@@ -488,6 +482,7 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       switch (OMP_CLAUSE_MAP_KIND (clause))
 	{
 	case OMP_CLAUSE_MAP_ALLOC:
+	case OMP_CLAUSE_MAP_POINTER:
 	  pp_string (buffer, "alloc");
 	  break;
 	case OMP_CLAUSE_MAP_TO:
@@ -505,8 +500,31 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_character (buffer, ':');
       dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
 			 spc, flags, false);
+     print_clause_size:
+      if (OMP_CLAUSE_SIZE (clause))
+	{
+	  if (OMP_CLAUSE_MAP_KIND (clause) == OMP_CLAUSE_MAP_POINTER)
+	    pp_string (buffer, " [pointer assign, bias: ");
+	  else
+	    pp_string (buffer, " [len: ");
+	  dump_generic_node (buffer, OMP_CLAUSE_SIZE (clause),
+			     spc, flags, false);
+	  pp_character (buffer, ']');
+	}
       pp_character (buffer, ')');
       break;
+
+    case OMP_CLAUSE_FROM:
+      pp_string (buffer, "from(");
+      dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      goto print_clause_size;
+
+    case OMP_CLAUSE_TO:
+      pp_string (buffer, "to(");
+      dump_generic_node (buffer, OMP_CLAUSE_DECL (clause),
+			 spc, flags, false);
+      goto print_clause_size;
 
     case OMP_CLAUSE_NUM_TEAMS:
       pp_string (buffer, "num_teams(");

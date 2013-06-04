@@ -1,3 +1,25 @@
+2013-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Handle array
+	sections on OMP_CLAUSE_{MAP,TO,FROM} clauses, handle
+	OMP_CLAUSE_DEPEND clause.
+	(gimplify_adjust_omp_clauses): Handle array sections on
+	OMP_CLAUSE_MAP, handle OMP_CLAUSE_DEPEND clause.
+	* tree.c (omp_clause_num_ops): OMP_CLAUSE_{MAP,TO,FROM}
+	now have 2 arguments, move OMP_CLAUSE_UNIFORM before these
+	3.
+	(omp_clause_code_name): Adjust for OMP_CLAUSE_UNIFORM movement.
+	(walk_tree_1): Adjust to handle 2 arguments of
+	OMP_CLAUSE_{MAP,TO,FROM}.
+	* tree-pretty-print.c (dump_omp_clause): For OMP_CLAUSE_{MAP,TO,FROM}
+	print OMP_CLAUSE_SIZE, and for OMP_CLAUSE_MAP handle
+	OMP_CLAUSE_MAP_POINTER.
+	* tree.h (enum omp_clause_code): Move OMP_CLAUSE_UNIFORM before
+	OMP_CLAUSE_{MAP,TO,FROM}.
+	(OMP_CLAUSE_SIZE): Define.
+	(enum omp_clause_map_kind): Add OMP_CLAUSE_MAP_POINTER.
+	* omp-low.c (scan_sharing_clauses): Handle OMP_CLAUSE_DEPEND.
+
 2013-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-builtins.def (BUILT_IN_OMP_GET_TEAM_NUM,
