@@ -962,8 +962,9 @@ DEF_RTL_EXPR(DEFINE_ASM_ATTRIBUTES, "define_asm_attributes", "V", RTX_EXTRA)
       relational operator.  Operands should have only one alternative.
    1: A C expression giving an additional condition for recognizing
       the generated pattern.
-   2: A template or C code to produce assembler output.  */
-DEF_RTL_EXPR(DEFINE_COND_EXEC, "define_cond_exec", "Ess", RTX_EXTRA)
+   2: A template or C code to produce assembler output.
+   3: A vector of attributes to append to the resulting cond_exec insn.  */
+DEF_RTL_EXPR(DEFINE_COND_EXEC, "define_cond_exec", "EssV", RTX_EXTRA)
 
 /* Definition of an operand predicate.  The difference between
    DEFINE_PREDICATE and DEFINE_SPECIAL_PREDICATE is that genrecog will

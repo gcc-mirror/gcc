@@ -1,3 +1,10 @@
+2013-06-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* rtl.def: Add extra fourth optional field to define_cond_exec.
+	* gensupport.c (process_one_cond_exec): Process attributes from
+	define_cond_exec.
+	* doc/md.texi: Document fourth field in define_cond_exec.
+
 2013-06-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expmed.c (extract_bit_field_1): In the larger-than-a-word case, factor
