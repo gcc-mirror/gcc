@@ -103,7 +103,7 @@ static bool aarch64_vfp_is_call_or_return_candidate (enum machine_mode,
 static void aarch64_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
-static int aarch64_simd_valid_immediate (rtx, enum machine_mode, int, rtx *,
+static bool aarch64_simd_valid_immediate (rtx, enum machine_mode, int, rtx *,
 					 int *, unsigned char *, int *, int *);
 static bool aarch64_vector_mode_supported_p (enum machine_mode);
 static unsigned bit_count (unsigned HOST_WIDE_INT);
@@ -5153,7 +5153,7 @@ aarch64_legitimate_constant_p (enum machine_mode mode, rtx x)
      we now decompose CONST_INTs according to expand_mov_immediate.  */
   if ((GET_CODE (x) == CONST_VECTOR
        && aarch64_simd_valid_immediate (x, mode, false,
-					NULL, NULL, NULL, NULL, NULL) != -1)
+					NULL, NULL, NULL, NULL, NULL))
       || CONST_INT_P (x) || aarch64_valid_floating_const (mode, x))
 	return !targetm.cannot_force_const_mem (mode, x);
 
@@ -6144,11 +6144,8 @@ aarch64_vect_float_const_representable_p (rtx x)
   return aarch64_float_const_representable_p (x0);
 }
 
-/* TODO: This function returns values similar to those
-   returned by neon_valid_immediate in gcc/config/arm/arm.c
-   but the API here is different enough that these magic numbers
-   are not used.  It should be sufficient to return true or false.  */
-static int
+/* Return true for valid and false for invalid.  */
+static bool
 aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
 			      rtx *modconst, int *elementwidth,
 			      unsigned char *elementchar,
@@ -6184,24 +6181,21 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
 
       if (!(simd_imm_zero
 	    || aarch64_vect_float_const_representable_p (op)))
-	return -1;
+	return false;
 
-	if (modconst)
-	  *modconst = CONST_VECTOR_ELT (op, 0);
+      if (modconst)
+	*modconst = CONST_VECTOR_ELT (op, 0);
 
-	if (elementwidth)
-	  *elementwidth = elem_width;
+      if (elementwidth)
+	*elementwidth = elem_width;
 
-	if (elementchar)
-	  *elementchar = sizetochar (elem_width);
+      if (elementchar)
+	*elementchar = sizetochar (elem_width);
 
-	if (shift)
-	  *shift = 0;
+      if (shift)
+	*shift = 0;
 
-	if (simd_imm_zero)
-	  return 19;
-	else
-	  return 18;
+      return true;
     }
 
   /* Splat vector constant out into a byte vector.  */
@@ -6299,7 +6293,7 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
   if (immtype == -1
       || (immtype >= 12 && immtype <= 15)
       || immtype == 18)
-    return -1;
+    return false;
 
 
   if (elementwidth)
@@ -6351,7 +6345,7 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
         }
     }
 
-  return immtype;
+  return (immtype >= 0);
 #undef CHECK
 }
 
@@ -6369,11 +6363,11 @@ aarch64_simd_immediate_valid_for_move (rtx op, enum machine_mode mode,
   int tmpwidth;
   unsigned char tmpwidthc;
   int tmpmvn = 0, tmpshift = 0;
-  int retval = aarch64_simd_valid_immediate (op, mode, 0, &tmpconst,
+  bool retval = aarch64_simd_valid_immediate (op, mode, 0, &tmpconst,
 					     &tmpwidth, &tmpwidthc,
 					     &tmpmvn, &tmpshift);
 
-  if (retval == -1)
+  if (!retval)
     return 0;
 
   if (modconst)
