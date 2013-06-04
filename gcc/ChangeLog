@@ -1,3 +1,10 @@
+2013-06-04  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline.c (update_caller_keys): Fix availability test.
+	(update_callee_keys): Likewise.
+	* symtab.c (symtab_alias_ultimate_target): Make availaiblity logic
+	to follow ELF standard.
+
 2013-06-04  Jürgen Urban  <JuergenUrban@gmx.de>
 
 	* config.gcc (mipsr5900-*-elf*, mipsr5900el-*-elf*, mips64r5900-*-elf*)

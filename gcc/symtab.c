@@ -834,19 +834,64 @@ symtab_node_availability (symtab_node node)
 symtab_node
 symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
 {
+  bool weakref_p = false;
+
+  if (!node->symbol.alias)
+    {
+      if (availability)
+        *availability = symtab_node_availability (node);
+      return node;
+    }
+
+  /* To determine visibility of the target, we follow ELF semantic of aliases.
+     Here alias is an alternative assembler name of a given definition. Its
+     availablity prevails the availablity of its target (i.e. static alias of
+     weak definition is available.
+
+     Weakref is a different animal (and not part of ELF per se). It is just
+     alternative name of a given symbol used within one complation unit
+     and is translated prior hitting the object file.  It inherits the
+     visibility of its target (i.e. weakref of non-overwritable definition
+     is non-overwritable, while weakref of weak definition is weak).
+
+     If we ever get into supporting targets with different semantics, a target
+     hook will be needed here.  */
+
   if (availability)
-    *availability = symtab_node_availability (node);
+    {
+      weakref_p = DECL_EXTERNAL (node->symbol.decl) && node->symbol.alias;
+      if (!weakref_p)
+        *availability = symtab_node_availability (node);
+      else
+	*availability = AVAIL_LOCAL;
+    }
   while (node)
     {
       if (node->symbol.alias && node->symbol.analyzed)
 	node = symtab_alias_target (node);
       else
-	return node;
-      if (node && availability)
+	{
+	  if (!availability)
+	    ;
+	  else if (node->symbol.analyzed)
+	    {
+	      if (weakref_p)
+		{
+		  enum availability a = symtab_node_availability (node);
+		  if (a < *availability)
+		    *availability = a;
+		}
+	    }
+	  else
+	    *availability = AVAIL_NOT_AVAILABLE;
+	  return node;
+	}
+      if (node && availability && weakref_p)
 	{
 	  enum availability a = symtab_node_availability (node);
 	  if (a < *availability)
 	    *availability = a;
+          weakref_p = DECL_EXTERNAL (node->symbol.decl) && node->symbol.alias;
 	}
     }
   if (availability)
