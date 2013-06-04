@@ -1,5 +1,17 @@
 2013-06-04  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): No
+	longer static.
+	(aarch64_simd_immediate_valid_for_move): Remove.
+	(aarch64_simd_scalar_immediate_valid_for_move): Update call.
+	(aarch64_simd_make_constant): Update call.
+	(aarch64_output_simd_mov_immediate): Update call.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_valid_immediate):
+	Add prototype.
+	* config/aarch64/constraints.md (Dn): Update call.
+
+2013-06-04  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Change
 	return type to bool for prototype.
 	(aarch64_legitimate_constant_p): Check for true instead of not -1.
