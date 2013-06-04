@@ -387,7 +387,11 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   for (vnode = varpool_first_variable (); vnode; vnode = vnext)
     {
       vnext = varpool_next_variable (vnode);
-      if (!vnode->symbol.aux)
+      if (!vnode->symbol.aux
+	  /* For can_refer_decl_in_current_unit_p we want to track for
+	     all external variables if they are defined in other partition
+	     or not.  */
+	  && (!flag_ltrans || !DECL_EXTERNAL (vnode->symbol.decl)))
 	{
 	  if (file)
 	    fprintf (file, " %s", varpool_node_name (vnode));
