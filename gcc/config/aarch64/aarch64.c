@@ -92,7 +92,6 @@ struct simd_immediate_info
   rtx value;
   int shift;
   int element_width;
-  unsigned char element_char;
   bool mvn;
 };
 
@@ -6103,7 +6102,7 @@ aarch64_mangle_type (const_tree type)
 }
 
 /* Return the equivalent letter for size.  */
-static unsigned char
+static char
 sizetochar (int size)
 {
   switch (size)
@@ -6164,7 +6163,6 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
     {							\
       immtype = (CLASS);				\
       elsize = (ELSIZE);				\
-      elchar = sizetochar (elsize);			\
       eshift = (SHIFT);					\
       emvn = (NEG);					\
       break;						\
@@ -6173,25 +6171,20 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
   unsigned int i, elsize = 0, idx = 0, n_elts = CONST_VECTOR_NUNITS (op);
   unsigned int innersize = GET_MODE_SIZE (GET_MODE_INNER (mode));
   unsigned char bytes[16];
-  unsigned char elchar = 0;
   int immtype = -1, matches;
   unsigned int invmask = inverse ? 0xff : 0;
   int eshift, emvn;
 
   if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
     {
-      bool simd_imm_zero = aarch64_simd_imm_zero_p (op, mode);
-      int elem_width = GET_MODE_BITSIZE (GET_MODE (CONST_VECTOR_ELT (op, 0)));
-
-      if (!(simd_imm_zero
-	    || aarch64_vect_float_const_representable_p (op)))
+      if (! (aarch64_simd_imm_zero_p (op, mode)
+	     || aarch64_vect_float_const_representable_p (op)))
 	return false;
 
       if (info)
 	{
 	  info->value = CONST_VECTOR_ELT (op, 0);
-	  info->element_width = elem_width;
-	  info->element_char = sizetochar (elem_width);
+	  info->element_width = GET_MODE_BITSIZE (GET_MODE (info->value));
 	  info->mvn = false;
 	  info->shift = 0;
 	}
@@ -6299,7 +6292,6 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
   if (info)
     {
       info->element_width = elsize;
-      info->element_char = elchar;
       info->mvn = emvn != 0;
       info->shift = eshift;
 
@@ -7230,7 +7222,7 @@ aarch64_float_const_representable_p (rtx x)
 }
 
 char*
-aarch64_output_simd_mov_immediate (rtx *const_vector,
+aarch64_output_simd_mov_immediate (rtx const_vector,
 				   enum machine_mode mode,
 				   unsigned width)
 {
@@ -7238,16 +7230,17 @@ aarch64_output_simd_mov_immediate (rtx *const_vector,
   static char templ[40];
   const char *mnemonic;
   unsigned int lane_count = 0;
+  char element_char;
 
   struct simd_immediate_info info;
 
   /* This will return true to show const_vector is legal for use as either
      a AdvSIMD MOVI instruction (or, implicitly, MVNI) immediate.  It will
      also update INFO to show how the immediate should be generated.  */
-  is_valid = aarch64_simd_valid_immediate (*const_vector, mode, false, &info);
+  is_valid = aarch64_simd_valid_immediate (const_vector, mode, false, &info);
   gcc_assert (is_valid);
 
-  gcc_assert (info.element_width != 0);
+  element_char = sizetochar (info.element_width);
   lane_count = width / info.element_width;
 
   mode = GET_MODE_INNER (mode);
@@ -7269,7 +7262,7 @@ aarch64_output_simd_mov_immediate (rtx *const_vector,
 	    snprintf (templ, sizeof (templ), "fmov\t%%d0, %s", float_buf);
 	  else
 	    snprintf (templ, sizeof (templ), "fmov\t%%0.%d%c, %s",
-		      lane_count, info.element_char, float_buf);
+		      lane_count, element_char, float_buf);
 	  return templ;
 	}
     }
@@ -7281,11 +7274,11 @@ aarch64_output_simd_mov_immediate (rtx *const_vector,
 	      mnemonic, UINTVAL (info.value));
   else if (info.shift)
     snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, " HOST_WIDE_INT_PRINT_HEX
-	      ", lsl %d", mnemonic, lane_count, info.element_char,
+	      ", lsl %d", mnemonic, lane_count, element_char,
 	      UINTVAL (info.value), info.shift);
   else
     snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, " HOST_WIDE_INT_PRINT_HEX,
-	      mnemonic, lane_count, info.element_char, UINTVAL (info.value));
+	      mnemonic, lane_count, element_char, UINTVAL (info.value));
   return templ;
 }
 

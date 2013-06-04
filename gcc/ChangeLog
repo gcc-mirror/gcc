@@ -1,5 +1,19 @@
 2013-06-04  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.c (simd_immediate_info): Remove
+	element_char member.
+	(sizetochar): Return signed char.
+	(aarch64_simd_valid_immediate): Remove elchar and other
+	unnecessary variables.
+	(aarch64_output_simd_mov_immediate): Take rtx instead of &rtx.
+	Calculate element_char as required.
+	* config/aarch64/aarch64-protos.h: Update and move prototype
+	for aarch64_output_simd_mov_immediate.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>):
+	Update arguments.
+
+2013-06-04  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.c (simd_immediate_info): Struct to hold
 	information completed by aarch64_simd_valid_immediate.
 	(aarch64_legitimate_constant_p): Update arguments.
