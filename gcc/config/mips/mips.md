@@ -55,6 +55,7 @@
   r5000
   r5400
   r5500
+  r5900
   r7000
   r8000
   r9000
@@ -755,7 +756,9 @@
 ;; This mode iterator allows :MOVECC to be used anywhere that a
 ;; conditional-move-type condition is needed.
 (define_mode_iterator MOVECC [SI (DI "TARGET_64BIT")
-                              (CC "TARGET_HARD_FLOAT && !TARGET_LOONGSON_2EF")])
+                              (CC "TARGET_HARD_FLOAT
+				   && !TARGET_LOONGSON_2EF
+				   && !TARGET_MIPS5900")])
 
 ;; 32-bit integer moves for which we provide move patterns.
 (define_mode_iterator IMOVE32

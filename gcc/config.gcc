@@ -1935,9 +1935,14 @@ mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tmake_file="mips/t-elf mips/t-sb1"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
 	;;
-mips-*-elf* | mipsel-*-elf*)
+mips-*-elf* | mipsel-*-elf* | mipsr5900-*-elf* | mipsr5900el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf"
+	;;
+mips64r5900-*-elf* | mips64r5900el-*-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
+	tmake_file="mips/t-elf"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
 	;;
 mips64-*-elf* | mips64el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
@@ -2976,6 +2981,19 @@ if test x$with_cpu = x ; then
 	  with_cpu=m${default_m68k_cpu}
 	  ;;
       esac
+      ;;
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      with_arch=r5900
+      with_tune=r5900
+      if test x$with_llsc = x; then
+	# r5900 doesn't support ll, sc, lld and scd instructions:
+	with_llsc=no
+      fi
+      if test x$with_float = x; then
+	# r5900 doesn't support 64 bit float:
+	# 32 bit float doesn't comply with IEEE 754.
+	with_float=soft
+      fi
       ;;
     mips*-*-vxworks)
       with_arch=mips2
