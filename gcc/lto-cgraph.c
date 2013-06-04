@@ -918,7 +918,6 @@ static tree
 get_alias_symbol (tree decl)
 {
   tree alias = lookup_attribute ("alias", DECL_ATTRIBUTES (decl));
-  gcc_assert (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)));
   return get_identifier (TREE_STRING_POINTER
 			  (TREE_VALUE (TREE_VALUE (alias))));
 }
@@ -1008,7 +1007,8 @@ input_node (struct lto_file_decl_data *file_data,
       node->thunk.virtual_value = virtual_value;
       node->thunk.virtual_offset_p = (type & 4);
     }
-  if (node->symbol.alias && !node->symbol.analyzed)
+  if (node->symbol.alias && !node->symbol.analyzed
+      && lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
     node->symbol.alias_target = get_alias_symbol (node->symbol.decl);
   return node;
 }
@@ -1050,7 +1050,8 @@ input_varpool_node (struct lto_file_decl_data *file_data,
       DECL_EXTERNAL (node->symbol.decl) = 1;
       TREE_STATIC (node->symbol.decl) = 0;
     }
-  if (node->symbol.alias && !node->symbol.analyzed)
+  if (node->symbol.alias && !node->symbol.analyzed
+      && lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
     node->symbol.alias_target = get_alias_symbol (node->symbol.decl);
   ref = streamer_read_hwi (ib);
   /* Store a reference for now, and fix up later to be a pointer.  */

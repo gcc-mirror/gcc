@@ -1,5 +1,13 @@
 2013-06-04  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c (get_alias_symbol): Remove weakref sanity check.
+	(input_node, input_varpool_node): Handle correctly external same
+	body aliases.
+	* ipa.c (symtab_remove_unreachable_nodes): Do not remove external
+	nodes at ltrans stage.
+
+2013-06-04  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline.c (update_caller_keys): Fix availability test.
 	(update_callee_keys): Likewise.
 	* symtab.c (symtab_alias_ultimate_target): Make availaiblity logic
