@@ -399,6 +399,9 @@ struct mips_cpu_info {
       if (TARGET_MCU)							\
 	builtin_define ("__mips_mcu");					\
 									\
+      if (TARGET_EVA)							\
+	builtin_define ("__mips_eva");					\
+									\
       if (TARGET_DSP)							\
 	{								\
 	  builtin_define ("__mips_dsp");				\
@@ -1125,6 +1128,7 @@ struct mips_cpu_info {
 %{mdsp} %{mno-dsp} \
 %{mdspr2} %{mno-dspr2} \
 %{mmcu} %{mno-mcu} \
+%{meva} %{mno-eva} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-vr4120} %{mfix-vr4130} \

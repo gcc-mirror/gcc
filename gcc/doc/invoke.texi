@@ -752,6 +752,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-float -msingle-float  -mdouble-float  @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
+-meva -mno-eva @gol
 -mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -16375,6 +16376,12 @@ Use (do not use) MT Multithreading instructions.
 @opindex mmcu
 @opindex mno-mcu
 Use (do not use) the MIPS MCU ASE instructions.
+
+@item -meva
+@itemx -mno-eva
+@opindex meva
+@opindex mno-eva
+Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
 
 @item -mlong64
 @opindex mlong64
