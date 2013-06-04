@@ -42,7 +42,7 @@ void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate code to deallocate an array, if it is allocated.  */
-tree gfc_trans_dealloc_allocated (tree, bool);
+tree gfc_trans_dealloc_allocated (tree, bool, gfc_expr *);
 
 tree gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank);
 

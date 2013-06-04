@@ -7247,7 +7247,7 @@ gfc_conv_array_parameter (gfc_se * se, gfc_expr * expr, bool g77,
 /* Generate code to deallocate an array, if it is allocated.  */
 
 tree
-gfc_trans_dealloc_allocated (tree descriptor, bool coarray)
+gfc_trans_dealloc_allocated (tree descriptor, bool coarray, gfc_expr *expr)
 {
   tree tmp;
   tree var;
@@ -7263,7 +7263,7 @@ gfc_trans_dealloc_allocated (tree descriptor, bool coarray)
      are already deallocated are ignored.  */
   tmp = gfc_deallocate_with_status (coarray ? descriptor : var, NULL_TREE,
 				    NULL_TREE, NULL_TREE, NULL_TREE, true,
-				    NULL, coarray);
+				    expr, coarray);
   gfc_add_expr_to_block (&block, tmp);
 
   /* Zero the data pointer.  */
@@ -7552,7 +7552,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	    {
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
-	      tmp = gfc_trans_dealloc_allocated (comp, c->attr.codimension);
+	      tmp = gfc_trans_dealloc_allocated (comp, c->attr.codimension, NULL);
 	      gfc_add_expr_to_block (&tmpblock, tmp);
 	    }
 	  else if (c->attr.allocatable)
@@ -7584,7 +7584,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)))
 	        tmp = gfc_trans_dealloc_allocated (comp,
-					CLASS_DATA (c)->attr.codimension);
+					CLASS_DATA (c)->attr.codimension, NULL);
 	      else
 		{
 		  tmp = gfc_deallocate_scalar_with_status (comp, NULL_TREE, true, NULL,
@@ -8296,7 +8296,7 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
   stmtblock_t cleanup;
   locus loc;
   int rank;
-  bool sym_has_alloc_comp;
+  bool sym_has_alloc_comp, has_finalizer;
 
   sym_has_alloc_comp = (sym->ts.type == BT_DERIVED
 			|| sym->ts.type == BT_CLASS)
@@ -8383,8 +8383,12 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 
   /* Allocatable arrays need to be freed when they go out of scope.
      The allocatable components of pointers must not be touched.  */
-  if (sym_has_alloc_comp && !(sym->attr.function || sym->attr.result)
-      && !sym->attr.pointer && !sym->attr.save)
+  has_finalizer = sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED
+		   ? gfc_is_finalizable (sym->ts.u.derived, NULL) : false;
+  if ((!sym->attr.allocatable || !has_finalizer)
+      && sym_has_alloc_comp && !(sym->attr.function || sym->attr.result)
+      && !sym->attr.pointer && !sym->attr.save
+      && !sym->ns->proc_name->attr.is_main_program)
     {
       int rank;
       rank = sym->as ? sym->as->rank : 0;
@@ -8393,10 +8397,13 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
     }
 
   if (sym->attr.allocatable && (sym->attr.dimension || sym->attr.codimension)
-      && !sym->attr.save && !sym->attr.result)
+      && !sym->attr.save && !sym->attr.result
+      && !sym->ns->proc_name->attr.is_main_program)
     {
       tmp = gfc_trans_dealloc_allocated (sym->backend_decl,
-					 sym->attr.codimension);
+					 sym->attr.codimension,
+					 has_finalizer
+					 ? gfc_lval_expr_from_sym (sym) : NULL);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 
