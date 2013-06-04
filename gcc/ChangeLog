@@ -1,3 +1,11 @@
+2013-06-04  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Change
+	return type to bool for prototype.
+	(aarch64_legitimate_constant_p): Check for true instead of not -1.
+	(aarch64_simd_valid_immediate): Fix up each return to return a bool.
+	(aarch64_simd_immediate_valid_for_move): Update retval for bool.
+
 2013-06-04  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.opt (meva): New.
