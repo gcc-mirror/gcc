@@ -5,31 +5,25 @@
 #include <stdio.h>
 #endif
 #include <stdlib.h>
-int main2 (int argc, char **argv);
+int main2 (char **argv);
 int main(int argc, char **argv)
 {
-  int x = 0;
-  if (argc == 1)
-    {
-      const char *array[] = {"a.out", "10", "15"};	     
-      x = main2 (3, (char **) array);
-    }
-  else if (argc == 3)
-    x = main2 (argc, argv);
-  else
-    return 1;
- 
+  int x = 0; 
+  const char *array[] = {"a.out", "10", "15"};	     
+  x = main2 ((char **) array);
   return x;
 }
 
 
-int main2 (int argc, char **argv)
+int main2 (char **argv)
 {
   int x = 3, y, z, array[10], array2[10], TwodArray[10][10], jj,kk,ll ;
   int array2_check[10], array2d_check[10][10], array2d[10][10];
   int FourDArray[10][10][10][10], array4[10][10][10][10];
   int array4_check[10][10][10][10];
-  int ii = 0; 
+  int ii = 0, argc = 3; 
+    
+  __asm volatile ("" : "+r" (argc));
 
   for (ii = 0; ii < 10; ii++)
     {

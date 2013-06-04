@@ -5,7 +5,7 @@
 #include <stdio.h>
 #endif
 
-int main(int argc, char **argv)
+int main(void)
 {
   int array[10][10], array2[10], array3[10], x = 0, y;
   int x_correct, y_correct, ii, jj = 0;

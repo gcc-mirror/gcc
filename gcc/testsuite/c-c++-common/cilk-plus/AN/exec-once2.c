@@ -35,11 +35,13 @@ int func4(int x)
 
 
 /* This program makes an assumption that argc == 1.  */
-int main (int argc, char **argv)
+int main (void)
 {
-
+  int argc = 1;
   int array[2500];
 
+  /* This is done to make sure the compiler does not optimize out argc.  */
+  __asm volatile ("" : "+r" (argc));
   /* This should set array[0->999] to 5.  */
   array[argc-1:func2(++argc):1] = 5;
   array[1000:500:1] = 10; /* set all variables in array[1000-->1499] to 10.  */

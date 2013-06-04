@@ -1,10 +1,10 @@
 /* { dg-options "-fcilkplus" } */
 
-int main (int argc, char **argv)
+int main (void)
 {
   extern int func (int);
   int array[10][10], array2[10];
-
+  int argc = 1;
   array2[array[:][:]] = 5; /* { dg-error "rank of the array's index is greater than 1" } */
 
   array2[array[:][:]] = 5; /* { dg-error "rank of the array's index is greater than 1" } */

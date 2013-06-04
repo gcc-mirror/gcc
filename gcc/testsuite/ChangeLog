@@ -1,3 +1,46 @@
+2013-06-04  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/array_test1.c (main): Replaced argc, argv
+	parameters with void.
+	(main2): Removed argc parameter.
+	* c-c++-common/cilk-plus/AN/array_test2.c (main2): Likewise.
+	(main): Replaced argc, argv parameters with void.
+	* c-c++-common/cilk-plus/AN/array_test_ND.c (main): Likewise.
+	(main2): Removed argc parameter.
+	* c-c++-common/cilk-plus/AN/builtin_fn_custom.c (main): Replaced argc
+	argv parameters with void.  Added __asm volatile to avoid optimization
+	on argc, if necessary.
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating (main): Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/conditional.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/fn_ptr.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/gather-scatter-errors.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/gather_scatter.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/misc.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_reduce_return.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/test_builtin_return.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/vla.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/comma-exp.c (main): Replaced argc, argv
+	parameters with void.
+	(main2): Removed argc parameter.
+	* c-c++-common/cilk-plus/AN/if_test.c (main2): Likewise.
+	(main): Replaced argc, argv parameters with void.
+	* c-c++-common/cilk-plus/AN/fp_triplet_values (main2): Replace argc,
+	argv parameters with void.  Also renamed this function as main, and
+	delete the existing main.
+	* c-c++-common/cilk-plus/AN/sec_implicit.c (main2): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit2.c (main2): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_reduce_max_min_ind.c (main2): Likewise.
+
 2013-06-04  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/movi_1.c: New test.

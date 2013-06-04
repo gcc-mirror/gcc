@@ -4,7 +4,7 @@
 /* #include <stdlib.h> */
 
 /* char __sec_reduce_add (int *); */
-int main(int argc, char **argv)
+int main(void)
 {
   int ii,array[10], y = 0, y_int = 0, array2[10];
   double x, yy, array3[10], array4[10];

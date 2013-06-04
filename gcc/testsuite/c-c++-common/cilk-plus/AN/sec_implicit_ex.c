@@ -5,7 +5,7 @@ void abort (void);
 void exit  (int);
 
 
-int main(int argc, char **argv)
+int main(void)
 {
   int jj, kk, array_3C[10][10][10];
   int ii,array[10], y = 0, y_int = 0, array2[10], array_3[10][10][10];
