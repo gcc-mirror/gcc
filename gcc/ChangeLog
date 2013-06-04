@@ -1,3 +1,8 @@
+2013-06-04  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (output_toc): Correct little-endian float
+	constant output.
+
 2013-06-04  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* rtl.def: Add extra fourth optional field to define_cond_exec.
