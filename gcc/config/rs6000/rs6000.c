@@ -22574,7 +22574,10 @@ output_toc (FILE *file, rtx x, int labelno, enum machine_mode mode)
 	    fputs (DOUBLE_INT_ASM_OP, file);
 	  else
 	    fprintf (file, "\t.tc FS_%lx[TC],", l & 0xffffffff);
-	  fprintf (file, "0x%lx00000000\n", l & 0xffffffff);
+	  if (WORDS_BIG_ENDIAN)
+	    fprintf (file, "0x%lx00000000\n", l & 0xffffffff);
+	  else
+	    fprintf (file, "0x%lx\n", l & 0xffffffff);
 	  return;
 	}
       else
