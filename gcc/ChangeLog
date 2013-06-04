@@ -1,3 +1,8 @@
+2013-06-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expmed.c (extract_bit_field_1): In the larger-than-a-word case, factor
+	out the processing order as in store_bit_field_1.
+
 2013-06-04  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/57500
@@ -33,7 +38,7 @@
 2013-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57268
-	* sched-deps.c (sched_analyze_2): Don't flush_pedning_lists
+	* sched-deps.c (sched_analyze_2): Don't flush_pending_lists
 	if DEBUG_INSN_P (insn).
 
 	Reapply
