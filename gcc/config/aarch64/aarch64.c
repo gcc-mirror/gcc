@@ -5989,30 +5989,55 @@ aarch64_vector_mode_supported_p (enum machine_mode mode)
   return false;
 }
 
-/* Return quad mode as the preferred SIMD mode.  */
+/* Return appropriate SIMD container
+   for MODE within a vector of WIDTH bits.  */
+static enum machine_mode
+aarch64_simd_container_mode (enum machine_mode mode, unsigned width)
+{
+  gcc_assert (width == 64 || width == 128);
+  if (TARGET_SIMD)
+    {
+      if (width == 128)
+	switch (mode)
+	  {
+	  case DFmode:
+	    return V2DFmode;
+	  case SFmode:
+	    return V4SFmode;
+	  case SImode:
+	    return V4SImode;
+	  case HImode:
+	    return V8HImode;
+	  case QImode:
+	    return V16QImode;
+	  case DImode:
+	    return V2DImode;
+	  default:
+	    break;
+	  }
+      else
+	switch (mode)
+	  {
+	  case SFmode:
+	    return V2SFmode;
+	  case SImode:
+	    return V2SImode;
+	  case HImode:
+	    return V4HImode;
+	  case QImode:
+	    return V8QImode;
+	  default:
+	    break;
+	  }
+    }
+  return word_mode;
+}
+
+/* Return 128-bit container as the preferred SIMD mode for MODE.  */
 static enum machine_mode
 aarch64_preferred_simd_mode (enum machine_mode mode)
 {
-  if (TARGET_SIMD)
-    switch (mode)
-      {
-      case DFmode:
-        return V2DFmode;
-      case SFmode:
-        return V4SFmode;
-      case SImode:
-        return V4SImode;
-      case HImode:
-        return V8HImode;
-      case QImode:
-        return V16QImode;
-      case DImode:
-          return V2DImode;
-        break;
-
-      default:;
-      }
-  return word_mode;
+  return aarch64_simd_container_mode (mode, 128);
 }
 
 /* Return the bitmask of possible vector sizes for the vectorizer
@@ -7280,6 +7305,18 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
     snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, " HOST_WIDE_INT_PRINT_HEX,
 	      mnemonic, lane_count, element_char, UINTVAL (info.value));
   return templ;
+}
+
+char*
+aarch64_output_scalar_simd_mov_immediate (rtx immediate,
+					  enum machine_mode mode)
+{
+  enum machine_mode vmode;
+
+  gcc_assert (!VECTOR_MODE_P (mode));
+  vmode = aarch64_simd_container_mode (mode, 64);
+  rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (immediate));
+  return aarch64_output_simd_mov_immediate (v_op, vmode, 64);
 }
 
 /* Split operands into moves from op[1] + op[2] into op[0].  */

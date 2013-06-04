@@ -774,17 +774,34 @@
         (match_operand:SHORT 1 "general_operand"      " r,M,D<hq>,m, m,rZ,*w,*w, r,*w"))]
   "(register_operand (operands[0], <MODE>mode)
     || aarch64_reg_or_zero (operands[1], <MODE>mode))"
-  "@
-   mov\\t%w0, %w1
-   mov\\t%w0, %1
-   movi\\t%0.<Vallxd>, %1
-   ldr<size>\\t%w0, %1
-   ldr\\t%<size>0, %1
-   str<size>\\t%w1, %0
-   str\\t%<size>1, %0
-   umov\\t%w0, %1.<v>[0]
-   dup\\t%0.<Vallxd>, %w1
-   dup\\t%0, %1.<v>[0]"
+{
+   switch (which_alternative)
+     {
+     case 0:
+       return "mov\t%w0, %w1";
+     case 1:
+       return "mov\t%w0, %1";
+     case 2:
+       return aarch64_output_scalar_simd_mov_immediate (operands[1],
+							<MODE>mode);
+     case 3:
+       return "ldr<size>\t%w0, %1";
+     case 4:
+       return "ldr\t%<size>0, %1";
+     case 5:
+       return "str<size>\t%w1, %0";
+     case 6:
+       return "str\t%<size>1, %0";
+     case 7:
+       return "umov\t%w0, %1.<v>[0]";
+     case 8:
+       return "dup\t%0.<Vallxd>, %w1";
+     case 9:
+       return "dup\t%0, %1.<v>[0]";
+     default:
+       gcc_unreachable ();
+     }
+}
   [(set_attr "v8type" "move,alu,alu,load1,load1,store1,store1,*,*,*")
    (set_attr "simd_type" "*,*,simd_move_imm,*,*,*,*,simd_movgp,simd_dupgp,simd_dup")
    (set_attr "simd" "*,*,yes,*,*,*,*,yes,yes,yes")
