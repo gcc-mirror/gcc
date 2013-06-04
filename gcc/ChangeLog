@@ -1,3 +1,20 @@
+2013-06-04  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config.gcc (mipsr5900-*-elf*, mipsr5900el-*-elf*, mips64r5900-*-elf*)
+	(mips64r5900el-*-elf*): New configurations.
+	* config/mips/mips-cpus.def (r5900): New processor.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_rtx_cost_data): Add an R5900 entry.
+	(mips_issue_rate): Handle PROCESSOR_R5900.
+	(mips_reorg_process_insns): Force reorder mode for the R5900.
+	* config/mips/mips.h (TARGET_MIPS5900): Define.
+	(ISA_HAS_CONDMOVE, ISA_HAS_PREFETCH, ISA_HAS_HILO_INTERLOCKS): Include
+	TARGET_MIPS5900.
+	(ISA_HAS_LOAD_DELAY, ISA_HAS_XFER_DELAY, ISA_HAS_FCMP_DELAY): Exclude
+	TARGET_MIPS5900.
+	* config/mips/mips.md (processor): Add r5900.
+	(MOVECC): Disallow CCmode conditions for TARGET_MIPS5900.
+
 2013-06-04  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Call

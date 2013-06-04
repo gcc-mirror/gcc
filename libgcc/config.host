@@ -739,7 +739,17 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
-	tmake_file="${tmake_file} t-crtfm mips/t-mips16"
+	tmake_file="${tmake_file} t-crtfm"
+	# Check for MicroMIPS support.
+	case ${host} in
+		mips64r5900* | mipsr5900*)
+			# The MIPS16 support code uses floating point
+			# instructions that are not supported on r5900.
+			;;
+		*)
+			tmake_file="${tmake_file} mips/t-mips16"
+			;;
+	esac
 	md_unwind_header=mips/linux-unwind.h
 	if test "${ac_cv_sizeof_long_double}" = 16; then
 		tmake_file="${tmake_file} mips/t-tpbit"
@@ -777,8 +787,16 @@ mips-*-elf* | mipsel-*-elf*)
 	tmake_file="$tmake_file mips/t-elf mips/t-crtstuff mips/t-mips16"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
+mipsr5900-*-elf* | mipsr5900el-*-elf*)
+	tmake_file="$tmake_file mips/t-elf mips/t-crtstuff"
+	extra_parts="$extra_parts crti.o crtn.o"
+	;;
 mips64-*-elf* | mips64el-*-elf*)
 	tmake_file="$tmake_file mips/t-elf mips/t-crtstuff mips/t-mips16"
+	extra_parts="$extra_parts crti.o crtn.o"
+	;;
+mips64r5900-*-elf* | mips64r5900el-*-elf*)
+	tmake_file="$tmake_file mips/t-elf mips/t-crtstuff"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
