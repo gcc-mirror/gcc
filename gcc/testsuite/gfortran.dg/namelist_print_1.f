@@ -8,6 +8,6 @@
       real  x
       namelist /mynml/ x
       x = 1
-! ( dg-output "^" }
+! { dg-output "^" }
       print mynml ! { dg-output "&MYNML(\n|\r\n|\r) X=  1.00000000    ,(\n|\r\n|\r) /(\n|\r\n|\r)" }
       end

@@ -1,3 +1,21 @@
+2013-06-03  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/bounds_check_7.f90: Remove "! {".
+	* gfortran.dg/coarray_poly_3.f90: Remove inactive, broken dg-*.
+	* gfortran.dg/default_initialization_5.f90: Update dg-do.
+	* gfortran.dg/g77/f77-edit-s-out.f: Fix broken dg-output.
+	* gfortran.dg/g77/f77-edit-t-out.f: Fix broken dg-output.
+	* gfortran.dg/g77/f77-edit-x-out.f: Fix broken dg-output.
+	* gfortran.dg/init_flag_11.f90: Fix broken dg-options.
+	* gfortran.dg/io_real_boz_3.f90: Add comment regarding dg-do  run.
+	* gfortran.dg/io_real_boz_4.f90: Ditto.
+	* gfortran.dg/io_real_boz_5.f90: Ditto.
+	* gfortran.dg/namelist_print_1.f: Fix broken dg-output.
+	* gfortran.dg/read_x_eor.f90: Fix broken dg-output.
+	* gfortran.dg/repeat_1.f90: Improve dg-output pattern.
+	* gfortran.dg/spread_bounds_1.f90: Fix broken dg-output.
+	* gfortran.dg/transpose_2.f90: Fix dg-output.
+
 2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): New testcase.

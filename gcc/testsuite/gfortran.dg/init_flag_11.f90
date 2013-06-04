@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-flags "-finit-local-zero -fno-automatic"
+! { dg-options "-finit-local-zero -fno-automatic" }
 !
 ! PR fortran/53818
 !
