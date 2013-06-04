@@ -1,3 +1,10 @@
+2013-06-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline.
+        2013-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (MALLOC_ABI_ALIGNMENT): New #define.
+
 2013-06-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Backport from mainline.

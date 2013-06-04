@@ -2289,6 +2289,13 @@ extern char rs6000_reg_names[][8];	/* register names (0 vs. %r0).  */
 /* How to align the given loop. */
 #define LOOP_ALIGN(LABEL)  rs6000_loop_align(LABEL)
 
+/* Alignment guaranteed by __builtin_malloc.  */
+/* FIXME:  128-bit alignment is guaranteed by glibc for TARGET_64BIT.
+   However, specifying the stronger guarantee currently leads to
+   a regression in SPEC CPU2006 437.leslie3d.  The stronger
+   guarantee should be implemented here once that's fixed.  */
+#define MALLOC_ABI_ALIGNMENT (64)
+
 /* Pick up the return address upon entry to a procedure. Used for
    dwarf2 unwind information.  This also enables the table driven
    mechanism.  */
