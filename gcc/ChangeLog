@@ -1,5 +1,15 @@
 2013-06-04  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Call
+	into function to generate MOVI instruction.
+	* config/aarch64/aarch64.c (aarch64_simd_container_mode):
+	New function.
+	(aarch64_preferred_simd_mode): Turn into wrapper.
+	(aarch64_output_scalar_simd_mov_immediate): New function.
+	* config/aarch64/aarch64-protos.h: Add prototype for above.
+
+2013-06-04  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.c (simd_immediate_info): Remove
 	element_char member.
 	(sizetochar): Return signed char.
