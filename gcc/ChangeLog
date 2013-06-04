@@ -1,3 +1,11 @@
+2013-06-04  Catherine Moore  <clm@codesourcery.com>
+
+	* config/mips/mips.opt (meva): New.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS):
+	Define __mips_eva.
+	(ASM_SPEC): Handle -meva.
+	* doc/invoke.texi (meva):  Document.
+
 2013-06-04  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (output_toc): Correct little-endian float
