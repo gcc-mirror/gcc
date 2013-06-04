@@ -656,8 +656,11 @@ cgraph_process_same_body_aliases (void)
   symtab_node node;
   FOR_EACH_SYMBOL (node)
     if (node->symbol.cpp_implicit_alias && !node->symbol.analyzed)
-      symtab_resolve_alias (node,
-			    symtab_get_node (node->symbol.alias_target));
+      symtab_resolve_alias
+        (node,
+	 TREE_CODE (node->symbol.alias_target) == VAR_DECL
+	 ? (symtab_node)varpool_node_for_decl (node->symbol.alias_target)
+	 : (symtab_node)cgraph_get_create_node (node->symbol.alias_target));
   cpp_implicit_aliases_done = true;
 }
 
