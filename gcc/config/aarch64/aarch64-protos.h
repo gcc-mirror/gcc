@@ -149,6 +149,7 @@ bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, enum machine_mode);
 bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
 			    enum machine_mode);
+char *aarch64_output_simd_mov_immediate (rtx, enum machine_mode, unsigned);
 bool aarch64_pad_arg_upward (enum machine_mode, const_tree);
 bool aarch64_pad_reg_upward (enum machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
@@ -259,6 +260,4 @@ extern void aarch64_split_combinev16qi (rtx operands[3]);
 extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
-
-char* aarch64_output_simd_mov_immediate (rtx *, enum machine_mode, unsigned);
 #endif /* GCC_AARCH64_PROTOS_H */
