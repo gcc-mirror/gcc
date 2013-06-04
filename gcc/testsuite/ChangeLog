@@ -1,3 +1,7 @@
+2013-06-04  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias.c: New testcase.
+
 2013-06-04  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/array_test1.c (main): Replaced argc, argv
