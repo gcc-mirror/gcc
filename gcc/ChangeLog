@@ -1,5 +1,20 @@
 2013-06-04  Ian Bolton  <ian.bolton@arm.com>
 
+	* config/aarch64/aarch64.c (simd_immediate_info): Struct to hold
+	information completed by aarch64_simd_valid_immediate.
+	(aarch64_legitimate_constant_p): Update arguments.
+	(aarch64_simd_valid_immediate): Work with struct rather than many
+	pointers.
+	(aarch64_simd_scalar_immediate_valid_for_move): Update arguments.
+	(aarch64_simd_make_constant): Update arguments.
+	(aarch64_output_simd_mov_immediate): Work with struct rather than
+	many pointers.  Output immediate directly rather than as operand.
+	* config/aarch64/aarch64-protos.h (aarch64_simd_valid_immediate):
+	Update prototype.
+	* config/aarch64/constraints.md (Dn): Update arguments.
+
+2013-06-04  Ian Bolton  <ian.bolton@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): No
 	longer static.
 	(aarch64_simd_immediate_valid_for_move): Remove.

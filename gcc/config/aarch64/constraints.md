@@ -143,9 +143,8 @@
   "@internal
  A constraint that matches vector of immediates."
  (and (match_code "const_vector")
-      (match_test "aarch64_simd_valid_immediate (op, GET_MODE (op), 0,
-						 NULL, NULL, NULL,
-						 NULL, NULL)")))
+      (match_test "aarch64_simd_valid_immediate (op, GET_MODE (op),
+						 false, NULL)")))
 
 (define_constraint "Dh"
   "@internal

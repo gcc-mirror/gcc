@@ -87,6 +87,15 @@ struct aarch64_address_info {
   enum aarch64_symbol_type symbol_type;
 };
 
+struct simd_immediate_info
+{
+  rtx value;
+  int shift;
+  int element_width;
+  unsigned char element_char;
+  bool mvn;
+};
+
 /* The current code model.  */
 enum aarch64_code_model aarch64_cmodel;
 
@@ -5150,8 +5159,7 @@ aarch64_legitimate_constant_p (enum machine_mode mode, rtx x)
   /* This could probably go away because
      we now decompose CONST_INTs according to expand_mov_immediate.  */
   if ((GET_CODE (x) == CONST_VECTOR
-       && aarch64_simd_valid_immediate (x, mode, false,
-					NULL, NULL, NULL, NULL, NULL))
+       && aarch64_simd_valid_immediate (x, mode, false, NULL))
       || CONST_INT_P (x) || aarch64_valid_floating_const (mode, x))
 	return !targetm.cannot_force_const_mem (mode, x);
 
@@ -6144,10 +6152,8 @@ aarch64_vect_float_const_representable_p (rtx x)
 
 /* Return true for valid and false for invalid.  */
 bool
-aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
-			      rtx *modconst, int *elementwidth,
-			      unsigned char *elementchar,
-			      int *mvn, int *shift)
+aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, bool inverse,
+			      struct simd_immediate_info *info)
 {
 #define CHECK(STRIDE, ELSIZE, CLASS, TEST, SHIFT, NEG)	\
   matches = 1;						\
@@ -6181,17 +6187,14 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
 	    || aarch64_vect_float_const_representable_p (op)))
 	return false;
 
-      if (modconst)
-	*modconst = CONST_VECTOR_ELT (op, 0);
-
-      if (elementwidth)
-	*elementwidth = elem_width;
-
-      if (elementchar)
-	*elementchar = sizetochar (elem_width);
-
-      if (shift)
-	*shift = 0;
+      if (info)
+	{
+	  info->value = CONST_VECTOR_ELT (op, 0);
+	  info->element_width = elem_width;
+	  info->element_char = sizetochar (elem_width);
+	  info->mvn = false;
+	  info->shift = 0;
+	}
 
       return true;
     }
@@ -6293,21 +6296,13 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
       || immtype == 18)
     return false;
 
-
-  if (elementwidth)
-    *elementwidth = elsize;
-
-  if (elementchar)
-    *elementchar = elchar;
-
-  if (mvn)
-    *mvn = emvn;
-
-  if (shift)
-    *shift = eshift;
-
-  if (modconst)
+  if (info)
     {
+      info->element_width = elsize;
+      info->element_char = elchar;
+      info->mvn = emvn != 0;
+      info->shift = eshift;
+
       unsigned HOST_WIDE_INT imm = 0;
 
       /* Un-invert bytes of recognized vector, if necessary.  */
@@ -6324,26 +6319,24 @@ aarch64_simd_valid_immediate (rtx op, enum machine_mode mode, int inverse,
             imm |= (unsigned HOST_WIDE_INT) (bytes[i] ? 0xff : 0)
 	      << (i * BITS_PER_UNIT);
 
-          *modconst = GEN_INT (imm);
-        }
-      else
-        {
-          unsigned HOST_WIDE_INT imm = 0;
 
-          for (i = 0; i < elsize / BITS_PER_UNIT; i++)
-            imm |= (unsigned HOST_WIDE_INT) bytes[i] << (i * BITS_PER_UNIT);
+	  info->value = GEN_INT (imm);
+	}
+      else
+	{
+	  for (i = 0; i < elsize / BITS_PER_UNIT; i++)
+	    imm |= (unsigned HOST_WIDE_INT) bytes[i] << (i * BITS_PER_UNIT);
 
 	  /* Construct 'abcdefgh' because the assembler cannot handle
-	     generic constants.  */
-	  gcc_assert (shift != NULL && mvn != NULL);
-	  if (*mvn)
+	     generic constants.	 */
+	  if (info->mvn)
 	    imm = ~imm;
-	  imm = (imm >> *shift) & 0xff;
-          *modconst = GEN_INT (imm);
-        }
+	  imm = (imm >> info->shift) & 0xff;
+	  info->value = GEN_INT (imm);
+	}
     }
 
-  return (immtype >= 0);
+  return true;
 #undef CHECK
 }
 
@@ -6451,8 +6444,7 @@ aarch64_simd_scalar_immediate_valid_for_move (rtx op, enum machine_mode mode)
   gcc_assert (!VECTOR_MODE_P (mode));
   vmode = aarch64_preferred_simd_mode (mode);
   rtx op_v = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (op));
-  return aarch64_simd_valid_immediate (op_v, vmode, 0, NULL,
-				       NULL, NULL, NULL, NULL);
+  return aarch64_simd_valid_immediate (op_v, vmode, false, NULL);
 }
 
 /* Construct and return a PARALLEL RTX vector.  */
@@ -6680,8 +6672,7 @@ aarch64_simd_make_constant (rtx vals)
     gcc_unreachable ();
 
   if (const_vec != NULL_RTX
-      && aarch64_simd_valid_immediate (const_vec, mode, 0, NULL,
-				       NULL, NULL, NULL, NULL))
+      && aarch64_simd_valid_immediate (const_vec, mode, false, NULL))
     /* Load using MOVI/MVNI.  */
     return const_vec;
   else if ((const_dup = aarch64_simd_dup_constant (vals)) != NULL_RTX)
@@ -7244,45 +7235,57 @@ aarch64_output_simd_mov_immediate (rtx *const_vector,
 				   unsigned width)
 {
   bool is_valid;
-  unsigned char widthc;
-  int lane_width_bits;
   static char templ[40];
-  int shift = 0, mvn = 0;
   const char *mnemonic;
   unsigned int lane_count = 0;
 
-/* This will return true to show const_vector is legal for use as either
-   a AdvSIMD MOVI instruction (or, implicitly, MVNI) immediate.  It
-   writes back various values via the int pointers and it modifies the
-   operand pointed to by CONST_VECTOR in-place, if required.  */
-  is_valid =
-    aarch64_simd_valid_immediate (*const_vector, mode, 0,
-				  const_vector, &lane_width_bits,
-				  &widthc, &mvn, &shift);
+  struct simd_immediate_info info;
+
+  /* This will return true to show const_vector is legal for use as either
+     a AdvSIMD MOVI instruction (or, implicitly, MVNI) immediate.  It will
+     also update INFO to show how the immediate should be generated.  */
+  is_valid = aarch64_simd_valid_immediate (*const_vector, mode, false, &info);
   gcc_assert (is_valid);
+
+  gcc_assert (info.element_width != 0);
+  lane_count = width / info.element_width;
 
   mode = GET_MODE_INNER (mode);
   if (mode == SFmode || mode == DFmode)
     {
-      bool zero_p =
-	aarch64_float_const_zero_rtx_p (*const_vector);
-      gcc_assert (shift == 0);
-      mnemonic = zero_p ? "movi" : "fmov";
-    }
-  else
-    mnemonic = mvn ? "mvni" : "movi";
+      gcc_assert (info.shift == 0 && ! info.mvn);
+      if (aarch64_float_const_zero_rtx_p (info.value))
+        info.value = GEN_INT (0);
+      else
+	{
+#define buf_size 20
+	  REAL_VALUE_TYPE r;
+	  REAL_VALUE_FROM_CONST_DOUBLE (r, info.value);
+	  char float_buf[buf_size] = {'\0'};
+	  real_to_decimal_for_mode (float_buf, &r, buf_size, buf_size, 1, mode);
+#undef buf_size
 
-  gcc_assert (lane_width_bits != 0);
-  lane_count = width / lane_width_bits;
+	  if (lane_count == 1)
+	    snprintf (templ, sizeof (templ), "fmov\t%%d0, %s", float_buf);
+	  else
+	    snprintf (templ, sizeof (templ), "fmov\t%%0.%d%c, %s",
+		      lane_count, info.element_char, float_buf);
+	  return templ;
+	}
+    }
+
+  mnemonic = info.mvn ? "mvni" : "movi";
 
   if (lane_count == 1)
-    snprintf (templ, sizeof (templ), "%s\t%%d0, %%1", mnemonic);
-  else if (shift)
-    snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, %%1, lsl %d",
-	      mnemonic, lane_count, widthc, shift);
+    snprintf (templ, sizeof (templ), "%s\t%%d0, " HOST_WIDE_INT_PRINT_HEX,
+	      mnemonic, UINTVAL (info.value));
+  else if (info.shift)
+    snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, " HOST_WIDE_INT_PRINT_HEX
+	      ", lsl %d", mnemonic, lane_count, info.element_char,
+	      UINTVAL (info.value), info.shift);
   else
-    snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, %%1",
-	      mnemonic, lane_count, widthc);
+    snprintf (templ, sizeof (templ), "%s\t%%0.%d%c, " HOST_WIDE_INT_PRINT_HEX,
+	      mnemonic, lane_count, info.element_char, UINTVAL (info.value));
   return templ;
 }
 
