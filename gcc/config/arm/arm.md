@@ -93,6 +93,15 @@
 ; IS_THUMB1 is set to 'yes' iff we are generating Thumb-1 code.
 (define_attr "is_thumb1" "no,yes" (const (symbol_ref "thumb1_code")))
 
+; We use this attribute to disable alternatives that can produce 32-bit
+; instructions inside an IT-block in Thumb2 state.  ARMv8 deprecates IT blocks
+; that contain 32-bit instructions.
+(define_attr "enabled_for_depr_it" "no,yes" (const_string "yes"))
+
+; This attribute is used to disable a predicated alternative when we have
+; arm_restrict_it.
+(define_attr "predicable_short_it" "no,yes" (const_string "yes"))
+
 ;; Operand number of an input operand that is shifted.  Zero if the
 ;; given instruction does not shift one of its input operands.
 (define_attr "shift" "" (const_int 0))
@@ -102,6 +111,8 @@
 ; performance we should try and group them together).
 (define_attr "fpu" "none,vfp"
   (const (symbol_ref "arm_fpu_attr")))
+
+(define_attr "predicated" "yes,no" (const_string "no"))
 
 ; LENGTH of an instruction (in bytes)
 (define_attr "length" ""
@@ -188,6 +199,15 @@
 ; Enable all alternatives that are both arch_enabled and insn_enabled.
  (define_attr "enabled" "no,yes"
    (cond [(eq_attr "insn_enabled" "no")
+	  (const_string "no")
+
+	  (and (eq_attr "predicable_short_it" "no")
+	       (and (eq_attr "predicated" "yes")
+	            (match_test "arm_restrict_it")))
+	  (const_string "no")
+
+	  (and (eq_attr "enabled_for_depr_it" "no")
+	       (match_test "arm_restrict_it"))
 	  (const_string "no")
 
 	  (eq_attr "arch_enabled" "no")
@@ -12130,6 +12150,7 @@
      (const_int 0)])]
   "TARGET_32BIT"
   ""
+[(set_attr "predicated" "yes")]
 )
 
 (define_insn "force_register_use"
