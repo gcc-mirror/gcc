@@ -1,3 +1,10 @@
+2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-typeck.c (convert_arguments): Moved checking of builtin cilkplus
+	reduction functions outside the for-loop.  Added a check if the fundecl
+	is non-NULL.  Finally, removed an unwanted if-statement, and made the
+	body unconditional.
+
 2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-typeck.c (c_finish_if_stmt): Added a check to see if the rank of the
