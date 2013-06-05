@@ -1,3 +1,7 @@
+2013-06-05  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Remove duplicated contents.
+
 2013-06-04  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/attr-alias.c: New testcase.
