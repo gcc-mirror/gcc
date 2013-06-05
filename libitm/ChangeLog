@@ -1,3 +1,15 @@
+2013-03-31  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR bootstrap/56714
+	* local_atomic (__always_inline): Always define our version.
+	(__calculate_memory_order): Mark inline.
+	(atomic_thread_fence): Ditto.
+	(atomic_signal_fence): Ditto.
+	(atomic_bool::atomic_flag_test_and_set_explicit): Ditto.
+	(atomic_bool::atomic_flag_clear_explicit): Ditto.
+	(atomic_bool::atomic_flag_test_and_set): Ditto.
+	(atomic_bool::atomic_flag_clear): Ditto.
+
 2013-04-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/sjlj.S: New file.
