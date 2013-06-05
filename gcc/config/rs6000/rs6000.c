@@ -15677,7 +15677,7 @@ print_operand (FILE *file, rtx x, int code)
       /* Mark the decl as referenced so that cgraph will output the
 	 function.  */
       if (SYMBOL_REF_DECL (x))
-	mark_decl_referenced (SYMBOL_REF_DECL (x));
+	DECL_PRESERVE_P (SYMBOL_REF_DECL (x)) = 1;
 
       /* For macho, check to see if we need a stub.  */
       if (TARGET_MACHO)
