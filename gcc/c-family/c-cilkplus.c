@@ -104,26 +104,21 @@ c_check_cilk_loop_incr (location_t loc, tree decl, tree incr)
   return error_mark_node;
 }
 
-/* Callback for walk_tree.
+/* Callback for walk_tree to validate the body of a pragma simd loop
+   or _cilk_for loop.
 
    This function is passed in as a function pointer to walk_tree.  *TP is
    the current tree pointer, *WALK_SUBTREES is set to 0 by this function if
    recursing into TP's subtrees is unnecessary. *DATA is a bool variable that
    is set to false if an error has occured.  */
 
-static tree
-find_invalid_stmts_in_loops (tree *tp, int *walk_subtrees, void *data)
+tree
+c_validate_cilk_plus_loop (tree *tp, int *walk_subtrees, void *data)
 {
   if (!tp || !*tp)
     return NULL_TREE;
 
   bool *valid = (bool *) data;
-
-  // FIXME: Disallow the following constructs within a SIMD loop:
-  //
-  // _Cilk_spawn
-  // _Cilk_for
-  // try
 
   /* FIXME: Jumps are disallowed into or out of the body of a
      _Cilk_for.  We can't just check for GOTO_EXPR here, since
@@ -205,7 +200,7 @@ static bool
 c_check_cilk_loop_body (tree body)
 {
   bool valid = true;
-  walk_tree (&body, find_invalid_stmts_in_loops, (void *) &valid, NULL);
+  walk_tree (&body, c_validate_cilk_plus_loop, (void *) &valid, NULL);
   return valid;
 }
 

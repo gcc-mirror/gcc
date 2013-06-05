@@ -20,6 +20,11 @@
 load_lib gcc-dg.exp
 
 dg-init
+
+# Run the tests that are shared with C++.
+
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] " -ftree-vectorize -fcilkplus -std=c99" " "
+
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O0 -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "
@@ -43,8 +48,8 @@ dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -f
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus -g -O3 -std=c99" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O3 -ftree-vectorize -std=c99 -g -fcilkplus" " "
 
-# pragma simd tests
-# Run the tests that are shared with C++.
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/PS/*.c]] " -ftree-vectorize -fcilkplus" " "
+# Run the C-only tests.
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.c]] \
+	"-ftree-vectorize -fcilkplus -std=c99" " "
 
 dg-finish

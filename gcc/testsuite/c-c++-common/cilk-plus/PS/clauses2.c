@@ -1,14 +1,14 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -fdump-tree-original" } */
+/* { dg-options "-O3 -fdump-tree-original -fcilkplus" } */
 
 volatile int *a, *b;
 
 void foo()
 {
-  int i, j, k;
+  int j, k;
 
 #pragma simd linear(j : 4, k) vectorlength(4)
-  for (i=0; i < 1000; ++i)
+  for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 }
 

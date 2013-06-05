@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99 -Werror -Wunknown-pragmas" } */
+/* { dg-options "-O3 -Werror -Wunknown-pragmas -fcilkplus" } */
 
 volatile int *a, *b;
 
@@ -27,7 +27,7 @@ void foo()
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
-#pragma simd vectorlength(i) /* { dg-error "vectorlength must be an integer" } */
+#pragma simd vectorlength(i) /* { dg-error "\(vectorlength must be an integer\|in a constant\)" } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
@@ -35,11 +35,11 @@ void foo()
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
-#pragma simd linear(blah) /* { dg-error "'blah' undeclared" } */
+#pragma simd linear(blah) /* { dg-error "'blah' \(undeclared\|has not been\)" } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
-#pragma simd linear(j, 36, k) /* { dg-error "expected '\\)'" } */
+#pragma simd linear(j, 36, k) /* { dg-error "expected" } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
@@ -65,12 +65,12 @@ void foo()
 
   // And now everyone in unison!
 #pragma simd linear(j : 4) vectorlength(4)
-  for (i=0; i < 1000; ++i)
+  for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 
 #pragma simd linear(blah2, 36)
-  /* { dg-error "'blah2' undeclared" "undeclared" { target *-*-* } 71 } */
-  /* { dg-error "expected '\\)'" "expected" { target *-*-* } 71 } */
+  /* { dg-error "'blah2' \(undeclared\|has not been\)" "undeclared" { target *-*-* } 71 } */
+  /* { dg-error "expected" "expected" { target *-*-* } 71 } */
   for (int i=0; i < 1000; ++i)
     a[i] = b[j];
 }

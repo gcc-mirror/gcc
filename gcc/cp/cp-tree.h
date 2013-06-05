@@ -6144,6 +6144,9 @@ extern bool cxx_omp_privatize_by_reference	(const_tree);
 extern void suggest_alternatives_for            (location_t, tree);
 extern tree strip_using_decl                    (tree);
 
+/* in cp-cilkplus.c */
+extern bool cpp_validate_cilk_plus_loop		(tree);
+
 /* -- end of C++ */
 
 #endif /* ! GCC_CP_TREE_H */

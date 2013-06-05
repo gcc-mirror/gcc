@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -std=c99" } */
+/* { dg-options "-O3 -fcilkplus" } */
 
 int *a, *b, *c;
 int something;
@@ -7,11 +7,6 @@ int something;
 void foo()
 {
   int i, j;
-
-  // The initialization shall declare or initialize a *SINGLE* variable.
-#pragma simd
-  for (i=0, j=5; i < 1000; i++) // { dg-error "expected ';' before ','" }
-    a[i] = b[j];
 
   // Declaration and initialization is allowed.
 #pragma simd
@@ -25,12 +20,12 @@ void foo()
 
   // Empty condition is not allowed.
 #pragma simd
-  for (i=0; ; ++i)		/* { dg-error "missing condition" } */
+  for (int i=0; ; ++i)		/* { dg-error "missing condition" } */
     a[i] = i;
 
   // Empty increment is not allowed.
 #pragma simd
-  for (i=0; i < 1234; )		/* { dg-error "missing increment" } */
+  for (int i=0; i < 1234; )		/* { dg-error "missing increment" } */
     a[i] = i*2;
 
 #pragma simd
@@ -55,83 +50,83 @@ void foo()
 
   // Condition of '==' is not allowed.
 #pragma simd
-  for (i=j; i == 5; ++i) /* { dg-error "invalid controlling predicate" } */
+  for (int i=j; i == 5; ++i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];
 
   // The LHS or RHS of the condition must be the initialization variable.
 #pragma simd
-  for (i=0; i+j < 1234; ++i) /* { dg-error "invalid controlling predicate" } */
+  for (int i=0; i+j < 1234; ++i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];  
 
   // Likewise.
 #pragma simd
-  for (i=0; 1234 < i + j; ++i) /* { dg-error "invalid controlling predicate" } */
+  for (int i=0; 1234 < i + j; ++i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];  
 
   // Likewise, this is ok.
 #pragma simd
-  for (i=0; 1234 + j < i; ++i)
+  for (int i=0; 1234 + j < i; ++i)
     a[i] = b[i];
 
   // According to the CilkPlus forum, casts are not allowed, even if
   // they are no-ops.
 #pragma simd
-  for (i=0; (char)i < 1234; ++i) /* { dg-error "invalid controlling predicate" } */
+  for (int i=0; (char)i < 1234; ++i) /* { dg-error "invalid controlling predicate" } */
     a[i] = b[i];
 
 #pragma simd
-  for (i=255; i != something; --i)
+  for (int i=255; i != something; --i)
     a[i] = b[i];
 
   // This condition gets folded into "i != 0" by
   // c_parser_cilk_for_statement().  This is allowed as per the "!="
   // allowance above.
 #pragma simd
-  for (i=100; i; --i)
+  for (int i=100; i; --i)
     a[i] = b[i];
 
 #pragma simd
-  for (i=100; i != 5; i += something)
+  for (int i=100; i != 5; i += something)
     a[i] = b[i];
 
   // Increment must be on the induction variable.
 #pragma simd
-  for (i=0; i < 100; j++) /* { dg-error "invalid increment expression" } */
+  for (int i=0; i < 100; j++) /* { dg-error "invalid increment expression" } */
     a[i] = b[i];
 
   // Likewise.
 #pragma simd
-  for (i=0; i < 100; j = i + 1) /* { dg-error "invalid increment expression" } */
+  for (int i=0; i < 100; j = i + 1) /* { dg-error "invalid increment expression" } */
     a[i] = b[i];
 
   // Likewise.
 #pragma simd
-  for (i=0; i < 100; i = j + 1) /* { dg-error "invalid increment expression" } */
+  for (int i=0; i < 100; i = j + 1) /* { dg-error "invalid increment expression" } */
     a[i] = b[i];
 
 #pragma simd
-  for (i=0; i < 100; i = i + 5)
+  for (int i=0; i < 100; i = i + 5)
     a[i] = b[i];
 
   // Only PLUS and MINUS increments are allowed.
 #pragma simd
-  for (i=0; i < 100; i *= 5) /* { dg-error "invalid increment expression" } */
+  for (int i=0; i < 100; i *= 5) /* { dg-error "invalid increment expression" } */
     a[i] = b[i];
 
 #pragma simd
-  for (i=0; i < 100; i -= j)
+  for (int i=0; i < 100; i -= j)
     a[i] = b[i];
 
 #pragma simd
-  for (i=0; i < 100; i = i + j)
+  for (int i=0; i < 100; i = i + j)
     a[i] = b[i];
 
 #pragma simd
-  for (i=0; i < 100; i = j + i)
+  for (int i=0; i < 100; i = j + i)
     a[i] = b[i];
 
 #pragma simd
-  for (i=0; i < 100; ++i, ++j) /* { dg-error "invalid increment expression" } */
+  for (int i=0; i < 100; ++i, ++j) /* { dg-error "invalid increment expression" } */
     a[i] = b[i];
 
 #pragma simd

@@ -9095,9 +9095,9 @@ c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
 
     case 2:
       if (is_break) 
-	error ("break statement within _Cilk_for loop");
+	error ("break statement within <#pragma simd> loop body");
       else 
-	error ("continue statement within _Cilk_for loop");
+	error ("continue statement within <#pragma simd> loop loop");
       return NULL_TREE;
 
     default:

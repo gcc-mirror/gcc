@@ -1046,6 +1046,12 @@ extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
 extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
 extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
 
+/* In c-cilkplus.c  */
+extern tree c_finish_cilk_simd_loop (location_t, tree, tree, tree, tree,
+				     tree, tree);
+extern tree c_finish_cilk_clauses (tree);
+extern tree c_validate_cilk_plus_loop (tree *, int *, void *);
+
 /* Not in c-omp.c; provided by the front end.  */
 extern bool c_omp_sharing_predetermined (tree);
 extern tree c_omp_remap_decl (tree, bool);

@@ -1,13 +1,12 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-gimple" } */
+/* { dg-options "-O3 -fdump-tree-gimple -fcilkplus" } */
 
 int *a, *b;
 
 void foo()
 {
-  int i;
 #pragma simd vectorlength(8)
-  for (i=0; i < 1000; ++i)
+  for (int i=0; i < 1000; ++i)
     a[i] = b[i];
 }
 

@@ -1,15 +1,15 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fopenmp" } */
+/* { dg-options "-fcilkplus -fopenmp" } */
 
 int *a, *b, c;
 void *jmpbuf[10];
 
 void foo()
 {
-  int i, j;
+  int j;
 
 #pragma simd
-  for (i=0; i < 1000; ++i)
+  for (int i=0; i < 1000; ++i)
     {
       if (c == 5)
 	return;	 /* { dg-error "return statments are not allowed" } */
@@ -19,14 +19,14 @@ void foo()
     }
 
 #pragma simd
-  for (i=0; i < 1000; ++i)
+  for (int i=0; i < 1000; ++i)
     {
       if (c==5)
 	break; /* { dg-error "break statement within" } */
     }
 
 #pragma simd
-  for (i=0; i < 1000; ++i)
+  for (int i=0; i < 1000; ++i)
     {
 #pragma omp for /* { dg-error "OpenMP statements are not allowed" } */
       for (j=0; j < 1000; ++j)
