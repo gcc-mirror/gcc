@@ -1,3 +1,8 @@
+2013-06-05  Jan Hubicka  <jh@suse.cz>
+
+	* varasm.c (mark_decl_referenced): Revert the removal until targets
+	are fixed.
+
 2013-06-05  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (print_operand, 'z'): Use DECL_PRESERVE_P
@@ -31,7 +36,6 @@
 	(function_and_variable_visibility): Clear forced_by_abi as needed.
 	* trans-mem.c (ipa_tm_mark_forced_by_abi_node): New functoin.
 	(ipa_tm_create_version_alias, ipa_tm_create_version): Update.
-	* varasm.c (mark_decl_referenced): Remove.
 	* symtab.c (dump_symtab_base): Dump forced_by_abi.
 	* varpool.c (decide_is_variable_needed): Remove.
 
