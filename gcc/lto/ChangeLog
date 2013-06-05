@@ -1,3 +1,9 @@
+2013-06-05  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (num_merged_types): New global variable.
+	(uniquify_nodes): Increase num_merged_types when merging a type.
+	(print_lto_report_1): Output the number of merged types.
+
 2013-06-01  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Simplify dumping; Replace

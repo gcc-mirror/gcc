@@ -1788,6 +1788,7 @@ lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
     }
 }
 
+static unsigned long num_merged_types = 0;
 
 /* Given a streamer cache structure DATA_IN (holding a sequence of trees
    for one compilation unit) go over all trees starting at index FROM until the
@@ -1817,7 +1818,10 @@ uniquify_nodes (struct data_in *data_in, unsigned from)
 	     to reset that flag afterwards - nothing that refers
 	     to those types is left and they are collected.  */
 	  if (newt != t)
-	    TREE_VISITED (t) = 1;
+	    {
+	      num_merged_types++;
+	      TREE_VISITED (t) = 1;
+	    }
 	}
     }
 
@@ -3136,6 +3140,7 @@ print_lto_report_1 (void)
 	     htab_collisions (type_hash_cache));
   else
     fprintf (stderr, "[%s] GIMPLE type hash cache table is empty\n", pfx);
+  fprintf (stderr, "[%s] Merged %lu types\n", pfx, num_merged_types);
 
   print_gimple_types_stats (pfx);
   print_lto_report (pfx);
