@@ -1,3 +1,7 @@
+2013-06-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* tsan.c (tsan_atomic_table): Make const.
+
 2013-06-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-streamer.c (streamer_tree_cache_insert_1): Update the
