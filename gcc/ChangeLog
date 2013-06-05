@@ -1,3 +1,7 @@
+2013-06-05  Mike Stump  <mikestump@comcast.net>
+
+	* gdbinit.in (__FUNCTION__): Add.
+
 2013-06-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_conditional_move): Swap all
