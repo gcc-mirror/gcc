@@ -512,7 +512,8 @@ Objective-C and Objective-C++ Dialects}.
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd @gol
 -munaligned-access @gol
--mneon-for-64bits}
+-mneon-for-64bits @gol
+-mrestrict-it}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
@@ -11633,6 +11634,12 @@ defined.
 Enables using Neon to handle scalar 64-bits operations. This is
 disabled by default since the cost of moving data from core registers
 to Neon is high.
+
+@item -mrestrict-it
+@opindex mrestrict-it
+Restricts generation of IT blocks to conform to the rules of ARMv8.
+IT blocks can only contain a single 16-bit instruction from a select
+set of instructions. This option is on by default for ARMv8 Thumb mode.
 @end table
 
 @node AVR Options
