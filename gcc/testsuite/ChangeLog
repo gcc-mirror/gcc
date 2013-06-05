@@ -1,3 +1,11 @@
+2013-06-05  Manfred Schwarb  <manfred99@gmx.ch>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/string_length_2.f90: Fix dg-do run.
+	* gfortran.dg/io_real_boz_3.f90: Remove extra space in "dg-do  run".
+	* gfortran.dg/io_real_boz_4.f90: Ditto.
+	* gfortran.dg/io_real_boz_5.f90: Ditto.
+
 2013-06-05  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/tree-ssa/attr-alias.c: Remove duplicated contents.
