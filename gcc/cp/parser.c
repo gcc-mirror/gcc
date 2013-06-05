@@ -236,7 +236,6 @@ static void cp_parser_cilk_simd_construct
 static tree cp_parser_cilk_for
   (cp_parser *, enum rid, tree);
 
-
 /* Manifest constants.  */
 #define CP_LEXER_BUFFER_SIZE ((256 * 1024) / sizeof (cp_token))
 #define CP_SAVED_TOKEN_STACK 5
@@ -30182,9 +30181,9 @@ cp_parser_cilk_simd_construct (cp_parser *parser, cp_token *pragma_token)
   return;
 }
 
-/* Parses the initializer of a for/_Cilk_for statement.  The initial value is
-   stored in *INIT, and the inital value's declaration is stored as  DECL_EXPR
-   in *PRE_BODY.  */
+/* Parses the initializer of a for/_Cilk_for statement.  The initial
+   value is stored in *INIT, and the inital value's declaration is
+   stored as DECL_EXPR in *PRE_BODY.  */
 
 static tree
 cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
@@ -30206,8 +30205,8 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
     {
       cp_declarator *cp_decl;
       tree asm_spec, attr;
-      cp_decl = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED, NULL,
-				      NULL, false);
+      cp_decl = cp_parser_declarator (parser, CP_PARSER_DECLARATOR_NAMED,
+				      NULL, NULL, false);
       attr = cp_parser_attributes_opt (parser);
       asm_spec = cp_parser_asm_specification_opt (parser);
       if (cp_decl == cp_error_declarator)
@@ -30221,8 +30220,8 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
 	  if (cp_lexer_next_token_is_not (parser->lexer, CPP_EQ))
 	    {
 	      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
-		error_at (loc, "parenthesized initialization is not allowed in"
-			  " for-loop");
+		error_at (loc, "parenthesized initialization is "
+			  "not allowed in for-loop");
 	      else
 		{	  
 		  if (!cp_parser_require (parser, CPP_EQ, RT_EQ))
@@ -30240,8 +30239,8 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
 					    &is_non_constant_init);
 	      if (auto_node)
 		{
-		  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl), *init,
-							auto_node);
+		  TREE_TYPE (decl)
+		    = do_auto_deduction (TREE_TYPE (decl), *init, auto_node);
 		  if (!CLASS_TYPE_P (TREE_TYPE (decl))
 		      && !type_dependent_expression_p (decl))
 		    goto non_class;
@@ -30277,7 +30276,8 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
     {
       cp_id_kind idk;
       cp_parser_parse_tentatively (parser);
-      decl = cp_parser_primary_expression (parser, false, false, false, &idk);
+      decl = cp_parser_primary_expression (parser, false, false,
+					   false, &idk);
       if (!cp_parser_error_occurred (parser) && decl && DECL_P (decl)
 	  && CLASS_TYPE_P (TREE_TYPE (decl)))
 	{
@@ -30285,8 +30285,9 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
 	  cp_parser_parse_definitely (parser);
 	  cp_parser_require (parser, CPP_EQ, RT_EQ);
 	  rhs = cp_parser_assignment_expression (parser, false, NULL);
-	  new_expr = build_x_modify_expr (EXPR_LOCATION (rhs), decl, NOP_EXPR,
-					  rhs, tf_warning_or_error);
+	  new_expr = build_x_modify_expr (EXPR_LOCATION (rhs), decl,
+					  NOP_EXPR, rhs,
+					  tf_warning_or_error);
 	  finish_expr_stmt (new_expr);
 	}
       else
@@ -30399,7 +30400,8 @@ cp_parser_cilk_for_expression_iterator (cp_parser *parser)
 		 build2 (t_code, TREE_TYPE (name), name, expr));
 }
 
-/* Parses the condition for a for-loop with pragma simd or _Cilk_for loop.  */
+/* Parses the condition for a for-loop with pragma simd or _Cilk_for
+   loop.  */
 
 static tree
 cp_parser_cilk_for_condition (cp_parser *parser)
@@ -30459,9 +30461,10 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
   tree init = NULL_TREE, pre_body = NULL_TREE, decl;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
   
-  /* FIXME: Allow CILK_FOR into this function.  That is, use this function to
-     parse _Cilk_for statments also.  To do this correctly, add another param.
-     called "grain" to hold the grainsize.  */
+  /* FIXME: Allow CILK_FOR into this function.  That is, use this
+     function to parse _Cilk_for statments also.  To do this
+     correctly, add another param.  called "grain" to hold the
+     grainsize.  */
 
   gcc_assert (for_keyword == RID_FOR);
 
@@ -30499,7 +30502,8 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
 	   && !DECL_INITIAL (decl)
 	   && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (decl)))
     {
-      error_at (loc, "control variable for the %s-loop needs to be initialized",
+      error_at (loc, "control variable for the %s-loop needs to "
+		"be initialized",
 		for_keyword == RID_FOR ? "for" : "_Cilk_for");
       valid = false;
     }
@@ -30577,8 +30581,8 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
       TREE_VEC_ELT (condv, 0) = cond;
       TREE_VEC_ELT (incrv, 0) = incr_expr;
       TREE_VEC_ELT (declv, 0) = decl;
-      omp_simd_node = finish_omp_for (loc, OMP_SIMD, declv, initv, condv, incrv,
-				      body, pre_body, clauses);
+      omp_simd_node = finish_omp_for (loc, OMP_SIMD, declv, initv, condv,
+				      incrv, body, pre_body, clauses);
       return omp_simd_node;
     }
   else

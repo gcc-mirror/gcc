@@ -63,15 +63,15 @@ cpp_validate_cilk_plus_loop_aux (tree *tp, int *walk_subtrees, void *data)
       *valid = false;
       *walk_subtrees = 0;
     }
-    /* FIXME: Add a check for TREE_CODE (*tp) == CILK_FOR_STMT and flag them as
-       invalid when cilk keywords are adopted.  */
+    /* FIXME: Add a check for TREE_CODE (*tp) == CILK_FOR_STMT and
+       flag them as invalid when cilk keywords are adopted.  */
   return NULL_TREE;
 }  
 
 
-/* Walks through all the subtrees of BODY using walk_tree to make sure invalid
-   statements/expressions are not found inside BODY.  Returns false if any
-   invalid statements are found.  */
+/* Walks through all the subtrees of BODY using walk_tree to make sure
+   invalid statements/expressions are not found inside BODY.  Returns
+   false if any invalid statements are found.  */
 
 bool
 cpp_validate_cilk_plus_loop (tree body)
