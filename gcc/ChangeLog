@@ -1,3 +1,8 @@
+2013-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Swap all
+	GE, GT, GEU and GTU compares, modulo DImode compares with zero.
+
 2013-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* varasm.c (mark_decl_referenced): Revert the removal until targets
@@ -98,8 +103,7 @@
 
 	* config/aarch64/aarch64.md (*mov<mode>_aarch64): Call
 	into function to generate MOVI instruction.
-	* config/aarch64/aarch64.c (aarch64_simd_container_mode):
-	New function.
+	* config/aarch64/aarch64.c (aarch64_simd_container_mode): New function.
 	(aarch64_preferred_simd_mode): Turn into wrapper.
 	(aarch64_output_scalar_simd_mov_immediate): New function.
 	* config/aarch64/aarch64-protos.h: Add prototype for above.
@@ -156,8 +160,7 @@
 2013-06-04  Catherine Moore  <clm@codesourcery.com>
 
 	* config/mips/mips.opt (meva): New.
-	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS):
-	Define __mips_eva.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define __mips_eva.
 	(ASM_SPEC): Handle -meva.
 	* doc/invoke.texi (meva):  Document.
 
@@ -276,11 +279,9 @@
 	(cpp_implicit_aliases_done): ... this one.
 	(cgraph_create_function_alias): Update.
 	(cgraph_same_body_alias): Update.
-	(dump_cgraph_node): Remove alias dumping; simplify
-	thunk dumping.
+	(dump_cgraph_node): Remove alias dumping; simplify thunk dumping.
 	(verify_edge_corresponds_to_fndecl): Simplify.
-	* cgraph.h (symtab_node_base): Add cpp_implicit_alias,
-	alias_target.
+	* cgraph.h (symtab_node_base): Add cpp_implicit_alias, alias_target.
 	(cgraph_node): Remove same_body_alias.
 	(varpool_node): Remove alias_of and extra_name_alias.
 	(same_body_aliases_done): Rename to ..
@@ -414,8 +415,7 @@
 2013-05-31  Tobias Burnus  <burnus@net-b.de>
 
 	PR middle-end/57073
-	* tree-ssa-math-opts.c (execute_cse_sincos): Move check
-	further up.
+	* tree-ssa-math-opts.c (execute_cse_sincos): Move check further up.
 
 2013-05-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
@@ -738,7 +738,8 @@
 	(symtab_alias_target): New function.
 	(cgraph_alias_aliased_node, varpool_alias_aliased_node): Rename to ...
 	(cgraph_alias_target, varpool_alias_target): .. this one; simplify.
-	(cgraph_function_or_thunk_node): Simplify using symtab_alias_ultimate_target.
+	(cgraph_function_or_thunk_node): Simplify using
+	symtab_alias_ultimate_target.
 	(varpool_variable_node): Likewise.
 	* cgraph.c (cgraph_create_function_alias): Update.
 	(cgraph_add_thunk): Update.
@@ -756,7 +757,8 @@
 	propagate_constants_accross_call, devirtualization_time_bonus,
 	ipcp_propagate_stage): Update.
 	* tree-emutls.c (create_emultls_var, ipa_lower_emutls): Update.
-	* ipa-inline-transform.c (clone_inlined_nodes, preserve_function_body_p): Update.
+	* ipa-inline-transform.c (clone_inlined_nodes,
+	preserve_function_body_p): Update.
 	* ipa-reference.c (propagate): Update.
 	(write_node_summary_p): Update.
 	* toplev.c (wrapup_global_declaration_2): Update.
@@ -797,8 +799,8 @@
 	* tree-eh.c (tree_could_trap_p): Update.
 	* ipa-split.c (consider_split, execute_split_functions): Update.
 	* ipa.c (cgraph_non_local_node_p_1, cgraph_local_node_p,
-	 has_addr_references_p): Update;
-	move ahead in file for better readability.
+	has_addr_references_p): Update; move ahead in file for better
+	readability.
 	(process_references): Simplify.
 	(symtab_remove_unreachable_nodes): Update; cleanup way function/var
 	bodies are removed.
@@ -813,8 +815,8 @@
 	inline_write_summary): Update.
 	* gimple-fold.c (can_refer_decl_in_current_unit_p): Update.
 	* ipa-prop.c (ipa_compute_jump_functions): Update.
-	(ipa_print_node_params, ipa_prop_read_section, ipa_update_after_lto_read,
-	read_replacements_section): Update.
+	(ipa_print_node_params, ipa_prop_read_section,
+	ipa_update_after_lto_read, read_replacements_section): Update.
 	* varasm.c (mark_decl_referenced): Update.
 	(assemble_alias, dump_tm_clone_pairs): Update.
 	* tree-inline.c (copy_bb): Update.
@@ -826,7 +828,8 @@
 	* tree-ssa-structalias.c (get_constraint_for_ssa_var,
 	create_variable_info_for, associate_varinfo_to_alias, ipa_pta_execute):
 	Update.
-	* passes.c (ipa_write_summaries, ipa_write_optimization_summaries): Update.
+	* passes.c (ipa_write_summaries, ipa_write_optimization_summaries):
+	Update.
 	* i386.c (ix86_get_function_versions_dispatcher,
 	ix86_generate_version_dispatcher_body): Update.
 	(fold_builtin_cpu): Use varpool_add_new_variable.
@@ -835,7 +838,8 @@
 	(dump_varpool_node, varpool_node_for_asm,
 	cgraph_variable_initializer_availability, varpool_analyze_node,
 	varpool_assemble_decl, varpool_remove_unreferenced_decls,
-	varpool_finalize_named_section_flags, varpool_create_variable_alias): Update
+	varpool_finalize_named_section_flags, varpool_create_variable_alias):
+	Update.
 
 2013-05-29  Jan Hubicka  <jh@suse.cz>
 
@@ -851,8 +855,7 @@
 
 	* rx/rx.h (TARGET_CPU_CPP_BUILTINS): Add macros for RX100, RX200,
 	and RX600.
-	* rx/rx.opt: Add macro for rx100 with string rx100 and value
-	RX100.
+	* rx/rx.opt: Add macro for rx100 with string rx100 and value RX100.
 	* rx/rx-opts.h (rx_cpu_types): Add new cpu type rx100.
 	* rx/t-rx: Add rx100 under multi library matches option for nofpu
 	option.
@@ -867,8 +870,7 @@
 
 	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add micromips
 	and mips16 directories.
-	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Add micromips and
-	mips16.
+	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Add micromips and mips16.
 	(MULTILIB_DIRNAMES): Ditto.
 	(MULTILIB_EXCEPTIONS): Add new exceptions.
 	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Add micromips.

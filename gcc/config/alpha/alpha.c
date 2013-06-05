@@ -2700,12 +2700,12 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
       break;
 
     case GE:  case GT:  case GEU:  case GTU:
-      /* These must be swapped.  */
-      if (op1 != CONST0_RTX (cmp_mode))
-	{
-	  code = swap_condition (code);
-	  tem = op0, op0 = op1, op1 = tem;
-	}
+      /* These normally need swapping, but for integer zero we have
+	 special patterns that recognize swapped operands.  */
+      if (cmp_mode == DImode && op1 == const0_rtx)
+	break;
+      code = swap_condition (code);
+      tem = op0, op0 = op1, op1 = tem;
       break;
 
     default:
