@@ -4681,6 +4681,13 @@ ipa_tm_mark_force_output_node (struct cgraph_node *node)
   node->symbol.analyzed = true;
 }
 
+static inline void
+ipa_tm_mark_forced_by_abi_node (struct cgraph_node *node)
+{
+  node->symbol.forced_by_abi = true;
+  node->symbol.analyzed = true;
+}
+
 /* Callback data for ipa_tm_create_version_alias.  */
 struct create_version_alias_info
 {
@@ -4737,6 +4744,8 @@ ipa_tm_create_version_alias (struct cgraph_node *node, void *data)
   if (info->old_node->symbol.force_output
       || ipa_ref_list_first_referring (&info->old_node->symbol.ref_list))
     ipa_tm_mark_force_output_node (new_node);
+  if (info->old_node->symbol.forced_by_abi)
+    ipa_tm_mark_forced_by_abi_node (new_node);
   return false;
 }
 
@@ -4792,6 +4801,8 @@ ipa_tm_create_version (struct cgraph_node *old_node)
   if (old_node->symbol.force_output
       || ipa_ref_list_first_referring (&old_node->symbol.ref_list))
     ipa_tm_mark_force_output_node (new_node);
+  if (old_node->symbol.forced_by_abi)
+    ipa_tm_mark_forced_by_abi_node (new_node);
 
   /* Do the same thing, but for any aliases of the original node.  */
   {

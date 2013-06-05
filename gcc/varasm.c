@@ -2244,33 +2244,6 @@ mark_referenced (tree id)
   TREE_SYMBOL_REFERENCED (id) = 1;
 }
 
-/* Set the symbol_referenced flag for DECL and notify callgraph.  */
-void
-mark_decl_referenced (tree decl)
-{
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    {
-      /* Extern inline functions don't become needed when referenced.
-	 If we know a method will be emitted in other TU and no new
-	 functions can be marked reachable, just use the external
-	 definition.  */
-      struct cgraph_node *node = cgraph_get_create_node (decl);
-      if (!DECL_EXTERNAL (decl)
-	  && !node->symbol.definition)
-	cgraph_mark_force_output_node (node);
-    }
-  else if (TREE_CODE (decl) == VAR_DECL)
-    {
-      struct varpool_node *node = varpool_node_for_decl (decl);
-      /* C++ frontend use mark_decl_references to force COMDAT variables
-         to be output that might appear dead otherwise.  */
-      node->symbol.force_output = true;
-    }
-  /* else do nothing - we can get various sorts of CST nodes here,
-     which do not need to be marked.  */
-}
-
-
 /* Follow the IDENTIFIER_TRANSPARENT_ALIAS chain starting at *ALIAS
    until we find an identifier that is not itself a transparent alias.
    Modify the alias passed to it by reference (and all aliases on the

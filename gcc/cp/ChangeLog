@@ -1,3 +1,9 @@
+2013-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (maybe_make_one_only): Use forced_by_abi instad of
+	mark_decl_referenced.
+	(mark_needed): Likewise.
+
 2013-06-03  Jason Merrill  <jason@redhat.com>
 
 	* class.c (mark_type_abi_tags): New.

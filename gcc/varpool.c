@@ -130,28 +130,6 @@ varpool_node_for_asm (tree asmname)
     return NULL;
 }
 
-/* Determine if variable DECL is needed.  That is, visible to something
-   either outside this translation unit, something magic in the system
-   configury */
-bool
-decide_is_variable_needed (struct varpool_node *node, tree decl)
-{
-  if (DECL_EXTERNAL (decl))
-    return false;
-
-  /* If the user told us it is used, then it must be so.  */
-  if (node->symbol.force_output)
-    return true;
-
-  /* Externally visible variables must be output.  The exception is
-     COMDAT variables that must be output only when they are needed.  */
-  if (TREE_PUBLIC (decl)
-      && !DECL_COMDAT (decl))
-    return true;
-
-  return false;
-}
-
 /* Return if DECL is constant and its initial value is known (so we can do
    constant folding using DECL_INITIAL (decl)).  */
 

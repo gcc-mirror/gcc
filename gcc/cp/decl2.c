@@ -1703,9 +1703,10 @@ maybe_make_one_only (tree decl)
 
       if (VAR_P (decl))
 	{
+          struct varpool_node *node = varpool_node_for_decl (decl);
 	  DECL_COMDAT (decl) = 1;
 	  /* Mark it needed so we don't forget to emit it.  */
-	  mark_decl_referenced (decl);
+          node->symbol.forced_by_abi = true;
 	  TREE_USED (decl) = 1;
 	}
     }
@@ -1813,7 +1814,22 @@ void
 mark_needed (tree decl)
 {
   TREE_USED (decl) = 1;
-  mark_decl_referenced (decl);
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      /* Extern inline functions don't become needed when referenced.
+	 If we know a method will be emitted in other TU and no new
+	 functions can be marked reachable, just use the external
+	 definition.  */
+      struct cgraph_node *node = cgraph_get_create_node (decl);
+      node->symbol.forced_by_abi = true;
+    }
+  else if (TREE_CODE (decl) == VAR_DECL)
+    {
+      struct varpool_node *node = varpool_node_for_decl (decl);
+      /* C++ frontend use mark_decl_references to force COMDAT variables
+         to be output that might appear dead otherwise.  */
+      node->symbol.forced_by_abi = true;
+    }
 }
 
 /* DECL is either a FUNCTION_DECL or a VAR_DECL.  This function

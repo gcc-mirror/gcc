@@ -469,6 +469,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->local.can_change_signature, 1);
   bp_pack_value (&bp, node->local.redefined_extern_inline, 1);
   bp_pack_value (&bp, node->symbol.force_output, 1);
+  bp_pack_value (&bp, node->symbol.forced_by_abi, 1);
   bp_pack_value (&bp, node->symbol.unique_name, 1);
   bp_pack_value (&bp, node->symbol.address_taken, 1);
   bp_pack_value (&bp, node->abstract_and_needed, 1);
@@ -527,6 +528,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, struct varpool_node
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, node->symbol.externally_visible, 1);
   bp_pack_value (&bp, node->symbol.force_output, 1);
+  bp_pack_value (&bp, node->symbol.forced_by_abi, 1);
   bp_pack_value (&bp, node->symbol.unique_name, 1);
   bp_pack_value (&bp, node->symbol.definition, 1);
   alias_p = node->symbol.alias && (!boundary_p || DECL_EXTERNAL (node->symbol.decl));
@@ -672,7 +674,7 @@ output_refs (lto_symtab_encoder_t encoder)
       count = ipa_ref_list_nreferences (&node->symbol.ref_list);
       if (count)
 	{
-	  streamer_write_uhwi_stream (ob->main_stream, count);
+	  streamer_write_gcov_count_stream (ob->main_stream, count);
 	  streamer_write_uhwi_stream (ob->main_stream,
 				     lto_symtab_encoder_lookup (encoder, node));
 	  for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list,
@@ -881,6 +883,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->local.can_change_signature = bp_unpack_value (bp, 1);
   node->local.redefined_extern_inline = bp_unpack_value (bp, 1);
   node->symbol.force_output = bp_unpack_value (bp, 1);
+  node->symbol.forced_by_abi = bp_unpack_value (bp, 1);
   node->symbol.unique_name = bp_unpack_value (bp, 1);
   node->symbol.address_taken = bp_unpack_value (bp, 1);
   node->abstract_and_needed = bp_unpack_value (bp, 1);
@@ -1039,6 +1042,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   bp = streamer_read_bitpack (ib);
   node->symbol.externally_visible = bp_unpack_value (&bp, 1);
   node->symbol.force_output = bp_unpack_value (&bp, 1);
+  node->symbol.forced_by_abi = bp_unpack_value (&bp, 1);
   node->symbol.unique_name = bp_unpack_value (&bp, 1);
   node->symbol.definition = bp_unpack_value (&bp, 1);
   node->symbol.alias = bp_unpack_value (&bp, 1);
