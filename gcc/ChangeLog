@@ -1,3 +1,8 @@
+2013-06-05  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (print_operand, 'z'): Use DECL_PRESERVE_P
+	instead of mark_decl_referenced.
+
 2013-06-05  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_remove_node): Clear forced_by_abi.
