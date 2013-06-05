@@ -72,9 +72,13 @@ struct GTY(()) symtab_node_base
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* Needed variables might become dead by optimization.  This flag
-     forces the variable to be output even if it appears dead otherwise.  */
+  /* The symbol will be assumed to be used in an invisiable way (like 
+     by an toplevel asm statement).  */
   unsigned force_output : 1;
+  /* Like FORCE_OUTPUT, but in the case it is ABI requiring the symbol to be
+     exported.  Unlike FORCE_OUTPUT this flag gets cleared to symbols promoted
+     to static and it does not inhibit optimization.  */
+  unsigned forced_by_abi : 1;
   /* True when the name is known to be unique and thus it does not need mangling.  */
   unsigned unique_name : 1;
 
@@ -775,7 +779,6 @@ void dump_varpool (FILE *);
 void dump_varpool_node (FILE *, struct varpool_node *);
 
 void varpool_finalize_decl (tree);
-bool decide_is_variable_needed (struct varpool_node *, tree);
 enum availability cgraph_variable_initializer_availability (struct varpool_node *);
 void cgraph_make_node_local (struct cgraph_node *);
 bool cgraph_node_can_be_local_p (struct cgraph_node *);
@@ -1216,6 +1219,7 @@ varpool_can_remove_if_no_refs (struct varpool_node *node)
     return true;
   return (!node->symbol.force_output && !node->symbol.used_from_other_partition
   	  && ((DECL_COMDAT (node->symbol.decl)
+	       && !node->symbol.forced_by_abi
 	       && !symtab_used_from_object_file_p ((symtab_node) node))
 	      || !node->symbol.externally_visible
 	      || DECL_HAS_VALUE_EXPR_P (node->symbol.decl)));
