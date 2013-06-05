@@ -1,3 +1,7 @@
+2013-06-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-ssa-structalias.c (call_stmt_vars): Make static.
+
 2013-06-04  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (get_alias_symbol): Remove weakref sanity check.
