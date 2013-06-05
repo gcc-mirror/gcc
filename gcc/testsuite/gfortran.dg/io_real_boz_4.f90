@@ -1,5 +1,4 @@
-! { dg-do  run }
-! Note: two spaces before "run" to run only once (libgfortran test)
+! { dg-do run }
 ! { dg-options "-std=f2003" }
 ! { dg-require-effective-target fortran_real_16 }
 !
