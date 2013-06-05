@@ -1,3 +1,10 @@
+2013-06-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer.c (streamer_tree_cache_insert_1): Update the
+	index associated with the tree we are supposed to replace.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Output
+	TREE_ASM_WRITTEN as zero for everything but SSA names.
+
 2013-06-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-ssa-structalias.c (call_stmt_vars): Make static.
