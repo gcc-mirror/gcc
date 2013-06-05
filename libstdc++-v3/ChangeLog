@@ -1,3 +1,7 @@
+2013-06-05  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: Use -O0.
+
 2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57419
