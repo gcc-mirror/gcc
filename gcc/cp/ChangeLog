@@ -1,6 +1,12 @@
+2013-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51908
+	* parser.c (cp_parser_postfix_expression [RID_*CAST]): Set
+	parser->in_type_id_in_expr_p before calling cp_parser_type_id.
+
 2013-06-03  Jan Hubicka  <jh@suse.cz>
 
-	* decl2.c (maybe_make_one_only): Use forced_by_abi instad of
+	* decl2.c (maybe_make_one_only): Use forced_by_abi instead of
 	mark_decl_referenced.
 	(mark_needed): Likewise.
 
