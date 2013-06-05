@@ -1,4 +1,4 @@
-/* Copyright (C) 2012
+/* Copyright (C) 2012-2013
    Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -176,19 +176,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 typedef enum
 {
-  FC_NONE = 0b00000000000,
-  FC_ADDR = 0b00000000001,
-  FC_ALLOC = 0b00000000010,
-  FC_BARRIER = 0b00000000100,
-  FC_BROADCAST = 0b00000001000,
-  FC_COLL = 0b00000010000,
-  FC_INFO = 0b00000100000,
-  FC_LOCK = 0b00001000000,
-  FC_MEM = 0b00010000000,
-  FC_MISC = 0b00100000000,
-  FC_PORTALS = 0b01000000000,
-  FC_SYSTEM = 0b10000000000,
-  FC_ALL = 0b11111111111
+  FC_NONE      = 0b000000000000,
+  FC_ADDR      = 0b000000000001,
+  FC_ALLOC     = 0b000000000010,
+  FC_ATOMIC    = 0b000000000100,
+  FC_BARRIER   = 0b000000001000,
+  FC_BROADCAST = 0b000000010000,
+  FC_COLL      = 0b000000100000,
+  FC_INFO      = 0b000001000000,
+  FC_LOCK      = 0b000010000000,
+  FC_MEM       = 0b000100000000,
+  FC_MISC      = 0b001000000000,
+  FC_PORTALS   = 0b010000000000,
+  FC_SYSTEM    = 0b100000000000,
+  FC_ALL       = 0b111111111111
 } gupcr_facility_t;
 
 #ifndef LONG_LONG_BITS
@@ -290,6 +291,8 @@ extern long long gupcr_strtoll (const char *const,
 extern void gupcr_strtoll_error (const char *const str,
 				 long long int, long long int val_max, int);
 extern void gupcr_size_cvt_error (const char *const str, int);
+extern const char *gupcr_get_buf_as_hex (char *bufstr,
+					 const void *buf, size_t size);
 extern const char *gupcr_get_pid_as_string (void);
 extern size_t gupcr_get_shared_heap_size (void);
 extern int gupcr_is_node_local_memory_enabled (void);

@@ -1,4 +1,4 @@
-/* Copyright (C) 2012
+/* Copyright (C) 2012-2013
    Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -149,6 +149,7 @@ extern const char *gupcr_strptldatatype (ptl_datatype_t);
 extern const char *gupcr_nifailtype (ptl_ni_fail_t);
 extern void gupcr_process_fail_events (ptl_handle_eq_t);
 extern ptl_datatype_t gupcr_get_atomic_datatype (int);
+extern size_t gupcr_get_atomic_size (ptl_datatype_t);
 extern int gupcr_get_rank (void);
 extern int gupcr_get_threads_count (void);
 extern int gupcr_get_rank_pid (int rank);

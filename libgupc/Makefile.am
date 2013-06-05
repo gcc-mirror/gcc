@@ -31,7 +31,7 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
         $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
-UPC_HDRS = include/upc_castable.h \
+UPC_HDRS = include/upc_atomic.h include/upc_castable.h \
            include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
            include/upc_relaxed.h include/upc_strict.h \
@@ -148,6 +148,8 @@ EXTRA_DIST += gcc-upc-lib.in \
 UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_addr.c \
 	portals4/gupcr_alloc.upc portals4/gupcr_alloc.h \
+	portals4/gupcr_atomic.upc \
+	portals4/gupcr_atomic_sup.h portals4/gupcr_atomic_sup.c \
 	portals4/gupcr_barrier.h portals4/gupcr_barrier.c \
 	portals4/gupcr_broadcast.h portals4/gupcr_broadcast.c \
 	portals4/gupcr_castable.upc \

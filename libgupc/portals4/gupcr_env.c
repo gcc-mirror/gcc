@@ -116,6 +116,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	ADDR		UPC casts to local and access to PTS's.
 	ALL		All the facilities
 	ALLOC		UPC dynamic memory allocation
+	ATOMIC		UPC atomic operations
 	BARRIER 	UPC barrier/notify/wait operations
 	BROADCAST	UPC runtime internal broadcast operations
 	COLL		UPC collectives
@@ -150,6 +151,7 @@ gupcr_facility_table[] =
   {"addr", FC_ADDR},
   {"all", FC_ALL},
   {"alloc", FC_ALLOC},
+  {"atomic", FC_ATOMIC},
   {"barrier", FC_BARRIER},
   {"broadcast", FC_BROADCAST},
   {"coll", FC_COLL},

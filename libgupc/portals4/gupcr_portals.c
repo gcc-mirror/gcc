@@ -1,4 +1,4 @@
-/* Copyright (C) 2012
+/* Copyright (C) 2012-2013
    Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -304,6 +304,50 @@ gupcr_get_atomic_datatype (int size)
     default:
       gupcr_fatal_error
 	("Unable to convert size of %d into Portals atomic data type.", size);
+    }
+  return -1;
+}
+
+/**
+ * Return Portals data size from the specified atomic type.
+ *
+ * @param [in] type Portals atomic data type
+ * @retval Portals atomic data type size
+ */
+size_t
+gupcr_get_atomic_size (ptl_datatype_t type)
+{
+  switch (type)
+    {
+    case PTL_INT8_T:
+    case PTL_UINT8_T:
+      return 1;
+    case PTL_INT16_T:
+    case PTL_UINT16_T:
+      return 2;
+    case PTL_INT32_T:
+    case PTL_UINT32_T:
+      return 4;
+    case PTL_INT64_T:
+    case PTL_UINT64_T:
+      return 8;
+    case PTL_FLOAT:
+      return __SIZEOF_FLOAT__;
+    case PTL_FLOAT_COMPLEX:
+      return 2 * __SIZEOF_FLOAT__;
+    case PTL_DOUBLE:
+      return __SIZEOF_DOUBLE__;
+    case PTL_DOUBLE_COMPLEX:
+      return 2 * __SIZEOF_DOUBLE__;
+#ifdef __SIZEOF_LONG_DOUBLE__
+    case PTL_LONG_DOUBLE:
+      return __SIZEOF_LONG_DOUBLE__;
+    case PTL_LONG_DOUBLE_COMPLEX:
+      return 2 * __SIZEOF_LONG_DOUBLE__;
+#endif
+    default:
+      gupcr_fatal_error
+	("Unknown atomic type %d", (int) type);
     }
   return -1;
 }

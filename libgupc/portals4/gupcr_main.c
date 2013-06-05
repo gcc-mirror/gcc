@@ -43,6 +43,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gupcr_gmem.h"
 #include "gupcr_node.h"
 #include "gupcr_coll_sup.h"
+#include "gupcr_atomic_sup.h"
 
 /** User's main program */
 extern int GUPCR_MAIN (int argc, char *argv[]);
@@ -136,6 +137,7 @@ gupcr_init (void)
   gupcr_barrier_init ();
   gupcr_broadcast_init ();
   gupcr_coll_init ();
+  gupcr_atomic_init ();
   gupcr_shutdown_init ();
 
   GUPCR_PTS_SET_NULL_SHARED (heap_region_base);
@@ -160,6 +162,7 @@ void
 gupcr_fini (void)
 {
   gupcr_shutdown_fini ();
+  gupcr_atomic_fini ();
   gupcr_broadcast_fini ();
   gupcr_barrier_fini ();
   gupcr_lock_fini ();

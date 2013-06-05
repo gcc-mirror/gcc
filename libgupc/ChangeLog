@@ -1,3 +1,23 @@
+2013-06-05  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Add support for UPC atomics to Portals4 runtime.
+	Makefile.am (UPC_RUNTIME_SRC): Add atomic files.
+	(UPC_HDRS): Add atomic files.
+	Makefile.in: Re-generate.
+	include/upc_atomic.h: New. UPC atomic interface.
+	portals4/gcc-upc-lib.in (__UPC_ATOMIC__): Add.
+	Add definition of upc_atomicdomain_t.
+	portals4/gupcr_atomic.upc: New. UPC atomic implementation.
+	portals4/gupcr_atomic_sup.c: New. UPC atomic support functions.
+	portals4/gupcr_atomic_sup.h: New.
+	portals4/gupcr_env.c (gupcr_facility_table): Add atomic facility.
+	portals4/gupcr_main.c (gupcr_init): Add atomic initialization.
+	(gupcr_fini): Add atomic finalization.
+	portals4/gupcr_portals.c (gupcr_get_atomic_size): Add.
+	portals4/gupcr_portals.h (gupcr_get_atomic_size): Add.
+	portals4/gupcr_utils.c (gupcr_get_buf_as_hex): Add.
+	portals4/gupcr_utils.h (gupcr_facility_t): Add atomic facility.
+
 2013-05-09  Nenad Vukicevic  <nenad@intrepid.com>
 
 	portals4/gupcr_env.c: Add UPC_FIRSTTOUCH environment variable

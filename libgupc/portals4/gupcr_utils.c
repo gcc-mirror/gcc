@@ -1,4 +1,4 @@
-/* Copyright (C) 2012
+/* Copyright (C) 2012-2013
    Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
@@ -304,6 +304,26 @@ gupcr_unique_local_name (char *fname, const char *prefix, int thread,
     gupcr_fatal_error ("unique local name too long");
   sprintf (n, "%s" GUPCR_LOCAL_NAME_FMT, prefix, thread,
 	   gupcr_get_rank_pid (thread));
+}
+
+/* Convert buffer to string (max of 16 characters) */
+const char *
+gupcr_get_buf_as_hex (char *bufstr, const void *buf, size_t size)
+{
+  size_t cnt = (size > 16) ? 16 : size;
+  bufstr[0] = 0;
+  if (cnt > 0)
+    {
+      char *tmp = bufstr;
+      size_t i;
+      for (i=0; i<cnt-1; ++i)
+	{
+	  sprintf (tmp, "%02x ", ((unsigned char *)buf)[i]);
+	  tmp += 3;
+	}
+      sprintf (tmp, "%02x", ((unsigned char *)buf)[cnt-1]);
+    }
+  return bufstr;
 }
 
 void
