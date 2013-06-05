@@ -1,3 +1,11 @@
+2013-06-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/fshort-wchar.c: Add extra dg-options for
+	arm*-*-*eabi* targets.
+	* gcc.dg/tree-ssa/pr42585.c: Change dg-final to catch
+	arm*-*-* targets.
+	* gcc.dg/tree-ssa/pr43491.c: Likewise.
+
 2013-06-05  Manfred Schwarb  <manfred99@gmx.ch>
 	    Tobias Burnus  <burnus@net-b.de>
 
