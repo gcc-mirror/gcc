@@ -662,6 +662,10 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET arm_asan_shadow_offset
 
+#undef MAX_INSN_PER_IT_BLOCK
+#define MAX_INSN_PER_IT_BLOCK (arm_restrict_it ? 1 : 4)
+
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
@@ -1871,6 +1875,11 @@ arm_option_override (void)
   arm_arch_thumb_hwdiv = (insn_flags & FL_THUMB_DIV) != 0;
   arm_arch_arm_hwdiv = (insn_flags & FL_ARM_DIV) != 0;
   arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
+  if (arm_restrict_it == 2)
+    arm_restrict_it = arm_arch8 && TARGET_THUMB2;
+
+  if (!TARGET_THUMB2)
+    arm_restrict_it = 0;
 
   /* If we are not using the default (ARM mode) section anchor offset
      ranges, then set the correct ranges now.  */
@@ -19593,7 +19602,7 @@ thumb2_final_prescan_insn (rtx insn)
 	break;
       /* Allow up to 4 conditionally executed instructions in a block.  */
       n = get_attr_ce_count (insn);
-      if (arm_condexec_masklen + n > 4)
+      if (arm_condexec_masklen + n > MAX_INSN_PER_IT_BLOCK)
 	break;
 
       predicate = COND_EXEC_TEST (body);

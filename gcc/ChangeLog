@@ -1,3 +1,11 @@
+2013-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.c (MAX_INSN_PER_IT_BLOCK): New macro.
+	(arm_option_override): Override arm_restrict_it where appropriate.
+	(thumb2_final_prescan_insn): Use MAX_INSN_PER_IT_BLOCK.
+	* config/arm/arm.opt (mrestrict-it): New command-line option.
+	* doc/invoke.texi: Document -mrestrict-it.
+
 2013-06-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* tsan.c (tsan_atomic_table): Make const.
