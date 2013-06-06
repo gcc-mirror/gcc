@@ -1,5 +1,8 @@
 2013-06-06  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* configure.tgt (XCFLAGS): Add -ftls-model=initial-exec for
+	GNU/Hurd, as done for Linux-based systems.
+
 	* config/posix/ptrlock.h: Fix comment.
 
 2013-05-27  Tobias Burnus  <burnus@net-b.de>
