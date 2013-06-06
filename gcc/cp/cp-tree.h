@@ -2737,7 +2737,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
   : TREE_VEC_LENGTH (INNERMOST_TEMPLATE_ARGS (NODE))
 #endif
 /* The list of typedefs - used in the template - that need
-   access checking at template instantiation time.  */
+   access checking at template instantiation time.
+
+   FIXME this should be associated with the TEMPLATE_DECL, not the
+   TEMPLATE_INFO.  */
 #define TI_TYPEDEFS_NEEDING_ACCESS_CHECKING(NODE) \
   ((struct tree_template_info*)TEMPLATE_INFO_CHECK \
      (NODE))->typedefs_needing_access_checking
