@@ -128,6 +128,7 @@
    UNSPEC_VUPKLS_V4SF
    UNSPEC_VUPKHU_V4SF
    UNSPEC_VUPKLU_V4SF
+   UNSPEC_VGBBD
 ])
 
 (define_c_enum "unspecv"
@@ -941,6 +942,31 @@
   "vmrglw %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
+;; Power8 vector merge even/odd
+(define_insn "p8_vmrgew"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(vec_select:V4SI
+	  (vec_concat:V8SI
+	    (match_operand:V4SI 1 "register_operand" "v")
+	    (match_operand:V4SI 2 "register_operand" "v"))
+	  (parallel [(const_int 0) (const_int 4)
+		     (const_int 2) (const_int 6)])))]
+  "TARGET_P8_VECTOR"
+  "vmrgew %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "p8_vmrgow"
+  [(set (match_operand:V4SI 0 "register_operand" "=v")
+	(vec_select:V4SI
+	  (vec_concat:V8SI
+	    (match_operand:V4SI 1 "register_operand" "v")
+	    (match_operand:V4SI 2 "register_operand" "v"))
+	  (parallel [(const_int 1) (const_int 5)
+		     (const_int 3) (const_int 7)])))]
+  "TARGET_P8_VECTOR"
+  "vmrgow %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
 (define_insn "vec_widen_umult_even_v16qi"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V16QI 1 "register_operand" "v")
@@ -1017,10 +1043,13 @@
 ;; logical ops.  Have the logical ops follow the memory ops in
 ;; terms of whether to prefer VSX or Altivec
 
+;; AND has a clobber to be consistant with VSX, which adds splitters for using
+;; the GPR registers.
 (define_insn "*altivec_and<mode>3"
   [(set (match_operand:VM 0 "register_operand" "=v")
         (and:VM (match_operand:VM 1 "register_operand" "v")
-		(match_operand:VM 2 "register_operand" "v")))]
+		(match_operand:VM 2 "register_operand" "v")))
+   (clobber (match_scratch:CC 3 "=X"))]
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
   "vand %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -1050,8 +1079,8 @@
   
 (define_insn "*altivec_nor<mode>3"
   [(set (match_operand:VM 0 "register_operand" "=v")
-        (not:VM (ior:VM (match_operand:VM 1 "register_operand" "v")
-			(match_operand:VM 2 "register_operand" "v"))))]
+	(and:VM (not:VM (match_operand:VM 1 "register_operand" "v"))
+		(not:VM (match_operand:VM 2 "register_operand" "v"))))]
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
   "vnor %0,%1,%2"
   [(set_attr "type" "vecsimple")])
@@ -2370,3 +2399,34 @@
   emit_insn (gen_altivec_vcfux (operands[0], tmp, const0_rtx));
   DONE;
 }")
+
+
+;; Power8 vector instructions encoded as Altivec instructions
+
+;; Vector count leading zeros
+(define_insn "*p8v_clz<mode>2"
+  [(set (match_operand:VI2 0 "register_operand" "=v")
+	(clz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
+  "TARGET_P8_VECTOR"
+  "vclz<wd> %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+;; Vector population count
+(define_insn "*p8v_popcount<mode>2"
+  [(set (match_operand:VI2 0 "register_operand" "=v")
+        (popcount:VI2 (match_operand:VI2 1 "register_operand" "v")))]
+  "TARGET_P8_VECTOR"
+  "vpopcnt<wd> %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])
+
+;; Vector Gather Bits by Bytes by Doubleword
+(define_insn "p8v_vgbbd"
+  [(set (match_operand:V16QI 0 "register_operand" "=v")
+	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")]
+		      UNSPEC_VGBBD))]
+  "TARGET_P8_VECTOR"
+  "vgbbd %0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "vecsimple")])

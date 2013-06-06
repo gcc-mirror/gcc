@@ -730,9 +730,10 @@
   "")
 
 (define_expand "and<mode>3"
-  [(set (match_operand:VEC_L 0 "vlogical_operand" "")
-        (and:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
-		   (match_operand:VEC_L 2 "vlogical_operand" "")))]
+  [(parallel [(set (match_operand:VEC_L 0 "vlogical_operand" "")
+		   (and:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
+			      (match_operand:VEC_L 2 "vlogical_operand" "")))
+	      (clobber (match_scratch:CC 3 ""))])]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
    && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
@@ -746,8 +747,8 @@
 
 (define_expand "nor<mode>3"
   [(set (match_operand:VEC_L 0 "vlogical_operand" "")
-        (not:VEC_L (ior:VEC_L (match_operand:VEC_L 1 "vlogical_operand" "")
-			      (match_operand:VEC_L 2 "vlogical_operand" ""))))]
+	(and:VEC_L (not:VEC_L (match_operand:VEC_L 1 "vlogical_operand" ""))
+		   (not:VEC_L (match_operand:VEC_L 2 "vlogical_operand" ""))))]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
    && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
@@ -760,6 +761,47 @@
    && (<MODE>mode != TImode || TARGET_POWERPC64)"
   "")
 
+;; Power8 vector logical instructions.
+(define_expand "eqv<mode>3"
+  [(set (match_operand:VEC_L 0 "register_operand" "")
+	(not:VEC_L
+	 (xor:VEC_L (match_operand:VEC_L 1 "register_operand" "")
+		    (match_operand:VEC_L 2 "register_operand" ""))))]
+  "TARGET_P8_VECTOR && VECTOR_MEM_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)")
+
+;; Rewrite nand into canonical form
+(define_expand "nand<mode>3"
+  [(set (match_operand:VEC_L 0 "register_operand" "")
+	(ior:VEC_L
+	 (not:VEC_L (match_operand:VEC_L 1 "register_operand" ""))
+	 (not:VEC_L (match_operand:VEC_L 2 "register_operand" ""))))]
+  "TARGET_P8_VECTOR && VECTOR_MEM_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)")
+
+;; The canonical form is to have the negated elment first, so we need to
+;; reverse arguments.
+(define_expand "orc<mode>3"
+  [(set (match_operand:VEC_L 0 "register_operand" "")
+	(ior:VEC_L
+	 (not:VEC_L (match_operand:VEC_L 1 "register_operand" ""))
+	 (match_operand:VEC_L 2 "register_operand" "")))]
+  "TARGET_P8_VECTOR && VECTOR_MEM_VSX_P (<MODE>mode)
+   && (<MODE>mode != TImode || TARGET_POWERPC64)")
+
+;; Vector count leading zeros
+(define_expand "clz<mode>2"
+  [(set (match_operand:VEC_I 0 "register_operand" "")
+	(clz:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
+  "TARGET_P8_VECTOR")
+
+;; Vector population count
+(define_expand "popcount<mode>2"
+  [(set (match_operand:VEC_I 0 "register_operand" "")
+        (popcount:VEC_I (match_operand:VEC_I 1 "register_operand" "")))]
+  "TARGET_P8_VECTOR")
+
+
 ;; Same size conversions
 (define_expand "float<VEC_int><mode>2"
   [(set (match_operand:VEC_F 0 "vfloat_operand" "")

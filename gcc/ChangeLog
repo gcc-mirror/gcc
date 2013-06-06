@@ -1,3 +1,150 @@
+2013-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions):
+	Document new power8 builtins.
+
+	* config/rs6000/vector.md (and<mode>3): Add a clobber/scratch of a
+	condition code register, to allow 128-bit logical operations to be
+	done in the VSX or GPR registers.
+	(nor<mode>3): Use the canonical form for nor.
+	(eqv<mode>3): Add expanders for power8 xxleqv, xxlnand, xxlorc,
+	vclz*, and vpopcnt* vector instructions.
+	(nand<mode>3): Likewise.
+	(orc<mode>3): Likewise.
+	(clz<mode>2): LIkewise.
+	(popcount<mode>2): Likewise.
+
+	* config/rs6000/predicates.md (int_reg_operand): Rework tests so
+	that only the GPRs are recognized.
+
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	support for new power8 builtins.
+
+	* config/rs6000/rs6000-builtin.def (xscvspdpn): Add new power8
+	builtin functions.
+	(xscvdpspn): Likewise.
+	(vclz): Likewise.
+	(vclzb): Likewise.
+	(vclzh): Likewise.
+	(vclzw): Likewise.
+	(vclzd): Likewise.
+	(vpopcnt): Likewise.
+	(vpopcntb): Likewise.
+	(vpopcnth): Likewise.
+	(vpopcntw): Likewise.
+	(vpopcntd): Likewise.
+	(vgbbd): Likewise.
+	(vmrgew): Likewise.
+	(vmrgow): Likewise.
+	(eqv): Likewise.
+	(eqv_v16qi3): Likewise.
+	(eqv_v8hi3): Likewise.
+	(eqv_v4si3): Likewise.
+	(eqv_v2di3): Likewise.
+	(eqv_v4sf3): Likewise.
+	(eqv_v2df3): Likewise.
+	(nand): Likewise.
+	(nand_v16qi3): Likewise.
+	(nand_v8hi3): Likewise.
+	(nand_v4si3): Likewise.
+	(nand_v2di3): Likewise.
+	(nand_v4sf3): Likewise.
+	(nand_v2df3): Likewise.
+	(orc): Likewise.
+	(orc_v16qi3): Likewise.
+	(orc_v8hi3): Likewise.
+	(orc_v4si3): Likewise.
+	(orc_v2di3): Likewise.
+	(orc_v4sf3): Likewise.
+	(orc_v2df3): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Only
+	allow power8 quad mode in 64-bit.
+	(rs6000_builtin_vectorized_function): Add support to vectorize
+	ISA 2.07 count leading zeros, population count builtins.
+	(rs6000_expand_vector_init): On ISA 2.07 use xscvdpspn to form
+	V4SF vectors instead of xscvdpsp to avoid IEEE related traps.
+	(builtin_function_type): Add vgbbd builtin function which takes an
+	unsigned argument.
+	(altivec_expand_vec_perm_const): Add support for new power8 merge
+	instructions.
+
+	* config/rs6000/vsx.md (VSX_L2): New iterator for 128-bit types,
+	that does not include TImdoe for use with 32-bit.
+	(UNSPEC_VSX_CVSPDPN): Support for power8 xscvdpspn and xscvspdpn
+	instructions.
+	(UNSPEC_VSX_CVDPSPN): Likewise.
+	(vsx_xscvdpspn): Likewise.
+	(vsx_xscvspdpn): Likewise.
+	(vsx_xscvdpspn_scalar): Likewise.
+	(vsx_xscvspdpn_directmove): Likewise.
+	(vsx_and<mode>3): Split logical operations into 32-bit and
+	64-bit. Add support to do logical operations on TImode as well as
+	VSX vector types.  Allow logical operations to be done in either
+	VSX registers or in general purpose registers in 64-bit mode.  Add
+	splitters if GPRs were used. For AND, add clobber of CCmode to
+	allow use of ANDI on GPRs.  Rewrite nor to use the canonical RTL
+	encoding.
+	(vsx_and<mode>3_32bit): Likewise.
+	(vsx_and<mode>3_64bit): Likewise.
+	(vsx_ior<mode>3): Likewise.
+	(vsx_ior<mode>3_32bit): Likewise.
+	(vsx_ior<mode>3_64bit): Likewise.
+	(vsx_xor<mode>3): Likewise.
+	(vsx_xor<mode>3_32bit): Likewise.
+	(vsx_xor<mode>3_64bit): Likewise.
+	(vsx_one_cmpl<mode>2): Likewise.
+	(vsx_one_cmpl<mode>2_32bit): Likewise.
+	(vsx_one_cmpl<mode>2_64bit): Likewise.
+	(vsx_nor<mode>3): Likewise.
+	(vsx_nor<mode>3_32bit): Likewise.
+	(vsx_nor<mode>3_64bit): Likewise.
+	(vsx_andc<mode>3): Likewise.
+	(vsx_andc<mode>3_32bit): Likewise.
+	(vsx_andc<mode>3_64bit): Likewise.
+	(vsx_eqv<mode>3_32bit): Add support for power8 xxleqv, xxlnand,
+	and xxlorc instructions.
+	(vsx_eqv<mode>3_64bit): Likewise.
+	(vsx_nand<mode>3_32bit): Likewise.
+	(vsx_nand<mode>3_64bit): Likewise.
+	(vsx_orc<mode>3_32bit): Likewise.
+	(vsx_orc<mode>3_64bit): Likewise.
+
+	* config/rs6000/rs6000.h (VLOGICAL_REGNO_P): Update comment.
+
+	* config/rs6000/altivec.md (UNSPEC_VGBBD): Add power8 vgbbd
+	instruction.
+	(p8_vmrgew): Add power8 vmrgew and vmrgow instructions.
+	(p8_vmrgow): Likewise.
+	(altivec_and<mode>3): Add clobber of CCmode to allow AND using
+	GPRs to be split under VSX.
+	(p8v_clz<mode>2): Add power8 count leading zero support.
+	(p8v_popcount<mode>2): Add power8 population count support.
+	(p8v_vgbbd): Add power8 gather bits by bytes by doubleword
+	support.
+
+	* config/rs6000/rs6000.md (eqv<mode>3): Add support for powerp eqv
+	instruction.
+
+	* config/rs6000/altivec.h (vec_eqv): Add defines to export power8
+	builtin functions.
+	(vec_nand): Likewise.
+	(vec_vclz): Likewise.
+	(vec_vclzb): Likewise.
+	(vec_vclzd): Likewise.
+	(vec_vclzh): Likewise.
+	(vec_vclzw): Likewise.
+	(vec_vgbbd): Likewise.
+	(vec_vmrgew): Likewise.
+	(vec_vmrgow): Likewise.
+	(vec_vpopcnt): Likewise.
+	(vec_vpopcntb): Likewise.
+	(vec_vpopcntd): Likewise.
+	(vec_vpopcnth): Likewise.
+	(vec_vpopcntw): Likewise.
+
 2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57468
