@@ -1,5 +1,12 @@
 2013-06-06  Gary Funck  <gary@intrepid.com>
 
+	* smp/upc_main.c (__upc_fatal): Extend interface to
+	support printf-like formatting of fatal error messages.
+	* smp/upc_sup.h (__upc_fatal): Adjust prototype.
+	(__upc_exit): Add nothrow attribute to prototype.
+
+2013-06-06  Gary Funck  <gary@intrepid.com>
+
 	* include/upc.h: Re-fix. Delete all of the (deprecated) declarations
 	of prototype for upc_local_alloc().  It has been
 	removed in the UPC 1.3 spec.

@@ -26,6 +26,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include <stdarg.h>
 #include "upc_config.h"
 #include "upc_sysdep.h"
 #include "upc_defs.h"
@@ -1087,21 +1088,25 @@ __upc_notify_debugger_of_abort (const char *mesg)
    Note: this is called by a UPC thread (process) when a fatal runtime
    error is detected.  */
 void
-__upc_fatal (const char *msg)
+__upc_fatal (const char *fmt, ...)
 {
   upc_info_p u = __upc_info;
+  char msg[4096];
+  char *bp = msg;
+  va_list args, ap;
   if (u)
     __upc_acquire_lock (&u->lock);
-  fflush (0);
+  bp += sprintf (bp, "%s: ", __upc_pgm_name);
   if (__upc_err_filename && __upc_err_linenum)
-    {
-      fprintf (stderr, "%s: at %s:%u, UPC error: %s\n",
-         __upc_pgm_name, __upc_err_filename, __upc_err_linenum, msg);
-    }
-  else
-    {
-      fprintf (stderr, "%s: UPC error: %s\n", __upc_pgm_name, msg);
-    }
+    bp += sprintf (bp, "at %s:%u ", __upc_err_filename, __upc_err_linenum);
+  bp += sprintf (bp, "UPC error: ");
+  va_start (args, fmt);
+  va_copy (args, ap);
+  bp += vsprintf (bp, fmt, args);
+  va_end (args);
+  *bp++ = '\n';
+  fflush (0);
+  (void) fputs (msg, stderr);
   fflush (0);
   __upc_notify_debugger_of_abort (msg);
 #if HAVE_UPC_BACKTRACE
