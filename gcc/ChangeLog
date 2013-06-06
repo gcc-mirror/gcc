@@ -1,3 +1,15 @@
+2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* config/s390/s390.opt (mlra): New option.
+	* config/s390/s390.c (s390_decompose_address): Check displacement
+	for all registers for LRA.
+	(s390_secondary_reload): Don't used secondary reloads for LRA.
+	(s390_lra_p): New function.
+	(TARGET_LRA_P): Define.
+	* config/s390/s390.md (*movmem_short, *clrmem_short): Change value
+	of attribute cpu_facility to zarch for the last alternative.
+	(*cmpmem_short): Ditto.
+
 2013-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_r3_live_at_start_p): New predicate.
