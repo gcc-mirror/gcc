@@ -1,3 +1,18 @@
+2013-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/sync.md (atomic_loaddi_1):
+	Disable predication for arm_restrict_it.
+	(arm_load_exclusive<mode>): Likewise.
+	(arm_load_exclusivesi): Likewise.
+	(arm_load_exclusivedi): Likewise.
+	(arm_load_acquire_exclusive<mode>): Likewise.
+	(arm_load_acquire_exclusivesi): Likewise.
+	(arm_load_acquire_exclusivedi): Likewise.
+	(arm_store_exclusive<mode>): Likewise.
+	(arm_store_exclusive<mode>): Likewise.
+	(arm_store_release_exclusivedi): Likewise.
+	(arm_store_release_exclusive<mode>): Likewise.
+
 2013-06-06  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (enum LTO_tags): Move LTO_tree_pickle_reference
