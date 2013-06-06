@@ -17783,7 +17783,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 	      && !parser->in_type_id_in_expr_p
 	      && cp_parser_uncommitted_to_tentative_parse_p (parser)
 	      /* However, a parameter-declaration of the form
-		 "foat(f)" (which is a valid declaration of a
+		 "float(f)" (which is a valid declaration of a
 		 parameter "f") can also be interpreted as an
 		 expression (the conversion of "f" to "float").  */
 	      && !parenthesized_p)
