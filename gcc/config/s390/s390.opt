@@ -149,3 +149,7 @@ Target Report Joined RejectNegative UInteger Var(s390_branch_cost) Init(1)
 Set the branch costs for conditional branch instructions.  Reasonable
 values are small, non-negative integers.  The default branch cost is
 1.
+
+mlra
+Target Report Var(s390_lra_flag) Init(1) Save
+Use LRA instead of reload
