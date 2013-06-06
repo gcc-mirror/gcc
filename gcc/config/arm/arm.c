@@ -16178,24 +16178,33 @@ arm_compute_save_reg0_reg12_mask (void)
   return save_reg_mask;
 }
 
+/* Return true if r3 is live at the start of the function.  */
 
-/* Compute the number of bytes used to store the static chain register on the
-   stack, above the stack frame. We need to know this accurately to get the
-   alignment of the rest of the stack frame correct. */
-
-static int arm_compute_static_chain_stack_bytes (void)
+static bool
+arm_r3_live_at_start_p (void)
 {
-  unsigned long func_type = arm_current_func_type ();
-  int static_chain_stack_bytes = 0;
-
-  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM &&
-      IS_NESTED (func_type) &&
-      df_regs_ever_live_p (3) && crtl->args.pretend_args_size == 0)
-    static_chain_stack_bytes = 4;
-
-  return static_chain_stack_bytes;
+  /* Just look at cfg info, which is still close enough to correct at this
+     point.  This gives false positives for broken functions that might use
+     uninitialized data that happens to be allocated in r3, but who cares?  */
+  return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR), 3);
 }
 
+/* Compute the number of bytes used to store the static chain register on the
+   stack, above the stack frame.  We need to know this accurately to get the
+   alignment of the rest of the stack frame correct.  */
+
+static int
+arm_compute_static_chain_stack_bytes (void)
+{
+  /* See the defining assertion in arm_expand_prologue.  */
+  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM
+      && IS_NESTED (arm_current_func_type ())
+      && arm_r3_live_at_start_p ()
+      && crtl->args.pretend_args_size == 0)
+    return 4;
+
+  return 0;
+}
 
 /* Compute a bit mask of which registers need to be
    saved on the stack for the current function.
@@ -18151,16 +18160,16 @@ arm_expand_prologue (void)
 	}
       else if (IS_NESTED (func_type))
 	{
-	  /* The Static chain register is the same as the IP register
+	  /* The static chain register is the same as the IP register
 	     used as a scratch register during stack frame creation.
 	     To get around this need to find somewhere to store IP
 	     whilst the frame is being created.  We try the following
 	     places in order:
 
-	       1. The last argument register.
+	       1. The last argument register r3.
 	       2. A slot on the stack above the frame.  (This only
 	          works if the function is not a varargs function).
-	       3. Register r3, after pushing the argument registers
+	       3. Register r3 again, after pushing the argument registers
 	          onto the stack.
 
 	     Note - we only need to tell the dwarf2 backend about the SP
@@ -18168,7 +18177,7 @@ arm_expand_prologue (void)
 	     doesn't need to be unwound, as it doesn't contain a value
 	     inherited from the caller.  */
 
-	  if (df_regs_ever_live_p (3) == false)
+	  if (!arm_r3_live_at_start_p ())
 	    insn = emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
 	  else if (args_to_push == 0)
 	    {
@@ -18309,8 +18318,7 @@ arm_expand_prologue (void)
 	  if (IS_NESTED (func_type))
 	    {
 	      /* Recover the static chain register.  */
-	      if (!df_regs_ever_live_p (3)
-		  || saved_pretend_args)
+	      if (!arm_r3_live_at_start_p () || saved_pretend_args)
 		insn = gen_rtx_REG (SImode, 3);
 	      else /* if (crtl->args.pretend_args_size == 0) */
 		{
