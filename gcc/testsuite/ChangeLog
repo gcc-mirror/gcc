@@ -1,3 +1,8 @@
+2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57459
+	* gcc.target/i386/pr57459.c: New test.
+
 2013-06-06  Teresa Johnson  <tejohnson@google.com>
 
 	PR c++/53743
