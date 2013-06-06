@@ -2,6 +2,21 @@
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>
 
+	* gcc.target/powerpc/p8vector-builtin-1.c: New test to test
+	power8 builtin functions.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-2.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-3.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-4.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-5.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-6.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-builtin-7.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-1.c: New
+	tests to test power8 auto-vectorization.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-2.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-3.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-4.c: Likewise.
+	* gcc/testsuite/gcc.target/powerpc/p8vector-vectorize-5.c: Likewise.
+
 	* gcc.target/powerpc/crypto-builtin-1.c: Use effective target
 	powerpc_p8vector_ok instead of powerpc_vsx_ok.
 
