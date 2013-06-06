@@ -1,3 +1,7 @@
+2013-06-06  Douglas B Rupp  <rupp@adacore.com>
+
+	* config.host (arm-wrs-vxworks): Configure with other soft float.
+
 2013-05-20  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	Backport from mainline:
