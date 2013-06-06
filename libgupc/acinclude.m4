@@ -1,6 +1,4 @@
-dnl Copyright 1994, 1995, 1996, 1997, 1998, 1999, 2001, 2004
-dnl Copyright 2005, 2006, 2007, 2008, 2009, 2010, 2011
-dnl Free Software Foundation, Inc.
+dnl Copyright (C) 1994-2013 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.

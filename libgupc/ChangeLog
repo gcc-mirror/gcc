@@ -1,5 +1,9 @@
 2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
+	Update copyright years.
+
+2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
+
 	portals4/gupcr_atomic.upc (upc_atomic_query): Compile error fix.
 
 2013-06-06  Gary Funck  <gary@intrepid.com>

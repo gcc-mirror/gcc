@@ -1,5 +1,4 @@
-/* Copyright (c) 2006, 2007, 2008, 2009, 2010, 2011
-   Free Software Foundation, Inc. 
+/* Copyright (C) 2006-2013 Free Software Foundation, Inc.
    This file is part of the UPC runtime library.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>

@@ -1,9 +1,7 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal -I . -I .. -I ../config && autoconf && autoheader && automake
 #
-#   Copyright (C) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-#   2010, 2011, 2012
-#   Free Software Foundation, Inc.
+#   Copyright (C) 2001-2013 Free Software Foundation, Inc.
 #   Contributed by Gary Funck <gary@intrepid.com>
 #   Derived from libgomp/configure.ac
 #
@@ -1372,7 +1370,7 @@ AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_POSIX, [test "$upc_node_local" = "posix"])
 AM_CONDITIONAL(LIBGUPC_NODE_LOCAL_MEM_MMAP, [test "$upc_node_local" = "mmap"])
 
 AH_TOP(
-[/* Copyright (C) 2008, 2009, 2010, 2011 Free Software Foundation, Inc.
+[/* Copyright (C) 2008-2013 Free Software Foundation, Inc.
    This file is part of the UPC runtime Library.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>

@@ -1,5 +1,4 @@
-/* Copyright (c) 2009, 2010, 2011, 2012
-   Free Software Foundation, Inc. 
+/* Copyright (C) 2009-2013 Free Software Foundation, Inc.
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
