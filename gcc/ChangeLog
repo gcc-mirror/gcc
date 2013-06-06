@@ -1,5 +1,11 @@
 2013-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm-ldmstm.ml: Set "predicable_short_it" to "no"
+	where appropriate.
+	* config/arm/ldmstm.md: Regenerate.
+
+2013-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/sync.md (atomic_loaddi_1):
 	Disable predication for arm_restrict_it.
 	(arm_load_exclusive<mode>): Likewise.
