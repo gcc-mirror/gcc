@@ -1380,15 +1380,6 @@ get_uncond_jump_length (void)
   return length;
 }
 
-/* Emit a barrier into the footer of BB.  */
-
-static void
-emit_barrier_after_bb (basic_block bb)
-{
-  rtx barrier = emit_barrier_after (BB_END (bb));
-  BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
-}
-
 /* The landing pad OLD_LP, in block OLD_BB, has edges from both partitions.
    Duplicate the landing pad and split the edges so that no EH edge
    crosses partitions.  */
@@ -1720,8 +1711,7 @@ fix_up_fall_thru_edges (void)
 		     (i.e. fix it so the fall through does not cross and
 		     the cond jump does).  */
 
-		  if (!cond_jump_crosses
-		      && cur_bb->aux == cond_jump->dest)
+		  if (!cond_jump_crosses)
 		    {
 		      /* Find label in fall_thru block. We've already added
 			 any missing labels, so there must be one.  */
@@ -1765,10 +1755,10 @@ fix_up_fall_thru_edges (void)
 		      new_bb->aux = cur_bb->aux;
 		      cur_bb->aux = new_bb;
 
-		      /* Make sure new fall-through bb is in same
-			 partition as bb it's falling through from.  */
+                      /* This is done by force_nonfallthru_and_redirect.  */
+		      gcc_assert (BB_PARTITION (new_bb)
+                                  == BB_PARTITION (cur_bb));
 
-		      BB_COPY_PARTITION (new_bb, cur_bb);
 		      single_succ_edge (new_bb)->flags |= EDGE_CROSSING;
 		    }
 		  else
@@ -2064,7 +2054,10 @@ add_reg_crossing_jump_notes (void)
   FOR_EACH_BB (bb)
     FOR_EACH_EDGE (e, ei, bb->succs)
       if ((e->flags & EDGE_CROSSING)
-	  && JUMP_P (BB_END (e->src)))
+	  && JUMP_P (BB_END (e->src))
+          /* Some notes were added during fix_up_fall_thru_edges, via
+             force_nonfallthru_and_redirect.  */
+          && !find_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX))
 	add_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
 }
 
@@ -2133,23 +2126,26 @@ reorder_basic_blocks (void)
    encountering this note will make the compiler switch between the
    hot and cold text sections.  */
 
-static void
+void
 insert_section_boundary_note (void)
 {
   basic_block bb;
-  int first_partition = 0;
+  bool switched_sections = false;
+  int current_partition = 0;
 
-  if (!flag_reorder_blocks_and_partition)
+  if (!crtl->has_bb_partition)
     return;
 
   FOR_EACH_BB (bb)
     {
-      if (!first_partition)
-	first_partition = BB_PARTITION (bb);
-      if (BB_PARTITION (bb) != first_partition)
+      if (!current_partition)
+	current_partition = BB_PARTITION (bb);
+      if (BB_PARTITION (bb) != current_partition)
 	{
-	  emit_note_before (NOTE_INSN_SWITCH_TEXT_SECTIONS, BB_HEAD (bb));
-	  break;
+	  gcc_assert (!switched_sections);
+          switched_sections = true;
+          emit_note_before (NOTE_INSN_SWITCH_TEXT_SECTIONS, BB_HEAD (bb));
+          current_partition = BB_PARTITION (bb);
 	}
     }
 }
@@ -2180,8 +2176,6 @@ rest_of_handle_reorder_blocks (void)
       bb->aux = bb->next_bb;
   cfg_layout_finalize ();
 
-  /* Add NOTE_INSN_SWITCH_TEXT_SECTIONS notes.  */
-  insert_section_boundary_note ();
   return 0;
 }
 
@@ -2313,6 +2307,11 @@ duplicate_computed_gotos (void)
 
       /* The successor block has to be a duplication candidate.  */
       if (!bitmap_bit_p (candidates, single_succ (bb)->index))
+	continue;
+
+      /* Don't duplicate a partition crossing edge, which requires difficult
+         fixup.  */
+      if (find_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX))
 	continue;
 
       new_bb = duplicate_block (single_succ (bb), single_succ_edge (bb), bb);

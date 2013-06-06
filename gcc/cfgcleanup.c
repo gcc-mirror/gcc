@@ -456,7 +456,7 @@ try_forward_edges (int mode, basic_block b)
 
       if (first != EXIT_BLOCK_PTR
 	  && find_reg_note (BB_END (first), REG_CROSSING_JUMP, NULL_RTX))
-	return false;
+	return changed;
 
       while (counter < n_basic_blocks)
 	{
