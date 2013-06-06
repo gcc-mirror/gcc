@@ -14,7 +14,10 @@
 if test $gcc_cv_have_tls = yes ; then
   case "${target}" in
 
-    *-*-linux*)
+    *-*-k*bsd*-gnu*)
+	;;
+
+    *-*-linux* | *-*-gnu*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
 	;;
   esac
