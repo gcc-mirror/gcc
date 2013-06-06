@@ -1,5 +1,11 @@
 2013-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm-fixed.md (add<mode>3,usadd<mode>3,ssadd<mode>3,
+	sub<mode>3, ussub<mode>3, sssub<mode>3, arm_ssatsihi_shift,
+	arm_usatsihi): Adjust alternatives for arm_restrict_it.
+
+2013-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm-ldmstm.ml: Set "predicable_short_it" to "no"
 	where appropriate.
 	* config/arm/ldmstm.md: Regenerate.
