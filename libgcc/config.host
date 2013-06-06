@@ -316,7 +316,7 @@ alpha*-dec-*vms*)
 	md_unwind_header=alpha/vms-unwind.h
 	;;
 arm-wrs-vxworks)
-	tmake_file="$tmake_file arm/t-arm arm/t-vxworks t-fdpbit"
+	tmake_file="$tmake_file arm/t-arm arm/t-vxworks t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 arm*-*-netbsdelf*)
