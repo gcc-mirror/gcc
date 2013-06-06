@@ -216,13 +216,7 @@ streamer_write_hwi_in_range (struct lto_output_stream *obs,
 		       && range < 0x7fffffff);
 
   val -= min;
-  streamer_write_char_stream (obs, val & 255);
-  if (range >= 0xff)
-    streamer_write_char_stream (obs, (val >> 8) & 255);
-  if (range >= 0xffff)
-    streamer_write_char_stream (obs, (val >> 16) & 255);
-  if (range >= 0xffffff)
-    streamer_write_char_stream (obs, (val >> 24) & 255);
+  streamer_write_uhwi_stream (obs, (unsigned HOST_WIDE_INT) val);
 }
 
 /* Input VAL into OBS and verify it is in range MIN...MAX that is supposed
@@ -235,17 +229,11 @@ streamer_read_hwi_in_range (struct lto_input_block *ib,
 				 HOST_WIDE_INT max)
 {
   HOST_WIDE_INT range = max - min;
-  HOST_WIDE_INT val = streamer_read_uchar (ib);
+  unsigned HOST_WIDE_INT uval = streamer_read_uhwi (ib);
 
   gcc_checking_assert (range > 0 && range < 0x7fffffff);
 
-  if (range >= 0xff)
-    val |= ((HOST_WIDE_INT)streamer_read_uchar (ib)) << 8;
-  if (range >= 0xffff)
-    val |= ((HOST_WIDE_INT)streamer_read_uchar (ib)) << 16;
-  if (range >= 0xffffff)
-    val |= ((HOST_WIDE_INT)streamer_read_uchar (ib)) << 24;
-  val += min;
+  HOST_WIDE_INT val = (HOST_WIDE_INT) (uval + (unsigned HOST_WIDE_INT) min);
   if (val < min || val > max)
     lto_value_range_error (purpose, val, min, max);
   return val;
