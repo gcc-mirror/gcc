@@ -1,3 +1,17 @@
+2013-06-06  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (enum LTO_tags): Move LTO_tree_pickle_reference
+	after LTO_null.
+	(lto_tag_is_tree_code_p): Adjust.
+	(lto_tag_is_gimple_code_p): Likewise.
+	(lto_gimple_code_to_tag): Likewise.
+	(lto_tag_to_gimple_code): Likewise.
+	(lto_tree_code_to_tag): Likewise.
+	(lto_tag_to_tree_code): Likewise.
+	* data-streamer.h (streamer_write_hwi_in_range): Use
+	uhwi streaming to stream the normalized range.
+	(streamer_read_hwi_in_range): Likewise.
+
 2013-06-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (enabled_for_depr_it): New attribute.
