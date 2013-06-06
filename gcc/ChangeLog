@@ -1,3 +1,57 @@
+2013-06-06  Teresa Johnson  <tejohnson@google.com>
+
+	PR c++/53743
+	* ifcvt.c (find_if_case_1): Replace BB_COPY_PARTITION with assert
+	as this is now done by redirect_edge_and_branch_force.
+	* function.c (thread_prologue_and_epilogue_insns): Insert new bb after
+	barriers, and fix interaction with splitting.
+	* emit-rtl.c (try_split): Copy REG_CROSSING_JUMP notes.
+	* cfgcleanup.c (try_forward_edges): Fix early return value to properly
+	reflect changes made in the routine.
+	* bb-reorder.c (emit_barrier_after_bb): Move to cfgrtl.c.
+	(fix_up_fall_thru_edges): Remove incorrect check for bb layout order
+	since this is called in cfglayout mode, and replace partition fixup
+	with assert as that is now done by force_nonfallthru_and_redirect.
+	(add_reg_crossing_jump_notes): Handle the fact that some jumps may
+	already be marked with region crossing note.
+	(insert_section_boundary_note): Make non-static, gate on flag
+	has_bb_partition, rewrite to also check for multiple partitions.
+	(rest_of_handle_reorder_blocks): Remove call to
+	insert_section_boundary_note, now done later during free_cfg.
+	(duplicate_computed_gotos): Don't duplicate partition crossing edge.
+	* bb-reorder.h (insert_section_boundary_note): Declare.
+	* Makefile.in (cfgrtl.o): Depend on bb-reorder.h
+	* cfgrtl.c (rest_of_pass_free_cfg): If partitions exist
+	invoke insert_section_boundary_note.
+	(try_redirect_by_replacing_jump): Remove unnecessary
+	check for region crossing note.
+	(fixup_partition_crossing): New function.
+	(rtl_redirect_edge_and_branch): Fixup partition boundaries.
+	(emit_barrier_after_bb): Move here from bb-reorder.c, handle insertion
+	in non-cfglayout mode.
+	(force_nonfallthru_and_redirect): Fixup partition boundaries,
+	remove old code that tried to do this. Emit barrier correctly
+	when we are in cfglayout mode.
+	(last_bb_in_partition): New function.
+	(rtl_split_edge): Correctly fixup partition boundaries.
+	(commit_one_edge_insertion): Remove old code that tried to
+	fixup region crossing edge since this is now handled in
+	split_block, and set up insertion point correctly since
+	block may now end in a jump.
+	(verify_hot_cold_block_grouping): Guard against checking when not in
+	linearized RTL mode.
+	(rtl_verify_edges): Add checks for incorrect/missing REG_CROSSING_JUMP
+	notes.
+	(rtl_verify_flow_info_1): Move verify_hot_cold_block_grouping to
+	rtl_verify_flow_info, so not called in cfglayout mode.
+	(rtl_verify_flow_info): Move verify_hot_cold_block_grouping here.
+	(fixup_reorder_chain): Remove old code that attempted to fixup region
+	crossing note as this is now handled in force_nonfallthru_and_redirect.
+	(duplicate_insn_chain): Don't duplicate switch section notes.
+	(rtl_can_remove_branch_p): Remove unnecessary check for region crossing
+	note.
+	* basic-block.h (emit_barrier_after_bb): Declare.
+
 2013-06-06  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-fixed.md (add<mode>3,usadd<mode>3,ssadd<mode>3,
