@@ -586,7 +586,7 @@ upc_all_atomicdomain_free (upc_atomicdomain_t * domain)
  * @retval Expected performance
  */
 int
-upc_atomic_query (upc_type_t type __attribute__ ((unused))
+upc_atomic_query (upc_type_t type __attribute__ ((unused)),
 		  upc_op_t ops __attribute__ ((unused)),
 		  shared void *addr __attribute__ ((unused)))
 {

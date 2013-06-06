@@ -1,3 +1,7 @@
+2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
+
+	portals4/gupcr_atomic.upc (upc_atomic_query): Compile error fix.
+
 2013-06-06  Gary Funck  <gary@intrepid.com>
 
 	* smp/upc_main.c (__upc_fatal): Extend interface to
