@@ -1,3 +1,8 @@
+2013-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43652
+	* g++.dg/parse/error53.C: New.
+
 2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57459
