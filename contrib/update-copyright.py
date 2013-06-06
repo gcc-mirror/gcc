@@ -708,6 +708,10 @@ class GCCCopyright (Copyright):
         self.add_external_author ('The Regents of the University of California.')
         self.add_external_author ('Unicode, Inc.')
         self.add_external_author ('University of Toronto.')
+        self.add_external_author ('Michigan Technological University')
+        self.add_external_author ('Jeff Muizelaar')
+        self.add_external_author ('Sandia Corporation.')
+        self.add_external_author ('Oren Ben-Kiki')
 
 class GCCCmdLine (CmdLine):
     def __init__ (self):
@@ -731,6 +735,7 @@ class GCCCmdLine (CmdLine):
         self.add_dir ('libgcc', LibGCCFilter())
         self.add_dir ('libgfortran')
         self.add_dir ('libgomp')
+        self.add_dir ('libgupc')
         self.add_dir ('libiberty')
         self.add_dir ('libitm')
         self.add_dir ('libjava', LibJavaFilter())

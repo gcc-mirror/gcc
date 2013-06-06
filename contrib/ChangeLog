@@ -1,3 +1,8 @@
+2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
+
+	* update-copyright.py: Add libgupc to the default list. Add
+	all libgupc external authors.
+
 2013-05-24  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* download_prerequisites: Download isl and cloog conditionally.
