@@ -1,3 +1,8 @@
+2013-06-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.dg/vect/no-section-anchors-vect-68.c:
+	Add dg-skip-if aarch64_tiny.
+
 2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR C/57457
