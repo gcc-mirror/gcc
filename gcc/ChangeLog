@@ -1,3 +1,9 @@
+2013-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_r3_live_at_start_p): New predicate.
+	(arm_compute_static_chain_stack_bytes): Use it.  Tidy up.
+	(arm_expand_prologue): Likewise.
+
 2013-06-06  Teresa Johnson  <tejohnson@google.com>
 
 	PR c++/53743
