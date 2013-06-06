@@ -1,3 +1,8 @@
+2013-06-06  Brooks Moses  <bmoses@google.com>
+
+	* testsuite-management/validate_failures.py: Fix handling of
+	summary lines with "|" characters or empty description fields.
+
 2013-05-24  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* download_prerequisites: Download isl and cloog conditionally.
