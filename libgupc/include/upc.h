@@ -90,9 +90,6 @@ extern size_t upc_affinitysizeg (size_t, size_t, size_t, const char *, int);
 #define upc_memput(p1, p2, n)    upc_memputg(p1, p2, n, __FILE__, __LINE__)
 #define upc_memset(p1, c, n)     upc_memsetg(p1, c, n, __FILE__, __LINE__)
 #define upc_unlock(lck)          upc_unlockg(lck, __FILE__, __LINE__)
-/* upc_local_alloc is deprecated and removed in the 1.3 specification.  */
-#define upc_local_alloc(n,s)     upc_local_allocg(n, s, __FILE__, __LINE__)
-
 #define upc_threadof(p) upc_threadofg(p, __FILE__, __LINE__)
 #define upc_phaseof(p) upc_phaseofg(p, __FILE__, __LINE__)
 #define upc_resetphase(p) upc_resetphaseg(p, __FILE__, __LINE__)
@@ -121,10 +118,6 @@ extern void upc_memcpy(shared void *, shared const void *, size_t);
 extern void upc_memget(void *, shared const void *, size_t);
 extern void upc_memput(shared void *, const void *, size_t);
 extern void upc_memset(shared void *, int, size_t);
-
-/* upc_local_alloc is deprecated and removed in the 1.3 specification.  */
-extern shared void *upc_local_alloc (size_t, size_t)
-                   __attribute__((deprecated));
 
 #endif /* __UPC_PUPC_INST__ */
 
