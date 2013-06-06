@@ -1,3 +1,7 @@
+2013-06-06  Douglas B Rupp  <rupp@adacore.com>
+
+	* config.host (arm-wrs-vxworks): Configure with other soft float.
+
 2013-06-04  Jürgen Urban  <JuergenUrban@gmx.de>
 
 	* config.host (mipsr5900-*-elf*, mipsr5900el-*-elf*, mips64r5900-*-elf*)
