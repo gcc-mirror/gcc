@@ -1,3 +1,9 @@
+2013-06-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57542
+	* trans.c (gfc_build_final_call): Add se.pre to the block
+	and modify the assert.
+
 2013-06-04  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
