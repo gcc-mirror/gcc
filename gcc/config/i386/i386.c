@@ -33951,6 +33951,8 @@ static inline bool
 inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 				enum machine_mode mode, int strict)
 {
+  if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
+    return false;
   if (MAYBE_FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class1)
       || MAYBE_FLOAT_CLASS_P (class2) != FLOAT_CLASS_P (class2)
       || MAYBE_SSE_CLASS_P (class1) != SSE_CLASS_P (class1)

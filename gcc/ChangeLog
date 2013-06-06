@@ -1,5 +1,11 @@
 2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR rtl-optimization/57468
+	* config/i386/i386.c (inline_secondary_memory_needed): Ignore
+	spilled pseudos.
+
+2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/57459
 	* lra-constraints.c (update_ebb_live_info): Fix typo for operand
 	type when setting live regs.
