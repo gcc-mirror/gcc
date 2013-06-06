@@ -1743,7 +1743,7 @@ gfc_trans_do_while (gfc_code * code)
   gfc_conv_expr_val (&cond, code->expr1);
   gfc_add_block_to_block (&block, &cond.pre);
   cond.expr = fold_build1_loc (code->expr1->where.lb->location,
-			       TRUTH_NOT_EXPR, boolean_type_node, cond.expr);
+			       TRUTH_NOT_EXPR, TREE_TYPE (cond.expr), cond.expr);
 
   /* Build "IF (! cond) GOTO exit_label".  */
   tmp = build1_v (GOTO_EXPR, exit_label);

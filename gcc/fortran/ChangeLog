@@ -1,3 +1,12 @@
+2013-06-06  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2012-08-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/54370
+	* trans-stmt.c (gfc_trans_do_while): Don't change the logical
+	kind for negation of the condition.
+
 2013-06-01  Janus Weil  <janus@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
