@@ -647,6 +647,15 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
     }
 }
 
+/* Returns TRUE for valid addresses.  */
+#undef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
+static bool
+rl78_valid_pointer_mode (enum machine_mode m)
+{
+  return (m == HImode || m == SImode);
+}
+
 /* Return the appropriate mode for a named address address.  */
 #undef TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode

@@ -1,3 +1,8 @@
+2013-06-06  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_valid_pointer_mode): New, implements
+	TARGET_VALID_POINTER_MODE.
+
 2013-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>
