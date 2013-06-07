@@ -21,8 +21,8 @@ main()
 /* calls to test1 and test2 can be inlined and optmized away. Calls
    to test and test4 are overwritable.  */
 
-/* { dg-final { scan-tree-dump-times "test (" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "test4 (" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-not "test1 (" "optimized" } } */
-/* { dg-final { scan-tree-dump-not "test2 (" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "  test " 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "  test4 " 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-not "  test1 " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "  test2 " "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

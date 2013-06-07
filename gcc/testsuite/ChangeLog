@@ -1,3 +1,7 @@
+2013-06-07  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Remove brackets in template.
+
 2013-06-07  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57549
