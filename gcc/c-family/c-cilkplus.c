@@ -207,12 +207,16 @@ c_check_cilk_loop_body (tree body)
 /* Validate a _Cilk_for construct (or a #pragma simd for loop, which
    has the same syntactic restrictions).  Returns TRUE if there were
    no errors, FALSE otherwise.  LOC is the location of the for.  DECL
-   is the controlling variable.  COND is the condition.  INCR is the
-   increment expression.  BODY is the body of the LOOP.  */
+   is the controlling variable.  COND is the condition.  INCRP is a
+   pointer the increment expression (in case, the increment needs to
+   be canonicalized).  BODY is the body of the LOOP.  */
 
 static bool
-c_check_cilk_loop (location_t loc, tree decl, tree cond, tree incr, tree body)
+c_check_cilk_loop (location_t loc, tree decl, tree cond, tree *incrp,
+		   tree body)
 {
+  tree incr = *incrp;
+
   if (decl == error_mark_node
       || cond == error_mark_node 
       || incr == error_mark_node
@@ -284,10 +288,11 @@ c_check_cilk_loop (location_t loc, tree decl, tree cond, tree incr, tree body)
       return false;
     }
 
-  /* Validate the increment.  */
+  /* Validate and canonicalize the increment.  */
   incr = c_check_cilk_loop_incr (loc, decl, incr);
   if (incr == error_mark_node)
     return false;
+  *incrp = incr;
 
   if (!c_check_cilk_loop_body (body))
     return false;
@@ -325,7 +330,7 @@ c_finish_cilk_simd_loop (location_t loc,
 {
   location_t rhs_loc;
 
-  if (!c_check_cilk_loop (loc, decl, cond, incr, body))
+  if (!c_check_cilk_loop (loc, decl, cond, &incr, body))
     return NULL;
 
   /* In the case of "for (int i = 0...)", init will be a decl.  It should
@@ -345,7 +350,11 @@ c_finish_cilk_simd_loop (location_t loc,
       init = build_modify_expr (loc, decl, NULL_TREE, NOP_EXPR, rhs_loc,
 				init, NULL_TREE);
     }
-  gcc_assert (TREE_CODE (init) == MODIFY_EXPR);
+
+  // The C++ parser just gives us the rhs.
+  if (TREE_CODE (init) != MODIFY_EXPR)
+    init = build2 (MODIFY_EXPR, void_type_node, decl, init);
+
   gcc_assert (TREE_OPERAND (init, 0) == decl);
 
   tree initv = make_tree_vec (1);

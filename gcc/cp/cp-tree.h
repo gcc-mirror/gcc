@@ -5790,6 +5790,7 @@ extern void finish_omp_taskyield		(void);
 extern void finish_omp_taskgroup		(tree);
 extern void finish_omp_cancel			(tree);
 extern void finish_omp_cancellation_point	(tree);
+extern tree finish_cilk_for_cond		(tree);
 extern tree begin_transaction_stmt		(location_t, tree *, int);
 extern void finish_transaction_stmt		(tree, tree, int, tree);
 extern tree build_transaction_expr		(location_t, tree, int, tree);

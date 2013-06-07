@@ -29899,7 +29899,11 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context)
 
     case PRAGMA_CILK_SIMD:
       if (context == pragma_external)
-	goto bad_stmt;
+	{
+	  error_at (pragma_tok->location,
+		    "%<#pragma simd%> must be inside a function");
+	  break;
+	}
       cp_parser_cilk_simd_construct (parser, pragma_tok);
       return true;
 
@@ -30198,7 +30202,7 @@ cp_parser_cilk_simd_construct (cp_parser *parser, cp_token *pragma_token)
   if (cp_lexer_next_token_is_not_keyword (parser->lexer, RID_FOR))
     {
       error_at (cp_lexer_peek_token (parser->lexer)->location,
-		"expected for-statement after %<#pragma simd%> clauses");
+		"for statement expected");
       return;
     }
 
@@ -30229,7 +30233,7 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
   tree this_pre_body = push_stmt_list ();
   if (token->type == CPP_SEMICOLON)
     {
-      error_at (loc, "for-loop initializer must declare variable");
+      error_at (loc, "expected iteration declaration");
       return error_mark_node;
     }
   cp_parser_parse_tentatively (parser);
@@ -30315,6 +30319,9 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
 	  && CLASS_TYPE_P (TREE_TYPE (decl)))
 	{
 	  tree rhs, new_expr;
+	  // ?? FIXME: I don't see any definition for *init in this
+	  // code path. ??
+	  gcc_unreachable ();
 	  cp_parser_parse_definitely (parser);
 	  cp_parser_require (parser, CPP_EQ, RT_EQ);
 	  rhs = cp_parser_assignment_expression (parser, false, NULL);
@@ -30338,151 +30345,6 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
   return decl;
 }
   
-
-/* Parses the increment expresion for a cilk_for or for statement with
-   #pragma simd.  */
-
-static tree
-cp_parser_cilk_for_expression_iterator (cp_parser *parser)
-{
-  cp_token *token = cp_lexer_peek_token (parser->lexer);
-  tree name = NULL_TREE, expr = NULL_TREE;
-  enum tree_code t_code = NOP_EXPR;
-
-  if (token->type == CPP_SEMICOLON)
-    {
-      error_at (token->location, "missing loop expression");
-      return error_mark_node;
-    }
-  if (token->type == CPP_PLUS_PLUS || token->type == CPP_MINUS_MINUS)
-    {
-      cp_lexer_consume_token (parser->lexer);
-      token = cp_lexer_peek_token (parser->lexer);
-      t_code = token->type == CPP_PLUS_PLUS ? PREINCREMENT_EXPR
-	: PREDECREMENT_EXPR;
-    }
-
-  if (token->type != CPP_NAME)
-    {
-      error_at (token->location, "invalid loop expression");
-      cp_parser_skip_to_end_of_statement (parser);
-      return error_mark_node;
-    }
-
-  name = cp_parser_lookup_name (parser, token->u.value, none_type, false, false,
-				false, NULL, token->location);
-  if (name == error_mark_node)
-    return error_mark_node;
-
-  /* If name is not a declaration, then the loop is not valid.  */
-  if (!DECL_P (name))
-    {
-      error_at (token->location, "invalid loop increment expression");
-      return error_mark_node;
-    }
-  cp_lexer_consume_token (parser->lexer);
-  token = cp_lexer_peek_token (parser->lexer);
-
-  if (t_code != NOP_EXPR)
-    {
-      if (token->type != CPP_CLOSE_PAREN)
-	{
-	  error_at (token->location, "invalid loop expression");
-	  return error_mark_node;
-	}
-      return build2 (t_code, void_type_node, name, NULL_TREE);
-    }
-
-  if (token->type == CPP_CLOSE_PAREN)
-    {
-      error_at (token->location,
-		"loop expression must modify control variable");
-      return error_mark_node;
-    }
-
-  cp_lexer_consume_token (parser->lexer);
-  if (token->type == CPP_PLUS_PLUS || token->type == CPP_MINUS_MINUS)
-    return build2 (token->type == CPP_PLUS_PLUS ? POSTINCREMENT_EXPR
-		   : POSTDECREMENT_EXPR, void_type_node, name, NULL_TREE);
-  else if (token->type == CPP_EQ)
-    {
-      sorry ("loop with = operator");
-      return error_mark_node;
-    }
-  else if (token->type == CPP_PLUS_EQ || token->type == CPP_MINUS_EQ)
-    t_code = token->type == CPP_PLUS_EQ  ? PLUS_EXPR : MINUS_EXPR;
-  else if (token->type == CPP_MOD_EQ || token->type == CPP_XOR_EQ
-	   || token->type == CPP_DIV_EQ || token->type == CPP_AND_EQ
-	   || token->type == CPP_OR_EQ || token->type == CPP_AND_EQ
-	   || token->type == CPP_LSHIFT_EQ || token->type == CPP_RSHIFT_EQ)
-    {
-      error_at (token->location, "invalid loop increment operation");
-      return error_mark_node;
-    }
-  else
-    {
-      error_at (token->location, "invalid loop expression");
-      return error_mark_node;
-    }
-  expr = cp_parser_binary_expression (parser, false, false, PREC_NOT_OPERATOR,
-				      NULL);
-  if (expr == error_mark_node)
-    return expr;
-
-  return build2 (MODIFY_EXPR, void_type_node, name,
-		 build2 (t_code, TREE_TYPE (name), name, expr));
-}
-
-/* Parses the condition for a for-loop with pragma simd or _Cilk_for
-   loop.  */
-
-static tree
-cp_parser_cilk_for_condition (cp_parser *parser)
-{
-  tree lhs, rhs;
-  enum tree_code code = ERROR_MARK;
-
-  lhs = cp_parser_binary_expression (parser, false, false,
-				     PREC_SHIFT_EXPRESSION, NULL);
-  switch (cp_lexer_peek_token (parser->lexer)->type)
-    {
-    case CPP_NOT_EQ:
-      code = NE_EXPR;
-      break;    
-    case CPP_LESS:
-      code = LT_EXPR;
-      break;
-    case CPP_LESS_EQ:
-      code = LE_EXPR;
-      break;
-    case CPP_GREATER_EQ:
-      code = GE_EXPR;
-      break;
-    case CPP_GREATER:
-      code = GT_EXPR;
-      break;
-    case CPP_EQ_EQ:
-      error_at (cp_lexer_peek_token (parser->lexer)->location,
-		"equality test not permitted in the Cilk_for loop");
-      break;
-    default:
-      error_at (cp_lexer_peek_token (parser->lexer)->location,
-		"missing comparison operator in the loop condition");
-    }
-  cp_lexer_consume_token (parser->lexer);
-
-  rhs = cp_parser_binary_expression (parser, false, false,
-				     PREC_SHIFT_EXPRESSION, NULL);
-  parser->scope = NULL_TREE;
-  parser->qualifying_scope = NULL_TREE;
-  parser->object_scope = NULL_TREE;
-
-  if (code == ERROR_MARK || lhs == error_mark_node || rhs == error_mark_node)
-    return error_mark_node;
-
-  return build2 (code, boolean_type_node, lhs, rhs);
-}
-   
 /* Top-level function to parse _Cilk_for and for statements.  */
 
 static tree
@@ -30552,12 +30414,14 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
     return error_mark_node;
   if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
-      error_at (loc, "%s-loop requires a condition",
-		for_keyword == RID_FOR ? "for" : "_Cilk_for");
+      error_at (loc, "missing condition");
       cond = error_mark_node;
     }
   else
-    cond = cp_parser_cilk_for_condition (parser);
+    {
+      cond = cp_parser_condition (parser);
+      cond = finish_cilk_for_cond (cond);
+    }
 
   if (cond == error_mark_node)
     valid = false;
@@ -30565,12 +30429,11 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
   
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
     {
-      error_at (loc, "%s-loop requires an increment expression",
-		for_keyword == RID_FOR ? "for" : "_Cilk_for");
+      error_at (loc, "missing increment");
       incr_expr = error_mark_node;
     }
   else
-    incr_expr = cp_parser_cilk_for_expression_iterator (parser);
+    incr_expr = cp_parser_expression (parser, false, NULL);
   
   if (incr_expr == error_mark_node)
     {
@@ -30592,10 +30455,8 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
 
   if (for_keyword == RID_FOR)
     {
-      tree initv, incrv, condv, declv, omp_simd_node, body = NULL_TREE;
-
       parser->in_statement = IN_CILK_P_SIMD_FOR;
-      body = push_stmt_list ();
+      tree body = push_stmt_list ();
       cp_parser_statement (parser, NULL_TREE, false, NULL);
       body = pop_stmt_list (body);
 
@@ -30604,23 +30465,16 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
 	 nodes, just return an error mark node.  */
       if (!cpp_validate_cilk_plus_loop (body))
 	return error_mark_node;
-      
-      /* Now pass all the information into finish_omp_for.  */
-      initv = make_tree_vec (1);
-      condv = make_tree_vec (1);
-      incrv = make_tree_vec (1);
-      declv = make_tree_vec (1);
-      TREE_VEC_ELT (initv, 0) = init;
-      TREE_VEC_ELT (condv, 0) = cond;
-      TREE_VEC_ELT (incrv, 0) = incr_expr;
-      TREE_VEC_ELT (declv, 0) = decl;
-      omp_simd_node = finish_omp_for (loc, OMP_SIMD, declv, initv, condv,
-				      incrv, body, pre_body, clauses);
-      return omp_simd_node;
+
+      return c_finish_cilk_simd_loop (loc, decl, init, cond, incr_expr,
+				      body, clauses);
     }
   else
-    /* Fix this when _Cilk_for is added into the mix.  */
-    return NULL_TREE;
+    {
+      /* Handle _Cilk_for here when implemented.  */
+      gcc_unreachable ();
+      return NULL_TREE;
+    }
 }
 
 #include "gt-cp-parser.h"

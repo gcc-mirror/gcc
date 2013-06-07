@@ -1,9 +1,12 @@
 2013-05-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
 
 	* cp-tree.h (p_simd_valid_stmts_in_body_p): New prototype.
+	(finish_cilk_for_cond): Likewise.
 	* parser.h (IN_CILK_P_SIMD_FOR): New #define.
 	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Added new obj-file cp-cilkplus.o
 	* cp-cilkplus.c: New file.
+	* semantics.c (finish_cilk_for_cond): New.
 	* parser.c (cp_parser_pragma): Added a PRAGMA_CILK_SIMD case.
 	(cp_parser_cilk_simd_vectorlength): New function.
 	(cp_parser_cilk_simd_linear): Likewise.
