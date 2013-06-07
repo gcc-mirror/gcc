@@ -9,11 +9,11 @@ template<class Tp>
     Tp elem;  // { dg-error "incomplete type" }
 
     constexpr single(const Tp& e)
-    : elem(e) { }   // { dg-error "invalid field" }
+    : elem(e) { }
 
     single(single&& s)
     noexcept(std::is_nothrow_move_constructible<Tp>::value) 
-    : elem(s.elem) { } // { dg-error "invalid field|no member" }
+    : elem(s.elem) { }
   };
 
 template<class Tp>

@@ -10530,21 +10530,13 @@ grokdeclarator (const cp_declarator *declarator,
 		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
 	  {
 	    if (unqualified_id)
-	      error ("field %qD has incomplete type", unqualified_id);
+	      error ("field %qD has incomplete type %qT",
+		     unqualified_id, type);
 	    else
 	      error ("name %qT has incomplete type", type);
 
-	    /* If we're instantiating a template, tell them which
-	       instantiation made the field's type be incomplete.  */
-	    if (current_class_type
-		&& TYPE_NAME (current_class_type)
-		&& IDENTIFIER_TEMPLATE (current_class_name)
-		&& declspecs->type
-		&& declspecs->type == type)
-	      error ("  in instantiation of template %qT",
-		     current_class_type);
-
-	    return error_mark_node;
+	    type = error_mark_node;
+	    decl = NULL_TREE;
 	  }
 	else
 	  {
