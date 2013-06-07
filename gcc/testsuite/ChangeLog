@@ -1,3 +1,8 @@
+2013-06-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/55033
+	* gcc.target/powerpc/pr55033.c: New.
+
 2013-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53658
