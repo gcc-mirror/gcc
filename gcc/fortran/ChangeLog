@@ -1,5 +1,14 @@
 2013-06-07  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/57549
+	* array.c (gfc_match_array_constructor): Call
+	gfc_match_type_spec instead of gfc_match_decl_type_spec.
+	* match.c (gfc_match_type_spec): Renamed from match_type_spec.
+	(gfc_match_type_is, gfc_match_allocate): Update call.
+	* match.h (gfc_match_type_spec): Add prototype.
+
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57556
 	* trans.c (gfc_build_final_call): Init block before use.
 

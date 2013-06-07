@@ -1,3 +1,10 @@
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57549
+	* gfortran.dg/array_constructor_48.f90: New.
+	* gfortran.dg/array_constructor_type_14.f03: Correct test case.
+	* gfortran.dg/array_constructor_type_15.f03: Ditto.
+
 2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/56315
