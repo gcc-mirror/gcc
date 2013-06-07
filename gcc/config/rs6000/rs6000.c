@@ -9370,20 +9370,17 @@ setup_incoming_varargs (cumulative_args_t cum, enum machine_mode mode,
   if (! no_rtl && first_reg_offset < GP_ARG_NUM_REG
       && cfun->va_list_gpr_size)
     {
-      int nregs = GP_ARG_NUM_REG - first_reg_offset;
+      int n_gpr, nregs = GP_ARG_NUM_REG - first_reg_offset;
 
       if (va_list_gpr_counter_field)
-	{
-	  /* V4 va_list_gpr_size counts number of registers needed.  */
-	  if (nregs > cfun->va_list_gpr_size)
-	    nregs = cfun->va_list_gpr_size;
-	}
+	/* V4 va_list_gpr_size counts number of registers needed.  */
+	n_gpr = cfun->va_list_gpr_size;
       else
-	{
-	  /* char * va_list instead counts number of bytes needed.  */
-	  if (nregs > cfun->va_list_gpr_size / reg_size)
-	    nregs = cfun->va_list_gpr_size / reg_size;
-	}
+	/* char * va_list instead counts number of bytes needed.  */
+	n_gpr = (cfun->va_list_gpr_size + reg_size - 1) / reg_size;
+
+      if (nregs > n_gpr)
+	nregs = n_gpr;
 
       mem = gen_rtx_MEM (BLKmode,
 			 plus_constant (Pmode, save_area,
