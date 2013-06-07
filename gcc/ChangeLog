@@ -1,3 +1,16 @@
+2013-06-07  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
+	override user -mfp-in-toc.
+	(offsettable_ok_by_alignment): Consider just the current access
+	rather than the whole object, unless BLKmode.  Handle
+	CONSTANT_POOL_ADDRESS_P constants that lack a decl too.
+	(use_toc_relative_ref): Allow CONSTANT_POOL_ADDRESS_P constants
+	for -mcmodel=medium.
+	* config/rs6000/linux64.h (SUBSUBTARGET_OVERRIDE_OPTIONS): Don't
+	override user -mfp-in-toc or -msum-in-toc.  Default to
+	-mno-fp-in-toc for -mcmodel=medium.
+
 2013-06-06  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (rl78_valid_pointer_mode): New, implements

@@ -3052,7 +3052,8 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* Place FP constants in the constant pool instead of TOC
      if section anchors enabled.  */
-  if (flag_section_anchors)
+  if (flag_section_anchors
+      && !global_options_set.x_TARGET_NO_FP_IN_TOC)
     TARGET_NO_FP_IN_TOC = 1;
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
@@ -5519,91 +5520,102 @@ virtual_stack_registers_memory_p (rtx op)
 	  && regnum <= LAST_VIRTUAL_POINTER_REGISTER);
 }
 
-/* Return true if memory accesses to OP are known to never straddle
-   a 32k boundary.  */
+/* Return true if a MODE sized memory accesses to OP plus OFFSET
+   is known to not straddle a 32k boundary.  */
 
 static bool
 offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 			     enum machine_mode mode)
 {
   tree decl, type;
-  unsigned HOST_WIDE_INT dsize, dalign;
+  unsigned HOST_WIDE_INT dsize, dalign, lsb, mask;
 
   if (GET_CODE (op) != SYMBOL_REF)
     return false;
 
+  dsize = GET_MODE_SIZE (mode);
   decl = SYMBOL_REF_DECL (op);
   if (!decl)
     {
-      if (GET_MODE_SIZE (mode) == 0)
+      if (dsize == 0)
 	return false;
 
       /* -fsection-anchors loses the original SYMBOL_REF_DECL when
 	 replacing memory addresses with an anchor plus offset.  We
 	 could find the decl by rummaging around in the block->objects
 	 VEC for the given offset but that seems like too much work.  */
-      dalign = 1;
+      dalign = BITS_PER_UNIT;
       if (SYMBOL_REF_HAS_BLOCK_INFO_P (op)
 	  && SYMBOL_REF_ANCHOR_P (op)
 	  && SYMBOL_REF_BLOCK (op) != NULL)
 	{
 	  struct object_block *block = SYMBOL_REF_BLOCK (op);
-	  HOST_WIDE_INT lsb, mask;
 
-	  /* Given the alignment of the block..  */
 	  dalign = block->alignment;
-	  mask = dalign / BITS_PER_UNIT - 1;
-
-	  /* ..and the combined offset of the anchor and any offset
-	     to this block object..  */
 	  offset += SYMBOL_REF_BLOCK_OFFSET (op);
-	  lsb = offset & -offset;
-
-	  /* ..find how many bits of the alignment we know for the
-	     object.  */
-	  mask &= lsb - 1;
-	  dalign = mask + 1;
 	}
-      return dalign >= GET_MODE_SIZE (mode);
-    }
+      else if (CONSTANT_POOL_ADDRESS_P (op))
+	{
+	  /* It would be nice to have get_pool_align()..  */
+	  enum machine_mode cmode = get_pool_mode (op);
 
-  if (DECL_P (decl))
+	  dalign = GET_MODE_ALIGNMENT (cmode);
+	}
+    }
+  else if (DECL_P (decl))
     {
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	return true;
+      dalign = DECL_ALIGN (decl);
 
-      if (!DECL_SIZE_UNIT (decl))
-	return false;
+      if (dsize == 0)
+	{
+	  /* Allow BLKmode when the entire object is known to not
+	     cross a 32k boundary.  */
+	  if (!DECL_SIZE_UNIT (decl))
+	    return false;
 
-      if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
-	return false;
+	  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+	    return false;
 
-      dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
-      if (dsize > 32768)
-	return false;
+	  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  if (dsize > 32768)
+	    return false;
 
-      dalign = DECL_ALIGN_UNIT (decl);
-      return dalign >= dsize;
+	  return dalign / BITS_PER_UNIT >= dsize;
+	}
+    }
+  else
+    {
+      type = TREE_TYPE (decl);
+
+      dalign = TYPE_ALIGN (type);
+      if (CONSTANT_CLASS_P (decl))
+	dalign = CONSTANT_ALIGNMENT (decl, dalign);
+      else
+	dalign = DATA_ALIGNMENT (decl, dalign);
+
+      if (dsize == 0)
+	{
+	  /* BLKmode, check the entire object.  */
+	  if (TREE_CODE (decl) == STRING_CST)
+	    dsize = TREE_STRING_LENGTH (decl);
+	  else if (TYPE_SIZE_UNIT (type)
+		   && host_integerp (TYPE_SIZE_UNIT (type), 1))
+	    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+	  else
+	    return false;
+	  if (dsize > 32768)
+	    return false;
+
+	  return dalign / BITS_PER_UNIT >= dsize;
+	}
     }
 
-  type = TREE_TYPE (decl);
+  /* Find how many bits of the alignment we know for this access.  */
+  mask = dalign / BITS_PER_UNIT - 1;
+  lsb = offset & -offset;
+  mask &= lsb - 1;
+  dalign = mask + 1;
 
-  if (TREE_CODE (decl) == STRING_CST)
-    dsize = TREE_STRING_LENGTH (decl);
-  else if (TYPE_SIZE_UNIT (type)
-	   && host_integerp (TYPE_SIZE_UNIT (type), 1))
-    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
-  else
-    return false;
-  if (dsize > 32768)
-    return false;
-
-  dalign = TYPE_ALIGN (type);
-  if (CONSTANT_CLASS_P (decl))
-    dalign = CONSTANT_ALIGNMENT (decl, dalign);
-  else
-    dalign = DATA_ALIGNMENT (decl, dalign);
-  dalign /= BITS_PER_UNIT;
   return dalign >= dsize;
 }
 
@@ -6549,7 +6561,6 @@ use_toc_relative_ref (rtx sym)
 	   && ASM_OUTPUT_SPECIAL_POOL_ENTRY_P (get_pool_constant (sym),
 					       get_pool_mode (sym)))
 	  || (TARGET_CMODEL == CMODEL_MEDIUM
-	      && !CONSTANT_POOL_ADDRESS_P (sym)
 	      && SYMBOL_REF_LOCAL_P (sym)));
 }
 
