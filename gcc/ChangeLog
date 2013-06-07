@@ -1,5 +1,10 @@
 2013-06-07  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (setup_incoming_varargs): Round up
+	va_list_gpr_size.
+
+2013-06-07  Alan Modra  <amodra@gmail.com>
+
 	* varasm.c (force_const_mem): Assert mode is not VOID or BLK.
 
 2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
