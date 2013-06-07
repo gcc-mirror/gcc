@@ -1,3 +1,19 @@
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (length_mismatch_in_expr_p): Moved this
+	function to c-family/array-notation-common.c.
+	(is_cilkplus_reduce_builtin): Likewise.
+	(find_rank): Likewise.
+	(extract_array_notation_exprs): Likewise.
+	(replace_array_notations): Likewise.
+	(find_inv_trees): Likewise.
+	(replace_inv_trees): Likewise.
+	(contains_array_notation_expr): Likewise.
+	(find_correct_array_notation_type): Likewise.
+	(replace_invariant_exprs): Initialized additional_tcodes to NULL.
+	(struct inv_list): Moved this to c-family/array-notation-common.c.
+	* c-tree.h (is_cilkplus_builtin_reduce): Remove prototype.
+	
 2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-typeck.c (convert_arguments): Moved checking of builtin cilkplus
