@@ -7561,7 +7561,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       if (CLASS_TYPE_P (template_type) && is_dependent_type)
 	/* If the type makes use of template parameters, the
 	   code that generates debugging information will crash.  */
-	DECL_IGNORED_P (TYPE_STUB_DECL (t)) = 1;
+	DECL_IGNORED_P (TYPE_MAIN_DECL (t)) = 1;
 
       /* Possibly limit visibility based on template args.  */
       TREE_PUBLIC (type_decl) = 1;
