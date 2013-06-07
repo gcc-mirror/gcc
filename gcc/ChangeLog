@@ -1,7 +1,23 @@
+2013-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-06-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Swap all
+	GE, GT, GEU and GTU compares, modulo DImode compares with zero.
+
+	Backport from mainline
+	2013-05-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57379
+	* config/alpha/alpha.md (unspec): Add UNSPEC_XFLT_COMPARE.
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Construct
+	REG_EQUAL note as UNSPEC_XFLT_COMPARE unspec.
+
 2013-06-04  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline.
-        2013-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	2013-05-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.h (MALLOC_ABI_ALIGNMENT): New #define.
 
@@ -33,7 +49,7 @@
 	Backport from mainline
 	2013-05-02  Greta Yorsh  <Greta.Yorsh@arm.com>
 
-        PR target/56732
+	PR target/56732
 	* config/arm/arm.c (arm_expand_epilogue): Check really_return before
 	generating simple_return for naked functions.
 
@@ -229,14 +245,14 @@
 
 2013-05-09  Martin Jambor  <mjambor@suse.cz>
 
-        PR middle-end/56988
-        * ipa-prop.h (ipa_agg_replacement_value): New flag by_ref.
-        * ipa-cp.c (find_aggregate_values_for_callers_subset): Fill in the
+	PR middle-end/56988
+	* ipa-prop.h (ipa_agg_replacement_value): New flag by_ref.
+	* ipa-cp.c (find_aggregate_values_for_callers_subset): Fill in the
 	by_ref flag of ipa_agg_replacement_value structures.
-        (known_aggs_to_agg_replacement_list): Likewise.
-        * ipa-prop.c (write_agg_replacement_chain): Stream by_ref flag.
-        (read_agg_replacement_chain): Likewise.
-        (ipcp_transform_function): Also check that by_ref flags match.
+	(known_aggs_to_agg_replacement_list): Likewise.
+	* ipa-prop.c (write_agg_replacement_chain): Stream by_ref flag.
+	(read_agg_replacement_chain): Likewise.
+	(ipcp_transform_function): Also check that by_ref flags match.
 
 2013-05-08  Diego Novillo  <dnovillo@google.com>
 
@@ -341,7 +357,7 @@
 	2013-04-25  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57066
-        * builtins.c (fold_builtin_logb): Return +Inf for -Inf.
+	* builtins.c (fold_builtin_logb): Return +Inf for -Inf.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -377,40 +393,40 @@
 	Backport from mainline
 	2013-04-24  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR rtl-optimizations/57046
-        * lra-constraints (split_reg): Set up lra_risky_transformations_p
-        for multi-reg splits.
+	PR rtl-optimizations/57046
+	* lra-constraints (split_reg): Set up lra_risky_transformations_p
+	for multi-reg splits.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
 	2013-04-22  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR target/57018
-        * lra-eliminations.c (mark_not_eliminable): Prevent elimination of
-        a set sp if no stack realignment.
+	PR target/57018
+	* lra-eliminations.c (mark_not_eliminable): Prevent elimination of
+	a set sp if no stack realignment.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
 	2013-04-18  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR rtl-optimization/56999
-        * lra-coalesce.c (coalescable_pseudo_p): Remove 2nd parameter and
-        related code.
-        (lra_coalesce): Remove split_origin_bitmap and related code.
-        * lra.c (lra): Coalesce after undoing inheritance. Recreate live
-        ranges if necessary.
+	PR rtl-optimization/56999
+	* lra-coalesce.c (coalescable_pseudo_p): Remove 2nd parameter and
+	related code.
+	(lra_coalesce): Remove split_origin_bitmap and related code.
+	* lra.c (lra): Coalesce after undoing inheritance. Recreate live
+	ranges if necessary.
 
 2013-05-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Backport from mainline
 	2013-04-19  Vladimir Makarov  <vmakarov@redhat.com>
 
-        PR rtl-optimization/56847
-        * lra-constraints.c (process_alt_operands): Discourage alternative
-        with non-matche doffsettable memory constraint fro memory with
-        known offset.
+	PR rtl-optimization/56847
+	* lra-constraints.c (process_alt_operands): Discourage alternative
+	with non-matche doffsettable memory constraint fro memory with
+	known offset.
 
 2013-05-02  Ian Bolton  <ian.bolton@arm.com>
 
