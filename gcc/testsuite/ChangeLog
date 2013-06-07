@@ -1,3 +1,8 @@
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR middle-end/57541
+	* c-c++-common/cilk-plus/AN/pr57541.c: New test case.
+
 2013-06-07  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/attr-alias.c: Remove brackets in template.

@@ -1,5 +1,10 @@
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
+	* c-array-notation.c (expand_array_notation_exprs): Added
+	ARRAY_NOTATION_REF case.
+	
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
 	* c-array-notation.c (length_mismatch_in_expr_p): Moved this
 	function to c-family/array-notation-common.c.
 	(is_cilkplus_reduce_builtin): Likewise.
