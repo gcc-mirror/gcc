@@ -1,3 +1,12 @@
+2013-06-06  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (grokdeclarator): Keep a decl with error type.
+	(grokfield, grokbitfield): Likewise.
+	* pt.c (instantiate_class_template_1): Likewise.
+	(tsubst_decl): Drop redundant error.
+	* class.c (walk_subobject_offsets): Handle erroneous fields.
+	* typeck2.c (process_init_constructor_record): Likewise.
+
 2013-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51908

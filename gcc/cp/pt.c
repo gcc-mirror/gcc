@@ -8863,9 +8863,8 @@ instantiate_class_template_1 (tree type)
 		  else if (TREE_CODE (r) == FIELD_DECL)
 		    {
 		      /* Determine whether R has a valid type and can be
-			 completed later.  If R is invalid, then it is
-			 replaced by error_mark_node so that it will not be
-			 added to TYPE_FIELDS.  */
+			 completed later.  If R is invalid, then its type is
+			 replaced by error_mark_node.  */
 		      tree rtype = TREE_TYPE (r);
 		      if (can_complete_type_without_circularity (rtype))
 			complete_type (rtype);
@@ -8873,7 +8872,7 @@ instantiate_class_template_1 (tree type)
 		      if (!COMPLETE_TYPE_P (rtype))
 			{
 			  cxx_incomplete_type_error (r, rtype);
-			  r = error_mark_node;
+			  TREE_TYPE (r) = error_mark_node;
 			}
 		    }
 
@@ -10514,8 +10513,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	/* We don't have to set DECL_CONTEXT here; it is set by
 	   finish_member_declaration.  */
 	DECL_CHAIN (r) = NULL_TREE;
-	if (VOID_TYPE_P (type))
-	  error ("instantiation of %q+D as type %qT", r, type);
 
 	apply_late_template_attributes (&r, DECL_ATTRIBUTES (r), 0,
 					args, complain, in_decl);

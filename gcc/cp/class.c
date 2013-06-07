@@ -3779,7 +3779,9 @@ walk_subobject_offsets (tree type,
 
       /* Iterate through the fields of TYPE.  */
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	if (TREE_CODE (field) == FIELD_DECL && !DECL_ARTIFICIAL (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_TYPE (field) != error_mark_node
+	    && !DECL_ARTIFICIAL (field))
 	  {
 	    tree field_offset;
 

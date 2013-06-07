@@ -835,9 +835,11 @@ grokfield (const cp_declarator *declarator,
     init = NULL_TREE;
 
   value = grokdeclarator (declarator, declspecs, FIELD, init != 0, &attrlist);
-  if (! value || error_operand_p (value))
+  if (! value || value == error_mark_node)
     /* friend or constructor went bad.  */
     return error_mark_node;
+  if (TREE_TYPE (value) == error_mark_node)
+    return value;
 
   if (TREE_CODE (value) == TYPE_DECL && init)
     {
@@ -1045,8 +1047,10 @@ grokbitfield (const cp_declarator *declarator,
 {
   tree value = grokdeclarator (declarator, declspecs, BITFIELD, 0, &attrlist);
 
-  if (value == error_mark_node) 
+  if (value == error_mark_node)
     return NULL_TREE; /* friends went bad.  */
+  if (TREE_TYPE (value) == error_mark_node)
+    return value;
 
   /* Pass friendly classes back.  */
   if (VOID_TYPE_P (value))
