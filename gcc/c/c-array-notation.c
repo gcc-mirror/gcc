@@ -2317,6 +2317,14 @@ expand_array_notation_exprs (tree t)
     case RETURN_EXPR:
       if (contains_array_notation_expr (t))
 	t = fix_return_expr (t);
+      return t;
+    case ARRAY_NOTATION_REF:
+      /* IF we are here, then we are dealing with cases like this:
+	 A[:];
+	 A[x:y:z];
+	 A[x:y];
+	 Replace those with just void zero node.  */
+      t = void_zero_node;
     default:
       return t;
     }
