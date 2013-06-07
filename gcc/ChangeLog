@@ -1,3 +1,9 @@
+2013-06-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (cpu_facility): Add cpu_zarch.
+	("*movmem_short", "*clrmem_short", "*cmpmem_short): Use cpu_zarch
+	for last alternative in the cpu_facility attribute.
+
 2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/56315
