@@ -1,3 +1,8 @@
+2013-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/dwarf2/discriminator.c: Fix wording.
+	Revert to dg-options.
+
 2013-06-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	PR target/55033
