@@ -1,5 +1,9 @@
 2013-06-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55520
+	* semantics.c (add_capture): Diagnose capture of variable-size
+	type that is not a C++1y array of runtime bound.
+
 	* decl.c (grokdeclarator): Keep a decl with error type.
 	(grokfield, grokbitfield): Likewise.
 	* pt.c (instantiate_class_template_1): Likewise.
