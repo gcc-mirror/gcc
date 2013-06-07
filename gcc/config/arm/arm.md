@@ -3020,7 +3020,7 @@
 (define_insn_and_split "*iordi3_insn"
   [(set (match_operand:DI         0 "s_register_operand"     "=w,w ,&r,&r,&r,&r,?w,?w")
 	(ior:DI (match_operand:DI 1 "s_register_operand"     "%w,0 ,0 ,r ,0 ,r ,w ,0")
-		(match_operand:DI 2 "arm_iordi_operand_neon" "w ,Dl,r ,r ,De,De,w ,Dl")))]
+		(match_operand:DI 2 "arm_iordi_operand_neon" "w ,Dl,r ,r ,Df,Df,w ,Dl")))]
   "TARGET_32BIT && !TARGET_IWMMXT"
   {
   switch (which_alternative)
@@ -3056,7 +3056,7 @@
 
   }"
   [(set_attr "neon_type" "neon_int_1,neon_int_1,*,*,*,*,neon_int_1,neon_int_1")
-   (set_attr "length" "*,*,8,8,8,8,8,8")
+   (set_attr "length" "*,*,8,8,8,8,*,*")
    (set_attr "arch" "neon_for_64bits,neon_for_64bits,*,*,*,*,avoid_neon_for_64bits,avoid_neon_for_64bits")]
 )
 

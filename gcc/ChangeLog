@@ -1,3 +1,9 @@
+2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/constraints.md (Df): New constraint.
+	* config/arm/arm.md (iordi3_insn): Use Df constraint instead of De.
+	Correct length attribute for last two alternatives.
+
 2013-06-07  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Don't
