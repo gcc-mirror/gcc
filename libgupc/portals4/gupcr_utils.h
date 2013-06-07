@@ -46,9 +46,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 /* Give up control of the CPU for a small time interval.  */
 #ifdef _POSIX_PRIORITY_SCHEDULING
-#define gupcr_yield_cpu() do { sched_yield(); } while (0)
+#define gupcr_yield_cpu() do { sched_yield (); } while (0)
 #else
-#define gupcr_yield_cpu() do { usleep(1000L); } while (0)
+#define gupcr_yield_cpu() do { usleep (1000L); } while (0)
 #endif
 
 /* Give up control of the CPU for specified amount of time.  */
@@ -78,7 +78,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef GUPCR_HAVE_CHECKS
 #define gupcr_assert(expr) (expr) ? (void)(0)				\
    : gupcr_fatal_error ("UPC runtime assertion `%s' failed",		\
-                        __STRING(expr))
+                        __STRING (expr))
 #else
 #define gupcr_assert(expr)
 #endif
@@ -90,7 +90,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
         status = syscall args;						\
 	if (status < 0)					        	\
 	  gupcr_fatal_error ("UPC runtime system call `%s' failed: %s",	\
-	                     __STRING(syscall),				\
+	                     __STRING (syscall),				\
 	                     gupcr_strerror ());			\
       }									\
     while (0)
@@ -112,7 +112,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
         status = mkdir (dir, 0755);					\
 	if (status < 0 && errno != EEXIST)		        	\
 	  gupcr_fatal_error ("UPC runtime `mkdir' of `%s' failed: %s",	\
-	                     dir, __STRING(syscall));			\
+	                     dir, __STRING (syscall));			\
       }									\
     while (0)
 
@@ -155,16 +155,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
           (((facility) & gupcr_debug_facility_mask) != 0)
 #define gupcr_debug(facility, fmt, args...)				\
           if (gupcr_debug_enabled (facility))				\
-            gupcr_debug_print("%s: " fmt "\n", __func__ , ##args)
+            gupcr_debug_print ("%s: " fmt "\n", __func__ , ##args)
 #define gupcr_log(facility, fmt, args...)				\
           if (facility & gupcr_log_facility_mask)			\
-            gupcr_log_print(fmt "\n", ##args)
+            gupcr_log_print (fmt "\n", ##args)
 #define gupcr_stats(facility, fmt, args...)				\
           if (facility & gupcr_stats_facility_mask)			\
-            gupcr_stats_print(fmt "\n", ##args)
+            gupcr_stats_print (fmt "\n", ##args)
 #define gupcr_trace(facility, fmt, args...)				\
           if (facility & gupcr_trace_facility_mask)			\
-            gupcr_trace_print(fmt "\n", ##args)
+            gupcr_trace_print (fmt "\n", ##args)
 #else
 #define gupcr_debug_enabled(facility) (0)
 #define gupcr_debug(facility, fmt, args...)
@@ -244,7 +244,7 @@ gupcr_log2 (unsigned long long v)
 
 #ifdef __UPC__
 
-/* For ptrdiff_t definition */
+/* For ptrdiff_t definition.  */
 #include <stddef.h>
 
 /** Increment a shared pointer, by 'nbytes'.  */
@@ -312,7 +312,7 @@ extern void gupcr_warn_print (const char *fmt, ...)
 extern void gupcr_utils_init (void);
 extern void gupcr_utils_fini (void);
 
-/* Called from: gupcr_env.c */
+/* Called from: gupcr_env.c.  */
 extern void gupcr_be_quiet (void);
 extern void gupcr_no_warn (void);
 extern void gupcr_set_shared_heap_size (size_t heap_size);
@@ -327,15 +327,15 @@ extern void gupcr_set_stats_filename (const char *);
 extern void gupcr_set_trace_facility (gupcr_facility_t);
 extern void gupcr_set_trace_filename (const char *);
 
-/* See: gupcr_clock.c */
+/* See: gupcr_clock.c.  */
 extern double gupcr_clock (void);
 extern double gupcr_clock_resolution (void);
 extern void gupcr_clock_init (void);
 
-/* See: gupcr_env.c  */
+/* See: gupcr_env.c.  */
 extern void gupcr_env_init (void);
 
-/* See: gupcr_pgm_info.c  */
+/* See: gupcr_pgm_info.c.  */
 extern void gupcr_validate_pgm_info (void);
 
 //end lib_utils_api

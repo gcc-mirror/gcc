@@ -145,7 +145,7 @@ gupcr_signal_exit (int status)
   gupcr_finalize_ok = 0;
   /* Wait for our own shutdown pthread to complete.  */
   pthread_join (gupcr_shutdown_pthread_id, NULL);
-  /* Wait for ACKs from all threads. It should happen quickly
+  /* Wait for ACKs from all threads.  It should happen quickly
      if everything is ok, otherwise timeout after configured
      number of seconds.  */
   do

@@ -43,12 +43,12 @@ static double gupcr_clock_base;
 
 #if HAVE_CLOCK_GETTIME
 
-#if defined(CLOCK_MONOTONIC_RAW) && defined(CLOCK_MONOTONIC)
+#if defined (CLOCK_MONOTONIC_RAW) && defined (CLOCK_MONOTONIC)
 #define GUPCR_CLOCK_ID CLOCK_MONOTONIC_RAW
 /* On some RHEL/CentOS systems, the timer resolution returned for
    CLOCK_MONOTONIC_RAW is incorrect.  Use CLOCK_MONOTONIC instead.  */
 #define GUPCR_CLOCK_REZ_ID CLOCK_MONOTONIC
-#elif defined(CLOCK_MONOTONIC)
+#elif defined (CLOCK_MONOTONIC)
 #define GUPCR_CLOCK_ID CLOCK_MONOTONIC
 #define GUPCR_CLOCK_REZ_ID CLOCK_MONOTONIC
 #else

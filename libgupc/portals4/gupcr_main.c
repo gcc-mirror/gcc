@@ -92,8 +92,8 @@ gupcr_init (void)
   if (gupcr_runtime_init ())
     {
       /* Report an error to stderr as the GUPC error reporting
-	 is not initialized yet. Note: all threads report
-	 this error. */
+	 is not initialized yet.  Note: all threads report
+	 this error.  */
       fprintf (stderr, "Unable to initialize runtime.\n");
       abort ();
     }
@@ -148,7 +148,7 @@ gupcr_init (void)
   /* Indicate that runtime initialization is complete.  */
   gupcr_init_complete ();
 
-  /* It is ok to call the finalization routines */
+  /* It is ok to call the finalization routines.  */
   gupcr_finalize_ok = 1;
 }
 

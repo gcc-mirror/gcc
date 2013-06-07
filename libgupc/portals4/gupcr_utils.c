@@ -166,7 +166,7 @@ gupcr_abort (void)
   abort ();
 }
 
-/* NOTE: registered as an exit routine */
+/* NOTE: registered as an exit routine.  */
 void
 gupcr_exit ()
 {
@@ -315,12 +315,12 @@ gupcr_get_buf_as_hex (char *bufstr, const void *buf, size_t size)
     {
       char *tmp = bufstr;
       size_t i;
-      for (i=0; i<cnt-1; ++i)
+      for (i = 0; i < cnt - 1; ++i)
 	{
-	  sprintf (tmp, "%02x ", ((unsigned char *)buf)[i]);
+	  sprintf (tmp, "%02x ", ((unsigned char *) buf)[i]);
 	  tmp += 3;
 	}
-      sprintf (tmp, "%02x", ((unsigned char *)buf)[cnt-1]);
+      sprintf (tmp, "%02x", ((unsigned char *) buf)[cnt - 1]);
     }
   return bufstr;
 }
@@ -599,7 +599,7 @@ gupcr_strtoll (const char *const str,
       errno = 0;
       result = strtoll (str, &suffix, 0);
       if (errno == ERANGE)
-	/* underflow/overflow */
+	/* Underflow/Overflow.  */
 	*status = -4;
       else if (suffix[0])
 	{

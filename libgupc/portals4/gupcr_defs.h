@@ -69,30 +69,30 @@ extern unsigned int gupcr_err_linenum;
       gupcr_err_linenum  = 0; \
     } while (0)
 
-/* The base address of the UPC shared section */
+/* The base address of the UPC shared section.  */
 extern char GUPCR_SHARED_SECTION_START[1];
 
-/* The ending address (plus one) of the UPC shared section */
+/* The ending address (plus one) of the UPC shared section.  */
 extern char GUPCR_SHARED_SECTION_END[1];
 
-/* The base address of the UPC compiled program info. section */
+/* The base address of the UPC program information section.  */
 extern char GUPCR_PGM_INFO_SECTION_START[1];
 
-/* The ending address (plus one) of the UPC compiled program info. section */
+/* The ending address (plus one) of the UPC program information section.  */
 extern char GUPCR_PGM_INFO_SECTION_END[1];
 
 #ifndef __UPC__
-/* The value of THREADS when defined at run time */
+/* The value of THREADS when defined at run time.  */
 extern int THREADS;
 
-/* Current thread id */
+/* Current thread id.  */
 extern int MYTHREAD;
 #endif /* !__UPC__ */
 
-/* OK to call finalize routines */
+/* OK to call finalize routines.  */
 extern int gupcr_finalize_ok;
 
-/* Prototype for the main finalize routine */
+/* Prototype for the main finalize routine.  */
 extern void gupcr_fini (void);
 
 #endif /* gupcr_defs.h */

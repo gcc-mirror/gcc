@@ -72,7 +72,7 @@ upc_all_broadcast (shared void *dst, shared const void *src,
   /* Initialize the collectives broadcast tree.  */
   gupcr_coll_tree_setup (src_thread, 0, THREADS);
 
-  /* Optional IN sync. mode */
+  /* Optional IN synchronization mode.  */
   if (UPC_IN_MYSYNC & sync_mode || !(UPC_IN_NOSYNC & sync_mode))
     upc_barrier;
 
@@ -120,7 +120,7 @@ upc_all_broadcast (shared void *dst, shared const void *src,
       ++blk_cnt;
     }
 
-  /* Optional OUT sync. mode */
+  /* Optional OUT synchronization mode.  */
   if (UPC_OUT_MYSYNC & sync_mode || !(UPC_OUT_NOSYNC & sync_mode))
     upc_barrier;
   gupcr_trace (FC_COLL, "COLL ALL_BROADCAST EXIT");

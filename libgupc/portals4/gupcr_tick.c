@@ -30,9 +30,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if HAVE_CLOCK_GETTIME
 #ifdef CLOCK_MONOTONIC_RAW
-/* System clock id passed to clock_gettime. CLOCK_MONOTONIC_RAW
+/* System clock id passed to clock_gettime.  CLOCK_MONOTONIC_RAW
    is preferred.  It has been available in the Linux kernel
-   since version 2.6.28 */
+   since version 2.6.28.  */
 #define SYS_RT_CLOCK_ID CLOCK_MONOTONIC_RAW
 #else
 #define SYS_RT_CLOCK_ID CLOCK_MONOTONIC
@@ -52,7 +52,7 @@ upc_ticks_now (void)
   return t;
 }
 
-#else /* !HAVE_CLOCK_GETTIME */
+#else /* not HAVE_CLOCK_GETTIME */
 
 upc_tick_t
 upc_ticks_now (void)

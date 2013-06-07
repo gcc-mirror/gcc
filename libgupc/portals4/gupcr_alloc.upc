@@ -73,7 +73,7 @@ typedef shared upc_heap_t *upc_heap_p;
 
 typedef struct upc_heap_node_struct
 {
-  upc_heap_list_t link;		/* must be first */
+  upc_heap_list_t link;		/* Must be first.  */
   size_t size;
   int alloc_tag;
   int is_global;
@@ -100,7 +100,7 @@ gupcr_plog2 (unsigned long long v)
     GUPCR_HEAP_ALLOC_MIN_BITS;
 }
 
-/** Return TRUE if 'list' is empty. */
+/** Return TRUE if 'list' is empty.  */
 static inline int
 gupcr_heap_is_empty_list (upc_heap_list_p list)
 {

@@ -1,5 +1,40 @@
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
+	include/gasp_upc.h: Cleanup to conform to GCC codding style
+	(mainly fixing comments, but also some prototypes, defiens, ...).
+	include/gcc-upc.h: Ditto.
+	include/pupc.h: Ditto.
+	include/upc.h: Ditto.
+	include/upc_collective.h: Ditto.
+	include/upc_tick.h: Ditto.
+	include/upc_types.h: Ditto.
+	portals4/gcc-upc-lib.in: Ditto.
+	portals4/gupcr_access.c: Ditto.
+	portals4/gupcr_access.h: Ditto.
+	portals4/gupcr_addr.c: Ditto.
+	portals4/gupcr_alloc.upc: Ditto.
+	portals4/gupcr_clock.c: Ditto.
+	portals4/gupcr_coll_broadcast.upc: Ditto.
+	portals4/gupcr_coll_reduce.in: Ditto.
+	portals4/gupcr_coll_reduce.upc: Ditto.
+	portals4/gupcr_config.h: Ditto.
+	portals4/gupcr_defs.h: Ditto.
+	portals4/gupcr_gmem.c: Ditto.
+	portals4/gupcr_gmem.h: Ditto.
+	portals4/gupcr_lock_sup.h: Ditto.
+	portals4/gupcr_main.c: Ditto.
+	portals4/gupcr_mem.c: Ditto.
+	portals4/gupcr_pgm_info.c: Ditto.
+	portals4/gupcr_portals.c: Ditto.
+	portals4/gupcr_pts.h: Ditto.
+	portals4/gupcr_runtime.c: Ditto.
+	portals4/gupcr_shutdown.c: Ditto.
+	portals4/gupcr_tick.c: Ditto.
+	portals4/gupcr_utils.c: Ditto.
+	portals4/gupcr_utils.h: Ditto.
+
+2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
+
 	portals4/gupcr_atomic.upc: Cleanup calls to gupc_fatal_error.
 	Message starts with lowercase letter, no need for thread
 	identification as it will be included automatically, cleanup

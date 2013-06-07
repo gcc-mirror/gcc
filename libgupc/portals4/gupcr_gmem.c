@@ -427,7 +427,7 @@ gupcr_gmem_init (void)
   ptl_le_t le;
   ptl_pt_index_t pte;
   gupcr_log (FC_MEM, "gmem init called");
-  /* Allocate memory for this thread's contribution to shared memory. */
+  /* Allocate memory for this thread's contribution to shared memory.  */
   gupcr_gmem_alloc_shared ();
   gupcr_portals_call (PtlPTAlloc,
 		      (gupcr_ptl_ni, 0,
@@ -453,7 +453,7 @@ gupcr_gmem_init (void)
   gupcr_gmem_gets.num_completed = 0;
   gupcr_gmem_gets.md_options =
     PTL_MD_EVENT_CT_REPLY | PTL_MD_EVENT_SUCCESS_DISABLE;
-  /* Allocate at least THREADS number of EQ entries. */
+  /* Allocate at least THREADS number of EQ entries.  */
   gupcr_portals_call (PtlEQAlloc,
 		      (gupcr_ptl_ni, THREADS, &gupcr_gmem_gets.eq_handle));
   gupcr_portals_call (PtlCTAlloc, (gupcr_ptl_ni, &gupcr_gmem_gets.ct_handle));
@@ -464,7 +464,7 @@ gupcr_gmem_init (void)
   md.eq_handle = gupcr_gmem_gets.eq_handle;
   md.ct_handle = gupcr_gmem_gets.ct_handle;
   gupcr_portals_call (PtlMDBind, (gupcr_ptl_ni, &md, &gupcr_gmem_gets.md));
-  /* Initialize GMEM put lists. */
+  /* Initialize GMEM put lists.  */
   gupcr_gmem_puts.num_pending = 0;
   gupcr_gmem_puts.num_completed = 0;
   gupcr_gmem_puts.md_options =
@@ -506,12 +506,12 @@ gupcr_gmem_fini (void)
   gupcr_portals_call (PtlMDRelease, (gupcr_gmem_gets.md));
   gupcr_portals_call (PtlCTFree, (gupcr_gmem_gets.ct_handle));
   gupcr_portals_call (PtlEQFree, (gupcr_gmem_gets.eq_handle));
-  /* Release PUT MDs. */
+  /* Release PUT MDs.  */
   gupcr_portals_call (PtlMDRelease, (gupcr_gmem_puts.md));
   gupcr_portals_call (PtlMDRelease, (gupcr_gmem_put_bb_md));
   gupcr_portals_call (PtlCTFree, (gupcr_gmem_puts.ct_handle));
   gupcr_portals_call (PtlEQFree, (gupcr_gmem_puts.eq_handle));
-  /* Release LEs and PTEs. */
+  /* Release LEs and PTEs.  */
   gupcr_portals_call (PtlLEUnlink, (gupcr_gmem_le));
   gupcr_portals_call (PtlPTFree, (gupcr_ptl_ni, GUPCR_PTL_PTE_GMEM));
 }

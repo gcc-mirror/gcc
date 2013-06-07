@@ -35,16 +35,16 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #pragma upc upc_code
 
-/* upc_lock_t is an opaque shared type */
+/* upc_lock_t is an opaque shared type.  */
 typedef shared struct upc_lock_struct upc_lock_t;
 
 #ifndef upc_poll
-/* for now upc_poll is a no-op */
+/* For now upc_poll is a no-op.  */
 #define upc_poll()
 #endif
 
 #ifdef __UPC_USES_PTHREADS__
-/* Pthreads implementation uses per thread random seed */
+/* Pthreads implementation uses per thread random seed.  */
 #define rand __upc_rand
 #define srand __upc_srand
 extern int __upc_rand (void);

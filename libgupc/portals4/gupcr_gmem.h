@@ -37,7 +37,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * @{
  */
 
-/* Configuration-defined limits */
+/* Configuration-defined limits.  */
 /** Maximum size of the message that uses put bounce buffer.  */
 #define GUPCR_GMEM_MAX_SAFE_PUT_SIZE 1*KILOBYTE
 

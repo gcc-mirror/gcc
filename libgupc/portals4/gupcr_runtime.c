@@ -70,7 +70,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <stdio.h>
 #include <string.h>
 #include <portals4.h>
-#ifdef GUPCR_JOB_LAUNCHER_SLURM 
+#ifdef GUPCR_JOB_LAUNCHER_SLURM
 #include <slurm/pmi.h>
 #else
 #include <portals4/pmi.h>
@@ -268,7 +268,7 @@ gupcr_runtime_get_mapping (ptl_handle_ni_t ni_h)
   if (PTL_OK != ret)
     return NULL;
 
-  /* put my information */
+  /* Put my information.  */
   snprintf (key, max_key_len, "libgupc-%lu-%lu-nid",
 	    (long unsigned) ni_h, (long unsigned) rank);
   if (0 != encode (&my_id.phys.nid, sizeof (my_id.phys.nid), val,
@@ -303,7 +303,7 @@ gupcr_runtime_get_mapping (ptl_handle_ni_t ni_h)
       return NULL;
     }
 
-  /* get everyone's information */
+  /* Get everyone's information.  */
   map->mapping = malloc (sizeof (ptl_process_t) * size);
   if (NULL == map->mapping)
     return NULL;

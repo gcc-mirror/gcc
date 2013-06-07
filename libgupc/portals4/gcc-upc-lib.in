@@ -33,23 +33,23 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <unistd.h>
 #endif /* IN_TARGET_LIBS */
 
-/* required, for size_t definition */
+/* Required for size_t definition.  */
 #include <sys/types.h>
 
 #pragma upc c_code
 
-/* helper macros for expanding the value of a macro as a string. */
+/* Helper macros for expanding the value of a macro as a string.  */
 #define __UPC_STR__(S) #S
 #define __UPC_XSTR__(S) __UPC_STR__(S)
 
 #ifdef __UPC_STATIC_THREADS__
-/* defined at compile time by the -fupc-threads-N switch */
+/* Defined at compile time by the -fupc-threads-N switch.  */
 #define __UPC_N_THREADS__ THREADS
 #define __UPC_STR__(S) #S
 #define __UPC_XSTR__(S) __UPC_STR__(S)
 #define __UPC_THREADS_CONFIG__ " staticthreads=" __UPC_XSTR__(THREADS)
 #else
-/* defined at run time */
+/* Defined at run time.  */
 extern const int THREADS;
 #define __UPC_N_THREADS__ -1
 #define __UPC_THREADS_CONFIG__ "dynamicthreads"
@@ -64,7 +64,7 @@ extern const int THREADS;
 typedef shared struct upc_atomicdomain_struct upc_atomicdomain_t;
 
 /* Place configuration information required by the Berkeley
-   UPC compilation system into the object file. */
+   UPC compilation system into the object file.  */
 static const char GCCUPCConfig[]
 #if __MACH__
   __attribute__ ((section ("__DATA,upc_pgm_info"))) __attribute__ ((used)) =
@@ -84,7 +84,7 @@ extern const int MYTHREAD;
 extern int __upc_forall_depth;
 
 /* The UPC runtime's main program must run first,
- * we rename the user's main to upc_main(). */
+   we rename the user's main to upc_main().  */
 #if __MACH__
 extern int
 main ()
@@ -96,29 +96,29 @@ __asm__ ("upc_main");
 #endif
 
 /* Remap calls to exit so that they invoke the UPC runtime's
-   implementation of exit instead. */
+   implementation of exit instead.  */
 #define exit __upc_exit
 
 /* Implementation of upc_fence.  */
 #define upc_fence __upc_fence()
 
 /* upc_shared_ptr_t is predefined as the representation of
-   a shared pointer type. */
+   a shared pointer type.  */
 
 /* Runtime variables used by optimized code generation
-   on some targets. */
-/* The base address of the UPC shared section */
+   on some targets.  */
+/* The base address of the UPC shared section.  */
 extern char __upc_shared_start[1];
 
-/* Runtime procedures */
+/* Runtime procedures.  */
 //include lib_runtime_api
 
 //include detect_target64
 
-/* Runtime shared access procedures */
+/* Runtime shared access procedures.  */
 //include mode_types
 
-#if defined(__UPC_INLINE_LIB__) || defined(IN_TARGET_LIBS)
+#if defined (__UPC_INLINE_LIB__) || defined (IN_TARGET_LIBS)
 
 /* Library routines have access to runtime internals.  */
 
@@ -136,7 +136,7 @@ extern char __upc_shared_start[1];
 //include lib_gmem
 //include lib_node_local
 //include lib_max_threads_def
-/* Must include stdio.h because of FILE def */
+/* Must include stdio.h because of FILE def.  */
 #include <stdio.h>
 //include lib_utils_api
 //include lib_portals

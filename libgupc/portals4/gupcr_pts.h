@@ -34,13 +34,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 //begin lib_pts_defs
 
-/* UPC pointer representation */
+/* UPC pointer representation.  */
 
-#if (defined(GUPCR_PTS_STRUCT_REP) + defined(GUPCR_PTS_WORD_PAIR_REP) \
-     + defined(GUPCR_PTS_PACKED_REP)) == 0
+#if (defined (GUPCR_PTS_STRUCT_REP) + defined (GUPCR_PTS_WORD_PAIR_REP) \
+     + defined (GUPCR_PTS_PACKED_REP)) == 0
 #error Unknown PTS representation.
-#elif (defined(GUPCR_PTS_STRUCT_REP) + defined(GUPCR_PTS_WORD_PAIR_REP) \
-     + defined(GUPCR_PTS_PACKED_REP)) != 1
+#elif (defined (GUPCR_PTS_STRUCT_REP) + defined (GUPCR_PTS_WORD_PAIR_REP) \
+     + defined (GUPCR_PTS_PACKED_REP)) != 1
 #error Only one UPC shared pointer representaion setting is permitted.
 #endif
 
@@ -86,7 +86,7 @@ typedef struct shared_ptr_struct
 } upc_shared_ptr_t __attribute__ ((aligned (GUPCR_PTS_ALIGN)));
 typedef upc_shared_ptr_t *upc_shared_ptr_p;
 /* upc_dbg_shared_ptr_t is used by the debugger to figure out
-   shared pointer layout */
+   shared pointer layout.  */
 typedef upc_shared_ptr_t upc_dbg_shared_ptr_t;
 #endif
 

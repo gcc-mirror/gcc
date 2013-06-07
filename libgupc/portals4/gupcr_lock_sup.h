@@ -40,7 +40,7 @@ extern void gupcr_lock_put (size_t, size_t, void *, size_t);
 extern void gupcr_lock_get (size_t, size_t, void *, size_t);
 extern void gupcr_lock_wait (void);
 
-/* See: gupcr_alloc.upc */
+/* See: gupcr_alloc.upc.  */
 extern void gupcr_lock_link_init (void);
 extern void gupcr_lock_free_init (void);
 extern void gupcr_lock_heap_sup_init (void);

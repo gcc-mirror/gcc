@@ -61,7 +61,7 @@ typedef upc_compiled_thread_info_t *upc_compiled_thread_info_p;
 
 /* List of compiled UPC files, and the value of THREADS
    specified at compile-time (-1 means no value given
-   at compile-time). */
+   at compile-time).  */
 static upc_compiled_thread_info_p gupcr_compiled_thread_info = 0;
 
 static void
@@ -87,7 +87,7 @@ gupcr_register_pgm_info (char *filename, int nthreads,
 {
   upc_compiled_thread_info_p info, *p;
   gupcr_malloc (info, (sizeof (upc_compiled_thread_info_t)));
-  /* Insertion into list is ordered by file name. */
+  /* Insertion into list is ordered by file name.  */
   for (p = &gupcr_compiled_thread_info;
        *p && strcmp (filename, (*p)->filename) >= 0;
        p = &(*p)->next) /* loop */ ;

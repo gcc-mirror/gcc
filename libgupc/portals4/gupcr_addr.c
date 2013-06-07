@@ -185,7 +185,7 @@ upc_affinitysize (size_t totalsize, size_t nbytes, size_t threadid)
 	result = (size_t) ((nblocks + THREADS - 1) / THREADS) * nbytes;
       else if (threadid > cutoff)
 	result = (size_t) (nblocks / THREADS) * nbytes;
-      else			/* threadid == cutoff */
+      else
 	result = (size_t) ((nblocks / THREADS) * nbytes)
 	  + totalsize - nblocks * nbytes;
     }

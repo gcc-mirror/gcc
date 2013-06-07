@@ -35,7 +35,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "gupcr_portals.h"
 #include "gupcr_runtime.h"
 
-/* Portals network interface handle/limits/rank */
+/* Portals network interface handle/limits/rank.  */
 ptl_handle_ni_t gupcr_ptl_ni;
 ptl_ni_limits_t gupcr_ptl_ni_limits;
 ptl_rank_t gupcr_ptl_rank;
@@ -345,8 +345,7 @@ gupcr_get_atomic_size (ptl_datatype_t type)
       return 2 * __SIZEOF_LONG_DOUBLE__;
 #endif
     default:
-      gupcr_fatal_error
-	("Unknown atomic type %d", (int) type);
+      gupcr_fatal_error ("unknown atomic type %d", (int) type);
     }
   return -1;
 }
@@ -372,7 +371,7 @@ gupcr_process_fail_events (ptl_handle_eq_t eq)
     {
       const char *eqerr = gupcr_streqtype (ev.type);
       const char *nierr = gupcr_nifailtype (ev.ni_fail_type);
-      gupcr_error_print ("Event failure %s (%s (%x))", eqerr, nierr,
+      gupcr_error_print ("event failure %s (%s (%x))", eqerr, nierr,
 			 ev.ni_fail_type);
     }
 }

@@ -77,138 +77,139 @@ extern void upc_all_permute (shared void *dst, shared const void *src,
 			     upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceC (shared void *dst, shared const void *src,
-				     upc_op_t op, size_t nelems,
-				     size_t blk_size,
-				     signed char (*func) (signed char,
-							  signed char),
-				     upc_flag_t sync_mode);
+				    upc_op_t op, size_t nelems,
+				    size_t blk_size,
+				    signed char (*func) (signed char,
+							 signed char),
+				    upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceUC (shared void *dst,
-				      shared const void *src, upc_op_t op,
-				      size_t nelems, size_t blk_size,
-				      unsigned char (*func) (unsigned char,
-							     unsigned char),
-				      upc_flag_t sync_mode);
+				     shared const void *src, upc_op_t op,
+				     size_t nelems, size_t blk_size,
+				     unsigned char (*func) (unsigned char,
+							    unsigned char),
+				     upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceS (shared void *dst, shared const void *src,
-				     upc_op_t op, size_t nelems,
-				     size_t blk_size,
-				     signed short (*func) (signed short,
-							   signed short),
-				     upc_flag_t sync_mode);
+				    upc_op_t op, size_t nelems,
+				    size_t blk_size,
+				    signed short (*func) (signed short,
+							  signed short),
+				    upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceUS (shared void *dst,
-				      shared const void *src, upc_op_t op,
-				      size_t nelems, size_t blk_size,
-				      unsigned short (*func) (unsigned short,
-							      unsigned short),
-				      upc_flag_t sync_mode);
+				     shared const void *src, upc_op_t op,
+				     size_t nelems, size_t blk_size,
+				     unsigned short (*func) (unsigned short,
+							     unsigned short),
+				     upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceI (shared void *dst, shared const void *src,
-				     upc_op_t op, size_t nelems,
-				     size_t blk_size,
-				     signed int (*func) (signed int,
-							 signed int),
-				     upc_flag_t sync_mode);
+				    upc_op_t op, size_t nelems,
+				    size_t blk_size,
+				    signed int (*func) (signed int,
+							signed int),
+				    upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceUI (shared void *dst,
-				      shared const void *src, upc_op_t op,
-				      size_t nelems, size_t blk_size,
-				      unsigned int (*func) (unsigned int,
-							    unsigned int),
-				      upc_flag_t sync_mode);
+				     shared const void *src, upc_op_t op,
+				     size_t nelems, size_t blk_size,
+				     unsigned int (*func) (unsigned int,
+							   unsigned int),
+				     upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceL (shared void *dst, shared const void *src,
-				     upc_op_t op, size_t nelems,
-				     size_t blk_size,
-				     signed long (*func) (signed long,
-							  signed long),
-				     upc_flag_t sync_mode);
+				    upc_op_t op, size_t nelems,
+				    size_t blk_size,
+				    signed long (*func) (signed long,
+							 signed long),
+				    upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceUL (shared void *dst,
-				      shared const void *src, upc_op_t op,
-				      size_t nelems, size_t blk_size,
-				      unsigned long (*func) (unsigned long,
-							     unsigned long),
-				      upc_flag_t sync_mode);
+				     shared const void *src, upc_op_t op,
+				     size_t nelems, size_t blk_size,
+				     unsigned long (*func) (unsigned long,
+							    unsigned long),
+				     upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceF (shared void *dst, shared const void *src,
-				     upc_op_t op, size_t nelems,
-				     size_t blk_size, float (*func) (float,
-								     float),
-				     upc_flag_t sync_mode);
+				    upc_op_t op, size_t nelems,
+				    size_t blk_size, float (*func) (float,
+								    float),
+				    upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceD (shared void *dst, shared const void *src,
-				     upc_op_t op, size_t nelems,
-				     size_t blk_size, double (*func) (double,
-								      double),
-				     upc_flag_t sync_mode);
+				    upc_op_t op, size_t nelems,
+				    size_t blk_size, double (*func) (double,
+								     double),
+				    upc_flag_t sync_mode);
 
 extern void upc_all_prefix_reduceLD (shared void *dst, shared const void *src,
-				      upc_op_t op, size_t nelems,
-				      size_t blk_size, long double (*func) (long double,
-				 				            long double),
-				      upc_flag_t sync_mode);
+				     upc_op_t op, size_t nelems,
+				     size_t blk_size,
+				     long double (*func) (long double,
+							  long double),
+				     upc_flag_t sync_mode);
 
 extern void upc_all_reduceC (shared void *dst, shared const void *src,
-			      upc_op_t op, size_t nelems, size_t blk_size,
-			      signed char (*func) (signed char, signed char),
-			      upc_flag_t sync_mode);
+			     upc_op_t op, size_t nelems, size_t blk_size,
+			     signed char (*func) (signed char, signed char),
+			     upc_flag_t sync_mode);
 
 extern void upc_all_reduceUC (shared void *dst, shared const void *src,
-			       upc_op_t op, size_t nelems, size_t blk_size,
-			       unsigned char (*func) (unsigned char,
-						      unsigned char),
-			       upc_flag_t sync_mode);
+			      upc_op_t op, size_t nelems, size_t blk_size,
+			      unsigned char (*func) (unsigned char,
+						     unsigned char),
+			      upc_flag_t sync_mode);
 
 extern void upc_all_reduceS (shared void *dst, shared const void *src,
-			      upc_op_t op, size_t nelems, size_t blk_size,
-			      signed short (*func) (signed short,
-						    signed short),
-			      upc_flag_t sync_mode);
+			     upc_op_t op, size_t nelems, size_t blk_size,
+			     signed short (*func) (signed short,
+						   signed short),
+			     upc_flag_t sync_mode);
 
 extern void upc_all_reduceUS (shared void *dst, shared const void *src,
-			       upc_op_t op, size_t nelems, size_t blk_size,
-			       unsigned short (*func) (unsigned short,
-						       unsigned short),
-			       upc_flag_t sync_mode);
+			      upc_op_t op, size_t nelems, size_t blk_size,
+			      unsigned short (*func) (unsigned short,
+						      unsigned short),
+			      upc_flag_t sync_mode);
 
 extern void upc_all_reduceI (shared void *dst, shared const void *src,
-			      upc_op_t op, size_t nelems, size_t blk_size,
-			      signed int (*func) (signed int, signed int),
-			      upc_flag_t sync_mode);
+			     upc_op_t op, size_t nelems, size_t blk_size,
+			     signed int (*func) (signed int, signed int),
+			     upc_flag_t sync_mode);
 
 extern void upc_all_reduceUI (shared void *dst, shared const void *src,
-			       upc_op_t op, size_t nelems, size_t blk_size,
-			       unsigned int (*func) (unsigned int,
-						     unsigned int),
-			       upc_flag_t sync_mode);
+			      upc_op_t op, size_t nelems, size_t blk_size,
+			      unsigned int (*func) (unsigned int,
+						    unsigned int),
+			      upc_flag_t sync_mode);
 
 extern void upc_all_reduceL (shared void *dst, shared const void *src,
-			      upc_op_t op, size_t nelems, size_t blk_size,
-			      signed long (*func) (signed long, signed long),
-			      upc_flag_t sync_mode);
+			     upc_op_t op, size_t nelems, size_t blk_size,
+			     signed long (*func) (signed long, signed long),
+			     upc_flag_t sync_mode);
 
 extern void upc_all_reduceUL (shared void *dst, shared const void *src,
-			       upc_op_t op, size_t nelems, size_t blk_size,
-			       unsigned long (*func) (unsigned long,
-						      unsigned long),
-			       upc_flag_t sync_mode);
+			      upc_op_t op, size_t nelems, size_t blk_size,
+			      unsigned long (*func) (unsigned long,
+						     unsigned long),
+			      upc_flag_t sync_mode);
 
 extern void upc_all_reduceF (shared void *dst, shared const void *src,
-			      upc_op_t op, size_t nelems, size_t blk_size,
-			      float (*func) (float, float),
-			      upc_flag_t sync_mode);
+			     upc_op_t op, size_t nelems, size_t blk_size,
+			     float (*func) (float, float),
+			     upc_flag_t sync_mode);
 
 extern void upc_all_reduceD (shared void *dst, shared const void *src,
-			      upc_op_t op, size_t nelems, size_t blk_size,
-			      double (*func) (double, double),
-			      upc_flag_t sync_mode);
+			     upc_op_t op, size_t nelems, size_t blk_size,
+			     double (*func) (double, double),
+			     upc_flag_t sync_mode);
 
 extern void upc_all_reduceLD (shared void *dst, shared const void *src,
-			       upc_op_t op, size_t nelems, size_t blk_size,
-			       long double (*func) (long double, long double),
-			       upc_flag_t sync_mode);
+			      upc_op_t op, size_t nelems, size_t blk_size,
+			      long double (*func) (long double, long double),
+			      upc_flag_t sync_mode);
 
 extern void upc_all_scatter (shared void *dst, shared const void *src,
 			     size_t nbytes, upc_flag_t sync_mode);
