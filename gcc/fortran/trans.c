@@ -852,6 +852,7 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   gcc_assert (final_wrapper->expr_type == EXPR_VARIABLE);
   gcc_assert (var);
 
+  gfc_start_block (&block);
   gfc_init_se (&se, NULL);
   gfc_conv_expr (&se, final_wrapper);
   final_fndecl = se.expr;
@@ -936,7 +937,6 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
   if (!POINTER_TYPE_P (TREE_TYPE (array)))
     array = gfc_build_addr_expr (NULL, array);
 
-  gfc_start_block (&block);
   gfc_add_block_to_block (&block, &se.pre);
   tmp = build_call_expr_loc (input_location,
 			     final_fndecl, 3, array,
