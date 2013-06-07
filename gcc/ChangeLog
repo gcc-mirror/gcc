@@ -1,3 +1,8 @@
+2013-06-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* recog.c (offsettable_address_addr_space_p): Fix calculation of
+	address mode.  Move pointer mode initialization to the same place.
+
 2013-06-07  Sofiane Naci  <sofiane.naci@arm.com>
 
 	Backport from mainline
