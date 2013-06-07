@@ -1,3 +1,7 @@
+2013-06-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-object-size.c (unknown): Make const.
+
 2013-06-07  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (cpu_facility): Add cpu_zarch.

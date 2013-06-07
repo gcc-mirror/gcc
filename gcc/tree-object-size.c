@@ -39,7 +39,7 @@ struct object_size_info
   unsigned int *stack, *tos;
 };
 
-static unsigned HOST_WIDE_INT unknown[4] = { -1, -1, 0, 0 };
+static const unsigned HOST_WIDE_INT unknown[4] = { -1, -1, 0, 0 };
 
 static tree compute_object_offset (const_tree, const_tree);
 static unsigned HOST_WIDE_INT addr_object_size (struct object_size_info *,
