@@ -1,3 +1,26 @@
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* array-notation-common.c (length_mismatch_in_expr_p): Moved this
+	function from c/c-array-notation.c.
+	(is_cilkplus_reduce_builtin): Likewise.
+	(find_rank): Likewise.
+	(extract_array_notation_exprs): Likewise.
+	(replace_array_notations): Likewise.
+	(find_inv_trees): Likewise.
+	(replace_inv_trees): Likewise.
+	(contains_array_notation_expr): Likewise.
+	(find_correct_array_notation_type): Likewise.
+	* c-common.h (struct inv_list): Moved this struct from the file
+	c/c-array-notation.c and added a new field called additional tcodes.
+	(length_mismatch_in_expr_p): New prototype.
+	(is_cilkplus_reduce_builtin): Likewise.
+	(find_rank): Likewise.
+	(extract_array_notation_exprs): Likewise.
+	(replace_array_notation): Likewise.
+	(find_inv_trees): Likewise.
+	(replace_inv_trees): Likewise.
+	(find_correct_array_notation_type): Likewise.
+	
 2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.c (c_define_builtins): When cilkplus is enabled, the
