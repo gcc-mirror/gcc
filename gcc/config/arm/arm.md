@@ -3181,19 +3181,49 @@
 (define_expand "xordi3"
   [(set (match_operand:DI         0 "s_register_operand" "")
 	(xor:DI (match_operand:DI 1 "s_register_operand" "")
-		(match_operand:DI 2 "s_register_operand" "")))]
+		(match_operand:DI 2 "arm_xordi_operand" "")))]
   "TARGET_32BIT"
   ""
 )
 
-(define_insn "*xordi3_insn"
-  [(set (match_operand:DI         0 "s_register_operand" "=&r,&r")
-	(xor:DI (match_operand:DI 1 "s_register_operand"  "%0,r")
-		(match_operand:DI 2 "s_register_operand"   "r,r")))]
-  "TARGET_32BIT && !TARGET_IWMMXT && !TARGET_NEON"
-  "#"
-  [(set_attr "length" "8")
-   (set_attr "predicable" "yes")]
+(define_insn_and_split "*xordi3_insn"
+  [(set (match_operand:DI         0 "s_register_operand" "=w,&r,&r,&r,&r,?w")
+	(xor:DI (match_operand:DI 1 "s_register_operand" "w ,%0,r ,0 ,r ,w")
+		(match_operand:DI 2 "arm_xordi_operand"  "w ,r ,r ,Dg,Dg,w")))]
+  "TARGET_32BIT && !TARGET_IWMMXT"
+{
+  switch (which_alternative)
+    {
+    case 1:
+    case 2:
+    case 3:
+    case 4:  /* fall through */
+      return "#";
+    case 0: /* fall through */
+    case 5: return "veor\t%P0, %P1, %P2";
+    default: gcc_unreachable ();
+    }
+}
+  "TARGET_32BIT && !TARGET_IWMMXT && reload_completed
+   && !(IS_VFP_REGNUM (REGNO (operands[0])))"
+  [(set (match_dup 3) (match_dup 4))
+   (set (match_dup 5) (match_dup 6))]
+  "
+  {
+    operands[3] = gen_lowpart (SImode, operands[0]);
+    operands[5] = gen_highpart (SImode, operands[0]);
+
+    operands[4] = simplify_gen_binary (XOR, SImode,
+                                           gen_lowpart (SImode, operands[1]),
+                                           gen_lowpart (SImode, operands[2]));
+    operands[6] = simplify_gen_binary (XOR, SImode,
+                                           gen_highpart (SImode, operands[1]),
+                                           gen_highpart_mode (SImode, DImode, operands[2]));
+
+  }"
+  [(set_attr "length" "*,8,8,8,8,*")
+   (set_attr "neon_type" "neon_int_1,*,*,*,*,neon_int_1")
+   (set_attr "arch" "neon_for_64bits,*,*,*,*,avoid_neon_for_64bits")]
 )
 
 (define_insn "*xordi_zesidi_di"

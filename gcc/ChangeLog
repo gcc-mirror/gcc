@@ -1,5 +1,16 @@
 2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR target/56315
+	* config/arm/arm.md (*xordi3_insn): Change to insn_and_split.
+	(xordi3): Change operand 2 constraint to arm_xordi_operand.
+	* config/arm/arm.c (const_ok_for_dimode_op): Handle XOR.
+	* config/arm/constraints.md (Dg): New constraint.
+	* config/arm/neon.md (xordi3_neon): Remove.
+	(neon_veor<mode>): Generate xordi3 instead of xordi3_neon.
+	* config/arm/predicates.md (arm_xordi_operand): New predicate.
+
+2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (anddi3_insn): Remove duplicate alternatives.
 	Clean up alternatives.
 

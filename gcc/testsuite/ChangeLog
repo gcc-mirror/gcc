@@ -1,3 +1,8 @@
+2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56315
+	* gcc.target/arm/xordi3-opt.c: New test.
+
 2013-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/debug/dwarf2/discriminator.c: Fix wording.
