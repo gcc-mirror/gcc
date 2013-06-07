@@ -1,3 +1,7 @@
+2013-06-07  Jan Hubicka  <jh@suse.cz>
+
+	* symtab.c (symtab_resolve_alias): Do not remove alias attribute.
+
 2013-06-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-object-size.c (unknown): Make const.

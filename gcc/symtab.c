@@ -978,8 +978,6 @@ symtab_resolve_alias (symtab_node node, symtab_node target)
      We do not want to keep it around or we would have to mind updating them
      when renaming symbols.  */
   node->symbol.alias_target = NULL;
-  DECL_ATTRIBUTES (node->symbol.decl)
-     = remove_attribute ("alias", DECL_ATTRIBUTES (node->symbol.decl));
 
   if (node->symbol.cpp_implicit_alias && cgraph_state >= CGRAPH_STATE_CONSTRUCTION)
     fixup_same_cpp_alias_visibility (node, target);
