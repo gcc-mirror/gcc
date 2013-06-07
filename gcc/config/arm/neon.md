@@ -782,21 +782,6 @@
   [(set_attr "neon_type" "neon_int_1")]
 )
 
-(define_insn "xordi3_neon"
-  [(set (match_operand:DI 0 "s_register_operand" "=w,?&r,?&r,?w")
-        (xor:DI (match_operand:DI 1 "s_register_operand" "%w,0,r,w")
-	        (match_operand:DI 2 "s_register_operand" "w,r,r,w")))]
-  "TARGET_NEON"
-  "@
-   veor\t%P0, %P1, %P2
-   #
-   #
-   veor\t%P0, %P1, %P2"
-  [(set_attr "neon_type" "neon_int_1,*,*,neon_int_1")
-   (set_attr "length" "*,8,8,*")
-   (set_attr "arch" "neon_for_64bits,*,*,avoid_neon_for_64bits")]
-)
-
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (not:VDQ (match_operand:VDQ 1 "s_register_operand" "w")))]
@@ -5605,7 +5590,7 @@
    (match_operand:SI 3 "immediate_operand" "")]
   "TARGET_NEON"
 {
-  emit_insn (gen_xor<mode>3<V_suf64> (operands[0], operands[1], operands[2]));
+  emit_insn (gen_xor<mode>3 (operands[0], operands[1], operands[2]));
   DONE;
 })
 
