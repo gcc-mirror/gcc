@@ -59,7 +59,7 @@ static ptl_handle_ct_t gupcr_coll_md_eq;
 /** Collectives number of received ACKs on local md */
 static ptl_size_t gupcr_coll_ack_cnt;
 
-/* Collectives thread tree */
+/* Collectives thread tree.  */
 /** Collectives tree parent thread */
 int gupcr_coll_parent_thread;
 /** Collectives tree number of children */
@@ -90,11 +90,11 @@ int gupcr_coll_child[GUPCR_TREE_FANOUT];
 void
 gupcr_coll_tree_setup (size_t newroot, size_t start, int nthreads)
 {
-/* convert from/to 0-(THREADS-1) to start-(nthreads-1) range */
+/* Convert from/to 0-(THREADS-1) to start-(nthreads-1) range.  */
 #define NEWID(id,first) ((id - first + THREADS) % THREADS)
 #define OLDID(nid,first) ((nid + first) % THREADS)
 
-/* remap int the new root (from root 0 to "root") */
+/* Remap into the new root (from root 0 to "root").  */
 #define NEWIDROOT(id,top,cnt) ((cnt + id - top) % cnt)
 #define OLDIDROOT(nid,top,cnt) ((nid + top) % cnt)
   int i;
@@ -111,7 +111,7 @@ gupcr_coll_tree_setup (size_t newroot, size_t start, int nthreads)
     ok_to_root = 1;
 
   /* Get myid - first convert into the new range (0-nthreads),
-     then, if needed and possible, into the range where newroot becomes 0. */
+     then, if needed and possible, into the range where newroot becomes 0.  */
   myid = NEWID (MYTHREAD, start);
   if (ok_to_root)
     myid = NEWIDROOT (myid, root, nthreads);
@@ -282,7 +282,7 @@ gupcr_coll_ack_wait (size_t cnt)
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_coll_md_eq);
-      gupcr_fatal_error ("Thread %d: Received an error on coll MD", MYTHREAD);
+      gupcr_fatal_error ("received an error on collective MD");
     }
   gupcr_coll_ack_cnt += cnt;
 }
@@ -308,7 +308,7 @@ gupcr_coll_signal_wait (size_t cnt)
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_coll_le_eq);
-      gupcr_fatal_error ("Thread %d: Received an error on coll LE", MYTHREAD);
+      gupcr_fatal_error ("received an error on collective LE");
     }
   gupcr_coll_signal_cnt += cnt;
 }
@@ -337,7 +337,7 @@ gupcr_coll_init (void)
 				   gupcr_coll_le_eq, GUPCR_PTL_PTE_COLL,
 				   &pte));
   if (pte != GUPCR_PTL_PTE_COLL)
-    gupcr_fatal_error ("Cannot allocate PTE GUPCR_PTL_PTE_COLL.");
+    gupcr_fatal_error ("cannot allocate PTE GUPCR_PTL_PTE_COLL.");
   gupcr_debug (FC_COLL, "Collectives PTE allocated: %d", GUPCR_PTL_PTE_COLL);
 
   /* Allocate the Portals LE that is used for collectives.  */

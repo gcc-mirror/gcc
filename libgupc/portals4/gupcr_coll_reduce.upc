@@ -120,7 +120,7 @@ gupcr_portals_reduce_op (upc_op_t op)
     case UPC_MAX:
       return PTL_MAX;
     default:
-      gupcr_fatal_error ("Cannot convert UPC reduce operation 0x%lx.", op);
+      gupcr_fatal_error ("cannot convert UPC reduce operation 0x%lx.", op);
     }
 }
 
@@ -315,7 +315,7 @@ void upc_all_reduceC
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -752,7 +752,7 @@ void upc_all_reduceUC
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -1189,7 +1189,7 @@ void upc_all_reduceS
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -1626,7 +1626,7 @@ void upc_all_reduceUS
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -2063,7 +2063,7 @@ void upc_all_reduceI
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -2500,7 +2500,7 @@ void upc_all_reduceUI
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -2937,7 +2937,7 @@ void upc_all_reduceL
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -3374,7 +3374,7 @@ void upc_all_reduceUL
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -3826,7 +3826,7 @@ void upc_all_reduceF
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -4278,7 +4278,7 @@ void upc_all_reduceD
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
@@ -4730,7 +4730,7 @@ void upc_all_reduceLD
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 

@@ -96,8 +96,7 @@ gupcr_lock_swap (size_t dest_thread,
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_lock_md_eq);
-      gupcr_fatal_error
-	("Thread %d: Received an error on the lock MD on PtlSwap", MYTHREAD);
+      gupcr_fatal_error ("received an error on lock MD");
     }
 }
 
@@ -138,8 +137,7 @@ gupcr_lock_cswap (size_t dest_thread,
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_lock_md_eq);
-      gupcr_fatal_error
-	("Thread %d: Received an error on the lock MD on PtlCSwap", MYTHREAD);
+      gupcr_fatal_error ("received an error on lock MD");
     }
   return !memcmp (cmp, gupcr_lock_buf, size);
 }
@@ -178,8 +176,7 @@ gupcr_lock_put (size_t dest_thread, size_t dest_addr, void *val, size_t size)
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_lock_md_eq);
-      gupcr_fatal_error ("Thread %d: Received an error on the lock MD put",
-			 MYTHREAD);
+      gupcr_fatal_error ("received an error on lock MD");
     }
 }
 
@@ -209,8 +206,7 @@ gupcr_lock_get (size_t dest_thread, size_t dest_addr, void *val, size_t size)
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_lock_md_eq);
-      gupcr_fatal_error ("Thread %d: Received an error on the lock MD get",
-			 MYTHREAD);
+      gupcr_fatal_error ("received an error on lock MD");
     }
 }
 
@@ -237,8 +233,7 @@ gupcr_lock_wait (void)
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_lock_le_eq);
-      gupcr_fatal_error ("Thread %d: Received an error on the lock LE",
-			 MYTHREAD);
+      gupcr_fatal_error ("received an error on lock LE");
     }
 }
 
@@ -276,7 +271,7 @@ gupcr_lock_init (void)
 	       (long unsigned) gupcr_gmem_base,
 	       (long unsigned) gupcr_gmem_size);
   /* Setup MD for writes into lock data structures located on
-     other threads.   Map the entire user address space,
+     other threads.  Map the entire user address space,
      though the MD probably could be constrained to the area where
      lock data structures are managed.  */
   gupcr_portals_call (PtlCTAlloc, (gupcr_ptl_ni, &gupcr_lock_md_ct));

@@ -90,7 +90,7 @@ gupcr_atomic_get (size_t dthread, size_t doffset, void *fetch_ptr,
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_atomic_md_eq);
-      gupcr_fatal_error ("Error on atomic MD");
+      gupcr_fatal_error ("received an error on atomic MD");
     }
   gupcr_debug (FC_ATOMIC, "ov(%s)",
 	       gupcr_get_buf_as_hex (tmpbuf, fetch_ptr, size));
@@ -131,7 +131,7 @@ gupcr_atomic_set (size_t dthread, size_t doffset, void *fetch_ptr,
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_atomic_md_eq);
-      gupcr_fatal_error ("Error on atomic MD");
+      gupcr_fatal_error ("received an error on atomic MD");
     }
   if (fetch_ptr)
     {
@@ -180,7 +180,7 @@ gupcr_atomic_cswap (size_t dthread, size_t doffset, void *fetch_ptr,
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_atomic_md_eq);
-      gupcr_fatal_error ("Error on atomic MD");
+      gupcr_fatal_error ("received an error on atomic MD");
     }
   if (fetch_ptr)
     {
@@ -199,7 +199,7 @@ gupcr_atomic_cswap (size_t dthread, size_t doffset, void *fetch_ptr,
  * @param[in] doffset Destination offset
  * @param[in] fetch_ptr Fetch value pointer (optional)
  * @param[in] value Atomic value for the operation
- * @param[in] op Atomic operation 
+ * @param[in] op Atomic operation
  * @param[in] type Atomic data type
  */
 void
@@ -238,7 +238,7 @@ gupcr_atomic_op (size_t dthread, size_t doffset, void *fetch_ptr,
   if (ct.failure)
     {
       gupcr_process_fail_events (gupcr_atomic_md_eq);
-      gupcr_fatal_error ("Error on atomic MD");
+      gupcr_fatal_error ("received an error on atomic MD");
     }
   if (fetch_ptr)
     {

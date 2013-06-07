@@ -47,13 +47,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
  UPC_FIRSTTOUCH
 
-	Not used. Reserved for future use.
+	Not used.  Reserved for future use.
 
  UPC_FORCETOUCH
 
 	Force the thread to touch every memory page in its own shared
-	memory space on startup. This ensures the correct NUMA memory
-	allocation. By default it is "YES".
+	memory space on startup.  This ensures the correct NUMA memory
+	allocation.  By default it is "YES".
 
  UPC_LOG
 
@@ -75,7 +75,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
  UPC_NODES
 
-	Not used. Reserved for future use.
+	Not used.  Reserved for future use.
 
  UPC_QUIET
 
@@ -313,7 +313,7 @@ gupcr_env_filename (const char *const env_var_arg)
 		++filename_len;
 	    }
 	  /* Allocate the string; copy ENV_VAR_STR_ARG and
-	     make '%' substitutions.   */
+	     make '%' substitutions.  */
 	  gupcr_malloc (filename, filename_len + 1);
 	  for (fp = filename, cp = filename_arg; *cp; ++cp)
 	    {
@@ -494,7 +494,7 @@ gupcr_env_init (void)
 	      gupcr_warn ("unknown UPC environment variable: %s", env_var);
 	      break;
 	    default:
-	      gupcr_fatal_error ("env var. case value out of range");
+	      gupcr_fatal_error ("env variable case value out of range");
 	    }
 	}
     }

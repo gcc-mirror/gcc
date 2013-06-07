@@ -39,13 +39,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  * GUPC Portals4 UPC atomics implementation.
  *
  * All UPC atomic operations and data types, with exception of UPC_PTS,
- * are almost completely matched to the corresponding Portals4 atomics. 
+ * are almost completely matched to the corresponding Portals4 atomics.
  * The following exceptions are made:
  *
  * UPC_SUB  Converted into Portals4 atomic add of a negative number.
  * UPC_INC  Converted into Portals4 atomic add of one.
  * UPC_DEC  Converted into Portals4 atomic add of negative one.
- * 
+ *
  * UPC_PTS data type does not use Portals4 atomic operations (even though
  * 64 bit pointer-to-shared can fit into the int64 container).  This is
  * mainly due to the fact that pointer-to-shared comparison has to
@@ -98,7 +98,7 @@ gupcr_atomic_to_ptl_type (upc_type_t upc_type)
     case UPC_DOUBLE:
       return UPC_ATOMIC_TO_PTL_DOUBLE;
     default:
-      gupcr_error ("Invalid UPC atomic type %d", (int) upc_type);
+      gupcr_error ("invalid UPC atomic type %d", (int) upc_type);
     }
   return -1;
 }
@@ -129,7 +129,7 @@ gupcr_atomic_to_ptl_op (upc_op_t upc_op)
     case UPC_XOR:
       return PTL_BXOR;
     default:
-      gupcr_error ("Invalid UPC atomic op %d", (int) upc_op);
+      gupcr_error ("invalid UPC atomic op %d", (int) upc_op);
     }
   return -1;
 }
@@ -258,7 +258,7 @@ gupcr_set_optype_val (void *buf, upc_type_t type, int value)
     case UPC_DOUBLE:
       FUNC_TYPE_SET (UPC_DOUBLE, double);
     default:
-      gupcr_error ("Wrong UPC type (%d)", type);
+      gupcr_error ("wrong UPC type (%d)", type);
     }
 }
 
@@ -308,7 +308,7 @@ gupcr_negate_atomic_type (void *dbuf, const void *sbuf, upc_type_t type)
     case UPC_DOUBLE:
       FUNC_TYPE_NEGATE (UPC_DOUBLE, double);
     default:
-      gupcr_error ("Wrong UPC type (%d)", type);
+      gupcr_error ("wrong UPC type (%d)", type);
     }
 }
 
@@ -345,7 +345,7 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
     gupcr_gmem_sync_puts ();
 
   if (domain == NULL)
-    gupcr_fatal_error ("A NULL atomic domain pointer specified");
+    gupcr_fatal_error ("NULL atomic domain pointer specified");
 
   ldomain = (struct upc_atomicdomain_struct *) &domain[MYTHREAD];
 
@@ -354,11 +354,11 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
 	       gupcr_get_atomic_type_as_string (ldomain->type));
 
   if (target == NULL)
-    gupcr_fatal_error ("A NULL atomic target pointer specified");
+    gupcr_fatal_error ("NULL atomic target pointer specified");
 
   if (!(op && ldomain->ops))
     {
-      gupcr_fatal_error ("Invalid operation (%s) for specified domain",
+      gupcr_fatal_error ("invalid operation (%s) for specified domain",
 			 gupcr_get_atomic_op_as_string (op));
     }
 
@@ -367,32 +367,32 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
     {
     case UPC_GET:
       if (fetch_ptr == NULL)
-	gupcr_fatal_error
-	  ("Atomic operation (UPC_GET) requires a non-NULL fetch pointer");
+	gupcr_fatal_error (
+	  "atomic operation (UPC_GET) requires a non-NULL fetch pointer");
     case UPC_INC:
     case UPC_DEC:
       if (operand1 != NULL)
-	gupcr_error ("Atomic operation (%s) requires a NULL operand1",
+	gupcr_error ("atomic operation (%s) requires a NULL operand1",
 		     gupcr_get_atomic_op_as_string (op));
       if (operand2 != NULL)
-	gupcr_error ("Atomic operation (%s) requires a NULL operand2",
+	gupcr_error ("atomic operation (%s) requires a NULL operand2",
 		     gupcr_get_atomic_op_as_string (op));
       break;
     case UPC_CSWAP:
       if (operand1 == NULL)
-	gupcr_fatal_error
-	  ("Atomic operation (UPC_CSWAP) requires a non-NULL operand1");
+	gupcr_fatal_error (
+	  "atomic operation (UPC_CSWAP) requires a non-NULL operand1");
       if (operand2 == NULL)
-	gupcr_fatal_error
-	  ("Atomic operation (UPC_CSWAP) requires a non-NULL operand2");
+	gupcr_fatal_error (
+	  "atomic operation (UPC_CSWAP) requires a non-NULL operand2");
       break;
     default:
       if (operand1 == NULL)
 	gupcr_fatal_error (
-		"Atomic operation (%s) requires a non-NULL operand1",
+		"atomic operation (%s) requires a non-NULL operand1",
 		gupcr_get_atomic_op_as_string (op));
       if (operand2 != NULL)
-	gupcr_error ("Atomic operation (%s) requires a NULL operand2",
+	gupcr_error ("atomic operation (%s) requires a NULL operand2",
 		     gupcr_get_atomic_op_as_string (op));
     }
 
@@ -425,7 +425,7 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
 	  break;
 	default:
 	  upc_unlock (ldomain->lock);
-	  gupcr_fatal_error ("Invalid atomic operation (%s) for UPC_PTS",
+	  gupcr_fatal_error ("invalid atomic operation (%s) for UPC_PTS",
 			      gupcr_get_atomic_op_as_string (op));
 	}
       upc_unlock (ldomain->lock);
@@ -456,7 +456,7 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
 	      ldomain->type == UPC_FLOAT || ldomain->type == UPC_DOUBLE)
 	    {
 	      gupcr_fatal_error (
-			"Invalid atomic operation (%s) for %s type",
+			"invalid atomic operation (%s) for %s type",
 			gupcr_get_atomic_op_as_string (op),
 			gupcr_get_atomic_type_as_string (ldomain->type));
 	    }
@@ -490,7 +490,7 @@ upc_atomic_relaxed (upc_atomicdomain_t * domain,
 			   gupcr_atomic_to_ptl_type (ldomain->type));
 	  break;
 	default:
-	  gupcr_fatal_error ("Invalid atomic operation: %s",
+	  gupcr_fatal_error ("invalid atomic operation: %s",
 			     gupcr_get_atomic_op_as_string (op));
 	}
     }
@@ -566,7 +566,7 @@ void
 upc_all_atomicdomain_free (upc_atomicdomain_t * domain)
 {
   if (domain == NULL)
-    gupcr_fatal_error ("A NULL atomic domain pointer specified");
+    gupcr_fatal_error ("NULL atomic domain pointer specified");
   upc_barrier;
   if (MYTHREAD == 0)
     {

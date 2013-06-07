@@ -1,3 +1,20 @@
+2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
+
+	portals4/gupcr_atomic.upc: Cleanup calls to gupc_fatal_error.
+	Message starts with lowercase letter, no need for thread
+	identification as it will be included automatically, cleanup
+	message content.
+	portals4/gupcr_atomic_sup.c: Ditto.
+	portals4/gupcr_barrier.c: Ditto.
+	portals4/gupcr_broadcast.c: Ditto.
+	portals4/gupcr_coll_init.upc: Ditto.
+	portals4/gupcr_coll_reduce.in: Ditto.
+	portals4/gupcr_coll_reduce.upc: Ditto.
+	portals4/gupcr_coll_sup.c: Ditto.
+	portals4/gupcr_env.c: Ditto.
+	portals4/gupcr_lock.upc: Ditto.
+	portals4/gupcr_lock_sup.c: Ditto.
+
 2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Update copyright years.

@@ -120,7 +120,7 @@ gupcr_portals_reduce_op (upc_op_t op)
     case UPC_MAX:
       return PTL_MAX;
     default:
-      gupcr_fatal_error ("Cannot convert UPC reduce operation 0x%lx.", op);
+      gupcr_fatal_error ("cannot convert UPC reduce operation 0x%lx.", op);
     }
 }
 
@@ -358,7 +358,7 @@ void upc_all_reduce_GENERIC
 	    local_result = func (local_result, *l_src++);
 	  break;
 	default:
-	  gupcr_fatal_error ("Bad UPC collectives reduce operator 0x%lx.", op);
+	  gupcr_fatal_error ("bad UPC collectives reduce operator 0x%lx.", op);
 	}
     }
 
