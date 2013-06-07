@@ -1,3 +1,7 @@
+2013-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.
