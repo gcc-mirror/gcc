@@ -3567,7 +3567,8 @@ force_const_mem (enum machine_mode mode, rtx x)
   *slot = desc;
 
   /* Align the location counter as required by EXP's data type.  */
-  align = GET_MODE_ALIGNMENT (mode == VOIDmode ? word_mode : mode);
+  gcc_checking_assert (mode != VOIDmode && mode != BLKmode);
+  align = GET_MODE_ALIGNMENT (mode);
 #ifdef CONSTANT_ALIGNMENT
   {
     tree type = lang_hooks.types.type_for_mode (mode, 0);

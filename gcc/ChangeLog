@@ -1,3 +1,7 @@
+2013-06-07  Alan Modra  <amodra@gmail.com>
+
+	* varasm.c (force_const_mem): Assert mode is not VOID or BLK.
+
 2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/constraints.md (Df): New constraint.
