@@ -60,6 +60,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp                           value_type;
       typedef integral_constant<_Tp, __v>   type;
       constexpr operator value_type() const { return value; }
+#if __cplusplus > 201103L
+      constexpr value_type operator()() const { return value; }
+#endif
     };
   
   template<typename _Tp, _Tp __v>

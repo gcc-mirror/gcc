@@ -1,8 +1,7 @@
-// { dg-options "-std=gnu++0x" }
 // { dg-do compile }
-// 2009-11-12  Paolo Carlini  <paolo.carlini@oracle.com>
+// { dg-options "-std=gnu++1y" }
 //
-// Copyright (C) 2009-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,11 +18,19 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-error "static assertion failed" "" { target *-*-* } 1862 }
+#include <type_traits>
+#include <cassert> //testsuite_hooks.h>
 
-#include <utility>
+typedef std::integral_constant<int, 1>       ic_one;
+typedef std::integral_constant<int, 0>       ic_zero;
+typedef std::integral_constant<int, -1>      ic_minus_one;
 
-void test01()
-{
-  std::declval<int>();		// { dg-error "required from here" }
-}
+typedef std::integral_constant<bool, true>   ic_true;
+typedef std::integral_constant<bool, false>  ic_false;
+
+static_assert( ic_one{}() == 1, "1" );
+static_assert( ic_zero{}() == 0, "0" );
+static_assert( ic_minus_one{}() == -1, "-1" );
+
+static_assert( ic_true{}() == true, "true" );
+static_assert( ic_false{}() == false, "false" );
