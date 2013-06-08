@@ -1,3 +1,15 @@
+2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/type-traits (integral_constant::operator()): Implement
+	N3545.
+	* testsuite/20_util/integral_constant/call_operator.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2013-06-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
