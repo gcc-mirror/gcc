@@ -1,3 +1,11 @@
+2013-06-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (struct oc_local_state): Reorder fields.
+	(output_constructor_bitfield): Replace OUTER parameter with BIT_OFFSET
+	and adjust accordingly.
+	(output_constructor): Reorder initialization code and adjust call to
+	output_constructor_bitfield.
+
 2013-06-07  Sriraman Tallam  <tmsriram@google.com>
 
 	PR c++/57548
