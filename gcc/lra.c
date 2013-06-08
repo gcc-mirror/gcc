@@ -306,11 +306,11 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	  || (disp != NULL_RTX && ! CONSTANT_P (disp))
 	  || (scale != NULL_RTX && ! CONSTANT_P (scale)))
 	{
-	  /* Its is not an address generation.	Probably we have no 3 op
+	  /* It is not an address generation.	Probably we have no 3 op
 	     add.  Last chance is to use 2-op add insn.	 */
 	  lra_assert (x != y && x != z);
-	  emit_move_insn (x, z);
-	  insn = gen_add2_insn (x, y);
+	  emit_move_insn (x, y);
+	  insn = gen_add2_insn (x, z);
 	  emit_insn (insn);
 	}
       else

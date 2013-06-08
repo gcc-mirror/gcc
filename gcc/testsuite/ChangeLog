@@ -1,3 +1,8 @@
+2013-06-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57559
+	* gcc.target/s390/pr57559.c : New test.
+
 2013-06-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336
