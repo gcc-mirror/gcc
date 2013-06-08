@@ -116,7 +116,7 @@ namespace __gnu_test
    * 
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a output_iterator. It should not be
-   * instansiated directly, but generated from a test_container
+   * instantiated directly, but generated from a test_container
    */
   template<class T>
   struct output_iterator_wrapper
@@ -177,7 +177,7 @@ namespace __gnu_test
    * 
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a input_iterator. It should not be
-   * instansiated directly, but generated from a test_container
+   * instantiated directly, but generated from a test_container
    */
   template<class T>
   class input_iterator_wrapper
@@ -259,7 +259,7 @@ namespace __gnu_test
    * 
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a forward_iterator. It should not be
-   * instansiated directly, but generated from a test_container
+   * instantiated directly, but generated from a test_container
    */
   template<class T>
   struct forward_iterator_wrapper : public input_iterator_wrapper<T>
@@ -313,7 +313,7 @@ namespace __gnu_test
    * 
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a forward_iterator. It should not be
-   * instansiated directly, but generated from a test_container
+   * instantiated directly, but generated from a test_container
    */
   template<class T>
   struct bidirectional_iterator_wrapper : public forward_iterator_wrapper<T>
@@ -377,7 +377,7 @@ namespace __gnu_test
    * 
    * This class takes a pointer and wraps it to provide exactly
    * the requirements of a forward_iterator. It should not be
-   * instansiated directly, but generated from a test_container
+   * instantiated directly, but generated from a test_container
    */
   template<class T>
   struct random_access_iterator_wrapper 
