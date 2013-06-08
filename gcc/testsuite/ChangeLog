@@ -1,3 +1,8 @@
+2013-06-07  Sriraman Tallam  <tmsriram@google.com>
+
+	PR c++/57548
+	* testsuite/g++.dg/ext/pr57548.C: New test.
+
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR middle-end/57541
