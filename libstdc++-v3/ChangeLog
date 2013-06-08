@@ -1,3 +1,11 @@
+2013-06-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3654 - Quoted Strings Library Proposal
+	* include/std/iomanip: Add quoted(String, Char delim, Char escape)
+	manipulators and supporting machinery in c++1y mode.
+	* testsuite/27_io/manipulators/standard/char/quoted.cc: New.
+	* testsuite/27_io/manipulators/standard/wchar_t/quoted.cc: New.
+
 2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/alloc_traits.h (allocator_traits::max_size()): LWG
