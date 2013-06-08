@@ -713,7 +713,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
      *
      *  Time returned represents wall time from the system-wide clock.
     */
-     struct system_clock
+    struct system_clock
     {
       typedef chrono::nanoseconds     				duration;
       typedef duration::rep    					rep;
@@ -775,148 +775,137 @@ _GLIBCXX_END_NAMESPACE_VERSION
     */
     using high_resolution_clock = system_clock;
 
-  } // end inline namespace _V2
+    } // end inline namespace _V2
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
 
-  // @} group chrono
-} // namespace
-
-#endif //_GLIBCXX_USE_C99_STDINT_TR1
-
-#endif // C++11
-
 #if __cplusplus > 201103L
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
+  inline namespace literals {
+  inline namespace chrono_literals {
 
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+    namespace __detail {
 
-inline namespace literals {
-inline namespace chrono_literals {
+      using namespace __parse_int;
 
-  namespace __detail {
+      template<unsigned long long _Val, typename _Dur>
+	struct _Select_type
+	: conditional<
+	    _Val <= static_cast<unsigned long long>
+		      (numeric_limits<typename _Dur::rep>::max()),
+	    _Dur, void>
+	{
+	  static constexpr typename _Select_type::type
+	    value{static_cast<typename _Select_type::type>(_Val)};
+	};
 
-    using namespace __parse_int;
+      template<unsigned long long _Val, typename _Dur>
+	constexpr typename _Select_type<_Val, _Dur>::type
+	_Select_type<_Val, _Dur>::value;
 
-    template<unsigned long long _Val, typename _Dur>
-      struct _Select_type
-      : conditional<
-	  _Val <= static_cast<unsigned long long>
-		    (numeric_limits<typename _Dur::rep>::max()),
-	  _Dur, void>
+    } // __detail
+
+    constexpr chrono::duration<long double, ratio<3600,1>>
+    operator"" h(long double __hours)
+    { return chrono::duration<long double, ratio<3600,1>>{__hours}; }
+
+    template <char... _Digits>
+      constexpr typename
+      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+			     chrono::hours>::type
+      operator"" h()
       {
-	static constexpr typename _Select_type::type
-	  value{static_cast<typename _Select_type::type>(_Val)};
-      };
+	return __detail::_Select_type<
+			  __select_int::_Select_int<_Digits...>::value,
+			  chrono::hours>::value;
+      }
 
-    template<unsigned long long _Val, typename _Dur>
-      constexpr typename _Select_type<_Val, _Dur>::type
-      _Select_type<_Val, _Dur>::value;
+    constexpr chrono::duration<long double, ratio<60,1>>
+    operator"" min(long double __mins)
+    { return chrono::duration<long double, ratio<60,1>>{__mins}; }
 
-  } // __detail
+    template <char... _Digits>
+      constexpr typename
+      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+			     chrono::minutes>::type
+      operator"" min()
+      {
+	return __detail::_Select_type<
+			  __select_int::_Select_int<_Digits...>::value,
+			  chrono::minutes>::value;
+      }
 
-  constexpr chrono::duration<long double, ratio<3600,1>>
-  operator"" h(long double __hours)
-  { return chrono::duration<long double, ratio<3600,1>>{__hours}; }
+    constexpr chrono::duration<long double>
+    operator"" s(long double __secs)
+    { return chrono::duration<long double>{__secs}; }
 
-  template <char... _Digits>
-    constexpr typename
-    __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
-			   chrono::hours>::type
-    operator"" h()
-    {
-      return __detail::_Select_type<
-			__select_int::_Select_int<_Digits...>::value,
-			chrono::hours>::value;
-    }
+    template <char... _Digits>
+      constexpr typename
+      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+			     chrono::seconds>::type
+      operator"" s()
+      {
+	return __detail::_Select_type<
+			  __select_int::_Select_int<_Digits...>::value,
+			  chrono::seconds>::value;
+      }
 
-  constexpr chrono::duration<long double, ratio<60,1>>
-  operator"" min(long double __mins)
-  { return chrono::duration<long double, ratio<60,1>>{__mins}; }
+    constexpr chrono::duration<long double, milli>
+    operator"" ms(long double __msecs)
+    { return chrono::duration<long double, milli>{__msecs}; }
 
-  template <char... _Digits>
-    constexpr typename
-    __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
-			   chrono::minutes>::type
-    operator"" min()
-    {
-      return __detail::_Select_type<
-			__select_int::_Select_int<_Digits...>::value,
-			chrono::minutes>::value;
-    }
+    template <char... _Digits>
+      constexpr typename
+      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+			     chrono::milliseconds>::type
+      operator"" ms()
+      {
+	return __detail::_Select_type<
+			  __select_int::_Select_int<_Digits...>::value,
+			  chrono::milliseconds>::value;
+      }
 
-  constexpr chrono::duration<long double>
-  operator"" s(long double __secs)
-  { return chrono::duration<long double>{__secs}; }
+    constexpr chrono::duration<long double, micro>
+    operator"" us(long double __usecs)
+    { return chrono::duration<long double, micro>{__usecs}; }
 
-  template <char... _Digits>
-    constexpr typename
-    __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
-			   chrono::seconds>::type
-    operator"" s()
-    {
-      return __detail::_Select_type<
-			__select_int::_Select_int<_Digits...>::value,
-			chrono::seconds>::value;
-    }
+    template <char... _Digits>
+      constexpr typename
+      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+			     chrono::microseconds>::type
+      operator"" us()
+      {
+	return __detail::_Select_type<
+			  __select_int::_Select_int<_Digits...>::value,
+			  chrono::microseconds>::value;
+      }
 
-  constexpr chrono::duration<long double, milli>
-  operator"" ms(long double __msecs)
-  { return chrono::duration<long double, milli>{__msecs}; }
+    constexpr chrono::duration<long double, nano>
+    operator"" ns(long double __nsecs)
+    { return chrono::duration<long double, nano>{__nsecs}; }
 
-  template <char... _Digits>
-    constexpr typename
-    __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
-			   chrono::milliseconds>::type
-    operator"" ms()
-    {
-      return __detail::_Select_type<
-			__select_int::_Select_int<_Digits...>::value,
-			chrono::milliseconds>::value;
-    }
+    template <char... _Digits>
+      constexpr typename
+      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+			     chrono::nanoseconds>::type
+      operator"" ns()
+      {
+	return __detail::_Select_type<
+			  __select_int::_Select_int<_Digits...>::value,
+			  chrono::nanoseconds>::value;
+      }
 
-  constexpr chrono::duration<long double, micro>
-  operator"" us(long double __usecs)
-  { return chrono::duration<long double, micro>{__usecs}; }
+  } // inline namespace chrono_literals
+  } // inline namespace literals
 
-  template <char... _Digits>
-    constexpr typename
-    __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
-			   chrono::microseconds>::type
-    operator"" us()
-    {
-      return __detail::_Select_type<
-			__select_int::_Select_int<_Digits...>::value,
-			chrono::microseconds>::value;
-    }
+#endif // __cplusplus > 201103L
 
-  constexpr chrono::duration<long double, nano>
-  operator"" ns(long double __nsecs)
-  { return chrono::duration<long double, nano>{__nsecs}; }
-
-  template <char... _Digits>
-    constexpr typename
-    __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
-			   chrono::nanoseconds>::type
-    operator"" ns()
-    {
-      return __detail::_Select_type<
-			__select_int::_Select_int<_Digits...>::value,
-			chrono::nanoseconds>::value;
-    }
-
-} // inline namespace chrono_literals
-} // inline namespace literals
-
-_GLIBCXX_END_NAMESPACE_VERSION
+  // @} group chrono
 } // namespace std
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1
 
-#endif // __cplusplus > 201103L
+#endif // C++11
 
 #endif //_GLIBCXX_CHRONO

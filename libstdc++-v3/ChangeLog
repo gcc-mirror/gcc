@@ -1,5 +1,15 @@
 2013-06-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
+	Simplify and clean up library literals.
+	* include/std/chrono: Simplify namespace and versioning management.
+	* include/bits/basic_string.h: Ditto.
+	* testsuite/20_util/duration/literals/types.cc: Remove bogus comment.
+	* testsuite/20_util/duration/literals/values.cc: Ditto.
+	* testsuite/21_strings/basic_string/literals/types.cc: Ditto.
+	* testsuite/21_strings/basic_string/literals/values.cc: Ditto.
+
+2013-06-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
 	Implement N3654 - Quoted Strings Library Proposal
 	* include/std/iomanip: Add quoted(String, Char delim, Char escape)
 	manipulators and supporting machinery in c++1y mode.
