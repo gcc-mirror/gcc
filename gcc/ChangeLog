@@ -1,3 +1,9 @@
+2013-06-07  Sriraman Tallam  <tmsriram@google.com>
+
+	PR c++/57548
+	* cp/call.c (build_over_call):  Check if current_function_decl is
+	NULL.
+
 2013-06-07  Jan Hubicka  <jh@suse.cz>
 
 	* symtab.c (symtab_resolve_alias): Do not remove alias attribute.
