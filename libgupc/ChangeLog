@@ -1,11 +1,5 @@
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
-	testsuite/libgupc.upc/intrepid/test07.upc: Split test into two
-	separate compilation units.
-	testsuite/libgupc.upc/intrepid/test07_sep.upc: New.
-	testsuite/libgupc.upc/intrepid/test08.upc: Split test into two
-	separate compilation units.
-	testsuite/libgupc.upc/intrepid/test08_sep.upc: New.
 	testsuite/libgupc.upc/upc.exp: Changed list of tests to exclude
 	separate compilation units (*_sep.upc).
 
