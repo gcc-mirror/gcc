@@ -5717,7 +5717,7 @@ gfc_simplify_storage_size (gfc_expr *x,
   if (x->ts.type == BT_CLASS || x->ts.deferred)
     return NULL;
 
-  if (x->ts.type == BT_CHARACTER
+  if (x->ts.type == BT_CHARACTER && x->expr_type != EXPR_CONSTANT
       && (!x->ts.u.cl || !x->ts.u.cl->length
 	  || x->ts.u.cl->length->expr_type != EXPR_CONSTANT))
     return NULL;
