@@ -18,10 +18,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// NOTE: This makes use of the fact that we know how moveable
-// is implemented on string (via swap). If the implementation changed
-// this test may begin to fail.
-
 #include <chrono>
 #include <testsuite_hooks.h>
 
