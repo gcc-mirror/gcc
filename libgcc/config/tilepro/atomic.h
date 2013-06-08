@@ -1,6 +1,5 @@
 /* Macros for atomic functionality for tile.
-   Copyright (C) 2011, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 2011-2013 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is free software; you can redistribute it and/or modify it
@@ -93,8 +92,6 @@
    compare-and-exchange routine, so may be potentially less efficient.  */
 #endif
 
-#include <stdint.h>
-#include <features.h>
 #ifdef __tilegx__
 #include <arch/spr_def.h>
 #else
@@ -123,9 +120,9 @@ static __inline __attribute__ ((always_inline))
 
 /* 64-bit integer compare-and-exchange.  */
 static __inline __attribute__ ((always_inline))
-     int64_t arch_atomic_val_compare_and_exchange_8 (volatile int64_t * mem,
-						     int64_t oldval,
-						     int64_t newval)
+     long long arch_atomic_val_compare_and_exchange_8 (volatile long long
+						       *mem, long long oldval,
+						       long long newval)
 {
 #ifdef __tilegx__
   __insn_mtspr (SPR_CMPEXCH_VALUE, oldval);
@@ -140,7 +137,7 @@ static __inline __attribute__ ((always_inline))
 			"R04" (newval_lo), "R05" (newval_hi),
 			"m" (*mem):"r20", "r21", "r22", "r23", "r24", "r25",
 			"r26", "r27", "r28", "r29", "memory");
-  return ((uint64_t) result_hi) << 32 | result_lo;
+  return ((long long) result_hi) << 32 | result_lo;
 #endif
 }
 
@@ -151,11 +148,11 @@ extern int __arch_atomic_error_bad_argument_size (void)
 
 
 #define arch_atomic_val_compare_and_exchange(mem, o, n)                 \
-  ({                                                                    \
+  __extension__ ({                                                      \
     (__typeof(*(mem)))(__typeof(*(mem)-*(mem)))                         \
       ((sizeof(*(mem)) == 8) ?                                          \
        arch_atomic_val_compare_and_exchange_8(                          \
-         (volatile int64_t*)(mem), (__typeof((o)-(o)))(o),              \
+         (volatile long long*)(mem), (__typeof((o)-(o)))(o),            \
          (__typeof((n)-(n)))(n)) :                                      \
        (sizeof(*(mem)) == 4) ?                                          \
        arch_atomic_val_compare_and_exchange_4(                          \
@@ -165,7 +162,7 @@ extern int __arch_atomic_error_bad_argument_size (void)
   })
 
 #define arch_atomic_bool_compare_and_exchange(mem, o, n)                \
-  ({                                                                    \
+  __extension__ ({                                                      \
     __typeof(o) __o = (o);                                              \
     __builtin_expect(                                                   \
       __o == arch_atomic_val_compare_and_exchange((mem), __o, (n)), 1); \
@@ -175,7 +172,7 @@ extern int __arch_atomic_error_bad_argument_size (void)
 /* Loop with compare_and_exchange until we guess the correct value.
    Normally "expr" will be an expression using __old and __value.  */
 #define __arch_atomic_update_cmpxchg(mem, value, expr)                  \
-  ({                                                                    \
+  __extension__ ({                                                      \
     __typeof(value) __value = (value);                                  \
     __typeof(*(mem)) *__mem = (mem), __old = *__mem, __guess;           \
     do {                                                                \
@@ -190,12 +187,14 @@ extern int __arch_atomic_error_bad_argument_size (void)
 /* Generic atomic op with 8- or 4-byte variant.
    The _mask, _addend, and _expr arguments are ignored on tilegx.  */
 #define __arch_atomic_update(mem, value, op, _mask, _addend, _expr)     \
-  ({                                                                    \
+  __extension__ ({                                                      \
     ((__typeof(*(mem)))                                                 \
      ((sizeof(*(mem)) == 8) ? (__typeof(*(mem)-*(mem)))__insn_##op(     \
-        (void *)(mem), (int64_t)(__typeof((value)-(value)))(value)) :   \
+        (volatile void *)(mem),                                         \
+        (long long)(__typeof((value)-(value)))(value)) :                \
       (sizeof(*(mem)) == 4) ? (int)__insn_##op##4(                      \
-        (void *)(mem), (int32_t)(__typeof((value)-(value)))(value)) :   \
+        (volatile void *)(mem),                                         \
+        (int)(__typeof((value)-(value)))(value)) :                      \
       __arch_atomic_error_bad_argument_size()));                        \
   })
 
@@ -225,7 +224,7 @@ static __inline __attribute__ ((always_inline))
 /* Generic atomic op with 8- or 4-byte variant.
    The _op argument is ignored on tilepro.  */
 #define __arch_atomic_update(mem, value, _op, mask, addend, expr)       \
-  ({                                                                    \
+  __extension__ ({                                                      \
     (__typeof(*(mem)))(__typeof(*(mem)-*(mem)))                         \
       ((sizeof(*(mem)) == 8) ?                                          \
        __arch_atomic_update_cmpxchg((mem), (value), (expr)) :           \
@@ -264,13 +263,13 @@ static __inline __attribute__ ((always_inline))
   __arch_atomic_update_cmpxchg(mem, mask, ~(__old & __value))
 
 #define arch_atomic_bit_set(mem, bit)                                   \
-  ({                                                                    \
+  __extension__ ({                                                      \
     __typeof(*(mem)) __mask = (__typeof(*(mem)))1 << (bit);             \
     __mask & arch_atomic_or((mem), __mask);                             \
   })
 
 #define arch_atomic_bit_clear(mem, bit)                                 \
-  ({                                                                    \
+  __extension__ ({                                                      \
     __typeof(*(mem)) __mask = (__typeof(*(mem)))1 << (bit);             \
     __mask & arch_atomic_and((mem), ~__mask);                           \
   })
