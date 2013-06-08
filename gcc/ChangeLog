@@ -1,3 +1,10 @@
+2013-06-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57559
+	* lra-constraints.c (process_alt_operands): Don't discourage
+	memory with known offset for offsetable memory constraint.
+	* lra.c (lra_emit_add): Exchange y and z for 2-op add insn.
+
 2013-06-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* varasm.c (struct oc_local_state): Reorder fields.

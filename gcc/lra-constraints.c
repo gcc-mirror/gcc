@@ -1997,15 +1997,8 @@ process_alt_operands (int only_alternative)
 			      (op, this_alternative) == NO_REGS))))
 		reject += LRA_MAX_REJECT;
 
-	      if (MEM_P (op) && offmemok)
-		{
-		  /* If we know offset and this non-offsetable memory,
-		     something wrong with this memory and it is better
-		     to try other memory possibilities.  */
-		  if (MEM_OFFSET_KNOWN_P (op))
-		    reject += LRA_MAX_REJECT;
-		}
-	      else if (! (const_to_mem && constmemok))
+	      if (! (MEM_P (op) && offmemok)
+		  && ! (const_to_mem && constmemok))
 		{
 		  /* We prefer to reload pseudos over reloading other
 		     things, since such reloads may be able to be
