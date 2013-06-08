@@ -1,5 +1,18 @@
 2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/stl_algo.h (is_permutation): Add overloads from N3671.
+	* include/bits/stl_algobase.h (equal, mismatch): Likewise.
+	* testsuite/25_algorithms/equal/1.cc: Remove duplicate test case.
+	* testsuite/25_algorithms/equal/2.cc: New.
+	* testsuite/25_algorithms/equal/check_type2.cc: New.
+	* testsuite/25_algorithms/is_permutationqual/2.cc: New.
+	* testsuite/25_algorithms/is_permutationqual/check_type2.cc: New.
+	* testsuite/25_algorithms/mismatch/2.cc: New.
+	* testsuite/25_algorithms/mismatch/check_type2.cc: New.
+	* testsuite/util/testsuite_iterators.h: Fix spelling.
+
+2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/type-traits (integral_constant::operator()): Implement
 	N3545.
 	* testsuite/20_util/integral_constant/call_operator.cc: New.

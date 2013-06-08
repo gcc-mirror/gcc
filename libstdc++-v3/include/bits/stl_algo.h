@@ -4371,6 +4371,140 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return true;
     }
 
+#if __cplusplus > 201103L
+  /**
+   *  @brief  Checks whether a permutaion of the second sequence is equal
+   *          to the first sequence.
+   *  @ingroup non_mutating_algorithms
+   *  @param  __first1  Start of first range.
+   *  @param  __last1   End of first range.
+   *  @param  __first2  Start of second range.
+   *  @param  __last2   End of first range.
+   *  @return true if there exists a permutation of the elements in the range
+   *          [__first2, __last2), beginning with ForwardIterator2 begin,
+   *          such that equal(__first1, __last1, begin) returns true;
+   *          otherwise, returns false.
+  */
+  template<typename _ForwardIterator1, typename _ForwardIterator2>
+    bool
+    is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+		   _ForwardIterator2 __first2, _ForwardIterator2 __last2)
+    {
+      using _Cat1
+	= typename iterator_traits<_ForwardIterator1>::iterator_category;
+      using _Cat2
+	= typename iterator_traits<_ForwardIterator2>::iterator_category;
+      using _It1_is_RA = is_same<_Cat1, random_access_iterator_tag>;
+      using _It2_is_RA = is_same<_Cat2, random_access_iterator_tag>;
+      if (_It1_is_RA() && _It1_is_RA())
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	}
+
+      // Efficiently compare identical prefixes:  O(N) if sequences
+      // have the same elements in the same order.
+      for (; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
+	if (!(*__first1 == *__first2))
+	  break;
+
+      if (__first1 == __last1 && __first2 == __last2)
+	return true;
+
+      if (std::distance(__first1, __last1) != std::distance(__first2, __last2))
+	return false;
+
+      for (auto __scan = __first1; __scan != __last1; ++__scan)
+	{
+	  if (__scan != _GLIBCXX_STD_A::find(__first1, __scan, *__scan))
+	    continue; // We've seen this one before.
+
+	  auto __matches = std::count(__first2, __last2, *__scan);
+	  if (0 == __matches
+	      || std::count(__scan, __last1, *__scan) != __matches)
+	    return false;
+	}
+      return true;
+    }
+
+  /**
+   *  @brief  Checks whether a permutation of the second sequence is equal
+   *          to the first sequence.
+   *  @ingroup non_mutating_algorithms
+   *  @param  __first1  Start of first range.
+   *  @param  __last1   End of first range.
+   *  @param  __first2  Start of second range.
+   *  @param  __last2   End of first range.
+   *  @param  __pred    A binary predicate.
+   *  @return true if there exists a permutation of the elements in the range
+   *          [__first2, __last2), beginning with ForwardIterator2 begin,
+   *          such that equal(__first1, __last1, __begin, __pred) returns true;
+   *          otherwise, returns false.
+  */
+  template<typename _ForwardIterator1, typename _ForwardIterator2,
+	   typename _BinaryPredicate>
+    bool
+    is_permutation(_ForwardIterator1 __first1, _ForwardIterator1 __last1,
+		   _ForwardIterator2 __first2, _ForwardIterator2 __last2,
+		   _BinaryPredicate __pred)
+    {
+      using _Cat1
+	= typename iterator_traits<_ForwardIterator1>::iterator_category;
+      using _Cat2
+	= typename iterator_traits<_ForwardIterator2>::iterator_category;
+      using _It1_is_RA = is_same<_Cat1, random_access_iterator_tag>;
+      using _It2_is_RA = is_same<_Cat2, random_access_iterator_tag>;
+      constexpr bool __ra_iters = _It1_is_RA() && _It1_is_RA();
+      if (__ra_iters)
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	}
+
+      // Efficiently compare identical prefixes:  O(N) if sequences
+      // have the same elements in the same order.
+      for (; __first1 != __last1; ++__first1, ++__first2)
+	if (!bool(__pred(*__first1, *__first2)))
+	  break;
+
+      if (__ra_iters)
+	{
+	  if (__first1 == __last1)
+	    return true;
+	}
+      else
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 == 0 && __d2 == 0)
+	    return true;
+	  if (__d1 != __d2)
+	    return false;
+	}
+
+      for (_ForwardIterator1 __scan = __first1; __scan != __last1; ++__scan)
+	{
+	  using std::placeholders::_1;
+
+	  if (__scan != _GLIBCXX_STD_A::find_if(__first1, __scan,
+						std::bind(__pred, _1, *__scan)))
+	    continue; // We've seen this one before.
+
+	  auto __matches = std::count_if(__first2, __last2,
+					 std::bind(__pred, _1, *__scan));
+	  if (0 == __matches
+	      || std::count_if(__scan, __last1,
+			       std::bind(__pred, _1, *__scan)) != __matches)
+	    return false;
+	}
+      return true;
+    }
+#endif
+
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /**
    *  @brief Shuffle the elements of a sequence using a uniform random
