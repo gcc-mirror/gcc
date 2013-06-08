@@ -1,4 +1,7 @@
-/* Copyright (C) 2001-2013 Free Software Foundation, Inc.
+/* { dg-additional-sources "test07_sep.upc" } */
+/* Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
+   2010, 2011, 2012
+   Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
    and Nenad Vukicevic <nenad@intrepid.com>
@@ -30,34 +33,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define FACTOR 100
 
-void
-test07 ()
-{
-  extern shared int array[FACTOR * THREADS];
-  int i;
-  for (i = MYTHREAD; i < FACTOR * THREADS; i += THREADS)
-    {
-      array[i] = i + 1;
-    }
-  upc_barrier;
-  if (MYTHREAD == 0)
-    {
-      for (i = 0; i < FACTOR * THREADS; ++i)
-	{
-	  int got = array[i];
-	  int expected = i + 1;
-	  if (got != expected)
-	    {
-	      fprintf (stderr, "test07: error at element %d. "
-	               "Expected %d, got %d\n", i, expected, got);
-	      abort ();
-	    }
-	}
-      printf ("test07: simple external shared array test - passed.\n");
-    }
-}
-
 shared int array[FACTOR*THREADS];
+
+extern void test07 (); /* separate */
 
 int
 main()

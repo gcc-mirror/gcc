@@ -1,6 +1,5 @@
-/* { dg-additional-sources "test08_sep.upc" } */
 /* Copyright (c) 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009,
-   2010, 2011, 2012
+   2010, 2011
    Free Software Foundation, Inc. 
    This file is part of the UPC runtime library test suite.
    Written by Gary Funck <gary@intrepid.com>
@@ -33,13 +32,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define DIM1 1024
 
-shared int array[DIM1][THREADS];
-
-extern void test08 (); /* separate */
-
-int
-main()
+void
+test08 ()
 {
-  test08 ();
-  return 0;
+  extern shared int array[DIM1][THREADS];
+  int i, j;
+  for (i = 0; i < DIM1; ++i)
+    {
+      array[i][MYTHREAD] = (i + 1) * (MYTHREAD + 1);
+    }
+  upc_barrier;
+  if (MYTHREAD == 0)
+    {
+      for (i = 0; i < DIM1; ++i)
+	{
+	  for (j = 0; j < THREADS; ++j)
+	    {
+	      int got = array[i][j];
+	      int expected = (i + 1) * (j + 1);
+	      if (got != expected)
+		{
+		  fprintf (stderr, "test08: error at element [%d,%d]. Expected %d, got %d\n",
+			   i, j, expected, got);
+		  abort ();
+		}
+	    }
+	}
+      printf ("test08: simple external 2-dimensional array test - passed.\n");
+    }
 }

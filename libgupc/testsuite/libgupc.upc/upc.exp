@@ -17,7 +17,7 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 # Gather a list of all tests.
-set tests [lsort [find $srcdir/$subdir *.upc]]
+set tests [lsort [find $srcdir/$subdir test??.upc]]
 
 set ld_library_path $always_ld_library_path
 append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
