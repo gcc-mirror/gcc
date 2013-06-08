@@ -1,5 +1,10 @@
 2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/bits/alloc_traits.h (allocator_traits::max_size()): LWG
+	2162: Add noexcept.
+
+2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/bits/stl_algo.h (is_permutation): Add overloads from N3671.
 	* include/bits/stl_algobase.h (equal, mismatch): Likewise.
 	* testsuite/25_algorithms/equal/1.cc: Remove duplicate test case.
