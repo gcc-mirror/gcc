@@ -1,5 +1,12 @@
 2013-06-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37336
+	* gfortran.dg/finalize_10.f90: New.
+	* gfortran.dg/auto_dealloc_2.f90: Update tree-dump.
+	* gfortran.dg/finalize_15.f90: New.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57553
 	* gfortran.dg/storage_size_4.f90: New.
 

@@ -1,5 +1,11 @@
 2013-06-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37336
+	* trans-decl.c (init_intent_out_dt): Call finalizer
+	when approriate.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57553
 	* simplify.c (gfc_simplify_storage_size): Handle literal
 	strings.
