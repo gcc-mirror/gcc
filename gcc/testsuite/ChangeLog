@@ -1,3 +1,8 @@
+2013-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57568
+	* gcc.c-torture/execute/pr57568.c: New test.
+
 2013-06-06  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline
