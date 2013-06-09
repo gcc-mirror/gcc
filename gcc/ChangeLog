@@ -1,3 +1,12 @@
+2013-06-10  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	Backport from mainline
+	2013-05-20  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/56547
+	* config/sh/sh.md (fmasf4): Remove empty constraints strings.
+	(*fmasf4, *fmasf4_media): New insns.
+
 2013-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57568
