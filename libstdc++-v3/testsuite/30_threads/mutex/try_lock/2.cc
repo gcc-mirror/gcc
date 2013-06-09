@@ -24,6 +24,7 @@
 
 
 #include <mutex>
+#include <thread>
 #include <system_error>
 #include <testsuite_hooks.h>
 
@@ -38,15 +39,18 @@ int main()
       m.lock();
       bool b;
 
-      try
-	{
-	  b = m.try_lock();
-	  VERIFY( !b );
-	}
-      catch (const std::system_error& e)
-	{
-	  VERIFY( false );
-	}
+      std::thread t([&] {
+        try
+          {
+            b = m.try_lock();
+          }
+        catch (const std::system_error& e)
+          {
+            VERIFY( false );
+          }
+      });
+      t.join();
+      VERIFY( !b );
 
       m.unlock();
     }
