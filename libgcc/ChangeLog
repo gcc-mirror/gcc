@@ -1,3 +1,9 @@
+2013-06-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/6526
+	* config/sh/lib1funcs.S (sdivsi3_i4, udivsi3_i4): Do not change bits
+	other than FPSCR.PR and FPSCR.SZ.  Add SH4A implementation.
+
 2013-06-08  Walter Lee  <walt@tilera.com>
 
 	* config/tilepro/atomic.h: Don't include stdint.h or features.h.
