@@ -1,3 +1,10 @@
+2013-06-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (call_once): Remove parentheses to fix error in
+	c++1y and gnu++1y mode.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Call try_lock() in new
+	thread to avoid undefined behaviour.
+
 2013-06-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Simplify and clean up library literals.
