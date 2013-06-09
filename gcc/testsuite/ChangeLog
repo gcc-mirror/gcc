@@ -1,3 +1,8 @@
+2013-06-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/6526
+	* gcc.target/sh/pr6526.c: New.
+
 2013-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57568
