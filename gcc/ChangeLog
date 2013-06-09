@@ -1,3 +1,9 @@
+2013-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57568
+	* config/i386/i386.md (TARGET_READ_MODIFY_WRITE peepholes): Ensure
+	that operands[2] doesn't overlap with operands[0].
+
 2013-06-09  David Edelsohn  <dje.gcc@gmail.com>
 	    Jan Hubicka  <jh@suse.cz>
 
