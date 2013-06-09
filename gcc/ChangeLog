@@ -1,3 +1,9 @@
+2013-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57568
+	* config/i386/i386.md (TARGET_READ_MODIFY_WRITE peepholes): Ensure
+	that operands[2] doesn't overlap with operands[0].
+
 2013-06-07  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
 
 	* recog.c (offsettable_address_addr_space_p): Fix calculation of
