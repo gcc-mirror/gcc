@@ -15728,11 +15728,6 @@ print_operand (FILE *file, rtx x, int code)
 	 TOCs and the like.  */
       gcc_assert (GET_CODE (x) == SYMBOL_REF);
 
-      /* Mark the decl as referenced so that cgraph will output the
-	 function.  */
-      if (SYMBOL_REF_DECL (x))
-	DECL_PRESERVE_P (SYMBOL_REF_DECL (x)) = 1;
-
       /* For macho, check to see if we need a stub.  */
       if (TARGET_MACHO)
 	{
