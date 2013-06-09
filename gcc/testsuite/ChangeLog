@@ -1,3 +1,8 @@
+2013-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37404
+	* g++.dg/other/vararg-4.C: New.
+
 2013-06-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57559
