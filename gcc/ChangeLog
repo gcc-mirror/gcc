@@ -1,3 +1,33 @@
+2013-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56564
+	* varasm.c (align_variable): Don't use DATA_ALIGNMENT or
+	CONSTANT_ALIGNMENT if !decl_binds_to_current_def_p (decl).
+	Use DATA_ABI_ALIGNMENT for that case instead if defined.
+	(get_variable_align): New function.
+	(get_variable_section, emit_bss, emit_common,
+	assemble_variable_contents, place_block_symbol): Use
+	get_variable_align instead of DECL_ALIGN.
+	(assemble_noswitch_variable): Add align argument, use it
+	instead of DECL_ALIGN.
+	(assemble_variable): Adjust caller.  Use get_variable_align
+	instead of DECL_ALIGN.
+	* config/i386/i386.h (DATA_ALIGNMENT): Adjust x86_data_alignment
+	caller.
+	(DATA_ABI_ALIGNMENT): Define.
+	* config/i386/i386-protos.h (x86_data_alignment): Adjust prototype.
+	* config/i386/i386.c (x86_data_alignment): Add opt argument.  If
+	opt is false, only return the psABI mandated alignment increase.
+	* config/c6x/c6x.h (DATA_ALIGNMENT): Renamed to...
+	(DATA_ABI_ALIGNMENT): ... this.
+	* config/mmix/mmix.h (DATA_ALIGNMENT): Renamed to...
+	(DATA_ABI_ALIGNMENT): ... this.
+	* config/mmix/mmix.c (mmix_data_alignment): Adjust function comment.
+	* config/s390/s390.h (DATA_ALIGNMENT): Renamed to...
+	(DATA_ABI_ALIGNMENT): ... this.
+	* doc/tm.texi.in (DATA_ABI_ALIGNMENT): Document.
+	* doc/tm.texi: Regenerated.
+
 2013-06-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Also use

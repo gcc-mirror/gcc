@@ -207,7 +207,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 #endif	/* RTX_CODE  */
 
 #ifdef TREE_CODE
-extern int ix86_data_alignment (tree, int);
+extern int ix86_data_alignment (tree, int, bool);
 extern unsigned int ix86_local_alignment (tree, enum machine_mode,
 					  unsigned int);
 extern unsigned int ix86_minimum_alignment (tree, enum machine_mode,

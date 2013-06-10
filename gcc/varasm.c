@@ -966,13 +966,80 @@ align_variable (tree decl, bool dont_output_data)
       align = MAX_OFILE_ALIGNMENT;
     }
 
-  /* On some machines, it is good to increase alignment sometimes.  */
   if (! DECL_USER_ALIGN (decl))
     {
+#ifdef DATA_ABI_ALIGNMENT
+      unsigned int data_abi_align
+	= DATA_ABI_ALIGNMENT (TREE_TYPE (decl), align);
+      /* For backwards compatibility, don't assume the ABI alignment for
+	 TLS variables.  */
+      if (! DECL_THREAD_LOCAL_P (decl) || data_abi_align <= BITS_PER_WORD)
+	align = data_abi_align;
+#endif
+
+      /* On some machines, it is good to increase alignment sometimes.
+	 But as DECL_ALIGN is used both for actually emitting the variable
+	 and for code accessing the variable as guaranteed alignment, we
+	 can only increase the alignment if it is a performance optimization
+	 if the references to it must bind to the current definition.  */
+      if (decl_binds_to_current_def_p (decl))
+	{
+#ifdef DATA_ALIGNMENT
+	  unsigned int data_align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
+	  /* Don't increase alignment too much for TLS variables - TLS space
+	     is too precious.  */
+	  if (! DECL_THREAD_LOCAL_P (decl) || data_align <= BITS_PER_WORD)
+	    align = data_align;
+#endif
+#ifdef CONSTANT_ALIGNMENT
+	  if (DECL_INITIAL (decl) != 0
+	      && DECL_INITIAL (decl) != error_mark_node)
+	    {
+	      unsigned int const_align
+		= CONSTANT_ALIGNMENT (DECL_INITIAL (decl), align);
+	      /* Don't increase alignment too much for TLS variables - TLS
+		 space is too precious.  */
+	      if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
+		align = const_align;
+	    }
+#endif
+	}
+    }
+
+  /* Reset the alignment in case we have made it tighter, so we can benefit
+     from it in get_pointer_alignment.  */
+  DECL_ALIGN (decl) = align;
+}
+
+/* Return DECL_ALIGN (decl), possibly increased for optimization purposes
+   beyond what align_variable returned.  */
+
+static unsigned int
+get_variable_align (tree decl)
+{
+  unsigned int align = DECL_ALIGN (decl);
+
+  /* For user aligned vars or static vars align_variable already did
+     everything.  */
+  if (DECL_USER_ALIGN (decl) || !TREE_PUBLIC (decl))
+    return align;
+
+#ifdef DATA_ABI_ALIGNMENT
+  if (DECL_THREAD_LOCAL_P (decl))
+    align = DATA_ABI_ALIGNMENT (TREE_TYPE (decl), align);
+#endif
+
+  /* For decls that bind to the current definition, align_variable
+     did also everything, except for not assuming ABI required alignment
+     of TLS variables.  For other vars, increase the alignment here
+     as an optimization.  */
+  if (!decl_binds_to_current_def_p (decl))
+    {
+      /* On some machines, it is good to increase alignment sometimes.  */
 #ifdef DATA_ALIGNMENT
       unsigned int data_align = DATA_ALIGNMENT (TREE_TYPE (decl), align);
       /* Don't increase alignment too much for TLS variables - TLS space
-	 is too precious.  */
+         is too precious.  */
       if (! DECL_THREAD_LOCAL_P (decl) || data_align <= BITS_PER_WORD)
 	align = data_align;
 #endif
@@ -986,12 +1053,10 @@ align_variable (tree decl, bool dont_output_data)
 	  if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
 	    align = const_align;
 	}
-#endif
     }
+#endif
 
-  /* Reset the alignment in case we have made it tighter, so we can benefit
-     from it in get_pointer_alignment.  */
-  DECL_ALIGN (decl) = align;
+  return align;
 }
 
 /* Return the section into which the given VAR_DECL or CONST_DECL
@@ -1043,7 +1108,8 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 	return bss_noswitch_section;
     }
 
-  return targetm.asm_out.select_section (decl, reloc, DECL_ALIGN (decl));
+  return targetm.asm_out.select_section (decl, reloc,
+					 get_variable_align (decl));
 }
 
 /* Return the block into which object_block DECL should be placed.  */
@@ -1780,7 +1846,8 @@ emit_bss (tree decl ATTRIBUTE_UNUSED,
 	  unsigned HOST_WIDE_INT rounded ATTRIBUTE_UNUSED)
 {
 #if defined ASM_OUTPUT_ALIGNED_BSS
-  ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size, DECL_ALIGN (decl));
+  ASM_OUTPUT_ALIGNED_BSS (asm_out_file, decl, name, size,
+			  get_variable_align (decl));
   return true;
 #endif
 }
@@ -1796,10 +1863,11 @@ emit_common (tree decl ATTRIBUTE_UNUSED,
 {
 #if defined ASM_OUTPUT_ALIGNED_DECL_COMMON
   ASM_OUTPUT_ALIGNED_DECL_COMMON (asm_out_file, decl, name,
-				  size, DECL_ALIGN (decl));
+				  size, get_variable_align (decl));
   return true;
 #elif defined ASM_OUTPUT_ALIGNED_COMMON
-  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, name, size, DECL_ALIGN (decl));
+  ASM_OUTPUT_ALIGNED_COMMON (asm_out_file, name, size,
+			     get_variable_align (decl));
   return true;
 #else
   ASM_OUTPUT_COMMON (asm_out_file, name, size, rounded);
@@ -1828,7 +1896,8 @@ emit_tls_common (tree decl ATTRIBUTE_UNUSED,
    NAME is the name of DECL's SYMBOL_REF.  */
 
 static void
-assemble_noswitch_variable (tree decl, const char *name, section *sect)
+assemble_noswitch_variable (tree decl, const char *name, section *sect,
+			    unsigned int align)
 {
   unsigned HOST_WIDE_INT size, rounded;
 
@@ -1850,7 +1919,7 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect)
 	     * (BIGGEST_ALIGNMENT / BITS_PER_UNIT));
 
   if (!sect->noswitch.callback (decl, name, size, rounded)
-      && (unsigned HOST_WIDE_INT) DECL_ALIGN_UNIT (decl) > rounded)
+      && (unsigned HOST_WIDE_INT) (align / BITS_PER_UNIT) > rounded)
     warning (0, "requested alignment for %q+D is greater than "
 	     "implemented alignment of %wu", decl, rounded);
 }
@@ -1880,7 +1949,7 @@ assemble_variable_contents (tree decl, const char *name,
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
 			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
-			 DECL_ALIGN (decl));
+			 get_variable_align (decl));
       else
 	/* Leave space for it.  */
 	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
@@ -1904,6 +1973,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
   const char *name;
   rtx decl_rtl, symbol;
   section *sect;
+  unsigned int align;
   bool asan_protected = false;
 
   /* This function is supposed to handle VARIABLES.  Ensure we have one.  */
@@ -2003,6 +2073,8 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   set_mem_align (decl_rtl, DECL_ALIGN (decl));
 
+  align = get_variable_align (decl);
+
   if (TREE_PUBLIC (decl))
     maybe_assemble_visibility (decl);
 
@@ -2032,12 +2104,12 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       place_block_symbol (symbol);
     }
   else if (SECTION_STYLE (sect) == SECTION_NOSWITCH)
-    assemble_noswitch_variable (decl, name, sect);
+    assemble_noswitch_variable (decl, name, sect, align);
   else
     {
       switch_to_section (sect);
-      if (DECL_ALIGN (decl) > BITS_PER_UNIT)
-	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (DECL_ALIGN_UNIT (decl)));
+      if (align > BITS_PER_UNIT)
+	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_variable_contents (decl, name, dont_output_data);
       if (asan_protected)
 	{
@@ -6959,7 +7031,7 @@ place_block_symbol (rtx symbol)
   else
     {
       decl = SYMBOL_REF_DECL (symbol);
-      alignment = DECL_ALIGN (decl);
+      alignment = get_variable_align (decl);
       size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
       if (flag_asan && asan_protect_global (decl))
 	{
