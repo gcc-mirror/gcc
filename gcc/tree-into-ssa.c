@@ -93,7 +93,7 @@ static sbitmap old_ssa_names;
    the operations done on them are presence tests.  */
 static sbitmap new_ssa_names;
 
-sbitmap interesting_blocks;
+static sbitmap interesting_blocks;
 
 /* Set of SSA names that have been marked to be released after they
    were registered in the replacement table.  They will be finally
