@@ -1,3 +1,8 @@
+2013-06-10  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (hash_external_ref): Use die_symbol or signature
+	for hash so that hash table traversal order is deterministic.
+
 2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>
