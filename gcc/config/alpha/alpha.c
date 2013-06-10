@@ -3068,7 +3068,8 @@ alpha_emit_xfloating_compare (enum rtx_code *pcode, rtx op0, rtx op1)
   out = gen_reg_rtx (DImode);
 
   /* What's actually returned is -1,0,1, not a proper boolean value.  */
-  note = gen_rtx_UNSPEC (DImode, gen_rtvec (2, op0, op1), UNSPEC_XFLT_COMPARE);
+  note = gen_rtx_fmt_ee (cmp_code, VOIDmode, op0, op1);
+  note = gen_rtx_UNSPEC (DImode, gen_rtvec (1, note), UNSPEC_XFLT_COMPARE);
   alpha_emit_xfloating_libcall (func, out, operands, 2, note);
 
   return out;
