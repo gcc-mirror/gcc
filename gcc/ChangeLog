@@ -1,3 +1,8 @@
+2013-06-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_xfloating_compare): Also use
+	cmp_code to construct REG_EQUAL note.
+
 2013-06-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57568
