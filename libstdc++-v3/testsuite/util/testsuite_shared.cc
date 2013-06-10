@@ -19,9 +19,13 @@
 #include <stdexcept>
 #include <iostream>
 #include <sstream>
+#include <set>
+#include <map>
 #include <ext/mt_allocator.h>
 #include <bits/functexcept.h>
 
+namespace __gnu_test
+{
 // libstdc++/22309
 extern "C" void
 try_allocation()
@@ -70,3 +74,57 @@ try_function_random_fail()
   // Randomly throw. See if other threads cleanup.
   std::__throw_bad_exception();
 }
+
+#if __cplusplus < 201103L
+// "must be compiled with C++98"
+  void 
+  erase_external(std::set<int>& s)
+  { s.erase(s.begin()); }
+
+  void 
+  erase_external(std::multiset<int>& s)
+  { s.erase(s.begin()); }
+  
+  void 
+  erase_external(std::map<int, int>& s)
+  { s.erase(s.begin()); }
+  
+  void 
+  erase_external(std::multimap<int, int>& s)
+  { s.erase(s.begin()); }
+
+  void 
+  erase_external_iterators(std::set<int>& s)
+  {
+    typedef typename std::set<int>::iterator iterator_type;
+    iterator_type iter = s.begin();
+    s.erase(iter, ++iter);
+  }
+
+  void 
+  erase_external_iterators(std::multiset<int>& s)
+  {
+    typedef typename std::multiset<int>::iterator iterator_type;
+    iterator_type iter = s.begin();
+    s.erase(iter, ++iter);
+  }
+
+  void 
+  erase_external_iterators(std::map<int, int>& s)
+  {
+    typedef typename std::map<int, int>::iterator iterator_type;
+    iterator_type iter = s.begin();
+    s.erase(iter, ++iter);
+  }
+
+  
+  void 
+  erase_external_iterators(std::multimap<int, int>& s)
+  {
+    typedef typename std::multimap<int, int>::iterator iterator_type;
+    iterator_type iter = s.begin();
+    s.erase(iter, ++iter);
+  }
+#endif
+
+} // end namepace __gnu_test
