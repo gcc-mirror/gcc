@@ -1,3 +1,7 @@
+2013-06-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-into-ssa.c (interesting_blocks): Make static.
+
 2013-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56564
