@@ -1,3 +1,9 @@
+2013-06-07  Sriraman Tallam  <tmsriram@google.com>
+
+	PR c++/57548
+	* call.c (build_over_call):  Check if current_function_decl is
+	NULL.
+
 2013-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53658
