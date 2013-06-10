@@ -44,11 +44,11 @@ int main(void)
   max_value = array3[0] * array4[0];
   for (ii = 0; ii < 10; ii++)
     if (array3[ii] * array4[ii] > max_value) {
-      max_value = array3[ii] * array4[ii];
       max_index = ii;
     }
     
-  
+  for (ii = 0; ii < 10; ii++)
+    my_func (&max_value, array3[ii] * array4[ii]);
   
 #if HAVE_IO
   for (ii = 0; ii < 10; ii++) 

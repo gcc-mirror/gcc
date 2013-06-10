@@ -143,25 +143,18 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
     {
       call_fn = CALL_EXPR_ARG (an_builtin_fn, 2);
-      while (TREE_CODE (call_fn) == CONVERT_EXPR
-	     || TREE_CODE (call_fn) == NOP_EXPR)
+      if (TREE_CODE (call_fn) == ADDR_EXPR)
 	call_fn = TREE_OPERAND (call_fn, 0);
-      call_fn = TREE_OPERAND (call_fn, 0);
-      
       identity_value = CALL_EXPR_ARG (an_builtin_fn, 0);
-      while (TREE_CODE (identity_value) == CONVERT_EXPR
-	     || TREE_CODE (identity_value) == NOP_EXPR)
-	identity_value = TREE_OPERAND (identity_value, 0);
       func_parm = CALL_EXPR_ARG (an_builtin_fn, 1);
     }
   else
     func_parm = CALL_EXPR_ARG (an_builtin_fn, 0);
   
-  while (TREE_CODE (func_parm) == CONVERT_EXPR
-	 || TREE_CODE (func_parm) == EXCESS_PRECISION_EXPR
-	 || TREE_CODE (func_parm) == NOP_EXPR)
-    func_parm = TREE_OPERAND (func_parm, 0);
-
+  /* Fully fold any EXCESSIVE_PRECISION EXPR that can occur in the function
+     parameter.  */
+  func_parm = c_fully_fold (func_parm, false, NULL);
+  
   location = EXPR_LOCATION (an_builtin_fn);
   
   if (!find_rank (location, an_builtin_fn, an_builtin_fn, true, &rank))
