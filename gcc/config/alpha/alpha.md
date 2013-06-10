@@ -25,6 +25,7 @@
 ;; Uses of UNSPEC in this file:
 
 (define_c_enum "unspec" [
+  UNSPEC_XFLT_COMPARE
   UNSPEC_ARG_HOME
   UNSPEC_LDGP1
   UNSPEC_INSXH
