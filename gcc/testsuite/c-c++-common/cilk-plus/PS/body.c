@@ -12,7 +12,7 @@ void foo()
   for (int i=0; i < 1000; ++i)
     {
       if (c == 5)
-	return;	 /* { dg-error "return statments are not allowed" } */
+	return;	 /* { dg-error "\(return statments are not allowed\|invalid exit\)" } */
       if (c == 6)
 	__builtin_setjmp (jmpbuf); /* { dg-error "calls to setjmp are not allowed" } */
       a[i] = b[i];
