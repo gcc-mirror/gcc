@@ -30379,6 +30379,7 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
       return error_mark_node;
     }
 
+  /* Parse initialization.  */
   if (for_keyword == RID_FOR)
     decl = cp_parser_simd_for_init_statement (parser, &init, &pre_body);
 
@@ -30410,6 +30411,7 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
       valid = false;
     }
 
+  /* Parse condition.  */
   if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     return error_mark_node;
   if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
@@ -30426,7 +30428,8 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
   if (cond == error_mark_node)
     valid = false;
   cp_parser_consume_semicolon_at_end_of_statement (parser);
-  
+
+  /* Parse increment.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
     {
       error_at (loc, "missing increment");

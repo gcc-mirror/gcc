@@ -6058,7 +6058,7 @@ finish_omp_cancellation_point (tree clauses)
 tree
 finish_cilk_for_cond (tree cond)
 {
-  return maybe_convert_cond (cond);
+  return cp_truthvalue_conversion (cond);
 }
 
 /* Begin a __transaction_atomic or __transaction_relaxed statement.
