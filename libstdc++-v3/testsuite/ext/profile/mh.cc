@@ -1,4 +1,4 @@
-// { dg-do compile { target *-*-linux* } }
+// { dg-do compile { target *-*-linux* *-*-gnu* } }
 // { dg-xfail-if "" { uclibc } { "*" } { "" } }
 // { dg-require-profile-mode "" }
 

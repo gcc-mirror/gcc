@@ -1,3 +1,10 @@
+2013-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/icv-2.c: Extend current handling of
+	Linux-based x86 systems to cover all GNU systems.
+	* testsuite/libgomp.c/lock-3.c: Likewise.
+	* testsuite/libgomp.c/pr48591.c: Likewise.
+
 2013-06-06  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* configure.tgt (XCFLAGS): Add -ftls-model=initial-exec for

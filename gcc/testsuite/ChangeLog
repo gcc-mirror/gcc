@@ -1,3 +1,76 @@
+2013-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/abi/forced.C: Extend current handling of Linux-based x86
+	systems to cover all GNU systems.
+	* g++.dg/abi/guard2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-rom.C: Likewise.
+	* g++.dg/eh/sighandle.C: Likewise.
+	* g++.dg/ext/cleanup-10.C: Likewise.
+	* g++.dg/ext/cleanup-11.C: Likewise.
+	* g++.dg/ext/cleanup-8.C: Likewise.
+	* g++.dg/ext/cleanup-9.C: Likewise.
+	* g++.dg/opt/const5.C: Likewise.
+	* g++.dg/opt/life1.C: Likewise.
+	* g++.dg/other/pr39496.C: Likewise.
+	* g++.old-deja/g++.abi/aggregates.C: Likewise.
+	* g++.old-deja/g++.abi/align.C: Likewise.
+	* g++.old-deja/g++.abi/bitfields.C: Likewise.
+	* g++.old-deja/g++.law/weak.C: Likewise.
+	* g++.old-deja/g++.pt/asm1.C: Likewise.
+	* gcc.c-torture/execute/20030125-1.x: Likewise.
+	* gcc.c-torture/execute/990127-2.x: Likewise.
+	* gcc.dg/20041106-1.c: Likewise.
+	* gcc.dg/20050503-1.c: Likewise.
+	* gcc.dg/builtin-object-size-5.c: Likewise.
+	* gcc.dg/cleanup-10.c: Likewise.
+	* gcc.dg/cleanup-11.c: Likewise.
+	* gcc.dg/cleanup-8.c: Likewise.
+	* gcc.dg/cleanup-9.c: Likewise.
+	* gcc.dg/complex-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/asm-line1.c: Likewise.
+	* gcc.dg/debug/dwarf2/discriminator.c: Likewise.
+	* gcc.dg/dfp/convert-dfp-round-thread.c: Likewise.
+	* gcc.dg/dfp/pr35739.c: Likewise.
+	* gcc.dg/fdata-sections-1.c: Likewise.
+	* gcc.dg/lto/20090206-1_0.c: Likewise.
+	* gcc.dg/lto/20090206-2_0.c: Likewise.
+	* gcc.dg/pr30360.c: Likewise.
+	* gcc.dg/pr37303.c: Likewise.
+	* gcc.dg/pr39323-1.c: Likewise.
+	* gcc.dg/pr39323-2.c: Likewise.
+	* gcc.dg/pr39323-3.c: Likewise.
+	* gcc.dg/pr45416.c: Likewise.
+	* gcc.dg/setjmp-2.c: Likewise.
+	* gcc.dg/split-1.c: Likewise.
+	* gcc.dg/split-3.c: Likewise.
+	* gcc.dg/split-4.c: Likewise.
+	* gcc.dg/strlenopt-12g.c: Likewise.
+	* gcc.dg/strlenopt-14g.c: Likewise.
+	* gcc.dg/strlenopt-14gf.c: Likewise.
+	* gcc.dg/strlenopt-16g.c: Likewise.
+	* gcc.dg/strlenopt-17g.c: Likewise.
+	* gcc.dg/strlenopt-18g.c: Likewise.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+	* gcc.dg/strlenopt-22g.c: Likewise.
+	* gcc.dg/strlenopt-2f.c: Likewise.
+	* gcc.dg/strlenopt-4g.c: Likewise.
+	* gcc.dg/strlenopt-4gf.c: Likewise.
+	* gcc.dg/struct-ret-3.c: Likewise.
+	* gcc.dg/torture/stackalign/setjmp-2.c: Likewise.
+	* gcc.misc-tests/linkage.exp: Likewise.
+	* gcc.target/i386/20000724-1.c: Likewise.
+	* gcc.target/i386/align-main-3.c: Likewise.
+	* gcc.target/i386/cleanup-1.c: Likewise.
+	* gcc.target/i386/inline-mcpy.c: Likewise.
+	* gcc.target/i386/pr32268.c: Likewise.
+	* gcc.target/i386/pr36613.c: Likewise.
+	* gcc.target/i386/pr39013-1.c: Likewise.
+	* gcc.target/i386/pr39013-2.c: Likewise.
+	* gcc.target/i386/pr39496.c: Likewise.
+	* gcc.target/i386/pr40906-3.c: Likewise.
+	* gcc.target/i386/pr46084.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_pie): Likewise.
+
 2013-06-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/6526
