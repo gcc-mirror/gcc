@@ -1,3 +1,8 @@
+2013-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52440
+	* g++.dg/cpp0x/pr52440.C: New.
+
 2013-06-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56564
