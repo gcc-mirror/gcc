@@ -126,7 +126,9 @@
         (match_operand:VEC_L 1 "input_operand" ""))]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)
    && reload_completed
-   && gpr_or_gpr_p (operands[0], operands[1])"
+   && gpr_or_gpr_p (operands[0], operands[1])
+   && !direct_move_p (operands[0], operands[1])
+   && !quad_load_store_p (operands[0], operands[1])"
   [(pc)]
 {
   rs6000_split_multireg_move (operands[0], operands[1]);

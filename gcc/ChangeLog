@@ -1,3 +1,104 @@
+2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* config/rs6000/vector.md (GPR move splitter): Do not split moves
+	of vectors in GPRS if they are direct moves or quad word load or
+	store moves.
+
+	* config/rs6000/rs6000-protos.h (rs6000_output_move_128bit): Add
+	declaration.
+	(direct_move_p): Likewise.
+	(quad_load_store_p): Likewise.
+
+	* config/rs6000/rs6000.c (enum rs6000_reg_type): Simplify register
+	classes into bins based on the physical register type.
+	(reg_class_to_reg_type): Likewise.
+	(IS_STD_REG_TYPE): Likewise.
+	(IS_FP_VECT_REG_TYPE): Likewise.
+	(reload_fpr_gpr): Arrays to determine what insn to use if we can
+	use direct move instructions.
+	(reload_gpr_vsx): Likewise.
+	(reload_vsx_gpr): Likewise.
+	(rs6000_init_hard_regno_mode_ok): Precalculate the register type
+	information that is a simplification of register classes.  Also
+	precalculate direct move reload helpers.
+	(direct_move_p): New function to return true if the operation can
+	be done as a direct move instruciton.
+	(quad_load_store_p): New function to return true if the operation
+	is a quad memory operation.
+	(rs6000_legitimize_address): If quad memory, only allow register
+	indirect for TImode addresses.
+	(rs6000_legitimate_address_p): Likewise.
+	(enum reload_reg_type): Delete, replace with rs6000_reg_type.
+	(rs6000_reload_register_type): Likewise.
+	(register_to_reg_type): Return register type.
+	(rs6000_secondary_reload_simple_move): New helper function for
+	secondary reload and secondary memory needed to identify anything
+	that is a simple move, and does not need reloading.
+	(rs6000_secondary_reload_direct_move): New helper function for
+	secondary reload to identify cases that can be done with several
+	instructions via the direct move instructions.
+	(rs6000_secondary_reload_move): New helper function for secondary
+	reload to identify moves between register types that can be done.
+	(rs6000_secondary_reload): Add support for quad memory operations
+	and for direct move.
+	(rs6000_secondary_memory_needed): Likewise.
+	(rs6000_debug_secondary_memory_needed): Change argument names.
+	(rs6000_output_move_128bit): New function to return the move to
+	use for 128-bit moves, including knowing about the various
+	limitations of quad memory operations.
+
+	* config/rs6000/vsx.md (vsx_mov<mode>): Add support for quad
+	memory operations.  call rs6000_output_move_128bit for the actual
+	instruciton(s) to generate.
+	(vsx_movti_64bit): Likewise.
+
+	* config/rs6000/rs6000.md (UNSPEC_P8V_FMRGOW): New unspec values.
+	(UNSPEC_P8V_MTVSRWZ): Likewise.
+	(UNSPEC_P8V_RELOAD_FROM_GPR): Likewise.
+	(UNSPEC_P8V_MTVSRD): Likewise.
+	(UNSPEC_P8V_XXPERMDI): Likewise.
+	(UNSPEC_P8V_RELOAD_FROM_VSX): Likewise.
+	(UNSPEC_FUSION_GPR): Likewise.
+	(FMOVE128_GPR): New iterator for direct move.
+	(f32_lv): New mode attribute for load/store of SFmode/SDmode
+	values.
+	(f32_sv): Likewise.
+	(f32_dm): Likewise.
+	(zero_extend<mode>di2_internal1): Add support for power8 32-bit
+	loads and direct move instructions.
+	(zero_extendsidi2_lfiwzx): Likewise.
+	(extendsidi2_lfiwax): Likewise.
+	(extendsidi2_nocell): Likewise.
+	(floatsi<mode>2_lfiwax): Likewise.
+	(lfiwax): Likewise.
+	(floatunssi<mode>2_lfiwzx): Likewise.
+	(lfiwzx): Likewise.
+	(fix_trunc<mode>_stfiwx): Likewise.
+	(fixuns_trunc<mode>_stfiwx): Likewise.
+	(mov<mode>_hardfloat, 32-bit floating point): Likewise.
+	(mov<move>_hardfloat64, 64-bit floating point): Likewise.
+	(parity<mode>2_cmpb): Set length/type attr.
+	(unnamed shift right patterns, mov<mode>_internal2): Change type attr
+	for 'mr.' to fast_compare.
+	(bpermd_<mode>): Change type attr to popcnt.
+	(p8_fmrgow_<mode>): New insns for power8 direct move support.
+	(p8_mtvsrwz_1): Likewise.
+	(p8_mtvsrwz_2): Likewise.
+	(reload_fpr_from_gpr<mode>): Likewise.
+	(p8_mtvsrd_1): Likewise.
+	(p8_mtvsrd_2): Likewise.
+	(p8_xxpermdi_<mode>): Likewise.
+	(reload_vsx_from_gpr<mode>): Likewise.
+	(reload_vsx_from_gprsf): Likewise.
+	(p8_mfvsrd_3_<mode>): LIkewise.
+	(reload_gpr_from_vsx<mode>): Likewise.
+	(reload_gpr_from_vsxsf): Likewise.
+	(p8_mfvsrd_4_disf): Likewise.
+	(multi-word GPR splits): Do not split direct moves or quad memory
+	operations.
+
 2013-06-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-into-ssa.c (interesting_blocks): Make static.
