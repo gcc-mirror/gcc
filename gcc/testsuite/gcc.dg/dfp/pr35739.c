@@ -1,5 +1,5 @@
 /* PR c/35739 */
-/* { dg-do compile { target *-*-linux* } } */
+/* { dg-do compile { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-O -fpreprocessed -fmudflap" } */
 
 _Decimal128

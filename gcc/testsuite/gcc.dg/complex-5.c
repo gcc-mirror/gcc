@@ -1,7 +1,7 @@
 /* PR middle-end/33088 */
 /* Origin: Joseph S. Myers <jsm28@gcc.gnu.org> */
 
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* } } */
+/* { dg-do run { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } */
 /* { dg-options "-std=c99 -O -ffloat-store -lm" } */
 
 #include <fenv.h>

@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-O2" } */
 
 extern void abort(void);

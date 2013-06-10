@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* } } */
 /* { dg-require-effective-target ia32 } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
 
