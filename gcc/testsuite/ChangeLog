@@ -1,3 +1,9 @@
+2013-06-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57563
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c (main): Fixed a bug
+	in how we check __sec_reduce_mutating function's result.	
+
 2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>

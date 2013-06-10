@@ -1,3 +1,9 @@
+2013-06-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (fix_builtin_array_notation_fn): Fully folded
+	excessive precision expressions in function parameters.  Also removed
+	couple unwanted while statements.
+
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-array-notation.c (expand_array_notation_exprs): Added
