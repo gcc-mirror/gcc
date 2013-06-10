@@ -30236,6 +30236,17 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
       error_at (loc, "expected iteration declaration");
       return error_mark_node;
     }
+
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_STATIC)
+      || cp_lexer_next_token_is_keyword (parser->lexer, RID_REGISTER)
+      || cp_lexer_next_token_is_keyword (parser->lexer, RID_EXTERN)
+      || cp_lexer_next_token_is_keyword (parser->lexer, RID_MUTABLE)
+      || cp_lexer_next_token_is_keyword (parser->lexer, RID_THREAD))
+    {
+      error_at (loc, "storage class is not allowed");
+      cp_lexer_consume_token (parser->lexer);
+    }
+
   cp_parser_parse_tentatively (parser);
   cp_parser_type_specifier_seq (parser, true, false, &type_specifiers);
   if (cp_parser_parse_definitely (parser))
@@ -30332,7 +30343,8 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
 	}
       else
 	{
-	  decl = NULL_TREE;
+	  if (decl != error_mark_node)
+	    decl = NULL;
 	  cp_parser_abort_tentative_parse (parser);
 	  *init = cp_parser_expression (parser, false, NULL);
 	}
@@ -30409,6 +30421,12 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
 		"declarations", for_keyword == RID_FOR ? "for" : "_Cilk_for");
       cp_parser_skip_to_end_of_statement (parser);
       valid = false;
+    }
+
+  if (!valid)
+    {
+      /* Skip to the semicolon ending the init.  */
+      cp_parser_skip_to_end_of_statement (parser);
     }
 
   /* Parse condition.  */
