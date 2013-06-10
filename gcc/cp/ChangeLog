@@ -1,3 +1,8 @@
+2013-06-10  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (add_decl_to_level): Add decls in an anonymous
+	namespace to static_decls.
+
 2013-06-07  Sriraman Tallam  <tmsriram@google.com>
 
 	PR c++/57548
