@@ -1,3 +1,19 @@
+2013-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56564
+	* gcc.target/i386/pr56564-1.c: New test.
+	* gcc.target/i386/pr56564-2.c: New test.
+	* gcc.target/i386/pr56564-3.c: New test.
+	* gcc.target/i386/pr56564-4.c: New test.
+	* gcc.target/i386/avx256-unaligned-load-4.c: Add -fno-common.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-4.c: Likewise.
+	* gcc.target/i386/vect-sizes-1.c: Likewise.
+	* gcc.target/i386/memcpy-1.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c (tmp): Initialize.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c (tmp): Likewise.
+
 2013-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* g++.dg/abi/forced.C: Extend current handling of Linux-based x86

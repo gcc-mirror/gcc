@@ -1062,6 +1062,15 @@ arrays to be word-aligned so that @code{strcpy} calls that copy
 constants to character arrays can be done inline.
 @end defmac
 
+@defmac DATA_ABI_ALIGNMENT (@var{type}, @var{basic-align})
+Similar to @code{DATA_ALIGNMENT}, but for the cases where the ABI mandates
+some alignment increase, instead of optimization only purposes.  E.g.@
+AMD x86-64 psABI says that variables with array type larger than 15 bytes
+must be aligned to 16 byte boundaries.
+
+If this macro is not defined, then @var{basic-align} is used.
+@end defmac
+
 @defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
 If defined, a C expression to compute the alignment given to a constant
 that is being placed in memory.  @var{constant} is the constant and
