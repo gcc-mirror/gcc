@@ -1,3 +1,7 @@
+2013-06-11  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64-simd.md (move_lo_quad_<mode>): Update.
+
 2013-06-11  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Check that param_index is

@@ -1058,9 +1058,9 @@
 	  (vec_duplicate:<VHALF> (const_int 0))))]
   "TARGET_SIMD"
   "@
-   mov\\t%d0, %d1
-   fmov\t%d0, %1
-   dup\t%d0, %1"
+   dup\\t%d0, %1.d[0]
+   fmov\\t%d0, %1
+   dup\\t%d0, %1"
   [(set_attr "v8type" "*,fmov,*")
    (set_attr "simd_type" "simd_dup,*,simd_dup")
    (set_attr "simd_mode" "<MODE>")
