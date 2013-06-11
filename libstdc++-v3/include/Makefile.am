@@ -172,8 +172,7 @@ bits_headers = \
 	${bits_srcdir}/valarray_array.tcc \
 	${bits_srcdir}/valarray_before.h \
 	${bits_srcdir}/valarray_after.h \
-	${bits_srcdir}/vector.tcc \
-	${bits_host_headers}
+	${bits_srcdir}/vector.tcc
 
 bits_host_headers = \
 	${glibcxx_srcdir}/${CPU_OPT_BITS_RANDOM}
@@ -535,8 +534,7 @@ ext_headers = \
 	${ext_srcdir}/vstring.tcc \
 	${ext_srcdir}/vstring_fwd.h \
 	${ext_srcdir}/vstring_util.h \
-	${ext_compat_headers} \
-	${ext_host_headers}
+	${ext_compat_headers}
 
 ext_compat_headers = \
 	${backward_srcdir}/hash_set \
@@ -1048,13 +1046,14 @@ stamp-profile-impl: ${profile_impl_headers}
 
 stamp-${host_alias}:
 	@-mkdir -p ${host_builddir}
+	@-mkdir -p ${host_builddir}/../ext
 	@$(STAMP) stamp-${host_alias}
 
 # Host includes static.
 # XXX Missing dependency info for {host_headers_extra}
-stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
+stamp-host: ${host_headers} ${bits_host_headers} ${ext_host_headers} ${host_headers_noinst} stamp-${host_alias}
 	@cd ${host_builddir} && {\
-	  $(LN_S) ${host_headers} . || true ;\
+	  $(LN_S) ${host_headers} ${bits_host_headers} . || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(BASIC_FILE_H) basic_file.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(ALLOCATOR_H) c++allocator.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CSTDIO_H) c++io.h || true ;\
@@ -1063,6 +1062,9 @@ stamp-host: ${host_headers} ${host_headers_noinst} stamp-${host_alias}
 	  $(LN_S) ${glibcxx_srcdir}/$(COMPATIBILITY_H) . || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CMESSAGES_H) messages_members.h || true ;\
 	  $(LN_S) ${glibcxx_srcdir}/$(CTIME_H) time_members.h || true;\
+	} 2>/dev/null
+	@cd ${host_builddir}/../ext && {\
+	  $(LN_S) ${ext_host_headers} . || true ;\
 	} 2>/dev/null
 	$(STAMP) stamp-host
 
@@ -1290,9 +1292,12 @@ install-headers:
 	for file in ${profile_impl_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${gxx_include_dir}/${profile_impl_builddir}; done
 	$(mkinstalldirs) $(DESTDIR)${host_installdir}
-	for file in ${host_headers} ${host_headers_extra} \
+	for file in ${host_headers} ${bits_host_headers} ${host_headers_extra} \
 	 ${thread_host_headers}; do \
 	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}; done
+	$(mkinstalldirs) $(DESTDIR)${host_installdir}/../ext
+	for file in ${ext_host_headers}; do \
+	  $(INSTALL_DATA) $${file} $(DESTDIR)${host_installdir}/../ext; done
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = ${pch_output} ${pch_output_anchors} stamp-host
