@@ -1,3 +1,10 @@
+2013-06-11  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Fix library literals error involving namespace __detail.
+	* include/std/chrono: Rename __detail to __select_type. Reformat.
+	* include/bits/basic_string.h: Reformat.
+	* testsuite/20_util/duration/literals/ns_detail.cc: New.
+
 2013-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/56019

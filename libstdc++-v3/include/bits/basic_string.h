@@ -3105,8 +3105,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
-  inline namespace literals {
-  inline namespace string_literals {
+  inline namespace literals
+  {
+  inline namespace string_literals
+  {
 
     inline basic_string<char>
     operator"" s(const char* __str, size_t __len)
