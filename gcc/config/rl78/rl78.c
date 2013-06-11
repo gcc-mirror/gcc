@@ -2739,6 +2739,16 @@ rl78_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 }
 
 
+
+#undef  TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
+
+static enum machine_mode
+rl78_unwind_word_mode (void)
+{
+  return HImode;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"
