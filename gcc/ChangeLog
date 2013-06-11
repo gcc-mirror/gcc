@@ -1,3 +1,8 @@
+2013-06-11  Anton Blanchard  <anton@samba.org>
+
+	* config/rs6000/rs6000.c (rs6000_adjust_atomic_subword): Calculate
+	correct shift value in little-endian mode.
+
 2013-06-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56564
