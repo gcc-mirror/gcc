@@ -1,3 +1,9 @@
+2013-06-11  Alan Modra  <amodra@gmail.com>
+
+	* varasm.c (get_section): Don't die on !DECL_P decl.  Tidy error
+	reporting.
+	(get_named_section): Don't NULL !DECL_P decl.
+
 2013-06-11  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* doc/invoke.texi (core-avx2): Document.
