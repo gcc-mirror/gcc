@@ -17399,6 +17399,13 @@ mark_decl_instantiated (tree result, int extern_p)
   if (TREE_ASM_WRITTEN (result))
     return;
 
+  /* For anonymous namespace we don't need to do anything.  */
+  if (decl_anon_ns_mem_p (result))
+    {
+      gcc_assert (!TREE_PUBLIC (result));
+      return;
+    }
+
   if (TREE_CODE (result) != FUNCTION_DECL)
     /* The TREE_PUBLIC flag for function declarations will have been
        set correctly by tsubst.  */
