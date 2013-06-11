@@ -4980,8 +4980,6 @@ do_warn_unused_parameter (tree fn)
       warning (OPT_Wunused_parameter, "unused parameter %q+D", decl);
 }
 
-static GTY(()) rtx initial_trampoline;
-
 /* Generate RTL for the end of the current function.  */
 
 void
