@@ -3,6 +3,7 @@
 
 	* Makefile.in (C_COMMON_OBJS): Depend on c-family/c-cilkplus.o.
 	(c-cilkplus.o): New dependency.
+	* omp-low.c (extract_omp_for_data): Add case for NE_EXPR.
 
 c-family/
 	* c-cilkplus.c: New.

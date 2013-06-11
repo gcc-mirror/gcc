@@ -316,6 +316,12 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	case LT_EXPR:
 	case GT_EXPR:
 	  break;
+	case NE_EXPR:
+	  if (!flag_enable_cilk)
+	    gcc_unreachable ();
+	  /* NE_EXPR is technically not allowed in OpenMP, but it is
+	     allowed in Cilk Plus, which generates OMP_SIMD constructs.  */
+	  break;
 	case LE_EXPR:
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->n2)))
 	    loop->n2 = fold_build_pointer_plus_hwi_loc (loc, loop->n2, 1);
