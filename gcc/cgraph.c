@@ -568,6 +568,8 @@ cgraph_create_function_alias (tree alias, tree target)
   alias_node->symbol.alias_target = target;
   alias_node->symbol.definition = true;
   alias_node->symbol.alias = true;
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
+    alias_node->symbol.weakref = true;
   return alias_node;
 }
 

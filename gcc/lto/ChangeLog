@@ -1,3 +1,11 @@
+2013-06-11 Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (get_symbol_class): Simplify weakref handling.
+	(add_symbol_to_partition_1): Likewise.
+	(contained_in_symbol): Likewise.
+	(lto_balanced_map): Likewise.
+	(rename_statics): Drop weakref.
+
 2013-06-05  Richard Biener  <rguenther@suse.de>
 
 	* lto.c (num_merged_types): New global variable.

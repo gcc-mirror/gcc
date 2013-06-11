@@ -1,3 +1,30 @@
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_create_function_alias): Set weakref flag.
+	* cgraph.h (symtab_node_base): Add weakref flag.
+	* cgraphunit.c (cgraph_reset_node): Clear weakref flag.
+	(handle_alias_pairs): Set weakref flag, do not set DECL_EXTERNAL.
+	(output_weakrefs): Use weakref flag.
+	* fold-const.c (simple_operand_p): Handle WEAK.
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Drop weakref.
+	* ipa.c (varpool_externally_visible_p): Drop weakref.
+	(function_and_variable_visibility): Update comment; fix weakref
+	sanity checks; do not clear DECL_WEAK on them.
+	* lto-cgraph.c (lto_output_node): update.
+	(lto_output_varpool_node): Update.
+	(input_overwrite_node): Update.
+	(input_node): Update.
+	(input_varpool_node): Update.
+	* lto-symtab.c (lto_symtab_symbol_p): Do not special case weakrefs.
+	(lto_symtab_merge_symbols): Add sanity check.
+	(lto_symtab_prevailing_decl): Do not special case weakrefs.
+	* passes.c (rest_of_decl_compilation): Set static flag, too.
+	* symtab.c (dump_symtab_base): Dump weakref.
+	(verify_symtab_base): Sanity check weakrefs.
+	(symtab_make_decl_local): Remove duplicated code.
+	(symtab_alias_ultimate_target): Simplify.
+	* varpool.c (varpool_create_variable_alias): Set weakref flag.
+	
 2013-06-11  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (TARGET_UNWIND_WORD_MODE): Define.

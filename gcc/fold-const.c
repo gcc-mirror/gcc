@@ -3755,6 +3755,10 @@ simple_operand_p (const_tree exp)
 		 #pragma weak, etc).  */
 	      && ! TREE_PUBLIC (exp)
 	      && ! DECL_EXTERNAL (exp)
+	      /* Weakrefs are not safe to be read, since they can be NULL.
+ 		 They are !TREE_PUBLIC && !DECL_EXTERNAL but still
+		 have DECL_WEAK flag set.  */
+	      && (! VAR_OR_FUNCTION_DECL_P (exp) || ! DECL_WEAK (exp))
 	      /* Loading a static variable is unduly expensive, but global
 		 registers aren't expensive.  */
 	      && (! TREE_STATIC (exp) || DECL_REGISTER (exp))));
