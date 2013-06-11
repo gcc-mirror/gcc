@@ -1,3 +1,8 @@
+2013-06-11  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Check that param_index is
+	within bounds at the beginning of the function.
+
 2013-06-11  Alan Modra  <amodra@gmail.com>
 
 	* varasm.c (get_section): Don't die on !DECL_P decl.  Tidy error
