@@ -1,3 +1,7 @@
+2013-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* function.c (initial_trampoline): Remove stray copy.
+
 2013-06-11  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/aarch64/aarch64-simd.md (move_lo_quad_<mode>): Update.
