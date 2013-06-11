@@ -1,3 +1,8 @@
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/57551
+	* g++.dg/ext/visibility/anon6.C: Update testcase.
+
 2013-06-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c/57563

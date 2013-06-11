@@ -1,3 +1,9 @@
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/57551
+	* cp/pt.c (mark_decl_instantiated): Do not export explicit instantiations
+	of anonymous namespace templates.
+
 2013-06-10  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.c (add_decl_to_level): Add decls in an anonymous
