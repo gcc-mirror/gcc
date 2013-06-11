@@ -44,4 +44,12 @@
 #include <bits/c++config.h>
 #include <stddef.h>
 
+#if __cplusplus >= 201103L
+namespace std
+{
+  // We handle size_t, ptrdiff_t, and nullptr_t in c++config.h.
+  using ::max_align_t;
+}
 #endif
+
+#endif // _GLIBCXX_CSTDDEF

@@ -1,3 +1,11 @@
+2013-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56019
+	* include/c_global/cstddef (max_align_t): Add to namespace std.
+	* include/c_std/cstddef: Likewise.
+	* testsuite/18_support/max_align_t/requirements/1.cc: New.
+	* testsuite/18_support/max_align_t/requirements/2.cc: Likewise.
+
 2013-06-10  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_ABI_TAG_CXX11): Add.
