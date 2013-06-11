@@ -2991,7 +2991,13 @@ build_class_array_ref (gfc_se *se, tree base, tree index)
   if (ts == NULL)
     return false;
 
-  if (class_ref == NULL)
+  if (class_ref == NULL && expr->symtree->n.sym->attr.function
+      && expr->symtree->n.sym == expr->symtree->n.sym->result)
+    {
+      gcc_assert (expr->symtree->n.sym->backend_decl == current_function_decl);
+      decl = gfc_get_fake_result_decl (expr->symtree->n.sym, 0);
+    }
+  else if (class_ref == NULL)
     decl = expr->symtree->n.sym->backend_decl;
   else
     {
