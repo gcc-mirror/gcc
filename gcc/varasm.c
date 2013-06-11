@@ -307,19 +307,22 @@ get_section (const char *name, unsigned int flags, tree decl)
 	      return sect;
 	    }
 	  /* Sanity check user variables for flag changes.  */
-	  if (decl == 0)
-	    decl = sect->named.decl;
-	  gcc_assert (decl);
-	  if (sect->named.decl == NULL)
+	  if (sect->named.decl != NULL
+	      && DECL_P (sect->named.decl)
+	      && decl != sect->named.decl)
+	    {
+	      if (decl != NULL && DECL_P (decl))
+		error ("%+D causes a section type conflict with %D",
+		       decl, sect->named.decl);
+	      else
+		error ("section type conflict with %D", sect->named.decl);
+	      inform (DECL_SOURCE_LOCATION (sect->named.decl),
+		      "%qD was declared here", sect->named.decl);
+	    }
+	  else if (decl != NULL && DECL_P (decl))
 	    error ("%+D causes a section type conflict", decl);
 	  else
-	    {
-	      error ("%+D causes a section type conflict with %D",
-		     decl, sect->named.decl);
-	      if (decl != sect->named.decl)
-		inform (DECL_SOURCE_LOCATION (sect->named.decl),
-			"%qD was declared here", sect->named.decl);
-	    }
+	    error ("section type conflict");
 	  /* Make sure we don't error about one section multiple times.  */
 	  sect->common.flags |= SECTION_OVERRIDE;
 	}
@@ -409,9 +412,6 @@ get_named_section (tree decl, const char *name, int reloc)
     }
 
   flags = targetm.section_type_flags (decl, name, reloc);
-
-  if (decl && !DECL_P (decl))
-    decl = NULL_TREE;
   return get_section (name, flags, decl);
 }
 
