@@ -1,3 +1,9 @@
+2013-06-11  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* doc/invoke.texi (core-avx2): Document.
+	(slm): Likewise.
+	(atom): Updated with MOVBE.
+
 2013-06-11  Richard Biener  <rguenther@suse.de>
 
 	* collect2.c (main): Do not redirect ld stdout/stderr when
