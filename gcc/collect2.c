@@ -1189,8 +1189,11 @@ main (int argc, char **argv)
 #ifdef COLLECT_EXPORT_LIST
   export_file = make_temp_file (".x");
 #endif
-  ldout = make_temp_file (".ld");
-  lderrout = make_temp_file (".le");
+  if (!debug)
+    {
+      ldout = make_temp_file (".ld");
+      lderrout = make_temp_file (".le");
+    }
   *c_ptr++ = c_file_name;
   *c_ptr++ = "-x";
   *c_ptr++ = "c";
