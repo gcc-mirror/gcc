@@ -782,10 +782,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #if __cplusplus > 201103L
 
-  inline namespace literals {
-  inline namespace chrono_literals {
+  inline namespace literals
+  {
+  inline namespace chrono_literals
+  {
 
-    namespace __detail {
+    namespace __select_type
+    {
 
       using namespace __parse_int;
 
@@ -804,7 +807,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	constexpr typename _Select_type<_Val, _Dur>::type
 	_Select_type<_Val, _Dur>::value;
 
-    } // __detail
+    } // __select_type
 
     constexpr chrono::duration<long double, ratio<3600,1>>
     operator"" h(long double __hours)
@@ -812,11 +815,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template <char... _Digits>
       constexpr typename
-      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+      __select_type::_Select_type<__select_int::_Select_int<_Digits...>::value,
 			     chrono::hours>::type
       operator"" h()
       {
-	return __detail::_Select_type<
+	return __select_type::_Select_type<
 			  __select_int::_Select_int<_Digits...>::value,
 			  chrono::hours>::value;
       }
@@ -827,11 +830,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template <char... _Digits>
       constexpr typename
-      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+      __select_type::_Select_type<__select_int::_Select_int<_Digits...>::value,
 			     chrono::minutes>::type
       operator"" min()
       {
-	return __detail::_Select_type<
+	return __select_type::_Select_type<
 			  __select_int::_Select_int<_Digits...>::value,
 			  chrono::minutes>::value;
       }
@@ -842,11 +845,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template <char... _Digits>
       constexpr typename
-      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+      __select_type::_Select_type<__select_int::_Select_int<_Digits...>::value,
 			     chrono::seconds>::type
       operator"" s()
       {
-	return __detail::_Select_type<
+	return __select_type::_Select_type<
 			  __select_int::_Select_int<_Digits...>::value,
 			  chrono::seconds>::value;
       }
@@ -857,11 +860,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template <char... _Digits>
       constexpr typename
-      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+      __select_type::_Select_type<__select_int::_Select_int<_Digits...>::value,
 			     chrono::milliseconds>::type
       operator"" ms()
       {
-	return __detail::_Select_type<
+	return __select_type::_Select_type<
 			  __select_int::_Select_int<_Digits...>::value,
 			  chrono::milliseconds>::value;
       }
@@ -872,11 +875,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template <char... _Digits>
       constexpr typename
-      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+      __select_type::_Select_type<__select_int::_Select_int<_Digits...>::value,
 			     chrono::microseconds>::type
       operator"" us()
       {
-	return __detail::_Select_type<
+	return __select_type::_Select_type<
 			  __select_int::_Select_int<_Digits...>::value,
 			  chrono::microseconds>::value;
       }
@@ -887,11 +890,11 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     template <char... _Digits>
       constexpr typename
-      __detail::_Select_type<__select_int::_Select_int<_Digits...>::value,
+      __select_type::_Select_type<__select_int::_Select_int<_Digits...>::value,
 			     chrono::nanoseconds>::type
       operator"" ns()
       {
-	return __detail::_Select_type<
+	return __select_type::_Select_type<
 			  __select_int::_Select_int<_Digits...>::value,
 			  chrono::nanoseconds>::value;
       }
