@@ -73,11 +73,6 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
       || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
     return true;
-  /* Weakrefs have somewhat confusing DECL_EXTERNAL flag set; they
-     are always safe.  */
-  if (DECL_EXTERNAL (decl)
-      && lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
-    return true;
   /* We are folding reference from external vtable.  The vtable may reffer
      to a symbol keyed to other compilation unit.  The other compilation
      unit may be in separate DSO and the symbol may be hidden.  */

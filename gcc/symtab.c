@@ -481,6 +481,8 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " analyzed");
   if (node->symbol.alias)
     fprintf (f, " alias");
+  if (node->symbol.weakref)
+    fprintf (f, " weakref");
   if (node->symbol.cpp_implicit_alias)
     fprintf (f, " cpp_implicit_alias");
   if (node->symbol.alias_target)
@@ -682,9 +684,14 @@ verify_symtab_base (symtab_node node)
       error_found = true;
     }
   if (node->symbol.alias && !node->symbol.definition
-      && !lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+      && !node->symbol.weakref)
     {
       error ("node is alias but not definition");
+      error_found = true;
+    }
+  if (node->symbol.weakref && !node->symbol.alias)
+    {
+      error ("node is weakref but not an alias");
       error_found = true;
     }
   if (node->symbol.same_comdat_group)
@@ -799,8 +806,6 @@ symtab_make_decl_local (tree decl)
   DECL_VISIBILITY_SPECIFIED (decl) = 0;
   DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   TREE_PUBLIC (decl) = 0;
-  DECL_VISIBILITY_SPECIFIED (decl) = 0;
-  DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
   if (!DECL_RTL_SET_P (decl))
     return;
 
@@ -861,7 +866,7 @@ symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
 
   if (availability)
     {
-      weakref_p = DECL_EXTERNAL (node->symbol.decl) && node->symbol.alias;
+      weakref_p = node->symbol.weakref;
       if (!weakref_p)
         *availability = symtab_node_availability (node);
       else
@@ -893,7 +898,7 @@ symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
 	  enum availability a = symtab_node_availability (node);
 	  if (a < *availability)
 	    *availability = a;
-          weakref_p = DECL_EXTERNAL (node->symbol.decl) && node->symbol.alias;
+          weakref_p = node->symbol.weakref;
 	}
     }
   if (availability)

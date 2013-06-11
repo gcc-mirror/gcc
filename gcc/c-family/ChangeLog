@@ -1,3 +1,10 @@
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (handle_alias_ifunc_attribute): Do not set
+	DECL_EXTERNAL for weakref variables.
+	* c-pragma.c (handle_pragma_weak): Make sure aliases
+	are not declared as external.
+
 2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* array-notation-common.c (length_mismatch_in_expr_p): Moved this

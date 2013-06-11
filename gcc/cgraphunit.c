@@ -379,6 +379,7 @@ cgraph_reset_node (struct cgraph_node *node)
   node->symbol.analyzed = false;
   node->symbol.definition = false;
   node->symbol.alias = false;
+  node->symbol.weakref = false;
   node->symbol.cpp_implicit_alias = false;
 
   cgraph_node_remove_callees (node);
@@ -1021,9 +1022,9 @@ handle_alias_pairs (void)
 	  if (node)
 	    {
 	      node->symbol.alias_target = p->target;
+	      node->symbol.weakref = true;
 	      node->symbol.alias = true;
 	    }
-	  DECL_EXTERNAL (p->decl) = 1;
 	  alias_pairs->unordered_remove (i);
 	  continue;
 	}
@@ -1033,16 +1034,6 @@ handle_alias_pairs (void)
 	  alias_pairs->unordered_remove (i);
 	  continue;
 	}
-
-      /* Normally EXTERNAL flag is used to mark external inlines,
-	 however for aliases it seems to be allowed to use it w/o
-	 any meaning. See gcc.dg/attr-alias-3.c  
-	 However for weakref we insist on EXTERNAL flag being set.
-	 See gcc.dg/attr-alias-5.c  */
-      if (DECL_EXTERNAL (p->decl))
-	DECL_EXTERNAL (p->decl)
-	  = lookup_attribute ("weakref",
-			      DECL_ATTRIBUTES (p->decl)) != NULL;
 
       if (DECL_EXTERNAL (target_node->symbol.decl)
 	  /* We use local aliases for C++ thunks to force the tailcall
@@ -1885,9 +1876,9 @@ output_weakrefs (void)
 {
   symtab_node node;
   FOR_EACH_SYMBOL (node)
-    if (node->symbol.alias && DECL_EXTERNAL (node->symbol.decl)
+    if (node->symbol.alias
         && !TREE_ASM_WRITTEN (node->symbol.decl)
-	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+	&& node->symbol.weakref)
       {
 	tree target;
 

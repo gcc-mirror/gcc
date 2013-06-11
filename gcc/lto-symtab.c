@@ -235,9 +235,6 @@ lto_symtab_symbol_p (symtab_node e)
 {
   if (!TREE_PUBLIC (e->symbol.decl) && !DECL_EXTERNAL (e->symbol.decl))
     return false;
-  /* weakrefs are really static variables that are made external by a hack.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (e->symbol.decl)))
-    return false;
   return symtab_real_symbol_p (e);
 }
 
@@ -589,6 +586,7 @@ lto_symtab_merge_symbols (void)
 	  if (!node->symbol.analyzed && node->symbol.alias_target)
 	    {
 	      symtab_node tgt = symtab_node_for_asm (node->symbol.alias_target);
+	      gcc_assert (node->symbol.weakref);
 	      if (tgt)
 		symtab_resolve_alias (node, tgt);
 	    }
@@ -615,11 +613,6 @@ lto_symtab_prevailing_decl (tree decl)
   /* Likewise builtins are their own prevailing decl.  This preserves
      non-builtin vs. builtin uses from compile-time.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
-    return decl;
-
-  /* As an anoying special cases weakrefs are really static variables with
-     EXTERNAL flag.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return decl;
 
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */

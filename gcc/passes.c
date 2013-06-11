@@ -136,8 +136,8 @@ rest_of_decl_compilation (tree decl,
 	/* A quirk of the initial implementation of aliases required that the
 	   user add "extern" to all of them.  Which is silly, but now
 	   historical.  Do note that the symbol is in fact locally defined.  */
-	if (!lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
-	  DECL_EXTERNAL (decl) = 0;
+	DECL_EXTERNAL (decl) = 0;
+	TREE_STATIC (decl) = 1;
 	assemble_alias (decl, alias);
       }
   }
