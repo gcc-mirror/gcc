@@ -1,3 +1,8 @@
+2013-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56564
+	* varasm.c (get_variable_align): Move #endif to the right place.
+
 2013-06-10  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (hash_external_ref): Use die_symbol or signature

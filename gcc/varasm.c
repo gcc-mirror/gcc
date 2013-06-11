@@ -1053,8 +1053,8 @@ get_variable_align (tree decl)
 	  if (! DECL_THREAD_LOCAL_P (decl) || const_align <= BITS_PER_WORD)
 	    align = const_align;
 	}
-    }
 #endif
+    }
 
   return align;
 }
