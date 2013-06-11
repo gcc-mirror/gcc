@@ -1,3 +1,9 @@
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57535
+	* trans-array.c (build_class_array_ref): Fix ICE for
+	function result variables.
+
 2013-06-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/37336

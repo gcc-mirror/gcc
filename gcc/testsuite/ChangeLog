@@ -1,3 +1,8 @@
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57535
+	* gfortran.dg/class_array_18.f90: New.
+
 2013-06-11  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/57551
