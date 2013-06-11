@@ -1,3 +1,9 @@
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57508
+	* resolve.c (get_temp_from_expr): Don't copy function
+	result attributes to temporary.
+
 2013-06-04  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline

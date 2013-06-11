@@ -1,3 +1,8 @@
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57508
+	* gfortran.dg/defined_assignment_7.f90: New.
+
 2013-06-10  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	Backport from mainline
