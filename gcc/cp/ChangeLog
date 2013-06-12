@@ -1,5 +1,9 @@
 2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* parser.c (cp_parser_nested_name_specifier_opt): Fix typo in comment.
+
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/42021
 	* parser.c (cp_parser_nested_name_specifier_opt): Avoid emitting
 	again diagnostic already emitted by cp_parser_lookup_name.
