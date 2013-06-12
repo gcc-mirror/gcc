@@ -6781,10 +6781,10 @@ bool
 decl_binds_to_current_def_p (tree decl)
 {
   gcc_assert (DECL_P (decl));
-  if (!TREE_PUBLIC (decl))
-    return true;
   if (!targetm.binds_local_p (decl))
     return false;
+  if (!TREE_PUBLIC (decl))
+    return true;
   /* When resolution is available, just use it.  */
   if (TREE_CODE (decl) == VAR_DECL
       && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)))
@@ -6802,10 +6802,20 @@ decl_binds_to_current_def_p (tree decl)
 	return resolution_to_local_definition_p (node->symbol.resolution);
     }
   /* Otherwise we have to assume the worst for DECL_WEAK (hidden weaks
-     binds locally but still can be overwritten).
+     binds locally but still can be overwritten), DECL_COMMON (can be merged
+     with a non-common definition somewhere in the same module) or
+     DECL_EXTERNAL.
      This rely on fact that binds_local_p behave as decl_replaceable_p
      for all other declaration types.  */
-  return !DECL_WEAK (decl);
+  if (DECL_WEAK (decl))
+    return false;
+  if (DECL_COMMON (decl)
+      && (DECL_INITIAL (decl) == NULL
+	  || DECL_INITIAL (decl) == error_mark_node))
+    return false;
+  if (DECL_EXTERNAL (decl))
+    return false;
+  return true;
 }
 
 /* A replaceable function or variable is one which may be replaced
