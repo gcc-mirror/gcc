@@ -1,3 +1,9 @@
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56564
+	* gcc.target/i386/pr56564-1.c: Skip on darwin, mingw and cygwin.
+	* gcc.target/i386/pr56564-3.c: Likewise.
+
 2013-06-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57535
