@@ -1,10 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fcilkplus" } */
 
-void abort (void);
-void exit  (int);
-
-
 int main(void)
 {
   int jj, kk, array_3C[10][10][10];
@@ -24,10 +20,7 @@ int main(void)
     for (jj = 0; jj < 10; jj++)
       for (kk = 0; kk < 10; kk++)
 	if (array_3[ii][jj][kk] != array_3C[ii][jj][kk])
-	  abort ();
+	  return 1;
 	
-
-  exit (0);
-  
   return 0;
 }
