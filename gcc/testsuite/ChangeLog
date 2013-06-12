@@ -1,3 +1,8 @@
+2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57577
+	* c-c++-common/cilk-plus/AN/pr57577.c: New testcase.
+
 2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38958

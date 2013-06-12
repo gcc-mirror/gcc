@@ -1,3 +1,9 @@
+2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (build_array_notation_expr): Reject array notation
+	mismatch between LHS and RHS even inside a call_expr.  Also, removed
+	a couple while statements that were dead code.
+
 2013-06-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-array-notation.c (fix_builtin_array_notation_fn): Fully folded
