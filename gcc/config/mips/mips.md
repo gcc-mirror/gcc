@@ -407,8 +407,12 @@
 
 ;; Is this an extended instruction in mips16 mode?
 (define_attr "extended_mips16" "no,yes"
-  (if_then_else (ior (eq_attr "move_type" "sll0")
-		     (eq_attr "jal" "direct"))
+  (if_then_else (ior ;; In general, constant-pool loads are extended
+  		     ;; instructions.  We don't yet optimize for 16-bit
+		     ;; PC-relative references.
+  		     (eq_attr "move_type" "sll0,loadpool")
+		     (eq_attr "jal" "direct")
+		     (eq_attr "got" "load"))
 		(const_string "yes")
 		(const_string "no")))
 
@@ -421,14 +425,89 @@
 	                  (match_test "TARGET_MICROMIPS")))
 	        (const_string "yes")
 	        (const_string "no")))
-  
-;; Length of instruction in bytes.
-(define_attr "length" ""
-   (cond [(and (eq_attr "extended_mips16" "yes")
-	       (match_test "TARGET_MIPS16"))
-	  (const_int 4)
 
-	  (and (eq_attr "compression" "micromips,all")
+;; The number of individual instructions that a non-branch pattern generates,
+;; using units of BASE_INSN_LENGTH.
+(define_attr "insn_count" ""
+  (cond [;; "Ghost" instructions occupy no space.
+	 (eq_attr "type" "ghost")
+	 (const_int 0)
+
+	 ;; Extended instructions count as 2.
+   	 (and (eq_attr "extended_mips16" "yes")
+	      (match_test "TARGET_MIPS16"))
+	 (const_int 2)
+
+	 ;; A GOT load followed by an add of $gp.  This is not used for MIPS16.
+	 (eq_attr "got" "xgot_high")
+	 (const_int 2)
+
+	 ;; SHIFT_SHIFTs are decomposed into two separate instructions.
+	 ;; They are extended instructions on MIPS16 targets.
+	 (eq_attr "move_type" "shift_shift")
+	 (if_then_else (match_test "TARGET_MIPS16")
+	 	       (const_int 4)
+	 	       (const_int 2))
+
+	 ;; Check for doubleword moves that are decomposed into two
+	 ;; instructions.  The individual instructions are unextended
+	 ;; MIPS16 ones.
+	 (and (eq_attr "move_type" "mtc,mfc,mtlo,mflo,move")
+	      (eq_attr "dword_mode" "yes"))
+	 (const_int 2)
+
+	 ;; Constants, loads and stores are handled by external routines.
+	 (and (eq_attr "move_type" "const,constN")
+	      (eq_attr "dword_mode" "yes"))
+	 (symbol_ref "mips_split_const_insns (operands[1])")
+	 (eq_attr "move_type" "const,constN")
+	 (symbol_ref "mips_const_insns (operands[1])")
+	 (eq_attr "move_type" "load,fpload")
+	 (symbol_ref "mips_load_store_insns (operands[1], insn)")
+	 (eq_attr "move_type" "store,fpstore")
+	 (symbol_ref "mips_load_store_insns (operands[0], insn)
+		      + (TARGET_FIX_24K ? 1 : 0)")
+
+	 ;; In the worst case, a call macro will take 8 instructions:
+	 ;;
+	 ;;	lui $25,%call_hi(FOO)
+	 ;;	addu $25,$25,$28
+	 ;;	lw $25,%call_lo(FOO)($25)
+	 ;;	nop
+	 ;;	jalr $25
+	 ;;	nop
+	 ;;	lw $gp,X($sp)
+	 ;;	nop
+	 (eq_attr "jal_macro" "yes")
+	 (const_int 8)
+
+	 ;; Various VR4120 errata require a nop to be inserted after a macc
+	 ;; instruction.  The assembler does this for us, so account for
+	 ;; the worst-case length here.
+	 (and (eq_attr "type" "imadd")
+	      (match_test "TARGET_FIX_VR4120"))
+	 (const_int 2)
+
+	 ;; VR4120 errata MD(4): if there are consecutive dmult instructions,
+	 ;; the result of the second one is missed.  The assembler should work
+	 ;; around this by inserting a nop after the first dmult.
+	 (and (eq_attr "type" "imul,imul3")
+	      (eq_attr "mode" "DI")
+	      (match_test "TARGET_FIX_VR4120"))
+	 (const_int 2)
+
+	 (eq_attr "type" "idiv,idiv3")
+	 (symbol_ref "mips_idiv_insns ()")
+
+	 (not (eq_attr "sync_mem" "none"))
+	 (symbol_ref "mips_sync_loop_insns (insn, operands)")]
+	(const_int 1)))
+
+;; Length of instruction in bytes.  The default is derived from "insn_count",
+;; but there are special cases for branches (which must be handled here)
+;; and for compressed single instructions.
+(define_attr "length" ""
+   (cond [(and (eq_attr "compression" "micromips,all")
 	       (eq_attr "dword_mode" "no")
 	       (match_test "TARGET_MICROMIPS"))
 	  (const_int 2)
@@ -581,95 +660,8 @@
 		 (const_int 20)
 		 (match_test "Pmode == SImode")
 		 (const_int 16)
-		 ] (const_int 24))
-
-	  ;; "Ghost" instructions occupy no space.
-	  (eq_attr "type" "ghost")
-	  (const_int 0)
-
-	  ;; GOT loads are extended MIPS16 instructions and 4-byte
-	  ;; microMIPS instructions.
-	  (eq_attr "got" "load")
-	  (const_int 4)
-
-	  ;; A GOT load followed by an add of $gp.
-	  (eq_attr "got" "xgot_high")
-	  (const_int 8)
-
-	  ;; In general, constant-pool loads are extended instructions.
-	  (eq_attr "move_type" "loadpool")
-	  (const_int 4)
-
-	  ;; SHIFT_SHIFTs are decomposed into two separate instructions.
-	  ;; They are extended instructions on MIPS16 targets.
-	  (eq_attr "move_type" "shift_shift")
-	  (const_int 8)
-
-	  ;; Check for doubleword moves that are decomposed into two
-	  ;; instructions.  The individual instructions are unextended
-	  ;; MIPS16 ones or 2-byte microMIPS ones.
-	  (and (eq_attr "move_type" "mtc,mfc,mtlo,mflo,move")
-	       (eq_attr "dword_mode" "yes"))
-	  (if_then_else (match_test "TARGET_COMPRESSION")
-	  		(const_int 4)
-	  		(const_int 8))
-
-	  ;; Doubleword CONST{,N} moves are split into two word
-	  ;; CONST{,N} moves.
-	  (and (eq_attr "move_type" "const,constN")
-	       (eq_attr "dword_mode" "yes"))
-	  (symbol_ref "mips_split_const_insns (operands[1]) * BASE_INSN_LENGTH")
-
-	  ;; Otherwise, constants, loads and stores are handled by external
-	  ;; routines.
-	  (eq_attr "move_type" "const,constN")
-	  (symbol_ref "mips_const_insns (operands[1]) * BASE_INSN_LENGTH")
-	  (eq_attr "move_type" "load,fpload")
-	  (symbol_ref "mips_load_store_insns (operands[1], insn)
-	  	       * BASE_INSN_LENGTH")
-	  (eq_attr "move_type" "store,fpstore")
-	  (symbol_ref "mips_load_store_insns (operands[0], insn)
-		       * BASE_INSN_LENGTH
-		       + (TARGET_FIX_24K ? NOP_INSN_LENGTH : 0)")
-
-	  ;; In the worst case, a call macro will take 8 instructions:
-	  ;;
-	  ;;	 lui $25,%call_hi(FOO)
-	  ;;	 addu $25,$25,$28
-	  ;;     lw $25,%call_lo(FOO)($25)
-	  ;;	 nop
-	  ;;	 jalr $25
-	  ;;	 nop
-	  ;;	 lw $gp,X($sp)
-	  ;;	 nop
-	  (eq_attr "jal_macro" "yes")
-	  (const_int 32)
-
-	  ;; Various VR4120 errata require a nop to be inserted after a macc
-	  ;; instruction.  The assembler does this for us, so account for
-	  ;; the worst-case length here.
-	  (and (eq_attr "type" "imadd")
-	       (match_test "TARGET_FIX_VR4120"))
-	  (const_int 8)
-
-	  ;; VR4120 errata MD(4): if there are consecutive dmult instructions,
-	  ;; the result of the second one is missed.  The assembler should work
-	  ;; around this by inserting a nop after the first dmult.
-	  (and (eq_attr "type" "imul,imul3")
-	       (and (eq_attr "mode" "DI")
-		    (match_test "TARGET_FIX_VR4120")))
-	  (const_int 8)
-
-	  (eq_attr "type" "idiv,idiv3")
-	  (symbol_ref "mips_idiv_insns () * BASE_INSN_LENGTH")
-
-	  (not (eq_attr "sync_mem" "none"))
-	  (symbol_ref "mips_sync_loop_insns (insn, operands)
-	  	       * BASE_INSN_LENGTH")
-
-	  (match_test "TARGET_MIPS16")
-	  (const_int 2)
-	  ] (const_int 4)))
+		 ] (const_int 24))]
+	 (symbol_ref "get_attr_insn_count (insn) * BASE_INSN_LENGTH")))
 
 ;; Attribute describing the processor.
 (define_enum_attr "cpu" "processor"
@@ -702,16 +694,11 @@
 	 (const_string "hilo")]
 	(const_string "none")))
 
-;; Is it a single instruction?
-(define_attr "single_insn" "no,yes"
-  (symbol_ref "(get_attr_length (insn) == (TARGET_MIPS16 ? 2 : 4)
-		? SINGLE_INSN_YES : SINGLE_INSN_NO)"))
-
 ;; Can the instruction be put into a delay slot?
 (define_attr "can_delay" "no,yes"
   (if_then_else (and (eq_attr "type" "!branch,call,jump")
-		     (and (eq_attr "hazard" "none")
-			  (eq_attr "single_insn" "yes")))
+		     (eq_attr "hazard" "none")
+		     (match_test "get_attr_insn_count (insn) == 1"))
 		(const_string "yes")
 		(const_string "no")))
 
@@ -1420,7 +1407,7 @@
   "mul.<fmt>\t%0,%1,%2\;nop"
   [(set_attr "type" "fmul")
    (set_attr "mode" "<MODE>")
-   (set_attr "length" "8")])
+   (set_attr "insn_count" "2")])
 
 (define_insn "mulv2sf3"
   [(set (match_operand:V2SF 0 "register_operand" "=f")
@@ -1575,7 +1562,7 @@
   "<d>mult\t%1,%2\;mflo\t%0"
   [(set_attr "type" "imul")
    (set_attr "mode" "<MODE>")
-   (set_attr "length" "8")])
+   (set_attr "insn_count" "2")])
 
 ;; On the VR4120 and VR4130, it is better to use "mtlo $0; macc" instead
 ;; of "mult; mflo".  They have the same latency, but the first form gives
@@ -1635,7 +1622,7 @@
   [(set_attr "type"	"imadd")
    (set_attr "accum_in"	"3")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"4,8")])
+   (set_attr "insn_count" "1,2")])
 
 ;; The same idea applies here.  The middle alternative needs one less
 ;; clobber than the final alternative, so we add "*?" as a counterweight.
@@ -1654,7 +1641,7 @@
   [(set_attr "type"	"imadd")
    (set_attr "accum_in"	"3")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"4,4,8")])
+   (set_attr "insn_count" "1,1,2")])
 
 ;; Split *mul_acc_si if both the source and destination accumulator
 ;; values are GPRs.
@@ -1735,7 +1722,7 @@
   ""
   [(set_attr "type"     "imadd")
    (set_attr "accum_in"	"1")
-   (set_attr "length"	"8")])
+   (set_attr "insn_count" "2")])
 
 ;; Patterns generated by the define_peephole2 below.
 
@@ -1871,7 +1858,7 @@
   [(set_attr "type"     "imadd")
    (set_attr "accum_in"	"1")
    (set_attr "mode"     "SI")
-   (set_attr "length"   "4,8")])
+   (set_attr "insn_count" "1,2")])
 
 ;; Split *mul_sub_si if both the source and destination accumulator
 ;; values are GPRs.
@@ -1952,7 +1939,7 @@
   "mult<u>\t%1,%2\;mflo\t%L0\;mfhi\t%M0"
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")
-   (set_attr "length" "12")])
+   (set_attr "insn_count" "3")])
 
 (define_insn_and_split "<u>mulsidi3_64bit"
   [(set (match_operand:DI 0 "register_operand" "=d")
@@ -1971,10 +1958,10 @@
 }
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")
-   (set (attr "length")
+   (set (attr "insn_count")
 	(if_then_else (match_test "ISA_HAS_EXT_INS")
-		      (const_int 16)
-		      (const_int 28)))])
+		      (const_int 4)
+		      (const_int 7)))])
 
 (define_expand "<u>mulsidi3_64bit_mips16"
   [(set (match_operand:DI 0 "register_operand")
@@ -2125,7 +2112,7 @@
 }
   [(set_attr "type" "imul")
    (set_attr "mode" "SI")
-   (set_attr "length" "8")])
+   (set_attr "insn_count" "2")])
 
 (define_expand "<su>mulsi3_highpart_split"
   [(set (match_operand:SI 0 "register_operand")
@@ -2224,7 +2211,7 @@
 }
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")
-   (set_attr "length" "8")])
+   (set_attr "insn_count" "2")])
 
 (define_expand "<su>muldi3_highpart_split"
   [(set (match_operand:DI 0 "register_operand")
@@ -2287,7 +2274,7 @@
   "dmult<u>\t%1,%2\;mflo\t%L0\;mfhi\t%M0"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")
-   (set_attr "length" "12")])
+   (set_attr "insn_count" "3")])
 
 ;; The R4650 supports a 32-bit multiply/ 64-bit accumulate
 ;; instruction.  The HI/LO registers are used as a 64-bit accumulator.
@@ -2538,10 +2525,10 @@
 }
   [(set_attr "type" "fdiv")
    (set_attr "mode" "<UNITMODE>")
-   (set (attr "length")
+   (set (attr "insn_count")
         (if_then_else (match_test "TARGET_FIX_SB1")
-                      (const_int 8)
-                      (const_int 4)))])
+                      (const_int 2)
+                      (const_int 1)))])
 
 (define_insn "*recip<mode>3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -2556,10 +2543,10 @@
 }
   [(set_attr "type" "frdiv")
    (set_attr "mode" "<UNITMODE>")
-   (set (attr "length")
+   (set (attr "insn_count")
         (if_then_else (match_test "TARGET_FIX_SB1")
-                      (const_int 8)
-                      (const_int 4)))])
+                      (const_int 2)
+                      (const_int 1)))])
 
 ;; VR4120 errata MD(A1): signed division instructions do not work correctly
 ;; with negative operands.  We use special libgcc functions instead.
@@ -2589,7 +2576,8 @@
 }
  [(set_attr "type" "idiv")
   (set_attr "mode" "<MODE>")
-  (set_attr "length" "8")])
+  ;; Worst case for MIPS16.
+  (set_attr "insn_count" "3")])
 
 ;; See the comment above "divmod<mode>4" for the MIPS16 handling.
 (define_insn_and_split "udivmod<mode>4"
@@ -2609,9 +2597,10 @@
     emit_move_insn (operands[0], gen_rtx_REG (<MODE>mode, LO_REGNUM));
   DONE;
 }
- [(set_attr "type" "idiv")
-  (set_attr "mode" "<MODE>")
-  (set_attr "length" "8")])
+  [(set_attr "type" "idiv")
+   (set_attr "mode" "<MODE>")
+   ;; Worst case for MIPS16.
+   (set_attr "insn_count" "3")])
 
 (define_expand "<u>divmod<mode>4_split"
   [(set (match_operand:GPR 0 "register_operand")
@@ -2671,10 +2660,10 @@
 }
   [(set_attr "type" "fsqrt")
    (set_attr "mode" "<UNITMODE>")
-   (set (attr "length")
+   (set (attr "insn_count")
         (if_then_else (match_test "TARGET_FIX_SB1")
-                      (const_int 8)
-                      (const_int 4)))])
+                      (const_int 2)
+                      (const_int 1)))])
 
 (define_insn "*rsqrt<mode>a"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -2689,10 +2678,10 @@
 }
   [(set_attr "type" "frsqrt")
    (set_attr "mode" "<UNITMODE>")
-   (set (attr "length")
+   (set (attr "insn_count")
         (if_then_else (match_test "TARGET_FIX_SB1")
-                      (const_int 8)
-                      (const_int 4)))])
+                      (const_int 2)
+                      (const_int 1)))])
 
 (define_insn "*rsqrt<mode>b"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -2707,10 +2696,10 @@
 }
   [(set_attr "type" "frsqrt")
    (set_attr "mode" "<UNITMODE>")
-   (set (attr "length")
+   (set (attr "insn_count")
         (if_then_else (match_test "TARGET_FIX_SB1")
-                      (const_int 8)
-                      (const_int 4)))])
+                      (const_int 2)
+                      (const_int 1)))])
 
 ;;
 ;;  ....................
@@ -3503,7 +3492,7 @@
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"DF")
    (set_attr "cnv_mode"	"D2I")
-   (set_attr "length"	"36")])
+   (set_attr "insn_count" "9")])
 
 (define_expand "fix_truncsfsi2"
   [(set (match_operand:SI 0 "register_operand")
@@ -3540,7 +3529,7 @@
   [(set_attr "type"	"fcvt")
    (set_attr "mode"	"SF")
    (set_attr "cnv_mode"	"S2I")
-   (set_attr "length"	"36")])
+   (set_attr "insn_count" "9")])
 
 
 (define_insn "fix_truncdfdi2"
@@ -4018,7 +4007,7 @@
   operands[2] = mips_unspec_address (operands[1], SYMBOL_64_HIGH);
   operands[3] = mips_unspec_address (operands[1], SYMBOL_64_MID);
 }
-  [(set_attr "length" "20")])
+  [(set_attr "insn_count" "5")])
 
 ;; Use a scratch register to reduce the latency of the above pattern
 ;; on superscalar machines.  The optimized sequence is:
@@ -4073,7 +4062,7 @@
   operands[3] = mips_unspec_address (operands[1], SYMBOL_64_HIGH);
   operands[4] = mips_unspec_address (operands[1], SYMBOL_64_LOW);
 }
-  [(set_attr "length" "24")])
+  [(set_attr "insn_count" "6")])
 
 ;; Split HIGHs into:
 ;;
@@ -5083,7 +5072,7 @@
     return ".cprestore\t%1";
 }
   [(set_attr "type" "store")
-   (set_attr "length" "4,12")])
+   (set_attr "insn_count" "1,3")])
 
 (define_insn "use_cprestore_<mode>"
   [(set (reg:P CPRESTORE_SLOT_REGNUM)
@@ -5144,7 +5133,7 @@
          "\tjr.hb\t$31\n"
          "\tnop%>%)";
 }
-  [(set_attr "length" "20")])
+  [(set_attr "insn_count" "5")])
 
 ;; Cache operations for R4000-style caches.
 (define_insn "mips_cache"
@@ -5337,8 +5326,7 @@
 ;; not have and immediate).  We recognize a shift of a load in order
 ;; to make it simple enough for combine to understand.
 ;;
-;; The length here is the worst case: the length of the split version
-;; will be more accurate.
+;; The instruction count here is the worst case.
 (define_insn_and_split ""
   [(set (match_operand:SI 0 "register_operand" "=d")
 	(lshiftrt:SI (match_operand:SI 1 "memory_operand" "m")
@@ -5351,7 +5339,8 @@
   ""
   [(set_attr "type"	"load")
    (set_attr "mode"	"SI")
-   (set_attr "length"	"8")])
+   (set (attr "insn_count")
+	(symbol_ref "mips_load_store_insns (operands[1], insn) + 2"))])
 
 (define_insn "rotr<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=d")
@@ -5990,7 +5979,7 @@
   
   return "j\t%4";
 }
-  [(set_attr "length" "32")])
+  [(set_attr "insn_count" "16")])
 
 ;; For TARGET_USE_GOT, we save the gp in the jmp_buf as well.
 ;; While it is possible to either pull it off the stack (in the
@@ -6881,11 +6870,8 @@
    (set (match_dup 0) (reg:P TLS_GET_TP_REGNUM))]
   ""
   [(set_attr "type" "unknown")
-   ; Since rdhwr always generates a trap for now, putting it in a delay
-   ; slot would make the kernel's emulation of it much slower.
-   (set_attr "can_delay" "no")
    (set_attr "mode" "<MODE>")
-   (set_attr "length" "8")])
+   (set_attr "insn_count" "2")])
 
 (define_insn "*tls_get_tp_<mode>_split"
   [(set (reg:P TLS_GET_TP_REGNUM)
@@ -6893,7 +6879,8 @@
   "HAVE_AS_TLS && !TARGET_MIPS16"
   ".set\tpush\;.set\tmips32r2\t\;rdhwr\t$3,$29\;.set\tpop"
   [(set_attr "type" "unknown")
-   ; See tls_get_tp_<mode>
+   ; Since rdhwr always generates a trap for now, putting it in a delay
+   ; slot would make the kernel's emulation of it much slower.
    (set_attr "can_delay" "no")
    (set_attr "mode" "<MODE>")])
 
@@ -6925,7 +6912,7 @@
    (set (match_dup 0) (reg:P TLS_GET_TP_REGNUM))]
   ""
   [(set_attr "type" "multi")
-   (set_attr "length" "8")
+   (set_attr "insn_count" "4")
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*tls_get_tp_mips16_call_<mode>"
@@ -6937,7 +6924,7 @@
   "HAVE_AS_TLS && TARGET_MIPS16"
   { return MIPS_CALL ("jal", operands, 0, -1); }
   [(set_attr "type" "call")
-   (set_attr "length" "6")
+   (set_attr "insn_count" "3")
    (set_attr "mode" "<MODE>")])
 
 ;; Named pattern for expanding thread pointer reference.
