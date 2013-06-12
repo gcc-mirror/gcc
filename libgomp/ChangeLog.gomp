@@ -1,3 +1,15 @@
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp_lib.f90.in (omp_get_dynamic, omp_get_nested,
+	omp_in_parallel, omp_get_max_threads, omp_get_num_procs,
+	omp_get_num_threads, omp_get_thread_num, omp_get_thread_limit,
+	omp_set_max_active_levels, omp_get_max_active_levels,
+	omp_get_level, omp_get_ancestor_thread_num,
+	omp_get_team_size, omp_get_active_level, omp_in_final,
+	omp_get_cancellation, omp_get_default_device,
+	omp_get_num_devices, omp_get_num_teams, omp_get_team_num): Remove
+	useless use omp_lib_kinds.
+
 2013-04-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/atomic-17.c: New test.
