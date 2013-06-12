@@ -1,8 +1,14 @@
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42021
+	* parser.c (cp_parser_nested_name_specifier_opt): Avoid emitting
+	again diagnostic already emitted by cp_parser_lookup_name.
+
 2013-06-11  Jan Hubicka  <jh@suse.cz>
 
 	PR c++/57551
-	* cp/pt.c (mark_decl_instantiated): Do not export explicit instantiations
-	of anonymous namespace templates.
+	* cp/pt.c (mark_decl_instantiated): Do not export explicit
+	instantiations of anonymous namespace templates.
 
 2013-06-10  Jason Merrill  <jason@redhat.com>
 
