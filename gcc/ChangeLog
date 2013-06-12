@@ -1,3 +1,12 @@
+2013-06-12  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): convert to split.
+	(aarch64_simd_combine<mode>): New instruction expansion.
+	* config/aarch64/aarch64-protos.h (aarch64_split_simd_combine): New
+	function prototype.
+	* config/aarch64/aarch64.c (aarch64_split_combine): New function.
+	* config/aarch64/iterators.md (Vdbl): Add entry for DF.
+
 2013-06-12  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (verify_edge_corresponds_to_fndecl): Be lax about
