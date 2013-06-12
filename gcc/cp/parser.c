@@ -5231,7 +5231,7 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 		      else if (ambiguous_decls)
 			{
 			  // cp_parser_lookup_name has the same diagnostic,
-			  // thus make sure to emit it almost once.
+			  // thus make sure to emit it at most once.
 			  if (cp_parser_uncommitted_to_tentative_parse_p
 			      (parser))
 			    {
