@@ -638,7 +638,10 @@ vect_recog_widen_mult_pattern (vec<gimple> *stmts,
           && vect_handle_widen_op_by_const (last_stmt, MULT_EXPR, oprnd1,
 		                            &oprnd0, stmts, type,
 					    &half_type0, def_stmt0))
-        half_type1 = half_type0;
+	{
+	  half_type1 = half_type0;
+	  oprnd1 = fold_convert (half_type1, oprnd1);
+	}
       else
         return NULL;
     }
