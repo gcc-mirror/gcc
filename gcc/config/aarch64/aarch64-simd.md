@@ -2218,15 +2218,29 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "aarch64_combine<mode>"
+(define_insn_and_split "aarch64_combine<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
         (vec_concat:<VDBL> (match_operand:VDC 1 "register_operand" "w")
 			   (match_operand:VDC 2 "register_operand" "w")))]
   "TARGET_SIMD"
-  "mov\\t%0.d[0], %1.d[0]\;ins\\t%0.d[1], %2.d[0]"
-  [(set_attr "simd_type" "simd_ins")
-   (set_attr "simd_mode" "<MODE>")]
-)
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "aarch64_simd_combine<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
+        (vec_concat:<VDBL> (match_operand:VDC 1 "register_operand" "w")
+  (match_operand:VDC 2 "register_operand" "w")))]
+  "TARGET_SIMD"
+  {
+    emit_insn (gen_move_lo_quad_<Vdbl> (operands[0], operands[1]));
+    emit_insn (gen_move_hi_quad_<Vdbl> (operands[0], operands[2]));
+    DONE;
+  })
 
 ;; <su><addsub>l<q>.
 

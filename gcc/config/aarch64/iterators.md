@@ -385,7 +385,8 @@
 ;; Double modes of vector modes (lower case).
 (define_mode_attr Vdbl [(V8QI "v16qi") (V4HI "v8hi")
 			(V2SI "v4si")  (V2SF "v4sf")
-			(SI   "v2si")  (DI   "v2di")])
+			(SI   "v2si")  (DI   "v2di")
+			(DF   "v2df")])
 
 ;; Narrowed modes for VDN.
 (define_mode_attr VNARROWD [(V4HI "V8QI") (V2SI "V4HI")
