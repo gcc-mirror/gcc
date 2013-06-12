@@ -1,3 +1,9 @@
+2013-06-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/arm/unaligned-memcpy-4.c (src, dst): Initialize
+	to ensure alignment.
+	* gcc.target/arm/unaligned-memcpy-3.c (src): Likewise.
+
 2013-06-12  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/finalize_10.f90: Update scan-tree-dump.
