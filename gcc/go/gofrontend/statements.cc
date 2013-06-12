@@ -1707,8 +1707,8 @@ Expression_statement::do_check_types(Gogo*)
     this->expr_->discarding_value();
 }
 
-// An expression statement may fall through unless it is a call to a
-// function which does not return.
+// An expression statement is only a terminating statement if it is
+// a call to panic.
 
 bool
 Expression_statement::do_may_fall_through() const
@@ -1717,22 +1717,28 @@ Expression_statement::do_may_fall_through() const
   if (call != NULL)
     {
       const Expression* fn = call->fn();
-      const Func_expression* fe = fn->func_expression();
-      if (fe != NULL)
+      // panic is still an unknown named object.
+      const Unknown_expression* ue = fn->unknown_expression();
+      if (ue != NULL)
 	{
-	  const Named_object* no = fe->named_object();
+	  Named_object* no = ue->named_object();
 
-	  Function_type* fntype;
-	  if (no->is_function())
-	    fntype = no->func_value()->type();
-	  else if (no->is_function_declaration())
-	    fntype = no->func_declaration_value()->type();
-	  else
-	    fntype = NULL;
+          if (no->is_unknown())
+            no = no->unknown_value()->real_named_object();
+          if (no != NULL)
+            {
+              Function_type* fntype;
+              if (no->is_function())
+                fntype = no->func_value()->type();
+              else if (no->is_function_declaration())
+                fntype = no->func_declaration_value()->type();
+              else
+                fntype = NULL;
 
-	  // The builtin function panic does not return.
-	  if (fntype != NULL && fntype->is_builtin() && no->name() == "panic")
-	    return false;
+              // The builtin function panic does not return.
+              if (fntype != NULL && fntype->is_builtin() && no->name() == "panic")
+                return false;
+            }
 	}
     }
   return true;
@@ -3700,9 +3706,6 @@ class Constant_switch_statement : public Statement
   void
   do_check_types(Gogo*);
 
-  bool
-  do_may_fall_through() const;
-
   Bstatement*
   do_get_backend(Translate_context*);
 
@@ -3744,22 +3747,6 @@ Constant_switch_statement::do_check_types(Gogo*)
 {
   if (!this->clauses_->check_types(this->val_->type()))
     this->set_is_error();
-}
-
-// Return whether this switch may fall through.
-
-bool
-Constant_switch_statement::do_may_fall_through() const
-{
-  if (this->clauses_ == NULL)
-    return true;
-
-  // If we have a break label, then some case needed it.  That implies
-  // that the switch statement as a whole can fall through.
-  if (this->break_label_ != NULL)
-    return true;
-
-  return this->clauses_->may_fall_through();
 }
 
 // Convert to GENERIC.
@@ -3911,6 +3898,22 @@ Switch_statement::do_dump_statement(Ast_dump_context* ast_dump_context) const
   ast_dump_context->ostream() << std::endl;
 }
 
+// Return whether this switch may fall through.
+
+bool
+Switch_statement::do_may_fall_through() const
+{
+  if (this->clauses_ == NULL)
+    return true;
+
+  // If we have a break label, then some case needed it.  That implies
+  // that the switch statement as a whole can fall through.
+  if (this->break_label_ != NULL)
+    return true;
+
+  return this->clauses_->may_fall_through();
+}
+
 // Make a switch statement.
 
 Switch_statement*
@@ -4050,6 +4053,17 @@ Type_case_clauses::Type_case_clause::lower(Type* switch_val_type,
     }
 }
 
+// Return true if this type clause may fall through to the statements
+// following the switch.
+
+bool
+Type_case_clauses::Type_case_clause::may_fall_through() const
+{
+  if (this->statements_ == NULL)
+    return true;
+  return this->statements_->may_fall_through();
+}
+
 // Dump the AST representation for a type case clause
 
 void
@@ -4148,6 +4162,25 @@ Type_case_clauses::lower(Type* switch_val_type, Block* b,
 			NULL);
 }
 
+// Return true if these clauses may fall through to the statements
+// following the switch statement.
+
+bool
+Type_case_clauses::may_fall_through() const
+{
+  bool found_default = false;
+  for (Type_clauses::const_iterator p = this->clauses_.begin();
+       p != this->clauses_.end();
+       ++p)
+    {
+      if (p->may_fall_through())
+	return true;
+      if (p->is_default())
+	found_default = true;
+    }
+  return !found_default;
+}
+
 // Dump the AST representation for case clauses (from a switch statement)
 
 void
@@ -4235,6 +4268,22 @@ Type_switch_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
   b->add_statement(s);
 
   return Statement::make_block_statement(b, loc);
+}
+
+// Return whether this switch may fall through.
+
+bool
+Type_switch_statement::do_may_fall_through() const
+{
+  if (this->clauses_ == NULL)
+    return true;
+
+  // If we have a break label, then some case needed it.  That implies
+  // that the switch statement as a whole can fall through.
+  if (this->break_label_ != NULL)
+    return true;
+
+  return this->clauses_->may_fall_through();
 }
 
 // Return the break label for this type switch statement, creating it
@@ -4954,6 +5003,19 @@ Select_statement::do_lower(Gogo* gogo, Named_object* function,
   return Statement::make_block_statement(b, loc);
 }
 
+// Whether the select statement itself may fall through to the following
+// statement.
+
+bool
+Select_statement::do_may_fall_through() const
+{
+  // A select statement is terminating if no break statement
+  // refers to it and all of its clauses are terminating.
+  if (this->break_label_ != NULL)
+    return true;
+  return this->clauses_->may_fall_through();
+}
+
 // Return the backend representation for a select statement.
 
 Bstatement*
@@ -5112,6 +5174,20 @@ For_statement::set_break_continue_labels(Unnamed_label* break_label,
   go_assert(this->break_label_ == NULL && this->continue_label_ == NULL);
   this->break_label_ = break_label;
   this->continue_label_ = continue_label;
+}
+
+// Whether the overall statement may fall through.
+
+bool
+For_statement::do_may_fall_through() const
+{
+  // A for loop is terminating if it has no condition and
+  // no break statement.
+  if(this->cond_ != NULL)
+    return true;
+  if(this->break_label_ != NULL)
+    return true;
+  return false;
 }
 
 // Dump the AST representation for a for statement.
