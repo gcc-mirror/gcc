@@ -1,3 +1,10 @@
+2013-06-12  Kaushik Phatak  <kaushik.phatak@kpitcummins.com>
+
+	* config/rl78/constraints.md (U): New constraint.
+	* config/rl78/rl78.md (*mulqi3_rl78,*mulhi3_rl78,*mulhi3_g13): Add
+	valloc attribute.
+
+
 2013-06-11  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/57589
