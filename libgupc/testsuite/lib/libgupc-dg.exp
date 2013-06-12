@@ -13,26 +13,44 @@ set upc_portals [check_no_compiler_messages portals executable {
     int main () { PtlInit(); }
   } ]
 
+# Check if YOD is supported for UPC program launching
+set upc_runtime_yod [check_no_compiler_messages yod executable {
+	#include <upc.h>
+	#include "config.h"
+	#ifndef GUPCR_JOB_LAUNCHER_YOD
+	#  error YOD is not supported
+	#endif
+        int main () {}
+    } ]
+
 # Find YOD if portals runtime is used
 if { $upc_portals } {
-    # Environment variable set?
-    if { [info exists ::env(YOD)] } {
-        set yod_cmd $::env(YOD)
+    # YOD or SLURM?
+    if { $upc_runtime_yod } {
+        set env_var YOD
+        set run_var yod
     } else {
-        # Find yod on the exec path
+        set env_var "SRUN"
+        set run_var "srun"
+    }
+    # Environment variable set?
+    if { [info exists ::env($env_var)] } {
+        set run_cmd $::env($env_var)
+    } else {
+        # Find run command on the exec path
         set path [split $::env(PATH) ":"]
         foreach d $path {
-	    set yod_cmd [file join $d "yod"]
-            verbose "UPC checking for YOD: $yod_cmd in dir: $d" 2
-            if [file executable $yod_cmd] {
+	    set run_cmd [file join $d "$run_var"]
+            verbose "UPC checking for $env_var: $run_var in dir: $d" 2
+            if [file executable $run_cmd] {
 	        break
 	    }
         }
+        if { [string compare $run_cmd ""] == 0 } {
+	    error "UPC: Portals4 run command ($run_var) cannot be found."
+        }
+        verbose "UPC using run command: $run_cmd" 2
     }
-    if { [string compare $yod_cmd ""] == 0 } {
-	error "UPC: Portals4 YOD command cannot be found."
-    }
-    verbose "UPC using YOD: $yod_cmd" 2
 }
 
 # upc_load -- wrapper around default upc_load to pass an extra
@@ -46,10 +64,10 @@ if { [info procs libgupc_load] != [list] \
     proc libgupc_load { program args } {
         global upc_run_arguments
         global upc_portals
-	global yod_cmd
+	global run_cmd
 
         if { $upc_portals } {
-            set runcmd $yod_cmd
+            set runcmd $run_cmd
 	    set pargs { "$upc_run_arguments $program" }
 	} else {
             set pargs { $upc_run_arguments }

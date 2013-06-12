@@ -1,3 +1,8 @@
+2013-06-12  Nenad Vukicevic  <nenad@intrepid.com>
+
+	testsuite/lib/libgupc-dg.exp: Check GUPC P4 runtime for SLURM
+	or YOD configuration and use appropriate commands to run tests.
+
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
 	testsuite/libgupc.upc/upc.exp: Changed list of tests to exclude
