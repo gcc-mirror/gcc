@@ -1,3 +1,16 @@
+2013-06-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Populate symtab hashtable.
+	* cgraph.h (varpool_create_empty_node): Declare.
+	* lto-cgraph.c (input_node, input_varpool_node): Forcingly create
+	duplicated nodes.
+	* symtab.c (symtab_unregister_node): Be lax about missin entries
+	in node hash.
+	(symtab_get_node): Update comment.
+	* varpool.c (varpool_create_empty_node): Break out from ...
+	(varpool_node_for_decl): ... here.
+	* lto-streamer.h (lto_file_decl_data): Add RESOLUTION_MAP.
+
 2013-06-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <TARGET_MEM_REF>: Use straight-line flow.

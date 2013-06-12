@@ -1,3 +1,10 @@
+2013-06-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (register_resolution): Take lto_file_data argument.
+	(lto_register_var_decl_in_symtab,
+	lto_register_function_decl_in_symtab): Update.
+	(read_cgraph_and_symbols): Update resolution_map handling.
+
 2013-06-11 Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (get_symbol_class): Simplify weakref handling.

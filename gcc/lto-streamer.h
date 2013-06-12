@@ -569,6 +569,9 @@ struct GTY(()) lto_file_decl_data
   unsigned max_index;
 
   struct gcov_ctr_summary GTY((skip)) profile_info;
+
+  /* Map assigning declarations their resolutions.  */
+  pointer_map_t * GTY((skip)) resolution_map;
 };
 
 typedef struct lto_file_decl_data *lto_file_decl_data_ptr;
