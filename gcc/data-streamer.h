@@ -183,8 +183,9 @@ streamer_write_char_stream (struct lto_output_stream *obs, char c)
     lto_append_block (obs);
 
   /* Write the actual character.  */
-  *obs->current_pointer = c;
-  obs->current_pointer++;
+  char *current_pointer = obs->current_pointer;
+  *(current_pointer++) = c;
+  obs->current_pointer = current_pointer;
   obs->total_size++;
   obs->left_in_block--;
 }

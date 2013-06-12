@@ -1,3 +1,11 @@
+2013-06-12  Richard Biener  <rguenther@suse.de>
+
+	* data-streamer.h (streamer_write_char_stream): CSE
+	obs->current_pointer.
+	* data-streamer-out.c (streamer_write_uhwi_stream): Inline
+	streamer_write_char_stream manually and optimize the resulting loop.
+	(streamer_write_hwi_stream): Likewise.
+
 2013-06-12  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_symtab_merge_symbols): Populate symtab hashtable.
