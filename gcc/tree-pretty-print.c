@@ -533,6 +533,13 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
       pp_character (buffer, ')');
       break;
 
+    case OMP_CLAUSE_THREAD_LIMIT:
+      pp_string (buffer, "thread_limit(");
+      dump_generic_node (buffer, OMP_CLAUSE_THREAD_LIMIT_EXPR (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
     case OMP_CLAUSE_DEVICE:
       pp_string (buffer, "device(");
       dump_generic_node (buffer, OMP_CLAUSE_DEVICE_ID (clause),

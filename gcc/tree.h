@@ -431,6 +431,9 @@ enum omp_clause_code
   /* OpenMP clause: num_teams(integer-expression).  */
   OMP_CLAUSE_NUM_TEAMS,
 
+  /* OpenMP clause: thread_limit(integer-expression).  */
+  OMP_CLAUSE_THREAD_LIMIT,
+
   /* OpenMP clause: proc_bind ({master,close,spread}).  */
   OMP_CLAUSE_PROC_BIND,
 
@@ -1977,6 +1980,10 @@ extern void protected_set_expr_location (tree, location_t);
 
 #define OMP_CLAUSE_NUM_TEAMS_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_NUM_TEAMS), 0)
+
+#define OMP_CLAUSE_THREAD_LIMIT_EXPR(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, \
+						OMP_CLAUSE_THREAD_LIMIT), 0)
 
 #define OMP_CLAUSE_DEVICE_ID(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEVICE), 0)

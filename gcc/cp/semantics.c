@@ -4779,6 +4779,25 @@ finish_omp_clauses (tree clauses)
 	    }
 	  break;
 
+	case OMP_CLAUSE_THREAD_LIMIT:
+	  t = OMP_CLAUSE_THREAD_LIMIT_EXPR (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (!type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error ("%<thread_limit%> expression must be integral");
+	      remove = true;
+	    }
+	  else
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
+	      OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = t;
+	    }
+	  break;
+
 	case OMP_CLAUSE_DEVICE:
 	  t = OMP_CLAUSE_DEVICE_ID (c);
 	  if (t == error_mark_node)

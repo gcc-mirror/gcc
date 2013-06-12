@@ -1,3 +1,8 @@
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+
 2013-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.c (c_common_attribute_table): Add "omp declare target"

@@ -1,3 +1,13 @@
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_THREAD_LIMIT.
+	* parser.c (cp_parser_omp_clause_name): Handle thread_limit clause.
+	(cp_parser_omp_clause_thread_limit): New function.
+	(cp_parser_omp_all_clauses): Handle PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+	(OMP_TEAMS_CLAUSE_MASK): Replace PRAGMA_OMP_CLAUSE_NUM_THREADS
+	with PRAGMA_OMP_CLAUSE_THREAD_LIMIT.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_THREAD_LIMIT.
+
 2013-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (handle_omp_array_sections_1, handle_omp_array_sections):

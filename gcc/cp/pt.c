@@ -12667,6 +12667,7 @@ tsubst_omp_clauses (tree clauses, bool declare_simd,
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_SAFELEN:
 	case OMP_CLAUSE_SIMDLEN:
 	  OMP_CLAUSE_OPERAND (nc, 0)

@@ -1,3 +1,13 @@
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Handle
+	OMP_CLAUSE_THREAD_LIMIT.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add entries for
+	OMP_CLAUSE_THREAD_LIMIT.
+	* tree.h (enum omp_clause_code): Add OMP_CLAUSE_THREAD_LIMIT.
+	(OMP_CLAUSE_THREAD_LIMIT_EXPR): Define.
+
 2013-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Handle array

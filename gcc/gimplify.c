@@ -6420,6 +6420,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_DEVICE:
 	  if (gimplify_expr (&OMP_CLAUSE_OPERAND (c, 0), pre_p, NULL,
