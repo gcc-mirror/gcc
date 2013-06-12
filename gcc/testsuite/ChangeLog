@@ -1,7 +1,11 @@
 2013-06-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/finalize_10.f90: Update scan-tree-dump.
+
+2013-06-12  Tobias Burnus  <burnus@net-b.de>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
-	* gfortran.dg/finalize_10.f90: Update dg-dump.
+	* gfortran.dg/finalize_10.f90: Update scan-tree-dump.
 
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
