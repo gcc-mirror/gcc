@@ -2891,6 +2891,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       /* True, since the plugin splits the archives.  */
       gcc_assert (num_objects == nfiles);
     }
+  cgraph_state = CGRAPH_LTO_STREAMING;
 
   tree_with_vars = htab_create_ggc (101, htab_hash_pointer, htab_eq_pointer,
 				    NULL);

@@ -1,5 +1,9 @@
 2013-06-12  Jan Hubicka  <jh@suse.cz>
 
+	* lto.c (read_cgraph_and_symbols): Set cgraph into streaming state.
+
+2013-06-12  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (register_resolution): Take lto_file_data argument.
 	(lto_register_var_decl_in_symtab,
 	lto_register_function_decl_in_symtab): Update.

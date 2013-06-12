@@ -2291,6 +2291,8 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
 
   if (!decl || e->callee->global.inlined_to)
     return false;
+  if (cgraph_state == CGRAPH_LTO_STREAMING)
+    return false;
   node = cgraph_get_node (decl);
 
   /* We do not know if a node from a different partition is an alias or what it
