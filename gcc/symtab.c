@@ -269,7 +269,11 @@ symtab_unregister_node (symtab_node node)
   node->symbol.previous = NULL;
 
   slot = htab_find_slot (symtab_hash, node, NO_INSERT);
-  if (*slot == node)
+
+  /* During LTO symtab merging we temporarily corrupt decl to symtab node
+     hash.  */
+  gcc_assert ((slot && *slot) || in_lto_p);
+  if (slot && *slot && *slot == node)
     {
       symtab_node replacement_node = NULL;
       if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
@@ -291,10 +295,14 @@ symtab_get_node (const_tree decl)
   symtab_node *slot;
   struct symtab_node_base key;
 
+#ifdef ENABLE_CHECKING
+  /* Check that we are called for sane type of object - functions
+     and static or external variables.  */
   gcc_checking_assert (TREE_CODE (decl) == FUNCTION_DECL
 		       || (TREE_CODE (decl) == VAR_DECL
 			   && (TREE_STATIC (decl) || DECL_EXTERNAL (decl)
 			       || in_lto_p)));
+#endif
 
   if (!symtab_hash)
     return NULL;

@@ -959,7 +959,14 @@ input_node (struct lto_file_decl_data *file_data,
 				vNULL, false);
     }
   else
-    node = cgraph_get_create_node (fn_decl);
+    {
+      /* Declaration of functions can be already merged with a declaration
+	 from other input file.  We keep cgraph unmerged until after streaming
+	 of ipa passes is done.  Alays forcingly create a fresh node.  */
+      node = cgraph_create_empty_node ();
+      node->symbol.decl = fn_decl;
+      symtab_register_node ((symtab_node)node);
+    }
 
   node->symbol.order = order;
   if (order >= symtab_order)
@@ -1035,7 +1042,14 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   order = streamer_read_hwi (ib) + order_base;
   decl_index = streamer_read_uhwi (ib);
   var_decl = lto_file_decl_data_get_var_decl (file_data, decl_index);
-  node = varpool_node_for_decl (var_decl);
+
+  /* Declaration of functions can be already merged with a declaration
+     from other input file.  We keep cgraph unmerged until after streaming
+     of ipa passes is done.  Alays forcingly create a fresh node.  */
+  node = varpool_create_empty_node ();
+  node->symbol.decl = var_decl;
+  symtab_register_node ((symtab_node)node);
+
   node->symbol.order = order;
   if (order >= symtab_order)
     symtab_order = order + 1;

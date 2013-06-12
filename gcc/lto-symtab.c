@@ -573,16 +573,21 @@ lto_symtab_merge_symbols (void)
     {
       symtab_initialize_asm_name_hash ();
 
-      /* Do the actual merging.  */
+      /* Do the actual merging.  
+         At this point we invalidate hash translating decls into symtab nodes
+	 because after removing one of duplicate decls the hash is not correcly
+	 updated to the ohter dupliate.  */
       FOR_EACH_SYMBOL (node)
 	if (lto_symtab_symbol_p (node)
 	    && node->symbol.next_sharing_asm_name
 	    && !node->symbol.previous_sharing_asm_name)
 	  lto_symtab_merge_symbols_1 (node);
 
-      /* Resolve weakref aliases whose target are now in the compilation unit.  */
+      /* Resolve weakref aliases whose target are now in the compilation unit.  
+	 also re-populate the hash translating decls into symtab nodes*/
       FOR_EACH_SYMBOL (node)
 	{
+	  cgraph_node *cnode;
 	  if (!node->symbol.analyzed && node->symbol.alias_target)
 	    {
 	      symtab_node tgt = symtab_node_for_asm (node->symbol.alias_target);
@@ -591,6 +596,10 @@ lto_symtab_merge_symbols (void)
 		symtab_resolve_alias (node, tgt);
 	    }
 	  node->symbol.aux = NULL;
+	  if (!(cnode = dyn_cast <cgraph_node> (node))
+	      || !cnode->clone_of
+	      || cnode->clone_of->symbol.decl != cnode->symbol.decl)
+	    symtab_insert_node_to_hashtable ((symtab_node)node);
 	}
     }
 }
