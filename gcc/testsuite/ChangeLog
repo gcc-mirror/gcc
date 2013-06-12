@@ -1,3 +1,8 @@
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38958
+	* g++.dg/warn/Wunused-var-20.C: New.
+
 2013-06-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp: Handle -f{no-,}common.

@@ -1,5 +1,11 @@
 2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/38958
+	* decl.c (poplevel): For the benefit of -Wunused-variable see
+	through references.
+
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* parser.c (cp_parser_nested_name_specifier_opt): Fix typo in comment.
 
 2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
