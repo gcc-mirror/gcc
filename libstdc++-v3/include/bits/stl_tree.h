@@ -336,21 +336,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
               _Node_allocator;
 
     protected:
-      typedef _Rb_tree_node_base* _Base_ptr;
-      typedef const _Rb_tree_node_base* _Const_Base_ptr;
+      typedef _Rb_tree_node_base* 		_Base_ptr;
+      typedef const _Rb_tree_node_base* 	_Const_Base_ptr;
 
     public:
-      typedef _Key key_type;
-      typedef _Val value_type;
-      typedef value_type* pointer;
-      typedef const value_type* const_pointer;
-      typedef value_type& reference;
-      typedef const value_type& const_reference;
-      typedef _Rb_tree_node<_Val>* _Link_type;
-      typedef const _Rb_tree_node<_Val>* _Const_Link_type;
-      typedef size_t size_type;
-      typedef ptrdiff_t difference_type;
-      typedef _Alloc allocator_type;
+      typedef _Key 				key_type;
+      typedef _Val 				value_type;
+      typedef value_type* 			pointer;
+      typedef const value_type* 		const_pointer;
+      typedef value_type& 			reference;
+      typedef const value_type& 		const_reference;
+      typedef _Rb_tree_node<_Val>* 		_Link_type;
+      typedef const _Rb_tree_node<_Val>*	_Const_Link_type;
+      typedef size_t 				size_type;
+      typedef ptrdiff_t 			difference_type;
+      typedef _Alloc 				allocator_type;
 
       _Node_allocator&
       _M_get_Node_allocator() _GLIBCXX_NOEXCEPT
@@ -800,6 +800,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 130. Associative erase should return an iterator.
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __position)
       {
@@ -810,6 +811,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // LWG 2059.
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(iterator __position)
       {
@@ -833,6 +835,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // DR 130. Associative erase should return an iterator.
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __first, const_iterator __last)
       {
