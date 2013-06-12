@@ -1,3 +1,8 @@
+2013-06-12  Roland Stigge <stigge@antcom.de>
+
+	PR target/57578
+	* config/rs6000/t-linux (MULTIARCH_DIRNAME): Fix SPE version detection.
+
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57537
