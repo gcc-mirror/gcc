@@ -1507,7 +1507,8 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
   tree otr_type;
   tree t;
 
-  if (param_index == -1)
+  if (param_index == -1
+      || known_vals.length () <= (unsigned int) param_index)
     return NULL_TREE;
 
   if (!ie->indirect_info->polymorphic)
@@ -1528,8 +1529,7 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 	    t = NULL;
 	}
       else
-	t = (known_vals.length () > (unsigned int) param_index
-	     ? known_vals[param_index] : NULL);
+	t = known_vals[param_index];
 
       if (t &&
 	  TREE_CODE (t) == ADDR_EXPR
