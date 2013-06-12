@@ -1,3 +1,43 @@
+2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (emit_load_locked): Add support for
+	power8 byte, half-word, and quad-word atomic instructions.
+	(emit_store_conditional): Likewise.
+	(rs6000_expand_atomic_compare_and_swap): Likewise.
+	(rs6000_expand_atomic_op): Likewise.
+
+	* config/rs6000/sync.md (larx): Add new modes for power8.
+	(stcx): Likewise.
+	(AINT): New mode iterator to include TImode as well as normal
+	integer modes on power8.
+	(fetchop_pred): Use int_reg_operand instead of gpc_reg_operand so
+	that VSX registers are not considered.  Use AINT mode iterator
+	instead of INT1 to allow inclusion of quad word atomic operations
+	on power8.
+	(load_locked<mode>): Likewise.
+	(store_conditional<mode>): Likewise.
+	(atomic_compare_and_swap<mode>): Likewise.
+	(atomic_exchange<mode>): Likewise.
+	(atomic_nand<mode>): Likewise.
+	(atomic_fetch_<fetchop_name><mode>): Likewise.
+	(atomic_nand_fetch<mode>): Likewise.
+	(mem_thread_fence): Use gen_loadsync_<mode> instead of enumerating
+	each type.
+	(ATOMIC): On power8, add QImode, HImode modes.
+	(load_locked<QHI:mode>_si): Varients of load_locked for QI/HI
+	modes that promote to SImode.
+	(load_lockedti): Convert TImode arguments to PTImode, so that we
+	get a guaranteed even/odd register pair.
+	(load_lockedpti): Likewise.
+	(store_conditionalti): Likewise.
+	(store_conditionalpti): Likewise.
+
+	* config/rs6000/rs6000.md (QHI): New mode iterator for power8
+	atomic load/store instructions.
+	(HSI): Likewise.
+
 2013-06-12  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.md (extended_mips16): Include GOT and constant-pool

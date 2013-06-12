@@ -18,14 +18,23 @@
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
 
-(define_mode_attr larx [(SI "lwarx") (DI "ldarx")])
-(define_mode_attr stcx [(SI "stwcx.") (DI "stdcx.")])
+(define_mode_attr larx [(QI "lbarx")
+			(HI "lharx")
+			(SI "lwarx")
+			(DI "ldarx")
+			(TI "lqarx")])
+
+(define_mode_attr stcx [(QI "stbcx.")
+			(HI "sthcx.")
+			(SI "stwcx.")
+			(DI "stdcx.")
+			(TI "stqcx.")])
 
 (define_code_iterator FETCHOP [plus minus ior xor and])
 (define_code_attr fetchop_name
   [(plus "add") (minus "sub") (ior "or") (xor "xor") (and "and")])
 (define_code_attr fetchop_pred
-  [(plus "add_operand") (minus "gpc_reg_operand")
+  [(plus "add_operand") (minus "int_reg_operand")
    (ior "logical_operand") (xor "logical_operand") (and "and_operand")])
 
 (define_expand "mem_thread_fence"
@@ -129,16 +138,7 @@
     case MEMMODEL_CONSUME:
     case MEMMODEL_ACQUIRE:
     case MEMMODEL_SEQ_CST:
-      if (GET_MODE (operands[0]) == QImode)
-	emit_insn (gen_loadsync_qi (operands[0]));
-      else if (GET_MODE (operands[0]) == HImode)
-	emit_insn (gen_loadsync_hi (operands[0]));
-      else if (GET_MODE (operands[0]) == SImode)
-	emit_insn (gen_loadsync_si (operands[0]));
-      else if (GET_MODE (operands[0]) == DImode)
-	emit_insn (gen_loadsync_di (operands[0]));
-      else
-	gcc_unreachable ();
+      emit_insn (gen_loadsync_<mode> (operands[0]));
       break;
     default:
       gcc_unreachable ();
@@ -170,35 +170,109 @@
   DONE;
 })
 
-;; ??? Power ISA 2.06B says that there *is* a load-{byte,half}-and-reserve
-;; opcode that is "phased-in".  Not implemented as of Power7, so not yet used,
-;; but let's prepare the macros anyway.
+;; Any supported integer mode that has atomic l<x>arx/st<x>cx. instrucitons
+;; other than the quad memory operations, which have special restrictions.
+;; Byte/halfword atomic instructions were added in ISA 2.06B, but were phased
+;; in and did not show up until power8.  TImode atomic lqarx/stqcx. require
+;; special handling due to even/odd register requirements.
+(define_mode_iterator ATOMIC [(QI "TARGET_SYNC_HI_QI")
+			      (HI "TARGET_SYNC_HI_QI")
+			      SI
+			      (DI "TARGET_POWERPC64")])
 
-(define_mode_iterator ATOMIC    [SI (DI "TARGET_POWERPC64")])
+;; Types that we should provide atomic instructions for.
+
+(define_mode_iterator AINT [QI
+			    HI
+			    SI
+			    (DI "TARGET_POWERPC64")
+			    (TI "TARGET_SYNC_TI")])
 
 (define_insn "load_locked<mode>"
-  [(set (match_operand:ATOMIC 0 "gpc_reg_operand" "=r")
+  [(set (match_operand:ATOMIC 0 "int_reg_operand" "=r")
 	(unspec_volatile:ATOMIC
          [(match_operand:ATOMIC 1 "memory_operand" "Z")] UNSPECV_LL))]
   ""
   "<larx> %0,%y1"
   [(set_attr "type" "load_l")])
 
+(define_insn "load_locked<QHI:mode>_si"
+  [(set (match_operand:SI 0 "int_reg_operand" "=r")
+	(unspec_volatile:SI
+	  [(match_operand:QHI 1 "memory_operand" "Z")] UNSPECV_LL))]
+  "TARGET_SYNC_HI_QI"
+  "<QHI:larx> %0,%y1"
+  [(set_attr "type" "load_l")])
+
+;; Use PTImode to get even/odd register pairs
+(define_expand "load_lockedti"
+  [(use (match_operand:TI 0 "quad_int_reg_operand" ""))
+   (use (match_operand:TI 1 "memory_operand" ""))]
+  "TARGET_SYNC_TI"
+{
+  /* Use a temporary register to force getting an even register for the
+     lqarx/stqcrx. instructions.  Normal optimizations will eliminate this
+     extra copy.  */
+  rtx pti = gen_reg_rtx (PTImode);
+  emit_insn (gen_load_lockedpti (pti, operands[1]));
+  emit_move_insn (operands[0], gen_lowpart (TImode, pti));
+  DONE;
+})
+
+(define_insn "load_lockedpti"
+  [(set (match_operand:PTI 0 "quad_int_reg_operand" "=&r")
+	(unspec_volatile:PTI
+         [(match_operand:TI 1 "memory_operand" "Z")] UNSPECV_LL))]
+  "TARGET_SYNC_TI
+   && !reg_mentioned_p (operands[0], operands[1])
+   && quad_int_reg_operand (operands[0], PTImode)"
+  "lqarx %0,%y1"
+  [(set_attr "type" "load_l")])
+
 (define_insn "store_conditional<mode>"
   [(set (match_operand:CC 0 "cc_reg_operand" "=x")
 	(unspec_volatile:CC [(const_int 0)] UNSPECV_SC))
    (set (match_operand:ATOMIC 1 "memory_operand" "=Z")
-	(match_operand:ATOMIC 2 "gpc_reg_operand" "r"))]
+	(match_operand:ATOMIC 2 "int_reg_operand" "r"))]
   ""
   "<stcx> %2,%y1"
   [(set_attr "type" "store_c")])
 
+(define_expand "store_conditionalti"
+  [(use (match_operand:CC 0 "cc_reg_operand" ""))
+   (use (match_operand:TI 1 "memory_operand" ""))
+   (use (match_operand:TI 2 "quad_int_reg_operand" ""))]
+  "TARGET_SYNC_TI"
+{
+  rtx op0 = operands[0];
+  rtx op1 = operands[1];
+  rtx op2 = operands[2];
+  rtx pti_op1 = change_address (op1, PTImode, XEXP (op1, 0));
+  rtx pti_op2 = gen_reg_rtx (PTImode);
+
+  /* Use a temporary register to force getting an even register for the
+     lqarx/stqcrx. instructions.  Normal optimizations will eliminate this
+     extra copy.  */
+  emit_move_insn (pti_op2, gen_lowpart (PTImode, op2));
+  emit_insn (gen_store_conditionalpti (op0, pti_op1, pti_op2));
+  DONE;
+})
+
+(define_insn "store_conditionalpti"
+  [(set (match_operand:CC 0 "cc_reg_operand" "=x")
+	(unspec_volatile:CC [(const_int 0)] UNSPECV_SC))
+   (set (match_operand:PTI 1 "memory_operand" "=Z")
+	(match_operand:PTI 2 "quad_int_reg_operand" "r"))]
+  "TARGET_SYNC_TI && quad_int_reg_operand (operands[2], PTImode)"
+  "stqcx. %2,%y1"
+  [(set_attr "type" "store_c")])
+
 (define_expand "atomic_compare_and_swap<mode>"
-  [(match_operand:SI 0 "gpc_reg_operand" "")		;; bool out
-   (match_operand:INT1 1 "gpc_reg_operand" "")		;; val out
-   (match_operand:INT1 2 "memory_operand" "")		;; memory
-   (match_operand:INT1 3 "reg_or_short_operand" "")	;; expected
-   (match_operand:INT1 4 "gpc_reg_operand" "")		;; desired
+  [(match_operand:SI 0 "int_reg_operand" "")		;; bool out
+   (match_operand:AINT 1 "int_reg_operand" "")		;; val out
+   (match_operand:AINT 2 "memory_operand" "")		;; memory
+   (match_operand:AINT 3 "reg_or_short_operand" "")	;; expected
+   (match_operand:AINT 4 "int_reg_operand" "")		;; desired
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; model succ
    (match_operand:SI 7 "const_int_operand" "")]		;; model fail
@@ -209,9 +283,9 @@
 })
 
 (define_expand "atomic_exchange<mode>"
-  [(match_operand:INT1 0 "gpc_reg_operand" "")		;; output
-   (match_operand:INT1 1 "memory_operand" "")		;; memory
-   (match_operand:INT1 2 "gpc_reg_operand" "")		;; input
+  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
+   (match_operand:AINT 1 "memory_operand" "")		;; memory
+   (match_operand:AINT 2 "int_reg_operand" "")		;; input
    (match_operand:SI 3 "const_int_operand" "")]		;; model
   ""
 {
@@ -220,9 +294,9 @@
 })
 
 (define_expand "atomic_<fetchop_name><mode>"
-  [(match_operand:INT1 0 "memory_operand" "")		;; memory
-   (FETCHOP:INT1 (match_dup 0)
-     (match_operand:INT1 1 "<fetchop_pred>" ""))	;; operand
+  [(match_operand:AINT 0 "memory_operand" "")		;; memory
+   (FETCHOP:AINT (match_dup 0)
+     (match_operand:AINT 1 "<fetchop_pred>" ""))	;; operand
    (match_operand:SI 2 "const_int_operand" "")]		;; model
   ""
 {
@@ -232,8 +306,8 @@
 })
 
 (define_expand "atomic_nand<mode>"
-  [(match_operand:INT1 0 "memory_operand" "")		;; memory
-   (match_operand:INT1 1 "gpc_reg_operand" "")		;; operand
+  [(match_operand:AINT 0 "memory_operand" "")		;; memory
+   (match_operand:AINT 1 "int_reg_operand" "")		;; operand
    (match_operand:SI 2 "const_int_operand" "")]		;; model
   ""
 {
@@ -243,10 +317,10 @@
 })
 
 (define_expand "atomic_fetch_<fetchop_name><mode>"
-  [(match_operand:INT1 0 "gpc_reg_operand" "")		;; output
-   (match_operand:INT1 1 "memory_operand" "")		;; memory
-   (FETCHOP:INT1 (match_dup 1)
-     (match_operand:INT1 2 "<fetchop_pred>" ""))	;; operand
+  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
+   (match_operand:AINT 1 "memory_operand" "")		;; memory
+   (FETCHOP:AINT (match_dup 1)
+     (match_operand:AINT 2 "<fetchop_pred>" ""))	;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
   ""
 { 
@@ -256,9 +330,9 @@
 })
 
 (define_expand "atomic_fetch_nand<mode>"
-  [(match_operand:INT1 0 "gpc_reg_operand" "")		;; output
-   (match_operand:INT1 1 "memory_operand" "")		;; memory
-   (match_operand:INT1 2 "gpc_reg_operand" "")		;; operand
+  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
+   (match_operand:AINT 1 "memory_operand" "")		;; memory
+   (match_operand:AINT 2 "int_reg_operand" "")		;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
   ""
 {
@@ -268,10 +342,10 @@
 })
 
 (define_expand "atomic_<fetchop_name>_fetch<mode>"
-  [(match_operand:INT1 0 "gpc_reg_operand" "")		;; output
-   (match_operand:INT1 1 "memory_operand" "")		;; memory
-   (FETCHOP:INT1 (match_dup 1)
-     (match_operand:INT1 2 "<fetchop_pred>" ""))	;; operand
+  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
+   (match_operand:AINT 1 "memory_operand" "")		;; memory
+   (FETCHOP:AINT (match_dup 1)
+     (match_operand:AINT 2 "<fetchop_pred>" ""))	;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
   ""
 {
@@ -281,9 +355,9 @@
 })
 
 (define_expand "atomic_nand_fetch<mode>"
-  [(match_operand:INT1 0 "gpc_reg_operand" "")		;; output
-   (match_operand:INT1 1 "memory_operand" "")		;; memory
-   (match_operand:INT1 2 "gpc_reg_operand" "")		;; operand
+  [(match_operand:AINT 0 "int_reg_operand" "")		;; output
+   (match_operand:AINT 1 "memory_operand" "")		;; memory
+   (match_operand:AINT 2 "int_reg_operand" "")		;; operand
    (match_operand:SI 3 "const_int_operand" "")]		;; model
   ""
 {

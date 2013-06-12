@@ -1,3 +1,11 @@
+2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/atomic-p7.c: New file, add tests for atomic
+	load/store instructions on power7, power8.
+	* gcc.target/powerpc/atomic-p8.c: Likewise.
+
 2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c/57577
