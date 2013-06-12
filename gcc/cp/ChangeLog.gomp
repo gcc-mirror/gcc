@@ -1,5 +1,14 @@
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* semantics.c (finish_omp_clause): Don't mark references addressable.
+	For OMP_CLAUSE_{TO,FROM} detect same decl appearing more than once
+	in motion clauses.
+	* parser.c (cp_parser_omp_var_list_no_open): Handle [ expression ]
+	notation in array section specification.
+	(cp_parser_omp_all_clauses): Don't require to/from clauses to be
+	first.
+	(cp_parser_omp_target_update): Adjust diagnostics.
+
 	* semantics.c (finish_omp_clauses): Handle OMP_CLAUSE_THREAD_LIMIT.
 	* parser.c (cp_parser_omp_clause_name): Handle thread_limit clause.
 	(cp_parser_omp_clause_thread_limit): New function.

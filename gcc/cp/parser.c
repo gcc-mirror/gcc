@@ -26332,13 +26332,19 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  if (!colon)
 		    parser->colon_corrects_to_scope_p
 		      = saved_colon_corrects_to_scope_p;
-		  /* Look for `:'.  */
-		  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
-		    goto skip_comma;
-		  if (!cp_lexer_next_token_is (parser->lexer,
-					       CPP_CLOSE_SQUARE))
-		    length = cp_parser_expression (parser, /*cast_p=*/false,
-						   NULL);
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
+		    length = integer_one_node;
+		  else
+		    {
+		      /* Look for `:'.  */
+		      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+			goto skip_comma;
+		      if (!cp_lexer_next_token_is (parser->lexer,
+						   CPP_CLOSE_SQUARE))
+			length = cp_parser_expression (parser,
+						       /*cast_p=*/false,
+						       NULL);
+		    }
 		  /* Look for the closing `]'.  */
 		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
 					  RT_CLOSE_SQUARE))
@@ -27441,15 +27447,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO,
 					    clauses);
 	  c_name = "to";
-	  if (!first)
-	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_FROM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_FROM,
 					    clauses);
 	  c_name = "from";
-	  if (!first)
-	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNIFORM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_UNIFORM,
@@ -29165,7 +29167,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
       && find_omp_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
     {
       error_at (pragma_tok->location,
-		"%<#pragma omp target update must contain either "
+		"%<#pragma omp target update must contain at least one "
 		"%<from%> or %<to%> clauses");
       return false;
     }

@@ -4944,8 +4944,18 @@ finish_omp_clauses (tree clauses)
 	      remove = true;
 	    }
 	  else if (!processing_template_decl
+		   && TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE
 		   && !cxx_mark_addressable (t))
 	    remove = true;
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
+	    break;
+	  else if (bitmap_bit_p (&generic_head, DECL_UID (t)))
+	    {
+	      error ("%qD appears more than once in motion clauses", t);
+	      remove = true;
+	    }
+	  else
+	    bitmap_set_bit (&generic_head, DECL_UID (t));
 	  break;
 
 	case OMP_CLAUSE_UNIFORM:
