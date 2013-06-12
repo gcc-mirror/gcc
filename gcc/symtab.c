@@ -647,11 +647,14 @@ verify_symtab_base (symtab_node node)
       error_found = true;
     }
    
-  hashed_node = symtab_get_node (node->symbol.decl);
-  if (!hashed_node)
+  if (cgraph_state != CGRAPH_LTO_STREAMING)
     {
-      error ("node not found in symtab decl hashtable");
-      error_found = true;
+      hashed_node = symtab_get_node (node->symbol.decl);
+      if (!hashed_node)
+	{
+	  error ("node not found in symtab decl hashtable");
+	  error_found = true;
+	}
     }
   if (assembler_name_hash)
     {

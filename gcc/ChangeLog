@@ -1,3 +1,10 @@
+2013-06-12  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (verify_edge_corresponds_to_fndecl): Be lax about
+	decl has when in streaming stage.
+	* lto-symtab.c (lto_symtab_merge_symbols): Likewise.
+	* cgraph.h (cgraph_state): Add CGRAPH_LTO_STREAMING.
+
 2013-06-12  Roland Stigge <stigge@antcom.de>
 
 	PR target/57578
