@@ -1,5 +1,6 @@
 /* PR target/56564 */
 /* { dg-do compile { target { fpic && lp64 } } } */
+/* { dg-skip-if "No symbol interposition for PIC" { *-*-mingw* *-*-cygwin* *-*-darwin* } } */
 /* { dg-options "-O3 -fpic -fdump-tree-optimized" } */
 
 struct S { long a, b; } s = { 5, 6 };
