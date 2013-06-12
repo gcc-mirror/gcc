@@ -1,3 +1,9 @@
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57537
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): If
+	vect_handle_widen_op_by_const, convert oprnd1 to half_type1.
+
 2013-06-12  Richard Biener  <rguenther@suse.de>
 
 	* data-streamer.h (streamer_write_char_stream): CSE
