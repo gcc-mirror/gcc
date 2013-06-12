@@ -1,3 +1,9 @@
+2013-06-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Handle -f{no-,}common.
+	* gcc.target/mips/memcpy-1.c: Remove redundant dg-do.
+	Run with -fno-common.
+
 2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c (main): Replaced abort
