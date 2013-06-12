@@ -1,3 +1,30 @@
+2013-06-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.md (extended_mips16): Include GOT and constant-pool
+	loads.
+	(insn_count): New attribute, with most cases extracted from...
+	(length): ...here.  Redefine most cases in terms of insn_count.
+	(single_insn): Delete.
+	(can_delay): Use insn_count to check for single instructions.
+	(*mul<mode>3_r4300, mul<mode>3_r4000, *mul_acc_si, *mul_acc_si_r3900)
+	(*msac_using_macc, *mul_sub_si, <u>mulsidi3_32bit_r4000)
+	(<u>mulsidi3_64bit_r4000, <su>muldi3_highpart_internal)
+	(<su>mulsi3_highpart_split, <su>muldi3_highpart_internal)
+	(<u>mulditi3_r4000, *div<mode>3, *recip<mode>3, divmod<mode>4)
+	(udivmod<mode>4, sqrt<mode>2, *rsqrt<mode>a, *rsqrt<mode>b)
+	(fix_truncdfsi2_macro, fix_truncsfsi2_macro, *lea_high64)
+	(*lea64, cprestore_<mode>, clear_hazard_<mode>, <unnamed insn>)
+	(casesi_internal_mips16_<mode>, *tls_get_tp_<mode>_split)
+	(tls_get_tp_mips16, *tls_get_tp_mips16_call_<mode>): Use "insn_count"
+	rather than "length".
+	(tls_get_tp_<mode>): Likewise.  Remove redundant "no_delay" attribute.
+	* config/mips/mips-ps-3d.md (mips_c_cond_4s, mips_cabs_cond_4s):
+	Use "insn_count" rather than "length".
+	* config/mips/mips-dsp.md
+	(mips_l<SHORT:size><u>x_ext<GPR:mode>_<P:mode>)
+	(mips_l<GPR:size>x_<P:mode>, *mips_lw<u>x_<P:mode>_ext): Remove
+	length attributes.
+
 2013-06-12  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR tree-optimization/57361
