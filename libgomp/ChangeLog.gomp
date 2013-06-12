@@ -1,5 +1,14 @@
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
+	* fortran.c (omp_is_initial_device): Add ialias_redirect.
+	(omp_is_initial_device_): New function.
+	* omp_lib.f90.in (omp_is_initial_device): New interface.
+	* omp.h.in (omp_is_initial_device): New prototype.
+	* libgomp.map (omp_is_initial_device, omp_is_initial_device_):
+	Export @@OMP_4.0.
+	* env.c (omp_is_initial_device): New function.  Add ialias for it.
+	* omp_lib.h.in (omp_is_initial_device): New external.
+
 	* omp_lib.f90.in (omp_get_dynamic, omp_get_nested,
 	omp_in_parallel, omp_get_max_threads, omp_get_num_procs,
 	omp_get_num_threads, omp_get_thread_num, omp_get_thread_limit,

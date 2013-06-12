@@ -908,6 +908,12 @@ omp_get_team_num (void)
   return 0;
 }
 
+int
+omp_is_initial_device (void)
+{
+  return 1;
+}
+
 ialias (omp_set_dynamic)
 ialias (omp_set_nested)
 ialias (omp_set_num_threads)
@@ -926,3 +932,4 @@ ialias (omp_get_default_device)
 ialias (omp_get_num_devices)
 ialias (omp_get_num_teams)
 ialias (omp_get_team_num)
+ialias (omp_is_initial_device)
