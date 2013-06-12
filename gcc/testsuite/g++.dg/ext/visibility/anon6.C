@@ -3,9 +3,9 @@
 // { dg-final { scan-assembler-not "globl.*1BIiE1cE" } }
 // { dg-final { scan-assembler-not "comdat" } }
 // { dg-final { scan-assembler-not "weak" } }
-// { dg-final { scan-assembler-not "1CIiE1cE" } }
+// { dg-final { scan-assembler-not "1AIiE1cE" } }
 
-// Test that B<int>::c is emitted as an internal symbol, and C<int>::c is
+// Test that B<int>::c is emitted as an internal symbol, and A<int>::c is
 // not emitted.
 
 namespace
