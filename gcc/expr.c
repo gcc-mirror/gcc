@@ -9602,7 +9602,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    create_output_operand (&ops[0], NULL_RTX, mode);
 	    create_fixed_operand (&ops[1], temp);
 	    expand_insn (icode, 2, ops);
-	    return ops[0].value;
+	    temp = ops[0].value;
 	  }
 	return temp;
       }
@@ -9621,34 +9621,25 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	if (mem_ref_refers_to_non_mem_p (exp))
 	  {
 	    HOST_WIDE_INT offset = mem_ref_offset (exp).low;
-	    tree bit_offset;
-	    tree bftype;
 	    base = TREE_OPERAND (base, 0);
 	    if (offset == 0
-		&& host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1)
+		&& host_integerp (TYPE_SIZE (type), 1)
 		&& (GET_MODE_BITSIZE (DECL_MODE (base))
-		    == TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))))
-	      return expand_expr (build1 (VIEW_CONVERT_EXPR,
-					  TREE_TYPE (exp), base),
+		    == TREE_INT_CST_LOW (TYPE_SIZE (type))))
+	      return expand_expr (build1 (VIEW_CONVERT_EXPR, type, base),
 				  target, tmode, modifier);
-	    bit_offset = bitsize_int (offset * BITS_PER_UNIT);
-	    bftype = TREE_TYPE (base);
-	    if (TYPE_MODE (TREE_TYPE (exp)) != BLKmode)
-	      bftype = TREE_TYPE (exp);
-	    else
+	    if (TYPE_MODE (type) == BLKmode)
 	      {
 		temp = assign_stack_temp (DECL_MODE (base),
 					  GET_MODE_SIZE (DECL_MODE (base)));
 		store_expr (base, temp, 0, false);
 		temp = adjust_address (temp, BLKmode, offset);
-		set_mem_size (temp, int_size_in_bytes (TREE_TYPE (exp)));
+		set_mem_size (temp, int_size_in_bytes (type));
 		return temp;
 	      }
-	    return expand_expr (build3 (BIT_FIELD_REF, bftype,
-					base,
-					TYPE_SIZE (TREE_TYPE (exp)),
-					bit_offset),
-				target, tmode, modifier);
+	    exp = build3 (BIT_FIELD_REF, type, base, TYPE_SIZE (type),
+			  bitsize_int (offset * BITS_PER_UNIT));
+	    return expand_expr (exp, target, tmode, modifier);
 	  }
 	address_mode = targetm.addr_space.address_mode (as);
 	base = TREE_OPERAND (exp, 0);
@@ -9690,7 +9681,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		create_output_operand (&ops[0], NULL_RTX, mode);
 		create_fixed_operand (&ops[1], temp);
 		expand_insn (icode, 2, ops);
-		return ops[0].value;
+		temp = ops[0].value;
 	      }
 	    else if (SLOW_UNALIGNED_ACCESS (mode, align))
 	      temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
@@ -10202,7 +10193,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    || modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_INITIALIZER)
 	  return op0;
-	else if (target == 0)
+	
+	if (target == 0)
 	  target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
 
 	convert_move (target, op0, unsignedp);
@@ -10249,7 +10241,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* If we are converting to BLKmode, try to avoid an intermediate
 	 temporary by fetching an inner memory reference.  */
       if (mode == BLKmode
-	  && TREE_CODE (TYPE_SIZE (TREE_TYPE (exp))) == INTEGER_CST
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	  && TYPE_MODE (TREE_TYPE (treeop0)) != BLKmode
 	  && handled_component_p (treeop0))
       {
@@ -10268,7 +10260,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	if (!offset
 	    && (bitpos % BITS_PER_UNIT) == 0
 	    && bitsize >= 0
-	    && compare_tree_int (TYPE_SIZE (TREE_TYPE (exp)), bitsize) == 0)
+	    && compare_tree_int (TYPE_SIZE (type), bitsize) == 0)
 	  {
 	    /* See the normal_inner_ref case for the rationale.  */
 	    orig_op0
@@ -10309,8 +10301,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       }
 
       if (!op0)
-	op0 = expand_expr (treeop0,
-			   NULL_RTX, VOIDmode, modifier);
+	op0 = expand_expr (treeop0, NULL_RTX, VOIDmode, modifier);
 
       /* If the input and output modes are both the same, we are done.  */
       if (mode == GET_MODE (op0))

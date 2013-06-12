@@ -1,3 +1,11 @@
+2013-06-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <TARGET_MEM_REF>: Use straight-line flow.
+	<MEM_REF>: Use 'type' instead of TREE_TYPE (exp) and tidy up the first
+	part.  Use straight-line flow at the end.
+	<COMPONENT_REF>: Remove superfluous else.
+	<VIEW_CONVERT_EXPR>: Use 'type' instead of TREE_TYPE (exp).
+
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/56564
