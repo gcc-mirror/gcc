@@ -5230,10 +5230,16 @@ cp_parser_nested_name_specifier_opt (cp_parser *parser,
 				  decl);
 		      else if (ambiguous_decls)
 			{
-			  error_at (token->location,
-				    "reference to %qD is ambiguous",
-				    token->u.value);
-			  print_candidates (ambiguous_decls);
+			  // cp_parser_lookup_name has the same diagnostic,
+			  // thus make sure to emit it almost once.
+			  if (cp_parser_uncommitted_to_tentative_parse_p
+			      (parser))
+			    {
+			      error_at (token->location,
+					"reference to %qD is ambiguous",
+					token->u.value);
+			      print_candidates (ambiguous_decls);
+			    }
 			  decl = error_mark_node;
 			}
 		      else
