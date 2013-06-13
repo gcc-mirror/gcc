@@ -1,3 +1,8 @@
+2013-06-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	* gfortran.dg/typebound_assignment_5.f03: New.
+
 2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/forwprop-27.c: New testcase.
