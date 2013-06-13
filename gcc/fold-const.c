@@ -2473,9 +2473,13 @@ operand_equal_p (const_tree arg0, const_tree arg1, unsigned int flags)
     }
 
   if (TREE_CODE (arg0) != TREE_CODE (arg1)
-      /* This is needed for conversions and for COMPONENT_REF.
-	 Might as well play it safe and always test this.  */
-      || TREE_CODE (TREE_TYPE (arg0)) == ERROR_MARK
+      /* NOP_EXPR and CONVERT_EXPR are considered equal.  */
+      && !(CONVERT_EXPR_P (arg0) && CONVERT_EXPR_P (arg1)))
+    return 0;
+
+  /* This is needed for conversions and for COMPONENT_REF.
+     Might as well play it safe and always test this.  */
+  if (TREE_CODE (TREE_TYPE (arg0)) == ERROR_MARK
       || TREE_CODE (TREE_TYPE (arg1)) == ERROR_MARK
       || TYPE_MODE (TREE_TYPE (arg0)) != TYPE_MODE (TREE_TYPE (arg1)))
     return 0;
