@@ -55,6 +55,14 @@ void test01()
 	   int (ClassType::*[2][3])>(false)) );
   VERIFY( (test_property<is_nothrow_copy_assignable, 
 	   int (ClassType::*[][2][3]) (int)>(false)) );
+  VERIFY( (test_property<is_nothrow_copy_assignable, 
+       ClassType(unsigned) const &>(false)) );
+  VERIFY( (test_property<is_nothrow_copy_assignable, 
+       bool(ClassType) const>(false)) );
+  VERIFY( (test_property<is_nothrow_copy_assignable, 
+       bool(...) &&>(false)) );
+  VERIFY( (test_property<is_nothrow_copy_assignable, 
+       EnumType(int, ...)>(false)) );
 
   VERIFY( (test_property<is_nothrow_copy_assignable,
 	   ExceptCopyAssignClass>(false)) );

@@ -1,3 +1,37 @@
+2013-06-13  Daniel Krugler  <daniel.kruegler@gmail.com>
+
+	* include/std/type_traits (is_function): Support ref-qualified
+	functions.
+	(is_copy_constructible, is_move_constructible, is_copy_assignable,
+	is_move_assignable, is_nothrow_copy_constructible,
+	is_nothrow_move_constructible, is_nothrow_copy_assignable,
+	is_nothrow_move_assignable): Implement LWG 2196.
+	(add_lvalue_reference, add_rvalue_reference, add_pointer): Implement
+	LWG 2101.
+	(__strip_reference_wrapper<<const reference_wrapper<_Tp>>): Remove,
+	unused.
+	* testsuite/20_util/add_lvalue_reference/value.cc: Extend.
+	* testsuite/20_util/add_rvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/decay/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
+	* testsuite/20_util/is_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_function/value.cc: Likewise.
+	* testsuite/20_util/is_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_move_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_constructible/value.cc: Likewise.
+
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
 2013-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/tr1/modified_bessel_func.tcc (__gnu_cxx::__airy_ai(),
