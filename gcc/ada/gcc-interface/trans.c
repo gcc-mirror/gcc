@@ -1075,19 +1075,6 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
     {
       const bool read_only = DECL_POINTS_TO_READONLY_P (gnu_result);
 
-      /* First do the first dereference if needed.  */
-      if (TREE_CODE (gnu_result) == PARM_DECL
-	  && DECL_BY_DOUBLE_REF_P (gnu_result))
-	{
-	  gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
-	  if (TREE_CODE (gnu_result) == INDIRECT_REF)
-	    TREE_THIS_NOTRAP (gnu_result) = 1;
-
-	  /* The first reference, in case of a double reference, always points
-	     to read-only, see gnat_to_gnu_param for the rationale.  */
-	  TREE_READONLY (gnu_result) = 1;
-	}
-
       /* If it's a PARM_DECL to foreign convention subprogram, convert it.  */
       if (TREE_CODE (gnu_result) == PARM_DECL
 	  && DECL_BY_COMPONENT_PTR_P (gnu_result))
@@ -3251,7 +3238,6 @@ build_function_stub (tree gnu_subprog, Entity_Id gnat_subprog)
 	    = convert_vms_descriptor (TREE_TYPE (gnu_subprog_param),
 				      gnu_stub_param,
 				      DECL_PARM_ALT_TYPE (gnu_stub_param),
-				      DECL_BY_DOUBLE_REF_P (gnu_subprog_param),
 				      gnat_subprog);
 	}
       else
@@ -3546,8 +3532,7 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
       bool is_var_decl = (TREE_CODE (gnu_param) == VAR_DECL);
 
       annotate_object (gnat_param, TREE_TYPE (gnu_param), NULL_TREE,
-		       DECL_BY_REF_P (gnu_param),
-		       !is_var_decl && DECL_BY_DOUBLE_REF_P (gnu_param));
+		       DECL_BY_REF_P (gnu_param));
 
       if (is_var_decl)
 	save_gnu_tree (gnat_param, NULL_TREE, false);
@@ -4009,12 +3994,6 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* The symmetry of the paths to the type of an entity is broken here
 	     since arguments don't know that they will be passed by ref.  */
 	  gnu_formal_type = TREE_TYPE (gnu_formal);
-
-	  if (DECL_BY_DOUBLE_REF_P (gnu_formal))
-	    gnu_actual
-	      = build_unary_op (ADDR_EXPR, TREE_TYPE (gnu_formal_type),
-				gnu_actual);
-
 	  gnu_actual = build_unary_op (ADDR_EXPR, gnu_formal_type, gnu_actual);
 	}
       else if (is_true_formal_parm && DECL_BY_COMPONENT_PTR_P (gnu_formal))

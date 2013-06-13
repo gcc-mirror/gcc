@@ -360,10 +360,6 @@ do {						   \
    constant CONSTRUCTOR.  */
 #define DECL_CONST_ADDRESS_P(NODE) DECL_LANG_FLAG_0 (CONST_DECL_CHECK (NODE))
 
-/* Nonzero in a PARM_DECL if it is always used by double reference, i.e. a
-   pair of INDIRECT_REFs is needed to access the object.  */
-#define DECL_BY_DOUBLE_REF_P(NODE) DECL_LANG_FLAG_0 (PARM_DECL_CHECK (NODE))
-
 /* Nonzero in a FIELD_DECL if it is declared as aliased.  */
 #define DECL_ALIASED_P(NODE) DECL_LANG_FLAG_0 (FIELD_DECL_CHECK (NODE))
 

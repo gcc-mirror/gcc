@@ -436,7 +436,7 @@ package Targparm is
    --  the source program may not contain explicit 64-bit shifts. In addition,
    --  the code generated for packed arrays will avoid the use of long shifts.
 
-   Support_Nondefault_SSO_On_Target : Boolean := False;
+   Support_Nondefault_SSO_On_Target : Boolean := True;
    --  If True, the back end supports the non-default Scalar_Storage_Order
    --  (i.e. allows non-confirming Scalar_Storage_Order attribute definition
    --  clauses).
