@@ -715,6 +715,11 @@ extern unsigned char rs6000_recip_bits[];
    instructions for them.  Might as well be consistent with bits and bytes.  */
 #define WORDS_BIG_ENDIAN 1
 
+/* This says that for the IBM long double the larger magnitude double
+   comes first.  It's really a two element double array, and arrays
+   don't index differently between little- and big-endian.  */
+#define LONG_DOUBLE_LARGE_FIRST 1
+
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
