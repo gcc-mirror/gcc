@@ -277,8 +277,8 @@ static_assert(!std::is_assignable<DelAnyAssign&, int&>::value, "Error");
 static_assert(!std::is_assignable<DelAnyAssign&, const int&>::value, "Error");
 static_assert(!std::is_assignable<DelAnyAssign&, void>::value, "Error");
 static_assert(!std::is_assignable<DelAnyAssign&, void()>::value, "Error");
-// static_assert(!std::is_assignable<DelAnyAssign&, void()
-// const>::value, "Error");
+static_assert(!std::is_assignable<DelAnyAssign&, 
+  void() const>::value, "Error");
 static_assert(!std::is_assignable<DelAnyAssign&, void(&)()>::value, "Error");
 static_assert(!std::is_assignable<DelAnyAssign&, void(&&)()>::value, "Error");
 static_assert(!std::is_assignable<DelAnyAssign&,
@@ -580,6 +580,9 @@ static_assert(!std::is_assignable<const UAssignAll&,
 UAssignAll&>::value, "Error");
 static_assert(!std::is_assignable<const UAssignAll&, const
 UAssignAll&>::value, "Error");
+static_assert(!std::is_assignable<UAssignAll&, void() const>::value, "Error");
+static_assert(!std::is_assignable<UAssignAll&, void() &>::value, "Error");
+static_assert(!std::is_assignable<UAssignAll&, void() const volatile &&>::value, "Error");
 
 static_assert(std::is_assignable<UAssignAll&, int>::value, "Error");
 static_assert(std::is_assignable<UAssignAll&, int&>::value, "Error");
@@ -600,7 +603,6 @@ static_assert(std::is_assignable<UAssignAll&,
 std::nullptr_t&>::value, "Error");
 static_assert(std::is_assignable<UAssignAll&, void()>::value, "Error");
 static_assert(std::is_assignable<UAssignAll&, void(&)()>::value, "Error");
-//static_assert(std::is_assignable<UAssignAll&, void() const>::value, "Error");
 static_assert(std::is_assignable<UAssignAll&, void(*)()>::value, "Error");
 static_assert(std::is_assignable<UAssignAll&, void(*&)()>::value, "Error");
 static_assert(std::is_assignable<UAssignAll&, int*>::value, "Error");
@@ -636,8 +638,8 @@ static_assert(!std::is_assignable<UDelAssignAll&,
 std::nullptr_t&>::value, "Error");
 static_assert(!std::is_assignable<UDelAssignAll&, void()>::value, "Error");
 static_assert(!std::is_assignable<UDelAssignAll&, void(&)()>::value, "Error");
-// static_assert(!std::is_assignable<UDelAssignAll&, void()
-// const>::value, "Error");
+static_assert(!std::is_assignable<UDelAssignAll&, void()
+ const>::value, "Error");
 static_assert(!std::is_assignable<UDelAssignAll&, void(*)()>::value, "Error");
 static_assert(!std::is_assignable<UDelAssignAll&, void(*&)()>::value, "Error");
 static_assert(!std::is_assignable<UDelAssignAll&, int*>::value, "Error");

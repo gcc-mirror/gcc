@@ -54,6 +54,14 @@ void test01()
 	   int (ClassType::*[2][3])>(false)) );
   VERIFY( (test_property<is_move_assignable, 
 	   int (ClassType::*[][2][3]) (int)>(false)) );
+  VERIFY( (test_property<is_move_assignable, 
+       ClassType(unsigned) const &>(false)) );
+  VERIFY( (test_property<is_move_assignable, 
+       bool(ClassType) const>(false)) );
+  VERIFY( (test_property<is_move_assignable, 
+       bool(...) &&>(false)) );
+  VERIFY( (test_property<is_move_assignable, 
+       EnumType(int, ...)>(false)) );
 
   VERIFY( (test_property<is_move_assignable, DeletedCopyAssignClass>(false)) );
   VERIFY( (test_property<is_move_assignable, DeletedMoveAssignClass>(false)) );

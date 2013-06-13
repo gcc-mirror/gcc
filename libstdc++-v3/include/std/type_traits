@@ -377,7 +377,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) &&>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes......)>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) &&>
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
@@ -385,7 +401,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) const &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) const &&>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes......) const>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) const &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) const &&>
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
@@ -393,7 +425,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) volatile &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) volatile &&>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes......) volatile>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) volatile &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) volatile &&>
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
@@ -401,7 +449,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
   template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) const volatile &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes...) const volatile &&>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
     struct is_function<_Res(_ArgTypes......) const volatile>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) const volatile &>
+    : public true_type { };
+
+  template<typename _Res, typename... _ArgTypes>
+    struct is_function<_Res(_ArgTypes......) const volatile &&>
     : public true_type { };
 
   template<typename>
@@ -480,6 +544,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct is_member_pointer
     : public __is_member_pointer_helper<typename remove_cv<_Tp>::type>::type
+    { };
+
+  // Utility to detect referenceable types ([defns.referenceable]).
+
+  template<typename _Tp>
+    struct __is_referenceable
+    : public __or_<is_object<_Tp>, is_reference<_Tp>>::type
+    { };
+
+  template<typename _Res, typename... _Args>
+    struct __is_referenceable<_Res(_Args...)>
+    : public true_type
+    { };
+
+  template<typename _Res, typename... _Args>
+    struct __is_referenceable<_Res(_Args......)>
+    : public true_type
     { };
 
   // Type properties.
@@ -947,15 +1028,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_constructible_impl<_Tp, _Args...>::type
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_copy_constructible_impl;
 
   template<typename _Tp>
-    struct __is_copy_constructible_impl<_Tp, true>
+    struct __is_copy_constructible_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_copy_constructible_impl<_Tp, false>
+    struct __is_copy_constructible_impl<_Tp, true>
     : public is_constructible<_Tp, const _Tp&>
     { };
 
@@ -965,15 +1046,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_copy_constructible_impl<_Tp>
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_move_constructible_impl;
 
   template<typename _Tp>
-    struct __is_move_constructible_impl<_Tp, true>
+    struct __is_move_constructible_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_move_constructible_impl<_Tp, false>
+    struct __is_move_constructible_impl<_Tp, true>
     : public is_constructible<_Tp, _Tp&&>
     { };
 
@@ -1033,15 +1114,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __is_nt_constructible_impl<_Tp, _Args...>>::type
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nothrow_copy_constructible_impl;
 
   template<typename _Tp>
-    struct __is_nothrow_copy_constructible_impl<_Tp, true>
+    struct __is_nothrow_copy_constructible_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_nothrow_copy_constructible_impl<_Tp, false>
+    struct __is_nothrow_copy_constructible_impl<_Tp, true>
     : public is_nothrow_constructible<_Tp, const _Tp&>
     { };
 
@@ -1051,15 +1132,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_nothrow_copy_constructible_impl<_Tp>
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nothrow_move_constructible_impl;
 
   template<typename _Tp>
-    struct __is_nothrow_move_constructible_impl<_Tp, true>
+    struct __is_nothrow_move_constructible_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_nothrow_move_constructible_impl<_Tp, false>
+    struct __is_nothrow_move_constructible_impl<_Tp, true>
     : public is_nothrow_constructible<_Tp, _Tp&&>
     { };
 
@@ -1091,15 +1172,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : public __is_assignable_helper<_Tp, _Up>::type
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_copy_assignable_impl;
 
   template<typename _Tp>
-    struct __is_copy_assignable_impl<_Tp, true>
+    struct __is_copy_assignable_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_copy_assignable_impl<_Tp, false>
+    struct __is_copy_assignable_impl<_Tp, true>
     : public is_assignable<_Tp&, const _Tp&>
     { };
 
@@ -1109,15 +1190,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_copy_assignable_impl<_Tp>
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_move_assignable_impl;
 
   template<typename _Tp>
-    struct __is_move_assignable_impl<_Tp, true>
+    struct __is_move_assignable_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_move_assignable_impl<_Tp, false>
+    struct __is_move_assignable_impl<_Tp, true>
     : public is_assignable<_Tp&, _Tp&&>
     { };
 
@@ -1139,15 +1220,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    __is_nt_assignable_impl<_Tp, _Up>>::type
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nt_copy_assignable_impl;
 
   template<typename _Tp>
-    struct __is_nt_copy_assignable_impl<_Tp, true>
+    struct __is_nt_copy_assignable_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_nt_copy_assignable_impl<_Tp, false>
+    struct __is_nt_copy_assignable_impl<_Tp, true>
     : public is_nothrow_assignable<_Tp&, const _Tp&>
     { };
 
@@ -1157,15 +1238,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __is_nt_copy_assignable_impl<_Tp>
     { };
 
-  template<typename _Tp, bool = is_void<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __is_nt_move_assignable_impl;
 
   template<typename _Tp>
-    struct __is_nt_move_assignable_impl<_Tp, true>
+    struct __is_nt_move_assignable_impl<_Tp, false>
     : public false_type { };
 
   template<typename _Tp>
-    struct __is_nt_move_assignable_impl<_Tp, false>
+    struct __is_nt_move_assignable_impl<_Tp, true>
     : public is_nothrow_assignable<_Tp&, _Tp&&>
     { };
 
@@ -1373,20 +1454,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct remove_reference<_Tp&&>
     { typedef _Tp   type; };
 
-  template<typename _Tp,
-	   bool = __and_<__not_<is_reference<_Tp>>,
-                         __not_<is_void<_Tp>>>::value,
-	   bool = is_rvalue_reference<_Tp>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __add_lvalue_reference_helper
     { typedef _Tp   type; };
 
   template<typename _Tp>
-    struct __add_lvalue_reference_helper<_Tp, true, false>
+    struct __add_lvalue_reference_helper<_Tp, true>
     { typedef _Tp&   type; };
-
-  template<typename _Tp>
-    struct __add_lvalue_reference_helper<_Tp, false, true>
-    { typedef typename remove_reference<_Tp>::type&   type; };
 
   /// add_lvalue_reference
   template<typename _Tp>
@@ -1394,9 +1468,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public __add_lvalue_reference_helper<_Tp>
     { };
 
-  template<typename _Tp,
-           bool = __and_<__not_<is_reference<_Tp>>,
-                         __not_<is_void<_Tp>>>::value>
+  template<typename _Tp, bool = __is_referenceable<_Tp>::value>
     struct __add_rvalue_reference_helper
     { typedef _Tp   type; };
 
@@ -1654,9 +1726,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { };
 
   /// add_pointer
+  template<typename _Tp, bool = __or_<__is_referenceable<_Tp>,
+				      is_void<_Tp>>::value>
+    struct __add_pointer_helper
+    { typedef _Tp     type; };
+
   template<typename _Tp>
-    struct add_pointer
+    struct __add_pointer_helper<_Tp, true>
     { typedef typename remove_reference<_Tp>::type*     type; };
+
+  template<typename _Tp>
+    struct add_pointer 
+    : public __add_pointer_helper<_Tp>
+    { };
 
 
   template<std::size_t _Len>
@@ -1733,12 +1815,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __strip_reference_wrapper<reference_wrapper<_Tp> >
-    {
-      typedef _Tp& __type;
-    };
-
-  template<typename _Tp>
-    struct __strip_reference_wrapper<const reference_wrapper<_Tp> >
     {
       typedef _Tp& __type;
     };
