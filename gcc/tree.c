@@ -1643,6 +1643,21 @@ build_one_cst (tree type)
     }
 }
 
+/* Return an integer of type TYPE containing all 1's in as much precision as
+   it contains, or a complex or vector whose subparts are such integers.  */
+
+tree
+build_all_ones_cst (tree type)
+{
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      tree scalar = build_all_ones_cst (TREE_TYPE (type));
+      return build_complex (type, scalar, scalar);
+    }
+  else
+    return build_minus_one_cst (type);
+}
+
 /* Return a constant of arithmetic type TYPE which is the
    opposite of the multiplicative identity of the set TYPE.  */
 

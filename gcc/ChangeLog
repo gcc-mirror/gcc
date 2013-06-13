@@ -1,3 +1,10 @@
+2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* tree-ssa-forwprop.c (simplify_bitwise_binary, associate_plusminus):
+	Generalize to complex and vector.
+	* tree.c (build_all_ones_cst): New function.
+	* tree.h (build_all_ones_cst): Declare it.
+
 2013-06-13  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.h (LONG_DOUBLE_LARGE_FIRST): Define.

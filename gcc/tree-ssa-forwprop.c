@@ -1978,8 +1978,8 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
   /* (a | CST1) & CST2  ->  (a & CST2) | (CST1 & CST2).  */
   if (code == BIT_AND_EXPR
       && def1_code == BIT_IOR_EXPR
-      && TREE_CODE (arg2) == INTEGER_CST
-      && TREE_CODE (def1_arg2) == INTEGER_CST)
+      && CONSTANT_CLASS_P (arg2)
+      && CONSTANT_CLASS_P (def1_arg2))
     {
       tree cst = fold_build2 (BIT_AND_EXPR, TREE_TYPE (arg2),
 			      arg2, def1_arg2);
@@ -2009,8 +2009,8 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
        || code == BIT_IOR_EXPR
        || code == BIT_XOR_EXPR)
       && def1_code == code 
-      && TREE_CODE (arg2) == INTEGER_CST
-      && TREE_CODE (def1_arg2) == INTEGER_CST)
+      && CONSTANT_CLASS_P (arg2)
+      && CONSTANT_CLASS_P (def1_arg2))
     {
       tree cst = fold_build2 (code, TREE_TYPE (arg2),
 			      arg2, def1_arg2);
@@ -2022,7 +2022,6 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 
   /* Canonicalize X ^ ~0 to ~X.  */
   if (code == BIT_XOR_EXPR
-      && TREE_CODE (arg2) == INTEGER_CST
       && integer_all_onesp (arg2))
     {
       gimple_assign_set_rhs_with_ops (gsi, BIT_NOT_EXPR, arg1, NULL_TREE);
@@ -2433,7 +2432,7 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 	(A +- B) - A       ->  +- B
 	(A +- B) -+ B      ->  A
 	(CST +- A) +- CST  ->  CST +- A
-	(A + CST) +- CST   ->  A + CST
+	(A +- CST) +- CST  ->  A +- CST
 	~A + A             ->  -1
 	~A + 1             ->  -A 
 	A - (A +- B)       ->  -+ B
@@ -2479,8 +2478,8 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
-	      else if (TREE_CODE (rhs2) == INTEGER_CST
-		       && TREE_CODE (def_rhs1) == INTEGER_CST)
+	      else if (CONSTANT_CLASS_P (rhs2)
+		       && CONSTANT_CLASS_P (def_rhs1))
 		{
 		  /* (CST +- A) +- CST -> CST +- A.  */
 		  tree cst = fold_binary (code, TREE_TYPE (rhs1),
@@ -2496,16 +2495,17 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		      gimple_set_modified (stmt, true);
 		    }
 		}
-	      else if (TREE_CODE (rhs2) == INTEGER_CST
-		       && TREE_CODE (def_rhs2) == INTEGER_CST
-		       && def_code == PLUS_EXPR)
+	      else if (CONSTANT_CLASS_P (rhs2)
+		       && CONSTANT_CLASS_P (def_rhs2))
 		{
-		  /* (A + CST) +- CST -> A + CST.  */
-		  tree cst = fold_binary (code, TREE_TYPE (rhs1),
+		  /* (A +- CST) +- CST -> A +- CST.  */
+		  enum tree_code mix = (code == def_code)
+				       ? PLUS_EXPR : MINUS_EXPR;
+		  tree cst = fold_binary (mix, TREE_TYPE (rhs1),
 					  def_rhs2, rhs2);
 		  if (cst && !TREE_OVERFLOW (cst))
 		    {
-		      code = PLUS_EXPR;
+		      code = def_code;
 		      gimple_assign_set_rhs_code (stmt, code);
 		      rhs1 = def_rhs1;
 		      gimple_assign_set_rhs1 (stmt, rhs1);
@@ -2515,23 +2515,24 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		    }
 		}
 	    }
-	  else if (def_code == BIT_NOT_EXPR
-		   && INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+	  else if (def_code == BIT_NOT_EXPR && code == PLUS_EXPR)
 	    {
 	      tree def_rhs1 = gimple_assign_rhs1 (def_stmt);
-	      if (code == PLUS_EXPR
-		  && operand_equal_p (def_rhs1, rhs2, 0))
+	      if (operand_equal_p (def_rhs1, rhs2, 0))
 		{
 		  /* ~A + A -> -1.  */
-		  code = INTEGER_CST;
-		  rhs1 = build_int_cst_type (TREE_TYPE (rhs2), -1);
+		  rhs1 = build_all_ones_cst (TREE_TYPE (rhs2));
 		  rhs2 = NULL_TREE;
+		  code = TREE_CODE (rhs1);
 		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
 		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
-	      else if (code == PLUS_EXPR
-		       && integer_onep (rhs1))
+	      else if ((TREE_CODE (TREE_TYPE (rhs2)) != COMPLEX_TYPE
+			&& integer_onep (rhs2))
+		       || (TREE_CODE (rhs2) == COMPLEX_CST
+			   && integer_onep (TREE_REALPART (rhs2))
+			   && integer_onep (TREE_IMAGPART (rhs2))))
 		{
 		  /* ~A + 1 -> -A.  */
 		  code = NEGATE_EXPR;
@@ -2580,8 +2581,8 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
 		}
-	      else if (TREE_CODE (rhs1) == INTEGER_CST
-		       && TREE_CODE (def_rhs1) == INTEGER_CST)
+	      else if (CONSTANT_CLASS_P (rhs1)
+		       && CONSTANT_CLASS_P (def_rhs1))
 		{
 		  /* CST +- (CST +- A) -> CST +- A.  */
 		  tree cst = fold_binary (code, TREE_TYPE (rhs2),
@@ -2597,8 +2598,8 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		      gimple_set_modified (stmt, true);
 		    }
 		}
-	      else if (TREE_CODE (rhs1) == INTEGER_CST
-		       && TREE_CODE (def_rhs2) == INTEGER_CST)
+	      else if (CONSTANT_CLASS_P (rhs1)
+		       && CONSTANT_CLASS_P (def_rhs2))
 		{
 		  /* CST +- (A +- CST) -> CST +- A.  */
 		  tree cst = fold_binary (def_code == code
@@ -2615,17 +2616,16 @@ associate_plusminus (gimple_stmt_iterator *gsi)
 		    }
 		}
 	    }
-	  else if (def_code == BIT_NOT_EXPR
-		   && INTEGRAL_TYPE_P (TREE_TYPE (rhs2)))
+	  else if (def_code == BIT_NOT_EXPR)
 	    {
 	      tree def_rhs1 = gimple_assign_rhs1 (def_stmt);
 	      if (code == PLUS_EXPR
 		  && operand_equal_p (def_rhs1, rhs1, 0))
 		{
 		  /* A + ~A -> -1.  */
-		  code = INTEGER_CST;
-		  rhs1 = build_int_cst_type (TREE_TYPE (rhs1), -1);
+		  rhs1 = build_all_ones_cst (TREE_TYPE (rhs1));
 		  rhs2 = NULL_TREE;
+		  code = TREE_CODE (rhs1);
 		  gimple_assign_set_rhs_with_ops (gsi, code, rhs1, NULL_TREE);
 		  gcc_assert (gsi_stmt (*gsi) == stmt);
 		  gimple_set_modified (stmt, true);
