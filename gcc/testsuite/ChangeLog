@@ -1,3 +1,7 @@
+2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-minus-1.c: New testcase.
+
 2013-06-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/49074
