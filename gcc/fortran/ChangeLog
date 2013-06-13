@@ -1,3 +1,10 @@
+2013-06-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	* trans-expr.c (gfc_conv_variable): Don't walk the reference chain.
+	Handle NULL array references.
+	(gfc_conv_procedure_call): Remove code handling NULL array references.
+
 2013-06-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57535
