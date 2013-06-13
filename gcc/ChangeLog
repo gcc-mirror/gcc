@@ -1,3 +1,7 @@
+2013-06-14  Alan Modra  <amodra@gmail.com>
+
+	* varasm.c (force_const_mem): Revert 2013-06-07 change.
+
 2013-06-13  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p):
