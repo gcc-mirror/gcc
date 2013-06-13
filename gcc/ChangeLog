@@ -1,3 +1,10 @@
+2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* fold-const.c (negate_expr_p): Handle VECTOR_CST.
+	(fold_negate_expr): Likewise.
+	(fold_real_zero_addition_p): Handle vectors.
+	(fold_binary_loc) <PLUS_EXPR, MINUS_EXPR>: Likewise.
+
 2013-06-14  Alan Modra  <amodra@gmail.com>
 
 	* varasm.c (force_const_mem): Revert 2013-06-07 change.
