@@ -1,3 +1,10 @@
+2013-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1/modified_bessel_func.tcc (__gnu_cxx::__airy_ai(),
+	__gnu_cxx::__airy_bi()): Remove.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/airy.cc: Fix.
+
 2013-06-12  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR libstdc++/56430

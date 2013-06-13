@@ -1,6 +1,6 @@
 // { dg-do compile }
 
-// 2013-02-13  Edward Smith-Rowland <3dw4rd@verizon.net>
+// 2013-06-12  Edward Smith-Rowland <3dw4rd@verizon.net>
 //
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
@@ -24,14 +24,11 @@
 
 #include <tr1/cmath>
 
-int
+void
 test01()
 {
   bool test __attribute__((unused)) = true;
   double x, Ai, Bi, Aip, Bip;
   x = 1.0;
   std::tr1::__detail::__airy(x, Ai, Bi, Aip, Bip);
-
-  double Ai2 = __gnu_cxx::__airy_ai(x);
-  double Bi2 = __gnu_cxx::__airy_bi(x);
 }
