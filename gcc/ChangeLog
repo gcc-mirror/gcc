@@ -1,3 +1,11 @@
+2013-06-13  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.h (LONG_DOUBLE_LARGE_FIRST): Define.
+	* config/rs6000/rs6000.md (signbittf2): New insn.
+	(extenddftf2_internal): Use LONG_DOUBLE_LARGE_FIRST.
+	(abstf2_internal, cmptf_internal2): Likewise.
+	* config/rs6000/spe.md (spe_abstf2_cmp, spe_abstf2_tst): Likewise.
+
 2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
 	    Peter Bergner <bergner@vnet.ibm.com>

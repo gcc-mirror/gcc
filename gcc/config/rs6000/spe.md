@@ -2604,8 +2604,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128"
   "
 {
-  const int hi_word = FLOAT_WORDS_BIG_ENDIAN ? 0 : GET_MODE_SIZE (DFmode);
-  const int lo_word = FLOAT_WORDS_BIG_ENDIAN ? GET_MODE_SIZE (DFmode) : 0;
+  const int hi_word = LONG_DOUBLE_LARGE_FIRST ? 0 : GET_MODE_SIZE (DFmode);
+  const int lo_word = LONG_DOUBLE_LARGE_FIRST ? GET_MODE_SIZE (DFmode) : 0;
   operands[3] = gen_reg_rtx (DFmode);
   operands[4] = gen_reg_rtx (CCFPmode);
   operands[5] = simplify_gen_subreg (DFmode, operands[0], TFmode, hi_word);
@@ -2627,8 +2627,8 @@
    && TARGET_HARD_FLOAT && TARGET_E500_DOUBLE && TARGET_LONG_DOUBLE_128"
   "
 {
-  const int hi_word = FLOAT_WORDS_BIG_ENDIAN ? 0 : GET_MODE_SIZE (DFmode);
-  const int lo_word = FLOAT_WORDS_BIG_ENDIAN ? GET_MODE_SIZE (DFmode) : 0;
+  const int hi_word = LONG_DOUBLE_LARGE_FIRST ? 0 : GET_MODE_SIZE (DFmode);
+  const int lo_word = LONG_DOUBLE_LARGE_FIRST ? GET_MODE_SIZE (DFmode) : 0;
   operands[3] = gen_reg_rtx (DFmode);
   operands[4] = gen_reg_rtx (CCFPmode);
   operands[5] = simplify_gen_subreg (DFmode, operands[0], TFmode, hi_word);
