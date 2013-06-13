@@ -606,9 +606,8 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 {
   if (!node->symbol.definition)
     return false;
-  if (!DECL_COMDAT (node->symbol.decl)
-      && (!TREE_PUBLIC (node->symbol.decl)
-	  || DECL_EXTERNAL (node->symbol.decl)))
+  if (!TREE_PUBLIC (node->symbol.decl)
+      || DECL_EXTERNAL (node->symbol.decl))
     return false;
 
   /* Do not try to localize built-in functions yet.  One of problems is that we
@@ -667,7 +666,7 @@ varpool_externally_visible_p (struct varpool_node *vnode)
   if (DECL_EXTERNAL (vnode->symbol.decl))
     return true;
 
-  if (!DECL_COMDAT (vnode->symbol.decl) && !TREE_PUBLIC (vnode->symbol.decl))
+  if (!TREE_PUBLIC (vnode->symbol.decl))
     return false;
 
   /* If linker counts on us, we must preserve the function.  */
