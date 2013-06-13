@@ -1,3 +1,12 @@
+2013-06-12  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/56430
+	* include/tr1/modified_bessel_func.tcc (__airy): Remove return
+	from void function.
+	(__gnu_cxx::__airy_ai(), __gnu_cxx::__airy_bi()): New functions.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/airy.cc: New.
+
 2013-06-11  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Fix library literals error involving namespace __detail.
