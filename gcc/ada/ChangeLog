@@ -1,3 +1,20 @@
+2013-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_BY_DOUBLE_REF_P): Delete.
+	* gcc-interface/gigi.h (annotate_object): Adjust prototype.
+	(convert_vms_descriptor): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not pass fat pointer
+	types by double dereference.
+	(annotate_object): Remove BY_DOUBLE_REF parameter and adjust.
+	(gnat_to_gnu_entity): Adjust calls to annotate_object.
+	* gcc-interface/trans.c (Identifier_to_gnu): Do not deal with double
+	dereference.
+	(Call_to_gnu): Likewise.
+	(build_function_stub): Adjust call to convert_vms_descriptor.
+	(Subprogram_Body_to_gnu): Adjust call to annotate_object.
+	* gcc-interface/utils.c (convert_vms_descriptor): Remove BY_REF
+	parameter and adjust.
+
 2013-05-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (arm% androideabi): Robustify.

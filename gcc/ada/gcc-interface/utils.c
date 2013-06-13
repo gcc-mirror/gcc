@@ -4096,33 +4096,25 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 
 /* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
    pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
-   pointer type of GNU_EXPR.  BY_REF is true if the result is to be used by
-   reference.  GNAT_SUBPROG is the subprogram to which the VMS descriptor is
-   passed.  */
+   pointer type of GNU_EXPR.  GNAT_SUBPROG is the subprogram to which the
+   descriptor is passed.  */
 
 tree
 convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
-			bool by_ref, Entity_Id gnat_subprog)
+			Entity_Id gnat_subprog)
 {
   tree desc_type = TREE_TYPE (TREE_TYPE (gnu_expr));
   tree desc = build1 (INDIRECT_REF, desc_type, gnu_expr);
   tree mbo = TYPE_FIELDS (desc_type);
   const char *mbostr = IDENTIFIER_POINTER (DECL_NAME (mbo));
   tree mbmo = DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (mbo)));
-  tree real_type, is64bit, gnu_expr32, gnu_expr64;
-
-  if (by_ref)
-    real_type = TREE_TYPE (gnu_type);
-  else
-    real_type = gnu_type;
+  tree is64bit, gnu_expr32, gnu_expr64;
 
   /* If the field name is not MBO, it must be 32-bit and no alternate.
      Otherwise primary must be 64-bit and alternate 32-bit.  */
   if (strcmp (mbostr, "MBO") != 0)
     {
-      tree ret = convert_vms_descriptor32 (real_type, gnu_expr, gnat_subprog);
-      if (by_ref)
-	ret = build_unary_op (ADDR_EXPR, gnu_type, ret);
+      tree ret = convert_vms_descriptor32 (gnu_type, gnu_expr, gnat_subprog);
       return ret;
     }
 
@@ -4139,14 +4131,9 @@ convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
 					integer_minus_one_node));
 
   /* Build the 2 possible end results.  */
-  gnu_expr64 = convert_vms_descriptor64 (real_type, gnu_expr, gnat_subprog);
-  if (by_ref)
-    gnu_expr64 =  build_unary_op (ADDR_EXPR, gnu_type, gnu_expr64);
+  gnu_expr64 = convert_vms_descriptor64 (gnu_type, gnu_expr, gnat_subprog);
   gnu_expr = fold_convert (gnu_expr_alt_type, gnu_expr);
-  gnu_expr32 = convert_vms_descriptor32 (real_type, gnu_expr, gnat_subprog);
-  if (by_ref)
-    gnu_expr32 =  build_unary_op (ADDR_EXPR, gnu_type, gnu_expr32);
-
+  gnu_expr32 = convert_vms_descriptor32 (gnu_type, gnu_expr, gnat_subprog);
   return build3 (COND_EXPR, gnu_type, is64bit, gnu_expr64, gnu_expr32);
 }
 

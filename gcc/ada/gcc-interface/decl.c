@@ -1025,7 +1025,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			save_gnu_tree (gnat_entity, gnu_decl, true);
 			saved = true;
 			annotate_object (gnat_entity, gnu_type, NULL_TREE,
-					 false, false);
+					 false);
 			/* This assertion will fail if the renamed object
 			   isn't aligned enough as to make it possible to
 			   honor the alignment set on the renaming.  */
@@ -1604,7 +1604,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	   type of the object and not on the object directly, and makes it
 	   possible to support all confirming representation clauses.  */
 	annotate_object (gnat_entity, TREE_TYPE (gnu_decl), gnu_object_size,
-			 used_by_ref, false);
+			 used_by_ref);
       }
       break;
 
@@ -5650,7 +5650,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   /* The parameter can be indirectly modified if its address is taken.  */
   bool ro_param = in_param && !Address_Taken (gnat_param);
   bool by_return = false, by_component_ptr = false;
-  bool by_ref = false, by_double_ref = false;
+  bool by_ref = false;
   tree gnu_param;
 
   /* Copy-return is used only for the first parameter of a valued procedure.
@@ -5775,19 +5775,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
 	gnu_param_type
 	  = build_qualified_type (gnu_param_type, TYPE_QUAL_RESTRICT);
       by_ref = true;
-
-      /* In some ABIs, e.g. SPARC 32-bit, fat pointer types are themselves
-	 passed by reference.  Pass them by explicit reference, this will
-	 generate more debuggable code at -O0.  */
-      if (TYPE_IS_FAT_POINTER_P (gnu_param_type)
-	  && targetm.calls.pass_by_reference (pack_cumulative_args (NULL),
-					      TYPE_MODE (gnu_param_type),
-					      gnu_param_type,
-					      true))
-	{
-	   gnu_param_type = build_reference_type (gnu_param_type);
-	   by_double_ref = true;
-	}
     }
 
   /* Pass In Out or Out parameters using copy-in copy-out mechanism.  */
@@ -5830,7 +5817,6 @@ gnat_to_gnu_param (Entity_Id gnat_param, Mechanism_Type mech,
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type,
 				 ro_param || by_ref || by_component_ptr);
   DECL_BY_REF_P (gnu_param) = by_ref;
-  DECL_BY_DOUBLE_REF_P (gnu_param) = by_double_ref;
   DECL_BY_COMPONENT_PTR_P (gnu_param) = by_component_ptr;
   DECL_BY_DESCRIPTOR_P (gnu_param) = (mech == By_Descriptor ||
                                       mech == By_Short_Descriptor);
@@ -7554,18 +7540,13 @@ annotate_value (tree gnu_size)
 /* Given GNAT_ENTITY, an object (constant, variable, parameter, exception)
    and GNU_TYPE, its corresponding GCC type, set Esize and Alignment to the
    size and alignment used by Gigi.  Prefer SIZE over TYPE_SIZE if non-null.
-   BY_REF is true if the object is used by reference and BY_DOUBLE_REF is
-   true if the object is used by double reference.  */
+   BY_REF is true if the object is used by reference.  */
 
 void
-annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref,
-		 bool by_double_ref)
+annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size, bool by_ref)
 {
   if (by_ref)
     {
-      if (by_double_ref)
-	gnu_type = TREE_TYPE (gnu_type);
-
       if (TYPE_IS_FAT_POINTER_P (gnu_type))
 	gnu_type = TYPE_UNCONSTRAINED_ARRAY (gnu_type);
       else
