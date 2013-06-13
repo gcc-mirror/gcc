@@ -508,6 +508,8 @@ dump_symtab_base (FILE *f, symtab_node node)
     fprintf (f, " force_output");
   if (node->symbol.forced_by_abi)
     fprintf (f, " forced_by_abi");
+  if (node->symbol.externally_visible)
+    fprintf (f, " externally_visible");
   if (node->symbol.resolution != LDPR_UNKNOWN)
     fprintf (f, " %s",
  	     ld_plugin_symbol_resolution_names[(int)node->symbol.resolution]);
@@ -653,6 +655,15 @@ verify_symtab_base (symtab_node node)
       if (!hashed_node)
 	{
 	  error ("node not found in symtab decl hashtable");
+	  error_found = true;
+	}
+      if (hashed_node != node
+	  && (!is_a <cgraph_node> (node)
+	      || !dyn_cast <cgraph_node> (node)->clone_of
+	      || dyn_cast <cgraph_node> (node)->clone_of->symbol.decl
+		 != node->symbol.decl))
+	{
+	  error ("node differs from symtab decl hashtable");
 	  error_found = true;
 	}
     }

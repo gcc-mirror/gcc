@@ -1,3 +1,10 @@
+2013-06-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (cgraph_externally_visible_p, varpool_externally_visible_p):
+	Local comdats are not externally visible.
+	* symtab.c (dump_symtab_base): Dump externally visible.
+	(verify_symtab_base): Verify back links in the symtab hash.
+
 2013-06-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* fold-const.c (operand_equal_p): Consider NOP_EXPR and
