@@ -1,5 +1,10 @@
 2013-06-13  Bin Cheng  <bin.cheng@arm.com>
 
+	* fold-const.c (operand_equal_p): Consider NOP_EXPR and
+	CONVERT_EXPR as equal nodes.
+
+2013-06-13  Bin Cheng  <bin.cheng@arm.com>
+
 	* rtlanal.c (noop_move_p): Check the code to be executed for
 	COND_EXEC.
 
