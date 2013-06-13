@@ -1,3 +1,8 @@
+2013-06-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Move
+	test for clearing quad memory on 32-bit later.
+
 2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	* fold-const.c (negate_expr_p): Handle VECTOR_CST.
