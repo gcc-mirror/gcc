@@ -357,12 +357,13 @@ namespace tr1
      *           derivatives @f$ Ai'(x) @f$ and @f$ Bi(x) @f$
      *           respectively.
      *
-     *   @param  __n  The order of the Airy functions.
      *   @param  __x  The argument of the Airy functions.
-     *   @param  __i_n  The output Airy function.
-     *   @param  __k_n  The output Airy function.
-     *   @param  __ip_n  The output derivative of the Airy function.
-     *   @param  __kp_n  The output derivative of the Airy function.
+     *   @param  __Ai  The output Airy function of the first kind.
+     *   @param  __Bi  The output Airy function of the second kind.
+     *   @param  __Aip  The output derivative of the Airy function
+     *                  of the first kind.
+     *   @param  __Bip  The output derivative of the Airy function
+     *                  of the second kind.
      */
     template <typename _Tp>
     void
@@ -372,9 +373,7 @@ namespace tr1
       const _Tp __rootx = std::sqrt(__absx);
       const _Tp __z = _Tp(2) * __absx * __rootx / _Tp(3);
 
-      if (__isnan(__x))
-        return std::numeric_limits<_Tp>::quiet_NaN();
-      else if (__x > _Tp(0))
+      if (__x > _Tp(0))
         {
           _Tp __I_nu, __Ip_nu, __K_nu, __Kp_nu;
 
@@ -431,5 +430,52 @@ namespace tr1
   } // namespace std::tr1::__detail
 }
 }
+
+
+namespace __gnu_cxx
+{
+
+  /**
+   *   @brief  Compute the Airy function of the first kind @f$ Ai(x) @f$.
+   *
+   *   @param  __x  The argument of the Airy function.
+   *   @return  The Airy function of the first kind at x.
+   */
+  template<typename _Tp>
+    _Tp
+    __airy_ai(_Tp __x)
+    {
+      if (__isnan(__x))
+        return std::numeric_limits<_Tp>::quiet_NaN();
+      else
+        {
+          _Tp __Ai, __Bi, __Aip, __Bip;
+          std::tr1::__detail::__airy(__x, __Ai, __Bi, __Aip, __Bip);
+          return __Ai;
+        }
+    }
+
+
+  /**
+   *   @brief  Compute the Airy function of the second kind @f$ Bi(x) @f$.
+   *
+   *   @param  __x  The argument of the Airy function.
+   *   @return  The Airy function of the second kind at x.
+   */
+  template<typename _Tp>
+    _Tp
+    __airy_bi(_Tp __x)
+    {
+      if (__isnan(__x))
+        return std::numeric_limits<_Tp>::quiet_NaN();
+      else
+        {
+          _Tp __Ai, __Bi, __Aip, __Bip;
+          std::tr1::__detail::__airy(__x, __Ai, __Bi, __Aip, __Bip);
+          return __Bi;
+        }
+    }
+
+} // namespace __gnu_cxx
 
 #endif // _GLIBCXX_TR1_MODIFIED_BESSEL_FUNC_TCC
