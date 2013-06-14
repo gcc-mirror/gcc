@@ -9909,11 +9909,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			  && modifier != EXPAND_STACK_PARM
 			  ? target : NULL_RTX),
 			 VOIDmode,
-			 (modifier == EXPAND_INITIALIZER
-			  || modifier == EXPAND_CONST_ADDRESS
-			  || modifier == EXPAND_STACK_PARM)
-			 ? modifier : EXPAND_NORMAL);
-
+			 modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier);
 
 	/* If the bitfield is volatile, we want to access it in the
 	   field's mode, not the computed mode.
@@ -10072,6 +10068,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 		      || (MEM_P (op0)
 			  && (MEM_ALIGN (op0) < GET_MODE_ALIGNMENT (mode1)
 			      || (bitpos % GET_MODE_ALIGNMENT (mode1) != 0))))
+		     && modifier != EXPAND_MEMORY
 		     && ((modifier == EXPAND_CONST_ADDRESS
 			  || modifier == EXPAND_INITIALIZER)
 			 ? STRICT_ALIGNMENT
@@ -10271,10 +10268,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			      && modifier != EXPAND_STACK_PARM
 			      ? target : NULL_RTX),
 			     VOIDmode,
-			     (modifier == EXPAND_INITIALIZER
-			      || modifier == EXPAND_CONST_ADDRESS
-			      || modifier == EXPAND_STACK_PARM)
-			     ? modifier : EXPAND_NORMAL);
+			     modifier == EXPAND_SUM ? EXPAND_NORMAL : modifier);
 
 	    if (MEM_P (orig_op0))
 	      {

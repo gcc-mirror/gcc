@@ -1,3 +1,8 @@
+2013-06-14  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/57134
+	* gcc.dg/pr57134.c: New.
+
 2013-06-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57596

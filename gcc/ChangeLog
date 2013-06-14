@@ -1,3 +1,12 @@
+2013-06-14  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/57134
+	PR middle-end/57586
+	* expr.c (expand_expr_real_1 <normal_inner_ref>): Pass
+	EXPAND_MEMORY and EXPAND_WRITE to recursive call.  Don't use
+	bitfield expansion when EXPAND_MEMORY.
+	(expand_expr_real_1 <VIEW_CONVERT_EXPR>): Pass modifier likewise.
+
 2013-06-13  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Move
