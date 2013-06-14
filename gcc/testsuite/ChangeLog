@@ -1,3 +1,9 @@
+2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57599
+	* g++.dg/rtti/dyncast6.C: New.
+	* g++.dg/cpp0x/dyncast1.C: Likewise.
+
 2013-06-14  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/57134
