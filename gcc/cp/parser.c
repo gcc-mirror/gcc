@@ -30396,7 +30396,8 @@ cp_parser_simd_for_init_statement (cp_parser *parser, tree *init,
   return decl;
 }
   
-/* Top-level function to parse _Cilk_for and for statements.  */
+/* Top-level function to parse _Cilk_for and the for statement
+   following <#pragma simd>.  */
 
 static tree
 cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
@@ -30407,11 +30408,6 @@ cp_parser_cilk_for (cp_parser *parser, enum rid for_keyword, tree clauses)
   tree init = NULL_TREE, pre_body = NULL_TREE, decl;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
   
-  /* FIXME: Allow CILK_FOR into this function.  That is, use this
-     function to parse _Cilk_for statments also.  To do this
-     correctly, add another param.  called "grain" to hold the
-     grainsize.  */
-
   gcc_assert (for_keyword == RID_FOR);
 
   if (!cp_lexer_next_token_is_keyword (parser->lexer, for_keyword))

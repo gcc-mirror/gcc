@@ -11947,12 +11947,6 @@ c_parser_cilk_all_clauses (c_parser *parser)
 	  break;
 	case PRAGMA_CILK_CLAUSE_FIRSTPRIVATE:
 	  /* Use the OpenMP counterpart.  */
-	  /* FIXME: Note from the Cilk Plus forum: "For the time
-	     being, assume that firstprivate refers to the vector
-	     lane. (This is what is implemented in the icc compiler.)
-	     As we update the spec, we will harmonize these
-	     definitions with OpenMP 4, possibly deprecating
-	     firstprivate."  */
 	  clauses = c_parser_omp_clause_firstprivate (parser, clauses);
 	  break;
 	case PRAGMA_CILK_CLAUSE_LASTPRIVATE:
@@ -11980,7 +11974,7 @@ c_parser_cilk_all_clauses (c_parser *parser)
    which have the same syntactic restrictions.
 
    FOR_KEYWORD can be either RID_CILK_FOR or RID_FOR, for parsing
-   _cilk_for or the <#pragma simd> for loop construct respectively.
+   _Cilk_for or the <#pragma simd> for loop construct respectively.
 
    (NOTE: For now, only RID_FOR is handled).
 
@@ -12104,12 +12098,7 @@ c_parser_cilk_for_statement (c_parser *parser, enum rid for_keyword,
 
   if (!fail)
     {
-      /*
-      // FIXME: Uncomment when RID_CILK_FOR is implemented.
-      if (for_keyword == RID_CILK_FOR)
-	c_finish_cilk_loop (loc, decl, cond, incr, body, grain);
-      else
-      */
+      if (for_keyword == RID_FOR)
 	c_finish_cilk_simd_loop (loc, decl, init, cond, incr, body, clauses);
     }
 

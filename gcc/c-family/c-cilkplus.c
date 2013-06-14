@@ -158,11 +158,6 @@ c_validate_cilk_plus_loop (tree *tp, int *walk_subtrees, void *data)
 	break;
       }
 
-      /* FIXME: Perhaps we could do without these OMP tests and defer
-	 to the OMP type checking, since OMP_SIMD cannot have OpenMP
-	 constructs either.  From OpenMP 4.0rc2: "No OpenMP construct
-	 can appear in the simd region".  Similarly for the call to
-	 setjmp above.  */
     case OMP_PARALLEL:
     case OMP_TASK:
     case OMP_FOR:
@@ -372,12 +367,12 @@ c_finish_cilk_simd_loop (location_t loc,
   TREE_TYPE (t) = void_type_node;
   OMP_FOR_INIT (t) = initv;
 
-  /* FIXME: The spec says "The increment and limit expressions may be
+  /* ?? The spec says "The increment and limit expressions may be
      evaluated fewer times than in the serialization.  If different
      evaluations of the same expression yield different values, the
-     behavior of the program is undefined."  This means that the RHS
-     of the condition and increment could be wrapped in a
-     SAVE_EXPR.  */
+     behavior of the program is undefined."  Perhaps the RHS of the
+     condition and increment could be wrapped in a SAVE_EXPR to
+     evaluate only once.  */
   OMP_FOR_COND (t) = condv;
   OMP_FOR_INCR (t) = incrv;
 
@@ -394,11 +389,6 @@ c_finish_cilk_simd_loop (location_t loc,
 tree
 c_finish_cilk_clauses (tree clauses)
 {
-  /* FIXME: Should we do some minimal type checking of the clauses
-     here, or at the minimum gcc_asserts?  */
-
-  /* FIXME: Must validate reduction clauses too.  Right now we're
-     ignoring them.  */
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
       tree prev = clauses;
