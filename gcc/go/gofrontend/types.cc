@@ -4532,6 +4532,7 @@ Struct_type::field_reference_depth(Expression* struct_expr,
 	      go_assert(sub != NULL);
 	    }
 	  sub->set_struct_expression(here);
+          sub->set_implicit(true);
 	}
       else if (subdepth > found_depth)
 	delete sub;

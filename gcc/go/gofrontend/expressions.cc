@@ -7279,19 +7279,31 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       Field_reference_expression* farg = arg->field_reference_expression();
       if (farg == NULL)
 	return false;
-      Expression* struct_expr = farg->expr();
-      Type* st = struct_expr->type();
-      if (st->struct_type() == NULL)
-	return false;
-      if (st->named_type() != NULL)
-	st->named_type()->convert(this->gogo_);
-      unsigned int offset;
-      if (!st->struct_type()->backend_field_offset(this->gogo_,
-						   farg->field_index(),
-						   &offset))
-	return false;
+      unsigned int total_offset = 0;
+      while (true)
+        {
+          Expression* struct_expr = farg->expr();
+          Type* st = struct_expr->type();
+          if (st->struct_type() == NULL)
+            return false;
+          if (st->named_type() != NULL)
+            st->named_type()->convert(this->gogo_);
+          unsigned int offset;
+          if (!st->struct_type()->backend_field_offset(this->gogo_,
+						       farg->field_index(),
+						       &offset))
+            return false;
+          total_offset += offset;
+          if (farg->implicit() && struct_expr->field_reference_expression() != NULL)
+            {
+              // Go up until we reach the original base.
+              farg = struct_expr->field_reference_expression();
+              continue;
+            }
+          break;
+        }
       nc->set_unsigned_long(Type::lookup_integer_type("uintptr"),
-			    static_cast<unsigned long>(offset));
+			    static_cast<unsigned long>(total_offset));
       return true;
     }
   else if (this->code_ == BUILTIN_REAL || this->code_ == BUILTIN_IMAG)
