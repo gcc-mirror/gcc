@@ -3690,10 +3690,17 @@ finish_offsetof (tree expr)
       || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
       || TREE_TYPE (expr) == unknown_type_node)
     {
-      if (TREE_CODE (expr) == COMPONENT_REF
-	  || TREE_CODE (expr) == COMPOUND_EXPR)
-	expr = TREE_OPERAND (expr, 1);
-      error ("cannot apply %<offsetof%> to member function %qD", expr);
+      if (TREE_CODE (expr) == INDIRECT_REF)
+	error ("second operand of %<offsetof%> is neither a single "
+	       "identifier nor a sequence of member accesses and "
+	       "array references");
+      else
+	{
+	  if (TREE_CODE (expr) == COMPONENT_REF
+	      || TREE_CODE (expr) == COMPOUND_EXPR)
+	    expr = TREE_OPERAND (expr, 1);
+	  error ("cannot apply %<offsetof%> to member function %qD", expr);
+	}
       return error_mark_node;
     }
   if (REFERENCE_REF_P (expr))
