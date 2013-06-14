@@ -1,5 +1,11 @@
 2013-06-14  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/57508
+	* resolve.c (get_temp_from_expr): Don't copy function
+	result attributes to temporary.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57596
 	* trans-decl.c (gfc_trans_deferred_vars): Honor OPTIONAL
 	for nullify and deferred-strings' length variable.
