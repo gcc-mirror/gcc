@@ -1,3 +1,11 @@
+2013-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57619
+	* include/bits/unordered_map.h (unordered_map<>::insert,
+	unordered_multimap<>::insert): Use std::forward, not std::move.
+	* testsuite/23_containers/unordered_map/insert/57619.C: New.
+	* testsuite/23_containers/unordered_multimap/insert/57619.C: Likewise.
+
 2013-06-12  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* include/bits/c++config (_GLIBCXX_ABI_TAG_CXX11): Add.

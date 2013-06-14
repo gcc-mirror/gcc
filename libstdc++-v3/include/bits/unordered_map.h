@@ -367,7 +367,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						    _Pair&&>::value>::type>
 	std::pair<iterator, bool>
 	insert(_Pair&& __x)
-	{ return _M_h.insert(std::move(__x)); }
+        { return _M_h.insert(std::forward<_Pair>(__x)); }
       //@}
 
       //@{
@@ -401,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						    _Pair&&>::value>::type>
 	iterator
 	insert(const_iterator __hint, _Pair&& __x)
-	{ return _M_h.insert(__hint, std::move(__x)); }
+	{ return _M_h.insert(__hint, std::forward<_Pair>(__x)); }
       //@}
 
       /**
@@ -1032,7 +1032,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						    _Pair&&>::value>::type>
 	iterator
 	insert(_Pair&& __x)
-	{ return _M_h.insert(std::move(__x)); }
+        { return _M_h.insert(std::forward<_Pair>(__x)); }
       //@}
 
       //@{
@@ -1064,7 +1064,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 						    _Pair&&>::value>::type>
 	iterator
 	insert(const_iterator __hint, _Pair&& __x)
-	{ return _M_h.insert(__hint, std::move(__x)); }
+        { return _M_h.insert(__hint, std::forward<_Pair>(__x)); }
       //@}
 
       /**
