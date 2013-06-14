@@ -1101,6 +1101,9 @@ extern tree tree_ssa_strip_useless_type_conversions (tree);
 extern bool useless_type_conversion_p (tree, tree);
 extern bool types_compatible_p (tree, tree);
 
+/* In tree-ssa-coalesce.c */
+extern bool gimple_can_coalesce_p (tree, tree);
+
 /* Return the first node in GIMPLE sequence S.  */
 
 static inline gimple_seq_node
