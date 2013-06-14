@@ -1,3 +1,9 @@
+2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57599
+	* rtti.c (build_dynamic_cast_1): In case of cast to an unambiguous
+	accessible base simply forward to build_static_cast.
+
 2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38958
