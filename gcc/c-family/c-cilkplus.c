@@ -162,7 +162,6 @@ c_validate_cilk_plus_loop (tree *tp, int *walk_subtrees, void *data)
     case OMP_TASK:
     case OMP_FOR:
     case OMP_SIMD:
-    case OMP_FOR_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_SECTIONS:
     case OMP_SINGLE:
