@@ -1,3 +1,22 @@
+2013-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h: Move omp_clause_mask code earlier in the file.
+	(c_omp_split_clauses): New prototype.
+	(c_split_parallel_clauses): Removed.
+	* c-pragma.h (enum pragma_kind): Add
+	PRAGMA_OMP_DISTRIBUTE_PARALLEL_FOR,
+	PRAGMA_OMP_DISTRIBUTE_PARALLEL_FOR_SIMD,
+	PRAGMA_OMP_DISTRIBUTE_SIMD, PRAGMA_OMP_TARGET_TEAMS,
+	PRAGMA_OMP_TARGET_TEAMS_DISTRIBUTE,
+	PRAGMA_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_FOR,
+	PRAGMA_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_FOR_SIMD,
+	PRAGMA_OMP_TEAMS_DISTRIBUTE,
+	PRAGMA_OMP_TEAMS_DISTRIBUTE_PARALLEL_FOR,
+	and PRAGMA_OMP_TEAMS_DISTRIBUTE_PARALLEL_FOR_SIMD.
+	* c-omp.c: Include c-pragma.h.
+	(c_omp_split_clauses): New function.
+	(c_split_parallel_clauses): Remove.
+
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add

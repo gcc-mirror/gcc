@@ -13293,19 +13293,22 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case OMP_FOR:
     case OMP_SIMD:
-    case OMP_FOR_SIMD:
     case OMP_DISTRIBUTE:
       {
 	tree clauses, body, pre_body;
-	tree declv, initv, condv, incrv;
+	tree declv = NULL_TREE, initv = NULL_TREE, condv = NULL_TREE;
+	tree incrv = NULL_TREE;
 	int i;
 
 	clauses = tsubst_omp_clauses (OMP_FOR_CLAUSES (t), false,
 				      args, complain, in_decl);
-	declv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
-	initv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
-	condv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
-	incrv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	if (OMP_FOR_INIT (t) != NULL_TREE)
+	  {
+	    declv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	    initv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	    condv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	    incrv = make_tree_vec (TREE_VEC_LENGTH (OMP_FOR_INIT (t)));
+	  }
 
 	stmt = begin_omp_structured_block ();
 
@@ -13313,17 +13316,29 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	RECUR (OMP_FOR_PRE_BODY (t));
 	pre_body = pop_stmt_list (pre_body);
 
-	for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
-	  tsubst_omp_for_iterator (t, i, declv, initv, condv, incrv,
-				   &clauses, args, complain, in_decl,
-				   integral_constant_expression_p);
+	if (OMP_FOR_INIT (t) != NULL_TREE)
+	  for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (t)); i++)
+	    tsubst_omp_for_iterator (t, i, declv, initv, condv, incrv,
+				     &clauses, args, complain, in_decl,
+				     integral_constant_expression_p);
 
 	body = push_stmt_list ();
 	RECUR (OMP_FOR_BODY (t));
 	body = pop_stmt_list (body);
 
-	t = finish_omp_for (EXPR_LOCATION (t), TREE_CODE (t), declv, initv,
-			    condv, incrv, body, pre_body, clauses);
+	if (OMP_FOR_INIT (t) != NULL_TREE)
+	  t = finish_omp_for (EXPR_LOCATION (t), TREE_CODE (t), declv, initv,
+			      condv, incrv, body, pre_body, clauses);
+	else
+	  {
+	    t = make_node (TREE_CODE (t));
+	    TREE_TYPE (t) = void_type_node;
+	    OMP_FOR_BODY (t) = body;
+	    OMP_FOR_PRE_BODY (t) = pre_body;
+	    OMP_FOR_CLAUSES (t) = clauses;
+	    SET_EXPR_LOCATION (t, EXPR_LOCATION (t));
+	    add_stmt (t);
+	  }
 
 	add_stmt (finish_omp_structured_block (stmt));
       }
