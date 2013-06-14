@@ -27299,7 +27299,8 @@ cp_parser_omp_clause_proc_bind (cp_parser *parser, tree list,
 
 static tree
 cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
-			   const char *where, cp_token *pragma_tok)
+			   const char *where, cp_token *pragma_tok,
+			   bool finish_p = true)
 {
   tree clauses = NULL;
   bool first = true;
@@ -27526,9 +27527,9 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
     }
  saw_error:
   cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-  if (parser->omp_declare_simd_clauses)
-    return clauses;
-  return finish_omp_clauses (clauses);
+  if (finish_p)
+    return finish_omp_clauses (clauses);
+  return clauses;
 }
 
 /* OpenMP 2.5:
@@ -28202,7 +28203,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
 
 static tree
 cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
-			tree *par_clauses)
+			tree *cclauses)
 {
   tree init, cond, incr, body, decl, pre_body = NULL_TREE, ret;
   tree real_decl, initv, condv, incrv, declv;
@@ -28412,10 +28413,12 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 
       if (decl)
 	real_decl = decl;
-      if (par_clauses != NULL && real_decl != NULL_TREE)
+      if (cclauses != NULL
+	  && cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL] != NULL
+	  && real_decl != NULL_TREE)
 	{
 	  tree *c;
-	  for (c = par_clauses; *c ; )
+	  for (c = &cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL]; *c ; )
 	    if (OMP_CLAUSE_CODE (*c) == OMP_CLAUSE_FIRSTPRIVATE
 		&& OMP_CLAUSE_DECL (*c) == real_decl)
 	      {
@@ -28594,6 +28597,20 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   return ret;
 }
 
+/* Helper function for OpenMP parsing, split clauses and call
+   finish_omp_clauses on each of the set of clauses afterwards.  */
+
+static void
+cp_omp_split_clauses (location_t loc, enum tree_code code,
+		      omp_clause_mask mask, tree clauses, tree *cclauses)
+{
+  int i;
+  c_omp_split_clauses (loc, code, mask, clauses, cclauses);
+  for (i = 0; i < C_OMP_CLAUSE_SPLIT_COUNT; i++)
+    if (cclauses[i])
+      cclauses[i] = finish_omp_clauses (cclauses[i]);
+}
+
 /* OpenMP 4.0:
    #pragma omp simd simd-clause[optseq] new-line
      for-loop  */
@@ -28608,18 +28625,29 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
 
 static tree
-cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok)
+cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
+		    char *p_name, omp_clause_mask mask, tree *cclauses)
 {
   tree clauses, sb, ret;
   unsigned int save;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
-  clauses = cp_parser_omp_all_clauses (parser, OMP_SIMD_CLAUSE_MASK,
-				       "#pragma omp simd", pragma_tok);
+  strcat (p_name, " simd");
+  mask |= OMP_SIMD_CLAUSE_MASK;
+  mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ORDERED);
+
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_SIMD, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
+    }
 
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
-  ret = cp_parser_omp_for_loop (parser, OMP_SIMD, clauses, NULL);
+  ret = cp_parser_omp_for_loop (parser, OMP_SIMD, clauses, cclauses);
 
   cp_parser_end_omp_structured_block (parser, save);
   add_stmt (finish_omp_structured_block (sb));
@@ -28646,13 +28674,17 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
 
 static tree
-cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok)
+cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok,
+		   char *p_name, omp_clause_mask mask, tree *cclauses)
 {
   tree clauses, sb, ret;
   unsigned int save;
-  enum tree_code code = OMP_FOR;
-  omp_clause_mask mask = OMP_FOR_CLAUSE_MASK;
-  const char *p_name = "#pragma omp for";
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  strcat (p_name, " for");
+  mask |= OMP_FOR_CLAUSE_MASK;
+  if (cclauses)
+    mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
@@ -28661,19 +28693,41 @@ cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok)
 
       if (strcmp (p, "simd") == 0)
 	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+
 	  cp_lexer_consume_token (parser->lexer);
-	  code = OMP_FOR_SIMD;
-	  mask |= OMP_SIMD_CLAUSE_MASK;
-	  p_name = "#pragma omp for simd";
+	  sb = begin_omp_structured_block ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  ret = cp_parser_omp_simd (parser, pragma_tok, p_name, mask,
+				    cclauses);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  ret = make_node (OMP_FOR);
+	  TREE_TYPE (ret) = void_type_node;
+	  OMP_FOR_BODY (ret) = body;
+	  OMP_FOR_CLAUSES (ret) = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
+	  SET_EXPR_LOCATION (ret, loc);
+	  add_stmt (ret);
+	  return ret;
 	}
     }
 
-  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok);
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_FOR, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
+    }
 
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
-  ret = cp_parser_omp_for_loop (parser, code, clauses, NULL);
+  ret = cp_parser_omp_for_loop (parser, OMP_FOR, clauses, cclauses);
 
   cp_parser_end_omp_structured_block (parser, save);
   add_stmt (finish_omp_structured_block (sb));
@@ -28800,12 +28854,24 @@ cp_parser_omp_sections_scope (cp_parser *parser)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT))
 
 static tree
-cp_parser_omp_sections (cp_parser *parser, cp_token *pragma_tok)
+cp_parser_omp_sections (cp_parser *parser, cp_token *pragma_tok,
+			char *p_name, omp_clause_mask mask, tree *cclauses)
 {
   tree clauses, ret;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
-  clauses = cp_parser_omp_all_clauses (parser, OMP_SECTIONS_CLAUSE_MASK,
-				       "#pragma omp sections", pragma_tok);
+  strcat (p_name, " sections");
+  mask |= OMP_SECTIONS_CLAUSE_MASK;
+  if (cclauses)
+    mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT);
+
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_SECTIONS, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_SECTIONS];
+    }
 
   ret = cp_parser_omp_sections_scope (parser);
   if (ret)
@@ -28834,35 +28900,37 @@ cp_parser_omp_sections (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PROC_BIND))
 
 static tree
-cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok)
+cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
+			char *p_name, omp_clause_mask mask, tree *cclauses)
 {
-  enum pragma_kind p_kind = PRAGMA_OMP_PARALLEL;
-  const char *p_name = "#pragma omp parallel";
-  tree stmt, clauses, par_clause, ws_clause, block;
-  omp_clause_mask mask = OMP_PARALLEL_CLAUSE_MASK;
+  tree stmt, clauses, block;
   unsigned int save;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
+  strcat (p_name, " parallel");
+  mask |= OMP_PARALLEL_CLAUSE_MASK;
+
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_FOR))
     {
-      cp_lexer_consume_token (parser->lexer);
-      p_kind = PRAGMA_OMP_PARALLEL_FOR;
-      p_name = "#pragma omp parallel for";
-      mask |= OMP_FOR_CLAUSE_MASK;
-      mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT);
-      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-	{
-	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
-	  const char *p = IDENTIFIER_POINTER (id);
+      tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+      if (cclauses == NULL)
+	cclauses = cclauses_buf;
 
-	  if (strcmp (p, "simd") == 0)
-	    {
-	      cp_lexer_consume_token (parser->lexer);
-	      p_kind = PRAGMA_OMP_PARALLEL_FOR_SIMD;
-	      p_name = "#pragma omp parallel for simd";
-	      mask |= OMP_SIMD_CLAUSE_MASK;
-	    }
-	}
+      cp_lexer_consume_token (parser->lexer);
+      block = begin_omp_parallel ();
+      save = cp_parser_begin_omp_structured_block (parser);
+      cp_parser_omp_for (parser, pragma_tok, p_name, mask, cclauses);
+      cp_parser_end_omp_structured_block (parser, save);
+      stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
+				  block);
+      OMP_PARALLEL_COMBINED (stmt) = 1;
+      return stmt;
+    }
+  else if (cclauses)
+    {
+      error_at (loc, "expected %<for%> after %qs", p_name);
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return NULL_TREE;
     }
   else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
@@ -28870,50 +28938,28 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok)
       const char *p = IDENTIFIER_POINTER (id);
       if (strcmp (p, "sections") == 0)
 	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  cclauses = cclauses_buf;
+
 	  cp_lexer_consume_token (parser->lexer);
-	  p_kind = PRAGMA_OMP_PARALLEL_SECTIONS;
-	  p_name = "#pragma omp parallel sections";
-	  mask |= OMP_SECTIONS_CLAUSE_MASK;
-	  mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT);
+	  block = begin_omp_parallel ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  cp_parser_omp_sections (parser, pragma_tok, p_name, mask, cclauses);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
+				      block);
+	  OMP_PARALLEL_COMBINED (stmt) = 1;
+	  return stmt;
 	}
     }
 
   clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok);
+
   block = begin_omp_parallel ();
   save = cp_parser_begin_omp_structured_block (parser);
-
-  switch (p_kind)
-    {
-    case PRAGMA_OMP_PARALLEL:
-      cp_parser_statement (parser, NULL_TREE, false, NULL);
-      par_clause = clauses;
-      break;
-
-    case PRAGMA_OMP_PARALLEL_FOR:
-      c_split_parallel_clauses (loc, clauses, &par_clause, &ws_clause);
-      cp_parser_omp_for_loop (parser, OMP_FOR, ws_clause, &par_clause);
-      break;
-
-    case PRAGMA_OMP_PARALLEL_FOR_SIMD:
-      c_split_parallel_clauses (loc, clauses, &par_clause, &ws_clause);
-      cp_parser_omp_for_loop (parser, OMP_FOR_SIMD, ws_clause, &par_clause);
-      break;
-
-    case PRAGMA_OMP_PARALLEL_SECTIONS:
-      c_split_parallel_clauses (loc, clauses, &par_clause, &ws_clause);
-      stmt = cp_parser_omp_sections_scope (parser);
-      if (stmt)
-	OMP_SECTIONS_CLAUSES (stmt) = ws_clause;
-      break;
-
-    default:
-      gcc_unreachable ();
-    }
-
+  cp_parser_statement (parser, NULL_TREE, false, NULL);
   cp_parser_end_omp_structured_block (parser, save);
-  stmt = finish_omp_parallel (par_clause, block);
-  if (p_kind != PRAGMA_OMP_PARALLEL)
-    OMP_PARALLEL_COMBINED (stmt) = 1;
+  stmt = finish_omp_parallel (clauses, block);
   return stmt;
 }
 
@@ -29088,6 +29134,92 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok)
 }
 
 /* OpenMP 4.0:
+   #pragma omp distribute distribute-clause[optseq] new-line
+     for-loop  */
+
+#define OMP_DISTRIBUTE_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+
+static tree
+cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok,
+			  char *p_name, omp_clause_mask mask, tree *cclauses)
+{
+  tree clauses, sb, ret;
+  unsigned int save;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  strcat (p_name, " distribute");
+  mask |= OMP_DISTRIBUTE_CLAUSE_MASK;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+      bool simd = false;
+      bool parallel = false;
+
+      if (strcmp (p, "simd") == 0)
+	{
+	  simd = true;
+	  if (cclauses)
+	    {
+	      error_at (loc, "%<simd%> not expected after %qs", p_name);
+	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	      return NULL_TREE;
+	    }
+	}
+      else
+	parallel = strcmp (p, "parallel") == 0;
+      if (parallel || simd)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+	  sb = begin_omp_structured_block ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  if (simd)
+	    ret = cp_parser_omp_simd (parser, pragma_tok, p_name, mask,
+				      cclauses);
+	  else
+	    ret = cp_parser_omp_parallel (parser, pragma_tok, p_name, mask,
+					  cclauses);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  ret = make_node (OMP_DISTRIBUTE);
+	  TREE_TYPE (ret) = void_type_node;
+	  OMP_FOR_BODY (ret) = body;
+	  OMP_FOR_CLAUSES (ret) = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+	  SET_EXPR_LOCATION (ret, loc);
+	  add_stmt (ret);
+	  return ret;
+	}
+    }
+
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_DISTRIBUTE, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
+    }
+
+  sb = begin_omp_structured_block ();
+  save = cp_parser_begin_omp_structured_block (parser);
+
+  ret = cp_parser_omp_for_loop (parser, OMP_DISTRIBUTE, clauses, NULL);
+
+  cp_parser_end_omp_structured_block (parser, save);
+  add_stmt (finish_omp_structured_block (sb));
+
+  return ret;
+}
+
+/* OpenMP 4.0:
    # pragma omp teams teams-clause[optseq] new-line
      structured-block  */
 
@@ -29101,14 +29233,55 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULT))
 
 static tree
-cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok)
+cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
+		     char *p_name, omp_clause_mask mask, tree *cclauses)
 {
+  tree clauses, sb, ret;
+  unsigned int save;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  strcat (p_name, " teams");
+  mask |= OMP_TEAMS_CLAUSE_MASK;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+      if (strcmp (p, "distribute") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  sb = begin_omp_structured_block ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  ret = cp_parser_omp_distribute (parser, pragma_tok, p_name, mask,
+					  cclauses);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  clauses = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+	  ret = make_node (OMP_TEAMS);
+	  TREE_TYPE (ret) = void_type_node;
+	  OMP_TEAMS_CLAUSES (ret) = clauses;
+	  OMP_TEAMS_BODY (ret) = body;
+	  return add_stmt (ret);
+	}
+    }
+
+  clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+				       cclauses == NULL);
+  if (cclauses)
+    {
+      cp_omp_split_clauses (loc, OMP_TEAMS, mask, clauses, cclauses);
+      clauses = cclauses[C_OMP_CLAUSE_SPLIT_TEAMS];
+    }
+
   tree stmt = make_node (OMP_TEAMS);
   TREE_TYPE (stmt) = void_type_node;
-
-  OMP_TEAMS_CLAUSES (stmt)
-    = cp_parser_omp_all_clauses (parser, OMP_TEAMS_CLAUSE_MASK,
-				 "#pragma omp teams", pragma_tok);
+  OMP_TEAMS_CLAUSES (stmt) = clauses;
   OMP_TEAMS_BODY (stmt) = cp_parser_omp_structured_block (parser);
 
   return add_stmt (stmt);
@@ -29216,6 +29389,29 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  cp_lexer_consume_token (parser->lexer);
 	  return cp_parser_omp_target_update (parser, pragma_tok, context);
 	}
+      else if (strcmp (p, "teams") == 0)
+	{
+	  tree cclauses[C_OMP_CLAUSE_SPLIT_COUNT];
+	  char p_name[sizeof ("#pragma omp target teams distribute "
+			      "parallel for simd")];
+
+	  cp_lexer_consume_token (parser->lexer);
+	  strcpy (p_name, "#pragma omp target");
+	  tree sb = begin_omp_structured_block ();
+	  unsigned save = cp_parser_begin_omp_structured_block (parser);
+	  tree ret = cp_parser_omp_teams (parser, pragma_tok, p_name,
+					  OMP_TARGET_CLAUSE_MASK, cclauses);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  tree stmt = make_node (OMP_TARGET);
+	  TREE_TYPE (stmt) = void_type_node;
+	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+	  OMP_TARGET_BODY (stmt) = body;
+	  add_stmt (stmt);
+	  return true;
+	}
     }
 
   tree stmt = make_node (OMP_TARGET);
@@ -29229,36 +29425,6 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
   SET_EXPR_LOCATION (stmt, pragma_tok->location);
   add_stmt (stmt);
   return true;
-}
-
-/* OpenMP 4.0:
-   #pragma omp distribute distribute-clause[optseq] new-line
-     for-loop  */
-
-#define OMP_DISTRIBUTE_CLAUSE_MASK				\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE)\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
-
-static tree
-cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok)
-{
-  tree clauses, sb, ret;
-  unsigned int save;
-
-  clauses = cp_parser_omp_all_clauses (parser, OMP_DISTRIBUTE_CLAUSE_MASK,
-				       "#pragma omp distribute", pragma_tok);
-
-  sb = begin_omp_structured_block ();
-  save = cp_parser_begin_omp_structured_block (parser);
-
-  ret = cp_parser_omp_for_loop (parser, OMP_DISTRIBUTE, clauses, NULL);
-
-  cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
-
-  return ret;
 }
 
 /* OpenMP 4.0:
@@ -29281,7 +29447,8 @@ cp_parser_omp_declare_simd (cp_parser *parser, cp_token *pragma_tok,
   vec_safe_push (parser->omp_declare_simd_clauses, NULL_TREE);
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_DECLARE_SIMD_CLAUSE_MASK,
-				 "#pragma omp declare simd", pragma_tok);
+				 "#pragma omp declare simd", pragma_tok,
+				 false);
   parser->omp_declare_simd_clauses->last () = clauses;
   if (first_p)
     {
@@ -29382,6 +29549,8 @@ static void
 cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
 {
   tree stmt;
+  char p_name[sizeof "#pragma omp teams distribute parallel for simd"];
+  omp_clause_mask mask (0);
 
   switch (pragma_tok->pragma_kind)
     {
@@ -29392,10 +29561,12 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
       stmt = cp_parser_omp_critical (parser, pragma_tok);
       break;
     case PRAGMA_OMP_DISTRIBUTE:
-      stmt = cp_parser_omp_distribute (parser, pragma_tok);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_distribute (parser, pragma_tok, p_name, mask, NULL);
       break;
     case PRAGMA_OMP_FOR:
-      stmt = cp_parser_omp_for (parser, pragma_tok);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_for (parser, pragma_tok, p_name, mask, NULL);
       break;
     case PRAGMA_OMP_MASTER:
       stmt = cp_parser_omp_master (parser, pragma_tok);
@@ -29404,13 +29575,16 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
       stmt = cp_parser_omp_ordered (parser, pragma_tok);
       break;
     case PRAGMA_OMP_PARALLEL:
-      stmt = cp_parser_omp_parallel (parser, pragma_tok);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_parallel (parser, pragma_tok, p_name, mask, NULL);
       break;
     case PRAGMA_OMP_SECTIONS:
-      stmt = cp_parser_omp_sections (parser, pragma_tok);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_sections (parser, pragma_tok, p_name, mask, NULL);
       break;
     case PRAGMA_OMP_SIMD:
-      stmt = cp_parser_omp_simd (parser, pragma_tok);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_simd (parser, pragma_tok, p_name, mask, NULL);
       break;
     case PRAGMA_OMP_SINGLE:
       stmt = cp_parser_omp_single (parser, pragma_tok);
@@ -29422,7 +29596,8 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok)
       cp_parser_omp_taskgroup (parser, pragma_tok);
       return;
     case PRAGMA_OMP_TEAMS:
-      stmt = cp_parser_omp_teams (parser, pragma_tok);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_teams (parser, pragma_tok, p_name, mask, NULL);
       break;
     default:
       gcc_unreachable ();

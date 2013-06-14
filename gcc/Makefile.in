@@ -1976,7 +1976,7 @@ c-family/c-lex.o : c-family/c-lex.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(CPPLIB_H) $(TARGET_H) $(TIMEVAR_H)
 
 c-family/c-omp.o : c-family/c-omp.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TREE_H) $(C_COMMON_H) $(GIMPLE_H) langhooks.h
+	$(TREE_H) $(C_COMMON_H) $(C_PRAGMA_H) $(GIMPLE_H) langhooks.h
 
 CFLAGS-c-family/c-opts.o += @TARGET_SYSTEM_ROOT_DEFINE@
 c-family/c-opts.o : c-family/c-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \

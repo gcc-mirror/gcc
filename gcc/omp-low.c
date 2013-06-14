@@ -938,16 +938,24 @@ build_outer_var_ref (tree var, omp_context *ctx)
       bool by_ref = use_pointer_for_field (var, NULL);
       x = build_receiver_ref (var, by_ref, ctx);
     }
+  else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
+	   && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
+    {
+      /* #pragma omp simd isn't a worksharing construct, and can reference even
+	 private vars in its linear etc. clauses.  */
+      x = NULL_TREE;
+      if (ctx->outer && is_taskreg_ctx (ctx))
+	x = lookup_decl (var, ctx->outer);
+      else if (ctx->outer)
+	x = maybe_lookup_decl (var, ctx->outer);
+      if (x == NULL_TREE)
+	x = var;
+    }
   else if (ctx->outer)
     x = lookup_decl (var, ctx->outer);
   else if (is_reference (var))
     /* This can happen with orphaned constructs.  If var is reference, it is
        possible it is shared and as such valid.  */
-    x = var;
-  else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
-    /* #pragma omp simd isn't a worksharing construct, and can reference even
-       private vars in its linear etc. clauses.  */
     x = var;
   else
     gcc_unreachable ();
@@ -1877,8 +1885,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
   if (ctx != NULL)
     {
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	  && (gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD
-	      || gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_FOR_SIMD))
+	  && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
 	{
 	  error_at (gimple_location (stmt),
 		    "OpenMP constructs may not be nested inside simd region");

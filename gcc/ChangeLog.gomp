@@ -1,3 +1,23 @@
+2013-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple-pretty-print.c (dump_gimple_omp_for): Don't handle
+	GF_OMP_FOR_KIND_FOR_SIMD.
+	* gimple.h (GF_OMP_FOR_KIND_FOR_SIMD): Remove.
+	(GF_OMP_FOR_COMBINED): New.
+	(gimple_omp_for_combined_p, gimple_omp_for_set_combined_p): New
+	inline functions.
+	* gimplify.c (is_gimple_stmt): Don't handle OMP_FOR_SIMD.
+	(find_combined_omp_for): New function.
+	(gimplify_omp_for): Handle combined OMP_DISTRIBUTE and OMP_FOR
+	loops.
+	* Makefile.in (c-family/c-omp.o): Depend on $(C_PRAGMA_H).
+	* omp-low.c (build_outer_var_ref): Fix up simd handling.
+	(check_omp_nesting_restrictions): Don't handle
+	GF_OMP_FOR_KIND_FOR_SIMD.
+	* tree.def (OMP_FOR_SIMD): Remove.
+	* tree-pretty-print.c (dump_generic_node): Don't handle OMP_FOR_SIMD.
+	Handle NULL OMP_FOR_INIT.
+
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Handle

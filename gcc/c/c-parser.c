@@ -11044,7 +11044,7 @@ c_parser_omp_for (location_t loc, c_parser *parser)
       if (strcmp (p, "simd") == 0)
 	{
 	  c_parser_consume_token (parser);
-	  code = OMP_FOR_SIMD;
+	  /* code = OMP_FOR_SIMD; */
 	  mask |= OMP_SIMD_CLAUSE_MASK;
 	  p_name = "#pragma omp for simd";
 	}
@@ -11234,6 +11234,7 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
   const char *p_name = "#pragma omp parallel";
   tree stmt, clauses, par_clause, ws_clause, block;
   omp_clause_mask mask = OMP_PARALLEL_CLAUSE_MASK;
+  tree cclauses[C_OMP_CLAUSE_SPLIT_COUNT];
 
   if (c_parser_next_token_is_keyword (parser, RID_FOR))
     {
@@ -11280,7 +11281,9 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
 
     case PRAGMA_OMP_PARALLEL_FOR:
       block = c_begin_omp_parallel ();
-      c_split_parallel_clauses (loc, clauses, &par_clause, &ws_clause);
+      c_omp_split_clauses (loc, OMP_FOR, mask, clauses, cclauses);
+      par_clause = cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL];
+      ws_clause = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
       c_parser_omp_for_loop (loc, parser, OMP_FOR, ws_clause, &par_clause);
       stmt = c_finish_omp_parallel (loc, par_clause, block);
       OMP_PARALLEL_COMBINED (stmt) = 1;
@@ -11288,8 +11291,10 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
 
     case PRAGMA_OMP_PARALLEL_FOR_SIMD:
       block = c_begin_omp_parallel ();
-      c_split_parallel_clauses (loc, clauses, &par_clause, &ws_clause);
-      c_parser_omp_for_loop (loc, parser, OMP_FOR_SIMD, ws_clause,
+      c_omp_split_clauses (loc, OMP_FOR, mask, clauses, cclauses);
+      par_clause = cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL];
+      ws_clause = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
+      c_parser_omp_for_loop (loc, parser, OMP_FOR /*_SIMD*/, ws_clause,
 			     &par_clause);
       stmt = c_finish_omp_parallel (loc, par_clause, block);
       OMP_PARALLEL_COMBINED (stmt) = 1;
@@ -11297,7 +11302,9 @@ c_parser_omp_parallel (location_t loc, c_parser *parser)
 
     case PRAGMA_OMP_PARALLEL_SECTIONS:
       block = c_begin_omp_parallel ();
-      c_split_parallel_clauses (loc, clauses, &par_clause, &ws_clause);
+      c_omp_split_clauses (loc, OMP_SECTIONS, mask, clauses, cclauses);
+      par_clause = cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL];
+      ws_clause = cclauses[C_OMP_CLAUSE_SPLIT_SECTIONS];
       stmt = c_parser_omp_sections_scope (loc, parser);
       if (stmt)
 	OMP_SECTIONS_CLAUSES (stmt) = ws_clause;

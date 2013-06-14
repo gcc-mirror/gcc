@@ -1,5 +1,34 @@
 2013-06-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_omp_all_clauses): Add defaulted finish_p
+	argument.  Don't call finish_omp_clauses if it is false.
+	(cp_parser_omp_for_loop): Change last argument to cclauses,
+	and adjust uses to grab parallel clauses from the array of all
+	the split clauses.
+	(cp_omp_split_clauses): New function.
+	(cp_parser_omp_simd): Add p_name, mask and cclauses arguments.
+	Allow the function to be called also when parsing combined constructs.
+	(cp_parser_omp_sections): Likewise.
+	(cp_parser_omp_for): Add p_name, mask and cclauses arguments.
+	Allow the function to be called also when parsing combined constructs,
+	and call cp_parser_omp_simd when parsing for simd.
+	(cp_parser_omp_parallel): Likewise.
+	(cp_parser_omp_distribute): Likewise.
+	(cp_parser_omp_teams): Likewise.
+	(cp_parser_omp_target): If next token is teams, call
+	cp_parser_omp_teams and parse it as combined construct.
+	(cp_parser_omp_declare_simd): Pass false as last argument to
+	cp_parser_omp_all_clauses.
+	(cp_parser_omp_construct): Adjust callers of cp_parser_omp_simd,
+	cp_parser_omp_sections, cp_parser_omp_for, cp_parser_omp_parallel,
+	cp_parser_omp_distribute and cp_parser_omp_teams.
+	* pt.c (tsubst_expr): Don't handle OMP_FOR_SIMD.  Handle NULL
+	OMP_FOR_INIT.
+	* semantics.c (finish_omp_for): Don't handle OMP_FOR_SIMD.
+	* cp-tree.h (OMP_FOR_GIMPLIFYING_P): Adjust comment.
+	* cp-gimplify.c (cp_gimplify_expr, cp_genericize_r): Don't handle
+	OMP_FOR_SIMD.
+	
 	* decl2.c (cp_omp_mappable_type): No longer static.  Handle array
 	types and recurse for FIELD_DECL types.
 	* semantics.c (handle_omp_array_sections_1): Call

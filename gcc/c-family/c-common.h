@@ -1030,112 +1030,6 @@ extern void pp_dir_change (cpp_reader *, const char *);
 extern bool check_missing_format_attribute (tree, tree);
 
 /* In c-omp.c  */
-extern tree c_finish_omp_master (location_t, tree);
-extern tree c_finish_omp_critical (location_t, tree, tree);
-extern tree c_finish_omp_ordered (location_t, tree);
-extern void c_finish_omp_barrier (location_t);
-extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool, bool);
-extern void c_finish_omp_flush (location_t);
-extern void c_finish_omp_taskwait (location_t);
-extern void c_finish_omp_taskyield (location_t);
-extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
-			      tree, tree, tree);
-extern void c_split_parallel_clauses (location_t, tree, tree *, tree *);
-extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
-extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
-extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
-
-/* Not in c-omp.c; provided by the front end.  */
-extern bool c_omp_sharing_predetermined (tree);
-extern tree c_omp_remap_decl (tree, bool);
-extern void record_types_used_by_current_var_decl (tree);
-
-/* Return next tree in the chain for chain_next walking of tree nodes.  */
-static inline tree
-c_tree_chain_next (tree t)
-{
-  /* TREE_CHAIN of a type is TYPE_STUB_DECL, which is different
-     kind of object, never a long chain of nodes.  Prefer
-     TYPE_NEXT_VARIANT for types.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
-    return TYPE_NEXT_VARIANT (t);
-  /* Otherwise, if there is TREE_CHAIN, return it.  */
-  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
-    return TREE_CHAIN (t);
-  return NULL;
-}
-
-/* Mask used by tm_stmt_attr.  */
-#define TM_STMT_ATTR_OUTER	2
-#define TM_STMT_ATTR_ATOMIC	4
-#define TM_STMT_ATTR_RELAXED	8
-
-extern int parse_tm_stmt_attr (tree, int);
-
-/* Mask used by tm_attr_to_mask and tm_mask_to_attr.  Note that these
-   are ordered specifically such that more restrictive attributes are
-   at lower bit positions.  This fact is known by the C++ tm attribute
-   inheritance code such that least bit extraction (mask & -mask) results
-   in the most restrictive attribute.  */
-#define TM_ATTR_SAFE			1
-#define TM_ATTR_CALLABLE		2
-#define TM_ATTR_PURE			4
-#define TM_ATTR_IRREVOCABLE		8
-#define TM_ATTR_MAY_CANCEL_OUTER	16
-
-extern int tm_attr_to_mask (tree);
-extern tree tm_mask_to_attr (int);
-extern tree find_tm_attribute (tree);
-
-/* A suffix-identifier value doublet that represents user-defined literals
-   for C++-0x.  */
-enum overflow_type {
-  OT_UNDERFLOW = -1,
-  OT_NONE,
-  OT_OVERFLOW
-};
-
-struct GTY(()) tree_userdef_literal {
-  struct tree_base base;
-  tree suffix_id;
-  tree value;
-  tree num_string;
-  enum overflow_type overflow;
-};
-
-#define USERDEF_LITERAL_SUFFIX_ID(NODE) \
-  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->suffix_id)
-
-#define USERDEF_LITERAL_VALUE(NODE) \
-  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->value)
-
-#define USERDEF_LITERAL_OVERFLOW(NODE) \
-  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->overflow)
-
-#define USERDEF_LITERAL_NUM_STRING(NODE) \
-  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->num_string)
-
-#define USERDEF_LITERAL_TYPE(NODE) \
-  (TREE_TYPE (USERDEF_LITERAL_VALUE (NODE)))
-
-extern tree build_userdef_literal (tree suffix_id, tree value,
-				   enum overflow_type overflow,
-				   tree num_string);
-
-extern void convert_vector_to_pointer_for_subscript (location_t, tree*, tree);
-
-/* Possibe cases of scalar_to_vector conversion.  */
-enum stv_conv {
-  stv_error,        /* Error occured.  */
-  stv_nothing,      /* Nothing happened.  */
-  stv_firstarg,     /* First argument must be expanded.  */
-  stv_secondarg     /* Second argument must be expanded.  */
-};
-
-extern enum stv_conv scalar_to_vector (location_t loc, enum tree_code code,
-				       tree op0, tree op1, bool);
-
 #if HOST_BITS_PER_WIDE_INT >= 64
 typedef unsigned HOST_WIDE_INT omp_clause_mask;
 # define OMP_CLAUSE_MASK_1 ((omp_clause_mask) 1)
@@ -1260,5 +1154,124 @@ omp_clause_mask::operator == (omp_clause_mask b) const
 
 # define OMP_CLAUSE_MASK_1 omp_clause_mask (1)
 #endif
+
+enum c_omp_clause_split
+{
+  C_OMP_CLAUSE_SPLIT_TARGET = 0,
+  C_OMP_CLAUSE_SPLIT_TEAMS,
+  C_OMP_CLAUSE_SPLIT_DISTRIBUTE,
+  C_OMP_CLAUSE_SPLIT_PARALLEL,
+  C_OMP_CLAUSE_SPLIT_FOR,
+  C_OMP_CLAUSE_SPLIT_SIMD,
+  C_OMP_CLAUSE_SPLIT_COUNT,
+  C_OMP_CLAUSE_SPLIT_SECTIONS = C_OMP_CLAUSE_SPLIT_FOR
+};
+
+extern tree c_finish_omp_master (location_t, tree);
+extern tree c_finish_omp_critical (location_t, tree, tree);
+extern tree c_finish_omp_ordered (location_t, tree);
+extern void c_finish_omp_barrier (location_t);
+extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
+				 tree, tree, tree, tree, tree, bool, bool);
+extern void c_finish_omp_flush (location_t);
+extern void c_finish_omp_taskwait (location_t);
+extern void c_finish_omp_taskyield (location_t);
+extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
+			      tree, tree, tree);
+extern void c_omp_split_clauses (location_t, enum tree_code, omp_clause_mask,
+				 tree, tree *);
+extern tree c_omp_declare_simd_clauses_to_numbers (tree, tree);
+extern void c_omp_declare_simd_clauses_to_decls (tree, tree);
+extern enum omp_clause_default_kind c_omp_predetermined_sharing (tree);
+
+/* Not in c-omp.c; provided by the front end.  */
+extern bool c_omp_sharing_predetermined (tree);
+extern tree c_omp_remap_decl (tree, bool);
+extern void record_types_used_by_current_var_decl (tree);
+
+/* Return next tree in the chain for chain_next walking of tree nodes.  */
+static inline tree
+c_tree_chain_next (tree t)
+{
+  /* TREE_CHAIN of a type is TYPE_STUB_DECL, which is different
+     kind of object, never a long chain of nodes.  Prefer
+     TYPE_NEXT_VARIANT for types.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_TYPE_COMMON))
+    return TYPE_NEXT_VARIANT (t);
+  /* Otherwise, if there is TREE_CHAIN, return it.  */
+  if (CODE_CONTAINS_STRUCT (TREE_CODE (t), TS_COMMON))
+    return TREE_CHAIN (t);
+  return NULL;
+}
+
+/* Mask used by tm_stmt_attr.  */
+#define TM_STMT_ATTR_OUTER	2
+#define TM_STMT_ATTR_ATOMIC	4
+#define TM_STMT_ATTR_RELAXED	8
+
+extern int parse_tm_stmt_attr (tree, int);
+
+/* Mask used by tm_attr_to_mask and tm_mask_to_attr.  Note that these
+   are ordered specifically such that more restrictive attributes are
+   at lower bit positions.  This fact is known by the C++ tm attribute
+   inheritance code such that least bit extraction (mask & -mask) results
+   in the most restrictive attribute.  */
+#define TM_ATTR_SAFE			1
+#define TM_ATTR_CALLABLE		2
+#define TM_ATTR_PURE			4
+#define TM_ATTR_IRREVOCABLE		8
+#define TM_ATTR_MAY_CANCEL_OUTER	16
+
+extern int tm_attr_to_mask (tree);
+extern tree tm_mask_to_attr (int);
+extern tree find_tm_attribute (tree);
+
+/* A suffix-identifier value doublet that represents user-defined literals
+   for C++-0x.  */
+enum overflow_type {
+  OT_UNDERFLOW = -1,
+  OT_NONE,
+  OT_OVERFLOW
+};
+
+struct GTY(()) tree_userdef_literal {
+  struct tree_base base;
+  tree suffix_id;
+  tree value;
+  tree num_string;
+  enum overflow_type overflow;
+};
+
+#define USERDEF_LITERAL_SUFFIX_ID(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->suffix_id)
+
+#define USERDEF_LITERAL_VALUE(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->value)
+
+#define USERDEF_LITERAL_OVERFLOW(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->overflow)
+
+#define USERDEF_LITERAL_NUM_STRING(NODE) \
+  (((struct tree_userdef_literal *)USERDEF_LITERAL_CHECK (NODE))->num_string)
+
+#define USERDEF_LITERAL_TYPE(NODE) \
+  (TREE_TYPE (USERDEF_LITERAL_VALUE (NODE)))
+
+extern tree build_userdef_literal (tree suffix_id, tree value,
+				   enum overflow_type overflow,
+				   tree num_string);
+
+extern void convert_vector_to_pointer_for_subscript (location_t, tree*, tree);
+
+/* Possibe cases of scalar_to_vector conversion.  */
+enum stv_conv {
+  stv_error,        /* Error occured.  */
+  stv_nothing,      /* Nothing happened.  */
+  stv_firstarg,     /* First argument must be expanded.  */
+  stv_secondarg     /* Second argument must be expanded.  */
+};
+
+extern enum stv_conv scalar_to_vector (location_t loc, enum tree_code code,
+				       tree op0, tree op1, bool);
 
 #endif /* ! GCC_C_COMMON_H */

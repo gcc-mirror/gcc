@@ -4716,7 +4716,6 @@ is_gimple_stmt (tree t)
     case OMP_PARALLEL:
     case OMP_FOR:
     case OMP_SIMD:
-    case OMP_FOR_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_SECTIONS:
     case OMP_SECTION:
@@ -6826,12 +6825,39 @@ gimplify_omp_task (tree *expr_p, gimple_seq *pre_p)
   *expr_p = NULL_TREE;
 }
 
+/* Helper function of gimplify_omp_for, find OMP_FOR resp. OMP_SIMD
+   with non-NULL OMP_FOR_INIT.  */
+
+static tree
+find_combined_omp_for (tree *tp, int *walk_subtrees, void *)
+{
+  *walk_subtrees = 0;
+  switch (TREE_CODE (*tp))
+    {
+    case OMP_FOR:
+      *walk_subtrees = 1;
+      /* FALLTHRU */
+    case OMP_SIMD:
+      if (OMP_FOR_INIT (*tp) != NULL_TREE)
+	return *tp;
+      break;
+    case BIND_EXPR:
+    case STATEMENT_LIST:
+    case OMP_PARALLEL:
+      *walk_subtrees = 1;
+      break;
+    default:
+      break;
+    }
+  return NULL_TREE;
+}
+
 /* Gimplify the gross structure of an OMP_FOR statement.  */
 
 static enum gimplify_status
 gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 {
-  tree for_stmt, decl, var, t;
+  tree for_stmt, orig_for_stmt, decl, var, t;
   enum gimplify_status ret = GS_ALL_DONE;
   enum gimplify_status tret;
   gimple gfor;
@@ -6840,10 +6866,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   bool simd;
   bitmap has_decl_expr = NULL;
 
-  for_stmt = *expr_p;
+  orig_for_stmt = for_stmt = *expr_p;
 
-  simd = TREE_CODE (for_stmt) == OMP_SIMD
-	 || TREE_CODE (for_stmt) == OMP_FOR_SIMD;
+  simd = TREE_CODE (for_stmt) == OMP_SIMD;
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
 			     TREE_CODE (for_stmt) == OMP_SIMD
 			     ? ORT_SIMD : ORT_WORKSHARE);
@@ -6876,6 +6901,13 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   gimplify_and_add (OMP_FOR_PRE_BODY (for_stmt), &for_pre_body);
   OMP_FOR_PRE_BODY (for_stmt) = NULL_TREE;
 
+  if (OMP_FOR_INIT (for_stmt) == NULL_TREE)
+    {
+      for_stmt = walk_tree (&OMP_FOR_BODY (for_stmt), find_combined_omp_for,
+			    NULL, NULL);
+      gcc_assert (for_stmt != NULL_TREE);
+    }
+
   for_body = NULL;
   gcc_assert (TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt))
 	      == TREE_VEC_LENGTH (OMP_FOR_COND (for_stmt)));
@@ -6891,12 +6923,14 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		  || POINTER_TYPE_P (TREE_TYPE (decl)));
 
       /* Make sure the iteration variable is private.  */
-      bool is_private = omp_is_private (gimplify_omp_ctxp, decl, simd);
       tree c = NULL_TREE;
-      if (simd)
+      if (orig_for_stmt != for_stmt)
+	/* Do this only on innermost construct for combined ones.  */;
+      else if (simd)
 	{
 	  splay_tree_node n = splay_tree_lookup (gimplify_omp_ctxp->variables,
 						 (splay_tree_key)decl);
+	  omp_is_private (gimplify_omp_ctxp, decl, simd);
 	  if (n != NULL && (n->value & GOVD_DATA_SHARE_CLASS) != 0)
 	    omp_notice_variable (gimplify_omp_ctxp, decl, true);
 	  else
@@ -6913,7 +6947,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 				GOVD_LINEAR | GOVD_EXPLICIT | GOVD_SEEN);
 	    }
 	}
-      else if (is_private)
+      else if (omp_is_private (gimplify_omp_ctxp, decl, simd))
 	omp_notice_variable (gimplify_omp_ctxp, decl, true);
       else
 	omp_add_variable (gimplify_omp_ctxp, decl, GOVD_PRIVATE | GOVD_SEEN);
@@ -6921,7 +6955,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       /* If DECL is not a gimple register, create a temporary variable to act
 	 as an iteration counter.  This is valid, since DECL cannot be
 	 modified in the body of the loop.  */
-      if (!is_gimple_reg (decl))
+      if (orig_for_stmt != for_stmt)
+	var = decl;
+      else if (!is_gimple_reg (decl))
 	{
 	  var = create_tmp_var (TREE_TYPE (decl), get_name (decl));
 	  TREE_OPERAND (t, 0) = var;
@@ -6954,6 +6990,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	{
 	case PREINCREMENT_EXPR:
 	case POSTINCREMENT_EXPR:
+	  if (orig_for_stmt != for_stmt)
+	    break;
 	  t = build_int_cst (TREE_TYPE (decl), 1);
 	  if (c)
 	    OMP_CLAUSE_LINEAR_STEP (c) = t;
@@ -6964,6 +7002,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
 	case PREDECREMENT_EXPR:
 	case POSTDECREMENT_EXPR:
+	  if (orig_for_stmt != for_stmt)
+	    break;
 	  t = build_int_cst (TREE_TYPE (decl), -1);
 	  if (c)
 	    OMP_CLAUSE_LINEAR_STEP (c) = t;
@@ -7020,7 +7060,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  gcc_unreachable ();
 	}
 
-      if (var != decl || TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1)
+      if ((var != decl || TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) > 1)
+	  && orig_for_stmt == for_stmt)
 	{
 	  for (c = OMP_FOR_CLAUSES (for_stmt); c ; c = OMP_CLAUSE_CHAIN (c))
 	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE
@@ -7045,23 +7086,37 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   BITMAP_FREE (has_decl_expr);
 
-  gimplify_and_add (OMP_FOR_BODY (for_stmt), &for_body);
+  gimplify_and_add (OMP_FOR_BODY (orig_for_stmt), &for_body);
 
-  gimplify_adjust_omp_clauses (&OMP_FOR_CLAUSES (for_stmt));
+  if (orig_for_stmt != for_stmt)
+    for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
+      {
+	t = TREE_VEC_ELT (OMP_FOR_INIT (for_stmt), i);
+	decl = TREE_OPERAND (t, 0);
+	var = create_tmp_var (TREE_TYPE (decl), get_name (decl));
+	omp_add_variable (gimplify_omp_ctxp, var, GOVD_PRIVATE | GOVD_SEEN);
+	TREE_OPERAND (t, 0) = var;
+	t = TREE_VEC_ELT (OMP_FOR_INCR (for_stmt), i);
+	TREE_OPERAND (t, 1) = copy_node (TREE_OPERAND (t, 1));
+	TREE_OPERAND (TREE_OPERAND (t, 1), 0) = var;
+      }
+
+  gimplify_adjust_omp_clauses (&OMP_FOR_CLAUSES (orig_for_stmt));
 
   int kind;
-  switch (TREE_CODE (for_stmt))
+  switch (TREE_CODE (orig_for_stmt))
     {
     case OMP_FOR: kind = GF_OMP_FOR_KIND_FOR; break;
     case OMP_SIMD: kind = GF_OMP_FOR_KIND_SIMD; break;
-    case OMP_FOR_SIMD: kind = GF_OMP_FOR_KIND_FOR_SIMD; break;
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     default:
       gcc_unreachable ();
     }
-  gfor = gimple_build_omp_for (for_body, kind, OMP_FOR_CLAUSES (for_stmt),
+  gfor = gimple_build_omp_for (for_body, kind, OMP_FOR_CLAUSES (orig_for_stmt),
 			       TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)),
 			       for_pre_body);
+  if (orig_for_stmt != for_stmt)
+    gimple_omp_for_set_combined_p (gfor, true);
 
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
     {
@@ -8057,7 +8112,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_FOR:
 	case OMP_SIMD:
-	case OMP_FOR_SIMD:
 	case OMP_DISTRIBUTE:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;

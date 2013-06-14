@@ -5782,11 +5782,10 @@ finish_omp_for (location_t locus, enum tree_code code, tree declv, tree initv,
 
       if (CLASS_TYPE_P (TREE_TYPE (decl)))
 	{
-	  if (code == OMP_SIMD || code == OMP_FOR_SIMD)
+	  if (code == OMP_SIMD)
 	    {
-	      error_at (elocus, "%<#pragma omp%s simd%> used with class "
-				"iteration variable %qE",
-			code == OMP_FOR_SIMD ? " for" : "", decl);
+	      error_at (elocus, "%<#pragma omp simd%> used with class "
+				"iteration variable %qE", decl);
 	      return NULL;
 	    }
 	  if (handle_omp_for_class_iterator (i, locus, declv, initv, condv,
