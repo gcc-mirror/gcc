@@ -3855,12 +3855,21 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	      if (!sym->attr.dummy || sym->attr.intent == INTENT_OUT)
 		{
 		  /* Nullify when entering the scope.  */
-		  gfc_add_modify (&init, se.expr,
-				  fold_convert (TREE_TYPE (se.expr),
-					        null_pointer_node));
+		  tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+					 TREE_TYPE (se.expr), se.expr,
+					 fold_convert (TREE_TYPE (se.expr),
+						       null_pointer_node));
+		  if (sym->attr.optional)
+		    {
+		      tree present = gfc_conv_expr_present (sym);
+		      tmp = build3_loc (input_location, COND_EXPR,
+					void_type_node, present, tmp,
+					build_empty_stmt (input_location));
+		    }
+		  gfc_add_expr_to_block (&init, tmp);
 		}
 
-	      if ((sym->attr.dummy ||sym->attr.result)
+	      if ((sym->attr.dummy || sym->attr.result)
 		    && sym->ts.type == BT_CHARACTER
 		    && sym->ts.deferred)
 		{
@@ -3874,15 +3883,38 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		    gfc_add_modify (&init, sym->ts.u.cl->backend_decl,
 				build_int_cst (gfc_charlen_type_node, 0));
 		  else
-		    gfc_add_modify (&init, sym->ts.u.cl->backend_decl, tmp);
+		    {
+		      tree tmp2;
+
+		      tmp2 = fold_build2_loc (input_location, MODIFY_EXPR,
+					      gfc_charlen_type_node,
+					      sym->ts.u.cl->backend_decl, tmp);
+		      if (sym->attr.optional)
+			{
+			  tree present = gfc_conv_expr_present (sym);
+			  tmp2 = build3_loc (input_location, COND_EXPR,
+					     void_type_node, present, tmp2,
+					     build_empty_stmt (input_location));
+			}
+		      gfc_add_expr_to_block (&init, tmp2);
+		    }
 
 		  gfc_restore_backend_locus (&loc);
 
 		  /* Pass the final character length back.  */
 		  if (sym->attr.intent != INTENT_IN)
-		    tmp = fold_build2_loc (input_location, MODIFY_EXPR,
-					   gfc_charlen_type_node, tmp,
-					   sym->ts.u.cl->backend_decl);
+		    {
+		      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+					     gfc_charlen_type_node, tmp,
+					     sym->ts.u.cl->backend_decl);
+		      if (sym->attr.optional)
+			{
+			  tree present = gfc_conv_expr_present (sym);
+			  tmp = build3_loc (input_location, COND_EXPR,
+					    void_type_node, present, tmp,
+					    build_empty_stmt (input_location));
+			}
+		    }
 		  else
 		    tmp = NULL_TREE;
 		}

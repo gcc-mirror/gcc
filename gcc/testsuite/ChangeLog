@@ -1,3 +1,8 @@
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57596
+	* gfortran.dg/deferred_type_param_9.f90: New.
+
 2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/fold-minus-1.c: New testcase.
