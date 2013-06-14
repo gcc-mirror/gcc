@@ -4122,11 +4122,11 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
+      t = convert_from_reference (t);
       if (!processing_template_decl
 	  && POINTER_TYPE_P (TREE_TYPE (t))
 	  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 	pointer_based_p = true;
-      t = convert_from_reference (t);
       return t;
     }
 
@@ -4921,6 +4921,18 @@ finish_omp_clauses (tree clauses)
 	    {
 	      if (handle_omp_array_sections (c))
 		remove = true;
+	      else
+		{
+		  t = OMP_CLAUSE_DECL (c);
+		  if (!cp_omp_mappable_type (TREE_TYPE (t)))
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"array section does not have mappable type "
+				"in %qs clause",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      remove = true;
+		    }
+		}
 	      break;
 	    }
 	  if (t == error_mark_node)
@@ -4947,6 +4959,16 @@ finish_omp_clauses (tree clauses)
 		   && TREE_CODE (TREE_TYPE (t)) != REFERENCE_TYPE
 		   && !cxx_mark_addressable (t))
 	    remove = true;
+	  else if (!cp_omp_mappable_type ((TREE_CODE (TREE_TYPE (t))
+					   == REFERENCE_TYPE)
+					  ? TREE_TYPE (TREE_TYPE (t))
+					  : TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD does not have a mappable type in %qs clause", t,
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP)
 	    break;
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t)))

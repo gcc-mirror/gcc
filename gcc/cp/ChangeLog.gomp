@@ -1,3 +1,13 @@
+2013-06-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cp_omp_mappable_type): No longer static.  Handle array
+	types and recurse for FIELD_DECL types.
+	* semantics.c (handle_omp_array_sections_1): Call
+	convert_from_reference before testing for pointer_based_p.
+	(finish_omp_clauses): Complain if OMP_CLAUSE_{MAP,TO,FROM}
+	decls or array sections don't have cp_omp_mappable_type.
+	* cp-tree.h (cp_omp_mappable_type): New prototype.
+
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* semantics.c (finish_omp_clause): Don't mark references addressable.

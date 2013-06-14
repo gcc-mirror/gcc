@@ -1334,12 +1334,15 @@ cp_check_const_attributes (tree attributes)
 }
 
 /* Return true if TYPE is an OpenMP mappable type.  */
-static bool
+bool
 cp_omp_mappable_type (tree type)
 {
   /* Mappable type has to be complete.  */
   if (type == error_mark_node || !COMPLETE_TYPE_P (type))
     return false;
+  /* Arrays have mappable type if the elements have mappable type.  */
+  while (TREE_CODE (type) == ARRAY_TYPE)
+    type = TREE_TYPE (type);
   /* A mappable type cannot contain virtual members.  */
   if (CLASS_TYPE_P (type) && CLASSTYPE_VTABLES (type))
     return false;
@@ -1349,6 +1352,10 @@ cp_omp_mappable_type (tree type)
       tree field;
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == VAR_DECL)
+	  return false;
+	/* All fields must have mappable types.  */
+	else if (TREE_CODE (field) == FIELD_DECL
+		 && !cp_omp_mappable_type (TREE_TYPE (field)))
 	  return false;
     }
   return true;
