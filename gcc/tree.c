@@ -257,6 +257,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_INBRANCH  */
   0, /* OMP_CLAUSE_NOTINBRANCH  */
   1, /* OMP_CLAUSE_NUM_TEAMS  */
+  1, /* OMP_CLAUSE_THREAD_LIMIT  */
   0, /* OMP_CLAUSE_PROC_BIND  */
   1, /* OMP_CLAUSE_SAFELEN  */
   1, /* OMP_CLAUSE_SIMDLEN  */
@@ -298,6 +299,7 @@ const char * const omp_clause_code_name[] =
   "inbranch",
   "notinbranch",
   "num_teams",
+  "thread_limit",
   "proc_bind",
   "safelen",
   "simdlen",
@@ -11014,6 +11016,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE_NUM_TEAMS:
+	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_SAFELEN:

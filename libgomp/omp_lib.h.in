@@ -92,3 +92,6 @@
       external omp_get_team_num
       integer(4) omp_get_default_device, omp_get_num_devices
       integer(4) omp_get_num_teams, omp_get_team_num
+
+      external omp_is_initial_device
+      logical(4) omp_is_initial_device

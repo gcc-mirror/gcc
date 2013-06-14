@@ -118,6 +118,8 @@ extern int omp_get_num_devices (void) __GOMP_NOTHROW;
 extern int omp_get_num_teams (void) __GOMP_NOTHROW;
 extern int omp_get_team_num (void) __GOMP_NOTHROW;
 
+extern int omp_is_initial_device (void) __GOMP_NOTHROW;
+
 #ifdef __cplusplus
 }
 #endif

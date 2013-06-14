@@ -130,6 +130,8 @@ OMP_4.0 {
 	omp_get_num_teams_;
 	omp_get_team_num;
 	omp_get_team_num_;
+	omp_is_initial_device;
+	omp_is_initial_device_;
 } OMP_3.1;
 
 GOMP_1.0 {

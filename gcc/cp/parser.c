@@ -26238,6 +26238,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 't':
 	  if (!strcmp ("taskgroup", p))
 	    result = PRAGMA_OMP_CLAUSE_TASKGROUP;
+	  else if (!strcmp ("thread_limit", p))
+	    result = PRAGMA_OMP_CLAUSE_THREAD_LIMIT;
 	  else if (!strcmp ("to", p))
 	    result = PRAGMA_OMP_CLAUSE_TO;
 	  break;
@@ -26343,13 +26345,19 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  if (!colon)
 		    parser->colon_corrects_to_scope_p
 		      = saved_colon_corrects_to_scope_p;
-		  /* Look for `:'.  */
-		  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
-		    goto skip_comma;
-		  if (!cp_lexer_next_token_is (parser->lexer,
-					       CPP_CLOSE_SQUARE))
-		    length = cp_parser_expression (parser, /*cast_p=*/false,
-						   NULL);
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_SQUARE))
+		    length = integer_one_node;
+		  else
+		    {
+		      /* Look for `:'.  */
+		      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+			goto skip_comma;
+		      if (!cp_lexer_next_token_is (parser->lexer,
+						   CPP_CLOSE_SQUARE))
+			length = cp_parser_expression (parser,
+						       /*cast_p=*/false,
+						       NULL);
+		    }
 		  /* Look for the closing `]'.  */
 		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
 					  RT_CLOSE_SQUARE))
@@ -26905,6 +26913,36 @@ cp_parser_omp_clause_num_teams (cp_parser *parser, tree list,
 }
 
 /* OpenMP 4.0:
+   thread_limit ( expression ) */
+
+static tree
+cp_parser_omp_clause_thread_limit (cp_parser *parser, tree list,
+				   location_t location)
+{
+  tree t, c;
+
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return list;
+
+  t = cp_parser_expression (parser, false, NULL);
+
+  if (t == error_mark_node
+      || !cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_THREAD_LIMIT,
+			     "thread_limit", location);
+
+  c = build_omp_clause (location, OMP_CLAUSE_THREAD_LIMIT);
+  OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = t;
+  OMP_CLAUSE_CHAIN (c) = list;
+
+  return c;
+}
+
+/* OpenMP 4.0:
    aligned ( variable-list )
    aligned ( variable-list : constant-expression )  */
 
@@ -27422,15 +27460,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_TO,
 					    clauses);
 	  c_name = "to";
-	  if (!first)
-	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_FROM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_FROM,
 					    clauses);
 	  c_name = "from";
-	  if (!first)
-	    goto clause_not_first;
 	  break;
 	case PRAGMA_OMP_CLAUSE_UNIFORM:
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_UNIFORM,
@@ -27441,6 +27475,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_num_teams (parser, clauses,
 						    token->location);
 	  c_name = "num_teams";
+	  break;
+	case PRAGMA_OMP_CLAUSE_THREAD_LIMIT:
+	  clauses = cp_parser_omp_clause_thread_limit (parser, clauses,
+						       token->location);
+	  c_name = "thread_limit";
 	  break;
 	case PRAGMA_OMP_CLAUSE_ALIGNED:
 	  clauses = cp_parser_omp_clause_aligned (parser, clauses);
@@ -29071,7 +29110,7 @@ cp_parser_omp_cancellation_point (cp_parser *parser, cp_token *pragma_tok)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SHARED)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_TEAMS)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULT))
 
 static tree
@@ -29141,7 +29180,7 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
       && find_omp_clause (clauses, OMP_CLAUSE_FROM) == NULL_TREE)
     {
       error_at (pragma_tok->location,
-		"%<#pragma omp target update must contain either "
+		"%<#pragma omp target update must contain at least one "
 		"%<from%> or %<to%> clauses");
       return false;
     }
