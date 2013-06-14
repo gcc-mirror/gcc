@@ -1,3 +1,7 @@
+2013-06-14  Mike Stump  <mikestump@comcast.net>
+
+	* Makefile.in (TARGET_H): Add insn-codes.h.
+
 2013-06-14  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/57134
