@@ -818,7 +818,8 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
   pop_cfun ();
   if (call_stmt
       && callee && callee->symbol.decl
-      && !gimple_check_call_matching_types (call_stmt, callee->symbol.decl))
+      && !gimple_check_call_matching_types (call_stmt, callee->symbol.decl,
+					    false))
     edge->call_stmt_cannot_inline_p = true;
   else
     edge->call_stmt_cannot_inline_p = false;
@@ -1018,7 +1019,8 @@ cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee)
 
   if (edge->call_stmt)
     edge->call_stmt_cannot_inline_p
-      = !gimple_check_call_matching_types (edge->call_stmt, callee->symbol.decl);
+      = !gimple_check_call_matching_types (edge->call_stmt, callee->symbol.decl,
+					   false);
 
   /* We need to re-determine the inlining status of the edge.  */
   initialize_inline_failed (edge);

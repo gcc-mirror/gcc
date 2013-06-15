@@ -1,3 +1,14 @@
+2013-06-15  Dehao Chen  <dehao@google.com>
+
+	* tree-flow.h (gimple_check_call_matching_types): Add new argument.
+	* gimple-low.c (gimple_check_call_matching_types): Likewise.
+	(gimple_check_call_args): Likewise.
+	* value-prof.c (check_ic_target): Likewise.
+	* ipa-inline.c (early_inliner): Likewise.
+	* ipa-prop.c (update_indirect_edges_after_inlining): Likewise.
+	* cgraph.c (cgraph_create_edge_1): Likewise.
+	(cgraph_make_edge_direct): Likewise.
+
 2013-06-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/57615

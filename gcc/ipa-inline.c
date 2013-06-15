@@ -2054,8 +2054,8 @@ early_inliner (void)
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	      if (edge->callee->symbol.decl
-		  && !gimple_check_call_matching_types (edge->call_stmt,
-							edge->callee->symbol.decl))
+		  && !gimple_check_call_matching_types (
+		      edge->call_stmt, edge->callee->symbol.decl, false))
 		edge->call_stmt_cannot_inline_p = true;
 	    }
 	  timevar_pop (TV_INTEGRATION);
