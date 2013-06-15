@@ -1,3 +1,11 @@
+2013-06-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	PR fortran/56136
+	* gfortran.dg/typebound_assignment_5.f03: Check the absence of any
+	packing.
+	* gfortran.dg/typebound_assignment_6.f03: New.
+
 2013-06-15  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* gcc.target/h8300/h8300.exp: New.
