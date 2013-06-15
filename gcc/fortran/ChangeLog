@@ -1,3 +1,10 @@
+2013-06-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	PR fortran/56136
+	* dependency.c (gfc_check_argument_var_dependency): Return 0 in the
+	array constructor case.
+
 2013-06-14  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57508

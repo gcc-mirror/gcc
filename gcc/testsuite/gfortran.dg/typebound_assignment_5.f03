@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fdump-tree-original" }
 !
 ! PR fortran/49074
 ! ICE on defined assignment with class arrays.
@@ -38,3 +39,6 @@
         if (any(foobar%i /= [1, 2])) call abort
       end program
 
+! { dg-final { scan-tree-dump-not "_gfortran_internal_pack" "original" } }
+! { dg-final { scan-tree-dump-not "_gfortran_internal_unpack" "original" } }
+! { dg-final { cleanup-tree-dump "original"} }

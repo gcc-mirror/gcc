@@ -990,7 +990,9 @@ gfc_check_argument_var_dependency (gfc_expr *var, sym_intent intent,
       return 0;
 
     case EXPR_ARRAY:
-      return gfc_check_dependency (var, expr, 1);
+      /* the scalarizer always generates a temporary for array constructors,
+	 so there is no dependency.  */
+      return 0;
 
     case EXPR_FUNCTION:
       if (intent != INTENT_IN)
