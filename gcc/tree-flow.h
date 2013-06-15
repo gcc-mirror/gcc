@@ -464,7 +464,7 @@ extern void record_vars_into (tree, tree);
 extern void record_vars (tree);
 extern bool gimple_seq_may_fallthru (gimple_seq);
 extern bool gimple_stmt_may_fallthru (gimple);
-extern bool gimple_check_call_matching_types (gimple, tree);
+extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
 
 /* In tree-ssa.c  */
