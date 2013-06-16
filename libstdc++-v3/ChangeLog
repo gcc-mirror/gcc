@@ -1,5 +1,16 @@
 2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	PR libstdc++/57263
+	* include/bits/forward_list.h (_Fwd_list_base): Convert to/from
+	allocator's pointer type.
+	* include/bits/hashtable.h (_Hashtable): Likewise.
+	* testsuite/util/testsuite_allocator.h (CustomPointerAlloc): Add.
+	* testsuite/23_containers/forward_list/allocator/ext_ptr.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: New.
+	* testsuite/23_containers/vector/allocator/ext_ptr.cc: New.
+
+2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	* include/std/shared_mutex: Implement N3659.
 	* include/bits/c++14_warning.h: New.
 	* include/Makefile.am: Add new headers.
