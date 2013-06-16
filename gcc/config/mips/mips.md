@@ -1468,7 +1468,7 @@
   [(set (match_operand:GPR 0 "register_operand")
 	(mult:GPR (match_operand:GPR 1 "register_operand")
 		  (match_operand:GPR 2 "register_operand")))]
-  ""
+  "ISA_HAS_<D>MULT"
 {
   rtx lo;
 
@@ -1514,7 +1514,7 @@
 {
   if (which_alternative == 1)
     return "<d>mult\t%1,%2";
-  if (<MODE>mode == SImode && TARGET_MIPS3900)
+  if (<MODE>mode == SImode && (TARGET_MIPS3900 || TARGET_MIPS5900))
     return "mult\t%0,%1,%2";
   return "<d>mul\t%0,%1,%2";
 }
@@ -1548,7 +1548,7 @@
   [(set (match_operand:GPR 0 "muldiv_target_operand" "=l")
 	(mult:GPR (match_operand:GPR 1 "register_operand" "d")
 		  (match_operand:GPR 2 "register_operand" "d")))]
-  "!TARGET_FIX_R4000"
+  "ISA_HAS_<D>MULT && !TARGET_FIX_R4000"
   "<d>mult\t%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "<MODE>")])
@@ -1558,7 +1558,7 @@
 	(mult:GPR (match_operand:GPR 1 "register_operand" "d")
 		  (match_operand:GPR 2 "register_operand" "d")))
    (clobber (match_scratch:GPR 3 "=l"))]
-  "TARGET_FIX_R4000"
+  "ISA_HAS_<D>MULT && TARGET_FIX_R4000"
   "<d>mult\t%1,%2\;mflo\t%0"
   [(set_attr "type" "imul")
    (set_attr "mode" "<MODE>")
@@ -2025,7 +2025,7 @@
 	(mult:DI (sign_extend:DI (match_operand:SI 1 "register_operand" "d"))
 		 (sign_extend:DI (match_operand:SI 2 "register_operand" "d"))))
    (clobber (match_scratch:DI 3 "=l"))]
-  "TARGET_64BIT && ISA_HAS_DMUL3"
+  "ISA_HAS_DMUL3"
   "dmul\t%0,%1,%2"
   [(set_attr "type" "imul3")
    (set_attr "mode" "DI")])
@@ -2179,7 +2179,7 @@
 	  (mult:TI (any_extend:TI (match_operand:DI 1 "register_operand"))
 		   (any_extend:TI (match_operand:DI 2 "register_operand")))
 	  (const_int 64))))]
-  "TARGET_64BIT && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
+  "ISA_HAS_DMULT && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
 {
   if (TARGET_MIPS16)
     emit_insn (gen_<su>muldi3_highpart_split (operands[0], operands[1],
@@ -2198,7 +2198,7 @@
 		   (any_extend:TI (match_operand:DI 2 "register_operand" "d")))
 	  (const_int 64))))
    (clobber (match_scratch:DI 3 "=l"))]
-  "TARGET_64BIT
+  "ISA_HAS_DMULT
    && !TARGET_MIPS16
    && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
   { return TARGET_FIX_R4000 ? "dmult<u>\t%1,%2\n\tmfhi\t%0" : "#"; }
@@ -2234,7 +2234,7 @@
   [(set (match_operand:TI 0 "register_operand")
 	(mult:TI (any_extend:TI (match_operand:DI 1 "register_operand"))
 		 (any_extend:TI (match_operand:DI 2 "register_operand"))))]
-  "TARGET_64BIT && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
+  "ISA_HAS_DMULT && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
 {
   rtx hilo;
 
@@ -2256,7 +2256,7 @@
   [(set (match_operand:TI 0 "muldiv_target_operand" "=x")
 	(mult:TI (any_extend:TI (match_operand:DI 1 "register_operand" "d"))
 		 (any_extend:TI (match_operand:DI 2 "register_operand" "d"))))]
-  "TARGET_64BIT
+  "ISA_HAS_DMULT
    && !TARGET_FIX_R4000
    && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
   "dmult<u>\t%1,%2"
@@ -2268,7 +2268,7 @@
 	(mult:TI (any_extend:TI (match_operand:DI 1 "register_operand" "d"))
 		 (any_extend:TI (match_operand:DI 2 "register_operand" "d"))))
    (clobber (match_scratch:TI 3 "=x"))]
-  "TARGET_64BIT
+  "ISA_HAS_DMULT
    && TARGET_FIX_R4000
    && !(<CODE> == ZERO_EXTEND && TARGET_FIX_VR4120)"
   "dmult<u>\t%1,%2\;mflo\t%L0\;mfhi\t%M0"
@@ -2564,7 +2564,7 @@
    (set (match_operand:GPR 3 "register_operand" "=d")
 	(mod:GPR (match_dup 1)
 		 (match_dup 2)))]
-  "!TARGET_FIX_VR4120"
+  "ISA_HAS_<D>DIV && !TARGET_FIX_VR4120"
   "#"
   "&& ((TARGET_MIPS16 && cse_not_expected) || reload_completed)"
   [(const_int 0)]
@@ -2587,7 +2587,7 @@
    (set (match_operand:GPR 3 "register_operand" "=d")
 	(umod:GPR (match_dup 1)
 		  (match_dup 2)))]
-  ""
+  "ISA_HAS_<D>DIV"
   "#"
   "(TARGET_MIPS16 && cse_not_expected) || reload_completed"
   [(const_int 0)]
@@ -2633,7 +2633,7 @@
 	  [(any_div:GPR (match_operand:GPR 1 "register_operand" "d")
 			(match_operand:GPR 2 "register_operand" "d"))]
 	  UNSPEC_SET_HILO))]
-  ""
+  "ISA_HAS_<GPR:D>DIV"
   { return mips_output_division ("<GPR:d>div<u>\t%.,%1,%2", operands); }
   [(set_attr "type" "idiv")
    (set_attr "mode" "<GPR:MODE>")])
