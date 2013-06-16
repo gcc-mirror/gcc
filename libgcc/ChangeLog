@@ -1,3 +1,8 @@
+2013-06-16  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config/mips/lib2funcs.c: New file.
+	* config/mips/t-mips (LIB2ADD_ST): Add it.
+
 2013-06-09  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/6526

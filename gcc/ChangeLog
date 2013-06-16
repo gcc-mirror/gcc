@@ -1,3 +1,17 @@
+2013-06-16  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config/mips/mips.h (ISA_HAS_MUL3): Include TARGET_MIPS5900.
+	(ISA_HAS_MULT, ISA_HAS_DMULT, ISA_HAS_DIV, ISA_HAS_DDIV): New macros.
+	* config/mips/mips.md (mul<mode>3, mul<mode>3_internal)
+	(mul<mode>3_r4000): Require ISA_HAS_<D>MULT.
+	(mul<mode>3_mul3): Handle TARGET_MIPS5900.
+	(mulsidi3_64bit_dmul): Remove redundant TARGET_64BIT test.
+	(<su>muldi3_highpart, <su>muldi3_highpart_internal, <u>mulditi3)
+	(<u>mulditi3_internal, <u>mulditi3_r4000): Require ISA_HAS_DMULT
+	instead of TARGET_64BIT.
+	(divmod<mode>4, udivmod<mode>4, <u>divmod<GPR:mode>4_hilo_<HILO:mode>):
+	Require ISA_HAS_<D>DIV.
+
 2013-06-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.gcc (mips*-mti-linux*, mips64*-*-linux*, mipsisa64*-*-linux*)
