@@ -156,7 +156,8 @@ static int insert_subset_children (splay_tree_node, void*);
 static alias_set_entry get_alias_set_entry (alias_set_type);
 static bool nonoverlapping_component_refs_p (const_rtx, const_rtx);
 static tree decl_for_component_ref (tree);
-static int write_dependence_p (const_rtx, const_rtx, int);
+static int write_dependence_p (const_rtx, enum machine_mode, rtx, const_rtx,
+			       bool, bool);
 
 static void memory_modified_1 (rtx, const_rtx, void *);
 
@@ -2553,14 +2554,21 @@ canon_true_dependence (const_rtx mem, enum machine_mode mem_mode, rtx mem_addr,
 }
 
 /* Returns nonzero if a write to X might alias a previous read from
-   (or, if WRITEP is nonzero, a write to) MEM.  */
+   (or, if WRITEP is true, a write to) MEM.
+   If MEM_CANONCALIZED is nonzero, CANON_MEM_ADDR is the canonicalized
+   address of MEM, and MEM_MODE the mode for that access.  */
 
 static int
-write_dependence_p (const_rtx mem, const_rtx x, int writep)
+write_dependence_p (const_rtx mem, enum machine_mode mem_mode,
+		    rtx canon_mem_addr, const_rtx x,
+		    bool mem_canonicalized, bool writep)
 {
   rtx x_addr, mem_addr;
   rtx base;
   int ret;
+
+  gcc_checking_assert (mem_canonicalized ? (canon_mem_addr != NULL_RTX)
+		       : (canon_mem_addr == NULL_RTX && mem_mode == VOIDmode));
 
   if (MEM_VOLATILE_P (x) && MEM_VOLATILE_P (mem))
     return 1;
@@ -2612,9 +2620,15 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
     return 0;
 
   x_addr = canon_rtx (x_addr);
-  mem_addr = canon_rtx (mem_addr);
+  if (mem_canonicalized)
+    mem_addr = canon_mem_addr;
+  else
+    {
+      mem_addr = canon_rtx (mem_addr);
+      mem_mode = GET_MODE (mem);
+    }
 
-  if ((ret = memrefs_conflict_p (SIZE_FOR_MODE (mem), mem_addr,
+  if ((ret = memrefs_conflict_p (GET_MODE_SIZE (mem_mode), mem_addr,
 				 SIZE_FOR_MODE (x), x_addr, 0)) != -1)
     return ret;
 
@@ -2629,7 +2643,20 @@ write_dependence_p (const_rtx mem, const_rtx x, int writep)
 int
 anti_dependence (const_rtx mem, const_rtx x)
 {
-  return write_dependence_p (mem, x, /*writep=*/0);
+  return write_dependence_p (mem, VOIDmode, NULL_RTX, x,
+			     /*mem_canonicalized=*/false, /*writep=*/false);
+}
+
+/* Likewise, but we already have a canonicalized MEM_ADDR for MEM.
+   Also, consider MEM in MEM_MODE (which might be from an enclosing
+   STRICT_LOW_PART / ZERO_EXTRACT).  */
+
+int
+canon_anti_dependence (const_rtx mem, enum machine_mode mem_mode,
+		       rtx mem_addr, const_rtx x)
+{
+  return write_dependence_p (mem, mem_mode, mem_addr, x,
+			     /*mem_canonicalized=*/true, /*writep=*/false);
 }
 
 /* Output dependence: X is written after store in MEM takes place.  */
@@ -2637,7 +2664,8 @@ anti_dependence (const_rtx mem, const_rtx x)
 int
 output_dependence (const_rtx mem, const_rtx x)
 {
-  return write_dependence_p (mem, x, /*writep=*/1);
+  return write_dependence_p (mem, VOIDmode, NULL_RTX, x,
+			     /*mem_canonicalized=*/false, /*writep=*/true);
 }
 
 
