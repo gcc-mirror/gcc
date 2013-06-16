@@ -12463,7 +12463,10 @@ mips_start_ll_sc_sync_block (void)
   if (!ISA_HAS_LL_SC)
     {
       output_asm_insn (".set\tpush", 0);
-      output_asm_insn (".set\tmips2", 0);
+      if (TARGET_64BIT)
+	output_asm_insn (".set\tmips3", 0);
+      else
+	output_asm_insn (".set\tmips2", 0);
     }
 }
 
