@@ -1,3 +1,9 @@
+2013-06-16  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config/mips/mips.h (ISA_HAS_LL_SC): Exclude TARGET_MIPS5900.
+	* config/mips/mips.c (mips_start_ll_sc_sync_block): Output
+	".set mips3" for 64-bit targets.
+
 2013-06-15  Dehao Chen  <dehao@google.com>
 
 	* tree-flow.h (gimple_check_call_matching_types): Add new argument.
