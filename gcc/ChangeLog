@@ -1,3 +1,14 @@
+2013-06-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config.gcc (mips*-mti-linux*, mips64*-*-linux*, mipsisa64*-*-linux*)
+	(mips*-*-linux*): Move default with_llsc setting to where other
+	defaults are set.
+	(mips*-*-vxworks*): Move with_arch default from with_cpu block to
+	with_arch block.
+	(mips64r5900-*-*, mips64r5900el-*-*, mipsr5900-*-*, mipsr5900el-*-*):
+	Likewise.  Remove default with_tune setting.  Move default float
+	setting to its own block.  Handle with_llsc in the same block as above.
+
 2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/57425
