@@ -1,5 +1,10 @@
 2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
+	* include/std/shared_mutex (shared_lock::operator=): Add missing
+	return statement.
+
+2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
 	PR libstdc++/57263
 	* include/bits/forward_list.h (_Fwd_list_base): Convert to/from
 	allocator's pointer type.

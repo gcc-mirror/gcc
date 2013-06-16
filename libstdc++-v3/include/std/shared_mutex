@@ -339,7 +339,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       shared_lock&
       operator=(shared_lock&& __sl) noexcept
-      { shared_lock(std::move(__sl)).swap(*this); }
+      {
+	shared_lock(std::move(__sl)).swap(*this);
+	return *this;
+      }
 
       void
       lock()
