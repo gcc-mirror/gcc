@@ -1,3 +1,32 @@
+2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/shared_mutex: Implement N3659.
+	* include/bits/c++14_warning.h: New.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* testsuite/30_threads/shared_lock/cons/1.cc: New.
+	* testsuite/30_threads/shared_lock/locking/2.cc: New.
+	* testsuite/30_threads/shared_lock/cons/2.cc: New.
+	* testsuite/30_threads/shared_lock/locking/3.cc: New.
+	* testsuite/30_threads/shared_lock/cons/3.cc: New.
+	* testsuite/30_threads/shared_lock/locking/4.cc: New.
+	* testsuite/30_threads/shared_lock/cons/4.cc: New.
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: New.
+	* testsuite/30_threads/shared_lock/cons/5.cc: New.
+	* testsuite/30_threads/shared_lock/modifiers/2.cc: New.
+	* testsuite/30_threads/shared_lock/cons/6.cc: New.
+	* testsuite/30_threads/shared_lock/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/30_threads/shared_lock/locking/1.cc: New.
+	* testsuite/30_threads/shared_lock/requirements/typedefs.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/assign_neg.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/copy_neg.cc: New.
+	* testsuite/30_threads/shared_mutex/requirements/
+	standard_layout.cc: New.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: New.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: New.
+
 2013-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/57619
