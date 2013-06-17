@@ -269,7 +269,7 @@ int main2 (char **argv)
   
   /* atoi(argv[1]) == 10, so it will convert all 10's to 5's */
   if (FourDArray[0:10:1][0:5:2][9:10:-1][x:y:z] +
-      FourDArray[0:10:1][0:5:2][9:-10:1][x:y:z]  != 20) 
+      FourDArray[0:10:1][0:5:2][9:10:-1][x:y:z]  != 20) 
     array4[0:10:1][0:5:2][9:10:-1][x:y:z] = 10; 
   else
     array4[0:10][0:5:2][9:10:-1][x:y:z] = 5;
