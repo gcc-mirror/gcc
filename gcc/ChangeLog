@@ -1,3 +1,72 @@
+2013-06-17  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (enum LTO_tags): Add LTO_tree_scc.
+	(lto_input_scc): Declare.
+	(lto_input_tree_1): Likewise.
+	(struct lto_stats_d): Add num_tree_bodies_output and
+	num_pickle_refs_output.
+	* lto-streamer-in.c (lto_read_body): Use streamer_tree_cache_get_tree.
+	(lto_read_tree_1): Split out from ...
+	(lto_read_tree): ... this.
+	(lto_input_scc): New function.
+	(lto_input_tree_1): Split out from ...
+	(lto_input_tree): ... this.  Handle LTO_tree_scc.
+	(lto_data_in_create): Create the streamer cache without hashes.
+	* lto-streamer-out.c (create_output_block): Create the streamer
+	cache with hashes when not doing WPA.
+	(lto_write_tree_1): Split out from ...
+	(lto_write_tree): ... this.
+	(get_symbol_initial_value): New function.
+	(lto_output_tree_1): Split out from ...
+	(lto_output_tree): ... this.  Write trees as series of SCCs
+	using a DFS walk via DFS_write_tree.
+	(struct sccs, struct scc_entry): New types.
+	(next_dfs_num, sccstack, sccstate, sccstate_obstack): New globals.
+	(DFS_write_tree_body): New function.
+	(DFS_write_tree): Likewise.
+	(hash_tree): Likewise.
+	(scc_entry_compare): Likewise.
+	(hash_scc): Likewise.
+	(tree_is_indexable): DEBUG_EXPR_DECLs are local entities.
+	* tree-streamer-in.c (lto_input_ts_list_tree_pointers): Stream
+	TREE_CHAIN as regular reference.
+	(streamer_read_integer_cst): Remove.
+	(streamer_get_pickled_tree): Adjust.
+	* tree-streamer-out.c (streamer_write_chain): Disable streaming
+	of DECL_EXTERNALs in BLOCK_VARS for now.
+	(write_ts_list_tree_pointers): Stream TREE_CHAIN as regular
+	reference.
+	* tree-streamer.c (streamer_tree_cache_add_to_node_array):
+	Add hash value argument and record that if hashes are recorded
+	in the cache.
+	(streamer_tree_cache_insert_1): Adjust.
+	(streamer_tree_cache_insert): Likewise.
+	(streamer_tree_cache_insert_at): Rename to ...
+	(streamer_tree_cache_replace_tree): ... this and adjust.
+	(streamer_tree_cache_append): Adjust.
+	(record_common_node): Likewise.
+	(streamer_tree_cache_create): Add argument whether to
+	record hash values together with trees.
+	(streamer_tree_cache_delete): Adjust.
+	* tree-streamer.h (struct streamer_tree_cache_d): Add
+	vector of hashes.
+	(streamer_read_integer_cst): Remove.
+	(streamer_tree_cache_insert): Adjust.
+	(streamer_tree_cache_append): Likewise.
+	(streamer_tree_cache_insert_at): Rename to ...
+	(streamer_tree_cache_replace_tree): ... this and adjust.
+	(streamer_tree_cache_create): Add argument whether to record hashes.
+	(streamer_tree_cache_get): Rename to ...
+	(streamer_tree_cache_get_tree): ... this.
+	(streamer_tree_cache_get_hash): New function.
+	* tree.c (cache_integer_cst): New function.
+	* tree.h (cache_integer_cst): Declare.
+	(ANON_AGGRNAME_FORMAT, ANON_AGGRNAME_P): Move here from cp/cp-tree.h.
+	* lto-symtab.c (lto_varpool_replace_node): Only release
+	DECL_INITIAL of non-prevailing decls.
+	* varpool.c (varpool_remove_initializer): Do not release
+	DECL_INITIAL when we are still in CGRAPH_LTO_STREAMING.
+
 2013-06-16  Jürgen Urban  <JuergenUrban@gmx.de>
 
 	* config/mips/mips.h (ISA_HAS_MUL3): Include TARGET_MIPS5900.

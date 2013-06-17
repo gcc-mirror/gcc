@@ -84,7 +84,12 @@ varpool_remove_initializer (struct varpool_node *node)
       /* Keep vtables for BINFO folding.  */
       && !DECL_VIRTUAL_P (node->symbol.decl)
       /* FIXME: http://gcc.gnu.org/PR55395 */
-      && debug_info_level == DINFO_LEVEL_NONE)
+      && debug_info_level == DINFO_LEVEL_NONE
+      /* When doing declaration merging we have duplicate
+	 entries for given decl.  Do not attempt to remove
+	 the boides, or we will end up remiving
+	 wrong one.  */
+      && cgraph_state != CGRAPH_LTO_STREAMING)
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
 }
 

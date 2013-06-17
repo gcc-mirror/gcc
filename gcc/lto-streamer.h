@@ -199,6 +199,9 @@ enum LTO_tags
   /* EH try/catch node.  */
   LTO_eh_catch,
 
+  /* Special for global streamer.  A blob of unnamed tree nodes.  */
+  LTO_tree_scc,
+
   /* References to indexable tree nodes.  These objects are stored in
      tables that are written separately from the function bodies that
      reference them.  This way they can be instantiated even when the
@@ -421,6 +424,8 @@ struct lto_stats_d
   unsigned HOST_WIDE_INT num_compressed_il_bytes;
   unsigned HOST_WIDE_INT num_input_il_bytes;
   unsigned HOST_WIDE_INT num_uncompressed_il_bytes;
+  unsigned HOST_WIDE_INT num_tree_bodies_output;
+  unsigned HOST_WIDE_INT num_pickle_refs_output;
 };
 
 /* Entry of LTO symtab encoder.  */
@@ -854,6 +859,10 @@ tree lto_input_tree_ref (struct lto_input_block *, struct data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
 void lto_init_eh (void);
+hashval_t lto_input_scc (struct lto_input_block *, struct data_in *,
+			 unsigned *, unsigned *);
+tree lto_input_tree_1 (struct lto_input_block *, struct data_in *,
+		       enum LTO_tags, hashval_t hash);
 tree lto_input_tree (struct lto_input_block *, struct data_in *);
 
 
