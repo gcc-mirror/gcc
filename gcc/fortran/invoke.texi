@@ -151,7 +151,7 @@ and warnings}.
 @item Debugging Options
 @xref{Debugging Options,,Options for debugging your program or GNU Fortran}.
 @gccoptlist{-fbacktrace -fdump-fortran-optimized -fdump-fortran-original @gol
--fdump-parse-tree -ffpe-trap=@var{list}
+-fdump-parse-tree -ffpe-trap=@var{list} -ffpe-summary=@var{list}
 }
 
 @item Directory Options
@@ -1020,6 +1020,17 @@ due to rounding, and hence the @code{ffpe-trap=inexact} is likely to
 be uninteresting in practice.
 
 By default no exception traps are enabled.
+
+@item -ffpe-summary=@var{list}
+@opindex @code{ffpe-summary=}@var{list}
+Specify a list of floating-point exceptions, whose flag status is printed
+to @code{ERROR_UNIT} when invoking @code{STOP} and @code{ERROR STOP}.
+@var{list} can be either @samp{none}, @samp{all} or a comma-separated list
+of the following exceptions: @samp{invalid}, @samp{zero}, @samp{overflow},
+@samp{underflow}, @samp{inexact} and @samp{denormal}. (See
+@option{-ffpe-trap} for a description of the exceptions.)
+
+By default, a summary for all exceptions but @samp{inexact} is shown.
 
 @item -fno-backtrace
 @opindex @code{fno-backtrace}

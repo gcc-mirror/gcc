@@ -5203,14 +5203,15 @@ create_main_function (tree fndecl)
     /* TODO: This is the -frange-check option, which no longer affects
        library behavior; when bumping the library ABI this slot can be
        reused for something else. As it is the last element in the
-       array, we can instead leave it out altogether.
+       array, we can instead leave it out altogether. */
+    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+                            build_int_cst (integer_type_node, 0));
     CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
                             build_int_cst (integer_type_node,
-                                           gfc_option.flag_range_check));
-    */
+                                           gfc_option.fpe_summary));
 
     array_type = build_array_type (integer_type_node,
-				   build_index_type (size_int (6)));
+				   build_index_type (size_int (8)));
     array = build_constructor (array_type, v);
     TREE_CONSTANT (array) = 1;
     TREE_STATIC (array) = 1;
@@ -5225,7 +5226,7 @@ create_main_function (tree fndecl)
 
     tmp = build_call_expr_loc (input_location,
 			   gfor_fndecl_set_options, 2,
-			   build_int_cst (integer_type_node, 7), var);
+			   build_int_cst (integer_type_node, 9), var);
     gfc_add_expr_to_block (&body, tmp);
   }
 
