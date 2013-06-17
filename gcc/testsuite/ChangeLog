@@ -1,4 +1,8 @@
 2013-06-17  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/sec_reduce_ind_same_value.c: New test.
+
+2013-06-17  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 	
 	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.
 	Also changed the returns from error as distinct values so that it is
