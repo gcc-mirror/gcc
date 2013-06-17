@@ -1,3 +1,12 @@
+2013-06-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algobase.h (equal): Make C++14 overloads from N3671
+	dispatch to traditional std::equal for random-access iterators.
+	(__equal2_aux, __equal2): Remove.
+	(__equal::equal): Remove unused overloads.
+	* include/bits/stl_algo.h (is_permutation): Fix typos.
+
 2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/shared_mutex (shared_lock::operator=): Add missing
