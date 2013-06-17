@@ -1,3 +1,21 @@
+2013-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* libgfortran.h (compile_options_t) Add fpe_summary.
+	(get_fpu_except_flags): New prototype.
+	* runtime/compile_options.c (set_options, init_compile_options):
+	Handle fpe_summary.
+	* runtime/stop.c (report_exception): New function.
+	(stop_numeric, stop_numeric_f08, stop_string, error_stop_string,
+	error_stop_numeric): Call it.
+	* config/fpu-387.h (get_fpu_except_flags): New function.
+	* config/fpu-aix.h (get_fpu_except_flags): New function.
+	* config/fpu-generic.h (get_fpu_except_flags): New function.
+	* config/fpu-glibc.h (get_fpu_except_flags): New function.
+	* config/fpu-glibc.h (get_fpu_except_flags): New function.
+	* configure.ac: Check for fpxcp.h.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2013-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57496

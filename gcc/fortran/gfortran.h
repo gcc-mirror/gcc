@@ -2303,6 +2303,7 @@ typedef struct
   int flag_frontend_optimize;
 
   int fpe;
+  int fpe_summary;
   int rtcheck;
   gfc_fcoarray coarray;
 

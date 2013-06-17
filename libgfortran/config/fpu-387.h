@@ -134,3 +134,40 @@ void set_fpu (void)
       asm volatile ("%vldmxcsr %0" : : "m" (cw_sse));
     }
 }
+
+
+int
+get_fpu_except_flags (void)
+{
+  int result;
+  unsigned short cw;
+
+  __asm__ __volatile__ ("fnstsw\t%0" : "=a" (cw));
+
+  if (has_sse())
+    {
+      unsigned int cw_sse;
+      __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+      cw |= cw_sse;
+    }
+
+  if (cw & _FPU_MASK_IM)
+    result |= GFC_FPE_INVALID;
+
+  if (cw & _FPU_MASK_ZM)
+    result |= GFC_FPE_ZERO;
+
+  if (cw & _FPU_MASK_OM)
+    result |= GFC_FPE_OVERFLOW;
+
+  if (cw & _FPU_MASK_UM)
+    result |= GFC_FPE_UNDERFLOW;
+
+  if (cw & _FPU_MASK_DM)
+    result |= GFC_FPE_DENORMAL;
+
+  if (cw & _FPU_MASK_PM)
+    result |= GFC_FPE_INEXACT;
+
+  return result;
+}

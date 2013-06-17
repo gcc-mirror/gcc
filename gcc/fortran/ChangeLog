@@ -1,3 +1,15 @@
+2013-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Add fpe_summary.
+	* gfortran.texi (_gfortran_set_options): Update.
+	* invoke.texi (-ffpe-summary): Add doc.
+	* lang.opt (ffpe-summary): Add flag.
+	* options.c (gfc_init_options, gfc_handle_option): Handle it.
+	(gfc_handle_fpe_option): Renamed from gfc_handle_fpe_trap_option,
+	also handle fpe_summary.
+	* trans-decl.c (create_main_function): Update
+	_gfortran_set_options call.
+
 2013-06-15  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/49074
