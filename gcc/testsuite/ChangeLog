@@ -1,3 +1,7 @@
+2013-06-17  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c: Update.
+
 2013-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/16128

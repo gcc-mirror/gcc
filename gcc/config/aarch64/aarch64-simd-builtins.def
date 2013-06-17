@@ -64,7 +64,7 @@
   BUILTIN_VQ (REINTERP, reinterpretv2df, 0)
 
   BUILTIN_VDQ_I (BINOP, dup_lane, 0)
-  BUILTIN_SDQ_I (BINOP, dup_lane, 0)
+  BUILTIN_VDQ_I (BINOP, dup_lane_scalar, 0)
   /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
   BUILTIN_VSDQ_I (BINOP, sqshl, 0)
   BUILTIN_VSDQ_I (BINOP, uqshl, 0)
