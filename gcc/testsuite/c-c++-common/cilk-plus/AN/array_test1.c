@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do run } */
 /* { dg-options "-fcilkplus" } */
 
 #include <stdlib.h>
@@ -47,7 +47,7 @@ int main2 (char **argv)
   array[x:y:z] = 505;
   for (ii = x; ii < 10; ii += z)
     if (array[ii] != 505)
-      return 2;
+      return 4;
     
   x = atoi(argv[1]);
   z = (10-atoi(argv[1]))/atoi(argv[1]);
@@ -57,7 +57,7 @@ int main2 (char **argv)
 
   for (ii = x; ii < 10; ii += z)
     if (array[ii] != 25)
-      return 1;
+      return 5;
   x = atoi(argv[1]);
   z = (10-atoi(argv[1]))/atoi(argv[1]);
   y = 10-atoi(argv[1]);
@@ -66,19 +66,19 @@ int main2 (char **argv)
     1400;
   for (ii = x; ii < 10; ii += z)
     if (array[ii] != 1400)
-      return 1;
+      return 6;
   
 
   array[atoi("5"):5:1] = 5555;
   
   for (ii = atoi ("5"); ii < 10; ii++)
     if (array[ii] != 5555)
-      return 2;
+      return 7;
   
 
   array[atoi("5"):atoi("5"):atoi("1")] = 9999;
   for (ii = atoi ("5"); ii < (atoi ("5") + atoi ("5")); ii += atoi ("1"))
     if (array[ii] != 9999)
-      return 3;
+      return 8;
   return 0;
 }
