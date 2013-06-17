@@ -5,8 +5,8 @@
 
 2013-06-16  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
-	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of accidentally
-	placing minus sign for length instead of stride.
+	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of 
+	accidentally placing minus sign for length instead of stride.
 
 2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
 
