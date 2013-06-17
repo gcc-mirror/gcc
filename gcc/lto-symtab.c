@@ -97,7 +97,8 @@ lto_varpool_replace_node (struct varpool_node *vnode,
   ipa_clone_referring ((symtab_node)prevailing_node, &vnode->symbol.ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
-  if (DECL_INITIAL (vnode->symbol.decl))
+  if (DECL_INITIAL (vnode->symbol.decl)
+      && vnode->symbol.decl != prevailing_node->symbol.decl)
     DECL_INITIAL (vnode->symbol.decl) = error_mark_node;
   /* Finally remove the replaced node.  */
   varpool_remove_node (vnode);

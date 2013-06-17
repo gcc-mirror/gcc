@@ -1,3 +1,7 @@
+2013-06-17  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (ANON_AGGRNAME_FORMAT, ANON_AGGRNAME_P): Move to tree.h.
+
 2013-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/16128

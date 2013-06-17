@@ -1266,6 +1266,99 @@ build_int_cst_wide (tree type, unsigned HOST_WIDE_INT low, HOST_WIDE_INT hi)
   return t;
 }
 
+void
+cache_integer_cst (tree t)
+{
+  tree type = TREE_TYPE (t);
+  HOST_WIDE_INT hi = TREE_INT_CST_HIGH (t);
+  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (t);
+  int ix = -1;
+  int limit = 0;
+
+  gcc_assert (!TREE_OVERFLOW (t));
+
+  switch (TREE_CODE (type))
+    {
+    case NULLPTR_TYPE:
+      gcc_assert (hi == 0 && low == 0);
+      /* Fallthru.  */
+
+    case POINTER_TYPE:
+    case REFERENCE_TYPE:
+      /* Cache NULL pointer.  */
+      if (!hi && !low)
+	{
+	  limit = 1;
+	  ix = 0;
+	}
+      break;
+
+    case BOOLEAN_TYPE:
+      /* Cache false or true.  */
+      limit = 2;
+      if (!hi && low < 2)
+	ix = low;
+      break;
+
+    case INTEGER_TYPE:
+    case OFFSET_TYPE:
+      if (TYPE_UNSIGNED (type))
+	{
+	  /* Cache 0..N */
+	  limit = INTEGER_SHARE_LIMIT;
+	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
+	    ix = low;
+	}
+      else
+	{
+	  /* Cache -1..N */
+	  limit = INTEGER_SHARE_LIMIT + 1;
+	  if (!hi && low < (unsigned HOST_WIDE_INT)INTEGER_SHARE_LIMIT)
+	    ix = low + 1;
+	  else if (hi == -1 && low == -(unsigned HOST_WIDE_INT)1)
+	    ix = 0;
+	}
+      break;
+
+    case ENUMERAL_TYPE:
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  if (ix >= 0)
+    {
+      /* Look for it in the type's vector of small shared ints.  */
+      if (!TYPE_CACHED_VALUES_P (type))
+	{
+	  TYPE_CACHED_VALUES_P (type) = 1;
+	  TYPE_CACHED_VALUES (type) = make_tree_vec (limit);
+	}
+
+      gcc_assert (TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) == NULL_TREE);
+      TREE_VEC_ELT (TYPE_CACHED_VALUES (type), ix) = t;
+    }
+  else
+    {
+      /* Use the cache of larger shared ints.  */
+      void **slot;
+
+      slot = htab_find_slot (int_cst_hash_table, t, INSERT);
+      /* If there is already an entry for the number verify it's the
+         same.  */
+      if (*slot)
+	{
+	  gcc_assert (TREE_INT_CST_LOW ((tree)*slot) == low
+		      && TREE_INT_CST_HIGH ((tree)*slot) == hi);
+	  return;
+	}
+      /* Otherwise insert this one into the hash table.  */
+      *slot = t;
+    }
+}
+
+
 /* Builds an integer constant in TYPE such that lowest BITS bits are ones
    and the rest are zeros.  */
 

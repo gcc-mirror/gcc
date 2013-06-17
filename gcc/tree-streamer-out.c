@@ -95,10 +95,10 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
     bp_pack_value (bp, TYPE_ARTIFICIAL (expr), 1);
   else
     bp_pack_value (bp, TREE_NO_WARNING (expr), 1);
-  bp_pack_value (bp, TREE_USED (expr), 1);
   bp_pack_value (bp, TREE_NOTHROW (expr), 1);
   bp_pack_value (bp, TREE_STATIC (expr), 1);
-  bp_pack_value (bp, TREE_PRIVATE (expr), 1);
+  if (TREE_CODE (expr) != TREE_BINFO)
+    bp_pack_value (bp, TREE_PRIVATE (expr), 1);
   bp_pack_value (bp, TREE_PROTECTED (expr), 1);
   bp_pack_value (bp, TREE_DEPRECATED (expr), 1);
   if (TYPE_P (expr))
@@ -298,12 +298,15 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);
   bp_pack_value (bp, TYPE_PACKED (expr), 1);
   bp_pack_value (bp, TYPE_RESTRICT (expr), 1);
-  bp_pack_value (bp, TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr), 2);
   bp_pack_value (bp, TYPE_USER_ALIGN (expr), 1);
   bp_pack_value (bp, TYPE_READONLY (expr), 1);
   bp_pack_var_len_unsigned (bp, TYPE_PRECISION (expr));
   bp_pack_var_len_unsigned (bp, TYPE_ALIGN (expr));
-  bp_pack_var_len_int (bp, TYPE_ALIAS_SET (expr) == 0 ? 0 : -1);
+  /* Make sure to preserve the fact whether the frontend would assign
+     alias-set zero to this type.  */
+  bp_pack_var_len_int (bp, (TYPE_ALIAS_SET (expr) == 0
+			    || (!in_lto_p
+				&& get_alias_set (expr) == 0)) ? 0 : -1);
 }
 
 
@@ -491,9 +494,10 @@ streamer_write_chain (struct output_block *ob, tree t, bool ref_p)
 	 to the global decls section as we do not want to have them
 	 enter decl merging.  This is, of course, only for the call
 	 for streaming BLOCK_VARS, but other callers are safe.  */
+      /* ???  FIXME wrt SCC streaming.  Drop these for now.  */
       if (VAR_OR_FUNCTION_DECL_P (t)
 	  && DECL_EXTERNAL (t))
-	stream_write_tree_shallow_non_ref (ob, t, ref_p);
+	; /* stream_write_tree_shallow_non_ref (ob, t, ref_p); */
       else
 	stream_write_tree (ob, t, ref_p);
 
@@ -553,7 +557,13 @@ static void
 write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
 				     bool ref_p)
 {
-  stream_write_tree (ob, DECL_NAME (expr), ref_p);
+  /* Drop names that were created for anonymous entities.  */
+  if (DECL_NAME (expr)
+      && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
+      && ANON_AGGRNAME_P (DECL_NAME (expr)))
+    stream_write_tree (ob, NULL_TREE, ref_p);
+  else
+    stream_write_tree (ob, DECL_NAME (expr), ref_p);
   stream_write_tree (ob, DECL_CONTEXT (expr), ref_p);
 }
 
@@ -716,7 +726,7 @@ write_ts_list_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
 {
   stream_write_tree (ob, TREE_PURPOSE (expr), ref_p);
   stream_write_tree (ob, TREE_VALUE (expr), ref_p);
-  streamer_write_chain (ob, TREE_CHAIN (expr), ref_p);
+  stream_write_tree (ob, TREE_CHAIN (expr), ref_p);
 }
 
 
@@ -841,6 +851,8 @@ void
 streamer_write_tree_body (struct output_block *ob, tree expr, bool ref_p)
 {
   enum tree_code code;
+
+  lto_stats.num_tree_bodies_output++;
 
   code = TREE_CODE (expr);
 

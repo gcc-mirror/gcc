@@ -4345,8 +4345,6 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 #define VFIELD_NAME "_vptr."
 #define VFIELD_NAME_FORMAT "_vptr.%s"
 
-#define ANON_AGGRNAME_FORMAT "._%d"
-
 #else /* NO_DOT_IN_LABEL */
 
 #ifndef NO_DOLLAR_IN_LABEL
@@ -4357,7 +4355,6 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 #define VFIELD_BASE "$vf"
 #define VFIELD_NAME "_vptr$"
 #define VFIELD_NAME_FORMAT "_vptr$%s"
-#define ANON_AGGRNAME_FORMAT "$_%d"
 
 #else /* NO_DOLLAR_IN_LABEL */
 
@@ -4375,12 +4372,6 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, \
 	    sizeof (VFIELD_NAME) - 1))
 #define VFIELD_NAME_FORMAT "__vptr_%s"
-
-#define ANON_AGGRNAME_PREFIX "__anon_"
-#define ANON_AGGRNAME_P(ID_NODE) \
-  (!strncmp (IDENTIFIER_POINTER (ID_NODE), ANON_AGGRNAME_PREFIX, \
-	     sizeof (ANON_AGGRNAME_PREFIX) - 1))
-#define ANON_AGGRNAME_FORMAT "__anon_%d"
 
 #endif	/* NO_DOLLAR_IN_LABEL */
 #endif	/* NO_DOT_IN_LABEL */
@@ -4418,11 +4409,6 @@ extern GTY(()) vec<tree, va_gc> *local_classes;
 #define VFIELD_NAME_P(ID_NODE) \
   (!strncmp (IDENTIFIER_POINTER (ID_NODE), VFIELD_NAME, sizeof(VFIELD_NAME)-1))
 
-/* For anonymous aggregate types, we need some sort of name to
-   hold on to.  In practice, this should not appear, but it should
-   not be harmful if it does.  */
-#define ANON_AGGRNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == JOINER \
-				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
 #endif /* !defined(NO_DOLLAR_IN_LABEL) || !defined(NO_DOT_IN_LABEL) */
 
 

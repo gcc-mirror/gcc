@@ -1,3 +1,38 @@
+2013-06-17  Richard Biener  <rguenther@suse.de>
+
+	* Make-lang.in (lto.o): Add $(DATA_STREAMER_H) dependency.
+	* lto.c: Include data-streamer.h.
+	(lto_read_in_decl_state): Use streamer_tree_cache_get_tree.
+	(gimple_type_leader_entry_s, gimple_type_leader,
+	gimple_lookup_type_leader): Remove.
+	(gtc_visit): Simplify.
+	(gimple_types_compatible_p): Likewise.
+	(gimple_register_type_1): Likewise.  Merge into ...
+	(gimple_register_type): ... this.  Keep it as legacy for
+	statistics purposes for now.
+	(fixup_integer_cst): Remove.
+	(LTO_FIXUP_TREE, lto_fixup_types, lto_ft_*): Simplify and
+	rename to ...
+	(MAYBE_REMEMBER_WITH_VARS, maybe_remember_with_vars,
+	maybe_remember_with_vars_*): ... these.
+	(uniquify_nodes): Remove.
+	(lto_fixup_prevailing_type): New function.
+	(struct tree_scc, struct tree_scc_hasher): New type and hasher.
+	(tree_scc_hash, tree_scc_hash_obstack): New globals.
+	(num_merged_types, num_prevailing_types, num_not_merged_types,
+	num_not_merged_types_in_same_scc, total_scc_size, num_sccs_read,
+	total_scc_size_merged, num_sccs_merged, num_scc_compares,
+	num_scc_compare_collisions): New global counters.
+	(compare_tree_sccs_1): New function.
+	(compare_tree_sccs): Likewise.
+	(unify_scc): Likewise.
+	(lto_read_decls): Stream in tree SCCs and unify them on the
+	way in.  Finalize prevailing SCC tree members.
+	(read_cgraph_and_symbols): Do not initialize or free gimple_type_leader.
+	Allocate and free tree_scc_hash_obstack and tree_scc_hash, do not bother
+	to ggc-collect during merging.
+	(print_lto_report_1): Adjust for new merging code.
+
 2013-06-12  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Set cgraph into streaming state.
