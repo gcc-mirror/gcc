@@ -1,3 +1,17 @@
+2013-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/16128
+	* g++.dg/template/error52.C: New.
+	* g++.dg/lookup/friend15.C: Update.
+	* g++.dg/parse/error11.C: Likewise.
+	* g++.dg/parse/error14.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/template25.C: Likewise.
+	* g++.old-deja/g++.jason/cond.C: Likewise.
+	* g++.old-deja/g++.mike/for2.C: Likewise.
+	* g++.old-deja/g++.robertl/eb125.C: Likewise.
+	* obj-c++.dg/property/dotsyntax-4.mm: Likewise.
+
 2013-06-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/unaligned-memcpy-2.c (dest): Initialize to
@@ -5,7 +19,7 @@
 
 2013-06-16  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
-	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of 
+	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of
 	accidentally placing minus sign for length instead of stride.
 
 2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
