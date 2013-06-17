@@ -798,19 +798,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return false;
 	  return true;
 	}
-
-#if __cplusplus > 201103L
-      template<typename _II1, typename _II2>
-        static bool
-        equal(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
-        {
-	  for (; __first1 != __last1 && __first2 != __last2;
-	      ++__first1, ++__first2)
-	    if (!(*__first1 == *__first2))
-	      return false;
-	  return true;
-	}
-#endif
     };
 
   template<>
@@ -823,17 +810,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return !__builtin_memcmp(__first1, __first2, sizeof(_Tp)
 				   * (__last1 - __first1));
 	}
-
-#if __cplusplus > 201103L
-      template<typename _Tp>
-        static bool
-        equal(const _Tp* __first1, const _Tp* __last1, const _Tp* __first2,
-	      const _Tp* __last2)
-        {
-	  return !__builtin_memcmp(__first1, __first2, sizeof(_Tp)
-				   * (__last1 - __first1));
-	}
-#endif
     };
 
   template<typename _II1, typename _II2>
@@ -850,66 +826,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       return std::__equal<__simple>::equal(__first1, __last1, __first2);
     }
-
-#if __cplusplus > 201103L
-  template<bool _BoolType>
-    struct __equal2
-    {
-      template<typename _It>
-	using _IterCat = typename iterator_traits<_It>::iterator_category;
-      template<typename _It>
-	using _IsRA = is_same<_IterCat<_It>, random_access_iterator_tag>;
-
-      template<typename _II1, typename _II2>
-        static bool
-        equal(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
-        {
-	  constexpr bool __ra_iters = _IsRA<_II1>() && _IsRA<_II2>();
-	  if (__ra_iters)
-	    {
-	      auto __d1 = std::distance(__first1, __last1);
-	      auto __d2 = std::distance(__first2, __last2);
-	      if (__d1 != __d2)
-		return false;
-	    }
-	  for (; __first1 != __last1 && __first2 != __last2;
-	       ++__first1, ++__first2)
-	    if (!(*__first1 == *__first2))
-	      return false;
-	  return __ra_iters || (__first1 == __last1 && __first2 == __last2);
-	}
-    };
-
-  template<>
-    struct __equal2<true>
-    {
-      template<typename _Tp>
-        static bool
-        equal(const _Tp* __first1, const _Tp* __last1, const _Tp* __first2,
-	      const _Tp* __last2)
-        {
-	  if ((__last1 - __first1) != (__last2 - __first2))
-	    return false;
-	  return !__builtin_memcmp(__first1, __first2, sizeof(_Tp)
-				   * (__last1 - __first1));
-	}
-    };
-
-  template<typename _II1, typename _II2>
-    inline bool
-    __equal2_aux(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
-    {
-      typedef typename iterator_traits<_II1>::value_type _ValueType1;
-      typedef typename iterator_traits<_II2>::value_type _ValueType2;
-      const bool __simple = ((__is_integer<_ValueType1>::__value
-			      || __is_pointer<_ValueType1>::__value)
-	                     && __is_pointer<_II1>::__value
-	                     && __is_pointer<_II2>::__value
-			     && __are_same<_ValueType1, _ValueType2>::__value);
-
-      return __equal2<__simple>::equal(__first1, __last1, __first2, __last2);
-    }
-#endif
 
   template<typename, typename>
     struct __lc_rai
@@ -1174,10 +1090,23 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      return std::__equal2_aux(std::__niter_base(__first1),
-			       std::__niter_base(__last1),
-			       std::__niter_base(__first2),
-			       std::__niter_base(__last2));
+      using _RATag = random_access_iterator_tag;
+      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
+      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
+      if (_RAIters())
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	  return std::equal(__first1, __last1, __first2);
+	}
+
+      for (; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
+	if (!(*__first1 == *__first2))
+	  return false;
+      return __first1 == __last1 && __first2 == __last2;
     }
 
   /**
@@ -1207,23 +1136,23 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
+      using _RATag = random_access_iterator_tag;
       using _Cat1 = typename iterator_traits<_IIter1>::iterator_category;
       using _Cat2 = typename iterator_traits<_IIter2>::iterator_category;
-      using _IIter1_is_RA = is_same<_Cat1, random_access_iterator_tag>;
-      using _IIter2_is_RA = is_same<_Cat2, random_access_iterator_tag>;
-      constexpr bool __ra_iters = _IIter1_is_RA() && _IIter1_is_RA();
-      if (__ra_iters)
+      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
+      if (_RAIters())
 	{
 	  auto __d1 = std::distance(__first1, __last1);
 	  auto __d2 = std::distance(__first2, __last2);
 	  if (__d1 != __d2)
 	    return false;
+	  return std::equal(__first1, __last1, __first2, __binary_pred);
 	}
 
       for (; __first1 != __last1 && __first2 != __last2; ++__first1, ++__first2)
 	if (!bool(__binary_pred(*__first1, *__first2)))
 	  return false;
-      return __ra_iters || (__first1 == __last1 && __first2 == __last2);
+      return __first1 == __last1 && __first2 == __last2;
     }
 #endif
 
