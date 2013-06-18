@@ -523,6 +523,14 @@ class Type
   static Type*
   make_forward_declaration(Named_object*);
 
+  // Make a builtin struct type from a list of fields.
+  static Struct_type*
+  make_builtin_struct_type(int nfields, ...);
+
+  // Make a builtin named type.
+  static Named_type*
+  make_builtin_named_type(const char* name, Type* type);
+
   // Traverse a type.
   static int
   traverse(Type*, Traverse*);
@@ -1034,14 +1042,6 @@ class Type
   Expression*
   type_descriptor_constructor(Gogo*, int runtime_type_kind, Named_type*,
 			      const Methods*, bool only_value_methods);
-
-  // Make a builtin struct type from a list of fields.
-  static Struct_type*
-  make_builtin_struct_type(int nfields, ...);
-
-  // Make a builtin named type.
-  static Named_type*
-  make_builtin_named_type(const char* name, Type* type);
 
   // For the benefit of child class reflection string generation.
   void
@@ -1796,7 +1796,7 @@ class Function_type : public Type
   int
   do_traverse(Traverse*);
 
-  // A trampoline function has a pointer which matters for GC.
+  // A function descriptor may be allocated on the heap.
   bool
   do_has_pointer() const
   { return true; }

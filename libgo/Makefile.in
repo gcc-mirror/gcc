@@ -208,7 +208,7 @@ am__objects_5 = go-append.lo go-assert.lo go-assert-interface.lo \
 	go-reflect-call.lo go-reflect-map.lo go-rune.lo \
 	go-runtime-error.lo go-setenv.lo go-signal.lo go-strcmp.lo \
 	go-string-to-byte-array.lo go-string-to-int-array.lo \
-	go-strplus.lo go-strslice.lo go-traceback.lo go-trampoline.lo \
+	go-strplus.lo go-strslice.lo go-traceback.lo \
 	go-type-complex.lo go-type-eface.lo go-type-error.lo \
 	go-type-float.lo go-type-identity.lo go-type-interface.lo \
 	go-type-string.lo go-typedesc-equal.lo go-typestring.lo \
@@ -822,7 +822,6 @@ runtime_files = \
 	runtime/go-strplus.c \
 	runtime/go-strslice.c \
 	runtime/go-traceback.c \
-	runtime/go-trampoline.c \
 	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
 	runtime/go-type-error.c \
@@ -2519,7 +2518,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strplus.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-strslice.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-traceback.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-trampoline.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-complex.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-eface.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/go-type-error.Plo@am__quote@
@@ -2958,13 +2956,6 @@ go-traceback.lo: runtime/go-traceback.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-traceback.c' object='go-traceback.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-traceback.lo `test -f 'runtime/go-traceback.c' || echo '$(srcdir)/'`runtime/go-traceback.c
-
-go-trampoline.lo: runtime/go-trampoline.c
-@am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-trampoline.lo -MD -MP -MF $(DEPDIR)/go-trampoline.Tpo -c -o go-trampoline.lo `test -f 'runtime/go-trampoline.c' || echo '$(srcdir)/'`runtime/go-trampoline.c
-@am__fastdepCC_TRUE@	$(am__mv) $(DEPDIR)/go-trampoline.Tpo $(DEPDIR)/go-trampoline.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='runtime/go-trampoline.c' object='go-trampoline.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o go-trampoline.lo `test -f 'runtime/go-trampoline.c' || echo '$(srcdir)/'`runtime/go-trampoline.c
 
 go-type-complex.lo: runtime/go-type-complex.c
 @am__fastdepCC_TRUE@	$(LIBTOOL)  --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT go-type-complex.lo -MD -MP -MF $(DEPDIR)/go-type-complex.Tpo -c -o go-type-complex.lo `test -f 'runtime/go-type-complex.c' || echo '$(srcdir)/'`runtime/go-type-complex.c

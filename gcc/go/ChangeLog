@@ -1,3 +1,9 @@
+2013-06-18  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::immutable_struct): Add is_hidden
+	parameter.
+	(Gcc_backend::immutable_struct_set_init): Likewise.
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.

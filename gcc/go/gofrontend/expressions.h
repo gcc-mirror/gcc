@@ -67,6 +67,8 @@ class Expression
     EXPRESSION_SET_AND_USE_TEMPORARY,
     EXPRESSION_SINK,
     EXPRESSION_FUNC_REFERENCE,
+    EXPRESSION_FUNC_DESCRIPTOR,
+    EXPRESSION_FUNC_CODE_REFERENCE,
     EXPRESSION_UNKNOWN_REFERENCE,
     EXPRESSION_BOOLEAN,
     EXPRESSION_STRING,
@@ -150,9 +152,24 @@ class Expression
   static Expression*
   make_sink(Location);
 
-  // Make a reference to a function in an expression.
+  // Make a reference to a function in an expression.  This returns a
+  // pointer to the struct holding the address of the function
+  // followed by any closed-over variables.
   static Expression*
   make_func_reference(Named_object*, Expression* closure, Location);
+
+  // Make a function descriptor, an immutable struct with a single
+  // field that points to the function code.  This may only be used
+  // with functions that do not have closures.  FN is the function for
+  // which we are making the descriptor.  DFN is the descriptor
+  // function wrapper.
+  static Expression*
+  make_func_descriptor(Named_object* fn, Named_object* dfn);
+
+  // Make a reference to the code of a function.  This is used to set
+  // descriptor and closure fields.
+  static Expression*
+  make_func_code_reference(Named_object*, Location);
 
   // Make a reference to an unknown name.  In a correct program this
   // will always be lowered to a real const/var/func reference.
@@ -522,6 +539,11 @@ class Expression
   // Return true if this is a reference to a local variable.
   bool
   is_local_variable() const;
+
+  // Make the builtin function descriptor type, so that it can be
+  // converted.
+  static void
+  make_func_descriptor_type();
 
   // Traverse an expression.
   static int
@@ -1484,7 +1506,7 @@ class Func_expression : public Expression
   { }
 
   // Return the object associated with the function.
-  const Named_object*
+  Named_object*
   named_object() const
   { return this->function_; }
 
@@ -1494,13 +1516,16 @@ class Func_expression : public Expression
   closure()
   { return this->closure_; }
 
-  // Return a tree for this function without evaluating the closure.
-  tree
-  get_tree_without_closure(Gogo*);
+  // Return a tree for the code for a function.
+  static tree
+  get_code_pointer(Gogo*, Named_object* function, Location loc);
 
  protected:
   int
   do_traverse(Traverse*);
+
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Type*
   do_type();
@@ -1532,8 +1557,8 @@ class Func_expression : public Expression
   // The function itself.
   Named_object* function_;
   // A closure.  This is normally NULL.  For a nested function, it may
-  // be a heap-allocated struct holding pointers to all the variables
-  // referenced by this function and defined in enclosing functions.
+  // be a struct holding pointers to all the variables referenced by
+  // this function and defined in enclosing functions.
   Expression* closure_;
 };
 

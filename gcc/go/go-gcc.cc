@@ -287,10 +287,10 @@ class Gcc_backend : public Backend
 		     Location, Bstatement**);
 
   Bvariable*
-  immutable_struct(const std::string&, bool, Btype*, Location);
+  immutable_struct(const std::string&, bool, bool, Btype*, Location);
 
   void
-  immutable_struct_set_init(Bvariable*, const std::string&, bool, Btype*,
+  immutable_struct_set_init(Bvariable*, const std::string&, bool, bool, Btype*,
 			    Location, Bexpression*);
 
   Bvariable*
@@ -1454,8 +1454,8 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 // Create a named immutable initialized data structure.
 
 Bvariable*
-Gcc_backend::immutable_struct(const std::string& name, bool, Btype* btype,
-			      Location location)
+Gcc_backend::immutable_struct(const std::string& name, bool, bool,
+			      Btype* btype, Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -1482,7 +1482,7 @@ Gcc_backend::immutable_struct(const std::string& name, bool, Btype* btype,
 
 void
 Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
-				       bool is_common, Btype*,
+				       bool is_hidden, bool is_common, Btype*,
 				       Location,
 				       Bexpression* initializer)
 {
@@ -1495,7 +1495,10 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 
   // We can't call make_decl_one_only until we set DECL_INITIAL.
   if (!is_common)
-    TREE_PUBLIC(decl) = 1;
+    {
+      if (!is_hidden)
+	TREE_PUBLIC(decl) = 1;
+    }
   else
     {
       make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
