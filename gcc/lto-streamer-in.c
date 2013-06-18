@@ -1305,7 +1305,7 @@ lto_data_in_create (struct lto_file_decl_data *file_data, const char *strings,
   data_in->strings = strings;
   data_in->strings_len = len;
   data_in->globals_resolution = resolutions;
-  data_in->reader_cache = streamer_tree_cache_create (false);
+  data_in->reader_cache = streamer_tree_cache_create (false, false);
 
   return data_in;
 }

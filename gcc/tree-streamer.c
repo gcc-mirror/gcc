@@ -197,7 +197,10 @@ streamer_tree_cache_replace_tree (struct streamer_tree_cache_d *cache,
   hashval_t hash = 0;
   if (cache->hashes.exists ())
     hash = streamer_tree_cache_get_hash (cache, ix);
-  streamer_tree_cache_insert_1 (cache, t, hash, &ix, false);
+  if (!cache->node_map)
+    streamer_tree_cache_add_to_node_array (cache, ix, t, hash);
+  else
+    streamer_tree_cache_insert_1 (cache, t, hash, &ix, false);
 }
 
 
@@ -208,7 +211,10 @@ streamer_tree_cache_append (struct streamer_tree_cache_d *cache,
 			    tree t, hashval_t hash)
 {
   unsigned ix = cache->nodes.length ();
-  streamer_tree_cache_insert_1 (cache, t, hash, &ix, false);
+  if (!cache->node_map)
+    streamer_tree_cache_add_to_node_array (cache, ix, t, hash);
+  else
+    streamer_tree_cache_insert_1 (cache, t, hash, &ix, false);
 }
 
 /* Return true if tree node T exists in CACHE, otherwise false.  If IX_P is
@@ -319,13 +325,14 @@ preload_common_nodes (struct streamer_tree_cache_d *cache)
 /* Create a cache of pickled nodes.  */
 
 struct streamer_tree_cache_d *
-streamer_tree_cache_create (bool with_hashes)
+streamer_tree_cache_create (bool with_hashes, bool with_map)
 {
   struct streamer_tree_cache_d *cache;
 
   cache = XCNEW (struct streamer_tree_cache_d);
 
-  cache->node_map = pointer_map_create ();
+  if (with_map)
+    cache->node_map = pointer_map_create ();
   cache->nodes.create (165);
   if (with_hashes)
     cache->hashes.create (165);
@@ -347,7 +354,8 @@ streamer_tree_cache_delete (struct streamer_tree_cache_d *c)
   if (c == NULL)
     return;
 
-  pointer_map_destroy (c->node_map);
+  if (c->node_map)
+    pointer_map_destroy (c->node_map);
   c->nodes.release ();
   c->hashes.release ();
   free (c);

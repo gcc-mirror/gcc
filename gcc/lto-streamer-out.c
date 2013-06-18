@@ -71,7 +71,7 @@ create_output_block (enum lto_section_type section_type)
   ob->decl_state = lto_get_out_decl_state ();
   ob->main_stream = XCNEW (struct lto_output_stream);
   ob->string_stream = XCNEW (struct lto_output_stream);
-  ob->writer_cache = streamer_tree_cache_create (!flag_wpa);
+  ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true);
 
   if (section_type == LTO_section_function_body)
     ob->cfg_stream = XCNEW (struct lto_output_stream);

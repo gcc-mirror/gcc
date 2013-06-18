@@ -1608,7 +1608,8 @@ register_resolution (struct lto_file_decl_data *file_data, tree decl,
    different files.  */
 
 static void
-lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
+lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl,
+				 unsigned ix)
 {
   tree context;
 
@@ -1616,19 +1617,13 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
   if (!TREE_PUBLIC (decl)
       && !((context = decl_function_context (decl))
 	   && auto_var_in_fn_p (decl, context)))
-    {
-      rest_of_decl_compilation (decl, 1, 0);
-    }
+    rest_of_decl_compilation (decl, 1, 0);
 
   /* If this variable has already been declared, queue the
      declaration for merging.  */
   if (TREE_PUBLIC (decl))
-    {
-      unsigned ix;
-      if (!streamer_tree_cache_lookup (data_in->reader_cache, decl, &ix))
-	gcc_unreachable ();
-      register_resolution (data_in->file_data, decl, get_resolution (data_in, ix));
-    }
+    register_resolution (data_in->file_data,
+			 decl, get_resolution (data_in, ix));
 }
 
 
@@ -1638,17 +1633,14 @@ lto_register_var_decl_in_symtab (struct data_in *data_in, tree decl)
    file being read.  */
 
 static void
-lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl)
+lto_register_function_decl_in_symtab (struct data_in *data_in, tree decl,
+				      unsigned ix)
 {
   /* If this variable has already been declared, queue the
      declaration for merging.  */
   if (TREE_PUBLIC (decl) && !DECL_ABSTRACT (decl))
-    {
-      unsigned ix;
-      if (!streamer_tree_cache_lookup (data_in->reader_cache, decl, &ix))
-	gcc_unreachable ();
-      register_resolution (data_in->file_data, decl, get_resolution (data_in, ix));
-    }
+    register_resolution (data_in->file_data,
+			 decl, get_resolution (data_in, ix));
 }
 
 
@@ -2259,6 +2251,19 @@ compare_tree_sccs (tree_scc *pscc, tree_scc *scc,
   return false;
 }
 
+/* QSort sort function to sort a map of two pointers after the 2nd
+   pointer.  */
+
+static int
+cmp_tree (const void *p1_, const void *p2_)
+{
+  tree *p1 = (tree *)(const_cast<void *>(p1_));
+  tree *p2 = (tree *)(const_cast<void *>(p2_));
+  if (p1[1] == p2[1])
+    return 0;
+  return ((uintptr_t)p1[1] < (uintptr_t)p2[1]) ? -1 : 1;
+}
+
 /* Try to unify the SCC with nodes FROM to FROM + LEN in CACHE and
    hash value SCC_HASH with an already recorded SCC.  Return true if
    that was successful, otherwise return false.  */
@@ -2323,29 +2328,47 @@ unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
 	  num_sccs_merged++;
 	  total_scc_size_merged += len;
 
-	  /* Fixup the streamer cache with the prevailing nodes according
-	     to the tree node mapping computed by compare_tree_sccs.  */
+#ifdef ENABLE_CHECKING
 	  for (unsigned i = 0; i < len; ++i)
 	    {
 	      tree t = map[2*i+1];
 	      enum tree_code code = TREE_CODE (t);
-	      unsigned ix;
-	      bool r;
 	      /* IDENTIFIER_NODEs should be singletons and are merged by the
 		 streamer.  The others should be singletons, too, and we
 		 should not merge them in any way.  */
 	      gcc_assert (code != TRANSLATION_UNIT_DECL
 			  && code != IDENTIFIER_NODE
 			  && !streamer_handle_as_builtin_p (t));
-	      r = streamer_tree_cache_lookup (cache, t, &ix);
-	      gcc_assert (r && ix >= from);
-	      streamer_tree_cache_replace_tree (cache, map[2 * i], ix);
-	      if (TYPE_P (t))
-		num_merged_types++;
 	    }
+#endif
+
+	  /* Fixup the streamer cache with the prevailing nodes according
+	     to the tree node mapping computed by compare_tree_sccs.  */
+	  if (len == 1)
+	    streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
+	  else
+	    {
+	      tree *map2 = XALLOCAVEC (tree, 2 * len);
+	      for (unsigned i = 0; i < len; ++i)
+		{
+		  map2[i*2] = (tree)(uintptr_t)(from + i);
+		  map2[i*2+1] = scc->entries[i];
+		}
+	      qsort (map2, len, 2 * sizeof (tree), cmp_tree);
+	      qsort (map, len, 2 * sizeof (tree), cmp_tree);
+	      for (unsigned i = 0; i < len; ++i)
+		streamer_tree_cache_replace_tree (cache, map[2*i],
+						  (uintptr_t)map2[2*i]);
+	    }
+
 	  /* Free the tree nodes from the read SCC.  */
 	  for (unsigned i = 0; i < len; ++i)
-	    ggc_free (scc->entries[i]);
+	    {
+	      if (TYPE_P (scc->entries[i]))
+		num_merged_types++;
+	      ggc_free (scc->entries[i]);
+	    }
+
 	  break;
 	}
 
@@ -2493,10 +2516,10 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		  /* Register variables and functions with the
 		     symbol table.  */
 		  if (TREE_CODE (t) == VAR_DECL)
-		    lto_register_var_decl_in_symtab (data_in, t);
+		    lto_register_var_decl_in_symtab (data_in, t, from + i);
 		  else if (TREE_CODE (t) == FUNCTION_DECL
 			   && !DECL_BUILT_IN (t))
-		    lto_register_function_decl_in_symtab (data_in, t);
+		    lto_register_function_decl_in_symtab (data_in, t, from + i);
 		  /* Scan the tree for references to global functions or
 		     variables and record those for later fixup.  */
 		  maybe_remember_with_vars (t);
