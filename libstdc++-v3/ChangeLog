@@ -1,3 +1,13 @@
+2013-06-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57641
+	* include/std/mutex (timed_mutex, recursive_timed_mutex): Move common
+	functionality to new __timed_mutex_impl mixin. Overload try_lock_until
+	to handle conversion between different clocks. Replace constrained
+	__try_lock_for_impl overloads with conditional increment.
+	* include/std/shared_mutex (shared_mutex::_Mutex): Use the new mixin.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: New.
+
 2013-06-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
 	    Chris Jefferson  <chris@bubblescope.net>
 

@@ -56,55 +56,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class shared_mutex
   {
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
-    struct _Mutex : mutex
+    struct _Mutex : mutex, __timed_mutex_impl<_Mutex>
     {
-      typedef chrono::steady_clock 	  	__clock_t;
-
-      template <class _Rep, class _Period>
+      template<typename _Rep, typename _Period>
 	bool
 	try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
-	{ return __try_lock_for_impl(__rtime); }
+	{ return _M_try_lock_for(__rtime); }
 
-      template <class _Clock, class _Duration>
+      template<typename _Clock, typename _Duration>
 	bool
 	try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
-	{
-	  chrono::time_point<_Clock, chrono::seconds> __s =
-	    chrono::time_point_cast<chrono::seconds>(__atime);
-
-	  chrono::nanoseconds __ns =
-	    chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	  __gthread_time_t __ts = {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
-
-	  return !__gthread_mutex_timedlock(native_handle(), &__ts);
-	}
-
-    private:
-      template<typename _Rep, typename _Period>
-	typename enable_if<
-	  ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-	__try_lock_for_impl(const chrono::duration<_Rep, _Period>& __rtime)
-	{
-	  __clock_t::time_point __atime = __clock_t::now()
-	    + chrono::duration_cast<__clock_t::duration>(__rtime);
-
-	  return try_lock_until(__atime);
-	}
-
-      template <typename _Rep, typename _Period>
-	typename enable_if<
-	  !ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-	__try_lock_for_impl(const chrono::duration<_Rep, _Period>& __rtime)
-	{
-	  __clock_t::time_point __atime = __clock_t::now()
-	    + ++chrono::duration_cast<__clock_t::duration>(__rtime);
-
-	  return try_lock_until(__atime);
-	}
+	{ return _M_try_lock_until(__atime); }
     };
 #else
     typedef mutex _Mutex;
