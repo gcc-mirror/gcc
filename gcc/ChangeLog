@@ -1,5 +1,23 @@
 2013-06-18  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (LTO_STREAMER_H): Add pointer-set.h dependency.
+	* lto-streamer.h: Include pointer-set.h.
+	(struct lto_decl_slot): Remove.
+	(struct lto_tree_ref_encoder): Make tree_hash_table a pointer-map.
+	Remove next_index entry.
+	(lto_hash_decl_slot_node, lto_eq_decl_slot_node,
+	lto_hash_type_slot_node, lto_eq_type_slot_node): Remove.
+	(lto_init_tree_ref_encoder): Adjust.
+	(lto_destroy_tree_ref_encoder): Likewise.
+	* lto-section-out.c (lto_hash_decl_slot_node, lto_eq_decl_slot_node,
+	lto_hash_type_slot_node, lto_eq_type_slot_node): Remove.
+	(lto_output_decl_index): Adjust.
+	(lto_new_out_decl_state): Likewise.
+	(lto_record_function_out_decl_state): Likewise.
+	* lto-streamer-out.c (copy_function): Likewise.
+
+2013-06-18  Richard Biener  <rguenther@suse.de>
+
 	* Makefile.in (cgraphunit.o): Add $(CFGLOOP_H) dependency.
 	* cgraphunit.c: Include cfgloop.h.
 	(init_lowered_empty_function): Initialize the loop tree.
