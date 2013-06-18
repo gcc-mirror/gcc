@@ -48,59 +48,7 @@ static vec<lto_out_decl_state_ptr> decl_state_stack;
    generate the decl directory later. */
 
 vec<lto_out_decl_state_ptr> lto_function_decl_states;
-/* Returns a hash code for P.  */
 
-hashval_t
-lto_hash_decl_slot_node (const void *p)
-{
-  const struct lto_decl_slot *ds = (const struct lto_decl_slot *) p;
-
-  /*
-    return (hashval_t) DECL_UID (ds->t);
-  */
-  return (hashval_t) TREE_HASH (ds->t);
-}
-
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-int
-lto_eq_decl_slot_node (const void *p1, const void *p2)
-{
-  const struct lto_decl_slot *ds1 =
-    (const struct lto_decl_slot *) p1;
-  const struct lto_decl_slot *ds2 =
-    (const struct lto_decl_slot *) p2;
-
-  /*
-  return DECL_UID (ds1->t) == DECL_UID (ds2->t);
-  */
-  return ds1->t == ds2->t;
-}
-
-
-/* Returns a hash code for P.  */
-
-hashval_t
-lto_hash_type_slot_node (const void *p)
-{
-  const struct lto_decl_slot *ds = (const struct lto_decl_slot *) p;
-  return (hashval_t) TYPE_UID (ds->t);
-}
-
-
-/* Returns nonzero if P1 and P2 are equal.  */
-
-int
-lto_eq_type_slot_node (const void *p1, const void *p2)
-{
-  const struct lto_decl_slot *ds1 =
-    (const struct lto_decl_slot *) p1;
-  const struct lto_decl_slot *ds2 =
-    (const struct lto_decl_slot *) p2;
-
-  return TYPE_UID (ds1->t) == TYPE_UID (ds2->t);
-}
 
 /*****************************************************************************
    Output routines shared by all of the serialization passes.
@@ -278,29 +226,19 @@ lto_output_decl_index (struct lto_output_stream *obs,
 		       tree name, unsigned int *this_index)
 {
   void **slot;
-  struct lto_decl_slot d_slot;
   int index;
   bool new_entry_p = FALSE;
 
-  d_slot.t = name;
-  slot = htab_find_slot (encoder->tree_hash_table, &d_slot, INSERT);
+  slot = pointer_map_insert (encoder->tree_hash_table, name);
   if (*slot == NULL)
     {
-      struct lto_decl_slot *new_slot
-	= (struct lto_decl_slot *) xmalloc (sizeof (struct lto_decl_slot));
-      index = encoder->next_index++;
-
-      new_slot->t = name;
-      new_slot->slot_num = index;
-      *slot = new_slot;
+      index = encoder->trees.length ();
+      *slot = (void *)(uintptr_t) index;
       encoder->trees.safe_push (name);
       new_entry_p = TRUE;
     }
   else
-    {
-      struct lto_decl_slot *old_slot = (struct lto_decl_slot *)*slot;
-      index = old_slot->slot_num;
-    }
+    index = (uintptr_t) *slot;
 
   if (obs)
     streamer_write_uhwi_stream (obs, index);
@@ -440,23 +378,9 @@ lto_new_out_decl_state (void)
 {
   struct lto_out_decl_state *state = XCNEW (struct lto_out_decl_state);
   int i;
-  htab_hash hash_fn;
-  htab_eq eq_fn;
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
-    {
-      if (i == LTO_DECL_STREAM_TYPE)
-	{
-	  hash_fn = lto_hash_type_slot_node;
-	  eq_fn = lto_eq_type_slot_node;
-	}
-      else
-	{
-	  hash_fn = lto_hash_decl_slot_node;
-	  eq_fn = lto_eq_decl_slot_node;
-	}
-      lto_init_tree_ref_encoder (&state->streams[i], hash_fn, eq_fn);
-    }
+    lto_init_tree_ref_encoder (&state->streams[i]);
 
   return state;
 }
@@ -514,7 +438,7 @@ lto_record_function_out_decl_state (tree fn_decl,
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     if (state->streams[i].tree_hash_table)
       {
-	htab_delete (state->streams[i].tree_hash_table);
+	pointer_map_destroy (state->streams[i].tree_hash_table);
 	state->streams[i].tree_hash_table = NULL;
       }
   state->fn_decl = fn_decl;
