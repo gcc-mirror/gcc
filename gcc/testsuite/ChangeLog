@@ -1,3 +1,9 @@
+2013-06-18  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/i386/inline_error.c: New test.
+	* gcc.c-torture/compile/pr44043.c: Fix test to expect an error.
+	* gcc.c-torture/compile/pr43791.c: Fix test to expect an error.
+
 2013-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53211
