@@ -5384,6 +5384,48 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
   return false;
 }
 
+/* Return alignment of TYPE.  Existing alignment is ALIGN.  HOW
+   selects whether the alignment is abi mandated, optional, or
+   both abi and optional alignment.  */
+   
+unsigned int
+rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
+{
+  if (how != align_opt)
+    {
+      if (TREE_CODE (type) == VECTOR_TYPE)
+	{
+	  if ((TARGET_SPE && SPE_VECTOR_MODE (TYPE_MODE (type)))
+	      || (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (TYPE_MODE (type))))
+	    {
+	      if (align < 64)
+		align = 64;
+	    }
+	  else if (align < 128)
+	    align = 128;
+	}
+      else if (TARGET_E500_DOUBLE
+	       && TREE_CODE (type) == REAL_TYPE
+	       && TYPE_MODE (type) == DFmode)
+	{
+	  if (align < 64)
+	    align = 64;
+	}
+    }
+
+  if (how != align_abi)
+    {
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_MODE (TREE_TYPE (type)) == QImode)
+	{
+	  if (align < BITS_PER_WORD)
+	    align = BITS_PER_WORD;
+	}
+    }
+
+  return align;
+}
+
 /* AIX increases natural record alignment to doubleword if the first
    field is an FP double while the FP fields remain word aligned.  */
 
