@@ -87,28 +87,26 @@
 ;; 32-bit multiplies
 (define_insn_reservation "cortex_a15_mult32" 3
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "mult")
-	    (and (eq_attr "neon_type" "none")
-		 (eq_attr "mul64" "no"))))
+       (and (eq_attr "mul32" "yes")
+	    (eq_attr "neon_type" "none")))
   "ca15_issue1,ca15_mx")
 
 ;; 64-bit multiplies
 (define_insn_reservation "cortex_a15_mult64" 4
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "mult")
-	    (and (eq_attr "neon_type" "none")
-		 (eq_attr "mul64" "yes"))))
+       (and (eq_attr "mul64" "yes")
+	    (eq_attr "neon_type" "none")))
   "ca15_issue1,ca15_mx*2")
 
 ;; Integer divide
 (define_insn_reservation "cortex_a15_udiv" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "insn" "udiv"))
+       (eq_attr "type" "udiv"))
   "ca15_issue1,ca15_mx")
 
 (define_insn_reservation "cortex_a15_sdiv" 10
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "insn" "sdiv"))
+       (eq_attr "type" "sdiv"))
   "ca15_issue1,ca15_mx")
 
 ;; Block all issue pipes for a cycle

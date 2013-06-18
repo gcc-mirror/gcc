@@ -128,32 +128,32 @@
 
 (define_insn_reservation "cortex_r4_mul_4" 4
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "mul,smmul"))
+       (eq_attr "type" "mul,smmul"))
   "cortex_r4_mul_2")
 
 (define_insn_reservation "cortex_r4_mul_3" 3
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "smulxy,smulwy,smuad,smusd"))
+       (eq_attr "type" "smulxy,smulwy,smuad,smusd"))
   "cortex_r4_mul")
 
 (define_insn_reservation "cortex_r4_mla_4" 4
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "mla,smmla"))
+       (eq_attr "type" "mla,smmla"))
   "cortex_r4_mul_2")
 
 (define_insn_reservation "cortex_r4_mla_3" 3
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "smlaxy,smlawy,smlad,smlsd"))
+       (eq_attr "type" "smlaxy,smlawy,smlad,smlsd"))
   "cortex_r4_mul")
 
 (define_insn_reservation "cortex_r4_smlald" 3
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "smlald,smlsld"))
+       (eq_attr "type" "smlald,smlsld"))
   "cortex_r4_mul")
 
 (define_insn_reservation "cortex_r4_mull" 4
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "smull,umull,umlal,umaal"))
+       (eq_attr "type" "smull,umull,umlal,umaal"))
   "cortex_r4_mul_2")
 
 ;; A multiply or an MLA with a single-register result, followed by an
@@ -196,12 +196,12 @@
 ;; This gives a latency of nine for udiv and ten for sdiv.
 (define_insn_reservation "cortex_r4_udiv" 9
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "udiv"))
+       (eq_attr "type" "udiv"))
   "cortex_r4_div_9")
 
 (define_insn_reservation "cortex_r4_sdiv" 10
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "insn" "sdiv"))
+       (eq_attr "type" "sdiv"))
   "cortex_r4_div_10")
 
 ;; Branches.  We assume correct prediction.

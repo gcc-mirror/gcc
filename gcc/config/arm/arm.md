@@ -250,7 +250,7 @@
 ;; scheduling information.
 
 (define_attr "insn"
-        "mov,mvn,smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals,smlawy,smuad,smuadx,smlad,smladx,smusd,smusdx,smlsd,smlsdx,smmul,smmulr,smmla,umaal,smlald,smlsld,clz,mrs,msr,xtab,sdiv,udiv,sat,other"
+        "mov,mvn,clz,mrs,msr,xtab,sat,other"
         (const_string "other"))
 
 ; TYPE attribute is used to detect floating point instructions which, if
@@ -274,7 +274,6 @@
 ;		regs, but has a source operand shifted by a constant
 ; alu_shift_reg	any data instruction that doesn't hit memory or fp
 ;		regs, but has a source operand shifted by a register value
-; mult		a multiply instruction
 ; block		blockage insn, this blocks all functional units
 ; float		a floating point arithmetic operation (subject to expansion)
 ; fdivd		DFmode floating point division
@@ -304,7 +303,6 @@
   simple_alu_shift,\
   alu_shift,\
   alu_shift_reg,\
-  mult,\
   block,\
   float,\
   fdivd,\
@@ -348,18 +346,57 @@
   ffarithd,\
   fcmps,\
   fcmpd,\
-  fcpys"
- (if_then_else 
-    (eq_attr "insn" "smulxy,smlaxy,smlalxy,smulwy,smlawx,mul,muls,mla,mlas,\
-	     	     umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
-    (const_string "mult")
-    (const_string "alu_reg")))
+  fcpys,\
+  smulxy,\
+  smlaxy,\
+  smlalxy,\
+  smulwy,\
+  smlawx,\
+  mul,\
+  muls,\
+  mla,\
+  mlas,\
+  umull,\
+  umulls,\
+  umlal,\
+  umlals,\
+  smull,\
+  smulls,\
+  smlal,\
+  smlals,\
+  smlawy,\
+  smuad,\
+  smuadx,\
+  smlad,\
+  smladx,\
+  smusd,\
+  smusdx,\
+  smlsd,\
+  smlsdx,\
+  smmul,\
+  smmulr,\
+  smmla,\
+  umaal,\
+  smlald,\
+  smlsld,\
+  sdiv,\
+  udiv"
+  (const_string "alu_reg"))
+
+; Is this an (integer side) multiply with a 32-bit (or smaller) result?
+(define_attr "mul32" "no,yes"
+  (if_then_else
+    (eq_attr "type"
+     "smulxy,smlaxy,smulwy,smlawx,mul,muls,mla,mlas,smlawy,smuad,smuadx,\
+      smlad,smladx,smusd,smusdx,smlsd,smlsdx,smmul,smmulr,smmla,smlald,smlsld")
+    (const_string "yes")
+    (const_string "no")))
 
 ; Is this an (integer side) multiply with a 64-bit result?
 (define_attr "mul64" "no,yes"
   (if_then_else
-    (eq_attr "insn"
-     "smlalxy,umull,umulls,umlal,umlals,smull,smulls,smlal,smlals")
+    (eq_attr "type"
+     "smlalxy,umull,umulls,umaal,umlal,umlals,smull,smulls,smlal,smlals")
     (const_string "yes")
     (const_string "no")))
 
@@ -1484,7 +1521,7 @@
 		 (match_operand:SI 1 "s_register_operand" "%0,r")))]
   "TARGET_32BIT && !arm_arch6"
   "mul%?\\t%0, %2, %1"
-  [(set_attr "insn" "mul")
+  [(set_attr "type" "mul")
    (set_attr "predicable" "yes")]
 )
 
@@ -1494,7 +1531,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r")))]
   "TARGET_32BIT && arm_arch6"
   "mul%?\\t%0, %1, %2"
-  [(set_attr "insn" "mul")
+  [(set_attr "type" "mul")
    (set_attr "predicable" "yes")]
 )
 
@@ -1515,7 +1552,7 @@
     return \"mul\\t%0, %2\";
   "
   [(set_attr "length" "4,4,2")
-   (set_attr "insn" "mul")]
+   (set_attr "type" "muls")]
 )
 
 (define_insn "*thumb_mulsi3_v6"
@@ -1528,7 +1565,7 @@
    mul\\t%0, %1
    mul\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr "insn" "mul")]
+   (set_attr "type" "muls")]
 )
 
 (define_insn "*mulsi3_compare0"
@@ -1542,7 +1579,7 @@
   "TARGET_ARM && !arm_arch6"
   "mul%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "insn" "muls")]
+   (set_attr "type" "muls")]
 )
 
 (define_insn "*mulsi3_compare0_v6"
@@ -1556,7 +1593,7 @@
   "TARGET_ARM && arm_arch6 && optimize_size"
   "mul%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "insn" "muls")]
+   (set_attr "type" "muls")]
 )
 
 (define_insn "*mulsi_compare0_scratch"
@@ -1569,7 +1606,7 @@
   "TARGET_ARM && !arm_arch6"
   "mul%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "insn" "muls")]
+   (set_attr "type" "muls")]
 )
 
 (define_insn "*mulsi_compare0_scratch_v6"
@@ -1582,7 +1619,7 @@
   "TARGET_ARM && arm_arch6 && optimize_size"
   "mul%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "insn" "muls")]
+   (set_attr "type" "muls")]
 )
 
 ;; Unnamed templates to match MLA instruction.
@@ -1595,7 +1632,7 @@
 	  (match_operand:SI 3 "s_register_operand" "r,r,0,0")))]
   "TARGET_32BIT && !arm_arch6"
   "mla%?\\t%0, %2, %1, %3"
-  [(set_attr "insn" "mla")
+  [(set_attr "type" "mla")
    (set_attr "predicable" "yes")]
 )
 
@@ -1607,7 +1644,7 @@
 	  (match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_32BIT && arm_arch6"
   "mla%?\\t%0, %2, %1, %3"
-  [(set_attr "insn" "mla")
+  [(set_attr "type" "mla")
    (set_attr "predicable" "yes")]
 )
 
@@ -1625,7 +1662,7 @@
   "TARGET_ARM && arm_arch6"
   "mla%.\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
-   (set_attr "insn" "mlas")]
+   (set_attr "type" "mlas")]
 )
 
 (define_insn "*mulsi3addsi_compare0_v6"
@@ -1642,7 +1679,7 @@
   "TARGET_ARM && arm_arch6 && optimize_size"
   "mla%.\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
-   (set_attr "insn" "mlas")]
+   (set_attr "type" "mlas")]
 )
 
 (define_insn "*mulsi3addsi_compare0_scratch"
@@ -1657,7 +1694,7 @@
   "TARGET_ARM && !arm_arch6"
   "mla%.\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
-   (set_attr "insn" "mlas")]
+   (set_attr "type" "mlas")]
 )
 
 (define_insn "*mulsi3addsi_compare0_scratch_v6"
@@ -1672,7 +1709,7 @@
   "TARGET_ARM && arm_arch6 && optimize_size"
   "mla%.\\t%0, %2, %1, %3"
   [(set_attr "conds" "set")
-   (set_attr "insn" "mlas")]
+   (set_attr "type" "mlas")]
 )
 
 (define_insn "*mulsi3subsi"
@@ -1683,7 +1720,7 @@
 		   (match_operand:SI 1 "s_register_operand" "r"))))]
   "TARGET_32BIT && arm_arch_thumb2"
   "mls%?\\t%0, %2, %1, %3"
-  [(set_attr "insn" "mla")
+  [(set_attr "type" "mla")
    (set_attr "predicable" "yes")]
 )
 
@@ -1706,7 +1743,7 @@
 	 (match_operand:DI 1 "s_register_operand" "0")))]
   "TARGET_32BIT && arm_arch3m && !arm_arch6"
   "smlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "insn" "smlal")
+  [(set_attr "type" "smlal")
    (set_attr "predicable" "yes")]
 )
 
@@ -1719,7 +1756,7 @@
 	 (match_operand:DI 1 "s_register_operand" "0")))]
   "TARGET_32BIT && arm_arch6"
   "smlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "insn" "smlal")
+  [(set_attr "type" "smlal")
    (set_attr "predicable" "yes")]
 )
 
@@ -1745,7 +1782,7 @@
 	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
   "TARGET_32BIT && arm_arch3m && !arm_arch6"
   "smull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "smull")
+  [(set_attr "type" "smull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1756,7 +1793,7 @@
 	 (sign_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
   "TARGET_32BIT && arm_arch6"
   "smull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "smull")
+  [(set_attr "type" "smull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1776,7 +1813,7 @@
 	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
   "TARGET_32BIT && arm_arch3m && !arm_arch6"
   "umull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "umull")
+  [(set_attr "type" "umull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1787,7 +1824,7 @@
 	 (zero_extend:DI (match_operand:SI 2 "s_register_operand" "r"))))]
   "TARGET_32BIT && arm_arch6"
   "umull%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "umull")
+  [(set_attr "type" "umull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1810,7 +1847,7 @@
 	 (match_operand:DI 1 "s_register_operand" "0")))]
   "TARGET_32BIT && arm_arch3m && !arm_arch6"
   "umlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "insn" "umlal")
+  [(set_attr "type" "umlal")
    (set_attr "predicable" "yes")]
 )
 
@@ -1823,7 +1860,7 @@
 	 (match_operand:DI 1 "s_register_operand" "0")))]
   "TARGET_32BIT && arm_arch6"
   "umlal%?\\t%Q0, %R0, %3, %2"
-  [(set_attr "insn" "umlal")
+  [(set_attr "type" "umlal")
    (set_attr "predicable" "yes")]
 )
 
@@ -1852,7 +1889,7 @@
    (clobber (match_scratch:SI 3 "=&r,&r"))]
   "TARGET_32BIT && arm_arch3m && !arm_arch6"
   "smull%?\\t%3, %0, %2, %1"
-  [(set_attr "insn" "smull")
+  [(set_attr "type" "smull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1867,7 +1904,7 @@
    (clobber (match_scratch:SI 3 "=r"))]
   "TARGET_32BIT && arm_arch6"
   "smull%?\\t%3, %0, %2, %1"
-  [(set_attr "insn" "smull")
+  [(set_attr "type" "smull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1896,7 +1933,7 @@
    (clobber (match_scratch:SI 3 "=&r,&r"))]
   "TARGET_32BIT && arm_arch3m && !arm_arch6"
   "umull%?\\t%3, %0, %2, %1"
-  [(set_attr "insn" "umull")
+  [(set_attr "type" "umull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1911,7 +1948,7 @@
    (clobber (match_scratch:SI 3 "=r"))]
   "TARGET_32BIT && arm_arch6"
   "umull%?\\t%3, %0, %2, %1"
-  [(set_attr "insn" "umull")
+  [(set_attr "type" "umull")
    (set_attr "predicable" "yes")]
 )
 
@@ -1923,7 +1960,7 @@
 		  (match_operand:HI 2 "s_register_operand" "r"))))]
   "TARGET_DSP_MULTIPLY"
   "smulbb%?\\t%0, %1, %2"
-  [(set_attr "insn" "smulxy")
+  [(set_attr "type" "smulxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -1936,7 +1973,7 @@
 		  (match_operand:HI 2 "s_register_operand" "r"))))]
   "TARGET_DSP_MULTIPLY"
   "smultb%?\\t%0, %1, %2"
-  [(set_attr "insn" "smulxy")
+  [(set_attr "type" "smulxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -1949,7 +1986,7 @@
 		  (const_int 16))))]
   "TARGET_DSP_MULTIPLY"
   "smulbt%?\\t%0, %1, %2"
-  [(set_attr "insn" "smulxy")
+  [(set_attr "type" "smulxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -1963,7 +2000,7 @@
 		  (const_int 16))))]
   "TARGET_DSP_MULTIPLY"
   "smultt%?\\t%0, %1, %2"
-  [(set_attr "insn" "smulxy")
+  [(set_attr "type" "smulxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -1976,7 +2013,7 @@
 		 (match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_DSP_MULTIPLY"
   "smlabb%?\\t%0, %1, %2, %3"
-  [(set_attr "insn" "smlaxy")
+  [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -1991,7 +2028,7 @@
 		 (match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_DSP_MULTIPLY"
   "smlatb%?\\t%0, %1, %2, %3"
-  [(set_attr "insn" "smlaxy")
+  [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -2006,7 +2043,7 @@
 		 (match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_DSP_MULTIPLY"
   "smlatt%?\\t%0, %1, %2, %3"
-  [(set_attr "insn" "smlaxy")
+  [(set_attr "type" "smlaxy")
    (set_attr "predicable" "yes")]
 )
 
@@ -2020,7 +2057,7 @@
 	  (match_operand:DI 3 "s_register_operand" "0")))]
   "TARGET_DSP_MULTIPLY"
   "smlalbb%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "smlalxy")
+  [(set_attr "type" "smlalxy")
    (set_attr "predicable" "yes")])
 
 ;; Note: there is no maddhidi4ibt because this one is canonical form
@@ -2036,7 +2073,7 @@
 	  (match_operand:DI 3 "s_register_operand" "0")))]
   "TARGET_DSP_MULTIPLY"
   "smlaltb%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "smlalxy")
+  [(set_attr "type" "smlalxy")
    (set_attr "predicable" "yes")])
 
 (define_insn "*maddhidi4tt"
@@ -2053,7 +2090,7 @@
 	  (match_operand:DI 3 "s_register_operand" "0")))]
   "TARGET_DSP_MULTIPLY"
   "smlaltt%?\\t%Q0, %R0, %1, %2"
-  [(set_attr "insn" "smlalxy")
+  [(set_attr "type" "smlalxy")
    (set_attr "predicable" "yes")])
 
 (define_expand "mulsf3"
@@ -4584,7 +4621,7 @@
   "TARGET_IDIV"
   "sdiv%?\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "sdiv")]
+   (set_attr "type" "sdiv")]
 )
 
 (define_insn "udivsi3"
@@ -4594,7 +4631,7 @@
   "TARGET_IDIV"
   "udiv%?\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "udiv")]
+   (set_attr "type" "udiv")]
 )
 
 
