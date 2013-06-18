@@ -1,3 +1,10 @@
+2013-06-18  Sriraman Tallam  <tmsriram@google.com>
+
+	* ipa-inline.c (inline_always_inline_functions): Pretend always_inline
+	functions are inlined during failures to flag an error.
+	* tree-inline.c (expand_call_inline): Allow the error to be flagged
+	in early inline pass.
+	
 2013-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (initial_ix86_tune_features): Fix a typo

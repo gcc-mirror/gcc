@@ -1911,7 +1911,15 @@ inline_always_inline_functions (struct cgraph_node *node)
 	}
 
       if (!can_early_inline_edge_p (e))
-	continue;
+	{
+	  /* Set inlined to true if the callee is marked "always_inline" but
+	     is not inlinable.  This will allow flagging an error later in
+	     expand_call_inline in tree-inline.c.  */
+	  if (lookup_attribute ("always_inline",
+				 DECL_ATTRIBUTES (callee->symbol.decl)) != NULL)
+	    inlined = true;
+	  continue;
+	}
 
       if (dump_file)
 	fprintf (dump_file, "  Inlining %s into %s (always_inline).\n",
