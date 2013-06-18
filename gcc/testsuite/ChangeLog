@@ -1,3 +1,8 @@
+2013-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53211
+	* g++.dg/cpp0x/decltype55.C: New.
+
 2013-06-18  Marek Polacek  <polacek@redhat.com>
 
 	* gcc.dg/c90-fordecl-1.c: Adjust expected message.
@@ -7,11 +12,11 @@
 	* c-c++-common/cilk-plus/AN/sec_reduce_ind_same_value.c: New test.
 
 2013-06-17  Balaji V. Iyer  <balaji.v.iyer@intel.com>
-	
+
 	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.
 	Also changed the returns from error as distinct values so that it is
 	easier to debug.
-	
+
 2013-06-17  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c: Update.
