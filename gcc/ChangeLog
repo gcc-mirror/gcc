@@ -1,3 +1,25 @@
+2013-06-18  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/arm.c (neon_vector_mem_operand): Add strict argument.
+	Permit virtual register pre-reload if !strict.
+	(coproc_secondary_reload_class): Adjust for neon_vector_mem_operand
+	change.
+	* config/arm/arm-protos.h (neon_vector_mem_operand): Adjust
+	prototype.
+	* config/arm/neon.md (movmisalign<mode>): Use
+	neon_perm_struct_or_reg_operand instead of
+	neon_struct_or_register_operand.
+	(*movmisalign<mode>_neon_load, *movmisalign<mode>_neon_store): Use
+	neon_permissive_struct_operand instead of neon_struct_operand.
+	* config/arm/constraints.md (Un, Um, Us): Adjust calls to
+	neon_vector_mem_operand.
+	* config/arm/predicates.md (neon_struct_operand): Adjust call to
+	neon_vector_mem_operand.
+	(neon_permissive_struct_operand): New.
+	(neon_struct_or_register_operand): Rename to...
+	(neon_perm_struct_or_reg_operand): This. Adjust call to
+	neon_vector_mem_operand.
+
 2013-06-18  Richard Biener  <rguenther@suse.de>
 
 	* Makefile.in (LTO_STREAMER_H): Add pointer-set.h dependency.

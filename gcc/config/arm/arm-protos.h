@@ -95,7 +95,7 @@ extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 extern bool arm_tls_referenced_p (rtx);
 
 extern int arm_coproc_mem_operand (rtx, bool);
-extern int neon_vector_mem_operand (rtx, int);
+extern int neon_vector_mem_operand (rtx, int, bool);
 extern int neon_struct_mem_operand (rtx);
 extern int arm_no_early_store_addr_dep (rtx, rtx);
 extern int arm_early_store_addr_dep (rtx, rtx);
