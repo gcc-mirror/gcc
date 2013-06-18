@@ -1,5 +1,12 @@
 2013-06-18  Richard Biener  <rguenther@suse.de>
 
+	* Makefile.in (cgraphunit.o): Add $(CFGLOOP_H) dependency.
+	* cgraphunit.c: Include cfgloop.h.
+	(init_lowered_empty_function): Initialize the loop tree.
+	(assemble_thunk): Insert new BBs into loops.
+
+2013-06-18  Richard Biener  <rguenther@suse.de>
+
 	* tree-streamer.h (streamer_tree_cache_create): Adjust prototype.
 	* tree-streamer.c (streamer_tree_cache_create): Make maintaining
 	the map from cache entry to cache index optional.

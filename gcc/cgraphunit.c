@@ -192,6 +192,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "lto-streamer.h"
 #include "except.h"
+#include "cfgloop.h"
 #include "regset.h"     /* FIXME: For reg_obstack.  */
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
@@ -1196,18 +1197,24 @@ init_lowered_empty_function (tree decl, bool in_ssa)
       init_tree_ssa (cfun);
       init_ssa_operands (cfun);
       cfun->gimple_df->in_ssa_p = true;
+      cfun->curr_properties |= PROP_ssa;
     }
 
   DECL_INITIAL (decl) = make_node (BLOCK);
 
   DECL_SAVED_TREE (decl) = error_mark_node;
-  cfun->curr_properties |=
-    (PROP_gimple_lcf | PROP_gimple_leh | PROP_cfg | PROP_ssa | PROP_gimple_any);
+  cfun->curr_properties |= (PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_any
+			    | PROP_cfg | PROP_loops);
+
+  set_loops_for_fn (cfun, ggc_alloc_cleared_loops ());
+  init_loops_structure (cfun, loops_for_fn (cfun), 1);
+  loops_for_fn (cfun)->state |= LOOPS_MAY_HAVE_MULTIPLE_LATCHES;
 
   /* Create BB for body of the function and connect it properly.  */
   bb = create_basic_block (NULL, (void *) 0, ENTRY_BLOCK_PTR);
-  make_edge (ENTRY_BLOCK_PTR, bb, 0);
+  make_edge (ENTRY_BLOCK_PTR, bb, EDGE_FALLTHRU);
   make_edge (bb, EXIT_BLOCK_PTR, 0);
+  add_bb_to_loop (bb, ENTRY_BLOCK_PTR->loop_father);
 
   return bb;
 }
@@ -1452,6 +1459,9 @@ assemble_thunk (struct cgraph_node *node)
 	      then_bb = create_basic_block (NULL, (void *) 0, bb);
 	      return_bb = create_basic_block (NULL, (void *) 0, then_bb);
 	      else_bb = create_basic_block (NULL, (void *) 0, else_bb);
+	      add_bb_to_loop (then_bb, bb->loop_father);
+	      add_bb_to_loop (return_bb, bb->loop_father);
+	      add_bb_to_loop (else_bb, bb->loop_father);
 	      remove_edge (single_succ_edge (bb));
 	      true_label = gimple_block_label (then_bb);
 	      stmt = gimple_build_cond (NE_EXPR, restmp,

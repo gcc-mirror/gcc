@@ -2903,7 +2903,7 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(IPA_PROP_H) \
    gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
-   $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(IPA_UTILS_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(IPA_UTILS_H) $(CFGLOOP_H) \
    $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H) $(GCC_PLUGIN_H) plugin.h
 cgraphclones.o : cgraphclones.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
