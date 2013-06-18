@@ -1,3 +1,15 @@
+2013-06-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-streamer.h (streamer_tree_cache_create): Adjust prototype.
+	* tree-streamer.c (streamer_tree_cache_create): Make maintaining
+	the map from cache entry to cache index optional.
+	(streamer_tree_cache_replace_tree): Adjust accordingly.
+	(streamer_tree_cache_append): Likewise.
+	(streamer_tree_cache_delete): Likewise.
+	* lto-streamer-in.c (lto_data_in_create): Do not maintain the
+	streamer cache map from cache entry to cache index.
+	* lto-streamer-out.c (create_output_block): Adjust.
+
 2013-06-18  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/arm/arm.md (attribute "insn"): Move multiplication and division

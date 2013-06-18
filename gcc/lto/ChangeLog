@@ -1,3 +1,14 @@
+2013-06-18  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (lto_register_var_decl_in_symtab): Pass in cache index
+	and use it.
+	(lto_register_function_decl_in_symtab): Likewise.
+	(cmp_tree): New function.
+	(unify_scc): Instead of using the streamer cache map from entry
+	to cache index match up the two maps we have by sorting them.
+	Adjust calls to lto_register_var_decl_in_symtab and
+	lto_register_function_decl_in_symtab.
+
 2013-06-17  Richard Biener  <rguenther@suse.de>
 
 	* Make-lang.in (lto.o): Add $(DATA_STREAMER_H) dependency.
