@@ -302,7 +302,9 @@ go_func_to_cif (const struct __go_func_type *func, _Bool is_interface,
   in_types = ((const struct __go_type_descriptor **)
 	      func->__in.__values);
 
-  num_args = num_params + (is_interface ? 1 : 0);
+  num_args = (num_params
+	      + (is_interface ? 1 : 0)
+	      + (!is_interface && !is_method ? 1 : 0));
   args = (ffi_type **) __go_alloc (num_args * sizeof (ffi_type *));
   i = 0;
   off = 0;
@@ -318,6 +320,12 @@ go_func_to_cif (const struct __go_func_type *func, _Bool is_interface,
     }
   for (; i < num_params; ++i)
     args[i + off] = go_type_to_ffi (in_types[i]);
+
+  if (!is_interface && !is_method)
+    {
+      // There is a closure argument, a pointer.
+      args[i + off] = &ffi_type_pointer;
+    }
 
   rettype = go_func_return_ffi (func);
 
@@ -491,11 +499,24 @@ go_set_results (const struct __go_func_type *func, unsigned char *call_result,
 }
 
 /* Call a function.  The type of the function is FUNC_TYPE, and the
-   address is FUNC_ADDR.  PARAMS is an array of parameter addresses.
-   RESULTS is an array of result addresses.  */
+   closure is FUNC_VAL.  PARAMS is an array of parameter addresses.
+   RESULTS is an array of result addresses.
+
+   If IS_INTERFACE is true this is a call to an interface method and
+   the first argument is the receiver, which is always a pointer.
+   This argument, the receiver, is not described in FUNC_TYPE.
+
+   If IS_METHOD is true this is a call to a method expression.  The
+   first argument is the receiver.  It is described in FUNC_TYPE, but
+   regardless of FUNC_TYPE, it is passed as a pointer.
+
+   If neither IS_INTERFACE nor IS_METHOD is true then we are calling a
+   function indirectly, and the caller is responsible for passing a
+   trailing closure argument, a pointer, which is not described in
+   FUNC_TYPE.  */
 
 void
-reflect_call (const struct __go_func_type *func_type, const void *func_addr,
+reflect_call (const struct __go_func_type *func_type, FuncVal *func_val,
 	      _Bool is_interface, _Bool is_method, void **params,
 	      void **results)
 {
@@ -507,7 +528,7 @@ reflect_call (const struct __go_func_type *func_type, const void *func_addr,
 
   call_result = (unsigned char *) malloc (go_results_size (func_type));
 
-  ffi_call (&cif, func_addr, call_result, params);
+  ffi_call (&cif, func_val->fn, call_result, params);
 
   /* Some day we may need to free result values if RESULTS is
      NULL.  */
@@ -521,7 +542,7 @@ reflect_call (const struct __go_func_type *func_type, const void *func_addr,
 
 void
 reflect_call (const struct __go_func_type *func_type __attribute__ ((unused)),
-	      const void *func_addr __attribute__ ((unused)),
+	      FuncVal *func_val __attribute__ ((unused)),
 	      _Bool is_interface __attribute__ ((unused)),
 	      _Bool is_method __attribute__ ((unused)),
 	      void **params __attribute__ ((unused)),
