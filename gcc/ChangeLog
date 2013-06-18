@@ -319,7 +319,7 @@
 
 	PR rtl-optimization/57425
 	PR rtl-optimization/57569
-	* alias.c (write_dependence_p): Add new parameters mem_size,
+	* alias.c (write_dependence_p): Add new parameters mem_mode,
 	canon_mem_addr and mem_canonicalized.  Change type of writep to bool.
 	Changed all callers.
 	(canon_anti_dependence): New function.
