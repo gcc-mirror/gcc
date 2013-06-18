@@ -241,8 +241,8 @@
 })
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VDQX 0 "neon_struct_or_register_operand")
-	(unspec:VDQX [(match_operand:VDQX 1 "neon_struct_or_register_operand")]
+  [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
+	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
 		     UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
 {
@@ -255,7 +255,7 @@
 })
 
 (define_insn "*movmisalign<mode>_neon_store"
-  [(set (match_operand:VDX 0 "neon_struct_operand"	       "=Um")
+  [(set (match_operand:VDX 0 "neon_permissive_struct_operand"	"=Um")
 	(unspec:VDX [(match_operand:VDX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
@@ -263,15 +263,16 @@
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
 (define_insn "*movmisalign<mode>_neon_load"
-  [(set (match_operand:VDX 0 "s_register_operand"		"=w")
-	(unspec:VDX [(match_operand:VDX 1 "neon_struct_operand" " Um")]
+  [(set (match_operand:VDX 0 "s_register_operand"			"=w")
+	(unspec:VDX [(match_operand:VDX 1 "neon_permissive_struct_operand"
+									" Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vld1.<V_sz_elem>\t{%P0}, %A1"
   [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
 (define_insn "*movmisalign<mode>_neon_store"
-  [(set (match_operand:VQX 0 "neon_struct_operand"	       "=Um")
+  [(set (match_operand:VQX 0 "neon_permissive_struct_operand"  "=Um")
 	(unspec:VQX [(match_operand:VQX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
@@ -279,8 +280,9 @@
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
 (define_insn "*movmisalign<mode>_neon_load"
-  [(set (match_operand:VQX 0 "s_register_operand"	         "=w")
-	(unspec:VQX [(match_operand:VQX 1 "neon_struct_operand" " Um")]
+  [(set (match_operand:VQX 0 "s_register_operand"			"=w")
+	(unspec:VQX [(match_operand:VQX 1 "neon_permissive_struct_operand"
+									" Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
   "TARGET_NEON && !BYTES_BIG_ENDIAN"
   "vld1.<V_sz_elem>\t{%q0}, %A1"
