@@ -1,3 +1,8 @@
+2013-06-18  Richard Biener  <rguenther@suse.de>
+
+	PR lto/57334
+	* lto-symtab.c (lto_symtab_merge_decls): Process nodes properly.
+
 2013-06-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	PR target/57609
