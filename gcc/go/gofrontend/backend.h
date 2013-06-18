@@ -95,7 +95,10 @@ class Backend
 
   // Get a function type.  The receiver, parameter, and results are
   // generated from the types in the Function_type.  The Function_type
-  // is provided so that the names are available.
+  // is provided so that the names are available.  This should return
+  // not the type of a Go function (which is a pointer to a struct)
+  // but the type of a C function pointer (which will be used as the
+  // type of the first field of the struct).
   virtual Btype*
   function_type(const Btyped_identifier& receiver,
 		const std::vector<Btyped_identifier>& parameters,
@@ -388,18 +391,22 @@ class Backend
 		     Bstatement** pstatement) = 0;
 
   // Create a named immutable initialized data structure.  This is
-  // used for type descriptors and map descriptors.  This returns a
-  // Bvariable because it corresponds to an initialized const global
-  // variable in C.
+  // used for type descriptors, map descriptors, and function
+  // descriptors.  This returns a Bvariable because it corresponds to
+  // an initialized const variable in C.
   //
   // NAME is the name to use for the initialized global variable which
   // this call will create.
+  //
+  // IS_HIDDEN will be true if the descriptor should only be visible
+  // within the current object.
   //
   // IS_COMMON is true if NAME may be defined by several packages, and
   // the linker should merge all such definitions.  If IS_COMMON is
   // false, NAME should be defined in only one file.  In general
   // IS_COMMON will be true for the type descriptor of an unnamed type
-  // or a builtin type.
+  // or a builtin type.  IS_HIDDEN and IS_COMMON will never both be
+  // true.
   //
   // TYPE will be a struct type; the type of the returned expression
   // must be a pointer to this struct type.
@@ -409,20 +416,20 @@ class Backend
   // address.  After calling this the frontend will call
   // immutable_struct_set_init.
   virtual Bvariable*
-  immutable_struct(const std::string& name, bool is_common, Btype* type,
-		   Location) = 0;
+  immutable_struct(const std::string& name, bool is_hidden, bool is_common,
+		   Btype* type, Location) = 0;
 
   // Set the initial value of a variable created by immutable_struct.
-  // The NAME, IS_COMMON, TYPE, and location parameters are the same
-  // ones passed to immutable_struct.  INITIALIZER will be a composite
-  // literal of type TYPE.  It will not contain any function calls or
-  // anything else which can not be put into a read-only data section.
-  // It may contain the address of variables created by
+  // The NAME, IS_HIDDEN, IS_COMMON, TYPE, and location parameters are
+  // the same ones passed to immutable_struct.  INITIALIZER will be a
+  // composite literal of type TYPE.  It will not contain any function
+  // calls or anything else that can not be put into a read-only data
+  // section.  It may contain the address of variables created by
   // immutable_struct.
   virtual void
   immutable_struct_set_init(Bvariable*, const std::string& name,
-			    bool is_common, Btype* type, Location,
-			    Bexpression* initializer) = 0;
+			    bool is_hidden, bool is_common, Btype* type,
+			    Location, Bexpression* initializer) = 0;
 
   // Create a reference to a named immutable initialized data
   // structure defined in some other package.  This will be a

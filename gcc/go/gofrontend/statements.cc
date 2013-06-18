@@ -1959,10 +1959,15 @@ Thunk_statement::is_simple(Function_type* fntype) const
 	      && results->begin()->type()->points_to() == NULL)))
     return false;
 
-  // If this calls something which is not a simple function, then we
+  // If this calls something that is not a simple function, then we
   // need a thunk.
   Expression* fn = this->call_->call_expression()->fn();
-  if (fn->interface_field_reference_expression() != NULL)
+  if (fn->func_expression() == NULL)
+    return false;
+
+  // If the function uses a closure, then we need a thunk.  FIXME: We
+  // could accept a zero argument function with a closure.
+  if (fn->func_expression()->closure() != NULL)
     return false;
 
   return true;
@@ -2502,7 +2507,11 @@ Thunk_statement::get_fn_and_arg(Expression** pfn, Expression** parg)
 
   Call_expression* ce = this->call_->call_expression();
 
-  *pfn = ce->fn();
+  Expression* fn = ce->fn();
+  Func_expression* fe = fn->func_expression();
+  go_assert(fe != NULL);
+  *pfn = Expression::make_func_code_reference(fe->named_object(),
+					      fe->location());
 
   const Expression_list* args = ce->args();
   if (args == NULL || args->empty())
