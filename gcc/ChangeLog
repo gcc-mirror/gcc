@@ -1,3 +1,129 @@
+2013-06-18  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/arm.md (attribute "insn"): Move multiplication and division
+	attributes to...
+	(attribute "type"): ... here.  Remove mult.
+	(attribute "mul32"): New attribute.
+	(attribute "mul64"): Add umaal.
+	(*arm_mulsi3): Update attributes.
+	(*arm_mulsi3_v6): Likewise.
+	(*thumb_mulsi3): Likewise.
+	(*thumb_mulsi3_v6): Likewise.
+	(*mulsi3_compare0): Likewise.
+	(*mulsi3_compare0_v6): Likewise.
+	(*mulsi_compare0_scratch): Likewise.
+	(*mulsi_compare0_scratch_v6): Likewise.
+	(*mulsi3addsi): Likewise.
+	(*mulsi3addsi_v6): Likewise.
+	(*mulsi3addsi_compare0): Likewise.
+	(*mulsi3addsi_compare0_v6): Likewise.
+	(*mulsi3addsi_compare0_scratch): Likewise.
+	(*mulsi3addsi_compare0_scratch_v6): Likewise.
+	(*mulsi3subsi): Likewise.
+	(*mulsidi3adddi): Likewise.
+	(*mulsi3addsi_v6): Likewise.
+	(*mulsidi3adddi_v6): Likewise.
+	(*mulsidi3_nov6): Likewise.
+	(*mulsidi3_v6): Likewise.
+	(*umulsidi3_nov6): Likewise.
+	(*umulsidi3_v6): Likewise.
+	(*umulsidi3adddi): Likewise.
+	(*umulsidi3adddi_v6): Likewise.
+	(*smulsi3_highpart_nov6): Likewise.
+	(*smulsi3_highpart_v6): Likewise.
+	(*umulsi3_highpart_nov6): Likewise.
+	(*umulsi3_highpart_v6): Likewise.
+	(mulhisi3): Likewise.
+	(*mulhisi3tb): Likewise.
+	(*mulhisi3bt): Likewise.
+	(*mulhisi3tt): Likewise.
+	(maddhisi4): Likewise.
+	(*maddhisi4tb): Likewise.
+	(*maddhisi4tt): Likewise.
+	(maddhidi4): Likewise.
+	(*maddhidi4tb): Likewise.
+	(*maddhidi4tt): Likewise.
+	(divsi3): Likewise.
+	(udivsi3): Likewise.
+	* config/arm/thumb2.md (thumb2_mulsi_short): Update attributes.
+	(thumb2_mulsi_short_compare0): Likewise.
+	(thumb2_mulsi_short_compare0_scratch): Likewise.
+	* config/arm/arm1020e.md (1020mult1): Update attribute change.
+	(1020mult2): Likewise.
+	(1020mult3): Likewise.
+	(1020mult4): Likewise.
+	(1020mult5): Likewise.
+	(1020mult6): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_mult32): Update attribute change.
+	(cortex_a15_mult64): Likewise.
+	(cortex_a15_sdiv): Likewise.
+	(cortex_a15_udiv): Likewise.
+	* config/arm/arm1026ejs.md (mult1): Update attribute change.
+	(mult2): Likewise.
+	(mult3): Likewise.
+	(mult4): Likewise.
+	(mult5): Likewise.
+	(mult6): Likewise.
+	* config/arm/marvell-pj4.md (pj4_ir_mul): Update attribute change.
+	(pj4_ir_div): Likewise.
+	* config/arm/arm1136jfs.md (11_mult1): Update attribute change.
+	(11_mult2): Likewise.
+	(11_mult3): Likewise.
+	(11_mult4): Likewise.
+	(11_mult5): Likewise.
+	(11_mult6): Likewise.
+	(11_mult7): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_mul): Update attribute change.
+	(cortex_a8_mla): Likewise.
+	(cortex_a8_mull): Likewise.
+	(cortex_a8_smulwy): Likewise.
+	(cortex_a8_smlald): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update attribute change.
+	* config/arm/cortex-r4.md (cortex_r4_mul_4): Update attribute change.
+	(cortex_r4_mul_3): Likewise.
+	(cortex_r4_mla_4): Likewise.
+	(cortex_r4_mla_3): Likewise.
+	(cortex_r4_smlald): Likewise.
+	(cortex_r4_mull): Likewise.
+	(cortex_r4_sdiv): Likewise.
+	(cortex_r4_udiv): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_mul): Update attribute change.
+	(cortex_a7_idiv): Likewise.
+	* config/arm/arm926ejs.md (9_mult1): Update attribute change.
+	(9_mult2): Likewise.
+	(9_mult3): Likewise.
+	(9_mult4): Likewise.
+	(9_mult5): Likewise.
+	(9_mult6): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_mul): Update attribute change.
+	(cortex_a53_sdiv): Likewise.
+	(cortex_a53_udiv): Likewise.
+	* config/arm/fa726te.md (726te_mult_op): Update attribute change.
+	* config/arm/fmp626.md (mp626_mult1): Update attribute change.
+	(mp626_mult2): Likewise.
+	(mp626_mult3): Likewise.
+	(mp626_mult4): Likewise.
+	* config/arm/fa526.md (526_mult1): Update attribute change.
+	(526_mult2): Likewise.
+	* config/arm/arm-generic.md (mult): Update attribute change.
+	(mult_ldsched_strongarm): Likewise.
+	(mult_ldsched): Likewise.
+	(multi_cycle): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_mul): Update attribute change.
+	* config/arm/fa606te.md (606te_mult1): Update attribute change.
+	(606te_mult2): Likewise.
+	(606te_mult3): Likewise.
+	(606te_mult4): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_mult16): Update attribute change.
+	(cortex_a9_mac16): Likewise.
+	(cortex_a9_multiply): Likewise.
+	(cortex_a9_mac): Likewise.
+	(cortex_a9_multiply_long): Likewise.
+	* config/arm/fa626te.md (626te_mult1): Update attribute change.
+	(626te_mult2): Likewise.
+	(626te_mult3): Likewise.
+	(626te_mult4): Likewise.
+
 2013-06-18  Richard Biener  <rguenther@suse.de>
 
 	PR lto/57334

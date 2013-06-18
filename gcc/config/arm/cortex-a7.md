@@ -127,8 +127,9 @@
 
 (define_insn_reservation "cortex_a7_mul" 2
   (and (eq_attr "tune" "cortexa7")
-       (and (eq_attr "type" "mult")
-            (eq_attr "neon_type" "none")))
+       (and (eq_attr "neon_type" "none")
+            (ior (eq_attr "mul32" "yes")
+                 (eq_attr "mul64" "yes"))))
   "cortex_a7_both")
 
 ;; Forward the result of a multiply operation to the accumulator 
@@ -140,7 +141,7 @@
 ;; The latency depends on the operands, so we use an estimate here.
 (define_insn_reservation "cortex_a7_idiv" 5
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "insn" "udiv,sdiv"))
+       (eq_attr "type" "udiv,sdiv"))
   "cortex_a7_both*5")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
