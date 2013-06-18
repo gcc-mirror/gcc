@@ -7023,7 +7023,7 @@ s390_chunkify_start (void)
       if (LABEL_P (insn)
 	  && (LABEL_PRESERVE_P (insn) || LABEL_NAME (insn)))
 	{
-	  rtx vec_insn = next_real_insn (insn);
+	  rtx vec_insn = next_active_insn (insn);
 	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
@@ -7054,7 +7054,7 @@ s390_chunkify_start (void)
 	    {
 	      /* Find the jump table used by this casesi jump.  */
 	      rtx vec_label = XEXP (XEXP (XVECEXP (pat, 0, 1), 0), 0);
-	      rtx vec_insn = next_real_insn (vec_label);
+	      rtx vec_insn = next_active_insn (vec_label);
 	      if (vec_insn && JUMP_TABLE_DATA_P (vec_insn))
 		{
 		  rtx vec_pat = PATTERN (vec_insn);
@@ -7085,11 +7085,20 @@ s390_chunkify_start (void)
 
   /* Insert base register reload insns at every far label.  */
 
+  if (dump_file)
+    {
+      fprintf (dump_file, "Function: %s\n", current_function_name ());
+      fprintf (dump_file, "far labels:\n");
+    }
+
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (LABEL_P (insn)
         && bitmap_bit_p (far_labels, CODE_LABEL_NUMBER (insn)))
       {
 	struct constant_pool *pool = s390_find_pool (pool_list, insn);
+	if (dump_file)
+	  print_rtx (insn);
+
 	if (pool)
 	  {
 	    rtx new_insn = gen_reload_base (cfun->machine->base_reg,
