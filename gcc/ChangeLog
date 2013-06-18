@@ -1,3 +1,8 @@
+2013-06-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/i386.c (initial_ix86_tune_features): Fix a typo
+	in comments.
+
 2013-06-18  Julian Brown  <julian@codesourcery.com>
 
 	* config/arm/arm.c (neon_vector_mem_operand): Add strict argument.

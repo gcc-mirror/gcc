@@ -2085,7 +2085,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      instructions.  */
   ~m_ATOM,
 
-  /* X86_SOFTARE_PREFETCHING_BENEFICIAL: Enable software prefetching
+  /* X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL: Enable software prefetching
      at -O3.  For the moment, the prefetching seems badly tuned for Intel
      chips.  */
   m_K6_GEODE | m_AMD_MULTIPLE,
