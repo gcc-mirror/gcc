@@ -1,5 +1,8 @@
 2013-06-19  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-forwprop.c (simplify_bitwise_binary_boolean): Fix typo
+	in comment.
+
 	* tree-ssa-forwprop.c (simplify_bitwise_binary_boolean): New function.
 	(simplify_bitwise_binary): Use it to simpify certain binary ops on
 	booleans.

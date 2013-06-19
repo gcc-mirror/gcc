@@ -1881,7 +1881,7 @@ hoist_conversion_for_bitop_p (tree to, tree from)
    then we can simplify the two statements into a single LT_EXPR or LE_EXPR
    when code is BIT_AND_EXPR and BIT_IOR_EXPR respectively.
 
-   If a simplification is mode, return TRUE, else return FALSE.  */
+   If a simplification is made, return TRUE, else return FALSE.  */
 static bool
 simplify_bitwise_binary_boolean (gimple_stmt_iterator *gsi,
 				 enum tree_code code,
