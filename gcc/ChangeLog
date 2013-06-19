@@ -1,3 +1,12 @@
+2013-06-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	Revert:
+	2013-06-18  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	PR target/57609
+	* config/s390/s390.c (s390_chunkify_start): Replace next_real_insn
+	with next_active_insn.
+
 2013-06-18  Sriraman Tallam  <tmsriram@google.com>
 
 	* ipa-inline.c (inline_always_inline_functions): Pretend always_inline
