@@ -1,3 +1,8 @@
+2012-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h: Use __asm__ and __volatile__ consistently.
+	(get_fpu_except_flags): Initialize result.
+
 2013-06-17  Tobias Burnus  <burnus@net-b.de>
 
 	* libgfortran.h (compile_options_t) Add fpe_summary.
