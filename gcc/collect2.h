@@ -25,8 +25,6 @@ extern void do_tlink (char **, char **);
 extern struct pex_obj *collect_execute (const char *, char **, const char *,
 					const char *, int flags);
 
-extern void collect_exit (int) ATTRIBUTE_NORETURN;
-
 extern int collect_wait (const char *, struct pex_obj *);
 
 extern void dump_ld_file (const char *, FILE *);
