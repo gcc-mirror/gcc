@@ -1872,7 +1872,7 @@ class Field_reference_expression : public Expression
   Field_reference_expression(Expression* expr, unsigned int field_index,
 			     Location location)
     : Expression(EXPRESSION_FIELD_REFERENCE, location),
-      expr_(expr), field_index_(field_index), called_fieldtrack_(false)
+      expr_(expr), field_index_(field_index), implicit_(false), called_fieldtrack_(false)
   { }
 
   // Return the struct expression.

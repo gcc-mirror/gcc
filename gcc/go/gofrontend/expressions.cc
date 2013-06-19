@@ -6955,6 +6955,26 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       return Expression::make_error(loc);
     }
 
+  if (this->code_ == BUILTIN_OFFSETOF)
+    {
+      Expression* arg = this->one_arg();
+      Field_reference_expression* farg = arg->field_reference_expression();
+      while (farg != NULL)
+	{
+	  if (!farg->implicit())
+	    break;
+	  // When the selector refers to an embedded field,
+	  // it must not be reached through pointer indirections.
+	  if (farg->expr()->deref() != farg->expr())
+	    {
+	      this->report_error(_("argument of Offsetof implies indirection of an embedded field"));
+	      return this;
+	    }
+	  // Go up until we reach the original base.
+	  farg = farg->expr()->field_reference_expression();
+	}
+    }
+ 
   if (this->is_constant())
     {
       Numeric_constant nc;
