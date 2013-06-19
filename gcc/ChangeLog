@@ -1,3 +1,8 @@
+2013-06-19  Richard Biener  <rguenther@suse.de>
+
+	* expr.c (expand_expr_real_1): Use SCOPE_FILE_SCOPE_P to check
+	for global context.
+
 2013-06-19  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	Revert:
