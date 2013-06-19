@@ -9353,7 +9353,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       /* Variables inherited from containing functions should have
 	 been lowered by this point.  */
       context = decl_function_context (exp);
-      gcc_assert (!context
+      gcc_assert (SCOPE_FILE_SCOPE_P (context)
 		  || context == current_function_decl
 		  || TREE_STATIC (exp)
 		  || DECL_EXTERNAL (exp)
