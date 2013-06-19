@@ -1,3 +1,8 @@
+2013-06-19  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/57518
+	* testsuite/gcc.dg/pr57518.c: New test.
+
 2013-06-19  Igor Zamyatin  <igor.zamyatin@intel.com>
 
 	* gcc.dg/tree-ssa/loop-19.c: Add -fno-common.
