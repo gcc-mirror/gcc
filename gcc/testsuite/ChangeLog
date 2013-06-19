@@ -1,3 +1,8 @@
+2013-06-19  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/55033
+	* gcc.target/powerpc/pr55033.c: Fix options.
+
 2013-06-18  Sriraman Tallam  <tmsriram@google.com>
 
 	* gcc.target/i386/inline_error.c: New test.
