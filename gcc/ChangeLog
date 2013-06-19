@@ -1,3 +1,9 @@
+2013-06-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56544
+	* doc/cpp.texi [Standard Predefined Macros, __cplusplus]: Document
+	that now in C++ the value is correct per the C++ standards.
+
 2013-06-19  Richard Biener  <rguenther@suse.de>
 
 	* expr.c (expand_expr_real_1): Use SCOPE_FILE_SCOPE_P to check
