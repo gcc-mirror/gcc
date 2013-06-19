@@ -13,7 +13,7 @@
 	functions are inlined during failures to flag an error.
 	* tree-inline.c (expand_call_inline): Allow the error to be flagged
 	in early inline pass.
-	
+
 2013-06-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c (initial_ix86_tune_features): Fix a typo
@@ -80,8 +80,8 @@
 
 2013-06-18  Sofiane Naci  <sofiane.naci@arm.com>
 
-	* config/arm/arm.md (attribute "insn"): Move multiplication and division
-	attributes to...
+	* config/arm/arm.md (attribute "insn"): Move multiplication and
+	division attributes to...
 	(attribute "type"): ... here.  Remove mult.
 	(attribute "mul32"): New attribute.
 	(attribute "mul64"): Add umaal.
@@ -134,7 +134,8 @@
 	(1020mult4): Likewise.
 	(1020mult5): Likewise.
 	(1020mult6): Likewise.
-	* config/arm/cortex-a15.md (cortex_a15_mult32): Update attribute change.
+	* config/arm/cortex-a15.md (cortex_a15_mult32): Update attribute
+	change.
 	(cortex_a15_mult64): Likewise.
 	(cortex_a15_sdiv): Likewise.
 	(cortex_a15_udiv): Likewise.
@@ -418,8 +419,7 @@
 
 2013-06-13  Bin Cheng  <bin.cheng@arm.com>
 
-	* rtlanal.c (noop_move_p): Check the code to be executed for
-	COND_EXEC.
+	* rtlanal.c (noop_move_p): Check the code to be executed for COND_EXEC.
 
 2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
 
@@ -510,7 +510,8 @@
 
 2013-06-12  Sofiane Naci  <sofiane.naci@arm.com>
 
-	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): convert to split.
+	* config/aarch64/aarch64-simd.md (aarch64_combine<mode>): Convert
+	to split.
 	(aarch64_simd_combine<mode>): New instruction expansion.
 	* config/aarch64/aarch64-protos.h (aarch64_split_simd_combine): New
 	function prototype.
@@ -646,8 +647,7 @@
 
 2013-06-11  Richard Biener  <rguenther@suse.de>
 
-	* collect2.c (main): Do not redirect ld stdout/stderr when
-	debugging.
+	* collect2.c (main): Do not redirect ld stdout/stderr when debugging.
 
 2013-06-11  Anton Blanchard  <anton@samba.org>
 
@@ -728,8 +728,7 @@
 	(UNSPEC_P8V_RELOAD_FROM_VSX): Likewise.
 	(UNSPEC_FUSION_GPR): Likewise.
 	(FMOVE128_GPR): New iterator for direct move.
-	(f32_lv): New mode attribute for load/store of SFmode/SDmode
-	values.
+	(f32_lv): New mode attribute for load/store of SFmode/SDmode values.
 	(f32_sv): Likewise.
 	(f32_dm): Likewise.
 	(zero_extend<mode>di2_internal1): Add support for power8 32-bit
