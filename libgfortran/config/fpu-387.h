@@ -73,7 +73,7 @@ has_sse (void)
 
       /* We need a single SSE instruction here so the handler can safely skip
 	 over it.  */
-      __asm__ volatile ("movaps %xmm0,%xmm0");
+      __asm__ __volatile__ ("movaps\t%xmm0,%xmm0");
 
       sigaction (SIGILL, &oact, NULL);
 
@@ -100,7 +100,7 @@ void set_fpu (void)
 {
   unsigned short cw;
 
-  asm volatile ("fnstcw %0" : "=m" (cw));
+  __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
 
   cw |= (_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM
 	 | _FPU_MASK_UM | _FPU_MASK_PM);
@@ -112,13 +112,13 @@ void set_fpu (void)
   if (options.fpe & GFC_FPE_UNDERFLOW) cw &= ~_FPU_MASK_UM;
   if (options.fpe & GFC_FPE_INEXACT) cw &= ~_FPU_MASK_PM;
 
-  asm volatile ("fldcw %0" : : "m" (cw));
+  __asm__ __volatile__ ("fldcw\t%0" : : "m" (cw));
 
   if (has_sse())
     {
       unsigned int cw_sse;
 
-      asm volatile ("%vstmxcsr %0" : "=m" (cw_sse));
+      __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
 
       cw_sse &= 0xffff0000;
       cw_sse |= (_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM
@@ -131,7 +131,7 @@ void set_fpu (void)
       if (options.fpe & GFC_FPE_UNDERFLOW) cw_sse &= ~(_FPU_MASK_UM << 7);
       if (options.fpe & GFC_FPE_INEXACT) cw_sse &= ~(_FPU_MASK_PM << 7);
 
-      asm volatile ("%vldmxcsr %0" : : "m" (cw_sse));
+      __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
     }
 }
 
@@ -139,7 +139,7 @@ void set_fpu (void)
 int
 get_fpu_except_flags (void)
 {
-  int result;
+  int result = 0;
   unsigned short cw;
 
   __asm__ __volatile__ ("fnstsw\t%0" : "=a" (cw));
@@ -147,27 +147,18 @@ get_fpu_except_flags (void)
   if (has_sse())
     {
       unsigned int cw_sse;
+
       __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+
       cw |= cw_sse;
     }
 
-  if (cw & _FPU_MASK_IM)
-    result |= GFC_FPE_INVALID;
-
-  if (cw & _FPU_MASK_ZM)
-    result |= GFC_FPE_ZERO;
-
-  if (cw & _FPU_MASK_OM)
-    result |= GFC_FPE_OVERFLOW;
-
-  if (cw & _FPU_MASK_UM)
-    result |= GFC_FPE_UNDERFLOW;
-
-  if (cw & _FPU_MASK_DM)
-    result |= GFC_FPE_DENORMAL;
-
-  if (cw & _FPU_MASK_PM)
-    result |= GFC_FPE_INEXACT;
+  if (cw & _FPU_MASK_IM) result |= GFC_FPE_INVALID;
+  if (cw & _FPU_MASK_DM) result |= GFC_FPE_DENORMAL;
+  if (cw & _FPU_MASK_ZM) result |= GFC_FPE_ZERO;
+  if (cw & _FPU_MASK_OM) result |= GFC_FPE_OVERFLOW;
+  if (cw & _FPU_MASK_UM) result |= GFC_FPE_UNDERFLOW;
+  if (cw & _FPU_MASK_PM) result |= GFC_FPE_INEXACT;
 
   return result;
 }
