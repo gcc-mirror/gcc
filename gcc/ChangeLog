@@ -1,3 +1,9 @@
+2013-06-19  Steve Ellcey  <sellcey@mips.com>
+
+	PR target/56942
+	* config/mips/mips.md (casesi_internal_mips16_<mode>):
+	Use NEXT_INSN instead of next_real_insn.
+
 2013-06-19  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (const_value_known_p): Replace by ...
