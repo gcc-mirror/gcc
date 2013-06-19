@@ -6,7 +6,7 @@
 
 /* { dg-do compile { target { i?86-*-* || { x86_64-*-* || powerpc_hard_double } } } } */
 /* { dg-require-effective-target nonpic } */
-/* { dg-options "-O3 -fno-tree-loop-distribute-patterns -fno-prefetch-loop-arrays -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fno-tree-loop-distribute-patterns -fno-prefetch-loop-arrays -fdump-tree-optimized -fno-common" } */
 
 # define N      2000000
 double   a[N],c[N];
