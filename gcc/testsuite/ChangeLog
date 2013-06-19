@@ -1,3 +1,13 @@
+2013-06-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+       * c-c++-common/cilk-plus/AN/builtin_fn_custom.c: Replaced all the
+       hard-coded values of array sizes with a #define.
+       * c-c++-common/cilk-plus/AN/builtin_fn_mutating.c: Likewise.
+       * c-c++-common/cilk-plus/AN/builtin_func_double2.c: Likewise.
+       * c-c++-common/cilk-plus/AN/gather_scatter.c: Likewise.
+       * c-c++-common/cilk-plus/AN/pr57577.c: Likewise.
+       * c-c++-common/cilk-plus/AN/sec_implicit_ex.c: Likewise.
+
 2013-06-19  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* gcc.dg/torture/stackalign/builtin-apply-2.c: set
@@ -2274,7 +2284,6 @@
 
 	* gcc.target/aarch64/negs.c: New.
 
->>>>>>> trunk
 2013-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56895

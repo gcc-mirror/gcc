@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-fcilkplus" } */
 
-int A[10], B[10][10];
+#define NUMBER 100
+int A[NUMBER], B[NUMBER][NUMBER];
 int foo (int a);
 
 int main () {
