@@ -1,3 +1,9 @@
+2013-06-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	arm.md (split for eq(reg, 0)): Add variants for ARMv5 and Thumb2.
+	(peepholes for eq(reg, not-0)): Ensure condition register is dead after
+	pattern.  Use more efficient sequences on ARMv5 and Thumb2.
+
 2013-06-19  Steven Bosscher  <steven@gcc.gnu.org>
 
 	PR target/57609
