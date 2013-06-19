@@ -1,3 +1,10 @@
+2013-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	PR target/57609
+	* config/s390/s390.c (s390_chunkify_start): Replace next_real_insn
+	with NEXT_INSN.  Use tablejump_p to check for jump table data
+	insns.
+
 2013-06-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56544
