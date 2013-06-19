@@ -1110,55 +1110,55 @@ main (int argc, char **argv)
   if (ld_file_name == 0)
 #endif
 #ifdef REAL_LD_FILE_NAME
-  ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME);
+  ld_file_name = find_a_file (&path, REAL_LD_FILE_NAME, X_OK);
   if (ld_file_name == 0)
 #endif
   /* Search the (target-specific) compiler dirs for ld'.  */
-  ld_file_name = find_a_file (&cpath, real_ld_suffix);
+  ld_file_name = find_a_file (&cpath, real_ld_suffix, X_OK);
   /* Likewise for `collect-ld'.  */
   if (ld_file_name == 0)
     {
-      ld_file_name = find_a_file (&cpath, collect_ld_suffix);
+      ld_file_name = find_a_file (&cpath, collect_ld_suffix, X_OK);
       use_collect_ld = ld_file_name != 0;
     }
   /* Search the compiler directories for `ld'.  We have protection against
      recursive calls in find_a_file.  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&cpath, ld_suffixes[selected_linker]);
+    ld_file_name = find_a_file (&cpath, ld_suffixes[selected_linker], X_OK);
   /* Search the ordinary system bin directories
      for `ld' (if native linking) or `TARGET-ld' (if cross).  */
   if (ld_file_name == 0)
-    ld_file_name = find_a_file (&path, full_ld_suffixes[selected_linker]);
+    ld_file_name = find_a_file (&path, full_ld_suffixes[selected_linker], X_OK);
 
 #ifdef REAL_NM_FILE_NAME
-  nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME);
+  nm_file_name = find_a_file (&path, REAL_NM_FILE_NAME, X_OK);
   if (nm_file_name == 0)
 #endif
-  nm_file_name = find_a_file (&cpath, gnm_suffix);
+  nm_file_name = find_a_file (&cpath, gnm_suffix, X_OK);
   if (nm_file_name == 0)
-    nm_file_name = find_a_file (&path, full_gnm_suffix);
+    nm_file_name = find_a_file (&path, full_gnm_suffix, X_OK);
   if (nm_file_name == 0)
-    nm_file_name = find_a_file (&cpath, nm_suffix);
+    nm_file_name = find_a_file (&cpath, nm_suffix, X_OK);
   if (nm_file_name == 0)
-    nm_file_name = find_a_file (&path, full_nm_suffix);
+    nm_file_name = find_a_file (&path, full_nm_suffix, X_OK);
 
 #ifdef LDD_SUFFIX
-  ldd_file_name = find_a_file (&cpath, ldd_suffix);
+  ldd_file_name = find_a_file (&cpath, ldd_suffix, X_OK);
   if (ldd_file_name == 0)
-    ldd_file_name = find_a_file (&path, full_ldd_suffix);
+    ldd_file_name = find_a_file (&path, full_ldd_suffix, X_OK);
 #endif
 
 #ifdef REAL_STRIP_FILE_NAME
-  strip_file_name = find_a_file (&path, REAL_STRIP_FILE_NAME);
+  strip_file_name = find_a_file (&path, REAL_STRIP_FILE_NAME, X_OK);
   if (strip_file_name == 0)
 #endif
-  strip_file_name = find_a_file (&cpath, gstrip_suffix);
+  strip_file_name = find_a_file (&cpath, gstrip_suffix, X_OK);
   if (strip_file_name == 0)
-    strip_file_name = find_a_file (&path, full_gstrip_suffix);
+    strip_file_name = find_a_file (&path, full_gstrip_suffix, X_OK);
   if (strip_file_name == 0)
-    strip_file_name = find_a_file (&cpath, strip_suffix);
+    strip_file_name = find_a_file (&cpath, strip_suffix, X_OK);
   if (strip_file_name == 0)
-    strip_file_name = find_a_file (&path, full_strip_suffix);
+    strip_file_name = find_a_file (&path, full_strip_suffix, X_OK);
 
   /* Determine the full path name of the C compiler to use.  */
   c_file_name = getenv ("COLLECT_GCC");
@@ -1171,12 +1171,12 @@ main (int argc, char **argv)
 #endif
     }
 
-  p = find_a_file (&cpath, c_file_name);
+  p = find_a_file (&cpath, c_file_name, X_OK);
 
   /* Here it should be safe to use the system search path since we should have
      already qualified the name of the compiler when it is needed.  */
   if (p == 0)
-    p = find_a_file (&path, c_file_name);
+    p = find_a_file (&path, c_file_name, X_OK);
 
   if (p)
     c_file_name = p;
