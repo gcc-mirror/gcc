@@ -1,3 +1,9 @@
+2013-06-19  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-forwprop.c (simplify_bitwise_binary_boolean): New function.
+	(simplify_bitwise_binary): Use it to simpify certain binary ops on
+	booleans.
+
 2013-06-19  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/arm/vfp.md: Move VFP instruction classification documentation
