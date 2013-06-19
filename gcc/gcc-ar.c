@@ -147,21 +147,17 @@ main(int ac, char **av)
   exe_name = find_a_file (&target_path, PERSONALITY);
   if (!exe_name)
     {
+      const char *real_exe_name = PERSONALITY;
 #ifdef CROSS_DIRECTORY_STRUCTURE
-      const char *cross_exe_name;
-
-      cross_exe_name = concat (target_machine, "-", PERSONALITY, NULL);
-      exe_name = find_a_file (&path, cross_exe_name);
+      real_exe_name = concat (target_machine, "-", PERSONALITY, NULL);
+#endif
+      exe_name = find_a_file (&path, real_exe_name);
       if (!exe_name)
 	{
 	  fprintf (stderr, "%s: Cannot find binary '%s'\n", av[0],
-		   cross_exe_name);
+		   real_exe_name);
 	  exit (1);
 	}
-#else
-      fprintf (stderr, "%s: Cannot find binary '%s'\n", av[0], PERSONALITY);
-      exit (1);
-#endif
     }
 
   /* Create new command line with plugin */
