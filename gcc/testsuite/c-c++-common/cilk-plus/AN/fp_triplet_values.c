@@ -3,27 +3,12 @@
 
 float q;
 
-int main2 (int argc, char **argv);
-int main (int argc, char **argv)
-{
-  int x = 0;
-  if (argc == 1)
-    {
-      const char *array[] = {"a.out", "5"};
-      x = main2 (2, (char **)array);
-    }
-  else
-    x = main2 (argc, argv);
-
-  return x;
-}
-
 void func (int *x)
 {
   *x = 5;
 }
 
-int main2 (int argc, char **argv)
+int main (void)
 {
   int array[10], array2[10];
   array2[:] = array[1.5:2]; /* { dg-error "start-index of array notation triplet is not an integer" } */

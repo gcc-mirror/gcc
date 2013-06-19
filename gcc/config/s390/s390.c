@@ -2017,14 +2017,18 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	 Thus we don't check the displacement for validity here.  If after
 	 elimination the displacement turns out to be invalid after all,
 	 this is fixed up by reload in any case.  */
-      if (base != arg_pointer_rtx
-	  && indx != arg_pointer_rtx
-	  && base != return_address_pointer_rtx
-	  && indx != return_address_pointer_rtx
-	  && base != frame_pointer_rtx
-	  && indx != frame_pointer_rtx
-	  && base != virtual_stack_vars_rtx
-	  && indx != virtual_stack_vars_rtx)
+      /* LRA maintains always displacements up to date and we need to
+	 know the displacement is right during all LRA not only at the
+	 final elimination.  */
+      if (lra_in_progress
+	  || (base != arg_pointer_rtx
+	      && indx != arg_pointer_rtx
+	      && base != return_address_pointer_rtx
+	      && indx != return_address_pointer_rtx
+	      && base != frame_pointer_rtx
+	      && indx != frame_pointer_rtx
+	      && base != virtual_stack_vars_rtx
+	      && indx != virtual_stack_vars_rtx))
 	if (!DISP_IN_RANGE (offset))
 	  return false;
     }
@@ -3189,7 +3193,9 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
   /* We need a scratch register when loading a PLUS expression which
      is not a legitimate operand of the LOAD ADDRESS instruction.  */
-  if (in_p && s390_plus_operand (x, mode))
+  /* LRA can deal with transformation of plus op very well -- so we
+     don't need to prompt LRA in this case.  */
+  if (! lra_in_progress && in_p && s390_plus_operand (x, mode))
     sri->icode = (TARGET_64BIT ?
 		  CODE_FOR_reloaddi_plus : CODE_FOR_reloadsi_plus);
 
@@ -7868,6 +7874,13 @@ s390_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
   return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
+/* Return true if we use LRA instead of reload pass.  */
+static bool
+s390_lra_p (void)
+{
+  return s390_lra_flag;
+}
+
 /* Return true if register FROM can be eliminated via register TO.  */
 
 static bool
@@ -11104,6 +11117,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P s390_legitimate_constant_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P s390_lra_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate

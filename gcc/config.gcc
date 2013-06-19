@@ -1813,7 +1813,6 @@ mips*-mti-linux*)
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
 	gnu_ld=yes
 	gas=yes
-	test x$with_llsc != x || with_llsc=yes
 	;;
 mips64*-*-linux* | mipsisa64*-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/gnu-user64.h mips/linux64.h mips/linux-common.h"
@@ -1834,7 +1833,6 @@ mips64*-*-linux* | mipsisa64*-*-linux*)
 	esac
 	gnu_ld=yes
 	gas=yes
-	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-*-linux*)				# Linux MIPS, either endian.
         tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} mips/gnu-user.h mips/linux.h"
@@ -1850,7 +1848,6 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         mipsisa32*)
 		tm_defines="${tm_defines} MIPS_ISA_DEFAULT=32"
         esac
-	test x$with_llsc != x || with_llsc=yes
 	;;
 mips*-mti-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h mips/mti-elf.h"
@@ -1928,23 +1925,25 @@ mipsisa64r2-*-elf* | mipsisa64r2el-*-elf*)
 mipsisa64sr71k-*-elf*)
         tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
         tmake_file=mips/t-sr71k
-	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sr71000\\\" MIPS_ABI_DEFAULT=ABI_EABI"
         ;;
 mipsisa64sb1-*-elf* | mipsisa64sb1el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf mips/t-sb1"
-	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=64 MIPS_CPU_STRING_DEFAULT=\\\"sb1\\\" MIPS_ABI_DEFAULT=ABI_O64"
 	;;
-mips-*-elf* | mipsel-*-elf*)
+mips-*-elf* | mipsel-*-elf* | mipsr5900-*-elf* | mipsr5900el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf"
+	;;
+mips64r5900-*-elf* | mips64r5900el-*-elf*)
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
+	tmake_file="mips/t-elf"
+	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
 	;;
 mips64-*-elf* | mips64el-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
 	tmake_file="mips/t-elf"
-	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips64vr-*-elf* | mips64vrel-*-elf*)
@@ -1955,7 +1954,6 @@ mips64vr-*-elf* | mips64vrel-*-elf*)
 mips64orion-*-elf* | mips64orionel-*-elf*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elforion.h mips/elf.h"
 	tmake_file="mips/t-elf"
-	target_cpu_default="MASK_64BIT|MASK_FLOAT64"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_O64"
 	;;
 mips*-*-rtems*)
@@ -2981,9 +2979,6 @@ if test x$with_cpu = x ; then
 	  ;;
       esac
       ;;
-    mips*-*-vxworks)
-      with_arch=mips2
-      ;;
     powerpc*-*-*spe*)
       if test x$enable_e500_double = xyes; then
          with_cpu=8548
@@ -3044,6 +3039,12 @@ if test x$with_arch = x ; then
     x86_64-*-*)
       with_arch=$arch
       ;;
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      with_arch=r5900
+      ;;
+    mips*-*-vxworks)
+      with_arch=mips2
+      ;;
   esac
 
   # Avoid overriding --with-arch-32 and --with-arch-64 values.
@@ -3074,6 +3075,17 @@ if test x$with_arch = x ; then
 	with_arch_64=x86-64
 	with_arch=
       fi
+      ;;
+  esac
+fi
+
+# Infer a default setting for --with-float.
+if test x$with_float = x; then
+  case ${target} in
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      # The R5900 doesn't support 64-bit float.  32-bit float doesn't
+      # comply with IEEE 754.
+      with_float=soft
       ;;
   esac
 fi
@@ -3110,6 +3122,20 @@ if test x$with_schedule = x; then
 		with_schedule=7100LC
 		;;
 	esac
+fi
+
+# Infer a default setting for --with-llsc.
+if test x$with_llsc = x; then
+  case ${target} in
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      # The R5900 doesn't support LL(D) and SC(D).
+      with_llsc=no
+      ;;
+    mips*-*-linux*)
+      # The kernel emulates LL and SC where necessary.
+      with_llsc=yes
+      ;;
+  esac
 fi
 
 # Validate and mark as valid any --with options supported

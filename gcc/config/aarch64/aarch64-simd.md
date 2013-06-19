@@ -409,7 +409,7 @@
      case 4: return "ins\t%0.d[0], %1";
      case 5: return "mov\t%0, %1";
      case 6:
-	return aarch64_output_simd_mov_immediate (&operands[1],
+	return aarch64_output_simd_mov_immediate (operands[1],
 						  <MODE>mode, 64);
      default: gcc_unreachable ();
      }
@@ -440,7 +440,7 @@
     case 5:
 	return "#";
     case 6:
-	return aarch64_output_simd_mov_immediate (&operands[1], <MODE>mode, 128);
+	return aarch64_output_simd_mov_immediate (operands[1], <MODE>mode, 128);
     default:
 	gcc_unreachable ();
     }
@@ -1058,9 +1058,9 @@
 	  (vec_duplicate:<VHALF> (const_int 0))))]
   "TARGET_SIMD"
   "@
-   mov\\t%d0, %d1
-   fmov\t%d0, %1
-   dup\t%d0, %1"
+   dup\\t%d0, %1.d[0]
+   fmov\\t%d0, %1
+   dup\\t%d0, %1"
   [(set_attr "v8type" "*,fmov,*")
    (set_attr "simd_type" "simd_dup,*,simd_dup")
    (set_attr "simd_mode" "<MODE>")
@@ -1189,6 +1189,104 @@
 )
 
 ;; Widening arithmetic.
+
+(define_insn "*aarch64_<su>mlal_lo<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (plus:<VWIDE>
+          (mult:<VWIDE>
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 2 "register_operand" "w")
+                 (match_operand:VQW 3 "vect_par_cnst_lo_half" "")))
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 4 "register_operand" "w")
+                 (match_dup 3))))
+          (match_operand:<VWIDE> 1 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "<su>mlal\t%0.<Vwtype>, %2.<Vhalftype>, %4.<Vhalftype>"
+  [(set_attr "simd_type" "simd_mlal")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_<su>mlal_hi<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (plus:<VWIDE>
+          (mult:<VWIDE>
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 2 "register_operand" "w")
+                 (match_operand:VQW 3 "vect_par_cnst_hi_half" "")))
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 4 "register_operand" "w")
+                 (match_dup 3))))
+          (match_operand:<VWIDE> 1 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "<su>mlal2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vtype>"
+  [(set_attr "simd_type" "simd_mlal")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_<su>mlsl_lo<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (minus:<VWIDE>
+          (match_operand:<VWIDE> 1 "register_operand" "0")
+          (mult:<VWIDE>
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 2 "register_operand" "w")
+                 (match_operand:VQW 3 "vect_par_cnst_lo_half" "")))
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 4 "register_operand" "w")
+                 (match_dup 3))))))]
+  "TARGET_SIMD"
+  "<su>mlsl\t%0.<Vwtype>, %2.<Vhalftype>, %4.<Vhalftype>"
+  [(set_attr "simd_type" "simd_mlal")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_<su>mlsl_hi<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (minus:<VWIDE>
+          (match_operand:<VWIDE> 1 "register_operand" "0")
+          (mult:<VWIDE>
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 2 "register_operand" "w")
+                 (match_operand:VQW 3 "vect_par_cnst_hi_half" "")))
+              (ANY_EXTEND:<VWIDE> (vec_select:<VHALF>
+                 (match_operand:VQW 4 "register_operand" "w")
+                 (match_dup 3))))))]
+  "TARGET_SIMD"
+  "<su>mlsl2\t%0.<Vwtype>, %2.<Vtype>, %4.<Vtype>"
+  [(set_attr "simd_type" "simd_mlal")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_<su>mlal<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (plus:<VWIDE>
+          (mult:<VWIDE>
+            (ANY_EXTEND:<VWIDE>
+              (match_operand:VDW 1 "register_operand" "w"))
+            (ANY_EXTEND:<VWIDE>
+              (match_operand:VDW 2 "register_operand" "w")))
+          (match_operand:<VWIDE> 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "<su>mlal\t%0.<Vwtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_mlal")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_<su>mlsl<mode>"
+  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
+        (minus:<VWIDE>
+          (match_operand:<VWIDE> 1 "register_operand" "0")
+          (mult:<VWIDE>
+            (ANY_EXTEND:<VWIDE>
+              (match_operand:VDW 2 "register_operand" "w"))
+            (ANY_EXTEND:<VWIDE>
+              (match_operand:VDW 3 "register_operand" "w")))))]
+  "TARGET_SIMD"
+  "<su>mlsl\t%0.<Vwtype>, %2.<Vtype>, %3.<Vtype>"
+  [(set_attr "simd_type" "simd_mlal")
+   (set_attr "simd_mode" "<MODE>")]
+)
 
 (define_insn "aarch64_simd_vec_<su>mult_lo_<mode>"
  [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
@@ -2218,15 +2316,29 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "aarch64_combine<mode>"
+(define_insn_and_split "aarch64_combine<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
         (vec_concat:<VDBL> (match_operand:VDC 1 "register_operand" "w")
 			   (match_operand:VDC 2 "register_operand" "w")))]
   "TARGET_SIMD"
-  "mov\\t%0.d[0], %1.d[0]\;ins\\t%0.d[1], %2.d[0]"
-  [(set_attr "simd_type" "simd_ins")
-   (set_attr "simd_mode" "<MODE>")]
-)
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  aarch64_split_simd_combine (operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "aarch64_simd_combine<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand" "=&w")
+        (vec_concat:<VDBL> (match_operand:VDC 1 "register_operand" "w")
+  (match_operand:VDC 2 "register_operand" "w")))]
+  "TARGET_SIMD"
+  {
+    emit_insn (gen_move_lo_quad_<Vdbl> (operands[0], operands[1]));
+    emit_insn (gen_move_hi_quad_<Vdbl> (operands[0], operands[2]));
+    DONE;
+  })
 
 ;; <su><addsub>l<q>.
 

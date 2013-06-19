@@ -1,3 +1,15 @@
+2013-06-19 Gary Funck  <gary@intrepid.com>
+
+	Merge trunk version 200149 into gupc branch.
+	upc-act.c (upc_create_static_var): New.
+	(upc_build_init_func): Call upc_create_static_var() to
+	create a static variable, __upc_init_func_addr, which
+	is initialized to the address of the UPC
+	shared data initialization function.  This change is
+	needed to avoid writing to the output assembly language
+	file too early.
+	(upc_build_sync_stmt): Delete unused variable, sync_expr_type.
+
 2013-05-14 Gary Funck  <gary@intrepid.com>
 
 	upc-pts-packed.c (upc_pts_packed_build_cvt):

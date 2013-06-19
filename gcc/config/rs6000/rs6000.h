@@ -715,6 +715,11 @@ extern unsigned char rs6000_recip_bits[];
    instructions for them.  Might as well be consistent with bits and bytes.  */
 #define WORDS_BIG_ENDIAN 1
 
+/* This says that for the IBM long double the larger magnitude double
+   comes first.  It's really a two element double array, and arrays
+   don't index differently between little- and big-endian.  */
+#define LONG_DOUBLE_LARGE_FIRST 1
+
 #define MAX_BITS_PER_WORD 64
 
 /* Width of a word, in units (bytes).  */
@@ -1114,10 +1119,10 @@ extern unsigned rs6000_pointer_size;
 #define VINT_REGNO_P(N) ALTIVEC_REGNO_P (N)
 
 /* Alternate name for any vector register supporting logical operations, no
-   matter which instruction set(s) are available.  Under VSX, we allow GPRs as
-   well as vector registers on 64-bit systems.  We don't allow 32-bit systems,
-   due to the number of registers involved, and the number of instructions to
-   load/store the values..  */
+   matter which instruction set(s) are available.  For 64-bit mode, we also
+   allow logical operations in the GPRS.  This is to allow atomic quad word
+   builtins not to need the VSX registers for lqarx/stqcx.  It also helps with
+   __int128_t arguments that are passed in GPRs.  */
 #define VLOGICAL_REGNO_P(N)						\
   (ALTIVEC_REGNO_P (N)							\
    || (TARGET_VSX && FP_REGNO_P (N))					\

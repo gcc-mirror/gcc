@@ -783,7 +783,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 
-      int __e = __gthread_once(&(__once._M_once), &__once_proxy);
+      int __e = __gthread_once(&__once._M_once, &__once_proxy);
 
 #ifndef _GLIBCXX_HAVE_TLS
       if (__functor_lock)

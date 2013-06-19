@@ -1,3 +1,604 @@
+2013-06-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/unaligned-memcpy-2.c (dest): Initialize to
+	ensure alignment.
+
+2013-06-16  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of 
+	accidentally placing minus sign for length instead of stride.
+
+2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57425
+	PR rtl-optimization/57569
+	* gcc.dg/torture/pr57425-1.c, gcc.dg/torture/pr57425-2.c: New files.
+	* gcc.dg/torture/pr57425-3.c, gcc.dg/torture/pr57569.c: Likewise.
+
+2013-06-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	PR fortran/56136
+	* gfortran.dg/typebound_assignment_5.f03: Check the absence of any
+	packing.
+	* gfortran.dg/typebound_assignment_6.f03: New.
+
+2013-06-15  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* gcc.target/h8300/h8300.exp: New.
+	* gcc.dg/pragma-isr.c: Move to ...
+	* gcc.target/sh/torture/pragma-isr.c: ... here ...
+	* gcc.target/h8300/pragma-isr.c: ... and here.
+	* gcc.dg/pragma-isr2.c: Move to ...
+	* gcc.target/sh/torture/pragma-isr2.c: ... here ...
+	* gcc.target/h8300/pragma-isr2.c: ... and here.
+	* gcc.dg/pragma-isr-trapa.c: Move to ...
+	* gcc.target/sh/pragma-isr-trapa.c: ... here.
+	* gcc.dg/pragma-isr-trapa2.c: Move to ...
+	* gcc.target/sh/pragma-isr-trapa2.c: ... here.
+	* gcc.dg/pragma-isr-trap_exit.c: Move to ...
+	* gcc.target/sh/pragma-isr-trap-exit.c: ... here.
+	* gcc.dg/pragma-isr-nosave_low_regs.c: Move to ...
+	* gcc.target/sh/pragma-isr-nosave_low_regs.c: ... here.
+	* gcc.dg/attr-isr-nosave_low_regs.c: Move to ...
+	* gcc.target/sh/attr-isr-nosave_low_regs.c: ... here.
+	* gcc.dg/attr-isr-trap_exit.c: Move to ...
+	* gcc.target/sh/attr-isr-trap_exit.c: ... here.
+	* gcc.dg/attr-isr-trapa.c: Move to ...
+	* gcc.target/sh/attr-isr-trapa.c: ... here.
+
+2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51413
+	* g++.dg/ext/builtin-offsetof1.C: New.
+
+2013-06-14  Vidya Praveen <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/vect_smlal_1.c: New file.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57508
+	* gfortran.dg/defined_assignment_7.f90: New.
+
+2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57599
+	* g++.dg/rtti/dyncast6.C: New.
+	* g++.dg/cpp0x/dyncast1.C: Likewise.
+
+2013-06-14  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/57134
+	* gcc.dg/pr57134.c: New.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57596
+	* gfortran.dg/deferred_type_param_9.f90: New.
+
+2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/fold-minus-1.c: New testcase.
+
+2013-06-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	* gfortran.dg/typebound_assignment_5.f03: New.
+
+2013-06-13  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/forwprop-27.c: New testcase.
+
+2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/atomic-p7.c: New file, add tests for atomic
+	load/store instructions on power7, power8.
+	* gcc.target/powerpc/atomic-p8.c: Likewise.
+
+2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57577
+	* c-c++-common/cilk-plus/AN/pr57577.c: New testcase.
+
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38958
+	* g++.dg/warn/Wunused-var-20.C: New.
+
+2013-06-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp: Handle -f{no-,}common.
+	* gcc.target/mips/memcpy-1.c: Remove redundant dg-do.
+	Run with -fno-common.
+
+2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c (main): Replaced abort
+	and exit function calls with return 1 and return 0, respectively.
+
+2013-06-12  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/umips-branch-1.c, gcc.target/mips/umips-branch-2.c:
+	New tests.
+
+2013-06-12  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/57361
+	* gcc.dg/tree-ssa/pr57361.c: New file.
+
+2013-06-12  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* gcc.target/arm/unaligned-memcpy-4.c (src, dst): Initialize
+	to ensure alignment.
+	* gcc.target/arm/unaligned-memcpy-3.c (src): Likewise.
+
+2013-06-12  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/finalize_10.f90: Update scan-tree-dump.
+
+2013-06-12  Tobias Burnus  <burnus@net-b.de>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	* gfortran.dg/finalize_10.f90: Update scan-tree-dump.
+
+2013-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56564
+	* gcc.target/i386/pr56564-1.c: Skip on darwin, mingw and cygwin.
+	* gcc.target/i386/pr56564-3.c: Likewise.
+
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57535
+	* gfortran.dg/class_array_18.f90: New.
+
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/57551
+	* g++.dg/ext/visibility/anon6.C: Update testcase.
+
+2013-06-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57563
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c (main): Fixed a bug
+	in how we check __sec_reduce_mutating function's result.	
+
+2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/direct-move-vint1.c: New tests for power8
+	direct move instructions.
+	* gcc.target/powerpc/direct-move-vint2.c: Likewise.
+	* gcc.target/powerpc/direct-move.h: Likewise.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float2.c: Likewise.
+	* gcc.target/powerpc/direct-move-double1.c: Likewise.
+	* gcc.target/powerpc/direct-move-double2.c: Likewise.
+	* gcc.target/powerpc/direct-move-long1.c: Likewise.
+	* gcc.target/powerpc/direct-move-long2.c: Likewise.
+
+2013-06-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52440
+	* g++.dg/cpp0x/pr52440.C: New.
+
+2013-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/56564
+	* gcc.target/i386/pr56564-1.c: New test.
+	* gcc.target/i386/pr56564-2.c: New test.
+	* gcc.target/i386/pr56564-3.c: New test.
+	* gcc.target/i386/pr56564-4.c: New test.
+	* gcc.target/i386/avx256-unaligned-load-4.c: Add -fno-common.
+	* gcc.target/i386/avx256-unaligned-store-1.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-3.c: Likewise.
+	* gcc.target/i386/avx256-unaligned-store-4.c: Likewise.
+	* gcc.target/i386/vect-sizes-1.c: Likewise.
+	* gcc.target/i386/memcpy-1.c: Likewise.
+	* gcc.dg/vect/costmodel/i386/costmodel-vect-31.c (tmp): Initialize.
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-31.c (tmp): Likewise.
+
+2013-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* g++.dg/abi/forced.C: Extend current handling of Linux-based x86
+	systems to cover all GNU systems.
+	* g++.dg/abi/guard2.C: Likewise.
+	* g++.dg/cpp0x/constexpr-rom.C: Likewise.
+	* g++.dg/eh/sighandle.C: Likewise.
+	* g++.dg/ext/cleanup-10.C: Likewise.
+	* g++.dg/ext/cleanup-11.C: Likewise.
+	* g++.dg/ext/cleanup-8.C: Likewise.
+	* g++.dg/ext/cleanup-9.C: Likewise.
+	* g++.dg/opt/const5.C: Likewise.
+	* g++.dg/opt/life1.C: Likewise.
+	* g++.dg/other/pr39496.C: Likewise.
+	* g++.old-deja/g++.abi/aggregates.C: Likewise.
+	* g++.old-deja/g++.abi/align.C: Likewise.
+	* g++.old-deja/g++.abi/bitfields.C: Likewise.
+	* g++.old-deja/g++.law/weak.C: Likewise.
+	* g++.old-deja/g++.pt/asm1.C: Likewise.
+	* gcc.c-torture/execute/20030125-1.x: Likewise.
+	* gcc.c-torture/execute/990127-2.x: Likewise.
+	* gcc.dg/20041106-1.c: Likewise.
+	* gcc.dg/20050503-1.c: Likewise.
+	* gcc.dg/builtin-object-size-5.c: Likewise.
+	* gcc.dg/cleanup-10.c: Likewise.
+	* gcc.dg/cleanup-11.c: Likewise.
+	* gcc.dg/cleanup-8.c: Likewise.
+	* gcc.dg/cleanup-9.c: Likewise.
+	* gcc.dg/complex-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/asm-line1.c: Likewise.
+	* gcc.dg/debug/dwarf2/discriminator.c: Likewise.
+	* gcc.dg/dfp/convert-dfp-round-thread.c: Likewise.
+	* gcc.dg/dfp/pr35739.c: Likewise.
+	* gcc.dg/fdata-sections-1.c: Likewise.
+	* gcc.dg/lto/20090206-1_0.c: Likewise.
+	* gcc.dg/lto/20090206-2_0.c: Likewise.
+	* gcc.dg/pr30360.c: Likewise.
+	* gcc.dg/pr37303.c: Likewise.
+	* gcc.dg/pr39323-1.c: Likewise.
+	* gcc.dg/pr39323-2.c: Likewise.
+	* gcc.dg/pr39323-3.c: Likewise.
+	* gcc.dg/pr45416.c: Likewise.
+	* gcc.dg/setjmp-2.c: Likewise.
+	* gcc.dg/split-1.c: Likewise.
+	* gcc.dg/split-3.c: Likewise.
+	* gcc.dg/split-4.c: Likewise.
+	* gcc.dg/strlenopt-12g.c: Likewise.
+	* gcc.dg/strlenopt-14g.c: Likewise.
+	* gcc.dg/strlenopt-14gf.c: Likewise.
+	* gcc.dg/strlenopt-16g.c: Likewise.
+	* gcc.dg/strlenopt-17g.c: Likewise.
+	* gcc.dg/strlenopt-18g.c: Likewise.
+	* gcc.dg/strlenopt-1f.c: Likewise.
+	* gcc.dg/strlenopt-22g.c: Likewise.
+	* gcc.dg/strlenopt-2f.c: Likewise.
+	* gcc.dg/strlenopt-4g.c: Likewise.
+	* gcc.dg/strlenopt-4gf.c: Likewise.
+	* gcc.dg/struct-ret-3.c: Likewise.
+	* gcc.dg/torture/stackalign/setjmp-2.c: Likewise.
+	* gcc.misc-tests/linkage.exp: Likewise.
+	* gcc.target/i386/20000724-1.c: Likewise.
+	* gcc.target/i386/align-main-3.c: Likewise.
+	* gcc.target/i386/cleanup-1.c: Likewise.
+	* gcc.target/i386/inline-mcpy.c: Likewise.
+	* gcc.target/i386/pr32268.c: Likewise.
+	* gcc.target/i386/pr36613.c: Likewise.
+	* gcc.target/i386/pr39013-1.c: Likewise.
+	* gcc.target/i386/pr39013-2.c: Likewise.
+	* gcc.target/i386/pr39496.c: Likewise.
+	* gcc.target/i386/pr40906-3.c: Likewise.
+	* gcc.target/i386/pr46084.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_pie): Likewise.
+
+2013-06-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/6526
+	* gcc.target/sh/pr6526.c: New.
+
+2013-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57568
+	* gcc.c-torture/execute/pr57568.c: New test.
+
+2013-06-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/37404
+	* g++.dg/other/vararg-4.C: New.
+
+2013-06-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57559
+	* gcc.target/s390/pr57559.c : New test.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/finalize_10.f90: New.
+	* gfortran.dg/auto_dealloc_2.f90: Update tree-dump.
+	* gfortran.dg/finalize_15.f90: New.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57553
+	* gfortran.dg/storage_size_4.f90: New.
+
+2013-06-07  Sriraman Tallam  <tmsriram@google.com>
+
+	PR c++/57548
+	* testsuite/g++.dg/ext/pr57548.C: New test.
+
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR middle-end/57541
+	* c-c++-common/cilk-plus/AN/pr57541.c: New test case.
+
+2013-06-07  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Remove brackets in template.
+
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57549
+	* gfortran.dg/array_constructor_48.f90: New.
+	* gfortran.dg/array_constructor_type_14.f03: Correct test case.
+	* gfortran.dg/array_constructor_type_15.f03: Ditto.
+
+2013-06-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/56315
+	* gcc.target/arm/xordi3-opt.c: New test.
+
+2013-06-07  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/dwarf2/discriminator.c: Fix wording.
+	Revert to dg-options.
+
+2013-06-07  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/55033
+	* gcc.target/powerpc/pr55033.c: New.
+
+2013-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53658
+	* g++.dg/cpp0x/alias-decl-36.C: New.
+
+2013-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/p8vector-builtin-1.c: New test to test
+	power8 builtin functions.
+	* gcc.target/powerpc/p8vector-builtin-2.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-4.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-5.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-6.c: Likewise.
+	* gcc.target/powerpc/p8vector-builtin-7.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-1.c: New
+	tests to test power8 auto-vectorization.
+	* gcc.target/powerpc/p8vector-vectorize-2.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-3.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-4.c: Likewise.
+	* gcc.target/powerpc/p8vector-vectorize-5.c: Likewise.
+
+	* gcc.target/powerpc/crypto-builtin-1.c: Use effective target
+	powerpc_p8vector_ok instead of powerpc_vsx_ok.
+
+	* gcc.target/powerpc/bool.c: New file, add eqv, nand, nor tests.
+
+	* lib/target-supports.exp (check_p8vector_hw_available) Add power8
+	support.
+	(check_effective_target_powerpc_p8vector_ok): Likewise.
+	(is-effective-target): Likewise.
+	(check_vect_support_and_set_flags): Likewise.
+
+2013-06-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43652
+	* g++.dg/parse/error53.C: New.
+
+2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57459
+	* gcc.target/i386/pr57459.c: New test.
+
+2013-06-06  Teresa Johnson  <tejohnson@google.com>
+
+	PR c++/53743
+	* gcc.dg/tree-prof/va-arg-pack-1.c: Cloned from c-torture, made
+	into -freorder-blocks-and-partition test.
+	* gcc.dg/tree-prof/comp-goto-1.c: Ditto.
+	* gcc.dg/tree-prof/20041218-1.c: Ditto.
+	* gcc.dg/tree-prof/pr52027.c: Use -O2.
+	* gcc.dg/tree-prof/pr50907.c: Ditto.
+	* gcc.dg/tree-prof/pr45354.c: Ditto.
+	* g++.dg/tree-prof/partition2.C: Ditto.
+	* g++.dg/tree-prof/partition3.C: Ditto.
+
+2013-06-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57542
+	* gfortran.dg/finalize_16.f90: New.
+
+2013-06-06  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.dg/vect/no-section-anchors-vect-68.c:
+	Add dg-skip-if aarch64_tiny.
+
+2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR C/57457
+	* c-c++-common/cilk-plus/AN/pr57457.c: New test.
+	* c-c++-common/cilk-plus/AN/pr57457-2.c: Likewise.
+
+2013-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51908
+	* g++.dg/cpp0x/decltype54.C: New.
+
+2013-06-05  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.dg/fshort-wchar.c: Add extra dg-options for
+	arm*-*-*eabi* targets.
+	* gcc.dg/tree-ssa/pr42585.c: Change dg-final to catch
+	arm*-*-* targets.
+	* gcc.dg/tree-ssa/pr43491.c: Likewise.
+
+2013-06-05  Manfred Schwarb  <manfred99@gmx.ch>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/string_length_2.f90: Fix dg-do run.
+	* gfortran.dg/io_real_boz_3.f90: Remove extra space in "dg-do  run".
+	* gfortran.dg/io_real_boz_4.f90: Ditto.
+	* gfortran.dg/io_real_boz_5.f90: Ditto.
+
+2013-06-05  Andreas Schwab  <schwab@suse.de>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Remove duplicated contents.
+
+2013-06-04  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias.c: New testcase.
+
+2013-06-04  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/array_test1.c (main): Replaced argc, argv
+	parameters with void.
+	(main2): Removed argc parameter.
+	* c-c++-common/cilk-plus/AN/array_test2.c (main2): Likewise.
+	(main): Replaced argc, argv parameters with void.
+	* c-c++-common/cilk-plus/AN/array_test_ND.c (main): Likewise.
+	(main2): Removed argc parameter.
+	* c-c++-common/cilk-plus/AN/builtin_fn_custom.c (main): Replaced argc
+	argv parameters with void.  Added __asm volatile to avoid optimization
+	on argc, if necessary.
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating (main): Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/conditional.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/exec-once2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/fn_ptr.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/gather-scatter-errors.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/gather_scatter.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/misc.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_reduce_return.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/test_builtin_return.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/vla.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/comma-exp.c (main): Replaced argc, argv
+	parameters with void.
+	(main2): Removed argc parameter.
+	* c-c++-common/cilk-plus/AN/if_test.c (main2): Likewise.
+	(main): Replaced argc, argv parameters with void.
+	* c-c++-common/cilk-plus/AN/fp_triplet_values (main2): Replace argc,
+	argv parameters with void.  Also renamed this function as main, and
+	delete the existing main.
+	* c-c++-common/cilk-plus/AN/sec_implicit.c (main2): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit2.c (main2): Likewise.
+	* c-c++-common/cilk-plus/AN/sec_reduce_max_min_ind.c (main2): Likewise.
+
+2013-06-04  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/movi_1.c: New test.
+
+2013-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/finalize_12.f90: New.
+	* gfortran.dg/alloc_comp_basics_1.f90: Add BLOCK for
+	end of scope finalization.
+	* gfortran.dg/alloc_comp_constructor_1.f90: Ditto.
+	* gfortran.dg/allocatable_scalar_9.f90: Ditto.
+	* gfortran.dg/auto_dealloc_2.f90: Ditto.
+	* gfortran.dg/class_19.f03: Ditto.
+	* gfortran.dg/coarray_lib_alloc_1.f90: Ditto.
+	* gfortran.dg/coarray_lib_alloc_2.f90: Ditto.
+	* gfortran.dg/extends_14.f03: Ditto.
+	* gfortran.dg/move_alloc_4.f90: Ditto.
+	* gfortran.dg/typebound_proc_27.f03: Ditto.
+
+2013-06-04  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/bounds_check_7.f90: Remove "! {".
+	* gfortran.dg/coarray_poly_3.f90: Remove inactive, broken dg-*.
+	* gfortran.dg/default_initialization_5.f90: Update dg-do.
+	* gfortran.dg/g77/f77-edit-s-out.f: Fix broken dg-output.
+	* gfortran.dg/g77/f77-edit-t-out.f: Fix broken dg-output.
+	* gfortran.dg/g77/f77-edit-x-out.f: Fix broken dg-output.
+	* gfortran.dg/init_flag_11.f90: Fix broken dg-options.
+	* gfortran.dg/io_real_boz_3.f90: Add comment regarding dg-do  run.
+	* gfortran.dg/io_real_boz_4.f90: Ditto.
+	* gfortran.dg/io_real_boz_5.f90: Ditto.
+	* gfortran.dg/namelist_print_1.f: Fix broken dg-output.
+	* gfortran.dg/read_x_eor.f90: Fix broken dg-output.
+	* gfortran.dg/repeat_1.f90: Improve dg-output pattern.
+	* gfortran.dg/spread_bounds_1.f90: Fix broken dg-output.
+	* gfortran.dg/transpose_2.f90: Fix dg-output.
+
+2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): New testcase.
+	* c-c++-common/cilk-plus/AN/rank_mismatch.c: Added a '-w' option to
+	dg-option and an header comment.
+	
+2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57419
+	* g++.dg/cpp0x/sfinae46.C: New.
+	* g++.dg/cpp0x/defaulted13.C: Adjust.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp0x/defaulted26.C: Likewise.
+	* g++.dg/cpp0x/defaulted3.C: Likewise.
+	* g++.dg/cpp0x/error1.C: Likewise.
+	* g++.dg/cpp0x/implicit1.C: Likewise.
+	* g++.dg/cpp0x/implicit11.C: Likewise.
+	* g++.dg/cpp0x/inh-ctor13.C: Likewise.
+	* g++.dg/cpp0x/initlist47.C: Likewise.
+	* g++.dg/cpp0x/initlist9.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-errloc.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-errloc2.C: Likewise.
+	* g++.dg/cpp0x/nsdmi-local.C: Likewise.
+	* g++.dg/cpp0x/union4.C: Likewise.
+	* g++.dg/template/crash108.C: Likewise.
+	* g++.dg/template/crash41.C: Likewise.
+	* g++.old-deja/g++.jason/local.C: Likewise.
+	* g++.old-deja/g++.law/visibility3.C: Likewise.
+
+2013-06-03  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/vect/bb-slp-31.c: Update vect dump message.
+	* gcc.dg/vect/bb-slp-14.c: Ditto.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Ditto.
+	* gcc.dg/vect/bb-slp-23.c: Ditto.
+	* gcc.dg/vect/bb-slp-15.c: Ditto.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Ditto.
+	* gcc.dg/vect/bb-slp-24.c: Ditto.
+	* gcc.dg/vect/bb-slp-16.c: Ditto.
+	* gcc.dg/vect/bb-slp-25.c: Ditto.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Ditto.
+	* gcc.dg/vect/bb-slp-17.c: Ditto.
+	* gcc.dg/vect/bb-slp-1.c: Ditto.
+	* gcc.dg/vect/bb-slp-26.c: Ditto.
+	* gcc.dg/vect/bb-slp-18.c: Ditto.
+	* gcc.dg/vect/bb-slp-2.c: Ditto.
+	* gcc.dg/vect/no-tree-reassoc-bb-slp-12.c: Ditto.
+	* gcc.dg/vect/bb-slp-27.c: Ditto.
+	* gcc.dg/vect/bb-slp-19.c: Ditto.
+	* gcc.dg/vect/bb-slp-3.c: Ditto.
+	* gcc.dg/vect/bb-slp-28.c: Ditto.
+	* gcc.dg/vect/bb-slp-4.c: Ditto.
+	* gcc.dg/vect/bb-slp-29.c: Ditto.
+	* gcc.dg/vect/bb-slp-5.c: Ditto.
+	* gcc.dg/vect/bb-slp-6.c: Ditto.
+	* gcc.dg/vect/bb-slp-8a.c: Ditto.
+	* gcc.dg/vect/bb-slp-7.c: Ditto.
+	* gcc.dg/vect/bb-slp-8b.c: Ditto.
+	* gcc.dg/vect/bb-slp-8.c: Ditto.
+	* gcc.dg/vect/bb-slp-9.c: Ditto.
+	* gcc.dg/vect/bb-slp-10.c: Ditto.
+	* gcc.dg/vect/bb-slp-11.c: Ditto.
+	* gcc.dg/vect/bb-slp-20.c: Ditto.
+	* gcc.dg/vect/bb-slp-cond-1.c: Ditto.
+	* gcc.dg/vect/bb-slp-21.c: Ditto.
+	* gcc.dg/vect/bb-slp-30.c: Ditto.
+	* gcc.dg/vect/bb-slp-13.c: Ditto.
+	* gcc.dg/vect/bb-slp-22.c: Ditto.
+	* g++.dg/vect/slp-pr50413.cc: Ditto.
+	* g++.dg/vect/slp-pr56812.cc: Ditto.
+	* g++.dg/vect/slp-pr50819.cc: Ditto.
+
 2013-06-01  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57456

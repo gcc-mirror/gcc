@@ -1,3 +1,103 @@
+2013-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Add fpe_summary.
+	* gfortran.texi (_gfortran_set_options): Update.
+	* invoke.texi (-ffpe-summary): Add doc.
+	* lang.opt (ffpe-summary): Add flag.
+	* options.c (gfc_init_options, gfc_handle_option): Handle it.
+	(gfc_handle_fpe_option): Renamed from gfc_handle_fpe_trap_option,
+	also handle fpe_summary.
+	* trans-decl.c (create_main_function): Update
+	_gfortran_set_options call.
+
+2013-06-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	PR fortran/56136
+	* dependency.c (gfc_check_argument_var_dependency): Return 0 in the
+	array constructor case.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57508
+	* resolve.c (get_temp_from_expr): Don't copy function
+	result attributes to temporary.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57596
+	* trans-decl.c (gfc_trans_deferred_vars): Honor OPTIONAL
+	for nullify and deferred-strings' length variable.
+
+2013-06-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	* trans-expr.c (gfc_conv_variable): Don't walk the reference chain.
+	Handle NULL array references.
+	(gfc_conv_procedure_call): Remove code handling NULL array references.
+
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57535
+	* trans-array.c (build_class_array_ref): Fix ICE for
+	function result variables.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans-decl.c (init_intent_out_dt): Call finalizer
+	when approriate.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57553
+	* simplify.c (gfc_simplify_storage_size): Handle literal
+	strings.
+	* trans-intrinsic.c (gfc_conv_intrinsic_storage_size):
+	Add missing fold_convert.
+
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57549
+	* array.c (gfc_match_array_constructor): Call
+	gfc_match_type_spec instead of gfc_match_decl_type_spec.
+	* match.c (gfc_match_type_spec): Renamed from match_type_spec.
+	(gfc_match_type_is, gfc_match_allocate): Update call.
+	* match.h (gfc_match_type_spec): Add prototype.
+
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57556
+	* trans.c (gfc_build_final_call): Init block before use.
+
+2013-06-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57542
+	* trans.c (gfc_build_final_call): Add se.pre to the block
+	and modify the assert.
+
+2013-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans.h (gfc_build_final_call): Remove prototype.
+	(gfc_add_finalizer_call): Add prototype.
+	* trans-array.c (gfc_trans_dealloc_allocated): Support finalization.
+	(structure_alloc_comps): Update caller.
+	(gfc_trans_deferred_array): Call finalizer.
+	* trans-array.h (gfc_trans_dealloc_allocated): Update prototype.
+	* trans-decl.c (gfc_trans_deferred_vars): Don't deallocate/finalize
+	variables of the main program.
+	* trans-expr.c (gfc_conv_procedure_call): Support finalization.
+	* trans-openmp.c (gfc_omp_clause_dtor,
+	gfc_trans_omp_array_reduction): Update calls.
+	* trans-stmt.c (gfc_trans_deallocate): Avoid double deallocation
+	of alloc components.
+	* trans.c (gfc_add_finalizer_call): New function.
+	(gfc_deallocate_with_status,
+	gfc_deallocate_scalar_with_status): Call it
+	(gfc_build_final_call): Fix handling of scalar coarrays,
+	move up in the file and make static.
+
 2013-06-01  Janus Weil  <janus@gcc.gnu.org>
 	    Mikael Morin  <mikael@gcc.gnu.org>
 

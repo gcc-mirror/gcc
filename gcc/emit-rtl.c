@@ -3574,6 +3574,7 @@ try_split (rtx pat, rtx trial, int last)
 	  break;
 
 	case REG_NON_LOCAL_GOTO:
+	case REG_CROSSING_JUMP:
 	  for (insn = insn_last; insn != NULL_RTX; insn = PREV_INSN (insn))
 	    {
 	      if (JUMP_P (insn))

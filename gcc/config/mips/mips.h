@@ -222,6 +222,7 @@ struct mips_cpu_info {
 #define TARGET_MIPS4130             (mips_arch == PROCESSOR_R4130)
 #define TARGET_MIPS5400             (mips_arch == PROCESSOR_R5400)
 #define TARGET_MIPS5500             (mips_arch == PROCESSOR_R5500)
+#define TARGET_MIPS5900             (mips_arch == PROCESSOR_R5900)
 #define TARGET_MIPS7000             (mips_arch == PROCESSOR_R7000)
 #define TARGET_MIPS9000             (mips_arch == PROCESSOR_R9000)
 #define TARGET_OCTEON		    (mips_arch == PROCESSOR_OCTEON	\
@@ -398,6 +399,9 @@ struct mips_cpu_info {
 									\
       if (TARGET_MCU)							\
 	builtin_define ("__mips_mcu");					\
+									\
+      if (TARGET_EVA)							\
+	builtin_define ("__mips_eva");					\
 									\
       if (TARGET_DSP)							\
 	{								\
@@ -803,6 +807,7 @@ struct mips_cpu_info {
 #define ISA_HAS_MUL3		((TARGET_MIPS3900                       \
 				  || TARGET_MIPS5400			\
 				  || TARGET_MIPS5500			\
+				  || TARGET_MIPS5900			\
 				  || TARGET_MIPS7000			\
 				  || TARGET_MIPS9000			\
 				  || TARGET_MAD				\
@@ -816,6 +821,22 @@ struct mips_cpu_info {
 #define ISA_HAS_DMUL3		(TARGET_64BIT				\
 				 && TARGET_OCTEON			\
 				 && !TARGET_MIPS16)
+
+/* ISA supports instructions DMULT and DMULTU. */
+#define ISA_HAS_DMULT		(TARGET_64BIT && !TARGET_MIPS5900)
+
+/* ISA supports instructions MULT and MULTU.
+   This is always true, but the macro is needed for ISA_HAS_<D>MULT
+   in mips.md.  */
+#define ISA_HAS_MULT		(1)
+
+/* ISA supports instructions DDIV and DDIVU. */
+#define ISA_HAS_DDIV		(TARGET_64BIT && !TARGET_MIPS5900)
+
+/* ISA supports instructions DIV and DIVU.
+   This is always true, but the macro is needed for ISA_HAS_<D>DIV
+   in mips.md.  */
+#define ISA_HAS_DIV		(1)
 
 #define ISA_HAS_DIV3		((TARGET_LOONGSON_2EF			\
 				  || TARGET_LOONGSON_3A)		\
@@ -833,7 +854,9 @@ struct mips_cpu_info {
 
 /* ISA has the integer conditional move instructions introduced in mips4 and
    ST Loongson 2E/2F.  */
-#define ISA_HAS_CONDMOVE        (ISA_HAS_FP_CONDMOVE || TARGET_LOONGSON_2EF)
+#define ISA_HAS_CONDMOVE        (ISA_HAS_FP_CONDMOVE			\
+				 || TARGET_MIPS5900			\
+				 || TARGET_LOONGSON_2EF)
 
 /* ISA has LDC1 and SDC1.  */
 #define ISA_HAS_LDC1_SDC1	(!ISA_MIPS1 && !TARGET_MIPS16)
@@ -946,6 +969,7 @@ struct mips_cpu_info {
 /* ISA has data prefetch instructions.  This controls use of 'pref'.  */
 #define ISA_HAS_PREFETCH	((ISA_MIPS4				\
 				  || TARGET_LOONGSON_2EF		\
+				  || TARGET_MIPS5900			\
 				  || ISA_MIPS32				\
 				  || ISA_MIPS32R2			\
 				  || ISA_MIPS64				\
@@ -1007,15 +1031,18 @@ struct mips_cpu_info {
    and "addiu $4,$4,1".  */
 #define ISA_HAS_LOAD_DELAY	(ISA_MIPS1				\
 				 && !TARGET_MIPS3900			\
+				 && !TARGET_MIPS5900			\
 				 && !TARGET_MIPS16			\
 				 && !TARGET_MICROMIPS)
 
 /* Likewise mtc1 and mfc1.  */
 #define ISA_HAS_XFER_DELAY	(mips_isa <= 3			\
+				 && !TARGET_MIPS5900		\
 				 && !TARGET_LOONGSON_2EF)
 
 /* Likewise floating-point comparisons.  */
 #define ISA_HAS_FCMP_DELAY	(mips_isa <= 3			\
+				 && !TARGET_MIPS5900		\
 				 && !TARGET_LOONGSON_2EF)
 
 /* True if mflo and mfhi can be immediately followed by instructions
@@ -1035,6 +1062,7 @@ struct mips_cpu_info {
 				 || ISA_MIPS64				\
 				 || ISA_MIPS64R2			\
 				 || TARGET_MIPS5500			\
+				 || TARGET_MIPS5900			\
 				 || TARGET_LOONGSON_2EF)
 
 /* ISA includes synci, jr.hb and jalr.hb.  */
@@ -1052,7 +1080,7 @@ struct mips_cpu_info {
 /* ISA includes ll and sc.  Note that this implies ISA_HAS_SYNC
    because the expanders use both ISA_HAS_SYNC and ISA_HAS_LL_SC
    instructions.  */
-#define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS16)
+#define ISA_HAS_LL_SC (mips_isa >= 2 && !TARGET_MIPS5900 && !TARGET_MIPS16)
 #define GENERATE_LL_SC			\
   (target_flags_explicit & MASK_LLSC	\
    ? TARGET_LLSC && !TARGET_MIPS16	\
@@ -1125,6 +1153,7 @@ struct mips_cpu_info {
 %{mdsp} %{mno-dsp} \
 %{mdspr2} %{mno-dspr2} \
 %{mmcu} %{mno-mcu} \
+%{meva} %{mno-eva} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-vr4120} %{mfix-vr4130} \

@@ -2690,8 +2690,15 @@ sched_analyze_2 (struct deps_desc *deps, rtx x, rtx insn)
 
 	/* Always add these dependencies to pending_reads, since
 	   this insn may be followed by a write.  */
-        if (!deps->readonly)
-          add_insn_mem_dependence (deps, true, insn, x);
+	if (!deps->readonly)
+	  {
+	    if ((deps->pending_read_list_length
+		 + deps->pending_write_list_length)
+		> MAX_PENDING_LIST_LENGTH
+		&& !DEBUG_INSN_P (insn))
+	      flush_pending_lists (deps, insn, true, true);
+	    add_insn_mem_dependence (deps, true, insn, x);
+	  }
 
 	sched_analyze_2 (deps, XEXP (x, 0), insn);
 

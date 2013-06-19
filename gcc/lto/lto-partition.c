@@ -60,7 +60,7 @@ get_symbol_class (symtab_node node)
     return SYMBOL_DUPLICATE;
 
   /* Weakref aliases are always duplicated.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+  if (node->symbol.weakref)
     return SYMBOL_DUPLICATE;
 
   /* External declarations are external.  */
@@ -218,10 +218,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node node)
 
   /* Add all aliases associated with the symbol.  */
   for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS
-	&& !lookup_attribute ("weakref",
-			      DECL_ATTRIBUTES
-				(ref->referring->symbol.decl)))
+    if (ref->use == IPA_REF_ALIAS && !node->symbol.weakref)
       add_symbol_to_partition_1 (part, ref->referring);
 
   /* Ensure that SAME_COMDAT_GROUP lists all allways added in a group.  */
@@ -243,8 +240,7 @@ static symtab_node
 contained_in_symbol (symtab_node node)
 {
   /* Weakrefs are never contained in anything.  */
-  if (lookup_attribute ("weakref",
-			DECL_ATTRIBUTES (node->symbol.decl)))
+  if (node->symbol.weakref)
     return node;
   if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
     {
@@ -561,8 +557,7 @@ lto_balanced_map (void)
 
 	      last_visited_node++;
 
-	      gcc_assert (node->symbol.definition
-			  || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)));
+	      gcc_assert (node->symbol.definition || node->symbol.weakref);
 
 	      /* Compute boundary cost of callgraph edges.  */
 	      for (edge = node->callees; edge; edge = edge->next_callee)
@@ -871,8 +866,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
 	 once this is fixed.  */
         || DECL_EXTERNAL (node->symbol.decl)
         || !symtab_real_symbol_p (node))
-       && !may_need_named_section_p (encoder, node)
-       && !lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+       && !may_need_named_section_p (encoder, node))
     return;
 
   /* Now walk symbols sharing the same name and see if there are any conflicts.
@@ -897,11 +891,9 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */
   for (s = symtab_node_for_asm (name); s;)
-    if ((!s->symbol.externally_visible
-	 || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+    if (!s->symbol.externally_visible
 	&& ((symtab_real_symbol_p (s)
-             && (!DECL_EXTERNAL (node->symbol.decl)
-	         || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+             && !DECL_EXTERNAL (node->symbol.decl)
 	     && !TREE_PUBLIC (node->symbol.decl))
  	    || may_need_named_section_p (encoder, s))
 	&& (!encoder

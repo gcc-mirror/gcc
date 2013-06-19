@@ -796,6 +796,7 @@ extern basic_block force_nonfallthru_and_redirect (edge, basic_block, rtx);
 extern bool contains_no_active_insn_p (const_basic_block);
 extern bool forwarder_block_p (const_basic_block);
 extern bool can_fallthru (basic_block, basic_block);
+extern void emit_barrier_after_bb (basic_block bb);
 
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);

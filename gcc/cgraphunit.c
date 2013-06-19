@@ -216,36 +216,45 @@ static GTY(()) struct asm_node *asm_last_node;
 /* Used for vtable lookup in thunk adjusting.  */
 static GTY (()) tree vtable_entry_type;
 
-/* Determine if function DECL is trivially needed and should stay in the
-   compilation unit.  This is used at the symbol table construction time
-   and differs from later logic removing unnecessary functions that can
-   take into account results of analysis, whole program info etc.  */
-
-static bool
-cgraph_decide_is_function_needed (struct cgraph_node *node, tree decl)
+/* Determine if symbol DECL is needed.  That is, visible to something
+   either outside this translation unit, something magic in the system
+   configury */
+bool
+decide_is_symbol_needed (symtab_node node)
 {
-  /* If the user told us it is used, then it must be so.  */
-  if (node->symbol.force_output)
-    return true;
+  tree decl = node->symbol.decl;
 
   /* Double check that no one output the function into assembly file
      early.  */
   gcc_checking_assert (!DECL_ASSEMBLER_NAME_SET_P (decl)
 	               || !TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl)));
 
+  if (!node->symbol.definition)
+    return false;
 
-  /* Keep constructors, destructors and virtual functions.  */
-  if (DECL_STATIC_CONSTRUCTOR (decl)
-      || DECL_STATIC_DESTRUCTOR (decl)
-      || (DECL_VIRTUAL_P (decl)
-	  && optimize && (DECL_COMDAT (decl) || DECL_EXTERNAL (decl))))
-     return true;
+  /* Devirtualization may access these.  */
+  if (DECL_VIRTUAL_P (decl) && optimize)
+    return true;
 
-  /* Externally visible functions must be output.  The exception is
-     COMDAT functions that must be output only when they are needed.  */
+  if (DECL_EXTERNAL (decl))
+    return false;
 
-  if (TREE_PUBLIC (decl)
-      && !DECL_COMDAT (decl) && !DECL_EXTERNAL (decl))
+  /* If the user told us it is used, then it must be so.  */
+  if (node->symbol.force_output)
+    return true;
+
+  /* ABI forced symbols are needed when they are external.  */
+  if (node->symbol.forced_by_abi && TREE_PUBLIC (decl))
+    return true;
+
+ /* Keep constructors, destructors and virtual functions.  */
+   if (TREE_CODE (decl) == FUNCTION_DECL
+       && (DECL_STATIC_CONSTRUCTOR (decl) || DECL_STATIC_DESTRUCTOR (decl)))
+    return true;
+
+  /* Externally visible variables must be output.  The exception is
+     COMDAT variables that must be output only when they are needed.  */
+  if (TREE_PUBLIC (decl) && !DECL_COMDAT (decl))
     return true;
 
   return false;
@@ -370,6 +379,7 @@ cgraph_reset_node (struct cgraph_node *node)
   node->symbol.analyzed = false;
   node->symbol.definition = false;
   node->symbol.alias = false;
+  node->symbol.weakref = false;
   node->symbol.cpp_implicit_alias = false;
 
   cgraph_node_remove_callees (node);
@@ -447,7 +457,7 @@ cgraph_finalize_function (tree decl, bool nested)
     ggc_collect ();
 
   if (cgraph_state == CGRAPH_STATE_CONSTRUCTION
-      && (cgraph_decide_is_function_needed (node, decl)
+      && (decide_is_symbol_needed ((symtab_node) node)
 	  || referred_to_p ((symtab_node)node)))
     enqueue_node ((symtab_node)node);
 }
@@ -656,8 +666,11 @@ cgraph_process_same_body_aliases (void)
   symtab_node node;
   FOR_EACH_SYMBOL (node)
     if (node->symbol.cpp_implicit_alias && !node->symbol.analyzed)
-      symtab_resolve_alias (node,
-			    symtab_get_node (node->symbol.alias_target));
+      symtab_resolve_alias
+        (node,
+	 TREE_CODE (node->symbol.alias_target) == VAR_DECL
+	 ? (symtab_node)varpool_node_for_decl (node->symbol.alias_target)
+	 : (symtab_node)cgraph_get_create_node (node->symbol.alias_target));
   cpp_implicit_aliases_done = true;
 }
 
@@ -798,7 +811,7 @@ varpool_finalize_decl (tree decl)
     node->symbol.force_output = true;
 
   if (cgraph_state == CGRAPH_STATE_CONSTRUCTION
-      && (decide_is_variable_needed (node, decl)
+      && (decide_is_symbol_needed ((symtab_node) node)
 	  || referred_to_p ((symtab_node)node)))
     enqueue_node ((symtab_node)node);
   if (cgraph_state >= CGRAPH_STATE_IPA_SSA)
@@ -809,21 +822,6 @@ varpool_finalize_decl (tree decl)
     varpool_assemble_decl (node);
 }
 
-
-/* Determine if a symbol NODE is finalized and needed.  */
-
-inline static bool
-symbol_defined_and_needed (symtab_node node)
-{
-  if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
-    return cnode->symbol.definition
-	   && cgraph_decide_is_function_needed (cnode, cnode->symbol.decl);
-  if (varpool_node *vnode = dyn_cast <varpool_node> (node))
-    return vnode->symbol.definition
-	   && !DECL_EXTERNAL (vnode->symbol.decl)
-	   && decide_is_variable_needed (vnode, vnode->symbol.decl);
-  return false;
-}
 
 /* Discover all functions and variables that are trivially needed, analyze
    them as well as all functions and variables referred by them  */
@@ -866,7 +864,7 @@ analyze_functions (void)
 	   node != (symtab_node)first_analyzed
 	   && node != (symtab_node)first_analyzed_var; node = node->symbol.next)
 	{
-	  if (symbol_defined_and_needed (node))
+	  if (decide_is_symbol_needed (node))
 	    {
 	      enqueue_node (node);
 	      if (!changed && cgraph_dump_file)
@@ -1024,9 +1022,9 @@ handle_alias_pairs (void)
 	  if (node)
 	    {
 	      node->symbol.alias_target = p->target;
+	      node->symbol.weakref = true;
 	      node->symbol.alias = true;
 	    }
-	  DECL_EXTERNAL (p->decl) = 1;
 	  alias_pairs->unordered_remove (i);
 	  continue;
 	}
@@ -1036,16 +1034,6 @@ handle_alias_pairs (void)
 	  alias_pairs->unordered_remove (i);
 	  continue;
 	}
-
-      /* Normally EXTERNAL flag is used to mark external inlines,
-	 however for aliases it seems to be allowed to use it w/o
-	 any meaning. See gcc.dg/attr-alias-3.c  
-	 However for weakref we insist on EXTERNAL flag being set.
-	 See gcc.dg/attr-alias-5.c  */
-      if (DECL_EXTERNAL (p->decl))
-	DECL_EXTERNAL (p->decl)
-	  = lookup_attribute ("weakref",
-			      DECL_ATTRIBUTES (p->decl)) != NULL;
 
       if (DECL_EXTERNAL (target_node->symbol.decl)
 	  /* We use local aliases for C++ thunks to force the tailcall
@@ -1888,9 +1876,9 @@ output_weakrefs (void)
 {
   symtab_node node;
   FOR_EACH_SYMBOL (node)
-    if (node->symbol.alias && DECL_EXTERNAL (node->symbol.decl)
+    if (node->symbol.alias
         && !TREE_ASM_WRITTEN (node->symbol.decl)
-	&& lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+	&& node->symbol.weakref)
       {
 	tree target;
 

@@ -399,6 +399,9 @@
 /* Define to 1 if you have the <fptrap.h> header file. */
 #undef HAVE_FPTRAP_H
 
+/* Define to 1 if you have the <fpxcp.h> header file. */
+#undef HAVE_FPXCP_H
+
 /* fp_enable is present */
 #undef HAVE_FP_ENABLE
 

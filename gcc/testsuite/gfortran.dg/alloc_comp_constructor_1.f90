@@ -19,9 +19,12 @@ Program test_constructor
         type(thytype), allocatable :: q(:)
     end type mytype
 
-    type (mytype) :: x
     type (thytype) :: foo = thytype(reshape ([43, 100, 54, 76], [2,2]))
     integer :: y(0:1, -1:0) = reshape ([42, 99, 55, 77], [2,2])
+
+  BLOCK ! Add scoping unit as the vars are otherwise implicitly SAVEd
+
+    type (mytype) :: x
     integer, allocatable :: yy(:,:)
     type (thytype), allocatable :: bar(:)
     integer :: i
@@ -70,7 +73,7 @@ Program test_constructor
 
     ! Check that passing the constructor to a procedure works
     call check_mytype (mytype(y, [foo, foo]))
-
+  END BLOCK
 contains
 
     subroutine check_mytype(x)

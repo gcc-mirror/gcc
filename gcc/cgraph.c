@@ -568,6 +568,8 @@ cgraph_create_function_alias (tree alias, tree target)
   alias_node->symbol.alias_target = target;
   alias_node->symbol.definition = true;
   alias_node->symbol.alias = true;
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
+    alias_node->symbol.weakref = true;
   return alias_node;
 }
 
@@ -816,7 +818,8 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
   pop_cfun ();
   if (call_stmt
       && callee && callee->symbol.decl
-      && !gimple_check_call_matching_types (call_stmt, callee->symbol.decl))
+      && !gimple_check_call_matching_types (call_stmt, callee->symbol.decl,
+					    false))
     edge->call_stmt_cannot_inline_p = true;
   else
     edge->call_stmt_cannot_inline_p = false;
@@ -1016,7 +1019,8 @@ cgraph_make_edge_direct (struct cgraph_edge *edge, struct cgraph_node *callee)
 
   if (edge->call_stmt)
     edge->call_stmt_cannot_inline_p
-      = !gimple_check_call_matching_types (edge->call_stmt, callee->symbol.decl);
+      = !gimple_check_call_matching_types (edge->call_stmt, callee->symbol.decl,
+					   false);
 
   /* We need to re-determine the inlining status of the edge.  */
   initialize_inline_failed (edge);
@@ -1326,6 +1330,7 @@ cgraph_remove_node (struct cgraph_node *node)
   /* Incremental inlining access removed nodes stored in the postorder list.
      */
   node->symbol.force_output = false;
+  node->symbol.forced_by_abi = false;
   for (n = node->nested; n; n = n->next_nested)
     n->origin = NULL;
   node->nested = NULL;
@@ -1712,6 +1717,8 @@ cgraph_node_cannot_be_local_p_1 (struct cgraph_node *node,
 {
   return !(!node->symbol.force_output
 	   && ((DECL_COMDAT (node->symbol.decl)
+		&& !node->symbol.forced_by_abi
+	        && !symtab_used_from_object_file_p ((symtab_node) node)
 		&& !node->symbol.same_comdat_group)
 	       || !node->symbol.externally_visible));
 }
@@ -1804,6 +1811,7 @@ cgraph_make_node_local_1 (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
       symtab_make_decl_local (node->symbol.decl);
 
       node->symbol.externally_visible = false;
+      node->symbol.forced_by_abi = false;
       node->local.local = true;
       node->symbol.unique_name = (node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
 				  || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP);
@@ -2085,6 +2093,7 @@ cgraph_can_remove_if_no_direct_calls_and_refs_p (struct cgraph_node *node)
   /* Only COMDAT functions can be removed if externally visible.  */
   if (node->symbol.externally_visible
       && (!DECL_COMDAT (node->symbol.decl)
+	  || node->symbol.forced_by_abi
 	  || symtab_used_from_object_file_p ((symtab_node) node)))
     return false;
   return true;
@@ -2283,6 +2292,8 @@ verify_edge_corresponds_to_fndecl (struct cgraph_edge *e, tree decl)
   struct cgraph_node *node;
 
   if (!decl || e->callee->global.inlined_to)
+    return false;
+  if (cgraph_state == CGRAPH_LTO_STREAMING)
     return false;
   node = cgraph_get_node (decl);
 

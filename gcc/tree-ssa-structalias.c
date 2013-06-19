@@ -382,7 +382,7 @@ new_var_info (tree t, const char *name)
 
 /* A map mapping call statements to per-stmt variables for uses
    and clobbers specific to the call.  */
-struct pointer_map_t *call_stmt_vars;
+static struct pointer_map_t *call_stmt_vars;
 
 /* Lookup or create the variable for the call statement CALL.  */
 

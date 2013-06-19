@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-linux* x86_64-*-linux* } } */
+/* { dg-do compile { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } */
 /* { dg-options "-O2" } */
 
 typedef __SIZE_TYPE__ size_t;

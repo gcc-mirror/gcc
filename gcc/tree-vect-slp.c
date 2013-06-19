@@ -3182,7 +3182,7 @@ vect_slp_transform_bb (basic_block bb)
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+    dump_printf_loc (MSG_NOTE, vect_location,
 		     "BASIC BLOCK VECTORIZED\n");
 
   destroy_bb_vec_info (bb_vinfo);

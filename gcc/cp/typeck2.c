@@ -1236,6 +1236,8 @@ process_init_constructor_record (tree type, tree init,
       type = TREE_TYPE (field);
       if (DECL_BIT_FIELD_TYPE (field))
 	type = DECL_BIT_FIELD_TYPE (field);
+      if (type == error_mark_node)
+	return PICFLAG_ERRONEOUS;
 
       if (idx < vec_safe_length (CONSTRUCTOR_ELTS (init)))
 	{

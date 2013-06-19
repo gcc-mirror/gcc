@@ -1860,6 +1860,15 @@ class Field_reference_expression : public Expression
   field_index() const
   { return this->field_index_; }
 
+  // Return whether this node was implied by an anonymous field.
+  bool
+  implicit() const
+  { return this->implicit_; }
+
+  void
+  set_implicit(bool implicit)
+  { this->implicit_ = implicit; }
+
   // Set the struct expression.  This is used when parsing.
   void
   set_struct_expression(Expression* expr)
@@ -1914,6 +1923,9 @@ class Field_reference_expression : public Expression
   Expression* expr_;
   // The zero-based index of the field we are retrieving.
   unsigned int field_index_;
+  // Whether this node was emitted implicitly for an embedded field,
+  // that is, expr_ is not the expr_ of the original user node.
+  bool implicit_;
   // Whether we have already emitted a fieldtrack call.
   bool called_fieldtrack_;
 };

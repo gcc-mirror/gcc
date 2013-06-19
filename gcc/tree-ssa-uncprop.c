@@ -474,12 +474,11 @@ uncprop_into_successor_phis (basic_block bb)
 	  equiv_hash_elt an_equiv_elt;
 	  equiv_hash_elt **slot;
 
-	  /* If the argument is not an invariant, and refers to the same
-	     underlying variable as the PHI result, then there's no
-	     point in un-propagating the argument.  */
+	  /* If the argument is not an invariant and can be potentially
+	     coalesced with the result, then there's no point in
+	     un-propagating the argument.  */
 	  if (!is_gimple_min_invariant (arg)
-	      && (SSA_NAME_VAR (arg) == SSA_NAME_VAR (res)
-		  && TREE_TYPE (arg) == TREE_TYPE (res)))
+	      && gimple_can_coalesce_p (arg, res))
 	    continue;
 
 	  /* Lookup this argument's value in the hash table.  */
@@ -493,7 +492,7 @@ uncprop_into_successor_phis (basic_block bb)
 	      int j;
 
 	      /* Walk every equivalence with the same value.  If we find
-		 one with the same underlying variable as the PHI result,
+		 one that can potentially coalesce with the PHI rsult,
 		 then replace the value in the argument with its equivalent
 		 SSA_NAME.  Use the most recent equivalence as hopefully
 		 that results in shortest lifetimes.  */
@@ -501,8 +500,7 @@ uncprop_into_successor_phis (basic_block bb)
 		{
 		  tree equiv = elt->equivalences[j];
 
-		  if (SSA_NAME_VAR (equiv) == SSA_NAME_VAR (res)
-		      && TREE_TYPE (equiv) == TREE_TYPE (res))
+		  if (gimple_can_coalesce_p (equiv, res))
 		    {
 		      SET_PHI_ARG_DEF (phi, e->dest_idx, equiv);
 		      break;

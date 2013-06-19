@@ -512,7 +512,8 @@ Objective-C and Objective-C++ Dialects}.
 -mword-relocations @gol
 -mfix-cortex-m3-ldrd @gol
 -munaligned-access @gol
--mneon-for-64bits}
+-mneon-for-64bits @gol
+-mrestrict-it}
 
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
@@ -752,6 +753,7 @@ Objective-C and Objective-C++ Dialects}.
 -mno-float -msingle-float  -mdouble-float  @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
+-meva -mno-eva @gol
 -mmicromips -mno-micromips @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
@@ -6172,7 +6174,7 @@ Controls optimization dumps from various optimization passes. If the
 @samp{-@var{options}} form is used, @var{options} is a list of
 @samp{-} separated options to select the dump details and
 optimizations.  If @var{options} is not specified, it defaults to
-@option{all} for details and @option{optall} for optimization
+@option{optimized} for details and @option{optall} for optimization
 groups. If the @var{filename} is not specified, it defaults to
 @file{stderr}. Note that the output @var{filename} will be overwritten
 in case of multiple translation units. If a combined output from
@@ -11632,6 +11634,12 @@ defined.
 Enables using Neon to handle scalar 64-bits operations. This is
 disabled by default since the cost of moving data from core registers
 to Neon is high.
+
+@item -mrestrict-it
+@opindex mrestrict-it
+Restricts generation of IT blocks to conform to the rules of ARMv8.
+IT blocks can only contain a single 16-bit instruction from a select
+set of instructions. This option is on by default for ARMv8 Thumb mode.
 @end table
 
 @node AVR Options
@@ -13825,9 +13833,18 @@ Intel Core CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3, SSSE3,
 SSE4.1, SSE4.2, AVX, AES, PCLMUL, FSGSBASE, RDRND and F16C instruction
 set support.
 
+@item core-avx2
+Intel Core CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1, SSE4.2, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA, BMI, BMI2
+and F16C instruction set support.
+
 @item atom
-Intel Atom CPU with 64-bit extensions, MMX, SSE, SSE2, SSE3 and SSSE3
+Intel Atom CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3 and SSSE3
 instruction set support.
+
+@item slm
+Intel Silvermont CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3, SSSE3,
+SSE4.1 and SSE4.2 instruction set support.
 
 @item k6
 AMD K6 CPU with MMX instruction set support.
@@ -16375,6 +16392,12 @@ Use (do not use) MT Multithreading instructions.
 @opindex mmcu
 @opindex mno-mcu
 Use (do not use) the MIPS MCU ASE instructions.
+
+@item -meva
+@itemx -mno-eva
+@opindex meva
+@opindex mno-eva
+Use (do not use) the MIPS Enhanced Virtual Addressing instructions.
 
 @item -mlong64
 @opindex mlong64

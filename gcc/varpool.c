@@ -36,18 +36,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "flags.h"
 
+/* Allocate new callgraph node and insert it into basic data structures.  */
+
+struct varpool_node *
+varpool_create_empty_node (void)
+{   
+  struct varpool_node *node = ggc_alloc_cleared_varpool_node ();
+  node->symbol.type = SYMTAB_VARIABLE;
+  return node;
+}   
+
 /* Return varpool node assigned to DECL.  Create new one when needed.  */
 struct varpool_node *
 varpool_node_for_decl (tree decl)
 {
   struct varpool_node *node = varpool_get_node (decl);
-  gcc_assert (TREE_CODE (decl) == VAR_DECL
-	      && (TREE_STATIC (decl) || DECL_EXTERNAL (decl) || in_lto_p));
+  gcc_checking_assert (TREE_CODE (decl) == VAR_DECL);
   if (node)
     return node;
 
-  node = ggc_alloc_cleared_varpool_node ();
-  node->symbol.type = SYMTAB_VARIABLE;
+  node = varpool_create_empty_node ();
   node->symbol.decl = decl;
   symtab_register_node ((symtab_node)node);
   return node;
@@ -128,28 +136,6 @@ varpool_node_for_asm (tree asmname)
     return dyn_cast <varpool_node> (node);
   else
     return NULL;
-}
-
-/* Determine if variable DECL is needed.  That is, visible to something
-   either outside this translation unit, something magic in the system
-   configury */
-bool
-decide_is_variable_needed (struct varpool_node *node, tree decl)
-{
-  if (DECL_EXTERNAL (decl))
-    return false;
-
-  /* If the user told us it is used, then it must be so.  */
-  if (node->symbol.force_output)
-    return true;
-
-  /* Externally visible variables must be output.  The exception is
-     COMDAT variables that must be output only when they are needed.  */
-  if (TREE_PUBLIC (decl)
-      && !DECL_COMDAT (decl))
-    return true;
-
-  return false;
 }
 
 /* Return if DECL is constant and its initial value is known (so we can do
@@ -474,6 +460,8 @@ varpool_create_variable_alias (tree alias, tree decl)
   alias_node->symbol.alias = true;
   alias_node->symbol.definition = true;
   alias_node->symbol.alias_target = decl;
+  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (alias)) != NULL)
+    alias_node->symbol.weakref = true;
   return alias_node;
 }
 

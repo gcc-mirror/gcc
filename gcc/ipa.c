@@ -387,7 +387,11 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
   for (vnode = varpool_first_variable (); vnode; vnode = vnext)
     {
       vnext = varpool_next_variable (vnode);
-      if (!vnode->symbol.aux)
+      if (!vnode->symbol.aux
+	  /* For can_refer_decl_in_current_unit_p we want to track for
+	     all external variables if they are defined in other partition
+	     or not.  */
+	  && (!flag_ltrans || !DECL_EXTERNAL (vnode->symbol.decl)))
 	{
 	  if (file)
 	    fprintf (file, " %s", varpool_node_name (vnode));
@@ -515,7 +519,7 @@ ipa_discover_readonly_nonaddressable_vars (void)
 
 /* Return true when there is a reference to node and it is not vtable.  */
 static bool
-cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
+address_taken_from_non_vtable_p (symtab_node node)
 {
   int i;
   struct ipa_ref *ref;
@@ -533,6 +537,38 @@ cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
   return false;
 }
 
+/* A helper for comdat_can_be_unshared_p.  */
+
+static bool
+comdat_can_be_unshared_p_1 (symtab_node node)
+{
+  /* When address is taken, we don't know if equality comparison won't
+     break eventaully. Exception are virutal functions and vtables, where
+     this is not possible by language standard.  */
+  if (!DECL_VIRTUAL_P (node->symbol.decl)
+      && address_taken_from_non_vtable_p (node))
+    return false;
+
+  /* If the symbol is used in some weird way, better to not touch it.  */
+  if (node->symbol.force_output)
+    return false;
+
+  /* Explicit instantiations needs to be output when possibly
+     used externally.  */
+  if (node->symbol.forced_by_abi
+      && TREE_PUBLIC (node->symbol.decl)
+      && (node->symbol.resolution != LDPR_PREVAILING_DEF_IRONLY
+          && !flag_whole_program))
+    return false;
+
+  /* Non-readonly and volatile variables can not be duplicated.  */
+  if (is_a <varpool_node> (node)
+      && (!TREE_READONLY (node->symbol.decl)
+	  || TREE_THIS_VOLATILE (node->symbol.decl)))
+    return false;
+  return true;
+}
+
 /* COMDAT functions must be shared only if they have address taken,
    otherwise we can produce our own private implementation with
    -fwhole-program.  
@@ -543,24 +579,21 @@ cgraph_address_taken_from_non_vtable_p (struct cgraph_node *node)
    but in C++ there is no way to compare their addresses for equality.  */
 
 static bool
-cgraph_comdat_can_be_unshared_p (struct cgraph_node *node)
+comdat_can_be_unshared_p (symtab_node node)
 {
-  if ((cgraph_address_taken_from_non_vtable_p (node)
-       && !DECL_VIRTUAL_P (node->symbol.decl))
-      || !node->symbol.definition)
+  if (!comdat_can_be_unshared_p_1 (node))
     return false;
   if (node->symbol.same_comdat_group)
     {
-      struct cgraph_node *next;
+      symtab_node next;
 
       /* If more than one function is in the same COMDAT group, it must
          be shared even if just one function in the comdat group has
          address taken.  */
-      for (next = cgraph (node->symbol.same_comdat_group);
-	   next != node; next = cgraph (next->symbol.same_comdat_group))
-	if (cgraph_address_taken_from_non_vtable_p (next)
-	    && !DECL_VIRTUAL_P (next->symbol.decl))
-	  return false;
+      for (next = node->symbol.same_comdat_group;
+	   next != node; next = next->symbol.same_comdat_group)
+        if (!comdat_can_be_unshared_p_1 (next))
+          return false;
     }
   return true;
 }
@@ -573,9 +606,8 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 {
   if (!node->symbol.definition)
     return false;
-  if (!DECL_COMDAT (node->symbol.decl)
-      && (!TREE_PUBLIC (node->symbol.decl)
-	  || DECL_EXTERNAL (node->symbol.decl)))
+  if (!TREE_PUBLIC (node->symbol.decl)
+      || DECL_EXTERNAL (node->symbol.decl))
     return false;
 
   /* Do not try to localize built-in functions yet.  One of problems is that we
@@ -606,7 +638,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
       implementing same COMDAT)  */
   if ((in_lto_p || whole_program)
       && DECL_COMDAT (node->symbol.decl)
-      && cgraph_comdat_can_be_unshared_p (node))
+      && comdat_can_be_unshared_p ((symtab_node) node))
     return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */
@@ -631,16 +663,10 @@ cgraph_externally_visible_p (struct cgraph_node *node,
 bool
 varpool_externally_visible_p (struct varpool_node *vnode)
 {
-  /* Do not touch weakrefs; while they are not externally visible,
-     dropping their DECL_EXTERNAL flags confuse most
-     of code handling them.  */
-  if (vnode->symbol.alias && DECL_EXTERNAL (vnode->symbol.decl))
-    return true;
-
   if (DECL_EXTERNAL (vnode->symbol.decl))
     return true;
 
-  if (!DECL_COMDAT (vnode->symbol.decl) && !TREE_PUBLIC (vnode->symbol.decl))
+  if (!TREE_PUBLIC (vnode->symbol.decl))
     return false;
 
   /* If linker counts on us, we must preserve the function.  */
@@ -676,8 +702,8 @@ varpool_externally_visible_p (struct varpool_node *vnode)
      is faster for dynamic linking.  Also this match logic hidding vtables
      from LTO symbol tables.  */
   if ((in_lto_p || flag_whole_program)
-      && !vnode->symbol.force_output
-      && DECL_COMDAT (vnode->symbol.decl) && DECL_VIRTUAL_P (vnode->symbol.decl))
+      && DECL_COMDAT (vnode->symbol.decl)
+      && comdat_can_be_unshared_p ((symtab_node) vnode))
     return false;
 
   /* When doing link time optimizations, hidden symbols become local.  */
@@ -739,9 +765,11 @@ function_and_variable_visibility (bool whole_program)
       /* Frontends and alias code marks nodes as needed before parsing is finished.
 	 We may end up marking as node external nodes where this flag is meaningless
 	 strip it.  */
-      if (node->symbol.force_output
-	  && (DECL_EXTERNAL (node->symbol.decl) || !node->symbol.definition))
-	node->symbol.force_output = 0;
+      if (DECL_EXTERNAL (node->symbol.decl) || !node->symbol.definition)
+	{
+	  node->symbol.force_output = 0;
+	  node->symbol.forced_by_abi = 0;
+	}
 
       /* C++ FE on lack of COMDAT support create local COMDAT functions
 	 (that ought to be shared but can not due to object format
@@ -749,9 +777,9 @@ function_and_variable_visibility (bool whole_program)
 	 happy.  Clear the flag here to avoid confusion in middle-end.  */
       if (DECL_COMDAT (node->symbol.decl) && !TREE_PUBLIC (node->symbol.decl))
         DECL_COMDAT (node->symbol.decl) = 0;
-      /* For external decls stop tracking same_comdat_group, it doesn't matter
-	 what comdat group they are in when they won't be emitted in this TU,
-	 and simplifies later passes.  */
+
+      /* For external decls stop tracking same_comdat_group. It doesn't matter
+	 what comdat group they are in when they won't be emitted in this TU.  */
       if (node->symbol.same_comdat_group && DECL_EXTERNAL (node->symbol.decl))
 	{
 #ifdef ENABLE_CHECKING
@@ -769,6 +797,7 @@ function_and_variable_visibility (bool whole_program)
       gcc_assert ((!DECL_WEAK (node->symbol.decl)
 		  && !DECL_COMDAT (node->symbol.decl))
       	          || TREE_PUBLIC (node->symbol.decl)
+		  || node->symbol.weakref
 		  || DECL_EXTERNAL (node->symbol.decl));
       if (cgraph_externally_visible_p (node, whole_program))
         {
@@ -776,8 +805,12 @@ function_and_variable_visibility (bool whole_program)
 	  node->symbol.externally_visible = true;
 	}
       else
-	node->symbol.externally_visible = false;
-      if (!node->symbol.externally_visible && node->symbol.definition
+	{
+	  node->symbol.externally_visible = false;
+	  node->symbol.forced_by_abi = false;
+	}
+      if (!node->symbol.externally_visible
+	  && node->symbol.definition && !node->symbol.weakref
 	  && !DECL_EXTERNAL (node->symbol.decl))
 	{
 	  gcc_assert (whole_program || in_lto_p
@@ -822,6 +855,7 @@ function_and_variable_visibility (bool whole_program)
     {
       /* weak flag makes no sense on local variables.  */
       gcc_assert (!DECL_WEAK (vnode->symbol.decl)
+		  || vnode->symbol.weakref
       		  || TREE_PUBLIC (vnode->symbol.decl)
 		  || DECL_EXTERNAL (vnode->symbol.decl));
       /* In several cases declarations can not be common:
@@ -855,8 +889,12 @@ function_and_variable_visibility (bool whole_program)
       if (varpool_externally_visible_p (vnode))
 	vnode->symbol.externally_visible = true;
       else
-        vnode->symbol.externally_visible = false;
-      if (!vnode->symbol.externally_visible)
+	{
+          vnode->symbol.externally_visible = false;
+	  vnode->symbol.forced_by_abi = false;
+	}
+      if (!vnode->symbol.externally_visible
+	  && !vnode->symbol.weakref)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->symbol.decl));
 	  symtab_make_decl_local (vnode->symbol.decl);

@@ -1101,7 +1101,6 @@ update_caller_keys (fibheap_t heap, struct cgraph_node *node,
   struct ipa_ref *ref;
 
   if ((!node->symbol.alias && !inline_summary (node)->inlinable)
-      || cgraph_function_body_availability (node) <= AVAIL_OVERWRITABLE
       || node->global.inlined_to)
     return;
   if (!bitmap_set_bit (updated_nodes, node->uid))
@@ -1162,7 +1161,7 @@ update_callee_keys (fibheap_t heap, struct cgraph_node *node,
 	if (e->inline_failed
 	    && (callee = cgraph_function_or_thunk_node (e->callee, &avail))
 	    && inline_summary (callee)->inlinable
-	    && cgraph_function_body_availability (callee) >= AVAIL_AVAILABLE
+	    && avail >= AVAIL_AVAILABLE
 	    && !bitmap_bit_p (updated_nodes, callee->uid))
 	  {
 	    if (can_inline_edge_p (e, false)
@@ -2055,8 +2054,8 @@ early_inliner (void)
 	      es->call_stmt_time
 		= estimate_num_insns (edge->call_stmt, &eni_time_weights);
 	      if (edge->callee->symbol.decl
-		  && !gimple_check_call_matching_types (edge->call_stmt,
-							edge->callee->symbol.decl))
+		  && !gimple_check_call_matching_types (
+		      edge->call_stmt, edge->callee->symbol.decl, false))
 		edge->call_stmt_cannot_inline_p = true;
 	    }
 	  timevar_pop (TV_INTEGRATION);

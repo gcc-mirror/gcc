@@ -64,6 +64,7 @@ upc_pts_ops_t upc_pts;
 static int contains_pts_refs_p (tree);
 static int recursive_count_upc_threads_refs (tree);
 static void upc_build_init_func (const tree);
+static tree upc_create_static_var (tree, const char *);
 static int upc_lang_layout_decl_p (tree, tree);
 static void upc_lang_layout_decl (tree, tree);
 static void upc_parse_init (void);
@@ -298,7 +299,6 @@ upc_build_sync_stmt (location_t loc, tree sync_kind, tree sync_expr)
 {
   if (sync_expr != NULL_TREE)
     {
-      tree sync_expr_type = TREE_TYPE (sync_expr);
       mark_exp_read (sync_expr);
       sync_expr = c_cvt_expr_for_assign (loc, integer_type_node, sync_expr);
       if (sync_expr == error_mark_node)
@@ -1449,6 +1449,28 @@ upc_pts_is_valid_p (tree exp)
     && upc_shared_type_p (TREE_TYPE (type));
 }
 
+/* Create a static variable of type 'type'.
+   This routine mimics the behavior of 'objc_create_temporary_var'
+   with the change that it creates a static (file scoped) variable.  */
+static tree
+upc_create_static_var (tree type, const char *name)
+{
+  tree id = get_identifier (name);
+  tree decl = build_decl (input_location, VAR_DECL, id, type);
+  TREE_USED (decl) = 1;
+  TREE_STATIC (decl) = 1;
+  TREE_READONLY (decl) = 1;
+  TREE_THIS_VOLATILE (decl) = 0;
+  TREE_ADDRESSABLE (decl) = 0;
+  DECL_PRESERVE_P (decl) = 1;
+  DECL_ARTIFICIAL (decl) = 1;
+  DECL_EXTERNAL (decl) = 0;
+  DECL_IGNORED_P (decl) = 1;
+  DECL_CONTEXT (decl) = NULL;
+  pushdecl_top_level (decl);
+  return decl;
+}
+
 /* Build a function that will be called by the UPC runtime
    to initialize UPC shared variables.  STMT_LIST is a
    list of initialization statements.  */
@@ -1462,8 +1484,8 @@ upc_build_init_func (const tree stmt_list)
   struct c_declarator *init_func_decl;
   struct c_arg_info args;
   tree init_func, fn_body;
+  tree init_func_ptr_type, init_func_addr;
   location_t loc = input_location;
-  rtx init_func_symbol;
   int decl_ok;
   memset (&void_spec, '\0', sizeof (struct c_typespec));
   void_spec.kind = ctsk_typedef;
@@ -1489,10 +1511,14 @@ upc_build_init_func (const tree stmt_list)
   gcc_assert (DECL_RTL (init_func));
   mark_decl_referenced (init_func);
   DECL_PRESERVE_P (init_func) = 1;
-  upc_init_array_section =
-    get_section (UPC_INIT_ARRAY_SECTION_NAME, 0, NULL);
-  init_func_symbol = XEXP (DECL_RTL (init_func), 0);
-  assemble_addr_to_section (init_func_symbol, upc_init_array_section);
+  init_func_ptr_type = build_pointer_type (TREE_TYPE (init_func));
+  init_func_addr = upc_create_static_var (init_func_ptr_type,
+                                          "__upc_init_func_addr");
+  DECL_INITIAL (init_func_addr) = build_unary_op (loc, ADDR_EXPR,
+                                                  init_func, 0);
+  DECL_SECTION_NAME (init_func_addr) = build_string (
+                                    strlen (UPC_INIT_ARRAY_SECTION_NAME),
+                                    UPC_INIT_ARRAY_SECTION_NAME);
 }
 
 /* If the accumulated UPC initialization statement list is

@@ -1,6 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } { "*" } { "" } } */
-/* { dg-require-effective-target powerpc_vsx_ok } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mcpu=power8 -O2 -ftree-vectorize -fvect-cost-model -fno-unroll-loops -fno-unroll-all-loops" } */
 
 typedef vector unsigned long long	crypto_t;

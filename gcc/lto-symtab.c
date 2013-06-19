@@ -235,9 +235,6 @@ lto_symtab_symbol_p (symtab_node e)
 {
   if (!TREE_PUBLIC (e->symbol.decl) && !DECL_EXTERNAL (e->symbol.decl))
     return false;
-  /* weakrefs are really static variables that are made external by a hack.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (e->symbol.decl)))
-    return false;
   return symtab_real_symbol_p (e);
 }
 
@@ -576,23 +573,40 @@ lto_symtab_merge_symbols (void)
     {
       symtab_initialize_asm_name_hash ();
 
-      /* Do the actual merging.  */
+      /* Do the actual merging.  
+         At this point we invalidate hash translating decls into symtab nodes
+	 because after removing one of duplicate decls the hash is not correcly
+	 updated to the ohter dupliate.  */
       FOR_EACH_SYMBOL (node)
 	if (lto_symtab_symbol_p (node)
 	    && node->symbol.next_sharing_asm_name
 	    && !node->symbol.previous_sharing_asm_name)
 	  lto_symtab_merge_symbols_1 (node);
 
-      /* Resolve weakref aliases whose target are now in the compilation unit.  */
+      /* Resolve weakref aliases whose target are now in the compilation unit.  
+	 also re-populate the hash translating decls into symtab nodes*/
       FOR_EACH_SYMBOL (node)
 	{
+	  cgraph_node *cnode, *cnode2;
 	  if (!node->symbol.analyzed && node->symbol.alias_target)
 	    {
 	      symtab_node tgt = symtab_node_for_asm (node->symbol.alias_target);
+	      gcc_assert (node->symbol.weakref);
 	      if (tgt)
 		symtab_resolve_alias (node, tgt);
 	    }
 	  node->symbol.aux = NULL;
+	  
+	  if (!(cnode = dyn_cast <cgraph_node> (node))
+	      || !cnode->clone_of
+	      || cnode->clone_of->symbol.decl != cnode->symbol.decl)
+	    {
+	      if (cnode && DECL_BUILT_IN (node->symbol.decl)
+		  && (cnode2 = cgraph_get_node (node->symbol.decl))
+		  && cnode2 != cnode)
+		lto_cgraph_replace_node (cnode2, cnode);
+	      symtab_insert_node_to_hashtable ((symtab_node)node);
+	    }
 	}
     }
 }
@@ -615,11 +629,6 @@ lto_symtab_prevailing_decl (tree decl)
   /* Likewise builtins are their own prevailing decl.  This preserves
      non-builtin vs. builtin uses from compile-time.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
-    return decl;
-
-  /* As an anoying special cases weakrefs are really static variables with
-     EXTERNAL flag.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return decl;
 
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */

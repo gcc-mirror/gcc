@@ -1199,6 +1199,10 @@ noop_move_p (const_rtx insn)
   if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
     return 0;
 
+  /* Check the code to be executed for COND_EXEC.  */
+  if (GET_CODE (pat) == COND_EXEC)
+    pat = COND_EXEC_CODE (pat);
+
   if (GET_CODE (pat) == SET && set_noop_p (pat))
     return 1;
 

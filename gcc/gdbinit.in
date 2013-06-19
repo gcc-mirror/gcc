@@ -184,6 +184,7 @@ end
 # Define some macros helpful to gdb when it is expanding macros.
 macro define __FILE__ "gdb"
 macro define __LINE__ 1
+macro define __FUNCTION__ "gdb"
 macro define __null 0
 
 # Gracefully handle aborts in functions used from gdb.

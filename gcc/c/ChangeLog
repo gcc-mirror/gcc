@@ -1,3 +1,63 @@
+2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (build_array_notation_expr): Reject array notation
+	mismatch between LHS and RHS even inside a call_expr.  Also, removed
+	a couple while statements that were dead code.
+
+2013-06-10  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (fix_builtin_array_notation_fn): Fully folded
+	excessive precision expressions in function parameters.  Also removed
+	couple unwanted while statements.
+
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (expand_array_notation_exprs): Added
+	ARRAY_NOTATION_REF case.
+	
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (length_mismatch_in_expr_p): Moved this
+	function to c-family/array-notation-common.c.
+	(is_cilkplus_reduce_builtin): Likewise.
+	(find_rank): Likewise.
+	(extract_array_notation_exprs): Likewise.
+	(replace_array_notations): Likewise.
+	(find_inv_trees): Likewise.
+	(replace_inv_trees): Likewise.
+	(contains_array_notation_expr): Likewise.
+	(find_correct_array_notation_type): Likewise.
+	(replace_invariant_exprs): Initialized additional_tcodes to NULL.
+	(struct inv_list): Moved this to c-family/array-notation-common.c.
+	* c-tree.h (is_cilkplus_builtin_reduce): Remove prototype.
+	
+2013-06-05  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-typeck.c (convert_arguments): Moved checking of builtin cilkplus
+	reduction functions outside the for-loop.  Added a check if the fundecl
+	is non-NULL.  Finally, removed an unwanted if-statement, and made the
+	body unconditional.
+
+2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-typeck.c (c_finish_if_stmt): Added a check to see if the rank of the
+	condition of the if-statement matches the rank of else-block and then-
+	block when array notations are used.
+	* c-parser.c (c_parser_declaration_or_fndef): Expanded array notation
+	expression after the entire function body is parsed.
+	(c_parser_expr_no_commas): Delayed creating array notation expressions
+	to the end of function parsing.
+	* c-array-notation.c (fix_conditional_array_notations_1): Expanded the
+	whole if-statement instead of just the condition.
+	(expand_array_notation_exprs): Added MODIFY_EXPR case.	
+
+2013-06-03  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57474
+	* c-array-notation.c (build_array_notation_expr): Initialized rhs_length
+	array to NULL_TREE if they are unused.  Also added a check for the
+	field to be NULL before its fields are used in future.
+	
 2013-05-29  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR bootstrap/57450

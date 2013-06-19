@@ -5801,7 +5801,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+      dump_printf_loc (MSG_NOTE, vect_location,
 		       "LOOP VECTORIZED\n");
       if (loop->inner)
 	dump_printf_loc (MSG_NOTE, vect_location,

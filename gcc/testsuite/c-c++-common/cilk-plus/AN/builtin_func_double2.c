@@ -5,8 +5,9 @@
 #include <stdio.h>
 #endif
 
-int main(int argc, char **argv)
+int main(void)
 {
+  int argc = 1;
   int ii,array[10], y = 0, y_int = 0, array2[10], y_int2=0, y2=0;
   double x, yy, array3[10], array4[10];
   int all_zero, all_nonzero, any_zero, any_nonzero;
@@ -20,6 +21,7 @@ int main(int argc, char **argv)
 	array3[ii] = (double) ii + 0.00;
       array4[ii] = (double) (1.00000/ (double)(ii+1));
     }
+  __asm volatile ("" : "+r" (argc));
   y_int = __sec_reduce_any_nonzero (array3[:] + array[4]); 
   y_int2 = __sec_reduce_any_zero (array3[:] + array[4]); 
   y = __sec_reduce_all_nonzero ((array3[:] + array4[:]) * (argc-1)); 

@@ -4,7 +4,7 @@
 
 struct A
 {
-  ~A() = delete;		// { dg-error "declared here" }
+  ~A() = delete;		// { dg-message "declared here" }
 };
 
 struct B: A { };		// { dg-error "deleted" }

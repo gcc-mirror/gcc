@@ -35,7 +35,7 @@
 #include <cxxabi.h>
 #include <testsuite_common_types.h>
 
-#ifdef __linux__
+#if defined (__linux__) || defined (__GLIBC__)
 #include <malloc.h>
 #elif defined (__FreeBSD__)
 extern "C"

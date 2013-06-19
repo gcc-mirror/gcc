@@ -3,25 +3,20 @@
 
 #include <stdlib.h>
 
-int main2 (int argc, char **argv);
-int main(int argc, char **argv)
+int main2 (char **argv);
+int main(void)
 {
-  int x = 0;
-  if (argc == 1)
-    {
-      const char *array[] = {"a.out", "5"};	     
-      x = main2 (2, (char **)array);
-    }
-  else
-    x = main2 (argc, argv);
-      
+  int x = 0; 
+  const char *array[] = {"a.out", "5"};	     
+  x = main2 ((char **)array);
   return x;
 }
 
-int main2 (int argc, char **argv)
+int main2 (char **argv)
 {
+  int argc = 2;
   int array[10], array2[10], ii = 0, x = 2, z= 0 , y = 0 ;
-
+  __asm volatile ("" : "+r" (argc));
   for (ii = 0; ii < 10; ii++)
     array[ii] = 10;
 

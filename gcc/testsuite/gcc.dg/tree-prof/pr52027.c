@@ -1,6 +1,6 @@
 /* PR debug/52027 */
 /* { dg-require-effective-target freorder } */
-/* { dg-options "-O -freorder-blocks-and-partition -fno-reorder-functions" } */
+/* { dg-options "-O2 -freorder-blocks-and-partition -fno-reorder-functions" } */
 
 void
 foo (int len)

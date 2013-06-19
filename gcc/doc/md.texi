@@ -8866,7 +8866,8 @@ can be quite tedious to describe these forms directly in the
 (define_cond_exec
   [@var{predicate-pattern}]
   "@var{condition}"
-  "@var{output-template}")
+  "@var{output-template}"
+  "@var{optional-insn-attribues}")
 @end smallexample
 
 @var{predicate-pattern} is the condition that must be true for the
@@ -8886,6 +8887,13 @@ assembly text for the predicate is a simple prefix to the main insn.
 In order to handle the general case, there is a global variable
 @code{current_insn_predicate} that will contain the entire predicate
 if the current insn is predicated, and will otherwise be @code{NULL}.
+
+@var{optional-insn-attributes} is an optional vector of attributes that gets
+appended to the insn attributes of the produced cond_exec rtx. It can
+be used to add some distinguishing attribute to cond_exec rtxs produced
+that way. An example usage would be to use this attribute in conjunction
+with attributes on the main pattern to disable particular alternatives under
+certain conditions.
 
 When @code{define_cond_exec} is used, an implicit reference to
 the @code{predicable} instruction attribute is made.

@@ -325,7 +325,7 @@ gfc_omp_clause_dtor (tree clause ATTRIBUTE_UNUSED, tree decl)
 
   /* Allocatable arrays in FIRSTPRIVATE/LASTPRIVATE etc. clauses need
      to be deallocated if they were allocated.  */
-  return gfc_trans_dealloc_allocated (decl, false);
+  return gfc_trans_dealloc_allocated (decl, false, NULL);
 }
 
 
@@ -707,7 +707,8 @@ gfc_trans_omp_array_reduction (tree c, gfc_symbol *sym, locus where)
       gfc_start_block (&block);
       gfc_add_expr_to_block (&block, gfc_trans_assignment (e3, e4, false,
 			     true));
-      gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl, false));
+      gfc_add_expr_to_block (&block, gfc_trans_dealloc_allocated (decl, false,
+								  NULL));
       stmt = gfc_finish_block (&block);
     }
   else

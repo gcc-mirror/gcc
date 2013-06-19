@@ -1,3 +1,28 @@
+2013-06-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (read_cgraph_and_symbols): Set cgraph into streaming state.
+
+2013-06-12  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (register_resolution): Take lto_file_data argument.
+	(lto_register_var_decl_in_symtab,
+	lto_register_function_decl_in_symtab): Update.
+	(read_cgraph_and_symbols): Update resolution_map handling.
+
+2013-06-11 Jan Hubicka  <jh@suse.cz>
+
+	* lto-partition.c (get_symbol_class): Simplify weakref handling.
+	(add_symbol_to_partition_1): Likewise.
+	(contained_in_symbol): Likewise.
+	(lto_balanced_map): Likewise.
+	(rename_statics): Drop weakref.
+
+2013-06-05  Richard Biener  <rguenther@suse.de>
+
+	* lto.c (num_merged_types): New global variable.
+	(uniquify_nodes): Increase num_merged_types when merging a type.
+	(print_lto_report_1): Output the number of merged types.
+
 2013-06-01  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Simplify dumping; Replace

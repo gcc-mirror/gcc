@@ -1231,7 +1231,7 @@ static bool
 check_ic_target (gimple call_stmt, struct cgraph_node *target)
 {
    location_t locus;
-   if (gimple_check_call_matching_types (call_stmt, target->symbol.decl))
+   if (gimple_check_call_matching_types (call_stmt, target->symbol.decl, true))
      return true;
 
    locus =  gimple_location (call_stmt);

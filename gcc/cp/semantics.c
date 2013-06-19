@@ -1778,8 +1778,9 @@ finish_qualified_id_expr (tree qualifying_class,
   if (error_operand_p (expr))
     return error_mark_node;
 
-  if (DECL_P (expr) || BASELINK_P (expr))
-    mark_used (expr);
+  if ((DECL_P (expr) || BASELINK_P (expr))
+      && !mark_used (expr, complain))
+    return error_mark_node;
 
   if (template_p)
     check_template_keyword (expr);
@@ -3689,10 +3690,17 @@ finish_offsetof (tree expr)
       || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
       || TREE_TYPE (expr) == unknown_type_node)
     {
-      if (TREE_CODE (expr) == COMPONENT_REF
-	  || TREE_CODE (expr) == COMPOUND_EXPR)
-	expr = TREE_OPERAND (expr, 1);
-      error ("cannot apply %<offsetof%> to member function %qD", expr);
+      if (TREE_CODE (expr) == INDIRECT_REF)
+	error ("second operand of %<offsetof%> is neither a single "
+	       "identifier nor a sequence of member accesses and "
+	       "array references");
+      else
+	{
+	  if (TREE_CODE (expr) == COMPONENT_REF
+	      || TREE_CODE (expr) == COMPOUND_EXPR)
+	    expr = TREE_OPERAND (expr, 1);
+	  error ("cannot apply %<offsetof%> to member function %qD", expr);
+	}
       return error_mark_node;
     }
   if (REFERENCE_REF_P (expr))
@@ -9485,6 +9493,15 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
 					  ptr_field, build_address (elt),
 					  nelts_field, array_type_nelts (type));
       type = ctype;
+    }
+  else if (variably_modified_type_p (type, NULL_TREE))
+    {
+      error ("capture of variable-size type %qT that is not a C++1y array "
+	     "of runtime bound", type);
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && variably_modified_type_p (TREE_TYPE (type), NULL_TREE))
+	inform (input_location, "because the array element type %qT has "
+		"variable size", TREE_TYPE (type));
     }
   else if (by_reference_p)
     {

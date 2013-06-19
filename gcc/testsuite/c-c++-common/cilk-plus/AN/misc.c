@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fcilkplus" } */
 
-int main (int argc, char **argv)
+int main (void)
 {
   int array[10], array2[10][10];
   int x, ii, jj ;

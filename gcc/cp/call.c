@@ -7053,7 +7053,8 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
      otherwise the call should go through the dispatcher.  */
 
   if (DECL_FUNCTION_VERSIONED (fn)
-      && !targetm.target_option.can_inline_p (current_function_decl, fn))
+      && (current_function_decl == NULL
+	  || !targetm.target_option.can_inline_p (current_function_decl, fn)))
     {
       fn = get_function_version_dispatcher (fn);
       if (fn == NULL)

@@ -1,4 +1,4 @@
-/* { dg-do run { target { { i?86-*-linux* x86_64-*-linux* } && ilp32 } } } */
+/* { dg-do run { target { { i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } && ilp32 } } } */
 /* { dg-options "-Os" } */
 /* PR target/36613 */
 

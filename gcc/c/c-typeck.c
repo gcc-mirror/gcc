@@ -3004,6 +3004,8 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
 	  break;
 	}
     }
+  if (flag_enable_cilkplus && fundecl && is_cilkplus_reduce_builtin (fundecl))
+    return vec_safe_length (values);
 
   /* Scan the given expressions and types, producing individual
      converted arguments.  */
@@ -3021,17 +3023,6 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
       bool npc;
       tree parmval;
 
-      // FIXME: I assume this code is here to handle the overloaded
-      // behavior of the __sec_reduce* builtins, and avoid giving
-      // argument mismatch warnings/errors.  We should probably handle
-      // this with the resolve_overloaded_builtin infrastructure.
-      /* If the function call is a builtin function call, then we do not
-	 worry about it since we break them up into its equivalent later and
-	 we do the appropriate checks there.  */
-      if (flag_enable_cilkplus
-	  && is_cilkplus_reduce_builtin (fundecl))
-	continue;
-      
       if (type == void_type_node)
 	{
 	  if (selector)
@@ -3269,16 +3260,10 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
 
   if (typetail != 0 && TREE_VALUE (typetail) != void_type_node)
     {
-      /* If array notation is used and Cilk Plus is enabled, then we do not
-	 worry about this error now.  We will handle them in a later place.  */
-      if (!flag_enable_cilkplus
-	  || !is_cilkplus_reduce_builtin (fundecl))
-	{
-	  error_at (input_location,
-		    "too few arguments to function %qE", function);
-	  inform_declaration (fundecl);
-	  return -1;
-	}
+      error_at (input_location,
+		"too few arguments to function %qE", function);
+      inform_declaration (fundecl);
+      return -1;
     }
 
   return error_args ? -1 : (int) parmnum;
@@ -9259,6 +9244,34 @@ c_finish_if_stmt (location_t if_locus, tree cond, tree then_block,
 {
   tree stmt;
 
+  /* If the condition has array notations, then the rank of the then_block and
+     else_block must be either 0 or be equal to the rank of the condition.  If
+     the condition does not have array notations then break them up as it is
+     broken up in a normal expression.  */
+  if (flag_enable_cilkplus && contains_array_notation_expr (cond))
+    {
+      size_t then_rank = 0, cond_rank = 0, else_rank = 0;
+      if (!find_rank (if_locus, cond, cond, true, &cond_rank))
+	return;
+      if (then_block
+	  && !find_rank (if_locus, then_block, then_block, true, &then_rank))
+	return;
+      if (else_block
+	  && !find_rank (if_locus, else_block, else_block, true, &else_rank)) 
+	return;
+      if (cond_rank != then_rank && then_rank != 0)
+	{
+	  error_at (if_locus, "rank-mismatch between if-statement%'s condition"
+		    " and the then-block");
+	  return;
+	}
+      else if (cond_rank != else_rank && else_rank != 0)
+	{
+	  error_at (if_locus, "rank-mismatch between if-statement%'s condition"
+		    " and the else-block");
+	  return;
+	}
+    }
   /* Diagnose an ambiguous else if if-then-else is nested inside if-then.  */
   if (warn_parentheses && nested_if && else_block == NULL)
     {

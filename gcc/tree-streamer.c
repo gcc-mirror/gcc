@@ -152,6 +152,7 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
 	     the requested location slot.  */
 	  ix = *ix_p;
 	  streamer_tree_cache_add_to_node_array (cache, ix, t);
+	  *slot = (void *)(size_t) (ix + 1);
 	}
 
       /* Indicate that T was already in the cache.  */

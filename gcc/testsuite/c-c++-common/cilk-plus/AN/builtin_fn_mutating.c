@@ -13,7 +13,7 @@ void my_func (double *x, double y)
 }
 
 
-int main(int argc, char **argv)
+int main(void)
 {
   int ii,array[10], y = 0, y_int = 0, array2[10];
   double x = 0.000, yy, array3[10], array4[10];
@@ -44,11 +44,11 @@ int main(int argc, char **argv)
   max_value = array3[0] * array4[0];
   for (ii = 0; ii < 10; ii++)
     if (array3[ii] * array4[ii] > max_value) {
-      max_value = array3[ii] * array4[ii];
       max_index = ii;
     }
     
-  
+  for (ii = 0; ii < 10; ii++)
+    my_func (&max_value, array3[ii] * array4[ii]);
   
 #if HAVE_IO
   for (ii = 0; ii < 10; ii++) 

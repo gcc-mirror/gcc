@@ -28,6 +28,7 @@
 
 #include <tr1/unordered_map>
 #include <bits/move.h>
+#include <ext/pointer.h>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test
@@ -487,6 +488,36 @@ namespace __gnu_test
         struct rebind
         { typedef ExplicitConsAlloc<Up> other; };
     };
+
+#if __cplusplus >= 201103L
+  template<typename Tp>
+    class CustomPointerAlloc : public std::allocator<Tp>
+    {
+      template<typename Up, typename Sp = __gnu_cxx::_Std_pointer_impl<Up>>
+	using Ptr =  __gnu_cxx::_Pointer_adapter<Sp>;
+
+    public:
+      CustomPointerAlloc() = default;
+
+      template<typename Up>
+        CustomPointerAlloc(const CustomPointerAlloc<Up>&) { }
+
+      template<typename Up>
+        struct rebind
+        { typedef CustomPointerAlloc<Up> other; };
+
+      typedef Ptr<Tp> 		pointer;
+      typedef Ptr<const Tp>	const_pointer;
+      typedef Ptr<void>		void_pointer;
+      typedef Ptr<const void>	const_void_pointer;
+
+      pointer allocate(std::size_t n, pointer = {})
+      { return pointer(std::allocator<Tp>::allocate(n)); }
+
+      void deallocate(pointer p, std::size_t n)
+      { std::allocator<Tp>::deallocate(std::addressof(*p), n); }
+    };
+#endif
 
 } // namespace __gnu_test
 

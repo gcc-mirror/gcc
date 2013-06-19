@@ -622,17 +622,20 @@ poplevel (int keep, int reverse, int functionbody)
 	   push_local_binding where the list of decls returned by
 	   getdecls is built.  */
 	decl = TREE_CODE (d) == TREE_LIST ? TREE_VALUE (d) : d;
+	// See through references for improved -Wunused-variable (PR 38958).
+	tree type = non_reference (TREE_TYPE (decl));
 	if (VAR_P (decl)
 	    && (! TREE_USED (decl) || !DECL_READ_P (decl))
 	    && ! DECL_IN_SYSTEM_HEADER (decl)
 	    && DECL_NAME (decl) && ! DECL_ARTIFICIAL (decl)
-	    && TREE_TYPE (decl) != error_mark_node
-	    && (!CLASS_TYPE_P (TREE_TYPE (decl))
-		|| !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (decl))))
+	    && type != error_mark_node
+	    && (!CLASS_TYPE_P (type)
+		|| !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)))
 	  {
 	    if (! TREE_USED (decl))
 	      warning (OPT_Wunused_variable, "unused variable %q+D", decl);
 	    else if (DECL_CONTEXT (decl) == current_function_decl
+		     // For -Wunused-but-set-variable leave references alone.
 		     && TREE_CODE (TREE_TYPE (decl)) != REFERENCE_TYPE
 		     && errorcount == unused_but_set_errorcount)
 	      {
@@ -10530,21 +10533,13 @@ grokdeclarator (const cp_declarator *declarator,
 		 && (TREE_CODE (type) != ARRAY_TYPE || initialized == 0))
 	  {
 	    if (unqualified_id)
-	      error ("field %qD has incomplete type", unqualified_id);
+	      error ("field %qD has incomplete type %qT",
+		     unqualified_id, type);
 	    else
 	      error ("name %qT has incomplete type", type);
 
-	    /* If we're instantiating a template, tell them which
-	       instantiation made the field's type be incomplete.  */
-	    if (current_class_type
-		&& TYPE_NAME (current_class_type)
-		&& IDENTIFIER_TEMPLATE (current_class_name)
-		&& declspecs->type
-		&& declspecs->type == type)
-	      error ("  in instantiation of template %qT",
-		     current_class_type);
-
-	    return error_mark_node;
+	    type = error_mark_node;
+	    decl = NULL_TREE;
 	  }
 	else
 	  {

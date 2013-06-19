@@ -56,6 +56,8 @@ struct GTY(()) symtab_node_base
   /* True when symbol is an alias.  
      Set by assemble_alias.  */
   unsigned alias : 1;
+  /* True when alias is a weakref.  */
+  unsigned weakref : 1;
   /* C++ frontend produce same body aliases and extra name aliases for
      virutal functions and vtables that are obviously equivalent.
      Those aliases are bit special, especially because C++ frontend
@@ -72,9 +74,13 @@ struct GTY(()) symtab_node_base
 
   /* Set when function is visible by other units.  */
   unsigned externally_visible : 1;
-  /* Needed variables might become dead by optimization.  This flag
-     forces the variable to be output even if it appears dead otherwise.  */
+  /* The symbol will be assumed to be used in an invisiable way (like 
+     by an toplevel asm statement).  */
   unsigned force_output : 1;
+  /* Like FORCE_OUTPUT, but in the case it is ABI requiring the symbol to be
+     exported.  Unlike FORCE_OUTPUT this flag gets cleared to symbols promoted
+     to static and it does not inhibit optimization.  */
+  unsigned forced_by_abi : 1;
   /* True when the name is known to be unique and thus it does not need mangling.  */
   unsigned unique_name : 1;
 
@@ -545,6 +551,8 @@ enum cgraph_state
   CGRAPH_STATE_PARSING,
   /* Callgraph is being constructed.  It is safe to add new functions.  */
   CGRAPH_STATE_CONSTRUCTION,
+  /* Callgraph is being at LTO time.  */
+  CGRAPH_LTO_STREAMING,
   /* Callgraph is built and IPA passes are being run.  */
   CGRAPH_STATE_IPA,
   /* Callgraph is built and all functions are transformed to SSA form.  */
@@ -767,6 +775,7 @@ bool cgraph_maybe_hot_edge_p (struct cgraph_edge *e);
 bool cgraph_optimize_for_size_p (struct cgraph_node *);
 
 /* In varpool.c  */
+struct varpool_node *varpool_create_empty_node (void);
 struct varpool_node *varpool_node_for_decl (tree);
 struct varpool_node *varpool_node_for_asm (tree asmname);
 void varpool_mark_needed_node (struct varpool_node *);
@@ -775,7 +784,6 @@ void dump_varpool (FILE *);
 void dump_varpool_node (FILE *, struct varpool_node *);
 
 void varpool_finalize_decl (tree);
-bool decide_is_variable_needed (struct varpool_node *, tree);
 enum availability cgraph_variable_initializer_availability (struct varpool_node *);
 void cgraph_make_node_local (struct cgraph_node *);
 bool cgraph_node_can_be_local_p (struct cgraph_node *);
@@ -1216,6 +1224,7 @@ varpool_can_remove_if_no_refs (struct varpool_node *node)
     return true;
   return (!node->symbol.force_output && !node->symbol.used_from_other_partition
   	  && ((DECL_COMDAT (node->symbol.decl)
+	       && !node->symbol.forced_by_abi
 	       && !symtab_used_from_object_file_p ((symtab_node) node))
 	      || !node->symbol.externally_visible
 	      || DECL_HAS_VALUE_EXPR_P (node->symbol.decl)));

@@ -622,19 +622,10 @@ build_dynamic_cast_1 (tree type, tree expr, tsubst_flags_t complain)
   /* If *type is an unambiguous accessible base class of *exprtype,
      convert statically.  */
   {
-    tree binfo;
-
-    binfo = lookup_base (TREE_TYPE (exprtype), TREE_TYPE (type),
-			 ba_check, NULL, complain);
-
+    tree binfo = lookup_base (TREE_TYPE (exprtype), TREE_TYPE (type),
+			      ba_check, NULL, complain);
     if (binfo)
-      {
-	expr = build_base_path (PLUS_EXPR, convert_from_reference (expr),
-				binfo, 0, complain);
-	if (TYPE_PTR_P (exprtype))
-	  expr = rvalue (expr);
-	return expr;
-      }
+      return build_static_cast (type, expr, complain);
   }
 
   /* Otherwise *exprtype must be a polymorphic class (have a vtbl).  */

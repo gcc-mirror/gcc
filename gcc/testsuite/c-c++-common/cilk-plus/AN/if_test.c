@@ -5,31 +5,25 @@
 #include <stdio.h>
 #endif
 #include <stdlib.h>
-int main2 (int argc, char **argv);
+int main2 (char **argv);
 int main(int argc, char **argv)
 {
-  int x = 0;
-  if (argc == 1)
-    {
-      const char *array[] = {"a.out", "10", "15"};	     
-      x = main2 (3, (char **) array);
-    }
-  else if (argc == 3)
-    x = main2 (argc, argv);
-  else
-    return 1;
- 
+  int x = 0; 
+  const char *array[] = {"a.out", "10", "15"};	     
+  x = main2 ((char **) array);
   return x;
 }
 
 
-int main2 (int argc, char **argv)
+int main2 (char **argv)
 {
   int x = 3, y, z, array[10], array2[10], TwodArray[10][10], jj,kk,ll ;
   int array2_check[10], array2d_check[10][10], array2d[10][10];
   int FourDArray[10][10][10][10], array4[10][10][10][10];
   int array4_check[10][10][10][10];
-  int ii = 0; 
+  int ii = 0, argc = 3; 
+    
+  __asm volatile ("" : "+r" (argc));
 
   for (ii = 0; ii < 10; ii++)
     {
@@ -275,7 +269,7 @@ int main2 (int argc, char **argv)
   
   /* atoi(argv[1]) == 10, so it will convert all 10's to 5's */
   if (FourDArray[0:10:1][0:5:2][9:10:-1][x:y:z] +
-      FourDArray[0:10:1][0:5:2][9:-10:1][x:y:z]  != 20) 
+      FourDArray[0:10:1][0:5:2][9:10:-1][x:y:z]  != 20) 
     array4[0:10:1][0:5:2][9:10:-1][x:y:z] = 10; 
   else
     array4[0:10][0:5:2][9:10:-1][x:y:z] = 5;

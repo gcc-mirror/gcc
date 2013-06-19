@@ -7,10 +7,10 @@ int function_call (int x)
   return x;
 }
 
-int main(int argc, char **argv)
+int main (void)
 {
   int array[100], array2[100][100];
-
+  int argc = 4;
   array[:] = array[:] + array2[:][:]; /* { dg-error "rank mismatch between" } */
 
   if (array[:] + array2[:][:]) /* { dg-error "rank mismatch between" } */

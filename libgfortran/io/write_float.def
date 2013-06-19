@@ -961,6 +961,34 @@ __qmath_(quadmath_snprintf) (buffer, size, "%+-#.*Qf", \
 #endif
 
 
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define ISFINITE2Q(val) finiteq(val)
+#endif
+#define ISFINITE2(val) isfinite(val)
+#define ISFINITE2L(val) isfinite(val)
+
+#define ISFINITE(suff,val) TOKENPASTE(ISFINITE2,suff)(val)
+
+
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define SIGNBIT2Q(val) signbitq(val)
+#endif
+#define SIGNBIT2(val) signbit(val)
+#define SIGNBIT2L(val) signbit(val)
+
+#define SIGNBIT(suff,val) TOKENPASTE(SIGNBIT2,suff)(val)
+
+
+#if defined(GFC_REAL_16_IS_FLOAT128)
+#define ISNAN2Q(val) isnanq(val)
+#endif
+#define ISNAN2(val) isnan(val)
+#define ISNAN2L(val) isnan(val)
+
+#define ISNAN(suff,val) TOKENPASTE(ISNAN2,suff)(val)
+
+
+
 /* Generate corresponding I/O format for FMT_G and output.
    The rules to translate FMT_G to FMT_E or FMT_F from DEC fortran
    LRM (table 11-2, Chapter 11, "I/O Formatting", P11-25) is:
@@ -1127,7 +1155,7 @@ OUTPUT_FLOAT_FMT_G(16,L)
 {\
     GFC_REAL_ ## x tmp;				\
     tmp = * (GFC_REAL_ ## x *)source;				\
-    if (isfinite (tmp))						\
+    if (ISFINITE (y,tmp))					\
       nprinted = DTOA(y,0,tmp);					\
     else\
       nprinted = -1;\
@@ -1194,10 +1222,10 @@ determine_en_precision (st_parameter_dt *dtp, const fnode *f,
 {\
 	GFC_REAL_ ## x tmp;\
 	tmp = * (GFC_REAL_ ## x *)source;\
-	sign_bit = signbit (tmp);\
-	if (!isfinite (tmp))\
+	sign_bit = SIGNBIT (y,tmp);\
+	if (!ISFINITE (y,tmp))\
 	  { \
-	    write_infnan (dtp, f, isnan (tmp), sign_bit);\
+	    write_infnan (dtp, f, ISNAN (y,tmp), sign_bit);\
 	    return;\
 	  }\
 	tmp = sign_bit ? -tmp : tmp;\

@@ -17,7 +17,7 @@ int func (int *x)
 #endif
    return *x;
 }
-int main (int argc, char **argv)
+int main (void)
 {
   char array[NUMBER], array2[NUMBER];
   int ii, d = 2;
