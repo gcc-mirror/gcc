@@ -1,6 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-fcilkplus" } */
 
+#define NUMBER 100
 #if HAVE_IO
 #include <stdio.h>
 #endif
@@ -18,17 +19,17 @@ double my_func (double x, double y)
 /* char __sec_reduce_add (int *); */
 int main(void)
 {
-  int ii,array[10], y = 0, y_int = 0, array2[10];
-  double x, yy, array3[10], array4[10];
+  int ii,array[NUMBER], y = 0, y_int = 0, array2[NUMBER];
+  double x, yy, array3[NUMBER], array4[NUMBER];
   double max_value = 0.000, min_value = 0.000, add_value, mul_value = 1.00;
   int max_index = 0, min_index = 0;
-  for (ii = 0; ii < 10; ii++)
+  for (ii = 0; ii < NUMBER; ii++)
     {
       array[ii] = 1+ii;
       array2[ii]= 2; 
     }
 
-  for (ii = 0; ii < 10; ii++)
+  for (ii = 0; ii < NUMBER; ii++)
     {
       if (ii%2 && ii)
 	array3[ii] = (double)(1.0000/(double)ii);
@@ -43,7 +44,7 @@ int main(void)
 
   /* Initialize it to the first variable.  */
   max_value = array3[0] * array4[0];
-  for (ii = 0; ii < 10; ii++)
+  for (ii = 0; ii < NUMBER; ii++)
     if (array3[ii] * array4[ii] > max_value) {
       max_value = array3[ii] * array4[ii];
       max_index = ii;
@@ -52,7 +53,7 @@ int main(void)
   
   
 #if HAVE_IO
-  for (ii = 0; ii < 10; ii++) 
+  for (ii = 0; ii < NUMBER; ii++) 
     printf("%5.3f ", array3[ii] * array4[ii]);
   printf("\n");
   printf("Max = %5.3f\t Max Index = %2d\n", x, y);
