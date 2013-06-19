@@ -136,7 +136,7 @@ main(int ac, char **av)
   setup_prefixes (av[0]);
 
   /* Find the GCC LTO plugin */
-  plugin = find_a_file (&target_path, LTOPLUGINSONAME);
+  plugin = find_a_file (&target_path, LTOPLUGINSONAME, R_OK);
   if (!plugin)
     {
       fprintf (stderr, "%s: Cannot find plugin '%s'\n", av[0], LTOPLUGINSONAME);
@@ -144,14 +144,14 @@ main(int ac, char **av)
     }
 
   /* Find the wrapped binutils program.  */
-  exe_name = find_a_file (&target_path, PERSONALITY);
+  exe_name = find_a_file (&target_path, PERSONALITY, X_OK);
   if (!exe_name)
     {
       const char *real_exe_name = PERSONALITY;
 #ifdef CROSS_DIRECTORY_STRUCTURE
       real_exe_name = concat (target_machine, "-", PERSONALITY, NULL);
 #endif
-      exe_name = find_a_file (&path, real_exe_name);
+      exe_name = find_a_file (&path, real_exe_name, X_OK);
       if (!exe_name)
 	{
 	  fprintf (stderr, "%s: Cannot find binary '%s'\n", av[0],

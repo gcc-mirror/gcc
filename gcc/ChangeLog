@@ -1,3 +1,12 @@
+2013-06-19  Matthias Klose  <doko@ubuntu.com>
+
+	PR driver/57651
+	* file-find.h (find_a_file): Add a mode parameter.
+	* file-find.c (find_a_file): Likewise.
+	* gcc-ar.c (main): Call find_a_file with R_OK for the plugin,
+	with X_OK for the executables.
+	* collect2.c (main): Call find_a_file with X_OK.
+
 2013-06-19  Steve Ellcey  <sellcey@mips.com>
 
 	PR target/56942
