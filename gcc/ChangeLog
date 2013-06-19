@@ -1,3 +1,8 @@
+2013-06-19  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* doc/invoke.texi (core-avx2): Document.
+	(atom): Updated with MOVBE.
+
 2013-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/57651
