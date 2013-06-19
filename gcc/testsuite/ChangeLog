@@ -1,3 +1,8 @@
+2013-06-19  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: set
+	STACK_ARGUMENTS_SIZE with 0 if __aarch64__ is defined.
+
 2013-06-19  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/forwprop-28.c: New test.
