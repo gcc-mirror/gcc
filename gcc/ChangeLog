@@ -1,3 +1,10 @@
+2013-06-19  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/vfp.md: Move VFP instruction classification documentation
+	to ...
+	* config/arm/arm.md: ... here.  Update instruction classification
+	documentation.
+
 2013-06-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	arm.md (split for eq(reg, 0)): Add variants for ARMv5 and Thumb2.

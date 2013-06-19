@@ -253,49 +253,88 @@
         "mov,mvn,clz,mrs,msr,xtab,sat,other"
         (const_string "other"))
 
-; TYPE attribute is used to detect floating point instructions which, if
-; running on a co-processor can run in parallel with other, basic instructions
-; If write-buffer scheduling is enabled then it can also be used in the
-; scheduling of writes.
-
-; Classification of each insn
-; Note: vfp.md has different meanings for some of these, and some further
-; types as well.  See that file for details.
-; simple_alu_imm  a simple alu instruction that doesn't hit memory or fp
-;               regs or have a shifted source operand and has an immediate
-;               operand. This currently only tracks very basic immediate
-;               alu operations.
-; alu_reg       any alu instruction that doesn't hit memory or fp
-;               regs or have a shifted source operand
-;               and does not have an immediate operand. This is
-;               also the default
-; simple_alu_shift covers UXTH, UXTB, SXTH, SXTB
-; alu_shift	any data instruction that doesn't hit memory or fp
-;		regs, but has a source operand shifted by a constant
-; alu_shift_reg	any data instruction that doesn't hit memory or fp
-;		regs, but has a source operand shifted by a register value
-; block		blockage insn, this blocks all functional units
-; float		a floating point arithmetic operation (subject to expansion)
-; fdivd		DFmode floating point division
-; fdivs		SFmode floating point division
-; f_load[sd]	A single/double load from memory. Used for VFP unit.
-; f_store[sd]	A single/double store to memory. Used for VFP unit.
-; f_flag	a transfer of co-processor flags to the CPSR
-; f_2_r		transfer float to core (no memory needed)
-; r_2_f		transfer core to float
-; f_cvt		convert floating<->integral
-; branch	a branch
-; call		a subroutine call
-; load_byte	load byte(s) from memory to arm registers
-; load1		load 1 word from memory to arm registers
-; load2         load 2 words from memory to arm registers
-; load3         load 3 words from memory to arm registers
-; load4         load 4 words from memory to arm registers
-; store		store 1 word to memory from arm registers
-; store2	store 2 words
-; store3	store 3 words
-; store4	store 4 (or more) words
+; TYPE attribute is used to classify instructions for use in scheduling.
 ;
+; Instruction classification:
+;
+; alu_reg            any alu instruction that doesn't hit memory or fp
+;                    regs or have a shifted source operand and does not have
+;                    an immediate operand.  This is also the default.
+; alu_shift          any data instruction that doesn't hit memory or fp.
+;                    regs, but has a source operand shifted by a constant.
+; alu_shift_reg      any data instruction that doesn't hit memory or fp.
+; block              blockage insn, this blocks all functional units.
+; branch             branch.
+; call               subroutine call.
+; f_2_r              transfer from float to core (no memory needed).
+; f_cvt              conversion between float and integral.
+; f_flag             transfer of co-processor flags to the CPSR.
+; f_load[d,s]        double/single load from memory.  Used for VFP unit.
+; f_minmax[d,s]      double/single floating point minimum/maximum.
+; f_rint[d,s]        double/single floating point rount to integral.
+; f_sel[d,s]         double/single floating byte select.
+; f_store[d,s]       double/single store to memory.  Used for VFP unit.
+; fadd[d,s]          double/single floating-point scalar addition.
+; fcmp[d,s]          double/single floating-point compare.
+; fconst[d,s]        double/single load immediate.
+; fcpys              single precision floating point cpy.
+; fdiv[d,s]          double/single precision floating point division.
+; ffarith[d,s]       double/single floating point abs/neg/cpy.
+; ffma[d,s]          double/single floating point fused multiply-accumulate.
+; float              floating point arithmetic operation.
+; fmac[d,s]          double/single floating point multiply-accumulate.
+; fmul[d,s]          double/single floating point multiply.
+; load_byte          load byte(s) from memory to arm registers.
+; load1              load 1 word from memory to arm registers.
+; load2              load 2 words from memory to arm registers.
+; load3              load 3 words from memory to arm registers.
+; load4              load 4 words from memory to arm registers.
+; mla                integer multiply accumulate.
+; mlas               integer multiply accumulate, flag setting.
+; mov                integer move.
+; mul                integer multiply.
+; muls               integer multiply, flag setting.
+; r_2_f              transfer from core to float.
+; sdiv               signed division.
+; simple_alu_imm     simple alu instruction that doesn't hit memory or fp
+;                    regs or have a shifted source operand and has an
+;                    immediate operand.  This currently only tracks very basic
+;                    immediate alu operations.
+; simple_alu_shift   simple alu instruction with a shifted source operand.
+; smlad              signed multiply accumulate dual.
+; smladx             signed multiply accumulate dual reverse.
+; smlal              signed multiply accumulate long.
+; smlald             signed multiply accumulate long dual.
+; smlals             signed multiply accumulate long, flag setting.
+; smlalxy            signed multiply accumulate, 16x16-bit, 64-bit accumulate.
+; smlawx             signed multiply accumulate, 32x16-bit, 32-bit accumulate.
+; smlawy             signed multiply accumulate wide, 32x16-bit,
+;                    32-bit accumulate.
+; smlaxy             signed multiply accumulate, 16x16-bit, 32-bit accumulate.
+; smlsd              signed multiply subtract dual.
+; smlsdx             signed multiply subtract dual reverse.
+; smlsld             signed multiply subtract long dual.
+; smmla              signed most significant word multiply accumulate.
+; smmul              signed most significant word multiply.
+; smmulr             signed most significant word multiply, rounded.
+; smuad              signed dual multiply add.
+; smuadx             signed dual multiply add reverse.
+; smull              signed multiply long.
+; smulls             signed multiply long, flag setting.
+; smulwy             signed multiply wide, 32x16-bit, 32-bit accumulate.
+; smulxy             signed multiply, 16x16-bit, 32-bit accumulate.
+; smusd              signed dual multiply subtract.
+; smusdx             signed dual multiply subtract reverse.
+; store1             store 1 word to memory from arm registers.
+; store2             store 2 words to memory from arm registers.
+; store3             store 3 words to memory from arm registers.
+; store4             store 4 (or more) words to memory from arm registers.
+; udiv               unsigned division.
+; umaal              unsigned multiply accumulate accumulate long.
+; umlal              unsigned multiply accumulate long.
+; umlals             unsigned multiply accumulate long, flag setting.
+; umull              unsigned multiply long.
+; umulls             unsigned multiply long, flag setting.
 
 (define_attr "type"
  "simple_alu_imm,\
