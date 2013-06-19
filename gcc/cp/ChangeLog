@@ -1,3 +1,9 @@
+2013-06-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/57638
+	* pt.c (unify, [TEMPLATE_PARM_INDEX]): Pass to unify_type_mismatch
+	TREE_TYPE (arg), not arg itself.
+
 2013-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53211

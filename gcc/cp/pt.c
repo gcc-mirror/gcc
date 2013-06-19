@@ -16961,7 +16961,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	   later.  */
 	return unify_success (explain_p);
       else
-	return unify_type_mismatch (explain_p, tparm, arg);
+	return unify_type_mismatch (explain_p, tparm, TREE_TYPE (arg));
 
       /* If ARG is a parameter pack or an expansion, we cannot unify
 	 against it unless PARM is also a parameter pack.  */
