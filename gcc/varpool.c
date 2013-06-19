@@ -66,12 +66,15 @@ void
 varpool_remove_node (struct varpool_node *node)
 {
   symtab_unregister_node ((symtab_node)node);
+  tree init;
 
   /* Because we remove references from external functions before final compilation,
      we may end up removing useful constructors.
      FIXME: We probably want to trace boundaries better.  */
-  if (!const_value_known_p (node->symbol.decl))
+  if ((init = ctor_for_folding (node->symbol.decl)) == error_mark_node)
     varpool_remove_initializer (node);
+  else
+    DECL_INITIAL (node->symbol.decl) = init;
   ggc_free (node);
 }
 
@@ -109,7 +112,7 @@ dump_varpool_node (FILE *f, struct varpool_node *node)
     fprintf (f, " output");
   if (TREE_READONLY (node->symbol.decl))
     fprintf (f, " read-only");
-  if (const_value_known_p (node->symbol.decl))
+  if (ctor_for_folding (node->symbol.decl) != error_mark_node)
     fprintf (f, " const-value-known");
   fprintf (f, "\n");
 }
@@ -144,44 +147,93 @@ varpool_node_for_asm (tree asmname)
 }
 
 /* Return if DECL is constant and its initial value is known (so we can do
-   constant folding using DECL_INITIAL (decl)).  */
+   constant folding using DECL_INITIAL (decl)).
+   Return ERROR_MARK_NODE when value is unknown.  */
 
-bool
-const_value_known_p (tree decl)
+tree
+ctor_for_folding (tree decl)
 {
+  struct varpool_node *node, *real_node;
+  tree real_decl;
+
   if (TREE_CODE (decl) != VAR_DECL
-      &&TREE_CODE (decl) != CONST_DECL)
-    return false;
+      && TREE_CODE (decl) != CONST_DECL)
+    return error_mark_node;
 
   if (TREE_CODE (decl) == CONST_DECL
       || DECL_IN_CONSTANT_POOL (decl))
-    return true;
+    return DECL_INITIAL (decl);
+
+  if (TREE_THIS_VOLATILE (decl))
+    return error_mark_node;
+
+  /* Do not care about automatic variables.  Those are never initialized
+     anyway, because gimplifier exapnds the code*/
+  if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+    {
+      gcc_assert (!TREE_PUBLIC (decl));
+      return error_mark_node;
+    }
 
   gcc_assert (TREE_CODE (decl) == VAR_DECL);
 
-  if (!TREE_READONLY (decl) || TREE_THIS_VOLATILE (decl))
-    return false;
+  node = varpool_get_node (decl);
+  if (node)
+    {
+      real_node = varpool_variable_node (node);
+      real_decl = real_node->symbol.decl;
+    }
+  else
+    real_decl = decl;
 
-  /* Gimplifier takes away constructors of local vars  */
-  if (!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-    return DECL_INITIAL (decl) != NULL;
+  /* See if we are dealing with alias.
+     In most cases alias is just alternative symbol pointing to a given
+     constructor.  This allows us to use interposition rules of DECL
+     constructor of REAL_NODE.  However weakrefs are special by being just
+     alternative name of their target (if defined).  */
+  if (decl != real_decl)
+    {
+      gcc_assert (!DECL_INITIAL (decl)
+		  || DECL_INITIAL (decl) == error_mark_node);
+      if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
+	{
+	  node = varpool_alias_target (node);
+	  decl = node->symbol.decl;
+	}
+    }
 
-  gcc_assert (TREE_STATIC (decl) || DECL_EXTERNAL (decl));
+  /* Vtables are defined by their types and must match no matter of interposition
+     rules.  */
+  if (DECL_VIRTUAL_P (real_decl))
+    {
+      gcc_checking_assert (TREE_READONLY (real_decl));
+      return DECL_INITIAL (real_decl);
+    }
+
+  /* If thre is no constructor, we have nothing to do.  */
+  if (DECL_INITIAL (real_decl) == error_mark_node)
+    return error_mark_node;
+
+  /* Non-readonly alias of readonly variable is also de-facto readonly,
+     because the variable itself is in readonly section.  
+     We also honnor READONLY flag on alias assuming that user knows
+     what he is doing.  */
+  if (!TREE_READONLY (decl) && !TREE_READONLY (real_decl))
+    return error_mark_node;
 
   /* Variables declared 'const' without an initializer
      have zero as the initializer if they may not be
      overridden at link or run time.  */
-  if (!DECL_INITIAL (decl)
-      && (DECL_EXTERNAL (decl)
-	  || decl_replaceable_p (decl)))
-    return false;
+  if (!DECL_INITIAL (real_decl)
+      && (DECL_EXTERNAL (decl) || decl_replaceable_p (decl)))
+    return error_mark_node;
 
   /* Variables declared `const' with an initializer are considered
      to not be overwritable with different initializer by default. 
 
      ??? Previously we behaved so for scalar variables but not for array
      accesses.  */
-  return true;
+  return DECL_INITIAL (real_decl);
 }
 
 /* Add the variable DECL to the varpool.

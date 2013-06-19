@@ -1,3 +1,7 @@
+2013-06-19  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias-2.c: New testcase.
+
 2013-06-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
        * c-c++-common/cilk-plus/AN/builtin_fn_custom.c: Replaced all the
