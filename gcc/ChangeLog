@@ -1,3 +1,10 @@
+2013-06-19  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/57604
+	* lra.c (emit_add3_insn, emit_add2_insn): New functions.
+	(lra_emit_add): Use the functions.  Add comment about Y as an
+	address segment.
+
 2013-06-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR driver/57652
