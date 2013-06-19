@@ -1,8 +1,17 @@
+2013-06-19  Alan Modra  <amodra@gmail.com>
+
+	Apply mainline patches
+	2013-06-04  Alan Modra  <amodra@gmail.com>
+	* config/rs6000/ibm-ldouble.c: Enable for little-endian.
+
+	2013-04-25  Alan Modra  <amodra@gmail.com>
+	* config.host: Match little-endian powerpc-linux.
+
 2013-06-08  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline:
 	2013-06-08  Walter Lee  <walt@tilera.com>
-	
+
 	* config/tilepro/atomic.h: Don't include stdint.h or features.h.
 	Replace int64_t with long long.  Add __extension__ where
 	appropriate.
@@ -49,7 +58,7 @@
 
 	Backport from mainline:
 	2013-03-26  Walter Lee  <walt@tilera.com>
-	
+
 	* config/tilegx/t-crtstuff: Add -fno-asynchronous-unwind-tables
 	-mcmodel=large to CRTSTUFF_T_CFLAGS_S variable.
 

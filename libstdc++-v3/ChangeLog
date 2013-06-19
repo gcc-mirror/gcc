@@ -1,3 +1,9 @@
+2013-06-19  Alan Modra  <amodra@gmail.com>
+
+	Apply mainline patch
+	2013-06-14  Alan Modra  <amodra@gmail.com>
+	* configure.host (abi_baseline_pair): Match powerpc64*.
+
 2013-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/57619
