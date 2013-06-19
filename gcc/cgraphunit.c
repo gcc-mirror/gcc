@@ -762,8 +762,7 @@ process_function_and_variable_attributes (struct cgraph_node *first,
     {
       tree decl = vnode->symbol.decl;
       if (DECL_EXTERNAL (decl)
-	  && DECL_INITIAL (decl)
-	  && const_value_known_p (decl))
+	  && DECL_INITIAL (decl))
 	varpool_finalize_decl (decl);
       if (DECL_PRESERVE_P (decl))
 	vnode->symbol.force_output = true;

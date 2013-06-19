@@ -145,7 +145,9 @@ process_references (struct ipa_ref_list *list,
 		     constant folding.  Keep references alive so partitioning
 		     knows about potential references.  */
 		  || (TREE_CODE (node->symbol.decl) == VAR_DECL
-		      && flag_wpa && const_value_known_p (node->symbol.decl)))))
+		      && flag_wpa
+		      && ctor_for_folding (node->symbol.decl)
+		         != error_mark_node))))
 	pointer_set_insert (reachable, node);
       enqueue_node ((symtab_node) node, first, reachable);
     }
@@ -400,6 +402,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	}
       else if (!pointer_set_contains (reachable, vnode))
         {
+	  tree init;
 	  if (vnode->symbol.definition)
 	    {
 	      if (file)
@@ -411,8 +414,10 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  vnode->symbol.aux = NULL;
 
 	  /* Keep body if it may be useful for constant folding.  */
-	  if (!const_value_known_p (vnode->symbol.decl))
+	  if ((init = ctor_for_folding (vnode->symbol.decl)) == error_mark_node)
 	    varpool_remove_initializer (vnode);
+	  else
+	    DECL_INITIAL (vnode->symbol.decl) = init;
 	  ipa_remove_all_references (&vnode->symbol.ref_list);
 	}
       else

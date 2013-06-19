@@ -192,9 +192,9 @@ canonicalize_constructor_val (tree cval, tree from_decl)
 tree
 get_symbol_constant_value (tree sym)
 {
-  if (const_value_known_p (sym))
+  tree val = ctor_for_folding (sym);
+  if (val != error_mark_node)
     {
-      tree val = DECL_INITIAL (sym);
       if (val)
 	{
 	  val = canonicalize_constructor_val (unshare_expr (val), sym);
@@ -2695,19 +2695,18 @@ get_base_constructor (tree base, HOST_WIDE_INT *bit_offset,
   switch (TREE_CODE (base))
     {
     case VAR_DECL:
-      if (!const_value_known_p (base))
-	return NULL_TREE;
-
-      /* Fallthru.  */
     case CONST_DECL:
-      if (!DECL_INITIAL (base)
-	  && (TREE_STATIC (base) || DECL_EXTERNAL (base)))
-        return error_mark_node;
-      /* Do not return an error_mark_node DECL_INITIAL.  LTO uses this
-         as special marker (_not_ zero ...) for its own purposes.  */
-      if (DECL_INITIAL (base) == error_mark_node)
-	return NULL_TREE;
-      return DECL_INITIAL (base);
+      {
+	tree init = ctor_for_folding (base);
+
+	/* Our semantic is exact oposite of ctor_for_folding;
+	   NULL means unknown, while error_mark_node is 0.  */
+	if (init == error_mark_node)
+	  return NULL_TREE;
+	if (!init)
+	  return error_mark_node;
+	return init;
+      }
 
     case ARRAY_REF:
     case COMPONENT_REF:

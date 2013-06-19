@@ -1,3 +1,23 @@
+2013-06-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (const_value_known_p): Replace by ...
+	(ctor_for_folding): .. this one.
+	* cgraphunit.c (process_function_and_variable_attributes): Use it.
+	* lto-cgraph.c (compute_ltrans_boundary): Use ctor_for_folding.
+	* expr.c (expand_expr_real_1): Likewise.
+	(string_constant): Likewise.
+	* tree-ssa-loop-ivcanon.c (constant_after_peeling): Likewise.
+	* ipa.c (process_references): Likewise.
+	(symtab_remove_unreachable_nodes): Likewise.
+	* ipa-inline-analysis.c (param_change_prob): Likewise.
+	* gimple-fold.c (canonicalize_constructor_val): Likewise.
+	(get_base_constructor): Likwise.
+	* varpool.c (varpool_remove_node): Likewise.
+	(varpool_remove_initializer): LIkewise.
+	(dump_varpool_node): LIkwise.
+	(const_value_known_p): Rewrite to ...
+	(ctor_for_folding): ... this one.
+
 2013-06-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/57651
