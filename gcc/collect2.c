@@ -366,8 +366,8 @@ static void scan_prog_file (const char *, scanpass, scanfilter);
 
 /* Delete tempfiles and exit function.  */
 
-void
-collect_exit (int status)
+static void
+collect_atexit (void)
 {
   if (c_file != 0 && c_file[0])
     maybe_unlink (c_file);
@@ -395,13 +395,8 @@ collect_exit (int status)
       maybe_unlink (lderrout);
     }
 
-  if (status != 0 && output_file != 0 && output_file[0])
-    maybe_unlink (output_file);
-
   if (response_file)
     maybe_unlink (response_file);
-
-  exit (status);
 }
 
 
@@ -969,6 +964,9 @@ main (int argc, char **argv)
      receive the signal.  A different setting is inheritable */
   signal (SIGCHLD, SIG_DFL);
 #endif
+
+  if (atexit (collect_atexit) != 0)
+    fatal_error ("atexit failed");
 
   /* Unlock the stdio streams.  */
   unlock_std_streams ();
@@ -1816,7 +1814,7 @@ collect_wait (const char *prog, struct pex_obj *pex)
 	  error ("%s terminated with signal %d [%s]%s",
 		 prog, sig, strsignal(sig),
 		 WCOREDUMP(status) ? ", core dumped" : "");
-	  collect_exit (FATAL_EXIT_CODE);
+	  exit (FATAL_EXIT_CODE);
 	}
 
       if (WIFEXITED (status))
@@ -1832,7 +1830,7 @@ do_wait (const char *prog, struct pex_obj *pex)
   if (ret != 0)
     {
       error ("%s returned %d exit status", prog, ret);
-      collect_exit (ret);
+      exit (ret);
     }
 
   if (response_file)
