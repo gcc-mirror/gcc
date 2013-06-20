@@ -1,9 +1,11 @@
 2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h (_FPU_MASK_ALL): New.
+	(_FPU_EX_ALL): Ditto.
 	(set_fpu): Use fstcw to store x87 FPU control word. Use fnclex to
 	clear stalled exception flags.  Correctly clear stalled SSE
 	exception flags.  Simplify code.
+	(get_fpu_except_flags): Simplify code.
 
 2013-06-20  Tobias Burnus  <burnus@net-b.de>
 
