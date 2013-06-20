@@ -1,3 +1,7 @@
+2013-06-20  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (input_symtab): Do not set cgraph state.
+
 2013-06-20  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/57425
