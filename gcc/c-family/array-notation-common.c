@@ -484,7 +484,7 @@ find_inv_trees (tree *tp, int *walk_subtrees, void *data)
 	 tree codes such as TARGET_EXPR must be eliminated.  These codes are
 	 passed into additional_tcodes and are walked through and checked.  */
       for (ii = 0; ii < vec_safe_length (i_list->additional_tcodes); ii++)
-	if (TREE_CODE (*tp) == (enum rid)(*(i_list->additional_tcodes))[ii])
+	if (TREE_CODE (*tp) == (*(i_list->additional_tcodes))[ii])
 	  *walk_subtrees = 0;
     }
   return NULL_TREE;
