@@ -1,3 +1,9 @@
+2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57655
+	* config/i386/i386.c (construct_container): Report error if
+	long double is used with disabled x87 float returns.
+
 2013-06-20  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (input_symtab): Do not set cgraph state.
