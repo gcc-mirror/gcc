@@ -1,3 +1,7 @@
+2013-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (get_temp_from_expr): Don't set FL_VARIABLE twice.
+
 2013-06-17  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.h (gfc_option_t): Add fpe_summary.

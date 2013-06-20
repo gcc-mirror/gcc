@@ -9311,7 +9311,6 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
     tmp->n.sym->attr.dimension = 0;
 
   gfc_set_sym_referenced (tmp->n.sym);
-  gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
   gfc_commit_symbol (tmp->n.sym);
   e = gfc_lval_expr_from_sym (tmp->n.sym);
 
