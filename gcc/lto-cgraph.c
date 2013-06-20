@@ -1451,8 +1451,6 @@ input_symtab (void)
   unsigned int j = 0;
   struct cgraph_node *node;
 
-  cgraph_state = CGRAPH_STATE_IPA_SSA;
-
   while ((file_data = file_data_vec[j++]))
     {
       const char *data;

@@ -3362,7 +3362,6 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 {
   unsigned int i, last_file_ix;
   FILE *resolution;
-  struct cgraph_node *node;
   int count = 0;
   struct lto_file_decl_data **decl_data;
   void **res;
@@ -3544,14 +3543,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     }
   lto_symtab_merge_symbols ();
   ggc_collect ();
-
-  /* FIXME: ipa_transforms_to_apply holds list of passes that have optimization
-     summaries computed and needs to apply changes.  At the moment WHOPR only
-     supports inlining, so we can push it here by hand.  In future we need to stream
-     this field into ltrans compilation.  */
-  if (flag_ltrans)
-    FOR_EACH_DEFINED_FUNCTION (node)
-      node->ipa_transforms_to_apply.safe_push ((ipa_opt_pass)&pass_ipa_inline);
+  cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   timevar_pop (TV_IPA_LTO_CGRAPH_MERGE);
 
