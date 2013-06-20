@@ -5,6 +5,10 @@
 
 2013-06-20  Jeff Law  <law@redhat.com>
 
+	PR tree-optimization/57660
+	* gcc.dg/tree-ssa/forwprop-28.c: Don't run test on various targets
+	based on their branch cost.
+
 	* gcc.dg/tree-ssa/forwprop-28.c: Add missing dg-final.
 
 2013-06-20  Tobias Burnus  <burnus@net-b.de>
