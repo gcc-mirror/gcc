@@ -226,6 +226,14 @@ extern int errno;
 # include <stdlib.h>
 #endif
 
+/* When compiling C++ we need to include <cstdlib> as well as <stdlib.h> so
+   that it is processed before we poison "malloc"; otherwise, if a source
+   file uses a standard library header that includes <cstdlib>, we will get
+   an error about 'using std::malloc'.  */
+#ifdef __cplusplus
+#include <cstdlib>
+#endif
+
 /* Undef vec_free from AIX stdlib.h header which conflicts with vec.h.  */
 #undef vec_free
 
