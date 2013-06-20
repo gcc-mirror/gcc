@@ -1,3 +1,8 @@
+2013-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57633
+	* io/list_read.c (next_char, eat_separator): Don't set EOL for \r.
+
 2012-06-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h: Use __asm__ and __volatile__ consistently.
