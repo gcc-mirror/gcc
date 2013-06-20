@@ -1,3 +1,9 @@
+2013-06-20  Torvald Riegel  <triegel@redhat.com>
+
+	PR libitm/57643
+	* beginend.cc (gtm_thread::begin_transaction): Handle reentrancy in
+	the HTM fastpath.
+
 2013-03-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR bootstrap/56714
