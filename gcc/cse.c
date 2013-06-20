@@ -1837,7 +1837,7 @@ check_dependence (rtx *x, void *data)
 {
   struct check_dependence_data *d = (struct check_dependence_data *) data;
   if (*x && MEM_P (*x))
-    return canon_anti_dependence (d->exp, d->mode, d->addr, *x);
+    return canon_anti_dependence (*x, true, d->exp, d->mode, d->addr);
   else
     return 0;
 }

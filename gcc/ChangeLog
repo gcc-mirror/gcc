@@ -1,3 +1,14 @@
+2013-06-20  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57425
+	PR rtl-optimization/57569
+	* alias.c (write_dependence_p): Remove parameters mem_mode and
+	canon_mem_addr.  Add parameters x_mode, x_addr and x_canonicalized.
+	Changed all callers.
+	(canon_anti_dependence): Get comments and semantics in sync.
+	Add parameter mem_canonicalized.  Changed all callers.
+	* rtl.h (canon_anti_dependence): Update prototype.
+
 2013-06-20  Richard Biener  <rguenther@suse.de>
 
 	* data-streamer-in.c (streamer_read_uhwi): Optimize single

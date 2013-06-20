@@ -2263,8 +2263,8 @@ cselib_invalidate_mem (rtx mem_rtx)
 	      continue;
 	    }
 	  if (num_mems < PARAM_VALUE (PARAM_MAX_CSELIB_MEMORY_LOCATIONS)
-	      && ! canon_anti_dependence (mem_rtx, GET_MODE (mem_rtx),
-					  mem_addr, x))
+	      && ! canon_anti_dependence (x, false, mem_rtx,
+					  GET_MODE (mem_rtx), mem_addr))
 	    {
 	      has_mem = true;
 	      num_mems++;
