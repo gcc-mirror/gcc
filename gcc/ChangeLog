@@ -1,3 +1,10 @@
+2013-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57584
+	* tree-ssa-loop-niter.c (expand_simple_operations): Avoid including
+	SSA names into the expanded expression that take part in
+	abnormal coalescing.
+
 2013-06-19    <singhai@google.com>
 
 	* gcov.c (print_usage): Handle new option.
