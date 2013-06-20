@@ -37,6 +37,7 @@ along with Gcov; see the file COPYING3.  If not see
 #include "intl.h"
 #include "diagnostic.h"
 #include "version.h"
+#include "demangle.h"
 
 #include <getopt.h>
 
@@ -168,6 +169,7 @@ typedef struct function_info
 {
   /* Name of function.  */
   char *name;
+  char *demangled_name;
   unsigned ident;
   unsigned lineno_checksum;
   unsigned cfg_checksum;
@@ -325,6 +327,14 @@ static int flag_gcov_file = 1;
 
 static int flag_display_progress = 0;
 
+/* Output *.gcov file in intermediate format used by 'lcov'.  */
+
+static int flag_intermediate_format = 0;
+
+/* Output demangled function names.  */
+
+static int flag_demangled_names = 0;
+
 /* For included files, make the gcov output file name include the name
    of the input source file.  For example, if x.h is included in a.c,
    then the output file name is a.c##x.h.gcov instead of x.h.gcov.  */
@@ -388,6 +398,7 @@ static void executed_summary (unsigned, unsigned);
 static void function_summary (const coverage_t *, const char *);
 static const char *format_gcov (gcov_type, gcov_type, int);
 static void accumulate_line_counts (source_t *);
+static void output_gcov_file(const char *, source_t *);
 static int output_branch_count (FILE *, int, const arc_t *);
 static void output_lines (FILE *, const source_t *);
 static char *make_gcov_file_name (const char *, const char *);
@@ -461,21 +472,23 @@ print_usage (int error_p)
   fnotice (file, "Usage: gcov [OPTION]... SOURCE|OBJ...\n\n");
   fnotice (file, "Print code coverage information.\n\n");
   fnotice (file, "  -h, --help                      Print this help, then exit\n");
-  fnotice (file, "  -v, --version                   Print version number, then exit\n");
   fnotice (file, "  -a, --all-blocks                Show information for every basic block\n");
   fnotice (file, "  -b, --branch-probabilities      Include branch probabilities in output\n");
-  fnotice (file, "  -c, --branch-counts             Given counts of branches taken\n\
+  fnotice (file, "  -c, --branch-counts             Output counts of branches taken\n\
                                     rather than percentages\n");
-  fnotice (file, "  -n, --no-output                 Do not create an output file\n");
+  fnotice (file, "  -d, --display-progress          Display progress information\n");
+  fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
+  fnotice (file, "  -i, --intermediate-format       Output .gcov file in intermediate text format\n");
   fnotice (file, "  -l, --long-file-names           Use long output file names for included\n\
                                     source files\n");
-  fnotice (file, "  -f, --function-summaries        Output summaries for each function\n");
+  fnotice (file, "  -m, --demangled-names           Output demangled function names\n");
+  fnotice (file, "  -n, --no-output                 Do not create an output file\n");
   fnotice (file, "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n");
-  fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
-  fnotice (file, "  -r, --relative-only             Only show data for relative sources\n");
   fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
+  fnotice (file, "  -r, --relative-only             Only show data for relative sources\n");
+  fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
   fnotice (file, "  -u, --unconditional-branches    Show unconditional branch counts too\n");
-  fnotice (file, "  -d, --display-progress          Display progress information\n");
+  fnotice (file, "  -v, --version                   Print version number, then exit\n");
   fnotice (file, "\nFor bug reporting instructions, please see:\n%s.\n",
 	   bug_report_url);
   exit (status);
@@ -503,9 +516,11 @@ static const struct option options[] =
   { "all-blocks",           no_argument,       NULL, 'a' },
   { "branch-probabilities", no_argument,       NULL, 'b' },
   { "branch-counts",        no_argument,       NULL, 'c' },
+  { "intermediate-format",  no_argument,       NULL, 'i' },
   { "no-output",            no_argument,       NULL, 'n' },
   { "long-file-names",      no_argument,       NULL, 'l' },
   { "function-summaries",   no_argument,       NULL, 'f' },
+  { "demangled-names",      no_argument,       NULL, 'm' },
   { "preserve-paths",       no_argument,       NULL, 'p' },
   { "relative-only",        no_argument,       NULL, 'r' },
   { "object-directory",     required_argument, NULL, 'o' },
@@ -523,7 +538,8 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  while ((opt = getopt_long (argc, argv, "abcdfhlno:s:pruv", options, NULL)) != -1)
+  while ((opt = getopt_long (argc, argv, "abcdfhilmno:s:pruv", options, NULL)) !=
+         -1)
     {
       switch (opt)
 	{
@@ -545,6 +561,9 @@ process_args (int argc, char **argv)
 	case 'l':
 	  flag_long_names = 1;
 	  break;
+	case 'm':
+	  flag_demangled_names = 1;
+	  break;
 	case 'n':
 	  flag_gcov_file = 0;
 	  break;
@@ -564,6 +583,10 @@ process_args (int argc, char **argv)
 	case 'u':
 	  flag_unconditional = 1;
 	  break;
+	case 'i':
+          flag_intermediate_format = 1;
+          flag_gcov_file = 1;
+          break;
         case 'd':
           flag_display_progress = 1;
           break;
@@ -578,6 +601,110 @@ process_args (int argc, char **argv)
 
   return optind;
 }
+
+/* Get the name of the gcov file.  The return value must be free'd.
+
+   It appends the '.gcov' extension to the *basename* of the file.
+   The resulting file name will be in PWD.
+
+   e.g.,
+   input: foo.da,       output: foo.da.gcov
+   input: a/b/foo.cc,   output: foo.cc.gcov  */
+
+static char *
+get_gcov_intermediate_filename (const char *file_name)
+{
+  const char *gcov = ".gcov";
+  char *result;
+  const char *cptr;
+
+  /* Find the 'basename'.  */
+  cptr = lbasename (file_name);
+
+  result = XNEWVEC(char, strlen (cptr) + strlen (gcov) + 1);
+  sprintf (result, "%s%s", cptr, gcov);
+
+  return result;
+}
+
+/* Output the result in intermediate format used by 'lcov'.
+
+The intermediate format contains a single file named 'foo.cc.gcov',
+with no source code included. A sample output is
+
+file:foo.cc
+function:5,1,_Z3foov
+function:13,1,main
+function:19,1,_GLOBAL__sub_I__Z3foov
+function:19,1,_Z41__static_initialization_and_destruction_0ii
+lcount:5,1
+lcount:7,9
+lcount:9,8
+lcount:11,1
+file:/.../iostream
+lcount:74,1
+file:/.../basic_ios.h
+file:/.../ostream
+file:/.../ios_base.h
+function:157,0,_ZStorSt12_Ios_IostateS_
+lcount:157,0
+file:/.../char_traits.h
+function:258,0,_ZNSt11char_traitsIcE6lengthEPKc
+lcount:258,0
+...
+
+The default gcov outputs multiple files: 'foo.cc.gcov',
+'iostream.gcov', 'ios_base.h.gcov', etc. with source code
+included. Instead the intermediate format here outputs only a single
+file 'foo.cc.gcov' similar to the above example. */
+
+static void
+output_intermediate_file (FILE *gcov_file, source_t *src)
+{
+  unsigned line_num;    /* current line number.  */
+  const line_t *line;   /* current line info ptr.  */
+  function_t *fn;       /* current function info ptr. */
+
+  fprintf (gcov_file, "file:%s\n", src->name);    /* source file name */
+
+  for (fn = src->functions; fn; fn = fn->line_next)
+    {
+      /* function:<name>,<line_number>,<execution_count> */
+      fprintf (gcov_file, "function:%d,%s,%s\n", fn->line,
+               format_gcov (fn->blocks[0].count, 0, -1),
+               flag_demangled_names ? fn->demangled_name : fn->name);
+    }
+
+  for (line_num = 1, line = &src->lines[line_num];
+       line_num < src->num_lines;
+       line_num++, line++)
+    {
+      arc_t *arc;
+      if (line->exists)
+        fprintf (gcov_file, "lcount:%u,%s\n", line_num,
+                 format_gcov (line->count, 0, -1));
+      if (flag_branches)
+        for (arc = line->u.branches; arc; arc = arc->line_next)
+          {
+            if (!arc->is_unconditional && !arc->is_call_non_return)
+              {
+                const char *branch_type;
+                /* branch:<line_num>,<branch_coverage_type>
+                   branch_coverage_type
+                     : notexec (Branch not executed)
+                     : taken (Branch executed and taken)
+                     : nottaken (Branch executed, but not taken)
+                */
+                if (arc->src->count)
+                  branch_type = (arc->count > 0) ? "taken" : "nottaken";
+                else
+                  branch_type = "notexec";
+                fprintf(gcov_file, "branch:%d,%s\n", line_num, branch_type);
+              }
+          }
+    }
+}
+
 
 /* Process a single input file.  */
 
@@ -655,11 +782,40 @@ process_file (const char *file_name)
 }
 
 static void
+output_gcov_file(const char *file_name, source_t *src)
+{
+  char *gcov_file_name = make_gcov_file_name (file_name, src->coverage.name);
+
+  if (src->coverage.lines)
+    {
+      FILE *gcov_file = fopen (gcov_file_name, "w");
+      if (gcov_file)
+        {
+          fnotice (stdout, "Creating '%s'\n", gcov_file_name);
+          output_lines (gcov_file, src);
+          if (ferror (gcov_file))
+            fnotice (stderr, "Error writing output file '%s'\n", gcov_file_name);
+          fclose (gcov_file);
+        }
+      else
+        fnotice (stderr, "Could not open output file '%s'\n", gcov_file_name);
+    }
+  else
+    {
+      unlink (gcov_file_name);
+      fnotice (stdout, "Removing '%s'\n", gcov_file_name);
+    }
+  free (gcov_file_name);
+}
+
+static void
 generate_results (const char *file_name)
 {
   unsigned ix;
   source_t *src;
   function_t *fn;
+  FILE *gcov_intermediate_file = NULL;
+  char *gcov_intermediate_filename = NULL;
 
   for (ix = n_sources, src = sources; ix--; src++)
     if (src->num_lines)
@@ -670,7 +826,7 @@ generate_results (const char *file_name)
       coverage_t coverage;
 
       memset (&coverage, 0, sizeof (coverage));
-      coverage.name = fn->name;
+      coverage.name = flag_demangled_names ? fn->demangled_name : fn->name;
       add_line_counts (flag_function_summary ? &coverage : NULL, fn);
       if (flag_function_summary)
 	{
@@ -688,7 +844,21 @@ generate_results (const char *file_name)
       else
 	file_name = canonicalize_name (file_name);
     }
-  
+
+  if (flag_gcov_file && flag_intermediate_format)
+    {
+      /* Open the intermediate file.  */
+      gcov_intermediate_filename =
+        get_gcov_intermediate_filename (file_name);
+      gcov_intermediate_file = fopen (gcov_intermediate_filename, "w");
+      if (!gcov_intermediate_file)
+        {
+          fnotice (stderr, "Cannot open intermediate output file %s\n",
+                   gcov_intermediate_filename);
+          return;
+        }
+    }
+
   for (ix = n_sources, src = sources; ix--; src++)
     {
       if (flag_relative_only)
@@ -711,34 +881,21 @@ generate_results (const char *file_name)
       total_executed += src->coverage.lines_executed;
       if (flag_gcov_file)
 	{
-	  char *gcov_file_name
-	    = make_gcov_file_name (file_name, src->coverage.name);
+          if (flag_intermediate_format)
+            /* Output the intermediate format without requiring source
+               files.  This outputs a section to a *single* file.  */
+            output_intermediate_file (gcov_intermediate_file, src);
+          else
+            output_gcov_file (file_name, src);
+          fnotice (stdout, "\n");
+        }
+    }
 
-	  if (src->coverage.lines)
-	    {
-	      FILE *gcov_file = fopen (gcov_file_name, "w");
-
-	      if (gcov_file)
-		{
-		  fnotice (stdout, "Creating '%s'\n", gcov_file_name);
-		  output_lines (gcov_file, src);
-		  if (ferror (gcov_file))
-		    fnotice (stderr, "Error writing output file '%s'\n",
-			     gcov_file_name);
-		  fclose (gcov_file);
-		}
-	      else
-		fnotice (stderr, "Could not open output file '%s'\n",
-			 gcov_file_name);
-	    }
-	  else
-	    {
-	      unlink (gcov_file_name);
-	      fnotice (stdout, "Removing '%s'\n", gcov_file_name);
-	    }
-	  free (gcov_file_name);
-	}
-      fnotice (stdout, "\n");
+  if (flag_gcov_file && flag_intermediate_format)
+    {
+      /* Now we've finished writing the intermediate file.  */
+      fclose (gcov_intermediate_file);
+      XDELETEVEC (gcov_intermediate_filename);
     }
 
   if (!file_name)
@@ -765,6 +922,9 @@ release_function (function_t *fn)
     }
   free (fn->blocks);
   free (fn->counts);
+  if (flag_demangled_names && fn->demangled_name != fn->name)
+    free (fn->demangled_name);
+  free (fn->name);
 }
 
 /* Release all memory used.  */
@@ -1050,6 +1210,12 @@ read_graph_file (void)
 
 	  fn = XCNEW (function_t);
 	  fn->name = function_name;
+          if (flag_demangled_names)
+            {
+              fn->demangled_name = cplus_demangle (fn->name, DMGL_PARAMS);
+              if (!fn->demangled_name)
+                fn->demangled_name = fn->name;
+            }
 	  fn->ident = ident;
 	  fn->lineno_checksum = lineno_checksum;
 	  fn->cfg_checksum = cfg_checksum;
@@ -2277,7 +2443,8 @@ output_lines (FILE *gcov_file, const source_t *src)
 	    if (arc->fake)
 	      return_count -= arc->count;
 
-	  fprintf (gcov_file, "function %s", fn->name);
+	  fprintf (gcov_file, "function %s", flag_demangled_names ?
+                   fn->demangled_name : fn->name);
 	  fprintf (gcov_file, " called %s",
 		   format_gcov (called_count, 0, -1));
 	  fprintf (gcov_file, " returned %s",
