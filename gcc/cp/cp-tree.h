@@ -3727,11 +3727,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    specializations of this template.  (Full specializations are not
    recorded on this list.)  The TREE_PURPOSE holds the arguments used
    in the partial specialization (e.g., for `template <class T> struct
-   S<T*, int>' this will be `T*'.)  The arguments will also include
-   any outer template arguments.  The TREE_VALUE holds the innermost
-   template parameters for the specialization (e.g., `T' in the
-   example above.)  The TREE_TYPE is the _TYPE node for the partial
-   specialization.
+   S<T*, int>' this will be `T*, int'.)  The arguments will also include
+   any outer template arguments.  The TREE_VALUE holds the TEMPLATE_DECL
+   for the partial specialization.  The TREE_TYPE is the _TYPE node for
+   the partial specialization.
 
    This list is not used for other templates.  */
 #define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     \
@@ -3801,9 +3800,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define SET_DECL_SELF_REFERENCE_P(NODE) \
   (DECL_LANG_FLAG_4 (NODE) = 1)
 
-/* A `primary' template is one that has its own template header.  A
-   member function of a class template is a template, but not primary.
-   A member template is primary.  Friend templates are primary, too.  */
+/* A `primary' template is one that has its own template header and is not
+   a partial specialization.  A member function of a class template is a
+   template, but not primary.  A member template is primary.  Friend
+   templates are primary, too.  */
 
 /* Returns the primary template corresponding to these parameters.  */
 #define DECL_PRIMARY_TEMPLATE(NODE) \
