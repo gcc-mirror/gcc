@@ -1,5 +1,11 @@
 2013-06-20  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (process_partial_specialization): Build a TEMPLATE_DECL for
+	a partial specialization.
+	(tsubst_decl): Don't clobber CLASSTYPE_TI_TEMPLATE of a partial
+	specialization.
+	(most_specialized_class): Adjust.
+
 	* cp-tree.h (DECL_TEMPLATE_PARMS, DECL_TEMPLATE_RESULT)
 	(DECL_TEMPLATE_INSTANTIATIONS, DECL_TEMPLATE_SPECIALIZATIONS): Use
 	TEMPLATE_DECL_CHECK.
