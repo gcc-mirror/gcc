@@ -1157,7 +1157,7 @@ struct inv_list
 {
   vec<tree, va_gc> *list_values;
   vec<tree, va_gc> *replacement;
-  vec<enum rid, va_gc> *additional_tcodes; 
+  vec<enum tree_code, va_gc> *additional_tcodes; 
 };
 
 /* In array-notation-common.c.  */

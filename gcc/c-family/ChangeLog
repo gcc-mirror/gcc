@@ -1,3 +1,10 @@
+2013-06-20  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* array-notation-common.c (find_inv_trees): Removed an unwanted
+	typecasting.
+	* c-common.h (struct inv_list::additional_tcodes): Changed type from
+	enum rid to enum tree_code.
+
 2013-06-11  Jan Hubicka  <jh@suse.cz>
 
 	* c-common.c (handle_alias_ifunc_attribute): Do not set
