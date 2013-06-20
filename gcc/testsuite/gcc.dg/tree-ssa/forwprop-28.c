@@ -74,3 +74,5 @@ test_8 (int code)
 }
 
 /* { dg-final { scan-tree-dump-times "Replaced" 8 "forwprop1"} } */
+/* { dg-final { cleanup-tree-dump "forwprop1" } } */
+
