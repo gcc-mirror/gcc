@@ -1,3 +1,16 @@
+2013-06-19    <singhai@google.com>
+
+	* gcov.c (print_usage): Handle new option.
+	(process_args): Ditto.
+	(get_gcov_intermediate_filename): New function.
+	(output_intermediate_file): New function.
+	(output_gcov_file): New function
+	(generate_results): Handle new option.
+	(release_function): Relase demangled name.
+	(read_graph_file): Handle demangled name.
+	(output_lines): Ditto.
+	* doc/gcov.texi: Document gcov intermediate format.
+
 2013-06-19  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/57604

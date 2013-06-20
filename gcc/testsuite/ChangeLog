@@ -1,3 +1,8 @@
+2013-06-19    <singhai@google.com>
+
+	* g++.dg/gcov/gcov-8.C: New testcase.
+	* lib/gcov.exp: Handle intermediate format.
+
 2013-06-19  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/57518
