@@ -3683,13 +3683,15 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    TEMPLATE_PARM_INDEX for the parameter is available as the
    DECL_INITIAL (for a PARM_DECL) or as the TREE_TYPE (for a
    TYPE_DECL).  */
-#define DECL_TEMPLATE_PARMS(NODE)       DECL_NON_COMMON_CHECK (NODE)->decl_non_common.arguments
+#define DECL_TEMPLATE_PARMS(NODE)       \
+  TEMPLATE_DECL_CHECK (NODE)->decl_non_common.arguments
 #define DECL_INNERMOST_TEMPLATE_PARMS(NODE) \
    INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (NODE))
 #define DECL_NTPARMS(NODE) \
    TREE_VEC_LENGTH (DECL_INNERMOST_TEMPLATE_PARMS (NODE))
 /* For function, method, class-data templates.  */
-#define DECL_TEMPLATE_RESULT(NODE)      DECL_RESULT_FLD (NODE)
+#define DECL_TEMPLATE_RESULT(NODE)      \
+  DECL_RESULT_FLD (TEMPLATE_DECL_CHECK (NODE))
 /* For a function template at namespace scope, DECL_TEMPLATE_INSTANTIATIONS
    lists all instantiations and specializations of the function so that
    tsubst_friend_function can reassign them to another template if we find
@@ -3718,7 +3720,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    <class U> struct S1<T>::S2'.
 
    This list is not used for other templates.  */
-#define DECL_TEMPLATE_INSTANTIATIONS(NODE) DECL_VINDEX (NODE)
+#define DECL_TEMPLATE_INSTANTIATIONS(NODE) \
+  DECL_VINDEX (TEMPLATE_DECL_CHECK (NODE))
+
 /* For a class template, this list contains the partial
    specializations of this template.  (Full specializations are not
    recorded on this list.)  The TREE_PURPOSE holds the arguments used
@@ -3730,7 +3734,8 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    specialization.
 
    This list is not used for other templates.  */
-#define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     DECL_SIZE (NODE)
+#define DECL_TEMPLATE_SPECIALIZATIONS(NODE)     \
+  DECL_SIZE (TEMPLATE_DECL_CHECK (NODE))
 
 /* Nonzero for a DECL which is actually a template parameter.  Keep
    these checks in ascending tree code order.   */
