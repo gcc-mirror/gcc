@@ -1,3 +1,8 @@
+2013-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57584
+	* gcc.dg/torture/pr57584.c: New testcase.
+
 2013-06-19    <singhai@google.com>
 
 	* g++.dg/gcov/gcov-8.C: New testcase.
