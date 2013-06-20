@@ -1,5 +1,11 @@
 2013-06-20  Torvald Riegel  <triegel@redhat.com>
 
+	* query.cc (_ITM_inTransaction): Abort when using the HTM fastpath.
+	(_ITM_getTransactionId): Same.
+	* config/x86/target.h (htm_transaction_active): New.
+
+2013-06-20  Torvald Riegel  <triegel@redhat.com>
+
 	PR libitm/57643
 	* beginend.cc (gtm_thread::begin_transaction): Handle reentrancy in
 	the HTM fastpath.
