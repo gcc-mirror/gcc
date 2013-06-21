@@ -30420,10 +30420,6 @@ cp_parser_cilk_simd_construct (cp_parser *parser, cp_token *pragma_token)
       return;
     }
 
-  /* #pragma simd is built on top of OpenMP 4.0's OMP_SIMD trees.  */
-  if (!flag_openmp)
-    flag_openmp = true;
-
   tree sb = begin_omp_structured_block ();
   int save = cp_parser_begin_omp_structured_block (parser);
   cp_parser_cilk_for (parser, RID_FOR, clauses);

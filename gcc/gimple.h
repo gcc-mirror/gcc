@@ -111,9 +111,10 @@ enum gf_mask {
     GF_CALL_INTERNAL		= 1 << 6,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_FOR_KIND_MASK	= 3 << 0,
-    GF_OMP_FOR_KIND_FOR		= 0 << 0,
-    GF_OMP_FOR_KIND_SIMD	= 1 << 0,
-    GF_OMP_FOR_KIND_DISTRIBUTE	= 2 << 0,
+    GF_OMP_FOR_KIND_FOR		= 0 << 0, /* #pragma omp for */
+    GF_OMP_FOR_KIND_DISTRIBUTE	= 1 << 0, /* #pragma omp distribute */
+    GF_OMP_FOR_KIND_SIMD	= 2 << 0, /* #pragma omp simd */
+    GF_OMP_FOR_KIND_CILKSIMD	= 3 << 0, /* (Cilk Plus) #pragma simd */
     GF_OMP_FOR_COMBINED		= 4 << 0,
     GF_OMP_TARGET_KIND_MASK	= 3 << 0,
     GF_OMP_TARGET_KIND_REGION	= 0 << 0,

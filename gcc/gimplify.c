@@ -4716,6 +4716,7 @@ is_gimple_stmt (tree t)
     case OMP_PARALLEL:
     case OMP_FOR:
     case OMP_SIMD:
+    case CILK_SIMD:
     case OMP_DISTRIBUTE:
     case OMP_SECTIONS:
     case OMP_SECTION:
@@ -6838,6 +6839,8 @@ find_combined_omp_for (tree *tp, int *walk_subtrees, void *)
       *walk_subtrees = 1;
       /* FALLTHRU */
     case OMP_SIMD:
+    case CILK_SIMD:
+      /* ?? Hmmm, is this the right way to handle CILK_SIMD?  */
       if (OMP_FOR_INIT (*tp) != NULL_TREE)
 	return *tp;
       break;
@@ -6868,9 +6871,11 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 
   orig_for_stmt = for_stmt = *expr_p;
 
-  simd = TREE_CODE (for_stmt) == OMP_SIMD;
+  simd = TREE_CODE (for_stmt) == OMP_SIMD
+    || TREE_CODE (for_stmt) == CILK_SIMD;
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
-			     TREE_CODE (for_stmt) == OMP_SIMD
+			     (TREE_CODE (for_stmt) == OMP_SIMD
+			      || TREE_CODE (for_stmt) == CILK_SIMD)
 			     ? ORT_SIMD : ORT_WORKSHARE);
 
   /* Handle OMP_FOR_INIT.  */
@@ -7108,6 +7113,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
     {
     case OMP_FOR: kind = GF_OMP_FOR_KIND_FOR; break;
     case OMP_SIMD: kind = GF_OMP_FOR_KIND_SIMD; break;
+    case CILK_SIMD: kind = GF_OMP_FOR_KIND_CILKSIMD; break;
     case OMP_DISTRIBUTE: kind = GF_OMP_FOR_KIND_DISTRIBUTE; break;
     default:
       gcc_unreachable ();
@@ -8109,6 +8115,14 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  gimplify_omp_task (expr_p, pre_p);
 	  ret = GS_ALL_DONE;
 	  break;
+
+	case CILK_SIMD:
+	  /* For <#pragma simd> we will be generating GIMPLE_OMP_FOR
+	     with GF_OMP_FOR_KIND_CILKSIMD and let the OpenMP
+	     mechanism handle everything.  */
+	  if (!flag_openmp)
+	    flag_openmp = true;
+	  /* FALLTHRU */
 
 	case OMP_FOR:
 	case OMP_SIMD:

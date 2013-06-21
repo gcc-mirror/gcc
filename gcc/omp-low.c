@@ -223,7 +223,7 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
   int i;
   struct omp_for_data_loop dummy_loop;
   location_t loc = gimple_location (for_stmt);
-  bool non_ws = gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_SIMD;
+  bool non_ws = gimple_omp_for_kind (for_stmt) & GF_OMP_FOR_KIND_SIMD;
   bool distribute = gimple_omp_for_kind (for_stmt)
 		    == GF_OMP_FOR_KIND_DISTRIBUTE;
 
@@ -317,11 +317,12 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	case GT_EXPR:
 	  break;
 	case NE_EXPR:
-	  if (!flag_enable_cilk)
+	  /* NE_EXPR is only allowed for Cilk Plus loops.  */
+	  if (flag_enable_cilk
+	      && gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_CILKSIMD)
+	    break;
+	  else
 	    gcc_unreachable ();
-	  /* NE_EXPR is technically not allowed in OpenMP, but it is
-	     allowed in Cilk Plus, which generates OMP_SIMD constructs.  */
-	  break;
 	case LE_EXPR:
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->n2)))
 	    loop->n2 = fold_build_pointer_plus_hwi_loc (loc, loop->n2, 1);
@@ -945,7 +946,7 @@ build_outer_var_ref (tree var, omp_context *ctx)
       x = build_receiver_ref (var, by_ref, ctx);
     }
   else if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
+	   && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
     {
       /* #pragma omp simd isn't a worksharing construct, and can reference even
 	 private vars in its linear etc. clauses.  */
@@ -1891,7 +1892,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
   if (ctx != NULL)
     {
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
-	  && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
+	  && gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD)
 	{
 	  error_at (gimple_location (stmt),
 		    "OpenMP constructs may not be nested inside simd region");
@@ -1922,7 +1923,7 @@ check_omp_nesting_restrictions (gimple stmt, omp_context *ctx)
   switch (gimple_code (stmt))
     {
     case GIMPLE_OMP_FOR:
-      if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_SIMD)
+      if (gimple_omp_for_kind (stmt) & GF_OMP_FOR_KIND_SIMD)
 	return true;
       if (gimple_omp_for_kind (stmt) == GF_OMP_FOR_KIND_DISTRIBUTE)
 	{
@@ -2763,9 +2764,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
      happens after firstprivate copying in all threads.  */
   if (copyin_by_ref || lastprivate_firstprivate)
     {
-      /* Don't add any barrier for #pragma omp simd.  */
+      /* Don't add any barrier for #pragma omp simd or #pragma simd.  */
       if (gimple_code (ctx->stmt) != GIMPLE_OMP_FOR
-	  || gimple_omp_for_kind (ctx->stmt) != GF_OMP_FOR_KIND_SIMD)
+	  || !(gimple_omp_for_kind (ctx->stmt) & GF_OMP_FOR_KIND_SIMD))
 	gimplify_and_add (build_omp_barrier (), ilist);
     }
 }
@@ -5511,7 +5512,7 @@ expand_omp_for (struct omp_region *region)
        original loops from being detected.  Fix that up.  */
     loops_state_set (LOOPS_NEED_FIXUP);
 
-  if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
+  if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_KIND_SIMD)
     expand_omp_simd (region, &fd);
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered
@@ -7203,7 +7204,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   /* Once lowered, extract the bounds and clauses.  */
   extract_omp_for_data (stmt, &fd, NULL);
 
-  if (gimple_omp_for_kind (fd.for_stmt) != GF_OMP_FOR_KIND_SIMD)
+  if (!(gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_KIND_SIMD))
     lower_omp_for_lastprivate (&fd, &body, &dlist, ctx);
 
   gimple_seq_add_stmt (&body, stmt);
@@ -7220,7 +7221,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   /* Region exit marker goes at the end of the loop body.  */
   gimple_seq_add_stmt (&body, gimple_build_omp_return (fd.have_nowait));
-  if (gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_SIMD)
+  if (gimple_omp_for_kind (fd.for_stmt) & GF_OMP_FOR_KIND_SIMD)
     {
       dlist = NULL;
       lower_lastprivate_clauses (gimple_omp_for_clauses (fd.for_stmt),
@@ -7888,12 +7889,33 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
     error ("invalid entry to OpenMP structured block");
 #endif
 
+  bool cilkplus_block = false;
+  if (flag_enable_cilk)
+    {
+      if ((branch_ctx
+	   && gimple_code (branch_ctx) == GIMPLE_OMP_FOR
+	   && gimple_omp_for_kind (branch_ctx) & GF_OMP_FOR_KIND_CILKSIMD)
+	  || (gimple_code (label_ctx) == GIMPLE_OMP_FOR
+	      && gimple_omp_for_kind (label_ctx) & GF_OMP_FOR_KIND_CILKSIMD))
+	cilkplus_block = true;
+    }
+
   /* If it's obvious we have an invalid entry, be specific about the error.  */
   if (branch_ctx == NULL)
-    error ("invalid entry to OpenMP structured block");
+    {
+      if (cilkplus_block)
+	error ("invalid entry to Cilk Plus structured block");
+      else
+	error ("invalid entry to OpenMP structured block");
+    }
   else
-    /* Otherwise, be vague and lazy, but efficient.  */
-    error ("invalid branch to/from an OpenMP structured block");
+    {
+      /* Otherwise, be vague and lazy, but efficient.  */
+      if (cilkplus_block)
+	error ("invalid branch to/from a Cilk Plus structured block");
+      else
+	error ("invalid branch to/from an OpenMP structured block");
+    }
 
   gsi_replace (gsi_p, gimple_build_nop (), false);
   return true;

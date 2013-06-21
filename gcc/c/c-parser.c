@@ -12123,11 +12123,6 @@ c_parser_cilk_simd_construct (c_parser *parser)
 {
   tree clauses = c_parser_cilk_all_clauses (parser);
 
-  /* For <#pragma simd> we will be generating OMP_SIMD's and let the
-     OpenMP mechanism handle everything.  */
-  if (!flag_openmp)
-    flag_openmp = true;
-
   c_parser_cilk_for_statement (parser, RID_FOR, clauses);
 }
 
