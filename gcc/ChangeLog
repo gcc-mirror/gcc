@@ -1,3 +1,8 @@
+2013-06-21  Andi Kleen  <ak@linux.intel.com>
+
+	* doc/extend.texi: Document that __atomic_clear and
+	  __atomic_test_and_set should only be used with bool.
+
 2013-06-20  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Use
