@@ -1038,7 +1038,7 @@ gimple_extract_devirt_binfo_from_cst (tree cst)
       HOST_WIDE_INT pos, size;
       tree fld;
 
-      if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (expected_type))
+      if (types_same_for_odr (type, expected_type))
 	break;
       if (offset < 0)
 	return NULL_TREE;
