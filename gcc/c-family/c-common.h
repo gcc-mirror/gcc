@@ -1160,6 +1160,29 @@ struct inv_list
   vec<enum tree_code, va_gc> *additional_tcodes; 
 };
 
+/* This structure holds all the important components that can be extracted
+   from an ARRAY_NOTATION_REF expression.  It is used to pass array notation
+   information between the functions that are responsible for expansion.  */
+typedef struct cilkplus_an_parts
+{
+  tree value;
+  tree start;
+  tree length;
+  tree stride;
+  bool is_vector;
+} an_parts;
+
+/* This structure holds the components necessary to create the loop around
+   the ARRAY_REF that is created using the ARRAY_NOTATION information.  */
+
+typedef struct cilkplus_an_loop_parts
+{
+  tree var;         /* Loop induction variable.  */
+  tree incr;        /* Loop increment/decrement expression.  */
+  tree cmp;         /* Loop condition.  */
+  tree ind_init;    /* Initialization of the loop induction variable.  */
+} an_loop_parts; 
+
 /* In array-notation-common.c.  */
 extern HOST_WIDE_INT extract_sec_implicit_index_arg (location_t, tree);
 extern bool is_sec_implicit_index_fn (tree);
@@ -1179,4 +1202,8 @@ extern void replace_array_notations (tree *, bool, vec<tree, va_gc> *,
 extern tree find_inv_trees (tree *, int *, void *);
 extern tree replace_inv_trees (tree *, int *, void *);
 extern tree find_correct_array_notation_type (tree op);
+extern void cilkplus_extract_an_triplets (vec<tree, va_gc> *, size_t, size_t,
+					  vec<vec<an_parts> > *);
+extern vec <tree, va_gc> *fix_sec_implicit_args
+  (location_t, vec <tree, va_gc> *, vec<an_loop_parts>, size_t, tree);
 #endif /* ! GCC_C_COMMON_H */

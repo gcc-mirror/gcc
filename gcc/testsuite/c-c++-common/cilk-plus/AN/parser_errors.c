@@ -8,4 +8,4 @@ int main (void)
   array2[:] = array2[: ;  /* { dg-error "expected ']'" } */
 
   return 0;
-} /* { dg-error "expected ';' before" } */
+} /* { dg-error "expected ';' before" "" { target c } } */
