@@ -1420,7 +1420,11 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       || (sym->ts.type == BT_CLASS &&
 	  (CLASS_DATA (sym)->attr.dimension
 	   || CLASS_DATA (sym)->attr.allocatable))
-      || (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.alloc_comp)
+      || (sym->ts.type == BT_DERIVED
+	  && (sym->ts.u.derived->attr.alloc_comp
+	      || (!sym->attr.pointer && !sym->attr.artificial && !sym->attr.save
+		  && !sym->ns->proc_name->attr.is_main_program
+		  && gfc_is_finalizable (sym->ts.u.derived, NULL))))
       /* This applies a derived type default initializer.  */
       || (sym->ts.type == BT_DERIVED
 	  && sym->attr.save == SAVE_NONE
@@ -3668,8 +3672,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
   for (sym = proc_sym->tlink; sym != proc_sym; sym = sym->tlink)
     {
-      bool sym_has_alloc_comp = (sym->ts.type == BT_DERIVED)
-				   && sym->ts.u.derived->attr.alloc_comp;
+      bool alloc_comp_or_fini = (sym->ts.type == BT_DERIVED)
+				&& (sym->ts.u.derived->attr.alloc_comp
+				    || gfc_is_finalizable (sym->ts.u.derived,
+							   NULL));
       if (sym->assoc)
 	continue;
 
@@ -3754,7 +3760,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		  gfc_save_backend_locus (&loc);
 		  gfc_set_backend_locus (&sym->declared_at);
 
-		  if (sym_has_alloc_comp)
+		  if (alloc_comp_or_fini)
 		    {
 		      seen_trans_deferred_array = true;
 		      gfc_trans_deferred_array (sym, block);
@@ -3802,7 +3808,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    default:
 	      gcc_unreachable ();
 	    }
-	  if (sym_has_alloc_comp && !seen_trans_deferred_array)
+	  if (alloc_comp_or_fini && !seen_trans_deferred_array)
 	    gfc_trans_deferred_array (sym, block);
 	}
       else if ((!sym->attr.dummy || sym->ts.deferred)
@@ -3998,7 +4004,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
       else if (sym->ts.deferred)
 	gfc_fatal_error ("Deferred type parameter not yet supported");
-      else if (sym_has_alloc_comp)
+      else if (alloc_comp_or_fini)
 	gfc_trans_deferred_array (sym, block);
       else if (sym->ts.type == BT_CHARACTER)
 	{
