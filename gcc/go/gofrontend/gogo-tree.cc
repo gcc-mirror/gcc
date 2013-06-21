@@ -829,6 +829,14 @@ Gogo::write_globals()
 	    }
 	}
 
+      // Skip blank named functions.
+      if (no->is_function() && no->func_value()->is_sink())
+        {
+          --i;
+          --count;
+          continue;
+        }
+
       if (!no->is_variable())
 	{
 	  vec[i] = no->get_tree(this, NULL);
