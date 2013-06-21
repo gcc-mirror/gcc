@@ -1,3 +1,10 @@
+2013-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57666
+	* include/std/valarray (valarray<>::operator=(const _Expr<>&)):
+	Implement correctly C++11 26.6.2.3/1.
+	* testsuite/26_numerics/valarray/dr630-3.C: New.
+
 2013-06-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	PR libstdc++/57641
