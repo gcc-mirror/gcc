@@ -2,7 +2,7 @@
    them.
 
    Copyright (C) 1995, 1998, 1999, 2000, 2001, 2003, 2004, 2005, 2007, 2008,
-   2009, 2010, 2011 Free Software Foundation, Inc.
+   2009, 2010, 2011, 2013 Free Software Foundation, Inc.
    Contributed by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -820,18 +820,18 @@ scan_linker_output (const char *fname)
 void
 do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
 {
-  int exit = tlink_execute ("ld", ld_argv, ldout, lderrout);
+  int ret = tlink_execute ("ld", ld_argv, ldout, lderrout);
 
   tlink_init ();
 
-  if (exit)
+  if (ret)
     {
       int i = 0;
 
       /* Until collect does a better job of figuring out which are object
 	 files, assume that everything on the command line could be.  */
       if (read_repo_files (ld_argv))
-	while (exit && i++ < MAX_ITERATIONS)
+	while (ret && i++ < MAX_ITERATIONS)
 	  {
 	    if (tlink_verbose >= 3)
 	      {
@@ -846,7 +846,7 @@ do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
 	      break;
 	    if (tlink_verbose)
 	      fprintf (stderr, _("collect: relinking\n"));
-	    exit = tlink_execute ("ld", ld_argv, ldout, lderrout);
+	    ret = tlink_execute ("ld", ld_argv, ldout, lderrout);
 	  }
     }
 
@@ -854,9 +854,9 @@ do_tlink (char **ld_argv, char **object_lst ATTRIBUTE_UNUSED)
   unlink (ldout);
   dump_file (lderrout, stderr);
   unlink (lderrout);
-  if (exit)
+  if (ret)
     {
-      error ("ld returned %d exit status", exit);
-      collect_exit (exit);
+      error ("ld returned %d exit status", ret);
+      exit (ret);
     }
 }
