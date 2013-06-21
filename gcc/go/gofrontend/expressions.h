@@ -32,6 +32,7 @@ class String_expression;
 class Binary_expression;
 class Call_expression;
 class Func_expression;
+class Func_descriptor_expression;
 class Unknown_expression;
 class Index_expression;
 class Map_index_expression;
@@ -161,10 +162,9 @@ class Expression
   // Make a function descriptor, an immutable struct with a single
   // field that points to the function code.  This may only be used
   // with functions that do not have closures.  FN is the function for
-  // which we are making the descriptor.  DFN is the descriptor
-  // function wrapper.
-  static Expression*
-  make_func_descriptor(Named_object* fn, Named_object* dfn);
+  // which we are making the descriptor.
+  static Func_descriptor_expression*
+  make_func_descriptor(Named_object* fn);
 
   // Make a reference to the code of a function.  This is used to set
   // descriptor and closure fields.
@@ -1560,6 +1560,63 @@ class Func_expression : public Expression
   // be a struct holding pointers to all the variables referenced by
   // this function and defined in enclosing functions.
   Expression* closure_;
+};
+
+// A function descriptor.  A function descriptor is a struct with a
+// single field pointing to the function code.  This is used for
+// functions without closures.
+
+class Func_descriptor_expression : public Expression
+{
+ public:
+  Func_descriptor_expression(Named_object* fn);
+
+  // Set the descriptor wrapper.
+  void
+  set_descriptor_wrapper(Named_object* dfn)
+  {
+    go_assert(this->dfn_ == NULL);
+    this->dfn_ = dfn;
+  }
+
+  // Make the function descriptor type, so that it can be converted.
+  static void
+  make_func_descriptor_type();
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy();
+
+  bool
+  do_is_addressable() const
+  { return true; }
+
+  tree
+  do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context* context) const;
+
+ private:
+  // The type of all function descriptors.
+  static Type* descriptor_type;
+
+  // The function for which this is the descriptor.
+  Named_object* fn_;
+  // The descriptor function.
+  Named_object* dfn_;
+  // The descriptor variable.
+  Bvariable* dvar_;
 };
 
 // A reference to an unknown name.
