@@ -476,6 +476,10 @@ class Gogo
   void
   lower_constant(Named_object*);
 
+  // Create all necessary function descriptors.
+  void
+  create_function_descriptors();
+
   // Finalize the method lists and build stub methods for named types.
   void
   finalize_methods();
@@ -1164,15 +1168,15 @@ class Function
   // is NULL unless we actually need a defer stack.
   Temporary_statement* defer_stack_;
   // True if the result variables are named.
-  bool results_are_named_;
+  bool results_are_named_ : 1;
   // True if this method should not be included in the type descriptor.
-  bool nointerface_;
+  bool nointerface_ : 1;
   // True if this function calls the predeclared recover function.
-  bool calls_recover_;
+  bool calls_recover_ : 1;
   // True if this a thunk built for a function which calls recover.
-  bool is_recover_thunk_;
+  bool is_recover_thunk_ : 1;
   // True if this function already has a recover thunk.
-  bool has_recover_thunk_;
+  bool has_recover_thunk_ : 1;
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
