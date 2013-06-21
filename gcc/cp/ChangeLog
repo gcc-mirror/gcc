@@ -1,5 +1,7 @@
 2013-06-20  Jason Merrill  <jason@redhat.com>
 
+	* decl.c (compute_array_index_type): Use size_one_node.
+
 	* pt.c (process_partial_specialization): Build a TEMPLATE_DECL for
 	a partial specialization.
 	(tsubst_decl): Don't clobber CLASSTYPE_TI_TEMPLATE of a partial
