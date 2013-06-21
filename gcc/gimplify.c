@@ -6839,8 +6839,6 @@ find_combined_omp_for (tree *tp, int *walk_subtrees, void *)
       *walk_subtrees = 1;
       /* FALLTHRU */
     case OMP_SIMD:
-    case CILK_SIMD:
-      /* ?? Hmmm, is this the right way to handle CILK_SIMD?  */
       if (OMP_FOR_INIT (*tp) != NULL_TREE)
 	return *tp;
       break;
@@ -6874,9 +6872,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
   simd = TREE_CODE (for_stmt) == OMP_SIMD
     || TREE_CODE (for_stmt) == CILK_SIMD;
   gimplify_scan_omp_clauses (&OMP_FOR_CLAUSES (for_stmt), pre_p,
-			     (TREE_CODE (for_stmt) == OMP_SIMD
-			      || TREE_CODE (for_stmt) == CILK_SIMD)
-			     ? ORT_SIMD : ORT_WORKSHARE);
+			     simd ? ORT_SIMD : ORT_WORKSHARE);
 
   /* Handle OMP_FOR_INIT.  */
   for_pre_body = NULL;

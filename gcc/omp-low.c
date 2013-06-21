@@ -317,12 +317,9 @@ extract_omp_for_data (gimple for_stmt, struct omp_for_data *fd,
 	case GT_EXPR:
 	  break;
 	case NE_EXPR:
-	  /* NE_EXPR is only allowed for Cilk Plus loops.  */
-	  if (flag_enable_cilk
-	      && gimple_omp_for_kind (for_stmt) == GF_OMP_FOR_KIND_CILKSIMD)
-	    break;
-	  else
-	    gcc_unreachable ();
+	  gcc_assert (gimple_omp_for_kind (for_stmt)
+		      == GF_OMP_FOR_KIND_CILKSIMD);
+	  break;
 	case LE_EXPR:
 	  if (POINTER_TYPE_P (TREE_TYPE (loop->n2)))
 	    loop->n2 = fold_build_pointer_plus_hwi_loc (loc, loop->n2, 1);
@@ -7894,9 +7891,9 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
     {
       if ((branch_ctx
 	   && gimple_code (branch_ctx) == GIMPLE_OMP_FOR
-	   && gimple_omp_for_kind (branch_ctx) & GF_OMP_FOR_KIND_CILKSIMD)
+	   && gimple_omp_for_kind (branch_ctx) == GF_OMP_FOR_KIND_CILKSIMD)
 	  || (gimple_code (label_ctx) == GIMPLE_OMP_FOR
-	      && gimple_omp_for_kind (label_ctx) & GF_OMP_FOR_KIND_CILKSIMD))
+	      && gimple_omp_for_kind (label_ctx) == GF_OMP_FOR_KIND_CILKSIMD))
 	cilkplus_block = true;
     }
 

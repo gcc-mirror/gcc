@@ -17,7 +17,6 @@
 	* gimplify.c (gimplify_omp_for): Add case for CILK_SIMD.
 	(gimplify_expr): Same.
 	(is_gimple_stmt): Same.
-	(find_combined_omp_for): Same.
 
 c-family/
 	* c-cilkplus.c: New.
