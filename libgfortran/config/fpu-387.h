@@ -73,7 +73,7 @@ has_sse (void)
 
       /* We need a single SSE instruction here so the handler can safely skip
 	 over it.  */
-      __asm__ volatile ("movaps %xmm0,%xmm0");
+      __asm__ __volatile__ ("movaps\t%xmm0,%xmm0");
 
       sigaction (SIGILL, &oact, NULL);
 
@@ -95,42 +95,42 @@ has_sse (void)
 #define _FPU_MASK_OM  0x08
 #define _FPU_MASK_UM  0x10
 #define _FPU_MASK_PM  0x20
+#define _FPU_MASK_ALL 0x3f
+
+#define _FPU_EX_ALL   0x3f
 
 void set_fpu (void)
 {
+  int excepts = 0;
   unsigned short cw;
 
-  asm volatile ("fnstcw %0" : "=m" (cw));
+  __asm__ __volatile__ ("fstcw\t%0" : "=m" (cw));
 
-  cw |= (_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM
-	 | _FPU_MASK_UM | _FPU_MASK_PM);
+  if (options.fpe & GFC_FPE_INVALID) excepts |= _FPU_MASK_IM;
+  if (options.fpe & GFC_FPE_DENORMAL) excepts |= _FPU_MASK_DM;
+  if (options.fpe & GFC_FPE_ZERO) excepts |= _FPU_MASK_ZM;
+  if (options.fpe & GFC_FPE_OVERFLOW) excepts |= _FPU_MASK_OM;
+  if (options.fpe & GFC_FPE_UNDERFLOW) excepts |= _FPU_MASK_UM;
+  if (options.fpe & GFC_FPE_INEXACT) excepts |= _FPU_MASK_PM;
 
-  if (options.fpe & GFC_FPE_INVALID) cw &= ~_FPU_MASK_IM;
-  if (options.fpe & GFC_FPE_DENORMAL) cw &= ~_FPU_MASK_DM;
-  if (options.fpe & GFC_FPE_ZERO) cw &= ~_FPU_MASK_ZM;
-  if (options.fpe & GFC_FPE_OVERFLOW) cw &= ~_FPU_MASK_OM;
-  if (options.fpe & GFC_FPE_UNDERFLOW) cw &= ~_FPU_MASK_UM;
-  if (options.fpe & GFC_FPE_INEXACT) cw &= ~_FPU_MASK_PM;
+  cw |= _FPU_MASK_ALL;
+  cw &= ~excepts;
 
-  asm volatile ("fldcw %0" : : "m" (cw));
+  __asm__ __volatile__ ("fnclex\n\tfldcw\t%0" : : "m" (cw));
 
   if (has_sse())
     {
       unsigned int cw_sse;
 
-      asm volatile ("%vstmxcsr %0" : "=m" (cw_sse));
+      __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
 
-      cw_sse &= 0xffff0000;
-      cw_sse |= (_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM | _FPU_MASK_OM
-		 | _FPU_MASK_UM | _FPU_MASK_PM ) << 7;
+      /* The SSE exception masks are shifted by 7 bits.  */
+      cw_sse |= _FPU_MASK_ALL << 7;
+      cw_sse &= ~(excepts << 7);
 
-      if (options.fpe & GFC_FPE_INVALID) cw_sse &= ~(_FPU_MASK_IM << 7);
-      if (options.fpe & GFC_FPE_DENORMAL) cw_sse &= ~(_FPU_MASK_DM << 7);
-      if (options.fpe & GFC_FPE_ZERO) cw_sse &= ~(_FPU_MASK_ZM << 7);
-      if (options.fpe & GFC_FPE_OVERFLOW) cw_sse &= ~(_FPU_MASK_OM << 7);
-      if (options.fpe & GFC_FPE_UNDERFLOW) cw_sse &= ~(_FPU_MASK_UM << 7);
-      if (options.fpe & GFC_FPE_INEXACT) cw_sse &= ~(_FPU_MASK_PM << 7);
+      /* Clear stalled exception flags.  */
+      cw_sse &= ~_FPU_EX_ALL;
 
-      asm volatile ("%vldmxcsr %0" : : "m" (cw_sse));
+      __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
     }
 }

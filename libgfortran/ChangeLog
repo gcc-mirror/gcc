@@ -1,3 +1,19 @@
+2013-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (_FPU_MASK_ALL): New.
+	(_FPU_EX_ALL): Ditto.
+	(set_fpu): Use fstcw to store x87 FPU control word. Use fnclex to
+	clear stalled exception flags.  Correctly clear stalled SSE
+	exception flags.  Simplify code.
+
+	Backport from mainline
+	2013-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h: Use __asm__ and __volatile__ consistently.
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.
