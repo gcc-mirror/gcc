@@ -8112,16 +8112,9 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  ret = GS_ALL_DONE;
 	  break;
 
-	case CILK_SIMD:
-	  /* For <#pragma simd> we will be generating GIMPLE_OMP_FOR
-	     with GF_OMP_FOR_KIND_CILKSIMD and let the OpenMP
-	     mechanism handle everything.  */
-	  if (!flag_openmp)
-	    flag_openmp = true;
-	  /* FALLTHRU */
-
 	case OMP_FOR:
 	case OMP_SIMD:
+	case CILK_SIMD:
 	case OMP_DISTRIBUTE:
 	  ret = gimplify_omp_for (expr_p, pre_p);
 	  break;

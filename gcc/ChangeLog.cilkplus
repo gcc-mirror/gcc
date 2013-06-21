@@ -10,6 +10,9 @@
 	(expand_omp_for): Same.
 	(lower_omp_for): Same.
 	(diagnose_sb_0): Adjust for Cilk Plus for loops.
+	(gate_expand_omp): Check for Cilk Plus.
+	(execute_lower_omp): Same.
+	(gate_diagnose_omp_blocks): Same.
 	* tree.def (CILK_SIMD): New entry.
 	* tree-pretty-print.c (dump_generic_node): Add case for CILK_SIMD.
 	* gimple-pretty-print.c (dump_gimple_omp_for): Add case for
