@@ -1,5 +1,14 @@
 2013-06-21  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-array.c (gfc_trans_deferred_array): Call the
+	finalizer for nonallocatable local variables.
+	* trans-decl.c (gfc_get_symbol_decl): Add local
+	finalizable vars to the deferred list.
+	(gfc_trans_deferred_vars): Call gfc_trans_deferred_array
+	for those.
+
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-array.c (gfc_alloc_allocatable_for_assignment): Allocate
 	at least one byte.
 	* trans-expr.c (alloc_scalar_allocatable_for_assignment): Ditto.
