@@ -1,3 +1,13 @@
+2013-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/for-1.h: New file.
+	* testsuite/libgomp.c/for-2.h: New file.
+	* testsuite/libgomp.c/for-1.c: New test.
+	* testsuite/libgomp.c/for-2.c: New test.
+	* testsuite/libgomp.c++/for-9.C: New test.
+	* testsuite/libgomp.c++/for-10.C: New test.
+	* testsuite/libgomp.c++/for-11.C: New test.
+
 2013-06-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* fortran.c (omp_is_initial_device): Add ialias_redirect.

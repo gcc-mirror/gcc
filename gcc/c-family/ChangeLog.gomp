@@ -1,3 +1,8 @@
+2013-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses): Fix up OMP_CLAUSE_COLLAPSE
+	handling.
+
 2013-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-common.h: Move omp_clause_mask code earlier in the file.

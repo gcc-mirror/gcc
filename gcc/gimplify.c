@@ -71,7 +71,7 @@ enum gimplify_omp_var_data
 enum omp_region_type
 {
   ORT_WORKSHARE = 0,
-  ORT_SIMD = 1, /* #pragma omp for simd is ORT_WORKSHARE.  */
+  ORT_SIMD = 1,
   ORT_PARALLEL = 2,
   ORT_COMBINED_PARALLEL = 3,
   ORT_TASK = 4,
@@ -89,6 +89,7 @@ struct gimplify_omp_ctx
   location_t location;
   enum omp_clause_default_kind default_kind;
   enum omp_region_type region_type;
+  bool combined_loop;
 };
 
 static struct gimplify_ctx *gimplify_ctxp;
@@ -6906,6 +6907,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       for_stmt = walk_tree (&OMP_FOR_BODY (for_stmt), find_combined_omp_for,
 			    NULL, NULL);
       gcc_assert (for_stmt != NULL_TREE);
+      gimplify_omp_ctxp->combined_loop = true;
     }
 
   for_body = NULL;
@@ -7117,6 +7119,18 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 			       for_pre_body);
   if (orig_for_stmt != for_stmt)
     gimple_omp_for_set_combined_p (gfor, true);
+  if (gimplify_omp_ctxp
+      && (gimplify_omp_ctxp->combined_loop
+	  || (gimplify_omp_ctxp->region_type == ORT_COMBINED_PARALLEL
+	      && gimplify_omp_ctxp->outer_context
+	      && gimplify_omp_ctxp->outer_context->combined_loop)))
+    {
+      gimple_omp_for_set_combined_into_p (gfor, true);
+      if (gimplify_omp_ctxp->combined_loop)
+	gcc_assert (TREE_CODE (orig_for_stmt) == OMP_SIMD);
+      else
+	gcc_assert (TREE_CODE (orig_for_stmt) == OMP_FOR);
+    }
 
   for (i = 0; i < TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)); i++)
     {

@@ -386,6 +386,9 @@ enum omp_clause_code
   /* OpenMP clause: map ({alloc:,to:,from:,tofrom:,}variable-list).  */
   OMP_CLAUSE_MAP,
 
+  /* Internal clause: temporary for combined loops expansion.  */
+  OMP_CLAUSE__LOOPTEMP_,
+
   /* OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
@@ -1889,7 +1892,7 @@ extern void protected_set_expr_location (tree, location_t);
 #define OMP_CLAUSE_DECL(NODE)      					\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
-					      OMP_CLAUSE_MAP), 0)
+					      OMP_CLAUSE__LOOPTEMP_), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)

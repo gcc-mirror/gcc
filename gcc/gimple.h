@@ -114,7 +114,8 @@ enum gf_mask {
     GF_OMP_FOR_KIND_FOR		= 0 << 0,
     GF_OMP_FOR_KIND_SIMD	= 1 << 0,
     GF_OMP_FOR_KIND_DISTRIBUTE	= 2 << 0,
-    GF_OMP_FOR_COMBINED		= 4 << 0,
+    GF_OMP_FOR_COMBINED		= 1 << 2,
+    GF_OMP_FOR_COMBINED_INTO	= 1 << 3,
     GF_OMP_TARGET_KIND_MASK	= 3 << 0,
     GF_OMP_TARGET_KIND_REGION	= 0 << 0,
     GF_OMP_TARGET_KIND_DATA	= 1 << 0,
@@ -4025,6 +4026,31 @@ gimple_omp_for_set_combined_p (gimple g, bool combined_p)
     g->gsbase.subcode |= GF_OMP_FOR_COMBINED;
   else
     g->gsbase.subcode &= ~GF_OMP_FOR_COMBINED;
+}
+
+
+/* Return true if OMP for statement G has the
+   GF_OMP_FOR_COMBINED_INTO flag set.  */
+
+static inline bool
+gimple_omp_for_combined_into_p (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  return (gimple_omp_subcode (g) & GF_OMP_FOR_COMBINED_INTO) != 0;
+}
+
+
+/* Set the GF_OMP_FOR_COMBINED_INTO field in G depending on the boolean
+   value of COMBINED_P.  */
+
+static inline void
+gimple_omp_for_set_combined_into_p (gimple g, bool combined_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  if (combined_p)
+    g->gsbase.subcode |= GF_OMP_FOR_COMBINED_INTO;
+  else
+    g->gsbase.subcode &= ~GF_OMP_FOR_COMBINED_INTO;
 }
 
 

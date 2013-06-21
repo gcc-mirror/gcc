@@ -680,7 +680,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
 	      cclauses[C_OMP_CLAUSE_SPLIT_SIMD] = c;
 	    }
-	  if (mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS))
+	  if (mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_SCHEDULE))
 	    {
 	      if (mask & (OMP_CLAUSE_MASK_1
 			  << PRAGMA_OMP_CLAUSE_DIST_SCHEDULE))

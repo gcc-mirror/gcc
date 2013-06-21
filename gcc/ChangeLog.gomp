@@ -1,3 +1,56 @@
+2013-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.h (enum gf_mask): Adjust GF_OMP_FOR_COMBINED
+	value representation, add GF_OMP_FOR_COMBINED_INTO.
+	(gimple_omp_for_combined_into_p,
+	gimple_omp_for_set_combined_into_p): New inlines.
+	* gimplify.c (enum omp_region_type): Remove outdated
+	ORT_SIMD comment.
+	(struct gimplify_omp_ctx): Add combined_loop field.
+	(gimplify_omp_for): Call gimple_omp_for_set_combined_into_p
+	for inner for/simd constructs combined with an outer
+	loop construct (for or distribute).
+	* tree.c (omp_clause_num_ops): Add OMP_CLAUSE__LOOPTEMP_
+	entry.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE__LOOPTEMP_.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE__LOOPTEMP_.
+	* tree.h (enum omp_clause_code): Add OMP_CLAUSE__LOOPTEMP_.
+	(OMP_CLAUSE_DECL): Allow also on OMP_CLAUSE__LOOPTEMP_.
+	* omp-low.c (extract_omp_for_data): Rename non_ws to simd.  Don't set
+	fd->chunk_size for non-chunk OMP_CLAUSE_SCHEDULE_STATIC, unless
+	fd->have_ordered.  For OMP_CLAUSE_SCHEDULE_STATIC non-ordered loops
+	compute fd->iter_type the same as for simd.
+	(get_ws_args_for): Add par_stmt argument, if
+	gimple_omp_for_combined_into_p, use first two _looptemp_ clauses
+	temporaries instead of fd->loop.n{1,2}.
+	(determine_parallel_type): Adjust caller.
+	(scan_sharing_clauses): Handle OMP_CLAUSE__LOOPTEMP_.
+	(find_combined_for): New function.
+	(scan_omp_parallel): If gimple_omp_parallel_combined_p and
+	it is combined with gimple_omp_for_combined_into_p OMP_FOR,
+	add OMP_CLAUSE__LOOPTEMP_ clauses to the parallel.
+	(check_omp_nesting_restrictions): Don't insist that the only construct
+	nested in OMP_DISTRIBUTE must be OMP_PARALLEL.
+	(lower_rec_input_clauses, lower_send_clauses): Handle
+	OMP_CLAUSE__LOOPTEMP_.
+	(expand_omp_for_init_counts, expand_omp_for_init_vars,
+	extract_omp_for_update_vars): New functions.
+	(expand_omp_for_generic): Add inner_stmt argument.  Use
+	expand_omp_for_{init,update}* helper functions.  Handle combined loop
+	constructs.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk):
+	Likewise.  Handle fd->collapse > 1 and broken_loop cases.
+	(expand_omp_simd): Use expand_omp_for_init* helper functions.  Handle
+	combined loop constructs.
+	(expand_omp_for): Add inner_stmt argument.  Pass it through to
+	expand_omp_for_{generic,static_{,no}chunk}.  Use
+	expand_omp_for_static* even for fd->collapse > 1 and/or broken_loop
+	cases, just not when fd->have_ordered.
+	(expand_omp): Adjust expand_omp_for caller.
+	(lower_omp_for): If gimple_omp_parallel_combined_p, add
+	OMP_CLAUSE__LOOPTEMP_ clauses to the GIMPLE_FOR stmt.
+
 2013-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple-pretty-print.c (dump_gimple_omp_for): Don't handle

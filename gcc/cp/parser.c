@@ -29162,15 +29162,7 @@ cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok,
       bool parallel = false;
 
       if (strcmp (p, "simd") == 0)
-	{
-	  simd = true;
-	  if (cclauses)
-	    {
-	      error_at (loc, "%<simd%> not expected after %qs", p_name);
-	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-	      return NULL_TREE;
-	    }
-	}
+	simd = true;
       else
 	parallel = strcmp (p, "parallel") == 0;
       if (parallel || simd)
@@ -29178,6 +29170,7 @@ cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok,
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
 	  if (cclauses == NULL)
 	    cclauses = cclauses_buf;
+	  cp_lexer_consume_token (parser->lexer);
 	  sb = begin_omp_structured_block ();
 	  save = cp_parser_begin_omp_structured_block (parser);
 	  if (simd)

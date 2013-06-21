@@ -1372,7 +1372,7 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
 
   /* Add implicit "omp declare target" attribute if requested.  */
   if (current_omp_declare_target_attribute
-      && (TREE_CODE (*decl) == VAR_DECL
+      && ((TREE_CODE (*decl) == VAR_DECL && TREE_STATIC (*decl))
 	  || TREE_CODE (*decl) == FUNCTION_DECL))
     {
       if (TREE_CODE (*decl) == VAR_DECL
