@@ -1242,24 +1242,6 @@ Func_expression::do_traverse(Traverse* traverse)
 	  : Expression::traverse(&this->closure_, traverse));
 }
 
-// Lower a function reference.  If this reference is not called
-// directly, make sure there is a function descriptor.
-
-Expression*
-Func_expression::do_lower(Gogo* gogo, Named_object*, Statement_inserter*, int)
-{
-  // Make sure that the descriptor exists.  FIXME: If the function is
-  // only ever called, and is never referenced otherwise, then we
-  // don't need the descriptor.  We could do that with another pass
-  // over the tree.
-  if (this->closure_ == NULL
-      && this->function_->is_function()
-      && !this->function_->func_value()->is_method())
-    this->function_->func_value()->descriptor(gogo, this->function_);
-
-  return this;
-}
-
 // Return the type of a function expression.
 
 Type*
