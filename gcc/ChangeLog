@@ -1,3 +1,13 @@
+2013-06-20  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Use
+	types_same_for_odr.
+	* tree.c (decls_same_for_odr): New function.
+	(same_for_edr): New function.
+	(types_same_for_odr): New function.
+	(get_binfo_at_offset): Use it.
+	* tree.h (types_same_for_odr): Declare.
+
 2013-06-20  Oleg Endo <oleg.endo@t-online.de>
 	    Jason Merrill  <jason@redhat.com>
 
