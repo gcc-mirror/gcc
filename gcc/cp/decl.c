@@ -8296,7 +8296,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
   else if (TREE_CONSTANT (size)
 	   /* We don't allow VLAs at non-function scopes, or during
 	      tentative template substitution.  */
-	   || !at_function_scope_p () || !(complain & tf_error))
+	   || !at_function_scope_p ()
+	   || (cxx_dialect < cxx1y && !(complain & tf_error)))
     {
       if (!(complain & tf_error))
 	return error_mark_node;
