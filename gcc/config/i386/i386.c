@@ -6396,7 +6396,7 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
 
   /* Likewise, error if the ABI requires us to return values in the
      x87 registers and the user specified -mno-80387.  */
-  if (!TARGET_80387 && in_return)
+  if (in_return && !TARGET_FLOAT_RETURNS_IN_80387)
     for (i = 0; i < n; i++)
       if (regclass[i] == X86_64_X87_CLASS
 	  || regclass[i] == X86_64_X87UP_CLASS
