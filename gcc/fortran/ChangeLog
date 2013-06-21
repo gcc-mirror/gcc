@@ -1,3 +1,9 @@
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Allocate
+	at least one byte.
+	* trans-expr.c (alloc_scalar_allocatable_for_assignment): Ditto.
+
 2013-06-20  Tobias Burnus  <burnus@net-b.de>
 
 	* resolve.c (get_temp_from_expr): Don't set FL_VARIABLE twice.

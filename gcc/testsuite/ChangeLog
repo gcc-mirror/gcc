@@ -1,3 +1,7 @@
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/realloc_on_assign_18.f90: New.
+
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.

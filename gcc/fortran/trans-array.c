@@ -8209,6 +8209,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 			   gfc_array_index_type,
 			   tmp, size2);
   size2 = fold_convert (size_type_node, size2);
+  size2 = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+			   size2, size_one_node);
   size2 = gfc_evaluate_now (size2, &fblock);
 
   /* Realloc expression.  Note that the scalarizer uses desc.data
