@@ -911,6 +911,14 @@ class Function
   result_variables()
   { return this->results_; }
 
+  bool
+  is_sink() const
+  { return this->is_sink_; }
+
+  void
+  set_is_sink()
+  { this->is_sink_ = true; }
+
   // Whether the result variables have names.
   bool
   results_are_named() const
@@ -1167,6 +1175,8 @@ class Function
   // distinguish the defer stack for one function from another.  This
   // is NULL unless we actually need a defer stack.
   Temporary_statement* defer_stack_;
+  // True if this function is sink-named.  No code is generated.
+  bool is_sink_ : 1;
   // True if the result variables are named.
   bool results_are_named_ : 1;
   // True if this method should not be included in the type descriptor.

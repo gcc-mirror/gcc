@@ -819,7 +819,8 @@ Gogo::start_function(const std::string& name, Function_type* type,
       char buf[30];
       snprintf(buf, sizeof buf, ".$sink%d", sink_count);
       ++sink_count;
-      ret = Named_object::make_function(buf, NULL, function);
+      ret = this->package_->bindings()->add_function(buf, NULL, function);
+      ret->func_value()->set_is_sink();
     }
   else if (!type->is_method())
     {
@@ -3253,8 +3254,8 @@ Function::Function(Function_type* type, Function* enclosing, Block* block,
   : type_(type), enclosing_(enclosing), results_(NULL),
     closure_var_(NULL), block_(block), location_(location), labels_(),
     local_type_count_(0), descriptor_(NULL), fndecl_(NULL), defer_stack_(NULL),
-    results_are_named_(false), nointerface_(false), calls_recover_(false),
-    is_recover_thunk_(false), has_recover_thunk_(false),
+    is_sink_(false), results_are_named_(false), nointerface_(false),
+    calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
     in_unique_section_(false), is_descriptor_wrapper_(false)
 {
 }
