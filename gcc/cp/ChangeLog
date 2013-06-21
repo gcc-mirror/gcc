@@ -1,3 +1,47 @@
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* call.c (convert_like_real): Added a check if array notation is present
+	in expression.  If so, then no conversion of arguments is necessary.
+	(build_over_call): Likewise.
+	* typeck.c (cp_build_function_call_vec): Likewise.
+	(convert_for_assignment): Likewise.
+	(cp_build_array_ref): Reject array notations with a rank greater than 1
+	as an array's index.
+	(cp_build_binary_op): If array notations are preent in op, then call
+	find_correct_array_notation_type.
+	(cp_build_addr_expr_1): Handle ARRAY_NOTATION_REF similar to ARRAY_REF.
+	* cp-array-notation.c: New file.
+	* cp-objcp-common.c (cp_common_init_ts): Marked ARRAY_NOTATION_REF tree
+	as typed.
+	* cp-tree.h (fix_array_notation_exprs): New prototype.
+	* semantics.c (finish_return_stmt): Reject array notations as
+	return value.
+	(cxx_eval_constant_expression): Added ARRAY_NOTATION_REF case.
+	(potential_constant_expression_1): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	* error.c (dump_decl): Likewise.
+	(dump_expr): Likewise.
+	* pt.c (ARRAY_NOTATION_REF): Likewise.
+	(type_unification_real): Do not unify any arguments if array notations
+	are found in arg.
+	(instantiate_decl): Added a check for array notaitons inside the
+	function body.  If so, then expand them.
+	* parser.c (cp_parser_array_notation): New function.
+	(cp_parser_postfix_open_square_expression): Added a check for colons
+	inside square braces.  If found, then handle the array access as an
+	array notation access.  Also, disable auto-correction from a single
+	colon to scope when Cilk Plus is enabled.
+	(cp_parser_compound_statement): Added a check for array notations
+	inside the statement.  If found, then expand them.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_function_definition_after_declarator): Likewise.
+	(cp_parser_selection_statement): Searched for array notations inside
+	condition.  If so, then emit an error.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_direct_declarator): Reject array notations inside a
+	variable or array declaration.
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Added cp/cp-array-notation.o.
+
 2013-06-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/55149

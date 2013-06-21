@@ -5858,9 +5858,15 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    break;
 	}
 
-      if (permerror (loc, "invalid conversion from %qT to %qT",
-		     TREE_TYPE (expr), totype)
-	  && fn)
+      if (flag_enable_cilkplus
+	  && (contains_array_notation_expr (expr)
+	      || contains_array_notation_expr (fn)))
+	/* If we are using array notations, we fix them up at a later stage
+	   and we will do these checks then.  */
+	;
+      else if (permerror (loc, "invalid conversion from %qT to %qT",
+			  TREE_TYPE (expr), totype)
+	       && fn)
 	inform (DECL_SOURCE_LOCATION (fn),
 		"initializing argument %P of %qD", argnum, fn);
 
@@ -6890,12 +6896,20 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    }
 	}
 
-      val = convert_like_with_context (conv, arg, fn, i-is_method,
-	                               conversion_warning
-				       ? complain
-				       : complain & (~tf_warning));
+      /* If the function call is builtin array notation function then no need
+	 to do any type conversion.  */
+      if (flag_enable_cilkplus
+	  && is_cilkplus_reduce_builtin (fn) != BUILT_IN_NONE)
+	val = arg;
+      else
+	{
+	  val = convert_like_with_context (conv, arg, fn, i - is_method,
+					   conversion_warning
+					   ? complain
+					   : complain & (~tf_warning));
 
-      val = convert_for_arg_passing (type, val, complain);
+	  val = convert_for_arg_passing (type, val, complain);
+	}
       if (val == error_mark_node)
         return error_mark_node;
       else

@@ -13753,6 +13753,20 @@ tsubst_copy_and_build (tree t,
 				 RECUR (TREE_OPERAND (t, 1)),
 				 complain|decltype_flag));
 
+    case ARRAY_NOTATION_REF:
+      {
+	tree start_index, length, stride;
+	op1 = tsubst_non_call_postfix_expression (ARRAY_NOTATION_ARRAY (t),
+						  args, complain, in_decl);
+	start_index = RECUR (ARRAY_NOTATION_START (t));
+	length = RECUR (ARRAY_NOTATION_LENGTH (t));
+	stride = RECUR (ARRAY_NOTATION_STRIDE (t));
+	if (!cilkplus_an_triplet_types_ok_p (loc, start_index, length, stride,
+					     TREE_TYPE (op1)))
+	  RETURN (error_mark_node);
+	RETURN (build_array_notation_ref (EXPR_LOCATION (t), op1, start_index,
+					  length, stride, TREE_TYPE (op1)));
+      }
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0)))
 	RETURN (tsubst_copy (t, args, complain, in_decl));
@@ -15724,6 +15738,9 @@ type_unification_real (tree tparms,
 
       arg = args[ia];
       ++ia;
+
+      if (flag_enable_cilkplus && TREE_CODE (arg) == ARRAY_NOTATION_REF)
+	return 1;
 
       if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
 			      flags, explain_p))
@@ -19126,6 +19143,11 @@ instantiate_decl (tree d, int defer_ok,
       pointer_map_destroy (local_specializations);
       local_specializations = saved_local_specializations;
 
+      /* We expand all the array notation expressions here.  */
+      if (flag_enable_cilkplus
+	  && contains_array_notation_expr (DECL_SAVED_TREE (d)))
+	DECL_SAVED_TREE (d) = expand_array_notation_exprs (DECL_SAVED_TREE (d));
+      
       /* Finish the function.  */
       d = finish_function (0);
       expand_or_defer_fn (d);

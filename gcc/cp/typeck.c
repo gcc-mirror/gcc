@@ -3005,6 +3005,22 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       return error_mark_node;
     }
 
+  /* If an array's index is an array notation, then its rank cannot be
+     greater than one.  */ 
+  if (flag_enable_cilkplus && contains_array_notation_expr (idx))
+    {
+      size_t rank = 0;
+
+      /* If find_rank returns false, then it should have reported an error,
+	 thus it is unnecessary for repetition.  */
+      if (!find_rank (loc, idx, idx, true, &rank))
+	return error_mark_node;
+      if (rank > 1)
+	{
+	  error_at (loc, "rank of the array%'s index is greater than 1");
+	  return error_mark_node;
+	}
+    }
   if (TREE_TYPE (array) == error_mark_node
       || TREE_TYPE (idx) == error_mark_node)
     return error_mark_node;
@@ -3477,8 +3493,12 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
       params = &allocated;
     }
 
-  nargs = convert_arguments (parm_types, params, fndecl, LOOKUP_NORMAL,
-			     complain);
+  if (flag_enable_cilkplus
+      && is_cilkplus_reduce_builtin (fndecl) != BUILT_IN_NONE)
+    nargs = (*params)->length ();
+  else
+    nargs = convert_arguments (parm_types, params, fndecl, LOOKUP_NORMAL,
+			       complain);
   if (nargs < 0)
     return error_mark_node;
 
@@ -3936,8 +3956,15 @@ cp_build_binary_op (location_t location,
 	}
     }
 
-  type0 = TREE_TYPE (op0);
-  type1 = TREE_TYPE (op1);
+  if (flag_enable_cilkplus && contains_array_notation_expr (op0))
+    type0 = find_correct_array_notation_type (op0);
+  else
+    type0 = TREE_TYPE (op0);
+
+  if (flag_enable_cilkplus && contains_array_notation_expr (op1))
+    type1 = find_correct_array_notation_type (op1);
+  else
+    type1 = TREE_TYPE (op1);
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -5140,6 +5167,13 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   gcc_assert (!identifier_p (arg) || !IDENTIFIER_OPNAME_P (arg));
 
+  if (flag_enable_cilkplus && TREE_CODE (arg) == ARRAY_NOTATION_REF)
+    {
+      val = build_address (arg);
+      if (TREE_CODE (arg) == OFFSET_REF)
+	PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
+      return val;
+    }
   if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
       && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
     {
@@ -7818,6 +7852,13 @@ convert_for_assignment (tree type, tree rhs,
   tree rhstype;
   enum tree_code coder;
 
+  /* If we are dealing with built-in array notation function then we don't need
+     to convert them.  They will be broken up into modify exprs in future,
+     during which all these checks will be done.  */
+  if (flag_enable_cilkplus
+      && is_cilkplus_reduce_builtin (fndecl) != BUILT_IN_NONE)
+    return rhs;
+  
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);

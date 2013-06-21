@@ -1,0 +1,48 @@
+#   Copyright (C) 2013 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Written by Balaji V. Iyer <balaji.v.iyer@intel.com>
+
+
+load_lib g++-dg.exp
+
+dg-init
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O0 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O1 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O2 -ftree-vectorize -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O3 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O0 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O1 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O2 -ftree-vectorize -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -g -O3 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O3 -ftree-vectorize -fcilkplus -g" " "
+dg-finish
+
+dg-init
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O0 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O1 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O2 -ftree-vectorize -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O3 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -O0 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -O1 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -O2 -ftree-vectorize -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -g -O3 -fcilkplus" " "
+dg-runtest [lsort [glob -nocomplain $srcdir/g++.dg/cilk-plus/AN/*.cc]] " -O3 -ftree-vectorize -fcilkplus -g" " "
+dg-finish

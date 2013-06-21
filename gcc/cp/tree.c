@@ -141,6 +141,7 @@ lvalue_kind (const_tree ref)
     case INDIRECT_REF:
     case ARROW_EXPR:
     case ARRAY_REF:
+    case ARRAY_NOTATION_REF:
     case PARM_DECL:
     case RESULT_DECL:
       return clk_ordinary;
