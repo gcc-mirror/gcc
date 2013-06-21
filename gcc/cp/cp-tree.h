@@ -126,6 +126,7 @@ c-common.h, not after.
    5: CLASS_TYPE_P (in RECORD_TYPE and UNION_TYPE)
       ENUM_FIXED_UNDERLYING_TYPE_P (in ENUMERAL_TYPE)
       AUTO_IS_DECLTYPE (in TEMPLATE_TYPE_PARM)
+      REFERENCE_VLA_OK (in REFERENCE_TYPE)
    6: TYPE_DEPENDENT_P_VALID
 
    Usage of DECL_LANG_FLAG_?:
@@ -139,6 +140,7 @@ c-common.h, not after.
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
       FUNCTION_PARAMETER_PACK_P (in PARM_DECL)
       USING_DECL_TYPENAME_P (in USING_DECL)
+      DECL_VLA_CAPTURE_P (in FIELD_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
       DECL_IMPLICIT_TYPEDEF_P (in a TYPE_DECL)
    3: DECL_IN_AGGR_P.
@@ -2979,6 +2981,11 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    && (TREE_CODE (TREE_TYPE (TREE_OPERAND ((NODE), 0)))	\
        == REFERENCE_TYPE))
 
+/* True if NODE is a REFERENCE_TYPE which is OK to instantiate to be a
+   reference to VLA type, because it's used for VLA capture.  */
+#define REFERENCE_VLA_OK(NODE) \
+  (TYPE_LANG_FLAG_5 (REFERENCE_TYPE_CHECK (NODE)))
+
 #define NEW_EXPR_USE_GLOBAL(NODE) \
   TREE_LANG_FLAG_0 (NEW_EXPR_CHECK (NODE))
 #define DELETE_EXPR_USE_GLOBAL(NODE) \
@@ -3615,6 +3622,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    erroneously declared PARM_DECL.  */
 #define DECL_THIS_STATIC(NODE) \
   DECL_LANG_FLAG_6 (VAR_FUNCTION_OR_PARM_DECL_CHECK (NODE))
+
+/* Nonzero for FIELD_DECL node means that this field is a lambda capture
+   field for an array of runtime bound.  */
+#define DECL_VLA_CAPTURE_P(NODE) \
+  DECL_LANG_FLAG_1 (FIELD_DECL_CHECK (NODE))
 
 /* Nonzero for FIELD_DECL node means that this field is a base class
    of the parent object, as opposed to a member field.  */

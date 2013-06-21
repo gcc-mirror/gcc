@@ -884,8 +884,8 @@ array_of_runtime_bound_p (tree t)
   if (!dom)
     return false;
   tree max = TYPE_MAX_VALUE (dom);
-  return (!value_dependent_expression_p (max)
-	  && !TREE_CONSTANT (max));
+  return (!potential_rvalue_constant_expression (max)
+	  || (!value_dependent_expression_p (max) && !TREE_CONSTANT (max)));
 }
 
 /* Return a reference type node referring to TO_TYPE.  If RVAL is

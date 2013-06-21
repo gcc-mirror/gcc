@@ -11575,7 +11575,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type_real (r, cp_type_quals (t), complain);
 
-	if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+	if (cxx_dialect >= cxx1y
+	    && !(TREE_CODE (t) == REFERENCE_TYPE && REFERENCE_VLA_OK (t))
+	    && array_of_runtime_bound_p (type))
 	  {
 	    if (complain & tf_warning_or_error)
 	      pedwarn

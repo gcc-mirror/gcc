@@ -1,5 +1,18 @@
 2013-06-20  Jason Merrill  <jason@redhat.com>
 
+	PR c++/55149
+	* decl.c (compute_array_index_type): Don't reject VLAs in SFINAE
+	context if we're in C++14 mode.
+	* tree.c (array_of_runtime_bound_p): Return true for a dependent
+	bound that is not potentually constant.
+	* cp-tree.h (DECL_VLA_CAPTURE_P, REFERENCE_VLA_OK): New.
+	* pt.c (tsubst) [REFERENCE_TYPE]: Check REFERENCE_VLA_OK.
+	* semantics.c (build_lambda_object): Don't rvalue a VLA capture.
+	(build_capture_proxy): Set REFERENCE_VLA_OK.
+	(vla_capture_type): Make it a proper C++ class.
+	(add_capture): Set DECL_VLA_CAPTURE_P.  Don't pre-digest the
+	initializer.
+
 	* decl.c (compute_array_index_type): Use size_one_node.
 
 	* pt.c (process_partial_specialization): Build a TEMPLATE_DECL for
