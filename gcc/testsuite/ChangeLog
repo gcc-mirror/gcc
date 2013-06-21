@@ -1,3 +1,8 @@
+2013-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53211
+	* g++.dg/cpp0x/decltype55.C: New.
+
 2013-06-20  Wei Mi  <wmi@google.com>
 
 	Backport from mainline
@@ -5,7 +10,6 @@
 
 	PR rtl-optimization/57518
 	* testsuite/gcc.dg/pr57518.c: New test.
-
 
 2013-06-11  Tobias Burnus  <burnus@net-b.de>
 

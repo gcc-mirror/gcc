@@ -1,3 +1,10 @@
+2013-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53211
+	* pt.c (type_dependent_expression_p): Handle an array of unknown
+	bound depending on a variadic parameter.
+	* parser.c (cp_parser_range_for): Revert PR56794 changes.
+
 2013-05-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57319
