@@ -91,6 +91,9 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // form which is easier to use.
   ::gogo->lower_parse_tree();
 
+  // Create function descriptors as needed.
+  ::gogo->create_function_descriptors();
+
   // Write out queued up functions for hash and comparison of types.
   ::gogo->write_specific_type_functions();
 
