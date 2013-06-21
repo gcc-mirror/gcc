@@ -1,3 +1,7 @@
+2013-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/fpu-sysv.h (get_fpu_except_flags): Fix typo.
+
 2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h (_FPU_MASK_ALL): New.
@@ -30,7 +34,7 @@
 	* config/fpu-aix.h (get_fpu_except_flags): New function.
 	* config/fpu-generic.h (get_fpu_except_flags): New function.
 	* config/fpu-glibc.h (get_fpu_except_flags): New function.
-	* config/fpu-glibc.h (get_fpu_except_flags): New function.
+	* config/fpu-sysv.h (get_fpu_except_flags): New function.
 	* configure.ac: Check for fpxcp.h.
 	* configure: Regenerate.
 	* config.h.in: Regenerate.

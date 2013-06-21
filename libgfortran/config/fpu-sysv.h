@@ -85,7 +85,7 @@ int
 get_fpu_except_flags (void)
 {
   int result;
-  fp_except_t set_excepts;
+  fp_except set_excepts;
 
   result = 0;
   set_excepts = fpgetsticky ();
