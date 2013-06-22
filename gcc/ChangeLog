@@ -1,3 +1,8 @@
+2013-06-22  Andi Kleen  <ak@linux.intel.com>
+
+	* doc/extend.texi: Use __atomic_store_n instead of
+	__atomic_store in HLE example.
+
 2013-06-22  Oleg Endo <olegendo@gcc.gnu.org>
 
 	* config/sh/sh.c: Remove <cstdlib> workaround.
