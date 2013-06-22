@@ -3978,7 +3978,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _UniformRandomNumberGenerator>
 	result_type
-	_M_waiting(_UniformRandomNumberGenerator& __urng, _IntType __t);
+	_M_waiting(_UniformRandomNumberGenerator& __urng,
+		   _IntType __t, double __q);
 
       param_type _M_param;
 
