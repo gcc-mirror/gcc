@@ -1,3 +1,7 @@
+2013-06-22  Oleg Endo <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.c: Remove <cstdlib> workaround.
+
 2013-06-21  Andi Kleen  <ak@linux.intel.com>
 
 	* doc/extend.texi: Dont use __atomic_clear in HLE
@@ -18,7 +22,7 @@
 	(get_binfo_at_offset): Use it.
 	* tree.h (types_same_for_odr): Declare.
 
-2013-06-20  Oleg Endo <oleg.endo@t-online.de>
+2013-06-20  Oleg Endo <olegendo@gcc.gnu.org>
 	    Jason Merrill  <jason@redhat.com>
 
 	* system.h: Include <cstdlib> as well as <stdlib.h>.
