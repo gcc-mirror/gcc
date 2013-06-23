@@ -1,3 +1,11 @@
+2013-06-23  Oleg Endo <olegendo@gcc.gnu.org>
+
+	PR target/52483
+	* config/sh/predicates.md (general_extend_operand): Invoke
+	general_movsrc_operand for memory operands.
+	(general_movsrc_operand): Allow reg+reg addressing, do not use
+	general_operand for memory operands.
+
 2013-06-23  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/i386.c (ix86_pragma_target_parse):  Restore target

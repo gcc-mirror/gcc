@@ -1,3 +1,12 @@
+2013-06-23  Oleg Endo <olegendo@gcc.gnu.org>
+
+	PR target/52483
+	* gcc.target/sh/pr52483-1.c: New.
+	* gcc.target/sh/pr52483-2.c: New.
+	* gcc.target/sh/pr52483-3.c: New.
+	* gcc.target/sh/pr52483-4.c: New.
+	* gcc.target/sh/pr52483-5.c: New.
+
 2013-06-23  Sriraman Tallam  <tmsriram@google.com>
 
 	* testsuite/gcc.target/i386/intrinsics_1.c: New test.
