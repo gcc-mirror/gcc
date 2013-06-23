@@ -28,12 +28,14 @@
 #ifndef _FMA4INTRIN_H_INCLUDED
 #define _FMA4INTRIN_H_INCLUDED
 
-#ifndef __FMA4__
-# error "FMA4 instruction set not enabled"
-#else
-
 /* We need definitions from the SSE4A, SSE3, SSE2 and SSE header files.  */
 #include <ammintrin.h>
+
+#ifndef __FMA4__
+#pragma GCC push_options
+#pragma GCC target("fma4")
+#define __DISABLE_FMA4__
+#endif /* __FMA4__ */
 
 /* 128b Floating point multiply/add type instructions.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -231,6 +233,9 @@ _mm256_msubadd_pd (__m256d __A, __m256d __B, __m256d __C)
   return (__m256d) __builtin_ia32_vfmaddsubpd256 ((__v4df)__A, (__v4df)__B, -(__v4df)__C);
 }
 
-#endif
+#ifdef __DISABLE_FMA4__
+#undef __DISABLE_FMA4__
+#pragma GCC pop_options
+#endif /* __DISABLE_FMA4__ */
 
 #endif

@@ -376,20 +376,23 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 
   if (! args)
     {
-      cur_tree = ((pop_target)
-		  ? pop_target
-		  : target_option_default_node);
+      cur_tree = (pop_target ? pop_target : target_option_default_node);
       cl_target_option_restore (&global_options,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else
     {
       cur_tree = ix86_valid_target_attribute_tree (args);
-      if (!cur_tree)
-	return false;
+      if (!cur_tree || cur_tree == error_mark_node)
+       {
+         cl_target_option_restore (&global_options,
+                                   TREE_TARGET_OPTION (prev_tree));
+         return false;
+       }
     }
 
   target_option_current_node = cur_tree;
+  ix86_reset_previous_fndecl ();
 
   /* Figure out the previous/current isa, arch, tune and the differences.  */
   prev_opt  = TREE_TARGET_OPTION (prev_tree);

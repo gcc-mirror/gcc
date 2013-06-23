@@ -1,3 +1,14 @@
+2013-06-23  Sriraman Tallam  <tmsriram@google.com>
+
+	* testsuite/gcc.target/i386/intrinsics_1.c: New test.
+	* testsuite/gcc.target/i386/intrinsics_2.c: Ditto.
+	* testsuite/gcc.target/i386/intrinsics_3.c: Ditto.
+	* testsuite/gcc.target/i386/intrinsics_4.c: Ditto.
+	* testsuite/gcc.target/i386/intrinsics_5.c: Ditto.
+	* testsuite/gcc.target/i386/intrinsics_6.c: Ditto.
+	* testsuite/gcc.target/i386/avx-1.c: Provide macros for builtins
+	needing immediate arguments in f16cintrin.h and rtmintrin.h.
+
 2013-06-21  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/finalize_17.f90: New.

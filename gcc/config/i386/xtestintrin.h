@@ -25,12 +25,14 @@
 # error "Never use <xtestintrin.h> directly; include <immintrin.h> instead."
 #endif
 
-#ifndef __RTM__
-# error "RTM instruction set not enabled"
-#endif /* __RTM__ */
-
 #ifndef _XTESTINTRIN_H_INCLUDED
 #define _XTESTINTRIN_H_INCLUDED
+
+#ifndef __RTM__
+#pragma GCC push_options
+#pragma GCC target("rtm")
+#define __DISABLE_RTM__
+#endif /* __RTM__ */
 
 /* Return non-zero if the instruction executes inside an RTM or HLE code
    region.  Return zero otherwise.   */
@@ -40,5 +42,10 @@ _xtest (void)
 {
   return __builtin_ia32_xtest ();
 }
+
+#ifdef __DISABLE_RTM__
+#undef __DISABLE_RTM__
+#pragma GCC pop_options
+#endif /* __DISABLE_RTM__ */
 
 #endif /* _XTESTINTRIN_H_INCLUDED */

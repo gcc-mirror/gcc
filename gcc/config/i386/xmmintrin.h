@@ -27,15 +27,17 @@
 #ifndef _XMMINTRIN_H_INCLUDED
 #define _XMMINTRIN_H_INCLUDED
 
-#ifndef __SSE__
-# error "SSE instruction set not enabled"
-#else
-
 /* We need type definitions from the MMX header file.  */
 #include <mmintrin.h>
 
 /* Get _mm_malloc () and _mm_free ().  */
 #include <mm_malloc.h>
+
+#ifndef __SSE__
+#pragma GCC push_options
+#pragma GCC target("sse")
+#define __DISABLE_SSE__
+#endif /* __SSE__ */
 
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
@@ -1242,9 +1244,11 @@ do {									\
 } while (0)
 
 /* For backward source compatibility.  */
-#ifdef __SSE2__
 # include <emmintrin.h>
-#endif
 
-#endif /* __SSE__ */
+#ifdef __DISABLE_SSE__
+#undef __DISABLE_SSE__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE__ */
+
 #endif /* _XMMINTRIN_H_INCLUDED */
