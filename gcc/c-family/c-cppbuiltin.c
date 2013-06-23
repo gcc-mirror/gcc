@@ -713,7 +713,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_define (pfile, "__DEPRECATED");
       if (flag_rtti)
 	cpp_define (pfile, "__GXX_RTTI");
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
         cpp_define (pfile, "__GXX_EXPERIMENTAL_CXX0X__");
     }
   /* Note that we define this for C as well, so that we know if

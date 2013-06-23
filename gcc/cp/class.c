@@ -2971,7 +2971,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 {
   bool move_ok = false;
 
-  if (cxx_dialect >= cxx0x && !CLASSTYPE_DESTRUCTORS (t)
+  if (cxx_dialect >= cxx11 && !CLASSTYPE_DESTRUCTORS (t)
       && !TYPE_HAS_COPY_CTOR (t) && !TYPE_HAS_COPY_ASSIGN (t)
       && !type_has_move_constructor (t) && !type_has_move_assign (t))
     move_ok = true;
@@ -2998,7 +2998,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
     {
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	TYPE_HAS_CONSTEXPR_CTOR (t)
 	  /* This might force the declaration.  */
 	  = type_has_constexpr_default_constructor (t);
@@ -3199,7 +3199,7 @@ check_field_decl (tree field,
 
   /* In C++98 an anonymous union cannot contain any fields which would change
      the settings of CANT_HAVE_CONST_CTOR and friends.  */
-  if (ANON_UNION_TYPE_P (type) && cxx_dialect < cxx0x)
+  if (ANON_UNION_TYPE_P (type) && cxx_dialect < cxx11)
     ;
   /* And, we don't set TYPE_HAS_CONST_COPY_CTOR, etc., for anonymous
      structs.  So, we recurse through their fields here.  */
@@ -3220,7 +3220,7 @@ check_field_decl (tree field,
 	 make it through without complaint.  */
       abstract_virtuals_error (field, type);
 
-      if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx0x)
+      if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx11)
 	{
 	  static bool warned;
 	  int oldcount = errorcount;
@@ -5181,7 +5181,7 @@ finalize_literal_type_property (tree t)
 {
   tree fn;
 
-  if (cxx_dialect < cxx0x
+  if (cxx_dialect < cxx11
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
@@ -5321,7 +5321,7 @@ check_bases_and_members (tree t)
 
   /* Deduce noexcept on destructors.  This needs to happen after we've set
      triviality flags appropriately for our bases.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     deduce_noexcept_on_destructors (t);
 
   /* Check all the method declarations.  */

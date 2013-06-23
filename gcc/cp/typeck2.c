@@ -890,7 +890,7 @@ check_narrowing (tree type, tree init)
 
   if (!ok)
     {
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	pedwarn (EXPR_LOC_OR_HERE (init), OPT_Wnarrowing,
 		 "narrowing conversion of %qE from %qT to %qT inside { }",
 		 init, ftype, type);

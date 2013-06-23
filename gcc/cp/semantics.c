@@ -7790,7 +7790,7 @@ non_const_var_error (tree r)
     }
   else
     {
-      if (cxx_dialect >= cxx0x && !DECL_DECLARED_CONSTEXPR_P (r))
+      if (cxx_dialect >= cxx11 && !DECL_DECLARED_CONSTEXPR_P (r))
 	inform (DECL_SOURCE_LOCATION (r),
 		"%qD was not declared %<constexpr%>", r);
       else
@@ -8741,7 +8741,7 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
     case STATIC_CAST_EXPR:
     case REINTERPRET_CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
-      if (cxx_dialect < cxx0x
+      if (cxx_dialect < cxx11
 	  && !dependent_type_p (TREE_TYPE (t))
 	  && !INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (t)))
 	/* In C++98, a conversion to non-integral type can't be part of a

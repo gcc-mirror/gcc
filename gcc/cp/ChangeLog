@@ -1,3 +1,45 @@
+2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* call.c (null_ptr_cst_p): Use cxx11 in lieu of cxx0x.
+	* class.c (add_implicitly_declared_members): Likewise.
+	(check_field_decl): Likewise.
+	(finalize_literal_type_property): Likewise.
+	(check_bases_and_members): Likewise.
+	* decl.c (poplevel): Likewise.
+	(case_conversion): Likewise.
+	(check_initializer): Likewise.
+	(grokfndecl): Likewise.
+	(check_static_variable_definition): Likewise.
+	(compute_array_index_type): Likewise.
+	(grokdeclarator): Likewise.
+	(build_enumerator): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* lex.c (init_reswords): Likewise.
+	* method.c (synthesized_method_walk): Likewise.
+	(implicitly_declare_fn): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_constant_expression): Likewise.
+	(cp_parser_for_init_statement): Likewise.
+	(cp_parser_block_declaration): Likewise.
+	(cp_parser_type_name): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_nth_tokens_can_be_std_attribute_p): Likewise.
+	(cp_parser_template_declaration_after_export): Likewise.
+	* pt.c (convert_nontype_argument_function): Likewise.
+	(convert_nontype_argument): Likewise.
+	(convert_template_argument): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	(build_non_dependent_expr): Likewise.
+	* semantics.c (non_const_var_error): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	(build_vec_init_expr): Likewise.
+	(cast_valid_in_integral_constant_expression_p): Likewise.
+	* typeck.c (build_x_conditional_expr): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* call.c (convert_like_real): Added a check if array notation is present

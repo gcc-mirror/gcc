@@ -2829,7 +2829,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser,
 	   template <typename T> struct B : public A<T> { X x; };
 
 	 The user should have said "typename A<T>::X".  */
-      if (cxx_dialect < cxx0x && id == ridpointers[(int)RID_CONSTEXPR])
+      if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_CONSTEXPR])
 	inform (location, "C++11 %<constexpr%> only available with "
 		"-std=c++11 or -std=gnu++11");
       else if (processing_template_decl && current_class_type
@@ -8259,7 +8259,7 @@ cp_parser_constant_expression (cp_parser* parser,
   /* We are now parsing a constant-expression.  */
   parser->integral_constant_expression_p = true;
   parser->allow_non_integral_constant_expression_p
-    = (allow_non_constant_p || cxx_dialect >= cxx0x);
+    = (allow_non_constant_p || cxx_dialect >= cxx11);
   parser->non_integral_constant_expression_p = false;
   /* Although the grammar says "conditional-expression", we parse an
      "assignment-expression", which also permits "throw-expression"
@@ -8276,7 +8276,7 @@ cp_parser_constant_expression (cp_parser* parser,
     = saved_integral_constant_expression_p;
   parser->allow_non_integral_constant_expression_p
     = saved_allow_non_integral_constant_expression_p;
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     {
       /* Require an rvalue constant expression here; that's what our
 	 callers expect.  Reference constant expressions are handled
@@ -10428,7 +10428,7 @@ cp_parser_for_init_statement (cp_parser* parser, tree *decl)
 	  /* It is a range-for, consume the ':' */
 	  cp_lexer_consume_token (parser->lexer);
 	  is_range_for = true;
-	  if (cxx_dialect < cxx0x)
+	  if (cxx_dialect < cxx11)
 	    {
 	      error_at (cp_lexer_peek_token (parser->lexer)->location,
 			"range-based %<for%> loops are not allowed "
@@ -10916,7 +10916,7 @@ cp_parser_block_declaration (cp_parser *parser,
 	cp_parser_using_directive (parser);
       /* If the second token after 'using' is '=', then we have an
 	 alias-declaration.  */
-      else if (cxx_dialect >= cxx0x
+      else if (cxx_dialect >= cxx11
 	       && token2->type == CPP_NAME
 	       && ((cp_lexer_peek_nth_token (parser->lexer, 3)->type == CPP_EQ)
 		   || (cp_nth_tokens_can_be_attribute_p (parser, 3))))
@@ -14533,7 +14533,7 @@ cp_parser_type_name (cp_parser* parser)
   /* If it's not a class-name, keep looking.  */
   if (!cp_parser_parse_definitely (parser))
     {
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
 	/* It must be a typedef-name or an enum-name.  */
 	return cp_parser_nonclass_name (parser);
 
@@ -15069,7 +15069,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_CLASS)
       || cp_lexer_next_token_is_keyword (parser->lexer, RID_STRUCT))
     {
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
         maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
       /* Consume the `struct' or `class' token.  */
@@ -15163,7 +15163,7 @@ cp_parser_enum_specifier (cp_parser* parser)
       if (!cp_parser_parse_definitely (parser))
 	return NULL_TREE;
 
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
         maybe_warn_cpp0x (CPP0X_SCOPED_ENUMS);
 
       has_underlying_type = true;
@@ -15181,7 +15181,7 @@ cp_parser_enum_specifier (cp_parser* parser)
   /* Look for the `{' but don't consume it yet.  */
   if (!cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
     {
-      if (cxx_dialect < cxx0x || (!scoped_enum_p && !underlying_type))
+      if (cxx_dialect < cxx11 || (!scoped_enum_p && !underlying_type))
 	{
 	  cp_parser_error (parser, "expected %<{%>");
 	  if (has_underlying_type)
@@ -15381,7 +15381,7 @@ cp_parser_enumerator_list (cp_parser* parser, tree type)
       /* If the next token is a `}', there is a trailing comma.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_BRACE))
 	{
-	  if (cxx_dialect < cxx0x && !in_system_header)
+	  if (cxx_dialect < cxx11 && !in_system_header)
 	    pedwarn (input_location, OPT_Wpedantic,
                      "comma at end of enumerator list");
 	  break;
@@ -19730,7 +19730,7 @@ cp_parser_member_declaration (cp_parser* parser)
   /* Check for a using-declaration.  */
   if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
     {
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
 	{
 	  /* Parse the using-declaration.  */
 	  cp_parser_using_declaration (parser,
@@ -19834,7 +19834,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	    {
 	      /* If the `friend' keyword was present, the friend must
 		 be introduced with a class-key.  */
-	       if (!declares_class_or_enum && cxx_dialect < cxx0x)
+	       if (!declares_class_or_enum && cxx_dialect < cxx11)
 		 pedwarn (decl_spec_token_start->location, OPT_Wpedantic,
 			  "in C++03 a class-key must be used "
 			  "when declaring a friend");
@@ -20034,7 +20034,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		    initializer = cp_parser_pure_specifier (parser);
 		  else if (decl_specifiers.storage_class != sc_static)
 		    initializer = cp_parser_save_nsdmi (parser);
-		  else if (cxx_dialect >= cxx0x)
+		  else if (cxx_dialect >= cxx11)
 		    {
 		      bool nonconst;
 		      /* Don't require a constant rvalue in C++11, since we
@@ -20573,7 +20573,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
 
 #if 0
   /* Enable this once a lot of code has transitioned to noexcept?  */
-  if (cxx_dialect >= cxx0x && !in_system_header)
+  if (cxx_dialect >= cxx11 && !in_system_header)
     warning (OPT_Wdeprecated, "dynamic exception specifications are "
 	     "deprecated in C++0x; use %<noexcept%> instead");
 #endif
@@ -21041,7 +21041,7 @@ cp_nth_tokens_can_be_std_attribute_p (cp_parser *parser, size_t n)
 {
   cp_token *token = cp_lexer_peek_nth_token (parser->lexer, n);
 
-  return (cxx_dialect >= cxx0x
+  return (cxx_dialect >= cxx11
 	  && ((token->type == CPP_KEYWORD && token->keyword == RID_ALIGNAS)
 	      || (token->type == CPP_OPEN_SQUARE
 		  && (token = cp_lexer_peek_nth_token (parser->lexer, n + 1))
@@ -22457,7 +22457,7 @@ cp_parser_template_declaration_after_export (cp_parser* parser, bool member_p)
   if (cp_lexer_next_token_is_keyword (parser->lexer,
 				      RID_TEMPLATE))
     cp_parser_template_declaration_after_export (parser, member_p);
-  else if (cxx_dialect >= cxx0x
+  else if (cxx_dialect >= cxx11
 	   && cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
     decl = cp_parser_alias_declaration (parser);
   else
