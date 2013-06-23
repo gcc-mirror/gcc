@@ -211,7 +211,7 @@ lvalue_kind (const_tree ref)
       /* We just return clk_ordinary for NON_DEPENDENT_EXPR in C++98, but
 	 in C++11 lvalues don't bind to rvalue references, so we need to
 	 work harder to avoid bogus errors (c++/44870).  */
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
 	return clk_ordinary;
       else
 	return lvalue_kind (TREE_OPERAND (ref, 0));
@@ -566,7 +566,7 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
   TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
 
-  if (cxx_dialect >= cxx0x
+  if (cxx_dialect >= cxx11
       && potential_constant_expression (elt_init))
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
@@ -3956,7 +3956,7 @@ bool
 cast_valid_in_integral_constant_expression_p (tree type)
 {
   return (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
-	  || cxx_dialect >= cxx0x
+	  || cxx_dialect >= cxx11
 	  || dependent_type_p (type)
 	  || type == error_mark_node);
 }

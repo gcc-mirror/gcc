@@ -230,8 +230,8 @@ make_friend_class (tree type, tree friend_type, bool complain)
 	 (possibly cv-qualified) class type, that class is declared as a
 	 friend; otherwise, the friend declaration is ignored.
 
-         So don't complain in C++0x mode.  */
-      if (cxx_dialect < cxx0x)
+         So don't complain in C++11 mode.  */
+      if (cxx_dialect < cxx11)
 	pedwarn (input_location, complain ? 0 : OPT_Wpedantic,
 		 "invalid type %qT declared %<friend%>", friend_type);
       return;

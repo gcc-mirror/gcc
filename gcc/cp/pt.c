@@ -5151,9 +5151,9 @@ convert_nontype_argument_function (tree type, tree expr)
     }
 
   linkage = decl_linkage (fn_no_ptr);
-  if (cxx_dialect >= cxx0x ? linkage == lk_none : linkage != lk_external)
+  if (cxx_dialect >= cxx11 ? linkage == lk_none : linkage != lk_external)
     {
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	error ("%qE is not a valid template argument for type %qT "
 	       "because %qD has no linkage",
 	       expr, type, fn_no_ptr);
@@ -5178,7 +5178,7 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
   STRIP_NOPS (expr);
   if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
     return true;
-  if (cxx_dialect >= cxx0x && null_member_pointer_value_p (expr))
+  if (cxx_dialect >= cxx11 && null_member_pointer_value_p (expr))
     return true;
   if (complain & tf_error)
     {
@@ -5510,7 +5510,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      arbitrary constant expressions.  Pointer and pointer to
      member arguments can be general constant expressions that evaluate
      to a null value, but otherwise still need to be of a specific form.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     {
       if (TREE_CODE (expr) == PTRMEM_CST)
 	/* A PTRMEM_CST is already constant, and a valid template
@@ -5644,7 +5644,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       if (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr))
 	/* Non-type template parameters are OK.  */
 	;
-      else if (cxx_dialect >= cxx0x && integer_zerop (expr))
+      else if (cxx_dialect >= cxx11 && integer_zerop (expr))
 	/* Null pointer values are OK in C++11.  */;
       else if (TREE_CODE (expr) != ADDR_EXPR
 	       && TREE_CODE (expr_type) != ARRAY_TYPE)
@@ -5681,14 +5681,14 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		     expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if (cxx_dialect < cxx0x && !DECL_EXTERNAL_LINKAGE_P (decl))
+	  else if (cxx_dialect < cxx11 && !DECL_EXTERNAL_LINKAGE_P (decl))
 	    {
 	      error ("%qE is not a valid template argument of type %qT "
 		     "because %qD does not have external linkage",
 		     expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if (cxx_dialect >= cxx0x && decl_linkage (decl) == lk_none)
+	  else if (cxx_dialect >= cxx11 && decl_linkage (decl) == lk_none)
 	    {
 	      error ("%qE is not a valid template argument of type %qT "
 		     "because %qD has no linkage",
@@ -5787,7 +5787,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
-      if (cxx_dialect >= cxx0x && integer_zerop (expr))
+      if (cxx_dialect >= cxx11 && integer_zerop (expr))
 	/* Null pointer values are OK in C++11.  */
 	return perform_qualification_conversions (type, expr);
 
@@ -6216,7 +6216,7 @@ convert_template_argument (tree parm,
       tree t = maybe_get_template_decl_from_type_decl (TYPE_NAME (arg));
       if (TREE_CODE (t) == TEMPLATE_DECL)
 	{
-	  if (cxx_dialect >= cxx0x)
+	  if (cxx_dialect >= cxx11)
 	    /* OK under DR 1004.  */;
 	  else if (complain & tf_warning_or_error)
 	    pedwarn (input_location, OPT_Wpedantic, "injected-class-name %qD"
@@ -13518,7 +13518,7 @@ tsubst_copy_and_build (tree t,
 	decl = finish_id_expression (t, decl, NULL_TREE,
 				     &idk,
 				     integral_constant_expression_p,
-          /*allow_non_integral_constant_expression_p=*/(cxx_dialect >= cxx0x),
+          /*allow_non_integral_constant_expression_p=*/(cxx_dialect >= cxx11),
 				     &non_integral_constant_expression_p,
 				     /*template_p=*/false,
 				     /*done=*/true,
@@ -19834,7 +19834,7 @@ value_dependent_expression_p (tree expression)
 	    /* If there are no operands, it must be an expression such
 	       as "int()". This should not happen for aggregate types
 	       because it would form non-constant expressions.  */
-	    gcc_assert (cxx_dialect >= cxx0x
+	    gcc_assert (cxx_dialect >= cxx11
 			|| INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 
 	    return false;
@@ -20701,7 +20701,7 @@ build_non_dependent_expr (tree expr)
 #ifdef ENABLE_CHECKING
   /* Try to get a constant value for all non-dependent expressions in
       order to expose bugs in *_dependent_expression_p and constexpr.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     maybe_constant_value (fold_non_dependent_expr_sfinae (expr, tf_none));
 #endif
 

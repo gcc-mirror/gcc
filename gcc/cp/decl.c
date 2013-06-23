@@ -652,7 +652,7 @@ poplevel (int keep, int reverse, int functionbody)
       if (leaving_for_scope && VAR_P (link)
 	  /* It's hard to make this ARM compatibility hack play nicely with
 	     lambdas, and it really isn't necessary in C++11 mode.  */
-	  && cxx_dialect < cxx0x
+	  && cxx_dialect < cxx11
 	  && DECL_NAME (link))
 	{
 	  tree name = DECL_NAME (link);
@@ -3090,7 +3090,7 @@ case_conversion (tree type, tree value)
   if (value == NULL_TREE)
     return value;
 
-  if (cxx_dialect >= cxx0x
+  if (cxx_dialect >= cxx11
       && (SCOPED_ENUM_P (type)
 	  || !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))))
     {
@@ -5757,7 +5757,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
     {
       static int explained = 0;
 
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
 	error ("initializer invalid for static member with constructor");
       else
 	error ("non-constant in-class initialization invalid for static "
@@ -7653,7 +7653,7 @@ grokfndecl (tree ctype,
     grokclassfn (ctype, decl, flags);
 
   /* 12.4/3  */
-  if (cxx_dialect >= cxx0x
+  if (cxx_dialect >= cxx11
       && DECL_DESTRUCTOR_P (decl)
       && !TYPE_BEING_DEFINED (DECL_CONTEXT (decl))
       && !processing_template_decl)
@@ -8053,7 +8053,7 @@ check_static_variable_definition (tree decl, tree type)
      in check_initializer.  */
   if (DECL_P (decl) && DECL_DECLARED_CONSTEXPR_P (decl))
     return 0;
-  else if (cxx_dialect >= cxx0x && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
+  else if (cxx_dialect >= cxx11 && !INTEGRAL_OR_ENUMERATION_TYPE_P (type))
     {
       if (!COMPLETE_TYPE_P (type))
 	error ("in-class initialization of static data member %q#D of "
@@ -8175,7 +8175,7 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 
       mark_rvalue_use (size);
 
-      if (cxx_dialect < cxx0x && TREE_CODE (size) == NOP_EXPR
+      if (cxx_dialect < cxx11 && TREE_CODE (size) == NOP_EXPR
 	  && TREE_SIDE_EFFECTS (size))
 	/* In C++98, we mark a non-constant array bound with a magic
 	   NOP_EXPR with TREE_SIDE_EFFECTS; don't fold in that case.  */;
@@ -9534,7 +9534,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 		else if (declarator->u.function.late_return_type)
 		  {
-		    if (cxx_dialect < cxx0x)
+		    if (cxx_dialect < cxx11)
 		      /* Not using maybe_warn_cpp0x because this should
 			 always be an error.  */
 		      error ("trailing return type only available with "
@@ -12842,7 +12842,7 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 				  && double_int_fits_to_tree_p (type, di))
 				break;
 			    }
-			  if (type && cxx_dialect < cxx0x
+			  if (type && cxx_dialect < cxx11
 			      && itk > itk_unsigned_long)
 			    pedwarn (input_location, OPT_Wlong_long, pos ? "\
 incremented enumerator value is too large for %<unsigned long%>" :  "\

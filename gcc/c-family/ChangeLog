@@ -1,3 +1,9 @@
+2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.c (c_common_nodes_and_builtins): Use cxx11 in lieu of cxx0x.
+	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.h (struct cilkplus_an_parts): New structure.
@@ -6,7 +12,7 @@
 	(fix_sec_implicit_args): Likewise.
 	* array-notation-common.c (cilkplus_extract_an_triplets): New function.
 	(fix_sec_implicit_args): Likewise.
-	
+
 2013-06-20  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* array-notation-common.c (find_inv_trees): Removed an unwanted
