@@ -451,6 +451,7 @@ ix86_handle_option (struct gcc_options *opts,
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_LZCNT_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LZCNT_UNSET;
 	}
+      return true;
 
     case OPT_mtbm:
       if (value)
