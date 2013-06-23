@@ -25,12 +25,14 @@
 # error "Never use <f16intrin.h> directly; include <x86intrin.h> or <immintrin.h> instead."
 #endif
 
-#ifndef __F16C__
-# error "F16C instruction set not enabled"
-#else
-
 #ifndef _F16CINTRIN_H_INCLUDED
 #define _F16CINTRIN_H_INCLUDED
+
+#ifndef __F16C__
+#pragma GCC push_options
+#pragma GCC target("f16c")
+#define __DISABLE_F16C__
+#endif /* __F16C__ */
 
 extern __inline float __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _cvtsh_ss (unsigned short __S)
@@ -88,5 +90,9 @@ _mm256_cvtps_ph (__m256 __A, const int __I)
   ((__m128i) __builtin_ia32_vcvtps2ph256 ((__v8sf)(__m256) A, (int) (I)))
 #endif /* __OPTIMIZE */
 
+#ifdef __DISABLE_F16C__
+#undef __DISABLE_F16C__
+#pragma GCC pop_options
+#endif /* __DISABLE_F16C__ */
+
 #endif /* _F16CINTRIN_H_INCLUDED */
-#endif /* __F16C__ */

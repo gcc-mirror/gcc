@@ -1,3 +1,42 @@
+2013-06-23  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/i386.c (ix86_pragma_target_parse):  Restore target
+	when current target options does not apply.
+	* config/i386/i386-protos.h (ix86_reset_previous_fndecl): New function.
+	* config/i386/i386.c (ix86_reset_previous_fndecl): Ditto.
+	* config/i386/bmiintrin.h: Pass appropriate target attributes to header.
+	* config/i386/mmintrin.h: Ditto.
+	* config/i386/nmmintrin.h: Ditto.
+	* config/i386/avx2intrin.h: Ditto.
+	* config/i386/fxsrintrin.h: Ditto.
+	* config/i386/tbmintrin.h: Ditto.
+	* config/i386/xsaveintrin.h: Ditto.
+	* config/i386/f16cintrin.h: Ditto.
+	* config/i386/xtestintrin.h: Ditto.
+	* config/i386/xsaveoptintrin.h: Ditto.
+	* config/i386/bmi2intrin.h: Ditto.
+	* config/i386/lzcntintrin.h: Ditto.
+	* config/i386/smmintrin.h: Ditto.
+	* config/i386/wmmintrin.h: Ditto.
+	* config/i386/x86intrin.h: Remove all header include guards.
+	* config/i386/prfchwintrin.h: Ditto.
+	* config/i386/pmmintrin.h: Ditto.
+	* config/i386/tmmintrin.h: Ditto.
+	* config/i386/xmmintrin.h: Ditto.
+	* config/i386/popcntintrin.h: Ditto.
+	* config/i386/rdseedintrin.h: Ditto.
+	* config/i386/ammintrin.h: Ditto.
+	* config/i386/emmintrin.h: Ditto.
+	* config/i386/immintrin.h: Remove all header include guards.
+	* config/i386/fma4intrin.h: Ditto.
+	* config/i386/lwpintrin.h: Ditto.
+	* config/i386/xopintrin.h: Ditto.
+	* config/i386/ia32intrin.h: Ditto.
+	* config/i386/avxintrin.h: Ditto.
+	* config/i386/rtmintrin.h: Ditto.
+	* config/i386/fmaintrin.h: Ditto.
+	* config/i386/mm3dnow.h: Ditto.
+
 2013-06-22  Sriraman Tallam  <tmsriram@google.com>
 
 	* common/config/i386/i386-common.c: Handle LZCNT.

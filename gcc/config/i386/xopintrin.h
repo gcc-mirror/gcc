@@ -28,11 +28,13 @@
 #ifndef _XOPMMINTRIN_H_INCLUDED
 #define _XOPMMINTRIN_H_INCLUDED
 
-#ifndef __XOP__
-# error "XOP instruction set not enabled"
-#else
-
 #include <fma4intrin.h>
+
+#ifndef __XOP__
+#pragma GCC push_options
+#pragma GCC target("xop")
+#define __DISABLE_XOP__
+#endif /* __XOP__ */
 
 /* Integer multiply/add intructions. */
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -830,6 +832,9 @@ _mm256_permute2_ps (__m256 __X, __m256 __Y, __m256i __C, const int __I)
  					  (int)(I)))
 #endif /* __OPTIMIZE__ */
 
-#endif /* __XOP__ */
+#ifdef __DISABLE_XOP__
+#undef __DISABLE_XOP__
+#pragma GCC pop_options
+#endif /* __DISABLE_XOP__ */
 
 #endif /* _XOPMMINTRIN_H_INCLUDED */
