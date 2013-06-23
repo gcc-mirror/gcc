@@ -1,3 +1,9 @@
+2013-06-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57688
+	* common/config/i386/i386-common.c (ix86_handle_option): For OPT_mlzcnt
+	add missing return true.
+
 2013-06-23  Oleg Endo <olegendo@gcc.gnu.org>
 
 	PR target/52483
