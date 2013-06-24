@@ -55,11 +55,11 @@
 namespace std
 {
   extern "C" void abort(void) throw () _GLIBCXX_NORETURN;
-  extern "C" int atexit(void (*)()) throw ();
+  extern "C" int atexit(void (*)(void)) throw ();
   extern "C" void exit(int) throw () _GLIBCXX_NORETURN;
 #if __cplusplus >= 201103L
 # ifdef _GLIBCXX_HAVE_AT_QUICK_EXIT
-  extern "C" int at_quick_exit(void (*)()) throw ();
+  extern "C" int at_quick_exit(void (*)(void)) throw ();
 # endif
 # ifdef _GLIBCXX_HAVE_QUICK_EXIT
   extern "C" void quick_exit(int) throw() _GLIBCXX_NORETURN;

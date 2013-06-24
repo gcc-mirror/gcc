@@ -1,3 +1,10 @@
+2013-06-24  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/57691
+	* include/c_global/cstdlib (atexit, at_quick_exit): If !_GLIBCC_HOSTED,
+	declare per the letter of the C++ standard in terms of void.
+	* include/c_std/cstdlib: Likewise.
+
 2013-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/57674
