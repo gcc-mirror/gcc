@@ -1,5 +1,13 @@
+2013-06-24  Steven G. Kargl  <sgk@troutmask.apl.washington.edu>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/52413
+	* simplify.c (gfc_simplify_fraction): Fix the sign of negative values.
+
 2013-06-21  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/37336
 	* trans-array.c (gfc_trans_deferred_array): Call the
 	finalizer for nonallocatable local variables.
 	* trans-decl.c (gfc_get_symbol_decl): Add local
