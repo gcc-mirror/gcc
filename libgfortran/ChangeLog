@@ -1,3 +1,10 @@
+2013-06-24  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Check for fp_except and fp_except_t.
+	* config/fpu-sysv.h: Conditionally use either type.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
 2013-06-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/fpu-sysv.h (get_fpu_except_flags): Fix typo.

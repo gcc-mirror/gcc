@@ -25977,6 +25977,27 @@ $as_echo "#define HAVE_FPSETMASK 1" >>confdefs.h
 
   fi
 
+ac_fn_c_check_type "$LINENO" "fp_except" "ac_cv_type_fp_except" "#include <ieeefp.h>
+"
+if test "x$ac_cv_type_fp_except" = x""yes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FP_EXCEPT 1
+_ACEOF
+
+
+fi
+ac_fn_c_check_type "$LINENO" "fp_except_t" "ac_cv_type_fp_except_t" "#include <ieeefp.h>
+"
+if test "x$ac_cv_type_fp_except_t" = x""yes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_FP_EXCEPT_T 1
+_ACEOF
+
+
+fi
+
 
 # Check for AIX fp_trap and fp_enable
 ac_fn_c_check_func "$LINENO" "fp_trap" "ac_cv_func_fp_trap"
