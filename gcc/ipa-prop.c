@@ -78,6 +78,21 @@ struct ipa_cst_ref_desc
 
 static alloc_pool ipa_refdesc_pool;
 
+/* Return true if DECL_FUNCTION_SPECIFIC_OPTIMIZATION of the decl associated
+   with NODE should prevent us from analyzing it for the purposes of IPA-CP.  */
+
+static bool
+ipa_func_spec_opts_forbid_analysis_p (struct cgraph_node *node)
+{
+  tree fs_opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (node->symbol.decl);
+  struct cl_optimization *os;
+
+  if (!fs_opts)
+    return false;
+  os = TREE_OPTIMIZATION (fs_opts);
+  return !os->x_optimize || !os->x_flag_ipa_cp;
+}
+
 /* Return index of the formal whose tree is PTREE in function which corresponds
    to INFO.  */
 
@@ -1446,6 +1461,9 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
     return;
   vec_safe_grow_cleared (args->jump_functions, arg_num);
 
+  if (ipa_func_spec_opts_forbid_analysis_p (cs->caller))
+    return;
+
   for (n = 0; n < arg_num; n++)
     {
       struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, n);
@@ -1936,6 +1954,17 @@ ipa_analyze_params_uses (struct cgraph_node *node,
   if (ipa_get_param_count (info) == 0 || info->uses_analysis_done)
     return;
 
+  info->uses_analysis_done = 1;
+  if (ipa_func_spec_opts_forbid_analysis_p (node))
+    {
+      for (i = 0; i < ipa_get_param_count (info); i++)
+	{
+	  ipa_set_param_used (info, i, true);
+	  ipa_set_controlled_uses (info, i, IPA_UNDESCRIBED_USE);
+	}
+      return;
+    }
+
   for (i = 0; i < ipa_get_param_count (info); i++)
     {
       tree parm = ipa_get_param (info, i);
@@ -1992,8 +2021,6 @@ ipa_analyze_params_uses (struct cgraph_node *node,
 				       visit_ref_for_mod_analysis,
 				       visit_ref_for_mod_analysis);
     }
-
-  info->uses_analysis_done = 1;
 }
 
 /* Free stuff in PARMS_AINFO, assume there are PARAM_COUNT parameters.  */
