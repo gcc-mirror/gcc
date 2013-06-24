@@ -1,3 +1,8 @@
+2013-06-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57358
+	* gcc.dg/ipa/pr57358.c: New test.
+
 2013-06-24  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/57686

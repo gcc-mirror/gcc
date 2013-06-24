@@ -1,5 +1,12 @@
 2013-06-24  Martin Jambor  <mjambor@suse.cz>
 
+	PR tree-optimization/57358
+	* ipa-prop.c (ipa_func_spec_opts_forbid_analysis_p): New function.
+	(ipa_compute_jump_functions_for_edge): Bail out if it returns true.
+	(ipa_analyze_params_uses): Generate pessimistic info when true.
+
+2013-06-24  Martin Jambor  <mjambor@suse.cz>
+
 	PR tree-optimization/57539
 	* cgraphclones.c (cgraph_clone_node): Add parameter new_inlined_to, set
 	global.inlined_to of the new node to it.  All callers changed.
