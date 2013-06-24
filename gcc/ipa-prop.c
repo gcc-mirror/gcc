@@ -678,13 +678,19 @@ parm_ref_data_preserved_p (struct param_analysis_info *parm_ainfo,
   bool modified = false;
   ao_ref refd;
 
-  gcc_checking_assert (gimple_vuse (stmt));
   if (parm_ainfo && parm_ainfo->ref_modified)
     return false;
 
-  ao_ref_init (&refd, ref);
-  walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
-		      NULL);
+  if (optimize)
+    {
+      gcc_checking_assert (gimple_vuse (stmt));
+      ao_ref_init (&refd, ref);
+      walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
+			  NULL);
+    }
+  else
+    modified = true;
+
   if (parm_ainfo && modified)
     parm_ainfo->ref_modified = true;
   return !modified;

@@ -1,3 +1,9 @@
+2013-06-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57358
+	* ipa-prop.c (parm_ref_data_preserved_p): Always return true when
+	not optimizing.
+
 2013-06-24  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (vspltis_constant): Correct for little-endian.
