@@ -983,6 +983,7 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
 {
   struct cpp_dir *dir;
   _cpp_file *file;
+  bool stacked;
 
   dir = search_path_head (pfile, fname, angle_brackets, type);
   if (!dir)
@@ -993,19 +994,26 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (type == IT_DEFAULT && file == NULL)
     return false;
 
-  /* Compensate for the increment in linemap_add that occurs in
-     _cpp_stack_file.  In the case of a normal #include, we're
-     currently at the start of the line *following* the #include.  A
-     separate source_location for this location makes no sense (until
-     we do the LC_LEAVE), and complicates LAST_SOURCE_LINE_LOCATION.
-     This does not apply if we found a PCH file (in which case
-     linemap_add is not called) or we were included from the
-     command-line.  */
+  /* Compensate for the increment in linemap_add that occurs if
+      _cpp_stack_file actually stacks the file.  In the case of a
+     normal #include, we're currently at the start of the line
+     *following* the #include.  A separate source_location for this
+     location makes no sense (until we do the LC_LEAVE), and
+     complicates LAST_SOURCE_LINE_LOCATION.  This does not apply if we
+     found a PCH file (in which case linemap_add is not called) or we
+     were included from the command-line.  */
   if (file->pchname == NULL && file->err_no == 0
       && type != IT_CMDLINE && type != IT_DEFAULT)
     pfile->line_table->highest_location--;
 
-  return _cpp_stack_file (pfile, file, type == IT_IMPORT);
+  stacked = _cpp_stack_file (pfile, file, type == IT_IMPORT);
+
+  if (!stacked)
+    /* _cpp_stack_file didn't stack the file, so let's rollback the
+       compensation dance we performed above.  */
+    pfile->line_table->highest_location++;
+
+  return stacked;
 }
 
 /* Could not open FILE.  The complication is dependency output.  */
