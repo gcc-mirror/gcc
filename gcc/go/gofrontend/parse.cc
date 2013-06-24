@@ -1457,6 +1457,16 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 
       if (!Gogo::is_sink_name(pi->name()))
 	this->gogo_->add_constant(*pi, *pe, this->iota_value());
+      else
+	{
+	  static int count;
+	  char buf[30];
+	  snprintf(buf, sizeof buf, ".$sinkconst%d", count);
+	  ++count;
+	  Typed_identifier ti(std::string(buf), type, pi->location());
+	  Named_object* no = this->gogo_->add_constant(ti, *pe, this->iota_value());
+	  no->const_value()->set_is_sink();
+	}
     }
   if (pe != expr_list->end())
     error_at(this->location(), "too many initializers");

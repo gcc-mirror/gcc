@@ -814,6 +814,15 @@ Gogo::write_globals()
 	  continue;
 	}
 
+      // Skip blank named functions and constants.
+      if ((no->is_function() && no->func_value()->is_sink())
+	  || (no->is_const() && no->const_value()->is_sink()))
+        {
+          --i;
+          --count;
+          continue;
+        }
+
       // There is nothing useful we can output for constants which
       // have ideal or non-integral type.
       if (no->is_const())
@@ -828,14 +837,6 @@ Gogo::write_globals()
 	      continue;
 	    }
 	}
-
-      // Skip blank named functions.
-      if (no->is_function() && no->func_value()->is_sink())
-        {
-          --i;
-          --count;
-          continue;
-        }
 
       if (!no->is_variable())
 	{
