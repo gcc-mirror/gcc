@@ -2684,9 +2684,6 @@ ipa_propagate_indirect_call_infos (struct cgraph_edge *cs,
   propagate_controlled_uses (cs);
   changed = propagate_info_to_inlined_callees (cs, cs->callee, new_edges);
 
-  /* We do not keep jump functions of inlined edges up to date. Better to free
-     them so we do not access them accidentally.  */
-  ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
   return changed;
 }
 
@@ -2816,9 +2813,12 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	      dst_rdesc
 		= (struct ipa_cst_ref_desc *) pool_alloc (ipa_refdesc_pool);
 	      dst_rdesc->cs = dst;
-	      dst_rdesc->next_duplicate = src_rdesc->next_duplicate;
-	      src_rdesc->next_duplicate = dst_rdesc;
 	      dst_rdesc->refcount = src_rdesc->refcount;
+	      if (dst->caller->global.inlined_to)
+		{
+		  dst_rdesc->next_duplicate = src_rdesc->next_duplicate;
+		  src_rdesc->next_duplicate = dst_rdesc;
+		}
 	      dst_jf->value.constant.rdesc = dst_rdesc;
 	    }
 	  else
@@ -2833,13 +2833,10 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	      for (dst_rdesc = src_rdesc->next_duplicate;
 		   dst_rdesc;
 		   dst_rdesc = dst_rdesc->next_duplicate)
-		{
-		  gcc_assert (dst_rdesc->cs->caller->global.inlined_to);
-		  if (dst_rdesc->cs->caller->global.inlined_to
-		      == dst->caller->global.inlined_to)
-		    break;
-		}
-
+		if (dst_rdesc->cs->caller->global.inlined_to
+		    == dst->caller->global.inlined_to)
+		  break;
+	      gcc_assert (dst_rdesc);
 	      dst_jf->value.constant.rdesc = dst_rdesc;
 	    }
 	}

@@ -715,7 +715,7 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					unsigned, gcov_type, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 					int, bool, vec<cgraph_edge_p>,
-					bool);
+					bool, struct cgraph_node *);
 tree clone_function_name (tree decl, const char *);
 struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 			                          vec<cgraph_edge_p>,

@@ -1,3 +1,16 @@
+2013-06-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57539
+	* cgraphclones.c (cgraph_clone_node): Add parameter new_inlined_to, set
+	global.inlined_to of the new node to it.  All callers changed.
+	* ipa-inline-transform.c (clone_inlined_nodes): New variable
+	inlining_into, pass it to cgraph_clone_node.
+	* ipa-prop.c (ipa_propagate_indirect_call_infos): Do not call
+	ipa_free_edge_args_substructures.
+	(ipa_edge_duplication_hook): Only add edges from inlined nodes to
+	rdesc linked list.  Do not assert rdesc edges have inlined caller.
+	Assert we have found an rdesc in the rdesc list.
+
 2013-06-24  Richard Biener  <rguenther@suse.de>
 
 	* pointer-set.h (struct pointer_set_t): Move here from
