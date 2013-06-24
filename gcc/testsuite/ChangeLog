@@ -1,3 +1,9 @@
+2013-06-24  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/altivec-consts.c: Correct for little-endian.
+	Add scan-assembler-not "lvx".
+	* gcc.target/powerpc/le-altivec-consts.c: New.
+
 2013-06-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
