@@ -1,5 +1,10 @@
 2013-06-24  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/57686
+	* gcc.dg/torture/pr57584.c: Remove target specific bits.
+
+2013-06-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57488
 	* gcc.dg/torture/pr57488.c: New testcase.
 
