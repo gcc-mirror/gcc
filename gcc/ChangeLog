@@ -1,5 +1,40 @@
 2013-06-24  Richard Biener  <rguenther@suse.de>
 
+	* pointer-set.h (struct pointer_set_t): Move here from
+	pointer-set.c.
+	(pointer_set_lookup): Declare.
+	(class pointer_map): New template class implementing a
+	generic pointer to T map.
+	(pointer_map<T>::pointer_map, pointer_map<T>::~pointer_map,
+	pointer_map<T>::contains, pointer_map<T>::insert,
+	pointer_map<T>::traverse): New functions.
+	* pointer-set.c (struct pointer_set_t): Moved to pointer-set.h.
+	(pointer_set_lookup): New function.
+	(pointer_set_contains): Use pointer_set_lookup.
+	(pointer_set_insert): Likewise.
+	(insert_aux): Remove.
+	(struct pointer_map_t): Embed a pointer_set_t.
+	(pointer_map_create): Adjust.
+	(pointer_map_destroy): Likewise.
+	(pointer_map_contains): Likewise.
+	(pointer_map_insert): Likewise.
+	(pointer_map_traverse): Likewise.
+	* tree-streamer.h (struct streamer_tree_cache_d): Use a
+	pointer_map<unsigned> instead of a pointer_map_t.
+	* tree-streamer.c (streamer_tree_cache_insert_1): Adjust.
+	(streamer_tree_cache_lookup): Likewise.
+	(streamer_tree_cache_create): Likewise.
+	(streamer_tree_cache_delete): Likewise.
+	* lto-streamer.h (struct lto_tree_ref_encoder): Use a
+	pointer_map<unsigned> instead of a pointer_map_t.
+	(lto_init_tree_ref_encoder): Adjust.
+	(lto_destroy_tree_ref_encoder): Likewise.
+	* lto-section-out.c (lto_output_decl_index): Likewise.
+	(lto_record_function_out_decl_state): Likewise.
+	* dominance.c (iterate_fix_dominators): Use pointer_map<int>.
+
+2013-06-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57488
 	* tree-ssa-pre.c (insert): Clear NEW sets before each iteration.
 

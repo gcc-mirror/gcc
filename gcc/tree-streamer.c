@@ -128,30 +128,27 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
 			      tree t, hashval_t hash, unsigned *ix_p,
 			      bool insert_at_next_slot_p)
 {
-  void **slot;
+  unsigned *slot;
   unsigned ix;
   bool existed_p;
 
   gcc_assert (t);
 
-  slot = pointer_map_insert (cache->node_map, t);
-  if (!*slot)
+  slot = cache->node_map->insert (t, &existed_p);
+  if (!existed_p)
     {
       /* Determine the next slot to use in the cache.  */
       if (insert_at_next_slot_p)
 	ix = cache->nodes.length ();
       else
 	ix = *ix_p;
-       *slot = (void *)(size_t) (ix + 1);
+       *slot = ix;
 
       streamer_tree_cache_add_to_node_array (cache, ix, t, hash);
-
-      /* Indicate that the item was not present in the cache.  */
-      existed_p = false;
     }
   else
     {
-      ix = (size_t) *slot - 1;
+      ix = *slot;
 
       if (!insert_at_next_slot_p && ix != *ix_p)
 	{
@@ -160,11 +157,8 @@ streamer_tree_cache_insert_1 (struct streamer_tree_cache_d *cache,
 	     the requested location slot.  */
 	  ix = *ix_p;
 	  streamer_tree_cache_add_to_node_array (cache, ix, t, hash);
-	  *slot = (void *)(size_t) (ix + 1);
+	  *slot = ix;
 	}
-
-      /* Indicate that T was already in the cache.  */
-      existed_p = true;
     }
 
   if (ix_p)
@@ -225,13 +219,13 @@ bool
 streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
 			    unsigned *ix_p)
 {
-  void **slot;
+  unsigned *slot;
   bool retval;
   unsigned ix;
 
   gcc_assert (t);
 
-  slot = pointer_map_contains  (cache->node_map, t);
+  slot = cache->node_map->contains (t);
   if (slot == NULL)
     {
       retval = false;
@@ -240,7 +234,7 @@ streamer_tree_cache_lookup (struct streamer_tree_cache_d *cache, tree t,
   else
     {
       retval = true;
-      ix = (size_t) *slot - 1;
+      ix = *slot;
     }
 
   if (ix_p)
@@ -332,7 +326,7 @@ streamer_tree_cache_create (bool with_hashes, bool with_map)
   cache = XCNEW (struct streamer_tree_cache_d);
 
   if (with_map)
-    cache->node_map = pointer_map_create ();
+    cache->node_map = new pointer_map<unsigned>;
   cache->nodes.create (165);
   if (with_hashes)
     cache->hashes.create (165);
@@ -355,7 +349,7 @@ streamer_tree_cache_delete (struct streamer_tree_cache_d *c)
     return;
 
   if (c->node_map)
-    pointer_map_destroy (c->node_map);
+    delete c->node_map;
   c->nodes.release ();
   c->hashes.release ();
   free (c);
