@@ -405,6 +405,12 @@
 /* fp_enable is present */
 #undef HAVE_FP_ENABLE
 
+/* Define to 1 if the system has the type `fp_except'. */
+#undef HAVE_FP_EXCEPT
+
+/* Define to 1 if the system has the type `fp_except_t'. */
+#undef HAVE_FP_EXCEPT_T
+
 /* fp_trap is present */
 #undef HAVE_FP_TRAP
 
