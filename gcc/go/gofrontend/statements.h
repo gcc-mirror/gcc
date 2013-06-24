@@ -207,6 +207,13 @@ class Statement
   static Return_statement*
   make_return_statement(Expression_list*, Location);
 
+  // Make a statement that returns the result of a call expression.
+  // If the call does not return any results, this just returns the
+  // call expression as a statement, assuming that the function will
+  // end immediately afterward.
+  static Statement*
+  make_return_from_call(Call_expression*, Location);
+
   // Make a break statement.
   static Statement*
   make_break_statement(Unnamed_label* label, Location);
