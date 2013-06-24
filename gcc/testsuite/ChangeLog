@@ -1,3 +1,9 @@
+2013-06-24  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/altivec-consts.c: Correct for little-endian.
+	Add scan-assembler-not "lvx".
+	* gcc.target/powerpc/le-altivec-consts.c: New.
+
 2013-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/sfinae47.C: New.
