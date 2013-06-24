@@ -1,3 +1,199 @@
+2013-06-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/52413
+	* gfortran.dg/fraction.f90: New.
+
+2013-06-24  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/altivec-consts.c: Correct for little-endian.
+	Add scan-assembler-not "lvx".
+	* gcc.target/powerpc/le-altivec-consts.c: New.
+
+2013-06-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/sfinae47.C: New.
+
+2013-06-23  Oleg Endo <olegendo@gcc.gnu.org>
+
+	PR target/52483
+	* gcc.target/sh/pr52483-1.c: New.
+	* gcc.target/sh/pr52483-2.c: New.
+	* gcc.target/sh/pr52483-3.c: New.
+	* gcc.target/sh/pr52483-4.c: New.
+	* gcc.target/sh/pr52483-5.c: New.
+
+2013-06-23  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/i386/intrinsics_1.c: New test.
+	* gcc.target/i386/intrinsics_2.c: Ditto.
+	* gcc.target/i386/intrinsics_3.c: Ditto.
+	* gcc.target/i386/intrinsics_4.c: Ditto.
+	* gcc.target/i386/intrinsics_5.c: Ditto.
+	* gcc.target/i386/intrinsics_6.c: Ditto.
+	* gcc.target/i386/avx-1.c: Provide macros for builtins
+	needing immediate arguments in f16cintrin.h and rtmintrin.h.
+
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/finalize_17.f90: New.
+
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/realloc_on_assign_18.f90: New.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.
+	Also changed the returns from error as distinct values so that debugging
+	can get easier.
+	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): Made certain
+	errors specific to C, if necessary.  Also added new error hooks for C++.
+	* c-c++-common/cilk-plus/AN/misc.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors2.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors3.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/pr57541.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): In addition to the
+	same changes as parser_errors3.c, spaces were added between colons to
+	not confuse C++ compiler with 2 colons as scope.
+	* c-c++-common/cilk-plus/AN/vla.c: Make this test C specific.
+	* g++.dg/cilk-plus/AN/array_test1_tplt.cc: New test.
+	* g++.dg/cilk-plus/AN/array_test2_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/AN/array_test_ND_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/AN/braced_list.cc: Likewise.
+	* g++.dg/cilk-plus/AN/builtin_fn_custom_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/AN/builtin_fn_mutating_tplt.cc: Likewise.
+	* g++.dg/cilk-plus/AN/fp_triplet_values_tplt.c: Likewise.
+	* g++.dg/cilk-plus/AN/preincr_test.cc: Likewise.
+	* g++.dg/cilk-plus/AN/postincr_test.cc: Likewise.
+	* g++.dg/cilk-plus/cilk-plus.exp: New script.
+	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests in the list.
+	
+2013-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/53317
+	* gcc.dg/torture/fp-int-convert-float128-timode-2.c: New test.
+
+2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57655
+	* gcc.target/i386/pr57655.c: New test.
+
+2013-06-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ada/acats/tests/gcc: Delete.
+	* gnat.dg/style: Likewise.
+
+2013-06-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/57660
+	* gcc.dg/tree-ssa/forwprop-28.c: Don't run test on various targets
+	based on their branch cost.
+
+	* gcc.dg/tree-ssa/forwprop-28.c: Add missing dg-final.
+
+2013-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57633
+	* gfortran.dg/list_read_11.f90: New.
+
+2013-06-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57584
+	* gcc.dg/torture/pr57584.c: New testcase.
+
+2013-06-19    <singhai@google.com>
+
+	* g++.dg/gcov/gcov-8.C: New testcase.
+	* lib/gcov.exp: Handle intermediate format.
+
+2013-06-19  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/57518
+	* testsuite/gcc.dg/pr57518.c: New test.
+
+2013-06-19  Igor Zamyatin  <igor.zamyatin@intel.com>
+
+	* gcc.dg/tree-ssa/loop-19.c: Add -fno-common.
+
+2013-06-19  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias-2.c: New testcase.
+
+2013-06-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/builtin_fn_custom.c: Replaced all the
+	hard-coded values of array sizes with a #define.
+	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c: Likewise.
+	* c-c++-common/cilk-plus/AN/builtin_func_double2.c: Likewise.
+	* c-c++-common/cilk-plus/AN/gather_scatter.c: Likewise.
+	* c-c++-common/cilk-plus/AN/pr57577.c: Likewise.
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c: Likewise.
+
+2013-06-19  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: set
+	STACK_ARGUMENTS_SIZE with 0 if __aarch64__ is defined.
+
+2013-06-19  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-28.c: New test.
+
+2013-06-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/57638
+	* g++.dg/template/error53.C: New.
+
+2013-06-19  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	PR target/55033
+	* gcc.target/powerpc/pr55033.c: Fix options.
+
+2013-06-18  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/i386/inline_error.c: New test.
+	* gcc.c-torture/compile/pr44043.c: Fix test to expect an error.
+	* gcc.c-torture/compile/pr43791.c: Fix test to expect an error.
+
+2013-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53211
+	* g++.dg/cpp0x/decltype55.C: New.
+
+2013-06-18  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/c90-fordecl-1.c: Adjust expected message.
+
+2013-06-17  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/sec_reduce_ind_same_value.c: New test.
+
+2013-06-17  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.
+	Also changed the returns from error as distinct values so that it is
+	easier to debug.
+
+2013-06-17  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c: Update.
+
+2013-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/16128
+	* g++.dg/template/error52.C: New.
+	* g++.dg/lookup/friend15.C: Update.
+	* g++.dg/parse/error11.C: Likewise.
+	* g++.dg/parse/error14.C: Likewise.
+	* g++.dg/parse/parser-pr28152-2.C: Likewise.
+	* g++.dg/parse/template25.C: Likewise.
+	* g++.old-deja/g++.jason/cond.C: Likewise.
+	* g++.old-deja/g++.mike/for2.C: Likewise.
+	* g++.old-deja/g++.robertl/eb125.C: Likewise.
+	* obj-c++.dg/property/dotsyntax-4.mm: Likewise.
+
 2013-06-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/unaligned-memcpy-2.c (dest): Initialize to
@@ -5,7 +201,7 @@
 
 2013-06-16  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
-	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of 
+	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of
 	accidentally placing minus sign for length instead of stride.
 
 2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
@@ -2212,7 +2408,6 @@
 
 	* gcc.target/aarch64/negs.c: New.
 
->>>>>>> trunk
 2013-04-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/56895

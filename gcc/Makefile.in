@@ -967,7 +967,7 @@ LRA_INT_H = lra.h $(BITMAP_H) $(RECOG_H) $(INSN_ATTR_H) insn-codes.h \
 DBGCNT_H = dbgcnt.h dbgcnt.def
 LTO_STREAMER_H = lto-streamer.h $(LINKER_PLUGIN_API_H) $(TARGET_H) \
 		$(CGRAPH_H) $(VEC_H) $(HASH_TABLE_H) $(TREE_H) $(GIMPLE_H) \
-		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h
+		$(GCOV_IO_H) $(DIAGNOSTIC_H) alloc-pool.h pointer-set.h
 DATA_STREAMER_H = data-streamer.h $(VEC_H) $(LTO_STREAMER_H)
 GIMPLE_STREAMER_H = gimple-streamer.h $(LTO_STREAMER_H) $(BASIC_BLOCK_H) \
 		    $(FUNCTION_H)
@@ -2906,7 +2906,7 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_FLOW_H) $(TREE_PASS_H) debug.h $(DIAGNOSTIC_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(IPA_PROP_H) \
    gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
-   $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(IPA_UTILS_H) \
+   $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(IPA_UTILS_H) $(CFGLOOP_H) \
    $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H) $(GCC_PLUGIN_H) plugin.h
 cgraphclones.o : cgraphclones.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \

@@ -766,10 +766,9 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       symtab_node node = lto_symtab_encoder_deref (encoder, i);
       if (varpool_node *vnode = dyn_cast <varpool_node> (node))
 	{
-	  if (DECL_INITIAL (vnode->symbol.decl)
-	      && !lto_symtab_encoder_encode_initializer_p (encoder,
-							   vnode)
-	      && const_value_known_p (vnode->symbol.decl))
+	  if (!lto_symtab_encoder_encode_initializer_p (encoder,
+							vnode)
+	      && ctor_for_folding (vnode->symbol.decl) != error_mark_node)
 	    {
 	      lto_set_symtab_encoder_encode_initializer (encoder, vnode);
 	      add_references (encoder, &vnode->symbol.ref_list);
@@ -1451,8 +1450,6 @@ input_symtab (void)
   struct lto_file_decl_data *file_data;
   unsigned int j = 0;
   struct cgraph_node *node;
-
-  cgraph_state = CGRAPH_STATE_IPA_SSA;
 
   while ((file_data = file_data_vec[j++]))
     {

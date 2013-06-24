@@ -97,7 +97,8 @@ lto_varpool_replace_node (struct varpool_node *vnode,
   ipa_clone_referring ((symtab_node)prevailing_node, &vnode->symbol.ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
-  if (DECL_INITIAL (vnode->symbol.decl))
+  if (DECL_INITIAL (vnode->symbol.decl)
+      && vnode->symbol.decl != prevailing_node->symbol.decl)
     DECL_INITIAL (vnode->symbol.decl) = error_mark_node;
   /* Finally remove the replaced node.  */
   varpool_remove_node (vnode);
@@ -521,19 +522,9 @@ lto_symtab_merge_decls (void)
   symtab_initialize_asm_name_hash ();
 
   FOR_EACH_SYMBOL (node)
-    if (lto_symtab_symbol_p (node)
+    if (!node->symbol.previous_sharing_asm_name
 	&& node->symbol.next_sharing_asm_name)
-      {
-        symtab_node n;
-
-	/* To avoid duplicated work, see if this is first real symbol in the
-	   chain.  */
-	for (n = node->symbol.previous_sharing_asm_name;
-	     n && !lto_symtab_symbol_p (n); n = n->symbol.previous_sharing_asm_name)
-	  ;
-	if (!n)
-          lto_symtab_merge_decls_1 (node);
-      }
+      lto_symtab_merge_decls_1 (node);
 }
 
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */

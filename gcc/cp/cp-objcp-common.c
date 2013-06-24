@@ -321,6 +321,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (USING_STMT);
   MARK_TS_TYPED (LAMBDA_EXPR);
   MARK_TS_TYPED (CTOR_INITIALIZER);
+  MARK_TS_TYPED (ARRAY_NOTATION_REF);
 }
 
 #include "gt-cp-cp-objcp-common.h"

@@ -1298,8 +1298,8 @@ Type::make_type_descriptor_var(Gogo* gogo)
   // converting INITIALIZER.
 
   this->type_descriptor_var_ =
-    gogo->backend()->immutable_struct(var_name, is_common, initializer_btype,
-				      loc);
+    gogo->backend()->immutable_struct(var_name, false, is_common,
+				      initializer_btype, loc);
   if (phash != NULL)
     *phash = this->type_descriptor_var_;
 
@@ -1308,7 +1308,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
   Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
 
   gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
-					     var_name, is_common,
+					     var_name, false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
 }
@@ -1528,26 +1528,6 @@ Type::make_type_descriptor_type()
 
       // The type descriptor type.
 
-      Typed_identifier_list* params = new Typed_identifier_list();
-      params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
-
-      Typed_identifier_list* results = new Typed_identifier_list();
-      results->push_back(Typed_identifier("", uintptr_type, bloc));
-
-      Type* hashfn_type = Type::make_function_type(NULL, params, results, bloc);
-
-      params = new Typed_identifier_list();
-      params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
-
-      results = new Typed_identifier_list();
-      results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
-
-      Type* equalfn_type = Type::make_function_type(NULL, params, results,
-						    bloc);
-
       Struct_type* type_descriptor_type =
 	Type::make_builtin_struct_type(10,
 				       "Kind", uint8_type,
@@ -1555,8 +1535,8 @@ Type::make_type_descriptor_type()
 				       "fieldAlign", uint8_type,
 				       "size", uintptr_type,
 				       "hash", uint32_type,
-				       "hashfn", hashfn_type,
-				       "equalfn", equalfn_type,
+				       "hashfn", uintptr_type,
+				       "equalfn", uintptr_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
@@ -1946,8 +1926,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Named_object* equal_fn;
   this->type_functions(gogo, name, hash_fntype, equal_fntype, &hash_fn,
 		       &equal_fn);
-  vals->push_back(Expression::make_func_reference(hash_fn, NULL, bloc));
-  vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
+  vals->push_back(Expression::make_func_code_reference(hash_fn, bloc));
+  vals->push_back(Expression::make_func_code_reference(equal_fn, bloc));
 
   ++p;
   go_assert(p->is_field_name("string"));
@@ -2207,7 +2187,7 @@ Type::method_constructor(Gogo*, Type* method_type,
 
   ++p;
   go_assert(p->is_field_name("tfn"));
-  vals->push_back(Expression::make_func_reference(no, NULL, bloc));
+  vals->push_back(Expression::make_func_code_reference(no, bloc));
 
   ++p;
   go_assert(p == fields->end());
@@ -3407,6 +3387,18 @@ Function_type::do_hash_for_method(Gogo* gogo) const
 Btype*
 Function_type::do_get_backend(Gogo* gogo)
 {
+  // When we do anything with a function value other than call it, it
+  // is represented as a pointer to a struct whose first field is the
+  // actual function.  So that is what we return as the type of a Go
+  // function.  The function stored in the first field always that
+  // takes one additional trailing argument: the closure pointer.  For
+  // a top-level function, this additional argument will only be
+  // passed when invoking the function indirectly, via the struct.
+
+  Location loc = this->location();
+  Btype* struct_type = gogo->backend()->placeholder_struct_type("", loc);
+  Btype* ptr_struct_type = gogo->backend()->pointer_type(struct_type);
+
   Backend::Btyped_identifier breceiver;
   if (this->receiver_ != NULL)
     {
@@ -3422,9 +3414,15 @@ Function_type::do_get_backend(Gogo* gogo)
     }
 
   std::vector<Backend::Btyped_identifier> bparameters;
-  if (this->parameters_ != NULL)
+  size_t last;
+  if (this->parameters_ == NULL)
     {
-      bparameters.resize(this->parameters_->size());
+      bparameters.resize(1);
+      last = 0;
+    }
+  else
+    {
+      bparameters.resize(this->parameters_->size() + 1);
       size_t i = 0;
       for (Typed_identifier_list::const_iterator p = this->parameters_->begin();
 	   p != this->parameters_->end();
@@ -3434,8 +3432,12 @@ Function_type::do_get_backend(Gogo* gogo)
 	  bparameters[i].btype = p->type()->get_backend(gogo);
 	  bparameters[i].location = p->location();
 	}
-      go_assert(i == bparameters.size());
+      last = i;
     }
+  go_assert(last + 1 == bparameters.size());
+  bparameters[last].name = "$closure";
+  bparameters[last].btype = ptr_struct_type;
+  bparameters[last].location = loc;
 
   std::vector<Backend::Btyped_identifier> bresults;
   if (this->results_ != NULL)
@@ -3453,8 +3455,15 @@ Function_type::do_get_backend(Gogo* gogo)
       go_assert(i == bresults.size());
     }
 
-  return gogo->backend()->function_type(breceiver, bparameters, bresults,
-					this->location());
+  Btype* fntype = gogo->backend()->function_type(breceiver, bparameters,
+						 bresults, loc);
+  std::vector<Backend::Btyped_identifier> fields(1);
+  fields[0].name = "code";
+  fields[0].btype = fntype;
+  fields[0].location = loc;
+  if (!gogo->backend()->set_placeholder_struct_type(struct_type, fields))
+    return gogo->backend()->error_type();
+  return ptr_struct_type;
 }
 
 // The type of a function type descriptor.
@@ -6228,7 +6237,8 @@ Map_type::map_descriptor(Gogo* gogo)
 
   std::string mangled_name = "__go_map_" + this->mangled_name(gogo);
   Btype* map_descriptor_btype = map_descriptor_type->get_backend(gogo);
-  Bvariable* bvar = gogo->backend()->immutable_struct(mangled_name, true,
+  Bvariable* bvar = gogo->backend()->immutable_struct(mangled_name, false,
+						      true,
 						      map_descriptor_btype,
 						      bloc);
 
@@ -6236,7 +6246,7 @@ Map_type::map_descriptor(Gogo* gogo)
   context.set_is_const();
   Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
 
-  gogo->backend()->immutable_struct_set_init(bvar, mangled_name, true,
+  gogo->backend()->immutable_struct_set_init(bvar, mangled_name, false, true,
 					     map_descriptor_btype, bloc,
 					     binitializer);
 

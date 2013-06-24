@@ -15,6 +15,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
 load_lib libitm-dg.exp
+load_gcc_lib gcc-dg.exp
 
 global shlib_ext
 

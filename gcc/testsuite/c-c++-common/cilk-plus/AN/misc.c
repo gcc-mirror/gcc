@@ -73,13 +73,13 @@ int main (void)
   while (ii != array2[1:x:3][1:2:1]) /* { dg-error "array notations cannot be used as a condition for while statement"  } */
     x = 2;
 
-  do { /* { dg-error "array notations cannot be used as a condition for a do-while statement" } */
+  do { /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c } } */
     x = 3;
-  } while (ii != array2[:][:]); 
+  } while (ii != array2[:][:]); /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c++ } } */
 
-  do {  /* { dg-error "array notations cannot be used as a condition for a do-while statement" } */
+  do {  /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c } } */
     x = 2;
-  } while (ii != (x + array2[:][1:x:2]) + 2);
+  } while (ii != (x + array2[:][1:x:2]) + 2); /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c++ } } */
   
   do { 
     x += 3;

@@ -1870,6 +1870,52 @@ hoist_conversion_for_bitop_p (tree to, tree from)
   return false;
 }
 
+/* GSI points to a statement of the form
+
+   result = OP0 CODE OP1
+
+   Where OP0 and OP1 are single bit SSA_NAMEs and CODE is either
+   BIT_AND_EXPR or BIT_IOR_EXPR.
+
+   If OP0 is fed by a bitwise negation of another single bit SSA_NAME,
+   then we can simplify the two statements into a single LT_EXPR or LE_EXPR
+   when code is BIT_AND_EXPR and BIT_IOR_EXPR respectively.
+
+   If a simplification is made, return TRUE, else return FALSE.  */
+static bool
+simplify_bitwise_binary_boolean (gimple_stmt_iterator *gsi,
+				 enum tree_code code,
+				 tree op0, tree op1)
+{
+  gimple op0_def_stmt = SSA_NAME_DEF_STMT (op0);
+
+  if (!is_gimple_assign (op0_def_stmt)
+      || (gimple_assign_rhs_code (op0_def_stmt) != BIT_NOT_EXPR))
+    return false;
+
+  tree x = gimple_assign_rhs1 (op0_def_stmt);
+  if (TREE_CODE (x) == SSA_NAME
+      && INTEGRAL_TYPE_P (TREE_TYPE (x))
+      && TYPE_PRECISION (TREE_TYPE (x)) == 1
+      && TYPE_UNSIGNED (TREE_TYPE (x)) == TYPE_UNSIGNED (TREE_TYPE (op1)))
+    {
+      enum tree_code newcode;
+
+      gimple stmt = gsi_stmt (*gsi);
+      gimple_assign_set_rhs1 (stmt, x);
+      gimple_assign_set_rhs2 (stmt, op1);
+      if (code == BIT_AND_EXPR)
+	newcode = TYPE_UNSIGNED (TREE_TYPE (x)) ? LT_EXPR : GT_EXPR;
+      else
+	newcode = TYPE_UNSIGNED (TREE_TYPE (x)) ? LE_EXPR : GE_EXPR;
+      gimple_assign_set_rhs_code (stmt, newcode); 
+      update_stmt (stmt);
+      return true;
+    }
+  return false;
+
+}
+
 /* Simplify bitwise binary operations.
    Return true if a transformation applied, otherwise return false.  */
 
@@ -2117,8 +2163,44 @@ simplify_bitwise_binary (gimple_stmt_iterator *gsi)
 	      return true;
 	    }
 	}
-    }
 
+      /* If arg1 and arg2 are booleans (or any single bit type)
+         then try to simplify:
+
+	   (~X & Y) -> X < Y
+	   (X & ~Y) -> Y < X
+	   (~X | Y) -> X <= Y
+	   (X | ~Y) -> Y <= X 
+
+	  But only do this if our result feeds into a comparison as
+	  this transformation is not always a win, particularly on
+	  targets with and-not instructions.  */
+      if (TREE_CODE (arg1) == SSA_NAME
+	  && TREE_CODE (arg2) == SSA_NAME
+	  && INTEGRAL_TYPE_P (TREE_TYPE (arg1))
+	  && TYPE_PRECISION (TREE_TYPE (arg1)) == 1
+	  && TYPE_PRECISION (TREE_TYPE (arg2)) == 1
+	  && (TYPE_UNSIGNED (TREE_TYPE (arg1))
+	      == TYPE_UNSIGNED (TREE_TYPE (arg2))))
+	{
+	  use_operand_p use_p;
+          gimple use_stmt;
+
+	  if (single_imm_use (gimple_assign_lhs (stmt), &use_p, &use_stmt))
+	    {
+	      if (gimple_code (use_stmt) == GIMPLE_COND
+		  && gimple_cond_lhs (use_stmt) == gimple_assign_lhs (stmt)
+		  && integer_zerop (gimple_cond_rhs (use_stmt))
+		  && gimple_cond_code (use_stmt) == NE_EXPR)
+		{
+	          if (simplify_bitwise_binary_boolean (gsi, code, arg1, arg2))
+		    return true;
+	          if (simplify_bitwise_binary_boolean (gsi, code, arg2, arg1))
+		    return true;
+		}
+	    }
+	}
+    }
   return false;
 }
 

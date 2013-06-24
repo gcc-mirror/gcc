@@ -15,6 +15,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #endif
 
 #define _FP_KEEPNANFRACP	1
+#define _FP_QNANNEGATEDP 0
 
 #define _FP_NANSIGN_S		1
 #define _FP_NANSIGN_D		1

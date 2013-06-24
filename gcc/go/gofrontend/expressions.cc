@@ -1255,17 +1255,16 @@ Func_expression::do_type()
     go_unreachable();
 }
 
-// Get the tree for a function expression without evaluating the
-// closure.
+// Get the tree for the code of a function expression.
 
 tree
-Func_expression::get_tree_without_closure(Gogo* gogo)
+Func_expression::get_code_pointer(Gogo* gogo, Named_object* no, Location loc)
 {
   Function_type* fntype;
-  if (this->function_->is_function())
-    fntype = this->function_->func_value()->type();
-  else if (this->function_->is_function_declaration())
-    fntype = this->function_->func_declaration_value()->type();
+  if (no->is_function())
+    fntype = no->func_value()->type();
+  else if (no->is_function_declaration())
+    fntype = no->func_declaration_value()->type();
   else
     go_unreachable();
 
@@ -1273,13 +1272,11 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
   // can't take their address.
   if (fntype->is_builtin())
     {
-      error_at(this->location(),
+      error_at(loc,
 	       "invalid use of special builtin function %qs; must be called",
-	       this->function_->name().c_str());
+	       no->message_name().c_str());
       return error_mark_node;
     }
-
-  Named_object* no = this->function_;
 
   tree id = no->get_id(gogo);
   if (id == error_mark_node)
@@ -1296,46 +1293,55 @@ Func_expression::get_tree_without_closure(Gogo* gogo)
   if (fndecl == error_mark_node)
     return error_mark_node;
 
-  return build_fold_addr_expr_loc(this->location().gcc_location(), fndecl);
+  return build_fold_addr_expr_loc(loc.gcc_location(), fndecl);
 }
 
 // Get the tree for a function expression.  This is used when we take
-// the address of a function rather than simply calling it.  If the
-// function has a closure, we must use a trampoline.
+// the address of a function rather than simply calling it.  A func
+// value is represented as a pointer to a block of memory.  The first
+// word of that memory is a pointer to the function code.  The
+// remaining parts of that memory are the addresses of variables that
+// the function closes over.
 
 tree
 Func_expression::do_get_tree(Translate_context* context)
 {
-  Gogo* gogo = context->gogo();
-
-  tree fnaddr = this->get_tree_without_closure(gogo);
-  if (fnaddr == error_mark_node)
-    return error_mark_node;
-
-  go_assert(TREE_CODE(fnaddr) == ADDR_EXPR
-	     && TREE_CODE(TREE_OPERAND(fnaddr, 0)) == FUNCTION_DECL);
-  TREE_ADDRESSABLE(TREE_OPERAND(fnaddr, 0)) = 1;
-
-  // If there is no closure, that is all have to do.
+  // If there is no closure, just use the function descriptor.
   if (this->closure_ == NULL)
-    return fnaddr;
+    {
+      Gogo* gogo = context->gogo();
+      Named_object* no = this->function_;
+      Expression* descriptor;
+      if (no->is_function())
+	descriptor = no->func_value()->descriptor(gogo, no);
+      else if (no->is_function_declaration())
+	{
+	  if (no->func_declaration_value()->type()->is_builtin())
+	    {
+	      error_at(this->location(),
+		       ("invalid use of special builtin function %qs; "
+			"must be called"),
+		       no->message_name().c_str());
+	      return error_mark_node;
+	    }
+	  descriptor = no->func_declaration_value()->descriptor(gogo, no);
+	}
+      else
+	go_unreachable();
+
+      tree dtree = descriptor->get_tree(context);
+      if (dtree == error_mark_node)
+	return error_mark_node;
+      return build_fold_addr_expr_loc(this->location().gcc_location(), dtree);
+    }
 
   go_assert(this->function_->func_value()->enclosing() != NULL);
 
-  // Get the value of the closure.  This will be a pointer to space
-  // allocated on the heap.
-  tree closure_tree = this->closure_->get_tree(context);
-  if (closure_tree == error_mark_node)
-    return error_mark_node;
-  go_assert(POINTER_TYPE_P(TREE_TYPE(closure_tree)));
-
-  // Now we need to build some code on the heap.  This code will load
-  // the static chain pointer with the closure and then jump to the
-  // body of the function.  The normal gcc approach is to build the
-  // code on the stack.  Unfortunately we can not do that, as Go
-  // permits us to return the function pointer.
-
-  return gogo->make_trampoline(fnaddr, closure_tree, this->location());
+  // If there is a closure, then the closure is itself the function
+  // expression.  It is a pointer to a struct whose first field points
+  // to the function code and whose remaining fields are the addresses
+  // of the closed-over variables.
+  return this->closure_->get_tree(context);
 }
 
 // Ast dump for function.
@@ -1359,6 +1365,197 @@ Expression::make_func_reference(Named_object* function, Expression* closure,
 				Location location)
 {
   return new Func_expression(function, closure, location);
+}
+
+// Class Func_descriptor_expression.
+
+// Constructor.
+
+Func_descriptor_expression::Func_descriptor_expression(Named_object* fn)
+  : Expression(EXPRESSION_FUNC_DESCRIPTOR, fn->location()),
+    fn_(fn), dfn_(NULL), dvar_(NULL)
+{
+  go_assert(!fn->is_function() || !fn->func_value()->needs_closure());
+}
+
+// Traversal.
+
+int
+Func_descriptor_expression::do_traverse(Traverse*)
+{
+  return TRAVERSE_CONTINUE;
+}
+
+// All function descriptors have the same type.
+
+Type* Func_descriptor_expression::descriptor_type;
+
+void
+Func_descriptor_expression::make_func_descriptor_type()
+{
+  if (Func_descriptor_expression::descriptor_type != NULL)
+    return;
+  Type* uintptr_type = Type::lookup_integer_type("uintptr");
+  Type* struct_type = Type::make_builtin_struct_type(1, "code", uintptr_type);
+  Func_descriptor_expression::descriptor_type =
+    Type::make_builtin_named_type("functionDescriptor", struct_type);
+}
+
+Type*
+Func_descriptor_expression::do_type()
+{
+  Func_descriptor_expression::make_func_descriptor_type();
+  return Func_descriptor_expression::descriptor_type;
+}
+
+// Copy a Func_descriptor_expression;
+
+Expression*
+Func_descriptor_expression::do_copy()
+{
+  Func_descriptor_expression* fde =
+    Expression::make_func_descriptor(this->fn_);
+  if (this->dfn_ != NULL)
+    fde->set_descriptor_wrapper(this->dfn_);
+  return fde;
+}
+
+// The tree for a function descriptor.
+
+tree
+Func_descriptor_expression::do_get_tree(Translate_context* context)
+{
+  if (this->dvar_ != NULL)
+    return var_to_tree(this->dvar_);
+
+  Gogo* gogo = context->gogo();
+  Named_object* no = this->fn_;
+  Location loc = no->location();
+
+  std::string var_name;
+  if (no->package() == NULL)
+    var_name = gogo->pkgpath_symbol();
+  else
+    var_name = no->package()->pkgpath_symbol();
+  var_name.push_back('.');
+  var_name.append(Gogo::unpack_hidden_name(no->name()));
+  var_name.append("$descriptor");
+
+  Btype* btype = this->type()->get_backend(gogo);
+
+  Bvariable* bvar;
+  if (no->package() != NULL
+      || Linemap::is_predeclared_location(no->location()))
+    {
+      bvar = context->backend()->immutable_struct_reference(var_name, btype,
+							    loc);
+      go_assert(this->dfn_ == NULL);
+    }
+  else
+    {
+      Location bloc = Linemap::predeclared_location();
+      bool is_hidden = ((no->is_function()
+			 && no->func_value()->enclosing() != NULL)
+			|| Gogo::is_thunk(no));
+      bvar = context->backend()->immutable_struct(var_name, is_hidden, false,
+						  btype, bloc);
+      Expression_list* vals = new Expression_list();
+      go_assert(this->dfn_ != NULL);
+      vals->push_back(Expression::make_func_code_reference(this->dfn_, bloc));
+      Expression* init =
+	Expression::make_struct_composite_literal(this->type(), vals, bloc);
+      Translate_context bcontext(gogo, NULL, NULL, NULL);
+      bcontext.set_is_const();
+      Bexpression* binit = tree_to_expr(init->get_tree(&bcontext));
+      context->backend()->immutable_struct_set_init(bvar, var_name, is_hidden,
+						    false, btype, bloc, binit);
+    }
+
+  this->dvar_ = bvar;
+  return var_to_tree(bvar);
+}
+
+// Print a function descriptor expression.
+
+void
+Func_descriptor_expression::do_dump_expression(Ast_dump_context* context) const
+{
+  context->ostream() << "[descriptor " << this->fn_->name() << "]";
+}
+
+// Make a function descriptor expression.
+
+Func_descriptor_expression*
+Expression::make_func_descriptor(Named_object* fn)
+{
+  return new Func_descriptor_expression(fn);
+}
+
+// Make the function descriptor type, so that it can be converted.
+
+void
+Expression::make_func_descriptor_type()
+{
+  Func_descriptor_expression::make_func_descriptor_type();
+}
+
+// A reference to just the code of a function.
+
+class Func_code_reference_expression : public Expression
+{
+ public:
+  Func_code_reference_expression(Named_object* function, Location location)
+    : Expression(EXPRESSION_FUNC_CODE_REFERENCE, location),
+      function_(function)
+  { }
+
+ protected:
+  int
+  do_traverse(Traverse*)
+  { return TRAVERSE_CONTINUE; }
+
+  Type*
+  do_type()
+  { return Type::make_pointer_type(Type::make_void_type()); }
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy()
+  {
+    return Expression::make_func_code_reference(this->function_,
+						this->location());
+  }
+
+  tree
+  do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context* context) const
+  { context->ostream() << "[raw " << this->function_->name() << "]" ; }
+
+ private:
+  // The function.
+  Named_object* function_;
+};
+
+// Get the tree for a reference to function code.
+
+tree
+Func_code_reference_expression::do_get_tree(Translate_context* context)
+{
+  return Func_expression::get_code_pointer(context->gogo(), this->function_,
+					   this->location());
+}
+
+// Make a reference to the code of a function.
+
+Expression*
+Expression::make_func_code_reference(Named_object* function, Location location)
+{
+  return new Func_code_reference_expression(function, location);
 }
 
 // Class Unknown_expression.
@@ -6722,6 +6919,26 @@ Builtin_call_expression::do_lower(Gogo* gogo, Named_object* function,
       return Expression::make_error(loc);
     }
 
+  if (this->code_ == BUILTIN_OFFSETOF)
+    {
+      Expression* arg = this->one_arg();
+      Field_reference_expression* farg = arg->field_reference_expression();
+      while (farg != NULL)
+	{
+	  if (!farg->implicit())
+	    break;
+	  // When the selector refers to an embedded field,
+	  // it must not be reached through pointer indirections.
+	  if (farg->expr()->deref() != farg->expr())
+	    {
+	      this->report_error(_("argument of Offsetof implies indirection of an embedded field"));
+	      return this;
+	    }
+	  // Go up until we reach the original base.
+	  farg = farg->expr()->field_reference_expression();
+	}
+    }
+ 
   if (this->is_constant())
     {
       Numeric_constant nc;
@@ -8521,6 +8738,74 @@ Builtin_call_expression::do_export(Export* exp) const
 
 // Class Call_expression.
 
+// A Go function can be viewed in a couple of different ways.  The
+// code of a Go function becomes a backend function with parameters
+// whose types are simply the backend representation of the Go types.
+// If there are multiple results, they are returned as a backend
+// struct.
+
+// However, when Go code refers to a function other than simply
+// calling it, the backend type of that function is actually a struct.
+// The first field of the struct points to the Go function code
+// (sometimes a wrapper as described below).  The remaining fields
+// hold addresses of closed-over variables.  This struct is called a
+// closure.
+
+// There are a few cases to consider.
+
+// A direct function call of a known function in package scope.  In
+// this case there are no closed-over variables, and we know the name
+// of the function code.  We can simply produce a backend call to the
+// function directly, and not worry about the closure.
+
+// A direct function call of a known function literal.  In this case
+// we know the function code and we know the closure.  We generate the
+// function code such that it expects an additional final argument of
+// the closure type.  We pass the closure as the last argument, after
+// the other arguments.
+
+// An indirect function call.  In this case we have a closure.  We
+// load the pointer to the function code from the first field of the
+// closure.  We pass the address of the closure as the last argument.
+
+// A call to a method of an interface.  Type methods are always at
+// package scope, so we call the function directly, and don't worry
+// about the closure.
+
+// This means that for a function at package scope we have two cases.
+// One is the direct call, which has no closure.  The other is the
+// indirect call, which does have a closure.  We can't simply ignore
+// the closure, even though it is the last argument, because that will
+// fail on targets where the function pops its arguments.  So when
+// generating a closure for a package-scope function we set the
+// function code pointer in the closure to point to a wrapper
+// function.  This wrapper function accepts a final argument that
+// points to the closure, ignores it, and calls the real function as a
+// direct function call.  This wrapper will normally be efficient, and
+// can often simply be a tail call to the real function.
+
+// We don't use GCC's static chain pointer because 1) we don't need
+// it; 2) GCC only permits using a static chain to call a known
+// function, so we can't use it for an indirect call anyhow.  Since we
+// can't use it for an indirect call, we may as well not worry about
+// using it for a direct call either.
+
+// We pass the closure last rather than first because it means that
+// the function wrapper we put into a closure for a package-scope
+// function can normally just be a tail call to the real function.
+
+// For method expressions we generate a wrapper that loads the
+// receiver from the closure and then calls the method.  This
+// unfortunately forces reshuffling the arguments, since there is a
+// new first argument, but we can't avoid reshuffling either for
+// method expressions or for indirect calls of package-scope
+// functions, and since the latter are more common we reshuffle for
+// method expressions.
+
+// Note that the Go code retains the Go types.  The extra final
+// argument only appears when we convert to the backend
+// representation.
+
 // Traversal.
 
 int
@@ -9129,11 +9414,21 @@ Call_expression::do_get_tree(Translate_context* context)
   const bool has_closure = func != NULL && func->closure() != NULL;
   const bool is_interface_method = interface_method != NULL;
 
+  int closure_arg;
+  if (has_closure)
+    closure_arg = 1;
+  else if (func != NULL)
+    closure_arg = 0;
+  else if (is_interface_method)
+    closure_arg = 0;
+  else
+    closure_arg = 1;
+
   int nargs;
   tree* args;
   if (this->args_ == NULL || this->args_->empty())
     {
-      nargs = is_interface_method ? 1 : 0;
+      nargs = (is_interface_method ? 1 : 0) + closure_arg;
       args = nargs == 0 ? NULL : new tree[nargs];
     }
   else if (fntype->parameters() == NULL || fntype->parameters()->empty())
@@ -9142,7 +9437,7 @@ Call_expression::do_get_tree(Translate_context* context)
       go_assert(!is_interface_method
 		&& fntype->is_method()
 		&& this->args_->size() == 1);
-      nargs = 1;
+      nargs = 1 + closure_arg;
       args = new tree[nargs];
       args[0] = this->args_->front()->get_tree(context);
     }
@@ -9153,6 +9448,7 @@ Call_expression::do_get_tree(Translate_context* context)
       nargs = this->args_->size();
       int i = is_interface_method ? 1 : 0;
       nargs += i;
+      nargs += closure_arg;
       args = new tree[nargs];
 
       Typed_identifier_list::const_iterator pp = params->begin();
@@ -9173,35 +9469,70 @@ Call_expression::do_get_tree(Translate_context* context)
 						       arg_val,
 						       location);
 	  if (args[i] == error_mark_node)
-	    {
-	      delete[] args;
-	      return error_mark_node;
-	    }
+	    return error_mark_node;
 	}
       go_assert(pp == params->end());
-      go_assert(i == nargs);
+      go_assert(i + closure_arg == nargs);
     }
 
-  tree rettype = TREE_TYPE(TREE_TYPE(type_to_tree(fntype->get_backend(gogo))));
+  tree fntype_tree = type_to_tree(fntype->get_backend(gogo));
+  if (fntype_tree == error_mark_node)
+    return error_mark_node;
+  go_assert(POINTER_TYPE_P(fntype_tree));
+  if (TREE_TYPE(fntype_tree) == error_mark_node)
+    return error_mark_node;
+  go_assert(TREE_CODE(TREE_TYPE(fntype_tree)) == RECORD_TYPE);
+  tree fnfield_type = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(fntype_tree)));
+  if (fnfield_type == error_mark_node)
+    return error_mark_node;
+  go_assert(FUNCTION_POINTER_TYPE_P(fnfield_type));
+  tree rettype = TREE_TYPE(TREE_TYPE(fnfield_type));
   if (rettype == error_mark_node)
-    {
-      delete[] args;
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   tree fn;
-  if (has_closure)
-    fn = func->get_tree_without_closure(gogo);
+  if (func != NULL)
+    {
+      Named_object* no = func->named_object();
+      go_assert(!no->is_function()
+		|| !no->func_value()->is_descriptor_wrapper());
+      fn = Func_expression::get_code_pointer(gogo, no, location);
+      if (has_closure)
+	{
+	  go_assert(closure_arg == 1 && nargs > 0);
+	  args[nargs - 1] = func->closure()->get_tree(context);
+	}
+    }
   else if (!is_interface_method)
-    fn = this->fn_->get_tree(context);
+    {
+      tree closure_tree = this->fn_->get_tree(context);
+      if (closure_tree == error_mark_node)
+	return error_mark_node;
+      tree fnc = fold_convert_loc(location.gcc_location(), fntype_tree,
+				  closure_tree);
+      go_assert(POINTER_TYPE_P(TREE_TYPE(fnc))
+		&& (TREE_CODE(TREE_TYPE(TREE_TYPE(fnc)))
+		    == RECORD_TYPE));
+      tree field = TYPE_FIELDS(TREE_TYPE(TREE_TYPE(fnc)));
+      fn = fold_build3_loc(location.gcc_location(), COMPONENT_REF,
+			   TREE_TYPE(field),
+			   build_fold_indirect_ref_loc(location.gcc_location(),
+						       fnc),
+			   field, NULL_TREE);
+      go_assert(closure_arg == 1 && nargs > 0);
+      args[nargs - 1] = closure_tree;
+    }      
   else
-    fn = this->interface_method_function(context, interface_method, &args[0]);
+    {
+      fn = this->interface_method_function(context, interface_method,
+					   &args[0]);
+      if (fn == error_mark_node)
+	return error_mark_node;
+      go_assert(closure_arg == 0);
+    }
 
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
-    {
-      delete[] args;
-      return error_mark_node;
-    }
+    return error_mark_node;
 
   tree fndecl = fn;
   if (TREE_CODE(fndecl) == ADDR_EXPR)
@@ -9210,12 +9541,7 @@ Call_expression::do_get_tree(Translate_context* context)
   // Add a type cast in case the type of the function is a recursive
   // type which refers to itself.
   if (!DECL_P(fndecl) || !DECL_IS_BUILTIN(fndecl))
-    {
-      tree fnt = type_to_tree(fntype->get_backend(gogo));
-      if (fnt == error_mark_node)
-	return error_mark_node;
-      fn = fold_convert_loc(location.gcc_location(), fnt, fn);
-    }
+    fn = fold_convert_loc(location.gcc_location(), fnfield_type, fn);
 
   // This is to support builtin math functions when using 80387 math.
   tree excess_type = NULL_TREE;
@@ -9259,13 +9585,6 @@ Call_expression::do_get_tree(Translate_context* context)
 
   SET_EXPR_LOCATION(ret, location.gcc_location());
 
-  if (has_closure)
-    {
-      tree closure_tree = func->closure()->get_tree(context);
-      if (closure_tree != error_mark_node)
-	CALL_EXPR_STATIC_CHAIN(ret) = closure_tree;
-    }
-
   // If this is a recursive function type which returns itself, as in
   //   type F func() F
   // we have used ptr_type_node for the return type.  Add a cast here
@@ -9285,24 +9604,6 @@ Call_expression::do_get_tree(Translate_context* context)
 
   if (this->results_ != NULL)
     ret = this->set_results(context, ret);
-
-  // We can't unwind the stack past a call to nil, so we need to
-  // insert an explicit check so that the panic can be recovered.
-  if (func == NULL)
-    {
-      tree compare = fold_build2_loc(location.gcc_location(), EQ_EXPR,
-				     boolean_type_node, fn,
-				     fold_convert_loc(location.gcc_location(),
-						      TREE_TYPE(fn),
-						      null_pointer_node));
-      tree crash = build3_loc(location.gcc_location(), COND_EXPR,
-			      void_type_node, compare,
-			      gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
-						  location),
-			      NULL_TREE);
-      ret = fold_build2_loc(location.gcc_location(), COMPOUND_EXPR,
-			    TREE_TYPE(ret), crash, ret);
-    }
 
   this->tree_ = ret;
 
@@ -11126,8 +11427,10 @@ Selector_expression::lower_method_expression(Gogo* gogo)
   // as their first argument.  If this is for a pointer type, we can
   // simply reuse the existing function.  We use an internal hack to
   // get the right type.
-
-  if (method != NULL && is_pointer)
+  // FIXME: This optimization is disabled because it doesn't yet work
+  // with function descriptors when the method expression is not
+  // directly called.
+  if (method != NULL && is_pointer && false)
     {
       Named_object* mno = (method->needs_stub_method()
 			   ? method->stub_object()

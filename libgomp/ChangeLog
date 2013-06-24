@@ -1,3 +1,14 @@
+2013-06-20  Iain Sandoe  <iain@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp: Reorder lib loads into dependency order.
+	Do not load_gcc_lib gcc-dg.exp and add a comment as to why.
+	* testsuite/libgomp.c/c.exp: load_gcc_lib gcc-dg.exp.
+	* testsuite/libgomp.fortran/fortran.exp: Likewise.
+	* testsuite/libgomp.graphite/graphite.exp: Likewise.
+	* testsuite/libgomp.c++/c++.exp: load_gcc_lib gcc-dg.exp.
+	Use dg-runtest rather than gfortran-dg-runtest.
+
 2013-06-10  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.c/icv-2.c: Extend current handling of

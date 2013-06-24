@@ -1179,7 +1179,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   bool ctor_p;
 
   if (spec_p)
-    *spec_p = (cxx_dialect >= cxx0x ? noexcept_true_spec : empty_except_spec);
+    *spec_p = (cxx_dialect >= cxx11 ? noexcept_true_spec : empty_except_spec);
 
   if (deleted_p)
     {
@@ -1271,7 +1271,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
      resolution, so a constructor can be trivial even if it would otherwise
      call a non-trivial constructor.  */
   if (expected_trivial
-      && (!copy_arg_p || cxx_dialect < cxx0x))
+      && (!copy_arg_p || cxx_dialect < cxx11))
     {
       if (constexpr_p && sfk == sfk_constructor)
 	{
@@ -1632,7 +1632,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   if (deleted_p)
     constexpr_p = false;
   /* A trivial copy/move constructor is also a constexpr constructor.  */
-  else if (trivial_p && cxx_dialect >= cxx0x
+  else if (trivial_p && cxx_dialect >= cxx11
 	   && (kind == sfk_copy_constructor
 	       || kind == sfk_move_constructor))
     gcc_assert (constexpr_p);
@@ -1713,7 +1713,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   DECL_IN_AGGR_P (fn) = 1;
   DECL_ARTIFICIAL (fn) = 1;
   DECL_DEFAULTED_FN (fn) = 1;
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     {
       DECL_DELETED_FN (fn) = deleted_p;
       DECL_DECLARED_CONSTEXPR_P (fn) = constexpr_p;

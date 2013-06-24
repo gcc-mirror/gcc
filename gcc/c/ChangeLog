@@ -1,3 +1,8 @@
+2013-06-18  Marek Polacek  <polacek@redhat.com>
+
+	PR c/57630
+	* c-decl.c (check_for_loop_decls): Improve diagnostics messages.
+
 2013-06-12  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-array-notation.c (build_array_notation_expr): Reject array notation

@@ -4246,8 +4246,16 @@ process_partial_specialization (tree decl)
   /* We should only get here once.  */
   gcc_assert (!COMPLETE_TYPE_P (type));
 
+  tree tmpl = build_template_decl (decl, current_template_parms,
+				   DECL_MEMBER_TEMPLATE_P (maintmpl));
+  TREE_TYPE (tmpl) = type;
+  DECL_TEMPLATE_RESULT (tmpl) = decl;
+  SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
+  DECL_TEMPLATE_INFO (tmpl) = build_template_info (maintmpl, specargs);
+  DECL_PRIMARY_TEMPLATE (tmpl) = maintmpl;
+
   DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)
-    = tree_cons (specargs, inner_parms,
+    = tree_cons (specargs, tmpl,
                  DECL_TEMPLATE_SPECIALIZATIONS (maintmpl));
   TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (maintmpl)) = type;
 
@@ -5143,9 +5151,9 @@ convert_nontype_argument_function (tree type, tree expr)
     }
 
   linkage = decl_linkage (fn_no_ptr);
-  if (cxx_dialect >= cxx0x ? linkage == lk_none : linkage != lk_external)
+  if (cxx_dialect >= cxx11 ? linkage == lk_none : linkage != lk_external)
     {
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	error ("%qE is not a valid template argument for type %qT "
 	       "because %qD has no linkage",
 	       expr, type, fn_no_ptr);
@@ -5170,7 +5178,7 @@ check_valid_ptrmem_cst_expr (tree type, tree expr,
   STRIP_NOPS (expr);
   if (expr && (null_ptr_cst_p (expr) || TREE_CODE (expr) == PTRMEM_CST))
     return true;
-  if (cxx_dialect >= cxx0x && null_member_pointer_value_p (expr))
+  if (cxx_dialect >= cxx11 && null_member_pointer_value_p (expr))
     return true;
   if (complain & tf_error)
     {
@@ -5502,7 +5510,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
      arbitrary constant expressions.  Pointer and pointer to
      member arguments can be general constant expressions that evaluate
      to a null value, but otherwise still need to be of a specific form.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     {
       if (TREE_CODE (expr) == PTRMEM_CST)
 	/* A PTRMEM_CST is already constant, and a valid template
@@ -5636,7 +5644,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       if (DECL_P (expr) && DECL_TEMPLATE_PARM_P (expr))
 	/* Non-type template parameters are OK.  */
 	;
-      else if (cxx_dialect >= cxx0x && integer_zerop (expr))
+      else if (cxx_dialect >= cxx11 && integer_zerop (expr))
 	/* Null pointer values are OK in C++11.  */;
       else if (TREE_CODE (expr) != ADDR_EXPR
 	       && TREE_CODE (expr_type) != ARRAY_TYPE)
@@ -5673,14 +5681,14 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		     expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if (cxx_dialect < cxx0x && !DECL_EXTERNAL_LINKAGE_P (decl))
+	  else if (cxx_dialect < cxx11 && !DECL_EXTERNAL_LINKAGE_P (decl))
 	    {
 	      error ("%qE is not a valid template argument of type %qT "
 		     "because %qD does not have external linkage",
 		     expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if (cxx_dialect >= cxx0x && decl_linkage (decl) == lk_none)
+	  else if (cxx_dialect >= cxx11 && decl_linkage (decl) == lk_none)
 	    {
 	      error ("%qE is not a valid template argument of type %qT "
 		     "because %qD has no linkage",
@@ -5779,7 +5787,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    return error_mark_node;
 	}
 
-      if (cxx_dialect >= cxx0x && integer_zerop (expr))
+      if (cxx_dialect >= cxx11 && integer_zerop (expr))
 	/* Null pointer values are OK in C++11.  */
 	return perform_qualification_conversions (type, expr);
 
@@ -6208,7 +6216,7 @@ convert_template_argument (tree parm,
       tree t = maybe_get_template_decl_from_type_decl (TYPE_NAME (arg));
       if (TREE_CODE (t) == TEMPLATE_DECL)
 	{
-	  if (cxx_dialect >= cxx0x)
+	  if (cxx_dialect >= cxx11)
 	    /* OK under DR 1004.  */;
 	  else if (complain & tf_warning_or_error)
 	    pedwarn (input_location, OPT_Wpedantic, "injected-class-name %qD"
@@ -10058,7 +10066,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	      RETURN (error_mark_node);
 
 	    TREE_TYPE (r) = new_type;
-	    CLASSTYPE_TI_TEMPLATE (new_type) = r;
+	    /* For a partial specialization, we need to keep pointing to
+	       the primary template.  */
+	    if (!DECL_TEMPLATE_SPECIALIZATION (t))
+	      CLASSTYPE_TI_TEMPLATE (new_type) = r;
 	    DECL_TEMPLATE_RESULT (r) = TYPE_MAIN_DECL (new_type);
 	    DECL_TI_ARGS (r) = CLASSTYPE_TI_ARGS (new_type);
 	    DECL_CONTEXT (r) = TYPE_CONTEXT (new_type);
@@ -11564,7 +11575,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  r = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
 	r = cp_build_qualified_type_real (r, cp_type_quals (t), complain);
 
-	if (cxx_dialect >= cxx1y && array_of_runtime_bound_p (type))
+	if (cxx_dialect >= cxx1y
+	    && !(TREE_CODE (t) == REFERENCE_TYPE && REFERENCE_VLA_OK (t))
+	    && array_of_runtime_bound_p (type))
 	  {
 	    if (complain & tf_warning_or_error)
 	      pedwarn
@@ -13505,7 +13518,7 @@ tsubst_copy_and_build (tree t,
 	decl = finish_id_expression (t, decl, NULL_TREE,
 				     &idk,
 				     integral_constant_expression_p,
-          /*allow_non_integral_constant_expression_p=*/(cxx_dialect >= cxx0x),
+          /*allow_non_integral_constant_expression_p=*/(cxx_dialect >= cxx11),
 				     &non_integral_constant_expression_p,
 				     /*template_p=*/false,
 				     /*done=*/true,
@@ -13740,6 +13753,20 @@ tsubst_copy_and_build (tree t,
 				 RECUR (TREE_OPERAND (t, 1)),
 				 complain|decltype_flag));
 
+    case ARRAY_NOTATION_REF:
+      {
+	tree start_index, length, stride;
+	op1 = tsubst_non_call_postfix_expression (ARRAY_NOTATION_ARRAY (t),
+						  args, complain, in_decl);
+	start_index = RECUR (ARRAY_NOTATION_START (t));
+	length = RECUR (ARRAY_NOTATION_LENGTH (t));
+	stride = RECUR (ARRAY_NOTATION_STRIDE (t));
+	if (!cilkplus_an_triplet_types_ok_p (loc, start_index, length, stride,
+					     TREE_TYPE (op1)))
+	  RETURN (error_mark_node);
+	RETURN (build_array_notation_ref (EXPR_LOCATION (t), op1, start_index,
+					  length, stride, TREE_TYPE (op1)));
+      }
     case SIZEOF_EXPR:
       if (PACK_EXPANSION_P (TREE_OPERAND (t, 0)))
 	RETURN (tsubst_copy (t, args, complain, in_decl));
@@ -15712,6 +15739,9 @@ type_unification_real (tree tparms,
       arg = args[ia];
       ++ia;
 
+      if (flag_enable_cilkplus && TREE_CODE (arg) == ARRAY_NOTATION_REF)
+	return 1;
+
       if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
 			      flags, explain_p))
 	return 1;
@@ -16961,7 +16991,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 	   later.  */
 	return unify_success (explain_p);
       else
-	return unify_type_mismatch (explain_p, tparm, arg);
+	return unify_type_mismatch (explain_p, tparm, TREE_TYPE (arg));
 
       /* If ARG is a parameter pack or an expansion, we cannot unify
 	 against it unless PARM is also a parameter pack.  */
@@ -18080,7 +18110,8 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
     {
       tree partial_spec_args;
       tree spec_args;
-      tree parms = TREE_VALUE (t);
+      tree spec_tmpl = TREE_VALUE (t);
+      tree orig_parms = DECL_INNERMOST_TEMPLATE_PARMS (spec_tmpl);
 
       partial_spec_args = CLASSTYPE_TI_ARGS (TREE_TYPE (t));
 
@@ -18088,24 +18119,14 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
 
       if (outer_args)
 	{
-	  int i;
-
 	  /* Discard the outer levels of args, and then substitute in the
 	     template args from the enclosing class.  */
 	  partial_spec_args = INNERMOST_TEMPLATE_ARGS (partial_spec_args);
 	  partial_spec_args = tsubst_template_args
 	    (partial_spec_args, outer_args, tf_none, NULL_TREE);
 
-	  /* PARMS already refers to just the innermost parms, but the
-	     template parms in partial_spec_args had their levels lowered
-	     by tsubst, so we need to do the same for the parm list.  We
-	     can't just tsubst the TREE_VEC itself, as tsubst wants to
-	     treat a TREE_VEC as an argument vector.  */
-	  parms = copy_node (parms);
-	  for (i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
-	    TREE_VEC_ELT (parms, i) =
-	      tsubst (TREE_VEC_ELT (parms, i), outer_args, tf_none, NULL_TREE);
-
+	  /* And the same for the partial specialization TEMPLATE_DECL.  */
+	  spec_tmpl = tsubst (spec_tmpl, outer_args, tf_none, NULL_TREE);
 	}
 
       partial_spec_args =
@@ -18120,7 +18141,10 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
 
       if (partial_spec_args == error_mark_node)
 	return error_mark_node;
+      if (spec_tmpl == error_mark_node)
+	return error_mark_node;
 
+      tree parms = DECL_INNERMOST_TEMPLATE_PARMS (spec_tmpl);
       spec_args = get_class_bindings (tmpl, parms,
 				      partial_spec_args,
 				      args);
@@ -18128,7 +18152,7 @@ most_specialized_class (tree type, tree tmpl, tsubst_flags_t complain)
 	{
 	  if (outer_args)
 	    spec_args = add_to_template_args (outer_args, spec_args);
-	  list = tree_cons (spec_args, TREE_VALUE (t), list);
+	  list = tree_cons (spec_args, orig_parms, list);
 	  TREE_TYPE (list) = TREE_TYPE (t);
 	}
     }
@@ -19119,6 +19143,11 @@ instantiate_decl (tree d, int defer_ok,
       pointer_map_destroy (local_specializations);
       local_specializations = saved_local_specializations;
 
+      /* We expand all the array notation expressions here.  */
+      if (flag_enable_cilkplus
+	  && contains_array_notation_expr (DECL_SAVED_TREE (d)))
+	DECL_SAVED_TREE (d) = expand_array_notation_exprs (DECL_SAVED_TREE (d));
+      
       /* Finish the function.  */
       d = finish_function (0);
       expand_or_defer_fn (d);
@@ -19805,7 +19834,7 @@ value_dependent_expression_p (tree expression)
 	    /* If there are no operands, it must be an expression such
 	       as "int()". This should not happen for aggregate types
 	       because it would form non-constant expressions.  */
-	    gcc_assert (cxx_dialect >= cxx0x
+	    gcc_assert (cxx_dialect >= cxx11
 			|| INTEGRAL_OR_ENUMERATION_TYPE_P (type));
 
 	    return false;
@@ -20078,6 +20107,29 @@ type_dependent_expression_p (tree expression)
       && dependent_type_p (DECL_CONTEXT (expression))
       && VAR_HAD_UNKNOWN_BOUND (expression))
     return true;
+
+  /* An array of unknown bound depending on a variadic parameter, eg:
+
+     template<typename... Args>
+       void foo (Args... args)
+       {
+         int arr[] = { args... };
+       }
+
+     template<int... vals>
+       void bar ()
+       {
+         int arr[] = { vals... };
+       }
+
+     If the array has no length and has an initializer, it must be that
+     we couldn't determine its length in cp_complete_array_type because
+     it is dependent.  */
+  if (VAR_P (expression)
+      && TREE_CODE (TREE_TYPE (expression)) == ARRAY_TYPE
+      && !TYPE_DOMAIN (TREE_TYPE (expression))
+      && DECL_INITIAL (expression))
+   return true;
 
   if (TREE_TYPE (expression) == unknown_type_node)
     {
@@ -20649,7 +20701,7 @@ build_non_dependent_expr (tree expr)
 #ifdef ENABLE_CHECKING
   /* Try to get a constant value for all non-dependent expressions in
       order to expose bugs in *_dependent_expression_p and constexpr.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     maybe_constant_value (fold_non_dependent_expr_sfinae (expr, tf_none));
 #endif
 

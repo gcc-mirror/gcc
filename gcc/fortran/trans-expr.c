@@ -7574,6 +7574,9 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
       size_in_bytes = size;
     }
 
+  size_in_bytes = fold_build2_loc (input_location, MAX_EXPR, size_type_node,
+				   size_in_bytes, size_one_node);
+
   if (expr1->ts.type == BT_DERIVED && expr1->ts.u.derived->attr.alloc_comp)
     {
       tmp = build_call_expr_loc (input_location,

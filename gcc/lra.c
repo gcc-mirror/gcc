@@ -242,6 +242,42 @@ lra_delete_dead_insn (rtx insn)
   lra_set_insn_deleted (insn);
 }
 
+/* Emit insn x = y + z.  Return NULL if we failed to do it.
+   Otherwise, return the insn.  We don't use gen_add3_insn as it might
+   clobber CC.  */
+static rtx
+emit_add3_insn (rtx x, rtx y, rtx z)
+{
+  rtx insn, last;
+
+  last = get_last_insn ();
+  insn = emit_insn (gen_rtx_SET (VOIDmode, x,
+				 gen_rtx_PLUS (GET_MODE (y), y, z)));
+  if (recog_memoized (insn) < 0)
+    {
+      delete_insns_since (last);
+      insn = NULL_RTX;
+    }
+  return insn;
+}
+
+/* Emit insn x = x + y.  Return the insn.  We use gen_add2_insn as the
+   last resort.  */
+static rtx
+emit_add2_insn (rtx x, rtx y)
+{
+  rtx insn;
+
+  insn = emit_add3_insn (x, x, y);
+  if (insn == NULL_RTX)
+    {
+      insn = gen_add2_insn (x, y);
+      if (insn != NULL_RTX)
+	emit_insn (insn);
+    }
+  return insn;
+}
+
 /* Target checks operands through operand predicates to recognize an
    insn.  We should have a special precaution to generate add insns
    which are frequent results of elimination.
@@ -260,10 +296,10 @@ lra_emit_add (rtx x, rtx y, rtx z)
   rtx a1, a2, base, index, disp, scale, index_scale;
   bool ok_p;
 
-  insn = gen_add3_insn (x, y, z);
+  insn = emit_add3_insn (x, y, z);
   old = max_reg_num ();
   if (insn != NULL_RTX)
-    emit_insn (insn);
+    ;
   else
     {
       disp = a2 = NULL_RTX;
@@ -306,12 +342,14 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	  || (disp != NULL_RTX && ! CONSTANT_P (disp))
 	  || (scale != NULL_RTX && ! CONSTANT_P (scale)))
 	{
-	  /* It is not an address generation.	Probably we have no 3 op
-	     add.  Last chance is to use 2-op add insn.	 */
+	  /* Probably we have no 3 op add.  Last chance is to use 2-op
+	     add insn.  To succeed, don't move Z to X as an address
+	     segment always comes in Y.  Otherwise, we might fail when
+	     adding the address segment to register.  */
 	  lra_assert (x != y && x != z);
 	  emit_move_insn (x, y);
-	  insn = gen_add2_insn (x, z);
-	  emit_insn (insn);
+	  insn = emit_add2_insn (x, z);
+	  lra_assert (insn != NULL_RTX);
 	}
       else
 	{
@@ -322,8 +360,8 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	      /* Generate x = index_scale; x = x + base.  */
 	      lra_assert (index_scale != NULL_RTX && base != NULL_RTX);
 	      emit_move_insn (x, index_scale);
-	      insn = gen_add2_insn (x, base);
-	      emit_insn (insn);
+	      insn = emit_add2_insn (x, base);
+	      lra_assert (insn != NULL_RTX);
 	    }
 	  else if (scale == NULL_RTX)
 	    {
@@ -337,14 +375,14 @@ lra_emit_add (rtx x, rtx y, rtx z)
 		  delete_insns_since (last);
 		  /* Generate x = disp; x = x + base.  */
 		  emit_move_insn (x, disp);
-		  insn = gen_add2_insn (x, base);
-		  emit_insn (insn);
+		  insn = emit_add2_insn (x, base);
+		  lra_assert (insn != NULL_RTX);
 		}
 	      /* Generate x = x + index.  */
 	      if (index != NULL_RTX)
 		{
-		  insn = gen_add2_insn (x, index);
-		  emit_insn (insn);
+		  insn = emit_add2_insn (x, index);
+		  lra_assert (insn != NULL_RTX);
 		}
 	    }
 	  else
@@ -355,16 +393,12 @@ lra_emit_add (rtx x, rtx y, rtx z)
 	      ok_p = false;
 	      if (recog_memoized (insn) >= 0)
 		{
-		  insn = gen_add2_insn (x, disp);
+		  insn = emit_add2_insn (x, disp);
 		  if (insn != NULL_RTX)
 		    {
-		      emit_insn (insn);
-		      insn = gen_add2_insn (x, disp);
+		      insn = emit_add2_insn (x, disp);
 		      if (insn != NULL_RTX)
-			{
-			  emit_insn (insn);
-			  ok_p = true;
-			}
+			ok_p = true;
 		    }
 		}
 	      if (! ok_p)
@@ -372,10 +406,10 @@ lra_emit_add (rtx x, rtx y, rtx z)
 		  delete_insns_since (last);
 		  /* Generate x = disp; x = x + base; x = x + index_scale.  */
 		  emit_move_insn (x, disp);
-		  insn = gen_add2_insn (x, base);
-		  emit_insn (insn);
-		  insn = gen_add2_insn (x, index_scale);
-		  emit_insn (insn);
+		  insn = emit_add2_insn (x, base);
+		  lra_assert (insn != NULL_RTX);
+		  insn = emit_add2_insn (x, index_scale);
+		  lra_assert (insn != NULL_RTX);
 		}
 	    }
 	}

@@ -32,6 +32,7 @@ class String_expression;
 class Binary_expression;
 class Call_expression;
 class Func_expression;
+class Func_descriptor_expression;
 class Unknown_expression;
 class Index_expression;
 class Map_index_expression;
@@ -67,6 +68,8 @@ class Expression
     EXPRESSION_SET_AND_USE_TEMPORARY,
     EXPRESSION_SINK,
     EXPRESSION_FUNC_REFERENCE,
+    EXPRESSION_FUNC_DESCRIPTOR,
+    EXPRESSION_FUNC_CODE_REFERENCE,
     EXPRESSION_UNKNOWN_REFERENCE,
     EXPRESSION_BOOLEAN,
     EXPRESSION_STRING,
@@ -150,9 +153,23 @@ class Expression
   static Expression*
   make_sink(Location);
 
-  // Make a reference to a function in an expression.
+  // Make a reference to a function in an expression.  This returns a
+  // pointer to the struct holding the address of the function
+  // followed by any closed-over variables.
   static Expression*
   make_func_reference(Named_object*, Expression* closure, Location);
+
+  // Make a function descriptor, an immutable struct with a single
+  // field that points to the function code.  This may only be used
+  // with functions that do not have closures.  FN is the function for
+  // which we are making the descriptor.
+  static Func_descriptor_expression*
+  make_func_descriptor(Named_object* fn);
+
+  // Make a reference to the code of a function.  This is used to set
+  // descriptor and closure fields.
+  static Expression*
+  make_func_code_reference(Named_object*, Location);
 
   // Make a reference to an unknown name.  In a correct program this
   // will always be lowered to a real const/var/func reference.
@@ -522,6 +539,11 @@ class Expression
   // Return true if this is a reference to a local variable.
   bool
   is_local_variable() const;
+
+  // Make the builtin function descriptor type, so that it can be
+  // converted.
+  static void
+  make_func_descriptor_type();
 
   // Traverse an expression.
   static int
@@ -1484,7 +1506,7 @@ class Func_expression : public Expression
   { }
 
   // Return the object associated with the function.
-  const Named_object*
+  Named_object*
   named_object() const
   { return this->function_; }
 
@@ -1494,9 +1516,9 @@ class Func_expression : public Expression
   closure()
   { return this->closure_; }
 
-  // Return a tree for this function without evaluating the closure.
-  tree
-  get_tree_without_closure(Gogo*);
+  // Return a tree for the code for a function.
+  static tree
+  get_code_pointer(Gogo*, Named_object* function, Location loc);
 
  protected:
   int
@@ -1532,9 +1554,66 @@ class Func_expression : public Expression
   // The function itself.
   Named_object* function_;
   // A closure.  This is normally NULL.  For a nested function, it may
-  // be a heap-allocated struct holding pointers to all the variables
-  // referenced by this function and defined in enclosing functions.
+  // be a struct holding pointers to all the variables referenced by
+  // this function and defined in enclosing functions.
   Expression* closure_;
+};
+
+// A function descriptor.  A function descriptor is a struct with a
+// single field pointing to the function code.  This is used for
+// functions without closures.
+
+class Func_descriptor_expression : public Expression
+{
+ public:
+  Func_descriptor_expression(Named_object* fn);
+
+  // Set the descriptor wrapper.
+  void
+  set_descriptor_wrapper(Named_object* dfn)
+  {
+    go_assert(this->dfn_ == NULL);
+    this->dfn_ = dfn;
+  }
+
+  // Make the function descriptor type, so that it can be converted.
+  static void
+  make_func_descriptor_type();
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy();
+
+  bool
+  do_is_addressable() const
+  { return true; }
+
+  tree
+  do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context* context) const;
+
+ private:
+  // The type of all function descriptors.
+  static Type* descriptor_type;
+
+  // The function for which this is the descriptor.
+  Named_object* fn_;
+  // The descriptor function.
+  Named_object* dfn_;
+  // The descriptor variable.
+  Bvariable* dvar_;
 };
 
 // A reference to an unknown name.
@@ -1847,7 +1926,7 @@ class Field_reference_expression : public Expression
   Field_reference_expression(Expression* expr, unsigned int field_index,
 			     Location location)
     : Expression(EXPRESSION_FIELD_REFERENCE, location),
-      expr_(expr), field_index_(field_index), called_fieldtrack_(false)
+      expr_(expr), field_index_(field_index), implicit_(false), called_fieldtrack_(false)
   { }
 
   // Return the struct expression.

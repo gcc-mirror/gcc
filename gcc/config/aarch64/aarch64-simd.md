@@ -357,29 +357,18 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "aarch64_dup_lane<mode>"
-  [(set (match_operand:ALLX 0 "register_operand" "=w")
+(define_insn "aarch64_dup_lane_scalar<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w, r")
 	(vec_select:<VEL>
-	  (match_operand:<VCON> 1 "register_operand" "w")
-	  (parallel [(match_operand:SI 2 "immediate_operand" "i")])
+	  (match_operand:VDQ 1 "register_operand" "w, w")
+	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i")])
         ))]
   "TARGET_SIMD"
-  "dup\\t%<v>0<Vmtype>, %1.<Vetype>[%2]"
-  [(set_attr "simd_type" "simd_dup")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
-(define_insn "aarch64_dup_lanedi"
-  [(set (match_operand:DI 0 "register_operand" "=w,r")
-	(vec_select:DI
-	  (match_operand:V2DI 1 "register_operand" "w,w")
-	  (parallel [(match_operand:SI 2 "immediate_operand" "i,i")])))]
-  "TARGET_SIMD"
   "@
-   dup\\t%<v>0<Vmtype>, %1.<Vetype>[%2]
-   umov\t%0, %1.d[%2]"
-  [(set_attr "simd_type" "simd_dup")
-   (set_attr "simd_mode" "DI")]
+   dup\\t%<Vetype>0, %1.<Vetype>[%2]
+   umov\\t%<vw>0, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_dup, simd_movgp")
+   (set_attr "simd_mode" "<MODE>")]
 )
 
 (define_insn "aarch64_simd_dup<mode>"

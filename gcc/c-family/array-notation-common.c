@@ -484,7 +484,7 @@ find_inv_trees (tree *tp, int *walk_subtrees, void *data)
 	 tree codes such as TARGET_EXPR must be eliminated.  These codes are
 	 passed into additional_tcodes and are walked through and checked.  */
       for (ii = 0; ii < vec_safe_length (i_list->additional_tcodes); ii++)
-	if (TREE_CODE (*tp) == (enum rid)(*(i_list->additional_tcodes))[ii])
+	if (TREE_CODE (*tp) == (*(i_list->additional_tcodes))[ii])
 	  *walk_subtrees = 0;
     }
   return NULL_TREE;
@@ -559,4 +559,101 @@ find_correct_array_notation_type (tree op)
 	  }
     } 
   return return_type;
+}
+
+/* Extracts all the array notation triplet information from LIST and stores
+   them in the following fields of the 2-D array NODE(size x rank):
+   START, LENGTH and STRIDE, holding the starting index, length, and stride,
+   respectively.  In addition, it also sets two bool fields, IS_VECTOR and
+   COUNT_DOWN, in NODE indicating whether a certain value at a certain field
+   is a vector and if the array is accessed from high to low.  */
+
+void
+cilkplus_extract_an_triplets (vec<tree, va_gc> *list, size_t size, size_t rank,
+			      vec<vec<struct cilkplus_an_parts> > *node)
+{
+  vec<vec<tree> > array_exprs = vNULL;
+  struct cilkplus_an_parts init = { NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
+				    false };
+  node->safe_grow_cleared (size);
+  array_exprs.safe_grow_cleared (size);
+  for (size_t ii = 0; ii < size; ii++)
+    for (size_t jj = 0; jj < rank; jj++)
+      {
+	(*node)[ii].safe_push (init);
+	array_exprs[ii].safe_push (NULL_TREE);
+      }
+
+  for (size_t ii = 0; ii < size; ii++)
+    {
+      size_t jj = 0;
+      tree ii_tree = (*list)[ii];
+      while (ii_tree)
+	if (TREE_CODE (ii_tree) == ARRAY_NOTATION_REF)
+	  {
+	    array_exprs[ii][jj] = ii_tree;
+	    jj++;
+	    ii_tree = ARRAY_NOTATION_ARRAY (ii_tree);
+	  }
+	else if (TREE_CODE (ii_tree) == ARRAY_REF)
+	  ii_tree = TREE_OPERAND (ii_tree, 0);
+	else if (TREE_CODE (ii_tree) == VAR_DECL
+		 || TREE_CODE (ii_tree) == CALL_EXPR
+		 || TREE_CODE (ii_tree) == PARM_DECL)
+	  break;
+	else
+	  gcc_unreachable ();	
+    }
+    for (size_t ii = 0; ii < size; ii++)
+      if (TREE_CODE ((*list)[ii]) == ARRAY_NOTATION_REF)
+	for (size_t jj = 0; jj < rank; jj++)
+	  if (TREE_CODE (array_exprs[ii][jj]) == ARRAY_NOTATION_REF)
+	    {
+	      tree ii_tree = array_exprs[ii][jj];
+	      (*node)[ii][jj].is_vector = true;
+	      (*node)[ii][jj].value = ARRAY_NOTATION_ARRAY (ii_tree);
+	      (*node)[ii][jj].start = ARRAY_NOTATION_START (ii_tree);
+	      (*node)[ii][jj].length =
+		fold_build1 (CONVERT_EXPR, integer_type_node,
+			     ARRAY_NOTATION_LENGTH (ii_tree));
+	      (*node)[ii][jj].stride =
+		fold_build1 (CONVERT_EXPR, integer_type_node,
+			     ARRAY_NOTATION_STRIDE (ii_tree));
+	    }
+}
+
+/* Replaces all the __sec_implicit_arg functions in LIST with the induction
+   variable stored in VAR at the appropriate location pointed by the
+   __sec_implicit_arg's first parameter.  Emits an error if the parameter is
+   not between 0 and RANK.  */
+
+vec <tree, va_gc> *
+fix_sec_implicit_args (location_t loc, vec <tree, va_gc> *list,
+		       vec<an_loop_parts> an_loop_info, size_t rank,
+		       tree orig_stmt)
+{
+  vec <tree, va_gc> *array_operand = NULL;
+  for (size_t ii = 0; ii < vec_safe_length (list); ii++)
+    if (TREE_CODE ((*list)[ii]) == CALL_EXPR
+	&& TREE_CODE (CALL_EXPR_FN ((*list)[ii])) == ADDR_EXPR
+	&& is_sec_implicit_index_fn (CALL_EXPR_FN ((*list)[ii])))
+      {
+	int idx = extract_sec_implicit_index_arg (loc, (*list)[ii]);
+	if (idx < (int) rank && idx >= 0)
+	  vec_safe_push (array_operand, an_loop_info[idx].var);
+	else if (idx == -1)
+	  /* In this case, the returning function would have emitted an
+	     error thus it is not necessary to do so again.  */
+	  return NULL;
+	else
+	  {
+	    error_at (loc, "__sec_implicit_index argument %d must be "
+		      "less than the rank of %qE", idx, orig_stmt);
+	    return NULL;
+	  }
+      }
+    else
+      /* Save the existing value into the array operand.  */
+      vec_safe_push (array_operand, (*list)[ii]);
+  return array_operand;
 }

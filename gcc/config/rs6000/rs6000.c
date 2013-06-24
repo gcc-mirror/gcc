@@ -4657,7 +4657,7 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
   bitsize = GET_MODE_BITSIZE (inner);
   mask = GET_MODE_MASK (inner);
 
-  val = const_vector_elt_as_int (op, nunits - 1);
+  val = const_vector_elt_as_int (op, BYTES_BIG_ENDIAN ? nunits - 1 : 0);
   splat_val = val;
   msb_val = val > 0 ? 0 : -1;
 
@@ -4697,7 +4697,7 @@ vspltis_constant (rtx op, unsigned step, unsigned copies)
   for (i = 0; i < nunits - 1; ++i)
     {
       HOST_WIDE_INT desired_val;
-      if (((i + 1) & (step - 1)) == 0)
+      if (((BYTES_BIG_ENDIAN ? i + 1 : i) & (step - 1)) == 0)
 	desired_val = val;
       else
 	desired_val = msb_val;
@@ -4782,13 +4782,13 @@ gen_easy_altivec_constant (rtx op)
 {
   enum machine_mode mode = GET_MODE (op);
   int nunits = GET_MODE_NUNITS (mode);
-  rtx last = CONST_VECTOR_ELT (op, nunits - 1);
+  rtx val = CONST_VECTOR_ELT (op, BYTES_BIG_ENDIAN ? nunits - 1 : 0);
   unsigned step = nunits / 4;
   unsigned copies = 1;
 
   /* Start with a vspltisw.  */
   if (vspltis_constant (op, step, copies))
-    return gen_rtx_VEC_DUPLICATE (V4SImode, gen_lowpart (SImode, last));
+    return gen_rtx_VEC_DUPLICATE (V4SImode, gen_lowpart (SImode, val));
 
   /* Then try with a vspltish.  */
   if (step == 1)
@@ -4797,7 +4797,7 @@ gen_easy_altivec_constant (rtx op)
     step >>= 1;
 
   if (vspltis_constant (op, step, copies))
-    return gen_rtx_VEC_DUPLICATE (V8HImode, gen_lowpart (HImode, last));
+    return gen_rtx_VEC_DUPLICATE (V8HImode, gen_lowpart (HImode, val));
 
   /* And finally a vspltisb.  */
   if (step == 1)
@@ -4806,7 +4806,7 @@ gen_easy_altivec_constant (rtx op)
     step >>= 1;
 
   if (vspltis_constant (op, step, copies))
-    return gen_rtx_VEC_DUPLICATE (V16QImode, gen_lowpart (QImode, last));
+    return gen_rtx_VEC_DUPLICATE (V16QImode, gen_lowpart (QImode, val));
 
   gcc_unreachable ();
 }
@@ -5382,6 +5382,48 @@ invalid_e500_subreg (rtx op, enum machine_mode mode)
     return true;
 
   return false;
+}
+
+/* Return alignment of TYPE.  Existing alignment is ALIGN.  HOW
+   selects whether the alignment is abi mandated, optional, or
+   both abi and optional alignment.  */
+   
+unsigned int
+rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
+{
+  if (how != align_opt)
+    {
+      if (TREE_CODE (type) == VECTOR_TYPE)
+	{
+	  if ((TARGET_SPE && SPE_VECTOR_MODE (TYPE_MODE (type)))
+	      || (TARGET_PAIRED_FLOAT && PAIRED_VECTOR_MODE (TYPE_MODE (type))))
+	    {
+	      if (align < 64)
+		align = 64;
+	    }
+	  else if (align < 128)
+	    align = 128;
+	}
+      else if (TARGET_E500_DOUBLE
+	       && TREE_CODE (type) == REAL_TYPE
+	       && TYPE_MODE (type) == DFmode)
+	{
+	  if (align < 64)
+	    align = 64;
+	}
+    }
+
+  if (how != align_abi)
+    {
+      if (TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_MODE (TREE_TYPE (type)) == QImode)
+	{
+	  if (align < BITS_PER_WORD)
+	    align = BITS_PER_WORD;
+	}
+    }
+
+  return align;
 }
 
 /* AIX increases natural record alignment to doubleword if the first

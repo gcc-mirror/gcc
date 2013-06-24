@@ -18,19 +18,19 @@ int main (void)
     array2[:] = 5;
   else
     array2[:] = 10;
-  if (!(array[0:10:1] + array[0:10:1])) /* { dg-error "condition and the then-block" } */
-    array2d[:][:] = 5;
+  if (!(array[0:10:1] + array[0:10:1])) /* { dg-error "condition and the then-block" "" { target c } } */
+    array2d[:][:] = 5; /* { dg-error "rank mismatch with controlling expression of parent" "" { target c++ } } */
   else
     array2[:] = 10;
 
-  if (!(array[0:10:1] + array[0:10:1])) /* { dg-error "condition and the else-block" } */
+  if (!(array[0:10:1] + array[0:10:1])) /* { dg-error "condition and the else-block" "" { target c } } */
     array2[:] = 5;
   else
-    array2d[:][:] = 10;
+    array2d[:][:] = 10; /* { dg-error "rank mismatch with controlling expression of parent" "" { target c++ } } */
 
 
-  if (TwodArray[:][:] != 10) /* { dg-error "condition and the then-block" } */
-    array2[:] = 10; 
+  if (TwodArray[:][:] != 10) /* { dg-error "condition and the then-block" "" { target c } } */
+    array2[:] = 10;  /* { dg-error "rank mismatch with controlling expression of parent" "" { target c++ } } */
   else
     array2[:] = 5;
 
@@ -40,8 +40,8 @@ int main (void)
     array4[32][:][:][:] = 5;
 
   /* atoi(argv[1]) == 10, so it will convert all 10's to 5's */
-  if (FourDArray[42][0:10:1][9:10:-1][0:5:2] != 10) /* { dg-error "condition and the then-block" } */
-    array4[0:10:1][0:5:2][9:10:-1][0:5:2] = 10; 
+  if (FourDArray[42][0:10:1][9:10:-1][0:5:2] != 10) /* { dg-error "condition and the then-block" "" { target c } } */
+    array4[0:10:1][0:5:2][9:10:-1][0:5:2] = 10;  /* { dg-error "rank mismatch with controlling expression of parent" "" { target c++ } } */
   else
     array4[0:10:1][0:5:2][9:10:-1][0:5:2] = 5;
 

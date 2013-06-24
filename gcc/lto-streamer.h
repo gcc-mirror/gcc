@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "gcov-io.h"
 #include "diagnostic.h"
+#include "pointer-set.h"
 
 /* Define when debugging the LTO streamer.  This causes the writer
    to output the numeric value for the memory address of the tree node
@@ -198,6 +199,9 @@ enum LTO_tags
 
   /* EH try/catch node.  */
   LTO_eh_catch,
+
+  /* Special for global streamer.  A blob of unnamed tree nodes.  */
+  LTO_tree_scc,
 
   /* References to indexable tree nodes.  These objects are stored in
      tables that are written separately from the function bodies that
@@ -421,6 +425,8 @@ struct lto_stats_d
   unsigned HOST_WIDE_INT num_compressed_il_bytes;
   unsigned HOST_WIDE_INT num_input_il_bytes;
   unsigned HOST_WIDE_INT num_uncompressed_il_bytes;
+  unsigned HOST_WIDE_INT num_tree_bodies_output;
+  unsigned HOST_WIDE_INT num_pickle_refs_output;
 };
 
 /* Entry of LTO symtab encoder.  */
@@ -469,21 +475,12 @@ struct GTY(()) lto_tree_ref_table
 };
 
 
-/* Mapping between trees and slots in an array.  */
-struct lto_decl_slot
-{
-  tree t;
-  int slot_num;
-};
-
-
 /* The lto_tree_ref_encoder struct is used to encode trees into indices. */
 
 struct lto_tree_ref_encoder
 {
-  htab_t tree_hash_table;	/* Maps pointers to indices. */
-  unsigned int next_index;	/* Next available index. */
-  vec<tree> trees;	/* Maps indices to pointers. */
+  pointer_map_t *tree_hash_table;	/* Maps pointers to indices. */
+  vec<tree> trees;			/* Maps indices to pointers. */
 };
 
 
@@ -783,10 +780,6 @@ extern void lto_value_range_error (const char *,
 				   HOST_WIDE_INT) ATTRIBUTE_NORETURN;
 
 /* In lto-section-out.c  */
-extern hashval_t lto_hash_decl_slot_node (const void *);
-extern int lto_eq_decl_slot_node (const void *, const void *);
-extern hashval_t lto_hash_type_slot_node (const void *);
-extern int lto_eq_type_slot_node (const void *, const void *);
 extern void lto_begin_section (const char *, bool);
 extern void lto_end_section (void);
 extern void lto_write_stream (struct lto_output_stream *);
@@ -854,6 +847,10 @@ tree lto_input_tree_ref (struct lto_input_block *, struct data_in *,
 			 struct function *, enum LTO_tags);
 void lto_tag_check_set (enum LTO_tags, int, ...);
 void lto_init_eh (void);
+hashval_t lto_input_scc (struct lto_input_block *, struct data_in *,
+			 unsigned *, unsigned *);
+tree lto_input_tree_1 (struct lto_input_block *, struct data_in *,
+		       enum LTO_tags, hashval_t hash);
 tree lto_input_tree (struct lto_input_block *, struct data_in *);
 
 
@@ -998,11 +995,9 @@ lto_tag_check_range (enum LTO_tags actual, enum LTO_tags tag1,
 
 /* Initialize an lto_out_decl_buffer ENCODER.  */
 static inline void
-lto_init_tree_ref_encoder (struct lto_tree_ref_encoder *encoder,
-			   htab_hash hash_fn, htab_eq eq_fn)
+lto_init_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)
 {
-  encoder->tree_hash_table = htab_create (37, hash_fn, eq_fn, free);
-  encoder->next_index = 0;
+  encoder->tree_hash_table = pointer_map_create ();
   encoder->trees.create (0);
 }
 
@@ -1014,7 +1009,7 @@ lto_destroy_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)
 {
   /* Hash table may be delete already.  */
   if (encoder->tree_hash_table)
-    htab_delete (encoder->tree_hash_table);
+    pointer_map_destroy (encoder->tree_hash_table);
   encoder->trees.release ();
 }
 

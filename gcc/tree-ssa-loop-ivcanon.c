@@ -174,7 +174,7 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
       while (handled_component_p (base))
 	base = TREE_OPERAND (base, 0);
       if ((DECL_P (base)
-	   && const_value_known_p (base))
+	   && ctor_for_folding (base) != error_mark_node)
 	  || CONSTANT_CLASS_P (base))
 	{
 	  /* If so, see if we understand all the indices.  */

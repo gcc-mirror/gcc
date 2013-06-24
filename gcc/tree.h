@@ -5796,6 +5796,7 @@ extern const_tree strip_invariant_refs (const_tree);
 extern tree lhd_gcc_personality (void);
 extern void assign_assembler_name_if_neeeded (tree);
 extern void warn_deprecated_use (tree, tree);
+extern void cache_integer_cst (tree);
 
 
 /* In cgraph.c */
@@ -6132,6 +6133,7 @@ extern location_t tree_nonartificial_location (tree);
 extern tree block_ultimate_origin (const_tree);
 
 extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
+extern bool types_same_for_odr (tree type1, tree type2);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
 extern bool contains_bitfld_component_ref_p (const_tree);
@@ -6740,5 +6742,28 @@ builtin_decl_implicit_p (enum built_in_function fncode)
   return (builtin_info.decl[uns_fncode] != NULL_TREE
 	  && builtin_info.implicit_p[uns_fncode]);
 }
+
+
+/* For anonymous aggregate types, we need some sort of name to
+   hold on to.  In practice, this should not appear, but it should
+   not be harmful if it does.  */
+#ifndef NO_DOT_IN_LABEL
+#define ANON_AGGRNAME_FORMAT "._%d"
+#define ANON_AGGRNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '.' \
+				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
+#else /* NO_DOT_IN_LABEL */
+#ifndef NO_DOLLAR_IN_LABEL
+#define ANON_AGGRNAME_FORMAT "$_%d"
+#define ANON_AGGRNAME_P(ID_NODE) (IDENTIFIER_POINTER (ID_NODE)[0] == '$' \
+				  && IDENTIFIER_POINTER (ID_NODE)[1] == '_')
+#else /* NO_DOLLAR_IN_LABEL */
+#define ANON_AGGRNAME_PREFIX "__anon_"
+#define ANON_AGGRNAME_P(ID_NODE) \
+  (!strncmp (IDENTIFIER_POINTER (ID_NODE), ANON_AGGRNAME_PREFIX, \
+	     sizeof (ANON_AGGRNAME_PREFIX) - 1))
+#define ANON_AGGRNAME_FORMAT "__anon_%d"
+#endif	/* NO_DOLLAR_IN_LABEL */
+#endif	/* NO_DOT_IN_LABEL */
+
 
 #endif  /* GCC_TREE_H  */

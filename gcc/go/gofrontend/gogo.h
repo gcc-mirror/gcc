@@ -476,6 +476,10 @@ class Gogo
   void
   lower_constant(Named_object*);
 
+  // Create all necessary function descriptors.
+  void
+  create_function_descriptors();
+
   // Finalize the method lists and build stub methods for named types.
   void
   finalize_methods();
@@ -614,10 +618,6 @@ class Gogo
   receive_from_channel(tree type_tree, tree type_descriptor_tree, tree channel,
 		       Location);
 
-  // Make a trampoline which calls FNADDR passing CLOSURE.
-  tree
-  make_trampoline(tree fnaddr, tree closure, Location);
-
  private:
   // During parsing, we keep a stack of functions.  Each function on
   // the stack is one that we are currently parsing.  For each
@@ -668,10 +668,6 @@ class Gogo
   // to the pointer.
   tree
   ptr_go_string_constant_tree(const std::string&);
-
-  // Return the type of a trampoline.
-  static tree
-  trampoline_type_tree();
 
   // Type used to map import names to packages.
   typedef std::map<std::string, Package*> Imports;
@@ -915,6 +911,14 @@ class Function
   result_variables()
   { return this->results_; }
 
+  bool
+  is_sink() const
+  { return this->is_sink_; }
+
+  void
+  set_is_sink()
+  { this->is_sink_ = true; }
+
   // Whether the result variables have names.
   bool
   results_are_named() const
@@ -1046,6 +1050,12 @@ class Function
   set_in_unique_section()
   { this->in_unique_section_ = true; }
 
+  // Whether this function was created as a descriptor wrapper for
+  // another function.
+  bool
+  is_descriptor_wrapper() const
+  { return this->is_descriptor_wrapper_; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1058,6 +1068,26 @@ class Function
   // Determine types in the function.
   void
   determine_types();
+
+  // Return an expression for the function descriptor, given the named
+  // object for this function.  This may only be called for functions
+  // without a closure.  This will be an immutable struct with one
+  // field that points to the function's code.
+  Expression*
+  descriptor(Gogo*, Named_object*);
+
+  // Set the descriptor for this function.  This is used when a
+  // function declaration is followed by a function definition.
+  void
+  set_descriptor(Expression* descriptor)
+  {
+    go_assert(this->descriptor_ == NULL);
+    this->descriptor_ = descriptor;
+  }
+
+  // Build a descriptor wrapper function.
+  static Named_object*
+  make_descriptor_wrapper(Gogo*, Named_object*, Function_type*);
 
   // Return the function's decl given an identifier.
   tree
@@ -1137,25 +1167,32 @@ class Function
   Labels labels_;
   // The number of local types defined in this function.
   unsigned int local_type_count_;
+  // The function descriptor, if any.
+  Expression* descriptor_;
   // The function decl.
   tree fndecl_;
   // The defer stack variable.  A pointer to this variable is used to
   // distinguish the defer stack for one function from another.  This
   // is NULL unless we actually need a defer stack.
   Temporary_statement* defer_stack_;
+  // True if this function is sink-named.  No code is generated.
+  bool is_sink_ : 1;
   // True if the result variables are named.
-  bool results_are_named_;
+  bool results_are_named_ : 1;
   // True if this method should not be included in the type descriptor.
-  bool nointerface_;
+  bool nointerface_ : 1;
   // True if this function calls the predeclared recover function.
-  bool calls_recover_;
+  bool calls_recover_ : 1;
   // True if this a thunk built for a function which calls recover.
-  bool is_recover_thunk_;
+  bool is_recover_thunk_ : 1;
   // True if this function already has a recover thunk.
-  bool has_recover_thunk_;
+  bool has_recover_thunk_ : 1;
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
+  // True if this is a function wrapper created to put in a function
+  // descriptor.
+  bool is_descriptor_wrapper_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1198,7 +1235,8 @@ class Function_declaration
 {
  public:
   Function_declaration(Function_type* fntype, Location location)
-    : fntype_(fntype), location_(location), asm_name_(), fndecl_(NULL)
+    : fntype_(fntype), location_(location), asm_name_(), descriptor_(NULL),
+      fndecl_(NULL)
   { }
 
   Function_type*
@@ -1218,9 +1256,26 @@ class Function_declaration
   set_asm_name(const std::string& asm_name)
   { this->asm_name_ = asm_name; }
 
+  // Return an expression for the function descriptor, given the named
+  // object for this function.  This may only be called for functions
+  // without a closure.  This will be an immutable struct with one
+  // field that points to the function's code.
+  Expression*
+  descriptor(Gogo*, Named_object*);
+
+  // Return true if we have created a descriptor for this declaration.
+  bool
+  has_descriptor() const
+  { return this->descriptor_ != NULL; }
+
   // Return a decl for the function given an identifier.
   tree
   get_or_make_decl(Gogo*, Named_object*, tree id);
+
+  // If there is a descriptor, build it into the backend
+  // representation.
+  void
+  build_backend_descriptor(Gogo*);
 
   // Export a function declaration.
   void
@@ -1235,6 +1290,8 @@ class Function_declaration
   // The assembler name: this is the name to use in references to the
   // function.  This is normally empty.
   std::string asm_name_;
+  // The function descriptor, if any.
+  Expression* descriptor_;
   // The function decl if needed.
   tree fndecl_;
 };

@@ -1,3 +1,33 @@
+2013-06-24  Tobias Burnus  <burnus@net-b.de>
+
+	* configure.ac: Check for fp_except and fp_except_t.
+	* config/fpu-sysv.h: Conditionally use either type.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2013-06-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/fpu-sysv.h (get_fpu_except_flags): Fix typo.
+
+2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (_FPU_MASK_ALL): New.
+	(_FPU_EX_ALL): Ditto.
+	(set_fpu): Use fstcw to store x87 FPU control word. Use fnclex to
+	clear stalled exception flags.  Correctly clear stalled SSE
+	exception flags.  Simplify code.
+	(get_fpu_except_flags): Simplify code.
+
+2013-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57633
+	* io/list_read.c (next_char, eat_separator): Don't set EOL for \r.
+
+2013-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h: Use __asm__ and __volatile__ consistently.
+	(get_fpu_except_flags): Initialize result.
+
 2013-06-17  Tobias Burnus  <burnus@net-b.de>
 
 	* libgfortran.h (compile_options_t) Add fpe_summary.
@@ -11,7 +41,7 @@
 	* config/fpu-aix.h (get_fpu_except_flags): New function.
 	* config/fpu-generic.h (get_fpu_except_flags): New function.
 	* config/fpu-glibc.h (get_fpu_except_flags): New function.
-	* config/fpu-glibc.h (get_fpu_except_flags): New function.
+	* config/fpu-sysv.h (get_fpu_except_flags): New function.
 	* configure.ac: Check for fpxcp.h.
 	* configure: Regenerate.
 	* config.h.in: Regenerate.

@@ -2863,6 +2863,28 @@ no_equiv (rtx reg, const_rtx store ATTRIBUTE_UNUSED,
     }
 }
 
+/* Check whether the SUBREG is a paradoxical subreg and set the result
+   in PDX_SUBREGS.  */
+
+static int
+set_paradoxical_subreg (rtx *subreg, void *pdx_subregs)
+{
+  rtx reg;
+
+  if ((*subreg) == NULL_RTX)
+    return 1;
+  if (GET_CODE (*subreg) != SUBREG)
+    return 0;
+  reg = SUBREG_REG (*subreg);
+  if (!REG_P (reg))
+    return 0;
+
+  if (paradoxical_subreg_p (*subreg))
+    ((bool *)pdx_subregs)[REGNO (reg)] = true;
+
+  return 0;
+}
+
 /* In DEBUG_INSN location adjust REGs from CLEARED_REGS bitmap to the
    equivalent replacement.  */
 
@@ -2901,15 +2923,32 @@ update_equiv_regs (void)
   basic_block bb;
   int loop_depth;
   bitmap cleared_regs;
+  bool *pdx_subregs;
 
   /* We need to keep track of whether or not we recorded a LABEL_REF so
      that we know if the jump optimizer needs to be rerun.  */
   recorded_label_ref = 0;
 
+  /* Use pdx_subregs to show whether a reg is used in a paradoxical
+     subreg.  */
+  pdx_subregs = XCNEWVEC (bool, max_regno);
+
   reg_equiv = XCNEWVEC (struct equivalence, max_regno);
   grow_reg_equivs ();
 
   init_alias_analysis ();
+
+  /* Scan insns and set pdx_subregs[regno] if the reg is used in a
+     paradoxical subreg. Don't set such reg sequivalent to a mem,
+     because lra will not substitute such equiv memory in order to
+     prevent access beyond allocated memory for paradoxical memory subreg.  */
+  FOR_EACH_BB (bb)
+    FOR_BB_INSNS (bb, insn)
+      {
+	if (! INSN_P (insn))
+	  continue;
+	for_each_rtx (&insn, set_paradoxical_subreg, (void *)pdx_subregs);
+      }
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)
@@ -3008,6 +3047,13 @@ update_equiv_regs (void)
 	    {
 	      /* This might be setting a SUBREG of a pseudo, a pseudo that is
 		 also set somewhere else to a constant.  */
+	      note_stores (set, no_equiv, NULL);
+	      continue;
+	    }
+
+	  /* Don't set reg (if pdx_subregs[regno] == true) equivalent to a mem.  */
+	  if (MEM_P (src) && pdx_subregs[regno])
+	    {
 	      note_stores (set, no_equiv, NULL);
 	      continue;
 	    }
@@ -3170,7 +3216,8 @@ update_equiv_regs (void)
 	  && reg_equiv[regno].init_insns != const0_rtx
 	  && ! find_reg_note (XEXP (reg_equiv[regno].init_insns, 0),
 			      REG_EQUIV, NULL_RTX)
-	  && ! contains_replace_regs (XEXP (dest, 0)))
+	  && ! contains_replace_regs (XEXP (dest, 0))
+	  && ! pdx_subregs[regno])
 	{
 	  rtx init_insn = XEXP (reg_equiv[regno].init_insns, 0);
 	  if (validate_equiv_mem (init_insn, src, dest)
@@ -3361,6 +3408,7 @@ update_equiv_regs (void)
 
   end_alias_analysis ();
   free (reg_equiv);
+  free (pdx_subregs);
   return recorded_label_ref;
 }
 

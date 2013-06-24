@@ -87,6 +87,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA_BMI_SET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_BMI2_SET OPTION_MASK_ISA_BMI2
+#define OPTION_MASK_ISA_LZCNT_SET OPTION_MASK_ISA_LZCNT
 #define OPTION_MASK_ISA_TBM_SET OPTION_MASK_ISA_TBM
 #define OPTION_MASK_ISA_POPCNT_SET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_SET OPTION_MASK_ISA_CX16
@@ -154,6 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA_ABM_UNSET OPTION_MASK_ISA_ABM
 #define OPTION_MASK_ISA_BMI_UNSET OPTION_MASK_ISA_BMI
 #define OPTION_MASK_ISA_BMI2_UNSET OPTION_MASK_ISA_BMI2
+#define OPTION_MASK_ISA_LZCNT_UNSET OPTION_MASK_ISA_LZCNT
 #define OPTION_MASK_ISA_TBM_UNSET OPTION_MASK_ISA_TBM
 #define OPTION_MASK_ISA_POPCNT_UNSET OPTION_MASK_ISA_POPCNT
 #define OPTION_MASK_ISA_CX16_UNSET OPTION_MASK_ISA_CX16
@@ -435,6 +437,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_BMI2_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_BMI2_UNSET;
+	}
+      return true;
+
+    case OPT_mlzcnt:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_LZCNT_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LZCNT_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_LZCNT_UNSET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_LZCNT_UNSET;
 	}
       return true;
 

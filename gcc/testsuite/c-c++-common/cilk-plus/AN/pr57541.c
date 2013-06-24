@@ -4,11 +4,14 @@
 int A[10];
 
 int main () {
-  char c = (char)N; /* { dg-error "undeclared" } */
+
+  /* C compiler uses the term "undeclared" whereas C++ compiler uses
+    "not declared".  Thus, grepping for declared seem to be the easiest.  */
+  char c = (char)N; /* { dg-error "declared" } */
   short s = (short)N;
   long l = (long)N;
   A[l:s:c];
 }
 
-/* { dg-message "note: each" "defined" { target *-*-* }  7 } */
+/* { dg-message "note: each" "defined" { target c }  10 } */
 

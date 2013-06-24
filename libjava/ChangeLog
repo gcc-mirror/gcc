@@ -1,3 +1,14 @@
+2013-06-20  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4 (PKG_CHECK_MODULES): Use AC_PATH_TOOL to check for pkg-config.
+	* classpath/m4/pkg.m4 (PKG_CHECK_MODULES): Likewise.
+	* configure: Regenerate.
+	* classpath/configure: Regenerate.
+
+2013-06-20  Matthias Klose  <doko@ubuntu.com>
+
+	* libtool-version: Bump soversion.
+
 2013-05-22  Mark Mitchell  <mark@codesourcery.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 

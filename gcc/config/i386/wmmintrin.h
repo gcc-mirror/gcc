@@ -30,13 +30,14 @@
 /* We need definitions from the SSE2 header file.  */
 #include <emmintrin.h>
 
-#if !defined (__AES__) && !defined (__PCLMUL__)
-# error "AES/PCLMUL instructions not enabled"
-#else
-
 /* AES */
 
-#ifdef __AES__
+#ifndef __AES__
+#pragma GCC push_options
+#pragma GCC target("aes")
+#define __DISABLE_AES__
+#endif /* __AES__ */
+
 /* Performs 1 round of AES decryption of the first m128i using 
    the second m128i as a round key.  */
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -92,11 +93,20 @@ _mm_aeskeygenassist_si128 (__m128i __X, const int __C)
   ((__m128i) __builtin_ia32_aeskeygenassist128 ((__v2di)(__m128i)(X),	\
 						(int)(C)))
 #endif
-#endif  /* __AES__ */
+
+#ifdef __DISABLE_AES__
+#undef __DISABLE_AES__
+#pragma GCC pop_options
+#endif /* __DISABLE_AES__ */
 
 /* PCLMUL */
 
-#ifdef __PCLMUL__
+#ifndef __PCLMUL__
+#pragma GCC push_options
+#pragma GCC target("pclmul")
+#define __DISABLE_PCLMUL__
+#endif /* __PCLMUL__ */
+
 /* Performs carry-less integer multiplication of 64-bit halves of
    128-bit input operands.  The third parameter inducates which 64-bit
    haves of the input parameters v1 and v2 should be used. It must be
@@ -113,8 +123,10 @@ _mm_clmulepi64_si128 (__m128i __X, __m128i __Y, const int __I)
   ((__m128i) __builtin_ia32_pclmulqdq128 ((__v2di)(__m128i)(X),		\
 					  (__v2di)(__m128i)(Y), (int)(I)))
 #endif
-#endif  /* __PCLMUL__  */
 
-#endif /* __AES__/__PCLMUL__ */
+#ifdef __DISABLE_PCLMUL__
+#undef __DISABLE_PCLMUL__
+#pragma GCC pop_options
+#endif /* __DISABLE_PCLMUL__ */
 
 #endif /* _WMMINTRIN_H_INCLUDED */

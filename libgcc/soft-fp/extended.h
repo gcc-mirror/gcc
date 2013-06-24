@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Extended Precision.
-   Copyright (C) 1999,2006,2007,2012 Free Software Foundation, Inc.
+   Copyright (C) 1999-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek (jj@ultra.linux.cz).
 
@@ -203,7 +203,7 @@ union _FP_UNION_E
  * anyway, we optimize it by doing most of the calculations
  * in two UWtype registers instead of four.
  */
- 
+
 #define _FP_SQRT_MEAT_E(R, S, T, X, q)			\
   do {							\
     q = (_FP_W_TYPE)1 << (_FP_W_TYPE_SIZE - 1);		\
@@ -416,7 +416,7 @@ union _FP_UNION_E
 	R##_f0 |= _FP_WORK_STICKY;			\
       }							\
   } while (0)
- 
+
 #define FP_CMP_E(r,X,Y,un)	_FP_CMP(E,2,r,X,Y,un)
 #define FP_CMP_EQ_E(r,X,Y)	_FP_CMP_EQ(E,2,r,X,Y)
 #define FP_CMP_UNORD_E(r,X,Y)	_FP_CMP_UNORD(E,2,r,X,Y)

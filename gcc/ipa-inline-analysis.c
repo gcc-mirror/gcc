@@ -2106,8 +2106,9 @@ param_change_prob (gimple stmt, int i)
       struct record_modified_bb_info info;
       bitmap_iterator bi;
       unsigned index;
+      tree init = ctor_for_folding (base);
 
-      if (const_value_known_p (base))
+      if (init != error_mark_node)
 	return 0;
       if (!bb->frequency)
 	return REG_BR_PROB_BASE;

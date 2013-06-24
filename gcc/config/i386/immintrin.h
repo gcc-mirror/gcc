@@ -24,71 +24,43 @@
 #ifndef _IMMINTRIN_H_INCLUDED
 #define _IMMINTRIN_H_INCLUDED
 
-#ifdef __MMX__
 #include <mmintrin.h>
-#endif
 
-#ifdef __SSE__
 #include <xmmintrin.h>
-#endif
 
-#ifdef __SSE2__
 #include <emmintrin.h>
-#endif
 
-#ifdef __SSE3__
 #include <pmmintrin.h>
-#endif
 
-#ifdef __SSSE3__
 #include <tmmintrin.h>
-#endif
 
-#if defined (__SSE4_2__) || defined (__SSE4_1__)
 #include <smmintrin.h>
-#endif
 
-#if defined (__AES__) || defined (__PCLMUL__)
 #include <wmmintrin.h>
-#endif
 
-#ifdef __AVX__
 #include <avxintrin.h>
-#endif
 
-#ifdef __AVX2__
 #include <avx2intrin.h>
-#endif
 
-#ifdef __LZCNT__
 #include <lzcntintrin.h>
-#endif
 
-#ifdef __BMI__
 #include <bmiintrin.h>
-#endif
 
-#ifdef __BMI2__
 #include <bmi2intrin.h>
-#endif
 
-#ifdef __FMA__
 #include <fmaintrin.h>
-#endif
 
-#ifdef __F16C__
 #include <f16cintrin.h>
-#endif
 
-#ifdef __RTM__
 #include <rtmintrin.h>
-#endif
 
-#ifdef __RTM__
 #include <xtestintrin.h>
-#endif
 
-#ifdef __RDRND__
+#ifndef __RDRND__
+#pragma GCC push_options
+#pragma GCC target("rdrnd")
+#define __DISABLE_RDRND__
+#endif /* __RDRND__ */
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _rdrand16_step (unsigned short *__P)
@@ -102,10 +74,18 @@ _rdrand32_step (unsigned int *__P)
 {
   return __builtin_ia32_rdrand32_step (__P);
 }
-#endif /* __RDRND__ */
+#ifdef __DISABLE_RDRND__
+#undef __DISABLE_RDRND__
+#pragma GCC pop_options
+#endif /* __DISABLE_RDRND__ */
 
 #ifdef  __x86_64__
-#ifdef __FSGSBASE__
+
+#ifndef __FSGSBASE__
+#pragma GCC push_options
+#pragma GCC target("fsgsbase")
+#define __DISABLE_FSGSBASE__
+#endif /* __FSGSBASE__ */
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _readfsbase_u32 (void)
@@ -161,16 +141,27 @@ _writegsbase_u64 (unsigned long long __B)
 {
   __builtin_ia32_wrgsbase64 (__B);
 }
-#endif /* __FSGSBASE__ */
+#ifdef __DISABLE_FSGSBASE__
+#undef __DISABLE_FSGSBASE__
+#pragma GCC pop_options
+#endif /* __DISABLE_FSGSBASE__ */
 
-#ifdef __RDRND__
+#ifndef __RDRND__
+#pragma GCC push_options
+#pragma GCC target("rdrnd")
+#define __DISABLE_RDRND__
+#endif /* __RDRND__ */
 extern __inline int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _rdrand64_step (unsigned long long *__P)
 {
   return __builtin_ia32_rdrand64_step (__P);
 }
-#endif /* __RDRND__ */
+#ifdef __DISABLE_RDRND__
+#undef __DISABLE_RDRND__
+#pragma GCC pop_options
+#endif /* __DISABLE_RDRND__ */
+
 #endif /* __x86_64__  */
 
 #endif /* _IMMINTRIN_H_INCLUDED */

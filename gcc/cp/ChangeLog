@@ -1,3 +1,139 @@
+2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* call.c (null_ptr_cst_p): Use cxx11 in lieu of cxx0x.
+	* class.c (add_implicitly_declared_members): Likewise.
+	(check_field_decl): Likewise.
+	(finalize_literal_type_property): Likewise.
+	(check_bases_and_members): Likewise.
+	* decl.c (poplevel): Likewise.
+	(case_conversion): Likewise.
+	(check_initializer): Likewise.
+	(grokfndecl): Likewise.
+	(check_static_variable_definition): Likewise.
+	(compute_array_index_type): Likewise.
+	(grokdeclarator): Likewise.
+	(build_enumerator): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* lex.c (init_reswords): Likewise.
+	* method.c (synthesized_method_walk): Likewise.
+	(implicitly_declare_fn): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_constant_expression): Likewise.
+	(cp_parser_for_init_statement): Likewise.
+	(cp_parser_block_declaration): Likewise.
+	(cp_parser_type_name): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_nth_tokens_can_be_std_attribute_p): Likewise.
+	(cp_parser_template_declaration_after_export): Likewise.
+	* pt.c (convert_nontype_argument_function): Likewise.
+	(convert_nontype_argument): Likewise.
+	(convert_template_argument): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	(build_non_dependent_expr): Likewise.
+	* semantics.c (non_const_var_error): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	(build_vec_init_expr): Likewise.
+	(cast_valid_in_integral_constant_expression_p): Likewise.
+	* typeck.c (build_x_conditional_expr): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* call.c (convert_like_real): Added a check if array notation is present
+	in expression.  If so, then no conversion of arguments is necessary.
+	(build_over_call): Likewise.
+	* typeck.c (cp_build_function_call_vec): Likewise.
+	(convert_for_assignment): Likewise.
+	(cp_build_array_ref): Reject array notations with a rank greater than 1
+	as an array's index.
+	(cp_build_binary_op): If array notations are preent in op, then call
+	find_correct_array_notation_type.
+	(cp_build_addr_expr_1): Handle ARRAY_NOTATION_REF similar to ARRAY_REF.
+	* cp-array-notation.c: New file.
+	* cp-objcp-common.c (cp_common_init_ts): Marked ARRAY_NOTATION_REF tree
+	as typed.
+	* cp-tree.h (fix_array_notation_exprs): New prototype.
+	* semantics.c (finish_return_stmt): Reject array notations as
+	return value.
+	(cxx_eval_constant_expression): Added ARRAY_NOTATION_REF case.
+	(potential_constant_expression_1): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	* error.c (dump_decl): Likewise.
+	(dump_expr): Likewise.
+	* pt.c (ARRAY_NOTATION_REF): Likewise.
+	(type_unification_real): Do not unify any arguments if array notations
+	are found in arg.
+	(instantiate_decl): Added a check for array notaitons inside the
+	function body.  If so, then expand them.
+	* parser.c (cp_parser_array_notation): New function.
+	(cp_parser_postfix_open_square_expression): Added a check for colons
+	inside square braces.  If found, then handle the array access as an
+	array notation access.  Also, disable auto-correction from a single
+	colon to scope when Cilk Plus is enabled.
+	(cp_parser_compound_statement): Added a check for array notations
+	inside the statement.  If found, then expand them.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_function_definition_after_declarator): Likewise.
+	(cp_parser_selection_statement): Searched for array notations inside
+	condition.  If so, then emit an error.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_direct_declarator): Reject array notations inside a
+	variable or array declaration.
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Added cp/cp-array-notation.o.
+
+2013-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55149
+	* decl.c (compute_array_index_type): Don't reject VLAs in SFINAE
+	context if we're in C++14 mode.
+	* tree.c (array_of_runtime_bound_p): Return true for a dependent
+	bound that is not potentually constant.
+	* cp-tree.h (DECL_VLA_CAPTURE_P, REFERENCE_VLA_OK): New.
+	* pt.c (tsubst) [REFERENCE_TYPE]: Check REFERENCE_VLA_OK.
+	* semantics.c (build_lambda_object): Don't rvalue a VLA capture.
+	(build_capture_proxy): Set REFERENCE_VLA_OK.
+	(vla_capture_type): Make it a proper C++ class.
+	(add_capture): Set DECL_VLA_CAPTURE_P.  Don't pre-digest the
+	initializer.
+
+	* decl.c (compute_array_index_type): Use size_one_node.
+
+	* pt.c (process_partial_specialization): Build a TEMPLATE_DECL for
+	a partial specialization.
+	(tsubst_decl): Don't clobber CLASSTYPE_TI_TEMPLATE of a partial
+	specialization.
+	(most_specialized_class): Adjust.
+
+	* cp-tree.h (DECL_TEMPLATE_PARMS, DECL_TEMPLATE_RESULT)
+	(DECL_TEMPLATE_INSTANTIATIONS, DECL_TEMPLATE_SPECIALIZATIONS): Use
+	TEMPLATE_DECL_CHECK.
+
+2013-06-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/57638
+	* pt.c (unify, [TEMPLATE_PARM_INDEX]): Pass to unify_type_mismatch
+	TREE_TYPE (arg), not arg itself.
+
+2013-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53211
+	* pt.c (type_dependent_expression_p): Handle an array of unknown
+	bound depending on a variadic parameter.
+	* parser.c (cp_parser_range_for): Revert PR56794 changes.
+
+2013-06-17  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (ANON_AGGRNAME_FORMAT, ANON_AGGRNAME_P): Move to tree.h.
+
+2013-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/16128
+	* parser.c (cp_parser_expression_statement): Check whether
+	cp_parser_expression returns error_mark_node.
+
 2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51413

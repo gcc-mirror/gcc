@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic four-word fraction declaration and manipulation.
-   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 1997-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -81,7 +81,7 @@
   } while (0)
 
 
-/* Right shift with sticky-lsb. 
+/* Right shift with sticky-lsb.
  * What this actually means is that we do a standard right-shift,
  * but that if any of the bits that fall off the right hand side
  * were one then we always set the LSbit.
@@ -435,7 +435,7 @@
  * We have just one right now, maybe Newton approximation
  * should be added for those machines where division is fast.
  */
- 
+
 #define _FP_SQRT_MEAT_4(R, S, T, X, q)				\
   do {								\
     while (q)							\
@@ -481,7 +481,7 @@
 	    S##_f[2] += (T##_f[1] > S##_f[1]);			\
 	    S##_f[3] += (T##_f[2] > S##_f[2]);			\
 	    __FP_FRAC_DEC_3(X##_f[3], X##_f[2], X##_f[1],	\
-	    		    T##_f[3], T##_f[2], T##_f[1]);	\
+			    T##_f[3], T##_f[2], T##_f[1]);	\
 	    R##_f[1] += q;					\
 	  }							\
 	_FP_FRAC_SLL_4(X, 1);					\
@@ -516,7 +516,7 @@
 
 
 /*
- * Internals 
+ * Internals
  */
 
 #define __FP_FRAC_SET_4(X,I3,I2,I1,I0)					\
@@ -618,9 +618,9 @@
 /* Convert FP values between word sizes. This appears to be more
  * complicated than I'd have expected it to be, so these might be
  * wrong... These macros are in any case somewhat bogus because they
- * use information about what various FRAC_n variables look like 
+ * use information about what various FRAC_n variables look like
  * internally [eg, that 2 word vars are X_f0 and x_f1]. But so do
- * the ones in op-2.h and op-1.h. 
+ * the ones in op-2.h and op-1.h.
  */
 #define _FP_FRAC_COPY_1_4(D, S)		(D##_f = S##_f[0])
 
@@ -630,7 +630,7 @@ do {						\
   D##_f1 = S##_f[1];				\
 } while (0)
 
-/* Assembly/disassembly for converting to/from integral types.  
+/* Assembly/disassembly for converting to/from integral types.
  * No shifting or overflow handled here.
  */
 /* Put the FP value X into r, which is an integer of size rsize. */

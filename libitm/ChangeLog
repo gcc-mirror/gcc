@@ -1,3 +1,23 @@
+2013-06-20  Iain Sandoe  <iain@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/lib/libitm.exp: Reorder lib loads into dependency order.
+	Do not load_gcc_lib gcc-dg.exp and add a comment as to why.
+	* testsuite/libitm.c/c.exp: load_gcc_lib gcc-dg.exp.
+	* testsuite/libitm.c++/c++.exp: load_gcc_lib gcc-dg.exp.
+
+2013-06-20  Torvald Riegel  <triegel@redhat.com>
+
+	* query.cc (_ITM_inTransaction): Abort when using the HTM fastpath.
+	(_ITM_getTransactionId): Same.
+	* config/x86/target.h (htm_transaction_active): New.
+
+2013-06-20  Torvald Riegel  <triegel@redhat.com>
+
+	PR libitm/57643
+	* beginend.cc (gtm_thread::begin_transaction): Handle reentrancy in
+	the HTM fastpath.
+
 2013-03-31  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	PR bootstrap/56714

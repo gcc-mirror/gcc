@@ -7023,7 +7023,7 @@ s390_chunkify_start (void)
       if (LABEL_P (insn)
 	  && (LABEL_PRESERVE_P (insn) || LABEL_NAME (insn)))
 	{
-	  rtx vec_insn = next_real_insn (insn);
+	  rtx vec_insn = NEXT_INSN (insn);
 	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
@@ -7033,6 +7033,8 @@ s390_chunkify_start (void)
       else if (JUMP_P (insn))
 	{
           rtx pat = PATTERN (insn);
+          rtx table;
+
 	  if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
 	    pat = XVECEXP (pat, 0, 0);
 
@@ -7046,28 +7048,18 @@ s390_chunkify_start (void)
 		    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		}
             }
-	  else if (GET_CODE (pat) == PARALLEL
-		   && XVECLEN (pat, 0) == 2
-		   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
-		   && GET_CODE (XVECEXP (pat, 0, 1)) == USE
-		   && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == LABEL_REF)
-	    {
-	      /* Find the jump table used by this casesi jump.  */
-	      rtx vec_label = XEXP (XEXP (XVECEXP (pat, 0, 1), 0), 0);
-	      rtx vec_insn = next_real_insn (vec_label);
-	      if (vec_insn && JUMP_TABLE_DATA_P (vec_insn))
-		{
-		  rtx vec_pat = PATTERN (vec_insn);
-		  int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
+         else if (tablejump_p (insn, NULL, &table))
+           {
+             rtx vec_pat = PATTERN (table);
+             int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
 
-		  for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
-		    {
-		      rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
+             for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
+               {
+                 rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
 
-		      if (s390_find_pool (pool_list, label)
-			  != s390_find_pool (pool_list, insn))
-			bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
-		    }
+                 if (s390_find_pool (pool_list, label)
+                     != s390_find_pool (pool_list, insn))
+                   bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		}
 	    }
         }

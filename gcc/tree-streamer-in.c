@@ -122,10 +122,10 @@ unpack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
     TYPE_ARTIFICIAL (expr) = (unsigned) bp_unpack_value (bp, 1);
   else
     TREE_NO_WARNING (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_USED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_NOTHROW (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_STATIC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TREE_PRIVATE (expr) = (unsigned) bp_unpack_value (bp, 1);
+  if (TREE_CODE (expr) != TREE_BINFO)
+    TREE_PRIVATE (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_PROTECTED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TREE_DEPRECATED (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (TYPE_P (expr))
@@ -351,8 +351,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
-  TYPE_CONTAINS_PLACEHOLDER_INTERNAL (expr)
-    	= (unsigned) bp_unpack_value (bp, 2);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_READONLY (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PRECISION (expr) = bp_unpack_var_len_unsigned (bp);
@@ -811,7 +809,7 @@ lto_input_ts_list_tree_pointers (struct lto_input_block *ib,
 {
   TREE_PURPOSE (expr) = stream_read_tree (ib, data_in);
   TREE_VALUE (expr) = stream_read_tree (ib, data_in);
-  TREE_CHAIN (expr) = streamer_read_chain (ib, data_in);
+  TREE_CHAIN (expr) = stream_read_tree (ib, data_in);
 }
 
 
@@ -1021,19 +1019,6 @@ streamer_read_tree_body (struct lto_input_block *ib, struct data_in *data_in,
 }
 
 
-/* Read and INTEGER_CST node from input block IB using the per-file
-   context in DATA_IN.  */
-
-tree
-streamer_read_integer_cst (struct lto_input_block *ib, struct data_in *data_in)
-{
-  tree type = stream_read_tree (ib, data_in);
-  unsigned HOST_WIDE_INT low = streamer_read_uhwi (ib);
-  HOST_WIDE_INT high = streamer_read_hwi (ib);
-  return build_int_cst_wide (type, low, high);
-}
-
-
 /* Read an index IX from input block IB and return the tree node at
    DATA_IN->FILE_DATA->GLOBALS_INDEX[IX].  */
 
@@ -1047,7 +1032,7 @@ streamer_get_pickled_tree (struct lto_input_block *ib, struct data_in *data_in)
   ix = streamer_read_uhwi (ib);
   expected_tag = streamer_read_enum (ib, LTO_tags, LTO_NUM_TAGS);
 
-  result = streamer_tree_cache_get (data_in->reader_cache, ix);
+  result = streamer_tree_cache_get_tree (data_in->reader_cache, ix);
   gcc_assert (result
               && TREE_CODE (result) == lto_tag_to_tree_code (expected_tag));
 
@@ -1091,7 +1076,7 @@ streamer_get_builtin_tree (struct lto_input_block *ib, struct data_in *data_in)
   if (asmname)
     set_builtin_user_assembler_name (result, asmname);
 
-  streamer_tree_cache_append (data_in->reader_cache, result);
+  streamer_tree_cache_append (data_in->reader_cache, result, 0);
 
   return result;
 }

@@ -71,7 +71,7 @@ create_output_block (enum lto_section_type section_type)
   ob->decl_state = lto_get_out_decl_state ();
   ob->main_stream = XCNEW (struct lto_output_stream);
   ob->string_stream = XCNEW (struct lto_output_stream);
-  ob->writer_cache = streamer_tree_cache_create ();
+  ob->writer_cache = streamer_tree_cache_create (!flag_wpa, true);
 
   if (section_type == LTO_section_function_body)
     ob->cfg_stream = XCNEW (struct lto_output_stream);
@@ -128,6 +128,8 @@ tree_is_indexable (tree t)
     return true;
   else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
 	   && !TREE_STATIC (t))
+    return false;
+  else if (TREE_CODE (t) == DEBUG_EXPR_DECL)
     return false;
   /* Variably modified types need to be streamed alongside function
      bodies because they can refer to local entities.  Together with
@@ -293,27 +295,48 @@ lto_is_streamable (tree expr)
 }
 
 
+/* For EXPR lookup and return what we want to stream to OB as DECL_INITIAL.  */
+
+static tree
+get_symbol_initial_value (struct output_block *ob, tree expr)
+{
+  gcc_checking_assert (DECL_P (expr)
+		       && TREE_CODE (expr) != FUNCTION_DECL
+		       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL);
+
+  /* Handle DECL_INITIAL for symbols.  */
+  tree initial = DECL_INITIAL (expr);
+  if (TREE_CODE (expr) == VAR_DECL
+      && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
+      && !DECL_IN_CONSTANT_POOL (expr)
+      && initial)
+    {
+      lto_symtab_encoder_t encoder;
+      struct varpool_node *vnode;
+
+      encoder = ob->decl_state->symtab_node_encoder;
+      vnode = varpool_get_node (expr);
+      if (!vnode
+	  || !lto_symtab_encoder_encode_initializer_p (encoder,
+						       vnode))
+	initial = error_mark_node;
+    }
+
+  return initial;
+}
+
+
 /* Write a physical representation of tree node EXPR to output block
    OB.  If REF_P is true, the leaves of EXPR are emitted as references
    via lto_output_tree_ref.  IX is the index into the streamer cache
    where EXPR is stored.  */
 
 static void
-lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
+lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
 {
-  struct bitpack_d bp;
-
-  if (!lto_is_streamable (expr))
-    internal_error ("tree code %qs is not supported in LTO streams",
-	            tree_code_name[TREE_CODE (expr)]);
-
-  /* Write the header, containing everything needed to materialize
-     EXPR on the reading side.  */
-  streamer_write_tree_header (ob, expr);
-
   /* Pack all the non-pointer fields in EXPR into a bitpack and write
      the resulting bitpack.  */
-  bp = bitpack_create (ob->main_stream);
+  bitpack_d bp = bitpack_create (ob->main_stream);
   streamer_pack_tree_bitfields (ob, &bp, expr);
   streamer_write_bitpack (&bp);
 
@@ -326,28 +349,937 @@ lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
       && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
     {
       /* Handle DECL_INITIAL for symbols.  */
-      tree initial = DECL_INITIAL (expr);
-      if (TREE_CODE (expr) == VAR_DECL
-	  && (TREE_STATIC (expr) || DECL_EXTERNAL (expr))
-	  && !DECL_IN_CONSTANT_POOL (expr)
-	  && initial)
-	{
-	  lto_symtab_encoder_t encoder;
-	  struct varpool_node *vnode;
-
-	  encoder = ob->decl_state->symtab_node_encoder;
-	  vnode = varpool_get_node (expr);
-	  if (!vnode
-	      || !lto_symtab_encoder_encode_initializer_p (encoder,
-							    vnode))
-	    initial = error_mark_node;
-	}
-
+      tree initial = get_symbol_initial_value (ob, expr);
       stream_write_tree (ob, initial, ref_p);
     }
+}
+
+/* Write a physical representation of tree node EXPR to output block
+   OB.  If REF_P is true, the leaves of EXPR are emitted as references
+   via lto_output_tree_ref.  IX is the index into the streamer cache
+   where EXPR is stored.  */
+
+static void
+lto_write_tree (struct output_block *ob, tree expr, bool ref_p)
+{
+  if (!lto_is_streamable (expr))
+    internal_error ("tree code %qs is not supported in LTO streams",
+		    tree_code_name[TREE_CODE (expr)]);
+
+  /* Write the header, containing everything needed to materialize
+     EXPR on the reading side.  */
+  streamer_write_tree_header (ob, expr);
+
+  lto_write_tree_1 (ob, expr, ref_p);
 
   /* Mark the end of EXPR.  */
   streamer_write_zero (ob);
+}
+
+/* Emit the physical representation of tree node EXPR to output block
+   OB.  If THIS_REF_P is true, the leaves of EXPR are emitted as references
+   via lto_output_tree_ref.  REF_P is used for streaming siblings of EXPR.  */
+
+static void
+lto_output_tree_1 (struct output_block *ob, tree expr, hashval_t hash,
+		   bool ref_p, bool this_ref_p)
+{
+  unsigned ix;
+
+  gcc_checking_assert (expr != NULL_TREE
+		       && !(this_ref_p && tree_is_indexable (expr)));
+
+  bool exists_p = streamer_tree_cache_insert (ob->writer_cache,
+					      expr, hash, &ix);
+  gcc_assert (!exists_p);
+  if (streamer_handle_as_builtin_p (expr))
+    {
+      /* MD and NORMAL builtins do not need to be written out
+	 completely as they are always instantiated by the
+	 compiler on startup.  The only builtins that need to
+	 be written out are BUILT_IN_FRONTEND.  For all other
+	 builtins, we simply write the class and code.  */
+      streamer_write_builtin (ob, expr);
+    }
+  else if (TREE_CODE (expr) == INTEGER_CST
+	   && !TREE_OVERFLOW (expr))
+    {
+      /* Shared INTEGER_CST nodes are special because they need their
+	 original type to be materialized by the reader (to implement
+	 TYPE_CACHED_VALUES).  */
+      streamer_write_integer_cst (ob, expr, ref_p);
+    }
+  else
+    {
+      /* This is the first time we see EXPR, write its fields
+	 to OB.  */
+      lto_write_tree (ob, expr, ref_p);
+    }
+}
+
+struct sccs
+{
+  unsigned int dfsnum;
+  unsigned int low;
+};
+
+struct scc_entry
+{
+  tree t;
+  hashval_t hash;
+};
+
+static unsigned int next_dfs_num;
+static vec<scc_entry> sccstack;
+static struct pointer_map_t *sccstate;
+static struct obstack sccstate_obstack;
+
+static void
+DFS_write_tree (struct output_block *ob, sccs *from_state,
+		tree expr, bool ref_p, bool this_ref_p);
+
+/* Handle the tree EXPR in the DFS walk with SCC state EXPR_STATE and
+   DFS recurse for all tree edges originating from it.  */
+
+static void
+DFS_write_tree_body (struct output_block *ob,
+		     tree expr, sccs *expr_state, bool ref_p)
+{
+#define DFS_follow_tree_edge(DEST) \
+  DFS_write_tree (ob, expr_state, DEST, ref_p, ref_p)
+
+  enum tree_code code;
+
+  code = TREE_CODE (expr);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    {
+      if (TREE_CODE (expr) != IDENTIFIER_NODE)
+	DFS_follow_tree_edge (TREE_TYPE (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    {
+      for (unsigned i = 0; i < VECTOR_CST_NELTS (expr); ++i)
+	DFS_follow_tree_edge (VECTOR_CST_ELT (expr, i));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
+    {
+      DFS_follow_tree_edge (TREE_REALPART (expr));
+      DFS_follow_tree_edge (TREE_IMAGPART (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    {
+      /* Drop names that were created for anonymous entities.  */
+      if (DECL_NAME (expr)
+	  && TREE_CODE (DECL_NAME (expr)) == IDENTIFIER_NODE
+	  && ANON_AGGRNAME_P (DECL_NAME (expr)))
+	;
+      else
+	DFS_follow_tree_edge (DECL_NAME (expr));
+      DFS_follow_tree_edge (DECL_CONTEXT (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
+    {
+      DFS_follow_tree_edge (DECL_SIZE (expr));
+      DFS_follow_tree_edge (DECL_SIZE_UNIT (expr));
+
+      /* Note, DECL_INITIAL is not handled here.  Since DECL_INITIAL needs
+	 special handling in LTO, it must be handled by streamer hooks.  */
+
+      DFS_follow_tree_edge (DECL_ATTRIBUTES (expr));
+
+      /* Do not follow DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
+	 for early inlining so drop it on the floor instead of ICEing in
+	 dwarf2out.c.  */
+
+      if ((TREE_CODE (expr) == VAR_DECL
+	   || TREE_CODE (expr) == PARM_DECL)
+	  && DECL_HAS_VALUE_EXPR_P (expr))
+	DFS_follow_tree_edge (DECL_VALUE_EXPR (expr));
+      if (TREE_CODE (expr) == VAR_DECL)
+	DFS_follow_tree_edge (DECL_DEBUG_EXPR (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
+    {
+      if (TREE_CODE (expr) == FUNCTION_DECL)
+	{
+	  for (tree t = DECL_ARGUMENTS (expr); t; t = TREE_CHAIN (t))
+	    DFS_follow_tree_edge (t);
+	  DFS_follow_tree_edge (DECL_RESULT (expr));
+	}
+      else if (TREE_CODE (expr) == TYPE_DECL)
+	DFS_follow_tree_edge (DECL_ORIGINAL_TYPE (expr));
+      DFS_follow_tree_edge (DECL_VINDEX (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      /* Make sure we don't inadvertently set the assembler name.  */
+      if (DECL_ASSEMBLER_NAME_SET_P (expr))
+	DFS_follow_tree_edge (DECL_ASSEMBLER_NAME (expr));
+      DFS_follow_tree_edge (DECL_SECTION_NAME (expr));
+      DFS_follow_tree_edge (DECL_COMDAT_GROUP (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
+    {
+      DFS_follow_tree_edge (DECL_FIELD_OFFSET (expr));
+      DFS_follow_tree_edge (DECL_BIT_FIELD_TYPE (expr));
+      DFS_follow_tree_edge (DECL_BIT_FIELD_REPRESENTATIVE (expr));
+      DFS_follow_tree_edge (DECL_FIELD_BIT_OFFSET (expr));
+      DFS_follow_tree_edge (DECL_FCONTEXT (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      DFS_follow_tree_edge (DECL_FUNCTION_PERSONALITY (expr));
+      DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_TARGET (expr));
+      DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    {
+      DFS_follow_tree_edge (TYPE_SIZE (expr));
+      DFS_follow_tree_edge (TYPE_SIZE_UNIT (expr));
+      DFS_follow_tree_edge (TYPE_ATTRIBUTES (expr));
+      DFS_follow_tree_edge (TYPE_NAME (expr));
+      /* Do not follow TYPE_POINTER_TO or TYPE_REFERENCE_TO.  They will be
+	 reconstructed during fixup.  */
+      /* Do not follow TYPE_NEXT_VARIANT, we reconstruct the variant lists
+	 during fixup.  */
+      DFS_follow_tree_edge (TYPE_MAIN_VARIANT (expr));
+      DFS_follow_tree_edge (TYPE_CONTEXT (expr));
+      /* TYPE_CANONICAL is re-computed during type merging, so no need
+	 to follow it here.  */
+      DFS_follow_tree_edge (TYPE_STUB_DECL (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    {
+      if (TREE_CODE (expr) == ENUMERAL_TYPE)
+	DFS_follow_tree_edge (TYPE_VALUES (expr));
+      else if (TREE_CODE (expr) == ARRAY_TYPE)
+	DFS_follow_tree_edge (TYPE_DOMAIN (expr));
+      else if (RECORD_OR_UNION_TYPE_P (expr))
+	for (tree t = TYPE_FIELDS (expr); t; t = TREE_CHAIN (t))
+	  DFS_follow_tree_edge (t);
+      else if (TREE_CODE (expr) == FUNCTION_TYPE
+	       || TREE_CODE (expr) == METHOD_TYPE)
+	DFS_follow_tree_edge (TYPE_ARG_TYPES (expr));
+
+      if (!POINTER_TYPE_P (expr))
+	DFS_follow_tree_edge (TYPE_MINVAL (expr));
+      DFS_follow_tree_edge (TYPE_MAXVAL (expr));
+      if (RECORD_OR_UNION_TYPE_P (expr))
+	DFS_follow_tree_edge (TYPE_BINFO (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+    {
+      DFS_follow_tree_edge (TREE_PURPOSE (expr));
+      DFS_follow_tree_edge (TREE_VALUE (expr));
+      DFS_follow_tree_edge (TREE_CHAIN (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
+    {
+      for (int i = 0; i < TREE_VEC_LENGTH (expr); i++)
+	DFS_follow_tree_edge (TREE_VEC_ELT (expr, i));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    {
+      for (int i = 0; i < TREE_OPERAND_LENGTH (expr); i++)
+	DFS_follow_tree_edge (TREE_OPERAND (expr, i));
+      DFS_follow_tree_edge (TREE_BLOCK (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
+    {
+      for (tree t = BLOCK_VARS (expr); t; t = TREE_CHAIN (t))
+	/* ???  FIXME.  See also streamer_write_chain.  */
+	if (!(VAR_OR_FUNCTION_DECL_P (t)
+	      && DECL_EXTERNAL (t)))
+	  DFS_follow_tree_edge (t);
+
+      DFS_follow_tree_edge (BLOCK_SUPERCONTEXT (expr));
+
+      /* Follow BLOCK_ABSTRACT_ORIGIN for the limited cases we can
+	 handle - those that represent inlined function scopes.
+	 For the drop rest them on the floor instead of ICEing
+	 in dwarf2out.c.  */
+      if (inlined_function_outer_scope_p (expr))
+	{
+	  tree ultimate_origin = block_ultimate_origin (expr);
+	  DFS_follow_tree_edge (ultimate_origin);
+	}
+      /* Do not follow BLOCK_NONLOCALIZED_VARS.  We cannot handle debug
+	 information for early inlined BLOCKs so drop it on the floor instead
+	 of ICEing in dwarf2out.c.  */
+
+      /* BLOCK_FRAGMENT_ORIGIN and BLOCK_FRAGMENT_CHAIN is not live at LTO
+	 streaming time.  */
+
+      /* Do not output BLOCK_SUBBLOCKS.  Instead on streaming-in this
+	 list is re-constructed from BLOCK_SUPERCONTEXT.  */
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      unsigned i;
+      tree t;
+
+      /* Note that the number of BINFO slots has already been emitted in
+	 EXPR's header (see streamer_write_tree_header) because this length
+	 is needed to build the empty BINFO node on the reader side.  */
+      FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (expr), i, t)
+	DFS_follow_tree_edge (t);
+      DFS_follow_tree_edge (BINFO_OFFSET (expr));
+      DFS_follow_tree_edge (BINFO_VTABLE (expr));
+      DFS_follow_tree_edge (BINFO_VPTR_FIELD (expr));
+
+      /* The number of BINFO_BASE_ACCESSES has already been emitted in
+	 EXPR's bitfield section.  */
+      FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
+	DFS_follow_tree_edge (t);
+
+      DFS_follow_tree_edge (BINFO_INHERITANCE_CHAIN (expr));
+      DFS_follow_tree_edge (BINFO_SUBVTT_INDEX (expr));
+      DFS_follow_tree_edge (BINFO_VPTR_INDEX (expr));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      unsigned i;
+      tree index, value;
+
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, index, value)
+	{
+	  DFS_follow_tree_edge (index);
+	  DFS_follow_tree_edge (value);
+	}
+    }
+
+#undef DFS_follow_tree_edge
+}
+
+/* Return a hash value for the tree T.  */
+
+static hashval_t
+hash_tree (struct streamer_tree_cache_d *cache, tree t)
+{
+#define visit(SIBLING) \
+  do { \
+    unsigned ix; \
+    if (SIBLING && streamer_tree_cache_lookup (cache, SIBLING, &ix)) \
+      v = iterative_hash_hashval_t (streamer_tree_cache_get_hash (cache, ix), v); \
+  } while (0)
+
+  /* Hash TS_BASE.  */
+  enum tree_code code = TREE_CODE (t);
+  hashval_t v = iterative_hash_host_wide_int (code, 0);
+  if (!TYPE_P (t))
+    {
+      v = iterative_hash_host_wide_int (TREE_SIDE_EFFECTS (t)
+					| (TREE_CONSTANT (t) << 1)
+					| (TREE_READONLY (t) << 2)
+					| (TREE_PUBLIC (t) << 3), v);
+    }
+  v = iterative_hash_host_wide_int (TREE_ADDRESSABLE (t)
+				    | (TREE_THIS_VOLATILE (t) << 1), v);
+  if (DECL_P (t))
+    v = iterative_hash_host_wide_int (DECL_UNSIGNED (t), v);
+  else if (TYPE_P (t))
+    v = iterative_hash_host_wide_int (TYPE_UNSIGNED (t), v);
+  if (TYPE_P (t))
+    v = iterative_hash_host_wide_int (TYPE_ARTIFICIAL (t), v);
+  else
+    v = iterative_hash_host_wide_int (TREE_NO_WARNING (t), v);
+  v = iterative_hash_host_wide_int (TREE_NOTHROW (t)
+				    | (TREE_STATIC (t) << 1)
+				    | (TREE_PROTECTED (t) << 2)
+				    | (TREE_DEPRECATED (t) << 3), v);
+  if (code != TREE_BINFO)
+    v = iterative_hash_host_wide_int (TREE_PRIVATE (t), v);
+  if (TYPE_P (t))
+    v = iterative_hash_host_wide_int (TYPE_SATURATING (t)
+				      | (TYPE_ADDR_SPACE (t) << 1), v);
+  else if (code == SSA_NAME)
+    v = iterative_hash_host_wide_int (SSA_NAME_IS_DEFAULT_DEF (t), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
+    {
+      v = iterative_hash_host_wide_int (TREE_INT_CST_LOW (t), v);
+      v = iterative_hash_host_wide_int (TREE_INT_CST_HIGH (t), v);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
+    {
+      REAL_VALUE_TYPE r = TREE_REAL_CST (t);
+      v = iterative_hash_host_wide_int (r.cl, v);
+      v = iterative_hash_host_wide_int (r.decimal
+					| (r.sign << 1)
+					| (r.signalling << 2)
+					| (r.canonical << 3), v);
+      v = iterative_hash_host_wide_int (r.uexp, v);
+      for (unsigned i = 0; i < SIGSZ; ++i)
+	v = iterative_hash_host_wide_int (r.sig[i], v);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIXED_CST))
+    {
+      FIXED_VALUE_TYPE f = TREE_FIXED_CST (t);
+      v = iterative_hash_host_wide_int (f.mode, v);
+      v = iterative_hash_host_wide_int (f.data.low, v);
+      v = iterative_hash_host_wide_int (f.data.high, v);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
+    {
+      v = iterative_hash_host_wide_int (DECL_MODE (t), v);
+      v = iterative_hash_host_wide_int (DECL_NONLOCAL (t)
+					| (DECL_VIRTUAL_P (t) << 1)
+					| (DECL_IGNORED_P (t) << 2)
+					| (DECL_ABSTRACT (t) << 3)
+					| (DECL_ARTIFICIAL (t) << 4)
+					| (DECL_USER_ALIGN (t) << 5)
+					| (DECL_PRESERVE_P (t) << 6)
+					| (DECL_EXTERNAL (t) << 7)
+					| (DECL_GIMPLE_REG_P (t) << 8), v);
+      v = iterative_hash_host_wide_int (DECL_ALIGN (t), v);
+      if (code == LABEL_DECL)
+	{
+	  v = iterative_hash_host_wide_int (DECL_ERROR_ISSUED (t), v);
+	  v = iterative_hash_host_wide_int (EH_LANDING_PAD_NR (t), v);
+	  v = iterative_hash_host_wide_int (LABEL_DECL_UID (t), v);
+	}
+      else if (code == FIELD_DECL)
+	{
+	  v = iterative_hash_host_wide_int (DECL_PACKED (t)
+					    | (DECL_NONADDRESSABLE_P (t) << 1),
+					    v);
+	  v = iterative_hash_host_wide_int (DECL_OFFSET_ALIGN (t), v);
+	}
+      else if (code == VAR_DECL)
+	{
+	  v = iterative_hash_host_wide_int (DECL_HAS_DEBUG_EXPR_P (t)
+					    | (DECL_NONLOCAL_FRAME (t) << 1),
+					    v);
+	}
+      if (code == RESULT_DECL
+	  || code == PARM_DECL
+	  || code == VAR_DECL)
+	{
+	  v = iterative_hash_host_wide_int (DECL_BY_REFERENCE (t), v);
+	  if (code == VAR_DECL
+	      || code == PARM_DECL)
+	    v = iterative_hash_host_wide_int (DECL_HAS_VALUE_EXPR_P (t), v);
+	}
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WRTL))
+    v = iterative_hash_host_wide_int (DECL_REGISTER (t), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      v = iterative_hash_host_wide_int (DECL_DEFER_OUTPUT (t)
+					| (DECL_COMMON (t) << 1)
+					| (DECL_DLLIMPORT_P (t) << 2)
+					| (DECL_WEAK (t) << 3)
+					| (DECL_SEEN_IN_BIND_EXPR_P (t) << 4)
+					| (DECL_COMDAT (t) << 5)
+					| (DECL_VISIBILITY_SPECIFIED (t) << 6),
+					v);
+      v = iterative_hash_host_wide_int (DECL_VISIBILITY (t), v);
+      if (code == VAR_DECL)
+	{
+	  v = iterative_hash_host_wide_int (DECL_HARD_REGISTER (t)
+					    | (DECL_IN_TEXT_SECTION (t) << 1)
+					    | (DECL_IN_CONSTANT_POOL (t) << 2),
+					    v);
+	  v = iterative_hash_host_wide_int (DECL_TLS_MODEL (t), v);
+	}
+      if (VAR_OR_FUNCTION_DECL_P (t))
+	v = iterative_hash_host_wide_int (DECL_INIT_PRIORITY (t), v);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      v = iterative_hash_host_wide_int (DECL_BUILT_IN_CLASS (t), v);
+      v = iterative_hash_host_wide_int (DECL_STATIC_CONSTRUCTOR (t)
+					| (DECL_STATIC_DESTRUCTOR (t) << 1)
+					| (DECL_UNINLINABLE (t) << 2)
+					| (DECL_POSSIBLY_INLINED (t) << 3)
+					| (DECL_IS_NOVOPS (t) << 4)
+					| (DECL_IS_RETURNS_TWICE (t) << 5)
+					| (DECL_IS_MALLOC (t) << 6)
+					| (DECL_IS_OPERATOR_NEW (t) << 7)
+					| (DECL_DECLARED_INLINE_P (t) << 8)
+					| (DECL_STATIC_CHAIN (t) << 9)
+					| (DECL_NO_INLINE_WARNING_P (t) << 10)
+					| (DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (t) << 11)
+					| (DECL_NO_LIMIT_STACK (t) << 12)
+					| (DECL_DISREGARD_INLINE_LIMITS (t) << 13)
+					| (DECL_PURE_P (t) << 14)
+					| (DECL_LOOPING_CONST_OR_PURE_P (t) << 15), v);
+      if (DECL_BUILT_IN_CLASS (t) != NOT_BUILT_IN)
+	v = iterative_hash_host_wide_int (DECL_FUNCTION_CODE (t), v);
+      if (DECL_STATIC_DESTRUCTOR (t))
+	v = iterative_hash_host_wide_int (DECL_FINI_PRIORITY (t), v);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    {
+      v = iterative_hash_host_wide_int (TYPE_MODE (t), v);
+      v = iterative_hash_host_wide_int (TYPE_STRING_FLAG (t)
+					| (TYPE_NO_FORCE_BLK (t) << 1)
+					| (TYPE_NEEDS_CONSTRUCTING (t) << 2)
+					| (TYPE_PACKED (t) << 3)
+					| (TYPE_RESTRICT (t) << 4)
+					| (TYPE_USER_ALIGN (t) << 5)
+					| (TYPE_READONLY (t) << 6), v);
+      if (RECORD_OR_UNION_TYPE_P (t))
+	v = iterative_hash_host_wide_int (TYPE_TRANSPARENT_AGGR (t), v);
+      else if (code == ARRAY_TYPE)
+	v = iterative_hash_host_wide_int (TYPE_NONALIASED_COMPONENT (t), v);
+      v = iterative_hash_host_wide_int (TYPE_PRECISION (t), v);
+      v = iterative_hash_host_wide_int (TYPE_ALIGN (t), v);
+      v = iterative_hash_host_wide_int ((TYPE_ALIAS_SET (t) == 0
+					 || (!in_lto_p
+					     && get_alias_set (t) == 0))
+					? 0 : -1, v);
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TRANSLATION_UNIT_DECL))
+    v = iterative_hash (TRANSLATION_UNIT_LANGUAGE (t),
+			strlen (TRANSLATION_UNIT_LANGUAGE (t)), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TARGET_OPTION))
+    v = iterative_hash (t, sizeof (struct cl_target_option), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_OPTIMIZATION))
+    v = iterative_hash (t, sizeof (struct cl_optimization), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_IDENTIFIER))
+    v = iterative_hash_host_wide_int (IDENTIFIER_HASH_VALUE (t), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_STRING))
+    v = iterative_hash (TREE_STRING_POINTER (t), TREE_STRING_LENGTH (t), v);
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPED))
+    {
+      if (POINTER_TYPE_P (t))
+	{
+	  /* For pointers factor in the pointed-to type recursively as
+	     we cannot recurse through only pointers.
+	     ???  We can generalize this by keeping track of the
+	     in-SCC edges for each tree (or arbitrarily the first
+	     such edge) and hashing that in in a second stage
+	     (instead of the quadratic mixing of the SCC we do now).  */
+	  hashval_t x;
+	  unsigned ix;
+	  if (streamer_tree_cache_lookup (cache, TREE_TYPE (t), &ix))
+	    x = streamer_tree_cache_get_hash (cache, ix);
+	  else
+	    x = hash_tree (cache, TREE_TYPE (t));
+	  v = iterative_hash_hashval_t (x, v);
+	}
+      else if (code != IDENTIFIER_NODE)
+	visit (TREE_TYPE (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VECTOR))
+    for (unsigned i = 0; i < VECTOR_CST_NELTS (t); ++i)
+      visit (VECTOR_CST_ELT (t, i));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_COMPLEX))
+    {
+      visit (TREE_REALPART (t));
+      visit (TREE_IMAGPART (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_MINIMAL))
+    {
+      /* Drop names that were created for anonymous entities.  */
+      if (DECL_NAME (t)
+	  && TREE_CODE (DECL_NAME (t)) == IDENTIFIER_NODE
+	  && ANON_AGGRNAME_P (DECL_NAME (t)))
+	;
+      else
+	visit (DECL_NAME (t));
+      if (DECL_FILE_SCOPE_P (t))
+	;
+      else
+	visit (DECL_CONTEXT (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
+    {
+      visit (DECL_SIZE (t));
+      visit (DECL_SIZE_UNIT (t));
+      visit (DECL_ATTRIBUTES (t));
+      if ((code == VAR_DECL
+	   || code == PARM_DECL)
+	  && DECL_HAS_VALUE_EXPR_P (t))
+	visit (DECL_VALUE_EXPR (t));
+      if (code == VAR_DECL
+	  && DECL_HAS_DEBUG_EXPR_P (t))
+	visit (DECL_DEBUG_EXPR (t));
+      /* ???  Hash DECL_INITIAL as streamed.  Needs the output-block to
+         be able to call get_symbol_initial_value.  */
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
+    {
+      if (code == FUNCTION_DECL)
+	{
+	  for (tree a = DECL_ARGUMENTS (t); a; a = DECL_CHAIN (a))
+	    visit (a);
+	  visit (DECL_RESULT (t));
+	}
+      else if (code == TYPE_DECL)
+	visit (DECL_ORIGINAL_TYPE (t));
+      visit (DECL_VINDEX (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
+    {
+      if (DECL_ASSEMBLER_NAME_SET_P (t))
+	visit (DECL_ASSEMBLER_NAME (t));
+      visit (DECL_SECTION_NAME (t));
+      visit (DECL_COMDAT_GROUP (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
+    {
+      visit (DECL_FIELD_OFFSET (t));
+      visit (DECL_BIT_FIELD_TYPE (t));
+      visit (DECL_BIT_FIELD_REPRESENTATIVE (t));
+      visit (DECL_FIELD_BIT_OFFSET (t));
+      visit (DECL_FCONTEXT (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
+    {
+      visit (DECL_FUNCTION_PERSONALITY (t));
+      visit (DECL_FUNCTION_SPECIFIC_TARGET (t));
+      visit (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_COMMON))
+    {
+      visit (TYPE_SIZE (t));
+      visit (TYPE_SIZE_UNIT (t));
+      visit (TYPE_ATTRIBUTES (t));
+      visit (TYPE_NAME (t));
+      visit (TYPE_MAIN_VARIANT (t));
+      if (TYPE_FILE_SCOPE_P (t))
+	;
+      else
+	visit (TYPE_CONTEXT (t));
+      visit (TYPE_STUB_DECL (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
+    {
+      if (code == ENUMERAL_TYPE)
+	visit (TYPE_VALUES (t));
+      else if (code == ARRAY_TYPE)
+	visit (TYPE_DOMAIN (t));
+      else if (RECORD_OR_UNION_TYPE_P (t))
+	for (tree f = TYPE_FIELDS (t); f; f = TREE_CHAIN (f))
+	  visit (f);
+      else if (code == FUNCTION_TYPE
+	       || code == METHOD_TYPE)
+	visit (TYPE_ARG_TYPES (t));
+      if (!POINTER_TYPE_P (t))
+	visit (TYPE_MINVAL (t));
+      visit (TYPE_MAXVAL (t));
+      if (RECORD_OR_UNION_TYPE_P (t))
+	visit (TYPE_BINFO (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_LIST))
+    {
+      visit (TREE_PURPOSE (t));
+      visit (TREE_VALUE (t));
+      visit (TREE_CHAIN (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_VEC))
+    for (int i = 0; i < TREE_VEC_LENGTH (t); ++i)
+      visit (TREE_VEC_ELT (t, i));
+
+  if (CODE_CONTAINS_STRUCT (code, TS_EXP))
+    {
+      v = iterative_hash_host_wide_int (TREE_OPERAND_LENGTH (t), v);
+      for (int i = 0; i < TREE_OPERAND_LENGTH (t); ++i)
+	visit (TREE_OPERAND (t, i));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
+    {
+      unsigned i;
+      tree b;
+      FOR_EACH_VEC_ELT (*BINFO_BASE_BINFOS (t), i, b)
+	visit (b);
+      visit (BINFO_OFFSET (t));
+      visit (BINFO_VTABLE (t));
+      visit (BINFO_VPTR_FIELD (t));
+      FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (t), i, b)
+	visit (b);
+      visit (BINFO_INHERITANCE_CHAIN (t));
+      visit (BINFO_SUBVTT_INDEX (t));
+      visit (BINFO_VPTR_INDEX (t));
+    }
+
+  if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
+    {
+      unsigned i;
+      tree index, value;
+      v = iterative_hash_host_wide_int (CONSTRUCTOR_NELTS (t), v);
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, index, value)
+	{
+	  visit (index);
+	  visit (value);
+	}
+    }
+
+  return v;
+
+#undef visit
+}
+
+/* Compare two SCC entries by their hash value for qsorting them.  */
+
+static int
+scc_entry_compare (const void *p1_, const void *p2_)
+{
+  const scc_entry *p1 = (const scc_entry *) p1_;
+  const scc_entry *p2 = (const scc_entry *) p2_;
+  if (p1->hash < p2->hash)
+    return -1;
+  else if (p1->hash > p2->hash)
+    return 1;
+  return 0;
+}
+
+/* Return a hash value for the SCC on the SCC stack from FIRST with
+   size SIZE.  */
+
+static hashval_t
+hash_scc (struct streamer_tree_cache_d *cache, unsigned first, unsigned size)
+{
+  /* Compute hash values for the SCC members.  */
+  for (unsigned i = 0; i < size; ++i)
+    sccstack[first+i].hash = hash_tree (cache, sccstack[first+i].t);
+
+  if (size == 1)
+    return sccstack[first].hash;
+
+  /* Sort the SCC of type, hash pairs so that when we mix in
+     all members of the SCC the hash value becomes independent on
+     the order we visited the SCC.  Disregard hashes equal to
+     the hash of the tree we mix into because we cannot guarantee
+     a stable sort for those across different TUs.  */
+  qsort (&sccstack[first], size, sizeof (scc_entry), scc_entry_compare);
+  hashval_t *tem = XALLOCAVEC (hashval_t, size);
+  for (unsigned i = 0; i < size; ++i)
+    {
+      hashval_t hash = sccstack[first+i].hash;
+      hashval_t orig_hash = hash;
+      unsigned j;
+      /* Skip same hashes.  */
+      for (j = i + 1;
+	   j < size && sccstack[first+j].hash == orig_hash; ++j)
+	;
+      for (; j < size; ++j)
+	hash = iterative_hash_hashval_t (sccstack[first+j].hash, hash);
+      for (j = 0; sccstack[first+j].hash != orig_hash; ++j)
+	hash = iterative_hash_hashval_t (sccstack[first+j].hash, hash);
+      tem[i] = hash;
+    }
+  hashval_t scc_hash = 0;
+  for (unsigned i = 0; i < size; ++i)
+    {
+      sccstack[first+i].hash = tem[i];
+      scc_hash = iterative_hash_hashval_t (tem[i], scc_hash);
+    }
+  return scc_hash;
+}
+
+/* DFS walk EXPR and stream SCCs of tree bodies if they are not
+   already in the streamer cache.  Main routine called for
+   each visit of EXPR.  */
+
+static void
+DFS_write_tree (struct output_block *ob, sccs *from_state,
+		tree expr, bool ref_p, bool this_ref_p)
+{
+  unsigned ix;
+  sccs **slot;
+
+  /* Handle special cases.  */
+  if (expr == NULL_TREE)
+    return;
+
+  /* Do not DFS walk into indexable trees.  */
+  if (this_ref_p && tree_is_indexable (expr))
+    return;
+
+  /* Check if we already streamed EXPR.  */
+  if (streamer_tree_cache_lookup (ob->writer_cache, expr, &ix))
+    return;
+
+  slot = (sccs **)pointer_map_insert (sccstate, expr);
+  sccs *cstate = *slot;
+  if (!cstate)
+    {
+      scc_entry e = { expr, 0 };
+      /* Not yet visited.  DFS recurse and push it onto the stack.  */
+      *slot = cstate = XOBNEW (&sccstate_obstack, struct sccs);
+      sccstack.safe_push (e);
+      cstate->dfsnum = next_dfs_num++;
+      cstate->low = cstate->dfsnum;
+
+      if (streamer_handle_as_builtin_p (expr))
+	;
+      else if (TREE_CODE (expr) == INTEGER_CST
+	       && !TREE_OVERFLOW (expr))
+	DFS_write_tree (ob, cstate, TREE_TYPE (expr), ref_p, ref_p);
+      else
+	{
+	  DFS_write_tree_body (ob, expr, cstate, ref_p);
+
+	  /* Walk any LTO-specific edges.  */
+	  if (DECL_P (expr)
+	      && TREE_CODE (expr) != FUNCTION_DECL
+	      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+	    {
+	      /* Handle DECL_INITIAL for symbols.  */
+	      tree initial = get_symbol_initial_value (ob, expr);
+	      DFS_write_tree (ob, cstate, initial, ref_p, ref_p);
+	    }
+	}
+
+      /* See if we found an SCC.  */
+      if (cstate->low == cstate->dfsnum)
+	{
+	  unsigned first, size;
+	  tree x;
+
+	  /* Pop the SCC and compute its size.  */
+	  first = sccstack.length ();
+	  do
+	    {
+	      x = sccstack[--first].t;
+	    }
+	  while (x != expr);
+	  size = sccstack.length () - first;
+
+	  /* No need to compute hashes for LTRANS units, we don't perform
+	     any merging there.  */
+	  hashval_t scc_hash = 0;
+	  unsigned scc_entry_len = 0;
+	  if (!flag_wpa)
+	    {
+	      scc_hash = hash_scc (ob->writer_cache, first, size);
+
+	      /* Put the entries with the least number of collisions first.  */
+	      unsigned entry_start = 0;
+	      scc_entry_len = size + 1;
+	      for (unsigned i = 0; i < size;)
+		{
+		  unsigned from = i;
+		  for (i = i + 1; i < size
+		       && (sccstack[first + i].hash
+			   == sccstack[first + from].hash); ++i)
+		    ;
+		  if (i - from < scc_entry_len)
+		    {
+		      scc_entry_len = i - from;
+		      entry_start = from;
+		    }
+		}
+	      for (unsigned i = 0; i < scc_entry_len; ++i)
+		{
+		  scc_entry tem = sccstack[first + i];
+		  sccstack[first + i] = sccstack[first + entry_start + i];
+		  sccstack[first + entry_start + i] = tem;
+		}
+	    }
+
+	  /* Write LTO_tree_scc.  */
+	  streamer_write_record_start (ob, LTO_tree_scc);
+	  streamer_write_uhwi (ob, size);
+	  streamer_write_uhwi (ob, scc_hash);
+
+	  /* Write size-1 SCCs without wrapping them inside SCC bundles.
+	     All INTEGER_CSTs need to be handled this way as we need
+	     their type to materialize them.  Also builtins are handled
+	     this way.
+	     ???  We still wrap these in LTO_tree_scc so at the
+	     input side we can properly identify the tree we want
+	     to ultimatively return.  */
+	  size_t old_len = ob->writer_cache->nodes.length ();
+	  if (size == 1)
+	    lto_output_tree_1 (ob, expr, scc_hash, ref_p, this_ref_p);
+	  else
+	    {
+	      /* Write the size of the SCC entry candidates.  */
+	      streamer_write_uhwi (ob, scc_entry_len);
+
+	      /* Write all headers and populate the streamer cache.  */
+	      for (unsigned i = 0; i < size; ++i)
+		{
+		  hashval_t hash = sccstack[first+i].hash;
+		  tree t = sccstack[first+i].t;
+		  bool exists_p = streamer_tree_cache_insert (ob->writer_cache,
+							      t, hash, &ix);
+		  gcc_assert (!exists_p);
+
+		  if (!lto_is_streamable (t))
+		    internal_error ("tree code %qs is not supported "
+				    "in LTO streams",
+				    tree_code_name[TREE_CODE (t)]);
+
+		  gcc_checking_assert (!streamer_handle_as_builtin_p (t));
+
+		  /* Write the header, containing everything needed to
+		     materialize EXPR on the reading side.  */
+		  streamer_write_tree_header (ob, t);
+		}
+
+	      /* Write the bitpacks and tree references.  */
+	      for (unsigned i = 0; i < size; ++i)
+		{
+		  lto_write_tree_1 (ob, sccstack[first+i].t, ref_p);
+
+		  /* Mark the end of the tree.  */
+		  streamer_write_zero (ob);
+		}
+	    }
+	  gcc_assert (old_len + size == ob->writer_cache->nodes.length ());
+
+	  /* Finally truncate the vector.  */
+	  sccstack.truncate (first);
+
+	  if (from_state)
+	    from_state->low = MIN (from_state->low, cstate->low);
+	  return;
+	}
+
+      if (from_state)
+	from_state->low = MIN (from_state->low, cstate->low);
+    }
+  gcc_checking_assert (from_state);
+  if (cstate->dfsnum < from_state->dfsnum)
+    from_state->low = MIN (cstate->dfsnum, from_state->low);
 }
 
 
@@ -374,16 +1306,7 @@ lto_output_tree (struct output_block *ob, tree expr,
       return;
     }
 
-  /* Shared INTEGER_CST nodes are special because they need their original type
-     to be materialized by the reader (to implement TYPE_CACHED_VALUES).  */
-  if (TREE_CODE (expr) == INTEGER_CST
-      && !TREE_OVERFLOW (expr))
-    {
-      streamer_write_integer_cst (ob, expr, ref_p);
-      return;
-    }
-
-  existed_p = streamer_tree_cache_insert (ob->writer_cache, expr, &ix);
+  existed_p = streamer_tree_cache_lookup (ob->writer_cache, expr, &ix);
   if (existed_p)
     {
       /* If a node has already been streamed out, make sure that
@@ -393,21 +1316,42 @@ lto_output_tree (struct output_block *ob, tree expr,
       streamer_write_uhwi (ob, ix);
       streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
 			   lto_tree_code_to_tag (TREE_CODE (expr)));
-    }
-  else if (streamer_handle_as_builtin_p (expr))
-    {
-      /* MD and NORMAL builtins do not need to be written out
-	 completely as they are always instantiated by the
-	 compiler on startup.  The only builtins that need to
-	 be written out are BUILT_IN_FRONTEND.  For all other
-	 builtins, we simply write the class and code.  */
-      streamer_write_builtin (ob, expr);
+      lto_stats.num_pickle_refs_output++;
     }
   else
     {
-      /* This is the first time we see EXPR, write its fields
-	 to OB.  */
-      lto_write_tree (ob, expr, ref_p);
+      /* This is the first time we see EXPR, write all reachable
+	 trees to OB.  */
+      static bool in_dfs_walk;
+
+      /* Protect against recursion which means disconnect between
+         what tree edges we walk in the DFS walk and what edges
+	 we stream out.  */
+      gcc_assert (!in_dfs_walk);
+
+      /* Start the DFS walk.  */
+      /* Save ob state ... */
+      /* let's see ... */
+      in_dfs_walk = true;
+      sccstate = pointer_map_create ();
+      gcc_obstack_init (&sccstate_obstack);
+      next_dfs_num = 1;
+      DFS_write_tree (ob, NULL, expr, ref_p, this_ref_p);
+      sccstack.release ();
+      pointer_map_destroy (sccstate);
+      obstack_free (&sccstate_obstack, NULL);
+      in_dfs_walk = false;
+
+      /* Finally append a reference to the tree we were writing.
+	 ???  If expr ended up as a singleton we could have
+	 inlined it here and avoid outputting a reference.  */
+      existed_p = streamer_tree_cache_lookup (ob->writer_cache, expr, &ix);
+      gcc_assert (existed_p);
+      streamer_write_record_start (ob, LTO_tree_pickle_reference);
+      streamer_write_uhwi (ob, ix);
+      streamer_write_enum (ob->main_stream, LTO_tags, LTO_NUM_TAGS,
+			   lto_tree_code_to_tag (TREE_CODE (expr)));
+      lto_stats.num_pickle_refs_output++;
     }
 }
 
@@ -978,9 +1922,9 @@ copy_function (struct cgraph_node *node)
 	 So just copy the vector.  All the encoders in the in state
 	 must be empty where we reach here. */
       gcc_assert (lto_tree_ref_encoder_size (encoder) == 0);
+      encoder->trees.reserve_exact (n);
       for (j = 0; j < n; j++)
 	encoder->trees.safe_push (trees[j]);
-      encoder->next_index = n;
     }
 
   lto_free_section_data (file_data, LTO_section_function_body, name,
