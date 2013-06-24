@@ -1,3 +1,8 @@
+2013-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57488
+	* gcc.dg/torture/pr57488.c: New testcase.
+
 2013-06-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
