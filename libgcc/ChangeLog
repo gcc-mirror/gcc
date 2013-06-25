@@ -1,3 +1,8 @@
+2013-06-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* Makefile.in (clean, distclean): Remove auto-target.h and stamp-h
+	correctly.
+
 2013-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/53317
