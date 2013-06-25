@@ -1,3 +1,9 @@
+2013-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56977
+	* passes.c (init_optimization_passes): Move pass_fold_builtins
+	and pass_dce earlier with -Og.
+
 2013-06-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* expr.c (expand_expr_real_1) <ARRAY_REF>: Fix formatting glitches.
