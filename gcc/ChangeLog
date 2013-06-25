@@ -1,3 +1,15 @@
+2013-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57670
+	* cgraph.h (cgraph_indirect_call_info): New flag member_ptr.
+	* ipa-prop.c (ipa_print_node_jump_functions): Mark member pointer
+	calls in the dump.
+	(ipa_note_param_call): Initialize member_ptr flag.
+	(ipa_analyze_indirect_call_uses): Set member_ptr flag.
+	(ipa_make_edge_direct_to_target): Bail out if member_ptr is set.
+	(ipa_write_indirect_edge_info): Stream member_ptr flag.
+	(ipa_read_indirect_edge_info): Likewise.
+
 2013-06-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56977

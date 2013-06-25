@@ -440,6 +440,8 @@ struct GTY(()) cgraph_indirect_call_info
   /* Set when the call is a call of a pointer loaded from contents of an
      aggregate at offset.  */
   unsigned agg_contents : 1;
+  /* Set when this is a call through a member pointer.  */
+  unsigned member_ptr : 1;
   /* When the previous bit is set, this one determines whether the destination
      is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;

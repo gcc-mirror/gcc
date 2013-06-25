@@ -1,3 +1,8 @@
+2013-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57670
+	* g++.dg/ipa/pr57670.C: New test.
+
 2013-06-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/56977

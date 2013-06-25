@@ -303,8 +303,9 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 
       ii = cs->indirect_info;
       if (ii->agg_contents)
-	fprintf (f, "    indirect aggregate callsite, calling param %i, "
+	fprintf (f, "    indirect %s callsite, calling param %i, "
 		 "offset " HOST_WIDE_INT_PRINT_DEC ", %s",
+		 ii->member_ptr ? "member ptr" : "aggregate",
 		 ii->param_index, ii->offset,
 		 ii->by_ref ? "by reference" : "by_value");
       else
@@ -1626,6 +1627,7 @@ ipa_note_param_call (struct cgraph_node *node, int param_index, gimple stmt)
   cs->indirect_info->offset = 0;
   cs->indirect_info->polymorphic = 0;
   cs->indirect_info->agg_contents = 0;
+  cs->indirect_info->member_ptr = 0;
   return cs;
 }
 
@@ -1819,6 +1821,7 @@ ipa_analyze_indirect_call_uses (struct cgraph_node *node,
       struct cgraph_edge *cs = ipa_note_param_call (node, index, call);
       cs->indirect_info->offset = offset;
       cs->indirect_info->agg_contents = 1;
+      cs->indirect_info->member_ptr = 1;
     }
 
   return;
@@ -2239,6 +2242,10 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
       target = canonicalize_constructor_val (target, NULL);
       if (!target || TREE_CODE (target) != FUNCTION_DECL)
 	{
+	  if (ie->indirect_info->member_ptr)
+	    /* Member pointer call that goes through a VMT lookup.  */
+	    return NULL;
+
 	  if (dump_file)
 	    fprintf (dump_file, "ipa-prop: Discovered direct call to non-function"
 				" in %s/%i, making it unreachable.\n",
@@ -3792,6 +3799,7 @@ ipa_write_indirect_edge_info (struct output_block *ob,
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, ii->polymorphic, 1);
   bp_pack_value (&bp, ii->agg_contents, 1);
+  bp_pack_value (&bp, ii->member_ptr, 1);
   bp_pack_value (&bp, ii->by_ref, 1);
   streamer_write_bitpack (&bp);
 
@@ -3818,6 +3826,7 @@ ipa_read_indirect_edge_info (struct lto_input_block *ib,
   bp = streamer_read_bitpack (ib);
   ii->polymorphic = bp_unpack_value (&bp, 1);
   ii->agg_contents = bp_unpack_value (&bp, 1);
+  ii->member_ptr = bp_unpack_value (&bp, 1);
   ii->by_ref = bp_unpack_value (&bp, 1);
   if (ii->polymorphic)
     {
