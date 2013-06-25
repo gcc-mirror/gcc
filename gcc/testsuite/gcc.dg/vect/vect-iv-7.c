@@ -6,7 +6,7 @@
 #define N 16
 int result[N] = {8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38};
  
-__attribute__ ((noinline)) int main1 (int X)
+__attribute__ ((noinline, noclone)) int main1 (int X)
 {  
   int arr[N];
   int k = 3;
@@ -38,5 +38,5 @@ int main (void)
   return main1 (2);
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */
 /* { dg-final { cleanup-tree-dump "vect" } } */

@@ -1,3 +1,12 @@
+2013-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57705
+	* tree-vect-loop.c (vect_is_simple_iv_evolution): Allow
+	SSA_NAME step, provided that it is not defined inside the loop.
+	(vect_analyze_scalar_cycles_1): Disallow SSA_NAME step in nested
+	loop.
+	(get_initial_def_for_induction): Handle SSA_NAME IV step.
+
 2013-06-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/57670
