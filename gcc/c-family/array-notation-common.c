@@ -75,35 +75,37 @@ extract_sec_implicit_index_arg (location_t location, tree fn)
   return return_int;
 }
 
-/* Returns true if there is length mismatch among expressions
-   on the same dimension and on the same side of the equal sign.  The
-   expressions (or ARRAY_NOTATION lengths) are passed in through 2-D array
-   **LIST where X and Y indicate first and second dimension sizes of LIST,
-   respectively.  */
+/* Returns true if there is a length mismatch among exprssions that are at the
+   same dimension and one the same side of the equal sign.  The Array notation
+   lengths (LIST->LENGTH) is passed in as a 2D vector of trees.  */
 
 bool
-length_mismatch_in_expr_p (location_t loc, tree **list, size_t x, size_t y)
+length_mismatch_in_expr_p (location_t loc, vec<vec<an_parts> >list)
 {
   size_t ii, jj;
-  tree start = NULL_TREE;
-  HOST_WIDE_INT l_start, l_node;
+  tree length = NULL_TREE;
+  HOST_WIDE_INT l_length, l_node;
+  
+  size_t x = list.length ();
+  size_t y = list[0].length ();
+  
   for (jj = 0; jj < y; jj++)
     {
-      start = NULL_TREE;
+      length = NULL_TREE;
       for (ii = 0; ii < x; ii++)
 	{
-	  if (!start)
-	    start = list[ii][jj];
-	  else if (TREE_CODE (start) == INTEGER_CST)
+	  if (!length)
+	    length = list[ii][jj].length;
+	  else if (TREE_CODE (length) == INTEGER_CST)
 	    {
-	      /* If start is a INTEGER, and list[ii][jj] is an integer then
+	      /* If length is a INTEGER, and list[ii][jj] is an integer then
 		 check if they are equal.  If they are not equal then return
 		 true.  */
-	      if (TREE_CODE (list[ii][jj]) == INTEGER_CST)
+	      if (TREE_CODE (list[ii][jj].length) == INTEGER_CST)
 		{
-		  l_node = int_cst_value (list[ii][jj]);
-		  l_start = int_cst_value (start);
-		  if (absu_hwi (l_start) != absu_hwi (l_node))
+		  l_node = int_cst_value (list[ii][jj].length);
+		  l_length = int_cst_value (length);
+		  if (absu_hwi (l_length) != absu_hwi (l_node))
 		    {
 		      error_at (loc, "length mismatch in expression");
 		      return true;
@@ -111,9 +113,9 @@ length_mismatch_in_expr_p (location_t loc, tree **list, size_t x, size_t y)
 		}
 	    }
 	  else
-	    /* We set the start node as the current node just in case it turns
+	    /* We set the length node as the current node just in case it turns
 	       out to be an integer.  */
-	    start = list[ii][jj];
+	    length = list[ii][jj].length;
 	}
     }
   return false;

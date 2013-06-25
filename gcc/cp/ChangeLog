@@ -42,6 +42,12 @@
 
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
+	* cp-array-notation.c (cp_length_mismatch_in_expr_p): Remove.
+	(expand_an_in_modify_expr): Changed a function call from the above
+	removed function to length_mismatch_in_expr_p.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
 	* call.c (convert_like_real): Added a check if array notation is present
 	in expression.  If so, then no conversion of arguments is necessary.
 	(build_over_call): Likewise.
