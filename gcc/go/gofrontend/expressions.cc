@@ -5668,6 +5668,7 @@ Binary_expression::do_determine_type(const Type_context* context)
       if (tleft->is_abstract()
 	  && subcontext.type != NULL
 	  && !subcontext.may_be_abstract
+	  && subcontext.type->interface_type() == NULL
 	  && subcontext.type->integer_type() == NULL)
 	this->report_error(("invalid context-determined non-integer type "
 			    "for left operand of shift"));
@@ -7383,6 +7384,8 @@ Builtin_call_expression::lower_make()
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   int uintptr_bits = uintptr_type->integer_type()->bits();
 
+  Type_context int_context(Type::lookup_integer_type("int"), false);
+
   ++parg;
   Expression* len_arg;
   if (parg == args->end())
@@ -7401,6 +7404,7 @@ Builtin_call_expression::lower_make()
   else
     {
       len_arg = *parg;
+      len_arg->determine_type(&int_context);
       if (!this->check_int_value(len_arg, true))
 	return Expression::make_error(this->location());
       if (len_arg->type()->integer_type() != NULL
@@ -7413,6 +7417,7 @@ Builtin_call_expression::lower_make()
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
+      cap_arg->determine_type(&int_context);
       if (!this->check_int_value(cap_arg, false))
 	return Expression::make_error(this->location());
 
@@ -8030,6 +8035,8 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
     case BUILTIN_REAL:
     case BUILTIN_IMAG:
       arg_type = Builtin_call_expression::complex_type(context->type);
+      if (arg_type == NULL)
+	arg_type = Type::lookup_complex_type("complex128");
       is_print = false;
       break;
 
@@ -8038,6 +8045,8 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 	// For the complex function the type of one operand can
 	// determine the type of the other, as in a binary expression.
 	arg_type = Builtin_call_expression::real_imag_type(context->type);
+	if (arg_type == NULL)
+	  arg_type = Type::lookup_float_type("float64");
 	if (args != NULL && args->size() == 2)
 	  {
 	    Type* t1 = args->front()->type();
@@ -10379,13 +10388,20 @@ Array_index_expression::do_determine_type(const Type_context*)
 void
 Array_index_expression::do_check_types(Gogo*)
 {
-  if (this->start_->type()->integer_type() == NULL)
+  Numeric_constant nc;
+  unsigned long v;
+  if (this->start_->type()->integer_type() == NULL
+      && !this->start_->type()->is_error()
+      && (!this->start_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
       && this->end_->type()->integer_type() == NULL
       && !this->end_->type()->is_error()
       && !this->end_->is_nil_expression()
-      && !this->end_->is_error_expression())
+      && !this->end_->is_error_expression()
+      && (!this->end_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
 
   Array_type* array_type = this->array_->type()->array_type();
