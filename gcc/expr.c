@@ -9698,7 +9698,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
       {
 	tree array = treeop0;
 	tree index = treeop1;
-        tree init;
+	tree init;
 
 	/* Fold an expression like: "foo"[2].
 	   This is not done in fold so it won't happen inside &.
@@ -9776,32 +9776,31 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 			    break;
 			}
 
-		      return expand_expr (fold (value), target, tmode,
-					  modifier);
+		      return
+		        expand_expr (fold (value), target, tmode, modifier);
 		    }
 	      }
-	    else if(TREE_CODE (init) == STRING_CST)
+	    else if (TREE_CODE (init) == STRING_CST)
 	      {
-		tree index1 = index;
 		tree low_bound = array_ref_low_bound (exp);
-		index1 = fold_convert_loc (loc, sizetype,
-					   treeop1);
+		tree index1 = fold_convert_loc (loc, sizetype, treeop1);
 
-		/* Optimize the special-case of a zero lower bound.
+		/* Optimize the special case of a zero lower bound.
 
-		   We convert the low_bound to sizetype to avoid some problems
-		   with constant folding.  (E.g. suppose the lower bound is 1,
-		   and its mode is QI.  Without the conversion,l (ARRAY
-		   +(INDEX-(unsigned char)1)) becomes ((ARRAY+(-(unsigned char)1))
-		   +INDEX), which becomes (ARRAY+255+INDEX).  Opps!)  */
-
-		if (! integer_zerop (low_bound))
+		   We convert the lower bound to sizetype to avoid problems
+		   with constant folding.  E.g. suppose the lower bound is
+		   1 and its mode is QI.  Without the conversion
+		      (ARRAY + (INDEX - (unsigned char)1))
+		   becomes
+		      (ARRAY + (-(unsigned char)1) + INDEX)
+		   which becomes
+		      (ARRAY + 255 + INDEX).  Oops!  */
+		if (!integer_zerop (low_bound))
 		  index1 = size_diffop_loc (loc, index1,
-					fold_convert_loc (loc, sizetype,
-							  low_bound));
+					    fold_convert_loc (loc, sizetype,
+							      low_bound));
 
-		if (0 > compare_tree_int (index1,
-					  TREE_STRING_LENGTH (init)))
+		if (compare_tree_int (index1, TREE_STRING_LENGTH (init)) < 0)
 		  {
 		    tree type = TREE_TYPE (TREE_TYPE (init));
 		    enum machine_mode mode = TYPE_MODE (type);
@@ -10187,7 +10186,7 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	    || modifier == EXPAND_CONST_ADDRESS
 	    || modifier == EXPAND_INITIALIZER)
 	  return op0;
-	
+
 	if (target == 0)
 	  target = gen_reg_rtx (tmode != VOIDmode ? tmode : mode);
 
