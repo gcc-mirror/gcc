@@ -1,3 +1,12 @@
+2013-06-25  Alan Modra  <amodra@gmail.com>
+
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Move var declaration
+	before statements.
+	(ffi_prep_args64): Support little-endian.
+	(ffi_closure_helper_SYSV, ffi_closure_helper_LINUX64): Likewise.
+	* src/powerpc/linux64_closure.S (ffi_closure_LINUX64): Likewise.
+	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Likewise.
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.
