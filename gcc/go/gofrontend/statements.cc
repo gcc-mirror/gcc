@@ -569,7 +569,10 @@ void
 Assignment_statement::do_determine_types()
 {
   this->lhs_->determine_type_no_context();
-  Type_context context(this->lhs_->type(), false);
+  Type* rhs_context_type = this->lhs_->type();
+  if (rhs_context_type->is_sink_type())
+    rhs_context_type = NULL;
+  Type_context context(rhs_context_type, false);
   this->rhs_->determine_type(&context);
 }
 
