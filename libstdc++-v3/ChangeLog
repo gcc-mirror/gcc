@@ -1,3 +1,10 @@
+2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57704
+	* include/bits/char_traits.h (char_traits<char>::lt): Implement
+	LWG 467.
+	* testsuite/21_strings/char_traits/requirements/char/57704.cc: New.
+
 2013-06-24  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR libstdc++/57691
