@@ -1,3 +1,10 @@
+2013-06-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* expr.c (expand_expr_real_1) <ARRAY_REF>: Fix formatting glitches.
+	<BIT_FIELD_REF>: Remove trailing TAB.
+	* varasm.c (output_constructor_bitfield): Fix formatting glitch and
+	remove blank line.
+
 2013-06-24  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/57358
