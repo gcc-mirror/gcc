@@ -78,52 +78,6 @@ create_an_loop (tree init, tree cond, tree incr, tree body)
   finish_for_stmt (for_stmt);
 }
 
-/* Returns true if there is a length mismatch among exprssions that are at the
-   same dimension and one the same side of the equal sign.  The Array notation
-   lengths (LIST->LENGTH) is passed in as a 2D vector of trees.  */
-
-static bool
-cp_length_mismatch_in_expr_p (location_t loc, vec<vec<an_parts> >list)
-{
-  size_t ii, jj;
-  tree length = NULL_TREE;
-  HOST_WIDE_INT l_length, l_node;
-  
-  size_t x = list.length ();
-  size_t y = list[0].length ();
-  
-  for (jj = 0; jj < y; jj++)
-    {
-      length = NULL_TREE;
-      for (ii = 0; ii < x; ii++)
-	{
-	  if (!length)
-	    length = list[ii][jj].length;
-	  else if (TREE_CODE (length) == INTEGER_CST)
-	    {
-	      /* If length is a INTEGER, and list[ii][jj] is an integer then
-		 check if they are equal.  If they are not equal then return
-		 true.  */
-	      if (TREE_CODE (list[ii][jj].length) == INTEGER_CST)
-		{
-		  l_node = int_cst_value (list[ii][jj].length);
-		  l_length = int_cst_value (length);
-		  if (absu_hwi (l_length) != absu_hwi (l_node))
-		    {
-		      error_at (loc, "length mismatch in expression");
-		      return true;
-		    }
-		}
-	    }
-	  else
-	    /* We set the length node as the current node just in case it turns
-	       out to be an integer.  */
-	    length = list[ii][jj].length;
-	}
-    }
-  return false;
-}
-
 /* If *VALUE is not a constant integer, then this function replaces it with
    a variable to make it loop invariant for array notations.  */
 
@@ -744,9 +698,9 @@ expand_an_in_modify_expr (location_t location, tree lhs,
   if (rhs_list)
     cilkplus_extract_an_triplets (rhs_list, rhs_list_size, rhs_rank,
 				  &rhs_an_info);
-  if (cp_length_mismatch_in_expr_p (EXPR_LOCATION (lhs), lhs_an_info)
-      || (rhs_list && cp_length_mismatch_in_expr_p (EXPR_LOCATION (rhs),
-						    rhs_an_info)))
+  if (length_mismatch_in_expr_p (EXPR_LOCATION (lhs), lhs_an_info)
+      || (rhs_list && length_mismatch_in_expr_p (EXPR_LOCATION (rhs),
+						 rhs_an_info)))
     {
       pop_stmt_list (an_init);
       return error_mark_node;

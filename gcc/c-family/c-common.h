@@ -1193,7 +1193,7 @@ extern bool contains_array_notation_expr (tree);
 extern tree expand_array_notation_exprs (tree);
 extern tree fix_conditional_array_notations (tree);
 extern tree find_correct_array_notation_type (tree);
-extern bool length_mismatch_in_expr_p (location_t, tree **, size_t, size_t);
+extern bool length_mismatch_in_expr_p (location_t, vec<vec<an_parts> >);
 extern enum built_in_function is_cilkplus_reduce_builtin (tree);
 extern bool find_rank (location_t, tree, tree, bool, size_t *);
 extern void extract_array_notation_exprs (tree, bool, vec<tree, va_gc> **);

@@ -1,3 +1,15 @@
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-array-notation.c (make_triplet_val_inv): New function.
+	(create_cmp_incr): Likewise.
+	(create_array_refs): Likewise.
+	(fix_builtin_array_notation_fn): Replaced all mallocs with tree vec.
+	Also modularized common parts between functions and called the function.
+	(build_array_notation_expr): Likewise.
+	(fix_conditional_array_notations_1): Likewise.
+	(fix_array_notation_expr): Likewise.
+	(fix_array_notation_call_expr): Likewise.
+
 2013-06-18  Marek Polacek  <polacek@redhat.com>
 
 	PR c/57630

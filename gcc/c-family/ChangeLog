@@ -4,6 +4,14 @@
 	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
 	* c-opts.c (c_common_post_options): Likewise.
 
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>  
+
+	* array-notation-common.c (length_mismatch_in_expr): Changed the
+	parameter type's from a dynamic array to a vec_tree.  Also removed
+	the size parameters.
+	* c-common.h (length_mismatch_in_expr_p): Fixed prototype's as per
+	the change above.
+
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.h (struct cilkplus_an_parts): New structure.
