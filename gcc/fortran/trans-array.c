@@ -3145,7 +3145,7 @@ build_array_ref (tree desc, tree offset, tree decl)
    a(i, j, k) = base[offset + i * stride[0] + j * stride[1] + k * stride[2]]*/
 
 void
-gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
+gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
 		    locus * where)
 {
   int n;
@@ -3154,6 +3154,8 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
   tree stride;
   gfc_se indexse;
   gfc_se tmpse;
+  gfc_symbol * sym = expr->symtree->n.sym;
+  char *var_name = NULL;
 
   if (ar->dimen == 0)
     {
@@ -3182,6 +3184,35 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
       gfc_conv_scalarized_array_ref (se, ar);
       gfc_advance_se_ss_chain (se);
       return;
+    }
+
+  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+    {
+      size_t len;
+      gfc_ref *ref;
+
+      len = strlen (sym->name) + 1;
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_ARRAY && &ref->u.ar == ar)
+	    break;
+	  if (ref->type == REF_COMPONENT)
+	    len += 1 + strlen (ref->u.c.component->name);
+	}
+
+      var_name = XALLOCAVEC (char, len);
+      strcpy (var_name, sym->name);
+
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	  if (ref->type == REF_ARRAY && &ref->u.ar == ar)
+	    break;
+	  if (ref->type == REF_COMPONENT)
+	    {
+	      strcat (var_name, "%%");
+	      strcat (var_name, ref->u.c.component->name);
+	    }
+	}
     }
 
   cst_offset = offset = gfc_index_zero_node;
@@ -3219,7 +3250,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	  cond = fold_build2_loc (input_location, LT_EXPR, boolean_type_node,
 				  indexse.expr, tmp);
 	  asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-		    "below lower bound of %%ld", n+1, sym->name);
+		    "below lower bound of %%ld", n+1, var_name);
 	  gfc_trans_runtime_check (true, false, cond, &se->pre, where, msg,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
@@ -3243,7 +3274,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_symbol * sym,
 	      cond = fold_build2_loc (input_location, GT_EXPR,
 				      boolean_type_node, indexse.expr, tmp);
 	      asprintf (&msg, "Index '%%ld' of dimension %d of array '%s' "
-			"above upper bound of %%ld", n+1, sym->name);
+			"above upper bound of %%ld", n+1, var_name);
 	      gfc_trans_runtime_check (true, false, cond, &se->pre, where, msg,
 				   fold_convert (long_integer_type_node,
 						 indexse.expr),
