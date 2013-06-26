@@ -1059,7 +1059,7 @@ const struct tune_params arm_cortex_a15_tune =
   arm_9e_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
-  5,						/* Max cond insns.  */
+  2,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
@@ -9143,6 +9143,12 @@ arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
     }
 
   return cost;
+}
+
+int
+arm_max_conditional_execute (void)
+{
+  return max_insns_skipped;
 }
 
 static int
@@ -19567,6 +19573,13 @@ thumb2_final_prescan_insn (rtx insn)
   enum arm_cond_code code;
   int n;
   int mask;
+  int max;
+
+  /* Maximum number of conditionally executed instructions in a block
+     is minimum of the two max values: maximum allowed in an IT block
+     and maximum that is beneficial according to the cost model and tune.  */
+  max = (max_insns_skipped < MAX_INSN_PER_IT_BLOCK) ?
+    max_insns_skipped : MAX_INSN_PER_IT_BLOCK;
 
   /* Remove the previous insn from the count of insns to be output.  */
   if (arm_condexec_count)
@@ -19609,9 +19622,9 @@ thumb2_final_prescan_insn (rtx insn)
       /* ??? Recognize conditional jumps, and combine them with IT blocks.  */
       if (GET_CODE (body) != COND_EXEC)
 	break;
-      /* Allow up to 4 conditionally executed instructions in a block.  */
+      /* Maximum number of conditionally executed instructions in a block.  */
       n = get_attr_ce_count (insn);
-      if (arm_condexec_masklen + n > MAX_INSN_PER_IT_BLOCK)
+      if (arm_condexec_masklen + n > max)
 	break;
 
       predicate = COND_EXEC_TEST (body);
