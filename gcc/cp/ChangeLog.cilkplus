@@ -1,3 +1,10 @@
+2013-06-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-gimplify.c (cp_gimplify_expr): Add case for CILK_SIMD.
+	(cp_genericize_r): Same.
+	* pt.c (tsubst_expr): Same.
+	* semantics.c (finish_omp_for): Same.
+
 2013-05-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
