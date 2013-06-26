@@ -1,3 +1,14 @@
+2013-06-26  Greta Yorsh  <Greta.Yorsh@arm.com>
+
+	* config/arm/arm.h (MAX_CONDITIONAL_EXECUTE): Define macro.
+	* config/arm/arm-protos.h (arm_max_conditional_execute): New
+	declaration.
+	(tune_params): Update comment.
+	* config/arm/arm.c (arm_cortex_a15_tune): Set max_cond_insns to 2.
+	(arm_max_conditional_execute): New function.
+	(thumb2_final_prescan_insn): Use max_insn_skipped and
+	MAX_INSN_PER_IT_BLOCK to compute maximum instructions in a block.
+
 2013-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57705
