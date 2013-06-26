@@ -1,3 +1,10 @@
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Status page for C++2014 library features
+	* doc/xml/faq.xml: Add link to new C++14 status page.
+	* doc/xml/manual/intro.xml: Ditto.
+	* doc/xml/manual/status_cxx2014.xml: New.
+
 2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/57704

@@ -29,11 +29,15 @@
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2011.xml">
     </xi:include>
 
-    <!-- Section 01.3 : Status C++ TR1 -->
+    <!-- Section 01.3 : Status C++ 2014 -->
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxx2014.xml">
+    </xi:include>
+
+    <!-- Section 01.4 : Status C++ TR1 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxxtr1.xml">
     </xi:include>
 
-    <!-- Section 01.4 : Status C++ TR24733 -->
+    <!-- Section 01.5 : Status C++ TR24733 -->
     <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" parse="xml" href="status_cxxtr24733.xml">
     </xi:include>
   </section>
