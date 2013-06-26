@@ -1,3 +1,9 @@
+2013-06-25  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57692
+	* c-c++-common/cilk-plus/AN/gather_scatter.c: Fixed a bug of stack
+	overflow due to size of arrays.
+
 2013-06-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57705

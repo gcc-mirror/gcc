@@ -1,16 +1,16 @@
 /* { dg-do run } */
 /* { dg-options "-fcilkplus" } */
 
-#define NUMBER 100
+#define NUMBER 20
 #if HAVE_IO
 #include <stdio.h>
 #endif
 
+float array4[NUMBER][NUMBER][NUMBER][NUMBER];
 int main(void)
 {
   int array[NUMBER][NUMBER], array2[NUMBER], array3[NUMBER], x = 0, y;
-  int x_correct, y_correct, ii, jj = 0;
-  float array4[NUMBER][NUMBER][NUMBER][NUMBER];
+  int x_correct, y_correct, ii, jj = 0, kk = 0, ll = 0;
   for (ii = 0; ii < NUMBER; ii++)
     {
       for (jj = 0; jj < NUMBER; jj++)
