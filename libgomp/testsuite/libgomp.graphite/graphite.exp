@@ -23,6 +23,7 @@ if [info exists lang_test_file] then {
 }
 
 load_lib libgomp-dg.exp
+load_gcc_lib gcc-dg.exp
 
 if ![check_effective_target_pthread] {
   return

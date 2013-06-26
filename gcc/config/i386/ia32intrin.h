@@ -49,7 +49,12 @@ __bswapd (int __X)
   return __builtin_bswap32 (__X);
 }
 
-#ifdef __SSE4_2__
+#ifndef __SSE4_2__
+#pragma GCC push_options
+#pragma GCC target("sse4.2")
+#define __DISABLE_SSE4_2__
+#endif /* __SSE4_2__ */
+
 /* 32bit accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -71,7 +76,11 @@ __crc32d (unsigned int __C, unsigned int __V)
 {
   return __builtin_ia32_crc32si (__C, __V);
 }
-#endif /* SSE4.2 */
+
+#ifdef __DISABLE_SSE4_2__
+#undef __DISABLE_SSE4_2__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4_2__ */
 
 /* 32bit popcnt */
 extern __inline int
@@ -186,7 +195,12 @@ __bswapq (long long __X)
   return __builtin_bswap64 (__X);
 }
 
-#ifdef __SSE4_2__
+#ifndef __SSE4_2__
+#pragma GCC push_options
+#pragma GCC target("sse4.2")
+#define __DISABLE_SSE4_2__
+#endif /* __SSE4_2__ */
+
 /* 64bit accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
 extern __inline unsigned long long
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -194,7 +208,11 @@ __crc32q (unsigned long long __C, unsigned long long __V)
 {
   return __builtin_ia32_crc32di (__C, __V);
 }
-#endif
+
+#ifdef __DISABLE_SSE4_2__
+#undef __DISABLE_SSE4_2__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4_2__ */
 
 /* 64bit popcnt */
 extern __inline long long

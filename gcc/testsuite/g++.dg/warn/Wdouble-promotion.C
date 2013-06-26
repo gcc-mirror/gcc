@@ -5,7 +5,7 @@
 
 /* Some targets do not provide <complex.h> so we define I ourselves.  */
 #define I 1.0iF
-#define ID ((_Complex double)I) // { dg-warning "implicit" }
+#define ID ((_Complex double)I)
 
 float f;
 double d;
@@ -29,19 +29,19 @@ usual_arithmetic_conversions(void)
   /* Values of type "float" are implicitly converted to "double" or
      "long double" due to use in arithmetic with "double" or "long
      double" operands.  */
-  local_f = f + 1.0;         /* { dg-warning "implicit" } */
-  local_f = f - d;           /* { dg-warning "implicit" } */
-  local_f = 1.0f * 1.0;      /* { dg-warning "implicit" } */
-  local_f = 1.0f / d;        /* { dg-warning "implicit" } */
+  local_f = f + 1.0;         /* { dg-warning "15:implicit" } */
+  local_f = f - d;           /* { dg-warning "15:implicit" } */
+  local_f = 1.0f * 1.0;      /* { dg-warning "18:implicit" } */
+  local_f = 1.0f / d;        /* { dg-warning "18:implicit" } */
 
-  local_cf = cf + 1.0;       /* { dg-warning "implicit" } */
-  local_cf = cf - d;         /* { dg-warning "implicit" } */
-  local_cf = cf + 1.0 * ID;  /* { dg-message "in expansion of macro 'ID'" } */
-  local_cf = cf - cd;        /* { dg-warning "implicit" } */
+  local_cf = cf + 1.0;       /* { dg-warning "17:implicit" } */
+  local_cf = cf - d;         /* { dg-warning "17:implicit" } */
+  local_cf = cf + 1.0 * ID;  /* { dg-warning "17:implicit" } */
+  local_cf = cf - cd;        /* { dg-warning "17:implicit" } */
   
-  local_f = i ? f : d;       /* { dg-warning "implicit" } */
-  i = f == d;                /* { dg-warning "implicit" } */
-  i = d != f;                /* { dg-warning "implicit" } */
+  local_f = i ? f : d;       /* { dg-warning "15:implicit" } */
+  i = f == d;                /* { dg-warning "9:implicit" } */
+  i = d != f;                /* { dg-warning "9:implicit" } */
 }
 
 void 

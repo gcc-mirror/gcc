@@ -1199,6 +1199,10 @@ noop_move_p (const_rtx insn)
   if (find_reg_note (insn, REG_EQUAL, NULL_RTX))
     return 0;
 
+  /* Check the code to be executed for COND_EXEC.  */
+  if (GET_CODE (pat) == COND_EXEC)
+    pat = COND_EXEC_CODE (pat);
+
   if (GET_CODE (pat) == SET && set_noop_p (pat))
     return 1;
 
@@ -2711,6 +2715,7 @@ tablejump_p (const_rtx insn, rtx *labelp, rtx *tablep)
       && (table = next_active_insn (label)) != NULL_RTX
       && JUMP_TABLE_DATA_P (table))
     {
+      gcc_assert (table == NEXT_INSN (label));
       if (labelp)
 	*labelp = label;
       if (tablep)

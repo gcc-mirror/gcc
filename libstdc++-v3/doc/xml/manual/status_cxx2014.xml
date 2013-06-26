@@ -1,0 +1,201 @@
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" 
+	 xml:id="status.iso.2014" xreflabel="Status C++ 2014">
+<?dbhtml filename="status_iso_cxx2014.html"?>
+
+<info><title>C++ 2014</title>
+  <keywordset>
+    <keyword>ISO C++</keyword>
+    <keyword>2014</keyword>
+  </keywordset>
+</info>
+
+<para>
+In this implementation <literal>-std=gnu++1y</literal> or
+<literal>-std=c++1y</literal> flags must be used to enable language
+and library
+features. See <link linkend="manual.intro.using.flags">dialect</link>
+options. The pre-defined symbol
+<constant>__cplusplus</constant> is used to check for the
+presence of the required flag.
+</para>
+
+<para>
+This page describes the C++14 support in mainline GCC SVN, not in any
+particular release.
+</para>
+
+<table frame="all">
+<title>C++ 2014 Implementation Status</title>
+
+<tgroup cols="4" align="left" colsep="0" rowsep="1">
+<colspec colname="c1"/>
+<colspec colname="c2"/>
+<colspec colname="c3"/>
+<colspec colname="c4"/>
+  <thead>
+    <row>
+      <entry>Paper</entry>
+      <entry>Title</entry>
+      <entry>Status</entry>
+      <entry>Comments</entry>
+    </row>
+  </thead>
+
+  <tbody>
+
+    <row>
+      <entry>N3669</entry>
+      <entry>Fixing constexpr member functions without const</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3668</entry>
+      <entry><code>exchange()</code> utility function</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3670</entry>
+      <entry>Wording for Addressing Tuples by Type</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3656</entry>
+      <entry><code>make_unique</code></entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3462</entry>
+      <entry><code>std::result_of</code> and SFINAE</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3545</entry>
+      <entry>An Incremental Improvement to <code>integral_constant</code></entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3642</entry>
+      <entry>User-defined Literals for Standard Library Types</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3671</entry>
+      <entry>Making non-modifying sequence operations more robust</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3654</entry>
+      <entry>Quoted Strings Library Proposal</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+
+    <row>
+      <entry>N3469</entry>
+      <entry>Constexpr Library Additions: chrono</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3470</entry>
+      <entry>Constexpr Library Additions: containers</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <entry>N3471</entry>
+      <entry>Constexpr Library Additions: utilities</entry>
+      <entry>Y</entry>
+      <entry/>
+    </row>
+
+
+    <row>
+      <?dbhtml bgcolor="#C8C8B0" ?>
+      <entry>N3658</entry>
+      <entry>Compile-time integer sequences</entry>
+      <entry>WIP</entry>
+      <entry>Need tests</entry>
+    </row>
+
+    <row>
+      <entry>N3659</entry>
+      <entry>Shared Locking in C++</entry>
+      <entry>Y</entry>
+      <entry>Need tests</entry>
+    </row>
+
+
+    <row>
+      <?dbhtml bgcolor="#C8C8B0" ?>
+      <entry>N3421</entry>
+      <entry>Making Operator Functors greater&lt;&gt;</entry>
+      <entry>WIP</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8C8B0" ?>
+      <entry>N3657</entry>
+      <entry>Adding heterogeneous comparison lookup to associative containers</entry>
+      <entry>WIP</entry>
+      <entry/>
+    </row>
+
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>N3672</entry>
+      <entry>A proposal to add a utility class to represent optional objects</entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>N3655</entry>
+      <entry>TransformationTraits Redux</entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>N3662</entry>
+      <entry>C++ Dynamic Arrays</entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+    <row>
+      <?dbhtml bgcolor="#C8B0B0" ?>
+      <entry>N3644</entry>
+      <entry>Null Forward Iterators</entry>
+      <entry>N</entry>
+      <entry/>
+    </row>
+
+  </tbody>
+</tgroup>
+</table>
+
+</section>

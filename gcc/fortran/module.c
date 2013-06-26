@@ -80,10 +80,8 @@ along with GCC; see the file COPYING3.  If not see
 #define MODULE_EXTENSION ".mod"
 
 /* Don't put any single quote (') in MOD_VERSION, if you want it to be
-   recognized.  
-   TODO: When the version is bumped, remove the extra empty line at
-   the beginning of module files.  */
-#define MOD_VERSION "10"
+   recognized.  */
+#define MOD_VERSION "11"
 
 
 /* Structure that describes a position within a module file.  */
@@ -4532,7 +4530,7 @@ check_for_ambiguous (gfc_symbol *st_sym, pointer_info *info)
   module_locus locus;
   symbol_attribute attr;
 
-  if (st_sym->name == gfc_current_ns->proc_name->name)
+  if (gfc_current_ns->proc_name && st_sym->name == gfc_current_ns->proc_name->name)
     {
       gfc_error ("'%s' of module '%s', imported at %C, is also the name of the "
 		 "current program unit", st_sym->name, module_name);
@@ -5567,13 +5565,8 @@ gfc_dump_module (const char *name, int dump_flag)
     gfc_fatal_error ("Can't open module file '%s' for writing at %C: %s",
 		     filename_tmp, xstrerror (errno));
 
-  /* Write the header.
-     FIXME: For backwards compatibility with the old uncompressed
-     module format, write an extra empty line. When the module version
-     is bumped, this can be removed.  */
-  gzprintf (module_fp, "GFORTRAN module version '%s' created from %s\n\n",
+  gzprintf (module_fp, "GFORTRAN module version '%s' created from %s\n",
 	    MOD_VERSION, gfc_source_file);
-
 
   /* Write the module itself.  */
   iomode = IO_OUTPUT;
@@ -6364,10 +6357,10 @@ gfc_use_module (gfc_use_list *module)
   read_module_to_tmpbuf ();
   gzclose (module_fp);
 
-  /* Skip the first two lines of the module, after checking that this is
+  /* Skip the first line of the module, after checking that this is
      a gfortran module file.  */
   line = 0;
-  while (line < 2)
+  while (line < 1)
     {
       c = module_char ();
       if (c == EOF)

@@ -286,6 +286,7 @@ foreach option {
 
 # Add -ffoo/-fno-foo options to mips_option_groups.
 foreach option {
+    common
     delayed-branch
     expensive-optimizations
     fast-math

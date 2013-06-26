@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -360,10 +360,6 @@ do {						   \
    constant CONSTRUCTOR.  */
 #define DECL_CONST_ADDRESS_P(NODE) DECL_LANG_FLAG_0 (CONST_DECL_CHECK (NODE))
 
-/* Nonzero in a PARM_DECL if it is always used by double reference, i.e. a
-   pair of INDIRECT_REFs is needed to access the object.  */
-#define DECL_BY_DOUBLE_REF_P(NODE) DECL_LANG_FLAG_0 (PARM_DECL_CHECK (NODE))
-
 /* Nonzero in a FIELD_DECL if it is declared as aliased.  */
 #define DECL_ALIASED_P(NODE) DECL_LANG_FLAG_0 (FIELD_DECL_CHECK (NODE))
 
@@ -506,6 +502,12 @@ do {						   \
   to toggle the individual settings.  */
 #define LOOP_STMT_BOTTOM_COND_P(NODE) TREE_LANG_FLAG_0 (LOOP_STMT_CHECK (NODE))
 #define LOOP_STMT_TOP_UPDATE_P(NODE)  TREE_LANG_FLAG_1 (LOOP_STMT_CHECK (NODE))
+
+/* Optimization hints on loops.  */
+#define LOOP_STMT_NO_UNROLL(NODE) TREE_LANG_FLAG_2 (LOOP_STMT_CHECK (NODE))
+#define LOOP_STMT_UNROLL(NODE)    TREE_LANG_FLAG_3 (LOOP_STMT_CHECK (NODE))
+#define LOOP_STMT_NO_VECTOR(NODE) TREE_LANG_FLAG_4 (LOOP_STMT_CHECK (NODE))
+#define LOOP_STMT_VECTOR(NODE)    TREE_LANG_FLAG_5 (LOOP_STMT_CHECK (NODE))
 
 #define EXIT_STMT_COND(NODE)     TREE_OPERAND_CHECK_CODE (NODE, EXIT_STMT, 0)
 #define EXIT_STMT_LABEL(NODE)    TREE_OPERAND_CHECK_CODE (NODE, EXIT_STMT, 1)

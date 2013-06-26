@@ -95,10 +95,14 @@
                  "pj4_ir_mul,pj4_ir_div,pj4_core_to_vfp")
 
 (define_insn_reservation "pj4_ir_mul" 3
-  (and (eq_attr "tune" "marvell_pj4") (eq_attr "type" "mult")) "pj4_is,pj4_mul,nothing*2,pj4_cp")
+  (and (eq_attr "tune" "marvell_pj4")
+       (ior (eq_attr "mul32" "yes")
+            (eq_attr "mul64" "yes")))
+                     "pj4_is,pj4_mul,nothing*2,pj4_cp")
 
 (define_insn_reservation "pj4_ir_div" 20
-  (and (eq_attr "tune" "marvell_pj4") (eq_attr "insn" "udiv,sdiv")) "pj4_is,pj4_div*19,pj4_cp")
+  (and (eq_attr "tune" "marvell_pj4") 
+       (eq_attr "type" "udiv,sdiv")) "pj4_is,pj4_div*19,pj4_cp")
 
 ;; Branches and calls.
 

@@ -2017,14 +2017,18 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 	 Thus we don't check the displacement for validity here.  If after
 	 elimination the displacement turns out to be invalid after all,
 	 this is fixed up by reload in any case.  */
-      if (base != arg_pointer_rtx
-	  && indx != arg_pointer_rtx
-	  && base != return_address_pointer_rtx
-	  && indx != return_address_pointer_rtx
-	  && base != frame_pointer_rtx
-	  && indx != frame_pointer_rtx
-	  && base != virtual_stack_vars_rtx
-	  && indx != virtual_stack_vars_rtx)
+      /* LRA maintains always displacements up to date and we need to
+	 know the displacement is right during all LRA not only at the
+	 final elimination.  */
+      if (lra_in_progress
+	  || (base != arg_pointer_rtx
+	      && indx != arg_pointer_rtx
+	      && base != return_address_pointer_rtx
+	      && indx != return_address_pointer_rtx
+	      && base != frame_pointer_rtx
+	      && indx != frame_pointer_rtx
+	      && base != virtual_stack_vars_rtx
+	      && indx != virtual_stack_vars_rtx))
 	if (!DISP_IN_RANGE (offset))
 	  return false;
     }
@@ -3189,7 +3193,9 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
   /* We need a scratch register when loading a PLUS expression which
      is not a legitimate operand of the LOAD ADDRESS instruction.  */
-  if (in_p && s390_plus_operand (x, mode))
+  /* LRA can deal with transformation of plus op very well -- so we
+     don't need to prompt LRA in this case.  */
+  if (! lra_in_progress && in_p && s390_plus_operand (x, mode))
     sri->icode = (TARGET_64BIT ?
 		  CODE_FOR_reloaddi_plus : CODE_FOR_reloadsi_plus);
 
@@ -7017,7 +7023,7 @@ s390_chunkify_start (void)
       if (LABEL_P (insn)
 	  && (LABEL_PRESERVE_P (insn) || LABEL_NAME (insn)))
 	{
-	  rtx vec_insn = next_real_insn (insn);
+	  rtx vec_insn = NEXT_INSN (insn);
 	  if (! vec_insn || ! JUMP_TABLE_DATA_P (vec_insn))
 	    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (insn));
 	}
@@ -7027,6 +7033,8 @@ s390_chunkify_start (void)
       else if (JUMP_P (insn))
 	{
           rtx pat = PATTERN (insn);
+          rtx table;
+
 	  if (GET_CODE (pat) == PARALLEL && XVECLEN (pat, 0) > 2)
 	    pat = XVECEXP (pat, 0, 0);
 
@@ -7040,28 +7048,18 @@ s390_chunkify_start (void)
 		    bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		}
             }
-	  else if (GET_CODE (pat) == PARALLEL
-		   && XVECLEN (pat, 0) == 2
-		   && GET_CODE (XVECEXP (pat, 0, 0)) == SET
-		   && GET_CODE (XVECEXP (pat, 0, 1)) == USE
-		   && GET_CODE (XEXP (XVECEXP (pat, 0, 1), 0)) == LABEL_REF)
-	    {
-	      /* Find the jump table used by this casesi jump.  */
-	      rtx vec_label = XEXP (XEXP (XVECEXP (pat, 0, 1), 0), 0);
-	      rtx vec_insn = next_real_insn (vec_label);
-	      if (vec_insn && JUMP_TABLE_DATA_P (vec_insn))
-		{
-		  rtx vec_pat = PATTERN (vec_insn);
-		  int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
+         else if (tablejump_p (insn, NULL, &table))
+           {
+             rtx vec_pat = PATTERN (table);
+             int i, diff_p = GET_CODE (vec_pat) == ADDR_DIFF_VEC;
 
-		  for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
-		    {
-		      rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
+             for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
+               {
+                 rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
 
-		      if (s390_find_pool (pool_list, label)
-			  != s390_find_pool (pool_list, insn))
-			bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
-		    }
+                 if (s390_find_pool (pool_list, label)
+                     != s390_find_pool (pool_list, insn))
+                   bitmap_set_bit (far_labels, CODE_LABEL_NUMBER (label));
 		}
 	    }
         }
@@ -7866,6 +7864,13 @@ s390_class_max_nregs (enum reg_class rclass, enum machine_mode mode)
       break;
     }
   return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
+
+/* Return true if we use LRA instead of reload pass.  */
+static bool
+s390_lra_p (void)
+{
+  return s390_lra_flag;
 }
 
 /* Return true if register FROM can be eliminated via register TO.  */
@@ -11104,6 +11109,9 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P s390_legitimate_constant_p
+
+#undef TARGET_LRA_P
+#define TARGET_LRA_P s390_lra_p
 
 #undef TARGET_CAN_ELIMINATE
 #define TARGET_CAN_ELIMINATE s390_can_eliminate

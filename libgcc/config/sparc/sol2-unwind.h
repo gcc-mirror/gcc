@@ -155,12 +155,10 @@ sparc64_frob_update_context (struct _Unwind_Context *context,
 {
   /* The column of %sp contains the old CFA, not the old value of %sp.
      The CFA offset already comprises the stack bias so, when %sp is the
-     CFA register, we must avoid counting the stack bias twice.  Do not
-     do that for signal frames as the offset is artificial for them.  */
+     CFA register, we must avoid counting the stack bias twice.  */
   if (fs->regs.cfa_reg == __builtin_dwarf_sp_column ()
       && fs->regs.cfa_how == CFA_REG_OFFSET
-      && fs->regs.cfa_offset != 0
-      && !fs->signal_frame)
+      && fs->regs.cfa_offset != 0)
     {
       long i;
 
@@ -296,9 +294,8 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
 			     _Unwind_FrameState *fs)
 {
   void *pc = context->ra;
-  struct frame *fp = (struct frame *) context->cfa;
-  int nframes;
   void *this_cfa = context->cfa;
+  int nframes = 0;
   long new_cfa;
   void *ra_location, *shifted_ra_location;
   mcontext_t *mctx;
@@ -318,21 +315,22 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
       return _URC_NO_REASON;
     }
 
+  /* Do some pattern matching at the return address.  */
   if (IS_SIGHANDLER (pc, this_cfa, &nframes))
     {
+      struct frame *fp = (struct frame *) this_cfa;
       struct handler_args {
 	struct frame frwin;
 	ucontext_t ucontext;
       } *handler_args;
       ucontext_t *ucp;
 
-      /* context->cfa points into the frame after the saved frame pointer and
+      /* this_cfa points into the frame after the saved frame pointer and
          saved pc (struct frame).
 
          The ucontext_t structure is in the kernel frame after a struct
          frame.  Since the frame sizes vary even within OS releases, we
          need to walk the stack to get there.  */
-
       for (i = 0; i < nframes; i++)
 	fp = (struct frame *) ((char *)fp->fr_savfp + STACK_BIAS);
 
@@ -340,19 +338,15 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
       ucp = &handler_args->ucontext;
       mctx = &ucp->uc_mcontext;
     }
-
-  /* Exit if the pattern at the return address does not match the
-     previous three patterns.  */
   else
     return _URC_END_OF_STACK;
 
-  new_cfa = mctx->gregs[REG_SP];
   /* The frame address is %sp + STACK_BIAS in 64-bit mode.  */
-  new_cfa += STACK_BIAS;
+  new_cfa = mctx->gregs[REG_SP] + STACK_BIAS;
 
   fs->regs.cfa_how = CFA_REG_OFFSET;
   fs->regs.cfa_reg = __builtin_dwarf_sp_column ();
-  fs->regs.cfa_offset = new_cfa - (long) this_cfa;
+  fs->regs.cfa_offset = new_cfa - (long) this_cfa + STACK_BIAS;
 
   /* Restore global and out registers (in this order) from the
      ucontext_t structure, uc_mcontext.gregs field.  */
@@ -372,7 +366,7 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
   for (i = 0; i < 16; i++)
     {
       fs->regs.reg[i + 16].how = REG_SAVED_OFFSET;
-      fs->regs.reg[i + 16].loc.offset = i*sizeof(long);
+      fs->regs.reg[i + 16].loc.offset = i * sizeof(long);
     }
 
   /* Check whether we need to restore FPU registers.  */
@@ -409,7 +403,12 @@ MD_FALLBACK_FRAME_STATE_FOR (struct _Unwind_Context *context,
   fs->retaddr_column = 0;
   fs->regs.reg[0].how = REG_SAVED_OFFSET;
   fs->regs.reg[0].loc.offset = (long)shifted_ra_location - new_cfa;
-  fs->signal_frame = 1;
+
+  /* SIGFPE for IEEE-754 exceptions is delivered after the faulting insn
+     rather than before it, so don't set fs->signal_frame in that case.
+     We test whether the cexc field of the FSR is zero.  */
+  if ((mctx->fpregs.fpu_fsr & 0x1f) == 0)
+    fs->signal_frame = 1;
 
   return _URC_NO_REASON;
 }

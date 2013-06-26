@@ -270,8 +270,9 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 	  gcc_assert (stmt_info);
 
 	  /* Skip stmts which do not need to be vectorized.  */
-	  if (!STMT_VINFO_RELEVANT_P (stmt_info)
-	      && !STMT_VINFO_LIVE_P (stmt_info))
+	  if ((!STMT_VINFO_RELEVANT_P (stmt_info)
+	       && !STMT_VINFO_LIVE_P (stmt_info))
+	      || gimple_clobber_p (stmt))
             {
               if (STMT_VINFO_IN_PATTERN_P (stmt_info)
                   && (pattern_stmt = STMT_VINFO_RELATED_STMT (stmt_info))
@@ -499,7 +500,7 @@ vect_determine_vectorization_factor (loop_vec_info loop_vinfo)
 /* Function vect_is_simple_iv_evolution.
 
    FORNOW: A simple evolution of an induction variables in the loop is
-   considered a polynomial evolution with constant step.  */
+   considered a polynomial evolution.  */
 
 static bool
 vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
@@ -508,6 +509,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   tree init_expr;
   tree step_expr;
   tree evolution_part = evolution_part_in_loop_num (access_fn, loop_nb);
+  basic_block bb;
 
   /* When there is no evolution in this loop, the evolution function
      is not "simple".  */
@@ -533,7 +535,10 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   *init = init_expr;
   *step = step_expr;
 
-  if (TREE_CODE (step_expr) != INTEGER_CST)
+  if (TREE_CODE (step_expr) != INTEGER_CST
+      && (TREE_CODE (step_expr) != SSA_NAME
+	  || ((bb = gimple_bb (SSA_NAME_DEF_STMT (step_expr)))
+	      && flow_bb_inside_loop_p (get_loop (cfun, loop_nb), bb))))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -555,7 +560,7 @@ static void
 vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 {
   basic_block bb = loop->header;
-  tree dumy;
+  tree init, step;
   vec<gimple> worklist;
   worklist.create (64);
   gimple_stmt_iterator gsi;
@@ -604,7 +609,9 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, struct loop *loop)
 	}
 
       if (!access_fn
-	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &dumy, &dumy))
+	  || !vect_is_simple_iv_evolution (loop->num, access_fn, &init, &step)
+	  || (LOOP_VINFO_LOOP (loop_vinfo) != loop
+	      && TREE_CODE (step) != INTEGER_CST))
 	{
 	  worklist.safe_push (phi);
 	  continue;
@@ -1431,7 +1438,8 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
           gimple stmt = gsi_stmt (si);
-	  if (!vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
+	  if (!gimple_clobber_p (stmt)
+	      && !vect_analyze_stmt (stmt, &need_to_vectorize, NULL))
 	    return false;
         }
     } /* bbs */
@@ -3271,10 +3279,14 @@ get_initial_def_for_induction (gimple iv_phi)
       expr = build_int_cst (TREE_TYPE (step_expr), vf);
       new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
 			      expr, step_expr);
+      if (TREE_CODE (step_expr) == SSA_NAME)
+	new_name = vect_init_vector (iv_phi, new_name,
+				     TREE_TYPE (step_expr), NULL);
     }
 
   t = unshare_expr (new_name);
-  gcc_assert (CONSTANT_CLASS_P (new_name));
+  gcc_assert (CONSTANT_CLASS_P (new_name)
+	      || TREE_CODE (new_name) == SSA_NAME);
   stepvectype = get_vectype_for_scalar_type (TREE_TYPE (new_name));
   gcc_assert (stepvectype);
   new_vec = build_vector_from_val (stepvectype, t);
@@ -3330,8 +3342,12 @@ get_initial_def_for_induction (gimple iv_phi)
       expr = build_int_cst (TREE_TYPE (step_expr), nunits);
       new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
 			      expr, step_expr);
+      if (TREE_CODE (step_expr) == SSA_NAME)
+	new_name = vect_init_vector (iv_phi, new_name,
+				     TREE_TYPE (step_expr), NULL);
       t = unshare_expr (new_name);
-      gcc_assert (CONSTANT_CLASS_P (new_name));
+      gcc_assert (CONSTANT_CLASS_P (new_name)
+		  || TREE_CODE (new_name) == SSA_NAME);
       new_vec = build_vector_from_val (stepvectype, t);
       vec_step = vect_init_vector (iv_phi, new_vec, stepvectype, NULL);
 
@@ -5595,7 +5611,17 @@ vect_transform_loop (loop_vec_info loop_vinfo)
           if (transform_pattern_stmt)
 	    stmt = pattern_stmt;
           else
-            stmt = gsi_stmt (si);
+	    {
+	      stmt = gsi_stmt (si);
+	      /* During vectorization remove existing clobber stmts.  */
+	      if (gimple_clobber_p (stmt))
+		{
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&si, true);
+		  release_defs (stmt);
+		  continue;
+		}
+	    }
 
 	  if (dump_enabled_p ())
 	    {
@@ -5789,7 +5815,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+      dump_printf_loc (MSG_NOTE, vect_location,
 		       "LOOP VECTORIZED\n");
       if (loop->inner)
 	dump_printf_loc (MSG_NOTE, vect_location,

@@ -53,18 +53,16 @@ void func(void)
 // { dg-error "6:missing template arguments before" "template" { target *-*-* } { 51 } }
 // { dg-error "9:expected primary-expression before ':' token" "primary" { target *-*-* } 51 }
 // { dg-error "9:expected '\]' before ':' token" "backslash" { target *-*-* } 51 }
-// { dg-error "9:expected ';' before ':' token" "semicolon" { target *-*-* } 51 }
 // { dg-error "6:missing template arguments before" "template" { target *-*-* } 52 }
 // { dg-error "7:expected primary-expression before ':' token" "primary" { target *-*-* } 52 }
 // { dg-error "7:expected '\]' before ':' token" "backslash" { target *-*-* } 52 }
-// { dg-error "7:expected ';' before ':' token" "semicolon" { target *-*-* } 52 }
 //
   int Foo[2];
   Foo[::value] = 0;
 }
 
 template struct Foo<::B>; // { dg-error "20:'<::' cannot begin" "begin" { target c++98 } }
-// { dg-message "20:is an alternate" "alt" { target c++98 } 66 }
+// { dg-message "20:is an alternate" "alt" { target c++98 } 64 }
 
 // On the first error message, an additional note about the use of 
 //  -fpermissive should be present

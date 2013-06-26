@@ -647,6 +647,15 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
     }
 }
 
+/* Returns TRUE for valid addresses.  */
+#undef TARGET_VALID_POINTER_MODE
+#define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
+static bool
+rl78_valid_pointer_mode (enum machine_mode m)
+{
+  return (m == HImode || m == SImode);
+}
+
 /* Return the appropriate mode for a named address address.  */
 #undef TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
@@ -2730,6 +2739,16 @@ rl78_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 }
 
 
+
+#undef  TARGET_UNWIND_WORD_MODE
+#define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
+
+static enum machine_mode
+rl78_unwind_word_mode (void)
+{
+  return HImode;
+}
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"

@@ -174,6 +174,71 @@ find_char_conv (gfc_typespec *from, gfc_typespec *to)
 }
 
 
+/* Check TS29113, C407b for assumed type and C535b for assumed-rank,
+   and a likewise check for NO_ARG_CHECK.  */
+
+static bool
+do_ts29113_check (gfc_intrinsic_sym *specific, gfc_actual_arglist *arg)
+{
+  gfc_actual_arglist *a;
+
+  for (a = arg; a; a = a->next)
+    {
+      if (!a->expr)
+	continue;
+
+      if (a->expr->expr_type == EXPR_VARIABLE
+	  && (a->expr->symtree->n.sym->attr.ext_attr
+	      & (1 << EXT_ATTR_NO_ARG_CHECK))
+	  && specific->id != GFC_ISYM_C_LOC
+	  && specific->id != GFC_ISYM_PRESENT)
+	{
+	  gfc_error ("Variable with NO_ARG_CHECK attribute at %L is only "
+		     "permitted as argument to the intrinsic functions "
+		     "C_LOC and PRESENT", &a->expr->where);
+	  return false;
+	}
+      else if (a->expr->ts.type == BT_ASSUMED
+	       && specific->id != GFC_ISYM_LBOUND
+	       && specific->id != GFC_ISYM_PRESENT
+	       && specific->id != GFC_ISYM_RANK
+	       && specific->id != GFC_ISYM_SHAPE
+	       && specific->id != GFC_ISYM_SIZE
+	       && specific->id != GFC_ISYM_UBOUND
+	       && specific->id != GFC_ISYM_C_LOC)
+	{
+	  gfc_error ("Assumed-type argument at %L is not permitted as actual"
+		     " argument to the intrinsic %s", &a->expr->where,
+		     gfc_current_intrinsic);
+	  return false;
+	}
+      else if (a->expr->ts.type == BT_ASSUMED && a != arg)
+	{
+	  gfc_error ("Assumed-type argument at %L is only permitted as "
+		     "first actual argument to the intrinsic %s",
+		     &a->expr->where, gfc_current_intrinsic);
+	  return false;
+	}
+      if (a->expr->rank == -1 && !specific->inquiry)
+	{
+	  gfc_error ("Assumed-rank argument at %L is only permitted as actual "
+		     "argument to intrinsic inquiry functions",
+		     &a->expr->where);
+	  return false;
+	}
+      if (a->expr->rank == -1 && arg != a)
+	{
+	  gfc_error ("Assumed-rank argument at %L is only permitted as first "
+		     "actual argument to the intrinsic inquiry function %s",
+		     &a->expr->where, gfc_current_intrinsic);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+
 /* Interface to the check functions.  We break apart an argument list
    and call the proper check function rather than forcing each
    function to manipulate the argument list.  */
@@ -981,7 +1046,8 @@ gfc_is_intrinsic (gfc_symbol* sym, int subroutine_flag, locus loc)
     return false;
 
   /* See if this intrinsic is allowed in the current standard.  */
-  if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc))
+  if (!gfc_check_intrinsic_standard (isym, &symstd, false, loc)
+      && !sym->attr.artificial)
     {
       if (sym->attr.proc == PROC_UNKNOWN
 	  && gfc_option.warn_intrinsics_std)
@@ -3982,9 +4048,16 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
       || specific->check.f1m == gfc_check_min_max_integer
       || specific->check.f1m == gfc_check_min_max_real
       || specific->check.f1m == gfc_check_min_max_double)
-    return (*specific->check.f1m) (*ap);
+    {
+      if (!do_ts29113_check (specific, *ap))
+	return false;
+      return (*specific->check.f1m) (*ap);
+    }
 
   if (!sort_actual (specific->name, ap, specific->formal, &expr->where))
+    return false;
+
+  if (!do_ts29113_check (specific, *ap))
     return false;
 
   if (specific->check.f3ml == gfc_check_minloc_maxloc)
@@ -4294,6 +4367,9 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
   init_arglist (isym);
 
   if (!sort_actual (name, &c->ext.actual, isym->formal, &c->loc))
+    goto fail;
+
+  if (!do_ts29113_check (isym, c->ext.actual))
     goto fail;
 
   if (isym->check.f1 != NULL)

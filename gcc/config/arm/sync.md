@@ -124,7 +124,8 @@
 		   UNSPEC_LL))]
   "TARGET_HAVE_LDREXD && ARM_DOUBLEWORD_ALIGN"
   "ldrexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "s_register_operand" "")		;; bool out
@@ -361,7 +362,8 @@
 	    VUNSPEC_LL)))]
   "TARGET_HAVE_LDREXBH"
   "ldrex<sync_sfx>%?\t%0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_load_acquire_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -371,7 +373,8 @@
 	    VUNSPEC_LAX)))]
   "TARGET_HAVE_LDACQ"
   "ldaex<sync_sfx>%?\\t%0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_load_exclusivesi"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -380,7 +383,8 @@
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREX"
   "ldrex%?\t%0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_load_acquire_exclusivesi"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -389,7 +393,8 @@
 	  VUNSPEC_LAX))]
   "TARGET_HAVE_LDACQ"
   "ldaex%?\t%0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_load_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -398,7 +403,8 @@
 	  VUNSPEC_LL))]
   "TARGET_HAVE_LDREXD"
   "ldrexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_load_acquire_exclusivedi"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -407,7 +413,8 @@
 	  VUNSPEC_LAX))]
   "TARGET_HAVE_LDACQ && ARM_DOUBLEWORD_ALIGN"
   "ldaexd%?\t%0, %H0, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_store_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -431,7 +438,8 @@
       }
     return "strex<sync_sfx>%?\t%0, %2, %C1";
   }
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_store_release_exclusivedi"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -448,7 +456,8 @@
     operands[3] = gen_rtx_REG (SImode, REGNO (value) + 1);
     return "stlexd%?\t%0, %2, %3, %C1";
   }
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "arm_store_release_exclusive<mode>"
   [(set (match_operand:SI 0 "s_register_operand" "=&r")
@@ -459,4 +468,5 @@
 	  VUNSPEC_SLX))]
   "TARGET_HAVE_LDACQ"
   "stlex<sync_sfx>%?\t%0, %2, %C1"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])

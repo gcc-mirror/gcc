@@ -1,7 +1,7 @@
 // PR c++/22464
 
 template<typename T>
-void do_something(const T* A) // { dg-error "declared" }
+void do_something(const T* A) // { dg-message "declared" }
 { 
   struct helper_t{ 
     helper_t() {  

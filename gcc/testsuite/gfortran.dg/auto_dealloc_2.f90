@@ -11,11 +11,12 @@ type :: t
   integer, allocatable :: i(:)
 end type
 
+block ! New block as the main program implies SAVE
 type(t) :: a
 
 call init(a)
 call init(a)
-
+end block
 contains
 
   subroutine init(x)
@@ -25,5 +26,6 @@ contains
 
 end program 
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 3 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 4 "original" } }
+! { dg-final { scan-tree-dump-times "x->_vptr->_final \\(" 1 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

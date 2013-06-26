@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-def.h"
 #include "common/common-target.h"
 #include "tm_p.h"
-#include "hashtab.h"
+#include "hash-table.h"
 #include "langhooks.h"
 #include "gimple.h"
 #include "intl.h"
@@ -170,7 +170,7 @@ static ds_t ia64_get_insn_spec_ds (rtx);
 static ds_t ia64_get_insn_checked_ds (rtx);
 static bool ia64_skip_rtx_p (const_rtx);
 static int ia64_speculate_insn (rtx, ds_t, rtx *);
-static bool ia64_needs_block_p (int);
+static bool ia64_needs_block_p (ds_t);
 static rtx ia64_gen_spec_check (rtx, rtx, ds_t);
 static int ia64_spec_check_p (rtx);
 static int ia64_spec_check_src_p (rtx);
@@ -257,8 +257,6 @@ static struct bundle_state *get_free_bundle_state (void);
 static void free_bundle_state (struct bundle_state *);
 static void initiate_bundle_states (void);
 static void finish_bundle_states (void);
-static unsigned bundle_state_hash (const void *);
-static int bundle_state_eq_p (const void *, const void *);
 static int insert_bundle_state (struct bundle_state *);
 static void initiate_bundle_state_table (void);
 static void finish_bundle_state_table (void);
@@ -8341,9 +8339,7 @@ ia64_needs_block_p (ds_t ts)
   return !(mflag_sched_spec_control_ldc && mflag_sched_spec_ldc);
 }
 
-/* Generate (or regenerate, if (MUTATE_P)) recovery check for INSN.
-   If (LABEL != 0 || MUTATE_P), generate branchy recovery check.
-   Otherwise, generate a simple check.  */
+/* Generate (or regenerate) a recovery check for INSN.  */
 static rtx
 ia64_gen_spec_check (rtx insn, rtx label, ds_t ds)
 {
@@ -8528,18 +8524,21 @@ finish_bundle_states (void)
     }
 }
 
-/* Hash table of the bundle states.  The key is dfa_state and insn_num
-   of the bundle states.  */
+/* Hashtable helpers.  */
 
-static htab_t bundle_state_table;
+struct bundle_state_hasher : typed_noop_remove <bundle_state>
+{
+  typedef bundle_state value_type;
+  typedef bundle_state compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+};
 
 /* The function returns hash of BUNDLE_STATE.  */
 
-static unsigned
-bundle_state_hash (const void *bundle_state)
+inline hashval_t
+bundle_state_hasher::hash (const value_type *state)
 {
-  const struct bundle_state *const state
-    = (const struct bundle_state *) bundle_state;
   unsigned result, i;
 
   for (result = i = 0; i < dfa_state_size; i++)
@@ -8550,18 +8549,19 @@ bundle_state_hash (const void *bundle_state)
 
 /* The function returns nonzero if the bundle state keys are equal.  */
 
-static int
-bundle_state_eq_p (const void *bundle_state_1, const void *bundle_state_2)
+inline bool
+bundle_state_hasher::equal (const value_type *state1,
+			    const compare_type *state2)
 {
-  const struct bundle_state *const state1
-    = (const struct bundle_state *) bundle_state_1;
-  const struct bundle_state *const state2
-    = (const struct bundle_state *) bundle_state_2;
-
   return (state1->insn_num == state2->insn_num
 	  && memcmp (state1->dfa_state, state2->dfa_state,
 		     dfa_state_size) == 0);
 }
+
+/* Hash table of the bundle states.  The key is dfa_state and insn_num
+   of the bundle states.  */
+
+static hash_table <bundle_state_hasher> bundle_state_table;
 
 /* The function inserts the BUNDLE_STATE into the hash table.  The
    function returns nonzero if the bundle has been inserted into the
@@ -8570,39 +8570,35 @@ bundle_state_eq_p (const void *bundle_state_1, const void *bundle_state_2)
 static int
 insert_bundle_state (struct bundle_state *bundle_state)
 {
-  void **entry_ptr;
+  struct bundle_state **entry_ptr;
 
-  entry_ptr = htab_find_slot (bundle_state_table, bundle_state, INSERT);
+  entry_ptr = bundle_state_table.find_slot (bundle_state, INSERT);
   if (*entry_ptr == NULL)
     {
       bundle_state->next = index_to_bundle_states [bundle_state->insn_num];
       index_to_bundle_states [bundle_state->insn_num] = bundle_state;
-      *entry_ptr = (void *) bundle_state;
+      *entry_ptr = bundle_state;
       return TRUE;
     }
-  else if (bundle_state->cost < ((struct bundle_state *) *entry_ptr)->cost
-	   || (bundle_state->cost == ((struct bundle_state *) *entry_ptr)->cost
-	       && (((struct bundle_state *)*entry_ptr)->accumulated_insns_num
+  else if (bundle_state->cost < (*entry_ptr)->cost
+	   || (bundle_state->cost == (*entry_ptr)->cost
+	       && ((*entry_ptr)->accumulated_insns_num
 		   > bundle_state->accumulated_insns_num
-		   || (((struct bundle_state *)
-			*entry_ptr)->accumulated_insns_num
+		   || ((*entry_ptr)->accumulated_insns_num
 		       == bundle_state->accumulated_insns_num
-		       && (((struct bundle_state *)
-			    *entry_ptr)->branch_deviation
+		       && ((*entry_ptr)->branch_deviation
 			   > bundle_state->branch_deviation
-			   || (((struct bundle_state *)
-				*entry_ptr)->branch_deviation
+			   || ((*entry_ptr)->branch_deviation
 			       == bundle_state->branch_deviation
-			       && ((struct bundle_state *)
-				   *entry_ptr)->middle_bundle_stops
+			       && (*entry_ptr)->middle_bundle_stops
 			       > bundle_state->middle_bundle_stops))))))
 
     {
       struct bundle_state temp;
 
-      temp = *(struct bundle_state *) *entry_ptr;
-      *(struct bundle_state *) *entry_ptr = *bundle_state;
-      ((struct bundle_state *) *entry_ptr)->next = temp.next;
+      temp = **entry_ptr;
+      **entry_ptr = *bundle_state;
+      (*entry_ptr)->next = temp.next;
       *bundle_state = temp;
     }
   return FALSE;
@@ -8613,8 +8609,7 @@ insert_bundle_state (struct bundle_state *bundle_state)
 static void
 initiate_bundle_state_table (void)
 {
-  bundle_state_table = htab_create (50, bundle_state_hash, bundle_state_eq_p,
-				    (htab_del) 0);
+  bundle_state_table.create (50);
 }
 
 /* Finish work with the hash table.  */
@@ -8622,7 +8617,7 @@ initiate_bundle_state_table (void)
 static void
 finish_bundle_state_table (void)
 {
-  htab_delete (bundle_state_table);
+  bundle_state_table.dispose ();
 }
 
 

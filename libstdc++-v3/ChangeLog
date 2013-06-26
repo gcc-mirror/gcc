@@ -1,3 +1,656 @@
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Status page for C++2014 library features
+	* doc/xml/faq.xml: Add link to new C++14 status page.
+	* doc/xml/manual/intro.xml: Ditto.
+	* doc/xml/manual/status_cxx2014.xml: New.
+
+2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57704
+	* include/bits/char_traits.h (char_traits<char>::lt): Implement
+	LWG 467.
+	* testsuite/21_strings/char_traits/requirements/char/57704.cc: New.
+
+2013-06-24  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR libstdc++/57691
+	* include/c_global/cstdlib (atexit, at_quick_exit): If !_GLIBCC_HOSTED,
+	declare per the letter of the C++ standard in terms of void.
+	* include/c_std/cstdlib: Likewise.
+
+2013-06-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57674
+	* include/bits/random.h (binomial_distribution<>::_M_waiting):
+	Add double parameter.
+	* include/bits/random.tcc (binomial_distribution<>::operator()
+	(_UniformRandomNumberGenerator&, const param_type&)): Pass
+	__param._M_q to _M_waiting.
+	(_M_waiting): Adjust.
+	* testsuite/26_numerics/random/binomial_distribution/
+	operators/values.cc: Add tests.
+
+2013-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57666
+	* include/std/valarray (valarray<>::operator=(const _Expr<>&)):
+	Implement correctly C++11 26.6.2.3/1.
+	* testsuite/26_numerics/valarray/dr630-3.C: New.
+
+2013-06-18  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57641
+	* include/std/mutex (timed_mutex, recursive_timed_mutex): Move common
+	functionality to new __timed_mutex_impl mixin. Overload try_lock_until
+	to handle conversion between different clocks. Replace constrained
+	__try_lock_for_impl overloads with conditional increment.
+	* include/std/shared_mutex (shared_mutex::_Mutex): Use the new mixin.
+	* testsuite/30_threads/timed_mutex/try_lock_until/57641.cc: New.
+
+2013-06-17  Jonathan Wakely  <jwakely.gcc@gmail.com>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	* include/bits/stl_algobase.h (equal): Make C++14 overloads from N3671
+	dispatch to traditional std::equal for random-access iterators.
+	(__equal2_aux, __equal2): Remove.
+	(__equal::equal): Remove unused overloads.
+	* include/bits/stl_algo.h (is_permutation): Fix typos.
+
+2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/shared_mutex (shared_lock::operator=): Add missing
+	return statement.
+
+2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57263
+	* include/bits/forward_list.h (_Fwd_list_base): Convert to/from
+	allocator's pointer type.
+	* include/bits/hashtable.h (_Hashtable): Likewise.
+	* testsuite/util/testsuite_allocator.h (CustomPointerAlloc): Add.
+	* testsuite/23_containers/forward_list/allocator/ext_ptr.cc: New.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: New.
+	* testsuite/23_containers/vector/allocator/ext_ptr.cc: New.
+
+2013-06-16  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/shared_mutex: Implement N3659.
+	* include/bits/c++14_warning.h: New.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* testsuite/30_threads/shared_lock/cons/1.cc: New.
+	* testsuite/30_threads/shared_lock/locking/2.cc: New.
+	* testsuite/30_threads/shared_lock/cons/2.cc: New.
+	* testsuite/30_threads/shared_lock/locking/3.cc: New.
+	* testsuite/30_threads/shared_lock/cons/3.cc: New.
+	* testsuite/30_threads/shared_lock/locking/4.cc: New.
+	* testsuite/30_threads/shared_lock/cons/4.cc: New.
+	* testsuite/30_threads/shared_lock/modifiers/1.cc: New.
+	* testsuite/30_threads/shared_lock/cons/5.cc: New.
+	* testsuite/30_threads/shared_lock/modifiers/2.cc: New.
+	* testsuite/30_threads/shared_lock/cons/6.cc: New.
+	* testsuite/30_threads/shared_lock/requirements/
+	explicit_instantiation.cc: New.
+	* testsuite/30_threads/shared_lock/locking/1.cc: New.
+	* testsuite/30_threads/shared_lock/requirements/typedefs.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/1.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/assign_neg.cc: New.
+	* testsuite/30_threads/shared_mutex/cons/copy_neg.cc: New.
+	* testsuite/30_threads/shared_mutex/requirements/
+	standard_layout.cc: New.
+	* testsuite/30_threads/shared_mutex/try_lock/1.cc: New.
+	* testsuite/30_threads/shared_mutex/try_lock/2.cc: New.
+
+2013-06-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57619
+	* include/bits/unordered_map.h (unordered_map<>::insert,
+	unordered_multimap<>::insert): Use std::forward, not std::move.
+	* testsuite/23_containers/unordered_map/insert/57619.C: New.
+	* testsuite/23_containers/unordered_multimap/insert/57619.C: Likewise.
+
+2013-06-14  Alan Modra  <amodra@gmail.com>
+
+	* configure.host (abi_baseline_pair): Match powerpc64*.
+
+2013-06-13  Daniel Krugler  <daniel.kruegler@gmail.com>
+
+	* include/std/type_traits (is_function): Support ref-qualified
+	functions.
+	(is_copy_constructible, is_move_constructible, is_copy_assignable,
+	is_move_assignable, is_nothrow_copy_constructible,
+	is_nothrow_move_constructible, is_nothrow_copy_assignable,
+	is_nothrow_move_assignable): Implement LWG 2196.
+	(add_lvalue_reference, add_rvalue_reference, add_pointer): Implement
+	LWG 2101.
+	(__strip_reference_wrapper<<const reference_wrapper<_Tp>>): Remove,
+	unused.
+	* testsuite/20_util/add_lvalue_reference/value.cc: Extend.
+	* testsuite/20_util/add_rvalue_reference/value.cc: Likewise.
+	* testsuite/20_util/decay/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_constructible/value-2.cc: Likewise.
+	* testsuite/20_util/is_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_function/value.cc: Likewise.
+	* testsuite/20_util/is_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_move_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_copy_constructible/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_assignable/value.cc: Likewise.
+	* testsuite/20_util/is_nothrow_move_constructible/value.cc: Likewise.
+
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2013-06-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/tr1/modified_bessel_func.tcc (__gnu_cxx::__airy_ai(),
+	__gnu_cxx::__airy_bi()): Remove.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/airy.cc: Fix.
+
+2013-06-12  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/56430
+	* include/tr1/modified_bessel_func.tcc (__airy): Remove return
+	from void function.
+	(__gnu_cxx::__airy_ai(), __gnu_cxx::__airy_bi()): New functions.
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	10_cyl_bessel_k/airy.cc: New.
+
+2013-06-11  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Fix library literals error involving namespace __detail.
+	* include/std/chrono: Rename __detail to __select_type. Reformat.
+	* include/bits/basic_string.h: Reformat.
+	* testsuite/20_util/duration/literals/ns_detail.cc: New.
+
+2013-06-11  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56019
+	* include/c_global/cstddef (max_align_t): Add to namespace std.
+	* include/c_std/cstddef: Likewise.
+	* testsuite/18_support/max_align_t/requirements/1.cc: New.
+	* testsuite/18_support/max_align_t/requirements/2.cc: Likewise.
+
+2013-06-10  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_ABI_TAG_CXX11): Add.
+	* include/bits/stl_map.h (erase): Use abi_tag when C++11.
+	* include/bits/stl_multimap.h: Same.
+	* include/bits/stl_multiset.h: Same.
+	* include/bits/stl_set.h: Same.
+	* include/bits/stl_tree.h: Same.
+	* include/std/complex (real, imag): Use macro for abi_tag.
+
+	* testsuite/lib/libstdc++.exp: Disable inlinling with -fno-inline.
+	* testsuite/util/testsuite_containers.h (erase_external): New
+	declarations.
+	(erase_external_iterators): Same.
+	(linkage_check_cxx98_cxx11_erase): Same.
+	(linkage_check_cxx98_cxx11_erase_iterators): Same.
+	* testsuite/util/testsuite_shared.cc: Define.
+	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: New.
+	* testsuite/23_containers/map/modifiers/erase/
+	dr130-linkage-check.cc: New.
+	* testsuite/23_containers/multimap/modifiers/erase/abi_tag.cc: New.
+	* testsuite/23_containers/multimap/modifiers/erase/
+	dr130-linkage-check.cc: New.
+	* testsuite/23_containers/multiset/modifiers/erase/abi_tag.cc: New.
+	* testsuite/23_containers/multiset/modifiers/erase/
+	dr130-linkage-check.cc: New.
+	* testsuite/23_containers/set/modifiers/erase/abi_tag.cc: New.
+	* testsuite/23_containers/set/modifiers/erase/dr130-linkage-check.cc:
+	New.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Adjust line number.
+
+	* testsuite/23_containers/map/dr130.cc: Move...
+	* testsuite/23_containers/map/modifiers/dr130.cc: ...here.
+	* testsuite/23_containers/multimap/dr130.cc: Move ...
+	* testsuite/23_containers/multimap/modifiers/dr130.cc: ...here.
+	* testsuite/23_containers/multiset/dr130.cc: Move...
+	* testsuite/23_containers/multiset/modifiers/dr130.cc: ...here.
+	* testsuite/23_containers/set/dr130.cc: Move...
+	* testsuite/23_containers/set/modifiers/dr130.cc: ...here.
+
+2013-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/17_intro/headers/c++1998/49745.cc: Extend current
+	handling of Linux-based x86 systems to cover all GNU systems.
+	* testsuite/18_support/bad_exception/23591_thread-1.c: Likewise.
+	* testsuite/18_support/pthread_guard.cc: Likewise.
+	* testsuite/20_util/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+	* testsuite/20_util/shared_ptr/thread/mutex_weaktoshared.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/pthread18185.cc: Likewise.
+	* testsuite/21_strings/basic_string/pthread4.cc: Likewise.
+	* testsuite/22_locale/ctype/is/char/2.cc: Likewise.
+	* testsuite/22_locale/ctype/is/wchar_t/2.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-1.cc: Likewise.
+	* testsuite/22_locale/locale/cons/12658_thread-2.cc: Likewise.
+	* testsuite/23_containers/list/pthread1.cc: Likewise.
+	* testsuite/23_containers/list/pthread5.cc: Likewise.
+	* testsuite/23_containers/map/pthread6.cc: Likewise.
+	* testsuite/23_containers/vector/debug/multithreaded_swap.cc:
+	Likewise.
+	* testsuite/26_numerics/headers/cmath/c99_classification_macros_c.cc:
+	Likewise.
+	* testsuite/27_io/basic_ofstream/pthread2.cc: Likewise.
+	* testsuite/27_io/basic_ostringstream/pthread3.cc: Likewise.
+	* testsuite/30_threads/async/42819.cc: Likewise.
+	* testsuite/30_threads/async/49668.cc: Likewise.
+	* testsuite/30_threads/async/54297.cc: Likewise.
+	* testsuite/30_threads/async/any.cc: Likewise.
+	* testsuite/30_threads/async/async.cc: Likewise.
+	* testsuite/30_threads/async/launch.cc: Likewise.
+	* testsuite/30_threads/async/sync.cc: Likewise.
+	* testsuite/30_threads/call_once/39909.cc: Likewise.
+	* testsuite/30_threads/call_once/49668.cc: Likewise.
+	* testsuite/30_threads/call_once/call_once1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/54185.cc: Likewise.
+	* testsuite/30_threads/condition_variable/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/2.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/53841.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/50862.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/53830.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/cons/1.cc: Likewise.
+	* testsuite/30_threads/condition_variable_any/members/1.cc:
+	Likewise.
+	* testsuite/30_threads/condition_variable_any/members/2.cc:
+	Likewise.
+	* testsuite/30_threads/future/cons/move.cc: Likewise.
+	* testsuite/30_threads/future/members/45133.cc: Likewise.
+	* testsuite/30_threads/future/members/get.cc: Likewise.
+	* testsuite/30_threads/future/members/get2.cc: Likewise.
+	* testsuite/30_threads/future/members/share.cc: Likewise.
+	* testsuite/30_threads/future/members/valid.cc: Likewise.
+	* testsuite/30_threads/future/members/wait.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_for.cc: Likewise.
+	* testsuite/30_threads/future/members/wait_until.cc: Likewise.
+	* testsuite/30_threads/lock/1.cc: Likewise.
+	* testsuite/30_threads/lock/2.cc: Likewise.
+	* testsuite/30_threads/lock/3.cc: Likewise.
+	* testsuite/30_threads/lock/4.cc: Likewise.
+	* testsuite/30_threads/mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/mutex/dest/destructor_locked.cc: Likewise.
+	* testsuite/30_threads/mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/mutex/native_handle/typesizes.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/49668.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/1.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/3.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/56492.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move.cc: Likewise.
+	* testsuite/30_threads/packaged_task/cons/move_assign.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/members/get_future2.cc:
+	Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke3.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke4.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/invoke5.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/reset2.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/swap.cc: Likewise.
+	* testsuite/30_threads/packaged_task/members/valid.cc: Likewise.
+	* testsuite/30_threads/promise/cons/1.cc: Likewise.
+	* testsuite/30_threads/promise/cons/alloc.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move.cc: Likewise.
+	* testsuite/30_threads/promise/cons/move_assign.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future.cc: Likewise.
+	* testsuite/30_threads/promise/members/get_future2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_exception2.cc:
+	Likewise.
+	* testsuite/30_threads/promise/members/set_value.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value2.cc: Likewise.
+	* testsuite/30_threads/promise/members/set_value3.cc: Likewise.
+	* testsuite/30_threads/promise/members/swap.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/lock/2.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_for/3.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/1.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/2.cc:
+	Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/unlock/1.cc:
+	Likewise.
+	* testsuite/30_threads/shared_future/cons/move.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/45133.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/get2.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/valid.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait.cc: Likewise.
+	* testsuite/30_threads/shared_future/members/wait_for.cc:
+	Likewise.
+	* testsuite/30_threads/shared_future/members/wait_until.cc:
+	Likewise.
+	* testsuite/30_threads/this_thread/1.cc: Likewise.
+	* testsuite/30_threads/this_thread/2.cc: Likewise.
+	* testsuite/30_threads/this_thread/3.cc: Likewise.
+	* testsuite/30_threads/this_thread/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/1.cc: Likewise.
+	* testsuite/30_threads/thread/cons/2.cc: Likewise.
+	* testsuite/30_threads/thread/cons/3.cc: Likewise.
+	* testsuite/30_threads/thread/cons/4.cc: Likewise.
+	* testsuite/30_threads/thread/cons/49668.cc: Likewise.
+	* testsuite/30_threads/thread/cons/5.cc: Likewise.
+	* testsuite/30_threads/thread/cons/6.cc: Likewise.
+	* testsuite/30_threads/thread/cons/7.cc: Likewise.
+	* testsuite/30_threads/thread/cons/8.cc: Likewise.
+	* testsuite/30_threads/thread/cons/9.cc: Likewise.
+	* testsuite/30_threads/thread/cons/moveable.cc: Likewise.
+	* testsuite/30_threads/thread/members/1.cc: Likewise.
+	* testsuite/30_threads/thread/members/2.cc: Likewise.
+	* testsuite/30_threads/thread/members/3.cc: Likewise.
+	* testsuite/30_threads/thread/members/4.cc: Likewise.
+	* testsuite/30_threads/thread/members/5.cc: Likewise.
+	* testsuite/30_threads/thread/members/hardware_concurrency.cc:
+	Likewise.
+	* testsuite/30_threads/thread/native_handle/cancel.cc: Likewise.
+	* testsuite/30_threads/thread/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/thread/swap/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/cons/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/dest/destructor_locked.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/native_handle/typesizes.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_for/3.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/1.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/2.cc: Likewise.
+	* testsuite/30_threads/timed_mutex/unlock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/1.cc: Likewise.
+	* testsuite/30_threads/try_lock/2.cc: Likewise.
+	* testsuite/30_threads/try_lock/3.cc: Likewise.
+	* testsuite/30_threads/try_lock/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/5.cc: Likewise.
+	* testsuite/30_threads/unique_lock/cons/6.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/2.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/3.cc: Likewise.
+	* testsuite/30_threads/unique_lock/locking/4.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/1.cc: Likewise.
+	* testsuite/30_threads/unique_lock/modifiers/2.cc: Likewise.
+	* testsuite/ext/mt_allocator/22309_thread.cc: Likewise.
+	* testsuite/ext/profile/mh.cc: Likewise.
+	* testsuite/ext/rope/pthread7-rope.cc: Likewise.
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/default_weaktoshared.cc:
+	Likewise.
+	* testsuite/tr1/2_general_utilities/shared_ptr/thread/mutex_weaktoshared.cc:
+	Likewise.
+	* testsuite/util/testsuite_performance.h: Extend current handling
+	of Linux-based systems to cover all glibc-based systems.
+
+2013-06-09  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/mutex (call_once): Remove parentheses to fix error in
+	c++1y and gnu++1y mode.
+	* testsuite/30_threads/mutex/try_lock/2.cc: Call try_lock() in new
+	thread to avoid undefined behaviour.
+
+2013-06-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Simplify and clean up library literals.
+	* include/std/chrono: Simplify namespace and versioning management.
+	* include/bits/basic_string.h: Ditto.
+	* testsuite/20_util/duration/literals/types.cc: Remove bogus comment.
+	* testsuite/20_util/duration/literals/values.cc: Ditto.
+	* testsuite/21_strings/basic_string/literals/types.cc: Ditto.
+	* testsuite/21_strings/basic_string/literals/values.cc: Ditto.
+
+2013-06-08  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3654 - Quoted Strings Library Proposal
+	* include/std/iomanip: Add quoted(String, Char delim, Char escape)
+	manipulators and supporting machinery in c++1y mode.
+	* testsuite/27_io/manipulators/standard/char/quoted.cc: New.
+	* testsuite/27_io/manipulators/standard/wchar_t/quoted.cc: New.
+
+2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/alloc_traits.h (allocator_traits::max_size()): LWG
+	2162: Add noexcept.
+
+2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/bits/stl_algo.h (is_permutation): Add overloads from N3671.
+	* include/bits/stl_algobase.h (equal, mismatch): Likewise.
+	* testsuite/25_algorithms/equal/1.cc: Remove duplicate test case.
+	* testsuite/25_algorithms/equal/2.cc: New.
+	* testsuite/25_algorithms/equal/check_type2.cc: New.
+	* testsuite/25_algorithms/is_permutationqual/2.cc: New.
+	* testsuite/25_algorithms/is_permutationqual/check_type2.cc: New.
+	* testsuite/25_algorithms/mismatch/2.cc: New.
+	* testsuite/25_algorithms/mismatch/check_type2.cc: New.
+	* testsuite/util/testsuite_iterators.h: Fix spelling.
+
+2013-06-08  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* include/std/type-traits (integral_constant::operator()): Implement
+	N3545.
+	* testsuite/20_util/integral_constant/call_operator.cc: New.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	line numbers.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2013-06-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/abi/post/alpha-linux-gnu/baseline_symbols.txt: Update.
+
+2013-06-05  Tom Tromey  <tromey@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/shared_ptr.cc: Use -O0.
+
+2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57419
+	* testsuite/20_util/default_delete/48631_neg.cc: Adjust.
+
+2013-06-01  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* include/std/chrono: Collapse redundant 'inline' from 'inline
+	constexpr'.
+	* include/std/tuple: Ditto.
+	* include/bits/move.h: Ditto.
+
+2013-05-30  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement N3642 - User-defined Literals for Standard Library Types
+	* include/bits/parse_numbers.h: New.
+	* include/std/chrono: Add duration literal operators.
+	* include/bits/basic_string.h: Add string literal operators.
+	* include/Makefile.in: Add parse_numbers.h.
+	* include/Makefile.am: Ditto.
+	* testsuite/20_util/duration/literals/values.cc: New.
+	* testsuite/20_util/duration/literals/types.cc: New.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Adjust.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Adjust.
+	* testsuite/21_strings/basic_string/literals/values.cc: New.
+	* testsuite/21_strings/basic_string/literals/types.cc: New.
+
+2013-05-28  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* src/c++11/compatibility-chrono.cc (steady_clock::now()): If
+	!_GLIBCXX_USE_GETTIMEOFDAY perform conversion inline instead of
+	calling non-existent from_time_t.
+
+2013-05-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerate.
+
+2013-05-24  Benjamin Kosnik  <bkoz@redhat.com>
+
+	* include/std/chrono: Wrap clocks in inline namespace _V2.
+	* src/c++11/chrono.cc: Same.
+	* src/c++11/compatibility-chrono.cc: Revert to previous chrono.cc
+	file, with default configure macros selected.
+
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.19): Use symbols from inline
+	namespace.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Fix up.
+
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Regenerated.
+
+2013-05-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/os/solaris/solaris2.9/os_defines.h [!CLOCK_MONOTONIC]
+	(CLOCK_MONOTONIC): Define.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/type_traits.h (__is_null_pointer): Add std::nullptr_t
+	overload.
+
+	* include/bits/cpp_type_traits.h (__is_fundamental): Remove, unused.
+
+2013-05-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* src/c++11/chrono.cc: If _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL,
+	include unistd.h and sys/syscall.h.  If _GLIBCXX_COMPATIBILITY_CXX0X,
+	don't define system_clock::is_steady, system_clock::now() and
+	steady_clock::is_steady.
+	(std::chrono::system_clock::now()): If
+	_GLIBCXX_USE_CLOCK_GETTIME_SYSCALL, call
+	syscall (SYS_clock_gettime, ...) instead of clock_gettime (...).
+	(std::chrono::system_clock::now()): Likewise.  Add weak attribute
+	if _GLIBCXX_COMPATIBILITY_CXX0X and compatibility-chrono.cc will
+	be non-empty.
+	* src/Makefile.am (cxx11_sources): Add compatibility-chrono.cc.
+	(compatibility-chrono.lo, compatibility-chrono.o): New goals.
+	* src/c++11/compatibility-chrono.cc: New file.
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): On linux*, check for
+	syscall (SYS_clock_gettime, CLOCK_MONOTONIC, &tp).
+	* testsuite/util/testsuite_abi.cc (check_version): Add
+	GLIBCXX_3.4.20 version and make it the latest.
+	* config/abi/pre/gnu.ver (_ZNSt6chrono12steady_clock3nowEv): Export
+	also @@GLIBCXX_3.4.19.  Move all symbols so far added for GCC 4.9 to
+	@@GLIBCXX_3.4.20 instead.
+	* config/abi/post/i386-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390x-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/x86_64-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/x86_64-linux-gnu/32/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/s390-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/i486-linux-gnu/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/amd64/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.10/sparcv9/baseline_symbols.txt:
+	Regenerated.
+	* config/abi/post/solaris2.9/baseline_symbols.txt: Regenerated.
+	* config/abi/post/solaris2.9/sparcv9/baseline_symbols.txt: Regenerated.
+	* config.h.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* configure: Regenerated.
+
+2013-05-23  Matthias Klose  <doko@ubuntu.com>
+
+	* include/Makefile.am (bits_headers): Remove ${bits_host_headers}.
+	(ext_headers): Remove ${ext_host_headers}.
+	(stamp-${host_alias}): Create ${host_builddir}/../ext.
+	(stamp-host): Link ${bits_host_headers} and ${ext_host_headers}.
+	(install-headers): Install ${bits_host_headers} and ${ext_host_headers}.
+	* include/Makefile.in: Regenerate.
+	* include/ext/random: Include ext/opt_random.h.
+
+2013-05-22  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* acinclude.m4 (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Add KIND=auto to
+	enable features if target OS is known to support them.
+	* configure.ac (GLIBCXX_ENABLE_LIBSTDCXX_TIME): Default to 'auto'.
+	* configure: Regenerate.
+
+2013-05-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/57336
+	* include/std/functional (__invoke): Do not form function types with
+	abstract return type.
+	* testsuite/20_util/reference_wrapper/invoke-3.cc: New.
+
 2013-05-19  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/std/tuple (get): Implement N3670.

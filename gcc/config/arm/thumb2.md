@@ -1063,7 +1063,7 @@
   "mul%!\\t%0, %2, %0"
   [(set_attr "predicable" "yes")
    (set_attr "length" "2")
-   (set_attr "insn" "muls")])
+   (set_attr "type" "muls")])
 
 (define_insn "*thumb2_mulsi_short_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -1076,7 +1076,7 @@
   "TARGET_THUMB2 && optimize_size"
   "muls\\t%0, %2, %0"
   [(set_attr "length" "2")
-   (set_attr "insn" "muls")])
+   (set_attr "type" "muls")])
 
 (define_insn "*thumb2_mulsi_short_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -1088,7 +1088,7 @@
   "TARGET_THUMB2 && optimize_size"
   "muls\\t%0, %2, %0"
   [(set_attr "length" "2")
-   (set_attr "insn" "muls")])
+   (set_attr "type" "muls")])
 
 (define_insn "*thumb2_cbz"
   [(set (pc) (if_then_else

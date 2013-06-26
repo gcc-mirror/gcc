@@ -1,3 +1,8 @@
+2013-06-24  Dehao Chen  <dehao@google.com>
+
+	* files.c (_cpp_stack_include): Fix the highest_location when header
+	file is guarded by #ifndef and is included twice.
+
 2013-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	N3472 binary constants

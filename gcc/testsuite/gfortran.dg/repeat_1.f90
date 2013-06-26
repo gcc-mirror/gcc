@@ -17,4 +17,4 @@ contains
     f = x
   end function f
 end
-! { dg-output "Fortran runtime error: Argument NCOPIES of REPEAT intrinsic is negative .* line 6)"
+! { dg-output "Fortran runtime error: Argument NCOPIES of REPEAT intrinsic is negative \\(its value is -1\\)" }

@@ -25,7 +25,7 @@ end
 function func() ! { dg-error "shall not be a coarray or have a coarray component" }
   type t
   end type t
-  class(t), allocatable :: func[*] ! { dg-error ""
+  class(t), allocatable :: func[*]
 end
 
 function func2() ! { dg-error "must be dummy, allocatable or pointer" }
@@ -33,7 +33,7 @@ function func2() ! { dg-error "must be dummy, allocatable or pointer" }
     integer, allocatable :: caf[:]
   end type t
   class(t) :: func2a ! { dg-error "CLASS variable 'func2a' at .1. must be dummy, allocatable or pointer" }
-  class(t) :: func2 ! {CLASS variable 'func' at (1) must be dummy, allocatable or pointer
+  class(t) :: func2
 end
 
 subroutine foo1(x1) ! { dg-error "Coarray variable 'x1' at .1. shall not have codimensions with deferred shape" }

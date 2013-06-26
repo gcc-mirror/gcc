@@ -161,7 +161,9 @@ proc libstdc++_init { testfile } {
     set v3-sharedlib 0
     set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.$shlib_ext]
     if {$sharedlibdir != ""} {
-	if { [string match "*-*-linux*" $target_triplet] && [isnative] } {
+	if { ([string match "*-*-linux*" $target_triplet]
+	      || [string match "*-*-gnu*" $target_triplet])
+	     && [isnative] } then {
 	    set v3-sharedlib 1
 	    verbose -log "shared library support detected"
 	} 
@@ -626,7 +628,7 @@ proc v3-build_support { } {
 	    # Compile with "-w" so that warnings issued by the compiler
 	    # do not prevent compilation.
 	    if { [v3_target_compile $srcdir/util/$f $object_file "sharedlib" \
-	     [list "incdir=$srcdir" "additional_flags=-w -shared -fPIC -DPIC"]]
+	     [list "incdir=$srcdir" "additional_flags=-fno-inline -w -shared -fPIC -DPIC"]]
 		 != "" } {
 		error "could not compile $f"
 	    }

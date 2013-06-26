@@ -1,3 +1,303 @@
+2013-06-24  Steven G. Kargl  <sgk@troutmask.apl.washington.edu>
+	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+	    Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/52413
+	* simplify.c (gfc_simplify_fraction): Fix the sign of negative values.
+
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans-array.c (gfc_trans_deferred_array): Call the
+	finalizer for nonallocatable local variables.
+	* trans-decl.c (gfc_get_symbol_decl): Add local
+	finalizable vars to the deferred list.
+	(gfc_trans_deferred_vars): Call gfc_trans_deferred_array
+	for those.
+
+2013-06-21  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Allocate
+	at least one byte.
+	* trans-expr.c (alloc_scalar_allocatable_for_assignment): Ditto.
+
+2013-06-20  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (get_temp_from_expr): Don't set FL_VARIABLE twice.
+
+2013-06-17  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.h (gfc_option_t): Add fpe_summary.
+	* gfortran.texi (_gfortran_set_options): Update.
+	* invoke.texi (-ffpe-summary): Add doc.
+	* lang.opt (ffpe-summary): Add flag.
+	* options.c (gfc_init_options, gfc_handle_option): Handle it.
+	(gfc_handle_fpe_option): Renamed from gfc_handle_fpe_trap_option,
+	also handle fpe_summary.
+	* trans-decl.c (create_main_function): Update
+	_gfortran_set_options call.
+
+2013-06-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	PR fortran/56136
+	* dependency.c (gfc_check_argument_var_dependency): Return 0 in the
+	array constructor case.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57508
+	* resolve.c (get_temp_from_expr): Don't copy function
+	result attributes to temporary.
+
+2013-06-14  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57596
+	* trans-decl.c (gfc_trans_deferred_vars): Honor OPTIONAL
+	for nullify and deferred-strings' length variable.
+
+2013-06-13  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/49074
+	* trans-expr.c (gfc_conv_variable): Don't walk the reference chain.
+	Handle NULL array references.
+	(gfc_conv_procedure_call): Remove code handling NULL array references.
+
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57535
+	* trans-array.c (build_class_array_ref): Fix ICE for
+	function result variables.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans-decl.c (init_intent_out_dt): Call finalizer
+	when approriate.
+
+2013-06-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57553
+	* simplify.c (gfc_simplify_storage_size): Handle literal
+	strings.
+	* trans-intrinsic.c (gfc_conv_intrinsic_storage_size):
+	Add missing fold_convert.
+
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57549
+	* array.c (gfc_match_array_constructor): Call
+	gfc_match_type_spec instead of gfc_match_decl_type_spec.
+	* match.c (gfc_match_type_spec): Renamed from match_type_spec.
+	(gfc_match_type_is, gfc_match_allocate): Update call.
+	* match.h (gfc_match_type_spec): Add prototype.
+
+2013-06-07  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57556
+	* trans.c (gfc_build_final_call): Init block before use.
+
+2013-06-06  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57542
+	* trans.c (gfc_build_final_call): Add se.pre to the block
+	and modify the assert.
+
+2013-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans.h (gfc_build_final_call): Remove prototype.
+	(gfc_add_finalizer_call): Add prototype.
+	* trans-array.c (gfc_trans_dealloc_allocated): Support finalization.
+	(structure_alloc_comps): Update caller.
+	(gfc_trans_deferred_array): Call finalizer.
+	* trans-array.h (gfc_trans_dealloc_allocated): Update prototype.
+	* trans-decl.c (gfc_trans_deferred_vars): Don't deallocate/finalize
+	variables of the main program.
+	* trans-expr.c (gfc_conv_procedure_call): Support finalization.
+	* trans-openmp.c (gfc_omp_clause_dtor,
+	gfc_trans_omp_array_reduction): Update calls.
+	* trans-stmt.c (gfc_trans_deallocate): Avoid double deallocation
+	of alloc components.
+	* trans.c (gfc_add_finalizer_call): New function.
+	(gfc_deallocate_with_status,
+	gfc_deallocate_scalar_with_status): Call it
+	(gfc_build_final_call): Fix handling of scalar coarrays,
+	move up in the file and make static.
+
+2013-06-01  Janus Weil  <janus@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	* error.c (get_terminal_width): Only limit the width if we're
+	outputting to a terminal. Try to determine width via ioctl.
+
+2013-06-01  Tobias Burnus  <burnus@net-b.de>
+
+	* decl.c (add_global_entry): Take locus.
+	(gfc_match_entry): Update call.
+	(gfc_match_end): Better error location.
+	* parse.c (parse_block_data, parse_module, add_global_procedure,
+	add_global_program): Use better locus data.
+
+2013-05-31  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57456
+	* trans-array.c (gfc_array_init_size): Use passed type spec,
+	when available.
+	(gfc_array_allocate): Pass typespec on.
+	* trans-array.h (gfc_array_allocate): Update prototype.
+	* trans-stmt.c (gfc_trans_allocate): Pass typespec on.
+
+2013-05-31  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54190
+	PR fortran/57217
+	* gfortran.h (gfc_terminal_width): Remove prototype.
+	* error.c (get_terminal_width): Moved here from misc.c. Renamed.
+	Try to determine terminal width from environment variable.
+	* interface.c (compare_type, compare_rank): New functions. Fix assumed
+	type/rank handling.
+	(compare_type_rank, check_dummy_characteristics,
+	check_result_characteristics, gfc_compare_interfaces): Use them.
+	(symbol_rank): Slightly modified and moved.
+	* misc.c (gfc_terminal_width): Moved to error.c.
+
+2013-05-30  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/54189
+	* resolve.c (check_assumed_size_reference): Check for e->ref.
+
+2013-05-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57458
+	* interface.c (compare_parameter): Update C1239/C1240 constraint
+	check for assumed-rank/TS29113.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* class.c (finalize_component): Fix coarray array refs.
+	(generate_finalization_wrapper): Only gfc_convert_type_warn
+	when the kind value is different.
+	(gfc_find_intrinsic_vtab): _copy's dst is now intent(inout).
+	(gfc_find_derived_vtab): Ditto. Enable finalization-wrapper
+	generation.
+	* module.c (MOD_VERSION): Bump.
+	(gfc_dump_module, gfc_use_module): Remove empty line in .mod.
+	* trans-array.c (gfc_conv_descriptor_token): Accept nonrestricted
+	void pointer.
+	(gfc_array_allocate, structure_alloc_comps): Don't nullify for
+	BT_CLASS allocations.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
+2013-05-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* resolve.c (gfc_resolve_finalizers): Remove not implemented error.
+
+2013-05-28  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-expr.c (gfc_conv_procedure_call): Deallocate
+	polymorphic arrays for allocatable intent(out) dummies.
+	(gfc_reset_vptr): New function, moved from trans-stmt.c
+	and extended.
+	* trans-stmt.c (reset_vptr): Remove.
+	(gfc_trans_deallocate): Update calls.
+	* trans.h (gfc_reset_vptr): New prototype.
+
+2013-05-28  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/57435
+	* module.c (check_for_ambiguous): Avoid null pointer deref.
+
+2013-05-28  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57217
+	* interface.c (check_dummy_characteristics): Symmetrize type check.
+
+2013-05-27  Bud Davis  <jmdavis@link.com>
+
+	PR fortran/50405
+	* resolve.c (resolve_formal_arglist): Detect error when an argument
+	has the same name as the function.
+
+2013-05-27  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (gfc_build_intrinsic_call): Make symbol as attr.artificial.
+	* intrinsic.c (gfc_is_intrinsic): Disable std check for those.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (get_temp_from_expr): Change mangling to
+	start always with a _.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	* resolve.c (get_temp_from_expr): Fix temp var mangling.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57364
+	* resolve.c (get_temp_from_expr): Commit created sym.
+
+2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57338
+	* intrinsic.c (do_check): Move some checks to ...
+	(do_ts29113_check): ... this new function.
+	(check_specific, gfc_intrinsic_sub_interface): Call it.
+
+2013-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi (RANDOM_SEED): Improve example.
+
+2013-05-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57035
+	* intrinsic.c (do_check): Add constraint check for
+	NO_ARG_CHECK, assumed rank and assumed type.
+	* gfortran.texi (NO_ARG_CHECK): Minor wording change,
+	allow PRESENT intrinsic.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	PR fortran/55465
+	* decl.c (add_global_entry): Add sym_name.
+	* parse.c (add_global_procedure): Ditto.
+	* resolve.c (resolve_bind_c_derived_types): Handle multiple decl for
+	a procedure.
+	(resolve_global_procedure): Handle gsym->ns pointing to a module.
+	* trans-decl.c (gfc_get_extern_function_decl): Ditto.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* decl.c (add_global_entry): Use nonbinding name
+	only for F2003 or if no binding label exists.
+	(gfc_match_entry): Update calls.
+	* parse.c (gfc_global_used): Improve error message.
+	(add_global_procedure): Use nonbinding name
+	only for F2003 or if no binding label exists.
+	(gfc_parse_file): Update call.
+	* resolve.c (resolve_global_procedure): Use binding
+	name when available.
+	* trans-decl.c (gfc_get_extern_function_decl): Ditto.
+
+2013-05-20  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/48858
+	* decl.c (gfc_match_bind_c_stmt): Add gfc_notify_std.
+	* match.c (gfc_match_common): Don't add commons to gsym.
+	* resolve.c (resolve_common_blocks): Add to gsym and
+	add checks.
+	(resolve_bind_c_comms): Remove.
+	(resolve_types): Remove call to the latter.
+	* trans-common.c (gfc_common_ns): Remove static var.
+	(gfc_map_of_all_commons): Add static var.
+	(build_common_decl): Correctly handle binding label.
+
 2013-05-16  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (f951$(exeext)): Use link mutex.

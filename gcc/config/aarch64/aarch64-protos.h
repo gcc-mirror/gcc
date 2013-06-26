@@ -81,6 +81,7 @@ enum aarch64_symbol_type
   SYMBOL_SMALL_TLSDESC,
   SYMBOL_SMALL_GOTTPREL,
   SYMBOL_SMALL_TPREL,
+  SYMBOL_TINY_ABSOLUTE,
   SYMBOL_FORCE_TO_MEM
 };
 
@@ -146,6 +147,10 @@ bool aarch64_is_long_call_p (rtx);
 bool aarch64_label_mentioned_p (rtx);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, enum machine_mode);
+bool aarch64_mov_operand_p (rtx, enum aarch64_symbol_context,
+			    enum machine_mode);
+char *aarch64_output_scalar_simd_mov_immediate (rtx, enum machine_mode);
+char *aarch64_output_simd_mov_immediate (rtx, enum machine_mode, unsigned);
 bool aarch64_pad_arg_upward (enum machine_mode, const_tree);
 bool aarch64_pad_reg_upward (enum machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
@@ -154,6 +159,8 @@ bool aarch64_simd_imm_scalar_p (rtx x, enum machine_mode mode);
 bool aarch64_simd_imm_zero_p (rtx, enum machine_mode);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, enum machine_mode);
 bool aarch64_simd_shift_imm_p (rtx, enum machine_mode, bool);
+bool aarch64_simd_valid_immediate (rtx, enum machine_mode, bool,
+				   struct simd_immediate_info *);
 bool aarch64_symbolic_address_p (rtx);
 bool aarch64_symbolic_constant_p (rtx, enum aarch64_symbol_context,
 				  enum aarch64_symbol_type *);
@@ -219,6 +226,8 @@ void aarch64_split_128bit_move (rtx, rtx);
 
 bool aarch64_split_128bit_move_p (rtx, rtx);
 
+void aarch64_split_simd_combine (rtx, rtx, rtx);
+
 void aarch64_split_simd_move (rtx, rtx);
 
 /* Check for a legitimate floating point constant for FMOV.  */
@@ -254,6 +263,4 @@ extern void aarch64_split_combinev16qi (rtx operands[3]);
 extern void aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel);
 extern bool
 aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel);
-
-char* aarch64_output_simd_mov_immediate (rtx *, enum machine_mode, unsigned);
 #endif /* GCC_AARCH64_PROTOS_H */

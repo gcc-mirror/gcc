@@ -367,7 +367,12 @@ handle_pragma_weak (cpp_reader * ARG_UNUSED (dummy))
     {
       apply_pragma_weak (decl, value);
       if (value)
-	assemble_alias (decl, value);
+	{
+	  DECL_EXTERNAL (decl) = 0;
+	  if (TREE_CODE (decl) == VAR_DECL)
+	    TREE_STATIC (decl) = 1;
+	  assemble_alias (decl, value);
+	}
     }
   else
     {

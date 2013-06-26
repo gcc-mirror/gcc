@@ -1,3 +1,144 @@
+2013-06-25  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* Makefile.in (clean, distclean): Remove auto-target.h and stamp-h
+	correctly.
+
+2013-06-21  Joseph Myers  <joseph@codesourcery.com>
+
+	PR other/53317
+	* soft-fp/adddf3.c: Update from glibc.
+	* soft-fp/addsf3.c: Likewise.
+	* soft-fp/addtf3.c: Likewise.
+	* soft-fp/divdf3.c: Likewise.
+	* soft-fp/divsf3.c: Likewise.
+	* soft-fp/divtf3.c: Likewise.
+	* soft-fp/double.h: Likewise.
+	* soft-fp/eqdf2.c: Likewise.
+	* soft-fp/eqsf2.c: Likewise.
+	* soft-fp/eqtf2.c: Likewise.
+	* soft-fp/extenddftf2.c: Likewise.
+	* soft-fp/extended.h: Likewise.
+	* soft-fp/extendsfdf2.c: Likewise.
+	* soft-fp/extendsftf2.c: Likewise.
+	* soft-fp/fixdfdi.c: Likewise.
+	* soft-fp/fixdfsi.c: Likewise.
+	* soft-fp/fixsfdi.c: Likewise.
+	* soft-fp/fixsfsi.c: Likewise.
+	* soft-fp/fixtfdi.c: Likewise.
+	* soft-fp/fixtfsi.c: Likewise.
+	* soft-fp/fixunsdfdi.c: Likewise.
+	* soft-fp/fixunsdfsi.c: Likewise.
+	* soft-fp/fixunssfdi.c: Likewise.
+	* soft-fp/fixunssfsi.c: Likewise.
+	* soft-fp/fixunstfdi.c: Likewise.
+	* soft-fp/fixunstfsi.c: Likewise.
+	* soft-fp/floatdidf.c: Likewise.
+	* soft-fp/floatdisf.c: Likewise.
+	* soft-fp/floatditf.c: Likewise.
+	* soft-fp/floatsidf.c: Likewise.
+	* soft-fp/floatsisf.c: Likewise.
+	* soft-fp/floatsitf.c: Likewise.
+	* soft-fp/floatundidf.c: Likewise.
+	* soft-fp/floatundisf.c: Likewise.
+	* soft-fp/floatunditf.c: Likewise.
+	* soft-fp/floatunsidf.c: Likewise.
+	* soft-fp/floatunsisf.c: Likewise.
+	* soft-fp/floatunsitf.c: Likewise.
+	* soft-fp/gedf2.c: Likewise.
+	* soft-fp/gesf2.c: Likewise.
+	* soft-fp/getf2.c: Likewise.
+	* soft-fp/ledf2.c: Likewise.
+	* soft-fp/lesf2.c: Likewise.
+	* soft-fp/letf2.c: Likewise.
+	* soft-fp/muldf3.c: Likewise.
+	* soft-fp/mulsf3.c: Likewise.
+	* soft-fp/multf3.c: Likewise.
+	* soft-fp/negdf2.c: Likewise.
+	* soft-fp/negsf2.c: Likewise.
+	* soft-fp/negtf2.c: Likewise.
+	* soft-fp/op-1.h: Likewise.
+	* soft-fp/op-2.h: Likewise.
+	* soft-fp/op-4.h: Likewise.
+	* soft-fp/op-8.h: Likewise.
+	* soft-fp/op-common.h: Likewise.
+	* soft-fp/quad.h: Likewise.
+	* soft-fp/single.h: Likewise.
+	* soft-fp/soft-fp.h: Likewise.
+	* soft-fp/subdf3.c: Likewise.
+	* soft-fp/subsf3.c: Likewise.
+	* soft-fp/subtf3.c: Likewise.
+	* soft-fp/truncdfsf2.c: Likewise.
+	* soft-fp/trunctfdf2.c: Likewise.
+	* soft-fp/trunctfsf2.c: Likewise.
+	* soft-fp/unorddf2.c: Likewise.
+	* soft-fp/unordsf2.c: Likewise.
+	* soft-fp/unordtf2.c: Likewise.
+	* config/aarch64/sfp-machine.h (_FP_QNANNEGATEDP): Define to 0.
+	* config/arm/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/c6x/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/i386/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/ia64/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/lm32/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/moxie/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/rs6000/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/score/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+	* config/tilegx/sfp-machine32.h (_FP_QNANNEGATEDP): Likewise.
+	* config/tilegx/sfp-machine64.h (_FP_QNANNEGATEDP): Likewise.
+	* config/tilepro/sfp-machine.h (_FP_QNANNEGATEDP): Likewise.
+
+2013-06-16  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config/mips/lib2funcs.c: New file.
+	* config/mips/t-mips (LIB2ADD_ST): Add it.
+
+2013-06-09  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/6526
+	* config/sh/lib1funcs.S (sdivsi3_i4, udivsi3_i4): Do not change bits
+	other than FPSCR.PR and FPSCR.SZ.  Add SH4A implementation.
+
+2013-06-08  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.h: Don't include stdint.h or features.h.
+	Replace int64_t with long long.  Add __extension__ where
+	appropriate.
+	* config/tilepro/atomic.c: Include config.h.
+
+2013-06-06  Douglas B Rupp  <rupp@adacore.com>
+
+	* config.host (arm-wrs-vxworks): Configure with other soft float.
+
+2013-06-04  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config.host (mipsr5900-*-elf*, mipsr5900el-*-elf*, mips64r5900-*-elf*)
+	(mips64r5900el-*-elf*): New configurations.
+
+2013-06-04  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/ibm-ldouble.c: Enable for little-endian.
+
+2013-06-03  Yuri Rumyantsev  <yuri.s.rumyantsev@intel.com>
+
+	* config/i386/cpuinfo.c (INTEL_SLM): New enum value.
+
+2013-05-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sol2-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Do not set
+	fs->signal_frame for SIGFPE raised for IEEE-754 exceptions.
+	* config/i386/sol2-unwind.h (x86_fallback_frame_state): Likewise.
+
+2013-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.host (powerpc-*-elf*): Add rs6000/t-savresfgpr to tmake_file.
+	(powerpc-wrs-vxworks): Likewise.
+
+2013-05-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sol2-unwind.h (sparc64_frob_update_context): Do it for
+	signal frames as well.
+	(MD_FALLBACK_FRAME_STATE_FOR): Do minor cleanups throughout and add the
+	STACK_BIAS to the CFA offset.
+
 2013-05-17  Richard Henderson  <rth@redhat.com>
 
 	PR target/49146

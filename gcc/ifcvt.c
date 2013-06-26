@@ -3905,10 +3905,9 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   if (new_bb)
     {
       df_bb_replace (then_bb_index, new_bb);
-      /* Since the fallthru edge was redirected from test_bb to new_bb,
-         we need to ensure that new_bb is in the same partition as
-         test bb (you can not fall through across section boundaries).  */
-      BB_COPY_PARTITION (new_bb, test_bb);
+      /* This should have been done above via force_nonfallthru_and_redirect
+         (possibly called from redirect_edge_and_branch_force).  */
+      gcc_checking_assert (BB_PARTITION (new_bb) == BB_PARTITION (test_bb));
     }
 
   num_true_changes++;

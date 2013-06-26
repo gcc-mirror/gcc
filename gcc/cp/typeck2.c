@@ -890,7 +890,7 @@ check_narrowing (tree type, tree init)
 
   if (!ok)
     {
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	pedwarn (EXPR_LOC_OR_HERE (init), OPT_Wnarrowing,
 		 "narrowing conversion of %qE from %qT to %qT inside { }",
 		 init, ftype, type);
@@ -1236,6 +1236,8 @@ process_init_constructor_record (tree type, tree init,
       type = TREE_TYPE (field);
       if (DECL_BIT_FIELD_TYPE (field))
 	type = DECL_BIT_FIELD_TYPE (field);
+      if (type == error_mark_node)
+	return PICFLAG_ERRONEOUS;
 
       if (idx < vec_safe_length (CONSTRUCTOR_ELTS (init)))
 	{

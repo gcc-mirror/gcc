@@ -1672,6 +1672,10 @@ gen_regexp_sequence (const char *str)
   int i;
 
   sequence_vect = get_str_vect (str, &els_num, ',', TRUE);
+  if (els_num == -1)
+    fatal ("unbalanced parentheses in reservation `%s'", str);
+  if (sequence_vect == NULL)
+    fatal ("invalid reservation `%s'", str);
   if (els_num > 1)
     {
       sequence = XCREATENODEVAR (struct regexp, sizeof (struct regexp)

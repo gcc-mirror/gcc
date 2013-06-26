@@ -27,12 +27,14 @@
 #ifndef _PMMINTRIN_H_INCLUDED
 #define _PMMINTRIN_H_INCLUDED
 
-#ifndef __SSE3__
-# error "SSE3 instruction set not enabled"
-#else
-
 /* We need definitions from the SSE2 and SSE header files*/
 #include <emmintrin.h>
+
+#ifndef __SSE3__
+#pragma GCC push_options
+#pragma GCC target("sse3")
+#define __DISABLE_SSE3__
+#endif /* __SSE3__ */
 
 /* Additional bits in the MXCSR.  */
 #define _MM_DENORMALS_ZERO_MASK		0x0040
@@ -122,6 +124,9 @@ _mm_mwait (unsigned int __E, unsigned int __H)
   __builtin_ia32_mwait (__E, __H);
 }
 
-#endif /* __SSE3__ */
+#ifdef __DISABLE_SSE3__
+#undef __DISABLE_SSE3__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE3__ */
 
 #endif /* _PMMINTRIN_H_INCLUDED */

@@ -2141,7 +2141,8 @@ rationalize_conditional_expr (enum tree_code code, tree t,
       gcc_assert (!TREE_SIDE_EFFECTS (op0)
 		  && !TREE_SIDE_EFFECTS (op1));
       return
-	build_conditional_expr (build_x_binary_op (input_location,
+	build_conditional_expr (EXPR_LOC_OR_HERE (t),
+				build_x_binary_op (EXPR_LOC_OR_HERE (t),
 						   (TREE_CODE (t) == MIN_EXPR
 						    ? LE_EXPR : GE_EXPR),
 						   op0, TREE_CODE (op0),
@@ -2154,7 +2155,7 @@ rationalize_conditional_expr (enum tree_code code, tree t,
     }
 
   return
-    build_conditional_expr (TREE_OPERAND (t, 0),
+    build_conditional_expr (EXPR_LOC_OR_HERE (t), TREE_OPERAND (t, 0),
 			    cp_build_unary_op (code, TREE_OPERAND (t, 1), 0,
                                                complain),
 			    cp_build_unary_op (code, TREE_OPERAND (t, 2), 0,
@@ -3004,6 +3005,22 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
       return error_mark_node;
     }
 
+  /* If an array's index is an array notation, then its rank cannot be
+     greater than one.  */ 
+  if (flag_enable_cilkplus && contains_array_notation_expr (idx))
+    {
+      size_t rank = 0;
+
+      /* If find_rank returns false, then it should have reported an error,
+	 thus it is unnecessary for repetition.  */
+      if (!find_rank (loc, idx, idx, true, &rank))
+	return error_mark_node;
+      if (rank > 1)
+	{
+	  error_at (loc, "rank of the array%'s index is greater than 1");
+	  return error_mark_node;
+	}
+    }
   if (TREE_TYPE (array) == error_mark_node
       || TREE_TYPE (idx) == error_mark_node)
     return error_mark_node;
@@ -3024,7 +3041,7 @@ cp_build_array_ref (location_t loc, tree array, tree idx,
 
     case COND_EXPR:
       ret = build_conditional_expr
-	      (TREE_OPERAND (array, 0),
+	       (loc, TREE_OPERAND (array, 0),
 	       cp_build_array_ref (loc, TREE_OPERAND (array, 1), idx,
 				   complain),
 	       cp_build_array_ref (loc, TREE_OPERAND (array, 2), idx,
@@ -3306,7 +3323,7 @@ get_member_function_from_ptrfunc (tree *instance_ptrptr, tree function,
 		     cp_build_addr_expr (e2, complain));
 
       e2 = fold_convert (TREE_TYPE (e3), e2);
-      e1 = build_conditional_expr (e1, e2, e3, complain);
+      e1 = build_conditional_expr (input_location, e1, e2, e3, complain);
       if (e1 == error_mark_node)
 	return error_mark_node;
 
@@ -3476,8 +3493,12 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
       params = &allocated;
     }
 
-  nargs = convert_arguments (parm_types, params, fndecl, LOOKUP_NORMAL,
-			     complain);
+  if (flag_enable_cilkplus
+      && is_cilkplus_reduce_builtin (fndecl) != BUILT_IN_NONE)
+    nargs = (*params)->length ();
+  else
+    nargs = convert_arguments (parm_types, params, fndecl, LOOKUP_NORMAL,
+			       complain);
   if (nargs < 0)
     return error_mark_node;
 
@@ -3935,8 +3956,15 @@ cp_build_binary_op (location_t location,
 	}
     }
 
-  type0 = TREE_TYPE (op0);
-  type1 = TREE_TYPE (op1);
+  if (flag_enable_cilkplus && contains_array_notation_expr (op0))
+    type0 = find_correct_array_notation_type (op0);
+  else
+    type0 = TREE_TYPE (op0);
+
+  if (flag_enable_cilkplus && contains_array_notation_expr (op1))
+    type1 = find_correct_array_notation_type (op1);
+  else
+    type1 = TREE_TYPE (op1);
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -5139,6 +5167,13 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   gcc_assert (!identifier_p (arg) || !IDENTIFIER_OPNAME_P (arg));
 
+  if (flag_enable_cilkplus && TREE_CODE (arg) == ARRAY_NOTATION_REF)
+    {
+      val = build_address (arg);
+      if (TREE_CODE (arg) == OFFSET_REF)
+	PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
+      return val;
+    }
   if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
       && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
     {
@@ -5902,7 +5937,7 @@ build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2,
       op2 = build_non_dependent_expr (op2);
     }
 
-  expr = build_conditional_expr (ifexp, op1, op2, complain);
+  expr = build_conditional_expr (loc, ifexp, op1, op2, complain);
   if (processing_template_decl && expr != error_mark_node
       && TREE_CODE (expr) != VEC_COND_EXPR)
     {
@@ -5910,7 +5945,7 @@ build_x_conditional_expr (location_t loc, tree ifexp, tree op1, tree op2,
 				    orig_ifexp, orig_op1, orig_op2);
       /* In C++11, remember that the result is an lvalue or xvalue.
          In C++98, lvalue_kind can just assume lvalue in a template.  */
-      if (cxx_dialect >= cxx0x
+      if (cxx_dialect >= cxx11
 	  && lvalue_or_rvalue_with_address_p (expr)
 	  && !lvalue_or_rvalue_with_address_p (min))
 	TREE_TYPE (min) = cp_build_reference_type (TREE_TYPE (min),
@@ -7152,7 +7187,7 @@ cp_build_modify_expr (tree lhs, enum tree_code modifycode, tree rhs,
 	  return error_mark_node;
 
 	cond = build_conditional_expr
-	  (TREE_OPERAND (lhs, 0),
+	  (input_location, TREE_OPERAND (lhs, 0),
 	   cp_build_modify_expr (TREE_OPERAND (lhs, 1),
 				 modifycode, rhs, complain),
 	   cp_build_modify_expr (TREE_OPERAND (lhs, 2),
@@ -7817,6 +7852,13 @@ convert_for_assignment (tree type, tree rhs,
   tree rhstype;
   enum tree_code coder;
 
+  /* If we are dealing with built-in array notation function then we don't need
+     to convert them.  They will be broken up into modify exprs in future,
+     during which all these checks will be done.  */
+  if (flag_enable_cilkplus
+      && is_cilkplus_reduce_builtin (fndecl) != BUILT_IN_NONE)
+    return rhs;
+  
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);

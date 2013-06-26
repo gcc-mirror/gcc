@@ -207,6 +207,13 @@ class Statement
   static Return_statement*
   make_return_statement(Expression_list*, Location);
 
+  // Make a statement that returns the result of a call expression.
+  // If the call does not return any results, this just returns the
+  // call expression as a statement, assuming that the function will
+  // end immediately afterward.
+  static Statement*
+  make_return_from_call(Call_expression*, Location);
+
   // Make a break statement.
   static Statement*
   make_break_statement(Unnamed_label* label, Location);
@@ -894,8 +901,7 @@ class Select_statement : public Statement
   { this->clauses_->check_types(); }
 
   bool
-  do_may_fall_through() const
-  { return this->clauses_->may_fall_through(); }
+  do_may_fall_through() const;
 
   Bstatement*
   do_get_backend(Translate_context*);
@@ -1085,6 +1091,9 @@ class For_statement : public Statement
 
   Statement*
   do_lower(Gogo*, Named_object*, Block*, Statement_inserter*);
+
+  bool
+  do_may_fall_through() const;
 
   Bstatement*
   do_get_backend(Translate_context*)
@@ -1399,6 +1408,9 @@ class Switch_statement : public Statement
   void
   do_dump_statement(Ast_dump_context*) const;
 
+  bool
+  do_may_fall_through() const;
+
  private:
   // The value to switch on.  This may be NULL.
   Expression* val_;
@@ -1449,6 +1461,11 @@ class Type_case_clauses
   lower(Type*, Block*, Temporary_statement* descriptor_temp,
 	Unnamed_label* break_label) const;
 
+  // Return true if these clauses may fall through to the statements
+  // following the switch statement.
+  bool
+  may_fall_through() const;
+
   // Dump the AST representation to a dump context.
   void
   dump_clauses(Ast_dump_context*) const;
@@ -1492,6 +1509,12 @@ class Type_case_clauses
     void
     lower(Type*, Block*, Temporary_statement* descriptor_temp,
 	  Unnamed_label* break_label, Unnamed_label** stmts_label) const;
+
+    // Return true if this clause may fall through to execute the
+    // statements following the switch statement.  This is not the
+    // same as whether this clause falls through to the next clause.
+    bool
+    may_fall_through() const;
 
     // Dump the AST representation to a dump context.
     void
@@ -1555,6 +1578,9 @@ class Type_switch_statement : public Statement
 
   void
   do_dump_statement(Ast_dump_context*) const;
+
+  bool
+  do_may_fall_through() const;
 
  private:
   // The variable holding the value we are switching on.

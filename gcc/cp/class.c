@@ -1354,11 +1354,11 @@ find_abi_tags_r (tree *tp, int */*walk_subtrees*/, void *data)
   return NULL_TREE;
 }
 
-/* Check that class T has all the abi tags that subobject SUBOB has, or
-   warn if not.  */
+/* Set IDENTIFIER_MARKED on all the ABI tags on T and its (transitively
+   complete) template arguments.  */
 
 static void
-check_abi_tags (tree t, tree subob)
+mark_type_abi_tags (tree t, bool val)
 {
   tree attributes = lookup_attribute ("abi_tag", TYPE_ATTRIBUTES (t));
   if (attributes)
@@ -1368,25 +1368,41 @@ check_abi_tags (tree t, tree subob)
 	{
 	  tree tag = TREE_VALUE (list);
 	  tree id = get_identifier (TREE_STRING_POINTER (tag));
-	  IDENTIFIER_MARKED (id) = true;
+	  IDENTIFIER_MARKED (id) = val;
 	}
     }
+
+  /* Also mark ABI tags from template arguments.  */
+  if (CLASSTYPE_TEMPLATE_INFO (t))
+    {
+      tree args = CLASSTYPE_TI_ARGS (t);
+      for (int i = 0; i < TMPL_ARGS_DEPTH (args); ++i)
+	{
+	  tree level = TMPL_ARGS_LEVEL (args, i+1);
+	  for (int j = 0; j < TREE_VEC_LENGTH (level); ++j)
+	    {
+	      tree arg = TREE_VEC_ELT (level, j);
+	      if (CLASS_TYPE_P (arg))
+		mark_type_abi_tags (arg, val);
+	    }
+	}
+    }
+}
+
+/* Check that class T has all the abi tags that subobject SUBOB has, or
+   warn if not.  */
+
+static void
+check_abi_tags (tree t, tree subob)
+{
+  mark_type_abi_tags (t, true);
 
   tree subtype = TYPE_P (subob) ? subob : TREE_TYPE (subob);
   struct abi_tag_data data = { t, subob };
 
   cp_walk_tree_without_duplicates (&subtype, find_abi_tags_r, &data);
 
-  if (attributes)
-    {
-      for (tree list = TREE_VALUE (attributes); list;
-	   list = TREE_CHAIN (list))
-	{
-	  tree tag = TREE_VALUE (list);
-	  tree id = get_identifier (TREE_STRING_POINTER (tag));
-	  IDENTIFIER_MARKED (id) = false;
-	}
-    }
+  mark_type_abi_tags (t, false);
 }
 
 /* Run through the base classes of T, updating CANT_HAVE_CONST_CTOR_P,
@@ -2955,7 +2971,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 {
   bool move_ok = false;
 
-  if (cxx_dialect >= cxx0x && !CLASSTYPE_DESTRUCTORS (t)
+  if (cxx_dialect >= cxx11 && !CLASSTYPE_DESTRUCTORS (t)
       && !TYPE_HAS_COPY_CTOR (t) && !TYPE_HAS_COPY_ASSIGN (t)
       && !type_has_move_constructor (t) && !type_has_move_assign (t))
     move_ok = true;
@@ -2982,7 +2998,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
     {
       TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 1;
       CLASSTYPE_LAZY_DEFAULT_CTOR (t) = 1;
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	TYPE_HAS_CONSTEXPR_CTOR (t)
 	  /* This might force the declaration.  */
 	  = type_has_constexpr_default_constructor (t);
@@ -3140,9 +3156,12 @@ check_bitfield_decl (tree field)
 	  error ("zero width for bit-field %q+D", field);
 	  w = error_mark_node;
 	}
-      else if (compare_tree_int (w, TYPE_PRECISION (type)) > 0
-	       && TREE_CODE (type) != ENUMERAL_TYPE
-	       && TREE_CODE (type) != BOOLEAN_TYPE)
+      else if ((TREE_CODE (type) != ENUMERAL_TYPE
+		&& TREE_CODE (type) != BOOLEAN_TYPE
+		&& compare_tree_int (w, TYPE_PRECISION (type)) > 0)
+	       || ((TREE_CODE (type) == ENUMERAL_TYPE
+		    || TREE_CODE (type) == BOOLEAN_TYPE)
+		   && tree_int_cst_lt (TYPE_SIZE (type), w)))
 	warning (0, "width of %q+D exceeds its type", field);
       else if (TREE_CODE (type) == ENUMERAL_TYPE
 	       && (0 > (compare_tree_int
@@ -3180,7 +3199,7 @@ check_field_decl (tree field,
 
   /* In C++98 an anonymous union cannot contain any fields which would change
      the settings of CANT_HAVE_CONST_CTOR and friends.  */
-  if (ANON_UNION_TYPE_P (type) && cxx_dialect < cxx0x)
+  if (ANON_UNION_TYPE_P (type) && cxx_dialect < cxx11)
     ;
   /* And, we don't set TYPE_HAS_CONST_COPY_CTOR, etc., for anonymous
      structs.  So, we recurse through their fields here.  */
@@ -3201,7 +3220,7 @@ check_field_decl (tree field,
 	 make it through without complaint.  */
       abstract_virtuals_error (field, type);
 
-      if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx0x)
+      if (TREE_CODE (t) == UNION_TYPE && cxx_dialect < cxx11)
 	{
 	  static bool warned;
 	  int oldcount = errorcount;
@@ -3760,7 +3779,9 @@ walk_subobject_offsets (tree type,
 
       /* Iterate through the fields of TYPE.  */
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	if (TREE_CODE (field) == FIELD_DECL && !DECL_ARTIFICIAL (field))
+	if (TREE_CODE (field) == FIELD_DECL
+	    && TREE_TYPE (field) != error_mark_node
+	    && !DECL_ARTIFICIAL (field))
 	  {
 	    tree field_offset;
 
@@ -4831,6 +4852,44 @@ type_has_user_provided_default_constructor (tree t)
   return false;
 }
 
+/* TYPE is being used as a virtual base, and has a non-trivial move
+   assignment.  Return true if this is due to there being a user-provided
+   move assignment in TYPE or one of its subobjects; if there isn't, then
+   multiple move assignment can't cause any harm.  */
+
+bool
+vbase_has_user_provided_move_assign (tree type)
+{
+  /* Does the type itself have a user-provided move assignment operator?  */
+  for (tree fns
+	 = lookup_fnfields_slot_nolazy (type, ansi_assopname (NOP_EXPR));
+       fns; fns = OVL_NEXT (fns))
+    {
+      tree fn = OVL_CURRENT (fns);
+      if (move_fn_p (fn) && user_provided_p (fn))
+	return true;
+    }
+
+  /* Do any of its bases?  */
+  tree binfo = TYPE_BINFO (type);
+  tree base_binfo;
+  for (int i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); ++i)
+    if (vbase_has_user_provided_move_assign (BINFO_TYPE (base_binfo)))
+      return true;
+
+  /* Or non-static data members?  */
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && CLASS_TYPE_P (TREE_TYPE (field))
+	  && vbase_has_user_provided_move_assign (TREE_TYPE (field)))
+	return true;
+    }
+
+  /* Seems not.  */
+  return false;
+}
+
 /* If default-initialization leaves part of TYPE uninitialized, returns
    a DECL for the field or TYPE itself (DR 253).  */
 
@@ -5122,7 +5181,7 @@ finalize_literal_type_property (tree t)
 {
   tree fn;
 
-  if (cxx_dialect < cxx0x
+  if (cxx_dialect < cxx11
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
@@ -5262,7 +5321,7 @@ check_bases_and_members (tree t)
 
   /* Deduce noexcept on destructors.  This needs to happen after we've set
      triviality flags appropriately for our bases.  */
-  if (cxx_dialect >= cxx0x)
+  if (cxx_dialect >= cxx11)
     deduce_noexcept_on_destructors (t);
 
   /* Check all the method declarations.  */
@@ -9216,6 +9275,32 @@ publicly_uniquely_derived_p (tree parent, tree type)
   tree base = lookup_base (type, parent, ba_ignore_scope | ba_check,
 			   NULL, tf_none);
   return base && base != error_mark_node;
+}
+
+/* CTX1 and CTX2 are declaration contexts.  Return the innermost common
+   class between them, if any.  */
+
+tree
+common_enclosing_class (tree ctx1, tree ctx2)
+{
+  if (!TYPE_P (ctx1) || !TYPE_P (ctx2))
+    return NULL_TREE;
+  gcc_assert (ctx1 == TYPE_MAIN_VARIANT (ctx1)
+	      && ctx2 == TYPE_MAIN_VARIANT (ctx2));
+  if (ctx1 == ctx2)
+    return ctx1;
+  for (tree t = ctx1; TYPE_P (t); t = TYPE_CONTEXT (t))
+    TYPE_MARKED_P (t) = true;
+  tree found = NULL_TREE;
+  for (tree t = ctx2; TYPE_P (t); t = TYPE_CONTEXT (t))
+    if (TYPE_MARKED_P (t))
+      {
+	found = t;
+	break;
+      }
+  for (tree t = ctx1; TYPE_P (t); t = TYPE_CONTEXT (t))
+    TYPE_MARKED_P (t) = false;
+  return found;
 }
 
 #include "gt-cp-class.h"

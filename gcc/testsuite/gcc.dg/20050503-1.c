@@ -47,4 +47,4 @@ F3 (14b, int, strncmp, const char *, const char *, size_t, (a1, "abcdefghijklm",
 F2 (15, char *, strchr, const char *, int, (a1, a2))
 
 /* All the calls above should be tail call optimized on i?86/x86-64.  */
-/* { dg-final { scan-assembler-not "call" { target i?86-*-linux* x86_64-*-linux* } } } */
+/* { dg-final { scan-assembler-not "call" { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } } */

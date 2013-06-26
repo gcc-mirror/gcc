@@ -19,12 +19,6 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* FIXME: This is a temporary hack, so that we can include <algorithm>
-   below.  <algorithm> will try to include <cstdlib> which will reference
-   malloc & co, which are poisoned by "system.h".  The proper solution is
-   to include <cstdlib> in "system.h" instead of <stdlib.h>.  */
-#include <cstdlib>
-
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"

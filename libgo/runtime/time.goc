@@ -49,12 +49,15 @@ static void siftdown(int32);
 
 // Ready the goroutine e.data.
 static void
-ready(int64 now, Eface e)
+ready(int64 now, Eface e, void *closure)
 {
 	USED(now);
+	USED(closure);
 
 	runtime_ready(e.__object);
 }
+
+static FuncVal readyv = {(void(*)(void))ready};
 
 // Put the current goroutine to sleep for ns nanoseconds.
 void
@@ -70,7 +73,7 @@ runtime_tsleep(int64 ns, const char *reason)
 
 	t.when = runtime_nanotime() + ns;
 	t.period = 0;
-	t.f = ready;
+	t.fv = &readyv;
 	t.arg.__object = g;
 	runtime_lock(&timers);
 	addtimer(&t);
@@ -158,7 +161,7 @@ timerproc(void* dummy __attribute__ ((unused)))
 {
 	int64 delta, now;
 	Timer *t;
-	void (*f)(int64, Eface);
+	void (*f)(int64, Eface, void *);
 	Eface arg;
 
 	for(;;) {
@@ -184,12 +187,12 @@ timerproc(void* dummy __attribute__ ((unused)))
 				siftdown(0);
 				t->i = -1;  // mark as removed
 			}
-			f = t->f;
+			f = (void*)t->fv->fn;
 			arg = t->arg;
 			runtime_unlock(&timers);
 			if(raceenabled)
 				runtime_raceacquire(t);
-			f(now, arg);
+			f(now, arg, &t->fv);
 			runtime_lock(&timers);
 		}
 		if(delta < 0) {

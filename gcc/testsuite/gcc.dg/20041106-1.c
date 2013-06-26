@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* *-*-solaris* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* *-*-solaris* } } */
 /* { dg-options -O2 } */
 
 #include <sys/types.h>

@@ -10,5 +10,4 @@ void f(void)
 void g(void)
 {
   template f<int>(); /* { dg-error "expected primary-expression" "primary-expression" } */
-  /* { dg-error "expected ';'" "semicolon" { target *-*-* } 12 } */
 }

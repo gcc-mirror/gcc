@@ -1740,7 +1740,7 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 	      if ((!edge
 		   || (edge->indirect_inlining_edge
 		       && id->transform_call_graph_edges == CB_CGE_MOVE_CLONES))
-		  && id->dst_node->analyzed
+		  && id->dst_node->symbol.definition
 		  && (fn = gimple_call_fndecl (stmt)) != NULL)
 		{
 		  struct cgraph_node *dest = cgraph_get_node (fn);
@@ -1751,10 +1751,10 @@ copy_bb (copy_body_data *id, basic_block bb, int frequency_scale,
 		     producing dead clone (for further cloning).  In all
 		     other cases we hit a bug (incorrect node sharing is the
 		     most common reason for missing edges).  */
-		  gcc_assert (!dest->analyzed
+		  gcc_assert (!dest->symbol.definition
 			      || dest->symbol.address_taken
-		  	      || !id->src_node->analyzed
-			      || !id->dst_node->analyzed);
+		  	      || !id->src_node->symbol.definition
+			      || !id->dst_node->symbol.definition);
 		  if (id->transform_call_graph_edges == CB_CGE_MOVE_CLONES)
 		    cgraph_create_edge_including_clones
 		      (id->dst_node, dest, orig_stmt, stmt, bb->count,
@@ -3625,7 +3625,7 @@ estimate_num_insns (gimple stmt, eni_weights *weights)
 
 	/* Do not special case builtins where we see the body.
 	   This just confuse inliner.  */
-	if (!decl || !(node = cgraph_get_node (decl)) || node->analyzed)
+	if (!decl || !(node = cgraph_get_node (decl)) || node->symbol.definition)
 	  ;
 	/* For buitins that are likely expanded to nothing or
 	   inlined do not account operand costs.  */
@@ -3921,8 +3921,6 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	     for inlining, but we can't do that because frontends overwrite
 	     the body.  */
 	  && !cg_edge->callee->local.redefined_extern_inline
-	  /* Avoid warnings during early inline pass. */
-	  && cgraph_global_info_ready
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
 	  && (reason != CIF_BODY_NOT_AVAILABLE || !flag_generate_lto))
 	{
@@ -4360,7 +4358,7 @@ optimize_inline_calls (tree fn)
   memset (&id, 0, sizeof (id));
 
   id.src_node = id.dst_node = cgraph_get_node (fn);
-  gcc_assert (id.dst_node->analyzed);
+  gcc_assert (id.dst_node->symbol.definition);
   id.dst_fn = fn;
   /* Or any functions that aren't finished yet.  */
   if (current_function_decl)
@@ -5254,7 +5252,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   pointer_set_destroy (id.statements_to_fold);
   fold_cond_expr_cond ();
   delete_unreachable_blocks_update_callgraph (&id);
-  if (id.dst_node->analyzed)
+  if (id.dst_node->symbol.definition)
     cgraph_rebuild_references ();
   update_ssa (TODO_update_ssa);
 

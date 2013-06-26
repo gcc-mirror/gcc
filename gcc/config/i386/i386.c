@@ -1482,6 +1482,79 @@ struct processor_costs atom_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
+static const
+struct processor_costs slm_cost = {
+  COSTS_N_INSNS (1),			/* cost of an add instruction */
+  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
+  COSTS_N_INSNS (1),			/* variable shift costs */
+  COSTS_N_INSNS (1),			/* constant shift costs */
+  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
+   COSTS_N_INSNS (4),			/*				 HI */
+   COSTS_N_INSNS (3),			/*				 SI */
+   COSTS_N_INSNS (4),			/*				 DI */
+   COSTS_N_INSNS (2)},			/*			      other */
+  0,					/* cost of multiply per each bit set */
+  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
+   COSTS_N_INSNS (26),			/*			    HI */
+   COSTS_N_INSNS (42),			/*			    SI */
+   COSTS_N_INSNS (74),			/*			    DI */
+   COSTS_N_INSNS (74)},			/*			    other */
+  COSTS_N_INSNS (1),			/* cost of movsx */
+  COSTS_N_INSNS (1),			/* cost of movzx */
+  8,					/* "large" insn */
+  17,					/* MOVE_RATIO */
+  4,					/* cost for loading QImode using movzbl */
+  {4, 4, 4},				/* cost of loading integer registers
+					   in QImode, HImode and SImode.
+					   Relative to reg-reg move (2).  */
+  {4, 4, 4},				/* cost of storing integer registers */
+  4,					/* cost of reg,reg fld/fst */
+  {12, 12, 12},				/* cost of loading fp registers
+					   in SFmode, DFmode and XFmode */
+  {6, 6, 8},				/* cost of storing fp registers
+					   in SFmode, DFmode and XFmode */
+  2,					/* cost of moving MMX register */
+  {8, 8},				/* cost of loading MMX registers
+					   in SImode and DImode */
+  {8, 8},				/* cost of storing MMX registers
+					   in SImode and DImode */
+  2,					/* cost of moving SSE register */
+  {8, 8, 8},				/* cost of loading SSE registers
+					   in SImode, DImode and TImode */
+  {8, 8, 8},				/* cost of storing SSE registers
+					   in SImode, DImode and TImode */
+  5,					/* MMX or SSE register to integer */
+  32,					/* size of l1 cache.  */
+  256,					/* size of l2 cache.  */
+  64,					/* size of prefetch block */
+  6,					/* number of parallel prefetches */
+  3,					/* Branch cost */
+  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
+  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
+  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
+  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
+  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
+  {{libcall, {{11, loop, false}, {-1, rep_prefix_4_byte, false}}},
+   {libcall, {{32, loop, false}, {64, rep_prefix_4_byte, false},
+          {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}},
+  {{libcall, {{8, loop, false}, {15, unrolled_loop, false},
+          {2048, rep_prefix_4_byte, false}, {-1, libcall, false}}},
+   {libcall, {{24, loop, false}, {32, unrolled_loop, false},
+          {8192, rep_prefix_8_byte, false}, {-1, libcall, false}}}},
+  1,					/* scalar_stmt_cost.  */
+  1,					/* scalar load_cost.  */
+  1,					/* scalar_store_cost.  */
+  1,					/* vec_stmt_cost.  */
+  1,					/* vec_to_scalar_cost.  */
+  1,					/* scalar_to_vec_cost.  */
+  1,					/* vec_align_load_cost.  */
+  2,					/* vec_unalign_load_cost.  */
+  1,					/* vec_store_cost.  */
+  3,					/* cond_taken_branch_cost.  */
+  1,					/* cond_not_taken_branch_cost.  */
+};
+
 /* Generic64 should produce code tuned for Nocona and K8.  */
 static const
 struct processor_costs generic64_cost = {
@@ -1735,6 +1808,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_HASWELL (1<<PROCESSOR_HASWELL)
 #define m_CORE_ALL (m_CORE2 | m_COREI7  | m_HASWELL)
 #define m_ATOM (1<<PROCESSOR_ATOM)
+#define m_SLM (1<<PROCESSOR_SLM)
 
 #define m_GEODE (1<<PROCESSOR_GEODE)
 #define m_K6 (1<<PROCESSOR_K6)
@@ -1778,7 +1852,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_486 | m_PENT,
 
   /* X86_TUNE_UNROLL_STRLEN */
-  m_486 | m_PENT | m_PPRO | m_ATOM | m_CORE_ALL | m_K6 | m_AMD_MULTIPLE | m_GENERIC,
+  m_486 | m_PENT | m_PPRO | m_ATOM | m_SLM | m_CORE_ALL | m_K6 | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
      on simulation result. But after P4 was made, no performance benefit
@@ -1790,11 +1864,11 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~m_386,
 
   /* X86_TUNE_USE_SAHF */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC,
 
   /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
      partial dependencies.  */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC,
 
   /* X86_TUNE_PARTIAL_REG_STALL: We probably ought to watch for partial
      register stalls on Generic32 compilation setting as well.  However
@@ -1817,13 +1891,13 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_386 | m_486 | m_K6_GEODE,
 
   /* X86_TUNE_USE_SIMODE_FIOP */
-  ~(m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC),
+  ~(m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC),
 
   /* X86_TUNE_USE_MOV0 */
   m_K6,
 
   /* X86_TUNE_USE_CLTD */
-  ~(m_PENT | m_ATOM | m_K6),
+  ~(m_PENT | m_ATOM | m_SLM | m_K6),
 
   /* X86_TUNE_USE_XCHGB: Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
   m_PENT4,
@@ -1838,7 +1912,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   ~(m_PENT | m_PPRO),
 
   /* X86_TUNE_PROMOTE_QIMODE */
-  m_386 | m_486 | m_PENT | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
+  m_386 | m_486 | m_PENT | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_FAST_PREFIX */
   ~(m_386 | m_486 | m_PENT),
@@ -1879,10 +1953,10 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
      for DFmode copies */
-  ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_GEODE | m_AMD_MULTIPLE | m_ATOM | m_GENERIC),
+  ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GEODE | m_AMD_MULTIPLE | m_GENERIC),
 
   /* X86_TUNE_PARTIAL_REG_DEPENDENCY */
-  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: In the Generic model we have a
      conflict here in between PPro/Pentium4 based chips that thread 128bit
@@ -1893,13 +1967,13 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
      shows that disabling this option on P4 brings over 20% SPECfp regression,
      while enabling it on K8 brings roughly 2.4% regression that can be partly
      masked by careful scheduling of moves.  */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM  | m_AMDFAM10 | m_BDVER | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMDFAM10 | m_BDVER | m_GENERIC,
 
   /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
-  m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER,
+  m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM,
 
   /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL */
-  m_COREI7 | m_BDVER,
+  m_COREI7 | m_BDVER | m_SLM,
 
   /* X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL */
   m_BDVER ,
@@ -1917,7 +1991,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_PPRO | m_P4_NOCONA,
 
   /* X86_TUNE_MEMORY_MISMATCH_STALL */
-  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_PROLOGUE_USING_MOVE */
   m_PPRO | m_ATHLON_K8,
@@ -1942,16 +2016,16 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
      than 4 branch instructions in the 16 byte window.  */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_SCHEDULE */
-  m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
+  m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_USE_BT */
-  m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC,
+  m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
 
   /* X86_TUNE_USE_INCDEC */
-  ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_GENERIC),
+  ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GENERIC),
 
   /* X86_TUNE_PAD_RETURNS */
   m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC,
@@ -1960,7 +2034,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   m_ATOM,
 
   /* X86_TUNE_EXT_80387_CONSTANTS */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
+  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
 
   /* X86_TUNE_AVOID_VECTOR_DECODE */
   m_CORE_ALL | m_K8 | m_GENERIC64,
@@ -2005,13 +2079,13 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
      will impact LEA instruction selection. */
-  m_ATOM,
+  m_ATOM | m_SLM,
 
   /* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
      instructions.  */
   ~m_ATOM,
 
-  /* X86_SOFTARE_PREFETCHING_BENEFICIAL: Enable software prefetching
+  /* X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL: Enable software prefetching
      at -O3.  For the moment, the prefetching seems badly tuned for Intel
      chips.  */
   m_K6_GEODE | m_AMD_MULTIPLE,
@@ -2026,7 +2100,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
      during reassociation of fp computation.  */
-  m_ATOM | m_HASWELL,
+  m_ATOM | m_SLM | m_HASWELL | m_BDVER1 | m_BDVER2,
 
   /* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
      regs instead of memory.  */
@@ -2034,7 +2108,12 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
 
   /* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
      a conditional move.  */
-  m_ATOM
+  m_ATOM,
+
+  /* X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS: Try to split memory operand for
+     fp converts to destination register.  */
+  m_SLM
+
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -2060,10 +2139,10 @@ static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
 };
 
 static const unsigned int x86_accumulate_outgoing_args
-  = m_PPRO | m_P4_NOCONA | m_ATOM | m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC;
+  = m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC;
 
 static const unsigned int x86_arch_always_fancy_math_387
-  = m_PENT | m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_AMD_MULTIPLE | m_GENERIC;
+  = m_PENT | m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC;
 
 static const unsigned int x86_avx256_split_unaligned_load
   = m_COREI7 | m_GENERIC;
@@ -2458,7 +2537,8 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&bdver3_cost, 16, 10, 16, 7, 11},
   {&btver1_cost, 16, 10, 16, 7, 11},
   {&btver2_cost, 16, 10, 16, 7, 11},
-  {&atom_cost, 16, 15, 16, 7, 16}
+  {&atom_cost, 16, 15, 16, 7, 16},
+  {&slm_cost, 16, 15, 16, 7, 16}
 };
 
 static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
@@ -2479,6 +2559,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
   "corei7",
   "core-avx2",
   "atom",
+  "slm",
   "geode",
   "k6",
   "k6-2",
@@ -2940,6 +3021,10 @@ ix86_option_override_internal (bool main_args_p)
       {"atom", PROCESSOR_ATOM, CPU_ATOM,
 	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_CX16 | PTA_MOVBE | PTA_FXSR},
+      {"slm", PROCESSOR_SLM, CPU_SLM,
+	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+	| PTA_SSSE3 | PTA_SSE4_1 | PTA_SSE4_2 | PTA_CX16 | PTA_MOVBE
+	| PTA_FXSR},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE | PTA_PRFCHW},
       {"k6", PROCESSOR_K6, CPU_K6, PTA_MMX},
@@ -4563,6 +4648,13 @@ ix86_can_inline_p (tree caller, tree callee)
 
 /* Remember the last target of ix86_set_current_function.  */
 static GTY(()) tree ix86_previous_fndecl;
+
+/* Invalidate ix86_previous_fndecl cache.  */
+void
+ix86_reset_previous_fndecl (void)
+{
+  ix86_previous_fndecl = NULL_TREE;
+}
 
 /* Establish appropriate back-end context for processing the function
    FNDECL.  The argument might be NULL to indicate processing at top
@@ -6413,7 +6505,7 @@ construct_container (enum machine_mode mode, enum machine_mode orig_mode,
 
   /* Likewise, error if the ABI requires us to return values in the
      x87 registers and the user specified -mno-80387.  */
-  if (!TARGET_80387 && in_return)
+  if (!TARGET_FLOAT_RETURNS_IN_80387 && in_return)
     for (i = 0; i < n; i++)
       if (regclass[i] == X86_64_X87_CLASS
 	  || regclass[i] == X86_64_X87UP_CLASS
@@ -17312,9 +17404,23 @@ distance_agu_use (unsigned int regno0, rtx insn)
 
 static bool
 ix86_lea_outperforms (rtx insn, unsigned int regno0, unsigned int regno1,
-		      unsigned int regno2, int split_cost)
+		      unsigned int regno2, int split_cost, bool has_scale)
 {
   int dist_define, dist_use;
+
+  /* For Silvermont if using a 2-source or 3-source LEA for
+     non-destructive destination purposes, or due to wanting
+     ability to use SCALE, the use of LEA is justified.  */
+  if (ix86_tune == PROCESSOR_SLM)
+    {
+      if (has_scale)
+	return true;
+      if (split_cost < 1)
+	return false;
+      if (regno0 == regno1 || regno0 == regno2)
+	return false;
+      return true;
+    }
 
   dist_define = distance_non_agu_define (regno1, regno2, insn);
   dist_use = distance_agu_use (regno0, insn);
@@ -17404,7 +17510,7 @@ ix86_avoid_lea_for_add (rtx insn, rtx operands[])
   if (regno0 == regno1 || regno0 == regno2)
     return false;
   else
-    return !ix86_lea_outperforms (insn, regno0, regno1, regno2, 1);
+    return !ix86_lea_outperforms (insn, regno0, regno1, regno2, 1, false);
 }
 
 /* Return true if we should emit lea instruction instead of mov
@@ -17426,7 +17532,7 @@ ix86_use_lea_for_mov (rtx insn, rtx operands[])
   regno0 = true_regnum (operands[0]);
   regno1 = true_regnum (operands[1]);
 
-  return ix86_lea_outperforms (insn, regno0, regno1, INVALID_REGNUM, 0);
+  return ix86_lea_outperforms (insn, regno0, regno1, INVALID_REGNUM, 0, false);
 }
 
 /* Return true if we need to split lea into a sequence of
@@ -17505,7 +17611,8 @@ ix86_avoid_lea_for_addr (rtx insn, rtx operands[])
       split_cost -= 1;
     }
 
-  return !ix86_lea_outperforms (insn, regno0, regno1, regno2, split_cost);
+  return !ix86_lea_outperforms (insn, regno0, regno1, regno2, split_cost,
+				parts.scale > 1);
 }
 
 /* Emit x86 binary operand CODE in mode MODE, where the first operand
@@ -17690,7 +17797,7 @@ ix86_lea_for_add_ok (rtx insn, rtx operands[])
   if (!TARGET_OPT_AGU || optimize_function_for_size_p (cfun))
     return false;
 
-  return ix86_lea_outperforms (insn, regno0, regno1, regno2, 0);
+  return ix86_lea_outperforms (insn, regno0, regno1, regno2, 0, false);
 }
 
 /* Return true if destination reg of SET_BODY is shift count of
@@ -24199,6 +24306,7 @@ ix86_issue_rate (void)
     {
     case PROCESSOR_PENTIUM:
     case PROCESSOR_ATOM:
+    case PROCESSOR_SLM:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
       return 2;
@@ -24284,6 +24392,73 @@ ix86_agi_dependent (rtx set_insn, rtx use_insn)
 	rtx addr = XEXP (recog_data.operand[i], 0);
 	return modified_in_p (addr, set_insn) != 0;
       }
+  return false;
+}
+
+/* Helper function for exact_store_load_dependency.
+   Return true if addr is found in insn.  */
+static bool
+exact_dependency_1 (rtx addr, rtx insn)
+{
+  enum rtx_code code;
+  const char *format_ptr;
+  int i, j;
+
+  code = GET_CODE (insn);
+  switch (code)
+    {
+    case MEM:
+      if (rtx_equal_p (addr, insn))
+	return true;
+      break;
+    case REG:
+    CASE_CONST_ANY:
+    case SYMBOL_REF:
+    case CODE_LABEL:
+    case PC:
+    case CC0:
+    case EXPR_LIST:
+      return false;
+    default:
+      break;
+    }
+
+  format_ptr = GET_RTX_FORMAT (code);
+  for (i = 0; i < GET_RTX_LENGTH (code); i++)
+    {
+      switch (*format_ptr++)
+	{
+	case 'e':
+	  if (exact_dependency_1 (addr, XEXP (insn, i)))
+	    return true;
+	  break;
+	case 'E':
+	  for (j = 0; j < XVECLEN (insn, i); j++)
+	    if (exact_dependency_1 (addr, XVECEXP (insn, i, j)))
+	      return true;
+	    break;
+	}
+    }
+  return false;
+}
+
+/* Return true if there exists exact dependency for store & load, i.e.
+   the same memory address is used in them.  */
+static bool
+exact_store_load_dependency (rtx store, rtx load)
+{
+  rtx set1, set2;
+
+  set1 = single_set (store);
+  if (!set1)
+    return false;
+  if (!MEM_P (SET_DEST (set1)))
+    return false;
+  set2 = single_set (load);
+  if (!set2)
+    return false;
+  if (exact_dependency_1 (SET_DEST (set1), SET_SRC (set2)))
+    return true;
   return false;
 }
 
@@ -24438,6 +24613,39 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
 	  else
 	    cost = 0;
 	}
+      break;
+
+    case PROCESSOR_SLM:
+      if (!reload_completed)
+	return cost;
+
+      /* Increase cost of integer loads.  */
+      memory = get_attr_memory (dep_insn);
+      if (memory == MEMORY_LOAD || memory == MEMORY_BOTH)
+	{
+	  enum attr_unit unit = get_attr_unit (dep_insn);
+	  if (unit == UNIT_INTEGER && cost == 1)
+	    {
+	      if (memory == MEMORY_LOAD)
+		cost = 3;
+	      else
+		{
+		  /* Increase cost of ld/st for short int types only
+		     because of store forwarding issue.  */
+		  rtx set = single_set (dep_insn);
+		  if (set && (GET_MODE (SET_DEST (set)) == QImode
+			      || GET_MODE (SET_DEST (set)) == HImode))
+		    {
+		      /* Increase cost of store/load insn if exact
+			 dependence exists and it is load insn.  */
+		      enum attr_memory insn_memory = get_attr_memory (insn);
+		      if (insn_memory == MEMORY_LOAD
+			  && exact_store_load_dependency (dep_insn, insn))
+			cost = 3;
+		    }
+		}
+	    }
+	}
 
     default:
       break;
@@ -24466,6 +24674,7 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_COREI7:
     case PROCESSOR_HASWELL:
     case PROCESSOR_ATOM:
+    case PROCESSOR_SLM:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
 	 issue_rate.  I wonder why tuning for many CPUs does not do this.  */
@@ -24483,110 +24692,204 @@ ia32_multipass_dfa_lookahead (void)
    execution. It is applied if
    (1) IMUL instruction is on the top of list;
    (2) There exists the only producer of independent IMUL instruction in
-       ready list;
-   (3) Put found producer on the top of ready list.
-   Returns issue rate.  */
-
+       ready list.
+   Return index of IMUL producer if it was found and -1 otherwise.  */
 static int
-ix86_sched_reorder(FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
-                   int clock_var ATTRIBUTE_UNUSED)
+do_reorder_for_imul (rtx *ready, int n_ready)
 {
-  static int issue_rate = -1;
-  int n_ready = *pn_ready;
-  rtx insn, insn1, insn2;
-  int i;
+  rtx insn, set, insn1, insn2;
   sd_iterator_def sd_it;
   dep_t dep;
   int index = -1;
+  int i;
+
+  if (ix86_tune != PROCESSOR_ATOM)
+    return index;
+
+  /* Check that IMUL instruction is on the top of ready list.  */
+  insn = ready[n_ready - 1];
+  set = single_set (insn);
+  if (!set)
+    return index;
+  if (!(GET_CODE (SET_SRC (set)) == MULT
+      && GET_MODE (SET_SRC (set)) == SImode))
+    return index;
+
+  /* Search for producer of independent IMUL instruction.  */
+  for (i = n_ready - 2; i >= 0; i--)
+    {
+      insn = ready[i];
+      if (!NONDEBUG_INSN_P (insn))
+	continue;
+      /* Skip IMUL instruction.  */
+      insn2 = PATTERN (insn);
+      if (GET_CODE (insn2) == PARALLEL)
+	insn2 = XVECEXP (insn2, 0, 0);
+      if (GET_CODE (insn2) == SET
+	  && GET_CODE (SET_SRC (insn2)) == MULT
+	  && GET_MODE (SET_SRC (insn2)) == SImode)
+	continue;
+
+      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
+	{
+	  rtx con;
+	  con = DEP_CON (dep);
+	  if (!NONDEBUG_INSN_P (con))
+	    continue;
+	  insn1 = PATTERN (con);
+	  if (GET_CODE (insn1) == PARALLEL)
+	    insn1 = XVECEXP (insn1, 0, 0);
+
+	  if (GET_CODE (insn1) == SET
+	      && GET_CODE (SET_SRC (insn1)) == MULT
+	      && GET_MODE (SET_SRC (insn1)) == SImode)
+	    {
+	      sd_iterator_def sd_it1;
+	      dep_t dep1;
+	      /* Check if there is no other dependee for IMUL.  */
+	      index = i;
+	      FOR_EACH_DEP (con, SD_LIST_BACK, sd_it1, dep1)
+		{
+		  rtx pro;
+		  pro = DEP_PRO (dep1);
+		  if (!NONDEBUG_INSN_P (pro))
+		    continue;
+		  if (pro != insn)
+		    index = -1;
+		}
+	      if (index >= 0)
+		break;
+	    }
+	}
+      if (index >= 0)
+	break;
+    }
+  return index;
+}
+
+/* Try to find the best candidate on the top of ready list if two insns
+   have the same priority - candidate is best if its dependees were
+   scheduled earlier. Applied for Silvermont only.
+   Return true if top 2 insns must be interchanged.  */
+static bool
+swap_top_of_ready_list (rtx *ready, int n_ready)
+{
+  rtx top = ready[n_ready - 1];
+  rtx next = ready[n_ready - 2];
+  rtx set;
+  sd_iterator_def sd_it;
+  dep_t dep;
+  int clock1 = -1;
+  int clock2 = -1;
+  #define INSN_TICK(INSN) (HID (INSN)->tick)
+
+  if (ix86_tune != PROCESSOR_SLM)
+    return false;
+
+  if (!NONDEBUG_INSN_P (top))
+    return false;
+  if (!NONJUMP_INSN_P (top))
+    return false;
+  if (!NONDEBUG_INSN_P (next))
+    return false;
+  if (!NONJUMP_INSN_P (next))
+    return false;
+  set = single_set (top);
+  if (!set)
+    return false;
+  set = single_set (next);
+  if (!set)
+    return false;
+
+  if (INSN_PRIORITY_KNOWN (top) && INSN_PRIORITY_KNOWN (next))
+    {
+      if (INSN_PRIORITY (top) != INSN_PRIORITY (next))
+	return false;
+      /* Determine winner more precise.  */
+      FOR_EACH_DEP (top, SD_LIST_RES_BACK, sd_it, dep)
+	{
+	  rtx pro;
+	  pro = DEP_PRO (dep);
+	  if (!NONDEBUG_INSN_P (pro))
+	    continue;
+	  if (INSN_TICK (pro) > clock1)
+	    clock1 = INSN_TICK (pro);
+	}
+      FOR_EACH_DEP (next, SD_LIST_RES_BACK, sd_it, dep)
+	{
+	  rtx pro;
+	  pro = DEP_PRO (dep);
+	  if (!NONDEBUG_INSN_P (pro))
+	    continue;
+	  if (INSN_TICK (pro) > clock2)
+	    clock2 = INSN_TICK (pro);
+	}
+
+      if (clock1 == clock2)
+	{
+	  /* Determine winner - load must win. */
+	  enum attr_memory memory1, memory2;
+	  memory1 = get_attr_memory (top);
+	  memory2 = get_attr_memory (next);
+	  if (memory2 == MEMORY_LOAD && memory1 != MEMORY_LOAD)
+	    return true;
+	}
+	return (bool) (clock2 < clock1);
+    }
+  return false;
+  #undef INSN_TICK
+}
+
+/* Perform possible reodering of ready list for Atom/Silvermont only.
+   Return issue rate.  */
+static int
+ix86_sched_reorder (FILE *dump, int sched_verbose, rtx *ready, int *pn_ready,
+		   int clock_var)
+{
+  int issue_rate = -1;
+  int n_ready = *pn_ready;
+  int i;
+  rtx insn;
+  int index = -1;
 
   /* Set up issue rate.  */
-  issue_rate = ix86_issue_rate();
+  issue_rate = ix86_issue_rate ();
 
-  /* Do reodering for Atom only.  */
-  if (ix86_tune != PROCESSOR_ATOM)
+  /* Do reodering for Atom/SLM only.  */
+  if (ix86_tune != PROCESSOR_ATOM && ix86_tune != PROCESSOR_SLM)
     return issue_rate;
-  /* Do not perform ready list reodering for pre-reload schedule pass.  */
-  if (!reload_completed)
-    return issue_rate;
+
   /* Nothing to do if ready list contains only 1 instruction.  */
   if (n_ready <= 1)
     return issue_rate;
 
-  /* Check that IMUL instruction is on the top of ready list.  */
-  insn = ready[n_ready - 1];
-  if (!NONDEBUG_INSN_P (insn))
-    return issue_rate;
-  insn = PATTERN (insn);
-  if (GET_CODE (insn) == PARALLEL)
-    insn = XVECEXP (insn, 0, 0);
-  if (GET_CODE (insn) != SET)
-    return issue_rate;
-  if (!(GET_CODE (SET_SRC (insn)) == MULT
-      && GET_MODE (SET_SRC (insn)) == SImode))
+  /* Do reodering for post-reload scheduler only.  */
+  if (!reload_completed)
     return issue_rate;
 
-  /* Search for producer of independent IMUL instruction.  */
-  for (i = n_ready - 2; i>= 0; i--)
+  if ((index = do_reorder_for_imul (ready, n_ready)) >= 0)
     {
-      insn = ready[i];
-      if (!NONDEBUG_INSN_P (insn))
-        continue;
-      /* Skip IMUL instruction.  */
-      insn2 = PATTERN (insn);
-      if (GET_CODE (insn2) == PARALLEL)
-        insn2 = XVECEXP (insn2, 0, 0);
-      if (GET_CODE (insn2) == SET
-          && GET_CODE (SET_SRC (insn2)) == MULT
-          && GET_MODE (SET_SRC (insn2)) == SImode)
-        continue;
+      if (sched_verbose > 1)
+	fprintf (dump, ";;\tatom sched_reorder: put %d insn on top\n",
+		 INSN_UID (ready[index]));
 
-      FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
-        {
-          rtx con;
-	  con = DEP_CON (dep);
-	  if (!NONDEBUG_INSN_P (con))
-	    continue;
-          insn1 = PATTERN (con);
-          if (GET_CODE (insn1) == PARALLEL)
-            insn1 = XVECEXP (insn1, 0, 0);
-
-          if (GET_CODE (insn1) == SET
-              && GET_CODE (SET_SRC (insn1)) == MULT
-              && GET_MODE (SET_SRC (insn1)) == SImode)
-            {
-              sd_iterator_def sd_it1;
-              dep_t dep1;
-              /* Check if there is no other dependee for IMUL.  */
-              index = i;
-              FOR_EACH_DEP (con, SD_LIST_BACK, sd_it1, dep1)
-                {
-                  rtx pro;
-                  pro = DEP_PRO (dep1);
-		  if (!NONDEBUG_INSN_P (pro))
-		    continue;
-                  if (pro != insn)
-                    index = -1;
-	        }
-              if (index >= 0)
-                break;
-            }
-        }
-      if (index >= 0)
-        break;
+      /* Put IMUL producer (ready[index]) at the top of ready list.  */
+      insn = ready[index];
+      for (i = index; i < n_ready - 1; i++)
+	ready[i] = ready[i + 1];
+      ready[n_ready - 1] = insn;
+      return issue_rate;
     }
-  if (index < 0)
-    return issue_rate; /* Didn't find IMUL producer.  */
-
-  if (sched_verbose > 1)
-    fprintf(dump, ";;\tatom sched_reorder: swap %d and %d insns\n",
-            INSN_UID (ready[index]), INSN_UID (ready[n_ready - 1]));
-
-  /* Put IMUL producer (ready[index]) at the top of ready list.  */
-  insn1= ready[index];
-  for (i = index; i < n_ready - 1; i++)
-    ready[i] = ready[i + 1];
-  ready[n_ready - 1] = insn1;
-
+  if (clock_var != 0 && swap_top_of_ready_list (ready, n_ready))
+    {
+      if (sched_verbose > 1)
+	fprintf (dump, ";;\tslm sched_reorder: swap %d and %d insns\n",
+		 INSN_UID (ready[n_ready - 1]), INSN_UID (ready[n_ready - 2]));
+      /* Swap 2 top elements of ready list.  */
+      insn = ready[n_ready - 1];
+      ready[n_ready - 1] = ready[n_ready - 2];
+      ready[n_ready - 2] = insn;
+    }
   return issue_rate;
 }
 
@@ -25079,11 +25382,12 @@ ix86_constant_alignment (tree exp, int align)
    instead of that alignment to align the object.  */
 
 int
-ix86_data_alignment (tree type, int align)
+ix86_data_alignment (tree type, int align, bool opt)
 {
   int max_align = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
 
-  if (AGGREGATE_TYPE_P (type)
+  if (opt
+      && AGGREGATE_TYPE_P (type)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
       && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
@@ -25095,13 +25399,16 @@ ix86_data_alignment (tree type, int align)
      to 16byte boundary.  */
   if (TARGET_64BIT)
     {
-      if (AGGREGATE_TYPE_P (type)
-	   && TYPE_SIZE (type)
-	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
-	       || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+      if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
+	  && TYPE_SIZE (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
+	      || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
 	return 128;
     }
+
+  if (!opt)
+    return align;
 
   if (TREE_CODE (type) == ARRAY_TYPE)
     {
@@ -29468,7 +29775,7 @@ ix86_get_function_versions_dispatcher (void *decl)
       dispatcher_version_info
 	= insert_new_cgraph_node_version (dispatcher_node);
       dispatcher_version_info->next = default_version_info;
-      dispatcher_node->local.finalized = 1;
+      dispatcher_node->symbol.definition = 1;
 
       /* Set the dispatcher for all the versions.  */
       it_v = default_version_info;
@@ -29623,7 +29930,7 @@ ix86_generate_version_dispatcher_body (void *node_p)
   default_ver_decl = node_version_info->next->this_node->symbol.decl;
 
   /* node is going to be an alias, so remove the finalized bit.  */
-  node->local.finalized = false;
+  node->symbol.definition = false;
 
   resolver_decl = make_resolver_func (default_ver_decl,
 				      node->symbol.decl, &empty_bb);
@@ -29756,6 +30063,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7,
     M_AMDFAM10H,
     M_AMDFAM15H,
+    M_INTEL_SLM,
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -29778,6 +30086,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"amd", M_AMD},
       {"intel", M_INTEL},
       {"atom", M_INTEL_ATOM},
+      {"slm", M_INTEL_SLM},
       {"core2", M_INTEL_CORE2},
       {"corei7", M_INTEL_COREI7},
       {"nehalem", M_INTEL_COREI7_NEHALEM},
@@ -29816,6 +30125,9 @@ fold_builtin_cpu (tree fndecl, tree *args)
   tree __processor_model_type = build_processor_model_struct ();
   tree __cpu_model_var = make_var_decl (__processor_model_type,
 					"__cpu_model");
+
+
+  varpool_add_new_variable (__cpu_model_var);
 
   gcc_assert ((args != NULL) && (*args != NULL));
 
@@ -33650,6 +33962,8 @@ static inline bool
 inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
 				enum machine_mode mode, int strict)
 {
+  if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
+    return false;
   if (MAYBE_FLOAT_CLASS_P (class1) != FLOAT_CLASS_P (class1)
       || MAYBE_FLOAT_CLASS_P (class2) != FLOAT_CLASS_P (class2)
       || MAYBE_SSE_CLASS_P (class1) != SSE_CLASS_P (class1)
@@ -35564,6 +35878,46 @@ ix86_pad_short_function (void)
     }
 }
 
+/* Fix up a Windows system unwinder issue.  If an EH region falls thru into
+   the epilogue, the Windows system unwinder will apply epilogue logic and
+   produce incorrect offsets.  This can be avoided by adding a nop between
+   the last insn that can throw and the first insn of the epilogue.  */
+
+static void
+ix86_seh_fixup_eh_fallthru (void)
+{
+  edge e;
+  edge_iterator ei;
+
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR->preds)
+    {
+      rtx insn, next;
+
+      /* Find the beginning of the epilogue.  */
+      for (insn = BB_END (e->src); insn != NULL; insn = PREV_INSN (insn))
+	if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_EPILOGUE_BEG)
+	  break;
+      if (insn == NULL)
+	continue;
+
+      /* We only care about preceeding insns that can throw.  */
+      insn = prev_active_insn (insn);
+      if (insn == NULL || !can_throw_internal (insn))
+	continue;
+
+      /* Do not separate calls from their debug information.  */
+      for (next = NEXT_INSN (insn); next != NULL; next = NEXT_INSN (next))
+	if (NOTE_P (next)
+            && (NOTE_KIND (next) == NOTE_INSN_VAR_LOCATION
+                || NOTE_KIND (next) == NOTE_INSN_CALL_ARG_LOCATION))
+	  insn = next;
+	else
+	  break;
+
+      emit_insn_after (gen_nops (const1_rtx), insn);
+    }
+}
+
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -35572,6 +35926,9 @@ ix86_reorg (void)
   /* We are freeing block_for_insn in the toplev to keep compatibility
      with old MDEP_REORGS that are not CFG based.  Recompute it now.  */
   compute_bb_for_insn ();
+
+  if (TARGET_SEH && current_function_has_exception_handlers ())
+    ix86_seh_fixup_eh_fallthru ();
 
   if (optimize && optimize_function_for_speed_p (cfun))
     {
@@ -42681,6 +43038,9 @@ ix86_memmodel_check (unsigned HOST_WIDE_INT val)
 
 #undef TARGET_REGISTER_PRIORITY
 #define TARGET_REGISTER_PRIORITY ix86_register_priority
+
+#undef TARGET_REGISTER_USAGE_LEVELING_P
+#define TARGET_REGISTER_USAGE_LEVELING_P hook_bool_void_true
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P ix86_legitimate_constant_p

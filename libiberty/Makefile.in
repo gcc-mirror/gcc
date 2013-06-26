@@ -355,19 +355,19 @@ install-strip: install
 # since it will be passed the multilib flags.
 MULTIOSDIR = `$(CC) $(CFLAGS) -print-multi-os-directory`
 install_to_libdir: all
-	${mkinstalldirs} $(DESTDIR)$(libdir)/$(MULTIOSDIR)
-	$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)n
-	( cd $(DESTDIR)$(libdir)/$(MULTIOSDIR) ; chmod 644 $(TARGETLIB)n ;$(RANLIB) $(TARGETLIB)n )
-	mv -f $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)n $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)
 	if test -n "${target_header_dir}"; then \
-	  case "${target_header_dir}" in \
-	    /*)    thd=${target_header_dir};; \
-	    *)     thd=${includedir}/${target_header_dir};; \
-	  esac; \
-	  ${mkinstalldirs} $(DESTDIR)$${thd}; \
-	  for h in ${INSTALLED_HEADERS}; do \
-	    ${INSTALL_DATA} $$h $(DESTDIR)$${thd}; \
-	  done; \
+		${mkinstalldirs} $(DESTDIR)$(libdir)/$(MULTIOSDIR); \
+		$(INSTALL_DATA) $(TARGETLIB) $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)n; \
+		( cd $(DESTDIR)$(libdir)/$(MULTIOSDIR) ; chmod 644 $(TARGETLIB)n ;$(RANLIB) $(TARGETLIB)n ); \
+		mv -f $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB)n $(DESTDIR)$(libdir)/$(MULTIOSDIR)/$(TARGETLIB); \
+		case "${target_header_dir}" in \
+		  /*)    thd=${target_header_dir};; \
+		  *)     thd=${includedir}/${target_header_dir};; \
+		esac; \
+		${mkinstalldirs} $(DESTDIR)$${thd}; \
+		for h in ${INSTALLED_HEADERS}; do \
+		  ${INSTALL_DATA} $$h $(DESTDIR)$${thd}; \
+		done; \
 	fi
 	@$(MULTIDO) $(FLAGS_TO_PASS) multi-do DO=install
 

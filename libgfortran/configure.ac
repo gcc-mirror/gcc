@@ -254,20 +254,34 @@ AC_CHECK_TYPES([ptrdiff_t])
 # check header files (we assume C89 is available, so don't check for that)
 AC_CHECK_HEADERS_ONCE(unistd.h sys/time.h sys/times.h sys/resource.h \
 sys/types.h sys/stat.h sys/wait.h floatingpoint.h ieeefp.h fenv.h fptrap.h \
-pwd.h complex.h) 
+fpxcp.h pwd.h complex.h) 
 
 GCC_HEADER_STDINT(gstdint.h)
 
 AC_CHECK_MEMBERS([struct stat.st_blksize, struct stat.st_blocks, struct stat.st_rdev])
 
 # Check for library functions.
-AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
-ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
-alarm access fork execl wait setmode execve pipe dup2 close \
-strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
-getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
-readlink getgid getpid getppid getuid geteuid umask getegid \
-secure_getenv __secure_getenv)
+if test "x${with_newlib}" = "xyes"; then
+   # We are being configured with a cross compiler.  AC_REPLACE_FUNCS
+   # may not work correctly, because the compiler may not be able to
+   # link executables.
+   AC_DEFINE(HAVE_MKSTEMP, 1, [Define if you have mkstemp.])
+   AC_DEFINE(HAVE_STRTOF, 1, [Define if you have strtof.])
+   AC_DEFINE(HAVE_STRTOLD, 1, [Define if you have strtold.])
+   AC_DEFINE(HAVE_SNPRINTF, 1, [Define if you have snprintf.])
+   AC_DEFINE(HAVE_STRCASESTR, 1, [Define if you have strcasestr.])
+   AC_DEFINE(HAVE_VSNPRINTF, 1, [Define if you have vsnprintf.])
+   AC_DEFINE(HAVE_LOCALTIME_R, 1, [Define if you have localtime_r.])
+   AC_DEFINE(HAVE_GMTIME_R, 1, [Define if you have gmtime_r.])
+else
+   AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
+   ftruncate chsize chdir getlogin gethostname kill link symlink sleep ttyname \
+   alarm access fork execl wait setmode execve pipe dup2 close \
+   strcasestr getrlimit gettimeofday stat fstat lstat getpwuid vsnprintf dup \
+   getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
+   readlink getgid getpid getppid getuid geteuid umask getegid \
+   secure_getenv __secure_getenv)
+fi
 
 # Check strerror_r, cannot be above as versions with two and three arguments exist
 LIBGFOR_CHECK_STRERROR_R
@@ -498,6 +512,7 @@ fi
 
 # Check for SysV fpsetmask
 LIBGFOR_CHECK_FPSETMASK
+AC_CHECK_TYPES([fp_except,fp_except_t], [], [], [[#include <ieeefp.h>]])
 
 # Check for AIX fp_trap and fp_enable
 AC_CHECK_FUNC([fp_trap],[have_fp_trap=yes AC_DEFINE([HAVE_FP_TRAP],[1],[fp_trap is present])])

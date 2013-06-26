@@ -1,3 +1,46 @@
+2013-05-22  Mark Mitchell  <mark@codesourcery.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	* configure.ac: Define host_noncanonical and target_noncanonical.
+	Support --enable-version-specific-runtime-libs.
+	* m4/acinclude.m4 (CLASSPATH_TOOLEXECLIBDIR): Match libjava
+	definition of toolexeclibdir.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* doc/api/Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* examples/Makefile.in: Regenerated.
+	* external/jsr166/Makefile.in: Regenerated.
+	* external/Makefile.in: Regenerated.
+	* external/relaxngDatatype/Makefile.in: Regenerated.
+	* external/sax/Makefile.in: Regenerated.
+	* external/w3c_dom/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* lib/Makefile.in: Regenerated.
+	* native/fdlibm/Makefile.in: Regenerated.
+	* native/jawt/Makefile.in: Regenerated.
+	* native/jni/Makefile.in: Regenerated.
+	* native/jni/gconf-peer/Makefile.in: Regenerated.
+	* native/jni/gstreamer-peer/Makefile.in: Regenerated.
+	* native/jni/gtk-peer/Makefile.in: Regenerated.
+	* native/jni/java-io/Makefile.in: Regenerated.
+	* native/jni/java-lang/Makefile.in: Regenerated.
+	* native/jni/java-math/Makefile.in: Regenerated.
+	* native/jni/java-net/Makefile.in: Regenerated.
+	* native/jni/java-nio/Makefile.in: Regenerated.
+	* native/jni/java-util/Makefile.in: Regenerated.
+	* native/jni/Makefile.in: Regenerated.
+	* native/jni/midi-alsa/Makefile.in: Regenerated.
+	* native/jni/midi-dssi/Makefile.in: Regenerated.
+	* native/jni/native-lib/Makefile.in: Regenerated.
+	* native/jni/qt-peer/Makefile.in: Regenerated.
+	* native/jni/xmlj/Makefile.in: Regenerated.
+	* native/Makefile.in: Regenerated.
+	* native/plugin/Makefile.in: Regenerated.
+	* resource/Makefile.in: Regenerated.
+	* scripts/Makefile.in: Regenerated.
+	* tools/Makefile.in: Regenerated.
+
 2013-01-10  Matthias Klose <doko@ubuntu.com>
 
 	* tools/gnu/classpath/tools/gjdoc/Main.java: Accept -source 1.5,

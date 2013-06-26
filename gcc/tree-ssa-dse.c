@@ -84,6 +84,13 @@ dse_possible_dead_store_p (gimple stmt, gimple *use_stmt)
 
   *use_stmt = NULL;
 
+  /* Self-assignments are zombies.  */
+  if (operand_equal_p (gimple_assign_rhs1 (stmt), gimple_assign_lhs (stmt), 0))
+    {
+      *use_stmt = stmt;
+      return true;
+    }
+
   /* Find the first dominated statement that clobbers (part of) the
      memory stmt stores to with no intermediate statement that may use
      part of the memory stmt stores.  That is, find a store that may

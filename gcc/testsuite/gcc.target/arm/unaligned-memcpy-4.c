@@ -4,8 +4,8 @@
 
 #include <string.h>
 
-char src[16];
-char dest[16];
+char src[16] = { 0 };
+char dest[16] = { 0 };
 
 void aligned_both (void)
 {

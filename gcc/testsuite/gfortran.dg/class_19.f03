@@ -39,5 +39,5 @@ program main
 
 end program main
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 11 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 12 "original" } }
 ! { dg-final { cleanup-tree-dump "original" } }

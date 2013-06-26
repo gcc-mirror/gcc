@@ -223,6 +223,58 @@ namespace __gnu_test
   template<typename _Tp>
   _Tp citerator<_Tp>::_S_container;
 
+  // DR 130 vs. C++98 vs. C++11.
+  // Defined in testsuite_shared.cc.
+  void 
+  erase_external(std::set<int>& s);
+
+  void 
+  erase_external(std::multiset<int>& s);
+
+  void 
+  erase_external(std::map<int, int>& s);
+
+  void 
+  erase_external(std::multimap<int, int>& s);
+
+  void 
+  erase_external_iterators(std::set<int>& s);
+
+  void 
+  erase_external_iterators(std::multiset<int>& s);
+
+  void 
+  erase_external_iterators(std::map<int, int>& s);
+
+  void 
+  erase_external_iterators(std::multimap<int, int>& s);
+
+// NB: "must be compiled with C++11"
+#if __cplusplus >= 201103L
+template<typename _Tp>
+  void 
+  linkage_check_cxx98_cxx11_erase(_Tp& container)
+  {
+    // Crashing when exteral reference and internal reference symbols are
+    // equivalently mangled but have different size return types in C++98
+    // and C++11 signatures.
+    erase_external(container); 		// C++98
+    container.erase(container.begin());	// C++11
+  }
+
+template<typename _Tp>
+  void 
+  linkage_check_cxx98_cxx11_erase_iterators(_Tp& container)
+  {
+    // Crashing when exteral reference and internal reference symbols are
+    // equivalently mangled but have different size return types in C++98
+    // and C++11 signatures.
+    erase_external_iterators(container);// C++98
+
+    auto iter = container.begin();
+    container.erase(iter, ++iter);	// C++11
+  }
+#endif
 
 } // namespace __gnu_test
 

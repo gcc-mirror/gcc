@@ -23,6 +23,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "hash-table.h"
 #include "tm.h"
 #include "rtl.h"
 #include "tree.h"
@@ -661,6 +662,10 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET arm_asan_shadow_offset
 
+#undef MAX_INSN_PER_IT_BLOCK
+#define MAX_INSN_PER_IT_BLOCK (arm_restrict_it ? 1 : 4)
+
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Obstack for minipool constant handling.  */
@@ -1054,7 +1059,7 @@ const struct tune_params arm_cortex_a15_tune =
   arm_9e_rtx_costs,
   NULL,
   1,						/* Constant limit.  */
-  5,						/* Max cond insns.  */
+  2,						/* Max cond insns.  */
   ARM_PREFETCH_NOT_BENEFICIAL,
   false,					/* Prefer constant pool.  */
   arm_default_branch_cost,
@@ -1870,6 +1875,11 @@ arm_option_override (void)
   arm_arch_thumb_hwdiv = (insn_flags & FL_THUMB_DIV) != 0;
   arm_arch_arm_hwdiv = (insn_flags & FL_ARM_DIV) != 0;
   arm_tune_cortex_a9 = (arm_tune == cortexa9) != 0;
+  if (arm_restrict_it == 2)
+    arm_restrict_it = arm_arch8 && TARGET_THUMB2;
+
+  if (!TARGET_THUMB2)
+    arm_restrict_it = 0;
 
   /* If we are not using the default (ARM mode) section anchor offset
      ranges, then set the correct ranges now.  */
@@ -2167,6 +2177,14 @@ arm_option_override (void)
   maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, 2,
                          global_options.x_param_values,
                          global_options_set.x_param_values);
+
+  /* Disable shrink-wrap when optimizing function for size, since it tends to
+     generate additional returns.  */
+  if (optimize_function_for_size_p (cfun) && TARGET_THUMB2)
+    flag_shrink_wrap = false;
+  /* TBD: Dwarf info for apcs frame is not handled yet.  */
+  if (TARGET_APCS_FRAME)
+    flag_shrink_wrap = false;
 
   /* Register global variables with the garbage collector.  */
   arm_add_gc_roots ();
@@ -2517,6 +2535,18 @@ use_return_insn (int iscond, rtx sibling)
   return 1;
 }
 
+/* Return TRUE if we should try to use a simple_return insn, i.e. perform
+   shrink-wrapping if possible.  This is the case if we need to emit a
+   prologue, which we can test by looking at the offsets.  */
+bool
+use_simple_return_p (void)
+{
+  arm_stack_offsets *offsets;
+
+  offsets = arm_get_frame_offsets ();
+  return offsets->outgoing_args != 0;
+}
+
 /* Return TRUE if int I is a valid immediate ARM constant.  */
 
 int
@@ -2656,6 +2686,8 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
   switch (code)
     {
     case AND:
+    case IOR:
+    case XOR:
       return (const_ok_for_op (hi_val, code) || hi_val == 0xFFFFFFFF)
               && (const_ok_for_op (lo_val, code) || lo_val == 0xFFFFFFFF);
     case PLUS:
@@ -3816,36 +3848,48 @@ arm_function_value(const_tree type, const_tree func,
   return arm_libcall_value_1 (mode);
 }
 
-static int
-libcall_eq (const void *p1, const void *p2)
+/* libcall hashtable helpers.  */
+
+struct libcall_hasher : typed_noop_remove <rtx_def>
 {
-  return rtx_equal_p ((const_rtx) p1, (const_rtx) p2);
+  typedef rtx_def value_type;
+  typedef rtx_def compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline bool equal (const value_type *, const compare_type *);
+  static inline void remove (value_type *);
+};
+
+inline bool
+libcall_hasher::equal (const value_type *p1, const compare_type *p2)
+{
+  return rtx_equal_p (p1, p2);
 }
 
-static hashval_t
-libcall_hash (const void *p1)
+inline hashval_t
+libcall_hasher::hash (const value_type *p1)
 {
-  return hash_rtx ((const_rtx) p1, VOIDmode, NULL, NULL, FALSE);
+  return hash_rtx (p1, VOIDmode, NULL, NULL, FALSE);
 }
+
+typedef hash_table <libcall_hasher> libcall_table_type;
 
 static void
-add_libcall (htab_t htab, rtx libcall)
+add_libcall (libcall_table_type htab, rtx libcall)
 {
-  *htab_find_slot (htab, libcall, INSERT) = libcall;
+  *htab.find_slot (libcall, INSERT) = libcall;
 }
 
 static bool
 arm_libcall_uses_aapcs_base (const_rtx libcall)
 {
   static bool init_done = false;
-  static htab_t libcall_htab;
+  static libcall_table_type libcall_htab;
 
   if (!init_done)
     {
       init_done = true;
 
-      libcall_htab = htab_create (31, libcall_hash, libcall_eq,
-				  NULL);
+      libcall_htab.create (31);
       add_libcall (libcall_htab,
 		   convert_optab_libfunc (sfloat_optab, SFmode, SImode));
       add_libcall (libcall_htab,
@@ -3904,7 +3948,7 @@ arm_libcall_uses_aapcs_base (const_rtx libcall)
 							DFmode));
     }
 
-  return libcall && htab_find (libcall_htab, libcall) != NULL;
+  return libcall && libcall_htab.find (libcall) != NULL;
 }
 
 static rtx
@@ -7819,7 +7863,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	  && GET_CODE (SET_SRC (x)) == VEC_SELECT)
 	{
 	  *total = rtx_cost (SET_DEST (x), code, 0, speed);
-	  if (!neon_vector_mem_operand (SET_DEST (x), 2))
+	  if (!neon_vector_mem_operand (SET_DEST (x), 2, true))
 	    *total += COSTS_N_INSNS (1);
 	  return true;
 	}
@@ -7830,7 +7874,7 @@ arm_rtx_costs_1 (rtx x, enum rtx_code outer, int* total, bool speed)
 	{
 	  rtx mem = XEXP (XEXP (SET_SRC (x), 0), 0);
 	  *total = rtx_cost (mem, code, 0, speed);
-	  if (!neon_vector_mem_operand (mem, 2))
+	  if (!neon_vector_mem_operand (mem, 2, true))
 	    *total += COSTS_N_INSNS (1);
 	  return true;
 	}
@@ -9101,6 +9145,12 @@ arm_adjust_cost (rtx insn, rtx link, rtx dep, int cost)
   return cost;
 }
 
+int
+arm_max_conditional_execute (void)
+{
+  return max_insns_skipped;
+}
+
 static int
 arm_default_branch_cost (bool speed_p, bool predictable_p ATTRIBUTE_UNUSED)
 {
@@ -10002,7 +10052,7 @@ arm_coproc_mem_operand (rtx op, bool wb)
     2 - Element/structure loads (vld1)
  */
 int
-neon_vector_mem_operand (rtx op, int type)
+neon_vector_mem_operand (rtx op, int type, bool strict)
 {
   rtx ind;
 
@@ -10014,7 +10064,7 @@ neon_vector_mem_operand (rtx op, int type)
 	  || reg_mentioned_p (virtual_outgoing_args_rtx, op)
 	  || reg_mentioned_p (virtual_stack_dynamic_rtx, op)
 	  || reg_mentioned_p (virtual_stack_vars_rtx, op)))
-    return FALSE;
+    return !strict;
 
   /* Constants are converted into offsets from labels.  */
   if (!MEM_P (op))
@@ -10124,7 +10174,7 @@ coproc_secondary_reload_class (enum machine_mode mode, rtx x, bool wb)
     {
       if (!TARGET_NEON_FP16)
 	return GENERAL_REGS;
-      if (s_register_operand (x, mode) || neon_vector_mem_operand (x, 2))
+      if (s_register_operand (x, mode) || neon_vector_mem_operand (x, 2, true))
 	return NO_REGS;
       return GENERAL_REGS;
     }
@@ -16135,24 +16185,33 @@ arm_compute_save_reg0_reg12_mask (void)
   return save_reg_mask;
 }
 
+/* Return true if r3 is live at the start of the function.  */
 
-/* Compute the number of bytes used to store the static chain register on the
-   stack, above the stack frame. We need to know this accurately to get the
-   alignment of the rest of the stack frame correct. */
-
-static int arm_compute_static_chain_stack_bytes (void)
+static bool
+arm_r3_live_at_start_p (void)
 {
-  unsigned long func_type = arm_current_func_type ();
-  int static_chain_stack_bytes = 0;
-
-  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM &&
-      IS_NESTED (func_type) &&
-      df_regs_ever_live_p (3) && crtl->args.pretend_args_size == 0)
-    static_chain_stack_bytes = 4;
-
-  return static_chain_stack_bytes;
+  /* Just look at cfg info, which is still close enough to correct at this
+     point.  This gives false positives for broken functions that might use
+     uninitialized data that happens to be allocated in r3, but who cares?  */
+  return REGNO_REG_SET_P (df_get_live_out (ENTRY_BLOCK_PTR), 3);
 }
 
+/* Compute the number of bytes used to store the static chain register on the
+   stack, above the stack frame.  We need to know this accurately to get the
+   alignment of the rest of the stack frame correct.  */
+
+static int
+arm_compute_static_chain_stack_bytes (void)
+{
+  /* See the defining assertion in arm_expand_prologue.  */
+  if (TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM
+      && IS_NESTED (arm_current_func_type ())
+      && arm_r3_live_at_start_p ()
+      && crtl->args.pretend_args_size == 0)
+    return 4;
+
+  return 0;
+}
 
 /* Compute a bit mask of which registers need to be
    saved on the stack for the current function.
@@ -17122,6 +17181,19 @@ emit_multi_reg_push (unsigned long mask)
   return par;
 }
 
+/* Add a REG_CFA_ADJUST_CFA REG note to INSN.
+   SIZE is the offset to be adjusted.
+   DEST and SRC might be stack_pointer_rtx or hard_frame_pointer_rtx.  */
+static void
+arm_add_cfa_adjust_cfa_note (rtx insn, int size, rtx dest, rtx src)
+{
+  rtx dwarf;
+
+  RTX_FRAME_RELATED_P (insn) = 1;
+  dwarf = gen_rtx_SET (VOIDmode, dest, plus_constant (Pmode, src, size));
+  add_reg_note (insn, REG_CFA_ADJUST_CFA, dwarf);
+}
+
 /* Generate and emit an insn pattern that we will recognize as a pop_multi.
    SAVED_REGS_MASK shows which registers need to be restored.
 
@@ -17212,6 +17284,9 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
     par = emit_insn (par);
 
   REG_NOTES (par) = dwarf;
+  if (!return_in_pc)
+    arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD * num_regs,
+				 stack_pointer_rtx, stack_pointer_rtx);
 }
 
 /* Generate and emit an insn pattern that we will recognize as a pop_multi
@@ -17282,6 +17357,9 @@ arm_emit_vfp_multi_reg_pop (int first_reg, int num_regs, rtx base_reg)
 
   par = emit_insn (par);
   REG_NOTES (par) = dwarf;
+
+  arm_add_cfa_adjust_cfa_note (par, 2 * UNITS_PER_WORD * num_regs,
+			       base_reg, base_reg);
 }
 
 /* Generate and emit a pattern that will be recognized as LDRD pattern.  If even
@@ -17357,6 +17435,7 @@ thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
                pattern can be emitted now.  */
             par = emit_insn (par);
             REG_NOTES (par) = dwarf;
+	    RTX_FRAME_RELATED_P (par) = 1;
           }
 
         i++;
@@ -17373,7 +17452,12 @@ thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
                      stack_pointer_rtx,
                      plus_constant (Pmode, stack_pointer_rtx, 4 * i));
   RTX_FRAME_RELATED_P (tmp) = 1;
-  emit_insn (tmp);
+  tmp = emit_insn (tmp);
+  if (!return_in_pc)
+    {
+      arm_add_cfa_adjust_cfa_note (tmp, UNITS_PER_WORD * i,
+				   stack_pointer_rtx, stack_pointer_rtx);
+    }
 
   dwarf = NULL_RTX;
 
@@ -17407,9 +17491,11 @@ thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
       else
         {
           par = emit_insn (tmp);
+	  REG_NOTES (par) = dwarf;
+	  arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD,
+				       stack_pointer_rtx, stack_pointer_rtx);
         }
 
-      REG_NOTES (par) = dwarf;
     }
   else if ((num_regs % 2) == 1 && return_in_pc)
     {
@@ -17568,11 +17654,27 @@ thumb_force_lr_save (void)
 	     || df_regs_ever_live_p (LR_REGNUM));
 }
 
+/* We do not know if r3 will be available because
+   we do have an indirect tailcall happening in this
+   particular case.  */
+static bool
+is_indirect_tailcall_p (rtx call)
+{
+  rtx pat = PATTERN (call);
+
+  /* Indirect tail call.  */
+  pat = XVECEXP (pat, 0, 0);
+  if (GET_CODE (pat) == SET)
+    pat = SET_SRC (pat);
+
+  pat = XEXP (XEXP (pat, 0), 0);
+  return REG_P (pat);
+}
 
 /* Return true if r3 is used by any of the tail call insns in the
    current function.  */
 static bool
-any_sibcall_uses_r3 (void)
+any_sibcall_could_use_r3 (void)
 {
   edge_iterator ei;
   edge e;
@@ -17586,7 +17688,8 @@ any_sibcall_uses_r3 (void)
 	if (!CALL_P (call))
 	  call = prev_nonnote_nondebug_insn (call);
 	gcc_assert (CALL_P (call) && SIBLING_CALL_P (call));
-	if (find_regno_fusage (call, USE, 3))
+	if (find_regno_fusage (call, USE, 3)
+	    || is_indirect_tailcall_p (call))
 	  return true;
       }
   return false;
@@ -17753,7 +17856,7 @@ arm_get_frame_offsets (void)
 	  /* If it is safe to use r3, then do so.  This sometimes
 	     generates better code on Thumb-2 by avoiding the need to
 	     use 32-bit push/pop instructions.  */
-          if (! any_sibcall_uses_r3 ()
+          if (! any_sibcall_could_use_r3 ()
 	      && arm_size_return_regs () <= 12
 	      && (offsets->saved_regs_mask & (1 << 3)) == 0
               && (TARGET_THUMB2 || !current_tune->prefer_ldrd_strd))
@@ -18064,16 +18167,16 @@ arm_expand_prologue (void)
 	}
       else if (IS_NESTED (func_type))
 	{
-	  /* The Static chain register is the same as the IP register
+	  /* The static chain register is the same as the IP register
 	     used as a scratch register during stack frame creation.
 	     To get around this need to find somewhere to store IP
 	     whilst the frame is being created.  We try the following
 	     places in order:
 
-	       1. The last argument register.
+	       1. The last argument register r3.
 	       2. A slot on the stack above the frame.  (This only
 	          works if the function is not a varargs function).
-	       3. Register r3, after pushing the argument registers
+	       3. Register r3 again, after pushing the argument registers
 	          onto the stack.
 
 	     Note - we only need to tell the dwarf2 backend about the SP
@@ -18081,7 +18184,7 @@ arm_expand_prologue (void)
 	     doesn't need to be unwound, as it doesn't contain a value
 	     inherited from the caller.  */
 
-	  if (df_regs_ever_live_p (3) == false)
+	  if (!arm_r3_live_at_start_p ())
 	    insn = emit_set_insn (gen_rtx_REG (SImode, 3), ip_rtx);
 	  else if (args_to_push == 0)
 	    {
@@ -18222,8 +18325,7 @@ arm_expand_prologue (void)
 	  if (IS_NESTED (func_type))
 	    {
 	      /* Recover the static chain register.  */
-	      if (!df_regs_ever_live_p (3)
-		  || saved_pretend_args)
+	      if (!arm_r3_live_at_start_p () || saved_pretend_args)
 		insn = gen_rtx_REG (SImode, 3);
 	      else /* if (crtl->args.pretend_args_size == 0) */
 		{
@@ -19471,6 +19573,13 @@ thumb2_final_prescan_insn (rtx insn)
   enum arm_cond_code code;
   int n;
   int mask;
+  int max;
+
+  /* Maximum number of conditionally executed instructions in a block
+     is minimum of the two max values: maximum allowed in an IT block
+     and maximum that is beneficial according to the cost model and tune.  */
+  max = (max_insns_skipped < MAX_INSN_PER_IT_BLOCK) ?
+    max_insns_skipped : MAX_INSN_PER_IT_BLOCK;
 
   /* Remove the previous insn from the count of insns to be output.  */
   if (arm_condexec_count)
@@ -19513,9 +19622,9 @@ thumb2_final_prescan_insn (rtx insn)
       /* ??? Recognize conditional jumps, and combine them with IT blocks.  */
       if (GET_CODE (body) != COND_EXEC)
 	break;
-      /* Allow up to 4 conditionally executed instructions in a block.  */
+      /* Maximum number of conditionally executed instructions in a block.  */
       n = get_attr_ce_count (insn);
-      if (arm_condexec_masklen + n > 4)
+      if (arm_condexec_masklen + n > max)
 	break;
 
       predicate = COND_EXEC_TEST (body);
@@ -23978,7 +24087,7 @@ thumb1_expand_prologue (void)
    all we really need to check here is if single register is to be
    returned, or multiple register return.  */
 void
-thumb2_expand_return (void)
+thumb2_expand_return (bool simple_return)
 {
   int i, num_regs;
   unsigned long saved_regs_mask;
@@ -23991,7 +24100,7 @@ thumb2_expand_return (void)
     if (saved_regs_mask & (1 << i))
       num_regs++;
 
-  if (saved_regs_mask)
+  if (!simple_return && saved_regs_mask)
     {
       if (num_regs == 1)
         {
@@ -24269,6 +24378,7 @@ arm_expand_epilogue (bool really_return)
 
   if (frame_pointer_needed)
     {
+      rtx insn;
       /* Restore stack pointer if necessary.  */
       if (TARGET_ARM)
         {
@@ -24279,9 +24389,12 @@ arm_expand_epilogue (bool really_return)
           /* Force out any pending memory operations that reference stacked data
              before stack de-allocation occurs.  */
           emit_insn (gen_blockage ());
-          emit_insn (gen_addsi3 (stack_pointer_rtx,
-                                 hard_frame_pointer_rtx,
-                                 GEN_INT (amount)));
+	  insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
+			    hard_frame_pointer_rtx,
+			    GEN_INT (amount)));
+	  arm_add_cfa_adjust_cfa_note (insn, amount,
+				       stack_pointer_rtx,
+				       hard_frame_pointer_rtx);
 
           /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
              deleted.  */
@@ -24291,16 +24404,25 @@ arm_expand_epilogue (bool really_return)
         {
           /* In Thumb-2 mode, the frame pointer points to the last saved
              register.  */
-          amount = offsets->locals_base - offsets->saved_regs;
-          if (amount)
-            emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-                                   hard_frame_pointer_rtx,
-                                   GEN_INT (amount)));
+	  amount = offsets->locals_base - offsets->saved_regs;
+	  if (amount)
+	    {
+	      insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
+				hard_frame_pointer_rtx,
+				GEN_INT (amount)));
+	      arm_add_cfa_adjust_cfa_note (insn, amount,
+					   hard_frame_pointer_rtx,
+					   hard_frame_pointer_rtx);
+	    }
 
           /* Force out any pending memory operations that reference stacked data
              before stack de-allocation occurs.  */
           emit_insn (gen_blockage ());
-          emit_insn (gen_movsi (stack_pointer_rtx, hard_frame_pointer_rtx));
+	  insn = emit_insn (gen_movsi (stack_pointer_rtx,
+				       hard_frame_pointer_rtx));
+	  arm_add_cfa_adjust_cfa_note (insn, 0,
+				       stack_pointer_rtx,
+				       hard_frame_pointer_rtx);
           /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is not
              deleted.  */
           emit_insn (gen_force_register_use (stack_pointer_rtx));
@@ -24313,12 +24435,15 @@ arm_expand_epilogue (bool really_return)
       amount = offsets->outgoing_args - offsets->saved_regs;
       if (amount)
         {
+	  rtx tmp;
           /* Force out any pending memory operations that reference stacked data
              before stack de-allocation occurs.  */
           emit_insn (gen_blockage ());
-          emit_insn (gen_addsi3 (stack_pointer_rtx,
-                                 stack_pointer_rtx,
-                                 GEN_INT (amount)));
+	  tmp = emit_insn (gen_addsi3 (stack_pointer_rtx,
+				       stack_pointer_rtx,
+				       GEN_INT (amount)));
+	  arm_add_cfa_adjust_cfa_note (tmp, amount,
+				       stack_pointer_rtx, stack_pointer_rtx);
           /* Emit USE(stack_pointer_rtx) to ensure that stack adjustment is
              not deleted.  */
           emit_insn (gen_force_register_use (stack_pointer_rtx));
@@ -24371,6 +24496,8 @@ arm_expand_epilogue (bool really_return)
           REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
                                              gen_rtx_REG (V2SImode, i),
                                              NULL_RTX);
+	  arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
+				       stack_pointer_rtx, stack_pointer_rtx);
         }
 
   if (saved_regs_mask)
@@ -24418,6 +24545,9 @@ arm_expand_epilogue (bool really_return)
                     REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
                                                        gen_rtx_REG (SImode, i),
                                                        NULL_RTX);
+		    arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
                   }
               }
         }
@@ -24442,9 +24572,33 @@ arm_expand_epilogue (bool really_return)
     }
 
   if (crtl->args.pretend_args_size)
-    emit_insn (gen_addsi3 (stack_pointer_rtx,
-                           stack_pointer_rtx,
-                           GEN_INT (crtl->args.pretend_args_size)));
+    {
+      int i, j;
+      rtx dwarf = NULL_RTX;
+      rtx tmp = emit_insn (gen_addsi3 (stack_pointer_rtx,
+			   stack_pointer_rtx,
+			   GEN_INT (crtl->args.pretend_args_size)));
+
+      RTX_FRAME_RELATED_P (tmp) = 1;
+
+      if (cfun->machine->uses_anonymous_args)
+	{
+	  /* Restore pretend args.  Refer arm_expand_prologue on how to save
+	     pretend_args in stack.  */
+	  int num_regs = crtl->args.pretend_args_size / 4;
+	  saved_regs_mask = (0xf0 >> num_regs) & 0xf;
+	  for (j = 0, i = 0; j < num_regs; i++)
+	    if (saved_regs_mask & (1 << i))
+	      {
+		rtx reg = gen_rtx_REG (SImode, i);
+		dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
+		j++;
+	      }
+	  REG_NOTES (tmp) = dwarf;
+	}
+      arm_add_cfa_adjust_cfa_note (tmp, crtl->args.pretend_args_size,
+				   stack_pointer_rtx, stack_pointer_rtx);
+    }
 
   if (!really_return)
     return;
@@ -25861,9 +26015,8 @@ arm_dwarf_register_span (rtx rtl)
 
   nregs = GET_MODE_SIZE (GET_MODE (rtl)) / 8;
   p = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs));
-  regno = (regno - FIRST_VFP_REGNUM) / 2;
   for (i = 0; i < nregs; i++)
-    XVECEXP (p, 0, i) = gen_rtx_REG (DImode, 256 + regno + i);
+    XVECEXP (p, 0, i) = gen_rtx_REG (DImode, regno + i);
 
   return p;
 }
@@ -26113,9 +26266,17 @@ arm_unwind_emit (FILE * asm_out_file, rtx insn)
 	  handled_one = true;
 	  break;
 
+	/* The INSN is generated in epilogue.  It is set as RTX_FRAME_RELATED_P
+	   to get correct dwarf information for shrink-wrap.  We should not
+	   emit unwind information for it because these are used either for
+	   pretend arguments or notes to adjust sp and restore registers from
+	   stack.  */
+	case REG_CFA_ADJUST_CFA:
+	case REG_CFA_RESTORE:
+	  return;
+
 	case REG_CFA_DEF_CFA:
 	case REG_CFA_EXPRESSION:
-	case REG_CFA_ADJUST_CFA:
 	case REG_CFA_OFFSET:
 	  /* ??? Only handling here what we actually emit.  */
 	  gcc_unreachable ();

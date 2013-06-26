@@ -43,6 +43,10 @@ void test01()
   typedef void (fn_type) ();
   typedef decay<fn_type>::type  	test4_type;
   VERIFY( (is_same<test4_type, std::add_pointer<fn_type>::type>::value) );
+
+  typedef void (cfn_type) () const;
+  typedef decay<cfn_type>::type  	test5_type;
+  VERIFY( (is_same<test5_type, cfn_type>::value) );
 }
 
 int main()

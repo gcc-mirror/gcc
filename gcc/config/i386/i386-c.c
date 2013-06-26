@@ -149,6 +149,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__atom");
       def_or_undef (parse_in, "__atom__");
       break;
+    case PROCESSOR_SLM:
+      def_or_undef (parse_in, "__slm");
+      def_or_undef (parse_in, "__slm__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -240,6 +244,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_ATOM:
       def_or_undef (parse_in, "__tune_atom__");
+      break;
+    case PROCESSOR_SLM:
+      def_or_undef (parse_in, "__tune_slm__");
       break;
     case PROCESSOR_GENERIC32:
     case PROCESSOR_GENERIC64:
@@ -369,20 +376,23 @@ ix86_pragma_target_parse (tree args, tree pop_target)
 
   if (! args)
     {
-      cur_tree = ((pop_target)
-		  ? pop_target
-		  : target_option_default_node);
+      cur_tree = (pop_target ? pop_target : target_option_default_node);
       cl_target_option_restore (&global_options,
 				TREE_TARGET_OPTION (cur_tree));
     }
   else
     {
       cur_tree = ix86_valid_target_attribute_tree (args);
-      if (!cur_tree)
-	return false;
+      if (!cur_tree || cur_tree == error_mark_node)
+       {
+         cl_target_option_restore (&global_options,
+                                   TREE_TARGET_OPTION (prev_tree));
+         return false;
+       }
     }
 
   target_option_current_node = cur_tree;
+  ix86_reset_previous_fndecl ();
 
   /* Figure out the previous/current isa, arch, tune and the differences.  */
   prev_opt  = TREE_TARGET_OPTION (prev_tree);

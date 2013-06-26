@@ -129,13 +129,13 @@
 ;; Multiply and multiply-accumulate results are available after four stages.
 (define_insn_reservation "11_mult1" 4
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "mul,mla"))
+      (eq_attr "type" "mul,mla"))
  "e_1*2,e_2,e_3,e_wb")
 
 ;; The *S variants set the condition flags, which requires three more cycles.
 (define_insn_reservation "11_mult2" 4
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "muls,mlas"))
+      (eq_attr "type" "muls,mlas"))
  "e_1*2,e_2,e_3,e_wb")
 
 (define_bypass 3 "11_mult1,11_mult2"
@@ -160,13 +160,13 @@
 ;; the two multiply-accumulate instructions.
 (define_insn_reservation "11_mult3" 5
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "smull,umull,smlal,umlal"))
+      (eq_attr "type" "smull,umull,smlal,umlal"))
  "e_1*3,e_2,e_3,e_wb*2")
 
 ;; The *S variants set the condition flags, which requires three more cycles.
 (define_insn_reservation "11_mult4" 5
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "smulls,umulls,smlals,umlals"))
+      (eq_attr "type" "smulls,umulls,smlals,umlals"))
  "e_1*3,e_2,e_3,e_wb*2")
 
 (define_bypass 4 "11_mult3,11_mult4"
@@ -190,7 +190,8 @@
 ;; cycles.
 (define_insn_reservation "11_mult5" 3
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "smulxy,smlaxy,smulwy,smlawy,smuad,smuadx,smlad,smladx,smusd,smusdx,smlsd,smlsdx"))
+      (eq_attr "type" "smulxy,smlaxy,smulwy,smlawy,smuad,smuadx,smlad,smladx,\
+                       smusd,smusdx,smlsd,smlsdx"))
  "e_1,e_2,e_3,e_wb")
 
 (define_bypass 2 "11_mult5"
@@ -211,14 +212,14 @@
 ;; The same idea, then the 32-bit result is added to a 64-bit quantity.
 (define_insn_reservation "11_mult6" 4
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "smlalxy"))
+      (eq_attr "type" "smlalxy"))
  "e_1*2,e_2,e_3,e_wb*2")
 
 ;; Signed 32x32 multiply, then the most significant 32 bits are extracted
 ;; and are available after the memory stage.
 (define_insn_reservation "11_mult7" 4
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "insn" "smmul,smmulr"))
+      (eq_attr "type" "smmul,smmulr"))
  "e_1*2,e_2,e_3,e_wb")
 
 (define_bypass 3 "11_mult6,11_mult7"

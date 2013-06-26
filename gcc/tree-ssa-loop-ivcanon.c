@@ -174,7 +174,7 @@ constant_after_peeling (tree op, gimple stmt, struct loop *loop)
       while (handled_component_p (base))
 	base = TREE_OPERAND (base, 0);
       if ((DECL_P (base)
-	   && const_value_known_p (base))
+	   && ctor_for_folding (base) != error_mark_node)
 	  || CONSTANT_CLASS_P (base))
 	{
 	  /* If so, see if we understand all the indices.  */
@@ -257,8 +257,10 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
 
 	  /* Look for reasons why we might optimize this stmt away. */
 
+	  if (gimple_has_side_effects (stmt))
+	    ;
 	  /* Exit conditional.  */
-	  if (exit && body[i] == exit->src
+	  else if (exit && body[i] == exit->src
 		   && stmt == last_stmt (exit->src))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))

@@ -2694,17 +2694,18 @@ with this attribute actual arguments of any type and kind (similar to
 @code{TYPE(*)}), scalars and arrays of any rank (no equivalent
 in Fortran standard) are accepted.  As with @code{TYPE(*)}, the argument
 is unlimited polymorphic and no type information is available.
-Additionally, the same restrictions apply, i.e. the argument may only be
-passed to dummy arguments with the @code{NO_ARG_CHECK} attribute and as
-argument to the @code{C_LOC} intrinsic function of the @code{ISO_C_BINDING}
-module.
+Additionally, the argument may only be passed to dummy arguments
+with the @code{NO_ARG_CHECK} attribute and as argument to the
+@code{PRESENT} intrinsic function and to @code{C_LOC} of the
+@code{ISO_C_BINDING} module.
 
 Variables with @code{NO_ARG_CHECK} attribute shall be of assumed-type
-(@code{TYPE(*)}; recommended) or of an intrinsic numeric type; they
-shall not have the @code{ALLOCATE}, @code{CODIMENSION}, @code{INTENT(OUT)},
-@code{POINTER} or @code{VALUE} attribute; furthermore, they shall be
-either scalar or of assumed-size (@code{dimension(*)}). As @code{TYPE(*)},
-the @code{NO_ARG_CHECK} attribute requires an explicit interface.
+(@code{TYPE(*)}; recommended) or of type @code{INTEGER}, @code{LOGICAL},
+@code{REAL} or @code{COMPLEX}. They shall not have the @code{ALLOCATE},
+@code{CODIMENSION}, @code{INTENT(OUT)}, @code{POINTER} or @code{VALUE}
+attribute; furthermore, they shall be either scalar or of assumed-size
+(@code{dimension(*)}). As @code{TYPE(*)}, the @code{NO_ARG_CHECK} attribute
+requires an explicit interface.
 
 @itemize
 @item @code{NO_ARG_CHECK} -- disable the type, kind and rank checking
@@ -2845,7 +2846,7 @@ standard error.  Default: @code{GFC_STD_F95_DEL | GFC_STD_LEGACY}.
 Default: off.
 @item @var{option}[3] @tab Unused.
 @item @var{option}[4] @tab If non zero, enable backtracing on run-time
-errors.  Default: off.
+errors.  Default: off. (Default in the compiler: on.)
 Note: Installs a signal handler and requires command-line
 initialization using @code{_gfortran_set_args}.
 @item @var{option}[5] @tab If non zero, supports signed zeros.
@@ -2854,13 +2855,21 @@ Default: enabled.
 are (bitwise or-ed): GFC_RTCHECK_BOUNDS (1), GFC_RTCHECK_ARRAY_TEMPS (2),
 GFC_RTCHECK_RECURSION (4), GFC_RTCHECK_DO (16), GFC_RTCHECK_POINTER (32).
 Default: disabled.
+@item @var{option}[7] @tab Unused.
+@item @var{option}[8] @tab Show a warning when invoking @code{STOP} and
+@code{ERROR STOP} if a floating-point exception occurred. Possible values
+are (bitwise or-ed) @code{GFC_FPE_INVALID} (1), @code{GFC_FPE_DENORMAL} (2),
+@code{GFC_FPE_ZERO} (4), @code{GFC_FPE_OVERFLOW} (8),
+@code{GFC_FPE_UNDERFLOW} (16), @code{GFC_FPE_INEXACT} (32). Default: None (0).
+(Default in the compiler: @code{GFC_FPE_INVALID | GFC_FPE_DENORMAL |
+GFC_FPE_ZERO | GFC_FPE_OVERFLOW | GFC_FPE_UNDERFLOW}.)
 @end multitable
 
 @item @emph{Example}:
 @smallexample
-  /* Use gfortran 4.8 default options.  */
-  static int options[] = @{68, 511, 0, 0, 1, 1, 0@};
-  _gfortran_set_options (7, &options);
+  /* Use gfortran 4.9 default options.  */
+  static int options[] = @{68, 511, 0, 0, 1, 1, 0, 0, 31@};
+  _gfortran_set_options (9, &options);
 @end smallexample
 @end table
 

@@ -24,7 +24,7 @@ tree gfc_array_deallocate (tree, tree, tree, tree, tree, gfc_expr*);
 /* Generate code to initialize and allocate an array.  Statements are added to
    se, which should contain an expression for the array descriptor.  */
 bool gfc_array_allocate (gfc_se *, gfc_expr *, tree, tree, tree, tree,
-			 tree, tree *, gfc_expr *);
+			 tree, tree *, gfc_expr *, gfc_typespec *);
 
 /* Allow the bounds of a loop to be set from a callee's array spec.  */
 void gfc_set_loop_bounds_from_array_spec (gfc_interface_mapping *,
@@ -42,7 +42,7 @@ void gfc_trans_dummy_array_bias (gfc_symbol *, tree, gfc_wrapped_block *);
 /* Generate entry and exit code for g77 calling convention arrays.  */
 void gfc_trans_g77_array (gfc_symbol *, gfc_wrapped_block *);
 /* Generate code to deallocate an array, if it is allocated.  */
-tree gfc_trans_dealloc_allocated (tree, bool);
+tree gfc_trans_dealloc_allocated (tree, bool, gfc_expr *);
 
 tree gfc_duplicate_allocatable (tree dest, tree src, tree type, int rank);
 

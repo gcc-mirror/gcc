@@ -44,7 +44,7 @@ go_create_gogo(int int_type_size, int pointer_size, const char *pkgpath,
 GO_EXTERN_C
 void
 go_parse_input_files(const char** filenames, unsigned int filename_count,
-		     bool only_check_syntax, bool require_return_statement)
+		     bool only_check_syntax, bool)
 {
   go_assert(filename_count > 0);
 
@@ -84,9 +84,15 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Finalize method lists and build stub methods for named types.
   ::gogo->finalize_methods();
 
+  // Check that functions have a terminating statement.
+  ::gogo->check_return_statements();
+
   // Now that we have seen all the names, lower the parse tree into a
   // form which is easier to use.
   ::gogo->lower_parse_tree();
+
+  // Create function descriptors as needed.
+  ::gogo->create_function_descriptors();
 
   // Write out queued up functions for hash and comparison of types.
   ::gogo->write_specific_type_functions();
@@ -103,10 +109,6 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 
   if (only_check_syntax)
     return;
-
-  // Check that functions have return statements.
-  if (require_return_statement)
-    ::gogo->check_return_statements();
 
   // Export global identifiers as appropriate.
   ::gogo->do_exports();

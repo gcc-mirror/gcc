@@ -485,7 +485,7 @@ void	runtime_helpgc(int32 nproc);
 void	runtime_gchelper(void);
 
 struct __go_func_type;
-bool	runtime_getfinalizer(void *p, bool del, void (**fn)(void*), const struct __go_func_type **ft);
+bool	runtime_getfinalizer(void *p, bool del, FuncVal **fn, const struct __go_func_type **ft);
 void	runtime_walkfintab(void (*fn)(void*), void (*scan)(Obj));
 
 enum
@@ -505,4 +505,3 @@ void	runtime_gc_itab_ptr(Eface*);
 void	runtime_memorydump(void);
 
 void	runtime_time_scan(void (*)(Obj));
-void	runtime_trampoline_scan(void (*)(Obj));

@@ -1,3 +1,363 @@
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/57640
+	* parser.c (cp_parser_unqualified_id): Add declarator_p to checks
+	to trigger warning, (cp_literal_operator_id): Remove bogus TODO comment.
+
+2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* call.c (null_ptr_cst_p): Use cxx11 in lieu of cxx0x.
+	* class.c (add_implicitly_declared_members): Likewise.
+	(check_field_decl): Likewise.
+	(finalize_literal_type_property): Likewise.
+	(check_bases_and_members): Likewise.
+	* decl.c (poplevel): Likewise.
+	(case_conversion): Likewise.
+	(check_initializer): Likewise.
+	(grokfndecl): Likewise.
+	(check_static_variable_definition): Likewise.
+	(compute_array_index_type): Likewise.
+	(grokdeclarator): Likewise.
+	(build_enumerator): Likewise.
+	* friend.c (make_friend_class): Likewise.
+	* lex.c (init_reswords): Likewise.
+	* method.c (synthesized_method_walk): Likewise.
+	(implicitly_declare_fn): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name): Likewise.
+	(cp_parser_constant_expression): Likewise.
+	(cp_parser_for_init_statement): Likewise.
+	(cp_parser_block_declaration): Likewise.
+	(cp_parser_type_name): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_enumerator_list): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_nth_tokens_can_be_std_attribute_p): Likewise.
+	(cp_parser_template_declaration_after_export): Likewise.
+	* pt.c (convert_nontype_argument_function): Likewise.
+	(convert_nontype_argument): Likewise.
+	(convert_template_argument): Likewise.
+	(tsubst_copy_and_build): Likewise.
+	(build_non_dependent_expr): Likewise.
+	* semantics.c (non_const_var_error): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	(build_vec_init_expr): Likewise.
+	(cast_valid_in_integral_constant_expression_p): Likewise.
+	* typeck.c (build_x_conditional_expr): Likewise.
+	* typeck2.c (check_narrowing): Likewise.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* cp-array-notation.c (cp_length_mismatch_in_expr_p): Remove.
+	(expand_an_in_modify_expr): Changed a function call from the above
+	removed function to length_mismatch_in_expr_p.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* call.c (convert_like_real): Added a check if array notation is present
+	in expression.  If so, then no conversion of arguments is necessary.
+	(build_over_call): Likewise.
+	* typeck.c (cp_build_function_call_vec): Likewise.
+	(convert_for_assignment): Likewise.
+	(cp_build_array_ref): Reject array notations with a rank greater than 1
+	as an array's index.
+	(cp_build_binary_op): If array notations are preent in op, then call
+	find_correct_array_notation_type.
+	(cp_build_addr_expr_1): Handle ARRAY_NOTATION_REF similar to ARRAY_REF.
+	* cp-array-notation.c: New file.
+	* cp-objcp-common.c (cp_common_init_ts): Marked ARRAY_NOTATION_REF tree
+	as typed.
+	* cp-tree.h (fix_array_notation_exprs): New prototype.
+	* semantics.c (finish_return_stmt): Reject array notations as
+	return value.
+	(cxx_eval_constant_expression): Added ARRAY_NOTATION_REF case.
+	(potential_constant_expression_1): Likewise.
+	* tree.c (lvalue_kind): Likewise.
+	* error.c (dump_decl): Likewise.
+	(dump_expr): Likewise.
+	* pt.c (ARRAY_NOTATION_REF): Likewise.
+	(type_unification_real): Do not unify any arguments if array notations
+	are found in arg.
+	(instantiate_decl): Added a check for array notaitons inside the
+	function body.  If so, then expand them.
+	* parser.c (cp_parser_array_notation): New function.
+	(cp_parser_postfix_open_square_expression): Added a check for colons
+	inside square braces.  If found, then handle the array access as an
+	array notation access.  Also, disable auto-correction from a single
+	colon to scope when Cilk Plus is enabled.
+	(cp_parser_compound_statement): Added a check for array notations
+	inside the statement.  If found, then expand them.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_function_definition_after_declarator): Likewise.
+	(cp_parser_selection_statement): Searched for array notations inside
+	condition.  If so, then emit an error.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_direct_declarator): Reject array notations inside a
+	variable or array declaration.
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Added cp/cp-array-notation.o.
+
+2013-06-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55149
+	* decl.c (compute_array_index_type): Don't reject VLAs in SFINAE
+	context if we're in C++14 mode.
+	* tree.c (array_of_runtime_bound_p): Return true for a dependent
+	bound that is not potentually constant.
+	* cp-tree.h (DECL_VLA_CAPTURE_P, REFERENCE_VLA_OK): New.
+	* pt.c (tsubst) [REFERENCE_TYPE]: Check REFERENCE_VLA_OK.
+	* semantics.c (build_lambda_object): Don't rvalue a VLA capture.
+	(build_capture_proxy): Set REFERENCE_VLA_OK.
+	(vla_capture_type): Make it a proper C++ class.
+	(add_capture): Set DECL_VLA_CAPTURE_P.  Don't pre-digest the
+	initializer.
+
+	* decl.c (compute_array_index_type): Use size_one_node.
+
+	* pt.c (process_partial_specialization): Build a TEMPLATE_DECL for
+	a partial specialization.
+	(tsubst_decl): Don't clobber CLASSTYPE_TI_TEMPLATE of a partial
+	specialization.
+	(most_specialized_class): Adjust.
+
+	* cp-tree.h (DECL_TEMPLATE_PARMS, DECL_TEMPLATE_RESULT)
+	(DECL_TEMPLATE_INSTANTIATIONS, DECL_TEMPLATE_SPECIALIZATIONS): Use
+	TEMPLATE_DECL_CHECK.
+
+2013-06-19  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	PR c++/57638
+	* pt.c (unify, [TEMPLATE_PARM_INDEX]): Pass to unify_type_mismatch
+	TREE_TYPE (arg), not arg itself.
+
+2013-06-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53211
+	* pt.c (type_dependent_expression_p): Handle an array of unknown
+	bound depending on a variadic parameter.
+	* parser.c (cp_parser_range_for): Revert PR56794 changes.
+
+2013-06-17  Richard Biener  <rguenther@suse.de>
+
+	* cp-tree.h (ANON_AGGRNAME_FORMAT, ANON_AGGRNAME_P): Move to tree.h.
+
+2013-06-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/16128
+	* parser.c (cp_parser_expression_statement): Check whether
+	cp_parser_expression returns error_mark_node.
+
+2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51413
+	* semantics.c (finish_offsetof): Handle INDIRECT_REF as expr.
+
+2013-06-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57599
+	* rtti.c (build_dynamic_cast_1): In case of cast to an unambiguous
+	accessible base simply forward to build_static_cast.
+
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38958
+	* decl.c (poplevel): For the benefit of -Wunused-variable see
+	through references.
+
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_nested_name_specifier_opt): Fix typo in comment.
+
+2013-06-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/42021
+	* parser.c (cp_parser_nested_name_specifier_opt): Avoid emitting
+	again diagnostic already emitted by cp_parser_lookup_name.
+
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	PR c++/57551
+	* cp/pt.c (mark_decl_instantiated): Do not export explicit
+	instantiations of anonymous namespace templates.
+
+2013-06-10  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.c (add_decl_to_level): Add decls in an anonymous
+	namespace to static_decls.
+
+2013-06-07  Sriraman Tallam  <tmsriram@google.com>
+
+	PR c++/57548
+	* call.c (build_over_call):  Check if current_function_decl is
+	NULL.
+
+2013-06-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/53658
+	* pt.c (lookup_template_class_1): Consistently use TYPE_MAIN_DECL,
+	not TYPE_STUB_DECL, to access the _DECL for a _TYPE.
+
+2013-06-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55520
+	* semantics.c (add_capture): Diagnose capture of variable-size
+	type that is not a C++1y array of runtime bound.
+
+	* decl.c (grokdeclarator): Keep a decl with error type.
+	(grokfield, grokbitfield): Likewise.
+	* pt.c (instantiate_class_template_1): Likewise.
+	(tsubst_decl): Drop redundant error.
+	* class.c (walk_subobject_offsets): Handle erroneous fields.
+	* typeck2.c (process_init_constructor_record): Likewise.
+
+2013-06-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51908
+	* parser.c (cp_parser_postfix_expression [RID_*CAST]): Set
+	parser->in_type_id_in_expr_p before calling cp_parser_type_id.
+
+2013-06-03  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (maybe_make_one_only): Use forced_by_abi instead of
+	mark_decl_referenced.
+	(mark_needed): Likewise.
+
+2013-06-03  Jason Merrill  <jason@redhat.com>
+
+	* class.c (mark_type_abi_tags): New.
+	(check_abi_tags): Use it.
+
+2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57419
+	* decl2.c (mark_used): Add overload taking a tsubst_flags_t too.
+	* semantics.c (finish_qualified_id_expr): Use it.
+	* cp-tree.h: Update.
+
+2013-06-01  Jan Hubicka  <jh@suse.cz>
+
+	* decl2.c (cp_write_global_declarations): Replace same_body_alias
+	by symbol.cpp_implicit_alias.
+
+2013-05-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57404
+	* cp-lang.c (cp_classify_record): Handle structs without
+	TYPE_LANG_SPECIFIC.
+
+	PR c++/52377
+	* class.c (common_enclosing_class): New.
+	* cp-tree.h: Declare it.
+	* init.c (sort_mem_initializers): Don't splice out a union member
+	with an NSDMI.
+
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (cp_fix_function_decl_p): Update for new symtab flags.
+	* decl2.c )var_finalized_p, cp_write_global_declarations): Likewise.
+
+2013-05-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/25666
+	* decl2.c (check_classfn): Check for destructors declared as member
+	templates.
+
+2013-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56971
+	* pt.c (any_template_arguments_need_structural_equality_p): A
+	TEMPLATE_TEMPLATE_PARM can require structural type comparison.
+
+2013-05-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/19618
+	* class.c (check_bitfield_decl): Warn for bool and enum bitfields
+	with width exceeding the type.
+
+2013-05-24  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57391
+	* semantics.c (cxx_eval_constant_expression): Handle FMA_EXPR.
+	(cxx_eval_trinary_expression): Rename from cxx_eval_vec_perm_expr.
+
+2013-05-23  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57388
+	* tree.c (build_ref_qualified_type): Clear
+	FUNCTION_RVALUE_QUALIFIED for lvalue ref-qualifier.
+
+2013-05-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/56930
+	* call.c (convert_like_real): Use cp_convert_and_check.
+	* cvt.c (cp_convert_and_check): Use maybe_constant_value.
+	* semantics.c (cxx_eval_constant_expression): Handle LTGT_EXPR.
+	(potential_constant_expression_1): Handle OMP_ATOMIC*.
+
+	PR c++/56915
+	* semantics.c (maybe_add_lambda_conv_op): Give up if the call op
+	isn't defined.
+
+2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57352
+	* parser.c (cp_parser_conversion_type_id): Set up
+	parser->type_definition_forbidden_message before calling
+	cp_parser_type_specifier_seq.
+
+2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57211
+	* method.c (defaultable_fn_check): Avoid do_warn_unused_parameter
+	warnings about defaulted functions.
+
+2013-05-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_conditional_expr_1): Add location_t parameter.
+	(build_conditional_expr): Likewise.
+	* typeck.c (rationalize_conditional_expr, cp_build_array_ref,
+	get_member_function_from_ptrfunc, build_x_conditional_expr,
+	cp_build_modify_expr): Update.
+	* init.c (build_new_1): Likewise.
+	* cp-tree.h: Update declaration.
+
+2013-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57016
+	* pt.c (instantiation_dependent_r) [TRAIT_EXPR]: Only check type2
+	if there is one.
+
+	PR c++/57102
+	* decl.c (fndecl_declared_return_type): Also look in
+	DECL_SAVED_FUNCTION_DATA.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/12288
+	* parser.c (cp_parser_parameter_declaration): Check return value
+	of cp_parser_parse_and_diagnose_invalid_type_name.
+
+2013-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57319
+	* class.c (vbase_has_user_provided_move_assign): New.
+	* method.c (synthesized_method_walk): Check it.
+	* cp-tree.h: Declare it.
+
+	PR c++/57325
+	* tree.c (build_cplus_array_type): Copy layout info if element
+	type is complete.
+
+2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/23608
+	* call.c (build_new_op_1): Propagate loc to cp_build_binary_op.
+
+2013-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57317
+	* decl2.c (determine_visibility): Use PRIMARY_TEMPLATE_P to decide
+	whether a template has its own args.
+
 2013-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57327

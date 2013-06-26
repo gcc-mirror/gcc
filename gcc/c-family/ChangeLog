@@ -1,3 +1,84 @@
+2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-common.c (c_common_nodes_and_builtins): Use cxx11 in lieu of cxx0x.
+	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>  
+
+	* array-notation-common.c (length_mismatch_in_expr): Changed the
+	parameter type's from a dynamic array to a vec_tree.  Also removed
+	the size parameters.
+	* c-common.h (length_mismatch_in_expr_p): Fixed prototype's as per
+	the change above.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-common.h (struct cilkplus_an_parts): New structure.
+	(struct cilkplus_an_loop_parts): Likewise.
+	(cilkplus_extract_an_triplets): New prototype.
+	(fix_sec_implicit_args): Likewise.
+	* array-notation-common.c (cilkplus_extract_an_triplets): New function.
+	(fix_sec_implicit_args): Likewise.
+
+2013-06-20  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* array-notation-common.c (find_inv_trees): Removed an unwanted
+	typecasting.
+	* c-common.h (struct inv_list::additional_tcodes): Changed type from
+	enum rid to enum tree_code.
+
+2013-06-11  Jan Hubicka  <jh@suse.cz>
+
+	* c-common.c (handle_alias_ifunc_attribute): Do not set
+	DECL_EXTERNAL for weakref variables.
+	* c-pragma.c (handle_pragma_weak): Make sure aliases
+	are not declared as external.
+
+2013-06-07  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* array-notation-common.c (length_mismatch_in_expr_p): Moved this
+	function from c/c-array-notation.c.
+	(is_cilkplus_reduce_builtin): Likewise.
+	(find_rank): Likewise.
+	(extract_array_notation_exprs): Likewise.
+	(replace_array_notations): Likewise.
+	(find_inv_trees): Likewise.
+	(replace_inv_trees): Likewise.
+	(contains_array_notation_expr): Likewise.
+	(find_correct_array_notation_type): Likewise.
+	* c-common.h (struct inv_list): Moved this struct from the file
+	c/c-array-notation.c and added a new field called additional tcodes.
+	(length_mismatch_in_expr_p): New prototype.
+	(is_cilkplus_reduce_builtin): Likewise.
+	(find_rank): Likewise.
+	(extract_array_notation_exprs): Likewise.
+	(replace_array_notation): Likewise.
+	(find_inv_trees): Likewise.
+	(replace_inv_trees): Likewise.
+	(find_correct_array_notation_type): Likewise.
+	
+2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-common.c (c_define_builtins): When cilkplus is enabled, the
+	function array_notation_init_builtins is called.
+	(c_common_init_ts): Added ARRAY_NOTATION_REF as typed.
+	* c-common.def (ARRAY_NOTATION_REF): New tree.
+	* c-common.h (build_array_notation_expr): New function declaration.
+	(build_array_notation_ref): Likewise.
+	(extract_sec_implicit_index_arg): New extern declaration.
+	(is_sec_implicit_index_fn): Likewise.
+	(ARRAY_NOTATION_CHECK): New define.
+	(ARRAY_NOTATION_ARRAY): Likewise.
+	(ARRAY_NOTATION_START): Likewise.
+	(ARRAY_NOTATION_LENGTH): Likewise.
+	(ARRAY_NOTATION_STRIDE): Likewise.
+	* c-pretty-print.c (pp_c_postifix_expression): Added a new case for
+	ARRAY_NOTATION_REF.
+	(pp_c_expression): Likewise.
+	* c.opt (flag_enable_cilkplus): New flag.
+	* array-notation-common.c: New file.
+
 2013-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/57274

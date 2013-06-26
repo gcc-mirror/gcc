@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target ia32 } */
-/* { dg-options "-O2 -march=pentiumpro -minline-all-stringops" } */
+/* { dg-options "-O2 -march=pentiumpro -minline-all-stringops -fno-common" } */
 /* { dg-final { scan-assembler "rep" } } */
 /* { dg-final { scan-assembler "movs" } } */
 /* { dg-final { scan-assembler-not "test" } } */

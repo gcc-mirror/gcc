@@ -198,7 +198,7 @@ enum tsan_atomic_action
 
 /* Table how to map sync/atomic builtins to their corresponding
    tsan equivalents.  */
-static struct tsan_map_atomic
+static const struct tsan_map_atomic
 {
   enum built_in_function fcode, tsan_fcode;
   enum tsan_atomic_action action;

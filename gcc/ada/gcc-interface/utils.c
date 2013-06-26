@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2012, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2013, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -233,7 +233,6 @@ static tree split_plus (tree, tree *);
 static tree float_type_for_precision (int, enum machine_mode);
 static tree convert_to_fat_pointer (tree, tree);
 static bool potential_alignment_gap (tree, tree, tree);
-static void process_attributes (tree, struct attrib *);
 
 /* Initialize data structures of the utils.c module.  */
 
@@ -653,11 +652,12 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
 /* Create a record type that contains a SIZE bytes long field of TYPE with a
    starting bit position so that it is aligned to ALIGN bits, and leaving at
    least ROOM bytes free before the field.  BASE_ALIGN is the alignment the
-   record is guaranteed to get.  */
+   record is guaranteed to get.  GNAT_NODE is used for the position of the
+   associated TYPE_DECL.  */
 
 tree
 make_aligning_type (tree type, unsigned int align, tree size,
-		    unsigned int base_align, int room)
+		    unsigned int base_align, int room, Node_Id gnat_node)
 {
   /* We will be crafting a record type with one field at a position set to be
      the next multiple of ALIGN past record'address + room bytes.  We use a
@@ -739,7 +739,7 @@ make_aligning_type (tree type, unsigned int align, tree size,
 
   /* Declare it now since it will never be declared otherwise.  This is
      necessary to ensure that its subtrees are properly marked.  */
-  create_type_decl (name, record_type, NULL, true, false, Empty);
+  create_type_decl (name, record_type, true, false, gnat_node);
 
   return record_type;
 }
@@ -1074,7 +1074,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   /* If requested, complete the original type and give it a name.  */
   if (is_user_type)
     create_type_decl (get_entity_name (gnat_entity), type,
-		      NULL, !Comes_From_Source (gnat_entity),
+		      !Comes_From_Source (gnat_entity),
 		      !(TYPE_NAME (type)
 			&& TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
 			&& DECL_IGNORED_P (TYPE_NAME (type))),
@@ -2024,7 +2024,7 @@ create_index_type (tree min, tree max, tree index, Node_Id gnat_node)
 
   /* Then set the index type.  */
   SET_TYPE_INDEX_TYPE (type, index);
-  create_type_decl (NULL_TREE, type, NULL, true, false, gnat_node);
+  create_type_decl (NULL_TREE, type, true, false, gnat_node);
 
   return type;
 }
@@ -2075,8 +2075,8 @@ create_type_stub_decl (tree type_name, tree type)
    is used for the position of the decl.  */
 
 tree
-create_type_decl (tree type_name, tree type, struct attrib *attr_list,
-		  bool artificial_p, bool debug_info_p, Node_Id gnat_node)
+create_type_decl (tree type_name, tree type, bool artificial_p,
+		  bool debug_info_p, Node_Id gnat_node)
 {
   enum tree_code code = TREE_CODE (type);
   bool named = TYPE_NAME (type) && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL;
@@ -2093,16 +2093,13 @@ create_type_decl (tree type_name, tree type, struct attrib *attr_list,
       DECL_NAME (type_decl) = type_name;
     }
   else
-    type_decl = build_decl (input_location,
-			    TYPE_DECL, type_name, type);
+    type_decl = build_decl (input_location, TYPE_DECL, type_name, type);
 
   DECL_ARTIFICIAL (type_decl) = artificial_p;
   TYPE_ARTIFICIAL (type) = artificial_p;
 
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (type_decl, gnat_node);
-
-  process_attributes (type_decl, attr_list);
 
   /* If we're naming the type, equate the TYPE_STUB_DECL to the name.
      This causes the name to be also viewed as a "tag" by the debug
@@ -2224,17 +2221,21 @@ create_var_decl_1 (tree var_name, tree asm_name, tree type, tree var_init,
 	   != null_pointer_node)
     DECL_IGNORED_P (var_decl) = 1;
 
-  /* Add this decl to the current binding level.  */
-  gnat_pushdecl (var_decl, gnat_node);
-
   if (TREE_SIDE_EFFECTS (var_decl))
     TREE_ADDRESSABLE (var_decl) = 1;
+
+  /* ??? Some attributes cannot be applied to CONST_DECLs.  */
+  if (TREE_CODE (var_decl) == VAR_DECL)
+    process_attributes (&var_decl, &attr_list, true, gnat_node);
+
+  /* Add this decl to the current binding level.  */
+  gnat_pushdecl (var_decl, gnat_node);
 
   if (TREE_CODE (var_decl) == VAR_DECL)
     {
       if (asm_name)
 	SET_DECL_ASSEMBLER_NAME (var_decl, asm_name);
-      process_attributes (var_decl, attr_list);
+
       if (global_bindings_p ())
 	rest_of_decl_compilation (var_decl, true, 0);
     }
@@ -2450,65 +2451,71 @@ create_param_decl (tree param_name, tree param_type, bool readonly)
   return param_decl;
 }
 
-/* Given a DECL and ATTR_LIST, process the listed attributes.  */
+/* Process the attributes in ATTR_LIST for NODE, which is either a DECL or
+   a TYPE.  If IN_PLACE is true, the tree pointed to by NODE should not be
+   changed.  GNAT_NODE is used for the position of error messages.  */
 
-static void
-process_attributes (tree decl, struct attrib *attr_list)
+void
+process_attributes (tree *node, struct attrib **attr_list, bool in_place,
+		    Node_Id gnat_node)
 {
-  for (; attr_list; attr_list = attr_list->next)
-    switch (attr_list->type)
+  struct attrib *attr;
+
+  for (attr = *attr_list; attr; attr = attr->next)
+    switch (attr->type)
       {
       case ATTR_MACHINE_ATTRIBUTE:
-	input_location = DECL_SOURCE_LOCATION (decl);
-	decl_attributes (&decl, tree_cons (attr_list->name, attr_list->args,
-					   NULL_TREE),
-			 ATTR_FLAG_TYPE_IN_PLACE);
+	Sloc_to_locus (Sloc (gnat_node), &input_location);
+	decl_attributes (node, tree_cons (attr->name, attr->args, NULL_TREE),
+			 in_place ? ATTR_FLAG_TYPE_IN_PLACE : 0);
 	break;
 
       case ATTR_LINK_ALIAS:
-        if (! DECL_EXTERNAL (decl))
+        if (!DECL_EXTERNAL (*node))
 	  {
-	    TREE_STATIC (decl) = 1;
-	    assemble_alias (decl, attr_list->name);
+	    TREE_STATIC (*node) = 1;
+	    assemble_alias (*node, attr->name);
 	  }
 	break;
 
       case ATTR_WEAK_EXTERNAL:
 	if (SUPPORTS_WEAK)
-	  declare_weak (decl);
+	  declare_weak (*node);
 	else
 	  post_error ("?weak declarations not supported on this target",
-		      attr_list->error_point);
+		      attr->error_point);
 	break;
 
       case ATTR_LINK_SECTION:
 	if (targetm_common.have_named_sections)
 	  {
-	    DECL_SECTION_NAME (decl)
-	      = build_string (IDENTIFIER_LENGTH (attr_list->name),
-			      IDENTIFIER_POINTER (attr_list->name));
-	    DECL_COMMON (decl) = 0;
+	    DECL_SECTION_NAME (*node)
+	      = build_string (IDENTIFIER_LENGTH (attr->name),
+			      IDENTIFIER_POINTER (attr->name));
+	    DECL_COMMON (*node) = 0;
 	  }
 	else
 	  post_error ("?section attributes are not supported for this target",
-		      attr_list->error_point);
+		      attr->error_point);
 	break;
 
       case ATTR_LINK_CONSTRUCTOR:
-	DECL_STATIC_CONSTRUCTOR (decl) = 1;
-	TREE_USED (decl) = 1;
+	DECL_STATIC_CONSTRUCTOR (*node) = 1;
+	TREE_USED (*node) = 1;
 	break;
 
       case ATTR_LINK_DESTRUCTOR:
-	DECL_STATIC_DESTRUCTOR (decl) = 1;
-	TREE_USED (decl) = 1;
+	DECL_STATIC_DESTRUCTOR (*node) = 1;
+	TREE_USED (*node) = 1;
 	break;
 
       case ATTR_THREAD_LOCAL_STORAGE:
-	DECL_TLS_MODEL (decl) = decl_default_tls_model (decl);
-	DECL_COMMON (decl) = 0;
+	DECL_TLS_MODEL (*node) = decl_default_tls_model (*node);
+	DECL_COMMON (*node) = 0;
 	break;
       }
+
+  *attr_list = NULL;
 }
 
 /* Record DECL as a global renaming pointer.  */
@@ -2621,14 +2628,14 @@ create_label_decl (tree label_name, Node_Id gnat_node)
    node), PARAM_DECL_LIST is the list of the subprogram arguments (a list of
    PARM_DECL nodes chained through the DECL_CHAIN field).
 
-   INLINE_FLAG, PUBLIC_FLAG, EXTERN_FLAG, ARTIFICIAL_FLAG and ATTR_LIST are
+   INLINE_STATUS, PUBLIC_FLAG, EXTERN_FLAG, ARTIFICIAL_FLAG and ATTR_LIST are
    used to set the appropriate fields in the FUNCTION_DECL.  GNAT_NODE is
    used for the position of the decl.  */
 
 tree
 create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
-		     tree param_decl_list, bool inline_flag, bool public_flag,
-		     bool extern_flag, bool artificial_flag,
+ 		     tree param_decl_list, enum inline_status_t inline_status,
+		     bool public_flag, bool extern_flag, bool artificial_flag,
 		     struct attrib *attr_list, Node_Id gnat_node)
 {
   tree subprog_decl = build_decl (input_location, FUNCTION_DECL, subprog_name,
@@ -2642,7 +2649,7 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
      function in the current unit since it is private to the other unit.
      We could inline the nested function as well but it's probably better
      to err on the side of too little inlining.  */
-  if (!inline_flag
+  if (inline_status != is_enabled
       && !public_flag
       && current_function_decl
       && DECL_DECLARED_INLINE_P (current_function_decl)
@@ -2651,8 +2658,24 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 
   DECL_ARTIFICIAL (subprog_decl) = artificial_flag;
   DECL_EXTERNAL (subprog_decl) = extern_flag;
-  DECL_DECLARED_INLINE_P (subprog_decl) = inline_flag;
-  DECL_NO_INLINE_WARNING_P (subprog_decl) = inline_flag && artificial_flag;
+
+  switch (inline_status)
+    {
+    case is_suppressed:
+      DECL_UNINLINABLE (subprog_decl) = 1;
+      break;
+
+    case is_disabled:
+      break;
+
+    case is_enabled:
+      DECL_DECLARED_INLINE_P (subprog_decl) = 1;
+      DECL_NO_INLINE_WARNING_P (subprog_decl) = artificial_flag;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   TREE_PUBLIC (subprog_decl) = public_flag;
   TREE_READONLY (subprog_decl) = TYPE_READONLY (subprog_type);
@@ -2678,10 +2701,10 @@ create_subprog_decl (tree subprog_name, tree asm_name, tree subprog_type,
 	DECL_NAME (subprog_decl) = main_identifier_node;
     }
 
+  process_attributes (&subprog_decl, &attr_list, true, gnat_node);
+
   /* Add this decl to the current binding level.  */
   gnat_pushdecl (subprog_decl, gnat_node);
-
-  process_attributes (subprog_decl, attr_list);
 
   /* Output the assembler code and/or RTL for the declaration.  */
   rest_of_decl_compilation (subprog_decl, global_bindings_p (), 0);
@@ -4073,33 +4096,25 @@ convert_vms_descriptor32 (tree gnu_type, tree gnu_expr, Entity_Id gnat_subprog)
 
 /* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
    pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
-   pointer type of GNU_EXPR.  BY_REF is true if the result is to be used by
-   reference.  GNAT_SUBPROG is the subprogram to which the VMS descriptor is
-   passed.  */
+   pointer type of GNU_EXPR.  GNAT_SUBPROG is the subprogram to which the
+   descriptor is passed.  */
 
 tree
 convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
-			bool by_ref, Entity_Id gnat_subprog)
+			Entity_Id gnat_subprog)
 {
   tree desc_type = TREE_TYPE (TREE_TYPE (gnu_expr));
   tree desc = build1 (INDIRECT_REF, desc_type, gnu_expr);
   tree mbo = TYPE_FIELDS (desc_type);
   const char *mbostr = IDENTIFIER_POINTER (DECL_NAME (mbo));
   tree mbmo = DECL_CHAIN (DECL_CHAIN (DECL_CHAIN (mbo)));
-  tree real_type, is64bit, gnu_expr32, gnu_expr64;
-
-  if (by_ref)
-    real_type = TREE_TYPE (gnu_type);
-  else
-    real_type = gnu_type;
+  tree is64bit, gnu_expr32, gnu_expr64;
 
   /* If the field name is not MBO, it must be 32-bit and no alternate.
      Otherwise primary must be 64-bit and alternate 32-bit.  */
   if (strcmp (mbostr, "MBO") != 0)
     {
-      tree ret = convert_vms_descriptor32 (real_type, gnu_expr, gnat_subprog);
-      if (by_ref)
-	ret = build_unary_op (ADDR_EXPR, gnu_type, ret);
+      tree ret = convert_vms_descriptor32 (gnu_type, gnu_expr, gnat_subprog);
       return ret;
     }
 
@@ -4116,14 +4131,9 @@ convert_vms_descriptor (tree gnu_type, tree gnu_expr, tree gnu_expr_alt_type,
 					integer_minus_one_node));
 
   /* Build the 2 possible end results.  */
-  gnu_expr64 = convert_vms_descriptor64 (real_type, gnu_expr, gnat_subprog);
-  if (by_ref)
-    gnu_expr64 =  build_unary_op (ADDR_EXPR, gnu_type, gnu_expr64);
+  gnu_expr64 = convert_vms_descriptor64 (gnu_type, gnu_expr, gnat_subprog);
   gnu_expr = fold_convert (gnu_expr_alt_type, gnu_expr);
-  gnu_expr32 = convert_vms_descriptor32 (real_type, gnu_expr, gnat_subprog);
-  if (by_ref)
-    gnu_expr32 =  build_unary_op (ADDR_EXPR, gnu_type, gnu_expr32);
-
+  gnu_expr32 = convert_vms_descriptor32 (gnu_type, gnu_expr, gnat_subprog);
   return build3 (COND_EXPR, gnu_type, is64bit, gnu_expr64, gnu_expr32);
 }
 
@@ -4153,7 +4163,7 @@ build_unc_object_type (tree template_type, tree object_type, tree name,
 
   /* Declare it now since it will never be declared otherwise.  This is
      necessary to ensure that its subtrees are properly marked.  */
-  create_type_decl (name, type, NULL, true, debug_info_p, Empty);
+  create_type_decl (name, type, true, debug_info_p, Empty);
 
   return type;
 }
@@ -6347,7 +6357,6 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* Vector representative type and size.  */
   tree rep_type = *node;
   tree rep_size = TYPE_SIZE_UNIT (rep_type);
-  tree rep_name;
 
   /* Vector size in bytes and number of units.  */
   unsigned HOST_WIDE_INT vec_bytes, vec_units;
@@ -6357,12 +6366,6 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   enum machine_mode elem_mode;
 
   *no_add_attrs = true;
-
-  /* Get the representative array type, possibly nested within a
-     padding record e.g. for alignment purposes.  */
-
-  if (TYPE_IS_PADDING_P (rep_type))
-    rep_type = TREE_TYPE (TYPE_FIELDS (rep_type));
 
   if (TREE_CODE (rep_type) != ARRAY_TYPE)
     {
@@ -6424,10 +6427,6 @@ handle_vector_type_attribute (tree *node, tree name, tree ARG_UNUSED (args),
   /* Build the vector type and replace.  */
 
   *node = build_vector_type (elem_type, vec_units);
-  rep_name = TYPE_NAME (rep_type);
-  if (TREE_CODE (rep_name) == TYPE_DECL)
-    rep_name = DECL_NAME (rep_name);
-  TYPE_NAME (*node) = rep_name;
   TYPE_REPRESENTATIVE_ARRAY (*node) = rep_type;
 
   return NULL_TREE;

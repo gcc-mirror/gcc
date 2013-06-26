@@ -412,7 +412,7 @@ _GLIBCXX_ALLOC_TR_NESTED_TYPE(propagate_on_container_swap,
        *  Returns @c __a.max_size() if that expression is well-formed,
        *  otherwise returns @c numeric_limits<size_type>::max()
       */
-      static size_type max_size(const _Alloc& __a)
+      static size_type max_size(const _Alloc& __a) noexcept
       { return _S_max_size(__a); }
 
       /**

@@ -1,7 +1,7 @@
 /* Test if we inline memcpy even with -Os, when the user requested it.  */
 /* Don't name this test with memcpy in its name, otherwise the scan-assembler
    would be confused.  */
-/* { dg-do compile { target *-*-linux* } } */
+/* { dg-do compile { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-Os -minline-all-stringops" } */
 /* { dg-final { scan-assembler-not "memcpy" } } */
 char f(int i)

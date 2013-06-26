@@ -25,12 +25,15 @@
 # error "Never use <lzcntintrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef __LZCNT__
-# error "LZCNT instruction is not enabled"
-#endif /* __LZCNT__ */
 
 #ifndef _LZCNTINTRIN_H_INCLUDED
 #define _LZCNTINTRIN_H_INCLUDED
+
+#ifndef __LZCNT__
+#pragma GCC push_options
+#pragma GCC target("lzcnt")
+#define __DISABLE_LZCNT__
+#endif /* __LZCNT__ */
 
 extern __inline unsigned short __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __lzcnt16 (unsigned short __X)
@@ -63,5 +66,10 @@ _lzcnt_u64 (unsigned long long __X)
   return __builtin_clzll (__X);
 }
 #endif
+
+#ifdef __DISABLE_LZCNT__
+#undef __DISABLE_LZCNT__
+#pragma GCC pop_options
+#endif /* __DISABLE_LZCNT__ */
 
 #endif /* _LZCNTINTRIN_H_INCLUDED */

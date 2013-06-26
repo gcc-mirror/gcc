@@ -18,5 +18,5 @@ PROGRAM test
 
   TYPE(foo), PARAMETER :: x = foo(42, 42.)
 
-  WRITE (*,*) (/ TYPE(foo) :: x, foo(0, 1.), bar(.TRUE.) /) ! { dg-error "convert TYPE" }
+  WRITE (*,*) (/ foo :: x, foo(0, 1.), bar(.TRUE.) /) ! { dg-error "convert TYPE" }
 END PROGRAM test

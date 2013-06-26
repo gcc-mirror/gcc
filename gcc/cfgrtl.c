@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "hard-reg-set.h"
 #include "basic-block.h"
+#include "bb-reorder.h"
 #include "regs.h"
 #include "flags.h"
 #include "function.h"
@@ -450,6 +451,9 @@ rest_of_pass_free_cfg (void)
       df_analyze ();
     }
 #endif
+
+  if (crtl->has_bb_partition)
+    insert_section_boundary_note ();
 
   free_bb_for_insn ();
   return 0;
@@ -981,8 +985,7 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
      partition boundaries).  See  the comments at the top of
      bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
 
-  if (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
-      || BB_PARTITION (src) != BB_PARTITION (target))
+  if (BB_PARTITION (src) != BB_PARTITION (target))
     return NULL;
 
   /* We can replace or remove a complex jump only when we have exactly
@@ -1291,6 +1294,53 @@ redirect_branch_edge (edge e, basic_block target)
   return e;
 }
 
+/* Called when edge E has been redirected to a new destination,
+   in order to update the region crossing flag on the edge and
+   jump.  */
+
+static void
+fixup_partition_crossing (edge e)
+{
+  rtx note;
+
+  if (e->src == ENTRY_BLOCK_PTR || e->dest == EXIT_BLOCK_PTR)
+    return;
+  /* If we redirected an existing edge, it may already be marked
+     crossing, even though the new src is missing a reg crossing note.
+     But make sure reg crossing note doesn't already exist before
+     inserting.  */
+  if (BB_PARTITION (e->src) != BB_PARTITION (e->dest))
+    {
+      e->flags |= EDGE_CROSSING;
+      note = find_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
+      if (JUMP_P (BB_END (e->src))
+          && !note)
+        add_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
+    }
+  else if (BB_PARTITION (e->src) == BB_PARTITION (e->dest))
+    {
+      e->flags &= ~EDGE_CROSSING;
+      /* Remove the section crossing note from jump at end of
+         src if it exists, and if no other successors are
+         still crossing.  */
+      note = find_reg_note (BB_END (e->src), REG_CROSSING_JUMP, NULL_RTX);
+      if (note)
+        {
+          bool has_crossing_succ = false;
+          edge e2;
+          edge_iterator ei;
+          FOR_EACH_EDGE (e2, ei, e->src->succs)
+            {
+              has_crossing_succ |= (e2->flags & EDGE_CROSSING);
+              if (has_crossing_succ)
+                break;
+            }
+          if (!has_crossing_succ)
+            remove_note (BB_END (e->src), note);
+        }
+    }
+}
+
 /* Attempt to change code to redirect edge E to TARGET.  Don't do that on
    expense of adding new instructions or reordering basic blocks.
 
@@ -1307,16 +1357,18 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
 {
   edge ret;
   basic_block src = e->src;
+  basic_block dest = e->dest;
 
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
     return NULL;
 
-  if (e->dest == target)
+  if (dest == target)
     return e;
 
   if ((ret = try_redirect_by_replacing_jump (e, target, false)) != NULL)
     {
       df_set_bb_dirty (src);
+      fixup_partition_crossing (ret);
       return ret;
     }
 
@@ -1325,7 +1377,20 @@ rtl_redirect_edge_and_branch (edge e, basic_block target)
     return NULL;
 
   df_set_bb_dirty (src);
+  fixup_partition_crossing (ret);
   return ret;
+}
+
+/* Emit a barrier after BB, into the footer if we are in CFGLAYOUT mode.  */
+
+void
+emit_barrier_after_bb (basic_block bb)
+{
+  rtx barrier = emit_barrier_after (BB_END (bb));
+  gcc_assert (current_ir_type() == IR_RTL_CFGRTL
+              || current_ir_type () == IR_RTL_CFGLAYOUT);
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
+    BB_FOOTER (bb) = unlink_insn_chain (barrier, barrier);
 }
 
 /* Like force_nonfallthru below, but additionally performs redirection
@@ -1492,12 +1557,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       /* Make sure new block ends up in correct hot/cold section.  */
 
       BB_COPY_PARTITION (jump_block, e->src);
-      if (flag_reorder_blocks_and_partition
-	  && targetm_common.have_named_sections
-	  && JUMP_P (BB_END (jump_block))
-	  && !any_condjump_p (BB_END (jump_block))
-	  && (EDGE_SUCC (jump_block, 0)->flags & EDGE_CROSSING))
-	add_reg_note (BB_END (jump_block), REG_CROSSING_JUMP, NULL_RTX);
 
       /* Wire edge in.  */
       new_edge = make_edge (e->src, jump_block, EDGE_FALLTHRU);
@@ -1507,6 +1566,10 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       /* Redirect old edge.  */
       redirect_edge_pred (e, jump_block);
       e->probability = REG_BR_PROB_BASE;
+
+      /* If e->src was previously region crossing, it no longer is
+         and the reg crossing note should be removed.  */
+      fixup_partition_crossing (new_edge);
 
       /* If asm goto has any label refs to target's label,
 	 add also edge from asm goto bb to target.  */
@@ -1559,13 +1622,16 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       LABEL_NUSES (label)++;
     }
 
-  emit_barrier_after (BB_END (jump_block));
+  /* We might be in cfg layout mode, and if so, the following routine will
+     insert the barrier correctly.  */
+  emit_barrier_after_bb (jump_block);
   redirect_edge_succ_nodup (e, target);
 
   if (abnormal_edge_flags)
     make_edge (src, target, abnormal_edge_flags);
 
   df_mark_solutions_dirty ();
+  fixup_partition_crossing (e);
   return new_bb;
 }
 
@@ -1654,6 +1720,21 @@ rtl_move_block_after (basic_block bb ATTRIBUTE_UNUSED,
   return false;
 }
 
+/* Locate the last bb in the same partition as START_BB.  */
+
+static basic_block
+last_bb_in_partition (basic_block start_bb)
+{
+  basic_block bb;
+  FOR_BB_BETWEEN (bb, start_bb, EXIT_BLOCK_PTR, next_bb)
+    {
+      if (BB_PARTITION (start_bb) != BB_PARTITION (bb->next_bb))
+        return bb;
+    }
+  /* Return bb before EXIT_BLOCK_PTR.  */
+  return bb->prev_bb;
+}
+
 /* Split a (typically critical) edge.  Return the new block.
    The edge must not be abnormal.
 
@@ -1664,7 +1745,7 @@ rtl_move_block_after (basic_block bb ATTRIBUTE_UNUSED,
 static basic_block
 rtl_split_edge (edge edge_in)
 {
-  basic_block bb;
+  basic_block bb, new_bb;
   rtx before;
 
   /* Abnormal edges cannot be split.  */
@@ -1696,12 +1777,49 @@ rtl_split_edge (edge edge_in)
     }
   else
     {
-      bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
-      /* ??? Why not edge_in->dest->prev_bb here?  */
-      BB_COPY_PARTITION (bb, edge_in->dest);
+      if (edge_in->src == ENTRY_BLOCK_PTR)
+        {
+          bb = create_basic_block (before, NULL, edge_in->dest->prev_bb);
+          BB_COPY_PARTITION (bb, edge_in->dest);
+        }
+      else
+        {
+          basic_block after = edge_in->dest->prev_bb;
+          /* If this is post-bb reordering, and the edge crosses a partition
+             boundary, the new block needs to be inserted in the bb chain
+             at the end of the src partition (since we put the new bb into
+             that partition, see below). Otherwise we may end up creating
+             an extra partition crossing in the chain, which is illegal.
+             It can't go after the src, because src may have a fall-through
+             to a different block.  */
+          if (crtl->bb_reorder_complete
+              && (edge_in->flags & EDGE_CROSSING))
+            {
+              after = last_bb_in_partition (edge_in->src);
+              before = NEXT_INSN (BB_END (after));
+              /* The instruction following the last bb in partition should
+                 be a barrier, since it cannot end in a fall-through.  */
+              gcc_checking_assert (BARRIER_P (before));
+              before = NEXT_INSN (before);
+            }
+          bb = create_basic_block (before, NULL, after);
+          /* Put the split bb into the src partition, to avoid creating
+             a situation where a cold bb dominates a hot bb, in the case
+             where src is cold and dest is hot. The src will dominate
+             the new bb (whereas it might not have dominated dest).  */
+          BB_COPY_PARTITION (bb, edge_in->src);
+        }
     }
 
   make_single_succ_edge (bb, edge_in->dest, EDGE_FALLTHRU);
+
+  /* Can't allow a region crossing edge to be fallthrough.  */
+  if (BB_PARTITION (bb) != BB_PARTITION (edge_in->dest)
+      && edge_in->dest != EXIT_BLOCK_PTR)
+    {
+      new_bb = force_nonfallthru (single_succ_edge (bb));
+      gcc_assert (!new_bb);
+    }
 
   /* For non-fallthru edges, we must adjust the predecessor's
      jump instruction to target our new block.  */
@@ -1815,17 +1933,13 @@ commit_one_edge_insertion (edge e)
   else
     {
       bb = split_edge (e);
-      after = BB_END (bb);
 
-      if (flag_reorder_blocks_and_partition
-	  && targetm_common.have_named_sections
-	  && e->src != ENTRY_BLOCK_PTR
-	  && BB_PARTITION (e->src) == BB_COLD_PARTITION
-	  && !(e->flags & EDGE_CROSSING)
-	  && JUMP_P (after)
-	  && !any_condjump_p (after)
-	  && (single_succ_edge (bb)->flags & EDGE_CROSSING))
-	add_reg_note (after, REG_CROSSING_JUMP, NULL_RTX);
+      /* If E crossed a partition boundary, we needed to make bb end in
+         a region-crossing jump, even though it was originally fallthru.  */
+      if (JUMP_P (BB_END (bb)))
+	before = BB_END (bb);
+      else
+        after = BB_END (bb);
     }
 
   /* Now that we've found the spot, do the insertion.  */
@@ -2071,7 +2185,11 @@ verify_hot_cold_block_grouping (void)
   bool switched_sections = false;
   int current_partition = BB_UNPARTITIONED;
 
-  if (!crtl->bb_reorder_complete)
+  /* Even after bb reordering is complete, we go into cfglayout mode
+     again (in compgoto). Ensure we don't call this before going back
+     into linearized RTL when any layout fixes would have been committed.  */
+  if (!crtl->bb_reorder_complete
+      || current_ir_type() != IR_RTL_CFGRTL)
     return err;
 
   FOR_EACH_BB (bb)
@@ -2116,6 +2234,7 @@ rtl_verify_edges (void)
       edge e, fallthru = NULL;
       edge_iterator ei;
       rtx note;
+      bool has_crossing_edge = false;
 
       if (JUMP_P (BB_END (bb))
 	  && (note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX))
@@ -2141,6 +2260,7 @@ rtl_verify_edges (void)
 	  is_crossing = (BB_PARTITION (e->src) != BB_PARTITION (e->dest)
 			 && e->src != ENTRY_BLOCK_PTR
 			 && e->dest != EXIT_BLOCK_PTR);
+          has_crossing_edge |= is_crossing;
 	  if (e->flags & EDGE_CROSSING)
 	    {
 	      if (!is_crossing)
@@ -2158,6 +2278,13 @@ rtl_verify_edges (void)
 		{
 		  error ("EH edge crosses section boundary in bb %i",
 			 e->src->index);
+		  err = 1;
+		}
+              if (JUMP_P (BB_END (bb))
+                  && !find_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX))
+		{
+		  error ("No region crossing jump at section boundary in bb %i",
+			 bb->index);
 		  err = 1;
 		}
 	    }
@@ -2187,6 +2314,15 @@ rtl_verify_edges (void)
 	  if (e->flags & EDGE_ABNORMAL)
 	    n_abnormal++;
 	}
+
+        if (!has_crossing_edge
+            && find_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX))
+          {
+            print_rtl_with_bb (stderr, get_insns (), TDF_RTL | TDF_BLOCKS | TDF_DETAILS);
+            error ("Region crossing jump across same section in bb %i",
+                   bb->index);
+            err = 1;
+          }
 
       if (n_eh && !find_reg_note (BB_END (bb), REG_EH_REGION, NULL_RTX))
 	{
@@ -2394,8 +2530,6 @@ rtl_verify_flow_info_1 (void)
   err |= rtl_verify_bb_insns ();
 
   err |= rtl_verify_edges ();
-
-  err |= verify_hot_cold_block_grouping();
 
   return err;
 }
@@ -2641,6 +2775,8 @@ rtl_verify_flow_info (void)
   err |= rtl_verify_fallthru ();
 
   err |= rtl_verify_bb_layout ();
+
+  err |= verify_hot_cold_block_grouping ();
 
   return err;
 }
@@ -3343,7 +3479,7 @@ fixup_reorder_chain (void)
       edge e_fall, e_taken, e;
       rtx bb_end_insn;
       rtx ret_label = NULL_RTX;
-      basic_block nb, src_bb;
+      basic_block nb;
       edge_iterator ei;
 
       if (EDGE_COUNT (bb->succs) == 0)
@@ -3478,7 +3614,6 @@ fixup_reorder_chain (void)
       /* We got here if we need to add a new jump insn. 
 	 Note force_nonfallthru can delete E_FALL and thus we have to
 	 save E_FALL->src prior to the call to force_nonfallthru.  */
-      src_bb = e_fall->src;
       nb = force_nonfallthru_and_redirect (e_fall, e_fall->dest, ret_label);
       if (nb)
 	{
@@ -3486,17 +3621,6 @@ fixup_reorder_chain (void)
 	  bb->aux = nb;
 	  /* Don't process this new block.  */
 	  bb = nb;
-
-	  /* Make sure new bb is tagged for correct section (same as
-	     fall-thru source, since you cannot fall-thru across
-	     section boundaries).  */
-	  BB_COPY_PARTITION (src_bb, single_pred (bb));
-	  if (flag_reorder_blocks_and_partition
-	      && targetm_common.have_named_sections
-	      && JUMP_P (BB_END (bb))
-	      && !any_condjump_p (BB_END (bb))
-	      && (EDGE_SUCC (bb, 0)->flags & EDGE_CROSSING))
-	    add_reg_note (BB_END (bb), REG_CROSSING_JUMP, NULL_RTX);
 	}
     }
 
@@ -3796,10 +3920,11 @@ duplicate_insn_chain (rtx from, rtx to)
 	    case NOTE_INSN_FUNCTION_BEG:
 	      /* There is always just single entry to function.  */
 	    case NOTE_INSN_BASIC_BLOCK:
+              /* We should only switch text sections once.  */
+	    case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	      break;
 
 	    case NOTE_INSN_EPILOGUE_BEG:
-	    case NOTE_INSN_SWITCH_TEXT_SECTIONS:
 	      emit_note_copy (insn);
 	      break;
 
@@ -4611,8 +4736,7 @@ rtl_can_remove_branch_p (const_edge e)
   if (e->flags & (EDGE_ABNORMAL_CALL | EDGE_EH))
     return false;
 
-  if (find_reg_note (insn, REG_CROSSING_JUMP, NULL_RTX)
-      || BB_PARTITION (src) != BB_PARTITION (target))
+  if (BB_PARTITION (src) != BB_PARTITION (target))
     return false;
 
   if (!onlyjump_p (insn)

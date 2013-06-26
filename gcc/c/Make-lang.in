@@ -56,7 +56,7 @@ c/gccspec.o: c/gccspec.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
 # Language-specific object files for C and Objective C.
 C_AND_OBJC_OBJS = attribs.o c/c-errors.o c/c-decl.o c/c-typeck.o \
   c/c-convert.o c/c-aux-info.o c/c-objc-common.o c/c-parser.o \
-  $(C_COMMON_OBJS) $(C_TARGET_OBJS)
+  c/c-array-notation.o $(C_COMMON_OBJS) $(C_TARGET_OBJS)
 
 # Language-specific object files for C.
 C_OBJS = c/c-lang.o c-family/stub-objc.o $(C_AND_OBJC_OBJS)
@@ -191,4 +191,9 @@ c/c-typeck.o : c/c-typeck.c c/c-lang.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_
 	$(TREE_H) $(C_TREE_H) $(TARGET_H) $(FLAGS_H) intl.h \
 	langhooks.h tree-iterator.h $(BITMAP_H) $(GIMPLE_H) \
 	c-family/c-objc.h c-family/c-common.h
+
+c/c-array-notation.o: c/c-array-notation.c c/c-lang.h $(CONFIG_H) \
+	$(SYSTEM_H) coretypes.h $(TREE_H) $(C_TREE_H) $(TARGET_H) \
+	intl.h output.h $(EXPR_H) langhooks.h tree-iterator.h $(BITMAP_H) \
+	$(GIMPLE_H) c-family/c-objc.h
 

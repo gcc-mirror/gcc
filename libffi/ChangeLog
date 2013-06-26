@@ -1,3 +1,22 @@
+2013-06-25  Alan Modra  <amodra@gmail.com>
+
+	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Move var declaration
+	before statements.
+	(ffi_prep_args64): Support little-endian.
+	(ffi_closure_helper_SYSV, ffi_closure_helper_LINUX64): Likewise.
+	* src/powerpc/linux64_closure.S (ffi_closure_LINUX64): Likewise.
+	* src/powerpc/ppc_closure.S (ffi_closure_SYSV): Likewise.
+
+2013-05-22  Dominique d'Humieres  <dominiq@lps.ens.fr>
+	    Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR libffi/56033
+	* testsuite/libffi.call/cls_struct_va1.c (test_fn): Cast resp to
+	ffi_arg *.
+	* testsuite/libffi.call/cls_uint_va.c (cls_ret_T_fn): Likewise.
+	* testsuite/libffi.call/va_1.c (main): Change res to ffi_arg.
+	* testsuite/libffi.call/va_struct1.c (main): Likewise.
+
 2013-03-22  Kai Tietz  <ktietz@redhat.com>
 
 	* src/x86/win64.S: Make use of ffi_closure_win64_inner

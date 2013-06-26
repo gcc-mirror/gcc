@@ -1926,11 +1926,11 @@ facilities of the standard C library available.
 This macro is defined when the C++ compiler is in use.  You can use
 @code{__cplusplus} to test whether a header is compiled by a C compiler
 or a C++ compiler.  This macro is similar to @code{__STDC_VERSION__}, in
-that it expands to a version number.  A fully conforming implementation
-of the 1998 C++ standard will define this macro to @code{199711L}.  The
-GNU C++ compiler is not yet fully conforming, so it uses @code{1}
-instead.  It is hoped to complete the implementation of standard C++
-in the near future.
+that it expands to a version number.  Depending on the language standard
+selected, the value of the macro is @code{199711L}, as mandated by the
+1998 C++ standard; @code{201103L}, per the 2011 C++ standard; an
+unspecified value strictly larger than @code{201103L} for the experimental 
+languages enabled by @option{-std=c++1y} and @option{-std=gnu++1y}.
 
 @item __OBJC__
 This macro is defined, with value 1, when the Objective-C compiler is in

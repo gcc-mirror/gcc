@@ -341,6 +341,7 @@ gfc_wrapped_block;
 /* Class API functions.  */
 tree gfc_class_data_get (tree);
 tree gfc_class_vptr_get (tree);
+void gfc_reset_vptr (stmtblock_t *, gfc_expr *);
 tree gfc_class_set_static_fields (tree, tree, tree);
 tree gfc_vtable_hash_get (tree);
 tree gfc_vtable_size_get (tree);
@@ -351,8 +352,7 @@ tree gfc_vtable_final_get (tree);
 tree gfc_get_vptr_from_expr (tree);
 tree gfc_get_class_array_ref (tree, tree);
 tree gfc_copy_class_to_class (tree, tree, tree);
-tree gfc_build_final_call (gfc_typespec, gfc_expr *, gfc_expr *, bool,
-			   gfc_expr *);
+bool gfc_add_finalizer_call (stmtblock_t *, gfc_expr *);
 void gfc_conv_derived_to_class (gfc_se *, gfc_expr *, gfc_typespec, tree, bool,
 				bool);
 void gfc_conv_class_to_class (gfc_se *, gfc_expr *, gfc_typespec, bool, bool,
