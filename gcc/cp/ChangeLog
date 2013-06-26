@@ -1,3 +1,9 @@
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/57640
+	* parser.c (cp_parser_unqualified_id): Add declarator_p to checks
+	to trigger warning, (cp_literal_operator_id): Remove bogus TODO comment.
+
 2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (null_ptr_cst_p): Use cxx11 in lieu of cxx0x.
