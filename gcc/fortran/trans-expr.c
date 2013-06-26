@@ -1910,7 +1910,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	      && ref->next == NULL && (se->descriptor_only))
 	    return;
 
-	  gfc_conv_array_ref (se, &ref->u.ar, sym, &expr->where);
+	  gfc_conv_array_ref (se, &ref->u.ar, expr, &expr->where);
 	  /* Return a pointer to an element.  */
 	  break;
 
