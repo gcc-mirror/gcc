@@ -1278,6 +1278,14 @@ Gogo::define_global_names()
 		   n.c_str());
 	  inform(pf->second, "%qs imported here", n.c_str());
 	}
+
+      // No package scope identifier may be named "init".
+      if (!p->second->is_function()
+	  && Gogo::unpack_hidden_name(p->second->name()) == "init")
+	{
+	  error_at(p->second->location(),
+	           "cannot declare init - must be func");
+	}
     }
 }
 
