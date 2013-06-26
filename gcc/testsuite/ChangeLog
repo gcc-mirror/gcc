@@ -1,3 +1,8 @@
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/57640
+	* g++.dg/cpp1y/pr57640.C: New.
+
 2013-06-25  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c/57692

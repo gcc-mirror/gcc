@@ -5000,7 +5000,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    {
 	      /* 17.6.3.3.5  */
 	      const char *name = UDLIT_OP_SUFFIX (id);
-	      if (name[0] != '_' && !in_system_header)
+	      if (name[0] != '_' && !in_system_header && declarator_p)
 		warning (0, "literal operator suffixes not preceded by %<_%>"
 			    " are reserved for future standardization");
 	    }
@@ -12346,7 +12346,6 @@ cp_literal_operator_id (const char* name)
 			      + strlen (name) + 10);
   sprintf (buffer, UDLIT_OP_ANSI_FORMAT, name);
   identifier = get_identifier (buffer);
-  /*IDENTIFIER_UDLIT_OPNAME_P (identifier) = 1; If we get a flag someday. */
 
   return identifier;
 }
