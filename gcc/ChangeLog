@@ -1,3 +1,18 @@
+2013-06-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+	    Pat Haugen <pthaugen@us.ibm.com>
+	    Peter Bergner <bergner@vnet.ibm.com>
+
+	* config/rs6000/power8.md: New.
+	* config/rs6000/rs6000-cpus.def (RS6000_CPU table): Adjust processor
+	setting for power8 entry.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add power8.md.
+	* config/rs6000/rs6000.c (is_microcoded_insn, is_cracked_insn): Adjust
+	test for Power4/Power5 only.
+	(insn_must_be_first_in_group, insn_must_be_last_in_group): Add Power8
+	support.
+	(force_new_group): Adjust comment.
+	* config/rs6000/rs6000.md: Include power8.md.
+
 2013-06-26  Greta Yorsh  <Greta.Yorsh@arm.com>
 
 	* config/arm/arm.h (MAX_CONDITIONAL_EXECUTE): Define macro.
