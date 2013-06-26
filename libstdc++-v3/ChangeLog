@@ -7,6 +7,16 @@
 
 2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: Avoid
+	spurious fails with check-debug.
+	* testsuite/23_containers/multimap/modifiers/erase/abi_tag.cc:
+	Likewise.
+	* testsuite/23_containers/set/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/erase/abi_tag.cc:
+	Likewise.
+
+2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/57704
 	* include/bits/char_traits.h (char_traits<char>::lt): Implement
 	LWG 467.
