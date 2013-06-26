@@ -2118,6 +2118,7 @@ microblaze_initial_elimination_offset (int from, int to)
    't'  print 't' for EQ, 'f' for NE
    'm'  Print 1<<operand.
    'i'  Print 'i' if MEM operand has immediate value
+   'y'  Print 'y' if MEM operand is single register
    'o'	Print operand address+4
    '?'	Print 'd' if we use a branch with delay slot instead of normal branch.
    'h'  Print high word of const_double (int or float) value as hex
@@ -2287,6 +2288,15 @@ print_operand (FILE * file, rtx op, int letter)
       {
 	rtx op4 = adjust_address (op, GET_MODE (op), 4);
 	output_address (XEXP (op4, 0));
+      }
+    else if (letter == 'y')
+      {
+        rtx mem_reg = XEXP (op, 0);
+        if (GET_CODE (mem_reg) == REG)
+        {
+            register int regnum = REGNO (mem_reg);
+            fprintf (file, "%s", reg_names[regnum]);
+        }
       }
     else
       output_address (XEXP (op, 0));
