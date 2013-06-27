@@ -1,3 +1,7 @@
+2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/vector (emplace(iterator, _Args&&...)): Define.
+
 2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: Avoid
