@@ -1,4 +1,7 @@
-2013-06-21  Jason Merrill  <jason@redhat.com>
+2013-06-26  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Diagnose a non-constant
+	initializer for in-class static.
 
 	PR c++/57408
 	* semantics.c (add_capture): Set type to error_mark_node after
