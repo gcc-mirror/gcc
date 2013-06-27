@@ -12464,6 +12464,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case COND_EXPR:
     case MODOP_EXPR:
     case PSEUDO_DTOR_EXPR:
+    case VEC_PERM_EXPR:
       {
 	r = build_nt
 	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
@@ -14627,6 +14628,13 @@ tsubst_copy_and_build (tree t,
 
     case PAREN_EXPR:
       RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+
+    case VEC_PERM_EXPR:
+      RETURN (build_x_vec_perm_expr (input_location,
+		RECUR (TREE_OPERAND (t, 0)),
+		RECUR (TREE_OPERAND (t, 1)),
+		RECUR (TREE_OPERAND (t, 2)),
+		complain));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */

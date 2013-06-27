@@ -5691,9 +5691,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  mark_exp_read (p);
 
 	if (vec->length () == 2)
-	  return c_build_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1]); 
+	  return build_x_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1],
+					 tf_warning_or_error);
 	else if (vec->length () == 3)
-	  return c_build_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2]);
+	  return build_x_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2],
+					 tf_warning_or_error);
 	else
 	{
 	  error_at (loc, "wrong number of arguments to "

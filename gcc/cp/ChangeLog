@@ -1,5 +1,14 @@
 2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/57509
+	* typeck.c (cp_build_vec_perm_expr): New function.
+	* cp-tree.h: Declare it.
+	* parser.c (cp_parser_postfix_expression): Call it.
+	* pt.c (tsubst_copy): Handle VEC_PERM_EXPR.
+	(tsubst_copy_and_build): Likewise.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR c++/57172
 	* pt.c (more_specialized_fn): If both arguments are references,
 	give priority to an lvalue.
