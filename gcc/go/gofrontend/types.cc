@@ -9396,13 +9396,18 @@ Type::find_field_or_method(const Type* type,
 	fnt = pf->type()->deref()->named_type();
       go_assert(fnt != NULL);
 
+      // Methods with pointer receivers on embedded field are
+      // inherited by the pointer to struct, and also by the struct
+      // type if the field itself is a pointer.
+      bool can_be_pointer = (receiver_can_be_pointer
+			     || pf->type()->points_to() != NULL);
       int sublevel = level == NULL ? 1 : *level + 1;
       bool sub_is_method;
       std::string subambig1;
       std::string subambig2;
       bool subfound = Type::find_field_or_method(fnt,
 						 name,
-						 receiver_can_be_pointer,
+						 can_be_pointer,
 						 seen,
 						 &sublevel,
 						 &sub_is_method,
