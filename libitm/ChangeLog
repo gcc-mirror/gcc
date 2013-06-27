@@ -1,3 +1,10 @@
+2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/target.h: Include htmintrin.h.
+	(_HTM_ITM_RETRIES): New macro definition.
+	(htm_available, htm_init, htm_begin, htm_begin_success)
+	(htm_commit, htm_abort, htm_abort_should_retry): New functions.
+
 2013-06-20  Iain Sandoe  <iain@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
