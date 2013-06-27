@@ -41,8 +41,6 @@
   (UNSPEC_CMP		104)    ;; signed compare
   (UNSPEC_CMPU		105)    ;; unsigned compare
   (UNSPEC_TLS           106)    ;; jump table
-  (UNSPEC_SYNC_CAS      107)    ;; Represent atomic compare swap.
-  (UNSPEC_SYNC_XCHG     108)    ;; Represent atomic exchange.
 ])
 
 
@@ -2223,5 +2221,3 @@
   [(set_attr "type"     "arith")
   (set_attr "mode"      "SI")
   (set_attr "length"    "4")])
-
-(include "sync.md")
