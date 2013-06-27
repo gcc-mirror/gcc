@@ -3040,7 +3040,7 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 		  && t->array_type()->length()->is_nil_expression())
 		{
 		  error_at(ret->location(),
-			   "invalid use of %<...%> in type conversion");
+			   "use of %<[...]%> outside of array literal");
 		  ret = Expression::make_error(loc);
 		}
 	      else
