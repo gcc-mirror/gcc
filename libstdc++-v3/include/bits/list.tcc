@@ -85,10 +85,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     template<typename... _Args>
       typename list<_Tp, _Alloc>::iterator
       list<_Tp, _Alloc>::
-      emplace(iterator __position, _Args&&... __args)
+      emplace(const_iterator __position, _Args&&... __args)
       {
 	_Node* __tmp = _M_create_node(std::forward<_Args>(__args)...);
-	__tmp->_M_hook(__position._M_node);
+	__tmp->_M_hook(__position._M_const_cast()._M_node);
 	return iterator(__tmp);
       }
 #endif
@@ -96,10 +96,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     typename list<_Tp, _Alloc>::iterator
     list<_Tp, _Alloc>::
+#if __cplusplus >= 201103L
+    insert(const_iterator __position, const value_type& __x)
+#else
     insert(iterator __position, const value_type& __x)
+#endif
     {
       _Node* __tmp = _M_create_node(__x);
-      __tmp->_M_hook(__position._M_node);
+      __tmp->_M_hook(__position._M_const_cast()._M_node);
       return iterator(__tmp);
     }
 
@@ -113,11 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
     {
       iterator __ret = iterator(__position._M_node->_M_next);
-#if __cplusplus >= 201103L
       _M_erase(__position._M_const_cast());
-#else
-      _M_erase(__position);
-#endif
       return __ret;
     }
 

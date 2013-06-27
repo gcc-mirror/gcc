@@ -140,6 +140,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _List_iterator(__detail::_List_node_base* __x)
       : _M_node(__x) { }
 
+      _Self
+      _M_const_cast() const
+      { return *this; }
+
       // Must downcast from _List_node_base to _List_node to get to _M_data.
       reference
       operator*() const
@@ -1060,9 +1064,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       template<typename... _Args>
         iterator
-        emplace(iterator __position, _Args&&... __args);
-#endif
+        emplace(const_iterator __position, _Args&&... __args);
 
+      /**
+       *  @brief  Inserts given value into %list before specified iterator.
+       *  @param  __position  A const_iterator into the %list.
+       *  @param  __x  Data to be inserted.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert a copy of the given value before
+       *  the specified location.  Due to the nature of a %list this
+       *  operation can be done in constant time, and does not
+       *  invalidate iterators and references.
+       */
+      iterator
+      insert(const_iterator __position, const value_type& __x);
+#else
       /**
        *  @brief  Inserts given value into %list before specified iterator.
        *  @param  __position  An iterator into the %list.
@@ -1076,11 +1093,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       iterator
       insert(iterator __position, const value_type& __x);
+#endif
 
 #if __cplusplus >= 201103L
       /**
        *  @brief  Inserts given rvalue into %list before specified iterator.
-       *  @param  __position  An iterator into the %list.
+       *  @param  __position  A const_iterator into the %list.
        *  @param  __x  Data to be inserted.
        *  @return  An iterator that points to the inserted data.
        *
@@ -1090,7 +1108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  invalidate iterators and references.
         */
       iterator
-      insert(iterator __position, value_type&& __x)
+      insert(const_iterator __position, value_type&& __x)
       { return emplace(__position, std::move(__x)); }
 
       /**
@@ -1206,11 +1224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	while (__first != __last)
 	  __first = erase(__first);
-#if __cplusplus >= 201103L
 	return __last._M_const_cast();
-#else
-	return __last;
-#endif
       }
 
       /**

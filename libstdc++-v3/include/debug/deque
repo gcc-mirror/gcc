@@ -383,7 +383,7 @@ namespace __debug
 
       template<typename... _Args>
         iterator
-        emplace(iterator __position, _Args&&... __args)
+        emplace(const_iterator __position, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__position);
 	  _Base_iterator __res = _Base::emplace(__position.base(),
@@ -394,7 +394,11 @@ namespace __debug
 #endif
 
       iterator
+#if __cplusplus >= 201103L
+      insert(const_iterator __position, const _Tp& __x)
+#else
       insert(iterator __position, const _Tp& __x)
+#endif
       {
 	__glibcxx_check_insert(__position);
 	_Base_iterator __res = _Base::insert(__position.base(), __x);
@@ -404,7 +408,7 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       iterator
-      insert(iterator __position, _Tp&& __x)
+      insert(const_iterator __position, _Tp&& __x)
       { return emplace(__position, std::move(__x)); }
 
       void

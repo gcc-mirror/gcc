@@ -734,19 +734,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      _Container>::__type>& __i)
         : _M_current(__i.base()) { }
 
+#if __cplusplus >= 201103L
       __normal_iterator<typename _Container::pointer, _Container>
       _M_const_cast() const
       {
-#if __cplusplus >= 201103L
 	using _PTraits = std::pointer_traits<typename _Container::pointer>;
 	return __normal_iterator<typename _Container::pointer, _Container>
 	  (_PTraits::pointer_to(const_cast<typename _PTraits::element_type&>
 				(*_M_current)));
-#else
-        return __normal_iterator<typename _Container::pointer, _Container>
-	  (const_cast<typename _Container::pointer>(_M_current));
-#endif
       }
+#else
+      __normal_iterator
+      _M_const_cast() const
+      { return *this; }
+#endif
 
       // Forward iterator requirements
       reference
