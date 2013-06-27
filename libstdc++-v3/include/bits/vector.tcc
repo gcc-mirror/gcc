@@ -105,7 +105,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     typename vector<_Tp, _Alloc>::iterator
     vector<_Tp, _Alloc>::
+#if __cplusplus >= 201103L
+    insert(const_iterator __position, const value_type& __x)
+#else
     insert(iterator __position, const value_type& __x)
+#endif
     {
       const size_type __n = __position - begin();
       if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
@@ -120,11 +124,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	    {
 	      _Tp __x_copy = __x;
-	      _M_insert_aux(__position, std::move(__x_copy));
+	      _M_insert_aux(__position._M_const_cast(), std::move(__x_copy));
 	    }
 	  else
 #endif
-	    _M_insert_aux(__position, __x);
+	    _M_insert_aux(__position._M_const_cast(), __x);
 	}
       return iterator(this->_M_impl._M_start + __n);
     }
@@ -292,7 +296,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     template<typename... _Args>
       typename vector<_Tp, _Alloc>::iterator
       vector<_Tp, _Alloc>::
-      emplace(iterator __position, _Args&&... __args)
+      emplace(const_iterator __position, _Args&&... __args)
       {
 	const size_type __n = __position - begin();
 	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage
@@ -303,7 +307,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    ++this->_M_impl._M_finish;
 	  }
 	else
-	  _M_insert_aux(__position, std::forward<_Args>(__args)...);
+	  _M_insert_aux(__position._M_const_cast(),
+			std::forward<_Args>(__args)...);
 	return iterator(this->_M_impl._M_start + __n);
       }
 

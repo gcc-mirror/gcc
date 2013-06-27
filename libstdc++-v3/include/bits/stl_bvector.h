@@ -222,6 +222,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     _Bit_iterator(_Bit_type * __x, unsigned int __y)
     : _Bit_iterator_base(__x, __y) { }
 
+    iterator
+    _M_const_cast() const
+    { return *this; }
+
     reference
     operator*() const
     { return reference(_M_p, 1UL << _M_offset); }
@@ -859,14 +863,18 @@ template<typename _Alloc>
     }
 
     iterator
+#if __cplusplus >= 201103L
+    insert(const_iterator __position, const bool& __x = bool())
+#else
     insert(iterator __position, const bool& __x = bool())
+#endif
     {
       const difference_type __n = __position - begin();
       if (this->_M_impl._M_finish._M_p != this->_M_impl._M_end_of_storage
 	  && __position == end())
         *this->_M_impl._M_finish++ = __x;
       else
-        _M_insert_aux(__position, __x);
+        _M_insert_aux(__position._M_const_cast(), __x);
       return begin() + __n;
     }
 
@@ -904,20 +912,18 @@ template<typename _Alloc>
     iterator
 #if __cplusplus >= 201103L
     erase(const_iterator __position)
-    { return _M_erase(__position._M_const_cast()); }
 #else
     erase(iterator __position)
-    { return _M_erase(__position); }
 #endif
+    { return _M_erase(__position._M_const_cast()); }
 
     iterator
 #if __cplusplus >= 201103L
     erase(const_iterator __first, const_iterator __last)
-    { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 #else
     erase(iterator __first, iterator __last)
-    { return _M_erase(__first, __last); }
 #endif
+    { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 
     void
     resize(size_type __new_size, bool __x = bool())
