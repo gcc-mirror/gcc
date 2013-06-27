@@ -1,12 +1,3 @@
-2013-06-16  David Holsgrove <david.holsgrove@xilinx.com>
-
-	* gcc/config/microblaze/sync.md: New file.
-	* gcc/config/microblaze/microblaze.md: Add UNSPEC_SYNC_CAS,
-	UNSPEC_SYNC_XCHG and include sync.md.
-	* gcc/config/microblaze/microblaze.c: Add print_operand 'y'.
-	* gcc/config/microblaze/constraints.md: Add memory_contraint
-	'Q' which is a single register.
-
 2013-06-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/i386/gnu.h [TARGET_LIBC_PROVIDES_SSP]
