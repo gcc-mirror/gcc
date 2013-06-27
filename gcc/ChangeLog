@@ -1,3 +1,8 @@
+2013-06-27  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_add_offset): Change to pass
+	'mode' to aarch64_plus_immediate and gen_rtx_PLUS.
+
 2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c: Rename UNSPEC_CCU_TO_INT to
