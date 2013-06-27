@@ -1,3 +1,9 @@
+2013-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.c (vectorizable_store): Move ptr_incr var
+	decl before the loop, initialize to NULL.
+	(vectorizable_load): Initialize ptr_incr to NULL.
+
 2013-06-27  Martin Jambor  <mjambor@suse.cz>
 
 	PR lto/57208
