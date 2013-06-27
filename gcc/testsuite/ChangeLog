@@ -1,3 +1,8 @@
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* g++.dg/ext/pr57509.C: New file.
+
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57623
