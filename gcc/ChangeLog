@@ -1,3 +1,11 @@
+2013-06-27  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config.gcc (mips*-mti-elf*, mips*-sde-elf*, mips64r5900-*-elf*)
+	(mips64r5900el-*-elf*): Include mips/n32-elf.h.
+	* config/mips/sde.h (LOCAL_LABEL_PREFIX, NO_DOLLAR_IN_LABEL)
+	(LONG_DOUBLE_TYPE_SIZE, LIBGCC2_LONG_DOUBLE_TYPE_SIZE): Move to...
+	* config/mips/n32-elf.h: ...this new file.
+
 2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR target/57224
