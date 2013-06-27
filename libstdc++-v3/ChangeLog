@@ -1,5 +1,19 @@
 2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/append/*: Move inside
+	testsuite/21_strings/basic_string/modifiers/.
+	* testsuite/21_strings/basic_string/assign/*: Likewise.
+	* testsuite/21_strings/basic_string/insert/*: Likewise.
+	* testsuite/21_strings/basic_string/replace/*: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/char/
+	pop_back.cc: Rename to 1.cc.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/wchar_t/
+	pop_back.cc: Likewise.
+	* testsuite/ext/vstring/assign/*: Move inside
+	testsuite/ext/vstring/modifiers/.
+
+2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/stl_deque.h (deque<>::insert(iterator,
 	const value_type&), deque<>::insert(iterator, value_type&&),
 	deque<>::emplace(iterator, _Args&&...)): Adjust C++11 signatures to
