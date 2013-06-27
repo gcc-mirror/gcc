@@ -1,3 +1,10 @@
+2013-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57623
+	* config/i386/i386.md (bmi2_bzhi_<mode>3): Swap AND arguments
+	to match RTL canonicalization.  Swap predicates and
+	constraints of operand 1 and 2.
+
 2013-06-27  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (inherit_in_ebb): Process static hard regs
