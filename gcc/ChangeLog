@@ -1,3 +1,9 @@
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR target/57224
+	* config/i386/i386.c (enum ix86_builtins, bdesc_args): Remove
+	IX86_BUILTIN_CMPNGTSS and IX86_BUILTIN_CMPNGESS.
+
 2013-06-27  Catherine Moore <clm@codesourcery.com>
 
 	* config/mips/mips-tables.opt: Regenerate.
