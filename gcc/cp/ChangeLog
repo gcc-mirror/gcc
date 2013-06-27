@@ -1,3 +1,9 @@
+2013-06-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57408
+	* semantics.c (add_capture): Set type to error_mark_node after
+	error.
+
 2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/57640
