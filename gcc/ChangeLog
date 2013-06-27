@@ -1,3 +1,11 @@
+2013-06-27  Catherine Moore <clm@codesourcery.com>
+
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips-cpus.def: Add m14ke and m14kec.
+	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): m14ke* implies
+	-mdspr2.
+	* doc/invoke.texi: Add -m14kc.
+ 
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57623
