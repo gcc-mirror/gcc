@@ -1,5 +1,13 @@
 2013-06-27  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_force_temporary): Add an extra
+	parameter 'mode' of type 'enum machine_mode mode'; change to pass
+	'mode' to force_reg.
+	(aarch64_add_offset): Update calls to aarch64_force_temporary.
+	(aarch64_expand_mov_immediate): Likewise.
+
+2013-06-27  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* config/aarch64/aarch64.c (aarch64_add_offset): Change to pass
 	'mode' to aarch64_plus_immediate and gen_rtx_PLUS.
 
