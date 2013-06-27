@@ -1,3 +1,8 @@
+2013-06-27  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (inherit_in_ebb): Process static hard regs
+	too.  Process OP_INOUT regs for splitting too.
+
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-vect-stmts.c (vectorizable_store): Move ptr_incr var
