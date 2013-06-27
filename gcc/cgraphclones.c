@@ -341,27 +341,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
       || in_lto_p)
     new_node->symbol.unique_name = true;
   FOR_EACH_VEC_SAFE_ELT (tree_map, i, map)
-    {
-      tree var = map->new_tree;
-      symtab_node ref_node;
-
-      STRIP_NOPS (var);
-      if (TREE_CODE (var) != ADDR_EXPR)
-	continue;
-      var = get_base_var (var);
-      if (!var)
-	continue;
-      if (TREE_CODE (var) != FUNCTION_DECL
-	  && TREE_CODE (var) != VAR_DECL)
-	continue;
-
-      /* Record references of the future statement initializing the constant
-	 argument.  */
-      ref_node = symtab_get_node (var);
-      gcc_checking_assert (ref_node);
-      ipa_record_reference ((symtab_node)new_node, (symtab_node)ref_node,
-			    IPA_REF_ADDR, NULL);
-    }
+    ipa_maybe_record_reference ((symtab_node) new_node, map->new_tree,
+				IPA_REF_ADDR, NULL);
   if (!args_to_skip)
     new_node->clone.combined_args_to_skip = old_node->clone.combined_args_to_skip;
   else if (old_node->clone.combined_args_to_skip)

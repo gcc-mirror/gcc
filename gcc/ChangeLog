@@ -1,3 +1,13 @@
+2013-06-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR lto/57208
+	* ipa-ref.h (ipa_maybe_record_reference): Declare.
+	* ipa-ref.c (ipa_maybe_record_reference): New function.
+	* cgraphclones.c (cgraph_create_virtual_clone): Use it.
+	* ipa-cp.c (create_specialized_node): Record potential references from
+	aggvals.
+	* Makefile.in (ipa-ref.o): Add IPA_REF_H to dependencies.
+
 2013-06-27  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_force_temporary): Add an extra
