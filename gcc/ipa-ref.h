@@ -61,6 +61,8 @@ struct GTY(()) ipa_ref_list
 struct ipa_ref * ipa_record_reference (symtab_node,
 				       symtab_node,
 				       enum ipa_ref_use, gimple);
+struct ipa_ref * ipa_maybe_record_reference (symtab_node, tree,
+					     enum ipa_ref_use, gimple);
 
 void ipa_remove_reference (struct ipa_ref *);
 void ipa_remove_all_references (struct ipa_ref_list *);
