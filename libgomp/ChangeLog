@@ -1,3 +1,8 @@
+2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* testsuite/libgomp.fortran/strassen.f90:
+	Add dg-skip-if aarch64_tiny.
+
 2013-06-20  Iain Sandoe  <iain@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
