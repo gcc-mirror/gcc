@@ -3040,7 +3040,7 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 		  && t->array_type()->length()->is_nil_expression())
 		{
 		  error_at(ret->location(),
-			   "invalid use of %<...%> in type conversion");
+			   "use of %<[...]%> outside of array literal");
 		  ret = Expression::make_error(loc);
 		}
 	      else
@@ -4523,9 +4523,12 @@ Parse::expr_case_clause(Case_clauses* clauses, bool* saw_default)
   bool is_fallthrough = false;
   if (this->peek_token()->is_keyword(KEYWORD_FALLTHROUGH))
     {
+      Location fallthrough_loc = this->location();
       is_fallthrough = true;
       if (this->advance_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
+      if (this->peek_token()->is_op(OPERATOR_RCURLY))
+	error_at(fallthrough_loc, _("cannot fallthrough final case in switch"));
     }
 
   if (is_default)

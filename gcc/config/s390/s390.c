@@ -367,6 +367,10 @@ struct GTY(()) machine_function
   const char *some_ld_name;
 
   bool has_landing_pad_p;
+
+  /* True if the current function may contain a tbegin clobbering
+     FPRs.  */
+  bool tbegin_p;
 };
 
 /* Few accessor macros for struct cfun->machine->s390_frame_layout.  */
@@ -824,9 +828,9 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       *op1 = constm1_rtx;
     }
 
-  /* Remove redundant UNSPEC_CCU_TO_INT conversions if possible.  */
+  /* Remove redundant UNSPEC_STRCMPCC_TO_INT conversions if possible.  */
   if (GET_CODE (*op0) == UNSPEC
-      && XINT (*op0, 1) == UNSPEC_CCU_TO_INT
+      && XINT (*op0, 1) == UNSPEC_STRCMPCC_TO_INT
       && XVECLEN (*op0, 0) == 1
       && GET_MODE (XVECEXP (*op0, 0, 0)) == CCUmode
       && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
@@ -852,25 +856,35 @@ s390_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	}
     }
 
-  /* Remove redundant UNSPEC_CCZ_TO_INT conversions if possible.  */
+  /* Remove redundant UNSPEC_CC_TO_INT conversions if possible.  */
   if (GET_CODE (*op0) == UNSPEC
-      && XINT (*op0, 1) == UNSPEC_CCZ_TO_INT
+      && XINT (*op0, 1) == UNSPEC_CC_TO_INT
       && XVECLEN (*op0, 0) == 1
-      && GET_MODE (XVECEXP (*op0, 0, 0)) == CCZmode
       && GET_CODE (XVECEXP (*op0, 0, 0)) == REG
       && REGNO (XVECEXP (*op0, 0, 0)) == CC_REGNUM
-      && *op1 == const0_rtx)
+      && CONST_INT_P (*op1))
     {
       enum rtx_code new_code = UNKNOWN;
-      switch (*code)
+      switch (GET_MODE (XVECEXP (*op0, 0, 0)))
 	{
-	  case EQ: new_code = EQ;  break;
-	  case NE: new_code = NE;  break;
-	  default: break;
+	case CCZmode:
+	case CCRAWmode:
+	  switch (*code)
+	    {
+	    case EQ: new_code = EQ;  break;
+	    case NE: new_code = NE;  break;
+	    default: break;
+	    }
+	  break;
+	default: break;
 	}
 
       if (new_code != UNKNOWN)
 	{
+	  /* For CCRAWmode put the required cc mask into the second
+	     operand.  */
+	  if (GET_MODE (XVECEXP (*op0, 0, 0)) == CCRAWmode)
+	    *op1 = gen_rtx_CONST_INT (VOIDmode, 1 << (3 - INTVAL (*op1)));
 	  *op0 = XVECEXP (*op0, 0, 0);
 	  *code = new_code;
 	}
@@ -942,10 +956,11 @@ s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
 			    const0_rtx);
 }
 
-/* Emit a jump instruction to TARGET.  If COND is NULL_RTX, emit an
-   unconditional jump, else a conditional jump under condition COND.  */
+/* Emit a jump instruction to TARGET and return it.  If COND is
+   NULL_RTX, emit an unconditional jump, else a conditional jump under
+   condition COND.  */
 
-void
+rtx
 s390_emit_jump (rtx target, rtx cond)
 {
   rtx insn;
@@ -955,7 +970,7 @@ s390_emit_jump (rtx target, rtx cond)
     target = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, target, pc_rtx);
 
   insn = gen_rtx_SET (VOIDmode, pc_rtx, target);
-  emit_jump_insn (insn);
+  return emit_jump_insn (insn);
 }
 
 /* Return branch condition mask to implement a branch
@@ -971,7 +986,10 @@ s390_branch_condition_mask (rtx code)
 
   gcc_assert (GET_CODE (XEXP (code, 0)) == REG);
   gcc_assert (REGNO (XEXP (code, 0)) == CC_REGNUM);
-  gcc_assert (XEXP (code, 1) == const0_rtx);
+  gcc_assert (XEXP (code, 1) == const0_rtx
+	      || (GET_MODE (XEXP (code, 0)) == CCRAWmode
+		  && CONST_INT_P (XEXP (code, 1))));
+
 
   switch (GET_MODE (XEXP (code, 0)))
     {
@@ -1145,6 +1163,17 @@ s390_branch_condition_mask (rtx code)
         }
       break;
 
+    case CCRAWmode:
+      switch (GET_CODE (code))
+	{
+	case EQ:
+	  return INTVAL (XEXP (code, 1));
+	case NE:
+	  return (INTVAL (XEXP (code, 1))) ^ 0xf;
+	default:
+	  gcc_unreachable ();
+	}
+
     default:
       return -1;
     }
@@ -1204,7 +1233,9 @@ s390_branch_condition_mnemonic (rtx code, int inv)
 
   if (GET_CODE (XEXP (code, 0)) == REG
       && REGNO (XEXP (code, 0)) == CC_REGNUM
-      && XEXP (code, 1) == const0_rtx)
+      && (XEXP (code, 1) == const0_rtx
+	  || (GET_MODE (XEXP (code, 0)) == CCRAWmode
+	      && CONST_INT_P (XEXP (code, 1)))))
     mask = s390_branch_condition_mask (code);
   else
     mask = s390_compare_and_branch_condition_mask (code);
@@ -1601,6 +1632,11 @@ s390_option_override (void)
      user. E.g. with -m31 -march=z10 -mzarch   */
   if (!(target_flags_explicit & MASK_HARD_DFP) && TARGET_DFP)
     target_flags |= MASK_HARD_DFP;
+
+  /* Enable hardware transactions if available and not explicitly
+     disabled by user.  E.g. with -m31 -march=zEC12 -mzarch */
+  if (!(target_flags_explicit & MASK_OPT_HTM) && TARGET_CPU_HTM && TARGET_ZARCH)
+    target_flags |= MASK_OPT_HTM;
 
   if (TARGET_HARD_DFP && !TARGET_DFP)
     {
@@ -7334,11 +7370,11 @@ s390_reg_clobbered_rtx (rtx setreg, const_rtx set_insn ATTRIBUTE_UNUSED, void *d
   if (GET_CODE (setreg) == SUBREG)
     {
       rtx inner = SUBREG_REG (setreg);
-      if (!GENERAL_REG_P (inner))
+      if (!GENERAL_REG_P (inner) && !FP_REG_P (inner))
 	return;
       regno = subreg_regno (setreg);
     }
-  else if (GENERAL_REG_P (setreg))
+  else if (GENERAL_REG_P (setreg) || FP_REG_P (setreg))
     regno = REGNO (setreg);
   else
     return;
@@ -7361,13 +7397,13 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
   rtx cur_insn;
   unsigned int i;
 
-  memset (regs_ever_clobbered, 0, 16 * sizeof (int));
+  memset (regs_ever_clobbered, 0, 32 * sizeof (int));
 
   /* For non-leaf functions we have to consider all call clobbered regs to be
      clobbered.  */
   if (!crtl->is_leaf)
     {
-      for (i = 0; i < 16; i++)
+      for (i = 0; i < 32; i++)
 	regs_ever_clobbered[i] = call_really_used_regs[i];
     }
 
@@ -7389,7 +7425,7 @@ s390_regs_ever_clobbered (int *regs_ever_clobbered)
      See expand_builtin_unwind_init.  For regs_ever_live this is done by
      reload.  */
   if (cfun->has_nonlocal_label)
-    for (i = 0; i < 16; i++)
+    for (i = 0; i < 32; i++)
       if (!call_really_used_regs[i])
 	regs_ever_clobbered[i] = 1;
 
@@ -7455,17 +7491,6 @@ s390_register_info (int clobbered_regs[])
 {
   int i, j;
 
-  /* fprs 8 - 15 are call saved for 64 Bit ABI.  */
-  cfun_frame_layout.fpr_bitmap = 0;
-  cfun_frame_layout.high_fprs = 0;
-  if (TARGET_64BIT)
-    for (i = 24; i < 32; i++)
-      if (df_regs_ever_live_p (i) && !global_regs[i])
-	{
-	  cfun_set_fpr_bit (i - 16);
-	  cfun_frame_layout.high_fprs++;
-	}
-
   /* Find first and last gpr to be saved.  We trust regs_ever_live
      data, except that we don't save and restore global registers.
 
@@ -7473,6 +7498,29 @@ s390_register_info (int clobbered_regs[])
      to be handled extra.  */
 
   s390_regs_ever_clobbered (clobbered_regs);
+
+  /* fprs 8 - 15 are call saved for 64 Bit ABI.  */
+  if (!epilogue_completed)
+    {
+      cfun_frame_layout.fpr_bitmap = 0;
+      cfun_frame_layout.high_fprs = 0;
+      if (TARGET_64BIT)
+	for (i = 24; i < 32; i++)
+	  /* During reload we have to use the df_regs_ever_live infos
+	     since reload is marking FPRs used as spill slots there as
+	     live before actually making the code changes.  Without
+	     this we fail during elimination offset verification.  */
+	  if ((clobbered_regs[i]
+	       || (df_regs_ever_live_p (i)
+		   && (lra_in_progress
+		       || reload_in_progress
+		       || crtl->saves_all_registers)))
+	      && !global_regs[i])
+	    {
+	      cfun_set_fpr_bit (i - 16);
+	      cfun_frame_layout.high_fprs++;
+	    }
+    }
 
   for (i = 0; i < 16; i++)
     clobbered_regs[i] = clobbered_regs[i] && !global_regs[i] && !fixed_regs[i];
@@ -7724,7 +7772,7 @@ s390_init_frame_layout (void)
 {
   HOST_WIDE_INT frame_size;
   int base_used;
-  int clobbered_regs[16];
+  int clobbered_regs[32];
 
   /* On S/390 machines, we may need to perform branch splitting, which
      will require both base and return address register.  We have no
@@ -7759,6 +7807,157 @@ s390_init_frame_layout (void)
   while (frame_size != cfun_frame_layout.frame_size);
 }
 
+/* Remove the FPR clobbers from a tbegin insn if it can be proven that
+   the TX is nonescaping.  A transaction is considered escaping if
+   there is at least one path from tbegin returning CC0 to the
+   function exit block without an tend.
+
+   The check so far has some limitations:
+   - only single tbegin/tend BBs are supported
+   - the first cond jump after tbegin must separate the CC0 path from ~CC0
+   - when CC is copied to a GPR and the CC0 check is done with the GPR
+     this is not supported
+*/
+
+static void
+s390_optimize_nonescaping_tx (void)
+{
+  const unsigned int CC0 = 1 << 3;
+  basic_block tbegin_bb = NULL;
+  basic_block tend_bb = NULL;
+  basic_block bb;
+  rtx insn;
+  bool result = true;
+  int bb_index;
+  rtx tbegin_insn = NULL_RTX;
+
+  if (!cfun->machine->tbegin_p)
+    return;
+
+  for (bb_index = 0; bb_index < n_basic_blocks; bb_index++)
+    {
+      bb = BASIC_BLOCK (bb_index);
+
+      FOR_BB_INSNS (bb, insn)
+	{
+	  rtx ite, cc, pat, target;
+	  unsigned HOST_WIDE_INT mask;
+
+	  if (!INSN_P (insn) || INSN_CODE (insn) <= 0)
+	    continue;
+
+	  pat = PATTERN (insn);
+
+	  if (GET_CODE (pat) == PARALLEL)
+	    pat = XVECEXP (pat, 0, 0);
+
+	  if (GET_CODE (pat) != SET
+	      || GET_CODE (SET_SRC (pat)) != UNSPEC_VOLATILE)
+	    continue;
+
+	  if (XINT (SET_SRC (pat), 1) == UNSPECV_TBEGIN)
+	    {
+	      rtx tmp;
+
+	      tbegin_insn = insn;
+
+	      /* Just return if the tbegin doesn't have clobbers.  */
+	      if (GET_CODE (PATTERN (insn)) != PARALLEL)
+		return;
+
+	      if (tbegin_bb != NULL)
+		return;
+
+	      /* Find the next conditional jump.  */
+	      for (tmp = NEXT_INSN (insn);
+		   tmp != NULL_RTX;
+		   tmp = NEXT_INSN (tmp))
+		{
+		  if (reg_set_p (gen_rtx_REG (CCmode, CC_REGNUM), tmp))
+		    return;
+		  if (!JUMP_P (tmp))
+		    continue;
+
+		  ite = SET_SRC (PATTERN (tmp));
+		  if (GET_CODE (ite) != IF_THEN_ELSE)
+		    continue;
+
+		  cc = XEXP (XEXP (ite, 0), 0);
+		  if (!REG_P (cc) || !CC_REGNO_P (REGNO (cc))
+		      || GET_MODE (cc) != CCRAWmode
+		      || GET_CODE (XEXP (XEXP (ite, 0), 1)) != CONST_INT)
+		    return;
+
+		  if (bb->succs->length () != 2)
+		    return;
+
+		  mask = INTVAL (XEXP (XEXP (ite, 0), 1));
+		  if (GET_CODE (XEXP (ite, 0)) == NE)
+		    mask ^= 0xf;
+
+		  if (mask == CC0)
+		    target = XEXP (ite, 1);
+		  else if (mask == (CC0 ^ 0xf))
+		    target = XEXP (ite, 2);
+		  else
+		    return;
+
+		  {
+		    edge_iterator ei;
+		    edge e1, e2;
+
+		    ei = ei_start (bb->succs);
+		    e1 = ei_safe_edge (ei);
+		    ei_next (&ei);
+		    e2 = ei_safe_edge (ei);
+
+		    if (e2->flags & EDGE_FALLTHRU)
+		      {
+			e2 = e1;
+			e1 = ei_safe_edge (ei);
+		      }
+
+		    if (!(e1->flags & EDGE_FALLTHRU))
+		      return;
+
+		    tbegin_bb = (target == pc_rtx) ? e1->dest : e2->dest;
+		  }
+		  if (tmp == BB_END (bb))
+		    break;
+		}
+	    }
+
+	  if (XINT (SET_SRC (pat), 1) == UNSPECV_TEND)
+	    {
+	      if (tend_bb != NULL)
+		return;
+	      tend_bb = bb;
+	    }
+	}
+    }
+
+  /* Either we successfully remove the FPR clobbers here or we are not
+     able to do anything for this TX.  Both cases don't qualify for
+     another look.  */
+  cfun->machine->tbegin_p = false;
+
+  if (tbegin_bb == NULL || tend_bb == NULL)
+    return;
+
+  calculate_dominance_info (CDI_POST_DOMINATORS);
+  result = dominated_by_p (CDI_POST_DOMINATORS, tbegin_bb, tend_bb);
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  if (!result)
+    return;
+
+  PATTERN (tbegin_insn) = XVECEXP (PATTERN (tbegin_insn), 0, 0);
+  INSN_CODE (tbegin_insn) = -1;
+  df_insn_rescan (tbegin_insn);
+
+  return;
+}
+
 /* Update frame layout.  Recompute actual register save data based on
    current info and update regs_ever_live for the special registers.
    May be called multiple times, but may never cause *more* registers
@@ -7767,7 +7966,7 @@ s390_init_frame_layout (void)
 static void
 s390_update_frame_layout (void)
 {
-  int clobbered_regs[16];
+  int clobbered_regs[32];
 
   s390_register_info (clobbered_regs);
 
@@ -8204,8 +8403,10 @@ s390_emit_prologue (void)
   int offset;
   int next_fpr = 0;
 
-  /* Complete frame layout.  */
+  /* Try to get rid of the FPR clobbers.  */
+  s390_optimize_nonescaping_tx ();
 
+  /* Complete frame layout.  */
   s390_update_frame_layout ();
 
   /* Annotate all constant pool references to let the scheduler know
@@ -9352,6 +9553,294 @@ s390_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 
   return build_va_arg_indirect_ref (addr);
 }
+
+/* Emit rtl for the tbegin or tbegin_retry (RETRY != NULL_RTX)
+   expanders.
+   DEST  - Register location where CC will be stored.
+   TDB   - Pointer to a 256 byte area where to store the transaction.
+           diagnostic block. NULL if TDB is not needed.
+   RETRY - Retry count value.  If non-NULL a retry loop for CC2
+           is emitted
+   CLOBBER_FPRS_P - If true clobbers for all FPRs are emitted as part
+                    of the tbegin instruction pattern.  */
+
+void
+s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
+{
+  const int CC0 = 1 << 3;
+  const int CC1 = 1 << 2;
+  const int CC3 = 1 << 0;
+  rtx abort_label = gen_label_rtx ();
+  rtx leave_label = gen_label_rtx ();
+  rtx retry_reg = gen_reg_rtx (SImode);
+  rtx retry_label = NULL_RTX;
+  rtx jump;
+  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+
+  if (retry != NULL_RTX)
+    {
+      emit_move_insn (retry_reg, retry);
+      retry_label = gen_label_rtx ();
+      emit_label (retry_label);
+    }
+
+  if (clobber_fprs_p)
+    emit_insn (gen_tbegin_1 (tdb,
+		 gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK)));
+  else
+    emit_insn (gen_tbegin_nofloat_1 (tdb,
+		 gen_rtx_CONST_INT (VOIDmode, TBEGIN_MASK)));
+
+  jump = s390_emit_jump (abort_label,
+			 gen_rtx_NE (VOIDmode,
+				     gen_rtx_REG (CCRAWmode, CC_REGNUM),
+				     gen_rtx_CONST_INT (VOIDmode, CC0)));
+
+  JUMP_LABEL (jump) = abort_label;
+  LABEL_NUSES (abort_label) = 1;
+  add_reg_note (jump, REG_BR_PROB, very_unlikely);
+
+  /* Initialize CC return value.  */
+  emit_move_insn (dest, const0_rtx);
+
+  s390_emit_jump (leave_label, NULL_RTX);
+  LABEL_NUSES (leave_label) = 1;
+  emit_barrier ();
+
+  /* Abort handler code.  */
+
+  emit_label (abort_label);
+  if (retry != NULL_RTX)
+    {
+      rtx count = gen_reg_rtx (SImode);
+      jump = s390_emit_jump (leave_label,
+			     gen_rtx_EQ (VOIDmode,
+			       gen_rtx_REG (CCRAWmode, CC_REGNUM),
+			       gen_rtx_CONST_INT (VOIDmode, CC1 | CC3)));
+      LABEL_NUSES (leave_label) = 2;
+      add_reg_note (jump, REG_BR_PROB, very_unlikely);
+
+      /* CC2 - transient failure. Perform retry with ppa.  */
+      emit_move_insn (count, retry);
+      emit_insn (gen_subsi3 (count, count, retry_reg));
+      emit_insn (gen_tx_assist (count));
+      jump = emit_jump_insn (gen_doloop_si64 (retry_label,
+					      retry_reg,
+					      retry_reg));
+      JUMP_LABEL (jump) = retry_label;
+      LABEL_NUSES (retry_label) = 1;
+    }
+
+  emit_move_insn (dest, gen_rtx_UNSPEC (SImode,
+					gen_rtvec (1, gen_rtx_REG (CCRAWmode,
+								   CC_REGNUM)),
+					UNSPEC_CC_TO_INT));
+  emit_label (leave_label);
+}
+
+/* Builtins.  */
+
+enum s390_builtin
+{
+  S390_BUILTIN_TBEGIN,
+  S390_BUILTIN_TBEGIN_NOFLOAT,
+  S390_BUILTIN_TBEGIN_RETRY,
+  S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
+  S390_BUILTIN_TBEGINC,
+  S390_BUILTIN_TEND,
+  S390_BUILTIN_TABORT,
+  S390_BUILTIN_NON_TX_STORE,
+  S390_BUILTIN_TX_NESTING_DEPTH,
+  S390_BUILTIN_TX_ASSIST,
+
+  S390_BUILTIN_max
+};
+
+static enum insn_code const code_for_builtin[S390_BUILTIN_max] = {
+  CODE_FOR_tbegin,
+  CODE_FOR_tbegin_nofloat,
+  CODE_FOR_tbegin_retry,
+  CODE_FOR_tbegin_retry_nofloat,
+  CODE_FOR_tbeginc,
+  CODE_FOR_tend,
+  CODE_FOR_tabort,
+  CODE_FOR_ntstg,
+  CODE_FOR_etnd,
+  CODE_FOR_tx_assist
+};
+
+static void
+s390_init_builtins (void)
+{
+  tree ftype, uint64_type;
+
+  /* void foo (void) */
+  ftype = build_function_type_list (void_type_node, NULL_TREE);
+  add_builtin_function ("__builtin_tbeginc", ftype, S390_BUILTIN_TBEGINC,
+			BUILT_IN_MD, NULL, NULL_TREE);
+
+  /* void foo (int) */
+  ftype = build_function_type_list (void_type_node, integer_type_node,
+				    NULL_TREE);
+  add_builtin_function ("__builtin_tabort", ftype,
+			S390_BUILTIN_TABORT, BUILT_IN_MD, NULL, NULL_TREE);
+  add_builtin_function ("__builtin_tx_assist", ftype,
+			S390_BUILTIN_TX_ASSIST, BUILT_IN_MD, NULL, NULL_TREE);
+
+  /* int foo (void *) */
+  ftype = build_function_type_list (integer_type_node, ptr_type_node, NULL_TREE);
+  add_builtin_function ("__builtin_tbegin", ftype, S390_BUILTIN_TBEGIN,
+			BUILT_IN_MD, NULL, NULL_TREE);
+  add_builtin_function ("__builtin_tbegin_nofloat", ftype,
+			S390_BUILTIN_TBEGIN_NOFLOAT,
+			BUILT_IN_MD, NULL, NULL_TREE);
+
+  /* int foo (void *, int) */
+  ftype = build_function_type_list (integer_type_node, ptr_type_node,
+				    integer_type_node, NULL_TREE);
+  add_builtin_function ("__builtin_tbegin_retry", ftype,
+			S390_BUILTIN_TBEGIN_RETRY,
+			BUILT_IN_MD,
+			NULL, NULL_TREE);
+  add_builtin_function ("__builtin_tbegin_retry_nofloat", ftype,
+			S390_BUILTIN_TBEGIN_RETRY_NOFLOAT,
+			BUILT_IN_MD,
+			NULL, NULL_TREE);
+
+  /* int foo (void) */
+  ftype = build_function_type_list (integer_type_node, NULL_TREE);
+  add_builtin_function ("__builtin_tx_nesting_depth", ftype,
+			S390_BUILTIN_TX_NESTING_DEPTH,
+			BUILT_IN_MD, NULL, NULL_TREE);
+  add_builtin_function ("__builtin_tend", ftype,
+			S390_BUILTIN_TEND, BUILT_IN_MD,	NULL, NULL_TREE);
+
+  /* void foo (uint64_t *, uint64_t) */
+  if (TARGET_64BIT)
+    uint64_type = long_unsigned_type_node;
+  else
+    uint64_type = long_long_unsigned_type_node;
+
+   ftype = build_function_type_list (void_type_node,
+ 				    build_pointer_type (uint64_type),
+				    uint64_type, NULL_TREE);
+  add_builtin_function ("__builtin_non_tx_store", ftype,
+			S390_BUILTIN_NON_TX_STORE,
+			BUILT_IN_MD, NULL, NULL_TREE);
+}
+
+/* Expand an expression EXP that calls a built-in function,
+   with result going to TARGET if that's convenient
+   (and in mode MODE if that's convenient).
+   SUBTARGET may be used as the target for computing one of EXP's operands.
+   IGNORE is nonzero if the value is to be ignored.  */
+
+static rtx
+s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
+		     enum machine_mode mode ATTRIBUTE_UNUSED,
+		     int ignore ATTRIBUTE_UNUSED)
+{
+#define MAX_ARGS 2
+
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  enum insn_code icode;
+  rtx op[MAX_ARGS], pat;
+  int arity;
+  bool nonvoid;
+  tree arg;
+  call_expr_arg_iterator iter;
+
+  if (fcode >= S390_BUILTIN_max)
+    internal_error ("bad builtin fcode");
+  icode = code_for_builtin[fcode];
+  if (icode == 0)
+    internal_error ("bad builtin fcode");
+
+  if (!TARGET_ZEC12)
+    error ("Transactional execution builtins require zEC12 or later\n");
+
+  if (!TARGET_HTM && TARGET_ZEC12)
+    error ("Transactional execution builtins not enabled (-mtx)\n");
+
+  /* Set a flag in the machine specific cfun part in order to support
+     saving/restoring of FPRs.  */
+  if (fcode == S390_BUILTIN_TBEGIN || fcode == S390_BUILTIN_TBEGIN_RETRY)
+    cfun->machine->tbegin_p = true;
+
+  nonvoid = TREE_TYPE (TREE_TYPE (fndecl)) != void_type_node;
+
+  arity = 0;
+  FOR_EACH_CALL_EXPR_ARG (arg, iter, exp)
+    {
+      const struct insn_operand_data *insn_op;
+
+      if (arg == error_mark_node)
+	return NULL_RTX;
+      if (arity >= MAX_ARGS)
+	return NULL_RTX;
+
+      insn_op = &insn_data[icode].operand[arity + nonvoid];
+
+      op[arity] = expand_expr (arg, NULL_RTX, insn_op->mode, EXPAND_NORMAL);
+
+      if (!(*insn_op->predicate) (op[arity], insn_op->mode))
+	{
+	  if (insn_op->predicate == memory_operand)
+	    {
+	      /* Don't move a NULL pointer into a register. Otherwise
+		 we have to rely on combine being able to move it back
+		 in order to get an immediate 0 in the instruction.  */
+	      if (op[arity] != const0_rtx)
+		op[arity] = copy_to_mode_reg (Pmode, op[arity]);
+	      op[arity] = gen_rtx_MEM (insn_op->mode, op[arity]);
+	    }
+	  else
+	    op[arity] = copy_to_mode_reg (insn_op->mode, op[arity]);
+	}
+
+      arity++;
+    }
+
+  if (nonvoid)
+    {
+      enum machine_mode tmode = insn_data[icode].operand[0].mode;
+      if (!target
+	  || GET_MODE (target) != tmode
+	  || !(*insn_data[icode].operand[0].predicate) (target, tmode))
+	target = gen_reg_rtx (tmode);
+    }
+
+  switch (arity)
+    {
+    case 0:
+      pat = GEN_FCN (icode) (target);
+      break;
+    case 1:
+      if (nonvoid)
+        pat = GEN_FCN (icode) (target, op[0]);
+      else
+	pat = GEN_FCN (icode) (op[0]);
+      break;
+    case 2:
+      if (nonvoid)
+	pat = GEN_FCN (icode) (target, op[0], op[1]);
+      else
+	pat = GEN_FCN (icode) (op[0], op[1]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  if (!pat)
+    return NULL_RTX;
+  emit_insn (pat);
+
+  if (nonvoid)
+    return target;
+  else
+    return const0_rtx;
+}
+
 
 /* Output assembly code for the trampoline template to
    stdio stream FILE.
@@ -11007,6 +11496,11 @@ s390_loop_unroll_adjust (unsigned nunroll, struct loop *loop)
 
 #undef TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY s390_return_in_memory
+
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS s390_init_builtins
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN s390_expand_builtin
 
 #undef TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA
 #define TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA s390_output_addr_const_extra

@@ -10491,6 +10491,7 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
 	  && variably_modified_type_p (TREE_TYPE (type), NULL_TREE))
 	inform (input_location, "because the array element type %qT has "
 		"variable size", TREE_TYPE (type));
+      type = error_mark_node;
     }
   else if (by_reference_p)
     {

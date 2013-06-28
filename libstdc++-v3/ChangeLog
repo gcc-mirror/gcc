@@ -1,9 +1,122 @@
+2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/21_strings/basic_string/append/*: Move inside
+	testsuite/21_strings/basic_string/modifiers/.
+	* testsuite/21_strings/basic_string/assign/*: Likewise.
+	* testsuite/21_strings/basic_string/insert/*: Likewise.
+	* testsuite/21_strings/basic_string/replace/*: Likewise.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/char/
+	pop_back.cc: Rename to 1.cc.
+	* testsuite/21_strings/basic_string/modifiers/pop_back/wchar_t/
+	pop_back.cc: Likewise.
+	* testsuite/ext/vstring/assign/*: Move inside
+	testsuite/ext/vstring/modifiers/.
+
+2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_deque.h (deque<>::insert(iterator,
+	const value_type&), deque<>::insert(iterator, value_type&&),
+	deque<>::emplace(iterator, _Args&&...)): Adjust C++11 signatures to
+	take a const_iterator.
+	(deque<>::erase): Simplify.
+	* include/bits/stl_list.h: Likewise.
+	(_List_iterator<>::_M_const_cast): Add.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	(_Bit_iterator::_M_const_cast): Add.
+	* include/bits/deque.tcc: Adjust definitions.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/bits/stl_iterator.h (__normal_iterator<>::_M_const_cast):
+	Define trivial version in C++98 mode.
+	* include/ext/vstring.h (__versa_string<>::insert(iterator, _CharT),
+	__versa_string<>::replace(iterator, iterator, const __versa_string&),
+	__versa_string<>::replace(iterator, iterator, const _CharT*,
+	size_type), __versa_string<>::replace(iterator, iterator,
+	const _CharT*), __versa_string<>::replace(iterator, iterator,
+	size_type, _CharT)): Adjust C++11 signatures to take a pair of
+	const_iterators.
+	* include/debug/deque: Adjust.
+	* include/debug/list: Likewise.
+	* include/debug/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/list: Likewise.
+	* include/profile/vector: Likewise.
+	(vector<>::emplace): Add.
+	* testsuite/util/exception/safety.h: Update.
+	* testsuite/23_containers/deque/modifiers/emplace/const_iterator.cc:
+	New.
+	* testsuite/23_containers/deque/modifiers/insert/const_iterator.cc:
+	Likewise.
+	* testsuite/23_containers/list/modifiers/emplace/const_iterator.cc:
+	Likewise.
+	* testsuite/23_containers/list/modifiers/insert/const_iterator.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/
+	const_iterator.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/emplace/const_iterator.cc:
+	Likewise.
+	* testsuite/23_containers/vector/modifiers/insert/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/insert/char/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/insert/wchar_t/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/replace/char/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/replace/wchar_t/const_iterator.cc:
+	Likewise.
+
+	* testsuite/ext/vstring/modifiers/char/54577.cc: Move to testsuite/
+	ext/vstring/modifiers/erase/char/.
+	* testsuite/ext/vstring/modifiers/wchar_t/54577.cc: Move to testsuite/
+	ext/vstring/modifiers/wchar_t/.
+	* testsuite/ext/vstring/modifiers/char/pop_back.cc: Move to testsuite/
+	ext/vstring/modifiers/pop_back/char/.
+	* testsuite/ext/vstring/modifiers/wchar_t/pop_back.cc: Move to
+	testsuite/ext/vstring/modifiers/pop_back/wchar_t/.
+
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	Status page for C++2014 library features
 	* doc/xml/faq.xml: Add link to new C++14 status page.
 	* doc/xml/manual/intro.xml: Ditto.
 	* doc/xml/manual/status_cxx2014.xml: New.
+
+2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/map/modifiers/erase/abi_tag.cc: Avoid
+	spurious fails with check-debug.
+	* testsuite/23_containers/multimap/modifiers/erase/abi_tag.cc:
+	Likewise.
+	* testsuite/23_containers/set/modifiers/erase/abi_tag.cc: Likewise.
+	* testsuite/23_containers/multiset/modifiers/erase/abi_tag.cc:
+	Likewise.
 
 2013-06-25  Paolo Carlini  <paolo.carlini@oracle.com>
 

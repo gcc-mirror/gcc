@@ -1,3 +1,33 @@
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57682
+	* parser.c (cp_parser_save_member_function_body): Handle correctly
+	curly braces in function-try-block mem-initializers.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* typeck.c (cp_build_vec_perm_expr): New function.
+	* cp-tree.h: Declare it.
+	* parser.c (cp_parser_postfix_expression): Call it.
+	* pt.c (tsubst_copy): Handle VEC_PERM_EXPR.
+	(tsubst_copy_and_build): Likewise.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57172
+	* pt.c (more_specialized_fn): If both arguments are references,
+	give priority to an lvalue.
+
+2013-06-26  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Diagnose a non-constant
+	initializer for in-class static.
+
+	PR c++/57408
+	* semantics.c (add_capture): Set type to error_mark_node after
+	error.
+
 2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/57640

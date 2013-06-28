@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ggc.h"
 #include "target.h"
 #include "cgraph.h"
+#include "ipa-utils.h"
 
 static const char *ipa_ref_use_name[] = {"read","write","addr","alias"};
 
@@ -65,6 +66,30 @@ ipa_record_reference (symtab_node referring_node,
 	ipa_ref_referred_ref_list (ref)->referring[ref->referred_index] = ref;
     }
   return ref;
+}
+
+/* If VAL is a reference to a function or a variable, add a reference from
+   REFERRING_NODE to the corresponding symbol table node.  USE_TYPE specify
+   type of the use and STMT the statement (if it exists).  Return the new
+   reference or NULL if none was created.  */
+
+struct ipa_ref *
+ipa_maybe_record_reference (symtab_node referring_node, tree val,
+			    enum ipa_ref_use use_type, gimple stmt)
+{
+  STRIP_NOPS (val);
+  if (TREE_CODE (val) != ADDR_EXPR)
+    return NULL;
+  val = get_base_var (val);
+  if (val && (TREE_CODE (val) == FUNCTION_DECL
+	       || TREE_CODE (val) == VAR_DECL))
+    {
+      symtab_node referred = symtab_get_node (val);
+      gcc_checking_assert (referred);
+      return ipa_record_reference (referring_node, referred,
+				   use_type, stmt);
+    }
+  return NULL;
 }
 
 /* Remove reference REF.  */

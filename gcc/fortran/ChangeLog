@@ -1,3 +1,11 @@
+2013-06-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29800
+	* trans-array.c (gfc_conv_array_ref): Improve out-of-bounds
+	diagnostic message.
+	* trans-array.c (gfc_conv_array_ref): Update prototype.
+	* trans-expr.c (gfc_conv_variable): Update call.
+
 2013-06-24  Steven G. Kargl  <sgk@troutmask.apl.washington.edu>
 	    Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>

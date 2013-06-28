@@ -68,6 +68,13 @@ enum aarch64_symbol_context
    Each of of these represents a thread-local symbol, and corresponds to the
    thread local storage relocation operator for the symbol being referred to.
 
+   SYMBOL_TINY_ABSOLUTE
+
+   Generate symbol accesses as a PC relative address using a single
+   instruction.  To compute the address of symbol foo, we generate:
+
+   ADR x0, foo
+
    SYMBOL_FORCE_TO_MEM : Global variables are addressed using
    constant pool.  All variable addresses are spilled into constant
    pools.  The constant pools themselves are addressed using PC
@@ -137,6 +144,8 @@ struct tune_params
 
 HOST_WIDE_INT aarch64_initial_elimination_offset (unsigned, unsigned);
 bool aarch64_bitmask_imm (HOST_WIDE_INT val, enum machine_mode);
+enum aarch64_symbol_type
+aarch64_classify_symbolic_expression (rtx, enum aarch64_symbol_context);
 bool aarch64_constant_address_p (rtx);
 bool aarch64_float_const_zero_rtx_p (rtx);
 bool aarch64_function_arg_regno_p (unsigned);
@@ -162,8 +171,6 @@ bool aarch64_simd_shift_imm_p (rtx, enum machine_mode, bool);
 bool aarch64_simd_valid_immediate (rtx, enum machine_mode, bool,
 				   struct simd_immediate_info *);
 bool aarch64_symbolic_address_p (rtx);
-bool aarch64_symbolic_constant_p (rtx, enum aarch64_symbol_context,
-				  enum aarch64_symbol_type *);
 bool aarch64_uimm12_shift (HOST_WIDE_INT);
 const char *aarch64_output_casesi (rtx *);
 enum aarch64_symbol_type aarch64_classify_symbol (rtx,

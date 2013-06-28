@@ -1,3 +1,56 @@
+2013-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* g++.dg/ext/pr57509.C: Pass vectors by reference to avoid warnings.
+
+2013-06-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * gcc.target/i386/bmi-1.c: Extend with new instrinsic.
+        Fix scan patterns.
+        * gcc.target/i386/bmi-1.c: Ditto.
+        * gcc.target/i386/bmi-bextr-4.c: New.
+        * gcc.target/i386/bmi-bextr-5.c: Ditto.
+
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57682
+	* g++.dg/cpp0x/initlist73.C: New.
+
+2013-06-27  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc.dg/atomic-flag.c: Add dg-require-effective-target sync_*.
+	* g++.dg/simulate-thread/atomics-2.C: Likewise.
+	* g++.dg/simulate-thread/atomics-1.C: Likewise.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* g++.dg/ext/pr57509.C: New file.
+
+2013-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57623
+	* gcc.target/i386/bmi-bextr-3.c: New test.
+
+	PR target/57623
+	* gcc.target/i386/bmi2-bzhi-1.c: New test.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57172
+	* g++.dg/cpp0x/pr57172.C: New testcase.
+
+2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-1.c: New file.
+	* gcc.target/s390/htm-nofloat-1.c: New file.
+	* gcc.target/s390/htm-xl-intrin-1.c: New file.
+
+2013-06-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29800
+	* gfortran.dg/bounds_check_17.f90: New.
+
 2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	PR c++/57640
@@ -112,7 +165,7 @@
 	* g++.dg/cilk-plus/AN/postincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/cilk-plus.exp: New script.
 	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests in the list.
-	
+
 2013-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/53317
@@ -402,7 +455,7 @@
 
 	PR c/57563
 	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c (main): Fixed a bug
-	in how we check __sec_reduce_mutating function's result.	
+	in how we check __sec_reduce_mutating function's result.
 
 2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
@@ -770,7 +823,7 @@
 	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): New testcase.
 	* c-c++-common/cilk-plus/AN/rank_mismatch.c: Added a '-w' option to
 	dg-option and an header comment.
-	
+
 2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57419

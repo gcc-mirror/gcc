@@ -6346,25 +6346,6 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 	  cleanups = make_tree_vector ();
 	  init = check_initializer (decl, init, flags, &cleanups);
 
-	  /* Check that the initializer for a static data member was a
-	     constant.  Although we check in the parser that the
-	     initializer is an integral constant expression, we do not
-	     simplify division-by-zero at the point at which it
-	     occurs.  Therefore, in:
-
-	       struct S { static const int i = 7 / 0; };
-
-	     we issue an error at this point.  It would
-	     probably be better to forbid division by zero in
-	     integral constant expressions.  */
-	  if (DECL_EXTERNAL (decl) && init)
-	    {
-	      error ("%qD cannot be initialized by a non-constant expression"
-		     " when being declared", decl);
-	      DECL_INITIALIZED_IN_CLASS_P (decl) = 0;
-	      init = NULL_TREE;
-	    }
-
 	  /* Handle:
 
 	     [dcl.init]

@@ -5848,6 +5848,20 @@ Binary_expression::do_check_types(Gogo*)
 	  this->set_is_error();
 	  return;
 	}
+      if (this->op_ == OPERATOR_DIV || this->op_ == OPERATOR_MOD)
+	{
+	  // Division by a zero integer constant is an error.
+	  Numeric_constant rconst;
+	  unsigned long rval;
+	  if (left_type->integer_type() != NULL
+	      && this->right_->numeric_constant_value(&rconst)
+	      && rconst.to_unsigned_long(&rval) == Numeric_constant::NC_UL_VALID
+	      && rval == 0)
+	    {
+	      this->report_error(_("integer division by zero"));
+	      return;
+	    }
+	}
     }
   else
     {

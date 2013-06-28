@@ -1,3 +1,10 @@
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* c-common.h (c_build_vec_perm_expr): New complain argument.
+	* c-common.c (c_build_vec_perm_expr): Likewise.
+	Use save_expr also in C++.
+
 2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-common.c (c_common_nodes_and_builtins): Use cxx11 in lieu of cxx0x.
