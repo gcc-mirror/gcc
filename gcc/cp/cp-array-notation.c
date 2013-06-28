@@ -59,7 +59,6 @@
 #include "diagnostic.h"
 #include "tree-iterator.h"
 #include "vec.h"
-#include "gimple.h"
 
 /* Creates a FOR_STMT with INIT, COND, INCR and BODY as the initializer,
    condition, increment expression and the loop-body, respectively.  */
@@ -82,17 +81,12 @@ create_an_loop (tree init, tree cond, tree incr, tree body)
    a variable to make it loop invariant for array notations.  */
 
 static inline void
-make_triplet_val_inv (location_t loc, tree *value, tsubst_flags_t cry)
+make_triplet_val_inv (tree *value)
 {
-  tree var;
   if (TREE_CODE (*value) != INTEGER_CST
       && TREE_CODE (*value) != PARM_DECL
       && TREE_CODE (*value) != VAR_DECL)
-    {
-      var = build_decl (loc, VAR_DECL, NULL_TREE, integer_type_node);
-      finish_expr_stmt (build_x_modify_expr (loc, var, NOP_EXPR, *value, cry));
-      *value = var;
-    }
+    *value = get_temp_regvar (ptrdiff_type_node, *value);
 }
 
 /* Returns a vector of size RANK that contains an ARRAY_REF.  This vector is
@@ -112,47 +106,22 @@ create_array_refs (location_t loc, vec<vec<an_parts> > an_info,
 {
   tree ind_mult, ind_incr;
   vec<tree, va_gc> *array_operand = NULL;
+
   for (size_t ii = 0; ii < size; ii++)
     if (an_info[ii][0].is_vector)
       {
 	tree array_opr = an_info[ii][rank - 1].value;
 	for (int s_jj = rank -1; s_jj >= 0; s_jj--)
 	  {
-	    tree str = NULL_TREE, v = NULL_TREE, st = NULL_TREE;
-	    tree start = an_info[ii][s_jj].start;
-	    tree stride = an_info[ii][s_jj].stride;
-	    tree var = an_loop_info[s_jj].var;
+	    tree start = cp_fold_convert (ptrdiff_type_node, 
+					  an_info[ii][s_jj].start);
+	    tree stride = cp_fold_convert (ptrdiff_type_node, 
+					   an_info[ii][s_jj].stride);
+	    tree var = cp_fold_convert (ptrdiff_type_node, 
+					an_loop_info[s_jj].var);
 
-	    /* If stride and start are of same type and the induction var
-	       is not, convert induction variable to stride's type.  */
-	    if (TREE_TYPE (start) == TREE_TYPE (stride)
-		&& TREE_TYPE (stride) != TREE_TYPE (var))
-	      {
-		st = start;
-		str = stride;
-		v = build_c_cast (loc, TREE_TYPE (str), var);
-	      }
-	    else if (TREE_TYPE (start) != TREE_TYPE (stride))
-	      {
-		/* If we reach here, then the stride and start are of
-		   different types, and so it doesn't really matter what
-		   the induction variable type is, convert everything to 
-		   integer.  The reason why we pick an integer
-		   instead of something like size_t is because the stride
-		   and length can be + or -.  */
-		st = build_c_cast (loc, integer_type_node, start);
-		str = build_c_cast (loc, integer_type_node, stride);
-		v = build_c_cast (loc, integer_type_node, var);
-	      }
-	    else
-	      {
-		st = start;
-		str = stride;
-		v = var;
-	      }
-
-	    ind_mult = build2 (MULT_EXPR, TREE_TYPE (v), v, str);
-	    ind_incr = build2 (PLUS_EXPR, TREE_TYPE (v), st, ind_mult);
+	    ind_mult = build2 (MULT_EXPR, TREE_TYPE (var), var, stride);
+	    ind_incr = build2 (PLUS_EXPR, TREE_TYPE (var), start, ind_mult);
 	    /* Array [ start_index + (induction_var * stride)]  */
 	    array_opr = grok_array_decl	(loc, array_opr, ind_incr, false);
 	  }
@@ -192,7 +161,7 @@ replace_invariant_exprs (tree *node)
 {
   size_t ix = 0;
   tree node_list = NULL_TREE;
-  tree t = NULL_TREE, new_var = NULL_TREE, new_node; 
+  tree t = NULL_TREE, new_var = NULL_TREE;
   struct inv_list data;
 
   data.list_values = NULL;
@@ -204,17 +173,18 @@ replace_invariant_exprs (tree *node)
     {
       node_list = push_stmt_list ();
       for (ix = 0; vec_safe_iterate (data.list_values, ix, &t); ix++)
-	{
-	  if (processing_template_decl || !TREE_TYPE (t))
-	    new_var = build_min_nt_loc (EXPR_LOCATION (t), VAR_DECL, NULL_TREE,
-				       	NULL_TREE);
-	  else
-	    new_var = build_decl (EXPR_LOCATION (t), VAR_DECL, NULL_TREE,
-				  TREE_TYPE (t));
-	  gcc_assert (new_var != NULL_TREE && new_var != error_mark_node);
-	  new_node = build_x_modify_expr (EXPR_LOCATION (t), new_var, NOP_EXPR,
-					  t, tf_warning_or_error);
-	  finish_expr_stmt (new_node);
+	{ 
+	  /* Sometimes, when comma_expr has a function call in it, it will
+	     typecast it to void.  Find_inv_trees finds those nodes and so
+	     if it void type, then don't bother creating a new var to hold 
+	     the return value.   */
+	  if (VOID_TYPE_P (TREE_TYPE (t)))
+	    {
+	      finish_expr_stmt (t);
+	      new_var = void_zero_node;
+	    }
+	  else 
+	    new_var = get_temp_regvar (TREE_TYPE (t), t); 
 	  vec_safe_push (data.replacement, new_var);
 	}
       cp_walk_tree (node, replace_inv_trees, (void *) &data, NULL);
@@ -235,7 +205,6 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
   tree new_var_type = NULL_TREE, func_parm, new_yes_expr, new_no_expr;
   tree array_ind_value = NULL_TREE, new_no_ind, new_yes_ind, new_no_list;
   tree new_yes_list, new_cond_expr, new_expr = NULL_TREE; 
-  tree new_var_init = NULL_TREE, new_exp_init = NULL_TREE;
   vec<tree, va_gc> *array_list = NULL, *array_operand = NULL;
   size_t list_size = 0, rank = 0, ii = 0;
   tree  body, an_init, loop_with_init = alloc_stmt_list ();
@@ -305,7 +274,7 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_NONZERO:
-      new_var_type = integer_type_node;
+      new_var_type = boolean_type_node;
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND:
@@ -334,24 +303,30 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
     if (TREE_CODE ((*array_list)[ii]) == ARRAY_NOTATION_REF)
       {
 	tree anode = (*array_list)[ii];
-	make_triplet_val_inv (location, &ARRAY_NOTATION_START (anode),
-			      tf_warning_or_error);
-	make_triplet_val_inv (location, &ARRAY_NOTATION_LENGTH (anode),
-			      tf_warning_or_error);
-	make_triplet_val_inv (location, &ARRAY_NOTATION_STRIDE (anode),
-			      tf_warning_or_error);
+	make_triplet_val_inv (&ARRAY_NOTATION_START (anode));
+	make_triplet_val_inv (&ARRAY_NOTATION_LENGTH (anode));
+	make_triplet_val_inv (&ARRAY_NOTATION_STRIDE (anode));
       }
   cilkplus_extract_an_triplets (array_list, list_size, rank, &an_info);
   for (ii = 0; ii < rank; ii++)
     {
-      an_loop_info[ii].var = build_decl (location, VAR_DECL, NULL_TREE,
-				  TREE_TYPE (an_info[0][ii].start));
-      an_loop_info[ii].ind_init = build_x_modify_expr
-	(location, an_loop_info[ii].var, NOP_EXPR, 
-	 build_zero_cst (TREE_TYPE (an_loop_info[ii].var)),
-	 tf_warning_or_error);
+      tree typ = ptrdiff_type_node;
+
+      /* In this place, we are using get_temp_regvar instead of 
+	 create_temporary_var if an_type is SEC_REDUCE_MAX/MIN_IND because
+	 the array_ind_value depends on this value being initalized to 0.  */
+      if (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
+	  || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND) 
+	an_loop_info[ii].var = get_temp_regvar (typ, build_zero_cst (typ));
+      else
+	{
+	  an_loop_info[ii].var = create_temporary_var (typ);
+	  add_decl_expr (an_loop_info[ii].var);
+	}
+      an_loop_info[ii].ind_init = 
+	build_x_modify_expr (location, an_loop_info[ii].var, INIT_EXPR,
+			     build_zero_cst (typ), tf_warning_or_error);
     }
-  
   array_operand = create_array_refs (location, an_info, an_loop_info,
 				      list_size, rank);
   replace_array_notations (&func_parm, true, array_list, array_operand);
@@ -360,26 +335,9 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
     TREE_TYPE (func_parm) = TREE_TYPE ((*array_list)[0]);
   
   create_cmp_incr (location, &an_loop_info, rank, an_info, tf_warning_or_error);
-  if (an_type != BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
-    {
-      if (processing_template_decl)
-	*new_var = build_decl (location, VAR_DECL, NULL_TREE, new_var_type);
-      else
-	*new_var = create_tmp_var (new_var_type, NULL);
-    }
-  else
-    /* We do not require a new variable for mutating.  The "identity value"
-       itself is the variable.  */
-    *new_var = NULL_TREE;
-  
   if (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
-      || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND)
-    {
-      array_ind_value = create_tmp_var (TREE_TYPE (func_parm), NULL);
-      gcc_assert (array_ind_value && (array_ind_value != error_mark_node));
-      DECL_INITIAL (array_ind_value) = NULL_TREE;
-      pushdecl (array_ind_value);
-    }
+      || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND) 
+    array_ind_value = get_temp_regvar (TREE_TYPE (func_parm), func_parm);
 
   array_op0 = (*array_operand)[0];
   switch (an_type)
@@ -394,35 +352,36 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO:
-      code = (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO) ? EQ_EXPR
-	: NE_EXPR;
+      code = ((an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO) ? EQ_EXPR
+	: NE_EXPR);
       init = build_zero_cst (new_var_type);
       cond_init = build_one_cst (new_var_type);
       comp_node = build_zero_cst (TREE_TYPE (func_parm));
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_NONZERO:
-      code = (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO) ? NE_EXPR
-	: EQ_EXPR;
+      code = ((an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO) ? NE_EXPR
+	: EQ_EXPR);
       init = build_one_cst (new_var_type);
       cond_init = build_zero_cst (new_var_type);
       comp_node = build_zero_cst (TREE_TYPE (func_parm));
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MAX:
       code = MAX_EXPR;
-      init = TYPE_MIN_VALUE (new_var_type) ? TYPE_MIN_VALUE (new_var_type)
-	: func_parm;
+      init = (TYPE_MIN_VALUE (new_var_type) ? TYPE_MIN_VALUE (new_var_type)
+	: func_parm);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MIN:
       code = MIN_EXPR;
-      init = TYPE_MAX_VALUE (new_var_type) ? TYPE_MAX_VALUE (new_var_type)
-	: func_parm;
+      init = (TYPE_MAX_VALUE (new_var_type) ? TYPE_MAX_VALUE (new_var_type)
+	: func_parm);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND:
-      code = an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND ? LE_EXPR
-	: GE_EXPR;
+      code = (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND ? LE_EXPR
+	: GE_EXPR);
       init = an_loop_info[0].var;
+      break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE:
       init = identity_value;
       break;
@@ -433,9 +392,11 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
       gcc_unreachable ();
     }
 
-  if (init)
-    new_var_init = build_x_modify_expr (location, *new_var, NOP_EXPR, init,
-					tf_warning_or_error);
+  if (an_type != BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
+    *new_var = get_temp_regvar (new_var_type, init);
+  else
+    *new_var = NULL_TREE;
+
   switch (an_type)
     {
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ADD:
@@ -470,8 +431,6 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND:
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND:
-      new_exp_init = build_x_modify_expr (location, array_ind_value, NOP_EXPR,
-					  func_parm, tf_warning_or_error);
       new_yes_expr = build_x_modify_expr (location, array_ind_value, NOP_EXPR,
 					  func_parm, tf_warning_or_error);
       new_no_expr = build_x_modify_expr (location, array_ind_value, NOP_EXPR,
@@ -521,21 +480,8 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
     default:
       gcc_unreachable ();
     }
-  
-  /* The reason we are putting initial variable twice is because the
-     new exp init below depends on this value being initialized.  */
-  for (ii = 0; ii < rank; ii++)
-    finish_expr_stmt (an_loop_info[ii].ind_init);
- 
-  if (an_type != BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
-    finish_expr_stmt (new_var_init);
-
-  if (an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
-      || an_type == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND)
-    finish_expr_stmt (new_exp_init);
-
   an_init = pop_stmt_list (an_init);
-  append_to_statement_list_force (an_init, &loop_with_init);
+  append_to_statement_list (an_init, &loop_with_init);
   body = new_expr;
 
   for (ii = 0; ii < rank; ii++)
@@ -545,7 +491,7 @@ expand_sec_reduce_builtin (tree an_builtin_fn, tree *new_var)
 		      an_loop_info[ii].incr, body);
       body = pop_stmt_list (new_loop);
     }
-  append_to_statement_list_force (body, &loop_with_init);
+  append_to_statement_list (body, &loop_with_init);
 
   an_info.release ();
   an_loop_info.release ();
@@ -634,10 +580,7 @@ expand_an_in_modify_expr (location_t location, tree lhs,
 	  return an_init;
 	}
       else
-	{
-	  pop_stmt_list (an_init);
-	  return NULL_TREE;
-	}
+	gcc_unreachable ();
     }
 
   /* If for some reason location is not set, then find if LHS or RHS has
@@ -659,8 +602,6 @@ expand_an_in_modify_expr (location_t location, tree lhs,
     
   if (lhs_rank == 0 && rhs_rank != 0)
     {
-      if (location == UNKNOWN_LOCATION && EXPR_HAS_LOCATION (rhs))
-	location = EXPR_LOCATION (rhs);
       error_at (location, "%qD cannot be scalar when %qD is not", lhs, rhs);
       return error_mark_node;
     }
@@ -675,17 +616,17 @@ expand_an_in_modify_expr (location_t location, tree lhs,
   for (ii = 0; ii < lhs_list_size; ii++)
     {
       tree anode = (*lhs_list)[ii];
-      make_triplet_val_inv (location, &ARRAY_NOTATION_START (anode), complain);
-      make_triplet_val_inv (location, &ARRAY_NOTATION_LENGTH (anode), complain);
-      make_triplet_val_inv (location, &ARRAY_NOTATION_STRIDE (anode), complain);
+      make_triplet_val_inv (&ARRAY_NOTATION_START (anode));
+      make_triplet_val_inv (&ARRAY_NOTATION_LENGTH (anode));
+      make_triplet_val_inv (&ARRAY_NOTATION_STRIDE (anode));
     }
   for (ii = 0; ii < rhs_list_size; ii++)
     if ((*rhs_list)[ii] && TREE_CODE ((*rhs_list)[ii]) == ARRAY_NOTATION_REF)
       {
 	tree aa = (*rhs_list)[ii];
-	make_triplet_val_inv (location, &ARRAY_NOTATION_START (aa), complain);
-	make_triplet_val_inv (location, &ARRAY_NOTATION_LENGTH (aa), complain);
-	make_triplet_val_inv (location, &ARRAY_NOTATION_STRIDE (aa), complain);
+	make_triplet_val_inv (&ARRAY_NOTATION_START (aa));
+	make_triplet_val_inv (&ARRAY_NOTATION_LENGTH (aa));
+	make_triplet_val_inv (&ARRAY_NOTATION_STRIDE (aa));
       }
   lhs_an_loop_info.safe_grow_cleared (lhs_rank);
   
@@ -705,31 +646,29 @@ expand_an_in_modify_expr (location_t location, tree lhs,
       pop_stmt_list (an_init);
       return error_mark_node;
     }
-  tree rhs_len = (rhs_list_size > 0 && rhs_rank > 0) ?
-    rhs_an_info[0][0].length : NULL_TREE;
-  tree lhs_len = (lhs_list_size > 0 && lhs_rank > 0) ?
-    lhs_an_info[0][0].length : NULL_TREE;
+  tree rhs_len = ((rhs_list_size > 0 && rhs_rank > 0) ?
+    rhs_an_info[0][0].length : NULL_TREE);
+  tree lhs_len = ((lhs_list_size > 0 && lhs_rank > 0) ?
+    lhs_an_info[0][0].length : NULL_TREE);
   if (lhs_list_size > 0 && rhs_list_size > 0 && lhs_rank > 0 && rhs_rank > 0
       && TREE_CODE (lhs_len) == INTEGER_CST && rhs_len
-      && TREE_CODE (rhs_len) == INTEGER_CST)
-    {
-      HOST_WIDE_INT l_length = int_cst_value (lhs_len);
-      HOST_WIDE_INT r_length = int_cst_value (rhs_len);
-      if (absu_hwi (l_length) != absu_hwi (r_length))
-	{
-	  error_at (location, "length mismatch between LHS and RHS");
-	  pop_stmt_list (an_init);
-	  return error_mark_node;
-	}
+      && TREE_CODE (rhs_len) == INTEGER_CST 
+      && !tree_int_cst_equal (rhs_len, lhs_len))
+    { 
+      error_at (location, "length mismatch between LHS and RHS"); 
+      pop_stmt_list (an_init); 
+      return error_mark_node;
     }
-   for (ii = 0; ii < lhs_rank; ii++)
-    if (lhs_an_info[0][ii].start && TREE_TYPE (lhs_an_info[0][ii].start))
-      lhs_an_loop_info[ii].var =
-	build_decl (location, VAR_DECL, NULL_TREE,
-		    TREE_TYPE (lhs_an_info[0][ii].start));
-    else
-      lhs_an_loop_info[ii].var = build_decl (location, VAR_DECL, NULL_TREE,
-					     integer_type_node);
+   for (ii = 0; ii < lhs_rank; ii++) 
+     {
+       tree typ = ptrdiff_type_node; 
+       lhs_an_loop_info[ii].var = create_temporary_var (typ);
+       add_decl_expr (lhs_an_loop_info[ii].var);
+       lhs_an_loop_info[ii].ind_init = build_x_modify_expr 
+	 (location, lhs_an_loop_info[ii].var, INIT_EXPR, build_zero_cst (typ), 
+	  complain);
+     }
+   
    if (rhs_list_size > 0)
      {
        rhs_array_operand = fix_sec_implicit_args (location, rhs_list,
@@ -743,24 +682,15 @@ expand_an_in_modify_expr (location_t location, tree lhs,
   rhs_list = NULL;
   extract_array_notation_exprs (rhs, true, &rhs_list);
   rhs_list_size = vec_safe_length (rhs_list);    
-  
-  for (ii = 0; ii < lhs_rank; ii++)
-    if (lhs_an_info[0][ii].is_vector)
-      {
-	lhs_an_loop_info[ii].ind_init = build_x_modify_expr
-	  (location, lhs_an_loop_info[ii].var, NOP_EXPR,
-	   build_zero_cst (TREE_TYPE (lhs_an_loop_info[ii].var)), complain);
-      }
+
   for (ii = 0; ii < rhs_rank; ii++)
     {
-      /* When we have a polynomial, we assume that the indices are of type
-	 integer.  */
-      rhs_an_loop_info[ii].var =
-	build_decl (location, VAR_DECL, NULL_TREE,
-		    TREE_TYPE (rhs_an_info[0][ii].start));
+      tree typ = ptrdiff_type_node;
+      rhs_an_loop_info[ii].var = create_temporary_var (typ);
+      add_decl_expr (rhs_an_loop_info[ii].var);
       rhs_an_loop_info[ii].ind_init = build_x_modify_expr
-	(location, rhs_an_loop_info[ii].var, NOP_EXPR, 
-	 build_zero_cst (TREE_TYPE (rhs_an_loop_info[ii].var)), complain);
+	(location, rhs_an_loop_info[ii].var, INIT_EXPR, build_zero_cst (typ), 
+	 complain);
     }
 
   if (lhs_rank)
@@ -809,12 +739,12 @@ expand_an_in_modify_expr (location_t location, tree lhs,
     else if (ii < lhs_rank && ii >= rhs_rank)
       cond_expr[ii] = lhs_an_loop_info[ii].cmp;
     else
-      /* No need to compare ii < rhs_rank && ii >= lhs_rank because valid Array
-	 notation expression cannot RHS's rank cannot be greater than LHS.  */
+      /* No need to compare ii < rhs_rank && ii >= lhs_rank because in a valid 
+	 Array notation expression, rank of RHS cannot be greater than LHS.  */
       gcc_unreachable ();
   
   an_init = pop_stmt_list (an_init);
-  append_to_statement_list_force (an_init, &loop_with_init);
+  append_to_statement_list (an_init, &loop_with_init);
   body = array_expr;
   for (ii = 0; ii < MAX (lhs_rank, rhs_rank); ii++)
     {
@@ -824,17 +754,13 @@ expand_an_in_modify_expr (location_t location, tree lhs,
 
       if (lhs_rank)
 	{
-	  append_to_statement_list_force (lhs_an_loop_info[ii].ind_init,
-					  &init_list);
-	  append_to_statement_list_force (lhs_an_loop_info[ii].incr,
-					  &incr_list);
+	  append_to_statement_list (lhs_an_loop_info[ii].ind_init, &init_list);
+	  append_to_statement_list (lhs_an_loop_info[ii].incr, &incr_list);
 	}
       if (rhs_rank)
 	{
-	  append_to_statement_list_force (rhs_an_loop_info[ii].ind_init,
-					  &init_list);
-	  append_to_statement_list_force (rhs_an_loop_info[ii].incr,
-					  &incr_list);
+	  append_to_statement_list (rhs_an_loop_info[ii].ind_init, &init_list);
+	  append_to_statement_list (rhs_an_loop_info[ii].incr, &incr_list);
 	}
       create_an_loop (init_list, cond_expr[ii], incr_list, body);
       body = pop_stmt_list (new_loop);
@@ -867,7 +793,6 @@ cp_expand_cond_array_notations (tree orig_stmt)
   tree an_init, body, stmt = NULL_TREE;
   tree builtin_loop, new_var = NULL_TREE;
   tree loop_with_init = alloc_stmt_list ();
-  tsubst_flags_t complain = tf_warning_or_error;
   location_t location = UNKNOWN_LOCATION;
   vec<vec<an_parts> > an_info = vNULL;
   vec<an_loop_parts> an_loop_info = vNULL;
@@ -884,13 +809,17 @@ cp_expand_cond_array_notations (tree orig_stmt)
 	  || find_rank (EXPR_LOCATION (no_expr), no_expr, no_expr, true,
 			&no_rank))
 	return error_mark_node;
-      if (cond_rank != 0 && cond_rank != yes_rank && yes_rank != 0)
+      /* If the condition has a zero rank, then handle array notations in body
+	 seperately.  */
+      if (cond_rank == 0)
+	return orig_stmt;
+      if (cond_rank != yes_rank && yes_rank != 0)
 	{
 	  error_at (EXPR_LOCATION (yes_expr), "rank mismatch with controlling"
 		    " expression of parent if-statement");
 	  return error_mark_node;
 	}
-      else if (cond_rank != 0 && cond_rank != no_rank && no_rank != 0)
+      else if (cond_rank != no_rank && no_rank != 0)
 	{
 	  error_at (EXPR_LOCATION (no_expr), "rank mismatch with controlling "
 		    "expression of parent if-statement");
@@ -911,13 +840,17 @@ cp_expand_cond_array_notations (tree orig_stmt)
 	      && !find_rank (EXPR_LOCATION (no_expr), no_expr, no_expr, true,
 			     &no_rank)))
 	return error_mark_node;
-      if (cond_rank != 0 && cond_rank != yes_rank && yes_rank != 0)
+
+      /* Same reasoning as for COND_EXPR.  */
+      if (cond_rank == 0)
+	return orig_stmt;
+      else if (cond_rank != yes_rank && yes_rank != 0)
 	{
 	  error_at (EXPR_LOCATION (yes_expr), "rank mismatch with controlling"
 		    " expression of parent if-statement");
 	  return error_mark_node;
 	}
-      else if (cond_rank != 0 && cond_rank != no_rank && no_rank != 0)
+      else if (cond_rank != no_rank && no_rank != 0)
 	{
 	  error_at (EXPR_LOCATION (no_expr), "rank mismatch with controlling "
 		    "expression of parent if-statement");
@@ -949,11 +882,11 @@ cp_expand_cond_array_notations (tree orig_stmt)
 	      vec_safe_push (new_var_list, new_var);
 	      replace_array_notations (&orig_stmt, false, sub_list,
 				       new_var_list);
-	      append_to_statement_list_force (builtin_loop, &stmt);
+	      append_to_statement_list (builtin_loop, &stmt);
 	    }
 	}
     }
-  append_to_statement_list_force (orig_stmt, &stmt);
+  append_to_statement_list (orig_stmt, &stmt);
   rank = 0;
   array_list = NULL;
   if (!find_rank (EXPR_LOCATION (stmt), stmt, stmt, true, &rank))
@@ -977,37 +910,28 @@ cp_expand_cond_array_notations (tree orig_stmt)
   for (ii = 0; ii < list_size; ii++)
     {
       tree anode = (*array_list)[ii];
-      make_triplet_val_inv (location, &ARRAY_NOTATION_START (anode), complain);
-      make_triplet_val_inv (location, &ARRAY_NOTATION_LENGTH (anode), complain);
-      make_triplet_val_inv (location, &ARRAY_NOTATION_STRIDE (anode), complain);
+      make_triplet_val_inv (&ARRAY_NOTATION_START (anode));
+      make_triplet_val_inv (&ARRAY_NOTATION_LENGTH (anode));
+      make_triplet_val_inv (&ARRAY_NOTATION_STRIDE (anode));
     }
   cilkplus_extract_an_triplets (array_list, list_size, rank, &an_info);
-  for (ii = 0; ii < rank; ii++)
-      if (TREE_TYPE (an_info[0][ii].start)
-	  && TREE_CODE (TREE_TYPE (an_info[0][ii].start)) != TEMPLATE_TYPE_PARM)
-	{
-	  an_loop_info[ii].var = build_decl (location, VAR_DECL, NULL_TREE,
-					     TREE_TYPE (an_info[0][ii].start));
-	  an_loop_info[ii].ind_init = build_x_modify_expr
-	    (location, an_loop_info[ii].var, NOP_EXPR,
-	     build_zero_cst (TREE_TYPE (an_loop_info[ii].var)),
-	     tf_warning_or_error);
-	}
-      else
-	{
-	  an_loop_info[ii].var = build_min_nt_loc (location, VAR_DECL,
-						   NULL_TREE, NULL_TREE);
-	  an_loop_info[ii].ind_init =
-	    build_x_modify_expr (location, an_loop_info[ii].var, NOP_EXPR,
-				 integer_zero_node, tf_warning_or_error);
-	}
+
+  for (ii = 0; ii < rank; ii++) 
+    {
+      tree typ = ptrdiff_type_node;
+      an_loop_info[ii].var = create_temporary_var (typ);
+      add_decl_expr (an_loop_info[ii].var);
+      an_loop_info[ii].ind_init =
+	build_x_modify_expr (location, an_loop_info[ii].var, INIT_EXPR,
+			     build_zero_cst (typ), tf_warning_or_error);
+    }
   array_operand = create_array_refs (location, an_info, an_loop_info,
 				     list_size, rank);
   replace_array_notations (&stmt, true, array_list, array_operand);
   create_cmp_incr (location, &an_loop_info, rank, an_info, tf_warning_or_error);
   
   an_init = pop_stmt_list (an_init);
-  append_to_statement_list_force (an_init, &loop_with_init);
+  append_to_statement_list (an_init, &loop_with_init);
   body = stmt;
 
   for (ii = 0; ii < rank; ii++)
@@ -1017,7 +941,7 @@ cp_expand_cond_array_notations (tree orig_stmt)
 		      an_loop_info[ii].incr, body);
       body = pop_stmt_list (new_loop);
     }
-  append_to_statement_list_force (body, &loop_with_init);
+  append_to_statement_list (body, &loop_with_init);
 
   an_info.release ();
   an_loop_info.release ();
@@ -1062,14 +986,14 @@ expand_unary_array_notation_exprs (tree orig_stmt)
 	  {
 	    vec<tree, va_gc> *sub_list = NULL, *new_var_list = NULL;
 	    stmt = alloc_stmt_list ();
-	    append_to_statement_list_force (builtin_loop, &stmt);
+	    append_to_statement_list (builtin_loop, &stmt);
 	    vec_safe_push (sub_list, list_node);
 	    vec_safe_push (new_var_list, new_var);
 	    replace_array_notations (&orig_stmt, false, sub_list, new_var_list);
 	  }	
       }
   if (stmt != NULL_TREE)
-    append_to_statement_list_force (finish_expr_stmt (orig_stmt), &stmt);
+    append_to_statement_list (finish_expr_stmt (orig_stmt), &stmt);
   else
     stmt = orig_stmt;
   rank = 0;
@@ -1089,22 +1013,19 @@ expand_unary_array_notation_exprs (tree orig_stmt)
   for (ii = 0; ii < list_size; ii++)
     {
       tree array_node = (*array_list)[ii];
-      make_triplet_val_inv (location, &ARRAY_NOTATION_START (array_node),
-			    tf_warning_or_error);
-      make_triplet_val_inv (location, &ARRAY_NOTATION_LENGTH (array_node),
-			    tf_warning_or_error);
-      make_triplet_val_inv (location, &ARRAY_NOTATION_STRIDE (array_node),
-			    tf_warning_or_error);
+      make_triplet_val_inv (&ARRAY_NOTATION_START (array_node));
+      make_triplet_val_inv (&ARRAY_NOTATION_LENGTH (array_node));
+      make_triplet_val_inv (&ARRAY_NOTATION_STRIDE (array_node));
     }
   cilkplus_extract_an_triplets (array_list, list_size, rank, &an_info);
   
   for (ii = 0; ii < rank; ii++)
     {
-      an_loop_info[ii].var = build_decl (location, VAR_DECL, NULL_TREE,
-				  TREE_TYPE (an_info[0][ii].start));
+      tree typ = ptrdiff_type_node;
+      an_loop_info[ii].var = create_temporary_var (typ);
+      add_decl_expr (an_loop_info[ii].var);
       an_loop_info[ii].ind_init = build_x_modify_expr
-	(location, an_loop_info[ii].var, NOP_EXPR, 
-	 build_zero_cst (TREE_TYPE (an_loop_info[ii].var)),
+	(location, an_loop_info[ii].var, INIT_EXPR, build_zero_cst (typ), 
 	 tf_warning_or_error);
     }
   array_operand = create_array_refs (location, an_info, an_loop_info,
@@ -1113,7 +1034,7 @@ expand_unary_array_notation_exprs (tree orig_stmt)
   create_cmp_incr (location, &an_loop_info, rank, an_info, tf_warning_or_error);
   
   an_init = pop_stmt_list (an_init);
-  append_to_statement_list_force (an_init, &loop_with_init);
+  append_to_statement_list (an_init, &loop_with_init);
   body = stmt;
   
   for (ii = 0; ii < rank; ii++)
@@ -1123,7 +1044,7 @@ expand_unary_array_notation_exprs (tree orig_stmt)
 		      an_loop_info[ii].incr, body);
       body = pop_stmt_list (new_loop);
     }
-  append_to_statement_list_force (body, &loop_with_init);
+  append_to_statement_list (body, &loop_with_init);
 
   an_info.release ();
   an_loop_info.release ();
@@ -1139,21 +1060,35 @@ static tree
 expand_return_expr (tree expr)
 {
   tree new_mod_list, new_var, new_mod, retval_expr;
-
+  size_t rank  = 0;
+  location_t loc = EXPR_LOCATION (expr);
   if (TREE_CODE (expr) != RETURN_EXPR)
     return expr;
+      
+  if (!find_rank (loc, expr, expr, false, &rank))
+    return error_mark_node;
 
-  location_t loc = EXPR_LOCATION (expr);
-  new_mod_list = alloc_stmt_list ();
+  /* If the return expression contains array notations, then flag it as
+     error.  */
+  if (rank >= 1)
+    {
+      error_at (loc, "array notation expression cannot be used as a return "
+		"value");
+      return error_mark_node;
+    }
+  
+  new_mod_list = push_stmt_list ();
   retval_expr = TREE_OPERAND (expr, 0);
-  new_var = build_decl (loc, VAR_DECL, NULL_TREE, TREE_TYPE (retval_expr));
+  new_var = create_temporary_var (TREE_TYPE (retval_expr));
+  add_decl_expr (new_var);
   new_mod = expand_an_in_modify_expr (loc, new_var, NOP_EXPR,
-					 TREE_OPERAND (retval_expr, 1),
-					 tf_warning_or_error);
+				      TREE_OPERAND (retval_expr, 1),
+				      tf_warning_or_error);
   TREE_OPERAND (retval_expr, 1) = new_var;
   TREE_OPERAND (expr, 0) = retval_expr;
-  append_to_statement_list_force (new_mod, &new_mod_list);
-  append_to_statement_list_force (expr, &new_mod_list);
+  add_stmt (new_mod);
+  add_stmt (expr);
+  new_mod_list = pop_stmt_list (new_mod_list);
   return new_mod_list;
 }
 
@@ -1290,19 +1225,21 @@ expand_array_notation_exprs (tree t)
       else
 	t = expand_array_notation_exprs (t);
       return t;
-
-    case SWITCH_EXPR:
-      t = cp_expand_cond_array_notations (t);
-      if (TREE_CODE (t) == SWITCH_EXPR)
-	SWITCH_BODY (t) = expand_array_notation_exprs (SWITCH_BODY (t));
-      else
-	t = expand_array_notation_exprs (t);
-      return t;
-    case FOR_STMT:      
+    case FOR_STMT:
+      if (contains_array_notation_expr (FOR_COND (t)))
+	{
+	  error_at (EXPR_LOCATION (FOR_COND (t)),
+		    "array notation cannot be used in a condition for "
+		    "a for-loop");
+	  return error_mark_node;
+	}
       /* FIXME: Add a check for CILK_FOR_STMT here when we add Cilk tasking 
 	 keywords.  */
       if (TREE_CODE (t) == FOR_STMT)
-	FOR_BODY (t) = expand_array_notation_exprs (FOR_BODY (t));
+	{ 
+	  FOR_BODY (t) = expand_array_notation_exprs (FOR_BODY (t));
+	  FOR_EXPR (t) = expand_array_notation_exprs (FOR_EXPR (t));
+	}
       else
 	t = expand_array_notation_exprs (t);
       return t;
@@ -1322,44 +1259,39 @@ expand_array_notation_exprs (tree t)
 	t = expand_array_notation_exprs (t);
       return t;
     case SWITCH_STMT:
-      t = cp_expand_cond_array_notations (t);
-      /* If the above function added some extra instructions above the original
-	 switch statement, then we can't assume it is still SWITCH_STMT so we
-	 have to check again.  */
-      if (TREE_CODE (t) == SWITCH_STMT)
+      if (contains_array_notation_expr (SWITCH_STMT_COND (t)))
 	{
-	  if (SWITCH_STMT_BODY (t))
-	    SWITCH_STMT_BODY (t) =
-	      expand_array_notation_exprs (SWITCH_STMT_BODY (t));
+	  error_at (EXPR_LOCATION (SWITCH_STMT_COND (t)),
+		    "array notation cannot be used as a condition for "
+		    "switch statement");
+	  return error_mark_node;
 	}
-      else
-	t = expand_array_notation_exprs (t);
+      if (SWITCH_STMT_BODY (t))
+	SWITCH_STMT_BODY (t) =
+	  expand_array_notation_exprs (SWITCH_STMT_BODY (t));
       return t;
     case WHILE_STMT:
-      t = cp_expand_cond_array_notations (t);
-      /* If the above function added some extra instructions above the original
-	 while statement, then we can't assume it is still WHILE_STMTso we
-	 have to check again.  */
-      if (TREE_CODE (t) == WHILE_STMT)
+      if (contains_array_notation_expr (WHILE_COND (t)))
 	{
-	  if (WHILE_BODY (t))
-	    WHILE_BODY (t) = expand_array_notation_exprs (WHILE_BODY (t));
+	  if (EXPR_LOCATION (WHILE_COND (t)) != UNKNOWN_LOCATION)
+	    loc = EXPR_LOCATION (WHILE_COND (t));
+	  error_at (loc, "array notation cannot be used as a condition for "
+		    "while statement");
+	  return error_mark_node;
 	}
-      else
-	t = expand_array_notation_exprs (t);
+      if (WHILE_BODY (t))
+	WHILE_BODY (t) = expand_array_notation_exprs (WHILE_BODY (t));
       return t;
     case DO_STMT:
-      t = cp_expand_cond_array_notations (t);
-      /* If the above function added some extra instructions above the original
-	 do-while statement, then we can't assume it is still DO_STMT so we
-	 have to check again.  */
-      if (TREE_CODE (t) == DO_STMT)
-	{      
-	  if (DO_BODY (t))
-	    DO_BODY (t) = expand_array_notation_exprs (DO_BODY (t));
+      if (contains_array_notation_expr (DO_COND (t)))
+	{
+	  error_at (EXPR_LOCATION (DO_COND (t)),
+		    "array notation cannot be used as a condition for a "
+		    "do-while statement");
+	  return error_mark_node;
 	}
-      else
-	t = expand_array_notation_exprs (t);
+      if (DO_BODY (t))
+	DO_BODY (t) = expand_array_notation_exprs (DO_BODY (t));
       return t;
     default:
       if (is_expr)
@@ -1380,59 +1312,66 @@ expand_array_notation_exprs (tree t)
   return t;
 }
 
-/* Given the base of an array (ARRAY), the START_INDEX, the number of elements
-   to be accessed (LENGTH) and the STRIDE, construct an ARRAY_NOTATION_REF tree
-   of type TYPE and return it.  Restrictions on START_INDEX, LENGTH and STRIDE 
-   are the same as that of index field passed into ARRAY_REF.  The only
-   additional restriction is that, unlike index in ARRAY_REF, stride, length
-   and start_index cannot contain array notations.  */
+/* Given the base of an array (ARRAY), the START (start_index), the number of 
+   elements to be accessed (LENGTH) and the STRIDE, construct an 
+   ARRAY_NOTATION_REF tree of type TYPE and return it.  Restrictions on START, 
+   LENGTH and STRIDE are the same as that of index field passed into ARRAY_REF. 
+   The only additional restriction is that, unlike index in ARRAY_REF, stride, 
+   length and start_index cannot contain array notations.  */
 
 tree
-build_array_notation_ref (location_t loc, tree array, tree start_index,
-			  tree length, tree stride, tree type)
+build_array_notation_ref (location_t loc, tree array, tree start, tree length, 
+			  tree stride, tree type)
 {
   tree array_ntn_expr = NULL_TREE;
+
+  /* If we enter the then-case of the if-statement below, we have hit a case 
+     like this: ARRAY [:].  */
+  if (!start && !length)
+    {
+      if (TREE_CODE (type) != ARRAY_TYPE)
+	{
+	  error_at (loc, "start-index and length fields necessary for "
+		    "using array notation in pointers or records");
+	  return error_mark_node;
+	}
+      tree domain = TYPE_DOMAIN (type);
+      if (!domain)
+	{
+	  error_at (loc, "start-index and length fields necessary for "
+		    "using array notation with array of unknown bound");
+	  return error_mark_node;
+	}
+      start = cp_fold_convert (ptrdiff_type_node, TYPE_MINVAL (domain));
+      length = size_binop (PLUS_EXPR, TYPE_MAXVAL (domain), size_one_node);
+      length = cp_fold_convert (ptrdiff_type_node, length);
+    }
+    
+  if (!stride) 
+    stride = build_one_cst (ptrdiff_type_node);
   
-  /* When dealing with templates, do the type checking at a later time.  */
-  if (processing_template_decl || !type)
-    {
-      if (!type && TREE_TYPE (array))
-	type = TREE_TYPE (array);
-      array_ntn_expr = build_min_nt_loc (loc, ARRAY_NOTATION_REF, array,
-					 start_index, length, stride, type,
-					 NULL_TREE);
-      TREE_TYPE (array_ntn_expr) = type;
+  /* When dealing with templates, triplet type-checking will be done in pt.c 
+     after type substitution.  */
+  if (processing_template_decl 
+      && (type_dependent_expression_p (array) 
+	  || type_dependent_expression_p (length) 
+	  || type_dependent_expression_p (start) 
+	  || type_dependent_expression_p (stride))) 
+    array_ntn_expr = build_min_nt_loc (loc, ARRAY_NOTATION_REF, array, start, 
+				       length, stride, NULL_TREE);
+  else 
+    { 
+      if (!cilkplus_an_triplet_types_ok_p (loc, start, length, stride, type))
+	return error_mark_node;
+      array_ntn_expr = build4 (ARRAY_NOTATION_REF, NULL_TREE, array, start, 
+			       length, stride);
     }
-  if (!stride)
-    {
-      if (TREE_CONSTANT (start_index) && TREE_CONSTANT (length)
-	  && TREE_CODE (start_index) != VAR_DECL
-	  && TREE_CODE (length) != VAR_DECL
-	  && tree_int_cst_lt (length, start_index))
-	stride = build_int_cst (TREE_TYPE (start_index), -1);
-      else
-	stride = build_int_cst (TREE_TYPE (start_index), 1);
-    }
+  if (TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == POINTER_TYPE)
+    TREE_TYPE (array_ntn_expr) = TREE_TYPE (type);
+  else
+    gcc_unreachable ();
 
-  if (!cilkplus_an_triplet_types_ok_p (loc, start_index, length, stride, type))
-    return error_mark_node;
-
-  if (!processing_template_decl)
-    {
-      array_ntn_expr = build4 (ARRAY_NOTATION_REF, NULL_TREE, NULL_TREE,
-			       NULL_TREE, NULL_TREE, NULL_TREE);
-      ARRAY_NOTATION_ARRAY (array_ntn_expr) = array;
-      ARRAY_NOTATION_START (array_ntn_expr) = start_index;
-      ARRAY_NOTATION_LENGTH (array_ntn_expr) = length;
-      ARRAY_NOTATION_STRIDE (array_ntn_expr) = stride;
-      if (type && (TREE_CODE (type) == ARRAY_TYPE
-		   || TREE_CODE (type) == POINTER_TYPE))
-	TREE_TYPE (array_ntn_expr) = TREE_TYPE (type);
-      else
-	TREE_TYPE (array_ntn_expr) = type;
-    }
   SET_EXPR_LOCATION (array_ntn_expr, loc);
-
   return array_ntn_expr;
 }
 
@@ -1462,19 +1401,8 @@ cilkplus_an_triplet_types_ok_p (location_t loc, tree start_index, tree length,
     }
   if (!TREE_CODE (type) == FUNCTION_TYPE)
     {
-      error_at (loc, "array notations cannot be used with function type");
+      error_at (loc, "array notation cannot be used with function type");
       return false;
-    }
-  while (type && (TREE_CODE (type) == POINTER_TYPE
-		  || TREE_CODE (type) == ARRAY_TYPE))
-    {
-      type = TREE_TYPE (type);
-      if (type && TREE_CODE (type) == FUNCTION_TYPE)
-	{
-	  error_at (loc, "array notations cannot be used with function pointer"
-		    " arrays");
-	  return false;
-	}
     }
   if (!find_rank (loc, start_index, start_index, false, &start_rank)
       || !find_rank (loc, length, length, false, &length_rank)

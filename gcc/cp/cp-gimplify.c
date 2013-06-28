@@ -1207,6 +1207,12 @@ cp_genericize (tree fndecl)
   if (DECL_CLONED_FUNCTION_P (fndecl))
     return;
 
+  /* Expand all the array notations here.  */
+  if (flag_enable_cilkplus 
+      && contains_array_notation_expr (DECL_SAVED_TREE (fndecl)))
+    DECL_SAVED_TREE (fndecl) = 
+      expand_array_notation_exprs (DECL_SAVED_TREE (fndecl));
+
   /* We do want to see every occurrence of the parms, so we can't just use
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl));
