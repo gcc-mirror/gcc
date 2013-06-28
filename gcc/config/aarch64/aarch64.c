@@ -3130,10 +3130,13 @@ aarch64_symbolic_address_p (rtx x)
 
 /* Classify the base of symbolic expression X, given that X appears in
    context CONTEXT.  */
-static enum aarch64_symbol_type
-aarch64_classify_symbolic_expression (rtx x, enum aarch64_symbol_context context)
+
+enum aarch64_symbol_type
+aarch64_classify_symbolic_expression (rtx x,
+				      enum aarch64_symbol_context context)
 {
   rtx offset;
+
   split_const (x, &x, &offset);
   return aarch64_classify_symbol (x, context);
 }
@@ -5132,24 +5135,6 @@ aarch64_classify_symbol (rtx x,
 
   /* By default push everything into the constant pool.  */
   return SYMBOL_FORCE_TO_MEM;
-}
-
-/* Return true if X is a symbolic constant that can be used in context
-   CONTEXT.  If it is, store the type of the symbol in *SYMBOL_TYPE.  */
-
-bool
-aarch64_symbolic_constant_p (rtx x, enum aarch64_symbol_context context,
-			     enum aarch64_symbol_type *symbol_type)
-{
-  rtx offset;
-  split_const (x, &x, &offset);
-  if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
-    *symbol_type = aarch64_classify_symbol (x, context);
-  else
-    return false;
-
-  /* No checking of offset at this point.  */
-  return true;
 }
 
 bool

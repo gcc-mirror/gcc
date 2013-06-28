@@ -118,9 +118,8 @@
 (define_predicate "aarch64_valid_symref"
   (match_code "const, symbol_ref, label_ref")
 {
-  enum aarch64_symbol_type symbol_type;
-  return (aarch64_symbolic_constant_p (op, SYMBOL_CONTEXT_ADR, &symbol_type)
-	 && symbol_type != SYMBOL_FORCE_TO_MEM);
+  return (aarch64_classify_symbolic_expression (op, SYMBOL_CONTEXT_ADR)
+	  != SYMBOL_FORCE_TO_MEM);
 })
 
 (define_predicate "aarch64_tls_ie_symref"
