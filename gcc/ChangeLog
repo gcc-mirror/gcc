@@ -1,3 +1,10 @@
+2013-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57736
+	* config/i386/i386.c (ix86_expand_builtin): If target == NULL
+	and mode is VOIDmode, don't create a VOIDmode pseudo to copy result
+	into.
+
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57623

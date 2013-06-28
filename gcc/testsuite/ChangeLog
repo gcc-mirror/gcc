@@ -1,3 +1,8 @@
+2013-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57736
+	* gcc.target/i386/pr57736.c: New test.
+
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57623
