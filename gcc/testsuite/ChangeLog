@@ -1,3 +1,8 @@
+2013-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* g++.dg/ext/pr57509.C: Pass vectors by reference to avoid warnings.
+
 2013-06-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * gcc.target/i386/bmi-1.c: Extend with new instrinsic.
