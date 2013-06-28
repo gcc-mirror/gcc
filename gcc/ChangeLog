@@ -1,5 +1,10 @@
 2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_cannot_force_const_mem): Adjust
+	layout.
+
+2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
 	* config/aarch64/aarch64-protos.h (aarch64_symbol_type):
 	Update comment w.r.t SYMBOL_TINY_ABSOLUTE.
 

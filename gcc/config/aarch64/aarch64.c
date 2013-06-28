@@ -1,4 +1,5 @@
-/* Machine description for AArch64 architecture.
+
+1;3201;0c/* Machine description for AArch64 architecture.
    Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
@@ -2687,12 +2688,14 @@ static bool
 aarch64_cannot_force_const_mem (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   rtx base, offset;
+
   if (GET_CODE (x) == HIGH)
     return true;
 
   split_const (x, &base, &offset);
   if (GET_CODE (base) == SYMBOL_REF || GET_CODE (base) == LABEL_REF)
-    return (aarch64_classify_symbol (base, SYMBOL_CONTEXT_ADR) != SYMBOL_FORCE_TO_MEM);
+    return (aarch64_classify_symbol (base, SYMBOL_CONTEXT_ADR)
+	    != SYMBOL_FORCE_TO_MEM);
 
   return aarch64_tls_referenced_p (x);
 }
