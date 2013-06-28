@@ -1,3 +1,26 @@
+2013-06-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/predicates.md (arm_cond_move_operator): New predicate.
+	* config/arm/arm.md (movsfcc): Use arm_cond_move_operator predicate.
+	(movdfcc): Likewise.
+	* config/arm/vfp.md (*thumb2_movsf_vfp):
+	Disable predication for arm_restrict_it.
+	(*thumb2_movsfcc_vfp): Disable for arm_restrict_it.
+	(*thumb2_movdfcc_vfp): Likewise.
+	(*abssf2_vfp, *absdf2_vfp, *negsf2_vfp, *negdf2_vfp,*addsf3_vfp,
+	*adddf3_vfp, *subsf3_vfp, *subdf3_vfpc, *divsf3_vfp,*divdf3_vfp,
+	*mulsf3_vfp, *muldf3_vfp, *mulsf3negsf_vfp, *muldf3negdf_vfp,
+	*mulsf3addsf_vfp, *muldf3adddf_vfp, *mulsf3subsf_vfp,
+	*muldf3subdf_vfp, *mulsf3negsfaddsf_vfp, *fmuldf3negdfadddf_vfp,
+	*mulsf3negsfsubsf_vfp, *muldf3negdfsubdf_vfp, *fma<SDF:mode>4,
+	*fmsub<SDF:mode>4, *fnmsub<SDF:mode>4, *fnmadd<SDF:mode>4,
+	*extendsfdf2_vfp, *truncdfsf2_vfp, *extendhfsf2, *truncsfhf2,
+	*truncsisf2_vfp, *truncsidf2_vfp, fixuns_truncsfsi2, fixuns_truncdfsi2,
+	*floatsisf2_vfp, *floatsidf2_vfp, floatunssisf2, floatunssidf2,
+	*sqrtsf2_vfp, *sqrtdf2_vfp, *cmpsf_vfp, *cmpsf_trap_vfp, *cmpdf_vfp,
+	*cmpdf_trap_vfp, <vrint_pattern><SDF:mode>2):
+	Disable predication for arm_restrict_it.
+
 2013-06-28  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* config/i386/bmiintrin.h (_bextr_u32): New.
