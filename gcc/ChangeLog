@@ -1,3 +1,12 @@
+2013-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57744
+	* config/rs6000/rs6000.h (MODES_TIEABLE_P): Do not allow PTImode
+	to tie with any other modes.  Eliminate Altivec vector mode tests,
+	since these are a subset of ALTIVEC or VSX vector modes.  Simplify
+	code, to return 0 if testing MODE2 for a condition, if we've
+	already tested MODE1 for the same condition.
+
 2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_cannot_force_const_mem): Adjust
