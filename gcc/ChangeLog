@@ -1,5 +1,63 @@
 2013-06-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (arm_mulsi3_v6): Add alternative for 16-bit
+	encoding.
+	(mulsi3addsi_v6): Disable predicable variant for arm_restrict_it.
+	(mulsi3subsi): Likewise.
+	(mulsidi3adddi): Likewise.
+	(mulsidi3_v6): Likewise.
+	(umulsidi3_v6): Likewise.
+	(umulsidi3adddi_v6): Likewise.
+	(smulsi3_highpart_v6): Likewise.
+	(umulsi3_highpart_v6): Likewise.
+	(mulhisi3tb): Likewise.
+	(mulhisi3bt): Likewise.
+	(mulhisi3tt): Likewise.
+	(maddhisi4): Likewise.
+	(maddhisi4tb): Likewise.
+	(maddhisi4tt): Likewise.
+	(maddhidi4): Likewise.
+	(maddhidi4tb): Likewise.
+	(maddhidi4tt): Likewise.
+	(zeroextractsi_compare0_scratch): Likewise.
+	(insv_zero): Likewise.
+	(insv_t2): Likewise.
+	(anddi_notzesidi_di): Likewise.
+	(anddi_notsesidi_di): Likewise.
+	(andsi_notsi_si): Likewise.
+	(iordi_zesidi_di): Likewise.
+	(xordi_zesidi_di): Likewise.
+	(andsi_iorsi3_notsi): Likewise.
+	(smax_0): Likewise.
+	(smax_m1): Likewise.
+	(smin_0): Likewise.
+	(not_shiftsi): Likewise.
+	(unaligned_loadsi): Likewise.
+	(unaligned_loadhis): Likewise.
+	(unaligned_loadhiu): Likewise.
+	(unaligned_storesi): Likewise.
+	(unaligned_storehi): Likewise.
+	(extv_reg): Likewise.
+	(extzv_t2): Likewise.
+	(divsi3): Likewise.
+	(udivsi3): Likewise.
+	(arm_zero_extendhisi2addsi): Likewise.
+	(arm_zero_extendqisi2addsi): Likewise.
+	(compareqi_eq0): Likewise.
+	(arm_extendhisi2_v6): Likewise.
+	(arm_extendqisi2addsi): Likewise.
+	(arm_movt): Likewise.
+	(thumb2_ldrd): Likewise.
+	(thumb2_ldrd_base): Likewise.
+	(thumb2_ldrd_base_neg): Likewise.
+	(thumb2_strd): Likewise.
+	(thumb2_strd_base): Likewise.
+	(thumb2_strd_base_neg): Likewise.
+	(arm_negsi2): Add alternative for 16-bit encoding.
+	(arm_one_cmplsi2): Likewise.
+
+2013-06-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/predicates.md (arm_cond_move_operator): New predicate.
 	* config/arm/arm.md (movsfcc): Use arm_cond_move_operator predicate.
 	(movdfcc): Likewise.
