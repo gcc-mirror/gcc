@@ -1,3 +1,8 @@
+2013-06-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* config/i386/bmiintrin.h (_bextr_u32): New.
+	(_bextr_u64): Ditto.
+
 2013-06-27  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config.gcc (mips*-mti-elf*, mips*-sde-elf*, mips64r5900-*-elf*)
@@ -19,7 +24,7 @@
 	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): m14ke* implies
 	-mdspr2.
 	* doc/invoke.texi: Add -m14kc.
- 
+
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57623
