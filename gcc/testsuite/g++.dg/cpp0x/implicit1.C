@@ -15,7 +15,7 @@ D d;				// { dg-error "deleted" }
 
 struct E
 {
-  ~E() = delete;		// { dg-error "declared here" }
+  ~E() = delete;		// { dg-message "declared here" }
 };
 
 struct F

@@ -242,7 +242,7 @@ next_char (st_parameter_dt *dtp)
 	dtp->u.p.current_unit->strm_pos++;
     }
 done:
-  dtp->u.p.at_eol = (c == '\n' || c == '\r' || c == EOF);
+  dtp->u.p.at_eol = (c == '\n' || c == EOF);
   return c;
 }
 
@@ -334,7 +334,6 @@ eat_separator (st_parameter_dt *dtp)
       break;
 
     case '\r':
-      dtp->u.p.at_eol = 1;
       if ((n = next_char(dtp)) == EOF)
 	return LIBERROR_END;
       if (n != '\n')

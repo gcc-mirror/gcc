@@ -239,6 +239,10 @@ mword-relocations
 Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
 Only generate absolute relocations on word sized values.
 
+mrestrict-it
+Target Report Var(arm_restrict_it) Init(2)
+Generate IT blocks appropriate for ARMv8.
+
 mfix-cortex-m3-ldrd
 Target Report Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions

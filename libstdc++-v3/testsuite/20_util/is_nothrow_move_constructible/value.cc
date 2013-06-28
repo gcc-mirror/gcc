@@ -55,6 +55,14 @@ void test01()
 	   int (ClassType::*[2][3])>(false)) );
   VERIFY( (test_category<is_nothrow_move_constructible,
 	   int (ClassType::*[][2][3]) (int)>(false)) );
+  VERIFY( (test_category<is_nothrow_move_constructible, 
+       ClassType(unsigned) const &>(false)) );
+  VERIFY( (test_category<is_nothrow_move_constructible, 
+       bool(ClassType) const>(false)) );
+  VERIFY( (test_category<is_nothrow_move_constructible, 
+       bool(...) &&>(false)) );
+  VERIFY( (test_category<is_nothrow_move_constructible, 
+       EnumType(int, ...)>(false)) );
 
   VERIFY( (test_property<is_nothrow_move_constructible,
 	   const NoexceptMoveConsClass>(false)) );

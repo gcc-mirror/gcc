@@ -4,6 +4,7 @@
 ! Allocate/deallocate with libcaf.
 !
 
+ subroutine test()
  integer(4), allocatable :: xx[:], yy(:)[:]
  integer :: stat
  character(len=200) :: errmsg

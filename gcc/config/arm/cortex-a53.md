@@ -89,7 +89,8 @@
 
 (define_insn_reservation "cortex_a53_mul" 3
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "mult"))
+       (ior (eq_attr "mul32" "yes")
+            (eq_attr "mul64" "yes")))
   "cortex_a53_single_issue")
 
 ;; A multiply with a single-register result or an MLA, followed by an
@@ -103,12 +104,12 @@
 ;; Punt with a high enough latency for divides.
 (define_insn_reservation "cortex_a53_udiv" 8
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "insn" "udiv"))
+       (eq_attr "type" "udiv"))
   "(cortex_a53_slot0+cortex_a53_idiv),cortex_a53_idiv*7")
 
 (define_insn_reservation "cortex_a53_sdiv" 9
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "insn" "sdiv"))
+       (eq_attr "type" "sdiv"))
   "(cortex_a53_slot0+cortex_a53_idiv),cortex_a53_idiv*8")
 
 

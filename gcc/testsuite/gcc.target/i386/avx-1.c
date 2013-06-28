@@ -159,6 +159,13 @@
 #define __builtin_ia32_vec_ext_v4hi(A, N) __builtin_ia32_vec_ext_v4hi(A, 0)
 #define __builtin_ia32_shufps(A, B, N) __builtin_ia32_shufps(A, B, 0)
 
+/* f16cintrin.h */
+#define __builtin_ia32_vcvtps2ph(A, I) __builtin_ia32_vcvtps2ph(A, 0)
+#define __builtin_ia32_vcvtps2ph256(A, I) __builtin_ia32_vcvtps2ph256(A, 0)
+
+/* rtmintrin.h */
+#define __builtin_ia32_xabort(I) __builtin_ia32_xabort(0)
+
 #include <wmmintrin.h>
 #include <immintrin.h>
 #include <mm3dnow.h>

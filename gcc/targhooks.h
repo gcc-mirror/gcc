@@ -135,6 +135,7 @@ extern int default_return_pops_args (tree, tree, int);
 extern reg_class_t default_branch_target_register_class (void);
 extern bool default_lra_p (void);
 extern int default_register_priority (int);
+extern bool default_register_usage_leveling_p (void);
 extern bool default_different_addr_displacement_p (void);
 extern reg_class_t default_secondary_reload (bool, rtx, reg_class_t,
 					     enum machine_mode,

@@ -1471,7 +1471,7 @@ typedef struct debug_prefix_map
 } debug_prefix_map;
 
 /* Linked list of such structures.  */
-debug_prefix_map *debug_prefix_maps;
+static debug_prefix_map *debug_prefix_maps;
 
 
 /* Record a debug file prefix mapping.  ARG is the argument to

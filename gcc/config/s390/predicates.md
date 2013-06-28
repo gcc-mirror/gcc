@@ -176,7 +176,11 @@
 {
   if (GET_CODE (XEXP (op, 0)) != REG
       || REGNO (XEXP (op, 0)) != CC_REGNUM
-      || XEXP (op, 1) != const0_rtx)
+      || (XEXP (op, 1) != const0_rtx
+          && !(CONST_INT_P (XEXP (op, 1))
+	       && GET_MODE (XEXP (op, 0)) == CCRAWmode
+	       && INTVAL (XEXP (op, 1)) >= 0
+               && INTVAL (XEXP (op, 1)) <= 15)))
     return false;
 
   return (s390_branch_condition_mask (op) >= 0);
@@ -224,7 +228,11 @@
 
   if (GET_CODE (XEXP (op, 0)) != REG
       || REGNO (XEXP (op, 0)) != CC_REGNUM
-      || XEXP (op, 1) != const0_rtx)
+      || (XEXP (op, 1) != const0_rtx
+          && !(CONST_INT_P (XEXP (op, 1))
+	       && GET_MODE (XEXP (op, 0)) == CCRAWmode
+	       && INTVAL (XEXP (op, 1)) >= 0
+               && INTVAL (XEXP (op, 1)) <= 15)))
     return false;
 
   switch (GET_MODE (XEXP (op, 0)))

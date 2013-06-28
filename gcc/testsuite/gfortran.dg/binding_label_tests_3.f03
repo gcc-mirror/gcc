@@ -2,14 +2,14 @@
 program main
 use iso_c_binding
   interface
-     subroutine p1(f, a1, a2, a3, a4) bind(c, name='printf') ! { dg-error "collides" }
+     subroutine p1(f, a1, a2, a3, a4) bind(c, name='printf') ! Doubtful use ...
        import :: c_ptr, c_int, c_double
        type(c_ptr), value :: f
        integer(c_int), value :: a1, a3
        real(c_double), value :: a2, a4
      end subroutine p1
 
-     subroutine p2(f, a1, a2, a3, a4) bind(c, name='printf') ! { dg-error "collides" }
+     subroutine p2(f, a1, a2, a3, a4) bind(c, name='printf') ! ... with incompatible interfaces
        import :: c_ptr, c_int, c_double
        type(c_ptr), value :: f
        real(c_double), value :: a1, a3

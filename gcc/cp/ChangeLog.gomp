@@ -1,3 +1,12 @@
+2013-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl2.c (cplus_decl_attributes): Only add attribute
+	to TREE_STATIC vars.
+	* parser.c (cp_parser_omp_distribute): Don't reject
+	#pragma omp teams distribute simd and
+	#pragma omp target teams distribute simd.  Consume
+	simd or parallel token.
+
 2013-06-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.c (cp_parser_omp_all_clauses): Add defaulted finish_p

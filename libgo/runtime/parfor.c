@@ -83,7 +83,7 @@ void runtime_parforsetup2(ParFor *, uint32, uint32, void *, bool, void *)
 void
 runtime_parforsetup2(ParFor *desc, uint32 nthr, uint32 n, void *ctx, bool wait, void *body)
 {
-	runtime_parforsetup(desc, nthr, n, ctx, wait, (void(*)(ParFor*, uint32))body);
+	runtime_parforsetup(desc, nthr, n, ctx, wait, *(void(**)(ParFor*, uint32))body);
 }
 
 void

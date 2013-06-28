@@ -30,6 +30,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "gfortran.h"
 
+#ifdef HAVE_TERMIOS_H
+# include <termios.h>
+#endif
+
+#ifdef GWINSZ_IN_SYS_IOCTL
+# include <sys/ioctl.h>
+#endif
+
+
 static int suppress_errors = 0;
 
 static int warnings_not_errors = 0; 
@@ -59,12 +68,45 @@ gfc_pop_suppress_errors (void)
 }
 
 
+/* Determine terminal width (for trimming source lines in output).  */
+
+static int
+get_terminal_width (void)
+{
+  /* Only limit the width if we're outputting to a terminal.  */
+#ifdef HAVE_UNISTD_H
+  if (!isatty (STDERR_FILENO))
+    return INT_MAX;
+#endif
+  
+  /* Method #1: Use ioctl (not available on all systems).  */
+#ifdef TIOCGWINSZ
+  struct winsize w;
+  w.ws_col = 0;
+  if (ioctl (0, TIOCGWINSZ, &w) == 0 && w.ws_col > 0)
+    return w.ws_col;
+#endif
+
+  /* Method #2: Query environment variable $COLUMNS.  */
+  const char *p = getenv ("COLUMNS");
+  if (p)
+    {
+      int value = atoi (p);
+      if (value > 0)
+	return value;
+    }
+
+  /* If both fail, use reasonable default.  */
+  return 80;
+}
+
+
 /* Per-file error initialization.  */
 
 void
 gfc_error_init_1 (void)
 {
-  terminal_width = gfc_terminal_width ();
+  terminal_width = get_terminal_width ();
   errors = 0;
   warnings = 0;
   buffer_flag = 0;

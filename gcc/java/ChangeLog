@@ -1,3 +1,16 @@
+2013-06-05  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (emit_register_classes_in_jcr_section): Use DECL_PRESERVE_P
+	instead of mark_decl_referenced.
+
+2013-05-29  Jan Hubicka  <jh@suse.cz>
+
+	* decl.c (java_mark_decl_local): Update for new symtab flags.
+
+2013-05-22  Matthias Klose  <doko@ubuntu.com>
+
+	* jvspec.c (jvgenmain_spec): Add %I to cc1 call.
+
 2013-05-16  Jason Merrill  <jason@redhat.com>
 
 	* Make-lang.in (jc1$(exeext)): Use link mutex.

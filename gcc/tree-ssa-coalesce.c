@@ -943,8 +943,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		continue;
 
 	      register_ssa_partition (map, arg);
-	      if ((SSA_NAME_VAR (arg) == SSA_NAME_VAR (res)
-		   && TREE_TYPE (arg) == TREE_TYPE (res))
+	      if (gimple_can_coalesce_p (arg, res)
 		  || (e->flags & EDGE_ABNORMAL))
 		{
 		  saw_copy = true;
@@ -985,8 +984,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		if (gimple_assign_copy_p (stmt)
                     && TREE_CODE (lhs) == SSA_NAME
 		    && TREE_CODE (rhs1) == SSA_NAME
-		    && SSA_NAME_VAR (lhs) == SSA_NAME_VAR (rhs1)
-		    && TREE_TYPE (lhs) == TREE_TYPE (rhs1))
+		    && gimple_can_coalesce_p (lhs, rhs1))
 		  {
 		    v1 = SSA_NAME_VERSION (lhs);
 		    v2 = SSA_NAME_VERSION (rhs1);
@@ -1037,8 +1035,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		    v1 = SSA_NAME_VERSION (outputs[match]);
 		    v2 = SSA_NAME_VERSION (input);
 
-		    if (SSA_NAME_VAR (outputs[match]) == SSA_NAME_VAR (input)
-			&& TREE_TYPE (outputs[match]) == TREE_TYPE (input))
+		    if (gimple_can_coalesce_p (outputs[match], input))
 		      {
 			cost = coalesce_cost (REG_BR_PROB_BASE,
 					      optimize_bb_for_size_p (bb));
@@ -1072,8 +1069,7 @@ create_outofssa_var_map (coalesce_list_p cl, bitmap used_in_copy)
 		first = var;
 	      else
 		{
-		  gcc_assert (SSA_NAME_VAR (var) == SSA_NAME_VAR (first)
-			      && TREE_TYPE (var) == TREE_TYPE (first));
+		  gcc_assert (gimple_can_coalesce_p (var, first));
 		  v1 = SSA_NAME_VERSION (first);
 		  v2 = SSA_NAME_VERSION (var);
 		  bitmap_set_bit (used_in_copy, v1);
@@ -1210,8 +1206,7 @@ coalesce_partitions (var_map map, ssa_conflicts_p graph, coalesce_list_p cl,
       var2 = ssa_name (y);
 
       /* Assert the coalesces have the same base variable.  */
-      gcc_assert (SSA_NAME_VAR (var1) == SSA_NAME_VAR (var2)
-		  && TREE_TYPE (var1) == TREE_TYPE (var2));
+      gcc_assert (gimple_can_coalesce_p (var1, var2));
 
       if (debug)
 	fprintf (debug, "Coalesce list: ");
@@ -1340,4 +1335,39 @@ coalesce_ssa_name (void)
   ssa_conflicts_delete (graph);
 
   return map;
+}
+
+/* Given SSA_NAMEs NAME1 and NAME2, return true if they are candidates for
+   coalescing together, false otherwise.
+
+   This must stay consistent with var_map_base_init in tree-ssa-live.c.  */
+
+bool
+gimple_can_coalesce_p (tree name1, tree name2)
+{
+  /* First check the SSA_NAME's associated DECL.  We only want to
+     coalesce if they have the same DECL or both have no associated DECL.  */
+  if (SSA_NAME_VAR (name1) != SSA_NAME_VAR (name2))
+    return false;
+
+  /* Now check the types.  If the types are the same, then we should
+     try to coalesce V1 and V2.  */
+  tree t1 = TREE_TYPE (name1);
+  tree t2 = TREE_TYPE (name2);
+  if (t1 == t2)
+    return true;
+
+  /* If the types are not the same, check for a canonical type match.  This
+     (for example) allows coalescing when the types are fundamentally the
+     same, but just have different names. 
+
+     Note pointer types with different address spaces may have the same
+     canonical type.  Those are rejected for coalescing by the
+     types_compatible_p check.  */
+  if (TYPE_CANONICAL (t1)
+      && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
+      && types_compatible_p (t1, t2))
+    return true;
+
+  return false;
 }

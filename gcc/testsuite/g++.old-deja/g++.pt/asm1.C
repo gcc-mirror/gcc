@@ -1,4 +1,4 @@
-// { dg-do assemble { target i?86-*-linux* x86_64-*-linux* } }
+// { dg-do assemble { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } }
 // We'd use ebx with 32-bit pic code, so skip.
 // { dg-skip-if "" { ilp32 && { ! nonpic } } { "*" } { "" } }
 // Origin: "Weidmann, Nicholas" <nicholas.weidmann@swx.ch>

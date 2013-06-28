@@ -1,5 +1,5 @@
 /* PR debug/50983 */
-/* { dg-do compile { target *-*-linux-gnu } } */
+/* { dg-do compile { target *-*-gnu* } } */
 /* { dg-options "-O0 -gdwarf-2" } */
 /* { dg-final { scan-assembler "is_stmt 1" } } */
 

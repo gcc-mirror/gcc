@@ -29,8 +29,10 @@
 #define _FMAINTRIN_H_INCLUDED
 
 #ifndef __FMA__
-# error "FMA instruction set not enabled"
-#else
+#pragma GCC push_options
+#pragma GCC target("fma")
+#define __DISABLE_FMA__
+#endif /* __FMA__ */
 
 extern __inline __m128d
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -292,6 +294,9 @@ _mm256_fmsubadd_ps (__m256 __A, __m256 __B, __m256 __C)
                                                 -(__v8sf)__C);
 }
 
-#endif
+#ifdef __DISABLE_FMA__
+#undef __DISABLE_FMA__
+#pragma GCC pop_options
+#endif /* __DISABLE_FMA__ */
 
 #endif

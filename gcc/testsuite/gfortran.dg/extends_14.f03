@@ -16,12 +16,13 @@ program evolve_aflow
   type, extends(state_t) :: astate_t
   end type
 
+ block ! New scoping unit as "a"/"b" are otherwise implicitly SAVEd
   type(astate_t) :: a,b
 
   allocate(a%U(1000))
 
   a = b
-
+ end block
 end program 
 
 ! { dg-final { scan-tree-dump-times "__builtin_free" 3 "original" } }

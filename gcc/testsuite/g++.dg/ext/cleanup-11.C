@@ -1,4 +1,4 @@
-/* { dg-do run { target hppa*-*-hpux* *-*-linux* powerpc*-*-darwin* *-*-darwin[912]* } } */
+/* { dg-do run { target hppa*-*-hpux* *-*-linux* *-*-gnu* powerpc*-*-darwin* *-*-darwin[912]* } } */
 /* { dg-options "-fexceptions -fnon-call-exceptions -O2" } */
 /* Verify that cleanups work with exception handling through realtime signal
    frames on alternate stack.  */

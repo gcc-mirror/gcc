@@ -1,3 +1,144 @@
+2013-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_BY_DOUBLE_REF_P): Delete.
+	* gcc-interface/gigi.h (annotate_object): Adjust prototype.
+	(convert_vms_descriptor): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not pass fat pointer
+	types by double dereference.
+	(annotate_object): Remove BY_DOUBLE_REF parameter and adjust.
+	(gnat_to_gnu_entity): Adjust calls to annotate_object.
+	* gcc-interface/trans.c (Identifier_to_gnu): Do not deal with double
+	dereference.
+	(Call_to_gnu): Likewise.
+	(build_function_stub): Adjust call to convert_vms_descriptor.
+	(Subprogram_Body_to_gnu): Adjust call to annotate_object.
+	* gcc-interface/utils.c (convert_vms_descriptor): Remove BY_REF
+	parameter and adjust.
+
+2013-05-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (arm% androideabi): Robustify.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c: (gnat_to_gnu_entity): In ASIS mode, do not
+	check that access types have a set size.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (vinfo_t): New type and associated vector.
+	(components_to_record): Change return type to bool.
+	Lay out the variants in two passes.  Do not force a specific layout for
+	the variant part if the variants do not have a representation clause.
+	Take the alignment of the variant part into account when laying out
+	variants without rep clause in a record type with a partial rep clause.
+	(create_rep_part): Do not set the position of the field.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Last_Bit>: Add kludge
+	to avoid generating an overflow for -1.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (create_type_decl): Adjust prototype.
+	(create_label_decl): Complete prototype.
+	(process_attributes): Declare.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust multiple calls to
+	create_type_decl throughout.
+	<E_Enumeration_Type>: Do the layout of the type manually and call
+	process_attributes on it.  Reindent.
+	<E_Enumeration_Subtype>: Minor tweak.
+	<E_Floating_Point_Subtype>: Reindent.
+	<E_Array_Subtype>: Call process_attributes on the array type built
+	for a packed array type.
+	<E_Record_Type>: Call process_attributes on the type.
+	<E_Record_Subtype>: Likewise.
+	<E_Access_Type>: Likewise.
+	<E_Subprogram_Type>: Likewise.
+	Likewise for all types at the end of the processing.
+	* gcc-interface/utils.c (make_aligning_type): Adjust call to
+	create_type_decl.
+	(maybe_pad_type): Likewise.
+	(create_index_type): Likewise.
+	(create_type_decl): Remove attr_list parameter and associated code.
+	(create_var_decl_1): Call process_attributes on the variable.
+	(process_attributes): Take a pointer to the object and add in_place
+	and gnat_node parameters and adjust throughout.
+	<ATTR_MACHINE_ATTRIBUTE>: Pass ATTR_FLAG_TYPE_IN_PLACE only on demand
+	and set the input location.
+	Zap the attribute list at the end.
+	(create_subprog_decl): Call process_attributes on the subprogram.
+	(build_unc_object_type): Adjust call to create_type_decl.
+	(handle_vector_type_attribute): Remove dead code.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (make_aligning_type): Adjust prototype.
+	* gcc-interface/utils.c (make_aligning_type): Take GNAT_NODE parameter
+	for the position of the associated TYPE_DECL.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Adjust call to above.
+	* gcc-interface/utils2.c (maybe_wrap_malloc): Likewise.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not prematurely
+	elaborate the full view of a type with a freeze node.
+	* gcc-interface/trans.c (process_type): Add explicit predicate.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <object>: Always build the
+	UNC variable for aliased objects with unconstrained nominal subtype.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (gnat_init_gcc_fp): Declare.
+	* gcc-interface/trans.c (gigi): Call it.
+	* gcc-interface/misc.c (gnat_init_gcc_fp): New function.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (enum inline_status_t): New type.
+	(create_subprog_decl): Adjust prototype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Procedure>: Adjust
+	calls to create_subprog_decl.
+	(get_minimal_subprog_decl): Likewise.
+	* gcc-interface/trans.c (gigi): Likewise.
+	(build_raise_check): Likewise.
+	(establish_gnat_vms_condition_handler): Likewise.
+	(Compilation_Unit_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (create_subprog_decl): Change inline_flag
+	parameter to inline_status and implement for suppressed inlining.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (LOOP_STMT_NO_UNROLL): New define.
+	(LOOP_STMT_UNROLL): Likewise.
+	(LOOP_STMT_NO_VECTOR): Likewise.
+	(LOOP_STMT_VECTOR): Likewise.
+	* gcc-interface/trans.c (struct loop_info_d): Replace label field
+	with stmt field.
+	(Pragma_to_gnu) <Pragma_Loop_Optimize>: New case.
+	(Loop_Statement_to_gnu): Save the loop statement onto the stack
+	instead of the label.
+	(gnat_to_gnu) <N_Exit_Statement>: Retrieve the loop label.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c: Include diagnostic.h and opts.h.
+	(Pragma_to_gnu) <Pragma_Warnings>: New case.
+
+2013-05-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Constify
+	a handful of local variables.
+	For a derived untagged type that renames discriminants, change the type
+	of the stored discriminants to a subtype with the bounds of the type
+	of the visible discriminants.
+	(build_subst_list): Rename local variable.
+
 2013-05-16  Jason Merrill  <jason@redhat.com>
 
 	* gcc-interface/Make-lang.in (gnat1$(exeext)): Use link mutex.
@@ -13,7 +154,7 @@
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Use
 	int_const_binop to shift bounds by 1 when they are integer constants.
 
-2013-04-25  Arnaud Charlet  <charlet@adacore.com>
+2013-04-25  Arnaud Charlet  <charlet@adacore.com>>
 
 	* gcc-interface/Makefile.in (ADA_EXCLUDE_SRCS): Exclude s-init.ad{s,b}
 

@@ -47,6 +47,8 @@ enum processor_vendor
   VENDOR_MAX
 };
 
+/* Any new types or subtypes have to be inserted at the end. */
+
 enum processor_types
 {
   INTEL_ATOM = 1,
@@ -54,6 +56,7 @@ enum processor_types
   INTEL_COREI7,
   AMDFAM10H,
   AMDFAM15H,
+  INTEL_SLM,
   CPU_TYPE_MAX
 };
 

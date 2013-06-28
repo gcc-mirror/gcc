@@ -27,12 +27,14 @@
 #ifndef _TMMINTRIN_H_INCLUDED
 #define _TMMINTRIN_H_INCLUDED
 
-#ifndef __SSSE3__
-# error "SSSE3 instruction set not enabled"
-#else
-
 /* We need definitions from the SSE3, SSE2 and SSE header files*/
 #include <pmmintrin.h>
+
+#ifndef __SSSE3__
+#pragma GCC push_options
+#pragma GCC target("ssse3")
+#define __DISABLE_SSSE3__
+#endif /* __SSSE3__ */
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_hadd_epi16 (__m128i __X, __m128i __Y)
@@ -239,6 +241,9 @@ _mm_abs_pi32 (__m64 __X)
   return (__m64) __builtin_ia32_pabsd ((__v2si)__X);
 }
 
-#endif /* __SSSE3__ */
+#ifdef __DISABLE_SSSE3__
+#undef __DISABLE_SSSE3__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSSE3__ */
 
 #endif /* _TMMINTRIN_H_INCLUDED */

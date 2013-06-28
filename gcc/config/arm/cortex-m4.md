@@ -31,7 +31,10 @@
 ;; ALU and multiply is one cycle.
 (define_insn_reservation "cortex_m4_alu" 1
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "alu_reg,simple_alu_imm,simple_alu_shift,alu_shift,alu_shift_reg,mult"))
+       (ior (eq_attr "type" "alu_reg,simple_alu_imm,simple_alu_shift,\
+                             alu_shift,alu_shift_reg")
+	    (ior (eq_attr "mul32" "yes")
+		 (eq_attr "mul64" "yes"))))
   "cortex_m4_ex")
 
 ;; Byte, half-word and word load is two cycles.

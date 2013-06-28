@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-std=gnu++11 -g" }
+// { dg-options "-std=gnu++11 -g -O0" }
 
 // Copyright (C) 2012-2013 Free Software Foundation, Inc.
 //

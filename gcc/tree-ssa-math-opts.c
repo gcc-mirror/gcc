@@ -1445,12 +1445,41 @@ execute_cse_sincos (void)
 		CASE_FLT_FN (BUILT_IN_POWI):
 		  arg0 = gimple_call_arg (stmt, 0);
 		  arg1 = gimple_call_arg (stmt, 1);
-		  if (!host_integerp (arg1, 0))
-		    break;
-
-		  n = TREE_INT_CST_LOW (arg1);
 		  loc = gimple_location (stmt);
-		  result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
+
+		  if (real_minus_onep (arg0))
+		    {
+                      tree t0, t1, cond, one, minus_one;
+		      gimple stmt;
+
+		      t0 = TREE_TYPE (arg0);
+		      t1 = TREE_TYPE (arg1);
+		      one = build_real (t0, dconst1);
+		      minus_one = build_real (t0, dconstm1);
+
+		      cond = make_temp_ssa_name (t1, NULL, "powi_cond");
+		      stmt = gimple_build_assign_with_ops (BIT_AND_EXPR, cond,
+							   arg1,
+							   build_int_cst (t1,
+									  1));
+		      gimple_set_location (stmt, loc);
+		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+
+		      result = make_temp_ssa_name (t0, NULL, "powi");
+		      stmt = gimple_build_assign_with_ops (COND_EXPR, result,
+							   cond,
+							   minus_one, one);
+		      gimple_set_location (stmt, loc);
+		      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+		    }
+		  else
+		    {
+		      if (!host_integerp (arg1, 0))
+			break;
+
+		      n = TREE_INT_CST_LOW (arg1);
+		      result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
+		    }
 
 		  if (result)
 		    {

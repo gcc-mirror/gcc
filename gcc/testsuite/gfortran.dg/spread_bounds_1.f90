@@ -8,5 +8,5 @@ program main
   times = 2
   target = spread(source,2,times)
 end program main
-! { dg-output "Fortran runtime error:  Incorrect extent in return value of SPREAD intrinsic in dimension 2: is 3, should be 2"
+! { dg-output "Fortran runtime error: Incorrect extent in return value of SPREAD intrinsic in dimension 2: is 3, should be 2" }
 

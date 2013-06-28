@@ -40,6 +40,8 @@ extern void ix86_output_addr_diff_elt (FILE *, int, int);
 extern enum calling_abi ix86_cfun_abi (void);
 extern enum calling_abi ix86_function_type_abi (const_tree);
 
+extern void ix86_reset_previous_fndecl (void);
+
 #ifdef RTX_CODE
 extern int standard_80387_constant_p (rtx);
 extern const char *standard_80387_constant_opcode (rtx);
@@ -207,7 +209,7 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 #endif	/* RTX_CODE  */
 
 #ifdef TREE_CODE
-extern int ix86_data_alignment (tree, int);
+extern int ix86_data_alignment (tree, int, bool);
 extern unsigned int ix86_local_alignment (tree, enum machine_mode,
 					  unsigned int);
 extern unsigned int ix86_minimum_alignment (tree, enum machine_mode,

@@ -481,7 +481,7 @@
   operands[7] = simplify_gen_subreg (CCV2mode, operands[0], CCV4mode, 8);
 }
   [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
+   (set_attr "insn_count" "2")
    (set_attr "mode" "FPSW")])
 
 (define_insn_and_split "mips_cabs_cond_4s"
@@ -510,7 +510,7 @@
   operands[7] = simplify_gen_subreg (CCV2mode, operands[0], CCV4mode, 8);
 }
   [(set_attr "type" "fcmp")
-   (set_attr "length" "8")
+   (set_attr "insn_count" "2")
    (set_attr "mode" "FPSW")])
 
 

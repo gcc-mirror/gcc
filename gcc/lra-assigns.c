@@ -603,11 +603,7 @@ find_hard_regno_for (int regno, int *cost, int try_only_hard_regno)
 	  if (best_hard_regno < 0 || hard_regno_costs[hard_regno] < best_cost
 	      || (hard_regno_costs[hard_regno] == best_cost
 		  && (priority > best_priority
-		      /* Hard register usage leveling actually results
-			 in bigger code for targets with conditional
-			 execution like ARM because it reduces chance
-			 of if-conversion after LRA.  */
-		      || (! targetm.have_conditional_execution ()
+		      || (targetm.register_usage_leveling_p ()
 			  && priority == best_priority
 			  && best_usage > lra_hard_reg_usage[hard_regno]))))
 	    {

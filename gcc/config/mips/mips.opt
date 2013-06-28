@@ -141,6 +141,10 @@ membedded-data
 Target Report Var(TARGET_EMBEDDED_DATA)
 Use ROM instead of RAM
 
+meva
+Target Report Var(TARGET_EVA)
+Use Enhanced Virtual Addressing instructions
+
 mexplicit-relocs
 Target Report Mask(EXPLICIT_RELOCS)
 Use NewABI-style %reloc() assembly operators

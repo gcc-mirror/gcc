@@ -120,18 +120,33 @@ bp_unpack_string (struct data_in *data_in, struct bitpack_d *bp)
 unsigned HOST_WIDE_INT
 streamer_read_uhwi (struct lto_input_block *ib)
 {
-  unsigned HOST_WIDE_INT result = 0;
-  int shift = 0;
+  unsigned HOST_WIDE_INT result;
+  int shift;
   unsigned HOST_WIDE_INT byte;
+  unsigned int p = ib->p;
+  unsigned int len = ib->len;
 
-  while (true)
+  const char *data = ib->data;
+  result = data[p++];
+  if ((result & 0x80) != 0)
     {
-      byte = streamer_read_uchar (ib);
-      result |= (byte & 0x7f) << shift;
-      shift += 7;
-      if ((byte & 0x80) == 0)
-	return result;
+      result &= 0x7f;
+      shift = 7;
+      do
+	{
+	  byte = data[p++];
+	  result |= (byte & 0x7f) << shift;
+	  shift += 7;
+	}
+      while ((byte & 0x80) != 0);
     }
+
+  /* We check for section overrun after the fact for performance reason.  */
+  if (p > len)
+    lto_section_overrun (ib);
+
+  ib->p = p;
+  return result;
 }
 
 

@@ -1937,8 +1937,8 @@ match_derived_type_spec (gfc_typespec *ts)
    the implicit_flag is not needed, so it was removed. Derived types are
    identified by their name alone.  */
 
-static match
-match_type_spec (gfc_typespec *ts)
+match
+gfc_match_type_spec (gfc_typespec *ts)
 {
   match m;
   locus old_locus;
@@ -3426,7 +3426,7 @@ gfc_match_allocate (void)
 
   /* Match an optional type-spec.  */
   old_locus = gfc_current_locus;
-  m = match_type_spec (&ts);
+  m = gfc_match_type_spec (&ts);
   if (m == MATCH_ERROR)
     goto cleanup;
   else if (m == MATCH_NO)
@@ -4332,7 +4332,6 @@ gfc_match_common (void)
   gfc_array_spec *as;
   gfc_equiv *e1, *e2;
   match m;
-  gfc_gsymbol *gsym;
 
   old_blank_common = gfc_current_ns->blank_common.head;
   if (old_blank_common)
@@ -4348,23 +4347,6 @@ gfc_match_common (void)
       m = match_common_name (name);
       if (m == MATCH_ERROR)
 	goto cleanup;
-
-      gsym = gfc_get_gsymbol (name);
-      if (gsym->type != GSYM_UNKNOWN && gsym->type != GSYM_COMMON)
-	{
-	  gfc_error ("Symbol '%s' at %C is already an external symbol that "
-		     "is not COMMON", name);
-	  goto cleanup;
-	}
-
-      if (gsym->type == GSYM_UNKNOWN)
-	{
-	  gsym->type = GSYM_COMMON;
-	  gsym->where = gfc_current_locus;
-	  gsym->defined = 1;
-	}
-
-      gsym->used = 1;
 
       if (name[0] == '\0')
 	{
@@ -5520,7 +5502,7 @@ gfc_match_type_is (void)
   c = gfc_get_case ();
   c->where = gfc_current_locus;
 
-  if (match_type_spec (&c->ts) == MATCH_ERROR)
+  if (gfc_match_type_spec (&c->ts) == MATCH_ERROR)
     goto cleanup;
 
   if (gfc_match_char (')') != MATCH_YES)

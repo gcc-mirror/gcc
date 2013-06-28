@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-char src[16];
+char src[16] = {0};
 
 void aligned_src (char *dest)
 {

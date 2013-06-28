@@ -139,22 +139,22 @@
 
 (define_insn_reservation "cortex_a8_mul" 6
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "insn" "mul,smulxy,smmul"))
+       (eq_attr "type" "mul,smulxy,smmul"))
   "cortex_a8_multiply_2")
 
 (define_insn_reservation "cortex_a8_mla" 6
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "insn" "mla,smlaxy,smlawy,smmla,smlad,smlsd"))
+       (eq_attr "type" "mla,smlaxy,smlawy,smmla,smlad,smlsd"))
   "cortex_a8_multiply_2")
 
 (define_insn_reservation "cortex_a8_mull" 7
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "insn" "smull,umull,smlal,umlal,umaal,smlalxy"))
+       (eq_attr "type" "smull,umull,smlal,umlal,umaal,smlalxy"))
   "cortex_a8_multiply_3")
 
 (define_insn_reservation "cortex_a8_smulwy" 5
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "insn" "smulwy,smuad,smusd"))
+       (eq_attr "type" "smulwy,smuad,smusd"))
   "cortex_a8_multiply")
 
 ;; smlald and smlsld are multiply-accumulate instructions but do not
@@ -162,7 +162,7 @@
 ;; cannot go in cortex_a8_mla above.  (See below for bypass details.)
 (define_insn_reservation "cortex_a8_smlald" 6
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "insn" "smlald,smlsld"))
+       (eq_attr "type" "smlald,smlsld"))
   "cortex_a8_multiply_2")
 
 ;; A multiply with a single-register result or an MLA, followed by an

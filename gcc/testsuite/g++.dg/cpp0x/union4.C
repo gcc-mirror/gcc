@@ -3,7 +3,7 @@
 
 struct SFoo
 {
-  SFoo() =delete;		// { dg-error "declared" }
+  SFoo() =delete;		// { dg-message "declared" }
 };
 
 union UFoo			// { dg-error "deleted" }

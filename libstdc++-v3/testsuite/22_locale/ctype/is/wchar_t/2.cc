@@ -1,4 +1,4 @@
-// { dg-do run { xfail *-*-![linux]* } }
+// { dg-do run { xfail { ! { *-*-linux* *-*-gnu* } } } }
 // { dg-require-namedlocale "de_DE" }
 
 // Copyright (C) 2000-2013 Free Software Foundation, Inc.

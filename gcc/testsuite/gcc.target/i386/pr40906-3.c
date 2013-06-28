@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* } } */
 /* { dg-require-effective-target ia32 } */
 /* { dg-require-effective-target sse2 } */
 /* { dg-options "-O2 -fomit-frame-pointer -fno-asynchronous-unwind-tables -msse2 -mpush-args -mno-accumulate-outgoing-args" } */

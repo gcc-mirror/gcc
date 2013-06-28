@@ -24,12 +24,13 @@
 
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
+extern bool use_simple_return_p (void);
 extern enum reg_class arm_regno_class (int);
 extern void arm_load_pic_register (unsigned long);
 extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
-extern void thumb2_expand_return (void);
+extern void thumb2_expand_return (bool);
 extern const char *arm_strip_name_encoding (const char *);
 extern void arm_asm_output_labelref (FILE *, const char *);
 extern void thumb2_asm_output_opcode (FILE *);
@@ -94,7 +95,7 @@ extern enum reg_class coproc_secondary_reload_class (enum machine_mode, rtx,
 extern bool arm_tls_referenced_p (rtx);
 
 extern int arm_coproc_mem_operand (rtx, bool);
-extern int neon_vector_mem_operand (rtx, int);
+extern int neon_vector_mem_operand (rtx, int, bool);
 extern int neon_struct_mem_operand (rtx);
 extern int arm_no_early_store_addr_dep (rtx, rtx);
 extern int arm_early_store_addr_dep (rtx, rtx);
@@ -227,6 +228,8 @@ extern const char *arm_mangle_type (const_tree);
 
 extern void arm_order_regs_for_local_alloc (void);
 
+extern int arm_max_conditional_execute ();
+
 /* Vectorizer cost model implementation.  */
 struct cpu_vec_costs {
   const int scalar_stmt_cost;   /* Cost of any scalar operation, excluding
@@ -256,8 +259,7 @@ struct tune_params
   bool (*rtx_costs) (rtx, RTX_CODE, RTX_CODE, int *, bool);
   bool (*sched_adjust_cost) (rtx, rtx, rtx, int *);
   int constant_limit;
-  /* Maximum number of instructions to conditionalise in
-     arm_final_prescan_insn.  */
+  /* Maximum number of instructions to conditionalise.  */
   int max_insns_skipped;
   int num_prefetch_slots;
   int l1_cache_size;

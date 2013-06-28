@@ -119,20 +119,15 @@ class TestResult(object):
 
   def __init__(self, summary_line, ordinal=-1):
     try:
-      self.attrs = ''
-      if '|' in summary_line:
-        (self.attrs, summary_line) = summary_line.split('|', 1)
+      (self.attrs, summary_line) = SplitAttributesFromSummaryLine(summary_line)
       try:
         (self.state,
          self.name,
-         self.description) = re.match(r' *([A-Z]+):\s*(\S+)\s+(.*)',
+         self.description) = re.match(r'([A-Z]+):\s*(\S+)\s*(.*)',
                                       summary_line).groups()
       except:
         print 'Failed to parse summary line: "%s"' % summary_line
         raise
-      self.attrs = self.attrs.strip()
-      self.state = self.state.strip()
-      self.description = self.description.strip()
       self.ordinal = ordinal
     except ValueError:
       Error('Cannot parse summary line "%s"' % summary_line)
@@ -208,11 +203,20 @@ def IsComment(line):
   return line.startswith('#')
 
 
+def SplitAttributesFromSummaryLine(line):
+  """Splits off attributes from a summary line, if present."""
+  if '|' in line and not _VALID_TEST_RESULTS_REX.match(line):
+    (attrs, line) = line.split('|', 1)
+    attrs = attrs.strip()
+  else:
+    attrs = ''
+  line = line.strip()
+  return (attrs, line)
+
+
 def IsInterestingResult(line):
   """Return True if line is one of the summary lines we care about."""
-  if '|' in line:
-    (_, line) = line.split('|', 1)
-    line = line.strip()
+  (_, line) = SplitAttributesFromSummaryLine(line)
   return bool(_VALID_TEST_RESULTS_REX.match(line))
 
 
@@ -416,8 +420,9 @@ def PerformComparison(expected, actual, ignore_missing_failures):
   if not ignore_missing_failures and len(expected_vs_actual) > 0:
     PrintSummary('Expected results not present in this build (fixed tests)'
                  '\n\nNOTE: This is not a failure.  It just means that these '
-                 'tests were expected\nto fail, but they worked in this '
-                 'configuration.\n', expected_vs_actual)
+                 'tests were expected\nto fail, but either they worked in '
+                 'this configuration or they were not\npresent at all.\n',
+                 expected_vs_actual)
 
   if tests_ok:
     print '\nSUCCESS: No unexpected failures.'

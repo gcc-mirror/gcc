@@ -859,10 +859,20 @@ emit_spill_move (bool to_p, rtx mem_pseudo, rtx val)
 {
   if (GET_MODE (mem_pseudo) != GET_MODE (val))
     {
-      val = gen_rtx_SUBREG (GET_MODE (mem_pseudo),
-			    GET_CODE (val) == SUBREG ? SUBREG_REG (val) : val,
-			    0);
-      LRA_SUBREG_P (val) = 1;
+      lra_assert (GET_MODE_SIZE (GET_MODE (mem_pseudo))
+		  >= GET_MODE_SIZE (GET_MODE (val)));
+      if (! MEM_P (val))
+	{
+	  val = gen_rtx_SUBREG (GET_MODE (mem_pseudo),
+				GET_CODE (val) == SUBREG ? SUBREG_REG (val) : val,
+				0);
+	  LRA_SUBREG_P (val) = 1;
+	}
+      else
+	{
+	  mem_pseudo = gen_lowpart_SUBREG (GET_MODE (val), mem_pseudo);
+	  LRA_SUBREG_P (mem_pseudo) = 1;
+	}
     }
   return (to_p
 	  ? gen_move_insn (mem_pseudo, val)
@@ -890,7 +900,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
     dreg = SUBREG_REG (dest);
   if (GET_CODE (src) == SUBREG)
     sreg = SUBREG_REG (src);
-  if (! REG_P (dreg) || ! REG_P (sreg))
+  if (! (REG_P (dreg) || MEM_P (dreg)) || ! (REG_P (sreg) || MEM_P (sreg)))
     return false;
   sclass = dclass = NO_REGS;
   if (REG_P (dreg))
@@ -911,14 +921,22 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
   if (sclass == ALL_REGS)
     /* See comments above.  */
     return false;
+  if (sclass == NO_REGS && dclass == NO_REGS)
+    return false;
 #ifdef SECONDARY_MEMORY_NEEDED
-  if (dclass != NO_REGS && sclass != NO_REGS
-      && SECONDARY_MEMORY_NEEDED (sclass, dclass, GET_MODE (src)))
+  if (SECONDARY_MEMORY_NEEDED (sclass, dclass, GET_MODE (src))
+#ifdef SECONDARY_MEMORY_NEEDED_MODE
+      && ((sclass != NO_REGS && dclass != NO_REGS)
+	  || GET_MODE (src) != SECONDARY_MEMORY_NEEDED_MODE (GET_MODE (src)))
+#endif
+      )
     {
       *sec_mem_p = true;
       return false;
     }
 #endif
+  if (! REG_P (dreg) || ! REG_P (sreg))
+    return false;
   sri.prev_sri = NULL;
   sri.icode = CODE_FOR_nothing;
   sri.extra_cost = 0;
@@ -1979,15 +1997,8 @@ process_alt_operands (int only_alternative)
 			      (op, this_alternative) == NO_REGS))))
 		reject += LRA_MAX_REJECT;
 
-	      if (MEM_P (op) && offmemok)
-		{
-		  /* If we know offset and this non-offsetable memory,
-		     something wrong with this memory and it is better
-		     to try other memory possibilities.  */
-		  if (MEM_OFFSET_KNOWN_P (op))
-		    reject += LRA_MAX_REJECT;
-		}
-	      else if (! (const_to_mem && constmemok))
+	      if (! (MEM_P (op) && offmemok)
+		  && ! (const_to_mem && constmemok))
 		{
 		  /* We prefer to reload pseudos over reloading other
 		     things, since such reloads may be able to be
@@ -3006,16 +3017,22 @@ curr_insn_transform (void)
 	  /* If the target says specifically to use another mode for
 	     secondary memory moves we can not reuse the original
 	     insn.  */
-         after = emit_spill_move (false, new_reg, dest);
-         lra_process_new_insns (curr_insn, NULL_RTX, after,
-                                "Inserting the sec. move");
-         before = emit_spill_move (true, new_reg, src);
-         lra_process_new_insns (curr_insn, before, NULL_RTX, "Changing on");
-         lra_set_insn_deleted (curr_insn);
-       }
+	  after = emit_spill_move (false, new_reg, dest);
+	  lra_process_new_insns (curr_insn, NULL_RTX, after,
+				 "Inserting the sec. move");
+	  /* We may have non null BEFORE here (e.g. after address
+	     processing.  */
+	  push_to_sequence (before);
+	  before = emit_spill_move (true, new_reg, src);
+	  emit_insn (before);
+	  before = get_insns ();
+	  end_sequence ();
+	  lra_process_new_insns (curr_insn, before, NULL_RTX, "Changing on");
+	  lra_set_insn_deleted (curr_insn);
+	}
       else if (dest == rld)
-       {
-         *curr_id->operand_loc[0] = new_reg;
+        {
+	  *curr_id->operand_loc[0] = new_reg;
 	  after = emit_spill_move (false, new_reg, dest);
 	  lra_process_new_insns (curr_insn, NULL_RTX, after,
 				 "Inserting the sec. move");
@@ -3023,7 +3040,12 @@ curr_insn_transform (void)
       else
 	{
 	  *curr_id->operand_loc[1] = new_reg;
+	  /* See comments above.  */
+	  push_to_sequence (before);
 	  before = emit_spill_move (true, new_reg, src);
+	  emit_insn (before);
+	  before = get_insns ();
+	  end_sequence ();
 	  lra_process_new_insns (curr_insn, before, NULL_RTX,
 				 "Inserting the sec. move");
 	}
@@ -3823,7 +3845,9 @@ struct usage_insns
 {
   /* If the value is equal to CURR_USAGE_INSNS_CHECK, then the member
      value INSNS is valid.  The insns is chain of optional debug insns
-     and a finishing non-debug insn using the corresponding reg.  */
+     and a finishing non-debug insn using the corresponding reg.  The
+     value is also used to mark the registers which are set up in the
+     current insn.  The negated insn uid is used for this.  */
   int check;
   /* Value of global reloads_num at the last insn in INSNS.  */
   int reloads_num;
@@ -4514,7 +4538,7 @@ update_ebb_live_info (rtx head, rtx tail)
 	  bitmap_clear_bit (&live_regs, reg->regno);
       /* Mark each used value as live.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_IN
+	if (reg->type != OP_OUT
 	    && bitmap_bit_p (&check_only_regs, reg->regno))
 	  bitmap_set_bit (&live_regs, reg->regno);
       /* It is quite important to remove dead move insns because it
@@ -4738,75 +4762,81 @@ inherit_in_ebb (rtx head, rtx tail)
 	}
       else if (INSN_P (curr_insn))
 	{
+	  int iter;
 	  int max_uid = get_max_uid ();
 
 	  curr_id = lra_get_insn_recog_data (curr_insn);
+	  curr_static_id = curr_id->insn_static_data;
 	  to_inherit_num = 0;
 	  /* Process insn definitions.	*/
-	  for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	    if (reg->type != OP_IN
-		&& (dst_regno = reg->regno) < lra_constraint_new_regno_start)
-	      {
-		if (dst_regno >= FIRST_PSEUDO_REGISTER && reg->type == OP_OUT
-		    && reg_renumber[dst_regno] < 0 && ! reg->subreg_p
-		    && usage_insns[dst_regno].check == curr_usage_insns_check
-		    && (next_usage_insns
-			= usage_insns[dst_regno].insns) != NULL_RTX)
-		  {
-		    struct lra_insn_reg *r;
+	  for (iter = 0; iter < 2; iter++)
+	    for (reg = iter == 0 ? curr_id->regs : curr_static_id->hard_regs;
+		 reg != NULL;
+		 reg = reg->next)
+	      if (reg->type != OP_IN
+		  && (dst_regno = reg->regno) < lra_constraint_new_regno_start)
+		{
+		  if (dst_regno >= FIRST_PSEUDO_REGISTER && reg->type == OP_OUT
+		      && reg_renumber[dst_regno] < 0 && ! reg->subreg_p
+		      && usage_insns[dst_regno].check == curr_usage_insns_check
+		      && (next_usage_insns
+			  = usage_insns[dst_regno].insns) != NULL_RTX)
+		    {
+		      struct lra_insn_reg *r;
 
-		    for (r = curr_id->regs; r != NULL; r = r->next)
-		      if (r->type != OP_OUT && r->regno == dst_regno)
-			break;
-		    /* Don't do inheritance if the pseudo is also
-		       used in the insn.  */
-		    if (r == NULL)
-		      /* We can not do inheritance right now
-			 because the current insn reg info (chain
-			 regs) can change after that.  */
-		      add_to_inherit (dst_regno, next_usage_insns);
-		  }
-		/* We can not process one reg twice here because of
-		   usage_insns invalidation.  */
-		if ((dst_regno < FIRST_PSEUDO_REGISTER
-		     || reg_renumber[dst_regno] >= 0)
-		    && ! reg->subreg_p && reg->type == OP_OUT)
-		  {
-		    HARD_REG_SET s;
+		      for (r = curr_id->regs; r != NULL; r = r->next)
+			if (r->type != OP_OUT && r->regno == dst_regno)
+			  break;
+		      /* Don't do inheritance if the pseudo is also
+			 used in the insn.  */
+		      if (r == NULL)
+			/* We can not do inheritance right now
+			   because the current insn reg info (chain
+			   regs) can change after that.  */
+			add_to_inherit (dst_regno, next_usage_insns);
+		    }
+		  /* We can not process one reg twice here because of
+		     usage_insns invalidation.  */
+		  if ((dst_regno < FIRST_PSEUDO_REGISTER
+		       || reg_renumber[dst_regno] >= 0)
+		    && ! reg->subreg_p && reg->type != OP_IN)
+		    {
+		      HARD_REG_SET s;
 
-		    if (split_if_necessary (dst_regno, reg->biggest_mode,
-					    potential_reload_hard_regs,
-					    false, curr_insn, max_uid))
-		      change_p = true;
-		    CLEAR_HARD_REG_SET (s);
-		    if (dst_regno < FIRST_PSEUDO_REGISTER)
-		      add_to_hard_reg_set (&s, reg->biggest_mode, dst_regno);
-		    else
-		      add_to_hard_reg_set (&s, PSEUDO_REGNO_MODE (dst_regno),
-					   reg_renumber[dst_regno]);
-		    AND_COMPL_HARD_REG_SET (live_hard_regs, s);
-		  }
-		/* We should invalidate potential inheritance or
-		   splitting for the current insn usages to the next
-		   usage insns (see code below) as the output pseudo
-		   prevents this.  */
-		if ((dst_regno >= FIRST_PSEUDO_REGISTER
-		     && reg_renumber[dst_regno] < 0)
-		    || (reg->type == OP_OUT && ! reg->subreg_p
-			&& (dst_regno < FIRST_PSEUDO_REGISTER
-			    || reg_renumber[dst_regno] >= 0)))
-		  {
-		    /* Invalidate.  */
-		    if (dst_regno >= FIRST_PSEUDO_REGISTER)
-		      usage_insns[dst_regno].check = 0;
-		    else
-		      {
-			nregs = hard_regno_nregs[dst_regno][reg->biggest_mode];
-			for (i = 0; i < nregs; i++)
-			  usage_insns[dst_regno + i].check = 0;
-		      }
-		  }
-	      }
+		      if (split_if_necessary (dst_regno, reg->biggest_mode,
+					      potential_reload_hard_regs,
+					      false, curr_insn, max_uid))
+			change_p = true;
+		      CLEAR_HARD_REG_SET (s);
+		      if (dst_regno < FIRST_PSEUDO_REGISTER)
+			add_to_hard_reg_set (&s, reg->biggest_mode, dst_regno);
+		      else
+			add_to_hard_reg_set (&s, PSEUDO_REGNO_MODE (dst_regno),
+					     reg_renumber[dst_regno]);
+		      AND_COMPL_HARD_REG_SET (live_hard_regs, s);
+		    }
+		  /* We should invalidate potential inheritance or
+		     splitting for the current insn usages to the next
+		     usage insns (see code below) as the output pseudo
+		     prevents this.  */
+		  if ((dst_regno >= FIRST_PSEUDO_REGISTER
+		       && reg_renumber[dst_regno] < 0)
+		      || (reg->type == OP_OUT && ! reg->subreg_p
+			  && (dst_regno < FIRST_PSEUDO_REGISTER
+			      || reg_renumber[dst_regno] >= 0)))
+		    {
+		      /* Invalidate and mark definitions.  */
+		      if (dst_regno >= FIRST_PSEUDO_REGISTER)
+			usage_insns[dst_regno].check = -(int) INSN_UID (curr_insn);
+		      else
+			{
+			  nregs = hard_regno_nregs[dst_regno][reg->biggest_mode];
+			  for (i = 0; i < nregs; i++)
+			    usage_insns[dst_regno + i].check
+			      = -(int) INSN_UID (curr_insn);
+			}
+		    }
+		}
 	  if (! JUMP_P (curr_insn))
 	    for (i = 0; i < to_inherit_num; i++)
 	      if (inherit_reload_reg (true, to_inherit[i].regno,
@@ -4851,57 +4881,62 @@ inherit_in_ebb (rtx head, rtx tail)
 	    }
 	  to_inherit_num = 0;
 	  /* Process insn usages.  */
-	  for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	    if ((reg->type != OP_OUT
-		 || (reg->type == OP_OUT && reg->subreg_p))
-		&& (src_regno = reg->regno) < lra_constraint_new_regno_start)
-	      {
-		if (src_regno >= FIRST_PSEUDO_REGISTER
-		    && reg_renumber[src_regno] < 0 && reg->type == OP_IN)
-		  {
-		    if (usage_insns[src_regno].check == curr_usage_insns_check
-			&& (next_usage_insns
-			    = usage_insns[src_regno].insns) != NULL_RTX
-			&& NONDEBUG_INSN_P (curr_insn))
-		      add_to_inherit (src_regno, next_usage_insns);
-		    else
-		      /* Add usages.  */
-		      add_next_usage_insn (src_regno, curr_insn, reloads_num);
-		  }
-		else if (src_regno < FIRST_PSEUDO_REGISTER
-			 || reg_renumber[src_regno] >= 0)
-		  {
-		    bool before_p;
-		    rtx use_insn = curr_insn;
+	  for (iter = 0; iter < 2; iter++)
+	    for (reg = iter == 0 ? curr_id->regs : curr_static_id->hard_regs;
+		 reg != NULL;
+		 reg = reg->next)
+	      if ((reg->type != OP_OUT
+		   || (reg->type == OP_OUT && reg->subreg_p))
+		  && (src_regno = reg->regno) < lra_constraint_new_regno_start)
+		{
+		  if (src_regno >= FIRST_PSEUDO_REGISTER
+		      && reg_renumber[src_regno] < 0 && reg->type == OP_IN)
+		    {
+		      if (usage_insns[src_regno].check == curr_usage_insns_check
+			  && (next_usage_insns
+			      = usage_insns[src_regno].insns) != NULL_RTX
+			  && NONDEBUG_INSN_P (curr_insn))
+			add_to_inherit (src_regno, next_usage_insns);
+		      else if (usage_insns[src_regno].check
+			       != -(int) INSN_UID (curr_insn))
+			/* Add usages but only if the reg is not set up
+			   in the same insn.  */
+			add_next_usage_insn (src_regno, curr_insn, reloads_num);
+		    }
+		  else if (src_regno < FIRST_PSEUDO_REGISTER
+			   || reg_renumber[src_regno] >= 0)
+		    {
+		      bool before_p;
+		      rtx use_insn = curr_insn;
 
-		    before_p = (JUMP_P (curr_insn)
-				|| (CALL_P (curr_insn) && reg->type == OP_IN));
-		    if (NONDEBUG_INSN_P (curr_insn)
-			&& split_if_necessary (src_regno, reg->biggest_mode,
-					       potential_reload_hard_regs,
-					       before_p, curr_insn, max_uid))
-		      {
-			if (reg->subreg_p)
-			  lra_risky_transformations_p = true;
-			change_p = true;
-			/* Invalidate.	*/
-			usage_insns[src_regno].check = 0;
-			if (before_p)
-			  use_insn = PREV_INSN (curr_insn);
-		      }
-		    if (NONDEBUG_INSN_P (curr_insn))
-		      {
-			if (src_regno < FIRST_PSEUDO_REGISTER)
-			  add_to_hard_reg_set (&live_hard_regs,
-					       reg->biggest_mode, src_regno);
-			else
-			  add_to_hard_reg_set (&live_hard_regs,
-					       PSEUDO_REGNO_MODE (src_regno),
-					       reg_renumber[src_regno]);
-		      }
-		    add_next_usage_insn (src_regno, use_insn, reloads_num);
-		  }
-	      }
+		      before_p = (JUMP_P (curr_insn)
+				  || (CALL_P (curr_insn) && reg->type == OP_IN));
+		      if (NONDEBUG_INSN_P (curr_insn)
+			  && split_if_necessary (src_regno, reg->biggest_mode,
+						 potential_reload_hard_regs,
+						 before_p, curr_insn, max_uid))
+			{
+			  if (reg->subreg_p)
+			    lra_risky_transformations_p = true;
+			  change_p = true;
+			  /* Invalidate.	*/
+			  usage_insns[src_regno].check = 0;
+			  if (before_p)
+			    use_insn = PREV_INSN (curr_insn);
+			}
+		      if (NONDEBUG_INSN_P (curr_insn))
+			{
+			  if (src_regno < FIRST_PSEUDO_REGISTER)
+			    add_to_hard_reg_set (&live_hard_regs,
+						 reg->biggest_mode, src_regno);
+			  else
+			    add_to_hard_reg_set (&live_hard_regs,
+						 PSEUDO_REGNO_MODE (src_regno),
+						 reg_renumber[src_regno]);
+			}
+		      add_next_usage_insn (src_regno, use_insn, reloads_num);
+		    }
+		}
 	  for (i = 0; i < to_inherit_num; i++)
 	    {
 	      src_regno = to_inherit[i].regno;

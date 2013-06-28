@@ -41,9 +41,8 @@
 #ifndef _GLIBCXX_ATOMIC
 #define _GLIBCXX_ATOMIC 1
 
-#ifndef __always_inline
-#define __always_inline inline __attribute__((always_inline))
-#endif
+#undef  __always_inline
+#define __always_inline __attribute__((always_inline))
 
 // #pragma GCC system_header
 
@@ -75,7 +74,7 @@ namespace std // _GLIBCXX_VISIBILITY(default)
       memory_order_seq_cst
     } memory_order;
 
-  __always_inline memory_order
+  inline __always_inline memory_order
   __calculate_memory_order(memory_order __m) noexcept
   {
     const bool __cond1 = __m == memory_order_release;
@@ -85,13 +84,13 @@ namespace std // _GLIBCXX_VISIBILITY(default)
     return __mo2;
   }
 
-  __always_inline void
+  inline __always_inline void
   atomic_thread_fence(memory_order __m) noexcept
   {
     __atomic_thread_fence (__m);
   }
 
-  __always_inline void
+  inline __always_inline void
   atomic_signal_fence(memory_order __m) noexcept
   {
     __atomic_thread_fence (__m);
@@ -1545,38 +1544,38 @@ namespace std // _GLIBCXX_VISIBILITY(default)
 
 
   // Function definitions, atomic_flag operations.
-  __always_inline bool
+  inline __always_inline bool
   atomic_flag_test_and_set_explicit(atomic_flag* __a,
 				    memory_order __m) noexcept
   { return __a->test_and_set(__m); }
 
-  __always_inline bool
+  inline __always_inline bool
   atomic_flag_test_and_set_explicit(volatile atomic_flag* __a,
 				    memory_order __m) noexcept
   { return __a->test_and_set(__m); }
 
-  __always_inline void
+  inline __always_inline void
   atomic_flag_clear_explicit(atomic_flag* __a, memory_order __m) noexcept
   { __a->clear(__m); }
 
-  __always_inline void
+  inline __always_inline void
   atomic_flag_clear_explicit(volatile atomic_flag* __a,
 			     memory_order __m) noexcept
   { __a->clear(__m); }
 
-  __always_inline bool
+  inline __always_inline bool
   atomic_flag_test_and_set(atomic_flag* __a) noexcept
   { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
 
-  __always_inline bool
+  inline __always_inline bool
   atomic_flag_test_and_set(volatile atomic_flag* __a) noexcept
   { return atomic_flag_test_and_set_explicit(__a, memory_order_seq_cst); }
 
-  __always_inline void
+  inline __always_inline void
   atomic_flag_clear(atomic_flag* __a) noexcept
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 
-  __always_inline void
+  inline __always_inline void
   atomic_flag_clear(volatile atomic_flag* __a) noexcept
   { atomic_flag_clear_explicit(__a, memory_order_seq_cst); }
 

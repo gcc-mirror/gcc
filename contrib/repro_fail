@@ -4,7 +4,7 @@
 #
 # Contributed by Diego Novillo <dnovillo@google.com>
 #
-# Copyright (C) 2011, 2012 Free Software Foundation, Inc.
+# Copyright (C) 2011, 2012, 2013 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -56,7 +56,9 @@ logf="$2"
 shift 2
 
 # Find the commands in LOGF that reference PATTERN.
-lines=$(grep -E "^spawn .*$pattern" $logf | sed -e 's/^spawn //')
+lines=$(grep -E "^spawn .*$pattern" $logf \
+        | sed -e 's/^spawn -ignore SIGHUP //' \
+        | sed -e 's/^spawn //')
 if [ -z "$lines" ] ; then
     echo "Could not find a spawn command for pattern $pattern"
     exit 1

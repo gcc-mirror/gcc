@@ -91,13 +91,14 @@ static void
 lto_varpool_replace_node (struct varpool_node *vnode,
 			  struct varpool_node *prevailing_node)
 {
-  gcc_assert (!vnode->finalized || prevailing_node->finalized);
-  gcc_assert (!vnode->analyzed || prevailing_node->analyzed);
+  gcc_assert (!vnode->symbol.definition || prevailing_node->symbol.definition);
+  gcc_assert (!vnode->symbol.analyzed || prevailing_node->symbol.analyzed);
 
   ipa_clone_referring ((symtab_node)prevailing_node, &vnode->symbol.ref_list);
 
   /* Be sure we can garbage collect the initializer.  */
-  if (DECL_INITIAL (vnode->symbol.decl))
+  if (DECL_INITIAL (vnode->symbol.decl)
+      && vnode->symbol.decl != prevailing_node->symbol.decl)
     DECL_INITIAL (vnode->symbol.decl) = error_mark_node;
   /* Finally remove the replaced node.  */
   varpool_remove_node (vnode);
@@ -235,9 +236,6 @@ lto_symtab_symbol_p (symtab_node e)
 {
   if (!TREE_PUBLIC (e->symbol.decl) && !DECL_EXTERNAL (e->symbol.decl))
     return false;
-  /* weakrefs are really static variables that are made external by a hack.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (e->symbol.decl)))
-    return false;
   return symtab_real_symbol_p (e);
 }
 
@@ -255,14 +253,7 @@ lto_symtab_resolve_can_prevail_p (symtab_node e)
   if (DECL_EXTERNAL (e->symbol.decl))
     return false;
 
-  /* For functions we need a non-discarded body.  */
-  if (TREE_CODE (e->symbol.decl) == FUNCTION_DECL)
-    return (cgraph (e)->analyzed);
-
-  else if (TREE_CODE (e->symbol.decl) == VAR_DECL)
-    return varpool (e)->finalized;
-
-  gcc_unreachable ();
+  return e->symbol.definition;
 }
 
 /* Resolve the symbol with the candidates in the chain *SLOT and store
@@ -531,25 +522,15 @@ lto_symtab_merge_decls (void)
   symtab_initialize_asm_name_hash ();
 
   FOR_EACH_SYMBOL (node)
-    if (lto_symtab_symbol_p (node)
+    if (!node->symbol.previous_sharing_asm_name
 	&& node->symbol.next_sharing_asm_name)
-      {
-        symtab_node n;
-
-	/* To avoid duplicated work, see if this is first real symbol in the
-	   chain.  */
-	for (n = node->symbol.previous_sharing_asm_name;
-	     n && !lto_symtab_symbol_p (n); n = n->symbol.previous_sharing_asm_name)
-	  ;
-	if (!n)
-          lto_symtab_merge_decls_1 (node);
-      }
+      lto_symtab_merge_decls_1 (node);
 }
 
 /* Helper to process the decl chain for the symbol table entry *SLOT.  */
 
 static void
-lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
+lto_symtab_merge_symbols_1 (symtab_node prevailing)
 {
   symtab_node e, next;
 
@@ -575,88 +556,49 @@ lto_symtab_merge_cgraph_nodes_1 (symtab_node prevailing)
    lto_symtab_merge_decls.  */
 
 void
-lto_symtab_merge_cgraph_nodes (void)
+lto_symtab_merge_symbols (void)
 {
-  struct cgraph_node *cnode;
-  struct varpool_node *vnode;
   symtab_node node;
 
-  /* Populate assembler name hash.   */
-  symtab_initialize_asm_name_hash ();
-
   if (!flag_ltrans)
-    FOR_EACH_SYMBOL (node)
-      if (lto_symtab_symbol_p (node)
-	  && node->symbol.next_sharing_asm_name
-	  && !node->symbol.previous_sharing_asm_name)
-        lto_symtab_merge_cgraph_nodes_1 (node);
-
-  FOR_EACH_FUNCTION (cnode)
     {
-      /* Resolve weakrefs to symbol defined in other unit.  */
-      if (!cnode->analyzed && cnode->thunk.alias && !DECL_P (cnode->thunk.alias))
-	{
-	  symtab_node node = symtab_node_for_asm (cnode->thunk.alias);
-	  if (node && is_a <cgraph_node> (node))
-	    {
-	      struct cgraph_node *n;
+      symtab_initialize_asm_name_hash ();
 
-	      for (n = cgraph (node); n && n->alias;
-		   n = n->analyzed ? cgraph_alias_aliased_node (n) : NULL)
-		if (n == cnode)
-		  {
-		    error ("function %q+D part of alias cycle", cnode->symbol.decl);
-		    cnode->alias = false;
-		    break;
-		  }
-	      if (cnode->alias)
-		{
-		  cgraph_create_function_alias (cnode->symbol.decl, node->symbol.decl);
-		  ipa_record_reference ((symtab_node)cnode, (symtab_node)node,
-					IPA_REF_ALIAS, NULL);
-		  cnode->analyzed = true;
-		}
-	    }
-	  else if (node)
-	    error ("%q+D alias in between function and variable is not supported", cnode->symbol.decl);
-	}
-      if ((cnode->thunk.thunk_p || cnode->alias)
-	  && cnode->thunk.alias && DECL_P (cnode->thunk.alias))
-        cnode->thunk.alias = lto_symtab_prevailing_decl (cnode->thunk.alias);
-      cnode->symbol.aux = NULL;
-    }
-  FOR_EACH_VARIABLE (vnode)
-    {
-      /* Resolve weakrefs to symbol defined in other unit.  */
-      if (!vnode->analyzed && vnode->alias_of && !DECL_P (vnode->alias_of))
-	{
-	  symtab_node node = symtab_node_for_asm (vnode->alias_of);
-	  if (node && is_a <cgraph_node> (node))
-	    {
-	      struct varpool_node *n;
+      /* Do the actual merging.  
+         At this point we invalidate hash translating decls into symtab nodes
+	 because after removing one of duplicate decls the hash is not correcly
+	 updated to the ohter dupliate.  */
+      FOR_EACH_SYMBOL (node)
+	if (lto_symtab_symbol_p (node)
+	    && node->symbol.next_sharing_asm_name
+	    && !node->symbol.previous_sharing_asm_name)
+	  lto_symtab_merge_symbols_1 (node);
 
-	      for (n = varpool (node); n && n->alias;
-		   n = n->analyzed ? varpool_alias_aliased_node (n) : NULL)
-		if (n == vnode)
-		  {
-		    error ("function %q+D part of alias cycle", vnode->symbol.decl);
-		    vnode->alias = false;
-		    break;
-		  }
-	      if (vnode->alias)
-		{
-		  varpool_create_variable_alias (vnode->symbol.decl, node->symbol.decl);
-		  ipa_record_reference ((symtab_node)vnode, (symtab_node)node,
-					IPA_REF_ALIAS, NULL);
-		  vnode->analyzed = true;
-		}
+      /* Resolve weakref aliases whose target are now in the compilation unit.  
+	 also re-populate the hash translating decls into symtab nodes*/
+      FOR_EACH_SYMBOL (node)
+	{
+	  cgraph_node *cnode, *cnode2;
+	  if (!node->symbol.analyzed && node->symbol.alias_target)
+	    {
+	      symtab_node tgt = symtab_node_for_asm (node->symbol.alias_target);
+	      gcc_assert (node->symbol.weakref);
+	      if (tgt)
+		symtab_resolve_alias (node, tgt);
 	    }
-	  else if (node)
-	    error ("%q+D alias in between function and variable is not supported", vnode->symbol.decl);
+	  node->symbol.aux = NULL;
+	  
+	  if (!(cnode = dyn_cast <cgraph_node> (node))
+	      || !cnode->clone_of
+	      || cnode->clone_of->symbol.decl != cnode->symbol.decl)
+	    {
+	      if (cnode && DECL_BUILT_IN (node->symbol.decl)
+		  && (cnode2 = cgraph_get_node (node->symbol.decl))
+		  && cnode2 != cnode)
+		lto_cgraph_replace_node (cnode2, cnode);
+	      symtab_insert_node_to_hashtable ((symtab_node)node);
+	    }
 	}
-      if (vnode->alias_of)
-        vnode->alias_of = lto_symtab_prevailing_decl (vnode->alias_of);
-      vnode->symbol.aux = NULL;
     }
 }
 
@@ -678,11 +620,6 @@ lto_symtab_prevailing_decl (tree decl)
   /* Likewise builtins are their own prevailing decl.  This preserves
      non-builtin vs. builtin uses from compile-time.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl))
-    return decl;
-
-  /* As an anoying special cases weakrefs are really static variables with
-     EXTERNAL flag.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return decl;
 
   /* Ensure DECL_ASSEMBLER_NAME will not set assembler name.  */

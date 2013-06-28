@@ -15,5 +15,4 @@ program main
   b = 2.1
   b = transpose(a)
 end program main
-! { dg-output "Fortran runtime error: Array bound mismatch for dimension 1 of
-! array 'b' (3/2)" }
+! { dg-output "Fortran runtime error: Array bound mismatch for dimension 1 of array 'b' \\(3/2\\)" }

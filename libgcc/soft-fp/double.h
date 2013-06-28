@@ -1,7 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Double Precision
-   Copyright (C) 1997, 1998, 1999, 2006, 2007, 2008, 2009, 2012
-   Free Software Foundation, Inc.
+   Copyright (C) 1997-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),

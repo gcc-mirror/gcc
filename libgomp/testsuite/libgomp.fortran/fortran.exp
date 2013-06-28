@@ -1,4 +1,6 @@
 load_lib libgomp-dg.exp
+load_gcc_lib gcc-dg.exp
+load_gcc_lib gfortran-dg.exp
 
 global shlib_ext
 global ALWAYS_CFLAGS

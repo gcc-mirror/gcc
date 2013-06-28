@@ -19,12 +19,13 @@
 ;; This file contains ARM instructions that support fixed-point operations.
 
 (define_insn "add<mode>3"
-  [(set (match_operand:FIXED 0 "s_register_operand" "=r")
-	(plus:FIXED (match_operand:FIXED 1 "s_register_operand" "r")
-		    (match_operand:FIXED 2 "s_register_operand" "r")))]
+  [(set (match_operand:FIXED 0 "s_register_operand" "=l,r")
+	(plus:FIXED (match_operand:FIXED 1 "s_register_operand" "l,r")
+		    (match_operand:FIXED 2 "s_register_operand" "l,r")))]
   "TARGET_32BIT"
   "add%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")])
 
 (define_insn "add<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
@@ -32,7 +33,8 @@
 		     (match_operand:ADDSUB 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "sadd<qaddsub_suf>%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "usadd<mode>3"
   [(set (match_operand:UQADDSUB 0 "s_register_operand" "=r")
@@ -40,7 +42,8 @@
 			  (match_operand:UQADDSUB 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "uqadd<qaddsub_suf>%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "ssadd<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
@@ -48,15 +51,17 @@
 			 (match_operand:QADDSUB 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "qadd<qaddsub_suf>%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "sub<mode>3"
-  [(set (match_operand:FIXED 0 "s_register_operand" "=r")
-	(minus:FIXED (match_operand:FIXED 1 "s_register_operand" "r")
-		     (match_operand:FIXED 2 "s_register_operand" "r")))]
+  [(set (match_operand:FIXED 0 "s_register_operand" "=l,r")
+	(minus:FIXED (match_operand:FIXED 1 "s_register_operand" "l,r")
+		     (match_operand:FIXED 2 "s_register_operand" "l,r")))]
   "TARGET_32BIT"
   "sub%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
@@ -64,7 +69,8 @@
 		      (match_operand:ADDSUB 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "ssub<qaddsub_suf>%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "ussub<mode>3"
   [(set (match_operand:UQADDSUB 0 "s_register_operand" "=r")
@@ -73,7 +79,8 @@
 	  (match_operand:UQADDSUB 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "uqsub<qaddsub_suf>%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "sssub<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
@@ -81,7 +88,8 @@
 			  (match_operand:QADDSUB 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "qsub<qaddsub_suf>%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")])
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 ;; Fractional multiplies.
 
@@ -374,6 +382,7 @@
   "TARGET_32BIT && arm_arch6"
   "ssat%?\\t%0, #16, %2%S1"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "insn" "sat")
    (set_attr "shift" "1")
    (set_attr "type" "alu_shift")])
@@ -384,4 +393,5 @@
   "TARGET_INT_SIMD"
   "usat%?\\t%0, #16, %1"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "insn" "sat")])

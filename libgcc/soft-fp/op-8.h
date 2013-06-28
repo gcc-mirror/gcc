@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic eight-word fraction declaration and manipulation.
-   Copyright (C) 1997,1998,1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz) and
@@ -77,7 +77,7 @@
   } while (0)
 
 
-/* Right shift with sticky-lsb. 
+/* Right shift with sticky-lsb.
  * What this actually means is that we do a standard right-shift,
  * but that if any of the bits that fall off the right hand side
  * were one then we always set the LSbit.

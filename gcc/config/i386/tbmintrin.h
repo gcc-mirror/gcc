@@ -25,12 +25,14 @@
 # error "Never use <tbmintrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef __TBM__
-# error "TBM instruction set not enabled"
-#endif /* __TBM__ */
-
 #ifndef _TBMINTRIN_H_INCLUDED
 #define _TBMINTRIN_H_INCLUDED
+
+#ifndef __TBM__
+#pragma GCC push_options
+#pragma GCC target("tbm")
+#define __DISABLE_TBM__
+#endif /* __TBM__ */
 
 #ifdef __OPTIMIZE__
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -169,4 +171,10 @@ __tzmsk_u64 (unsigned long long __X)
 
 
 #endif /* __x86_64__  */
+
+#ifdef __DISABLE_TBM__
+#undef __DISABLE_TBM__
+#pragma GCC pop_options
+#endif /* __DISABLE_TBM__ */
+
 #endif /* _TBMINTRIN_H_INCLUDED */

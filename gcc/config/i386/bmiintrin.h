@@ -25,12 +25,14 @@
 # error "Never use <bmiintrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef __BMI__
-# error "BMI instruction set not enabled"
-#endif /* __BMI__ */
-
 #ifndef _BMIINTRIN_H_INCLUDED
 #define _BMIINTRIN_H_INCLUDED
+
+#ifndef __BMI__
+#pragma GCC push_options
+#pragma GCC target("bmi")
+#define __DISABLE_BMI__
+#endif /* __BMI__ */
 
 extern __inline unsigned short __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __tzcnt_u16 (unsigned short __X)
@@ -49,6 +51,12 @@ extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, _
 __bextr_u32 (unsigned int __X, unsigned int __Y)
 {
   return __builtin_ia32_bextr_u32 (__X, __Y);
+}
+
+extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bextr_u32 (unsigned int __X, unsigned int __Y, unsigned __Z)
+{
+  return __builtin_ia32_bextr_u32 (__X, ((__Y & 0xff) | ((__Z & 0xff) << 8)));
 }
 
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -91,6 +99,12 @@ __bextr_u64 (unsigned long long __X, unsigned long long __Y)
 }
 
 extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bextr_u64 (unsigned long long __X, unsigned int __Y, unsigned int __Z)
+{
+  return __builtin_ia32_bextr_u64 (__X, ((__Y & 0xff) | ((__Z & 0xff) << 8)));
+}
+
+extern __inline unsigned long long __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 __blsi_u64 (unsigned long long __X)
 {
   return __X & -__X;
@@ -115,5 +129,10 @@ __tzcnt_u64 (unsigned long long __X)
 }
 
 #endif /* __x86_64__  */
+
+#ifdef __DISABLE_BMI__
+#undef __DISABLE_BMI__
+#pragma GCC pop_options
+#endif /* __DISABLE_BMI__ */
 
 #endif /* _BMIINTRIN_H_INCLUDED */

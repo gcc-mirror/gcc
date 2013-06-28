@@ -2268,7 +2268,8 @@ vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note)
    an implementation accident and this semantics is not guaranteed to
    the user.  */
 tree
-c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask)
+c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
+		       bool complain)
 {
   tree ret;
   bool wrap = true;
@@ -2288,22 +2289,25 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask)
   if (TREE_CODE (TREE_TYPE (mask)) != VECTOR_TYPE
       || TREE_CODE (TREE_TYPE (TREE_TYPE (mask))) != INTEGER_TYPE)
     {
-      error_at (loc, "__builtin_shuffle last argument must "
-		     "be an integer vector");
+      if (complain)
+	error_at (loc, "__builtin_shuffle last argument must "
+		       "be an integer vector");
       return error_mark_node;
     }
 
   if (TREE_CODE (TREE_TYPE (v0)) != VECTOR_TYPE
       || TREE_CODE (TREE_TYPE (v1)) != VECTOR_TYPE)
     {
-      error_at (loc, "__builtin_shuffle arguments must be vectors");
+      if (complain)
+	error_at (loc, "__builtin_shuffle arguments must be vectors");
       return error_mark_node;
     }
 
   if (TYPE_MAIN_VARIANT (TREE_TYPE (v0)) != TYPE_MAIN_VARIANT (TREE_TYPE (v1)))
     {
-      error_at (loc, "__builtin_shuffle argument vectors must be of "
-		     "the same type");
+      if (complain)
+	error_at (loc, "__builtin_shuffle argument vectors must be of "
+		       "the same type");
       return error_mark_node;
     }
 
@@ -2312,17 +2316,19 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask)
       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1))
 	 != TYPE_VECTOR_SUBPARTS (TREE_TYPE (mask)))
     {
-      error_at (loc, "__builtin_shuffle number of elements of the "
-		     "argument vector(s) and the mask vector should "
-		     "be the same");
+      if (complain)
+	error_at (loc, "__builtin_shuffle number of elements of the "
+		       "argument vector(s) and the mask vector should "
+		       "be the same");
       return error_mark_node;
     }
 
   if (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (v0))))
       != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (mask)))))
     {
-      error_at (loc, "__builtin_shuffle argument vector(s) inner type "
-		     "must have the same size as inner type of the mask");
+      if (complain)
+	error_at (loc, "__builtin_shuffle argument vector(s) inner type "
+		       "must have the same size as inner type of the mask");
       return error_mark_node;
     }
 
@@ -2343,6 +2349,8 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask)
       mask = c_fully_fold (mask, false, &maybe_const);
       wrap &= maybe_const;
     }
+  else if (two_arguments)
+    v1 = v0 = save_expr (v0);
 
   ret = build3_loc (loc, VEC_PERM_EXPR, TREE_TYPE (v0), v0, v1, mask);
 
@@ -5468,7 +5476,7 @@ c_common_nodes_and_builtins (void)
     {
       char16_type_node = make_unsigned_type (char16_type_size);
 
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	record_builtin_type (RID_CHAR16, "char16_t", char16_type_node);
     }
 
@@ -5484,7 +5492,7 @@ c_common_nodes_and_builtins (void)
     {
       char32_type_node = make_unsigned_type (char32_type_size);
 
-      if (cxx_dialect >= cxx0x)
+      if (cxx_dialect >= cxx11)
 	record_builtin_type (RID_CHAR32, "char32_t", char32_type_node);
     }
 
@@ -7590,13 +7598,7 @@ handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	DECL_INITIAL (decl) = error_mark_node;
       else
-	{
-	  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
-	    DECL_EXTERNAL (decl) = 1;
-	  else
-	    DECL_EXTERNAL (decl) = 0;
-	  TREE_STATIC (decl) = 1;
-	}
+	TREE_STATIC (decl) = 1;
 
       if (!is_alias)
 	/* ifuncs are also aliases, so set that attribute too. */
@@ -11456,6 +11458,7 @@ c_common_init_ts (void)
 {
   MARK_TS_TYPED (C_MAYBE_CONST_EXPR);
   MARK_TS_TYPED (EXCESS_PRECISION_EXPR);
+  MARK_TS_TYPED (ARRAY_NOTATION_REF);
 }
 
 /* Build a user-defined numeric literal out of an integer constant type VALUE

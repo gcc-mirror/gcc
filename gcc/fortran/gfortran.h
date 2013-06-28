@@ -2303,6 +2303,7 @@ typedef struct
   int flag_frontend_optimize;
 
   int fpe;
+  int fpe_summary;
   int rtcheck;
   gfc_fcoarray coarray;
 
@@ -2436,7 +2437,6 @@ void gfc_start_source_files (void);
 void gfc_end_source_files (void);
 
 /* misc.c */
-int gfc_terminal_width (void);
 void gfc_clear_ts (gfc_typespec *);
 FILE *gfc_open_file (const char *);
 const char *gfc_basic_typename (bt);

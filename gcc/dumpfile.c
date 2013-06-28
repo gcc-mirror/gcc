@@ -866,7 +866,7 @@ opt_info_switch_p (const char *arg)
 
   file_seen = xstrdup (filename);
   if (!flags)
-    flags = MSG_ALL;
+    flags = MSG_OPTIMIZED_LOCATIONS;
   if (!optgroup_flags)
     optgroup_flags = OPTGROUP_ALL;
 

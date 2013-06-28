@@ -1,6 +1,6 @@
 /* This test needs runtime that provides stpcpy, mempcpy and __*_chk
    functions.  */
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* } } */
 /* { dg-options "-O2 -fdump-tree-strlen" } */
 
 #define FORTIFY_SOURCE 2

@@ -45,11 +45,11 @@ contains
   subroutine bar(a,b, prsnt)
     integer, pointer, optional, intent(in) :: a(..),b(..)
     logical, value :: prsnt
-    ! The following is not valid, but it goes past the constraint check
-    ! Technically, it could be allowed and might be in Fortran 2015:
     if (.not. associated(a)) call abort()
     if (present(b)) then
-      if (.not. associated(a,b)) call abort()
+      ! The following is not valid
+      ! Technically, it could be allowed and might be in Fortran 2015:
+      ! if (.not. associated(a,b)) call abort()
     else
       if (.not. associated(a)) call abort()
     end if

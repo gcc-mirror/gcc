@@ -204,7 +204,7 @@ struct gimple_opt_pass pass_lower_cf =
    return false.  */
 
 static bool
-gimple_check_call_args (gimple stmt, tree fndecl)
+gimple_check_call_args (gimple stmt, tree fndecl, bool args_count_match)
 {
   tree parms, p;
   unsigned int i, nargs;
@@ -243,6 +243,8 @@ gimple_check_call_args (gimple stmt, tree fndecl)
 		  && !fold_convertible_p (DECL_ARG_TYPE (p), arg)))
             return false;
 	}
+      if (args_count_match && p)
+	return false;
     }
   else if (parms)
     {
@@ -271,11 +273,13 @@ gimple_check_call_args (gimple stmt, tree fndecl)
 }
 
 /* Verify if the type of the argument and lhs of CALL_STMT matches
-   that of the function declaration CALLEE.
+   that of the function declaration CALLEE. If ARGS_COUNT_MATCH is
+   true, the arg count needs to be the same.
    If we cannot verify this or there is a mismatch, return false.  */
 
 bool
-gimple_check_call_matching_types (gimple call_stmt, tree callee)
+gimple_check_call_matching_types (gimple call_stmt, tree callee,
+				  bool args_count_match)
 {
   tree lhs;
 
@@ -285,7 +289,7 @@ gimple_check_call_matching_types (gimple call_stmt, tree callee)
        && !useless_type_conversion_p (TREE_TYPE (DECL_RESULT (callee)),
                                       TREE_TYPE (lhs))
        && !fold_convertible_p (TREE_TYPE (DECL_RESULT (callee)), lhs))
-      || !gimple_check_call_args (call_stmt, callee))
+      || !gimple_check_call_args (call_stmt, callee, args_count_match))
     return false;
   return true;
 }

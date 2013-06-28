@@ -25,12 +25,14 @@
 # error "Never use <bmi2intrin.h> directly; include <x86intrin.h> instead."
 #endif
 
-#ifndef __BMI2__
-# error "BMI2 instruction set not enabled"
-#endif /* __BMI2__ */
-
 #ifndef _BMI2INTRIN_H_INCLUDED
 #define _BMI2INTRIN_H_INCLUDED
+
+#ifndef __BMI2__
+#pragma GCC push_options
+#pragma GCC target("bmi2")
+#define __DISABLE_BMI2__
+#endif /* __BMI2__ */
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -98,5 +100,10 @@ _mulx_u32 (unsigned int __X, unsigned int __Y, unsigned int *__P)
 }
 
 #endif /* !__x86_64__  */
+
+#ifdef __DISABLE_BMI2__
+#undef __DISABLE_BMI2__
+#pragma GCC pop_options
+#endif /* __DISABLE_BMI2__ */
 
 #endif /* _BMI2INTRIN_H_INCLUDED */

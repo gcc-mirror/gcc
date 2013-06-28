@@ -1,4 +1,5 @@
 load_lib libgomp-dg.exp
+load_gcc_lib gcc-dg.exp
 
 global shlib_ext
 
@@ -53,7 +54,7 @@ if { $lang_test_file_found } {
     }
 
     # Main loop.
-    gfortran-dg-runtest $tests $libstdcxx_includes
+    dg-runtest $tests "" $libstdcxx_includes
 }
 
 # All done.

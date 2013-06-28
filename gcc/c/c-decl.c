@@ -8503,11 +8503,12 @@ check_for_loop_decls (location_t loc, bool turn_off_iso_c99_error)
 	 the C99 for loop scope.  This doesn't make much sense, so don't
 	 allow it.  */
       error_at (loc, "%<for%> loop initial declarations "
-		"are only allowed in C99 mode");
+		"are only allowed in C99 or C11 mode");
       if (hint)
 	{
 	  inform (loc,
-		  "use option -std=c99 or -std=gnu99 to compile your code");
+		  "use option -std=c99, -std=gnu99, -std=c11 or -std=gnu11 "
+		  "to compile your code");
 	  hint = false;
 	}
       return NULL_TREE;

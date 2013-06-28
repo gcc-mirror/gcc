@@ -4,7 +4,7 @@ C
 C Origin: David Billinghurst <David.Billinghurst@riotinto.com>
 C
 C { dg-do run }
-C ( dg-output "^" }
+C { dg-output "^" }
  10   format(SP,I3,1X,SS,I3)
  20   format(SP,I3,1X,SS,I3,SP,I3)
  30   format(SP,I3,1X,SS,I3,S,I3)

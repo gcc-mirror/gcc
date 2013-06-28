@@ -1245,6 +1245,16 @@ aarch64_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 	  return AARCH64_FIND_FRINT_VARIANT (sqrt);
 #undef AARCH64_CHECK_BUILTIN_MODE
 #define AARCH64_CHECK_BUILTIN_MODE(C, N) \
+  (out_mode == SImode && out_n == C \
+   && in_mode == N##Imode && in_n == C)
+        case BUILT_IN_CLZ:
+          {
+            if (AARCH64_CHECK_BUILTIN_MODE (4, S))
+              return aarch64_builtin_decls[AARCH64_SIMD_BUILTIN_clzv4si];
+            return NULL_TREE;
+          }
+#undef AARCH64_CHECK_BUILTIN_MODE
+#define AARCH64_CHECK_BUILTIN_MODE(C, N) \
   (out_mode == N##Imode && out_n == C \
    && in_mode == N##Fmode && in_n == C)
 	case BUILT_IN_LFLOOR:

@@ -32,6 +32,9 @@ void test01()
   VERIFY( (test_category<is_function, ClassType (ClassType)>(true)) );
   VERIFY( (test_category<is_function, float (int, float, int[], int&)>(true)) );
   VERIFY( (test_category<is_function, int (int, ...)>(true)) );
+  VERIFY( (test_category<is_function, bool (ClassType) const>(true)) );
+  VERIFY( (test_category<is_function, ClassType () &>(true)) );
+  VERIFY( (test_category<is_function, char (int, ClassType) const volatile &&>(true)) );
 
   // Negative tests.
   VERIFY( (test_category<is_function, int&>(false)) );

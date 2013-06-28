@@ -20,7 +20,7 @@ module m
   type, extends(t1) :: t2
    contains
      procedure, nopass :: a => a2  ! { dg-error "Character length mismatch in function result" }
-     procedure, nopass :: b => b2  ! { dg-error "Type/rank mismatch in function result" }
+     procedure, nopass :: b => b2  ! { dg-error "Rank mismatch in function result" }
      procedure, nopass :: c => c2  ! FIXME: dg-warning "Possible character length mismatch" 
      procedure, nopass :: d => d2  ! valid, check for commutativity (+,*)
      procedure, nopass :: e => e2  ! { dg-error "Character length mismatch in function result" }

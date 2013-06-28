@@ -7,13 +7,13 @@ struct NonCopyable {
 };
 
 template<>
-NonCopyable<int>::NonCopyable(NonCopyable<int> const&) = delete; // { dg-error "declared" }
+NonCopyable<int>::NonCopyable(NonCopyable<int> const&) = delete; // { dg-message "declared" }
 
 template<typename T>
 NonCopyable<T>::NonCopyable(NonCopyable<T> const&) = default;
 
 template<>
-NonCopyable<double>::NonCopyable(NonCopyable<double> const&) = delete; // { dg-error "declared" }
+NonCopyable<double>::NonCopyable(NonCopyable<double> const&) = delete; // { dg-message "declared" }
 
 
 int main()

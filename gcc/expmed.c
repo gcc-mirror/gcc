@@ -1094,10 +1094,14 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       thispos = (bitpos + bitsdone) % unit;
 
       /* When region of bytes we can touch is restricted, decrease
-	 UNIT close to the end of the region as needed.  */
+	 UNIT close to the end of the region as needed.  If op0 is a REG
+	 or SUBREG of REG, don't do this, as there can't be data races
+	 on a register and we can expand shorter code in some cases.  */
       if (bitregion_end
 	  && unit > BITS_PER_UNIT
-	  && bitpos + bitsdone - thispos + unit > bitregion_end + 1)
+	  && bitpos + bitsdone - thispos + unit > bitregion_end + 1
+	  && !REG_P (op0)
+	  && (GET_CODE (op0) != SUBREG || !REG_P (SUBREG_REG (op0))))
 	{
 	  unit = unit / 2;
 	  continue;
@@ -1147,14 +1151,15 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	 the current word starting from the base register.  */
       if (GET_CODE (op0) == SUBREG)
 	{
-	  int word_offset = (SUBREG_BYTE (op0) / UNITS_PER_WORD) + offset;
+	  int word_offset = (SUBREG_BYTE (op0) / UNITS_PER_WORD)
+			    + (offset * unit / BITS_PER_WORD);
 	  enum machine_mode sub_mode = GET_MODE (SUBREG_REG (op0));
 	  if (sub_mode != BLKmode && GET_MODE_SIZE (sub_mode) < UNITS_PER_WORD)
 	    word = word_offset ? const0_rtx : op0;
 	  else
 	    word = operand_subword_force (SUBREG_REG (op0), word_offset,
 					  GET_MODE (SUBREG_REG (op0)));
-	  offset = 0;
+	  offset &= BITS_PER_WORD / unit - 1;
 	}
       else if (REG_P (op0))
 	{
@@ -1162,8 +1167,9 @@ store_split_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	  if (op0_mode != BLKmode && GET_MODE_SIZE (op0_mode) < UNITS_PER_WORD)
 	    word = offset ? const0_rtx : op0;
 	  else
-	    word = operand_subword_force (op0, offset, GET_MODE (op0));
-	  offset = 0;
+	    word = operand_subword_force (op0, offset * unit / BITS_PER_WORD,
+					  GET_MODE (op0));
+	  offset &= BITS_PER_WORD / unit - 1;
 	}
       else
 	word = op0;
@@ -1480,6 +1486,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 This is because the most significant word is the one which may
 	 be less than full.  */
 
+      unsigned int backwards = WORDS_BIG_ENDIAN;
       unsigned int nwords = (bitsize + (BITS_PER_WORD - 1)) / BITS_PER_WORD;
       unsigned int i;
       rtx last;
@@ -1497,13 +1504,14 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	     if I is 1, use the next to lowest word; and so on.  */
 	  /* Word number in TARGET to use.  */
 	  unsigned int wordnum
-	    = (WORDS_BIG_ENDIAN
+	    = (backwards
 	       ? GET_MODE_SIZE (GET_MODE (target)) / UNITS_PER_WORD - i - 1
 	       : i);
 	  /* Offset from start of field in OP0.  */
-	  unsigned int bit_offset = (WORDS_BIG_ENDIAN
-				     ? MAX (0, ((int) bitsize - ((int) i + 1)
-						* (int) BITS_PER_WORD))
+	  unsigned int bit_offset = (backwards
+				     ? MAX ((int) bitsize - ((int) i + 1)
+					    * BITS_PER_WORD,
+					    0)
 				     : (int) i * BITS_PER_WORD);
 	  rtx target_part = operand_subword (target, wordnum, 1, VOIDmode);
 	  rtx result_part
@@ -1535,7 +1543,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	      for (i = nwords; i < total_words; i++)
 		emit_move_insn
 		  (operand_subword (target,
-				    WORDS_BIG_ENDIAN ? total_words - i - 1 : i,
+				    backwards ? total_words - i - 1 : i,
 				    1, VOIDmode),
 		   const0_rtx);
 	    }

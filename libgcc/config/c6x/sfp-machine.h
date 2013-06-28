@@ -50,6 +50,7 @@
 #define _FP_NANSIGN_Q		0
 
 #define _FP_KEEPNANFRACP 1
+#define _FP_QNANNEGATEDP 0
 
 /* Someone please check this.  */
 #define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)			\

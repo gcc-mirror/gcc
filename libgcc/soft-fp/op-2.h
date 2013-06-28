@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic two-word fraction declaration and manipulation.
-   Copyright (C) 1997,1998,1999,2006,2007 Free Software Foundation, Inc.
+   Copyright (C) 1997-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -145,7 +145,7 @@
 #define _FP_MAXFRAC_2		(~(_FP_WS_TYPE)0), (~(_FP_WS_TYPE)0)
 
 /*
- * Internals 
+ * Internals
  */
 
 #define __FP_FRAC_SET_2(X,I1,I0)	(X##_f0 = I0, X##_f1 = I1)
@@ -348,7 +348,7 @@
    point multiplication.  This is useful if floating point
    multiplication has much bigger throughput than integer multiply.
    It is supposed to work for _FP_W_TYPE_SIZE 64 and wfracbits
-   between 106 and 120 only.  
+   between 106 and 120 only.
    Caller guarantees that X and Y has (1LLL << (wfracbits - 1)) set.
    SETFETZ is a macro which will disable all FPU exceptions and set rounding
    towards zero,  RESETFE should optionally reset it back.  */
@@ -433,10 +433,10 @@
     R##_f1 = (_t240 << (128 - (wfracbits - 1)))					\
 	     | ((_u240 & 0xffffff) >> ((wfracbits - 1) - 104));			\
     R##_f0 = ((_u240 & 0xffffff) << (168 - (wfracbits - 1)))			\
-    	     | ((_v240 & 0xffffff) << (144 - (wfracbits - 1)))			\
-    	     | ((_w240 & 0xffffff) << (120 - (wfracbits - 1)))			\
-    	     | ((_x240 & 0xffffff) >> ((wfracbits - 1) - 96))			\
-    	     | _y240;								\
+	     | ((_v240 & 0xffffff) << (144 - (wfracbits - 1)))			\
+	     | ((_w240 & 0xffffff) << (120 - (wfracbits - 1)))			\
+	     | ((_x240 & 0xffffff) >> ((wfracbits - 1) - 96))			\
+	     | _y240;								\
     resetfe;									\
   } while (0)
 
@@ -544,7 +544,7 @@
  * We have just one right now, maybe Newton approximation
  * should be added for those machines where division is fast.
  */
- 
+
 #define _FP_SQRT_MEAT_2(R, S, T, X, q)			\
   do {							\
     while (q)						\
@@ -586,7 +586,7 @@
 
 
 /*
- * Assembly/disassembly for converting to/from integral types.  
+ * Assembly/disassembly for converting to/from integral types.
  * No shifting or overflow handled here.
  */
 

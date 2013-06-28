@@ -120,7 +120,7 @@ struct Workbuf
 typedef struct Finalizer Finalizer;
 struct Finalizer
 {
-	void (*fn)(void*);
+	FuncVal *fn;
 	void *arg;
 	const struct __go_func_type *ft;
 };
@@ -1130,7 +1130,6 @@ addroots(void)
 	addroot((Obj){(byte*)&runtime_allm, sizeof runtime_allm, 0});
 	runtime_MProf_Mark(addroot);
 	runtime_time_scan(addroot);
-	runtime_trampoline_scan(addroot);
 
 	// MSpan.types
 	allspans = runtime_mheap.allspans;
@@ -1182,7 +1181,7 @@ addroots(void)
 static bool
 handlespecial(byte *p, uintptr size)
 {
-	void (*fn)(void*);
+	FuncVal *fn;
 	const struct __go_func_type *ft;
 	FinBlock *block;
 	Finalizer *f;
@@ -1731,11 +1730,12 @@ runfinq(void* dummy __attribute__ ((unused)))
 		for(; fb; fb=next) {
 			next = fb->next;
 			for(i=0; i<(uint32)fb->cnt; i++) {
-				void *params[1];
+				void *params[2];
 
 				f = &fb->fin[i];
 				params[0] = &f->arg;
-				reflect_call(f->ft, (void*)f->fn, 0, 0, params, nil);
+				params[1] = f;
+				reflect_call(f->ft, f->fn, 0, 0, params, nil);
 				f->fn = nil;
 				f->arg = nil;
 			}

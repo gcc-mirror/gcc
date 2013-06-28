@@ -50,3 +50,9 @@ set_fpu (void)
     estr_write ("Fortran runtime warning: IEEE 'inexact' "
 	        "exception not supported.\n");
 }
+
+int
+get_fpu_except_flags (void)
+{
+  return 0;
+}

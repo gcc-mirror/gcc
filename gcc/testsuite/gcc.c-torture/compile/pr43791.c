@@ -19,3 +19,4 @@ void trylock(void) {
      fasttrylock(slowtrylock);
 }
 
+/* { dg-prune-output "(inlining failed in call to always_inline.*indirect function call with a yet undetermined callee|called from here)" } */

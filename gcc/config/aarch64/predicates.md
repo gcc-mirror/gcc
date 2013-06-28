@@ -115,16 +115,11 @@
        (match_test "aarch64_legitimate_address_p (mode, XEXP (op, 0), PARALLEL,
 					       0)")))
 
-(define_predicate "aarch64_const_address"
-  (and (match_code "symbol_ref")
-       (match_test "mode == DImode && CONSTANT_ADDRESS_P (op)")))
-
 (define_predicate "aarch64_valid_symref"
   (match_code "const, symbol_ref, label_ref")
 {
-  enum aarch64_symbol_type symbol_type;
-  return (aarch64_symbolic_constant_p (op, SYMBOL_CONTEXT_ADR, &symbol_type)
-	 && symbol_type != SYMBOL_FORCE_TO_MEM);
+  return (aarch64_classify_symbolic_expression (op, SYMBOL_CONTEXT_ADR)
+	  != SYMBOL_FORCE_TO_MEM);
 })
 
 (define_predicate "aarch64_tls_ie_symref"
@@ -170,15 +165,10 @@
 })
 
 (define_predicate "aarch64_mov_operand"
-  (and (match_code "reg,subreg,mem,const_int,symbol_ref,high")
+  (and (match_code "reg,subreg,mem,const,const_int,symbol_ref,label_ref,high")
        (ior (match_operand 0 "register_operand")
 	    (ior (match_operand 0 "memory_operand")
-		 (ior (match_test "GET_CODE (op) == HIGH
-				   && aarch64_valid_symref (XEXP (op, 0),
-							    GET_MODE (XEXP (op, 0)))")
-		      (ior (match_test "CONST_INT_P (op)
-					&& aarch64_move_imm (INTVAL (op), mode)")
-			   (match_test "aarch64_const_address (op, mode)")))))))
+		 (match_test "aarch64_mov_operand_p (op, SYMBOL_CONTEXT_ADR, mode)")))))
 
 (define_predicate "aarch64_movti_operand"
   (and (match_code "reg,subreg,mem,const_int")

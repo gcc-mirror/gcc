@@ -20234,49 +20234,49 @@ vcvtpq_u64_f64 (float64x2_t __a)
 __extension__ static __inline int8x1_t __attribute__ ((__always_inline__))
 vdupb_lane_s8 (int8x16_t a, int const b)
 {
-  return __builtin_aarch64_dup_laneqi (a, b);
+  return __builtin_aarch64_dup_lane_scalarv16qi (a, b);
 }
 
 __extension__ static __inline uint8x1_t __attribute__ ((__always_inline__))
 vdupb_lane_u8 (uint8x16_t a, int const b)
 {
-  return (uint8x1_t) __builtin_aarch64_dup_laneqi ((int8x16_t) a, b);
+  return (uint8x1_t) __builtin_aarch64_dup_lane_scalarv16qi ((int8x16_t) a, b);
 }
 
 __extension__ static __inline int16x1_t __attribute__ ((__always_inline__))
 vduph_lane_s16 (int16x8_t a, int const b)
 {
-  return __builtin_aarch64_dup_lanehi (a, b);
+  return __builtin_aarch64_dup_lane_scalarv8hi (a, b);
 }
 
 __extension__ static __inline uint16x1_t __attribute__ ((__always_inline__))
 vduph_lane_u16 (uint16x8_t a, int const b)
 {
-  return (uint16x1_t) __builtin_aarch64_dup_lanehi ((int16x8_t) a, b);
+  return (uint16x1_t) __builtin_aarch64_dup_lane_scalarv8hi ((int16x8_t) a, b);
 }
 
 __extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
 vdups_lane_s32 (int32x4_t a, int const b)
 {
-  return __builtin_aarch64_dup_lanesi (a, b);
+  return __builtin_aarch64_dup_lane_scalarv4si (a, b);
 }
 
 __extension__ static __inline uint32x1_t __attribute__ ((__always_inline__))
 vdups_lane_u32 (uint32x4_t a, int const b)
 {
-  return (uint32x1_t) __builtin_aarch64_dup_lanesi ((int32x4_t) a, b);
+  return (uint32x1_t) __builtin_aarch64_dup_lane_scalarv4si ((int32x4_t) a, b);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vdupd_lane_s64 (int64x2_t a, int const b)
 {
-  return __builtin_aarch64_dup_lanedi (a, b);
+  return __builtin_aarch64_dup_lane_scalarv2di (a, b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vdupd_lane_u64 (uint64x2_t a, int const b)
 {
-  return (uint64x1_t) __builtin_aarch64_dup_lanedi ((int64x2_t) a, b);
+  return (uint64x1_t) __builtin_aarch64_dup_lane_scalarv2di ((int64x2_t) a, b);
 }
 
 /* vldn */

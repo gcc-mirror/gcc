@@ -24,7 +24,8 @@ enum rx_cpu_types
 {
   RX600,
   RX610,
-  RX200
+  RX200,
+  RX100
 };
 
 #endif

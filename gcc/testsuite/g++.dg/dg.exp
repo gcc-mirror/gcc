@@ -33,6 +33,7 @@ dg-init
 set tests [lsort [find $srcdir/$subdir *.C]]
 set tests [prune $tests $srcdir/$subdir/bprob/*]
 set tests [prune $tests $srcdir/$subdir/charset/*]
+set tests [prune $tests $srcdir/$subdir/cilk-plus/AN/*]
 set tests [prune $tests $srcdir/$subdir/compat/*]
 set tests [prune $tests $srcdir/$subdir/debug/*]
 set tests [prune $tests $srcdir/$subdir/dfp/*]

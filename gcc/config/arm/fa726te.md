@@ -115,7 +115,7 @@
 
 (define_insn_reservation "726te_mult_op" 3
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "insn" "smlalxy,mul,mla,muls,mlas,umull,umlal,smull,smlal,\
+      (eq_attr "type" "smlalxy,mul,mla,muls,mlas,umull,umlal,smull,smlal,\
                        umulls,umlals,smulls,smlals,smlawx,smulxy,smlaxy"))
  "fa726te_issue+fa726te_mac_pipe")
 

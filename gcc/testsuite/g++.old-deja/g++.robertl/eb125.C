@@ -16,7 +16,7 @@ class test_square
 
 template <class BOX> void test(BOX *the_box)
     {x				// { dg-error "not declared in this scope" }
-    the_box->print();		// { dg-error "before" }
+    the_box->print();
     }
 
 template void test<> (test_box *);

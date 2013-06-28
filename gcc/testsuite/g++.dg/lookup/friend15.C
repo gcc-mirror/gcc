@@ -8,5 +8,4 @@ void foo()
     friend class B;
   };
   B::B() {} // { dg-error "has not been declared" }
-// { dg-error "expected" "expected" { target *-*-* } 10 }
 }

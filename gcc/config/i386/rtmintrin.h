@@ -25,12 +25,14 @@
 # error "Never use <rtmintrin.h> directly; include <immintrin.h> instead."
 #endif
 
-#ifndef __RTM__
-# error "RTM instruction set not enabled"
-#endif /* __RTM__ */
-
 #ifndef _RTMINTRIN_H_INCLUDED
 #define _RTMINTRIN_H_INCLUDED
+
+#ifndef __RTM__
+#pragma GCC push_options
+#pragma GCC target("rtm")
+#define __DISABLE_RTM__
+#endif /* __RTM__ */
 
 #define _XBEGIN_STARTED		(~0u)
 #define _XABORT_EXPLICIT	(1 << 0)
@@ -73,5 +75,10 @@ _xabort (const unsigned int imm)
 #else
 #define _xabort(N)  __builtin_ia32_xabort (N)
 #endif /* __OPTIMIZE__ */
+
+#ifdef __DISABLE_RTM__
+#undef __DISABLE_RTM__
+#pragma GCC pop_options
+#endif /* __DISABLE_RTM__ */
 
 #endif /* _RTMINTRIN_H_INCLUDED */

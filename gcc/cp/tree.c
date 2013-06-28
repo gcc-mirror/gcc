@@ -141,6 +141,7 @@ lvalue_kind (const_tree ref)
     case INDIRECT_REF:
     case ARROW_EXPR:
     case ARRAY_REF:
+    case ARRAY_NOTATION_REF:
     case PARM_DECL:
     case RESULT_DECL:
       return clk_ordinary;
@@ -210,7 +211,7 @@ lvalue_kind (const_tree ref)
       /* We just return clk_ordinary for NON_DEPENDENT_EXPR in C++98, but
 	 in C++11 lvalues don't bind to rvalue references, so we need to
 	 work harder to avoid bogus errors (c++/44870).  */
-      if (cxx_dialect < cxx0x)
+      if (cxx_dialect < cxx11)
 	return clk_ordinary;
       else
 	return lvalue_kind (TREE_OPERAND (ref, 0));
@@ -565,7 +566,7 @@ build_vec_init_expr (tree type, tree init, tsubst_flags_t complain)
   TREE_SIDE_EFFECTS (init) = true;
   SET_EXPR_LOCATION (init, input_location);
 
-  if (cxx_dialect >= cxx0x
+  if (cxx_dialect >= cxx11
       && potential_constant_expression (elt_init))
     VEC_INIT_EXPR_IS_CONSTEXPR (init) = true;
   VEC_INIT_EXPR_VALUE_INIT (init) = value_init;
@@ -829,10 +830,12 @@ build_cplus_array_type (tree elt_type, tree index_type)
 
       if (TYPE_MAIN_VARIANT (t) != m)
 	{
-	  if (COMPLETE_TYPE_P (t) && !COMPLETE_TYPE_P (m))
+	  if (COMPLETE_TYPE_P (TREE_TYPE (t)) && !COMPLETE_TYPE_P (m))
 	    {
 	      /* m was built before the element type was complete, so we
-		 also need to copy the layout info from t.  */
+		 also need to copy the layout info from t.  We might
+	         end up doing this multiple times if t is an array of
+	         unknown bound.  */
 	      tree size = TYPE_SIZE (t);
 	      tree size_unit = TYPE_SIZE_UNIT (t);
 	      unsigned int align = TYPE_ALIGN (t);
@@ -882,8 +885,8 @@ array_of_runtime_bound_p (tree t)
   if (!dom)
     return false;
   tree max = TYPE_MAX_VALUE (dom);
-  return (!value_dependent_expression_p (max)
-	  && !TREE_CONSTANT (max));
+  return (!potential_rvalue_constant_expression (max)
+	  || (!value_dependent_expression_p (max) && !TREE_CONSTANT (max)));
 }
 
 /* Return a reference type node referring to TO_TYPE.  If RVAL is
@@ -1767,8 +1770,10 @@ build_ref_qualified_type (tree type, cp_ref_qualifier rqual)
     {
     case REF_QUAL_RVALUE:
       FUNCTION_RVALUE_QUALIFIED (t) = 1;
-      /* Intentional fall through */
+      FUNCTION_REF_QUALIFIED (t) = 1;
+      break;
     case REF_QUAL_LVALUE:
+      FUNCTION_RVALUE_QUALIFIED (t) = 0;
       FUNCTION_REF_QUALIFIED (t) = 1;
       break;
     default:
@@ -3951,7 +3956,7 @@ bool
 cast_valid_in_integral_constant_expression_p (tree type)
 {
   return (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
-	  || cxx_dialect >= cxx0x
+	  || cxx_dialect >= cxx11
 	  || dependent_type_p (type)
 	  || type == error_mark_node);
 }
@@ -3976,7 +3981,7 @@ cp_fix_function_decl_p (tree decl)
 
       /* Don't fix same_body aliases.  Although they don't have their own
 	 CFG, they share it with what they alias to.  */
-      if (!node || !node->alias
+      if (!node || !node->symbol.alias
 	  || !vec_safe_length (node->symbol.ref_list.references))
 	return true;
     }

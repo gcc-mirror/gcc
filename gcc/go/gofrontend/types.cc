@@ -1298,8 +1298,8 @@ Type::make_type_descriptor_var(Gogo* gogo)
   // converting INITIALIZER.
 
   this->type_descriptor_var_ =
-    gogo->backend()->immutable_struct(var_name, is_common, initializer_btype,
-				      loc);
+    gogo->backend()->immutable_struct(var_name, false, is_common,
+				      initializer_btype, loc);
   if (phash != NULL)
     *phash = this->type_descriptor_var_;
 
@@ -1308,7 +1308,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
   Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
 
   gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
-					     var_name, is_common,
+					     var_name, false, is_common,
 					     initializer_btype, loc,
 					     binitializer);
 }
@@ -1528,26 +1528,6 @@ Type::make_type_descriptor_type()
 
       // The type descriptor type.
 
-      Typed_identifier_list* params = new Typed_identifier_list();
-      params->push_back(Typed_identifier("key", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
-
-      Typed_identifier_list* results = new Typed_identifier_list();
-      results->push_back(Typed_identifier("", uintptr_type, bloc));
-
-      Type* hashfn_type = Type::make_function_type(NULL, params, results, bloc);
-
-      params = new Typed_identifier_list();
-      params->push_back(Typed_identifier("key1", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key2", unsafe_pointer_type, bloc));
-      params->push_back(Typed_identifier("key_size", uintptr_type, bloc));
-
-      results = new Typed_identifier_list();
-      results->push_back(Typed_identifier("", Type::lookup_bool_type(), bloc));
-
-      Type* equalfn_type = Type::make_function_type(NULL, params, results,
-						    bloc);
-
       Struct_type* type_descriptor_type =
 	Type::make_builtin_struct_type(10,
 				       "Kind", uint8_type,
@@ -1555,8 +1535,8 @@ Type::make_type_descriptor_type()
 				       "fieldAlign", uint8_type,
 				       "size", uintptr_type,
 				       "hash", uint32_type,
-				       "hashfn", hashfn_type,
-				       "equalfn", equalfn_type,
+				       "hashfn", uintptr_type,
+				       "equalfn", uintptr_type,
 				       "string", pointer_string_type,
 				       "", pointer_uncommon_type,
 				       "ptrToThis",
@@ -1946,8 +1926,8 @@ Type::type_descriptor_constructor(Gogo* gogo, int runtime_type_kind,
   Named_object* equal_fn;
   this->type_functions(gogo, name, hash_fntype, equal_fntype, &hash_fn,
 		       &equal_fn);
-  vals->push_back(Expression::make_func_reference(hash_fn, NULL, bloc));
-  vals->push_back(Expression::make_func_reference(equal_fn, NULL, bloc));
+  vals->push_back(Expression::make_func_code_reference(hash_fn, bloc));
+  vals->push_back(Expression::make_func_code_reference(equal_fn, bloc));
 
   ++p;
   go_assert(p->is_field_name("string"));
@@ -2207,7 +2187,7 @@ Type::method_constructor(Gogo*, Type* method_type,
 
   ++p;
   go_assert(p->is_field_name("tfn"));
-  vals->push_back(Expression::make_func_reference(no, NULL, bloc));
+  vals->push_back(Expression::make_func_code_reference(no, bloc));
 
   ++p;
   go_assert(p == fields->end());
@@ -3407,6 +3387,19 @@ Function_type::do_hash_for_method(Gogo* gogo) const
 Btype*
 Function_type::do_get_backend(Gogo* gogo)
 {
+  // When we do anything with a function value other than call it, it
+  // is represented as a pointer to a struct whose first field is the
+  // actual function.  So that is what we return as the type of a Go
+  // function.  The function stored in the first field always that
+  // takes one additional trailing argument: the closure pointer.  For
+  // a top-level function, this additional argument will only be
+  // passed when invoking the function indirectly, via the struct.
+
+  Location loc = this->location();
+  Btype* struct_type =
+    gogo->backend()->placeholder_struct_type("__go_descriptor", loc);
+  Btype* ptr_struct_type = gogo->backend()->pointer_type(struct_type);
+
   Backend::Btyped_identifier breceiver;
   if (this->receiver_ != NULL)
     {
@@ -3422,9 +3415,15 @@ Function_type::do_get_backend(Gogo* gogo)
     }
 
   std::vector<Backend::Btyped_identifier> bparameters;
-  if (this->parameters_ != NULL)
+  size_t last;
+  if (this->parameters_ == NULL)
     {
-      bparameters.resize(this->parameters_->size());
+      bparameters.resize(1);
+      last = 0;
+    }
+  else
+    {
+      bparameters.resize(this->parameters_->size() + 1);
       size_t i = 0;
       for (Typed_identifier_list::const_iterator p = this->parameters_->begin();
 	   p != this->parameters_->end();
@@ -3434,8 +3433,12 @@ Function_type::do_get_backend(Gogo* gogo)
 	  bparameters[i].btype = p->type()->get_backend(gogo);
 	  bparameters[i].location = p->location();
 	}
-      go_assert(i == bparameters.size());
+      last = i;
     }
+  go_assert(last + 1 == bparameters.size());
+  bparameters[last].name = "$closure";
+  bparameters[last].btype = ptr_struct_type;
+  bparameters[last].location = loc;
 
   std::vector<Backend::Btyped_identifier> bresults;
   if (this->results_ != NULL)
@@ -3453,8 +3456,15 @@ Function_type::do_get_backend(Gogo* gogo)
       go_assert(i == bresults.size());
     }
 
-  return gogo->backend()->function_type(breceiver, bparameters, bresults,
-					this->location());
+  Btype* fntype = gogo->backend()->function_type(breceiver, bparameters,
+						 bresults, loc);
+  std::vector<Backend::Btyped_identifier> fields(1);
+  fields[0].name = "code";
+  fields[0].btype = fntype;
+  fields[0].location = loc;
+  if (!gogo->backend()->set_placeholder_struct_type(struct_type, fields))
+    return gogo->backend()->error_type();
+  return ptr_struct_type;
 }
 
 // The type of a function type descriptor.
@@ -3824,6 +3834,49 @@ Function_type::copy_with_receiver(Type* receiver_type) const
   if (this->is_varargs_)
     ret->set_is_varargs();
   return ret;
+}
+
+// Make a copy of a function type ignoring any receiver and adding a
+// closure parameter.
+
+Function_type*
+Function_type::copy_with_closure(Type* closure_type) const
+{
+  Typed_identifier_list* new_params = new Typed_identifier_list();
+  const Typed_identifier_list* orig_params = this->parameters_;
+  if (orig_params != NULL && !orig_params->empty())
+    {
+      static int count;
+      char buf[50];
+      for (Typed_identifier_list::const_iterator p = orig_params->begin();
+	   p != orig_params->end();
+	   ++p)
+	{
+	  snprintf(buf, sizeof buf, "pt.%u", count);
+	  ++count;
+	  new_params->push_back(Typed_identifier(buf, p->type(),
+						 p->location()));
+	}
+    }
+  new_params->push_back(Typed_identifier("closure.0", closure_type,
+					 this->location_));
+
+  const Typed_identifier_list* orig_results = this->results_;
+  Typed_identifier_list* new_results;
+  if (orig_results == NULL || orig_results->empty())
+    new_results = NULL;
+  else
+    {
+      new_results = new Typed_identifier_list();
+      for (Typed_identifier_list::const_iterator p = orig_results->begin();
+	   p != orig_results->end();
+	   ++p)
+	new_results->push_back(Typed_identifier("", p->type(),
+						p->location()));
+    }
+
+  return Type::make_function_type(NULL, new_params, new_results,
+				  this->location());
 }
 
 // Make a function type.
@@ -4532,6 +4585,7 @@ Struct_type::field_reference_depth(Expression* struct_expr,
 	      go_assert(sub != NULL);
 	    }
 	  sub->set_struct_expression(here);
+          sub->set_implicit(true);
 	}
       else if (subdepth > found_depth)
 	delete sub;
@@ -6227,7 +6281,8 @@ Map_type::map_descriptor(Gogo* gogo)
 
   std::string mangled_name = "__go_map_" + this->mangled_name(gogo);
   Btype* map_descriptor_btype = map_descriptor_type->get_backend(gogo);
-  Bvariable* bvar = gogo->backend()->immutable_struct(mangled_name, true,
+  Bvariable* bvar = gogo->backend()->immutable_struct(mangled_name, false,
+						      true,
 						      map_descriptor_btype,
 						      bloc);
 
@@ -6235,7 +6290,7 @@ Map_type::map_descriptor(Gogo* gogo)
   context.set_is_const();
   Bexpression* binitializer = tree_to_expr(initializer->get_tree(&context));
 
-  gogo->backend()->immutable_struct_set_init(bvar, mangled_name, true,
+  gogo->backend()->immutable_struct_set_init(bvar, mangled_name, false, true,
 					     map_descriptor_btype, bloc,
 					     binitializer);
 
@@ -7569,7 +7624,7 @@ Method::bind_method(Expression* expr, Location location) const
       // the child class.
       return this->do_bind_method(expr, location);
     }
-  return Expression::make_bound_method(expr, this->stub_, location);
+  return Expression::make_bound_method(expr, this, this->stub_, location);
 }
 
 // Return the named object associated with a method.  This may only be
@@ -7612,8 +7667,8 @@ Expression*
 Named_method::do_bind_method(Expression* expr, Location location) const
 {
   Named_object* no = this->named_object_;
-  Bound_method_expression* bme = Expression::make_bound_method(expr, no,
-							       location);
+  Bound_method_expression* bme = Expression::make_bound_method(expr, this,
+							       no, location);
   // If this is not a local method, and it does not use a stub, then
   // the real method expects a different type.  We need to cast the
   // first argument.
@@ -8991,28 +9046,16 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
   call->set_hidden_fields_are_ok();
-  size_t count = call->result_count();
-  if (count == 0)
-    gogo->add_statement(Statement::make_statement(call, true));
-  else
-    {
-      Expression_list* retvals = new Expression_list();
-      if (count <= 1)
-	retvals->push_back(call);
-      else
-	{
-	  for (size_t i = 0; i < count; ++i)
-	    retvals->push_back(Expression::make_call_result(call, i));
-	}
-      Return_statement* retstat = Statement::make_return_statement(retvals,
-								   location);
 
+  Statement* s = Statement::make_return_from_call(call, location);
+  Return_statement* retstat = s->return_statement();
+  if (retstat != NULL)
+    {
       // We can return values with hidden fields from a stub.  This is
       // necessary if the method is itself hidden.
       retstat->set_hidden_fields_are_ok();
-
-      gogo->add_statement(retstat);
     }
+  gogo->add_statement(s);
 }
 
 // Apply FIELD_INDEXES to EXPR.  The field indexes have to be applied
@@ -9353,13 +9396,18 @@ Type::find_field_or_method(const Type* type,
 	fnt = pf->type()->deref()->named_type();
       go_assert(fnt != NULL);
 
+      // Methods with pointer receivers on embedded field are
+      // inherited by the pointer to struct, and also by the struct
+      // type if the field itself is a pointer.
+      bool can_be_pointer = (receiver_can_be_pointer
+			     || pf->type()->points_to() != NULL);
       int sublevel = level == NULL ? 1 : *level + 1;
       bool sub_is_method;
       std::string subambig1;
       std::string subambig2;
       bool subfound = Type::find_field_or_method(fnt,
 						 name,
-						 receiver_can_be_pointer,
+						 can_be_pointer,
 						 seen,
 						 &sublevel,
 						 &sub_is_method,

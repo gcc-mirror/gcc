@@ -37,6 +37,6 @@ long foo(long data, long v)
 }
 /* We should not eliminate global register variable when it is the RHS of
    a single assignment.  */
-/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre" { target { arm-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } */
-/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" { target { ! { arm-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 2" 1 "pre" { target { arm*-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "Eliminated: 3" 1 "pre" { target { ! { arm*-*-* i?86-*-* mips*-*-* x86_64-*-* } } } } } */
 /* { dg-final { cleanup-tree-dump "pre" } } */

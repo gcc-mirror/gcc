@@ -1,5 +1,5 @@
-// { dg-do run { target *-*-linux* *-*-solaris* powerpc-ibm-aix* } }
-// { dg-options " -std=gnu++0x -pthread" { target *-*-linux* powerpc-ibm-aix* } }
+// { dg-do run { target *-*-linux* *-*-gnu* *-*-solaris* powerpc-ibm-aix* } }
+// { dg-options " -std=gnu++0x -pthread" { target *-*-linux* *-*-gnu* powerpc-ibm-aix* } }
 // { dg-options " -std=gnu++0x -pthreads" { target *-*-solaris* } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }

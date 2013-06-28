@@ -28,8 +28,11 @@
 #define _MMINTRIN_H_INCLUDED
 
 #ifndef __MMX__
-# error "MMX instruction set not enabled"
-#else
+#pragma GCC push_options
+#pragma GCC target("mmx")
+#define __DISABLE_MMX__
+#endif /* __MMX__ */
+
 /* The Intel API is flexible enough that we must allow aliasing with other
    vector types, and their scalar components.  */
 typedef int __m64 __attribute__ ((__vector_size__ (8), __may_alias__));
@@ -303,13 +306,21 @@ _m_paddd (__m64 __m1, __m64 __m2)
 }
 
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
-#ifdef __SSE2__
+#ifndef __SSE2__
+#pragma GCC push_options
+#pragma GCC target("sse2")
+#define __DISABLE_SSE2__
+#endif /* __SSE2__ */
+
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_add_si64 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_paddq ((__v1di)__m1, (__v1di)__m2);
 }
-#endif
+#ifdef __DISABLE_SSE2__
+#undef __DISABLE_SSE2__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE2__ */
 
 /* Add the 8-bit values in M1 to the 8-bit values in M2 using signed
    saturated arithmetic.  */
@@ -407,13 +418,21 @@ _m_psubd (__m64 __m1, __m64 __m2)
 }
 
 /* Add the 64-bit values in M1 to the 64-bit values in M2.  */
-#ifdef __SSE2__
+#ifndef __SSE2__
+#pragma GCC push_options
+#pragma GCC target("sse2")
+#define __DISABLE_SSE2__
+#endif /* __SSE2__ */
+
 extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sub_si64 (__m64 __m1, __m64 __m2)
 {
   return (__m64) __builtin_ia32_psubq ((__v1di)__m1, (__v1di)__m2);
 }
-#endif
+#ifdef __DISABLE_SSE2__
+#undef __DISABLE_SSE2__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE2__ */
 
 /* Subtract the 8-bit values in M2 from the 8-bit values in M1 using signed
    saturating arithmetic.  */
@@ -915,6 +934,9 @@ _mm_set1_pi8 (char __b)
 {
   return _mm_set_pi8 (__b, __b, __b, __b, __b, __b, __b, __b);
 }
+#ifdef __DISABLE_MMX__
+#undef __DISABLE_MMX__
+#pragma GCC pop_options
+#endif /* __DISABLE_MMX__ */
 
-#endif /* __MMX__ */
 #endif /* _MMINTRIN_H_INCLUDED */

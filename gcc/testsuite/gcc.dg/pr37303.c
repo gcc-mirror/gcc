@@ -1,4 +1,4 @@
-/* { dg-do compile { target *-*-elf* *-*-linux-gnu* } } */
+/* { dg-do compile { target *-*-elf* *-*-gnu* } } */
 /* { dg-options "-std=c99" }
 /* { dg-final { scan-assembler "rdata|rodata" } } */
 

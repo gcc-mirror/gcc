@@ -40,6 +40,10 @@ void test01()
   VERIFY( (is_same<add_lvalue_reference<ClassType&&>::type, ClassType&>::value) );
   VERIFY( (is_same<add_lvalue_reference<void>::type, void>::value) );
   VERIFY( (is_same<add_lvalue_reference<const void>::type, const void>::value) );  
+  VERIFY( (is_same<add_lvalue_reference<bool(int) const>::type, bool(int) const>::value) );  
+  VERIFY( (is_same<add_lvalue_reference<bool(int) &>::type, bool(int) &>::value) );  
+  VERIFY( (is_same<add_lvalue_reference<bool(int) const &&>::type, bool(int) const &&>::value) );  
+  VERIFY( (is_same<add_lvalue_reference<bool(int)>::type, bool(&)(int)>::value) );  
 }
 
 int main()

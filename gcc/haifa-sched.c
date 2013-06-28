@@ -7435,20 +7435,19 @@ find_fallthru_edge_from (basic_block pred)
 static void
 sched_extend_bb (void)
 {
-  rtx insn;
-
   /* The following is done to keep current_sched_info->next_tail non null.  */
-  insn = BB_END (EXIT_BLOCK_PTR->prev_bb);
-  if (NEXT_INSN (insn) == 0
+  rtx end = BB_END (EXIT_BLOCK_PTR->prev_bb);
+  rtx insn = DEBUG_INSN_P (end) ? prev_nondebug_insn (end) : end;
+  if (NEXT_INSN (end) == 0
       || (!NOTE_P (insn)
 	  && !LABEL_P (insn)
 	  /* Don't emit a NOTE if it would end up before a BARRIER.  */
-	  && !BARRIER_P (NEXT_INSN (insn))))
+	  && !BARRIER_P (NEXT_INSN (end))))
     {
-      rtx note = emit_note_after (NOTE_INSN_DELETED, insn);
-      /* Make insn appear outside BB.  */
+      rtx note = emit_note_after (NOTE_INSN_DELETED, end);
+      /* Make note appear outside BB.  */
       set_block_for_insn (note, NULL);
-      BB_END (EXIT_BLOCK_PTR->prev_bb) = insn;
+      BB_END (EXIT_BLOCK_PTR->prev_bb) = end;
     }
 }
 

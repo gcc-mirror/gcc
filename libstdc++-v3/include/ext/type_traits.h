@@ -155,6 +155,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __is_null_pointer(_Type)
     { return false; }
 
+#if __cplusplus >= 201103L
+  inline bool
+  __is_null_pointer(std::nullptr_t)
+  { return true; }
+#endif
 
   // For complex and cmath
   template<typename _Tp, bool = std::__is_integer<_Tp>::__value>

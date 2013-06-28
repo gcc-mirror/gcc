@@ -55,6 +55,13 @@ DEFTREECODE (USERDEF_LITERAL, "userdef_literal", tcc_exceptional, 3)
    or for the purpose of -Wsizeof-pointer-memaccess warning.  */
 DEFTREECODE (SIZEOF_EXPR, "sizeof_expr", tcc_expression, 1)
 
+/* Array Notation expression.
+   Operand 0 is the array.
+   Operand 1 is the starting array index.
+   Operand 2 contains the number of elements you need to access.
+   Operand 3 is the stride.  */
+DEFTREECODE (ARRAY_NOTATION_REF, "array_notation_ref", tcc_reference, 4) 
+
 /*
 Local variables:
 mode:c

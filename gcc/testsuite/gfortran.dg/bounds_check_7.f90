@@ -5,7 +5,7 @@
 subroutine foo(a)
   integer a(*), i
   i = 0
-  a(i) = 42 ! {
+  a(i) = 42
 end subroutine foo
 
 program test

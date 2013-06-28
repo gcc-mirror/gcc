@@ -6,7 +6,7 @@
 
 program test
   procedure(real), pointer :: p
-  p => f()  ! { dg-error "Type/rank mismatch in function result" }
+  p => f()  ! { dg-error "Type mismatch in function result" }
 contains
  function f()
    pointer :: f

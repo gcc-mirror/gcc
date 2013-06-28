@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic one-word fraction declaration and manipulation.
-   Copyright (C) 1997,1998,1999,2006 Free Software Foundation, Inc.
+   Copyright (C) 1997-2013 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -233,7 +233,7 @@ do {							\
 	_nl = X##_f << (_FP_W_TYPE_SIZE - 1);				\
 	_nh = X##_f >> 1;						\
       }									\
-    									\
+									\
     udiv_qrnnd(_q, _r, _nh, _nl, _y);					\
     R##_f = _q | (_r != 0);						\
   } while (0)
@@ -255,14 +255,14 @@ do {							\
     udiv_qrnnd(_q, _r, _nh, _nl, Y##_f);		\
     R##_f = _q | (_r != 0);				\
   } while (0)
-  
-  
+
+
 /*
  * Square root algorithms:
  * We have just one right now, maybe Newton approximation
  * should be added for those machines where division is fast.
  */
- 
+
 #define _FP_SQRT_MEAT_1(R, S, T, X, q)			\
   do {							\
     while (q != _FP_WORK_ROUND)				\
@@ -286,7 +286,7 @@ do {							\
   } while (0)
 
 /*
- * Assembly/disassembly for converting to/from integral types.  
+ * Assembly/disassembly for converting to/from integral types.
  * No shifting or overflow handled here.
  */
 

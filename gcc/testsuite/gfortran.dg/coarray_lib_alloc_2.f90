@@ -4,6 +4,7 @@
 ! Allocate/deallocate with libcaf.
 !
 
+ subroutine test()
  type t
  end type t
  class(t), allocatable :: xx[:], yy(:)[:]

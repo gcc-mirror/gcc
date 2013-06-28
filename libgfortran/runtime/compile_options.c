@@ -173,6 +173,8 @@ set_options (int num, int options[])
      the library behavior; range checking is now always done when
      parsing integers. It's place in the options array is retained due
      to ABI compatibility. Remove when bumping the library ABI.  */
+  if (num >= 9)
+    compile_options.fpe_summary = options[8];
 
   /* If backtrace is required, we set signal handlers on the POSIX
      2001 signals with core action.  */
@@ -225,6 +227,7 @@ init_compile_options (void)
   compile_options.pedantic = 0;
   compile_options.backtrace = 0;
   compile_options.sign_zero = 1;
+  compile_options.fpe_summary = 0;
 }
 
 /* Function called by the front-end to tell us the

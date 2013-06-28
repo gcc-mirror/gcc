@@ -32,6 +32,7 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define _FP_NANSIGN_Q		1
 
 #define _FP_KEEPNANFRACP 1
+#define _FP_QNANNEGATEDP 0
 
 #define _FP_CHOOSENAN(fs, wc, R, X, Y, OP)			\
   do {								\

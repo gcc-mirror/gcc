@@ -1,3 +1,15 @@
+2013-05-31  Matt Burgess <matthew@linuxfromscratch.org>
+
+	PR other/56780
+	* libiberty/configure.ac: Move test for --enable-install-libiberty
+	outside of the 'with_target_subdir' test so that it actually gets
+	run.  Add output messages to show the test result.
+	* libiberty/configure: Regenerate.
+	* libiberty/Makefile.in (install_to_libdir): Place the
+	installation of the libiberty library in the same guard as that
+	used for the headers to prevent it being installed unless
+	requested via --enable-install-libiberty.
+
 2013-05-06  David Edelsohn  <dje.gcc@gmail.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 	    Segher Boessenkool  <segher@kernel.crashing.org>

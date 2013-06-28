@@ -975,6 +975,8 @@ rx_gen_move_template (rtx * operands, bool is_movu)
 	   loading an immediate into a register.  */
 	extension = ".W";
       break;
+    case DFmode:
+    case DImode:
     case SFmode:
     case SImode:
       extension = ".L";
@@ -988,19 +990,44 @@ rx_gen_move_template (rtx * operands, bool is_movu)
     }
 
   if (MEM_P (src) && rx_pid_data_operand (XEXP (src, 0)) == PID_UNENCODED)
-    src_template = "(%A1-__pid_base)[%P1]";
+    {
+      gcc_assert (GET_MODE (src) != DImode);
+      gcc_assert (GET_MODE (src) != DFmode);
+      
+      src_template = "(%A1 - __pid_base)[%P1]";
+    }
   else if (MEM_P (src) && rx_small_data_operand (XEXP (src, 0)))
-    src_template = "%%gp(%A1)[%G1]";
+    {
+      gcc_assert (GET_MODE (src) != DImode);
+      gcc_assert (GET_MODE (src) != DFmode);
+      
+      src_template = "%%gp(%A1)[%G1]";
+    }
   else
     src_template = "%1";
 
   if (MEM_P (dest) && rx_small_data_operand (XEXP (dest, 0)))
-    dst_template = "%%gp(%A0)[%G0]";
+    {
+      gcc_assert (GET_MODE (dest) != DImode);
+      gcc_assert (GET_MODE (dest) != DFmode);
+      
+      dst_template = "%%gp(%A0)[%G0]";
+    }
   else
     dst_template = "%0";
 
-  sprintf (out_template, "%s%s\t%s, %s", is_movu ? "movu" : "mov",
-	   extension, src_template, dst_template);
+  if (GET_MODE (dest) == DImode || GET_MODE (dest) == DFmode)
+    {
+      gcc_assert (! is_movu);
+
+      if (REG_P (src) && REG_P (dest) && (REGNO (dest) == REGNO (src) + 1))
+	sprintf (out_template, "mov.L\t%H1, %H0 | mov.L\t%1, %0");
+      else
+	sprintf (out_template, "mov.L\t%1, %0 | mov.L\t%H1, %H0");
+    }
+  else
+    sprintf (out_template, "%s%s\t%s, %s", is_movu ? "movu" : "mov",
+	     extension, src_template, dst_template);
   return out_template;
 }
 
@@ -3240,6 +3267,12 @@ rx_ok_to_inline (tree caller, tree callee)
     || lookup_attribute ("gnu_inline", DECL_ATTRIBUTES (callee)) != NULL_TREE;
 }
 
+static bool
+rx_enable_lra (void)
+{
+  return TARGET_ENABLE_LRA || 1;
+}
+
 
 #undef  TARGET_NARROW_VOLATILE_BITFIELD
 #define TARGET_NARROW_VOLATILE_BITFIELD		rx_narrow_volatile_bitfield
@@ -3390,6 +3423,9 @@ rx_ok_to_inline (tree caller, tree callee)
 
 #undef  TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN 		rx_warn_func_return
+
+#undef  TARGET_LRA_P
+#define TARGET_LRA_P 				rx_enable_lra
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

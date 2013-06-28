@@ -4,7 +4,7 @@
 
 #include <string.h>
 
-char dest[16];
+char dest[16] = { 0 };
 
 void aligned_dest (char *src)
 {

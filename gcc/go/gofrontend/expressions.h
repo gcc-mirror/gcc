@@ -16,6 +16,7 @@ class Translate_context;
 class Traverse;
 class Statement_inserter;
 class Type;
+class Method;
 struct Type_context;
 class Integer_type;
 class Float_type;
@@ -32,6 +33,7 @@ class String_expression;
 class Binary_expression;
 class Call_expression;
 class Func_expression;
+class Func_descriptor_expression;
 class Unknown_expression;
 class Index_expression;
 class Map_index_expression;
@@ -67,6 +69,8 @@ class Expression
     EXPRESSION_SET_AND_USE_TEMPORARY,
     EXPRESSION_SINK,
     EXPRESSION_FUNC_REFERENCE,
+    EXPRESSION_FUNC_DESCRIPTOR,
+    EXPRESSION_FUNC_CODE_REFERENCE,
     EXPRESSION_UNKNOWN_REFERENCE,
     EXPRESSION_BOOLEAN,
     EXPRESSION_STRING,
@@ -150,9 +154,23 @@ class Expression
   static Expression*
   make_sink(Location);
 
-  // Make a reference to a function in an expression.
+  // Make a reference to a function in an expression.  This returns a
+  // pointer to the struct holding the address of the function
+  // followed by any closed-over variables.
   static Expression*
   make_func_reference(Named_object*, Expression* closure, Location);
+
+  // Make a function descriptor, an immutable struct with a single
+  // field that points to the function code.  This may only be used
+  // with functions that do not have closures.  FN is the function for
+  // which we are making the descriptor.
+  static Func_descriptor_expression*
+  make_func_descriptor(Named_object* fn);
+
+  // Make a reference to the code of a function.  This is used to set
+  // descriptor and closure fields.
+  static Expression*
+  make_func_code_reference(Named_object*, Location);
 
   // Make a reference to an unknown name.  In a correct program this
   // will always be lowered to a real const/var/func reference.
@@ -207,9 +225,11 @@ class Expression
   make_call_result(Call_expression*, unsigned int index);
 
   // Make an expression which is a method bound to its first
-  // parameter.
+  // parameter.  METHOD is the method being called, FUNCTION is the
+  // function to call.
   static Bound_method_expression*
-  make_bound_method(Expression* object, Named_object* method, Location);
+  make_bound_method(Expression* object, const Method* method,
+		    Named_object* function, Location);
 
   // Make an index or slice expression.  This is a parser expression
   // which represents LEFT[START:END].  END may be NULL, meaning an
@@ -522,6 +542,11 @@ class Expression
   // Return true if this is a reference to a local variable.
   bool
   is_local_variable() const;
+
+  // Make the builtin function descriptor type, so that it can be
+  // converted.
+  static void
+  make_func_descriptor_type();
 
   // Traverse an expression.
   static int
@@ -1057,8 +1082,7 @@ class Set_and_use_temporary_expression : public Expression
   do_type();
 
   void
-  do_determine_type(const Type_context*)
-  { }
+  do_determine_type(const Type_context*);
 
   Expression*
   do_copy()
@@ -1484,7 +1508,7 @@ class Func_expression : public Expression
   { }
 
   // Return the object associated with the function.
-  const Named_object*
+  Named_object*
   named_object() const
   { return this->function_; }
 
@@ -1494,9 +1518,9 @@ class Func_expression : public Expression
   closure()
   { return this->closure_; }
 
-  // Return a tree for this function without evaluating the closure.
-  tree
-  get_tree_without_closure(Gogo*);
+  // Return a tree for the code for a function.
+  static tree
+  get_code_pointer(Gogo*, Named_object* function, Location loc);
 
  protected:
   int
@@ -1532,9 +1556,66 @@ class Func_expression : public Expression
   // The function itself.
   Named_object* function_;
   // A closure.  This is normally NULL.  For a nested function, it may
-  // be a heap-allocated struct holding pointers to all the variables
-  // referenced by this function and defined in enclosing functions.
+  // be a struct holding pointers to all the variables referenced by
+  // this function and defined in enclosing functions.
   Expression* closure_;
+};
+
+// A function descriptor.  A function descriptor is a struct with a
+// single field pointing to the function code.  This is used for
+// functions without closures.
+
+class Func_descriptor_expression : public Expression
+{
+ public:
+  Func_descriptor_expression(Named_object* fn);
+
+  // Set the descriptor wrapper.
+  void
+  set_descriptor_wrapper(Named_object* dfn)
+  {
+    go_assert(this->dfn_ == NULL);
+    this->dfn_ = dfn;
+  }
+
+  // Make the function descriptor type, so that it can be converted.
+  static void
+  make_func_descriptor_type();
+
+ protected:
+  int
+  do_traverse(Traverse*);
+
+  Type*
+  do_type();
+
+  void
+  do_determine_type(const Type_context*)
+  { }
+
+  Expression*
+  do_copy();
+
+  bool
+  do_is_addressable() const
+  { return true; }
+
+  tree
+  do_get_tree(Translate_context*);
+
+  void
+  do_dump_expression(Ast_dump_context* context) const;
+
+ private:
+  // The type of all function descriptors.
+  static Type* descriptor_type;
+
+  // The function for which this is the descriptor.
+  Named_object* fn_;
+  // The descriptor function.
+  Named_object* dfn_;
+  // The descriptor variable.
+  Bvariable* dvar_;
 };
 
 // A reference to an unknown name.
@@ -1773,10 +1854,10 @@ class Map_index_expression : public Expression
 class Bound_method_expression : public Expression
 {
  public:
-  Bound_method_expression(Expression* expr, Named_object* method,
-			  Location location)
+  Bound_method_expression(Expression* expr, const Method *method,
+			  Named_object* function, Location location)
     : Expression(EXPRESSION_BOUND_METHOD, location),
-      expr_(expr), expr_type_(NULL), method_(method)
+      expr_(expr), expr_type_(NULL), method_(method), function_(function)
   { }
 
   // Return the object which is the first argument.
@@ -1791,19 +1872,32 @@ class Bound_method_expression : public Expression
   first_argument_type() const
   { return this->expr_type_; }
 
-  // Return the method function.
-  Named_object*
-  method()
+  // Return the method.
+  const Method*
+  method() const
   { return this->method_; }
+
+  // Return the function to call.
+  Named_object*
+  function() const
+  { return this->function_; }
 
   // Set the implicit type of the expression.
   void
   set_first_argument_type(Type* type)
   { this->expr_type_ = type; }
 
+  // Create a thunk to call FUNCTION, for METHOD, when it is used as
+  // part of a method value.
+  static Named_object*
+  create_thunk(Gogo*, const Method* method, Named_object* function);
+
  protected:
   int
   do_traverse(Traverse*);
+
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Type*
   do_type();
@@ -1818,7 +1912,7 @@ class Bound_method_expression : public Expression
   do_copy()
   {
     return new Bound_method_expression(this->expr_->copy(), this->method_,
-				       this->location());
+				       this->function_, this->location());
   }
 
   tree
@@ -1828,6 +1922,11 @@ class Bound_method_expression : public Expression
   do_dump_expression(Ast_dump_context*) const;
 
  private:
+  // A mapping from method functions to the thunks we have created for
+  // them.
+  typedef Unordered_map(Named_object*, Named_object*) Method_value_thunks;
+  static Method_value_thunks method_value_thunks;
+
   // The object used to find the method.  This is passed to the method
   // as the first argument.
   Expression* expr_;
@@ -1835,8 +1934,12 @@ class Bound_method_expression : public Expression
   // NULL in the normal case, non-NULL when using a method from an
   // anonymous field which does not require a stub.
   Type* expr_type_;
-  // The method itself.
-  Named_object* method_;
+  // The method.
+  const Method* method_;
+  // The function to call.  This is not the same as
+  // method_->named_object() when the method has a stub.  This will be
+  // the real function rather than the stub.
+  Named_object* function_;
 };
 
 // A reference to a field in a struct.
@@ -1847,7 +1950,7 @@ class Field_reference_expression : public Expression
   Field_reference_expression(Expression* expr, unsigned int field_index,
 			     Location location)
     : Expression(EXPRESSION_FIELD_REFERENCE, location),
-      expr_(expr), field_index_(field_index), called_fieldtrack_(false)
+      expr_(expr), field_index_(field_index), implicit_(false), called_fieldtrack_(false)
   { }
 
   // Return the struct expression.
@@ -1859,6 +1962,15 @@ class Field_reference_expression : public Expression
   unsigned int
   field_index() const
   { return this->field_index_; }
+
+  // Return whether this node was implied by an anonymous field.
+  bool
+  implicit() const
+  { return this->implicit_; }
+
+  void
+  set_implicit(bool implicit)
+  { this->implicit_ = implicit; }
 
   // Set the struct expression.  This is used when parsing.
   void
@@ -1914,6 +2026,9 @@ class Field_reference_expression : public Expression
   Expression* expr_;
   // The zero-based index of the field we are retrieving.
   unsigned int field_index_;
+  // Whether this node was emitted implicitly for an embedded field,
+  // that is, expr_ is not the expr_ of the original user node.
+  bool implicit_;
   // Whether we have already emitted a fieldtrack call.
   bool called_fieldtrack_;
 };
@@ -1940,6 +2055,11 @@ class Interface_field_reference_expression : public Expression
   name() const
   { return this->name_; }
 
+  // Create a thunk to call the method NAME in TYPE when it is used as
+  // part of a method value.
+  static Named_object*
+  create_thunk(Gogo*, Interface_type* type, const std::string& name);
+
   // Return a tree for the pointer to the function to call, given a
   // tree for the expression.
   tree
@@ -1954,6 +2074,9 @@ class Interface_field_reference_expression : public Expression
  protected:
   int
   do_traverse(Traverse* traverse);
+
+  Expression*
+  do_lower(Gogo*, Named_object*, Statement_inserter*, int);
 
   Type*
   do_type();
@@ -1979,6 +2102,13 @@ class Interface_field_reference_expression : public Expression
   do_dump_expression(Ast_dump_context*) const;
 
  private:
+  // A mapping from interface types to a list of thunks we have
+  // created for methods.
+  typedef std::vector<std::pair<std::string, Named_object*> > Method_thunks;
+  typedef Unordered_map(Interface_type*, Method_thunks*)
+    Interface_method_thunks;
+  static Interface_method_thunks interface_method_thunks;
+
   // The expression for the interface object.  This should have a type
   // of interface or pointer to interface.
   Expression* expr_;

@@ -26,96 +26,52 @@
 
 #include <ia32intrin.h>
 
-#ifdef __MMX__
 #include <mmintrin.h>
-#endif
 
-#ifdef __SSE__
 #include <xmmintrin.h>
-#endif
 
-#ifdef __SSE2__
 #include <emmintrin.h>
-#endif
 
-#ifdef __SSE3__
 #include <pmmintrin.h>
-#endif
 
-#ifdef __SSSE3__
 #include <tmmintrin.h>
-#endif
 
-#ifdef __SSE4A__
 #include <ammintrin.h>
-#endif
 
-#if defined (__SSE4_2__) || defined (__SSE4_1__)
 #include <smmintrin.h>
-#endif
 
-#if defined (__AES__) || defined (__PCLMUL__)
 #include <wmmintrin.h>
-#endif
 
 /* For including AVX instructions */
 #include <immintrin.h>
 
-#ifdef __3dNOW__
 #include <mm3dnow.h>
-#endif
 
-#ifdef __FMA4__
 #include <fma4intrin.h>
-#endif
 
-#ifdef __XOP__
 #include <xopintrin.h>
-#endif
 
-#ifdef __LWP__
 #include <lwpintrin.h>
-#endif
 
-#ifdef __BMI__
 #include <bmiintrin.h>
-#endif
 
-#ifdef __BMI2__
 #include <bmi2intrin.h>
-#endif
 
-#ifdef __TBM__
 #include <tbmintrin.h>
-#endif
 
-#ifdef __LZCNT__
 #include <lzcntintrin.h>
-#endif
 
-#ifdef __POPCNT__
 #include <popcntintrin.h>
-#endif
 
-#ifdef __RDSEED__
 #include <rdseedintrin.h>
-#endif
 
-#ifdef __PRFCHW__
 #include <prfchwintrin.h>
-#endif
 
-#ifdef __FXSR__
 #include <fxsrintrin.h>
-#endif
 
-#ifdef __XSAVE__
 #include <xsaveintrin.h>
-#endif
 
-#ifdef __XSAVEOPT__
 #include <xsaveoptintrin.h>
-#endif
 
 #include <adxintrin.h>
 

@@ -199,15 +199,57 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 
 #if _GTHREAD_USE_MUTEX_TIMEDLOCK
-  /// timed_mutex
-  class timed_mutex : private __mutex_base
-  {
+  template<typename _Derived>
+    class __timed_mutex_impl
+    {
+    protected:
 #ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::steady_clock 	  	__clock_t;
+      typedef chrono::steady_clock 	  	__clock_t;
 #else
-    typedef chrono::high_resolution_clock 	__clock_t;
+      typedef chrono::high_resolution_clock 	__clock_t;
 #endif
 
+      template<typename _Rep, typename _Period>
+	bool
+	_M_try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
+	{
+	  auto __rt = chrono::duration_cast<__clock_t::duration>(__rtime);
+	  if (ratio_greater<__clock_t::period, _Period>())
+	    ++__rt;
+
+	  return _M_try_lock_until(__clock_t::now() + __rt);
+	}
+
+      template<typename _Duration>
+	bool
+	_M_try_lock_until(const chrono::time_point<__clock_t,
+						   _Duration>& __atime)
+	{
+	  chrono::time_point<__clock_t, chrono::seconds> __s =
+	    chrono::time_point_cast<chrono::seconds>(__atime);
+
+	  chrono::nanoseconds __ns =
+	    chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
+
+	  __gthread_time_t __ts = {
+	    static_cast<std::time_t>(__s.time_since_epoch().count()),
+	    static_cast<long>(__ns.count())
+	  };
+
+	  auto __mutex = static_cast<_Derived*>(this)->native_handle();
+	  return !__gthread_mutex_timedlock(__mutex, &__ts);
+	}
+
+      template<typename _Clock, typename _Duration>
+	bool
+	_M_try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
+	{ return _M_try_lock_for(__atime - _Clock::now()); }
+    };
+
+  /// timed_mutex
+  class timed_mutex
+  : private __mutex_base, public __timed_mutex_impl<timed_mutex>
+  {
   public:
     typedef __native_type* 		  	native_handle_type;
 
@@ -237,25 +279,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template <class _Rep, class _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
-      { return __try_lock_for_impl(__rtime); }
+      { return _M_try_lock_for(__rtime); }
 
     template <class _Clock, class _Duration>
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
-      {
-	chrono::time_point<_Clock, chrono::seconds> __s =
-	  chrono::time_point_cast<chrono::seconds>(__atime);
-
-	chrono::nanoseconds __ns =
-	  chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts = {
-	  static_cast<std::time_t>(__s.time_since_epoch().count()),
-	  static_cast<long>(__ns.count())
-	};
-
-	return !__gthread_mutex_timedlock(&_M_mutex, &__ts);
-      }
+      { return _M_try_lock_until(__atime); }
 
     void
     unlock()
@@ -267,40 +296,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     native_handle_type
     native_handle()
     { return &_M_mutex; }
-
-  private:
-    template<typename _Rep, typename _Period>
-      typename enable_if<
-	ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-      __try_lock_for_impl(const chrono::duration<_Rep, _Period>& __rtime)
-      {
-	__clock_t::time_point __atime = __clock_t::now()
-	  + chrono::duration_cast<__clock_t::duration>(__rtime);
-
-	return try_lock_until(__atime);
-      }
-
-    template <typename _Rep, typename _Period>
-      typename enable_if<
-	!ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-      __try_lock_for_impl(const chrono::duration<_Rep, _Period>& __rtime)
-      {
-	__clock_t::time_point __atime = __clock_t::now()
-	  + ++chrono::duration_cast<__clock_t::duration>(__rtime);
-
-	return try_lock_until(__atime);
-      }
   };
 
   /// recursive_timed_mutex
-  class recursive_timed_mutex : private __recursive_mutex_base
+  class recursive_timed_mutex
+  : private __recursive_mutex_base,
+    public __timed_mutex_impl<recursive_timed_mutex>
   {
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
-    typedef chrono::steady_clock 		__clock_t;
-#else
-    typedef chrono::high_resolution_clock 	__clock_t;
-#endif
-
   public:
     typedef __native_type* 			native_handle_type;
 
@@ -330,25 +332,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template <class _Rep, class _Period>
       bool
       try_lock_for(const chrono::duration<_Rep, _Period>& __rtime)
-      { return __try_lock_for_impl(__rtime); }
+      { return _M_try_lock_for(__rtime); }
 
     template <class _Clock, class _Duration>
       bool
       try_lock_until(const chrono::time_point<_Clock, _Duration>& __atime)
-      {
-	chrono::time_point<_Clock, chrono::seconds>  __s =
-	  chrono::time_point_cast<chrono::seconds>(__atime);
-
-	chrono::nanoseconds __ns =
-	  chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts = {
-	  static_cast<std::time_t>(__s.time_since_epoch().count()),
-	  static_cast<long>(__ns.count())
-	};
-
-	return !__gthread_recursive_mutex_timedlock(&_M_mutex, &__ts);
-      }
+      { return _M_try_lock_until(__atime); }
 
     void
     unlock()
@@ -360,29 +349,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     native_handle_type
     native_handle()
     { return &_M_mutex; }
-
-  private:
-    template<typename _Rep, typename _Period>
-      typename enable_if<
-	ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-      __try_lock_for_impl(const chrono::duration<_Rep, _Period>& __rtime)
-      {
-	__clock_t::time_point __atime = __clock_t::now()
-	  + chrono::duration_cast<__clock_t::duration>(__rtime);
-
-	return try_lock_until(__atime);
-      }
-
-    template <typename _Rep, typename _Period>
-      typename enable_if<
-	!ratio_less_equal<__clock_t::period, _Period>::value, bool>::type
-      __try_lock_for_impl(const chrono::duration<_Rep, _Period>& __rtime)
-      {
-	__clock_t::time_point __atime = __clock_t::now()
-	  + ++chrono::duration_cast<__clock_t::duration>(__rtime);
-
-	return try_lock_until(__atime);
-      }
   };
 #endif
 #endif // _GLIBCXX_HAS_GTHREADS
@@ -783,7 +749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __set_once_functor_lock_ptr(&__functor_lock);
 #endif
 
-      int __e = __gthread_once(&(__once._M_once), &__once_proxy);
+      int __e = __gthread_once(&__once._M_once, &__once_proxy);
 
 #ifndef _GLIBCXX_HAVE_TLS
       if (__functor_lock)

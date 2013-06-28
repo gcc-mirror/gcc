@@ -441,6 +441,10 @@ ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
 -ffpe-trap=[...]	Stop on following floating point exceptions
 
+ffpe-summary=
+Fortran RejectNegative JoinedOrMissing
+-ffpe-summary=[...]	Print summary of floating point exceptions
+
 ffree-form
 Fortran RejectNegative
 Assume that the source file is free form

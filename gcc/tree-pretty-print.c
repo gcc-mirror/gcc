@@ -317,6 +317,9 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
     case OMP_CLAUSE_UNIFORM:
       name = "uniform";
       goto print_remap;
+    case OMP_CLAUSE__LOOPTEMP_:
+      name = "_looptemp_";
+      goto print_remap;
   print_remap:
       pp_string (buffer, name);
       pp_character (buffer, '(');
@@ -588,6 +591,13 @@ dump_omp_clause (pretty_printer *buffer, tree clause, int spc, int flags)
     case OMP_CLAUSE_SIMDLEN:
       pp_string (buffer, "simdlen(");
       dump_generic_node (buffer, OMP_CLAUSE_SIMDLEN_EXPR (clause),
+			 spc, flags, false);
+      pp_character (buffer, ')');
+      break;
+
+    case OMP_CLAUSE__SIMDUID_:
+      pp_string (buffer, "_simduid_(");
+      dump_generic_node (buffer, OMP_CLAUSE__SIMDUID__DECL (clause),
 			 spc, flags, false);
       pp_character (buffer, ')');
       break;

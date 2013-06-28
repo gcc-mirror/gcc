@@ -1,5 +1,5 @@
 /* PR c/30360 */
-/* { dg-do run { target i?86-*-linux* x86_64-*-linux* ia64-*-linux* s390*-*-linux* } } */
+/* { dg-do run { target i?86-*-linux* i?86-*-gnu* x86_64-*-linux* ia64-*-linux* s390*-*-linux* } } */
 /* { dg-options "-O2 -std=gnu99" } */
 
 #define I	(__extension__ 1.0iF)

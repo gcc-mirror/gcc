@@ -24,15 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gfortran.h"
 
 
-/* Get terminal width.  */
-
-int
-gfc_terminal_width (void)
-{
-  return 80;
-}
-
-
 /* Initialize a typespec to unknown.  */
 
 void

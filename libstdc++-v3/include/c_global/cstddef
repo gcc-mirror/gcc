@@ -36,7 +36,20 @@
 // ISO C++ 14882: 18.1  Types
 //
 
+#ifndef _GLIBCXX_CSTDDEF
+#define _GLIBCXX_CSTDDEF 1
+
 #pragma GCC system_header
 
 #include <bits/c++config.h>
 #include <stddef.h>
+
+#if __cplusplus >= 201103L
+namespace std
+{
+  // We handle size_t, ptrdiff_t, and nullptr_t in c++config.h.
+  using ::max_align_t;
+}
+#endif
+
+#endif // _GLIBCXX_CSTDDEF

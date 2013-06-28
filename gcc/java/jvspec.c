@@ -59,7 +59,7 @@ static const char jvgenmain_spec[] =
   "jvgenmain %{findirect-dispatch} %{D*} %b %m.i |\n\
    cc1 %m.i %1 \
 		   %{!Q:-quiet} -dumpbase %b.c %{d*} %{m*}\
-		   %{g*} %{O*} \
+		   %{g*} %{O*} %I \
 		   %{v:-version} %{pg:-p} %{p}\
 		   %<fbounds-check %<fno-bounds-check\
 		   %<fassume-compiled* %<fno-assume-compiled*\

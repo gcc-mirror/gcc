@@ -29,6 +29,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <fptrap.h>
 #endif
 
+#ifdef HAVE_FPXCP_H
+#include <fpxcp.h>
+#endif
+
 void
 set_fpu (void)
 {
@@ -80,4 +84,35 @@ set_fpu (void)
 
   fp_trap(FP_TRAP_SYNC);
   fp_enable(mode);
+}
+
+
+int
+get_fpu_except_flags (void)
+{
+  int result, set_excepts;
+
+  result = 0;
+
+#ifdef HAVE_FPXCP_H
+  if (!fp_any_xcp ())
+    return 0;
+
+  if (fp_invalid_op ())
+    result |= GFC_FPE_INVALID;
+
+  if (fp_divbyzero ())
+    result |= GFC_FPE_ZERO;
+
+  if (fp_overflow ())
+    result |= GFC_FPE_OVERFLOW;
+
+  if (fp_underflow ())
+    result |= GFC_FPE_UNDERFLOW;
+
+  if (fp_inexact ())
+    result |= GFC_FPE_INEXACT;
+#endif
+
+  return result;
 }

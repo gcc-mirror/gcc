@@ -128,6 +128,31 @@ if test $cross_compiling = no && test $multilib = yes \
    cross_compiling=maybe
 fi
 
+# We may wish to install the target headers somewhere.
+AC_MSG_CHECKING([whether to install libiberty headers and static library])
+dnl install-libiberty is disabled by default
+
+AC_ARG_ENABLE(install-libiberty,
+[  --enable-install-libiberty       Install headers and library for end users],
+enable_install_libiberty=$enableval,
+enable_install_libiberty=no)dnl
+
+# Option parsed, now set things appropriately.
+case x"$enable_install_libiberty" in
+  xyes|x)
+    target_header_dir=libiberty
+    ;;
+  xno)   
+    target_header_dir=
+    ;;
+  *) 
+    # This could be sanity-checked in various ways...
+    target_header_dir="${enable_install_libiberty}"
+    ;;
+esac
+AC_MSG_RESULT($enable_install_libiberty)
+AC_MSG_NOTICE([target_header_dir = $target_header_dir])
+
 GCC_NO_EXECUTABLES
 AC_PROG_CC
 AC_SYS_LARGEFILE
@@ -491,27 +516,6 @@ if test -n "${with_target_subdir}"; then
     ;;
 
   esac
-
-  # We may wish to install the target headers somewhere.
-  AC_ARG_ENABLE(install-libiberty,
-  [  --enable-install-libiberty       Install headers for end users],
-  enable_install_libiberty=$enableval,
-  enable_install_libiberty=no)dnl
-  
-  # Option parsed, now set things appropriately.
-  case x"$enable_install_libiberty" in
-    xyes|x)
-      target_header_dir=libiberty
-      ;;
-    xno)   
-      target_header_dir=
-      ;;
-    *) 
-      # This could be sanity-checked in various ways...
-      target_header_dir="${enable_install_libiberty}"
-      ;;
-  esac
-
 
 else
 

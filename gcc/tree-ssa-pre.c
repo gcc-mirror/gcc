@@ -3665,6 +3665,12 @@ insert (void)
       if (dump_file && dump_flags & TDF_DETAILS)
 	fprintf (dump_file, "Starting insert iteration %d\n", num_iterations);
       new_stuff = insert_aux (ENTRY_BLOCK_PTR);
+
+      /* Clear the NEW sets before the next iteration.  We have already
+         fully propagated its contents.  */
+      if (new_stuff)
+	FOR_ALL_BB (bb)
+	  bitmap_set_free (NEW_SETS (bb));
     }
   statistics_histogram_event (cfun, "insert iterations", num_iterations);
 }

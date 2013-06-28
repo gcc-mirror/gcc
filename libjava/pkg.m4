@@ -6,7 +6,7 @@ AC_DEFUN([PKG_CHECK_MODULES], [
   succeeded=no
 
   if test -z "$PKG_CONFIG"; then
-    AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+    AC_PATH_TOOL(PKG_CONFIG, pkg-config, no)
   fi
 
   if test "$PKG_CONFIG" = "no" ; then

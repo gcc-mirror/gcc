@@ -1457,6 +1457,16 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 
       if (!Gogo::is_sink_name(pi->name()))
 	this->gogo_->add_constant(*pi, *pe, this->iota_value());
+      else
+	{
+	  static int count;
+	  char buf[30];
+	  snprintf(buf, sizeof buf, ".$sinkconst%d", count);
+	  ++count;
+	  Typed_identifier ti(std::string(buf), type, pi->location());
+	  Named_object* no = this->gogo_->add_constant(ti, *pe, this->iota_value());
+	  no->const_value()->set_is_sink();
+	}
     }
   if (pe != expr_list->end())
     error_at(this->location(), "too many initializers");
@@ -2627,7 +2637,11 @@ Parse::enclosing_var_reference(Named_object* in_function, Named_object* var,
   Named_object* this_function = this->gogo_->current_function();
   Named_object* closure = this_function->func_value()->closure_var();
 
-  Enclosing_var ev(var, in_function, this->enclosing_vars_.size());
+  // The last argument to the Enclosing_var constructor is the index
+  // of this variable in the closure.  We add 1 to the current number
+  // of enclosed variables, because the first field in the closure
+  // points to the function code.
+  Enclosing_var ev(var, in_function, this->enclosing_vars_.size() + 1);
   std::pair<Enclosing_vars::iterator, bool> ins =
     this->enclosing_vars_.insert(ev);
   if (ins.second)
@@ -2882,8 +2896,9 @@ Parse::function_lit()
 // Create a closure for the nested function FUNCTION.  This is based
 // on ENCLOSING_VARS, which is a list of all variables defined in
 // enclosing functions and referenced from FUNCTION.  A closure is the
-// address of a struct which contains the addresses of all the
-// referenced variables.  This returns NULL if no closure is required.
+// address of a struct which point to the real function code and
+// contains the addresses of all the referenced variables.  This
+// returns NULL if no closure is required.
 
 Expression*
 Parse::create_closure(Named_object* function, Enclosing_vars* enclosing_vars,
@@ -2899,16 +2914,25 @@ Parse::create_closure(Named_object* function, Enclosing_vars* enclosing_vars,
   for (Enclosing_vars::const_iterator p = enclosing_vars->begin();
        p != enclosing_vars->end();
        ++p)
-    ev[p->index()] = *p;
+    {
+      // Subtract 1 because index 0 is the function code.
+      ev[p->index() - 1] = *p;
+    }
 
   // Build an initializer for a composite literal of the closure's
   // type.
 
   Named_object* enclosing_function = this->gogo_->current_function();
   Expression_list* initializer = new Expression_list;
+
+  initializer->push_back(Expression::make_func_code_reference(function,
+							      location));
+
   for (size_t i = 0; i < enclosing_var_count; ++i)
     {
-      go_assert(ev[i].index() == i);
+      // Add 1 to i because the first field in the closure is a
+      // pointer to the function code.
+      go_assert(ev[i].index() == i + 1);
       Named_object* var = ev[i].var();
       Expression* ref;
       if (ev[i].in_function() == enclosing_function)
@@ -3016,7 +3040,7 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 		  && t->array_type()->length()->is_nil_expression())
 		{
 		  error_at(ret->location(),
-			   "invalid use of %<...%> in type conversion");
+			   "use of %<[...]%> outside of array literal");
 		  ret = Expression::make_error(loc);
 		}
 	      else
@@ -4499,9 +4523,12 @@ Parse::expr_case_clause(Case_clauses* clauses, bool* saw_default)
   bool is_fallthrough = false;
   if (this->peek_token()->is_keyword(KEYWORD_FALLTHROUGH))
     {
+      Location fallthrough_loc = this->location();
       is_fallthrough = true;
       if (this->advance_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
+      if (this->peek_token()->is_op(OPERATOR_RCURLY))
+	error_at(fallthrough_loc, _("cannot fallthrough final case in switch"));
     }
 
   if (is_default)

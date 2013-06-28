@@ -29,6 +29,8 @@ int array1[] = {0, 1};
 int array2[] = {1, 0};
 int array3[] = {1, 0, 1};
 
+bool __attribute__((unused)) test = false;
+
 void test1a()
 {
   Container con1(array1, array1);

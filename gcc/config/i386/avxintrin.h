@@ -28,6 +28,15 @@
 # error "Never use <avxintrin.h> directly; include <immintrin.h> instead."
 #endif
 
+#ifndef _AVXINTRIN_H_INCLUDED
+#define _AVXINTRIN_H_INCLUDED
+
+#ifndef __AVX__
+#pragma GCC push_options
+#pragma GCC target("avx")
+#define __DISABLE_AVX__
+#endif /* __AVX__ */
+
 /* Internal data types for implementing the intrinsics.  */
 typedef double __v4df __attribute__ ((__vector_size__ (32)));
 typedef float __v8sf __attribute__ ((__vector_size__ (32)));
@@ -1424,3 +1433,10 @@ _mm256_castsi128_si256 (__m128i __A)
 {
   return (__m256i) __builtin_ia32_si256_si ((__v4si)__A);
 }
+
+#ifdef __DISABLE_AVX__
+#undef __DISABLE_AVX__
+#pragma GCC pop_options
+#endif /* __DISABLE_AVX__ */
+
+#endif /* _AVXINTRIN_H_INCLUDED */

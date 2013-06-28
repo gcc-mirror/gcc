@@ -33,8 +33,10 @@ program alloc
         integer, allocatable :: a2(:)
     end type alloc2
 
-    type(alloc2) :: b
     integer :: i
+
+  BLOCK  ! To ensure that the allocatables are freed at the end of the scope
+    type(alloc2) :: b
     type(alloc2), allocatable :: c(:)
 
     if (allocated(b%a2) .OR. allocated(b%a1)) then
@@ -64,7 +66,7 @@ program alloc
     deallocate(c)
 
     ! 7 calls to _gfortran_deallocate (b (3) and c(4) goes aout of scope)
-
+  END BLOCK
 contains
 
     subroutine allocate_alloc2(b)

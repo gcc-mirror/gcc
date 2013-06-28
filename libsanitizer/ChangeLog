@@ -1,3 +1,8 @@
+2013-06-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* sanitizer_common/sanitizer_linux.cc (MemoryMappingLayout::Next):
+	Cherry pick upstream r182922.
+
 2013-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* configure.tgt: Add ARM pattern.

@@ -320,7 +320,7 @@ namespace __profile
 
       template<typename... _Args>
         iterator
-        emplace(iterator __position, _Args&&... __args)
+        emplace(const_iterator __position, _Args&&... __args)
 	{
 	  typename _Base::iterator __res = _Base::emplace(__position,
 					    std::forward<_Args>(__args)...);
@@ -329,7 +329,11 @@ namespace __profile
 #endif
 
       iterator
+#if __cplusplus >= 201103L
+      insert(const_iterator __position, const _Tp& __x)
+#else
       insert(iterator __position, const _Tp& __x)
+#endif
       {
 	typename _Base::iterator __res = _Base::insert(__position, __x);
 	return iterator(__res);
@@ -337,7 +341,7 @@ namespace __profile
 
 #if __cplusplus >= 201103L
       iterator
-      insert(iterator __position, _Tp&& __x)
+      insert(const_iterator __position, _Tp&& __x)
       { return emplace(__position, std::move(__x)); }
 
       void

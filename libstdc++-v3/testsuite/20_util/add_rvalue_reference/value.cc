@@ -31,6 +31,7 @@ void test01()
 
   VERIFY( (is_same<add_rvalue_reference<int>::type, int&&>::value) );
   VERIFY( (is_same<add_rvalue_reference<int&&>::type, int&&>::value) );
+  VERIFY( (is_same<add_rvalue_reference<int&>::type, int&>::value) );
   VERIFY( (is_same<add_rvalue_reference<const int>::type, const int&&>::value) );
   VERIFY( (is_same<add_rvalue_reference<int*>::type, int*&&>::value) );
   VERIFY( (is_same<add_rvalue_reference<ClassType&&>::type, ClassType&&>::value) );
@@ -38,6 +39,10 @@ void test01()
   VERIFY( (is_same<add_rvalue_reference<int(int)>::type, int(&&)(int)>::value) );
   VERIFY( (is_same<add_rvalue_reference<void>::type, void>::value) );
   VERIFY( (is_same<add_rvalue_reference<const void>::type, const void>::value) );  
+  VERIFY( (is_same<add_rvalue_reference<bool(int) const>::type, bool(int) const>::value) );  
+  VERIFY( (is_same<add_rvalue_reference<bool(int) &>::type, bool(int) &>::value) );  
+  VERIFY( (is_same<add_rvalue_reference<bool(int) const &&>::type, bool(int) const &&>::value) );  
+  VERIFY( (is_same<add_rvalue_reference<bool(int)>::type, bool(&&)(int)>::value) );  
 }
 
 int main()

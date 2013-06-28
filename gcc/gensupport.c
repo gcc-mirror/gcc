@@ -1717,6 +1717,21 @@ process_one_cond_exec (struct queue_elem *ce_elem)
 	  XVECEXP (insn, 1, 0) = pattern;
 	}
 
+       if (XVEC (ce_elem->data, 3) != NULL)
+	{
+	  rtvec attributes = rtvec_alloc (XVECLEN (insn, 4)
+	                                  + XVECLEN (ce_elem->data, 3));
+	  int i = 0;
+	  int j = 0;
+	  for (i = 0; i < XVECLEN (insn, 4); i++)
+	    RTVEC_ELT (attributes, i) = XVECEXP (insn, 4, i);
+
+	  for (j = 0; j < XVECLEN (ce_elem->data, 3); j++, i++)
+	    RTVEC_ELT (attributes, i) = XVECEXP (ce_elem->data, 3, j);
+
+	  XVEC (insn, 4) = attributes;
+	}
+
       XSTR (insn, 2) = alter_test_for_insn (ce_elem, insn_elem);
       XTMPL (insn, 3) = alter_output_for_insn (ce_elem, insn_elem,
 					      alternatives, max_operand);

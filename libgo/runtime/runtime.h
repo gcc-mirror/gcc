@@ -57,6 +57,7 @@ typedef	struct	G		G;
 typedef	union	Lock		Lock;
 typedef	struct	M		M;
 typedef	union	Note		Note;
+typedef	struct	FuncVal		FuncVal;
 typedef	struct	SigTab		SigTab;
 typedef	struct	MCache		MCache;
 typedef struct	FixAlloc	FixAlloc;
@@ -146,6 +147,11 @@ struct String
 {
 	const byte*	str;
 	intgo		len;
+};
+struct FuncVal
+{
+	void	(*fn)(void);
+	// variable-size, fn-specific data here
 };
 struct	GCStats
 {
@@ -313,7 +319,7 @@ struct	Timer
 	// a well-behaved function and not block.
 	int64	when;
 	int64	period;
-	void	(*f)(int64, Eface);
+	FuncVal	*fv;
 	Eface	arg;
 };
 
@@ -540,7 +546,7 @@ void	runtime_printslice(Slice);
 void	runtime_printcomplex(__complex double);
 
 struct __go_func_type;
-void reflect_call(const struct __go_func_type *, const void *, _Bool, _Bool,
+void reflect_call(const struct __go_func_type *, FuncVal *, _Bool, _Bool,
 		  void **, void **)
   __asm__ (GOSYM_PREFIX "reflect.call");
 
@@ -570,7 +576,7 @@ void	free(void *v);
 #define PREFETCH(p) __builtin_prefetch(p)
 
 struct __go_func_type;
-bool	runtime_addfinalizer(void*, void(*fn)(void*), const struct __go_func_type *);
+bool	runtime_addfinalizer(void*, FuncVal *fn, const struct __go_func_type *);
 #define runtime_getcallersp(p) __builtin_frame_address(1)
 int32	runtime_mcount(void);
 int32	runtime_gcount(void);

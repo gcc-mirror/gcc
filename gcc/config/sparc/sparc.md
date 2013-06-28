@@ -5499,7 +5499,7 @@
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(mult:DF (float_extend:DF (match_operand:SF 1 "register_operand" "f"))
 		 (float_extend:DF (match_operand:SF 2 "register_operand" "f"))))]
-  "(TARGET_V8 || TARGET_V9) && TARGET_FPU"
+  "(TARGET_V8 || TARGET_V9) && TARGET_FPU && !sparc_fix_ut699"
   "fsmuld\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
@@ -5528,20 +5528,37 @@
   "fdivq\t%1, %2, %0"
   [(set_attr "type" "fpdivd")])
 
-(define_insn "divdf3"
+(define_expand "divdf3"
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(div:DF (match_operand:DF 1 "register_operand" "e")
 		(match_operand:DF 2 "register_operand" "e")))]
   "TARGET_FPU"
+  "")
+
+(define_insn "*divdf3_nofix"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(div:DF (match_operand:DF 1 "register_operand" "e")
+		(match_operand:DF 2 "register_operand" "e")))]
+  "TARGET_FPU && !sparc_fix_ut699"
   "fdivd\t%1, %2, %0"
   [(set_attr "type" "fpdivd")
    (set_attr "fptype" "double")])
+
+(define_insn "*divdf3_fix"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(div:DF (match_operand:DF 1 "register_operand" "e")
+		(match_operand:DF 2 "register_operand" "e")))]
+  "TARGET_FPU && sparc_fix_ut699"
+  "fdivd\t%1, %2, %0\n\tstd\t%0, [%%sp-8]"
+  [(set_attr "type" "fpdivd")
+   (set_attr "fptype" "double")
+   (set_attr "length" "2")])
 
 (define_insn "divsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(div:SF (match_operand:SF 1 "register_operand" "f")
 		(match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && !sparc_fix_ut699"
   "fdivs\t%1, %2, %0"
   [(set_attr "type" "fpdivs")])
 
@@ -5742,18 +5759,33 @@
   "fsqrtq\t%1, %0"
   [(set_attr "type" "fpsqrtd")])
 
-(define_insn "sqrtdf2"
+(define_expand "sqrtdf2"
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(sqrt:DF (match_operand:DF 1 "register_operand" "e")))]
   "TARGET_FPU"
+  "")
+
+(define_insn "*sqrtdf2_nofix"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(sqrt:DF (match_operand:DF 1 "register_operand" "e")))]
+  "TARGET_FPU && !sparc_fix_ut699"
   "fsqrtd\t%1, %0"
   [(set_attr "type" "fpsqrtd")
    (set_attr "fptype" "double")])
 
+(define_insn "*sqrtdf2_fix"
+  [(set (match_operand:DF 0 "register_operand" "=e")
+	(sqrt:DF (match_operand:DF 1 "register_operand" "e")))]
+  "TARGET_FPU && sparc_fix_ut699"
+  "fsqrtd\t%1, %0\n\tstd\t%0, [%%sp-8]"
+  [(set_attr "type" "fpsqrtd")
+   (set_attr "fptype" "double")
+   (set_attr "length" "2")])
+
 (define_insn "sqrtsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(sqrt:SF (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_FPU"
+  "TARGET_FPU && !sparc_fix_ut699"
   "fsqrts\t%1, %0"
   [(set_attr "type" "fpsqrts")])
 
@@ -8557,7 +8589,7 @@
     mask |= (INTVAL (XVECEXP (sel, 0, i)) & 0xf) << (28 - i*4);
   sel = force_reg (SImode, gen_int_mode (mask, SImode));
 
-  emit_insn (gen_bmasksi_vis (gen_reg_rtx (SImode), sel, const0_rtx));
+  emit_insn (gen_bmasksi_vis (gen_rtx_REG (SImode, 0), sel, const0_rtx));
   emit_insn (gen_bshufflev8qi_vis (operands[0], operands[1], operands[2]));
   DONE;
 })

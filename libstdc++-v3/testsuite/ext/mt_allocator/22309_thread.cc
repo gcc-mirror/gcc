@@ -1,5 +1,5 @@
 // { dg-require-sharedlib "" }
-// { dg-options "-g -O2 -pthread -ldl" { target *-*-linux* } }
+// { dg-options "-g -O2 -pthread -ldl" { target *-*-linux* *-*-gnu* } }
 
 // Copyright (C) 2004-2013 Free Software Foundation, Inc.
 //

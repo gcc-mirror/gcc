@@ -3361,7 +3361,6 @@ analyze_candidates_and_replace (void)
 	 less expensive to calculate than the replaced statements.  */
       else
 	{
-	  int length;
 	  enum machine_mode mode;
 	  bool speed;
 
@@ -3372,14 +3371,11 @@ analyze_candidates_and_replace (void)
 
 	  /* If all candidates have already been replaced under other
 	     interpretations, nothing remains to be done.  */
-	  length = count_candidates (c);
-	  if (!length)
+	  if (!count_candidates (c))
 	    continue;
-	  if (length > MAX_INCR_VEC_LEN)
-	    length = MAX_INCR_VEC_LEN;
 
 	  /* Construct an array of increments for this candidate chain.  */
-	  incr_vec = XNEWVEC (incr_info, length);
+	  incr_vec = XNEWVEC (incr_info, MAX_INCR_VEC_LEN);
 	  incr_vec_len = 0;
 	  record_increments (c);
 

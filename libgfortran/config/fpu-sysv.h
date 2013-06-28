@@ -80,3 +80,51 @@ set_fpu (void)
 
   fpsetmask(cw);
 }
+
+int
+get_fpu_except_flags (void)
+{
+  int result;
+#if HAVE_FP_EXCEPT
+  fp_except set_excepts;
+#elif HAVE_FP_EXCEPT_T
+  fp_except_t set_excepts;
+#else
+  choke me
+#endif
+
+  result = 0;
+  set_excepts = fpgetsticky ();
+
+#ifdef FP_X_INV
+  if (set_excepts & FP_X_INV)
+    result |= GFC_FPE_INVALID;
+#endif
+
+#ifdef FP_X_DZ
+  if (set_excepts & FP_X_DZ)
+    result |= GFC_FPE_ZERO;
+#endif
+
+#ifdef FP_X_OFL
+  if (set_excepts & FP_X_OFL)
+    result |= GFC_FPE_OVERFLOW;
+#endif
+
+#ifdef FP_X_UFL
+  if (set_excepts & FP_X_UFL)
+    result |= GFC_FPE_UNDERFLOW;
+#endif
+
+#ifdef FP_X_DNML
+  if (set_excepts & FP_X_DNML)
+    result |= GFC_FPE_DENORMAL;
+#endif
+
+#ifdef FP_X_IMP
+  if (set_excepts & FP_X_IMP)
+    result |= GFC_FPE_INEXACT;
+#endif
+
+  return result;
+}

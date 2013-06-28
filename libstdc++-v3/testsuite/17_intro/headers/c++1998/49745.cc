@@ -1,4 +1,4 @@
-// { dg-do compile { target *-*-linux* } }
+// { dg-do compile { target *-*-linux* *-*-gnu* } }
 
 // Copyright (C) 2011-2013 Free Software Foundation, Inc.
 //

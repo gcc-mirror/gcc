@@ -1,4 +1,4 @@
-! { dg-run }
+! { dg-do run }
 ! { dg-options "-fdump-tree-original" }
 ! Test that all string length calculations are
 ! optimized away.

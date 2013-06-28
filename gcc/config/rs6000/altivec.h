@@ -321,6 +321,42 @@
 #define vec_vsx_st __builtin_vec_vsx_st
 #endif
 
+#ifdef _ARCH_PWR8
+/* Vector additions added in ISA 2.07.  */
+#define vec_eqv __builtin_vec_eqv
+#define vec_nand __builtin_vec_nand
+#define vec_orc __builtin_vec_orc
+#define vec_vaddudm __builtin_vec_vaddudm
+#define vec_vclz __builtin_vec_vclz
+#define vec_vclzb __builtin_vec_vclzb
+#define vec_vclzd __builtin_vec_vclzd
+#define vec_vclzh __builtin_vec_vclzh
+#define vec_vclzw __builtin_vec_vclzw
+#define vec_vgbbd __builtin_vec_vgbbd
+#define vec_vmaxsd __builtin_vec_vmaxsd
+#define vec_vmaxud __builtin_vec_vmaxud
+#define vec_vminsd __builtin_vec_vminsd
+#define vec_vminud __builtin_vec_vminud
+#define vec_vmrgew __builtin_vec_vmrgew
+#define vec_vmrgow __builtin_vec_vmrgow
+#define vec_vpksdss __builtin_vec_vpksdss
+#define vec_vpksdus __builtin_vec_vpksdus
+#define vec_vpkudum __builtin_vec_vpkudum
+#define vec_vpkudus __builtin_vec_vpkudus
+#define vec_vpopcnt __builtin_vec_vpopcnt
+#define vec_vpopcntb __builtin_vec_vpopcntb
+#define vec_vpopcntd __builtin_vec_vpopcntd
+#define vec_vpopcnth __builtin_vec_vpopcnth
+#define vec_vpopcntw __builtin_vec_vpopcntw
+#define vec_vrld __builtin_vec_vrld
+#define vec_vsld __builtin_vec_vsld
+#define vec_vsrad __builtin_vec_vsrad
+#define vec_vsrd __builtin_vec_vsrd
+#define vec_vsubudm __builtin_vec_vsubudm
+#define vec_vupkhsw __builtin_vec_vupkhsw
+#define vec_vupklsw __builtin_vec_vupklsw
+#endif
+
 /* Predicates.
    For C++, we use templates in order to allow non-parenthesized arguments.
    For C, instead, we use macros since non-parenthesized arguments were

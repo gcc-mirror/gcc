@@ -2936,7 +2936,22 @@ eliminate_const_or_copy (gimple stmt, bitmap interesting_names)
       return;
     }
 
-  propagate_rhs_into_lhs (stmt, lhs, rhs, interesting_names);
+  if (!virtual_operand_p (lhs))
+    propagate_rhs_into_lhs (stmt, lhs, rhs, interesting_names);
+  else
+    {
+      gimple use_stmt;
+      imm_use_iterator iter;
+      use_operand_p use_p;
+      /* For virtual operands we have to propagate into all uses as
+         otherwise we will create overlapping life-ranges.  */
+      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+	FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	  SET_USE (use_p, rhs);
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs) = 1;
+      remove_stmt_or_phi (stmt);
+    }
 
   /* Note that STMT may well have been deleted by now, so do
      not access it, instead use the saved version # to clear

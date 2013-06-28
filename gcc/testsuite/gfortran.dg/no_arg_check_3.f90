@@ -114,7 +114,7 @@ subroutine thirteen(x, y)
 !GCC$ attributes NO_ARG_CHECK :: x
   integer :: x
   integer :: y(:)
-  print *, ubound(y, dim=x) ! { dg-error "must be INTEGER" }
+  print *, ubound(y, dim=x) ! { dg-error "Variable with NO_ARG_CHECK attribute at .1. is only permitted as argument to the intrinsic functions C_LOC and PRESENT" }
 end subroutine thirteen
 
 subroutine fourteen(x)

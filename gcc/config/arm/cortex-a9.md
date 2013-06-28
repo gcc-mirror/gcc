@@ -130,29 +130,29 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; We get 16*16 multiply / mac results in 3 cycles.
 (define_insn_reservation "cortex_a9_mult16" 3
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "smulxy"))
+       (eq_attr "type" "smulxy"))
        "cortex_a9_mult16")
 
 ;; The 16*16 mac is slightly different that it
 ;; reserves M1 and M2 in the same cycle.
 (define_insn_reservation "cortex_a9_mac16" 3
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "smlaxy"))
+       (eq_attr "type" "smlaxy"))
   "cortex_a9_mac16")
 
 (define_insn_reservation "cortex_a9_multiply" 4
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "mul,smmul,smmulr"))
+       (eq_attr "type" "mul,smmul,smmulr"))
        "cortex_a9_mult")
 
 (define_insn_reservation "cortex_a9_mac" 4
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "mla,smmla"))
+       (eq_attr "type" "mla,smmla"))
        "cortex_a9_mac")
 
 (define_insn_reservation "cortex_a9_multiply_long" 5
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "insn" "smull,umull,smulls,umulls,smlal,smlals,umlal,umlals"))
+       (eq_attr "type" "smull,umull,smulls,umulls,smlal,smlals,umlal,umlals"))
        "cortex_a9_mult_long")
 
 ;; An instruction with a result in E2 can be forwarded

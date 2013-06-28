@@ -1,6 +1,6 @@
 /* This test needs to use setrlimit to set the stack size, so it can
    only run on Unix.  */
-/* { dg-do run { target *-*-linux* *-*-solaris* *-*-darwin* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* *-*-solaris* *-*-darwin* } } */
 /* { dg-require-effective-target split_stack } */
 /* { dg-options "-fsplit-stack" } */
 

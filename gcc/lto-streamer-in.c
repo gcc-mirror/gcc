@@ -1016,7 +1016,7 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
 	  unsigned i;
 	  for (i = len; i-- > from;)
 	    {
-	      tree t = cache->nodes[i];
+	      tree t = streamer_tree_cache_get_tree (cache, i);
 	      if (t == NULL_TREE)
 		continue;
 
@@ -1056,12 +1056,43 @@ lto_input_function_body (struct lto_file_decl_data *file_data,
 }
 
 
+/* Read the physical representation of a tree node EXPR from
+   input block IB using the per-file context in DATA_IN.  */
+
+static void
+lto_read_tree_1 (struct lto_input_block *ib, struct data_in *data_in, tree expr)
+{
+  /* Read all the bitfield values in EXPR.  Note that for LTO, we
+     only write language-independent bitfields, so no more unpacking is
+     needed.  */
+  streamer_read_tree_bitfields (ib, data_in, expr);
+
+  /* Read all the pointer fields in EXPR.  */
+  streamer_read_tree_body (ib, data_in, expr);
+
+  /* Read any LTO-specific data not read by the tree streamer.  */
+  if (DECL_P (expr)
+      && TREE_CODE (expr) != FUNCTION_DECL
+      && TREE_CODE (expr) != TRANSLATION_UNIT_DECL)
+    DECL_INITIAL (expr) = stream_read_tree (ib, data_in);
+
+  /* We should never try to instantiate an MD or NORMAL builtin here.  */
+  if (TREE_CODE (expr) == FUNCTION_DECL)
+    gcc_assert (!streamer_handle_as_builtin_p (expr));
+
+#ifdef LTO_STREAMER_DEBUG
+  /* Remove the mapping to RESULT's original address set by
+     streamer_alloc_tree.  */
+  lto_orig_address_remove (expr);
+#endif
+}
+
 /* Read the physical representation of a tree node with tag TAG from
    input block IB using the per-file context in DATA_IN.  */
 
 static tree
 lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
-	       enum LTO_tags tag)
+	       enum LTO_tags tag, hashval_t hash)
 {
   /* Instantiate a new tree node.  */
   tree result = streamer_alloc_tree (ib, data_in, tag);
@@ -1069,35 +1100,70 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
   /* Enter RESULT in the reader cache.  This will make RESULT
      available so that circular references in the rest of the tree
      structure can be resolved in subsequent calls to stream_read_tree.  */
-  streamer_tree_cache_append (data_in->reader_cache, result);
+  streamer_tree_cache_append (data_in->reader_cache, result, hash);
 
-  /* Read all the bitfield values in RESULT.  Note that for LTO, we
-     only write language-independent bitfields, so no more unpacking is
-     needed.  */
-  streamer_read_tree_bitfields (ib, data_in, result);
-
-  /* Read all the pointer fields in RESULT.  */
-  streamer_read_tree_body (ib, data_in, result);
-
-  /* Read any LTO-specific data not read by the tree streamer.  */
-  if (DECL_P (result)
-      && TREE_CODE (result) != FUNCTION_DECL
-      && TREE_CODE (result) != TRANSLATION_UNIT_DECL)
-    DECL_INITIAL (result) = stream_read_tree (ib, data_in);
-
-  /* We should never try to instantiate an MD or NORMAL builtin here.  */
-  if (TREE_CODE (result) == FUNCTION_DECL)
-    gcc_assert (!streamer_handle_as_builtin_p (result));
+  lto_read_tree_1 (ib, data_in, result);
 
   /* end_marker = */ streamer_read_uchar (ib);
 
-#ifdef LTO_STREAMER_DEBUG
-  /* Remove the mapping to RESULT's original address set by
-     streamer_alloc_tree.  */
-  lto_orig_address_remove (result);
-#endif
-
   return result;
+}
+
+
+/* Populate the reader cache with trees materialized from the SCC
+   following in the IB, DATA_IN stream.  */
+
+hashval_t
+lto_input_scc (struct lto_input_block *ib, struct data_in *data_in,
+	       unsigned *len, unsigned *entry_len)
+{
+  /* A blob of unnamed tree nodes, fill the cache from it and
+     recurse.  */
+  unsigned size = streamer_read_uhwi (ib);
+  hashval_t scc_hash = streamer_read_uhwi (ib);
+  unsigned scc_entry_len = 1;
+
+  if (size == 1)
+    {
+      enum LTO_tags tag = streamer_read_record_start (ib);
+      lto_input_tree_1 (ib, data_in, tag, scc_hash);
+    }
+  else
+    {
+      unsigned int first = data_in->reader_cache->nodes.length ();
+      tree result;
+
+      scc_entry_len = streamer_read_uhwi (ib);
+
+      /* Materialize size trees by reading their headers.  */
+      for (unsigned i = 0; i < size; ++i)
+	{
+	  enum LTO_tags tag = streamer_read_record_start (ib);
+	  if (tag == LTO_null
+	      || (tag >= LTO_field_decl_ref && tag <= LTO_global_decl_ref)
+	      || tag == LTO_tree_pickle_reference
+	      || tag == LTO_builtin_decl
+	      || tag == LTO_integer_cst
+	      || tag == LTO_tree_scc)
+	    gcc_unreachable ();
+
+	  result = streamer_alloc_tree (ib, data_in, tag);
+	  streamer_tree_cache_append (data_in->reader_cache, result, 0);
+	}
+
+      /* Read the tree bitpacks and references.  */
+      for (unsigned i = 0; i < size; ++i)
+	{
+	  result = streamer_tree_cache_get_tree (data_in->reader_cache,
+						 first + i);
+	  lto_read_tree_1 (ib, data_in, result);
+	  /* end_marker = */ streamer_read_uchar (ib);
+	}
+    }
+
+  *len = size;
+  *entry_len = scc_entry_len;
+  return scc_hash;
 }
 
 
@@ -1106,12 +1172,11 @@ lto_read_tree (struct lto_input_block *ib, struct data_in *data_in,
    to previously read nodes.  */
 
 tree
-lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
+lto_input_tree_1 (struct lto_input_block *ib, struct data_in *data_in,
+		  enum LTO_tags tag, hashval_t hash)
 {
-  enum LTO_tags tag;
   tree result;
 
-  tag = streamer_read_record_start (ib);
   gcc_assert ((unsigned) tag < (unsigned) LTO_NUM_TAGS);
 
   if (tag == LTO_null)
@@ -1137,17 +1202,37 @@ lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
     }
   else if (tag == LTO_integer_cst)
     {
-      /* For shared integer constants we only need the type and its hi/low
-	 words.  */
-      result = streamer_read_integer_cst (ib, data_in);
+      /* For shared integer constants in singletons we can use the existing
+         tree integer constant merging code.  */
+      tree type = stream_read_tree (ib, data_in);
+      unsigned HOST_WIDE_INT low = streamer_read_uhwi (ib);
+      HOST_WIDE_INT high = streamer_read_hwi (ib);
+      result = build_int_cst_wide (type, low, high);
+      streamer_tree_cache_append (data_in->reader_cache, result, hash);
+    }
+  else if (tag == LTO_tree_scc)
+    {
+      unsigned len, entry_len;
+
+      /* Input and skip the SCC.  */
+      lto_input_scc (ib, data_in, &len, &entry_len);
+
+      /* Recurse.  */
+      return lto_input_tree (ib, data_in);
     }
   else
     {
       /* Otherwise, materialize a new node from IB.  */
-      result = lto_read_tree (ib, data_in, tag);
+      result = lto_read_tree (ib, data_in, tag, hash);
     }
 
   return result;
+}
+
+tree
+lto_input_tree (struct lto_input_block *ib, struct data_in *data_in)
+{
+  return lto_input_tree_1 (ib, data_in, streamer_read_record_start (ib), 0);
 }
 
 
@@ -1220,7 +1305,7 @@ lto_data_in_create (struct lto_file_decl_data *file_data, const char *strings,
   data_in->strings = strings;
   data_in->strings_len = len;
   data_in->globals_resolution = resolutions;
-  data_in->reader_cache = streamer_tree_cache_create ();
+  data_in->reader_cache = streamer_tree_cache_create (false, false);
 
   return data_in;
 }

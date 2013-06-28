@@ -110,7 +110,7 @@ end subroutine twelf
 subroutine thirteen(x, y)
   type(*) :: x
   integer :: y(:)
-  print *, ubound(y, dim=x) ! { dg-error "must be INTEGER" }
+  print *, ubound(y, dim=x) ! { dg-error "Assumed-type argument at .1. is only permitted as first actual argument to the intrinsic ubound" }
 end subroutine thirteen
 
 subroutine fourteen(x)

@@ -243,8 +243,8 @@ type rtype struct {
 	size       uintptr // size in bytes
 	hash       uint32  // hash of type; avoids computation in hash tables
 
-	hashfn  func(unsafe.Pointer, uintptr)                 // hash function
-	equalfn func(unsafe.Pointer, unsafe.Pointer, uintptr) // equality function
+	hashfn  uintptr // hash function code
+	equalfn uintptr // equality function code
 
 	string        *string // string form; unnecessary  but undeniably useful
 	*uncommonType         // (relatively) uncommon fields
@@ -485,7 +485,7 @@ func (t *uncommonType) Method(i int) (m Method) {
 	mt := p.typ
 	m.Type = toType(mt)
 	x := new(unsafe.Pointer)
-	*x = p.tfn
+	*x = unsafe.Pointer(&p.tfn)
 	m.Func = Value{mt, unsafe.Pointer(x), fl | flagIndir}
 	m.Index = i
 	return

@@ -338,7 +338,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       _Node*
       _M_get_node()
-      { return _Node_alloc_traits::allocate(_M_get_Node_allocator(), 1); }
+      {
+	auto __ptr = _Node_alloc_traits::allocate(_M_get_Node_allocator(), 1);
+	return std::__addressof(*__ptr);
+      }
 
       template<typename... _Args>
         _Node*
@@ -367,7 +370,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       void
       _M_put_node(_Node* __p)
-      { _Node_alloc_traits::deallocate(_M_get_Node_allocator(), __p, 1); }
+      {
+	typedef typename _Node_alloc_traits::pointer _Ptr;
+	auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__p);
+	_Node_alloc_traits::deallocate(_M_get_Node_allocator(), __ptr, 1);
+      }
 
       _Fwd_list_node_base*
       _M_erase_after(_Fwd_list_node_base* __pos);

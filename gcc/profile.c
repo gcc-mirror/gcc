@@ -1085,18 +1085,20 @@ branch_prob (void)
 		 or __builtin_setjmp_dispatcher calls.  These are very
 		 special and don't expect anything to be inserted before
 		 them.  */
-	      if (!is_gimple_call (first)
-		  || (fndecl = gimple_call_fndecl (first)) == NULL
-		  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL
-		  || (DECL_FUNCTION_CODE (fndecl) != BUILT_IN_SETJMP_RECEIVER
-		      && (DECL_FUNCTION_CODE (fndecl)
-			  != BUILT_IN_SETJMP_DISPATCHER)))
-		{
-		  if (dump_file)
-		    fprintf (dump_file, "Splitting bb %i after labels\n",
-			     bb->index);
-		  split_block_after_labels (bb);
-		}
+	      if (is_gimple_call (first)
+		  && (((fndecl = gimple_call_fndecl (first)) != NULL
+		       && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+		       && (DECL_FUNCTION_CODE (fndecl)
+			   == BUILT_IN_SETJMP_RECEIVER
+			   || (DECL_FUNCTION_CODE (fndecl)
+			       == BUILT_IN_SETJMP_DISPATCHER)))
+		      || gimple_call_flags (first) & ECF_RETURNS_TWICE))
+		continue;
+
+	      if (dump_file)
+		fprintf (dump_file, "Splitting bb %i after labels\n",
+			 bb->index);
+	      split_block_after_labels (bb);
 	    }
 	}
     }

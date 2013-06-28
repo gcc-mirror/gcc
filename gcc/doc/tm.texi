@@ -1078,6 +1078,15 @@ arrays to be word-aligned so that @code{strcpy} calls that copy
 constants to character arrays can be done inline.
 @end defmac
 
+@defmac DATA_ABI_ALIGNMENT (@var{type}, @var{basic-align})
+Similar to @code{DATA_ALIGNMENT}, but for the cases where the ABI mandates
+some alignment increase, instead of optimization only purposes.  E.g.@
+AMD x86-64 psABI says that variables with array type larger than 15 bytes
+must be aligned to 16 byte boundaries.
+
+If this macro is not defined, then @var{basic-align} is used.
+@end defmac
+
 @defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
 If defined, a C expression to compute the alignment given to a constant
 that is being placed in memory.  @var{constant} is the constant and
@@ -2896,6 +2905,10 @@ A target hook which returns true if we use LRA instead of reload pass.  It means
 
 @deftypefn {Target Hook} int TARGET_REGISTER_PRIORITY (int)
 A target hook which returns the register priority number to which the  register @var{hard_regno} belongs to.  The bigger the number, the  more preferable the hard register usage (when all other conditions are  the same).  This hook can be used to prefer some hard register over  others in LRA.  For example, some x86-64 register usage needs  additional prefix which makes instructions longer.  The hook can  return lower priority number for such registers make them less favorable  and as result making the generated code smaller.    The default version of this target hook returns always zero.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_REGISTER_USAGE_LEVELING_P (void)
+A target hook which returns true if we need register usage leveling.  That means if a few hard registers are equally good for the  assignment, we choose the least used hard register.  The register  usage leveling may be profitable for some targets.  Don't use the  usage leveling for targets with conditional execution or targets  with big register files as it hurts if-conversion and cross-jumping  optimizations.    The default version of this target hook returns always false.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_DIFFERENT_ADDR_DISPLACEMENT_P (void)
@@ -6765,7 +6778,7 @@ Deallocate internal data in target scheduling context pointed to by @var{tc}.
 Deallocate a store for target scheduling context pointed to by @var{tc}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, int @var{request}, rtx *@var{new_pat})
+@deftypefn {Target Hook} int TARGET_SCHED_SPECULATE_INSN (rtx @var{insn}, unsigned int @var{dep_status}, rtx *@var{new_pat})
 This hook is called by the insn scheduler when @var{insn} has only
 speculative dependencies and therefore can be scheduled speculatively.
 The hook is used to check if the pattern of @var{insn} has a speculative
@@ -6776,13 +6789,13 @@ speculation.  If the return value equals 1 then @var{new_pat} is assigned
 the generated speculative pattern.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCHED_NEEDS_BLOCK_P (int @var{dep_status})
+@deftypefn {Target Hook} bool TARGET_SCHED_NEEDS_BLOCK_P (unsigned int @var{dep_status})
 This hook is called by the insn scheduler during generation of recovery code
 for @var{insn}.  It should return @code{true}, if the corresponding check
 instruction should branch to recovery code, or @code{false} otherwise.
 @end deftypefn
 
-@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, int @var{mutate_p})
+@deftypefn {Target Hook} rtx TARGET_SCHED_GEN_SPEC_CHECK (rtx @var{insn}, rtx @var{label}, unsigned int @var{ds})
 This hook is called by the insn scheduler to generate a pattern for recovery
 check instruction.  If @var{mutate_p} is zero, then @var{insn} is a
 speculative instruction for which the check should be generated.

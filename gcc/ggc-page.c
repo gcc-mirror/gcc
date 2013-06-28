@@ -2291,7 +2291,7 @@ ggc_pch_prepare_write (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
 }
 
 void
-ggc_pch_write_object (struct ggc_pch_data *d ATTRIBUTE_UNUSED,
+ggc_pch_write_object (struct ggc_pch_data *d,
 		      FILE *f, void *x, void *newx ATTRIBUTE_UNUSED,
 		      size_t size, bool is_string ATTRIBUTE_UNUSED)
 {

@@ -27,12 +27,14 @@
 #ifndef _AMMINTRIN_H_INCLUDED
 #define _AMMINTRIN_H_INCLUDED
 
-#ifndef __SSE4A__
-# error "SSE4A instruction set not enabled"
-#else
-
 /* We need definitions from the SSE3, SSE2 and SSE header files*/
 #include <pmmintrin.h>
+
+#ifndef __SSE4A__
+#pragma GCC push_options
+#pragma GCC target("sse4a")
+#define __DISABLE_SSE4A__
+#endif /* __SSE4A__ */
 
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_stream_sd (double * __P, __m128d __Y)
@@ -83,6 +85,9 @@ _mm_inserti_si64(__m128i __X, __m128i __Y, unsigned const int __I, unsigned cons
 				      (unsigned int)(I), (unsigned int)(L)))
 #endif
 
-#endif /* __SSE4A__ */
+#ifdef __DISABLE_SSE4A__
+#undef __DISABLE_SSE4A__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4A__ */
 
 #endif /* _AMMINTRIN_H_INCLUDED */

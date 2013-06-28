@@ -1961,6 +1961,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   tree fndecl = get_callee_fndecl (exp);
   enum machine_mode mode;
   bool errno_set = false;
+  bool try_widening = false;
   tree arg;
 
   if (!validate_arglist (exp, REAL_TYPE, VOID_TYPE))
@@ -1972,6 +1973,7 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
     {
     CASE_FLT_FN (BUILT_IN_SQRT):
       errno_set = ! tree_expr_nonnegative_p (arg);
+      try_widening = true;
       builtin_optab = sqrt_optab;
       break;
     CASE_FLT_FN (BUILT_IN_EXP):
@@ -2028,8 +2030,10 @@ expand_builtin_mathfn (tree exp, rtx target, rtx subtarget)
   if (! flag_errno_math || ! HONOR_NANS (mode))
     errno_set = false;
 
-  /* Before working hard, check whether the instruction is available.  */
-  if (optab_handler (builtin_optab, mode) != CODE_FOR_nothing
+  /* Before working hard, check whether the instruction is available, but try
+     to widen the mode for specific operations.  */
+  if ((optab_handler (builtin_optab, mode) != CODE_FOR_nothing
+       || (try_widening && !excess_precision_type (TREE_TYPE (exp))))
       && (!errno_set || !optimize_insn_for_size_p ()))
     {
       rtx result = gen_reg_rtx (mode);

@@ -60,7 +60,7 @@ get_symbol_class (symtab_node node)
     return SYMBOL_DUPLICATE;
 
   /* Weakref aliases are always duplicated.  */
-  if (lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+  if (node->symbol.weakref)
     return SYMBOL_DUPLICATE;
 
   /* External declarations are external.  */
@@ -74,13 +74,13 @@ get_symbol_class (symtab_node node)
          objects that can not be duplicated across partitions.  */
       if (DECL_IN_CONSTANT_POOL (node->symbol.decl))
 	return SYMBOL_DUPLICATE;
-      gcc_checking_assert (vnode->analyzed);
+      gcc_checking_assert (vnode->symbol.definition);
     }
   /* Functions that are cloned may stay in callgraph even if they are unused.
      Handle them as external; compute_ltrans_boundary take care to make
      proper things to happen (i.e. to make them appear in the boundary but
      with body streamed, so clone can me materialized).  */
-  else if (!cgraph (node)->analyzed)
+  else if (!cgraph (node)->symbol.definition)
     return SYMBOL_EXTERNAL;
 
   /* Comdats are duplicated to every use unless they are keyed.
@@ -146,7 +146,7 @@ add_references_to_partition (ltrans_partition part, symtab_node node)
        Recursively look into the initializers of the constant variable and add
        references, too.  */
     else if (is_a <varpool_node> (ref->referred)
-	     && const_value_known_p (ref->referred->symbol.decl)
+	     && ctor_for_folding (ref->referred->symbol.decl) != error_mark_node
 	     && !lto_symtab_encoder_in_partition_p (part->encoder, ref->referred))
       {
 	if (!part->initializers_visited)
@@ -218,10 +218,7 @@ add_symbol_to_partition_1 (ltrans_partition part, symtab_node node)
 
   /* Add all aliases associated with the symbol.  */
   for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
-    if (ref->use == IPA_REF_ALIAS
-	&& !lookup_attribute ("weakref",
-			      DECL_ATTRIBUTES
-				(ref->referring->symbol.decl)))
+    if (ref->use == IPA_REF_ALIAS && !node->symbol.weakref)
       add_symbol_to_partition_1 (part, ref->referring);
 
   /* Ensure that SAME_COMDAT_GROUP lists all allways added in a group.  */
@@ -243,8 +240,7 @@ static symtab_node
 contained_in_symbol (symtab_node node)
 {
   /* Weakrefs are never contained in anything.  */
-  if (lookup_attribute ("weakref",
-			DECL_ATTRIBUTES (node->symbol.decl)))
+  if (node->symbol.weakref)
     return node;
   if (cgraph_node *cnode = dyn_cast <cgraph_node> (node))
     {
@@ -561,12 +557,11 @@ lto_balanced_map (void)
 
 	      last_visited_node++;
 
-	      gcc_assert (node->analyzed
-			  || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)));
+	      gcc_assert (node->symbol.definition || node->symbol.weakref);
 
 	      /* Compute boundary cost of callgraph edges.  */
 	      for (edge = node->callees; edge; edge = edge->next_callee)
-		if (edge->callee->analyzed)
+		if (edge->callee->symbol.definition)
 		  {
 		    int edge_cost = edge->frequency;
 		    int index;
@@ -587,7 +582,7 @@ lto_balanced_map (void)
 		  int edge_cost = edge->frequency;
 		  int index;
 
-		  gcc_assert (edge->caller->analyzed);
+		  gcc_assert (edge->caller->symbol.definition);
 		  if (!edge_cost)
 		    edge_cost = 1;
 		  gcc_assert (edge_cost > 0);
@@ -614,7 +609,7 @@ lto_balanced_map (void)
 		int index;
 
 		vnode = ipa_ref_varpool_node (ref);
-		if (!vnode->finalized)
+		if (!vnode->symbol.definition)
 		  continue;
 		if (!symbol_partitioned_p ((symtab_node) vnode) && flag_toplevel_reorder
 		    && get_symbol_class ((symtab_node) vnode) == SYMBOL_PARTITION)
@@ -632,7 +627,7 @@ lto_balanced_map (void)
 		int index;
 
 		node = ipa_ref_node (ref);
-		if (!node->analyzed)
+		if (!node->symbol.definition)
 		  continue;
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   (symtab_node)node);
@@ -648,7 +643,7 @@ lto_balanced_map (void)
 		int index;
 
 		vnode = ipa_ref_referring_varpool_node (ref);
-		gcc_assert (vnode->finalized);
+		gcc_assert (vnode->symbol.definition);
 		if (!symbol_partitioned_p ((symtab_node) vnode) && flag_toplevel_reorder
 		    && get_symbol_class ((symtab_node) vnode) == SYMBOL_PARTITION)
 		  add_symbol_to_partition (partition, (symtab_node) vnode);
@@ -665,7 +660,7 @@ lto_balanced_map (void)
 		int index;
 
 		node = ipa_ref_referring_node (ref);
-		gcc_assert (node->analyzed);
+		gcc_assert (node->symbol.definition);
 		index = lto_symtab_encoder_lookup (partition->encoder,
 						   (symtab_node)node);
 		if (index != LCC_NOT_FOUND
@@ -871,8 +866,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
 	 once this is fixed.  */
         || DECL_EXTERNAL (node->symbol.decl)
         || !symtab_real_symbol_p (node))
-       && !may_need_named_section_p (encoder, node)
-       && !lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+       && !may_need_named_section_p (encoder, node))
     return;
 
   /* Now walk symbols sharing the same name and see if there are any conflicts.
@@ -897,11 +891,9 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
   /* Assign every symbol in the set that shares the same ASM name an unique
      mangled name.  */
   for (s = symtab_node_for_asm (name); s;)
-    if ((!s->symbol.externally_visible
-	 || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+    if (!s->symbol.externally_visible
 	&& ((symtab_real_symbol_p (s)
-             && (!DECL_EXTERNAL (node->symbol.decl)
-	         || lookup_attribute ("weakref", DECL_ATTRIBUTES (node->symbol.decl)))
+             && !DECL_EXTERNAL (node->symbol.decl)
 	     && !TREE_PUBLIC (node->symbol.decl))
  	    || may_need_named_section_p (encoder, s))
 	&& (!encoder

@@ -313,7 +313,7 @@ mmix_init_machine_status (void)
   return ggc_alloc_cleared_machine_function ();
 }
 
-/* DATA_ALIGNMENT.
+/* DATA_ABI_ALIGNMENT.
    We have trouble getting the address of stuff that is located at other
    than 32-bit alignments (GETA requirements), so try to give everything
    at least 32-bit alignment.  */

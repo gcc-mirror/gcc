@@ -487,7 +487,6 @@ runtime_files = \
 	runtime/go-strplus.c \
 	runtime/go-strslice.c \
 	runtime/go-traceback.c \
-	runtime/go-trampoline.c \
 	runtime/go-type-complex.c \
 	runtime/go-type-eface.c \
 	runtime/go-type-error.c \

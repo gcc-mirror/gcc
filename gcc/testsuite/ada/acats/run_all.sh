@@ -225,6 +225,10 @@ for chapter in $chapters; do
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -gnatE"
       fi
+      grep $i $testdir/floatstore.lst > /dev/null 2>&1
+      if [ $? -eq 0 ]; then
+         extraflags="$extraflags -ffloat-store"
+      fi
       grep $i $testdir/stackcheck.lst > /dev/null 2>&1
       if [ $? -eq 0 ]; then
          extraflags="$extraflags -fstack-check"

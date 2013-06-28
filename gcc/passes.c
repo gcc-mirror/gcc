@@ -136,8 +136,8 @@ rest_of_decl_compilation (tree decl,
 	/* A quirk of the initial implementation of aliases required that the
 	   user add "extern" to all of them.  Which is silly, but now
 	   historical.  Do note that the symbol is in fact locally defined.  */
-	if (!lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
-	  DECL_EXTERNAL (decl) = 0;
+	DECL_EXTERNAL (decl) = 0;
+	TREE_STATIC (decl) = 1;
 	assemble_alias (decl, alias);
       }
   }
@@ -718,7 +718,7 @@ dump_passes (void)
 
   create_pass_tab();
 
-  FOR_EACH_DEFINED_FUNCTION (n)
+  FOR_EACH_FUNCTION (n)
     if (DECL_STRUCT_FUNCTION (n->symbol.decl))
       {
 	node = n;
@@ -1300,6 +1300,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_lower_eh);
   NEXT_PASS (pass_build_cfg);
   NEXT_PASS (pass_warn_function_return);
+  NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
   *p = NULL;
 
@@ -1312,7 +1313,6 @@ init_optimization_passes (void)
       struct opt_pass **p = &pass_early_local_passes.pass.sub;
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_init_datastructures);
-      NEXT_PASS (pass_expand_omp);
 
       NEXT_PASS (pass_build_ssa);
       NEXT_PASS (pass_early_warn_uninitialized);
@@ -1402,12 +1402,12 @@ init_optimization_passes (void)
       NEXT_PASS (pass_ccp);
       /* After CCP we rewrite no longer addressed locals into SSA
 	 form if possible.  */
+      NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_forwprop);
       /* pass_build_alias is a dummy pass that ensures that we
 	 execute TODO_rebuild_alias at this point.  */
       NEXT_PASS (pass_build_alias);
       NEXT_PASS (pass_return_slot);
-      NEXT_PASS (pass_phiprop);
       NEXT_PASS (pass_fre);
       NEXT_PASS (pass_copy_prop);
       NEXT_PASS (pass_merge_phi);
@@ -1536,15 +1536,15 @@ init_optimization_passes (void)
       /* Perform simple scalar cleanup which is constant/copy propagation.  */
       NEXT_PASS (pass_ccp);
       NEXT_PASS (pass_object_sizes);
+      /* Fold remaining builtins.  */
+      NEXT_PASS (pass_fold_builtins);
       /* Copy propagation also copy-propagates constants, this is necessary
-         to forward object-size results properly.  */
+         to forward object-size and builtin folding results properly.  */
       NEXT_PASS (pass_copy_prop);
+      NEXT_PASS (pass_dce);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
       NEXT_PASS (pass_rename_ssa_copies);
-      NEXT_PASS (pass_dce);
-      /* Fold remaining builtins.  */
-      NEXT_PASS (pass_fold_builtins);
       /* ???  We do want some kind of loop invariant motion, but we possibly
          need to adjust LIM to be more friendly towards preserving accurate
 	 debug information here.  */
@@ -1709,7 +1709,7 @@ do_per_function (void (*callback) (void *data), void *data)
     {
       struct cgraph_node *node;
       FOR_EACH_DEFINED_FUNCTION (node)
-	if (gimple_has_body_p (node->symbol.decl)
+	if (node->symbol.analyzed && gimple_has_body_p (node->symbol.decl)
 	    && (!node->clone_of || node->symbol.decl != node->clone_of->symbol.decl))
 	  {
 	    push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
@@ -2461,6 +2461,7 @@ ipa_write_summaries (void)
   lto_symtab_encoder_t encoder;
   int i, order_pos;
   struct varpool_node *vnode;
+  struct cgraph_node *node;
   struct cgraph_node **order;
 
   if (!flag_generate_lto || seen_error ())
@@ -2492,13 +2493,15 @@ ipa_write_summaries (void)
 	  renumber_gimple_stmt_uids ();
 	  pop_cfun ();
 	}
-      if (node->analyzed)
+      if (node->symbol.definition)
         lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
     }
 
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (node->symbol.alias)
+      lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
   FOR_EACH_DEFINED_VARIABLE (vnode)
-    if ((!vnode->alias || vnode->alias_of))
-      lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
+    lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
 
   ipa_write_summaries_1 (compute_ltrans_boundary (encoder));
 
@@ -2564,7 +2567,7 @@ ipa_write_optimization_summaries (lto_symtab_encoder_t encoder)
 
 	 For functions newly born at WPA stage we need to initialize
 	 the uids here.  */
-      if (node->analyzed
+      if (node->symbol.definition
 	  && gimple_has_body_p (node->symbol.decl))
 	{
 	  push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));

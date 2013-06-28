@@ -195,7 +195,7 @@ _GLIBCXX_HAS_NESTED_TYPE(result_type)
 	     (!is_member_pointer<_Functor>::value
 	      && !is_function<_Functor>::value
 	      && !is_function<typename remove_pointer<_Functor>::type>::value),
-	     typename result_of<_Functor(_Args&&...)>::type
+	     typename result_of<_Functor&(_Args&&...)>::type
 	   >::type
     __invoke(_Functor& __f, _Args&&... __args)
     {

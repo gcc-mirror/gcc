@@ -21,21 +21,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "pointer-set.h"
 
-/* A pointer set is represented as a simple open-addressing hash
-   table.  Simplifications: The hash code is based on the value of the
-   pointer, not what it points to.  The number of buckets is always a
-   power of 2.  Null pointers are a reserved value.  Deletion is not
-   supported (yet).  There is no mechanism for user control of hash
-   function, equality comparison, initial size, or resizing policy.  */
-
-struct pointer_set_t
-{
-  size_t log_slots;
-  size_t n_slots;		/* n_slots = 2^log_slots */
-  size_t n_elements;
-
-  const void **slots;
-};
 
 /* Use the multiplicative method, as described in Knuth 6.4, to obtain
    a hash code for P in the range [0, MAX).  MAX == 2^LOGMAX.
@@ -67,6 +52,7 @@ hash1 (const void *p, unsigned long max, unsigned long logmax)
   return ((A * (uintptr_t) p) >> shift) & (max - 1);
 }
 
+
 /* Allocate an empty pointer set.  */
 struct pointer_set_t *
 pointer_set_create (void)
@@ -89,20 +75,28 @@ pointer_set_destroy (struct pointer_set_t *pset)
   XDELETE (pset);
 }
 
-/* Returns nonzero if PSET contains P.  P must be nonnull.
 
-   Collisions are resolved by linear probing.  */
-int
-pointer_set_contains (const struct pointer_set_t *pset, const void *p)
+/* Lookup the slot for the pointer P and return true if it exists,
+   otherwise return false in which case *IX points to the slot that
+   would be used on insertion.  */
+
+bool
+pointer_set_lookup (const pointer_set_t *pset, const void *p, size_t *ix)
 {
   size_t n = hash1 (p, pset->n_slots, pset->log_slots);
 
   while (true)
     {
       if (pset->slots[n] == p)
-       return 1;
+	{
+	  *ix = n;
+	  return true;
+	}
       else if (pset->slots[n] == 0)
-       return 0;
+	{
+	  *ix = n;
+	  return false;
+	}
       else
        {
          ++n;
@@ -112,23 +106,14 @@ pointer_set_contains (const struct pointer_set_t *pset, const void *p)
     }
 }
 
-/* Subroutine of pointer_set_insert.  Return the insertion slot for P into
-   an empty element of SLOTS, an array of length N_SLOTS.  */
-static inline size_t
-insert_aux (const void *p, const void **slots, size_t n_slots, size_t log_slots)
+/* Returns nonzero if PSET contains P.  P must be nonnull.
+
+   Collisions are resolved by linear probing.  */
+int
+pointer_set_contains (const struct pointer_set_t *pset, const void *p)
 {
-  size_t n = hash1 (p, n_slots, log_slots);
-  while (true)
-    {
-      if (slots[n] == p || slots[n] == 0)
-	return n;
-      else
-	{
-	  ++n;
-	  if (n == n_slots)
-	    n = 0;
-	}
-    }
+  size_t n;
+  return pointer_set_lookup (pset, p, &n);
 }
 
 /* Inserts P into PSET if it wasn't already there.  Returns nonzero
@@ -142,26 +127,24 @@ pointer_set_insert (struct pointer_set_t *pset, const void *p)
      superfluous but can happen at most once.  */
   if (pset->n_elements > pset->n_slots / 4)
     {
-      size_t new_log_slots = pset->log_slots + 1;
-      size_t new_n_slots = pset->n_slots * 2;
-      const void **new_slots = XCNEWVEC (const void *, new_n_slots);
+      size_t old_n_slots = pset->n_slots;
+      const void **old_slots = pset->slots;
+      pset->log_slots = pset->log_slots + 1;
+      pset->n_slots = pset->n_slots * 2;
+      pset->slots = XCNEWVEC (const void *, pset->n_slots);
       size_t i;
 
-      for (i = 0; i < pset->n_slots; ++i)
+      for (i = 0; i < old_n_slots; ++i)
         {
-	  const void *value = pset->slots[i];
-	  n = insert_aux (value, new_slots, new_n_slots, new_log_slots);
-	  new_slots[n] = value;
+	  const void *value = old_slots[i];
+	  pointer_set_lookup (pset, value, &n);
+	  pset->slots[n] = value;
 	}
 
-      XDELETEVEC (pset->slots);
-      pset->n_slots = new_n_slots;
-      pset->log_slots = new_log_slots;
-      pset->slots = new_slots;
+      XDELETEVEC (old_slots);
     }
 
-  n = insert_aux (p, pset->slots, pset->n_slots, pset->log_slots);
-  if (pset->slots[n])
+  if (pointer_set_lookup (pset, p, &n))
     return 1;
 
   pset->slots[n] = p;
@@ -190,11 +173,7 @@ void pointer_set_traverse (const struct pointer_set_t *pset,
 
 struct pointer_map_t
 {
-  size_t log_slots;
-  size_t n_slots;		/* n_slots = 2^log_slots */
-  size_t n_elements;
-
-  const void **keys;
+  pointer_set_t pset;
   void **values;
 };
 
@@ -204,19 +183,19 @@ pointer_map_create (void)
 {
   struct pointer_map_t *result = XNEW (struct pointer_map_t);
 
-  result->n_elements = 0;
-  result->log_slots = 8;
-  result->n_slots = (size_t) 1 << result->log_slots;
+  result->pset.n_elements = 0;
+  result->pset.log_slots = 8;
+  result->pset.n_slots = (size_t) 1 << result->pset.log_slots;
 
-  result->keys = XCNEWVEC (const void *, result->n_slots);
-  result->values = XCNEWVEC (void *, result->n_slots);
+  result->pset.slots = XCNEWVEC (const void *, result->pset.n_slots);
+  result->values = XCNEWVEC (void *, result->pset.n_slots);
   return result;
 }
 
 /* Reclaims all memory associated with PMAP.  */
 void pointer_map_destroy (struct pointer_map_t *pmap)
 {
-  XDELETEVEC (pmap->keys);
+  XDELETEVEC (pmap->pset.slots);
   XDELETEVEC (pmap->values);
   XDELETE (pmap);
 }
@@ -228,21 +207,11 @@ void pointer_map_destroy (struct pointer_map_t *pmap)
 void **
 pointer_map_contains (const struct pointer_map_t *pmap, const void *p)
 {
-  size_t n = hash1 (p, pmap->n_slots, pmap->log_slots);
-
-  while (true)
-    {
-      if (pmap->keys[n] == p)
-	return &pmap->values[n];
-      else if (pmap->keys[n] == 0)
-	return NULL;
-      else
-       {
-         ++n;
-         if (n == pmap->n_slots)
-           n = 0;
-       }
-    }
+  size_t n;
+  if (pointer_set_lookup (&pmap->pset, p, &n))
+    return &pmap->values[n];
+  else
+    return NULL;
 }
 
 /* Inserts P into PMAP if it wasn't already there.  Returns a pointer
@@ -254,36 +223,34 @@ pointer_map_insert (struct pointer_map_t *pmap, const void *p)
 
   /* For simplicity, expand the map even if P is already there.  This can be
      superfluous but can happen at most once.  */
-  if (pmap->n_elements > pmap->n_slots / 4)
+  if (pmap->pset.n_elements > pmap->pset.n_slots / 4)
     {
-      size_t new_log_slots = pmap->log_slots + 1;
-      size_t new_n_slots = pmap->n_slots * 2;
-      const void **new_keys = XCNEWVEC (const void *, new_n_slots);
-      void **new_values = XCNEWVEC (void *, new_n_slots);
+      size_t old_n_slots = pmap->pset.n_slots;
+      const void **old_keys = pmap->pset.slots;
+      void **old_values = pmap->values;
+      pmap->pset.log_slots = pmap->pset.log_slots + 1;
+      pmap->pset.n_slots = pmap->pset.n_slots * 2;
+      pmap->pset.slots = XCNEWVEC (const void *, pmap->pset.n_slots);
+      pmap->values = XCNEWVEC (void *, pmap->pset.n_slots);
       size_t i;
 
-      for (i = 0; i < pmap->n_slots; ++i)
-	if (pmap->keys[i])
+      for (i = 0; i < old_n_slots; ++i)
+	if (old_keys[i])
 	  {
-	    const void *key = pmap->keys[i];
-	    n = insert_aux (key, new_keys, new_n_slots, new_log_slots);
-	    new_keys[n] = key;
-	    new_values[n] = pmap->values[i];
+	    const void *key = old_keys[i];
+	    pointer_set_lookup (&pmap->pset, key, &n);
+	    pmap->pset.slots[n] = key;
+	    pmap->values[n] = old_values[i];
 	  }
 
-      XDELETEVEC (pmap->keys);
-      XDELETEVEC (pmap->values);
-      pmap->n_slots = new_n_slots;
-      pmap->log_slots = new_log_slots;
-      pmap->keys = new_keys;
-      pmap->values = new_values;
+      XDELETEVEC (old_keys);
+      XDELETEVEC (old_values);
     }
 
-  n = insert_aux (p, pmap->keys, pmap->n_slots, pmap->log_slots);
-  if (!pmap->keys[n])
+  if (!pointer_set_lookup (&pmap->pset, p, &n))
     {
-      ++pmap->n_elements;
-      pmap->keys[n] = p;
+      ++pmap->pset.n_elements;
+      pmap->pset.slots[n] = p;
     }
 
   return &pmap->values[n];
@@ -297,7 +264,8 @@ void pointer_map_traverse (const struct pointer_map_t *pmap,
 			   bool (*fn) (const void *, void **, void *), void *data)
 {
   size_t i;
-  for (i = 0; i < pmap->n_slots; ++i)
-    if (pmap->keys[i] && !fn (pmap->keys[i], &pmap->values[i], data))
+  for (i = 0; i < pmap->pset.n_slots; ++i)
+    if (pmap->pset.slots[i]
+	&& !fn (pmap->pset.slots[i], &pmap->values[i], data))
       break;
 }

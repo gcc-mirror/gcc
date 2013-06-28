@@ -21,6 +21,7 @@ if [info exists lang_test_file] then {
 }
 
 load_lib libitm-dg.exp
+load_gcc_lib gcc-dg.exp
 
 # If a testcase doesn't have special options, use these.
 if ![info exists DEFAULT_CFLAGS] then {

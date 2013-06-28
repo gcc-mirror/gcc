@@ -27,13 +27,15 @@
 #ifndef _SMMINTRIN_H_INCLUDED
 #define _SMMINTRIN_H_INCLUDED
 
-#ifndef __SSE4_1__
-# error "SSE4.1 instruction set not enabled"
-#else
-
 /* We need definitions from the SSSE3, SSE3, SSE2 and SSE header
    files.  */
 #include <tmmintrin.h>
+
+#ifndef __SSE4_1__
+#pragma GCC push_options
+#pragma GCC target("sse4.1")
+#define __DISABLE_SSE4_1__
+#endif /* __SSE4_1__ */
 
 /* Rounding mode macros. */
 #define _MM_FROUND_TO_NEAREST_INT	0x00
@@ -582,7 +584,11 @@ _mm_stream_load_si128 (__m128i *__X)
   return (__m128i) __builtin_ia32_movntdqa ((__v2di *) __X);
 }
 
-#ifdef __SSE4_2__
+#ifndef __SSE4_2__
+#pragma GCC push_options
+#pragma GCC target("sse4.2")
+#define __DISABLE_SSE4_2__
+#endif /* __SSE4_2__ */
 
 /* These macros specify the source data format.  */
 #define _SIDD_UBYTE_OPS			0x00
@@ -792,9 +798,29 @@ _mm_cmpgt_epi64 (__m128i __X, __m128i __Y)
   return (__m128i) __builtin_ia32_pcmpgtq ((__v2di)__X, (__v2di)__Y);
 }
 
-#ifdef __POPCNT__
+#ifdef __DISABLE_SSE4_2__
+#undef __DISABLE_SSE4_2__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4_2__ */
+
+#ifdef __DISABLE_SSE4_1__
+#undef __DISABLE_SSE4_1__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4_1__ */
+
 #include <popcntintrin.h>
-#endif
+
+#ifndef __SSE4_1__
+#pragma GCC push_options
+#pragma GCC target("sse4.1")
+#define __DISABLE_SSE4_1__
+#endif /* __SSE4_1__ */
+
+#ifndef __SSE4_2__
+#pragma GCC push_options
+#pragma GCC target("sse4.2")
+#define __DISABLE_SSE4_2__
+#endif /* __SSE4_1__ */
 
 /* Accumulate CRC32 (polynomial 0x11EDC6F41) value.  */
 extern __inline unsigned int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -823,8 +849,14 @@ _mm_crc32_u64 (unsigned long long __C, unsigned long long __V)
 }
 #endif
 
-#endif /* __SSE4_2__ */
+#ifdef __DISABLE_SSE4_2__
+#undef __DISABLE_SSE4_2__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4_2__ */
 
-#endif /* __SSE4_1__ */
+#ifdef __DISABLE_SSE4_1__
+#undef __DISABLE_SSE4_1__
+#pragma GCC pop_options
+#endif /* __DISABLE_SSE4_1__ */
 
 #endif /* _SMMINTRIN_H_INCLUDED */

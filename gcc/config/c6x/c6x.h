@@ -134,7 +134,7 @@ extern c6x_cpu_t c6x_arch;
    Really only externally visible arrays must be aligned this way, as
    only those are directly visible from another compilation unit.  But
    we don't have that information available here.  */
-#define DATA_ALIGNMENT(TYPE, ALIGN)					\
+#define DATA_ABI_ALIGNMENT(TYPE, ALIGN)					\
   (((ALIGN) < BITS_PER_UNIT * 8 && TREE_CODE (TYPE) == ARRAY_TYPE)	\
    ? BITS_PER_UNIT * 8 : (ALIGN))
 

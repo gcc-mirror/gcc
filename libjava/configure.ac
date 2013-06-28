@@ -1599,10 +1599,10 @@ gcjsubdir=gcj-$gcjversion-$libgcj_soversion
 multi_os_directory=`$CC -print-multi-os-directory`
 case $multi_os_directory in
   .)
-   dbexecdir='$(libdir)/'$gcjsubdir # Avoid /.
+   dbexecdir='$(toolexeclibdir)/'$gcjsubdir # Avoid /.
    ;;
   *)
-   dbexecdir='$(libdir)/'$multi_os_directory/$gcjsubdir
+   dbexecdir='$(toolexeclibdir)/'$multi_os_directory/$gcjsubdir
    ;;
 esac
 AC_SUBST(dbexecdir)

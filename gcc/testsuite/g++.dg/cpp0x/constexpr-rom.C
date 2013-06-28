@@ -2,7 +2,7 @@
 // { dg-options -std=c++0x }
 // { dg-additional-options -G0 { target { { alpha*-*-* frv*-*-* ia64-*-* lm32*-*-* m32r*-*-* microblaze*-*-* mips*-*-* powerpc*-*-* rs6000*-*-* score*-*-* } && { ! { *-*-darwin* *-*-aix* alpha*-*-*vms* } } } } }
 // { dg-final { scan-assembler "\\.rdata" { target mips*-*-* } } }
-// { dg-final { scan-assembler "rodata" { target { { *-*-linux-gnu || *-*-elf } && { ! mips*-*-* } } } } }
+// { dg-final { scan-assembler "rodata" { target { { *-*-linux-gnu *-*-gnu* *-*-elf } && { ! mips*-*-* } } } } }
 
 struct Data
 {

@@ -4894,4 +4894,18 @@ fix = {
 	_EOText_;
 };
 
+/*
+ *  Old Linux kernel's <compiler.h> header breaks Traditional CPP
+ */
+fix = {
+    hackname  = complier_h_tradcpp;
+    files     = linux/compiler.h;
+
+    select    = "#define __builtin_warning\\(x, y\\.\\.\\.\\) \\(1\\)";
+    c_fix     = format;
+    c_fix_arg = "/* __builtin_warning(x, y...) is obsolete */";
+
+    test_text = "#define __builtin_warning(x, y...) (1)";
+};
+
 /*EOF*/

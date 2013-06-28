@@ -1,4 +1,4 @@
-// { dg-do run { target { *-*-aix5* i?86-*-linux* x86_64-*-linux* } } }
+// { dg-do run { target { *-*-aix5* i?86-*-linux* i?86-*-gnu* x86_64-*-linux* } } }
 // { dg-options "-fexceptions -fnon-call-exceptions" }
 
 #include <signal.h>

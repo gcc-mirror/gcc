@@ -393,15 +393,15 @@ wrapup_global_declaration_2 (tree decl)
 
       if (!node && flag_ltrans)
 	needed = false;
-      else if (node && node->finalized)
+      else if (node && node->symbol.definition)
 	needed = false;
-      else if (node && node->alias)
+      else if (node && node->symbol.alias)
 	needed = false;
       else if (!cgraph_global_info_ready
 	       && (TREE_USED (decl)
 		   || TREE_USED (DECL_ASSEMBLER_NAME (decl))))
 	/* needed */;
-      else if (node && node->analyzed)
+      else if (node && node->symbol.analyzed)
 	/* needed */;
       else if (DECL_COMDAT (decl))
 	needed = false;

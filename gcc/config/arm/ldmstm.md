@@ -37,7 +37,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "ldm%(ia%)\t%5, {%1, %2, %3, %4}"
   [(set_attr "type" "load4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_ldm4_ia"
   [(match_parallel 0 "load_multiple_operation"
@@ -74,7 +75,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 5"
   "ldm%(ia%)\t%5!, {%1, %2, %3, %4}"
   [(set_attr "type" "load4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_ldm4_ia_update"
   [(match_parallel 0 "load_multiple_operation"
@@ -108,7 +110,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "stm%(ia%)\t%5, {%1, %2, %3, %4}"
   [(set_attr "type" "store4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm4_ia_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -125,7 +128,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 5"
   "stm%(ia%)\t%5!, {%1, %2, %3, %4}"
   [(set_attr "type" "store4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_stm4_ia_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -302,7 +306,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "ldm%(db%)\t%5, {%1, %2, %3, %4}"
   [(set_attr "type" "load4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*ldm4_db_update"
   [(match_parallel 0 "load_multiple_operation"
@@ -323,7 +328,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 5"
   "ldm%(db%)\t%5!, {%1, %2, %3, %4}"
   [(set_attr "type" "load4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm4_db"
   [(match_parallel 0 "store_multiple_operation"
@@ -338,7 +344,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "stm%(db%)\t%5, {%1, %2, %3, %4}"
   [(set_attr "type" "store4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm4_db_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -355,7 +362,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 5"
   "stm%(db%)\t%5!, {%1, %2, %3, %4}"
   [(set_attr "type" "store4")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_peephole2
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -477,7 +485,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "ldm%(ia%)\t%4, {%1, %2, %3}"
   [(set_attr "type" "load3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_ldm3_ia"
   [(match_parallel 0 "load_multiple_operation"
@@ -508,7 +517,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "ldm%(ia%)\t%4!, {%1, %2, %3}"
   [(set_attr "type" "load3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_ldm3_ia_update"
   [(match_parallel 0 "load_multiple_operation"
@@ -537,7 +547,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "stm%(ia%)\t%4, {%1, %2, %3}"
   [(set_attr "type" "store3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm3_ia_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -552,7 +563,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "stm%(ia%)\t%4!, {%1, %2, %3}"
   [(set_attr "type" "store3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_stm3_ia_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -704,7 +716,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "ldm%(db%)\t%4, {%1, %2, %3}"
   [(set_attr "type" "load3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*ldm3_db_update"
   [(match_parallel 0 "load_multiple_operation"
@@ -722,7 +735,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "ldm%(db%)\t%4!, {%1, %2, %3}"
   [(set_attr "type" "load3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm3_db"
   [(match_parallel 0 "store_multiple_operation"
@@ -735,7 +749,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "stm%(db%)\t%4, {%1, %2, %3}"
   [(set_attr "type" "store3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm3_db_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -750,7 +765,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 4"
   "stm%(db%)\t%4!, {%1, %2, %3}"
   [(set_attr "type" "store3")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_peephole2
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -855,7 +871,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
   "ldm%(ia%)\t%3, {%1, %2}"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_ldm2_ia"
   [(match_parallel 0 "load_multiple_operation"
@@ -880,7 +897,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "ldm%(ia%)\t%3!, {%1, %2}"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_ldm2_ia_update"
   [(match_parallel 0 "load_multiple_operation"
@@ -904,7 +922,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
   "stm%(ia%)\t%3, {%1, %2}"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm2_ia_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -917,7 +936,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "stm%(ia%)\t%3!, {%1, %2}"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb_stm2_ia_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -1044,7 +1064,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
   "ldm%(db%)\t%3, {%1, %2}"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*ldm2_db_update"
   [(match_parallel 0 "load_multiple_operation"
@@ -1059,7 +1080,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "ldm%(db%)\t%3!, {%1, %2}"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm2_db"
   [(match_parallel 0 "store_multiple_operation"
@@ -1070,7 +1092,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 2"
   "stm%(db%)\t%3, {%1, %2}"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*stm2_db_update"
   [(match_parallel 0 "store_multiple_operation"
@@ -1083,7 +1106,8 @@
   "TARGET_32BIT && XVECLEN (operands[0], 0) == 3"
   "stm%(db%)\t%3!, {%1, %2}"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_peephole2
   [(set (match_operand:SI 0 "s_register_operand" "")

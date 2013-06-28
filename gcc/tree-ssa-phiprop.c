@@ -247,7 +247,6 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
   ssa_op_iter i;
   bool phi_inserted;
   tree type = NULL_TREE;
-  bool one_invariant = false;
 
   if (!POINTER_TYPE_P (TREE_TYPE (ptr))
       || !is_gimple_reg_type (TREE_TYPE (TREE_TYPE (ptr))))
@@ -282,16 +281,7 @@ propagate_with_phi (basic_block bb, gimple phi, struct phiprop_d *phivn,
       if (!type
 	  && TREE_CODE (arg) == SSA_NAME)
 	type = TREE_TYPE (phivn[SSA_NAME_VERSION (arg)].value);
-      if (TREE_CODE (arg) == ADDR_EXPR
-	  && is_gimple_min_invariant (arg))
-	one_invariant = true;
     }
-
-  /* If we neither have an address of a decl nor can reuse a previously
-     inserted load, do not hoist anything.  */
-  if (!one_invariant
-      && !type)
-    return false;
 
   /* Find a dereferencing use.  First follow (single use) ssa
      copy chains for ptr.  */

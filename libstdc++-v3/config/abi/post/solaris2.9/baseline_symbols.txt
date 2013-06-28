@@ -1879,6 +1879,8 @@ FUNC:_ZNSt6__norm15_List_node_base7reverseEv@@GLIBCXX_3.4.9
 FUNC:_ZNSt6__norm15_List_node_base8transferEPS0_S1_@@GLIBCXX_3.4.9
 FUNC:_ZNSt6__norm15_List_node_base9_M_unhookEv@@GLIBCXX_3.4.14
 FUNC:_ZNSt6chrono12system_clock3nowEv@@GLIBCXX_3.4.11
+FUNC:_ZNSt6chrono3_V212steady_clock3nowEv@@GLIBCXX_3.4.19
+FUNC:_ZNSt6chrono3_V212system_clock3nowEv@@GLIBCXX_3.4.19
 FUNC:_ZNSt6gslice8_IndexerC1EjRKSt8valarrayIjES4_@@GLIBCXX_3.4
 FUNC:_ZNSt6gslice8_IndexerC2EjRKSt8valarrayIjES4_@@GLIBCXX_3.4
 FUNC:_ZNSt6locale11_M_coalesceERKS_S1_i@@GLIBCXX_3.4
@@ -2491,6 +2493,7 @@ OBJECT:0:GLIBCXX_3.4.15
 OBJECT:0:GLIBCXX_3.4.16
 OBJECT:0:GLIBCXX_3.4.17
 OBJECT:0:GLIBCXX_3.4.18
+OBJECT:0:GLIBCXX_3.4.19
 OBJECT:0:GLIBCXX_3.4.2
 OBJECT:0:GLIBCXX_3.4.3
 OBJECT:0:GLIBCXX_3.4.4
@@ -2989,6 +2992,8 @@ OBJECT:1:_ZNSt21__numeric_limits_base9is_iec559E@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_moduloE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt21__numeric_limits_base9is_signedE@@GLIBCXX_3.4
 OBJECT:1:_ZNSt6chrono12system_clock12is_monotonicE@@GLIBCXX_3.4.11
+OBJECT:1:_ZNSt6chrono3_V212steady_clock9is_steadyE@@GLIBCXX_3.4.19
+OBJECT:1:_ZNSt6chrono3_V212system_clock9is_steadyE@@GLIBCXX_3.4.19
 OBJECT:1:_ZSt7nothrow@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIcE@@GLIBCXX_3.4
 OBJECT:20:_ZTSSt12ctype_bynameIwE@@GLIBCXX_3.4

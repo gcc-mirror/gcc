@@ -5,7 +5,7 @@ int x;
 void f ()
 {
   static int s;
-  int x;			// { dg-error "" } referenced below
+  int x;			// { dg-message "" } referenced below
   extern int q();
 
   struct local {

@@ -4,7 +4,7 @@
 template<class T>
 struct A {
   template<class U>
-  bool operator==(const A<U>&) = delete; // { dg-error "declared" }
+  bool operator==(const A<U>&) = delete; // { dg-message "declared" }
   operator bool () { return true; }
 };
 

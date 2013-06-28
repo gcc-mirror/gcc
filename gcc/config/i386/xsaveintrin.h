@@ -28,6 +28,12 @@
 #ifndef _XSAVEINTRIN_H_INCLUDED
 #define _XSAVEINTRIN_H_INCLUDED
 
+#ifndef __XSAVE__
+#pragma GCC push_options
+#pragma GCC target("xsave")
+#define __DISABLE_XSAVE__
+#endif /* __XSAVE__ */
+
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _xsave (void *__P, long long __M)
@@ -57,5 +63,10 @@ _xrstor64 (void *__P, long long __M)
   return __builtin_ia32_xrstor64 (__P, __M);
 }
 #endif
+
+#ifdef __DISABLE_XSAVE__
+#undef __DISABLE_XSAVE__
+#pragma GCC pop_options
+#endif /* __DISABLE_XSAVE__ */
 
 #endif /* _XSAVEINTRIN_H_INCLUDED */

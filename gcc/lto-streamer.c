@@ -227,6 +227,13 @@ print_lto_report (const char *s)
 	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
 	       lto_stats.num_output_symtab_nodes);
 
+      fprintf (stderr, "[%s] # of output tree pickle references: "
+	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
+	       lto_stats.num_pickle_refs_output);
+      fprintf (stderr, "[%s] # of output tree bodies: "
+	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
+	       lto_stats.num_tree_bodies_output);
+
       fprintf (stderr, "[%s] # callgraph partitions: "
 	       HOST_WIDE_INT_PRINT_UNSIGNED "\n", s,
 	       lto_stats.num_cgraph_partitions);

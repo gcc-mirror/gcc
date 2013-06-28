@@ -61,6 +61,14 @@ void test01()
 	   int (ClassType::*[2][3])>(false)) );
   VERIFY( (test_category<is_copy_constructible,
 	   int (ClassType::*[][2][3]) (int)>(false)) );
+  VERIFY( (test_category<is_copy_constructible, 
+       ClassType(unsigned) const &>(false)) );
+  VERIFY( (test_category<is_copy_constructible, 
+       bool(ClassType) const>(false)) );
+  VERIFY( (test_category<is_copy_constructible, 
+       bool(...) &&>(false)) );
+  VERIFY( (test_category<is_copy_constructible, 
+       EnumType(int, ...)>(false)) );
 
   VERIFY( (test_property<is_copy_constructible,
 	   volatile NoexceptCopyConsClass>(false)) );

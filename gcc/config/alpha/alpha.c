@@ -2700,12 +2700,12 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
       break;
 
     case GE:  case GT:  case GEU:  case GTU:
-      /* These must be swapped.  */
-      if (op1 != CONST0_RTX (cmp_mode))
-	{
-	  code = swap_condition (code);
-	  tem = op0, op0 = op1, op1 = tem;
-	}
+      /* These normally need swapping, but for integer zero we have
+	 special patterns that recognize swapped operands.  */
+      if (cmp_mode == DImode && op1 == const0_rtx)
+	break;
+      code = swap_condition (code);
+      tem = op0, op0 = op1, op1 = tem;
       break;
 
     default:
@@ -3067,12 +3067,9 @@ alpha_emit_xfloating_compare (enum rtx_code *pcode, rtx op0, rtx op1)
   operands[1] = op1;
   out = gen_reg_rtx (DImode);
 
-  /* What's actually returned is -1,0,1, not a proper boolean value,
-     so use an EXPR_LIST as with a generic libcall instead of a 
-     comparison type expression.  */
-  note = gen_rtx_EXPR_LIST (VOIDmode, op1, NULL_RTX);
-  note = gen_rtx_EXPR_LIST (VOIDmode, op0, note);
-  note = gen_rtx_EXPR_LIST (VOIDmode, func, note);
+  /* What's actually returned is -1,0,1, not a proper boolean value.  */
+  note = gen_rtx_fmt_ee (cmp_code, VOIDmode, op0, op1);
+  note = gen_rtx_UNSPEC (DImode, gen_rtvec (1, note), UNSPEC_XFLT_COMPARE);
   alpha_emit_xfloating_libcall (func, out, operands, 2, note);
 
   return out;

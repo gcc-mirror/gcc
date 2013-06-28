@@ -288,6 +288,14 @@ mark_store (gimple stmt, tree t, void *data)
   return false;
 }
 
+/* Record all references from NODE that are taken in statement STMT.  */
+void
+ipa_record_stmt_references (struct cgraph_node *node, gimple stmt)
+{
+  walk_stmt_load_store_addr_ops (stmt, node, mark_load, mark_store,
+				 mark_address);
+}
+
 /* Create cgraph edges for function calls.
    Also look for functions and variables having addresses taken.  */
 
@@ -323,8 +331,7 @@ build_cgraph_edges (void)
 					     gimple_call_flags (stmt),
 					     bb->count, freq);
 	    }
-	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
-					 mark_store, mark_address);
+	  ipa_record_stmt_references (node, stmt);
 	  if (gimple_code (stmt) == GIMPLE_OMP_PARALLEL
 	      && gimple_omp_parallel_child_fn (stmt))
 	    {
@@ -348,8 +355,7 @@ build_cgraph_edges (void)
 	    }
 	}
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), node,
-				       mark_load, mark_store, mark_address);
+	ipa_record_stmt_references (node, gsi_stmt (gsi));
    }
 
   /* Look for initializers of constant variables and private statics.  */
@@ -437,13 +443,10 @@ rebuild_cgraph_edges (void)
 					     gimple_call_flags (stmt),
 					     bb->count, freq);
 	    }
-	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
-					 mark_store, mark_address);
-
+	  ipa_record_stmt_references (node, stmt);
 	}
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), node,
-				       mark_load, mark_store, mark_address);
+	ipa_record_stmt_references (node, gsi_stmt (gsi));
     }
   record_eh_tables (node, cfun);
   gcc_assert (!node->global.inlined_to);
@@ -468,16 +471,9 @@ cgraph_rebuild_references (void)
   FOR_EACH_BB (bb)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple stmt = gsi_stmt (gsi);
-
-	  walk_stmt_load_store_addr_ops (stmt, node, mark_load,
-					 mark_store, mark_address);
-
-	}
+	ipa_record_stmt_references (node, gsi_stmt (gsi));
       for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	walk_stmt_load_store_addr_ops (gsi_stmt (gsi), node,
-				       mark_load, mark_store, mark_address);
+	ipa_record_stmt_references (node, gsi_stmt (gsi));
     }
   record_eh_tables (node, cfun);
 }

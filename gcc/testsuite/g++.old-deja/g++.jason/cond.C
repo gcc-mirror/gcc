@@ -37,10 +37,9 @@ int main()
     ;
 
   A bar;			// { dg-error "not declared" "decl" } 
-  // { dg-error "expected" "exp" { target *-*-* } 39 }
   
   if (enum A { one, two, three } foo = one) // { dg-error "defined" "def" } 
-  // { dg-error "not declared" "expected" { target *-*-* } 42 }
+  // { dg-error "not declared" "expected" { target *-*-* } 41 }
     ;
 
   struct B { operator int () { return 2; } };
@@ -49,7 +48,7 @@ int main()
     ;
 
   if (int f () = 1)		// { dg-warning "extern" "extern" } 
-  // { dg-error "is initialized like a variable" "var" { target *-*-* } 51 }
+  // { dg-error "is initialized like a variable" "var" { target *-*-* } 50 }
     ;
   
   if (int a[2] = {1, 2})	// { dg-error "extended init" "" { target c++98 } }

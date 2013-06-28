@@ -943,7 +943,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       /**
        *  @brief  Inserts an object in %vector before specified iterator.
-       *  @param  __position  An iterator into the %vector.
+       *  @param  __position  A const_iterator into the %vector.
        *  @param  __args  Arguments.
        *  @return  An iterator that points to the inserted data.
        *
@@ -955,9 +955,22 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       template<typename... _Args>
         iterator
-        emplace(iterator __position, _Args&&... __args);
-#endif
+        emplace(const_iterator __position, _Args&&... __args);
 
+      /**
+       *  @brief  Inserts given value into %vector before specified iterator.
+       *  @param  __position  A const_iterator into the %vector.
+       *  @param  __x  Data to be inserted.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert a copy of the given value before
+       *  the specified location.  Note that this kind of operation
+       *  could be expensive for a %vector and if it is frequently
+       *  used the user should consider using std::list.
+       */
+      iterator
+      insert(const_iterator __position, const value_type& __x);
+#else
       /**
        *  @brief  Inserts given value into %vector before specified iterator.
        *  @param  __position  An iterator into the %vector.
@@ -971,11 +984,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       iterator
       insert(iterator __position, const value_type& __x);
+#endif
 
 #if __cplusplus >= 201103L
       /**
        *  @brief  Inserts given rvalue into %vector before specified iterator.
-       *  @param  __position  An iterator into the %vector.
+       *  @param  __position  A const_iterator into the %vector.
        *  @param  __x  Data to be inserted.
        *  @return  An iterator that points to the inserted data.
        *
@@ -985,7 +999,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  used the user should consider using std::list.
        */
       iterator
-      insert(iterator __position, value_type&& __x)
+      insert(const_iterator __position, value_type&& __x)
       { return emplace(__position, std::move(__x)); }
 
       /**
@@ -1074,11 +1088,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __position)
-      { return _M_erase(__position._M_const_cast()); }
 #else
       erase(iterator __position)
-      { return _M_erase(__position); }
 #endif
+      { return _M_erase(__position._M_const_cast()); }
 
       /**
        *  @brief  Remove a range of elements.
@@ -1101,11 +1114,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __first, const_iterator __last)
-      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 #else
       erase(iterator __first, iterator __last)
-      { return _M_erase(__first, __last); }
 #endif
+      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 
       /**
        *  @brief  Swaps data with another %vector.
@@ -1119,7 +1131,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       swap(vector& __x)
 #if __cplusplus >= 201103L
-			noexcept(_Alloc_traits::_S_nothrow_swap())
+      noexcept(_Alloc_traits::_S_nothrow_swap())
 #endif
       {
 	this->_M_impl._M_swap_data(__x._M_impl);

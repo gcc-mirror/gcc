@@ -3,7 +3,7 @@
 
 struct A {
   A();
-  A(const A&) = delete;		// { dg-error "declared" }
+  A(const A&) = delete;		// { dg-message "declared" }
 };
 
 template <class T>

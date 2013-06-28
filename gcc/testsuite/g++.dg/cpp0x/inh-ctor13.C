@@ -8,7 +8,7 @@ struct A
 
 struct C
 {
-  C() = delete;			// { dg-error "declared here" }
+  C() = delete;			// { dg-message "declared here" }
 };
 
 struct B: A, C

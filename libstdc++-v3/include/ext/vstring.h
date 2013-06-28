@@ -1087,7 +1087,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  change if an error is thrown.
       */
       iterator
-      insert(iterator __p, _CharT __c)
+#if __cplusplus >= 201103L
+      insert(const_iterator __p, _CharT __c)
+#else
+      insert(iterator __p, _CharT __c)	
+#endif
       {
 	_GLIBCXX_DEBUG_PEDASSERT(__p >= _M_ibegin() && __p <= _M_iend());
 	const size_type __pos = __p - _M_ibegin();
@@ -1313,7 +1317,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the string doesn't change if an error is thrown.
       */
       __versa_string&
+#if __cplusplus >= 201103L
+      replace(const_iterator __i1, const_iterator __i2,
+	      const __versa_string& __str)
+#else
       replace(iterator __i1, iterator __i2, const __versa_string& __str)
+#endif
       { return this->replace(__i1, __i2, __str._M_data(), __str.size()); }
 
       /**
@@ -1331,7 +1340,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  value of the string doesn't change if an error is thrown.
       */
       __versa_string&
+#if __cplusplus >= 201103L
+      replace(const_iterator __i1, const_iterator __i2,
+	      const _CharT* __s, size_type __n)
+#else
       replace(iterator __i1, iterator __i2, const _CharT* __s, size_type __n)
+#endif
       {
 	_GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
 				 && __i2 <= _M_iend());
@@ -1352,7 +1366,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the string doesn't change if an error is thrown.
       */
       __versa_string&
-      replace(iterator __i1, iterator __i2, const _CharT* __s)
+#if __cplusplus >= 201103L
+      replace(const_iterator __i1, const_iterator __i2, const _CharT* __s)
+#else
+      replace(iterator __i1, iterator __i2, const _CharT* __s)	
+#endif
       {
 	__glibcxx_requires_string(__s);
 	return this->replace(__i1, __i2, __s, traits_type::length(__s));
@@ -1373,7 +1391,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  the string doesn't change if an error is thrown.
       */
       __versa_string&
+#if __cplusplus >= 201103L
+      replace(const_iterator __i1, const_iterator __i2, size_type __n,
+	      _CharT __c)
+#else
       replace(iterator __i1, iterator __i2, size_type __n, _CharT __c)
+#endif
       {
 	_GLIBCXX_DEBUG_PEDASSERT(_M_ibegin() <= __i1 && __i1 <= __i2
 				 && __i2 <= _M_iend());

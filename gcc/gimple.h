@@ -111,11 +111,12 @@ enum gf_mask {
     GF_CALL_INTERNAL		= 1 << 6,
     GF_OMP_PARALLEL_COMBINED	= 1 << 0,
     GF_OMP_FOR_KIND_MASK	= 3 << 0,
-    GF_OMP_FOR_KIND_FOR		= 0 << 0, /* #pragma omp for */
-    GF_OMP_FOR_KIND_DISTRIBUTE	= 1 << 0, /* #pragma omp distribute */
-    GF_OMP_FOR_KIND_SIMD	= 2 << 0, /* #pragma omp simd */
-    GF_OMP_FOR_KIND_CILKSIMD	= 3 << 0, /* (Cilk Plus) #pragma simd */
-    GF_OMP_FOR_COMBINED		= 4 << 0,
+    GF_OMP_FOR_KIND_FOR		= 0 << 0,
+    GF_OMP_FOR_KIND_DISTRIBUTE	= 1 << 0,
+    GF_OMP_FOR_KIND_SIMD	= 2 << 0,
+    GF_OMP_FOR_KIND_CILKSIMD	= 3 << 0,
+    GF_OMP_FOR_COMBINED		= 1 << 2,
+    GF_OMP_FOR_COMBINED_INTO	= 1 << 3,
     GF_OMP_TARGET_KIND_MASK	= 3 << 0,
     GF_OMP_TARGET_KIND_REGION	= 0 << 0,
     GF_OMP_TARGET_KIND_DATA	= 1 << 0,
@@ -1113,6 +1114,9 @@ extern bool tree_ssa_useless_type_conversion (tree);
 extern tree tree_ssa_strip_useless_type_conversions (tree);
 extern bool useless_type_conversion_p (tree, tree);
 extern bool types_compatible_p (tree, tree);
+
+/* In tree-ssa-coalesce.c */
+extern bool gimple_can_coalesce_p (tree, tree);
 
 /* Return the first node in GIMPLE sequence S.  */
 
@@ -4026,6 +4030,31 @@ gimple_omp_for_set_combined_p (gimple g, bool combined_p)
     g->gsbase.subcode |= GF_OMP_FOR_COMBINED;
   else
     g->gsbase.subcode &= ~GF_OMP_FOR_COMBINED;
+}
+
+
+/* Return true if OMP for statement G has the
+   GF_OMP_FOR_COMBINED_INTO flag set.  */
+
+static inline bool
+gimple_omp_for_combined_into_p (const_gimple g)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  return (gimple_omp_subcode (g) & GF_OMP_FOR_COMBINED_INTO) != 0;
+}
+
+
+/* Set the GF_OMP_FOR_COMBINED_INTO field in G depending on the boolean
+   value of COMBINED_P.  */
+
+static inline void
+gimple_omp_for_set_combined_into_p (gimple g, bool combined_p)
+{
+  GIMPLE_CHECK (g, GIMPLE_OMP_FOR);
+  if (combined_p)
+    g->gsbase.subcode |= GF_OMP_FOR_COMBINED_INTO;
+  else
+    g->gsbase.subcode &= ~GF_OMP_FOR_COMBINED_INTO;
 }
 
 

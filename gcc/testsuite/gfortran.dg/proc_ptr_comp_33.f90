@@ -11,7 +11,7 @@ module m
 
   type :: rectangle
     real :: width, height
-    procedure(get_area_ai), pointer :: get_area => get_my_area  ! { dg-error "Type/rank mismatch" }
+    procedure(get_area_ai), pointer :: get_area => get_my_area  ! { dg-error "Type mismatch in argument" }
   end type rectangle
 
   abstract interface
@@ -51,7 +51,7 @@ program p
   type(rectangle) :: rect
 
   rect  = rectangle (1.0, 2.0, get1)
-  rect  = rectangle (3.0, 4.0, get2)  ! { dg-error "Type/rank mismatch" }
+  rect  = rectangle (3.0, 4.0, get2)  ! { dg-error "Type mismatch in argument" }
 
 contains
 

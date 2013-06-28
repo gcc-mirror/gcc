@@ -2814,10 +2814,10 @@ emit_register_classes_in_jcr_section (void)
   TREE_CONSTANT (cdecl) = 1;
   DECL_ARTIFICIAL (cdecl) = 1;
   DECL_IGNORED_P (cdecl) = 1;
+  DECL_PRESERVE_P (cdecl) = 1;
   pushdecl_top_level (cdecl);
   relayout_decl (cdecl);
   rest_of_decl_compilation (cdecl, 1, 0);
-  mark_decl_referenced (cdecl);
 #else
   /* A target has defined TARGET_USE_JCR_SECTION,
      but doesn't have a JCR_SECTION_NAME.  */

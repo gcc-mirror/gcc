@@ -122,15 +122,17 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-a}|@option{--all-blocks}]
      [@option{-b}|@option{--branch-probabilities}]
      [@option{-c}|@option{--branch-counts}]
-     [@option{-u}|@option{--unconditional-branches}]
-     [@option{-n}|@option{--no-output}]
+     [@option{-d}|@option{--display-progress}]
+     [@option{-f}|@option{--function-summaries}]
+     [@option{-i}|@option{--intermediate-format}]
      [@option{-l}|@option{--long-file-names}]
+     [@option{-m}|@option{--demangled-names}]
+     [@option{-n}|@option{--no-output}]
+     [@option{-o}|@option{--object-directory} @var{directory|file}]
      [@option{-p}|@option{--preserve-paths}]
      [@option{-r}|@option{--relative-only}]
-     [@option{-f}|@option{--function-summaries}]
-     [@option{-o}|@option{--object-directory} @var{directory|file}]
      [@option{-s}|@option{--source-prefix} @var{directory}]
-     [@option{-d}|@option{--display-progress}]
+     [@option{-u}|@option{--unconditional-branches}]
      @var{files}
 @c man end
 @c man begin SEEALSO
@@ -231,6 +233,50 @@ Unconditional branches are normally not interesting.
 @item -d
 @itemx --display-progress
 Display the progress on the standard output.
+
+@item -i
+@itemx --intermediate-format
+Output gcov file in an easy-to-parse intermediate text format that can
+be used by @command{lcov} or other tools. The output is a single
+@file{.gcov} file per @file{.gcda} file. No source code is required.
+
+The format of the intermediate @file{.gcov} file is plain text with
+one entry per line
+
+@smallexample
+file:@var{source_file_name}
+function:@var{line_number},@var{execution_count},@var{function_name}
+lcount:@var{line number},@var{execution_count}
+branch:@var{line_number},@var{branch_coverage_type}
+
+Where the @var{branch_coverage_type} is
+   notexec (Branch not executed)
+   taken (Branch executed and taken)
+   nottaken (Branch executed, but not taken)
+
+There can be multiple @var{file} entries in an intermediate gcov
+file. All entries following a @var{file} pertain to that source file
+until the next @var{file} entry.
+@end smallexample
+
+Here is a sample when @option{-i} is used in conjuction with @option{-b} option:
+
+@smallexample
+file:array.cc
+function:11,1,_Z3sumRKSt6vectorIPiSaIS0_EE
+function:22,1,main
+lcount:11,1
+lcount:12,1
+lcount:14,1
+branch:14,taken
+lcount:26,1
+branch:28,nottaken
+@end smallexample
+
+@item -m
+@itemx --demangled-names
+Display demangled function names in output. The default is to show
+mangled function names.
 
 @end table
 

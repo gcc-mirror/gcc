@@ -82,22 +82,22 @@
 
 (define_insn_reservation "626te_mult1" 2
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "insn" "smulwy,smlawy,smulxy,smlaxy"))
+      (eq_attr "type" "smulwy,smlawy,smulxy,smlaxy"))
  "fa626te_core")
 
 (define_insn_reservation "626te_mult2" 2
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "insn" "mul,mla"))
+      (eq_attr "type" "mul,mla"))
  "fa626te_core")
 
 (define_insn_reservation "626te_mult3" 3
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "insn" "muls,mlas,smull,smlal,umull,umlal,smlalxy,smlawx"))
+      (eq_attr "type" "muls,mlas,smull,smlal,umull,umlal,smlalxy,smlawx"))
  "fa626te_core*2")
 
 (define_insn_reservation "626te_mult4" 4
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "insn" "smulls,smlals,umulls,umlals"))
+      (eq_attr "type" "smulls,smlals,umulls,umlals"))
  "fa626te_core*3")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

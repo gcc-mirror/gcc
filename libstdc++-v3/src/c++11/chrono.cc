@@ -22,15 +22,21 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
+#include <bits/c++config.h>
 #include <chrono>
 
 #ifdef _GLIBCXX_USE_C99_STDINT_TR1
 
-// conditional inclusion of sys/time.h for gettimeofday
+// Conditional inclusion of sys/time.h for gettimeofday
 #if !defined(_GLIBCXX_USE_CLOCK_MONOTONIC) && \
     !defined(_GLIBCXX_USE_CLOCK_REALTIME) && \
      defined(_GLIBCXX_USE_GETTIMEOFDAY)
 #include <sys/time.h>
+#endif
+
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+#include <unistd.h>
+#include <sys/syscall.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -38,7 +44,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
   namespace chrono
   {
   _GLIBCXX_BEGIN_NAMESPACE_VERSION
- 
+
+    // XXX GLIBCXX_ABI Deprecated
+    inline namespace _V2 {
+
     constexpr bool system_clock::is_steady;
 
     system_clock::time_point
@@ -47,7 +56,11 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #ifdef _GLIBCXX_USE_CLOCK_REALTIME
       timespec tp;
       // -EINVAL, -EFAULT
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+      syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
+#else
       clock_gettime(CLOCK_REALTIME, &tp);
+#endif
       return time_point(duration(chrono::seconds(tp.tv_sec)
 				 + chrono::nanoseconds(tp.tv_nsec)));
 #elif defined(_GLIBCXX_USE_GETTIMEOFDAY)
@@ -61,20 +74,29 @@ namespace std _GLIBCXX_VISIBILITY(default)
       return system_clock::from_time_t(__sec);
 #endif
     }
+
     
-#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
     constexpr bool steady_clock::is_steady;
 
     steady_clock::time_point
     steady_clock::now() noexcept
     {
+#ifdef _GLIBCXX_USE_CLOCK_MONOTONIC
       timespec tp;
       // -EINVAL, -EFAULT
+#ifdef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+      syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
+#else
       clock_gettime(CLOCK_MONOTONIC, &tp);
+#endif
       return time_point(duration(chrono::seconds(tp.tv_sec)
 				 + chrono::nanoseconds(tp.tv_nsec)));
-    }
+#else
+      return time_point(system_clock::now().time_since_epoch());
 #endif
+    }
+
+  } // end inline namespace _V2
 
   _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono

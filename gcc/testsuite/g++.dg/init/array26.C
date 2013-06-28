@@ -8,4 +8,4 @@ struct B
   A a; // { dg-error "incomplete type" }
 };
 
-B b[1] = (B[]) { 0 }; // { dg-error "initializer" }
+B b[1] = (B[]) { 0 };

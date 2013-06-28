@@ -30,21 +30,22 @@
 /* Processor type.  Order must match cpu attribute in MD file.  */
 enum processor_type
  {
-   PROCESSOR_RS64A,
-   PROCESSOR_MPCCORE,
-   PROCESSOR_PPC403,
-   PROCESSOR_PPC405,
-   PROCESSOR_PPC440,
-   PROCESSOR_PPC476,
    PROCESSOR_PPC601,
    PROCESSOR_PPC603,
    PROCESSOR_PPC604,
    PROCESSOR_PPC604e,
    PROCESSOR_PPC620,
    PROCESSOR_PPC630,
+
    PROCESSOR_PPC750,
    PROCESSOR_PPC7400,
    PROCESSOR_PPC7450,
+
+   PROCESSOR_PPC403,
+   PROCESSOR_PPC405,
+   PROCESSOR_PPC440,
+   PROCESSOR_PPC476,
+
    PROCESSOR_PPC8540,
    PROCESSOR_PPC8548,
    PROCESSOR_PPCE300C2,
@@ -53,14 +54,20 @@ enum processor_type
    PROCESSOR_PPCE500MC64,
    PROCESSOR_PPCE5500,
    PROCESSOR_PPCE6500,
+
    PROCESSOR_POWER4,
    PROCESSOR_POWER5,
    PROCESSOR_POWER6,
    PROCESSOR_POWER7,
+   PROCESSOR_POWER8,
+
+   PROCESSOR_RS64A,
+   PROCESSOR_MPCCORE,
    PROCESSOR_CELL,
    PROCESSOR_PPCA2,
    PROCESSOR_TITAN
 };
+
 
 /* FP processor type.  */
 enum fpu_type_t
@@ -131,11 +138,14 @@ enum rs6000_cmodel {
   CMODEL_LARGE
 };
 
-/* Describe which vector unit to use for a given machine mode.  */
+/* Describe which vector unit to use for a given machine mode.  The
+   VECTOR_MEM_* and VECTOR_UNIT_* macros assume that Altivec, VSX, and
+   P8_VECTOR are contiguous.  */
 enum rs6000_vector {
   VECTOR_NONE,			/* Type is not  a vector or not supported */
   VECTOR_ALTIVEC,		/* Use altivec for vector processing */
   VECTOR_VSX,			/* Use VSX for vector processing */
+  VECTOR_P8_VECTOR,		/* Use ISA 2.07 VSX for vector processing */
   VECTOR_PAIRED,		/* Use paired floating point for vectors */
   VECTOR_SPE,			/* Use SPE for vector processing */
   VECTOR_OTHER			/* Some other vector unit */

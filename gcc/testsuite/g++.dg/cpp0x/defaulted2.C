@@ -42,7 +42,7 @@ struct E
 struct F
 {
   F() = default;
-  F(const F&) = delete;		// { dg-error "declared" }
+  F(const F&) = delete;		// { dg-message "declared" }
 };
 
 struct G

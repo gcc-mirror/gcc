@@ -690,7 +690,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       erase(const_iterator __position)
       { return _M_t.erase(__position); }
 
-      // LWG 2059.
+      // LWG 2059
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(iterator __position)
       { return _M_t.erase(__position); }

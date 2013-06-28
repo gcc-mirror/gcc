@@ -42,10 +42,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    represented as (1.0, +0.0) or (1.0, -0.0), and the low part of a
    NaN is don't-care.
 
-   This code currently assumes big-endian.  */
+   This code currently assumes the most significant double is in
+   the lower numbered register or lower addressed memory.  */
 
-#if (!defined (__LITTLE_ENDIAN__) \
-     && (defined (__MACH__) || defined (__powerpc__) || defined (_AIX)))
+#if defined (__MACH__) || defined (__powerpc__) || defined (_AIX)
 
 #define fabs(x) __builtin_fabs(x)
 #define isless(x, y) __builtin_isless (x, y)

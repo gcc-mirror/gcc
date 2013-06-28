@@ -5249,12 +5249,10 @@ static void
 gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
 {
   gfc_expr *arg;
-  gfc_se argse,eight;
+  gfc_se argse;
   tree type, result_type, tmp;
 
   arg = expr->value.function.actual->expr;
-  gfc_init_se (&eight, NULL);
-  gfc_conv_expr (&eight, gfc_get_int_expr (expr->ts.kind, NULL, 8));
   
   gfc_init_se (&argse, NULL);
   result_type = gfc_get_int_type (expr->ts.kind);
@@ -5285,11 +5283,12 @@ gfc_conv_intrinsic_storage_size (gfc_se *se, gfc_expr *expr)
   if (arg->ts.type == BT_CHARACTER)
     tmp = size_of_string_in_bytes (arg->ts.kind, argse.string_length);
   else
-    tmp = fold_convert (result_type, size_in_bytes (type)); 
+    tmp = size_in_bytes (type); 
+  tmp = fold_convert (result_type, tmp);
 
 done:
   se->expr = fold_build2_loc (input_location, MULT_EXPR, result_type, tmp,
-			      eight.expr);
+			      build_int_cst (result_type, BITS_PER_UNIT));
   gfc_add_block_to_block (&se->pre, &argse.pre);
 }
 

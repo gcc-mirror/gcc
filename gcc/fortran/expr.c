@@ -4657,6 +4657,7 @@ gfc_build_intrinsic_call (gfc_namespace *ns, gfc_isym_id id, const char* name,
   result->symtree->n.sym->intmod_sym_id = id;
   result->symtree->n.sym->attr.flavor = FL_PROCEDURE;
   result->symtree->n.sym->attr.intrinsic = 1;
+  result->symtree->n.sym->attr.artificial = 1;
 
   va_start (ap, numarg);
   atail = NULL;

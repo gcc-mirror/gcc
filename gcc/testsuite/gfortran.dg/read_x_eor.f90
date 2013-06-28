@@ -1,5 +1,5 @@
 ! { dg-do run }
-! ( dg-output "^" }
+! { dg-output "^" }
 !
 ! Test fix for pr24785 - EOR used to scrub the 2X.
 ! Reduced from PR example submitted by Harald Anlauf <anlauf@gmx.de>

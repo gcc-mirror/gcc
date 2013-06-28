@@ -775,7 +775,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
       _M_allocate_node(_Args&&... __args)
       {
-	__node_type* __n = _Node_alloc_traits::allocate(_M_node_allocator(), 1);
+	auto __nptr = _Node_alloc_traits::allocate(_M_node_allocator(), 1);
+	__node_type* __n = std::__addressof(*__nptr);
 	__try
 	  {
 	    _Value_alloc_type __a(_M_node_allocator());
@@ -786,7 +787,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	__catch(...)
 	  {
-	    _Node_alloc_traits::deallocate(_M_node_allocator(), __n, 1);
+	    _Node_alloc_traits::deallocate(_M_node_allocator(), __nptr, 1);
 	    __throw_exception_again;
 	  }
       }
@@ -800,10 +801,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_deallocate_node(__node_type* __n)
     {
+      typedef typename _Node_alloc_traits::pointer _Ptr;
+      auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__n);
       _Value_alloc_type __a(_M_node_allocator());
       _Value_alloc_traits::destroy(__a, __n->_M_valptr());
       __n->~__node_type();
-      _Node_alloc_traits::deallocate(_M_node_allocator(), __n, 1);
+      _Node_alloc_traits::deallocate(_M_node_allocator(), __ptr, 1);
     }
 
   template<typename _Key, typename _Value,
@@ -835,7 +838,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Bucket_alloc_type __alloc(_M_node_allocator());
 
-      __bucket_type* __p = _Bucket_alloc_traits::allocate(__alloc, __n);
+      auto __ptr = _Bucket_alloc_traits::allocate(__alloc, __n);
+      __bucket_type* __p = std::__addressof(*__ptr);
       __builtin_memset(__p, 0, __n * sizeof(__bucket_type));
       return __p;
     }
@@ -849,8 +853,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _M_deallocate_buckets(__bucket_type* __bkts, size_type __n)
     {
+      typedef typename _Bucket_alloc_traits::pointer _Ptr;
+      auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__bkts);
       _Bucket_alloc_type __alloc(_M_node_allocator());
-      _Bucket_alloc_traits::deallocate(__alloc, __bkts, __n);
+      _Bucket_alloc_traits::deallocate(__alloc, __ptr, __n);
     }
 
   template<typename _Key, typename _Value,

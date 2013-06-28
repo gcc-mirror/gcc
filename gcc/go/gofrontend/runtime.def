@@ -224,11 +224,6 @@ DEF_GO_RUNTIME(NEW, "__go_new", P1(UINTPTR), R1(POINTER))
 DEF_GO_RUNTIME(NEW_NOPOINTERS, "__go_new_nopointers", P1(UINTPTR), R1(POINTER))
 
 
-// Allocate a trampoline for a function literal.
-DEF_GO_RUNTIME(ALLOCATE_GO_TRAMPOLINE, "__go_allocate_trampoline",
-	       P2(UINTPTR, POINTER), R1(POINTER))
-
-
 // Start a new goroutine.
 DEF_GO_RUNTIME(GO, "__go_go", P2(FUNC_PTR, POINTER), R0())
 

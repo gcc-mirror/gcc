@@ -1,4 +1,4 @@
-/* { dg-do run { target *-*-linux* } } */
+/* { dg-do run { target *-*-linux* *-*-gnu* } } */
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE 1

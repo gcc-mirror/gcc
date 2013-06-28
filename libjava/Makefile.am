@@ -221,7 +221,7 @@ endif
 
 dbexec_LTLIBRARIES = libjvm.la
 
-pkgconfigdir = $(libdir)/pkgconfig
+pkgconfigdir = $(toolexeclibdir)/pkgconfig
 
 jardir = $(datadir)/java
 jar_DATA = libgcj-$(gcc_version).jar libgcj-tools-$(gcc_version).jar

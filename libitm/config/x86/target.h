@@ -125,6 +125,13 @@ htm_abort_should_retry (uint32_t begin_ret)
 {
   return begin_ret & _XABORT_RETRY;
 }
+
+/* Returns true iff a hardware transaction is currently being executed.  */
+static inline bool
+htm_transaction_active ()
+{
+  return _xtest() != 0;
+}
 #endif
 
 

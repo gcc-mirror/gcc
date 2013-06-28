@@ -260,6 +260,18 @@
  (and (match_code "const_int")
       (match_test "TARGET_32BIT && const_ok_for_dimode_op (ival, AND)")))
 
+(define_constraint "Df"
+ "@internal
+  In ARM/Thumb-2 state a const_int that can be used by insn iordi."
+ (and (match_code "const_int")
+      (match_test "TARGET_32BIT && const_ok_for_dimode_op (ival, IOR)")))
+
+(define_constraint "Dg"
+ "@internal
+  In ARM/Thumb-2 state a const_int that can be used by insn xordi."
+ (and (match_code "const_int")
+      (match_test "TARGET_32BIT && const_ok_for_dimode_op (ival, XOR)")))
+
 (define_constraint "Di"
  "@internal
   In ARM/Thumb-2 state a const_int or const_double where both the high
@@ -317,6 +329,9 @@
   (and (match_code "const_double")
        (match_test "TARGET_32BIT && TARGET_VFP && vfp3_const_double_for_fract_bits (op)")))
 
+(define_register_constraint "Ts" "(arm_restrict_it) ? LO_REGS : GENERAL_REGS"
+ "For arm_restrict_it the core registers @code{r0}-@code{r7}.  GENERAL_REGS otherwise.")
+
 (define_memory_constraint "Ua"
  "@internal
   An address valid for loading/storing register exclusive"
@@ -346,21 +361,21 @@
   In ARM/Thumb-2 state a valid address for Neon doubleword vector
   load/store instructions."
  (and (match_code "mem")
-      (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 0)")))
+      (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 0, true)")))
 
 (define_memory_constraint "Um"
  "@internal
   In ARM/Thumb-2 state a valid address for Neon element and structure
   load/store instructions."
  (and (match_code "mem")
-      (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 2)")))
+      (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 2, true)")))
 
 (define_memory_constraint "Us"
  "@internal
   In ARM/Thumb-2 state a valid address for non-offset loads/stores of
   quad-word values in four ARM registers."
  (and (match_code "mem")
-      (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 1)")))
+      (match_test "TARGET_32BIT && neon_vector_mem_operand (op, 1, true)")))
 
 (define_memory_constraint "Uq"
  "@internal
