@@ -1,5 +1,26 @@
 2013-06-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/constraints.md (Ts): New constraint.
+	* config/arm/arm.md (arm_movqi_insn): Add alternatives for
+	16-bit encodings.
+	(compare_scc): Use "Ts" constraint for operand 0.
+	(ior_scc_scc): Likewise.
+	(and_scc_scc): Likewise.
+	(and_scc_scc_nodom): Likewise.
+	(ior_scc_scc_cmp): Likewise for operand 7.
+	(and_scc_scc_cmp): Likewise.
+	* config/arm/thumb2.md (thumb2_movsi_insn):
+	Add alternatives for 16-bit encodings.
+	(thumb2_movhi_insn): Likewise.
+	(thumb2_movsicc_insn): Likewise.
+	(thumb2_and_scc): Take 'and' outside cond_exec.  Use "Ts" constraint.
+	(thumb2_negscc): Use "Ts" constraint.
+	Move mvn instruction outside cond_exec block.
+	* config/arm/vfp.md (thumb2_movsi_vfp): Add alternatives
+	for 16-bit encodings.
+
+2013-06-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (arm_mulsi3_v6): Add alternative for 16-bit
 	encoding.
 	(mulsi3addsi_v6): Disable predicable variant for arm_restrict_it.

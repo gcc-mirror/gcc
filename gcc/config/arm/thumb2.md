@@ -267,13 +267,14 @@
 ;; regs.  The high register alternatives are not taken into account when
 ;; choosing register preferences in order to reflect their expense.
 (define_insn "*thumb2_movsi_insn"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r,l ,*hk,m,*m")
-	(match_operand:SI 1 "general_operand"	   "rk ,I,K,j,mi,*mi,l,*hk"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r,l ,*hk,m,*m")
+	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,*mi,l,*hk"))]
   "TARGET_THUMB2 && ! TARGET_IWMMXT
    && !(TARGET_HARD_FLOAT && TARGET_VFP)
    && (   register_operand (operands[0], SImode)
        || register_operand (operands[1], SImode))"
   "@
+   mov%?\\t%0, %1
    mov%?\\t%0, %1
    mov%?\\t%0, %1
    mvn%?\\t%0, #%B1
@@ -282,10 +283,12 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "*,*,simple_alu_imm,*,load1,load1,store1,store1")
+  [(set_attr "type" "*,simple_alu_imm,simple_alu_imm,simple_alu_imm,*,load1,load1,store1,store1")
+   (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")
-   (set_attr "pool_range" "*,*,*,*,1018,4094,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,0,0,*,*")]
+   (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
+   (set_attr "pool_range" "*,*,*,*,*,1018,4094,*,*")
+   (set_attr "neg_pool_range" "*,*,*,*,*,0,0,*,*")]
 )
 
 (define_insn "tls_load_dot_plus_four"
@@ -390,14 +393,16 @@
 )
 
 (define_insn_and_split "*thumb2_movsicc_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r,r,r,r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=l,l,r,r,r,r,r,r,r,r,r,l")
 	(if_then_else:SI
 	 (match_operator 3 "arm_comparison_operator"
 	  [(match_operand 4 "cc_register" "") (const_int 0)])
-	 (match_operand:SI 1 "arm_not_operand" "0,0,rI,K,rI,rI,K,K")
-	 (match_operand:SI 2 "arm_not_operand" "rI,K,0,0,rI,K,rI,K")))]
+	 (match_operand:SI 1 "arm_not_operand" "0 ,Py,0 ,0,rI,K,rI,rI,K ,K,r,lPy")
+	 (match_operand:SI 2 "arm_not_operand" "Py,0 ,rI,K,0 ,0,rI,K ,rI,K,r,lPy")))]
   "TARGET_THUMB2"
   "@
+   it\\t%D3\;mov%D3\\t%0, %2
+   it\\t%d3\;mov%d3\\t%0, %1
    it\\t%D3\;mov%D3\\t%0, %2
    it\\t%D3\;mvn%D3\\t%0, #%B2
    it\\t%d3\;mov%d3\\t%0, %1
@@ -405,11 +410,15 @@
    #
    #
    #
+   #
+   #
    #"
-   ; alt 4: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
-   ; alt 5: ite\\t%d3\;mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
-   ; alt 6: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
-   ; alt 7: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2"
+   ; alt 6: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
+   ; alt 7: ite\\t%d3\;mov%d3\\t%0, %1\;mvn%D3\\t%0, #%B2
+   ; alt 8: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mov%D3\\t%0, %2
+   ; alt 9: ite\\t%d3\;mvn%d3\\t%0, #%B1\;mvn%D3\\t%0, #%B2
+   ; alt 10: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2
+   ; alt 11: ite\\t%d3\;mov%d3\\t%0, %1\;mov%D3\\t%0, %2"
   "&& reload_completed"
   [(const_int 0)]
   {
@@ -440,7 +449,8 @@
                                                operands[2])));
     DONE;
   }
-  [(set_attr "length" "6,6,6,6,10,10,10,10")
+  [(set_attr "length" "4,4,6,6,6,6,10,10,10,10,6,6")
+   (set_attr "enabled_for_depr_it" "yes,yes,no,no,no,no,no,no,no,no,yes,yes")
    (set_attr "conds" "use")]
 )
 
@@ -491,29 +501,30 @@
 
 
 (define_insn_and_split "*thumb2_and_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
 	(and:SI (match_operator:SI 1 "arm_comparison_operator"
 		 [(match_operand 2 "cc_register" "") (const_int 0)])
 		(match_operand:SI 3 "s_register_operand" "r")))]
   "TARGET_THUMB2"
-  "#"   ; "ite\\t%D1\;mov%D1\\t%0, #0\;and%d1\\t%0, %3, #1"
+  "#"   ; "and\\t%0, %3, #1\;it\\t%D1\;mov%D1\\t%0, #0"
   "&& reload_completed"
-  [(cond_exec (match_dup 5) (set (match_dup 0) (const_int 0)))
-   (cond_exec (match_dup 4) (set (match_dup 0)
-                                 (and:SI (match_dup 3) (const_int 1))))]
+  [(set (match_dup 0)
+        (and:SI (match_dup 3) (const_int 1)))
+   (cond_exec (match_dup 4) (set (match_dup 0) (const_int 0)))]
   {
     enum machine_mode mode = GET_MODE (operands[2]);
     enum rtx_code rc = GET_CODE (operands[1]);
 
-    operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
     if (mode == CCFPmode || mode == CCFPEmode)
       rc = reverse_condition_maybe_unordered (rc);
     else
       rc = reverse_condition (rc);
-    operands[5] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
+    operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
   }
   [(set_attr "conds" "use")
-   (set_attr "length" "10")]
+   (set (attr "length") (if_then_else (match_test "arm_restrict_it")
+                                      (const_int 8)
+                                      (const_int 10)))]
 )
 
 (define_insn_and_split "*thumb2_ior_scc"
@@ -649,7 +660,7 @@
 )
 
 (define_insn_and_split "*thumb2_negscc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
 	(neg:SI (match_operator 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_rhs_operand" "rI")])))
@@ -671,7 +682,7 @@
                                                   GEN_INT (31))));
         DONE;
       }
-    else if (GET_CODE (operands[3]) == NE)
+    else if (GET_CODE (operands[3]) == NE && !arm_restrict_it)
       {
         /* Emit subs\\t%0, %1, %2\;it\\tne\;mvnne\\t%0, #0 */
         if (CONST_INT_P (operands[2]))
@@ -691,7 +702,7 @@
       }
     else
       {
-       /* Emit:  cmp\\t%1, %2\;ite\\t%D3\;mov%D3\\t%0, #0\;mvn%d3\\t%0, #0 */
+       /* Emit:  cmp\\t%1, %2\;mvn\\t%0, #0\;it\\t%D3\;mov%D3\\t%0, #0\;*/
        enum rtx_code rc = reverse_condition (GET_CODE (operands[3]));
        enum machine_mode mode = SELECT_CC_MODE (rc, operands[1], operands[2]);
        rtx tmp1 = gen_rtx_REG (mode, CC_REGNUM);
@@ -699,21 +710,15 @@
        emit_insn (gen_rtx_SET (VOIDmode,
                                cc_reg,
                                gen_rtx_COMPARE (CCmode, operands[1], operands[2])));
+
+       emit_insn (gen_rtx_SET (VOIDmode, operands[0], GEN_INT (~0)));
+
        emit_insn (gen_rtx_COND_EXEC (VOIDmode,
                                      gen_rtx_fmt_ee (rc,
                                                      VOIDmode,
                                                      tmp1,
                                                      const0_rtx),
                                      gen_rtx_SET (VOIDmode, operands[0], const0_rtx)));
-       rc = GET_CODE (operands[3]);
-       emit_insn (gen_rtx_COND_EXEC (VOIDmode,
-                                     gen_rtx_fmt_ee (rc,
-                                                     VOIDmode,
-                                                     tmp1,
-                                                     const0_rtx),
-                                     gen_rtx_SET (VOIDmode,
-                                                  operands[0],
-                                                  GEN_INT (~0))));
        DONE;
       }
     FAIL;

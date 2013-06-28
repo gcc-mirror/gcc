@@ -329,6 +329,9 @@
   (and (match_code "const_double")
        (match_test "TARGET_32BIT && TARGET_VFP && vfp3_const_double_for_fract_bits (op)")))
 
+(define_register_constraint "Ts" "(arm_restrict_it) ? LO_REGS : GENERAL_REGS"
+ "For arm_restrict_it the core registers @code{r0}-@code{r7}.  GENERAL_REGS otherwise.")
+
 (define_memory_constraint "Ua"
  "@internal
   An address valid for loading/storing register exclusive"
