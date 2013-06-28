@@ -11864,7 +11864,7 @@ static bool
 c_parser_cilk_verify_simd (c_parser *parser,
 				  enum pragma_context context)
 {
-  if (!flag_enable_cilk)
+  if (!flag_enable_cilkplus)
     {
       warning (0, "pragma simd ignored because -fcilkplus is not enabled");
       c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);

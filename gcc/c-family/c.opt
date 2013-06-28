@@ -839,10 +839,6 @@ Recognize built-in functions
 fbuiltin-
 C ObjC C++ ObjC++ Joined
 
-fcilkplus
-C ObjC C++ ObjC++ LTO Report Var(flag_enable_cilk) Init(0)
-Enable Cilk
-
 fcanonical-system-headers
 C ObjC C++ ObjC++
 Where shorter, use canonicalized paths to systems headers.
