@@ -1,3 +1,12 @@
+2013-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/36041
+	* libgcc2.c (POPCOUNTCST2, POPCOUNTCST4, POPCOUNTCST8, POPCOUNTCST):
+	Define.
+	(__popcountSI2): For __SIZEOF_INT__ > 2 targets use arithmetics
+	instead of table lookups.
+	(__popcountDI2): Likewise.
+
 2013-06-25  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* Makefile.in (clean, distclean): Remove auto-target.h and stamp-h
