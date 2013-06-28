@@ -4201,6 +4201,15 @@ need_for_split_p (HARD_REG_SET potential_reload_hard_regs, int regno)
 	   && (regno >= FIRST_PSEUDO_REGISTER
 	       || ! TEST_HARD_REG_BIT (eliminable_regset, hard_regno))
 	   && ! TEST_HARD_REG_BIT (lra_no_alloc_regs, hard_regno)
+	   /* Don't split call clobbered hard regs living through
+	      calls, otherwise we might have a check problem in the
+	      assign sub-pass as in the most cases (exception is a
+	      situation when lra_risky_transformations_p value is
+	      true) the assign pass assumes that all pseudos living
+	      through calls are assigned to call saved hard regs.  */
+	   && (regno >= FIRST_PSEUDO_REGISTER
+	       || ! TEST_HARD_REG_BIT (call_used_reg_set, regno)
+	       || usage_insns[regno].calls_num == calls_num)
 	   /* We need at least 2 reloads to make pseudo splitting
 	      profitable.  We should provide hard regno splitting in
 	      any case to solve 1st insn scheduling problem when
@@ -4799,7 +4808,7 @@ inherit_in_ebb (rtx head, rtx tail)
 		     usage_insns invalidation.  */
 		  if ((dst_regno < FIRST_PSEUDO_REGISTER
 		       || reg_renumber[dst_regno] >= 0)
-		    && ! reg->subreg_p && reg->type != OP_IN)
+		      && ! reg->subreg_p && reg->type != OP_IN)
 		    {
 		      HARD_REG_SET s;
 
