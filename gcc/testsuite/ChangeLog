@@ -1,3 +1,9 @@
+2013-06-27  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc.dg/atomic-flag.c: Add dg-require-effective-target sync_*.
+	* g++.dg/simulate-thread/atomics-2.C: Likewise.
+	* g++.dg/simulate-thread/atomics-1.C: Likewise.
+
 2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/57509
