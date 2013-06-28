@@ -1,3 +1,9 @@
+2013-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57744
+	* gcc.target/powerpc/pr57744.c: New test to make sure lqarx and
+	stqcx. get even registers.
+
 2013-06-28  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/57509
