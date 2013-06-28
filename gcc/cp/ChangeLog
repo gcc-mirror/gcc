@@ -1,3 +1,9 @@
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57682
+	* parser.c (cp_parser_save_member_function_body): Handle correctly
+	curly braces in function-try-block mem-initializers.
+
 2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/57509

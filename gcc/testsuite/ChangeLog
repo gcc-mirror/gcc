@@ -1,3 +1,8 @@
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57682
+	* g++.dg/cpp0x/initlist73.C: New.
+
 2013-06-27  Meador Inge  <meadori@codesourcery.com>
 
 	* gcc.dg/atomic-flag.c: Add dg-require-effective-target sync_*.
