@@ -1,3 +1,14 @@
+2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	aarch64_classify_symbol_expression): Define.
+	(aarch64_symbolic_constant_p): Remove.
+	* config/aarch64/aarch64.c (aarch64_classify_symbol_expression): Remove
+	static.  Fix line length and white space.
+	(aarch64_symbolic_constant_p): Remove.
+	* config/aarch64/predicates.md (aarch64_valid_symref):
+	Use aarch64_classify_symbol_expression.
+
 2013-06-28  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/constraints.md (Ts): New constraint.
