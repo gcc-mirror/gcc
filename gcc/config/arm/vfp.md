@@ -62,45 +62,52 @@
 
 ;; See thumb2.md:thumb2_movsi_insn for an explanation of the split
 ;; high/low register alternatives for loads and stores here.
+;; The l/Py alternative should come after r/I to ensure that the short variant
+;; is chosen with length 2 when the instruction is predicated for
+;; arm_restrict_it.
 (define_insn "*thumb2_movsi_vfp"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,r,r, l,*hk,m, *m,*t, r,*t,*t,  *Uv")
-	(match_operand:SI 1 "general_operand"	   "rk, I,K,j,mi,*mi,l,*hk, r,*t,*t,*Uvi,*t"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rk,r,l,r,r, l,*hk,m, *m,*t, r,*t,*t,  *Uv")
+	(match_operand:SI 1 "general_operand"	   "rk,I,Py,K,j,mi,*mi,l,*hk, r,*t,*t,*Uvi,*t"))]
   "TARGET_THUMB2 && TARGET_VFP && TARGET_HARD_FLOAT
    && (   s_register_operand (operands[0], SImode)
        || s_register_operand (operands[1], SImode))"
   "*
   switch (which_alternative)
     {
-    case 0: case 1:
-      return \"mov%?\\t%0, %1\";
+    case 0:
+    case 1:
     case 2:
-      return \"mvn%?\\t%0, #%B1\";
+      return \"mov%?\\t%0, %1\";
     case 3:
-      return \"movw%?\\t%0, %1\";
+      return \"mvn%?\\t%0, #%B1\";
     case 4:
+      return \"movw%?\\t%0, %1\";
     case 5:
-      return \"ldr%?\\t%0, %1\";
     case 6:
+      return \"ldr%?\\t%0, %1\";
     case 7:
-      return \"str%?\\t%1, %0\";
     case 8:
-      return \"fmsr%?\\t%0, %1\\t%@ int\";
+      return \"str%?\\t%1, %0\";
     case 9:
-      return \"fmrs%?\\t%0, %1\\t%@ int\";
+      return \"fmsr%?\\t%0, %1\\t%@ int\";
     case 10:
+      return \"fmrs%?\\t%0, %1\\t%@ int\";
+    case 11:
       return \"fcpys%?\\t%0, %1\\t%@ int\";
-    case 11: case 12:
+    case 12: case 13:
       return output_move_vfp (operands);
     default:
       gcc_unreachable ();
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,*,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
-   (set_attr "neon_type" "*,*,*,*,*,*,*,*,neon_mcr,neon_mrc,neon_vmov,*,*")
-   (set_attr "insn" "mov,mov,mvn,mov,*,*,*,*,*,*,*,*,*")
-   (set_attr "pool_range"     "*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
-   (set_attr "neg_pool_range" "*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
+   (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,no")
+   (set_attr "type" "*,*,*,*,*,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
+   (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4")
+   (set_attr "neon_type" "*,*,*,*,*,*,*,*,*,neon_mcr,neon_mrc,neon_vmov,*,*")
+   (set_attr "insn" "mov,mov,mov,mvn,mov,*,*,*,*,*,*,*,*,*")
+   (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
+   (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
 )
 
 

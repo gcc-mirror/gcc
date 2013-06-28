@@ -7216,14 +7216,15 @@
   "
 )
 
-
 (define_insn "*arm_movqi_insn"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,l,Uu,r,m")
-	(match_operand:QI 1 "general_operand" "r,I,K,Uu,l,m,r"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,l,r,l,Uu,r,m")
+	(match_operand:QI 1 "general_operand" "r,r,I,Py,K,Uu,l,m,r"))]
   "TARGET_32BIT
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
   "@
+   mov%?\\t%0, %1
+   mov%?\\t%0, %1
    mov%?\\t%0, %1
    mov%?\\t%0, %1
    mvn%?\\t%0, #%B1
@@ -7231,11 +7232,12 @@
    str%(b%)\\t%1, %0
    ldr%(b%)\\t%0, %1
    str%(b%)\\t%1, %0"
-  [(set_attr "type" "*,simple_alu_imm,simple_alu_imm,load1, store1, load1, store1")
-   (set_attr "insn" "mov,mov,mvn,*,*,*,*")
+  [(set_attr "type" "*,*,simple_alu_imm,simple_alu_imm,simple_alu_imm,load1, store1, load1, store1")
+   (set_attr "insn" "mov,mov,mov,mov,mvn,*,*,*,*")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "any,any,any,t2,t2,any,any")
-   (set_attr "length" "4,4,4,2,2,4,4")]
+   (set_attr "predicable_short_it" "yes,yes,yes,no,no,no,no,no,no")
+   (set_attr "arch" "t2,any,any,t2,any,t2,t2,any,any")
+   (set_attr "length" "2,4,4,2,4,2,2,4,4")]
 )
 
 (define_insn "*thumb1_movqi_insn"
@@ -10164,7 +10166,7 @@
 	      (set (match_dup 0) (const_int 1)))])
 
 (define_insn_and_split "*compare_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts,Ts")
 	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "r,r")
 	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
@@ -10674,7 +10676,7 @@
 )
 
 (define_insn_and_split "*ior_scc_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
 	(ior:SI (match_operator:SI 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_add_operand" "rIL")])
@@ -10712,7 +10714,7 @@
 			  [(match_operand:SI 4 "s_register_operand" "r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
 		 (const_int 0)))
-   (set (match_operand:SI 7 "s_register_operand" "=r")
+   (set (match_operand:SI 7 "s_register_operand" "=Ts")
 	(ior:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
   "TARGET_32BIT"
@@ -10730,7 +10732,7 @@
    (set_attr "length" "16")])
 
 (define_insn_and_split "*and_scc_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
 	(and:SI (match_operator:SI 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_add_operand" "rIL")])
@@ -10770,7 +10772,7 @@
 			  [(match_operand:SI 4 "s_register_operand" "r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
 		 (const_int 0)))
-   (set (match_operand:SI 7 "s_register_operand" "=r")
+   (set (match_operand:SI 7 "s_register_operand" "=Ts")
 	(and:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
   "TARGET_32BIT"
@@ -10792,7 +10794,7 @@
 ;; need only zero the value if false (if true, then the value is already
 ;; correct).
 (define_insn_and_split "*and_scc_scc_nodom"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r")
+  [(set (match_operand:SI 0 "s_register_operand" "=&Ts,&Ts,&Ts")
 	(and:SI (match_operator:SI 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r,r,0")
 		  (match_operand:SI 2 "arm_add_operand" "rIL,0,rIL")])
