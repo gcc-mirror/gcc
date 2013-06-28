@@ -654,6 +654,10 @@ struct GTY(()) function {
   /* Nonzero if the current function contains any loops with
      loop->force_vect set.  */
   unsigned int has_force_vect_loops : 1;
+
+  /* Nonzero if the current function contains any loops with
+     nonzero value in loop->simduid.  */
+  unsigned int has_simduid_loops : 1;
 };
 
 /* Add the decl D to the local_decls list of FUN.  */

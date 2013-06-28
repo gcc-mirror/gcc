@@ -1,3 +1,9 @@
+2013-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/simd-1.C: New test.
+	* testsuite/libgomp.c++/simd-2.C: New test.
+	* testsuite/libgomp.c++/simd-3.C: New test.
+
 2013-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/for-1.h: New file.

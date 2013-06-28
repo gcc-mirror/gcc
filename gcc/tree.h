@@ -456,7 +456,10 @@ enum omp_clause_code
   OMP_CLAUSE_SECTIONS,
 
   /* OpenMP clause: taskgroup.  */
-  OMP_CLAUSE_TASKGROUP
+  OMP_CLAUSE_TASKGROUP,
+
+  /* Internally used only clause, holding SIMD uid.  */
+  OMP_CLAUSE__SIMDUID_
 };
 
 /* The definition of tree nodes fills the next several pages.  */
@@ -2000,6 +2003,9 @@ extern void protected_set_expr_location (tree, location_t);
 
 #define OMP_CLAUSE_SIMDLEN_EXPR(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_SIMDLEN), 0)
+
+#define OMP_CLAUSE__SIMDUID__DECL(NODE) \
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE__SIMDUID_), 0)
 
 enum omp_clause_schedule_kind
 {

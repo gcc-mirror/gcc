@@ -109,6 +109,30 @@ expand_STORE_LANES (gimple stmt)
   expand_insn (get_multi_vector_move (type, vec_store_lanes_optab), 2, ops);
 }
 
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_LANE (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_VF (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in adjust_simduid_builtins.  */
+
+static void
+expand_GOMP_SIMD_LAST_LANE (gimple stmt ATTRIBUTE_UNUSED)
+{
+  gcc_unreachable ();
+}
+
 /* Routines to expand each internal function, indexed by function number.
    Each routine has the prototype:
 

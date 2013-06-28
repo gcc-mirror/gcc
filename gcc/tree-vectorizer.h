@@ -576,6 +576,9 @@ typedef struct _stmt_vec_info {
   /* For loads only, true if this is a gather load.  */
   bool gather_p;
   bool stride_load_p;
+
+  /* For both loads and stores.  */
+  bool simd_lane_access_p;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -591,6 +594,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
 #define STMT_VINFO_GATHER_P(S)		   (S)->gather_p
 #define STMT_VINFO_STRIDE_LOAD_P(S)	   (S)->stride_load_p
+#define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_init

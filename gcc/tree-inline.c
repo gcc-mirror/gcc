@@ -2345,6 +2345,8 @@ copy_cfg_body (copy_body_data * id, gcov_type count, int frequency_scale,
 		  get_loop (src_cfun, 0));
       /* Defer to cfgcleanup to update loop-father fields of basic-blocks.  */
       loops_state_set (LOOPS_NEED_FIXUP);
+      cfun->has_force_vect_loops |= src_cfun->has_force_vect_loops;
+      cfun->has_simduid_loops |= src_cfun->has_simduid_loops;
     }
 
   /* If the loop tree in the source function needed fixup, mark the

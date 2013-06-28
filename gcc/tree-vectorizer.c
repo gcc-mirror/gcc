@@ -66,13 +66,209 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-vectorizer.h"
 #include "tree-pass.h"
+#include "hash-table.h"
+#include "tree-ssa-propagate.h"
 
 /* Loop or bb location.  */
 LOC vect_location;
 
 /* Vector mapping GIMPLE stmt to stmt_vec_info. */
 vec<vec_void_p> stmt_vec_info_vec;
+
+/* For mapping simduid to vectorization factor.  */
 
+struct simduid_to_vf : typed_free_remove<simduid_to_vf>
+{
+  unsigned int simduid;
+  int vf;
+
+  /* hash_table support.  */
+  typedef simduid_to_vf value_type;
+  typedef simduid_to_vf compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline int equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+simduid_to_vf::hash (const value_type *p)
+{
+  return p->simduid;
+}
+
+inline int
+simduid_to_vf::equal (const value_type *p1, const value_type *p2)
+{
+  return p1->simduid == p2->simduid;
+}
+
+/* For mapping decl to simduid.  */
+
+struct decl_to_simduid : typed_free_remove<decl_to_simduid>
+{
+  tree decl;
+  unsigned int simduid;
+
+  /* hash_table support.  */
+  typedef decl_to_simduid value_type;
+  typedef decl_to_simduid compare_type;
+  static inline hashval_t hash (const value_type *);
+  static inline int equal (const value_type *, const compare_type *);
+};
+
+inline hashval_t
+decl_to_simduid::hash (const value_type *p)
+{
+  return DECL_UID (p->decl);
+}
+
+inline int
+decl_to_simduid::equal (const value_type *p1, const value_type *p2)
+{
+  return p1->decl == p2->decl;
+}
+
+/* Fold IFN_GOMP_SIMD_LANE, IFN_GOMP_SIMD_VF and IFN_GOMP_SIMD_LAST_LANE
+   into their corresponding constants.  */
+
+static void
+adjust_simduid_builtins (hash_table <simduid_to_vf> &htab)
+{
+  basic_block bb;
+
+  FOR_EACH_BB (bb)
+    {
+      gimple_stmt_iterator i;
+
+      for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
+	{
+	  unsigned int vf = 1;
+	  enum internal_fn ifn;
+	  gimple stmt = gsi_stmt (i);
+	  tree t;
+	  if (!is_gimple_call (stmt)
+	      || !gimple_call_internal_p (stmt))
+	    continue;
+	  ifn = gimple_call_internal_fn (stmt);
+	  switch (ifn)
+	    {
+	    case IFN_GOMP_SIMD_LANE:
+	    case IFN_GOMP_SIMD_VF:
+	    case IFN_GOMP_SIMD_LAST_LANE:
+	      break;
+	    default:
+	      continue;
+	    }
+	  tree arg = gimple_call_arg (stmt, 0);
+	  gcc_assert (arg != NULL_TREE);
+	  gcc_assert (TREE_CODE (arg) == SSA_NAME);
+	  simduid_to_vf *p = NULL, data;
+	  data.simduid = DECL_UID (SSA_NAME_VAR (arg));
+	  if (htab.is_created ())
+	    p = htab.find (&data);
+	  if (p)
+	    vf = p->vf;
+	  switch (ifn)
+	    {
+	    case IFN_GOMP_SIMD_VF:
+	      t = build_int_cst (unsigned_type_node, vf);
+	      break;
+	    case IFN_GOMP_SIMD_LANE:
+	      t = build_int_cst (unsigned_type_node, 0);
+	      break;
+	    case IFN_GOMP_SIMD_LAST_LANE:
+	      t = gimple_call_arg (stmt, 1);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	  update_call_from_tree (&i, t);
+	}
+    }
+}
+
+/* Helper structure for note_simd_array_uses.  */
+
+struct note_simd_array_uses_struct
+{
+  hash_table <decl_to_simduid> *htab;
+  unsigned int simduid;
+};
+
+/* Callback for note_simd_array_uses, called through walk_gimple_op.  */
+
+static tree
+note_simd_array_uses_cb (tree *tp, int *walk_subtrees, void *data)
+{
+  struct walk_stmt_info *wi = (struct walk_stmt_info *) data;
+  struct note_simd_array_uses_struct *ns
+    = (struct note_simd_array_uses_struct *) wi->info;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+  else if (VAR_P (*tp)
+	   && lookup_attribute ("omp simd array", DECL_ATTRIBUTES (*tp))
+	   && DECL_CONTEXT (*tp) == current_function_decl)
+    {
+      decl_to_simduid data;
+      if (!ns->htab->is_created ())
+	ns->htab->create (15);
+      data.decl = *tp;
+      data.simduid = ns->simduid;
+      decl_to_simduid **slot = ns->htab->find_slot (&data, INSERT);
+      if (*slot == NULL)
+	{
+	  decl_to_simduid *p = XNEW (decl_to_simduid);
+	  *p = data;
+	  *slot = p;
+	}
+      else if ((*slot)->simduid != ns->simduid)
+	(*slot)->simduid = -1U;
+      *walk_subtrees = 0;
+    }
+  return NULL_TREE;
+}
+
+/* Find "omp simd array" temporaries and map them to corresponding
+   simduid.  */
+
+static void
+note_simd_array_uses (hash_table <decl_to_simduid> *htab)
+{
+  basic_block bb;
+  gimple_stmt_iterator gsi;
+  struct walk_stmt_info wi;
+  struct note_simd_array_uses_struct ns;
+
+  memset (&wi, 0, sizeof (wi));
+  wi.info = &ns;
+  ns.htab = htab;
+
+  FOR_EACH_BB (bb)
+    for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      {
+	gimple stmt = gsi_stmt (gsi);
+	if (!is_gimple_call (stmt) || !gimple_call_internal_p (stmt))
+	  continue;
+	switch (gimple_call_internal_fn (stmt))
+	  {
+	  case IFN_GOMP_SIMD_LANE:
+	  case IFN_GOMP_SIMD_VF:
+	  case IFN_GOMP_SIMD_LAST_LANE:
+	    break;
+	  default:
+	    continue;
+	  }
+	tree lhs = gimple_call_lhs (stmt);
+	if (lhs == NULL_TREE)
+	  continue;
+	imm_use_iterator use_iter;
+	gimple use_stmt;
+	ns.simduid = DECL_UID (SSA_NAME_VAR (gimple_call_arg (stmt, 0)));
+	FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, lhs)
+	  if (!is_gimple_debug (use_stmt))
+	    walk_gimple_op (use_stmt, note_simd_array_uses_cb, &wi);
+      }
+}
 
 /* Function vectorize_loops.
 
@@ -86,12 +282,21 @@ vectorize_loops (void)
   unsigned int vect_loops_num;
   loop_iterator li;
   struct loop *loop;
+  hash_table <simduid_to_vf> simduid_to_vf_htab;
+  hash_table <decl_to_simduid> decl_to_simduid_htab;
 
   vect_loops_num = number_of_loops (cfun);
 
   /* Bail out if there are no loops.  */
   if (vect_loops_num <= 1)
-    return 0;
+    {
+      if (cfun->has_simduid_loops)
+	adjust_simduid_builtins (simduid_to_vf_htab);
+      return 0;
+    }
+
+  if (cfun->has_simduid_loops)
+    note_simd_array_uses (&decl_to_simduid_htab);
 
   init_stmt_vec_info_vec ();
 
@@ -126,6 +331,17 @@ vectorize_loops (void)
 	/* Now that the loop has been vectorized, allow it to be unrolled
 	   etc.  */
 	loop->force_vect = false;
+
+	if (loop->simduid)
+	  {
+	    simduid_to_vf *simduid_to_vf_data = XNEW (simduid_to_vf);
+	    if (!simduid_to_vf_htab.is_created ())
+	      simduid_to_vf_htab.create (15);
+	    simduid_to_vf_data->simduid = DECL_UID (loop->simduid);
+	    simduid_to_vf_data->vf = loop_vinfo->vectorization_factor;
+	    *simduid_to_vf_htab.find_slot (simduid_to_vf_data, INSERT)
+	      = simduid_to_vf_data;
+	  }
       }
 
   vect_location = UNKNOWN_LOC;
@@ -152,6 +368,40 @@ vectorize_loops (void)
     }
 
   free_stmt_vec_info_vec ();
+
+  /* Fold IFN_GOMP_SIMD_{VF,LANE,LAST_LANE} builtins.  */
+  if (cfun->has_simduid_loops)
+    adjust_simduid_builtins (simduid_to_vf_htab);
+
+  /* Shrink any "omp array simd" temporary arrays to the
+     actual vectorization factors.  */
+  if (decl_to_simduid_htab.is_created ())
+    {
+      for (hash_table <decl_to_simduid>::iterator iter
+	   = decl_to_simduid_htab.begin ();
+	   iter != decl_to_simduid_htab.end (); ++iter)
+	if ((*iter).simduid != -1U)
+	  {
+	    tree decl = (*iter).decl;
+	    int vf = 1;
+	    if (simduid_to_vf_htab.is_created ())
+	      {
+		simduid_to_vf *p = NULL, data;
+		data.simduid = (*iter).simduid;
+		p = simduid_to_vf_htab.find (&data);
+		if (p)
+		  vf = p->vf;
+	      }
+	    tree atype
+	      = build_array_type_nelts (TREE_TYPE (TREE_TYPE (decl)), vf);
+	    TREE_TYPE (decl) = atype;
+	    relayout_decl (decl);
+	  }
+
+      decl_to_simduid_htab.dispose ();
+    }
+  if (simduid_to_vf_htab.is_created ())
+    simduid_to_vf_htab.dispose ();
 
   if (num_vectorized_loops > 0)
     {

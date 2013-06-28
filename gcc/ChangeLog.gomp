@@ -1,3 +1,76 @@
+2013-06-28  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* internal-fn.def (GOMP_SIMD_LANE, GOMP_SIMD_VF,
+	GOMP_SIMD_LAST_LANE): New internal functions.
+	* omp-low.c (omp_max_vf, lower_rec_simd_input_clauses): New
+	functions.
+	(lower_rec_input_clauses): Add fd argument.  Enforce max_vf = 1
+	if any data sharing clauses mention VLAs or for array reductions.
+	Handle OMP_CLAUSE__LOOPTEMP_ clause.  For
+	OMP_CLAUSE_{{FIRST,LAST,}PRIVATE,LINEAR,REDUCTION} on SIMD
+	constructs use "omp simd array" temporaries.  For OMP_CLAUSE_LINEAR
+	adjust initial value in combined constructs.  Don't emit any
+	barriers for #pragma omp distribute.  If max_vf is lower than
+	current safelen, prepend an OMP_CLAUSE_SAFELEN clause.
+	(lower_lastprivate_clauses): Handle "omp simd array" temporaries.
+	(lower_reduction_clauses): Exit early for #pragma omp simd.
+	(expand_omp_simd): Set loop->simduid from OMP_CLAUSE__SIMDUID_
+	and cfun->has_simduid_loops if set.
+	If OMP_CLAUSE_SAFELEN (1) is present, don't set loop->safelen
+	nor loop->force_vect.
+	(lower_omp_sections, lower_omp_single, lower_omp_taskreg): Adjust
+	lower_rec_input_clauses callers.
+	(lower_omp_for_lastprivate): Unshare vinit.
+	(lower_omp_for): Add OMP_CLAUSE__LOOPTEMP_ clauses before calling
+	lower_rec_input_clauses.  Adjust lower_rec_input_clauses caller.
+	Always call lower_omp_for_lastprivate at the same place, even for
+	#pragma omp simd.
+	* tree.h (enum clause_code): Add OMP_CLAUSE__SIMDUID_.
+	(OMP_CLAUSE__SIMDUID__DECL): Define.
+	* tree-vectorizer.c: Include hash-table.h and tree-ssa-propagate.h.
+	(simduid_to_vf, decl_to_simduid): New classes.
+	(simduid_to_vf::hash, simduid_to_vf::equal, decl_to_simduid::hash,
+	decl_to_simduid::equal): New methods.
+	(note_simd_array_uses_struct): New struct.
+	(adjust_simduid_builtins, note_simd_array_uses_cb,
+	note_simd_array_uses): New functions.
+	(vectorize_loops): Adjust "omp simd array" temporary array sizes
+	and fold GOMP_SIMD_{LANE,VF,LAST_LANE} builtins.
+	* tree-vectorizer.h (struct _stmt_vec_info): Add simd_lane_access_p
+	field.
+	(STMT_VINFO_SIMD_LANE_ACCESS_P): Define.
+	* tree-data-ref.c (get_references_in_stmt): Allow GOMP_SIMD_LANE
+	builtins in their own loops.
+	* tree-inline.c (copy_cfg_body): Propagate has_force_vect_loops
+	and has_simduid_loops.
+	* function.h (struct function): Add has_simduid_loops field.
+	* tree-ssa-ccp.c (likely_value): For GOMP_SIMD_{LANE,LAST_LANE,VF}
+	builtins ignore the undefined magic argument.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE__SIMDUID_
+	clause.
+	* cfgloop.h (struct loop): Add simduid field.
+	* Makefile.in (tree-vectorizer.o): Depend on $(HASH_TABLE_H)
+	and tree-ssa-propagate.h.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Check for SIMD
+	lane access.
+	* gimplify.c (omp_add_variable): Handle combination of aligned
+	clause and some data sharing clause for the same decl.
+	(gimplify_omp_for): For collapse (2) and above simd loops
+	predetermine loop iteration vars as lastprivate instead of
+	linear.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add
+	entries for OMP_CLAUSE__SIMDUID_.
+	(walk_tree_1): Handle OMP_CLAUSE__SIMDUID_.
+	* tree-vect-loop.c (vectorizable_live_operation): Handle live
+	GOMP_SIMD_LANE result.
+	* tree-vect-stmts.c (vectorizable_call): Vectorize GOMP_SIMD_LANE
+	builtin.
+	(vectorizable_store, vectorizable_load): Handle
+	STMT_VINFO_SIMD_LANE_ACCESS_P.
+	* internal-fn.c (expand_GOMP_SIMD_LANE, expand_GOMP_SIMD_VF,
+	expand_GOMP_SIMD_LAST_LANE): New functions.
+
 2013-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimple.h (enum gf_mask): Adjust GF_OMP_FOR_COMBINED

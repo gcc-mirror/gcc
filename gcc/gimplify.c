@@ -5814,7 +5814,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
     flags |= GOVD_SEEN;
 
   n = splay_tree_lookup (ctx->variables, (splay_tree_key)decl);
-  if (n != NULL)
+  if (n != NULL && n->value != GOVD_ALIGNED)
     {
       /* We shouldn't be re-adding the decl with the same data
 	 sharing class.  */
@@ -5823,7 +5823,8 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	 FIRSTPRIVATE and LASTPRIVATE.  */
       nflags = n->value | flags;
       gcc_assert ((nflags & GOVD_DATA_SHARE_CLASS)
-		  == (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE));
+		  == (GOVD_FIRSTPRIVATE | GOVD_LASTPRIVATE)
+		  || (flags & GOVD_DATA_SHARE_CLASS) == 0);
       n->value = nflags;
       return;
     }
@@ -5893,7 +5894,10 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	}
     }
 
-  splay_tree_insert (ctx->variables, (splay_tree_key)decl, flags);
+  if (n != NULL)
+    n->value |= flags;
+  else
+    splay_tree_insert (ctx->variables, (splay_tree_key)decl, flags);
 }
 
 /* Notice a threadprivate variable DECL used in OpenMP context CTX.
@@ -6935,7 +6939,7 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	  omp_is_private (gimplify_omp_ctxp, decl, simd);
 	  if (n != NULL && (n->value & GOVD_DATA_SHARE_CLASS) != 0)
 	    omp_notice_variable (gimplify_omp_ctxp, decl, true);
-	  else
+	  else if (TREE_VEC_LENGTH (OMP_FOR_INIT (for_stmt)) == 1)
 	    {
 	      c = build_omp_clause (input_location, OMP_CLAUSE_LINEAR);
 	      OMP_CLAUSE_LINEAR_NO_COPYIN (c) = 1;
@@ -6947,6 +6951,21 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 	      OMP_FOR_CLAUSES (for_stmt) = c;
 	      omp_add_variable (gimplify_omp_ctxp, decl,
 				GOVD_LINEAR | GOVD_EXPLICIT | GOVD_SEEN);
+	    }
+	  else
+	    {
+	      bool lastprivate
+		= (!has_decl_expr
+		   || !bitmap_bit_p (has_decl_expr, DECL_UID (decl)));
+	      c = build_omp_clause (input_location,
+				    lastprivate ? OMP_CLAUSE_LASTPRIVATE
+						: OMP_CLAUSE_PRIVATE);
+	      OMP_CLAUSE_DECL (c) = decl;
+	      OMP_CLAUSE_CHAIN (c) = OMP_FOR_CLAUSES (for_stmt);
+	      omp_add_variable (gimplify_omp_ctxp, decl,
+				(lastprivate ? GOVD_LASTPRIVATE : GOVD_PRIVATE)
+				| GOVD_SEEN);
+	      c = NULL_TREE;
 	    }
 	}
       else if (omp_is_private (gimplify_omp_ctxp, decl, simd))
