@@ -68,6 +68,13 @@ enum aarch64_symbol_context
    Each of of these represents a thread-local symbol, and corresponds to the
    thread local storage relocation operator for the symbol being referred to.
 
+   SYMBOL_TINY_ABSOLUTE
+
+   Generate symbol accesses as a PC relative address using a single
+   instruction.  To compute the address of symbol foo, we generate:
+
+   ADR x0, foo
+
    SYMBOL_FORCE_TO_MEM : Global variables are addressed using
    constant pool.  All variable addresses are spilled into constant
    pools.  The constant pools themselves are addressed using PC
