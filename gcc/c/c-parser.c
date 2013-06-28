@@ -11053,24 +11053,6 @@ c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index,
 	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
 	      return error_mark_node;
 	    }
-	  if (TREE_CODE (array_type) == ARRAY_TYPE)
-	    {
-	      tree subtype = TREE_TYPE (array_type);
-	      while (subtype && TREE_CODE (subtype) == POINTER_TYPE)
-		{
-		  /* Now this could be a function pointer.  Find them and
-		     give out an error.  */
-		  subtype = TREE_TYPE (subtype);
-		  if (subtype && TREE_CODE (subtype) == FUNCTION_TYPE)
-		    {
-		      error_at (loc, "array notations cannot be used with "
-				"function pointer arrays");
-		      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
-						 NULL);
-		      return error_mark_node;
-		    }
-		}
-	    }
 	  array_type_domain = TYPE_DOMAIN (array_type);
 
 	  if (!array_type_domain)
@@ -11113,27 +11095,6 @@ c_parser_array_notation (location_t loc, c_parser *parser, tree initial_index,
 			"type");
 	      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE, NULL);
 	      return error_mark_node;
-	    }
-	  if (TREE_CODE (array_type) == ARRAY_TYPE
-	      || TREE_CODE (array_type) == POINTER_TYPE)
-	    {
-	      tree subtype = TREE_TYPE (array_type);
-	      while (subtype
-		     && (TREE_CODE (subtype) == POINTER_TYPE
-			 || TREE_CODE (subtype) == ARRAY_TYPE))
-		{
-		  /* Now this could be a function pointer.  Find them and
-		     give out an error.  */
-		  subtype = TREE_TYPE (subtype);
-		  if (subtype && TREE_CODE (subtype) == FUNCTION_TYPE)
-		    {
-		      error_at (loc, "array notations cannot be used with "
-				"function pointer arrays");
-		      c_parser_skip_until_found (parser, CPP_CLOSE_SQUARE,
-						 NULL);
-		      return error_mark_node;
-		    }
-		}
 	    }
 	  c_parser_consume_token (parser); /* consume the ':' */
 	  end_index = c_parser_expression (parser).value;

@@ -1,3 +1,4 @@
+/* { dg-do compile { target c } } */
 /* { dg-options "-fcilkplus" } */
 
 int main(void)

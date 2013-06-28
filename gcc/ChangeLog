@@ -1,3 +1,7 @@
+2013-06-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* builtins.def: Fixed the function type of CILKPLUS_BUILTIN.
+	
 2013-06-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (need_for_split_p): Check call used hard regs

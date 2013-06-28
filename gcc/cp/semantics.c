@@ -779,22 +779,6 @@ finish_return_stmt (tree expr)
   tree r;
   bool no_warning;
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (expr))
-    {
-      size_t rank = 0;
-      
-      if (!find_rank (input_location, expr, expr, false, &rank))
-	return error_mark_node;
-
-      /* If the return expression contains array notations, then flag it as
-	 error.  */
-      if (rank >= 1)
-	{
-	  error_at (input_location, "array notation expression cannot be "
-		    "used as a return value");
-	  return error_mark_node;
-	}
-    }
   expr = check_return_expr (expr, &no_warning);
 
   if (flag_openmp && !check_omp_return ())
@@ -8089,7 +8073,6 @@ cxx_eval_constant_expression (const constexpr_call *call, tree t,
 				       non_constant_p, overflow_p);
       break;
 
-    case ARRAY_NOTATION_REF:
     case ARRAY_REF:
       r = cxx_eval_array_reference (call, t, allow_non_constant, addr,
 				    non_constant_p, overflow_p);
@@ -8901,7 +8884,6 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
       want_rval = true;
       /* Fall through.  */
     case ARRAY_REF:
-    case ARRAY_NOTATION_REF:
     case ARRAY_RANGE_REF:
     case MEMBER_REF:
     case DOTSTAR_EXPR:
@@ -8911,6 +8893,9 @@ potential_constant_expression_1 (tree t, bool want_rval, tsubst_flags_t flags)
 					      want_rval, flags))
 	  return false;
       return true;
+
+    case ARRAY_NOTATION_REF:
+      return false;
 
     case FMA_EXPR:
     case VEC_PERM_EXPR:

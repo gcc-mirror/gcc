@@ -6,7 +6,7 @@ int main (void)
   int array[10], array2[10][10];
   int x, ii, jj ;
 
-  switch (array[:]) {  /* { dg-error "array notations cannot be used as a condition for switch statement" } */
+  switch (array[:]) {  /* { dg-error "cannot be used as a condition for switch statement" } */
   case 1:
     x = 5;
     break;
@@ -17,7 +17,7 @@ int main (void)
     x = 9;
   }
 
-  switch (array2[:][:]) { /* { dg-error "array notations cannot be used as a condition for switch statement" } */
+  switch (array2[:][:]) { /* { dg-error "cannot be used as a condition for switch statement" } */
   case 1:
     x = 5;
     break;
@@ -28,7 +28,7 @@ int main (void)
     x = 9;
   }
 
-  switch (array[:] + x) { /* { dg-error "array notations cannot be used as a condition for switch statement" } */
+  switch (array[:] + x) { /* { dg-error "cannot be used as a condition for switch statement" } */
   case 1:
     x = 5;
     break;
@@ -39,7 +39,7 @@ int main (void)
     x = 9;
   }
   
-  switch (array2[:][1:x:4] + x) { /* { dg-error "array notations cannot be used as a condition for switch statement" } */
+  switch (array2[:][1:x:4] + x) { /* { dg-error "cannot be used as a condition for switch statement" } */
   case 1:
     x = 5;
     break;
@@ -50,36 +50,36 @@ int main (void)
     x = 9;
   }
 
-  for (ii = 0; ii < array[:]; ii++) /* { dg-error "array notations cannot be used in a condition for a for-loop" } */
+  for (ii = 0; ii < array[:]; ii++) /* { dg-error "cannot be used in a condition for a for-loop" } */
     {
       x = 2;
     }
 
-  for (ii = 0; ii < array2[:][:]; ii++) /* { dg-error "array notations cannot be used in a condition for a for-loop" } */
+  for (ii = 0; ii < array2[:][:]; ii++) /* { dg-error "cannot be used in a condition for a for-loop" } */
     {
       x = 3;
     }
 
-  for (; array2[:][:] < 2;) /* { dg-error "array notations cannot be used in a condition for a for-loop" } */
+  for (; array2[:][:] < 2;) /* { dg-error "cannot be used in a condition for a for-loop" } */
     x = 4;
 
 
-  while (array2[:][:]) /* { dg-error "array notations cannot be used as a condition for while statement" } */
+  while (array2[:][:]) /* { dg-error "cannot be used as a condition for while statement" } */
     x = 3;
 
-  while (array[1:1:1]) /* { dg-error "array notations cannot be used as a condition for while statement" } */
+  while (array[1:1:1]) /* { dg-error "cannot be used as a condition for while statement" } */
     x = 1;
 
-  while (ii != array2[1:x:3][1:2:1]) /* { dg-error "array notations cannot be used as a condition for while statement"  } */
+  while (ii != array2[1:x:3][1:2:1]) /* { dg-error "cannot be used as a condition for while statement"  } */
     x = 2;
 
-  do { /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c } } */
+  do { /* { dg-error "cannot be used as a condition for a do-while statement" "" { target c } } */
     x = 3;
-  } while (ii != array2[:][:]); /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c++ } } */
+  } while (ii != array2[:][:]); /* { dg-error "cannot be used as a condition for a do-while statement" "" { target c++ } } */
 
-  do {  /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c } } */
+  do {  /* { dg-error "cannot be used as a condition for a do-while statement" "" { target c } } */
     x = 2;
-  } while (ii != (x + array2[:][1:x:2]) + 2); /* { dg-error "array notations cannot be used as a condition for a do-while statement" "" { target c++ } } */
+  } while (ii != (x + array2[:][1:x:2]) + 2); /* { dg-error "cannot be used as a condition for a do-while statement" "" { target c++ } } */
   
   do { 
     x += 3;
