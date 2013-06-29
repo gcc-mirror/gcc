@@ -1,3 +1,10 @@
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57645
+	* class.c (deduce_noexcept_on_destructors): Save, set, and restore
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) around the main loop over the
+	destructors.
+
 2013-06-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* parser.c (cp_parser_array_notation): Removed rejection array notation
