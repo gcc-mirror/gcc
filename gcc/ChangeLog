@@ -1,3 +1,8 @@
+2013-06-29  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c: Remove junk from the beginning of the
+	file.
+
 2013-06-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	Revert:

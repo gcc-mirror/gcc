@@ -1,5 +1,4 @@
-
-1;3201;0c/* Machine description for AArch64 architecture.
+/* Machine description for AArch64 architecture.
    Copyright (C) 2009-2013 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
