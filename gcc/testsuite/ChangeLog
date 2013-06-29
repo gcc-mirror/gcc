@@ -1,3 +1,10 @@
+2013-06-28  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/udlit-nospace-neg.C: Adjust.
+	* g++.dg/cpp1y/udlit-enc-prefix-neg.C: New.
+	* g++.dg/cpp1y/udlit-userdef-string.C: New.
+	* g++.dg/cpp1y/complex_literals.h: New.
+
 2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57645

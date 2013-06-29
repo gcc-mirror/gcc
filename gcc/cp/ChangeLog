@@ -1,3 +1,9 @@
+2013-06-28  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* cp-tree.h (UDLIT_OP_ANSI_PREFIX): Remove space.
+	* parser.c (cp_parser_operator()): Parse user-defined string
+	literal as literal operator.
+
 2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57645
