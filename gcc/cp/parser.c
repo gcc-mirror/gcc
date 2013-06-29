@@ -12244,6 +12244,8 @@ cp_parser_operator (cp_parser* parser)
 {
   tree id = NULL_TREE;
   cp_token *token;
+  bool bad_encoding_prefix = false;
+  int string_len = 2;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -12443,10 +12445,20 @@ cp_parser_operator (cp_parser* parser)
       cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
       return ansi_opname (ARRAY_REF);
 
+    case CPP_WSTRING:
+      string_len = 3;
+    case CPP_STRING16:
+    case CPP_STRING32:
+      string_len = 5;
+    case CPP_UTF8STRING:
+      string_len = 4;
+      bad_encoding_prefix = true;
     case CPP_STRING:
       if (cxx_dialect == cxx98)
 	maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
-      if (TREE_STRING_LENGTH (token->u.value) > 2)
+      if (bad_encoding_prefix)
+	error ("invalid encoding prefix in literal operator");
+      if (TREE_STRING_LENGTH (token->u.value) > string_len)
 	{
 	  error ("expected empty string after %<operator%> keyword");
 	  return error_mark_node;
@@ -12464,15 +12476,49 @@ cp_parser_operator (cp_parser* parser)
 	      return cp_literal_operator_id (name);
 	    }
 	}
+      else if (token->type == CPP_KEYWORD)
+	{
+	  error ("unexpected keyword;"
+		 " remove space between quotes and suffix identifier");
+	  return error_mark_node;
+	}
       else
 	{
 	  error ("expected suffix identifier");
 	  return error_mark_node;
 	}
 
+    case CPP_WSTRING_USERDEF:
+      string_len = 3;
+    case CPP_STRING16_USERDEF:
+    case CPP_STRING32_USERDEF:
+      string_len = 5;
+    case CPP_UTF8STRING_USERDEF:
+      string_len = 4;
+      bad_encoding_prefix = true;
     case CPP_STRING_USERDEF:
-      error ("missing space between %<\"\"%> and suffix identifier");
-      return error_mark_node;
+      if (cxx_dialect == cxx98)
+	maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
+      if (bad_encoding_prefix)
+	error ("invalid encoding prefix in literal operator");
+      {
+	tree string_tree = USERDEF_LITERAL_VALUE (token->u.value);
+	if (TREE_STRING_LENGTH (string_tree) > string_len)
+	  {
+	    error ("expected empty string after %<operator%> keyword");
+	    return error_mark_node;
+	  }
+	id = USERDEF_LITERAL_SUFFIX_ID (token->u.value);
+	/* Consume the user-defined string literal.  */
+	cp_lexer_consume_token (parser->lexer);
+	if (id != error_mark_node)
+	  {
+	    const char *name = IDENTIFIER_POINTER (id);
+	    return cp_literal_operator_id (name);
+	  }
+	else
+	  return error_mark_node;
+      }
 
     default:
       /* Anything else is an error.  */
