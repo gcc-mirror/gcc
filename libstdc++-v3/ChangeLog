@@ -1,3 +1,39 @@
+2013-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_deque.h (deque<>::insert(iterator,
+	size_type, const value_type&), deque<>::insert(iterator,
+	initializer_list<>), deque<>::insert(iterator, _InputIterator,
+	_InputIterator)): Adjust C++11 signatures to take a const_iterator.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/debug/deque: Adjust.
+	* include/debug/vector: Likewise.
+	* include/profile/deque: Likewise.
+	* include/profile/vector: Likewise.
+	* testsuite/23_containers/deque/modifiers/insert/const_iterator.cc:
+	Extend.
+	* testsuite/23_containers/vector/bool/modifiers/insert/
+	const_iterator.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/insert/const_iterator.cc:
+	Likewise.
+
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/21_strings/basic_string/operations/*: Move inside

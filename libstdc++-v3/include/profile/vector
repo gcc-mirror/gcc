@@ -44,6 +44,9 @@ namespace __profile
     {
       typedef _GLIBCXX_STD_C::vector<_Tp, _Allocator> _Base;
 
+      typedef typename _Base::iterator _Base_iterator;
+      typedef typename _Base::const_iterator _Base_const_iterator;
+
 #if __cplusplus >= 201103L
       typedef __gnu_cxx::__alloc_traits<_Allocator>  _Alloc_traits;
 #endif
@@ -52,9 +55,9 @@ namespace __profile
       typedef typename _Base::reference             reference;
       typedef typename _Base::const_reference       const_reference;
 
-      typedef __iterator_tracker<typename _Base::iterator, vector>
+      typedef __iterator_tracker<_Base_iterator, vector>
                                                     iterator;
-      typedef __iterator_tracker<typename _Base::const_iterator, vector>
+      typedef __iterator_tracker<_Base_const_iterator, vector>
 				                    const_iterator;
 
       typedef typename _Base::size_type             size_type;
@@ -361,7 +364,7 @@ namespace __profile
         __profcxx_vector_insert(this, __position.base() - _Base::begin(),
                                 this->size());
         size_type __old_size = this->capacity();
-	typename _Base::iterator __res = _Base::insert(__position.base(), __x);
+	_Base_iterator __res = _Base::insert(__position.base(), __x);
         _M_profile_resize(this, __old_size, this->capacity());
 	return iterator(__res, this);
       }
@@ -370,10 +373,10 @@ namespace __profile
       iterator
       insert(const_iterator __position, _Tp&& __x)
       {
-        __profcxx_vector_insert(this, __position.base() - _Base::begin(),
+        __profcxx_vector_insert(this, __position.base() - _Base::cbegin(),
                                 this->size());
         size_type __old_size = this->capacity();
-	typename _Base::iterator __res = _Base::insert(__position.base(), __x);
+	_Base_iterator __res = _Base::insert(__position.base(), __x);
         _M_profile_resize(this, __old_size, this->capacity());
 	return iterator(__res, this);
       }
@@ -382,15 +385,14 @@ namespace __profile
         iterator
         emplace(const_iterator __position, _Args&&... __args)
         {
-	  typename _Base::iterator __res
-	    = _Base::emplace(__position.base(),
-			     std::forward<_Args>(__args)...);
+	  _Base_iterator __res = _Base::emplace(__position.base(),
+						std::forward<_Args>(__args)...);
 	  return iterator(__res, this);
 	}
 
-      void
-      insert(iterator __position, initializer_list<value_type> __l)
-      { this->insert(__position, __l.begin(), __l.end()); }
+      iterator
+      insert(const_iterator __position, initializer_list<value_type> __l)
+      { return this->insert(__position, __l.begin(), __l.end()); }
 #endif
 
 #if __cplusplus >= 201103L
@@ -404,12 +406,24 @@ namespace __profile
       void
       swap(vector& __x)
 #if __cplusplus >= 201103L
-			noexcept(_Alloc_traits::_S_nothrow_swap())
+      noexcept(_Alloc_traits::_S_nothrow_swap())
 #endif
       {
         _Base::swap(__x);
       }
 
+#if __cplusplus >= 201103L
+      iterator
+      insert(const_iterator __position, size_type __n, const _Tp& __x)
+      {
+        __profcxx_vector_insert(this, __position.base() - _Base::cbegin(),
+                                this->size());
+        size_type __old_size = this->capacity();
+        _Base_iterator __res = _Base::insert(__position, __n, __x);
+        _M_profile_resize(this, __old_size, this->capacity());
+	return iterator(__res, this);
+      }
+#else
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
       {
@@ -419,23 +433,35 @@ namespace __profile
         _Base::insert(__position, __n, __x);
         _M_profile_resize(this, __old_size, this->capacity());
       }
+#endif
 
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	iterator
+	insert(const_iterator __position,
+	       _InputIterator __first, _InputIterator __last)
+        {
+	  __profcxx_vector_insert(this, __position.base() - _Base::cbegin(),
+				  this->size());
+	  size_type __old_size = this->capacity();
+	  _Base_iterator __res = _Base::insert(__position, __first, __last);
+	  _M_profile_resize(this, __old_size, this->capacity());
+	  return iterator(__res, this);
+	}
 #else
       template<typename _InputIterator>
+	void
+	insert(iterator __position,
+	       _InputIterator __first, _InputIterator __last)
+        {
+	  __profcxx_vector_insert(this, __position.base() - _Base::begin(),
+				  this->size());
+	  size_type __old_size = this->capacity();
+	  _Base::insert(__position, __first, __last);
+	  _M_profile_resize(this, __old_size, this->capacity());
+	}
 #endif
-      void
-      insert(iterator __position,
-             _InputIterator __first, _InputIterator __last)
-      {
-        __profcxx_vector_insert(this, __position.base()-_Base::begin(),
-                                this->size());
-        size_type __old_size = this->capacity();
-        _Base::insert(__position, __first, __last);
-        _M_profile_resize(this, __old_size, this->capacity());
-      }
 
       iterator
 #if __cplusplus >= 201103L
@@ -444,7 +470,7 @@ namespace __profile
       erase(iterator __position)	
 #endif
       {
-	typename _Base::iterator __res = _Base::erase(__position.base());
+	_Base_iterator __res = _Base::erase(__position.base());
 	return iterator(__res, this);
       }
 
@@ -457,8 +483,7 @@ namespace __profile
       {
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
-	typename _Base::iterator __res = _Base::erase(__first.base(),
-                                                      __last.base());
+	_Base_iterator __res = _Base::erase(__first.base(), __last.base());
 	return iterator(__res, this);
       }
 

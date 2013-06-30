@@ -411,14 +411,26 @@ namespace __debug
       insert(const_iterator __position, _Tp&& __x)
       { return emplace(__position, std::move(__x)); }
 
-      void
-      insert(iterator __p, initializer_list<value_type> __l)
+      iterator
+      insert(const_iterator __position, initializer_list<value_type> __l)
       {
-	_Base::insert(__p, __l);
+	__glibcxx_check_insert(__position);
+	_Base_iterator __res = _Base::insert(__position.base(), __l);
 	this->_M_invalidate_all();
+	return iterator(__res, this);
       }
 #endif
 
+#if __cplusplus >= 201103L
+      iterator
+      insert(const_iterator __position, size_type __n, const _Tp& __x)
+      {
+	__glibcxx_check_insert(__position);
+	_Base_iterator __res = _Base::insert(__position.base(), __n, __x);
+	this->_M_invalidate_all();
+	return iterator(__res, this);
+      }
+#else
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
       {
@@ -426,13 +438,24 @@ namespace __debug
 	_Base::insert(__position.base(), __n, __x);
 	this->_M_invalidate_all();
       }
+#endif
 
 #if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+	iterator
+        insert(const_iterator __position,
+	       _InputIterator __first, _InputIterator __last)
+        {
+	  __glibcxx_check_insert_range(__position, __first, __last);
+	  _Base_iterator __res = _Base::insert(__position.base(),
+					       __gnu_debug::__base(__first),
+					       __gnu_debug::__base(__last));
+	  this->_M_invalidate_all();
+	  return iterator(__res, this);
+	}
 #else
       template<class _InputIterator>
-#endif
         void
         insert(iterator __position,
 	       _InputIterator __first, _InputIterator __last)
@@ -442,6 +465,7 @@ namespace __debug
 					   __gnu_debug::__base(__last));
 	  this->_M_invalidate_all();
 	}
+#endif
 
       void
       pop_front()
