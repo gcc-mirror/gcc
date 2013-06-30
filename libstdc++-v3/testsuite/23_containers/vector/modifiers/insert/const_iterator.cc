@@ -24,6 +24,9 @@ void test01()
 {
   std::vector<int> v1;
   int n = 0;
-  v1.insert(v1.cbegin(), n);
-  v1.insert(v1.cbegin(), 1);
+  std::vector<int>::iterator it = v1.insert(v1.cbegin(), n);
+  it = v1.insert(v1.cbegin(), 1);
+  it = v1.insert(v1.cbegin(), {2, 3});
+  it = v1.insert(v1.cbegin(), 1, 4);
+  it = v1.insert(v1.cbegin(), v1.begin(), v1.end());
 }

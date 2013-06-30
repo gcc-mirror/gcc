@@ -344,31 +344,35 @@ namespace __profile
       insert(const_iterator __position, _Tp&& __x)
       { return emplace(__position, std::move(__x)); }
 
-      void
-      insert(iterator __p, initializer_list<value_type> __l)
-      {
-	_Base::insert(__p, __l);
-      }
+      iterator
+      insert(const_iterator __p, initializer_list<value_type> __l)
+      { return _Base::insert(__p, __l); }
 #endif
 
+#if __cplusplus >= 201103L
+      iterator
+      insert(const_iterator __position, size_type __n, const _Tp& __x)
+      { return _Base::insert(__position, __n, __x); }
+#else
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
-      {
-	_Base::insert(__position, __n, __x);
-      }
+      { _Base::insert(__position, __n, __x); }
+#endif
 
 #if __cplusplus >= 201103L
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+        iterator
+        insert(const_iterator __position,
+	       _InputIterator __first, _InputIterator __last)
+        { return _Base::insert(__position, __first, __last); }
 #else
       template<typename _InputIterator>
-#endif
         void
         insert(iterator __position,
 	       _InputIterator __first, _InputIterator __last)
-        {
-	  _Base::insert(__position, __first, __last);
-	}
+        { _Base::insert(__position, __first, __last); }
+#endif
 
       void
       pop_front()

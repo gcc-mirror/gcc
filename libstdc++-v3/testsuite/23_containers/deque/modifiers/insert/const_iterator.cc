@@ -24,6 +24,9 @@ void test01()
 {
   std::deque<int> d1;
   int n = 0;
-  d1.insert(d1.cbegin(), n);
-  d1.insert(d1.cbegin(), 1);
+  std::deque<int>::iterator it = d1.insert(d1.cbegin(), n);
+  it = d1.insert(d1.cbegin(), 1);
+  it = d1.insert(d1.cbegin(), {2, 3});
+  it = d1.insert(d1.cbegin(), 1, 4);
+  it = d1.insert(d1.cbegin(), d1.begin(), d1.end());
 }

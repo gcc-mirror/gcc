@@ -471,11 +471,27 @@ namespace __debug
         insert(const_iterator __position, _Tp&& __x)
         { return emplace(__position, std::move(__x)); }
 
-      void
-      insert(iterator __position, initializer_list<value_type> __l)
-      { this->insert(__position, __l.begin(), __l.end()); }
+      iterator
+      insert(const_iterator __position, initializer_list<value_type> __l)
+      { return this->insert(__position, __l.begin(), __l.end()); }
 #endif
 
+#if __cplusplus >= 201103L
+      iterator
+      insert(const_iterator __position, size_type __n, const _Tp& __x)
+      {
+	__glibcxx_check_insert(__position);
+	bool __realloc = _M_requires_reallocation(this->size() + __n);
+	difference_type __offset = __position.base() - _Base::cbegin();
+	_Base_iterator __res = _Base::insert(__position.base(), __n, __x);
+	if (__realloc)
+	  this->_M_invalidate_all();
+	else
+	  this->_M_invalidate_after_nth(__offset);
+	_M_update_guaranteed_capacity();
+	return iterator(__res, this);
+      }
+#else
       void
       insert(iterator __position, size_type __n, const _Tp& __x)
       {
@@ -489,13 +505,35 @@ namespace __debug
 	  this->_M_invalidate_after_nth(__offset);
 	_M_update_guaranteed_capacity();
       }
+#endif
 
 #if __cplusplus >= 201103L
       template<class _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
+        iterator
+        insert(const_iterator __position,
+	       _InputIterator __first, _InputIterator __last)
+        {
+	  __glibcxx_check_insert_range(__position, __first, __last);
+
+	  /* Hard to guess if invalidation will occur, because __last
+	     - __first can't be calculated in all cases, so we just
+	     punt here by checking if it did occur. */
+	  _Base_iterator __old_begin = _M_base().begin();
+	  difference_type __offset = __position.base() - _Base::cbegin();
+	  _Base_iterator __res = _Base::insert(__position.base(),
+					       __gnu_debug::__base(__first),
+					       __gnu_debug::__base(__last));
+
+	  if (_M_base().begin() != __old_begin)
+	    this->_M_invalidate_all();
+	  else
+	    this->_M_invalidate_after_nth(__offset);
+	  _M_update_guaranteed_capacity();
+	  return iterator(__res, this);
+	}
 #else
       template<class _InputIterator>
-#endif
         void
         insert(iterator __position,
 	       _InputIterator __first, _InputIterator __last)
@@ -516,6 +554,7 @@ namespace __debug
 	    this->_M_invalidate_after_nth(__offset);
 	  _M_update_guaranteed_capacity();
 	}
+#endif
 
       iterator
 #if __cplusplus >= 201103L
