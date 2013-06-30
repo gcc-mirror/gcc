@@ -1,5 +1,15 @@
 2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* testsuite/21_strings/basic_string/operations/*: Move inside
+	testsuite/21_strings/basic_string/operations/data/.
+	* testsuite/21_strings/basic_string/compare/*: Move inside
+	testsuite/21_strings/basic_string/operations/.
+	* testsuite/21_strings/basic_string/find/*: Likewise.
+	* testsuite/21_strings/basic_string/rfind/*: Likewise.
+	* testsuite/21_strings/basic_string/substr/*: Likewise.
+
+2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* testsuite/21_strings/basic_string/append/*: Move inside
 	testsuite/21_strings/basic_string/modifiers/.
 	* testsuite/21_strings/basic_string/assign/*: Likewise.
