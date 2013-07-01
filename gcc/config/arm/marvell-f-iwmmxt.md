@@ -63,52 +63,62 @@
 ;; An attribute appended to instructions for classification
 
 (define_attr "wmmxt_shift" "yes,no"
-  (if_then_else (eq_attr "wtype" "wror, wsll, wsra, wsrl")
+  (if_then_else (eq_attr "type" "wmmx_wror, wmmx_wsll, wmmx_wsra, wmmx_wsrl")
 		(const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_pack" "yes,no"
-  (if_then_else (eq_attr "wtype" "waligni, walignr, wmerge, wpack, wshufh, wunpckeh, wunpckih, wunpckel, wunpckil")
+  (if_then_else (eq_attr "type" "wmmx_waligni, wmmx_walignr, wmmx_wmerge,\
+                                 wmmx_wpack, wmmx_wshufh, wmmx_wunpckeh,\
+                                 wmmx_wunpckih, wmmx_wunpckel, wmmx_wunpckil")
 		(const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_mult_c1" "yes,no"
-  (if_then_else (eq_attr "wtype" "wmac, wmadd, wmiaxy, wmiawxy, wmulw, wqmiaxy, wqmulwm")
+  (if_then_else (eq_attr "type" "wmmx_wmac, wmmx_wmadd, wmmx_wmiaxy,\
+                                 wmmx_wmiawxy, wmmx_wmulw, wmmx_wqmiaxy,\
+                                 wmmx_wqmulwm")
 		(const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_mult_c2" "yes,no"
-  (if_then_else (eq_attr "wtype" "wmul, wqmulm")
+  (if_then_else (eq_attr "type" "wmmx_wmul, wmmx_wqmulm")
 		(const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_alu_c1" "yes,no"
-  (if_then_else (eq_attr "wtype" "wabs, wabsdiff, wand, wandn, wmov, wor, wxor")
+  (if_then_else (eq_attr "type" "wmmx_wabs, wmmx_wabsdiff, wmmx_wand,\
+                                 wmmx_wandn, wmmx_wmov, wmmx_wor, wmmx_wxor")
 	        (const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_alu_c2" "yes,no"
-  (if_then_else (eq_attr "wtype" "wacc, wadd, waddsubhx, wavg2, wavg4, wcmpeq, wcmpgt, wmax, wmin, wsub, waddbhus, wsubaddhx")
+  (if_then_else (eq_attr "type" "wmmx_wacc, wmmx_wadd, wmmx_waddsubhx,\
+                                 wmmx_wavg2, wmmx_wavg4, wmmx_wcmpeq,\
+                                 wmmx_wcmpgt, wmmx_wmax, wmmx_wmin,\
+                                 wmmx_wsub, wmmx_waddbhus, wmmx_wsubaddhx")
 		(const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_alu_c3" "yes,no"
-  (if_then_else (eq_attr "wtype" "wsad")
+  (if_then_else (eq_attr "type" "wmmx_wsad")
 	        (const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_transfer_c1" "yes,no"
-  (if_then_else (eq_attr "wtype" "tbcst, tinsr, tmcr, tmcrr")
+  (if_then_else (eq_attr "type" "wmmx_tbcst, wmmx_tinsr,\
+                                 wmmx_tmcr, wmmx_tmcrr")
                 (const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_transfer_c2" "yes,no"
-  (if_then_else (eq_attr "wtype" "textrm, tmovmsk, tmrc, tmrrc")
+  (if_then_else (eq_attr "type" "wmmx_textrm, wmmx_tmovmsk,\
+                                 wmmx_tmrc, wmmx_tmrrc")
 	        (const_string "yes") (const_string "no"))
 )
 
 (define_attr "wmmxt_transfer_c3" "yes,no"
-  (if_then_else (eq_attr "wtype" "tmia, tmiaph, tmiaxy")
+  (if_then_else (eq_attr "type" "wmmx_tmia, wmmx_tmiaph, wmmx_tmiaxy")
 	        (const_string "yes") (const_string "no"))
 )
 
@@ -169,11 +179,11 @@
 
 (define_insn_reservation "marvell_f_iwmmxt_wstr" 0
   (and (eq_attr "marvell_f_iwmmxt" "yes")
-       (eq_attr "wtype" "wstr"))
+       (eq_attr "type" "wmmx_wstr"))
   "mf_iwmmxt_pipeline")
 
 ;There is a forwarding path from MW stage
 (define_insn_reservation "marvell_f_iwmmxt_wldr" 5
   (and (eq_attr "marvell_f_iwmmxt" "yes")
-       (eq_attr "wtype" "wldr"))
+       (eq_attr "type" "wmmx_wldr"))
   "mf_iwmmxt_pipeline")
