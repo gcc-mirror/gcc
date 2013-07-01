@@ -335,6 +335,70 @@
 ; umlals             unsigned multiply accumulate long, flag setting.
 ; umull              unsigned multiply long.
 ; umulls             unsigned multiply long, flag setting.
+;
+; The classification below is for instructions used by the Wireless MMX
+; Technology. Each attribute value is used to classify an instruction of the
+; same name or family.
+;
+; wmmx_tandc
+; wmmx_tbcst
+; wmmx_textrc
+; wmmx_textrm
+; wmmx_tinsr
+; wmmx_tmcr
+; wmmx_tmcrr
+; wmmx_tmia
+; wmmx_tmiaph
+; wmmx_tmiaxy
+; wmmx_tmrc
+; wmmx_tmrrc
+; wmmx_tmovmsk
+; wmmx_torc
+; wmmx_torvsc
+; wmmx_wabs
+; wmmx_wdiff
+; wmmx_wacc
+; wmmx_wadd
+; wmmx_waddbhus
+; wmmx_waddsubhx
+; wmmx_waligni
+; wmmx_walignr
+; wmmx_wand
+; wmmx_wandn
+; wmmx_wavg2
+; wmmx_wavg4
+; wmmx_wcmpeq
+; wmmx_wcmpgt
+; wmmx_wmac
+; wmmx_wmadd
+; wmmx_wmax
+; wmmx_wmerge
+; wmmx_wmiawxy
+; wmmx_wmiaxy
+; wmmx_wmin
+; wmmx_wmov
+; wmmx_wmul
+; wmmx_wmulw
+; wmmx_wldr
+; wmmx_wor
+; wmmx_wpack
+; wmmx_wqmiaxy
+; wmmx_wqmulm
+; wmmx_wqmulwm
+; wmmx_wror
+; wmmx_wsad
+; wmmx_wshufh
+; wmmx_wsll
+; wmmx_wsra
+; wmmx_wsrl
+; wmmx_wstr
+; wmmx_wsub
+; wmmx_wsubaddhx
+; wmmx_wunpckeh
+; wmmx_wunpckel
+; wmmx_wunpckih
+; wmmx_wunpckil
+; wmmx_wxor
 
 (define_attr "type"
  "simple_alu_imm,\
@@ -419,7 +483,66 @@
   smlald,\
   smlsld,\
   sdiv,\
-  udiv"
+  udiv,\
+  wmmx_tandc,\
+  wmmx_tbcst,\
+  wmmx_textrc,\
+  wmmx_textrm,\
+  wmmx_tinsr,\
+  wmmx_tmcr,\
+  wmmx_tmcrr,\
+  wmmx_tmia,\
+  wmmx_tmiaph,\
+  wmmx_tmiaxy,\
+  wmmx_tmrc,\
+  wmmx_tmrrc,\
+  wmmx_tmovmsk,\
+  wmmx_torc,\
+  wmmx_torvsc,\
+  wmmx_wabs,\
+  wmmx_wabsdiff,\
+  wmmx_wacc,\
+  wmmx_wadd,\
+  wmmx_waddbhus,\
+  wmmx_waddsubhx,\
+  wmmx_waligni,\
+  wmmx_walignr,\
+  wmmx_wand,\
+  wmmx_wandn,\
+  wmmx_wavg2,\
+  wmmx_wavg4,\
+  wmmx_wcmpeq,\
+  wmmx_wcmpgt,\
+  wmmx_wmac,\
+  wmmx_wmadd,\
+  wmmx_wmax,\
+  wmmx_wmerge,\
+  wmmx_wmiawxy,\
+  wmmx_wmiaxy,\
+  wmmx_wmin,\
+  wmmx_wmov,\
+  wmmx_wmul,\
+  wmmx_wmulw,\
+  wmmx_wldr,\
+  wmmx_wor,\
+  wmmx_wpack,\
+  wmmx_wqmiaxy,\
+  wmmx_wqmulm,\
+  wmmx_wqmulwm,\
+  wmmx_wror,\
+  wmmx_wsad,\
+  wmmx_wshufh,\
+  wmmx_wsll,\
+  wmmx_wsra,\
+  wmmx_wsrl,\
+  wmmx_wstr,\
+  wmmx_wsub,\
+  wmmx_wsubaddhx,\
+  wmmx_wunpckeh,\
+  wmmx_wunpckel,\
+  wmmx_wunpckih,\
+  wmmx_wunpckil,\
+  wmmx_wxor"
   (const_string "alu_reg"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
@@ -438,10 +561,6 @@
      "smlalxy,umull,umulls,umaal,umlal,umlals,smull,smulls,smlal,smlals")
     (const_string "yes")
     (const_string "no")))
-
-; wtype for WMMX insn scheduling purposes.
-(define_attr "wtype"
-        "none,wor,wxor,wand,wandn,wmov,tmcrr,tmrrc,wldr,wstr,tmcr,tmrc,wadd,wsub,wmul,wmac,wavg2,tinsr,textrm,wshufh,wcmpeq,wcmpgt,wmax,wmin,wpack,wunpckih,wunpckil,wunpckeh,wunpckel,wror,wsra,wsrl,wsll,wmadd,tmia,tmiaph,tmiaxy,tbcst,tmovmsk,wacc,waligni,walignr,tandc,textrc,torc,torvsc,wsad,wabs,wabsdiff,waddsubhx,wsubaddhx,wavg4,wmulw,wqmulm,wqmulwm,waddbhus,wqmiaxy,wmiaxy,wmiawxy,wmerge" (const_string "none"))
 
 ; Load scheduling, set from the arm_ld_sched variable
 ; initialized by arm_option_override()
@@ -567,9 +686,19 @@
 ; than one on the main cpu execution unit.
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
-		 "simple_alu_imm,alu_reg,\
-                  simple_alu_shift,alu_shift,\
-                  float,fdivd,fdivs")
+    "simple_alu_imm, alu_reg,\
+    simple_alu_shift, alu_shift, float, fdivd, fdivs,\
+    wmmx_wor, wmmx_wxor, wmmx_wand, wmmx_wandn, wmmx_wmov, wmmx_tmcrr,\
+    wmmx_tmrrc, wmmx_wldr, wmmx_wstr, wmmx_tmcr, wmmx_tmrc, wmmx_wadd,\
+    wmmx_wsub, wmmx_wmul, wmmx_wmac, wmmx_wavg2, wmmx_tinsr, wmmx_textrm,\
+    wmmx_wshufh, wmmx_wcmpeq, wmmx_wcmpgt, wmmx_wmax, wmmx_wmin, wmmx_wpack,\
+    wmmx_wunpckih, wmmx_wunpckil, wmmx_wunpckeh, wmmx_wunpckel, wmmx_wror,\
+    wmmx_wsra, wmmx_wsrl, wmmx_wsll, wmmx_wmadd, wmmx_tmia, wmmx_tmiaph,\
+    wmmx_tmiaxy, wmmx_tbcst, wmmx_tmovmsk, wmmx_wacc, wmmx_waligni,\
+    wmmx_walignr, wmmx_tandc, wmmx_textrc, wmmx_torc, wmmx_torvsc, wmmx_wsad,\
+    wmmx_wabs, wmmx_wabsdiff, wmmx_waddsubhx, wmmx_wsubaddhx, wmmx_wavg4,\
+    wmmx_wmulw, wmmx_wqmulm, wmmx_wqmulwm, wmmx_waddbhus, wmmx_wqmiaxy,\
+    wmmx_wmiaxy, wmmx_wmiawxy, wmmx_wmerge")
 		(const_string "single")
 	        (const_string "multi")))
 
