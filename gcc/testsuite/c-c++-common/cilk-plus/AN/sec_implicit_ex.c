@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-fcilkplus" } */
 
-#define NUMBER 100
+#define NUMBER 20
 
 int main(void)
 {
