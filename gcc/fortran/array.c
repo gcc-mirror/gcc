@@ -2084,7 +2084,7 @@ spec_size (gfc_array_spec *as, mpz_t *result)
   mpz_t size;
   int d;
 
-  if (as->type == AS_ASSUMED_RANK)
+  if (!as || as->type == AS_ASSUMED_RANK)
     return false;
 
   mpz_init_set_ui (*result, 1);
