@@ -5000,7 +5000,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	    {
 	      /* 17.6.3.3.5  */
 	      const char *name = UDLIT_OP_SUFFIX (id);
-	      if (name[0] != '_' && !in_system_header)
+	      if (name[0] != '_' && !in_system_header && declarator_p)
 		warning (0, "literal operator suffixes not preceded by %<_%>"
 			    " are reserved for future standardization");
 	    }
@@ -5691,9 +5691,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  mark_exp_read (p);
 
 	if (vec->length () == 2)
-	  return c_build_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1]); 
+	  return build_x_vec_perm_expr (loc, (*vec)[0], NULL_TREE, (*vec)[1],
+					 tf_warning_or_error);
 	else if (vec->length () == 3)
-	  return c_build_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2]);
+	  return build_x_vec_perm_expr (loc, (*vec)[0], (*vec)[1], (*vec)[2],
+					 tf_warning_or_error);
 	else
 	{
 	  error_at (loc, "wrong number of arguments to "
@@ -6060,41 +6062,31 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
   return error_mark_node;
 }
 
-/* This function parses Cilk Plus array notations.  The starting index is
-   passed in INIT_INDEX and the array name is passed in ARRAY_VALUE.  If the
-   INIT_INDEX is NULL, then we have special case were the entire array is
-   accessed (e.g. A[:]).  The return value of this function is a tree node
-   called VALUE_TREE of type ARRAY_NOTATION_REF.  If some error occurred it
-   returns error_mark_node.  */
+/* This function parses Cilk Plus array notations.  If a normal array expr. is
+   parsed then the array index is passed back to the caller through *INIT_INDEX 
+   and the function returns a NULL_TREE.  If array notation expr. is parsed, 
+   then *INIT_INDEX is ignored by the caller and the function returns 
+   a tree of type ARRAY_NOTATION_REF.  If some error occurred it returns 
+   error_mark_node.  */
 
 static tree
-cp_parser_array_notation (location_t loc, cp_parser *parser, tree init_index,
+cp_parser_array_notation (location_t loc, cp_parser *parser, tree *init_index,
 			  tree array_value)
 {
   cp_token *token = NULL;
-  tree start_index = NULL_TREE, length_index = NULL_TREE, stride = NULL_TREE;
-  tree value_tree, type, array_type, array_type_domain;
-  double_int x; 
-  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
-
+  tree length_index, stride = NULL_TREE, value_tree, array_type;
   if (!array_value || array_value == error_mark_node)
     {
       cp_parser_skip_to_end_of_statement (parser);
       return error_mark_node;
     }
+
+  array_type = TREE_TYPE (array_value);
   
-  if (processing_template_decl)
-    {
-      array_type = TREE_TYPE (array_value);
-      type = TREE_TYPE (array_type);
-    }
-  else
-    {
-      array_type = TREE_TYPE (array_value);
-      gcc_assert (array_type);
-      type = array_type;
-    }
+  bool saved_colon_corrects = parser->colon_corrects_to_scope_p;
+  parser->colon_corrects_to_scope_p = false;
   token = cp_lexer_peek_token (parser->lexer);
+  
   if (!token)
     {
       cp_parser_error (parser, "expected %<:%> or numeral");
@@ -6102,125 +6094,57 @@ cp_parser_array_notation (location_t loc, cp_parser *parser, tree init_index,
     }
   else if (token->type == CPP_COLON)
     {
-      if (!init_index)
+      /* Consume the ':'.  */
+      cp_lexer_consume_token (parser->lexer);
+      
+      /* If we are here, then we have a case like this A[:].  */
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_CLOSE_SQUARE)
 	{
-	  /* If we are here, then we have a case like this A[:].  */
-	  cp_lexer_consume_token (parser->lexer);
-
-	  if (cp_lexer_peek_token (parser->lexer)->type != CPP_CLOSE_SQUARE)
-	    {
-	      cp_parser_error (parser, "expected %<]%>");
-	      cp_parser_skip_to_end_of_statement (parser);
-	      return error_mark_node;
-	    }
-	  if (TREE_CODE (array_type) == RECORD_TYPE
-	      || TREE_CODE (array_type) == POINTER_TYPE)
-	    {
-	      error_at (loc, "start-index and length fields necessary for "
-			"using array notations in pointers or records");
-	      cp_parser_skip_to_end_of_statement (parser);
-	      return error_mark_node;
-	    }
-	  if (TREE_CODE (array_type) == ARRAY_TYPE)
-	    {
-	      tree subtype = TREE_TYPE (array_type);
-	      while (subtype && TREE_CODE (subtype) == POINTER_TYPE)
-		{
-		  /* This could be a function ptr.  If so, then emit error.  */
-		  subtype = TREE_TYPE (subtype);
-		  if (subtype && TREE_CODE (subtype) == FUNCTION_TYPE)
-		    {
-		      error_at (loc, "array notations cannot be used with"
-				" function pointer arrays");
-		      cp_parser_skip_to_end_of_statement (parser);
-		      return error_mark_node;
-		    }
-		}
-	    }
-	  array_type_domain = TYPE_DOMAIN (array_type);
-	  if (!array_type_domain)
-	    {
-	      error_at (loc, "start-index and length fields necessary for "
-			"using array notations in dimensionless arrays");
-	      cp_parser_skip_to_end_of_statement (parser);
-	      return error_mark_node;
-	    }
-	  start_index = TYPE_MINVAL (array_type_domain);
-	  start_index = fold_build1 (CONVERT_EXPR, ptrdiff_type_node,
-				     start_index);
-	  x = TREE_INT_CST (TYPE_MAXVAL (array_type_domain));
-	  x.low++;
-	  length_index = double_int_to_tree (integer_type_node, x);
-	  length_index = fold_build1 (CONVERT_EXPR, ptrdiff_type_node,
-				      length_index);
-	  stride = build_int_cst (integer_type_node, 1);
-	  stride = fold_build1 (CONVERT_EXPR, ptrdiff_type_node, stride);
-	}
-      else if (init_index != error_mark_node)
-	{
-	  /* If we hare here, then there are 2 possibilities:
-	     1. Array [ EXPR : EXPR ]
-	     2. Array [ EXPR : EXPR : EXPR ]
-	  */
-	  start_index = init_index;
-	  cp_lexer_consume_token (parser->lexer);
-
-	  saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
-	   /* The ':' is used in array notation.  Thus compiler cannot do scope 
-	      correction automatically.  */
-	  parser->colon_corrects_to_scope_p = false;
-	  length_index = cp_parser_expression (parser, false, NULL);
-	  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
-	  if (!length_index || length_index == error_mark_node)
-	    cp_parser_skip_to_end_of_statement (parser);
-	 
-	  if (cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
-	    {
-	      cp_lexer_consume_token (parser->lexer);
-	      saved_colon_corrects_to_scope_p = 
-		parser->colon_corrects_to_scope_p;
-	      /* Disable correcting single colon correcting to scope.  */
-	      parser->colon_corrects_to_scope_p = false;
-	      stride = cp_parser_expression (parser, false, NULL);
-	      parser->colon_corrects_to_scope_p = 
-		saved_colon_corrects_to_scope_p;
-	      if (!stride || stride == error_mark_node)
-		{
-		  cp_parser_skip_to_end_of_statement (parser);
-		  if (cp_lexer_peek_token (parser->lexer)->type
-		      == CPP_CLOSE_SQUARE)
-		    cp_lexer_consume_token (parser->lexer);
-		}
-	    }
-	  else
-	    stride = build_one_cst (integer_type_node);
-	}
-      else
-	{
+	  cp_parser_error (parser, "expected %<]%>");
 	  cp_parser_skip_to_end_of_statement (parser);
 	  return error_mark_node;
 	}
+      *init_index = NULL_TREE;
+      stride = NULL_TREE;
+      length_index = NULL_TREE;
     }
-  
-  if (start_index == error_mark_node || length_index == error_mark_node
-      || stride == error_mark_node || !start_index || !length_index
-      || !stride)
+  else
+    {
+      /* If we are here, then there are three valid possibilities:
+	 1. ARRAY [ EXP ]
+	 2. ARRAY [ EXP : EXP ]
+	 3. ARRAY [ EXP : EXP : EXP ]  */
+
+      *init_index = cp_parser_expression (parser, false, NULL);	
+      if (cp_lexer_peek_token (parser->lexer)->type != CPP_COLON)
+	{  
+	  /* This indicates that we have a normal array expression.  */
+	  parser->colon_corrects_to_scope_p = saved_colon_corrects;
+	  return NULL_TREE;
+	}
+      
+      /* Consume the ':'.  */
+      cp_lexer_consume_token (parser->lexer);
+      length_index = cp_parser_expression (parser, false, NULL);
+      if (cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  stride = cp_parser_expression (parser, false, NULL);
+	}
+    }
+  parser->colon_corrects_to_scope_p = saved_colon_corrects;
+
+  if (*init_index == error_mark_node || length_index == error_mark_node
+      || stride == error_mark_node)
     {
       if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_SQUARE)
 	cp_lexer_consume_token (parser->lexer);
       return error_mark_node;
     }
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
-  
-  /* We fold all 3 of the values to make things easier when we transform
-     them later.  */
-  start_index = fold (start_index);
-  length_index = fold (length_index);
-  stride = fold (stride);
 
-  value_tree = build_array_notation_ref (input_location, array_value,
-					 start_index, length_index, stride,
-					 type);
+  value_tree = build_array_notation_ref (loc, array_value, *init_index, 
+					 length_index, stride, array_type);
   return value_tree;
 }
 
@@ -6239,84 +6163,68 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
 					  bool for_offsetof,
 					  bool decltype_p)
 {
-  tree index;
+  tree index = NULL_TREE;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 
   /* Consume the `[' token.  */
   cp_lexer_consume_token (parser->lexer);
 
-  if (flag_enable_cilkplus
-      && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
-    /* If we are here, then we have something like this:
-       ARRAY[:]
-    */
-    postfix_expression = cp_parser_array_notation (loc, parser, NULL_TREE,
-						   postfix_expression);
+  /* Parse the index expression.  */
+  /* ??? For offsetof, there is a question of what to allow here.  If
+     offsetof is not being used in an integral constant expression context,
+     then we *could* get the right answer by computing the value at runtime.
+     If we are in an integral constant expression context, then we might
+     could accept any constant expression; hard to say without analysis.
+     Rather than open the barn door too wide right away, allow only integer
+     constant expressions here.  */
+  if (for_offsetof)
+    index = cp_parser_constant_expression (parser, false, NULL);
   else
     {
-      /* Here are have these options:
-	 1. ARRAY[EXPR]               -- This is the normal array call.
-	 2. ARRAY[EXPR : EXPR]        -- Array notation expr with default stride
-	 of 1.
-	 3. ARRAY[EXPR : EXPR : EXPR] -- Array Notation with userdefined stride.
-	 4. Array[Braced List]        -- This is handled by braced list.
-      */
-      
-      /* Parse the index expression.  */
-      /* ??? For offsetof, there is a question of what to allow here.  If
-	 offsetof is not being used in an integral constant expression context,
-	 then we *could* get the right answer by computing the value at runtime.
-	 If we are in an integral constant expression context, then we might
-	 could accept any constant expression; hard to say without analysis.
-	 Rather than open the barn door too wide right away, allow only integer
-	 constant expressions here.  */
-      if (for_offsetof)
-	index = cp_parser_constant_expression (parser, false, NULL);
-      else
+      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
 	{
-	  bool saved_colon_corrects_to_scope_p = 
-	    parser->colon_corrects_to_scope_p;
-	  if (flag_enable_cilkplus)
-	    parser->colon_corrects_to_scope_p = false;
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE))
+	  bool expr_nonconst_p;
+	  maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
+	  index = cp_parser_braced_list (parser, &expr_nonconst_p);
+	  if (flag_enable_cilkplus
+	      && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
 	    {
-	      bool expr_nonconst_p;
-	      maybe_warn_cpp0x (CPP0X_INITIALIZER_LISTS);
-	      index = cp_parser_braced_list (parser, &expr_nonconst_p);
-	      if (flag_enable_cilkplus
-		  && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
-		{
-		  error_at (cp_lexer_peek_token (parser->lexer)->location,
-			    "braced list index is not allowed with array "
-			    "notations");
-		  index = error_mark_node;
-		}
+	      error_at (cp_lexer_peek_token (parser->lexer)->location,
+			"braced list index is not allowed with array "
+			"notation");
+	      cp_parser_skip_to_end_of_statement (parser);
+	      return error_mark_node;
 	    }
-	  else
-	    index = cp_parser_expression (parser, /*cast_p=*/false, NULL);
-	  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
 	}
-      if (flag_enable_cilkplus
-	  && cp_lexer_peek_token (parser->lexer)->type == CPP_COLON)
-	postfix_expression = cp_parser_array_notation (loc, parser, index,
-						       postfix_expression);
-      else
+      else if (flag_enable_cilkplus)
 	{
-  	  /* Look for the closing `]'.  */
-	  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
-
-	  /* Build the ARRAY_REF.  */
-	  postfix_expression = grok_array_decl (loc, postfix_expression,
-						index, decltype_p);
-
-	  /* When not doing offsetof, array references are not permitted in
-	     constant-expressions.  */
-	  if (!for_offsetof
-	      && (cp_parser_non_integral_constant_expression (parser,
-							      NIC_ARRAY_REF)))
-	    postfix_expression = error_mark_node;
+	  /* Here are have these two options:
+	     ARRAY[EXP : EXP]        - Array notation expr with default
+	     stride of 1.
+	     ARRAY[EXP : EXP : EXP] - Array Notation with user-defined
+	     stride.  */
+	  tree an_exp = cp_parser_array_notation (loc, parser, &index, 
+						  postfix_expression);
+	  if (an_exp)
+	    return an_exp;
 	}
+      else
+	index = cp_parser_expression (parser, /*cast_p=*/false, NULL);
     }
+
+  /* Look for the closing `]'.  */
+  cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
+
+  /* Build the ARRAY_REF.  */
+  postfix_expression = grok_array_decl (loc, postfix_expression,
+					index, decltype_p);
+
+  /* When not doing offsetof, array references are not permitted in
+     constant-expressions.  */
+  if (!for_offsetof
+      && (cp_parser_non_integral_constant_expression (parser, NIC_ARRAY_REF)))
+    postfix_expression = error_mark_node;
+
   return postfix_expression;
 }
 
@@ -9551,8 +9459,6 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
   /* Consume the `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (compound_stmt))
-    compound_stmt = expand_array_notation_exprs (compound_stmt);
   return compound_stmt;
 }
 
@@ -9745,14 +9651,6 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p)
 
 	    /* Now we're all done with the switch-statement.  */
 	    finish_switch_stmt (statement);
-	    if (flag_enable_cilkplus
-		&& contains_array_notation_expr (condition))
-	      {
-		error_at (EXPR_LOCATION (condition),
-			  "array notations cannot be used as a condition for "
-			  "switch statement");
-		statement = error_mark_node;
-	      }      
 	  }
 
 	return statement;
@@ -10310,12 +10208,6 @@ cp_parser_iteration_statement (cp_parser* parser)
 	parser->in_statement = in_statement;
 	/* We're done with the while-statement.  */
 	finish_while_stmt (statement);
-	if (flag_enable_cilkplus && contains_array_notation_expr (condition))
-	  {
-	    error_at (EXPR_LOCATION (condition), "array notations cannot be "
-		      "used as a condition for while statement");
-	    statement = error_mark_node;
-	  }
       }
       break;
 
@@ -10342,15 +10234,6 @@ cp_parser_iteration_statement (cp_parser* parser)
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 	/* Look for the `;'.  */
 	cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-	if (flag_enable_cilkplus
-	    && contains_array_notation_expr (DO_COND (statement)))
-	  {
-	    error_at (EXPR_LOCATION (DO_COND (statement)),
-		      "array notations cannot be used as a condition for a "
-		      "do-while statement");
-	    statement = error_mark_node;
-	  }
-
       }
       break;
 
@@ -10369,17 +10252,8 @@ cp_parser_iteration_statement (cp_parser* parser)
 	cp_parser_already_scoped_statement (parser);
 	parser->in_statement = in_statement;
 
-	if (flag_enable_cilkplus
-	    && contains_array_notation_expr (FOR_COND (statement)))
-	  {
-	    error_at (EXPR_LOCATION (FOR_COND (statement)),
-		      "array notations cannot be used in a condition for a "
-		      "for-loop");
-	    statement = error_mark_node;
-	  }
-	else
-	  /* We're done with the for-statement.  */
-	  finish_for_stmt (statement);
+	/* We're done with the for-statement.  */
+	finish_for_stmt (statement);
       }
       break;
 
@@ -12346,7 +12220,6 @@ cp_literal_operator_id (const char* name)
 			      + strlen (name) + 10);
   sprintf (buffer, UDLIT_OP_ANSI_FORMAT, name);
   identifier = get_identifier (buffer);
-  /*IDENTIFIER_UDLIT_OPNAME_P (identifier) = 1; If we get a flag someday. */
 
   return identifier;
 }
@@ -12371,6 +12244,8 @@ cp_parser_operator (cp_parser* parser)
 {
   tree id = NULL_TREE;
   cp_token *token;
+  bool bad_encoding_prefix = false;
+  int string_len = 2;
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
@@ -12570,10 +12445,20 @@ cp_parser_operator (cp_parser* parser)
       cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
       return ansi_opname (ARRAY_REF);
 
+    case CPP_WSTRING:
+      string_len = 3;
+    case CPP_STRING16:
+    case CPP_STRING32:
+      string_len = 5;
+    case CPP_UTF8STRING:
+      string_len = 4;
+      bad_encoding_prefix = true;
     case CPP_STRING:
       if (cxx_dialect == cxx98)
 	maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
-      if (TREE_STRING_LENGTH (token->u.value) > 2)
+      if (bad_encoding_prefix)
+	error ("invalid encoding prefix in literal operator");
+      if (TREE_STRING_LENGTH (token->u.value) > string_len)
 	{
 	  error ("expected empty string after %<operator%> keyword");
 	  return error_mark_node;
@@ -12591,15 +12476,49 @@ cp_parser_operator (cp_parser* parser)
 	      return cp_literal_operator_id (name);
 	    }
 	}
+      else if (token->type == CPP_KEYWORD)
+	{
+	  error ("unexpected keyword;"
+		 " remove space between quotes and suffix identifier");
+	  return error_mark_node;
+	}
       else
 	{
 	  error ("expected suffix identifier");
 	  return error_mark_node;
 	}
 
+    case CPP_WSTRING_USERDEF:
+      string_len = 3;
+    case CPP_STRING16_USERDEF:
+    case CPP_STRING32_USERDEF:
+      string_len = 5;
+    case CPP_UTF8STRING_USERDEF:
+      string_len = 4;
+      bad_encoding_prefix = true;
     case CPP_STRING_USERDEF:
-      error ("missing space between %<\"\"%> and suffix identifier");
-      return error_mark_node;
+      if (cxx_dialect == cxx98)
+	maybe_warn_cpp0x (CPP0X_USER_DEFINED_LITERALS);
+      if (bad_encoding_prefix)
+	error ("invalid encoding prefix in literal operator");
+      {
+	tree string_tree = USERDEF_LITERAL_VALUE (token->u.value);
+	if (TREE_STRING_LENGTH (string_tree) > string_len)
+	  {
+	    error ("expected empty string after %<operator%> keyword");
+	    return error_mark_node;
+	  }
+	id = USERDEF_LITERAL_SUFFIX_ID (token->u.value);
+	/* Consume the user-defined string literal.  */
+	cp_lexer_consume_token (parser->lexer);
+	if (id != error_mark_node)
+	  {
+	    const char *name = IDENTIFIER_POINTER (id);
+	    return cp_literal_operator_id (name);
+	  }
+	else
+	  return error_mark_node;
+      }
 
     default:
       /* Anything else is an error.  */
@@ -16953,54 +16872,30 @@ cp_parser_direct_declarator (cp_parser* parser,
 	  if (token->type != CPP_CLOSE_SQUARE)
 	    {
 	      bool non_constant_p;
-
-	      if (flag_enable_cilkplus
-		  && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+	      bounds
+		= cp_parser_constant_expression (parser,
+						 /*allow_non_constant=*/true,
+						 &non_constant_p);
+	      if (!non_constant_p)
+		/* OK */;
+	      else if (error_operand_p (bounds))
+		/* Already gave an error.  */;
+	      else if (!parser->in_function_body
+		       || current_binding_level->kind == sk_function_parms)
 		{
+		  /* Normally, the array bound must be an integral constant
+		     expression.  However, as an extension, we allow VLAs
+		     in function scopes as long as they aren't part of a
+		     parameter declaration.  */
+		  cp_parser_error (parser,
+				   "array bound is not an integer constant");
 		  bounds = error_mark_node;
-		  error_at (cp_lexer_peek_token (parser->lexer)->location,
-			    "array notations cannot be used in declaration");
-		  cp_lexer_consume_token (parser->lexer);
 		}
-	      else
+	      else if (processing_template_decl)
 		{
-		  bounds
-		    = cp_parser_constant_expression (parser,
-						     /*allow_non_constant=*/true,
-						     &non_constant_p);
-		  if (!non_constant_p)
-		    /* OK */;
-		  else if (error_operand_p (bounds))
-		    /* Already gave an error.  */;
-		  else if (!parser->in_function_body
-			   || current_binding_level->kind == sk_function_parms)
-		    {
-		      /* Normally, the array bound must be an integral constant
-			 expression.  However, as an extension, we allow VLAs
-			 in function scopes as long as they aren't part of a
-			 parameter declaration.  */
-		      cp_parser_error (parser,
-				       "array bound is not an integer constant");
-		      bounds = error_mark_node;
-		    }
-		  else if (processing_template_decl)
-		    {
-		      /* Remember this wasn't a constant-expression.  */
-		      bounds = build_nop (TREE_TYPE (bounds), bounds);
-		      TREE_SIDE_EFFECTS (bounds) = 1;
-		    }
-		  if (flag_enable_cilkplus
-		      && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-		    {
-		      location_t loc =
-			cp_lexer_peek_token (parser->lexer)->location;
-		      while (cp_lexer_next_token_is_not (parser->lexer,
-							 CPP_CLOSE_SQUARE))
-			cp_lexer_consume_token (parser->lexer);
-		      error_at (loc, "array notations cannot be used in "
-			 	"declaration");
-		      bounds = error_mark_node; 
-		    }
+		  /* Remember this wasn't a constant-expression.  */
+		  bounds = build_nop (TREE_TYPE (bounds), bounds);
+		  TREE_SIDE_EFFECTS (bounds) = 1;
 		}
 	    }
 	  else
@@ -18371,11 +18266,6 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
   cp_parser_function_body (parser, in_function_try_block);
   if (check_body_p)
     check_constexpr_ctor_body (last, list);
-
-  /* Transform all array notations to the equivalent array refs and loop.  */
-  if (flag_enable_cilkplus && contains_array_notation_expr (body))
-    body = expand_array_notation_exprs (body);
-  
   /* Finish the function body.  */
   finish_function_body (body);
 
@@ -22355,12 +22245,6 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
 
   finish_lambda_scope ();
 
-  /* Expand all array notation expressions here.  */
-  if (flag_enable_cilkplus && current_function_decl
-      && contains_array_notation_expr (DECL_SAVED_TREE (current_function_decl)))
-    DECL_SAVED_TREE (current_function_decl) =
-      expand_array_notation_exprs (DECL_SAVED_TREE (current_function_decl));
-  
   /* Finish the function.  */
   fn = finish_function ((ctor_initializer_p ? 1 : 0) |
 			(inline_p ? 2 : 0));
@@ -22797,12 +22681,14 @@ cp_parser_save_member_function_body (cp_parser* parser,
   /* Save away the tokens that make up the body of the
      function.  */
   first = parser->lexer->next_token;
+  /* Handle function try blocks.  */
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_TRY))
+    cp_lexer_consume_token (parser->lexer);
   /* We can have braced-init-list mem-initializers before the fn body.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
     {
       cp_lexer_consume_token (parser->lexer);
-      while (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE)
-	     && cp_lexer_next_token_is_not_keyword (parser->lexer, RID_TRY))
+      while (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
 	{
 	  /* cache_group will stop after an un-nested { } pair, too.  */
 	  if (cp_parser_cache_group (parser, CPP_CLOSE_PAREN, /*depth=*/0))

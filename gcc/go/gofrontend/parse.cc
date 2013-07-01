@@ -1457,6 +1457,16 @@ Parse::const_spec(Type** last_type, Expression_list** last_expr_list)
 
       if (!Gogo::is_sink_name(pi->name()))
 	this->gogo_->add_constant(*pi, *pe, this->iota_value());
+      else
+	{
+	  static int count;
+	  char buf[30];
+	  snprintf(buf, sizeof buf, ".$sinkconst%d", count);
+	  ++count;
+	  Typed_identifier ti(std::string(buf), type, pi->location());
+	  Named_object* no = this->gogo_->add_constant(ti, *pe, this->iota_value());
+	  no->const_value()->set_is_sink();
+	}
     }
   if (pe != expr_list->end())
     error_at(this->location(), "too many initializers");
@@ -3030,7 +3040,7 @@ Parse::primary_expr(bool may_be_sink, bool may_be_composite_lit,
 		  && t->array_type()->length()->is_nil_expression())
 		{
 		  error_at(ret->location(),
-			   "invalid use of %<...%> in type conversion");
+			   "use of %<[...]%> outside of array literal");
 		  ret = Expression::make_error(loc);
 		}
 	      else
@@ -4513,9 +4523,12 @@ Parse::expr_case_clause(Case_clauses* clauses, bool* saw_default)
   bool is_fallthrough = false;
   if (this->peek_token()->is_keyword(KEYWORD_FALLTHROUGH))
     {
+      Location fallthrough_loc = this->location();
       is_fallthrough = true;
       if (this->advance_token()->is_op(OPERATOR_SEMICOLON))
 	this->advance_token();
+      if (this->peek_token()->is_op(OPERATOR_RCURLY))
+	error_at(fallthrough_loc, _("cannot fallthrough final case in switch"));
     }
 
   if (is_default)

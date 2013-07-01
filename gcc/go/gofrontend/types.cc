@@ -3396,7 +3396,8 @@ Function_type::do_get_backend(Gogo* gogo)
   // passed when invoking the function indirectly, via the struct.
 
   Location loc = this->location();
-  Btype* struct_type = gogo->backend()->placeholder_struct_type("", loc);
+  Btype* struct_type =
+    gogo->backend()->placeholder_struct_type("__go_descriptor", loc);
   Btype* ptr_struct_type = gogo->backend()->pointer_type(struct_type);
 
   Backend::Btyped_identifier breceiver;
@@ -3833,6 +3834,49 @@ Function_type::copy_with_receiver(Type* receiver_type) const
   if (this->is_varargs_)
     ret->set_is_varargs();
   return ret;
+}
+
+// Make a copy of a function type ignoring any receiver and adding a
+// closure parameter.
+
+Function_type*
+Function_type::copy_with_closure(Type* closure_type) const
+{
+  Typed_identifier_list* new_params = new Typed_identifier_list();
+  const Typed_identifier_list* orig_params = this->parameters_;
+  if (orig_params != NULL && !orig_params->empty())
+    {
+      static int count;
+      char buf[50];
+      for (Typed_identifier_list::const_iterator p = orig_params->begin();
+	   p != orig_params->end();
+	   ++p)
+	{
+	  snprintf(buf, sizeof buf, "pt.%u", count);
+	  ++count;
+	  new_params->push_back(Typed_identifier(buf, p->type(),
+						 p->location()));
+	}
+    }
+  new_params->push_back(Typed_identifier("closure.0", closure_type,
+					 this->location_));
+
+  const Typed_identifier_list* orig_results = this->results_;
+  Typed_identifier_list* new_results;
+  if (orig_results == NULL || orig_results->empty())
+    new_results = NULL;
+  else
+    {
+      new_results = new Typed_identifier_list();
+      for (Typed_identifier_list::const_iterator p = orig_results->begin();
+	   p != orig_results->end();
+	   ++p)
+	new_results->push_back(Typed_identifier("", p->type(),
+						p->location()));
+    }
+
+  return Type::make_function_type(NULL, new_params, new_results,
+				  this->location());
 }
 
 // Make a function type.
@@ -7580,7 +7624,7 @@ Method::bind_method(Expression* expr, Location location) const
       // the child class.
       return this->do_bind_method(expr, location);
     }
-  return Expression::make_bound_method(expr, this->stub_, location);
+  return Expression::make_bound_method(expr, this, this->stub_, location);
 }
 
 // Return the named object associated with a method.  This may only be
@@ -7623,8 +7667,8 @@ Expression*
 Named_method::do_bind_method(Expression* expr, Location location) const
 {
   Named_object* no = this->named_object_;
-  Bound_method_expression* bme = Expression::make_bound_method(expr, no,
-							       location);
+  Bound_method_expression* bme = Expression::make_bound_method(expr, this,
+							       no, location);
   // If this is not a local method, and it does not use a stub, then
   // the real method expects a different type.  We need to cast the
   // first argument.
@@ -9002,28 +9046,16 @@ Type::build_one_stub_method(Gogo* gogo, Method* method,
   Call_expression* call = Expression::make_call(func, arguments, is_varargs,
 						location);
   call->set_hidden_fields_are_ok();
-  size_t count = call->result_count();
-  if (count == 0)
-    gogo->add_statement(Statement::make_statement(call, true));
-  else
-    {
-      Expression_list* retvals = new Expression_list();
-      if (count <= 1)
-	retvals->push_back(call);
-      else
-	{
-	  for (size_t i = 0; i < count; ++i)
-	    retvals->push_back(Expression::make_call_result(call, i));
-	}
-      Return_statement* retstat = Statement::make_return_statement(retvals,
-								   location);
 
+  Statement* s = Statement::make_return_from_call(call, location);
+  Return_statement* retstat = s->return_statement();
+  if (retstat != NULL)
+    {
       // We can return values with hidden fields from a stub.  This is
       // necessary if the method is itself hidden.
       retstat->set_hidden_fields_are_ok();
-
-      gogo->add_statement(retstat);
     }
+  gogo->add_statement(s);
 }
 
 // Apply FIELD_INDEXES to EXPR.  The field indexes have to be applied
@@ -9364,13 +9396,18 @@ Type::find_field_or_method(const Type* type,
 	fnt = pf->type()->deref()->named_type();
       go_assert(fnt != NULL);
 
+      // Methods with pointer receivers on embedded field are
+      // inherited by the pointer to struct, and also by the struct
+      // type if the field itself is a pointer.
+      bool can_be_pointer = (receiver_can_be_pointer
+			     || pf->type()->points_to() != NULL);
       int sublevel = level == NULL ? 1 : *level + 1;
       bool sub_is_method;
       std::string subambig1;
       std::string subambig2;
       bool subfound = Type::find_field_or_method(fnt,
 						 name,
-						 receiver_can_be_pointer,
+						 can_be_pointer,
 						 seen,
 						 &sublevel,
 						 &sub_is_method,

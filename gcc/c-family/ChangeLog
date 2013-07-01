@@ -1,8 +1,23 @@
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* c-common.h (c_build_vec_perm_expr): New complain argument.
+	* c-common.c (c_build_vec_perm_expr): Likewise.
+	Use save_expr also in C++.
+
 2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-common.c (c_common_nodes_and_builtins): Use cxx11 in lieu of cxx0x.
 	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
 	* c-opts.c (c_common_post_options): Likewise.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>  
+
+	* array-notation-common.c (length_mismatch_in_expr): Changed the
+	parameter type's from a dynamic array to a vec_tree.  Also removed
+	the size parameters.
+	* c-common.h (length_mismatch_in_expr_p): Fixed prototype's as per
+	the change above.
 
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 

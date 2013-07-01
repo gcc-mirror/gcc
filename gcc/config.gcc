@@ -453,6 +453,7 @@ s390*-*-*)
 	cpu_type=s390
 	need_64bit_hwint=yes
 	extra_options="${extra_options} fused-madd.opt"
+	extra_headers="s390intrin.h htmintrin.h htmxlintrin.h"
 	;;
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
 sh[123456789lbe]*-*-* | sh-*-*)
@@ -1850,12 +1851,12 @@ mips*-*-linux*)				# Linux MIPS, either endian.
         esac
 	;;
 mips*-mti-elf*)
-	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h mips/mti-elf.h"
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h mips/mti-elf.h"
 	tmake_file="mips/t-mti-elf"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=33 MIPS_ABI_DEFAULT=ABI_32"
 	;;
 mips*-sde-elf*)
-	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/sde.h"
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h mips/sde.h"
 	tmake_file="mips/t-sde"
 	extra_options="${extra_options} mips/sde.opt"
 	case "${with_newlib}" in
@@ -1937,7 +1938,7 @@ mips-*-elf* | mipsel-*-elf* | mipsr5900-*-elf* | mipsr5900el-*-elf*)
 	tmake_file="mips/t-elf"
 	;;
 mips64r5900-*-elf* | mips64r5900el-*-elf*)
-	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h"
+	tm_file="elfos.h newlib-stdint.h ${tm_file} mips/elf.h mips/n32-elf.h"
 	tmake_file="mips/t-elf"
 	tm_defines="${tm_defines} MIPS_ISA_DEFAULT=3 MIPS_ABI_DEFAULT=ABI_N32"
 	;;

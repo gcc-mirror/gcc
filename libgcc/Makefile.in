@@ -121,8 +121,8 @@ installcheck:
 .PHONY: all clean
 
 clean:
-	-rm -f auto-target.h libgcc_tm.h libgcc.map
-	-rm -f libgcc_tm.stamp stamp-h stmp-ldirs
+	-rm -f libgcc_tm.h libgcc.map
+	-rm -f libgcc_tm.stamp stmp-ldirs
 	-rm -f *$(objext)
 	-rm -f *.dep
 	-rm -f *.a
@@ -131,6 +131,8 @@ clean:
 	@$(MULTICLEAN) multi-clean DO=clean
 distclean: clean
 	@$(MULTICLEAN) multi-clean DO=distclean
+	-rm -f auto-target.h
+	-rm -f stamp-h
 	-rm -f *~ Makefile config.cache config.status multilib.out
 	-rm -f config.log
 maintainer-clean realclean: distclean

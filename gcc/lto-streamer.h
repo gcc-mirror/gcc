@@ -479,7 +479,7 @@ struct GTY(()) lto_tree_ref_table
 
 struct lto_tree_ref_encoder
 {
-  pointer_map_t *tree_hash_table;	/* Maps pointers to indices. */
+  pointer_map<unsigned> *tree_hash_table;	/* Maps pointers to indices. */
   vec<tree> trees;			/* Maps indices to pointers. */
 };
 
@@ -997,7 +997,7 @@ lto_tag_check_range (enum LTO_tags actual, enum LTO_tags tag1,
 static inline void
 lto_init_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)
 {
-  encoder->tree_hash_table = pointer_map_create ();
+  encoder->tree_hash_table = new pointer_map<unsigned>;
   encoder->trees.create (0);
 }
 
@@ -1009,7 +1009,7 @@ lto_destroy_tree_ref_encoder (struct lto_tree_ref_encoder *encoder)
 {
   /* Hash table may be delete already.  */
   if (encoder->tree_hash_table)
-    pointer_map_destroy (encoder->tree_hash_table);
+    delete encoder->tree_hash_table;
   encoder->trees.release ();
 }
 

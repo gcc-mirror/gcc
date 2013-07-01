@@ -3796,6 +3796,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   enum vect_def_type dt;
   stmt_vec_info prev_stmt_info = NULL;
   tree dataref_ptr = NULL_TREE;
+  gimple ptr_incr = NULL;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
   int j;
@@ -4041,7 +4042,6 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   for (j = 0; j < ncopies; j++)
     {
       gimple new_stmt;
-      gimple ptr_incr;
 
       if (j == 0)
 	{
@@ -4314,7 +4314,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   tree dummy;
   enum dr_alignment_support alignment_support_scheme;
   tree dataref_ptr = NULL_TREE;
-  gimple ptr_incr;
+  gimple ptr_incr = NULL;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
   int i, j, group_size, group_gap;

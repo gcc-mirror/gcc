@@ -132,6 +132,13 @@ void
 clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 		     bool update_original, int *overall_size)
 {
+  struct cgraph_node *inlining_into;
+
+  if (e->caller->global.inlined_to)
+    inlining_into = e->caller->global.inlined_to;
+  else
+    inlining_into = e->caller;
+
   if (duplicate)
     {
       /* We may eliminate the need for out-of-line copy to be output.
@@ -167,18 +174,15 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 	{
 	  struct cgraph_node *n;
 	  n = cgraph_clone_node (e->callee, e->callee->symbol.decl,
-				 e->count, e->frequency,
-				 update_original, vNULL, true);
+				 e->count, e->frequency, update_original,
+				 vNULL, true, inlining_into);
 	  cgraph_redirect_edge_callee (e, n);
 	}
     }
   else
     symtab_dissolve_same_comdat_group_list ((symtab_node) e->callee);
 
-  if (e->caller->global.inlined_to)
-    e->callee->global.inlined_to = e->caller->global.inlined_to;
-  else
-    e->callee->global.inlined_to = e->caller;
+  e->callee->global.inlined_to = inlining_into;
 
   /* Recursively clone all bodies.  */
   for (e = e->callee->callees; e; e = e->next_callee)

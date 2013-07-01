@@ -4947,7 +4947,7 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
   /* Bit position of this element from the start of a possibly ongoing
      outer byte buffer.  */
   HOST_WIDE_INT byte_relative_ebitpos
-      = bit_offset + constructor_relative_ebitpos;
+    = bit_offset + constructor_relative_ebitpos;
 
   /* From the start of a possibly ongoing outer byte buffer, offsets to
      the first bit of this element and to the first bit past the end of
@@ -5131,7 +5131,6 @@ output_constructor (tree exp, unsigned HOST_WIDE_INT size,
   local.total_bytes = 0;
   local.byte_buffer_in_use = outer != NULL;
   local.byte = outer ? outer->byte : 0;
-
   local.last_relative_index = -1;
 
   gcc_assert (HOST_BITS_PER_WIDE_INT >= BITS_PER_UNIT);

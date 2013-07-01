@@ -956,7 +956,7 @@ extern bool lvalue_p (const_tree);
 
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
-extern tree c_build_vec_perm_expr (location_t, tree, tree, tree);
+extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
 
 extern rtx c_expand_expr (tree, rtx, enum machine_mode, int, rtx *);
 
@@ -1238,7 +1238,7 @@ extern bool contains_array_notation_expr (tree);
 extern tree expand_array_notation_exprs (tree);
 extern tree fix_conditional_array_notations (tree);
 extern tree find_correct_array_notation_type (tree);
-extern bool length_mismatch_in_expr_p (location_t, tree **, size_t, size_t);
+extern bool length_mismatch_in_expr_p (location_t, vec<vec<an_parts> >);
 extern enum built_in_function is_cilkplus_reduce_builtin (tree);
 extern bool find_rank (location_t, tree, tree, bool, size_t *);
 extern void extract_array_notation_exprs (tree, bool, vec<tree, va_gc> **);

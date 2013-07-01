@@ -34,7 +34,8 @@ enum processor_flags
   PF_DFP = 16,
   PF_Z10 = 32,
   PF_Z196 = 64,
-  PF_ZEC12 = 128
+  PF_ZEC12 = 128,
+  PF_TX = 256
 };
 
 /* This is necessary to avoid a warning about comparing different enum
@@ -61,6 +62,8 @@ enum processor_flags
  	(s390_arch_flags & PF_Z196)
 #define TARGET_CPU_ZEC12 \
  	(s390_arch_flags & PF_ZEC12)
+#define TARGET_CPU_HTM \
+ 	(s390_arch_flags & PF_TX)
 
 /* These flags indicate that the generated code should run on a cpu
    providing the respective hardware facility when run in
@@ -78,6 +81,8 @@ enum processor_flags
        (TARGET_ZARCH && TARGET_CPU_Z196)
 #define TARGET_ZEC12 \
        (TARGET_ZARCH && TARGET_CPU_ZEC12)
+#define TARGET_HTM \
+       (TARGET_ZARCH && TARGET_CPU_HTM && TARGET_OPT_HTM)
 
 
 #define TARGET_AVOID_CMP_AND_BRANCH (s390_tune == PROCESSOR_2817_Z196)
@@ -93,23 +98,25 @@ enum processor_flags
 #define TARGET_TPF 0
 
 /* Target CPU builtins.  */
-#define TARGET_CPU_CPP_BUILTINS()			\
-  do							\
-    {							\
-      builtin_assert ("cpu=s390");			\
-      builtin_assert ("machine=s390");			\
-      builtin_define ("__s390__");			\
-      if (TARGET_ZARCH)					\
-	builtin_define ("__zarch__");			\
-      if (TARGET_64BIT)					\
-        builtin_define ("__s390x__");			\
-      if (TARGET_LONG_DOUBLE_128)			\
-        builtin_define ("__LONG_DOUBLE_128__");		\
-    }							\
+#define TARGET_CPU_CPP_BUILTINS()					\
+  do									\
+    {									\
+      builtin_assert ("cpu=s390");					\
+      builtin_assert ("machine=s390");					\
+      builtin_define ("__s390__");					\
+      if (TARGET_ZARCH)							\
+	builtin_define ("__zarch__");					\
+      if (TARGET_64BIT)							\
+        builtin_define ("__s390x__");					\
+      if (TARGET_LONG_DOUBLE_128)					\
+        builtin_define ("__LONG_DOUBLE_128__");				\
+      if (TARGET_HTM)							\
+	builtin_define ("__HTM__");					\
+    }									\
   while (0)
 
 #ifdef DEFAULT_TARGET_64BIT
-#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP)
+#define TARGET_DEFAULT             (MASK_64BIT | MASK_ZARCH | MASK_HARD_DFP | MASK_OPT_HTM)
 #else
 #define TARGET_DEFAULT             0
 #endif

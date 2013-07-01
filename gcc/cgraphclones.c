@@ -167,13 +167,19 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
    function's profile to reflect the fact that part of execution is handled
    by node.  
    When CALL_DUPLICATOIN_HOOK is true, the ipa passes are acknowledged about
-   the new clone. Otherwise the caller is responsible for doing so later.  */
+   the new clone. Otherwise the caller is responsible for doing so later.
+
+   If the new node is being inlined into another one, NEW_INLINED_TO should be
+   the outline function the new one is (even indirectly) inlined to.  All hooks
+   will see this in node's global.inlined_to, when invoked.  Can be NULL if the
+   node is not inlined.  */
 
 struct cgraph_node *
 cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
 		   bool update_original,
 		   vec<cgraph_edge_p> redirect_callers,
-		   bool call_duplication_hook)
+		   bool call_duplication_hook,
+		   struct cgraph_node *new_inlined_to)
 {
   struct cgraph_node *new_node = cgraph_create_empty_node ();
   struct cgraph_edge *e;
@@ -195,6 +201,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   new_node->symbol.externally_visible = false;
   new_node->local.local = true;
   new_node->global = n->global;
+  new_node->global.inlined_to = new_inlined_to;
   new_node->rtl = n->rtl;
   new_node->count = count;
   new_node->frequency = n->frequency;
@@ -307,7 +314,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
 
   new_node = cgraph_clone_node (old_node, new_decl, old_node->count,
 				CGRAPH_FREQ_BASE, false,
-				redirect_callers, false);
+				redirect_callers, false, NULL);
   /* Update the properties.
      Make clone visible only within this translation unit.  Make sure
      that is not weak also.
@@ -334,27 +341,8 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
       || in_lto_p)
     new_node->symbol.unique_name = true;
   FOR_EACH_VEC_SAFE_ELT (tree_map, i, map)
-    {
-      tree var = map->new_tree;
-      symtab_node ref_node;
-
-      STRIP_NOPS (var);
-      if (TREE_CODE (var) != ADDR_EXPR)
-	continue;
-      var = get_base_var (var);
-      if (!var)
-	continue;
-      if (TREE_CODE (var) != FUNCTION_DECL
-	  && TREE_CODE (var) != VAR_DECL)
-	continue;
-
-      /* Record references of the future statement initializing the constant
-	 argument.  */
-      ref_node = symtab_get_node (var);
-      gcc_checking_assert (ref_node);
-      ipa_record_reference ((symtab_node)new_node, (symtab_node)ref_node,
-			    IPA_REF_ADDR, NULL);
-    }
+    ipa_maybe_record_reference ((symtab_node) new_node, map->new_tree,
+				IPA_REF_ADDR, NULL);
   if (!args_to_skip)
     new_node->clone.combined_args_to_skip = old_node->clone.combined_args_to_skip;
   else if (old_node->clone.combined_args_to_skip)

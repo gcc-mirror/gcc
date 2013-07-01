@@ -12464,6 +12464,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case COND_EXPR:
     case MODOP_EXPR:
     case PSEUDO_DTOR_EXPR:
+    case VEC_PERM_EXPR:
       {
 	r = build_nt
 	  (code, tsubst_copy (TREE_OPERAND (t, 0), args, complain, in_decl),
@@ -13761,9 +13762,6 @@ tsubst_copy_and_build (tree t,
 	start_index = RECUR (ARRAY_NOTATION_START (t));
 	length = RECUR (ARRAY_NOTATION_LENGTH (t));
 	stride = RECUR (ARRAY_NOTATION_STRIDE (t));
-	if (!cilkplus_an_triplet_types_ok_p (loc, start_index, length, stride,
-					     TREE_TYPE (op1)))
-	  RETURN (error_mark_node);
 	RETURN (build_array_notation_ref (EXPR_LOCATION (t), op1, start_index,
 					  length, stride, TREE_TYPE (op1)));
       }
@@ -14627,6 +14625,13 @@ tsubst_copy_and_build (tree t,
 
     case PAREN_EXPR:
       RETURN (finish_parenthesized_expr (RECUR (TREE_OPERAND (t, 0))));
+
+    case VEC_PERM_EXPR:
+      RETURN (build_x_vec_perm_expr (input_location,
+		RECUR (TREE_OPERAND (t, 0)),
+		RECUR (TREE_OPERAND (t, 1)),
+		RECUR (TREE_OPERAND (t, 2)),
+		complain));
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */
@@ -15738,9 +15743,6 @@ type_unification_real (tree tparms,
 
       arg = args[ia];
       ++ia;
-
-      if (flag_enable_cilkplus && TREE_CODE (arg) == ARRAY_NOTATION_REF)
-	return 1;
 
       if (unify_one_argument (tparms, targs, parm, arg, subr, strict,
 			      flags, explain_p))
@@ -17510,7 +17512,8 @@ check_undeduced_parms (tree targs, tree args, tree end)
    corresponding argument.  Deduction is done as for class templates.
    The arguments used in deduction have reference and top level cv
    qualifiers removed.  Iff both arguments were originally reference
-   types *and* deduction succeeds in both directions, the template
+   types *and* deduction succeeds in both directions, an lvalue reference
+   wins against an rvalue reference and otherwise the template
    with the more cv-qualified argument wins for that pairing (if
    neither is more cv-qualified, they both are equal).  Unlike regular
    deduction, after all the arguments have been deduced in this way,
@@ -17586,6 +17589,8 @@ more_specialized_fn (tree pat1, tree pat2, int len)
       int deduce1, deduce2;
       int quals1 = -1;
       int quals2 = -1;
+      int ref1 = 0;
+      int ref2 = 0;
 
       if (TREE_CODE (arg1) == TYPE_PACK_EXPANSION
           && TREE_CODE (arg2) == TYPE_PACK_EXPANSION)
@@ -17601,12 +17606,14 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 
       if (TREE_CODE (arg1) == REFERENCE_TYPE)
 	{
+	  ref1 = TYPE_REF_IS_RVALUE (arg1) + 1;
 	  arg1 = TREE_TYPE (arg1);
 	  quals1 = cp_type_quals (arg1);
 	}
 
       if (TREE_CODE (arg2) == REFERENCE_TYPE)
 	{
+	  ref2 = TYPE_REF_IS_RVALUE (arg2) + 1;
 	  arg2 = TREE_TYPE (arg2);
 	  quals2 = cp_type_quals (arg2);
 	}
@@ -17684,19 +17691,33 @@ more_specialized_fn (tree pat1, tree pat2, int len)
 
       /* "If, for a given type, deduction succeeds in both directions
 	 (i.e., the types are identical after the transformations above)
-	 and if the type from the argument template is more cv-qualified
-	 than the type from the parameter template (as described above)
-	 that type is considered to be more specialized than the other. If
-	 neither type is more cv-qualified than the other then neither type
-	 is more specialized than the other."  */
+	 and both P and A were reference types (before being replaced with
+	 the type referred to above):
+	 - if the type from the argument template was an lvalue reference and
+	 the type from the parameter template was not, the argument type is
+	 considered to be more specialized than the other; otherwise,
+	 - if the type from the argument template is more cv-qualified
+	 than the type from the parameter template (as described above),
+	 the argument type is considered to be more specialized than the other;
+	 otherwise,
+	 - neither type is more specialized than the other."  */
 
-      if (deduce1 && deduce2
-	  && quals1 != quals2 && quals1 >= 0 && quals2 >= 0)
+      if (deduce1 && deduce2)
 	{
-	  if ((quals1 & quals2) == quals2)
-	    lose2 = true;
-	  if ((quals1 & quals2) == quals1)
-	    lose1 = true;
+	  if (ref1 && ref2 && ref1 != ref2)
+	    {
+	      if (ref1 > ref2)
+		lose1 = true;
+	      else
+		lose2 = true;
+	    }
+	  else if (quals1 != quals2 && quals1 >= 0 && quals2 >= 0)
+	    {
+	      if ((quals1 & quals2) == quals2)
+		lose2 = true;
+	      if ((quals1 & quals2) == quals1)
+		lose1 = true;
+	    }
 	}
 
       if (lose1 && lose2)
@@ -19143,11 +19164,6 @@ instantiate_decl (tree d, int defer_ok,
       pointer_map_destroy (local_specializations);
       local_specializations = saved_local_specializations;
 
-      /* We expand all the array notation expressions here.  */
-      if (flag_enable_cilkplus
-	  && contains_array_notation_expr (DECL_SAVED_TREE (d)))
-	DECL_SAVED_TREE (d) = expand_array_notation_exprs (DECL_SAVED_TREE (d));
-      
       /* Finish the function.  */
       d = finish_function (0);
       expand_or_defer_fn (d);

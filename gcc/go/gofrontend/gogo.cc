@@ -1278,6 +1278,14 @@ Gogo::define_global_names()
 		   n.c_str());
 	  inform(pf->second, "%qs imported here", n.c_str());
 	}
+
+      // No package scope identifier may be named "init".
+      if (!p->second->is_function()
+	  && Gogo::unpack_hidden_name(p->second->name()) == "init")
+	{
+	  error_at(p->second->location(),
+	           "cannot declare init - must be func");
+	}
     }
 }
 
@@ -1795,11 +1803,36 @@ Create_function_descriptors::expression(Expression** pexpr)
       return TRAVERSE_CONTINUE;
     }
 
+  Bound_method_expression* bme = expr->bound_method_expression();
+  if (bme != NULL)
+    {
+      // We would not get here for a call to this method, so this is a
+      // method value.  We need to create a thunk.
+      Bound_method_expression::create_thunk(this->gogo_, bme->method(),
+					    bme->function());
+      return TRAVERSE_CONTINUE;
+    }
+
+  Interface_field_reference_expression* ifre =
+    expr->interface_field_reference_expression();
+  if (ifre != NULL)
+    {
+      // We would not get here for a call to this interface method, so
+      // this is a method value.  We need to create a thunk.
+      Interface_type* type = ifre->expr()->type()->interface_type();
+      if (type != NULL)
+	Interface_field_reference_expression::create_thunk(this->gogo_, type,
+							   ifre->name());
+      return TRAVERSE_CONTINUE;
+    }
+
   Call_expression* ce = expr->call_expression();
   if (ce != NULL)
     {
       Expression* fn = ce->fn();
-      if (fn->func_expression() != NULL)
+      if (fn->func_expression() != NULL
+	  || fn->bound_method_expression() != NULL
+	  || fn->interface_field_reference_expression() != NULL)
 	{
 	  // Traverse the arguments but not the function.
 	  Expression_list* args = ce->args();
@@ -2806,22 +2839,7 @@ Build_recover_thunks::function(Named_object* orig_no)
   // Any varargs call has already been lowered.
   call->set_varargs_are_lowered();
 
-  Statement* s;
-  if (orig_fntype->results() == NULL || orig_fntype->results()->empty())
-    s = Statement::make_statement(call, true);
-  else
-    {
-      Expression_list* vals = new Expression_list();
-      size_t rc = orig_fntype->results()->size();
-      if (rc == 1)
-	vals->push_back(call);
-      else
-	{
-	  for (size_t i = 0; i < rc; ++i)
-	    vals->push_back(Expression::make_call_result(call, i));
-	}
-      s = Statement::make_return_statement(vals, location);
-    }
+  Statement* s = Statement::make_return_from_call(call, location);
   s->determine_types();
   gogo->add_statement(s);
 
@@ -3557,42 +3575,8 @@ Function::make_descriptor_wrapper(Gogo* gogo, Named_object* no,
 {
   Location loc = no->location();
 
-  Typed_identifier_list* new_params = new Typed_identifier_list();
-  const Typed_identifier_list* orig_params = orig_fntype->parameters();
-  if (orig_params != NULL && !orig_params->empty())
-    {
-      static int count;
-      char buf[50];
-      for (Typed_identifier_list::const_iterator p = orig_params->begin();
-	   p != orig_params->end();
-	   ++p)
-	{
-	  snprintf(buf, sizeof buf, "pt.%u", count);
-	  ++count;
-	  new_params->push_back(Typed_identifier(buf, p->type(),
-						 p->location()));
-	}
-    }
   Type* vt = Type::make_pointer_type(Type::make_void_type());
-  new_params->push_back(Typed_identifier("closure.0", vt, loc));
-
-  const Typed_identifier_list* orig_results = orig_fntype->results();
-  Typed_identifier_list* new_results;
-  if (orig_results == NULL || orig_results->empty())
-    new_results = NULL;
-  else
-    {
-      new_results = new Typed_identifier_list();
-      for (Typed_identifier_list::const_iterator p = orig_results->begin();
-	   p != orig_results->end();
-	   ++p)
-	new_results->push_back(Typed_identifier("", p->type(),
-						p->location()));
-    }
-
-  Function_type* new_fntype = Type::make_function_type(NULL, new_params,
-						       new_results,
-						       loc);
+  Function_type* new_fntype = orig_fntype->copy_with_closure(vt);
 
   std::string name = no->name() + "$descriptorfn";
   Named_object* dno = gogo->start_function(name, new_fntype, false, loc);
@@ -3602,13 +3586,16 @@ Function::make_descriptor_wrapper(Gogo* gogo, Named_object* no,
 
   Expression* fn = Expression::make_func_reference(no, NULL, loc);
 
-  // Call the wrapper function, passing all of the arguments except
-  // for the last one (the last argument is the ignored closure).
+  // Call the function begin wrapped, passing all of the arguments
+  // except for the last one (the last argument is the ignored
+  // closure).
+  const Typed_identifier_list* orig_params = orig_fntype->parameters();
   Expression_list* args;
   if (orig_params == NULL || orig_params->empty())
     args = NULL;
   else
     {
+      const Typed_identifier_list* new_params = new_fntype->parameters();
       args = new Expression_list();
       for (Typed_identifier_list::const_iterator p = new_params->begin();
 	   p + 1 != new_params->end();
@@ -3627,23 +3614,7 @@ Function::make_descriptor_wrapper(Gogo* gogo, Named_object* no,
 						loc);
   call->set_varargs_are_lowered();
 
-  Statement* s;
-  if (orig_results == NULL || orig_results->empty())
-    s = Statement::make_statement(call, true);
-  else
-    {
-      Expression_list* vals = new Expression_list();
-      size_t rc = orig_results->size();
-      if (rc == 1)
-	vals->push_back(call);
-      else
-	{
-	  for (size_t i = 0; i < rc; ++i)
-	    vals->push_back(Expression::make_call_result(call, i));
-	}
-      s = Statement::make_return_statement(vals, loc);
-    }
-
+  Statement* s = Statement::make_return_from_call(call, loc);
   gogo->add_statement(s);
   Block* b = gogo->finish_block(loc);
   gogo->add_block(b, loc);

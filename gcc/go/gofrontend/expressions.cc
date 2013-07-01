@@ -1090,6 +1090,15 @@ Set_and_use_temporary_expression::do_type()
   return this->statement_->type();
 }
 
+// Determine the type of the expression.
+
+void
+Set_and_use_temporary_expression::do_determine_type(
+    const Type_context* context)
+{
+  this->expr_->determine_type(context);
+}
+
 // Take the address.
 
 void
@@ -5659,6 +5668,7 @@ Binary_expression::do_determine_type(const Type_context* context)
       if (tleft->is_abstract()
 	  && subcontext.type != NULL
 	  && !subcontext.may_be_abstract
+	  && subcontext.type->interface_type() == NULL
 	  && subcontext.type->integer_type() == NULL)
 	this->report_error(("invalid context-determined non-integer type "
 			    "for left operand of shift"));
@@ -5837,6 +5847,20 @@ Binary_expression::do_check_types(Gogo*)
 	{
 	  this->set_is_error();
 	  return;
+	}
+      if (this->op_ == OPERATOR_DIV || this->op_ == OPERATOR_MOD)
+	{
+	  // Division by a zero integer constant is an error.
+	  Numeric_constant rconst;
+	  unsigned long rval;
+	  if (left_type->integer_type() != NULL
+	      && this->right_->numeric_constant_value(&rconst)
+	      && rconst.to_unsigned_long(&rval) == Numeric_constant::NC_UL_VALID
+	      && rval == 0)
+	    {
+	      this->report_error(_("integer division by zero"));
+	      return;
+	    }
 	}
     }
   else
@@ -6626,20 +6650,49 @@ Bound_method_expression::do_traverse(Traverse* traverse)
   return Expression::traverse(&this->expr_, traverse);
 }
 
+// Lower the expression.  If this is a method value rather than being
+// called, and the method is accessed via a pointer, we may need to
+// add nil checks.  Introduce a temporary variable so that those nil
+// checks do not cause multiple evaluation.
+
+Expression*
+Bound_method_expression::do_lower(Gogo*, Named_object*,
+				  Statement_inserter* inserter, int)
+{
+  // For simplicity we use a temporary for every call to an embedded
+  // method, even though some of them might be pure value methods and
+  // not require a temporary.
+  if (this->expr_->var_expression() == NULL
+      && this->expr_->temporary_reference_expression() == NULL
+      && this->expr_->set_and_use_temporary_expression() == NULL
+      && (this->method_->field_indexes() != NULL
+	  || (this->method_->is_value_method()
+	      && this->expr_->type()->points_to() != NULL)))
+    {
+      Temporary_statement* temp =
+	Statement::make_temporary(this->expr_->type(), NULL, this->location());
+      inserter->insert(temp);
+      this->expr_ = Expression::make_set_and_use_temporary(temp, this->expr_,
+							   this->location());
+    }
+  return this;
+}
+
 // Return the type of a bound method expression.  The type of this
-// object is really the type of the method with no receiver.  We
-// should be able to get away with just returning the type of the
-// method.
+// object is simply the type of the method with no receiver.
 
 Type*
 Bound_method_expression::do_type()
 {
-  if (this->method_->is_function())
-    return this->method_->func_value()->type();
-  else if (this->method_->is_function_declaration())
-    return this->method_->func_declaration_value()->type();
+  Named_object* fn = this->method_->named_object();
+  Function_type* fntype;
+  if (fn->is_function())
+    fntype = fn->func_value()->type();
+  else if (fn->is_function_declaration())
+    fntype = fn->func_declaration_value()->type();
   else
     return Type::make_error_type();
+  return fntype->copy_without_receiver();
 }
 
 // Determine the types of a method expression.
@@ -6647,7 +6700,14 @@ Bound_method_expression::do_type()
 void
 Bound_method_expression::do_determine_type(const Type_context*)
 {
-  Function_type* fntype = this->type()->function_type();
+  Named_object* fn = this->method_->named_object();
+  Function_type* fntype;
+  if (fn->is_function())
+    fntype = fn->func_value()->type();
+  else if (fn->is_function_declaration())
+    fntype = fn->func_declaration_value()->type();
+  else
+    fntype = NULL;
   if (fntype == NULL || !fntype->is_method())
     this->expr_->determine_type_no_context();
   else
@@ -6662,31 +6722,278 @@ Bound_method_expression::do_determine_type(const Type_context*)
 void
 Bound_method_expression::do_check_types(Gogo*)
 {
-  if (!this->method_->is_function()
-      && !this->method_->is_function_declaration())
-    this->report_error(_("object is not a method"));
-  else
+  Named_object* fn = this->method_->named_object();
+  if (!fn->is_function() && !fn->is_function_declaration())
     {
-      Type* rtype = this->type()->function_type()->receiver()->type()->deref();
-      Type* etype = (this->expr_type_ != NULL
-		     ? this->expr_type_
-		     : this->expr_->type());
-      etype = etype->deref();
-      if (!Type::are_identical(rtype, etype, true, NULL))
-	this->report_error(_("method type does not match object type"));
+      this->report_error(_("object is not a method"));
+      return;
     }
+
+  Function_type* fntype;
+  if (fn->is_function())
+    fntype = fn->func_value()->type();
+  else if (fn->is_function_declaration())
+    fntype = fn->func_declaration_value()->type();
+  else
+    go_unreachable();
+  Type* rtype = fntype->receiver()->type()->deref();
+  Type* etype = (this->expr_type_ != NULL
+		 ? this->expr_type_
+		 : this->expr_->type());
+  etype = etype->deref();
+  if (!Type::are_identical(rtype, etype, true, NULL))
+    this->report_error(_("method type does not match object type"));
 }
 
-// Get the tree for a method expression.  There is no standard tree
-// representation for this.  The only places it may currently be used
-// are in a Call_expression or a Go_statement, which will take it
-// apart directly.  So this has nothing to do at present.
+// If a bound method expression is not simply called, then it is
+// represented as a closure.  The closure will hold a single variable,
+// the receiver to pass to the method.  The function will be a simple
+// thunk that pulls that value from the closure and calls the method
+// with the remaining arguments.
+//
+// Because method values are not common, we don't build all thunks for
+// every methods, but instead only build them as we need them.  In
+// particular, we even build them on demand for methods defined in
+// other packages.
+
+Bound_method_expression::Method_value_thunks
+  Bound_method_expression::method_value_thunks;
+
+// Find or create the thunk for METHOD.
+
+Named_object*
+Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
+				      Named_object* fn)
+{
+  std::pair<Named_object*, Named_object*> val(fn, NULL);
+  std::pair<Method_value_thunks::iterator, bool> ins =
+    Bound_method_expression::method_value_thunks.insert(val);
+  if (!ins.second)
+    {
+      // We have seen this method before.
+      go_assert(ins.first->second != NULL);
+      return ins.first->second;
+    }
+
+  Location loc = fn->location();
+
+  Function_type* orig_fntype;
+  if (fn->is_function())
+    orig_fntype = fn->func_value()->type();
+  else if (fn->is_function_declaration())
+    orig_fntype = fn->func_declaration_value()->type();
+  else
+    orig_fntype = NULL;
+
+  if (orig_fntype == NULL || !orig_fntype->is_method())
+    {
+      ins.first->second = Named_object::make_erroneous_name(Gogo::thunk_name());
+      return ins.first->second;
+    }
+
+  Struct_field_list* sfl = new Struct_field_list();
+  // The type here is wrong--it should be new_fntype.  But we don't
+  // have new_fntype yet, and it doesn't really matter.
+  Type* vt = Type::make_pointer_type(Type::make_void_type());
+  sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
+  sfl->push_back(Struct_field(Typed_identifier("val.1",
+					       orig_fntype->receiver()->type(),
+					       loc)));
+  Type* closure_type = Type::make_struct_type(sfl, loc);
+  closure_type = Type::make_pointer_type(closure_type);
+
+  Function_type* new_fntype = orig_fntype->copy_with_closure(closure_type);
+
+  Named_object* new_no = gogo->start_function(Gogo::thunk_name(), new_fntype,
+					      false, loc);
+
+  gogo->start_block(loc);
+
+  Named_object* cp = gogo->lookup("closure.0", NULL);
+  go_assert(cp != NULL
+	    && cp->is_variable()
+	    && cp->var_value()->is_parameter());
+
+  // Field 0 of the closure is the function code pointer, field 1 is
+  // the value on which to invoke the method.
+  Expression* arg = Expression::make_var_reference(cp, loc);
+  arg = Expression::make_unary(OPERATOR_MULT, arg, loc);
+  arg = Expression::make_field_reference(arg, 1, loc);
+
+  Expression* bme = Expression::make_bound_method(arg, method, fn, loc);
+
+  const Typed_identifier_list* orig_params = orig_fntype->parameters();
+  Expression_list* args;
+  if (orig_params == NULL || orig_params->empty())
+    args = NULL;
+  else
+    {
+      const Typed_identifier_list* new_params = new_fntype->parameters();
+      args = new Expression_list();
+      for (Typed_identifier_list::const_iterator p = new_params->begin();
+	   p + 1 != new_params->end();
+	   ++p)
+	{
+	  Named_object* p_no = gogo->lookup(p->name(), NULL);
+	  go_assert(p_no != NULL
+		    && p_no->is_variable()
+		    && p_no->var_value()->is_parameter());
+	  args->push_back(Expression::make_var_reference(p_no, loc));
+	}
+    }
+
+  Call_expression* call = Expression::make_call(bme, args,
+						orig_fntype->is_varargs(),
+						loc);
+  call->set_varargs_are_lowered();
+
+  Statement* s = Statement::make_return_from_call(call, loc);
+  gogo->add_statement(s);
+  Block* b = gogo->finish_block(loc);
+  gogo->add_block(b, loc);
+  gogo->lower_block(new_no, b);
+  gogo->finish_function(loc);
+
+  ins.first->second = new_no;
+  return new_no;
+}
+
+// Return an expression to check *REF for nil while dereferencing
+// according to FIELD_INDEXES.  Update *REF to build up the field
+// reference.  This is a static function so that we don't have to
+// worry about declaring Field_indexes in expressions.h.
+
+static Expression*
+bme_check_nil(const Method::Field_indexes* field_indexes, Location loc,
+	      Expression** ref)
+{
+  if (field_indexes == NULL)
+    return Expression::make_boolean(false, loc);
+  Expression* cond = bme_check_nil(field_indexes->next, loc, ref);
+  Struct_type* stype = (*ref)->type()->deref()->struct_type();
+  go_assert(stype != NULL
+	    && field_indexes->field_index < stype->field_count());
+  if ((*ref)->type()->struct_type() == NULL)
+    {
+      go_assert((*ref)->type()->points_to() != NULL);
+      Expression* n = Expression::make_binary(OPERATOR_EQEQ, *ref,
+					      Expression::make_nil(loc),
+					      loc);
+      cond = Expression::make_binary(OPERATOR_OROR, cond, n, loc);
+      *ref = Expression::make_unary(OPERATOR_MULT, *ref, loc);
+      go_assert((*ref)->type()->struct_type() == stype);
+    }
+  *ref = Expression::make_field_reference(*ref, field_indexes->field_index,
+					  loc);
+  return cond;
+}
+
+// Get the tree for a method value.
 
 tree
-Bound_method_expression::do_get_tree(Translate_context*)
+Bound_method_expression::do_get_tree(Translate_context* context)
 {
-  error_at(this->location(), "reference to method other than calling it");
-  return error_mark_node;
+  Named_object* thunk = Bound_method_expression::create_thunk(context->gogo(),
+							      this->method_,
+							      this->function_);
+  if (thunk->is_erroneous())
+    {
+      go_assert(saw_errors());
+      return error_mark_node;
+    }
+
+  // FIXME: We should lower this earlier, but we can't lower it in the
+  // lowering pass because at that point we don't know whether we need
+  // to create the thunk or not.  If the expression is called, we
+  // don't need the thunk.
+
+  Location loc = this->location();
+
+  // If the method expects a value, and we have a pointer, we need to
+  // dereference the pointer.
+
+  Named_object* fn = this->method_->named_object();
+  Function_type* fntype;
+  if (fn->is_function())
+    fntype = fn->func_value()->type();
+  else if (fn->is_function_declaration())
+    fntype = fn->func_declaration_value()->type();
+  else
+    go_unreachable();
+
+  Expression* val = this->expr_;
+  if (fntype->receiver()->type()->points_to() == NULL
+      && val->type()->points_to() != NULL)
+    val = Expression::make_unary(OPERATOR_MULT, val, loc);
+
+  // Note that we are ignoring this->expr_type_ here.  The thunk will
+  // expect a closure whose second field has type this->expr_type_ (if
+  // that is not NULL).  We are going to pass it a closure whose
+  // second field has type this->expr_->type().  Since
+  // this->expr_type_ is only not-NULL for pointer types, we can get
+  // away with this.
+
+  Struct_field_list* fields = new Struct_field_list();
+  fields->push_back(Struct_field(Typed_identifier("fn.0",
+						  thunk->func_value()->type(),
+						  loc)));
+  fields->push_back(Struct_field(Typed_identifier("val.1", val->type(), loc)));
+  Struct_type* st = Type::make_struct_type(fields, loc);
+
+  Expression_list* vals = new Expression_list();
+  vals->push_back(Expression::make_func_code_reference(thunk, loc));
+  vals->push_back(val);
+
+  Expression* ret = Expression::make_struct_composite_literal(st, vals, loc);
+  ret = Expression::make_heap_composite(ret, loc);
+
+  tree ret_tree = ret->get_tree(context);
+
+  Expression* nil_check = NULL;
+
+  // See whether the expression or any embedded pointers are nil.
+
+  Expression* expr = this->expr_;
+  if (this->method_->field_indexes() != NULL)
+    {
+      // Note that we are evaluating this->expr_ twice, but that is OK
+      // because in the lowering pass we forced it into a temporary
+      // variable.
+      Expression* ref = expr;
+      nil_check = bme_check_nil(this->method_->field_indexes(), loc, &ref);
+      expr = ref;
+    }
+
+  if (this->method_->is_value_method() && expr->type()->points_to() != NULL)
+    {
+      Expression* n = Expression::make_binary(OPERATOR_EQEQ, expr,
+					      Expression::make_nil(loc),
+					      loc);
+      if (nil_check == NULL)
+	nil_check = n;
+      else
+	nil_check = Expression::make_binary(OPERATOR_OROR, nil_check, n, loc);
+    }
+
+  if (nil_check != NULL)
+    {
+      tree nil_check_tree = nil_check->get_tree(context);
+      tree crash =
+	context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE, loc);
+      if (ret_tree == error_mark_node
+	  || nil_check_tree == error_mark_node
+	  || crash == error_mark_node)
+	return error_mark_node;
+
+      ret_tree = fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
+				 TREE_TYPE(ret_tree),
+				 build3_loc(loc.gcc_location(), COND_EXPR,
+					    void_type_node, nil_check_tree,
+					    crash, NULL_TREE),
+				 ret_tree);
+    }
+
+  return ret_tree;
 }
 
 // Dump ast representation of a bound method expression.
@@ -6705,16 +7012,16 @@ Bound_method_expression::do_dump_expression(Ast_dump_context* ast_dump_context)
       ast_dump_context->ostream() << ")";
     }
     
-  ast_dump_context->ostream() << "." << this->method_->name();
+  ast_dump_context->ostream() << "." << this->function_->name();
 }
 
 // Make a method expression.
 
 Bound_method_expression*
-Expression::make_bound_method(Expression* expr, Named_object* method,
-			      Location location)
+Expression::make_bound_method(Expression* expr, const Method* method,
+			      Named_object* function, Location location)
 {
-  return new Bound_method_expression(expr, method, location);
+  return new Bound_method_expression(expr, method, function, location);
 }
 
 // Class Builtin_call_expression.  This is used for a call to a
@@ -7091,6 +7398,8 @@ Builtin_call_expression::lower_make()
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
   int uintptr_bits = uintptr_type->integer_type()->bits();
 
+  Type_context int_context(Type::lookup_integer_type("int"), false);
+
   ++parg;
   Expression* len_arg;
   if (parg == args->end())
@@ -7109,6 +7418,7 @@ Builtin_call_expression::lower_make()
   else
     {
       len_arg = *parg;
+      len_arg->determine_type(&int_context);
       if (!this->check_int_value(len_arg, true))
 	return Expression::make_error(this->location());
       if (len_arg->type()->integer_type() != NULL
@@ -7121,6 +7431,7 @@ Builtin_call_expression::lower_make()
   if (is_slice && parg != args->end())
     {
       cap_arg = *parg;
+      cap_arg->determine_type(&int_context);
       if (!this->check_int_value(cap_arg, false))
 	return Expression::make_error(this->location());
 
@@ -7738,6 +8049,8 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
     case BUILTIN_REAL:
     case BUILTIN_IMAG:
       arg_type = Builtin_call_expression::complex_type(context->type);
+      if (arg_type == NULL)
+	arg_type = Type::lookup_complex_type("complex128");
       is_print = false;
       break;
 
@@ -7746,6 +8059,8 @@ Builtin_call_expression::do_determine_type(const Type_context* context)
 	// For the complex function the type of one operand can
 	// determine the type of the other, as in a binary expression.
 	arg_type = Builtin_call_expression::real_imag_type(context->type);
+	if (arg_type == NULL)
+	  arg_type = Type::lookup_float_type("float64");
 	if (args != NULL && args->size() == 2)
 	  {
 	    Type* t1 = args->front()->type();
@@ -8921,7 +9236,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
   Bound_method_expression* bme = this->fn_->bound_method_expression();
   if (bme != NULL)
     {
-      Named_object* method = bme->method();
+      Named_object* methodfn = bme->function();
       Expression* first_arg = bme->first_argument();
 
       // We always pass a pointer when calling a method.
@@ -8962,7 +9277,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       // old arguments, because we may be traversing them up in some
       // caller.  FIXME.
       this->args_ = new_args;
-      this->fn_ = Expression::make_func_reference(method, NULL,
+      this->fn_ = Expression::make_func_reference(methodfn, NULL,
 						  bme->location());
     }
 
@@ -10087,13 +10402,20 @@ Array_index_expression::do_determine_type(const Type_context*)
 void
 Array_index_expression::do_check_types(Gogo*)
 {
-  if (this->start_->type()->integer_type() == NULL)
+  Numeric_constant nc;
+  unsigned long v;
+  if (this->start_->type()->integer_type() == NULL
+      && !this->start_->type()->is_error()
+      && (!this->start_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("index must be integer"));
   if (this->end_ != NULL
       && this->end_->type()->integer_type() == NULL
       && !this->end_->type()->is_error()
       && !this->end_->is_nil_expression()
-      && !this->end_->is_error_expression())
+      && !this->end_->is_error_expression()
+      && (!this->end_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&v) == Numeric_constant::NC_UL_NOTINT))
     this->report_error(_("slice end must be integer"));
 
   Array_type* array_type = this->array_->type()->array_type();
@@ -11158,6 +11480,28 @@ Interface_field_reference_expression::do_traverse(Traverse* traverse)
   return Expression::traverse(&this->expr_, traverse);
 }
 
+// Lower the expression.  If this expression is not called, we need to
+// evaluate the expression twice when converting to the backend
+// interface.  So introduce a temporary variable if necessary.
+
+Expression*
+Interface_field_reference_expression::do_lower(Gogo*, Named_object*,
+					       Statement_inserter* inserter,
+					       int)
+{
+  if (this->expr_->var_expression() == NULL
+      && this->expr_->temporary_reference_expression() == NULL
+      && this->expr_->set_and_use_temporary_expression() == NULL)
+    {
+      Temporary_statement* temp =
+	Statement::make_temporary(this->expr_->type(), NULL, this->location());
+      inserter->insert(temp);
+      this->expr_ = Expression::make_set_and_use_temporary(temp, this->expr_,
+							   this->location());
+    }
+  return this;
+}
+
 // Return the type of an interface field reference.
 
 Type*
@@ -11218,18 +11562,188 @@ Interface_field_reference_expression::do_check_types(Gogo*)
     }
 }
 
-// Get a tree for a reference to a field in an interface.  There is no
-// standard tree type representation for this: it's a function
-// attached to its first argument, like a Bound_method_expression.
-// The only places it may currently be used are in a Call_expression
-// or a Go_statement, which will take it apart directly.  So this has
-// nothing to do at present.
+// If an interface field reference is not simply called, then it is
+// represented as a closure.  The closure will hold a single variable,
+// the value of the interface on which the method should be called.
+// The function will be a simple thunk that pulls the value from the
+// closure and calls the method with the remaining arguments.
+
+// Because method values are not common, we don't build all thunks for
+// all possible interface methods, but instead only build them as we
+// need them.  In particular, we even build them on demand for
+// interface methods defined in other packages.
+
+Interface_field_reference_expression::Interface_method_thunks
+  Interface_field_reference_expression::interface_method_thunks;
+
+// Find or create the thunk to call method NAME on TYPE.
+
+Named_object*
+Interface_field_reference_expression::create_thunk(Gogo* gogo,
+						   Interface_type* type,
+						   const std::string& name)
+{
+  std::pair<Interface_type*, Method_thunks*> val(type, NULL);
+  std::pair<Interface_method_thunks::iterator, bool> ins =
+    Interface_field_reference_expression::interface_method_thunks.insert(val);
+  if (ins.second)
+    {
+      // This is the first time we have seen this interface.
+      ins.first->second = new Method_thunks();
+    }
+
+  for (Method_thunks::const_iterator p = ins.first->second->begin();
+       p != ins.first->second->end();
+       p++)
+    if (p->first == name)
+      return p->second;
+
+  Location loc = type->location();
+
+  const Typed_identifier* method_id = type->find_method(name);
+  if (method_id == NULL)
+    return Named_object::make_erroneous_name(Gogo::thunk_name());
+
+  Function_type* orig_fntype = method_id->type()->function_type();
+  if (orig_fntype == NULL)
+    return Named_object::make_erroneous_name(Gogo::thunk_name());
+
+  Struct_field_list* sfl = new Struct_field_list();
+  // The type here is wrong--it should be new_fntype.  But we don't
+  // have new_fntype yet, and it doesn't really matter.
+  Type* vt = Type::make_pointer_type(Type::make_void_type());
+  sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
+  sfl->push_back(Struct_field(Typed_identifier("val.1", type, loc)));
+  Type* closure_type = Type::make_struct_type(sfl, loc);
+  closure_type = Type::make_pointer_type(closure_type);
+
+  Function_type* new_fntype = orig_fntype->copy_with_closure(closure_type);
+
+  Named_object* new_no = gogo->start_function(Gogo::thunk_name(), new_fntype,
+					      false, loc);
+
+  gogo->start_block(loc);
+
+  Named_object* cp = gogo->lookup("closure.0", NULL);
+  go_assert(cp != NULL
+	    && cp->is_variable()
+	    && cp->var_value()->is_parameter());
+
+  // Field 0 of the closure is the function code pointer, field 1 is
+  // the value on which to invoke the method.
+  Expression* arg = Expression::make_var_reference(cp, loc);
+  arg = Expression::make_unary(OPERATOR_MULT, arg, loc);
+  arg = Expression::make_field_reference(arg, 1, loc);
+
+  Expression *ifre = Expression::make_interface_field_reference(arg, name,
+								loc);
+
+  const Typed_identifier_list* orig_params = orig_fntype->parameters();
+  Expression_list* args;
+  if (orig_params == NULL || orig_params->empty())
+    args = NULL;
+  else
+    {
+      const Typed_identifier_list* new_params = new_fntype->parameters();
+      args = new Expression_list();
+      for (Typed_identifier_list::const_iterator p = new_params->begin();
+	   p + 1 != new_params->end();
+	   ++p)
+	{
+	  Named_object* p_no = gogo->lookup(p->name(), NULL);
+	  go_assert(p_no != NULL
+		    && p_no->is_variable()
+		    && p_no->var_value()->is_parameter());
+	  args->push_back(Expression::make_var_reference(p_no, loc));
+	}
+    }
+
+  Call_expression* call = Expression::make_call(ifre, args,
+						orig_fntype->is_varargs(),
+						loc);
+  call->set_varargs_are_lowered();
+
+  Statement* s = Statement::make_return_from_call(call, loc);
+  gogo->add_statement(s);
+  Block* b = gogo->finish_block(loc);
+  gogo->add_block(b, loc);
+  gogo->lower_block(new_no, b);
+  gogo->finish_function(loc);
+
+  ins.first->second->push_back(std::make_pair(name, new_no));
+  return new_no;
+}
+
+// Get a tree for a method value.
 
 tree
-Interface_field_reference_expression::do_get_tree(Translate_context*)
+Interface_field_reference_expression::do_get_tree(Translate_context* context)
 {
-  error_at(this->location(), "reference to method other than calling it");
-  return error_mark_node;
+  Interface_type* type = this->expr_->type()->interface_type();
+  if (type == NULL)
+    {
+      go_assert(saw_errors());
+      return error_mark_node;
+    }
+
+  Named_object* thunk =
+    Interface_field_reference_expression::create_thunk(context->gogo(),
+						       type, this->name_);
+  if (thunk->is_erroneous())
+    {
+      go_assert(saw_errors());
+      return error_mark_node;
+    }
+
+  // FIXME: We should lower this earlier, but we can't it lower it in
+  // the lowering pass because at that point we don't know whether we
+  // need to create the thunk or not.  If the expression is called, we
+  // don't need the thunk.
+
+  Location loc = this->location();
+
+  Struct_field_list* fields = new Struct_field_list();
+  fields->push_back(Struct_field(Typed_identifier("fn.0",
+						  thunk->func_value()->type(),
+						  loc)));
+  fields->push_back(Struct_field(Typed_identifier("val.1",
+						  this->expr_->type(),
+						  loc)));
+  Struct_type* st = Type::make_struct_type(fields, loc);
+
+  Expression_list* vals = new Expression_list();
+  vals->push_back(Expression::make_func_code_reference(thunk, loc));
+  vals->push_back(this->expr_);
+
+  Expression* expr = Expression::make_struct_composite_literal(st, vals, loc);
+  expr = Expression::make_heap_composite(expr, loc);
+
+  tree closure_tree = expr->get_tree(context);
+
+  // Note that we are evaluating this->expr_ twice, but that is OK
+  // because in the lowering pass we forced it into a temporary
+  // variable.
+  tree expr_tree = this->expr_->get_tree(context);
+  tree nil_check_tree = Expression::comparison_tree(context,
+						    Type::lookup_bool_type(),
+						    OPERATOR_EQEQ,
+						    this->expr_->type(),
+						    expr_tree,
+						    Type::make_nil_type(),
+						    null_pointer_node,
+						    loc);
+  tree crash = context->gogo()->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
+					      loc);
+  if (closure_tree == error_mark_node
+      || nil_check_tree == error_mark_node
+      || crash == error_mark_node)
+    return error_mark_node;
+  return fold_build2_loc(loc.gcc_location(), COMPOUND_EXPR,
+			 TREE_TYPE(closure_tree),
+			 build3_loc(loc.gcc_location(), COND_EXPR,
+				    void_type_node, nil_check_tree, crash,
+				    NULL_TREE),
+			 closure_tree);
 }
 
 // Dump ast representation for an interface field reference.
@@ -11485,22 +11999,7 @@ Selector_expression::lower_method_expression(Gogo* gogo)
 						method_type->is_varargs(),
 						location);
 
-  size_t count = call->result_count();
-  Statement* s;
-  if (count == 0)
-    s = Statement::make_statement(call, true);
-  else
-    {
-      Expression_list* retvals = new Expression_list();
-      if (count <= 1)
-	retvals->push_back(call);
-      else
-	{
-	  for (size_t i = 0; i < count; ++i)
-	    retvals->push_back(Expression::make_call_result(call, i));
-	}
-      s = Statement::make_return_statement(retvals, location);
-    }
+  Statement* s = Statement::make_return_from_call(call, location);
   gogo->add_statement(s);
 
   Block* b = gogo->finish_block(location);

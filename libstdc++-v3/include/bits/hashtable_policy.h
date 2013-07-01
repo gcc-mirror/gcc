@@ -612,7 +612,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __unique_keys = typename __hashtable_base::__unique_keys;
       using __ireturn_type = typename __hashtable_base::__ireturn_type;
-      using __iconv_type = typename __hashtable_base::__iconv_type;
 
       __hashtable&
       _M_conjure_hashtable()
@@ -626,8 +625,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       iterator
-      insert(const_iterator, const value_type& __v)
-      { return __iconv_type()(insert(__v)); }
+      insert(const_iterator __hint, const value_type& __v)
+      {
+	__hashtable& __h = _M_conjure_hashtable();
+	return __h._M_insert(__hint, __v, __unique_keys());
+      }
 
       void
       insert(initializer_list<value_type> __l)
@@ -711,8 +713,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       iterator
-      insert(const_iterator, value_type&& __v)
-      { return insert(std::move(__v)).first; }
+      insert(const_iterator __hint, value_type&& __v)
+      {
+	__hashtable& __h = this->_M_conjure_hashtable();
+	return __h._M_insert(__hint, std::move(__v), __unique_keys());
+      }
     };
 
   /// Specialization.
@@ -745,9 +750,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       iterator
-      insert(const_iterator, value_type&& __v)
-      { return insert(std::move(__v)); }
-     };
+      insert(const_iterator __hint, value_type&& __v)
+      {
+	__hashtable& __h = this->_M_conjure_hashtable();
+	return __h._M_insert(__hint, std::move(__v), __unique_keys());
+      }
+    };
 
   /// Specialization.
   template<typename _Key, typename _Value, typename _Alloc,
@@ -769,7 +777,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __unique_keys = typename __base_type::__unique_keys;
       using __hashtable = typename __base_type::__hashtable;
       using __ireturn_type = typename __base_type::__ireturn_type;
-      using __iconv_type = typename __base_type::__iconv_type;
 
       using __base_type::insert;
 
@@ -792,8 +799,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Pair, typename = _IFconsp<_Pair>>
 	iterator
-	insert(const_iterator, _Pair&& __v)
-	{ return __iconv_type()(insert(std::forward<_Pair>(__v))); }
+	insert(const_iterator __hint, _Pair&& __v)
+	{
+	  __hashtable& __h = this->_M_conjure_hashtable();
+	  return __h._M_emplace(__hint, __unique_keys(),
+				std::forward<_Pair>(__v));
+	}
    };
 
   /**
@@ -1470,10 +1481,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __ireturn_type = typename std::conditional<__unique_keys::value,
 						     std::pair<iterator, bool>,
 						     iterator>::type;
-
-    using __iconv_type = typename  std::conditional<__unique_keys::value,
-						    _Select1st, _Identity
-						    >::type;
   private:
     using _EqualEBO = _Hashtable_ebo_helper<0, _Equal>;
     using _EqualHelper =  _Equal_helper<_Key, _Value, _ExtractKey, _Equal,

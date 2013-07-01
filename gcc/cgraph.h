@@ -440,6 +440,8 @@ struct GTY(()) cgraph_indirect_call_info
   /* Set when the call is a call of a pointer loaded from contents of an
      aggregate at offset.  */
   unsigned agg_contents : 1;
+  /* Set when this is a call through a member pointer.  */
+  unsigned member_ptr : 1;
   /* When the previous bit is set, this one determines whether the destination
      is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;
@@ -715,7 +717,7 @@ struct cgraph_edge * cgraph_clone_edge (struct cgraph_edge *,
 					unsigned, gcov_type, int, bool);
 struct cgraph_node * cgraph_clone_node (struct cgraph_node *, tree, gcov_type,
 					int, bool, vec<cgraph_edge_p>,
-					bool);
+					bool, struct cgraph_node *);
 tree clone_function_name (tree decl, const char *);
 struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 			                          vec<cgraph_edge_p>,

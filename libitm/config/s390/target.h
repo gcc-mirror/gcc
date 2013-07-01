@@ -22,6 +22,12 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+
+#include <htmintrin.h>
+
+/* Number of retries for transient failures.  */
+#define _HTM_ITM_RETRIES 10
+
 namespace GTM HIDDEN {
 
 #define HW_CACHELINE_SIZE 256
@@ -51,5 +57,58 @@ cpu_relax (void)
 {
   __asm volatile ("" : : : "memory");
 }
+
+#ifdef __HTM__
+#define USE_HTM_FASTPATH
+
+static inline bool
+htm_available ()
+{
+  return true;
+}
+
+static inline uint32_t
+htm_init ()
+{
+  return htm_available () ? _HTM_ITM_RETRIES : 0;
+}
+
+static inline uint32_t
+htm_begin ()
+{
+  return __builtin_tbegin_nofloat (NULL);
+}
+
+static inline bool
+htm_begin_success (uint32_t begin_ret)
+{
+  return begin_ret == _HTM_TBEGIN_STARTED;
+}
+
+static inline void
+htm_commit ()
+{
+  __builtin_tend ();
+}
+
+static inline void
+htm_abort ()
+{
+  __builtin_tabort (_HTM_FIRST_USER_ABORT_CODE);
+}
+
+static inline bool
+htm_abort_should_retry (uint32_t begin_ret)
+{
+  return begin_ret == _HTM_TBEGIN_TRANSIENT;
+}
+
+static inline bool
+htm_transaction_active ()
+{
+  return __builtin_tx_nesting_depth() != 0;
+}
+
+#endif
 
 } // namespace GTM

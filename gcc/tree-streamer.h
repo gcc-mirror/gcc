@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 struct streamer_tree_cache_d
 {
   /* The mapping between tree nodes and slots into the nodes array.  */
-  struct pointer_map_t *node_map;
+  pointer_map<unsigned> *node_map;
 
   /* The nodes pickled so far.  */
   vec<tree> nodes;

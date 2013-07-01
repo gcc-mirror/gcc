@@ -1565,13 +1565,16 @@
 )
 
 (define_insn "*arm_mulsi3_v6"
-  [(set (match_operand:SI          0 "s_register_operand" "=r")
-	(mult:SI (match_operand:SI 1 "s_register_operand" "r")
-		 (match_operand:SI 2 "s_register_operand" "r")))]
+  [(set (match_operand:SI          0 "s_register_operand" "=l,l,r")
+	(mult:SI (match_operand:SI 1 "s_register_operand" "0,l,r")
+		 (match_operand:SI 2 "s_register_operand" "l,0,r")))]
   "TARGET_32BIT && arm_arch6"
   "mul%?\\t%0, %1, %2"
   [(set_attr "type" "mul")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "arch" "t2,t2,*")
+   (set_attr "length" "4")
+   (set_attr "predicable_short_it" "yes,yes,no")]
 )
 
 ; Unfortunately with the Thumb the '&'/'0' trick can fails when operands 
@@ -1684,7 +1687,8 @@
   "TARGET_32BIT && arm_arch6"
   "mla%?\\t%0, %2, %1, %3"
   [(set_attr "type" "mla")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*mulsi3addsi_compare0"
@@ -1760,7 +1764,8 @@
   "TARGET_32BIT && arm_arch_thumb2"
   "mls%?\\t%0, %2, %1, %3"
   [(set_attr "type" "mla")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "maddsidi4"
@@ -1796,7 +1801,8 @@
   "TARGET_32BIT && arm_arch6"
   "smlal%?\\t%Q0, %R0, %3, %2"
   [(set_attr "type" "smlal")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 ;; 32x32->64 widening multiply.
@@ -1833,7 +1839,8 @@
   "TARGET_32BIT && arm_arch6"
   "smull%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "smull")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "umulsidi3"
@@ -1864,7 +1871,8 @@
   "TARGET_32BIT && arm_arch6"
   "umull%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "umull")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "umaddsidi4"
@@ -1900,7 +1908,8 @@
   "TARGET_32BIT && arm_arch6"
   "umlal%?\\t%Q0, %R0, %3, %2"
   [(set_attr "type" "umlal")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "smulsi3_highpart"
@@ -1944,7 +1953,8 @@
   "TARGET_32BIT && arm_arch6"
   "smull%?\\t%3, %0, %2, %1"
   [(set_attr "type" "smull")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "umulsi3_highpart"
@@ -1988,7 +1998,8 @@
   "TARGET_32BIT && arm_arch6"
   "umull%?\\t%3, %0, %2, %1"
   [(set_attr "type" "umull")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "mulhisi3"
@@ -2013,7 +2024,8 @@
   "TARGET_DSP_MULTIPLY"
   "smultb%?\\t%0, %1, %2"
   [(set_attr "type" "smulxy")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*mulhisi3bt"
@@ -2026,7 +2038,8 @@
   "TARGET_DSP_MULTIPLY"
   "smulbt%?\\t%0, %1, %2"
   [(set_attr "type" "smulxy")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*mulhisi3tt"
@@ -2040,7 +2053,8 @@
   "TARGET_DSP_MULTIPLY"
   "smultt%?\\t%0, %1, %2"
   [(set_attr "type" "smulxy")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "maddhisi4"
@@ -2053,7 +2067,8 @@
   "TARGET_DSP_MULTIPLY"
   "smlabb%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 ;; Note: there is no maddhisi4ibt because this one is canonical form
@@ -2068,7 +2083,8 @@
   "TARGET_DSP_MULTIPLY"
   "smlatb%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*maddhisi4tt"
@@ -2083,21 +2099,23 @@
   "TARGET_DSP_MULTIPLY"
   "smlatt%?\\t%0, %1, %2, %3"
   [(set_attr "type" "smlaxy")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "maddhidi4"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
 	(plus:DI
 	  (mult:DI (sign_extend:DI
-	 	    (match_operand:HI 1 "s_register_operand" "r"))
+		    (match_operand:HI 1 "s_register_operand" "r"))
 		   (sign_extend:DI
 		    (match_operand:HI 2 "s_register_operand" "r")))
 	  (match_operand:DI 3 "s_register_operand" "0")))]
   "TARGET_DSP_MULTIPLY"
   "smlalbb%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "smlalxy")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 ;; Note: there is no maddhidi4ibt because this one is canonical form
 (define_insn "*maddhidi4tb"
@@ -2113,7 +2131,8 @@
   "TARGET_DSP_MULTIPLY"
   "smlaltb%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "smlalxy")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*maddhidi4tt"
   [(set (match_operand:DI 0 "s_register_operand" "=r")
@@ -2130,7 +2149,8 @@
   "TARGET_DSP_MULTIPLY"
   "smlaltt%?\\t%Q0, %R0, %1, %2"
   [(set_attr "type" "smlalxy")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_expand "mulsf3"
   [(set (match_operand:SF          0 "s_register_operand" "")
@@ -2486,7 +2506,7 @@
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (zero_extract:SI
 			  (match_operand:SI 0 "s_register_operand" "r")
-		 	  (match_operand 1 "const_int_operand" "n")
+			  (match_operand 1 "const_int_operand" "n")
 			  (match_operand 2 "const_int_operand" "n"))
 			 (const_int 0)))]
   "TARGET_32BIT
@@ -2502,6 +2522,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "type" "simple_alu_imm")]
 )
 
@@ -2929,7 +2950,8 @@
   "arm_arch_thumb2"
   "bfc%?\t%0, %2, %1"
   [(set_attr "length" "4")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "insv_t2"
@@ -2940,7 +2962,8 @@
   "arm_arch_thumb2"
   "bfi%?\t%0, %3, %2, %1"
   [(set_attr "length" "4")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 ; constants for op 2 will never be given to these patterns.
@@ -2967,7 +2990,7 @@
   [(set_attr "length" "8")
    (set_attr "predicable" "yes")]
 )
-  
+
 (define_insn_and_split "*anddi_notzesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (not:DI (zero_extend:DI
@@ -2992,9 +3015,10 @@
     operands[1] = gen_lowpart (SImode, operands[1]);
   }"
   [(set_attr "length" "4,8")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
-  
+
 (define_insn_and_split "*anddi_notsesidi_di"
   [(set (match_operand:DI 0 "s_register_operand" "=&r,&r")
 	(and:DI (not:DI (sign_extend:DI
@@ -3015,16 +3039,18 @@
     operands[1] = gen_lowpart (SImode, operands[1]);
   }"
   [(set_attr "length" "8")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
-  
+
 (define_insn "andsi_notsi_si"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
 	(and:SI (not:SI (match_operand:SI 2 "s_register_operand" "r"))
 		(match_operand:SI 1 "s_register_operand" "r")))]
   "TARGET_32BIT"
   "bic%?\\t%0, %1, %2"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "thumb1_bicsi3"
@@ -3137,7 +3163,8 @@
    orr%?\\t%Q0, %Q1, %2
    #"
   [(set_attr "length" "4,8")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*iordi_sesidi_di"
@@ -3312,7 +3339,8 @@
    eor%?\\t%Q0, %Q1, %2
    #"
   [(set_attr "length" "4,8")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*xordi_sesidi_di"
@@ -3442,7 +3470,8 @@
   ""
   [(set_attr "length" "8")
    (set_attr "ce_count" "2")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 ; ??? Are these four splitters still beneficial when the Thumb-2 bitfield
@@ -3578,7 +3607,8 @@
 		 (const_int 0)))]
   "TARGET_32BIT"
   "bic%?\\t%0, %1, %1, asr #31"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "*smax_m1"
@@ -3587,7 +3617,8 @@
 		 (const_int -1)))]
   "TARGET_32BIT"
   "orr%?\\t%0, %1, %1, asr #31"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn_and_split "*arm_smax_insn"
@@ -3635,7 +3666,8 @@
 		 (const_int 0)))]
   "TARGET_32BIT"
   "and%?\\t%0, %1, %1, asr #31"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn_and_split "*arm_smin_insn"
@@ -4310,6 +4342,7 @@
   "TARGET_32BIT"
   "mvn%?\\t%0, %1%S3"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "shift" "1")
    (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
@@ -4523,6 +4556,7 @@
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "load1")])
 
 (define_insn "unaligned_loadhis"
@@ -4535,6 +4569,7 @@
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "load_byte")])
 
 (define_insn "unaligned_loadhiu"
@@ -4547,6 +4582,7 @@
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "load_byte")])
 
 (define_insn "unaligned_storesi"
@@ -4558,6 +4594,7 @@
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "store1")])
 
 (define_insn "unaligned_storehi"
@@ -4569,6 +4606,7 @@
   [(set_attr "arch" "t2,any")
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
    (set_attr "type" "store1")])
 
 ;; Unaligned double-word load and store.
@@ -4637,7 +4675,8 @@
   "arm_arch_thumb2"
   "sbfx%?\t%0, %1, %3, %2"
   [(set_attr "length" "4")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_insn "extzv_t2"
@@ -4648,7 +4687,8 @@
   "arm_arch_thumb2"
   "ubfx%?\t%0, %1, %3, %2"
   [(set_attr "length" "4")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 
@@ -4660,6 +4700,7 @@
   "TARGET_IDIV"
   "sdiv%?\t%0, %1, %2"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "type" "sdiv")]
 )
 
@@ -4670,6 +4711,7 @@
   "TARGET_IDIV"
   "udiv%?\t%0, %1, %2"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "type" "udiv")]
 )
 
@@ -4732,11 +4774,14 @@
 )
 
 (define_insn "*arm_negsi2"
-  [(set (match_operand:SI         0 "s_register_operand" "=r")
-	(neg:SI (match_operand:SI 1 "s_register_operand" "r")))]
+  [(set (match_operand:SI         0 "s_register_operand" "=l,r")
+	(neg:SI (match_operand:SI 1 "s_register_operand" "l,r")))]
   "TARGET_32BIT"
   "rsb%?\\t%0, %1, #0"
-  [(set_attr "predicable" "yes")]
+  [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "4")]
 )
 
 (define_insn "*thumb1_negsi2"
@@ -5054,11 +5099,14 @@
 )
 
 (define_insn "*arm_one_cmplsi2"
-  [(set (match_operand:SI         0 "s_register_operand" "=r")
-	(not:SI (match_operand:SI 1 "s_register_operand"  "r")))]
+  [(set (match_operand:SI         0 "s_register_operand" "=l,r")
+	(not:SI (match_operand:SI 1 "s_register_operand"  "l,r")))]
   "TARGET_32BIT"
   "mvn%?\\t%0, %1"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "yes,no")
+   (set_attr "arch" "t2,*")
+   (set_attr "length" "4")
    (set_attr "insn" "mvn")]
 )
 
@@ -5384,7 +5432,8 @@
   "TARGET_INT_SIMD"
   "uxtah%?\\t%0, %2, %1"
   [(set_attr "type" "alu_shift")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "zero_extendqisi2"
@@ -5477,6 +5526,7 @@
   "TARGET_INT_SIMD"
   "uxtab%?\\t%0, %2, %1"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "insn" "xtab")
    (set_attr "type" "alu_shift")]
 )
@@ -5529,7 +5579,8 @@
   "TARGET_32BIT"
   "tst%?\\t%0, #255"
   [(set_attr "conds" "set")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_expand "extendhisi2"
@@ -5715,6 +5766,7 @@
    ldr%(sh%)\\t%0, %1"
   [(set_attr "type" "simple_alu_shift,load_byte")
    (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
 )
@@ -5827,7 +5879,8 @@
   "sxtab%?\\t%0, %2, %1"
   [(set_attr "type" "alu_shift")
    (set_attr "insn" "xtab")
-   (set_attr "predicable" "yes")]
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")]
 )
 
 (define_split
@@ -6283,6 +6336,7 @@
   "arm_arch_thumb2"
   "movt%?\t%0, #:upper16:%c2"
   [(set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")
    (set_attr "length" "4")]
 )
 
@@ -7162,14 +7216,15 @@
   "
 )
 
-
 (define_insn "*arm_movqi_insn"
-  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,l,Uu,r,m")
-	(match_operand:QI 1 "general_operand" "r,I,K,Uu,l,m,r"))]
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,r,r,l,r,l,Uu,r,m")
+	(match_operand:QI 1 "general_operand" "r,r,I,Py,K,Uu,l,m,r"))]
   "TARGET_32BIT
    && (   register_operand (operands[0], QImode)
        || register_operand (operands[1], QImode))"
   "@
+   mov%?\\t%0, %1
+   mov%?\\t%0, %1
    mov%?\\t%0, %1
    mov%?\\t%0, %1
    mvn%?\\t%0, #%B1
@@ -7177,11 +7232,12 @@
    str%(b%)\\t%1, %0
    ldr%(b%)\\t%0, %1
    str%(b%)\\t%1, %0"
-  [(set_attr "type" "*,simple_alu_imm,simple_alu_imm,load1, store1, load1, store1")
-   (set_attr "insn" "mov,mov,mvn,*,*,*,*")
+  [(set_attr "type" "*,*,simple_alu_imm,simple_alu_imm,simple_alu_imm,load1, store1, load1, store1")
+   (set_attr "insn" "mov,mov,mov,mov,mvn,*,*,*,*")
    (set_attr "predicable" "yes")
-   (set_attr "arch" "any,any,any,t2,t2,any,any")
-   (set_attr "length" "4,4,4,2,2,4,4")]
+   (set_attr "predicable_short_it" "yes,yes,yes,no,no,no,no,no,no")
+   (set_attr "arch" "t2,any,any,t2,any,t2,t2,any,any")
+   (set_attr "length" "2,4,4,2,4,2,2,4,4")]
 )
 
 (define_insn "*thumb1_movqi_insn"
@@ -8851,7 +8907,7 @@
 
 (define_expand "movsfcc"
   [(set (match_operand:SF 0 "s_register_operand" "")
-	(if_then_else:SF (match_operand 1 "expandable_comparison_operator" "")
+	(if_then_else:SF (match_operand 1 "arm_cond_move_operator" "")
 			 (match_operand:SF 2 "s_register_operand" "")
 			 (match_operand:SF 3 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
@@ -8873,7 +8929,7 @@
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "s_register_operand" "")
-	(if_then_else:DF (match_operand 1 "expandable_comparison_operator" "")
+	(if_then_else:DF (match_operand 1 "arm_cond_move_operator" "")
 			 (match_operand:DF 2 "s_register_operand" "")
 			 (match_operand:DF 3 "s_register_operand" "")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
@@ -10110,7 +10166,7 @@
 	      (set (match_dup 0) (const_int 1)))])
 
 (define_insn_and_split "*compare_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts,Ts")
 	(match_operator:SI 1 "arm_comparison_operator"
 	 [(match_operand:SI 2 "s_register_operand" "r,r")
 	  (match_operand:SI 3 "arm_add_operand" "rI,L")]))
@@ -10620,7 +10676,7 @@
 )
 
 (define_insn_and_split "*ior_scc_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
 	(ior:SI (match_operator:SI 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_add_operand" "rIL")])
@@ -10658,7 +10714,7 @@
 			  [(match_operand:SI 4 "s_register_operand" "r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
 		 (const_int 0)))
-   (set (match_operand:SI 7 "s_register_operand" "=r")
+   (set (match_operand:SI 7 "s_register_operand" "=Ts")
 	(ior:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
   "TARGET_32BIT"
@@ -10676,7 +10732,7 @@
    (set_attr "length" "16")])
 
 (define_insn_and_split "*and_scc_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=r")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
 	(and:SI (match_operator:SI 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r")
 		  (match_operand:SI 2 "arm_add_operand" "rIL")])
@@ -10716,7 +10772,7 @@
 			  [(match_operand:SI 4 "s_register_operand" "r")
 			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
 		 (const_int 0)))
-   (set (match_operand:SI 7 "s_register_operand" "=r")
+   (set (match_operand:SI 7 "s_register_operand" "=Ts")
 	(and:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
   "TARGET_32BIT"
@@ -10738,7 +10794,7 @@
 ;; need only zero the value if false (if true, then the value is already
 ;; correct).
 (define_insn_and_split "*and_scc_scc_nodom"
-  [(set (match_operand:SI 0 "s_register_operand" "=&r,&r,&r")
+  [(set (match_operand:SI 0 "s_register_operand" "=&Ts,&Ts,&Ts")
 	(and:SI (match_operator:SI 3 "arm_comparison_operator"
 		 [(match_operand:SI 1 "s_register_operand" "r,r,0")
 		  (match_operand:SI 2 "arm_add_operand" "rIL,0,rIL")])
@@ -12586,7 +12642,8 @@
                                   false, true))"
   "ldrd%?\t%0, %3, [%1, %2]"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb2_ldrd_base"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -12600,7 +12657,8 @@
                                   operands[1], 0, false, true))"
   "ldrd%?\t%0, %2, [%1]"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb2_ldrd_base_neg"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -12614,7 +12672,8 @@
                                   operands[1], -4, false, true))"
   "ldrd%?\t%0, %2, [%1, #-4]"
   [(set_attr "type" "load2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb2_strd"
   [(set (mem:SI (plus:SI (match_operand:SI 0 "s_register_operand" "rk")
@@ -12631,7 +12690,8 @@
                                   false, false))"
   "strd%?\t%2, %4, [%0, %1]"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb2_strd_base"
   [(set (mem:SI (match_operand:SI 0 "s_register_operand" "rk"))
@@ -12645,7 +12705,8 @@
                                   operands[0], 0, false, false))"
   "strd%?\t%1, %2, [%0]"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 (define_insn "*thumb2_strd_base_neg"
   [(set (mem:SI (plus:SI (match_operand:SI 0 "s_register_operand" "rk")
@@ -12659,7 +12720,8 @@
                                   operands[0], -4, false, false))"
   "strd%?\t%1, %2, [%0, #-4]"
   [(set_attr "type" "store2")
-   (set_attr "predicable" "yes")])
+   (set_attr "predicable" "yes")
+   (set_attr "predicable_short_it" "no")])
 
 
 ;; Load the load/store double peephole optimizations.

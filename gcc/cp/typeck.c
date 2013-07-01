@@ -3493,10 +3493,6 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
       params = &allocated;
     }
 
-  if (flag_enable_cilkplus
-      && is_cilkplus_reduce_builtin (fndecl) != BUILT_IN_NONE)
-    nargs = (*params)->length ();
-  else
     nargs = convert_arguments (parm_types, params, fndecl, LOOKUP_NORMAL,
 			       complain);
   if (nargs < 0)
@@ -3660,8 +3656,7 @@ convert_arguments (tree typelist, vec<tree, va_gc> **values, tree fndecl,
 	}
       else
 	{
-	  if (fndecl && DECL_BUILT_IN (fndecl)
-	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_CONSTANT_P)
+	  if (fndecl && magic_varargs_p (fndecl))
 	    /* Don't do ellipsis conversion for __built_in_constant_p
 	       as this will result in spurious errors for non-trivial
 	       types.  */
@@ -3956,15 +3951,8 @@ cp_build_binary_op (location_t location,
 	}
     }
 
-  if (flag_enable_cilkplus && contains_array_notation_expr (op0))
-    type0 = find_correct_array_notation_type (op0);
-  else
-    type0 = TREE_TYPE (op0);
-
-  if (flag_enable_cilkplus && contains_array_notation_expr (op1))
-    type1 = find_correct_array_notation_type (op1);
-  else
-    type1 = TREE_TYPE (op1);
+  type0 = TREE_TYPE (op0); 
+  type1 = TREE_TYPE (op1);
 
   /* The expression codes of the data types of the arguments tell us
      whether the arguments are integers, floating, pointers, etc.  */
@@ -4871,6 +4859,21 @@ cp_build_binary_op (location_t location,
 
   return result;
 }
+
+/* Build a VEC_PERM_EXPR.
+   This is a simple wrapper for c_build_vec_perm_expr.  */
+tree
+build_x_vec_perm_expr (location_t loc,
+			tree arg0, tree arg1, tree arg2,
+			tsubst_flags_t complain)
+{
+  if (processing_template_decl
+      && (type_dependent_expression_p (arg0)
+	  || type_dependent_expression_p (arg1)
+	  || type_dependent_expression_p (arg2)))
+    return build_min_nt_loc (loc, VEC_PERM_EXPR, arg0, arg1, arg2);
+  return c_build_vec_perm_expr (loc, arg0, arg1, arg2, complain & tf_error);
+}
 
 /* Return a tree for the sum or difference (RESULTCODE says which)
    of pointer PTROP and integer INTOP.  */
@@ -5167,13 +5170,6 @@ cp_build_addr_expr_1 (tree arg, bool strict_lvalue, tsubst_flags_t complain)
 
   gcc_assert (!identifier_p (arg) || !IDENTIFIER_OPNAME_P (arg));
 
-  if (flag_enable_cilkplus && TREE_CODE (arg) == ARRAY_NOTATION_REF)
-    {
-      val = build_address (arg);
-      if (TREE_CODE (arg) == OFFSET_REF)
-	PTRMEM_OK_P (val) = PTRMEM_OK_P (arg);
-      return val;
-    }
   if (TREE_CODE (arg) == COMPONENT_REF && type_unknown_p (arg)
       && !really_overloaded_fn (TREE_OPERAND (arg, 1)))
     {
@@ -7852,13 +7848,6 @@ convert_for_assignment (tree type, tree rhs,
   tree rhstype;
   enum tree_code coder;
 
-  /* If we are dealing with built-in array notation function then we don't need
-     to convert them.  They will be broken up into modify exprs in future,
-     during which all these checks will be done.  */
-  if (flag_enable_cilkplus
-      && is_cilkplus_reduce_builtin (fndecl) != BUILT_IN_NONE)
-    return rhs;
-  
   /* Strip NON_LVALUE_EXPRs since we aren't using as an lvalue.  */
   if (TREE_CODE (rhs) == NON_LVALUE_EXPR)
     rhs = TREE_OPERAND (rhs, 0);

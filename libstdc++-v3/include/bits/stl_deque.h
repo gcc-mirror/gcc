@@ -1458,7 +1458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       /**
        *  @brief  Inserts an object in %deque before specified iterator.
-       *  @param  __position  An iterator into the %deque.
+       *  @param  __position  A const_iterator into the %deque.
        *  @param  __args  Arguments.
        *  @return  An iterator that points to the inserted data.
        *
@@ -1467,9 +1467,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       template<typename... _Args>
         iterator
-        emplace(iterator __position, _Args&&... __args);
-#endif
+        emplace(const_iterator __position, _Args&&... __args);
 
+      /**
+       *  @brief  Inserts given value into %deque before specified iterator.
+       *  @param  __position  A const_iterator into the %deque.
+       *  @param  __x  Data to be inserted.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert a copy of the given value before the
+       *  specified location.
+       */
+      iterator
+      insert(const_iterator __position, const value_type& __x);
+#else
       /**
        *  @brief  Inserts given value into %deque before specified iterator.
        *  @param  __position  An iterator into the %deque.
@@ -1481,11 +1492,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       iterator
       insert(iterator __position, const value_type& __x);
+#endif
 
 #if __cplusplus >= 201103L
       /**
        *  @brief  Inserts given rvalue into %deque before specified iterator.
-       *  @param  __position  An iterator into the %deque.
+       *  @param  __position  A const_iterator into the %deque.
        *  @param  __x  Data to be inserted.
        *  @return  An iterator that points to the inserted data.
        *
@@ -1493,7 +1505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  specified location.
        */
       iterator
-      insert(iterator __position, value_type&& __x)
+      insert(const_iterator __position, value_type&& __x)
       { return emplace(__position, std::move(__x)); }
 
       /**
@@ -1505,11 +1517,30 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  initializer_list @a __l into the %deque before the location
        *  specified by @a __p.  This is known as <em>list insert</em>.
        */
-      void
-      insert(iterator __p, initializer_list<value_type> __l)
-      { this->insert(__p, __l.begin(), __l.end()); }
+      iterator
+      insert(const_iterator __p, initializer_list<value_type> __l)
+      { return this->insert(__p, __l.begin(), __l.end()); }
 #endif
 
+#if __cplusplus >= 201103L
+      /**
+       *  @brief  Inserts a number of copies of given data into the %deque.
+       *  @param  __position  A const_iterator into the %deque.
+       *  @param  __n  Number of elements to be inserted.
+       *  @param  __x  Data to be inserted.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert a specified number of copies of the given
+       *  data before the location specified by @a __position.
+       */
+      iterator
+      insert(const_iterator __position, size_type __n, const value_type& __x)
+      {
+	difference_type __offset = __position - cbegin();
+	_M_fill_insert(__position._M_const_cast(), __n, __x);
+	return begin() + __offset;
+      }
+#else
       /**
        *  @brief  Inserts a number of copies of given data into the %deque.
        *  @param  __position  An iterator into the %deque.
@@ -1522,7 +1553,32 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       insert(iterator __position, size_type __n, const value_type& __x)
       { _M_fill_insert(__position, __n, __x); }
+#endif
 
+#if __cplusplus >= 201103L
+      /**
+       *  @brief  Inserts a range into the %deque.
+       *  @param  __position  A const_iterator into the %deque.
+       *  @param  __first  An input iterator.
+       *  @param  __last   An input iterator.
+       *  @return  An iterator that points to the inserted data.
+       *
+       *  This function will insert copies of the data in the range
+       *  [__first,__last) into the %deque before the location specified
+       *  by @a __position.  This is known as <em>range insert</em>.
+       */
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+        iterator
+        insert(const_iterator __position, _InputIterator __first,
+	       _InputIterator __last)
+        {
+	  difference_type __offset = __position - cbegin();
+	  _M_insert_dispatch(__position._M_const_cast(),
+			     __first, __last, __false_type());
+	  return begin() + __offset;
+	}
+#else
       /**
        *  @brief  Inserts a range into the %deque.
        *  @param  __position  An iterator into the %deque.
@@ -1533,14 +1589,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  [__first,__last) into the %deque before the location specified
        *  by @a __position.  This is known as <em>range insert</em>.
        */
-#if __cplusplus >= 201103L
-      template<typename _InputIterator,
-	       typename = std::_RequireInputIter<_InputIterator>>
-        void
-        insert(iterator __position, _InputIterator __first,
-	       _InputIterator __last)
-        { _M_insert_dispatch(__position, __first, __last, __false_type()); }
-#else
       template<typename _InputIterator>
         void
         insert(iterator __position, _InputIterator __first,
@@ -1568,11 +1616,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __position)
-      { return _M_erase(__position._M_const_cast()); }
 #else
       erase(iterator __position)
-      { return _M_erase(__position); }
 #endif
+      { return _M_erase(__position._M_const_cast()); }
 
       /**
        *  @brief  Remove a range of elements.
@@ -1593,11 +1640,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
 #if __cplusplus >= 201103L
       erase(const_iterator __first, const_iterator __last)
-      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 #else
       erase(iterator __first, iterator __last)
-      { return _M_erase(__first, __last); }
 #endif
+      { return _M_erase(__first._M_const_cast(), __last._M_const_cast()); }
 
       /**
        *  @brief  Swaps data with another %deque.

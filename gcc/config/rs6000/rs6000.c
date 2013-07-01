@@ -24213,7 +24213,8 @@ is_microcoded_insn (rtx insn)
   if (rs6000_cpu_attr == CPU_CELL)
     return get_attr_cell_micro (insn) == CELL_MICRO_ALWAYS;
 
-  if (rs6000_sched_groups)
+  if (rs6000_sched_groups
+      && (rs6000_cpu == PROCESSOR_POWER4 || rs6000_cpu == PROCESSOR_POWER5))
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_LOAD_EXT_U
@@ -24238,7 +24239,8 @@ is_cracked_insn (rtx insn)
       || GET_CODE (PATTERN (insn)) == CLOBBER)
     return false;
 
-  if (rs6000_sched_groups)
+  if (rs6000_sched_groups
+      && (rs6000_cpu == PROCESSOR_POWER4 || rs6000_cpu == PROCESSOR_POWER5))
     {
       enum attr_type type = get_attr_type (insn);
       if (type == TYPE_LOAD_U || type == TYPE_STORE_U
@@ -25112,7 +25114,6 @@ insn_must_be_first_in_group (rtx insn)
         }
       break;
     case PROCESSOR_POWER7:
-    case PROCESSOR_POWER8:	/* FIXME */
       type = get_attr_type (insn);
 
       switch (type)
@@ -25140,6 +25141,39 @@ insn_must_be_first_in_group (rtx insn)
         case TYPE_FPLOAD_UX:
         case TYPE_FPSTORE_U:
         case TYPE_FPSTORE_UX:
+        case TYPE_MFJMPR:
+        case TYPE_MTJMPR:
+          return true;
+        default:
+          break;
+        }
+      break;
+    case PROCESSOR_POWER8:
+      type = get_attr_type (insn);
+
+      switch (type)
+        {
+        case TYPE_CR_LOGICAL:
+        case TYPE_DELAYED_CR:
+        case TYPE_MFCR:
+        case TYPE_MFCRF:
+        case TYPE_MTCR:
+        case TYPE_COMPARE:
+        case TYPE_DELAYED_COMPARE:
+        case TYPE_VAR_DELAYED_COMPARE:
+        case TYPE_IMUL_COMPARE:
+        case TYPE_LMUL_COMPARE:
+        case TYPE_SYNC:
+        case TYPE_ISYNC:
+        case TYPE_LOAD_L:
+        case TYPE_STORE_C:
+        case TYPE_LOAD_U:
+        case TYPE_LOAD_UX:
+        case TYPE_LOAD_EXT:
+        case TYPE_LOAD_EXT_U:
+        case TYPE_LOAD_EXT_UX:
+        case TYPE_STORE_UX:
+        case TYPE_VECSTORE:
         case TYPE_MFJMPR:
         case TYPE_MTJMPR:
           return true;
@@ -25209,11 +25243,29 @@ insn_must_be_last_in_group (rtx insn)
     }
     break;
   case PROCESSOR_POWER7:
-  case PROCESSOR_POWER8:	/* FIXME */
     type = get_attr_type (insn);
 
     switch (type)
       {
+      case TYPE_ISYNC:
+      case TYPE_SYNC:
+      case TYPE_LOAD_L:
+      case TYPE_STORE_C:
+      case TYPE_LOAD_EXT_U:
+      case TYPE_LOAD_EXT_UX:
+      case TYPE_STORE_UX:
+        return true;
+      default:
+        break;
+    }
+    break;
+  case PROCESSOR_POWER8:
+    type = get_attr_type (insn);
+
+    switch (type)
+      {
+      case TYPE_MFCR:
+      case TYPE_MTCR:
       case TYPE_ISYNC:
       case TYPE_SYNC:
       case TYPE_LOAD_L:
@@ -25315,7 +25367,7 @@ force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
       if (can_issue_more && !is_branch_slot_insn (next_insn))
 	can_issue_more--;
 
-      /* Power6 and Power7 have special group ending nop. */
+      /* Do we have a special group ending nop? */
       if (rs6000_cpu_attr == CPU_POWER6 || rs6000_cpu_attr == CPU_POWER7
 	  || rs6000_cpu_attr == CPU_POWER8)
 	{

@@ -225,20 +225,21 @@ lto_output_decl_index (struct lto_output_stream *obs,
 		       struct lto_tree_ref_encoder *encoder,
 		       tree name, unsigned int *this_index)
 {
-  void **slot;
-  int index;
+  unsigned *slot;
+  unsigned int index;
   bool new_entry_p = FALSE;
+  bool existed_p;
 
-  slot = pointer_map_insert (encoder->tree_hash_table, name);
-  if (*slot == NULL)
+  slot = encoder->tree_hash_table->insert (name, &existed_p);
+  if (!existed_p)
     {
       index = encoder->trees.length ();
-      *slot = (void *)(uintptr_t) index;
+      *slot = index;
       encoder->trees.safe_push (name);
       new_entry_p = TRUE;
     }
   else
-    index = (uintptr_t) *slot;
+    index = *slot;
 
   if (obs)
     streamer_write_uhwi_stream (obs, index);
@@ -438,7 +439,7 @@ lto_record_function_out_decl_state (tree fn_decl,
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     if (state->streams[i].tree_hash_table)
       {
-	pointer_map_destroy (state->streams[i].tree_hash_table);
+	delete state->streams[i].tree_hash_table;
 	state->streams[i].tree_hash_table = NULL;
       }
   state->fn_decl = fn_decl;

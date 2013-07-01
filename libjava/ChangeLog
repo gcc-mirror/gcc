@@ -1,3 +1,7 @@
+2013-06-20  Roland Lutz  <rlutz@hedmen.org>
+
+ 	* contrib/aot-compile.in: Fix typo in option list.
+
 2013-06-20  Matthias Klose  <doko@ubuntu.com>
 
 	* pkg.m4 (PKG_CHECK_MODULES): Use AC_PATH_TOOL to check for pkg-config.

@@ -265,7 +265,7 @@ namespace __gnu_test
 	: _F_erase_point(&_Tp::erase), _F_erase_range(&_Tp::erase) { }
       };
 
-    // Specializations, old C++03 signatures.
+    // Specialization, old C++03 signature.
     template<typename _Tp1, typename _Tp2, typename _Tp3>
       struct erase_base<std::basic_string<_Tp1, _Tp2, _Tp3>>
       {
@@ -274,24 +274,6 @@ namespace __gnu_test
 
 	iterator (container_type::* _F_erase_point)(iterator);
 	iterator (container_type::* _F_erase_range)(iterator, iterator);
-
-	erase_base()
-	: _F_erase_point(&container_type::erase),
-	  _F_erase_range(&container_type::erase) { }
-      };
-
-    template<typename _Tp1, typename _Tp2, typename _Tp3,
-	     template <typename, typename, typename> class _Tp4>
-      struct erase_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
-      {
-	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::const_iterator const_iterator;
-
-	iterator (container_type::* _F_erase_point)(const_iterator);
-	iterator (container_type::* _F_erase_range)(const_iterator,
-						    const_iterator);
 
 	erase_base()
 	: _F_erase_point(&container_type::erase),
@@ -698,47 +680,7 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&_Tp::insert) { }
       };
 
-    // Specializations, old C++03 signatures.
-    template<typename _Tp1, typename _Tp2>
-      struct insert_base<std::deque<_Tp1, _Tp2>>
-      {
-	typedef std::deque<_Tp1, _Tp2> 	                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2>
-      struct insert_base<std::list<_Tp1, _Tp2>>
-      {
-	typedef std::list<_Tp1, _Tp2>    	        container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    template<typename _Tp1, typename _Tp2>
-      struct insert_base<std::vector<_Tp1, _Tp2>>
-      {
-	typedef std::vector<_Tp1, _Tp2> 	        container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::value_type 	value_type;
-
-	iterator (container_type::* _F_insert_point)(iterator,
-						     const value_type&);
-
-	insert_base() : _F_insert_point(&container_type::insert) { }
-      };
-
-    // Specialization, as string insertion has a different signature.
+    // Specialization, old C++03 signature.
     template<typename _Tp1, typename _Tp2, typename _Tp3>
       struct insert_base<std::basic_string<_Tp1, _Tp2, _Tp3>>
       {
@@ -751,17 +693,19 @@ namespace __gnu_test
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };
 
-    // Likewise for __versa_string.
+    // Specialization, by value.
     template<typename _Tp1, typename _Tp2, typename _Tp3,
 	     template <typename, typename, typename> class _Tp4>
       struct insert_base<__gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>>
       {
 	typedef __gnu_cxx::__versa_string<_Tp1, _Tp2, _Tp3, _Tp4>
-	                                                container_type;
-	typedef typename container_type::iterator 	iterator;
-	typedef typename container_type::value_type 	value_type;
+                                                        container_type;
+	typedef typename container_type::iterator       iterator;
+	typedef typename container_type::const_iterator const_iterator;
+	typedef typename container_type::value_type     value_type;
 
-	iterator (container_type::* _F_insert_point)(iterator, value_type);
+	iterator (container_type::* _F_insert_point)(const_iterator,
+						     value_type);
 
 	insert_base() : _F_insert_point(&container_type::insert) { }
       };

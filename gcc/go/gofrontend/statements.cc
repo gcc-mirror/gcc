@@ -569,7 +569,10 @@ void
 Assignment_statement::do_determine_types()
 {
   this->lhs_->determine_type_no_context();
-  Type_context context(this->lhs_->type(), false);
+  Type* rhs_context_type = this->lhs_->type();
+  if (rhs_context_type->is_sink_type())
+    rhs_context_type = NULL;
+  Type_context context(rhs_context_type, false);
   this->rhs_->determine_type(&context);
 }
 
@@ -2813,6 +2816,28 @@ Statement::make_return_statement(Expression_list* vals,
 				 Location location)
 {
   return new Return_statement(vals, location);
+}
+
+// Make a statement that returns the result of a call expression.
+
+Statement*
+Statement::make_return_from_call(Call_expression* call, Location location)
+{
+  size_t rc = call->result_count();
+  if (rc == 0)
+    return Statement::make_statement(call, true);
+  else
+    {
+      Expression_list* vals = new Expression_list();
+      if (rc == 1)
+	vals->push_back(call);
+      else
+	{
+	  for (size_t i = 0; i < rc; ++i)
+	    vals->push_back(Expression::make_call_result(call, i));
+	}
+      return Statement::make_return_statement(vals, location);
+    }
 }
 
 // A break or continue statement.

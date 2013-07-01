@@ -1,3 +1,136 @@
+2013-07-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/54788
+	* gfortran.dg/pointer_remapping_8.f90: New.
+
+2013-06-28  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* g++.dg/cpp0x/udlit-nospace-neg.C: Adjust.
+	* g++.dg/cpp1y/udlit-enc-prefix-neg.C: New.
+	* g++.dg/cpp1y/udlit-userdef-string.C: New.
+	* g++.dg/cpp1y/complex_literals.h: New.
+
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57645
+	* g++.dg/cpp0x/noexcept21.C: New.
+
+2013-06-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57736
+	* gcc.target/i386/pr57736.c: New test.
+
+2013-06-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* c-c++-common/cilk-plus/AN/decl-ptr-colon.c (main): Made this testcase
+	c specific.
+	* c-c++-common/cilk-plus/AN/decl-ptr-colon.c (main): Changed dg-error
+	strings to match the fixed error messages.
+	* c-c++-common/cilk-plus/AN/misc.c (main): Likewise.
+	* c-c++-common/cilk-plus/AN/rank_mismatch.c (main): Added a new error
+	message check.
+
+2013-06-28  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/57744
+	* gcc.target/powerpc/pr57744.c: New test to make sure lqarx and
+	stqcx. get even registers.
+
+2013-06-28  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* g++.dg/ext/pr57509.C: Pass vectors by reference to avoid warnings.
+
+2013-06-28  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/bmi-1.c: Extend with new instrinsic.
+	Fix scan patterns.
+	* gcc.target/i386/bmi-1.c: Ditto.
+	* gcc.target/i386/bmi-bextr-4.c: New.
+	* gcc.target/i386/bmi-bextr-5.c: Ditto.
+
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57682
+	* g++.dg/cpp0x/initlist73.C: New.
+
+2013-06-27  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc.dg/atomic-flag.c: Add dg-require-effective-target sync_*.
+	* g++.dg/simulate-thread/atomics-2.C: Likewise.
+	* g++.dg/simulate-thread/atomics-1.C: Likewise.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* g++.dg/ext/pr57509.C: New file.
+
+2013-06-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57623
+	* gcc.target/i386/bmi-bextr-3.c: New test.
+
+	PR target/57623
+	* gcc.target/i386/bmi2-bzhi-1.c: New test.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57172
+	* g++.dg/cpp0x/pr57172.C: New testcase.
+
+2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/htm-1.c: New file.
+	* gcc.target/s390/htm-nofloat-1.c: New file.
+	* gcc.target/s390/htm-xl-intrin-1.c: New file.
+
+2013-06-26  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/29800
+	* gfortran.dg/bounds_check_17.f90: New.
+
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/57640
+	* g++.dg/cpp1y/pr57640.C: New.
+
+2013-06-25  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57692
+	* c-c++-common/cilk-plus/AN/gather_scatter.c: Fixed a bug of stack
+	overflow due to size of arrays.
+
+2013-06-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57705
+	* gcc.dg/vect/pr57705.c: New test.
+	* gcc.dg/vect/vect-iv-7.c: Add noclone attribute, remove xfail.
+
+2013-06-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/57670
+	* g++.dg/ipa/pr57670.C: New test.
+
+2013-06-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56977
+	* gcc.dg/pr56977.c: New testcase.
+
+2013-06-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57358
+	* gcc.dg/ipa/pr57358.c: New test.
+
+2013-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/57686
+	* gcc.dg/torture/pr57584.c: Remove target specific bits.
+
+2013-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57488
+	* gcc.dg/torture/pr57488.c: New testcase.
+
 2013-06-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
 	    Dominique d'Humieres  <dominiq@lps.ens.fr>
 
@@ -70,7 +203,7 @@
 	* g++.dg/cilk-plus/AN/postincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/cilk-plus.exp: New script.
 	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests in the list.
-	
+
 2013-06-21  Joseph Myers  <joseph@codesourcery.com>
 
 	PR other/53317
@@ -360,7 +493,7 @@
 
 	PR c/57563
 	* c-c++-common/cilk-plus/AN/builtin_fn_mutating.c (main): Fixed a bug
-	in how we check __sec_reduce_mutating function's result.	
+	in how we check __sec_reduce_mutating function's result.
 
 2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
@@ -728,7 +861,7 @@
 	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): New testcase.
 	* c-c++-common/cilk-plus/AN/rank_mismatch.c: Added a '-w' option to
 	dg-option and an header comment.
-	
+
 2013-06-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57419

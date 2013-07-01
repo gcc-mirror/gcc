@@ -1,3 +1,120 @@
+2013-06-28  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* cp-tree.h (UDLIT_OP_ANSI_PREFIX): Remove space.
+	* parser.c (cp_parser_operator()): Parse user-defined string
+	literal as literal operator.
+
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57645
+	* class.c (deduce_noexcept_on_destructors): Save, set, and restore
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) around the main loop over the
+	destructors.
+
+2013-06-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* parser.c (cp_parser_array_notation): Removed rejection array notation
+	of type function pointers. Added handling of array expressions when
+	Cilk Plus is enabled.  Took out type-checking.
+	(cp_parser_postfix_open_square_expression): Moved normal array expr.
+	parsing into cp_parser_array_notation when cilkplus is enabled.
+	(cp_parser_compound_statement): Removed expansion of array notations.
+	(cp_parser_ctor_initializer_opt_and_function_body): Likewise.
+	(cp_parser_function_definition_after_declarator): Likewise.
+	(cp_parser_selection_statement): Removed error reporting.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_direct_declarator): Removed error checking/reporting if
+	array notations are used in the declarator.
+	* pt.c (instantiate_decl): Likewise.
+	(type_unification_real): Removed a check for ARRAY_NOTATION_REF.
+	(cxx_eval_constant_expression): Removed ARRAY_NOTATION_REF case.
+	(potential_constant_expression_1): Returned false for
+	ARRAY_NOTATION_REF case.
+	* cp-gimplify.c (cp_genericize): Added expansion of array notation
+	expressions here.
+	* cp-array-notation.c (make_triplet_val_inv): Removed loc and cry 
+	parameters.  Replaced build_decls with get_temp_regvar with type as
+	ptrdiff.
+	(create_array_refs): Made the type-casting to ptrdiff_type.
+	(replace_invariant_var): Added a check for void return type before 
+	creating new var.  Replaced build_decl and build_min_nt_loc with
+	get_temp_regvar.
+	(expand_an_in_modify_expr): Ditto.  Replaced body of redundant else 
+	with gcc_unreachable.  Removed few unwanted checks.  Made induction 
+	variable type as ptrdiff_type.  Removed loc and complain arguments 
+	passed into make_triplet_val_inv.  Replaced all modify expression's 
+	code from NOP EXPR to INIT EXPR.  Replaced all forceful appending 
+	into stmt. list with the non-forceful one.  Replaced some integer 
+	conversion and equality-checking to using tree_int_cst_equal.
+	(expand_sec_reduce_builtin): All changes mentioned in above function
+	expand_an_in_modify_expr.  Made the new variable type of
+	SEC_REDUCE_ANY/ALL_{NON}ZERO intrinsic functions as bool.
+	(expand_array_notation_exprs): Removed SWITCH_EXPR case.  Moved all
+	the error reporting from parser to this function.  Removed unwanted
+	statements and checks from SWITCH_STMT, WHILE_STMT, and DO_STMT cases.
+	(cilkplus_an_triplet_types_ok_p): Removed rejection of array notation
+	in function pointers.
+	(cp_expand_cond_array_notations): Added a new if statements to check
+	if condition has a zero rank.  If so, then just return.
+	(expand_return_expr): Added a check for return expressions with a rank.
+	Replaced get_tmp_regvar with a create_temporary_var.
+	(build_array_notation_ref): Simplified and removed unwanted if-stmts.
+	Moved common code outside if-statements.  Moved type-checking from
+	parser to here.
+	* semantics.c (finish_return_stmt): Removed a check for return exprs.
+	with a rank.
+	* call.c (convert_like_real): Removed a check for array notation
+	expression in a function.
+	(build_over_call): Likewise.
+	(magic_varargs_p): Added a check for builtin array notation function.
+	Made this function non-static and removed its prototype.
+	* cp-tree.h (magic_varargs_p): New prototype.
+	* typeck.c (cp_build_function_call_vec): Removed automatic setting of
+	nargs to the param->length when builtin reduction function is used.
+	(convert_arguments): Replaced check for a constant_p function with
+	margic_varargs_p function call.
+	(cp_build_binary_op): Removed calling of the function
+	find_correct_array_notation_type.
+	(cp_build_addr_expr_1): Removed an unwanted if-statement.
+	(convert_for_assignment): Removed automatic return of rhs when array
+	notation builtin function is used.
+
+2013-06-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57682
+	* parser.c (cp_parser_save_member_function_body): Handle correctly
+	curly braces in function-try-block mem-initializers.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57509
+	* typeck.c (cp_build_vec_perm_expr): New function.
+	* cp-tree.h: Declare it.
+	* parser.c (cp_parser_postfix_expression): Call it.
+	* pt.c (tsubst_copy): Handle VEC_PERM_EXPR.
+	(tsubst_copy_and_build): Likewise.
+
+2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/57172
+	* pt.c (more_specialized_fn): If both arguments are references,
+	give priority to an lvalue.
+
+2013-06-26  Jason Merrill  <jason@redhat.com>
+
+	* typeck2.c (store_init_value): Diagnose a non-constant
+	initializer for in-class static.
+
+	PR c++/57408
+	* semantics.c (add_capture): Set type to error_mark_node after
+	error.
+
+2013-06-25  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/57640
+	* parser.c (cp_parser_unqualified_id): Add declarator_p to checks
+	to trigger warning, (cp_literal_operator_id): Remove bogus TODO comment.
+
 2013-06-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* call.c (null_ptr_cst_p): Use cxx11 in lieu of cxx0x.
@@ -39,6 +156,12 @@
 	(cast_valid_in_integral_constant_expression_p): Likewise.
 	* typeck.c (build_x_conditional_expr): Likewise.
 	* typeck2.c (check_narrowing): Likewise.
+
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	* cp-array-notation.c (cp_length_mismatch_in_expr_p): Remove.
+	(expand_an_in_modify_expr): Changed a function call from the above
+	removed function to length_mismatch_in_expr_p.
 
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 

@@ -955,7 +955,7 @@ input_node (struct lto_file_decl_data *file_data,
     {
       node = cgraph_clone_node (cgraph (nodes[clone_ref]), fn_decl,
 				0, CGRAPH_FREQ_BASE, false,
-				vNULL, false);
+				vNULL, false, NULL);
     }
   else
     {

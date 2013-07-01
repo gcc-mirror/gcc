@@ -1687,7 +1687,7 @@ class Named_constant
   Named_constant(Type* type, Expression* expr, int iota_value,
 		 Location location)
     : type_(type), expr_(expr), iota_value_(iota_value), location_(location),
-      lowering_(false)
+      lowering_(false), is_sink_(false)
   { }
 
   Type*
@@ -1720,6 +1720,14 @@ class Named_constant
   void
   clear_lowering()
   { this->lowering_ = false; }
+
+  bool
+  is_sink() const
+  { return this->is_sink_; }
+
+  void
+  set_is_sink()
+  { this->is_sink_ = true; }
 
   // Traverse the expression.
   int
@@ -1756,6 +1764,8 @@ class Named_constant
   Location location_;
   // Whether we are currently lowering this constant.
   bool lowering_;
+  // Whether this constant is blank named and needs only type checking.
+  bool is_sink_;
 };
 
 // A type declaration.

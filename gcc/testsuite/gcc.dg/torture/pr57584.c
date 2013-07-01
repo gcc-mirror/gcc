@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 
-typedef int int32_t __attribute__ ((__mode__ (__SI__)));
+typedef int int32_t;
 typedef unsigned char uint8_t;
 typedef unsigned long int uintptr_t;
 typedef uint8_t scm_t_uint8;
@@ -37,7 +37,7 @@ static SCM vm_debug_engine (SCM vm, SCM program, SCM *argv, int nargs) {
     register SCM *fp ;
     struct scm_vm *vp = ((struct scm_vm *) ((((scm_t_bits) (0? (*(SCM*)0=((((SCM *)((scm_t_cell *) (((scm_t_bits) (0? (*(SCM*)0=((((vm))))): (((vm)))))))) [((1))]))): (((SCM *)((scm_t_cell *) (((scm_t_bits) (0? (*(SCM*)0=((((vm))))): (((vm)))))))) [((1))]))))));
     static const void **jump_table_pointer = ((void *)0);
-    register const void **jump_table asm ("r12");
+    const void **jump_table;
     if (__builtin_expect ((!jump_table_pointer), 0))     {
 	jump_table_pointer[0] = &&l_nop;
     }

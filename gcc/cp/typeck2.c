@@ -775,7 +775,8 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       bool const_init;
       value = fold_non_dependent_expr (value);
       value = maybe_constant_init (value);
-      if (DECL_DECLARED_CONSTEXPR_P (decl))
+      if (DECL_DECLARED_CONSTEXPR_P (decl)
+	  || DECL_IN_AGGR_P (decl))
 	{
 	  /* Diagnose a non-constant initializer for constexpr.  */
 	  if (processing_template_decl

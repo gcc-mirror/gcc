@@ -10,6 +10,7 @@ int main (void)
   int array[10][10], array2[10];
 
   array[:][:] = array[:]; /* { dg-error "rank mismatch between" } */
+  /* { dg-error "invalid conversion" "" { target c++ } 12 } */
 
   x = array2[:]; /* { dg-error "cannot be scalar when" } */
 

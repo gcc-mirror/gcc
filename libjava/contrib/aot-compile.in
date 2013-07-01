@@ -52,7 +52,7 @@ try:
             sys.argv[1:],
             "M:C:D:m:c:l:e:",
             ["make=", "gcj=", "dbtool=",
-             "makeflags=" "gcjflags=", "ldflags=",
+             "makeflags=", "gcjflags=", "ldflags=",
              "exclude="])
         srcdir, dstdir = args
     except:

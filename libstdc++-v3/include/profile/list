@@ -335,7 +335,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 #if __cplusplus >= 201103L
       template<typename... _Args>
         iterator
-        emplace(iterator __position, _Args&&... __args)
+        emplace(const_iterator __position, _Args&&... __args)
 	{
 	  return iterator(_Base::emplace(__position.base(),
                                          std::forward<_Args>(__args)...),
@@ -344,7 +344,11 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 #endif
 
       iterator
+#if __cplusplus >= 201103L
+      insert(const_iterator __position, const _Tp& __x)
+#else
       insert(iterator __position, const _Tp& __x)
+#endif
       {
         _M_profile_insert(this, __position, size());
         return iterator(_Base::insert(__position.base(), __x), this);
@@ -352,8 +356,8 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
 #if __cplusplus >= 201103L
       iterator
-      insert(iterator __position, _Tp&& __x)
-      { 
+      insert(const_iterator __position, _Tp&& __x)
+      {
         _M_profile_insert(this, __position, size());
         return iterator(_Base::emplace(__position.base(), std::move(__x)),
                         this); 
@@ -606,11 +610,12 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       }
 
     private:
-      size_type _M_profile_insert(void* obj, iterator __pos, size_type __size)
+      size_type
+      _M_profile_insert(void* obj, const_iterator __pos, size_type __size)
       {
         size_type __shift = 0;
-        typename _Base::iterator __it = __pos.base();
-        for ( ; __it!=_Base::end(); __it++)
+        typename _Base::const_iterator __it = __pos.base();
+        for (; __it != _Base::end(); ++__it)
           __shift++;
         __profcxx_list_rewind(this);
         __profcxx_list_operation(this);

@@ -354,6 +354,60 @@
   <info><title>Unordered Associative</title></info>
   <?dbhtml filename="unordered_associative.html"?>
 
+  <section xml:id="containers.unordered.insert_hints" xreflabel="Insertion Hints">
+    <info><title>Insertion Hints</title></info>
+
+    <para>
+     Here is how the hinting works in the libstdc++ implementation of unordered
+     containers, and the rationale behind this behavior.
+    </para>
+    <para>
+      In the following text, the phrase <emphasis>equivalent to</emphasis> refer
+      to the result of the invocation of the equal predicate imposed on the
+      container by its <code>key_equal</code> object, which defaults to (basically)
+      <quote>==</quote>.
+    </para>
+    <para>
+      Unordered containers can be seen as a <code>std::vector</code> of
+      <code>std::forward_list</code>. The <code>std::vector</code> represents
+      the buckets and each <code>std::forward_list</code> is the list of nodes
+      belonging to the same bucket. When inserting an element in such a data
+      structure we first need to compute the element hash code to find the
+      bucket to insert the element to, the second step depends on the uniqueness
+      of elements in the container.
+    </para>
+    <para>
+      In the case of <code>std::unordered_set</code> and
+      <code>std::unordered_map</code> you need to look through all bucket's
+      elements for an equivalent one. If there is none the insertion can be
+      achieved, otherwise the insertion fails. As we always need to loop though
+      all bucket's elements, the hint doesn't tell us if the element is already
+      present, and we don't have any constraint on where the new element is to
+      be inserted, the hint won't be of any help and will then be ignored.
+    </para>
+    <para>
+      In the case of <code>std::unordered_multiset</code>
+      and <code>std::unordered_multimap</code> equivalent elements must be
+      linked together so that the <code>equal_range(const key_type&amp;)</code>
+      can return the range of iterators pointing to all equivalent elements.
+      This is where hinting can be used to point to another equivalent element
+      already part of the container and so skip all non equivalent elements of
+      the bucket. So to be useful the hint shall point to an element equivalent
+      to the one being inserted. The new element will be then inserted right
+      after the hint. Note that because of an implementation detail inserting
+      after a node can require updating the bucket of the following node. To
+      check if the next bucket is to be modified we need to compute the
+      following node's hash code. So if you want your hint to be really efficient
+      it should be followed by another equivalent element, the implementation
+      will detect this equivalence and won't compute next element hash code.
+    </para>
+    <para>
+      It is highly advised to start using unordered containers hints only if you
+      have a benchmark that will demonstrate the benefit of it. If you don't then do
+      not use hints, it might do more harm than good.
+    </para>
+  </section>
+
   <section xml:id="containers.unordered.hash" xreflabel="Hash">
     <info><title>Hash Code</title></info>
 

@@ -36,6 +36,12 @@ along with GCC.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #ifdef TARGET_LIBC_PROVIDES_SSP
+
 /* Not supported yet.  */
-#undef TARGET_THREAD_SSP_OFFSET
+# undef TARGET_THREAD_SSP_OFFSET
+
+/* Not supported yet.  */
+# undef TARGET_CAN_SPLIT_STACK
+# undef TARGET_THREAD_SPLIT_STACK_OFFSET
+
 #endif
