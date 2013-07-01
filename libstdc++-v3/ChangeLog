@@ -1,3 +1,50 @@
+2013-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/stl_list.h (list<>::insert(iterator,
+	size_type, const value_type&), list<>::insert(iterator,
+	initializer_list<>), list<>::insert(iterator, _InputIterator,
+	_InputIterator), list<>::splice(iterator, list&&),
+	list<>::splice(iterator, list&), list<>::splice(iterator, list&&,
+	iterator), list<>::splice(iterator, list&, iterator),
+	list<>::splice(iterator, list&&, iterator, iterator),
+	list<>::splice(iterator, list&, iterator, iterator)): Adjust C++11
+	signatures to take const_iterator(s).
+	* include/bits/list.tcc (list<>::insert(const_iterator, size_type,
+	const value_type&), list<>::insert(const_iterator, _InputIterator,
+	_InputIterator)): Define.
+	* include/ext/vstring.h (__versa_string<>::insert(iterator,
+	size_type, _CharT), __versa_string<>::insert(iterator,
+	_InputIterator, _InputIterator), __versa_string<>::insert(iterator,
+	std::initializer_list<>), __versa_string<>::replace(iterator,
+	iterator, _InputIterator, _InputIterator), __versa_string<>::
+	replace(iterator, iterator, std::initializer_list<>)): Adjust C++11
+	signatures to take const_iterator(s).
+	(__versa_string<>::_M_replace_dispatch): Take const_iterators.
+	* include/ext/vstring.tcc: Likewise.
+	* include/debug/list: Adjust.
+	* include/profile/list: Likewise.
+	* testsuite/23_containers/list/operations/splice/const_iterator.cc:
+	New.
+	* testsuite/23_containers/list/modifiers/insert/const_iterator.cc:
+	Extend.
+	* testsuite/ext/vstring/modifiers/insert/char/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/insert/wchar_t/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/replace/char/const_iterator.cc:
+	Likewise.
+	* testsuite/ext/vstring/modifiers/replace/wchar_t/const_iterator.cc:
+	Likewise.
+
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-06-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_deque.h (deque<>::insert(iterator,

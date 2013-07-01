@@ -1,6 +1,7 @@
-// 2007-04-27  Paolo Carlini  <pcarlini@suse.de>
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
-// Copyright (C) 2007-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,13 +18,15 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile }
-// { dg-error "no matching" "" { target *-*-* } 1603 }
-
 #include <list>
 
-void f()
+void test01()
 {
-  typedef std::list<std::list<int> > list_type;
-  list_type l(10, 1);
+  std::list<int> l1{0, 1}, l2{2, 3};
+  l1.splice(l1.cbegin(), l2);
+  l2.splice(l2.cbegin(), std::move(l1));
+  l1.splice(l1.cbegin(), l2, l2.cbegin());
+  l2.splice(l2.cbegin(), std::move(l1), l1.cbegin());
+  l1.splice(l1.cbegin(), l2, l2.cbegin(), l2.cend());
+  l2.splice(l2.cbegin(), std::move(l1), l1.cbegin(), l1.cend());
 }
