@@ -23,5 +23,8 @@
 void test01() 
 {
   __gnu_cxx::__vstring vs1;
-  vs1.insert(vs1.cbegin(), '1');
+  __gnu_cxx::__vstring::iterator it = vs1.insert(vs1.cbegin(), '1');
+  it = vs1.insert(vs1.cbegin(), 1, '2');
+  it = vs1.insert(vs1.cbegin(), {'3', '4'});
+  it = vs1.insert(vs1.cbegin(), vs1.begin(), vs1.end());
 }

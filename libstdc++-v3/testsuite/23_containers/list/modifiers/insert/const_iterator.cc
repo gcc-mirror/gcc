@@ -24,6 +24,9 @@ void test01()
 {
   std::list<int> l1;
   int n = 0;
-  l1.insert(l1.cbegin(), n);
-  l1.insert(l1.cbegin(), 1);
+  std::list<int>::iterator it = l1.insert(l1.cbegin(), n);
+  it = l1.insert(l1.cbegin(), 1);
+  it = l1.insert(l1.cbegin(), {2, 3});
+  it = l1.insert(l1.cbegin(), 1, 4);
+  it = l1.insert(l1.cbegin(), l1.begin(), l1.end());
 }

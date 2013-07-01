@@ -107,6 +107,40 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       return iterator(__tmp);
     }
 
+#if __cplusplus >= 201103L
+  template<typename _Tp, typename _Alloc>
+    typename list<_Tp, _Alloc>::iterator
+    list<_Tp, _Alloc>::
+    insert(const_iterator __position, size_type __n, const value_type& __x)
+    {
+      if (__n)
+	{
+	  list __tmp(__n, __x, get_allocator());
+	  iterator __it = __tmp.begin();
+	  splice(__position, __tmp);
+	  return __it;
+	}
+      return __position._M_const_cast();
+    }
+
+  template<typename _Tp, typename _Alloc>
+    template<typename _InputIterator, typename>
+      typename list<_Tp, _Alloc>::iterator
+      list<_Tp, _Alloc>::
+      insert(const_iterator __position, _InputIterator __first,
+	     _InputIterator __last)
+      {
+	list __tmp(__first, __last, get_allocator());
+	if (!__tmp.empty())
+	  {
+	    iterator __it = __tmp.begin();
+	    splice(__position, __tmp);
+	    return __it;
+	  }
+	return __position._M_const_cast();
+      }
+#endif
+
   template<typename _Tp, typename _Alloc>
     typename list<_Tp, _Alloc>::iterator
     list<_Tp, _Alloc>::
