@@ -2003,6 +2003,38 @@
    (set_attr "mode" "SI")]
 )
 
+(define_insn_and_split "absdi2"
+  [(set (match_operand:DI 0 "register_operand" "=r,w")
+	(abs:DI (match_operand:DI 1 "register_operand" "r,w")))
+   (clobber (match_scratch:DI 2 "=&r,X"))]
+  ""
+  "@
+   #
+   abs\\t%d0, %d1"
+  "reload_completed
+   && GP_REGNUM_P (REGNO (operands[0]))
+   && GP_REGNUM_P (REGNO (operands[1]))"
+  [(const_int 0)]
+  {
+    emit_insn (gen_rtx_SET (VOIDmode, operands[2],
+			    gen_rtx_XOR (DImode,
+					 gen_rtx_ASHIFTRT (DImode,
+							   operands[1],
+							   GEN_INT (63)),
+					 operands[1])));
+    emit_insn (gen_rtx_SET (VOIDmode,
+			    operands[0],
+			    gen_rtx_MINUS (DImode,
+					   operands[2],
+					   gen_rtx_ASHIFTRT (DImode,
+							     operands[1],
+							     GEN_INT (63)))));
+    DONE;
+  }
+  [(set_attr "v8type" "alu")
+   (set_attr "mode" "DI")]
+)
+
 (define_insn "neg<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(neg:GPI (match_operand:GPI 1 "register_operand" "r")))]
