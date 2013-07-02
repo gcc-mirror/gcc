@@ -1,3 +1,7 @@
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*extr_insv_reg<mode>): New pattern.
+
 2013-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_andsi3_insn): Add alternatives for 16-bit

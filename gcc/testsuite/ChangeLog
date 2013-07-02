@@ -1,3 +1,8 @@
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/bfxil_1.c: New test.
+	* gcc.target/aarch64/bfxil_2.c: Likewise.
+
 2013-07-01  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	PR c/57766
