@@ -1,5 +1,9 @@
 2013-07-02  Ian Bolton  <ian.bolton@arm.com>
 
+	* gcc.target/aarch64/abs_1.c: New test.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
 	* gcc.target/aarch64/bfxil_1.c: New test.
 	* gcc.target/aarch64/bfxil_2.c: Likewise.
 
