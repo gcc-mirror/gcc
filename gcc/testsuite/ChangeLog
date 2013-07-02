@@ -1,3 +1,10 @@
+2013-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57741
+	* gcc.dg/vect/pr57741-1.c: New test.
+	* gcc.dg/vect/pr57741-2.c: New test.
+	* gcc.dg/vect/pr57741-3.c: New test.
+
 2013-07-02  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/config/aarch64/insv_1.c: Update to show it doesn't work

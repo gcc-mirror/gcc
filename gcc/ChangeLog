@@ -1,3 +1,12 @@
+2013-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57741
+	* tree-vect-loop.c (vect_is_simple_iv_evolution): Disallow
+	non-INTEGRAL_TYPE_P non-SCALAR_FLOAT_TYPE_P SSA_NAME step_exprs,
+	or SCALAR_FLOAT_TYPE_P SSA_NAMEs if !flag_associative_math.
+	Allow REAL_CST step_exprs if flag_associative_math.
+	(get_initial_def_for_induction): Handle SCALAR_FLOAT_TYPE_P step_expr.
+
 2013-07-02  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64-simd.md (absdi2): Support abs for
