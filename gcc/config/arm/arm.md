@@ -2564,11 +2564,12 @@
 
 ; ??? Check split length for Thumb-2
 (define_insn_and_split "*arm_andsi3_insn"
-  [(set (match_operand:SI         0 "s_register_operand" "=r,r,r,r")
-	(and:SI (match_operand:SI 1 "s_register_operand" "r,r,r,r")
-		(match_operand:SI 2 "reg_or_int_operand" "I,K,r,?n")))]
+  [(set (match_operand:SI         0 "s_register_operand" "=r,l,r,r,r")
+	(and:SI (match_operand:SI 1 "s_register_operand" "%r,0,r,r,r")
+		(match_operand:SI 2 "reg_or_int_operand" "I,l,K,r,?n")))]
   "TARGET_32BIT"
   "@
+   and%?\\t%0, %1, %2
    and%?\\t%0, %1, %2
    bic%?\\t%0, %1, #%B2
    and%?\\t%0, %1, %2
@@ -2583,9 +2584,11 @@
 	               INTVAL (operands[2]), operands[0], operands[1], 0);
   DONE;
   "
-  [(set_attr "length" "4,4,4,16")
+  [(set_attr "length" "4,4,4,4,16")
    (set_attr "predicable" "yes")
-   (set_attr "type" 	"simple_alu_imm,simple_alu_imm,*,simple_alu_imm")]
+   (set_attr "predicable_short_it" "no,yes,no,no,no")
+   (set_attr "type"
+     "simple_alu_imm,simple_alu_imm,*,*,simple_alu_imm")]
 )
 
 (define_insn "*thumb1_andsi3_insn"
@@ -3338,11 +3341,12 @@
 )
 
 (define_insn_and_split "*iorsi3_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "=r,r,r,r")
-	(ior:SI (match_operand:SI 1 "s_register_operand" "%r,r,r,r")
-		(match_operand:SI 2 "reg_or_int_operand" "I,K,r,?n")))]
+  [(set (match_operand:SI 0 "s_register_operand" "=r,l,r,r,r")
+	(ior:SI (match_operand:SI 1 "s_register_operand" "%r,0,r,r,r")
+		(match_operand:SI 2 "reg_or_int_operand" "I,l,K,r,?n")))]
   "TARGET_32BIT"
   "@
+   orr%?\\t%0, %1, %2
    orr%?\\t%0, %1, %2
    orn%?\\t%0, %1, #%B2
    orr%?\\t%0, %1, %2
@@ -3353,14 +3357,15 @@
         || (TARGET_THUMB2 && const_ok_for_arm (~INTVAL (operands[2]))))"
   [(clobber (const_int 0))]
 {
-  arm_split_constant (IOR, SImode, curr_insn, 
+  arm_split_constant (IOR, SImode, curr_insn,
                       INTVAL (operands[2]), operands[0], operands[1], 0);
   DONE;
 }
-  [(set_attr "length" "4,4,4,16")
-   (set_attr "arch" "32,t2,32,32")
+  [(set_attr "length" "4,4,4,4,16")
+   (set_attr "arch" "32,t2,t2,32,32")
    (set_attr "predicable" "yes")
-   (set_attr "type" "simple_alu_imm,simple_alu_imm,*,*")]
+   (set_attr "predicable_short_it" "no,yes,no,no,no")
+   (set_attr "type" "simple_alu_imm,*,simple_alu_imm,*,*")]
 )
 
 (define_insn "*thumb1_iorsi3_insn"
@@ -3512,11 +3517,12 @@
 )
 
 (define_insn_and_split "*arm_xorsi3"
-  [(set (match_operand:SI         0 "s_register_operand" "=r,r,r")
-	(xor:SI (match_operand:SI 1 "s_register_operand" "%r,r,r")
-		(match_operand:SI 2 "reg_or_int_operand" "I,r,?n")))]
+  [(set (match_operand:SI         0 "s_register_operand" "=r,l,r,r")
+	(xor:SI (match_operand:SI 1 "s_register_operand" "%r,0,r,r")
+		(match_operand:SI 2 "reg_or_int_operand" "I,l,r,?n")))]
   "TARGET_32BIT"
   "@
+   eor%?\\t%0, %1, %2
    eor%?\\t%0, %1, %2
    eor%?\\t%0, %1, %2
    #"
@@ -3529,9 +3535,10 @@
                       INTVAL (operands[2]), operands[0], operands[1], 0);
   DONE;
 }
-  [(set_attr "length" "4,4,16")
+  [(set_attr "length" "4,4,4,16")
    (set_attr "predicable" "yes")
-   (set_attr "type"  "simple_alu_imm,*,*")]
+   (set_attr "predicable_short_it" "no,yes,no,no")
+   (set_attr "type"  "simple_alu_imm,*,*,*")]
 )
 
 (define_insn "*thumb1_xorsi3_insn"
