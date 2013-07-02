@@ -1,3 +1,10 @@
+2013-07-02  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/mips/call-1.c: Accept JALRS and JALR.
+	* gcc.target/mips/call-2.c: Likewise.
+	* gcc.target/mips/call-3.c: Likewise.
+	* gcc.target/mips/lazy-binding-1.c: Likewise.
+
 2013-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57741
