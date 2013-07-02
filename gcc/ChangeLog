@@ -1,3 +1,10 @@
+2013-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_andsi3_insn): Add alternatives for 16-bit
+	encoding.
+	(iorsi3_insn): Likewise.
+	(arm_xorsi3): Likewise.
+
 2013-07-01  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* arm.md (attribute "wtype"): Delete.  Move attribute values from here
