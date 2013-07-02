@@ -2106,6 +2106,15 @@ proc check_effective_target_aarch64_big_endian { } {
     }]
 }
 
+# Return 1 if this is a AArch64 target supporting little endian
+proc check_effective_target_aarch64_little_endian { } {
+    return [check_no_compiler_messages aarch64_little_endian assembly {
+        #if !defined(__aarch64__) || defined(__AARCH64EB__)
+        #error FOO
+        #endif
+    }]
+}
+
 # Return 1 is this is an arm target using 32-bit instructions
 proc check_effective_target_arm32 { } {
     return [check_no_compiler_messages arm32 assembly {
