@@ -1,5 +1,12 @@
 2013-07-02  Ian Bolton  <ian.bolton@arm.com>
 
+	* gcc.target/config/aarch64/insv_1.c: Update to show it doesn't work
+	on big endian.
+	* gcc.target/config/aarch64/insv_2.c: New test for big endian.
+	* lib/target-supports.exp: Define aarch64_little_endian.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
 	* gcc.target/aarch64/abs_1.c: New test.
 
 2013-07-02  Ian Bolton  <ian.bolton@arm.com>

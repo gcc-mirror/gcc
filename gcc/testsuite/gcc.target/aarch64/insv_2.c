@@ -1,6 +1,6 @@
 /* { dg-do run { target aarch64*-*-* } } */
 /* { dg-options "-O2 --save-temps -fno-inline" } */
-/* { dg-require-effective-target aarch64_little_endian } */
+/* { dg-require-effective-target aarch64_big_endian } */
 
 extern void abort (void);
 
@@ -16,7 +16,7 @@ typedef struct bitfield
 bitfield
 bfi1 (bitfield a)
 {
-  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 0, 8" } } */
+  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 56, 8" } } */
   a.eight = 3;
   return a;
 }
@@ -24,7 +24,7 @@ bfi1 (bitfield a)
 bitfield
 bfi2 (bitfield a)
 {
-  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 16, 5" } } */
+  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 43, 5" } } */
   a.five = 7;
   return a;
 }
@@ -32,7 +32,7 @@ bfi2 (bitfield a)
 bitfield
 movk (bitfield a)
 {
-  /* { dg-final { scan-assembler "movk\tx\[0-9\]+, 0x1d6b, lsl 32" } } */
+  /* { dg-final { scan-assembler "movk\tx\[0-9\]+, 0x1d6b, lsl 16" } } */
   a.sixteen = 7531;
   return a;
 }
@@ -40,7 +40,7 @@ movk (bitfield a)
 bitfield
 set1 (bitfield a)
 {
-  /* { dg-final { scan-assembler "orr\tx\[0-9\]+, x\[0-9\]+, 2031616" } } */
+  /* { dg-final { scan-assembler "orr\tx\[0-9\]+, x\[0-9\]+, 272678883688448" } } */
   a.five = 0x1f;
   return a;
 }
@@ -48,7 +48,7 @@ set1 (bitfield a)
 bitfield
 set0 (bitfield a)
 {
-  /* { dg-final { scan-assembler "and\tx\[0-9\]+, x\[0-9\]+, -2031617" } } */
+  /* { dg-final { scan-assembler "and\tx\[0-9\]+, x\[0-9\]+, -272678883688449" } } */
   a.five = 0;
   return a;
 }
