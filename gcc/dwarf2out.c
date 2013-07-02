@@ -3214,6 +3214,8 @@ static void gen_scheduled_generic_parms_dies (void);
 
 static const char *comp_dir_string (void);
 
+static hashval_t hash_loc_operands (dw_loc_descr_ref, hashval_t);
+
 /* enum for tracking thread-local variables whose address is really an offset
    relative to the TLS pointer, which will need link-time relocation, but will
    not need relocation by the DWARF consumer.  */
@@ -5437,11 +5439,12 @@ static inline void
 loc_checksum (dw_loc_descr_ref loc, struct md5_ctx *ctx)
 {
   int tem;
+  hashval_t hash = 0;
 
   tem = (loc->dtprel << 8) | ((unsigned int) loc->dw_loc_opc);
   CHECKSUM (tem);
-  CHECKSUM (loc->dw_loc_oprnd1);
-  CHECKSUM (loc->dw_loc_oprnd2);
+  hash = hash_loc_operands (loc, hash);
+  CHECKSUM (hash);
 }
 
 /* Calculate the checksum of an attribute.  */
@@ -5643,9 +5646,12 @@ loc_checksum_ordered (dw_loc_descr_ref loc, struct md5_ctx *ctx)
   /* Otherwise, just checksum the raw location expression.  */
   while (loc != NULL)
     {
+      hashval_t hash = 0;
+
+      CHECKSUM_ULEB128 (loc->dtprel);
       CHECKSUM_ULEB128 (loc->dw_loc_opc);
-      CHECKSUM (loc->dw_loc_oprnd1);
-      CHECKSUM (loc->dw_loc_oprnd2);
+      hash = hash_loc_operands (loc, hash);
+      CHECKSUM (hash);
       loc = loc->dw_loc_next;
     }
 }
@@ -23107,7 +23113,7 @@ resolve_addr (dw_die_ref die)
 
 /* Iteratively hash operands of LOC opcode.  */
 
-static inline hashval_t
+static hashval_t
 hash_loc_operands (dw_loc_descr_ref loc, hashval_t hash)
 {
   dw_val_ref val1 = &loc->dw_loc_oprnd1;

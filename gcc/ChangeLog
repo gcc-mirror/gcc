@@ -1,3 +1,10 @@
+2013-07-02  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (loc_checksum): Call hash_loc_operands for a
+	deterministic hash.
+	(loc_checksum_ordered): Likewise.
+	(hash_loc_operands): Remove inline keyword.
+
 2013-07-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57741
