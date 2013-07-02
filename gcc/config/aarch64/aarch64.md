@@ -3225,6 +3225,21 @@
    (set_attr "mode" "<MODE>")]
 )
 
+(define_insn "*extr_insv_lower_reg<mode>"
+  [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
+			  (match_operand 1 "const_int_operand" "n")
+			  (const_int 0))
+	(zero_extract:GPI (match_operand:GPI 2 "register_operand" "+r")
+			  (match_dup 1)
+			  (match_operand 3 "const_int_operand" "n")))]
+  "!(UINTVAL (operands[1]) == 0
+     || (UINTVAL (operands[3]) + UINTVAL (operands[1])
+	 > GET_MODE_BITSIZE (<MODE>mode)))"
+  "bfxil\\t%<w>0, %<w>2, %3, %1"
+  [(set_attr "v8type" "bfm")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "*<optab><ALLX:mode>_shft_<GPI:mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(ashift:GPI (ANY_EXTEND:GPI
