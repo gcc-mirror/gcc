@@ -1,3 +1,9 @@
+2013-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57777
+	* config/i386/predicates.md (vsib_address_operand): Disallow
+	SYMBOL_REF or LABEL_REF in parts.disp if TARGET_64BIT && flag_pic.
+
 2013-06-30  Terry Guo  <terry.guo@arm.com>
 
 	Backport from mainline
