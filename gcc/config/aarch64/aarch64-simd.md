@@ -3882,6 +3882,17 @@
   DONE;
 })
 
+(define_expand "aarch64_ld1<VALL:mode>"
+ [(match_operand:VALL 0 "register_operand")
+  (match_operand:DI 1 "register_operand")]
+  "TARGET_SIMD"
+{
+  enum machine_mode mode = <VALL:MODE>mode;
+  rtx mem = gen_rtx_MEM (mode, operands[1]);
+  emit_move_insn (operands[0], mem);
+  DONE;
+})
+
 (define_expand "aarch64_ld<VSTRUCT:nregs><VQ:mode>"
  [(match_operand:VSTRUCT 0 "register_operand" "=w")
   (match_operand:DI 1 "register_operand" "r")
@@ -4095,6 +4106,17 @@
   rtx mem = gen_rtx_MEM (mode, operands[0]);
 
   emit_insn (gen_vec_store_lanes<VSTRUCT:mode><VQ:mode> (mem, operands[1]));
+  DONE;
+})
+
+(define_expand "aarch64_st1<VALL:mode>"
+ [(match_operand:DI 0 "register_operand")
+  (match_operand:VALL 1 "register_operand")]
+  "TARGET_SIMD"
+{
+  enum machine_mode mode = <VALL:MODE>mode;
+  rtx mem = gen_rtx_MEM (mode, operands[0]);
+  emit_move_insn (mem, operands[1]);
   DONE;
 })
 
