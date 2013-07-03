@@ -1,3 +1,10 @@
+2013-07-03  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.h (enum arm_abi_type): Remove.
+	(ARM_ABI_AAPCS64): Ditto.
+	(arm_abi): Ditto.
+	(ARM_DEFAULT_ABI): Ditto.
+
 2013-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-builtins.c
