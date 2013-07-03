@@ -2578,7 +2578,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
 static bool
 gate_insert_vzeroupper (void)
 {
-  return TARGET_VZEROUPPER;
+  return TARGET_AVX && TARGET_VZEROUPPER;
 }
 
 static unsigned int
@@ -3936,34 +3936,26 @@ ix86_option_override_internal (bool main_args_p)
 #endif
    }
 
-  if (TARGET_AVX)
-    {
-      /* When not optimize for size, enable vzeroupper optimization for
-	 TARGET_AVX with -fexpensive-optimizations and split 32-byte
-	 AVX unaligned load/store.  */
-      if (!optimize_size)
-	{
-	  if (flag_expensive_optimizations
-	      && !(target_flags_explicit & MASK_VZEROUPPER))
-	    target_flags |= MASK_VZEROUPPER;
-	  if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
-	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
-	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-	  if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
-	      && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
-	    target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
-	  /* Enable 128-bit AVX instruction generation
-	     for the auto-vectorizer.  */
-	  if (TARGET_AVX128_OPTIMAL
-	      && !(target_flags_explicit & MASK_PREFER_AVX128))
-	    target_flags |= MASK_PREFER_AVX128;
-	}
-    }
-  else
-    {
-      /* Disable vzeroupper pass if TARGET_AVX is disabled.  */
-      target_flags &= ~MASK_VZEROUPPER;
-    }
+  /* When not optimize for size, enable vzeroupper optimization for
+     TARGET_AVX with -fexpensive-optimizations and split 32-byte
+     AVX unaligned load/store.  */
+  if (!optimize_size)
+  {
+     if (flag_expensive_optimizations
+	   && !(target_flags_explicit & MASK_VZEROUPPER))
+	target_flags |= MASK_VZEROUPPER;
+     if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
+	   && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+	target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
+     if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
+	   && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+	target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+     /* Enable 128-bit AVX instruction generation
+	for the auto-vectorizer.  */
+     if (TARGET_AVX128_OPTIMAL
+	   && !(target_flags_explicit & MASK_PREFER_AVX128))
+	target_flags |= MASK_PREFER_AVX128;
+  }
 
   if (ix86_recip_name)
     {
