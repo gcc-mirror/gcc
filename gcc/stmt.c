@@ -104,7 +104,6 @@ extern basic_block label_to_block_fn (struct function *, tree);
 
 static int n_occurrences (int, const char *);
 static bool tree_conflicts_with_clobbers_p (tree, HARD_REG_SET *);
-static void expand_nl_goto_receiver (void);
 static bool check_operand_nalternatives (tree, tree);
 static bool check_unique_operand_names (tree, tree, tree);
 static char *resolve_operand_name_1 (char *, tree, tree, tree);
@@ -198,7 +197,7 @@ expand_label (tree label)
 
   if (DECL_NONLOCAL (label))
     {
-      expand_nl_goto_receiver ();
+      expand_builtin_setjmp_receiver (NULL);
       nonlocal_goto_handler_labels
 	= gen_rtx_EXPR_LIST (VOIDmode, label_r,
 			     nonlocal_goto_handler_labels);
@@ -1554,77 +1553,6 @@ expand_return (tree retval)
     }
 }
 
-/* Emit code to restore vital registers at the beginning of a nonlocal goto
-   handler.  */
-static void
-expand_nl_goto_receiver (void)
-{
-  rtx chain;
-
-  /* Clobber the FP when we get here, so we have to make sure it's
-     marked as used by this function.  */
-  emit_use (hard_frame_pointer_rtx);
-
-  /* Mark the static chain as clobbered here so life information
-     doesn't get messed up for it.  */
-  chain = targetm.calls.static_chain (current_function_decl, true);
-  if (chain && REG_P (chain))
-    emit_clobber (chain);
-
-#ifdef HAVE_nonlocal_goto
-  if (! HAVE_nonlocal_goto)
-#endif
-    /* First adjust our frame pointer to its actual value.  It was
-       previously set to the start of the virtual area corresponding to
-       the stacked variables when we branched here and now needs to be
-       adjusted to the actual hardware fp value.
-
-       Assignments are to virtual registers are converted by
-       instantiate_virtual_regs into the corresponding assignment
-       to the underlying register (fp in this case) that makes
-       the original assignment true.
-       So the following insn will actually be
-       decrementing fp by STARTING_FRAME_OFFSET.  */
-    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
-
-#if !HARD_FRAME_POINTER_IS_ARG_POINTER
-  if (fixed_regs[ARG_POINTER_REGNUM])
-    {
-#ifdef ELIMINABLE_REGS
-      /* If the argument pointer can be eliminated in favor of the
-	 frame pointer, we don't need to restore it.  We assume here
-	 that if such an elimination is present, it can always be used.
-	 This is the case on all known machines; if we don't make this
-	 assumption, we do unnecessary saving on many machines.  */
-      static const struct elims {const int from, to;} elim_regs[] = ELIMINABLE_REGS;
-      size_t i;
-
-      for (i = 0; i < ARRAY_SIZE (elim_regs); i++)
-	if (elim_regs[i].from == ARG_POINTER_REGNUM
-	    && elim_regs[i].to == HARD_FRAME_POINTER_REGNUM)
-	  break;
-
-      if (i == ARRAY_SIZE (elim_regs))
-#endif
-	{
-	  /* Now restore our arg pointer from the address at which it
-	     was saved in our stack frame.  */
-	  emit_move_insn (crtl->args.internal_arg_pointer,
-			  copy_to_reg (get_arg_pointer_save_area ()));
-	}
-    }
-#endif
-
-#ifdef HAVE_nonlocal_goto_receiver
-  if (HAVE_nonlocal_goto_receiver)
-    emit_insn (gen_nonlocal_goto_receiver ());
-#endif
-
-  /* We must not allow the code we just generated to be reordered by
-     scheduling.  Specifically, the update of the frame pointer must
-     happen immediately, not later.  */
-  emit_insn (gen_blockage ());
-}
 
 /* Emit code to save the current value of stack.  */
 rtx
