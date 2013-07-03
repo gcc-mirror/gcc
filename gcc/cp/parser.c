@@ -5576,10 +5576,17 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Restore the old message.  */
 	parser->type_definition_forbidden_message = saved_message;
 
+	bool saved_greater_than_is_operator_p
+	  = parser->greater_than_is_operator_p;
+	parser->greater_than_is_operator_p = true;
+
 	/* And the expression which is being cast.  */
 	cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 	expression = cp_parser_expression (parser, /*cast_p=*/true, & idk);
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+
+	parser->greater_than_is_operator_p
+	  = saved_greater_than_is_operator_p;
 
 	/* Only type conversions to integral or enumeration types
 	   can be used in constant-expressions.  */
