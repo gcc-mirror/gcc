@@ -1,3 +1,10 @@
+2013-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/57771
+	* parser.c (cp_parser_postfix_expression) <case RID_STATCAST>
+	Temporarily set parser->greater_than_is_operator_p for
+	cp_parser_expression and restore from saved value afterwards.
+
 2013-06-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/53211
