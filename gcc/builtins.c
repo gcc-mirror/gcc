@@ -886,14 +886,15 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
 }
 
 /* Construct the trailing part of a __builtin_setjmp call.  This is
-   also called directly by the SJLJ exception handling code.  */
+   also called directly by the SJLJ exception handling code.
+   If RECEIVER_LABEL is NULL, instead contruct a nonlocal goto handler.  */
 
 void
 expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 {
   rtx chain;
 
-  /* Clobber the FP when we get here, so we have to make sure it's
+  /* Mark the FP as used when we get here, so we have to make sure it's
      marked as used by this function.  */
   emit_use (hard_frame_pointer_rtx);
 
@@ -908,17 +909,28 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 #ifdef HAVE_nonlocal_goto
   if (! HAVE_nonlocal_goto)
 #endif
-    {
-      emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
-      /* This might change the hard frame pointer in ways that aren't
-	 apparent to early optimization passes, so force a clobber.  */
-      emit_clobber (hard_frame_pointer_rtx);
-    }
+    /* First adjust our frame pointer to its actual value.  It was
+       previously set to the start of the virtual area corresponding to
+       the stacked variables when we branched here and now needs to be
+       adjusted to the actual hardware fp value.
+
+       Assignments to virtual registers are converted by
+       instantiate_virtual_regs into the corresponding assignment
+       to the underlying register (fp in this case) that makes
+       the original assignment true.
+       So the following insn will actually be decrementing fp by
+       STARTING_FRAME_OFFSET.  */
+    emit_move_insn (virtual_stack_vars_rtx, hard_frame_pointer_rtx);
 
 #if !HARD_FRAME_POINTER_IS_ARG_POINTER
   if (fixed_regs[ARG_POINTER_REGNUM])
     {
 #ifdef ELIMINABLE_REGS
+      /* If the argument pointer can be eliminated in favor of the
+	 frame pointer, we don't need to restore it.  We assume here
+	 that if such an elimination is present, it can always be used.
+	 This is the case on all known machines; if we don't make this
+	 assumption, we do unnecessary saving on many machines.  */
       size_t i;
       static const struct elims {const int from, to;} elim_regs[] = ELIMINABLE_REGS;
 
@@ -939,7 +951,7 @@ expand_builtin_setjmp_receiver (rtx receiver_label ATTRIBUTE_UNUSED)
 #endif
 
 #ifdef HAVE_builtin_setjmp_receiver
-  if (HAVE_builtin_setjmp_receiver)
+  if (receiver_label != NULL && HAVE_builtin_setjmp_receiver)
     emit_insn (gen_builtin_setjmp_receiver (receiver_label));
   else
 #endif
