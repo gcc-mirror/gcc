@@ -89,6 +89,21 @@
 	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
 	Likewise.
 
+2013-06-29  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Insert_base): Consider hint in
+	insert methods.
+	* include/bits/hashtable.h: Likewise.
+	* testsuite/23_containers/unordered_multimap/insert/hint.cc: New.
+	* testsuite/performance/23_containers/insert/unordered_multiset_hint.cc:
+	New.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+	* doc/xml/manual/containers.xml: Document hinting in unordered
+	containers.
+
 2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/21_strings/basic_string/operations/*: Move inside
