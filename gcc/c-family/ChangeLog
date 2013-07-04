@@ -1,3 +1,9 @@
+2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR c/57821
+	* c-common.c (complete_array_type): Delay folding first index
+	like other indices.  When folding, check for index overflow.
+
 2013-06-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/57509

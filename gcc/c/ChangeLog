@@ -1,3 +1,8 @@
+2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR c/57821
+	* c-typeck.c (set_init_index): When folding, check for index overflow.
+
 2013-06-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-parser.c (c_parser_array_notation): Removed rejection of array
