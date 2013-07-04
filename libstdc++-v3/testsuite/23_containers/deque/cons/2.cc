@@ -195,7 +195,7 @@ copyConstructorCheck()
 // @fn fillConstructorCheck()
 // This test explicitly verifies the basic fill constructor.  Like the default
 // constructor, later tests depend on the fill constructor working correctly.
-// That means this explicit test should preceed the later tests so the error
+// That means this explicit test should precede the later tests so the error
 // message given on assertion failure can be more helpful n tracking the
 // problem.
 // 

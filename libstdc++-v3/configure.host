@@ -66,7 +66,7 @@
 #                          (defaults to empty in acinclude.m4)
 #
 #   port_specific_symbol_files
-#                          whitespace-seperated list of files containing
+#                          whitespace-separated list of files containing
 #                          additional symbols to export from the shared
 #                          library, when symbol versioning is in use
 #

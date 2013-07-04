@@ -3333,7 +3333,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   /**
-   * @brief Return true if two Fisher f distributions are diferent.
+   * @brief Return true if two Fisher f distributions are different.
    */
   template<typename _RealType>
     inline bool

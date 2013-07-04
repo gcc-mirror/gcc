@@ -1713,7 +1713,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	  this->_M_store_code(__node, __code);
 
-	  // Always insert at the begining of the bucket.
+	  // Always insert at the beginning of the bucket.
 	  _M_insert_bucket_begin(__bkt, __node);
 	  ++_M_element_count;
 	  return iterator(__node);
