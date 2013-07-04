@@ -1,3 +1,11 @@
+2013-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38634
+	* decl.c (start_preparsed_function): Return a bool, false if
+	push_template_decl fails.
+	(start_function): Adjust.
+	* cp-tree.h: Update.
+
 2013-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/57771
