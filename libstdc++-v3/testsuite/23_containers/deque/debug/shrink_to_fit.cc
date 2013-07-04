@@ -25,7 +25,7 @@ void test01()
 {
   using std::deque;
   deque<int> d;
-  // Lets generate a hole at the begining of the deque:
+  // Let's generate a hole at the beginning of the deque:
   d.push_back(0);
   d.push_back(1);
   d.pop_front();

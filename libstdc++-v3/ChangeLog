@@ -1,3 +1,18 @@
+2013-07-04  Veres Lajos  <vlajos@gmail.com>
+	    Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	* config/locale/generic/codecvt_members.cc: Fix typo.
+	* configure.host: Likewise.
+	* doc/html/manual/policy_data_structures_design.html: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* include/bits/hashtable.h: Likewise.
+	* include/bits/random.h: Likewise.
+	* include/profile/impl/profiler_trace.h: Likewise.
+	* testsuite/23_containers/deque/cons/2.cc: Likewise.
+	* testsuite/23_containers/deque/debug/shrink_to_fit.cc: Likewise.
+	* testsuite/ext/pb_ds/example/basic_multimap.cc: Likewise.
+	* testsuite/performance/23_containers/insert_erase/41975.cc: Likewise.
+
 2013-07-04  Ray Chason  <chasonr@newsguy.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

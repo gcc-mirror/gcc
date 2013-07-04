@@ -3883,7 +3883,7 @@
 
 	  <para>Consider the two trees in the graphic below, labels A and B. The first
 	  is a tree of floats; the second is a tree of pairs, each
-	  signifying a geometric line interval. Each element in a tree is refered to as a node of the tree. Of course, each of
+	  signifying a geometric line interval. Each element in a tree is referred to as a node of the tree. Of course, each of
 	  these trees can support the usual queries: the first can easily
 	  search for <classname>0.4</classname>; the second can easily search for
 	  <classname>std::make_pair(10, 41)</classname>.</para>
