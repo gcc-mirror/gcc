@@ -1,3 +1,14 @@
+2013-07-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-protos.h (cpu_vector_cost): New.
+	(tune_params): New member 'const vec_costs'.
+	* config/aarch64/aarch64.c (generic_vector_cost): New.
+	(generic_tunings): New member 'generic_vector_cost'.
+	(aarch64_builtin_vectorization_cost): New.
+	(aarch64_add_stmt_cost): New.
+	(TARGET_VECTORIZE_ADD_STMT_COST): New.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): New.
+
 2013-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57777
