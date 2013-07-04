@@ -45,6 +45,8 @@
 #include "gimple.h"
 #include "optabs.h"
 #include "dwarf2.h"
+#include "cfgloop.h"
+#include "tree-vectorizer.h"
 
 /* Classifies an address.
 
@@ -184,6 +186,26 @@ static const struct cpu_regmove_cost generic_regmove_cost =
   NAMED_PARAM (FP2FP, 4)
 };
 
+/* Generic costs for vector insn classes.  */
+#if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
+__extension__
+#endif
+static const struct cpu_vector_cost generic_vector_cost =
+{
+  NAMED_PARAM (scalar_stmt_cost, 1),
+  NAMED_PARAM (scalar_load_cost, 1),
+  NAMED_PARAM (scalar_store_cost, 1),
+  NAMED_PARAM (vec_stmt_cost, 1),
+  NAMED_PARAM (vec_to_scalar_cost, 1),
+  NAMED_PARAM (scalar_to_vec_cost, 1),
+  NAMED_PARAM (vec_align_load_cost, 1),
+  NAMED_PARAM (vec_unalign_load_cost, 1),
+  NAMED_PARAM (vec_unalign_store_cost, 1),
+  NAMED_PARAM (vec_store_cost, 1),
+  NAMED_PARAM (cond_taken_branch_cost, 3),
+  NAMED_PARAM (cond_not_taken_branch_cost, 1)
+};
+
 #if HAVE_DESIGNATED_INITIALIZERS && GCC_VERSION >= 2007
 __extension__
 #endif
@@ -192,6 +214,7 @@ static const struct tune_params generic_tunings =
   &generic_rtx_cost_table,
   &generic_addrcost_table,
   &generic_regmove_cost,
+  &generic_vector_cost,
   NAMED_PARAM (memmov_cost, 4)
 };
 
@@ -4719,6 +4742,101 @@ aarch64_memory_move_cost (enum machine_mode mode ATTRIBUTE_UNUSED,
   return aarch64_tune_params->memmov_cost;
 }
 
+/* Vectorizer cost model target hooks.  */
+
+/* Implement targetm.vectorize.builtin_vectorization_cost.  */
+static int
+aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
+				    tree vectype,
+				    int misalign ATTRIBUTE_UNUSED)
+{
+  unsigned elements;
+
+  switch (type_of_cost)
+    {
+      case scalar_stmt:
+	return aarch64_tune_params->vec_costs->scalar_stmt_cost;
+
+      case scalar_load:
+	return aarch64_tune_params->vec_costs->scalar_load_cost;
+
+      case scalar_store:
+	return aarch64_tune_params->vec_costs->scalar_store_cost;
+
+      case vector_stmt:
+	return aarch64_tune_params->vec_costs->vec_stmt_cost;
+
+      case vector_load:
+	return aarch64_tune_params->vec_costs->vec_align_load_cost;
+
+      case vector_store:
+	return aarch64_tune_params->vec_costs->vec_store_cost;
+
+      case vec_to_scalar:
+	return aarch64_tune_params->vec_costs->vec_to_scalar_cost;
+
+      case scalar_to_vec:
+	return aarch64_tune_params->vec_costs->scalar_to_vec_cost;
+
+      case unaligned_load:
+	return aarch64_tune_params->vec_costs->vec_unalign_load_cost;
+
+      case unaligned_store:
+	return aarch64_tune_params->vec_costs->vec_unalign_store_cost;
+
+      case cond_branch_taken:
+	return aarch64_tune_params->vec_costs->cond_taken_branch_cost;
+
+      case cond_branch_not_taken:
+	return aarch64_tune_params->vec_costs->cond_not_taken_branch_cost;
+
+      case vec_perm:
+      case vec_promote_demote:
+	return aarch64_tune_params->vec_costs->vec_stmt_cost;
+
+      case vec_construct:
+        elements = TYPE_VECTOR_SUBPARTS (vectype);
+	return elements / 2 + 1;
+
+      default:
+	gcc_unreachable ();
+    }
+}
+
+/* Implement targetm.vectorize.add_stmt_cost.  */
+static unsigned
+aarch64_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
+		       struct _stmt_vec_info *stmt_info, int misalign,
+		       enum vect_cost_model_location where)
+{
+  unsigned *cost = (unsigned *) data;
+  unsigned retval = 0;
+
+  if (flag_vect_cost_model)
+    {
+      tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
+      int stmt_cost =
+	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+      /* Statements in an inner loop relative to the loop being
+	 vectorized are weighted more heavily.  The value here is
+	 a function (linear for now) of the loop nest level.  */
+      if (where == vect_body && stmt_info && stmt_in_inner_loop_p (stmt_info))
+	{
+	  loop_vec_info loop_info = STMT_VINFO_LOOP_VINFO (stmt_info);
+	  struct loop *loop =  LOOP_VINFO_LOOP (loop_info);
+	  unsigned nest_level = loop_depth (loop);
+
+	  count *= nest_level;
+	}
+
+      retval = (unsigned) (count * stmt_cost);
+      cost[where] += retval;
+    }
+
+  return retval;
+}
+
 static void initialize_aarch64_code_model (void);
 
 /* Parse the architecture extension string.  */
@@ -8079,6 +8197,13 @@ aarch64_vectorize_vec_perm_const_ok (enum machine_mode vmode,
 
 #undef TARGET_ARRAY_MODE_SUPPORTED_P
 #define TARGET_ARRAY_MODE_SUPPORTED_P aarch64_array_mode_supported_p
+
+#undef TARGET_VECTORIZE_ADD_STMT_COST
+#define TARGET_VECTORIZE_ADD_STMT_COST aarch64_add_stmt_cost
+
+#undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
+#define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
+  aarch64_builtin_vectorization_cost
 
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE aarch64_preferred_simd_mode
