@@ -1,3 +1,11 @@
+2013-07-04  Ray Chason  <chasonr@newsguy.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57808
+	* include/bits/regex.h (regex_token_iterator<>::operator==,
+	regex_token_iterator<>::operator!=, regex_token_iterator<>::operator*,
+	regex_token_iterator<>::operator->): Declare const.
+
 2013-07-01  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/bits/stl_list.h (list<>::insert(iterator,

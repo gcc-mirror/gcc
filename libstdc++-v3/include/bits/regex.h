@@ -2404,7 +2404,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @todo Implement this function.
        */
       regex_token_iterator(const regex_token_iterator& __rhs);
-      
+
       /**
        * @brief Assigns a %regex_token_iterator to another.
        * @param __rhs [IN] A %regex_token_iterator to copy.
@@ -2412,49 +2412,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       regex_token_iterator&
       operator=(const regex_token_iterator& __rhs);
-      
+
       /**
        * @brief Compares a %regex_token_iterator to another for equality.
        * @todo Implement this function.
        */
       bool
-      operator==(const regex_token_iterator& __rhs);
-      
+      operator==(const regex_token_iterator& __rhs) const;
+
       /**
        * @brief Compares a %regex_token_iterator to another for inequality.
        * @todo Implement this function.
        */
       bool
-      operator!=(const regex_token_iterator& __rhs);
-      
+      operator!=(const regex_token_iterator& __rhs) const;
+
       /**
        * @brief Dereferences a %regex_token_iterator.
        * @todo Implement this function.
        */
       const value_type&
-      operator*();
-      
+      operator*() const;
+
       /**
        * @brief Selects a %regex_token_iterator member.
        * @todo Implement this function.
        */
       const value_type*
-      operator->();
-      
+      operator->() const;
+
       /**
        * @brief Increments a %regex_token_iterator.
        * @todo Implement this function.
        */
       regex_token_iterator&
       operator++();
-      
+
       /**
        * @brief Postincrements a %regex_token_iterator.
        * @todo Implement this function.
        */
       regex_token_iterator
       operator++(int);
-      
+
     private: // data members for exposition only:
       typedef regex_iterator<_Bi_iter, _Ch_type, _Rx_traits> position_iterator;
 
