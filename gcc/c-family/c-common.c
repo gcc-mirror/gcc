@@ -9781,6 +9781,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   tree maxindex, type, main_type, elt, unqual_elt;
   int failure = 0, quals;
   hashval_t hashcode = 0;
+  bool overflow_p = false;
 
   maxindex = size_zero_node;
   if (initial_value)
@@ -9809,8 +9810,8 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 	      bool fold_p = false;
 
 	      if ((*v)[0].index)
-		maxindex = fold_convert_loc (input_location, sizetype,
-					     (*v)[0].index);
+		maxindex = (*v)[0].index, fold_p = true;
+
 	      curindex = maxindex;
 
 	      for (cnt = 1; vec_safe_iterate (v, cnt, &ce); cnt++)
@@ -9821,15 +9822,26 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 		  else
 		    {
 		      if (fold_p)
-		        curindex = fold_convert (sizetype, curindex);
+			{
+			  /* Since we treat size types now as ordinary
+			     unsigned types, we need an explicit overflow
+			     check.  */
+			  tree orig = curindex;
+		          curindex = fold_convert (sizetype, curindex);
+			  overflow_p |= tree_int_cst_lt (curindex, orig);
+			}
 		      curindex = size_binop (PLUS_EXPR, curindex,
 					     size_one_node);
 		    }
 		  if (tree_int_cst_lt (maxindex, curindex))
 		    maxindex = curindex, fold_p = curfold_p;
 		}
-	       if (fold_p)
-	         maxindex = fold_convert (sizetype, maxindex);
+	      if (fold_p)
+		{
+		  tree orig = maxindex;
+	          maxindex = fold_convert (sizetype, maxindex);
+		  overflow_p |= tree_int_cst_lt (maxindex, orig);
+		}
 	    }
 	}
       else
@@ -9890,7 +9902,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
 
   if (COMPLETE_TYPE_P (type)
       && TREE_CODE (TYPE_SIZE_UNIT (type)) == INTEGER_CST
-      && TREE_OVERFLOW (TYPE_SIZE_UNIT (type)))
+      && (overflow_p || TREE_OVERFLOW (TYPE_SIZE_UNIT (type))))
     {
       error ("size of array is too large");
       /* If we proceed with the array type as it is, we'll eventually
