@@ -5540,6 +5540,12 @@ semantics are identical to pragma Atomic.
 @node Pragma Short_Circuit_And_Or
 @unnumberedsec Pragma Short_Circuit_And_Or
 @findex Short_Circuit_And_Or
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Short_Circuit_And_Or;
+@end smallexample
 
 @noindent
 This configuration pragma causes any occurrence of the AND operator applied to

@@ -5997,6 +5997,8 @@ package body Sem_Prag is
          Check_No_Identifiers;
          Check_At_Least_N_Arguments (1);
 
+         --  Check all arguments are names of generic units or instances
+
          Arg := Arg1;
          while Present (Arg) loop
             Exp := Get_Pragma_Arg (Arg);
@@ -16059,6 +16061,8 @@ package body Sem_Prag is
          -- Short_Circuit_And_Or --
          --------------------------
 
+         --  pragma Short_Circuit_And_Or;
+
          when Pragma_Short_Circuit_And_Or =>
             GNAT_Pragma;
             Check_Arg_Count (0);
@@ -16069,7 +16073,9 @@ package body Sem_Prag is
          -- Share_Generic --
          -------------------
 
-         --  pragma Share_Generic (NAME {, NAME});
+         --  pragma Share_Generic (GNAME {, GNAME});
+
+         --  GNAME ::= generic_unit_NAME | generic_instance_NAME
 
          when Pragma_Share_Generic =>
             GNAT_Pragma;
