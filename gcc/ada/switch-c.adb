@@ -394,6 +394,22 @@ package body Switch.C is
             when 'D' =>
                Ptr := Ptr + 1;
 
+               --  Not allowed if previous -gnatR given
+
+               --  The reason for this prohibition is that the rewriting of
+               --  Sloc values causes strange malfunctions in the tests of
+               --  whether units belong to the main source. This is really a
+               --  bug, but too hard to fix for a marginal capability ???
+
+               --  The proper fix is to completely redo -gnatD processing so
+               --  that the tree is not messed with, and instead a separate
+               --  table is built on the side for debug information generation.
+
+               if List_Representation_Info /= 0 then
+                  Osint.Fail
+                    ("-gnatD not permitted since -gnatR given previously");
+               end if;
+
                --  Scan optional integer line limit value
 
                if Nat_Present (Switch_Chars, Max, Ptr) then
@@ -988,8 +1004,21 @@ package body Switch.C is
             --  -gnatR (list rep. info)
 
             when 'R' =>
+
+               --  Not allowed if previous -gnatD given. See more extensive
+               --  comments in the 'D' section for the inverse test.
+
+               if Debug_Generated_Code then
+                  Osint.Fail
+                    ("-gnatR not permitted since -gnatD given previously");
+               end if;
+
+               --  Set to annotate rep info, and set default -gnatR mode
+
                Back_Annotate_Rep_Info := True;
                List_Representation_Info := 1;
+
+               --  Scan possible parameter
 
                Ptr := Ptr + 1;
                while Ptr <= Max loop
