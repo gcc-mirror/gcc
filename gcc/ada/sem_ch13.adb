@@ -1799,13 +1799,16 @@ package body Sem_Ch13 is
                      end loop;
                   end if;
 
-                  --  Build the precondition/postcondition pragma
+                  --  Build the precondition/postcondition pragma. We copy
+                  --  the expression to avoid sharing between the original
+                  --  aspect and the pragma node, because in ASIS_Mode both
+                  --  will be independently analyzed.
 
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Eloc,
                          Chars      => Name_Check,
-                         Expression => Relocate_Node (Expr))),
+                         Expression => New_Copy_Tree (Expr))),
                        Pragma_Name                => Pname);
 
                   --  Add message unless exception messages are suppressed
