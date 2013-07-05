@@ -5220,7 +5220,15 @@ package body Sem_Ch12 is
          --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
-         elsif Nkind (Parent (E2)) =  N_Formal_Object_Declaration then
+         elsif Nkind (Parent (E2)) = N_Formal_Object_Declaration then
+            goto Next_E;
+
+         --  Ditto for defaulted formal subprograms.
+
+         elsif Is_Overloadable (E1)
+           and then Nkind (Unit_Declaration_Node (E2))
+             in N_Formal_Subprogram_Declaration
+         then
             goto Next_E;
 
          elsif Is_Type (E1) then
