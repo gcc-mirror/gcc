@@ -3360,7 +3360,16 @@ package body Freeze is
                     and then Nkind (Expression (Init_Stmts)) = N_Null_Statement
                   then
                      Insert_List_Before (Init_Stmts, Actions (Init_Stmts));
-                     Remove (Init_Stmts);
+
+                     --  Note that we rewrite Init_Stmts into a NULL statement,
+                     --  rather than just removing it, because Freeze_All may
+                     --  depend on this particular Node_Id still being present
+                     --  in the enclosing list to signal where to stop
+                     --  freezing.
+
+                     Rewrite (Init_Stmts,
+                       Make_Null_Statement (Sloc (Init_Stmts)));
+
                      Set_Initialization_Statements (E, Empty);
                   end if;
                end;

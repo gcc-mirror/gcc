@@ -1,3 +1,16 @@
+2013-07-05  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads, a-cfhama.ads, a-cfhase.ads, a-cforma.ads,
+	a-cforse.ads, a-cofove.ads: Add preconditions when needed +
+	container types are not tagged any more.
+
+2013-07-05  Thomas Quinot  <quinot@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For an object with captured
+	initialization statements, do not remove Init_Stmts from the
+	enclosing list, as Freeze_All might rely on it to know where to
+	stop freezing.
+
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
 	* exp_ch4.adb, a-cfdlli.ads, a-ngelfu.ads, s-bignum.adb: Minor

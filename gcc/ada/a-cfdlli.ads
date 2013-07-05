@@ -153,15 +153,11 @@ package Ada.Containers.Formal_Doubly_Linked_Lists is
 
    procedure Delete_First
      (Container : in out List;
-      Count     : Count_Type := 1)
-   with
-     Pre => not Is_Empty (Container);
+      Count     : Count_Type := 1);
 
    procedure Delete_Last
      (Container : in out List;
-      Count     : Count_Type := 1)
-   with
-     Pre => not Is_Empty (Container);
+      Count     : Count_Type := 1);
 
    procedure Reverse_Elements (Container : in out List);
 
