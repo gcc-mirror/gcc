@@ -2587,6 +2587,8 @@ package body Exp_Ch4 is
          Full_Type := Underlying_Type (Full_Type);
       end if;
 
+      --  Case of array types
+
       if Is_Array_Type (Full_Type) then
 
          --  If the operand is an elementary type other than a floating-point
@@ -2608,6 +2610,8 @@ package body Exp_Ch4 is
          else
             return Expand_Array_Equality (Nod, Lhs, Rhs, Bodies, Full_Type);
          end if;
+
+      --  Case of tagged record types
 
       elsif Is_Tagged_Type (Full_Type) then
 
@@ -2652,6 +2656,8 @@ package body Exp_Ch4 is
                New_List
                  (Unchecked_Convert_To (Etype (First_Formal (Eq_Op)), Lhs),
                   Unchecked_Convert_To (Etype (First_Formal (Eq_Op)), Rhs)));
+
+      --  Case of untagged record types
 
       elsif Is_Record_Type (Full_Type) then
          Eq_Op := TSS (Full_Type, TSS_Composite_Equality);
@@ -2821,9 +2827,9 @@ package body Exp_Ch4 is
             return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs, Bodies);
          end if;
 
-      else
-         --  If not array or record type, it is predefined equality.
+      --  Non-composite types (always use predefined equality)
 
+      else
          return Make_Op_Eq (Loc, Left_Opnd => Lhs, Right_Opnd => Rhs);
       end if;
    end Expand_Composite_Equality;
