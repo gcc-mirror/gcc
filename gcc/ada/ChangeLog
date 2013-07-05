@@ -1,3 +1,13 @@
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Package_Instance): Handle properly
+	a formal subprogram that was defaulted in the formal package.
+
+2013-07-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb (Traverse_Declarations_Or_Statements): Ignore
+	N_Implicit_Label_Declaration nodes.
+
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
 	* a-cfhase.adb, sem_prag.adb, a-cfhama.adb: Minor reformatting.
