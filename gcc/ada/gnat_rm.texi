@@ -206,6 +206,7 @@ Implementation Defined Pragmas
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
+* Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
 * Pragma Pure_05::
 * Pragma Pure_12::
@@ -1010,6 +1011,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
+* Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
 * Pragma Pure_05::
 * Pragma Pure_12::
@@ -5288,7 +5290,24 @@ generating @code{Restrictions} pragmas, it generates
 violations of the profile generate warning messages instead
 of error messages.
 
+@node Pragma Propagate_Exceptions
+@unnumberedsec Pragma Propagate_Exceptions
+@cindex Interfacing to C++
+@findex Propagate_Exceptions
 @noindent
+Syntax:
+
+@smallexample @c ada
+pragma Propagate_Exceptions;
+@end smallexample
+
+@noindent
+This pragma is now obsolete and, other than generating a warning if warnings
+on obsolescent features are enabled, is ignored.
+It is retained for compatibility
+purposes. It used to be used in connection with optimization of
+a now-obsolete mechanism for implementation of exceptions.
+
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
 @findex Psect_Object

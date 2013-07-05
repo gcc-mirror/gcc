@@ -10300,7 +10300,7 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_virtual is now obsolete and has no "
+                 ("'G'N'A'T pragma Cpp'_Virtual is now obsolete and has no "
                   & "effect?j?", N);
             end if;
          end CPP_Virtual;
@@ -10315,7 +10315,7 @@ package body Sem_Prag is
 
             if Warn_On_Obsolescent_Feature then
                Error_Msg_N
-                 ("'G'N'A'T pragma cpp'_vtable is now obsolete and has no "
+                 ("'G'N'A'T pragma Cpp'_Vtable is now obsolete and has no "
                   & "effect?j?", N);
             end if;
          end CPP_Vtable;
@@ -14604,6 +14604,7 @@ package body Sem_Prag is
          when Pragma_Overriding_Renamings =>
             GNAT_Pragma;
             Check_Arg_Count (0);
+            Check_Valid_Configuration_Pragma;
             Overriding_Renamings := True;
 
          ----------
@@ -15039,7 +15040,7 @@ package body Sem_Prag is
 
          --  pragma Predicate
          --    ([Entity =>] type_LOCAL_NAME,
-         --     [Check  =>] EXPRESSION);
+         --     [Check  =>] boolean_EXPRESSION);
 
          when Pragma_Predicate => Predicate : declare
             Type_Id : Node_Id;
@@ -15469,10 +15470,10 @@ package body Sem_Prag is
             GNAT_Pragma;
             Check_Arg_Count (0);
 
-            --  This code does not agree with above (no effect) comment ???
-
-            if In_Extended_Main_Source_Unit (N) then
-               Propagate_Exceptions := True;
+            if Warn_On_Obsolescent_Feature then
+               Error_Msg_N
+                 ("'G'N'A'T pragma Propagate'_Exceptions is now obsolete " &
+                  "and has no effect?j?", N);
             end if;
 
          ------------------

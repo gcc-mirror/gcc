@@ -1147,12 +1147,6 @@ package Opt is
    --  Set to true to enable printing of package standard in source form.
    --  This flag is set by the -gnatS switch
 
-   Propagate_Exceptions : Boolean := False;
-   --  GNAT
-   --  Indicates if subprogram descriptor exception tables should be
-   --  built for imported subprograms. Set True if a Propagate_Exceptions
-   --  pragma applies to the extended main unit.
-
    type Usage is (Unknown, Not_In_Use, In_Use);
    Project_File_In_Use : Usage := Unknown;
    --  GNAT
