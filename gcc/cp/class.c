@@ -291,9 +291,31 @@ build_base_path (enum tree_code code,
   if (code == MINUS_EXPR && v_binfo)
     {
       if (complain & tf_error)
-	error ("cannot convert from base %qT to derived type %qT via "
-	       "virtual base %qT", BINFO_TYPE (binfo), BINFO_TYPE (d_binfo),
-	       BINFO_TYPE (v_binfo));
+	{
+	  if (SAME_BINFO_TYPE_P (BINFO_TYPE (binfo), BINFO_TYPE (v_binfo)))
+	    {
+	      if (want_pointer)
+		error ("cannot convert from pointer to base class %qT to "
+		       "pointer to derived class %qT because the base is "
+		       "virtual", BINFO_TYPE (binfo), BINFO_TYPE (d_binfo));
+	      else
+		error ("cannot convert from base class %qT to derived "
+		       "class %qT because the base is virtual",
+		       BINFO_TYPE (binfo), BINFO_TYPE (d_binfo));
+	    }	      
+	  else
+	    {
+	      if (want_pointer)
+		error ("cannot convert from pointer to base class %qT to "
+		       "pointer to derived class %qT via virtual base %qT",
+		       BINFO_TYPE (binfo), BINFO_TYPE (d_binfo),
+		       BINFO_TYPE (v_binfo));
+	      else
+		error ("cannot convert from base class %qT to derived "
+		       "class %qT via virtual base %qT", BINFO_TYPE (binfo),
+		       BINFO_TYPE (d_binfo), BINFO_TYPE (v_binfo));
+	    }
+	}
       return error_mark_node;
     }
 
