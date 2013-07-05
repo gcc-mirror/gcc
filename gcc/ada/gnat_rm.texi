@@ -9185,11 +9185,8 @@ type @code{Character}).
 @unnumberedsubsec SPARK
 @findex SPARK
 [GNAT] This restriction checks at compile time that some constructs
-forbidden in SPARK are not present. The SPARK version used as a
-reference is the same as the Ada mode for the unit, so a unit compiled
-in Ada 95 mode with SPARK restrictions will be checked for constructs
-forbidden in SPARK 95.  Error messages related to SPARK restriction have
-the form:
+forbidden in SPARK 2005 are not present. Error messages related to
+SPARK restriction have the form:
 
 @smallexample
 violation of restriction "SPARK" at <file>
@@ -9198,17 +9195,21 @@ violation of restriction "SPARK" at <file>
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler only deals currently with code,
-not at all with SPARK annotations and does not guarantee catching all
-cases of constructs forbidden by SPARK.
+not at all with SPARK 2005 annotations and does not guarantee catching all
+cases of constructs forbidden by SPARK 2005.
 
-Thus it may well be the case that code which
-passes the compiler in SPARK mode is rejected by the SPARK Examiner,
-e.g. due to the different visibility rules of the Examiner based on
-SPARK @code{inherit} annotations.
+Thus it may well be the case that code which passes the compiler with
+the SPARK restriction is rejected by the SPARK Examiner, e.g. due to
+the different visibility rules of the Examiner based on SPARK 2005
+@code{inherit} annotations.
 
-This restriction can be useful in providing an initial filter for
-code developed using SPARK, or in examining legacy code to see how far
+This restriction can be useful in providing an initial filter for code
+developed using SPARK 2005, or in examining legacy code to see how far
 it is from meeting SPARK restrictions.
+
+Note that if a unit is compiled in Ada 95 mode with SPARK restriction,
+violations will be reported for constructs forbidden in SPARK 95,
+instead of SPARK 2005.
 
 @c ------------------------
 @node Implementation Advice

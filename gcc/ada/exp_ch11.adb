@@ -2132,6 +2132,8 @@ package body Exp_Ch11 is
             Add_Str_To_Name_Buffer ("PE_Accessibility_Check");
          when PE_Address_Of_Intrinsic =>
             Add_Str_To_Name_Buffer ("PE_Address_Of_Intrinsic");
+         when PE_Aliased_Parameters =>
+            Add_Str_To_Name_Buffer ("PE_Aliased_Parameters");
          when PE_All_Guards_Closed =>
             Add_Str_To_Name_Buffer ("PE_All_Guards_Closed");
          when PE_Bad_Predicated_Generic_Type =>

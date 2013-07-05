@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -595,8 +595,7 @@ package body Ch5 is
                      --  For statement (labeled loop statement with FOR)
 
                      elsif Token = Tok_For then
-                        Append_To (Statement_List,
-                          P_For_Statement (Id_Node));
+                        Append_To (Statement_List, P_For_Statement (Id_Node));
 
                      --  Improper statement follows label. If we have an
                      --  expression token, then assume the colon was part
