@@ -256,18 +256,19 @@
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.
-	Also changed the returns from error as distinct values so that debugging
-	can get easier.
+	Also changed the returns from error as distinct values so that
+	debugging can get easier.
 	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): Made certain
-	errors specific to C, if necessary.  Also added new error hooks for C++.
+	errors specific to C, if necessary.  Also added new error
+	hooks for C++.
 	* c-c++-common/cilk-plus/AN/misc.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/parser_errors.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/parser_errors2.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/parser_errors3.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/pr57541.c (main): Likewise.
-	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): In addition to the
-	same changes as parser_errors3.c, spaces were added between colons to
-	not confuse C++ compiler with 2 colons as scope.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): In addition to
+	the same changes as parser_errors3.c, spaces were added between colons
+	to not confuse C++ compiler with 2 colons as scope.
 	* c-c++-common/cilk-plus/AN/vla.c: Make this test C specific.
 	* g++.dg/cilk-plus/AN/array_test1_tplt.cc: New test.
 	* g++.dg/cilk-plus/AN/array_test2_tplt.cc: Likewise.
@@ -279,7 +280,8 @@
 	* g++.dg/cilk-plus/AN/preincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/AN/postincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/cilk-plus.exp: New script.
-	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests in the list.
+	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests
+	in the list.
 
 2013-06-21  Joseph Myers  <joseph@codesourcery.com>
 
@@ -314,7 +316,7 @@
 	PR tree-optimization/57584
 	* gcc.dg/torture/pr57584.c: New testcase.
 
-2013-06-19    <singhai@google.com>
+2013-06-19  Sharad Singhai  <singhai@google.com>
 
 	* g++.dg/gcov/gcov-8.C: New testcase.
 	* lib/gcov.exp: Handle intermediate format.
@@ -1689,7 +1691,7 @@
 2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* gcc.c-torture/compile/limits-externdecl.c [target avr-*-*]:
-        Expect "size of array is too large" error.
+	Expect "size of array is too large" error.
 
 2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
