@@ -1751,7 +1751,7 @@ package body Sem_Prag is
             --  defined for a primitive subprogram of a type descended from T.
             --  Note that this replacement is not done for selector names in
             --  parameter associations. These carry an entity for reference
-            --  purposes, but they semantically they are just identifiers.
+            --  purposes, but semantically they are just identifiers.
 
             -------------
             -- Get_ACW --
@@ -1795,7 +1795,7 @@ package body Sem_Prag is
                  and then Nkind (Parent (N)) /= N_Type_Conversion
                  and then
                    (Nkind (Parent (N)) /= N_Parameter_Association
-                      or else N /= Selector_Name (Parent (N)))
+                     or else N /= Selector_Name (Parent (N)))
                then
                   if Etype (Entity (N)) = T then
                      Typ := Class_Wide_Type (T);

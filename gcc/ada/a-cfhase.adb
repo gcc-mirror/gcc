@@ -687,7 +687,6 @@ package body Ada.Containers.Formal_Hashed_Sets is
       Insert (Container, New_Item, Position, Inserted);
 
       if not Inserted then
-
          Container.Nodes (Position.Node).Element := New_Item;
       end if;
    end Include;

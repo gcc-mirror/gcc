@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -447,6 +447,8 @@ package body Ada.Exceptions is
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Address_Of_Intrinsic
      (File : System.Address; Line : Integer);
+   procedure Rcheck_PE_Aliased_Parameters
+     (File : System.Address; Line : Integer);
    procedure Rcheck_PE_All_Guards_Closed
      (File : System.Address; Line : Integer);
    procedure Rcheck_PE_Bad_Predicated_Generic_Type
@@ -532,6 +534,8 @@ package body Ada.Exceptions is
                   "__gnat_rcheck_PE_Accessibility_Check");
    pragma Export (C, Rcheck_PE_Address_Of_Intrinsic,
                   "__gnat_rcheck_PE_Address_Of_Intrinsic");
+   pragma Export (C, Rcheck_PE_Aliased_Parameters,
+                  "__gnat_rcheck_PE_Aliased_Parameters");
    pragma Export (C, Rcheck_PE_All_Guards_Closed,
                   "__gnat_rcheck_PE_All_Guards_Closed");
    pragma Export (C, Rcheck_PE_Bad_Predicated_Generic_Type,
@@ -599,6 +603,7 @@ package body Ada.Exceptions is
    pragma No_Return (Rcheck_PE_Access_Before_Elaboration);
    pragma No_Return (Rcheck_PE_Accessibility_Check);
    pragma No_Return (Rcheck_PE_Address_Of_Intrinsic);
+   pragma No_Return (Rcheck_PE_Aliased_Parameters);
    pragma No_Return (Rcheck_PE_All_Guards_Closed);
    pragma No_Return (Rcheck_PE_Bad_Predicated_Generic_Type);
    pragma No_Return (Rcheck_PE_Current_Task_In_Entry_Body);
@@ -650,27 +655,28 @@ package body Ada.Exceptions is
    Rmsg_15 : constant String := "accessibility check failed"       & NUL;
    Rmsg_16 : constant String := "attempt to take address of"       &
                                 " intrinsic subprogram"            & NUL;
-   Rmsg_17 : constant String := "all guards closed"                & NUL;
-   Rmsg_18 : constant String := "improper use of generic subtype"  &
+   Rmsg_17 : constant String := "aliased parameters"               & NUL;
+   Rmsg_18 : constant String := "all guards closed"                & NUL;
+   Rmsg_19 : constant String := "improper use of generic subtype"  &
                                 " with predicate"                  & NUL;
-   Rmsg_19 : constant String := "Current_Task referenced in entry" &
+   Rmsg_20 : constant String := "Current_Task referenced in entry" &
                                 " body"                            & NUL;
-   Rmsg_20 : constant String := "duplicated entry address"         & NUL;
-   Rmsg_21 : constant String := "explicit raise"                   & NUL;
-   Rmsg_22 : constant String := "finalize/adjust raised exception" & NUL;
-   Rmsg_23 : constant String := "implicit return with No_Return"   & NUL;
-   Rmsg_24 : constant String := "misaligned address value"         & NUL;
-   Rmsg_25 : constant String := "missing return"                   & NUL;
-   Rmsg_26 : constant String := "overlaid controlled object"       & NUL;
-   Rmsg_27 : constant String := "potentially blocking operation"   & NUL;
-   Rmsg_28 : constant String := "stubbed subprogram called"        & NUL;
-   Rmsg_29 : constant String := "unchecked union restriction"      & NUL;
-   Rmsg_30 : constant String := "actual/returned class-wide"       &
+   Rmsg_21 : constant String := "duplicated entry address"         & NUL;
+   Rmsg_22 : constant String := "explicit raise"                   & NUL;
+   Rmsg_23 : constant String := "finalize/adjust raised exception" & NUL;
+   Rmsg_24 : constant String := "implicit return with No_Return"   & NUL;
+   Rmsg_25 : constant String := "misaligned address value"         & NUL;
+   Rmsg_26 : constant String := "missing return"                   & NUL;
+   Rmsg_27 : constant String := "overlaid controlled object"       & NUL;
+   Rmsg_28 : constant String := "potentially blocking operation"   & NUL;
+   Rmsg_29 : constant String := "stubbed subprogram called"        & NUL;
+   Rmsg_30 : constant String := "unchecked union restriction"      & NUL;
+   Rmsg_31 : constant String := "actual/returned class-wide"       &
                                 " value not transportable"         & NUL;
-   Rmsg_31 : constant String := "empty storage pool"               & NUL;
-   Rmsg_32 : constant String := "explicit raise"                   & NUL;
-   Rmsg_33 : constant String := "infinite recursion"               & NUL;
-   Rmsg_34 : constant String := "object too large"                 & NUL;
+   Rmsg_32 : constant String := "empty storage pool"               & NUL;
+   Rmsg_33 : constant String := "explicit raise"                   & NUL;
+   Rmsg_34 : constant String := "infinite recursion"               & NUL;
+   Rmsg_35 : constant String := "object too large"                 & NUL;
 
    -----------------------
    -- Polling Interface --
@@ -1316,123 +1322,130 @@ package body Ada.Exceptions is
       Raise_Program_Error_Msg (File, Line, Rmsg_16'Address);
    end Rcheck_PE_Address_Of_Intrinsic;
 
-   procedure Rcheck_PE_All_Guards_Closed
+   procedure Rcheck_PE_Aliased_Parameters
      (File : System.Address; Line : Integer)
    is
    begin
       Raise_Program_Error_Msg (File, Line, Rmsg_17'Address);
+   end Rcheck_PE_Aliased_Parameters;
+
+   procedure Rcheck_PE_All_Guards_Closed
+     (File : System.Address; Line : Integer)
+   is
+   begin
+      Raise_Program_Error_Msg (File, Line, Rmsg_18'Address);
    end Rcheck_PE_All_Guards_Closed;
 
    procedure Rcheck_PE_Bad_Predicated_Generic_Type
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_18'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_19'Address);
    end Rcheck_PE_Bad_Predicated_Generic_Type;
 
    procedure Rcheck_PE_Current_Task_In_Entry_Body
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_19'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_20'Address);
    end Rcheck_PE_Current_Task_In_Entry_Body;
 
    procedure Rcheck_PE_Duplicated_Entry_Address
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_20'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_21'Address);
    end Rcheck_PE_Duplicated_Entry_Address;
 
    procedure Rcheck_PE_Explicit_Raise
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_21'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_22'Address);
    end Rcheck_PE_Explicit_Raise;
 
    procedure Rcheck_PE_Implicit_Return
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_23'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_24'Address);
    end Rcheck_PE_Implicit_Return;
 
    procedure Rcheck_PE_Misaligned_Address_Value
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_24'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_25'Address);
    end Rcheck_PE_Misaligned_Address_Value;
 
    procedure Rcheck_PE_Missing_Return
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_25'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_26'Address);
    end Rcheck_PE_Missing_Return;
 
    procedure Rcheck_PE_Overlaid_Controlled_Object
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_26'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_27'Address);
    end Rcheck_PE_Overlaid_Controlled_Object;
 
    procedure Rcheck_PE_Potentially_Blocking_Operation
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_27'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_28'Address);
    end Rcheck_PE_Potentially_Blocking_Operation;
 
    procedure Rcheck_PE_Stubbed_Subprogram_Called
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_28'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_29'Address);
    end Rcheck_PE_Stubbed_Subprogram_Called;
 
    procedure Rcheck_PE_Unchecked_Union_Restriction
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_29'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_30'Address);
    end Rcheck_PE_Unchecked_Union_Restriction;
 
    procedure Rcheck_PE_Non_Transportable_Actual
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Program_Error_Msg (File, Line, Rmsg_30'Address);
+      Raise_Program_Error_Msg (File, Line, Rmsg_31'Address);
    end Rcheck_PE_Non_Transportable_Actual;
 
    procedure Rcheck_SE_Empty_Storage_Pool
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Storage_Error_Msg (File, Line, Rmsg_31'Address);
+      Raise_Storage_Error_Msg (File, Line, Rmsg_32'Address);
    end Rcheck_SE_Empty_Storage_Pool;
 
    procedure Rcheck_SE_Explicit_Raise
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Storage_Error_Msg (File, Line, Rmsg_32'Address);
+      Raise_Storage_Error_Msg (File, Line, Rmsg_33'Address);
    end Rcheck_SE_Explicit_Raise;
 
    procedure Rcheck_SE_Infinite_Recursion
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Storage_Error_Msg (File, Line, Rmsg_33'Address);
+      Raise_Storage_Error_Msg (File, Line, Rmsg_34'Address);
    end Rcheck_SE_Infinite_Recursion;
 
    procedure Rcheck_SE_Object_Too_Large
      (File : System.Address; Line : Integer)
    is
    begin
-      Raise_Storage_Error_Msg (File, Line, Rmsg_34'Address);
+      Raise_Storage_Error_Msg (File, Line, Rmsg_35'Address);
    end Rcheck_SE_Object_Too_Large;
 
    procedure Rcheck_CE_Access_Check_Ext
@@ -1488,7 +1501,7 @@ package body Ada.Exceptions is
       --  This is consistent with Raise_From_Controlled_Operation
 
       Exception_Data.Set_Exception_C_Msg
-        (X, Program_Error_Def'Access, File, Line, 0, Rmsg_22'Address);
+        (X, Program_Error_Def'Access, File, Line, 0, Rmsg_23'Address);
       Complete_And_Propagate_Occurrence (X);
    end Rcheck_PE_Finalize_Raised_Exception;
 

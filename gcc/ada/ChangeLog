@@ -1,3 +1,67 @@
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
+	* a-cfhase.adb, sem_prag.adb, a-cfhama.adb: Minor reformatting.
+
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): Check that name in function
+	call is a valid entity name before preserving entity in generic
+	copy.
+
+2013-07-05  Thomas Quinot  <quinot@adacore.com>
+
+	* par-ch5.adb: Minor reformatting.
+
+2013-07-05  Thomas Quinot  <quinot@adacore.com>
+
+	* sinfo.ads: Minor clarification to documentation for
+	N_Implicit_Label_Declaration.
+
+2013-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-except-2005.adb, a-except.adb: Add constant Rmsg_17. Correct the
+	values of all remaining constants.
+	(Rcheck_35): New routine along with pragmas Export and No_Return.
+	(Rcheck_PE_Aliased_Parameters): New routine along with pragmas
+	Export and No_Return.
+	(Rcheck_PE_All_Guards_Closed,
+	Rcheck_PE_Bad_Predicated_Generic_Type,
+	Rcheck_PE_Current_Task_In_Entry_Body,
+	Rcheck_PE_Duplicated_Entry_Address, Rcheck_PE_Explicit_Raise,
+	Rcheck_PE_Implicit_Return, Rcheck_PE_Misaligned_Address_Value,
+	Rcheck_PE_Missing_Return, Rcheck_PE_Overlaid_Controlled_Object,
+	Rcheck_PE_Potentially_Blocking_Operation
+	Rcheck_PE_Stubbed_Subprogram_Called,
+	Rcheck_PE_Unchecked_Union_Restriction,
+	Rcheck_PE_Non_Transportable_Actual, Rcheck_SE_Empty_Storage_Pool,
+	Rcheck_SE_Explicit_Raise, Rcheck_SE_Infinite_Recursion,
+	Rcheck_SE_Object_Too_Large, Rcheck_PE_Finalize_Raised_Exception):
+	Update the use of Rmsg_XX.
+	(Rcheck_17, Rcheck_18, Rcheck_19,
+	Rcheck_20, Rcheck_21, Rcheck_22, Rcheck_23, Rcheck_24, Rcheck_25,
+	Rcheck_26, Rcheck_27, Rcheck_28, Rcheck_29, Rcheck_30, Rcheck_31,
+	Rcheck_32, Rcheck_33, Rcheck_34, Rcheck_35): Update corresponding
+	renamed subprograms.
+	* checks.adb: Add with and use clause for Stringt.
+	(Apply_Parameter_Aliasing_Checks): Make constant Loc visible in
+	all subprograms of Apply_Parameter_Aliasing_Checks. Remove local
+	variable Cond. Initialize Check at the start of the routine. Use
+	routine Overlap_Check to construct a simple or a detailed run-time
+	check. Update the creation of the simple check.
+	(Overlap_Check): New routine.
+	* exp_ch11.adb (Get_RT_Exception_Name): Add a value for
+	PE_Aliased_Parameters.
+	* types.ads: Add new enumeration literal
+	PE_Aliased_Parameters. Update the corresponding integer values
+	of all RT_Exception_Code literals.
+	* types.h: Add new constant PE_Aliased_Parameters. Correct the
+	values of all remaining constants.
+
+2013-07-05  Yannick Moy  <moy@adacore.com>
+
+	* gnat_rm.texi: Minor renaming of SPARK into SPARK 2005 in
+	documentation.
+
 2013-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_PPC_In_Decl_Part): For a class-wide

@@ -488,7 +488,6 @@ package body Ada.Containers.Formal_Hashed_Maps is
       Insert (Container, Key, New_Item, Position, Inserted);
 
       if not Inserted then
-
          declare
             N : Node_Type renames Container.Nodes (Position.Node);
          begin

@@ -58,6 +58,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Sprint;   use Sprint;
 with Stand;    use Stand;
+with Stringt;  use Stringt;
 with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
@@ -2093,6 +2094,8 @@ package body Checks is
      (Call : Node_Id;
       Subp : Entity_Id)
    is
+      Loc : constant Source_Ptr := Sloc (Call);
+
       function May_Cause_Aliasing
         (Formal_1 : Entity_Id;
          Formal_2 : Entity_Id) return Boolean;
@@ -2104,6 +2107,20 @@ package body Checks is
       --  side effect removal. The temporary may hide a potential aliasing as
       --  it does not share the address of the actual. This routine attempts
       --  to retrieve the original actual.
+
+      procedure Overlap_Check
+        (Actual_1 : Node_Id;
+         Actual_2 : Node_Id;
+         Formal_1 : Entity_Id;
+         Formal_2 : Entity_Id;
+         Check    : in out Node_Id);
+      --  Create a check to determine whether Actual_1 overlaps with Actual_2.
+      --  If detailed exception messages are enabled, the check is augmented to
+      --  provide information about the names of the corresponding formals. See
+      --  the body for details. Actual_1 and Actual_2 denote the two actuals to
+      --  be tested. Formal_1 and Formal_2 denote the corresponding formals.
+      --  Check contains all and-ed simple tests generated so far or remains
+      --  unchanged in the case of detailed exception messaged.
 
       ------------------------
       -- May_Cause_Aliasing --
@@ -2161,20 +2178,89 @@ package body Checks is
          return N;
       end Original_Actual;
 
+      -------------------
+      -- Overlap_Check --
+      -------------------
+
+      procedure Overlap_Check
+        (Actual_1 : Node_Id;
+         Actual_2 : Node_Id;
+         Formal_1 : Entity_Id;
+         Formal_2 : Entity_Id;
+         Check    : in out Node_Id)
+      is
+         Cond : Node_Id;
+
+      begin
+         --  Generate:
+         --    Actual_1'Overlaps_Storage (Actual_2)
+
+         Cond :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Copy_Tree (Original_Actual (Actual_1)),
+             Attribute_Name => Name_Overlaps_Storage,
+             Expressions    =>
+               New_List (New_Copy_Tree (Original_Actual (Actual_2))));
+
+         --  Generate the following check when detailed exception messages are
+         --  enabled:
+
+         --    if Actual_1'Overlaps_Storage (Actual_2) then
+         --       raise Program_Error with <detailed message>;
+         --    end if;
+
+         if Exception_Extra_Info then
+            Start_String;
+
+            --  Do not generate location information for internal calls
+
+            if Comes_From_Source (Call) then
+               Store_String_Chars (Build_Location_String (Loc));
+               Store_String_Char (' ');
+            end if;
+
+            Store_String_Chars ("aliased parameters, actuals for """);
+            Store_String_Chars (Get_Name_String (Chars (Formal_1)));
+            Store_String_Chars (""" and """);
+            Store_String_Chars (Get_Name_String (Chars (Formal_2)));
+            Store_String_Chars (""" overlap");
+
+            Insert_Action (Call,
+              Make_If_Statement (Loc,
+                Condition       => Cond,
+                Then_Statements => New_List (
+                  Make_Raise_Statement (Loc,
+                    Name       =>
+                      New_Reference_To (Standard_Program_Error, Loc),
+                    Expression => Make_String_Literal (Loc, End_String)))));
+
+         --  Create a sequence of overlapping checks by and-ing them all
+         --  together.
+
+         else
+            if No (Check) then
+               Check := Cond;
+            else
+               Check :=
+                 Make_And_Then (Loc,
+                   Left_Opnd  => Check,
+                   Right_Opnd => Cond);
+            end if;
+         end if;
+      end Overlap_Check;
+
       --  Local variables
 
-      Loc      : constant Source_Ptr := Sloc (Call);
       Actual_1 : Node_Id;
       Actual_2 : Node_Id;
       Check    : Node_Id;
-      Cond     : Node_Id;
       Formal_1 : Entity_Id;
       Formal_2 : Entity_Id;
 
    --  Start of processing for Apply_Parameter_Aliasing_Checks
 
    begin
-      Cond := Empty;
+      Check := Empty;
 
       Actual_1 := First_Actual (Call);
       Formal_1 := First_Formal (Subp);
@@ -2200,25 +2286,12 @@ package body Checks is
                    Is_Elementary_Type (Etype (Original_Actual (Actual_2)))
                  and then May_Cause_Aliasing (Formal_1, Formal_2)
                then
-                  --  Generate:
-                  --    Actual_1'Overlaps_Storage (Actual_2)
-
-                  Check :=
-                    Make_Attribute_Reference (Loc,
-                      Prefix         =>
-                        New_Copy_Tree (Original_Actual (Actual_1)),
-                      Attribute_Name => Name_Overlaps_Storage,
-                      Expressions    =>
-                        New_List (New_Copy_Tree (Original_Actual (Actual_2))));
-
-                  if No (Cond) then
-                     Cond := Check;
-                  else
-                     Cond :=
-                       Make_And_Then (Loc,
-                         Left_Opnd  => Cond,
-                         Right_Opnd => Check);
-                  end if;
+                  Overlap_Check
+                    (Actual_1 => Actual_1,
+                     Actual_2 => Actual_2,
+                     Formal_1 => Formal_1,
+                     Formal_2 => Formal_2,
+                     Check    => Check);
                end if;
 
                Next_Actual (Actual_2);
@@ -2230,13 +2303,13 @@ package body Checks is
          Next_Formal (Formal_1);
       end loop;
 
-      --  Place the check right before the call
+      --  Place a simple check right before the call
 
-      if Present (Cond) then
+      if Present (Check) and then not Exception_Extra_Info then
          Insert_Action (Call,
            Make_Raise_Program_Error (Loc,
-             Condition => Cond,
-             Reason    => PE_Explicit_Raise));
+             Condition => Check,
+             Reason    => PE_Aliased_Parameters));
       end if;
    end Apply_Parameter_Aliasing_Checks;
 

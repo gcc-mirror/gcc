@@ -6577,7 +6577,13 @@ package body Sem_Ch12 is
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
 
-                  elsif Nkind (Assoc) = N_Function_Call then
+                  --  The name in the call may be a selected component if the
+                  --  call has not been analyzed yet, as may be the case for
+                  --  pre/post conditions in a generic unit.
+
+                  elsif Nkind (Assoc) = N_Function_Call
+                    and then Is_Entity_Name (Name (Assoc))
+                  then
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
                   elsif Nkind_In (Assoc, N_Defining_Identifier,
