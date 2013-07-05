@@ -43,13 +43,13 @@ along with GCC; see the file COPYING3.	If not see
 
    Here is block diagram of LRA passes:
 
-                                ---------------------
-           ---------------     | Undo inheritance    |     ---------------
-          | Memory-memory |    | for spilled pseudos)|    | New (and old) |
-          | move coalesce |<---| and splits (for     |<-- |   pseudos     |
-           ---------------     | pseudos got the     |    |  assignment   |
-  Start           |            |  same  hard regs)   |     ---------------
-    |             |             ---------------------               ^
+                                ------------------------
+           ---------------     | Undo inheritance for   |     ---------------
+          | Memory-memory |    | spilled pseudos,       |    | New (and old) |
+          | move coalesce |<---| splits for pseudos got |<-- |   pseudos     |
+           ---------------     | the same hard regs,    |    |  assignment   |
+  Start           |            | and optional reloads   |     ---------------
+    |             |             ------------------------            ^
     V             |              ----------------                   |
  -----------      V             | Update virtual |                  |
 |  Remove   |----> ------------>|    register    |                  |
@@ -2187,9 +2187,15 @@ bitmap_head lra_inheritance_pseudos;
 /* Split regnos before the new spill pass.  */
 bitmap_head lra_split_regs;
 
-/* Reload pseudo regnos before the new assign pass which still can be
-   spilled after the assinment pass.  */
+/* Reload pseudo regnos before the new assignmnet pass which still can
+   be spilled after the assinment pass as memory is also accepted in
+   insns for the reload pseudos.  */
 bitmap_head lra_optional_reload_pseudos;
+
+/* Pseudo regnos used for subreg reloads before the new assignment
+   pass.  Such pseudos still can be spilled after the assinment
+   pass.  */
+bitmap_head lra_subreg_reload_pseudos;
 
 /* First UID of insns generated before a new spill pass.  */
 int lra_constraint_new_insn_uid_start;
@@ -2296,6 +2302,7 @@ lra (FILE *f)
   bitmap_initialize (&lra_inheritance_pseudos, &reg_obstack);
   bitmap_initialize (&lra_split_regs, &reg_obstack);
   bitmap_initialize (&lra_optional_reload_pseudos, &reg_obstack);
+  bitmap_initialize (&lra_subreg_reload_pseudos, &reg_obstack);
   live_p = false;
   if (get_frame_size () != 0 && crtl->stack_alignment_needed)
     /* If we have a stack frame, we must align it now.  The stack size
@@ -2356,8 +2363,9 @@ lra (FILE *f)
 	      if (! live_p)
 		lra_clear_live_ranges ();
 	    }
+	  bitmap_clear (&lra_optional_reload_pseudos);
 	}
-      bitmap_clear (&lra_optional_reload_pseudos);
+      bitmap_clear (&lra_subreg_reload_pseudos);
       bitmap_clear (&lra_inheritance_pseudos);
       bitmap_clear (&lra_split_regs);
       if (! lra_need_for_spills_p ())
