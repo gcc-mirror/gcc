@@ -1,3 +1,8 @@
+2013-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14263
+	* class.c (build_base_path): Improve diagnostic.
+
 2013-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/38634
