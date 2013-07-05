@@ -1,3 +1,8 @@
+2013-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_Composite_Equality): Use the full view
+	when the base type is private.
+
 2013-07-05  Claire Dross  <dross@adacore.com>
 
 	* a-cfdlli.ads: Add preconditions when needed.

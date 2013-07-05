@@ -2580,6 +2580,13 @@ package body Exp_Ch4 is
 
       Full_Type := Base_Type (Full_Type);
 
+      --  When the base type itself is private, use the full view to expand
+      --  the composite equality.
+
+      if Is_Private_Type (Full_Type) then
+         Full_Type := Underlying_Type (Full_Type);
+      end if;
+
       if Is_Array_Type (Full_Type) then
 
          --  If the operand is an elementary type other than a floating-point
