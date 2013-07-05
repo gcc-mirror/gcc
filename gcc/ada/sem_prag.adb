@@ -10082,11 +10082,19 @@ package body Sem_Prag is
             if Nkind (Subp_Decl) = N_Subprogram_Body then
                Analyze_Contract_Cases_In_Decl_Part (N);
 
+            --  When Contract_Cases applies to a subprogram compilation unit,
+            --  the corresponding pragma is placed after the unit's declaration
+            --  node and needs to be analyzed immediately.
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration
+              and then Nkind (Parent (Subp_Decl)) = N_Compilation_Unit
+            then
+               Analyze_Contract_Cases_In_Decl_Part (N);
+            end if;
+
             --  Chain the pragma on the contract for further processing
 
-            else
-               Add_Contract_Item (N, Subp_Id);
-            end if;
+            Add_Contract_Item (N, Subp_Id);
          end Contract_Cases;
 
          ----------------
@@ -10590,11 +10598,19 @@ package body Sem_Prag is
             if Nkind (Subp_Decl) = N_Subprogram_Body then
                Analyze_Depends_In_Decl_Part (N);
 
+            --  When Depends applies to a subprogram compilation unit, the
+            --  corresponding pragma is placed after the unit's declaration
+            --  node and needs to be analyzed immediately.
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration
+              and then Nkind (Parent (Subp_Decl)) = N_Compilation_Unit
+            then
+               Analyze_Depends_In_Decl_Part (N);
+            end if;
+
             --  Chain the pragma on the contract for further processing
 
-            else
-               Add_Contract_Item (N, Subp_Id);
-            end if;
+            Add_Contract_Item (N, Subp_Id);
          end Depends;
 
          ---------------------
@@ -11833,11 +11849,19 @@ package body Sem_Prag is
             if Nkind (Subp_Decl) = N_Subprogram_Body then
                Analyze_Global_In_Decl_Part (N);
 
+            --  When Global applies to a subprogram compilation unit, the
+            --  corresponding pragma is placed after the unit's declaration
+            --  node and needs to be analyzed immediately.
+
+            elsif Nkind (Subp_Decl) = N_Subprogram_Declaration
+              and then Nkind (Parent (Subp_Decl)) = N_Compilation_Unit
+            then
+               Analyze_Global_In_Decl_Part (N);
+            end if;
+
             --  Chain the pragma on the contract for further processing
 
-            else
-               Add_Contract_Item (N, Subp_Id);
-            end if;
+            Add_Contract_Item (N, Subp_Id);
          end Global;
 
          -----------
@@ -13348,8 +13372,8 @@ package body Sem_Prag is
             --  abstract. ???
 
             if not Is_Tagged_Type (Typ) or else not Is_Abstract_Type (Typ) then
-               Error_Pragma_Arg ("pragma% requires an abstract "
-                 & "tagged type", Arg1);
+               Error_Pragma_Arg
+                 ("pragma% requires an abstract tagged type", Arg1);
 
             elsif not Has_Discriminants (Typ)
               or else Ekind (Etype (First_Discriminant (Typ)))

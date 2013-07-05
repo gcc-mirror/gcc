@@ -1,3 +1,23 @@
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Update doc on missing pragmas.
+	* sem_ch12.adb: Minor comment additions.
+
+2013-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Ensure that
+	Contract_Cases, Depends and Global are analyzed when they apply
+	to a subprogram compilation unit. The pragmas are all added
+	unconditionally to the construct's contract. This ensures that
+	proof tools can locate the pragmas.
+
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Freeze_Actual_Profile): An instance within
+	a generic unit does not freeze a generic private type of the
+	enclosing generic. This rule must also apply to a type derived
+	from a generic private type.
+
 2013-07-05  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat_rm.texi: Add missing documentation for pragmas.

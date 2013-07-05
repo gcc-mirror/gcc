@@ -4367,19 +4367,30 @@ package body Sem_Ch12 is
       Subp : Entity_Id) return Boolean
    is
    begin
-      --  This complex conditional requires blow by blow comments ???
+      --  Must be inlined (or inlined renaming)
 
       if (Is_In_Main_Unit (N)
            or else Is_Inlined (Subp)
            or else Is_Inlined (Alias (Subp)))
+
+        --  Must be generating code or analyzing code in ASIS mode
+
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
                              and then ASIS_Mode))
+
         --  The body is needed when generating code (full expansion), in ASIS
         --  mode for other tools, and in SPARK mode (special expansion) for
         --  formal verification of the body itself.
+
         and then (Expander_Active or ASIS_Mode)
+
+        --  No point in inlining if ABE is inevitable
+
         and then not ABE_Is_Certain (N)
+
+        --  Or if subprogram is eliminated
+
         and then not Is_Eliminated (Subp)
       then
          Pending_Instantiations.Append
@@ -4391,6 +4402,8 @@ package body Sem_Ch12 is
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
              Version                  => Ada_Version));
          return True;
+
+      --  Here if not inlined, or we ignore the inlining
 
       else
          return False;
