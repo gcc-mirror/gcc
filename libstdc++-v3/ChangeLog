@@ -1,3 +1,16 @@
+2013-07-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_ReuseOrAllocNode): Use forward
+	pattern.
+	(_MoveReuseOrAllocNode): Remove.
+	(_Insert_base): Take a functor defining how the node is generated.
+	* include/bits/hashtable.h: Adapt.
+	(operator=(initializer_list<value_type>)): Reuse node if any.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Adjust dg-error line number.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Likewise.
+
 2013-07-04  Veres Lajos  <vlajos@gmail.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
