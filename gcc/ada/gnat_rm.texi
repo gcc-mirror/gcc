@@ -195,12 +195,14 @@ Implementation Defined Pragmas
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
 * Pragma Overflow_Mode::
+* Pragma Overriding_Renamings::
 * Pragma Partition_Elaboration_Policy::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
 * Pragma Postcondition::
 * Pragma Precondition::
+* Pragma Predicate::
 * Pragma Preelaborable_Initialization::
 * Pragma Preelaborate_05::
 * Pragma Priority_Specific_Dispatching::
@@ -1006,6 +1008,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Polling::
 * Pragma Postcondition::
 * Pragma Precondition::
+* Pragma Predicate::
 * Pragma Preelaborable_Initialization::
 * Pragma Preelaborate_05::
 * Pragma Priority_Specific_Dispatching::
@@ -4727,6 +4730,7 @@ overflow checking, but does not affect the overflow mode.
 @unnumberedsec Pragma Overriding_Renamings
 @findex Overriding_Renamings
 @cindex Rational profile
+@cindex Rational compatibility
 @noindent
 Syntax:
 
@@ -4735,10 +4739,23 @@ pragma Overriding_Renamings;
 @end smallexample
 
 @noindent
-
-This is a GNAT pragma to simplify porting legacy code accepted by the Rational
+This is a GNAT configuration pragma to simplify porting
+legacy code accepted by the Rational
 Ada compiler. In the presence of this pragma, a renaming declaration that
-renames an inherited operation declared in the same scope is legal, even though
+renames an inherited operation declared in the same scope is legal if selected
+notation is used as in:
+
+@smallexample @c ada
+pragma Overriding_Renamings;
+...
+package R is
+  function F (..);
+  ...
+  function F (..) renames R.F;
+end R;
+@end smallexample
+
+even though
 RM 8.3 (15) stipulates that an overridden operation is not visible within the
 declaration of the overriding operation.
 
@@ -5058,6 +5075,47 @@ marked as Inline_Always, or those marked as Inline with front-end
 inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if precondition
 checking is enabled.
+
+@node Pragma Predicate
+@unnumberedsec Pragma Predicate
+@findex Predicate
+@findex Predicate pragma
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Predicate
+  ([Entity =>] type_LOCAL_NAME,
+   [Check  =>] EXPRESSION);
+@end smallexample
+
+@noindent
+This pragma (available in all versions of Ada in GNAT) encompasses both
+the @code{Static_Predicate} and @code{Dynamic_Predicate} aspects in
+Ada 2012. A predicate is regarded as static if it has an allowed form
+for @code{Static_Predicate} and is otherwise treated as a
+@code{Dynamic_Predicate}. Otherwise, predicates specified by this
+pragma behave exactly as described in the Ada 2012 reference manual.
+For example, if we have
+
+@smallexample @c ada
+type R is range 1 .. 10;
+subtype S is R;
+pragma Predicate (Entity => S, Check => S not in 4 .. 6);
+subtype Q is R
+pragma Predicate (Entity => Q, Check => F(Q) or G(Q));
+@end smallexample
+
+@noindent
+the effect is identical to the following Ada 2012 code:
+
+@smallexample @c ada
+type R is range 1 .. 10;
+subtype S is R with
+  Static_Predicate => S not in 4 .. 6;
+subtype Q is R with
+  Dynamic_Predicate => F(Q) or G(Q);
+@end smallexample
 
 @node Pragma Preelaborable_Initialization
 @unnumberedsec Pragma Preelaborable_Initialization

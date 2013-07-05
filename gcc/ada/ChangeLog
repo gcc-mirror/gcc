@@ -1,5 +1,20 @@
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Add missing documentation for pragmas.
+	* sem_ch8.adb: Minor reformatting.
+	* gnat_ugn.texi: Document that -gnatR and -gnatD cannot be used
+	together.
+
+2013-07-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.ads, sem_ch12.adb (Need_Subprogram_Instance_Body): Force
+	instance of subprogram body in SPARK mode, by testing Expander_Active
+	(set in SPARK mode) instead of Full_Expander_Active (not set in
+	SPARK mode).
+	* sem_ch8.adb: Minor reformatting.
+
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
 	* freeze.adb (Freeze_Entity): Remove test of obsolete flag
 	Propagate_Exceptions, and associated useless code that did
 	nothing.
