@@ -3746,7 +3746,6 @@ package body Sem_Prag is
       begin
          --  First check pragma arguments
 
-         GNAT_Pragma;
          Check_At_Least_N_Arguments (2);
          Check_At_Most_N_Arguments (4);
          Check_Arg_Order
@@ -5295,7 +5294,6 @@ package body Sem_Prag is
 
       procedure Process_Disable_Enable_Atomic_Sync (Nam : Name_Id) is
       begin
-         GNAT_Pragma;
          Check_No_Identifiers;
          Check_At_Most_N_Arguments (1);
 
@@ -9656,8 +9654,8 @@ package body Sem_Prag is
          --  pragma Check_Name (check_IDENTIFIER);
 
          when Pragma_Check_Name =>
-            Check_No_Identifiers;
             GNAT_Pragma;
+            Check_No_Identifiers;
             Check_Valid_Configuration_Pragma;
             Check_Arg_Count (1);
             Check_Arg_Is_Identifier (Arg1);
@@ -10667,6 +10665,7 @@ package body Sem_Prag is
          --  pragma Disable_Atomic_Synchronization [(Entity)];
 
          when Pragma_Disable_Atomic_Synchronization =>
+            GNAT_Pragma;
             Process_Disable_Enable_Atomic_Sync (Name_Suppress);
 
          -------------------
@@ -11098,6 +11097,7 @@ package body Sem_Prag is
          --  pragma Enable_Atomic_Synchronization [(Entity)];
 
          when Pragma_Enable_Atomic_Synchronization =>
+            GNAT_Pragma;
             Process_Disable_Enable_Atomic_Sync (Name_Unsuppress);
 
          ------------
@@ -11598,6 +11598,18 @@ package body Sem_Prag is
             end case;
          end External_Name_Casing;
 
+         ---------------
+         -- Fast_Math --
+         ---------------
+
+         --  pragma Fast_Math;
+
+         when Pragma_Fast_Math =>
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Valid_Configuration_Pragma;
+            Fast_Math := True;
+
          --------------------------
          -- Favor_Top_Level --
          --------------------------
@@ -11628,18 +11640,6 @@ package body Sem_Prag is
                   Get_Pragma_Arg (Arg1));
             end if;
          end Favor_Top_Level;
-
-         ---------------
-         -- Fast_Math --
-         ---------------
-
-         --  pragma Fast_Math;
-
-         when Pragma_Fast_Math =>
-            GNAT_Pragma;
-            Check_No_Identifiers;
-            Check_Valid_Configuration_Pragma;
-            Fast_Math := True;
 
          ---------------------------
          -- Finalize_Storage_Only --
@@ -11965,6 +11965,7 @@ package body Sem_Prag is
             Ent : Entity_Id;
 
          begin
+            GNAT_Pragma;
             Check_No_Identifiers;
 
             --  Form with no arguments
@@ -14477,6 +14478,41 @@ package body Sem_Prag is
             Optimize_Alignment_Local := True;
          end Optimize_Alignment;
 
+         -------------
+         -- Ordered --
+         -------------
+
+         --  pragma Ordered (first_enumeration_subtype_LOCAL_NAME);
+
+         when Pragma_Ordered => Ordered : declare
+            Assoc   : constant Node_Id := Arg1;
+            Type_Id : Node_Id;
+            Typ     : Entity_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_No_Identifiers;
+            Check_Arg_Count (1);
+            Check_Arg_Is_Local_Name (Arg1);
+
+            Type_Id := Get_Pragma_Arg (Assoc);
+            Find_Type (Type_Id);
+            Typ := Entity (Type_Id);
+
+            if Typ = Any_Type then
+               return;
+            else
+               Typ := Underlying_Type (Typ);
+            end if;
+
+            if not Is_Enumeration_Type (Typ) then
+               Error_Pragma ("pragma% must specify enumeration type");
+            end if;
+
+            Check_First_Subtype (Arg1);
+            Set_Has_Pragma_Ordered (Base_Type (Typ));
+         end Ordered;
+
          -------------------
          -- Overflow_Mode --
          -------------------
@@ -14557,43 +14593,16 @@ package body Sem_Prag is
             end if;
          end Overflow_Mode;
 
+         --------------------------
+         -- Overriding Renamings --
+         --------------------------
+
+         --  pragma Overriding_Renamings;
+
          when Pragma_Overriding_Renamings =>
-            Overriding_Renamings := True;
-
-         -------------
-         -- Ordered --
-         -------------
-
-         --  pragma Ordered (first_enumeration_subtype_LOCAL_NAME);
-
-         when Pragma_Ordered => Ordered : declare
-            Assoc   : constant Node_Id := Arg1;
-            Type_Id : Node_Id;
-            Typ     : Entity_Id;
-
-         begin
             GNAT_Pragma;
-            Check_No_Identifiers;
-            Check_Arg_Count (1);
-            Check_Arg_Is_Local_Name (Arg1);
-
-            Type_Id := Get_Pragma_Arg (Assoc);
-            Find_Type (Type_Id);
-            Typ := Entity (Type_Id);
-
-            if Typ = Any_Type then
-               return;
-            else
-               Typ := Underlying_Type (Typ);
-            end if;
-
-            if not Is_Enumeration_Type (Typ) then
-               Error_Pragma ("pragma% must specify enumeration type");
-            end if;
-
-            Check_First_Subtype (Arg1);
-            Set_Has_Pragma_Ordered (Base_Type (Typ));
-         end Ordered;
+            Check_Arg_Count (0);
+            Overriding_Renamings := True;
 
          ----------
          -- Pack --
@@ -15457,6 +15466,8 @@ package body Sem_Prag is
          when Pragma_Propagate_Exceptions =>
             GNAT_Pragma;
             Check_Arg_Count (0);
+
+            --  This code does not agree with above (no effect) comment ???
 
             if In_Extended_Main_Source_Unit (N) then
                Propagate_Exceptions := True;
@@ -16896,6 +16907,7 @@ package body Sem_Prag is
          --  MODE_TYPE ::= Nominal | Robustness
 
          when Pragma_Test_Case =>
+            GNAT_Pragma;
             Check_Test_Case;
 
          --------------------------

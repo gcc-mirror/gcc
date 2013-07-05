@@ -101,9 +101,9 @@ package Restrict is
      (No_Unchecked_Deallocation,   "a-uncdea"),
      (No_Unchecked_Deallocation,   "unchdeal"));
 
-   --  The following map has True for all GNAT pragmas. It is used to
-   --  implement pragma Restrictions (No_Implementation_Restrictions)
-   --  (which is why this restriction itself is excluded from the list).
+   --  The following map has True for all GNAT-defined Restrictions. It is used
+   --  to implement pragma Restrictions (No_Implementation_Restrictions) (which
+   --  is why this restriction itself is excluded from the list).
 
    Implementation_Restriction : array (All_Restrictions) of Boolean :=
      (Simple_Barriers                    => True,
