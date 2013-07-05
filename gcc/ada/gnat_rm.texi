@@ -202,14 +202,20 @@ Implementation Defined Pragmas
 * Pragma Postcondition::
 * Pragma Precondition::
 * Pragma Preelaborable_Initialization::
+* Pragma Preelaborate_05::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
 * Pragma Psect_Object::
+* Pragma Pure_05::
+* Pragma Pure_12::
 * Pragma Pure_Function::
+* Pragma Ravenscar::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
+* Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
 * Pragma Short_Descriptors::
@@ -223,6 +229,7 @@ Implementation Defined Pragmas
 * Pragma Subtitle::
 * Pragma Suppress::
 * Pragma Suppress_All::
+* Pragma Suppress_Debug_Info::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
 * Pragma Task_Info::
@@ -999,14 +1006,20 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Postcondition::
 * Pragma Precondition::
 * Pragma Preelaborable_Initialization::
+* Pragma Preelaborate_05::
 * Pragma Priority_Specific_Dispatching::
 * Pragma Profile::
 * Pragma Profile_Warnings::
 * Pragma Psect_Object::
+* Pragma Pure_05::
+* Pragma Pure_12::
 * Pragma Pure_Function::
+* Pragma Ravenscar::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
+* Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
 * Pragma Short_Descriptors::
@@ -1020,6 +1033,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Subtitle::
 * Pragma Suppress::
 * Pragma Suppress_All::
+* Pragma Suppress_Debug_Info::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
 * Pragma Task_Info::
@@ -2200,8 +2214,12 @@ that is, they never return an object whose type is a descendant of type T.
 @cindex Interfacing to C++
 @findex CPP_Virtual
 @noindent
-This pragma is now obsolete has has no effect because GNAT generates
-the same object layout than the G++ compiler.
+This pragma is now obsolete and, other than generating a warning if warnings
+on obsolescent features are enabled, is completely ignored.
+It is retained for compatibility
+purposes. It used to be required to ensure compoatibility with C++, but
+is no longer required for that purpose because GNAT generates
+the same object layout as the G++ compiler by default.
 
 See @ref{Interfacing to C++} for related information.
 
@@ -2210,8 +2228,11 @@ See @ref{Interfacing to C++} for related information.
 @cindex Interfacing with C++
 @findex CPP_Vtable
 @noindent
-This pragma is now obsolete has has no effect because GNAT generates
-the same object layout than the G++ compiler.
+This pragma is now obsolete and, other than generating a warning if warnings
+on obsolescent features are enabled, is completely ignored.
+It used to be required to ensure compatibility with C++, but
+is no longer required for that purpose because GNAT generates
+the same object layout than the G++ compiler by default.
 
 See @ref{Interfacing to C++} for related information.
 
@@ -3536,13 +3557,16 @@ happens regardless of whether these options are used.
 Syntax:
 
 @smallexample @c ada
-pragma Inline_Generic (generic_package_NAME);
+pragma Inline_Generic (GNAME @{, GNAME@});
+
+GNAME ::= generic_unit_NAME | generic_instance_NAME
 @end smallexample
 
 @noindent
-This is implemented for compatibility with DEC Ada 83 and is recognized,
-but otherwise ignored, by GNAT@.  All generic instantiations are inlined
-by default when using GNAT@.
+This pragma is provided for compatibility with Dec Ada 83. It has
+no effect in @code{GNAT} (which always inlines generics), other
+than to check that the given names are all names of generic units or
+generic instances.
 
 @node Pragma Interface
 @unnumberedsec Pragma Interface
@@ -4038,9 +4062,9 @@ this pragma, the standard runtime libraries must be recompiled.
 @findex Loop_Invariant
 @noindent
 Syntax:
+
 @smallexample @c ada
 pragma Loop_Invariant ( boolean_EXPRESSION );
-
 @end smallexample
 
 @noindent
@@ -4830,7 +4854,7 @@ details.
 
 @node Pragma Postcondition
 @unnumberedsec Pragma Postcondition
-@cindex Postconditions
+@cindex Postcondition
 @cindex Checks, postconditions
 @findex Postconditions
 @noindent
@@ -4985,45 +5009,6 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
-@node Pragma Preelaborable_Initialization
-@unnumberedsec Pragma Preelaborable_Initialization
-@findex Preelaborable_Initialization
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Preelaborable_Initialization (DIRECT_NAME);
-@end smallexample
-
-@noindent
-This pragma is standard in Ada 2005, but is available in all earlier
-versions of Ada as an implementation-defined pragma.
-See Ada 2012 Reference Manual for details.
-
-@node Pragma Priority_Specific_Dispatching
-@unnumberedsec Pragma Priority_Specific_Dispatching
-@findex Priority_Specific_Dispatching
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Priority_Specific_Dispatching (
-   POLICY_IDENTIFIER,
-   first_priority_EXPRESSION,
-   last_priority_EXPRESSION)
-
-POLICY_IDENTIFIER ::=
-   EDF_Across_Priorities            |
-   FIFO_Within_Priorities           |
-   Non_Preemptive_Within_Priorities |
-   Round_Robin_Within_Priorities
-@end smallexample
-
-@noindent
-This pragma is standard in Ada 2005, but is available in all earlier
-versions of Ada as an implementation-defined pragma.
-See Ada 2012 Reference Manual for details.
-
 @node Pragma Precondition
 @unnumberedsec Pragma Precondition
 @cindex Preconditions
@@ -5066,11 +5051,68 @@ declarations of a subprogram body. Only other pragmas may intervene
 postconditions, or appear before the postcondition in the
 declaration sequence in a subprogram body).
 
-Note: postcondition pragmas associated with subprograms that are
+Note: precondition pragmas associated with subprograms that are
 marked as Inline_Always, or those marked as Inline with front-end
 inlining (-gnatN option set) are accepted and legality-checked
-by the compiler, but are ignored at run-time even if postcondition
+by the compiler, but are ignored at run-time even if precondition
 checking is enabled.
+
+@node Pragma Preelaborable_Initialization
+@unnumberedsec Pragma Preelaborable_Initialization
+@findex Preelaborable_Initialization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Preelaborable_Initialization (DIRECT_NAME);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
+@node Pragma Preelaborate_05
+@unnumberedsec Pragma Preelaborate_05
+@findex Preelaborate_05
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Preelaborate_05 [(library_unit_NAME)];
+@end smallexample
+
+@noindent
+This pragma is only available in GNAT mode (@option{-gnatg} switch set)
+and is intended for use in the standard run-time library only. It has
+no effect in Ada 83 or Ada 95 mode, but is
+equivalent to @code{pragma Prelaborate} when operating in later
+Ada versions. This is used to handle some cases where packages
+not previously preelaborable became so in Ada 2005.
+
+@node Pragma Priority_Specific_Dispatching
+@unnumberedsec Pragma Priority_Specific_Dispatching
+@findex Priority_Specific_Dispatching
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Priority_Specific_Dispatching (
+   POLICY_IDENTIFIER,
+   first_priority_EXPRESSION,
+   last_priority_EXPRESSION)
+
+POLICY_IDENTIFIER ::=
+   EDF_Across_Priorities            |
+   FIFO_Within_Priorities           |
+   Non_Preemptive_Within_Priorities |
+   Round_Robin_Within_Priorities
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
 
 @node Pragma Profile
 @unnumberedsec Pragma Profile
@@ -5267,6 +5309,42 @@ EXTERNAL_SYMBOL ::=
 @noindent
 This pragma is identical in effect to pragma @code{Common_Object}.
 
+@node Pragma Pure_05
+@unnumberedsec Pragma Pure_05
+@findex Pure_05
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pure_05 [(library_unit_NAME)];
+@end smallexample
+
+@noindent
+This pragma is only available in GNAT mode (@option{-gnatg} switch set)
+and is intended for use in the standard run-time library only. It has
+no effect in Ada 83 or Ada 95 mode, but is
+equivalent to @code{pragma Pure} when operating in later
+Ada versions. This is used to handle some cases where packages
+not previously pure became so in Ada 2005.
+
+@node Pragma Pure_12
+@unnumberedsec Pragma Pure_12
+@findex Pure_12
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pure_12 [(library_unit_NAME)];
+@end smallexample
+
+@noindent
+This pragma is only available in GNAT mode (@option{-gnatg} switch set)
+and is intended for use in the standard run-time library only. It has
+no effect in Ada 83, Ada 95, or Ada 2005 modes, but is
+equivalent to @code{pragma Pure} when operating in later
+Ada versions. This is used to handle some cases where packages
+not previously pure became so in Ada 2012.
+
 @node Pragma Pure_Function
 @unnumberedsec Pragma Pure_Function
 @findex Pure_Function
@@ -5330,6 +5408,27 @@ function is also considered pure from an optimization point of view, but the
 unit is not a Pure unit in the categorization sense. So for example, a function
 thus marked is free to @code{with} non-pure units.
 
+@node Pragma Ravenscar
+@unnumberedsec Pragma Ravenscar
+@findex Pragma Ravenscar
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Ravenscar;
+@end smallexample
+
+@noindent
+This pragma is considered obsolescent, but is retained for
+compatibility purposes. It is equivalent to:
+
+@smallexample @c ada
+pragma Profile (Ravenscar);
+@end smallexample
+
+@noindent
+which is the preferred method of setting the @code{Ravenscar} profile.
+
 @node Pragma Relative_Deadline
 @unnumberedsec Pragma Relative_Deadline
 @findex Relative_Deadline
@@ -5371,6 +5470,28 @@ In the generic unit, the formal type is subject to all restrictions
 pertaining to remote access to class-wide types. At instantiation, the
 actual type must be a remote access to class-wide type.
 
+@node Pragma Restricted_Run_Time
+@unnumberedsec Pragma Restricted_Run_Time
+@findex Pragma Restricted_Run_Time
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Restricted_Run_Time;
+@end smallexample
+
+@noindent
+This pragma is considered obsolescent, but is retained for
+compatibility purposes. It is equivalent to:
+
+@smallexample @c ada
+pragma Profile (Restricted);
+@end smallexample
+
+@noindent
+which is the preferred method of setting the restricted run time
+profile.
+
 @node Pragma Restriction_Warnings
 @unnumberedsec Pragma Restriction_Warnings
 @findex Restriction_Warnings
@@ -5389,6 +5510,24 @@ pragma @code{Restrictions}). For each of these identifiers
 the compiler checks for violations of the restriction, but
 generates a warning message rather than an error message
 if the restriction is violated.
+
+@node Pragma Share_Generic
+@unnumberedsec Pragma Share_Generic
+@findex Share_Generic
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Share_Generic (GNAME @{, GNAME@});
+
+GNAME ::= generic_unit_NAME | generic_instance_NAME
+@end smallexample
+
+@noindent
+This pragma is provided for compatibility with Dec Ada 83. It has
+no effect in @code{GNAT} (which does not implement shared generics), other
+than to check that the given names are all names of generic units or
+generic instances.
 
 @node Pragma Shared
 @unnumberedsec Pragma Shared
@@ -5905,6 +6044,21 @@ Ada 83 usage where it appears at the end of a unit, and for compatibility
 with Rational Ada, where it appears as a program unit pragma.
 The use of the standard Ada pragma @code{Suppress (All_Checks)}
 as a normal configuration pragma is the preferred usage in GNAT@.
+
+@node Pragma Suppress_Debug_Info
+@unnumberedsec Pragma Suppress_Debug_Info
+@findex Suppress_Debug_Info
+@noindent
+Syntax:
+
+@smallexample @c ada
+Suppress_Debug_Info ([Entity =>] LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma can be used to suppress generation of debug information
+for the specified entity. It is intended primarily for use in debugging
+the debugger, and navigating around debugger problems.
 
 @node Pragma Suppress_Exception_Locations
 @unnumberedsec Pragma Suppress_Exception_Locations
@@ -20451,3 +20605,4 @@ this kind of implementation dependent addition.
 
 @bye
 tablishes the following set of restrictions:
+Pragma Shared
