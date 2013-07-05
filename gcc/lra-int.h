@@ -321,6 +321,7 @@ extern int lra_new_regno_start;
 extern int lra_constraint_new_regno_start;
 extern bitmap_head lra_inheritance_pseudos;
 extern bitmap_head lra_split_regs;
+extern bitmap_head lra_subreg_reload_pseudos;
 extern bitmap_head lra_optional_reload_pseudos;
 extern int lra_constraint_new_insn_uid_start;
 

@@ -1,3 +1,22 @@
+2013-07-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55342
+	* lra-int.h (lra_subreg_reload_pseudos): New.
+	* lra.c: Add undoing optional reloads to the block diagram.
+	(lra_subreg_reload_pseudos): New.
+	(lra_optional_reload_pseudos): Change comments.
+	(lra): Init and clear lra_subreg_reload_pseudos.  Clear
+	lra_optional_reload_pseudos after undo transformations.
+	* lra-assigns.c (pseudo_prefix_title): New.
+	(lra_setup_reg_renumber): Use it.
+	(spill_for): Ditto.  Check subreg reload pseudos too.
+	(assign_by_spills): Consider subreg reload pseudos too.
+	* lra-constraints.c (simplify_operand_subreg): Use
+	lra_subreg_reload_pseudos instead of lra_optional_reload_pseudos.
+	(curr_insn_transform): Recognize and do optional reloads.
+	(undo_optional_reloads): New.
+	(lra_undo_inheritance): Call undo_optional_reloads.
+
 2013-07-05  Thomas Quinot  <quinot@adacore.com>
 
 	* tree-complex.c (expand_complex_operations_1): Fix typo.
