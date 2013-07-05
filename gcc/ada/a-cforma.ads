@@ -67,7 +67,7 @@ package Ada.Containers.Formal_Ordered_Maps is
 
    function Equivalent_Keys (Left, Right : Key_Type) return Boolean;
 
-   type Map (Capacity : Count_Type) is tagged private;
+   type Map (Capacity : Count_Type) is private;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -85,48 +85,69 @@ package Ada.Containers.Formal_Ordered_Maps is
 
    procedure Clear (Container : in out Map);
 
-   procedure Assign (Target : in out Map; Source : Map);
+   procedure Assign (Target : in out Map; Source : Map) with
+     Pre => Target.Capacity >= Length (Source);
 
-   function Copy (Source : Map; Capacity : Count_Type := 0) return Map;
+   function Copy (Source : Map; Capacity : Count_Type := 0) return Map with
+     Pre => Capacity >= Source.Capacity;
 
-   function Key (Container : Map; Position : Cursor) return Key_Type;
+   function Key (Container : Map; Position : Cursor) return Key_Type with
+     Pre => Has_Element (Container, Position);
 
-   function Element (Container : Map; Position : Cursor) return Element_Type;
+   function Element
+     (Container : Map;
+      Position  : Cursor) return Element_Type
+   with
+     Pre => Has_Element (Container, Position);
 
    procedure Replace_Element
      (Container : in out Map;
       Position  : Cursor;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Has_Element (Container, Position);
 
-   procedure Move (Target : in out Map; Source : in out Map);
+   procedure Move (Target : in out Map; Source : in out Map) with
+     Pre => Target.Capacity >= Length (Source);
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type;
       Position  : out Cursor;
-      Inserted  : out Boolean);
+      Inserted  : out Boolean)
+   with
+     Pre => Length (Container) < Container.Capacity;
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Length (Container) < Container.Capacity
+              and then (not Contains (Container, Key));
 
    procedure Include
      (Container : in out Map;
       Key       : Key_Type;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Length (Container) < Container.Capacity;
 
    procedure Replace
      (Container : in out Map;
       Key       : Key_Type;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Contains (Container, Key);
 
    procedure Exclude (Container : in out Map; Key : Key_Type);
 
-   procedure Delete (Container : in out Map; Key : Key_Type);
+   procedure Delete (Container : in out Map; Key : Key_Type) with
+     Pre => Contains (Container, Key);
 
-   procedure Delete (Container : in out Map; Position : in out Cursor);
+   procedure Delete (Container : in out Map; Position : in out Cursor) with
+     Pre => Has_Element (Container, Position);
 
    procedure Delete_First (Container : in out Map);
 
@@ -134,27 +155,36 @@ package Ada.Containers.Formal_Ordered_Maps is
 
    function First (Container : Map) return Cursor;
 
-   function First_Element (Container : Map) return Element_Type;
+   function First_Element (Container : Map) return Element_Type with
+     Pre => not Is_Empty (Container);
 
-   function First_Key (Container : Map) return Key_Type;
+   function First_Key (Container : Map) return Key_Type with
+     Pre => not Is_Empty (Container);
 
    function Last (Container : Map) return Cursor;
 
-   function Last_Element (Container : Map) return Element_Type;
+   function Last_Element (Container : Map) return Element_Type with
+     Pre => not Is_Empty (Container);
 
-   function Last_Key (Container : Map) return Key_Type;
+   function Last_Key (Container : Map) return Key_Type with
+     Pre => not Is_Empty (Container);
 
-   function Next (Container : Map; Position : Cursor) return Cursor;
+   function Next (Container : Map; Position : Cursor) return Cursor with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
 
-   procedure Next (Container : Map; Position : in out Cursor);
+   procedure Next (Container : Map; Position : in out Cursor) with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
 
-   function Previous (Container : Map; Position : Cursor) return Cursor;
+   function Previous (Container : Map; Position : Cursor) return Cursor with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
 
-   procedure Previous (Container : Map; Position : in out Cursor);
+   procedure Previous (Container : Map; Position : in out Cursor) with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
 
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
-   function Element (Container : Map; Key : Key_Type) return Element_Type;
+   function Element (Container : Map; Key : Key_Type) return Element_Type with
+     Pre => Contains (Container, Key);
 
    function Floor (Container : Map; Key : Key_Type) return Cursor;
 
@@ -169,8 +199,10 @@ package Ada.Containers.Formal_Ordered_Maps is
    --  they are structurally equal (function "=" returns True) and that they
    --  have the same set of cursors.
 
-   function Left  (Container : Map; Position : Cursor) return Map;
-   function Right (Container : Map; Position : Cursor) return Map;
+   function Left  (Container : Map; Position : Cursor) return Map with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
+   function Right (Container : Map; Position : Cursor) return Map with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
    --  Left returns a container containing all elements preceding Position
    --  (excluded) in Container. Right returns a container containing all
    --  elements following Position (included) in Container. These two new
