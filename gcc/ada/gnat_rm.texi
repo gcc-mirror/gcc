@@ -117,6 +117,7 @@ Implementation Defined Pragmas
 * Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
+* Pragma CIL_Constructor::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -174,6 +175,8 @@ Implementation Defined Pragmas
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
 * Pragma Invariant::
+* Pragma Java_Constructor::
+* Pragma Java_Interface::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -926,6 +929,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
+* Pragma CIL_Constructor::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -983,6 +987,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
 * Pragma Invariant::
+* Pragma Java_Constructor::
+* Pragma Java_Interface::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -1772,6 +1778,24 @@ as synonyms for @code{ON} and @code{OFF}. These synonyms are provided for
 compatibility with the standard @code{Assertion_Policy} pragma. The check
 policy setting @code{DISABLE} causes the second argument of a corresponding
 @code{Check} pragma to be completely ignored and not analyzed.
+
+@node Pragma CIL_Constructor
+@unnumberedsec Pragma CIL_Constructor
+@findex CIL_Constructor
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma CIL_Constructor ([Entity =>] function_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma is used to assert that the specified Ada function should be
+mapped to the .NET constructor for some Ada tagged record type.
+
+See section 4.1 of the
+@code{GNAT User's Guide: Supplement for the .NET Platform.}
+for related information.
 
 @node Pragma Comment
 @unnumberedsec Pragma Comment
@@ -3814,6 +3838,42 @@ invariant pragma for the same entity.
 For further details on the use of this pragma, see the Ada 2012 documentation
 of the Type_Invariant aspect.
 
+@node Pragma Java_Constructor
+@unnumberedsec Pragma Java_Constructor
+@findex Java_Constructor
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Java_Constructor ([Entity =>] function_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma is used to assert that the specified Ada function should be
+mapped to the Java constructor for some Ada tagged record type.
+
+See section 7.3.2 of the
+@code{GNAT User's Guide: Supplement for the JVM Platform.}
+for related information.
+
+@node Pragma Java_Interface
+@unnumberedsec Pragma Java_Interface
+@findex Java_Interface
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Java_Interface ([Entity =>] abstract_tagged_type_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma is used to assert that the specified Ada abstract tagged type
+is to be mapped to a Java interface name.
+
+See sections 7.1 and 7.2 of the
+@code{GNAT User's Guide: Supplement for the JVM Platform.}
+for related information.
+
 @node Pragma Keep_Names
 @unnumberedsec Pragma Keep_Names
 @findex Keep_Names
@@ -4388,7 +4448,7 @@ pragma No_Run_Time;
 This is an obsolete configuration pragma that historically was used to
 setup what is now called the "zero footprint" library. It causes any
 library units outside this basic library to be ignored. The use of
-this pragma has been superceded by the general configurable run-time
+this pragma has been superseded by the general configurable run-time
 capability of @code{GNAT} where the compiler takes into account whatever
 units happen to be accessible in the library.
 

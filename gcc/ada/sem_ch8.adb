@@ -2069,11 +2069,20 @@ package body Sem_Ch8 is
 
                   if Is_Incomplete_Or_Private_Type (Etype (F))
                     and then No (Underlying_Type (Etype (F)))
-                    and then not Is_Generic_Type (Etype (F))
                   then
-                     Error_Msg_NE
-                       ("type& must be frozen before this point",
-                          Instantiation_Node, Etype (F));
+
+                     --  Exclude generic types, or types derived  from them.
+                     --  They will be frozen in the enclosing instance.
+
+                     if Is_Generic_Type (Etype (F))
+                       or else Is_Generic_Type (Root_Type (Etype (F)))
+                     then
+                        null;
+                     else
+                        Error_Msg_NE
+                          ("type& must be frozen before this point",
+                             Instantiation_Node, Etype (F));
+                     end if;
                   end if;
 
                   F := Next_Formal (F);
