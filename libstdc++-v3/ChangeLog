@@ -11,6 +11,17 @@
 	* testsuite/23_containers/unordered_set/
 	not_default_constructible_hash_neg.cc: Likewise.
 
+2013-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/23_containers/deque/modifiers/insert/const_iterator.cc:
+	Tweak, avoid potential undefined behavior.
+	* testsuite/23_containers/list/modifiers/insert/const_iterator.cc:
+	Likewise.
+	* testsuite/23_containers/vector/bool/modifiers/insert/
+	const_iterator.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/insert/const_iterator.cc:
+	Likewise.
+
 2013-07-04  Veres Lajos  <vlajos@gmail.com>
 	    Jonathan Wakely  <jwakely.gcc@gmail.com>
 
