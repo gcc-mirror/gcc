@@ -22,11 +22,11 @@
 
 void test01()
 {
-  std::list<int> l1;
+  std::list<int> l1, l2{5, 6};
   int n = 0;
   std::list<int>::iterator it = l1.insert(l1.cbegin(), n);
   it = l1.insert(l1.cbegin(), 1);
   it = l1.insert(l1.cbegin(), {2, 3});
   it = l1.insert(l1.cbegin(), 1, 4);
-  it = l1.insert(l1.cbegin(), l1.begin(), l1.end());
+  it = l1.insert(l1.cbegin(), l2.begin(), l2.end());
 }

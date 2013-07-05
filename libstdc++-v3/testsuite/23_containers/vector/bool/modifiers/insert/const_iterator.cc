@@ -22,9 +22,9 @@
 
 void test01()
 {
-  std::vector<bool> vb1;
+  std::vector<bool> vb1, vb2{true, false};
   std::vector<bool>::iterator it = vb1.insert(vb1.cbegin(), true);
   it = vb1.insert(vb1.cbegin(), {false, true});
   it = vb1.insert(vb1.cbegin(), 1, false);
-  it = vb1.insert(vb1.cbegin(), vb1.begin(), vb1.end());  
+  it = vb1.insert(vb1.cbegin(), vb2.begin(), vb2.end());  
 }
