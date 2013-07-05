@@ -1,5 +1,16 @@
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
+	* freeze.adb (Freeze_Entity): Remove test of obsolete flag
+	Propagate_Exceptions, and associated useless code that did
+	nothing.
+	* gnat_rm.texi: Add documentation for obsolete pragma
+	Propagate_Exceptions.
+	* opt.ads (Propagate_Exceptions): Obsolete flag removed.
+	* sem_prag.adb (Analyze_Pragma, case Propagate_Exceptions):
+	Remove useless and obsolete setting of Propagate_Exceptions flag.
+
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi, sem_prag.adb: Minor comment/text fixes.
 
 2013-07-05  Robert Dewar  <dewar@adacore.com>

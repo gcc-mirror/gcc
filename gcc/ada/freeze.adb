@@ -4940,21 +4940,6 @@ package body Freeze is
            and then not Is_Library_Level_Entity (E)
          then
             Set_Is_Public (E, False);
-
-         --  If no address clause and not intrinsic, then for imported
-         --  subprogram in main unit, generate descriptor if we are in
-         --  Propagate_Exceptions mode.
-
-         --  This is very odd code, it makes a null result, why ???
-
-         elsif Propagate_Exceptions
-           and then Is_Imported (E)
-           and then not Is_Intrinsic_Subprogram (E)
-           and then Convention (E) /= Convention_Stubbed
-         then
-            if Result = No_List then
-               Result := Empty_List;
-            end if;
          end if;
       end if;
 
