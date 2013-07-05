@@ -4574,15 +4574,20 @@ deduce_noexcept_on_destructor (tree dtor)
 static void
 deduce_noexcept_on_destructors (tree t)
 {
-  tree fns;
-
   /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
      out now.  */
   if (!CLASSTYPE_METHOD_VEC (t))
     return;
 
-  for (fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
+  bool saved_nontrivial_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
+
+  /* Avoid early exit from synthesized_method_walk (c++/57645).  */
+  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = true;
+
+  for (tree fns = CLASSTYPE_DESTRUCTORS (t); fns; fns = OVL_NEXT (fns))
     deduce_noexcept_on_destructor (OVL_CURRENT (fns));
+
+  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = saved_nontrivial_dtor;
 }
 
 /* Subroutine of set_one_vmethod_tm_attributes.  Search base classes

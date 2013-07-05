@@ -1,3 +1,10 @@
+2013-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57645
+	* class.c (deduce_noexcept_on_destructors): Save, set, and restore
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) around the main loop over the
+	destructors.
+
 2013-07-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/57771
