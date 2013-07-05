@@ -1,3 +1,8 @@
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb, a-cfdlli.ads, a-ngelfu.ads, s-bignum.adb: Minor
+	reformatting.
+
 2013-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_Composite_Equality): Use the full view
