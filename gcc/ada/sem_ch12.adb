@@ -4367,13 +4367,17 @@ package body Sem_Ch12 is
       Subp : Entity_Id) return Boolean
    is
    begin
+      --  This complex conditional requires blow by blow comments ???
+
       if (Is_In_Main_Unit (N)
            or else Is_Inlined (Subp)
            or else Is_Inlined (Alias (Subp)))
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
                              and then ASIS_Mode))
-        and then (Full_Expander_Active or else ASIS_Mode)
+        --  The following line definitely requires comments, why do we
+        --  test Expander_Active and not Full_Expander_Active here ???
+        and then (Expander_Active or ASIS_Mode)
         and then not ABE_Is_Certain (N)
         and then not Is_Eliminated (Subp)
       then

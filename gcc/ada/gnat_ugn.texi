@@ -3726,7 +3726,8 @@ users guide.
 @end ifset
 Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
-(see @option{-gnatx}).
+(see @option{-gnatx}). Note that this switch is not allowed if a previous
+-gnatR switch has been given, since these two switches are not compatible.
 
 @item ^-gnateA^/ALIASING_CHECK^
 @cindex @option{-gnateA} (@command{gcc})
@@ -4005,6 +4006,8 @@ Treat pragma Restrictions as Restriction_Warnings.
 @item ^-gnatR@r{[}0@r{/}1@r{/}2@r{/}3@r{[}s@r{]]}^/REPRESENTATION_INFO^
 @cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
+Note that this switch is not allowed if a previous
+-gnatD switch has been given, since these two switches are not compatible.
 
 @item -gnats
 @cindex @option{-gnats} (@command{gcc})

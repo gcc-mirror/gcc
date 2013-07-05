@@ -2816,13 +2816,17 @@ package body Sem_Ch8 is
 
          --  The following is illegal, because F hides whatever other F may
          --  be around:
-         --     function F (..)  renames F;
+         --     function F (...) renames F;
 
          elsif Old_S = New_S
            or else (Nkind (Nam) /= N_Expanded_Name
                      and then Chars (Old_S) = Chars (New_S))
          then
             Error_Msg_N ("subprogram cannot rename itself", N);
+
+         --  This is illegal even if we use a selector:
+         --     function F (...) renames Pkg.F;
+         --  because F is still hidden.
 
          elsif Nkind (Nam) = N_Expanded_Name
            and then Entity (Prefix (Nam)) = Current_Scope
