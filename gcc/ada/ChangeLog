@@ -1,5 +1,12 @@
 2013-07-05  Ed Schonberg  <schonberg@adacore.com>
 
+	* sem_ch13.adb (Analyze_Aspect_Specifications): For
+	pre/postconditions copy the expression to the generated pragma,
+	to avoid sharing between the original aspect and the pragma node,
+	because in ASIS_Mode both will be independently analyzed.
+
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch3.adb (Build_Variant_Record_Equality): Add pairs of
 	formals for each discriminant of an unchecked union.
 	(Make_Eq_Case): Suprogram accepts a list of discriminants. Nested
