@@ -1472,7 +1472,7 @@ expand_complex_operations_1 (gimple_stmt_iterator *gsi)
     case EQ_EXPR:
     case NE_EXPR:
       /* Note, both GIMPLE_ASSIGN and GIMPLE_COND may have an EQ_EXPR
-	 subocde, so we need to access the operands using gimple_op.  */
+	 subcode, so we need to access the operands using gimple_op.  */
       inner_type = TREE_TYPE (gimple_op (stmt, 1));
       if (TREE_CODE (inner_type) != COMPLEX_TYPE)
 	return;
