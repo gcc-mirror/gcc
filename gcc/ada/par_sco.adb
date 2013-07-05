@@ -2102,6 +2102,7 @@ package body Par_SCO is
             if Nkind (N) /= N_Implicit_Label_Declaration then
                Traverse_One (N);
             end if;
+
             Next (N);
          end loop;
 

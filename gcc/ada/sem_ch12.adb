@@ -5226,8 +5226,8 @@ package body Sem_Ch12 is
          --  Ditto for defaulted formal subprograms.
 
          elsif Is_Overloadable (E1)
-           and then Nkind (Unit_Declaration_Node (E2))
-             in N_Formal_Subprogram_Declaration
+           and then Nkind (Unit_Declaration_Node (E2)) in
+                      N_Formal_Subprogram_Declaration
          then
             goto Next_E;
 

@@ -203,9 +203,8 @@ Implementation Defined Pragmas
 * Pragma Precondition::
 * Pragma Preelaborable_Initialization::
 * Pragma Priority_Specific_Dispatching::
-* Pragma Profile (Ravenscar)::
-* Pragma Profile (Restricted)::
-* Pragma Profile (Rational)::
+* Pragma Profile::
+* Pragma Profile_Warnings::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Relative_Deadline::
@@ -1001,9 +1000,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Precondition::
 * Pragma Preelaborable_Initialization::
 * Pragma Priority_Specific_Dispatching::
-* Pragma Profile (Ravenscar)::
-* Pragma Profile (Restricted)::
-* Pragma Profile (Rational)::
+* Pragma Profile::
+* Pragma Profile_Warnings::
 * Pragma Psect_Object::
 * Pragma Pure_Function::
 * Pragma Relative_Deadline::
@@ -5074,21 +5072,35 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
-@node Pragma Profile (Ravenscar)
-@unnumberedsec Pragma Profile (Ravenscar)
-@findex Ravenscar
+@node Pragma Profile
+@unnumberedsec Pragma Profile
+@findex Profile
 @noindent
 Syntax:
 
 @smallexample @c ada
-pragma Profile (Ravenscar | Restricted);
+pragma Profile (Ravenscar | Restricted | Rational);
 @end smallexample
 
 @noindent
 This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
-configuration pragma that establishes the following set of configuration
-pragmas:
+configuration pragma that establishes a set of configiuration pragmas
+that depend on the argument. @code{Ravenscar} is standard in Ada 2005.
+The other two possibilities (@code{Restricted} or @code{Rational})
+are implementation-defined. The set of configuration pragmas
+is defined in the following sections.
+
+@itemize
+
+@item Pragma Profile (Ravenscar)
+@findex Ravenscar
+@noindent
+
+The @code{Ravenscar} profile is standard in Ada 2005,
+but is available in all earlier
+versions of Ada as an implementation-defined pragma. This profile
+establishes the following set of configuration pragmas:
 
 @table @code
 @item Task_Dispatching_Policy (FIFO_Within_Priorities)
@@ -5172,20 +5184,11 @@ that pragma @code{Profile (Ravenscar)}, like the pragma
 automatically causes the use of a simplified,
 more efficient version of the tasking run-time system.
 
-@node Pragma Profile (Restricted)
-@unnumberedsec Pragma Profile (Restricted)
+@item Pragma Profile (Restricted)
 @findex Restricted Run Time
 @noindent
-Syntax:
-
-@smallexample @c ada
-pragma Profile (Restricted);
-@end smallexample
-
-@noindent
-This is an implementation-defined version of the standard pragma defined
-in Ada 2005. It is available in all versions of Ada. It is a
-configuration pragma that establishes the following set of restrictions:
+This profile corresponds to the GNAT restricted run time. It
+establishes the following set of restrictions:
 
 @itemize @bullet
 @item No_Abort_Statements
@@ -5210,27 +5213,38 @@ This set of restrictions causes the automatic selection of a simplified
 version of the run time that provides improved performance for the
 limited set of tasking functionality permitted by this set of restrictions.
 
-@node Pragma Profile (Rational)
-@unnumberedsec Pragma Profile (Rational)
+@item Pragma Profile (Rational)
 @findex Rational compatibility mode
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Profile (Rational);
-@end smallexample
-
 @noindent
 The Rational profile is intended to facilitate porting legacy code that
 compiles with the Rational APEX compiler, even when the code includes non-
 conforming Ada constructs.  The profile enables the following three pragmas:
-
 
 @itemize @bullet
 @item pragma Implicit_Packing
 @item pragma Overriding_Renamings
 @item pragma Use_VADS_Size
 @end itemize
+
+@end itemize
+
+@node Pragma Profile_Warnings
+@unnumberedsec Pragma Profile_Warnings
+@findex Profile_Warnings
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Profile_Warnings (Ravenscar | Restricted | Rational);
+@end smallexample
+
+@noindent
+This is an implementation-defined pragma that is similar in
+effect to @code{pragma Profile} except that instead of
+generating @code{Restrictions} pragmas, it generates
+@code{Restriction_Warnings} pragmas. The result is that
+violations of the profile generate warning messages instead
+of error messages.
 
 @noindent
 @node Pragma Psect_Object
@@ -20436,3 +20450,4 @@ this kind of implementation dependent addition.
 @contents
 
 @bye
+tablishes the following set of restrictions:

@@ -1,3 +1,9 @@
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
+	* par_sco.adb, sem_ch12.adb, par-ch5.adb: Minor reformatting.
+	* gnat_rm.texi: Document pragma Profile_Warnings.
+	* restrict.ads, sem_prag.adb: Minor reformatting.
+
 2013-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Check_Formal_Package_Instance): Handle properly
