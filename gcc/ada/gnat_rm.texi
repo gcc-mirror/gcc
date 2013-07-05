@@ -136,9 +136,11 @@ Implementation Defined Pragmas
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
 * Pragma Detect_Blocking::
+* Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
+* Pragma Enable_Atomic_Synchronization::
 * Pragma Export_Exception::
 * Pragma Export_Function::
 * Pragma Export_Object::
@@ -943,9 +945,11 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
 * Pragma Detect_Blocking::
+* Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
+* Pragma Enable_Atomic_Synchronization::
 * Pragma Export_Exception::
 * Pragma Export_Function::
 * Pragma Export_Object::
@@ -2334,6 +2338,31 @@ This is a configuration pragma that forces the detection of potentially
 blocking operations within a protected operation, and to raise Program_Error
 if that happens.
 
+@node Pragma Disable_Atomic_Synchronization
+@unnumberedsec Pragma Disable_Atomic_Synchronization
+@cindex Atomic Synchronization
+@findex Disable_Atomic_Synchronization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Disable_Atomic_Synchronization [(Entity)];
+@end smallexample
+
+@noindent
+Ada requires that accesses (reads or writes) of an atomic variable be
+regarded as synchronization points in the case of multiple tasks.
+Particularly in the case of multi-processors this may require special
+handling, e.g. the generation of memory barriers. This capability may
+be turned off using this pragma in cases where it is known not to be
+required.
+
+The placement and scope rules for this pragma are the same as those
+for @code{pragma Suppress}. In particular it can be used as a
+configuration  pragma, or in a declaration sequence where it applies
+till the end of the scope. If an @code{Entity} argument is present,
+the action applies only to that entity.
+
 @node Pragma Dispatching_Domain
 @unnumberedsec Pragma Dispatching_Domain
 @findex Dispatching_Domain
@@ -2450,6 +2479,33 @@ Pragma @code{Eliminate} may be used where the referenced entity is a dispatching
 operation. In this case all the subprograms to which the given operation can
 dispatch are considered to be unused (are never called as a result of a direct
 or a dispatching call).
+
+@node Pragma Enable_Atomic_Synchronization
+@unnumberedsec Pragma Enable_Atomic_Synchronization
+@cindex Atomic Synchronization
+@findex Enable_Atomic_Synchronization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Enable_Atomic_Synchronization [(Entity)];
+@end smallexample
+
+@noindent
+Ada requires that accesses (reads or writes) of an atomic variable be
+regarded as synchronization points in the case of multiple tasks.
+Particularly in the case of multi-processors this may require special
+handling, e.g. the generation of memory barriers. This synchronization
+is performed by default, but can be turned off using
+@code{pragma Disable_Atomic_Synchronization}. The
+@code{Enable_Atomic_Synchronization} pragma can be used to turn
+it back on.
+
+The placement and scope rules for this pragma are the same as those
+for @code{pragma Unsuppress}. In particular it can be used as a
+configuration  pragma, or in a declaration sequence where it applies
+till the end of the scope. If an @code{Entity} argument is present,
+the action applies only to that entity.
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
@@ -4332,7 +4388,7 @@ pragma No_Run_Time;
 This is an obsolete configuration pragma that historically was used to
 setup what is now called the "zero footprint" library. It causes any
 library units outside this basic library to be ignored. The use of
-this pragma has been superceded by the general configuration run-time
+this pragma has been superceded by the general configurable run-time
 capability of @code{GNAT} where the compiler takes into account whatever
 units happen to be accessible in the library.
 

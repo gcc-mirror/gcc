@@ -1,3 +1,11 @@
+2013-07-05  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat_rm.texi: Add missing documentation for pragmas.
+
+2013-07-05  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb: Minor comment.
+
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Document that -gnatR and -gnatD cannot be used

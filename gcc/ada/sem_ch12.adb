@@ -4375,8 +4375,9 @@ package body Sem_Ch12 is
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
                              and then ASIS_Mode))
-        --  The following line definitely requires comments, why do we
-        --  test Expander_Active and not Full_Expander_Active here ???
+        --  The body is needed when generating code (full expansion), in ASIS
+        --  mode for other tools, and in SPARK mode (special expansion) for
+        --  formal verification of the body itself.
         and then (Expander_Active or ASIS_Mode)
         and then not ABE_Is_Certain (N)
         and then not Is_Eliminated (Subp)
