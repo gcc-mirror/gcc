@@ -2081,7 +2081,7 @@ package body Sem_Ch8 is
                      else
                         Error_Msg_NE
                           ("type& must be frozen before this point",
-                             Instantiation_Node, Etype (F));
+                           Instantiation_Node, Etype (F));
                      end if;
                   end if;
 

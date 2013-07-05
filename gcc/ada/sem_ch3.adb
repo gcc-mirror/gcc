@@ -1283,6 +1283,8 @@ package body Sem_Ch3 is
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
 
+      Generate_Reference_To_Formals (T_Name);
+
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute
 
       Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
