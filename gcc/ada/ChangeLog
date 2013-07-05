@@ -1,5 +1,12 @@
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi: Document that -gnatR and -gnatD cannot be used
+	together.
+	* switch-c.adb: Do not allow -gnatD and -gnatR to both be
+	specified.
+
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Add missing documentation for pragmas.
 	* sem_ch8.adb: Minor reformatting.
 	* gnat_ugn.texi: Document that -gnatR and -gnatD cannot be used
