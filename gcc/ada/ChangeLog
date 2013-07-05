@@ -1,3 +1,26 @@
+2013-07-05  Claire Dross  <dross@adacore.com>
+
+	* a-cfdlli.ads: Add preconditions when needed.
+
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb: Minor reformatting.
+
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): Use
+	Generate_Reference_To_Formals.
+	* lib-xref.adb (Generate_Reference_To_Formals): In the case of
+	access to subprograms, the formals are found in the designated
+	subprogram type.
+
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document that comments can be lined up with
+	previous non-blank line.
+	* styleg.adb (Check_Comment): Allow indentation to match previous
+	non-blank line (Same_Column_As_Previous_Line): New function
+
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
 	* gnat_rm.texi: Update doc on missing pragmas.

@@ -6065,7 +6065,8 @@ the examples in the Ada Reference Manual. Full line comments must be
 aligned with the @code{--} starting on a column that is a multiple of
 the alignment level, or they may be aligned the same way as the following
 non-blank line (this is useful when full line comments appear in the middle
-of a statement.
+of a statement, or they may be aligned with the source line on the previous
+non-blank line.
 
 @item ^a^ATTRIBUTE^
 @emph{Check attribute casing.}
