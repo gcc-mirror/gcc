@@ -246,7 +246,7 @@ package body Einfo is
 
    --    Thunk_Entity                    Node31
 
-   --    (unused)                        Node32
+   --    SPARK_Mode_Pragmas              Node32
 
    --    (unused)                        Node33
 
@@ -2824,6 +2824,21 @@ package body Einfo is
       pragma Assert (Is_Fixed_Point_Type (Id));
       return Ureal21 (Id);
    end Small_Value;
+
+   function SPARK_Mode_Pragmas (Id : E) return N is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function,         --  subprogram variants
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Node32 (Id);
+   end SPARK_Mode_Pragmas;
 
    function Spec_Entity (Id : E) return E is
    begin
@@ -5468,6 +5483,22 @@ package body Einfo is
       pragma Assert (Is_Fixed_Point_Type (Id));
       Set_Ureal21 (Id, V);
    end Set_Small_Value;
+
+   procedure Set_SPARK_Mode_Pragmas (Id : E; V : N) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function,         --  subprogram variants
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+
+      Set_Node32 (Id, V);
+   end Set_SPARK_Mode_Pragmas;
 
    procedure Set_Spec_Entity (Id : E; V : E) is
    begin
@@ -9149,6 +9180,16 @@ package body Einfo is
    procedure Write_Field32_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Function                                   |
+              E_Generic_Function                           |
+              E_Generic_Package                            |
+              E_Generic_Procedure                          |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Procedure                                  |
+              E_Subprogram_Body                            =>
+            Write_Str ("SPARK_Mode_Pragmas");
+
          when others                                       =>
             Write_Str ("Field32??");
       end case;

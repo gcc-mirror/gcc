@@ -232,6 +232,7 @@ Implementation Defined Pragmas
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma SPARK_Mode::
 * Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
@@ -290,6 +291,7 @@ Implementation Defined Aspects
 * Aspect Shared::
 * Aspect Simple_Storage_Pool::
 * Aspect Simple_Storage_Pool_Type::
+* Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
 * Aspect Test_Case::
 * Aspect Universal_Aliasing::
@@ -1044,6 +1046,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma SPARK_Mode::
 * Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
@@ -5996,6 +5999,80 @@ The second argument must be a string literal, it cannot be a static
 string expression other than a string literal.  This is because its value
 is needed for error messages issued by all phases of the compiler.
 
+@node Pragma SPARK_Mode
+@unnumberedsec Pragma SPARK_Mode
+@findex SPARK_Mode
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma SPARK_Mode [ (On | Off | Auto) ] ;
+@end smallexample
+
+@noindent
+This pragma is used to designate whether a contract and its implementation must
+follow the SPARK 2014 programming language syntactic and semantic rules. The
+pragma is intended for use with formal verification tools and has no effect on
+the generated code.
+
+When used as a configuration pragma over a whole compilation or in a particular
+compilation unit, it sets the mode of the units involved, in particular:
+
+@itemize @bullet
+
+@item
+@code{On}: All entities in the units must follow the SPARK 2014 language, and
+an error will be generated if not, unless locally overridden by a local
+SPARK_Mode pragma or aspect. @code{On} is the default mode when pragma
+SPARK_Mode is used without an argument.
+
+@item
+@code{Off}: The units are considered to be in Ada by default and therefore not
+part of SPARK 2014 unless overridden locally. These units may be called by SPARK
+2014 units.
+
+@item
+@code{Auto}: The formal verification tools will automatically detect whether
+each entity is in SPARK 2014 or in Ada.
+
+@end itemize
+
+Pragma SPARK_Mode can be used as a local pragma with the following semantics:
+
+@itemize @bullet
+
+@item
+Auto cannot be used as a mode argument.
+
+@item
+When the pragma appears immediately within the visible declarations of a
+package, it marks the whole package (spec and body) in or out of SPARK 2014.
+
+@item
+When the pragma appears immediately within the private declarations of a
+package, it marks the private part in or out of SPARK 2014.
+
+@item
+When the pragma appears immediately within the declarations of a package body,
+it marks the whole body in or out of SPARK 2014.
+
+@item
+When the pragma appears immediately within the elaboration statements of a
+package body, it marks the statements in or out of SPARK 2014.
+
+@item
+When the pragma appears after a subprogram declaration, it marks the whole
+subprogram (spec and body) in or out of SPARK 2014.
+
+@item
+When the pragma appears immediately within the declarations of a subprogram
+body, it marks the whole body in or out of SPARK 2014.
+
+@item
+Any other use of the pragma is illegal.
+
+@end itemize
+
 @node Pragma Static_Elaboration_Desired
 @unnumberedsec Pragma Static_Elaboration_Desired
 @findex Static_Elaboration_Desired
@@ -6048,8 +6125,7 @@ of this type.  It must name a function whose argument type may be any
 subtype, and whose returned type must be the type given as the first
 argument to the pragma.
 
-The meaning of the @var{Read}
-parameter is that if a stream attribute directly
+The meaning of the @var{Read} parameter is that if a stream attribute directly
 or indirectly specifies reading of the type given as the first parameter,
 then a value of the type given as the argument to the Read function is
 read from the stream, and then the Read function is used to convert this
@@ -7180,6 +7256,7 @@ clause.
 * Aspect Shared::
 * Aspect Simple_Storage_Pool::
 * Aspect Simple_Storage_Pool_Type::
+* Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
 * Aspect Test_Case::
 * Aspect Universal_Aliasing::
@@ -7432,6 +7509,12 @@ attribute definition clause.
 @findex Simple_Storage_Pool_Type
 @noindent
 This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
+
+@node Aspect SPARK_Mode
+@unnumberedsec Aspect SPARK_Mode
+@findex SPARK_Mode
+@noindent
+This aspect is equivalent to pragma @code{SPARK_Mode}.
 
 @node Aspect Suppress_Debug_Info
 @unnumberedsec Aspect Suppress_Debug_Info

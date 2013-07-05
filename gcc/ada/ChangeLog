@@ -1,3 +1,60 @@
+2013-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add an entry for SPARK_Mode in table Canonical_Aspect.
+	* aspects.ads: Add an entry for SPARK_Mode in tables Aspect_Id,
+	Aspect_Argument, Aspect_Names.
+	* atree.adb (Node32): New routine.
+	(Set_Node32): New routine.
+	* atree.ads (Node32): New routine.
+	(Set_Node32): New routine.
+	* einfo.adb: Node32 is now used as SPARK_Mode_Pragmas.
+	(Set_SPARK_Mode_Pragmas): New routine.
+	(SPARK_Mode_Pragmas): New routine.
+	(Write_Field32_Name): Add and entry for SPARK_Modes.
+	* einfo.ads: Add attribute SPARK_Mode_Pragmas along with usage
+	in various entities.
+	(Set_SPARK_Mode_Pragmas): New routine and
+	pragma Inline.
+	(SPARK_Mode_Pragmas): New routine and pragma Inline.
+	* gnat_rm.texi: Add sections explaining the syntax and semantics
+	of aspect/pragma SPARK_Mode.
+	* gnat_ugn.texi: Add pragma SPARK_Mode to the list of
+	configuration pragmas.
+	* lib.adb (Set_SPARK_Mode_Pragma): New routine.
+	(SPARK_Mode_Pragma): New routine.
+	* lib.ads: Alphabetize the comments on fields of record
+	Unit_Record. Add new field SPARK_Mode_Pragma along with
+	comment on its usage. Update the layout of record Unit_Record.
+	(Set_SPARK_Mode_Pragma): New routine and pragma Inline.
+	(SPARK_Mode_Pragma): New routine and pragma Inline.
+	* lib-load.adb (Create_Dummy_Package_Unit): Initialize
+	field SPARK_Mode_Pragma.
+	(Load_Main_Source): Initialize field SPARK_Mode_Pragma.
+	(Load_Unit): Initialize field SPARK_Mode_Pragma.
+	* lib-writ.adb (Add_Preprocessing_Dependency): Initialize field
+	SPARK_Mode_Pragma.
+	(Ensure_System_Dependency): Initialize field SPARK_Mode_Pragma.
+	* opt.ads: Alphabetize verification flags. Store the
+	compilation-wide SPARK mode in variable Global_SPARK_Mode.
+	* par-prag.adb: Pragma SPARK_Mode does not need special processing
+	by the parser.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Convert aspect
+	SPARK_Mode into a pragma.
+	(Check_Aspect_At_Freeze_Point): Aspect SPARK_Mode does not need
+	delayed processing.
+	* sem_prag.adb: Add an entry for SPARK_Mode in table Sig_Flags.
+	(Analyze_Pragma): Add processing for pragma SPARK_Mode.
+	(Get_SPARK_Mode_Id): New routine.
+	(Is_Elaboration_SPARK_Mode): New routine.
+	(Is_Private_SPARK_Mode): New routine.
+	* sem_prag.ads (Get_SPARK_Mode_Id): New routine.
+	(Is_Elaboration_SPARK_Mode): New routine.
+	(Is_Private_SPARK_Mode): New routine.
+	* sinfo.ads: Update the comment on the usage of field Next_Pragma.
+	* snames.ads-tmpl: Add new predefined name for SPARK_Mode and
+	Auto. Add new pragma Id for SPARK_Mode.
+	* types.ads: Add new type SPARK_Mode_Id.
+
 2013-07-05  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch13.adb (Analyze_Aspect_Specifications): For

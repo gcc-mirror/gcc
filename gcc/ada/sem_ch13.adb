@@ -1659,6 +1659,16 @@ package body Sem_Ch13 is
                   Insert_Delayed_Pragma (Aitem);
                   goto Continue;
 
+               --  SPARK_Mode
+
+               when Aspect_SPARK_Mode =>
+                  Make_Aitem_Pragma
+                    (Pragma_Argument_Associations => New_List (
+                       Make_Pragma_Argument_Association (Loc,
+                         Expression => Relocate_Node (Expr))),
+                     Pragma_Name                  => Name_SPARK_Mode);
+                  Delay_Required := False;
+
                --  Relative_Deadline
 
                when Aspect_Relative_Deadline =>
@@ -7390,6 +7400,7 @@ package body Sem_Ch13 is
               Aspect_Postcondition        |
               Aspect_Pre                  |
               Aspect_Precondition         |
+              Aspect_SPARK_Mode           |
               Aspect_Test_Case     =>
             raise Program_Error;
 
