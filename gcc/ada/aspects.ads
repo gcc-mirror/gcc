@@ -116,6 +116,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool,           -- GNAT
       Aspect_Size,
       Aspect_Small,
+      Aspect_SPARK_Mode,                    -- GNAT
       Aspect_Static_Predicate,
       Aspect_Storage_Pool,
       Aspect_Storage_Size,
@@ -322,6 +323,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool     => Name,
       Aspect_Size                    => Expression,
       Aspect_Small                   => Expression,
+      Aspect_SPARK_Mode              => Name,
       Aspect_Static_Predicate        => Expression,
       Aspect_Storage_Pool            => Name,
       Aspect_Storage_Size            => Expression,
@@ -423,6 +425,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool_Type     => Name_Simple_Storage_Pool_Type,
       Aspect_Size                         => Name_Size,
       Aspect_Small                        => Name_Small,
+      Aspect_SPARK_Mode                   => Name_SPARK_Mode,
       Aspect_Static_Predicate             => Name_Static_Predicate,
       Aspect_Storage_Pool                 => Name_Storage_Pool,
       Aspect_Storage_Size                 => Name_Storage_Size,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -166,6 +166,11 @@ package body Lib is
       return Units.Table (U).Source_Index;
    end Source_Index;
 
+   function SPARK_Mode_Pragma (U : Unit_Number_Type) return Node_Id is
+   begin
+      return Units.Table (U).SPARK_Mode_Pragma;
+   end SPARK_Mode_Pragma;
+
    function Unit_File_Name (U : Unit_Number_Type) return File_Name_Type is
    begin
       return Units.Table (U).Unit_File_Name;
@@ -253,6 +258,11 @@ package body Lib is
    begin
       Units.Table (U).OA_Setting := C;
    end Set_OA_Setting;
+
+   procedure Set_SPARK_Mode_Pragma (U : Unit_Number_Type; N : Node_Id) is
+   begin
+      Units.Table (U).SPARK_Mode_Pragma := N;
+   end Set_SPARK_Mode_Pragma;
 
    procedure Set_Unit_Name (U : Unit_Number_Type; N : Unit_Name_Type) is
    begin

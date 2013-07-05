@@ -11611,6 +11611,7 @@ recognized by GNAT:
    Short_Circuit_And_Or
    Source_File_Name
    Source_File_Name_Project
+   SPARK_Mode
    Style_Checks
    Suppress
    Suppress_Exception_Locations

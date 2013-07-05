@@ -1539,6 +1539,10 @@ package Sinfo is
    --      Used by processing for Pre/Postcondition pragmas to store a list of
    --      pragmas associated with the spec of a subprogram (see Sem_Prag for
    --      details).
+   --
+   --      Used by processing for pragma SPARK_Mode to store multiple pragmas
+   --      the apply to the same construct. These are visible/private mode for
+   --      a package spec and declarative/statement mode for package body.
 
    --  Next_Rep_Item (Node5-Sem)
    --    Present in pragma nodes, attribute definition nodes, enumeration rep

@@ -403,6 +403,7 @@ package body Aspects is
     Aspect_Simple_Storage_Pool_Type     => Aspect_Simple_Storage_Pool_Type,
     Aspect_Size                         => Aspect_Size,
     Aspect_Small                        => Aspect_Small,
+    Aspect_SPARK_Mode                   => Aspect_SPARK_Mode,
     Aspect_Static_Predicate             => Aspect_Predicate,
     Aspect_Storage_Pool                 => Aspect_Storage_Pool,
     Aspect_Storage_Size                 => Aspect_Storage_Size,
