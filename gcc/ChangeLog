@@ -1,3 +1,7 @@
+2013-07-05  Thomas Quinot  <quinot@adacore.com>
+
+	* tree-complex.c (expand_complex_operations_1): Fix typo.
+
 2013-07-04  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-protos.h (cpu_vector_cost): New.
