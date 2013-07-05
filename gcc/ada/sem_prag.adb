@@ -1749,6 +1749,9 @@ package body Sem_Prag is
             --  accessparameter of type access-to-T is interpreted as having
             --  type access-to-T'Class. This ensures the expression is well-
             --  defined for a primitive subprogram of a type descended from T.
+            --  Note that this replacement is not done for selector names in
+            --  parameter associations. These carry an entity for reference
+            --  purposes, but they semantically they are just identifiers.
 
             -------------
             -- Get_ACW --
@@ -1790,6 +1793,9 @@ package body Sem_Prag is
                  and then Present (Entity (N))
                  and then Is_Formal (Entity (N))
                  and then Nkind (Parent (N)) /= N_Type_Conversion
+                 and then
+                   (Nkind (Parent (N)) /= N_Parameter_Association
+                      or else N /= Selector_Name (Parent (N)))
                then
                   if Etype (Entity (N)) = T then
                      Typ := Class_Wide_Type (T);
