@@ -1,3 +1,13 @@
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Build_Variant_Record_Equality): Add pairs of
+	formals for each discriminant of an unchecked union.
+	(Make_Eq_Case): Suprogram accepts a list of discriminants. Nested
+	variants are supported. New helper function Corresponding_Formal.
+	* exp_ch4.adb (Build_Equality_Call): For unchecked unions,
+	loop through discriminants to create list of inferred values,
+	and modify call to equality routine accordingly.
+
 2013-07-05  Claire Dross  <dross@adacore.com>
 
 	* a-cfdlli.ads, a-cfhama.ads, a-cfhase.ads, a-cforma.ads,
