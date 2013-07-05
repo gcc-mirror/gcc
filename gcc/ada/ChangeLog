@@ -1,5 +1,9 @@
 2013-07-05  Robert Dewar  <dewar@adacore.com>
 
+	* gnat_rm.texi, sem_prag.adb: Minor comment/text fixes.
+
+2013-07-05  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Add missing doc for various pragmas.
 
 2013-07-05  Robert Dewar  <dewar@adacore.com>
