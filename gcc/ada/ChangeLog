@@ -1,3 +1,10 @@
+2013-07-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part): For a class-wide
+	condition, when replacing the name of a formal by a conversion
+	to the class-wide type, exempt selector names that appear in
+	parameter associations.
+
 2013-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (DECL_BY_DOUBLE_REF_P): Delete.
