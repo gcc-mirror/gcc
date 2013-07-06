@@ -1,3 +1,17 @@
+2013-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/29776
+	* fold-const.c (tree_call_nonnegative_warnv_p): Return true
+	for BUILT_IN_C{LZ,LRSB}*.
+	* tree.h (CASE_INT_FN): Add FN##IMAX case.
+	* tree-vrp.c (extract_range_basic): Handle
+	BUILT_IN_{FFS,PARITY,POPCOUNT,C{LZ,TZ,LRSB}}*.  For
+	BUILT_IN_CONSTANT_P if argument isn't (D) of PARM_DECL,
+	fall thru to code calling set_value*.
+	* builtins.c (expand_builtin): Remove *IMAX cases.
+	(fold_builtin_bitop): For BUILT_IN_CLRSB* return NULL_TREE
+	if width is bigger than 2*HWI.
+
 2013-07-05  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/55342

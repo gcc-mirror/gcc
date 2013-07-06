@@ -6107,7 +6107,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_INT_FN (BUILT_IN_FFS):
-    case BUILT_IN_FFSIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, ffs_optab);
       if (target)
@@ -6115,7 +6114,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_INT_FN (BUILT_IN_CLZ):
-    case BUILT_IN_CLZIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, clz_optab);
       if (target)
@@ -6123,7 +6121,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_INT_FN (BUILT_IN_CTZ):
-    case BUILT_IN_CTZIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, ctz_optab);
       if (target)
@@ -6131,7 +6128,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_INT_FN (BUILT_IN_CLRSB):
-    case BUILT_IN_CLRSBIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, clrsb_optab);
       if (target)
@@ -6139,7 +6135,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_INT_FN (BUILT_IN_POPCOUNT):
-    case BUILT_IN_POPCOUNTIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, popcount_optab);
       if (target)
@@ -6147,7 +6142,6 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
       break;
 
     CASE_INT_FN (BUILT_IN_PARITY):
-    case BUILT_IN_PARITYIMAX:
       target = expand_builtin_unop (target_mode, exp, target,
 				    subtarget, parity_optab);
       if (target)
@@ -8152,6 +8146,8 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLRSB):
+	  if (width > 2 * HOST_BITS_PER_WIDE_INT)
+	    return NULL_TREE;
 	  if (width > HOST_BITS_PER_WIDE_INT
 	      && (hi & ((unsigned HOST_WIDE_INT) 1
 			<< (width - HOST_BITS_PER_WIDE_INT - 1))) != 0)
