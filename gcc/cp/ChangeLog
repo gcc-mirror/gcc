@@ -1,3 +1,9 @@
+2013-07-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/28262
+	* parser.c (cp_parser_init_declarator): If we are parsing a typedef
+	set parser->default_arg_ok_p to false before cp_parser_declarator.
+
 2013-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/14263
