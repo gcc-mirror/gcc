@@ -15606,6 +15606,8 @@ tree_call_nonnegative_warnv_p (tree type, tree fndecl,
 	CASE_INT_FN (BUILT_IN_FFS):
 	CASE_INT_FN (BUILT_IN_PARITY):
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
+	CASE_INT_FN (BUILT_IN_CLZ):
+	CASE_INT_FN (BUILT_IN_CLRSB):
       case BUILT_IN_BSWAP32:
       case BUILT_IN_BSWAP64:
 	/* Always true.  */

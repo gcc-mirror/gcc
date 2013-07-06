@@ -1571,7 +1571,7 @@ FUNC (DWtype u)
   /* Otherwise, find the power of two.  */
   Wtype hi = u >> W_TYPE_SIZE;
   if (hi < 0)
-    hi = -hi;
+    hi = -(UWtype) hi;
 
   UWtype count, shift;
   count_leading_zeros (count, hi);
