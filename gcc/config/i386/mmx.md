@@ -1078,7 +1078,7 @@
                      (const_int 2) (const_int 10)
                      (const_int 3) (const_int 11)])))]
   "TARGET_MMX"
-  "punpcklbw\t{%2, %0|%0, %2}"
+  "punpcklbw\t{%2, %0|%0, %k2}"
   [(set_attr "type" "mmxcvt")
    (set_attr "mode" "DI")])
 
@@ -1104,7 +1104,7 @@
           (parallel [(const_int 0) (const_int 4)
                      (const_int 1) (const_int 5)])))]
   "TARGET_MMX"
-  "punpcklwd\t{%2, %0|%0, %2}"
+  "punpcklwd\t{%2, %0|%0, %k2}"
   [(set_attr "type" "mmxcvt")
    (set_attr "mode" "DI")])
 
@@ -1130,7 +1130,7 @@
 	  (parallel [(const_int 0)
 		     (const_int 2)])))]
   "TARGET_MMX"
-  "punpckldq\t{%2, %0|%0, %2}"
+  "punpckldq\t{%2, %0|%0, %k2}"
   [(set_attr "type" "mmxcvt")
    (set_attr "mode" "DI")])
 
