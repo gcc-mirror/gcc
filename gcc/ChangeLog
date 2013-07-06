@@ -1,3 +1,77 @@
+2013-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse_movlhps): Change alternative 3
+	of operand 2 to "m".
+
+2013-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57807
+	* config/i386/sse.md (iptr): New mode attribute.
+	(sse2_movq128): Add pointer size overrides for Intel asm dialect.
+	(<sse>_vm<plusminus_insn><mode>3): Ditto.
+	(<sse>_vmmul<mode>3): Ditto.
+	(<sse>_vmdiv<mode>3): Ditto.
+	(sse_vmrcpv4sf2): Ditto.
+	(<sse>_vmsqrt<mode>2): Ditto.
+	(sse_vmrsqrtv4sf2): Ditto.
+	(<sse>_vm<code><mode>3): Ditto.
+	(avx_vmcmp<mode>3): Ditto.
+	(<sse>_vmmaskcmp<mode>3): Ditto.
+	(<sse>_comi): Ditto.
+	(<sse>_ucomi): Ditto.
+	(*xop_vmfrcz_<mode>): Ditto.
+	(*fmai_fmadd_<mode>): Ditto.
+	(*fmai_fmsub_<mode>): Ditto.
+	(*fmai_fnmadd_<mode>): Ditto.
+	(*fmai_fnmsub_<mode>): Ditto.
+	(*fma4i_vmfmadd_<mode>): Ditto.
+	(*fma4i_vmfmsub_<mode>): Ditto.
+	(*fma4i_vmfnmadd_<mode>): Ditto.
+	(*fma4i_vmfnmsub_<mode>): Ditto.
+	(*xop_vmfrcz_<mode>): Ditto.
+	(sse_cvtps2pi): Ditto.
+	(sse_cvttps2pi): Ditto.
+	(sse_cvtss2si): Ditto.
+	(sse_cvtss2si_2): Ditto.
+	(sse_cvtss2siq_2): Ditto.
+	(sse_cvttss2si): Ditto.
+	(sse_cvttss2siq): Ditto.
+	(sse_cvtsd2si): Ditto.
+	(sse_cvtsd2si_2): Ditto.
+	(sse_cvtsd2siq_2): Ditto.
+	(sse_cvttsd2si): Ditto.
+	(sse_cvttsd2siq): Ditto.
+	(sse_cvtsd2ss): Ditto.
+	(sse_cvtss2sd): Ditto.
+	(avx2_pbroadcast<mode>): Ditto.
+	(avx2_pbroadcast<mode>_1): Ditto.
+	(*avx_vperm_broadcast_v4sf): Ditto.
+
+	(sse_movhlps): Ditto for movlp[sd]/movhp[sd] alternatives.
+	(sse_movlhps): Ditto.
+	(sse_storehps): Ditto.
+	(sse_loadhps): Ditto.
+	(sse_storelps): Ditto.
+	(sse_loadlps): Ditto.
+	(*vec_concatv4sf): Ditto.
+	(*vec_interleave_highv2df): Ditto.
+	(*vec_interleave_lowv2df): Ditto.
+	(*vec_extractv2df_1_sse): Ditto.
+	(*vec_extractv2df_0_sse): Ditto.
+	(sse2_storelpd): Ditto.
+	(sse2_loadlpd): Ditto.
+	(sse2_movsd): Ditto.
+	(*vec_concatv4si): Ditto.
+	(vec_concatv2di): Ditto.
+
+	* config/i386/mmx.md (mmx_punpcklbw): Add pointer size overrides
+	for Intel asm dialect.
+	(mmx_punpcklwd): Ditto.
+	(mmx_punpckldq): Ditto.
+
+	* config/i386/i386.c (ix86_print_operand) ['H']: Output 'qword ptr'
+	for intel assembler dialect.
+
 2013-07-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/29776
