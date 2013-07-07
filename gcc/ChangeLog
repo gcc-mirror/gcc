@@ -1,3 +1,8 @@
+2013-07-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Do not check
+	signature_TM2_ebx, it interferes with signature_INTEL_ebx.
+
 2013-07-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (sse_movlhps): Change alternative 3
