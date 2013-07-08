@@ -1,5 +1,10 @@
 2013-07-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/50554
+	* io.c (match_inquire_element): Add missing do-var check.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57785
 	* simplify.c (compute_dot_product): Complex conjugate for
 	dot_product.
