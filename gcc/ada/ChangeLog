@@ -1,3 +1,13 @@
+2013-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Save_Scope_Stack): Adding documentation.
+	(Restore_Scope_Stack): Remove the elements of the list when the
+	visibility of each entity is restored.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch9.adb, sem.ads, sem_util.adb: Minor reformatting.
+
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, sem_ch8.ads: Minor reformatting.
