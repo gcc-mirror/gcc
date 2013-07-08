@@ -3318,12 +3318,14 @@ package body Sem_Ch8 is
 
       --  This procedure is called in the context of subprogram renaming, and
       --  thus the attribute must be one that is a subprogram. All of those
-      --  have at least one formal parameter, with the singular exception of
-      --  AST_Entry (which is a real oddity, it is odd that this can be renamed
-      --  at all!)
+      --  have at least one formal parameter, with the exceptions of AST_Entry
+      --  (which is a real oddity, it is odd that this can be renamed at all!)
+      --  and the GNAT attribute 'Img, which GNAT treats as renameable.
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
-         if Aname /= Name_AST_Entry then
+         if Aname /= Name_AST_Entry
+           and then Aname /= Name_Img
+         then
             Error_Msg_N
               ("subprogram renaming an attribute must have formals", N);
             return;
@@ -3493,10 +3495,20 @@ package body Sem_Ch8 is
         and then Etype (Nam) /= RTE (RE_AST_Handler)
       then
          declare
-            P : constant Entity_Id := Prefix (Nam);
+            P : constant Node_Id := Prefix (Nam);
 
          begin
-            Find_Type (P);
+            --  The prefix of 'Img is an object that is evaluated for
+            --  each call of the function that renames it.
+
+            if Aname = Name_Img then
+               Preanalyze_And_Resolve (P);
+
+            --  For all other attribute renamings, the prefix is a subtype.
+
+            else
+               Find_Type (P);
+            end if;
 
             if Is_Tagged_Type (Etype (P)) then
                Ensure_Freeze_Node (Etype (P));

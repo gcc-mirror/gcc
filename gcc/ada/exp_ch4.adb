@@ -751,47 +751,66 @@ package body Exp_Ch4 is
 
             Stmts := New_List;
 
-            --  Create an explicit free statement to clean up the allocated
-            --  object in case the accessibility check fails. Generate:
+            --  If the target does not support allocation/deallocation, simply
+            --  finalize the object (if applicable). Generate:
 
-            --    Free (Obj_Ref);
+            --    [Deep_]Finalize (Obj_Ref.all);
 
-            Free_Stmt := Make_Free_Statement (Loc, New_Copy (Obj_Ref));
-            Set_Storage_Pool (Free_Stmt, Pool_Id);
+            if Restriction_Active (No_Implicit_Heap_Allocations) then
+               if Needs_Finalization (DesigT) then
+                  Append_To (Stmts,
+                    Make_Final_Call (
+                      Obj_Ref =>
+                        Make_Explicit_Dereference (Loc, New_Copy (Obj_Ref)),
+                      Typ     => DesigT));
+               end if;
 
-            Append_To (Stmts, Free_Stmt);
+            --  Finalize (if applicable) and deallocate the object in case the
+            --  accessibility check fails.
 
-            --  Finalize the object (if applicable), but wrap the call inside
-            --  a block to ensure that the object would still be deallocated in
-            --  case the finalization fails. Generate:
+            else
+               --  Create an explicit free statement to clean up the allocated
+               --  object in case the accessibility check fails. Generate:
 
-            --    begin
-            --       [Deep_]Finalize (Obj_Ref.all);
-            --    exception
-            --       when others =>
-            --          Free (Obj_Ref);
-            --          raise;
-            --    end;
+               --    Free (Obj_Ref);
 
-            if Needs_Finalization (DesigT) then
-               Prepend_To (Stmts,
-                 Make_Block_Statement (Loc,
-                   Handled_Statement_Sequence =>
-                     Make_Handled_Sequence_Of_Statements (Loc,
-                       Statements => New_List (
-                         Make_Final_Call (
-                           Obj_Ref =>
-                             Make_Explicit_Dereference (Loc,
-                               Prefix => New_Copy (Obj_Ref)),
-                           Typ     => DesigT)),
+               Free_Stmt := Make_Free_Statement (Loc, New_Copy (Obj_Ref));
+               Set_Storage_Pool (Free_Stmt, Pool_Id);
 
-                     Exception_Handlers => New_List (
-                       Make_Exception_Handler (Loc,
-                         Exception_Choices => New_List (
-                           Make_Others_Choice (Loc)),
-                         Statements        => New_List (
-                           New_Copy_Tree (Free_Stmt),
-                           Make_Raise_Statement (Loc)))))));
+               Append_To (Stmts, Free_Stmt);
+
+               --  Finalize the object (if applicable), but wrap the call
+               --  inside a block to ensure that the object would still be
+               --  deallocated in case the finalization fails. Generate:
+
+               --    begin
+               --       [Deep_]Finalize (Obj_Ref.all);
+               --    exception
+               --       when others =>
+               --          Free (Obj_Ref);
+               --          raise;
+               --    end;
+
+               if Needs_Finalization (DesigT) then
+                  Prepend_To (Stmts,
+                    Make_Block_Statement (Loc,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (
+                            Make_Final_Call (
+                              Obj_Ref =>
+                                Make_Explicit_Dereference (Loc,
+                                  Prefix => New_Copy (Obj_Ref)),
+                              Typ     => DesigT)),
+
+                        Exception_Handlers => New_List (
+                          Make_Exception_Handler (Loc,
+                            Exception_Choices => New_List (
+                              Make_Others_Choice (Loc)),
+                            Statements        => New_List (
+                              New_Copy_Tree (Free_Stmt),
+                              Make_Raise_Statement (Loc)))))));
+               end if;
             end if;
 
             --  Signal the accessibility failure through a Program_Error
