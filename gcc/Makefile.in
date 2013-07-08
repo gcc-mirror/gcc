@@ -2527,7 +2527,7 @@ tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) \
    tree-iterator.h $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_INLINE_H) \
    $(VEC_H) langhooks.h alloc-pool.h pointer-set.h $(CFGLOOP_H) \
-   $(TARGET_H) $(GIMPLE_PRETTY_PRINT_H) $(DIAGNOSTIC_CORE_H)
+   $(TARGET_H) $(GIMPLE_PRETTY_PRINT_H) $(DIAGNOSTIC_CORE_H) $(PARAMS_H)
 tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(GGC_H) \
    $(DIAGNOSTIC_H) $(BASIC_BLOCK_H) $(FLAGS_H) $(TM_H) \
