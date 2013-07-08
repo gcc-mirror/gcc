@@ -7707,10 +7707,10 @@ package body Sem_Ch8 is
    --    - Extra code was added to verify that all the elements of Elist1
    --      are found in Elist2
 
-   --  This test show that there may be more occurrences of this problem which
+   --  This test shows that there may be more occurrences of this problem which
    --  have not yet been detected. As a result, we replaced that approach by
    --  the current one in which Save_Scope_Stack returns the list of entities
-   --  whose visibility is changed, and that list is passed to Restore_Scope
+   --  whose visibility is changed, and that list is passed to Restore_Scope_
    --  Stack to undo that change. This approach is simpler and safer, although
    --  it consumes more memory.
 
