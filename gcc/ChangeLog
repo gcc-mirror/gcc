@@ -1,4 +1,7 @@
 2013-07-08  Graham Stott  <graham.stott@btinternet.com>
+	* Makefile.in: (c-family-warn): Define to $(STRICT_WARN)
+
+2013-07-08  Graham Stott  <graham.stott@btinternet.com>
 	* c-family/array-notation-common.c (length_mismatch_in_expr_p): Delete
 	unused variables l_length and l_node.
 

@@ -1141,6 +1141,8 @@ FORTRAN_TARGET_OBJS=@fortran_target_objs@
 # Object files for gcc many-languages driver.
 GCC_OBJS = gcc.o ggc-none.o
 
+c-family-warn = $(STRICT_WARN)
+
 # Language-specific object files shared by all C-family front ends.
 # FIXME: tree-mudflap is C-family only, but it is also part of the middle-end.
 # The mudflap machinery should be properly separated from the front ends, and
