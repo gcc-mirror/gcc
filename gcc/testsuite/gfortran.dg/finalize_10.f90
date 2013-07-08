@@ -32,8 +32,8 @@ end subroutine foo
 
 ! FINALIZE TYPE:
 ! { dg-final { scan-tree-dump-times "parm.\[0-9\]+.data = \\(void \\*\\) &\\(\\*aa.\[0-9\]+\\)\\\[0\\\];" 1 "original" } }
-! { dg!final { scan-tree-dump-times "__final_m_T2 (&parm.\[0-9\]+, 0, 0);" 1 "original" } }
-! { dg!final { scan-tree-dump-times "desc.\[0-9\]+.data = \\(void \\* restrict\\) bb;" 1 "original" } }
-! { dg!final { scan-tree-dump-times "__final_m_T2 (&desc.\[0-9\]+, 0, 0);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__final_m_T2 \\(&parm.\[0-9\]+, 0, 0\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "desc.\[0-9\]+.data = \\(void \\* restrict\\) bb;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__final_m_T2 \\(&desc.\[0-9\]+, 0, 0\\);" 1 "original" } }
 
 ! { dg-final { cleanup-tree-dump "original" } }

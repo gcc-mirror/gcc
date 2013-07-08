@@ -1,3 +1,8 @@
+2013-07-08  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/defined_assignment_7.f90: Fix dg-do.
+	* gfortran.dg/finalize_10.f90: Fix dg-final.
+
 2013-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57819
