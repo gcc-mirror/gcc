@@ -1,3 +1,20 @@
+2013-07-08  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* config/i386/i386-opts.h (enum stringop_alg): Add vector_loop.
+	* config/i386/i386.c (expand_set_or_movmem_via_loop): Use
+	adjust_address instead of change_address to keep info about alignment.
+	(emit_strmov): Remove.
+	(emit_memmov): New function.
+	(expand_movmem_epilogue): Refactor to properly handle bigger sizes.
+	(expand_movmem_epilogue): Likewise and return updated rtx for
+	destination.
+	(expand_constant_movmem_prologue): Likewise and return updated rtx for
+	destination and source.
+	(decide_alignment): Refactor, handle vector_loop.
+	(ix86_expand_movmem): Likewise.
+	(ix86_expand_setmem): Likewise.
+	* config/i386/i386.opt (Enum): Add vector_loop to option stringop_alg.
+
 2013-07-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Do not check

@@ -21953,11 +21953,10 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
 {
   rtx out_label, top_label, iter, tmp;
   enum machine_mode iter_mode = counter_mode (count);
-  rtx piece_size = GEN_INT (GET_MODE_SIZE (mode) * unroll);
+  int piece_size_n = GET_MODE_SIZE (mode) * unroll;
+  rtx piece_size = GEN_INT (piece_size_n);
   rtx piece_size_mask = GEN_INT (~((GET_MODE_SIZE (mode) * unroll) - 1));
   rtx size;
-  rtx x_addr;
-  rtx y_addr;
   int i;
 
   top_label = gen_label_rtx ();
@@ -21978,13 +21977,18 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
   emit_label (top_label);
 
   tmp = convert_modes (Pmode, iter_mode, iter, true);
-  x_addr = gen_rtx_PLUS (Pmode, destptr, tmp);
-  destmem = change_address (destmem, mode, x_addr);
+
+  /* This assert could be relaxed - in this case we'll need to compute
+     smallest power of two, containing in PIECE_SIZE_N and pass it to
+     offset_address.  */
+  gcc_assert ((piece_size_n & (piece_size_n - 1)) == 0);
+  destmem = offset_address (destmem, tmp, piece_size_n);
+  destmem = adjust_address (destmem, mode, 0);
 
   if (srcmem)
     {
-      y_addr = gen_rtx_PLUS (Pmode, srcptr, copy_rtx (tmp));
-      srcmem = change_address (srcmem, mode, y_addr);
+      srcmem = offset_address (srcmem, copy_rtx (tmp), piece_size_n);
+      srcmem = adjust_address (srcmem, mode, 0);
 
       /* When unrolling for chips that reorder memory reads and writes,
 	 we can save registers by using single temporary.
@@ -22163,13 +22167,76 @@ expand_setmem_via_rep_stos (rtx destmem, rtx destptr, rtx value,
   emit_insn (gen_rep_stos (destptr, countreg, destmem, value, destexp));
 }
 
-static void
-emit_strmov (rtx destmem, rtx srcmem,
-	     rtx destptr, rtx srcptr, enum machine_mode mode, int offset)
+/* This function emits moves to copy SIZE_TO_MOVE bytes from SRCMEM to
+   DESTMEM.
+   SRC is passed by pointer to be updated on return.
+   Return value is updated DST.  */
+static rtx
+emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
+	     HOST_WIDE_INT size_to_move)
 {
-  rtx src = adjust_automodify_address_nv (srcmem, mode, srcptr, offset);
-  rtx dest = adjust_automodify_address_nv (destmem, mode, destptr, offset);
-  emit_insn (gen_strmov (destptr, dest, srcptr, src));
+  rtx dst = destmem, src = *srcmem, adjust, tempreg;
+  enum insn_code code;
+  enum machine_mode move_mode;
+  int piece_size, i;
+
+  /* Find the widest mode in which we could perform moves.
+     Start with the biggest power of 2 less than SIZE_TO_MOVE and half
+     it until move of such size is supported.  */
+  piece_size = 1 << floor_log2 (size_to_move);
+  move_mode = mode_for_size (piece_size * BITS_PER_UNIT, MODE_INT, 0);
+  code = optab_handler (mov_optab, move_mode);
+  while (code == CODE_FOR_nothing && piece_size > 1)
+    {
+      piece_size >>= 1;
+      move_mode = mode_for_size (piece_size * BITS_PER_UNIT, MODE_INT, 0);
+      code = optab_handler (mov_optab, move_mode);
+    }
+
+  /* Find the corresponding vector mode with the same size as MOVE_MODE.
+     MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
+  if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
+    {
+      int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
+      move_mode = mode_for_vector (word_mode, nunits);
+      code = optab_handler (mov_optab, move_mode);
+      if (code == CODE_FOR_nothing)
+	{
+	  move_mode = word_mode;
+	  piece_size = GET_MODE_SIZE (move_mode);
+	  code = optab_handler (mov_optab, move_mode);
+	}
+    }
+  gcc_assert (code != CODE_FOR_nothing);
+
+  dst = adjust_automodify_address_nv (dst, move_mode, destptr, 0);
+  src = adjust_automodify_address_nv (src, move_mode, srcptr, 0);
+
+  /* Emit moves.  We'll need SIZE_TO_MOVE/PIECE_SIZES moves.  */
+  gcc_assert (size_to_move % piece_size == 0);
+  adjust = GEN_INT (piece_size);
+  for (i = 0; i < size_to_move; i += piece_size)
+    {
+      /* We move from memory to memory, so we'll need to do it via
+	 a temporary register.  */
+      tempreg = gen_reg_rtx (move_mode);
+      emit_insn (GEN_FCN (code) (tempreg, src));
+      emit_insn (GEN_FCN (code) (dst, tempreg));
+
+      emit_move_insn (destptr,
+		      gen_rtx_PLUS (Pmode, copy_rtx (destptr), adjust));
+      emit_move_insn (srcptr,
+		      gen_rtx_PLUS (Pmode, copy_rtx (srcptr), adjust));
+
+      dst = adjust_automodify_address_nv (dst, move_mode, destptr,
+					  piece_size);
+      src = adjust_automodify_address_nv (src, move_mode, srcptr,
+					  piece_size);
+    }
+
+  /* Update DST and SRC rtx.  */
+  *srcmem = src;
+  return dst;
 }
 
 /* Output code to copy at most count & (max_size - 1) bytes from SRC to DEST.  */
@@ -22181,44 +22248,17 @@ expand_movmem_epilogue (rtx destmem, rtx srcmem,
   if (CONST_INT_P (count))
     {
       HOST_WIDE_INT countval = INTVAL (count);
-      int offset = 0;
+      HOST_WIDE_INT epilogue_size = countval % max_size;
+      int i;
 
-      if ((countval & 0x10) && max_size > 16)
+      /* For now MAX_SIZE should be a power of 2.  This assert could be
+	 relaxed, but it'll require a bit more complicated epilogue
+	 expanding.  */
+      gcc_assert ((max_size & (max_size - 1)) == 0);
+      for (i = max_size; i >= 1; i >>= 1)
 	{
-	  if (TARGET_64BIT)
-	    {
-	      emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset);
-	      emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset + 8);
-	    }
-	  else
-	    gcc_unreachable ();
-	  offset += 16;
-	}
-      if ((countval & 0x08) && max_size > 8)
-	{
-	  if (TARGET_64BIT)
-	    emit_strmov (destmem, srcmem, destptr, srcptr, DImode, offset);
-	  else
-	    {
-	      emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset);
-	      emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset + 4);
-	    }
-	  offset += 8;
-	}
-      if ((countval & 0x04) && max_size > 4)
-	{
-          emit_strmov (destmem, srcmem, destptr, srcptr, SImode, offset);
-	  offset += 4;
-	}
-      if ((countval & 0x02) && max_size > 2)
-	{
-          emit_strmov (destmem, srcmem, destptr, srcptr, HImode, offset);
-	  offset += 2;
-	}
-      if ((countval & 0x01) && max_size > 1)
-	{
-          emit_strmov (destmem, srcmem, destptr, srcptr, QImode, offset);
-	  offset += 1;
+	  if (epilogue_size & i)
+	    destmem = emit_memmov (destmem, &srcmem, destptr, srcptr, i);
 	}
       return;
     }
@@ -22454,47 +22494,33 @@ expand_setmem_epilogue (rtx destmem, rtx destptr, rtx value, rtx count, int max_
 }
 
 /* Copy enough from DEST to SRC to align DEST known to by aligned by ALIGN to
-   DESIRED_ALIGNMENT.  */
-static void
+   DESIRED_ALIGNMENT.
+   Return value is updated DESTMEM.  */
+static rtx
 expand_movmem_prologue (rtx destmem, rtx srcmem,
 			rtx destptr, rtx srcptr, rtx count,
 			int align, int desired_alignment)
 {
-  if (align <= 1 && desired_alignment > 1)
+  int i;
+  for (i = 1; i < desired_alignment; i <<= 1)
     {
-      rtx label = ix86_expand_aligntest (destptr, 1, false);
-      srcmem = change_address (srcmem, QImode, srcptr);
-      destmem = change_address (destmem, QImode, destptr);
-      emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
-      ix86_adjust_counter (count, 1);
-      emit_label (label);
-      LABEL_NUSES (label) = 1;
+      if (align <= i)
+	{
+	  rtx label = ix86_expand_aligntest (destptr, i, false);
+	  destmem = emit_memmov (destmem, &srcmem, destptr, srcptr, i);
+	  ix86_adjust_counter (count, i);
+	  emit_label (label);
+	  LABEL_NUSES (label) = 1;
+	  set_mem_align (destmem, i * 2 * BITS_PER_UNIT);
+	}
     }
-  if (align <= 2 && desired_alignment > 2)
-    {
-      rtx label = ix86_expand_aligntest (destptr, 2, false);
-      srcmem = change_address (srcmem, HImode, srcptr);
-      destmem = change_address (destmem, HImode, destptr);
-      emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
-      ix86_adjust_counter (count, 2);
-      emit_label (label);
-      LABEL_NUSES (label) = 1;
-    }
-  if (align <= 4 && desired_alignment > 4)
-    {
-      rtx label = ix86_expand_aligntest (destptr, 4, false);
-      srcmem = change_address (srcmem, SImode, srcptr);
-      destmem = change_address (destmem, SImode, destptr);
-      emit_insn (gen_strmov (destptr, destmem, srcptr, srcmem));
-      ix86_adjust_counter (count, 4);
-      emit_label (label);
-      LABEL_NUSES (label) = 1;
-    }
-  gcc_assert (desired_alignment <= 8);
+  return destmem;
 }
 
 /* Copy enough from DST to SRC to align DST known to DESIRED_ALIGN.
-   ALIGN_BYTES is how many bytes need to be copied.  */
+   ALIGN_BYTES is how many bytes need to be copied.
+   The function updates DST and SRC, namely, it sets proper alignment.
+   DST is returned via return value, SRC is updated via pointer SRCP.  */
 static rtx
 expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
 				 int desired_align, int align_bytes)
@@ -22502,62 +22528,34 @@ expand_constant_movmem_prologue (rtx dst, rtx *srcp, rtx destreg, rtx srcreg,
   rtx src = *srcp;
   rtx orig_dst = dst;
   rtx orig_src = src;
-  int off = 0;
+  int piece_size = 1;
+  int copied_bytes = 0;
   int src_align_bytes = get_mem_align_offset (src, desired_align * BITS_PER_UNIT);
   if (src_align_bytes >= 0)
     src_align_bytes = desired_align - src_align_bytes;
-  if (align_bytes & 1)
+
+  for (piece_size = 1;
+       piece_size <= desired_align && copied_bytes < align_bytes;
+       piece_size <<= 1)
     {
-      dst = adjust_automodify_address_nv (dst, QImode, destreg, 0);
-      src = adjust_automodify_address_nv (src, QImode, srcreg, 0);
-      off = 1;
-      emit_insn (gen_strmov (destreg, dst, srcreg, src));
-    }
-  if (align_bytes & 2)
-    {
-      dst = adjust_automodify_address_nv (dst, HImode, destreg, off);
-      src = adjust_automodify_address_nv (src, HImode, srcreg, off);
-      if (MEM_ALIGN (dst) < 2 * BITS_PER_UNIT)
-	set_mem_align (dst, 2 * BITS_PER_UNIT);
-      if (src_align_bytes >= 0
-	  && (src_align_bytes & 1) == (align_bytes & 1)
-	  && MEM_ALIGN (src) < 2 * BITS_PER_UNIT)
-	set_mem_align (src, 2 * BITS_PER_UNIT);
-      off = 2;
-      emit_insn (gen_strmov (destreg, dst, srcreg, src));
-    }
-  if (align_bytes & 4)
-    {
-      dst = adjust_automodify_address_nv (dst, SImode, destreg, off);
-      src = adjust_automodify_address_nv (src, SImode, srcreg, off);
-      if (MEM_ALIGN (dst) < 4 * BITS_PER_UNIT)
-	set_mem_align (dst, 4 * BITS_PER_UNIT);
-      if (src_align_bytes >= 0)
+      if (align_bytes & piece_size)
 	{
-	  unsigned int src_align = 0;
-	  if ((src_align_bytes & 3) == (align_bytes & 3))
-	    src_align = 4;
-	  else if ((src_align_bytes & 1) == (align_bytes & 1))
-	    src_align = 2;
-	  if (MEM_ALIGN (src) < src_align * BITS_PER_UNIT)
-	    set_mem_align (src, src_align * BITS_PER_UNIT);
+	  dst = emit_memmov (dst, &src, destreg, srcreg, piece_size);
+	  copied_bytes += piece_size;
 	}
-      off = 4;
-      emit_insn (gen_strmov (destreg, dst, srcreg, src));
     }
-  dst = adjust_automodify_address_nv (dst, BLKmode, destreg, off);
-  src = adjust_automodify_address_nv (src, BLKmode, srcreg, off);
+
   if (MEM_ALIGN (dst) < (unsigned int) desired_align * BITS_PER_UNIT)
     set_mem_align (dst, desired_align * BITS_PER_UNIT);
   if (src_align_bytes >= 0)
     {
-      unsigned int src_align = 0;
-      if ((src_align_bytes & 7) == (align_bytes & 7))
-	src_align = 8;
-      else if ((src_align_bytes & 3) == (align_bytes & 3))
-	src_align = 4;
-      else if ((src_align_bytes & 1) == (align_bytes & 1))
-	src_align = 2;
+      unsigned int src_align;
+      for (src_align = desired_align; src_align >= 2; src_align >>= 1)
+	{
+	  if ((src_align_bytes & (src_align - 1))
+	       == (align_bytes & (src_align - 1)))
+	    break;
+	}
       if (src_align > (unsigned int) desired_align)
 	src_align = desired_align;
       if (MEM_ALIGN (src) < src_align * BITS_PER_UNIT)
@@ -22790,42 +22788,24 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size, bool memset,
 static int
 decide_alignment (int align,
 		  enum stringop_alg alg,
-		  int expected_size)
+		  int expected_size,
+		  enum machine_mode move_mode)
 {
   int desired_align = 0;
-  switch (alg)
-    {
-      case no_stringop:
-	gcc_unreachable ();
-      case loop:
-      case unrolled_loop:
-	desired_align = GET_MODE_SIZE (Pmode);
-	break;
-      case rep_prefix_8_byte:
-	desired_align = 8;
-	break;
-      case rep_prefix_4_byte:
-	/* PentiumPro has special logic triggering for 8 byte aligned blocks.
-	   copying whole cacheline at once.  */
-	if (TARGET_PENTIUMPRO)
-	  desired_align = 8;
-	else
-	  desired_align = 4;
-	break;
-      case rep_prefix_1_byte:
-	/* PentiumPro has special logic triggering for 8 byte aligned blocks.
-	   copying whole cacheline at once.  */
-	if (TARGET_PENTIUMPRO)
-	  desired_align = 8;
-	else
-	  desired_align = 1;
-	break;
-      case loop_1_byte:
-	desired_align = 1;
-	break;
-      case libcall:
-	return 0;
-    }
+
+  gcc_assert (alg != no_stringop);
+
+  if (alg == libcall)
+    return 0;
+  if (move_mode == VOIDmode)
+    return 0;
+
+  desired_align = GET_MODE_SIZE (move_mode);
+  /* PentiumPro has special logic triggering for 8 byte aligned blocks.
+     copying whole cacheline at once.  */
+  if (TARGET_PENTIUMPRO
+      && (alg == rep_prefix_4_byte || alg == rep_prefix_1_byte))
+    desired_align = 8;
 
   if (optimize_size)
     desired_align = 1;
@@ -22833,17 +22813,8 @@ decide_alignment (int align,
     desired_align = align;
   if (expected_size != -1 && expected_size < 4)
     desired_align = align;
-  return desired_align;
-}
 
-/* Return the smallest power of 2 greater than VAL.  */
-static int
-smallest_pow2_greater_than (int val)
-{
-  int ret = 1;
-  while (ret <= val)
-    ret <<= 1;
-  return ret;
+  return desired_align;
 }
 
 /* Expand string move (memcpy) operation.  Use i386 string operations
@@ -22889,6 +22860,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
   int dynamic_check;
   bool need_zero_guard = false;
   bool noalign;
+  enum machine_mode move_mode = VOIDmode;
+  int unroll_factor = 1;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -22912,49 +22885,70 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   /* Step 0: Decide on preferred algorithm, desired alignment and
      size of chunks to be copied by main loop.  */
-
   alg = decide_alg (count, expected_size, false, &dynamic_check, &noalign);
-  desired_align = decide_alignment (align, alg, expected_size);
-
-  if (!TARGET_ALIGN_STRINGOPS || noalign)
-    align = desired_align;
-
   if (alg == libcall)
     return false;
   gcc_assert (alg != no_stringop);
+
   if (!count)
     count_exp = copy_to_mode_reg (GET_MODE (count_exp), count_exp);
   destreg = copy_addr_to_reg (XEXP (dst, 0));
   srcreg = copy_addr_to_reg (XEXP (src, 0));
+
+  unroll_factor = 1;
+  move_mode = word_mode;
   switch (alg)
     {
     case libcall:
     case no_stringop:
       gcc_unreachable ();
+    case loop_1_byte:
+      need_zero_guard = true;
+      move_mode = QImode;
+      break;
     case loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (word_mode);
       break;
     case unrolled_loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (word_mode) * (TARGET_64BIT ? 4 : 2);
+      unroll_factor = (TARGET_64BIT ? 4 : 2);
+      break;
+    case vector_loop:
+      need_zero_guard = true;
+      unroll_factor = 4;
+      /* Find the widest supported mode.  */
+      move_mode = word_mode;
+      while (optab_handler (mov_optab, GET_MODE_WIDER_MODE (move_mode))
+	     != CODE_FOR_nothing)
+	  move_mode = GET_MODE_WIDER_MODE (move_mode);
+
+      /* Find the corresponding vector mode with the same size as MOVE_MODE.
+	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
+      if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
+	{
+	  int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
+	  move_mode = mode_for_vector (word_mode, nunits);
+	  if (optab_handler (mov_optab, move_mode) == CODE_FOR_nothing)
+	    move_mode = word_mode;
+	}
+      gcc_assert (optab_handler (mov_optab, move_mode) != CODE_FOR_nothing);
       break;
     case rep_prefix_8_byte:
-      size_needed = 8;
+      move_mode = DImode;
       break;
     case rep_prefix_4_byte:
-      size_needed = 4;
+      move_mode = SImode;
       break;
     case rep_prefix_1_byte:
-      size_needed = 1;
-      break;
-    case loop_1_byte:
-      need_zero_guard = true;
-      size_needed = 1;
+      move_mode = QImode;
       break;
     }
-
+  size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
   epilogue_size_needed = size_needed;
+
+  desired_align = decide_alignment (align, alg, expected_size, move_mode);
+  if (!TARGET_ALIGN_STRINGOPS || noalign)
+    align = desired_align;
 
   /* Step 1: Prologue guard.  */
 
@@ -22982,7 +22976,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
       /* Epilogue always copies COUNT_EXP & EPILOGUE_SIZE_NEEDED bytes.
 	 Make sure it is power of 2.  */
-      epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
+      epilogue_size_needed = 1 << (floor_log2 (epilogue_size_needed) + 1);
 
       if (count)
 	{
@@ -23047,8 +23041,8 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	     the info early.  */
 	  src = change_address (src, BLKmode, srcreg);
 	  dst = change_address (dst, BLKmode, destreg);
-	  expand_movmem_prologue (dst, src, destreg, srcreg, count_exp, align,
-				  desired_align);
+	  dst = expand_movmem_prologue (dst, src, destreg, srcreg, count_exp, align,
+					desired_align);
 	}
       else
 	{
@@ -23099,31 +23093,18 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
     case no_stringop:
       gcc_unreachable ();
     case loop_1_byte:
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
-				     count_exp, QImode, 1, expected_size);
-      break;
     case loop:
-      expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
-				     count_exp, word_mode, 1, expected_size);
-      break;
     case unrolled_loop:
-      /* Unroll only by factor of 2 in 32bit mode, since we don't have enough
-	 registers for 4 temporaries anyway.  */
+    case vector_loop:
       expand_set_or_movmem_via_loop (dst, src, destreg, srcreg, NULL,
-				     count_exp, word_mode, TARGET_64BIT ? 4 : 2,
+				     count_exp, move_mode, unroll_factor,
 				     expected_size);
       break;
     case rep_prefix_8_byte:
-      expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
-				 DImode);
-      break;
     case rep_prefix_4_byte:
-      expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
-				 SImode);
-      break;
     case rep_prefix_1_byte:
       expand_movmem_via_rep_mov (dst, src, destreg, srcreg, count_exp,
-				 QImode);
+				 move_mode);
       break;
     }
   /* Adjust properly the offset of src and dest memory for aliasing.  */
@@ -23164,7 +23145,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   if (count_exp != const0_rtx && epilogue_size_needed > 1)
     expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
-			    epilogue_size_needed);
+			    size_needed);
   if (jump_around_label)
     emit_label (jump_around_label);
   return true;
@@ -23285,6 +23266,8 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
   int dynamic_check;
   bool need_zero_guard = false;
   bool noalign;
+  enum machine_mode move_mode = VOIDmode;
+  int unroll_factor;
 
   if (CONST_INT_P (align_exp))
     align = INTVAL (align_exp);
@@ -23305,17 +23288,16 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
      size of chunks to be copied by main loop.  */
 
   alg = decide_alg (count, expected_size, true, &dynamic_check, &noalign);
-  desired_align = decide_alignment (align, alg, expected_size);
-
-  if (!TARGET_ALIGN_STRINGOPS || noalign)
-    align = desired_align;
-
   if (alg == libcall)
     return false;
   gcc_assert (alg != no_stringop);
+
   if (!count)
     count_exp = copy_to_mode_reg (counter_mode (count_exp), count_exp);
   destreg = copy_addr_to_reg (XEXP (dst, 0));
+
+  move_mode = word_mode;
+  unroll_factor = 1;
   switch (alg)
     {
     case libcall:
@@ -23323,27 +23305,32 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       gcc_unreachable ();
     case loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (word_mode);
       break;
+    case vector_loop:
     case unrolled_loop:
       need_zero_guard = true;
-      size_needed = GET_MODE_SIZE (word_mode) * 4;
+      unroll_factor = 4;
       break;
     case rep_prefix_8_byte:
-      size_needed = 8;
+      move_mode = DImode;
       break;
     case rep_prefix_4_byte:
-      size_needed = 4;
+      move_mode = SImode;
       break;
     case rep_prefix_1_byte:
-      size_needed = 1;
+      move_mode = QImode;
       break;
     case loop_1_byte:
       need_zero_guard = true;
-      size_needed = 1;
+      move_mode = QImode;
       break;
     }
+  size_needed = GET_MODE_SIZE (move_mode) * unroll_factor;
   epilogue_size_needed = size_needed;
+
+  desired_align = decide_alignment (align, alg, expected_size, move_mode);
+  if (!TARGET_ALIGN_STRINGOPS || noalign)
+    align = desired_align;
 
   /* Step 1: Prologue guard.  */
 
@@ -23380,7 +23367,7 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
       epilogue_size_needed = MAX (size_needed - 1, desired_align - align);
       /* Epilogue always copies COUNT_EXP & (EPILOGUE_SIZE_NEEDED - 1) bytes.
 	 Make sure it is power of 2.  */
-      epilogue_size_needed = smallest_pow2_greater_than (epilogue_size_needed);
+      epilogue_size_needed = 1 << (floor_log2 (epilogue_size_needed) + 1);
 
       /* To improve performance of small blocks, we jump around the VAL
 	 promoting mode.  This mean that if the promoted VAL is not constant,
@@ -23494,16 +23481,12 @@ ix86_expand_setmem (rtx dst, rtx count_exp, rtx val_exp, rtx align_exp,
     case no_stringop:
       gcc_unreachable ();
     case loop_1_byte:
-      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
-				     count_exp, QImode, 1, expected_size);
-      break;
     case loop:
-      expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
-				     count_exp, word_mode, 1, expected_size);
-      break;
+    case vector_loop:
     case unrolled_loop:
       expand_set_or_movmem_via_loop (dst, NULL, destreg, NULL, promoted_val,
-				     count_exp, word_mode, 4, expected_size);
+				     count_exp, move_mode, unroll_factor,
+				     expected_size);
       break;
     case rep_prefix_8_byte:
       expand_setmem_via_rep_stos (dst, destreg, promoted_val, count_exp,
