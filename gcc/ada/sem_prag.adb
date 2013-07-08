@@ -16354,16 +16354,6 @@ package body Sem_Prag is
             function Get_SPARK_Mode_Name (Id : SPARK_Mode_Id) return Name_Id;
             --  Convert a value of type SPARK_Mode_Id into a corresponding name
 
-            procedure Redefinition_Error (Mode : SPARK_Mode_Id);
-            --  Emit an error on an attempt to redefine existing mode Mode. The
-            --  message is associated with the first argument of the current
-            --  pragma.
-
-            procedure Redefinition_Error (Prag : Node_Id);
-            --  Emit an error on an attempt to redefine the mode of Prag. The
-            --  message is associated with the first argument of the current
-            --  pragma.
-
             ------------------
             -- Chain_Pragma --
             ------------------
@@ -16474,41 +16464,14 @@ package body Sem_Prag is
                end if;
             end Get_SPARK_Mode_Name;
 
-            ------------------------
-            -- Redefinition_Error --
-            ------------------------
-
-            procedure Redefinition_Error (Mode : SPARK_Mode_Id) is
-            begin
-               Error_Msg_Name_1 := Get_SPARK_Mode_Name (Mode);
-               Error_Msg_N
-                 ("cannot redefine 'S'P'A'R'K mode, already set to %", Arg1);
-            end Redefinition_Error;
-
-            ------------------------
-            -- Redefinition_Error --
-            ------------------------
-
-            procedure Redefinition_Error (Prag : Node_Id) is
-               Mode : constant Name_Id :=
-                        Chars (Get_Pragma_Arg (First
-                         (Pragma_Argument_Associations (Prag))));
-            begin
-               Error_Msg_Name_1 := Mode;
-               Error_Msg_Sloc   := Sloc (Prag);
-               Error_Msg_N
-                 ("cannot redefine 'S'P'A'R'K mode, already set to % #", Arg1);
-            end Redefinition_Error;
-
             --  Local variables
 
-            Body_Id   : Entity_Id;
-            Context   : Node_Id;
-            Mode      : Name_Id;
-            Mode_Id   : SPARK_Mode_Id;
-            Spec_Id   : Entity_Id;
-            Stmt      : Node_Id;
-            Unit_Prag : Node_Id;
+            Body_Id : Entity_Id;
+            Context : Node_Id;
+            Mode    : Name_Id;
+            Mode_Id : SPARK_Mode_Id;
+            Spec_Id : Entity_Id;
+            Stmt    : Node_Id;
 
          --  Start of processing for SPARK_Mode
 
@@ -16536,38 +16499,14 @@ package body Sem_Prag is
 
             if No (Context) then
                Check_Valid_Configuration_Pragma;
-
-               --  Set the global mode
-
-               if Global_SPARK_Mode = None then
-                  Global_SPARK_Mode := Mode_Id;
-
-               --  Catch an attempt to redefine an existing global mode by
-               --  using multiple configuration files.
-
-               elsif Global_SPARK_Mode /= Mode_Id then
-                  Redefinition_Error (Global_SPARK_Mode);
-               end if;
+               Global_SPARK_Mode := Mode_Id;
 
             --  When the pragma is placed before the declaration of a unit, it
             --  configures the whole unit.
 
             elsif Nkind (Context) = N_Compilation_Unit then
                Check_Valid_Configuration_Pragma;
-
-               Unit_Prag := SPARK_Mode_Pragma (Current_Sem_Unit);
-
-               --  Set the unit mode
-
-               if No (Unit_Prag) then
-                  Set_SPARK_Mode_Pragma (Current_Sem_Unit, N);
-
-               --  Catch an attempt to redefine the unit mode by using multiple
-               --  pragmas declared in the same region.
-
-               else
-                  Redefinition_Error (Unit_Prag);
-               end if;
+               Set_SPARK_Mode_Pragma (Current_Sem_Unit, N);
 
             --  The pragma applies to a [library unit] subprogram or package
 

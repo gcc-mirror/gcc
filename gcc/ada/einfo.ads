@@ -1,7 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
---                                                                          --
 --                                E I N F O                                 --
 --                                                                          --
 --                                 S p e c                                  --
@@ -3760,7 +3759,7 @@ package Einfo is
 --    SPARK_Mode_Pragmas (Node32)
 --       Present in the entities of subprogram specs and bodies as well as in
 --       package specs and bodies. Points to a list of SPARK_Mode pragmas that
---       apply to the related construct.
+--       apply to the related construct. Add note of what this is used for ???
 
 --    Spec_Entity (Node19)
 --       Defined in package body entities. Points to corresponding package

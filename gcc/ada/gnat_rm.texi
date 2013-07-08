@@ -6028,8 +6028,8 @@ SPARK_Mode is used without an argument.
 
 @item
 @code{Off}: The units are considered to be in Ada by default and therefore not
-part of SPARK 2014 unless overridden locally. These units may be called by SPARK
-2014 units.
+part of SPARK 2014 unless overridden locally. These units may be called by
+SPARK 2014 units.
 
 @item
 @code{Auto}: The formal verification tools will automatically detect whether
@@ -6045,28 +6045,38 @@ Pragma SPARK_Mode can be used as a local pragma with the following semantics:
 Auto cannot be used as a mode argument.
 
 @item
-When the pragma appears immediately within the visible declarations of a
-package, it marks the whole package (spec and body) in or out of SPARK 2014.
+When the pragma at the start of the visible declarations (preceded only
+by other pragmas) of a package declaration, it marks the whole package
+(declaration and body) in or out of SPARK 2014.
 
 @item
-When the pragma appears immediately within the private declarations of a
-package, it marks the private part in or out of SPARK 2014.
+When the pragma appears at the start of the private declarations of a
+package (only other pragmas can appear between the @code{private} keyword
+and the @code{SPARK_Mode} pragma, it marks the private part in or
+out of SPARK 2014 (overriding the mode for the public part).
 
 @item
-When the pragma appears immediately within the declarations of a package body,
-it marks the whole body in or out of SPARK 2014.
+When the pragma appears immediately at the start of the declarations of a
+package body (preceded only by other pragmas),
+it marks the whole body in or out of SPARK 2014 (overriding the default
+mode copied from the declaration).
 
 @item
-When the pragma appears immediately within the elaboration statements of a
-package body, it marks the statements in or out of SPARK 2014.
+When the pragma appears at the start of the elaboration statements of
+a package body (only other pragmas can appear between the @code{begin}
+keyword and the @code{SPARK_Mode} pragma,
+it marks the elaboration statements in or out of SPARK 2014, overriding
+the default mode of the package body).
 
 @item
-When the pragma appears after a subprogram declaration, it marks the whole
+When the pragma appears after a subprogram declaration (with only other
+pragmas intervening), it marks the whole
 subprogram (spec and body) in or out of SPARK 2014.
 
 @item
-When the pragma appears immediately within the declarations of a subprogram
-body, it marks the whole body in or out of SPARK 2014.
+When the pragma appears at the start of the declarations of a subprogram
+body (preceded only by other pragmas), it marks the whole body in or out
+of SPARK 2014, overriding the default mode set by the declaration.
 
 @item
 Any other use of the pragma is illegal.

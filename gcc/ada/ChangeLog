@@ -1,3 +1,15 @@
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Remove
+	variable Unit_Prag. Remove the check on duplicate mode for the
+	configuration form of the pragma.
+	(Redefinition_Error): Removed.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* lib.ads, gnat_rm.texi, einfo.ads, sem_ch13.adb: Minor reformatting
+	and editing.
+
 2013-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_PPC_In_Decl_Part): In ASIS mode,
