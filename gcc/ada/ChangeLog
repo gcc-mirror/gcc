@@ -1,5 +1,12 @@
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem_dim.adb: Minor error message change.
+	* freeze.adb (Freeze_Entity, array type case): Extend handling
+	of Implicit_Packing to handle multi-dimensional array case.
+	* gnat_rm.texi: Update doc on Implicit_Packing.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
 	* exp_ch4.adb: Minor reformatting.
 
 2013-07-08  Ed Schonberg  <schonberg@adacore.com>
