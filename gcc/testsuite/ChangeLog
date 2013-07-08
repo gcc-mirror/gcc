@@ -1,5 +1,7 @@
 2013-07-08  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/powerpc/ppc-spe64-1.c: Update expected error message.
+
 	* gcc.target/powerpc/pr47197.c: Require powerpc_altivec_ok.
 
 	* gcc.target/powerpc/sd-vsx.c: Require dfp.
