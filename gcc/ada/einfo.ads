@@ -7375,7 +7375,9 @@ package Einfo is
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for an instance of
    --  a pragma with the given pragma Id. If found, the value returned is the
-   --  N_Pragma node, otherwise Empty is returned.
+   --  N_Pragma node, otherwise Empty is returned. Delayed pragmas such as
+   --  Precondition, Postcondition, Contract_Cases, Depends and Global appear
+   --  in the N_Contract node of entity E and are also handled by this routine.
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
