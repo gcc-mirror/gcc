@@ -3565,12 +3565,13 @@ package body Sem_Prag is
          --  If we fall through loop, pragma is at start of list, so see if it
          --  is at the start of declarations of a subprogram body.
 
-         if Nkind (Parent (N)) = N_Subprogram_Body
-           and then List_Containing (N) = Declarations (Parent (N))
+         PO := Parent (N);
+
+         if Nkind (PO) = N_Subprogram_Body
+           and then List_Containing (N) = Declarations (PO)
          then
-            if Operating_Mode /= Generate_Code
-              or else Inside_A_Generic
-            then
+            if Operating_Mode /= Generate_Code or else Inside_A_Generic then
+
                --  Analyze pragma expression for correctness and for ASIS use
 
                Preanalyze_Assert_Expression
@@ -3585,22 +3586,56 @@ package body Sem_Prag is
                end if;
             end if;
 
+            --  Retain a copy of the pre- or postcondition pragma for formal
+            --  verification purposes. The copy is needed because the pragma is
+            --  expanded into other constructs which are not acceptable in the
+            --  N_Contract node.
+
+            if Acts_As_Spec (PO)
+              and then (SPARK_Mode or else Formal_Extensions)
+            then
+               declare
+                  Prag : constant Node_Id := New_Copy_Tree (N);
+
+               begin
+                  --  Preanalyze the pragma
+
+                  Preanalyze_Assert_Expression
+                    (Get_Pragma_Arg
+                      (First (Pragma_Argument_Associations (Prag))),
+                     Standard_Boolean);
+
+                  --  Preanalyze the corresponding aspect (if any)
+
+                  if Present (Corresponding_Aspect (Prag)) then
+                     Preanalyze_Assert_Expression
+                       (Expression (Corresponding_Aspect (Prag)),
+                     Standard_Boolean);
+                  end if;
+
+                  --  Chain the copy on the contract of the body
+
+                  Add_Contract_Item
+                    (Prag, Defining_Unit_Name (Specification (PO)));
+               end;
+            end if;
+
             In_Body := True;
             return;
 
          --  See if it is in the pragmas after a library level subprogram
 
-         elsif Nkind (Parent (N)) = N_Compilation_Unit_Aux then
+         elsif Nkind (PO) = N_Compilation_Unit_Aux then
 
             --  In formal verification mode, analyze pragma expression for
             --  correctness, as it is not expanded later.
 
             if SPARK_Mode then
                Analyze_PPC_In_Decl_Part
-                 (N, Defining_Entity (Unit (Parent (Parent (N)))));
+                 (N, Defining_Entity (Unit (Parent (PO))));
             end if;
 
-            Chain_PPC (Unit (Parent (Parent (N))));
+            Chain_PPC (Unit (Parent (PO)));
             return;
          end if;
 

@@ -1,3 +1,12 @@
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Get_Pragma): Handle the retrieval of delayed
+	pragmas stored in N_Contract nodes.
+	* einfo.ads (Get_Pragma): Update the comment on usage.
+	* sem_prag.adb (Check_Precondition_Postcondition): Retain a copy
+	of the pragma when it applies to a body that acts as a spec. The
+	copy is preanalyzed and chained on the contract of the body.
+
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* rtsfind.adb: Minor comment fix.
