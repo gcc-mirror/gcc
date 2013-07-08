@@ -903,6 +903,7 @@ package Snames is
    Name_Range                          : constant Name_Id := N + $;
    Name_Range_Length                   : constant Name_Id := N + $; -- GNAT
    Name_Ref                            : constant Name_Id := N + $; -- GNAT
+   Name_Restriction_Set                : constant Name_Id := N + $; -- GNAT
    Name_Result                         : constant Name_Id := N + $; -- GNAT
    Name_Round                          : constant Name_Id := N + $;
    Name_Safe_Emax                      : constant Name_Id := N + $; -- Ada 83
@@ -1519,6 +1520,7 @@ package Snames is
       Attribute_Range,
       Attribute_Range_Length,
       Attribute_Ref,
+      Attribute_Restriction_Set,
       Attribute_Result,
       Attribute_Round,
       Attribute_Safe_Emax,

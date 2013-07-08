@@ -8609,8 +8609,8 @@ package body Exp_Ch3 is
    --  end case;
 
    function Make_Eq_Case
-     (E     : Entity_Id;
-      CL    : Node_Id;
+     (E      : Entity_Id;
+      CL     : Node_Id;
       Discrs : Elist_Id := New_Elmt_List) return List_Id
    is
       Loc      : constant Source_Ptr := Sloc (E);
@@ -8660,6 +8660,8 @@ package body Exp_Ch3 is
          Name_Len := Name_Len - 1;
          return Name_Find;
       end External_Name;
+
+   --  Start of processing for Make_Eq_Case
 
    begin
       Append_To (Result, Make_Eq_If (E, Component_Items (CL)));

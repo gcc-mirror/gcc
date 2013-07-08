@@ -343,6 +343,8 @@ Implementation Defined Attributes
 * Attribute Passed_By_Reference::
 * Attribute Pool_Address::
 * Attribute Range_Length::
+* Attribute Ref::
+* Attribute Restriction_Set::
 * Attribute Result::
 * Attribute Safe_Emax::
 * Attribute Safe_Large::
@@ -7645,6 +7647,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Pool_Address::
 * Attribute Range_Length::
 * Attribute Ref::
+* Attribute Restriction_Set::
 * Attribute Result::
 * Attribute Safe_Emax::
 * Attribute Safe_Large::
@@ -8332,11 +8335,75 @@ same result as @code{Length} applied to the array itself.
 @unnumberedsec Attribute Ref
 @findex Ref
 @noindent
-The @code{System.Address'Ref}
-(@code{System.Address} is the only permissible prefix)
-denotes a function identical to
-@code{System.Storage_Elements.To_Address} except that
-it is a static attribute.  See @ref{Attribute To_Address} for more details.
+
+
+@node Attribute Restriction_Set
+@unnumberedsec Attribute Restriction_Set
+@findex Restriction_Set
+@cindex Restrictions
+@noindent
+This attribute allows compile time testing of restrictions that
+are currently in effect. It is primarily intended for specializing
+code in the run-time based on restrictions that are active (e.g.
+don't need to save fpt registers if restriction No_Floating_Point
+is known to be in effect), but can be used anywhere.
+
+There are two forms:
+
+@smallexample @c ada
+System'Restriction_Set (partition_boolean_restriction_NAME)
+System'Restriction_Set (No_Dependence => library_unit_NAME);
+@end smallexample
+
+@noindent
+In the case of the first form, the only restriction names
+allowed are parameterless restrictions that are checked
+for consistency at bind time. For a complete list see the
+subtype @code{System.Rident.Partition_Boolean_Restrictions}.
+
+The result returned is True if the restriction is known to
+be in effect, and False if the restriction is known not to
+be in effect. An important guarantee is that the value of
+a Restriction_Set attribute is known to be consistent throughout
+all the code of a partition.
+
+This is trivially achieved if the entire partition is compiled
+with a consistent set of restriction pragmas. However, the
+compilation model does not require this. It is possible to
+compile one set of units with one set of pragmas, and another
+set of units with another set of pragmas. It is even possible
+to compile a spec with one set of pragmas, and then WITH the
+same spec with a different set of pragmas. Inconsistencies
+in the actual use of the restriction are checked at bind time.
+
+In order to achieve the guarantee of consistency for the
+Restriction_Set pragma, we consider that a use of the pragma
+that yields False is equivalent to a violation of the
+restriction.
+
+So for example if you write
+
+@smallexample @c ada
+if System'Restriction_Set (No_Floating_Point) then
+   ...
+else
+   ...
+end if;
+@end smallexample
+
+@noindent
+And the result is False, so that the else branch is executed,
+you can assume that this restriction is not set for any unit
+in the partition. This is checked by considering this use of
+the restriction pragma to be a violation of the restriction
+No_Floating_Point. This means that no other unit can attempt
+to set this restriction (if some unit does attempt to set it,
+the binder will refuse to bind the partition).
+
+Technical note: The restriction name and the unit name are
+intepreted entirely syntactically, as in the corresponding
+Restrictions pragma, they are not analyzed semantically,
+so they do not have a type.
 
 @node Attribute Result
 @unnumberedsec Attribute Result

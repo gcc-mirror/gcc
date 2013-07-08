@@ -302,6 +302,11 @@ package Restrict is
    --  identifier, and if so returns the corresponding Restriction_Id value,
    --  otherwise returns Not_A_Restriction_Id.
 
+   function OK_No_Dependence_Unit_Name (N : Node_Id) return Boolean;
+   --  Used in checking No_Dependence argument of pragma Restrictions or
+   --  pragma Restrictions_Warning, or attribute Restriction_Set. Returns
+   --  True if N has the proper form for a unit name, False otherwise.
+
    function Is_In_Hidden_Part_In_SPARK (Loc : Source_Ptr) return Boolean;
    --  Determine if given location is covered by a hidden region range in the
    --  SPARK hides table.

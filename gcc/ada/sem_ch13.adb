@@ -1310,7 +1310,6 @@ package body Sem_Ch13 is
                     Aspect_Small                |
                     Aspect_Simple_Storage_Pool  |
                     Aspect_Storage_Pool         |
-                    Aspect_Storage_Size         |
                     Aspect_Stream_Size          |
                     Aspect_Value_Size           |
                     Aspect_Variable_Indexing    |
@@ -1751,7 +1750,7 @@ package body Sem_Ch13 is
                   Analyze_Aspect_Dimension_System (N, Id, Expr);
                   goto Continue;
 
-               --  Case 4: Special handling for aspects
+               --  Case 4: Aspects requiring special handling
 
                --  Pre/Post/Test_Case/Contract_Cases whose corresponding
                --  pragmas take care of the delay.
@@ -2027,6 +2026,62 @@ package body Sem_Ch13 is
 
                   else
                      Aitem := Empty;
+                  end if;
+
+               --  Storage_Size
+
+               --  This is special because for access types we need to generate
+               --  an attribute definition clause. This also works for single
+               --  task declarations, but it does not work for task type
+               --  declarations, because we have the case where the expression
+               --  references a discriminant of the task type. That can't use
+               --  an attribute definition clause because we would not have
+               --  visibility on the discriminant. For that case we must
+               --  generate a pragma in the task definition.
+
+               when Aspect_Storage_Size =>
+
+                  --  Task type case
+
+                  if Ekind (E) = E_Task_Type then
+                     declare
+                        Decl : constant Node_Id := Declaration_Node (E);
+
+                     begin
+                        pragma Assert (Nkind (Decl) = N_Task_Type_Declaration);
+
+                        --  If no task definition, create one
+
+                        if No (Task_Definition (Decl)) then
+                           Set_Task_Definition (Decl,
+                             Make_Task_Definition (Loc,
+                               Visible_Declarations => Empty_List,
+                               End_Label            => Empty));
+                        end if;
+
+                        --  Create a pragma and put it at the start of the
+                        --  task definition for the task type declaration.
+
+                        Make_Aitem_Pragma
+                          (Pragma_Argument_Associations => New_List (
+                             Make_Pragma_Argument_Association (Loc,
+                               Expression => Relocate_Node (Expr))),
+                           Pragma_Name                  => Name_Storage_Size);
+
+                        Prepend
+                          (Aitem,
+                           Visible_Declarations (Task_Definition (Decl)));
+                        goto Continue;
+                     end;
+
+                  --  All other cases, generate attribute definition
+
+                  else
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => Relocate_Node (Expr));
                   end if;
             end case;
 
@@ -4067,13 +4122,18 @@ package body Sem_Ch13 is
 
          begin
             if Is_Task_Type (U_Ent) then
-               Check_Restriction (No_Obsolescent_Features, N);
 
-               if Warn_On_Obsolescent_Feature then
-                  Error_Msg_N
-                    ("?j?storage size clause for task is an " &
-                     "obsolescent feature (RM J.9)", N);
-                  Error_Msg_N ("\?j?use Storage_Size pragma instead", N);
+               --  Check obsolescent (but never obsolescent if from aspect!)
+
+               if not From_Aspect_Specification (N) then
+                  Check_Restriction (No_Obsolescent_Features, N);
+
+                  if Warn_On_Obsolescent_Feature then
+                     Error_Msg_N
+                       ("?j?storage size clause for task is an " &
+                        "obsolescent feature (RM J.9)", N);
+                     Error_Msg_N ("\?j?use Storage_Size pragma instead", N);
+                  end if;
                end if;
 
                FOnly := True;

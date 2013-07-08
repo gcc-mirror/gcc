@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -193,7 +193,7 @@ package Lib.Load is
    --  generate a compilation unit node for it, and we need to make an entry
    --  for it in the units table, so as to maintain a one-to-one mapping
    --  between table and nodes. The table entry is used among other things to
-   --  provide a canonical traversal order for context units for Inspector.
+   --  provide a canonical traversal order for context units for CodePeer.
    --  The flag In_Main indicates whether the instance is the main unit.
 
    procedure Version_Update (U : Node_Id; From : Node_Id);

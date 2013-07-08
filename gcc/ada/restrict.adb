@@ -184,69 +184,6 @@ package body Restrict is
       Check_Restriction (No_Elaboration_Code, N);
    end Check_Elaboration_Code_Allowed;
 
-   -----------------------------
-   -- Check_SPARK_Restriction --
-   -----------------------------
-
-   procedure Check_SPARK_Restriction
-     (Msg   : String;
-      N     : Node_Id;
-      Force : Boolean := False)
-   is
-      Msg_Issued          : Boolean;
-      Save_Error_Msg_Sloc : Source_Ptr;
-
-   begin
-      if Force or else Comes_From_Source (Original_Node (N)) then
-         if Restriction_Check_Required (SPARK_05)
-           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
-         then
-            return;
-         end if;
-
-         --  Since the call to Restriction_Msg from Check_Restriction may set
-         --  Error_Msg_Sloc to the location of the pragma restriction, save and
-         --  restore the previous value of the global variable around the call.
-
-         Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
-         Error_Msg_Sloc := Save_Error_Msg_Sloc;
-
-         if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg, N);
-         end if;
-      end if;
-   end Check_SPARK_Restriction;
-
-   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
-      Msg_Issued          : Boolean;
-      Save_Error_Msg_Sloc : Source_Ptr;
-
-   begin
-      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
-
-      if Comes_From_Source (Original_Node (N)) then
-         if Restriction_Check_Required (SPARK_05)
-           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
-         then
-            return;
-         end if;
-
-         --  Since the call to Restriction_Msg from Check_Restriction may set
-         --  Error_Msg_Sloc to the location of the pragma restriction, save and
-         --  restore the previous value of the global variable around the call.
-
-         Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
-         Error_Msg_Sloc := Save_Error_Msg_Sloc;
-
-         if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg1, N);
-            Error_Msg_F (Msg2, N);
-         end if;
-      end if;
-   end Check_SPARK_Restriction;
-
    --------------------------------
    -- Check_No_Implicit_Aliasing --
    --------------------------------
@@ -883,6 +820,27 @@ package body Restrict is
         and then Restriction_Active (No_Exception_Propagation);
    end No_Exception_Propagation_Active;
 
+   --------------------------------
+   -- OK_No_Dependence_Unit_Name --
+   --------------------------------
+
+   function OK_No_Dependence_Unit_Name (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Selected_Component then
+         return
+           OK_No_Dependence_Unit_Name (Prefix (N))
+             and then
+           OK_No_Dependence_Unit_Name (Selector_Name (N));
+
+      elsif Nkind (N) = N_Identifier then
+         return True;
+
+      else
+         Error_Msg_N ("wrong form for unit name for No_Dependence", N);
+         return False;
+      end if;
+   end OK_No_Dependence_Unit_Name;
+
    ----------------------------------
    -- Process_Restriction_Synonyms --
    ----------------------------------
@@ -1436,6 +1394,69 @@ package body Restrict is
          No_Use_Of_Pragma_Warning (A_Id) := False;
       end if;
    end Set_Restriction_No_Use_Of_Pragma;
+
+   -----------------------------
+   -- Check_SPARK_Restriction --
+   -----------------------------
+
+   procedure Check_SPARK_Restriction
+     (Msg   : String;
+      N     : Node_Id;
+      Force : Boolean := False)
+   is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
+
+   begin
+      if Force or else Comes_From_Source (Original_Node (N)) then
+         if Restriction_Check_Required (SPARK_05)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg, N);
+         end if;
+      end if;
+   end Check_SPARK_Restriction;
+
+   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
+
+   begin
+      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
+
+      if Comes_From_Source (Original_Node (N)) then
+         if Restriction_Check_Required (SPARK_05)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg1, N);
+            Error_Msg_F (Msg2, N);
+         end if;
+      end if;
+   end Check_SPARK_Restriction;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

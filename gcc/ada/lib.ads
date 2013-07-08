@@ -688,6 +688,42 @@ package Lib is
    --  of the printout. If Withs is True, we print out units with'ed by this
    --  unit (not counting limited withs).
 
+   ---------------------------------------------------------------
+   -- Special Handling for Restriction_Set (No_Dependence) Case --
+   ---------------------------------------------------------------
+
+   --  If we have a Restriction_Set attribute for No_Dependence => unit,
+   --  and the unit is not given in a No_Dependence restriction that we
+   --  can see, the attribute will return False.
+
+   --  We have to ensure in this case that the binder will reject any attempt
+   --  to set a No_Dependence restriction in some other unit in the partition.
+
+   --  If the unit is in the semantic closure, then of course it is properly
+   --  WITH'ed by someone, and the binder will do this job automatically as
+   --  part of its normal processing.
+
+   --  But if the unit is not in the semantic closure, we must make sure the
+   --  binder knows about it. The use of the Restriction_Set attribute giving
+   --  a result of False does not mean of itself that we have to include the
+   --  unit in the partition. So what we do is to generate a with (W) line in
+   --  the ali file (with no file name information), but no corresponding D
+   --  (dependency) line. This is recognized by the binder as meaning "Don't
+   --  let anyone specify No_Dependence for this unit, but you don't have to
+   --  include it if there is no real W line for the unit".
+
+   --  The following table keeps track of relevant units. It is used in the
+   --  Lib.Writ circuit for outputting With lines to output the special with
+   --  line with RA if the unit is not in the semantic closure.
+
+   package Restriction_Set_Dependences is new Table.Table (
+     Table_Component_Type => Unit_Name_Type,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 10,
+     Table_Increment      => 100,
+     Table_Name           => "Restriction_Attribute_Dependences");
+
 private
    pragma Inline (Cunit);
    pragma Inline (Cunit_Entity);

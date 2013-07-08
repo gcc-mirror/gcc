@@ -1516,14 +1516,14 @@ package Sinfo is
    --    in rtsfind to indicate implicit dependencies on predefined units. Used
    --    to prevent multiple with_clauses for the same unit in a given context.
    --    A postorder traversal of the tree whose nodes are units and whose
-   --    links are with_clauses defines the order in which Inspector must
+   --    links are with_clauses defines the order in which CodePeer must
    --    examine a compiled unit and its full context. This ordering ensures
    --    that any subprogram call is examined after the subprogram declaration
    --    has been seen.
 
    --  Next_Named_Actual (Node4-Sem)
-   --    Present in parameter association node. Set during semantic analysis to
-   --    point to the next named parameter, where parameters are ordered by
+   --    Present in parameter association nodes. Set during semantic analysis
+   --    to point to the next named parameter, where parameters are ordered by
    --    declaration order (as opposed to the actual order in the call, which
    --    may be different due to named associations). Not that this field
    --    points to the explicit actual parameter itself, not to the

@@ -3782,7 +3782,7 @@ package body Exp_Ch6 is
 
          --  We perform these optimization regardless of whether we are in the
          --  main unit or in a unit in the context of the main unit, to ensure
-         --  that tree generated is the same in both cases, for Inspector use.
+         --  that tree generated is the same in both cases, for CodePeer use.
 
          if Is_RTE (Subp, RE_To_Address) then
             Rewrite (Call_Node,

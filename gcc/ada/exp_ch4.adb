@@ -725,11 +725,9 @@ package body Exp_Ch4 is
         (Ref            : Node_Id;
          Built_In_Place : Boolean := False)
       is
-         Pool_Id   : constant Entity_Id := Associated_Storage_Pool (PtrT);
-         Cond      : Node_Id;
-         Free_Stmt : Node_Id;
-         Obj_Ref   : Node_Id;
-         Stmts     : List_Id;
+         Cond    : Node_Id;
+         Obj_Ref : Node_Id;
+         Stmts   : List_Id;
 
       begin
          if Ada_Version >= Ada_2005
@@ -761,69 +759,26 @@ package body Exp_Ch4 is
 
             Stmts := New_List;
 
-            --  If the target does not support allocation/deallocation, simply
-            --  finalize the object (if applicable). Generate:
+            --  Why don't we free the object ??? discussion and explanation
+            --  needed of why old approach did not work ???
 
+            --  Generate:
             --    [Deep_]Finalize (Obj_Ref.all);
 
-            if Restriction_Active (No_Implicit_Heap_Allocations) then
-               if Needs_Finalization (DesigT) then
-                  Append_To (Stmts,
-                    Make_Final_Call (
-                      Obj_Ref =>
-                        Make_Explicit_Dereference (Loc, New_Copy (Obj_Ref)),
-                      Typ     => DesigT));
-               end if;
-
-            --  Finalize (if applicable) and deallocate the object in case the
-            --  accessibility check fails.
-
-            else
-               --  Create an explicit free statement to clean up the allocated
-               --  object in case the accessibility check fails. Generate:
-
-               --    Free (Obj_Ref);
-
-               Free_Stmt := Make_Free_Statement (Loc, New_Copy (Obj_Ref));
-               Set_Storage_Pool (Free_Stmt, Pool_Id);
-
-               Append_To (Stmts, Free_Stmt);
-
-               --  Finalize the object (if applicable), but wrap the call
-               --  inside a block to ensure that the object would still be
-               --  deallocated in case the finalization fails. Generate:
-
-               --    begin
-               --       [Deep_]Finalize (Obj_Ref.all);
-               --    exception
-               --       when others =>
-               --          Free (Obj_Ref);
-               --          raise;
-               --    end;
-
-               if Needs_Finalization (DesigT) then
-                  Prepend_To (Stmts,
-                    Make_Block_Statement (Loc,
-                      Handled_Statement_Sequence =>
-                        Make_Handled_Sequence_Of_Statements (Loc,
-                          Statements => New_List (
-                            Make_Final_Call (
-                              Obj_Ref =>
-                                Make_Explicit_Dereference (Loc,
-                                  Prefix => New_Copy (Obj_Ref)),
-                              Typ     => DesigT)),
-
-                        Exception_Handlers => New_List (
-                          Make_Exception_Handler (Loc,
-                            Exception_Choices => New_List (
-                              Make_Others_Choice (Loc)),
-                            Statements        => New_List (
-                              New_Copy_Tree (Free_Stmt),
-                              Make_Raise_Statement (Loc)))))));
-               end if;
+            if Needs_Finalization (DesigT) then
+               Append_To (Stmts,
+                 Make_Final_Call (
+                   Obj_Ref =>
+                     Make_Explicit_Dereference (Loc, New_Copy (Obj_Ref)),
+                   Typ     => DesigT));
             end if;
 
             --  Signal the accessibility failure through a Program_Error
+
+            --  Since we may have a storage leak, I would be inclined to
+            --  define a new PE_ code that warns of this possibility where
+            --  the message would be Accessibility_Check_Failed (causing
+            --  storage leak) ???
 
             Append_To (Stmts,
               Make_Raise_Program_Error (Loc,
