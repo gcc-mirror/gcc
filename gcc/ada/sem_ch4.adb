@@ -881,12 +881,24 @@ package body Sem_Ch4 is
          S : Entity_Id;
 
       begin
-         --  The ghost subprogram appears inside an assertion expression
+         --  Do not perform the check while preanalyzing the enclosing context
+         --  because the call is not in its final place. Premature attempts to
+         --  verify the placement lead to bogus errors.
 
-         if In_Assertion_Expression (N) then
+         if In_Spec_Expression then
             return;
 
+         --  The ghost subprogram appears inside an assertion expression
+         --  which is one of the allowed cases.
+
+         elsif In_Assertion_Expression (N) then
+            return;
+
+         --  Otherwise see if it inside another ghost subprogram
+
          else
+            --  Loop to climb scopes
+
             S := Current_Scope;
             while Present (S) and then S /= Standard_Standard loop
 
@@ -898,11 +910,14 @@ package body Sem_Ch4 is
 
                S := Scope (S);
             end loop;
-         end if;
 
-         Error_Msg_N
-           ("call to ghost subprogram must appear in assertion expression or "
-            & "another ghost subprogram", N);
+            --  If we fall through the loop it was not within another
+            --  ghost subprogram, so we have bad placement.
+
+            Error_Msg_N
+              ("call to ghost subprogram must appear in assertion expression "
+               & "or another ghost subprogram", N);
+         end if;
       end Check_Ghost_Subprogram_Call;
 
       --------------------------------------------------

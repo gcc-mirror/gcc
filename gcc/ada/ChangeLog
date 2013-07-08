@@ -1,5 +1,21 @@
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
+	* rtsfind.adb: Minor comment fix.
+
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch4.adb (Check_Ghost_Subprogram_Call): Do not check the placement
+	of a Ghost function call when the enclosing context is being
+	preanalyzed.
+
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Inlined_Call, Process_Formals): If the
+	expression in a return statement is a numeric literal, qualify
+	it with the return type for proper resolution.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
 	* sem.ads: Minor comment updates.
 	* s-restri.ads, exp_ch6.adb, lib-load.ads, exp_ch3.adb, sem_ch10.adb:
 	Minor reformatting.
