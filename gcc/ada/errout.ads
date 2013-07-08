@@ -101,10 +101,9 @@ package Errout is
    --        messages. Warning messages are only suppressed for case 1, and
    --        when they come from other than the main extended unit.
 
-   --  This normal suppression action may be overridden in cases 2-5 (but not
-   --  in case 1) by setting All_Errors mode, or by setting the special
-   --  unconditional message insertion character (!) at the end of the message
-   --  text as described below.
+   --  This normal suppression action may be overridden in cases 2-5 (but
+   --  not in case 1) by setting All_Errors mode, or by setting the special
+   --  unconditional message insertion character (!) as described below.
 
    ---------------------------------------------------------
    -- Error Message Text and Message Insertion Characters --
@@ -230,7 +229,7 @@ package Errout is
    --      name is defined, this insertion character has no effect.
 
    --    Insertion character ! (Exclamation: unconditional message)
-   --      The character ! appearing as the last character of a message makes
+   --      The character ! appearing anywhere in the text of a message makes
    --      the message unconditional which means that it is output even if it
    --      would normally be suppressed. See section above for a description
    --      of the cases in which messages are normally suppressed. Note that
@@ -249,7 +248,7 @@ package Errout is
 
    --    Insertion character !! (Double exclamation: unconditional warning)
    --      Normally warning messages issued in other than the main unit are
-   --      suppressed. If the message ends with !! then this suppression is
+   --      suppressed. If the message contains !! then this suppression is
    --      avoided. This is currently used by the Compile_Time_Warning pragma
    --      to ensure the message for a with'ed unit is output, and for warnings
    --      on ineffective back-end inlining, which is detected in units that

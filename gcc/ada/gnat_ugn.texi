@@ -17251,6 +17251,7 @@ The pragmas listed below should be used with caution inside libraries,
 as they can create incompatibilities with other Ada libraries:
 @itemize @bullet
 @item pragma @code{Locking_Policy}
+@item pragma @code{Partition_Elaboration_Policy}
 @item pragma @code{Queuing_Policy}
 @item pragma @code{Task_Dispatching_Policy}
 @item pragma @code{Unreserve_All_Interrupts}

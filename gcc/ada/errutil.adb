@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -163,9 +163,9 @@ package body Errutil is
       --  Corresponds to the Sptr value in the error message object
 
       Optr : Source_Ptr renames Flag_Location;
-      --  Corresponds to the Optr value in the error message object. Note
-      --  that for this usage, Sptr and Optr always have the same value,
-      --  since we do not have to worry about generic instantiations.
+      --  Corresponds to the Optr value in the error message object. Note that
+      --  for this usage, Sptr and Optr always have the same value, since we do
+      --  not have to worry about generic instantiations.
 
    begin
       if Errors_Must_Be_Ignored then
@@ -176,7 +176,7 @@ package body Errutil is
          raise Error_Msg_Exception;
       end if;
 
-      Test_Style_Warning_Serious_Msg (Msg);
+      Test_Style_Warning_Serious_Unconditional_Msg (Msg);
       Set_Msg_Text (Msg, Sptr);
 
       --  Kill continuation if parent message killed
@@ -680,8 +680,8 @@ package body Errutil is
    ------------------
 
    procedure Set_Msg_Text (Text : String; Flag : Source_Ptr) is
-      C : Character;         -- Current character
-      P : Natural;           -- Current index;
+      C : Character; -- Current character
+      P : Natural;   -- Current index;
 
    begin
       Manual_Quote_Mode := False;
@@ -744,7 +744,7 @@ package body Errutil is
             Set_Msg_Char ('"');
 
          elsif C = '!' then
-            Is_Unconditional_Msg := True;
+            null;
 
          elsif C = '?' then
             null;

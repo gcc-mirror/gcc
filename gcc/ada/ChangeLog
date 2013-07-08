@@ -1,5 +1,45 @@
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
+	* gnatcmd.adb: Minor reformatting.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* targparm.adb (Get_Target_Parameters): Recognize pragma
+	Partition_Elaboration_Policy.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Minor update to mention partition elaboration policy.
+
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Comple_Object_Operation): Revert previous change.
+	(Analyze_Indexed_Component_Form): In ASIS mode, if node has been
+	transformed but not rewritten as a function call (as is the case
+	in a generic), analyze it as such.
+
+2013-07-08  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat_rm.texi: Minor rewording: add missing word "operators"
+	in documentation for restriction No_Direct_Boolean_Operator.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Set_Msg_Txt): No longer sets Is_Style_Msg,
+	Is_Warning_Msg, or Is_Unconditional_Msg (all are set elsewhere
+	now).
+	* errout.ads: Insertions ! and !! no longer have to be at the
+	end of the message, they can be anywhere in the message.
+	* erroutc.adb (Test_Style_Warning_Serious_Unconditional_Msg):
+	Replaces Test_Style_Warning_Serious_Msg
+	* erroutc.ads (Has_Double_Exclam): New flag New comments for
+	existing flags (Test_Style_Warning_Serious_Unconditional_Msg):
+	Replaces Test_Style_Warning_Serious_Msg
+	* errutil.adb (Test_Style_Warning_Serious_Unconditional_Msg):
+	Replaces Test_Style_Warning_Serious_Msg
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
 	* par-prag.adb (Process_Restrictions_Or_Restriction_Warnings):
 	Recognize SPARK_05 as synonym for SPARK in restrictions pragma.
 	* restrict.ads, restrict.adb (SPARK_Hides): Table moved to body, only
