@@ -7654,119 +7654,20 @@ package body Sem_Ch8 is
    -- Restore_Scope_Stack --
    -------------------------
 
-   procedure Restore_Scope_Stack (Handle_Use : Boolean := True) is
-      E         : Entity_Id;
-      S         : Entity_Id;
-      Comp_Unit : Node_Id;
-      In_Child  : Boolean := False;
-      Full_Vis  : Boolean := True;
-      SS_Last   : constant Int := Scope_Stack.Last;
+   procedure Restore_Scope_Stack
+     (List       : Elist_Id;
+      Handle_Use : Boolean := True)
+   is
+      SS_Last : constant Int := Scope_Stack.Last;
+      Elmt    : Elmt_Id;
 
    begin
       --  Restore visibility of previous scope stack, if any
 
-      for J in reverse 0 .. Scope_Stack.Last loop
-         exit when  Scope_Stack.Table (J).Entity = Standard_Standard
-            or else No (Scope_Stack.Table (J).Entity);
-
-         S := Scope_Stack.Table (J).Entity;
-
-         if not Is_Hidden_Open_Scope (S) then
-
-            --  If the parent scope is hidden, its entities are hidden as
-            --  well, unless the entity is the instantiation currently
-            --  being analyzed.
-
-            if not Is_Hidden_Open_Scope (Scope (S))
-              or else not Analyzed (Parent (S))
-              or else Scope (S) = Standard_Standard
-            then
-               Set_Is_Immediately_Visible (S, True);
-            end if;
-
-            E := First_Entity (S);
-            while Present (E) loop
-               if Is_Child_Unit (E) then
-                  if not From_With_Type (E) then
-                     Set_Is_Immediately_Visible (E,
-                       Is_Visible_Lib_Unit (E) or else In_Open_Scopes (E));
-
-                  else
-                     pragma Assert
-                       (Nkind (Parent (E)) = N_Defining_Program_Unit_Name
-                         and then
-                           Nkind (Parent (Parent (E))) =
-                                               N_Package_Specification);
-                     Set_Is_Immediately_Visible (E,
-                       Limited_View_Installed (Parent (Parent (E))));
-                  end if;
-               else
-                  Set_Is_Immediately_Visible (E, True);
-               end if;
-
-               Next_Entity (E);
-
-               if not Full_Vis and then Is_Package_Or_Generic_Package (S) then
-
-                  --  We are in the visible part of the package scope
-
-                  exit when E = First_Private_Entity (S);
-               end if;
-            end loop;
-
-            --  The visibility of child units (siblings of current compilation)
-            --  must be restored in any case. Their declarations may appear
-            --  after the private part of the parent.
-
-            if not Full_Vis then
-               while Present (E) loop
-                  if Is_Child_Unit (E) then
-                     Set_Is_Immediately_Visible (E,
-                       Is_Visible_Lib_Unit (E) or else In_Open_Scopes (E));
-                  end if;
-
-                  Next_Entity (E);
-               end loop;
-            end if;
-         end if;
-
-         if Is_Child_Unit (S)
-            and not In_Child     --  check only for current unit
-         then
-            In_Child := True;
-
-            --  Restore visibility of parents according to whether the child
-            --  is private and whether we are in its visible part.
-
-            Comp_Unit := Parent (Unit_Declaration_Node (S));
-
-            if Nkind (Comp_Unit) = N_Compilation_Unit
-              and then Private_Present (Comp_Unit)
-            then
-               Full_Vis := True;
-
-            elsif Is_Package_Or_Generic_Package (S)
-              and then (In_Private_Part (S) or else In_Package_Body (S))
-            then
-               Full_Vis := True;
-
-            --  if S is the scope of some instance (which has already been
-            --  seen on the stack) it does not affect the visibility of
-            --  other scopes.
-
-            elsif Is_Hidden_Open_Scope (S) then
-               null;
-
-            elsif Ekind_In (S, E_Procedure, E_Function)
-              and then Has_Completion (S)
-            then
-               Full_Vis := True;
-            else
-               Full_Vis := False;
-            end if;
-         else
-            Full_Vis := True;
-         end if;
+      Elmt := First_Elmt (List);
+      while Present (Elmt) loop
+         Set_Is_Immediately_Visible (Node (Elmt));
+         Next_Elmt (Elmt);
       end loop;
 
       if SS_Last >= Scope_Stack.First
@@ -7781,10 +7682,23 @@ package body Sem_Ch8 is
    -- Save_Scope_Stack --
    ----------------------
 
-   procedure Save_Scope_Stack (Handle_Use : Boolean := True) is
+   function Save_Scope_Stack (Handle_Use : Boolean := True) return Elist_Id is
+      Result  : constant Elist_Id := New_Elmt_List;
       E       : Entity_Id;
       S       : Entity_Id;
       SS_Last : constant Int := Scope_Stack.Last;
+
+      procedure Remove_From_Visibility (E : Entity_Id);
+      --  If E is immediately visible then append it to the result and remove
+      --  it temporarily from visibility
+
+      procedure Remove_From_Visibility (E : Entity_Id) is
+      begin
+         if Is_Immediately_Visible (E) then
+            Append_Elmt (E, Result);
+            Set_Is_Immediately_Visible (E, False);
+         end if;
+      end Remove_From_Visibility;
 
    begin
       if SS_Last >= Scope_Stack.First
@@ -7803,16 +7717,19 @@ package body Sem_Ch8 is
                or else No (Scope_Stack.Table (J).Entity);
 
             S := Scope_Stack.Table (J).Entity;
-            Set_Is_Immediately_Visible (S, False);
+
+            Remove_From_Visibility (S);
 
             E := First_Entity (S);
             while Present (E) loop
-               Set_Is_Immediately_Visible (E, False);
+               Remove_From_Visibility (E);
                Next_Entity (E);
             end loop;
          end loop;
 
       end if;
+
+      return Result;
    end Save_Scope_Stack;
 
    -------------

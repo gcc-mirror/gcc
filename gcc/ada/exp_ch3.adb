@@ -4632,9 +4632,19 @@ package body Exp_Ch3 is
       ------------------
 
       procedure Build_Master (Ptr_Typ : Entity_Id) is
-         Desig_Typ : constant Entity_Id := Designated_Type (Ptr_Typ);
+         Desig_Typ : Entity_Id := Designated_Type (Ptr_Typ);
 
       begin
+         --  If the designated type is an incomplete view coming from a
+         --  limited-with'ed package, we need to use the nonlimited view in
+         --  case it has tasks.
+
+         if Ekind (Desig_Typ) in Incomplete_Kind
+           and then Present (Non_Limited_View (Desig_Typ))
+         then
+            Desig_Typ := Non_Limited_View (Desig_Typ);
+         end if;
+
          --  Anonymous access types are created for the components of the
          --  record parameter for an entry declaration. No master is created
          --  for such a type.

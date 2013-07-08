@@ -1,3 +1,26 @@
+2013-07-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* gnat_rm.texi: Minor reformatting and rewording for consistency.
+
+2013-07-08  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Build_Master): If Desig_Type is an incomplete
+	view coming from a limited-with'ed package, use the nonlimited
+	view in case it has tasks.
+
+2013-07-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.ad[sb] (Save_Scope_Stack): Modified to return the list
+	of entities which have been temporarily removed from immediate
+	visibility.
+	(Restore_Scope_Stack): Modified to receive an
+	additional parameter with the list of entities whose immediate
+	visibility must be restored.
+	* sem.adb (Do_Analyze): Use new version of
+	Save_Scope_Stack/Restore_Scope_Stack
+	* sem_ch12.adb (Inline_Instance_Body): Use new version of
+	Save_Scope_Stack and Restore_Scope_Stack
+
 2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Remove

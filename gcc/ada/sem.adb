@@ -1340,8 +1340,10 @@ package body Sem is
       ----------------
 
       procedure Do_Analyze is
+         List : Elist_Id;
+
       begin
-         Save_Scope_Stack;
+         List := Save_Scope_Stack;
          Push_Scope (Standard_Standard);
          Scope_Suppress := Suppress_Options;
          Scope_Stack.Table
@@ -1362,7 +1364,7 @@ package body Sem is
          --  Then pop entry for Standard, and pop implicit types
 
          Pop_Scope;
-         Restore_Scope_Stack;
+         Restore_Scope_Stack (List);
       end Do_Analyze;
 
       Already_Analyzed : constant Boolean := Analyzed (Comp_Unit);

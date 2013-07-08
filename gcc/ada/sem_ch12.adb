@@ -4084,6 +4084,7 @@ package body Sem_Ch12 is
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
       Instances    : array (1 .. Scope_Stack_Depth) of Entity_Id;
       Inner_Scopes : array (1 .. Scope_Stack_Depth) of Entity_Id;
+      List         : Elist_Id;
       Num_Inner    : Int := 0;
       N_Instances  : Int := 0;
       S            : Entity_Id;
@@ -4187,7 +4188,7 @@ package body Sem_Ch12 is
                --  Remove entities in current scopes from visibility, so that
                --  instance body is compiled in a clean environment.
 
-               Save_Scope_Stack (Handle_Use => False);
+               List := Save_Scope_Stack (Handle_Use => False);
 
                if Is_Child_Unit (S) then
 
@@ -4261,7 +4262,7 @@ package body Sem_Ch12 is
                end loop;
             end if;
 
-            Restore_Scope_Stack (Handle_Use => False);
+            Restore_Scope_Stack (List, Handle_Use => False);
 
             if Present (Curr_Scope)
               and then
