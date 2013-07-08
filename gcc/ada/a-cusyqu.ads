@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -80,30 +80,26 @@ package Ada.Containers.Unbounded_Synchronized_Queues is
          Max_Length  : Count_Type := 0;
       end record;
 
-      overriding
-      procedure Finalize (List : in out List_Type);
+      overriding procedure Finalize (List : in out List_Type);
 
    end Implementation;
 
-   protected type Queue (Ceiling : System.Any_Priority := Default_Ceiling)
-     with Priority => Ceiling is new Queue_Interfaces.Queue with
+   protected type Queue
+     (Ceiling : System.Any_Priority := Default_Ceiling)
+   with
+     Priority => Ceiling
+   is new Queue_Interfaces.Queue with
 
-      overriding
-      entry Enqueue (New_Item : Queue_Interfaces.Element_Type);
+      overriding entry Enqueue (New_Item : Queue_Interfaces.Element_Type);
 
-      overriding
-      entry Dequeue (Element : out Queue_Interfaces.Element_Type);
+      overriding entry Dequeue (Element : out Queue_Interfaces.Element_Type);
 
-      overriding
-      function Current_Use return Count_Type;
+      overriding function Current_Use return Count_Type;
 
-      overriding
-      function Peak_Use return Count_Type;
+      overriding function Peak_Use return Count_Type;
 
    private
-
       List : Implementation.List_Type;
-
    end Queue;
 
 end Ada.Containers.Unbounded_Synchronized_Queues;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  S p e c                                 --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -256,8 +256,7 @@ package System.Interrupts is
      (Object : access Static_Interrupt_Protection) return Boolean;
    --  Returns True
 
-   overriding
-   procedure Finalize (Object : in out Static_Interrupt_Protection);
+   overriding procedure Finalize (Object : in out Static_Interrupt_Protection);
    --  Restore previous handlers as required by C.3.1(12) then call
    --  Finalize (Protection).
 

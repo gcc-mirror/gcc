@@ -233,6 +233,16 @@ package body Exp_Ch4 is
    --  simple entity, and op is a comparison operator, optimizes it into a
    --  comparison of First and Last.
 
+   procedure Process_Transient_Object
+     (Decl     : Node_Id;
+      Rel_Node : Node_Id);
+   --  Subsidiary routine to the expansion of expression_with_actions and if
+   --  expressions. Generate all the necessary code to finalize a transient
+   --  controlled object when the enclosing context is elaborated or evaluated.
+   --  Decl denotes the declaration of the transient controlled object which is
+   --  usually the result of a controlled function call. Rel_Node denotes the
+   --  context, either an expression_with_actions or an if expression.
+
    procedure Rewrite_Comparison (N : Node_Id);
    --  If N is the node for a comparison whose outcome can be determined at
    --  compile time, then the node N can be rewritten with True or False. If
@@ -5052,306 +5062,23 @@ package body Exp_Ch4 is
    --------------------------------------
 
    procedure Expand_N_Expression_With_Actions (N : Node_Id) is
-      In_Case_Or_If_Expression : constant Boolean :=
-                                   Within_Case_Or_If_Expression (N);
-
       function Process_Action (Act : Node_Id) return Traverse_Result;
-      --  Inspect and process a single action of an expression_with_actions
+      --  Inspect and process a single action of an expression_with_actions for
+      --  transient controlled objects. If such objects are found, the routine
+      --  generates code to clean them up when the context of the expression is
+      --  evaluated or elaborated.
 
       --------------------
       -- Process_Action --
       --------------------
 
       function Process_Action (Act : Node_Id) return Traverse_Result is
-         procedure Process_Transient_Object (Obj_Decl : Node_Id);
-         --  Obj_Decl denotes the declaration of a transient controlled object.
-         --  Generate all necessary types and hooks to properly finalize the
-         --  result when the enclosing context is elaborated/evaluated.
-
-         ------------------------------
-         -- Process_Transient_Object --
-         ------------------------------
-
-         procedure Process_Transient_Object (Obj_Decl : Node_Id) is
-            function Find_Enclosing_Context return Node_Id;
-            --  Find the context where the expression_with_actions appears
-
-            ----------------------------
-            -- Find_Enclosing_Context --
-            ----------------------------
-
-            function Find_Enclosing_Context return Node_Id is
-               Par : Node_Id;
-               Top : Node_Id;
-
-            begin
-               --  The expression_with_actions is in a case/if expression and
-               --  the lifetime of any temporary controlled object is therefore
-               --  extended. Find a suitable insertion node by locating the top
-               --  most case or if expressions.
-
-               if In_Case_Or_If_Expression then
-                  Par := N;
-                  Top := N;
-                  while Present (Par) loop
-                     if Nkind_In (Original_Node (Par), N_Case_Expression,
-                                                       N_If_Expression)
-                     then
-                        Top := Par;
-
-                     --  Prevent the search from going too far
-
-                     elsif Is_Body_Or_Package_Declaration (Par) then
-                        exit;
-                     end if;
-
-                     Par := Parent (Par);
-                  end loop;
-
-                  --  The topmost case or if expression is now recovered, but
-                  --  it may still not be the correct place to add all the
-                  --  generated code. Climb to find a parent that is part of a
-                  --  declarative or statement list.
-
-                  Par := Top;
-                  while Present (Par) loop
-                     if Is_List_Member (Par)
-                       and then
-                         not Nkind_In (Par, N_Component_Association,
-                                            N_Discriminant_Association,
-                                            N_Parameter_Association,
-                                            N_Pragma_Argument_Association)
-                     then
-                        return Par;
-
-                     --  Prevent the search from going too far
-
-                     elsif Is_Body_Or_Package_Declaration (Par) then
-                        exit;
-                     end if;
-
-                     Par := Parent (Par);
-                  end loop;
-
-                  return Par;
-
-               --  Short circuit operators in complex expressions are converted
-               --  into expression_with_actions.
-
-               else
-                  --  Take care of the case where the expression_with_actions
-                  --  is buried deep inside an IF statement. The temporary
-                  --  function result must be finalized before the then, elsif
-                  --  or else statements are evaluated.
-
-                  --    if Something
-                  --      and then Ctrl_Func_Call
-                  --    then
-                  --       <result must be finalized at this point>
-                  --       <statements>
-                  --    end if;
-
-                  --  To achieve this, find the topmost logical operator. The
-                  --  generated actions are then inserted before/after it.
-
-                  Par := N;
-                  while Present (Par) loop
-
-                     --  Keep climbing past various operators
-
-                     if Nkind (Parent (Par)) in N_Op
-                       or else Nkind_In (Parent (Par), N_And_Then, N_Or_Else)
-                     then
-                        Par := Parent (Par);
-                     else
-                        exit;
-                     end if;
-                  end loop;
-
-                  Top := Par;
-
-                  --  The expression_with_actions might be located in a pragma
-                  --  in which case locate the pragma itself:
-
-                  --    pragma Precondition (... and then Ctrl_Func_Call ...);
-
-                  --  Similar case occurs when the expression_with_actions is
-                  --  related to an object declaration or assignment:
-
-                  --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
-
-                  --  Another case to consider is an expression_with_actions as
-                  --  part of a return statement:
-
-                  --    return ... and then Ctrl_Func_Call ...;
-
-                  --  Yet another case: a formal in a procedure call statement:
-
-                  --    Proc (... and then Ctrl_Func_Call ...);
-
-                  while Present (Par) loop
-                     if Nkind_In (Par, N_Assignment_Statement,
-                                       N_Object_Declaration,
-                                       N_Pragma,
-                                       N_Procedure_Call_Statement,
-                                       N_Simple_Return_Statement)
-                     then
-                        return Par;
-
-                     --  Prevent the search from going too far
-
-                     elsif Is_Body_Or_Package_Declaration (Par) then
-                        exit;
-                     end if;
-
-                     Par := Parent (Par);
-                  end loop;
-
-                  --  Return the topmost short circuit operator
-
-                  return Top;
-               end if;
-            end Find_Enclosing_Context;
-
-            --  Local variables
-
-            Context   : constant Node_Id    := Find_Enclosing_Context;
-            Loc       : constant Source_Ptr := Sloc (Obj_Decl);
-            Obj_Id    : constant Entity_Id  := Defining_Identifier (Obj_Decl);
-            Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
-            Desig_Typ : Entity_Id;
-            Expr      : Node_Id;
-            Fin_Call  : Node_Id;
-            Ptr_Id    : Entity_Id;
-            Temp_Id   : Entity_Id;
-
-         --  Start of processing for Process_Transient_Object
-
-         begin
-            --  Step 1: Create the access type which provides a reference to
-            --  the transient object.
-
-            if Is_Access_Type (Obj_Typ) then
-               Desig_Typ := Directly_Designated_Type (Obj_Typ);
-            else
-               Desig_Typ := Obj_Typ;
-            end if;
-
-            Desig_Typ := Base_Type (Desig_Typ);
-
-            --  Generate:
-            --    Ann : access [all] <Desig_Typ>;
-
-            Ptr_Id := Make_Temporary (Loc, 'A');
-
-            Insert_Action (Context,
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ptr_Id,
-                Type_Definition     =>
-                  Make_Access_To_Object_Definition (Loc,
-                    All_Present        =>
-                      Ekind (Obj_Typ) = E_General_Access_Type,
-                    Subtype_Indication => New_Reference_To (Desig_Typ, Loc))));
-
-            --  Step 2: Create a temporary which acts as a hook to the
-            --  transient object. Generate:
-
-            --    Temp : Ptr_Id := null;
-
-            Temp_Id := Make_Temporary (Loc, 'T');
-
-            Insert_Action (Context,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Temp_Id,
-                Object_Definition   => New_Reference_To (Ptr_Id, Loc)));
-
-            --  Mark this temporary as created for the purposes of exporting
-            --  the transient declaration out of the Actions list. This signals
-            --  the machinery in Build_Finalizer to recognize this special
-            --  case.
-
-            Set_Status_Flag_Or_Transient_Decl (Temp_Id, Obj_Decl);
-
-            --  Step 3: Hook the transient object to the temporary
-
-            --  The use of unchecked conversion / unrestricted access is needed
-            --  to avoid an accessibility violation. Note that the finalization
-            --  code is structured in such a way that the "hook" is processed
-            --  only when it points to an existing object.
-
-            if Is_Access_Type (Obj_Typ) then
-               Expr :=
-                 Unchecked_Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
-            else
-               Expr :=
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => New_Reference_To (Obj_Id, Loc),
-                   Attribute_Name => Name_Unrestricted_Access);
-            end if;
-
-            --  Generate:
-            --    Temp := Ptr_Id (Obj_Id);
-            --      <or>
-            --    Temp := Obj_Id'Unrestricted_Access;
-
-            Insert_After_And_Analyze (Obj_Decl,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Reference_To (Temp_Id, Loc),
-                Expression => Expr));
-
-            --  Step 4: Finalize the function result after the context has been
-            --  evaluated/elaborated. Generate:
-
-            --    if Temp /= null then
-            --       [Deep_]Finalize (Temp.all);
-            --       Temp := null;
-            --    end if;
-
-            --  When the expression_with_actions is part of a return statement,
-            --  there is no need to insert a finalization call, as the general
-            --  finalization mechanism (see Build_Finalizer) would take care of
-            --  the temporary function result on subprogram exit. Note that it
-            --  would also be impossible to insert the finalization code after
-            --  the return statement as this would make it unreachable.
-
-            if Nkind (Context) /= N_Simple_Return_Statement then
-               Fin_Call :=
-                 Make_Implicit_If_Statement (Obj_Decl,
-                   Condition =>
-                     Make_Op_Ne (Loc,
-                       Left_Opnd  => New_Reference_To (Temp_Id, Loc),
-                       Right_Opnd => Make_Null (Loc)),
-
-                   Then_Statements => New_List (
-                     Make_Final_Call
-                       (Obj_Ref =>
-                          Make_Explicit_Dereference (Loc,
-                            Prefix => New_Reference_To (Temp_Id, Loc)),
-                        Typ     => Desig_Typ),
-
-                     Make_Assignment_Statement (Loc,
-                       Name       => New_Reference_To (Temp_Id, Loc),
-                       Expression => Make_Null (Loc))));
-
-               --  Use the Actions list of logical operators when inserting the
-               --  finalization call. This ensures that all transient objects
-               --  are finalized after the operators are evaluated.
-
-               if Nkind_In (Context, N_And_Then, N_Or_Else) then
-                  Insert_Action (Context, Fin_Call);
-               else
-                  Insert_Action_After (Context, Fin_Call);
-               end if;
-            end if;
-         end Process_Transient_Object;
-
-      --  Start of processing for Process_Action
-
       begin
          if Nkind (Act) = N_Object_Declaration
            and then Is_Finalizable_Transient (Act, N)
          then
-            Process_Transient_Object (Act);
+            Process_Transient_Object (Act, N);
+            return Abandon;
 
          --  Avoid processing temporary function results multiple times when
          --  dealing with nested expression_with_actions.
@@ -5359,8 +5086,8 @@ package body Exp_Ch4 is
          elsif Nkind (Act) = N_Expression_With_Actions then
             return Abandon;
 
-         --  Do not process temporary function results in loops. This is
-         --  done by Expand_N_Loop_Statement and Build_Finalizer.
+         --  Do not process temporary function results in loops. This is done
+         --  by Expand_N_Loop_Statement and Build_Finalizer.
 
          elsif Nkind (Act) = N_Loop_Statement then
             return Abandon;
@@ -5393,67 +5120,31 @@ package body Exp_Ch4 is
    --  Deal with limited types and condition actions
 
    procedure Expand_N_If_Expression (N : Node_Id) is
-      function Create_Alternative
-        (Loc     : Source_Ptr;
-         Temp_Id : Entity_Id;
-         Flag_Id : Entity_Id;
-         Expr    : Node_Id) return List_Id;
-      --  Build the statements of a "then" or "else" dependent expression
-      --  alternative. Temp_Id is the if expression result, Flag_Id is a
-      --  finalization flag created to service expression Expr.
+      procedure Process_Actions (Actions : List_Id);
+      --  Inspect and process a single action list of an if expression for
+      --  transient controlled objects. If such objects are found, the routine
+      --  generates code to clean them up when the context of the expression is
+      --  evaluated or elaborated.
 
-      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean;
-      --  Determine if expression Expr is a rewritten controlled function call
+      ---------------------
+      -- Process_Actions --
+      ---------------------
 
-      ------------------------
-      -- Create_Alternative --
-      ------------------------
-
-      function Create_Alternative
-        (Loc     : Source_Ptr;
-         Temp_Id : Entity_Id;
-         Flag_Id : Entity_Id;
-         Expr    : Node_Id) return List_Id
-      is
-         Result : constant List_Id := New_List;
+      procedure Process_Actions (Actions : List_Id) is
+         Act : Node_Id;
 
       begin
-         --  Generate:
-         --    Fnn := True;
+         Act := First (Actions);
+         while Present (Act) loop
+            if Nkind (Act) = N_Object_Declaration
+              and then Is_Finalizable_Transient (Act, N)
+            then
+               Process_Transient_Object (Act, N);
+            end if;
 
-         if Present (Flag_Id)
-           and then not Is_Controlled_Function_Call (Expr)
-         then
-            Append_To (Result,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Reference_To (Flag_Id, Loc),
-                Expression => New_Reference_To (Standard_True, Loc)));
-         end if;
-
-         --  Generate:
-         --    Cnn := <expr>'Unrestricted_Access;
-
-         Append_To (Result,
-           Make_Assignment_Statement (Loc,
-             Name       => New_Reference_To (Temp_Id, Loc),
-             Expression =>
-               Make_Attribute_Reference (Loc,
-                 Prefix         => Relocate_Node (Expr),
-                 Attribute_Name => Name_Unrestricted_Access)));
-
-         return Result;
-      end Create_Alternative;
-
-      ---------------------------------
-      -- Is_Controlled_Function_Call --
-      ---------------------------------
-
-      function Is_Controlled_Function_Call (Expr : Node_Id) return Boolean is
-      begin
-         return
-           Nkind (Original_Node (Expr)) = N_Function_Call
-             and then Needs_Finalization (Etype (Expr));
-      end Is_Controlled_Function_Call;
+            Next (Act);
+         end loop;
+      end Process_Actions;
 
       --  Local variables
 
@@ -5469,6 +5160,7 @@ package body Exp_Ch4 is
       Expr    : Node_Id;
       New_If  : Node_Id;
       New_N   : Node_Id;
+      Ptr_Typ : Entity_Id;
 
    --  Start of processing for Expand_N_If_Expression
 
@@ -5541,70 +5233,66 @@ package body Exp_Ch4 is
       if Is_By_Reference_Type (Typ)
         and then not Back_End_Handles_Limited_Types
       then
-         declare
-            Flag_Id : Entity_Id;
-            Ptr_Typ : Entity_Id;
+         --  When the "then" or "else" expressions involve controlled function
+         --  calls, generated temporaries are chained on the corresponding list
+         --  of actions. These temporaries need to be finalized after the if
+         --  expression is evaluated.
 
-         begin
-            Flag_Id := Empty;
+         Process_Actions (Then_Actions (N));
+         Process_Actions (Else_Actions (N));
 
-            --  At least one of the if expression dependent expressions uses a
-            --  controlled function to provide the result. Create a status flag
-            --  to signal the finalization machinery that Cnn needs special
-            --  handling.
+         --  Generate:
+         --    type Ann is access all Typ;
 
-            if Is_Controlled_Function_Call (Thenx)
-                 or else
-               Is_Controlled_Function_Call (Elsex)
-            then
-               Flag_Id := Make_Temporary (Loc, 'F');
+         Ptr_Typ := Make_Temporary (Loc, 'A');
 
-               Insert_Action (N,
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Flag_Id,
-                   Object_Definition   =>
-                     New_Reference_To (Standard_Boolean, Loc),
-                   Expression          =>
-                     New_Reference_To (Standard_False, Loc)));
-            end if;
+         Insert_Action (N,
+           Make_Full_Type_Declaration (Loc,
+             Defining_Identifier => Ptr_Typ,
+             Type_Definition     =>
+               Make_Access_To_Object_Definition (Loc,
+                 All_Present        => True,
+                 Subtype_Indication => New_Reference_To (Typ, Loc))));
 
-            --  Generate:
-            --    type Ann is access all Typ;
+         --  Generate:
+         --    Cnn : Ann;
 
-            Ptr_Typ := Make_Temporary (Loc, 'A');
+         Cnn := Make_Temporary (Loc, 'C', N);
 
-            Insert_Action (N,
-              Make_Full_Type_Declaration (Loc,
-                Defining_Identifier => Ptr_Typ,
-                Type_Definition     =>
-                  Make_Access_To_Object_Definition (Loc,
-                    All_Present        => True,
-                    Subtype_Indication => New_Reference_To (Typ, Loc))));
+         Decl :=
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Cnn,
+             Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
 
-            --  Generate:
-            --    Cnn : Ann;
+         --  Generate:
+         --    if Cond then
+         --       Cnn := <Thenx>'Unrestricted_Access;
+         --    else
+         --       Cnn := <Elsex>'Unrestricted_Access;
+         --    end if;
 
-            Cnn := Make_Temporary (Loc, 'C', N);
-            Set_Ekind (Cnn, E_Variable);
-            Set_Status_Flag_Or_Transient_Decl (Cnn, Flag_Id);
+         New_If :=
+           Make_Implicit_If_Statement (N,
+             Condition       => Relocate_Node (Cond),
+             Then_Statements => New_List (
+               Make_Assignment_Statement (Sloc (Thenx),
+                 Name       => New_Reference_To (Cnn, Sloc (Thenx)),
+                 Expression =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => Relocate_Node (Thenx),
+                     Attribute_Name => Name_Unrestricted_Access))),
 
-            Decl :=
-               Make_Object_Declaration (Loc,
-                 Defining_Identifier => Cnn,
-                 Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc));
-
-            New_If :=
-              Make_Implicit_If_Statement (N,
-                Condition       => Relocate_Node (Cond),
-                Then_Statements =>
-                  Create_Alternative (Sloc (Thenx), Cnn, Flag_Id, Thenx),
-                Else_Statements =>
-                  Create_Alternative (Sloc (Elsex), Cnn, Flag_Id, Elsex));
+             Else_Statements => New_List (
+               Make_Assignment_Statement (Sloc (Elsex),
+                 Name       => New_Reference_To (Cnn, Sloc (Elsex)),
+                 Expression =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix         => Relocate_Node (Elsex),
+                     Attribute_Name => Name_Unrestricted_Access))));
 
             New_N :=
               Make_Explicit_Dereference (Loc,
                 Prefix => New_Occurrence_Of (Cnn, Loc));
-         end;
 
       --  For other types, we only need to expand if there are other actions
       --  associated with either branch.
@@ -5615,26 +5303,28 @@ package body Exp_Ch4 is
 
          if Present (Then_Actions (N)) then
             Rewrite (Thenx,
-                     Make_Expression_With_Actions (Sloc (Thenx),
-                       Actions    => Then_Actions (N),
-                       Expression => Relocate_Node (Thenx)));
+              Make_Expression_With_Actions (Sloc (Thenx),
+                Actions    => Then_Actions (N),
+                Expression => Relocate_Node (Thenx)));
+
             Set_Then_Actions (N, No_List);
             Analyze_And_Resolve (Thenx, Typ);
          end if;
 
          if Present (Else_Actions (N)) then
             Rewrite (Elsex,
-                     Make_Expression_With_Actions (Sloc (Elsex),
-                       Actions    => Else_Actions (N),
-                       Expression => Relocate_Node (Elsex)));
+              Make_Expression_With_Actions (Sloc (Elsex),
+                Actions    => Else_Actions (N),
+                Expression => Relocate_Node (Elsex)));
+
             Set_Else_Actions (N, No_List);
             Analyze_And_Resolve (Elsex, Typ);
          end if;
 
          return;
 
-         --  If no actions then no expansion needed, gigi will handle it using
-         --  the same approach as a C conditional expression.
+      --  If no actions then no expansion needed, gigi will handle it using the
+      --  same approach as a C conditional expression.
 
       else
          return;
@@ -12386,6 +12076,282 @@ package body Exp_Ch4 is
       Analyze_And_Resolve (N, Typ);
       return;
    end Optimize_Length_Comparison;
+
+   ------------------------------
+   -- Process_Transient_Object --
+   ------------------------------
+
+   procedure Process_Transient_Object
+     (Decl     : Node_Id;
+      Rel_Node : Node_Id)
+   is
+      function Find_Enclosing_Context (N : Node_Id) return Node_Id;
+      --  Find the logical context where N appears. The context is chosen such
+      --  that it is possible to insert before and after it.
+
+      ----------------------------
+      -- Find_Enclosing_Context --
+      ----------------------------
+
+      function Find_Enclosing_Context (N : Node_Id) return Node_Id is
+         Par : Node_Id;
+         Top : Node_Id;
+
+      begin
+         --  When the node is inside a case/if expression, the lifetime of any
+         --  temporary controlled object is extended. Find a suitable insertion
+         --  node by locating the topmost case or if expressions.
+
+         if Within_Case_Or_If_Expression (N) then
+            Par := N;
+            Top := N;
+            while Present (Par) loop
+               if Nkind_In (Original_Node (Par), N_Case_Expression,
+                                                 N_If_Expression)
+               then
+                  Top := Par;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            --  The topmost case or if expression is now recovered, but it may
+            --  still not be the correct place to add generated code. Climb to
+            --  find a parent that is part of a declarative or statement list.
+
+            Par := Top;
+            while Present (Par) loop
+               if Is_List_Member (Par)
+                 and then not Nkind_In (Par, N_Component_Association,
+                                             N_Discriminant_Association,
+                                             N_Parameter_Association,
+                                             N_Pragma_Argument_Association)
+               then
+                  return Par;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            return Par;
+
+         --  Short circuit operators in complex expressions are converted into
+         --  expression_with_actions.
+
+         else
+            --  Handle the case where the node is buried deep inside an if
+            --  statement. The temporary controlled object must be finalized
+            --  before the then, elsif or else statements are evaluated.
+
+            --    if Something
+            --      and then Ctrl_Func_Call
+            --    then
+            --       <result must be finalized at this point>
+            --       <statements>
+            --    end if;
+
+            --  To achieve this, find the topmost logical operator. Generated
+            --  actions are then inserted before/after it.
+
+            Par := N;
+            while Present (Par) loop
+
+               --  Keep climbing past various operators
+
+               if Nkind (Parent (Par)) in N_Op
+                 or else Nkind_In (Parent (Par), N_And_Then, N_Or_Else)
+               then
+                  Par := Parent (Par);
+               else
+                  exit;
+               end if;
+            end loop;
+
+            Top := Par;
+
+            --  The node may be located in a pragma in which case return the
+            --  pragma itself:
+
+            --    pragma Precondition (... and then Ctrl_Func_Call ...);
+
+            --  Similar case occurs when the node is related to an object
+            --  declaration or assignment:
+
+            --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
+
+            --  Another case to consider is when the node is part of a return
+            --  statement:
+
+            --    return ... and then Ctrl_Func_Call ...;
+
+            --  Another case is when the node acts as a formal in a procedure
+            --  call statement:
+
+            --    Proc (... and then Ctrl_Func_Call ...);
+
+            while Present (Par) loop
+               if Nkind_In (Par, N_Assignment_Statement,
+                                 N_Object_Declaration,
+                                 N_Pragma,
+                                 N_Procedure_Call_Statement,
+                                 N_Simple_Return_Statement)
+               then
+                  return Par;
+
+               --  Prevent the search from going too far
+
+               elsif Is_Body_Or_Package_Declaration (Par) then
+                  exit;
+               end if;
+
+               Par := Parent (Par);
+            end loop;
+
+            --  Return the topmost short circuit operator
+
+            return Top;
+         end if;
+      end Find_Enclosing_Context;
+
+      --  Local variables
+
+      Context   : constant Node_Id    := Find_Enclosing_Context (Rel_Node);
+      Loc       : constant Source_Ptr := Sloc (Decl);
+      Obj_Id    : constant Entity_Id  := Defining_Identifier (Decl);
+      Obj_Typ   : constant Node_Id    := Etype (Obj_Id);
+      Desig_Typ : Entity_Id;
+      Expr      : Node_Id;
+      Fin_Call  : Node_Id;
+      Ptr_Id    : Entity_Id;
+      Temp_Id   : Entity_Id;
+
+   --  Start of processing for Process_Transient_Object
+
+   begin
+      --  Step 1: Create the access type which provides a reference to the
+      --  transient controlled object.
+
+      if Is_Access_Type (Obj_Typ) then
+         Desig_Typ := Directly_Designated_Type (Obj_Typ);
+      else
+         Desig_Typ := Obj_Typ;
+      end if;
+
+      Desig_Typ := Base_Type (Desig_Typ);
+
+      --  Generate:
+      --    Ann : access [all] <Desig_Typ>;
+
+      Ptr_Id := Make_Temporary (Loc, 'A');
+
+      Insert_Action (Context,
+        Make_Full_Type_Declaration (Loc,
+          Defining_Identifier => Ptr_Id,
+          Type_Definition     =>
+            Make_Access_To_Object_Definition (Loc,
+              All_Present        => Ekind (Obj_Typ) = E_General_Access_Type,
+              Subtype_Indication => New_Reference_To (Desig_Typ, Loc))));
+
+      --  Step 2: Create a temporary which acts as a hook to the transient
+      --  controlled object. Generate:
+
+      --    Temp : Ptr_Id := null;
+
+      Temp_Id := Make_Temporary (Loc, 'T');
+
+      Insert_Action (Context,
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Temp_Id,
+          Object_Definition   => New_Reference_To (Ptr_Id, Loc)));
+
+      --  Mark the temporary as created for the purposes of exporting the
+      --  transient controlled object out of the expression_with_action or if
+      --  expression. This signals the machinery in Build_Finalizer to treat
+      --  this case specially.
+
+      Set_Status_Flag_Or_Transient_Decl (Temp_Id, Decl);
+
+      --  Step 3: Hook the transient object to the temporary
+
+      --  The use of unchecked conversion / unrestricted access is needed to
+      --  avoid an accessibility violation. Note that the finalization code is
+      --  structured in such a way that the "hook" is processed only when it
+      --  points to an existing object.
+
+      if Is_Access_Type (Obj_Typ) then
+         Expr := Unchecked_Convert_To (Ptr_Id, New_Reference_To (Obj_Id, Loc));
+      else
+         Expr :=
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Reference_To (Obj_Id, Loc),
+             Attribute_Name => Name_Unrestricted_Access);
+      end if;
+
+      --  Generate:
+      --    Temp := Ptr_Id (Obj_Id);
+      --      <or>
+      --    Temp := Obj_Id'Unrestricted_Access;
+
+      Insert_After_And_Analyze (Decl,
+        Make_Assignment_Statement (Loc,
+          Name       => New_Reference_To (Temp_Id, Loc),
+          Expression => Expr));
+
+      --  Step 4: Finalize the transient controlled object after the context
+      --  has been evaluated/elaborated. Generate:
+
+      --    if Temp /= null then
+      --       [Deep_]Finalize (Temp.all);
+      --       Temp := null;
+      --    end if;
+
+      --  When the node is part of a return statement, there is no need to
+      --  insert a finalization call, as the general finalization mechanism
+      --  (see Build_Finalizer) would take care of the transient controlled
+      --  object on subprogram exit. Note that it would also be impossible to
+      --  insert the finalization code after the return statement as this will
+      --  render it unreachable.
+
+      if Nkind (Context) /= N_Simple_Return_Statement then
+         Fin_Call :=
+           Make_Implicit_If_Statement (Decl,
+             Condition =>
+               Make_Op_Ne (Loc,
+                 Left_Opnd  => New_Reference_To (Temp_Id, Loc),
+                 Right_Opnd => Make_Null (Loc)),
+
+             Then_Statements => New_List (
+               Make_Final_Call
+                 (Obj_Ref =>
+                    Make_Explicit_Dereference (Loc,
+                      Prefix => New_Reference_To (Temp_Id, Loc)),
+                  Typ     => Desig_Typ),
+
+               Make_Assignment_Statement (Loc,
+                 Name       => New_Reference_To (Temp_Id, Loc),
+                 Expression => Make_Null (Loc))));
+
+         --  Use the Actions list of logical operators when inserting the
+         --  finalization call. This ensures that all transient controlled
+         --  objects are finalized after the operators are evaluated.
+
+         if Nkind_In (Context, N_And_Then, N_Or_Else) then
+            Insert_Action (Context, Fin_Call);
+         else
+            Insert_Action_After (Context, Fin_Call);
+         end if;
+      end if;
+   end Process_Transient_Object;
 
    ------------------------
    -- Rewrite_Comparison --

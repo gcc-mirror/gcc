@@ -1,3 +1,25 @@
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Create_Alternative): Removed.
+	(Expand_N_If_Expression): Remove constant
+	In_Case_Or_If_Expression. Add local variable
+	Ptr_Typ. Inspect the "then" and "else" action lists
+	for transient controlled objects and generate code to
+	finalize them.	(Is_Controlled_Function_Call): Removed.
+	(Process_Action): Update the comment on usage. Update the call
+	to Process_Transient_Object. There is no need to continue the
+	traversal of the object itself.
+	(Process_Actions): New routine.
+	(Process_Transient_Object): Moved to the top level of Exp_Ch4. Add
+	a new formal and update the related comment on usage.
+	* exp_util.adb (Within_Case_Or_If_Expression): Start the search
+	from the parent of the node.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* a-cusyqu.ads, a-cbprqu.ads, s-interr.ads, a-cuprqu.ads,
+	a-cbsyqu.ads: Minor reformatting (proper formatting of overriding).
+
 2013-07-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch8.adb (Attribute_Renaming): Treat 'Img as an attribute
