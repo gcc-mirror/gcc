@@ -7242,6 +7242,27 @@ package body Exp_Ch4 is
             Build_Equality_Call
               (TSS (Root_Type (Typl), TSS_Composite_Equality));
 
+         --  When comparing two Bounded_Strings, use the primitive equality of
+         --  the root Super_String type.
+
+         elsif Is_Bounded_String (Typl) then
+            Prim :=
+              First_Elmt (Collect_Primitive_Operations (Root_Type (Typl)));
+
+            while Present (Prim) loop
+               exit when Chars (Node (Prim)) = Name_Op_Eq
+                 and then Etype (First_Formal (Node (Prim))) =
+                          Etype (Next_Formal (First_Formal (Node (Prim))))
+                 and then Base_Type (Etype (Node (Prim))) = Standard_Boolean;
+
+               Next_Elmt (Prim);
+            end loop;
+
+            --  A Super_String type should always have a primitive equality
+
+            pragma Assert (Present (Prim));
+            Build_Equality_Call (Node (Prim));
+
          --  Otherwise expand the component by component equality. Note that
          --  we never use block-bit comparisons for records, because of the
          --  problems with gaps. The backend will often be able to recombine
@@ -10718,11 +10739,11 @@ package body Exp_Ch4 is
               Expand_Composite_Equality (Nod, Etype (C),
                Lhs =>
                  Make_Selected_Component (Loc,
-                   Prefix => New_Lhs,
+                   Prefix        => New_Lhs,
                    Selector_Name => New_Reference_To (C, Loc)),
                Rhs =>
                  Make_Selected_Component (Loc,
-                   Prefix => New_Rhs,
+                   Prefix        => New_Rhs,
                    Selector_Name => New_Reference_To (C, Loc)),
                Bodies => Bodies);
 

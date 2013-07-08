@@ -7283,16 +7283,17 @@ package body Exp_Ch3 is
 
             --  When compiling in Ada 2012 mode, ensure that the accessibility
             --  level of the subpool access type is not deeper than that of the
-            --  pool_with_subpools. This check is not performed on .NET/JVM
-            --  since these targets do not support pools. The check is omitted
-            --  on profiles that lack package System.Storage_Pools.Subpools.
+            --  pool_with_subpools.
 
             elsif Ada_Version >= Ada_2012
               and then Present (Associated_Storage_Pool (Def_Id))
+
+              --  Omit this check on .NET/JVM where pools are not supported
+
               and then VM_Target = No_VM
 
-              --  ??? Temporary workaround until restriction No_Storage_Pools
-              --  is implemented.
+              --  Omit this check for the case of a configurable run-time that
+              --  does not provide package System.Storage_Pools.Subpools.
 
               and then RTE_Available (RE_Root_Storage_Pool_With_Subpools)
             then
