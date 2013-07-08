@@ -3650,10 +3650,11 @@ gfc_check_sizeof (gfc_expr *arg)
    otherwise, it is set to NULL.  The msg string can be used in diagnostics.
    If c_loc is true, character with len > 1 are allowed (cf. Fortran
    2003corr5); additionally, assumed-shape/assumed-rank/deferred-shape
-   arrays are permitted.  */
+   arrays are permitted. And if c_f_ptr is true, deferred-shape arrays
+   are permitted. */
 
 static bool
-is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc)
+is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc, bool c_f_ptr)
 {
   *msg = NULL;
 
@@ -3734,7 +3735,8 @@ is_c_interoperable (gfc_expr *expr, const char **msg, bool c_loc)
 	  *msg = "Only whole-arrays are interoperable";
 	  return false;
 	}
-      if (ar->as->type != AS_EXPLICIT && ar->as->type != AS_ASSUMED_SIZE)
+      if (!c_f_ptr && ar->as->type != AS_EXPLICIT
+	  && ar->as->type != AS_ASSUMED_SIZE)
 	{
 	  *msg = "Only explicit-size and assumed-size arrays are interoperable";
 	  return false;
@@ -3750,7 +3752,7 @@ gfc_check_c_sizeof (gfc_expr *arg)
 {
   const char *msg;
 
-  if (!is_c_interoperable (arg, &msg, false))
+  if (!is_c_interoperable (arg, &msg, false, false))
     {
       gfc_error ("'%s' argument of '%s' intrinsic at %L must be an "
 		 "interoperable data entity: %s",
@@ -3900,7 +3902,7 @@ gfc_check_c_f_pointer (gfc_expr *cptr, gfc_expr *fptr, gfc_expr *shape)
       return false;
     }
 
-  if (!is_c_interoperable (fptr, &msg, false) && fptr->rank)
+  if (!is_c_interoperable (fptr, &msg, false, true))
     return gfc_notify_std (GFC_STD_F2008_TS, "Noninteroperable array FPTR "
 			   "at %L to C_F_POINTER: %s", &fptr->where, msg);
 
@@ -4029,7 +4031,7 @@ gfc_check_c_loc (gfc_expr *x)
       return false;
     }
 
-  if (!is_c_interoperable (x, &msg, true))
+  if (!is_c_interoperable (x, &msg, true, false))
     {
       if (x->ts.type == BT_CLASS)
 	{
