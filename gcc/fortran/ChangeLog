@@ -1,3 +1,10 @@
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57785
+	* simplify.c (compute_dot_product): Complex conjugate for
+	dot_product.
+	(gfc_simplify_dot_product, gfc_simplify_matmul): Update call.
+
 2013-06-11  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57508
