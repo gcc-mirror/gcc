@@ -1,3 +1,14 @@
+2013-07-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: Rename cfun_set_fpr_bit to cfun_set_fpr_save
+	and cfun_fpr_bit_p to cfun_fpr_save_p.
+	(s390_frame_area, s390_register_info, s390_frame_info)
+	(s390_emit_prologue, s390_emit_epilogue)
+	(s390_conditional_register_usage): Use the *_REGNUM macros for FPR
+	register numbers.
+	* config/s390/s390.h: Define *_REGNUM macros for floating point
+	register numbers.
+
 2013-07-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.in (tree-ssa-reassoc.o): Add dependency on $(PARAMS_H).

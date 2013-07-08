@@ -477,6 +477,23 @@ enum reg_class
   { 0xffffffff, 0x0000003f },	/* ALL_REGS */		\
 }
 
+#define F0_REGNUM  16
+#define F1_REGNUM  20
+#define F2_REGNUM  17
+#define F3_REGNUM  21
+#define F4_REGNUM  18
+#define F5_REGNUM  22
+#define F6_REGNUM  19
+#define F7_REGNUM  23
+#define F8_REGNUM  24
+#define F9_REGNUM  25
+#define F10_REGNUM 26
+#define F11_REGNUM 27
+#define F12_REGNUM 28
+#define F13_REGNUM 29
+#define F14_REGNUM 30
+#define F15_REGNUM 31
+
 /* In some case register allocation order is not enough for IRA to
    generate a good code.  The following macro (if defined) increases
    cost of REGNO for a pseudo approximately by pseudo usage frequency
