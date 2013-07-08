@@ -1,3 +1,13 @@
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch3.adb (Freeze_Type): Generate a
+	subpools-related accessibility check only on profiles that
+	include the corresponding library unit.
+
+2013-07-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch8.adb: Minor typo fixes.
+
 2013-07-08  Javier Miranda  <miranda@adacore.com>
 
 	* sem_ch8.adb (Save_Scope_Stack): Adding documentation.
