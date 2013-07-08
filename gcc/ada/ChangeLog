@@ -1,3 +1,13 @@
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_PPC_In_Decl_Part): In ASIS mode,
+	pre-analyze only the original expression attached to the source
+	aspect, not the relocated expression of the pragma, to prevent
+	malformed trees in ASIS mode.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Revert previous
+	patch: the expression in the aspect for pre/post must be relocated
+	to the pragma for proper analysis.
+
 2013-07-05  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb: Add an entry for SPARK_Mode in table Canonical_Aspect.
