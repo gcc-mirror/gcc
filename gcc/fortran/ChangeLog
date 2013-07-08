@@ -1,5 +1,12 @@
 2013-07-08  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/57834
+	* check.c (is_c_interoperable): Add special case for c_f_pointer.
+	(explicit-size, gfc_check_c_f_pointer, gfc_check_c_loc): Update
+	call.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/50554
 	* io.c (match_inquire_element): Add missing do-var check.
 
