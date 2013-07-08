@@ -520,8 +520,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       if (vendor == signature_AMD_ebx
 	  || vendor == signature_CENTAUR_ebx
 	  || vendor == signature_CYRIX_ebx
-	  || vendor == signature_NSC_ebx
-	  || vendor == signature_TM2_ebx)
+	  || vendor == signature_NSC_ebx)
 	cache = detect_caches_amd (ext_level);
       else if (vendor == signature_INTEL_ebx)
 	{
