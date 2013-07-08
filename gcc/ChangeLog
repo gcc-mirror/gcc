@@ -1,5 +1,13 @@
 2013-07-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/57819
+	* simplify-rtx.c (simplify_unary_operation_1) <case ZERO_EXTEND>:
+	Simplify (zero_extend:SI (subreg:QI (and:SI (reg:SI)
+	(const_int 63)) 0)).
+	* combine.c (make_extraction): Create ZERO_EXTEND or SIGN_EXTEND
+	using simplify_gen_unary instead of gen_rtx_*_EXTEND.
+	* config/i386/i386.md (*jcc_bt<mode>_1): New define_insn_and_split.
+
 	PR rtl-optimization/57829
 	* simplify-rtx.c (simplify_binary_operation_1) <case IOR>: Ensure that
 	mask bits outside of mode are just sign-extension from mode to HWI.

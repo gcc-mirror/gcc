@@ -1,5 +1,8 @@
 2013-07-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/57819
+	* gcc.target/i386/pr57819.c: New test.
+
 	PR rtl-optimization/57829
 	* gcc.c-torture/execute/pr57829.c: New test.
 
