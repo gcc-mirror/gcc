@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2011, Free Software Foundation, Inc.            --
+--          Copyright (C) 2011-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -83,24 +83,20 @@ package Ada.Containers.Bounded_Synchronized_Queues is
    protected type Queue
      (Capacity : Count_Type := Default_Capacity;
       Ceiling  : System.Any_Priority := Default_Ceiling)
-     with Priority => Ceiling is new Queue_Interfaces.Queue with
+   with
+     Priority => Ceiling
+   is new Queue_Interfaces.Queue with
 
-      overriding
-      entry Enqueue (New_Item : Queue_Interfaces.Element_Type);
+      overriding entry Enqueue (New_Item : Queue_Interfaces.Element_Type);
 
-      overriding
-      entry Dequeue (Element : out Queue_Interfaces.Element_Type);
+      overriding entry Dequeue (Element : out Queue_Interfaces.Element_Type);
 
-      overriding
-      function Current_Use return Count_Type;
+      overriding function Current_Use return Count_Type;
 
-      overriding
-      function Peak_Use return Count_Type;
+      overriding function Peak_Use return Count_Type;
 
    private
-
       List : Implementation.List_Type (Capacity);
-
    end Queue;
 
 end Ada.Containers.Bounded_Synchronized_Queues;
