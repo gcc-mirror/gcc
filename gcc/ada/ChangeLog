@@ -1,3 +1,13 @@
+ 2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb, exp_ch3.adb: Minor reformatting.
+
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): When comparing two
+	Bounded_Strings, use the predefined equality function of the
+	root Super_String type.
+
 2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Create_Alternative): Removed.

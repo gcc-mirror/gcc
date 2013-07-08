@@ -3300,14 +3300,14 @@ package body Sem_Ch8 is
    ------------------------
 
    procedure Attribute_Renaming (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Nam        : constant Node_Id    := Name (N);
-      Spec       : constant Node_Id    := Specification (N);
-      New_S      : constant Entity_Id  := Defining_Unit_Name (Spec);
-      Aname      : constant Name_Id    := Attribute_Name (Nam);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Nam   : constant Node_Id    := Name (N);
+      Spec  : constant Node_Id    := Specification (N);
+      New_S : constant Entity_Id  := Defining_Unit_Name (Spec);
+      Aname : constant Name_Id    := Attribute_Name (Nam);
 
-      Form_Num   : Nat      := 0;
-      Expr_List  : List_Id  := No_List;
+      Form_Num  : Nat      := 0;
+      Expr_List : List_Id  := No_List;
 
       Attr_Node  : Node_Id;
       Body_Node  : Node_Id;
@@ -3323,9 +3323,7 @@ package body Sem_Ch8 is
       --  and the GNAT attribute 'Img, which GNAT treats as renameable.
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
-         if Aname /= Name_AST_Entry
-           and then Aname /= Name_Img
-         then
+         if Aname /= Name_AST_Entry and then Aname /= Name_Img then
             Error_Msg_N
               ("subprogram renaming an attribute must have formals", N);
             return;
@@ -3344,8 +3342,8 @@ package body Sem_Ch8 is
                --  there are no subtypes involved.
 
                Rewrite (Parameter_Type (Param_Spec),
-                New_Reference_To
-                  (Base_Type (Entity (Parameter_Type (Param_Spec))), Loc));
+                 New_Reference_To
+                   (Base_Type (Entity (Parameter_Type (Param_Spec))), Loc));
             end if;
 
             if No (Expr_List) then
@@ -3498,13 +3496,13 @@ package body Sem_Ch8 is
             P : constant Node_Id := Prefix (Nam);
 
          begin
-            --  The prefix of 'Img is an object that is evaluated for
-            --  each call of the function that renames it.
+            --  The prefix of 'Img is an object that is evaluated for each call
+            --  of the function that renames it.
 
             if Aname = Name_Img then
                Preanalyze_And_Resolve (P);
 
-            --  For all other attribute renamings, the prefix is a subtype.
+            --  For all other attribute renamings, the prefix is a subtype
 
             else
                Find_Type (P);
