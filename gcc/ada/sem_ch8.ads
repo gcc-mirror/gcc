@@ -148,7 +148,8 @@ package Sem_Ch8 is
    --  with-clause on system. N is absent when the function is called to find
    --  the visibility of implicit operators.
 
-   function Save_Scope_Stack (Handle_Use : Boolean := True) return Elist_Id;
+   function Save_Scope_Stack
+     (Handle_Use : Boolean := True) return Elist_Id;
    procedure Restore_Scope_Stack
      (List       : Elist_Id;
       Handle_Use : Boolean := True);
@@ -156,10 +157,13 @@ package Sem_Ch8 is
    --  be compiled in the course of the compilation of another unit U2. This
    --  happens whenever Rtsfind is called. U1, the unit retrieved by Rtsfind,
    --  must be compiled in its own context, and the current scope stack
-   --  containing U2 and local scopes must be made unreachable. On return, the
-   --  contents of the scope stack must be made accessible again. The flag
-   --  Handle_Use indicates whether local use clauses must be removed or
-   --  installed. In the case of inlining of instance bodies, the visibility
+   --  containing U2 and local scopes must be made unreachable. This is
+   --  achieved using a call to Save_Scope_Stack. On return, the contents
+   --  of the scope stack must be made accessible again with a call to
+   --  Restore_Scope_Stack.
+   --
+   --  The flag Handle_Use indicates whether local use clauses must be removed
+   --  or installed. In the case of inlining of instance bodies, the visibility
    --  handling is done fully in Inline_Instance_Body, and use clauses are
    --  handled there. Save_Scope_Stack returns the list of entities which have
    --  been temporarily removed from visibility; that list must be passed to

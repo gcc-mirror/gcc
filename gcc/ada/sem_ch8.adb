@@ -7664,6 +7664,8 @@ package body Sem_Ch8 is
    begin
       --  Restore visibility of previous scope stack, if any
 
+      --  Should use Remove_Elmt, so that elements can be reused ???
+
       Elmt := First_Elmt (List);
       while Present (Elmt) loop
          Set_Is_Immediately_Visible (Node (Elmt));
@@ -7690,7 +7692,13 @@ package body Sem_Ch8 is
 
       procedure Remove_From_Visibility (E : Entity_Id);
       --  If E is immediately visible then append it to the result and remove
-      --  it temporarily from visibility
+      --  it temporarily from visibility.
+
+      ----------------------------
+      -- Remove_From_Visibility --
+      ----------------------------
+
+      --  Need comment on why we do this instead of old approach???
 
       procedure Remove_From_Visibility (E : Entity_Id) is
       begin
@@ -7699,6 +7707,8 @@ package body Sem_Ch8 is
             Set_Is_Immediately_Visible (E, False);
          end if;
       end Remove_From_Visibility;
+
+   --  Start of processing for Save_Scope_Stack
 
    begin
       if SS_Last >= Scope_Stack.First

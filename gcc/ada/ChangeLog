@@ -1,3 +1,7 @@
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch8.adb, sem_ch8.ads: Minor reformatting.
+
 2013-07-08  Gary Dismukes  <dismukes@adacore.com>
 
 	* gnat_rm.texi: Minor reformatting and rewording for consistency.
