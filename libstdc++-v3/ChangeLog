@@ -1,3 +1,7 @@
+2013-07-07  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* doc/xml/manual/status_cxx2014.xml: Add links for papers.
+
 2013-07-05  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_ReuseOrAllocNode): Use forward
