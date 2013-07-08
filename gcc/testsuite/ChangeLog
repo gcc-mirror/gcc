@@ -1,3 +1,8 @@
+2013-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57829
+	* gcc.c-torture/execute/pr57829.c: New test.
+
 2013-07-08  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
 
 	* gcc.target/i386/memcpy-vector_loop-1.c: New.
