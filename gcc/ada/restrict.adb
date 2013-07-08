@@ -166,7 +166,7 @@ package body Restrict is
    begin
       if Force or else Comes_From_Source (Original_Node (N)) then
 
-         if Restriction_Check_Required (SPARK)
+         if Restriction_Check_Required (SPARK_05)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
          then
             return;
@@ -177,7 +177,7 @@ package body Restrict is
          --  restore the previous value of the global variable around the call.
 
          Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
+         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
          Error_Msg_Sloc := Save_Error_Msg_Sloc;
 
          if Msg_Issued then
@@ -194,7 +194,7 @@ package body Restrict is
 
       if Comes_From_Source (Original_Node (N)) then
 
-         if Restriction_Check_Required (SPARK)
+         if Restriction_Check_Required (SPARK_05)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
          then
             return;
@@ -205,7 +205,7 @@ package body Restrict is
          --  restore the previous value of the global variable around the call.
 
          Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
+         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
          Error_Msg_Sloc := Save_Error_Msg_Sloc;
 
          if Msg_Issued then
@@ -880,9 +880,21 @@ package body Restrict is
          when Name_No_Task_Attributes =>
             New_Name := Name_No_Task_Attributes_Package;
 
+         --  SPARK is special in that we unconditionally warn
+
+         when Name_SPARK =>
+            Error_Msg_Name_1 := Name_SPARK;
+            Error_Msg_N ("restriction identifier % is obsolescent??", N);
+            Error_Msg_Name_1 := Name_SPARK_05;
+            Error_Msg_N ("|use restriction identifier % instead??", N);
+            return Name_SPARK_05;
+
          when others =>
             return Old_Name;
       end case;
+
+      --  Output warning if we are warning on obsolescent features for all
+      --  cases other than SPARK.
 
       if Warn_On_Obsolescent_Feature then
          Error_Msg_Name_1 := Old_Name;
@@ -983,10 +995,10 @@ package body Restrict is
 
       procedure Id_Case (S : String; Quotes : Boolean := True);
       --  Given a string S, case it according to current identifier casing,
-      --  except for SPARK (an acronym) which is set all upper case, and store
-      --  in Error_Msg_String. Then append `~` to the message buffer to output
-      --  the string unchanged surrounded in quotes. The quotes are suppressed
-      --  if Quotes = False.
+      --  except for SPARK_05 (an acronym) which is set all upper case, and
+      --  store in Error_Msg_String. Then append `~` to the message buffer
+      --  to output the string unchanged surrounded in quotes. The quotes
+      --  are suppressed if Quotes = False.
 
       --------------
       -- Add_Char --
@@ -1017,7 +1029,7 @@ package body Restrict is
          Name_Buffer (1 .. S'Last) := S;
          Name_Len := S'Length;
 
-         if R = SPARK then
+         if R = SPARK_05 then
             Set_All_Upper_Case;
          else
             Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
