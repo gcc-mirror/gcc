@@ -1,3 +1,7 @@
+2013-07-08  Graham Stott  <graham.stott@btinternet.com>
+	* c-family/array-notation-common.c (length_mismatch_in_expr_p): Delete
+	unused variables l_length and l_node.
+
 2013-07-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c: Rename cfun_set_fpr_bit to cfun_set_fpr_save

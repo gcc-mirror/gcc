@@ -84,7 +84,6 @@ length_mismatch_in_expr_p (location_t loc, vec<vec<an_parts> >list)
 {
   size_t ii, jj;
   tree length = NULL_TREE;
-  HOST_WIDE_INT l_length, l_node;
   
   size_t x = list.length ();
   size_t y = list[0].length ();
