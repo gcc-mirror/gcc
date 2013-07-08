@@ -1718,14 +1718,16 @@ package body Sem_Prag is
       --  Preanalyze the boolean expression, we treat this as a spec expression
       --  (i.e. similar to a default expression).
 
-      Preanalyze_Assert_Expression (Get_Pragma_Arg (Arg1), Standard_Boolean);
-
-      --  In ASIS mode, for a pragma generated from a source aspect, also
-      --  analyze the original aspect expression.
+      --  In ASIS mode, for a pragma generated from a source aspect, analyze
+      --  directly the the original aspect expression, which is shared with
+      --  the generated pragma.
 
       if ASIS_Mode and then Present (Corresponding_Aspect (N)) then
          Preanalyze_Assert_Expression
            (Expression (Corresponding_Aspect (N)), Standard_Boolean);
+      else
+         Preanalyze_Assert_Expression
+            (Get_Pragma_Arg (Arg1), Standard_Boolean);
       end if;
 
       --  For a class-wide condition, a reference to a controlling formal must
