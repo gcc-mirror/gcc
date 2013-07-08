@@ -2558,6 +2558,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
           HOST_WIDE_INT mask = INTVAL (trueop1) << count;
 
           if (mask >> count == INTVAL (trueop1)
+	      && trunc_int_for_mode (mask, mode) == mask
               && (mask & nonzero_bits (XEXP (op0, 0), mode)) == 0)
 	    return simplify_gen_binary (ASHIFTRT, mode,
 					plus_constant (XEXP (op0, 0), mask),
