@@ -3255,8 +3255,10 @@ of the configuration pragma Implicit_Packing, then the Size clause in this
 and similar examples will cause implicit packing and thus be accepted. For
 this implicit packing to occur, the type in question must be an array of small
 components whose size is known at compile time, and the Size clause must
-specify the exact size that corresponds to the length of the array multiplied
-by the size in bits of the component type.
+specify the exact size that corresponds to the number of elements in the array
+multiplied by the size in bits of the component type (both single and
+multi-dimensioned arrays can be controlled with this pragma).
+
 @cindex Array packing
 
 Similarly, the following example shows the use in the record case
