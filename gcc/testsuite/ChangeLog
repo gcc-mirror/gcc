@@ -1,3 +1,8 @@
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57469
+	* gfortran.dg/warn_unused_dummy_argument_4.f90: New.
+
 2013-07-08  Manfred Schwarb  <manfred99@gmx.ch>
 
 	* gfortran.dg/defined_assignment_7.f90: Fix dg-do.

@@ -1,3 +1,9 @@
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57469
+	* trans-decl.c (generate_local_decl): Don't warn that
+	a dummy is unused, when it is in a namelist.
+
 2013-07-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/54788
@@ -628,7 +634,7 @@
 
 	* class.c (finalization_scalarizer, finalizer_insert_packed_call,
 	generate_finalization_wrapper): Avoid segfault with absent SIZE=
-	argment to TRANSFER and use correct result kind for SIZE.
+	argument to TRANSFER and use correct result kind for SIZE.
 	* intrinsic.c (gfc_isym_id_by_intmod): Also handle ids of
 	nonmodules.
 	* trans.c (gfc_build_final_call): Handle coarrays.

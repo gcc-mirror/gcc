@@ -4726,7 +4726,7 @@ generate_local_decl (gfc_symbol * sym)
 	gfc_get_symbol_decl (sym);
 
       /* Warnings for unused dummy arguments.  */
-      else if (sym->attr.dummy)
+      else if (sym->attr.dummy && !sym->attr.in_namelist)
 	{
 	  /* INTENT(out) dummy arguments are likely meant to be set.  */
 	  if (gfc_option.warn_unused_dummy_argument
