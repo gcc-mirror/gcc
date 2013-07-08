@@ -406,14 +406,14 @@ procedure GNATCmd is
          end if;
       end loop;
 
-      --  If all arguments are switches and there is no switch -files=, add
-      --  the path names of all the sources of the main project.
+      --  If all arguments are switches and there is no switch -files=, add the
+      --  path names of all the sources of the main project.
 
       if Add_Sources then
 
-         --  For gnatcheck, gnatpp, and gnatmetric, create a temporary file
-         --  and put the list of sources in it. For gnatstack create a
-         --  temporary file with the list of .ci files.
+         --  For gnatcheck, gnatpp, and gnatmetric, create a temporary file and
+         --  put the list of sources in it. For gnatstack create a temporary
+         --  file with the list of .ci files.
 
          if The_Command = Check  or else
             The_Command = Pretty or else

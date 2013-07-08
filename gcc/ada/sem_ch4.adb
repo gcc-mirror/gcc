@@ -2472,9 +2472,21 @@ package body Sem_Ch4 is
             Process_Function_Call;
 
          elsif Nkind (P) = N_Selected_Component
+           and then Present (Entity (Selector_Name (P)))
            and then Is_Overloadable (Entity (Selector_Name (P)))
          then
             Process_Function_Call;
+
+         --  In ASIS mode within a generic, a prefixed call is analyzed and
+         --  partially rewritten but the original indexed component has not
+         --  yet been rewritten as a call. Perform the replacement now.
+
+         elsif Nkind (P) = N_Selected_Component
+           and then Nkind (Parent (P)) = N_Function_Call
+           and then ASIS_Mode
+         then
+            Rewrite (N, Parent (P));
+            Analyze (N);
 
          else
             --  Indexed component, slice, or a call to a member of a family
@@ -7202,13 +7214,13 @@ package body Sem_Ch4 is
          --  though they may be overwritten during resolution if overloaded.
          --  Perform the same transformation in ASIS mode, because during
          --  pre-analysis of a pre/post condition the node will not be
-         --  rewritten as a call.
+         --  rewritten as a call. (is this ASIS comment obsolete ???)
 
          Set_Comes_From_Source (Subprog, Comes_From_Source (N));
          Set_Comes_From_Source (Call_Node, Comes_From_Source (N));
 
          if Nkind (N) = N_Selected_Component
-           and then (not Inside_A_Generic or ASIS_Mode)
+           and then not Inside_A_Generic
          then
             Set_Entity (Selector_Name (N), Entity (Subprog));
             Set_Etype  (Selector_Name (N), Etype (Entity (Subprog)));

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -47,8 +47,20 @@ package Erroutc is
    Flag_Source : Source_File_Index;
    --  Source file index for source file where error is being posted
 
+   Has_Double_Exclam : Boolean := False;
+   --  Set true to indicate that the current message contains the insertion
+   --  sequence !! (force warnings even in non-main unit source files).
+
+   Is_Serious_Error : Boolean := False;
+   --  Set True for a serious error (i.e. any message that is not a warning
+   --  or style message, and that does not contain a | insertion character).
+
+   Is_Unconditional_Msg : Boolean := False;
+   --  Set True to indicate that the current message contains the insertion
+   --  character ! and is thus to be treated as an unconditional message.
+
    Is_Warning_Msg : Boolean := False;
-   --  Set True to indicate if current message is warning message
+   --  Set True to indicate if current message is warning message (contains ?)
 
    Warning_Msg_Char : Character;
    --  Warning character, valid only if Is_Warning_Msg is True
@@ -60,12 +72,6 @@ package Erroutc is
    Is_Style_Msg : Boolean := False;
    --  Set True to indicate if the current message is a style message
    --  (i.e. a message whose text starts with the characters "(style)").
-
-   Is_Serious_Error : Boolean := False;
-   --  Set by Set_Msg_Text to indicate if current message is serious error
-
-   Is_Unconditional_Msg : Boolean := False;
-   --  Set by Set_Msg_Text to indicate if current message is unconditional
 
    Kill_Message : Boolean := False;
    --  A flag used to kill weird messages (e.g. those containing uninterpreted
@@ -490,14 +496,26 @@ package Erroutc is
    --  Called in response to a pragma Warnings (On) to record the source
    --  location from which warnings are to be turned back on.
 
-   procedure Test_Style_Warning_Serious_Msg (Msg : String);
-   --  Sets Is_Warning_Msg true if Msg is a warning message (contains a
-   --  question mark character), and False otherwise. Is_Style_Msg is set true
-   --  if Msg is a style message (starts with "(style)". Sets Is_Serious_Error
-   --  True unless the message is a warning or style/info message or contains
-   --  the character | indicating a non-serious error message. Note that the
-   --  call has no effect for continuation messages (those whose first
-   --  character is '\').
+   procedure Test_Style_Warning_Serious_Unconditional_Msg (Msg : String);
+   --  Scans message text and sets the following variables:
+   --
+   --    Is_Warning_Msg is set True if Msg is a warning message (contains a
+   --    question mark character), and False otherwise.
+   --
+   --    Is_Style_Msg is set True if Msg is a style message (starts with
+   --    "(style)") and False otherwise.
+   --
+   --    Is_Serious_Error is set to True unless the message is a warning or
+   --    style message or contains the character | (non-serious error).
+   --
+   --    Is_Unconditional_Msg is set True if the message contains the character
+   --    ! and is otherwise set False.
+   --
+   --    Has_Double_Exclam is set True if the message contains the sequence !!
+   --    and is otherwise set False.
+   --
+   --  Note that the call has no effect for continuation messages (those whose
+   --  first character is '\'), and all variables are left unchanged.
 
    function Warnings_Suppressed (Loc : Source_Ptr) return Boolean;
    --  Determines if given location is covered by a warnings off suppression

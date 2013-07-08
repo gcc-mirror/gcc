@@ -9066,11 +9066,11 @@ dependence on a library unit.
 @node No_Direct_Boolean_Operators
 @unnumberedsubsec No_Direct_Boolean_Operators
 @findex No_Direct_Boolean_Operators
-[GNAT] This restriction ensures that no logical (and/or/xor) are used on
-operands of type Boolean (or any type derived
-from Boolean). This is intended for use in safety critical programs
-where the certification protocol requires the use of short-circuit
-(and then, or else) forms for all composite boolean operations.
+[GNAT] This restriction ensures that no logical operators (and/or/xor)
+are used on operands of type Boolean (or any type derived from Boolean).
+This is intended for use in safety critical programs where the certification
+protocol requires the use of short-circuit (and then, or else) forms for all
+composite boolean operations.
 
 @node No_Dispatch
 @unnumberedsubsec No_Dispatch
