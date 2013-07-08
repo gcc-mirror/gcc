@@ -1576,6 +1576,22 @@ package body Sem_Res is
       else
          Resolve (N, Typ);
       end if;
+
+      --  If in ASIS_Mode, propagate operand types to original actuals of
+      --  function call, which would otherwise not be fully resolved.
+
+      if ASIS_Mode then
+         if Is_Binary then
+            Set_Parameter_Associations
+              (Original_Node (N),
+               New_List (New_Copy_Tree (Left_Opnd (N)),
+                         New_Copy_Tree (Right_Opnd (N))));
+         else
+            Set_Parameter_Associations
+              (Original_Node (N),
+               New_List (New_Copy_Tree (Right_Opnd (N))));
+         end if;
+      end if;
    end Make_Call_Into_Operator;
 
    -------------------

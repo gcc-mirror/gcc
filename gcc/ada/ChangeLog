@@ -1,5 +1,30 @@
 2013-07-08  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch9.adb (Expand_N_Asynchronous_Select): If the trigger
+	of the asynchronous select is a dispatching call, transform the
+	abortable part into a procedure, to avoid duplication of local
+	loop variables that may appear within.
+
+2013-07-08  Vincent Celier  <celier@adacore.com>
+
+	* projects.texi: Update the documentation of suffixes in package
+	Naming.
+
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Conforming_Types): Anonymous_access_to_subprograsm
+	types are type conformant if the designated type of one is
+	protected and the other is not. Convention only matters when
+	checking subtype conformance.
+
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Make_Call_Into_Operator): In ASIS mode, propagate
+	back the fully resolved operands to the original function call
+	so that all semantic information remains available to ASIS.
+
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch4.adb: minor reformatting (remove obsolete comment).
 	* sem_ch9.adb: improve error message on illegal trigger.
 

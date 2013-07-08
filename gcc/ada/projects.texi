@@ -926,16 +926,21 @@ The following attributes can be defined in package @code{Naming}:
   that contain declaration (header files in C for instance). The attribute
   is indexed on the language.
   The two attributes are equivalent, but the latter is obsolescent.
+
+  If the value of the attribute is the empty string, it indicates to the
+  Project Manager that the only specifications/header files for the language
+  are those specified with attributes @code{Spec} or
+  @code{Specification_Exceptions}.
+
   If @code{Spec_Suffix ("Ada")} is not specified, then the default is
   @code{"^.ads^.ADS^"}.
-  The value must satisfy the following requirements:
+
+  A non empty value must satisfy the following requirements:
 
   @itemize -
-  @item It must not be empty
-  @item It cannot start with an alphanumeric character
-  @item It cannot start with an underscore followed by an alphanumeric character
   @item It must include at least one dot
-
+  @item If @code{Dot_Replacement} is a single dot, then it cannot include
+        more than one dot.
   @end itemize
 
 @item @b{Body_Suffix} and @b{Implementation_Suffix}:
@@ -944,6 +949,14 @@ The following attributes can be defined in package @code{Naming}:
   These attributes give the extension used for file names that contain
   code (bodies in Ada). They are indexed on the language. The second
   version is obsolescent and fully replaced by the first attribute.
+
+  For each language of a project, one of these two attributes need to be
+  specified, either in the project itself or in the configuration project file.
+
+  If the value of the attribute is the empty string, it indicates to the
+  Project Manager that the only source files for the language
+  are those specified with attributes @code{Body} or
+  @code{Implementation_Exceptions}.
 
   These attributes must satisfy the same requirements as @code{Spec_Suffix}.
   In addition, they must be different from any of the values in
@@ -956,10 +969,10 @@ The following attributes can be defined in package @code{Naming}:
   suffixes will be a body if the longest suffix is @code{Body_Suffix ("Ada")}
   or a spec if the longest suffix is @code{Spec_Suffix ("Ada")}.
 
-  If the suffix does not start with a '.', a file with a name exactly equal
-  to the suffix will also be part of the project (for instance if you define
-  the suffix as @code{Makefile}, a file called @file{Makefile} will be part
-  of the project. This capability is usually not interesting  when building.
+  If the suffix does not start with a '.', a file with a name exactly equal to
+  the suffix will also be part of the project (for instance if you define the
+  suffix as @code{Makefile.in}, a file called @file{Makefile.in} will be part
+  of the project. This capability is usually not interesting when building.
   However, it might become useful when a project is also used to
   find the list of source files in an editor, like the GNAT Programming System
   (GPS).
@@ -968,7 +981,11 @@ The following attributes can be defined in package @code{Naming}:
 @cindex @code{Separate_Suffix}
   This attribute is specific to Ada. It denotes the suffix used in file names
   that contain separate bodies. If it is not specified, then it defaults to
-  same value as @code{Body_Suffix ("Ada")}. The same rules apply as for the
+  same value as @code{Body_Suffix ("Ada")}.
+
+  The value of this attribute cannot be the empty string.
+
+  Otherwise, the same rules apply as for the
   @code{Body_Suffix} attribute. The only accepted index is "Ada".
 
 @item @b{Spec} or @b{Specification}:
