@@ -4629,7 +4629,7 @@ package body Sem_Prag is
                               and then
                                 Is_Spec_Name (Unit_Name (Current_Sem_Unit))
                               and then (Ekind (Cent) /= E_Package
-                                          or else not In_Private_Part (Cent));
+                                         or else not In_Private_Part (Cent));
                   --  Set True if this is the warning case, and we are in the
                   --  visible part of a package spec, or in a subprogram spec,
                   --  in which case we want to force the client to see the
