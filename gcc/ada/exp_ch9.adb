@@ -6756,6 +6756,40 @@ package body Exp_Ch9 is
       S   : Entity_Id;  --  Primitive operation slot
       T   : Entity_Id;  --  Additional status flag
 
+      procedure Rewrite_Abortable_Part;
+      --  If the trigger is a dispatching call, the expansion inserts multiple
+      --  copies of the abortable part. This is both inefficient, and may lead
+      --  to duplicate definitions that the back-end will reject, when the
+      --  abortable part includes loops. This procedure rewrites the abortable
+      --  part into a call to a generated procedure.
+
+      ----------------------------
+      -- Rewrite_Abortable_Part --
+      ----------------------------
+
+      procedure Rewrite_Abortable_Part is
+         Proc : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uA);
+         Decl : Node_Id;
+
+      begin
+         Decl :=
+           Make_Subprogram_Body (Loc,
+             Specification              =>
+               Make_Procedure_Specification (Loc, Defining_Unit_Name => Proc),
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc, Astats));
+         Insert_Before (N, Decl);
+         Analyze (Decl);
+
+         --  Rewrite abortable part into a call to this procedure.
+
+         Astats :=
+           New_List (
+             Make_Procedure_Call_Statement (Loc,
+               Name => New_Occurrence_Of (Proc, Loc)));
+      end Rewrite_Abortable_Part;
+
    begin
       Process_Statements_For_Controlled_Objects (Trig);
       Process_Statements_For_Controlled_Objects (Abrt);
@@ -6791,12 +6825,13 @@ package body Exp_Ch9 is
          if Ada_Version >= Ada_2005
            and then
              (No (Original_Node (Ecall))
-                or else not Nkind_In (Original_Node (Ecall),
-                                        N_Delay_Relative_Statement,
-                                        N_Delay_Until_Statement))
+               or else not Nkind_In (Original_Node (Ecall),
+                                     N_Delay_Relative_Statement,
+                                     N_Delay_Until_Statement))
          then
             Extract_Dispatching_Call (Ecall, Call_Ent, Obj, Actuals, Formals);
 
+            Rewrite_Abortable_Part;
             Decls := New_List;
             Stmts := New_List;
 
@@ -6831,9 +6866,9 @@ package body Exp_Ch9 is
               Make_Object_Declaration (Loc,
                 Defining_Identifier =>
                   Make_Defining_Identifier (Loc, Name_uD),
-                Object_Definition =>
-                  New_Reference_To (
-                    RTE (RE_Dummy_Communication_Block), Loc)));
+                Object_Definition   =>
+                  New_Reference_To
+                    (RTE (RE_Dummy_Communication_Block), Loc)));
 
             K := Build_K (Loc, Decls, Obj);
 
@@ -6875,8 +6910,7 @@ package body Exp_Ch9 is
 
             Prepend_To (Cleanup_Stmts,
               Make_Assignment_Statement (Loc,
-                Name =>
-                  New_Reference_To (Bnn, Loc),
+                Name       => New_Reference_To (Bnn, Loc),
                 Expression =>
                   Make_Unchecked_Type_Conversion (Loc,
                     Subtype_Mark =>
@@ -6889,10 +6923,10 @@ package body Exp_Ch9 is
             Prepend_To (Cleanup_Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  New_Reference_To (
-                    Find_Prim_Op (Etype (Etype (Obj)),
-                      Name_uDisp_Asynchronous_Select),
-                    Loc),
+                  New_Reference_To
+                    (Find_Prim_Op
+                       (Etype (Etype (Obj)), Name_uDisp_Asynchronous_Select),
+                     Loc),
                 Parameter_Associations =>
                   New_List (
                     New_Copy_Tree (Obj),             --  <object>
@@ -7117,10 +7151,10 @@ package body Exp_Ch9 is
             Append_To (Conc_Typ_Stmts,
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  New_Reference_To (
-                    Find_Prim_Op (Etype (Etype (Obj)),
-                      Name_uDisp_Get_Prim_Op_Kind),
-                    Loc),
+                  New_Reference_To
+                    (Find_Prim_Op (Etype (Etype (Obj)),
+                                   Name_uDisp_Get_Prim_Op_Kind),
+                     Loc),
                 Parameter_Associations =>
                   New_List (
                     New_Copy_Tree (Obj),
@@ -7240,11 +7274,11 @@ package body Exp_Ch9 is
 
             Abortable_Block :=
               Make_Block_Statement (Loc,
-                Identifier => New_Reference_To (Blk_Ent, Loc),
+                Identifier                 => New_Reference_To (Blk_Ent, Loc),
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc,
                     Statements => Astats),
-                Has_Created_Identifier => True,
+                Has_Created_Identifier     => True,
                 Is_Asynchronous_Call_Block => True);
 
             --  Append call to if Enqueue (When, DB'Unchecked_Access) then
@@ -7292,8 +7326,8 @@ package body Exp_Ch9 is
                   Make_Object_Declaration (Loc,
                     Defining_Identifier => Dblock_Ent,
                     Aliased_Present     => True,
-                    Object_Definition   => New_Reference_To (
-                      RTE (RE_Delay_Block), Loc))),
+                    Object_Definition   =>
+                      New_Reference_To (RTE (RE_Delay_Block), Loc))),
 
                 Handled_Statement_Sequence =>
                   Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
@@ -7318,10 +7352,9 @@ package body Exp_Ch9 is
 
          Decl := First (Decls);
          while Present (Decl)
-           and then
-             (Nkind (Decl) /= N_Object_Declaration
-               or else not Is_RTE (Etype (Object_Definition (Decl)),
-                                   RE_Communication_Block))
+           and then (Nkind (Decl) /= N_Object_Declaration
+                      or else not Is_RTE (Etype (Object_Definition (Decl)),
+                                          RE_Communication_Block))
          loop
             Next (Decl);
          end loop;
@@ -7338,13 +7371,12 @@ package body Exp_Ch9 is
          --    Mode => Asynchronous_Call;
          --    Block => Bnn);
 
-         Stmt := First (Stmts);
-
          --  Skip assignments to temporaries created for in-out parameters
 
          --  This makes unwarranted assumptions about the shape of the expanded
          --  tree for the call, and should be cleaned up ???
 
+         Stmt := First (Stmts);
          while Nkind (Stmt) /= N_Procedure_Call_Statement loop
             Next (Stmt);
          end loop;
