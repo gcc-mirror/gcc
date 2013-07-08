@@ -14144,9 +14144,8 @@ package body Sem_Util is
       if Known_Static_Esize (Typ) then
          Size := UI_To_Int (Esize (Typ));
 
-      --  If the Esize (Object_Size) is unknown at compile-time, look at the
-      --  RM_Size (Value_Size) since it may have been set by an explicit rep
-      --  item.
+      --  If the Esize (Object_Size) is unknown at compile time, look at the
+      --  RM_Size (Value_Size) which may have been set by an explicit rep item.
 
       elsif Known_Static_RM_Size (Typ) then
          Size := UI_To_Int (RM_Size (Typ));

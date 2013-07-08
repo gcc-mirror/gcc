@@ -7662,15 +7662,17 @@ package body Sem_Ch8 is
       Elmt    : Elmt_Id;
 
    begin
-      --  Restore visibility of previous scope stack, if any
+      --  Restore visibility of previous scope stack, if any, using the list
+      --  we saved (we use Remove, since this list will not be used again).
 
-      --  Should use Remove_Elmt, so that elements can be reused ???
-
-      Elmt := First_Elmt (List);
-      while Present (Elmt) loop
+      loop
+         Elmt := Last_Elmt (List);
+         exit when Elmt = No_Elmt;
          Set_Is_Immediately_Visible (Node (Elmt));
-         Next_Elmt (Elmt);
+         Remove_Last_Elmt (List);
       end loop;
+
+      --  Restore use clauses
 
       if SS_Last >= Scope_Stack.First
         and then Scope_Stack.Table (SS_Last).Entity /= Standard_Standard
@@ -7683,6 +7685,34 @@ package body Sem_Ch8 is
    ----------------------
    -- Save_Scope_Stack --
    ----------------------
+
+   --  Save_Scope_Stack/Restore_Scope_Stack were originally designed to avoid
+   --  consuming any memory. That is, Save_Scope_Stack took care of removing
+   --  from immediate visibility entities and Restore_Scope_Stack took care
+   --  of restoring their visibility analyzing the context of each entity. The
+   --  problem of such approach is that it was fragile and caused unexpected
+   --  visibility problems, and indeed one test was found where there was a
+   --  real problem.
+
+   --  Furthermore, the following experiment was carried out:
+
+   --    - Save_Scope_Stack was modified to store in an Elist1 all those
+   --      entities whose attribute Is_Immediately_Visible is modified
+   --      from True to False.
+
+   --    - Restore_Scope_Stack was modified to store in another Elist2
+   --      all the entities whose attribute Is_Immediately_Visible is
+   --      modified from False to True.
+
+   --    - Extra code was added to verify that all the elements of Elist1
+   --      are found in Elist2
+
+   --  This test show that there may be more occurrences of this problem which
+   --  have not yet been detected. As a result, we replaced that approach by
+   --  the current one in which Save_Scope_Stack returns the list of entities
+   --  whose visibility is changed, and that list is passed to Restore_Scope
+   --  Stack to undo that change. This approach is simpler and safer, although
+   --  it consumes more memory.
 
    function Save_Scope_Stack (Handle_Use : Boolean := True) return Elist_Id is
       Result  : constant Elist_Id := New_Elmt_List;
@@ -7697,8 +7727,6 @@ package body Sem_Ch8 is
       ----------------------------
       -- Remove_From_Visibility --
       ----------------------------
-
-      --  Need comment on why we do this instead of old approach???
 
       procedure Remove_From_Visibility (E : Entity_Id) is
       begin

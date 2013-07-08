@@ -562,7 +562,7 @@ package Sem is
    --  Note: for integer and real literals, the analyzer sets the flag to
    --  indicate that the result is a static expression. If the expander
    --  generates a literal that does NOT correspond to a static expression,
-   --  e.g. by folding an expression whose value is known at compile-time,
+   --  e.g. by folding an expression whose value is known at compile time,
    --  but is not technically static, then the caller should reset the
    --  Is_Static_Expression flag after analyzing but before resolving.
    --
