@@ -718,7 +718,7 @@ package Lib.Xref is
 
    procedure Generate_Reference_To_Formals (E : Entity_Id);
    --  Add a reference to the definition of each formal on the line for
-   --  a subprogram.
+   --  a subprogram or an access_to_subprogram type.
 
    procedure Generate_Reference_To_Generic_Formals (E : Entity_Id);
    --  Add a reference to the definition of each generic formal on the line

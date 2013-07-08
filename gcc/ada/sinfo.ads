@@ -1516,14 +1516,14 @@ package Sinfo is
    --    in rtsfind to indicate implicit dependencies on predefined units. Used
    --    to prevent multiple with_clauses for the same unit in a given context.
    --    A postorder traversal of the tree whose nodes are units and whose
-   --    links are with_clauses defines the order in which Inspector must
+   --    links are with_clauses defines the order in which CodePeer must
    --    examine a compiled unit and its full context. This ordering ensures
    --    that any subprogram call is examined after the subprogram declaration
    --    has been seen.
 
    --  Next_Named_Actual (Node4-Sem)
-   --    Present in parameter association node. Set during semantic analysis to
-   --    point to the next named parameter, where parameters are ordered by
+   --    Present in parameter association nodes. Set during semantic analysis
+   --    to point to the next named parameter, where parameters are ordered by
    --    declaration order (as opposed to the actual order in the call, which
    --    may be different due to named associations). Not that this field
    --    points to the explicit actual parameter itself, not to the
@@ -1539,6 +1539,10 @@ package Sinfo is
    --      Used by processing for Pre/Postcondition pragmas to store a list of
    --      pragmas associated with the spec of a subprogram (see Sem_Prag for
    --      details).
+   --
+   --      Used by processing for pragma SPARK_Mode to store multiple pragmas
+   --      the apply to the same construct. These are visible/private mode for
+   --      a package spec and declarative/statement mode for package body.
 
    --  Next_Rep_Item (Node5-Sem)
    --    Present in pragma nodes, attribute definition nodes, enumeration rep
@@ -7225,7 +7229,8 @@ package Sinfo is
       --  Sprint syntax: labelname : label;
 
       --  N_Implicit_Label_Declaration
-      --  Sloc points to the << of the label
+      --  Sloc points to the << token for a statement identifier, or to the
+      --    LOOP, DECLARE, or BEGIN token for a loop or block identifier
       --  Defining_Identifier (Node1)
       --  Label_Construct (Node2-Sem)
 

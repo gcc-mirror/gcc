@@ -175,7 +175,7 @@ package System.Rident is
       No_Elaboration_Code,                       -- GNAT
       No_Obsolescent_Features,                   -- Ada 2005 AI-368
       No_Wide_Characters,                        -- GNAT
-      SPARK,                                     -- GNAT
+      SPARK_05,                                  -- GNAT
 
       --  The following cases require a parameter value
 
@@ -223,13 +223,14 @@ package System.Rident is
    No_Dynamic_Interrupts  : Restriction_Id renames No_Dynamic_Attachment;
    No_Requeue             : Restriction_Id renames No_Requeue_Statements;
    No_Task_Attributes     : Restriction_Id renames No_Task_Attributes_Package;
+   SPARK                  : Restriction_Id renames SPARK_05;
 
    subtype All_Restrictions is Restriction_Id range
      Simple_Barriers .. Max_Storage_At_Blocking;
    --  All restrictions (excluding only Not_A_Restriction_Id)
 
    subtype All_Boolean_Restrictions is Restriction_Id range
-     Simple_Barriers .. SPARK;
+     Simple_Barriers .. SPARK_05;
    --  All restrictions which do not take a parameter
 
    subtype Partition_Boolean_Restrictions is All_Boolean_Restrictions range
@@ -240,7 +241,7 @@ package System.Rident is
    --  case of Boolean restrictions.
 
    subtype Cunit_Boolean_Restrictions is All_Boolean_Restrictions range
-     Immediate_Reclamation .. SPARK;
+     Immediate_Reclamation .. SPARK_05;
    --  Boolean restrictions that are not checked for partition consistency
    --  and that thus apply only to the current unit. Note that for these
    --  restrictions, the compiler does not apply restrictions found in

@@ -406,18 +406,19 @@ procedure GNATCmd is
          end if;
       end loop;
 
-      --  If all arguments are switches and there is no switch -files=, add
-      --  the path names of all the sources of the main project.
+      --  If all arguments are switches and there is no switch -files=, add the
+      --  path names of all the sources of the main project.
 
       if Add_Sources then
 
-         --  For gnatcheck, gnatpp, and gnatmetric, create a temporary file
-         --  and put the list of sources in it. For gnatstack create a
-         --  temporary file with the list of .ci files.
+         --  For gnatcheck, gnatpp, and gnatmetric, create a temporary file and
+         --  put the list of sources in it. For gnatstack create a temporary
+         --  file with the list of .ci files.
 
          if The_Command = Check  or else
             The_Command = Pretty or else
             The_Command = Metric or else
+            The_Command = List   or else
             The_Command = Stack
          then
             Tempdir.Create_Temp_File (FD, Temp_File_Name);
@@ -552,12 +553,10 @@ procedure GNATCmd is
                         end if;
 
                         if not Subunit then
-                           Last_Switches.Increment_Last;
-                           Last_Switches.Table (Last_Switches.Last) :=
-                             new String'
-                               (Get_Name_String
-                                    (Unit.File_Names
-                                         (Impl).Display_File));
+                           Add_To_Response_File
+                             (Get_Name_String
+                                (Unit.File_Names (Impl).Display_File),
+                              Check_File => False);
                         end if;
                      end if;
 
@@ -570,10 +569,10 @@ procedure GNATCmd is
                      if All_Projects or else
                         Unit.File_Names (Spec).Project = Project
                      then
-                        Last_Switches.Increment_Last;
-                        Last_Switches.Table (Last_Switches.Last) :=
-                          new String'(Get_Name_String
-                                       (Unit.File_Names (Spec).Display_File));
+                        Add_To_Response_File
+                          (Get_Name_String
+                             (Unit.File_Names (Spec).Display_File),
+                           Check_File => False);
                      end if;
                   end if;
 

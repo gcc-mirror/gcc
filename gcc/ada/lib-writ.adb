@@ -71,28 +71,29 @@ package body Lib.Writ is
    begin
       Units.Increment_Last;
       Units.Table (Units.Last) :=
-        (Unit_File_Name   => File_Name (S),
-         Unit_Name        => No_Unit_Name,
-         Expected_Unit    => No_Unit_Name,
-         Source_Index     => S,
-         Cunit            => Empty,
-         Cunit_Entity     => Empty,
-         Dependency_Num   => 0,
-         Dynamic_Elab     => False,
-         Fatal_Error      => False,
-         Generate_Code    => False,
-         Has_Allocator    => False,
-         Has_RACW         => False,
-         Is_Compiler_Unit => False,
-         Ident_String     => Empty,
-         Loading          => False,
-         Main_Priority    => -1,
-         Main_CPU         => -1,
-         Munit_Index      => 0,
-         Serial_Number    => 0,
-         Version          => 0,
-         Error_Location   => No_Location,
-         OA_Setting       => 'O');
+        (Unit_File_Name    => File_Name (S),
+         Unit_Name         => No_Unit_Name,
+         Expected_Unit     => No_Unit_Name,
+         Source_Index      => S,
+         Cunit             => Empty,
+         Cunit_Entity      => Empty,
+         Dependency_Num    => 0,
+         Dynamic_Elab      => False,
+         Fatal_Error       => False,
+         Generate_Code     => False,
+         Has_Allocator     => False,
+         Has_RACW          => False,
+         Is_Compiler_Unit  => False,
+         Ident_String      => Empty,
+         Loading           => False,
+         Main_Priority     => -1,
+         Main_CPU          => -1,
+         Munit_Index       => 0,
+         Serial_Number     => 0,
+         Version           => 0,
+         Error_Location    => No_Location,
+         OA_Setting        => 'O',
+         SPARK_Mode_Pragma => Empty);
    end Add_Preprocessing_Dependency;
 
    ------------------------------
@@ -128,28 +129,29 @@ package body Lib.Writ is
 
       Units.Increment_Last;
       Units.Table (Units.Last) := (
-        Unit_File_Name   => System_Fname,
-        Unit_Name        => System_Uname,
-        Expected_Unit    => System_Uname,
-        Source_Index     => System_Source_File_Index,
-        Cunit            => Empty,
-        Cunit_Entity     => Empty,
-        Dependency_Num   => 0,
-        Dynamic_Elab     => False,
-        Fatal_Error      => False,
-        Generate_Code    => False,
-        Has_Allocator    => False,
-        Has_RACW         => False,
-        Is_Compiler_Unit => False,
-        Ident_String     => Empty,
-        Loading          => False,
-        Main_Priority    => -1,
-        Main_CPU         => -1,
-        Munit_Index      => 0,
-        Serial_Number    => 0,
-        Version          => 0,
-        Error_Location   => No_Location,
-        OA_Setting       => 'O');
+        Unit_File_Name    => System_Fname,
+        Unit_Name         => System_Uname,
+        Expected_Unit     => System_Uname,
+        Source_Index      => System_Source_File_Index,
+        Cunit             => Empty,
+        Cunit_Entity      => Empty,
+        Dependency_Num    => 0,
+        Dynamic_Elab      => False,
+        Fatal_Error       => False,
+        Generate_Code     => False,
+        Has_Allocator     => False,
+        Has_RACW          => False,
+        Is_Compiler_Unit  => False,
+        Ident_String      => Empty,
+        Loading           => False,
+        Main_Priority     => -1,
+        Main_CPU          => -1,
+        Munit_Index       => 0,
+        Serial_Number     => 0,
+        Version           => 0,
+        Error_Location    => No_Location,
+        OA_Setting        => 'O',
+        SPARK_Mode_Pragma => Empty);
 
       --  Parse system.ads so that the checksum is set right
       --  Style checks are not applied.
@@ -880,6 +882,38 @@ package body Lib.Writ is
 
             Write_Info_EOL;
          end loop;
+
+         --  Finally generate the special lines for cases of Restriction_Set
+         --  with No_Dependence and no restriction present.
+
+         declare
+            Unam : Unit_Name_Type;
+
+         begin
+            for J in Restriction_Set_Dependences.First ..
+                     Restriction_Set_Dependences.Last
+            loop
+               Unam := Restriction_Set_Dependences.Table (J);
+
+               --  Don't need an entry if already in the unit table
+
+               for U in 0 .. Last_Unit loop
+                  if Unit_Name (U) = Unam then
+                     goto Continue;
+                  end if;
+               end loop;
+
+               --  Otherwise generate the entry
+
+               Write_Info_Initiate ('W');
+               Write_Info_Char (' ');
+               Write_Info_Name (Unam);
+               Write_Info_EOL;
+
+            <<Continue>>
+               null;
+            end loop;
+         end;
       end Write_With_Lines;
 
    --  Start of processing for Write_ALI

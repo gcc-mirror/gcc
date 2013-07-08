@@ -345,6 +345,9 @@ Enum(stringop_alg) String(loop) Value(loop)
 EnumValue
 Enum(stringop_alg) String(unrolled_loop) Value(unrolled_loop)
 
+EnumValue
+Enum(stringop_alg) String(vector_loop) Value(vector_loop)
+
 mtls-dialect=
 Target RejectNegative Joined Var(ix86_tls_dialect) Enum(tls_dialect) Init(TLS_DIALECT_GNU)
 Use given thread-local storage dialect

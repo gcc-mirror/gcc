@@ -102,6 +102,90 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::get<0>(std::forward<_Tp>(__x)); }
   };
 
+  // Functor recycling a pool of nodes and using allocation once the pool is
+  // empty.
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   typename _RehashPolicy, typename _Traits>
+    struct _ReuseOrAllocNode
+    {
+    private:
+      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
+				     _Equal, _H1, _H2, _Hash,
+				     _RehashPolicy, _Traits>;
+      using __val_alloc_type = typename __hashtable::_Value_alloc_type;
+      using __val_alloc_traits = typename __hashtable::_Value_alloc_traits;
+      using __node_alloc_traits = typename __hashtable::_Node_alloc_traits;
+      using __node_type = typename __hashtable::__node_type;
+
+    public:
+      _ReuseOrAllocNode(__node_type* __nodes, __hashtable& __h)
+	: _M_nodes(__nodes), _M_h(__h) { }
+      _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
+
+      ~_ReuseOrAllocNode()
+      { _M_h._M_deallocate_nodes(_M_nodes); }
+
+      template<typename _Arg>
+	__node_type*
+	operator()(_Arg&& __arg) const
+	{
+	  if (_M_nodes)
+	    {
+	      __node_type* __node = _M_nodes;
+	      _M_nodes = _M_nodes->_M_next();
+	      __node->_M_nxt = nullptr;
+	      __val_alloc_type __a(_M_h._M_node_allocator());
+	      __val_alloc_traits::destroy(__a, __node->_M_valptr());
+	      __try
+		{
+		  __val_alloc_traits::construct(__a, __node->_M_valptr(),
+						std::forward<_Arg>(__arg));
+		}
+	      __catch(...)
+		{
+		  __node->~__node_type();
+		  __node_alloc_traits::deallocate(_M_h._M_node_allocator(),
+						  __node, 1);
+		  __throw_exception_again;
+		}
+	      return __node;
+	    }
+	  return _M_h._M_allocate_node(std::forward<_Arg>(__arg));
+	}
+
+    private:
+      mutable __node_type* _M_nodes;
+      __hashtable& _M_h;
+    };
+
+  // Functor similar to the previous one but without any pool of node to recycle.
+  template<typename _Key, typename _Value, typename _Alloc,
+	   typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash,
+	   typename _RehashPolicy, typename _Traits>
+    struct _AllocNode
+    {
+    private:
+      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
+				     _Equal, _H1, _H2, _Hash,
+				     _RehashPolicy, _Traits>;
+      using __node_type = typename __hashtable::__node_type;
+
+    public:
+      _AllocNode(__hashtable& __h)
+	: _M_h(__h) { }
+
+      template<typename _Arg>
+	__node_type*
+	operator()(_Arg&& __arg) const
+	{ return _M_h._M_allocate_node(std::forward<_Arg>(__arg)); }
+
+    private:
+      __hashtable& _M_h;
+    };
+
   // Auxiliary types used for all instantiations of _Hashtable nodes
   // and iterators.
 
@@ -597,6 +681,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _RehashPolicy, typename _Traits>
     struct _Insert_base
     {
+    protected:
       using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
 				     _Equal, _H1, _H2, _Hash,
 				     _RehashPolicy, _Traits>;
@@ -612,23 +697,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __unique_keys = typename __hashtable_base::__unique_keys;
       using __ireturn_type = typename __hashtable_base::__ireturn_type;
+      using __node_gen_type = _AllocNode<_Key, _Value, _Alloc, _ExtractKey,
+					 _Equal, _H1, _H2, _Hash,
+					 _RehashPolicy, _Traits>;
 
       __hashtable&
       _M_conjure_hashtable()
       { return *(static_cast<__hashtable*>(this)); }
 
+      template<typename _InputIterator, typename _NodeGetter>
+	void
+	_M_insert_range(_InputIterator __first, _InputIterator __last,
+			const _NodeGetter&);
+
+    public:
       __ireturn_type
       insert(const value_type& __v)
       {
 	__hashtable& __h = _M_conjure_hashtable();
-	return __h._M_insert(__v, __unique_keys());
+	__node_gen_type __node_gen(__h);
+	return __h._M_insert(__v, __node_gen, __unique_keys());
       }
 
       iterator
       insert(const_iterator __hint, const value_type& __v)
       {
 	__hashtable& __h = _M_conjure_hashtable();
-	return __h._M_insert(__hint, __v, __unique_keys());
+	__node_gen_type __node_gen(__h);	
+	return __h._M_insert(__hint, __v, __node_gen, __unique_keys());
       }
 
       void
@@ -637,18 +733,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _InputIterator>
 	void
-	insert(_InputIterator __first, _InputIterator __last);
+	insert(_InputIterator __first, _InputIterator __last)
+	{
+	  __hashtable& __h = _M_conjure_hashtable();
+	  __node_gen_type __node_gen(__h);
+	  return _M_insert_range(__first, __last, __node_gen);
+	}
     };
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _H1, typename _H2, typename _Hash,
 	   typename _RehashPolicy, typename _Traits>
-    template<typename _InputIterator>
+    template<typename _InputIterator, typename _NodeGetter>
       void
       _Insert_base<_Key, _Value, _Alloc, _ExtractKey, _Equal, _H1, _H2, _Hash,
 		    _RehashPolicy, _Traits>::
-      insert(_InputIterator __first, _InputIterator __last)
+      _M_insert_range(_InputIterator __first, _InputIterator __last,
+		      const _NodeGetter& __node_gen)
       {
 	using __rehash_type = typename __hashtable::__rehash_type;
 	using __rehash_state = typename __hashtable::__rehash_state;
@@ -667,7 +769,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __h._M_rehash(__do_rehash.second, __saved_state);
 
 	for (; __first != __last; ++__first)
-	  __h._M_insert(*__first, __unique_keys());
+	  __h._M_insert(*__first, __node_gen, __unique_keys());
       }
 
   /**
@@ -702,6 +804,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __unique_keys = typename __base_type::__unique_keys;
       using __hashtable = typename __base_type::__hashtable;
+      using __node_gen_type = typename __base_type::__node_gen_type;
 
       using __base_type::insert;
 
@@ -709,14 +812,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       insert(value_type&& __v)
       {
 	__hashtable& __h = this->_M_conjure_hashtable();
-	return __h._M_insert(std::move(__v), __unique_keys());
+	__node_gen_type __node_gen(__h);
+	return __h._M_insert(std::move(__v), __node_gen, __unique_keys());
       }
 
       iterator
       insert(const_iterator __hint, value_type&& __v)
       {
 	__hashtable& __h = this->_M_conjure_hashtable();
-	return __h._M_insert(__hint, std::move(__v), __unique_keys());
+	__node_gen_type __node_gen(__h);
+	return __h._M_insert(__hint, std::move(__v), __node_gen,
+			     __unique_keys());
       }
     };
 
@@ -739,6 +845,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __unique_keys = typename __base_type::__unique_keys;
       using __hashtable = typename __base_type::__hashtable;
+      using __node_gen_type = typename __base_type::__node_gen_type;
 
       using __base_type::insert;
 
@@ -746,14 +853,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       insert(value_type&& __v)
       {
 	__hashtable& __h = this->_M_conjure_hashtable();
-	return __h._M_insert(std::move(__v), __unique_keys());
+	__node_gen_type __node_gen(__h);
+	return __h._M_insert(std::move(__v), __node_gen, __unique_keys());
       }
 
       iterator
       insert(const_iterator __hint, value_type&& __v)
       {
 	__hashtable& __h = this->_M_conjure_hashtable();
-	return __h._M_insert(__hint, std::move(__v), __unique_keys());
+	__node_gen_type __node_gen(__h);
+	return __h._M_insert(__hint, std::move(__v), __node_gen,
+			     __unique_keys());
       }
     };
 
@@ -1692,120 +1802,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Before_begin(_Alloc&& __a)
 	  : _NodeAlloc(std::forward<_Alloc>(__a))
 	{ }
-    };
-
-  /*
-   * Following are functors recyclicing a pool of nodes and using allocation
-   * once the pool is empty.
-   */
-  /// Version using copy semantic through the copy constructor.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash,
-	   typename _RehashPolicy, typename _Traits>
-    struct _ReuseOrAllocNode
-    {
-    private:
-      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
-				     _Equal, _H1, _H2, _Hash,
-				     _RehashPolicy, _Traits>;
-      using __val_alloc_type = typename __hashtable::_Value_alloc_type;
-      using __val_alloc_traits = typename __hashtable::_Value_alloc_traits;
-      using __node_alloc_traits = typename __hashtable::_Node_alloc_traits;
-      using __node_type = typename __hashtable::__node_type;
-
-    public:
-      _ReuseOrAllocNode(__node_type* __nodes, __hashtable& __h)
-	: _M_nodes(__nodes), _M_h(__h) { }
-      _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
-
-      ~_ReuseOrAllocNode()
-      { _M_h._M_deallocate_nodes(_M_nodes); }
-
-      __node_type*
-      operator()(const __node_type* __n) const
-      {
-	if (_M_nodes)
-	  {
-	    __node_type* __node = _M_nodes;
-	    _M_nodes = _M_nodes->_M_next();
-	    __node->_M_nxt = nullptr;
-	    __val_alloc_type __a(_M_h._M_node_allocator());
-	    __val_alloc_traits::destroy(__a, __node->_M_valptr());
-	    __try
-	      {
-		__val_alloc_traits::construct(__a, __node->_M_valptr(),
-					      __n->_M_v());
-	      }
-	    __catch(...)
-	      {
-		__node->~__node_type();
-		__node_alloc_traits::deallocate(_M_h._M_node_allocator(),
-						__node, 1);
-		__throw_exception_again;
-	      }
-	    return __node;
-	  }
-	return _M_h._M_allocate_node(__n->_M_v());
-      }
-
-      mutable __node_type* _M_nodes;
-      __hashtable& _M_h;
-    };
-
-  /// Version using move semantic through the move constructor.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash,
-	   typename _RehashPolicy, typename _Traits>
-    struct _MoveReuseOrAllocNode
-    {
-    private:
-      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
-				     _Equal, _H1, _H2, _Hash,
-				     _RehashPolicy, _Traits>;
-      using __val_alloc_type = typename __hashtable::_Value_alloc_type;
-      using __val_alloc_traits = typename __hashtable::_Value_alloc_traits;
-      using __node_alloc_traits = typename __hashtable::_Node_alloc_traits;
-      using __node_type = typename __hashtable::__node_type;
-
-    public:
-      _MoveReuseOrAllocNode(__node_type* __nodes, __hashtable& __h)
-	: _M_nodes(__nodes), _M_h(__h) { }
-      _MoveReuseOrAllocNode(const _MoveReuseOrAllocNode&) = delete;
-
-      ~_MoveReuseOrAllocNode()
-      { _M_h._M_deallocate_nodes(_M_nodes); }
-
-      __node_type*
-      operator()(__node_type* __n) const
-      {
-	if (_M_nodes)
-	  {
-	    __node_type* __node = _M_nodes;
-	    _M_nodes = _M_nodes->_M_next();
-	    __node->_M_nxt = nullptr;
-	    __val_alloc_type  __a(_M_h._M_node_allocator());
-	    __val_alloc_traits::destroy(__a, __node->_M_valptr());
-	    __try
-	      {
-		__val_alloc_traits::construct(__a, __node->_M_valptr(),
-					std::move_if_noexcept(__n->_M_v()));
-	      }
-	    __catch(...)
-	      {
-		__node->~__node_type();
-		__node_alloc_traits::deallocate(_M_h._M_node_allocator(),
-						__node, 1);
-		__throw_exception_again;
-	      }
-	    return __node;
-	  }
-	return _M_h._M_allocate_node(std::move_if_noexcept(__n->_M_v()));
-      }
-
-      mutable __node_type* _M_nodes;
-      __hashtable& _M_h;
     };
 
  //@} hashtable-detail

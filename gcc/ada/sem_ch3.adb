@@ -1283,6 +1283,8 @@ package body Sem_Ch3 is
       Init_Size_Align              (T_Name);
       Set_Directly_Designated_Type (T_Name, Desig_Type);
 
+      Generate_Reference_To_Formals (T_Name);
+
       --  Ada 2005 (AI-231): Propagate the null-excluding attribute
 
       Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
@@ -2075,7 +2077,7 @@ package body Sem_Ch3 is
    --  Start of processing for Analyze_Declarations
 
    begin
-      if Restriction_Check_Required (SPARK) then
+      if Restriction_Check_Required (SPARK_05) then
          Check_Later_Vs_Basic_Declarations (L, During_Parsing => False);
       end if;
 
@@ -3240,7 +3242,7 @@ package body Sem_Ch3 is
 
            --  Only call test if needed
 
-           and then Restriction_Check_Required (SPARK)
+           and then Restriction_Check_Required (SPARK_05)
            and then not Is_SPARK_Initialization_Expr (E)
          then
             Check_SPARK_Restriction

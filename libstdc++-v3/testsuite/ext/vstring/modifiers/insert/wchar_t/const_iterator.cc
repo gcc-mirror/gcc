@@ -23,5 +23,8 @@
 void test01() 
 {
   __gnu_cxx::__wvstring wvs1;
-  wvs1.insert(wvs1.cbegin(), L'1');
+  __gnu_cxx::__wvstring::iterator it = wvs1.insert(wvs1.cbegin(), L'1');
+  it = wvs1.insert(wvs1.cbegin(), 1, L'2');
+  it = wvs1.insert(wvs1.cbegin(), {L'3', L'4'});
+  it = wvs1.insert(wvs1.cbegin(), wvs1.begin(), wvs1.end());
 }

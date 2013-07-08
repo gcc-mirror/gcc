@@ -251,7 +251,7 @@ package body Ada.Containers.Formal_Vectors is
          raise Constraint_Error;
       end if;
 
-      Target.Clear;
+      Clear (Target);
 
       Target.Elements (1 .. LS) := Source.Elements (1 .. LS);
       Target.Last := Source.Last;
@@ -641,10 +641,10 @@ package body Ada.Containers.Formal_Vectors is
             --  I think we're missing this check in a-convec.adb...  ???
 
             I := Length (Target);
-            Target.Set_Length (I + Length (Source));
+            Set_Length (Target, I + Length (Source));
 
             J := Length (Target);
-            while not Source.Is_Empty loop
+            while not Is_Empty (Source) loop
                pragma Assert (Length (Source) <= 1
                  or else not (SA (Length (Source)) <
                      SA (Length (Source) - 1)));
@@ -1487,20 +1487,20 @@ package body Ada.Containers.Formal_Vectors is
 
    procedure Set_Length
      (Container : in out Vector;
-      Length    : Count_Type)
+      New_Length    : Count_Type)
    is
    begin
-      if Length = Formal_Vectors.Length (Container) then
+      if New_Length = Formal_Vectors.Length (Container) then
          return;
       end if;
 
-      if Length > Container.Capacity then
+      if New_Length > Container.Capacity then
          raise Constraint_Error;  -- ???
       end if;
 
       declare
          Last_As_Int : constant Int'Base :=
-           Int (Index_Type'First) + Int (Length) - 1;
+           Int (Index_Type'First) + Int (New_Length) - 1;
       begin
          Container.Last := Index_Type'Base (Last_As_Int);
       end;

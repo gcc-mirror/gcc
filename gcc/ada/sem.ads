@@ -562,7 +562,7 @@ package Sem is
    --  Note: for integer and real literals, the analyzer sets the flag to
    --  indicate that the result is a static expression. If the expander
    --  generates a literal that does NOT correspond to a static expression,
-   --  e.g. by folding an expression whose value is known at compile-time,
+   --  e.g. by folding an expression whose value is known at compile time,
    --  but is not technically static, then the caller should reset the
    --  Is_Static_Expression flag after analyzing but before resolving.
    --
@@ -654,12 +654,12 @@ package Sem is
    generic
       with procedure Action (Item : Node_Id);
    procedure Walk_Library_Items;
-   --  Primarily for use by SofCheck Inspector. Must be called after semantic
-   --  analysis (and expansion) are complete. Walks each relevant library item,
-   --  calling Action for each, in an order such that one will not run across
-   --  forward references. Each Item passed to Action is the declaration or
-   --  body of a library unit, including generics and renamings. The first item
-   --  is the N_Package_Declaration node for package Standard. Bodies are not
+   --  Primarily for use by CodePeer. Must be called after semantic analysis
+   --  (and expansion) are complete. Walks each relevant library item, calling
+   --  Action for each, in an order such that one will not run across forward
+   --  references. Each Item passed to Action is the declaration or body of
+   --  a library unit, including generics and renamings. The first item is
+   --  the N_Package_Declaration node for package Standard. Bodies are not
    --  included, except for the main unit itself, which always comes last.
    --
    --  Item is never a subunit
@@ -667,7 +667,9 @@ package Sem is
    --  Item is never an instantiation. Instead, the instance declaration is
    --  passed, and (if the instantiation is the main unit), the instance body.
 
-   --  Debugging:
+   ------------------------
+   -- Debugging Routines --
+   ------------------------
 
    function ss (Index : Int) return Scope_Stack_Entry;
    pragma Export (Ada, ss);

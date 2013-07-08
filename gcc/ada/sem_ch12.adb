@@ -4084,6 +4084,7 @@ package body Sem_Ch12 is
       Use_Clauses  : array (1 .. Scope_Stack_Depth) of Node_Id;
       Instances    : array (1 .. Scope_Stack_Depth) of Entity_Id;
       Inner_Scopes : array (1 .. Scope_Stack_Depth) of Entity_Id;
+      List         : Elist_Id;
       Num_Inner    : Int := 0;
       N_Instances  : Int := 0;
       S            : Entity_Id;
@@ -4187,7 +4188,7 @@ package body Sem_Ch12 is
                --  Remove entities in current scopes from visibility, so that
                --  instance body is compiled in a clean environment.
 
-               Save_Scope_Stack (Handle_Use => False);
+               List := Save_Scope_Stack (Handle_Use => False);
 
                if Is_Child_Unit (S) then
 
@@ -4261,7 +4262,7 @@ package body Sem_Ch12 is
                end loop;
             end if;
 
-            Restore_Scope_Stack (Handle_Use => False);
+            Restore_Scope_Stack (List, Handle_Use => False);
 
             if Present (Curr_Scope)
               and then
@@ -4367,14 +4368,30 @@ package body Sem_Ch12 is
       Subp : Entity_Id) return Boolean
    is
    begin
+      --  Must be inlined (or inlined renaming)
+
       if (Is_In_Main_Unit (N)
            or else Is_Inlined (Subp)
            or else Is_Inlined (Alias (Subp)))
+
+        --  Must be generating code or analyzing code in ASIS mode
+
         and then (Operating_Mode = Generate_Code
                    or else (Operating_Mode = Check_Semantics
                              and then ASIS_Mode))
-        and then (Full_Expander_Active or else ASIS_Mode)
+
+        --  The body is needed when generating code (full expansion), in ASIS
+        --  mode for other tools, and in SPARK mode (special expansion) for
+        --  formal verification of the body itself.
+
+        and then (Expander_Active or ASIS_Mode)
+
+        --  No point in inlining if ABE is inevitable
+
         and then not ABE_Is_Certain (N)
+
+        --  Or if subprogram is eliminated
+
         and then not Is_Eliminated (Subp)
       then
          Pending_Instantiations.Append
@@ -4386,6 +4403,8 @@ package body Sem_Ch12 is
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
              Version                  => Ada_Version));
          return True;
+
+      --  Here if not inlined, or we ignore the inlining
 
       else
          return False;
@@ -5220,7 +5239,15 @@ package body Sem_Ch12 is
          --  If the formal entity comes from a formal declaration, it was
          --  defaulted in the formal package, and no check is needed on it.
 
-         elsif Nkind (Parent (E2)) =  N_Formal_Object_Declaration then
+         elsif Nkind (Parent (E2)) = N_Formal_Object_Declaration then
+            goto Next_E;
+
+         --  Ditto for defaulted formal subprograms.
+
+         elsif Is_Overloadable (E1)
+           and then Nkind (Unit_Declaration_Node (E2)) in
+                      N_Formal_Subprogram_Declaration
+         then
             goto Next_E;
 
          elsif Is_Type (E1) then
@@ -6577,7 +6604,13 @@ package body Sem_Ch12 is
                      Set_Entity (New_N, Entity (Assoc));
                      Check_Private_View (N);
 
-                  elsif Nkind (Assoc) = N_Function_Call then
+                  --  The name in the call may be a selected component if the
+                  --  call has not been analyzed yet, as may be the case for
+                  --  pre/post conditions in a generic unit.
+
+                  elsif Nkind (Assoc) = N_Function_Call
+                    and then Is_Entity_Name (Name (Assoc))
+                  then
                      Set_Entity (New_N, Entity (Name (Assoc)));
 
                   elsif Nkind_In (Assoc, N_Defining_Identifier,

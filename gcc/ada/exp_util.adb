@@ -8040,11 +8040,11 @@ package body Exp_Util is
       Par : Node_Id;
 
    begin
-      --  Locate an enclosing case or if expression. Note: these constructs can
-      --  get expanded into Expression_With_Actions, hence the need to test
-      --  using the original node.
+      --  Locate an enclosing case or if expression. Note that these constructs
+      --  can be expanded into Expression_With_Actions, hence the test of the
+      --  original node.
 
-      Par := N;
+      Par := Parent (N);
       while Present (Par) loop
          if Nkind_In (Original_Node (Par), N_Case_Expression,
                                            N_If_Expression)

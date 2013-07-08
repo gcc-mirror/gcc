@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -265,38 +265,6 @@ package Lib is
    --  The first entry in the table, subscript Main_Unit, is for the main file.
    --  Each entry in this units table contains the following data.
 
-   --    Unit_File_Name
-   --      The name of the source file containing the unit. Set when the entry
-   --      is created by a call to Lib.Load, and then cannot be changed.
-
-   --    Source_Index
-   --      The index in the source file table of the corresponding source file.
-   --      Set when the entry is created by a call to Lib.Load and then cannot
-   --      be changed.
-
-   --    Munit_Index
-   --      The index of the unit within the file for multiple unit per file
-   --      mode. Set to zero in normal single unit per file mode.
-
-   --    Error_Location
-   --      This is copied from the Sloc field of the Enode argument passed
-   --      to Load_Unit. It refers to the enclosing construct which caused
-   --      this unit to be loaded, e.g. most typically the with clause that
-   --      referenced the unit, and is used for error handling in Par.Load.
-
-   --    Expected_Unit
-   --      This is the expected unit name for a file other than the main unit,
-   --      since these are cases where we load the unit using Lib.Load and we
-   --      know the unit that is expected. It must be the same as Unit_Name
-   --      if it is set (see test in Par.Load). Expected_Unit is set to
-   --      No_Name for the main unit.
-
-   --    Unit_Name
-   --      The name of the unit. Initialized to No_Name by Lib.Load, and then
-   --      set by the parser when the unit is parsed to the unit name actually
-   --      found in the file (which should, in the absence of errors) be the
-   --      same name as Expected_Unit.
-
    --    Cunit
    --      Pointer to the N_Compilation_Unit node. Initially set to Empty by
    --      Lib.Load, and then reset to the required node by the parser when
@@ -320,6 +288,19 @@ package Lib is
    --      checks specified (as the result of using the -gnatE compilation
    --      option or a pragma Elaboration_Checks (Dynamic).
 
+   --    Error_Location
+   --      This is copied from the Sloc field of the Enode argument passed
+   --      to Load_Unit. It refers to the enclosing construct which caused
+   --      this unit to be loaded, e.g. most typically the with clause that
+   --      referenced the unit, and is used for error handling in Par.Load.
+
+   --    Expected_Unit
+   --      This is the expected unit name for a file other than the main unit,
+   --      since these are cases where we load the unit using Lib.Load and we
+   --      know the unit that is expected. It must be the same as Unit_Name
+   --      if it is set (see test in Par.Load). Expected_Unit is set to
+   --      No_Name for the main unit.
+
    --    Fatal_Error
    --      A flag that is initialized to False, and gets set to True if a fatal
    --      error occurs during the processing of a unit. A fatal error is one
@@ -334,6 +315,10 @@ package Lib is
    --      This flag is set True for all units in the current file for which
    --      code is to be generated. This includes the unit explicitly compiled,
    --      together with its specification, and any subunits.
+
+   --    Has_Allocator
+   --      This flag is set if a subprogram unit has an allocator after the
+   --      BEGIN (it is used to set the AB flag in the M ALI line).
 
    --    Has_RACW
    --      A Boolean flag, initially set to False when a unit entry is created,
@@ -366,9 +351,9 @@ package Lib is
    --      that the default affinity is to be used (and is also used for
    --      entries that do not correspond to possible main programs).
 
-   --    Has_Allocator
-   --      This flag is set if a subprogram unit has an allocator after the
-   --      BEGIN (it is used to set the AB flag in the M ALI line).
+   --    Munit_Index
+   --      The index of the unit within the file for multiple unit per file
+   --      mode. Set to zero in normal single unit per file mode.
 
    --    OA_Setting
    --      This is a character field containing L if Optimize_Alignment mode
@@ -380,6 +365,25 @@ package Lib is
    --      only access to this field is via the Increment_Serial_Number
    --      routine which increments the current value and returns it. This
    --      serial number is separate for each unit.
+
+   --    Source_Index
+   --      The index in the source file table of the corresponding source file.
+   --      Set when the entry is created by a call to Lib.Load and then cannot
+   --      be changed.
+
+   --    SPARK_Mode_Pragma
+   --      Pointer to the configuration pragma SPARK_Mode that applies to the
+   --      whole unit. Add note of what this is used for ???
+
+   --    Unit_File_Name
+   --      The name of the source file containing the unit. Set when the entry
+   --      is created by a call to Lib.Load, and then cannot be changed.
+
+   --    Unit_Name
+   --      The name of the unit. Initialized to No_Name by Lib.Load, and then
+   --      set by the parser when the unit is parsed to the unit name actually
+   --      found in the file (which should, in the absence of errors) be the
+   --      same name as Expected_Unit.
 
    --    Version
    --      This field holds the version of the unit, which is computed as
@@ -404,43 +408,45 @@ package Lib is
    Default_Main_CPU : constant Int := -1;
    --  Value used in Main_CPU field to indicate default main affinity
 
-   function Cunit            (U : Unit_Number_Type) return Node_Id;
-   function Cunit_Entity     (U : Unit_Number_Type) return Entity_Id;
-   function Dependency_Num   (U : Unit_Number_Type) return Nat;
-   function Dynamic_Elab     (U : Unit_Number_Type) return Boolean;
-   function Error_Location   (U : Unit_Number_Type) return Source_Ptr;
-   function Expected_Unit    (U : Unit_Number_Type) return Unit_Name_Type;
-   function Fatal_Error      (U : Unit_Number_Type) return Boolean;
-   function Generate_Code    (U : Unit_Number_Type) return Boolean;
-   function Ident_String     (U : Unit_Number_Type) return Node_Id;
-   function Has_Allocator    (U : Unit_Number_Type) return Boolean;
-   function Has_RACW         (U : Unit_Number_Type) return Boolean;
-   function Is_Compiler_Unit (U : Unit_Number_Type) return Boolean;
-   function Loading          (U : Unit_Number_Type) return Boolean;
-   function Main_CPU         (U : Unit_Number_Type) return Int;
-   function Main_Priority    (U : Unit_Number_Type) return Int;
-   function Munit_Index      (U : Unit_Number_Type) return Nat;
-   function OA_Setting       (U : Unit_Number_Type) return Character;
-   function Source_Index     (U : Unit_Number_Type) return Source_File_Index;
-   function Unit_File_Name   (U : Unit_Number_Type) return File_Name_Type;
-   function Unit_Name        (U : Unit_Number_Type) return Unit_Name_Type;
+   function Cunit             (U : Unit_Number_Type) return Node_Id;
+   function Cunit_Entity      (U : Unit_Number_Type) return Entity_Id;
+   function Dependency_Num    (U : Unit_Number_Type) return Nat;
+   function Dynamic_Elab      (U : Unit_Number_Type) return Boolean;
+   function Error_Location    (U : Unit_Number_Type) return Source_Ptr;
+   function Expected_Unit     (U : Unit_Number_Type) return Unit_Name_Type;
+   function Fatal_Error       (U : Unit_Number_Type) return Boolean;
+   function Generate_Code     (U : Unit_Number_Type) return Boolean;
+   function Ident_String      (U : Unit_Number_Type) return Node_Id;
+   function Has_Allocator     (U : Unit_Number_Type) return Boolean;
+   function Has_RACW          (U : Unit_Number_Type) return Boolean;
+   function Is_Compiler_Unit  (U : Unit_Number_Type) return Boolean;
+   function Loading           (U : Unit_Number_Type) return Boolean;
+   function Main_CPU          (U : Unit_Number_Type) return Int;
+   function Main_Priority     (U : Unit_Number_Type) return Int;
+   function Munit_Index       (U : Unit_Number_Type) return Nat;
+   function OA_Setting        (U : Unit_Number_Type) return Character;
+   function Source_Index      (U : Unit_Number_Type) return Source_File_Index;
+   function SPARK_Mode_Pragma (U : Unit_Number_Type) return Node_Id;
+   function Unit_File_Name    (U : Unit_Number_Type) return File_Name_Type;
+   function Unit_Name         (U : Unit_Number_Type) return Unit_Name_Type;
    --  Get value of named field from given units table entry
 
-   procedure Set_Cunit            (U : Unit_Number_Type; N : Node_Id);
-   procedure Set_Cunit_Entity     (U : Unit_Number_Type; E : Entity_Id);
-   procedure Set_Dynamic_Elab     (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Error_Location   (U : Unit_Number_Type; W : Source_Ptr);
-   procedure Set_Fatal_Error      (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Generate_Code    (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Has_RACW         (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Has_Allocator    (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Is_Compiler_Unit (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Ident_String     (U : Unit_Number_Type; N : Node_Id);
-   procedure Set_Loading          (U : Unit_Number_Type; B : Boolean := True);
-   procedure Set_Main_CPU         (U : Unit_Number_Type; P : Int);
-   procedure Set_Main_Priority    (U : Unit_Number_Type; P : Int);
-   procedure Set_OA_Setting       (U : Unit_Number_Type; C : Character);
-   procedure Set_Unit_Name        (U : Unit_Number_Type; N : Unit_Name_Type);
+   procedure Set_Cunit             (U : Unit_Number_Type; N : Node_Id);
+   procedure Set_Cunit_Entity      (U : Unit_Number_Type; E : Entity_Id);
+   procedure Set_Dynamic_Elab      (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Error_Location    (U : Unit_Number_Type; W : Source_Ptr);
+   procedure Set_Fatal_Error       (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Generate_Code     (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Has_RACW          (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Has_Allocator     (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Is_Compiler_Unit  (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Ident_String      (U : Unit_Number_Type; N : Node_Id);
+   procedure Set_Loading           (U : Unit_Number_Type; B : Boolean := True);
+   procedure Set_Main_CPU          (U : Unit_Number_Type; P : Int);
+   procedure Set_Main_Priority     (U : Unit_Number_Type; P : Int);
+   procedure Set_OA_Setting        (U : Unit_Number_Type; C : Character);
+   procedure Set_SPARK_Mode_Pragma (U : Unit_Number_Type; N : Node_Id);
+   procedure Set_Unit_Name         (U : Unit_Number_Type; N : Unit_Name_Type);
    --  Set value of named field for given units table entry. Note that we
    --  do not have an entry for each possible field, since some of the fields
    --  can only be set by specialized interfaces (defined below).
@@ -682,6 +688,42 @@ package Lib is
    --  of the printout. If Withs is True, we print out units with'ed by this
    --  unit (not counting limited withs).
 
+   ---------------------------------------------------------------
+   -- Special Handling for Restriction_Set (No_Dependence) Case --
+   ---------------------------------------------------------------
+
+   --  If we have a Restriction_Set attribute for No_Dependence => unit,
+   --  and the unit is not given in a No_Dependence restriction that we
+   --  can see, the attribute will return False.
+
+   --  We have to ensure in this case that the binder will reject any attempt
+   --  to set a No_Dependence restriction in some other unit in the partition.
+
+   --  If the unit is in the semantic closure, then of course it is properly
+   --  WITH'ed by someone, and the binder will do this job automatically as
+   --  part of its normal processing.
+
+   --  But if the unit is not in the semantic closure, we must make sure the
+   --  binder knows about it. The use of the Restriction_Set attribute giving
+   --  a result of False does not mean of itself that we have to include the
+   --  unit in the partition. So what we do is to generate a with (W) line in
+   --  the ali file (with no file name information), but no corresponding D
+   --  (dependency) line. This is recognized by the binder as meaning "Don't
+   --  let anyone specify No_Dependence for this unit, but you don't have to
+   --  include it if there is no real W line for the unit".
+
+   --  The following table keeps track of relevant units. It is used in the
+   --  Lib.Writ circuit for outputting With lines to output the special with
+   --  line with RA if the unit is not in the semantic closure.
+
+   package Restriction_Set_Dependences is new Table.Table (
+     Table_Component_Type => Unit_Name_Type,
+     Table_Index_Type     => Int,
+     Table_Low_Bound      => 0,
+     Table_Initial        => 10,
+     Table_Increment      => 100,
+     Table_Name           => "Restriction_Attribute_Dependences");
+
 private
    pragma Inline (Cunit);
    pragma Inline (Cunit_Entity);
@@ -707,34 +749,37 @@ private
    pragma Inline (Set_Main_CPU);
    pragma Inline (Set_Main_Priority);
    pragma Inline (Set_OA_Setting);
+   pragma Inline (Set_SPARK_Mode_Pragma);
    pragma Inline (Set_Unit_Name);
    pragma Inline (Source_Index);
+   pragma Inline (SPARK_Mode_Pragma);
    pragma Inline (Unit_File_Name);
    pragma Inline (Unit_Name);
 
    type Unit_Record is record
-      Unit_File_Name   : File_Name_Type;
-      Unit_Name        : Unit_Name_Type;
-      Munit_Index      : Nat;
-      Expected_Unit    : Unit_Name_Type;
-      Source_Index     : Source_File_Index;
-      Cunit            : Node_Id;
-      Cunit_Entity     : Entity_Id;
-      Dependency_Num   : Int;
-      Ident_String     : Node_Id;
-      Main_Priority    : Int;
-      Main_CPU         : Int;
-      Serial_Number    : Nat;
-      Version          : Word;
-      Error_Location   : Source_Ptr;
-      Fatal_Error      : Boolean;
-      Generate_Code    : Boolean;
-      Has_RACW         : Boolean;
-      Is_Compiler_Unit : Boolean;
-      Dynamic_Elab     : Boolean;
-      Loading          : Boolean;
-      Has_Allocator    : Boolean;
-      OA_Setting       : Character;
+      Unit_File_Name    : File_Name_Type;
+      Unit_Name         : Unit_Name_Type;
+      Munit_Index       : Nat;
+      Expected_Unit     : Unit_Name_Type;
+      Source_Index      : Source_File_Index;
+      Cunit             : Node_Id;
+      Cunit_Entity      : Entity_Id;
+      Dependency_Num    : Int;
+      Ident_String      : Node_Id;
+      Main_Priority     : Int;
+      Main_CPU          : Int;
+      Serial_Number     : Nat;
+      Version           : Word;
+      Error_Location    : Source_Ptr;
+      Fatal_Error       : Boolean;
+      Generate_Code     : Boolean;
+      Has_RACW          : Boolean;
+      Is_Compiler_Unit  : Boolean;
+      Dynamic_Elab      : Boolean;
+      Loading           : Boolean;
+      Has_Allocator     : Boolean;
+      OA_Setting        : Character;
+      SPARK_Mode_Pragma : Node_Id;
    end record;
 
    --  The following representation clause ensures that the above record
@@ -742,31 +787,32 @@ private
    --  written by Tree_Gen, we do not write uninitialized values to the file.
 
    for Unit_Record use record
-      Unit_File_Name   at  0 range 0 .. 31;
-      Unit_Name        at  4 range 0 .. 31;
-      Munit_Index      at  8 range 0 .. 31;
-      Expected_Unit    at 12 range 0 .. 31;
-      Source_Index     at 16 range 0 .. 31;
-      Cunit            at 20 range 0 .. 31;
-      Cunit_Entity     at 24 range 0 .. 31;
-      Dependency_Num   at 28 range 0 .. 31;
-      Ident_String     at 32 range 0 .. 31;
-      Main_Priority    at 36 range 0 .. 31;
-      Main_CPU         at 40 range 0 .. 31;
-      Serial_Number    at 44 range 0 .. 31;
-      Version          at 48 range 0 .. 31;
-      Error_Location   at 52 range 0 .. 31;
-      Fatal_Error      at 56 range 0 ..  7;
-      Generate_Code    at 57 range 0 ..  7;
-      Has_RACW         at 58 range 0 ..  7;
-      Dynamic_Elab     at 59 range 0 ..  7;
-      Is_Compiler_Unit at 60 range 0 ..  7;
-      OA_Setting       at 61 range 0 ..  7;
-      Loading          at 62 range 0 ..  7;
-      Has_Allocator    at 63 range 0 ..  7;
+      Unit_File_Name    at  0 range 0 .. 31;
+      Unit_Name         at  4 range 0 .. 31;
+      Munit_Index       at  8 range 0 .. 31;
+      Expected_Unit     at 12 range 0 .. 31;
+      Source_Index      at 16 range 0 .. 31;
+      Cunit             at 20 range 0 .. 31;
+      Cunit_Entity      at 24 range 0 .. 31;
+      Dependency_Num    at 28 range 0 .. 31;
+      Ident_String      at 32 range 0 .. 31;
+      Main_Priority     at 36 range 0 .. 31;
+      Main_CPU          at 40 range 0 .. 31;
+      Serial_Number     at 44 range 0 .. 31;
+      Version           at 48 range 0 .. 31;
+      Error_Location    at 52 range 0 .. 31;
+      Fatal_Error       at 56 range 0 ..  7;
+      Generate_Code     at 57 range 0 ..  7;
+      Has_RACW          at 58 range 0 ..  7;
+      Dynamic_Elab      at 59 range 0 ..  7;
+      Is_Compiler_Unit  at 60 range 0 ..  7;
+      OA_Setting        at 61 range 0 ..  7;
+      Loading           at 62 range 0 ..  7;
+      Has_Allocator     at 63 range 0 ..  7;
+      SPARK_Mode_Pragma at 64 range 0 .. 31;
    end record;
 
-   for Unit_Record'Size use 64 * 8;
+   for Unit_Record'Size use 68 * 8;
    --  This ensures that we did not leave out any fields
 
    package Units is new Table.Table (

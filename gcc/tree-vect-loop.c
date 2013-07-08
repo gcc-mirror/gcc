@@ -538,7 +538,12 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn, tree * init,
   if (TREE_CODE (step_expr) != INTEGER_CST
       && (TREE_CODE (step_expr) != SSA_NAME
 	  || ((bb = gimple_bb (SSA_NAME_DEF_STMT (step_expr)))
-	      && flow_bb_inside_loop_p (get_loop (cfun, loop_nb), bb))))
+	      && flow_bb_inside_loop_p (get_loop (cfun, loop_nb), bb))
+	  || (!INTEGRAL_TYPE_P (TREE_TYPE (step_expr))
+	      && (!SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr))
+		  || !flag_associative_math)))
+      && (TREE_CODE (step_expr) != REAL_CST
+	  || !flag_associative_math))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3276,7 +3281,13 @@ get_initial_def_for_induction (gimple iv_phi)
     {
       /* iv_loop is the loop to be vectorized. Generate:
 	  vec_step = [VF*S, VF*S, VF*S, VF*S]  */
-      expr = build_int_cst (TREE_TYPE (step_expr), vf);
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
+	{
+	  expr = build_int_cst (integer_type_node, vf);
+	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	}
+      else
+	expr = build_int_cst (TREE_TYPE (step_expr), vf);
       new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
 			      expr, step_expr);
       if (TREE_CODE (step_expr) == SSA_NAME)
@@ -3339,7 +3350,13 @@ get_initial_def_for_induction (gimple iv_phi)
       gcc_assert (!nested_in_vect_loop);
 
       /* Create the vector that holds the step of the induction.  */
-      expr = build_int_cst (TREE_TYPE (step_expr), nunits);
+      if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
+	{
+	  expr = build_int_cst (integer_type_node, nunits);
+	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	}
+      else
+	expr = build_int_cst (TREE_TYPE (step_expr), nunits);
       new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
 			      expr, step_expr);
       if (TREE_CODE (step_expr) == SSA_NAME)

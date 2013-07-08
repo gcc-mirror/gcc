@@ -1,7 +1,6 @@
 ------------------------------------------------------------------------------
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
---                                                                          --
 --                                E I N F O                                 --
 --                                                                          --
 --                                 S p e c                                  --
@@ -3757,6 +3756,11 @@ package Einfo is
 --       Small of the type, either as given in a representation clause, or
 --       as computed (as a power of two) by the compiler.
 
+--    SPARK_Mode_Pragmas (Node32)
+--       Present in the entities of subprogram specs and bodies as well as in
+--       package specs and bodies. Points to a list of SPARK_Mode pragmas that
+--       apply to the related construct. Add note of what this is used for ???
+
 --    Spec_Entity (Node19)
 --       Defined in package body entities. Points to corresponding package
 --       spec entity. Also defined in subprogram body parameters in the
@@ -5394,6 +5398,7 @@ package Einfo is
    --    Subprograms_For_Type                (Node29)
    --    Corresponding_Equality              (Node30)   (implicit /= only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
+   --    SPARK_Mode_Pragmas                  (Node32)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Elaboration_Entity_Required         (Flag174)
    --    Default_Expressions_Processed       (Flag108)
@@ -5591,6 +5596,7 @@ package Einfo is
    --    Abstract_States                     (Elist25)
    --    Package_Instantiation               (Node26)
    --    Current_Use_Clause                  (Node27)
+   --    SPARK_Mode_Pragmas                  (Node32)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Discard_Names                       (Flag88)
@@ -5621,6 +5627,7 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Finalizer                           (Node24)   (non-generic case only)
+   --    SPARK_Mode_Pragmas                  (Node32)
    --    Delay_Subprogram_Descriptors        (Flag50)
    --    Has_Anonymous_Master                (Flag253)
    --    Scope_Depth                         (synth)
@@ -5667,6 +5674,7 @@ package Einfo is
    --    Extra_Formals                       (Node28)
    --    Static_Initialization               (Node30)   (init_proc only)
    --    Thunk_Entity                        (Node31)   (thunk case only)
+   --    SPARK_Mode_Pragmas                  (Node32)
    --    Body_Needed_For_SAL                 (Flag40)
    --    Delay_Cleanups                      (Flag114)
    --    Discard_Names                       (Flag88)
@@ -5837,6 +5845,7 @@ package Einfo is
    --    Last_Entity                         (Node20)
    --    Scope_Depth_Value                   (Uint22)
    --    Extra_Formals                       (Node28)
+   --    SPARK_Mode_Pragmas                  (Node32)
    --    Scope_Depth                         (synth)
 
    --  E_Subprogram_Type
@@ -6531,6 +6540,7 @@ package Einfo is
    function Size_Depends_On_Discriminant        (Id : E) return B;
    function Size_Known_At_Compile_Time          (Id : E) return B;
    function Small_Value                         (Id : E) return R;
+   function SPARK_Mode_Pragmas                  (Id : E) return N;
    function Spec_Entity                         (Id : E) return E;
    function Static_Elaboration_Desired          (Id : E) return B;
    function Static_Initialization               (Id : E) return N;
@@ -7145,6 +7155,7 @@ package Einfo is
    procedure Set_Size_Depends_On_Discriminant    (Id : E; V : B := True);
    procedure Set_Size_Known_At_Compile_Time      (Id : E; V : B := True);
    procedure Set_Small_Value                     (Id : E; V : R);
+   procedure Set_SPARK_Mode_Pragmas              (Id : E; V : N);
    procedure Set_Spec_Entity                     (Id : E; V : E);
    procedure Set_Static_Elaboration_Desired      (Id : E; V : B);
    procedure Set_Static_Initialization           (Id : E; V : N);
@@ -7364,7 +7375,9 @@ package Einfo is
    function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for an instance of
    --  a pragma with the given pragma Id. If found, the value returned is the
-   --  N_Pragma node, otherwise Empty is returned.
+   --  N_Pragma node, otherwise Empty is returned. Delayed pragmas such as
+   --  Precondition, Postcondition, Contract_Cases, Depends and Global appear
+   --  in the N_Contract node of entity E and are also handled by this routine.
 
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
@@ -7891,6 +7904,7 @@ package Einfo is
    pragma Inline (Size_Depends_On_Discriminant);
    pragma Inline (Size_Known_At_Compile_Time);
    pragma Inline (Small_Value);
+   pragma Inline (SPARK_Mode_Pragmas);
    pragma Inline (Spec_Entity);
    pragma Inline (Static_Elaboration_Desired);
    pragma Inline (Static_Initialization);
@@ -8305,6 +8319,7 @@ package Einfo is
    pragma Inline (Set_Size_Depends_On_Discriminant);
    pragma Inline (Set_Size_Known_At_Compile_Time);
    pragma Inline (Set_Small_Value);
+   pragma Inline (Set_SPARK_Mode_Pragmas);
    pragma Inline (Set_Spec_Entity);
    pragma Inline (Set_Static_Elaboration_Desired);
    pragma Inline (Set_Static_Initialization);

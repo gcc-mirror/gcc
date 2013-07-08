@@ -72,6 +72,7 @@ with Targparm; use Targparm;
 with Ttypes;   use Ttypes;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Uname;    use Uname;
 with Urealp;   use Urealp;
 
 package body Sem_Attr is
@@ -1642,9 +1643,7 @@ package body Sem_Attr is
       begin
          Check_E0;
 
-         if Nkind (P) /= N_Identifier
-           or else Chars (P) /= Name_Standard
-         then
+         if Nkind (P) /= N_Identifier or else Chars (P) /= Name_Standard then
             Error_Attr ("only allowed prefix for % attribute is Standard", P);
          end if;
       end Check_Standard_Prefix;
@@ -1658,12 +1657,11 @@ package body Sem_Attr is
          Btyp : Entity_Id;
 
          In_Shared_Var_Procs : Boolean;
-         --  True when compiling the body of System.Shared_Storage.
-         --  Shared_Var_Procs. For this runtime package (always compiled in
-         --  GNAT mode), we allow stream attributes references for limited
-         --  types for the case where shared passive objects are implemented
-         --  using stream attributes, which is the default in GNAT's persistent
-         --  storage implementation.
+         --  True when compiling System.Shared_Storage.Shared_Var_Procs body.
+         --  For this runtime package (always compiled in GNAT mode), we allow
+         --  stream attributes references for limited types for the case where
+         --  shared passive objects are implemented using stream attributes,
+         --  which is the default in GNAT's persistent storage implementation.
 
       begin
          Validate_Non_Static_Attribute_Function_Call;
@@ -2049,16 +2047,11 @@ package body Sem_Attr is
       --  some attributes for which we do not analyze the prefix, since the
       --  prefix is not a normal name, or else needs special handling.
 
-      if Aname /= Name_Elab_Body
-           and then
-         Aname /= Name_Elab_Spec
-           and then
-         Aname /= Name_Elab_Subp_Body
-           and then
-         Aname /= Name_UET_Address
-           and then
-         Aname /= Name_Enabled
-           and then
+      if Aname /= Name_Elab_Body       and then
+         Aname /= Name_Elab_Spec       and then
+         Aname /= Name_Elab_Subp_Body  and then
+         Aname /= Name_UET_Address     and then
+         Aname /= Name_Enabled         and then
          Aname /= Name_Old
       then
          Analyze (P);
@@ -2122,12 +2115,18 @@ package body Sem_Attr is
 
       else
          E1 := First (Exprs);
-         Analyze (E1);
 
-         --  Check for missing/bad expression (result of previous error)
+         --  Skip analysis for case of Restriction_Set, we do not expect
+         --  the argument to be analyzed in this case.
 
-         if No (E1) or else Etype (E1) = Any_Type then
-            raise Bad_Attribute;
+         if Aname /= Name_Restriction_Set then
+            Analyze (E1);
+
+            --  Check for missing/bad expression (result of previous error)
+
+            if No (E1) or else Etype (E1) = Any_Type then
+               raise Bad_Attribute;
+            end if;
          end if;
 
          E2 := Next (E1);
@@ -4832,6 +4831,121 @@ package body Sem_Attr is
          Resolve (E1, P_Base_Type);
          Resolve (E2, P_Base_Type);
 
+      ---------------------
+      -- Restriction_Set --
+      ---------------------
+
+      when Attribute_Restriction_Set => Restriction_Set : declare
+         R    : Restriction_Id;
+         U    : Node_Id;
+         Unam : Unit_Name_Type;
+
+         procedure Set_Result (B : Boolean);
+         --  Replace restriction node by static constant False or True,
+         --  depending on the value of B.
+
+         ----------------
+         -- Set_Result --
+         ----------------
+
+         procedure Set_Result (B : Boolean) is
+         begin
+            if B then
+               Rewrite (N, New_Occurrence_Of (Standard_True, Loc));
+            else
+               Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+            end if;
+
+            Set_Is_Static_Expression (N);
+         end Set_Result;
+
+      --  Start of processing for Restriction_Set
+
+      begin
+         Check_E1;
+         Analyze (P);
+
+         if Nkind (P) /= N_Identifier or else Chars (P) /= Name_System then
+            Set_Result (False);
+            Error_Attr_P ("prefix of % attribute must be System");
+         end if;
+
+         --  No_Dependence case
+
+         if Nkind (E1) = N_Parameter_Association then
+            pragma Assert (Chars (Selector_Name (E1)) = Name_No_Dependence);
+            U := Explicit_Actual_Parameter (E1);
+
+            if not OK_No_Dependence_Unit_Name (U) then
+               Set_Result (False);
+               Error_Attr;
+            end if;
+
+            --  See if there is an entry already in the table. That's the
+            --  case in which we can return True.
+
+            for J in No_Dependences.First .. No_Dependences.Last loop
+               if Designate_Same_Unit (U, No_Dependences.Table (J).Unit)
+                 and then No_Dependences.Table (J).Warn = False
+               then
+                  Set_Result (True);
+                  return;
+               end if;
+            end loop;
+
+            --  If not in the No_Dependence table, result is False
+
+            Set_Result (False);
+
+            --  In this case, we must ensure that the binder will reject any
+            --  other unit in the partition that sets No_Dependence for this
+            --  unit. We do that by making an entry in the special table kept
+            --  for this purpose (if the entry is not there already).
+
+            Unam := Get_Spec_Name (Get_Unit_Name (U));
+
+            for J in Restriction_Set_Dependences.First ..
+                     Restriction_Set_Dependences.Last
+            loop
+               if Restriction_Set_Dependences.Table (J) = Unam then
+                  return;
+               end if;
+            end loop;
+
+            Restriction_Set_Dependences.Append (Unam);
+
+         --  Normal restriction case
+
+         else
+            if Nkind (E1) /= N_Identifier then
+               Set_Result (False);
+               Error_Attr ("attribute % requires restriction identifier", E1);
+
+            else
+               R := Get_Restriction_Id (Process_Restriction_Synonyms (E1));
+
+               if R = Not_A_Restriction_Id then
+                  Set_Result (False);
+                  Error_Msg_Node_1 := E1;
+                  Error_Attr ("invalid restriction identifier &", E1);
+
+               elsif R not in Partition_Boolean_Restrictions then
+                  Set_Result (False);
+                  Error_Msg_Node_1 := E1;
+                  Error_Attr
+                    ("& is not a boolean partition-wide restriction", E1);
+               end if;
+
+               if Restriction_Active (R) then
+                  Set_Result (True);
+               else
+                  Check_Restriction (R, N);
+                  Set_Result (False);
+               end if;
+            end if;
+         end if;
+      end Restriction_Set;
+
       -----------
       -- Round --
       -----------
@@ -5334,9 +5448,7 @@ package body Sem_Attr is
          Check_E1;
          Analyze (P);
 
-         if Nkind (P) /= N_Identifier
-           or else Chars (P) /= Name_System
-         then
+         if Nkind (P) /= N_Identifier or else Chars (P) /= Name_System then
             Error_Attr_P ("prefix of % attribute must be System");
          end if;
 
@@ -8071,6 +8183,16 @@ package body Sem_Attr is
 
          Fold_Ureal (N, Eval_Fat.Remainder (P_Base_Type, X, Y), Static);
       end Remainder;
+
+      -----------------
+      -- Restriction --
+      -----------------
+
+      when Attribute_Restriction_Set => Restriction_Set : declare
+      begin
+         Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
+         Set_Is_Static_Expression (N);
+      end Restriction_Set;
 
       -----------
       -- Round --

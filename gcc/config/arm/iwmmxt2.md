@@ -24,7 +24,7 @@
   "TARGET_REALLY_IWMMXT"
   "wabs<MMX_char>%?\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wabs")]
+   (set_attr "type" "wmmx_wabs")]
 )
 
 (define_insn "iwmmxt_wabsdiffb"
@@ -37,7 +37,7 @@
  "TARGET_REALLY_IWMMXT"
  "wabsdiffb%?\\t%0, %1, %2"
  [(set_attr "predicable" "yes")
-  (set_attr "wtype" "wabsdiff")]
+  (set_attr "type" "wmmx_wabsdiff")]
 )
 
 (define_insn "iwmmxt_wabsdiffh"
@@ -50,7 +50,7 @@
   "TARGET_REALLY_IWMMXT"
   "wabsdiffh%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wabsdiff")]
+   (set_attr "type" "wmmx_wabsdiff")]
 )
 
 (define_insn "iwmmxt_wabsdiffw"
@@ -63,7 +63,7 @@
  "TARGET_REALLY_IWMMXT"
  "wabsdiffw%?\\t%0, %1, %2"
  [(set_attr "predicable" "yes")
-  (set_attr "wtype" "wabsdiff")]
+  (set_attr "type" "wmmx_wabsdiff")]
 )
 
 (define_insn "iwmmxt_waddsubhx"
@@ -81,7 +81,7 @@
   "TARGET_REALLY_IWMMXT"
   "waddsubhx%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "waddsubhx")]
+   (set_attr "type" "wmmx_waddsubhx")]
 )
 
 (define_insn "iwmmxt_wsubaddhx"
@@ -99,7 +99,7 @@
   "TARGET_REALLY_IWMMXT"
   "wsubaddhx%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wsubaddhx")]
+   (set_attr "type" "wmmx_wsubaddhx")]
 )
 
 (define_insn "addc<mode>3"
@@ -111,7 +111,7 @@
   "TARGET_REALLY_IWMMXT"
   "wadd<MMX_char>c%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wadd")]
+   (set_attr "type" "wmmx_wadd")]
 )
 
 (define_insn "iwmmxt_avg4"
@@ -143,7 +143,7 @@
   "TARGET_REALLY_IWMMXT"
   "wavg4%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wavg4")]
+   (set_attr "type" "wmmx_wavg4")]
 )
 
 (define_insn "iwmmxt_avg4r"
@@ -175,7 +175,7 @@
   "TARGET_REALLY_IWMMXT"
   "wavg4r%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wavg4")]
+   (set_attr "type" "wmmx_wavg4")]
 )
 
 (define_insn "iwmmxt_wmaddsx"
@@ -194,7 +194,7 @@
  "TARGET_REALLY_IWMMXT"
   "wmaddsx%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-	(set_attr "wtype" "wmadd")]
+	(set_attr "type" "wmmx_wmadd")]
 )
 
 (define_insn "iwmmxt_wmaddux"
@@ -213,7 +213,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmaddux%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmadd")]
+   (set_attr "type" "wmmx_wmadd")]
 )
 
 (define_insn "iwmmxt_wmaddsn"
@@ -232,7 +232,7 @@
  "TARGET_REALLY_IWMMXT"
  "wmaddsn%?\\t%0, %1, %2"
  [(set_attr "predicable" "yes")
-  (set_attr "wtype" "wmadd")]
+  (set_attr "type" "wmmx_wmadd")]
 )
 
 (define_insn "iwmmxt_wmaddun"
@@ -251,7 +251,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmaddun%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmadd")]
+   (set_attr "type" "wmmx_wmadd")]
 )
 
 (define_insn "iwmmxt_wmulwsm"
@@ -265,7 +265,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulwsm%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmulw")]
+   (set_attr "type" "wmmx_wmulw")]
 )
 
 (define_insn "iwmmxt_wmulwum"
@@ -279,7 +279,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulwum%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmulw")]
+   (set_attr "type" "wmmx_wmulw")]
 )
 
 (define_insn "iwmmxt_wmulsmr"
@@ -297,7 +297,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulsmr%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmul")]
+   (set_attr "type" "wmmx_wmul")]
 )
 
 (define_insn "iwmmxt_wmulumr"
@@ -316,7 +316,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulumr%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmul")]
+   (set_attr "type" "wmmx_wmul")]
 )
 
 (define_insn "iwmmxt_wmulwsmr"
@@ -333,7 +333,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulwsmr%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmul")]
+   (set_attr "type" "wmmx_wmul")]
 )
 
 (define_insn "iwmmxt_wmulwumr"
@@ -350,7 +350,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulwumr%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmulw")]
+   (set_attr "type" "wmmx_wmulw")]
 )
 
 (define_insn "iwmmxt_wmulwl"
@@ -361,7 +361,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmulwl%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmulw")]
+   (set_attr "type" "wmmx_wmulw")]
 )
 
 (define_insn "iwmmxt_wqmulm"
@@ -371,7 +371,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmulm%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmulm")]
+   (set_attr "type" "wmmx_wqmulm")]
 )
 
 (define_insn "iwmmxt_wqmulwm"
@@ -381,7 +381,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmulwm%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmulwm")]
+   (set_attr "type" "wmmx_wqmulwm")]
 )
 
 (define_insn "iwmmxt_wqmulmr"
@@ -391,7 +391,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmulmr%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmulm")]
+   (set_attr "type" "wmmx_wqmulm")]
 )
 
 (define_insn "iwmmxt_wqmulwmr"
@@ -401,7 +401,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmulwmr%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmulwm")]
+   (set_attr "type" "wmmx_wqmulwm")]
 )
 
 (define_insn "iwmmxt_waddbhusm"
@@ -417,7 +417,7 @@
   "TARGET_REALLY_IWMMXT"
   "waddbhusm%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "waddbhus")]
+   (set_attr "type" "wmmx_waddbhus")]
 )
 
 (define_insn "iwmmxt_waddbhusl"
@@ -433,7 +433,7 @@
   "TARGET_REALLY_IWMMXT"
   "waddbhusl%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "waddbhus")]
+   (set_attr "type" "wmmx_waddbhus")]
 )
 
 (define_insn "iwmmxt_wqmiabb"
@@ -446,7 +446,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiabb%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiabt"
@@ -459,7 +459,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiabt%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiatb"
@@ -472,7 +472,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiatb%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiatt"
@@ -485,7 +485,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiatt%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiabbn"
@@ -498,7 +498,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiabbn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiabtn"
@@ -511,7 +511,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiabtn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiatbn"
@@ -524,7 +524,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiatbn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wqmiattn"
@@ -537,7 +537,7 @@
   "TARGET_REALLY_IWMMXT"
   "wqmiattn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wqmiaxy")]
+   (set_attr "type" "wmmx_wqmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiabb"
@@ -561,7 +561,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiabb%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiabt"
@@ -585,7 +585,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiabt%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiatb"
@@ -609,7 +609,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiatb%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiatt"
@@ -633,7 +633,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiatt%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiabbn"
@@ -657,7 +657,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiabbn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiabtn"
@@ -681,7 +681,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiabtn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiatbn"
@@ -705,7 +705,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiatbn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiattn"
@@ -729,7 +729,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiattn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiaxy")]
+   (set_attr "type" "wmmx_wmiaxy")]
 )
 
 (define_insn "iwmmxt_wmiawbb"
@@ -742,7 +742,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawbb%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawbt"
@@ -755,7 +755,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawbt%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawtb"
@@ -768,7 +768,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawtb%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawtt"
@@ -781,7 +781,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawtt%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawbbn"
@@ -794,7 +794,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawbbn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawbtn"
@@ -807,7 +807,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawbtn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawtbn"
@@ -820,7 +820,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawtbn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmiawttn"
@@ -833,7 +833,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmiawttn%?\\t%0, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmiawxy")]
+   (set_attr "type" "wmmx_wmiawxy")]
 )
 
 (define_insn "iwmmxt_wmerge"
@@ -858,7 +858,7 @@
   "TARGET_REALLY_IWMMXT"
   "wmerge%?\\t%0, %1, %2, %3"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "wmerge")]
+   (set_attr "type" "wmmx_wmerge")]
 )
 
 (define_insn "iwmmxt_tandc<mode>3"
@@ -868,7 +868,7 @@
   "TARGET_REALLY_IWMMXT"
   "tandc<MMX_char>%?\\t r15"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "tandc")]
+   (set_attr "type" "wmmx_tandc")]
 )
 
 (define_insn "iwmmxt_torc<mode>3"
@@ -878,7 +878,7 @@
   "TARGET_REALLY_IWMMXT"
   "torc<MMX_char>%?\\t r15"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "torc")]
+   (set_attr "type" "wmmx_torc")]
 )
 
 (define_insn "iwmmxt_torvsc<mode>3"
@@ -888,7 +888,7 @@
   "TARGET_REALLY_IWMMXT"
   "torvsc<MMX_char>%?\\t r15"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "torvsc")]
+   (set_attr "type" "wmmx_torvsc")]
 )
 
 (define_insn "iwmmxt_textrc<mode>3"
@@ -899,5 +899,5 @@
   "TARGET_REALLY_IWMMXT"
   "textrc<MMX_char>%?\\t r15, %0"
   [(set_attr "predicable" "yes")
-   (set_attr "wtype" "textrc")]
+   (set_attr "type" "wmmx_textrc")]
 )

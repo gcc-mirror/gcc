@@ -127,7 +127,7 @@ int main()
   assert(it != acc.end());
   assert(it->second.size() == 2);
 
-  // The begining of the month has arrived. We need to give a 3%
+  // The beginning of the month has arrived. We need to give a 3%
   // interest to all accounts with a positive balance.
 
   // First we loop over all customers.

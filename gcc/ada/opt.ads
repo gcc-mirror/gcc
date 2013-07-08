@@ -1147,12 +1147,6 @@ package Opt is
    --  Set to true to enable printing of package standard in source form.
    --  This flag is set by the -gnatS switch
 
-   Propagate_Exceptions : Boolean := False;
-   --  GNAT
-   --  Indicates if subprogram descriptor exception tables should be
-   --  built for imported subprograms. Set True if a Propagate_Exceptions
-   --  pragma applies to the extended main unit.
-
    type Usage is (Unknown, Not_In_Use, In_Use);
    Project_File_In_Use : Usage := Unknown;
    --  GNAT
@@ -1976,6 +1970,21 @@ package Opt is
    -- Modes for Formal Verification --
    -----------------------------------
 
+   Frame_Condition_Mode : Boolean := False;
+   --  Specific mode to be used in combination with SPARK_Mode. If set to
+   --  true, ALI files containing the frame conditions (global effects) are
+   --  generated, and Why files are *not* generated. If not true, Why files
+   --  are generated. Set by debug flag -gnatd.G.
+
+   Formal_Extensions : Boolean := False;
+   --  When this flag is set, new aspects/pragmas/attributes are accepted,
+   --  whose main purpose is to facilitate formal verification. Set by debug
+   --  flag -gnatd.V.
+
+   Global_SPARK_Mode : SPARK_Mode_Id := None;
+   --  The mode applicable to the whole compilation. The global mode can be set
+   --  in a configuration file such as gnat.adc.
+
    SPARK_Mode : Boolean := False;
    --  Specific compiling mode targeting formal verification through the
    --  generation of Why code for those parts of the input code that belong to
@@ -1984,21 +1993,10 @@ package Opt is
    --  from the SPARK restriction defined in GNAT to detect violations of a
    --  subset of SPARK 2005 rules.
 
-   Frame_Condition_Mode : Boolean := False;
-   --  Specific mode to be used in combination with SPARK_Mode. If set to
-   --  true, ALI files containing the frame conditions (global effects) are
-   --  generated, and Why files are *not* generated. If not true, Why files
-   --  are generated. Set by debug flag -gnatd.G.
-
    SPARK_Strict_Mode : Boolean := False;
    --  Interpret compiler permissions as strictly as possible. E.g. base ranges
    --  for integers are limited to the strict minimum with this option. Set by
    --  debug flag -gnatd.D.
-
-   Formal_Extensions : Boolean := False;
-   --  When this flag is set, new aspects/pragmas/attributes are accepted,
-   --  whose main purpose is to facilitate formal verification. Set by debug
-   --  flag -gnatd.V.
 
    function Full_Expander_Active return Boolean;
    pragma Inline (Full_Expander_Active);

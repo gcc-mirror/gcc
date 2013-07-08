@@ -1409,7 +1409,7 @@ package body Sem_Dim is
                if L_Has_Dimensions then
                   if not Compile_Time_Known_Value (R) then
                      Error_Msg_N ("exponent of dimensioned operand must be " &
-                                  "known at compile-time", N);
+                                  "known at compile time", N);
                   end if;
 
                   declare

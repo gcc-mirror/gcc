@@ -436,6 +436,7 @@ package Snames is
    Name_Short_Descriptors              : constant Name_Id := N + $; -- GNAT
    Name_Source_File_Name               : constant Name_Id := N + $; -- GNAT
    Name_Source_File_Name_Project       : constant Name_Id := N + $; -- GNAT
+   Name_SPARK_Mode                     : constant Name_Id := N + $; -- GNAT
    Name_Style_Checks                   : constant Name_Id := N + $; -- GNAT
    Name_Suppress                       : constant Name_Id := N + $;
    Name_Suppress_Exception_Locations   : constant Name_Id := N + $; -- GNAT
@@ -673,6 +674,7 @@ package Snames is
    Name_Assertion                      : constant Name_Id := N + $;
    Name_Assertions                     : constant Name_Id := N + $;
    Name_Attribute_Name                 : constant Name_Id := N + $;
+   Name_Auto                           : constant Name_Id := N + $;
    Name_Body_File_Name                 : constant Name_Id := N + $;
    Name_Boolean_Entry_Barriers         : constant Name_Id := N + $;
    Name_By_Any                         : constant Name_Id := N + $;
@@ -731,6 +733,7 @@ package Snames is
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
    Name_No_Implementation_Extensions   : constant Name_Id := N + $;
+   Name_No_Obsolescent_Features        : constant Name_Id := N + $;
    Name_No_Requeue                     : constant Name_Id := N + $;
    Name_No_Requeue_Statements          : constant Name_Id := N + $;
    Name_No_Specification_Of_Aspect     : constant Name_Id := N + $;
@@ -760,6 +763,8 @@ package Snames is
    Name_Semaphore                      : constant Name_Id := N + $;
    Name_Short_Descriptor               : constant Name_Id := N + $;
    Name_Simple_Barriers                : constant Name_Id := N + $;
+   Name_SPARK                          : constant Name_Id := N + $;
+   Name_SPARK_05                       : constant Name_Id := N + $;
    Name_Spec_File_Name                 : constant Name_Id := N + $;
    Name_State                          : constant Name_Id := N + $;
    Name_Statement_Assertions           : constant Name_Id := N + $;
@@ -898,6 +903,7 @@ package Snames is
    Name_Range                          : constant Name_Id := N + $;
    Name_Range_Length                   : constant Name_Id := N + $; -- GNAT
    Name_Ref                            : constant Name_Id := N + $; -- GNAT
+   Name_Restriction_Set                : constant Name_Id := N + $; -- GNAT
    Name_Result                         : constant Name_Id := N + $; -- GNAT
    Name_Round                          : constant Name_Id := N + $;
    Name_Safe_Emax                      : constant Name_Id := N + $; -- Ada 83
@@ -1514,6 +1520,7 @@ package Snames is
       Attribute_Range,
       Attribute_Range_Length,
       Attribute_Ref,
+      Attribute_Restriction_Set,
       Attribute_Result,
       Attribute_Round,
       Attribute_Safe_Emax,
@@ -1748,6 +1755,7 @@ package Snames is
       Pragma_Short_Descriptors,
       Pragma_Source_File_Name,
       Pragma_Source_File_Name_Project,
+      Pragma_SPARK_Mode,
       Pragma_Style_Checks,
       Pragma_Suppress,
       Pragma_Suppress_Exception_Locations,

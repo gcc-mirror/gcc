@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -113,7 +113,6 @@ package Sem_Ch12 is
    function Need_Subprogram_Instance_Body
      (N    : Node_Id;
       Subp : Entity_Id) return Boolean;
-
    --  If a subprogram instance is inlined, indicate that the body of it
    --  must be created, to be used in inlined calls by the back-end. The
    --  subprogram may be inlined because the generic itself carries the

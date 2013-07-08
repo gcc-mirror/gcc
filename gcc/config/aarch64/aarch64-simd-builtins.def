@@ -354,3 +354,10 @@
 
   VAR1 (UNOP, float_extend_lo_, 0, v2df)
   VAR1 (UNOP, float_truncate_lo_, 0, v2sf)
+
+  /* Implemented by aarch64_ld1<VALL:mode>.  */
+  BUILTIN_VALL (LOAD1, ld1, 0)
+
+  /* Implemented by aarch64_st1<VALL:mode>.  */
+  BUILTIN_VALL (STORE1, st1, 0)
+

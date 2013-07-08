@@ -113,6 +113,9 @@ package Sem_Prag is
    --  True have their analysis delayed until after the main program is parsed
    --  and analyzed.
 
+   function Get_SPARK_Mode_Id (N : Node_Id) return SPARK_Mode_Id;
+   --  Given a pragma SPARK_Mode node, return the corresponding mode id
+
    procedure Initialize;
    --  Initializes data structures used for pragma processing. Must be called
    --  before analyzing each new main source program.
@@ -126,6 +129,10 @@ package Sem_Prag is
    --  concatenations) and places it in Name_Buffer, setting Name_Len to its
    --  length, and then returns True. If it is not of the correct form, then an
    --  appropriate error message is posted, and False is returned.
+
+   function Is_Elaboration_SPARK_Mode (N : Node_Id) return Boolean;
+   --  Determine whether pragma SPARK_Mode appears in the statement part of a
+   --  package body.
 
    function Is_Non_Significant_Pragma_Reference (N : Node_Id) return Boolean;
    --  The node N is a node for an entity and the issue is whether the
@@ -142,6 +149,10 @@ package Sem_Prag is
    --  True is returned, the argument is converted to a string literal. If
    --  False is returned, then the argument is treated as an entity reference
    --  to the operator.
+
+   function Is_Private_SPARK_Mode (N : Node_Id) return Boolean;
+   --  Determine whether pragma SPARK_Mode appears in the private part of a
+   --  package.
 
    function Is_Valid_Assertion_Kind (Nam : Name_Id) return Boolean;
    --  Returns True if Nam is one of the names recognized as a valid assertion

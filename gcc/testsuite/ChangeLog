@@ -1,3 +1,113 @@
+2013-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57819
+	* gcc.target/i386/pr57819.c: New test.
+
+	PR rtl-optimization/57829
+	* gcc.c-torture/execute/pr57829.c: New test.
+
+2013-07-08  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* gcc.target/i386/memcpy-vector_loop-1.c: New.
+	* gcc.target/i386/memcpy-vector_loop-2.c: New.
+
+2013-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57807
+	* gcc.target/i386/pr57807.c: New test.
+
+2013-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/29776
+	* gcc.dg/tree-ssa/vrp89.c: New test.
+
+2013-07-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/28262
+	* g++.dg/parse/defarg16.C: New.
+
+2013-07-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55342
+	* gcc.target/i386/pr55342.c: New.
+
+2013-07-05  Marcus Shawcroft  <marcus.shawcroft@arm.com>
+
+	* gcc.dg/pr57518.c: Adjust scan-rtl-dump-not pattern.
+
+2013-07-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/14263
+	* g++.dg/inherit/virtual10.C: New.
+
+2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	PR c/57821
+	* gcc.dg/large-size-array-6.c: New test.
+
+2013-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/38634
+	* g++.dg/template/crash116.C: New.
+
+2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.dg/tree-ssa/vrp66.c: Make conditional on { target { ! int16 } } .
+	* gcc.dg/tree-ssa/vrp66-int16-sw.c: New test.
+
+2013-07-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54998
+	* g++.dg/cpp0x/nsdmi-list3.C: New.
+
+2013-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57777
+	* gcc.target/i386/pr57777.c: New test.
+
+	PR c++/57771
+	* g++.dg/template/arg9.C: New test.
+
+2013-07-02  Sriraman Tallam  <tmsriram@google.com>
+
+	* gcc.target/i386/avx-inline.c: New test.
+
+2013-07-02  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/mips/call-1.c: Accept JALRS and JALR.
+	* gcc.target/mips/call-2.c: Likewise.
+	* gcc.target/mips/call-3.c: Likewise.
+	* gcc.target/mips/lazy-binding-1.c: Likewise.
+
+2013-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57741
+	* gcc.dg/vect/pr57741-1.c: New test.
+	* gcc.dg/vect/pr57741-2.c: New test.
+	* gcc.dg/vect/pr57741-3.c: New test.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/config/aarch64/insv_1.c: Update to show it doesn't work
+	on big endian.
+	* gcc.target/config/aarch64/insv_2.c: New test for big endian.
+	* lib/target-supports.exp: Define aarch64_little_endian.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/abs_1.c: New test.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/bfxil_1.c: New test.
+	* gcc.target/aarch64/bfxil_2.c: Likewise.
+
+2013-07-01  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57766
+	* c-c++-common/cilk-plus/AN/sec_implicit_ex.c (NUMBER): Changed
+	array sizes from 100 to 20.
+
 2013-07-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/54788
@@ -179,18 +289,19 @@
 2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-c++-common/cilk-plus/AN/array_test1.c: Make this an execution test.
-	Also changed the returns from error as distinct values so that debugging
-	can get easier.
+	Also changed the returns from error as distinct values so that
+	debugging can get easier.
 	* c-c++-common/cilk-plus/AN/if_test_errors.c (main): Made certain
-	errors specific to C, if necessary.  Also added new error hooks for C++.
+	errors specific to C, if necessary.  Also added new error
+	hooks for C++.
 	* c-c++-common/cilk-plus/AN/misc.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/parser_errors.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/parser_errors2.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/parser_errors3.c (main): Likewise.
 	* c-c++-common/cilk-plus/AN/pr57541.c (main): Likewise.
-	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): In addition to the
-	same changes as parser_errors3.c, spaces were added between colons to
-	not confuse C++ compiler with 2 colons as scope.
+	* c-c++-common/cilk-plus/AN/parser_errors4.c (main): In addition to
+	the same changes as parser_errors3.c, spaces were added between colons
+	to not confuse C++ compiler with 2 colons as scope.
 	* c-c++-common/cilk-plus/AN/vla.c: Make this test C specific.
 	* g++.dg/cilk-plus/AN/array_test1_tplt.cc: New test.
 	* g++.dg/cilk-plus/AN/array_test2_tplt.cc: Likewise.
@@ -202,7 +313,8 @@
 	* g++.dg/cilk-plus/AN/preincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/AN/postincr_test.cc: Likewise.
 	* g++.dg/cilk-plus/cilk-plus.exp: New script.
-	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests in the list.
+	* gcc/testsuite/g++.dg/dg.exp: Included Cilk Plus C++ tests
+	in the list.
 
 2013-06-21  Joseph Myers  <joseph@codesourcery.com>
 
@@ -237,7 +349,7 @@
 	PR tree-optimization/57584
 	* gcc.dg/torture/pr57584.c: New testcase.
 
-2013-06-19    <singhai@google.com>
+2013-06-19  Sharad Singhai  <singhai@google.com>
 
 	* g++.dg/gcov/gcov-8.C: New testcase.
 	* lib/gcov.exp: Handle intermediate format.
@@ -1612,7 +1724,7 @@
 2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	* gcc.c-torture/compile/limits-externdecl.c [target avr-*-*]:
-        Expect "size of array is too large" error.
+	Expect "size of array is too large" error.
 
 2013-05-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 

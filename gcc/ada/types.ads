@@ -843,25 +843,26 @@ package Types is
       PE_Access_Before_Elaboration,      -- 14
       PE_Accessibility_Check_Failed,     -- 15
       PE_Address_Of_Intrinsic,           -- 16
-      PE_All_Guards_Closed,              -- 17
-      PE_Bad_Predicated_Generic_Type,    -- 18
-      PE_Current_Task_In_Entry_Body,     -- 19
-      PE_Duplicated_Entry_Address,       -- 20
-      PE_Explicit_Raise,                 -- 21
-      PE_Finalize_Raised_Exception,      -- 22
-      PE_Implicit_Return,                -- 23
-      PE_Misaligned_Address_Value,       -- 24
-      PE_Missing_Return,                 -- 25
-      PE_Overlaid_Controlled_Object,     -- 26
-      PE_Potentially_Blocking_Operation, -- 27
-      PE_Stubbed_Subprogram_Called,      -- 28
-      PE_Unchecked_Union_Restriction,    -- 29
-      PE_Non_Transportable_Actual,       -- 30
+      PE_Aliased_Parameters,             -- 17
+      PE_All_Guards_Closed,              -- 18
+      PE_Bad_Predicated_Generic_Type,    -- 19
+      PE_Current_Task_In_Entry_Body,     -- 20
+      PE_Duplicated_Entry_Address,       -- 21
+      PE_Explicit_Raise,                 -- 22
+      PE_Finalize_Raised_Exception,      -- 23
+      PE_Implicit_Return,                -- 24
+      PE_Misaligned_Address_Value,       -- 25
+      PE_Missing_Return,                 -- 26
+      PE_Overlaid_Controlled_Object,     -- 27
+      PE_Potentially_Blocking_Operation, -- 28
+      PE_Stubbed_Subprogram_Called,      -- 29
+      PE_Unchecked_Union_Restriction,    -- 30
+      PE_Non_Transportable_Actual,       -- 31
 
-      SE_Empty_Storage_Pool,             -- 31
-      SE_Explicit_Raise,                 -- 32
-      SE_Infinite_Recursion,             -- 33
-      SE_Object_Too_Large);              -- 34
+      SE_Empty_Storage_Pool,             -- 32
+      SE_Explicit_Raise,                 -- 33
+      SE_Infinite_Recursion,             -- 34
+      SE_Object_Too_Large);              -- 35
 
    subtype RT_CE_Exceptions is RT_Exception_Code range
      CE_Access_Check_Failed ..
@@ -874,5 +875,13 @@ package Types is
    subtype RT_SE_Exceptions is RT_Exception_Code range
      SE_Empty_Storage_Pool ..
      SE_Object_Too_Large;
+
+   ----------------------------------------
+   -- Types Used for SPARK Mode Handling --
+   ----------------------------------------
+
+   type SPARK_Mode_Id is (None, SPARK_Off, SPARK_Auto, SPARK_On);
+   --  Type used to represent all legal modes that can be set by aspect/pragma
+   --  SPARK_Mode.
 
 end Types;

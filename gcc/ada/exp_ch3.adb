@@ -237,16 +237,19 @@ package body Exp_Ch3 is
    --  user-defined equality. Factored out of Predefined_Primitive_Bodies.
 
    function Make_Eq_Case
-     (E     : Entity_Id;
-      CL    : Node_Id;
-      Discr : Entity_Id := Empty) return List_Id;
+     (E      : Entity_Id;
+      CL     : Node_Id;
+      Discrs : Elist_Id := New_Elmt_List) return List_Id;
    --  Building block for variant record equality. Defined to share the code
    --  between the tagged and non-tagged case. Given a Component_List node CL,
    --  it generates an 'if' followed by a 'case' statement that compares all
    --  components of local temporaries named X and Y (that are declared as
    --  formals at some upper level). E provides the Sloc to be used for the
-   --  generated code. Discr is used as the case statement switch in the case
-   --  of Unchecked_Union equality.
+   --  generated code.
+   --
+   --  IF E is an unchecked_union,  Discrs is the list of formals created for
+   --  the inferred discriminants of one operand. These formals are used in
+   --  the generated case statements for each variant of the unchecked union.
 
    function Make_Eq_If
      (E : Entity_Id;
@@ -4335,8 +4338,7 @@ package body Exp_Ch3 is
               Result_Definition => New_Reference_To (Standard_Boolean, Loc)),
           Declarations               => New_List,
           Handled_Statement_Sequence =>
-            Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => Stmts)));
+            Make_Handled_Sequence_Of_Statements (Loc, Statements => Stmts)));
 
       Append_To (Pspecs,
         Make_Parameter_Specification (Loc,
@@ -4350,57 +4352,71 @@ package body Exp_Ch3 is
 
       --  Unchecked_Unions require additional machinery to support equality.
       --  Two extra parameters (A and B) are added to the equality function
-      --  parameter list in order to capture the inferred values of the
-      --  discriminants in later calls.
+      --  parameter list for each discriminant of the type, in order to
+      --  capture the inferred values of the discriminants in equality calls.
+      --  The names of the parameters match the names of the corresponding
+      --  discriminant, with an added suffix.
 
       if Is_Unchecked_Union (Typ) then
          declare
-            Discr_Type : constant Node_Id := Etype (First_Discriminant (Typ));
-
-            A : constant Node_Id :=
-                  Make_Defining_Identifier (Loc,
-                    Chars => Name_A);
-
-            B : constant Node_Id :=
-                  Make_Defining_Identifier (Loc,
-                    Chars => Name_B);
+            Discr      : Entity_Id;
+            Discr_Type : Entity_Id;
+            A, B       : Entity_Id;
+            New_Discrs : Elist_Id;
 
          begin
-            --  Add A and B to the parameter list
+            New_Discrs := New_Elmt_List;
 
-            Append_To (Pspecs,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => A,
-                Parameter_Type => New_Reference_To (Discr_Type, Loc)));
+            Discr := First_Discriminant (Typ);
+            while Present (Discr) loop
+               Discr_Type := Etype (Discr);
+               A := Make_Defining_Identifier (Loc,
+                      Chars => New_External_Name (Chars (Discr), 'A'));
 
-            Append_To (Pspecs,
-              Make_Parameter_Specification (Loc,
-                Defining_Identifier => B,
-                Parameter_Type => New_Reference_To (Discr_Type, Loc)));
+               B := Make_Defining_Identifier (Loc,
+                      Chars => New_External_Name (Chars (Discr), 'B'));
 
-            --  Generate the following header code to compare the inferred
-            --  discriminants:
+               --  Add new parameters to the parameter list
 
-            --  if a /= b then
-            --     return False;
-            --  end if;
+               Append_To (Pspecs,
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier => A,
+                   Parameter_Type      => New_Reference_To (Discr_Type, Loc)));
 
-            Append_To (Stmts,
-              Make_If_Statement (Loc,
-                Condition =>
-                  Make_Op_Ne (Loc,
-                    Left_Opnd => New_Reference_To (A, Loc),
-                    Right_Opnd => New_Reference_To (B, Loc)),
-                Then_Statements => New_List (
-                  Make_Simple_Return_Statement (Loc,
-                    Expression => New_Occurrence_Of (Standard_False, Loc)))));
+               Append_To (Pspecs,
+                 Make_Parameter_Specification (Loc,
+                   Defining_Identifier => B,
+                   Parameter_Type      => New_Reference_To (Discr_Type, Loc)));
+
+               Append_Elmt (A, New_Discrs);
+
+               --  Generate the following code to compare each of the inferred
+               --  discriminants:
+
+               --  if a /= b then
+               --     return False;
+               --  end if;
+
+               Append_To (Stmts,
+                 Make_If_Statement (Loc,
+                   Condition       =>
+                     Make_Op_Ne (Loc,
+                       Left_Opnd  => New_Reference_To (A, Loc),
+                       Right_Opnd => New_Reference_To (B, Loc)),
+                   Then_Statements => New_List (
+                     Make_Simple_Return_Statement (Loc,
+                       Expression =>
+                         New_Occurrence_Of (Standard_False, Loc)))));
+               Next_Discriminant (Discr);
+            end loop;
 
             --  Generate component-by-component comparison. Note that we must
-            --  propagate one of the inferred discriminant formals to act as
-            --  the case statement switch.
+            --  propagate the inferred discriminants formals to act as
+            --  the case statement switch. Their value is added when an
+            --  equality call on unchecked unions is expanded.
 
             Append_List_To (Stmts,
-              Make_Eq_Case (Typ, Comps, A));
+              Make_Eq_Case (Typ, Comps, New_Discrs));
          end;
 
       --  Normal case (not unchecked union)
@@ -4616,9 +4632,19 @@ package body Exp_Ch3 is
       ------------------
 
       procedure Build_Master (Ptr_Typ : Entity_Id) is
-         Desig_Typ : constant Entity_Id := Designated_Type (Ptr_Typ);
+         Desig_Typ : Entity_Id := Designated_Type (Ptr_Typ);
 
       begin
+         --  If the designated type is an incomplete view coming from a
+         --  limited-with'ed package, we need to use the nonlimited view in
+         --  case it has tasks.
+
+         if Ekind (Desig_Typ) in Incomplete_Kind
+           and then Present (Non_Limited_View (Desig_Typ))
+         then
+            Desig_Typ := Non_Limited_View (Desig_Typ);
+         end if;
+
          --  Anonymous access types are created for the components of the
          --  record parameter for an entry declaration. No master is created
          --  for such a type.
@@ -7257,12 +7283,19 @@ package body Exp_Ch3 is
 
             --  When compiling in Ada 2012 mode, ensure that the accessibility
             --  level of the subpool access type is not deeper than that of the
-            --  pool_with_subpools. This check is not performed on .NET/JVM
-            --  since those targets do not support pools.
+            --  pool_with_subpools.
 
             elsif Ada_Version >= Ada_2012
               and then Present (Associated_Storage_Pool (Def_Id))
+
+              --  Omit this check on .NET/JVM where pools are not supported
+
               and then VM_Target = No_VM
+
+              --  Omit this check for the case of a configurable run-time that
+              --  does not provide package System.Storage_Pools.Subpools.
+
+              and then RTE_Available (RE_Root_Storage_Pool_With_Subpools)
             then
                declare
                   Loc   : constant Source_Ptr := Sloc (Def_Id);
@@ -8576,14 +8609,59 @@ package body Exp_Ch3 is
    --  end case;
 
    function Make_Eq_Case
-     (E     : Entity_Id;
-      CL    : Node_Id;
-      Discr : Entity_Id := Empty) return List_Id
+     (E      : Entity_Id;
+      CL     : Node_Id;
+      Discrs : Elist_Id := New_Elmt_List) return List_Id
    is
       Loc      : constant Source_Ptr := Sloc (E);
       Result   : constant List_Id    := New_List;
       Variant  : Node_Id;
       Alt_List : List_Id;
+
+      function Corresponding_Formal (C : Node_Id) return Entity_Id;
+      --  Given the discriminant that controls a given variant of an unchecked
+      --  union, find the formal of the equality function that carries the
+      --  inferred value of the discriminant.
+
+      function External_Name (E : Entity_Id) return Name_Id;
+      --  The value of a given discriminant is conveyed in the corresponding
+      --  formal parameter of the equality routine. The name of this formal
+      --  parameter carries a one-character suffix which is removed here.
+
+      --------------------------
+      -- Corresponding_Formal --
+      --------------------------
+
+      function Corresponding_Formal (C : Node_Id) return Entity_Id is
+         Discr : constant Entity_Id := Entity (Name (Variant_Part (C)));
+         Elm   : Elmt_Id;
+
+      begin
+         Elm := First_Elmt (Discrs);
+         while Present (Elm) loop
+            if Chars (Discr) = External_Name (Node (Elm)) then
+               return Node (Elm);
+            end if;
+            Next_Elmt (Elm);
+         end loop;
+
+         --  A formal of the proper name must be found
+
+         raise Program_Error;
+      end Corresponding_Formal;
+
+      -------------------
+      -- External_Name --
+      -------------------
+
+      function External_Name (E : Entity_Id) return Name_Id is
+      begin
+         Get_Name_String (Chars (E));
+         Name_Len := Name_Len - 1;
+         return Name_Find;
+      end External_Name;
+
+   --  Start of processing for Make_Eq_Case
 
    begin
       Append_To (Result, Make_Eq_If (E, Component_Items (CL)));
@@ -8604,18 +8682,21 @@ package body Exp_Ch3 is
          Append_To (Alt_List,
            Make_Case_Statement_Alternative (Loc,
              Discrete_Choices => New_Copy_List (Discrete_Choices (Variant)),
-             Statements => Make_Eq_Case (E, Component_List (Variant))));
+             Statements =>
+               Make_Eq_Case (E, Component_List (Variant), Discrs)));
 
          Next_Non_Pragma (Variant);
       end loop;
 
-      --  If we have an Unchecked_Union, use one of the parameters that
-      --  captures the discriminants.
+      --  If we have an Unchecked_Union, use one of the parameters of the
+      --  enclosing equality routine that captures the discriminant, to use
+      --  as the expression in the generated case statement.
 
       if Is_Unchecked_Union (E) then
          Append_To (Result,
            Make_Case_Statement (Loc,
-             Expression => New_Reference_To (Discr, Loc),
+             Expression =>
+               New_Reference_To (Corresponding_Formal (CL), Loc),
              Alternatives => Alt_List));
 
       else

@@ -117,6 +117,7 @@ Implementation Defined Pragmas
 * Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
+* Pragma CIL_Constructor::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -136,9 +137,11 @@ Implementation Defined Pragmas
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
 * Pragma Detect_Blocking::
+* Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
+* Pragma Enable_Atomic_Synchronization::
 * Pragma Export_Exception::
 * Pragma Export_Function::
 * Pragma Export_Object::
@@ -172,6 +175,8 @@ Implementation Defined Pragmas
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
 * Pragma Invariant::
+* Pragma Java_Constructor::
+* Pragma Java_Interface::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -189,28 +194,37 @@ Implementation Defined Pragmas
 * Pragma No_Body::
 * Pragma No_Inline::
 * Pragma No_Return::
+* Pragma No_Run_Time::
 * Pragma No_Strict_Aliasing ::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
 * Pragma Optimize_Alignment::
 * Pragma Ordered::
 * Pragma Overflow_Mode::
+* Pragma Overriding_Renamings::
 * Pragma Partition_Elaboration_Policy::
 * Pragma Passive::
 * Pragma Persistent_BSS::
 * Pragma Polling::
 * Pragma Postcondition::
 * Pragma Precondition::
+* Pragma Predicate::
 * Pragma Preelaborable_Initialization::
+* Pragma Preelaborate_05::
 * Pragma Priority_Specific_Dispatching::
-* Pragma Profile (Ravenscar)::
-* Pragma Profile (Restricted)::
-* Pragma Profile (Rational)::
+* Pragma Profile::
+* Pragma Profile_Warnings::
+* Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
+* Pragma Pure_05::
+* Pragma Pure_12::
 * Pragma Pure_Function::
+* Pragma Ravenscar::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
+* Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
 * Pragma Short_Descriptors::
@@ -218,12 +232,14 @@ Implementation Defined Pragmas
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma SPARK_Mode::
 * Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
 * Pragma Suppress::
 * Pragma Suppress_All::
+* Pragma Suppress_Debug_Info::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
 * Pragma Task_Info::
@@ -275,6 +291,7 @@ Implementation Defined Aspects
 * Aspect Shared::
 * Aspect Simple_Storage_Pool::
 * Aspect Simple_Storage_Pool_Type::
+* Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
 * Aspect Test_Case::
 * Aspect Universal_Aliasing::
@@ -326,6 +343,8 @@ Implementation Defined Attributes
 * Attribute Passed_By_Reference::
 * Attribute Pool_Address::
 * Attribute Range_Length::
+* Attribute Ref::
+* Attribute Restriction_Set::
 * Attribute Result::
 * Attribute Safe_Emax::
 * Attribute Safe_Large::
@@ -437,7 +456,7 @@ Program Unit Level Restrictions
 * No_Implicit_Aliasing::
 * No_Obsolescent_Features::
 * No_Wide_Characters::
-* SPARK::
+* SPARK_05::
 
 The Implementation of Standard I/O
 
@@ -914,6 +933,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Check_Float_Overflow::
 * Pragma Check_Name::
 * Pragma Check_Policy::
+* Pragma CIL_Constructor::
 * Pragma Comment::
 * Pragma Common_Object::
 * Pragma Compile_Time_Error::
@@ -933,9 +953,11 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Debug_Policy::
 * Pragma Default_Storage_Pool::
 * Pragma Detect_Blocking::
+* Pragma Disable_Atomic_Synchronization::
 * Pragma Dispatching_Domain::
 * Pragma Elaboration_Checks::
 * Pragma Eliminate::
+* Pragma Enable_Atomic_Synchronization::
 * Pragma Export_Exception::
 * Pragma Export_Function::
 * Pragma Export_Object::
@@ -969,6 +991,8 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Interrupt_Handler::
 * Pragma Interrupt_State::
 * Pragma Invariant::
+* Pragma Java_Constructor::
+* Pragma Java_Interface::
 * Pragma Keep_Names::
 * Pragma License::
 * Pragma Link_With::
@@ -986,6 +1010,7 @@ consideration, the use of these pragmas should be minimized.
 * Pragma No_Body::
 * Pragma No_Inline::
 * Pragma No_Return::
+* Pragma No_Run_Time::
 * Pragma No_Strict_Aliasing::
 * Pragma Normalize_Scalars::
 * Pragma Obsolescent::
@@ -999,16 +1024,23 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Polling::
 * Pragma Postcondition::
 * Pragma Precondition::
+* Pragma Predicate::
 * Pragma Preelaborable_Initialization::
+* Pragma Preelaborate_05::
 * Pragma Priority_Specific_Dispatching::
-* Pragma Profile (Ravenscar)::
-* Pragma Profile (Restricted)::
-* Pragma Profile (Rational)::
+* Pragma Profile::
+* Pragma Profile_Warnings::
+* Pragma Propagate_Exceptions::
 * Pragma Psect_Object::
+* Pragma Pure_05::
+* Pragma Pure_12::
 * Pragma Pure_Function::
+* Pragma Ravenscar::
 * Pragma Relative_Deadline::
 * Pragma Remote_Access_Type::
+* Pragma Restricted_Run_Time::
 * Pragma Restriction_Warnings::
+* Pragma Share_Generic::
 * Pragma Shared::
 * Pragma Short_Circuit_And_Or::
 * Pragma Short_Descriptors::
@@ -1016,12 +1048,14 @@ consideration, the use of these pragmas should be minimized.
 * Pragma Source_File_Name::
 * Pragma Source_File_Name_Project::
 * Pragma Source_Reference::
+* Pragma SPARK_Mode::
 * Pragma Static_Elaboration_Desired::
 * Pragma Stream_Convert::
 * Pragma Style_Checks::
 * Pragma Subtitle::
 * Pragma Suppress::
 * Pragma Suppress_All::
+* Pragma Suppress_Debug_Info::
 * Pragma Suppress_Exception_Locations::
 * Pragma Suppress_Initialization::
 * Pragma Task_Info::
@@ -1750,6 +1784,24 @@ compatibility with the standard @code{Assertion_Policy} pragma. The check
 policy setting @code{DISABLE} causes the second argument of a corresponding
 @code{Check} pragma to be completely ignored and not analyzed.
 
+@node Pragma CIL_Constructor
+@unnumberedsec Pragma CIL_Constructor
+@findex CIL_Constructor
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma CIL_Constructor ([Entity =>] function_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma is used to assert that the specified Ada function should be
+mapped to the .NET constructor for some Ada tagged record type.
+
+See section 4.1 of the
+@code{GNAT User's Guide: Supplement for the .NET Platform.}
+for related information.
+
 @node Pragma Comment
 @unnumberedsec Pragma Comment
 @findex Comment
@@ -2202,8 +2254,12 @@ that is, they never return an object whose type is a descendant of type T.
 @cindex Interfacing to C++
 @findex CPP_Virtual
 @noindent
-This pragma is now obsolete has has no effect because GNAT generates
-the same object layout than the G++ compiler.
+This pragma is now obsolete and, other than generating a warning if warnings
+on obsolescent features are enabled, is completely ignored.
+It is retained for compatibility
+purposes. It used to be required to ensure compoatibility with C++, but
+is no longer required for that purpose because GNAT generates
+the same object layout as the G++ compiler by default.
 
 See @ref{Interfacing to C++} for related information.
 
@@ -2212,8 +2268,11 @@ See @ref{Interfacing to C++} for related information.
 @cindex Interfacing with C++
 @findex CPP_Vtable
 @noindent
-This pragma is now obsolete has has no effect because GNAT generates
-the same object layout than the G++ compiler.
+This pragma is now obsolete and, other than generating a warning if warnings
+on obsolescent features are enabled, is completely ignored.
+It used to be required to ensure compatibility with C++, but
+is no longer required for that purpose because GNAT generates
+the same object layout than the G++ compiler by default.
 
 See @ref{Interfacing to C++} for related information.
 
@@ -2307,6 +2366,31 @@ versions of Ada as an implementation-defined pragma.
 This is a configuration pragma that forces the detection of potentially
 blocking operations within a protected operation, and to raise Program_Error
 if that happens.
+
+@node Pragma Disable_Atomic_Synchronization
+@unnumberedsec Pragma Disable_Atomic_Synchronization
+@cindex Atomic Synchronization
+@findex Disable_Atomic_Synchronization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Disable_Atomic_Synchronization [(Entity)];
+@end smallexample
+
+@noindent
+Ada requires that accesses (reads or writes) of an atomic variable be
+regarded as synchronization points in the case of multiple tasks.
+Particularly in the case of multi-processors this may require special
+handling, e.g. the generation of memory barriers. This capability may
+be turned off using this pragma in cases where it is known not to be
+required.
+
+The placement and scope rules for this pragma are the same as those
+for @code{pragma Suppress}. In particular it can be used as a
+configuration  pragma, or in a declaration sequence where it applies
+till the end of the scope. If an @code{Entity} argument is present,
+the action applies only to that entity.
 
 @node Pragma Dispatching_Domain
 @unnumberedsec Pragma Dispatching_Domain
@@ -2424,6 +2508,33 @@ Pragma @code{Eliminate} may be used where the referenced entity is a dispatching
 operation. In this case all the subprograms to which the given operation can
 dispatch are considered to be unused (are never called as a result of a direct
 or a dispatching call).
+
+@node Pragma Enable_Atomic_Synchronization
+@unnumberedsec Pragma Enable_Atomic_Synchronization
+@cindex Atomic Synchronization
+@findex Enable_Atomic_Synchronization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Enable_Atomic_Synchronization [(Entity)];
+@end smallexample
+
+@noindent
+Ada requires that accesses (reads or writes) of an atomic variable be
+regarded as synchronization points in the case of multiple tasks.
+Particularly in the case of multi-processors this may require special
+handling, e.g. the generation of memory barriers. This synchronization
+is performed by default, but can be turned off using
+@code{pragma Disable_Atomic_Synchronization}. The
+@code{Enable_Atomic_Synchronization} pragma can be used to turn
+it back on.
+
+The placement and scope rules for this pragma are the same as those
+for @code{pragma Unsuppress}. In particular it can be used as a
+configuration  pragma, or in a declaration sequence where it applies
+till the end of the scope. If an @code{Entity} argument is present,
+the action applies only to that entity.
 
 @node Pragma Export_Exception
 @unnumberedsec Pragma Export_Exception
@@ -3146,8 +3257,10 @@ of the configuration pragma Implicit_Packing, then the Size clause in this
 and similar examples will cause implicit packing and thus be accepted. For
 this implicit packing to occur, the type in question must be an array of small
 components whose size is known at compile time, and the Size clause must
-specify the exact size that corresponds to the length of the array multiplied
-by the size in bits of the component type.
+specify the exact size that corresponds to the number of elements in the array
+multiplied by the size in bits of the component type (both single and
+multi-dimensioned arrays can be controlled with this pragma).
+
 @cindex Array packing
 
 Similarly, the following example shows the use in the record case
@@ -3538,13 +3651,16 @@ happens regardless of whether these options are used.
 Syntax:
 
 @smallexample @c ada
-pragma Inline_Generic (generic_package_NAME);
+pragma Inline_Generic (GNAME @{, GNAME@});
+
+GNAME ::= generic_unit_NAME | generic_instance_NAME
 @end smallexample
 
 @noindent
-This is implemented for compatibility with DEC Ada 83 and is recognized,
-but otherwise ignored, by GNAT@.  All generic instantiations are inlined
-by default when using GNAT@.
+This pragma is provided for compatibility with Dec Ada 83. It has
+no effect in @code{GNAT} (which always inlines generics), other
+than to check that the given names are all names of generic units or
+generic instances.
 
 @node Pragma Interface
 @unnumberedsec Pragma Interface
@@ -3728,6 +3844,42 @@ invariant pragma for the same entity.
 
 For further details on the use of this pragma, see the Ada 2012 documentation
 of the Type_Invariant aspect.
+
+@node Pragma Java_Constructor
+@unnumberedsec Pragma Java_Constructor
+@findex Java_Constructor
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Java_Constructor ([Entity =>] function_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma is used to assert that the specified Ada function should be
+mapped to the Java constructor for some Ada tagged record type.
+
+See section 7.3.2 of the
+@code{GNAT User's Guide: Supplement for the JVM Platform.}
+for related information.
+
+@node Pragma Java_Interface
+@unnumberedsec Pragma Java_Interface
+@findex Java_Interface
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Java_Interface ([Entity =>] abstract_tagged_type_LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma is used to assert that the specified Ada abstract tagged type
+is to be mapped to a Java interface name.
+
+See sections 7.1 and 7.2 of the
+@code{GNAT User's Guide: Supplement for the JVM Platform.}
+for related information.
 
 @node Pragma Keep_Names
 @unnumberedsec Pragma Keep_Names
@@ -4040,9 +4192,9 @@ this pragma, the standard runtime libraries must be recompiled.
 @findex Loop_Invariant
 @noindent
 Syntax:
+
 @smallexample @c ada
 pragma Loop_Invariant ( boolean_EXPRESSION );
-
 @end smallexample
 
 @noindent
@@ -4288,6 +4440,24 @@ statement sequence is a call to such a procedure.
 Note that in Ada 2005 mode, this pragma is part of the language. It is
 available in all earlier versions of Ada as an implementation-defined
 pragma.
+
+@node Pragma No_Run_Time
+@unnumberedsec Pragma No_Run_Time
+@findex No_Run_Time
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma No_Run_Time;
+@end smallexample
+
+@noindent
+This is an obsolete configuration pragma that historically was used to
+setup what is now called the "zero footprint" library. It causes any
+library units outside this basic library to be ignored. The use of
+this pragma has been superseded by the general configurable run-time
+capability of @code{GNAT} where the compiler takes into account whatever
+units happen to be accessible in the library.
 
 @node Pragma No_Strict_Aliasing
 @unnumberedsec Pragma No_Strict_Aliasing
@@ -4703,6 +4873,7 @@ overflow checking, but does not affect the overflow mode.
 @unnumberedsec Pragma Overriding_Renamings
 @findex Overriding_Renamings
 @cindex Rational profile
+@cindex Rational compatibility
 @noindent
 Syntax:
 
@@ -4711,10 +4882,23 @@ pragma Overriding_Renamings;
 @end smallexample
 
 @noindent
-
-This is a GNAT pragma to simplify porting legacy code accepted by the Rational
+This is a GNAT configuration pragma to simplify porting
+legacy code accepted by the Rational
 Ada compiler. In the presence of this pragma, a renaming declaration that
-renames an inherited operation declared in the same scope is legal, even though
+renames an inherited operation declared in the same scope is legal if selected
+notation is used as in:
+
+@smallexample @c ada
+pragma Overriding_Renamings;
+...
+package R is
+  function F (..);
+  ...
+  function F (..) renames R.F;
+end R;
+@end smallexample
+
+even though
 RM 8.3 (15) stipulates that an overridden operation is not visible within the
 declaration of the overriding operation.
 
@@ -4832,7 +5016,7 @@ details.
 
 @node Pragma Postcondition
 @unnumberedsec Pragma Postcondition
-@cindex Postconditions
+@cindex Postcondition
 @cindex Checks, postconditions
 @findex Postconditions
 @noindent
@@ -4987,45 +5171,6 @@ inlining (-gnatN option set) are accepted and legality-checked
 by the compiler, but are ignored at run-time even if postcondition
 checking is enabled.
 
-@node Pragma Preelaborable_Initialization
-@unnumberedsec Pragma Preelaborable_Initialization
-@findex Preelaborable_Initialization
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Preelaborable_Initialization (DIRECT_NAME);
-@end smallexample
-
-@noindent
-This pragma is standard in Ada 2005, but is available in all earlier
-versions of Ada as an implementation-defined pragma.
-See Ada 2012 Reference Manual for details.
-
-@node Pragma Priority_Specific_Dispatching
-@unnumberedsec Pragma Priority_Specific_Dispatching
-@findex Priority_Specific_Dispatching
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Priority_Specific_Dispatching (
-   POLICY_IDENTIFIER,
-   first_priority_EXPRESSION,
-   last_priority_EXPRESSION)
-
-POLICY_IDENTIFIER ::=
-   EDF_Across_Priorities            |
-   FIFO_Within_Priorities           |
-   Non_Preemptive_Within_Priorities |
-   Round_Robin_Within_Priorities
-@end smallexample
-
-@noindent
-This pragma is standard in Ada 2005, but is available in all earlier
-versions of Ada as an implementation-defined pragma.
-See Ada 2012 Reference Manual for details.
-
 @node Pragma Precondition
 @unnumberedsec Pragma Precondition
 @cindex Preconditions
@@ -5068,27 +5213,139 @@ declarations of a subprogram body. Only other pragmas may intervene
 postconditions, or appear before the postcondition in the
 declaration sequence in a subprogram body).
 
-Note: postcondition pragmas associated with subprograms that are
+Note: precondition pragmas associated with subprograms that are
 marked as Inline_Always, or those marked as Inline with front-end
 inlining (-gnatN option set) are accepted and legality-checked
-by the compiler, but are ignored at run-time even if postcondition
+by the compiler, but are ignored at run-time even if precondition
 checking is enabled.
 
-@node Pragma Profile (Ravenscar)
-@unnumberedsec Pragma Profile (Ravenscar)
-@findex Ravenscar
+@node Pragma Predicate
+@unnumberedsec Pragma Predicate
+@findex Predicate
+@findex Predicate pragma
 @noindent
 Syntax:
 
 @smallexample @c ada
-pragma Profile (Ravenscar | Restricted);
+pragma Predicate
+  ([Entity =>] type_LOCAL_NAME,
+   [Check  =>] EXPRESSION);
+@end smallexample
+
+@noindent
+This pragma (available in all versions of Ada in GNAT) encompasses both
+the @code{Static_Predicate} and @code{Dynamic_Predicate} aspects in
+Ada 2012. A predicate is regarded as static if it has an allowed form
+for @code{Static_Predicate} and is otherwise treated as a
+@code{Dynamic_Predicate}. Otherwise, predicates specified by this
+pragma behave exactly as described in the Ada 2012 reference manual.
+For example, if we have
+
+@smallexample @c ada
+type R is range 1 .. 10;
+subtype S is R;
+pragma Predicate (Entity => S, Check => S not in 4 .. 6);
+subtype Q is R
+pragma Predicate (Entity => Q, Check => F(Q) or G(Q));
+@end smallexample
+
+@noindent
+the effect is identical to the following Ada 2012 code:
+
+@smallexample @c ada
+type R is range 1 .. 10;
+subtype S is R with
+  Static_Predicate => S not in 4 .. 6;
+subtype Q is R with
+  Dynamic_Predicate => F(Q) or G(Q);
+@end smallexample
+
+@node Pragma Preelaborable_Initialization
+@unnumberedsec Pragma Preelaborable_Initialization
+@findex Preelaborable_Initialization
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Preelaborable_Initialization (DIRECT_NAME);
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
+@node Pragma Preelaborate_05
+@unnumberedsec Pragma Preelaborate_05
+@findex Preelaborate_05
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Preelaborate_05 [(library_unit_NAME)];
+@end smallexample
+
+@noindent
+This pragma is only available in GNAT mode (@option{-gnatg} switch set)
+and is intended for use in the standard run-time library only. It has
+no effect in Ada 83 or Ada 95 mode, but is
+equivalent to @code{pragma Prelaborate} when operating in later
+Ada versions. This is used to handle some cases where packages
+not previously preelaborable became so in Ada 2005.
+
+@node Pragma Priority_Specific_Dispatching
+@unnumberedsec Pragma Priority_Specific_Dispatching
+@findex Priority_Specific_Dispatching
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Priority_Specific_Dispatching (
+   POLICY_IDENTIFIER,
+   first_priority_EXPRESSION,
+   last_priority_EXPRESSION)
+
+POLICY_IDENTIFIER ::=
+   EDF_Across_Priorities            |
+   FIFO_Within_Priorities           |
+   Non_Preemptive_Within_Priorities |
+   Round_Robin_Within_Priorities
+@end smallexample
+
+@noindent
+This pragma is standard in Ada 2005, but is available in all earlier
+versions of Ada as an implementation-defined pragma.
+See Ada 2012 Reference Manual for details.
+
+@node Pragma Profile
+@unnumberedsec Pragma Profile
+@findex Profile
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Profile (Ravenscar | Restricted | Rational);
 @end smallexample
 
 @noindent
 This pragma is standard in Ada 2005, but is available in all earlier
 versions of Ada as an implementation-defined pragma. This is a
-configuration pragma that establishes the following set of configuration
-pragmas:
+configuration pragma that establishes a set of configiuration pragmas
+that depend on the argument. @code{Ravenscar} is standard in Ada 2005.
+The other two possibilities (@code{Restricted} or @code{Rational})
+are implementation-defined. The set of configuration pragmas
+is defined in the following sections.
+
+@itemize
+
+@item Pragma Profile (Ravenscar)
+@findex Ravenscar
+@noindent
+
+The @code{Ravenscar} profile is standard in Ada 2005,
+but is available in all earlier
+versions of Ada as an implementation-defined pragma. This profile
+establishes the following set of configuration pragmas:
 
 @table @code
 @item Task_Dispatching_Policy (FIFO_Within_Priorities)
@@ -5172,20 +5429,11 @@ that pragma @code{Profile (Ravenscar)}, like the pragma
 automatically causes the use of a simplified,
 more efficient version of the tasking run-time system.
 
-@node Pragma Profile (Restricted)
-@unnumberedsec Pragma Profile (Restricted)
+@item Pragma Profile (Restricted)
 @findex Restricted Run Time
 @noindent
-Syntax:
-
-@smallexample @c ada
-pragma Profile (Restricted);
-@end smallexample
-
-@noindent
-This is an implementation-defined version of the standard pragma defined
-in Ada 2005. It is available in all versions of Ada. It is a
-configuration pragma that establishes the following set of restrictions:
+This profile corresponds to the GNAT restricted run time. It
+establishes the following set of restrictions:
 
 @itemize @bullet
 @item No_Abort_Statements
@@ -5210,21 +5458,12 @@ This set of restrictions causes the automatic selection of a simplified
 version of the run time that provides improved performance for the
 limited set of tasking functionality permitted by this set of restrictions.
 
-@node Pragma Profile (Rational)
-@unnumberedsec Pragma Profile (Rational)
+@item Pragma Profile (Rational)
 @findex Rational compatibility mode
-@noindent
-Syntax:
-
-@smallexample @c ada
-pragma Profile (Rational);
-@end smallexample
-
 @noindent
 The Rational profile is intended to facilitate porting legacy code that
 compiles with the Rational APEX compiler, even when the code includes non-
 conforming Ada constructs.  The profile enables the following three pragmas:
-
 
 @itemize @bullet
 @item pragma Implicit_Packing
@@ -5232,7 +5471,44 @@ conforming Ada constructs.  The profile enables the following three pragmas:
 @item pragma Use_VADS_Size
 @end itemize
 
+@end itemize
+
+@node Pragma Profile_Warnings
+@unnumberedsec Pragma Profile_Warnings
+@findex Profile_Warnings
 @noindent
+Syntax:
+
+@smallexample @c ada
+pragma Profile_Warnings (Ravenscar | Restricted | Rational);
+@end smallexample
+
+@noindent
+This is an implementation-defined pragma that is similar in
+effect to @code{pragma Profile} except that instead of
+generating @code{Restrictions} pragmas, it generates
+@code{Restriction_Warnings} pragmas. The result is that
+violations of the profile generate warning messages instead
+of error messages.
+
+@node Pragma Propagate_Exceptions
+@unnumberedsec Pragma Propagate_Exceptions
+@cindex Interfacing to C++
+@findex Propagate_Exceptions
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Propagate_Exceptions;
+@end smallexample
+
+@noindent
+This pragma is now obsolete and, other than generating a warning if warnings
+on obsolescent features are enabled, is ignored.
+It is retained for compatibility
+purposes. It used to be used in connection with optimization of
+a now-obsolete mechanism for implementation of exceptions.
+
 @node Pragma Psect_Object
 @unnumberedsec Pragma Psect_Object
 @findex Psect_Object
@@ -5252,6 +5528,42 @@ EXTERNAL_SYMBOL ::=
 
 @noindent
 This pragma is identical in effect to pragma @code{Common_Object}.
+
+@node Pragma Pure_05
+@unnumberedsec Pragma Pure_05
+@findex Pure_05
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pure_05 [(library_unit_NAME)];
+@end smallexample
+
+@noindent
+This pragma is only available in GNAT mode (@option{-gnatg} switch set)
+and is intended for use in the standard run-time library only. It has
+no effect in Ada 83 or Ada 95 mode, but is
+equivalent to @code{pragma Pure} when operating in later
+Ada versions. This is used to handle some cases where packages
+not previously pure became so in Ada 2005.
+
+@node Pragma Pure_12
+@unnumberedsec Pragma Pure_12
+@findex Pure_12
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Pure_12 [(library_unit_NAME)];
+@end smallexample
+
+@noindent
+This pragma is only available in GNAT mode (@option{-gnatg} switch set)
+and is intended for use in the standard run-time library only. It has
+no effect in Ada 83, Ada 95, or Ada 2005 modes, but is
+equivalent to @code{pragma Pure} when operating in later
+Ada versions. This is used to handle some cases where packages
+not previously pure became so in Ada 2012.
 
 @node Pragma Pure_Function
 @unnumberedsec Pragma Pure_Function
@@ -5316,6 +5628,27 @@ function is also considered pure from an optimization point of view, but the
 unit is not a Pure unit in the categorization sense. So for example, a function
 thus marked is free to @code{with} non-pure units.
 
+@node Pragma Ravenscar
+@unnumberedsec Pragma Ravenscar
+@findex Pragma Ravenscar
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Ravenscar;
+@end smallexample
+
+@noindent
+This pragma is considered obsolescent, but is retained for
+compatibility purposes. It is equivalent to:
+
+@smallexample @c ada
+pragma Profile (Ravenscar);
+@end smallexample
+
+@noindent
+which is the preferred method of setting the @code{Ravenscar} profile.
+
 @node Pragma Relative_Deadline
 @unnumberedsec Pragma Relative_Deadline
 @findex Relative_Deadline
@@ -5357,6 +5690,28 @@ In the generic unit, the formal type is subject to all restrictions
 pertaining to remote access to class-wide types. At instantiation, the
 actual type must be a remote access to class-wide type.
 
+@node Pragma Restricted_Run_Time
+@unnumberedsec Pragma Restricted_Run_Time
+@findex Pragma Restricted_Run_Time
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Restricted_Run_Time;
+@end smallexample
+
+@noindent
+This pragma is considered obsolescent, but is retained for
+compatibility purposes. It is equivalent to:
+
+@smallexample @c ada
+pragma Profile (Restricted);
+@end smallexample
+
+@noindent
+which is the preferred method of setting the restricted run time
+profile.
+
 @node Pragma Restriction_Warnings
 @unnumberedsec Pragma Restriction_Warnings
 @findex Restriction_Warnings
@@ -5376,6 +5731,24 @@ the compiler checks for violations of the restriction, but
 generates a warning message rather than an error message
 if the restriction is violated.
 
+@node Pragma Share_Generic
+@unnumberedsec Pragma Share_Generic
+@findex Share_Generic
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Share_Generic (GNAME @{, GNAME@});
+
+GNAME ::= generic_unit_NAME | generic_instance_NAME
+@end smallexample
+
+@noindent
+This pragma is provided for compatibility with Dec Ada 83. It has
+no effect in @code{GNAT} (which does not implement shared generics), other
+than to check that the given names are all names of generic units or
+generic instances.
+
 @node Pragma Shared
 @unnumberedsec Pragma Shared
 @findex Shared
@@ -5387,6 +5760,12 @@ semantics are identical to pragma Atomic.
 @node Pragma Short_Circuit_And_Or
 @unnumberedsec Pragma Short_Circuit_And_Or
 @findex Short_Circuit_And_Or
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma Short_Circuit_And_Or;
+@end smallexample
 
 @noindent
 This configuration pragma causes any occurrence of the AND operator applied to
@@ -5624,6 +6003,90 @@ The second argument must be a string literal, it cannot be a static
 string expression other than a string literal.  This is because its value
 is needed for error messages issued by all phases of the compiler.
 
+@node Pragma SPARK_Mode
+@unnumberedsec Pragma SPARK_Mode
+@findex SPARK_Mode
+@noindent
+Syntax:
+
+@smallexample @c ada
+pragma SPARK_Mode [ (On | Off | Auto) ] ;
+@end smallexample
+
+@noindent
+This pragma is used to designate whether a contract and its implementation must
+follow the SPARK 2014 programming language syntactic and semantic rules. The
+pragma is intended for use with formal verification tools and has no effect on
+the generated code.
+
+When used as a configuration pragma over a whole compilation or in a particular
+compilation unit, it sets the mode of the units involved, in particular:
+
+@itemize @bullet
+
+@item
+@code{On}: All entities in the units must follow the SPARK 2014 language, and
+an error will be generated if not, unless locally overridden by a local
+SPARK_Mode pragma or aspect. @code{On} is the default mode when pragma
+SPARK_Mode is used without an argument.
+
+@item
+@code{Off}: The units are considered to be in Ada by default and therefore not
+part of SPARK 2014 unless overridden locally. These units may be called by
+SPARK 2014 units.
+
+@item
+@code{Auto}: The formal verification tools will automatically detect whether
+each entity is in SPARK 2014 or in Ada.
+
+@end itemize
+
+Pragma SPARK_Mode can be used as a local pragma with the following semantics:
+
+@itemize @bullet
+
+@item
+Auto cannot be used as a mode argument.
+
+@item
+When the pragma at the start of the visible declarations (preceded only
+by other pragmas) of a package declaration, it marks the whole package
+(declaration and body) in or out of SPARK 2014.
+
+@item
+When the pragma appears at the start of the private declarations of a
+package (only other pragmas can appear between the @code{private} keyword
+and the @code{SPARK_Mode} pragma), it marks the private part in or
+out of SPARK 2014 (overriding the default mode of the visible part).
+
+@item
+When the pragma appears immediately at the start of the declarations of a
+package body (preceded only by other pragmas),
+it marks the whole body in or out of SPARK 2014 (overriding the default
+mode set by the declaration).
+
+@item
+When the pragma appears at the start of the elaboration statements of
+a package body (only other pragmas can appear between the @code{begin}
+keyword and the @code{SPARK_Mode} pragma),
+it marks the elaboration statements in or out of SPARK 2014 (overriding
+the default mode of the package body).
+
+@item
+When the pragma appears after a subprogram declaration (with only other
+pragmas intervening), it marks the whole
+subprogram (spec and body) in or out of SPARK 2014.
+
+@item
+When the pragma appears at the start of the declarations of a subprogram
+body (preceded only by other pragmas), it marks the whole body in or out
+of SPARK 2014 (overriding the default mode set by the declaration).
+
+@item
+Any other use of the pragma is illegal.
+
+@end itemize
+
 @node Pragma Static_Elaboration_Desired
 @unnumberedsec Pragma Static_Elaboration_Desired
 @findex Static_Elaboration_Desired
@@ -5676,8 +6139,7 @@ of this type.  It must name a function whose argument type may be any
 subtype, and whose returned type must be the type given as the first
 argument to the pragma.
 
-The meaning of the @var{Read}
-parameter is that if a stream attribute directly
+The meaning of the @var{Read} parameter is that if a stream attribute directly
 or indirectly specifies reading of the type given as the first parameter,
 then a value of the type given as the argument to the Read function is
 read from the stream, and then the Read function is used to convert this
@@ -5891,6 +6353,21 @@ Ada 83 usage where it appears at the end of a unit, and for compatibility
 with Rational Ada, where it appears as a program unit pragma.
 The use of the standard Ada pragma @code{Suppress (All_Checks)}
 as a normal configuration pragma is the preferred usage in GNAT@.
+
+@node Pragma Suppress_Debug_Info
+@unnumberedsec Pragma Suppress_Debug_Info
+@findex Suppress_Debug_Info
+@noindent
+Syntax:
+
+@smallexample @c ada
+Suppress_Debug_Info ([Entity =>] LOCAL_NAME);
+@end smallexample
+
+@noindent
+This pragma can be used to suppress generation of debug information
+for the specified entity. It is intended primarily for use in debugging
+the debugger, and navigating around debugger problems.
 
 @node Pragma Suppress_Exception_Locations
 @unnumberedsec Pragma Suppress_Exception_Locations
@@ -6793,6 +7270,7 @@ clause.
 * Aspect Shared::
 * Aspect Simple_Storage_Pool::
 * Aspect Simple_Storage_Pool_Type::
+* Aspect SPARK_Mode::
 * Aspect Suppress_Debug_Info::
 * Aspect Test_Case::
 * Aspect Universal_Aliasing::
@@ -7046,6 +7524,12 @@ attribute definition clause.
 @noindent
 This aspect is equivalent to pragma @code{Simple_Storage_Pool_Type}.
 
+@node Aspect SPARK_Mode
+@unnumberedsec Aspect SPARK_Mode
+@findex SPARK_Mode
+@noindent
+This aspect is equivalent to pragma @code{SPARK_Mode}.
+
 @node Aspect Suppress_Debug_Info
 @unnumberedsec Aspect Suppress_Debug_Info
 @findex Suppress_Debug_Info
@@ -7163,6 +7647,7 @@ consideration, you should minimize the use of these attributes.
 * Attribute Pool_Address::
 * Attribute Range_Length::
 * Attribute Ref::
+* Attribute Restriction_Set::
 * Attribute Result::
 * Attribute Safe_Emax::
 * Attribute Safe_Large::
@@ -7575,8 +8060,8 @@ indicates whether or not the corresponding actual type has discriminants.
 @unnumberedsec Attribute Img
 @findex Img
 @noindent
-The @code{Img} attribute differs from @code{Image} in that it may be
-applied to objects as well as types, in which case it gives the
+The @code{Img} attribute differs from @code{Image} in that it is applied
+directly to an object, and yields the same result as
 @code{Image} for the subtype of the object.  This is convenient for
 debugging:
 
@@ -7593,6 +8078,12 @@ Put_Line ("X = " & @var{T}'Image (X));
 
 @noindent
 where @var{T} is the (sub)type of the object @code{X}.
+
+Note that technically, in analogy to @code{Image},
+@code{X'Img} returns a parameterless function
+that returns the appropriate string when called. This means that
+@code{X'Img} can be renamed as a function-returning-string, or used
+in an instantiation as a function parameter.
 
 @node Attribute Integer_Value
 @unnumberedsec Attribute Integer_Value
@@ -7844,11 +8335,75 @@ same result as @code{Length} applied to the array itself.
 @unnumberedsec Attribute Ref
 @findex Ref
 @noindent
-The @code{System.Address'Ref}
-(@code{System.Address} is the only permissible prefix)
-denotes a function identical to
-@code{System.Storage_Elements.To_Address} except that
-it is a static attribute.  See @ref{Attribute To_Address} for more details.
+
+
+@node Attribute Restriction_Set
+@unnumberedsec Attribute Restriction_Set
+@findex Restriction_Set
+@cindex Restrictions
+@noindent
+This attribute allows compile time testing of restrictions that
+are currently in effect. It is primarily intended for specializing
+code in the run-time based on restrictions that are active (e.g.
+don't need to save fpt registers if restriction No_Floating_Point
+is known to be in effect), but can be used anywhere.
+
+There are two forms:
+
+@smallexample @c ada
+System'Restriction_Set (partition_boolean_restriction_NAME)
+System'Restriction_Set (No_Dependence => library_unit_NAME);
+@end smallexample
+
+@noindent
+In the case of the first form, the only restriction names
+allowed are parameterless restrictions that are checked
+for consistency at bind time. For a complete list see the
+subtype @code{System.Rident.Partition_Boolean_Restrictions}.
+
+The result returned is True if the restriction is known to
+be in effect, and False if the restriction is known not to
+be in effect. An important guarantee is that the value of
+a Restriction_Set attribute is known to be consistent throughout
+all the code of a partition.
+
+This is trivially achieved if the entire partition is compiled
+with a consistent set of restriction pragmas. However, the
+compilation model does not require this. It is possible to
+compile one set of units with one set of pragmas, and another
+set of units with another set of pragmas. It is even possible
+to compile a spec with one set of pragmas, and then WITH the
+same spec with a different set of pragmas. Inconsistencies
+in the actual use of the restriction are checked at bind time.
+
+In order to achieve the guarantee of consistency for the
+Restriction_Set pragma, we consider that a use of the pragma
+that yields False is equivalent to a violation of the
+restriction.
+
+So for example if you write
+
+@smallexample @c ada
+if System'Restriction_Set (No_Floating_Point) then
+   ...
+else
+   ...
+end if;
+@end smallexample
+
+@noindent
+And the result is False, so that the else branch is executed,
+you can assume that this restriction is not set for any unit
+in the partition. This is checked by considering this use of
+the restriction pragma to be a violation of the restriction
+No_Floating_Point. This means that no other unit can attempt
+to set this restriction (if some unit does attempt to set it,
+the binder will refuse to bind the partition).
+
+Technical note: The restriction name and the unit name are
+intepreted entirely syntactically, as in the corresponding
+Restrictions pragma, they are not analyzed semantically,
+so they do not have a type.
 
 @node Attribute Result
 @unnumberedsec Attribute Result
@@ -8469,6 +9024,12 @@ Note that this restriction is checked at run time. Violation of this
 restriction results in the raising of Program_Error exception at the point of
 the call.
 
+@findex Max_Entry_Queue_Depth
+The restriction @code{Max_Entry_Queue_Depth} is recognized as a
+synonym for @code{Max_Entry_Queue_Length}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
+
 @node Max_Protected_Entries
 @unnumberedsubsec Max_Protected_Entries
 @findex Max_Protected_Entries
@@ -8578,11 +9139,11 @@ dependence on a library unit.
 @node No_Direct_Boolean_Operators
 @unnumberedsubsec No_Direct_Boolean_Operators
 @findex No_Direct_Boolean_Operators
-[GNAT] This restriction ensures that no logical (and/or/xor) are used on
-operands of type Boolean (or any type derived
-from Boolean). This is intended for use in safety critical programs
-where the certification protocol requires the use of short-circuit
-(and then, or else) forms for all composite boolean operations.
+[GNAT] This restriction ensures that no logical operators (and/or/xor)
+are used on operands of type Boolean (or any type derived from Boolean).
+This is intended for use in safety critical programs where the certification
+protocol requires the use of short-circuit (and then, or else) forms for all
+composite boolean operations.
 
 @node No_Dispatch
 @unnumberedsubsec No_Dispatch
@@ -8654,6 +9215,12 @@ end Example;
 operations defined in package Ada.Interrupts
 (Is_Reserved, Is_Attached, Current_Handler, Attach_Handler, Exchange_Handler,
 Detach_Handler, and Reference).
+
+@findex No_Dynamic_Interrupts
+The restriction @code{No_Dynamic_Interrupts} is recognized as a
+synonym for @code{No_Dynamic_Attachment}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
 
 @node No_Dynamic_Priorities
 @unnumberedsubsec No_Dynamic_Priorities
@@ -8896,6 +9463,12 @@ appearing in source code.
 are permitted and prevents keyword @code{requeue} from being used in source
 code.
 
+@findex No_Requeue
+The restriction @code{No_Requeue} is recognized as a
+synonym for @code{No_Requeue_Statements}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on oNobsolescent features are activated).
+
 @node No_Secondary_Stack
 @unnumberedsubsec No_Secondary_Stack
 @findex No_Secondary_Stack
@@ -8977,6 +9550,12 @@ or types containing task subcomponents.
 [GNAT] This restriction ensures at compile time that there are no implicit or
 explicit dependencies on the package @code{Ada.Task_Attributes}.
 
+@findex No_Task_Attributes
+The restriction @code{No_Task_Attributes} is recognized as a synonym
+for @code{No_Task_Attributes_Package}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
+
 @node No_Task_Hierarchy
 @unnumberedsubsec No_Task_Hierarchy
 @findex No_Task_Hierarchy
@@ -9016,6 +9595,12 @@ declarations for protected types are restricted to either static boolean
 expressions or references to simple boolean variables defined in the private
 part of the protected type.  No other form of entry barriers is permitted.
 
+@findex Boolean_Entry_Barriers
+The restriction @code{Boolean_Entry_Barriers} is recognized as a
+synonym for @code{Simple_Barriers}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
+
 @node Static_Priorities
 @unnumberedsubsec Static_Priorities
 @findex Static_Priorities
@@ -9051,7 +9636,7 @@ other compilation units in the partition.
 * No_Implicit_Aliasing::
 * No_Obsolescent_Features::
 * No_Wide_Characters::
-* SPARK::
+* SPARK_05::
 @end menu
 
 @node No_Elaboration_Code
@@ -9181,15 +9766,18 @@ appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
 type @code{Character}).
 
-@node SPARK
-@unnumberedsubsec SPARK
-@findex SPARK
+@node SPARK_05
+@unnumberedsubsec SPARK_05
+@findex SPARK_05
 [GNAT] This restriction checks at compile time that some constructs
-forbidden in SPARK are not present. The SPARK version used as a
-reference is the same as the Ada mode for the unit, so a unit compiled
-in Ada 95 mode with SPARK restrictions will be checked for constructs
-forbidden in SPARK 95.  Error messages related to SPARK restriction have
-the form:
+forbidden in SPARK 2005 are not present. Error messages related to
+SPARK restriction have the form:
+
+@findex SPARK
+The restriction @code{SPARK} is recognized as a
+synonym for @code{SPARK_05}. This is retained for historical
+compatibility purposes (and an unconditional warning will be generated
+for its use, advising replacement by @code{SPARK}.
 
 @smallexample
 violation of restriction "SPARK" at <file>
@@ -9198,17 +9786,21 @@ violation of restriction "SPARK" at <file>
 
 This is not a replacement for the semantic checks performed by the
 SPARK Examiner tool, as the compiler only deals currently with code,
-not at all with SPARK annotations and does not guarantee catching all
-cases of constructs forbidden by SPARK.
+not at all with SPARK 2005 annotations and does not guarantee catching all
+cases of constructs forbidden by SPARK 2005.
 
-Thus it may well be the case that code which
-passes the compiler in SPARK mode is rejected by the SPARK Examiner,
-e.g. due to the different visibility rules of the Examiner based on
-SPARK @code{inherit} annotations.
+Thus it may well be the case that code which passes the compiler with
+the SPARK restriction is rejected by the SPARK Examiner, e.g. due to
+the different visibility rules of the Examiner based on SPARK 2005
+@code{inherit} annotations.
 
-This restriction can be useful in providing an initial filter for
-code developed using SPARK, or in examining legacy code to see how far
+This restriction can be useful in providing an initial filter for code
+developed using SPARK 2005, or in examining legacy code to see how far
 it is from meeting SPARK restrictions.
+
+Note that if a unit is compiled in Ada 95 mode with SPARK restriction,
+violations will be reported for constructs forbidden in SPARK 95,
+instead of SPARK 2005.
 
 @c ------------------------
 @node Implementation Advice
@@ -20435,3 +21027,5 @@ this kind of implementation dependent addition.
 @contents
 
 @bye
+tablishes the following set of restrictions:
+Pragma Shared

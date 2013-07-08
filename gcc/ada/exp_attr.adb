@@ -6500,6 +6500,7 @@ package body Exp_Attr is
            Attribute_Modulus                      |
            Attribute_Partition_ID                 |
            Attribute_Range                        |
+           Attribute_Restriction_Set              |
            Attribute_Safe_Emax                    |
            Attribute_Safe_First                   |
            Attribute_Safe_Large                   |

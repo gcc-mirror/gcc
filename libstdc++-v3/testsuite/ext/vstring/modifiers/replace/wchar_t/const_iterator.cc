@@ -27,4 +27,6 @@ void test01()
   wvs1.replace(wvs1.cbegin(), wvs1.cend(), L"1", 1);
   wvs1.replace(wvs1.cbegin(), wvs1.cend(), L"2");
   wvs1.replace(wvs1.cbegin(), wvs1.cend(), 1, L'3');
+  wvs1.replace(wvs1.cbegin(), wvs1.cend(), wvs1.begin(), wvs1.end());
+  wvs1.replace(wvs1.cbegin(), wvs1.cend(), {'4', '5'});
 }

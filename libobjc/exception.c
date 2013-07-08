@@ -202,7 +202,7 @@ get_ttype_entry (struct lsda_header_info *info, _Unwind_Word i)
 #ifdef SJLJ_EXCEPTIONS
 #define PERSONALITY_FUNCTION	__gnu_objc_personality_sj0
 #define __builtin_eh_return_data_regno(x) x
-#elif defined(__SEH__)
+#elif defined(__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 #define PERSONALITY_FUNCTION	__gnu_objc_personality_imp
 #else
 #define PERSONALITY_FUNCTION	__gnu_objc_personality_v0
@@ -227,7 +227,7 @@ PERSONALITY_FUNCTION (_Unwind_State state,
 
 #define CONTINUE_UNWINDING return _URC_CONTINUE_UNWIND
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 static
 #endif
 _Unwind_Reason_Code
@@ -524,7 +524,7 @@ objc_exception_throw (id exception)
   abort ();
 }
 
-#ifdef __SEH__
+#if defined (__SEH__) && !defined (__USING_SJLJ_EXCEPTIONS__)
 EXCEPTION_DISPOSITION
 __gnu_objc_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 			     PCONTEXT ms_orig_context,
@@ -533,4 +533,4 @@ __gnu_objc_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
   return _GCC_specific_handler (ms_exc, this_frame, ms_orig_context,
 				ms_disp, __gnu_objc_personality_imp);
 }
-#endif /* SEH */
+#endif

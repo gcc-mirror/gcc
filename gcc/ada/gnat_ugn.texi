@@ -3726,7 +3726,8 @@ users guide.
 @end ifset
 Create expanded source files for source level debugging. This switch
 also suppress generation of cross-reference information
-(see @option{-gnatx}).
+(see @option{-gnatx}). Note that this switch is not allowed if a previous
+-gnatR switch has been given, since these two switches are not compatible.
 
 @item ^-gnateA^/ALIASING_CHECK^
 @cindex @option{-gnateA} (@command{gcc})
@@ -4005,6 +4006,8 @@ Treat pragma Restrictions as Restriction_Warnings.
 @item ^-gnatR@r{[}0@r{/}1@r{/}2@r{/}3@r{[}s@r{]]}^/REPRESENTATION_INFO^
 @cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
+Note that this switch is not allowed if a previous
+-gnatD switch has been given, since these two switches are not compatible.
 
 @item -gnats
 @cindex @option{-gnats} (@command{gcc})
@@ -6062,7 +6065,8 @@ the examples in the Ada Reference Manual. Full line comments must be
 aligned with the @code{--} starting on a column that is a multiple of
 the alignment level, or they may be aligned the same way as the following
 non-blank line (this is useful when full line comments appear in the middle
-of a statement.
+of a statement, or they may be aligned with the source line on the previous
+non-blank line.
 
 @item ^a^ATTRIBUTE^
 @emph{Check attribute casing.}
@@ -11607,6 +11611,7 @@ recognized by GNAT:
    Short_Circuit_And_Or
    Source_File_Name
    Source_File_Name_Project
+   SPARK_Mode
    Style_Checks
    Suppress
    Suppress_Exception_Locations
@@ -17246,6 +17251,7 @@ The pragmas listed below should be used with caution inside libraries,
 as they can create incompatibilities with other Ada libraries:
 @itemize @bullet
 @item pragma @code{Locking_Policy}
+@item pragma @code{Partition_Elaboration_Policy}
 @item pragma @code{Queuing_Policy}
 @item pragma @code{Task_Dispatching_Policy}
 @item pragma @code{Unreserve_All_Interrupts}

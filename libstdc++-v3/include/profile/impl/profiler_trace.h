@@ -283,7 +283,7 @@ namespace __gnu_profile
     
 	  if (__stack_it == __stack_table.end())
 	    {
-	      // First occurence of this call context.
+	      // First occurrence of this call context.
 	      if (__max_mem() == 0 || __stack_table_byte_size < __max_mem()) 
 		{
 		  __stack_table_byte_size 

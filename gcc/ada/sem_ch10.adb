@@ -3000,7 +3000,7 @@ package body Sem_Ch10 is
       Set_First_Name         (Withn, True);
       Set_Implicit_With      (Withn, True);
 
-      --  If the unit is a package or generic package  declaration, a private_
+      --  If the unit is a package or generic package declaration, a private_
       --  with_clause on a child unit implies that the implicit with on the
       --  parent is also private.
 

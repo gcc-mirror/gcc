@@ -1123,6 +1123,7 @@ aarch64_simd_expand_builtin (int fcode, tree exp, rtx target)
       return aarch64_simd_expand_args (target, icode, 1, exp,
 				       SIMD_ARG_COPY_TO_REG, SIMD_ARG_STOP);
 
+    case AARCH64_SIMD_STORE1:
     case AARCH64_SIMD_STORESTRUCT:
       return aarch64_simd_expand_args (target, icode, 0, exp,
 				       SIMD_ARG_COPY_TO_REG,

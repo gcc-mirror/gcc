@@ -402,7 +402,9 @@ package Lib.Writ is
 
    --    No restriction pragma is present for the named boolean restriction.
    --    However, the compiler did detect one or more violations of this
-   --    restriction, which may require a binder consistency check.
+   --    restriction, which may require a binder consistency check. Note that
+   --    one case of a violation is the use of a Restriction_Set attribute for
+   --    the restriction that yielded False.
 
    --  For the case of restrictions that take a parameter, we need both the
    --  information from pragma if present, and the actual information about
@@ -618,9 +620,9 @@ package Lib.Writ is
    --  Following each U line, is a series of lines of the form
 
    --    W unit-name [source-name lib-name] [E] [EA] [ED] [AD]
-   --    or
+   --      or
    --    Y unit-name [source-name lib-name] [E] [EA] [ED] [AD]
-   --    or
+   --      or
    --    Z unit-name [source-name lib-name] [E] [EA] [ED] [AD]
    --
    --      One W line is present for each unit that is mentioned in an explicit
@@ -655,6 +657,14 @@ package Lib.Writ is
    --      The parameter source-name and lib-name are omitted for the case of a
    --      generic unit compiled with earlier versions of GNAT which did not
    --      generate object or ali files for generics.
+   --
+   --      The parameter source-name and lib-name are also omitted for the W
+   --      lines that result from use of a Restriction_Set attribute which gets
+   --      a result of False from a No_Dependence check, in the case where the
+   --      unit is not in the semantic closure. In such a case, the bare W
+   --      line is generated, but no D (dependency) line. This will make the
+   --      binder do the consistency check, but not include the unit in the
+   --      partition closure (unless it is properly With'ed somewhere).
 
    --  -----------------------
    --  -- L  Linker_Options --

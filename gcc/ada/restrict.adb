@@ -41,6 +41,38 @@ with Uname;    use Uname;
 
 package body Restrict is
 
+   -------------------------------
+   -- SPARK Restriction Control --
+   -------------------------------
+
+   --  SPARK HIDE directives allow the effect of the SPARK_05 restriction to be
+   --  turned off for a specified region of code, and the following tables are
+   --  the data structures used to keep track of these regions.
+
+   --  The table contains pairs of source locations, the first being the start
+   --  location for hidden region, and the second being the end location.
+
+   --  Note that the start location is included in the hidden region, while
+   --  the end location is excluded from it. (It typically corresponds to the
+   --  next token during scanning.)
+
+   type SPARK_Hide_Entry is record
+      Start : Source_Ptr;
+      Stop  : Source_Ptr;
+   end record;
+
+   package SPARK_Hides is new Table.Table (
+     Table_Component_Type => SPARK_Hide_Entry,
+     Table_Index_Type     => Natural,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "SPARK Hides");
+
+   --------------------------------
+   -- Package Local Declarations --
+   --------------------------------
+
    Config_Cunit_Boolean_Restrictions : Save_Cunit_Boolean_Restrictions;
    --  Save compilation unit restrictions set by config pragma files
 
@@ -151,69 +183,6 @@ package body Restrict is
    begin
       Check_Restriction (No_Elaboration_Code, N);
    end Check_Elaboration_Code_Allowed;
-
-   -----------------------------
-   -- Check_SPARK_Restriction --
-   -----------------------------
-
-   procedure Check_SPARK_Restriction
-     (Msg   : String;
-      N     : Node_Id;
-      Force : Boolean := False)
-   is
-      Msg_Issued          : Boolean;
-      Save_Error_Msg_Sloc : Source_Ptr;
-   begin
-      if Force or else Comes_From_Source (Original_Node (N)) then
-
-         if Restriction_Check_Required (SPARK)
-           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
-         then
-            return;
-         end if;
-
-         --  Since the call to Restriction_Msg from Check_Restriction may set
-         --  Error_Msg_Sloc to the location of the pragma restriction, save and
-         --  restore the previous value of the global variable around the call.
-
-         Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
-         Error_Msg_Sloc := Save_Error_Msg_Sloc;
-
-         if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg, N);
-         end if;
-      end if;
-   end Check_SPARK_Restriction;
-
-   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
-      Msg_Issued          : Boolean;
-      Save_Error_Msg_Sloc : Source_Ptr;
-   begin
-      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
-
-      if Comes_From_Source (Original_Node (N)) then
-
-         if Restriction_Check_Required (SPARK)
-           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
-         then
-            return;
-         end if;
-
-         --  Since the call to Restriction_Msg from Check_Restriction may set
-         --  Error_Msg_Sloc to the location of the pragma restriction, save and
-         --  restore the previous value of the global variable around the call.
-
-         Save_Error_Msg_Sloc := Error_Msg_Sloc;
-         Check_Restriction (Msg_Issued, SPARK, First_Node (N));
-         Error_Msg_Sloc := Save_Error_Msg_Sloc;
-
-         if Msg_Issued then
-            Error_Msg_F ("\\| " & Msg1, N);
-            Error_Msg_F (Msg2, N);
-         end if;
-      end if;
-   end Check_SPARK_Restriction;
 
    --------------------------------
    -- Check_No_Implicit_Aliasing --
@@ -851,6 +820,27 @@ package body Restrict is
         and then Restriction_Active (No_Exception_Propagation);
    end No_Exception_Propagation_Active;
 
+   --------------------------------
+   -- OK_No_Dependence_Unit_Name --
+   --------------------------------
+
+   function OK_No_Dependence_Unit_Name (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Selected_Component then
+         return
+           OK_No_Dependence_Unit_Name (Prefix (N))
+             and then
+           OK_No_Dependence_Unit_Name (Selector_Name (N));
+
+      elsif Nkind (N) = N_Identifier then
+         return True;
+
+      else
+         Error_Msg_N ("wrong form for unit name for No_Dependence", N);
+         return False;
+      end if;
+   end OK_No_Dependence_Unit_Name;
+
    ----------------------------------
    -- Process_Restriction_Synonyms --
    ----------------------------------
@@ -880,9 +870,21 @@ package body Restrict is
          when Name_No_Task_Attributes =>
             New_Name := Name_No_Task_Attributes_Package;
 
+         --  SPARK is special in that we unconditionally warn
+
+         when Name_SPARK =>
+            Error_Msg_Name_1 := Name_SPARK;
+            Error_Msg_N ("restriction identifier % is obsolescent??", N);
+            Error_Msg_Name_1 := Name_SPARK_05;
+            Error_Msg_N ("|use restriction identifier % instead??", N);
+            return Name_SPARK_05;
+
          when others =>
             return Old_Name;
       end case;
+
+      --  Output warning if we are warning on obsolescent features for all
+      --  cases other than SPARK.
 
       if Warn_On_Obsolescent_Feature then
          Error_Msg_Name_1 := Old_Name;
@@ -983,10 +985,10 @@ package body Restrict is
 
       procedure Id_Case (S : String; Quotes : Boolean := True);
       --  Given a string S, case it according to current identifier casing,
-      --  except for SPARK (an acronym) which is set all upper case, and store
-      --  in Error_Msg_String. Then append `~` to the message buffer to output
-      --  the string unchanged surrounded in quotes. The quotes are suppressed
-      --  if Quotes = False.
+      --  except for SPARK_05 (an acronym) which is set all upper case, and
+      --  store in Error_Msg_String. Then append `~` to the message buffer
+      --  to output the string unchanged surrounded in quotes. The quotes
+      --  are suppressed if Quotes = False.
 
       --------------
       -- Add_Char --
@@ -1017,7 +1019,7 @@ package body Restrict is
          Name_Buffer (1 .. S'Last) := S;
          Name_Len := S'Length;
 
-         if R = SPARK then
+         if R = SPARK_05 then
             Set_All_Upper_Case;
          else
             Set_Casing (Identifier_Casing (Get_Source_File_Index (Sloc (N))));
@@ -1127,20 +1129,16 @@ package body Restrict is
 
    function Same_Unit (U1, U2 : Node_Id) return Boolean is
    begin
-      if Nkind (U1) = N_Identifier then
-         return Nkind (U2) = N_Identifier and then Chars (U1) = Chars (U2);
+      if Nkind (U1) = N_Identifier and then Nkind (U2) = N_Identifier then
+         return Chars (U1) = Chars (U2);
 
-      elsif Nkind (U2) = N_Identifier then
-         return False;
-
-      elsif (Nkind (U1) = N_Selected_Component
-             or else Nkind (U1) = N_Expanded_Name)
-        and then
-          (Nkind (U2) = N_Selected_Component
-           or else Nkind (U2) = N_Expanded_Name)
+      elsif Nkind_In (U1, N_Selected_Component, N_Expanded_Name)
+              and then
+            Nkind_In (U2, N_Selected_Component, N_Expanded_Name)
       then
          return Same_Unit (Prefix (U1), Prefix (U2))
-           and then Same_Unit (Selector_Name (U1), Selector_Name (U2));
+                  and then
+                Same_Unit (Selector_Name (U1), Selector_Name (U2));
       else
          return False;
       end if;
@@ -1396,6 +1394,69 @@ package body Restrict is
          No_Use_Of_Pragma_Warning (A_Id) := False;
       end if;
    end Set_Restriction_No_Use_Of_Pragma;
+
+   -----------------------------
+   -- Check_SPARK_Restriction --
+   -----------------------------
+
+   procedure Check_SPARK_Restriction
+     (Msg   : String;
+      N     : Node_Id;
+      Force : Boolean := False)
+   is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
+
+   begin
+      if Force or else Comes_From_Source (Original_Node (N)) then
+         if Restriction_Check_Required (SPARK_05)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg, N);
+         end if;
+      end if;
+   end Check_SPARK_Restriction;
+
+   procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
+      Msg_Issued          : Boolean;
+      Save_Error_Msg_Sloc : Source_Ptr;
+
+   begin
+      pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
+
+      if Comes_From_Source (Original_Node (N)) then
+         if Restriction_Check_Required (SPARK_05)
+           and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
+         then
+            return;
+         end if;
+
+         --  Since the call to Restriction_Msg from Check_Restriction may set
+         --  Error_Msg_Sloc to the location of the pragma restriction, save and
+         --  restore the previous value of the global variable around the call.
+
+         Save_Error_Msg_Sloc := Error_Msg_Sloc;
+         Check_Restriction (Msg_Issued, SPARK_05, First_Node (N));
+         Error_Msg_Sloc := Save_Error_Msg_Sloc;
+
+         if Msg_Issued then
+            Error_Msg_F ("\\| " & Msg1, N);
+            Error_Msg_F (Msg2, N);
+         end if;
+      end if;
+   end Check_SPARK_Restriction;
 
    ----------------------------------
    -- Suppress_Restriction_Message --

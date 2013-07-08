@@ -232,18 +232,16 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          Id := Chars (Arg);
          Expr := Expression (Arg);
 
-         if Id = No_Name
-           and then Nkind (Expr) = N_Identifier
-         then
-            case Get_Restriction_Id (Chars (Expr)) is
-               when No_Obsolescent_Features =>
+         if Id = No_Name and then Nkind (Expr) = N_Identifier then
+            case Chars (Expr) is
+               when Name_No_Obsolescent_Features =>
                   Set_Restriction (No_Obsolescent_Features, Pragma_Node);
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
-               when SPARK =>
-                  Set_Restriction (SPARK, Pragma_Node);
-                  Restriction_Warnings (SPARK) :=
+               when Name_SPARK | Name_SPARK_05 =>
+                  Set_Restriction (SPARK_05, Pragma_Node);
+                  Restriction_Warnings (SPARK_05) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
                when others =>
@@ -1262,6 +1260,7 @@ begin
            Pragma_Short_Circuit_And_Or           |
            Pragma_Short_Descriptors              |
            Pragma_Simple_Storage_Pool_Type       |
+           Pragma_SPARK_Mode                     |
            Pragma_Storage_Size                   |
            Pragma_Storage_Unit                   |
            Pragma_Static_Elaboration_Desired     |

@@ -7326,7 +7326,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (pos_rtx != 0
       && GET_MODE_SIZE (pos_mode) > GET_MODE_SIZE (GET_MODE (pos_rtx)))
     {
-      rtx temp = gen_rtx_ZERO_EXTEND (pos_mode, pos_rtx);
+      rtx temp = simplify_gen_unary (ZERO_EXTEND, pos_mode, pos_rtx,
+				     GET_MODE (pos_rtx));
 
       /* If we know that no extraneous bits are set, and that the high
 	 bit is not set, convert extraction to cheaper one - either
@@ -7340,7 +7341,8 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		       >> 1))
 		  == 0)))
 	{
-	  rtx temp1 = gen_rtx_SIGN_EXTEND (pos_mode, pos_rtx);
+	  rtx temp1 = simplify_gen_unary (SIGN_EXTEND, pos_mode, pos_rtx,
+					  GET_MODE (pos_rtx));
 
 	  /* Prefer ZERO_EXTENSION, since it gives more information to
 	     backends.  */

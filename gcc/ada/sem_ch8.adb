@@ -2069,11 +2069,20 @@ package body Sem_Ch8 is
 
                   if Is_Incomplete_Or_Private_Type (Etype (F))
                     and then No (Underlying_Type (Etype (F)))
-                    and then not Is_Generic_Type (Etype (F))
                   then
-                     Error_Msg_NE
-                       ("type& must be frozen before this point",
-                          Instantiation_Node, Etype (F));
+
+                     --  Exclude generic types, or types derived  from them.
+                     --  They will be frozen in the enclosing instance.
+
+                     if Is_Generic_Type (Etype (F))
+                       or else Is_Generic_Type (Root_Type (Etype (F)))
+                     then
+                        null;
+                     else
+                        Error_Msg_NE
+                          ("type& must be frozen before this point",
+                           Instantiation_Node, Etype (F));
+                     end if;
                   end if;
 
                   F := Next_Formal (F);
@@ -2816,13 +2825,17 @@ package body Sem_Ch8 is
 
          --  The following is illegal, because F hides whatever other F may
          --  be around:
-         --     function F (..)  renames F;
+         --     function F (...) renames F;
 
          elsif Old_S = New_S
            or else (Nkind (Nam) /= N_Expanded_Name
                      and then Chars (Old_S) = Chars (New_S))
          then
             Error_Msg_N ("subprogram cannot rename itself", N);
+
+         --  This is illegal even if we use a selector:
+         --     function F (...) renames Pkg.F;
+         --  because F is still hidden.
 
          elsif Nkind (Nam) = N_Expanded_Name
            and then Entity (Prefix (Nam)) = Current_Scope
@@ -3287,14 +3300,14 @@ package body Sem_Ch8 is
    ------------------------
 
    procedure Attribute_Renaming (N : Node_Id) is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Nam        : constant Node_Id    := Name (N);
-      Spec       : constant Node_Id    := Specification (N);
-      New_S      : constant Entity_Id  := Defining_Unit_Name (Spec);
-      Aname      : constant Name_Id    := Attribute_Name (Nam);
+      Loc   : constant Source_Ptr := Sloc (N);
+      Nam   : constant Node_Id    := Name (N);
+      Spec  : constant Node_Id    := Specification (N);
+      New_S : constant Entity_Id  := Defining_Unit_Name (Spec);
+      Aname : constant Name_Id    := Attribute_Name (Nam);
 
-      Form_Num   : Nat      := 0;
-      Expr_List  : List_Id  := No_List;
+      Form_Num  : Nat      := 0;
+      Expr_List : List_Id  := No_List;
 
       Attr_Node  : Node_Id;
       Body_Node  : Node_Id;
@@ -3305,12 +3318,12 @@ package body Sem_Ch8 is
 
       --  This procedure is called in the context of subprogram renaming, and
       --  thus the attribute must be one that is a subprogram. All of those
-      --  have at least one formal parameter, with the singular exception of
-      --  AST_Entry (which is a real oddity, it is odd that this can be renamed
-      --  at all!)
+      --  have at least one formal parameter, with the exceptions of AST_Entry
+      --  (which is a real oddity, it is odd that this can be renamed at all!)
+      --  and the GNAT attribute 'Img, which GNAT treats as renameable.
 
       if not Is_Non_Empty_List (Parameter_Specifications (Spec)) then
-         if Aname /= Name_AST_Entry then
+         if Aname /= Name_AST_Entry and then Aname /= Name_Img then
             Error_Msg_N
               ("subprogram renaming an attribute must have formals", N);
             return;
@@ -3329,8 +3342,8 @@ package body Sem_Ch8 is
                --  there are no subtypes involved.
 
                Rewrite (Parameter_Type (Param_Spec),
-                New_Reference_To
-                  (Base_Type (Entity (Parameter_Type (Param_Spec))), Loc));
+                 New_Reference_To
+                   (Base_Type (Entity (Parameter_Type (Param_Spec))), Loc));
             end if;
 
             if No (Expr_List) then
@@ -3480,10 +3493,20 @@ package body Sem_Ch8 is
         and then Etype (Nam) /= RTE (RE_AST_Handler)
       then
          declare
-            P : constant Entity_Id := Prefix (Nam);
+            P : constant Node_Id := Prefix (Nam);
 
          begin
-            Find_Type (P);
+            --  The prefix of 'Img is an object that is evaluated for each call
+            --  of the function that renames it.
+
+            if Aname = Name_Img then
+               Preanalyze_And_Resolve (P);
+
+            --  For all other attribute renamings, the prefix is a subtype
+
+            else
+               Find_Type (P);
+            end if;
 
             if Is_Tagged_Type (Etype (P)) then
                Ensure_Freeze_Node (Etype (P));
@@ -5859,7 +5882,7 @@ package body Sem_Ch8 is
       --  Selector name cannot be a character literal or an operator symbol in
       --  SPARK, except for the operator symbol in a renaming.
 
-      if Restriction_Check_Required (SPARK) then
+      if Restriction_Check_Required (SPARK_05) then
          if Nkind (Selector_Name (N)) = N_Character_Literal then
             Check_SPARK_Restriction
               ("character literal cannot be prefixed", N);
@@ -6199,7 +6222,7 @@ package body Sem_Ch8 is
          --  Selector name is restricted in SPARK
 
          if Nkind (N) = N_Expanded_Name
-           and then Restriction_Check_Required (SPARK)
+           and then Restriction_Check_Required (SPARK_05)
          then
             if Is_Subprogram (P_Name) then
                Check_SPARK_Restriction
@@ -7641,120 +7664,25 @@ package body Sem_Ch8 is
    -- Restore_Scope_Stack --
    -------------------------
 
-   procedure Restore_Scope_Stack (Handle_Use : Boolean := True) is
-      E         : Entity_Id;
-      S         : Entity_Id;
-      Comp_Unit : Node_Id;
-      In_Child  : Boolean := False;
-      Full_Vis  : Boolean := True;
-      SS_Last   : constant Int := Scope_Stack.Last;
+   procedure Restore_Scope_Stack
+     (List       : Elist_Id;
+      Handle_Use : Boolean := True)
+   is
+      SS_Last : constant Int := Scope_Stack.Last;
+      Elmt    : Elmt_Id;
 
    begin
-      --  Restore visibility of previous scope stack, if any
+      --  Restore visibility of previous scope stack, if any, using the list
+      --  we saved (we use Remove, since this list will not be used again).
 
-      for J in reverse 0 .. Scope_Stack.Last loop
-         exit when  Scope_Stack.Table (J).Entity = Standard_Standard
-            or else No (Scope_Stack.Table (J).Entity);
-
-         S := Scope_Stack.Table (J).Entity;
-
-         if not Is_Hidden_Open_Scope (S) then
-
-            --  If the parent scope is hidden, its entities are hidden as
-            --  well, unless the entity is the instantiation currently
-            --  being analyzed.
-
-            if not Is_Hidden_Open_Scope (Scope (S))
-              or else not Analyzed (Parent (S))
-              or else Scope (S) = Standard_Standard
-            then
-               Set_Is_Immediately_Visible (S, True);
-            end if;
-
-            E := First_Entity (S);
-            while Present (E) loop
-               if Is_Child_Unit (E) then
-                  if not From_With_Type (E) then
-                     Set_Is_Immediately_Visible (E,
-                       Is_Visible_Lib_Unit (E) or else In_Open_Scopes (E));
-
-                  else
-                     pragma Assert
-                       (Nkind (Parent (E)) = N_Defining_Program_Unit_Name
-                         and then
-                           Nkind (Parent (Parent (E))) =
-                                               N_Package_Specification);
-                     Set_Is_Immediately_Visible (E,
-                       Limited_View_Installed (Parent (Parent (E))));
-                  end if;
-               else
-                  Set_Is_Immediately_Visible (E, True);
-               end if;
-
-               Next_Entity (E);
-
-               if not Full_Vis and then Is_Package_Or_Generic_Package (S) then
-
-                  --  We are in the visible part of the package scope
-
-                  exit when E = First_Private_Entity (S);
-               end if;
-            end loop;
-
-            --  The visibility of child units (siblings of current compilation)
-            --  must be restored in any case. Their declarations may appear
-            --  after the private part of the parent.
-
-            if not Full_Vis then
-               while Present (E) loop
-                  if Is_Child_Unit (E) then
-                     Set_Is_Immediately_Visible (E,
-                       Is_Visible_Lib_Unit (E) or else In_Open_Scopes (E));
-                  end if;
-
-                  Next_Entity (E);
-               end loop;
-            end if;
-         end if;
-
-         if Is_Child_Unit (S)
-            and not In_Child     --  check only for current unit
-         then
-            In_Child := True;
-
-            --  Restore visibility of parents according to whether the child
-            --  is private and whether we are in its visible part.
-
-            Comp_Unit := Parent (Unit_Declaration_Node (S));
-
-            if Nkind (Comp_Unit) = N_Compilation_Unit
-              and then Private_Present (Comp_Unit)
-            then
-               Full_Vis := True;
-
-            elsif Is_Package_Or_Generic_Package (S)
-              and then (In_Private_Part (S) or else In_Package_Body (S))
-            then
-               Full_Vis := True;
-
-            --  if S is the scope of some instance (which has already been
-            --  seen on the stack) it does not affect the visibility of
-            --  other scopes.
-
-            elsif Is_Hidden_Open_Scope (S) then
-               null;
-
-            elsif Ekind_In (S, E_Procedure, E_Function)
-              and then Has_Completion (S)
-            then
-               Full_Vis := True;
-            else
-               Full_Vis := False;
-            end if;
-         else
-            Full_Vis := True;
-         end if;
+      loop
+         Elmt := Last_Elmt (List);
+         exit when Elmt = No_Elmt;
+         Set_Is_Immediately_Visible (Node (Elmt));
+         Remove_Last_Elmt (List);
       end loop;
+
+      --  Restore use clauses
 
       if SS_Last >= Scope_Stack.First
         and then Scope_Stack.Table (SS_Last).Entity /= Standard_Standard
@@ -7768,10 +7696,57 @@ package body Sem_Ch8 is
    -- Save_Scope_Stack --
    ----------------------
 
-   procedure Save_Scope_Stack (Handle_Use : Boolean := True) is
+   --  Save_Scope_Stack/Restore_Scope_Stack were originally designed to avoid
+   --  consuming any memory. That is, Save_Scope_Stack took care of removing
+   --  from immediate visibility entities and Restore_Scope_Stack took care
+   --  of restoring their visibility analyzing the context of each entity. The
+   --  problem of such approach is that it was fragile and caused unexpected
+   --  visibility problems, and indeed one test was found where there was a
+   --  real problem.
+
+   --  Furthermore, the following experiment was carried out:
+
+   --    - Save_Scope_Stack was modified to store in an Elist1 all those
+   --      entities whose attribute Is_Immediately_Visible is modified
+   --      from True to False.
+
+   --    - Restore_Scope_Stack was modified to store in another Elist2
+   --      all the entities whose attribute Is_Immediately_Visible is
+   --      modified from False to True.
+
+   --    - Extra code was added to verify that all the elements of Elist1
+   --      are found in Elist2
+
+   --  This test shows that there may be more occurrences of this problem which
+   --  have not yet been detected. As a result, we replaced that approach by
+   --  the current one in which Save_Scope_Stack returns the list of entities
+   --  whose visibility is changed, and that list is passed to Restore_Scope_
+   --  Stack to undo that change. This approach is simpler and safer, although
+   --  it consumes more memory.
+
+   function Save_Scope_Stack (Handle_Use : Boolean := True) return Elist_Id is
+      Result  : constant Elist_Id := New_Elmt_List;
       E       : Entity_Id;
       S       : Entity_Id;
       SS_Last : constant Int := Scope_Stack.Last;
+
+      procedure Remove_From_Visibility (E : Entity_Id);
+      --  If E is immediately visible then append it to the result and remove
+      --  it temporarily from visibility.
+
+      ----------------------------
+      -- Remove_From_Visibility --
+      ----------------------------
+
+      procedure Remove_From_Visibility (E : Entity_Id) is
+      begin
+         if Is_Immediately_Visible (E) then
+            Append_Elmt (E, Result);
+            Set_Is_Immediately_Visible (E, False);
+         end if;
+      end Remove_From_Visibility;
+
+   --  Start of processing for Save_Scope_Stack
 
    begin
       if SS_Last >= Scope_Stack.First
@@ -7790,16 +7765,19 @@ package body Sem_Ch8 is
                or else No (Scope_Stack.Table (J).Entity);
 
             S := Scope_Stack.Table (J).Entity;
-            Set_Is_Immediately_Visible (S, False);
+
+            Remove_From_Visibility (S);
 
             E := First_Entity (S);
             while Present (E) loop
-               Set_Is_Immediately_Visible (E, False);
+               Remove_From_Visibility (E);
                Next_Entity (E);
             end loop;
          end loop;
 
       end if;
+
+      return Result;
    end Save_Scope_Stack;
 
    -------------

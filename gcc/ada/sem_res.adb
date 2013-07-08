@@ -1576,6 +1576,23 @@ package body Sem_Res is
       else
          Resolve (N, Typ);
       end if;
+
+      --  If in ASIS_Mode, propagate operand types to original actuals of
+      --  function call, which would otherwise not be fully resolved. If
+      --  the call has already been constant-folded, nothing to do.
+
+      if ASIS_Mode and then Nkind (N) in N_Op then
+         if Is_Binary then
+            Set_Parameter_Associations
+              (Original_Node (N),
+               New_List (New_Copy_Tree (Left_Opnd (N)),
+                         New_Copy_Tree (Right_Opnd (N))));
+         else
+            Set_Parameter_Associations
+              (Original_Node (N),
+               New_List (New_Copy_Tree (Right_Opnd (N))));
+         end if;
+      end if;
    end Make_Call_Into_Operator;
 
    -------------------
@@ -7028,7 +7045,7 @@ package body Sem_Res is
             --  Protect call to Matching_Static_Array_Bounds to avoid costly
             --  operation if not needed.
 
-            if Restriction_Check_Required (SPARK)
+            if Restriction_Check_Required (SPARK_05)
               and then Base_Type (T) /= Standard_String
               and then Base_Type (Etype (L)) = Base_Type (Etype (R))
               and then Etype (L) /= Any_Composite  --  or else L in error
@@ -7738,7 +7755,7 @@ package body Sem_Res is
             --  Protect call to Matching_Static_Array_Bounds to avoid costly
             --  operation if not needed.
 
-            if Restriction_Check_Required (SPARK)
+            if Restriction_Check_Required (SPARK_05)
               and then Base_Type (Left_Typ) = Base_Type (Right_Typ)
               and then Left_Typ /= Any_Composite  --  or Left_Opnd in error
               and then Right_Typ /= Any_Composite  --  or Right_Opnd in error
@@ -8483,7 +8500,7 @@ package body Sem_Res is
       --  Protect call to Matching_Static_Array_Bounds to avoid costly
       --  operation if not needed.
 
-      if Restriction_Check_Required (SPARK)
+      if Restriction_Check_Required (SPARK_05)
         and then Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Etype (Expr))
         and then Etype (Expr) /= Any_Composite  --  or else Expr in error
@@ -9625,7 +9642,7 @@ package body Sem_Res is
       --  Protect call to Matching_Static_Array_Bounds to avoid costly
       --  operation if not needed.
 
-      if Restriction_Check_Required (SPARK)
+      if Restriction_Check_Required (SPARK_05)
         and then Is_Array_Type (Target_Typ)
         and then Is_Array_Type (Operand_Typ)
         and then Operand_Typ /= Any_Composite  --  or else Operand in error

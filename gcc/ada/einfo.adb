@@ -246,7 +246,7 @@ package body Einfo is
 
    --    Thunk_Entity                    Node31
 
-   --    (unused)                        Node32
+   --    SPARK_Mode_Pragmas              Node32
 
    --    (unused)                        Node33
 
@@ -2824,6 +2824,21 @@ package body Einfo is
       pragma Assert (Is_Fixed_Point_Type (Id));
       return Ureal21 (Id);
    end Small_Value;
+
+   function SPARK_Mode_Pragmas (Id : E) return N is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function,         --  subprogram variants
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+      return Node32 (Id);
+   end SPARK_Mode_Pragmas;
 
    function Spec_Entity (Id : E) return E is
    begin
@@ -5469,6 +5484,22 @@ package body Einfo is
       Set_Ureal21 (Id, V);
    end Set_Small_Value;
 
+   procedure Set_SPARK_Mode_Pragmas (Id : E; V : N) is
+   begin
+      pragma Assert
+        (Ekind_In (Id, E_Function,         --  subprogram variants
+                       E_Generic_Function,
+                       E_Generic_Procedure,
+                       E_Procedure,
+                       E_Subprogram_Body)
+           or else
+         Ekind_In (Id, E_Generic_Package,  --  package variants
+                       E_Package,
+                       E_Package_Body));
+
+      Set_Node32 (Id, V);
+   end Set_SPARK_Mode_Pragmas;
+
    procedure Set_Spec_Entity (Id : E; V : E) is
    begin
       pragma Assert (Ekind (Id) = E_Package_Body or else Is_Formal (Id));
@@ -6249,19 +6280,58 @@ package body Einfo is
    -- Get_Pragma --
    ----------------
 
-   function Get_Pragma (E  : Entity_Id; Id : Pragma_Id) return Node_Id
-   is
-      N : Node_Id;
+   function Get_Pragma (E : Entity_Id; Id : Pragma_Id) return Node_Id is
+      Is_CDG  : constant Boolean :=
+                  Id = Pragma_Depends or else Id = Pragma_Global;
+      Is_CTC  : constant Boolean :=
+                  Id = Pragma_Contract_Cases or else Id = Pragma_Test_Case;
+      Is_PPC  : constant Boolean :=
+                  Id = Pragma_Precondition or else Id = Pragma_Postcondition;
+      Delayed : constant Boolean := Is_CDG or else Is_CTC or else Is_PPC;
+      Item    : Node_Id;
+      Items   : Node_Id;
 
    begin
-      N := First_Rep_Item (E);
-      while Present (N) loop
-         if Nkind (N) = N_Pragma
-           and then Get_Pragma_Id (Pragma_Name (N)) = Id
-         then
-            return N;
+      --  Handle delayed pragmas that appear in N_Contract nodes. Those have to
+      --  be extracted from their specialized list.
+
+      if Delayed then
+         Items := Contract (E);
+
+         if No (Items) then
+            return Empty;
+
+         elsif Is_CDG then
+            Item := Classifications (Items);
+
+         elsif Is_CTC then
+            Item := Contract_Test_Cases (Items);
+
          else
-            Next_Rep_Item (N);
+            Item := Pre_Post_Conditions (Items);
+         end if;
+
+      --  Regular pragmas
+
+      else
+         Item := First_Rep_Item (E);
+      end if;
+
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name (Item)) = Id
+         then
+            return Item;
+
+         --  All nodes in N_Contract are chained using Next_Pragma
+
+         elsif Delayed then
+            Item := Next_Pragma (Item);
+
+         --  Regular pragmas
+
+         else
+            Next_Rep_Item (Item);
          end if;
       end loop;
 
@@ -9149,6 +9219,16 @@ package body Einfo is
    procedure Write_Field32_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Function                                   |
+              E_Generic_Function                           |
+              E_Generic_Package                            |
+              E_Generic_Procedure                          |
+              E_Package                                    |
+              E_Package_Body                               |
+              E_Procedure                                  |
+              E_Subprogram_Body                            =>
+            Write_Str ("SPARK_Mode_Pragmas");
+
          when others                                       =>
             Write_Str ("Field32??");
       end case;

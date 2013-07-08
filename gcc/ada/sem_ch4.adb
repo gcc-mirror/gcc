@@ -881,12 +881,24 @@ package body Sem_Ch4 is
          S : Entity_Id;
 
       begin
-         --  The ghost subprogram appears inside an assertion expression
+         --  Do not perform the check while preanalyzing the enclosing context
+         --  because the call is not in its final place. Premature attempts to
+         --  verify the placement lead to bogus errors.
 
-         if In_Assertion_Expression (N) then
+         if In_Spec_Expression then
             return;
 
+         --  The ghost subprogram appears inside an assertion expression
+         --  which is one of the allowed cases.
+
+         elsif In_Assertion_Expression (N) then
+            return;
+
+         --  Otherwise see if it inside another ghost subprogram
+
          else
+            --  Loop to climb scopes
+
             S := Current_Scope;
             while Present (S) and then S /= Standard_Standard loop
 
@@ -898,11 +910,14 @@ package body Sem_Ch4 is
 
                S := Scope (S);
             end loop;
-         end if;
 
-         Error_Msg_N
-           ("call to ghost subprogram must appear in assertion expression or "
-            & "another ghost subprogram", N);
+            --  If we fall through the loop it was not within another
+            --  ghost subprogram, so we have bad placement.
+
+            Error_Msg_N
+              ("call to ghost subprogram must appear in assertion expression "
+               & "or another ghost subprogram", N);
+         end if;
       end Check_Ghost_Subprogram_Call;
 
       --------------------------------------------------
@@ -991,7 +1006,7 @@ package body Sem_Ch4 is
    --  Start of processing for Analyze_Call
 
    begin
-      if Restriction_Check_Required (SPARK) then
+      if Restriction_Check_Required (SPARK_05) then
          Check_Mixed_Parameter_And_Named_Associations;
       end if;
 
@@ -2472,9 +2487,21 @@ package body Sem_Ch4 is
             Process_Function_Call;
 
          elsif Nkind (P) = N_Selected_Component
+           and then Present (Entity (Selector_Name (P)))
            and then Is_Overloadable (Entity (Selector_Name (P)))
          then
             Process_Function_Call;
+
+         --  In ASIS mode within a generic, a prefixed call is analyzed and
+         --  partially rewritten but the original indexed component has not
+         --  yet been rewritten as a call. Perform the replacement now.
+
+         elsif Nkind (P) = N_Selected_Component
+           and then Nkind (Parent (P)) = N_Function_Call
+           and then ASIS_Mode
+         then
+            Rewrite (N, Parent (P));
+            Analyze (N);
 
          else
             --  Indexed component, slice, or a call to a member of a family

@@ -2532,6 +2532,12 @@ package body Atree is
          return Node_Id (Nodes.Table (N + 5).Field7);
       end Node31;
 
+      function Node32 (N : Node_Id) return Node_Id is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         return Node_Id (Nodes.Table (N + 5).Field8);
+      end Node32;
+
       function List1 (N : Node_Id) return List_Id is
       begin
          pragma Assert (N <= Nodes.Last);
@@ -5242,6 +5248,12 @@ package body Atree is
          pragma Assert (Nkind (N) in N_Entity);
          Nodes.Table (N + 5).Field7 := Union_Id (Val);
       end Set_Node31;
+
+      procedure Set_Node32 (N : Node_Id; Val : Node_Id) is
+      begin
+         pragma Assert (Nkind (N) in N_Entity);
+         Nodes.Table (N + 5).Field8 := Union_Id (Val);
+      end Set_Node32;
 
       procedure Set_List1 (N : Node_Id; Val : List_Id) is
       begin

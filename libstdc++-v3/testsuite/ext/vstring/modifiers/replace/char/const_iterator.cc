@@ -27,4 +27,6 @@ void test01()
   vs1.replace(vs1.cbegin(), vs1.cend(), "1", 1);
   vs1.replace(vs1.cbegin(), vs1.cend(), "2");
   vs1.replace(vs1.cbegin(), vs1.cend(), 1, '3');
+  vs1.replace(vs1.cbegin(), vs1.cend(), vs1.begin(), vs1.end());
+  vs1.replace(vs1.cbegin(), vs1.cend(), {'4', '5'});
 }

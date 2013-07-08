@@ -1,7 +1,433 @@
+2013-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57819
+	* simplify-rtx.c (simplify_unary_operation_1) <case ZERO_EXTEND>:
+	Simplify (zero_extend:SI (subreg:QI (and:SI (reg:SI)
+	(const_int 63)) 0)).
+	* combine.c (make_extraction): Create ZERO_EXTEND or SIGN_EXTEND
+	using simplify_gen_unary instead of gen_rtx_*_EXTEND.
+	* config/i386/i386.md (*jcc_bt<mode>_1): New define_insn_and_split.
+
+	PR rtl-optimization/57829
+	* simplify-rtx.c (simplify_binary_operation_1) <case IOR>: Ensure that
+	mask bits outside of mode are just sign-extension from mode to HWI.
+
+2013-07-08  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* config/i386/i386-opts.h (enum stringop_alg): Add vector_loop.
+	* config/i386/i386.c (expand_set_or_movmem_via_loop): Use
+	adjust_address instead of change_address to keep info about alignment.
+	(emit_strmov): Remove.
+	(emit_memmov): New function.
+	(expand_movmem_epilogue): Refactor to properly handle bigger sizes.
+	(expand_movmem_epilogue): Likewise and return updated rtx for
+	destination.
+	(expand_constant_movmem_prologue): Likewise and return updated rtx for
+	destination and source.
+	(decide_alignment): Refactor, handle vector_loop.
+	(ix86_expand_movmem): Likewise.
+	(ix86_expand_setmem): Likewise.
+	* config/i386/i386.opt (Enum): Add vector_loop to option stringop_alg.
+
+2013-07-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Do not check
+	signature_TM2_ebx, it interferes with signature_INTEL_ebx.
+
+2013-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (sse_movlhps): Change alternative 3
+	of operand 2 to "m".
+
+2013-07-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/57807
+	* config/i386/sse.md (iptr): New mode attribute.
+	(sse2_movq128): Add pointer size overrides for Intel asm dialect.
+	(<sse>_vm<plusminus_insn><mode>3): Ditto.
+	(<sse>_vmmul<mode>3): Ditto.
+	(<sse>_vmdiv<mode>3): Ditto.
+	(sse_vmrcpv4sf2): Ditto.
+	(<sse>_vmsqrt<mode>2): Ditto.
+	(sse_vmrsqrtv4sf2): Ditto.
+	(<sse>_vm<code><mode>3): Ditto.
+	(avx_vmcmp<mode>3): Ditto.
+	(<sse>_vmmaskcmp<mode>3): Ditto.
+	(<sse>_comi): Ditto.
+	(<sse>_ucomi): Ditto.
+	(*xop_vmfrcz_<mode>): Ditto.
+	(*fmai_fmadd_<mode>): Ditto.
+	(*fmai_fmsub_<mode>): Ditto.
+	(*fmai_fnmadd_<mode>): Ditto.
+	(*fmai_fnmsub_<mode>): Ditto.
+	(*fma4i_vmfmadd_<mode>): Ditto.
+	(*fma4i_vmfmsub_<mode>): Ditto.
+	(*fma4i_vmfnmadd_<mode>): Ditto.
+	(*fma4i_vmfnmsub_<mode>): Ditto.
+	(*xop_vmfrcz_<mode>): Ditto.
+	(sse_cvtps2pi): Ditto.
+	(sse_cvttps2pi): Ditto.
+	(sse_cvtss2si): Ditto.
+	(sse_cvtss2si_2): Ditto.
+	(sse_cvtss2siq_2): Ditto.
+	(sse_cvttss2si): Ditto.
+	(sse_cvttss2siq): Ditto.
+	(sse_cvtsd2si): Ditto.
+	(sse_cvtsd2si_2): Ditto.
+	(sse_cvtsd2siq_2): Ditto.
+	(sse_cvttsd2si): Ditto.
+	(sse_cvttsd2siq): Ditto.
+	(sse_cvtsd2ss): Ditto.
+	(sse_cvtss2sd): Ditto.
+	(avx2_pbroadcast<mode>): Ditto.
+	(avx2_pbroadcast<mode>_1): Ditto.
+	(*avx_vperm_broadcast_v4sf): Ditto.
+
+	(sse_movhlps): Ditto for movlp[sd]/movhp[sd] alternatives.
+	(sse_movlhps): Ditto.
+	(sse_storehps): Ditto.
+	(sse_loadhps): Ditto.
+	(sse_storelps): Ditto.
+	(sse_loadlps): Ditto.
+	(*vec_concatv4sf): Ditto.
+	(*vec_interleave_highv2df): Ditto.
+	(*vec_interleave_lowv2df): Ditto.
+	(*vec_extractv2df_1_sse): Ditto.
+	(*vec_extractv2df_0_sse): Ditto.
+	(sse2_storelpd): Ditto.
+	(sse2_loadlpd): Ditto.
+	(sse2_movsd): Ditto.
+	(*vec_concatv4si): Ditto.
+	(vec_concatv2di): Ditto.
+
+	* config/i386/mmx.md (mmx_punpcklbw): Add pointer size overrides
+	for Intel asm dialect.
+	(mmx_punpcklwd): Ditto.
+	(mmx_punpckldq): Ditto.
+
+	* config/i386/i386.c (ix86_print_operand) ['H']: Output 'qword ptr'
+	for intel assembler dialect.
+
+2013-07-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/29776
+	* fold-const.c (tree_call_nonnegative_warnv_p): Return true
+	for BUILT_IN_C{LZ,LRSB}*.
+	* tree.h (CASE_INT_FN): Add FN##IMAX case.
+	* tree-vrp.c (extract_range_basic): Handle
+	BUILT_IN_{FFS,PARITY,POPCOUNT,C{LZ,TZ,LRSB}}*.  For
+	BUILT_IN_CONSTANT_P if argument isn't (D) of PARM_DECL,
+	fall thru to code calling set_value*.
+	* builtins.c (expand_builtin): Remove *IMAX cases.
+	(fold_builtin_bitop): For BUILT_IN_CLRSB* return NULL_TREE
+	if width is bigger than 2*HWI.
+
+2013-07-05  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/55342
+	* lra-int.h (lra_subreg_reload_pseudos): New.
+	* lra.c: Add undoing optional reloads to the block diagram.
+	(lra_subreg_reload_pseudos): New.
+	(lra_optional_reload_pseudos): Change comments.
+	(lra): Init and clear lra_subreg_reload_pseudos.  Clear
+	lra_optional_reload_pseudos after undo transformations.
+	* lra-assigns.c (pseudo_prefix_title): New.
+	(lra_setup_reg_renumber): Use it.
+	(spill_for): Ditto.  Check subreg reload pseudos too.
+	(assign_by_spills): Consider subreg reload pseudos too.
+	* lra-constraints.c (simplify_operand_subreg): Use
+	lra_subreg_reload_pseudos instead of lra_optional_reload_pseudos.
+	(curr_insn_transform): Recognize and do optional reloads.
+	(undo_optional_reloads): New.
+	(lra_undo_inheritance): Call undo_optional_reloads.
+
+2013-07-05  Thomas Quinot  <quinot@adacore.com>
+
+	* tree-complex.c (expand_complex_operations_1): Fix typo.
+
+2013-07-04  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-protos.h (cpu_vector_cost): New.
+	(tune_params): New member 'const vec_costs'.
+	* config/aarch64/aarch64.c (generic_vector_cost): New.
+	(generic_tunings): New member 'generic_vector_cost'.
+	(aarch64_builtin_vectorization_cost): New.
+	(aarch64_add_stmt_cost): New.
+	(TARGET_VECTORIZE_ADD_STMT_COST): New.
+	(TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST): New.
+
+2013-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/57777
+	* config/i386/predicates.md (vsib_address_operand): Disallow
+	SYMBOL_REF or LABEL_REF in parts.disp if TARGET_64BIT && flag_pic.
+
+2013-07-03  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	PR middle-end/55030
+	* stmt.c (expand_nl_goto_receiver): Remove almost-copy of
+	expand_builtin_setjmp_receiver.
+	(expand_label): Adjust, call expand_builtin_setjmp_receiver
+	with NULL for the label parameter.
+	* builtins.c (expand_builtin_setjmp_receiver): Don't clobber
+	the frame-pointer.  Adjust comments.
+	[HAVE_builtin_setjmp_receiver]: Emit builtin_setjmp_receiver
+	only if LABEL is non-NULL.
+
+2013-07-03  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.h (enum arm_abi_type): Remove.
+	(ARM_ABI_AAPCS64): Ditto.
+	(arm_abi): Ditto.
+	(ARM_DEFAULT_ABI): Ditto.
+
+2013-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_expand_builtin): Handle AARCH64_SIMD_STORE1.
+	* config/aarch64/aarch64-simd-builtins.def (ld1): New.
+	(st1): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_ld1<VALL:mode>): New.
+	(aarch64_st1<VALL:mode>): Likewise.
+	* config/aarch64/arm_neon.h
+	(vld1<q>_<fpsu><8, 16, 32, 64>): Convert to RTL builtins.
+
+2013-07-02  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/i386.c (gate_insert_vzeroupper): Check if
+	target ISA is AVX.
+	(ix86_option_override_internal):Turn on all -mavx target flags by
+	default as they are dependent on AVX anyway.
+
+2013-07-02  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (loc_checksum): Call hash_loc_operands for a
+	deterministic hash.
+	(loc_checksum_ordered): Likewise.
+	(hash_loc_operands): Remove inline keyword.
+
+2013-07-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57741
+	* tree-vect-loop.c (vect_is_simple_iv_evolution): Disallow
+	non-INTEGRAL_TYPE_P non-SCALAR_FLOAT_TYPE_P SSA_NAME step_exprs,
+	or SCALAR_FLOAT_TYPE_P SSA_NAMEs if !flag_associative_math.
+	Allow REAL_CST step_exprs if flag_associative_math.
+	(get_initial_def_for_induction): Handle SCALAR_FLOAT_TYPE_P step_expr.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64-simd.md (absdi2): Support abs for DI mode.
+
+2013-07-02  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (*extr_insv_reg<mode>): New pattern.
+
+2013-07-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_andsi3_insn): Add alternatives for 16-bit
+	encoding.
+	(iorsi3_insn): Likewise.
+	(arm_xorsi3): Likewise.
+
+2013-07-01  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* arm.md (attribute "wtype"): Delete.  Move attribute values from here
+	to ...
+	(attribute "type"): ... here, and prefix with "wmmx_".
+	(attribute "core_cycles"): Update for attribute changes.
+	* iwmmxt.md (tbcstv8qi): Update for attribute changes.
+	(tbcstv4hi): Likewise.
+	(tbcstv2si): Likewise.
+	(iwmmxt_iordi3): Likewise.
+	(iwmmxt_xordi3): Likewise.
+	(iwmmxt_anddi3): Likewise.
+	(iwmmxt_nanddi3): Likewise.
+	(iwmmxt_arm_movdi): Likewise.
+	(iwmmxt_movsi_insn): Likewise.
+	(mov<mode>_internal): Likewise.
+	(and<mode>3_iwmmxt): Likewise.
+	(ior<mode>3_iwmmxt): Likewise.
+	(xor<mode>3_iwmmxt): Likewise.
+	(add<mode>3_iwmmxt): Likewise.
+	(ssaddv8qi3): Likewise.
+	(ssaddv4hi3): Likewise.
+	(ssaddv2si3): Likewise.
+	(usaddv8qi3): Likewise.
+	(usaddv4hi3): Likewise.
+	(usaddv2si3): Likewise.
+	(sub<mode>3_iwmmxt): Likewise.
+	(sssubv8qi3): Likewise.
+	(sssubv4hi3): Likewise.
+	(sssubv2si3): Likewise.
+	(ussubv8qi3): Likewise.
+	(ussubv4hi3): Likewise.
+	(ussubv2si3): Likewise.
+	(mulv4hi3_iwmmxt): Likewise.
+	(smulv4hi3_highpart): Likewise.
+	(umulv4hi3_highpart): Likewise.
+	(iwmmxt_wmacs): Likewise.
+	(iwmmxt_wmacsz): Likewise.
+	(iwmmxt_wmacu): Likewise.
+	(iwmmxt_wmacuz): Likewise.
+	(iwmmxt_clrdi): Likewise.
+	(iwmmxt_clrv8qi): Likewise.
+	(iwmmxt_clr4hi): Likewise.
+	(iwmmxt_clr2si): Likewise.
+	(iwmmxt_uavgrndv8qi3): Likewise.
+	(iwmmxt_uavgrndv4hi3): Likewise.
+	(iwmmxt_uavgv8qi3): Likewise.
+	(iwmmxt_uavgv4hi3): Likewise.
+	(iwmmxt_tinsrb): Likewise.
+	(iwmmxt_tinsrh): Likewise.
+	(iwmmxt_tinsrw): Likewise.
+	(iwmmxt_textrmub): Likewise.
+	(iwmmxt_textrmsb): Likewise.
+	(iwmmxt_textrmuh): Likewise.
+	(iwmmxt_textrmsh): Likewise.
+	(iwmmxt_textrmw): Likewise.
+	(iwmxxt_wshufh): Likewise.
+	(eqv8qi3): Likewise.
+	(eqv4hi3): Likewise.
+	(eqv2si3): Likewise.
+	(gtuv8qi3): Likewise.
+	(gtuv4hi3): Likewise.
+	(gtuv2si3): Likewise.
+	(gtv8qi3): Likewise.
+	(gtv4hi3): Likewise.
+	(gtv2si3): Likewise.
+	(smax<mode>3_iwmmxt): Likewise.
+	(umax<mode>3_iwmmxt): Likewise.
+	(smin<mode>3_iwmmxt): Likewise.
+	(umin<mode>3_iwmmxt): Likewise.
+	(iwmmxt_wpackhss): Likewise.
+	(iwmmxt_wpackwss): Likewise.
+	(iwmmxt_wpackdss): Likewise.
+	(iwmmxt_wpackhus): Likewise.
+	(iwmmxt_wpackwus): Likewise.
+	(iwmmxt_wpackdus): Likewise.
+	(iwmmxt_wunpckihb): Likewise.
+	(iwmmxt_wunpckihh): Likewise.
+	(iwmmxt_wunpckihw): Likewise.
+	(iwmmxt_wunpckilb): Likewise.
+	(iwmmxt_wunpckilh): Likewise.
+	(iwmmxt_wunpckilw): Likewise.
+	(iwmmxt_wunpckehub): Likewise.
+	(iwmmxt_wunpckehuh): Likewise.
+	(iwmmxt_wunpckehuw): Likewise.
+	(iwmmxt_wunpckehsb): Likewise.
+	(iwmmxt_wunpckehsh): Likewise.
+	(iwmmxt_wunpckehsw): Likewise.
+	(iwmmxt_wunpckelub): Likewise.
+	(iwmmxt_wunpckeluh): Likewise.
+	(iwmmxt_wunpckeluw): Likewise.
+	(iwmmxt_wunpckelsb): Likewise.
+	(iwmmxt_wunpckelsh): Likewise.
+	(iwmmxt_wunpckelsw): Likewise.
+	(ror<mode>3): Likewise.
+	(ashr<mode>3_iwmmxt): Likewise.
+	(lshr<mode>3_iwmmxt): Likewise.
+	(ashl<mode>3_iwmmxt): Likewise.
+	(ror<mode>3_di): Likewise.
+	(ashr<mode>3_di): Likewise.
+	(lshr<mode>3_di): Likewise.
+	(ashl<mode>3_di): Likewise.
+	(iwmmxt_wmadds): Likewise.
+	(iwmmxt_wmaddu): Likewise.
+	(iwmmxt_tmia): Likewise.
+	(iwmmxt_tmiaph): Likewise.
+	(iwmmxt_tmiabb): Likewise.
+	(iwmmxt_tmiatb): Likewise.
+	(iwmmxt_tmiabt): Likewise.
+	(iwmmxt_tmiatt): Likewise.
+	(iwmmxt_tmovmskb): Likewise.
+	(iwmmxt_tmovmskh): Likewise.
+	(iwmmxt_tmovmskw): Likewise.
+	(iwmmxt_waccb): Likewise.
+	(iwmmxt_wacch): Likewise.
+	(iwmmxt_waccw): Likewise.
+	(iwmmxt_waligni): Likewise.
+	(iwmmxt_walignr): Likewise.
+	(iwmmxt_walignr0): Likewise.
+	(iwmmxt_walignr1): Likewise.
+	(iwmmxt_walignr2): Likewise.
+	(iwmmxt_walignr3): Likewise.
+	(iwmmxt_wsadb): Likewise.
+	(iwmmxt_wsadh): Likewise.
+	(iwmmxt_wsadbz): Likewise.
+	(iwmmxt_wsadhz): Likewise.
+	* iwmmxt2.md (iwmmxt_wabs<mode>3): Update for attribute changes.
+	(iwmmxt_wabsdiffb): Likewise.
+	(iwmmxt_wabsdiffh): Likewise.
+	(iwmmxt_wabsdiffw): Likewise.
+	(iwmmxt_waddsubhx): Likewise
+	(iwmmxt_wsubaddhx): Likewise.
+	(addc<mode>3): Likewise.
+	(iwmmxt_avg4): Likewise.
+	(iwmmxt_avg4r): Likewise.
+	(iwmmxt_wmaddsx): Likewise.
+	(iwmmxt_wmaddux): Likewise.
+	(iwmmxt_wmaddsn): Likewise.
+	(iwmmxt_wmaddun): Likewise.
+	(iwmmxt_wmulwsm): Likewise.
+	(iwmmxt_wmulwum): Likewise.
+	(iwmmxt_wmulsmr): Likewise.
+	(iwmmxt_wmulumr): Likewise.
+	(iwmmxt_wmulwsmr): Likewise.
+	(iwmmxt_wmulwumr): Likewise.
+	(iwmmxt_wmulwl): Likewise.
+	(iwmmxt_wqmulm): Likewise.
+	(iwmmxt_wqmulwm): Likewise.
+	(iwmmxt_wqmulmr): Likewise.
+	(iwmmxt_wqmulwmr): Likewise.
+	(iwmmxt_waddbhusm): Likewise.
+	(iwmmxt_waddbhusl): Likewise.
+	(iwmmxt_wqmiabb): Likewise.
+	(iwmmxt_wqmiabt): Likewise.
+	(iwmmxt_wqmiatb): Likewise.
+	(iwmmxt_wqmiatt): Likewise.
+	(iwmmxt_wqmiabbn): Likewise.
+	(iwmmxt_wqmiabtn): Likewise.
+	(iwmmxt_wqmiatbn): Likewise.
+	(iwmmxt_wqmiattn): Likewise.
+	(iwmmxt_wmiabb): Likewise.
+	(iwmmxt_wmiabt): Likewise.
+	(iwmmxt_wmiatb): Likewise.
+	(iwmmxt_wmiatt): Likewise.
+	(iwmmxt_wmiabbn): Likewise.
+	(iwmmxt_wmiabtn): Likewise.
+	(iwmmxt_wmiatbn): Likewise.
+	(iwmmxt_wmiattn): Likewise.
+	(iwmmxt_wmiawbb): Likewise.
+	(iwmmxt_wmiawbt): Likewise.
+	(iwmmxt_wmiawtb): Likewise.
+	(iwmmxt_wmiawtt): Likewise.
+	(iwmmxt_wmiawbbn): Likewise.
+	(iwmmxt_wmiawbtn): Likewise.
+	(iwmmxt_wmiawtbn): Likewise.
+	(iwmmxt_wmiawttn): Likewise.
+	(iwmmxt_wmerge): Likewise.
+	(iwmmxt_tandc<mode>3): Likewise.
+	(iwmmxt_torc<mode>3): Likewise.
+	(iwmmxt_torvsc<mode>3): Likewise.
+	(iwmmxt_textrc<mode>3): Likewise.
+	* marvell-f-iwmmxt.md (wmmxt_shift): Update for attribute changes.
+	(wmmxt_pack): Likewise.
+	(wmmxt_mult_c1): Likewise.
+	(wmmxt_mult_c2): Likewise.
+	(wmmxt_alu_c1): Likewise.
+	(wmmxt_alu_c2): Likewise.
+	(wmmxt_alu_c3): Likewise.
+	(wmmxt_transfer_c1): Likewise.
+	(wmmxt_transfer_c2): Likewise.
+	(wmmxt_transfer_c3): Likewise.
+	(marvell_f_iwmmxt_wstr): Likewise.
+	(marvell_f_iwmmxt_wldr): Likewise.
+
 2013-06-29  Yufeng Zhang  <yufeng.zhang@arm.com>
 
-	* config/aarch64/aarch64.c: Remove junk from the beginning of the
-	file.
+	* config/aarch64/aarch64.c: Remove junk from the beginning of the file.
 
 2013-06-28  Vladimir Makarov  <vmakarov@redhat.com>
 
@@ -16,9 +442,8 @@
 2013-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57736
-	* config/i386/i386.c (ix86_expand_builtin): If target == NULL
-	and mode is VOIDmode, don't create a VOIDmode pseudo to copy result
-	into.
+	* config/i386/i386.c (ix86_expand_builtin): If target == NULL and
+	mode is VOIDmode, don't create a VOIDmode pseudo to copy result into.
 
 2013-06-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
@@ -50,8 +475,8 @@
 
 2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
-	* config/aarch64/aarch64-protos.h
-	aarch64_classify_symbol_expression): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_classify_symbol_expression):
+	Define.
 	(aarch64_symbolic_constant_p): Remove.
 	* config/aarch64/aarch64.c (aarch64_classify_symbol_expression): Remove
 	static.  Fix line length and white space.
@@ -184,8 +609,7 @@
 
 	* config/mips/mips-tables.opt: Regenerate.
 	* config/mips/mips-cpus.def: Add m14ke and m14kec.
-	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): m14ke* implies
-	-mdspr2.
+	* config/mips/mips.h (BASE_DRIVER_SELF_SPECS): m14ke* implies -mdspr2.
 	* doc/invoke.texi: Add -m14kc.
 
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
@@ -201,8 +625,8 @@
 
 2013-06-27  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* lra-constraints.c (inherit_in_ebb): Process static hard regs
-	too.  Process OP_INOUT regs for splitting too.
+	* lra-constraints.c (inherit_in_ebb): Process static hard regs too.
+	Process OP_INOUT regs for splitting too.
 
 2013-06-27  Jakub Jelinek  <jakub@redhat.com>
 
@@ -258,8 +682,7 @@
 	(s390_expand_builtin): New function.
 	(TARGET_INIT_BUILTINS): Define.
 	(TARGET_EXPAND_BUILTIN): Define.
-	* common/config/s390/s390-common.c (processor_flags_table): Add
-	PF_TX.
+	* common/config/s390/s390-common.c (processor_flags_table): Add PF_TX.
 	* config/s390/predicates.md (s390_comparison): Handle CCRAWmode.
 	(s390_alc_comparison): Likewise.
 	* config/s390/s390-modes.def: Add CCRAWmode.
@@ -270,8 +693,7 @@
 	* config/s390/s390.md: Rename UNSPEC_CCU_TO_INT to
 	UNSPEC_STRCMPCC_TO_INT and UNSPEC_CCZ_TO_INT to UNSPEC_CC_TO_INT.
 	(UNSPECV_TBEGIN, UNSPECV_TBEGINC, UNSPECV_TEND, UNSPECV_TABORT)
-	(UNSPECV_ETND, UNSPECV_NTSTG, UNSPECV_PPA): New unspecv enum
-	values.
+	(UNSPECV_ETND, UNSPECV_NTSTG, UNSPECV_PPA): New unspecv enum values.
 	(TBEGIN_MASK, TBEGINC_MASK): New constants.
 	("*cc_to_int"): Move up.
 	("*mov<mode>cc", "*cjump_64", "*cjump_31"): Accept integer
@@ -293,8 +715,7 @@
 2013-06-26  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* config/i386/gnu.h [TARGET_LIBC_PROVIDES_SSP]
-	(TARGET_CAN_SPLIT_STACK, TARGET_THREAD_SPLIT_STACK_OFFSET):
-	Undefine.
+	(TARGET_CAN_SPLIT_STACK, TARGET_THREAD_SPLIT_STACK_OFFSET): Undefine.
 
 2013-06-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 	    Pat Haugen <pthaugen@us.ibm.com>
@@ -327,8 +748,7 @@
 	PR tree-optimization/57705
 	* tree-vect-loop.c (vect_is_simple_iv_evolution): Allow
 	SSA_NAME step, provided that it is not defined inside the loop.
-	(vect_analyze_scalar_cycles_1): Disallow SSA_NAME step in nested
-	loop.
+	(vect_analyze_scalar_cycles_1): Disallow SSA_NAME step in nested loop.
 	(get_initial_def_for_induction): Handle SSA_NAME IV step.
 
 2013-06-25  Martin Jambor  <mjambor@suse.cz>
@@ -378,8 +798,7 @@
 
 2013-06-24  Richard Biener  <rguenther@suse.de>
 
-	* pointer-set.h (struct pointer_set_t): Move here from
-	pointer-set.c.
+	* pointer-set.h (struct pointer_set_t): Move here from pointer-set.c.
 	(pointer_set_lookup): Declare.
 	(class pointer_map): New template class implementing a
 	generic pointer to T map.
@@ -443,7 +862,8 @@
 	when current target options does not apply.
 	* config/i386/i386-protos.h (ix86_reset_previous_fndecl): New function.
 	* config/i386/i386.c (ix86_reset_previous_fndecl): Ditto.
-	* config/i386/bmiintrin.h: Pass appropriate target attributes to header.
+	* config/i386/bmiintrin.h: Pass appropriate target
+	attributes to header.
 	* config/i386/mmintrin.h: Ditto.
 	* config/i386/nmmintrin.h: Ditto.
 	* config/i386/avx2intrin.h: Ditto.
@@ -491,8 +911,7 @@
 
 2013-06-21  Andi Kleen  <ak@linux.intel.com>
 
-	* doc/extend.texi: Dont use __atomic_clear in HLE
-	example.  Fix typo.
+	* doc/extend.texi: Dont use __atomic_clear in HLE example.  Fix typo.
 
 2013-06-21  Andi Kleen  <ak@linux.intel.com>
 

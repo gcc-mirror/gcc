@@ -2789,11 +2789,11 @@ package body Sem_Ch6 is
               and then
                 (Nkind (Original_Node (Spec_Decl)) =
                                         N_Subprogram_Renaming_Declaration
-                   or else (Present (Corresponding_Body (Spec_Decl))
-                             and then
-                               Nkind (Unit_Declaration_Node
-                                        (Corresponding_Body (Spec_Decl))) =
-                                           N_Subprogram_Renaming_Declaration))
+                  or else (Present (Corresponding_Body (Spec_Decl))
+                            and then
+                              Nkind (Unit_Declaration_Node
+                                       (Corresponding_Body (Spec_Decl))) =
+                                          N_Subprogram_Renaming_Declaration))
             then
                Conformant := True;
 
@@ -7663,13 +7663,16 @@ package body Sem_Ch6 is
       end if;
 
       --  Ada 2005 (AI-254): Anonymous access-to-subprogram types must be
-      --  treated recursively because they carry a signature.
+      --  treated recursively because they carry a signature. As far as
+      --  conformance is concerned, convention plays no role, and either
+      --  or both could be access to protected subprograms.
 
       Are_Anonymous_Access_To_Subprogram_Types :=
-        Ekind (Type_1) = Ekind (Type_2)
+        Ekind_In (Type_1, E_Anonymous_Access_Subprogram_Type,
+                          E_Anonymous_Access_Protected_Subprogram_Type)
           and then
-            Ekind_In (Type_1, E_Anonymous_Access_Subprogram_Type,
-                              E_Anonymous_Access_Protected_Subprogram_Type);
+        Ekind_In (Type_2, E_Anonymous_Access_Subprogram_Type,
+                          E_Anonymous_Access_Protected_Subprogram_Type);
 
       --  Test anonymous access type case. For this case, static subtype
       --  matching is required for mode conformance (RM 6.3.1(15)). We check

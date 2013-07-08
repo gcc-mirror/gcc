@@ -2867,7 +2867,7 @@ package body Sem_Ch5 is
             --  we are in formal mode where goto statements are not allowed.
 
             if Nkind (Nxt) = N_Label
-              and then not Restriction_Check_Required (SPARK)
+              and then not Restriction_Check_Required (SPARK_05)
             then
                return;
 
@@ -2924,7 +2924,7 @@ package body Sem_Ch5 is
 
                   --  Now issue the warning (or error in formal mode)
 
-                  if Restriction_Check_Required (SPARK) then
+                  if Restriction_Check_Required (SPARK_05) then
                      Check_SPARK_Restriction
                        ("unreachable code is not allowed", Error_Node);
                   else

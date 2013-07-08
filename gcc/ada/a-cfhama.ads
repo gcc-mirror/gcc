@@ -64,7 +64,7 @@ generic
 package Ada.Containers.Formal_Hashed_Maps is
    pragma Pure;
 
-   type Map (Capacity : Count_Type; Modulus : Hash_Type) is tagged private;
+   type Map (Capacity : Count_Type; Modulus : Hash_Type) is private;
    pragma Preelaborable_Initialization (Map);
 
    type Cursor is private;
@@ -80,7 +80,9 @@ package Ada.Containers.Formal_Hashed_Maps is
 
    procedure Reserve_Capacity
      (Container : in out Map;
-      Capacity  : Count_Type);
+      Capacity  : Count_Type)
+   with
+     Pre => Capacity <= Container.Capacity;
 
    function Length (Container : Map) return Count_Type;
 
@@ -88,67 +90,91 @@ package Ada.Containers.Formal_Hashed_Maps is
 
    procedure Clear (Container : in out Map);
 
-   procedure Assign (Target : in out Map; Source : Map);
+   procedure Assign (Target : in out Map; Source : Map) with
+     Pre => Target.Capacity >= Length (Source);
 
-   --  Copy returns a container stricty equal to Source
-   --  It must have the same cursors associated to each element
-   --  Therefore:
-   --  - capacity=0 means use container.capacity as cap of tgt
-   --  - the modulus cannot be changed.
    function Copy
      (Source   : Map;
-      Capacity : Count_Type := 0) return Map;
+      Capacity : Count_Type := 0) return Map
+   with
+     Pre => Capacity >= Source.Capacity;
+   --  Copy returns a container stricty equal to Source. It must have
+   --  the same cursors associated with each element. Therefore:
+   --  - capacity=0 means use container.capacity as capacity of target
+   --  - the modulus cannot be changed.
 
-   function Key (Container : Map; Position : Cursor) return Key_Type;
+   function Key (Container : Map; Position : Cursor) return Key_Type with
+     Pre => Has_Element (Container, Position);
 
-   function Element (Container : Map; Position : Cursor) return Element_Type;
+   function Element
+     (Container : Map;
+      Position  : Cursor) return Element_Type
+   with
+     Pre => Has_Element (Container, Position);
 
    procedure Replace_Element
      (Container : in out Map;
       Position  : Cursor;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Has_Element (Container, Position);
 
-   procedure Move (Target : in out Map; Source : in out Map);
+   procedure Move (Target : in out Map; Source : in out Map) with
+     Pre => Target.Capacity >= Length (Source);
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
       New_Item  : Element_Type;
       Position  : out Cursor;
-      Inserted  : out Boolean);
+      Inserted  : out Boolean)
+   with
+     Pre => Length (Container) < Container.Capacity;
 
    procedure Insert
      (Container : in out Map;
       Key       : Key_Type;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Length (Container) < Container.Capacity
+              and then (not Contains (Container, Key));
 
    procedure Include
      (Container : in out Map;
       Key       : Key_Type;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Length (Container) < Container.Capacity;
 
    procedure Replace
      (Container : in out Map;
       Key       : Key_Type;
-      New_Item  : Element_Type);
+      New_Item  : Element_Type)
+   with
+     Pre => Contains (Container, Key);
 
    procedure Exclude (Container : in out Map; Key : Key_Type);
 
-   procedure Delete (Container : in out Map; Key : Key_Type);
+   procedure Delete (Container : in out Map; Key : Key_Type) with
+     Pre => Contains (Container, Key);
 
-   procedure Delete (Container : in out Map; Position : in out Cursor);
+   procedure Delete (Container : in out Map; Position : in out Cursor) with
+     Pre => Has_Element (Container, Position);
 
    function First (Container : Map) return Cursor;
 
-   function Next (Container : Map; Position : Cursor) return Cursor;
+   function Next (Container : Map; Position : Cursor) return Cursor with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
 
-   procedure Next (Container : Map; Position : in out Cursor);
+   procedure Next (Container : Map; Position : in out Cursor) with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
 
    function Find (Container : Map; Key : Key_Type) return Cursor;
 
    function Contains (Container : Map; Key : Key_Type) return Boolean;
 
-   function Element (Container : Map; Key : Key_Type) return Element_Type;
+   function Element (Container : Map; Key : Key_Type) return Element_Type with
+     Pre => Contains (Container, Key);
 
    function Has_Element (Container : Map; Position : Cursor) return Boolean;
 
@@ -175,8 +201,10 @@ package Ada.Containers.Formal_Hashed_Maps is
    --  they are structurally equal (function "=" returns True) and that they
    --  have the same set of cursors.
 
-   function Left  (Container : Map; Position : Cursor) return Map;
-   function Right (Container : Map; Position : Cursor) return Map;
+   function Left  (Container : Map; Position : Cursor) return Map with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
+   function Right (Container : Map; Position : Cursor) return Map with
+     Pre => Has_Element (Container, Position) or else Position = No_Element;
    --  Left returns a container containing all elements preceding Position
    --  (excluded) in Container. Right returns a container containing all
    --  elements following Position (included) in Container. These two new

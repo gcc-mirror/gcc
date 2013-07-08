@@ -322,7 +322,7 @@ extern const char * built_in_names[(int) END_BUILTINS];
 
 #define CASE_FLT_FN(FN) case FN: case FN##F: case FN##L
 #define CASE_FLT_FN_REENT(FN) case FN##_R: case FN##F_R: case FN##L_R
-#define CASE_INT_FN(FN) case FN: case FN##L: case FN##LL
+#define CASE_INT_FN(FN) case FN: case FN##L: case FN##LL: case FN##IMAX
 
 /* In an OMP_CLAUSE node.  */
 
