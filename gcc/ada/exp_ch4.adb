@@ -2835,7 +2835,7 @@ package body Exp_Ch4 is
 
          elsif Ada_Version >= Ada_2012 or else Is_Bounded_String (Typ) then
 
-            --  if no TSS has been created for the type, check whether there is
+            --  If no TSS has been created for the type, check whether there is
             --  a primitive equality declared for it.
 
             declare

@@ -1,3 +1,15 @@
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_ch4.adb: Minor reformatting.
+
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Complete_Object_Operation): In ASIS mode, if
+	the parent node is a selected component and the analysis as a
+	call is successful, set the type of the selector in the parent
+	node for subsequent checks, because the rewriting of the node
+	does not take place during pre-analysis.
+
  2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, exp_ch3.adb: Minor reformatting.
