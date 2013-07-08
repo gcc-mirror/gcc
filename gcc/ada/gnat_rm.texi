@@ -8057,8 +8057,8 @@ indicates whether or not the corresponding actual type has discriminants.
 @unnumberedsec Attribute Img
 @findex Img
 @noindent
-The @code{Img} attribute differs from @code{Image} in that it may be
-applied to objects as well as types, in which case it gives the
+The @code{Img} attribute differs from @code{Image} in that it is applied
+directly to an object, and yields the same result as
 @code{Image} for the subtype of the object.  This is convenient for
 debugging:
 
@@ -8075,6 +8075,12 @@ Put_Line ("X = " & @var{T}'Image (X));
 
 @noindent
 where @var{T} is the (sub)type of the object @code{X}.
+
+Note that technically, in analogy to @code{Image},
+@code{X'Img} returns a parameterless function
+that returns the appropriate string when called. This means that
+@code{X'Img} can be renamed as a function-returning-string, or used
+in an instantiation as a function parameter.
 
 @node Attribute Integer_Value
 @unnumberedsec Attribute Integer_Value

@@ -1171,20 +1171,16 @@ package body Restrict is
 
    function Same_Unit (U1, U2 : Node_Id) return Boolean is
    begin
-      if Nkind (U1) = N_Identifier then
-         return Nkind (U2) = N_Identifier and then Chars (U1) = Chars (U2);
+      if Nkind (U1) = N_Identifier and then Nkind (U2) = N_Identifier then
+         return Chars (U1) = Chars (U2);
 
-      elsif Nkind (U2) = N_Identifier then
-         return False;
-
-      elsif (Nkind (U1) = N_Selected_Component
-             or else Nkind (U1) = N_Expanded_Name)
-        and then
-          (Nkind (U2) = N_Selected_Component
-           or else Nkind (U2) = N_Expanded_Name)
+      elsif Nkind_In (U1, N_Selected_Component, N_Expanded_Name)
+              and then
+            Nkind_In (U2, N_Selected_Component, N_Expanded_Name)
       then
          return Same_Unit (Prefix (U1), Prefix (U2))
-           and then Same_Unit (Selector_Name (U1), Selector_Name (U2));
+                  and then
+                Same_Unit (Selector_Name (U1), Selector_Name (U2));
       else
          return False;
       end if;

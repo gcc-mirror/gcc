@@ -232,10 +232,8 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          Id := Chars (Arg);
          Expr := Expression (Arg);
 
-         if Id = No_Name
-           and then Nkind (Expr) = N_Identifier
-         then
-            case  Chars (Expr) is
+         if Id = No_Name and then Nkind (Expr) = N_Identifier then
+            case Chars (Expr) is
                when Name_No_Obsolescent_Features =>
                   Set_Restriction (No_Obsolescent_Features, Pragma_Node);
                   Restriction_Warnings (No_Obsolescent_Features) :=

@@ -1578,9 +1578,10 @@ package body Sem_Res is
       end if;
 
       --  If in ASIS_Mode, propagate operand types to original actuals of
-      --  function call, which would otherwise not be fully resolved.
+      --  function call, which would otherwise not be fully resolved. If
+      --  the call has already been constant-folded, nothing to do.
 
-      if ASIS_Mode then
+      if ASIS_Mode and then Nkind (N) in N_Op then
          if Is_Binary then
             Set_Parameter_Associations
               (Original_Node (N),
