@@ -1,3 +1,18 @@
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Attribute_Renaming): Treat 'Img as an attribute
+	that can be renamed as a function.
+
+2013-07-08  Thomas Quinot  <quinot@adacore.com>
+
+	* g-socket.ads: Document target dependency: FIONBIO may or may not
+	be inherited from listening socket by accepted socket.
+
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Do not deallocate the object
+	on targets that can't deallocate.
+
 2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch3.adb (Freeze_Type): Generate a

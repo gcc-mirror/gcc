@@ -816,7 +816,8 @@ package GNAT.Sockets is
    --  connections, creates a new connected socket with mostly the same
    --  properties as Server, and allocates a new socket. The returned Address
    --  is filled in with the address of the connection. Raises Socket_Error on
-   --  error.
+   --  error. Note: if Server is a non-blocking socket, whether or not this
+   --  aspect is inherited by Socket is platform-dependent.
 
    procedure Accept_Socket
      (Server   : Socket_Type;
