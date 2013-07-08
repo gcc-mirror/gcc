@@ -1,3 +1,9 @@
+2013-07-08  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/56892
+	* config/i386/i386.c (TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P): Define as
+	hook_bool_const_tree_true.
+
 2013-07-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c: Replace F*_REGNUM with FPR*_REGNUM.
