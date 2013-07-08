@@ -4,4 +4,4 @@
 /* { dg-options "-m64" } */
 
 /* { dg-error "-m64 not supported in this configuration" "SPE not 64-bit" { target *-*-* } 0 } */
-/* { dg-error "64-bit E500 not supported" "64-bit E500" { target *-*-* } 0 } */
+/* { dg-error "64-bit SPE not supported" "64-bit SPE" { target *-*-* } 0 } */
