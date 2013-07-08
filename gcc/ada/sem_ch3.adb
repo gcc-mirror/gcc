@@ -2077,7 +2077,7 @@ package body Sem_Ch3 is
    --  Start of processing for Analyze_Declarations
 
    begin
-      if Restriction_Check_Required (SPARK) then
+      if Restriction_Check_Required (SPARK_05) then
          Check_Later_Vs_Basic_Declarations (L, During_Parsing => False);
       end if;
 
@@ -3242,7 +3242,7 @@ package body Sem_Ch3 is
 
            --  Only call test if needed
 
-           and then Restriction_Check_Required (SPARK)
+           and then Restriction_Check_Required (SPARK_05)
            and then not Is_SPARK_Initialization_Expr (E)
          then
             Check_SPARK_Restriction

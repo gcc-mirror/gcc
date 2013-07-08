@@ -1,3 +1,18 @@
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* par-prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Recognize SPARK_05 as synonym for SPARK in restrictions pragma.
+	* restrict.ads, restrict.adb (SPARK_Hides): Table moved to body, only
+	referenced there.
+	* scng.adb, sem_ch3.adb, sem_ch4.adb, sem_ch5.adb, sem_ch8.adb,
+	sem_res.adb, sem_util.adb: Use restriction SPARK_05 instead of SPARK.
+	* snames.ads-tmpl (Name_No_Obsolescent_Features): New entry.
+
+2013-07-08  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb (Check_Files): Use a response file for gnatls
+	when possible.
+
 2013-07-08  Gary Dismukes  <dismukes@adacore.com>
 
 	* freeze.adb: Minor typo fixes.

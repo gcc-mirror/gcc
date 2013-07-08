@@ -5882,7 +5882,7 @@ package body Sem_Ch8 is
       --  Selector name cannot be a character literal or an operator symbol in
       --  SPARK, except for the operator symbol in a renaming.
 
-      if Restriction_Check_Required (SPARK) then
+      if Restriction_Check_Required (SPARK_05) then
          if Nkind (Selector_Name (N)) = N_Character_Literal then
             Check_SPARK_Restriction
               ("character literal cannot be prefixed", N);
@@ -6222,7 +6222,7 @@ package body Sem_Ch8 is
          --  Selector name is restricted in SPARK
 
          if Nkind (N) = N_Expanded_Name
-           and then Restriction_Check_Required (SPARK)
+           and then Restriction_Check_Required (SPARK_05)
          then
             if Is_Subprogram (P_Name) then
                Check_SPARK_Restriction

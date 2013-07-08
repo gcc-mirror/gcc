@@ -176,34 +176,6 @@ package Restrict is
      Table_Increment      => 200,
      Table_Name           => "Name_No_Dependences");
 
-   -------------------------------
-   -- SPARK Restriction Control --
-   -------------------------------
-
-   --  SPARK HIDE directives allow the effect of the SPARK_05 restriction to be
-   --  turned off for a specified region of code, and the following tables are
-   --  the data structures used to keep track of these regions.
-
-   --  The table contains pairs of source locations, the first being the start
-   --  location for hidden region, and the second being the end location.
-
-   --  Note that the start location is included in the hidden region, while
-   --  the end location is excluded from it. (It typically corresponds to the
-   --  next token during scanning.)
-
-   type SPARK_Hide_Entry is record
-      Start : Source_Ptr;
-      Stop  : Source_Ptr;
-   end record;
-
-   package SPARK_Hides is new Table.Table (
-     Table_Component_Type => SPARK_Hide_Entry,
-     Table_Index_Type     => Natural,
-     Table_Low_Bound      => 1,
-     Table_Initial        => 100,
-     Table_Increment      => 200,
-     Table_Name           => "SPARK Hides");
-
    -----------------
    -- Subprograms --
    -----------------
@@ -380,7 +352,9 @@ package Restrict is
    --  restrictions are set.
 
    procedure Set_Hidden_Part_In_SPARK (Loc1, Loc2 : Source_Ptr);
-   --  Insert a new hidden region range in the SPARK hides table
+   --  Insert a new hidden region range in the SPARK hides table. The effect
+   --  is to hide any SPARK violation messages which are in the range Loc1 to
+   --  Loc2-1 (i.e. Loc2 is the first location for reenabling checks).
 
    procedure Set_Profile_Restrictions
      (P    : Profile_Name;
