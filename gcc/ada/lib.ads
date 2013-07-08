@@ -373,7 +373,7 @@ package Lib is
 
    --    SPARK_Mode_Pragma
    --      Pointer to the configuration pragma SPARK_Mode that applies to the
-   --      whole unit.
+   --      whole unit. Add note of what this is used for ???
 
    --    Unit_File_Name
    --      The name of the source file containing the unit. Set when the entry

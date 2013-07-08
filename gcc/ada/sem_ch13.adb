@@ -1809,7 +1809,9 @@ package body Sem_Ch13 is
                      end loop;
                   end if;
 
-                  --  Build the precondition/postcondition pragma.
+                  --  Build the precondition/postcondition pragma
+
+                  --  Add note about why we do NOT need Copy_Tree here ???
 
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
