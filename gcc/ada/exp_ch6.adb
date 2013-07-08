@@ -4680,7 +4680,8 @@ package body Exp_Ch6 is
 
       function Process_Formals (N : Node_Id) return Traverse_Result;
       --  Replace occurrence of a formal with the corresponding actual, or the
-      --  thunk generated for it.
+      --  thunk generated for it. Replace a return statement with an assignment
+      --  to the target of the call, with appropriate conversions if needed.
 
       function Process_Sloc (Nod : Node_Id) return Traverse_Result;
       --  If the call being expanded is that of an internal subprogram, set the
@@ -4808,9 +4809,14 @@ package body Exp_Ch6 is
                --  errors, e.g. when the expression is a numeric literal and
                --  the context is private. If the expression is an aggregate,
                --  use a qualified expression, because an aggregate is not a
-               --  legal argument of a conversion.
+               --  legal argument of a conversion. Ditto for numeric literals,
+               --  which must be resolved to a specific type.
 
-               if Nkind_In (Expression (N), N_Aggregate, N_Null) then
+               if Nkind_In (Expression (N), N_Aggregate,
+                                            N_Null,
+                                            N_Real_Literal,
+                                            N_Integer_Literal)
+               then
                   Ret :=
                     Make_Qualified_Expression (Sloc (N),
                       Subtype_Mark => New_Occurrence_Of (Ret_Type, Sloc (N)),

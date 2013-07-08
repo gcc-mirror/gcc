@@ -839,8 +839,8 @@ package body Rtsfind is
          return;
       end if;
 
-      --  Add the with_clause, if not already in the context of the current
-      --  compilation unit.
+      --  Add the with_clause, if we have not already added an implicit with
+      --  for this unit to the current compilation unit.
 
       declare
          LibUnit : constant Node_Id := Unit (Cunit (U.Unum));
