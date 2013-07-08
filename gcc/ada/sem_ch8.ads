@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -148,9 +148,11 @@ package Sem_Ch8 is
    --  with-clause on system. N is absent when the function is called to find
    --  the visibility of implicit operators.
 
-   procedure Restore_Scope_Stack (Handle_Use : Boolean := True);
-   procedure Save_Scope_Stack (Handle_Use : Boolean := True);
-   --  These two procedures are called from Semantics, when a unit U1 is to
+   function Save_Scope_Stack (Handle_Use : Boolean := True) return Elist_Id;
+   procedure Restore_Scope_Stack
+     (List       : Elist_Id;
+      Handle_Use : Boolean := True);
+   --  These two subprograms are called from Semantics, when a unit U1 is to
    --  be compiled in the course of the compilation of another unit U2. This
    --  happens whenever Rtsfind is called. U1, the unit retrieved by Rtsfind,
    --  must be compiled in its own context, and the current scope stack
@@ -159,7 +161,9 @@ package Sem_Ch8 is
    --  Handle_Use indicates whether local use clauses must be removed or
    --  installed. In the case of inlining of instance bodies, the visibility
    --  handling is done fully in Inline_Instance_Body, and use clauses are
-   --  handled there.
+   --  handled there. Save_Scope_Stack returns the list of entities which have
+   --  been temporarily removed from visibility; that list must be passed to
+   --  Restore_Scope_Stack to restore their visibility.
 
    procedure Set_Use (L : List_Id);
    --  Find use clauses that are declarative items in a package declaration

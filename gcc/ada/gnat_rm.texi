@@ -6052,20 +6052,20 @@ by other pragmas) of a package declaration, it marks the whole package
 @item
 When the pragma appears at the start of the private declarations of a
 package (only other pragmas can appear between the @code{private} keyword
-and the @code{SPARK_Mode} pragma, it marks the private part in or
-out of SPARK 2014 (overriding the mode for the public part).
+and the @code{SPARK_Mode} pragma), it marks the private part in or
+out of SPARK 2014 (overriding the default mode of the visible part).
 
 @item
 When the pragma appears immediately at the start of the declarations of a
 package body (preceded only by other pragmas),
 it marks the whole body in or out of SPARK 2014 (overriding the default
-mode copied from the declaration).
+mode set by the declaration).
 
 @item
 When the pragma appears at the start of the elaboration statements of
 a package body (only other pragmas can appear between the @code{begin}
-keyword and the @code{SPARK_Mode} pragma,
-it marks the elaboration statements in or out of SPARK 2014, overriding
+keyword and the @code{SPARK_Mode} pragma),
+it marks the elaboration statements in or out of SPARK 2014 (overriding
 the default mode of the package body).
 
 @item
@@ -6076,7 +6076,7 @@ subprogram (spec and body) in or out of SPARK 2014.
 @item
 When the pragma appears at the start of the declarations of a subprogram
 body (preceded only by other pragmas), it marks the whole body in or out
-of SPARK 2014, overriding the default mode set by the declaration.
+of SPARK 2014 (overriding the default mode set by the declaration).
 
 @item
 Any other use of the pragma is illegal.
