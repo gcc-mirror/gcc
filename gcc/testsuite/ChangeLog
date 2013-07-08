@@ -1,3 +1,8 @@
+2013-07-08  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/powerpc/sd-vsx.c: Require dfp.
+	* gcc.target/powerpc/sd-pwr6.c: Likewise.
+
 2013-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57834
