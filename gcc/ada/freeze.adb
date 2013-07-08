@@ -3415,15 +3415,16 @@ package body Freeze is
             --  a size given for an array where the array needs to be packed,
             --  but was not so the size cannot be honored. This is the case
             --  where implicit packing may apply. The reason we do this so
-            --  early is that if we have implicit packing, the lagout of the
+            --  early is that if we have implicit packing, the layout of the
             --  base type is affected, so we must do this before we freeze
             --  the base type.
 
             --  We could do this processing only if implicit packing is enabled
             --  since in all other cases, the error would be caught by the back
             --  end. However, we choose to do the check even if we do not have
-            --  implicit packingh enabled, since this allows us to give a more
-            --  useful error message (advising the use of pack or the pragma).
+            --  implicit packing enabled, since this allows us to give a more
+            --  useful error message (advising use of pragmas Implicit_Packing
+            --  or Pack).
 
             if Is_Array_Type (E) then
                declare

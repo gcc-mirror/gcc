@@ -1,3 +1,21 @@
+2013-07-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* freeze.adb: Minor typo fixes.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_rm.texi: Document SPARK_05 (replaces SPARK) Document
+	obsolete recognition of SPARK Document all other obsolete synonyms
+	for old restrictions.
+	* restrict.adb (Check_SPARK_Restriction): SPARK_05 replaces
+	SPARK (Process_Restriction_Synonyms): Handle SPARK as synonym
+	for SPARK_05.
+	* restrict.ads: Restriction SPARK_05 replaces SPARK.
+	* s-rident.ads: Replace restriction SPARK by SPARK_05 Add SPARK
+	as synonym for SPARK_05.
+	* sem_prag.adb: Minor reformatting.
+	* snames.ads-tmpl: Add entries for Name_SPARK and Name_SPARK_05.
+
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_dim.adb: Minor error message change.

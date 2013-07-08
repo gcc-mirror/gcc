@@ -762,6 +762,8 @@ package Snames is
    Name_Semaphore                      : constant Name_Id := N + $;
    Name_Short_Descriptor               : constant Name_Id := N + $;
    Name_Simple_Barriers                : constant Name_Id := N + $;
+   Name_SPARK                          : constant Name_Id := N + $;
+   Name_SPARK_05                       : constant Name_Id := N + $;
    Name_Spec_File_Name                 : constant Name_Id := N + $;
    Name_State                          : constant Name_Id := N + $;
    Name_Statement_Assertions           : constant Name_Id := N + $;

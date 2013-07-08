@@ -7016,7 +7016,7 @@ package body Sem_Prag is
       --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
 
       begin
-         --  Ignore all Restrictions pragma in CodePeer mode
+         --  Ignore all Restrictions pragmas in CodePeer mode
 
          if CodePeer_Mode then
             return;

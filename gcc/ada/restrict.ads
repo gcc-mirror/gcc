@@ -142,7 +142,7 @@ package Restrict is
       No_Wide_Characters                 => True,
       Static_Priorities                  => True,
       Static_Storage_Size                => True,
-      SPARK                              => True,
+      SPARK_05                           => True,
       others                             => False);
 
    --  The following table records entries made by Restrictions pragmas
@@ -180,7 +180,7 @@ package Restrict is
    -- SPARK Restriction Control --
    -------------------------------
 
-   --  SPARK HIDE directives allow the effect of the SPARK restriction to be
+   --  SPARK HIDE directives allow the effect of the SPARK_05 restriction to be
    --  turned off for a specified region of code, and the following tables are
    --  the data structures used to keep track of these regions.
 
@@ -282,10 +282,10 @@ package Restrict is
      (Msg   : String;
       N     : Node_Id;
       Force : Boolean := False);
-   --  Node N represents a construct not allowed in formal mode. If this is a
-   --  source node, or if the restriction is forced (Force = True), and the
-   --  SPARK restriction is set, then an error is issued on N. Msg is appended
-   --  to the restriction failure message.
+   --  Node N represents a construct not allowed in formal mode. If this is
+   --  a source node, or if the restriction is forced (Force = True), and
+   --  the SPARK_05 restriction is set, then an error is issued on N. Msg
+   --  is appended to the restriction failure message.
 
    procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id);
    --  Same as Check_SPARK_Restriction except there is a continuation message

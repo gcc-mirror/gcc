@@ -454,7 +454,7 @@ Program Unit Level Restrictions
 * No_Implicit_Aliasing::
 * No_Obsolescent_Features::
 * No_Wide_Characters::
-* SPARK::
+* SPARK_05::
 
 The Implementation of Standard I/O
 
@@ -8951,6 +8951,12 @@ Note that this restriction is checked at run time. Violation of this
 restriction results in the raising of Program_Error exception at the point of
 the call.
 
+@findex Max_Entry_Queue_Depth
+The restriction @code{Max_Entry_Queue_Depth} is recognized as a
+synonym for @code{Max_Entry_Queue_Length}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
+
 @node Max_Protected_Entries
 @unnumberedsubsec Max_Protected_Entries
 @findex Max_Protected_Entries
@@ -9136,6 +9142,12 @@ end Example;
 operations defined in package Ada.Interrupts
 (Is_Reserved, Is_Attached, Current_Handler, Attach_Handler, Exchange_Handler,
 Detach_Handler, and Reference).
+
+@findex No_Dynamic_Interrupts
+The restriction @code{No_Dynamic_Interrupts} is recognized as a
+synonym for @code{No_Dynamic_Attachment}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
 
 @node No_Dynamic_Priorities
 @unnumberedsubsec No_Dynamic_Priorities
@@ -9378,6 +9390,12 @@ appearing in source code.
 are permitted and prevents keyword @code{requeue} from being used in source
 code.
 
+@findex No_Requeue
+The restriction @code{No_Requeue} is recognized as a
+synonym for @code{No_Requeue_Statements}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on oNobsolescent features are activated).
+
 @node No_Secondary_Stack
 @unnumberedsubsec No_Secondary_Stack
 @findex No_Secondary_Stack
@@ -9459,6 +9477,12 @@ or types containing task subcomponents.
 [GNAT] This restriction ensures at compile time that there are no implicit or
 explicit dependencies on the package @code{Ada.Task_Attributes}.
 
+@findex No_Task_Attributes
+The restriction @code{No_Task_Attributes} is recognized as a synonym
+for @code{No_Task_Attributes_Package}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
+
 @node No_Task_Hierarchy
 @unnumberedsubsec No_Task_Hierarchy
 @findex No_Task_Hierarchy
@@ -9498,6 +9522,12 @@ declarations for protected types are restricted to either static boolean
 expressions or references to simple boolean variables defined in the private
 part of the protected type.  No other form of entry barriers is permitted.
 
+@findex Boolean_Entry_Barriers
+The restriction @code{Boolean_Entry_Barriers} is recognized as a
+synonym for @code{Simple_Barriers}. This is retained for historical
+compatibility purposes (and a warning will be generated for its use if
+warnings on obsolescent features are activated).
+
 @node Static_Priorities
 @unnumberedsubsec Static_Priorities
 @findex Static_Priorities
@@ -9533,7 +9563,7 @@ other compilation units in the partition.
 * No_Implicit_Aliasing::
 * No_Obsolescent_Features::
 * No_Wide_Characters::
-* SPARK::
+* SPARK_05::
 @end menu
 
 @node No_Elaboration_Code
@@ -9663,12 +9693,18 @@ appear, and that no wide or wide wide string or character literals
 appear in the program (that is literals representing characters not in
 type @code{Character}).
 
-@node SPARK
-@unnumberedsubsec SPARK
-@findex SPARK
+@node SPARK_05
+@unnumberedsubsec SPARK_05
+@findex SPARK_05
 [GNAT] This restriction checks at compile time that some constructs
 forbidden in SPARK 2005 are not present. Error messages related to
 SPARK restriction have the form:
+
+@findex SPARK
+The restriction @code{SPARK} is recognized as a
+synonym for @code{SPARK_05}. This is retained for historical
+compatibility purposes (and an unconditional warning will be generated
+for its use, advising replacement by @code{SPARK}.
 
 @smallexample
 violation of restriction "SPARK" at <file>
