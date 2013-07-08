@@ -1,3 +1,19 @@
+2013-07-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: Replace F*_REGNUM with FPR*_REGNUM.
+	* config/s390/s390.h: Remove F*_REGNUM macro definitions.
+	* config/s390/s390.md: Define FPR*_REGNUM constants.
+	Fix FPR2_REGNUM constant (18 -> 17).
+	("*trunc<BFP:mode><DFP_ALL:mode>2")
+	("*trunc<DFP_ALL:mode><BFP:mode>2")
+	("trunc<BFP:mode><DFP_ALL:mode>2")
+	("trunc<DFP_ALL:mode><BFP:mode>2")
+	("*extend<BFP:mode><DFP_ALL:mode>2")
+	("*extend<DFP_ALL:mode><BFP:mode>2")
+	("extend<BFP:mode><DFP_ALL:mode>2")
+	("extend<DFP_ALL:mode><BFP:mode>2"): Replace FPR2_REGNUM with
+	FPR4_REGNUM.
+
 2013-07-08  Graham Stott  <graham.stott@btinternet.com>
 	* Makefile.in: (c-family-warn): Define to $(STRICT_WARN)
 
