@@ -1,3 +1,9 @@
+2013-07-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57829
+	* simplify-rtx.c (simplify_binary_operation_1) <case IOR>: Ensure that
+	mask bits outside of mode are just sign-extension from mode to HWI.
+
 2013-07-08  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
 
 	* config/i386/i386-opts.h (enum stringop_alg): Add vector_loop.
