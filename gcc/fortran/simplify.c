@@ -333,13 +333,15 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 }
 
 
-/* Helper function for gfc_simplify_dot_product() and gfc_simplify_matmul.  */
+/* Helper function for gfc_simplify_dot_product() and gfc_simplify_matmul;
+   if conj_a is true, the matrix_a is complex conjugated.  */
 
 static gfc_expr *
 compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
-		     gfc_expr *matrix_b, int stride_b, int offset_b)
+		     gfc_expr *matrix_b, int stride_b, int offset_b,
+		     bool conj_a)
 {
-  gfc_expr *result, *a, *b;
+  gfc_expr *result, *a, *b, *c;
 
   result = gfc_get_constant_expr (matrix_a->ts.type, matrix_a->ts.kind,
 				  &matrix_a->where);
@@ -362,9 +364,11 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 	  case BT_INTEGER:
 	  case BT_REAL:
 	  case BT_COMPLEX:
-	    result = gfc_add (result,
-			      gfc_multiply (gfc_copy_expr (a),
-					    gfc_copy_expr (b)));
+	    if (conj_a && a->ts.type == BT_COMPLEX)
+	      c = gfc_simplify_conjg (a);
+	    else
+	      c = gfc_copy_expr (a);
+	    result = gfc_add (result, gfc_multiply (c, gfc_copy_expr (b)));
 	    break;
 
 	  default:
@@ -1882,7 +1886,7 @@ gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
   gcc_assert (vector_b->rank == 1);
   gcc_assert (gfc_compare_types (&vector_a->ts, &vector_b->ts));
 
-  return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0);
+  return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }
 
 
@@ -3910,7 +3914,7 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       for (row = 0; row < result_rows; ++row)
 	{
 	  gfc_expr *e = compute_dot_product (matrix_a, stride_a, offset_a,
-					     matrix_b, 1, offset_b);
+					     matrix_b, 1, offset_b, false);
 	  gfc_constructor_append_expr (&result->value.constructor,
 				       e, NULL);
 
