@@ -7212,9 +7212,6 @@ package body Sem_Ch4 is
          --  For cross-reference purposes, treat the new node as being in
          --  the source if the original one is. Set entity and type, even
          --  though they may be overwritten during resolution if overloaded.
-         --  Perform the same transformation in ASIS mode, because during
-         --  pre-analysis of a pre/post condition the node will not be
-         --  rewritten as a call. (is this ASIS comment obsolete ???)
 
          Set_Comes_From_Source (Subprog, Comes_From_Source (N));
          Set_Comes_From_Source (Call_Node, Comes_From_Source (N));

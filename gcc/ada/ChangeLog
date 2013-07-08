@@ -1,3 +1,12 @@
+2013-07-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb: minor reformatting (remove obsolete comment).
+	* sem_ch9.adb: improve error message on illegal trigger.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb: Minor reformatting.
+
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* gnatcmd.adb: Minor reformatting.
