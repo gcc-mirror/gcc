@@ -1,3 +1,7 @@
+2013-07-08  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/powerpc/pr47197.c: Require powerpc_altivec_ok.
+
 2013-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57785
