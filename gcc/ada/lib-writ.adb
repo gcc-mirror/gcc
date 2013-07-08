@@ -882,6 +882,38 @@ package body Lib.Writ is
 
             Write_Info_EOL;
          end loop;
+
+         --  Finally generate the special lines for cases of Restriction_Set
+         --  with No_Dependence and no restriction present.
+
+         declare
+            Unam : Unit_Name_Type;
+
+         begin
+            for J in Restriction_Set_Dependences.First ..
+                     Restriction_Set_Dependences.Last
+            loop
+               Unam := Restriction_Set_Dependences.Table (J);
+
+               --  Don't need an entry if already in the unit table
+
+               for U in 0 .. Last_Unit loop
+                  if Unit_Name (U) = Unam then
+                     goto Continue;
+                  end if;
+               end loop;
+
+               --  Otherwise generate the entry
+
+               Write_Info_Initiate ('W');
+               Write_Info_Char (' ');
+               Write_Info_Name (Unam);
+               Write_Info_EOL;
+
+            <<Continue>>
+               null;
+            end loop;
+         end;
       end Write_With_Lines;
 
    --  Start of processing for Write_ALI

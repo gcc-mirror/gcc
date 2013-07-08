@@ -1,5 +1,52 @@
 2013-07-08  Robert Dewar  <dewar@adacore.com>
 
+	* sem.ads: Minor comment updates.
+	* s-restri.ads, exp_ch6.adb, lib-load.ads, exp_ch3.adb, sem_ch10.adb:
+	Minor reformatting.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Add dummy entry
+	for Restriction_Set.
+	* gnat_rm.texi: Add missing menu entry for Attribute Ref Add
+	documentation for attribute Restriction_Set.
+	* lib-writ.adb (Write_With_Lines): Generate special W lines
+	for Restriction_Set.
+	* lib-writ.ads: Document special use of W lines for
+	Restriction_Set.
+	* lib.ads (Restriction_Set_Dependences): New table.
+	* par-ch4.adb (Is_Parameterless_Attribute): Add Loop_Entry to
+	list (Scan_Name_Extension_Apostrophe): Remove kludge test for
+	Loop_Entry (Scan_Name_Extension_Apostrophe): Handle No_Dependence
+	for Restricton_Set.
+	* restrict.adb (Check_SPARK_Restriction): Put in Alfa order
+	(OK_No_Dependence_Unit_Name): New function.
+	* restrict.ads (OK_No_Dependence_Unit_Name): New function.
+	* rtsfind.adb: Minor reformatting Minor code reorganization.
+	* sem_attr.adb (Analyze_Attribute): Add processing for
+	Restriction_Set.
+	* sem_prag.adb (Process_Restrictions_Or_Restriction_Warnings):
+	Remove Check_Unit_Name and use new function
+	OK_No_Dependence_Unit_Name instead.
+	* sinfo.ads: Minor comment updates.
+	* snames.ads-tmpl: Add entry for Restriction_Set attribute.
+
+2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Remove local constant
+	Pool_Id and local variable Free_Stmt. Do not deallocate the faulty
+	object as "free" is not available on all targets/profiles.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Handle
+	Storage_Size aspect for task type in case discriminant is
+	referenced.
+	(Analyze_Attribute_Definition_Clause): Do not flag Storage_Size
+	attribute definition clause as obsolescent if from aspect.
+
+2013-07-08  Robert Dewar  <dewar@adacore.com>
+
 	* gnat_rm.texi: Add documentation for Img returning a function.
 	* par-prag.adb: Minor reformatting.
 	* restrict.adb: Minor reformatting and code reorganization.

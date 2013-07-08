@@ -6990,31 +6990,6 @@ package body Sem_Prag is
          Expr  : Node_Id;
          Val   : Uint;
 
-         procedure Check_Unit_Name (N : Node_Id);
-         --  Checks unit name parameter for No_Dependence. Returns if it has
-         --  an appropriate form, otherwise raises pragma argument error.
-
-         ---------------------
-         -- Check_Unit_Name --
-         ---------------------
-
-         procedure Check_Unit_Name (N : Node_Id) is
-         begin
-            if Nkind (N) = N_Selected_Component then
-               Check_Unit_Name (Prefix (N));
-               Check_Unit_Name (Selector_Name (N));
-
-            elsif Nkind (N) = N_Identifier then
-               return;
-
-            else
-               Error_Pragma_Arg
-                 ("wrong form for unit name for No_Dependence", N);
-            end if;
-         end Check_Unit_Name;
-
-      --  Start of processing for Process_Restrictions_Or_Restriction_Warnings
-
       begin
          --  Ignore all Restrictions pragmas in CodePeer mode
 
@@ -7174,7 +7149,9 @@ package body Sem_Prag is
             --  already made the necessary entry in the No_Dependence table.
 
             elsif Id = Name_No_Dependence then
-               Check_Unit_Name (Expr);
+               if not OK_No_Dependence_Unit_Name (Expr) then
+                  raise Pragma_Exit;
+               end if;
 
             --  Case of No_Specification_Of_Aspect => Identifier.
 
