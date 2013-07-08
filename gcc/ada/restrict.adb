@@ -41,6 +41,38 @@ with Uname;    use Uname;
 
 package body Restrict is
 
+   -------------------------------
+   -- SPARK Restriction Control --
+   -------------------------------
+
+   --  SPARK HIDE directives allow the effect of the SPARK_05 restriction to be
+   --  turned off for a specified region of code, and the following tables are
+   --  the data structures used to keep track of these regions.
+
+   --  The table contains pairs of source locations, the first being the start
+   --  location for hidden region, and the second being the end location.
+
+   --  Note that the start location is included in the hidden region, while
+   --  the end location is excluded from it. (It typically corresponds to the
+   --  next token during scanning.)
+
+   type SPARK_Hide_Entry is record
+      Start : Source_Ptr;
+      Stop  : Source_Ptr;
+   end record;
+
+   package SPARK_Hides is new Table.Table (
+     Table_Component_Type => SPARK_Hide_Entry,
+     Table_Index_Type     => Natural,
+     Table_Low_Bound      => 1,
+     Table_Initial        => 100,
+     Table_Increment      => 200,
+     Table_Name           => "SPARK Hides");
+
+   --------------------------------
+   -- Package Local Declarations --
+   --------------------------------
+
    Config_Cunit_Boolean_Restrictions : Save_Cunit_Boolean_Restrictions;
    --  Save compilation unit restrictions set by config pragma files
 
@@ -163,9 +195,9 @@ package body Restrict is
    is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
+
    begin
       if Force or else Comes_From_Source (Original_Node (N)) then
-
          if Restriction_Check_Required (SPARK_05)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
          then
@@ -189,11 +221,11 @@ package body Restrict is
    procedure Check_SPARK_Restriction (Msg1, Msg2 : String; N : Node_Id) is
       Msg_Issued          : Boolean;
       Save_Error_Msg_Sloc : Source_Ptr;
+
    begin
       pragma Assert (Msg2'Length /= 0 and then Msg2 (Msg2'First) = '\');
 
       if Comes_From_Source (Original_Node (N)) then
-
          if Restriction_Check_Required (SPARK_05)
            and then Is_In_Hidden_Part_In_SPARK (Sloc (N))
          then

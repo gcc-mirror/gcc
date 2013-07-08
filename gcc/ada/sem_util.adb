@@ -4582,7 +4582,7 @@ package body Sem_Util is
       --  Declaring a homonym is not allowed in SPARK ...
 
       if Present (C)
-        and then Restriction_Check_Required (SPARK)
+        and then Restriction_Check_Required (SPARK_05)
       then
          declare
             Enclosing_Subp : constant Node_Id := Enclosing_Subprogram (Def_Id);
@@ -12982,7 +12982,7 @@ package body Sem_Util is
          --  subprogram bodies. Detect those cases by testing whether
          --  Process_End_Label was called for a body (Typ = 't') or a package.
 
-         if Restriction_Check_Required (SPARK)
+         if Restriction_Check_Required (SPARK_05)
            and then (Typ = 't' or else Ekind (Ent) = E_Package)
          then
             Error_Msg_Node_1 := Endl;

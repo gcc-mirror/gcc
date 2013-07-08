@@ -235,15 +235,15 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          if Id = No_Name
            and then Nkind (Expr) = N_Identifier
          then
-            case Get_Restriction_Id (Chars (Expr)) is
-               when No_Obsolescent_Features =>
+            case  Chars (Expr) is
+               when Name_No_Obsolescent_Features =>
                   Set_Restriction (No_Obsolescent_Features, Pragma_Node);
                   Restriction_Warnings (No_Obsolescent_Features) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
-               when SPARK =>
-                  Set_Restriction (SPARK, Pragma_Node);
-                  Restriction_Warnings (SPARK) :=
+               when Name_SPARK | Name_SPARK_05 =>
+                  Set_Restriction (SPARK_05, Pragma_Node);
+                  Restriction_Warnings (SPARK_05) :=
                     Prag_Id = Pragma_Restriction_Warnings;
 
                when others =>
