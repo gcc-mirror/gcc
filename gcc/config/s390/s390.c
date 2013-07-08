@@ -333,9 +333,9 @@ struct GTY (()) s390_frame_layout
   /* Bits standing for floating point registers. Set, if the
      respective register has to be saved. Starting with reg 16 (f0)
      at the rightmost bit.
-     Bit 15 -  8  7  6  5  4  3  2  1  0
-     fpr 15 -  8  7  5  3  1  6  4  2  0
-     reg 31 - 24 23 22 21 20 19 18 17 16  */
+     Bit 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
+     fpr 15 13 11  9 14 12 10  8  7  5  3  1  6  4  2  0
+     reg 31 30 29 28 27 26 25 24 23 22 21 20 19 18 17 16  */
   unsigned int fpr_bitmap;
 
   /* Number of floating point registers f8-f15 which must be saved.  */
@@ -380,9 +380,9 @@ struct GTY(()) machine_function
 #define cfun_gprs_save_area_size ((cfun_frame_layout.last_save_gpr_slot -           \
   cfun_frame_layout.first_save_gpr_slot + 1) * UNITS_PER_LONG)
 #define cfun_set_fpr_save(REGNO) (cfun->machine->frame_layout.fpr_bitmap |=    \
-  (1 << (REGNO - F0_REGNUM)))
+  (1 << (REGNO - FPR0_REGNUM)))
 #define cfun_fpr_save_p(REGNO) (!!(cfun->machine->frame_layout.fpr_bitmap &    \
-  (1 << (REGNO - F0_REGNUM))))
+  (1 << (REGNO - FPR0_REGNUM))))
 
 /* Number of GPRs and FPRs used for argument passing.  */
 #define GP_ARG_NUM_REG 5
@@ -7472,12 +7472,12 @@ s390_frame_area (int *area_bottom, int *area_top)
 
   if (!TARGET_64BIT)
     {
-      if (cfun_fpr_save_p (F4_REGNUM))
+      if (cfun_fpr_save_p (FPR4_REGNUM))
 	{
 	  b = MIN (b, cfun_frame_layout.f4_offset);
 	  t = MAX (t, cfun_frame_layout.f4_offset + 8);
 	}
-      if (cfun_fpr_save_p (F6_REGNUM))
+      if (cfun_fpr_save_p (FPR6_REGNUM))
 	{
 	  b = MIN (b, cfun_frame_layout.f4_offset + 8);
 	  t = MAX (t, cfun_frame_layout.f4_offset + 16);
@@ -7509,7 +7509,7 @@ s390_register_info (int clobbered_regs[])
       cfun_frame_layout.fpr_bitmap = 0;
       cfun_frame_layout.high_fprs = 0;
       if (TARGET_64BIT)
-	for (i = F8_REGNUM; i <= F15_REGNUM; i++)
+	for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
 	  /* During reload we have to use the df_regs_ever_live infos
 	     since reload is marking FPRs used as spill slots there as
 	     live before actually making the code changes.  Without
@@ -7648,16 +7648,16 @@ s390_register_info (int clobbered_regs[])
 	    min_fpr = 0;
 
 	  for (i = min_fpr; i < max_fpr; i++)
-	    cfun_set_fpr_save (i + F0_REGNUM);
+	    cfun_set_fpr_save (i + FPR0_REGNUM);
 	}
     }
 
   if (!TARGET_64BIT)
     {
-      if (df_regs_ever_live_p (F4_REGNUM) && !global_regs[F4_REGNUM])
-	cfun_set_fpr_save (F4_REGNUM);
-      if (df_regs_ever_live_p (F6_REGNUM) && !global_regs[F6_REGNUM])
-	cfun_set_fpr_save (F6_REGNUM);
+      if (df_regs_ever_live_p (FPR4_REGNUM) && !global_regs[FPR4_REGNUM])
+	cfun_set_fpr_save (FPR4_REGNUM);
+      if (df_regs_ever_live_p (FPR6_REGNUM) && !global_regs[FPR6_REGNUM])
+	cfun_set_fpr_save (FPR6_REGNUM);
     }
 }
 
@@ -7694,13 +7694,13 @@ s390_frame_info (void)
 	{
 	  cfun_frame_layout.f4_offset
 	    = (cfun_frame_layout.gprs_offset
-	       - 8 * (cfun_fpr_save_p (F4_REGNUM)
-		      + cfun_fpr_save_p (F6_REGNUM)));
+	       - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
+		      + cfun_fpr_save_p (FPR6_REGNUM)));
 
 	  cfun_frame_layout.f0_offset
 	    = (cfun_frame_layout.f4_offset
-	       - 8 * (cfun_fpr_save_p (F0_REGNUM)
-		      + cfun_fpr_save_p (F2_REGNUM)));
+	       - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
+		      + cfun_fpr_save_p (FPR2_REGNUM)));
 	}
       else
 	{
@@ -7709,26 +7709,26 @@ s390_frame_info (void)
 	  cfun_frame_layout.f0_offset
 	    = ((cfun_frame_layout.gprs_offset
 		& ~(STACK_BOUNDARY / BITS_PER_UNIT - 1))
-	       - 8 * (cfun_fpr_save_p (F0_REGNUM)
-		      + cfun_fpr_save_p (F2_REGNUM)));
+	       - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
+		      + cfun_fpr_save_p (FPR2_REGNUM)));
 
 	  cfun_frame_layout.f4_offset
 	    = (cfun_frame_layout.f0_offset
-	       - 8 * (cfun_fpr_save_p (F4_REGNUM)
-		      + cfun_fpr_save_p (F6_REGNUM)));
+	       - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
+		      + cfun_fpr_save_p (FPR6_REGNUM)));
 	}
     }
   else /* no backchain */
     {
       cfun_frame_layout.f4_offset
 	= (STACK_POINTER_OFFSET
-	   - 8 * (cfun_fpr_save_p (F4_REGNUM)
-		  + cfun_fpr_save_p (F6_REGNUM)));
+	   - 8 * (cfun_fpr_save_p (FPR4_REGNUM)
+		  + cfun_fpr_save_p (FPR6_REGNUM)));
 
       cfun_frame_layout.f0_offset
 	= (cfun_frame_layout.f4_offset
-	   - 8 * (cfun_fpr_save_p (F0_REGNUM)
-		  + cfun_fpr_save_p (F2_REGNUM)));
+	   - 8 * (cfun_fpr_save_p (FPR0_REGNUM)
+		  + cfun_fpr_save_p (FPR2_REGNUM)));
 
       cfun_frame_layout.gprs_offset
 	= cfun_frame_layout.f0_offset - cfun_gprs_save_area_size;
@@ -7760,7 +7760,7 @@ s390_frame_info (void)
 
       cfun_frame_layout.frame_size += cfun_frame_layout.high_fprs * 8;
 
-      for (i = F0_REGNUM; i <= F7_REGNUM; i++)
+      for (i = FPR0_REGNUM; i <= FPR7_REGNUM; i++)
 	if (cfun_fpr_save_p (i))
 	  cfun_frame_layout.frame_size += 8;
 
@@ -8466,7 +8466,7 @@ s390_emit_prologue (void)
   offset = cfun_frame_layout.f0_offset;
 
   /* Save f0 and f2.  */
-  for (i = F0_REGNUM; i <= F0_REGNUM + 1; i++)
+  for (i = FPR0_REGNUM; i <= FPR0_REGNUM + 1; i++)
     {
       if (cfun_fpr_save_p (i))
 	{
@@ -8479,7 +8479,7 @@ s390_emit_prologue (void)
 
   /* Save f4 and f6.  */
   offset = cfun_frame_layout.f4_offset;
-  for (i = F4_REGNUM; i <= F4_REGNUM + 1; i++)
+  for (i = FPR4_REGNUM; i <= FPR4_REGNUM + 1; i++)
     {
       if (cfun_fpr_save_p (i))
 	{
@@ -8502,7 +8502,7 @@ s390_emit_prologue (void)
       offset = (cfun_frame_layout.f8_offset
 		+ (cfun_frame_layout.high_fprs - 1) * 8);
 
-      for (i = F15_REGNUM; i >= F8_REGNUM && offset >= 0; i--)
+      for (i = FPR15_REGNUM; i >= FPR8_REGNUM && offset >= 0; i--)
 	if (cfun_fpr_save_p (i))
 	  {
 	    insn = save_fpr (stack_pointer_rtx, offset, i);
@@ -8515,7 +8515,7 @@ s390_emit_prologue (void)
     }
 
   if (!TARGET_PACKED_STACK)
-    next_fpr = cfun_save_high_fprs_p ? F15_REGNUM : 0;
+    next_fpr = cfun_save_high_fprs_p ? FPR15_REGNUM : 0;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun_frame_layout.frame_size;
@@ -8660,7 +8660,7 @@ s390_emit_prologue (void)
 
       offset = 0;
 
-      for (i = F8_REGNUM; i <= next_fpr; i++)
+      for (i = FPR8_REGNUM; i <= next_fpr; i++)
 	if (cfun_fpr_save_p (i))
 	  {
 	    rtx addr = plus_constant (Pmode, stack_pointer_rtx,
@@ -8790,7 +8790,7 @@ s390_emit_epilogue (bool sibcall)
       if (cfun_save_high_fprs_p)
 	{
 	  next_offset = cfun_frame_layout.f8_offset;
-	  for (i = F8_REGNUM; i <= F15_REGNUM; i++)
+	  for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
 	    {
 	      if (cfun_fpr_save_p (i))
 		{
@@ -8809,7 +8809,7 @@ s390_emit_epilogue (bool sibcall)
     {
       next_offset = cfun_frame_layout.f4_offset;
       /* f4, f6 */
-      for (i = F4_REGNUM; i <= F4_REGNUM + 1; i++)
+      for (i = FPR4_REGNUM; i <= FPR4_REGNUM + 1; i++)
 	{
 	  if (cfun_fpr_save_p (i))
 	    {
@@ -10518,18 +10518,18 @@ s390_conditional_register_usage (void)
     }
   if (TARGET_64BIT)
     {
-      for (i = F8_REGNUM; i <= F15_REGNUM; i++)
+      for (i = FPR8_REGNUM; i <= FPR15_REGNUM; i++)
 	call_used_regs[i] = call_really_used_regs[i] = 0;
     }
   else
     {
-      call_used_regs[F4_REGNUM] = call_really_used_regs[F4_REGNUM] = 0;
-      call_used_regs[F6_REGNUM] = call_really_used_regs[F6_REGNUM] = 0;
+      call_used_regs[FPR4_REGNUM] = call_really_used_regs[FPR4_REGNUM] = 0;
+      call_used_regs[FPR6_REGNUM] = call_really_used_regs[FPR6_REGNUM] = 0;
     }
 
   if (TARGET_SOFT_FLOAT)
     {
-      for (i = F0_REGNUM; i <= F15_REGNUM; i++)
+      for (i = FPR0_REGNUM; i <= FPR15_REGNUM; i++)
 	call_used_regs[i] = fixed_regs[i] = 1;
     }
 }
