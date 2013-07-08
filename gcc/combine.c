@@ -13580,14 +13580,17 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 		  && hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))] > 1)
 		{
 		  unsigned int endregno = END_HARD_REGNO (XEXP (note, 0));
-		  int all_used = 1;
+		  bool all_used = true;
 		  unsigned int i;
 
 		  for (i = regno; i < endregno; i++)
 		    if ((! refers_to_regno_p (i, i + 1, PATTERN (place), 0)
 			 && ! find_regno_fusage (place, USE, i))
 			|| dead_or_set_regno_p (place, i))
-		      all_used = 0;
+		      {
+			all_used = false;
+			break;
+		      }
 
 		  if (! all_used)
 		    {
@@ -13631,7 +13634,6 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 				    break;
 				  }
 			      }
-
 			}
 
 		      place = 0;

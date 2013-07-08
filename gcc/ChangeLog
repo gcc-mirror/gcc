@@ -1,3 +1,9 @@
+2013-07-08  Po-Chun Chang  <pchang9@cs.wisc.edu>
+
+	PR rtl-optimization/57786
+	* combine.c (distribute_notes) <case REG_DEAD>: Change all_used to bool
+	and break out of the loop when it is set to false.
+
 2013-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57819
