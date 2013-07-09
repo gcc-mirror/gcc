@@ -5637,6 +5637,7 @@ extern void resume_deferring_access_checks	(void);
 extern void stop_deferring_access_checks	(void);
 extern void pop_deferring_access_checks		(void);
 extern vec<deferred_access_check, va_gc> *get_deferred_access_checks (void);
+extern void reopen_deferring_access_checks (vec<deferred_access_check, va_gc> *);
 extern void pop_to_parent_deferring_access_checks (void);
 extern bool perform_access_checks (vec<deferred_access_check, va_gc> *,
 				   tsubst_flags_t);
