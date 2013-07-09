@@ -1,5 +1,8 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57471
+	* parser.c (cp_parser_sizeof_pack): Clear parser scopes.
+
 	PR c++/57658
 	* semantics.c (finish_id_expression): Return the id for an
 	unevaluated outer variable.
