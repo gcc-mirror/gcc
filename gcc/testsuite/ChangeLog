@@ -1,3 +1,8 @@
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53000
+	* g++.dg/cpp0x/decltype17.C: Adjust.
+
 2013-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51786
