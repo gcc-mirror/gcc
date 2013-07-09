@@ -4641,10 +4641,11 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
   /* [expr.cond]
 
-     If the second and third operands are lvalues and have the same
-     type, the result is of that type and is an lvalue.  */
-  if (real_lvalue_p (arg2)
-      && real_lvalue_p (arg3)
+     If the second and third operands are glvalues of the same value
+     category and have the same type, the result is of that type and
+     value category.  */
+  if (((real_lvalue_p (arg2) && real_lvalue_p (arg3))
+       || (xvalue_p (arg2) && xvalue_p (arg3)))
       && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
