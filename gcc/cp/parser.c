@@ -16986,6 +16986,11 @@ cp_parser_ref_qualifier_seq_opt (cp_parser* parser)
 {
   cp_ref_qualifier ref_qual = REF_QUAL_NONE;
   cp_token *token = cp_lexer_peek_token (parser->lexer);
+
+  /* Don't try to parse bitwise '&' as a ref-qualifier (c++/57532).  */
+  if (cxx_dialect < cxx11 && cp_parser_parsing_tentatively (parser))
+    return ref_qual;
+
   switch (token->type)
     {
     case CPP_AND:
