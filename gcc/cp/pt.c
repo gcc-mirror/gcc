@@ -5620,6 +5620,10 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	  else
 	    return NULL_TREE;
 	}
+
+      /* Avoid typedef problems.  */
+      if (TREE_TYPE (expr) != type)
+	expr = fold_convert (type, expr);
     }
   /* [temp.arg.nontype]/5, bullet 2
 

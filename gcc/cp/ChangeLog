@@ -1,5 +1,9 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57545
+	* pt.c (convert_nontype_argument) [INTEGER_CST]: Force the
+	argument to have the exact type of the parameter.
+
 	PR c++/57551
 	* semantics.c (cxx_eval_indirect_ref): Don't try to look through
 	a POINTER_PLUS_EXPR for type punning diagnostic.
