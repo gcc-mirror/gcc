@@ -9177,7 +9177,7 @@ lambda_capture_field_type (tree expr, bool explicit_init_p)
     }
   else
     type = non_reference (unlowered_expr_type (expr));
-  if (!type || WILDCARD_TYPE_P (type))
+  if (!type || WILDCARD_TYPE_P (type) || type_uses_auto (type))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
