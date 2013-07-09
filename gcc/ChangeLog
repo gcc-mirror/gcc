@@ -1,3 +1,8 @@
+2013-07-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Only
+	adjust register size for TDmode and TFmode for VSX registers.
+
 2013-07-08  Kai Tietz  <ktietz@redhat.com>
 
 	PR target/56892
