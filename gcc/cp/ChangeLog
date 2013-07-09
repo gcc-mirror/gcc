@@ -1,5 +1,9 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57437
+	* typeck.c (check_return_expr): Lambda proxies aren't eligible
+	for nrv or return by move.
+
 	PR c++/57532
 	* parser.c (cp_parser_ref_qualifier_opt): Don't tentatively parse
 	a ref-qualifier in C++98 mode.
