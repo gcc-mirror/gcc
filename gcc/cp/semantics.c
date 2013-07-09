@@ -7197,7 +7197,9 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
     return t;
   /* Don't VERIFY_CONSTANT here; we only want to check that we got a
      CONSTRUCTOR.  */
-  if (!*non_constant_p && TREE_CODE (whole) != CONSTRUCTOR)
+  if (!*non_constant_p
+      && TREE_CODE (whole) != VECTOR_CST
+      && TREE_CODE (whole) != CONSTRUCTOR)
     {
       if (!allow_non_constant)
 	error ("%qE is not a constant expression", orig_whole);
@@ -7205,6 +7207,10 @@ cxx_eval_bit_field_ref (const constexpr_call *call, tree t,
     }
   if (*non_constant_p)
     return t;
+
+  if (TREE_CODE (whole) == VECTOR_CST)
+    return fold_ternary (BIT_FIELD_REF, TREE_TYPE (t), whole,
+			 TREE_OPERAND (t, 1), TREE_OPERAND (t, 2));
 
   start = TREE_OPERAND (t, 2);
   istart = tree_low_cst (start, 0);

@@ -1,5 +1,11 @@
 2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/53094
+	* g++.dg/cpp0x/constexpr-53094-1.C: Adjust.
+	* g++.dg/ext/vector24.C: New testcase.
+
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR c++/53000
 	* g++.dg/cpp0x/decltype17.C: Adjust.
 

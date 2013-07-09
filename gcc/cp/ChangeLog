@@ -1,5 +1,10 @@
 2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
 
+	PR c++/53094
+	* semantics.c (cxx_eval_bit_field_ref): Handle VECTOR_CST.
+
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR c++/53000
 	* call.c (build_conditional_expr_1): Preserve xvalues.
 
