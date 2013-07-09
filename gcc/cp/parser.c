@@ -17374,6 +17374,10 @@ cp_parser_ref_qualifier_opt (cp_parser* parser)
 {
   cp_ref_qualifier ref_qual = REF_QUAL_NONE;
 
+  /* Don't try to parse bitwise '&' as a ref-qualifier (c++/57532).  */
+  if (cxx_dialect < cxx11 && cp_parser_parsing_tentatively (parser))
+    return ref_qual;
+
   while (true)
     {
       cp_ref_qualifier curr_ref_qual = REF_QUAL_NONE;

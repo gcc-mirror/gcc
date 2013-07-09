@@ -1,5 +1,9 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57532
+	* parser.c (cp_parser_ref_qualifier_opt): Don't tentatively parse
+	a ref-qualifier in C++98 mode.
+
 	PR c++/57545
 	* pt.c (convert_nontype_argument) [INTEGER_CST]: Force the
 	argument to have the exact type of the parameter.
