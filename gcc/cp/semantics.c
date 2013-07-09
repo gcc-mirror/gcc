@@ -155,6 +155,17 @@ push_deferring_access_checks (deferring_kind deferring)
     }
 }
 
+/* Save the current deferred access states and start deferred access
+   checking, continuing the set of deferred checks in CHECKS.  */
+
+void
+reopen_deferring_access_checks (vec<deferred_access_check, va_gc> * checks)
+{
+  push_deferring_access_checks (dk_deferred);
+  if (!deferred_access_no_check)
+    deferred_access_stack->last().deferred_access_checks = checks;
+}
+
 /* Resume deferring access checks again after we stopped doing
    this previously.  */
 

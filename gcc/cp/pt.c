@@ -138,6 +138,7 @@ static int maybe_adjust_types_for_deduction (unification_kind_t, tree*, tree*,
 					     tree);
 static int type_unification_real (tree, tree, tree, const tree *,
 				  unsigned int, int, unification_kind_t, int,
+				  vec<deferred_access_check, va_gc> **,
 				  bool);
 static void note_template_header (int);
 static tree convert_nontype_argument_function (tree, tree);
@@ -14974,7 +14975,6 @@ fn_type_unification (tree fn,
     return error_mark_node;
   tinst = build_tree_list (fn, NULL_TREE);
   ++deduction_depth;
-  push_deferring_access_checks (dk_deferred);
 
   gcc_assert (TREE_CODE (fn) == TEMPLATE_DECL);
 
@@ -15066,20 +15066,19 @@ fn_type_unification (tree fn,
 	}
       processing_template_decl += incomplete;
       input_location = DECL_SOURCE_LOCATION (fn);
+      /* Ignore any access checks; we'll see them again in
+	 instantiate_template and they might have the wrong
+	 access path at this point.  */
+      push_deferring_access_checks (dk_deferred);
       fntype = tsubst (TREE_TYPE (fn), explicit_targs,
 		       complain | tf_partial, NULL_TREE);
+      pop_deferring_access_checks ();
       input_location = loc;
       processing_template_decl -= incomplete;
       pop_tinst_level ();
 
       if (fntype == error_mark_node)
 	goto fail;
-
-      /* Throw away these access checks; we'll see them again in
-	 instantiate_template and they might have the wrong
-	 access path at this point.  */
-      pop_deferring_access_checks ();
-      push_deferring_access_checks (dk_deferred);
 
       /* Place the explicitly specified arguments in TARGS.  */
       for (i = NUM_TMPL_ARGS (explicit_targs); i--;)
@@ -15106,9 +15105,15 @@ fn_type_unification (tree fn,
      callers must be ready to deal with unification failures in any
      event.  */
 
+  /* type_unification_real will pass back any access checks from default
+     template argument substitution.  */
+  vec<deferred_access_check, va_gc> *checks;
+  checks = NULL;
+
   ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 			       targs, parms, args, nargs, /*subr=*/0,
-			       strict, flags, explain_p);
+			       strict, flags, &checks, explain_p);
+
   if (!ok)
     goto fail;
 
@@ -15155,16 +15160,23 @@ fn_type_unification (tree fn,
       excessive_deduction_depth = true;
       goto fail;
     }
+
+  /* Also collect access checks from the instantiation.  */
+  reopen_deferring_access_checks (checks);
+
   decl = instantiate_template (fn, targs, complain);
+
+  checks = get_deferred_access_checks ();
+  pop_deferring_access_checks ();
+
   pop_tinst_level ();
 
   if (decl == error_mark_node)
     goto fail;
 
-  /* Now perform any access checks encountered during deduction, such as
-     for default template arguments.  */
+  /* Now perform any access checks encountered during substitution.  */
   push_access_scope (decl);
-  ok = perform_deferred_access_checks (complain);
+  ok = perform_access_checks (checks, complain);
   pop_access_scope (decl);
   if (!ok)
     goto fail;
@@ -15193,7 +15205,6 @@ fn_type_unification (tree fn,
   r = decl;
 
  fail:
-  pop_deferring_access_checks ();
   --deduction_depth;
   if (excessive_deduction_depth)
     {
@@ -15454,7 +15465,10 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 
    If SUBR is 1, we're being called recursively (to unify the
    arguments of a function or method parameter of a function
-   template). */
+   template).
+
+   CHECKS is a pointer to a vector of access checks encountered while
+   substituting default template arguments.  */
 
 static int
 type_unification_real (tree tparms,
@@ -15465,6 +15479,7 @@ type_unification_real (tree tparms,
 		       int subr,
 		       unification_kind_t strict,
 		       int flags,
+		       vec<deferred_access_check, va_gc> **checks,
 		       bool explain_p)
 {
   tree parm, arg;
@@ -15604,6 +15619,7 @@ type_unification_real (tree tparms,
 	    {
 	      tree parm = TREE_VALUE (TREE_VEC_ELT (tparms, i));
 	      tree arg = TREE_PURPOSE (TREE_VEC_ELT (tparms, i));
+	      reopen_deferring_access_checks (*checks);
 	      location_t save_loc = input_location;
 	      if (DECL_P (parm))
 		input_location = DECL_SOURCE_LOCATION (parm);
@@ -15611,6 +15627,8 @@ type_unification_real (tree tparms,
 	      arg = convert_template_argument (parm, arg, targs, complain,
 					       i, NULL_TREE);
 	      input_location = save_loc;
+	      *checks = get_deferred_access_checks ();
+	      pop_deferring_access_checks ();
 	      if (arg == error_mark_node)
 		return 1;
 	      else
@@ -17078,7 +17096,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
 
 	return type_unification_real (tparms, targs, TYPE_ARG_TYPES (parm),
 				      args, nargs, 1, DEDUCE_EXACT,
-				      LOOKUP_NORMAL, explain_p);
+				      LOOKUP_NORMAL, NULL, explain_p);
       }
 
     case OFFSET_TYPE:
@@ -20649,7 +20667,7 @@ do_auto_deduction (tree type, tree init, tree auto_node)
     = build_tree_list (NULL_TREE, TYPE_NAME (auto_node));
   val = type_unification_real (tparms, targs, parms, args, 1, 0,
 			       DEDUCE_CALL, LOOKUP_NORMAL,
-			       /*explain_p=*/false);
+			       NULL, /*explain_p=*/false);
   if (val > 0)
     {
       if (processing_template_decl)
