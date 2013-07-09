@@ -1,3 +1,8 @@
+2013-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57831
+	* pt.c (tsubst_copy): Handle USING_DECL.
+
 2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR c++/53094

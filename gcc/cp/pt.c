@@ -12552,6 +12552,9 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TYPE_DECL:
       return tsubst (t, args, complain, in_decl);
 
+    case USING_DECL:
+      t = DECL_NAME (t);
+      /* Fall through.  */
     case IDENTIFIER_NODE:
       if (IDENTIFIER_TYPENAME_P (t))
 	{
