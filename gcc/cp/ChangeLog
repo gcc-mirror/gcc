@@ -1,5 +1,9 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57658
+	* semantics.c (finish_id_expression): Return the id for an
+	unevaluated outer variable.
+
 	PR c++/57526
 	* semantics.c (lambda_capture_field_type): Build a DECLTYPE_TYPE
 	if the variable type uses 'auto'.
