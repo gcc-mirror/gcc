@@ -1,3 +1,9 @@
+2013-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51786
+	* parser.c (cp_parser_simple_declaration): Before calling shadow_tag
+	also check declares_class_or_enum.
+
 2013-07-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57550
