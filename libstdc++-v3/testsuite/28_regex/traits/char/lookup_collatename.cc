@@ -1,4 +1,4 @@
-// { dg-do run { xfail *-*-* } }
+// { dg-do run }
 // { dg-options "-std=c++0x" }
 
 //

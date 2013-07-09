@@ -1,3 +1,18 @@
+2013-07-09  Tim Shen  <timshen91@gmail.com>
+
+	Implement class regex_traits.
+	* include/bits/regex.h: Implement lookup_classname and
+	lookup_collatename; modify isctype; partially implement
+	transform_primary.
+	* testsuite/28_regex/traits/char/isctype.cc: Add more test cases.
+	* testsuite/28_regex/traits/char/lookup_classname.cc: Likewise.
+	* testsuite/28_regex/traits/char/lookup_collatename.cc: Likewise.
+	* testsuite/28_regex/traits/char/transform_primary.cc: Likewise.
+	* testsuite/28_regex/traits/wchar_t/isctype.cc: New.
+	* testsuite/28_regex/traits/wchar_t/lookup_classname.cc: New.
+	* testsuite/28_regex/traits/wchar_t/lookup_collatename.cc: New.
+	* testsuite/28_regex/traits/wchar_t/transform_primary.cc: New.
+
 2013-07-07  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* doc/xml/manual/status_cxx2014.xml: Add links for papers.
