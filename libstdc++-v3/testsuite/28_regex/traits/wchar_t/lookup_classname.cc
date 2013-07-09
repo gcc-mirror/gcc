@@ -1,9 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=c++0x" }
 
-//
-// 2010-06-23  Stephen M. Webb <stephen.webb@bregmasoft.ca>
-//
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,23 +29,25 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef char CharT;
+  typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 
-	char n1[] = "lower";
-	char n2[] = "alpha";
-	traits t;
+  wchar_t n1[] = L"lower";
+  wchar_t n2[] = L"alpha";
+  traits t;
 
-  traits::char_class_type c1 = t.lookup_classname(n1, n1+sizeof(n1)-1);
+#define range(s) s, s+sizeof(s)/sizeof(s[0])-1
+  traits::char_class_type c1 = t.lookup_classname(range(n1));
   VERIFY( c1 != 0 );
 
-  traits::char_class_type c2 = t.lookup_classname(n1, n1+sizeof(n1)-1, true);
-  traits::char_class_type c3 = t.lookup_classname(n2, n2+sizeof(n2)-1, true);
-	VERIFY( c2 == c3 );
+  traits::char_class_type c2 = t.lookup_classname(range(n1), true);
+  traits::char_class_type c3 = t.lookup_classname(range(n2), true);
+  VERIFY( c2 == c3 );
+#undef range
 }
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

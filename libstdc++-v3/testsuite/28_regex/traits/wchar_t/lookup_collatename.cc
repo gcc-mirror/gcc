@@ -2,8 +2,6 @@
 // { dg-options "-std=c++0x" }
 
 //
-// 2010-06-23  Stephen M. Webb <stephen.webb@bregmasoft.ca>
-//
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -22,8 +20,8 @@
 // <http://www.gnu.org/licenses/>.
 
 // 28.3 Requirements [re.req]
-// 28.2(4) Table 127 - Regular expression traits class requirements
-// 28.7(9) Class template regex_traits [re.traits]
+// 28.2 (4) Table 127 - Regular expression traits class requirements
+// 28.7 (8) Class template regex_traits [re.traits]
 
 #include <regex>
 #include <testsuite_hooks.h>
@@ -32,19 +30,16 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef char CharT;
+  typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 
-	char n1[] = "lower";
-	char n2[] = "alpha";
+	wchar_t name[] = L"ll";
 	traits t;
 
-  traits::char_class_type c1 = t.lookup_classname(n1, n1+sizeof(n1)-1);
-  VERIFY( c1 != 0 );
+	traits::string_type sname =
+          t.lookup_collatename(name, name+sizeof(name)/sizeof(*name)-1);
 
-  traits::char_class_type c2 = t.lookup_classname(n1, n1+sizeof(n1)-1, true);
-  traits::char_class_type c3 = t.lookup_classname(n2, n2+sizeof(n2)-1, true);
-	VERIFY( c2 == c3 );
+  VERIFY( !sname.empty() );
 }
 
 int main()

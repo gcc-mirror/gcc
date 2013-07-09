@@ -1,9 +1,6 @@
 // { dg-do run }
 // { dg-options "-std=c++0x" }
 
-//
-// 2010-06-23  Stephen M. Webb <stephen.webb@bregmasoft.ca>
-//
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -32,35 +29,35 @@ void
 test01()
 {
   bool test __attribute__((unused)) = true;
-  typedef char CharT;
+  typedef wchar_t CharT;
   typedef std::regex_traits<CharT> traits;
 
-  const CharT lower[]   = "lOWer";
-  const CharT upper[]   = "UPPER";
-  const CharT nothing[] = "nothing";
-  const CharT word[]    = "w";
-  const CharT blank[]   = "blank";
-  const CharT digit[]   = "digit";
+  const CharT lower[]   = L"lOWer";
+  const CharT upper[]   = L"UPPER";
+  const CharT nothing[] = L"nothing";
+  const CharT word[]    = L"w";
+  const CharT blank[]   = L"blank";
+  const CharT digit[]   = L"digit";
   traits t;
 
 #define range(s) s, s+sizeof(s)/sizeof(s[0])-1
-  VERIFY( t.isctype('_', t.lookup_classname(range(word))));
-  VERIFY( t.isctype('A', t.lookup_classname(range(word))));
-  VERIFY(!t.isctype('~', t.lookup_classname(range(word))));
-  VERIFY(!t.isctype('e', t.lookup_classname(range(upper))));
-  VERIFY( t.isctype('e', t.lookup_classname(range(lower))));
-  VERIFY(!t.isctype('e', t.lookup_classname(range(nothing))));
-  VERIFY(!t.isctype('_', t.lookup_classname(range(digit))));
-  VERIFY( t.isctype(' ', t.lookup_classname(range(blank))));
-  VERIFY( t.isctype('\t', t.lookup_classname(range(blank))));
-  VERIFY(!t.isctype('\n', t.lookup_classname(range(blank))));
-  VERIFY( t.isctype('t', t.lookup_classname(range(upper), true)));
-  VERIFY( t.isctype('T', t.lookup_classname(range(lower), true)));
+  VERIFY( t.isctype(L'_', t.lookup_classname(range(word))));
+  VERIFY( t.isctype(L'A', t.lookup_classname(range(word))));
+  VERIFY(!t.isctype(L'~', t.lookup_classname(range(word))));
+  VERIFY(!t.isctype(L'e', t.lookup_classname(range(upper))));
+  VERIFY( t.isctype(L'e', t.lookup_classname(range(lower))));
+  VERIFY(!t.isctype(L'e', t.lookup_classname(range(nothing))));
+  VERIFY(!t.isctype(L'_', t.lookup_classname(range(digit))));
+  VERIFY( t.isctype(L' ', t.lookup_classname(range(blank))));
+  VERIFY( t.isctype(L'\t', t.lookup_classname(range(blank))));
+  VERIFY(!t.isctype(L'\n', t.lookup_classname(range(blank))));
+  VERIFY( t.isctype(L't', t.lookup_classname(range(upper), true)));
+  VERIFY( t.isctype(L'T', t.lookup_classname(range(lower), true)));
 #undef range
 }
 
 int main()
 {
-	test01();
-	return 0;
+  test01();
+  return 0;
 }

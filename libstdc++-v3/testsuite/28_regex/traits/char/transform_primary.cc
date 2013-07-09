@@ -1,5 +1,5 @@
 // { dg-options "-std=c++0x" }
-// { dg-do run { xfail *-*-* } }
+// { dg-do run }
 
 //
 // 2010-02-17  Stephen M. Webb <stephen.webb@bregmasoft.ca>
@@ -42,10 +42,12 @@ test01()
 	traits::string_type J = "ABC";
 
   VERIFY( G < H );
-  VERIFY( t.transform_primary(G.begin(), G.end()) < t.transform_primary(H.begin(), H.end()) ); 
+  VERIFY( t.transform_primary(G.begin(), G.end())
+          < t.transform_primary(H.begin(), H.end()) );
 
-  VERIFY( G == H );
-  VERIFY( t.transform_primary(G.begin(), G.end()) == t.transform_primary(J.begin(), J.end()) );
+  VERIFY( G > J );
+  VERIFY( t.transform_primary(G.begin(), G.end())
+          == t.transform_primary(J.begin(), J.end()) );
 }
 
 int main()

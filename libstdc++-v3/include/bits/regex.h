@@ -54,7 +54,74 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Ch_type                     	char_type;
       typedef std::basic_string<char_type> 	string_type;
       typedef std::locale                  	locale_type;
-      typedef std::ctype_base::mask        	char_class_type;
+    private:
+      struct _RegexMask
+        {
+          typedef typename std::ctype<char_type>::mask _BaseType;
+          _BaseType _M_base;
+          unsigned char _M_extended;
+          static constexpr unsigned char _S_under = 1 << 0;
+          // _S_blank should be removed in the future, when locale's complete.
+          static constexpr unsigned char _S_blank = 1 << 1;
+          static constexpr unsigned char _S_valid_mask = 0x3;
+
+          constexpr _RegexMask(_BaseType __base = 0,
+                               unsigned char __extended = 0)
+          : _M_base(__base), _M_extended(__extended)
+          { }
+
+          constexpr _RegexMask
+          operator&(_RegexMask __other) const
+          {
+            return _RegexMask(_M_base & __other._M_base,
+                              _M_extended & __other._M_extended);
+          }
+
+          constexpr _RegexMask
+          operator|(_RegexMask __other) const
+          {
+            return _RegexMask(_M_base | __other._M_base,
+                              _M_extended | __other._M_extended);
+          }
+
+          constexpr _RegexMask
+          operator^(_RegexMask __other) const
+          {
+            return _RegexMask(_M_base ^ __other._M_base,
+                              _M_extended ^ __other._M_extended);
+          }
+
+          constexpr _RegexMask
+          operator~() const
+          { return _RegexMask(~_M_base, ~_M_extended); }
+
+          constexpr _RegexMask&
+          operator&=(_RegexMask __other)
+          { return *this = (*this) & __other; }
+
+          constexpr _RegexMask&
+          operator|=(_RegexMask __other)
+          { return *this = (*this) | __other; }
+
+          constexpr _RegexMask&
+          operator^=(_RegexMask __other)
+          { return *this = (*this) ^ __other; }
+
+          constexpr bool
+          operator==(_RegexMask __other) const
+          {
+            return (_M_extended & _S_valid_mask)
+                   == (__other._M_extended & _S_valid_mask)
+                     && _M_base == __other._M_base;
+          }
+
+          constexpr bool
+          operator!=(_RegexMask __other) const
+          { return !((*this) == __other); }
+
+        };
+    public:
+      typedef _RegexMask char_class_type;
 
     public:
       /**
@@ -151,7 +218,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Fwd_iter>
         string_type
         transform_primary(_Fwd_iter __first, _Fwd_iter __last) const
-        { return string_type(); }
+        {
+          __try
+            {
+              typedef std::ctype<char_type> __ctype_type;
+              const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
+              std::vector<char_type> __v(__first, __last);
+              // FIXME : this is not entirely correct
+              __fctyp.tolower(&*__v.begin(), &*__v.end());
+              return this->transform(&*__v.begin(), &*__v.end());
+            }
+          __catch (...)
+            {
+            }
+          return string_type();
+        }
 
       /**
        * @brief Gets a collation element by name.
@@ -163,13 +244,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * collating element consisting of the character sequence designated by
        * the iterator range [__first, __last). Returns an empty string if the
        * character sequence is not a valid collating element.
-       *
-       * @todo Implement this function.
        */
       template<typename _Fwd_iter>
         string_type
-        lookup_collatename(_Fwd_iter __first, _Fwd_iter __last) const
-        { return string_type(); }
+        lookup_collatename(_Fwd_iter __first, _Fwd_iter __last) const;
 
       /**
        * @brief Maps one or more characters to a named character
@@ -207,14 +285,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * - space
        * - upper
        * - xdigit
-       *
-       * @todo Implement this function.
        */
       template<typename _Fwd_iter>
         char_class_type
         lookup_classname(_Fwd_iter __first, _Fwd_iter __last,
-	                 bool __icase = false) const
-	{ return 0; }
+                         bool __icase = false) const;
 
       /**
        * @brief Determines if @p c is a member of an identified class.
@@ -275,6 +350,245 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   template<typename _Ch_type>
+  template<typename _Fwd_iter>
+    typename regex_traits<_Ch_type>::string_type
+    regex_traits<_Ch_type>::
+    lookup_collatename(_Fwd_iter __first, _Fwd_iter __last) const
+    {
+      typedef std::ctype<char_type> __ctype_type;
+      const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
+
+      static const char* __collatenames[] =
+        {
+          "NUL",
+          "SOH",
+          "STX",
+          "ETX",
+          "EOT",
+          "ENQ",
+          "ACK",
+          "alert",
+          "backspace",
+          "tab",
+          "newline",
+          "vertical-tab",
+          "form-feed",
+          "carriage-return",
+          "SO",
+          "SI",
+          "DLE",
+          "DC1",
+          "DC2",
+          "DC3",
+          "DC4",
+          "NAK",
+          "SYN",
+          "ETB",
+          "CAN",
+          "EM",
+          "SUB",
+          "ESC",
+          "IS4",
+          "IS3",
+          "IS2",
+          "IS1",
+          "space",
+          "exclamation-mark",
+          "quotation-mark",
+          "number-sign",
+          "dollar-sign",
+          "percent-sign",
+          "ampersand",
+          "apostrophe",
+          "left-parenthesis",
+          "right-parenthesis",
+          "asterisk",
+          "plus-sign",
+          "comma",
+          "hyphen",
+          "period",
+          "slash",
+          "zero",
+          "one",
+          "two",
+          "three",
+          "four",
+          "five",
+          "six",
+          "seven",
+          "eight",
+          "nine",
+          "colon",
+          "semicolon",
+          "less-than-sign",
+          "equals-sign",
+          "greater-than-sign",
+          "question-mark",
+          "commercial-at",
+          "A",
+          "B",
+          "C",
+          "D",
+          "E",
+          "F",
+          "G",
+          "H",
+          "I",
+          "J",
+          "K",
+          "L",
+          "M",
+          "N",
+          "O",
+          "P",
+          "Q",
+          "R",
+          "S",
+          "T",
+          "U",
+          "V",
+          "W",
+          "X",
+          "Y",
+          "Z",
+          "left-square-bracket",
+          "backslash",
+          "right-square-bracket",
+          "circumflex",
+          "underscore",
+          "grave-accent",
+          "a",
+          "b",
+          "c",
+          "d",
+          "e",
+          "f",
+          "g",
+          "h",
+          "i",
+          "j",
+          "k",
+          "l",
+          "m",
+          "n",
+          "o",
+          "p",
+          "q",
+          "r",
+          "s",
+          "t",
+          "u",
+          "v",
+          "w",
+          "x",
+          "y",
+          "z",
+          "left-curly-bracket",
+          "vertical-line",
+          "right-curly-bracket",
+          "tilde",
+          "DEL",
+          ""
+        };
+
+      // same as boost
+      static const char* __digraphs[] =
+        {
+          "ae",
+          "Ae",
+          "AE",
+          "ch",
+          "Ch",
+          "CH",
+          "ll",
+          "Ll",
+          "LL",
+          "ss",
+          "Ss",
+          "SS",
+          "nj",
+          "Nj",
+          "NJ",
+          "dz",
+          "Dz",
+          "DZ",
+          "lj",
+          "Lj",
+          "LJ",
+          ""
+        };
+
+      std::string __s(__last - __first, '?');
+      string_type a(__first, __last);
+      __fctyp.narrow(__first, __last, '?', &*__s.begin());
+
+      for (unsigned int __i = 0; *__collatenames[__i]; __i++)
+        if (__s == __collatenames[__i])
+          return string_type(1, __fctyp.widen((char)__i));
+
+      for (unsigned int __i = 0; *__digraphs[__i]; __i++)
+        {
+          const char* __now = __digraphs[__i];
+          if (__s == __now)
+            {
+              string_type ret(__s.size(), __fctyp.widen('?'));
+              __fctyp.widen(__now, __now + 2/* ouch */, &*ret.begin());
+              return ret;
+            }
+        }
+      return string_type();
+    }
+
+  template<typename _Ch_type>
+  template<typename _Fwd_iter>
+    typename regex_traits<_Ch_type>::char_class_type
+    regex_traits<_Ch_type>::
+    lookup_classname(_Fwd_iter __first, _Fwd_iter __last, bool __icase) const
+    {
+      typedef std::ctype<char_type> __ctype_type;
+      typedef std::ctype<char> __cctype_type;
+      typedef const pair<const char*, char_class_type> _ClassnameEntry;
+      const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
+      const __cctype_type& __cctyp(use_facet<__cctype_type>(_M_locale));
+
+      static _ClassnameEntry __classnames[] =
+      {
+        {"d", ctype_base::digit},
+        {"w", {ctype_base::alnum, _RegexMask::_S_under}},
+        {"s", ctype_base::space},
+        {"alnum", ctype_base::alnum},
+        {"alpha", ctype_base::alpha},
+        {"blank", {0, _RegexMask::_S_blank}},
+        {"cntrl", ctype_base::cntrl},
+        {"digit", ctype_base::digit},
+        {"graph", ctype_base::graph},
+        {"lower", ctype_base::lower},
+        {"print", ctype_base::print},
+        {"punct", ctype_base::punct},
+        {"space", ctype_base::space},
+        {"upper", ctype_base::upper},
+        {"xdigit", ctype_base::xdigit},
+      };
+
+      std::string __s(__last - __first, '?');
+      __fctyp.narrow(__first, __last, '?', &__s[0]);
+      __cctyp.tolower(&*__s.begin(), &*__s.end());
+      for (_ClassnameEntry* __it = __classnames;
+           __it < *(&__classnames + 1);
+           ++__it)
+        {
+          if (__s == __it->first)
+            {
+              if (__icase
+                  && ((__it->second & (ctype_base::lower | ctype_base::upper)) != 0))
+                return ctype_base::alpha;
+              return __it->second;
+            }
+        }
+      return 0;
+    }
+
+  template<typename _Ch_type>
     bool
     regex_traits<_Ch_type>::
     isctype(_Ch_type __c, char_class_type __f) const
@@ -282,30 +596,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::ctype<char_type> __ctype_type;
       const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
       
-      if (__fctyp.is(__f, __c))
-	return true;
-      
-      // special case of underscore in [[:w:]]
-      if (__c == __fctyp.widen('_'))
-	{
-	  const char __wb[] = "w";
-	  char_class_type __wt = this->lookup_classname(__wb,
-							__wb + sizeof(__wb));
-	  if (__f | __wt)
-	    return true;
-	}
-    
-      // special case of [[:space:]] in [[:blank:]]
-      if (__fctyp.is(std::ctype_base::space, __c))
-	{
-	  const char __bb[] = "blank";
-	  char_class_type __bt = this->lookup_classname(__bb,
-							__bb + sizeof(__bb));
-	  if (__f | __bt)
-	    return true;
-	}
-      
-      return false;
+      return __fctyp.is(__f._M_base, __c)
+        // [[:w:]]
+        || ((__f._M_extended & _RegexMask::_S_under)
+            && __c == __fctyp.widen('_'))
+        // [[:blank:]]
+        || ((__f._M_extended & _RegexMask::_S_blank)
+            && (__c == __fctyp.widen(' ')
+                || __c == __fctyp.widen('\t')));
     }
 
   template<typename _Ch_type>
