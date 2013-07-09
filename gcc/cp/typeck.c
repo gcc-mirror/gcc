@@ -7929,7 +7929,8 @@ check_return_expr (tree retval, bool *no_warning)
      && TREE_CODE (retval) == VAR_DECL
      && DECL_CONTEXT (retval) == current_function_decl
      && ! TREE_STATIC (retval)
-     && ! DECL_ANON_UNION_VAR_P (retval)
+     /* And not a lambda or anonymous union proxy.  */
+     && !DECL_HAS_VALUE_EXPR_P (retval)
      && (DECL_ALIGN (retval)
          >= DECL_ALIGN (DECL_RESULT (current_function_decl)))
      /* The cv-unqualified type of the returned value must be the
@@ -7978,7 +7979,8 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       if ((cxx_dialect != cxx98)
-          && (TREE_CODE (retval) == VAR_DECL
+          && ((TREE_CODE (retval) == VAR_DECL
+	       && !DECL_HAS_VALUE_EXPR_P (retval))
 	      || TREE_CODE (retval) == PARM_DECL)
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && !TREE_STATIC (retval)

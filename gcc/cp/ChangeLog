@@ -1,5 +1,9 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57437
+	* typeck.c (check_return_expr): Lambda proxies aren't eligible
+	for nrv or return by move.
+
 	PR c++/57545
 	* pt.c (convert_nontype_argument) [INTEGER_CST]: Force the
 	argument to have the exact type of the parameter.
