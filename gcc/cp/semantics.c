@@ -9078,7 +9078,8 @@ lambda_capture_field_type (tree expr)
 {
   tree type;
   if (type_dependent_expression_p (expr)
-      && !(TREE_TYPE (expr) && TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE))
+      && !(TREE_TYPE (expr) && TREE_CODE (TREE_TYPE (expr)) == POINTER_TYPE
+	   && !type_uses_auto (TREE_TYPE (expr))))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
