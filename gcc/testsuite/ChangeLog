@@ -1,3 +1,9 @@
+2013-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57824
+	* c-c++-common/raw-string-17.c: New test.
+	* c-c++-common/gomp/pr57824.c: New test.
+
 2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57869

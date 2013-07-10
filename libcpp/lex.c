@@ -1543,8 +1543,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
       else if (c == '\n')
 	{
 	  if (pfile->state.in_directive
-	      || pfile->state.parsing_args
-	      || pfile->state.in_deferred_pragma)
+	      || (pfile->state.parsing_args
+		  && pfile->buffer->next_line >= pfile->buffer->rlimit))
 	    {
 	      cur--;
 	      type = CPP_OTHER;

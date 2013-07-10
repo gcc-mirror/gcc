@@ -1,5 +1,10 @@
 2013-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR preprocessor/57824
+	* lex.c (lex_raw_string): Allow reading new-lines if
+	in_deferred_pragma or if parsing_args and there is still
+	data in the current buffer.
+
 	* include/cpplib.h (cpp_token_val_index): Change parameter type to
 	const cpp_token *.
 	* lex.c (cpp_token_val_index): Likewise.
