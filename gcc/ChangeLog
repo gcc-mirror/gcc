@@ -1,3 +1,7 @@
+2013-07-10  Graham Stott  <graham.stott@btinternet.com>
+	* config/mips/mips.c (mips_rtx_costs): Very slightly increase
+	the cost of MULT when optimizing for size.
+
 2013-07-10  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/cr16/cr16-protos.h: Don't include target.h.
