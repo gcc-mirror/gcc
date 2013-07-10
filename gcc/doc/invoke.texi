@@ -237,7 +237,7 @@ Objective-C and Objective-C++ Dialects}.
 -Waggressive-loop-optimizations -Warray-bounds @gol
 -Wno-attributes -Wno-builtin-macro-redefined @gol
 -Wc++-compat -Wc++11-compat -Wcast-align  -Wcast-qual  @gol
--Wchar-subscripts -Wclobbered  -Wcomment @gol
+-Wchar-subscripts -Wclobbered  -Wcomment -Wconditionally-supported  @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wno-deprecated  @gol
 -Wno-deprecated-declarations -Wdisabled-optimization  @gol
 -Wno-div-by-zero -Wdouble-promotion -Wempty-body  -Wenum-compare @gol
@@ -4392,6 +4392,11 @@ programs.
 @opindex Wno-clobbered
 Warn for variables that might be changed by @samp{longjmp} or
 @samp{vfork}.  This warning is also enabled by @option{-Wextra}.
+
+@item -Wconditionally-supported @r{(C++ and Objective-C++ only)}
+@opindex Wconditionally-supported
+@opindex Wno-conditionally-supported
+Warn for conditionally-supported (C++11 [intro.defs]) constructs.
 
 @item -Wconversion
 @opindex Wconversion

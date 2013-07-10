@@ -1,3 +1,8 @@
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57869
+	* c.opt: Add Wconditionally-supported.
+
 2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR c/57821
@@ -17,7 +22,7 @@
 	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
 	* c-opts.c (c_common_post_options): Likewise.
 
-2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>  
+2013-06-21  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* array-notation-common.c (length_mismatch_in_expr): Changed the
 	parameter type's from a dynamic array to a vec_tree.  Also removed
@@ -70,7 +75,7 @@
 	(find_inv_trees): Likewise.
 	(replace_inv_trees): Likewise.
 	(find_correct_array_notation_type): Likewise.
-	
+
 2013-05-28  Balaji V. Iyer  <balaji.v.iyer@intel.com>
 
 	* c-common.c (c_define_builtins): When cilkplus is enabled, the

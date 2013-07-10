@@ -319,6 +319,10 @@ Wcomments
 C ObjC C++ ObjC++ Warning Alias(Wcomment)
 Synonym for -Wcomment
 
+Wconditionally-supported
+C++ ObjC++ Var(warn_conditionally_supported) Warning
+Warn for conditionally-supported constructs
+
 Wconversion
 C ObjC C++ ObjC++ Var(warn_conversion) Warning
 Warn for implicit type conversions that may change a value
