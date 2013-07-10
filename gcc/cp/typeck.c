@@ -6722,12 +6722,12 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
   else if ((TYPE_PTRFN_P (type) && TYPE_PTROBV_P (intype))
 	   || (TYPE_PTRFN_P (intype) && TYPE_PTROBV_P (type)))
     {
-      if (pedantic && (complain & tf_warning))
-	/* Only issue a warning, as we have always supported this
-	   where possible, and it is necessary in some cases.  DR 195
-	   addresses this issue, but as of 2004/10/26 is still in
-	   drafting.  */
-	warning (0, "ISO C++ forbids casting between pointer-to-function and pointer-to-object");
+      if (complain & tf_warning)
+	/* C++11 5.2.10 p8 says that "Converting a function pointer to an
+	   object pointer type or vice versa is conditionally-supported."  */
+	warning (OPT_Wconditionally_supported,
+		 "casting between pointer-to-function and pointer-to-object "
+		 "is conditionally-supported");
       return fold_if_not_in_template (build_nop (type, expr));
     }
   else if (TREE_CODE (type) == VECTOR_TYPE)

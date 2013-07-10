@@ -1,3 +1,8 @@
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57869
+	* doc/invoke.texi: Document -Wconditionally-supported.
+
 2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57844
