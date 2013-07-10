@@ -68,6 +68,7 @@ comparator (const void *va, const void *vb)
 static void
 print_mcus (size_t n_mcus)
 {
+  int duplicate = 0;
   size_t i;
     
   if (!n_mcus)
@@ -78,7 +79,20 @@ print_mcus (size_t n_mcus)
   printf ("@*@var{mcu}@tie{}=");
 
   for (i = 0; i < n_mcus; i++)
-    printf (" @code{%s}%s", mcu_name[i], i == n_mcus-1 ? ".\n\n" : ",");
+    {
+      printf (" @code{%s}%s", mcu_name[i], i == n_mcus-1 ? ".\n\n" : ",");
+
+      if (i && !strcmp (mcu_name[i], mcu_name[i-1]))
+        {
+          /* Sanity-check: Fail on devices that are present more than once.  */
+
+          duplicate = 1;
+          fprintf (stderr, "error: duplicate device: %s\n", mcu_name[i]);
+        }
+    }
+
+  if (duplicate)
+    exit (1);
 }
 
 int main (void)
