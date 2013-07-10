@@ -6,11 +6,6 @@
 	* config/i386/sse.md (sse_movlhps): Change alternative 3
 	of operand 2 to "m".
 
-2013-07-09  Jason Merrill  <jason@redhat.com>
-
-	PR c++/57793
-	* expr.c (get_inner_reference): Avoid returning a negative bitpos.
-
 2013-07-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Only
