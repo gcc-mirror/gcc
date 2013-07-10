@@ -1,5 +1,9 @@
 2013-07-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57402
+	* init.c (build_vec_init): Don't take shortcuts when initializing
+	a VLA.
+
 	PR c++/57471
 	* parser.c (cp_parser_sizeof_pack): Clear parser scopes.
 
