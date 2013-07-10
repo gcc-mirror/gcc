@@ -1,3 +1,8 @@
+2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/56987
+	* config/avr/avr.opt (Waddr-space-convert): Fix typo.
+
 2013-07-10  Graham Stott  <graham.stott@btinternet.com>
 	* config/mips/mips.c (mips_rtx_costs): Very slightly increase
 	the cost of MULT when optimizing for size.
