@@ -21,8 +21,6 @@
 #ifndef GCC_CR16_PROTOS_H
 #define GCC_CR16_PROTOS_H
 
-#include "target.h"
-
 /* Register usage.  */
 extern enum reg_class cr16_regno_reg_class (int);
 extern int cr16_hard_regno_mode_ok (int regno, enum machine_mode);

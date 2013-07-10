@@ -1,3 +1,7 @@
+2013-07-10  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/cr16/cr16-protos.h: Don't include target.h.
+
 2013-07-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Only
