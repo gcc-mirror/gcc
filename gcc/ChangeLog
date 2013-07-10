@@ -1,3 +1,8 @@
+2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/56987
+	* config/avr/avr.opt (Waddr-space-convert): Fix typo.
+
 2013-07-09  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Only
