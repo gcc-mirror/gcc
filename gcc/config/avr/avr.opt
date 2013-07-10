@@ -77,4 +77,4 @@ The device has no SPH special function register. This option will be overridden 
 
 Waddr-space-convert
 Warning C Report Var(avr_warn_addr_space_convert) Init(0)
-Warn if the address space of an address is change.
+Warn if the address space of an address is changed.
