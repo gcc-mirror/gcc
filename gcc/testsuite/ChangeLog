@@ -1,3 +1,9 @@
+2013-07-10  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/powerpc/20020118-1.c: Force 128-bit stack alignment
+	for EABI targets.
+	* gcc.c-torture/execute/nest-align-1.x: New.
+
 2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57874
