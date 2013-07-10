@@ -3332,6 +3332,7 @@ build_vec_init (tree base, tree maxindex, tree init,
 
   if (init
       && TREE_CODE (atype) == ARRAY_TYPE
+      && TREE_CONSTANT (maxindex)
       && (from_array == 2
 	  ? (!CLASS_TYPE_P (inner_elt_type)
 	     || !TYPE_HAS_COMPLEX_COPY_ASSIGN (inner_elt_type))
@@ -3452,6 +3453,7 @@ build_vec_init (tree base, tree maxindex, tree init,
       tree field, elt;
       /* Should we try to create a constant initializer?  */
       bool try_const = (TREE_CODE (atype) == ARRAY_TYPE
+			&& TREE_CONSTANT (maxindex)
 			&& (literal_type_p (inner_elt_type)
 			    || TYPE_HAS_CONSTEXPR_CTOR (inner_elt_type)));
       /* If the constructor already has the array type, it's been through
@@ -3561,6 +3563,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       /* Clear out INIT so that we don't get confused below.  */
       init = NULL_TREE;
+      /* Any elements without explicit initializers get {}.  */
+      explicit_value_init_p = true;
     }
   else if (from_array)
     {
