@@ -6040,7 +6040,7 @@ You should define this macro if and only if you define extra CC modes
 in @file{@var{machine}-modes.def}.
 @end defmac
 
-@deftypefn {Target Hook} void TARGET_CANONICALIZE_COMPARISON (int *@var{code}, rtx *@var{op0}, rtx *@var{op1}, bool @var{op0_preserve_value}) (@var{code}, @var{op0}, @var{op1}, @var{op0_preserve_value})
+@deftypefn {Target Hook} void TARGET_CANONICALIZE_COMPARISON (int *@var{code}, rtx *@var{op0}, rtx *@var{op1}, bool @var{op0_preserve_value})
 On some machines not all possible comparisons are defined, but you can
 convert an invalid comparison into a valid one.  For example, the Alpha
 does not have a @code{GT} comparison, but you can use an @code{LT}
