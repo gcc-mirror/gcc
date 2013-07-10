@@ -1,5 +1,8 @@
 2013-07-10  Joseph Myers  <joseph@codesourcery.com>
 
+	* doc/tm.texi.in: Move hook documentation to ....
+	* target.def: ... here.
+
 	* doc/tm.texi.in (TARGET_CANONICALIZE_COMPARISON): Remove stray
 	text on @hook line.
 	* doc/tm.texi: Regenerate.
