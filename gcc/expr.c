@@ -6698,7 +6698,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 			       ? 3 : exact_log2 (BITS_PER_UNIT),
 			       HOST_BITS_PER_DOUBLE_INT, true);
       tem = double_int_add (tem, bit_offset);
-      if (double_int_fits_in_shwi_p (tem))
+      if (double_int_fits_in_shwi_p (tem) && !double_int_negative_p (tem))
 	{
 	  *pbitpos = double_int_to_shwi (tem);
 	  *poffset = offset = NULL_TREE;
