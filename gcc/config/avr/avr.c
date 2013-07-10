@@ -1112,7 +1112,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
               leaf function and thus X has already been saved.  */
 
           int irq_state = -1;
-          HOST_WIDE_INT size_cfa = size;
+          HOST_WIDE_INT size_cfa = size, neg_size;
           rtx fp_plus_insns, fp, my_fp;
 
           gcc_assert (frame_pointer_needed
@@ -1151,6 +1151,7 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
             }
 
           size = trunc_int_for_mode (size, GET_MODE (my_fp));
+          neg_size = trunc_int_for_mode (-size, GET_MODE (my_fp));
 
           /************  Method 1: Adjust frame pointer  ************/
 
@@ -1171,7 +1172,8 @@ avr_prologue_setup_frame (HOST_WIDE_INT size, HARD_REG_SET set)
             }
 
           insn = emit_move_insn (my_fp, plus_constant (GET_MODE (my_fp),
-                                                       my_fp, -size));
+                                                       my_fp, neg_size));
+
           if (frame_pointer_needed)
             {
               RTX_FRAME_RELATED_P (insn) = 1;
