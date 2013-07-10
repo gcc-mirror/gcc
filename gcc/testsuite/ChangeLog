@@ -8,6 +8,9 @@
 
 2013-07-10  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/raw-string-18.c: New test.
+	* c-c++-common/raw-string-19.c: New test.
+
 	PR preprocessor/57757
 	* g++.dg/cpp/paste1.C: New test.
 	* g++.dg/cpp/paste2.C: New test.

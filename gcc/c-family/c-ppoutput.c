@@ -251,7 +251,11 @@ scan_translation_unit (cpp_reader *pfile)
 	  cpp_output_token (token, print.outf);
 	}
 
-      if (token->type == CPP_COMMENT)
+      /* CPP_COMMENT tokens and raw-string literal tokens can
+	 have embedded new-line characters.  Rather than enumerating
+	 all the possible token types just check if token uses
+	 val.str union member.  */
+      if (cpp_token_val_index (token) == CPP_TOKEN_FLD_STR)
 	account_for_newlines (token->val.str.text, token->val.str.len);
     }
 }

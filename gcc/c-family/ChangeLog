@@ -1,3 +1,8 @@
+2013-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-ppoutput.c (scan_translation_unit): Call account_for_newlines
+	for all CPP_TOKEN_FLD_STR tokens, not just CPP_COMMENT.
+
 2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57869
