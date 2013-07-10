@@ -3029,7 +3029,7 @@ _cpp_aligned_alloc (cpp_reader *pfile, size_t len)
 /* Say which field of TOK is in use.  */
 
 enum cpp_token_fld_kind
-cpp_token_val_index (cpp_token *tok)
+cpp_token_val_index (const cpp_token *tok)
 {
   switch (TOKEN_SPELL (tok))
     {

@@ -248,7 +248,7 @@ struct GTY(()) cpp_token {
 };
 
 /* Say which field is in use.  */
-extern enum cpp_token_fld_kind cpp_token_val_index (cpp_token *tok);
+extern enum cpp_token_fld_kind cpp_token_val_index (const cpp_token *tok);
 
 /* A type wide enough to hold any multibyte source character.
    cpplib's character constant interpreter requires an unsigned type.
