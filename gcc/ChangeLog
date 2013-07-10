@@ -1,3 +1,11 @@
+2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2013-07-10 trunk r200872.
+
+	PR target/57844
+	* config/avr/avr.c (avr_prologue_setup_frame): Trunk -size to mode
+	of my_fp.
+
 2013-07-10  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
