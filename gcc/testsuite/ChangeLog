@@ -1,4 +1,11 @@
+2013-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57757
+	* g++.dg/cpp/paste1.C: New test.
+	* g++.dg/cpp/paste2.C: New test.
+
 2013-07-10  Graham Stott  <grahams@btinternet.com>
+
 	* gcc.target/mips/mulsize-1.c: New.
 	* gcc.target/mips/mulsize-2.c: New.
 	* gcc.target/mips/mulsize-3.c: New.

@@ -2767,6 +2767,15 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
 				|| (CPP_OPTION (pfile, objc)
 				    && token1->val.str.text[0] == '@'
 				    && (b == CPP_NAME || b == CPP_STRING)));
+    case CPP_STRING:
+    case CPP_WSTRING:
+    case CPP_UTF8STRING:
+    case CPP_STRING16:
+    case CPP_STRING32:	return (CPP_OPTION (pfile, user_literals)
+				&& (b == CPP_NAME
+				    || (TOKEN_SPELL (token2) == SPELL_LITERAL
+					&& ISIDST (token2->val.str.text[0]))));
+
     default:		break;
     }
 

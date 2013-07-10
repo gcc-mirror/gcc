@@ -1,3 +1,10 @@
+2013-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57757
+	* lex.c (cpp_avoid_paste): Avoid pasting CPP_{,W,UTF8}STRING
+	or CPP_STRING{16,32} with CPP_NAME or SPELL_LITERAL token that
+	starts if a-zA-Z_.
+
 2013-06-28  Ed Smith-Rowland  <3dw4rd@verizon.net>
 
 	* lex.c (lex_raw_string(), lex_string()): Constrain suffixes treated
