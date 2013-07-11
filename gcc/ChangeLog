@@ -1,3 +1,9 @@
+2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57631
+	* config/avr/avr.c (avr_set_current_function): Sanity-check signal
+	name seen by assembler/linker rather if available.
+
 2013-07-11  Andreas Schwab  <schwab@suse.de>
 
 	* config/aarch64/aarch64-linux.h (CPP_SPEC): Define.
