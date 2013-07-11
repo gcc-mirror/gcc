@@ -3211,7 +3211,7 @@ curr_insn_transform (void)
 	     reg, we might improve the code through inheritance.  If
 	     it does not get a hard register we coalesce memory/memory
 	     moves later.  Ignore move insns to avoid cycling.  */
-	  if (! lra_simple_p
+	  if (0 && ! lra_simple_p
 	      && lra_undo_inheritance_iter < LRA_MAX_INHERITANCE_PASSES
 	      && goal_alt[i] != NO_REGS && REG_P (op)
 	      && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER
