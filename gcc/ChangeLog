@@ -1,3 +1,8 @@
+2013-07-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/i386.c (dispatch_function_versions): Fix array
+	indexing of function_version_info to match actual_versions.
+
 2013-07-11  Teresa Johnson  <tejohnson@google.com>
 
 	* vec.h (struct va_gc): Move release out-of-line.
