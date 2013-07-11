@@ -1,3 +1,8 @@
+2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57631
+	* gcc.target/avr/torture/pr57631.c: New test.
+
 2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57827

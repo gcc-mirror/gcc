@@ -584,7 +584,12 @@ avr_set_current_function (tree decl)
     {
       tree args = TYPE_ARG_TYPES (TREE_TYPE (decl));
       tree ret = TREE_TYPE (TREE_TYPE (decl));
-      const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+      const char *name;
+
+      name = DECL_ASSEMBLER_NAME_SET_P (decl)
+        /* Remove the leading '*' added in set_user_assembler_name.  */
+        ? 1 + IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl))
+        : IDENTIFIER_POINTER (DECL_NAME (decl));
 
       /* Silently ignore 'signal' if 'interrupt' is present.  AVR-LibC startet
          using this when it switched from SIGNAL and INTERRUPT to ISR.  */
