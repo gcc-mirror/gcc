@@ -1,3 +1,11 @@
+2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2013-07-11 trunk r200901.
+
+	PR target/57631
+	* config/avr/avr.c (avr_set_current_function): Sanity-check signal
+	name seen by assembler/linker if available.
+
 2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-10 trunk r200872.
