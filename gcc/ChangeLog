@@ -1,3 +1,7 @@
+2013-07-11  Andreas Schwab  <schwab@suse.de>
+
+	* config/aarch64/aarch64-linux.h (CPP_SPEC): Define.
+
 2013-07-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (curr_insn_transform): Switch off optional
