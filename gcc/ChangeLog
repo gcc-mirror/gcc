@@ -1,3 +1,8 @@
+2013-07-11  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_conditional_register_usage): Do not
+	use t[0-7] registers in MIPS16 mode when optimizing for size.
+
 2013-07-11  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/i386.c (dispatch_function_versions): Fix array
