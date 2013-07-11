@@ -1,3 +1,8 @@
+2013-07-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (curr_insn_transform): Switch off optional
+	reloads.
+
 2013-07-10  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/tm.texi.in: Move hook documentation to ....
