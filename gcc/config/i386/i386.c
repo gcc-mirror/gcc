@@ -29342,10 +29342,11 @@ dispatch_function_versions (tree dispatch_decl,
       if (predicate_chain == NULL_TREE)
 	continue;
 
+      function_version_info [actual_versions].version_decl = version_decl;
+      function_version_info [actual_versions].predicate_chain
+	 = predicate_chain;
+      function_version_info [actual_versions].dispatch_priority = priority;
       actual_versions++;
-      function_version_info [ix - 1].version_decl = version_decl;
-      function_version_info [ix - 1].predicate_chain = predicate_chain;
-      function_version_info [ix - 1].dispatch_priority = priority;
     }
 
   /* Sort the versions according to descending order of dispatch priority.  The
