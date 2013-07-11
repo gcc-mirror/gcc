@@ -1,3 +1,8 @@
+2013-07-11  Teresa Johnson  <tejohnson@google.com>
+
+	* vec.h (struct va_gc): Move release out-of-line.
+	(va_gc::release): Call ggc_free on released vec.
+
 2013-07-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
 
 	* config/rs6000/rs6000.md (""*tls_gd_low<TLSmode:tls_abi_suffix>"):
