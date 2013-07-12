@@ -6899,7 +6899,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
       gcc_assert (!lazy_p && type == MIPS_CALL_NORMAL);
       return insn;
     }
-				 ;
+
   orig_addr = addr;
   if (!call_insn_operand (addr, VOIDmode))
     {
