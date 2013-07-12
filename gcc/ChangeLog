@@ -1,3 +1,8 @@
+2013-07-12  Michael Matz  <matz@suse.de>
+
+	PR middle-end/55771
+	* convert.c (convert_to_real): Reject non-float inner types.
+
 2013-07-12  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/aarch64-protos.h
