@@ -1,3 +1,12 @@
+2013-07-12  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_simd_immediate_valid_for_move): Remove.
+	* config/aarch64/aarch64.c (simd_immediate_info): New member.
+	(aarch64_simd_valid_immediate): Recognize idioms for shifting ones
+	cases.
+	(aarch64_output_simd_mov_immediate): Print the correct shift specifier.
+
 2013-07-11  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.c (mips_conditional_register_usage): Do not
