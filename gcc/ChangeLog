@@ -1,3 +1,7 @@
+2013-07-12  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.c (mips_expand_call): Remove empty statement.
+
 2013-07-12  Michael Matz  <matz@suse.de>
 
 	PR middle-end/55771
