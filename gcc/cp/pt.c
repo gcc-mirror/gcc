@@ -5854,7 +5854,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		 "because it is of type %qT", expr, type,
 		 TREE_TYPE (expr));
 	  /* If we are just one standard conversion off, explain.  */
-	  if (can_convert (type, TREE_TYPE (expr), complain))
+	  if (can_convert_standard (type, TREE_TYPE (expr), complain))
 	    inform (input_location,
 		    "standard conversions are not allowed in this context");
 	  return NULL_TREE;

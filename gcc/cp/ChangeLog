@@ -1,3 +1,13 @@
+2013-07-13  Jason Merrill  <jason@redhat.com>
+
+	* call.c (can_convert): Allow user-defined conversions.
+	(can_convert_standard): New.
+	* cp-tree.h: Declare it.
+	* cvt.c (convert_to_reference): Use it.
+	* pt.c (convert_nontype_argument): Likewise.
+	* search.c (check_final_overrider): Likewise.
+	Don't worry about user-defined conversions.
+
 2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57869

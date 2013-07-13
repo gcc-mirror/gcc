@@ -5007,6 +5007,7 @@ extern tree build_op_delete_call		(enum tree_code, tree, tree,
 						 bool, tree, tree,
 						 tsubst_flags_t);
 extern bool can_convert				(tree, tree, tsubst_flags_t);
+extern bool can_convert_standard		(tree, tree, tsubst_flags_t);
 extern bool can_convert_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern bool can_convert_arg_bad			(tree, tree, tree, int,
