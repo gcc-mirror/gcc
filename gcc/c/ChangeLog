@@ -1,3 +1,8 @@
+2013-07-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57793
+	* c-decl.c (finish_struct): Check for too-large class.
+
 2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
 
 	PR c/57821
