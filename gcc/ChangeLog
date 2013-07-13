@@ -1,3 +1,10 @@
+2013-07-13  Jason Merrill  <jason@redhat.com>
+
+	* print-tree.c (debug_vec_tree): Use debug_raw.
+	(debug_raw (vec<tree, va_gc> &)): New.
+	(debug_raw (vec<tree, va_gc> *)): New.
+	* tree.h: Declare them.
+
 2013-07-13  Bin Cheng  <bin.cheng@arm.com>
 
 	* ifcvt.c (ifcvt_after_combine): New static variable.

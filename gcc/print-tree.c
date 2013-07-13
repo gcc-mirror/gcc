@@ -1097,26 +1097,37 @@ debug_body (const tree_node *ptr)
    down to a depth of six.  */
 
 DEBUG_FUNCTION void
-debug_vec_tree (vec<tree, va_gc> *vec)
+debug_raw (vec<tree, va_gc> &ref)
 {
   tree elt;
   unsigned ix;
 
   /* Print the slot this node is in, and its code, and address.  */
   fprintf (stderr, "<VEC");
-  dump_addr (stderr, " ", vec->address ());
+  dump_addr (stderr, " ", ref.address ());
 
-  FOR_EACH_VEC_ELT (*vec, ix, elt)
+  FOR_EACH_VEC_ELT (ref, ix, elt)
     {
       fprintf (stderr, "elt %d ", ix);
-      debug (elt);
+      debug_raw (elt);
     }
 }
 
 DEBUG_FUNCTION void
 debug (vec<tree, va_gc> &ref)
 {
-  debug_vec_tree (&ref);
+  tree elt;
+  unsigned ix;
+
+  /* Print the slot this node is in, and its code, and address.  */
+  fprintf (stderr, "<VEC");
+  dump_addr (stderr, " ", ref.address ());
+
+  FOR_EACH_VEC_ELT (ref, ix, elt)
+    {
+      fprintf (stderr, "elt %d ", ix);
+      debug (elt);
+    }
 }
 
 DEBUG_FUNCTION void
@@ -1126,4 +1137,19 @@ debug (vec<tree, va_gc> *ptr)
     debug (*ptr);
   else
     fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug_raw (vec<tree, va_gc> *ptr)
+{
+  if (ptr)
+    debug_raw (*ptr);
+  else
+    fprintf (stderr, "<nil>\n");
+}
+
+DEBUG_FUNCTION void
+debug_vec_tree (vec<tree, va_gc> *vec)
+{
+  debug_raw (vec);
 }
