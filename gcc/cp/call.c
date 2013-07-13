@@ -8814,6 +8814,20 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 bool
 can_convert (tree to, tree from, tsubst_flags_t complain)
 {
+  tree arg = NULL_TREE;
+  /* implicit_conversion only considers user-defined conversions
+     if it has an expression for the call argument list.  */
+  if (CLASS_TYPE_P (from) || CLASS_TYPE_P (to))
+    arg = build1 (CAST_EXPR, from, NULL_TREE);
+  return can_convert_arg (to, from, arg, LOOKUP_IMPLICIT, complain);
+}
+
+/* Returns nonzero if things of type FROM can be converted to TO with a
+   standard conversion.  */
+
+bool
+can_convert_standard (tree to, tree from, tsubst_flags_t complain)
+{
   return can_convert_arg (to, from, NULL_TREE, LOOKUP_IMPLICIT, complain);
 }
 
