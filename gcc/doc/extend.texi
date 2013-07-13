@@ -16377,6 +16377,23 @@ only be applied to classes declared within an @code{extern "Java"} block.
 Calls to methods declared in this interface are dispatched using GCJ's
 interface table mechanism, instead of regular virtual table dispatch.
 
+@item warn_unused
+@cindex @code{warn_unused} attribute
+
+For C++ types with non-trivial constructors and/or destructors it is
+impossible for the compiler to determine whether a variable of this
+type is truly unused if it is not referenced. This type attribute
+informs the compiler that variables of this type should be warned
+about if they appear to be unused, just like variables of fundamental
+types.
+
+This attribute is appropriate for types which just represent a value,
+such as @code{std::string}; it is not appropriate for types which
+control a resource, such as @code{std::mutex}.
+
+This attribute is also accepted in C, but it is unnecessary because C
+does not have constructors or destructors.
+
 @end table
 
 See also @ref{Namespace Association}.

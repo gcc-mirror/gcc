@@ -1,3 +1,9 @@
+2013-07-13  Lubos Lunak  <l.lunak@suse.cz>
+
+	PR c++/55203
+	* c-common.c (c_common_attribute_table): Add warn_unused.
+	(handle_warn_unused_attribute): New.
+
 2013-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-ppoutput.c (scan_translation_unit): Call account_for_newlines
