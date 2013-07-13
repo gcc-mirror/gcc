@@ -1,5 +1,8 @@
 2013-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57793
+	* class.c (layout_class_type): Check for too-large class.
+
 	* call.c (can_convert): Allow user-defined conversions.
 	(can_convert_standard): New.
 	* cp-tree.h: Declare it.
