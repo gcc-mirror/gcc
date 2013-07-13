@@ -1504,7 +1504,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
       return stmt_expr;
     }
 
-  if (VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
+  if ((VAR_P (exp) || TREE_CODE (exp) == PARM_DECL)
+      && !lookup_attribute ("warn_unused", TYPE_ATTRIBUTES (type)))
     /* Just know that we've seen something for this node.  */
     TREE_USED (exp) = 1;
 

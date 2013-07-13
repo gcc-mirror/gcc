@@ -1,3 +1,9 @@
+2013-07-13  Lubos Lunak  <l.lunak@suse.cz>
+
+	PR c++/55203
+	* init.c (build_aggr_init): Check for warn_unused attribute.
+	* decl.c (poplevel): Likewise.
+
 2013-07-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57402
