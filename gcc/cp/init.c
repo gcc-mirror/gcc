@@ -3561,10 +3561,14 @@ build_vec_init (tree base, tree maxindex, tree init,
 	    vec_free (new_vec);
 	}
 
-      /* Clear out INIT so that we don't get confused below.  */
-      init = NULL_TREE;
       /* Any elements without explicit initializers get {}.  */
-      explicit_value_init_p = true;
+      if (cxx_dialect >= cxx11 && AGGREGATE_TYPE_P (type))
+	init = build_constructor (init_list_type_node, NULL);
+      else
+	{
+	  init = NULL_TREE;
+	  explicit_value_init_p = true;
+	}
     }
   else if (from_array)
     {
@@ -3636,11 +3640,11 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  if (init != 0)
+	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
 	    sorry
 	      ("cannot initialize multi-dimensional array with initializer");
 	  elt_init = build_vec_init (build1 (INDIRECT_REF, type, base),
-				     0, 0,
+				     0, init,
 				     explicit_value_init_p,
 				     0, complain);
 	}
@@ -4121,7 +4125,7 @@ build_vec_delete (tree base, tree maxindex,
 	 bad name.  */
       maxindex = array_type_nelts_total (type);
       type = strip_array_types (type);
-      base = cp_build_addr_expr (base, complain);
+      base = decay_conversion (base, complain);
       if (base == error_mark_node)
 	return error_mark_node;
       if (TREE_SIDE_EFFECTS (base))
