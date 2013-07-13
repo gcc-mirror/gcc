@@ -1,3 +1,12 @@
+2013-07-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* ifcvt.c (ifcvt_after_combine): New static variable.
+	(cheap_bb_rtx_cost_p): Set scale to REG_BR_PROB_BASE when optimizing
+	for size.
+	(if_convert): New parameter after_combine.  Set ifcvt_after_combine.
+	(rest_of_handle_if_conversion, rest_of_handle_if_after_combine,
+	rest_of_handle_if_after_reload): Pass new argument for if_convert.
+
 2013-07-12  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips.c (mips_expand_call): Remove empty statement.
