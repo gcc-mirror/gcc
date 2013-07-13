@@ -67,6 +67,9 @@
 
 #define NULL_BLOCK	((basic_block) NULL)
 
+/* True if after combine pass.  */
+static bool ifcvt_after_combine;
+
 /* # of IF-THEN or IF-THEN-ELSE blocks we looked at  */
 static int num_possible_if_blocks;
 
@@ -141,11 +144,24 @@ cheap_bb_rtx_cost_p (const_basic_block bb, int scale, int max_cost)
   rtx insn = BB_HEAD (bb);
   bool speed = optimize_bb_for_speed_p (bb);
 
+  /* Set scale to REG_BR_PROB_BASE to void the identical scaling
+     applied to insn_rtx_cost when optimizing for size.  Only do
+     this after combine because if-conversion might interfere with
+     passes before combine.
+
+     Use optimize_function_for_speed_p instead of the pre-defined
+     variable speed to make sure it is set to same value for all
+     basic blocks in one if-conversion transformation.  */
+  if (!optimize_function_for_speed_p (cfun) && ifcvt_after_combine)
+    scale = REG_BR_PROB_BASE;
   /* Our branch probability/scaling factors are just estimates and don't
      account for cases where we can get speculation for free and other
      secondary benefits.  So we fudge the scale factor to make speculating
-     appear a little more profitable.  */
-  scale += REG_BR_PROB_BASE / 8;
+     appear a little more profitable when optimizing for performance.  */
+  else
+    scale += REG_BR_PROB_BASE / 8;
+
+
   max_cost *= scale;
 
   while (1)
@@ -4337,10 +4353,11 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
   return FALSE;
 }
 
-/* Main entry point for all if-conversion.  */
+/* Main entry point for all if-conversion.  AFTER_COMBINE is true if
+   we are after combine pass.  */
 
 static void
-if_convert (void)
+if_convert (bool after_combine)
 {
   basic_block bb;
   int pass;
@@ -4351,6 +4368,8 @@ if_convert (void)
       df_live_set_all_dirty ();
     }
 
+  /* Record whether we are after combine pass.  */
+  ifcvt_after_combine = after_combine;
   num_possible_if_blocks = 0;
   num_updated_if_blocks = 0;
   num_true_changes = 0;
@@ -4454,7 +4473,7 @@ rest_of_handle_if_conversion (void)
 	  dump_flow_info (dump_file, dump_flags);
 	}
       cleanup_cfg (CLEANUP_EXPENSIVE);
-      if_convert ();
+      if_convert (false);
     }
 
   cleanup_cfg (0);
@@ -4495,7 +4514,7 @@ gate_handle_if_after_combine (void)
 static unsigned int
 rest_of_handle_if_after_combine (void)
 {
-  if_convert ();
+  if_convert (true);
   return 0;
 }
 
@@ -4530,7 +4549,7 @@ gate_handle_if_after_reload (void)
 static unsigned int
 rest_of_handle_if_after_reload (void)
 {
-  if_convert ();
+  if_convert (true);
   return 0;
 }
 
