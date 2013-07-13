@@ -1,5 +1,9 @@
 2013-07-13  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57402
+	* init.c (build_vec_init): Use {} for arrays of class type.
+	(build_vec_delete): Don't take the address of the array.
+
 	PR c++/57793
 	* class.c (layout_class_type): Check for too-large class.
 
