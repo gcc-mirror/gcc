@@ -1,3 +1,17 @@
+2013-07-14  Adam Butcher  <adam@jessamine.co.uk>
+
+	* semantics.c (build_lambda_expr),
+	(build_lambda_object), (begin_lambda_type), (lambda_return_type),
+	(lambda_function), (lambda_capture_field_type), (is_capture_proxy),
+	(is_normal_capture_proxy), (insert_capture_proxy),
+	(insert_pending_capture_proxies), (lambda_proxy_type),
+	(build_capture_proxy), (vla_capture_type),
+	(register_capture_members), (add_default_capture),
+	(lambda_expr_this_capture), (maybe_resolve_dummy),
+	(nonlambda_method_basetype), (maybe_add_lambda_conv_op) and
+	(is_lambda_ignored_entity): Moved definitions into ...
+	* lambda.c: ... this new file.
+
 2013-07-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* call.c (build_conditional_expr_1): Handle the case with 1 vector
