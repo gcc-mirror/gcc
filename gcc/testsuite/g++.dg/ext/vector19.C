@@ -37,8 +37,7 @@ void j (vec2 *x, vec2 *y, vec2 *z, vec *t)
   *x = (*y < *z) ? *x : 4.2; /* { dg-error "" } */
   *y = (*x < *z) ? 2.5 : *y; /* { dg-error "" } */
   *t = *t ? *t : *t; /* { dg-error "" } */
-  *z = (*x < *z) ? '1' : '0'; /* { dg-error "" } */
-  // The last one may eventually be accepted.
+  *z = (*x < *z) ? '1' : '0';
 }
 
 template <class A, class B>

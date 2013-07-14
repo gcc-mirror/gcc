@@ -1,3 +1,8 @@
+2013-07-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector19.C: Adapt.
+	* g++.dg/ext/vector23.C: New testcase.
+
 2013-07-12  Michael Matz  <matz@suse.de>
 
 	PR middle-end/55771
