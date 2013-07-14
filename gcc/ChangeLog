@@ -1,3 +1,12 @@
+2013-07-13  Tobias Grosser  <tobias@grosser.es>
+
+	PR tree-optimization/54094
+	* graphite-clast-to-gimple.c (translate_clast_for_loop): Derive the
+	  scheduling dimension for the parallelism check from the polyhedral
+	  information in the AST.
+	* graphite-dependences.c (carries_deps): Do not assume the schedule is
+	  in 2D + 1 form.
+
 2013-07-13  Jason Merrill  <jason@redhat.com>
 
 	* print-tree.c (debug_vec_tree): Use debug_raw.
