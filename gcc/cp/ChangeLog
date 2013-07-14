@@ -1,3 +1,9 @@
+2013-07-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* call.c (build_conditional_expr_1): Handle the case with 1 vector
+	and 2 scalars. Call save_expr before building a vector.
+	* typeck.c (cp_build_binary_op): Check complain before complaining.
+
 2013-07-13  Lubos Lunak  <l.lunak@suse.cz>
 
 	PR c++/55203
