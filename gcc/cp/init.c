@@ -3524,6 +3524,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 
       /* Clear out INIT so that we don't get confused below.  */
       init = NULL_TREE;
+      /* Any elements without explicit initializers get {}.  */
+      explicit_value_init_p = true;
     }
   else if (from_array)
     {
