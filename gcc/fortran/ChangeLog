@@ -1,3 +1,13 @@
+2013-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/52669
+	* trans-decl.c (gfc_finish_var_decl):  Move setting of
+	PRIVATE for a module variable if the module has a private
+	default or -fmodule-private is given to...
+	(gfc_create_module_variable): here. Optionally
+	warn about private module variable which is not used.
+
 2013-07-08  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57834

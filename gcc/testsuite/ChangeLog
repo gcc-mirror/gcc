@@ -1,3 +1,9 @@
+2013-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52669
+	* fortran.dg/module_variable_1.f90:  New test.
+	* fortran.dg/module_variable_2.f90:  New test.
+
 2013-07-14  Marc Glisse  <marc.glisse@inria.fr>
 
 	* g++.dg/ext/vector19.C: Adapt.
