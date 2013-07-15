@@ -1,3 +1,60 @@
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.h (gfc_deallocate_alloc_comp_no_caf,
+	gfc_reassign_alloc_comp_caf): New prototype.
+	* trans-array.c (enum): Add DEALLOCATE_ALLOC_COMP_NO_CAF
+	and COPY_ALLOC_COMP_CAF.
+	(structure_alloc_comps): Handle it.
+	(gfc_reassign_alloc_comp_caf,
+	gfc_deallocate_alloc_comp_no_caf): New function.
+	(gfc_alloc_allocatable_for_assignment): Call it.
+	* trans-expr.c (gfc_trans_scalar_assign,
+	gfc_trans_arrayfunc_assign, gfc_trans_assignment_1): Ditto.
+	* parse.c (parse_derived): Correctly set coarray_comp.
+	* resolve.c (resolve_symbol): Improve error wording.
+
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans.c (gfc_add_comp_finalizer_call): New function.
+	* trans.h (gfc_add_comp_finalizer_call): New prototype.
+	* trans-array.c (structure_alloc_comps): Call it.
+
+2013-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/52669
+	* trans-decl.c (gfc_finish_var_decl):  Move setting of
+	PRIVATE for a module variable if the module has a private
+	default or -fmodule-private is given to...
+	(gfc_create_module_variable): here. Optionally
+	warn about private module variable which is not used.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57834
+	* check.c (is_c_interoperable): Add special case for c_f_pointer.
+	(explicit-size, gfc_check_c_f_pointer, gfc_check_c_loc): Update
+	call.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50554
+	* io.c (match_inquire_element): Add missing do-var check.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57785
+	* simplify.c (compute_dot_product): Complex conjugate for
+	dot_product.
+	(gfc_simplify_dot_product, gfc_simplify_matmul): Update call.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57469
+	* trans-decl.c (generate_local_decl): Don't warn that
+	a dummy is unused, when it is in a namelist.
+
 2013-07-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/54788
@@ -628,7 +685,7 @@
 
 	* class.c (finalization_scalarizer, finalizer_insert_packed_call,
 	generate_finalization_wrapper): Avoid segfault with absent SIZE=
-	argment to TRANSFER and use correct result kind for SIZE.
+	argument to TRANSFER and use correct result kind for SIZE.
 	* intrinsic.c (gfc_isym_id_by_intmod): Also handle ids of
 	nonmodules.
 	* trans.c (gfc_build_final_call): Handle coarrays.

@@ -1543,8 +1543,8 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
       else if (c == '\n')
 	{
 	  if (pfile->state.in_directive
-	      || pfile->state.parsing_args
-	      || pfile->state.in_deferred_pragma)
+	      || (pfile->state.parsing_args
+		  && pfile->buffer->next_line >= pfile->buffer->rlimit))
 	    {
 	      cur--;
 	      type = CPP_OTHER;
@@ -2767,6 +2767,15 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
 				|| (CPP_OPTION (pfile, objc)
 				    && token1->val.str.text[0] == '@'
 				    && (b == CPP_NAME || b == CPP_STRING)));
+    case CPP_STRING:
+    case CPP_WSTRING:
+    case CPP_UTF8STRING:
+    case CPP_STRING16:
+    case CPP_STRING32:	return (CPP_OPTION (pfile, user_literals)
+				&& (b == CPP_NAME
+				    || (TOKEN_SPELL (token2) == SPELL_LITERAL
+					&& ISIDST (token2->val.str.text[0]))));
+
     default:		break;
     }
 
@@ -3020,7 +3029,7 @@ _cpp_aligned_alloc (cpp_reader *pfile, size_t len)
 /* Say which field of TOK is in use.  */
 
 enum cpp_token_fld_kind
-cpp_token_val_index (cpp_token *tok)
+cpp_token_val_index (const cpp_token *tok)
 {
   switch (TOKEN_SPELL (tok))
     {

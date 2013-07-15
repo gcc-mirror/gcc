@@ -3890,12 +3890,12 @@ match_inquire_element (gfc_inquire *inquire)
   RETM m = match_vtag (&tag_s_async, &inquire->asynchronous);
   RETM m = match_vtag (&tag_s_delim, &inquire->delim);
   RETM m = match_vtag (&tag_s_decimal, &inquire->decimal);
-  RETM m = match_vtag (&tag_size, &inquire->size);
+  RETM m = match_out_tag (&tag_size, &inquire->size);
   RETM m = match_vtag (&tag_s_encoding, &inquire->encoding);
   RETM m = match_vtag (&tag_s_round, &inquire->round);
   RETM m = match_vtag (&tag_s_sign, &inquire->sign);
   RETM m = match_vtag (&tag_s_pad, &inquire->pad);
-  RETM m = match_vtag (&tag_iolength, &inquire->iolength);
+  RETM m = match_out_tag (&tag_iolength, &inquire->iolength);
   RETM m = match_vtag (&tag_convert, &inquire->convert);
   RETM m = match_out_tag (&tag_strm_out, &inquire->strm_pos);
   RETM m = match_vtag (&tag_pending, &inquire->pending);

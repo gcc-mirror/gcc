@@ -23,6 +23,8 @@
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-aarch64.so.1"
 
+#define CPP_SPEC "%{pthread:-D_REENTRANT}"
+
 #define LINUX_TARGET_LINK_SPEC  "%{h*}		\
    %{static:-Bstatic}				\
    %{shared:-shared}				\

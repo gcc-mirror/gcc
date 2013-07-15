@@ -6237,6 +6237,12 @@ layout_class_type (tree t, tree *virtuals_p)
   /* Let the back end lay out the type.  */
   finish_record_layout (rli, /*free_p=*/true);
 
+  if (TYPE_SIZE_UNIT (t)
+      && TREE_CODE (TYPE_SIZE_UNIT (t)) == INTEGER_CST
+      && !TREE_OVERFLOW (TYPE_SIZE_UNIT (t))
+      && !valid_constant_size_p (TYPE_SIZE_UNIT (t)))
+    error ("type %qT is too large", t);
+
   /* Warn about bases that can't be talked about due to ambiguity.  */
   warn_about_ambiguous_bases (t);
 

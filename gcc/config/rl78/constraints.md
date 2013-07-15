@@ -256,6 +256,19 @@
        (match_test "!rl78_far_p (op) && rl78_as_legitimate_address (VOIDmode, XEXP (op, 0), true, ADDR_SPACE_GENERIC)"))
 )
 
+(define_memory_constraint "U"
+  "memory references valid with mov to/from a/ax"
+  (and (match_code "mem")
+       (match_test "rl78_virt_insns_ok ()
+|| satisfies_constraint_Wab (op)
+|| satisfies_constraint_Wbc (op)
+|| satisfies_constraint_Wde (op)
+|| satisfies_constraint_Wd2 (op)
+|| satisfies_constraint_Whl (op)
+|| satisfies_constraint_Wh1 (op)
+|| satisfies_constraint_Whb (op)
+|| satisfies_constraint_Ws1 (op)
+|| satisfies_constraint_Wfr (op) ")))
 
 (define_memory_constraint "Qbi"
   "built-in compare types"

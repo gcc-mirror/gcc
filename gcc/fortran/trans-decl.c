@@ -559,12 +559,6 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
     {
       /* TODO: Don't set sym->module for result or dummy variables.  */
       gcc_assert (current_function_decl == NULL_TREE || sym->result == sym);
-      /* This is the declaration of a module variable.  */
-      if (sym->attr.access == ACCESS_UNKNOWN
-	  && (sym->ns->default_access == ACCESS_PRIVATE
-	      || (sym->ns->default_access == ACCESS_UNKNOWN
-		  && gfc_option.flag_module_private)))
-	sym->attr.access = ACCESS_PRIVATE;
 
       if (sym->attr.access != ACCESS_PRIVATE || sym->attr.public_used)
 	TREE_PUBLIC (decl) = 1;
@@ -4212,6 +4206,18 @@ gfc_create_module_variable (gfc_symbol * sym)
     internal_error ("backend decl for module variable %s already exists",
 		    sym->name);
 
+  if (sym->module && !sym->attr.result && !sym->attr.dummy
+      && (sym->attr.access == ACCESS_UNKNOWN
+	  && (sym->ns->default_access == ACCESS_PRIVATE
+	      || (sym->ns->default_access == ACCESS_UNKNOWN
+		  && gfc_option.flag_module_private))))
+    sym->attr.access = ACCESS_PRIVATE;
+
+  if (warn_unused_variable && !sym->attr.referenced
+      && sym->attr.access == ACCESS_PRIVATE)
+    gfc_warning ("Unused PRIVATE module variable '%s' declared at %L",
+		 sym->name, &sym->declared_at);
+
   /* We always want module variables to be created.  */
   sym->attr.referenced = 1;
   /* Create the decl.  */
@@ -4726,7 +4732,7 @@ generate_local_decl (gfc_symbol * sym)
 	gfc_get_symbol_decl (sym);
 
       /* Warnings for unused dummy arguments.  */
-      else if (sym->attr.dummy)
+      else if (sym->attr.dummy && !sym->attr.in_namelist)
 	{
 	  /* INTENT(out) dummy arguments are likely meant to be set.  */
 	  if (gfc_option.warn_unused_dummy_argument

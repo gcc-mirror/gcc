@@ -1,3 +1,186 @@
+2013-07-13  Tobias Grosser  <tobias@grosser.es>
+
+	PR tree-optimization/54094
+	* graphite-clast-to-gimple.c (translate_clast_for_loop): Derive the
+	  scheduling dimension for the parallelism check from the polyhedral
+	  information in the AST.
+	* graphite-dependences.c (carries_deps): Do not assume the schedule is
+	  in 2D + 1 form.
+
+2013-07-13  Jason Merrill  <jason@redhat.com>
+
+	* print-tree.c (debug_vec_tree): Use debug_raw.
+	(debug_raw (vec<tree, va_gc> &)): New.
+	(debug_raw (vec<tree, va_gc> *)): New.
+	* tree.h: Declare them.
+
+2013-07-13  Bin Cheng  <bin.cheng@arm.com>
+
+	* ifcvt.c (ifcvt_after_combine): New static variable.
+	(cheap_bb_rtx_cost_p): Set scale to REG_BR_PROB_BASE when optimizing
+	for size.
+	(if_convert): New parameter after_combine.  Set ifcvt_after_combine.
+	(rest_of_handle_if_conversion, rest_of_handle_if_after_combine,
+	rest_of_handle_if_after_reload): Pass new argument for if_convert.
+
+2013-07-12  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.c (mips_expand_call): Remove empty statement.
+
+2013-07-12  Michael Matz  <matz@suse.de>
+
+	PR middle-end/55771
+	* convert.c (convert_to_real): Reject non-float inner types.
+
+2013-07-12  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_simd_immediate_valid_for_move): Remove.
+	* config/aarch64/aarch64.c (simd_immediate_info): New member.
+	(aarch64_simd_valid_immediate): Recognize idioms for shifting ones
+	cases.
+	(aarch64_output_simd_mov_immediate): Print the correct shift specifier.
+
+2013-07-11  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_conditional_register_usage): Do not
+	use t[0-7] registers in MIPS16 mode when optimizing for size.
+
+2013-07-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/i386.c (dispatch_function_versions): Fix array
+	indexing of function_version_info to match actual_versions.
+
+2013-07-11  Teresa Johnson  <tejohnson@google.com>
+
+	* vec.h (struct va_gc): Move release out-of-line.
+	(va_gc::release): Call ggc_free on released vec.
+
+2013-07-11  Ulrich Weigand  <Ulrich.Weigand@de.ibm.com>
+
+	* config/rs6000/rs6000.md (""*tls_gd_low<TLSmode:tls_abi_suffix>"):
+	Require GOT register as additional operand in UNSPEC.
+	("*tls_ld_low<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_got_dtprel_low<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_got_tprel_low<TLSmode:tls_abi_suffix>"): Likewise.
+	("*tls_gd<TLSmode:tls_abi_suffix>"): Update splitter.
+	("*tls_ld<TLSmode:tls_abi_suffix>"): Likewise.
+	("tls_got_dtprel_<TLSmode:tls_abi_suffix>"): Likewise.
+	("tls_got_tprel_<TLSmode:tls_abi_suffix>"): Likewise.
+
+2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57631
+	* config/avr/avr.c (avr_set_current_function): Sanity-check signal
+	name seen by assembler/linker rather if available.
+
+2013-07-11  Andreas Schwab  <schwab@suse.de>
+
+	* config/aarch64/aarch64-linux.h (CPP_SPEC): Define.
+
+2013-07-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (curr_insn_transform): Switch off optional
+	reloads.
+
+2013-07-10  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/tm.texi.in: Move hook documentation to ....
+	* target.def: ... here.
+
+	* doc/tm.texi.in (TARGET_CANONICALIZE_COMPARISON): Remove stray
+	text on @hook line.
+	* doc/tm.texi: Regenerate.
+
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57869
+	* doc/invoke.texi: Document -Wconditionally-supported.
+
+2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57844
+	* config/avr/avr.c (avr_prologue_setup_frame): Trunk -size to mode
+	of my_fp.
+
+2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57506
+	* config/avr/avr-mcus.def (atmega16hva, atmega16hva2, atmega16hvb)
+	(atmega16m1, atmega16u4, atmega32a, atmega32c1, atmega32hvb)
+	(atmega32m1, atmega32u4, atmega32u6, atmega64c1, atmega64m1):
+	Remove duplicate devices.
+	* config/avr/gen-avr-mmcu-texi.c (print_mcus): Fail on duplicate MCUs.
+	* config/avr/t-multilib: Regenerate.
+	* config/avr/avr-tables.opt: Regenerate.
+	* doc/avr-mmcu.texi: Regenerate.
+
+2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/56987
+	* config/avr/avr.opt (Waddr-space-convert): Fix typo.
+
+2013-07-10  Graham Stott  <graham.stott@btinternet.com>
+
+	* config/mips/mips.c (mips_rtx_costs): Very slightly increase
+	the cost of MULT when optimizing for size.
+
+2013-07-10  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/cr16/cr16-protos.h: Don't include target.h.
+
+2013-07-09  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Only
+	adjust register size for TDmode and TFmode for VSX registers.
+
+2013-07-08  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/56892
+	* config/i386/i386.c (TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P): Define as
+	hook_bool_const_tree_true.
+
+2013-07-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: Replace F*_REGNUM with FPR*_REGNUM.
+	* config/s390/s390.h: Remove F*_REGNUM macro definitions.
+	* config/s390/s390.md: Define FPR*_REGNUM constants.
+	Fix FPR2_REGNUM constant (18 -> 17).
+	("*trunc<BFP:mode><DFP_ALL:mode>2")
+	("*trunc<DFP_ALL:mode><BFP:mode>2")
+	("trunc<BFP:mode><DFP_ALL:mode>2")
+	("trunc<DFP_ALL:mode><BFP:mode>2")
+	("*extend<BFP:mode><DFP_ALL:mode>2")
+	("*extend<DFP_ALL:mode><BFP:mode>2")
+	("extend<BFP:mode><DFP_ALL:mode>2")
+	("extend<DFP_ALL:mode><BFP:mode>2"): Replace FPR2_REGNUM with
+	FPR4_REGNUM.
+
+2013-07-08  Graham Stott  <graham.stott@btinternet.com>
+
+	* Makefile.in: (c-family-warn): Define to $(STRICT_WARN)
+
+2013-07-08  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: Rename cfun_set_fpr_bit to cfun_set_fpr_save
+	and cfun_fpr_bit_p to cfun_fpr_save_p.
+	(s390_frame_area, s390_register_info, s390_frame_info)
+	(s390_emit_prologue, s390_emit_epilogue)
+	(s390_conditional_register_usage): Use the *_REGNUM macros for FPR
+	register numbers.
+	* config/s390/s390.h: Define *_REGNUM macros for floating point
+	register numbers.
+
+2013-07-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.in (tree-ssa-reassoc.o): Add dependency on $(PARAMS_H).
+
+2013-07-08  Po-Chun Chang  <pchang9@cs.wisc.edu>
+
+	PR rtl-optimization/57786
+	* combine.c (distribute_notes) <case REG_DEAD>: Change all_used to bool
+	and break out of the loop when it is set to false.
+
 2013-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57819

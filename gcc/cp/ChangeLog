@@ -1,3 +1,114 @@
+2013-07-14  Adam Butcher  <adam@jessamine.co.uk>
+
+	* semantics.c (build_lambda_expr),
+	(build_lambda_object), (begin_lambda_type), (lambda_return_type),
+	(lambda_function), (lambda_capture_field_type), (is_capture_proxy),
+	(is_normal_capture_proxy), (insert_capture_proxy),
+	(insert_pending_capture_proxies), (lambda_proxy_type),
+	(build_capture_proxy), (vla_capture_type),
+	(register_capture_members), (add_default_capture),
+	(lambda_expr_this_capture), (maybe_resolve_dummy),
+	(nonlambda_method_basetype), (maybe_add_lambda_conv_op) and
+	(is_lambda_ignored_entity): Moved definitions into ...
+	* lambda.c: ... this new file.
+
+2013-07-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* call.c (build_conditional_expr_1): Handle the case with 1 vector
+	and 2 scalars. Call save_expr before building a vector.
+	* typeck.c (cp_build_binary_op): Check complain before complaining.
+
+2013-07-13  Lubos Lunak  <l.lunak@suse.cz>
+
+	PR c++/55203
+	* init.c (build_aggr_init): Check for warn_unused attribute.
+	* decl.c (poplevel): Likewise.
+
+2013-07-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57402
+	* init.c (build_vec_init): Use {} for arrays of class type.
+	(build_vec_delete): Don't take the address of the array.
+
+	PR c++/57793
+	* class.c (layout_class_type): Check for too-large class.
+
+	* call.c (can_convert): Allow user-defined conversions.
+	(can_convert_standard): New.
+	* cp-tree.h: Declare it.
+	* cvt.c (convert_to_reference): Use it.
+	* pt.c (convert_nontype_argument): Likewise.
+	* search.c (check_final_overrider): Likewise.
+	Don't worry about user-defined conversions.
+
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57869
+	* typeck.c (build_reinterpret_cast_1): With -Wconditionally-supported
+	warn about casting between pointer-to-function and pointer-to-object.
+
+2013-07-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57402
+	* init.c (build_vec_init): Don't take shortcuts when initializing
+	a VLA.
+
+	PR c++/57471
+	* parser.c (cp_parser_sizeof_pack): Clear parser scopes.
+
+	PR c++/57658
+	* semantics.c (finish_id_expression): Return the id for an
+	unevaluated outer variable.
+
+	PR c++/57526
+	* semantics.c (lambda_capture_field_type): Build a DECLTYPE_TYPE
+	if the variable type uses 'auto'.
+
+	PR c++/57437
+	* typeck.c (check_return_expr): Lambda proxies aren't eligible
+	for nrv or return by move.
+
+	PR c++/57532
+	* parser.c (cp_parser_ref_qualifier_opt): Don't tentatively parse
+	a ref-qualifier in C++98 mode.
+
+	PR c++/57545
+	* pt.c (convert_nontype_argument) [INTEGER_CST]: Force the
+	argument to have the exact type of the parameter.
+
+	PR c++/57551
+	* semantics.c (cxx_eval_indirect_ref): Don't try to look through
+	a POINTER_PLUS_EXPR for type punning diagnostic.
+
+	PR c++/57831
+	* pt.c (tsubst_copy): Handle USING_DECL.
+
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* semantics.c (cxx_eval_bit_field_ref): Handle VECTOR_CST.
+
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53000
+	* call.c (build_conditional_expr_1): Preserve xvalues.
+
+2013-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51786
+	* parser.c (cp_parser_simple_declaration): Before calling shadow_tag
+	also check declares_class_or_enum.
+
+2013-07-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57550
+	* pt.c (fn_type_unification): Only defer during substitution.
+	(type_unification_real): Defer during defarg substitution,
+	add checks parm to pass back deferred checks.
+	(unify, do_auto_deduction): Adjust.
+	* semantics.c (reopen_deferring_access_checks): New.
+	* cp-tree.h: Declare it.
+
 2013-07-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/28262

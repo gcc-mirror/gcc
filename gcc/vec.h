@@ -337,8 +337,20 @@ struct va_gc
 		       CXX_MEM_STAT_INFO);
 
   template<typename T, typename A>
-  static void release (vec<T, A, vl_embed> *&v) { v = NULL; }
+  static void release (vec<T, A, vl_embed> *&v);
 };
+
+
+/* Free GC memory used by V and reset V to NULL.  */
+
+template<typename T, typename A>
+inline void
+va_gc::release (vec<T, A, vl_embed> *&v)
+{
+  if (v)
+    ::ggc_free (v);
+  v = NULL;
+}
 
 
 /* Allocator for GC memory.  Ensure there are at least RESERVE free

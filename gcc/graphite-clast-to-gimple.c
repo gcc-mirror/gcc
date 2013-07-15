@@ -1181,8 +1181,11 @@ translate_clast_for_loop (loop_p context_loop, struct clast_for *stmt,
   redirect_edge_succ_nodup (next_e, after);
   set_immediate_dominator (CDI_DOMINATORS, next_e->dest, next_e->src);
 
+  isl_set *domain = isl_set_from_cloog_domain (stmt->domain);
+  int scheduling_dim = isl_set_n_dim (domain);
+
   if (flag_loop_parallelize_all
-      && loop_is_parallel_p (loop, bb_pbb_mapping, level))
+      && loop_is_parallel_p (loop, bb_pbb_mapping, scheduling_dim))
     loop->can_be_parallel = true;
 
   return last_e;

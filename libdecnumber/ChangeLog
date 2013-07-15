@@ -1,3 +1,8 @@
+2013-07-09  Simon Baldwin  <simonb@google.com>
+
+	* configure.ac: Add AC_CONFIG_AUX_DIR.
+	* configure: Regenerated.
+		
 2013-03-27  Kai Tietz  <ktietz@redhat.com>
 
 	* configure: Regenerated.

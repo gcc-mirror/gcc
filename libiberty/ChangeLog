@@ -1,3 +1,7 @@
+2013-07-09  Tristan Gingold  <gingold@adacore.com>
+
+	* makefile.vms (OBJS): Add dwarfnames.obj
+
 2013-05-31  Matt Burgess <matthew@linuxfromscratch.org>
 
 	PR other/56780

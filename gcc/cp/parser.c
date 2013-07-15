@@ -11009,11 +11009,20 @@ cp_parser_simple_declaration (cp_parser* parser,
 
   /* Issue an error message if no declarators are present, and the
      decl-specifier-seq does not itself declare a class or
-     enumeration.  */
+     enumeration: [dcl.dcl]/3.  */
   if (!saw_declarator)
     {
       if (cp_parser_declares_only_class_p (parser))
-	shadow_tag (&decl_specifiers);
+	{
+	  if (!declares_class_or_enum
+	      && decl_specifiers.type
+	      && OVERLOAD_TYPE_P (decl_specifiers.type))
+	    /* Ensure an error is issued anyway when finish_decltype_type,
+	       called via cp_parser_decl_specifier_seq, returns a class or
+	       an enumeration (c++/51786).  */
+	    decl_specifiers.type = NULL_TREE;
+	  shadow_tag (&decl_specifiers);
+	}
       /* Perform any deferred access checks.  */
       perform_deferred_access_checks (tf_warning_or_error);
     }
@@ -17365,6 +17374,10 @@ cp_parser_ref_qualifier_opt (cp_parser* parser)
 {
   cp_ref_qualifier ref_qual = REF_QUAL_NONE;
 
+  /* Don't try to parse bitwise '&' as a ref-qualifier (c++/57532).  */
+  if (cxx_dialect < cxx11 && cp_parser_parsing_tentatively (parser))
+    return ref_qual;
+
   while (true)
     {
       cp_ref_qualifier curr_ref_qual = REF_QUAL_NONE;
@@ -23123,6 +23136,10 @@ cp_parser_sizeof_pack (cp_parser *parser)
 
   cp_token *token = cp_lexer_peek_token (parser->lexer);
   tree name = cp_parser_identifier (parser);
+  /* The name is not qualified.  */
+  parser->scope = NULL_TREE;
+  parser->qualifying_scope = NULL_TREE;
+  parser->object_scope = NULL_TREE;
   tree expr = cp_parser_lookup_name_simple (parser, name, token->location);
   if (expr == error_mark_node)
     cp_parser_name_lookup_error (parser, name, expr, NLE_NULL,

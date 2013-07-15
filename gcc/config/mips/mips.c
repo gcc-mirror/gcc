@@ -3944,7 +3944,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 		  ? mips_cost->int_mult_si * 3 + 6
 		  : COSTS_N_INSNS (ISA_HAS_MUL3 ? 7 : 9));
       else if (!speed)
-	*total = COSTS_N_INSNS (ISA_HAS_MUL3 ? 1 : 2);
+	*total = COSTS_N_INSNS (ISA_HAS_MUL3 ? 1 : 2) + 1;
       else if (mode == DImode)
 	*total = mips_cost->int_mult_di;
       else
@@ -6899,7 +6899,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
       gcc_assert (!lazy_p && type == MIPS_CALL_NORMAL);
       return insn;
     }
-				 ;
+
   orig_addr = addr;
   if (!call_insn_operand (addr, VOIDmode))
     {
@@ -17199,10 +17199,17 @@ mips_conditional_register_usage (void)
     }
   if (TARGET_MIPS16)
     {
-      /* In MIPS16 mode, we permit the $t temporary registers to be used
-	 for reload.  We prohibit the unused $s registers, since they
+      /* In MIPS16 mode, we prohibit the unused $s registers, since they
 	 are call-saved, and saving them via a MIPS16 register would
-	 probably waste more time than just reloading the value.  */
+	 probably waste more time than just reloading the value.
+
+	 We permit the $t temporary registers when optimizing for speed
+	 but not when optimizing for space because using them results in
+	 code that is larger (but faster) then not using them.  We do
+	 allow $24 (t8) because it is used in CMP and CMPI instructions
+	 and $25 (t9) because it is used as the function call address in
+	 SVR4 PIC code.  */
+
       fixed_regs[18] = call_used_regs[18] = 1;
       fixed_regs[19] = call_used_regs[19] = 1;
       fixed_regs[20] = call_used_regs[20] = 1;
@@ -17212,6 +17219,17 @@ mips_conditional_register_usage (void)
       fixed_regs[26] = call_used_regs[26] = 1;
       fixed_regs[27] = call_used_regs[27] = 1;
       fixed_regs[30] = call_used_regs[30] = 1;
+      if (optimize_size)
+	{
+	  fixed_regs[8] = call_used_regs[8] = 1;
+	  fixed_regs[9] = call_used_regs[9] = 1;
+	  fixed_regs[10] = call_used_regs[10] = 1;
+	  fixed_regs[11] = call_used_regs[11] = 1;
+	  fixed_regs[12] = call_used_regs[12] = 1;
+	  fixed_regs[13] = call_used_regs[13] = 1;
+	  fixed_regs[14] = call_used_regs[14] = 1;
+	  fixed_regs[15] = call_used_regs[15] = 1;
+	}
 
       /* Do not allow HI and LO to be treated as register operands.
 	 There are no MTHI or MTLO instructions (or any real need

@@ -4405,10 +4405,54 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
       if (TREE_CODE (arg2_type) != VECTOR_TYPE
 	  && TREE_CODE (arg3_type) != VECTOR_TYPE)
 	{
-	  if (complain & tf_error)
-	    error_at (loc, "at least one operand of a vector conditional "
-		      "operator must be a vector");
-	  return error_mark_node;
+	  /* Rely on the error messages of the scalar version.  */
+	  tree scal = build_conditional_expr_1 (loc, integer_one_node,
+						orig_arg2, orig_arg3, complain);
+	  if (scal == error_mark_node)
+	    return error_mark_node;
+	  tree stype = TREE_TYPE (scal);
+	  tree ctype = TREE_TYPE (arg1_type);
+	  if (TYPE_SIZE (stype) != TYPE_SIZE (ctype)
+	      || (!INTEGRAL_TYPE_P (stype) && !SCALAR_FLOAT_TYPE_P (stype)))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "inferred scalar type %qT is not an integer or "
+			  "floating point type of the same size as %qT", stype,
+			  COMPARISON_CLASS_P (arg1)
+			  ? TREE_TYPE (TREE_TYPE (TREE_OPERAND (arg1, 0)))
+			  : ctype);
+	      return error_mark_node;
+	    }
+
+	  tree vtype = build_opaque_vector_type (stype,
+			 TYPE_VECTOR_SUBPARTS (arg1_type));
+	  /* We could pass complain & tf_warning to unsafe_conversion_p,
+	     but the warnings (like Wsign-conversion) have already been
+	     given by the scalar build_conditional_expr_1. We still check
+	     unsafe_conversion_p to forbid truncating long long -> float.  */
+	  if (unsafe_conversion_p (stype, arg2, false))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "conversion of scalar %qT to vector %qT "
+			       "involves truncation", arg2_type, vtype);
+	      return error_mark_node;
+	    }
+	  if (unsafe_conversion_p (stype, arg3, false))
+	    {
+	      if (complain & tf_error)
+		error_at (loc, "conversion of scalar %qT to vector %qT "
+			       "involves truncation", arg3_type, vtype);
+	      return error_mark_node;
+	    }
+
+	  arg2 = cp_convert (stype, arg2, complain);
+	  arg2 = save_expr (arg2);
+	  arg2 = build_vector_from_val (vtype, arg2);
+	  arg2_type = vtype;
+	  arg3 = cp_convert (stype, arg3, complain);
+	  arg3 = save_expr (arg3);
+	  arg3 = build_vector_from_val (vtype, arg3);
+	  arg3_type = vtype;
 	}
 
       if ((TREE_CODE (arg2_type) == VECTOR_TYPE)
@@ -4424,6 +4468,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 		return error_mark_node;
 	      case stv_firstarg:
 		{
+		  arg2 = save_expr (arg2);
 		  arg2 = convert (TREE_TYPE (arg3_type), arg2);
 		  arg2 = build_vector_from_val (arg3_type, arg2);
 		  arg2_type = TREE_TYPE (arg2);
@@ -4431,6 +4476,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 		}
 	      case stv_secondarg:
 		{
+		  arg3 = save_expr (arg3);
 		  arg3 = convert (TREE_TYPE (arg2_type), arg3);
 		  arg3 = build_vector_from_val (arg2_type, arg3);
 		  arg3_type = TREE_TYPE (arg3);
@@ -4641,10 +4687,11 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 
   /* [expr.cond]
 
-     If the second and third operands are lvalues and have the same
-     type, the result is of that type and is an lvalue.  */
-  if (real_lvalue_p (arg2)
-      && real_lvalue_p (arg3)
+     If the second and third operands are glvalues of the same value
+     category and have the same type, the result is of that type and
+     value category.  */
+  if (((real_lvalue_p (arg2) && real_lvalue_p (arg3))
+       || (xvalue_p (arg2) && xvalue_p (arg3)))
       && same_type_p (arg2_type, arg3_type))
     {
       result_type = arg2_type;
@@ -8812,6 +8859,20 @@ tourney (struct z_candidate *candidates, tsubst_flags_t complain)
 
 bool
 can_convert (tree to, tree from, tsubst_flags_t complain)
+{
+  tree arg = NULL_TREE;
+  /* implicit_conversion only considers user-defined conversions
+     if it has an expression for the call argument list.  */
+  if (CLASS_TYPE_P (from) || CLASS_TYPE_P (to))
+    arg = build1 (CAST_EXPR, from, NULL_TREE);
+  return can_convert_arg (to, from, arg, LOOKUP_IMPLICIT, complain);
+}
+
+/* Returns nonzero if things of type FROM can be converted to TO with a
+   standard conversion.  */
+
+bool
+can_convert_standard (tree to, tree from, tsubst_flags_t complain)
 {
   return can_convert_arg (to, from, NULL_TREE, LOOKUP_IMPLICIT, complain);
 }

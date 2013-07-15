@@ -1,3 +1,142 @@
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.dg/coarray_lib_realloc_1.f90: New.
+	* gfortran.dg/coarray/lib_realloc_1.f90: New.
+	* gfortran.dg/coarray_6.f90: Add dg-error.
+
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* gfortran.dg/finalize_18.f90: New.
+
+2013-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52669
+	* fortran.dg/module_variable_1.f90:  New test.
+	* fortran.dg/module_variable_2.f90:  New test.
+
+2013-07-14  Marc Glisse  <marc.glisse@inria.fr>
+
+	* g++.dg/ext/vector19.C: Adapt.
+	* g++.dg/ext/vector23.C: New testcase.
+
+2013-07-12  Michael Matz  <matz@suse.de>
+
+	PR middle-end/55771
+	* c-c++-common/pr55771.c: New test.
+
+2013-07-12  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/vect-movi.c: New.
+
+2013-07-11  Sriraman Tallam  <tmsriram@google.com>
+
+	PR target/57362
+	* g++.dg/ext/pr57362.C: New.
+	
+2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57631
+	* gcc.target/avr/torture/pr57631.c: New test.
+
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57827
+	* g++.dg/cpp0x/constexpr-ice7.C: New.
+
+2013-07-10  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/powerpc/20020118-1.c: Force 128-bit stack alignment
+	for EABI targets.
+	* gcc.c-torture/execute/nest-align-1.x: New.
+
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57874
+	* g++.dg/cpp0x/sfinae48.C: New.
+
+2013-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57824
+	* c-c++-common/raw-string-17.c: New test.
+	* c-c++-common/gomp/pr57824.c: New test.
+
+2013-07-10  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57869
+	* g++.dg/cpp0x/reinterpret_cast1.C: New.
+	* g++.dg/warn/Wconditionally-supported-1.C: Likewise.
+	* g++.dg/conversion/dr195.C: Update.
+	* g++.dg/expr/cast2.C: Likewise.
+
+2013-07-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/raw-string-18.c: New test.
+	* c-c++-common/raw-string-19.c: New test.
+
+	PR preprocessor/57757
+	* g++.dg/cpp/paste1.C: New test.
+	* g++.dg/cpp/paste2.C: New test.
+
+2013-07-10  Graham Stott  <grahams@btinternet.com>
+
+	* gcc.target/mips/mulsize-1.c: New.
+	* gcc.target/mips/mulsize-2.c: New.
+	* gcc.target/mips/mulsize-3.c: New.
+	* gcc.target/mips/mulsize-4.c: New.
+
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53094
+	* g++.dg/cpp0x/constexpr-53094-1.C: Adjust.
+	* g++.dg/ext/vector24.C: New testcase.
+
+2013-07-09  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR c++/53000
+	* g++.dg/cpp0x/decltype17.C: Adjust.
+
+2013-07-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51786
+	* g++.dg/cpp0x/pr51786.C: New.
+
+2013-07-08  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/powerpc/tfmode_off.c: Skip for EABI targets.
+
+	* gcc.target/powerpc/ppc-spe64-1.c: Update expected error message.
+
+	* gcc.target/powerpc/pr47197.c: Require powerpc_altivec_ok.
+
+	* gcc.target/powerpc/sd-vsx.c: Require dfp.
+	* gcc.target/powerpc/sd-pwr6.c: Likewise.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57834
+	* gfortran.dg/c_f_pointer_tests_8.f90: New.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/50554
+	* gfortran.dg/do_check_9.f90: New.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57785
+	* gfortran.dg/dot_product_2.f90: New.
+
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57469
+	* gfortran.dg/warn_unused_dummy_argument_4.f90: New.
+
+2013-07-08  Manfred Schwarb  <manfred99@gmx.ch>
+
+	* gfortran.dg/defined_assignment_7.f90: Fix dg-do.
+	* gfortran.dg/finalize_10.f90: Fix dg-final.
+
 2013-07-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/57819
