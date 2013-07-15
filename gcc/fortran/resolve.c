@@ -13125,8 +13125,8 @@ resolve_symbol (gfc_symbol *sym)
       && (class_attr.codimension || class_attr.pointer || class_attr.dimension
 	  || class_attr.allocatable))
     {
-      gfc_error ("Variable '%s' at %L with coarray component "
-		 "shall be a nonpointer, nonallocatable scalar",
+      gfc_error ("Variable '%s' at %L with coarray component shall be a "
+		 "nonpointer, nonallocatable scalar, which is not a coarray",
 		 sym->name, &sym->declared_at);
       return;
     }
