@@ -948,6 +948,102 @@ gfc_build_final_call (gfc_typespec ts, gfc_expr *final_wrapper, gfc_expr *var,
 }
 
 
+bool
+gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
+			     bool fini_coarray)
+{
+  gfc_se se;
+  stmtblock_t block2;
+  tree final_fndecl, size, array, tmp, cond;
+  symbol_attribute attr;
+  gfc_expr *final_expr = NULL;
+
+  if (comp->ts.type != BT_DERIVED && comp->ts.type != BT_CLASS)
+    return false;
+
+  gfc_init_block (&block2);
+
+  if (comp->ts.type == BT_DERIVED)
+    {
+      if (comp->attr.pointer)
+	return false;
+
+      gfc_is_finalizable (comp->ts.u.derived, &final_expr);
+      if (!final_expr)
+        return false;
+
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, final_expr);
+      final_fndecl = se.expr;
+      size = gfc_typenode_for_spec (&comp->ts);
+      size = TYPE_SIZE_UNIT (size);
+      size = fold_convert (gfc_array_index_type, size);
+
+      array = decl;
+    }
+  else /* comp->ts.type == BT_CLASS.  */
+    {
+      if (CLASS_DATA (comp)->attr.class_pointer)
+	return false;
+
+      gfc_is_finalizable (CLASS_DATA (comp)->ts.u.derived, &final_expr);
+      final_fndecl = gfc_vtable_final_get (decl);
+      size = gfc_vtable_size_get (decl);
+      array = gfc_class_data_get (decl);
+    }
+
+  if (comp->attr.allocatable
+      || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->attr.allocatable))
+    {
+      tmp = GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (array))
+	    ?  gfc_conv_descriptor_data_get (array) : array;
+      cond = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			    tmp, fold_convert (TREE_TYPE (tmp),
+						 null_pointer_node));
+    }
+  else
+    cond = boolean_true_node;
+
+  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (array)))
+    {
+      gfc_clear_attr (&attr);
+      gfc_init_se (&se, NULL);
+      array = gfc_conv_scalar_to_descriptor (&se, array, attr);
+      gfc_add_block_to_block (&block2, &se.pre);
+      gcc_assert (se.post.head == NULL_TREE);
+    }
+
+  if (!POINTER_TYPE_P (TREE_TYPE (array)))
+    array = gfc_build_addr_expr (NULL, array);
+
+  if (!final_expr)
+    {
+      tmp = fold_build2_loc (input_location, NE_EXPR, boolean_type_node,
+			     final_fndecl,
+			     fold_convert (TREE_TYPE (final_fndecl),
+					   null_pointer_node));
+      cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+			      boolean_type_node, cond, tmp);
+    }
+
+  if (POINTER_TYPE_P (TREE_TYPE (final_fndecl)))
+    final_fndecl = build_fold_indirect_ref_loc (input_location, final_fndecl);
+
+  tmp = build_call_expr_loc (input_location,
+			     final_fndecl, 3, array,
+			     size, fini_coarray ? boolean_true_node
+						: boolean_false_node);
+  gfc_add_expr_to_block (&block2, tmp);
+  tmp = gfc_finish_block (&block2);
+
+  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, cond, tmp,
+			 build_empty_stmt (input_location));
+  gfc_add_expr_to_block (block, tmp);
+
+  return true;
+}
+
+
 /* Add a call to the finalizer, using the passed *expr. Returns
    true when a finalizer call has been inserted.  */
 
