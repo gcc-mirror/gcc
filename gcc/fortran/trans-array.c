@@ -7584,19 +7584,34 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  called_dealloc_with_status = false;
 	  gfc_init_block (&tmpblock);
 
-	  if (c->attr.allocatable && (c->attr.dimension || c->attr.codimension)
-	      && !c->attr.proc_pointer)
+	  if ((c->ts.type == BT_DERIVED && !c->attr.pointer)
+	      || (c->ts.type == BT_CLASS && !CLASS_DATA (c)->attr.class_pointer))
 	    {
 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				      decl, cdecl, NULL_TREE);
+
+	      /* The finalizer frees allocatable components.  */
+	      called_dealloc_with_status
+		= gfc_add_comp_finalizer_call (&tmpblock, comp, c, true);
+	    }
+	  else
+	    comp = NULL_TREE;
+
+	  if (c->attr.allocatable && (c->attr.dimension || c->attr.codimension)
+	      && !c->attr.proc_pointer)
+	    {
+	      if (comp == NULL_TREE)
+		comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+					decl, cdecl, NULL_TREE);
 	      tmp = gfc_trans_dealloc_allocated (comp, c->attr.codimension, NULL);
 	      gfc_add_expr_to_block (&tmpblock, tmp);
 	    }
 	  else if (c->attr.allocatable)
 	    {
 	      /* Allocatable scalar components.  */
-	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
-				      decl, cdecl, NULL_TREE);
+	      if (comp == NULL_TREE)
+		comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+					decl, cdecl, NULL_TREE);
 
 	      tmp = gfc_deallocate_scalar_with_status (comp, NULL, true, NULL,
 						       c->ts);
@@ -7611,10 +7626,11 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 	  else if (c->ts.type == BT_CLASS && CLASS_DATA (c)->attr.allocatable)
 	    {
 	      /* Allocatable CLASS components.  */
-	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
-				      decl, cdecl, NULL_TREE);
 
 	      /* Add reference to '_data' component.  */
+	      if (comp == NULL_TREE)
+		comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+					decl, cdecl, NULL_TREE);
 	      tmp = CLASS_DATA (c)->backend_decl;
 	      comp = fold_build3_loc (input_location, COMPONENT_REF,
 				      TREE_TYPE (tmp), comp, tmp, NULL_TREE);

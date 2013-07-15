@@ -1,3 +1,10 @@
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/37336
+	* trans.c (gfc_add_comp_finalizer_call): New function.
+	* trans.h (gfc_add_comp_finalizer_call): New prototype.
+	* trans-array.c (structure_alloc_comps): Call it.
+
 2013-07-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Tobias Burnus  <burnus@gcc.gnu.org>
 
