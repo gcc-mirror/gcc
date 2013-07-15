@@ -6824,6 +6824,7 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
     }
   else if (ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
     {
+      tree tmp_var = NULL_TREE;
       cond = NULL_TREE;
 
       /* Are the rhs and the lhs the same?  */
@@ -6841,8 +6842,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 	 expression.  */
       if (!l_is_temp && dealloc)
 	{
-	  tmp = gfc_evaluate_now (lse->expr, &lse->pre);
-	  tmp = gfc_deallocate_alloc_comp (ts.u.derived, tmp, 0);
+	  tmp_var = gfc_evaluate_now (lse->expr, &lse->pre);
+	  tmp = gfc_deallocate_alloc_comp_no_caf (ts.u.derived, tmp_var, 0);
 	  if (deep_copy)
 	    tmp = build3_v (COND_EXPR, cond, build_empty_stmt (input_location),
 			    tmp);
@@ -6854,6 +6855,16 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 
       gfc_add_modify (&block, lse->expr,
 			   fold_convert (TREE_TYPE (lse->expr), rse->expr));
+
+      /* Restore pointer address of coarray components.  */
+      if (ts.u.derived->attr.coarray_comp && deep_copy)
+	{
+	  gcc_assert (tmp_var != NULL_TREE);
+	  tmp = gfc_reassign_alloc_comp_caf (ts.u.derived, tmp_var, lse->expr);
+	  tmp = build3_v (COND_EXPR, cond, build_empty_stmt (input_location),
+			  tmp);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
 
       /* Do a deep copy if the rhs is a variable, if it is not the
 	 same as the lhs.  */
@@ -7196,8 +7207,8 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
 	&& expr1->ts.u.derived->attr.alloc_comp)
     {
       tree tmp;
-      tmp = gfc_deallocate_alloc_comp (expr1->ts.u.derived, se.expr,
-				       expr1->rank);
+      tmp = gfc_deallocate_alloc_comp_no_caf (expr1->ts.u.derived, se.expr,
+					      expr1->rank);
       gfc_add_expr_to_block (&se.pre, tmp);
     }
 
@@ -7762,7 +7773,7 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 		       && expr1->rank && !expr2->rank);
   if (scalar_to_array && dealloc)
     {
-      tmp = gfc_deallocate_alloc_comp (expr2->ts.u.derived, rse.expr, 0);
+      tmp = gfc_deallocate_alloc_comp_no_caf (expr2->ts.u.derived, rse.expr, 0);
       gfc_add_expr_to_block (&loop.post, tmp);
     }
 

@@ -2228,11 +2228,11 @@ endType:
 	  sym->attr.coarray_comp = 1;
 	}
      
-      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp)
+      if (c->ts.type == BT_DERIVED && c->ts.u.derived->attr.coarray_comp
+	  && !c->attr.pointer)
 	{
 	  coarray = true;
-	  if (!pointer && !allocatable)
-	    sym->attr.coarray_comp = 1;
+	  sym->attr.coarray_comp = 1;
 	}
 
       /* Looking for lock_type components.  */

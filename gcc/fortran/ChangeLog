@@ -1,5 +1,20 @@
 2013-07-15  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-array.h (gfc_deallocate_alloc_comp_no_caf,
+	gfc_reassign_alloc_comp_caf): New prototype.
+	* trans-array.c (enum): Add DEALLOCATE_ALLOC_COMP_NO_CAF
+	and COPY_ALLOC_COMP_CAF.
+	(structure_alloc_comps): Handle it.
+	(gfc_reassign_alloc_comp_caf,
+	gfc_deallocate_alloc_comp_no_caf): New function.
+	(gfc_alloc_allocatable_for_assignment): Call it.
+	* trans-expr.c (gfc_trans_scalar_assign,
+	gfc_trans_arrayfunc_assign, gfc_trans_assignment_1): Ditto.
+	* parse.c (parse_derived): Correctly set coarray_comp.
+	* resolve.c (resolve_symbol): Improve error wording.
+
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37336
 	* trans.c (gfc_add_comp_finalizer_call): New function.
 	* trans.h (gfc_add_comp_finalizer_call): New prototype.

@@ -1,5 +1,11 @@
 2013-07-15  Tobias Burnus  <burnus@net-b.de>
 
+	* gfortran.dg/coarray_lib_realloc_1.f90: New.
+	* gfortran.dg/coarray/lib_realloc_1.f90: New.
+	* gfortran.dg/coarray_6.f90: Add dg-error.
+
+2013-07-15  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/37336
 	* gfortran.dg/finalize_18.f90: New.
 

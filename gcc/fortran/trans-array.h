@@ -51,6 +51,8 @@ tree gfc_copy_allocatable_data (tree dest, tree src, tree type, int rank);
 tree gfc_nullify_alloc_comp (gfc_symbol *, tree, int);
 
 tree gfc_deallocate_alloc_comp (gfc_symbol *, tree, int);
+tree gfc_deallocate_alloc_comp_no_caf (gfc_symbol *, tree, int);
+tree gfc_reassign_alloc_comp_caf (gfc_symbol *, tree, tree);
 
 tree gfc_copy_alloc_comp (gfc_symbol *, tree, tree, int);
 
