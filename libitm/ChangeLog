@@ -1,3 +1,18 @@
+2013-07-15  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* acinclude.m4 (LIBITM_CHECK_AS_HTM): New.
+	* configure.ac: Use it.
+	(AC_CHECK_HEADERS): Check for sys/auxv.h.
+	(AC_CHECK_FUNCS): Check for getauxval.
+	* config.h.in, configure: Rebuild.
+	* configure.tgt (target_cpu): Add -mhtm to XCFLAGS.
+	* config/powerpc/target.h: Include sys/auxv.h and htmintrin.h.
+	(USE_HTM_FASTPATH): Define.
+	(_TBEGIN_STARTED, _TBEGIN_INDETERMINATE, _TBEGIN_PERSISTENT,
+	_HTM_RETRIES) New macros.
+	(htm_abort, htm_abort_should_retry, htm_available, htm_begin, htm_init,
+	htm_begin_success, htm_commit, htm_transaction_active): New functions.
+
 2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/target.h: Include htmintrin.h.

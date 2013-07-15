@@ -30,6 +30,7 @@
    RS6000_BUILTIN_A -- ABS builtins
    RS6000_BUILTIN_D -- DST builtins
    RS6000_BUILTIN_E -- SPE EVSEL builtins.
+   RS6000_BUILTIN_H -- HTM builtins
    RS6000_BUILTIN_P -- Altivec, VSX, ISA 2.07 vector predicate builtins
    RS6000_BUILTIN_Q -- Paired floating point VSX predicate builtins
    RS6000_BUILTIN_S -- SPE predicate builtins
@@ -64,6 +65,10 @@
 
 #ifndef RS6000_BUILTIN_E
   #error "RS6000_BUILTIN_E is not defined."
+#endif
+
+#ifndef RS6000_BUILTIN_H
+  #error "RS6000_BUILTIN_H is not defined."
 #endif
 
 #ifndef RS6000_BUILTIN_P
@@ -402,6 +407,56 @@
 		    (RS6000_BTC_OVERLOADED		/* ATTR */	\
 		     | RS6000_BTC_TERNARY),				\
 		    CODE_FOR_nothing)			/* ICODE */
+
+/* HTM convenience macros.  */
+#define BU_HTM_0(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_H (HTM_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HTM,			/* MASK */	\
+		    RS6000_BTC_ ## ATTR,		/* ATTR */	\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_HTM_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_H (HTM_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HTM,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_HTM_2(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_H (HTM_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HTM,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_BINARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_HTM_3(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_H (HTM_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HTM,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_TERNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_HTM_SPR0(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_H (HTM_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HTM,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_SPR),					\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
+#define BU_HTM_SPR1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_H (HTM_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HTM,			/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY					\
+		     | RS6000_BTC_SPR					\
+		     | RS6000_BTC_VOID),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 /* SPE convenience macros.  */
 #define BU_SPE_1(ENUM, NAME, ATTR, ICODE)				\
@@ -1367,6 +1422,33 @@ BU_CRYPTO_OVERLOAD_3 (VPERMXOR,	 "vpermxor")
 BU_CRYPTO_OVERLOAD_3 (VSHASIGMA, "vshasigma")
 
 
+/* HTM functions.  */
+BU_HTM_1  (TABORT,	"tabort",	MISC,	tabort)
+BU_HTM_3  (TABORTDC,	"tabortdc",	MISC,	tabortdc)
+BU_HTM_3  (TABORTDCI,	"tabortdci",	MISC,	tabortdci)
+BU_HTM_3  (TABORTWC,	"tabortwc",	MISC,	tabortwc)
+BU_HTM_3  (TABORTWCI,	"tabortwci",	MISC,	tabortwci)
+BU_HTM_1  (TBEGIN,	"tbegin",	MISC,	tbegin)
+BU_HTM_1  (TCHECK,	"tcheck",	MISC,	tcheck)
+BU_HTM_1  (TEND,	"tend",		MISC,	tend)
+BU_HTM_0  (TENDALL,	"tendall",	MISC,	tend)
+BU_HTM_0  (TRECHKPT,	"trechkpt",	MISC,	trechkpt)
+BU_HTM_1  (TRECLAIM,	"treclaim",	MISC,	treclaim)
+BU_HTM_0  (TRESUME,	"tresume",	MISC,	tsr)
+BU_HTM_0  (TSUSPEND,	"tsuspend",	MISC,	tsr)
+BU_HTM_1  (TSR,		"tsr",		MISC,	tsr)
+BU_HTM_0  (TTEST,	"ttest",	MISC,	ttest)
+
+BU_HTM_SPR0 (GET_TFHAR,		"get_tfhar",	MISC,	nothing)
+BU_HTM_SPR1 (SET_TFHAR,		"set_tfhar",	MISC,	nothing)
+BU_HTM_SPR0 (GET_TFIAR,		"get_tfiar",	MISC,	nothing)
+BU_HTM_SPR1 (SET_TFIAR,		"set_tfiar",	MISC,	nothing)
+BU_HTM_SPR0 (GET_TEXASR,	"get_texasr",	MISC,	nothing)
+BU_HTM_SPR1 (SET_TEXASR,	"set_texasr",	MISC,	nothing)
+BU_HTM_SPR0 (GET_TEXASRU,	"get_texasru",	MISC,	nothing)
+BU_HTM_SPR1 (SET_TEXASRU,	"set_texasru",	MISC,	nothing)
+
+
 /* 3 argument paired floating point builtins.  */
 BU_PAIRED_3 (MSUB,            "msub",           FP, 	fmsv2sf4)
 BU_PAIRED_3 (MADD,            "madd",           FP, 	fmav2sf4)
@@ -1665,10 +1747,10 @@ BU_SPECIAL_X (RS6000_BUILTIN_RSQRTF, "__builtin_rsqrtf", RS6000_BTM_FRSQRTES,
 	      RS6000_BTC_FP)
 
 BU_SPECIAL_X (RS6000_BUILTIN_GET_TB, "__builtin_ppc_get_timebase",
-	     RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
 
 BU_SPECIAL_X (RS6000_BUILTIN_MFTB, "__builtin_ppc_mftb",
-	     RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
+	      RS6000_BTM_ALWAYS, RS6000_BTC_MISC)
 
 /* Darwin CfString builtin.  */
 BU_SPECIAL_X (RS6000_BUILTIN_CFSTRING, "__builtin_cfstring", RS6000_BTM_ALWAYS,

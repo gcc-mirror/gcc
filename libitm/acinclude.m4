@@ -123,6 +123,20 @@ i[[34567]]86 | x86_64)
   ;;
 esac])
 
+dnl Check if as supports HTM instructions.
+AC_DEFUN([LIBITM_CHECK_AS_HTM], [
+case "${target_cpu}" in
+powerpc*)
+  AC_CACHE_CHECK([if the assembler supports HTM], libitm_cv_as_htm, [
+    AC_TRY_COMPILE([], [asm("tbegin. 0; tend. 0");],
+		   [libitm_cv_as_htm=yes], [libitm_cv_as_htm=no])
+  ])
+  if test x$libitm_cv_as_htm = xyes; then
+    AC_DEFINE(HAVE_AS_HTM, 1, [Define to 1 if the assembler supports HTM.])
+  fi
+  ;;
+esac])
+
 sinclude(../libtool.m4)
 dnl The lines below arrange for aclocal not to bring an installed
 dnl libtool.m4 into aclocal.m4, while still arranging for automake to

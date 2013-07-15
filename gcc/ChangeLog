@@ -1,3 +1,53 @@
+2013-07-15  Peter Bergner <bergner@vnet.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Install htmintrin.h and htmxlintrin.h.
+	* config/rs6000/t-rs6000 (MD_INCLUDES): Add htm.md.
+	* config/rs6000/rs6000.opt: Add -mhtm option.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add OPTION_MASK_HTM.
+	(ISA_2_7_MASKS_SERVER): Add OPTION_MASK_HTM.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__HTM__ if the HTM instructions are available.
+	* config/rs6000/predicates.md (u3bit_cint_operand, u10bit_cint_operand,
+	htm_spr_reg_operand): New define_predicates.
+	* config/rs6000/rs6000.md (define_attr "type"): Add htm.
+	(TFHAR_REGNO, TFIAR_REGNO, TEXASR_REGNO): New define_constants.
+	Include htm.md.
+	* config/rs6000/rs6000-builtin.def (BU_HTM_0, BU_HTM_1, BU_HTM_2,
+	BU_HTM_3, BU_HTM_SPR0, BU_HTM_SPR1): Add support macros for defining
+	HTM builtin functions.
+	* config/rs6000/rs6000.c (RS6000_BUILTIN_H): New macro.
+	(rs6000_reg_names, alt_reg_names): Add HTM SPR register names.
+	(rs6000_init_hard_regno_mode_ok): Add support for HTM instructions.
+	(rs6000_builtin_mask_calculate): Likewise.
+	(rs6000_option_override_internal): Likewise.
+	(bdesc_htm): Add new HTM builtin support.
+	(htm_spr_num): New function.
+	(htm_spr_regno): Likewise.
+	(rs6000_htm_spr_icode): Likewise.
+	(htm_expand_builtin): Likewise.
+	(htm_init_builtins): Likewise.
+	(rs6000_expand_builtin): Add support for HTM builtin functions.
+	(rs6000_init_builtins): Likewise.
+	(rs6000_invalid_builtin, rs6000_opt_mask): Add support for -mhtm option.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add support for -mhtm.
+	(TARGET_HTM, MASK_HTM): Define macros.
+	(FIRST_PSEUDO_REGISTER): Adjust for new HTM SPR registers.
+	(FIXED_REGISTERS): Likewise.
+	(CALL_USED_REGISTERS): Likewise.
+	(CALL_REALLY_USED_REGISTERS): Likewise.
+	(REG_ALLOC_ORDER): Likewise.
+	(enum reg_class): Likewise.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+	(REGISTER_NAMES): Likewise.
+	(ADDITIONAL_REGISTER_NAMES): Likewise.
+	(RS6000_BTC_SPR, RS6000_BTC_VOID, RS6000_BTC_32BIT, RS6000_BTC_64BIT,
+	RS6000_BTC_MISC_MASK, RS6000_BTM_HTM): New macros.
+	(RS6000_BTM_COMMON): Add RS6000_BTM_HTM.
+	* config/rs6000/htm.md: New file.
+	* config/rs6000/htmintrin.h: New file.
+	* config/rs6000/htmxlintrin.h: New file.
+
 2013-07-15  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* config/aarch64/aarch64-protos.h (aarch64_symbol_type):

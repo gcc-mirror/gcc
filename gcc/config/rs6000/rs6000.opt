@@ -539,6 +539,10 @@ mdirect-move
 Target Report Mask(DIRECT_MOVE) Var(rs6000_isa_flags)
 Use ISA 2.07 direct move between GPR & VSX register instructions
 
+mhtm
+Target Report Mask(HTM) Var(rs6000_isa_flags)
+Use ISA 2.07 transactional memory (HTM) instructions
+
 mquad-memory
 Target Report Mask(QUAD_MEMORY) Var(rs6000_isa_flags)
 Generate the quad word memory instructions (lq/stq/lqarx/stqcx).
