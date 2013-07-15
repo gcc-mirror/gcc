@@ -15349,7 +15349,7 @@ $as_echo "#define STRING_WITH_STRINGS 1" >>confdefs.h
 
 fi
 
-for ac_header in unistd.h semaphore.h sys/time.h malloc.h
+for ac_header in unistd.h semaphore.h sys/time.h sys/auxv.h malloc.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -16184,7 +16184,7 @@ rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 
 # Check for functions needed.
-for ac_func in strtoull memalign posix_memalign
+for ac_func in strtoull memalign posix_memalign getauxval
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -17359,6 +17359,43 @@ $as_echo "$libitm_cv_as_rtm" >&6; }
   if test x$libitm_cv_as_rtm = xyes; then
 
 $as_echo "#define HAVE_AS_RTM 1" >>confdefs.h
+
+  fi
+  ;;
+esac
+
+case "${target_cpu}" in
+powerpc*)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking if the assembler supports HTM" >&5
+$as_echo_n "checking if the assembler supports HTM... " >&6; }
+if test "${libitm_cv_as_htm+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+asm("tbegin. 0; tend. 0");
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libitm_cv_as_htm=yes
+else
+  libitm_cv_as_htm=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libitm_cv_as_htm" >&5
+$as_echo "$libitm_cv_as_htm" >&6; }
+  if test x$libitm_cv_as_htm = xyes; then
+
+$as_echo "#define HAVE_AS_HTM 1" >>confdefs.h
 
   fi
   ;;
