@@ -1,3 +1,7 @@
+2013-07-15  Matthias Klose  <doko@ubuntu.com>
+
+	* libgcc2.c: Don't include <limits.h>.
+
 2013-07-09  Janis Johnson  <janisjo@codesourcery.com>
 
 	* config.host (powerpc-*-eabispe*): Add t-fdpbit to tmake_file.

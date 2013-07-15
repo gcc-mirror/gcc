@@ -1715,18 +1715,6 @@ FUNC (UDWtype u)
 #endif
 
 #if defined(L_fixunsxfsi) && LIBGCC2_HAS_XF_MODE
-/* Reenable the normal types, in case limits.h needs them.  */
-#undef char
-#undef short
-#undef int
-#undef long
-#undef unsigned
-#undef float
-#undef double
-#undef MIN
-#undef MAX
-#include <limits.h>
-
 UWtype
 __fixunsxfSI (XFtype a)
 {
@@ -1737,18 +1725,6 @@ __fixunsxfSI (XFtype a)
 #endif
 
 #if defined(L_fixunsdfsi) && LIBGCC2_HAS_DF_MODE
-/* Reenable the normal types, in case limits.h needs them.  */
-#undef char
-#undef short
-#undef int
-#undef long
-#undef unsigned
-#undef float
-#undef double
-#undef MIN
-#undef MAX
-#include <limits.h>
-
 UWtype
 __fixunsdfSI (DFtype a)
 {
@@ -1759,18 +1735,6 @@ __fixunsdfSI (DFtype a)
 #endif
 
 #if defined(L_fixunssfsi) && LIBGCC2_HAS_SF_MODE
-/* Reenable the normal types, in case limits.h needs them.  */
-#undef char
-#undef short
-#undef int
-#undef long
-#undef unsigned
-#undef float
-#undef double
-#undef MIN
-#undef MAX
-#include <limits.h>
-
 UWtype
 __fixunssfSI (SFtype a)
 {
