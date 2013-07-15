@@ -613,6 +613,10 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
 	return;
       }
 
+    case SYMBOL_TINY_GOT:
+      emit_insn (gen_ldr_got_tiny (dest, imm));
+      return;
+
     default:
       gcc_unreachable ();
     }
@@ -890,6 +894,7 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
         case SYMBOL_SMALL_TLSDESC:
         case SYMBOL_SMALL_GOTTPREL:
 	case SYMBOL_SMALL_GOT:
+	case SYMBOL_TINY_GOT:
 	  if (offset != const0_rtx)
 	    {
 	      gcc_assert(can_create_pseudo_p ());
@@ -3646,6 +3651,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	  asm_fprintf (asm_out_file, ":tprel:");
 	  break;
 
+	case SYMBOL_TINY_GOT:
+	  gcc_unreachable ();
+	  break;
+
 	default:
 	  break;
 	}
@@ -3673,6 +3682,10 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 
 	case SYMBOL_SMALL_TPREL:
 	  asm_fprintf (asm_out_file, ":tprel_lo12_nc:");
+	  break;
+
+	case SYMBOL_TINY_GOT:
+	  asm_fprintf (asm_out_file, ":got:");
 	  break;
 
 	default:
@@ -5241,7 +5254,7 @@ aarch64_classify_symbol (rtx x,
 
 	case AARCH64_CMODEL_TINY_PIC:
 	  if (!aarch64_symbol_binds_local_p (x))
-	    return SYMBOL_SMALL_GOT;
+	    return SYMBOL_TINY_GOT;
 	  return SYMBOL_TINY_ABSOLUTE;
 
 	case AARCH64_CMODEL_SMALL_PIC:

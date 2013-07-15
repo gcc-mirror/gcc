@@ -75,6 +75,17 @@ enum aarch64_symbol_context
 
    ADR x0, foo
 
+   SYMBOL_TINY_GOT
+
+   Generate symbol accesses via the GOT using a single PC relative
+   instruction.  To compute the address of symbol foo, we generate:
+
+   ldr t0, :got:foo
+
+   The value of foo can subsequently read using:
+
+   ldrb    t0, [t0]
+
    SYMBOL_FORCE_TO_MEM : Global variables are addressed using
    constant pool.  All variable addresses are spilled into constant
    pools.  The constant pools themselves are addressed using PC
@@ -89,6 +100,7 @@ enum aarch64_symbol_type
   SYMBOL_SMALL_GOTTPREL,
   SYMBOL_SMALL_TPREL,
   SYMBOL_TINY_ABSOLUTE,
+  SYMBOL_TINY_GOT,
   SYMBOL_FORCE_TO_MEM
 };
 
