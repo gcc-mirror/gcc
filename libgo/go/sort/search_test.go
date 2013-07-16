@@ -5,6 +5,7 @@
 package sort_test
 
 import (
+	"runtime"
 	. "sort"
 	"testing"
 )
@@ -114,6 +115,32 @@ func TestSearchWrappers(t *testing.T) {
 		if e.result != e.i {
 			t.Errorf("%s: expected index %d; got %d", e.name, e.i, e.result)
 		}
+	}
+}
+
+func runSearchWrappers() {
+	SearchInts(data, 11)
+	SearchFloat64s(fdata, 2.1)
+	SearchStrings(sdata, "")
+	IntSlice(data).Search(0)
+	Float64Slice(fdata).Search(2.0)
+	StringSlice(sdata).Search("x")
+}
+
+func TestSearchWrappersDontAlloc(t *testing.T) {
+	if runtime.GOMAXPROCS(0) > 1 {
+		t.Skip("skipping; GOMAXPROCS>1")
+	}
+	t.Skip("skipping alloc test for gccgo")
+	allocs := testing.AllocsPerRun(100, runSearchWrappers)
+	if allocs != 0 {
+		t.Errorf("expected no allocs for runSearchWrappers, got %v", allocs)
+	}
+}
+
+func BenchmarkSearchWrappers(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		runSearchWrappers()
 	}
 }
 

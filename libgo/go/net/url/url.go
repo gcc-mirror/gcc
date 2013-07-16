@@ -220,6 +220,13 @@ func escape(s string, mode encoding) string {
 //
 //	scheme:opaque[?query][#fragment]
 //
+// Note that the Path field is stored in decoded form: /%47%6f%2f becomes /Go/.
+// A consequence is that it is impossible to tell which slashes in the Path were
+// slashes in the raw URL and which were %2f. This distinction is rarely important,
+// but when it is a client must use other routines to parse the raw URL or construct
+// the parsed URL. For example, an HTTP server can consult req.RequestURI, and
+// an HTTP client can use URL{Host: "example.com", Opaque: "//example.com/Go%2f"}
+// instead of URL{Host: "example.com", Path: "/Go/"}.
 type URL struct {
 	Scheme   string
 	Opaque   string    // encoded opaque data
@@ -310,23 +317,22 @@ func getscheme(rawurl string) (scheme, path string, err error) {
 // Maybe s is of the form t c u.
 // If so, return t, c u (or t, u if cutc == true).
 // If not, return s, "".
-func split(s string, c byte, cutc bool) (string, string) {
-	for i := 0; i < len(s); i++ {
-		if s[i] == c {
-			if cutc {
-				return s[0:i], s[i+1:]
-			}
-			return s[0:i], s[i:]
-		}
+func split(s string, c string, cutc bool) (string, string) {
+	i := strings.Index(s, c)
+	if i < 0 {
+		return s, ""
 	}
-	return s, ""
+	if cutc {
+		return s[0:i], s[i+len(c):]
+	}
+	return s[0:i], s[i:]
 }
 
 // Parse parses rawurl into a URL structure.
 // The rawurl may be relative or absolute.
 func Parse(rawurl string) (url *URL, err error) {
 	// Cut off #frag
-	u, frag := split(rawurl, '#', true)
+	u, frag := split(rawurl, "#", true)
 	if url, err = parse(u, false); err != nil {
 		return nil, err
 	}
@@ -355,7 +361,7 @@ func ParseRequestURI(rawurl string) (url *URL, err error) {
 func parse(rawurl string, viaRequest bool) (url *URL, err error) {
 	var rest string
 
-	if rawurl == "" {
+	if rawurl == "" && viaRequest {
 		err = errors.New("empty url")
 		goto Error
 	}
@@ -371,8 +377,9 @@ func parse(rawurl string, viaRequest bool) (url *URL, err error) {
 	if url.Scheme, rest, err = getscheme(rawurl); err != nil {
 		goto Error
 	}
+	url.Scheme = strings.ToLower(url.Scheme)
 
-	rest, url.RawQuery = split(rest, '?', true)
+	rest, url.RawQuery = split(rest, "?", true)
 
 	if !strings.HasPrefix(rest, "/") {
 		if url.Scheme != "" {
@@ -388,7 +395,7 @@ func parse(rawurl string, viaRequest bool) (url *URL, err error) {
 
 	if (url.Scheme != "" || !viaRequest && !strings.HasPrefix(rest, "///")) && strings.HasPrefix(rest, "//") {
 		var authority string
-		authority, rest = split(rest[2:], '/', false)
+		authority, rest = split(rest[2:], "/", false)
 		url.User, url.Host, err = parseAuthority(authority)
 		if err != nil {
 			goto Error
@@ -420,7 +427,7 @@ func parseAuthority(authority string) (user *Userinfo, host string, err error) {
 		}
 		user = User(userinfo)
 	} else {
-		username, password := split(userinfo, ':', true)
+		username, password := split(userinfo, ":", true)
 		if username, err = unescape(username, encodeUserPassword); err != nil {
 			return
 		}
@@ -575,43 +582,39 @@ func (v Values) Encode() string {
 }
 
 // resolvePath applies special path segments from refs and applies
-// them to base, per RFC 2396.
-func resolvePath(basepath string, refpath string) string {
-	base := strings.Split(basepath, "/")
-	refs := strings.Split(refpath, "/")
-	if len(base) == 0 {
-		base = []string{""}
+// them to base, per RFC 3986.
+func resolvePath(base, ref string) string {
+	var full string
+	if ref == "" {
+		full = base
+	} else if ref[0] != '/' {
+		i := strings.LastIndex(base, "/")
+		full = base[:i+1] + ref
+	} else {
+		full = ref
 	}
-
-	rm := true
-	for idx, ref := range refs {
-		switch {
-		case ref == ".":
-			if idx == 0 {
-				base[len(base)-1] = ""
-				rm = true
-			} else {
-				rm = false
-			}
-		case ref == "..":
-			newLen := len(base) - 1
-			if newLen < 1 {
-				newLen = 1
-			}
-			base = base[0:newLen]
-			if rm {
-				base[len(base)-1] = ""
+	if full == "" {
+		return ""
+	}
+	var dst []string
+	src := strings.Split(full, "/")
+	for _, elem := range src {
+		switch elem {
+		case ".":
+			// drop
+		case "..":
+			if len(dst) > 0 {
+				dst = dst[:len(dst)-1]
 			}
 		default:
-			if idx == 0 || base[len(base)-1] == "" {
-				base[len(base)-1] = ref
-			} else {
-				base = append(base, ref)
-			}
-			rm = false
+			dst = append(dst, elem)
 		}
 	}
-	return strings.Join(base, "/")
+	if last := src[len(src)-1]; last == "." || last == ".." {
+		// Add final slash to the joined path.
+		dst = append(dst, "")
+	}
+	return "/" + strings.TrimLeft(strings.Join(dst, "/"), "/")
 }
 
 // IsAbs returns true if the URL is absolute.
@@ -631,43 +634,39 @@ func (u *URL) Parse(ref string) (*URL, error) {
 }
 
 // ResolveReference resolves a URI reference to an absolute URI from
-// an absolute base URI, per RFC 2396 Section 5.2.  The URI reference
+// an absolute base URI, per RFC 3986 Section 5.2.  The URI reference
 // may be relative or absolute.  ResolveReference always returns a new
 // URL instance, even if the returned URL is identical to either the
 // base or reference. If ref is an absolute URL, then ResolveReference
 // ignores base and returns a copy of ref.
 func (u *URL) ResolveReference(ref *URL) *URL {
-	if ref.IsAbs() {
-		url := *ref
+	url := *ref
+	if ref.Scheme == "" {
+		url.Scheme = u.Scheme
+	}
+	if ref.Scheme != "" || ref.Host != "" || ref.User != nil {
+		// The "absoluteURI" or "net_path" cases.
+		url.Path = resolvePath(ref.Path, "")
 		return &url
 	}
-	// relativeURI = ( net_path | abs_path | rel_path ) [ "?" query ]
-	url := *u
-	url.RawQuery = ref.RawQuery
-	url.Fragment = ref.Fragment
 	if ref.Opaque != "" {
-		url.Opaque = ref.Opaque
 		url.User = nil
 		url.Host = ""
 		url.Path = ""
 		return &url
 	}
-	if ref.Host != "" || ref.User != nil {
-		// The "net_path" case.
-		url.Host = ref.Host
-		url.User = ref.User
-	}
-	if strings.HasPrefix(ref.Path, "/") {
-		// The "abs_path" case.
-		url.Path = ref.Path
-	} else {
-		// The "rel_path" case.
-		path := resolvePath(u.Path, ref.Path)
-		if !strings.HasPrefix(path, "/") {
-			path = "/" + path
+	if ref.Path == "" {
+		if ref.RawQuery == "" {
+			url.RawQuery = u.RawQuery
+			if ref.Fragment == "" {
+				url.Fragment = u.Fragment
+			}
 		}
-		url.Path = path
 	}
+	// The "abs_path" or "rel_path" cases.
+	url.Host = u.Host
+	url.User = u.User
+	url.Path = resolvePath(u.Path, ref.Path)
 	return &url
 }
 
@@ -685,6 +684,10 @@ func (u *URL) RequestURI() string {
 		result = escape(u.Path, encodePath)
 		if result == "" {
 			result = "/"
+		}
+	} else {
+		if strings.HasPrefix(result, "//") {
+			result = u.Scheme + ":" + result
 		}
 	}
 	if u.RawQuery != "" {

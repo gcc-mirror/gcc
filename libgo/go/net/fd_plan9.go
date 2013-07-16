@@ -23,27 +23,21 @@ var canCancelIO = true // used for testing current package
 func sysInit() {
 }
 
-func dialTimeout(net, addr string, timeout time.Duration) (Conn, error) {
+func resolveAndDial(net, addr string, localAddr Addr, deadline time.Time) (Conn, error) {
 	// On plan9, use the relatively inefficient
 	// goroutine-racing implementation.
-	return dialTimeoutRace(net, addr, timeout)
+	return resolveAndDialChannel(net, addr, localAddr, deadline)
 }
 
-func newFD(proto, name string, ctl *os.File, laddr, raddr Addr) *netFD {
-	return &netFD{proto, name, "/net/" + proto + "/" + name, ctl, nil, laddr, raddr}
+func newFD(proto, name string, ctl, data *os.File, laddr, raddr Addr) *netFD {
+	return &netFD{proto, name, "/net/" + proto + "/" + name, ctl, data, laddr, raddr}
 }
 
 func (fd *netFD) ok() bool { return fd != nil && fd.ctl != nil }
 
 func (fd *netFD) Read(b []byte) (n int, err error) {
-	if !fd.ok() {
+	if !fd.ok() || fd.data == nil {
 		return 0, syscall.EINVAL
-	}
-	if fd.data == nil {
-		fd.data, err = os.OpenFile(fd.dir+"/data", os.O_RDWR, 0)
-		if err != nil {
-			return 0, err
-		}
 	}
 	n, err = fd.data.Read(b)
 	if fd.proto == "udp" && err == io.EOF {
@@ -54,14 +48,8 @@ func (fd *netFD) Read(b []byte) (n int, err error) {
 }
 
 func (fd *netFD) Write(b []byte) (n int, err error) {
-	if !fd.ok() {
+	if !fd.ok() || fd.data == nil {
 		return 0, syscall.EINVAL
-	}
-	if fd.data == nil {
-		fd.data, err = os.OpenFile(fd.dir+"/data", os.O_RDWR, 0)
-		if err != nil {
-			return 0, err
-		}
 	}
 	return fd.data.Write(b)
 }
@@ -85,19 +73,39 @@ func (fd *netFD) Close() error {
 		return syscall.EINVAL
 	}
 	err := fd.ctl.Close()
-	if err != nil {
-		return err
-	}
 	if fd.data != nil {
-		err = fd.data.Close()
+		if err1 := fd.data.Close(); err1 != nil && err == nil {
+			err = err1
+		}
 	}
 	fd.ctl = nil
 	fd.data = nil
 	return err
 }
 
+// This method is only called via Conn.
 func (fd *netFD) dup() (*os.File, error) {
-	return nil, syscall.EPLAN9
+	if !fd.ok() || fd.data == nil {
+		return nil, syscall.EINVAL
+	}
+	return fd.file(fd.data, fd.dir+"/data")
+}
+
+func (l *TCPListener) dup() (*os.File, error) {
+	if !l.fd.ok() {
+		return nil, syscall.EINVAL
+	}
+	return l.fd.file(l.fd.ctl, l.fd.dir+"/ctl")
+}
+
+func (fd *netFD) file(f *os.File, s string) (*os.File, error) {
+	syscall.ForkLock.RLock()
+	dfd, err := syscall.Dup(int(f.Fd()), -1)
+	syscall.ForkLock.RUnlock()
+	if err != nil {
+		return nil, &OpError{"dup", s, fd.laddr, err}
+	}
+	return os.NewFile(uintptr(dfd), s), nil
 }
 
 func setDeadline(fd *netFD, t time.Time) error {

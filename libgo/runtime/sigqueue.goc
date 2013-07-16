@@ -107,7 +107,7 @@ func signal_recv() (m uint32) {
 				new = HASWAITER;
 			if(runtime_cas(&sig.state, old, new)) {
 				if (new == HASWAITER) {
-					runtime_entersyscall();
+					runtime_entersyscallblock();
 					runtime_notesleep(&sig);
 					runtime_exitsyscall();
 					runtime_noteclear(&sig);
@@ -135,8 +135,6 @@ done:;
 
 // Must only be called from a single goroutine at a time.
 func signal_enable(s uint32) {
-	int32 i;
-
 	if(!sig.inuse) {
 		// The first call to signal_enable is for us
 		// to use for initialization.  It does not pass
@@ -146,16 +144,16 @@ func signal_enable(s uint32) {
 		return;
 	}
 	
-	if(~s == 0) {
-		// Special case: want everything.
-		for(i=0; (size_t)i<nelem(sig.wanted); i++)
-			sig.wanted[i] = ~(uint32)0;
-		runtime_sigenable(s);
-		return;
-	}
-
 	if(s >= nelem(sig.wanted)*32)
 		return;
 	sig.wanted[s/32] |= 1U<<(s&31);
 	runtime_sigenable(s);
+}
+
+// Must only be called from a single goroutine at a time.
+func signal_disable(s uint32) {
+	if(s >= nelem(sig.wanted)*32)
+		return;
+	sig.wanted[s/32] &= ~(1U<<(s&31));
+	runtime_sigdisable(s);
 }

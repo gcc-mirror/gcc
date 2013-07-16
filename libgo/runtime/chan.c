@@ -35,6 +35,8 @@ struct	WaitQ
 	SudoG*	last;
 };
 
+// The garbage collector is assuming that Hchan can only contain pointers into the stack
+// and cannot contain pointers into the heap.
 struct	Hchan
 {
 	uintgo	qcount;			// total data in the q
@@ -48,6 +50,8 @@ struct	Hchan
 	WaitQ	sendq;			// list of send waiters
 	Lock;
 };
+
+uint32 runtime_Hchansize = sizeof(Hchan);
 
 // Buffer follows Hchan immediately in memory.
 // chanbuf(c, i) is pointer to the i'th slot in the buffer.
@@ -107,6 +111,7 @@ runtime_makechan_c(ChanType *t, int64 hint)
 	c->elemsize = elem->__size;
 	c->elemalign = elem->__align;
 	c->dataqsiz = hint;
+	runtime_settype(c, (uintptr)t | TypeInfo_Chan);
 
 	if(debug)
 		runtime_printf("makechan: chan=%p; elemsize=%D; elemalign=%d; dataqsiz=%D\n",
@@ -875,16 +880,27 @@ sellock(Select *sel)
 static void
 selunlock(Select *sel)
 {
-	uint32 i;
-	Hchan *c, *c0;
+	int32 i, n, r;
+	Hchan *c;
 
-	c = nil;
-	for(i=sel->ncase; i-->0;) {
-		c0 = sel->lockorder[i];
-		if(c0 && c0 != c) {
-			c = c0;
-			runtime_unlock(c);
-		}
+	// We must be very careful here to not touch sel after we have unlocked
+	// the last lock, because sel can be freed right after the last unlock.
+	// Consider the following situation.
+	// First M calls runtime_park() in runtime_selectgo() passing the sel.
+	// Once runtime_park() has unlocked the last lock, another M makes
+	// the G that calls select runnable again and schedules it for execution.
+	// When the G runs on another M, it locks all the locks and frees sel.
+	// Now if the first M touches sel, it will access freed memory.
+	n = (int32)sel->ncase;
+	r = 0;
+	// skip the default case
+	if(n>0 && sel->lockorder[0] == nil)
+		r = 1;
+	for(i = n-1; i >= r; i--) {
+		c = sel->lockorder[i];
+		if(i>0 && sel->lockorder[i-1] == c)
+			continue;  // will unlock it on the next iteration
+		runtime_unlock(c);
 	}
 }
 
@@ -910,7 +926,7 @@ static int
 selectgo(Select **selp)
 {
 	Select *sel;
-	uint32 o, i, j;
+	uint32 o, i, j, k;
 	Scase *cas, *dfl;
 	Hchan *c;
 	SudoG *sg;
@@ -946,12 +962,42 @@ selectgo(Select **selp)
 	}
 
 	// sort the cases by Hchan address to get the locking order.
+	// simple heap sort, to guarantee n log n time and constant stack footprint.
 	for(i=0; i<sel->ncase; i++) {
-		c = sel->scase[i].chan;
-		for(j=i; j>0 && sel->lockorder[j-1] >= c; j--)
-			sel->lockorder[j] = sel->lockorder[j-1];
+		j = i;
+		c = sel->scase[j].chan;
+		while(j > 0 && sel->lockorder[k=(j-1)/2] < c) {
+			sel->lockorder[j] = sel->lockorder[k];
+			j = k;
+		}
 		sel->lockorder[j] = c;
 	}
+	for(i=sel->ncase; i-->0; ) {
+		c = sel->lockorder[i];
+		sel->lockorder[i] = sel->lockorder[0];
+		j = 0;
+		for(;;) {
+			k = j*2+1;
+			if(k >= i)
+				break;
+			if(k+1 < i && sel->lockorder[k] < sel->lockorder[k+1])
+				k++;
+			if(c < sel->lockorder[k]) {
+				sel->lockorder[j] = sel->lockorder[k];
+				j = k;
+				continue;
+			}
+			break;
+		}
+		sel->lockorder[j] = c;
+	}
+	/*
+	for(i=0; i+1<sel->ncase; i++)
+		if(sel->lockorder[i] > sel->lockorder[i+1]) {
+			runtime_printf("i=%d %p %p\n", i, sel->lockorder[i], sel->lockorder[i+1]);
+			runtime_throw("select: broken sort");
+		}
+	*/
 	sellock(sel);
 
 loop:
@@ -1048,7 +1094,7 @@ loop:
 	c = cas->chan;
 
 	if(c->dataqsiz > 0)
-		runtime_throw("selectgo: shouldnt happen");
+		runtime_throw("selectgo: shouldn't happen");
 
 	if(debug)
 		runtime_printf("wait-return: sel=%p c=%p cas=%p kind=%d\n",

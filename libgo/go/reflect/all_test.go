@@ -13,7 +13,8 @@ import (
 	"math/rand"
 	"os"
 	. "reflect"
-	/*	"runtime" */
+	"runtime"
+	"sort"
 	"sync"
 	"testing"
 	"time"
@@ -1464,7 +1465,7 @@ func (p Point) AnotherMethod(scale int) int {
 
 // This will be index 1.
 func (p Point) Dist(scale int) int {
-	//	println("Point.Dist", p.x, p.y, scale)
+	//println("Point.Dist", p.x, p.y, scale)
 	return p.x*p.x*scale + p.y*p.y*scale
 }
 
@@ -1480,23 +1481,23 @@ func TestMethod(t *testing.T) {
 	if !ok {
 		t.Fatalf("method by name failed")
 	}
-	m.Func.Call([]Value{ValueOf(p), ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Type MethodByName returned %d; want 250", i)
+	i = m.Func.Call([]Value{ValueOf(p), ValueOf(11)})[0].Int()
+	if i != 275 {
+		t.Errorf("Type MethodByName returned %d; want 275", i)
 	}
 
-	i = TypeOf(&p).Method(1).Func.Call([]Value{ValueOf(&p), ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Pointer Type Method returned %d; want 250", i)
+	i = TypeOf(&p).Method(1).Func.Call([]Value{ValueOf(&p), ValueOf(12)})[0].Int()
+	if i != 300 {
+		t.Errorf("Pointer Type Method returned %d; want 300", i)
 	}
 
 	m, ok = TypeOf(&p).MethodByName("Dist")
 	if !ok {
 		t.Fatalf("ptr method by name failed")
 	}
-	i = m.Func.Call([]Value{ValueOf(&p), ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Pointer Type MethodByName returned %d; want 250", i)
+	i = m.Func.Call([]Value{ValueOf(&p), ValueOf(13)})[0].Int()
+	if i != 325 {
+		t.Errorf("Pointer Type MethodByName returned %d; want 325", i)
 	}
 
 	// Curried method of value.
@@ -1505,17 +1506,17 @@ func TestMethod(t *testing.T) {
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Value Method Type is %s; want %s", tt, tfunc)
 	}
-	i = v.Call([]Value{ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Value Method returned %d; want 250", i)
+	i = v.Call([]Value{ValueOf(14)})[0].Int()
+	if i != 350 {
+		t.Errorf("Value Method returned %d; want 350", i)
 	}
 	v = ValueOf(p).MethodByName("Dist")
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Value MethodByName Type is %s; want %s", tt, tfunc)
 	}
-	i = v.Call([]Value{ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Value MethodByName returned %d; want 250", i)
+	i = v.Call([]Value{ValueOf(15)})[0].Int()
+	if i != 375 {
+		t.Errorf("Value MethodByName returned %d; want 375", i)
 	}
 
 	// Curried method of pointer.
@@ -1523,17 +1524,86 @@ func TestMethod(t *testing.T) {
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Pointer Value Method Type is %s; want %s", tt, tfunc)
 	}
-	i = v.Call([]Value{ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Pointer Value Method returned %d; want 250", i)
+	i = v.Call([]Value{ValueOf(16)})[0].Int()
+	if i != 400 {
+		t.Errorf("Pointer Value Method returned %d; want 400", i)
 	}
 	v = ValueOf(&p).MethodByName("Dist")
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Pointer Value MethodByName Type is %s; want %s", tt, tfunc)
 	}
-	i = v.Call([]Value{ValueOf(10)})[0].Int()
+	i = v.Call([]Value{ValueOf(17)})[0].Int()
+	if i != 425 {
+		t.Errorf("Pointer Value MethodByName returned %d; want 425", i)
+	}
+
+	// Curried method of interface value.
+	// Have to wrap interface value in a struct to get at it.
+	// Passing it to ValueOf directly would
+	// access the underlying Point, not the interface.
+	var x interface {
+		Dist(int) int
+	} = p
+	pv := ValueOf(&x).Elem()
+	v = pv.Method(0)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Interface Method Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(18)})[0].Int()
+	if i != 450 {
+		t.Errorf("Interface Method returned %d; want 450", i)
+	}
+	v = pv.MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Interface MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = v.Call([]Value{ValueOf(19)})[0].Int()
+	if i != 475 {
+		t.Errorf("Interface MethodByName returned %d; want 475", i)
+	}
+}
+
+/* Not yet implemented for gccgo
+
+func TestMethodValue(t *testing.T) {
+	p := Point{3, 4}
+	var i int64
+
+	// Curried method of value.
+	tfunc := TypeOf((func(int) int)(nil))
+	v := ValueOf(p).Method(1)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Value Method Type is %s; want %s", tt, tfunc)
+	}
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(10)})[0].Int()
 	if i != 250 {
-		t.Errorf("Pointer Value MethodByName returned %d; want 250", i)
+		t.Errorf("Value Method returned %d; want 250", i)
+	}
+	v = ValueOf(p).MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Value MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(11)})[0].Int()
+	if i != 275 {
+		t.Errorf("Value MethodByName returned %d; want 275", i)
+	}
+
+	// Curried method of pointer.
+	v = ValueOf(&p).Method(1)
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Pointer Value Method Type is %s; want %s", tt, tfunc)
+	}
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(12)})[0].Int()
+	if i != 300 {
+		t.Errorf("Pointer Value Method returned %d; want 300", i)
+	}
+	v = ValueOf(&p).MethodByName("Dist")
+	if tt := v.Type(); tt != tfunc {
+		t.Errorf("Pointer Value MethodByName Type is %s; want %s", tt, tfunc)
+	}
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(13)})[0].Int()
+	if i != 325 {
+		t.Errorf("Pointer Value MethodByName returned %d; want 325", i)
 	}
 
 	// Curried method of interface value.
@@ -1550,18 +1620,207 @@ func TestMethod(t *testing.T) {
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Interface Method Type is %s; want %s", tt, tfunc)
 	}
-	i = v.Call([]Value{ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Interface Method returned %d; want 250", i)
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(14)})[0].Int()
+	if i != 350 {
+		t.Errorf("Interface Method returned %d; want 350", i)
 	}
 	v = pv.MethodByName("Dist")
 	if tt := v.Type(); tt != tfunc {
 		t.Errorf("Interface MethodByName Type is %s; want %s", tt, tfunc)
 	}
-	i = v.Call([]Value{ValueOf(10)})[0].Int()
-	if i != 250 {
-		t.Errorf("Interface MethodByName returned %d; want 250", i)
+	i = ValueOf(v.Interface()).Call([]Value{ValueOf(15)})[0].Int()
+	if i != 375 {
+		t.Errorf("Interface MethodByName returned %d; want 375", i)
 	}
+}
+
+*/
+
+// Reflect version of $GOROOT/test/method5.go
+
+// Concrete types implementing M method.
+// Smaller than a word, word-sized, larger than a word.
+// Value and pointer receivers.
+
+type Tinter interface {
+	M(int, byte) (byte, int)
+}
+
+type Tsmallv byte
+
+func (v Tsmallv) M(x int, b byte) (byte, int) { return b, x + int(v) }
+
+type Tsmallp byte
+
+func (p *Tsmallp) M(x int, b byte) (byte, int) { return b, x + int(*p) }
+
+type Twordv uintptr
+
+func (v Twordv) M(x int, b byte) (byte, int) { return b, x + int(v) }
+
+type Twordp uintptr
+
+func (p *Twordp) M(x int, b byte) (byte, int) { return b, x + int(*p) }
+
+type Tbigv [2]uintptr
+
+func (v Tbigv) M(x int, b byte) (byte, int) { return b, x + int(v[0]) + int(v[1]) }
+
+type Tbigp [2]uintptr
+
+func (p *Tbigp) M(x int, b byte) (byte, int) { return b, x + int(p[0]) + int(p[1]) }
+
+// Again, with an unexported method.
+
+type tsmallv byte
+
+func (v tsmallv) m(x int, b byte) (byte, int) { return b, x + int(v) }
+
+type tsmallp byte
+
+func (p *tsmallp) m(x int, b byte) (byte, int) { return b, x + int(*p) }
+
+type twordv uintptr
+
+func (v twordv) m(x int, b byte) (byte, int) { return b, x + int(v) }
+
+type twordp uintptr
+
+func (p *twordp) m(x int, b byte) (byte, int) { return b, x + int(*p) }
+
+type tbigv [2]uintptr
+
+func (v tbigv) m(x int, b byte) (byte, int) { return b, x + int(v[0]) + int(v[1]) }
+
+type tbigp [2]uintptr
+
+func (p *tbigp) m(x int, b byte) (byte, int) { return b, x + int(p[0]) + int(p[1]) }
+
+type tinter interface {
+	m(int, byte) (byte, int)
+}
+
+// Embedding via pointer.
+
+type Tm1 struct {
+	Tm2
+}
+
+type Tm2 struct {
+	*Tm3
+}
+
+type Tm3 struct {
+	*Tm4
+}
+
+type Tm4 struct {
+}
+
+func (t4 Tm4) M(x int, b byte) (byte, int) { return b, x + 40 }
+
+func TestMethod5(t *testing.T) {
+	/* Not yet used for gccgo
+	CheckF := func(name string, f func(int, byte) (byte, int), inc int) {
+		b, x := f(1000, 99)
+		if b != 99 || x != 1000+inc {
+			t.Errorf("%s(1000, 99) = %v, %v, want 99, %v", name, b, x, 1000+inc)
+		}
+	}
+	*/
+
+	CheckV := func(name string, i Value, inc int) {
+		bx := i.Method(0).Call([]Value{ValueOf(1000), ValueOf(byte(99))})
+		b := bx[0].Interface()
+		x := bx[1].Interface()
+		if b != byte(99) || x != 1000+inc {
+			t.Errorf("direct %s.M(1000, 99) = %v, %v, want 99, %v", name, b, x, 1000+inc)
+		}
+
+		/* Not yet implemented for gccgo
+		CheckF(name+".M", i.Method(0).Interface().(func(int, byte) (byte, int)), inc)
+		*/
+	}
+
+	var TinterType = TypeOf(new(Tinter)).Elem()
+	var tinterType = TypeOf(new(tinter)).Elem()
+
+	CheckI := func(name string, i interface{}, inc int) {
+		v := ValueOf(i)
+		CheckV(name, v, inc)
+		CheckV("(i="+name+")", v.Convert(TinterType), inc)
+	}
+
+	sv := Tsmallv(1)
+	CheckI("sv", sv, 1)
+	CheckI("&sv", &sv, 1)
+
+	sp := Tsmallp(2)
+	CheckI("&sp", &sp, 2)
+
+	wv := Twordv(3)
+	CheckI("wv", wv, 3)
+	CheckI("&wv", &wv, 3)
+
+	wp := Twordp(4)
+	CheckI("&wp", &wp, 4)
+
+	bv := Tbigv([2]uintptr{5, 6})
+	CheckI("bv", bv, 11)
+	CheckI("&bv", &bv, 11)
+
+	bp := Tbigp([2]uintptr{7, 8})
+	CheckI("&bp", &bp, 15)
+
+	t4 := Tm4{}
+	t3 := Tm3{&t4}
+	t2 := Tm2{&t3}
+	t1 := Tm1{t2}
+	CheckI("t4", t4, 40)
+	CheckI("&t4", &t4, 40)
+	CheckI("t3", t3, 40)
+	CheckI("&t3", &t3, 40)
+	CheckI("t2", t2, 40)
+	CheckI("&t2", &t2, 40)
+	CheckI("t1", t1, 40)
+	CheckI("&t1", &t1, 40)
+
+	methodShouldPanic := func(name string, i interface{}) {
+		v := ValueOf(i)
+		m := v.Method(0)
+		shouldPanic(func() { m.Call([]Value{ValueOf(1000), ValueOf(byte(99))}) })
+		shouldPanic(func() { m.Interface() })
+
+		v = v.Convert(tinterType)
+		m = v.Method(0)
+		shouldPanic(func() { m.Call([]Value{ValueOf(1000), ValueOf(byte(99))}) })
+		shouldPanic(func() { m.Interface() })
+	}
+
+	_sv := tsmallv(1)
+	methodShouldPanic("_sv", _sv)
+	methodShouldPanic("&_sv", &_sv)
+
+	_sp := tsmallp(2)
+	methodShouldPanic("&_sp", &_sp)
+
+	_wv := twordv(3)
+	methodShouldPanic("_wv", _wv)
+	methodShouldPanic("&_wv", &_wv)
+
+	_wp := twordp(4)
+	methodShouldPanic("&_wp", &_wp)
+
+	_bv := tbigv([2]uintptr{5, 6})
+	methodShouldPanic("_bv", _bv)
+	methodShouldPanic("&_bv", &_bv)
+
+	_bp := tbigp([2]uintptr{7, 8})
+	methodShouldPanic("&_bp", &_bp)
+
+	var tnil Tinter
+	vnil := ValueOf(&tnil).Elem()
+	shouldPanic(func() { vnil.Method(0) })
 }
 
 func TestInterfaceSet(t *testing.T) {
@@ -1958,6 +2217,30 @@ func TestPtrTo(t *testing.T) {
 	}
 }
 
+func TestPtrToGC(t *testing.T) {
+	type T *uintptr
+	tt := TypeOf(T(nil))
+	pt := PtrTo(tt)
+	const n = 100
+	var x []interface{}
+	for i := 0; i < n; i++ {
+		v := New(pt)
+		p := new(*uintptr)
+		*p = new(uintptr)
+		**p = uintptr(i)
+		v.Elem().Set(ValueOf(p).Convert(pt))
+		x = append(x, v.Interface())
+	}
+	runtime.GC()
+
+	for i, xi := range x {
+		k := ValueOf(xi).Elem().Elem().Elem().Interface().(uintptr)
+		if k != uintptr(i) {
+			t.Errorf("lost x[%d] = %d, want %d", i, k, i)
+		}
+	}
+}
+
 func TestAddr(t *testing.T) {
 	var p struct {
 		X, Y int
@@ -2023,20 +2306,16 @@ func TestAddr(t *testing.T) {
 /* gccgo does do allocations here.
 
 func noAlloc(t *testing.T, n int, f func(int)) {
-	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
-	// once to prime everything
-	f(-1)
-	memstats := new(runtime.MemStats)
-	runtime.ReadMemStats(memstats)
-	oldmallocs := memstats.Mallocs
-
-	for j := 0; j < n; j++ {
-		f(j)
+	if runtime.GOMAXPROCS(0) > 1 {
+		t.Skip("skipping; GOMAXPROCS>1")
 	}
-	runtime.ReadMemStats(memstats)
-	mallocs := memstats.Mallocs - oldmallocs
-	if mallocs > 0 {
-		t.Fatalf("%d mallocs after %d iterations", mallocs, n)
+	i := -1
+	allocs := testing.AllocsPerRun(n, func() {
+		f(i)
+		i++
+	})
+	if allocs > 0 {
+		t.Errorf("%d iterations: got %v mallocs, want 0", n, allocs)
 	}
 }
 
@@ -2758,8 +3037,10 @@ func TestSliceOf(t *testing.T) {
 	type T int
 	st := SliceOf(TypeOf(T(1)))
 	v := MakeSlice(st, 10, 10)
+	runtime.GC()
 	for i := 0; i < v.Len(); i++ {
 		v.Index(i).Set(ValueOf(T(i)))
+		runtime.GC()
 	}
 	s := fmt.Sprint(v.Interface())
 	want := "[0 1 2 3 4 5 6 7 8 9]"
@@ -2772,13 +3053,63 @@ func TestSliceOf(t *testing.T) {
 	checkSameType(t, Zero(SliceOf(TypeOf(T1(1)))).Interface(), []T1{})
 }
 
+func TestSliceOverflow(t *testing.T) {
+	// check that MakeSlice panics when size of slice overflows uint
+	const S = 1e6
+	s := uint(S)
+	l := (1<<(unsafe.Sizeof((*byte)(nil))*8)-1)/s + 1
+	if l*s >= s {
+		t.Fatal("slice size does not overflow")
+	}
+	var x [S]byte
+	st := SliceOf(TypeOf(x))
+	defer func() {
+		err := recover()
+		if err == nil {
+			t.Fatal("slice overflow does not panic")
+		}
+	}()
+	MakeSlice(st, int(l), int(l))
+}
+
+func TestSliceOfGC(t *testing.T) {
+	type T *uintptr
+	tt := TypeOf(T(nil))
+	st := SliceOf(tt)
+	const n = 100
+	var x []interface{}
+	for i := 0; i < n; i++ {
+		v := MakeSlice(st, n, n)
+		for j := 0; j < v.Len(); j++ {
+			p := new(uintptr)
+			*p = uintptr(i*n + j)
+			v.Index(j).Set(ValueOf(p).Convert(tt))
+		}
+		x = append(x, v.Interface())
+	}
+	runtime.GC()
+
+	for i, xi := range x {
+		v := ValueOf(xi)
+		for j := 0; j < v.Len(); j++ {
+			k := v.Index(j).Elem().Interface()
+			if k != uintptr(i*n+j) {
+				t.Errorf("lost x[%d][%d] = %d, want %d", i, j, k, i*n+j)
+			}
+		}
+	}
+}
+
 func TestChanOf(t *testing.T) {
 	// check construction and use of type not in binary
 	type T string
 	ct := ChanOf(BothDir, TypeOf(T("")))
 	v := MakeChan(ct, 2)
+	runtime.GC()
 	v.Send(ValueOf(T("hello")))
+	runtime.GC()
 	v.Send(ValueOf(T("world")))
+	runtime.GC()
 
 	sv1, _ := v.Recv()
 	sv2, _ := v.Recv()
@@ -2793,13 +3124,63 @@ func TestChanOf(t *testing.T) {
 	checkSameType(t, Zero(ChanOf(BothDir, TypeOf(T1(1)))).Interface(), (chan T1)(nil))
 }
 
+func TestChanOfGC(t *testing.T) {
+	done := make(chan bool, 1)
+	go func() {
+		select {
+		case <-done:
+		case <-time.After(5 * time.Second):
+			panic("deadlock in TestChanOfGC")
+		}
+	}()
+
+	defer func() {
+		done <- true
+	}()
+
+	type T *uintptr
+	tt := TypeOf(T(nil))
+	ct := ChanOf(BothDir, tt)
+
+	// NOTE: The garbage collector handles allocated channels specially,
+	// so we have to save pointers to channels in x; the pointer code will
+	// use the gc info in the newly constructed chan type.
+	const n = 100
+	var x []interface{}
+	for i := 0; i < n; i++ {
+		v := MakeChan(ct, n)
+		for j := 0; j < n; j++ {
+			p := new(uintptr)
+			*p = uintptr(i*n + j)
+			v.Send(ValueOf(p).Convert(tt))
+		}
+		pv := New(ct)
+		pv.Elem().Set(v)
+		x = append(x, pv.Interface())
+	}
+	runtime.GC()
+
+	for i, xi := range x {
+		v := ValueOf(xi).Elem()
+		for j := 0; j < n; j++ {
+			pv, _ := v.Recv()
+			k := pv.Elem().Interface()
+			if k != uintptr(i*n+j) {
+				t.Errorf("lost x[%d][%d] = %d, want %d", i, j, k, i*n+j)
+			}
+		}
+	}
+}
+
 func TestMapOf(t *testing.T) {
 	// check construction and use of type not in binary
 	type K string
 	type V float64
 
 	v := MakeMap(MapOf(TypeOf(K("")), TypeOf(V(0))))
+	runtime.GC()
 	v.SetMapIndex(ValueOf(K("a")), ValueOf(V(1)))
+	runtime.GC()
 
 	s := fmt.Sprint(v.Interface())
 	want := "map[a:1]"
@@ -2809,6 +3190,81 @@ func TestMapOf(t *testing.T) {
 
 	// check that type already in binary is found
 	checkSameType(t, Zero(MapOf(TypeOf(V(0)), TypeOf(K("")))).Interface(), map[V]K(nil))
+
+	// check that invalid key type panics
+	shouldPanic(func() { MapOf(TypeOf((func())(nil)), TypeOf(false)) })
+}
+
+func TestMapOfGCKeys(t *testing.T) {
+	type T *uintptr
+	tt := TypeOf(T(nil))
+	mt := MapOf(tt, TypeOf(false))
+
+	// NOTE: The garbage collector handles allocated maps specially,
+	// so we have to save pointers to maps in x; the pointer code will
+	// use the gc info in the newly constructed map type.
+	const n = 100
+	var x []interface{}
+	for i := 0; i < n; i++ {
+		v := MakeMap(mt)
+		for j := 0; j < n; j++ {
+			p := new(uintptr)
+			*p = uintptr(i*n + j)
+			v.SetMapIndex(ValueOf(p).Convert(tt), ValueOf(true))
+		}
+		pv := New(mt)
+		pv.Elem().Set(v)
+		x = append(x, pv.Interface())
+	}
+	runtime.GC()
+
+	for i, xi := range x {
+		v := ValueOf(xi).Elem()
+		var out []int
+		for _, kv := range v.MapKeys() {
+			out = append(out, int(kv.Elem().Interface().(uintptr)))
+		}
+		sort.Ints(out)
+		for j, k := range out {
+			if k != i*n+j {
+				t.Errorf("lost x[%d][%d] = %d, want %d", i, j, k, i*n+j)
+			}
+		}
+	}
+}
+
+func TestMapOfGCValues(t *testing.T) {
+	type T *uintptr
+	tt := TypeOf(T(nil))
+	mt := MapOf(TypeOf(1), tt)
+
+	// NOTE: The garbage collector handles allocated maps specially,
+	// so we have to save pointers to maps in x; the pointer code will
+	// use the gc info in the newly constructed map type.
+	const n = 100
+	var x []interface{}
+	for i := 0; i < n; i++ {
+		v := MakeMap(mt)
+		for j := 0; j < n; j++ {
+			p := new(uintptr)
+			*p = uintptr(i*n + j)
+			v.SetMapIndex(ValueOf(j), ValueOf(p).Convert(tt))
+		}
+		pv := New(mt)
+		pv.Elem().Set(v)
+		x = append(x, pv.Interface())
+	}
+	runtime.GC()
+
+	for i, xi := range x {
+		v := ValueOf(xi).Elem()
+		for j := 0; j < n; j++ {
+			k := v.MapIndex(ValueOf(j)).Elem().Interface().(uintptr)
+			if k != uintptr(i*n+j) {
+				t.Errorf("lost x[%d][%d] = %d, want %d", i, j, k, i*n+j)
+			}
+		}
+	}
 }
 
 type B1 struct {

@@ -91,14 +91,22 @@
 //
 //	- the target operating system, as spelled by runtime.GOOS
 //	- the target architecture, as spelled by runtime.GOARCH
-//	- the compiler being used, currently either "gc" or "gccgo"
+//	- the compiler being used, either "gc" or "gccgo"
 //	- "cgo", if ctxt.CgoEnabled is true
+//	- "go1.1", from Go version 1.1 onward
 //	- any additional words listed in ctxt.BuildTags
 //
 // If a file's name, after stripping the extension and a possible _test suffix,
-// matches *_GOOS, *_GOARCH, or *_GOOS_GOARCH for any known operating
-// system and architecture values, then the file is considered to have an implicit
-// build constraint requiring those terms.
+// matches any of the following patterns:
+//	*_GOOS
+// 	*_GOARCH
+// 	*_GOOS_GOARCH
+// (example: source_windows_amd64.go) or the literals:
+//	GOOS
+// 	GOARCH
+// (example: windows.go) where GOOS and GOARCH represent any known operating
+// system and architecture values respectively, then the file is considered to
+// have an implicit build constraint requiring those terms.
 //
 // To keep a file from being considered for the build:
 //

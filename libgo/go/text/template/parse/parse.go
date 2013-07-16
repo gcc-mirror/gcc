@@ -429,7 +429,6 @@ func (t *Tree) pipeline(context string) (pipe *PipeNode) {
 			t.unexpected(token, context)
 		}
 	}
-	return
 }
 
 func (t *Tree) parseControl(context string) (pos Pos, line int, pipe *PipeNode, list, elseList *ListNode) {
@@ -445,7 +444,6 @@ func (t *Tree) parseControl(context string) (pos Pos, line int, pipe *PipeNode, 
 		if next.Type() != nodeEnd {
 			t.errorf("expected end; found %s", next)
 		}
-		elseList = elseList
 	}
 	return pipe.Position(), line, pipe, list, elseList
 }

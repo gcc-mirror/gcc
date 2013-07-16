@@ -176,10 +176,7 @@ func FromSlash(path string) string {
 // usually found in PATH or GOPATH environment variables.
 // Unlike strings.Split, SplitList returns an empty slice when passed an empty string.
 func SplitList(path string) []string {
-	if path == "" {
-		return []string{}
-	}
-	return strings.Split(path, string(ListSeparator))
+	return splitList(path)
 }
 
 // Split splits path immediately following the final Separator,
@@ -374,6 +371,7 @@ func walk(path string, info os.FileInfo, walkFn WalkFunc) error {
 // and directories are filtered by walkFn. The files are walked in lexical
 // order, which makes the output deterministic but means that for very
 // large directories Walk can be inefficient.
+// Walk does not follow symbolic links.
 func Walk(root string, walkFn WalkFunc) error {
 	info, err := os.Lstat(root)
 	if err != nil {
@@ -436,7 +434,8 @@ func Base(path string) string {
 }
 
 // Dir returns all but the last element of path, typically the path's directory.
-// Trailing path separators are removed before processing.
+// After dropping the final element, the path is Cleaned and trailing
+// slashes are removed.
 // If the path is empty, Dir returns ".".
 // If the path consists entirely of separators, Dir returns a single separator.
 // The returned path does not end in a separator unless it is the root directory.

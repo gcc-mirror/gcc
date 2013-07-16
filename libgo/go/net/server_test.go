@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -39,6 +40,12 @@ func skipServerTest(net, unixsotype, addr string, ipv6, ipv4map, linuxonly bool)
 		return true
 	}
 	return false
+}
+
+func tempfile(filename string) string {
+	// use /tmp in case it is prohibited to create
+	// UNIX sockets in TMPDIR
+	return "/tmp/" + filename + "." + strconv.Itoa(os.Getpid())
 }
 
 var streamConnServerTests = []struct {
@@ -86,7 +93,7 @@ var streamConnServerTests = []struct {
 
 	{snet: "tcp6", saddr: "[::1]", cnet: "tcp6", caddr: "[::1]", ipv6: true},
 
-	{snet: "unix", saddr: "/tmp/gotest1.net", cnet: "unix", caddr: "/tmp/gotest1.net.local"},
+	{snet: "unix", saddr: tempfile("gotest1.net"), cnet: "unix", caddr: tempfile("gotest1.net.local")},
 	{snet: "unix", saddr: "@gotest2/net", cnet: "unix", caddr: "@gotest2/net.local", linux: true},
 }
 
@@ -113,8 +120,7 @@ func TestStreamConnServer(t *testing.T) {
 		case "tcp", "tcp4", "tcp6":
 			_, port, err := SplitHostPort(taddr)
 			if err != nil {
-				t.Errorf("SplitHostPort(%q) failed: %v", taddr, err)
-				return
+				t.Fatalf("SplitHostPort(%q) failed: %v", taddr, err)
 			}
 			taddr = tt.caddr + ":" + port
 		}
@@ -136,7 +142,7 @@ var seqpacketConnServerTests = []struct {
 	caddr string // client address
 	empty bool   // test with empty data
 }{
-	{net: "unixpacket", saddr: "/tmp/gotest3.net", caddr: "/tmp/gotest3.net.local"},
+	{net: "unixpacket", saddr: tempfile("/gotest3.net"), caddr: tempfile("gotest3.net.local")},
 	{net: "unixpacket", saddr: "@gotest4/net", caddr: "@gotest4/net.local"},
 }
 
@@ -169,11 +175,11 @@ func TestSeqpacketConnServer(t *testing.T) {
 }
 
 func runStreamConnServer(t *testing.T, net, laddr string, listening chan<- string, done chan<- int) {
+	defer close(done)
 	l, err := Listen(net, laddr)
 	if err != nil {
 		t.Errorf("Listen(%q, %q) failed: %v", net, laddr, err)
 		listening <- "<nil>"
-		done <- 1
 		return
 	}
 	defer l.Close()
@@ -188,13 +194,14 @@ func runStreamConnServer(t *testing.T, net, laddr string, listening chan<- strin
 			}
 			rw.Write(buf[0:n])
 		}
-		done <- 1
+		close(done)
 	}
 
 run:
 	for {
 		c, err := l.Accept()
 		if err != nil {
+			t.Logf("Accept failed: %v", err)
 			continue run
 		}
 		echodone := make(chan int)
@@ -203,14 +210,12 @@ run:
 		c.Close()
 		break run
 	}
-	done <- 1
 }
 
 func runStreamConnClient(t *testing.T, net, taddr string, isEmpty bool) {
 	c, err := Dial(net, taddr)
 	if err != nil {
-		t.Errorf("Dial(%q, %q) failed: %v", net, taddr, err)
-		return
+		t.Fatalf("Dial(%q, %q) failed: %v", net, taddr, err)
 	}
 	defer c.Close()
 	c.SetReadDeadline(time.Now().Add(1 * time.Second))
@@ -220,14 +225,12 @@ func runStreamConnClient(t *testing.T, net, taddr string, isEmpty bool) {
 		wb = []byte("StreamConnClient by Dial\n")
 	}
 	if n, err := c.Write(wb); err != nil || n != len(wb) {
-		t.Errorf("Write failed: %v, %v; want %v, <nil>", n, err, len(wb))
-		return
+		t.Fatalf("Write failed: %v, %v; want %v, <nil>", n, err, len(wb))
 	}
 
 	rb := make([]byte, 1024)
 	if n, err := c.Read(rb[0:]); err != nil || n != len(wb) {
-		t.Errorf("Read failed: %v, %v; want %v, <nil>", n, err, len(wb))
-		return
+		t.Fatalf("Read failed: %v, %v; want %v, <nil>", n, err, len(wb))
 	}
 
 	// Send explicit ending for unixpacket.
@@ -298,10 +301,10 @@ var datagramPacketConnServerTests = []struct {
 	{snet: "udp", saddr: "[::1]", cnet: "udp", caddr: "[::1]", ipv6: true, empty: true},
 	{snet: "udp", saddr: "[::1]", cnet: "udp", caddr: "[::1]", ipv6: true, dial: true, empty: true},
 
-	{snet: "unixgram", saddr: "/tmp/gotest5.net", cnet: "unixgram", caddr: "/tmp/gotest5.net.local"},
-	{snet: "unixgram", saddr: "/tmp/gotest5.net", cnet: "unixgram", caddr: "/tmp/gotest5.net.local", dial: true},
-	{snet: "unixgram", saddr: "/tmp/gotest5.net", cnet: "unixgram", caddr: "/tmp/gotest5.net.local", empty: true},
-	{snet: "unixgram", saddr: "/tmp/gotest5.net", cnet: "unixgram", caddr: "/tmp/gotest5.net.local", dial: true, empty: true},
+	{snet: "unixgram", saddr: tempfile("gotest5.net"), cnet: "unixgram", caddr: tempfile("gotest5.net.local")},
+	{snet: "unixgram", saddr: tempfile("gotest5.net"), cnet: "unixgram", caddr: tempfile("gotest5.net.local"), dial: true},
+	{snet: "unixgram", saddr: tempfile("gotest5.net"), cnet: "unixgram", caddr: tempfile("gotest5.net.local"), empty: true},
+	{snet: "unixgram", saddr: tempfile("gotest5.net"), cnet: "unixgram", caddr: tempfile("gotest5.net.local"), dial: true, empty: true},
 
 	{snet: "unixgram", saddr: "@gotest6/net", cnet: "unixgram", caddr: "@gotest6/net.local", linux: true},
 }
@@ -333,8 +336,7 @@ func TestDatagramPacketConnServer(t *testing.T) {
 		case "udp", "udp4", "udp6":
 			_, port, err := SplitHostPort(taddr)
 			if err != nil {
-				t.Errorf("SplitHostPort(%q) failed: %v", taddr, err)
-				return
+				t.Fatalf("SplitHostPort(%q) failed: %v", taddr, err)
 			}
 			taddr = tt.caddr + ":" + port
 			tt.caddr += ":0"
@@ -397,14 +399,12 @@ func runDatagramConnClient(t *testing.T, net, laddr, taddr string, isEmpty bool)
 	case "udp", "udp4", "udp6":
 		c, err = Dial(net, taddr)
 		if err != nil {
-			t.Errorf("Dial(%q, %q) failed: %v", net, taddr, err)
-			return
+			t.Fatalf("Dial(%q, %q) failed: %v", net, taddr, err)
 		}
 	case "unixgram":
-		c, err = DialUnix(net, &UnixAddr{laddr, net}, &UnixAddr{taddr, net})
+		c, err = DialUnix(net, &UnixAddr{Name: laddr, Net: net}, &UnixAddr{Name: taddr, Net: net})
 		if err != nil {
-			t.Errorf("DialUnix(%q, {%q, %q}) failed: %v", net, laddr, taddr, err)
-			return
+			t.Fatalf("DialUnix(%q, {%q, %q}) failed: %v", net, laddr, taddr, err)
 		}
 	}
 	defer c.Close()
@@ -415,14 +415,12 @@ func runDatagramConnClient(t *testing.T, net, laddr, taddr string, isEmpty bool)
 		wb = []byte("DatagramConnClient by Dial\n")
 	}
 	if n, err := c.Write(wb[0:]); err != nil || n != len(wb) {
-		t.Errorf("Write failed: %v, %v; want %v, <nil>", n, err, len(wb))
-		return
+		t.Fatalf("Write failed: %v, %v; want %v, <nil>", n, err, len(wb))
 	}
 
 	rb := make([]byte, 1024)
 	if n, err := c.Read(rb[0:]); err != nil || n != len(wb) {
-		t.Errorf("Read failed: %v, %v; want %v, <nil>", n, err, len(wb))
-		return
+		t.Fatalf("Read failed: %v, %v; want %v, <nil>", n, err, len(wb))
 	}
 }
 
@@ -433,20 +431,17 @@ func runDatagramPacketConnClient(t *testing.T, net, laddr, taddr string, isEmpty
 	case "udp", "udp4", "udp6":
 		ra, err = ResolveUDPAddr(net, taddr)
 		if err != nil {
-			t.Errorf("ResolveUDPAddr(%q, %q) failed: %v", net, taddr, err)
-			return
+			t.Fatalf("ResolveUDPAddr(%q, %q) failed: %v", net, taddr, err)
 		}
 	case "unixgram":
 		ra, err = ResolveUnixAddr(net, taddr)
 		if err != nil {
-			t.Errorf("ResolveUxixAddr(%q, %q) failed: %v", net, taddr, err)
-			return
+			t.Fatalf("ResolveUxixAddr(%q, %q) failed: %v", net, taddr, err)
 		}
 	}
 	c, err := ListenPacket(net, laddr)
 	if err != nil {
-		t.Errorf("ListenPacket(%q, %q) faild: %v", net, laddr, err)
-		return
+		t.Fatalf("ListenPacket(%q, %q) faild: %v", net, laddr, err)
 	}
 	defer c.Close()
 	c.SetReadDeadline(time.Now().Add(1 * time.Second))
@@ -456,13 +451,11 @@ func runDatagramPacketConnClient(t *testing.T, net, laddr, taddr string, isEmpty
 		wb = []byte("DatagramPacketConnClient by ListenPacket\n")
 	}
 	if n, err := c.WriteTo(wb[0:], ra); err != nil || n != len(wb) {
-		t.Errorf("WriteTo(%v) failed: %v, %v; want %v, <nil>", ra, n, err, len(wb))
-		return
+		t.Fatalf("WriteTo(%v) failed: %v, %v; want %v, <nil>", ra, n, err, len(wb))
 	}
 
 	rb := make([]byte, 1024)
 	if n, _, err := c.ReadFrom(rb[0:]); err != nil || n != len(wb) {
-		t.Errorf("ReadFrom failed: %v, %v; want %v, <nil>", n, err, len(wb))
-		return
+		t.Fatalf("ReadFrom failed: %v, %v; want %v, <nil>", n, err, len(wb))
 	}
 }

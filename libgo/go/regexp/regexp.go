@@ -8,6 +8,8 @@
 // general syntax used by Perl, Python, and other languages.
 // More precisely, it is the syntax accepted by RE2 and described at
 // http://code.google.com/p/re2/wiki/Syntax, except for \C.
+// For an overview of the syntax, run
+//   godoc regexp/syntax
 //
 // All characters are UTF-8-encoded code points.
 //
@@ -27,11 +29,11 @@
 // of bytes; return values are adjusted as appropriate.
 //
 // If 'Submatch' is present, the return value is a slice identifying the
-// successive submatches of the expression.  Submatches are matches of
-// parenthesized subexpressions within the regular expression, numbered from
-// left to right in order of opening parenthesis.  Submatch 0 is the match of
-// the entire expression, submatch 1 the match of the first parenthesized
-// subexpression, and so on.
+// successive submatches of the expression. Submatches are matches of
+// parenthesized subexpressions (also known as capturing groups) within the
+// regular expression, numbered from left to right in order of opening
+// parenthesis. Submatch 0 is the match of the entire expression, submatch 1
+// the match of the first parenthesized subexpression, and so on.
 //
 // If 'Index' is present, matches and submatches are identified by byte index
 // pairs within the input string: result[2*n:2*n+1] identifies the indexes of
@@ -128,6 +130,14 @@ func Compile(expr string) (*Regexp, error) {
 // See http://swtch.com/~rsc/regexp/regexp2.html#posix for details.
 func CompilePOSIX(expr string) (*Regexp, error) {
 	return compile(expr, syntax.POSIX, true)
+}
+
+// Longest makes future searches prefer the leftmost-longest match.
+// That is, when matching against text, the regexp returns a match that
+// begins as early as possible in the input (leftmost), and among those
+// it chooses a match that is as long as possible.
+func (re *Regexp) Longest() {
+	re.longest = true
 }
 
 func compile(expr string, mode syntax.Flags, longest bool) (*Regexp, error) {
@@ -387,7 +397,7 @@ func (re *Regexp) Match(b []byte) bool {
 // MatchReader checks whether a textual regular expression matches the text
 // read by the RuneReader.  More complicated queries need to use Compile and
 // the full Regexp interface.
-func MatchReader(pattern string, r io.RuneReader) (matched bool, error error) {
+func MatchReader(pattern string, r io.RuneReader) (matched bool, err error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -398,7 +408,7 @@ func MatchReader(pattern string, r io.RuneReader) (matched bool, error error) {
 // MatchString checks whether a textual regular expression
 // matches a string.  More complicated queries need
 // to use Compile and the full Regexp interface.
-func MatchString(pattern string, s string) (matched bool, error error) {
+func MatchString(pattern string, s string) (matched bool, err error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err
@@ -409,7 +419,7 @@ func MatchString(pattern string, s string) (matched bool, error error) {
 // Match checks whether a textual regular expression
 // matches a byte slice.  More complicated queries need
 // to use Compile and the full Regexp interface.
-func Match(pattern string, b []byte) (matched bool, error error) {
+func Match(pattern string, b []byte) (matched bool, err error) {
 	re, err := Compile(pattern)
 	if err != nil {
 		return false, err

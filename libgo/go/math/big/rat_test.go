@@ -500,12 +500,10 @@ func TestIssue3521(t *testing.T) {
 	}
 }
 
-// Test inputs to Rat.SetString.  The optional prefix "slow:" skips
-// checks found to be slow for certain large rationals.
+// Test inputs to Rat.SetString.  The prefix "long:" causes the test
+// to be skipped in --test.short mode.  (The threshold is about 500us.)
 var float64inputs = []string{
-	//
 	// Constants plundered from strconv/testfp.txt.
-	//
 
 	// Table 1: Stress Inputs for Conversion to 53-bit Binary, < 1/2 ULP
 	"5e+125",
@@ -583,9 +581,7 @@ var float64inputs = []string{
 	"75224575729e-45",
 	"459926601011e+15",
 
-	//
 	// Constants plundered from strconv/atof_test.go.
-	//
 
 	"0",
 	"1",
@@ -630,8 +626,8 @@ var float64inputs = []string{
 	"-1e310",
 	"1e400",
 	"-1e400",
-	"1e400000",
-	"-1e400000",
+	"long:1e400000",
+	"long:-1e400000",
 
 	// denormalized
 	"1e-305",
@@ -649,10 +645,10 @@ var float64inputs = []string{
 	"2e-324",
 	// way too small
 	"1e-350",
-	"slow:1e-400000",
+	"long:1e-400000",
 	// way too small, negative
 	"-1e-350",
-	"slow:-1e-400000",
+	"long:-1e-400000",
 
 	// try to overflow exponent
 	// [Disabled: too slow and memory-hungry with rationals.]
@@ -672,7 +668,7 @@ var float64inputs = []string{
 
 	// A different kind of very large number.
 	"22.222222222222222",
-	"2." + strings.Repeat("2", 4000) + "e+1",
+	"long:2." + strings.Repeat("2", 4000) + "e+1",
 
 	// Exactly halfway between 1 and math.Nextafter(1, 2).
 	// Round to even (down).
@@ -682,7 +678,7 @@ var float64inputs = []string{
 	// Slightly higher; round up.
 	"1.00000000000000011102230246251565404236316680908203126",
 	// Slightly higher, but you have to read all the way to the end.
-	"slow:1.00000000000000011102230246251565404236316680908203125" + strings.Repeat("0", 10000) + "1",
+	"long:1.00000000000000011102230246251565404236316680908203125" + strings.Repeat("0", 10000) + "1",
 
 	// Smallest denormal, 2^(-1022-52)
 	"4.940656458412465441765687928682213723651e-324",
@@ -705,9 +701,11 @@ var float64inputs = []string{
 
 func TestFloat64SpecialCases(t *testing.T) {
 	for _, input := range float64inputs {
-		slow := strings.HasPrefix(input, "slow:")
-		if slow {
-			input = input[len("slow:"):]
+		if strings.HasPrefix(input, "long:") {
+			if testing.Short() {
+				continue
+			}
+			input = input[len("long:"):]
 		}
 
 		r, ok := new(Rat).SetString(input)
@@ -732,11 +730,11 @@ func TestFloat64SpecialCases(t *testing.T) {
 			case f == 0 && r.Num().BitLen() == 0:
 				// Ok: Rat(0) is equivalent to both +/- float64(0).
 			default:
-				t.Errorf("strconv.ParseFloat(%q) = %g (%b), want %g (%b); delta=%g", input, e, e, f, f, f-e)
+				t.Errorf("strconv.ParseFloat(%q) = %g (%b), want %g (%b); delta = %g", input, e, e, f, f, f-e)
 			}
 		}
 
-		if !isFinite(f) || slow {
+		if !isFinite(f) {
 			continue
 		}
 
@@ -751,7 +749,7 @@ func TestFloat64SpecialCases(t *testing.T) {
 
 		// 4. Check exactness using slow algorithm.
 		if wasExact := new(Rat).SetFloat64(f).Cmp(r) == 0; wasExact != exact {
-			t.Errorf("Rat.SetString(%q).Float64().exact = %b, want %b", input, exact, wasExact)
+			t.Errorf("Rat.SetString(%q).Float64().exact = %t, want %t", input, exact, wasExact)
 		}
 	}
 }
@@ -769,8 +767,11 @@ func TestFloat64Distribution(t *testing.T) {
 		9,
 		11,
 	}
-	const winc, einc = 5, 100 // quick test (<1s)
-	//const winc, einc = 1, 1 // soak test (~75s)
+	var winc, einc = uint64(1), int(1) // soak test (~75s on x86-64)
+	if testing.Short() {
+		winc, einc = 10, 500 // quick test (~12ms on x86-64)
+	}
+
 	for _, sign := range "+-" {
 		for _, a := range add {
 			for wid := uint64(0); wid < 60; wid += winc {
@@ -790,7 +791,7 @@ func TestFloat64Distribution(t *testing.T) {
 
 					if !checkIsBestApprox(t, f, r) {
 						// Append context information.
-						t.Errorf("(input was mantissa %#x, exp %d; f=%g (%b); f~%g; r=%v)",
+						t.Errorf("(input was mantissa %#x, exp %d; f = %g (%b); f ~ %g; r = %v)",
 							b, exp, f, f, math.Ldexp(float64(b), exp), r)
 					}
 
@@ -825,7 +826,7 @@ func checkNonLossyRoundtrip(t *testing.T, f float64) {
 	}
 	f2, exact := r.Float64()
 	if f != f2 || !exact {
-		t.Errorf("Rat.SetFloat64(%g).Float64() = %g (%b), %v, want %g (%b), %v; delta=%b",
+		t.Errorf("Rat.SetFloat64(%g).Float64() = %g (%b), %v, want %g (%b), %v; delta = %b",
 			f, f2, f2, exact, f, f, true, f2-f)
 	}
 }

@@ -43,11 +43,18 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 		i      int
 	)
 
-	// guard against side effects of shuffling fds below.
+	// Guard against side effects of shuffling fds below.
+	// Make sure that nextfd is beyond any currently open files so
+	// that we can't run the risk of overwriting any of them.
 	fd := make([]int, len(attr.Files))
+	nextfd = len(attr.Files)
 	for i, ufd := range attr.Files {
+		if nextfd < int(ufd) {
+			nextfd = int(ufd)
+		}
 		fd[i] = int(ufd)
 	}
+	nextfd++
 
 	// About to call fork.
 	// No more allocation or calls of non-assembly functions.
@@ -163,7 +170,6 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Pass 1: look for fd[i] < i and move those up above len(fd)
 	// so that pass 2 won't stomp on an fd it needs later.
-	nextfd = int(len(fd))
 	if pipe < nextfd {
 		err1 = raw_dup2(pipe, nextfd)
 		if err1 != 0 {

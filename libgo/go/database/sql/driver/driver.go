@@ -10,8 +10,8 @@ package driver
 
 import "errors"
 
-// A driver Value is a value that drivers must be able to handle.
-// A Value is either nil or an instance of one of these types:
+// Value is a value that drivers must be able to handle.
+// It is either nil or an instance of one of these types:
 //
 //   int64
 //   float64
@@ -56,13 +56,24 @@ var ErrBadConn = errors.New("driver: bad connection")
 
 // Execer is an optional interface that may be implemented by a Conn.
 //
-// If a Conn does not implement Execer, the db package's DB.Exec will
+// If a Conn does not implement Execer, the sql package's DB.Exec will
 // first prepare a query, execute the statement, and then close the
 // statement.
 //
 // Exec may return ErrSkip.
 type Execer interface {
 	Exec(query string, args []Value) (Result, error)
+}
+
+// Queryer is an optional interface that may be implemented by a Conn.
+//
+// If a Conn does not implement Queryer, the sql package's DB.Query will
+// first prepare a query, execute the statement, and then close the
+// statement.
+//
+// Query may return ErrSkip.
+type Queryer interface {
+	Query(query string, args []Value) (Rows, error)
 }
 
 // Conn is a connection to a database. It is not used concurrently
@@ -104,23 +115,8 @@ type Result interface {
 type Stmt interface {
 	// Close closes the statement.
 	//
-	// Closing a statement should not interrupt any outstanding
-	// query created from that statement. That is, the following
-	// order of operations is valid:
-	//
-	//  * create a driver statement
-	//  * call Query on statement, returning Rows
-	//  * close the statement
-	//  * read from Rows
-	//
-	// If closing a statement invalidates currently-running
-	// queries, the final step above will incorrectly fail.
-	//
-	// TODO(bradfitz): possibly remove the restriction above, if
-	// enough driver authors object and find it complicates their
-	// code too much. The sql package could be smarter about
-	// refcounting the statement and closing it at the appropriate
-	// time.
+	// As of Go 1.1, a Stmt will not be closed if it's in use
+	// by any queries.
 	Close() error
 
 	// NumInput returns the number of placeholder parameters.

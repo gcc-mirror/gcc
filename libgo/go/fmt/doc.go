@@ -74,7 +74,8 @@
 		-	pad with spaces on the right rather than the left (left-justify the field)
 		#	alternate format: add leading 0 for octal (%#o), 0x for hex (%#x);
 			0X for hex (%#X); suppress 0x for %p (%#p);
-			print a raw (backquoted) string if possible for %q (%#q);
+			for %q, print a raw (backquoted) string if strconv.CanBackquote
+			returns true;
 			write e.g. U+0078 'x' if the character is printable for %U (%#U).
 		' '	(space) leave a space for elided sign in numbers (% d);
 			put spaces between bytes printing strings or slices in hex (% x, % X)
@@ -137,6 +138,16 @@
 	by a single character (the verb) and end with a parenthesized
 	description.
 
+	If an Error or String method triggers a panic when called by a
+	print routine, the fmt package reformats the error message
+	from the panic, decorating it with an indication that it came
+	through the fmt package.  For example, if a String method
+	calls panic("bad"), the resulting formatted message will look
+	like
+		%s(PANIC=bad)
+
+	The %s just shows the print verb in use when the failure
+	occurred.
 
 	Scanning
 

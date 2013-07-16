@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Unix domain sockets stubs for Plan 9
-
 package net
 
 import (
@@ -93,8 +91,7 @@ func dialUnix(net string, laddr, raddr *UnixAddr, deadline time.Time) (*UnixConn
 type UnixListener struct{}
 
 // ListenUnix announces on the Unix domain socket laddr and returns a
-// Unix listener.  The network net must be "unix", "unixgram" or
-// "unixpacket".
+// Unix listener.  The network net must be "unix" or "unixpacket".
 func ListenUnix(net string, laddr *UnixAddr) (*UnixListener, error) {
 	return nil, syscall.EPLAN9
 }
@@ -129,14 +126,18 @@ func (l *UnixListener) SetDeadline(t time.Time) error {
 // File returns a copy of the underlying os.File, set to blocking
 // mode.  It is the caller's responsibility to close f when finished.
 // Closing l does not affect f, and closing f does not affect l.
+//
+// The returned os.File's file descriptor is different from the
+// connection's.  Attempting to change properties of the original
+// using this duplicate may or may not have the desired effect.
 func (l *UnixListener) File() (*os.File, error) {
 	return nil, syscall.EPLAN9
 }
 
 // ListenUnixgram listens for incoming Unix datagram packets addressed
-// to the local address laddr.  The returned connection c's ReadFrom
-// and WriteTo methods can be used to receive and send packets with
-// per-packet addressing.  The network net must be "unixgram".
+// to the local address laddr.  The network net must be "unixgram".
+// The returned connection's ReadFrom and WriteTo methods can be used
+// to receive and send packets with per-packet addressing.
 func ListenUnixgram(net string, laddr *UnixAddr) (*UnixConn, error) {
 	return nil, syscall.EPLAN9
 }
