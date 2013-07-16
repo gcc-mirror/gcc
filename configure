@@ -3762,9 +3762,13 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gprof target-libgloss"
     ;;
   mips*-*-bsd*)
-    noconfigdirs="$noconfigdirs gprof target-libgloss"
+    noconfigdirs="$noconfigdirs ld gas gprof target-libgloss"
     ;;
   mips*-*-linux*)
+    ;;
+  mips*-*-ultrix* | mips*-*-osf* | mips*-*-ecoff* | mips*-*-pe* \
+  | mips*-*-irix* | mips*-*-lnews* | mips*-*-riscos*)
+    noconfigdirs="$noconfigdirs ld gas gprof"
     ;;
   mips*-*-*)
     noconfigdirs="$noconfigdirs gprof"
