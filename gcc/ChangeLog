@@ -1,3 +1,8 @@
+2013-07-16  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_MULS, ISA_HAS_MSAC, ISA_HAS_MACC):
+	Fix comment typos.
+
 2013-07-15  Cong Hou  <congh@google.com>
 
 	* tree-vect-data-refs.c (dr_group_sort_cmp): Do not use hash function
