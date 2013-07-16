@@ -47,7 +47,7 @@ type State interface {
 }
 
 // Formatter is the interface implemented by values with a custom formatter.
-// The implementation of Format may call Sprintf or Fprintf(f) etc.
+// The implementation of Format may call Sprint(f) or Fprint(f) etc.
 // to generate its output.
 type Formatter interface {
 	Format(f State, c rune)
@@ -56,7 +56,8 @@ type Formatter interface {
 // Stringer is implemented by any value that has a String method,
 // which defines the ``native'' format for that value.
 // The String method is used to print values passed as an operand
-// to a %s or %v format or to an unformatted printer such as Print.
+// to any format that accepts a string or to an unformatted printer
+// such as Print.
 type Stringer interface {
 	String() string
 }
@@ -545,10 +546,15 @@ func (p *pp) fmtString(v string, verb rune, goSyntax bool) {
 	}
 }
 
-func (p *pp) fmtBytes(v []byte, verb rune, goSyntax bool, depth int) {
+func (p *pp) fmtBytes(v []byte, verb rune, goSyntax bool, typ reflect.Type, depth int) {
 	if verb == 'v' || verb == 'd' {
 		if goSyntax {
-			p.buf.Write(bytesBytes)
+			if typ == nil {
+				p.buf.Write(bytesBytes)
+			} else {
+				p.buf.WriteString(typ.String())
+				p.buf.WriteByte('{')
+			}
 		} else {
 			p.buf.WriteByte('[')
 		}
@@ -724,7 +730,7 @@ func (p *pp) printField(field interface{}, verb rune, plus, goSyntax bool, depth
 
 	if field == nil {
 		if verb == 'T' || verb == 'v' {
-			p.buf.Write(nilAngleBytes)
+			p.fmt.pad(nilAngleBytes)
 		} else {
 			p.badVerb(verb)
 		}
@@ -793,7 +799,7 @@ func (p *pp) printField(field interface{}, verb rune, plus, goSyntax bool, depth
 		p.fmtString(f, verb, goSyntax)
 		wasString = verb == 's' || verb == 'v'
 	case []byte:
-		p.fmtBytes(f, verb, goSyntax, depth)
+		p.fmtBytes(f, verb, goSyntax, nil, depth)
 		wasString = verb == 's'
 	default:
 		// Restore flags in case handleMethods finds a Formatter.
@@ -939,19 +945,22 @@ BigSwitch:
 		}
 	case reflect.Array, reflect.Slice:
 		// Byte slices are special.
-		if f.Type().Elem().Kind() == reflect.Uint8 {
-			// We know it's a slice of bytes, but we also know it does not have static type
-			// []byte, or it would have been caught above.  Therefore we cannot convert
-			// it directly in the (slightly) obvious way: f.Interface().([]byte); it doesn't have
-			// that type, and we can't write an expression of the right type and do a
-			// conversion because we don't have a static way to write the right type.
-			// So we build a slice by hand.  This is a rare case but it would be nice
-			// if reflection could help a little more.
-			bytes := make([]byte, f.Len())
-			for i := range bytes {
-				bytes[i] = byte(f.Index(i).Uint())
+		if typ := f.Type(); typ.Elem().Kind() == reflect.Uint8 {
+			var bytes []byte
+			if f.Kind() == reflect.Slice {
+				bytes = f.Bytes()
+			} else if f.CanAddr() {
+				bytes = f.Slice(0, f.Len()).Bytes()
+			} else {
+				// We have an array, but we cannot Slice() a non-addressable array,
+				// so we build a slice by hand. This is a rare case but it would be nice
+				// if reflection could help a little more.
+				bytes = make([]byte, f.Len())
+				for i := range bytes {
+					bytes[i] = byte(f.Index(i).Uint())
+				}
 			}
-			p.fmtBytes(bytes, verb, goSyntax, depth)
+			p.fmtBytes(bytes, verb, goSyntax, typ, depth)
 			wasString = verb == 's'
 			break
 		}
@@ -1063,7 +1072,7 @@ func (p *pp) doPrintf(format string, a []interface{}) {
 			p.fmt.wid, p.fmt.widPresent, i = parsenum(format, i, end)
 		}
 		// do we have precision?
-		if i < end && format[i] == '.' {
+		if i+1 < end && format[i] == '.' {
 			if format[i+1] == '*' {
 				p.fmt.prec, p.fmt.precPresent, i, fieldnum = intFromArg(a, end, i+1, fieldnum)
 				if !p.fmt.precPresent {

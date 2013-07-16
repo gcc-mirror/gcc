@@ -499,6 +499,8 @@ var execTests = []execTest{
 	{"bug8b", "{{4|dddArg 3}}", "", tVal, false},
 	// A bug was introduced that broke map lookups for lower-case names.
 	{"bug9", "{{.cause}}", "neglect", map[string]string{"cause": "neglect"}, true},
+	// Field chain starting with function did not work.
+	{"bug10", "{{mapOfThree.three}}-{{(mapOfThree).three}}", "3-3", 0, true},
 }
 
 func zeroArgs() string {
@@ -560,19 +562,24 @@ func stringer(s fmt.Stringer) string {
 	return s.String()
 }
 
+func mapOfThree() interface{} {
+	return map[string]int{"three": 3}
+}
+
 func testExecute(execTests []execTest, template *Template, t *testing.T) {
 	b := new(bytes.Buffer)
 	funcs := FuncMap{
-		"add":      add,
-		"count":    count,
-		"dddArg":   dddArg,
-		"echo":     echo,
-		"makemap":  makemap,
-		"oneArg":   oneArg,
-		"typeOf":   typeOf,
-		"vfunc":    vfunc,
-		"zeroArgs": zeroArgs,
-		"stringer": stringer,
+		"add":        add,
+		"count":      count,
+		"dddArg":     dddArg,
+		"echo":       echo,
+		"makemap":    makemap,
+		"mapOfThree": mapOfThree,
+		"oneArg":     oneArg,
+		"stringer":   stringer,
+		"typeOf":     typeOf,
+		"vfunc":      vfunc,
+		"zeroArgs":   zeroArgs,
 	}
 	for _, test := range execTests {
 		var tmpl *Template
@@ -815,4 +822,41 @@ func TestTree(t *testing.T) {
 func TestExecuteOnNewTemplate(t *testing.T) {
 	// This is issue 3872.
 	_ = New("Name").Templates()
+}
+
+const testTemplates = `{{define "one"}}one{{end}}{{define "two"}}two{{end}}`
+
+func TestMessageForExecuteEmpty(t *testing.T) {
+	// Test a truly empty template.
+	tmpl := New("empty")
+	var b bytes.Buffer
+	err := tmpl.Execute(&b, 0)
+	if err == nil {
+		t.Fatal("expected initial error")
+	}
+	got := err.Error()
+	want := `template: empty: "empty" is an incomplete or empty template`
+	if got != want {
+		t.Errorf("expected error %s got %s", want, got)
+	}
+	// Add a non-empty template to check that the error is helpful.
+	tests, err := New("").Parse(testTemplates)
+	if err != nil {
+		t.Fatal(err)
+	}
+	tmpl.AddParseTree("secondary", tests.Tree)
+	err = tmpl.Execute(&b, 0)
+	if err == nil {
+		t.Fatal("expected second error")
+	}
+	got = err.Error()
+	want = `template: empty: "empty" is an incomplete or empty template; defined templates are: "secondary"`
+	if got != want {
+		t.Errorf("expected error %s got %s", want, got)
+	}
+	// Make sure we can execute the secondary.
+	err = tmpl.ExecuteTemplate(&b, "secondary", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
 }

@@ -479,6 +479,7 @@ var parseTests = []ParseTest{
 	{"RubyDate", RubyDate, "Thu Feb 04 21:00:57 -0800 2010", true, true, 1, 0},
 	{"RFC850", RFC850, "Thursday, 04-Feb-10 21:00:57 PST", true, true, 1, 0},
 	{"RFC1123", RFC1123, "Thu, 04 Feb 2010 21:00:57 PST", true, true, 1, 0},
+	{"RFC1123", RFC1123, "Thu, 04 Feb 2010 22:00:57 PDT", true, true, 1, 0},
 	{"RFC1123Z", RFC1123Z, "Thu, 04 Feb 2010 21:00:57 -0800", true, true, 1, 0},
 	{"RFC3339", RFC3339, "2010-02-04T21:00:57-08:00", true, false, 1, 0},
 	{"custom: \"2006-01-02 15:04:05-07\"", "2006-01-02 15:04:05-07", "2010-02-04 21:00:57-08", true, false, 1, 0},
@@ -531,6 +532,42 @@ func TestParse(t *testing.T) {
 		} else {
 			checkTime(time, &test, t)
 		}
+	}
+}
+
+func TestParseInSydney(t *testing.T) {
+	loc, err := LoadLocation("Australia/Sydney")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Check that Parse (and ParseInLocation) understand
+	// that Feb EST and Aug EST are different time zones in Sydney
+	// even though both are called EST.
+	t1, err := ParseInLocation("Jan 02 2006 MST", "Feb 01 2013 EST", loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t2 := Date(2013, February, 1, 00, 00, 00, 0, loc)
+	if t1 != t2 {
+		t.Fatalf("ParseInLocation(Feb 01 2013 EST, Sydney) = %v, want %v", t1, t2)
+	}
+	_, offset := t1.Zone()
+	if offset != 11*60*60 {
+		t.Fatalf("ParseInLocation(Feb 01 2013 EST, Sydney).Zone = _, %d, want _, %d", offset, 11*60*60)
+	}
+
+	t1, err = ParseInLocation("Jan 02 2006 MST", "Aug 01 2013 EST", loc)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t2 = Date(2013, August, 1, 00, 00, 00, 0, loc)
+	if t1 != t2 {
+		t.Fatalf("ParseInLocation(Aug 01 2013 EST, Sydney) = %v, want %v", t1, t2)
+	}
+	_, offset = t1.Zone()
+	if offset != 10*60*60 {
+		t.Fatalf("ParseInLocation(Aug 01 2013 EST, Sydney).Zone = _, %d, want _, %d", offset, 10*60*60)
 	}
 }
 
@@ -640,6 +677,11 @@ var parseErrorTests = []ParseErrorTest{
 	// issue 4502. StampNano requires exactly 9 digits of precision.
 	{StampNano, "Dec  7 11:22:01.000000", `cannot parse ".000000" as ".000000000"`},
 	{StampNano, "Dec  7 11:22:01.0000000000", "extra text: 0"},
+	// issue 4493. Helpful errors.
+	{RFC3339, "2006-01-02T15:04:05Z07:00", `parsing time "2006-01-02T15:04:05Z07:00": extra text: 07:00`},
+	{RFC3339, "2006-01-02T15:04_abc", `parsing time "2006-01-02T15:04_abc" as "2006-01-02T15:04:05Z07:00": cannot parse "_abc" as ":"`},
+	{RFC3339, "2006-01-02T15:04:05_abc", `parsing time "2006-01-02T15:04:05_abc" as "2006-01-02T15:04:05Z07:00": cannot parse "_abc" as "Z07:00"`},
+	{RFC3339, "2006-01-02T15:04:05Z_abc", `parsing time "2006-01-02T15:04:05Z_abc": extra text: _abc`},
 }
 
 func TestParseErrors(t *testing.T) {
@@ -1258,20 +1300,30 @@ var mallocTest = []struct {
 }
 
 func TestCountMallocs(t *testing.T) {
-	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
+	if runtime.GOMAXPROCS(0) > 1 {
+		t.Skip("skipping; GOMAXPROCS>1")
+	}
 	for _, mt := range mallocTest {
-		const N = 100
-		memstats := new(runtime.MemStats)
-		runtime.ReadMemStats(memstats)
-		mallocs := 0 - memstats.Mallocs
-		for i := 0; i < N; i++ {
-			mt.fn()
+		allocs := int(testing.AllocsPerRun(100, mt.fn))
+		if allocs > mt.count {
+			t.Errorf("%s: %d allocs, want %d", mt.desc, allocs, mt.count)
 		}
-		runtime.ReadMemStats(memstats)
-		mallocs += memstats.Mallocs
-		if mallocs/N > uint64(mt.count) {
-			t.Errorf("%s: expected %d mallocs, got %d", mt.desc, mt.count, mallocs/N)
-		}
+	}
+}
+
+func TestLoadFixed(t *testing.T) {
+	// Issue 4064: handle locations without any zone transitions.
+	loc, err := LoadLocation("Etc/GMT+1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// The tzdata name Etc/GMT+1 uses "east is negative",
+	// but Go and most other systems use "east is positive".
+	// So GMT+1 corresponds to -3600 in the Go zone, not +3600.
+	name, offset := Now().In(loc).Zone()
+	if name != "GMT+1" || offset != -1*60*60 {
+		t.Errorf("Now().In(loc).Zone() = %q, %d, want %q, %d", name, offset, "GMT+1", -1*60*60)
 	}
 }
 

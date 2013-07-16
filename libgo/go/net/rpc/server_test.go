@@ -399,12 +399,10 @@ func (WriteFailCodec) WriteRequest(*Request, interface{}) error {
 
 func (WriteFailCodec) ReadResponseHeader(*Response) error {
 	select {}
-	panic("unreachable")
 }
 
 func (WriteFailCodec) ReadResponseBody(interface{}) error {
 	select {}
-	panic("unreachable")
 }
 
 func (WriteFailCodec) Close() error {
@@ -445,8 +443,7 @@ func dialHTTP() (*Client, error) {
 	return DialHTTP("tcp", httpServerAddr)
 }
 
-func countMallocs(dial func() (*Client, error), t *testing.T) uint64 {
-	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
+func countMallocs(dial func() (*Client, error), t *testing.T) float64 {
 	once.Do(startServer)
 	client, err := dial()
 	if err != nil {
@@ -454,11 +451,7 @@ func countMallocs(dial func() (*Client, error), t *testing.T) uint64 {
 	}
 	args := &Args{7, 8}
 	reply := new(Reply)
-	memstats := new(runtime.MemStats)
-	runtime.ReadMemStats(memstats)
-	mallocs := 0 - memstats.Mallocs
-	const count = 100
-	for i := 0; i < count; i++ {
+	return testing.AllocsPerRun(100, func() {
 		err := client.Call("Arith.Add", args, reply)
 		if err != nil {
 			t.Errorf("Add: expected no error but got string %q", err.Error())
@@ -466,18 +459,21 @@ func countMallocs(dial func() (*Client, error), t *testing.T) uint64 {
 		if reply.C != args.A+args.B {
 			t.Errorf("Add: expected %d got %d", reply.C, args.A+args.B)
 		}
-	}
-	runtime.ReadMemStats(memstats)
-	mallocs += memstats.Mallocs
-	return mallocs / count
+	})
 }
 
 func TestCountMallocs(t *testing.T) {
-	fmt.Printf("mallocs per rpc round trip: %d\n", countMallocs(dialDirect, t))
+	if runtime.GOMAXPROCS(0) > 1 {
+		t.Skip("skipping; GOMAXPROCS>1")
+	}
+	fmt.Printf("mallocs per rpc round trip: %v\n", countMallocs(dialDirect, t))
 }
 
 func TestCountMallocsOverHTTP(t *testing.T) {
-	fmt.Printf("mallocs per HTTP rpc round trip: %d\n", countMallocs(dialHTTP, t))
+	if runtime.GOMAXPROCS(0) > 1 {
+		t.Skip("skipping; GOMAXPROCS>1")
+	}
+	fmt.Printf("mallocs per HTTP rpc round trip: %v\n", countMallocs(dialHTTP, t))
 }
 
 type writeCrasher struct {
@@ -529,6 +525,23 @@ func TestTCPClose(t *testing.T) {
 	t.Logf("Arith: %d*%d=%d\n", args.A, args.B, reply)
 	if reply.C != args.A*args.B {
 		t.Errorf("Add: expected %d got %d", reply.C, args.A*args.B)
+	}
+}
+
+func TestErrorAfterClientClose(t *testing.T) {
+	once.Do(startServer)
+
+	client, err := dialHTTP()
+	if err != nil {
+		t.Fatalf("dialing: %v", err)
+	}
+	err = client.Close()
+	if err != nil {
+		t.Fatal("close error:", err)
+	}
+	err = client.Call("Arith.Add", &Args{7, 9}, new(Reply))
+	if err != ErrShutdown {
+		t.Errorf("Forever: expected ErrShutdown got %v", err)
 	}
 }
 

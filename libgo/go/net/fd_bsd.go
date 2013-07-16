@@ -33,6 +33,8 @@ func newpollster() (p *pollster, err error) {
 	return p, nil
 }
 
+// First return value is whether the pollServer should be woken up.
+// This version always returns false.
 func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, error) {
 	// pollServer is locked.
 
@@ -64,6 +66,8 @@ func (p *pollster) AddFD(fd int, mode int, repeat bool) (bool, error) {
 	return false, nil
 }
 
+// Return value is whether the pollServer should be woken up.
+// This version always returns false.
 func (p *pollster) DelFD(fd int, mode int) bool {
 	// pollServer is locked.
 

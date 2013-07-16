@@ -4,8 +4,6 @@
 
 // +build darwin freebsd linux netbsd openbsd windows
 
-// Unix domain sockets
-
 package net
 
 import (
@@ -14,6 +12,13 @@ import (
 	"syscall"
 	"time"
 )
+
+func (a *UnixAddr) isUnnamed() bool {
+	if a == nil || a.Name == "" {
+		return true
+	}
+	return false
+}
 
 func unixSocket(net string, laddr, raddr *UnixAddr, mode string, deadline time.Time) (*netFD, error) {
 	var sotype int
@@ -31,12 +36,12 @@ func unixSocket(net string, laddr, raddr *UnixAddr, mode string, deadline time.T
 	var la, ra syscall.Sockaddr
 	switch mode {
 	case "dial":
-		if laddr != nil {
+		if !laddr.isUnnamed() {
 			la = &syscall.SockaddrUnix{Name: laddr.Name}
 		}
 		if raddr != nil {
 			ra = &syscall.SockaddrUnix{Name: raddr.Name}
-		} else if sotype != syscall.SOCK_DGRAM || laddr == nil {
+		} else if sotype != syscall.SOCK_DGRAM || laddr.isUnnamed() {
 			return nil, &OpError{Op: mode, Net: net, Err: errMissingAddress}
 		}
 	case "listen":
@@ -69,21 +74,21 @@ error:
 
 func sockaddrToUnix(sa syscall.Sockaddr) Addr {
 	if s, ok := sa.(*syscall.SockaddrUnix); ok {
-		return &UnixAddr{s.Name, "unix"}
+		return &UnixAddr{Name: s.Name, Net: "unix"}
 	}
 	return nil
 }
 
 func sockaddrToUnixgram(sa syscall.Sockaddr) Addr {
 	if s, ok := sa.(*syscall.SockaddrUnix); ok {
-		return &UnixAddr{s.Name, "unixgram"}
+		return &UnixAddr{Name: s.Name, Net: "unixgram"}
 	}
 	return nil
 }
 
 func sockaddrToUnixpacket(sa syscall.Sockaddr) Addr {
 	if s, ok := sa.(*syscall.SockaddrUnix); ok {
-		return &UnixAddr{s.Name, "unixpacket"}
+		return &UnixAddr{Name: s.Name, Net: "unixpacket"}
 	}
 	return nil
 }
@@ -92,14 +97,13 @@ func sotypeToNet(sotype int) string {
 	switch sotype {
 	case syscall.SOCK_STREAM:
 		return "unix"
-	case syscall.SOCK_SEQPACKET:
-		return "unixpacket"
 	case syscall.SOCK_DGRAM:
 		return "unixgram"
+	case syscall.SOCK_SEQPACKET:
+		return "unixpacket"
 	default:
 		panic("sotypeToNet unknown socket type")
 	}
-	return ""
 }
 
 // UnixConn is an implementation of the Conn interface for connections
@@ -124,18 +128,20 @@ func (c *UnixConn) ReadFromUnix(b []byte) (n int, addr *UnixAddr, err error) {
 	n, sa, err := c.fd.ReadFrom(b)
 	switch sa := sa.(type) {
 	case *syscall.SockaddrUnix:
-		addr = &UnixAddr{sa.Name, sotypeToNet(c.fd.sotype)}
+		if sa.Name != "" {
+			addr = &UnixAddr{Name: sa.Name, Net: sotypeToNet(c.fd.sotype)}
+		}
 	}
 	return
 }
 
 // ReadFrom implements the PacketConn ReadFrom method.
-func (c *UnixConn) ReadFrom(b []byte) (n int, addr Addr, err error) {
+func (c *UnixConn) ReadFrom(b []byte) (int, Addr, error) {
 	if !c.ok() {
 		return 0, nil, syscall.EINVAL
 	}
-	n, uaddr, err := c.ReadFromUnix(b)
-	return n, uaddr.toAddr(), err
+	n, addr, err := c.ReadFromUnix(b)
+	return n, addr.toAddr(), err
 }
 
 // ReadMsgUnix reads a packet from c, copying the payload into b and
@@ -149,7 +155,9 @@ func (c *UnixConn) ReadMsgUnix(b, oob []byte) (n, oobn, flags int, addr *UnixAdd
 	n, oobn, flags, sa, err := c.fd.ReadMsg(b, oob)
 	switch sa := sa.(type) {
 	case *syscall.SockaddrUnix:
-		addr = &UnixAddr{sa.Name, sotypeToNet(c.fd.sotype)}
+		if sa.Name != "" {
+			addr = &UnixAddr{Name: sa.Name, Net: sotypeToNet(c.fd.sotype)}
+		}
 	}
 	return
 }
@@ -247,11 +255,10 @@ type UnixListener struct {
 }
 
 // ListenUnix announces on the Unix domain socket laddr and returns a
-// Unix listener.  The network net must be "unix", "unixgram" or
-// "unixpacket".
+// Unix listener.  The network net must be "unix" or "unixpacket".
 func ListenUnix(net string, laddr *UnixAddr) (*UnixListener, error) {
 	switch net {
-	case "unix", "unixgram", "unixpacket":
+	case "unix", "unixpacket":
 	default:
 		return nil, UnknownNetworkError(net)
 	}
@@ -264,7 +271,7 @@ func ListenUnix(net string, laddr *UnixAddr) (*UnixListener, error) {
 	}
 	err = syscall.Listen(fd.sysfd, listenerBacklog)
 	if err != nil {
-		closesocket(fd.sysfd)
+		fd.Close()
 		return nil, &OpError{Op: "listen", Net: net, Addr: laddr, Err: err}
 	}
 	return &UnixListener{fd, laddr.Name}, nil
@@ -332,12 +339,16 @@ func (l *UnixListener) SetDeadline(t time.Time) (err error) {
 // File returns a copy of the underlying os.File, set to blocking
 // mode.  It is the caller's responsibility to close f when finished.
 // Closing l does not affect f, and closing f does not affect l.
+//
+// The returned os.File's file descriptor is different from the
+// connection's.  Attempting to change properties of the original
+// using this duplicate may or may not have the desired effect.
 func (l *UnixListener) File() (f *os.File, err error) { return l.fd.dup() }
 
 // ListenUnixgram listens for incoming Unix datagram packets addressed
-// to the local address laddr.  The returned connection c's ReadFrom
-// and WriteTo methods can be used to receive and send packets with
-// per-packet addressing.  The network net must be "unixgram".
+// to the local address laddr.  The network net must be "unixgram".
+// The returned connection's ReadFrom and WriteTo methods can be used
+// to receive and send packets with per-packet addressing.
 func ListenUnixgram(net string, laddr *UnixAddr) (*UnixConn, error) {
 	switch net {
 	case "unixgram":

@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Network interface identification for Windows
-
 package net
 
 import (
@@ -25,6 +23,9 @@ func getAdapterList() (*syscall.IpAdapterInfo, error) {
 	b := make([]byte, 1000)
 	l := uint32(len(b))
 	a := (*syscall.IpAdapterInfo)(unsafe.Pointer(&b[0]))
+	// TODO(mikio): GetAdaptersInfo returns IP_ADAPTER_INFO that
+	// contains IPv4 address list only. We should use another API
+	// for fetching IPv6 stuff from the kernel.
 	err := syscall.GetAdaptersInfo(a, &l)
 	if err == syscall.ERROR_BUFFER_OVERFLOW {
 		b = make([]byte, l)
@@ -38,7 +39,7 @@ func getAdapterList() (*syscall.IpAdapterInfo, error) {
 }
 
 func getInterfaceList() ([]syscall.InterfaceInfo, error) {
-	s, err := syscall.Socket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_UDP)
+	s, err := sysSocket(syscall.AF_INET, syscall.SOCK_DGRAM, syscall.IPPROTO_UDP)
 	if err != nil {
 		return nil, os.NewSyscallError("Socket", err)
 	}
@@ -126,10 +127,10 @@ func interfaceTable(ifindex int) ([]Interface, error) {
 	return ift, nil
 }
 
-// If the ifindex is zero, interfaceAddrTable returns addresses
-// for all network interfaces.  Otherwise it returns addresses
-// for a specific interface.
-func interfaceAddrTable(ifindex int) ([]Addr, error) {
+// If the ifi is nil, interfaceAddrTable returns addresses for all
+// network interfaces.  Otherwise it returns addresses for a specific
+// interface.
+func interfaceAddrTable(ifi *Interface) ([]Addr, error) {
 	ai, err := getAdapterList()
 	if err != nil {
 		return nil, err
@@ -138,11 +139,10 @@ func interfaceAddrTable(ifindex int) ([]Addr, error) {
 	var ifat []Addr
 	for ; ai != nil; ai = ai.Next {
 		index := ai.Index
-		if ifindex == 0 || ifindex == int(index) {
+		if ifi == nil || ifi.Index == int(index) {
 			ipl := &ai.IpAddressList
 			for ; ipl != nil; ipl = ipl.Next {
-				ifa := IPAddr{}
-				ifa.IP = parseIPv4(bytePtrToString(&ipl.IpAddress.String[0]))
+				ifa := IPAddr{IP: parseIPv4(bytePtrToString(&ipl.IpAddress.String[0]))}
 				ifat = append(ifat, ifa.toAddr())
 			}
 		}
@@ -150,9 +150,9 @@ func interfaceAddrTable(ifindex int) ([]Addr, error) {
 	return ifat, nil
 }
 
-// If the ifindex is zero, interfaceMulticastAddrTable returns
-// addresses for all network interfaces.  Otherwise it returns
-// addresses for a specific interface.
-func interfaceMulticastAddrTable(ifindex int) ([]Addr, error) {
+// interfaceMulticastAddrTable returns addresses for a specific
+// interface.
+func interfaceMulticastAddrTable(ifi *Interface) ([]Addr, error) {
+	// TODO(mikio): Implement this like other platforms.
 	return nil, nil
 }

@@ -79,7 +79,7 @@ type SockaddrUnix struct {
 func (sa *SockaddrUnix) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
 	name := sa.Name
 	n := len(name)
-	if n >= len(sa.raw.Path) || n == 0 {
+	if n >= len(sa.raw.Path) {
 		return nil, 0, EINVAL
 	}
 	sa.raw.Family = AF_UNIX
@@ -88,7 +88,10 @@ func (sa *SockaddrUnix) sockaddr() (*RawSockaddrAny, Socklen_t, error) {
 		sa.raw.Path[i] = int8(name[i])
 	}
 	// length is family (uint16), name, NUL.
-	sl := 2 + Socklen_t(n) + 1
+	sl := Socklen_t(2)
+	if n > 0 {
+		sl += Socklen_t(n) + 1
+	}
 	if sa.raw.Path[0] == '@' {
 		sa.raw.Path[0] = 0
 		// Don't count trailing NUL for abstract address.
@@ -307,7 +310,9 @@ func Recvfrom(fd int, p []byte, flags int) (n int, from Sockaddr, err error) {
 	if n, err = recvfrom(fd, p, flags, &rsa, &len); err != nil {
 		return
 	}
-	from, err = anyToSockaddr(&rsa)
+	if rsa.Addr.Family != AF_UNSPEC {
+		from, err = anyToSockaddr(&rsa)
+	}
 	return
 }
 

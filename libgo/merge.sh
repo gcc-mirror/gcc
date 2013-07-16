@@ -163,12 +163,12 @@ done
   done
 done
 
-runtime="chan.c cpuprof.c env_posix.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mgc0.h mheap.c msize.c panic.c print.c proc.c race.h runtime.c runtime.h signal_unix.c malloc.h malloc.goc mprof.goc parfor.c runtime1.goc sema.goc sigqueue.goc string.goc time.goc"
+runtime="chan.c cpuprof.c env_posix.c lock_futex.c lock_sema.c mcache.c mcentral.c mfinal.c mfixalloc.c mgc0.c mgc0.h mheap.c msize.c netpoll.goc netpoll_epoll.c netpoll_kqueue.c netpoll_stub.c panic.c print.c proc.c race.h runtime.c runtime.h signal_unix.c signal_unix.h malloc.h malloc.goc mprof.goc parfor.c runtime1.goc sema.goc sigqueue.goc string.goc time.goc"
 for f in $runtime; do
   merge_c $f $f
 done
 
-merge_c thread_linux.c thread-linux.c
+merge_c os_linux.c thread-linux.c
 merge_c mem_linux.c mem.c
 
 (cd ${OLDDIR}/src/pkg && find . -name '*.go' -print) | while read f; do

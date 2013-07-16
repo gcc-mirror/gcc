@@ -21,14 +21,5 @@ void *unsafe_New (const struct __go_type_descriptor *)
 void *
 unsafe_New (const struct __go_type_descriptor *descriptor)
 {
-  uint32 flag;
-  void *ret;
-
-  flag = (descriptor->__code & GO_NO_POINTERS) != 0 ? FlagNoPointers : 0;
-  ret = runtime_mallocgc (descriptor->__size, flag, 1, 1);
-
-  if (UseSpanType && flag == 0)
-    runtime_settype (ret, (uintptr) descriptor | TypeInfo_SingleObject);
-
-  return ret;
+  return runtime_cnew (descriptor);
 }

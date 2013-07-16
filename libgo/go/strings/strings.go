@@ -26,7 +26,11 @@ func explode(s string, n int) []string {
 	i, cur := 0, 0
 	for ; i+1 < n; i++ {
 		ch, size = utf8.DecodeRuneInString(s[cur:])
-		a[i] = string(ch)
+		if ch == utf8.RuneError {
+			a[i] = string(utf8.RuneError)
+		} else {
+			a[i] = s[cur : cur+size]
+		}
 		cur += size
 	}
 	// add the rest, if there is any
@@ -36,27 +40,69 @@ func explode(s string, n int) []string {
 	return a
 }
 
+// primeRK is the prime base used in Rabin-Karp algorithm.
+const primeRK = 16777619
+
+// hashstr returns the hash and the appropriate multiplicative
+// factor for use in Rabin-Karp algorithm.
+func hashstr(sep string) (uint32, uint32) {
+	hash := uint32(0)
+	for i := 0; i < len(sep); i++ {
+		hash = hash*primeRK + uint32(sep[i])
+
+	}
+	var pow, sq uint32 = 1, primeRK
+	for i := len(sep); i > 0; i >>= 1 {
+		if i&1 != 0 {
+			pow *= sq
+		}
+		sq *= sq
+	}
+	return hash, pow
+}
+
 // Count counts the number of non-overlapping instances of sep in s.
 func Count(s, sep string) int {
-	if sep == "" {
-		return utf8.RuneCountInString(s) + 1
-	}
-	c := sep[0]
-	l := len(sep)
 	n := 0
-	if l == 1 {
+	// special cases
+	switch {
+	case len(sep) == 0:
+		return utf8.RuneCountInString(s) + 1
+	case len(sep) == 1:
 		// special case worth making fast
+		c := sep[0]
 		for i := 0; i < len(s); i++ {
 			if s[i] == c {
 				n++
 			}
 		}
 		return n
+	case len(sep) > len(s):
+		return 0
+	case len(sep) == len(s):
+		if sep == s {
+			return 1
+		}
+		return 0
 	}
-	for i := 0; i+l <= len(s); i++ {
-		if s[i] == c && s[i:i+l] == sep {
+	hashsep, pow := hashstr(sep)
+	h := uint32(0)
+	for i := 0; i < len(sep); i++ {
+		h = h*primeRK + uint32(s[i])
+	}
+	lastmatch := 0
+	if h == hashsep && s[:len(sep)] == sep {
+		n++
+		lastmatch = len(sep)
+	}
+	for i := len(sep); i < len(s); {
+		h *= primeRK
+		h += uint32(s[i])
+		h -= pow * uint32(s[i-len(sep)])
+		i++
+		if h == hashsep && lastmatch <= i-len(sep) && s[i-len(sep):i] == sep {
 			n++
-			i += l - 1
+			lastmatch = i
 		}
 	}
 	return n
@@ -80,11 +126,11 @@ func ContainsRune(s string, r rune) bool {
 // Index returns the index of the first instance of sep in s, or -1 if sep is not present in s.
 func Index(s, sep string) int {
 	n := len(sep)
-	if n == 0 {
+	switch {
+	case n == 0:
 		return 0
-	}
-	c := sep[0]
-	if n == 1 {
+	case n == 1:
+		c := sep[0]
 		// special case worth making fast
 		for i := 0; i < len(s); i++ {
 			if s[i] == c {
@@ -92,11 +138,30 @@ func Index(s, sep string) int {
 			}
 		}
 		return -1
+	case n == len(s):
+		if sep == s {
+			return 0
+		}
+		return -1
+	case n > len(s):
+		return -1
 	}
-	// n > 1
-	for i := 0; i+n <= len(s); i++ {
-		if s[i] == c && s[i:i+n] == sep {
-			return i
+	// Hash sep.
+	hashsep, pow := hashstr(sep)
+	var h uint32
+	for i := 0; i < n; i++ {
+		h = h*primeRK + uint32(s[i])
+	}
+	if h == hashsep && s[:n] == sep {
+		return 0
+	}
+	for i := n; i < len(s); {
+		h *= primeRK
+		h += uint32(s[i])
+		h -= pow * uint32(s[i-n])
+		i++
+		if h == hashsep && s[i-n:i] == sep {
+			return i - n
 		}
 	}
 	return -1
@@ -244,7 +309,8 @@ func SplitAfter(s, sep string) []string {
 }
 
 // Fields splits the string s around each instance of one or more consecutive white space
-// characters, returning an array of substrings of s or an empty list if s contains only white space.
+// characters, as defined by unicode.IsSpace, returning an array of substrings of s or an
+// empty list if s contains only white space.
 func Fields(s string) []string {
 	return FieldsFunc(s, unicode.IsSpace)
 }
@@ -426,10 +492,10 @@ func isSeparator(r rune) bool {
 	return unicode.IsSpace(r)
 }
 
-// BUG(r): The rule Title uses for word boundaries does not handle Unicode punctuation properly.
-
 // Title returns a copy of the string s with all Unicode letters that begin words
 // mapped to their title case.
+//
+// BUG: The rule Title uses for word boundaries does not handle Unicode punctuation properly.
 func Title(s string) string {
 	// Use a closure here to remember state.
 	// Hackish but effective. Depends on Map scanning in order and calling
@@ -556,6 +622,24 @@ func TrimRight(s string, cutset string) string {
 // and trailing white space removed, as defined by Unicode.
 func TrimSpace(s string) string {
 	return TrimFunc(s, unicode.IsSpace)
+}
+
+// TrimPrefix returns s without the provided leading prefix string.
+// If s doesn't start with prefix, s is returned unchanged.
+func TrimPrefix(s, prefix string) string {
+	if HasPrefix(s, prefix) {
+		return s[len(prefix):]
+	}
+	return s
+}
+
+// TrimSuffix returns s without the provided trailing suffix string.
+// If s doesn't end with suffix, s is returned unchanged.
+func TrimSuffix(s, suffix string) string {
+	if HasSuffix(s, suffix) {
+		return s[:len(s)-len(suffix)]
+	}
+	return s
 }
 
 // Replace returns a copy of the string s with the first n

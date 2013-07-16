@@ -211,40 +211,11 @@ toolexeclibgoencoding_DATA = \
 	encoding/pem.gox \
 	encoding/xml.gox
 
-if LIBGO_IS_LINUX
-# exp_inotify_gox = exp/inotify.gox
-exp_inotify_gox =
-else
-exp_inotify_gox =
-endif
-
 toolexeclibgoexpdir = $(toolexeclibgodir)/exp
 
 toolexeclibgoexp_DATA = \
-	exp/cookiejar.gox \
-	exp/ebnf.gox \
-	exp/html.gox \
-	$(exp_inotify_gox) \
-	exp/norm.gox \
 	exp/proxy.gox \
-	exp/ssa.gox \
-	exp/terminal.gox \
-	exp/utf8string.gox
-
-toolexeclibgoexphtmldir = $(toolexeclibgoexpdir)/html
-
-toolexeclibgoexphtml_DATA = \
-	exp/html/atom.gox
-
-toolexeclibgoexplocaledir = $(toolexeclibgoexpdir)/locale
-
-toolexeclibgoexplocale_DATA = \
-	exp/locale/collate.gox
-
-toolexeclibgoexplocalecollatedir = $(toolexeclibgoexplocaledir)/collate
-
-toolexeclibgoexplocalecollate_DATA = \
-	exp/locale/collate/build.gox
+	exp/terminal.gox
 
 toolexeclibgogodir = $(toolexeclibgodir)/go
 
@@ -256,8 +227,7 @@ toolexeclibgogo_DATA = \
 	go/parser.gox \
 	go/printer.gox \
 	go/scanner.gox \
-	go/token.gox \
-	go/types.gox
+	go/token.gox
 
 toolexeclibgohashdir = $(toolexeclibgodir)/hash
 
@@ -322,6 +292,7 @@ toolexeclibgonethttpdir = $(toolexeclibgonetdir)/http
 
 toolexeclibgonethttp_DATA = \
 	net/http/cgi.gox \
+	net/http/cookiejar.gox \
 	net/http/fcgi.gox \
 	net/http/httptest.gox \
 	net/http/httputil.gox \
@@ -335,7 +306,6 @@ toolexeclibgonetrpc_DATA = \
 toolexeclibgoolddir = $(toolexeclibgodir)/old
 
 toolexeclibgoold_DATA = \
-	old/netchan.gox \
 	old/regexp.gox \
 	old/template.gox
 
@@ -435,6 +405,16 @@ endif
 endif
 endif
 
+if LIBGO_IS_LINUX
+runtime_netpoll_files = netpoll.c runtime/netpoll_epoll.c
+else
+if LIBGO_IS_DARWIN
+runtime_netpoll_files = netpoll.c runtime/netpoll_kqueue.c
+else
+runtime_netpoll_files = runtime/netpoll_stub.c
+endif
+endif
+
 runtime_files = \
 	runtime/go-append.c \
 	runtime/go-assert.c \
@@ -513,6 +493,7 @@ runtime_files = \
 	runtime/mgc0.c \
 	runtime/mheap.c \
 	runtime/msize.c \
+	$(runtime_netpoll_files) \
 	runtime/panic.c \
 	runtime/parfor.c \
 	runtime/print.c \
@@ -548,6 +529,10 @@ mprof.c: $(srcdir)/runtime/mprof.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
 
+netpoll.c: $(srcdir)/runtime/netpoll.goc goc2c
+	./goc2c $< > $@.tmp
+	mv -f $@.tmp $@
+
 reflect.c: $(srcdir)/runtime/reflect.goc goc2c
 	./goc2c $< > $@.tmp
 	mv -f $@.tmp $@
@@ -573,7 +558,8 @@ time.c: $(srcdir)/runtime/time.goc goc2c
 	mv -f $@.tmp $@
 
 go_bufio_files = \
-	go/bufio/bufio.go
+	go/bufio/bufio.go \
+	go/bufio/scan.go
 
 go_bytes_files = \
 	go/bytes/buffer.go \
@@ -678,17 +664,17 @@ go_net_fd_os_file = go/net/fd_select.go
 go_net_newpollserver_file = go/net/newpollserver_rtems.go
 else # !LIBGO_IS_RTEMS
 if LIBGO_IS_LINUX
-go_net_fd_os_file = go/net/fd_linux.go
-go_net_newpollserver_file = go/net/newpollserver_unix.go
+go_net_fd_os_file =
+go_net_newpollserver_file =
 else # !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
 if LIBGO_IS_NETBSD
 go_net_fd_os_file = go/net/fd_bsd.go
-go_net_newpollserver_file = go/net/newpollserver_unix.go
+go_net_newpollserver_file =
 else # !LIBGO_IS_NETBSD && !LIBGO_IS_LINUX && !LIBGO_IS_RTEMS
 # By default use select with pipes.  Most systems should have
 # something better.
 go_net_fd_os_file = go/net/fd_select.go
-go_net_newpollserver_file = go/net/newpollserver_unix.go
+go_net_newpollserver_file =
 endif # !LIBGO_IS_NETBSD
 endif # !LIBGO_IS_LINUX
 endif # !LIBGO_IS_RTEMS
@@ -759,6 +745,16 @@ else
 go_net_cloexec_file = go/net/sys_cloexec.go
 endif
 
+if LIBGO_IS_LINUX
+go_net_poll_file = go/net/fd_poll_runtime.go
+else
+if LIBGO_IS_DARWIN
+go_net_poll_file = go/net/fd_poll_runtime.go
+else
+go_net_poll_file = go/net/fd_poll_unix.go
+endif
+endif
+
 go_net_files = \
 	go/net/cgo_unix.go \
 	$(go_net_cgo_file) \
@@ -786,10 +782,12 @@ go_net_files = \
 	go/net/net.go \
 	go/net/parse.go \
 	go/net/pipe.go \
+	$(go_net_poll_file) \
 	go/net/port.go \
 	go/net/port_unix.go \
 	$(go_net_sendfile_file) \
 	go/net/sock_posix.go \
+	go/net/sock_unix.go \
 	$(go_net_sock_file) \
 	go/net/sockopt_posix.go \
 	$(go_net_sockopt_file) \
@@ -890,7 +888,8 @@ go_os_files = \
 	$(go_os_stat_file) \
 	go/os/str.go \
 	$(go_os_sys_file) \
-	go/os/types.go
+	go/os/types.go \
+	go/os/types_notwin.go
 
 go_path_files = \
 	go/path/match.go \
@@ -979,6 +978,7 @@ go_syslog_c_files = \
 	go/log/syslog/syslog_c.c
 
 go_testing_files = \
+	go/testing/allocs.go \
 	go/testing/benchmark.go \
 	go/testing/example.go \
 	go/testing/testing.go
@@ -1101,7 +1101,8 @@ go_crypto_rand_files = \
 	go/crypto/rand/rand_unix.go \
 	go/crypto/rand/util.go
 go_crypto_rc4_files = \
-	go/crypto/rc4/rc4.go
+	go/crypto/rc4/rc4.go \
+	go/crypto/rc4/rc4_ref.go
 go_crypto_rsa_files = \
 	go/crypto/rsa/pkcs1v15.go \
 	go/crypto/rsa/rsa.go
@@ -1212,73 +1213,14 @@ go_encoding_xml_files = \
 	go/encoding/xml/typeinfo.go \
 	go/encoding/xml/xml.go
 
-go_exp_cookiejar_files = \
-	go/exp/cookiejar/jar.go \
-	go/exp/cookiejar/storage.go
-go_exp_ebnf_files = \
-	go/exp/ebnf/ebnf.go \
-	go/exp/ebnf/parser.go
-go_exp_html_files = \
-	go/exp/html/const.go \
-	go/exp/html/doc.go \
-	go/exp/html/doctype.go \
-	go/exp/html/entity.go \
-	go/exp/html/escape.go \
-	go/exp/html/foreign.go \
-	go/exp/html/node.go \
-	go/exp/html/parse.go \
-	go/exp/html/render.go \
-	go/exp/html/token.go
-go_exp_html_atom_files = \
-	go/exp/html/atom/atom.go \
-	go/exp/html/atom/table.go
-go_exp_inotify_files = \
-	go/exp/inotify/inotify_linux.go
-go_exp_locale_collate_files = \
-	go/exp/locale/collate/colelem.go \
-	go/exp/locale/collate/collate.go \
-	go/exp/locale/collate/colltab.go \
-	go/exp/locale/collate/contract.go \
-	go/exp/locale/collate/export.go \
-	go/exp/locale/collate/sort.go \
-	go/exp/locale/collate/table.go \
-	go/exp/locale/collate/tables.go \
-	go/exp/locale/collate/trie.go
-go_exp_locale_collate_build_files = \
-	go/exp/locale/collate/build/builder.go \
-	go/exp/locale/collate/build/colelem.go \
-	go/exp/locale/collate/build/contract.go \
-	go/exp/locale/collate/build/order.go \
-	go/exp/locale/collate/build/table.go \
-	go/exp/locale/collate/build/trie.go
-go_exp_norm_files = \
-	go/exp/norm/composition.go \
-	go/exp/norm/forminfo.go \
-	go/exp/norm/input.go \
-	go/exp/norm/iter.go \
-	go/exp/norm/normalize.go \
-	go/exp/norm/readwriter.go \
-	go/exp/norm/tables.go \
-	go/exp/norm/trie.go
 go_exp_proxy_files = \
 	go/exp/proxy/direct.go \
 	go/exp/proxy/per_host.go \
 	go/exp/proxy/proxy.go \
 	go/exp/proxy/socks5.go
-go_exp_ssa_files = \
-	go/exp/ssa/blockopt.go \
-	go/exp/ssa/doc.go \
-	go/exp/ssa/func.go \
-	go/exp/ssa/sanity.go \
-	go/exp/ssa/ssa.go \
-	go/exp/ssa/literal.go \
-	go/exp/ssa/print.go \
-	go/exp/ssa/util.go
 go_exp_terminal_files = \
 	go/exp/terminal/terminal.go \
 	go/exp/terminal/util.go
-go_exp_utf8string_files = \
-	go/exp/utf8string/string.go
 
 go_go_ast_files = \
 	go/go/ast/ast.go \
@@ -1317,24 +1259,6 @@ go_go_token_files = \
 	go/go/token/position.go \
 	go/go/token/serialize.go \
 	go/go/token/token.go
-go_go_types_files = \
-	go/go/types/api.go \
-	go/go/types/builtins.go \
-	go/go/types/check.go \
-	go/go/types/const.go \
-	go/go/types/conversions.go \
-	go/go/types/errors.go \
-	go/go/types/exportdata.go \
-	go/go/types/expr.go \
-	go/go/types/gcimporter.go \
-	go/go/types/objects.go \
-	go/go/types/operand.go \
-	go/go/types/predicates.go \
-	go/go/types/resolve.go \
-	go/go/types/scope.go \
-	go/go/types/stmt.go \
-	go/go/types/types.go \
-	go/go/types/universe.go
 
 go_hash_adler32_files = \
 	go/hash/adler32/adler32.go
@@ -1458,6 +1382,9 @@ go_net_url_files = \
 go_net_http_cgi_files = \
 	go/net/http/cgi/child.go \
 	go/net/http/cgi/host.go
+go_net_http_cookiejar_files = \
+	go/net/http/cookiejar/jar.go \
+	go/net/http/cookiejar/punycode.go
 go_net_http_fcgi_files = \
 	go/net/http/fcgi/child.go \
 	go/net/http/fcgi/fcgi.go
@@ -1473,10 +1400,6 @@ go_net_http_httputil_files = \
 	go/net/http/httputil/reverseproxy.go
 
 
-go_old_netchan_files = \
-	go/old/netchan/common.go \
-	go/old/netchan/export.go \
-	go/old/netchan/import.go
 go_old_regexp_files = \
 	go/old/regexp/regexp.go
 go_old_template_files = \
@@ -1518,6 +1441,7 @@ go_net_rpc_jsonrpc_files = \
 	go/net/rpc/jsonrpc/server.go
 
 go_runtime_debug_files = \
+	go/runtime/debug/garbage.go \
 	go/runtime/debug/stack.go
 go_runtime_pprof_files = \
 	go/runtime/pprof/pprof.go
@@ -1896,17 +1820,8 @@ libgo_go_objs = \
 	encoding/json.lo \
 	encoding/pem.lo \
 	encoding/xml.lo \
-	exp/cookiejar.lo \
-	exp/ebnf.lo \
-	exp/html.lo \
-	exp/html/atom.lo \
-	exp/locale/collate.lo \
-	exp/locale/collate/build.lo \
-	exp/norm.lo \
 	exp/proxy.lo \
-	exp/ssa.lo \
 	exp/terminal.lo \
-	exp/utf8string.lo \
 	html/template.lo \
 	go/ast.lo \
 	go/build.lo \
@@ -1916,12 +1831,12 @@ libgo_go_objs = \
 	go/printer.lo \
 	go/scanner.lo \
 	go/token.lo \
-	go/types.lo \
 	hash/adler32.lo \
 	hash/crc32.lo \
 	hash/crc64.lo \
 	hash/fnv.lo \
 	net/http/cgi.lo \
+	net/http/cookiejar.lo \
 	net/http/fcgi.lo \
 	net/http/httptest.lo \
 	net/http/httputil.lo \
@@ -1945,7 +1860,6 @@ libgo_go_objs = \
 	net/smtp.lo \
 	net/textproto.lo \
 	net/url.lo \
-	old/netchan.lo \
 	old/regexp.lo \
 	old/template.lo \
 	os/exec.lo \
@@ -2730,69 +2644,6 @@ encoding/xml/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: encoding/xml/check
 
-@go_include@ exp/cookiejar.lo.dep
-exp/cookiejar.lo.dep: $(go_exp_cookiejar_files)
-	$(BUILDDEPS)
-exp/cookiejar.lo: $(go_exp_cookiejar_files)
-	$(BUILDPACKAGE)
-exp/cookiejar/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/cookiejar/check
-
-@go_include@ exp/ebnf.lo.dep
-exp/ebnf.lo.dep: $(go_exp_ebnf_files)
-	$(BUILDDEPS)
-exp/ebnf.lo: $(go_exp_ebnf_files)
-	$(BUILDPACKAGE)
-exp/ebnf/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/ebnf/check
-
-@go_include@ exp/html.lo.dep
-exp/html.lo.dep: $(go_exp_html_files)
-	$(BUILDDEPS)
-exp/html.lo: $(go_exp_html_files)
-	$(BUILDPACKAGE)
-exp/html/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/html/check
-
-@go_include@ exp/html/atom.lo.dep
-exp/html/atom.lo.dep: $(go_exp_html_atom_files)
-	$(BUILDDEPS)
-exp/html/atom.lo: $(go_exp_html_atom_files)
-	$(BUILDPACKAGE)
-exp/html/atom/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/html/atom/check
-
-@go_include@ exp/locale/collate.lo.dep
-exp/locale/collate.lo.dep: $(go_exp_locale_collate_files)
-	$(BUILDDEPS)
-exp/locale/collate.lo: $(go_exp_locale_collate_files)
-	$(BUILDPACKAGE)
-exp/locale/collate/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/locale/collate/check
-
-@go_include@ exp/locale/collate/build.lo.dep
-exp/locale/collate/build.lo.dep: $(go_exp_locale_collate_build_files)
-	$(BUILDDEPS)
-exp/locale/collate/build.lo: $(go_exp_locale_collate_build_files)
-	$(BUILDPACKAGE)
-exp/locale/collate/build/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/locale/collate/build/check
-
-@go_include@ exp/norm.lo.dep
-exp/norm.lo.dep: $(go_exp_norm_files)
-	$(BUILDDEPS)
-exp/norm.lo: $(go_exp_norm_files)
-	$(BUILDPACKAGE)
-exp/norm/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/norm/check
-
 @go_include@ exp/proxy.lo.dep
 exp/proxy.lo.dep: $(go_exp_proxy_files)
 	$(BUILDDEPS)
@@ -2802,15 +2653,6 @@ exp/proxy/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/proxy/check
 
-@go_include@ exp/ssa.lo.dep
-exp/ssa.lo.dep: $(go_exp_ssa_files)
-	$(BUILDDEPS)
-exp/ssa.lo: $(go_exp_ssa_files)
-	$(BUILDPACKAGE)
-exp/ssa/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/ssa/check
-
 @go_include@ exp/terminal.lo.dep
 exp/terminal.lo.dep: $(go_exp_terminal_files)
 	$(BUILDDEPS)
@@ -2819,24 +2661,6 @@ exp/terminal.lo: $(go_exp_terminal_files)
 exp/terminal/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: exp/terminal/check
-
-@go_include@ exp/utf8string.lo.dep
-exp/utf8string.lo.dep: $(go_exp_utf8string_files)
-	$(BUILDDEPS)
-exp/utf8string.lo: $(go_exp_utf8string_files)
-	$(BUILDPACKAGE)
-exp/utf8string/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/utf8string/check
-
-@go_include@ exp/inotify.lo.dep
-exp/inotify.lo.dep: $(go_exp_inotify_files)
-	$(BUILDDEPS)
-exp/inotify.lo: $(go_exp_inotify_files)
-	$(BUILDPACKAGE)
-exp/inotify/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: exp/inotify/check
 
 @go_include@ html/template.lo.dep
 html/template.lo.dep: $(go_html_template_files)
@@ -2927,15 +2751,6 @@ go/token.lo: $(go_go_token_files)
 go/token/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: go/token/check
-
-@go_include@ go/types.lo.dep
-go/types.lo.dep: $(go_go_types_files)
-	$(BUILDDEPS)
-go/types.lo: $(go_go_types_files)
-	$(BUILDPACKAGE)
-go/types/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: go/types/check
 
 @go_include@ hash/adler32.lo.dep
 hash/adler32.lo.dep: $(go_hash_adler32_files)
@@ -3147,6 +2962,15 @@ net/http/cgi/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: net/http/cgi/check
 
+@go_include@ net/http/cookiejar.lo.dep
+net/http/cookiejar.lo.dep: $(go_net_http_cookiejar_files)
+	$(BUILDDEPS)
+net/http/cookiejar.lo: $(go_net_http_cookiejar_files)
+	$(BUILDPACKAGE)
+net/http/cookiejar/check: $(CHECK_DEPS)
+	@$(CHECK)
+.PHONY: net/http/cookiejar/check
+
 @go_include@ net/http/fcgi.lo.dep
 net/http/fcgi.lo.dep: $(go_net_http_fcgi_files)
 	$(BUILDDEPS)
@@ -3191,15 +3015,6 @@ net/rpc/jsonrpc.lo: $(go_net_rpc_jsonrpc_files)
 net/rpc/jsonrpc/check: $(CHECK_DEPS)
 	@$(CHECK)
 .PHONY: net/rpc/jsonrpc/check
-
-@go_include@ old/netchan.lo.dep
-old/netchan.lo.dep: $(go_old_netchan_files)
-	$(BUILDDEPS)
-old/netchan.lo: $(go_old_netchan_files)
-	$(BUILDPACKAGE)
-old/netchan/check: $(CHECK_DEPS)
-	@$(CHECK)
-.PHONY: old/netchan/check
 
 @go_include@ old/regexp.lo.dep
 old/regexp.lo.dep: $(go_old_regexp_files)
@@ -3549,29 +3364,9 @@ encoding/pem.gox: encoding/pem.lo
 encoding/xml.gox: encoding/xml.lo
 	$(BUILDGOX)
 
-exp/cookiejar.gox: exp/cookiejar.lo
-	$(BUILDGOX)
-exp/ebnf.gox: exp/ebnf.lo
-	$(BUILDGOX)
-exp/html.gox: exp/html.lo
-	$(BUILDGOX)
-exp/html/atom.gox: exp/html/atom.lo
-	$(BUILDGOX)
-exp/inotify.gox: exp/inotify.lo
-	$(BUILDGOX)
-exp/locale/collate.gox: exp/locale/collate.lo
-	$(BUILDGOX)
-exp/locale/collate/build.gox: exp/locale/collate/build.lo
-	$(BUILDGOX)
-exp/norm.gox: exp/norm.lo
-	$(BUILDGOX)
 exp/proxy.gox: exp/proxy.lo
 	$(BUILDGOX)
-exp/ssa.gox: exp/ssa.lo
-	$(BUILDGOX)
 exp/terminal.gox: exp/terminal.lo
-	$(BUILDGOX)
-exp/utf8string.gox: exp/utf8string.lo	
 	$(BUILDGOX)
 
 html/template.gox: html/template.lo
@@ -3592,8 +3387,6 @@ go/printer.gox: go/printer.lo
 go/scanner.gox: go/scanner.lo
 	$(BUILDGOX)
 go/token.gox: go/token.lo
-	$(BUILDGOX)
-go/types.gox: go/types.lo
 	$(BUILDGOX)
 
 hash/adler32.gox: hash/adler32.lo
@@ -3650,6 +3443,8 @@ net/url.gox: net/url.lo
 
 net/http/cgi.gox: net/http/cgi.lo
 	$(BUILDGOX)
+net/http/cookiejar.gox: net/http/cookiejar.lo
+	$(BUILDGOX)
 net/http/fcgi.gox: net/http/fcgi.lo
 	$(BUILDGOX)
 net/http/httptest.gox: net/http/httptest.lo
@@ -3662,8 +3457,6 @@ net/http/pprof.gox: net/http/pprof.lo
 net/rpc/jsonrpc.gox: net/rpc/jsonrpc.lo
 	$(BUILDGOX)
 
-old/netchan.gox: old/netchan.lo
-	$(BUILDGOX)
 old/regexp.gox: old/regexp.lo
 	$(BUILDGOX)
 old/template.gox: old/template.lo
@@ -3708,13 +3501,6 @@ unicode/utf16.gox: unicode/utf16.lo
 	$(BUILDGOX)
 unicode/utf8.gox: unicode/utf8.lo
 	$(BUILDGOX)
-
-if LIBGO_IS_LINUX
-# exp_inotify_check = exp/inotify/check
-exp_inotify_check =
-else
-exp_inotify_check =
-endif
 
 TEST_PACKAGES = \
 	bufio/check \
@@ -3786,17 +3572,8 @@ TEST_PACKAGES = \
 	encoding/json/check \
 	encoding/pem/check \
 	encoding/xml/check \
-	exp/cookiejar/check \
-	exp/ebnf/check \
-	exp/html/check \
-	exp/html/atom/check \
-	$(exp_inotify_check) \
-	exp/locale/collate/check \
-	exp/locale/collate/build/check \
-	exp/norm/check \
 	exp/proxy/check \
 	exp/terminal/check \
-	exp/utf8string/check \
 	html/template/check \
 	go/ast/check \
 	$(go_build_check_omitted_since_it_calls_6g) \
@@ -3806,7 +3583,6 @@ TEST_PACKAGES = \
 	go/printer/check \
 	go/scanner/check \
 	go/token/check \
-	go/types/check \
 	hash/adler32/check \
 	hash/crc32/check \
 	hash/crc64/check \
@@ -3824,6 +3600,7 @@ TEST_PACKAGES = \
 	mime/multipart/check \
 	net/http/check \
 	net/http/cgi/check \
+	net/http/cookiejar/check \
 	net/http/fcgi/check \
 	net/http/httptest/check \
 	net/http/httputil/check \
@@ -3833,7 +3610,6 @@ TEST_PACKAGES = \
 	net/textproto/check \
 	net/url/check \
 	net/rpc/jsonrpc/check \
-	old/netchan/check \
 	old/regexp/check \
 	old/template/check \
 	os/exec/check \

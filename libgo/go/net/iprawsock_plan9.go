@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Raw IP sockets for Plan 9
-
 package net
 
 import (
@@ -34,7 +32,7 @@ func (c *IPConn) ReadFrom(b []byte) (int, Addr, error) {
 }
 
 // ReadMsgIP reads a packet from c, copying the payload into b and the
-// associdated out-of-band data into oob.  It returns the number of
+// associated out-of-band data into oob.  It returns the number of
 // bytes copied into b, the number of bytes copied into oob, the flags
 // that were set on the packet and the source address of the packet.
 func (c *IPConn) ReadMsgIP(b, oob []byte) (n, oobn, flags int, addr *IPAddr, err error) {
@@ -76,7 +74,7 @@ func dialIP(netProto string, laddr, raddr *IPAddr, deadline time.Time) (*IPConn,
 }
 
 // ListenIP listens for incoming IP packets addressed to the local
-// address laddr.  The returned connection c's ReadFrom and WriteTo
+// address laddr.  The returned connection's ReadFrom and WriteTo
 // methods can be used to receive and send IP packets with per-packet
 // addressing.
 func ListenIP(netProto string, laddr *IPAddr) (*IPConn, error) {

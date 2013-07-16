@@ -1119,7 +1119,7 @@ func TestStoreLoadRelAcq32(t *testing.T) {
 					d1 := X.data1
 					d2 := X.data2
 					if d1 != i || d2 != float32(i) {
-						t.Fatalf("incorrect data: %d/%d (%d)", d1, d2, i)
+						t.Fatalf("incorrect data: %d/%g (%d)", d1, d2, i)
 					}
 				}
 			}
@@ -1167,7 +1167,7 @@ func TestStoreLoadRelAcq64(t *testing.T) {
 					d1 := X.data1
 					d2 := X.data2
 					if d1 != i || d2 != float64(i) {
-						t.Fatalf("incorrect data: %d/%d (%d)", d1, d2, i)
+						t.Fatalf("incorrect data: %d/%g (%d)", d1, d2, i)
 					}
 				}
 			}
@@ -1176,4 +1176,32 @@ func TestStoreLoadRelAcq64(t *testing.T) {
 	}
 	<-c
 	<-c
+}
+
+func shouldPanic(t *testing.T, name string, f func()) {
+	defer func() {
+		if recover() == nil {
+			t.Errorf("%s did not panic", name)
+		}
+	}()
+	f()
+}
+
+func TestUnaligned64(t *testing.T) {
+	// Unaligned 64-bit atomics on 32-bit systems are
+	// a continual source of pain. Test that on 32-bit systems they crash
+	// instead of failing silently.
+	if unsafe.Sizeof(int(0)) != 4 {
+		t.Skip("test only runs on 32-bit systems")
+	}
+
+	t.Skip("skipping test for gccgo")
+
+	x := make([]uint32, 4)
+	p := (*uint64)(unsafe.Pointer(&x[1])) // misaligned
+
+	shouldPanic(t, "LoadUint64", func() { LoadUint64(p) })
+	shouldPanic(t, "StoreUint64", func() { StoreUint64(p, 1) })
+	shouldPanic(t, "CompareAndSwapUint64", func() { CompareAndSwapUint64(p, 1, 2) })
+	shouldPanic(t, "AddUint64", func() { AddUint64(p, 3) })
 }

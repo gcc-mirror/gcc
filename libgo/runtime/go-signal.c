@@ -12,6 +12,7 @@
 #include "runtime.h"
 #include "go-assert.h"
 #include "go-panic.h"
+#include "signal_unix.h"
 
 #ifndef SA_RESTART
   #define SA_RESTART 0
@@ -157,12 +158,15 @@ runtime_badsignal(int32 sig)
 /* Handle a signal, for cases where we don't panic.  We can split the
    stack here.  */
 
-static void
-sig_handler (int sig)
+void
+runtime_sighandler (int sig, Siginfo *info,
+		    void *context __attribute__ ((unused)), G *gp)
 {
+  M *m;
   int i;
 
-  if (runtime_m () == NULL)
+  m = runtime_m ();
+  if (m == NULL)
     {
       runtime_badsignal (sig);
       return;
@@ -171,7 +175,8 @@ sig_handler (int sig)
 #ifdef SIGPROF
   if (sig == SIGPROF)
     {
-      runtime_sigprof ();
+      if (gp != runtime_m ()->g0 && gp != runtime_m ()->gsignal)
+	runtime_sigprof ();
       return;
     }
 #endif
@@ -179,13 +184,18 @@ sig_handler (int sig)
   for (i = 0; runtime_sigtab[i].sig != -1; ++i)
     {
       SigTab *t;
+      bool notify, crash;
 
       t = &runtime_sigtab[i];
 
       if (t->sig != sig)
 	continue;
 
-      if ((t->flags & SigNotify) != 0)
+      notify = false;
+#ifdef SA_SIGINFO
+      notify = info != NULL && info->si_code == SI_USER;
+#endif
+      if (notify || (t->flags & SigNotify) != 0)
 	{
 	  if (__go_sigsend (sig))
 	    return;
@@ -210,9 +220,15 @@ sig_handler (int sig)
 	  runtime_printf ("%s\n", name);
       }
 
+      if (m->lockedg != NULL && m->ncgo > 0 && gp == m->g0)
+	{
+	  runtime_printf("signal arrived during cgo execution\n");
+	  gp = m->lockedg;
+	}
+
       runtime_printf ("\n");
 
-      if (runtime_gotraceback ())
+      if (runtime_gotraceback (&crash))
 	{
 	  G *g;
 
@@ -224,6 +240,9 @@ sig_handler (int sig)
 	     a function that prints the registers saved in context in
 	     a readable form.  */
 	}
+
+      if (crash)
+	runtime_crash ();
 
       runtime_exit (2);
     }
@@ -259,15 +278,14 @@ sig_panic_leadin (int sig)
    permitted to split the stack.  */
 
 static void
-sig_panic_info_handler (int sig, siginfo_t *info,
-			void *context __attribute__ ((unused)))
+sig_panic_info_handler (int sig, Siginfo *info, void *context)
 {
   G *g;
 
   g = runtime_g ();
   if (g == NULL || info->si_code == SI_USER)
     {
-      sig_handler (sig);
+      runtime_sighandler (sig, info, context, g);
       return;
     }
 
@@ -331,7 +349,7 @@ sig_panic_handler (int sig)
   g = runtime_g ();
   if (g == NULL)
     {
-      sig_handler (sig);
+      runtime_sighandler (sig, NULL, NULL, g);
       return;
     }
 
@@ -373,10 +391,10 @@ sig_panic_handler (int sig)
    the stack.  */
 
 static void
-sig_tramp (int) __attribute__ ((no_split_stack));
+sig_tramp_info (int, Siginfo *, void *) __attribute__ ((no_split_stack));
 
 static void
-sig_tramp (int sig)
+sig_tramp_info (int sig, Siginfo *info, void *context)
 {
   G *gp;
   M *mp;
@@ -403,7 +421,7 @@ sig_tramp (int sig)
 #endif
     }
 
-  sig_handler (sig);
+  runtime_sighandler (sig, info, context, gp);
 
   /* We are going to return back to the signal trampoline and then to
      whatever we were doing before we got the signal.  Restore the
@@ -418,8 +436,20 @@ sig_tramp (int sig)
     }
 }
 
+#ifndef SA_SIGINFO
+
+static void sig_tramp (int sig) __attribute__ ((no_split_stack));
+
+static void
+sig_tramp (int sig)
+{
+  sig_tramp_info (sig, NULL, NULL);
+}
+
+#endif
+
 void
-runtime_setsig (int32 i, bool def __attribute__ ((unused)), bool restart)
+runtime_setsig (int32 i, GoSighandler *fn, bool restart)
 {
   struct sigaction sa;
   int r;
@@ -434,17 +464,30 @@ runtime_setsig (int32 i, bool def __attribute__ ((unused)), bool restart)
 
   if ((t->flags & SigPanic) == 0)
     {
+#ifdef SA_SIGINFO
+      sa.sa_flags = SA_ONSTACK | SA_SIGINFO;
+      if (fn == runtime_sighandler)
+	fn = (void *) sig_tramp_info;
+      sa.sa_sigaction = (void *) fn;
+#else
       sa.sa_flags = SA_ONSTACK;
-      sa.sa_handler = sig_tramp;
+      if (fn == runtime_sighandler)
+	fn = (void *) sig_tramp;
+      sa.sa_handler = (void *) fn;
+#endif
     }
   else
     {
 #ifdef SA_SIGINFO
       sa.sa_flags = SA_SIGINFO;
-      sa.sa_sigaction = sig_panic_info_handler;
+      if (fn == runtime_sighandler)
+	fn = (void *) sig_panic_info_handler;
+      sa.sa_sigaction = (void *) fn;
 #else
       sa.sa_flags = 0;
-      sa.sa_handler = sig_panic_handler;
+      if (fn == runtime_sighandler)
+	fn = (void *) sig_panic_handler;
+      sa.sa_handler = (void *) fn;
 #endif
     }
 
@@ -453,6 +496,37 @@ runtime_setsig (int32 i, bool def __attribute__ ((unused)), bool restart)
 
   if (sigaction (t->sig, &sa, NULL) != 0)
     __go_assert (0);
+}
+
+GoSighandler*
+runtime_getsig (int32 i)
+{
+  struct sigaction sa;
+  int r;
+  SigTab *t;
+
+  memset (&sa, 0, sizeof sa);
+
+  r = sigemptyset (&sa.sa_mask);
+  __go_assert (r == 0);
+
+  t = &runtime_sigtab[i];
+
+  if (sigaction (t->sig, NULL, &sa) != 0)
+    runtime_throw ("sigaction read failure");
+
+  if ((void *) sa.sa_handler == sig_tramp_info)
+    return runtime_sighandler;
+#ifdef SA_SIGINFO
+  if ((void *) sa.sa_handler == sig_panic_info_handler)
+    return runtime_sighandler;
+#else
+  if ((void *) sa.sa_handler == sig_tramp
+      || (void *) sa.sa_handler == sig_panic_handler)
+    return runtime_sighandler;
+#endif
+
+  return (void *) sa.sa_handler;
 }
 
 /* Used by the os package to raise SIGPIPE.  */

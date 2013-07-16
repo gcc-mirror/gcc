@@ -121,7 +121,9 @@ static uintptr eod[3] = {0, 1, 0};
 // LostProfileData is a no-op function used in profiles
 // to mark the number of profiling stack traces that were
 // discarded due to slow data writers.
-static void LostProfileData(void) {
+static void
+LostProfileData(void)
+{
 }
 
 extern void runtime_SetCPUProfileRate(intgo)
@@ -365,7 +367,7 @@ getprofile(Profile *p)
 		return ret;
 
 	// Wait for new log.
-	runtime_entersyscall();
+	runtime_entersyscallblock();
 	runtime_notesleep(&p->wait);
 	runtime_exitsyscall();
 	runtime_noteclear(&p->wait);
