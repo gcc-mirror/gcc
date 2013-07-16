@@ -929,22 +929,22 @@ struct mips_cpu_info {
 				  || TARGET_SR71K)			 \
 				 && !TARGET_MIPS16)
 
-/* ISA has three operand multiply instructions that
-   negates the result and puts the result in an accumulator.  */
+/* ISA has three operand multiply instructions that negate the
+   result and put the result in an accumulator.  */
 #define ISA_HAS_MULS		((TARGET_MIPS5400			\
 				  || TARGET_MIPS5500			\
 				  || TARGET_SR71K)			\
 				 && !TARGET_MIPS16)
 
-/* ISA has three operand multiply instructions that subtracts the
-   result from a 4th operand and puts the result in an accumulator.  */
+/* ISA has three operand multiply instructions that subtract the
+   result from a 4th operand and put the result in an accumulator.  */
 #define ISA_HAS_MSAC		((TARGET_MIPS5400			\
 				  || TARGET_MIPS5500			\
 				  || TARGET_SR71K)			\
 				 && !TARGET_MIPS16)
 
-/* ISA has three operand multiply instructions that  the result
-   from a 4th operand and puts the result in an accumulator.  */
+/* ISA has three operand multiply instructions that add the result
+   to a 4th operand and put the result in an accumulator.  */
 #define ISA_HAS_MACC		((TARGET_MIPS4120			\
 				  || TARGET_MIPS4130			\
 				  || TARGET_MIPS5400			\
