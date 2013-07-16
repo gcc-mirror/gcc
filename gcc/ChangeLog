@@ -1,5 +1,22 @@
 2013-07-16  Maciej W. Rozycki  <macro@codesourcery.com>
 
+	* config/mips/mips.h (ISA_HAS_FP4): Correct formatting.
+	(ISA_HAS_FP_MADD4_MSUB4): Also enable for ISA_MIPS32R2.
+	(ISA_HAS_NMADD4_NMSUB4): Remove the MODE argument; rewrite in
+	terms of ISA_HAS_FP4, and also enable for ISA_MIPS32R2.
+	(ISA_HAS_NMADD3_NMSUB3): Remove the MODE argument.
+	* config/mips/mips.c (mips_rtx_costs) <PLUS>: Check for
+	ISA_HAS_FP_MADD4_MSUB4 || ISA_HAS_FP_MADD3_MSUB3 rather than
+	ISA_HAS_FP4.
+	<MINUS, NEG>: Update according to changes to ISA_HAS_NMADD4_NMSUB4
+	and ISA_HAS_NMADD3_NMSUB3.
+	* config/mips/mips.md (nmadd4<mode>, nmadd3<mode>): Likewise.
+	(nmadd4<mode>_fastmath, nmadd3<mode>_fastmath): Likewise.
+	(nmsub4<mode>, nmsub3<mode>): Likewise.
+	(nmsub4<mode>_fastmath, nmsub3<mode>_fastmath): Likewise.
+
+2013-07-16  Maciej W. Rozycki  <macro@codesourcery.com>
+
 	* config/mips/mips.h (ISA_HAS_NMADD4_NMSUB4): Remove
 	TARGET_MIPS5400 checking.
 
