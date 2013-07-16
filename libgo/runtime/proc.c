@@ -1666,7 +1666,11 @@ runtime_entersyscall()
 				       &g->gcnext_segment, &g->gcnext_sp,
 				       &g->gcinitial_sp);
 #else
-	g->gcnext_sp = (byte *) &v;
+	{
+		uint32 v;
+
+		g->gcnext_sp = (byte *) &v;
+	}
 #endif
 
 	// Save the registers in the g structure so that any pointers
@@ -1713,7 +1717,7 @@ runtime_entersyscallblock(void)
 				       &g->gcnext_segment, &g->gcnext_sp,
 				       &g->gcinitial_sp);
 #else
-	g->gcnext_sp = (byte *) &v;
+	g->gcnext_sp = (byte *) &p;
 #endif
 
 	// Save the registers in the g structure so that any pointers
