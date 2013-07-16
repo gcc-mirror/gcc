@@ -907,7 +907,6 @@ struct mips_cpu_info {
 				  || (ISA_MIPS32R2 && (MODE) == V2SFmode) \
 				  || ISA_MIPS64				\
 				  || ISA_MIPS64R2)			\
-				 && (!TARGET_MIPS5400 || TARGET_MAD)	\
 				 && !TARGET_MIPS16)
 
 /* ISA has floating-point nmadd and nmsub instructions
