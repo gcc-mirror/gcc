@@ -6857,9 +6857,8 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
 			   fold_convert (TREE_TYPE (lse->expr), rse->expr));
 
       /* Restore pointer address of coarray components.  */
-      if (ts.u.derived->attr.coarray_comp && deep_copy)
+      if (ts.u.derived->attr.coarray_comp && deep_copy && tmp_var != NULL_TREE)
 	{
-	  gcc_assert (tmp_var != NULL_TREE);
 	  tmp = gfc_reassign_alloc_comp_caf (ts.u.derived, tmp_var, lse->expr);
 	  tmp = build3_v (COND_EXPR, cond, build_empty_stmt (input_location),
 			  tmp);
