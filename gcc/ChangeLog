@@ -1,3 +1,8 @@
+2013-07-16  Peter Bergner <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Do not
+	enable extra ISA flags with TARGET_HTM.
+
 2013-07-16  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips.h (ISA_HAS_MULS, ISA_HAS_MSAC, ISA_HAS_MACC):
