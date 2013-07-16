@@ -873,7 +873,7 @@ struct mips_cpu_info {
    FP madd and msub instructions, and the FP recip and recip sqrt
    instructions.  */
 #define ISA_HAS_FP4		((ISA_MIPS4				\
-				  || (ISA_MIPS32R2 && TARGET_FLOAT64)   \
+				  || (ISA_MIPS32R2 && TARGET_FLOAT64)	\
 				  || ISA_MIPS64				\
 				  || ISA_MIPS64R2)			\
 				 && !TARGET_MIPS16)
@@ -895,24 +895,20 @@ struct mips_cpu_info {
 #define GENERATE_MADD_MSUB	(TARGET_IMADD && !TARGET_MIPS16)
 
 /* ISA has floating-point madd and msub instructions 'd = a * b [+-] c'.  */
-#define ISA_HAS_FP_MADD4_MSUB4  ISA_HAS_FP4
+#define ISA_HAS_FP_MADD4_MSUB4  (ISA_HAS_FP4				\
+				 || (ISA_MIPS32R2 && !TARGET_MIPS16))
 
 /* ISA has floating-point madd and msub instructions 'c = a * b [+-] c'.  */
 #define ISA_HAS_FP_MADD3_MSUB3  TARGET_LOONGSON_2EF
 
 /* ISA has floating-point nmadd and nmsub instructions
    'd = -((a * b) [+-] c)'.  */
-#define ISA_HAS_NMADD4_NMSUB4(MODE)					\
-				((ISA_MIPS4				\
-				  || (ISA_MIPS32R2 && (MODE) == V2SFmode) \
-				  || ISA_MIPS64				\
-				  || ISA_MIPS64R2)			\
-				 && !TARGET_MIPS16)
+#define ISA_HAS_NMADD4_NMSUB4	(ISA_HAS_FP4				\
+				 || (ISA_MIPS32R2 && !TARGET_MIPS16))
 
 /* ISA has floating-point nmadd and nmsub instructions
    'c = -((a * b) [+-] c)'.  */
-#define ISA_HAS_NMADD3_NMSUB3(MODE)					\
-                                TARGET_LOONGSON_2EF
+#define ISA_HAS_NMADD3_NMSUB3	TARGET_LOONGSON_2EF
 
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
 #define ISA_HAS_CLZ_CLO		((ISA_MIPS32				\

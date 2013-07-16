@@ -3857,7 +3857,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
     case MINUS:
       if (float_mode_p
-	  && (ISA_HAS_NMADD4_NMSUB4 (mode) || ISA_HAS_NMADD3_NMSUB3 (mode))
+	  && (ISA_HAS_NMADD4_NMSUB4 || ISA_HAS_NMADD3_NMSUB3)
 	  && TARGET_FUSED_MADD
 	  && !HONOR_NANS (mode)
 	  && !HONOR_SIGNED_ZEROS (mode))
@@ -3890,7 +3890,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 	{
 	  /* If this is part of a MADD or MSUB, treat the PLUS as
 	     being free.  */
-	  if (ISA_HAS_FP4
+	  if ((ISA_HAS_FP_MADD4_MSUB4 || ISA_HAS_FP_MADD3_MSUB3)
 	      && TARGET_FUSED_MADD
 	      && GET_CODE (XEXP (x, 0)) == MULT)
 	    *total = 0;
@@ -3909,7 +3909,7 @@ mips_rtx_costs (rtx x, int code, int outer_code, int opno ATTRIBUTE_UNUSED,
 
     case NEG:
       if (float_mode_p
-	  && (ISA_HAS_NMADD4_NMSUB4 (mode) || ISA_HAS_NMADD3_NMSUB3 (mode))
+	  && (ISA_HAS_NMADD4_NMSUB4 || ISA_HAS_NMADD3_NMSUB3)
 	  && TARGET_FUSED_MADD
 	  && !HONOR_NANS (mode)
 	  && HONOR_SIGNED_ZEROS (mode))
