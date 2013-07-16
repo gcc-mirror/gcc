@@ -1,4 +1,13 @@
-2013-07-16  Peter Bergner <bergner@vnet.ibm.com>
+2013-07-16  Jakub Jelinek  <jakub@redhat.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (FIRST_PSEUDO_REGISTERS): Mention HTM
+	registers in the comment.
+	(DWARF_FRAME_REGISTERS): Subtract also the 3 HTM registers.
+	(DWARF_REG_TO_UNWIND_COLUMN): Use DWARF_FRAME_REGISTERS
+	rather than FIRST_PSEUDO_REGISTERS.
+
+2013-07-16  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Do not
 	enable extra ISA flags with TARGET_HTM.
@@ -13,7 +22,7 @@
 	* tree-vect-data-refs.c (dr_group_sort_cmp): Do not use hash function
 	in compare function for sorting.
 
-2013-07-15  Peter Bergner <bergner@vnet.ibm.com>
+2013-07-15  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-*): Install htmintrin.h and htmxlintrin.h.
 	* config/rs6000/t-rs6000 (MD_INCLUDES): Add htm.md.

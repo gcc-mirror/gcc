@@ -892,7 +892,9 @@ enum data_align { align_abi, align_opt, align_both };
    in inline functions.
 
    Another pseudo (not included in DWARF_FRAME_REGISTERS) is soft frame
-   pointer, which is eventually eliminated in favor of SP or FP.  */
+   pointer, which is eventually eliminated in favor of SP or FP.
+
+   The 3 HTM registers aren't also included in DWARF_FRAME_REGISTERS.  */
 
 #define FIRST_PSEUDO_REGISTER 117
 
@@ -900,7 +902,7 @@ enum data_align { align_abi, align_opt, align_both };
 #define PRE_GCC3_DWARF_FRAME_REGISTERS 77
 
 /* Add 32 dwarf columns for synthetic SPE registers.  */
-#define DWARF_FRAME_REGISTERS ((FIRST_PSEUDO_REGISTER - 1) + 32)
+#define DWARF_FRAME_REGISTERS ((FIRST_PSEUDO_REGISTER - 4) + 32)
 
 /* The SPE has an additional 32 synthetic registers, with DWARF debug
    info numbering for these registers starting at 1200.  While eh_frame
@@ -916,7 +918,7 @@ enum data_align { align_abi, align_opt, align_both };
    We must map them here to avoid huge unwinder tables mostly consisting
    of unused space.  */
 #define DWARF_REG_TO_UNWIND_COLUMN(r) \
-  ((r) > 1200 ? ((r) - 1200 + FIRST_PSEUDO_REGISTER - 1) : (r))
+  ((r) > 1200 ? ((r) - 1200 + (DWARF_FRAME_REGISTERS - 32)) : (r))
 
 /* Use standard DWARF numbering for DWARF debugging information.  */
 #define DBX_REGISTER_NUMBER(REGNO) rs6000_dbx_register_number (REGNO)
