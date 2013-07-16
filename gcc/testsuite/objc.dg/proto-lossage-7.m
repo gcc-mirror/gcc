@@ -1,12 +1,19 @@
 /* Check that typedefs of ObjC classes preserve 
    any @protocol qualifiers.  */
 /* { dg-do compile } */
+
+#ifdef __NEXT_RUNTIME__
+#include <Foundation/NSObject.h>
+#define OBJECT NSObject
+#else
 #include <objc/Object.h>
+#define OBJECT Object
+#endif
 
 @protocol CanDoStuff;
 
-typedef Object<CanDoStuff> CanDoStuffType;
-typedef Object<CanDoStuff> *CanDoStuffTypePtr;
+typedef OBJECT<CanDoStuff> CanDoStuffType;
+typedef OBJECT<CanDoStuff> *CanDoStuffTypePtr;
 
 @protocol CanDoStuff
 - (int) dostuff;

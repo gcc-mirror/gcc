@@ -2,8 +2,10 @@
 /* { dg-do compile { target *-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-skip-if "No NeXT fast enum. pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-framework Foundation" { target { *-*-darwin* } } } */
 
-#import <Foundation/Foundation.h>
+#include <Foundation/NSArray.h>
+#include <Foundation/NSAutoreleasePool.h>
 
 NSArray * createTestVictim(unsigned capacity) {
     NSMutableArray * arr = [[NSMutableArray alloc] initWithCapacity:capacity];
