@@ -1,3 +1,11 @@
+2013-07-15  Cong Hou  <congh@google.com>
+
+	* gcc.target/i386/l_fma_float_1.c: Update the instruction to be
+	counted.
+	* gcc.target/i386/l_fma_float_3.c: Likewise.
+	* gcc.target/i386/l_fma_double_1.c: Likewise.
+	* gcc.target/i386/l_fma_double_3.c: Likewise.
+
 2013-07-15  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* lib/target-supports.exp (check_effective_target_powerpc_htm_ok): New

@@ -2311,6 +2311,81 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   return vect_analyze_group_access (dr);
 }
 
+
+
+/*  A helper function used in the comparator function to sort data
+    references.  T1 and T2 are two data references to be compared.
+    The function returns -1, 0, or 1.  */
+
+static int
+compare_tree (tree t1, tree t2)
+{
+  int i, cmp;
+  enum tree_code code;
+  char tclass;
+
+  if (t1 == t2)
+    return 0;
+  if (t1 == NULL)
+    return -1;
+  if (t2 == NULL)
+    return 1;
+
+
+  if (TREE_CODE (t1) != TREE_CODE (t2))
+    return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;
+
+  code = TREE_CODE (t1);
+  switch (code)
+    {
+    /* For const values, we can just use hash values for comparisons.  */
+    case INTEGER_CST:
+    case REAL_CST:
+    case FIXED_CST:
+    case STRING_CST:
+    case COMPLEX_CST:
+    case VECTOR_CST:
+      {
+	hashval_t h1 = iterative_hash_expr (t1, 0);
+	hashval_t h2 = iterative_hash_expr (t2, 0);
+	if (h1 != h2)
+	  return h1 < h2 ? -1 : 1;
+	break;
+      }
+
+    case SSA_NAME:
+      cmp = compare_tree (SSA_NAME_VAR (t1), SSA_NAME_VAR (t2));
+      if (cmp != 0)
+	return cmp;
+
+      if (SSA_NAME_VERSION (t1) != SSA_NAME_VERSION (t2))
+	return SSA_NAME_VERSION (t1) < SSA_NAME_VERSION (t2) ? -1 : 1;
+      break;
+
+    default:
+      tclass = TREE_CODE_CLASS (code);
+
+      /* For var-decl, we could compare their UIDs.  */
+      if (tclass == tcc_declaration)
+	{
+	  if (DECL_UID (t1) != DECL_UID (t2))
+	    return DECL_UID (t1) < DECL_UID (t2) ? -1 : 1;
+	  break;
+	}
+
+      /* For expressions with operands, compare their operands recursively.  */
+      for (i = TREE_OPERAND_LENGTH (t1) - 1; i >= 0; --i)
+	{
+	  cmp = compare_tree (TREE_OPERAND (t1, i), TREE_OPERAND (t2, i));
+	  if (cmp != 0)
+	    return cmp;
+	}
+    }
+
+  return 0;
+}
+
+
 /* Compare two data-references DRA and DRB to group them into chunks
    suitable for grouping.  */
 
@@ -2319,7 +2394,6 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
 {
   data_reference_p dra = *(data_reference_p *)const_cast<void *>(dra_);
   data_reference_p drb = *(data_reference_p *)const_cast<void *>(drb_);
-  hashval_t h1, h2;
   int cmp;
 
   /* Stabilize sort.  */
@@ -2329,19 +2403,17 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   /* Ordering of DRs according to base.  */
   if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0))
     {
-      h1 = iterative_hash_expr (DR_BASE_ADDRESS (dra), 0);
-      h2 = iterative_hash_expr (DR_BASE_ADDRESS (drb), 0);
-      if (h1 != h2)
-	return h1 < h2 ? -1 : 1;
+      cmp = compare_tree (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb));
+      if (cmp != 0)
+        return cmp;
     }
 
   /* And according to DR_OFFSET.  */
   if (!dr_equal_offsets_p (dra, drb))
     {
-      h1 = iterative_hash_expr (DR_OFFSET (dra), 0);
-      h2 = iterative_hash_expr (DR_OFFSET (drb), 0);
-      if (h1 != h2)
-	return h1 < h2 ? -1 : 1;
+      cmp = compare_tree (DR_OFFSET (dra), DR_OFFSET (drb));
+      if (cmp != 0)
+        return cmp;
     }
 
   /* Put reads before writes.  */
@@ -2352,19 +2424,18 @@ dr_group_sort_cmp (const void *dra_, const void *drb_)
   if (!operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
 			TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0))
     {
-      h1 = iterative_hash_expr (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))), 0);
-      h2 = iterative_hash_expr (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))), 0);
-      if (h1 != h2)
-	return h1 < h2 ? -1 : 1;
+      cmp = compare_tree (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))),
+                          TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+      if (cmp != 0)
+        return cmp;
     }
 
   /* And after step.  */
   if (!operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
     {
-      h1 = iterative_hash_expr (DR_STEP (dra), 0);
-      h2 = iterative_hash_expr (DR_STEP (drb), 0);
-      if (h1 != h2)
-	return h1 < h2 ? -1 : 1;
+      cmp = compare_tree (DR_STEP (dra), DR_STEP (drb));
+      if (cmp != 0)
+        return cmp;
     }
 
   /* Then sort after DR_INIT.  In case of identical DRs sort after stmt UID.  */

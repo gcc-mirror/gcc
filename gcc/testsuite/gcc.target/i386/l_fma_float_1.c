@@ -9,9 +9,9 @@
 #include "l_fma_1.h"
 
 /* { dg-final { scan-assembler-times "vfmadd132ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfmadd213ps" 4  } } */
+/* { dg-final { scan-assembler-times "vfmadd231ps" 4  } } */
 /* { dg-final { scan-assembler-times "vfmsub132ps" 4  } } */
-/* { dg-final { scan-assembler-times "vfmsub213ps" 4  } } */
+/* { dg-final { scan-assembler-times "vfmsub231ps" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmadd132ps" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmadd231ps" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmsub132ps" 4  } } */
