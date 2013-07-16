@@ -1,3 +1,8 @@
+2013-07-15  Cong Hou  <congh@google.com>
+
+	* tree-vect-data-refs.c (dr_group_sort_cmp): Do not use hash function
+	in compare function for sorting.
+
 2013-07-15  Peter Bergner <bergner@vnet.ibm.com>
 
 	* config.gcc (powerpc*-*-*): Install htmintrin.h and htmxlintrin.h.
