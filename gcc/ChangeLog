@@ -1,3 +1,8 @@
+2013-07-16  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips.h (ISA_HAS_NMADD4_NMSUB4): Remove
+	TARGET_MIPS5400 checking.
+
 2013-07-16  Jakub Jelinek  <jakub@redhat.com>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
