@@ -68,40 +68,94 @@ func (e InvalidAddrError) Error() string   { return string(e) }
 func (e InvalidAddrError) Timeout() bool   { return false }
 func (e InvalidAddrError) Temporary() bool { return false }
 
-// SplitHostPort splits a network address of the form
-// "host:port" or "[host]:port" into host and port.
-// The latter form must be used when host contains a colon.
+// SplitHostPort splits a network address of the form "host:port",
+// "[host]:port" or "[ipv6-host%zone]:port" into host or
+// ipv6-host%zone and port.  A literal address or host name for IPv6
+// must be enclosed in square brackets, as in "[::1]:80",
+// "[ipv6-host]:http" or "[ipv6-host%zone]:80".
 func SplitHostPort(hostport string) (host, port string, err error) {
-	host, port, _, err = splitHostPort(hostport)
-	return
-}
+	j, k := 0, 0
 
-func splitHostPort(hostport string) (host, port, zone string, err error) {
 	// The port starts after the last colon.
 	i := last(hostport, ':')
 	if i < 0 {
-		err = &AddrError{"missing port in address", hostport}
-		return
+		goto missingPort
 	}
-	host, port = hostport[:i], hostport[i+1:]
-	// Can put brackets around host ...
-	if len(host) > 0 && host[0] == '[' && host[len(host)-1] == ']' {
-		host = host[1 : len(host)-1]
-	} else {
-		// ... but if there are no brackets, no colons.
-		if byteIndex(host, ':') >= 0 {
-			err = &AddrError{"too many colons in address", hostport}
+
+	if hostport[0] == '[' {
+		// Expect the first ']' just before the last ':'.
+		end := byteIndex(hostport, ']')
+		if end < 0 {
+			err = &AddrError{"missing ']' in address", hostport}
 			return
 		}
+		switch end + 1 {
+		case len(hostport):
+			// There can't be a ':' behind the ']' now.
+			goto missingPort
+		case i:
+			// The expected result.
+		default:
+			// Either ']' isn't followed by a colon, or it is
+			// followed by a colon that is not the last one.
+			if hostport[end+1] == ':' {
+				goto tooManyColons
+			}
+			goto missingPort
+		}
+		host = hostport[1:end]
+		j, k = 1, end+1 // there can't be a '[' resp. ']' before these positions
+	} else {
+		host = hostport[:i]
+		if byteIndex(host, ':') >= 0 {
+			goto tooManyColons
+		}
+		if byteIndex(host, '%') >= 0 {
+			goto missingBrackets
+		}
+	}
+	if byteIndex(hostport[j:], '[') >= 0 {
+		err = &AddrError{"unexpected '[' in address", hostport}
+		return
+	}
+	if byteIndex(hostport[k:], ']') >= 0 {
+		err = &AddrError{"unexpected ']' in address", hostport}
+		return
+	}
+
+	port = hostport[i+1:]
+	return
+
+missingPort:
+	err = &AddrError{"missing port in address", hostport}
+	return
+
+tooManyColons:
+	err = &AddrError{"too many colons in address", hostport}
+	return
+
+missingBrackets:
+	err = &AddrError{"missing brackets in address", hostport}
+	return
+}
+
+func splitHostZone(s string) (host, zone string) {
+	// The IPv6 scoped addressing zone identifer starts after the
+	// last percent sign.
+	if i := last(s, '%'); i > 0 {
+		host, zone = s[:i], s[i+1:]
+	} else {
+		host = s
 	}
 	return
 }
 
-// JoinHostPort combines host and port into a network address
-// of the form "host:port" or, if host contains a colon, "[host]:port".
+// JoinHostPort combines host and port into a network address of the
+// form "host:port" or, if host contains a colon or a percent sign,
+// "[host]:port".
 func JoinHostPort(host, port string) string {
-	// If host has colons, have to bracket it.
-	if byteIndex(host, ':') >= 0 {
+	// If host has colons or a percent sign, have to bracket it.
+	if byteIndex(host, ':') >= 0 || byteIndex(host, '%') >= 0 {
 		return "[" + host + "]:" + port
 	}
 	return host + ":" + port
@@ -116,7 +170,7 @@ func resolveInternetAddr(net, addr string, deadline time.Time) (Addr, error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6", "udp", "udp4", "udp6":
 		if addr != "" {
-			if host, port, zone, err = splitHostPort(addr); err != nil {
+			if host, port, err = SplitHostPort(addr); err != nil {
 				return nil, err
 			}
 			if portnum, err = parsePort(net, port); err != nil {
@@ -145,20 +199,24 @@ func resolveInternetAddr(net, addr string, deadline time.Time) (Addr, error) {
 		return inetaddr(net, nil, portnum, zone), nil
 	}
 	// Try as an IP address.
-	if ip := ParseIP(host); ip != nil {
+	if ip := parseIPv4(host); ip != nil {
 		return inetaddr(net, ip, portnum, zone), nil
+	}
+	if ip, zone := parseIPv6(host, true); ip != nil {
+		return inetaddr(net, ip, portnum, zone), nil
+	}
+	// Try as a domain name.
+	host, zone = splitHostZone(host)
+	addrs, err := lookupHostDeadline(host, deadline)
+	if err != nil {
+		return nil, err
 	}
 	var filter func(IP) IP
 	if net != "" && net[len(net)-1] == '4' {
 		filter = ipv4only
 	}
-	if net != "" && net[len(net)-1] == '6' {
+	if net != "" && net[len(net)-1] == '6' || zone != "" {
 		filter = ipv6only
-	}
-	// Try as a DNS name.
-	addrs, err := lookupHostDeadline(host, deadline)
-	if err != nil {
-		return nil, err
 	}
 	ip := firstFavoriteAddr(filter, addrs)
 	if ip == nil {

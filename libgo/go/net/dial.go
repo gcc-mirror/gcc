@@ -5,10 +5,55 @@
 package net
 
 import (
+	"errors"
 	"time"
 )
 
-func parseDialNetwork(net string) (afnet string, proto int, err error) {
+// A Dialer contains options for connecting to an address.
+//
+// The zero value for each field is equivalent to dialing
+// without that option. Dialing with the zero value of Dialer
+// is therefore equivalent to just calling the Dial function.
+type Dialer struct {
+	// Timeout is the maximum amount of time a dial will wait for
+	// a connect to complete. If Deadline is also set, it may fail
+	// earlier.
+	//
+	// The default is no timeout.
+	//
+	// With or without a timeout, the operating system may impose
+	// its own earlier timeout. For instance, TCP timeouts are
+	// often around 3 minutes.
+	Timeout time.Duration
+
+	// Deadline is the absolute point in time after which dials
+	// will fail. If Timeout is set, it may fail earlier.
+	// Zero means no deadline, or dependent on the operating system
+	// as with the Timeout option.
+	Deadline time.Time
+
+	// LocalAddr is the local address to use when dialing an
+	// address. The address must be of a compatible type for the
+	// network being dialed.
+	// If nil, a local address is automatically chosen.
+	LocalAddr Addr
+}
+
+// Return either now+Timeout or Deadline, whichever comes first.
+// Or zero, if neither is set.
+func (d *Dialer) deadline() time.Time {
+	if d.Timeout == 0 {
+		return d.Deadline
+	}
+	timeoutDeadline := time.Now().Add(d.Timeout)
+	if d.Deadline.IsZero() || timeoutDeadline.Before(d.Deadline) {
+		return timeoutDeadline
+	} else {
+		return d.Deadline
+	}
+}
+
+func parseNetwork(net string) (afnet string, proto int, err error) {
 	i := last(net, ':')
 	if i < 0 { // no colon
 		switch net {
@@ -37,132 +82,94 @@ func parseDialNetwork(net string) (afnet string, proto int, err error) {
 	return "", 0, UnknownNetworkError(net)
 }
 
-func resolveNetAddr(op, net, addr string, deadline time.Time) (afnet string, a Addr, err error) {
-	afnet, _, err = parseDialNetwork(net)
+func resolveAddr(op, net, addr string, deadline time.Time) (Addr, error) {
+	afnet, _, err := parseNetwork(net)
 	if err != nil {
-		return "", nil, &OpError{op, net, nil, err}
+		return nil, &OpError{op, net, nil, err}
 	}
 	if op == "dial" && addr == "" {
-		return "", nil, &OpError{op, net, nil, errMissingAddress}
-	}
-	a, err = resolveAfnetAddr(afnet, addr, deadline)
-	return
-}
-
-func resolveAfnetAddr(afnet, addr string, deadline time.Time) (Addr, error) {
-	if addr == "" {
-		return nil, nil
+		return nil, &OpError{op, net, nil, errMissingAddress}
 	}
 	switch afnet {
-	case "tcp", "tcp4", "tcp6", "udp", "udp4", "udp6", "ip", "ip4", "ip6":
-		return resolveInternetAddr(afnet, addr, deadline)
 	case "unix", "unixgram", "unixpacket":
 		return ResolveUnixAddr(afnet, addr)
 	}
-	return nil, nil
+	return resolveInternetAddr(afnet, addr, deadline)
 }
 
-// Dial connects to the address addr on the network net.
+// Dial connects to the address on the named network.
 //
 // Known networks are "tcp", "tcp4" (IPv4-only), "tcp6" (IPv6-only),
 // "udp", "udp4" (IPv4-only), "udp6" (IPv6-only), "ip", "ip4"
-// (IPv4-only), "ip6" (IPv6-only), "unix" and "unixpacket".
+// (IPv4-only), "ip6" (IPv6-only), "unix", "unixgram" and
+// "unixpacket".
 //
 // For TCP and UDP networks, addresses have the form host:port.
-// If host is a literal IPv6 address, it must be enclosed
-// in square brackets.  The functions JoinHostPort and SplitHostPort
-// manipulate addresses in this form.
+// If host is a literal IPv6 address or host name, it must be enclosed
+// in square brackets as in "[::1]:80", "[ipv6-host]:http" or
+// "[ipv6-host%zone]:80".
+// The functions JoinHostPort and SplitHostPort manipulate addresses
+// in this form.
 //
 // Examples:
 //	Dial("tcp", "12.34.56.78:80")
-//	Dial("tcp", "google.com:80")
-//	Dial("tcp", "[de:ad:be:ef::ca:fe]:80")
+//	Dial("tcp", "google.com:http")
+//	Dial("tcp", "[2001:db8::1]:http")
+//	Dial("tcp", "[fe80::1%lo0]:80")
 //
-// For IP networks, net must be "ip", "ip4" or "ip6" followed
-// by a colon and a protocol number or name.
+// For IP networks, the network must be "ip", "ip4" or "ip6" followed
+// by a colon and a protocol number or name and the addr must be a
+// literal IP address.
 //
 // Examples:
 //	Dial("ip4:1", "127.0.0.1")
 //	Dial("ip6:ospf", "::1")
 //
-func Dial(net, addr string) (Conn, error) {
-	_, addri, err := resolveNetAddr("dial", net, addr, noDeadline)
-	if err != nil {
-		return nil, err
-	}
-	return dialAddr(net, addr, addri, noDeadline)
+// For Unix networks, the address must be a file system path.
+func Dial(network, address string) (Conn, error) {
+	var d Dialer
+	return d.Dial(network, address)
 }
 
-func dialAddr(net, addr string, addri Addr, deadline time.Time) (c Conn, err error) {
-	switch ra := addri.(type) {
+// DialTimeout acts like Dial but takes a timeout.
+// The timeout includes name resolution, if required.
+func DialTimeout(network, address string, timeout time.Duration) (Conn, error) {
+	d := Dialer{Timeout: timeout}
+	return d.Dial(network, address)
+}
+
+// Dial connects to the address on the named network.
+//
+// See func Dial for a description of the network and address
+// parameters.
+func (d *Dialer) Dial(network, address string) (Conn, error) {
+	return resolveAndDial(network, address, d.LocalAddr, d.deadline())
+}
+
+func dial(net, addr string, la, ra Addr, deadline time.Time) (c Conn, err error) {
+	if la != nil && la.Network() != ra.Network() {
+		return nil, &OpError{"dial", net, ra, errors.New("mismatched local addr type " + la.Network())}
+	}
+	switch ra := ra.(type) {
 	case *TCPAddr:
-		c, err = dialTCP(net, nil, ra, deadline)
+		la, _ := la.(*TCPAddr)
+		c, err = dialTCP(net, la, ra, deadline)
 	case *UDPAddr:
-		c, err = dialUDP(net, nil, ra, deadline)
+		la, _ := la.(*UDPAddr)
+		c, err = dialUDP(net, la, ra, deadline)
 	case *IPAddr:
-		c, err = dialIP(net, nil, ra, deadline)
+		la, _ := la.(*IPAddr)
+		c, err = dialIP(net, la, ra, deadline)
 	case *UnixAddr:
-		c, err = dialUnix(net, nil, ra, deadline)
+		la, _ := la.(*UnixAddr)
+		c, err = dialUnix(net, la, ra, deadline)
 	default:
-		err = &OpError{"dial", net + " " + addr, nil, UnknownNetworkError(net)}
+		err = &OpError{"dial", net + " " + addr, ra, UnknownNetworkError(net)}
 	}
 	if err != nil {
 		return nil, err
 	}
 	return
-}
-
-// DialTimeout acts like Dial but takes a timeout.
-// The timeout includes name resolution, if required.
-func DialTimeout(net, addr string, timeout time.Duration) (Conn, error) {
-	return dialTimeout(net, addr, timeout)
-}
-
-// dialTimeoutRace is the old implementation of DialTimeout, still used
-// on operating systems where the deadline hasn't been pushed down
-// into the pollserver.
-// TODO: fix this on plan9.
-func dialTimeoutRace(net, addr string, timeout time.Duration) (Conn, error) {
-	t := time.NewTimer(timeout)
-	defer t.Stop()
-	type pair struct {
-		Conn
-		error
-	}
-	ch := make(chan pair, 1)
-	resolvedAddr := make(chan Addr, 1)
-	go func() {
-		_, addri, err := resolveNetAddr("dial", net, addr, noDeadline)
-		if err != nil {
-			ch <- pair{nil, err}
-			return
-		}
-		resolvedAddr <- addri // in case we need it for OpError
-		c, err := dialAddr(net, addr, addri, noDeadline)
-		ch <- pair{c, err}
-	}()
-	select {
-	case <-t.C:
-		// Try to use the real Addr in our OpError, if we resolved it
-		// before the timeout. Otherwise we just use stringAddr.
-		var addri Addr
-		select {
-		case a := <-resolvedAddr:
-			addri = a
-		default:
-			addri = &stringAddr{net, addr}
-		}
-		err := &OpError{
-			Op:   "dial",
-			Net:  net,
-			Addr: addri,
-			Err:  &timeoutError{},
-		}
-		return nil, err
-	case p := <-ch:
-		return p.Conn, p.error
-	}
-	panic("unreachable")
 }
 
 type stringAddr struct {
@@ -173,56 +180,38 @@ func (a stringAddr) Network() string { return a.net }
 func (a stringAddr) String() string  { return a.addr }
 
 // Listen announces on the local network address laddr.
-// The network string net must be a stream-oriented network:
-// "tcp", "tcp4", "tcp6", "unix" or "unixpacket".
+// The network net must be a stream-oriented network: "tcp", "tcp4",
+// "tcp6", "unix" or "unixpacket".
+// See Dial for the syntax of laddr.
 func Listen(net, laddr string) (Listener, error) {
-	afnet, a, err := resolveNetAddr("listen", net, laddr, noDeadline)
+	la, err := resolveAddr("listen", net, laddr, noDeadline)
 	if err != nil {
 		return nil, err
 	}
-	switch afnet {
-	case "tcp", "tcp4", "tcp6":
-		var la *TCPAddr
-		if a != nil {
-			la = a.(*TCPAddr)
-		}
+	switch la := la.(type) {
+	case *TCPAddr:
 		return ListenTCP(net, la)
-	case "unix", "unixpacket":
-		var la *UnixAddr
-		if a != nil {
-			la = a.(*UnixAddr)
-		}
+	case *UnixAddr:
 		return ListenUnix(net, la)
 	}
 	return nil, UnknownNetworkError(net)
 }
 
 // ListenPacket announces on the local network address laddr.
-// The network string net must be a packet-oriented network:
-// "udp", "udp4", "udp6", "ip", "ip4", "ip6" or "unixgram".
+// The network net must be a packet-oriented network: "udp", "udp4",
+// "udp6", "ip", "ip4", "ip6" or "unixgram".
+// See Dial for the syntax of laddr.
 func ListenPacket(net, laddr string) (PacketConn, error) {
-	afnet, a, err := resolveNetAddr("listen", net, laddr, noDeadline)
+	la, err := resolveAddr("listen", net, laddr, noDeadline)
 	if err != nil {
 		return nil, err
 	}
-	switch afnet {
-	case "udp", "udp4", "udp6":
-		var la *UDPAddr
-		if a != nil {
-			la = a.(*UDPAddr)
-		}
+	switch la := la.(type) {
+	case *UDPAddr:
 		return ListenUDP(net, la)
-	case "ip", "ip4", "ip6":
-		var la *IPAddr
-		if a != nil {
-			la = a.(*IPAddr)
-		}
+	case *IPAddr:
 		return ListenIP(net, la)
-	case "unixgram":
-		var la *UnixAddr
-		if a != nil {
-			la = a.(*UnixAddr)
-		}
+	case *UnixAddr:
 		return ListenUnixgram(net, la)
 	}
 	return nil, UnknownNetworkError(net)

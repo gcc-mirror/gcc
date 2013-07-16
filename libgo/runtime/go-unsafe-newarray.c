@@ -21,21 +21,5 @@ void *unsafe_NewArray (const struct __go_type_descriptor *, intgo)
 void *
 unsafe_NewArray (const struct __go_type_descriptor *descriptor, intgo n)
 {
-  uint64 size;
-  void *ret;
-
-  size = n * descriptor->__size;
-  if (size == 0)
-    ret = &runtime_zerobase;
-  else if ((descriptor->__code & GO_NO_POINTERS) != 0)
-    ret = runtime_mallocgc (size, FlagNoPointers, 1, 1);
-  else
-    {
-      ret = runtime_mallocgc (size, 0, 1, 1);
-
-      if (UseSpanType)
-	runtime_settype (ret, (uintptr) descriptor | TypeInfo_Array);
-    }
-
-  return ret;
+  return runtime_cnewarray (descriptor, n);
 }

@@ -81,8 +81,7 @@ func Marshal(v interface{}) ([]byte, error) {
 func MarshalIndent(v interface{}, prefix, indent string) ([]byte, error) {
 	var b bytes.Buffer
 	enc := NewEncoder(&b)
-	enc.prefix = prefix
-	enc.indent = indent
+	enc.Indent(prefix, indent)
 	if err := enc.Encode(v); err != nil {
 		return nil, err
 	}
@@ -99,6 +98,14 @@ func NewEncoder(w io.Writer) *Encoder {
 	return &Encoder{printer{Writer: bufio.NewWriter(w)}}
 }
 
+// Indent sets the encoder to generate XML in which each element
+// begins on a new indented line that starts with prefix and is followed by
+// one or more copies of indent according to the nesting depth.
+func (enc *Encoder) Indent(prefix, indent string) {
+	enc.prefix = prefix
+	enc.indent = indent
+}
+
 // Encode writes the XML encoding of v to the stream.
 //
 // See the documentation for Marshal for details about the conversion
@@ -113,10 +120,76 @@ func (enc *Encoder) Encode(v interface{}) error {
 
 type printer struct {
 	*bufio.Writer
+	seq        int
 	indent     string
 	prefix     string
 	depth      int
 	indentedIn bool
+	putNewline bool
+	attrNS     map[string]string // map prefix -> name space
+	attrPrefix map[string]string // map name space -> prefix
+}
+
+// createAttrPrefix finds the name space prefix attribute to use for the given name space,
+// defining a new prefix if necessary. It returns the prefix and whether it is new.
+func (p *printer) createAttrPrefix(url string) (prefix string, isNew bool) {
+	if prefix = p.attrPrefix[url]; prefix != "" {
+		return prefix, false
+	}
+
+	// The "http://www.w3.org/XML/1998/namespace" name space is predefined as "xml"
+	// and must be referred to that way.
+	// (The "http://www.w3.org/2000/xmlns/" name space is also predefined as "xmlns",
+	// but users should not be trying to use that one directly - that's our job.)
+	if url == xmlURL {
+		return "xml", false
+	}
+
+	// Need to define a new name space.
+	if p.attrPrefix == nil {
+		p.attrPrefix = make(map[string]string)
+		p.attrNS = make(map[string]string)
+	}
+
+	// Pick a name. We try to use the final element of the path
+	// but fall back to _.
+	prefix = strings.TrimRight(url, "/")
+	if i := strings.LastIndex(prefix, "/"); i >= 0 {
+		prefix = prefix[i+1:]
+	}
+	if prefix == "" || !isName([]byte(prefix)) || strings.Contains(prefix, ":") {
+		prefix = "_"
+	}
+	if strings.HasPrefix(prefix, "xml") {
+		// xmlanything is reserved.
+		prefix = "_" + prefix
+	}
+	if p.attrNS[prefix] != "" {
+		// Name is taken. Find a better one.
+		for p.seq++; ; p.seq++ {
+			if id := prefix + "_" + strconv.Itoa(p.seq); p.attrNS[id] == "" {
+				prefix = id
+				break
+			}
+		}
+	}
+
+	p.attrPrefix[url] = prefix
+	p.attrNS[prefix] = url
+
+	p.WriteString(`xmlns:`)
+	p.WriteString(prefix)
+	p.WriteString(`="`)
+	EscapeText(p, []byte(url))
+	p.WriteString(`" `)
+
+	return prefix, true
+}
+
+// deleteAttrPrefix removes an attribute name space prefix.
+func (p *printer) deleteAttrPrefix(prefix string) {
+	delete(p.attrPrefix, p.attrNS[prefix])
+	delete(p.attrNS, prefix)
 }
 
 // marshalValue writes one or more XML elements representing val.
@@ -185,7 +258,9 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 	if xmlns != "" {
 		p.WriteString(` xmlns="`)
 		// TODO: EscapeString, to avoid the allocation.
-		Escape(p, []byte(xmlns))
+		if err := EscapeText(p, []byte(xmlns)); err != nil {
+			return err
+		}
 		p.WriteByte('"')
 	}
 
@@ -200,6 +275,14 @@ func (p *printer) marshalValue(val reflect.Value, finfo *fieldInfo) error {
 			continue
 		}
 		p.WriteByte(' ')
+		if finfo.xmlns != "" {
+			prefix, created := p.createAttrPrefix(finfo.xmlns)
+			if created {
+				defer p.deleteAttrPrefix(prefix)
+			}
+			p.WriteString(prefix)
+			p.WriteByte(':')
+		}
 		p.WriteString(finfo.name)
 		p.WriteString(`="`)
 		if err := p.marshalSimple(fv.Type(), fv); err != nil {
@@ -244,19 +327,22 @@ func (p *printer) marshalSimple(typ reflect.Type, val reflect.Value) error {
 		p.WriteString(strconv.FormatFloat(val.Float(), 'g', -1, val.Type().Bits()))
 	case reflect.String:
 		// TODO: Add EscapeString.
-		Escape(p, []byte(val.String()))
+		EscapeText(p, []byte(val.String()))
 	case reflect.Bool:
 		p.WriteString(strconv.FormatBool(val.Bool()))
 	case reflect.Array:
 		// will be [...]byte
-		bytes := make([]byte, val.Len())
-		for i := range bytes {
-			bytes[i] = val.Index(i).Interface().(byte)
+		var bytes []byte
+		if val.CanAddr() {
+			bytes = val.Slice(0, val.Len()).Bytes()
+		} else {
+			bytes = make([]byte, val.Len())
+			reflect.Copy(reflect.ValueOf(bytes), val)
 		}
-		Escape(p, bytes)
+		EscapeText(p, bytes)
 	case reflect.Slice:
 		// will be []byte
-		Escape(p, val.Bytes())
+		EscapeText(p, val.Bytes())
 	default:
 		return &UnsupportedTypeError{typ}
 	}
@@ -273,7 +359,7 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 	s := parentStack{printer: p}
 	for i := range tinfo.fields {
 		finfo := &tinfo.fields[i]
-		if finfo.flags&(fAttr) != 0 {
+		if finfo.flags&fAttr != 0 {
 			continue
 		}
 		vf := finfo.value(val)
@@ -290,10 +376,14 @@ func (p *printer) marshalStruct(tinfo *typeInfo, val reflect.Value) error {
 			case reflect.Bool:
 				Escape(p, strconv.AppendBool(scratch[:0], vf.Bool()))
 			case reflect.String:
-				Escape(p, []byte(vf.String()))
+				if err := EscapeText(p, []byte(vf.String())); err != nil {
+					return err
+				}
 			case reflect.Slice:
 				if elem, ok := vf.Interface().([]byte); ok {
-					Escape(p, elem)
+					if err := EscapeText(p, elem); err != nil {
+						return err
+					}
 				}
 			case reflect.Struct:
 				if vf.Type() == timeType {
@@ -387,7 +477,11 @@ func (p *printer) writeIndent(depthDelta int) {
 		}
 		p.indentedIn = false
 	}
-	p.WriteByte('\n')
+	if p.putNewline {
+		p.WriteByte('\n')
+	} else {
+		p.putNewline = true
+	}
 	if len(p.prefix) > 0 {
 		p.WriteString(p.prefix)
 	}

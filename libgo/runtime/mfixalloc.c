@@ -30,6 +30,11 @@ void*
 runtime_FixAlloc_Alloc(FixAlloc *f)
 {
 	void *v;
+	
+	if(f->size == 0) {
+		runtime_printf("runtime: use of FixAlloc_Alloc before FixAlloc_Init\n");
+		runtime_throw("runtime: internal error");
+	}
 
 	if(f->list) {
 		v = f->list;

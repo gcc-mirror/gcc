@@ -263,7 +263,6 @@ func (f *decompressor) Read(b []byte) (int, error) {
 		}
 		f.step(f)
 	}
-	panic("unreachable")
 }
 
 func (f *decompressor) Close() error {
@@ -495,7 +494,6 @@ func (f *decompressor) huffmanBlock() {
 			return
 		}
 	}
-	panic("unreached")
 }
 
 // copyHist copies f.copyLen bytes from f.hist (f.copyDist bytes ago) to itself.
@@ -642,7 +640,6 @@ func (f *decompressor) huffSym(h *huffmanDecoder) (int, error) {
 			return int(chunk >> huffmanValueShift), nil
 		}
 	}
-	return 0, CorruptInputError(f.roffset)
 }
 
 // Flush any buffered output to the underlying writer.

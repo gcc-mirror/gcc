@@ -70,20 +70,19 @@ func getTypeInfo(typ reflect.Type) (*typeInfo, error) {
 				if t.Kind() == reflect.Ptr {
 					t = t.Elem()
 				}
-				if t.Kind() != reflect.Struct {
-					continue
-				}
-				inner, err := getTypeInfo(t)
-				if err != nil {
-					return nil, err
-				}
-				for _, finfo := range inner.fields {
-					finfo.idx = append([]int{i}, finfo.idx...)
-					if err := addFieldInfo(typ, tinfo, &finfo); err != nil {
+				if t.Kind() == reflect.Struct {
+					inner, err := getTypeInfo(t)
+					if err != nil {
 						return nil, err
 					}
+					for _, finfo := range inner.fields {
+						finfo.idx = append([]int{i}, finfo.idx...)
+						if err := addFieldInfo(typ, tinfo, &finfo); err != nil {
+							return nil, err
+						}
+					}
+					continue
 				}
-				continue
 			}
 
 			finfo, err := structFieldInfo(typ, &f)
@@ -193,16 +192,19 @@ func structFieldInfo(typ reflect.Type, f *reflect.StructField) (*fieldInfo, erro
 	}
 
 	// Prepare field name and parents.
-	tokens = strings.Split(tag, ">")
-	if tokens[0] == "" {
-		tokens[0] = f.Name
+	parents := strings.Split(tag, ">")
+	if parents[0] == "" {
+		parents[0] = f.Name
 	}
-	if tokens[len(tokens)-1] == "" {
+	if parents[len(parents)-1] == "" {
 		return nil, fmt.Errorf("xml: trailing '>' in field %s of type %s", f.Name, typ)
 	}
-	finfo.name = tokens[len(tokens)-1]
-	if len(tokens) > 1 {
-		finfo.parents = tokens[:len(tokens)-1]
+	finfo.name = parents[len(parents)-1]
+	if len(parents) > 1 {
+		if (finfo.flags & fElement) == 0 {
+			return nil, fmt.Errorf("xml: %s chain not valid with %s flag", tag, strings.Join(tokens[1:], ","))
+		}
+		finfo.parents = parents[:len(parents)-1]
 	}
 
 	// If the field type has an XMLName field, the names must match
@@ -266,6 +268,9 @@ Loop:
 	for i := range tinfo.fields {
 		oldf := &tinfo.fields[i]
 		if oldf.flags&fMode != newf.flags&fMode {
+			continue
+		}
+		if oldf.xmlns != "" && newf.xmlns != "" && oldf.xmlns != newf.xmlns {
 			continue
 		}
 		minl := min(len(newf.parents), len(oldf.parents))

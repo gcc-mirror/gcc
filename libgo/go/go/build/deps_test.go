@@ -5,10 +5,9 @@
 // This file exercises the import parser but also checks that
 // some low-level packages do not have new dependencies added.
 
-package build_test
+package build
 
 import (
-	"go/build"
 	"sort"
 	"testing"
 )
@@ -48,7 +47,7 @@ var pkgDeps = map[string][]string{
 	"math":          {"unsafe"},
 	"math/cmplx":    {"math"},
 	"math/rand":     {"L0", "math"},
-	"sort":          {"math"},
+	"sort":          {},
 	"strconv":       {"L0", "unicode/utf8", "math"},
 	"unicode/utf16": {},
 	"unicode/utf8":  {},
@@ -142,7 +141,7 @@ var pkgDeps = map[string][]string{
 	// Packages used by testing must be low-level (L2+fmt).
 	"regexp":         {"L2", "regexp/syntax"},
 	"regexp/syntax":  {"L2"},
-	"runtime/debug":  {"L2", "fmt", "io/ioutil", "os"},
+	"runtime/debug":  {"L2", "fmt", "io/ioutil", "os", "time"},
 	"runtime/pprof":  {"L2", "fmt", "text/tabwriter"},
 	"text/tabwriter": {"L2"},
 
@@ -306,7 +305,7 @@ var pkgDeps = map[string][]string{
 	},
 	"crypto/x509": {
 		"L4", "CRYPTO-MATH", "OS", "CGO",
-		"crypto/x509/pkix", "encoding/pem", "encoding/hex", "syscall",
+		"crypto/x509/pkix", "encoding/pem", "encoding/hex", "net", "syscall",
 	},
 	"crypto/x509/pkix": {"L4", "CRYPTO-MATH"},
 
@@ -382,7 +381,7 @@ func TestDependencies(t *testing.T) {
 	}
 	sort.Strings(all)
 
-	ctxt := build.Default
+	ctxt := Default
 	test := func(mustImport bool) {
 		for _, pkg := range all {
 			if isMacro(pkg) {

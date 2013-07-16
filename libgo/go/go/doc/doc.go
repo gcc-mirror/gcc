@@ -17,7 +17,10 @@ type Package struct {
 	ImportPath string
 	Imports    []string
 	Filenames  []string
-	Bugs       []string
+	Notes      map[string][]*Note
+	// DEPRECATED. For backward compatibility Bugs is still populated,
+	// but all new code should use Notes instead.
+	Bugs []string
 
 	// declarations
 	Consts []*Value
@@ -61,6 +64,16 @@ type Func struct {
 	Level int    // embedding level; 0 means not embedded
 }
 
+// A Note represents a marked comment starting with "MARKER(uid): note body".
+// Any note with a marker of 2 or more upper case [A-Z] letters and a uid of
+// at least one character is recognized. The ":" following the uid is optional.
+// Notes are collected in the Package.Notes map indexed by the notes marker.
+type Note struct {
+	Pos, End token.Pos // position range of the comment containing the marker
+	UID      string    // uid found with the marker
+	Body     string    // note body text
+}
+
 // Mode values control the operation of New.
 type Mode int
 
@@ -88,7 +101,8 @@ func New(pkg *ast.Package, importPath string, mode Mode) *Package {
 		ImportPath: importPath,
 		Imports:    sortedKeys(r.imports),
 		Filenames:  r.filenames,
-		Bugs:       r.bugs,
+		Notes:      r.notes,
+		Bugs:       noteBodies(r.notes["BUG"]),
 		Consts:     sortedValues(r.values, token.CONST),
 		Types:      sortedTypes(r.types, mode&AllMethods != 0),
 		Vars:       sortedValues(r.values, token.VAR),

@@ -4,8 +4,6 @@
 
 // +build darwin freebsd linux netbsd openbsd windows
 
-// UDP sockets for POSIX
-
 package net
 
 import (
@@ -51,8 +49,8 @@ func (a *UDPAddr) toAddr() sockaddr {
 	return a
 }
 
-// UDPConn is the implementation of the Conn and PacketConn
-// interfaces for UDP network connections.
+// UDPConn is the implementation of the Conn and PacketConn interfaces
+// for UDP network connections.
 type UDPConn struct {
 	conn
 }
@@ -63,8 +61,9 @@ func newUDPConn(fd *netFD) *UDPConn { return &UDPConn{conn{fd}} }
 // It returns the number of bytes copied into b and the return address
 // that was on the packet.
 //
-// ReadFromUDP can be made to time out and return an error with Timeout() == true
-// after a fixed time limit; see SetDeadline and SetReadDeadline.
+// ReadFromUDP can be made to time out and return an error with
+// Timeout() == true after a fixed time limit; see SetDeadline and
+// SetReadDeadline.
 func (c *UDPConn) ReadFromUDP(b []byte) (n int, addr *UDPAddr, err error) {
 	if !c.ok() {
 		return 0, nil, syscall.EINVAL
@@ -89,7 +88,7 @@ func (c *UDPConn) ReadFrom(b []byte) (int, Addr, error) {
 }
 
 // ReadMsgUDP reads a packet from c, copying the payload into b and
-// the associdated out-of-band data into oob.  It returns the number
+// the associated out-of-band data into oob.  It returns the number
 // of bytes copied into b, the number of bytes copied into oob, the
 // flags that were set on the packet and the source address of the
 // packet.
@@ -108,12 +107,13 @@ func (c *UDPConn) ReadMsgUDP(b, oob []byte) (n, oobn, flags int, addr *UDPAddr, 
 	return
 }
 
-// WriteToUDP writes a UDP packet to addr via c, copying the payload from b.
+// WriteToUDP writes a UDP packet to addr via c, copying the payload
+// from b.
 //
-// WriteToUDP can be made to time out and return
-// an error with Timeout() == true after a fixed time limit;
-// see SetDeadline and SetWriteDeadline.
-// On packet-oriented connections, write timeouts are rare.
+// WriteToUDP can be made to time out and return an error with
+// Timeout() == true after a fixed time limit; see SetDeadline and
+// SetWriteDeadline.  On packet-oriented connections, write timeouts
+// are rare.
 func (c *UDPConn) WriteToUDP(b []byte, addr *UDPAddr) (int, error) {
 	if !c.ok() {
 		return 0, syscall.EINVAL
@@ -158,8 +158,8 @@ func (c *UDPConn) WriteMsgUDP(b, oob []byte, addr *UDPAddr) (n, oobn int, err er
 }
 
 // DialUDP connects to the remote address raddr on the network net,
-// which must be "udp", "udp4", or "udp6".  If laddr is not nil, it is used
-// as the local address for the connection.
+// which must be "udp", "udp4", or "udp6".  If laddr is not nil, it is
+// used as the local address for the connection.
 func DialUDP(net string, laddr, raddr *UDPAddr) (*UDPConn, error) {
 	return dialUDP(net, laddr, raddr, noDeadline)
 }
@@ -180,10 +180,13 @@ func dialUDP(net string, laddr, raddr *UDPAddr, deadline time.Time) (*UDPConn, e
 	return newUDPConn(fd), nil
 }
 
-// ListenUDP listens for incoming UDP packets addressed to the
-// local address laddr.  The returned connection c's ReadFrom
-// and WriteTo methods can be used to receive and send UDP
-// packets with per-packet addressing.
+// ListenUDP listens for incoming UDP packets addressed to the local
+// address laddr.  Net must be "udp", "udp4", or "udp6".  If laddr has
+// a port of 0, ListenUDP will choose an available port.
+// The LocalAddr method of the returned UDPConn can be used to
+// discover the port.  The returned connection's ReadFrom and WriteTo
+// methods can be used to receive and send UDP packets with per-packet
+// addressing.
 func ListenUDP(net string, laddr *UDPAddr) (*UDPConn, error) {
 	switch net {
 	case "udp", "udp4", "udp6":
@@ -201,9 +204,9 @@ func ListenUDP(net string, laddr *UDPAddr) (*UDPConn, error) {
 }
 
 // ListenMulticastUDP listens for incoming multicast UDP packets
-// addressed to the group address gaddr on ifi, which specifies
-// the interface to join.  ListenMulticastUDP uses default
-// multicast interface if ifi is nil.
+// addressed to the group address gaddr on ifi, which specifies the
+// interface to join.  ListenMulticastUDP uses default multicast
+// interface if ifi is nil.
 func ListenMulticastUDP(net string, ifi *Interface, gaddr *UDPAddr) (*UDPConn, error) {
 	switch net {
 	case "udp", "udp4", "udp6":

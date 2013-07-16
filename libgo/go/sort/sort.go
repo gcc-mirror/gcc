@@ -6,8 +6,6 @@
 // collections.
 package sort
 
-import "math"
-
 // A type, typically a collection, that satisfies sort.Interface can be
 // sorted by the routines in this package.  The methods require that the
 // elements of the collection be enumerated by an integer index.
@@ -124,26 +122,31 @@ func doPivot(data Interface, lo, hi int) (midlo, midhi int) {
 	// into the middle of the slice.
 	pivot := lo
 	a, b, c, d := lo+1, lo+1, hi, hi
-	for b < c {
-		if data.Less(b, pivot) { // data[b] < pivot
-			b++
-			continue
+	for {
+		for b < c {
+			if data.Less(b, pivot) { // data[b] < pivot
+				b++
+			} else if !data.Less(pivot, b) { // data[b] = pivot
+				data.Swap(a, b)
+				a++
+				b++
+			} else {
+				break
+			}
 		}
-		if !data.Less(pivot, b) { // data[b] = pivot
-			data.Swap(a, b)
-			a++
-			b++
-			continue
+		for b < c {
+			if data.Less(pivot, c-1) { // data[c-1] > pivot
+				c--
+			} else if !data.Less(c-1, pivot) { // data[c-1] = pivot
+				data.Swap(c-1, d-1)
+				c--
+				d--
+			} else {
+				break
+			}
 		}
-		if data.Less(pivot, c-1) { // data[c-1] > pivot
-			c--
-			continue
-		}
-		if !data.Less(c-1, pivot) { // data[c-1] = pivot
-			data.Swap(c-1, d-1)
-			c--
-			d--
-			continue
+		if b >= c {
+			break
 		}
 		// data[b] > pivot; data[c-1] < pivot
 		data.Swap(b, c-1)
@@ -197,6 +200,22 @@ func Sort(data Interface) {
 	quickSort(data, 0, n, maxDepth)
 }
 
+type reverse struct {
+	// This embedded Interface permits Reverse to use the methods of
+	// another Interface implementation.
+	Interface
+}
+
+// Less returns the opposite of the embedded implementation's Less method.
+func (r reverse) Less(i, j int) bool {
+	return r.Interface.Less(j, i)
+}
+
+// Reverse returns the reverse order for data.
+func Reverse(data Interface) Interface {
+	return &reverse{data}
+}
+
 // IsSorted reports whether data is sorted.
 func IsSorted(data Interface) bool {
 	n := data.Len()
@@ -224,8 +243,13 @@ func (p IntSlice) Sort() { Sort(p) }
 type Float64Slice []float64
 
 func (p Float64Slice) Len() int           { return len(p) }
-func (p Float64Slice) Less(i, j int) bool { return p[i] < p[j] || math.IsNaN(p[i]) && !math.IsNaN(p[j]) }
+func (p Float64Slice) Less(i, j int) bool { return p[i] < p[j] || isNaN(p[i]) && !isNaN(p[j]) }
 func (p Float64Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
+
+// isNaN is a copy of math.IsNaN to avoid a dependency on the math package.
+func isNaN(f float64) bool {
+	return f != f
+}
 
 // Sort is a convenience method.
 func (p Float64Slice) Sort() { Sort(p) }

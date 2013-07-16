@@ -496,8 +496,8 @@ func TestSpecialCase(t *testing.T) {
 func TestTrimSpace(t *testing.T) { runStringTests(t, TrimSpace, "TrimSpace", trimSpaceTests) }
 
 var trimTests = []struct {
-	f               string
-	in, cutset, out string
+	f            string
+	in, arg, out string
 }{
 	{"Trim", "abba", "a", "bb"},
 	{"Trim", "abba", "ab", ""},
@@ -520,6 +520,10 @@ var trimTests = []struct {
 	{"TrimRight", "", "123", ""},
 	{"TrimRight", "", "", ""},
 	{"TrimRight", "☺\xc0", "☺", "☺\xc0"},
+	{"TrimPrefix", "aabb", "a", "abb"},
+	{"TrimPrefix", "aabb", "b", "aabb"},
+	{"TrimSuffix", "aabb", "a", "aabb"},
+	{"TrimSuffix", "aabb", "b", "aab"},
 }
 
 func TestTrim(t *testing.T) {
@@ -533,12 +537,16 @@ func TestTrim(t *testing.T) {
 			f = TrimLeft
 		case "TrimRight":
 			f = TrimRight
+		case "TrimPrefix":
+			f = TrimPrefix
+		case "TrimSuffix":
+			f = TrimSuffix
 		default:
 			t.Errorf("Undefined trim function %s", name)
 		}
-		actual := f(tc.in, tc.cutset)
+		actual := f(tc.in, tc.arg)
 		if actual != tc.out {
-			t.Errorf("%s(%q, %q) = %q; want %q", name, tc.in, tc.cutset, actual, tc.out)
+			t.Errorf("%s(%q, %q) = %q; want %q", name, tc.in, tc.arg, actual, tc.out)
 		}
 	}
 }
@@ -959,7 +967,7 @@ var ContainsRuneTests = []struct {
 func TestContainsRune(t *testing.T) {
 	for _, ct := range ContainsRuneTests {
 		if ContainsRune(ct.str, ct.r) != ct.expected {
-			t.Errorf("ContainsRune(%s, %s) = %v, want %v",
+			t.Errorf("ContainsRune(%q, %q) = %v, want %v",
 				ct.str, ct.r, !ct.expected, ct.expected)
 		}
 	}
@@ -990,6 +998,65 @@ func TestEqualFold(t *testing.T) {
 		if out := EqualFold(tt.t, tt.s); out != tt.out {
 			t.Errorf("EqualFold(%#q, %#q) = %v, want %v", tt.t, tt.s, out, tt.out)
 		}
+	}
+}
+
+func makeBenchInputHard() string {
+	tokens := [...]string{
+		"<a>", "<p>", "<b>", "<strong>",
+		"</a>", "</p>", "</b>", "</strong>",
+		"hello", "world",
+	}
+	x := make([]byte, 0, 1<<20)
+	for len(x) < 1<<20 {
+		i := rand.Intn(len(tokens))
+		x = append(x, tokens[i]...)
+	}
+	return string(x)
+}
+
+var benchInputHard = makeBenchInputHard()
+
+func benchmarkIndexHard(b *testing.B, sep string) {
+	for i := 0; i < b.N; i++ {
+		Index(benchInputHard, sep)
+	}
+}
+
+func benchmarkCountHard(b *testing.B, sep string) {
+	for i := 0; i < b.N; i++ {
+		Count(benchInputHard, sep)
+	}
+}
+
+func BenchmarkIndexHard1(b *testing.B) { benchmarkIndexHard(b, "<>") }
+func BenchmarkIndexHard2(b *testing.B) { benchmarkIndexHard(b, "</pre>") }
+func BenchmarkIndexHard3(b *testing.B) { benchmarkIndexHard(b, "<b>hello world</b>") }
+
+func BenchmarkCountHard1(b *testing.B) { benchmarkCountHard(b, "<>") }
+func BenchmarkCountHard2(b *testing.B) { benchmarkCountHard(b, "</pre>") }
+func BenchmarkCountHard3(b *testing.B) { benchmarkCountHard(b, "<b>hello world</b>") }
+
+var benchInputTorture = Repeat("ABC", 1<<10) + "123" + Repeat("ABC", 1<<10)
+var benchNeedleTorture = Repeat("ABC", 1<<10+1)
+
+func BenchmarkIndexTorture(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Index(benchInputTorture, benchNeedleTorture)
+	}
+}
+
+func BenchmarkCountTorture(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Count(benchInputTorture, benchNeedleTorture)
+	}
+}
+
+func BenchmarkCountTortureOverlapping(b *testing.B) {
+	A := Repeat("ABC", 1<<20)
+	B := Repeat("ABC", 1<<10)
+	for i := 0; i < b.N; i++ {
+		Count(A, B)
 	}
 }
 
@@ -1026,5 +1093,23 @@ func BenchmarkFieldsFunc(b *testing.B) {
 	b.SetBytes(int64(len(fieldsInput)))
 	for i := 0; i < b.N; i++ {
 		FieldsFunc(fieldsInput, unicode.IsSpace)
+	}
+}
+
+func BenchmarkSplit1(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Split(benchInputHard, "")
+	}
+}
+
+func BenchmarkSplit2(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Split(benchInputHard, "/")
+	}
+}
+
+func BenchmarkSplit3(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		Split(benchInputHard, "hello")
 	}
 }

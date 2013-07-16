@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"io"
 	"io/ioutil"
+	"strings"
 	"testing"
 )
 
@@ -137,27 +138,48 @@ func TestDecoderBuffering(t *testing.T) {
 }
 
 func TestDecodeCorrupt(t *testing.T) {
-	type corrupt struct {
-		e string
-		p int
-	}
-	examples := []corrupt{
+	testCases := []struct {
+		input  string
+		offset int // -1 means no corruption.
+	}{
+		{"", -1},
 		{"!!!!", 0},
 		{"x===", 0},
 		{"AA=A====", 2},
 		{"AAA=AAAA", 3},
 		{"MMMMMMMMM", 8},
 		{"MMMMMM", 0},
+		{"A=", 1},
+		{"AA=", 3},
+		{"AA==", 4},
+		{"AA===", 5},
+		{"AAAA=", 5},
+		{"AAAA==", 6},
+		{"AAAAA=", 6},
+		{"AAAAA==", 7},
+		{"A=======", 1},
+		{"AA======", -1},
+		{"AAA=====", 3},
+		{"AAAA====", -1},
+		{"AAAAA===", -1},
+		{"AAAAAA==", 6},
+		{"AAAAAAA=", -1},
+		{"AAAAAAAA", -1},
 	}
-
-	for _, e := range examples {
-		dbuf := make([]byte, StdEncoding.DecodedLen(len(e.e)))
-		_, err := StdEncoding.Decode(dbuf, []byte(e.e))
+	for _, tc := range testCases {
+		dbuf := make([]byte, StdEncoding.DecodedLen(len(tc.input)))
+		_, err := StdEncoding.Decode(dbuf, []byte(tc.input))
+		if tc.offset == -1 {
+			if err != nil {
+				t.Error("Decoder wrongly detected coruption in", tc.input)
+			}
+			continue
+		}
 		switch err := err.(type) {
 		case CorruptInputError:
-			testEqual(t, "Corruption in %q at offset %v, want %v", e.e, int(err), e.p)
+			testEqual(t, "Corruption in %q at offset %v, want %v", tc.input, int(err), tc.offset)
 		default:
-			t.Error("Decoder failed to detect corruption in", e)
+			t.Error("Decoder failed to detect corruption in", tc)
 		}
 	}
 }
@@ -195,9 +217,21 @@ func TestBig(t *testing.T) {
 	}
 }
 
+func testStringEncoding(t *testing.T, expected string, examples []string) {
+	for _, e := range examples {
+		buf, err := StdEncoding.DecodeString(e)
+		if err != nil {
+			t.Errorf("Decode(%q) failed: %v", e, err)
+			continue
+		}
+		if s := string(buf); s != expected {
+			t.Errorf("Decode(%q) = %q, want %q", e, s, expected)
+		}
+	}
+}
+
 func TestNewLineCharacters(t *testing.T) {
 	// Each of these should decode to the string "sure", without errors.
-	const expected = "sure"
 	examples := []string{
 		"ON2XEZI=",
 		"ON2XEZI=\r",
@@ -209,14 +243,44 @@ func TestNewLineCharacters(t *testing.T) {
 		"ON2XEZ\nI=",
 		"ON2XEZI\n=",
 	}
-	for _, e := range examples {
-		buf, err := StdEncoding.DecodeString(e)
-		if err != nil {
-			t.Errorf("Decode(%q) failed: %v", e, err)
-			continue
-		}
-		if s := string(buf); s != expected {
-			t.Errorf("Decode(%q) = %q, want %q", e, s, expected)
-		}
+	testStringEncoding(t, "sure", examples)
+
+	// Each of these should decode to the string "foobar", without errors.
+	examples = []string{
+		"MZXW6YTBOI======",
+		"MZXW6YTBOI=\r\n=====",
+	}
+	testStringEncoding(t, "foobar", examples)
+}
+
+func TestDecoderIssue4779(t *testing.T) {
+	encoded := `JRXXEZLNEBUXA43VNUQGI33MN5ZCA43JOQQGC3LFOQWCAY3PNZZWKY3UMV2HK4
+RAMFSGS4DJONUWG2LOM4QGK3DJOQWCA43FMQQGI3YKMVUXK43NN5SCA5DFNVYG64RANFXGG2LENFSH
+K3TUEB2XIIDMMFRG64TFEBSXIIDEN5WG64TFEBWWCZ3OMEQGC3DJOF2WCLRAKV2CAZLONFWQUYLEEB
+WWS3TJNUQHMZLONFQW2LBAOF2WS4ZANZXXG5DSOVSCAZLYMVZGG2LUMF2GS33OEB2WY3DBNVRW6IDM
+MFRG64TJOMQG42LTNEQHK5AKMFWGS4LVNFYCAZLYEBSWCIDDN5WW233EN4QGG33OONSXC5LBOQXCAR
+DVNFZSAYLVORSSA2LSOVZGKIDEN5WG64RANFXAU4TFOBZGK2DFNZSGK4TJOQQGS3RAOZXWY5LQORQX
+IZJAOZSWY2LUEBSXG43FEBRWS3DMOVWSAZDPNRXXEZJAMV2SAZTVM5UWC5BANZ2WY3DBBJYGC4TJMF
+2HK4ROEBCXQY3FOB2GK5LSEBZWS3TUEBXWGY3BMVRWC5BAMN2XA2LEMF2GC5BANZXW4IDQOJXWSZDF
+NZ2CYIDTOVXHIIDJNYFGG5LMOBQSA4LVNEQG6ZTGNFRWSYJAMRSXGZLSOVXHIIDNN5WGY2LUEBQW42
+LNEBUWIIDFON2CA3DBMJXXE5LNFY==
+====`
+	encodedShort := strings.Replace(encoded, "\n", "", -1)
+
+	dec := NewDecoder(StdEncoding, bytes.NewBufferString(encoded))
+	res1, err := ioutil.ReadAll(dec)
+	if err != nil {
+		t.Errorf("ReadAll failed: %v", err)
+	}
+
+	dec = NewDecoder(StdEncoding, bytes.NewBufferString(encodedShort))
+	var res2 []byte
+	res2, err = ioutil.ReadAll(dec)
+	if err != nil {
+		t.Errorf("ReadAll failed: %v", err)
+	}
+
+	if !bytes.Equal(res1, res2) {
+		t.Error("Decoded results not equal")
 	}
 }
