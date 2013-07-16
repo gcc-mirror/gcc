@@ -1,3 +1,9 @@
+2013-07-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57912
+	* trans-expr.c (gfc_trans_scalar_assign): Correct if
+	condition for caf realloc.
+
 2013-07-15  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-array.h (gfc_deallocate_alloc_comp_no_caf,
