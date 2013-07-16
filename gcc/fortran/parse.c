@@ -262,6 +262,7 @@ end_of_block:
 static gfc_statement
 decode_statement (void)
 {
+  gfc_namespace *ns;
   gfc_statement st;
   locus old_locus;
   match m;
@@ -363,7 +364,12 @@ decode_statement (void)
   match (NULL, gfc_match_associate, ST_ASSOCIATE);
   match (NULL, gfc_match_critical, ST_CRITICAL);
   match (NULL, gfc_match_select, ST_SELECT_CASE);
+
+  gfc_current_ns = gfc_build_block_ns (gfc_current_ns);
   match (NULL, gfc_match_select_type, ST_SELECT_TYPE);
+  ns = gfc_current_ns;
+  gfc_current_ns = gfc_current_ns->parent;
+  gfc_free_namespace (ns);
 
   /* General statement matching: Instead of testing every possible
      statement, we eliminate most possibilities by peeking at the

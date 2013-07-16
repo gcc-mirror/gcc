@@ -44,12 +44,12 @@ struct SemaRoot
 // Prime to not correlate with any user patterns.
 #define SEMTABLESZ 251
 
-union semtable
+struct semtable
 {
 	SemaRoot;
-	uint8 pad[CacheLineSize];
+	uint8 pad[CacheLineSize-sizeof(SemaRoot)];
 };
-static union semtable semtable[SEMTABLESZ];
+static struct semtable semtable[SEMTABLESZ];
 
 static SemaRoot*
 semroot(uint32 volatile *addr)

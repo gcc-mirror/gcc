@@ -1,4 +1,4 @@
-// String support -*- C++ -*-
+// <string> Forward declarations -*- C++ -*-
 
 // Copyright (C) 2001-2013 Free Software Foundation, Inc.
 //
@@ -37,13 +37,11 @@
 #pragma GCC system_header
 
 #include <bits/c++config.h>
+#include <bits/memoryfwd.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Alloc>
-    class allocator;
 
   /**
    *  @defgroup strings Strings
@@ -60,12 +58,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<> struct char_traits<char>;
 
-  typedef basic_string<char>    string;   /// A string of @c char
+  /// A string of @c char
+  typedef basic_string<char>    string;   
 
 #ifdef _GLIBCXX_USE_WCHAR_T
   template<> struct char_traits<wchar_t>;
 
-  typedef basic_string<wchar_t> wstring;   /// A string of @c wchar_t
+  /// A string of @c wchar_t
+  typedef basic_string<wchar_t> wstring;   
 #endif
 
 #if ((__cplusplus >= 201103L) \
@@ -74,13 +74,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<> struct char_traits<char16_t>;
   template<> struct char_traits<char32_t>;
 
-  typedef basic_string<char16_t> u16string; /// A string of @c char16_t
-  typedef basic_string<char32_t> u32string; /// A string of @c char32_t
+  /// A string of @c char16_t
+  typedef basic_string<char16_t> u16string; 
+
+  /// A string of @c char32_t
+  typedef basic_string<char32_t> u32string; 
 
 #endif
   /** @}  */
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif	// _STRINGFWD_H

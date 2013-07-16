@@ -1,4 +1,4 @@
-/* { dg-do run { target powerpc*-*-linux* powerpc*-*-eabi* } } */
+/* { dg-do run { target powerpc*-*-linux* powerpc*-*-eabi* powerpc-*-rtems* } } */
 /* { dg-options {} } */
 
 /* Test stack pointer alignment against variable alloca.  */

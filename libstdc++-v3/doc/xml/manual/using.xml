@@ -755,7 +755,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 . /mnt/share/bld/H-x86-gcc.20071201include/c++/4.3.0/string
 </programlisting>
 
-<para>The exclamation point to the left of the <code>stdc++.h.gch</code> listing means that the generated PCH file was used, and thus the </para>
+<para>The exclamation point to the left of the <code>stdc++.h.gch</code> listing means that the generated PCH file was used.</para>
 <para/>
 
 <para> Detailed information about creating precompiled header files can be found in the GCC <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/gcc/Precompiled-Headers.html">documentation</link>.

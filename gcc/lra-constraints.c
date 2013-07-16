@@ -1054,9 +1054,6 @@ static int goal_alt_number;
 /* Number of necessary reloads and overall cost reflecting the
    previous value and other unpleasantness of the best alternative.  */
 static int best_losers, best_overall;
-/* Number of small register classes used for operands of the best
-   alternative.	 */
-static int best_small_class_operands_num;
 /* Overall number hard registers used for reloads.  For example, on
    some targets we need 2 general registers to reload DFmode and only
    one floating point register.	 */
@@ -1321,7 +1318,7 @@ static bool
 process_alt_operands (int only_alternative)
 {
   bool ok_p = false;
-  int nop, small_class_operands_num, overall, nalt;
+  int nop, overall, nalt;
   int n_alternatives = curr_static_id->n_alternatives;
   int n_operands = curr_static_id->n_operands;
   /* LOSERS counts the operands that don't fit this alternative and
@@ -1400,6 +1397,7 @@ process_alt_operands (int only_alternative)
       if (only_alternative >= 0 && nalt != only_alternative)
 	continue;
 
+            
       overall = losers = reject = reload_nregs = reload_sum = 0;
       for (nop = 0; nop < n_operands; nop++)
 	reject += (curr_static_id
@@ -1533,8 +1531,8 @@ process_alt_operands (int only_alternative)
 			if (! curr_static_id->operand[m].early_clobber
 			    || operand_reg[nop] == NULL_RTX
 			    || (find_regno_note (curr_insn, REG_DEAD,
-						 REGNO (operand_reg[nop]))
-						 != NULL_RTX))
+						 REGNO (op))
+				|| REGNO (op) == REGNO (operand_reg[m])))
 			  match_p = true;
 		      }
 		    if (match_p)
@@ -1978,8 +1976,15 @@ process_alt_operands (int only_alternative)
 			      (op, this_alternative) == NO_REGS))))
 		reject += LRA_MAX_REJECT;
 
-	      if (! ((const_to_mem && constmemok)
-		     || (MEM_P (op) && offmemok)))
+	      if (MEM_P (op) && offmemok)
+		{
+		  /* If we know offset and this non-offsetable memory,
+		     something wrong with this memory and it is better
+		     to try other memory possibilities.  */
+		  if (MEM_OFFSET_KNOWN_P (op))
+		    reject += LRA_MAX_REJECT;
+		}
+	      else if (! (const_to_mem && constmemok))
 		{
 		  /* We prefer to reload pseudos over reloading other
 		     things, since such reloads may be able to be
@@ -1994,6 +1999,9 @@ process_alt_operands (int only_alternative)
 		  if (! no_regs_p)
 		    reload_nregs
 		      += ira_reg_class_max_nregs[this_alternative][mode];
+
+		  if (SMALL_REGISTER_CLASS_P (this_alternative))
+		    reject += LRA_LOSER_COST_FACTOR / 2;
 		}
 
 	      /* We are trying to spill pseudo into memory.  It is
@@ -2001,7 +2009,7 @@ process_alt_operands (int only_alternative)
 		 although it might takes the same number of
 		 reloads.  */
 	      if (no_regs_p && REG_P (op))
-		reject++;
+		reject += 2;
 
 #ifdef SECONDARY_MEMORY_NEEDED
 	      /* If reload requires moving value through secondary
@@ -2021,6 +2029,7 @@ process_alt_operands (int only_alternative)
 		 reloads.  */
 	      if (!REG_P (op) || curr_static_id->operand[nop].type != OP_IN)
 		reject++;
+
 	    }
 
 	  if (early_clobber_p)
@@ -2032,7 +2041,13 @@ process_alt_operands (int only_alternative)
 	     or non-important thing to be worth to do it.  */
 	  overall = losers * LRA_LOSER_COST_FACTOR + reject;
 	  if ((best_losers == 0 || losers != 0) && best_overall < overall)
-	    goto fail;
+            {
+              if (lra_dump_file != NULL)
+		fprintf (lra_dump_file,
+			 "          alt=%d,overall=%d,losers=%d -- reject\n",
+			 nalt, overall, losers);
+              goto fail;
+            }
 
 	  curr_alt[nop] = this_alternative;
 	  COPY_HARD_REG_SET (curr_alt_set[nop], this_alternative_set);
@@ -2052,16 +2067,18 @@ process_alt_operands (int only_alternative)
       curr_alt_dont_inherit_ops_num = 0;
       for (nop = 0; nop < early_clobbered_regs_num; nop++)
 	{
-	  int i, j, clobbered_hard_regno;
+	  int i, j, clobbered_hard_regno, first_conflict_j, last_conflict_j;
 	  HARD_REG_SET temp_set;
 
 	  i = early_clobbered_nops[nop];
 	  if ((! curr_alt_win[i] && ! curr_alt_match_win[i])
 	      || hard_regno[i] < 0)
 	    continue;
+	  lra_assert (operand_reg[i] != NULL_RTX);
 	  clobbered_hard_regno = hard_regno[i];
 	  CLEAR_HARD_REG_SET (temp_set);
 	  add_to_hard_reg_set (&temp_set, biggest_mode[i], clobbered_hard_regno);
+	  first_conflict_j = last_conflict_j = -1;
 	  for (j = 0; j < n_operands; j++)
 	    if (j == i
 		/* We don't want process insides of match_operator and
@@ -2073,35 +2090,66 @@ process_alt_operands (int only_alternative)
 	    else if ((curr_alt_matches[j] == i && curr_alt_match_win[j])
 		     || (curr_alt_matches[i] == j && curr_alt_match_win[i]))
 	      continue;
-	    else if (uses_hard_regs_p (*curr_id->operand_loc[j], temp_set))
-	      break;
-	  if (j >= n_operands)
-	    continue;
-	  /* We need to reload early clobbered register.  */
-	  for (j = 0; j < n_operands; j++)
-	    if (curr_alt_matches[j] == i)
+	    /* If we don't reload j-th operand, check conflicts.  */
+	    else if ((curr_alt_win[j] || curr_alt_match_win[j])
+		     && uses_hard_regs_p (*curr_id->operand_loc[j], temp_set))
 	      {
-		curr_alt_match_win[j] = false;
-		losers++;
-		overall += LRA_LOSER_COST_FACTOR;
+		if (first_conflict_j < 0)
+		  first_conflict_j = j;
+		last_conflict_j = j;
 	      }
-	  if (! curr_alt_match_win[i])
-	    curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = i;
+	  if (last_conflict_j < 0)
+	    continue;
+	  /* If earlyclobber operand conflicts with another
+	     non-matching operand which is actually the same register
+	     as the earlyclobber operand, it is better to reload the
+	     another operand as an operand matching the earlyclobber
+	     operand can be also the same.  */
+	  if (first_conflict_j == last_conflict_j
+	      && operand_reg[last_conflict_j]
+	      != NULL_RTX && ! curr_alt_match_win[last_conflict_j]
+	      && REGNO (operand_reg[i]) == REGNO (operand_reg[last_conflict_j]))
+	    {
+	      curr_alt_win[last_conflict_j] = false;
+	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++]
+		= last_conflict_j;
+	      losers++;
+	      /* Early clobber was already reflected in REJECT. */
+	      lra_assert (reject > 0);
+	      reject--;
+	      overall += LRA_LOSER_COST_FACTOR - 1;
+	    }
 	  else
 	    {
-	      /* Remember pseudos used for match reloads are never
-		 inherited.  */
-	      lra_assert (curr_alt_matches[i] >= 0);
-	      curr_alt_win[curr_alt_matches[i]] = false;
+	      /* We need to reload early clobbered register and the
+		 matched registers.  */
+	      for (j = 0; j < n_operands; j++)
+		if (curr_alt_matches[j] == i)
+		  {
+		    curr_alt_match_win[j] = false;
+		    losers++;
+		    overall += LRA_LOSER_COST_FACTOR;
+		  }
+	      if (! curr_alt_match_win[i])
+		curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++] = i;
+	      else
+		{
+		  /* Remember pseudos used for match reloads are never
+		     inherited.  */
+		  lra_assert (curr_alt_matches[i] >= 0);
+		  curr_alt_win[curr_alt_matches[i]] = false;
+		}
+	      curr_alt_win[i] = curr_alt_match_win[i] = false;
+	      losers++;
+	      /* Early clobber was already reflected in REJECT. */
+	      lra_assert (reject > 0);
+	      reject--;
+	      overall += LRA_LOSER_COST_FACTOR - 1;
 	    }
-	  curr_alt_win[i] = curr_alt_match_win[i] = false;
-	  losers++;
-	  overall += LRA_LOSER_COST_FACTOR;
 	}
-      small_class_operands_num = 0;
-      for (nop = 0; nop < n_operands; nop++)
-	small_class_operands_num
-	  += SMALL_REGISTER_CLASS_P (curr_alt[nop]) ? 1 : 0;
+      if (lra_dump_file != NULL)
+	fprintf (lra_dump_file, "          alt=%d,overall=%d,losers=%d,rld_nregs=%d\n",
+		 nalt, overall, losers, reload_nregs);
 
       /* If this alternative can be made to work by reloading, and it
 	 needs less reloading than the others checked so far, record
@@ -2113,17 +2161,12 @@ process_alt_operands (int only_alternative)
 		  || (best_overall == overall
 		      /* If the cost of the reloads is the same,
 			 prefer alternative which requires minimal
-			 number of small register classes for the
-			 operands.  This improves chances of reloads
-			 for insn requiring small register
-			 classes.  */
-		      && (small_class_operands_num
-			  < best_small_class_operands_num
-			  || (small_class_operands_num
-			      == best_small_class_operands_num
-			      && (reload_nregs < best_reload_nregs
-				  || (reload_nregs == best_reload_nregs
-				      && best_reload_sum < reload_sum))))))))
+			 number of reload regs.  */
+		      && (reload_nregs < best_reload_nregs
+			  || (reload_nregs == best_reload_nregs
+			      && (best_reload_sum < reload_sum
+				  || (best_reload_sum == reload_sum
+				      && nalt < goal_alt_number))))))))
 	{
 	  for (nop = 0; nop < n_operands; nop++)
 	    {
@@ -2139,7 +2182,6 @@ process_alt_operands (int only_alternative)
 	  goal_alt_swapped = curr_swapped;
 	  best_overall = overall;
 	  best_losers = losers;
-	  best_small_class_operands_num = small_class_operands_num;
 	  best_reload_nregs = reload_nregs;
 	  best_reload_sum = reload_sum;
 	  goal_alt_number = nalt;
@@ -2701,7 +2743,7 @@ curr_insn_transform (void)
      operands together against the register constraints.  */
 
   best_losers = best_overall = INT_MAX;
-  best_small_class_operands_num = best_reload_sum = 0;
+  best_reload_sum = 0;
 
   curr_swapped = false;
   goal_alt_swapped = false;
@@ -2904,7 +2946,10 @@ curr_insn_transform (void)
 	  for (; *p != '\0' && *p != ',' && *p != '#'; p++)
 	    fputc (*p, lra_dump_file);
 	}
-      fprintf (lra_dump_file, "\n");
+      if (INSN_CODE (curr_insn) >= 0
+          && (p = get_insn_name (INSN_CODE (curr_insn))) != NULL)
+        fprintf (lra_dump_file, " {%s}", p);
+       fprintf (lra_dump_file, "\n");
     }
 
   /* Right now, for any pair of operands I and J that are required to
@@ -3024,7 +3069,15 @@ curr_insn_transform (void)
 		 spilled.  Spilled scratch pseudos are transformed
 		 back to scratches at the LRA end.  */
 	      && lra_former_scratch_operand_p (curr_insn, i))
-	    change_class (REGNO (op), NO_REGS, "      Change", true);
+	    {
+	      int regno = REGNO (op);
+	      change_class (regno, NO_REGS, "      Change", true);
+	      if (lra_get_regno_hard_regno (regno) >= 0)
+		/* We don't have to mark all insn affected by the
+		   spilled pseudo as there is only one such insn, the
+		   current one.  */
+		reg_renumber[regno] = -1;
+	    }
 	  continue;
 	}
 
@@ -4089,7 +4142,7 @@ split_reg (bool before_p, int original_regno, rtx insn, rtx next_usage_insns)
 {
   enum reg_class rclass;
   rtx original_reg;
-  int hard_regno;
+  int hard_regno, nregs;
   rtx new_reg, save, restore, usage_insn;
   bool after_p;
   bool call_save_p;
@@ -4099,10 +4152,12 @@ split_reg (bool before_p, int original_regno, rtx insn, rtx next_usage_insns)
       rclass = ira_allocno_class_translate[REGNO_REG_CLASS (original_regno)];
       hard_regno = original_regno;
       call_save_p = false;
+      nregs = 1;
     }
   else
     {
       hard_regno = reg_renumber[original_regno];
+      nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (original_regno)];
       rclass = lra_get_allocno_class (original_regno);
       original_reg = regno_reg_rtx[original_regno];
       call_save_p = need_for_call_save_p (original_regno);
@@ -4215,6 +4270,13 @@ split_reg (bool before_p, int original_regno, rtx insn, rtx next_usage_insns)
 			 before_p ? NULL_RTX : save,
 			 call_save_p
 			 ?  "Add save<-reg" : "Add split<-reg");
+  if (nregs > 1)
+    /* If we are trying to split multi-register.  We should check
+       conflicts on the next assignment sub-pass.  IRA can allocate on
+       sub-register levels, LRA do this on pseudos level right now and
+       this discrepancy may create allocation conflicts after
+       splitting.  */
+    lra_risky_transformations_p = true;
   if (lra_dump_file != NULL)
     fprintf (lra_dump_file,
 	     "	  ))))))))))))))))))))))))))))))))))))))))))))))))\n");

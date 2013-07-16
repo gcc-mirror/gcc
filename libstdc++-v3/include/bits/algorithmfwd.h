@@ -1,4 +1,4 @@
-// <algorithm> declarations  -*- C++ -*-
+// <algorithm> Forward declarations  -*- C++ -*-
 
 // Copyright (C) 2007-2013 Free Software Foundation, Inc.
 //

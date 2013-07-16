@@ -23,6 +23,7 @@ load_lib dg-pch.exp
 
 # Initialize `dg'.
 dg-init
+pch-init
 
 set old_dg_do_what_default "${dg-do-what-default}"
 
@@ -36,4 +37,5 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.C]] {
 set dg-do-what-default "$old_dg_do_what_default"
 
 # All done.
+pch-finish
 dg-finish

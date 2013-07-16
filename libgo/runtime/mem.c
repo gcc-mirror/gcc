@@ -18,6 +18,10 @@
 #endif
 #endif
 
+#ifndef MAP_NORESERVE
+#define MAP_NORESERVE 0
+#endif
+
 #ifdef USE_DEV_ZERO
 static int dev_zero = -1;
 #endif
@@ -74,7 +78,7 @@ runtime_SysAlloc(uintptr n)
 	fd = dev_zero;
 #endif
 
-	p = runtime_mmap(nil, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
+	p = runtime_mmap(nil, n, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, fd, 0);
 	if (p == MAP_FAILED) {
 		if(errno == EACCES) {
 			runtime_printf("runtime: mmap: access denied\n");
@@ -134,7 +138,11 @@ runtime_SysReserve(void *v, uintptr n)
 		return v;
 	}
 	
-	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE, fd, 0);
+	// Use the MAP_NORESERVE mmap() flag here because typically most of
+	// this reservation will never be used. It does not make sense
+	// reserve a huge amount of unneeded swap space. This is important on
+	// systems which do not overcommit memory by default.
+	p = runtime_mmap(v, n, PROT_NONE, MAP_ANON|MAP_PRIVATE|MAP_NORESERVE, fd, 0);
 	if(p == MAP_FAILED)
 		return nil;
 	return p;
@@ -161,7 +169,7 @@ runtime_SysMap(void *v, uintptr n)
 
 	// On 64-bit, we don't actually have v reserved, so tread carefully.
 	if(sizeof(void*) == 8 && (uintptr)v >= 0xffffffffU) {
-		p = mmap_fixed(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_PRIVATE, fd, 0);
+		p = mmap_fixed(v, n, PROT_READ|PROT_WRITE, MAP_ANON|MAP_PRIVATE, fd, 0);
 		if(p == MAP_FAILED && errno == ENOMEM)
 			runtime_throw("runtime: out of memory");
 		if(p != v) {
@@ -171,7 +179,9 @@ runtime_SysMap(void *v, uintptr n)
 		return;
 	}
 
-	p = runtime_mmap(v, n, PROT_READ|PROT_WRITE|PROT_EXEC, MAP_ANON|MAP_FIXED|MAP_PRIVATE, fd, 0);
+	p = runtime_mmap(v, n, PROT_READ|PROT_WRITE, MAP_ANON|MAP_FIXED|MAP_PRIVATE, fd, 0);
+	if(p == MAP_FAILED && errno == ENOMEM)
+		runtime_throw("runtime: out of memory");
 	if(p != v)
 		runtime_throw("runtime: cannot map pages in arena address space");
 }

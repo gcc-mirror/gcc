@@ -1166,7 +1166,9 @@ enum reg_class
   "IWMMXT_GR_REGS",	\
   "CC_REG",		\
   "VFPCC_REG",		\
-  "ALL_REGS",		\
+  "SFP_REG",		\
+  "AFP_REG",		\
+  "ALL_REGS"		\
 }
 
 /* Define which registers fit in which classes.

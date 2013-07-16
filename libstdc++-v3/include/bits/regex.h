@@ -135,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       /**
-       * @brief Gets a sort key for a character sequence, independant of case.
+       * @brief Gets a sort key for a character sequence, independent of case.
        *
        * @param __first beginning of the character sequence.
        * @param __last  one-past-the-end of the character sequence.
@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * the returned mask identifies the classification regardless of
        * the case of the characters to be matched (for example,
        * [[:lower:]] is the same as [[:alpha:]]), otherwise a
-       * case-dependant classification is returned.  The value
+       * case-dependent classification is returned.  The value
        * returned shall be independent of the case of the characters
        * in the character sequence. If the name is not recognized then
        * returns a value that compares equal to 0.

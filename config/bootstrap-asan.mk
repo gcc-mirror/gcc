@@ -3,4 +3,5 @@
 STAGE2_CFLAGS += -fsanitize=address
 STAGE3_CFLAGS += -fsanitize=address
 POSTSTAGE1_LDFLAGS += -fsanitize=address -static-libasan \
+		      -B$$r/prev-$(TARGET_SUBDIR)/libsanitizer/asan/ \
 		      -B$$r/prev-$(TARGET_SUBDIR)/libsanitizer/asan/.libs

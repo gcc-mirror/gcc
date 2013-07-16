@@ -44,6 +44,8 @@ extern "C++" {
 
 namespace std 
 {
+  class type_info;
+
   /**
    * @addtogroup exceptions
    * @{
@@ -141,7 +143,7 @@ namespace std
       operator==(const exception_ptr&, const exception_ptr&)
 	_GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
-      const class type_info*
+      const class std::type_info*
       __cxa_exception_type() const _GLIBCXX_USE_NOEXCEPT
 	__attribute__ ((__pure__));
     };

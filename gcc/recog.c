@@ -1949,9 +1949,6 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
     (strictp ? strict_memory_address_addr_space_p
 	     : memory_address_addr_space_p);
   unsigned int mode_sz = GET_MODE_SIZE (mode);
-#ifdef POINTERS_EXTEND_UNSIGNED
-  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
-#endif
 
   if (CONSTANT_ADDRESS_P (y))
     return 1;
@@ -1961,6 +1958,13 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
 
   if (mode_dependent_address_p (y, as))
     return 0;
+
+  enum machine_mode address_mode = GET_MODE (y);
+  if (address_mode == VOIDmode)
+    address_mode = targetm.addr_space.address_mode (as);
+#ifdef POINTERS_EXTEND_UNSIGNED
+  enum machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+#endif
 
   /* ??? How much offset does an offsettable BLKmode reference need?
      Clearly that depends on the situation in which it's being used.
@@ -1977,7 +1981,7 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
       int good;
 
       y1 = *y2;
-      *y2 = plus_constant (GET_MODE (y), *y2, mode_sz - 1);
+      *y2 = plus_constant (address_mode, *y2, mode_sz - 1);
       /* Use QImode because an odd displacement may be automatically invalid
 	 for any wider mode.  But it should be valid for a single byte.  */
       good = (*addressp) (QImode, y, as);
@@ -1998,20 +2002,20 @@ offsettable_address_addr_space_p (int strictp, enum machine_mode mode, rtx y,
   if (GET_CODE (y) == LO_SUM
       && mode != BLKmode
       && mode_sz <= GET_MODE_ALIGNMENT (mode) / BITS_PER_UNIT)
-    z = gen_rtx_LO_SUM (GET_MODE (y), XEXP (y, 0),
-			plus_constant (GET_MODE (y), XEXP (y, 1),
+    z = gen_rtx_LO_SUM (address_mode, XEXP (y, 0),
+			plus_constant (address_mode, XEXP (y, 1),
 				       mode_sz - 1));
 #ifdef POINTERS_EXTEND_UNSIGNED
   /* Likewise for a ZERO_EXTEND from pointer_mode.  */
   else if (POINTERS_EXTEND_UNSIGNED > 0
 	   && GET_CODE (y) == ZERO_EXTEND
 	   && GET_MODE (XEXP (y, 0)) == pointer_mode)
-    z = gen_rtx_ZERO_EXTEND (GET_MODE (y),
+    z = gen_rtx_ZERO_EXTEND (address_mode,
 			     plus_constant (pointer_mode, XEXP (y, 0),
 					    mode_sz - 1));
 #endif
   else
-    z = plus_constant (GET_MODE (y), y, mode_sz - 1);
+    z = plus_constant (address_mode, y, mode_sz - 1);
 
   /* Use QImode because an odd displacement may be automatically invalid
      for any wider mode.  But it should be valid for a single byte.  */

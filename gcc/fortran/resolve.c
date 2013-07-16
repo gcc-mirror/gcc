@@ -3247,6 +3247,7 @@ resolve_function (gfc_expr *expr)
       for (arg = expr->value.function.actual; arg; arg = arg->next)
 	{
 	  if ((GENERIC_ID == GFC_ISYM_UBOUND || GENERIC_ID == GFC_ISYM_SIZE)
+	      && arg == expr->value.function.actual
 	      && arg->next != NULL && arg->next->expr)
 	    {
 	      if (arg->next->expr->expr_type != EXPR_CONSTANT)
@@ -3785,28 +3786,30 @@ resolve_call (gfc_code *c)
 	}
     }
 
-  /* If this ia a deferred TBP with an abstract interface
-     (which may of course be referenced), c->expr1 will be set.  */
-  if (csym && csym->attr.abstract && !c->expr1)
+  /* If this ia a deferred TBP, c->expr1 will be set.  */
+  if (!c->expr1 && csym)
     {
-      gfc_error ("ABSTRACT INTERFACE '%s' must not be referenced at %L",
-		 csym->name, &c->loc);
-      return FAILURE;
-    }
+      if (csym->attr.abstract)
+	{
+	  gfc_error ("ABSTRACT INTERFACE '%s' must not be referenced at %L",
+		    csym->name, &c->loc);
+	  return FAILURE;
+	}
 
-  /* Subroutines without the RECURSIVE attribution are not allowed to
-   * call themselves.  */
-  if (csym && is_illegal_recursion (csym, gfc_current_ns))
-    {
-      if (csym->attr.entry && csym->ns->entries)
-	gfc_error ("ENTRY '%s' at %L cannot be called recursively, as"
-		   " subroutine '%s' is not RECURSIVE",
-		   csym->name, &c->loc, csym->ns->entries->sym->name);
-      else
-	gfc_error ("SUBROUTINE '%s' at %L cannot be called recursively, as it"
-		   " is not RECURSIVE", csym->name, &c->loc);
+      /* Subroutines without the RECURSIVE attribution are not allowed to
+	 call themselves.  */
+      if (is_illegal_recursion (csym, gfc_current_ns))
+	{
+	  if (csym->attr.entry && csym->ns->entries)
+	    gfc_error ("ENTRY '%s' at %L cannot be called recursively, "
+		       "as subroutine '%s' is not RECURSIVE",
+		       csym->name, &c->loc, csym->ns->entries->sym->name);
+	  else
+	    gfc_error ("SUBROUTINE '%s' at %L cannot be called recursively, "
+		       "as it is not RECURSIVE", csym->name, &c->loc);
 
-      t = FAILURE;
+	  t = FAILURE;
+	}
     }
 
   /* Switch off assumed size checking and do this again for certain kinds
@@ -9743,6 +9746,10 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
 
   /* Add the attributes and the arrayspec to the temporary.  */
   tmp->n.sym->attr = gfc_expr_attr (e);
+  tmp->n.sym->attr.function = 0;
+  tmp->n.sym->attr.result = 0;
+  tmp->n.sym->attr.flavor = FL_VARIABLE;
+
   if (as)
     {
       tmp->n.sym->as = gfc_copy_array_spec (as);
@@ -9756,6 +9763,7 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns)
 
   gfc_set_sym_referenced (tmp->n.sym);
   gfc_add_flavor (&tmp->n.sym->attr, FL_VARIABLE, name, NULL);
+  gfc_commit_symbol (tmp->n.sym);
   e = gfc_lval_expr_from_sym (tmp->n.sym);
 
   /* Should the lhs be a section, use its array ref for the
@@ -9889,7 +9897,7 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 				      (*code)->expr1->rank ? 1 : 0);
   if (depth > 1)
     {
-      gfc_warning ("TODO: type-bound deﬁned assignment(s) at %L not "
+      gfc_warning ("TODO: type-bound defined assignment(s) at %L not "
 		   "done because multiple part array references would "
 		   "occur in intermediate expressions.", &(*code)->loc);
       return;
@@ -11029,9 +11037,10 @@ apply_default_init_local (gfc_symbol *sym)
 
   /* For saved variables, we don't want to add an initializer at function
      entry, so we just add a static initializer. Note that automatic variables
-     are stack allocated even with -fno-automatic.  */
+     are stack allocated even with -fno-automatic; we have also to exclude
+     result variable, which are also nonstatic.  */
   if (sym->attr.save || sym->ns->save_all
-      || (gfc_option.flag_max_stack_var_size == 0
+      || (gfc_option.flag_max_stack_var_size == 0 && !sym->attr.result
 	  && (!sym->attr.dimension || !is_non_constant_shape_array (sym))))
     {
       /* Don't clobber an existing initializer!  */
@@ -12863,6 +12872,8 @@ resolve_fl_derived0 (gfc_symbol *sym)
 	{
 	  gfc_error ("Component '%s' with CLASS at %L must be allocatable "
 		     "or pointer", c->name, &c->loc);
+	  /* Prevent a recurrence of the error.  */
+	  c->ts.type = BT_UNKNOWN;
 	  return FAILURE;
 	}
 

@@ -178,6 +178,7 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_WESTMERE;
 	      break;
 	    case 0x2a:
+	    case 0x2d:
 	      /* Sandy Bridge.  */
 	      __cpu_model.__cpu_type = INTEL_COREI7;
 	      __cpu_model.__cpu_subtype = INTEL_COREI7_SANDYBRIDGE;

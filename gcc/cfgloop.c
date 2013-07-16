@@ -466,6 +466,8 @@ flow_loops_find (struct loops *loops)
 			 "loop %d with header %d\n",
 			 loop->num, header->index);
 	    }
+	  /* Reset latch, we recompute it below.  */
+	  loop->latch = NULL;
 	  larray.safe_push (loop);
 	}
 
@@ -1412,6 +1414,19 @@ verify_loop_structure (void)
 	{
 	  error ("loop %d%'s header does not have exactly 2 entries", i);
 	  err = 1;
+	}
+      if (loop->latch)
+	{
+	  if (!find_edge (loop->latch, loop->header))
+	    {
+	      error ("loop %d%'s latch does not have an edge to its header", i);
+	      err = 1;
+	    }
+	  if (!dominated_by_p (CDI_DOMINATORS, loop->latch, loop->header))
+	    {
+	      error ("loop %d%'s latch is not dominated by its header", i);
+	      err = 1;
+	    }
 	}
       if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
 	{

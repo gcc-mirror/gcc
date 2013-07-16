@@ -116,13 +116,14 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
       for (i = 0; i < gimple_num_ops (stmt); i++)
 	{
 	  tree op = gimple_op (stmt, i);
+	  tree *basep = NULL;
 	  /* Wrap all uses of non-automatic variables inside MEM_REFs
 	     so that we do not have to deal with type mismatches on
 	     merged symbols during IL read in.  The first operand
 	     of GIMPLE_DEBUG must be a decl, not MEM_REF, though.  */
 	  if (op && (i || !is_gimple_debug (stmt)))
 	    {
-	      tree *basep = &op;
+	      basep = &op;
 	      while (handled_component_p (*basep))
 		basep = &TREE_OPERAND (*basep, 0);
 	      if (TREE_CODE (*basep) == VAR_DECL
@@ -136,8 +137,13 @@ output_gimple_stmt (struct output_block *ob, gimple stmt)
 						  (TREE_TYPE (*basep)), 0));
 		  TREE_THIS_VOLATILE (*basep) = volatilep;
 		}
+	      else
+		basep = NULL;
 	    }
 	  stream_write_tree (ob, op, true);
+	  /* Restore the original base if we wrapped it inside a MEM_REF.  */
+	  if (basep)
+	    *basep = TREE_OPERAND (TREE_OPERAND (*basep, 0), 0);
 	}
       if (is_gimple_call (stmt))
 	{

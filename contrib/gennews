@@ -24,6 +24,7 @@
 
 website=http://gcc.gnu.org/
 files="
+    gcc-4.8/index.html gcc-4.8/changes.html
     gcc-4.7/index.html gcc-4.7/changes.html
     gcc-4.6/index.html gcc-4.6/changes.html
     gcc-4.5/index.html gcc-4.5/changes.html

@@ -133,27 +133,6 @@ __sync_add_and_fetch_8 (uint64* ptr, uint64 add)
 
 #endif
 
-// Called to initialize a new m (including the bootstrap m).
-void
-runtime_minit(void)
-{
-	byte* stack;
-	size_t stacksize;
-	stack_t ss;
-	sigset_t sigs;
-
-	// Initialize signal handling.
-	runtime_m()->gsignal = runtime_malg(32*1024, &stack, &stacksize);	// OS X wants >=8K, Linux >=2K
-	ss.ss_sp = stack;
-	ss.ss_flags = 0;
-	ss.ss_size = stacksize;
-	if(sigaltstack(&ss, nil) < 0)
-		*(int *)0xf1 = 0xf1;
-	if (sigemptyset(&sigs) != 0)
-		runtime_throw("sigemptyset");
-	sigprocmask(SIG_SETMASK, &sigs, nil);
-}
-
 uintptr
 runtime_memlimit(void)
 {

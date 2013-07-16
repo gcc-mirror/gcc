@@ -18,6 +18,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+TM_H += $(srcdir)/config/arm/arm-cores.def
+OPTIONS_H_EXTRA += $(srcdir)/config/arm/arm-cores.def
+
 # All md files - except for arm.md.
 # This list should be kept in alphabetical order and updated whenever an md
 # file is added or removed.

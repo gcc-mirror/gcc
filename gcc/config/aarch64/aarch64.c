@@ -2926,9 +2926,10 @@ aarch64_classify_address (struct aarch64_address_info *info,
     case CONST:
     case SYMBOL_REF:
     case LABEL_REF:
-      /* load literal: pc-relative constant pool entry.  */
+      /* load literal: pc-relative constant pool entry.  Only supported
+         for SI mode or larger.  */
       info->type = ADDRESS_SYMBOLIC;
-      if (outer_code != PARALLEL)
+      if (outer_code != PARALLEL && GET_MODE_SIZE (mode) >= 4)
 	{
 	  rtx sym, addend;
 
@@ -3086,7 +3087,7 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
       && y == const0_rtx
       && (code == EQ || code == NE || code == LT || code == GE)
-      && (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS))
+      && (GET_CODE (x) == PLUS || GET_CODE (x) == MINUS || GET_CODE (x) == AND))
     return CC_NZmode;
 
   /* A compare with a shifted operand.  Because of canonicalization,
@@ -3363,6 +3364,16 @@ aarch64_print_operand (FILE *f, rtx x, char code)
 	}
       asm_fprintf (f, "%sv%d", REGISTER_PREFIX,
 			       REGNO (x) - V0_REGNUM + (code - 'S'));
+      break;
+
+    case 'X':
+      /* Print integer constant in hex.  */
+      if (GET_CODE (x) != CONST_INT)
+	{
+	  output_operand_lossage ("invalid operand for '%%%c'", code);
+	  return;
+	}
+      asm_fprintf (f, "0x%wx", UINTVAL (x));
       break;
 
     case 'w':
@@ -3870,14 +3881,21 @@ aarch64_can_eliminate (const int from, const int to)
     }
   else
     {
-      /* If we decided that we didn't need a frame pointer but then used
-	 LR in the function, then we do need a frame pointer after all, so
-	 prevent this elimination to ensure a frame pointer is used.  */
+      /* If we decided that we didn't need a leaf frame pointer but then used
+	 LR in the function, then we'll want a frame pointer after all, so
+	 prevent this elimination to ensure a frame pointer is used.
 
+	 NOTE: the original value of flag_omit_frame_pointer gets trashed
+	 IFF flag_omit_leaf_frame_pointer is true, so we check the value
+	 of faked_omit_frame_pointer here (which is true when we always
+	 wish to keep non-leaf frame pointers but only wish to keep leaf frame
+	 pointers when LR is clobbered).  */
       if (from == FRAME_POINTER_REGNUM && to == STACK_POINTER_REGNUM
-	  && df_regs_ever_live_p (LR_REGNUM))
+	  && df_regs_ever_live_p (LR_REGNUM)
+	  && faked_omit_frame_pointer)
 	return false;
     }
+
   return true;
 }
 
@@ -5986,7 +6004,7 @@ static aarch64_simd_mangle_map_entry aarch64_simd_mangle_map[] = {
 
 /* Implement TARGET_MANGLE_TYPE.  */
 
-const char *
+static const char *
 aarch64_mangle_type (const_tree type)
 {
   /* The AArch64 ABI documents say that "__va_list" has to be
@@ -6586,7 +6604,7 @@ aarch64_simd_dup_constant (rtx vals)
    constants (for vec_init) or CONST_VECTOR, efficiently into a
    register.  Returns an RTX to copy into the register, or NULL_RTX
    for a PARALLEL that can not be converted into a CONST_VECTOR.  */
-rtx
+static rtx
 aarch64_simd_make_constant (rtx vals)
 {
   enum machine_mode mode = GET_MODE (vals);
@@ -7049,12 +7067,30 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 }
 
 static void
+aarch64_print_extension (void)
+{
+  const struct aarch64_option_extension *opt = NULL;
+
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    if ((aarch64_isa_flags & opt->flags_on) == opt->flags_on)
+      asm_fprintf (asm_out_file, "+%s", opt->name);
+
+  asm_fprintf (asm_out_file, "\n");
+}
+
+static void
 aarch64_start_file (void)
 {
   if (selected_arch)
-    asm_fprintf (asm_out_file, "\t.arch %s\n", selected_arch->name);
+    {
+      asm_fprintf (asm_out_file, "\t.arch %s", selected_arch->name);
+      aarch64_print_extension ();
+    }
   else if (selected_cpu)
-    asm_fprintf (asm_out_file, "\t.cpu %s\n", selected_cpu->name);
+    {
+      asm_fprintf (asm_out_file, "\t.cpu %s", selected_cpu->name);
+      aarch64_print_extension ();
+    }
   default_file_start();
 }
 
@@ -7088,7 +7124,7 @@ aarch64_float_const_representable_p (rtx x)
   /* This represents our current view of how many bits
      make up the mantissa.  */
   int point_pos = 2 * HOST_BITS_PER_WIDE_INT - 1;
-  int sign, exponent;
+  int exponent;
   unsigned HOST_WIDE_INT mantissa, mask;
   HOST_WIDE_INT m1, m2;
   REAL_VALUE_TYPE r, m;
@@ -7105,8 +7141,7 @@ aarch64_float_const_representable_p (rtx x)
       || REAL_VALUE_MINUS_ZERO (r))
     return false;
 
-  /* Extract sign and exponent.  */
-  sign = REAL_VALUE_NEGATIVE (r) ? 1 : 0;
+  /* Extract exponent.  */
   r = real_value_abs (&r);
   exponent = REAL_EXP (&r);
 

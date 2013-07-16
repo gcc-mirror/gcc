@@ -9,6 +9,7 @@ v4si vs (v4si a, v4si b)
 }
 
 /* The compound literal should be placed directly in the vec_perm.  */
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <a, b, { 0, 4, 1, 5 }>;" 1 "gimple"} } */
+/* Test is xfailed on 32-bit hppa*-*-* because target-callee-copies.  */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR <a, b, { 0, 4, 1, 5 }>;" 1 "gimple" { xfail { hppa*-*-* && { ! lp64 } } } } } */
 
 /* { dg-final { cleanup-tree-dump "gimple" } } */

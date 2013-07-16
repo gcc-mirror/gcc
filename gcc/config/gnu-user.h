@@ -104,7 +104,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    it to force everything into the executable.  And similarly for -ltsan.  */
 #if defined(HAVE_LD_STATIC_DYNAMIC)
 #undef LIBASAN_EARLY_SPEC
-#define LIBASAN_EARLY_SPEC "%{static-libasan:%{!shared:" \
+#define LIBASAN_EARLY_SPEC "%{!shared:libasan_preinit%O%s} " \
+  "%{static-libasan:%{!shared:" \
   LD_STATIC_OPTION " --whole-archive -lasan --no-whole-archive " \
   LD_DYNAMIC_OPTION "}}%{!static-libasan:-lasan}"
 #undef LIBTSAN_EARLY_SPEC

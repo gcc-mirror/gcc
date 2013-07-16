@@ -1,3 +1,22 @@
+2013-05-31  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	Backport from mainline:
+	2013-05-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* inclhack.def (solaris_pow_int_overload): Update comment.
+	Change guard to match <cmath>.
+	* fixincl.x: Regenerate.
+	* tests/base/iso/math_iso.h [SOLARIS_POW_INT_OVERLOAD_CHECK]:
+	Matching change.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2013-01-16  Alexandre Oliva <aoliva@redhat.com>
 
 	* inclhack.def (feraiseexcept_nosse_invalid): New.

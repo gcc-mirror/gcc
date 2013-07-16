@@ -3603,7 +3603,7 @@
 	(vec_select:V4SF
 	  (vec_concat:V8SF
 	    (match_operand:V4SF 1 "nonimmediate_operand" " 0,x,0,x,0")
-	    (match_operand:V4SF 2 "nonimmediate_operand" " x,x,m,x,x"))
+	    (match_operand:V4SF 2 "nonimmediate_operand" " x,x,m,m,x"))
 	  (parallel [(const_int 0)
 		     (const_int 1)
 		     (const_int 4)
@@ -5638,7 +5638,7 @@
   if (TARGET_SSE4_1)
     {
       if (CONSTANT_P (operands[2]))
-	operands[2] = force_const_mem (<MODE>mode, operands[2]);
+	operands[2] = validize_mem (force_const_mem (<MODE>mode, operands[2]));
       ix86_fixup_binary_operands_no_copy (MULT, <MODE>mode, operands);
     }
   else
@@ -9942,7 +9942,8 @@
 	 (match_operand:SI 2 "const_0_to_<sserotatemax>_operand" "n")))]
   "TARGET_XOP"
 {
-  operands[3] = GEN_INT ((<ssescalarnum> * 8) - INTVAL (operands[2]));
+  operands[3]
+    = GEN_INT (GET_MODE_BITSIZE (<ssescalarmode>mode) - INTVAL (operands[2]));
   return \"vprot<ssemodesuffix>\t{%3, %1, %0|%0, %1, %3}\";
 }
   [(set_attr "type" "sseishft")

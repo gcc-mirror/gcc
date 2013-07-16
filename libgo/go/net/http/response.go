@@ -46,6 +46,9 @@ type Response struct {
 	// The http Client and Transport guarantee that Body is always
 	// non-nil, even on responses without a body or responses with
 	// a zero-lengthed body.
+	//
+	// The Body is automatically dechunked if the server replied
+	// with a "chunked" Transfer-Encoding.
 	Body io.ReadCloser
 
 	// ContentLength records the length of the associated content.  The
@@ -198,9 +201,7 @@ func (r *Response) Write(w io.Writer) error {
 	}
 	protoMajor, protoMinor := strconv.Itoa(r.ProtoMajor), strconv.Itoa(r.ProtoMinor)
 	statusCode := strconv.Itoa(r.StatusCode) + " "
-	if strings.HasPrefix(text, statusCode) {
-		text = text[len(statusCode):]
-	}
+	text = strings.TrimPrefix(text, statusCode)
 	io.WriteString(w, "HTTP/"+protoMajor+"."+protoMinor+" "+statusCode+text+"\r\n")
 
 	// Process Body,ContentLength,Close,Trailer

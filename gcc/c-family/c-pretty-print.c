@@ -2311,6 +2311,8 @@ pp_c_pretty_printer_init (c_pretty_printer *pp)
 {
   pp->offset_list               = 0;
 
+  pp->flags			= 0;
+
   pp->declaration               = pp_c_declaration;
   pp->declaration_specifiers    = pp_c_declaration_specifiers;
   pp->declarator                = pp_c_declarator;

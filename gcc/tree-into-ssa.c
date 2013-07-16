@@ -969,6 +969,12 @@ insert_phi_nodes_for (tree var, bitmap phi_insertion_points, bool update_p)
       if (update_p)
 	mark_block_for_update (bb);
 
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "creating PHI node in block #%d for ", bb_index);
+	  print_generic_expr (dump_file, var, TDF_SLIM);
+	  fprintf (dump_file, "\n");
+	}
       phi = NULL;
 
       if (TREE_CODE (var) == SSA_NAME)
@@ -3040,6 +3046,17 @@ insert_updated_phi_nodes_for (tree var, bitmap_head *dfs, bitmap blocks,
   BITMAP_FREE (idf);
 }
 
+/* Sort symbols_to_rename after their DECL_UID.  */
+
+static int
+insert_updated_phi_nodes_compare_uids (const void *a, const void *b)
+{
+  const_tree syma = *(const const_tree *)a;
+  const_tree symb = *(const const_tree *)b;
+  if (DECL_UID (syma) == DECL_UID (symb))
+    return 0;
+  return DECL_UID (syma) < DECL_UID (symb) ? -1 : 1;
+}
 
 /* Given a set of newly created SSA names (NEW_SSA_NAMES) and a set of
    existing SSA names (OLD_SSA_NAMES), update the SSA form so that:
@@ -3250,6 +3267,7 @@ update_ssa (unsigned update_flags)
 	  sbitmap_free (tmp);
 	}
 
+      symbols_to_rename.qsort (insert_updated_phi_nodes_compare_uids);
       FOR_EACH_VEC_ELT (symbols_to_rename, i, sym)
 	insert_updated_phi_nodes_for (sym, dfs, blocks_to_update,
 	                              update_flags);

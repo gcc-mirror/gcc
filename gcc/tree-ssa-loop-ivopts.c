@@ -2574,26 +2574,20 @@ record_important_candidates (struct ivopts_data *data)
 static void
 alloc_use_cost_map (struct ivopts_data *data)
 {
-  unsigned i, size, s, j;
+  unsigned i, size, s;
 
   for (i = 0; i < n_iv_uses (data); i++)
     {
       struct iv_use *use = iv_use (data, i);
-      bitmap_iterator bi;
 
       if (data->consider_all_candidates)
 	size = n_iv_cands (data);
       else
 	{
-	  s = 0;
-	  EXECUTE_IF_SET_IN_BITMAP (use->related_cands, 0, j, bi)
-	    {
-	      s++;
-	    }
+	  s = bitmap_count_bits (use->related_cands);
 
 	  /* Round up to the power of two, so that moduling by it is fast.  */
-	  for (size = 1; size < s; size <<= 1)
-	    continue;
+	  size = s ? (1 << ceil_log2 (s)) : 1;
 	}
 
       use->n_map_members = size;
@@ -2731,10 +2725,13 @@ get_use_iv_cost (struct ivopts_data *data, struct iv_use *use,
   for (i = s; i < use->n_map_members; i++)
     if (use->cost_map[i].cand == cand)
       return use->cost_map + i;
-
+    else if (use->cost_map[i].cand == NULL)
+      return NULL;
   for (i = 0; i < s; i++)
     if (use->cost_map[i].cand == cand)
       return use->cost_map + i;
+    else if (use->cost_map[i].cand == NULL)
+      return NULL;
 
   return NULL;
 }

@@ -67,6 +67,7 @@ typedef struct vn_phi_s
   hashval_t hashcode;
   vec<tree> phiargs;
   basic_block block;
+  tree type;
   tree result;
 } *vn_phi_t;
 typedef const struct vn_phi_s *const_vn_phi_t;
@@ -122,17 +123,25 @@ typedef struct vn_constant_s
 enum vn_kind { VN_NONE, VN_CONSTANT, VN_NARY, VN_REFERENCE, VN_PHI };
 enum vn_kind vn_get_stmt_kind (gimple);
 
+/* Hash the type TYPE using bits that distinguishes it in the
+   types_compatible_p sense.  */
+
+static inline hashval_t
+vn_hash_type (tree type)
+{
+  return (INTEGRAL_TYPE_P (type)
+	  + (INTEGRAL_TYPE_P (type)
+	     ? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
+}
+
 /* Hash the constant CONSTANT with distinguishing type incompatible
    constants in the types_compatible_p sense.  */
 
 static inline hashval_t
 vn_hash_constant_with_type (tree constant)
 {
-  tree type = TREE_TYPE (constant);
   return (iterative_hash_expr (constant, 0)
-	  + INTEGRAL_TYPE_P (type)
-	  + (INTEGRAL_TYPE_P (type)
-	     ? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
+	  + vn_hash_type (TREE_TYPE (constant)));
 }
 
 /* Compare the constants C1 and C2 with distinguishing type incompatible

@@ -8,9 +8,12 @@
 
 package syscall
 
-import "unsafe"
+import (
+	"runtime"
+	"unsafe"
+)
 
-// Round the length of a raw sockaddr up to align it propery.
+// Round the length of a raw sockaddr up to align it properly.
 func cmsgAlignOf(salen int) int {
 	salign := int(sizeofPtr)
 	// NOTE: It seems like 64-bit Darwin kernel still requires 32-bit
@@ -18,8 +21,10 @@ func cmsgAlignOf(salen int) int {
 	if darwinAMD64 {
 		salign = 4
 	}
-	if salen == 0 {
-		return salign
+	// NOTE: Solaris always uses 32-bit alignment,
+	// cf. _CMSG_DATA_ALIGNMENT in <sys/socket.h>.
+	if runtime.GOOS == "solaris" {
+		salign = 4
 	}
 	return (salen + salign - 1) & ^(salign - 1)
 }
@@ -37,7 +42,7 @@ func CmsgSpace(datalen int) int {
 }
 
 func cmsgData(h *Cmsghdr) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(unsafe.Pointer(h)) + SizeofCmsghdr)
+	return unsafe.Pointer(uintptr(unsafe.Pointer(h)) + uintptr(cmsgAlignOf(SizeofCmsghdr)))
 }
 
 // SocketControlMessage represents a socket control message.
@@ -50,14 +55,15 @@ type SocketControlMessage struct {
 // messages.
 func ParseSocketControlMessage(b []byte) ([]SocketControlMessage, error) {
 	var msgs []SocketControlMessage
-	for len(b) >= CmsgLen(0) {
-		h, dbuf, err := socketControlMessageHeaderAndData(b)
+	i := 0
+	for i+CmsgLen(0) <= len(b) {
+		h, dbuf, err := socketControlMessageHeaderAndData(b[i:])
 		if err != nil {
 			return nil, err
 		}
-		m := SocketControlMessage{Header: *h, Data: dbuf[:int(h.Len)-cmsgAlignOf(SizeofCmsghdr)]}
+		m := SocketControlMessage{Header: *h, Data: dbuf}
 		msgs = append(msgs, m)
-		b = b[cmsgAlignOf(int(h.Len)):]
+		i += cmsgAlignOf(int(h.Len))
 	}
 	return msgs, nil
 }
@@ -67,7 +73,7 @@ func socketControlMessageHeaderAndData(b []byte) (*Cmsghdr, []byte, error) {
 	if h.Len < SizeofCmsghdr || int(h.Len) > len(b) {
 		return nil, nil, EINVAL
 	}
-	return h, b[cmsgAlignOf(SizeofCmsghdr):], nil
+	return h, b[cmsgAlignOf(SizeofCmsghdr):h.Len], nil
 }
 
 // UnixRights encodes a set of open file descriptors into a socket

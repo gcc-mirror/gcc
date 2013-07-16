@@ -251,17 +251,11 @@ namespace __profile
   // Tuple interface to class template array.
 
   /// tuple_size
-  template<typename _Tp> 
-    class tuple_size;
-
   template<typename _Tp, std::size_t _Nm>
     struct tuple_size<__profile::array<_Tp, _Nm>>
     : public integral_constant<std::size_t, _Nm> { };
 
   /// tuple_element
-  template<std::size_t _Int, typename _Tp>
-    class tuple_element;
-
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     struct tuple_element<_Int, __profile::array<_Tp, _Nm>>
     {

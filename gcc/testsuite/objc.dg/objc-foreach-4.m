@@ -1,17 +1,13 @@
 /* Test for valid objc objects used in a for-each statement. */
 /* FIXME: Run this test with the GNU runtime as well.  */
-/* { dg-do compile { target *-*-darwin* } } */
+/* { dg-do run { target *-*-darwin* } } */
 /* { dg-skip-if "" { *-*-* } { "-fgnu-runtime" } { "" } } */
 /* { dg-skip-if "No NeXT fast enum. pre-Darwin9" { *-*-darwin[5-8]* } { "-fnext-runtime" } { "" } } */
+/* { dg-additional-options "-framework Foundation" { target { *-*-darwin* } } } */
 
-#include <objc/objc-api.h>
-#include <Foundation/Foundation.h>
-
-#if defined (__NEXT_RUNTIME__) && defined (__LP64__)
-/* Fudge the class reference until we implement the compiler-side 
-   const strings.  */
-extern void *_NSConstantStringClassReference;
-#endif
+#include <Foundation/NSString.h>
+#include <Foundation/NSAutoreleasePool.h>
+#include <Foundation/NSArray.h>
 
 // gcc -o foo foo.m -framework Foundation
 

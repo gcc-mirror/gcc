@@ -101,6 +101,19 @@ ssa_undefined_value_p (tree t)
               && pointer_set_contains (possibly_undefined_names, t)));
 }
 
+/* Like ssa_undefined_value_p, but don't return true if TREE_NO_WARNING
+   is set on SSA_NAME_VAR.  */
+
+static inline bool
+uninit_undefined_value_p (tree t)
+{
+  if (!ssa_undefined_value_p (t))
+    return false;
+  if (SSA_NAME_VAR (t) && TREE_NO_WARNING (SSA_NAME_VAR (t)))
+    return false;
+  return true;
+}
+
 /* Checks if the operand OPND of PHI is defined by 
    another phi with one operand defined by this PHI, 
    but the rest operands are all defined. If yes, 
@@ -124,7 +137,7 @@ can_skip_redundant_opnd (tree opnd, gimple phi)
       tree op = gimple_phi_arg_def (op_def, i);
       if (TREE_CODE (op) != SSA_NAME)
         continue;
-      if (op != phi_def && ssa_undefined_value_p (op))
+      if (op != phi_def && uninit_undefined_value_p (op))
         return false;
     }
 
@@ -149,7 +162,7 @@ compute_uninit_opnds_pos (gimple phi)
     {
       tree op = gimple_phi_arg_def (phi, i);
       if (TREE_CODE (op) == SSA_NAME
-          && ssa_undefined_value_p (op)
+          && uninit_undefined_value_p (op)
           && !can_skip_redundant_opnd (op, phi))
         MASK_SET_BIT (uninit_opnds, i);
     }
@@ -229,6 +242,7 @@ find_control_equiv_block (basic_block bb)
 
 #define MAX_NUM_CHAINS 8
 #define MAX_CHAIN_LEN 5
+#define MAX_POSTDOM_CHECK 8
 
 /* Computes the control dependence chains (paths of edges)
    for DEP_BB up to the dominating basic block BB (the head node of a
@@ -269,6 +283,7 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
       basic_block cd_bb;
+      int post_dom_check = 0;
       if (e->flags & (EDGE_FAKE | EDGE_ABNORMAL))
         continue;
 
@@ -298,7 +313,8 @@ compute_control_dep_chain (basic_block bb, basic_block dep_bb,
             }
 
           cd_bb = find_pdom (cd_bb);
-          if (cd_bb == EXIT_BLOCK_PTR)
+          post_dom_check++;
+          if (cd_bb == EXIT_BLOCK_PTR || post_dom_check > MAX_POSTDOM_CHECK)
             break;
         }
       cur_cd_chain->pop ();
@@ -501,7 +517,7 @@ collect_phi_def_edges (gimple phi, basic_block cd_root,
                                  gimple_bb (def), cd_root))
             collect_phi_def_edges (def, cd_root, edges,
                                    visited_phis);
-          else if (!ssa_undefined_value_p (opnd))
+          else if (!uninit_undefined_value_p (opnd))
             {
               if (dump_file && (dump_flags & TDF_DETAILS))
                 {
@@ -1985,7 +2001,7 @@ execute_late_warn_uninitialized (void)
           {
             tree op = gimple_phi_arg_def (phi, i);
             if (TREE_CODE (op) == SSA_NAME
-                && ssa_undefined_value_p (op))
+                && uninit_undefined_value_p (op))
               {
                 worklist.safe_push (phi);
 		pointer_set_insert (added_to_worklist, phi);

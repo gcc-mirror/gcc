@@ -69,7 +69,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //@{
       /**
        *  These are standard types.  They permit a standardized way of
-       *  referring to names of (or names dependant on) the template
+       *  referring to names of (or names dependent on) the template
        *  parameters, which are specific to the implementation.
       */
       typedef _CharT                                 char_type;
@@ -112,13 +112,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  This allows you to write constructs such as
        *  <code>if (!a_stream) ...</code> and <code>while (a_stream) ...</code>
       */
-#if __cplusplus >= 201103L
-      explicit operator bool() const
-      { return !this->fail(); }
-#else
       operator void*() const
       { return this->fail() ? 0 : const_cast<basic_ios*>(this); }
-#endif
 
       bool
       operator!() const

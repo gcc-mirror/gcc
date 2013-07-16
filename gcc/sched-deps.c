@@ -352,6 +352,8 @@ delete_dep_node (dep_node_t n)
   gcc_assert (dep_link_is_detached_p (DEP_NODE_BACK (n))
 	      && dep_link_is_detached_p (DEP_NODE_FORW (n)));
 
+  XDELETE (DEP_REPLACE (DEP_NODE_DEP (n)));
+
   --dn_pool_diff;
 
   pool_free (dn_pool, n);
@@ -3317,9 +3319,9 @@ sched_analyze_insn (struct deps_desc *deps, rtx x, rtx insn)
             SET_REGNO_REG_SET (&deps->reg_last_in_use, i);
           }
 
-      /* Flush pending lists on jumps, but not on speculative checks.  */
-      if (JUMP_P (insn) && !(sel_sched_p ()
-                             && sel_insn_is_speculation_check (insn)))
+      /* Don't flush pending lists on speculative checks for
+	 selective scheduling.  */
+      if (!sel_sched_p () || !sel_insn_is_speculation_check (insn))
 	flush_pending_lists (deps, insn, true, true);
 
       reg_pending_barrier = NOT_A_BARRIER;

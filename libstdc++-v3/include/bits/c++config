@@ -84,6 +84,12 @@
 # define _GLIBCXX_DEPRECATED
 #endif
 
+// Macros for ABI tag attributes.
+#ifndef _GLIBCXX_ABI_TAG_CXX11
+# define _GLIBCXX_ABI_TAG_CXX11 __attribute ((__abi_tag__ ("cxx11")))
+#endif
+
+
 #if __cplusplus
 
 // Macro for constexpr, to support in mixed 03/0x mode.

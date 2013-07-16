@@ -381,7 +381,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         __try
           {
             for (; __first != __last; ++__first)
+#if __cplusplus >= 201103L
+	      emplace_back(*__first);
+#else
               push_back(*__first);
+#endif
           }
         __catch(...)
           {

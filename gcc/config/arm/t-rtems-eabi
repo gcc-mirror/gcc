@@ -1,8 +1,47 @@
 # Custom RTEMS EABI multilibs
 
-MULTILIB_OPTIONS    = mthumb march=armv6-m/march=armv7/march=armv7-m
-MULTILIB_DIRNAMES   = thumb armv6-m armv7 armv7-m
-MULTILIB_EXCEPTIONS = march=armv6-m march=armv7 march=armv7-m
-MULTILIB_MATCHES    =
-MULTILIB_EXCLUSIONS =
-MULTILIB_OSDIRNAMES =
+MULTILIB_OPTIONS  = mthumb march=armv6-m/march=armv7-a/march=armv7-r/march=armv7-m mfpu=neon mfloat-abi=hard
+MULTILIB_DIRNAMES = thumb armv6-m armv7-a armv7-r armv7-m neon hard
+
+# Enumeration of multilibs
+
+MULTILIB_EXCEPTIONS =
+MULTILIB_EXCEPTIONS += mthumb/march=armv6-m/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += mthumb/march=armv6-m/mfpu=neon
+MULTILIB_EXCEPTIONS += mthumb/march=armv6-m/mfloat-abi=hard
+# MULTILIB_EXCEPTIONS += mthumb/march=armv6-m
+# MULTILIB_EXCEPTIONS += mthumb/march=armv7-a/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-a/mfpu=neon
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-a/mfloat-abi=hard
+# MULTILIB_EXCEPTIONS += mthumb/march=armv7-a
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-r/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-r/mfpu=neon
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-r/mfloat-abi=hard
+# MULTILIB_EXCEPTIONS += mthumb/march=armv7-r
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-m/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-m/mfpu=neon
+MULTILIB_EXCEPTIONS += mthumb/march=armv7-m/mfloat-abi=hard
+# MULTILIB_EXCEPTIONS += mthumb/march=armv7-m
+MULTILIB_EXCEPTIONS += mthumb/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += mthumb/mfpu=neon
+MULTILIB_EXCEPTIONS += mthumb/mfloat-abi=hard
+# MULTILIB_EXCEPTIONS += mthumb
+MULTILIB_EXCEPTIONS += march=armv6-m/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv6-m/mfpu=neon
+MULTILIB_EXCEPTIONS += march=armv6-m/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv6-m
+MULTILIB_EXCEPTIONS += march=armv7-a/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv7-a/mfpu=neon
+MULTILIB_EXCEPTIONS += march=armv7-a/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv7-a
+MULTILIB_EXCEPTIONS += march=armv7-r/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv7-r/mfpu=neon
+MULTILIB_EXCEPTIONS += march=armv7-r/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv7-r
+MULTILIB_EXCEPTIONS += march=armv7-m/mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv7-m/mfpu=neon
+MULTILIB_EXCEPTIONS += march=armv7-m/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += march=armv7-m
+MULTILIB_EXCEPTIONS += mfpu=neon/mfloat-abi=hard
+MULTILIB_EXCEPTIONS += mfpu=neon
+MULTILIB_EXCEPTIONS += mfloat-abi=hard

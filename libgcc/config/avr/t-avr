@@ -18,7 +18,8 @@ LIB1ASMFUNCS = \
 	_udivmodsi4 \
 	_divmodsi4 \
 	_divdi3 _udivdi3 \
-	_muldi3 \
+	_muldi3 _muldi3_6 \
+	_mulsidi3 _umulsidi3 \
 	_udivmod64 \
 	_negsi2 _negdi2 \
 	_prologue \
@@ -69,6 +70,8 @@ LIB1ASMFUNCS += \
 	_mulhq3 _muluhq3 \
 	_mulha3 _muluha3 _muluha3_round \
 	_mulsa3 _mulusa3 \
+	_usmuluha3 _ssmulha3 \
+	_usmulusa3 _ssmulsa3 \
 	_divqq3 _udivuqq3 _divqq_helper \
 	_divhq3 _udivuhq3 \
 	_divha3 _udivuha3 \
@@ -260,3 +263,15 @@ LIB2FUNCS_EXCLUDE += \
 LIB2FUNCS_EXCLUDE += \
 	$(foreach func,_div,\
 	$(foreach mode,$(sdiv_modes) $(udiv_modes),$(func_X)))
+
+
+ssmul_modes =  HA  SA
+usmul_modes = UHA USA
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_usmul,\
+	$(foreach mode,$(usmul_modes),$(func_X)))
+
+LIB2FUNCS_EXCLUDE += \
+	$(foreach func,_ssmul,\
+	$(foreach mode,$(ssmul_modes),$(func_X)))

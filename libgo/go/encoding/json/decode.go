@@ -33,6 +33,10 @@ import (
 // the value pointed at by the pointer.  If the pointer is nil, Unmarshal
 // allocates a new value for it to point to.
 //
+// To unmarshal JSON into a struct, Unmarshal matches incoming object
+// keys to the keys used by Marshal (either the struct field name or its tag),
+// preferring an exact match but also accepting a case-insensitive match.
+//
 // To unmarshal JSON into an interface value, Unmarshal unmarshals
 // the JSON into the concrete value contained in the interface value.
 // If the interface value is nil, that is, has no concrete value stored in it,
@@ -51,17 +55,22 @@ import (
 // If no more serious errors are encountered, Unmarshal returns
 // an UnmarshalTypeError describing the earliest such error.
 //
+// When unmarshaling quoted strings, invalid UTF-8 or
+// invalid UTF-16 surrogate pairs are not treated as an error.
+// Instead, they are replaced by the Unicode replacement
+// character U+FFFD.
+//
 func Unmarshal(data []byte, v interface{}) error {
-	d := new(decodeState).init(data)
-
-	// Quick check for well-formedness.
+	// Check for well-formedness.
 	// Avoids filling out half a data structure
 	// before discovering a JSON syntax error.
+	var d decodeState
 	err := checkValid(data, &d.scan)
 	if err != nil {
 		return err
 	}
 
+	d.init(data)
 	return d.unmarshal(v)
 }
 
@@ -252,6 +261,16 @@ func (d *decodeState) value(v reflect.Value) {
 		}
 		d.scan.step(&d.scan, '"')
 		d.scan.step(&d.scan, '"')
+
+		n := len(d.scan.parseState)
+		if n > 0 && d.scan.parseState[n-1] == parseObjectKey {
+			// d.scan thinks we just read an object key; finish the object
+			d.scan.step(&d.scan, ':')
+			d.scan.step(&d.scan, '"')
+			d.scan.step(&d.scan, '"')
+			d.scan.step(&d.scan, '}')
+		}
+
 		return
 	}
 
@@ -730,6 +749,7 @@ func (d *decodeState) valueInterface() interface{} {
 	switch d.scanWhile(scanSkipSpace) {
 	default:
 		d.error(errPhase)
+		panic("unreachable")
 	case scanBeginArray:
 		return d.arrayInterface()
 	case scanBeginObject:
@@ -737,12 +757,11 @@ func (d *decodeState) valueInterface() interface{} {
 	case scanBeginLiteral:
 		return d.literalInterface()
 	}
-	panic("unreachable")
 }
 
 // arrayInterface is like array but returns []interface{}.
 func (d *decodeState) arrayInterface() []interface{} {
-	var v []interface{}
+	var v = make([]interface{}, 0)
 	for {
 		// Look ahead for ] - can only happen on first iteration.
 		op := d.scanWhile(scanSkipSpace)
@@ -849,7 +868,6 @@ func (d *decodeState) literalInterface() interface{} {
 		}
 		return n
 	}
-	panic("unreachable")
 }
 
 // getu4 decodes \uXXXX from the beginning of s, returning the hex value,

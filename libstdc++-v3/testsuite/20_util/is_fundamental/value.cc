@@ -46,6 +46,9 @@ void test01()
   VERIFY( (test_category<is_fundamental, double>(true)) );
   VERIFY( (test_category<is_fundamental, long double>(true)) );
 
+  // libstdc++/56609
+  VERIFY( (test_category<is_fundamental, std::nullptr_t>(true)) );
+
   // Sanity check.
   VERIFY( (test_category<is_fundamental, ClassType>(false)) );
 }

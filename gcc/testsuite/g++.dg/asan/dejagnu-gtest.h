@@ -1,3 +1,6 @@
+#ifndef DEJAGNU_GTEST_H
+#define DEJAGNU_GTEST_H 1
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -113,3 +116,5 @@ main (int argc, const char **argv)
     }
   return 0;
 }
+
+#endif

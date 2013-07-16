@@ -16,8 +16,49 @@
 
 load_lib copy-file.exp
 
+proc pch-init { args } {
+    global pch_unsupported_debug pch_unsupported
+
+    if [info exists pch_unsupported_debug] {
+	error "pch-init: pch_unsupported_debug is not empty as expected"
+    }
+    if [info exists pch_unsupported] {
+	error "pch-init: pch_unsupported is not empty as expected"
+    }
+
+    set result [check_compile pchtest object "int i;" "-g -x c-header"]
+    set pch_unsupported_debug \
+	[regexp "debug format cannot be used with pre-compiled headers" \
+		[lindex $result 0]]
+
+    set pch_unsupported 0
+    if { $pch_unsupported_debug } {
+	verbose -log "pch is unsupported with the debug info format"
+
+	set result [check_compile pchtest object "int i;" "-x c-header"]
+	    set pch_unsupported \
+		[regexp "debug format cannot be used with pre-compiled headers" \
+			[lindex $result 0]]
+    }
+}
+
+proc pch-finish { args } {
+    global pch_unsupported_debug pch_unsupported
+    unset pch_unsupported_debug
+    unset pch_unsupported
+}
+
+proc check_effective_target_pch_supported_debug { } {
+    global pch_unsupported_debug
+    if { $pch_unsupported_debug } {
+	return 0
+    }
+    return 1
+}
+
 proc dg-flags-pch { subdir test otherflags options suffix } {
     global runtests dg-do-what-default
+    global pch_unsupported_debug pch_unsupported
 
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $test] {
@@ -34,6 +75,13 @@ proc dg-flags-pch { subdir test otherflags options suffix } {
     # unlikely to make any difference to PCH.
     foreach flags $options {
 	verbose "Testing $nshort, $otherflags $flags" 1
+
+	if { $pch_unsupported != 0 \
+	     || ( $pch_unsupported_debug != 0 && [regexp " -g" " $flags"] ) } {
+	    verbose -log "$nshort unsupported because debug format conflicts with PCH"
+	    unsupported "$nshort $flags"
+	    continue
+	}
 
 	# For the header files, the default is to precompile.
 	set dg-do-what-default precompile
@@ -78,7 +126,8 @@ proc dg-flags-pch { subdir test otherflags options suffix } {
  		    fail "$nshort $flags assembly comparison"
 		}
 	    }
-	} else {
+	} elseif { $pch_unsupported_debug == 0 \
+		   || [llength [grep $test "{\[ \t\]\+dg-require-effective-target\[ \t\]\+pch_supported_debug\[ \t\]\+.*\[ \t\]\+}"]] > 0 } {
 	    verbose -log "pch file '$bname$suffix.gch' missing"
 	    fail "$nshort $flags"
 	    if { !$have_errs } {

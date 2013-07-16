@@ -16,7 +16,7 @@ foo (int a[], int b[], int i)
 }
 
 /* { dg-final { scan-tree-dump-times "\\* 4" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\+ 4" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\+ 8" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\+ 12" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 4|\\, 4>" 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 8|\\, 8>" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\+ 12|\\, 12>" 1 "optimized" } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */

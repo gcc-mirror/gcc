@@ -927,18 +927,7 @@
 #	  define HEAP_START DATAEND
 #       endif
 #	define PROC_VDB
-/*	HEURISTIC1 reportedly no longer works under 2.7.  		*/
-/*  	HEURISTIC2 probably works, but this appears to be preferable.	*/
-/*	Apparently USRSTACK is defined to be USERLIMIT, but in some	*/
-/* 	installations that's undefined.  We work around this with a	*/
-/*	gross hack:							*/
-#       include <sys/vmparam.h>
-#	ifdef USERLIMIT
-	  /* This should work everywhere, but doesn't.	*/
-#	  define STACKBOTTOM USRSTACK
-#       else
-#	  define HEURISTIC2
-#       endif
+#	define SOLARIS_STACKBOTTOM
 #	include <unistd.h>
 #       define GETPAGESIZE()  sysconf(_SC_PAGESIZE)
 		/* getpagesize() appeared to be missing from at least one */
@@ -1067,13 +1056,7 @@
   	extern ptr_t GC_SysVGetDataStart();
 #       define DATASTART GC_SysVGetDataStart(0x1000, _etext)
 #	define DATAEND (_end)
-/*	# define STACKBOTTOM ((ptr_t)(_start)) worked through 2.7,  	*/
-/*      but reportedly breaks under 2.8.  It appears that the stack	*/
-/* 	base is a property of the executable, so this should not break	*/
-/* 	old executables.						*/
-/*  	HEURISTIC2 probably works, but this appears to be preferable.	*/
-#       include <sys/vm.h>
-#	define STACKBOTTOM USRSTACK
+#	define SOLARIS_STACKBOTTOM
 /* At least in Solaris 2.5, PROC_VDB gives wrong values for dirty bits. */
 /* It appears to be fixed in 2.8 and 2.9.				*/
 #	ifdef SOLARIS25_PROC_VDB_BUG_FIXED

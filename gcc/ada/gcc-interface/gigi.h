@@ -177,10 +177,9 @@ extern tree choices_to_gnu (tree operand, Node_Id choices);
 /* Given GNAT_ENTITY, an object (constant, variable, parameter, exception)
    and GNU_TYPE, its corresponding GCC type, set Esize and Alignment to the
    size and alignment used by Gigi.  Prefer SIZE over TYPE_SIZE if non-null.
-   BY_REF is true if the object is used by reference and BY_DOUBLE_REF is
-   true if the object is used by double reference.  */
+   BY_REF is true if the object is used by reference.  */
 extern void annotate_object (Entity_Id gnat_entity, tree gnu_type, tree size,
-			     bool by_ref, bool by_double_ref);
+			     bool by_ref);
 
 /* Return the variant part of RECORD_TYPE, if any.  Otherwise return NULL.  */
 extern tree get_variant_part (tree record_type);
@@ -930,11 +929,10 @@ extern tree fill_vms_descriptor (tree gnu_type, tree gnu_expr,
 
 /* Convert GNU_EXPR, a pointer to a VMS descriptor, to GNU_TYPE, a regular
    pointer or fat pointer type.  GNU_EXPR_ALT_TYPE is the alternate (32-bit)
-   pointer type of GNU_EXPR.  BY_REF is true if the result is to be used by
-   reference.  GNAT_SUBPROG is the subprogram to which the VMS descriptor is
-   passed.  */
+   pointer type of GNU_EXPR.  GNAT_SUBPROG is the subprogram to which the
+   descriptor is passed.  */
 extern tree convert_vms_descriptor (tree gnu_type, tree gnu_expr,
-				    tree gnu_expr_alt_type, bool by_ref,
+				    tree gnu_expr_alt_type,
 				    Entity_Id gnat_subprog);
 
 /* Indicate that we need to take the address of T and that it therefore

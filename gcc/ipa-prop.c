@@ -678,13 +678,19 @@ parm_ref_data_preserved_p (struct param_analysis_info *parm_ainfo,
   bool modified = false;
   ao_ref refd;
 
-  gcc_checking_assert (gimple_vuse (stmt));
   if (parm_ainfo && parm_ainfo->ref_modified)
     return false;
 
-  ao_ref_init (&refd, ref);
-  walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
-		      NULL);
+  if (optimize)
+    {
+      gcc_checking_assert (gimple_vuse (stmt));
+      ao_ref_init (&refd, ref);
+      walk_aliased_vdefs (&refd, gimple_vuse (stmt), mark_modified, &modified,
+			  NULL);
+    }
+  else
+    modified = true;
+
   if (parm_ainfo && modified)
     parm_ainfo->ref_modified = true;
   return !modified;
@@ -1268,7 +1274,9 @@ determine_known_aggregate_parts (gimple call, tree arg,
 
       lhs = gimple_assign_lhs (stmt);
       rhs = gimple_assign_rhs1 (stmt);
-      if (!is_gimple_reg_type (rhs))
+      if (!is_gimple_reg_type (rhs)
+	  || TREE_CODE (lhs) == BIT_FIELD_REF
+	  || contains_bitfld_component_ref_p (lhs))
 	break;
 
       lhs_base = get_ref_base_and_extent (lhs, &lhs_offset, &lhs_size,
@@ -1359,6 +1367,7 @@ determine_known_aggregate_parts (gimple call, tree arg,
 	    {
 	      struct ipa_agg_jf_item item;
 	      item.offset = list->offset - arg_offset;
+	      gcc_assert ((item.offset % BITS_PER_UNIT) == 0);
 	      item.value = unshare_expr_without_location (list->constant);
 	      jfunc->agg.items->quick_push (item);
 	    }
@@ -2100,10 +2109,65 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
   if (TREE_CODE (target) == ADDR_EXPR)
     target = TREE_OPERAND (target, 0);
   if (TREE_CODE (target) != FUNCTION_DECL)
-    return NULL;
+    {
+      target = canonicalize_constructor_val (target, NULL);
+      if (!target || TREE_CODE (target) != FUNCTION_DECL)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Discovered direct call to non-function"
+				" in (%s/%i).\n",
+		     cgraph_node_name (ie->caller), ie->caller->uid);
+	  return NULL;
+	}
+    }
   callee = cgraph_get_node (target);
-  if (!callee)
-    return NULL;
+
+  /* Because may-edges are not explicitely represented and vtable may be external,
+     we may create the first reference to the object in the unit.  */
+  if (!callee || callee->global.inlined_to)
+    {
+      struct cgraph_node *first_clone = callee;
+
+      /* We are better to ensure we can refer to it.
+	 In the case of static functions we are out of luck, since we already	
+	 removed its body.  In the case of public functions we may or may
+	 not introduce the reference.  */
+      if (!canonicalize_constructor_val (target, NULL)
+	  || !TREE_PUBLIC (target))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Discovered call to a known target "
+		     "(%s/%i -> %s/%i) but can not refer to it. Giving up.\n",
+		     xstrdup (cgraph_node_name (ie->caller)), ie->caller->uid,
+		     xstrdup (cgraph_node_name (ie->callee)), ie->callee->uid);
+	  return NULL;
+	}
+
+      /* Create symbol table node.  Even if inline clone exists, we can not take
+	 it as a target of non-inlined call.  */
+      callee = cgraph_create_node (target);
+
+      /* OK, we previously inlined the function, then removed the offline copy and
+	 now we want it back for external call.  This can happen when devirtualizing
+	 while inlining function called once that happens after extern inlined and
+	 virtuals are already removed.  In this case introduce the external node
+	 and make it available for call.  */
+      if (first_clone)
+	{
+	  first_clone->clone_of = callee;
+	  callee->clones = first_clone;
+	  symtab_prevail_in_asm_name_hash ((symtab_node)callee);
+	  symtab_insert_node_to_hashtable ((symtab_node)callee);
+	  if (dump_file)
+	    fprintf (dump_file, "ipa-prop: Introduced new external node "
+		     "(%s/%i) and turned into root of the clone tree.\n",
+		     xstrdup (cgraph_node_name (callee)), callee->uid);
+	}
+      else if (dump_file)
+	fprintf (dump_file, "ipa-prop: Introduced new external node "
+		 "(%s/%i).\n",
+		 xstrdup (cgraph_node_name (callee)), callee->uid);
+    }
   ipa_check_create_node_params ();
 
   /* We can not make edges to inline clones.  It is bug that someone removed
@@ -3619,9 +3683,15 @@ write_agg_replacement_chain (struct output_block *ob, struct cgraph_node *node)
 
   for (av = aggvals; av; av = av->next)
     {
+      struct bitpack_d bp;
+
       streamer_write_uhwi (ob, av->offset);
       streamer_write_uhwi (ob, av->index);
       stream_write_tree (ob, av->value, true);
+
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, av->by_ref, 1);
+      streamer_write_bitpack (&bp);
     }
 }
 
@@ -3639,11 +3709,14 @@ read_agg_replacement_chain (struct lto_input_block *ib,
   for (i = 0; i <count; i++)
     {
       struct ipa_agg_replacement_value *av;
+      struct bitpack_d bp;
 
       av = ggc_alloc_ipa_agg_replacement_value ();
       av->offset = streamer_read_uhwi (ib);
       av->index = streamer_read_uhwi (ib);
       av->value = stream_read_tree (ib, data_in);
+      bp = streamer_read_bitpack (ib);
+      av->by_ref = bp_unpack_value (&bp, 1);
       av->next = aggvals;
       aggvals = av;
     }
@@ -3862,7 +3935,7 @@ ipcp_transform_function (struct cgraph_node *node)
 	  if (v->index == index
 	      && v->offset == offset)
 	    break;
-	if (!v)
+	if (!v || v->by_ref != by_ref)
 	  continue;
 
 	gcc_checking_assert (is_gimple_ip_invariant (v->value));

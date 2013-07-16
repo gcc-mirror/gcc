@@ -1561,8 +1561,10 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	 from inttypes.h, we generate a warning and treat the ud-suffix as a
 	 separate preprocessing token.  This approach is under discussion by
 	 the standards committee, and has been adopted as a conforming
-	 extension by other front ends such as clang. */
-      if (ISALPHA (*cur))
+	 extension by other front ends such as clang.
+         A special exception is made for the suffix 's' which will be
+	 standardized as a user-defined literal suffix for strings.  */
+      if (ISALPHA (*cur) && *cur != 's')
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix))
@@ -1572,7 +1574,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 				   "a space between literal and identifier");
 	}
       /* Grab user defined literal suffix.  */
-      else if (*cur == '_')
+      else if (ISIDST (*cur))
 	{
 	  type = cpp_userdef_string_add_type (type);
 	  ++cur;
@@ -1692,8 +1694,10 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 	 from inttypes.h, we generate a warning and treat the ud-suffix as a
 	 separate preprocessing token.  This approach is under discussion by
 	 the standards committee, and has been adopted as a conforming
-	 extension by other front ends such as clang. */
-      if (ISALPHA (*cur))
+	 extension by other front ends such as clang.
+         A special exception is made for the suffix 's' which will be
+	 standardized as a user-defined literal suffix for strings.  */
+      if (ISALPHA (*cur) && *cur != 's')
 	{
 	  /* Raise a warning, but do not consume subsequent tokens.  */
 	  if (CPP_OPTION (pfile, warn_literal_suffix))
@@ -1703,7 +1707,7 @@ lex_string (cpp_reader *pfile, cpp_token *token, const uchar *base)
 				   "a space between literal and identifier");
 	}
       /* Grab user defined literal suffix.  */
-      else if (*cur == '_')
+      else if (ISIDST (*cur))
 	{
 	  type = cpp_userdef_char_add_type (type);
 	  type = cpp_userdef_string_add_type (type);
@@ -2842,8 +2846,17 @@ new_buff (size_t len)
     len = MIN_BUFF_SIZE;
   len = CPP_ALIGN (len);
 
+#ifdef ENABLE_VALGRIND_CHECKING
+  /* Valgrind warns about uses of interior pointers, so put _cpp_buff
+     struct first.  */
+  size_t slen = CPP_ALIGN2 (sizeof (_cpp_buff), 2 * DEFAULT_ALIGNMENT);
+  base = XNEWVEC (unsigned char, len + slen);
+  result = (_cpp_buff *) base;
+  base += slen;
+#else
   base = XNEWVEC (unsigned char, len + sizeof (_cpp_buff));
   result = (_cpp_buff *) (base + len);
+#endif
   result->base = base;
   result->cur = base;
   result->limit = base + len;
@@ -2930,7 +2943,11 @@ _cpp_free_buff (_cpp_buff *buff)
   for (; buff; buff = next)
     {
       next = buff->next;
+#ifdef ENABLE_VALGRIND_CHECKING
+      free (buff);
+#else
       free (buff->base);
+#endif
     }
 }
 

@@ -1211,6 +1211,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	      == TYPE_MODE (TREE_TYPE (TREE_TYPE (arg0->op0))))
 	  && GET_MODE_CLASS (TYPE_MODE (op->type)) == MODE_INT
 	  && GET_MODE_SIZE (TYPE_MODE (op->type)) == 1
+	  && tree_int_cst_sgn (op->op0) >= 0
 	  && compare_tree_int (op->op0, TREE_STRING_LENGTH (arg0->op0)) < 0)
 	return build_int_cst_type (op->type,
 				   (TREE_STRING_POINTER (arg0->op0)
@@ -2401,10 +2402,8 @@ vn_phi_compute_hash (vn_phi_t vp1)
 
   /* If all PHI arguments are constants we need to distinguish
      the PHI node via its type.  */
-  type = TREE_TYPE (vp1->phiargs[0]);
-  result += (INTEGRAL_TYPE_P (type)
-	     + (INTEGRAL_TYPE_P (type)
-		? TYPE_PRECISION (type) + TYPE_UNSIGNED (type) : 0));
+  type = vp1->type;
+  result += vn_hash_type (type);
 
   FOR_EACH_VEC_ELT (vp1->phiargs, i, phi1op)
     {
@@ -2443,8 +2442,7 @@ vn_phi_eq (const void *p1, const void *p2)
 
       /* If the PHI nodes do not have compatible types
 	 they are not the same.  */
-      if (!types_compatible_p (TREE_TYPE (vp1->phiargs[0]),
-			       TREE_TYPE (vp2->phiargs[0])))
+      if (!types_compatible_p (vp1->type, vp2->type))
 	return false;
 
       /* Any phi in the same block will have it's arguments in the
@@ -2484,6 +2482,7 @@ vn_phi_lookup (gimple phi)
       def = TREE_CODE (def) == SSA_NAME ? SSA_VAL (def) : def;
       shared_lookup_phiargs.safe_push (def);
     }
+  vp1.type = TREE_TYPE (gimple_phi_result (phi));
   vp1.phiargs = shared_lookup_phiargs;
   vp1.block = gimple_bb (phi);
   vp1.hashcode = vn_phi_compute_hash (&vp1);
@@ -2516,6 +2515,7 @@ vn_phi_insert (gimple phi, tree result)
       args.safe_push (def);
     }
   vp1->value_id = VN_INFO (result)->value_id;
+  vp1->type = TREE_TYPE (gimple_phi_result (phi));
   vp1->phiargs = args;
   vp1->block = gimple_bb (phi);
   vp1->result = result;
@@ -3499,8 +3499,13 @@ visit_use (tree use)
 		     We can value number 2 calls to the same function with the
 		     same vuse and the same operands which are not subsequent
 		     the same, because there is no code in the program that can
-		     compare the 2 values.  */
-		  || gimple_vdef (stmt)))
+		     compare the 2 values...  */
+		  || (gimple_vdef (stmt)
+		      /* ... unless the call returns a pointer which does
+		         not alias with anything else.  In which case the
+			 information that the values are distinct are encoded
+			 in the IL.  */
+		      && !(gimple_call_return_flags (stmt) & ERF_NOALIAS))))
 	    changed = visit_reference_op_call (lhs, stmt);
 	  else
 	    changed = defs_to_varying (stmt);
@@ -3955,18 +3960,17 @@ free_scc_vn (void)
   XDELETE (optimistic_info);
 }
 
-/* Set *ID if we computed something useful in RESULT.  */
+/* Set *ID according to RESULT.  */
 
 static void
 set_value_id_for_result (tree result, unsigned int *id)
 {
-  if (result)
-    {
-      if (TREE_CODE (result) == SSA_NAME)
-	*id = VN_INFO (result)->value_id;
-      else if (is_gimple_min_invariant (result))
-	*id = get_or_alloc_constant_value_id (result);
-    }
+  if (result && TREE_CODE (result) == SSA_NAME)
+    *id = VN_INFO (result)->value_id;
+  else if (result && is_gimple_min_invariant (result))
+    *id = get_or_alloc_constant_value_id (result);
+  else
+    *id = get_next_value_id ();
 }
 
 /* Set the value ids in the valid hash tables.  */

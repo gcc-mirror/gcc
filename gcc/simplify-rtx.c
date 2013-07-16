@@ -242,7 +242,8 @@ avoid_constant_pool_reference (rtx x)
       /* If we're accessing the constant in a different mode than it was
          originally stored, attempt to fix that up via subreg simplifications.
          If that fails we have no choice but to return the original memory.  */
-      if (offset != 0 || cmode != GET_MODE (x))
+      if ((offset != 0 || cmode != GET_MODE (x))
+	  && offset >= 0 && offset < GET_MODE_SIZE (cmode))
         {
           rtx tem = simplify_subreg (GET_MODE (x), c, cmode, offset);
           if (tem && CONSTANT_P (tem))
@@ -756,8 +757,17 @@ simplify_truncation (enum machine_mode mode, rtx op,
       && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (op)))
       && GET_CODE (SUBREG_REG (op)) == TRUNCATE
       && subreg_lowpart_p (op))
-    return simplify_gen_unary (TRUNCATE, mode, XEXP (SUBREG_REG (op), 0),
-			       GET_MODE (XEXP (SUBREG_REG (op), 0)));
+    {
+      rtx inner = XEXP (SUBREG_REG (op), 0);
+      if (GET_MODE_PRECISION (mode)
+	  <= GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op))))
+	return simplify_gen_unary (TRUNCATE, mode, inner, GET_MODE (inner));
+      else
+	/* If subreg above is paradoxical and C is narrower
+	   than A, return (subreg:A (truncate:C X) 0).  */
+	return simplify_gen_subreg (mode, SUBREG_REG (op),
+				    GET_MODE (SUBREG_REG (op)), 0);
+    }
 
   /* (truncate:A (truncate:B X)) is (truncate:A X).  */
   if (GET_CODE (op) == TRUNCATE)
@@ -2774,6 +2784,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
           HOST_WIDE_INT mask = INTVAL (trueop1) << count;
 
           if (mask >> count == INTVAL (trueop1)
+	      && trunc_int_for_mode (mask, mode) == mask
               && (mask & nonzero_bits (XEXP (op0, 0), mode)) == 0)
 	    return simplify_gen_binary (ASHIFTRT, mode,
 					plus_constant (mode, XEXP (op0, 0),

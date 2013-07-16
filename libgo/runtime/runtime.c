@@ -10,14 +10,27 @@
 #include "array.h"
 #include "go-panic.h"
 
+// The GOTRACEBACK environment variable controls the
+// behavior of a Go program that is crashing and exiting.
+//	GOTRACEBACK=0   suppress all tracebacks
+//	GOTRACEBACK=1   default behavior - show tracebacks but exclude runtime frames
+//	GOTRACEBACK=2   show tracebacks including runtime frames
+//	GOTRACEBACK=crash   show tracebacks including runtime frames, then crash (core dump etc)
 int32
-runtime_gotraceback(void)
+runtime_gotraceback(bool *crash)
 {
 	const byte *p;
 
+	if(crash != nil)
+		*crash = false;
 	p = runtime_getenv("GOTRACEBACK");
 	if(p == nil || p[0] == '\0')
 		return 1;	// default is on
+	if(runtime_strcmp((const char *)p, "crash") == 0) {
+		if(crash != nil)
+			*crash = true;
+		return 2;	// extra information
+	}
 	return runtime_atoi(p);
 }
 
@@ -43,6 +56,11 @@ runtime_progname()
 {
   return argc == 0 ? nil : argv[0];
 }
+
+// Information about what cpu features are available.
+// Set on startup in asm_{x86/amd64}.s.
+uint32 runtime_cpuid_ecx;
+uint32 runtime_cpuid_edx;
 
 void
 runtime_goargs(void)
@@ -90,6 +108,52 @@ runtime_atoi(const byte *p)
 	return n;
 }
 
+static struct root_list runtime_roots =
+{ nil,
+  { { &syscall_Envs, sizeof syscall_Envs },
+    { &os_Args, sizeof os_Args },
+    { nil, 0 } },
+};
+
+static void
+TestAtomic64(void)
+{
+	uint64 z64, x64;
+
+	z64 = 42;
+	x64 = 0;
+	PREFETCH(&z64);
+	if(runtime_cas64(&z64, &x64, 1))
+		runtime_throw("cas64 failed");
+	if(x64 != 42)
+		runtime_throw("cas64 failed");
+	if(!runtime_cas64(&z64, &x64, 1))
+		runtime_throw("cas64 failed");
+	if(x64 != 42 || z64 != 1)
+		runtime_throw("cas64 failed");
+	if(runtime_atomicload64(&z64) != 1)
+		runtime_throw("load64 failed");
+	runtime_atomicstore64(&z64, (1ull<<40)+1);
+	if(runtime_atomicload64(&z64) != (1ull<<40)+1)
+		runtime_throw("store64 failed");
+	if(runtime_xadd64(&z64, (1ull<<40)+1) != (2ull<<40)+2)
+		runtime_throw("xadd64 failed");
+	if(runtime_atomicload64(&z64) != (2ull<<40)+2)
+		runtime_throw("xadd64 failed");
+	if(runtime_xchg64(&z64, (3ull<<40)+3) != (2ull<<40)+2)
+		runtime_throw("xchg64 failed");
+	if(runtime_atomicload64(&z64) != (3ull<<40)+3)
+		runtime_throw("xchg64 failed");
+}
+
+void
+runtime_check(void)
+{
+	__go_register_gc_roots(&runtime_roots);
+
+	TestAtomic64();
+}
+
 uint32
 runtime_fastrand1(void)
 {
@@ -103,19 +167,6 @@ runtime_fastrand1(void)
 		x ^= 0x88888eefUL;
 	m->fastrand = x;
 	return x;
-}
-
-static struct root_list runtime_roots =
-{ nil,
-  { { &syscall_Envs, sizeof syscall_Envs },
-    { &os_Args, sizeof os_Args },
-    { nil, 0 } },
-};
-
-void
-runtime_check(void)
-{
-	__go_register_gc_roots(&runtime_roots);
 }
 
 int64
@@ -139,7 +190,7 @@ runtime_showframe(String s, bool current)
 	if(current && runtime_m()->throwing > 0)
 		return 1;
 	if(traceback < 0)
-		traceback = runtime_gotraceback();
+		traceback = runtime_gotraceback(nil);
 	return traceback > 1 || (__builtin_memchr(s.str, '.', s.len) != nil && __builtin_memcmp(s.str, "runtime.", 7) != 0);
 }
 

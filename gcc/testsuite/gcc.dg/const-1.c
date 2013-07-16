@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target nonpic } } */
 /* { dg-options "-O2 -Wsuggest-attribute=const" } */
 
 extern int extern_const(int a) __attribute__ ((const));

@@ -43,8 +43,8 @@
 #ifndef _ALLOCATOR_H
 #define _ALLOCATOR_H 1
 
-// Define the base class to std::allocator.
-#include <bits/c++allocator.h>
+#include <bits/c++allocator.h> // Define the base class to std::allocator.
+#include <bits/memoryfwd.h>
 #if __cplusplus >= 201103L
 #include <type_traits>
 #endif
@@ -54,16 +54,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   * @defgroup allocators Allocators
-   * @ingroup memory
-   *
-   * Classes encapsulating memory operations.
-   *
-   * @{
+   *  @addtogroup allocators
+   *  @{
    */
-
-  template<typename _Tp>
-    class allocator;
 
   /// allocator<void> specialization.
   template<>
@@ -150,13 +143,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
     { return false; }
 
-  /// Declare uses_allocator so it can be specialized in \<queue\> etc.
-  template<typename, typename>
-    struct uses_allocator;
-
-  /**
-   * @}
-   */
+  /// @} group allocator
 
   // Inhibit implicit instantiations for required instantiations,
   // which are defined via explicit instantiations elsewhere.

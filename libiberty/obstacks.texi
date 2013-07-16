@@ -1,5 +1,5 @@
-@node Obstacks,Licenses,Functions,Top
-@chapter Obstacks
+@node Obstacks
+@subsection Obstacks
 @cindex obstacks
 
 An @dfn{obstack} is a pool of memory containing a stack of objects.  You
@@ -15,25 +15,25 @@ the objects are usually small.  And the only space overhead per object is
 the padding needed to start each object on a suitable boundary.
 
 @menu
-* Creating Obstacks::           How to declare an obstack in your program.
-* Preparing for Obstacks::      Preparations needed before you can
-                                use obstacks.
+* Creating Obstacks::		How to declare an obstack in your program.
+* Preparing for Obstacks::	Preparations needed before you can
+				 use obstacks.
 * Allocation in an Obstack::    Allocating objects in an obstack.
 * Freeing Obstack Objects::     Freeing objects in an obstack.
-* Obstack Functions::           The obstack functions are both
-                                functions and macros.
+* Obstack Functions::		The obstack functions are both
+				 functions and macros.
 * Growing Objects::             Making an object bigger by stages.
-* Extra Fast Growing::          Extra-high-efficiency (though more
-                                complicated) growing objects.
+* Extra Fast Growing::		Extra-high-efficiency (though more
+				 complicated) growing objects.
 * Status of an Obstack::        Inquiries about the status of an obstack.
 * Obstacks Data Alignment::     Controlling alignment of objects in obstacks.
 * Obstack Chunks::              How obstacks obtain and release chunks;
-                                efficiency considerations.
+				 efficiency considerations.
 * Summary of Obstacks::
 @end menu
 
 @node Creating Obstacks
-@section Creating Obstacks
+@subsubsection Creating Obstacks
 
 The utilities for manipulating obstacks are declared in the header
 file @file{obstack.h}.
@@ -74,7 +74,7 @@ directly or indirectly.  You must also supply a function to free a chunk.
 These matters are described in the following section.
 
 @node Preparing for Obstacks
-@section Preparing for Using Obstacks
+@subsubsection Preparing for Using Obstacks
 
 Each source file in which you plan to use the obstack functions
 must include the header file @file{obstack.h}, like this:
@@ -160,7 +160,7 @@ obstack_alloc_failed_handler = &my_obstack_alloc_failed;
 @end defvar
 
 @node Allocation in an Obstack
-@section Allocation in an Obstack
+@subsubsection Allocation in an Obstack
 @cindex allocation (obstacks)
 
 The most direct way to allocate an object in an obstack is with
@@ -233,7 +233,7 @@ Contrast this with the previous example of @code{savestring} using
 @code{malloc} (@pxref{Basic Allocation, , , libc, The GNU C Library Reference Manual}).
 
 @node Freeing Obstack Objects
-@section Freeing Objects in an Obstack
+@subsubsection Freeing Objects in an Obstack
 @cindex freeing (obstacks)
 
 To free an object allocated in an obstack, use the function
@@ -265,7 +265,7 @@ frees the chunk (@pxref{Preparing for Obstacks}).  Then other
 obstacks, or non-obstack allocation, can reuse the space of the chunk.
 
 @node Obstack Functions
-@section Obstack Functions and Macros
+@subsubsection Obstack Functions and Macros
 @cindex macros
 
 The interfaces for using obstacks may be defined either as functions or
@@ -321,7 +321,7 @@ various language extensions in GNU C permit defining the macros so as to
 compute each argument only once.
 
 @node Growing Objects
-@section Growing Objects
+@subsubsection Growing Objects
 @cindex growing objects (in obstacks)
 @cindex changing the size of a block (obstacks)
 
@@ -435,7 +435,7 @@ the current object smaller.  Just don't try to shrink it beyond zero
 length---there's no telling what will happen if you do that.
 
 @node Extra Fast Growing
-@section Extra Fast Growing Objects
+@subsubsection Extra Fast Growing Objects
 @cindex efficiency and obstacks
 
 The usual functions for growing objects incur overhead for checking
@@ -538,7 +538,7 @@ add_string (struct obstack *obstack, const char *ptr, int len)
 @end smallexample
 
 @node Status of an Obstack
-@section Status of an Obstack
+@subsubsection Status of an Obstack
 @cindex obstack status
 @cindex status of obstack
 
@@ -580,12 +580,13 @@ obstack_next_free (@var{obstack-ptr}) - obstack_base (@var{obstack-ptr})
 @end deftypefun
 
 @node Obstacks Data Alignment
-@section Alignment of Data in Obstacks
+@subsubsection Alignment of Data in Obstacks
 @cindex alignment (in obstacks)
 
 Each obstack has an @dfn{alignment boundary}; each object allocated in
 the obstack automatically starts on an address that is a multiple of the
-specified boundary.  By default, this boundary is 4 bytes.
+specified boundary.  By default, this boundary is aligned so that
+the object can hold any type of data.
 
 To access an obstack's alignment boundary, use the macro
 @code{obstack_alignment_mask}, whose function prototype looks like
@@ -597,7 +598,9 @@ this:
 The value is a bit mask; a bit that is 1 indicates that the corresponding
 bit in the address of an object should be 0.  The mask value should be one
 less than a power of 2; the effect is that all object addresses are
-multiples of that power of 2.  The default value of the mask is 3, so that
+multiples of that power of 2.  The default value of the mask is a value
+that allows aligned objects to hold any type of data: for example, if
+its value is 3, any type of data can be stored at locations whose
 addresses are multiples of 4.  A mask value of 0 means an object can start
 on any multiple of 1 (that is, no alignment is required).
 
@@ -620,7 +623,7 @@ This will finish a zero-length object and then do proper alignment for
 the next object.
 
 @node Obstack Chunks
-@section Obstack Chunks
+@subsubsection Obstack Chunks
 @cindex efficiency of chunks
 @cindex chunks
 
@@ -676,7 +679,7 @@ if (obstack_chunk_size (obstack_ptr) < @var{new-chunk-size})
 @end smallexample
 
 @node Summary of Obstacks
-@section Summary of Obstack Functions
+@subsubsection Summary of Obstack Functions
 
 Here is a summary of all the functions associated with obstacks.  Each
 takes the address of an obstack (@code{struct obstack *}) as its first

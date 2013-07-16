@@ -776,6 +776,9 @@ case "${target}" in
   sh*-*-pe|mips*-*-pe|*arm-wince-pe)
     libgloss_dir=wince
     ;;
+  aarch64*-*-* )
+    libgloss_dir=aarch64
+    ;;
   arm*-*-*)
     libgloss_dir=arm
     ;;
@@ -2844,6 +2847,13 @@ target_configargs="$target_configargs ${tbaseargs}"
 if test x${is_cross_compiler} = xyes ; then
   target_configargs="--with-cross-host=${host_noncanonical} ${target_configargs}"
 fi
+
+# Pass --with-sysroot on darwin without SDK in /
+case "${target}" in
+  x86_64-*-darwin1[[3-9]]*)
+    host_configargs="--with-sysroot=\"`xcrun --show-sdk-path`\"  ${host_configargs}"
+    ;;
+esac
 
 # Default to --enable-multilib.
 if test x${enable_multilib} = x ; then

@@ -159,6 +159,10 @@ struct GTY ((chain_next ("%h.next"))) loop {
   /* True if the loop can be parallel.  */
   bool can_be_parallel;
 
+  /* True if -Waggressive-loop-optimizations warned about this loop
+     already.  */
+  bool warned_aggressive_loop_optimizations;
+
   /* An integer estimation of the number of iterations.  Estimate_state
      describes what is the state of the estimation.  */
   enum loop_estimation estimate_state;
@@ -216,7 +220,7 @@ extern void flow_loop_dump (const struct loop *, FILE *,
 struct loop *alloc_loop (void);
 extern void flow_loop_free (struct loop *);
 int flow_loop_nodes_find (basic_block, struct loop *);
-void fix_loop_structure (bitmap changed_bbs);
+unsigned fix_loop_structure (bitmap changed_bbs);
 bool mark_irreducible_loops (void);
 void release_recorded_exits (void);
 void record_loop_exits (void);

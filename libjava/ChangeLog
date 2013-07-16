@@ -1,3 +1,24 @@
+2013-06-19  Matthias Klose  <doko@ubuntu.com>
+
+	* pkg.m4 (PKG_CHECK_MODULES): Use AC_PATH_TOOL to check for pkg-config.
+	* classpath/m4/pkg.m4 (PKG_CHECK_MODULES): Likewise.
+	* configure: Regenerate.
+	* classpath/configure: Regenerate.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-12  Andrew John Hughes  <gnu.andrew@redhat.com>
+
+	* include/posix-threads.h:
+	(_Jv_MutexCheckMonitor(_Jv_Mutex_t)): Use
+	pthread_equal rather than !=.
+
 2013-01-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* Makefile.am (lib_gnu_awt_xlib_la_LDFLAGS): Replace

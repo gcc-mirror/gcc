@@ -141,6 +141,8 @@ pch_init (void)
 
   if (pch_ready_to_save_cpp_state)
     pch_cpp_save_state ();
+
+  XDELETE (target_validity);
 }
 
 /* Whether preprocessor state has been saved in a PCH file.  */

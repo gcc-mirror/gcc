@@ -1,4 +1,4 @@
-// { dg-do run { target { i?86-*-darwin* x86_64-*-darwin* } } }
+// { dg-do run }
 
 struct c18 { 
   virtual void bar() { }

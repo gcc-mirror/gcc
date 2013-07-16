@@ -82,8 +82,6 @@ License; for more information, see @ref{Library Copying}.
 
 * Functions::          Available functions, macros, and global variables.
 
-* Obstacks::           Object Stacks.
-
 * Licenses::           The various licenses under which libiberty sources are
                        distributed.
 
@@ -243,8 +241,7 @@ central location from which to use, maintain, and distribute them.
 * Obstacks::                     Stacks of arbitrary objects.
 @end menu
 
-@c This is generated from the glibc manual using a make-obstacks-texi.sh
-@c script of Phil's.  Hope it's accurate.
+@c This is generated from the glibc manual using contrib/make-obstacks-texi.pl
 @include obstacks.texi
 
 @node Functions

@@ -591,6 +591,9 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 /* Register save slot alignment.  */
 #define DWARF_CIE_DATA_ALIGNMENT (-UNITS_PER_LONG)
 
+/* Let the assembler generate debug line info.  */
+#define DWARF2_ASM_LINE_DEBUG_INFO 1
+
 
 /* Frame registers.  */
 

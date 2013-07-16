@@ -23,7 +23,7 @@ target_alias=${target_alias-$host_alias}
 AC_SUBST(target_alias)
 GCC_LIBSTDCXX_RAW_CXX_FLAGS
 
-AM_INIT_AUTOMAKE(foreign)
+AM_INIT_AUTOMAKE(foreign no-dist)
 AM_ENABLE_MULTILIB(, ..)
 AM_MAINTAINER_MODE
 

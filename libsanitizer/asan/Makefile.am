@@ -12,6 +12,7 @@ AM_CXXFLAGS += $(LIBSTDCXX_RAW_CXX_CXXFLAGS)
 ACLOCAL_AMFLAGS = -I $(top_srcdir) -I $(top_srcdir)/config
 
 toolexeclib_LTLIBRARIES = libasan.la
+nodist_toolexeclib_HEADERS = libasan_preinit.o
 
 asan_files = \
 	asan_allocator.cc \
@@ -37,7 +38,6 @@ asan_files = \
 
 libasan_la_SOURCES = $(asan_files)
 if USING_MAC_INTERPOSE
-libasan_la_SOURCES += dynamic/asan_interceptors_dynamic.cc
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la
 else
 libasan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la
@@ -45,6 +45,9 @@ endif
 libasan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 
 libasan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
+
+libasan_preinit.o: asan_preinit.o
+	cp $< $@
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
 # values defined in terms of make variables, as is the case for CC and

@@ -1024,7 +1024,8 @@ check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 			     bool type_must_agree, char *errmsg, int err_len)
 {
   /* Check type and rank.  */
-  if (type_must_agree && !compare_type_rank (s2, s1))
+  if (type_must_agree &&
+      (!compare_type_rank (s1, s2) || !compare_type_rank (s2, s1)))
     {
       snprintf (errmsg, err_len, "Type/rank mismatch in argument '%s'",
 		s1->name);
@@ -1182,8 +1183,15 @@ check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
 {
   gfc_symbol *r1, *r2;
 
-  r1 = s1->result ? s1->result : s1;
-  r2 = s2->result ? s2->result : s2;
+  if (s1->ts.interface && s1->ts.interface->result)
+    r1 = s1->ts.interface->result;
+  else
+    r1 = s1->result ? s1->result : s1;
+
+  if (s2->ts.interface && s2->ts.interface->result)
+    r2 = s2->ts.interface->result;
+  else
+    r2 = s2->result ? s2->result : s2;
 
   if (r1->ts.type == BT_UNKNOWN)
     return SUCCESS;

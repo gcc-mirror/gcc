@@ -69,6 +69,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator=(bool __i) noexcept
     { return _M_base.operator=(__i); }
 
+    bool
+    operator=(bool __i) volatile noexcept
+    { return _M_base.operator=(__i); }
+
     operator bool() const noexcept
     { return _M_base.load(); }
 

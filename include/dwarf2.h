@@ -376,6 +376,20 @@ enum dwarf_macro_record_type
 
 #define DW_EH_PE_indirect	0x80
 
+/* Codes for the debug sections in a dwarf package (.dwp) file.
+   Extensions for Fission.  See http://gcc.gnu.org/wiki/DebugFissionDWP.  */
+enum dwarf_sect
+  {
+    DW_SECT_INFO = 1,
+    DW_SECT_TYPES = 2,
+    DW_SECT_ABBREV = 3,
+    DW_SECT_LINE = 4,
+    DW_SECT_LOC = 5,
+    DW_SECT_STR_OFFSETS = 6,
+    DW_SECT_MACINFO = 7,
+    DW_SECT_MACRO = 8,
+    DW_SECT_MAX = 8
+  };
 
 #ifdef __cplusplus
 extern "C" {

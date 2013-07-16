@@ -18,6 +18,9 @@
 #  along with GCC; see the file COPYING3.  If not see
 #  <http://www.gnu.org/licenses/>.
 
+TM_H += $(srcdir)/config/aarch64/aarch64-cores.def
+OPTIONS_H_EXTRA += $(srcdir)/config/aarch64/aarch64-cores.def
+
 $(srcdir)/config/aarch64/aarch64-tune.md: $(srcdir)/config/aarch64/gentune.sh \
 	$(srcdir)/config/aarch64/aarch64-cores.def
 	$(SHELL) $(srcdir)/config/aarch64/gentune.sh \
@@ -27,6 +30,7 @@ $(srcdir)/config/aarch64/aarch64-tune.md: $(srcdir)/config/aarch64/gentune.sh \
 aarch64-builtins.o: $(srcdir)/config/aarch64/aarch64-builtins.c $(CONFIG_H) \
   $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) expr.h $(TM_P_H) $(RECOG_H) langhooks.h \
-  $(DIAGNOSTIC_CORE_H) $(OPTABS_H)
+  $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
+  $(srcdir)/config/aarch64/aarch64-simd-builtins.def
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/aarch64/aarch64-builtins.c

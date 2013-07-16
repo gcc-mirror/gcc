@@ -1188,7 +1188,7 @@ clear_decl_specs (cp_decl_specifier_seq *decl_specs)
    VAR_DECLs or FUNCTION_DECLs) should do that directly.  */
 
 static cp_declarator *make_call_declarator
-  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, tree, tree);
+  (cp_declarator *, tree, cp_cv_quals, cp_virt_specifiers, cp_ref_qualifier, tree, tree);
 static cp_declarator *make_array_declarator
   (cp_declarator *, tree);
 static cp_declarator *make_pointer_declarator
@@ -1367,6 +1367,7 @@ make_call_declarator (cp_declarator *target,
 		      tree parms,
 		      cp_cv_quals cv_qualifiers,
 		      cp_virt_specifiers virt_specifiers,
+		      cp_ref_qualifier ref_qualifier,
 		      tree exception_specification,
 		      tree late_return_type)
 {
@@ -1377,6 +1378,7 @@ make_call_declarator (cp_declarator *target,
   declarator->u.function.parameters = parms;
   declarator->u.function.qualifiers = cv_qualifiers;
   declarator->u.function.virt_specifiers = virt_specifiers;
+  declarator->u.function.ref_qualifier = ref_qualifier;
   declarator->u.function.exception_specification = exception_specification;
   declarator->u.function.late_return_type = late_return_type;
   if (target)
@@ -1802,9 +1804,9 @@ static tree cp_parser_nested_name_specifier
 static tree cp_parser_qualifying_entity
   (cp_parser *, bool, bool, bool, bool, bool);
 static tree cp_parser_postfix_expression
-  (cp_parser *, bool, bool, bool, cp_id_kind *);
+  (cp_parser *, bool, bool, bool, bool, cp_id_kind *);
 static tree cp_parser_postfix_open_square_expression
-  (cp_parser *, tree, bool);
+  (cp_parser *, tree, bool, bool);
 static tree cp_parser_postfix_dot_deref_expression
   (cp_parser *, enum cpp_ttype, tree, bool, cp_id_kind *, location_t);
 static vec<tree, va_gc> *cp_parser_parenthesized_expression_list
@@ -1832,7 +1834,7 @@ static vec<tree, va_gc> *cp_parser_new_initializer
 static tree cp_parser_delete_expression
   (cp_parser *);
 static tree cp_parser_cast_expression
-  (cp_parser *, bool, bool, cp_id_kind *);
+  (cp_parser *, bool, bool, bool, cp_id_kind *);
 static tree cp_parser_binary_expression
   (cp_parser *, bool, bool, enum cp_parser_prec, cp_id_kind *);
 static tree cp_parser_question_colon_clause
@@ -1843,6 +1845,8 @@ static enum tree_code cp_parser_assignment_operator_opt
   (cp_parser *);
 static tree cp_parser_expression
   (cp_parser *, bool, cp_id_kind *);
+static tree cp_parser_expression
+  (cp_parser *, bool, bool, cp_id_kind *);
 static tree cp_parser_constant_expression
   (cp_parser *, bool, bool *);
 static tree cp_parser_builtin_offsetof
@@ -1969,6 +1973,8 @@ static enum tree_code cp_parser_ptr_operator
 static cp_cv_quals cp_parser_cv_qualifier_seq_opt
   (cp_parser *);
 static cp_virt_specifiers cp_parser_virt_specifier_seq_opt
+  (cp_parser *);
+static cp_ref_qualifier cp_parser_ref_qualifier_seq_opt
   (cp_parser *);
 static tree cp_parser_late_return_type_opt
   (cp_parser *, cp_cv_quals);
@@ -3840,6 +3846,18 @@ cp_parser_translation_unit (cp_parser* parser)
   return success;
 }
 
+/* Return the appropriate tsubst flags for parsing, possibly in N3276
+   decltype context.  */
+
+static inline tsubst_flags_t
+complain_flags (bool decltype_p)
+{
+  tsubst_flags_t complain = tf_warning_or_error;
+  if (decltype_p)
+    complain |= tf_decltype;
+  return complain;
+}
+
 /* Expressions [gram.expr] */
 
 /* Parse a primary-expression.
@@ -3901,6 +3919,7 @@ cp_parser_primary_expression (cp_parser *parser,
 			      bool address_p,
 			      bool cast_p,
 			      bool template_arg_p,
+			      bool decltype_p,
 			      cp_id_kind *idk)
 {
   cp_token *token = NULL;
@@ -4052,7 +4071,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	else
 	  {
 	    /* Parse the parenthesized expression.  */
-	    expr = cp_parser_expression (parser, cast_p, idk);
+	    expr = cp_parser_expression (parser, cast_p, decltype_p, idk);
 	    /* Let the front end know that this expression was
 	       enclosed in parentheses. This matters in case, for
 	       example, the expression is of the form `A::B', since
@@ -4402,6 +4421,17 @@ cp_parser_primary_expression (cp_parser *parser,
       cp_parser_error (parser, "expected primary-expression");
       return error_mark_node;
     }
+}
+
+static inline tree
+cp_parser_primary_expression (cp_parser *parser,
+			      bool address_p,
+			      bool cast_p,
+			      bool template_arg_p,
+			      cp_id_kind *idk)
+{
+  return cp_parser_primary_expression (parser, address_p, cast_p, template_arg_p,
+				       /*decltype*/false, idk);
 }
 
 /* Parse an id-expression.
@@ -5365,7 +5395,7 @@ cp_parser_qualifying_entity (cp_parser *parser,
 
 static tree
 cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
-                              bool member_access_only_p,
+                              bool member_access_only_p, bool decltype_p,
 			      cp_id_kind * pidk_return)
 {
   cp_token *token;
@@ -5408,10 +5438,17 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	/* Restore the old message.  */
 	parser->type_definition_forbidden_message = saved_message;
 
+	bool saved_greater_than_is_operator_p
+	  = parser->greater_than_is_operator_p;
+	parser->greater_than_is_operator_p = true;
+
 	/* And the expression which is being cast.  */
 	cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN);
 	expression = cp_parser_expression (parser, /*cast_p=*/true, & idk);
 	cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
+
+	parser->greater_than_is_operator_p
+	  = saved_greater_than_is_operator_p;
 
 	/* Only type conversions to integral or enumeration types
 	   can be used in constant-expressions.  */
@@ -5626,10 +5663,16 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	postfix_expression
 	  = cp_parser_primary_expression (parser, address_p, cast_p,
 					  /*template_arg_p=*/false,
+					  decltype_p,
 					  &idk);
       }
       break;
     }
+
+  /* Note that we don't need to worry about calling build_cplus_new on a
+     class-valued CALL_EXPR in decltype when it isn't the end of the
+     postfix-expression; unary_complex_lvalue will take care of that for
+     all these cases.  */
 
   /* Keep looping until the postfix-expression is complete.  */
   while (true)
@@ -5657,7 +5700,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  postfix_expression
 	    = cp_parser_postfix_open_square_expression (parser,
 							postfix_expression,
-							false);
+							false,
+							decltype_p);
 	  idk = CP_ID_KIND_NONE;
           is_member_access = false;
 	  break;
@@ -5669,6 +5713,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    bool is_builtin_constant_p;
 	    bool saved_integral_constant_expression_p = false;
 	    bool saved_non_integral_constant_expression_p = false;
+	    tsubst_flags_t complain = complain_flags (decltype_p);
 	    vec<tree, va_gc> *args;
 
             is_member_access = false;
@@ -5727,7 +5772,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			  postfix_expression
 			    = perform_koenig_lookup (postfix_expression, args,
 						     /*include_std=*/false,
-						     tf_warning_or_error);
+						     complain);
 		      }
 		    else
 		      postfix_expression
@@ -5753,7 +5798,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			  postfix_expression
 			    = perform_koenig_lookup (postfix_expression, args,
 						     /*include_std=*/false,
-						     tf_warning_or_error);
+						     complain);
 		      }
 		  }
 	      }
@@ -5785,21 +5830,21 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			 ? LOOKUP_NORMAL|LOOKUP_NONVIRTUAL
 			 : LOOKUP_NORMAL),
 			/*fn_p=*/NULL,
-			tf_warning_or_error));
+			complain));
 		  }
 		else
 		  postfix_expression
 		    = finish_call_expr (postfix_expression, &args,
 					/*disallow_virtual=*/false,
 					/*koenig_p=*/false,
-					tf_warning_or_error);
+					complain);
 	      }
 	    else if (TREE_CODE (postfix_expression) == OFFSET_REF
 		     || TREE_CODE (postfix_expression) == MEMBER_REF
 		     || TREE_CODE (postfix_expression) == DOTSTAR_EXPR)
 	      postfix_expression = (build_offset_ref_call_from_tree
 				    (postfix_expression, &args,
-				     tf_warning_or_error));
+				     complain));
 	    else if (idk == CP_ID_KIND_QUALIFIED)
 	      /* A call to a static class member, or a namespace-scope
 		 function.  */
@@ -5807,14 +5852,14 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		= finish_call_expr (postfix_expression, &args,
 				    /*disallow_virtual=*/true,
 				    koenig_p,
-				    tf_warning_or_error);
+				    complain);
 	    else
 	      /* All other function calls.  */
 	      postfix_expression
 		= finish_call_expr (postfix_expression, &args,
 				    /*disallow_virtual=*/false,
 				    koenig_p,
-				    tf_warning_or_error);
+				    complain);
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;
@@ -5899,7 +5944,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 static tree
 cp_parser_postfix_open_square_expression (cp_parser *parser,
 					  tree postfix_expression,
-					  bool for_offsetof)
+					  bool for_offsetof,
+					  bool decltype_p)
 {
   tree index;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
@@ -5933,7 +5979,8 @@ cp_parser_postfix_open_square_expression (cp_parser *parser,
   cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
 
   /* Build the ARRAY_REF.  */
-  postfix_expression = grok_array_decl (loc, postfix_expression, index);
+  postfix_expression = grok_array_decl (loc, postfix_expression,
+					index, decltype_p);
 
   /* When not doing offsetof, array references are not permitted in
      constant-expressions.  */
@@ -6415,7 +6462,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
 
 static tree
 cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
-			    cp_id_kind * pidk)
+			    bool decltype_p, cp_id_kind * pidk)
 {
   cp_token *token;
   enum tree_code unary_operator;
@@ -6629,6 +6676,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
       tree expression = error_mark_node;
       non_integral_constant non_constant_p = NIC_NONE;
       location_t loc = token->location;
+      tsubst_flags_t complain = complain_flags (decltype_p);
 
       /* Consume the operator token.  */
       token = cp_lexer_consume_token (parser->lexer);
@@ -6636,7 +6684,9 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
       cast_expression
 	= cp_parser_cast_expression (parser,
 				     unary_operator == ADDR_EXPR,
-				     /*cast_p=*/false, pidk);
+				     /*cast_p=*/false,
+				     /*decltype*/false,
+				     pidk);
       /* Now, build an appropriate representation.  */
       switch (unary_operator)
 	{
@@ -6644,7 +6694,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  non_constant_p = NIC_STAR;
 	  expression = build_x_indirect_ref (loc, cast_expression,
 					     RO_UNARY_STAR,
-                                             tf_warning_or_error);
+                                             complain);
 	  break;
 
 	case ADDR_EXPR:
@@ -6653,7 +6703,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	case BIT_NOT_EXPR:
 	  expression = build_x_unary_op (loc, unary_operator,
 					 cast_expression,
-                                         tf_warning_or_error);
+                                         complain);
 	  break;
 
 	case PREINCREMENT_EXPR:
@@ -6665,7 +6715,7 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 	case NEGATE_EXPR:
 	case TRUTH_NOT_EXPR:
 	  expression = finish_unary_op_expr (loc, unary_operator,
-					     cast_expression);
+					     cast_expression, complain);
 	  break;
 
 	default:
@@ -6682,7 +6732,16 @@ cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
 
   return cp_parser_postfix_expression (parser, address_p, cast_p,
                                        /*member_access_only_p=*/false,
+				       decltype_p,
 				       pidk);
+}
+
+static inline tree
+cp_parser_unary_expression (cp_parser *parser, bool address_p, bool cast_p,
+			    cp_id_kind * pidk)
+{
+  return cp_parser_unary_expression (parser, address_p, cast_p,
+				     /*decltype*/false, pidk);
 }
 
 /* Returns ERROR_MARK if TOKEN is not a unary-operator.  If TOKEN is a
@@ -7163,7 +7222,7 @@ cp_parser_tokens_start_cast_expression (cp_parser *parser)
 
 static tree
 cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
-			   cp_id_kind * pidk)
+			   bool decltype_p, cp_id_kind * pidk)
 {
   /* If it's a `(', then we might be looking at a cast.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
@@ -7237,7 +7296,9 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  cp_parser_parse_definitely (parser);
 	  expr = cp_parser_cast_expression (parser,
 					    /*address_p=*/false,
-					    /*cast_p=*/true, pidk);
+					    /*cast_p=*/true,
+					    /*decltype_p=*/false,
+					    pidk);
 
 	  /* Warn about old-style casts, if so requested.  */
 	  if (warn_old_style_cast
@@ -7263,7 +7324,8 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 
   /* If we get here, then it's not a cast, so it must be a
      unary-expression.  */
-  return cp_parser_unary_expression (parser, address_p, cast_p, pidk);
+  return cp_parser_unary_expression (parser, address_p, cast_p,
+				     decltype_p, pidk);
 }
 
 /* Parse a binary expression of the general form:
@@ -7348,6 +7410,7 @@ cp_parser_cast_expression (cp_parser *parser, bool address_p, bool cast_p,
 static tree
 cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 			     bool no_toplevel_fold_p,
+			     bool decltype_p,
 			     enum cp_parser_prec prec,
 			     cp_id_kind * pidk)
 {
@@ -7362,7 +7425,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 
   /* Parse the first expression.  */
   current.lhs = cp_parser_cast_expression (parser, /*address_p=*/false,
-					   cast_p, pidk);
+					   cast_p, decltype_p, pidk);
   current.lhs_type = ERROR_MARK;
   current.prec = prec;
 
@@ -7479,7 +7542,7 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
 	current.lhs = build_x_binary_op (current.loc, current.tree_type,
 					 current.lhs, current.lhs_type,
 					 rhs, rhs_type, &overload,
-					 tf_warning_or_error);
+					 complain_flags (decltype_p));
       current.lhs_type = current.tree_type;
       if (EXPR_P (current.lhs))
 	SET_EXPR_LOCATION (current.lhs, current.loc);
@@ -7499,6 +7562,15 @@ cp_parser_binary_expression (cp_parser* parser, bool cast_p,
   return current.lhs;
 }
 
+static tree
+cp_parser_binary_expression (cp_parser* parser, bool cast_p,
+			     bool no_toplevel_fold_p,
+			     enum cp_parser_prec prec,
+			     cp_id_kind * pidk)
+{
+  return cp_parser_binary_expression (parser, cast_p, no_toplevel_fold_p,
+				      /*decltype*/false, prec, pidk);
+}
 
 /* Parse the `? expression : assignment-expression' part of a
    conditional-expression.  The LOGICAL_OR_EXPR is the
@@ -7568,12 +7640,13 @@ cp_parser_question_colon_clause (cp_parser* parser, tree logical_or_expr)
      throw-expression
 
    CAST_P is true if this expression is the target of a cast.
+   DECLTYPE_P is true if this expression is the operand of decltype.
 
    Returns a representation for the expression.  */
 
 static tree
 cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
-				 cp_id_kind * pidk)
+				 bool decltype_p, cp_id_kind * pidk)
 {
   tree expr;
 
@@ -7587,6 +7660,7 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
     {
       /* Parse the binary expressions (logical-or-expression).  */
       expr = cp_parser_binary_expression (parser, cast_p, false,
+					  decltype_p,
 					  PREC_NOT_OPERATOR, pidk);
       /* If the next token is a `?' then we're actually looking at a
 	 conditional-expression.  */
@@ -7623,13 +7697,21 @@ cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
 	      expr = build_x_modify_expr (loc, expr,
 					  assignment_operator,
 					  rhs,
-					  tf_warning_or_error);
+					  complain_flags (decltype_p));
 	      input_location = saved_input_location;
 	    }
 	}
     }
 
   return expr;
+}
+
+static tree
+cp_parser_assignment_expression (cp_parser* parser, bool cast_p,
+				 cp_id_kind * pidk)
+{
+  return cp_parser_assignment_expression (parser, cast_p,
+					  /*decltype*/false, pidk);
 }
 
 /* Parse an (optional) assignment-operator.
@@ -7723,11 +7805,14 @@ cp_parser_assignment_operator_opt (cp_parser* parser)
      expression , assignment-expression
 
    CAST_P is true if this expression is the target of a cast.
+   DECLTYPE_P is true if this expression is the immediate operand of decltype,
+     except possibly parenthesized or on the RHS of a comma (N3276).
 
    Returns a representation of the expression.  */
 
 static tree
-cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
+cp_parser_expression (cp_parser* parser, bool cast_p, bool decltype_p,
+		      cp_id_kind * pidk)
 {
   tree expression = NULL_TREE;
   location_t loc = UNKNOWN_LOCATION;
@@ -7738,7 +7823,19 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
 
       /* Parse the next assignment-expression.  */
       assignment_expression
-	= cp_parser_assignment_expression (parser, cast_p, pidk);
+	= cp_parser_assignment_expression (parser, cast_p, decltype_p, pidk);
+
+      /* We don't create a temporary for a call that is the immediate operand
+	 of decltype or on the RHS of a comma.  But when we see a comma, we
+	 need to create a temporary for a call on the LHS.  */
+      if (decltype_p && !processing_template_decl
+	  && TREE_CODE (assignment_expression) == CALL_EXPR
+	  && CLASS_TYPE_P (TREE_TYPE (assignment_expression))
+	  && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	assignment_expression
+	  = build_cplus_new (TREE_TYPE (assignment_expression),
+			     assignment_expression, tf_warning_or_error);
+
       /* If this is the first assignment-expression, we can just
 	 save it away.  */
       if (!expression)
@@ -7746,7 +7843,7 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
       else
 	expression = build_x_compound_expr (loc, expression,
 					    assignment_expression,
-                                            tf_warning_or_error);
+					    complain_flags (decltype_p));
       /* If the next token is not a comma, then we are done with the
 	 expression.  */
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
@@ -7760,6 +7857,12 @@ cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
     }
 
   return expression;
+}
+
+static inline tree
+cp_parser_expression (cp_parser* parser, bool cast_p, cp_id_kind * pidk)
+{
+  return cp_parser_expression (parser, cast_p, /*decltype*/false, pidk);
 }
 
 /* Parse a constant-expression.
@@ -7891,12 +7994,14 @@ cp_parser_builtin_offsetof (cp_parser *parser)
 	{
 	case CPP_OPEN_SQUARE:
 	  /* offsetof-member-designator "[" expression "]" */
-	  expr = cp_parser_postfix_open_square_expression (parser, expr, true);
+	  expr = cp_parser_postfix_open_square_expression (parser, expr,
+							   true, false);
 	  break;
 
 	case CPP_DEREF:
 	  /* offsetof-member-designator "->" identifier */
-	  expr = grok_array_decl (token->location, expr, integer_zero_node);
+	  expr = grok_array_decl (token->location, expr,
+				  integer_zero_node, false);
 	  /* FALLTHRU */
 
 	case CPP_DOT:
@@ -8526,6 +8631,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
     declarator = make_call_declarator (declarator, param_list, quals,
 				       VIRT_SPEC_UNSPECIFIED,
+                                       REF_QUAL_NONE,
 				       exception_spec,
                                        /*late_return_type=*/NULL_TREE);
     declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
@@ -9644,7 +9750,8 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr)
 
   /* The new increment expression.  */
   expression = finish_unary_op_expr (input_location,
-				     PREINCREMENT_EXPR, begin);
+				     PREINCREMENT_EXPR, begin,
+				     tf_warning_or_error);
   finish_for_expr (expression, statement);
 
   /* The declaration is initialized with *__begin inside the loop body.  */
@@ -11299,7 +11406,7 @@ cp_parser_decltype (cp_parser *parser)
 
       /* Parse a class member access.  */
       expr = cp_parser_postfix_expression (parser, /*address_p=*/false,
-                                           /*cast_p=*/false,
+                                           /*cast_p=*/false, /*decltype*/true,
                                            /*member_access_only_p=*/true, NULL);
 
       if (expr 
@@ -11327,7 +11434,8 @@ cp_parser_decltype (cp_parser *parser)
       parser->greater_than_is_operator_p = true;
 
       /* Parse a full expression.  */
-      expr = cp_parser_expression (parser, /*cast_p=*/false, NULL);
+      expr = cp_parser_expression (parser, /*cast_p=*/false,
+				   /*decltype*/true, NULL);
 
       /* The `>' token might be the end of a template-id or
 	 template-parameter-list now.  */
@@ -14248,12 +14356,14 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 				   typename_type,
 				   /*complain=*/tf_error);
       /* If the `typename' keyword is in effect and DECL is not a type
-	 decl. Then type is non existant.   */
+	 decl, then type is non existent.   */
       else if (tag_type == typename_type && TREE_CODE (decl) != TYPE_DECL)
-        type = NULL_TREE; 
-      else 
-	type = check_elaborated_type_specifier (tag_type, decl,
+        ; 
+      else if (TREE_CODE (decl) == TYPE_DECL)
+        type = check_elaborated_type_specifier (tag_type, decl,
 						/*allow_template_p=*/true);
+      else if (decl == error_mark_node)
+	type = error_mark_node; 
     }
 
   if (!type)
@@ -16166,6 +16276,7 @@ cp_parser_declarator (cp_parser* parser,
      declarator-id
      direct-declarator ( parameter-declaration-clause )
        cv-qualifier-seq [opt]
+       ref-qualifier [opt]
        exception-specification [opt]
      direct-declarator [ constant-expression [opt] ]
      ( declarator )
@@ -16174,6 +16285,7 @@ cp_parser_declarator (cp_parser* parser,
      direct-abstract-declarator [opt]
        ( parameter-declaration-clause )
        cv-qualifier-seq [opt]
+       ref-qualifier [opt]
        exception-specification [opt]
      direct-abstract-declarator [opt] [ constant-expression [opt] ]
      ( abstract-declarator )
@@ -16288,15 +16400,18 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      /* Consume the `)'.  */
 	      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
 
-	      /* If all went well, parse the cv-qualifier-seq and the
-		 exception-specification.  */
+	      /* If all went well, parse the cv-qualifier-seq,
+		 ref-qualifier and the exception-specification.  */
 	      if (member_p || cp_parser_parse_definitely (parser))
 		{
 		  cp_cv_quals cv_quals;
 		  cp_virt_specifiers virt_specifiers;
+		  cp_ref_qualifier ref_qual;
 		  tree exception_specification;
 		  tree late_return;
 		  tree attrs;
+		  bool memfn = (member_p || (pushed_scope
+					     && CLASS_TYPE_P (pushed_scope)));
 
 		  is_declarator = true;
 
@@ -16306,6 +16421,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 
 		  /* Parse the cv-qualifier-seq.  */
 		  cv_quals = cp_parser_cv_qualifier_seq_opt (parser);
+		  /* Parse the ref-qualifier. */
+		  ref_qual = cp_parser_ref_qualifier_seq_opt (parser);
 		  /* And the exception-specification.  */
 		  exception_specification
 		    = cp_parser_exception_specification_opt (parser);
@@ -16313,7 +16430,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 		  attrs = cp_parser_std_attribute_spec_seq (parser);
 
 		  late_return = (cp_parser_late_return_type_opt
-				 (parser, member_p ? cv_quals : -1));
+				 (parser, memfn ? cv_quals : -1));
 
 		  /* Parse the virt-specifier-seq.  */
 		  virt_specifiers = cp_parser_virt_specifier_seq_opt (parser);
@@ -16323,6 +16440,7 @@ cp_parser_direct_declarator (cp_parser* parser,
 						     params,
 						     cv_quals,
 						     virt_specifiers,
+						     ref_qual,
 						     exception_specification,
 						     late_return);
 		  declarator->std_attributes = attrs;
@@ -16855,6 +16973,42 @@ cp_parser_cv_qualifier_seq_opt (cp_parser* parser)
   return cv_quals;
 }
 
+/* Parse an (optional) ref-qualifier
+
+   ref-qualifier:
+     &
+     &&
+
+   Returns cp_ref_qualifier representing ref-qualifier. */
+
+static cp_ref_qualifier
+cp_parser_ref_qualifier_seq_opt (cp_parser* parser)
+{
+  cp_ref_qualifier ref_qual = REF_QUAL_NONE;
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+
+  /* Don't try to parse bitwise '&' as a ref-qualifier (c++/57532).  */
+  if (cxx_dialect < cxx11 && cp_parser_parsing_tentatively (parser))
+    return ref_qual;
+
+  switch (token->type)
+    {
+    case CPP_AND:
+      ref_qual = REF_QUAL_LVALUE;
+      break;
+    case CPP_AND_AND:
+      ref_qual = REF_QUAL_RVALUE;
+      break;
+    }
+
+  if (ref_qual)
+    {
+      cp_lexer_consume_token (parser->lexer);
+    }
+
+  return ref_qual;
+}
+
 /* Parse an (optional) virt-specifier-seq.
 
    virt-specifier-seq:
@@ -16962,17 +17116,21 @@ cp_parser_late_return_type_opt (cp_parser* parser, cp_cv_quals quals)
   /* Consume the ->.  */
   cp_lexer_consume_token (parser->lexer);
 
+  tree save_ccp = current_class_ptr;
+  tree save_ccr = current_class_ref;
   if (quals >= 0)
     {
       /* DR 1207: 'this' is in scope in the trailing return type.  */
-      gcc_assert (current_class_ptr == NULL_TREE);
       inject_this_parameter (current_class_type, quals);
     }
 
   type = cp_parser_trailing_type_id (parser);
 
   if (quals >= 0)
-    current_class_ptr = current_class_ref = NULL_TREE;
+    {
+      current_class_ptr = save_ccp;
+      current_class_ref = save_ccr;
+    }
 
   return type;
 }
@@ -17854,6 +18012,8 @@ cp_parser_braced_list (cp_parser* parser, bool* non_constant_p)
       if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
     }
+  else
+    *non_constant_p = false;
   /* Now, there should be a trailing `}'.  */
   cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
   TREE_TYPE (initializer) = init_list_type_node;
@@ -19366,6 +19526,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		  if (function_declarator_p (declarator)
 		      || (decl_specifiers.type
 			  && TREE_CODE (decl_specifiers.type) == TYPE_DECL
+			  && declarator->kind == cdk_id
 			  && (TREE_CODE (TREE_TYPE (decl_specifiers.type))
 			      == FUNCTION_TYPE)))
 		    initializer = cp_parser_pure_specifier (parser);
@@ -20669,8 +20830,13 @@ cp_parser_std_attribute (cp_parser *parser)
       token = cp_lexer_peek_token (parser->lexer);
     }
   else
-    attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
-				 NULL_TREE);
+    {
+      attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
+				   NULL_TREE);
+      /* C++11 noreturn attribute is equivalent to GNU's.  */
+      if (is_attribute_p ("noreturn", attr_id))
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+    }
 
   /* Now parse the optional argument clause of the attribute.  */
 
@@ -22028,7 +22194,7 @@ static tree
 cp_parser_simple_cast_expression (cp_parser *parser)
 {
   return cp_parser_cast_expression (parser, /*address_p=*/false,
-				    /*cast_p=*/false, NULL);
+				    /*cast_p=*/false, /*decltype*/false, NULL);
 }
 
 /* Parse a functional cast to TYPE.  Returns an expression
@@ -26825,7 +26991,7 @@ cp_parser_omp_for_incr (cp_parser *parser, tree decl)
       op = (token->type == CPP_PLUS_PLUS
 	    ? PREINCREMENT_EXPR : PREDECREMENT_EXPR);
       cp_lexer_consume_token (parser->lexer);
-      lhs = cp_parser_cast_expression (parser, false, false, NULL);
+      lhs = cp_parser_simple_cast_expression (parser);
       if (lhs != decl)
 	return error_mark_node;
       return build2 (op, TREE_TYPE (decl), decl, NULL_TREE);

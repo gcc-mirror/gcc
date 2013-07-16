@@ -88,6 +88,9 @@ go_vprintf(const char *s, va_list va)
 		case 'a':
 			runtime_printslice(va_arg(va, Slice));
 			break;
+		case 'c':
+			runtime_printbyte(va_arg(va, int32));
+			break;
 		case 'd':
 			runtime_printint(va_arg(va, int32));
 			break;
@@ -151,6 +154,12 @@ runtime_printbool(_Bool v)
 		return;
 	}
 	gwrite("false", 5);
+}
+
+void
+runtime_printbyte(int8 c)
+{
+	gwrite(&c, 1);
 }
 
 void

@@ -718,7 +718,7 @@ extern bool split_comparison (enum rtx_code, enum machine_mode,
 /* Call this once to initialize the contents of the optabs
    appropriately for the current target machine.  */
 extern void init_optabs (void);
-extern void init_all_optabs (void);
+extern void init_all_optabs (struct target_optabs *);
 
 /* Call this to initialize an optab function entry.  */
 extern rtx init_one_libfunc (const char *);

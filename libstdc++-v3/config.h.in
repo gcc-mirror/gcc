@@ -27,6 +27,9 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
+/* Define to 1 if you have the `at_quick_exit' function. */
+#undef HAVE_AT_QUICK_EXIT
+
 /* Define to 1 if the target assembler supports thread-local storage. */
 #undef HAVE_CC_TLS
 
@@ -303,6 +306,9 @@
 /* Define to 1 if you have the `qfpclass' function. */
 #undef HAVE_QFPCLASS
 
+/* Define to 1 if you have the `quick_exit' function. */
+#undef HAVE_QUICK_EXIT
+
 /* Define to 1 if you have the `setenv' function. */
 #undef HAVE_SETENV
 
@@ -393,6 +399,9 @@
 
 /* Define to 1 if you have the <sys/resource.h> header file. */
 #undef HAVE_SYS_RESOURCE_H
+
+/* Define to 1 if you have a suitable <sys/sdt.h> header file */
+#undef HAVE_SYS_SDT_H
 
 /* Define to 1 if you have the <sys/sem.h> header file. */
 #undef HAVE_SYS_SEM_H
@@ -652,6 +661,9 @@
 /* Define to 1 if you have the `_tanl' function. */
 #undef HAVE__TANL
 
+/* Define to 1 if you have the `__cxa_thread_atexit_impl' function. */
+#undef HAVE___CXA_THREAD_ATEXIT_IMPL
+
 /* Define as const if the declaration of iconv() needs const. */
 #undef ICONV_CONST
 
@@ -800,6 +812,9 @@
 
 /* Defined if clock_gettime has monotonic clock support. */
 #undef _GLIBCXX_USE_CLOCK_MONOTONIC
+
+/* Defined if clock_gettime syscall has monotonic and realtime clock support. */
+#undef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
 
 /* Defined if clock_gettime has realtime clock support. */
 #undef _GLIBCXX_USE_CLOCK_REALTIME

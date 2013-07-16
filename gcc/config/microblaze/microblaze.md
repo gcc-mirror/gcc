@@ -40,6 +40,7 @@
   (UNSPEC_PLT           103)    ;; jump table
   (UNSPEC_CMP		104)    ;; signed compare
   (UNSPEC_CMPU		105)    ;; unsigned compare
+  (UNSPEC_TLS           106)    ;; jump table
 ])
 
 
@@ -353,6 +354,20 @@
 (automata_option "time")
 (automata_option "progress")
 
+(define_insn "bswapsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (bswap:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_REORDER"
+  "swapb %0, %1"
+)
+
+(define_insn "bswaphi2"
+  [(set (match_operand:HI 0 "register_operand" "=r")
+        (bswap:HI (match_operand:HI 1 "register_operand" "r")))]
+  "TARGET_REORDER"
+  "swaph %0, %1"
+)
+
 ;;----------------------------------------------------------------
 ;; Microblaze delay slot description
 ;;----------------------------------------------------------------
@@ -445,7 +460,7 @@
 (define_insn "addsi3"
   [(set (match_operand:SI 0 "register_operand" "=d,d,d")
 	(plus:SI (match_operand:SI 1 "reg_or_0_operand" "%dJ,dJ,dJ")
-		 (match_operand:SI 2 "arith_operand" "d,I,i")))]
+		 (match_operand:SI 2 "arith_plus_operand" "d,I,i")))]
   ""
   "@
    addk\t%0,%z1,%2
@@ -878,8 +893,8 @@
 
 
 (define_insn "*movdi_internal"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,R,m")
-	(match_operand:DI 1 "general_operand"      " d,i,J,R,m,d,d"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=d,d,d,d,d,R,o")
+	(match_operand:DI 1 "general_operand"      " d,i,J,R,o,d,d"))]
   ""
   { 
     switch (which_alternative)
@@ -947,7 +962,7 @@
 (define_insn "movsi_status"
   [(set (match_operand:SI 0 "register_operand" "=d,d,z")
         (match_operand:SI 1 "register_operand" "z,d,d"))]
-  "interrupt_handler"
+  "microblaze_is_interrupt_variant ()"
   "@
 	mfs\t%0,%1  #mfs
 	addk\t%0,%1,r0 #add movsi
@@ -985,13 +1000,9 @@
   (set_attr "length"	"4")])
 
 (define_insn "*movsi_internal2"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,   d,d,R, T")
-	(match_operand:SI 1 "move_operand"         " d,I,Mnis,R,m,dJ,dJ"))]
-  "(register_operand (operands[0], SImode)
-    || register_operand (operands[1], SImode) 
-    || (GET_CODE (operands[1]) == CONST_INT && INTVAL (operands[1]) == 0))
-    && (flag_pic != 2 || (GET_CODE (operands[1]) != SYMBOL_REF 
-                         && GET_CODE (operands[1]) != LABEL_REF))"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=d,d,d,   d,d,R,m")
+	(match_operand:SI 1 "move_src_operand"         " d,I,Mnis,R,m,dJ,dJ"))]
+  ""
   "@
    addk\t%0,%1,r0
    addik\t%0,r0,%1\t# %X1
@@ -1182,7 +1193,7 @@
 ;; Applies to both TARGET_SOFT_FLOAT and TARGET_HARD_FLOAT
 ;;
 (define_insn "*movdf_internal"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,d,To")
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=d,d,d,d,o")
         (match_operand:DF 1 "general_operand" "dG,o,F,T,d"))]
   ""
   {
@@ -1637,10 +1648,10 @@
 ;; Setting a register from an floating point comparison. 
 ;;----------------------------------------------------------------
 (define_insn "cstoresf4"
-   [(set (match_operand:SI 0 "register_operand")
-        (match_operator:SI 1 "ordered_comparison_operator"
-	      [(match_operand:SF 2 "register_operand")
-	       (match_operand:SF 3 "register_operand")]))]
+   [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operator 1 "comparison_operator"
+	      [(match_operand:SF 2 "register_operand" "r")
+	       (match_operand:SF 3 "register_operand" "r")]))]
   "TARGET_HARD_FLOAT"
   "fcmp.%C1\t%0,%3,%2"
   [(set_attr "type"     "fcmp")
@@ -1667,7 +1678,7 @@
 
 (define_expand "cbranchsf4"
   [(set (pc)
-	(if_then_else (match_operator:SI 0 "ordered_comparison_operator"
+	(if_then_else (match_operator 0 "comparison_operator"
 		       [(match_operand:SF 1 "register_operand")
 		        (match_operand:SF 2 "register_operand")])
 		      (label_ref (match_operand 3 ""))
@@ -1860,6 +1871,32 @@
   }
 )
 
+(define_expand "save_stack_block"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  ""
+  {
+    emit_move_insn (operands[0], operands[1]);
+    DONE;
+  }
+)
+
+(define_expand "restore_stack_block"
+  [(match_operand 0 "register_operand" "")
+   (match_operand 1 "register_operand" "")]
+  ""
+  {
+    rtx retaddr = gen_rtx_MEM (Pmode, stack_pointer_rtx);
+    rtx rtmp    = gen_rtx_REG (SImode, R_TMP);
+
+    /* Move the retaddr.  */
+    emit_move_insn (rtmp, retaddr);
+    emit_move_insn (operands[0], operands[1]);
+    emit_move_insn (gen_rtx_MEM (Pmode, operands[0]), rtmp);
+    DONE;
+  }
+)
+
 ;; Trivial return.  Make it look like a normal return insn as that
 ;; allows jump optimizations to work better .
 (define_expand "return"
@@ -1878,7 +1915,7 @@
   [(any_return)]
   ""
   { 
-    if (microblaze_is_interrupt_handler ())
+    if (microblaze_is_interrupt_variant ())
         return "rtid\tr14, 0\;%#";
     else
         return "rtsd\tr15, 8\;%#";
@@ -1895,7 +1932,7 @@
    (use (match_operand:SI 0 "register_operand" ""))]
   ""
   {	
-    if (microblaze_is_interrupt_handler ())
+    if (microblaze_is_interrupt_variant ())
         return "rtid\tr14,0 \;%#";
     else
         return "rtsd\tr15,8 \;%#";
@@ -1991,7 +2028,7 @@
   (set_attr "length"	"4")])
 
 (define_insn "call_internal1"
-  [(call (mem (match_operand:SI 0 "call_insn_operand" "ri"))
+  [(call (mem (match_operand:SI 0 "call_insn_simple_operand" "ri"))
 	 (match_operand:SI 1 "" "i"))
   (clobber (reg:SI R_SR))]
   ""
@@ -2102,9 +2139,17 @@
     register rtx target = operands[1];
     register rtx target2=gen_rtx_REG (Pmode,GP_REG_FIRST + MB_ABI_SUB_RETURN_ADDR_REGNUM);
 
-    if (GET_CODE (target) == SYMBOL_REF){
-	gen_rtx_CLOBBER (VOIDmode,target2);
-	return "brlid\tr15,%1\;%#";
+    if (GET_CODE (target) == SYMBOL_REF)
+    {
+      gen_rtx_CLOBBER (VOIDmode,target2);
+      if (SYMBOL_REF_FLAGS (target) & SYMBOL_FLAG_FUNCTION)
+        {
+	  return "brlid\tr15,%1\;%#";
+        }
+      else
+        {
+	  return "bralid\tr15,%1\;%#";
+        }
     }
     else if (GET_CODE (target) == CONST_INT)
         return "la\t%@,r0,%1\;brald\tr15,%@\;%#";
@@ -2166,3 +2211,13 @@
   [(set_attr "type" "multi")
    (set_attr "length" "12")])
 
+;; This insn gives the count of leading number of zeros for the second
+;; operand and stores the result in first operand.
+(define_insn "clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (clz:SI (match_operand:SI 1 "register_operand" "r")))]
+  "TARGET_HAS_CLZ"
+  "clz\t%0,%1"
+  [(set_attr "type"     "arith")
+  (set_attr "mode"      "SI")
+  (set_attr "length"    "4")])

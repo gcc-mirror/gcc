@@ -816,11 +816,10 @@ sh_option_override (void)
       if (! strcmp (sh_div_str, "call-div1"))
 	sh_div_strategy = SH_DIV_CALL_DIV1;
       else if (! strcmp (sh_div_str, "call-fp")
-	       && (TARGET_FPU_DOUBLE
-		   || (TARGET_HARD_SH4 && TARGET_SH2E)
+	       && (TARGET_FPU_DOUBLE || TARGET_FPU_SINGLE_ONLY
 		   || (TARGET_SHCOMPACT && TARGET_FPU_ANY)))
 	sh_div_strategy = SH_DIV_CALL_FP;
-      else if (! strcmp (sh_div_str, "call-table") && TARGET_SH2)
+      else if (! strcmp (sh_div_str, "call-table") && TARGET_DYNSHIFT)
 	sh_div_strategy = SH_DIV_CALL_TABLE;
       else
 	/* Pick one that makes most sense for the target in general.
@@ -840,8 +839,6 @@ sh_option_override (void)
 	  sh_div_strategy = SH_DIV_CALL_FP;
 	/* SH1 .. SH3 cores often go into small-footprint systems, so
 	   default to the smallest implementation available.  */
-	else if (TARGET_SH2)	/* ??? EXPERIMENTAL */
-	  sh_div_strategy = SH_DIV_CALL_TABLE;
 	else
 	  sh_div_strategy = SH_DIV_CALL_DIV1;
     }

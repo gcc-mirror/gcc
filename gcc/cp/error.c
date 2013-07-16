@@ -78,6 +78,7 @@ static void dump_aggr_init_expr_args (tree, int, bool);
 static void dump_expr_list (tree, int);
 static void dump_global_iord (tree);
 static void dump_parameters (tree, int);
+static void dump_ref_qualifier (tree, int);
 static void dump_exception_spec (tree, int);
 static void dump_template_argument (tree, int);
 static void dump_template_argument_list (tree, int);
@@ -832,6 +833,7 @@ dump_type_suffix (tree t, int flags)
 	  pp_cxx_cv_qualifier_seq (cxx_pp, class_of_this_parm (t));
 	else
 	  pp_cxx_cv_qualifier_seq (cxx_pp, t);
+	dump_ref_qualifier (t, flags);
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), flags);
 	dump_type_suffix (TREE_TYPE (t), flags);
 	break;
@@ -1283,7 +1285,7 @@ struct find_typenames_t
 };
 
 static tree
-find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
+find_typenames_r (tree *tp, int *walk_subtrees, void *data)
 {
   struct find_typenames_t *d = (struct find_typenames_t *)data;
   tree mv = NULL_TREE;
@@ -1295,6 +1297,14 @@ find_typenames_r (tree *tp, int * /*walk_subtrees*/, void *data)
 	   || TREE_CODE (*tp) == DECLTYPE_TYPE)
     /* Add the typename without any cv-qualifiers.  */
     mv = TYPE_MAIN_VARIANT (*tp);
+
+  if (TREE_CODE (*tp) == TYPE_PACK_EXPANSION)
+    {
+      /* Don't mess with parameter packs since we don't remember
+	 the pack expansion context for a particular typename.  */
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
 
   if (mv && (mv == *tp || !pointer_set_insert (d->p_set, mv)))
     vec_safe_push (d->typenames, mv);
@@ -1418,6 +1428,7 @@ dump_function_decl (tree t, int flags)
 	{
 	  pp_base (cxx_pp)->padding = pp_before;
 	  pp_cxx_cv_qualifier_seq (cxx_pp, class_of_this_parm (fntype));
+	  dump_ref_qualifier (fntype, flags);
 	}
 
       if (flags & TFF_EXCEPTION_SPECIFICATION)
@@ -1497,6 +1508,21 @@ dump_parameters (tree parmtypes, int flags)
     }
 
   pp_cxx_right_paren (cxx_pp);
+}
+
+/* Print ref-qualifier of a FUNCTION_TYPE or METHOD_TYPE. FLAGS are ignored. */
+
+static void
+dump_ref_qualifier (tree t, int flags ATTRIBUTE_UNUSED)
+{
+  if (FUNCTION_REF_QUALIFIED (t))
+    {
+      pp_base (cxx_pp)->padding = pp_before;
+      if (FUNCTION_RVALUE_QUALIFIED (t))
+        pp_cxx_ws_string (cxx_pp, "&&");
+      else
+        pp_cxx_ws_string (cxx_pp, "&");
+    }
 }
 
 /* Print an exception specification. T is the exception specification.  */
@@ -2486,6 +2512,10 @@ dump_expr (tree t, int flags)
       dump_expr (resolve_virtual_fun_from_obj_type_ref (t), flags);
       break;
 
+    case LAMBDA_EXPR:
+      pp_string (cxx_pp, M_("<lambda>"));
+      break;
+
       /*  This list is incomplete, but should suffice for now.
 	  It is very important that `sorry' does not call
 	  `report_error_function'.  That could cause an infinite loop.  */
@@ -3336,7 +3366,7 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
 	break;
       case CPP0X_AUTO:
 	pedwarn (input_location, 0,
-		 "C++0x auto only available with -std=c++11 or -std=gnu++11");
+		 "C++11 auto only available with -std=c++11 or -std=gnu++11");
 	break;
       case CPP0X_SCOPED_ENUMS:
 	pedwarn (input_location, 0,
@@ -3380,6 +3410,11 @@ maybe_warn_cpp0x (cpp0x_warn_str str)
       case CPP0X_ATTRIBUTES:
 	pedwarn (input_location, 0,
 		 "c++11 attributes "
+		 "only available with -std=c++11 or -std=gnu++11");
+	break;
+      case CPP0X_REF_QUALIFIER:
+	pedwarn (input_location, 0,
+		 "ref-qualifiers "
 		 "only available with -std=c++11 or -std=gnu++11");
 	break;
       default:

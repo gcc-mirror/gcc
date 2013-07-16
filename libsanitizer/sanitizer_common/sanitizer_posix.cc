@@ -42,6 +42,10 @@ int GetPid() {
   return getpid();
 }
 
+u32 GetUid() {
+  return getuid();
+}
+
 uptr GetThreadSelf() {
   return (uptr)pthread_self();
 }
@@ -56,12 +60,12 @@ void *MmapOrDie(uptr size, const char *mem_type) {
     if (recursion_count) {
       // The Report() and CHECK calls below may call mmap recursively and fail.
       // If we went into recursion, just die.
-      RawWrite("AddressSanitizer is unable to mmap\n");
+      RawWrite("ERROR: Failed to mmap\n");
       Die();
     }
     recursion_count++;
-    Report("ERROR: Failed to allocate 0x%zx (%zd) bytes of %s: %s\n",
-           size, size, mem_type, strerror(errno));
+    Report("ERROR: %s failed to allocate 0x%zx (%zd) bytes of %s: %s\n",
+           SanitizerToolName, size, size, mem_type, strerror(errno));
     DumpProcessMap();
     CHECK("unable to mmap" && 0);
   }
@@ -72,8 +76,8 @@ void UnmapOrDie(void *addr, uptr size) {
   if (!addr || !size) return;
   int res = internal_munmap(addr, size);
   if (res != 0) {
-    Report("ERROR: Failed to deallocate 0x%zx (%zd) bytes at address %p\n",
-           size, size, addr);
+    Report("ERROR: %s failed to deallocate 0x%zx (%zd) bytes at address %p\n",
+           SanitizerToolName, size, size, addr);
     CHECK("unable to unmap" && 0);
   }
 }
@@ -86,8 +90,9 @@ void *MmapFixedNoReserve(uptr fixed_addr, uptr size) {
       MAP_PRIVATE | MAP_ANON | MAP_FIXED | MAP_NORESERVE,
       -1, 0);
   if (p == (void*)-1)
-    Report("ERROR: Failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
-           size, size, fixed_addr, errno);
+    Report("ERROR: "
+           "%s failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
+           SanitizerToolName, size, size, fixed_addr, errno);
   return p;
 }
 
@@ -99,8 +104,9 @@ void *MmapFixedOrDie(uptr fixed_addr, uptr size) {
       MAP_PRIVATE | MAP_ANON | MAP_FIXED,
       -1, 0);
   if (p == (void*)-1) {
-    Report("ERROR: Failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
-           size, size, fixed_addr, errno);
+    Report("ERROR:"
+           " %s failed to allocate 0x%zx (%zd) bytes at address %p (%d)\n",
+           SanitizerToolName, size, size, fixed_addr, errno);
     CHECK("unable to mmap" && 0);
   }
   return p;
@@ -118,7 +124,7 @@ void FlushUnneededShadowMemory(uptr addr, uptr size) {
 }
 
 void *MapFileToMemory(const char *file_name, uptr *buff_size) {
-  fd_t fd = internal_open(file_name, false);
+  fd_t fd = OpenFile(file_name, false);
   CHECK_NE(fd, kInvalidFd);
   uptr fsize = internal_filesize(fd);
   CHECK_NE(fsize, (uptr)-1);
@@ -187,7 +193,7 @@ void SetStackSizeLimitInBytes(uptr limit) {
   rlim.rlim_cur = limit;
   rlim.rlim_max = limit;
   if (setrlimit(RLIMIT_STACK, &rlim)) {
-    Report("setrlimit() failed %d\n", errno);
+    Report("ERROR: %s setrlimit() failed %d\n", SanitizerToolName, errno);
     Die();
   }
   CHECK(!StackSizeIsUnlimited());
@@ -199,10 +205,6 @@ void SleepForSeconds(int seconds) {
 
 void SleepForMillis(int millis) {
   usleep(millis * 1000);
-}
-
-void Exit(int exitcode) {
-  _exit(exitcode);
 }
 
 void Abort() {

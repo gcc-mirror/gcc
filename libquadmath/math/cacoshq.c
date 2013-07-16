@@ -70,7 +70,7 @@ cacoshq (__complex128 x)
 	 some cases.  */
       res = 2.0Q * clogq (csqrtq ((x + 1.0Q) / 2.0Q)
 			    + csqrtq ((x - 1.0Q) / 2.0Q));
-      if (signbit (__real__ res))
+      if (signbitq (__real__ res))
 	__real__ res = 0.0Q;
     }
   else

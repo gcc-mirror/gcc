@@ -94,11 +94,4 @@ namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __detail
-
- // Instantiations.
- template
- const unsigned long*
- lower_bound<const unsigned long*, size_t>(const unsigned long*,
-					   const unsigned long*,
-					   const size_t&);
 } // namespace std

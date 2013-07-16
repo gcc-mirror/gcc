@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include <errno.h>
 #include <stdlib.h>
+#include <sys/types.h>
 
 #include "backtrace.h"
 #include "internal.h"

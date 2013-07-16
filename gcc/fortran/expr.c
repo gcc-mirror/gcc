@@ -3528,7 +3528,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	}
       else if (rvalue->expr_type == EXPR_FUNCTION)
 	{
-	  s2 = rvalue->symtree->n.sym->result;
+	  if (rvalue->value.function.esym)
+	    s2 = rvalue->value.function.esym->result;
+	  else
+	    s2 = rvalue->symtree->n.sym->result;
+
 	  name = s2->name;
 	}
       else
@@ -3732,7 +3736,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  && rvalue->symtree->n.sym->ns->proc_name->attr.flavor != FL_PROCEDURE
 	  && rvalue->symtree->n.sym->ns->proc_name->attr.flavor != FL_PROGRAM)
        for (ns = rvalue->symtree->n.sym->ns;
-	    ns->proc_name && ns->proc_name->attr.flavor != FL_PROCEDURE;
+	    ns && ns->proc_name && ns->proc_name->attr.flavor != FL_PROCEDURE;
 	    ns = ns->parent)
 	if (ns->parent == lvalue->symtree->n.sym->ns)
 	  warn = true;
@@ -3886,7 +3890,8 @@ gfc_default_initializer (gfc_typespec *ts)
      types (otherwise we could use gfc_has_default_initializer()).  */
   for (comp = ts->u.derived->components; comp; comp = comp->next)
     if (comp->initializer || comp->attr.allocatable
-	|| (comp->ts.type == BT_CLASS && CLASS_DATA (comp)->attr.allocatable))
+	|| (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
+	    && CLASS_DATA (comp)->attr.allocatable))
       break;
 
   if (!comp)

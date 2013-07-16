@@ -6,6 +6,8 @@ package io_test
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	. "io"
 	"strings"
 	"testing"
@@ -88,6 +90,12 @@ func (w *noReadFrom) Write(p []byte) (n int, err error) {
 	return w.w.Write(p)
 }
 
+type wantedAndErrReader struct{}
+
+func (wantedAndErrReader) Read(p []byte) (int, error) {
+	return len(p), errors.New("wantedAndErrReader error")
+}
+
 func TestCopyNEOF(t *testing.T) {
 	// Test that EOF behavior is the same regardless of whether
 	// argument to CopyN has ReadFrom.
@@ -113,6 +121,16 @@ func TestCopyNEOF(t *testing.T) {
 	if n != 3 || err != EOF {
 		t.Errorf("CopyN(bytes.Buffer, foo, 4) = %d, %v; want 3, EOF", n, err)
 	}
+
+	n, err = CopyN(b, wantedAndErrReader{}, 5)
+	if n != 5 || err != nil {
+		t.Errorf("CopyN(bytes.Buffer, wantedAndErrReader, 5) = %d, %v; want 5, nil", n, err)
+	}
+
+	n, err = CopyN(&noReadFrom{b}, wantedAndErrReader{}, 5)
+	if n != 5 || err != nil {
+		t.Errorf("CopyN(noReadFrom, wantedAndErrReader, 5) = %d, %v; want 5, nil", n, err)
+	}
 }
 
 func TestReadAtLeast(t *testing.T) {
@@ -120,22 +138,30 @@ func TestReadAtLeast(t *testing.T) {
 	testReadAtLeast(t, &rb)
 }
 
-// A version of bytes.Buffer that returns n > 0, EOF on Read
+// A version of bytes.Buffer that returns n > 0, err on Read
 // when the input is exhausted.
-type dataAndEOFBuffer struct {
+type dataAndErrorBuffer struct {
+	err error
 	bytes.Buffer
 }
 
-func (r *dataAndEOFBuffer) Read(p []byte) (n int, err error) {
+func (r *dataAndErrorBuffer) Read(p []byte) (n int, err error) {
 	n, err = r.Buffer.Read(p)
 	if n > 0 && r.Buffer.Len() == 0 && err == nil {
-		err = EOF
+		err = r.err
 	}
 	return
 }
 
 func TestReadAtLeastWithDataAndEOF(t *testing.T) {
-	var rb dataAndEOFBuffer
+	var rb dataAndErrorBuffer
+	rb.err = EOF
+	testReadAtLeast(t, &rb)
+}
+
+func TestReadAtLeastWithDataAndError(t *testing.T) {
+	var rb dataAndErrorBuffer
+	rb.err = fmt.Errorf("fake error")
 	testReadAtLeast(t, &rb)
 }
 
@@ -169,8 +195,12 @@ func testReadAtLeast(t *testing.T, rb ReadWriter) {
 	}
 	rb.Write([]byte("4"))
 	n, err = ReadAtLeast(rb, buf, 2)
-	if err != ErrUnexpectedEOF {
-		t.Errorf("expected ErrUnexpectedEOF, got %v", err)
+	want := ErrUnexpectedEOF
+	if rb, ok := rb.(*dataAndErrorBuffer); ok && rb.err != EOF {
+		want = rb.err
+	}
+	if err != want {
+		t.Errorf("expected %v, got %v", want, err)
 	}
 	if n != 1 {
 		t.Errorf("expected to have read 1 bytes, got %v", n)

@@ -395,35 +395,6 @@ func (p *printer) writeCommentPrefix(pos, next token.Position, prev, comment *as
 	}
 }
 
-// Split comment text into lines
-// (using strings.Split(text, "\n") is significantly slower for
-// this specific purpose, as measured with: go test -bench=Print)
-//
-func split(text string) []string {
-	// count lines (comment text never ends in a newline)
-	n := 1
-	for i := 0; i < len(text); i++ {
-		if text[i] == '\n' {
-			n++
-		}
-	}
-
-	// split
-	lines := make([]string, n)
-	n = 0
-	i := 0
-	for j := 0; j < len(text); j++ {
-		if text[j] == '\n' {
-			lines[n] = text[i:j] // exclude newline
-			i = j + 1            // discard newline
-			n++
-		}
-	}
-	lines[n] = text[i:]
-
-	return lines
-}
-
 // Returns true if s contains only white space
 // (only tabs and blanks can appear in the printer's context).
 //
@@ -551,9 +522,7 @@ func stripCommonPrefix(lines []string) {
 			}
 			// Shorten the computed common prefix by the length of
 			// suffix, if it is found as suffix of the prefix.
-			if strings.HasSuffix(prefix, string(suffix)) {
-				prefix = prefix[0 : len(prefix)-len(suffix)]
-			}
+			prefix = strings.TrimSuffix(prefix, string(suffix))
 		}
 	}
 
@@ -618,7 +587,7 @@ func (p *printer) writeComment(comment *ast.Comment) {
 
 	// for /*-style comments, print line by line and let the
 	// write function take care of the proper indentation
-	lines := split(text)
+	lines := strings.Split(text, "\n")
 
 	// The comment started in the first column but is going
 	// to be indented. For an idempotent result, add indentation

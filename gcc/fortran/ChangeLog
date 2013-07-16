@@ -1,3 +1,257 @@
+2013-07-08  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57785
+	* simplify.c (compute_dot_product): Complex conjugate for
+	dot_product.
+	(gfc_simplify_dot_product, gfc_simplify_matmul): Update call.
+
+2013-06-11  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57508
+	* resolve.c (get_temp_from_expr): Don't copy function
+	result attributes to temporary.
+
+2013-06-04  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2013-05-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57364
+	* resolve.c (get_temp_from_expr): Commit created sym.
+
+2013-05-31  Janus Weil  <janus@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57217
+	* interface.c (check_dummy_characteristics): Symmetrize type check.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-05-22  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* intrinsic.texi (RANDOM_SEED): Improve example.
+
+2013-05-07  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline
+	2013-05-02  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57142
+	* simplify.c (gfc_simplify_size): Renamed from
+	simplify_size; fix kind=8 handling.
+	(gfc_simplify_size): New function.
+	(gfc_simplify_shape): Add range check.
+	* resolve.c (resolve_function): Fix handling
+	for ISYM_SIZE.
+
+2013-04-26  Janus Weil  <janus@gcc.gnu.org>
+
+	Backports from trunk:
+
+	PR fortran/56814
+	* interface.c (check_result_characteristics): Get result from interface
+	if present.
+
+	PR fortran/56968
+	* expr.c (gfc_check_pointer_assign): Handle generic functions returning
+	procedure pointers.
+
+	PR fortran/53685
+	PR fortran/57022
+	* check.c (gfc_calculate_transfer_sizes): Fix for array-valued SOURCE
+	expressions.
+	* target-memory.h (gfc_element_size): New prototype.
+	* target-memory.c (size_array): Remove.
+	(gfc_element_size): New function.
+	(gfc_target_expr_size): Modified to always return the full size of the
+	expression.
+
+2013-04-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56872
+	* frontend-passes.c (copy_walk_reduction_arg): Change argument type
+	to gfc_constructor.  If it has an iterator, wrap the copy of its
+	expression in an array constructor with that iterator.  Don't special
+	case function expressions.
+	(callback_reduction): Update caller.  Don't return early if there is
+	an iterator.
+
+2013-04-18  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56816
+	* match.c (gfc_match_select_type): Add syntax error. Move namespace
+	allocation and cleanup...
+	* parse.c (decode_statement): ... here.
+
+2013-04-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56994
+	* invoke.texi (NEAREST): S argument is not optional.
+
+2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56782
+	Backport fron trunk.
+	* frontend-passes.c (callback_reduction):  Dont't do
+	any simplification if there is only a single element
+	which has an iterator.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56615
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Pack arrays
+	if they are not simply contiguous.
+
+2013-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	* gfortran.texi (STRUCTURE and RECORD): State more clearly how
+	to convert them into derived types.
+
+2013-03-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56575
+	* expr.c (gfc_default_initializer): Check that a class declared
+	type has any components.
+	* resolve.c (resolve_fl_derived0): On failing the test for C437
+	set the type to BT_UNKNOWN to prevent repeat error messages.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56477
+	* expr.c (gfc_check_pointer_assign): Avoid NULL pointer dereference.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54730
+	* array.c (gfc_match_array_constructor): Set a checkpoint before
+	matching a typespec.  Drop it on success, restore it otherwise.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/54730
+	* gfortran.h (struct gfc_undo_change_set): New field 'previous'.
+	(gfc_new_undo_checkpoint, gfc_drop_last_undo_checkpoint,
+	gfc_restore_last_undo_checkpoint): New prototypes.
+	* symbol.c (default_undo_chgset_var): Update initialization.
+	(single_undo_checkpoint_p, gfc_new_undo_checkpoint,
+	free_undo_change_set_data, pop_undo_change_set,
+	gfc_drop_last_undo_checkpoint, enforce_single_undo_checkpoint):
+	New functions.
+	(save_symbol_data): Handle multiple change sets.  Make sure old_symbol
+	field's previous value is not overwritten.  Clear gfc_new field.
+	(restore_old_symbol): Restore previous old_symbol field.
+	(gfc_restore_last_undo_checkpoint): New function, using body renamed
+	from gfc_undo_symbols.  Restore the previous change set as current one.
+	(gfc_undo_symbols): New body.
+	(gfc_commit_symbols, gfc_commit_symbol, gfc_enforce_clean_symbol_state):
+	Call enforce_single_undo_checkpoint.
+	(gfc_symbol_done_2): Ditto.  Free change set data.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* symbol.c (restore_old_symbol): Fix thinko.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* symbol.c (gfc_undo_symbols): Move code...
+	(restore_old_symbol): ... here as a new function.
+
+2013-03-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* Make-lang.in (F95_PARSER_OBJS): Add dependency to vec.h.
+	* gfortran.h: Include vec.h.
+	(gfc_undo_change_set): New struct.
+	* symbol.c (tentative_tbp): Remove struct.
+	(changed_syms, tentative_tbp_list): Remove variables.
+	(default_undo_chgset_var, latest_undo_chgset): New variables.
+	(save_symbol_data, gfc_get_sym_tree, gfc_undo_symbols,
+	gfc_commit_symbols, gfc_commit_symbol,
+	gfc_enforce_clean_symbol_state, gfc_get_typebound_proc):
+	Use latest_undo_chgset instead of changed_syms and tentative_tbp_list.
+
+2013-03-01  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56491
+	* iresolve.c (resolve_bound): Use gfc_get_string instead of xstrdup.
+	* symbol.c (free_components): Free proc-pointer components.
+
+2013-03-01  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-decl.c (gfc_trans_deferred_vars): Free expr after use.
+	* trans-io.c (build_dt): Ditto.
+
+2013-02-24  Joseph Myers  <joseph@codesourcery.com>
+
+	* resolve.c (generate_component_assignments): Don't use UTF-8
+	ligature in diagnostic.
+
+2013-02-21  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/56385
+	* trans-array.c (structure_alloc_comps): Handle procedure-pointer
+	components with allocatable result.
+
+2012-02-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56416
+	* gfortran.texi (Part II: Language Reference, Extensions,
+	Non-Fortran Main Program): Sort @menu to match actual section order.
+	* intrinsic.texi (Intrinsic Procedures): Ditto.
+	(C_F_POINTER, PRECISION): Move to the alphabetically correct place.
+
+2013-02-15  Tobias Burnus  <burnus@net-b.de>
+	    Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/56318
+	* simplify.c (gfc_simplify_matmul): Fix result shape
+	and matmul result.
+
+2013-02-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/53818
+	* resolve.c (apply_default_init_local): Don't create an
+	initializer for a result variable.
+
+2013-02-14  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56224
+	* gfortran.h (gfc_add_include_path):  Add boolean argument
+	for warn.
+	* scanner.c (gfc_add_include_path):  Pass along warn argument
+	to add_path_to_list.
+	* options.c (gfc_post_options):  Add true warn argument to
+	gfc_add_include_path.
+	(gfc_handle_module_path_options):  Likewise.
+	(gfc_handle_option): Also gfc_add_include_path for intrinsic
+	modules, without warning.
+
+2013-02-14  Paul Thomas  <pault@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR testsuite/56138
+	* trans-decl.c (gfc_get_symbol_decl): Fix deferred-length
+	results for functions without extra result variable.
+
+	Revert:
+	2013-01-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56138
+	* trans-decl.c (gfc_trans_deferred_vars): Fix deferred-length
+	results for functions without extra result variable.
+
+2013-02-12  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46952
+	* resolve.c (resolve_call): Do not check deferred procedures for
+	recursiveness.
+
 2013-02-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/55362

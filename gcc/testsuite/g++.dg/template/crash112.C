@@ -5,7 +5,7 @@ struct A
   template<typename> void foo() {}
 };
 
-template<void (A::*)()> struct B {}; // { dg-error "declaration" }
+template<void (A::*)()> struct B {};
 
 template<int> struct C
 {
@@ -13,3 +13,5 @@ template<int> struct C
 };
 
 C<0> c;
+
+// { dg-prune-output "could not convert" }

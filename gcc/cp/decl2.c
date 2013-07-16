@@ -109,7 +109,8 @@ int at_eof;
    that apply to the function).  */
 
 tree
-build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals)
+build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals,
+		  cp_ref_qualifier rqual)
 {
   tree raises;
   tree attrs;
@@ -129,10 +130,12 @@ build_memfn_type (tree fntype, tree ctype, cp_cv_quals quals)
 				       (TREE_CODE (fntype) == METHOD_TYPE
 					? TREE_CHAIN (TYPE_ARG_TYPES (fntype))
 					: TYPE_ARG_TYPES (fntype)));
-  if (raises)
-    fntype = build_exception_variant (fntype, raises);
   if (attrs)
     fntype = cp_build_type_attribute_variant (fntype, attrs);
+  if (rqual)
+    fntype = build_ref_qualified_type (fntype, rqual);
+  if (raises)
+    fntype = build_exception_variant (fntype, raises);
 
   return fntype;
 }
@@ -157,7 +160,9 @@ change_return_type (tree new_ret, tree fntype)
   if (TREE_CODE (fntype) == FUNCTION_TYPE)
     {
       newtype = build_function_type (new_ret, args);
-      newtype = apply_memfn_quals (newtype, type_memfn_quals (fntype));
+      newtype = apply_memfn_quals (newtype,
+				   type_memfn_quals (fntype),
+				   type_memfn_rqual (fntype));
     }
   else
     newtype = build_method_type_directly
@@ -330,10 +335,11 @@ grokclassfn (tree ctype, tree function, enum overload_flags flags)
 }
 
 /* Create an ARRAY_REF, checking for the user doing things backwards
-   along the way.  */
+   along the way.  DECLTYPE_P is for N3276, as in the parser.  */
 
 tree
-grok_array_decl (location_t loc, tree array_expr, tree index_exp)
+grok_array_decl (location_t loc, tree array_expr, tree index_exp,
+		 bool decltype_p)
 {
   tree type;
   tree expr;
@@ -359,8 +365,13 @@ grok_array_decl (location_t loc, tree array_expr, tree index_exp)
 
   /* If they have an `operator[]', use that.  */
   if (MAYBE_CLASS_TYPE_P (type) || MAYBE_CLASS_TYPE_P (TREE_TYPE (index_exp)))
-    expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr, index_exp,
-			 NULL_TREE, /*overload=*/NULL, tf_warning_or_error);
+    {
+      tsubst_flags_t complain = tf_warning_or_error;
+      if (decltype_p)
+	complain |= tf_decltype;
+      expr = build_new_op (loc, ARRAY_REF, LOOKUP_NORMAL, array_expr,
+			   index_exp, NULL_TREE, /*overload=*/NULL, complain);
+    }
   else
     {
       tree p1, p2, i1, i2;
@@ -670,6 +681,11 @@ check_classfn (tree ctype, tree function, tree template_parms)
 	  /* A member template definition only matches a member template
 	     declaration.  */
 	  if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
+	    continue;
+
+	  /* ref-qualifier or absence of same must match.  */
+	  if (type_memfn_rqual (TREE_TYPE (function))
+	      != type_memfn_rqual (TREE_TYPE (fndecl)))
 	    continue;
 
 	  /* While finding a match, same types and params are not enough
@@ -1028,7 +1044,7 @@ grokbitfield (const cp_declarator *declarator,
   if (TREE_CODE (value) == VOID_TYPE)
     return void_type_node;
 
-  if (!INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (TREE_TYPE (value))
+  if (!INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (value))
       && (POINTER_TYPE_P (value)
           || !dependent_type_p (TREE_TYPE (value))))
     {
@@ -1261,7 +1277,9 @@ cp_reconstruct_complex_type (tree type, tree bottom)
     {
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
       outer = build_function_type (inner, TYPE_ARG_TYPES (type));
-      outer = apply_memfn_quals (outer, type_memfn_quals (type));
+      outer = apply_memfn_quals (outer,
+				 type_memfn_quals (type),
+				 type_memfn_rqual (type));
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
     {
@@ -2195,9 +2213,6 @@ determine_visibility (tree decl)
 	      && !lookup_attribute ("visibility", attribs))
 	    {
 	      int depth = TMPL_ARGS_DEPTH (args);
-	      int class_depth = 0;
-	      if (class_type && CLASSTYPE_TEMPLATE_INFO (class_type))
-		class_depth = TMPL_ARGS_DEPTH (CLASSTYPE_TI_ARGS (class_type));
 	      if (DECL_VISIBILITY_SPECIFIED (decl))
 		{
 		  /* A class template member with explicit visibility
@@ -2210,7 +2225,7 @@ determine_visibility (tree decl)
 		      constrain_visibility_for_template (decl, lev);
 		    }
 		}
-	      else if (depth > class_depth)
+	      else if (PRIMARY_TEMPLATE_P (TI_TEMPLATE (tinfo)))
 		/* Limit visibility based on its template arguments.  */
 		constrain_visibility_for_template (decl, args);
 	    }

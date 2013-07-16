@@ -1,3 +1,85 @@
+2013-06-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h (DECL_BY_DOUBLE_REF_P): Delete.
+	* gcc-interface/gigi.h (annotate_object): Adjust prototype.
+	(convert_vms_descriptor): Likewise.
+	* gcc-interface/decl.c (gnat_to_gnu_param): Do not pass fat pointer
+	types by double dereference.
+	(annotate_object): Remove BY_DOUBLE_REF parameter and adjust.
+	(gnat_to_gnu_entity): Adjust calls to annotate_object.
+	* gcc-interface/trans.c (Identifier_to_gnu): Do not deal with double
+	dereference.
+	(Call_to_gnu): Likewise.
+	(build_function_stub): Adjust call to convert_vms_descriptor.
+	(Subprogram_Body_to_gnu): Adjust call to annotate_object.
+	* gcc-interface/utils.c (convert_vms_descriptor): Remove BY_REF
+	parameter and adjust.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Last_Bit>: Add kludge
+	to avoid generating an overflow for -1.
+
+2013-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/56474
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Subtype>: Use
+	int_const_binop to shift bounds by 1 when they are integer constants.
+
+2013-04-23  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/55445
+	* raise-gcc.c (__SEH__): Additional check that SjLj isn't active.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-08  Cesar Strauss  <cestrauss@gmail.com>
+
+	PR ada/52123
+	* seh_init.c (Raise_From_Signal_Handler): Declare as no-return.
+	(__gnat_SEH_error_handler): Likewise.  Remove final return.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu): Abort instead of erroring
+	out for an unimplemented attribute.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_field): Remove the wrapper around
+	a misaligned integral type if a size is specified for the field.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Raise_Error_to_gnu) <CE_Index_Check_Failed>:
+	Record the unpadded type of the index type on the RCI stack.
+
+2013-03-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (emit_range_check): Assert that the range type
+	is a numerical type and remove useless local variables.
+
+2013-02-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/ada-tree.h: Back out change accidentally committed.
+
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/56258
+	* gnat-style.texi (@title): Remove @hfill.
+	* projects.texi: Avoid line wrapping inside of @pxref or @xref.
+
+2013-02-14  Rainer Emrich  <rainer@emrich-ebersheim.de>
+
+	PR target/52123
+	* tracebak.c: Cast from pointer via FARPROC.
+
 2013-02-07  Simon Wright  <simon@pushface.org>
 
 	PR target/50678

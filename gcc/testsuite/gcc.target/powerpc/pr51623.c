@@ -1,5 +1,5 @@
 /* PR target/51623 */
-/* { dg-do compile { target { { powerpc*-*-linux* && ilp32 } || { powerpc-*-eabi* } } } } */
+/* { dg-do compile { target { { powerpc*-*-linux* && ilp32 } || { powerpc-*-eabi* powerpc-*-rtems* } } } } */
 /* { dg-options "-mrelocatable -ffreestanding" } */
 
 /* This generated an error, since the compiler was calling

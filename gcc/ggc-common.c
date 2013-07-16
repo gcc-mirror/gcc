@@ -561,6 +561,10 @@ gt_pch_save (FILE *f)
 
   ggc_pch_prepare_write (state.d, state.f);
 
+#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+  vec<char> vbits = vNULL;
+#endif
+
   /* Actually write out the objects.  */
   for (i = 0; i < state.count; i++)
     {
@@ -569,6 +573,50 @@ gt_pch_save (FILE *f)
 	  this_object_size = state.ptrs[i]->size;
 	  this_object = XRESIZEVAR (char, this_object, this_object_size);
 	}
+#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+      /* obj might contain uninitialized bytes, e.g. in the trailing
+	 padding of the object.  Avoid warnings by making the memory
+	 temporarily defined and then restoring previous state.  */
+      int get_vbits = 0;
+      size_t valid_size = state.ptrs[i]->size;
+      if (__builtin_expect (RUNNING_ON_VALGRIND, 0))
+	{
+	  if (vbits.length () < valid_size)
+	    vbits.safe_grow (valid_size);
+	  get_vbits = VALGRIND_GET_VBITS (state.ptrs[i]->obj,
+					  vbits.address (), valid_size);
+	  if (get_vbits == 3)
+	    {
+	      /* We assume that first part of obj is addressable, and
+		 the rest is unaddressable.  Find out where the boundary is
+		 using binary search.  */
+	      size_t lo = 0, hi = valid_size;
+	      while (hi > lo)
+		{
+		  size_t mid = (lo + hi) / 2;
+		  get_vbits = VALGRIND_GET_VBITS ((char *) state.ptrs[i]->obj
+						  + mid, vbits.address (),
+						  1);
+		  if (get_vbits == 3)
+		    hi = mid;
+		  else if (get_vbits == 1)
+		    lo = mid + 1;
+		  else
+		    break;
+		}
+	      if (get_vbits == 1 || get_vbits == 3)
+		{
+		  valid_size = lo;
+		  get_vbits = VALGRIND_GET_VBITS (state.ptrs[i]->obj,
+						  vbits.address (),
+						  valid_size);
+		}
+	    }
+	  if (get_vbits == 1)
+	    VALGRIND_DISCARD (VALGRIND_MAKE_MEM_DEFINED (state.ptrs[i]->obj,
+							 state.ptrs[i]->size));
+	}
+#endif
       memcpy (this_object, state.ptrs[i]->obj, state.ptrs[i]->size);
       if (state.ptrs[i]->reorder_fn != NULL)
 	state.ptrs[i]->reorder_fn (state.ptrs[i]->obj,
@@ -582,11 +630,29 @@ gt_pch_save (FILE *f)
 			    state.ptrs[i]->note_ptr_fn == gt_pch_p_S);
       if (state.ptrs[i]->note_ptr_fn != gt_pch_p_S)
 	memcpy (state.ptrs[i]->obj, this_object, state.ptrs[i]->size);
+#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+      if (__builtin_expect (get_vbits == 1, 0))
+	{
+	  (void) VALGRIND_SET_VBITS (state.ptrs[i]->obj, vbits.address (),
+				     valid_size);
+	  if (valid_size != state.ptrs[i]->size)
+	    VALGRIND_DISCARD (VALGRIND_MAKE_MEM_NOACCESS ((char *)
+							  state.ptrs[i]->obj
+							  + valid_size,
+							  state.ptrs[i]->size
+							  - valid_size));
+	}
+#endif
     }
+#if defined ENABLE_VALGRIND_CHECKING && defined VALGRIND_GET_VBITS
+  vbits.release ();
+#endif
+
   ggc_pch_finish (state.d, state.f);
   gt_pch_fixup_stringpool ();
 
-  free (state.ptrs);
+  XDELETE (state.ptrs);
+  XDELETE (this_object);
   htab_delete (saving_htab);
 }
 

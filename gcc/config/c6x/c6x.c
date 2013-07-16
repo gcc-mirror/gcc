@@ -183,7 +183,7 @@ typedef int unit_req_table[2][UNIT_REQ_MAX];
 static unit_req_table unit_reqs;
 
 /* Register map for debugging.  */
-int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
+unsigned const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,	/* A0 - A15.  */
   37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,	/* A16 - A32.  */

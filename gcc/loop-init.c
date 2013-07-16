@@ -99,6 +99,9 @@ loop_optimizer_init (unsigned flags)
 #ifdef ENABLE_CHECKING
       verify_loop_structure ();
 #endif
+
+      /* Clear all flags.  */
+      loops_state_clear (~0U);
     }
 
   /* Apply flags to loops.  */
@@ -171,16 +174,19 @@ loop_fini_done:
    the latch, and loops did not get new subloops (new loops might possibly
    get created, but we are not interested in them).  Fix up the mess.
 
-   If CHANGED_BBS is not NULL, basic blocks whose loop has changed are
-   marked in it.  */
+   If CHANGED_BBS is not NULL, basic blocks whose loop depth has changed are
+   marked in it.
 
-void
+   Returns the number of new discovered loops.  */
+
+unsigned
 fix_loop_structure (bitmap changed_bbs)
 {
   basic_block bb;
   int record_exits = 0;
   loop_iterator li;
   struct loop *loop;
+  unsigned old_nloops, i;
 
   timevar_push (TV_LOOP_INIT);
 
@@ -224,9 +230,14 @@ fix_loop_structure (bitmap changed_bbs)
 	  flow_loop_tree_node_add (loop_outer (loop), ploop);
 	}
 
-      /* Remove the loop and free its data.  */
-      delete_loop (loop);
+      /* Remove the loop.  */
+      loop->header = NULL;
+      flow_loop_tree_node_remove (loop);
     }
+
+  /* Remember the number of loops so we can return how many new loops
+     flow_loops_find discovered.  */
+  old_nloops = number_of_loops ();
 
   /* Re-compute loop structure in-place.  */
   flow_loops_find (current_loops);
@@ -243,6 +254,14 @@ fix_loop_structure (bitmap changed_bbs)
 	}
     }
 
+  /* Finally free deleted loops.  */
+  FOR_EACH_VEC_ELT (*get_loops (), i, loop)
+    if (loop && loop->header == NULL)
+      {
+	(*get_loops ())[i] = NULL;
+	flow_loop_free (loop);
+      }
+
   loops_state_clear (LOOPS_NEED_FIXUP);
 
   /* Apply flags to loops.  */
@@ -253,6 +272,8 @@ fix_loop_structure (bitmap changed_bbs)
 #endif
 
   timevar_pop (TV_LOOP_INIT);
+
+  return number_of_loops () - old_nloops;
 }
 
 /* Gate for the RTL loop superpass.  The actual passes are subpasses.

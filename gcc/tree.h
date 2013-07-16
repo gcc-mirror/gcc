@@ -3586,13 +3586,29 @@ struct GTY(()) tree_optimization_option {
 
   /* The optimization options used by the user.  */
   struct cl_optimization opts;
+
+  /* Target optabs for this set of optimization options.  This is of
+     type `struct target_optabs *'.  */
+  unsigned char *GTY ((atomic)) optabs;
+
+  /* The value of this_target_optabs against which the optabs above were
+     generated.  */
+  struct target_optabs *GTY ((skip)) base_optabs;
 };
 
 #define TREE_OPTIMIZATION(NODE) \
   (&OPTIMIZATION_NODE_CHECK (NODE)->optimization.opts)
 
+#define TREE_OPTIMIZATION_OPTABS(NODE) \
+  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.optabs)
+
+#define TREE_OPTIMIZATION_BASE_OPTABS(NODE) \
+  (OPTIMIZATION_NODE_CHECK (NODE)->optimization.base_optabs)
+
 /* Return a tree node that encapsulates the current optimization options.  */
 extern tree build_optimization_node (void);
+
+extern void init_tree_optimization_optabs (tree);
 
 /* Target options used by a function.  */
 
@@ -5933,6 +5949,7 @@ extern tree block_ultimate_origin (const_tree);
 extern tree get_binfo_at_offset (tree, HOST_WIDE_INT, tree);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
+extern bool contains_bitfld_component_ref_p (const_tree);
 
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);

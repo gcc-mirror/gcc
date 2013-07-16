@@ -239,6 +239,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     struct atomic<_Tp*>;
 
+    /* The target's "set" value for test-and-set may not be exactly 1.  */
+#if __GCC_ATOMIC_TEST_AND_SET_TRUEVAL == 1
+    typedef bool __atomic_flag_data_type;
+#else
+    typedef unsigned char __atomic_flag_data_type;
+#endif
 
   /**
    *  @brief Base type for atomic_flag.
@@ -254,12 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct __atomic_flag_base
   {
-    /* The target's "set" value for test-and-set may not be exactly 1.  */
-#if __GCC_ATOMIC_TEST_AND_SET_TRUEVAL == 1
-    bool _M_i;
-#else
-    unsigned char _M_i;
-#endif
+    __atomic_flag_data_type _M_i;
   };
 
   _GLIBCXX_END_EXTERN_C
@@ -277,7 +278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Conversion to ATOMIC_FLAG_INIT.
     constexpr atomic_flag(bool __i) noexcept
-      : __atomic_flag_base({ __i ? __GCC_ATOMIC_TEST_AND_SET_TRUEVAL : 0 })
+      : __atomic_flag_base{ _S_init(__i) }
     { }
 
     bool
@@ -313,6 +314,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       __atomic_clear (&_M_i, __m);
     }
+
+  private:
+    static constexpr __atomic_flag_data_type
+    _S_init(bool __i)
+    { return __i ? __GCC_ATOMIC_TEST_AND_SET_TRUEVAL : 0; }
   };
 
 

@@ -272,22 +272,13 @@
      assumed in the instruction encoding.  */
   switch (mode)
     {
+    case BLKmode:
     case QImode:
     case HImode:
       return true;
 
-    case SImode:
-    case SFmode:
-    case SCmode:
-      return (INTVAL (op) % 4) == 0;
-
-    case DImode:
-    case DFmode:
-    case DCmode:
-      return (INTVAL (op) % 8) == 0;
-
     default:
-      break;
+      return (INTVAL (op) % GET_MODE_SIZE (mode)) == 0;
     }
 
   return false;

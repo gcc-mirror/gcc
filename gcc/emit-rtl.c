@@ -2580,10 +2580,14 @@ verify_rtx_sharing (rtx orig, rtx insn)
     case RETURN:
     case SIMPLE_RETURN:
     case SCRATCH:
-      return;
       /* SCRATCH must be shared because they represent distinct values.  */
+      return;
     case CLOBBER:
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
+      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+         clobbers or clobbers of hard registers that originated as pseudos.
+         This is needed to allow safe register renaming.  */
+      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
+	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
 	return;
       break;
 
@@ -2656,15 +2660,12 @@ verify_rtx_sharing (rtx orig, rtx insn)
   return;
 }
 
-/* Go through all the RTL insn bodies and check that there is no unexpected
-   sharing in between the subexpressions.  */
+/* Go through all the RTL insn bodies and clear all the USED bits.  */
 
-DEBUG_FUNCTION void
-verify_rtl_sharing (void)
+static void
+reset_all_used_flags (void)
 {
   rtx p;
-
-  timevar_push (TV_VERIFY_RTL_SHARING);
 
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
@@ -2689,6 +2690,19 @@ verify_rtl_sharing (void)
 	      }
 	  }
       }
+}
+
+/* Go through all the RTL insn bodies and check that there is no unexpected
+   sharing in between the subexpressions.  */
+
+DEBUG_FUNCTION void
+verify_rtl_sharing (void)
+{
+  rtx p;
+
+  timevar_push (TV_VERIFY_RTL_SHARING);
+
+  reset_all_used_flags ();
 
   for (p = get_insns (); p; p = NEXT_INSN (p))
     if (INSN_P (p))
@@ -2698,6 +2712,8 @@ verify_rtl_sharing (void)
 	if (CALL_P (p))
 	  verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (p), p);
       }
+
+  reset_all_used_flags ();
 
   timevar_pop (TV_VERIFY_RTL_SHARING);
 }
@@ -2797,7 +2813,11 @@ repeat:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
-      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER)
+      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+         clobbers or clobbers of hard registers that originated as pseudos.
+         This is needed to allow safe register renaming.  */
+      if (REG_P (XEXP (x, 0)) && REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER
+	  && ORIGINAL_REGNO (XEXP (x, 0)) == REGNO (XEXP (x, 0)))
 	return;
       break;
 
@@ -5303,7 +5323,11 @@ copy_insn_1 (rtx orig)
     case SIMPLE_RETURN:
       return orig;
     case CLOBBER:
-      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER)
+      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+         clobbers or clobbers of hard registers that originated as pseudos.
+         This is needed to allow safe register renaming.  */
+      if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER
+	  && ORIGINAL_REGNO (XEXP (orig, 0)) == REGNO (XEXP (orig, 0)))
 	return orig;
       break;
 

@@ -103,6 +103,6 @@ class Vector {
   Vector(const Vector&);
   void operator=(const Vector&);
 };
-}
+}  // namespace __tsan
 
 #endif  // #ifndef TSAN_VECTOR_H

@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in.
 
-AUTOMAKE_OPTIONS = foreign dejagnu
+AUTOMAKE_OPTIONS = foreign dejagnu no-dist
 
 EXPECT = expect
 

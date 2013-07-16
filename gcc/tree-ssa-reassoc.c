@@ -1062,11 +1062,9 @@ propagate_op_to_single_use (tree op, gimple stmt, tree *def)
   if (TREE_CODE (op) != SSA_NAME)
     update_stmt (use_stmt);
   gsi = gsi_for_stmt (stmt);
+  unlink_stmt_vdef (stmt);
   gsi_remove (&gsi, true);
   release_defs (stmt);
-
-  if (is_gimple_call (stmt))
-    unlink_stmt_vdef (stmt);
 }
 
 /* Walks the linear chain with result *DEF searching for an operation
@@ -1109,7 +1107,8 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
 	 the operand might be hiding in the rightmost one.  */
       if (opcode == MULT_EXPR
 	  && gimple_assign_rhs_code (stmt) == opcode
-	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME)
+	  && TREE_CODE (gimple_assign_rhs2 (stmt)) == SSA_NAME
+	  && has_single_use (gimple_assign_rhs2 (stmt)))
 	{
 	  gimple stmt2 = SSA_NAME_DEF_STMT (gimple_assign_rhs2 (stmt));
 	  if (stmt_is_power_of_op (stmt2, op))
@@ -4294,6 +4293,7 @@ struct gimple_opt_pass pass_reassoc =
   0,					/* properties_destroyed */
   0,					/* todo_flags_start */
   TODO_verify_ssa
+    | TODO_update_ssa_only_virtuals
     | TODO_verify_flow
     | TODO_ggc_collect			/* todo_flags_finish */
  }

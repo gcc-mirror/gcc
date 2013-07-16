@@ -34,7 +34,10 @@
 
 #if _GLIBCXX_HAVE_COMPLEX_H
 # include_next <complex.h>
-# undef complex
+# ifdef _GLIBCXX_COMPLEX
+// See PR56111, keep the macro in C++03 if possible.
+#  undef complex
+# endif
 #endif
 
 #ifndef _GLIBCXX_COMPLEX_H

@@ -3,6 +3,8 @@
 /* { dg-require-named-sections "" } */
 /* { dg-require-effective-target ptr32plus } */
 
+__extension__ typedef __UINTPTR_TYPE__ uintptr_t;
+
 int cpu (void *attr) {}
-const unsigned long x __attribute__((section("foo"))) =  (unsigned long)&cpu;
-const unsigned long g __attribute__((section("foo"))) = 0;
+const uintptr_t x __attribute__((section("foo"))) =  (uintptr_t)&cpu;
+const uintptr_t g __attribute__((section("foo"))) = 0;

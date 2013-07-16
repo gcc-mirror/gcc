@@ -87,9 +87,9 @@ Some basic guidelines for editing this document:
 * @code{CHMOD}:         CHMOD,     Change access permissions of files
 * @code{CMPLX}:         CMPLX,     Complex conversion function
 * @code{COMMAND_ARGUMENT_COUNT}: COMMAND_ARGUMENT_COUNT, Get number of command line arguments
-* @code{COMPLEX}:       COMPLEX,   Complex conversion function
-* @code{COMPILER_VERSION}: COMPILER_VERSION, Compiler version string
 * @code{COMPILER_OPTIONS}: COMPILER_OPTIONS, Options passed to the compiler
+* @code{COMPILER_VERSION}: COMPILER_VERSION, Compiler version string
+* @code{COMPLEX}:       COMPLEX,   Complex conversion function
 * @code{CONJG}:         CONJG,     Complex conjugate function
 * @code{COS}:           COS,       Cosine function
 * @code{COSH}:          COSH,      Hyperbolic cosine function
@@ -234,12 +234,12 @@ Some basic guidelines for editing this document:
 * @code{PRESENT}:       PRESENT,   Determine whether an optional dummy argument is specified
 * @code{PRODUCT}:       PRODUCT,   Product of array elements
 * @code{RADIX}:         RADIX,     Base of a data model
+* @code{RAN}:           RAN,       Real pseudo-random number
+* @code{RAND}:          RAND,      Real pseudo-random number
 * @code{RANDOM_NUMBER}: RANDOM_NUMBER, Pseudo-random number
 * @code{RANDOM_SEED}:   RANDOM_SEED, Initialize a pseudo-random number sequence
-* @code{RAND}:          RAND,      Real pseudo-random number
 * @code{RANGE}:         RANGE,     Decimal exponent range
 * @code{RANK} :         RANK,      Rank of a data object
-* @code{RAN}:           RAN,       Real pseudo-random number
 * @code{REAL}:          REAL,      Convert to real type 
 * @code{RENAME}:        RENAME,    Rename a file
 * @code{REPEAT}:        REPEAT,    Repeated string concatenation
@@ -2271,60 +2271,57 @@ end subroutine association_test
 @end table
 
 
-@node C_FUNLOC
-@section @code{C_FUNLOC} --- Obtain the C address of a procedure
-@fnindex C_FUNLOC
-@cindex pointer, C address of procedures
+@node C_F_POINTER
+@section @code{C_F_POINTER} --- Convert C into Fortran pointer
+@fnindex C_F_POINTER
+@cindex pointer, convert C to Fortran
 
 @table @asis
 @item @emph{Description}:
-@code{C_FUNLOC(x)} determines the C address of the argument.
+@code{C_F_POINTER(CPTR, FPTR[, SHAPE])} assigns the target of the C pointer
+@var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
 
 @item @emph{Standard}:
 Fortran 2003 and later
 
 @item @emph{Class}:
-Inquiry function
+Subroutine
 
 @item @emph{Syntax}:
-@code{RESULT = C_FUNLOC(x)}
+@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE])}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{x} @tab Interoperable function or pointer to such function.
+@item @var{CPTR}  @tab scalar of the type @code{C_PTR}. It is
+@code{INTENT(IN)}.
+@item @var{FPTR}  @tab pointer interoperable with @var{cptr}. It is
+@code{INTENT(OUT)}.
+@item @var{SHAPE} @tab (Optional) Rank-one array of type @code{INTEGER}
+with @code{INTENT(IN)}. It shall be present
+if and only if @var{fptr} is an array. The size
+must be equal to the rank of @var{fptr}.
 @end multitable
-
-@item @emph{Return value}:
-The return value is of type @code{C_FUNPTR} and contains the C address
-of the argument.
 
 @item @emph{Example}:
 @smallexample
-module x
-  use iso_c_binding
-  implicit none
-contains
-  subroutine sub(a) bind(c)
-    real(c_float) :: a
-    a = sqrt(a)+5.0
-  end subroutine sub
-end module x
 program main
   use iso_c_binding
-  use x
   implicit none
   interface
     subroutine my_routine(p) bind(c,name='myC_func')
-      import :: c_funptr
-      type(c_funptr), intent(in) :: p
+      import :: c_ptr
+      type(c_ptr), intent(out) :: p
     end subroutine
   end interface
-  call my_routine(c_funloc(sub))
+  type(c_ptr) :: cptr
+  real,pointer :: a(:)
+  call my_routine(cptr)
+  call c_f_pointer(cptr, a, [12])
 end program main
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_ASSOCIATED}, @ref{C_LOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
+@ref{C_LOC}, @ref{C_F_PROCPOINTER}
 @end table
 
 
@@ -2385,57 +2382,60 @@ end program main
 @end table
 
 
-@node C_F_POINTER
-@section @code{C_F_POINTER} --- Convert C into Fortran pointer
-@fnindex C_F_POINTER
-@cindex pointer, convert C to Fortran
+@node C_FUNLOC
+@section @code{C_FUNLOC} --- Obtain the C address of a procedure
+@fnindex C_FUNLOC
+@cindex pointer, C address of procedures
 
 @table @asis
 @item @emph{Description}:
-@code{C_F_POINTER(CPTR, FPTR[, SHAPE])} assigns the target of the C pointer
-@var{CPTR} to the Fortran pointer @var{FPTR} and specifies its shape.
+@code{C_FUNLOC(x)} determines the C address of the argument.
 
 @item @emph{Standard}:
 Fortran 2003 and later
 
 @item @emph{Class}:
-Subroutine
+Inquiry function
 
 @item @emph{Syntax}:
-@code{CALL C_F_POINTER(CPTR, FPTR[, SHAPE])}
+@code{RESULT = C_FUNLOC(x)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{CPTR}  @tab scalar of the type @code{C_PTR}. It is
-@code{INTENT(IN)}.
-@item @var{FPTR}  @tab pointer interoperable with @var{cptr}. It is
-@code{INTENT(OUT)}.
-@item @var{SHAPE} @tab (Optional) Rank-one array of type @code{INTEGER}
-with @code{INTENT(IN)}. It shall be present
-if and only if @var{fptr} is an array. The size
-must be equal to the rank of @var{fptr}.
+@item @var{x} @tab Interoperable function or pointer to such function.
 @end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{C_FUNPTR} and contains the C address
+of the argument.
 
 @item @emph{Example}:
 @smallexample
+module x
+  use iso_c_binding
+  implicit none
+contains
+  subroutine sub(a) bind(c)
+    real(c_float) :: a
+    a = sqrt(a)+5.0
+  end subroutine sub
+end module x
 program main
   use iso_c_binding
+  use x
   implicit none
   interface
     subroutine my_routine(p) bind(c,name='myC_func')
-      import :: c_ptr
-      type(c_ptr), intent(out) :: p
+      import :: c_funptr
+      type(c_funptr), intent(in) :: p
     end subroutine
   end interface
-  type(c_ptr) :: cptr
-  real,pointer :: a(:)
-  call my_routine(cptr)
-  call c_f_pointer(cptr, a, [12])
+  call my_routine(c_funloc(sub))
 end program main
 @end smallexample
 
 @item @emph{See also}:
-@ref{C_LOC}, @ref{C_F_PROCPOINTER}
+@ref{C_ASSOCIATED}, @ref{C_LOC}, @ref{C_F_POINTER}, @ref{C_F_PROCPOINTER}
 @end table
 
 
@@ -9248,7 +9248,7 @@ Elemental function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{X} @tab Shall be of type @code{REAL}.
-@item @var{S} @tab (Optional) shall be of type @code{REAL} and
+@item @var{S} @tab Shall be of type @code{REAL} and
 not equal to zero.
 @end multitable
 
@@ -9749,51 +9749,6 @@ default kind.
 
 
 
-@node PRECISION
-@section @code{PRECISION} --- Decimal precision of a real kind
-@fnindex PRECISION
-@cindex model representation, precision
-
-@table @asis
-@item @emph{Description}:
-@code{PRECISION(X)} returns the decimal precision in the model of the
-type of @code{X}.
-
-@item @emph{Standard}:
-Fortran 95 and later
-
-@item @emph{Class}:
-Inquiry function
-
-@item @emph{Syntax}:
-@code{RESULT = PRECISION(X)}
-
-@item @emph{Arguments}:
-@multitable @columnfractions .15 .70
-@item @var{X} @tab Shall be of type @code{REAL} or @code{COMPLEX}.
-@end multitable
-
-@item @emph{Return value}:
-The return value is of type @code{INTEGER} and of the default integer
-kind.
-
-@item @emph{See also}:
-@ref{SELECTED_REAL_KIND}, @ref{RANGE}
-
-@item @emph{Example}:
-@smallexample
-program prec_and_range
-  real(kind=4) :: x(2)
-  complex(kind=8) :: y
-
-  print *, precision(x), range(x)
-  print *, precision(y), range(y)
-end program prec_and_range
-@end smallexample
-@end table
-
-
-
 @node POPCNT
 @section @code{POPCNT} --- Number of bits set
 @fnindex POPCNT
@@ -9878,6 +9833,51 @@ program test_population
   print *, popcnt(huge(0_4)), poppar(huge(0_4))
   print *, popcnt(huge(0_8)), poppar(huge(0_8))
 end program test_population
+@end smallexample
+@end table
+
+
+
+@node PRECISION
+@section @code{PRECISION} --- Decimal precision of a real kind
+@fnindex PRECISION
+@cindex model representation, precision
+
+@table @asis
+@item @emph{Description}:
+@code{PRECISION(X)} returns the decimal precision in the model of the
+type of @code{X}.
+
+@item @emph{Standard}:
+Fortran 95 and later
+
+@item @emph{Class}:
+Inquiry function
+
+@item @emph{Syntax}:
+@code{RESULT = PRECISION(X)}
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{X} @tab Shall be of type @code{REAL} or @code{COMPLEX}.
+@end multitable
+
+@item @emph{Return value}:
+The return value is of type @code{INTEGER} and of the default integer
+kind.
+
+@item @emph{See also}:
+@ref{SELECTED_REAL_KIND}, @ref{RANGE}
+
+@item @emph{Example}:
+@smallexample
+program prec_and_range
+  real(kind=4) :: x(2)
+  complex(kind=8) :: y
+
+  print *, precision(x), range(x)
+  print *, precision(y), range(y)
+end program prec_and_range
 @end smallexample
 @end table
 
@@ -10173,9 +10173,12 @@ end program
 Restarts or queries the state of the pseudorandom number generator used by 
 @code{RANDOM_NUMBER}.
 
-If @code{RANDOM_SEED} is called without arguments, it is initialized to
-a default state. The example below shows how to initialize the random 
-seed based on the system's time.
+If @code{RANDOM_SEED} is called without arguments, it is initialized
+to a default state. The example below shows how to initialize the
+random seed with a varying seed in order to ensure a different random
+number sequence for each invocation of the program. Note that setting
+any of the seed values to zero should be avoided as it can result in
+poor quality random numbers being generated.
 
 @item @emph{Standard}:
 Fortran 95 and later
@@ -10203,20 +10206,53 @@ the @var{SIZE} argument.
 
 @item @emph{Example}:
 @smallexample
-SUBROUTINE init_random_seed()
-  INTEGER :: i, n, clock
-  INTEGER, DIMENSION(:), ALLOCATABLE :: seed
-
-  CALL RANDOM_SEED(size = n)
-  ALLOCATE(seed(n))
-
-  CALL SYSTEM_CLOCK(COUNT=clock)
-
-  seed = clock + 37 * (/ (i - 1, i = 1, n) /)
-  CALL RANDOM_SEED(PUT = seed)
-
-  DEALLOCATE(seed)
-END SUBROUTINE
+subroutine init_random_seed()
+  implicit none
+  integer, allocatable :: seed(:)
+  integer :: i, n, un, istat, dt(8), pid, t(2), s
+  integer(8) :: count, tms
+  
+  call random_seed(size = n)
+  allocate(seed(n))
+  ! First try if the OS provides a random number generator
+  open(newunit=un, file="/dev/urandom", access="stream", &
+       form="unformatted", action="read", status="old", iostat=istat)
+  if (istat == 0) then
+     read(un) seed
+     close(un)
+  else
+     ! Fallback to XOR:ing the current time and pid. The PID is
+     ! useful in case one launches multiple instances of the same
+     ! program in parallel.
+     call system_clock(count)
+     if (count /= 0) then
+        t = transfer(count, t)
+     else
+        call date_and_time(values=dt)
+        tms = (dt(1) - 1970) * 365_8 * 24 * 60 * 60 * 1000 &
+             + dt(2) * 31_8 * 24 * 60 * 60 * 1000 &
+             + dt(3) * 24 * 60 * 60 * 60 * 1000 &
+             + dt(5) * 60 * 60 * 1000 &
+             + dt(6) * 60 * 1000 + dt(7) * 1000 &
+             + dt(8)
+        t = transfer(tms, t)
+     end if
+     s = ieor(t(1), t(2))
+     pid = getpid() + 1099279 ! Add a prime
+     s = ieor(s, pid)
+     if (n >= 3) then
+        seed(1) = t(1) + 36269
+        seed(2) = t(2) + 72551
+        seed(3) = pid
+        if (n > 3) then
+           seed(4:) = s + 37 * (/ (i, i = 0, n - 4) /)
+        end if
+     else 
+        seed = s + 37 * (/ (i, i = 0, n - 1 ) /)
+     end if
+  end if
+  call random_seed(put=seed)
+end subroutine init_random_seed
 @end smallexample
 
 @item @emph{See also}:

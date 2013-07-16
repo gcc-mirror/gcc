@@ -374,6 +374,16 @@ namespace __profile
 	return iterator(__res, this);
       }
 
+      template<typename... _Args>
+        iterator
+        emplace(iterator __position, _Args&&... __args)
+        {
+	  typename _Base::iterator __res
+	    = _Base::emplace(__position.base(),
+			     std::forward<_Args>(__args)...);
+	  return iterator(__res, this);
+	}
+
       void
       insert(iterator __position, initializer_list<value_type> __l)
       { this->insert(__position, __l.begin(), __l.end()); }

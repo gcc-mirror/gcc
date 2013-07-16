@@ -660,7 +660,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool _M_ok;
 
     public:
-      /// Easy access to dependant types.
+      /// Easy access to dependent types.
       typedef _Traits 					traits_type;
       typedef basic_streambuf<_CharT, _Traits> 		__streambuf_type;
       typedef basic_istream<_CharT, _Traits> 		__istream_type;

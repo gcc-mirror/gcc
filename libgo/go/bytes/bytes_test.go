@@ -61,6 +61,10 @@ var compareTests = []struct {
 	{[]byte("ab"), []byte("x"), -1},
 	{[]byte("x"), []byte("a"), 1},
 	{[]byte("b"), []byte("x"), -1},
+	// test runtime·memeq's chunked implementation
+	{[]byte("abcdefgh"), []byte("abcdefgh"), 0},
+	{[]byte("abcdefghi"), []byte("abcdefghi"), 0},
+	{[]byte("abcdefghi"), []byte("abcdefghj"), -1},
 	// nil tests
 	{nil, nil, 0},
 	{[]byte(""), nil, 0},
@@ -82,6 +86,58 @@ func TestCompare(t *testing.T) {
 		eql = EqualPortable(tt.a, tt.b)
 		if eql != (tt.i == 0) {
 			t.Errorf(`EqualPortable(%q, %q) = %v`, tt.a, tt.b, eql)
+		}
+	}
+}
+
+func TestEqual(t *testing.T) {
+	var size = 128
+	if testing.Short() {
+		size = 32
+	}
+	a := make([]byte, size)
+	b := make([]byte, size)
+	b_init := make([]byte, size)
+	// randomish but deterministic data
+	for i := 0; i < size; i++ {
+		a[i] = byte(17 * i)
+		b_init[i] = byte(23*i + 100)
+	}
+
+	for len := 0; len <= size; len++ {
+		for x := 0; x <= size-len; x++ {
+			for y := 0; y <= size-len; y++ {
+				copy(b, b_init)
+				copy(b[y:y+len], a[x:x+len])
+				if !Equal(a[x:x+len], b[y:y+len]) || !Equal(b[y:y+len], a[x:x+len]) {
+					t.Errorf("Equal(%d, %d, %d) = false", len, x, y)
+				}
+			}
+		}
+	}
+}
+
+// make sure Equal returns false for minimally different strings.  The data
+// is all zeros except for a single one in one location.
+func TestNotEqual(t *testing.T) {
+	var size = 128
+	if testing.Short() {
+		size = 32
+	}
+	a := make([]byte, size)
+	b := make([]byte, size)
+
+	for len := 0; len <= size; len++ {
+		for x := 0; x <= size-len; x++ {
+			for y := 0; y <= size-len; y++ {
+				for diffpos := x; diffpos < x+len; diffpos++ {
+					a[diffpos] = 1
+					if Equal(a[x:x+len], b[y:y+len]) || Equal(b[y:y+len], a[x:x+len]) {
+						t.Errorf("NotEqual(%d, %d, %d, %d) = true", len, x, y, diffpos)
+					}
+					a[diffpos] = 0
+				}
+			}
 		}
 	}
 }
@@ -303,10 +359,30 @@ func bmIndexByte(b *testing.B, index func([]byte, byte) int, n int) {
 	buf[n-1] = '\x00'
 }
 
+func BenchmarkEqual0(b *testing.B) {
+	var buf [4]byte
+	buf1 := buf[0:0]
+	buf2 := buf[1:1]
+	for i := 0; i < b.N; i++ {
+		eq := Equal(buf1, buf2)
+		if !eq {
+			b.Fatal("bad equal")
+		}
+	}
+}
+
+func BenchmarkEqual1(b *testing.B)           { bmEqual(b, Equal, 1) }
+func BenchmarkEqual6(b *testing.B)           { bmEqual(b, Equal, 6) }
+func BenchmarkEqual9(b *testing.B)           { bmEqual(b, Equal, 9) }
+func BenchmarkEqual15(b *testing.B)          { bmEqual(b, Equal, 15) }
+func BenchmarkEqual16(b *testing.B)          { bmEqual(b, Equal, 16) }
+func BenchmarkEqual20(b *testing.B)          { bmEqual(b, Equal, 20) }
 func BenchmarkEqual32(b *testing.B)          { bmEqual(b, Equal, 32) }
 func BenchmarkEqual4K(b *testing.B)          { bmEqual(b, Equal, 4<<10) }
 func BenchmarkEqual4M(b *testing.B)          { bmEqual(b, Equal, 4<<20) }
 func BenchmarkEqual64M(b *testing.B)         { bmEqual(b, Equal, 64<<20) }
+func BenchmarkEqualPort1(b *testing.B)       { bmEqual(b, EqualPortable, 1) }
+func BenchmarkEqualPort6(b *testing.B)       { bmEqual(b, EqualPortable, 6) }
 func BenchmarkEqualPort32(b *testing.B)      { bmEqual(b, EqualPortable, 32) }
 func BenchmarkEqualPort4K(b *testing.B)      { bmEqual(b, EqualPortable, 4<<10) }
 func BenchmarkEqualPortable4M(b *testing.B)  { bmEqual(b, EqualPortable, 4<<20) }
@@ -794,8 +870,8 @@ func TestRunes(t *testing.T) {
 }
 
 type TrimTest struct {
-	f               string
-	in, cutset, out string
+	f            string
+	in, arg, out string
 }
 
 var trimTests = []TrimTest{
@@ -820,12 +896,17 @@ var trimTests = []TrimTest{
 	{"TrimRight", "", "123", ""},
 	{"TrimRight", "", "", ""},
 	{"TrimRight", "☺\xc0", "☺", "☺\xc0"},
+	{"TrimPrefix", "aabb", "a", "abb"},
+	{"TrimPrefix", "aabb", "b", "aabb"},
+	{"TrimSuffix", "aabb", "a", "aabb"},
+	{"TrimSuffix", "aabb", "b", "aab"},
 }
 
 func TestTrim(t *testing.T) {
 	for _, tc := range trimTests {
 		name := tc.f
 		var f func([]byte, string) []byte
+		var fb func([]byte, []byte) []byte
 		switch name {
 		case "Trim":
 			f = Trim
@@ -833,12 +914,21 @@ func TestTrim(t *testing.T) {
 			f = TrimLeft
 		case "TrimRight":
 			f = TrimRight
+		case "TrimPrefix":
+			fb = TrimPrefix
+		case "TrimSuffix":
+			fb = TrimSuffix
 		default:
 			t.Errorf("Undefined trim function %s", name)
 		}
-		actual := string(f([]byte(tc.in), tc.cutset))
+		var actual string
+		if f != nil {
+			actual = string(f([]byte(tc.in), tc.arg))
+		} else {
+			actual = string(fb([]byte(tc.in), []byte(tc.arg)))
+		}
 		if actual != tc.out {
-			t.Errorf("%s(%q, %q) = %q; want %q", name, tc.in, tc.cutset, actual, tc.out)
+			t.Errorf("%s(%q, %q) = %q; want %q", name, tc.in, tc.arg, actual, tc.out)
 		}
 	}
 }
@@ -1057,5 +1147,12 @@ func BenchmarkFieldsFunc(b *testing.B) {
 	b.SetBytes(int64(len(fieldsInput)))
 	for i := 0; i < b.N; i++ {
 		FieldsFunc(fieldsInput, unicode.IsSpace)
+	}
+}
+
+func BenchmarkTrimSpace(b *testing.B) {
+	s := []byte("  Some text.  \n")
+	for i := 0; i < b.N; i++ {
+		TrimSpace(s)
 	}
 }

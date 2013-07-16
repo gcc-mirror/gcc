@@ -661,6 +661,9 @@ struct GTY(()) gimple_statement_omp_atomic_store {
    tell the runtime that it should begin the transaction in
    serial-irrevocable mode.  */
 #define GTMA_DOES_GO_IRREVOCABLE	(1u << 6)
+/* The transaction contains no instrumentation code whatsover, most
+   likely because it is guaranteed to go irrevocable upon entry.  */
+#define GTMA_HAS_NO_INSTRUMENTATION	(1u << 7)
 
 struct GTY(()) gimple_statement_transaction
 {

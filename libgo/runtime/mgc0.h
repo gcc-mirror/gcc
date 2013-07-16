@@ -12,17 +12,22 @@
 // Meaning of arguments:
 //   off      Offset (in bytes) from the start of the current object
 //   objgc    Pointer to GC info of an object
+//   objgcrel Offset to GC info of an object
 //   len      Length of an array
 //   elemsize Size (in bytes) of an element
 //   size     Size (in bytes)
+//
+// NOTE: There is a copy of these in ../reflect/type.go.
+// They must be kept in sync.
 enum {
 	GC_END,         // End of object, loop or subroutine. Args: none
 	GC_PTR,         // A typed pointer. Args: (off, objgc)
 	GC_APTR,        // Pointer to an arbitrary object. Args: (off)
 	GC_ARRAY_START, // Start an array with a fixed length. Args: (off, len, elemsize)
 	GC_ARRAY_NEXT,  // The next element of an array. Args: none
-	GC_CALL,        // Call a subroutine. Args: (off, objgc)
+	GC_CALL,        // Call a subroutine. Args: (off, objgcrel)
 	GC_MAP_PTR,     // Go map. Args: (off, MapType*)
+	GC_CHAN_PTR,    // Go channel. Args: (off, ChanType*)
 	GC_STRING,      // Go string. Args: (off)
 	GC_EFACE,       // interface{}. Args: (off)
 	GC_IFACE,       // interface{...}. Args: (off)

@@ -128,10 +128,13 @@ instrument_expr (gimple_stmt_iterator gsi, tree expr, bool is_write)
 	return false;
     }
 
-  if (TREE_READONLY (base))
+  if (TREE_READONLY (base)
+      || (TREE_CODE (base) == VAR_DECL
+	  && DECL_HARD_REGISTER (base)))
     return false;
 
-  if (bitpos % (size * BITS_PER_UNIT)
+  if (size == 0
+      || bitpos % (size * BITS_PER_UNIT)
       || bitsize != size * BITS_PER_UNIT)
     return false;
 
@@ -681,7 +684,8 @@ instrument_func_exit (void)
     {
       gsi = gsi_last_bb (e->src);
       stmt = gsi_stmt (gsi);
-      gcc_assert (gimple_code (stmt) == GIMPLE_RETURN);
+      gcc_assert (gimple_code (stmt) == GIMPLE_RETURN
+		  || gimple_call_builtin_p (stmt, BUILT_IN_RETURN));
       loc = gimple_location (stmt);
       builtin_decl = builtin_decl_implicit (BUILT_IN_TSAN_FUNC_EXIT);
       g = gimple_build_call (builtin_decl, 0);

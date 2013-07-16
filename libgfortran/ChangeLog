@@ -1,3 +1,117 @@
+2013-06-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-06-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (_FPU_MASK_ALL): New.
+	(_FPU_EX_ALL): Ditto.
+	(set_fpu): Use fstcw to store x87 FPU control word. Use fnclex to
+	clear stalled exception flags.  Correctly clear stalled SSE
+	exception flags.  Simplify code.
+
+	Backport from mainline
+	2013-06-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h: Use __asm__ and __volatile__ consistently.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	2013-03-20  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/51825
+	* io/list_read.c (nml_read_obj): Don't end the component loop on a
+	nested derived type, but continue with the next loop iteration.
+	(nml_get_obj_data): Don't move the first_nl pointer further in the
+	list if a qualifier was found.
+
+2013-04-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+
+	PR libfortran/56786
+	* io/list_read.c (nml_parse_qualifier): Remove spurious next_char call
+	when checking for EOF. Use error return mechanism when EOF detected.
+	Do not return FAILURE unless parse_err_msg and parse_err_msg_size have
+	been set. Use hit_eof.
+	(nml_get_obj_data): Likewise use the correct error mechanism.
+	* io/transfer.c (hit_eof): Do not set AFTER_ENDFILE if in namelist
+	mode.
+
+2013-04-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from mainline:
+	2013-03-25  Tilo Schwarz  <tilo@tilo-schwarz.de>
+
+	PR libfortran/52512
+	* io/list_read.c (nml_parse_qualifier): To check for a derived type
+	don't use the namelist head element type but the current element type.
+	(nml_get_obj_data): Add current namelist element type to
+	nml_parse_qualifier call.
+
+2013-04-02  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline:
+	2013-03-28  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56735
+	* io/list_read.c (nml_query): Only abort when
+	an error occured.
+	(namelist_read): Add goto instead of falling through.
+
+2013-04-02  Tobias Burnus  <burnus@net-b.de>
+
+	Backport from mainline:
+	2013-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format): With caching, copy
+	dtp->format string.
+	(save_parsed_format): Use dtp->format directly without
+	copying.
+
+	2012-03-29  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56737
+	* io/format.c (parse_format_list): Also cache FMT_STRING.
+	(parse_format): Update call.
+
+2013-03-24  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/56696
+	* io/list_read.c (read_real): Fix EOF diagnostic.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-11  Tobias Burnus  <burnus@net-b.de>
+
+	* io/transfer.c (read_block_direct): Correct condition.
+	* intrinsics/execute_command_line.c (execute_command_line):
+	Remove dead code for the HAVE_FORK case.
+
+2013-02-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	PR libfortran/30162
+	* io/open.c (test_endfile): Call stell only if size != 0.
+	* io/unix.c (raw_tell): Revert r194679.
+	(raw_size): Return size field only for regular files, otherwise 0.
+
+2013-02-19  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR target/56347
+	* acinclude.m4 (LIBGFOR_CHECK_FOR_BROKEN_POWF): Remove check for
+	broken powf.
+	* configure.ac (LIBGFOR_CHECK_FOR_BROKEN_POWF): Likewise.
+	* intrinsics/c99_functions.c: Likewise.
+	* configure: Rebuilt.
+	* config.h.in: Rebuilt.
+
 2013-02-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/55978

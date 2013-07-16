@@ -49,9 +49,12 @@ SunOS)
   if readelf --help | grep -- --wide > /dev/null; then
     readelf="$readelf --wide"
   fi
+  # Omit _DYNAMIC etc. for consistency with extract_symvers.pl, only
+  # present on Solaris.
   ${readelf} ${lib} |\
   sed -e 's/ \[<other>: [A-Fa-f0-9]*\] //' -e '/\.dynsym/,/^$/p;d' |\
   egrep -v ' (LOCAL|UND) ' |\
+  egrep -v ' (_DYNAMIC|_GLOBAL_OFFSET_TABLE_|_PROCEDURE_LINKAGE_TABLE_|_edata|_end|_etext)$' |\
   sed -e 's/ <processor specific>: / <processor_specific>:_/g' |\
   sed -e 's/ <OS specific>: / <OS_specific>:_/g' |\
   sed -e 's/ <unknown>: / <unknown>:_/g' |\

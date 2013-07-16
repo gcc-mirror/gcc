@@ -132,10 +132,11 @@ typedef enum tag_scope {
   ts_global = 1,	/* All scopes.  This is the 3.4.1
 			   [basic.lookup.unqual] lookup mentioned
 			   in [basic.lookup.elab]/2.  */
-  ts_within_enclosing_non_class = 2	/* Search within enclosing non-class
+  ts_within_enclosing_non_class = 2,	/* Search within enclosing non-class
 					   only, for friend class lookup
 					   according to [namespace.memdef]/3
 					   and [class.friend]/9.  */
+  ts_lambda = 3			/* Declaring a lambda closure.  */
 } tag_scope;
 
 typedef struct GTY(()) cp_class_binding {

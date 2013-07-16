@@ -48,7 +48,7 @@ var (
 	ErrUnexpectedTrailer    = &ProtocolError{"trailer header without chunked transfer encoding"}
 	ErrMissingContentLength = &ProtocolError{"missing ContentLength in HEAD response"}
 	ErrNotMultipart         = &ProtocolError{"request Content-Type isn't multipart/form-data"}
-	ErrMissingBoundary      = &ProtocolError{"no multipart boundary param Content-Type"}
+	ErrMissingBoundary      = &ProtocolError{"no multipart boundary param in Content-Type"}
 )
 
 type badStringError struct {
@@ -283,7 +283,7 @@ func valueOrDefault(value, def string) string {
 	return def
 }
 
-const defaultUserAgent = "Go http package"
+const defaultUserAgent = "Go 1.1 package http"
 
 // Write writes an HTTP/1.1 request -- header and body -- in wire format.
 // This method consults the following fields of the request:
@@ -467,10 +467,42 @@ func (r *Request) SetBasicAuth(username, password string) {
 	r.Header.Set("Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(s)))
 }
 
+// parseRequestLine parses "GET /foo HTTP/1.1" into its three parts.
+func parseRequestLine(line string) (method, requestURI, proto string, ok bool) {
+	s1 := strings.Index(line, " ")
+	s2 := strings.Index(line[s1+1:], " ")
+	if s1 < 0 || s2 < 0 {
+		return
+	}
+	s2 += s1 + 1
+	return line[:s1], line[s1+1 : s2], line[s2+1:], true
+}
+
+// TODO(bradfitz): use a sync.Cache when available
+var textprotoReaderCache = make(chan *textproto.Reader, 4)
+
+func newTextprotoReader(br *bufio.Reader) *textproto.Reader {
+	select {
+	case r := <-textprotoReaderCache:
+		r.R = br
+		return r
+	default:
+		return textproto.NewReader(br)
+	}
+}
+
+func putTextprotoReader(r *textproto.Reader) {
+	r.R = nil
+	select {
+	case textprotoReaderCache <- r:
+	default:
+	}
+}
+
 // ReadRequest reads and parses a request from b.
 func ReadRequest(b *bufio.Reader) (req *Request, err error) {
 
-	tp := textproto.NewReader(b)
+	tp := newTextprotoReader(b)
 	req = new(Request)
 
 	// First line: GET /index.html HTTP/1.0
@@ -479,18 +511,18 @@ func ReadRequest(b *bufio.Reader) (req *Request, err error) {
 		return nil, err
 	}
 	defer func() {
+		putTextprotoReader(tp)
 		if err == io.EOF {
 			err = io.ErrUnexpectedEOF
 		}
 	}()
 
-	var f []string
-	if f = strings.SplitN(s, " ", 3); len(f) < 3 {
+	var ok bool
+	req.Method, req.RequestURI, req.Proto, ok = parseRequestLine(s)
+	if !ok {
 		return nil, &badStringError{"malformed HTTP request", s}
 	}
-	req.Method, req.RequestURI, req.Proto = f[0], f[1], f[2]
 	rawurl := req.RequestURI
-	var ok bool
 	if req.ProtoMajor, req.ProtoMinor, ok = ParseHTTPVersion(req.Proto); !ok {
 		return nil, &badStringError{"malformed HTTP version", req.Proto}
 	}

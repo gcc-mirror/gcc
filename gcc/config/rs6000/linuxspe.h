@@ -20,8 +20,13 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* Override rs6000.h and sysv4.h definition.  */
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#undef	TARGET_DEFAULT
+#define TARGET_DEFAULT (MASK_STRICT_ALIGN | MASK_LITTLE_ENDIAN)
+#else
 #undef	TARGET_DEFAULT
 #define TARGET_DEFAULT MASK_STRICT_ALIGN
+#endif
 
 #undef  ASM_DEFAULT_SPEC
 #define	ASM_DEFAULT_SPEC "-mppc -mspe -me500"

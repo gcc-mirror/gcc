@@ -10,4 +10,9 @@ _mark (int obj, int i, char *a)
 {
   (char *)&(((int *)(obj)) [i]) - a;
 }
+#elif __SIZEOF_POINTER__ == __SIZEOF_LONG_LONG__
+__extension__ _mark (long long obj, int i, char *a)
+{
+  (char *)&(((int *)(obj)) [i]) - a;
+}
 #endif

@@ -41,9 +41,6 @@ along with GCC; see the file COPYING3.  If not see
     }						\
   while (0)
 
-#undef CPP_SUBTARGET_SPEC
-#define CPP_SUBTARGET_SPEC ""
-
 /* Inherited from sp64-elf.  */
 #undef NO_IMPLICIT_EXTERN_C
 

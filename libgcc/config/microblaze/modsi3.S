@@ -55,6 +55,8 @@ $LaR5_Pos:
 $LaR6_Pos:
 	ADDIK	r3,r0,0      # Clear mod
 	ADDIK	r30,r0,0     # clear div
+	BLTId	r5,$LaDIV2   # If r5 is still negative (0x80000000), skip
+			     # the first bit search.
 	ADDIK	r29,r0,32    # Initialize the loop count
    # First part try to find the first '1' in the r5
 $LaDIV1:

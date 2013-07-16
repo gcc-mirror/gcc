@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_DEFAULT
 #define TARGET_DEFAULT \
-  (TARGET_CPU_DEFAULT | MASK_USERMODE | TARGET_ENDIAN_DEFAULT)
+  (TARGET_CPU_DEFAULT | TARGET_ENDIAN_DEFAULT)
 
 /* Define because we use the label and we do not need them.  */
 #define NO_PROFILE_COUNTERS 1
@@ -94,3 +94,13 @@ while (0)
 #define SH_DIV_STRATEGY_DEFAULT SH_DIV_CALL2
 #undef SH_DIV_STR_FOR_SIZE
 #define SH_DIV_STR_FOR_SIZE "call2"
+
+#undef SUBTARGET_OVERRIDE_OPTIONS
+#define SUBTARGET_OVERRIDE_OPTIONS					\
+  do									\
+    {									\
+      /* Set -musermode if it hasn't been specified.  */		\
+      if (global_options_set.x_TARGET_USERMODE == 0)			\
+	TARGET_USERMODE = true;						\
+    }									\
+  while (0)

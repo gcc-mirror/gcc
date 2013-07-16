@@ -18,6 +18,8 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+void __aarch64_sync_cache_range (const void *, const void *);
+
 void
 __aarch64_sync_cache_range (const void *base, const void *end)
 {
@@ -43,7 +45,7 @@ __aarch64_sync_cache_range (const void *base, const void *end)
   address = (const char*) ((__UINTPTR_TYPE__) base
 			   & ~ (__UINTPTR_TYPE__) (dcache_lsize - 1));
 
-  for (address; address < (const char *) end; address += dcache_lsize)
+  for (; address < (const char *) end; address += dcache_lsize)
     asm volatile ("dc\tcvau, %0"
 		  :
 		  : "r" (address)
@@ -55,7 +57,7 @@ __aarch64_sync_cache_range (const void *base, const void *end)
   address = (const char*) ((__UINTPTR_TYPE__) base
 			   & ~ (__UINTPTR_TYPE__) (icache_lsize - 1));
 
-  for (address; address < (const char *) end; address += icache_lsize)
+  for (; address < (const char *) end; address += icache_lsize)
     asm volatile ("ic\tivau, %0"
 		  :
 		  : "r" (address)

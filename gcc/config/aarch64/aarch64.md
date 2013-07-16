@@ -834,7 +834,8 @@
    movi\\t%d0, %1"
   [(set_attr "v8type" "move,move,move,alu,load1,store1,adr,adr,fmov,fmov,fmov,fmov")
    (set_attr "mode" "DI")
-   (set_attr "fp" "*,*,*,*,*,*,*,*,yes,yes,yes,yes")]
+   (set_attr "fp" "*,*,*,*,*,*,*,*,yes,yes,yes,*")
+   (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,yes")]
 )
 
 (define_insn "insv_imm<mode>"
@@ -844,8 +845,8 @@
 	(match_operand:GPI 2 "const_int_operand" "n"))]
   "INTVAL (operands[1]) < GET_MODE_BITSIZE (<MODE>mode)
    && INTVAL (operands[1]) % 16 == 0
-   && INTVAL (operands[2]) <= 0xffff"
-  "movk\\t%<w>0, %2, lsl %1"
+   && UINTVAL (operands[2]) <= 0xffff"
+  "movk\\t%<w>0, %X2, lsl %1"
   [(set_attr "v8type" "movk")
    (set_attr "mode" "<MODE>")]
 )
@@ -2547,8 +2548,8 @@
 )
 
 (define_insn "*and<mode>3nr_compare0"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:GPI (match_operand:GPI 0 "register_operand" "%r,r")
 		  (match_operand:GPI 1 "aarch64_logical_operand" "r,<lconst>"))
 	 (const_int 0)))]
@@ -2558,8 +2559,8 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "*and_<SHIFT:optab><mode>3nr_compare0"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
+  [(set (reg:CC_NZ CC_REGNUM)
+	(compare:CC_NZ
 	 (and:GPI (SHIFT:GPI
 		   (match_operand:GPI 0 "register_operand" "r")
 		   (match_operand:QI 1 "aarch64_shift_imm_<mode>" "n"))

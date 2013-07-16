@@ -1612,7 +1612,7 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 
   if (TYPE_PTRDATAMEM_P (ptrmem_type))
     {
-      bool is_lval = real_lvalue_p (datum);
+      cp_lvalue_kind kind = lvalue_kind (datum);
       tree ptype;
 
       /* Compute the type of the field, as described in [expr.ref].
@@ -1642,12 +1642,39 @@ build_m_component_ref (tree datum, tree component, tsubst_flags_t complain)
 	return error_mark_node;
 
       /* If the object expression was an rvalue, return an rvalue.  */
-      if (!is_lval)
+      if (kind & clk_class)
+	datum = rvalue (datum);
+      else if (kind & clk_rvalueref)
 	datum = move (datum);
       return datum;
     }
   else
-    return build2 (OFFSET_REF, type, datum, component);
+    {
+      /* 5.5/6: In a .* expression whose object expression is an rvalue, the
+	 program is ill-formed if the second operand is a pointer to member
+	 function with ref-qualifier &. In a .* expression whose object
+	 expression is an lvalue, the program is ill-formed if the second
+	 operand is a pointer to member function with ref-qualifier &&.  */
+      if (FUNCTION_REF_QUALIFIED (type))
+	{
+	  bool lval = real_lvalue_p (datum);
+	  if (lval && FUNCTION_RVALUE_QUALIFIED (type))
+	    {
+	      if (complain & tf_error)
+		error ("pointer-to-member-function type %qT requires an rvalue",
+		       ptrmem_type);
+	      return error_mark_node;
+	    }
+	  else if (!lval && !FUNCTION_RVALUE_QUALIFIED (type))
+	    {
+	      if (complain & tf_error)
+		error ("pointer-to-member-function type %qT requires an lvalue",
+		       ptrmem_type);
+	      return error_mark_node;
+	    }
+	}
+      return build2 (OFFSET_REF, type, datum, component);
+    }
 }
 
 /* Return a tree node for the expression TYPENAME '(' PARMS ')'.  */

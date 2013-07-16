@@ -268,6 +268,8 @@ enum reg_class
 #define INITIAL_ELIMINATION_OFFSET(FROM, TO, OFFSET) \
   ((OFFSET) = tilepro_initial_elimination_offset((FROM),(TO)))
 
+#define PROFILE_BEFORE_PROLOGUE 1
+
 #define FUNCTION_PROFILER(FILE, LABELNO) \
   tilepro_function_profiler (FILE, LABELNO)
 

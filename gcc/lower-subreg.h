@@ -34,6 +34,7 @@ struct lower_subreg_choices {
      should be split.  */
   bool splitting_ashift[MAX_BITS_PER_WORD];
   bool splitting_lshiftrt[MAX_BITS_PER_WORD];
+  bool splitting_ashiftrt[MAX_BITS_PER_WORD];
 
   /* True if there is at least one mode that is worth splitting.  */
   bool something_to_do;

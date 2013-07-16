@@ -945,9 +945,10 @@ write_lookup_constraint (void)
 	{
 	  do
 	    {
-	      printf ("      if (!strncmp (str, \"%s\", %lu))\n"
+	      printf ("      if (!strncmp (str + 1, \"%s\", %lu))\n"
 		      "        return CONSTRAINT_%s;\n",
-		      c->name, (unsigned long int) c->namelen, c->c_name);
+		      c->name + 1, (unsigned long int) c->namelen - 1,
+		      c->c_name);
 	      c = c->next_this_letter;
 	    }
 	  while (c);

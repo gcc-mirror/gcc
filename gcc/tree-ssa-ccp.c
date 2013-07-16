@@ -162,6 +162,7 @@ typedef struct prop_value_d prop_value_t;
    memory reference used to store (i.e., the LHS of the assignment
    doing the store).  */
 static prop_value_t *const_val;
+static unsigned n_const_val;
 
 static void canonicalize_float_value (prop_value_t *);
 static bool ccp_fold_stmt (gimple_stmt_iterator *);
@@ -295,7 +296,8 @@ get_value (tree var)
 {
   prop_value_t *val;
 
-  if (const_val == NULL)
+  if (const_val == NULL
+      || SSA_NAME_VERSION (var) >= n_const_val)
     return NULL;
 
   val = &const_val[SSA_NAME_VERSION (var)];
@@ -713,7 +715,8 @@ ccp_initialize (void)
 {
   basic_block bb;
 
-  const_val = XCNEWVEC (prop_value_t, num_ssa_names);
+  n_const_val = num_ssa_names;
+  const_val = XCNEWVEC (prop_value_t, n_const_val);
 
   /* Initialize simulation flags for PHI nodes and statements.  */
   FOR_EACH_BB (bb)
@@ -2105,7 +2108,7 @@ do_ssa_ccp (void)
   ccp_initialize ();
   ssa_propagate (ccp_visit_stmt, ccp_visit_phi_node);
   if (ccp_finalize ())
-    todo = (TODO_cleanup_cfg | TODO_update_ssa | TODO_remove_unused_locals);
+    todo = (TODO_cleanup_cfg | TODO_update_ssa);
   free_dominance_info (CDI_DOMINATORS);
   return todo;
 }

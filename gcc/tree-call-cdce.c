@@ -898,11 +898,10 @@ tree_call_cdce (void)
       /* As we introduced new control-flow we need to insert PHI-nodes
          for the call-clobbers of the remaining call.  */
       mark_virtual_operands_for_renaming (cfun);
-      return (TODO_update_ssa | TODO_cleanup_cfg | TODO_ggc_collect
-              | TODO_remove_unused_locals);
+      return TODO_update_ssa;
     }
-  else
-    return 0;
+
+  return 0;
 }
 
 static bool

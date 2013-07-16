@@ -87,8 +87,8 @@ data members.
 
 @menu
 * GTY Options::         What goes inside a @code{GTY(())}.
-* GGC Roots::           Making global variables GGC roots.
 * User GC::		Adding user-provided GC marking routines.
+* GGC Roots::           Making global variables GGC roots.
 * Files::               How the generated files work.
 * Invoking the garbage collector::   How to invoke the garbage collector.
 * Troubleshooting::     When something does not work as expected.
@@ -515,7 +515,7 @@ Note that the rules for the pointer walker @code{gt_pch_nx (my_struct
 case, the operation @code{op} must be applied to the @emph{address} of
 every pointer field.
 
-@section User-provided marking routines for template types
+@subsection User-provided marking routines for template types
 When a template type @code{TP} is marked with @code{GTY}, all
 instances of that type are considered user-provided types.  This means
 that the individual instances of @code{TP} do not need to be marked

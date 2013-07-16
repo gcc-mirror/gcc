@@ -1228,7 +1228,7 @@
 #endif
 
 
-/* Define if your AIX linker supports a large TOC. */
+/* Define if your PowerPC64 linker supports a large TOC. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_LARGE_TOC
 #endif
@@ -1275,12 +1275,6 @@
 /* Define if your linker supports --sysroot. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_SYSROOT
-#endif
-
-
-/* Define to 1 if you have the <libintl.h> header file. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LIBINTL_H
 #endif
 
 

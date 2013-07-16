@@ -26,10 +26,20 @@
 
     .section .init, "ax"
     .global __init
+
+    .weak _stack
+    .set  _stack, 0xffffffff
+    .weak _stack_end
+    .set  _stack_end, 0
+
     .align 2
 __init: 
     addik   r1, r1, -8
     sw      r15, r0, r1
+    la      r11, r0, _stack
+    mts     rshr, r11
+    la      r11, r0, _stack_end
+    mts     rslr, r11
 
     .section .fini, "ax"
     .global __fini

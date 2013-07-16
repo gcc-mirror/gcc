@@ -2812,6 +2812,7 @@ init_alias_analysis (void)
 
   vec_safe_grow_cleared (reg_known_value, maxreg - FIRST_PSEUDO_REGISTER);
   reg_known_equiv_p = sbitmap_alloc (maxreg - FIRST_PSEUDO_REGISTER);
+  bitmap_clear (reg_known_equiv_p);
 
   /* If we have memory allocated from the previous run, use it.  */
   if (old_reg_base_value)

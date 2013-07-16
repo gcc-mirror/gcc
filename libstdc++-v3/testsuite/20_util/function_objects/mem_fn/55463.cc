@@ -50,59 +50,63 @@ std::reference_wrapper<Y> yref();
 
 void test01()
 {
-  int& i1 = std::mem_fn( &X::func )( X() );
-  int& i2 = std::mem_fn( &X::func )( Y() );
-  int& i3 = std::mem_fn( &X::func )( ref() );
-  int& i4 = std::mem_fn( &X::func )( yref() );
-  int& i5 = std::mem_fn( &X::func )( X_ptr() );
-  int& i6 = std::mem_fn( &X::func )( smart_ptr() );
+  int& i1 __attribute__((unused)) = std::mem_fn( &X::func )( X() );
+  int& i2 __attribute__((unused)) = std::mem_fn( &X::func )( Y() );
+  int& i3 __attribute__((unused)) = std::mem_fn( &X::func )( ref() );
+  int& i4 __attribute__((unused)) = std::mem_fn( &X::func )( yref() );
+  int& i5 __attribute__((unused)) = std::mem_fn( &X::func )( X_ptr() );
+  int& i6 __attribute__((unused)) = std::mem_fn( &X::func )( smart_ptr() );
 
-  char& c1 = std::mem_fn( &X::func_c )( X() );
-  char& c2 = std::mem_fn( &X::func_c )( CX() );
-  char& c3 = std::mem_fn( &X::func_c )( Y() );
-  char& c4 = std::mem_fn( &X::func_c )( ref() );
-  char& c5 = std::mem_fn( &X::func_c )( cref() );
-  char& c6 = std::mem_fn( &X::func_c )( yref() );
-  char& c7 = std::mem_fn( &X::func_c )( X_ptr() );
-  char& c8 = std::mem_fn( &X::func_c )( smart_ptr() );
+  char& c1 __attribute__((unused)) = std::mem_fn( &X::func_c )( X() );
+  char& c2 __attribute__((unused)) = std::mem_fn( &X::func_c )( CX() );
+  char& c3 __attribute__((unused)) = std::mem_fn( &X::func_c )( Y() );
+  char& c4 __attribute__((unused)) = std::mem_fn( &X::func_c )( ref() );
+  char& c5 __attribute__((unused)) = std::mem_fn( &X::func_c )( cref() );
+  char& c6 __attribute__((unused)) = std::mem_fn( &X::func_c )( yref() );
+  char& c7 __attribute__((unused)) = std::mem_fn( &X::func_c )( X_ptr() );
+  char& c8 __attribute__((unused)) = std::mem_fn( &X::func_c )( smart_ptr() );
 
-  short& s1 = std::mem_fn( &X::func_v )( X() );
-  short& s2 = std::mem_fn( &X::func_v )( Y() );
-  short& s3 = std::mem_fn( &X::func_v )( ref() );
-  short& s4 = std::mem_fn( &X::func_v )( yref() );
-  short& s5 = std::mem_fn( &X::func_v )( X_ptr() );
-  short& s6 = std::mem_fn( &X::func_v )( smart_ptr() );
+  short& s1 __attribute__((unused)) = std::mem_fn( &X::func_v )( X() );
+  short& s2 __attribute__((unused)) = std::mem_fn( &X::func_v )( Y() );
+  short& s3 __attribute__((unused)) = std::mem_fn( &X::func_v )( ref() );
+  short& s4 __attribute__((unused)) = std::mem_fn( &X::func_v )( yref() );
+  short& s5 __attribute__((unused)) = std::mem_fn( &X::func_v )( X_ptr() );
+  short& s6 __attribute__((unused)) = std::mem_fn( &X::func_v )( smart_ptr() );
 
-  double& d1 = std::mem_fn( &X::func_cv )( X() );
-  double& d2 = std::mem_fn( &X::func_cv )( CX() );
-  double& d3 = std::mem_fn( &X::func_cv )( Y() );
-  double& d4 = std::mem_fn( &X::func_cv )( ref() );
-  double& d5 = std::mem_fn( &X::func_cv )( cref() );
-  double& d6 = std::mem_fn( &X::func_cv )( yref() );
-  double& d7 = std::mem_fn( &X::func_cv )( X_ptr() );
-  double& d8 = std::mem_fn( &X::func_cv )( smart_ptr() );
+  double& d1 __attribute__((unused)) = std::mem_fn( &X::func_cv )( X() );
+  double& d2 __attribute__((unused)) = std::mem_fn( &X::func_cv )( CX() );
+  double& d3 __attribute__((unused)) = std::mem_fn( &X::func_cv )( Y() );
+  double& d4 __attribute__((unused)) = std::mem_fn( &X::func_cv )( ref() );
+  double& d5 __attribute__((unused)) = std::mem_fn( &X::func_cv )( cref() );
+  double& d6 __attribute__((unused)) = std::mem_fn( &X::func_cv )( yref() );
+  double& d7 __attribute__((unused)) = std::mem_fn( &X::func_cv )( X_ptr() );
+  double& d8 __attribute__((unused))
+    = std::mem_fn( &X::func_cv )( smart_ptr() );
 
   // [expr.mptr.oper]
   // The result of a .* expression whose second operand is a pointer to a
   // data member is of the same value category (3.10) as its first operand.
-  int&& rval = std::mem_fn( &X::data )( X() );
-  const int&& crval = std::mem_fn( &X::data )( CX() );
-  int&& yrval = std::mem_fn( &X::data )( Y() );
-  const int&& ycrval = std::mem_fn( &X::data )( CY() );
+  int&& rval __attribute__((unused)) = std::mem_fn( &X::data )( X() );
+  const int&& crval __attribute__((unused)) = std::mem_fn( &X::data )( CX() );
+  int&& yrval __attribute__((unused)) = std::mem_fn( &X::data )( Y() );
+  const int&& ycrval __attribute__((unused)) = std::mem_fn( &X::data )( CY() );
 
-  int& val = std::mem_fn( &X::data )( ref() );
-  const int& cval = std::mem_fn( &X::data )( cref() );
-  int& yval = std::mem_fn( &X::data )( yref() );
+  int& val __attribute__((unused)) = std::mem_fn( &X::data )( ref() );
+  const int& cval __attribute__((unused)) = std::mem_fn( &X::data )( cref() );
+  int& yval __attribute__((unused)) = std::mem_fn( &X::data )( yref() );
 
-  int& pval = std::mem_fn( &X::data )( X_ptr() );
-  int& sval = std::mem_fn( &X::data )( smart_ptr() );
+  int& pval __attribute__((unused)) = std::mem_fn( &X::data )( X_ptr() );
+  int& sval __attribute__((unused)) = std::mem_fn( &X::data )( smart_ptr() );
 }
 
 void test02()
 {
   std::reference_wrapper<X> r = ref();
-  X& x1 = std::mem_fn( &std::reference_wrapper<X>::get )( r );
+  X& x1 __attribute__((unused))
+    = std::mem_fn( &std::reference_wrapper<X>::get )( r );
   const std::reference_wrapper<X> cr = ref();
-  const X& x3 = std::mem_fn( &std::reference_wrapper<X>::get )( cr );
-  X& x2 = std::mem_fn( &std::reference_wrapper<X>::get )( ref() );
+  const X& x3 __attribute__((unused))
+    = std::mem_fn( &std::reference_wrapper<X>::get )( cr );
+  X& x2 __attribute__((unused))
+    = std::mem_fn( &std::reference_wrapper<X>::get )( ref() );
 }

@@ -91,7 +91,7 @@ restore_dump (void)
 /* Functions for dumping instructions, av sets, and exprs.  */
 
 /* Default flags for dumping insns.  */
-static int dump_insn_rtx_flags = DUMP_INSN_RTX_PATTERN;
+static int dump_insn_rtx_flags = DUMP_INSN_RTX_UID | DUMP_INSN_RTX_PATTERN;
 
 /* Default flags for dumping vinsns.  */
 static int dump_vinsn_flags = (DUMP_VINSN_INSN_RTX | DUMP_VINSN_TYPE
@@ -136,7 +136,7 @@ dump_insn_rtx_1 (rtx insn, int flags)
     sel_print ("%d;", INSN_UID (insn));
 
   if (flags & DUMP_INSN_RTX_PATTERN)
-    sel_print ("%s;", str_pattern_slim (insn));
+    sel_print ("%s;", str_pattern_slim (PATTERN (insn)));
 
   if (flags & DUMP_INSN_RTX_BBN)
     {

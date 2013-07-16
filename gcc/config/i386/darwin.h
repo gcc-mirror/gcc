@@ -131,8 +131,7 @@ extern int darwin_emit_branch_islands;
   "%{Ofast|ffast-math|funsafe-math-optimizations:crtfastmath.o%s} \
    %{mpc32:crtprec32.o%s} \
    %{mpc64:crtprec64.o%s} \
-   %{mpc80:crtprec80.o%s} \
-   %{fgnu-tm: -lcrttme.o}"
+   %{mpc80:crtprec80.o%s}" TM_DESTRUCTOR
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \

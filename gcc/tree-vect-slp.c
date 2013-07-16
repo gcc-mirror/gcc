@@ -1429,7 +1429,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn, int group_size,
  
   for (j = 0; j < group_size; j++)
     if (!bitmap_bit_p (load_index, j))
-      return false;
+      {
+	sbitmap_free (load_index);
+	return false;
+      }
 
   sbitmap_free (load_index);
 
@@ -2614,14 +2617,14 @@ vect_get_slp_vect_defs (slp_tree slp_node, vec<tree> *vec_oprnds)
 
 void
 vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
-                   vec<slp_void_p> *vec_oprnds, int reduc_index)
+		   vec<vec<tree> > *vec_oprnds, int reduc_index)
 {
   gimple first_stmt;
   int number_of_vects = 0, i;
   unsigned int child_index = 0;
   HOST_WIDE_INT lhs_size_unit, rhs_size_unit;
   slp_tree child = NULL;
-  vec<tree> *vec_defs;
+  vec<tree> vec_defs;
   tree oprnd;
   bool vectorized_defs;
 
@@ -2676,19 +2679,20 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
         }
 
       /* Allocate memory for vectorized defs.  */
-      vec_alloc (vec_defs, number_of_vects);
+      vec_defs = vNULL;
+      vec_defs.create (number_of_vects);
 
       /* For reduction defs we call vect_get_constant_vectors (), since we are
          looking for initial loop invariant values.  */
       if (vectorized_defs && reduc_index == -1)
         /* The defs are already vectorized.  */
-        vect_get_slp_vect_defs (child, vec_defs);
+	vect_get_slp_vect_defs (child, &vec_defs);
       else
         /* Build vectors from scalar defs.  */
-        vect_get_constant_vectors (oprnd, slp_node, vec_defs, i,
+	vect_get_constant_vectors (oprnd, slp_node, &vec_defs, i,
                                    number_of_vects, reduc_index);
 
-      vec_oprnds->quick_push ((slp_void_p) vec_defs);
+      vec_oprnds->quick_push (vec_defs);
 
       /* For reductions, we only need initial values.  */
       if (reduc_index != -1)
@@ -3137,7 +3141,8 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 {
   vec<slp_instance> slp_instances;
   slp_instance instance;
-  unsigned int i, vf;
+  slp_tree loads_node;
+  unsigned int i, j, vf;
   bool is_store = false;
 
   if (loop_vinfo)
@@ -3156,6 +3161,14 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       /* Schedule the tree of INSTANCE.  */
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
                                              instance, vf);
+
+      /* Clear STMT_VINFO_VEC_STMT of all loads.  With shared loads
+         between SLP instances we fail to properly initialize the
+	 vectorized SLP stmts and confuse different load permutations.  */
+      FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), j, loads_node)
+	STMT_VINFO_VEC_STMT
+	  (vinfo_for_stmt (SLP_TREE_SCALAR_STMTS (loads_node)[0])) = NULL;
+
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.");
@@ -3168,7 +3181,15 @@ vect_schedule_slp (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
       unsigned int j;
       gimple_stmt_iterator gsi;
 
-      vect_remove_slp_scalar_calls (root);
+      /* Remove scalar call stmts.  Do not do this for basic-block
+	 vectorization as not all uses may be vectorized.
+	 ???  Why should this be necessary?  DCE should be able to
+	 remove the stmts itself.
+	 ???  For BB vectorization we can as well remove scalar
+	 stmts starting from the SLP tree root if they have no
+	 uses.  */
+      if (loop_vinfo)
+	vect_remove_slp_scalar_calls (root);
 
       for (j = 0; SLP_TREE_SCALAR_STMTS (root).iterate (j, &store)
                   && j < SLP_INSTANCE_GROUP_SIZE (instance); j++)

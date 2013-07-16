@@ -4400,6 +4400,15 @@ invoke_set_current_function_hook (tree fndecl)
 	}
 
       targetm.set_current_function (fndecl);
+      this_fn_optabs = this_target_optabs;
+
+      if (opts != optimization_default_node)
+	{
+	  init_tree_optimization_optabs (opts);
+	  if (TREE_OPTIMIZATION_OPTABS (opts))
+	    this_fn_optabs = (struct target_optabs *)
+	      TREE_OPTIMIZATION_OPTABS (opts);
+	}
     }
 }
 

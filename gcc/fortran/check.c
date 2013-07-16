@@ -4017,8 +4017,6 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
 			      size_t *result_length_p)
 {
   size_t result_elt_size;
-  mpz_t tmp;
-  gfc_expr *mold_element;
 
   if (source->expr_type == EXPR_FUNCTION)
     return FAILURE;
@@ -4027,20 +4025,12 @@ gfc_calculate_transfer_sizes (gfc_expr *source, gfc_expr *mold, gfc_expr *size,
     return FAILURE;
 
   /* Calculate the size of the source.  */
-  if (source->expr_type == EXPR_ARRAY
-      && gfc_array_size (source, &tmp) == FAILURE)
-    return FAILURE;
-
   *source_size = gfc_target_expr_size (source);
   if (*source_size == 0)
     return FAILURE;
 
-  mold_element = mold->expr_type == EXPR_ARRAY
-		 ? gfc_constructor_first (mold->value.constructor)->expr
-		 : mold;
-
   /* Determine the size of the element.  */
-  result_elt_size = gfc_target_expr_size (mold_element);
+  result_elt_size = gfc_element_size (mold);
   if (result_elt_size == 0)
     return FAILURE;
 

@@ -494,10 +494,11 @@ xm_include_list=@xm_include_list@
 xm_defines=@xm_defines@
 lang_checks=
 lang_checks_parallelized=
-dg_target_exps:=alpha.exp,arm.exp,avr.exp,bfin.exp,cris.exp,frv.exp
-dg_target_exps:=$(dg_target_exps),i386.exp,ia64.exp,m68k.exp,microblaze.exp
-dg_target_exps:=$(dg_target_exps),mips.exp,powerpc.exp,rx.exp,s390.exp,sh.exp
-dg_target_exps:=$(dg_target_exps),sparc.exp,spu.exp,xstormy16.exp
+dg_target_exps:=aarch64.exp,alpha.exp,arm.exp,avr.exp,bfin.exp,cris.exp
+dg_target_exps:=$(dg_target_exps),epiphany.exp,frv.exp,i386.exp,ia64.exp
+dg_target_exps:=$(dg_target_exps),m68k.exp,microblaze.exp,mips.exp,powerpc.exp
+dg_target_exps:=$(dg_target_exps),rx.exp,s390.exp,sh.exp,sparc.exp,spu.exp
+dg_target_exps:=$(dg_target_exps),tic6x.exp,xstormy16.exp
 # This lists a couple of test files that take most time during check-gcc.
 # When doing parallelized check-gcc, these can run in parallel with the
 # remaining tests.  Each word in this variable stands for work for one
@@ -517,8 +518,10 @@ check_gcc_parallelize=execute.exp=execute/2* \
 		      compile.exp=compile/\[9pP\]*,builtins.exp \
 		      compile.exp=compile/\[013-8a-oq-zA-OQ-Z\]* \
 		      dg-torture.exp,ieee.exp \
-		      vect.exp,guality.exp,unsorted.exp \
-		      struct-layout-1.exp,stackalign.exp,$(dg_target_exps)
+		      vect.exp,unsorted.exp \
+		      guality.exp \
+		      struct-layout-1.exp,stackalign.exp \
+		      $(dg_target_exps)
 lang_opt_files=@lang_opt_files@ $(srcdir)/c-family/c.opt $(srcdir)/common.opt
 lang_specs_files=@lang_specs_files@
 lang_tree_files=@lang_tree_files@
@@ -919,7 +922,7 @@ PREDICT_H = predict.h predict.def
 CPPLIB_H = $(srcdir)/../libcpp/include/line-map.h \
 	$(srcdir)/../libcpp/include/cpplib.h
 INPUT_H = $(srcdir)/../libcpp/include/line-map.h input.h
-OPTS_H = $(INPUT_H) $(VEC_H) opts.h
+OPTS_H = $(INPUT_H) $(VEC_H) opts.h $(OBSTACK_H)
 DECNUM_H = $(DECNUM)/decContext.h $(DECNUM)/decDPD.h $(DECNUM)/decNumber.h \
 	$(DECNUMFMT)/decimal32.h $(DECNUMFMT)/decimal64.h \
 	$(DECNUMFMT)/decimal128.h $(DECNUMFMT)/decimal128Local.h
@@ -2226,7 +2229,8 @@ stor-layout.o : stor-layout.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
 asan.o : asan.c asan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
    output.h coretypes.h $(GIMPLE_PRETTY_PRINT_H) \
    tree-iterator.h $(TREE_FLOW_H) $(TREE_PASS_H) \
-   $(TARGET_H) $(EXPR_H) $(OPTABS_H) $(TM_P_H) langhooks.h
+   $(TARGET_H) $(EXPR_H) $(OPTABS_H) $(TM_P_H) langhooks.h \
+   $(HASH_TABLE_H) alloc-pool.h
 tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    $(GIMPLE_H) $(DIAGNOSTIC_H) langhooks.h \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(CGRAPH_H) $(GGC_H) \
@@ -2442,7 +2446,7 @@ tree-ssa-loop-niter.o : tree-ssa-loop-niter.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h dumpfile.h \
    $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(TREE_DATA_REF_H) \
-   $(BASIC_BLOCK_H) $(GGC_H) intl.h $(GIMPLE_PRETTY_PRINT_H)
+   $(BASIC_BLOCK_H) $(GGC_H) intl.h $(GIMPLE_PRETTY_PRINT_H) $(TREE_PASS_H)
 tree-ssa-loop-ivcanon.o : tree-ssa-loop-ivcanon.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(TM_P_H) $(CFGLOOP_H) $(PARAMS_H) \
    $(TREE_INLINE_H) $(DIAGNOSTIC_H) $(TM_H) coretypes.h \
@@ -2501,7 +2505,7 @@ tree-ssa-reassoc.o : tree-ssa-reassoc.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) \
    tree-iterator.h $(BASIC_BLOCK_H) $(GIMPLE_H) $(TREE_INLINE_H) \
    $(VEC_H) langhooks.h alloc-pool.h pointer-set.h $(CFGLOOP_H) \
-   $(TARGET_H) $(GIMPLE_PRETTY_PRINT_H) $(DIAGNOSTIC_CORE_H)
+   $(TARGET_H) $(GIMPLE_PRETTY_PRINT_H) $(DIAGNOSTIC_CORE_H) $(PARAMS_H)
 tree-optimize.o : tree-optimize.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(GGC_H) \
    $(DIAGNOSTIC_H) $(BASIC_BLOCK_H) $(FLAGS_H) $(TM_H) \
@@ -3337,7 +3341,7 @@ sel-sched.o : sel-sched.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(FUNCTION_H) $(INSN_ATTR_H)  $(RECOG_H) $(EXCEPT_H) $(PARAMS_H) \
    $(TM_P_H) output.h $(TARGET_H) $(TREE_PASS_H)  \
    $(SCHED_INT_H) $(GGC_H) $(TREE_H) langhooks.h rtlhooks-def.h \
-   $(SEL_SCHED_IR_H) $(SEL_SCHED_DUMP_H) sel-sched.h $(DBGCNT_H) $(EMIT_RTL_H)
+   $(SEL_SCHED_IR_H) $(SEL_SCHED_DUMP_H) sel-sched.h $(DBGCNT_H) $(EMIT_RTL_H) ira.h
 sel-sched-dump.o : sel-sched-dump.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(RTL_H) $(REGS_H) hard-reg-set.h $(FLAGS_H) insn-config.h \
    $(FUNCTION_H) $(INSN_ATTR_H) $(DIAGNOSTIC_CORE_H) $(RECOG_H) $(EXCEPT_H) $(PARAMS_H) \
@@ -4597,7 +4601,7 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(C_PRAGMA_H)  $(CPPLIB_H)  $(FUNCTION_H) \
   cppdefault.h flags.h $(MD5_H) params.def params.h prefix.h tree-inline.h \
   $(GIMPLE_PRETTY_PRINT_H) realmpfr.h \
-  $(IPA_PROP_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) version.h
+  $(IPA_PROP_H) $(TARGET_H) $(RTL_H) $(TM_P_H) $(CFGLOOP_H) $(EMIT_RTL_H) version.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile

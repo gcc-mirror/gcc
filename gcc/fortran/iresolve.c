@@ -140,7 +140,7 @@ resolve_bound (gfc_expr *f, gfc_expr *array, gfc_expr *dim, gfc_expr *kind,
 	}
     }
 
-  f->value.function.name = xstrdup (name);
+  f->value.function.name = gfc_get_string (name);
 }
 
 

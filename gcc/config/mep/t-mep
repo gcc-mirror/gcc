@@ -29,7 +29,7 @@ mep-pragma.o: $(srcdir)/config/mep/mep-pragma.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(C_PRAGMA_H) \
 	$(CPPLIB_H) hard-reg-set.h output.h $(srcdir)/config/mep/mep-protos.h \
 	function.h insn-config.h reload.h $(TARGET_H)
-	$(COMPILER) -c $(ALL_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
 
 MULTILIB_OPTIONS = mel mall-opts mfar
 MULTILIB_DIRNAMES = el allopt far

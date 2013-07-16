@@ -14,7 +14,6 @@ package time
 
 static Timers timers;
 static void addtimer(Timer*);
-static bool deltimer(Timer*);
 
 // Package time APIs.
 // Godoc uses the comments in package time, not these.
@@ -30,15 +29,13 @@ func Sleep(ns int64) {
 func startTimer(t *Timer) {
 	if(raceenabled)
 		runtime_racerelease(t);
-	runtime_lock(&timers);
-	addtimer(t);
-	runtime_unlock(&timers);
+	runtime_addtimer(t);
 }
 
 // stopTimer removes t from the timer heap if it is there.
 // It returns true if t was removed, false if t wasn't even there.
 func stopTimer(t *Timer) (stopped bool) {
-	stopped = deltimer(t);
+	stopped = runtime_deltimer(t);
 }
 
 // C runtime.
@@ -49,12 +46,15 @@ static void siftdown(int32);
 
 // Ready the goroutine e.data.
 static void
-ready(int64 now, Eface e)
+ready(int64 now, Eface e, void *closure)
 {
 	USED(now);
+	USED(closure);
 
 	runtime_ready(e.__object);
 }
+
+static FuncVal readyv = {(void(*)(void))ready};
 
 // Put the current goroutine to sleep for ns nanoseconds.
 void
@@ -70,11 +70,19 @@ runtime_tsleep(int64 ns, const char *reason)
 
 	t.when = runtime_nanotime() + ns;
 	t.period = 0;
-	t.f = ready;
+	t.fv = &readyv;
 	t.arg.__object = g;
 	runtime_lock(&timers);
 	addtimer(&t);
 	runtime_park(runtime_unlock, &timers, reason);
+}
+
+void
+runtime_addtimer(Timer *t)
+{
+	runtime_lock(&timers);
+	addtimer(t);
+	runtime_unlock(&timers);
 }
 
 // Add a timer to the heap and start or kick the timer proc
@@ -119,8 +127,8 @@ addtimer(Timer *t)
 // Delete timer t from the heap.
 // Do not need to update the timerproc:
 // if it wakes up early, no big deal.
-static bool
-deltimer(Timer *t)
+bool
+runtime_deltimer(Timer *t)
 {
 	int32 i;
 
@@ -158,7 +166,7 @@ timerproc(void* dummy __attribute__ ((unused)))
 {
 	int64 delta, now;
 	Timer *t;
-	void (*f)(int64, Eface);
+	void (*f)(int64, Eface, void *);
 	Eface arg;
 
 	for(;;) {
@@ -184,12 +192,12 @@ timerproc(void* dummy __attribute__ ((unused)))
 				siftdown(0);
 				t->i = -1;  // mark as removed
 			}
-			f = t->f;
+			f = (void*)t->fv->fn;
 			arg = t->arg;
 			runtime_unlock(&timers);
 			if(raceenabled)
 				runtime_raceacquire(t);
-			f(now, arg);
+			f(now, arg, &t->fv);
 			runtime_lock(&timers);
 		}
 		if(delta < 0) {
@@ -202,7 +210,7 @@ timerproc(void* dummy __attribute__ ((unused)))
 		timers.sleeping = true;
 		runtime_noteclear(&timers.waitnote);
 		runtime_unlock(&timers);
-		runtime_entersyscall();
+		runtime_entersyscallblock();
 		runtime_notetsleep(&timers.waitnote, delta);
 		runtime_exitsyscall();
 	}

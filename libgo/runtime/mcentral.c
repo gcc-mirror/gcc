@@ -108,7 +108,7 @@ MCentral_Free(MCentral *c, void *v)
 	int32 size;
 
 	// Find span for v.
-	s = runtime_MHeap_Lookup(&runtime_mheap, v);
+	s = runtime_MHeap_Lookup(runtime_mheap, v);
 	if(s == nil || s->ref == 0)
 		runtime_throw("invalid free");
 
@@ -133,7 +133,7 @@ MCentral_Free(MCentral *c, void *v)
 		s->freelist = nil;
 		c->nfree -= (s->npages << PageShift) / size;
 		runtime_unlock(c);
-		runtime_MHeap_Free(&runtime_mheap, s, 0);
+		runtime_MHeap_Free(runtime_mheap, s, 0);
 		runtime_lock(c);
 	}
 }
@@ -168,7 +168,7 @@ runtime_MCentral_FreeSpan(MCentral *c, MSpan *s, int32 n, MLink *start, MLink *e
 		c->nfree -= (s->npages << PageShift) / size;
 		runtime_unlock(c);
 		runtime_unmarkspan((byte*)(s->start<<PageShift), s->npages<<PageShift);
-		runtime_MHeap_Free(&runtime_mheap, s, 0);
+		runtime_MHeap_Free(runtime_mheap, s, 0);
 	} else {
 		runtime_unlock(c);
 	}
@@ -200,7 +200,7 @@ MCentral_Grow(MCentral *c)
 
 	runtime_unlock(c);
 	runtime_MGetSizeClassInfo(c->sizeclass, &size, &npages, &n);
-	s = runtime_MHeap_Alloc(&runtime_mheap, npages, c->sizeclass, 0, 1);
+	s = runtime_MHeap_Alloc(runtime_mheap, npages, c->sizeclass, 0, 1);
 	if(s == nil) {
 		// TODO(rsc): Log out of memory
 		runtime_lock(c);

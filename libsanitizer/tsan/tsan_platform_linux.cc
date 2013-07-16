@@ -38,6 +38,8 @@
 #include <errno.h>
 #include <sched.h>
 #include <dlfcn.h>
+#define __need_res_state
+#include <resolv.h>
 
 extern "C" int arch_prctl(int code, __sanitizer::uptr *addr);
 
@@ -239,7 +241,7 @@ const char *InitializePlatform() {
   g_tls_size = (uptr)InitTlsSize();
   InitDataSeg();
 #endif
-  return getenv(kTsanOptionsEnv);
+  return GetEnv(kTsanOptionsEnv);
 }
 
 void FinalizePlatform() {
@@ -286,6 +288,19 @@ void GetThreadStackAndTls(bool main, uptr *stk_addr, uptr *stk_size,
 bool IsGlobalVar(uptr addr) {
   return g_data_start && addr >= g_data_start && addr < g_data_end;
 }
+
+#ifndef TSAN_GO
+int ExtractResolvFDs(void *state, int *fds, int nfd) {
+  int cnt = 0;
+  __res_state *statp = (__res_state*)state;
+  for (int i = 0; i < MAXNS && cnt < nfd; i++) {
+    if (statp->_u._ext.nsaddrs[i] && statp->_u._ext.nssocks[i] != -1)
+      fds[cnt++] = statp->_u._ext.nssocks[i];
+  }
+  return cnt;
+}
+#endif
+
 
 }  // namespace __tsan
 

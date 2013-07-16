@@ -179,6 +179,18 @@ void StatOutput(u64 *stat) {
   name[StatInt_sem_timedwait]            = "  sem_timedwait                   ";
   name[StatInt_sem_post]                 = "  sem_post                        ";
   name[StatInt_sem_getvalue]             = "  sem_getvalue                    ";
+  name[StatInt_stat]                     = "  stat                            ";
+  name[StatInt___xstat]                  = "  __xstat                         ";
+  name[StatInt_stat64]                   = "  stat64                          ";
+  name[StatInt___xstat64]                = "  __xstat64                       ";
+  name[StatInt_lstat]                    = "  lstat                           ";
+  name[StatInt___lxstat]                 = "  __lxstat                        ";
+  name[StatInt_lstat64]                  = "  lstat64                         ";
+  name[StatInt___lxstat64]               = "  __lxstat64                      ";
+  name[StatInt_fstat]                    = "  fstat                           ";
+  name[StatInt___fxstat]                 = "  __fxstat                        ";
+  name[StatInt_fstat64]                  = "  fstat64                         ";
+  name[StatInt___fxstat64]               = "  __fxstat64                      ";
   name[StatInt_open]                     = "  open                            ";
   name[StatInt_open64]                   = "  open64                          ";
   name[StatInt_creat]                    = "  creat                           ";
@@ -193,12 +205,15 @@ void StatOutput(u64 *stat) {
   name[StatInt_socket]                   = "  socket                          ";
   name[StatInt_socketpair]               = "  socketpair                      ";
   name[StatInt_connect]                  = "  connect                         ";
+  name[StatInt_bind]                     = "  bind                            ";
+  name[StatInt_listen]                   = "  listen                          ";
   name[StatInt_accept]                   = "  accept                          ";
   name[StatInt_accept4]                  = "  accept4                         ";
   name[StatInt_epoll_create]             = "  epoll_create                    ";
   name[StatInt_epoll_create1]            = "  epoll_create1                   ";
   name[StatInt_close]                    = "  close                           ";
   name[StatInt___close]                  = "  __close                         ";
+  name[StatInt___res_iclose]             = "  __res_iclose                    ";
   name[StatInt_pipe]                     = "  pipe                            ";
   name[StatInt_pipe2]                    = "  pipe2                           ";
   name[StatInt_read]                     = "  read                            ";
@@ -240,6 +255,22 @@ void StatOutput(u64 *stat) {
   name[StatInt_scanf]                    = "  scanf                           ";
   name[StatInt_sscanf]                   = "  sscanf                          ";
   name[StatInt_fscanf]                   = "  fscanf                          ";
+  name[StatInt___isoc99_vscanf]          = "  vscanf                          ";
+  name[StatInt___isoc99_vsscanf]         = "  vsscanf                         ";
+  name[StatInt___isoc99_vfscanf]         = "  vfscanf                         ";
+  name[StatInt___isoc99_scanf]           = "  scanf                           ";
+  name[StatInt___isoc99_sscanf]          = "  sscanf                          ";
+  name[StatInt___isoc99_fscanf]          = "  fscanf                          ";
+  name[StatInt_on_exit]                  = "  on_exit                         ";
+  name[StatInt___cxa_atexit]             = "  __cxa_atexit                    ";
+  name[StatInt_localtime]                = "  localtime                       ";
+  name[StatInt_localtime_r]              = "  localtime_r                     ";
+  name[StatInt_gmtime]                   = "  gmtime                          ";
+  name[StatInt_gmtime_r]                 = "  gmtime_r                        ";
+  name[StatInt_ctime]                    = "  ctime                           ";
+  name[StatInt_ctime_r]                  = "  ctime_r                         ";
+  name[StatInt_asctime]                  = "  asctime                         ";
+  name[StatInt_asctime_r]                = "  asctime_r                       ";
 
   name[StatAnnotation]                   = "Dynamic annotations               ";
   name[StatAnnotateHappensBefore]        = "  HappensBefore                   ";
@@ -285,6 +316,7 @@ void StatOutput(u64 *stat) {
   name[StatMtxAnnotations]               = "  Annotations                     ";
   name[StatMtxMBlock]                    = "  MBlock                          ";
   name[StatMtxJavaMBlock]                = "  JavaMBlock                      ";
+  name[StatMtxFD]                        = "  FD                              ";
 
   Printf("Statistics:\n");
   for (int i = 0; i < StatCnt; i++)

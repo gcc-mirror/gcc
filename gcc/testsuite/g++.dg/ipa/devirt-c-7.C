@@ -1,6 +1,7 @@
 /* Verify that ipa-cp will not get confused by placement new constructing an
    object within another one when looking for dynamic type change .  */
 /* { dg-do run } */
+/* { dg-require-effective-target nonpic } */
 /* { dg-options "-O3 -Wno-attributes"  } */
 
 extern "C" void abort (void);

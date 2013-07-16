@@ -12,7 +12,7 @@ target_alias=${target_alias-$host_alias}
 
 . ${srcdir}/configure.host
 
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([no-dist])
 
 # See if makeinfo has been installed and is modern enough
 # that we can use it.

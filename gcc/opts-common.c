@@ -276,7 +276,7 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
       && !option->cl_reject_negative
       && (opt_text[1] == 'W' || opt_text[1] == 'f' || opt_text[1] == 'm'))
     {
-      char *t = XNEWVEC (char, option->opt_len + 5);
+      char *t = XOBNEWVEC (&opts_obstack, char, option->opt_len + 5);
       t[0] = '-';
       t[1] = opt_text[1];
       t[2] = 'n';
@@ -301,11 +301,9 @@ generate_canonical_option (size_t opt_index, const char *arg, int value,
       else
 	{
 	  gcc_assert (option->flags & CL_JOINED);
-	  decoded->canonical_option[0] = concat (opt_text, arg, NULL);
+	  decoded->canonical_option[0] = opts_concat (opt_text, arg, NULL);
 	  decoded->canonical_option[1] = NULL;
 	  decoded->canonical_option_num_elements = 1;
-	  if (opt_text != option->opt_text)
-	    free (CONST_CAST (char *, opt_text));
 	}
     }
   else
@@ -590,7 +588,7 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     {
       size_t j;
       size_t len = strlen (arg);
-      char *arg_lower = XNEWVEC (char, len + 1);
+      char *arg_lower = XOBNEWVEC (&opts_obstack, char, len + 1);
 
       for (j = 0; j < len; j++)
 	arg_lower[j] = TOLOWER ((unsigned char) arg[j]);
@@ -670,7 +668,8 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
 	  decoded->canonical_option_num_elements = result;
 	}
     }
-  decoded->orig_option_with_args_text = p = XNEWVEC (char, total_len);
+  decoded->orig_option_with_args_text
+    = p = XOBNEWVEC (&opts_obstack, char, total_len);
   for (i = 0; i < result; i++)
     {
       size_t len = strlen (argv[i]);
@@ -691,6 +690,40 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
     }
 
   return result;
+}
+
+/* Obstack for option strings.  */
+
+struct obstack opts_obstack;
+
+/* Like libiberty concat, but allocate using opts_obstack.  */
+
+char *
+opts_concat (const char *first, ...)
+{
+  char *newstr, *end;
+  size_t length = 0;
+  const char *arg;
+  va_list ap;
+
+  /* First compute the size of the result and get sufficient memory.  */
+  va_start (ap, first);
+  for (arg = first; arg; arg = va_arg (ap, const char *))
+    length += strlen (arg);
+  newstr = XOBNEWVEC (&opts_obstack, char, length + 1);
+  va_end (ap);
+
+  /* Now copy the individual pieces to the result string. */
+  va_start (ap, first);
+  for (arg = first, end = newstr; arg; arg = va_arg (ap, const char *))
+    {
+      length = strlen (arg);
+      memcpy (end, arg, length);
+      end += length;
+    }
+  *end = '\0';
+  va_end (ap);
+  return newstr;
 }
 
 /* Decode command-line options (ARGC and ARGV being the arguments of
@@ -932,8 +965,8 @@ generate_option (size_t opt_index, const char *arg, int value,
 
     case 2:
       decoded->orig_option_with_args_text
-	= concat (decoded->canonical_option[0], " ",
-		  decoded->canonical_option[1], NULL);
+	= opts_concat (decoded->canonical_option[0], " ",
+		       decoded->canonical_option[1], NULL);
       break;
 
     default:

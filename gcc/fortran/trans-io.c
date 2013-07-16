@@ -1782,6 +1782,8 @@ build_dt (tree function, gfc_code * code)
 	  mask |= set_string (&block, &post_block, var, IOPARM_dt_namelist_name,
 			      nmlname);
 
+	  gfc_free_expr (nmlname);
+
 	  if (last_dt == READ)
 	    mask |= IOPARM_dt_namelist_read_mode;
 

@@ -59,16 +59,13 @@ redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
   slot = pointer_map_insert (edge_var_maps, e);
   head = (edge_var_map_vector *) *slot;
   if (!head)
-    {
-      head = new edge_var_map_vector;
-      head->create (5);
-      *slot = head;
-    }
+    vec_safe_reserve (head, 5);
   new_node.def = def;
   new_node.result = result;
   new_node.locus = locus;
 
-  head->safe_push (new_node);
+  vec_safe_push (head, new_node);
+  *slot = head;
 }
 
 
@@ -88,7 +85,7 @@ redirect_edge_var_map_clear (edge e)
   if (slot)
     {
       head = (edge_var_map_vector *) *slot;
-      delete head;
+      vec_free (head);
       *slot = NULL;
     }
 }
@@ -115,11 +112,11 @@ redirect_edge_var_map_dup (edge newe, edge olde)
     return;
   head = (edge_var_map_vector *) *old_slot;
 
-  edge_var_map_vector *new_head = new edge_var_map_vector;
+  edge_var_map_vector *new_head = NULL;
   if (head)
-    *new_head = head->copy ();
+    new_head = vec_safe_copy (head);
   else
-    new_head->create (5);
+    vec_safe_reserve (new_head, 5);
   *new_slot = new_head;
 }
 
@@ -151,7 +148,7 @@ free_var_map_entry (const void *key ATTRIBUTE_UNUSED,
 		    void *data ATTRIBUTE_UNUSED)
 {
   edge_var_map_vector *head = (edge_var_map_vector *) *value;
-  delete head;
+  vec_free (head);
   return true;
 }
 
@@ -626,16 +623,16 @@ verify_ssa_name (tree ssa_name, bool is_virtual)
       return true;
     }
 
-  if (SSA_NAME_VAR (ssa_name) != NULL_TREE
-      && TREE_TYPE (ssa_name) != TREE_TYPE (ssa_name))
-    {
-      error ("type mismatch between an SSA_NAME and its symbol");
-      return true;
-    }
-
   if (SSA_NAME_IN_FREE_LIST (ssa_name))
     {
       error ("found an SSA_NAME that had been released into the free pool");
+      return true;
+    }
+
+  if (SSA_NAME_VAR (ssa_name) != NULL_TREE
+      && TREE_TYPE (ssa_name) != TREE_TYPE (SSA_NAME_VAR (ssa_name)))
+    {
+      error ("type mismatch between an SSA_NAME and its symbol");
       return true;
     }
 

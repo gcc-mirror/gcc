@@ -208,8 +208,8 @@
 
 ;; VSX moves
 (define_insn "*vsx_mov<mode>"
-  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?wa,?wa,*Y,*r,*r,<VSr>,?wa,v,wZ,v")
-	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,wa,Z,wa,r,Y,r,j,j,W,v,wZ"))]
+  [(set (match_operand:VSX_M 0 "nonimmediate_operand" "=Z,<VSr>,<VSr>,?Z,?wa,?wa,*Y,*r,*r,<VSr>,?wa,*r,v,wZ,v")
+	(match_operand:VSX_M 1 "input_operand" "<VSr>,Z,<VSr>,wa,Z,wa,r,Y,r,j,j,j,W,v,wZ"))]
   "VECTOR_MEM_VSX_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
@@ -239,23 +239,24 @@
     case 6:
     case 7:
     case 8:
+    case 11:
       return "#";
 
     case 9:
     case 10:
       return "xxlxor %x0,%x0,%x0";
 
-    case 11:
+    case 12:
       return output_vec_const_move (operands);
 
-    case 12:
+    case 13:
       gcc_assert (MEM_P (operands[0])
 		  && GET_CODE (XEXP (operands[0], 0)) != PRE_INC
 		  && GET_CODE (XEXP (operands[0], 0)) != PRE_DEC
 		  && GET_CODE (XEXP (operands[0], 0)) != PRE_MODIFY);
       return "stvx %1,%y0";
 
-    case 13:
+    case 14:
       gcc_assert (MEM_P (operands[0])
 		  && GET_CODE (XEXP (operands[0], 0)) != PRE_INC
 		  && GET_CODE (XEXP (operands[0], 0)) != PRE_DEC
@@ -266,7 +267,7 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "type" "vecstore,vecload,vecsimple,vecstore,vecload,vecsimple,*,*,*,vecsimple,vecsimple,*,vecstore,vecload")])
+  [(set_attr "type" "vecstore,vecload,vecsimple,vecstore,vecload,vecsimple,*,*,*,vecsimple,vecsimple,*,*,vecstore,vecload")])
 
 ;; Unlike other VSX moves, allow the GPRs, since a normal use of TImode is for
 ;; unions.  However for plain data movement, slightly favor the vector loads

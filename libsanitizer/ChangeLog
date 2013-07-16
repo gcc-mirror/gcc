@@ -1,6 +1,79 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* configure.ac (AM_INIT_AUTOMAKE): Add no-dist.
+	* Makefile.in: Regenerated.
+	* asan/Makefile.in: Regenerated.
+	* interception/Makefile.in: Regenerated.
+	* sanitizer_common/Makefile.in: Regenerated.
+	* tsan/Makefile.in: Regenerated.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_mapping.h (kMidMemEnd): Increase to 0x4fffffffffULL.
+	* asan/asan_rtl.cc (__asan_init): Increase kMidMemEnd to
+	0x4fffffffffULL.
+
+2013-02-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56393
+	* asan/Makefile.am (nodist_toolexeclib_HEADERS): Set to
+	libasan_preinit.o.
+	(libasan_preinit.o): Depend on asan_preinit.o.
+	* asan/Makefile.in: Regenerated.
+	* asan/asan_preinit.cc: New file, synced from upstream.
+	* asan/asan_rtl.cc: Remove preinit stuff, synced from upstream.
+
+2013-02-21  Jack Howarth <howarth@bromo.med.uc.edu>
+
+	* asan/Makefile.am (libasan_la_SOURCES): Remove deprecated
+	dynamic/asan_interceptors_dynamic.cc.
+	* asan/Makefile.in: Regenerated.
+	* merge.sh: Remove merge of deprecated lib/asan/dynamic.
+
+2013-02-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_rtl.cc (__asan_preinit): Don't add if PIC macro is
+	defined.  Add used attribute.
+
+2013-02-21  Kostya Serebryany  <kcc@google.com>
+
+	* All source files: Merge from upstream r175733.
+	* sanitizer_common/Makefile.am: Added a new file.
+	* sanitizer_common/Makefile.in: Regenerated.
+
+2013-02-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/56327
+	* interception/interception.h (OFF_T): Merged from upstream
+	r175140.
+
+2013-02-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* asan/asan_mapping.h (SHADOW_OFFSET): Set to (1ULL << 44) on x86-64.
+
+2013-02-13  Kostya Serebryany  <kcc@google.com>
+
+	PR sanitizer/56128
+	* All source files: Merge from upstream r175049.
+	* interception/Makefile.am: added include path.
+	* interception/Makefile.in: Regenerated.
+
+2013-02-11  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	* configure.tgt: Disable build on darwin9 and earlier.
+
 2013-01-23  Kostya Serebryany  <kcc@google.com>
 
-        PR sanitizer/55989
+	PR sanitizer/55989
 	* All source files: Merge from upstream r173241.
 	* merge.sh: Support merging .inc files.
 

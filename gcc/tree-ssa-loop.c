@@ -70,10 +70,13 @@ tree_ssa_loop_init (void)
 		       | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
+  /* We might discover new loops, e.g. when turning irreducible
+     regions into reducible.  */
+  scev_initialize ();
+
   if (number_of_loops () <= 1)
     return 0;
 
-  scev_initialize ();
   return 0;
 }
 

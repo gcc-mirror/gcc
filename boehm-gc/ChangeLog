@@ -1,3 +1,34 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR other/43620
+	* Makefile.am (AUTOMAKE_OPTIONS): Add no-dist.
+	* include/Makefile.am (AUTOMAKE_OPTIONS): Add no-dist.
+	* testsuite/Makefile.am (AUTOMAKE_OPTIONS): Add no-dist.
+	* Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* os_dep.c [SOLARIS_STACKBOTTOM] (GC_solaris_stack_base): New
+	function.
+	[!BEOS && !AMIGA && !MSWIN32 && !MSWINCE && !OS2 && !NOSYS &&
+	!ECOS] (GC_get_stack_base): Use it.
+	* include/private/gcconfig.h [SPARC && SUNOS5]
+	(SOLARIS_STACKBOTTOM): Define.
+	(STACKBOTTOM, HEURISTIC2): Remove.
+	[I386 && SUNOS5]
+	(SOLARIS_STACKBOTTOM): Define.
+	(STACKBOTTOM): Remove.
+
 2012-11-04  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	* configure.ac: Add stanza for *-*-gnu* threads configuration.

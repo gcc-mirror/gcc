@@ -921,7 +921,7 @@ _mm256_broadcastsd_pd (__m128d __X)
 
 extern __inline __m256i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_broadcastsi128_si256 (__m128i __X)
+_mm256_broadcastsi128_si256 (__m128i __X)
 {
   return (__m256i) __builtin_ia32_vbroadcastsi256 ((__v2di)__X);
 }

@@ -1,4 +1,4 @@
-/* { dg-do compile } */ 
+/* { dg-do compile { target nonpic } } */
 /* { dg-options "-O2 -fdump-tree-pre-stats -fdump-tree-fre1" } */
 #include <stddef.h>
 

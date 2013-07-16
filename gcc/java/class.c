@@ -2958,9 +2958,14 @@ emit_symbol_table (tree name, tree the_table,
                                           null_pointer_node);
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, null_symbol);
 
-  table = build_constructor (symbols_array_type, v);
+  tree symbols_arr_type
+    = build_prim_array_type (symbol_type, vec_safe_length (v));
+
+  table = build_constructor (symbols_arr_type, v);
 
   /* Make it the initial value for otable_syms and emit the decl. */
+  TREE_TYPE (the_syms_decl) = symbols_arr_type;
+  relayout_decl (the_syms_decl);
   DECL_INITIAL (the_syms_decl) = table;
   DECL_ARTIFICIAL (the_syms_decl) = 1;
   DECL_IGNORED_P (the_syms_decl) = 1;
@@ -3109,12 +3114,15 @@ emit_assertion_table (tree klass)
                                             null_pointer_node);
   
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, null_entry);
+
+  tree type
+    = build_prim_array_type (assertion_entry_type, vec_safe_length (v));
   
-  ctor = build_constructor (assertion_table_type, v);
+  ctor = build_constructor (type, v);
 
   table_decl = build_decl (input_location,
 			   VAR_DECL, mangled_classname ("_type_assert_", klass),
-			   assertion_table_type);
+			   type);
 
   TREE_STATIC (table_decl) = 1;
   TREE_READONLY (table_decl) = 1;

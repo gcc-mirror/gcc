@@ -240,4 +240,4 @@ MD5Hash md5_hash(const void *data, uptr size) {
   MD5_Final((unsigned char*)&res.hash[0], &ctx);
   return res;
 }
-}
+}  // namespace __tsan

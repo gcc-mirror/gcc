@@ -1401,7 +1401,7 @@ foo.cc:1: advice: Change "list" to "forward_list".
   </para></listitem>
   <listitem><para><emphasis>Fundamentals:</emphasis>
   See papers:
-  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://portal.acm.org/citation.cfm?doid=1065944.1065981">
+  <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dl.acm.org/citation.cfm?doid=1065944.1065981">
   A framework for adaptive algorithm selection in STAPL</link> and
   <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://ieeexplore.ieee.org/search/wrapper.jsp?arnumber=4228227">
   Optimizing Sorting with Machine Learning Algorithms</link>.
@@ -1597,7 +1597,7 @@ the allocation sequence or switching to a structure conscious allocator.
   Keep a shadow for each container.  Record iterator dereferences and
   container member accesses.  Issue advice for elements referenced by
   multiple threads.
-  See paper: <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://portal.acm.org/citation.cfm?id=207110.207148">
+  See paper: <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://dl.acm.org/citation.cfm?id=207110.207148">
   The LRPD test: speculative run-time parallelization of loops with
   privatization and reduction parallelization</link>.
   </para></listitem>

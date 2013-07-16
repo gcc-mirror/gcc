@@ -7,6 +7,7 @@ package xml
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io"
 	"reflect"
 	"strconv"
@@ -263,6 +264,16 @@ type Data struct {
 
 type Plain struct {
 	V interface{}
+}
+
+type MyInt int
+
+type EmbedInt struct {
+	MyInt
+}
+
+type Strings struct {
+	X []string `xml:"A>B,omitempty"`
 }
 
 // Unless explicitly stated as such (or *Plain), all of the
@@ -789,6 +800,17 @@ var marshalTests = []struct {
 		},
 		UnmarshalOnly: true,
 	},
+	{
+		ExpectXML: `<EmbedInt><MyInt>42</MyInt></EmbedInt>`,
+		Value: &EmbedInt{
+			MyInt: 42,
+		},
+	},
+	// Test omitempty with parent chain; see golang.org/issue/4168.
+	{
+		ExpectXML: `<Strings><A></A></Strings>`,
+		Value:     &Strings{},
+	},
 }
 
 func TestMarshal(t *testing.T) {
@@ -809,6 +831,10 @@ func TestMarshal(t *testing.T) {
 			}
 		}
 	}
+}
+
+type AttrParent struct {
+	X string `xml:"X>Y,attr"`
 }
 
 var marshalErrorTests = []struct {
@@ -838,12 +864,39 @@ var marshalErrorTests = []struct {
 		Value: &Domain{Comment: []byte("f--bar")},
 		Err:   `xml: comments must not contain "--"`,
 	},
+	// Reject parent chain with attr, never worked; see golang.org/issue/5033.
+	{
+		Value: &AttrParent{},
+		Err:   `xml: X>Y chain not valid with attr flag`,
+	},
+}
+
+var marshalIndentTests = []struct {
+	Value     interface{}
+	Prefix    string
+	Indent    string
+	ExpectXML string
+}{
+	{
+		Value: &SecretAgent{
+			Handle:    "007",
+			Identity:  "James Bond",
+			Obfuscate: "<redacted/>",
+		},
+		Prefix:    "",
+		Indent:    "\t",
+		ExpectXML: fmt.Sprintf("<agent handle=\"007\">\n\t<Identity>James Bond</Identity><redacted/>\n</agent>"),
+	},
 }
 
 func TestMarshalErrors(t *testing.T) {
 	for idx, test := range marshalErrorTests {
-		_, err := Marshal(test.Value)
-		if err == nil || err.Error() != test.Err {
+		data, err := Marshal(test.Value)
+		if err == nil {
+			t.Errorf("#%d: marshal(%#v) = [success] %q, want error %v", idx, test.Value, data, test.Err)
+			continue
+		}
+		if err.Error() != test.Err {
 			t.Errorf("#%d: marshal(%#v) = [error] %v, want %v", idx, test.Value, err, test.Err)
 		}
 		if test.Kind != reflect.Invalid {
@@ -880,6 +933,19 @@ func TestUnmarshal(t *testing.T) {
 			t.Errorf("#%d: unexpected error: %#v", i, err)
 		} else if got, want := dest, test.Value; !reflect.DeepEqual(got, want) {
 			t.Errorf("#%d: unmarshal(%q):\nhave %#v\nwant %#v", i, test.ExpectXML, got, want)
+		}
+	}
+}
+
+func TestMarshalIndent(t *testing.T) {
+	for i, test := range marshalIndentTests {
+		data, err := MarshalIndent(test.Value, test.Prefix, test.Indent)
+		if err != nil {
+			t.Errorf("#%d: Error: %s", i, err)
+			continue
+		}
+		if got, want := string(data), test.ExpectXML; got != want {
+			t.Errorf("#%d: MarshalIndent:\nGot:%s\nWant:\n%s", i, got, want)
 		}
 	}
 }
@@ -930,6 +996,16 @@ func TestMarshalWriteErrors(t *testing.T) {
 	}
 	if buf.Len() != writeCap {
 		t.Errorf("buf.Len() = %d; want %d", buf.Len(), writeCap)
+	}
+}
+
+func TestMarshalWriteIOErrors(t *testing.T) {
+	enc := NewEncoder(errWriter{})
+
+	expectErr := "unwritable"
+	err := enc.Encode(&Passenger{})
+	if err == nil || err.Error() != expectErr {
+		t.Errorf("EscapeTest = [error] %v, want %v", err, expectErr)
 	}
 }
 

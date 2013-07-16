@@ -1,3 +1,27 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	Demangle C++11 ref-qualifier.
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_REFERENCE_THIS,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-01  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2.h (enum dwarf_sect): New enum type.
+
+2013-02-11  Sriraman Tallam  <tmsriram@google.com>
+
+	* plugin-api.h (enum ld_plugin_level): Assign integers
+	explicitly for all values.
+
 2013-01-30  Kai Tietz  <ktietz@redhat.com>
 
 	PR other/54620

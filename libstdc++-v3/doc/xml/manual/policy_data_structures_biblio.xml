@@ -895,7 +895,7 @@
     <biblioentry xml:id="biblio.maverik_lowerbounds">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps">
+	      xlink:href="http://magic.aladdin.cs.cmu.edu/2005/08/01/deamortization-part-2-binomial-heaps/">
 	  Deamortization - Part 2: Binomial Heaps
 	</link>
       </title>
@@ -1142,7 +1142,7 @@
     <biblioentry xml:id="biblio.nelson96stlpq">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.dogma.net/markn/articles/pq_stl/priority.htm">Priority Queues and the STL
+	      xlink:href="http://marknelson.us/1996/01/01/priority-queues/">Priority Queues and the STL
 	</link>
       </title>
       <date>

@@ -1,7 +1,7 @@
 int toto()
 {
   int i, j, k;
-  int a[100][100];
+  int a[100][200];
   int b[100];
 
   for (i = 1; i < 100; i++)

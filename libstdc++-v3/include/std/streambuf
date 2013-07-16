@@ -123,7 +123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       //@{
       /**
        *  These are standard types.  They permit a standardized way of
-       *  referring to names of (or names dependant on) the template
+       *  referring to names of (or names dependent on) the template
        *  parameters, which are specific to the implementation.
       */
       typedef _CharT 					char_type;
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class ostreambuf_iterator<char_type, traits_type>;
 
       friend streamsize
-      __copy_streambufs_eof<>(__streambuf_type*, __streambuf_type*, bool&);
+      __copy_streambufs_eof<>(basic_streambuf*, basic_streambuf*, bool&);
 
       template<bool _IsMove, typename _CharT2>
         friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value, 
@@ -174,20 +174,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		basic_string<_CharT2, _Traits2, _Alloc>&, _CharT2);
 
     protected:
-      //@{
-      /**
+      /*
        *  This is based on _IO_FILE, just reordered to be more consistent,
        *  and is intended to be the most minimal abstraction for an
        *  internal buffer.
        *  -  get == input == read
        *  -  put == output == write
       */
-      char_type* 		_M_in_beg;     // Start of get area. 
-      char_type* 		_M_in_cur;     // Current read area. 
-      char_type* 		_M_in_end;     // End of get area. 
-      char_type* 		_M_out_beg;    // Start of put area. 
-      char_type* 		_M_out_cur;    // Current put area. 
-      char_type* 		_M_out_end;    // End of put area.
+      char_type* 		_M_in_beg;     ///< Start of get area.
+      char_type* 		_M_in_cur;     ///< Current read area.
+      char_type* 		_M_in_end;     ///< End of get area.
+      char_type* 		_M_out_beg;    ///< Start of put area.
+      char_type* 		_M_out_cur;    ///< Current put area.
+      char_type* 		_M_out_end;    ///< End of put area.
 
       /// Current locale setting.
       locale 			_M_buf_locale;	
@@ -236,7 +235,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  derived @c foo member functions, passing the arguments (if any)
        *  and returning the result unchanged.
       */
-      __streambuf_type* 
+      basic_streambuf*
       pubsetbuf(char_type* __s, streamsize __n) 
       { return this->setbuf(__s, __n); }
 
@@ -800,15 +799,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // Side effect of DR 50. 
-      basic_streambuf(const __streambuf_type& __sb)
+      basic_streambuf(const basic_streambuf& __sb)
       : _M_in_beg(__sb._M_in_beg), _M_in_cur(__sb._M_in_cur), 
       _M_in_end(__sb._M_in_end), _M_out_beg(__sb._M_out_beg), 
       _M_out_cur(__sb._M_out_cur), _M_out_end(__sb._M_out_cur),
       _M_buf_locale(__sb._M_buf_locale) 
       { }
 
-      __streambuf_type& 
-      operator=(const __streambuf_type&) { return *this; };
+      basic_streambuf&
+      operator=(const basic_streambuf&) { return *this; };
     };
 
   // Explicit specialization declarations, defined in src/streambuf.cc.

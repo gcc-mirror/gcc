@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// Raw IP sockets
-
 package net
 
 // IPAddr represents the address of an IP end point.
@@ -19,17 +17,20 @@ func (a *IPAddr) String() string {
 	if a == nil {
 		return "<nil>"
 	}
+	if a.Zone != "" {
+		return a.IP.String() + "%" + a.Zone
+	}
 	return a.IP.String()
 }
 
-// ResolveIPAddr parses addr as an IP address and resolves domain
-// names to numeric addresses on the network net, which must be
-// "ip", "ip4" or "ip6".
+// ResolveIPAddr parses addr as an IP address of the form "host" or
+// "ipv6-host%zone" and resolves the domain name on the network net,
+// which must be "ip", "ip4" or "ip6".
 func ResolveIPAddr(net, addr string) (*IPAddr, error) {
 	if net == "" { // a hint wildcard for Go 1.0 undocumented behavior
 		net = "ip"
 	}
-	afnet, _, err := parseDialNetwork(net)
+	afnet, _, err := parseNetwork(net)
 	if err != nil {
 		return nil, err
 	}

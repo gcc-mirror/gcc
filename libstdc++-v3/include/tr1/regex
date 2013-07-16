@@ -847,7 +847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_flags(__f), _M_pattern(__first, __last), _M_mark_count(0)
         { _M_compile(); }
 
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+#ifdef _GLIBCXX_INCLUDE_AS_CXX11
       /**
        * @brief Constructs a basic regular expression from an initializer list.
        *
@@ -986,7 +986,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       flag_type __flags = regex_constants::ECMAScript)
         { return this->assign(string_type(__first, __last), __flags); }
 
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+#ifdef _GLIBCXX_INCLUDE_AS_CXX11
       /**
        * @brief Assigns a new regular expression to a regex object.
        *
@@ -1966,7 +1966,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       begin() const
       { return _Base_type::begin(); }
       
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+#ifdef _GLIBCXX_INCLUDE_AS_CXX11
       /**
        * @brief Gets an iterator to the start of the %sub_match collection.
        */
@@ -1982,7 +1982,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       end() const
       { return _Base_type::end(); }
       
-#ifdef _GLIBCXX_INCLUDE_AS_CXX0X
+#ifdef _GLIBCXX_INCLUDE_AS_CXX11
       /**
        * @brief Gets an iterator to one-past-the-end of the collection.
        */

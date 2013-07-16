@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 
 gfc_expr gfc_bad_expr;
 
+static gfc_expr *simplify_size (gfc_expr *, gfc_expr *, int);
+
 
 /* Note that 'simplification' is not just transforming expressions.
    For functions that are not simplified at compile time, range
@@ -330,13 +332,15 @@ init_result_expr (gfc_expr *e, int init, gfc_expr *array)
 }
 
 
-/* Helper function for gfc_simplify_dot_product() and gfc_simplify_matmul.  */
+/* Helper function for gfc_simplify_dot_product() and gfc_simplify_matmul;
+   if conj_a is true, the matrix_a is complex conjugated.  */
 
 static gfc_expr *
 compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
-		     gfc_expr *matrix_b, int stride_b, int offset_b)
+		     gfc_expr *matrix_b, int stride_b, int offset_b,
+		     bool conj_a)
 {
-  gfc_expr *result, *a, *b;
+  gfc_expr *result, *a, *b, *c;
 
   result = gfc_get_constant_expr (matrix_a->ts.type, matrix_a->ts.kind,
 				  &matrix_a->where);
@@ -359,9 +363,11 @@ compute_dot_product (gfc_expr *matrix_a, int stride_a, int offset_a,
 	  case BT_INTEGER:
 	  case BT_REAL:
 	  case BT_COMPLEX:
-	    result = gfc_add (result,
-			      gfc_multiply (gfc_copy_expr (a),
-					    gfc_copy_expr (b)));
+	    if (conj_a && a->ts.type == BT_COMPLEX)
+	      c = gfc_simplify_conjg (a);
+	    else
+	      c = gfc_copy_expr (a);
+	    result = gfc_add (result, gfc_multiply (c, gfc_copy_expr (b)));
 	    break;
 
 	  default:
@@ -1879,7 +1885,7 @@ gfc_simplify_dot_product (gfc_expr *vector_a, gfc_expr *vector_b)
   gcc_assert (vector_b->rank == 1);
   gcc_assert (gfc_compare_types (&vector_a->ts, &vector_b->ts));
 
-  return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0);
+  return compute_dot_product (vector_a, 1, 0, vector_b, 1, 0, true);
 }
 
 
@@ -3247,7 +3253,7 @@ simplify_bound_dim (gfc_expr *array, gfc_expr *kind, int d, int upper,
 	  gfc_expr* dim = result;
 	  mpz_set_si (dim->value.integer, d);
 
-	  result = gfc_simplify_size (array, dim, kind);
+	  result = simplify_size (array, dim, k);
 	  gfc_free_expr (dim);
 	  if (!result)
 	    goto returnNull;
@@ -3850,7 +3856,7 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
   if (matrix_a->rank == 1 && matrix_b->rank == 2)
     {
       result_rows = 1;
-      result_columns = mpz_get_si (matrix_b->shape[0]);
+      result_columns = mpz_get_si (matrix_b->shape[1]);
       stride_a = 1;
       stride_b = mpz_get_si (matrix_b->shape[0]);
 
@@ -3860,7 +3866,7 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
     }
   else if (matrix_a->rank == 2 && matrix_b->rank == 1)
     {
-      result_rows = mpz_get_si (matrix_b->shape[0]);
+      result_rows = mpz_get_si (matrix_a->shape[0]);
       result_columns = 1;
       stride_a = mpz_get_si (matrix_a->shape[0]);
       stride_b = 1;
@@ -3873,7 +3879,7 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
     {
       result_rows = mpz_get_si (matrix_a->shape[0]);
       result_columns = mpz_get_si (matrix_b->shape[1]);
-      stride_a = mpz_get_si (matrix_a->shape[1]);
+      stride_a = mpz_get_si (matrix_a->shape[0]);
       stride_b = mpz_get_si (matrix_b->shape[0]);
 
       result->rank = 2;
@@ -3892,7 +3898,7 @@ gfc_simplify_matmul (gfc_expr *matrix_a, gfc_expr *matrix_b)
       for (row = 0; row < result_rows; ++row)
 	{
 	  gfc_expr *e = compute_dot_product (matrix_a, stride_a, offset_a,
-					     matrix_b, 1, offset_b);
+					     matrix_b, 1, offset_b, false);
 	  gfc_constructor_append_expr (&result->value.constructor,
 				       e, NULL);
 
@@ -5503,15 +5509,12 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
       e = gfc_get_constant_expr (BT_INTEGER, k, &source->where);
 
       if (t == SUCCESS)
-	{
-	  mpz_set (e->value.integer, shape[n]);
-	  mpz_clear (shape[n]);
-	}
+	mpz_set (e->value.integer, shape[n]);
       else
 	{
 	  mpz_set_ui (e->value.integer, n + 1);
 
-	  f = gfc_simplify_size (source, e, NULL);
+	  f = simplify_size (source, e, k);
 	  gfc_free_expr (e);
 	  if (f == NULL)
 	    {
@@ -5522,23 +5525,30 @@ gfc_simplify_shape (gfc_expr *source, gfc_expr *kind)
 	    e = f;
 	}
 
+      if (e == &gfc_bad_expr || range_check (e, "SHAPE") == &gfc_bad_expr)
+	{
+	  gfc_free_expr (result);
+	  if (t)
+	    gfc_clear_shape (shape, source->rank);
+	  return &gfc_bad_expr;
+	}
+
       gfc_constructor_append_expr (&result->value.constructor, e, NULL);
     }
+
+  if (t)
+    gfc_clear_shape (shape, source->rank);
 
   return result;
 }
 
 
-gfc_expr *
-gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
+static gfc_expr *
+simplify_size (gfc_expr *array, gfc_expr *dim, int k)
 {
   mpz_t size;
   gfc_expr *return_value;
   int d;
-  int k = get_kind (BT_INTEGER, kind, "SIZE", gfc_default_integer_kind);
-
-  if (k == -1)
-    return &gfc_bad_expr;
 
   /* For unary operations, the size of the result is given by the size
      of the operand.  For binary ones, it's the size of the first operand
@@ -5568,7 +5578,7 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 	      replacement = array->value.op.op1;
 	    else
 	      {
-		simplified = gfc_simplify_size (array->value.op.op1, dim, kind);
+		simplified = simplify_size (array->value.op.op1, dim, k);
 		if (simplified)
 		  return simplified;
 
@@ -5578,18 +5588,20 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 	}
 
       /* Try to reduce it directly if possible.  */
-      simplified = gfc_simplify_size (replacement, dim, kind);
+      simplified = simplify_size (replacement, dim, k);
 
       /* Otherwise, we build a new SIZE call.  This is hopefully at least
 	 simpler than the original one.  */
       if (!simplified)
-	simplified = gfc_build_intrinsic_call (gfc_current_ns,
-					       GFC_ISYM_SIZE, "size",
-					       array->where, 3,
-					       gfc_copy_expr (replacement),
-					       gfc_copy_expr (dim),
-					       gfc_copy_expr (kind));
-
+	{
+	  gfc_expr *kind = gfc_get_int_expr (gfc_default_integer_kind, NULL, k);
+	  simplified = gfc_build_intrinsic_call (gfc_current_ns,
+						 GFC_ISYM_SIZE, "size",
+						 array->where, 3,
+						 gfc_copy_expr (replacement),
+						 gfc_copy_expr (dim),
+						 kind);
+	}
       return simplified;
     }
 
@@ -5608,9 +5620,28 @@ gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
 	return NULL;
     }
 
-  return_value = gfc_get_int_expr (k, &array->where, mpz_get_si (size));
+  return_value = gfc_get_constant_expr (BT_INTEGER, k, &array->where);
+  mpz_set (return_value->value.integer, size);
   mpz_clear (size);
+
   return return_value;
+}
+
+
+gfc_expr *
+gfc_simplify_size (gfc_expr *array, gfc_expr *dim, gfc_expr *kind)
+{
+  gfc_expr *result;
+  int k = get_kind (BT_INTEGER, kind, "SIZE", gfc_default_integer_kind);
+
+  if (k == -1)
+    return &gfc_bad_expr;
+
+  result = simplify_size (array, dim, k);
+  if (result == NULL || result == &gfc_bad_expr)
+    return result;
+
+  return range_check (result, "SIZE");
 }
 
 

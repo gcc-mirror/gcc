@@ -41,7 +41,7 @@ runtime_lock(Lock *l)
 		runtime_throw("runtime_lock: lock count");
 
 	// Speculative grab for lock.
-	v = runtime_xchg(&l->key, MUTEX_LOCKED);
+	v = runtime_xchg((uint32*)&l->key, MUTEX_LOCKED);
 	if(v == MUTEX_UNLOCKED)
 		return;
 
@@ -64,7 +64,7 @@ runtime_lock(Lock *l)
 		// Try for lock, spinning.
 		for(i = 0; i < spin; i++) {
 			while(l->key == MUTEX_UNLOCKED)
-				if(runtime_cas(&l->key, MUTEX_UNLOCKED, wait))
+				if(runtime_cas((uint32*)&l->key, MUTEX_UNLOCKED, wait))
 					return;
 			runtime_procyield(ACTIVE_SPIN_CNT);
 		}
@@ -72,17 +72,17 @@ runtime_lock(Lock *l)
 		// Try for lock, rescheduling.
 		for(i=0; i < PASSIVE_SPIN; i++) {
 			while(l->key == MUTEX_UNLOCKED)
-				if(runtime_cas(&l->key, MUTEX_UNLOCKED, wait))
+				if(runtime_cas((uint32*)&l->key, MUTEX_UNLOCKED, wait))
 					return;
 			runtime_osyield();
 		}
 
 		// Sleep.
-		v = runtime_xchg(&l->key, MUTEX_SLEEPING);
+		v = runtime_xchg((uint32*)&l->key, MUTEX_SLEEPING);
 		if(v == MUTEX_UNLOCKED)
 			return;
 		wait = MUTEX_SLEEPING;
-		runtime_futexsleep(&l->key, MUTEX_SLEEPING, -1);
+		runtime_futexsleep((uint32*)&l->key, MUTEX_SLEEPING, -1);
 	}
 }
 
@@ -94,11 +94,11 @@ runtime_unlock(Lock *l)
 	if(--runtime_m()->locks < 0)
 		runtime_throw("runtime_unlock: lock count");
 
-	v = runtime_xchg(&l->key, MUTEX_UNLOCKED);
+	v = runtime_xchg((uint32*)&l->key, MUTEX_UNLOCKED);
 	if(v == MUTEX_UNLOCKED)
 		runtime_throw("unlock of unlocked lock");
 	if(v == MUTEX_SLEEPING)
-		runtime_futexwakeup(&l->key, 1);
+		runtime_futexwakeup((uint32*)&l->key, 1);
 }
 
 // One-time notifications.
@@ -111,9 +111,9 @@ runtime_noteclear(Note *n)
 void
 runtime_notewakeup(Note *n)
 {
-	if(runtime_xchg(&n->key, 1))
+	if(runtime_xchg((uint32*)&n->key, 1))
 		runtime_throw("notewakeup - double wakeup");
-	runtime_futexwakeup(&n->key, 1);
+	runtime_futexwakeup((uint32*)&n->key, 1);
 }
 
 void
@@ -121,8 +121,8 @@ runtime_notesleep(Note *n)
 {
 	if(runtime_m()->profilehz > 0)
 		runtime_setprof(false);
-	while(runtime_atomicload(&n->key) == 0)
-		runtime_futexsleep(&n->key, 0, -1);
+	while(runtime_atomicload((uint32*)&n->key) == 0)
+		runtime_futexsleep((uint32*)&n->key, 0, -1);
 	if(runtime_m()->profilehz > 0)
 		runtime_setprof(true);
 }
@@ -137,15 +137,15 @@ runtime_notetsleep(Note *n, int64 ns)
 		return;
 	}
 
-	if(runtime_atomicload(&n->key) != 0)
+	if(runtime_atomicload((uint32*)&n->key) != 0)
 		return;
 
 	if(runtime_m()->profilehz > 0)
 		runtime_setprof(false);
 	deadline = runtime_nanotime() + ns;
 	for(;;) {
-		runtime_futexsleep(&n->key, 0, ns);
-		if(runtime_atomicload(&n->key) != 0)
+		runtime_futexsleep((uint32*)&n->key, 0, ns);
+		if(runtime_atomicload((uint32*)&n->key) != 0)
 			break;
 		now = runtime_nanotime();
 		if(now >= deadline)

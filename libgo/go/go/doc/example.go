@@ -18,6 +18,7 @@ import (
 	"unicode/utf8"
 )
 
+// An Example represents an example function found in a source files.
 type Example struct {
 	Name        string // name of the item being exemplified
 	Doc         string // example function doc string
@@ -26,8 +27,11 @@ type Example struct {
 	Comments    []*ast.CommentGroup
 	Output      string // expected output
 	EmptyOutput bool   // expect empty output
+	Order       int    // original source code order
 }
 
+// Examples returns the examples found in the files, sorted by Name field.
+// The Order fields record the order in which the examples were encountered.
 func Examples(files ...*ast.File) []*Example {
 	var list []*Example
 	for _, file := range files {
@@ -65,6 +69,7 @@ func Examples(files ...*ast.File) []*Example {
 				Comments:    file.Comments,
 				Output:      output,
 				EmptyOutput: output == "" && hasOutput,
+				Order:       len(flist),
 			})
 		}
 		if !hasTests && numDecl > 1 && len(flist) == 1 {
@@ -159,6 +164,13 @@ func playExample(file *ast.File, body *ast.BlockStmt) *ast.File {
 		// set of unresolved names, not "Println".)
 		if e, ok := n.(*ast.SelectorExpr); ok {
 			ast.Inspect(e.X, inspectFunc)
+			return false
+		}
+		// For key value expressions, only inspect the value
+		// as the key should be resolved by the type of the
+		// composite literal.
+		if e, ok := n.(*ast.KeyValueExpr); ok {
+			ast.Inspect(e.Value, inspectFunc)
 			return false
 		}
 		if id, ok := n.(*ast.Ident); ok {

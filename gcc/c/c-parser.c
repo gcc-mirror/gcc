@@ -6864,7 +6864,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
   tree sizeof_arg[3];
   unsigned int i;
   vec<tree, va_gc> *exprlist;
-  vec<tree, va_gc> *origtypes;
+  vec<tree, va_gc> *origtypes = NULL;
   while (true)
     {
       location_t op_loc = c_parser_peek_token (parser)->location;

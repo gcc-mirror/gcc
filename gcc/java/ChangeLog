@@ -1,3 +1,27 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcj/57074
+	* class.c (emit_symbol_table): Use array type of the
+	right size for the_syms_decl and its DECL_INITIAL, instead
+	of symbols_array_type.  Set TREE_TYPE (the_syms_decl) to it.
+	(emit_assertion_table): Use array type of the right size
+	for table_decl and its DECL_INITIAL.
+
+2013-04-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gcj.texi (Configure-time Options): Refer to GCC, not gcc.
+	(Resources): Adjust reference to Mauve.
+	Remove link to java.sun.com.
+	Refer to GCC, not gcc.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
 2013-01-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* jcf-dump.c (version): Update copyright notice dates.

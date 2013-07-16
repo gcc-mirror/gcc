@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "input.h"
 #include "splay-tree.h"
+#include "vec.h"
 
 /* Major control parameters.  */
 
@@ -1275,6 +1276,15 @@ typedef struct gfc_symbol
 }
 gfc_symbol;
 
+
+struct gfc_undo_change_set
+{
+  vec<gfc_symbol *> syms;
+  vec<gfc_typebound_proc *> tbps;
+  gfc_undo_change_set *previous;
+};
+
+
 /* This structure is used to keep track of symbols in common blocks.  */
 typedef struct gfc_common_head
 {
@@ -2381,7 +2391,7 @@ match gfc_match_char_spec (gfc_typespec *);
 void gfc_scanner_done_1 (void);
 void gfc_scanner_init_1 (void);
 
-void gfc_add_include_path (const char *, bool, bool);
+void gfc_add_include_path (const char *, bool, bool, bool);
 void gfc_add_intrinsic_modules_path (const char *);
 void gfc_release_include_path (void);
 FILE *gfc_open_included_file (const char *, bool, bool);
@@ -2632,6 +2642,9 @@ int gfc_get_sym_tree (const char *, gfc_namespace *, gfc_symtree **, bool);
 int gfc_get_ha_symbol (const char *, gfc_symbol **);
 int gfc_get_ha_sym_tree (const char *, gfc_symtree **);
 
+void gfc_new_undo_checkpoint (gfc_undo_change_set &);
+void gfc_drop_last_undo_checkpoint (void);
+void gfc_restore_last_undo_checkpoint (void);
 void gfc_undo_symbols (void);
 void gfc_commit_symbols (void);
 void gfc_commit_symbol (gfc_symbol *);

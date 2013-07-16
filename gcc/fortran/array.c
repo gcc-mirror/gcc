@@ -1046,6 +1046,7 @@ match
 gfc_match_array_constructor (gfc_expr **result)
 {
   gfc_constructor_base head, new_cons;
+  gfc_undo_change_set changed_syms;
   gfc_expr *expr;
   gfc_typespec ts;
   locus where;
@@ -1074,6 +1075,7 @@ gfc_match_array_constructor (gfc_expr **result)
 
   /* Try to match an optional "type-spec ::"  */
   gfc_clear_ts (&ts);
+  gfc_new_undo_checkpoint (changed_syms);
   if (gfc_match_decl_type_spec (&ts, 0) == MATCH_YES)
     {
       seen_ts = (gfc_match (" ::") == MATCH_YES);
@@ -1082,19 +1084,28 @@ gfc_match_array_constructor (gfc_expr **result)
 	{
 	  if (gfc_notify_std (GFC_STD_F2003, "Array constructor "
 			      "including type specification at %C") == FAILURE)
-	    goto cleanup;
+	    {
+	      gfc_restore_last_undo_checkpoint ();
+	      goto cleanup;
+	    }
 
 	  if (ts.deferred)
 	    {
 	      gfc_error ("Type-spec at %L cannot contain a deferred "
 			 "type parameter", &where);
+	      gfc_restore_last_undo_checkpoint ();
 	      goto cleanup;
 	    }
 	}
     }
 
-  if (! seen_ts)
-    gfc_current_locus = where;
+  if (seen_ts)
+    gfc_drop_last_undo_checkpoint ();
+  else
+    {
+      gfc_restore_last_undo_checkpoint ();
+      gfc_current_locus = where;
+    }
 
   if (gfc_match (end_delim) == MATCH_YES)
     {

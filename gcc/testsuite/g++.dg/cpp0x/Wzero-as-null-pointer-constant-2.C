@@ -1,0 +1,14 @@
+// PR c++/56373
+// { dg-options "-std=c++11 -Wzero-as-null-pointer-constant" }
+
+struct shared_ptr
+{
+  shared_ptr(decltype(nullptr));
+};
+
+void f()
+{
+  shared_ptr a = 0;  // { dg-warning "zero as null pointer" }
+  shared_ptr b(0);   // { dg-warning "zero as null pointer" }
+  shared_ptr c{0};   // { dg-warning "zero as null pointer" }
+}

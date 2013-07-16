@@ -43,6 +43,12 @@ enable_shared = @enable_shared@
 LN_S=@LN_S@
 AWK=@AWK@
 
+ifeq (cp -p,$(LN_S))
+LN_S_RECURSIVE = cp -pR
+else
+LN_S_RECURSIVE = $(LN_S)
+endif
+
 # Variables for the user (or the top level) to override.
 objext=.o
 THREAD_KIND=native
@@ -100,8 +106,8 @@ gnatlib-plain: osconstool $(GCC_DIR)/ada/Makefile
 	&& touch stamp-libada
 	-rm -rf adainclude
 	-rm -rf adalib
-	$(LN_S) $(ADA_RTS_DIR) adainclude
-	$(LN_S) $(ADA_RTS_DIR) adalib
+	$(LN_S_RECURSIVE) $(ADA_RTS_DIR) adainclude
+	$(LN_S_RECURSIVE) $(ADA_RTS_DIR) adalib
 
 gnatlib-sjlj gnatlib-zcx gnatlib-shared: osconstool $(GCC_DIR)/ada/Makefile
 	test -f stamp-libada || \
@@ -109,8 +115,8 @@ gnatlib-sjlj gnatlib-zcx gnatlib-shared: osconstool $(GCC_DIR)/ada/Makefile
 	&& touch stamp-libada
 	-rm -rf adainclude
 	-rm -rf adalib
-	$(LN_S) $(ADA_RTS_DIR) adainclude
-	$(LN_S) $(ADA_RTS_DIR) adalib
+	$(LN_S_RECURSIVE) $(ADA_RTS_DIR) adainclude
+	$(LN_S_RECURSIVE) $(ADA_RTS_DIR) adalib
 
 osconstool:
 	$(MAKE) -C $(GCC_DIR)/ada $(LIBADA_FLAGS_TO_PASS) ./bldtools/oscons/xoscons

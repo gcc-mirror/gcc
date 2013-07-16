@@ -1077,7 +1077,7 @@ mn10300_expand_epilogue (void)
 	      /* Insn: add size + 4 * num_regs_to_save
 				+ reg_save_bytes - 252,sp.  */
 	      this_strategy_size = SIZE_ADD_SP (size + 4 * num_regs_to_save
-						+ reg_save_bytes - 252);
+						+ (int) reg_save_bytes - 252);
 	      /* Insn: fmov (##,sp),fs#, fo each fs# to be restored.  */
 	      this_strategy_size += SIZE_FMOV_SP (252 - reg_save_bytes
 						  - 4 * num_regs_to_save,
@@ -3225,7 +3225,6 @@ mn10300_loop_contains_call_insn (loop_p loop)
 static void
 mn10300_scan_for_setlb_lcc (void)
 {
-  struct loops loops;
   loop_iterator liter;
   loop_p loop;
 
@@ -3235,9 +3234,7 @@ mn10300_scan_for_setlb_lcc (void)
   compute_bb_for_insn ();
 
   /* Find the loops.  */
-  if (flow_loops_find (& loops) < 1)
-    DUMP ("No loops found", NULL_RTX);
-  current_loops = & loops;
+  loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
   /* FIXME: For now we only investigate innermost loops.  In practice however
      if an inner loop is not suitable for use with the SETLB/Lcc insns, it may
@@ -3287,15 +3284,7 @@ mn10300_scan_for_setlb_lcc (void)
 		 reason);
     }
 
-#if 0 /* FIXME: We should free the storage we allocated, but
-	 for some unknown reason this leads to seg-faults.  */
-  FOR_EACH_LOOP (liter, loop, 0)
-    free_simple_loop_desc (loop);
-
-  flow_loops_free (current_loops);
-#endif
-
-  current_loops = NULL;
+  loop_optimizer_finalize ();
 
   df_finish_pass (false);  
 

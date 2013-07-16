@@ -964,6 +964,8 @@ end_ifcvt_sequence (struct noce_if_info *if_info)
 
   set_used_flags (if_info->x);
   set_used_flags (if_info->cond);
+  set_used_flags (if_info->a);
+  set_used_flags (if_info->b);
   unshare_all_rtl_in_chain (seq);
   end_sequence ();
 
@@ -2491,6 +2493,12 @@ noce_process_if_block (struct noce_if_info *if_info)
 	  || ! noce_operand_ok (SET_SRC (set_b))
 	  || reg_overlap_mentioned_p (x, SET_SRC (set_b))
 	  || modified_between_p (SET_SRC (set_b), insn_b, jump)
+	  /* Avoid extending the lifetime of hard registers on small
+	     register class machines.  */
+	  || (REG_P (SET_SRC (set_b))
+	      && HARD_REGISTER_P (SET_SRC (set_b))
+	      && targetm.small_register_classes_for_mode_p
+		   (GET_MODE (SET_SRC (set_b))))
 	  /* Likewise with X.  In particular this can happen when
 	     noce_get_condition looks farther back in the instruction
 	     stream than one might expect.  */
@@ -3467,7 +3475,7 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
      code processing.  ??? we should fix this in the future.  */
   if (EDGE_COUNT (then_bb->succs) == 0)
     {
-      if (single_pred_p (else_bb))
+      if (single_pred_p (else_bb) && else_bb != EXIT_BLOCK_PTR)
 	{
 	  rtx last_insn = BB_END (then_bb);
 

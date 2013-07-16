@@ -16,10 +16,16 @@ func NewLoggingConn(baseName string, c net.Conn) net.Conn {
 	return newLoggingConn(baseName, c)
 }
 
+func (t *Transport) NumPendingRequestsForTesting() int {
+	t.reqMu.Lock()
+	defer t.reqMu.Unlock()
+	return len(t.reqConn)
+}
+
 func (t *Transport) IdleConnKeysForTesting() (keys []string) {
 	keys = make([]string, 0)
-	t.idleLk.Lock()
-	defer t.idleLk.Unlock()
+	t.idleMu.Lock()
+	defer t.idleMu.Unlock()
 	if t.idleConn == nil {
 		return
 	}
@@ -30,8 +36,8 @@ func (t *Transport) IdleConnKeysForTesting() (keys []string) {
 }
 
 func (t *Transport) IdleConnCountForTesting(cacheKey string) int {
-	t.idleLk.Lock()
-	defer t.idleLk.Unlock()
+	t.idleMu.Lock()
+	defer t.idleMu.Unlock()
 	if t.idleConn == nil {
 		return 0
 	}
@@ -48,3 +54,5 @@ func NewTestTimeoutHandler(handler Handler, ch <-chan time.Time) Handler {
 	}
 	return &timeoutHandler{handler, f, ""}
 }
+
+var DefaultUserAgent = defaultUserAgent

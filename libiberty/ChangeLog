@@ -1,3 +1,47 @@
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-04-03  Jason Merrill  <jason@redhat.com>
+
+	Demangle C++11 ref-qualifier.
+	* cp-demangle.c (d_ref_qualifier): New.
+	(d_nested_name, d_function_type): Use it.
+	(d_parmlist): Don't get confused by a ref-qualifier.
+	(cplus_demangle_type): Reorder ref-qualifier.
+	(d_pointer_to_member_type): Likewise.
+	(d_dump): Handle DEMANGLE_COMPONENT_REFERENCE_THIS and
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE_THIS.
+	(d_make_comp, has_return_type, d_encoding): Likewise.
+	(d_print_comp, d_print_mod_list, d_print_mod): Likewise.
+	(d_print_function_type, is_ctor_or_dtor): Likewise.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-06  Tobias Burnus  <burnus@net-b.de>
+
+	* libiberty.texi: Update comment, remove lowersections.
+	* obstacks.texi: Regenerate.
+
+2013-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/56526
+	* simple-object-mach-o.c (simple_object_mach_o_segment): Initialize
+	wrapper_sect_offset to avoid a warning.
+
+2013-03-01  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* obstacks.texi (Obstacks): Trim @node to only contain the
+	node name.
+	* libiberty.texi (Obstacks): Lower section.
+
+2013-02-14  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_dump): Handle DEMANGLE_COMPONENT_DEFAULT_ARG.
+	(d_print_comp): Likewise.
+
 2013-02-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/56245

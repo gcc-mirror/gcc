@@ -978,7 +978,7 @@ extern bool vect_analyze_slp (loop_vec_info, bb_vec_info);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (vec<tree> , slp_tree,
-			       vec<slp_void_p> *, int);
+			       vec<vec<tree> > *, int);
 
 extern LOC find_bb_location (basic_block);
 extern bb_vec_info vect_slp_analyze_bb (basic_block);

@@ -48,11 +48,7 @@ along with GCC; see the file COPYING3.  If not see
  %{static|static-libgcc:-lgcc -lgcc_eh} \
  %{!static: \
    %{!static-libgcc: \
-     %{!shared: \
-       %{!shared-libgcc:-lgcc -lgcc_eh} \
-       %{shared-libgcc:-lgcc_s -lgcc} \
-      } \
-     %{shared:-lgcc_s -lgcc} \
+     -lgcc_s -lgcc \
     } \
   } "
 #else

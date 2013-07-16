@@ -1,5 +1,4 @@
-! { dg-do run { xfail *-*-* } }
-! XFAIL is tracked in PR 54932
+! { dg-do run }
 ! Program to check corner cases for DO statements.
 program do_1
   implicit none

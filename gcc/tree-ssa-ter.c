@@ -399,22 +399,22 @@ is_replaceable_p (gimple stmt, bool ter)
     return false;
 
   locus1 = gimple_location (stmt);
-  block1 = gimple_block (stmt);
+  block1 = LOCATION_BLOCK (locus1);
+  locus1 = LOCATION_LOCUS (locus1);
 
   if (gimple_code (use_stmt) == GIMPLE_PHI)
-    {
-      locus2 = 0;
-      block2 = NULL_TREE;
-    }
+    locus2 = gimple_phi_arg_location (use_stmt, PHI_ARG_INDEX_FROM_USE (use_p));
   else
-    {
-      locus2 = gimple_location (use_stmt);
-      block2 = gimple_block (use_stmt);
-    }
+    locus2 = gimple_location (use_stmt);
+  block2 = LOCATION_BLOCK (locus2);
+  locus2 = LOCATION_LOCUS (locus2);
 
-  if (!optimize
+  if ((!optimize || optimize_debug)
       && ter
-      && ((locus1 && locus1 != locus2) || (block1 && block1 != block2)))
+      && ((locus1 != UNKNOWN_LOCATION
+	   && locus1 != locus2)
+	  || (block1 != NULL_TREE
+	      && block1 != block2)))
     return false;
 
   /* Used in this block, but at the TOP of the block, not the end.  */

@@ -641,7 +641,7 @@ read_block_direct (st_parameter_dt *dtp, void *buf, size_t nbytes)
 
       have_read_subrecord = sread (dtp->u.p.current_unit->s, 
 				   buf + have_read_record, to_read_subrecord);
-      if (unlikely (have_read_subrecord) < 0)
+      if (unlikely (have_read_subrecord < 0))
 	{
 	  generate_error (&dtp->common, LIBERROR_OS, NULL);
 	  return;
@@ -3840,7 +3840,7 @@ hit_eof (st_parameter_dt * dtp)
       case NO_ENDFILE:
       case AT_ENDFILE:
         generate_error (&dtp->common, LIBERROR_END, NULL);
-	if (!is_internal_unit (dtp))
+	if (!is_internal_unit (dtp) && !dtp->u.p.namelist_mode)
 	  {
 	    dtp->u.p.current_unit->endfile = AFTER_ENDFILE;
 	    dtp->u.p.current_unit->current_record = 0;

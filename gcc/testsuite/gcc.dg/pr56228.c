@@ -1,6 +1,7 @@
 /* PR target/56228 */
 /* { dg-do assemble } */
 /* { dg-options "-O2" } */
+/* { dg-skip-if "accessing program memory with data memory address" { "avr-*-*" } { "*" } { "" } } */
 
 short a[14] = { 1, 2 };
 short b[15] = { 3, 4 };

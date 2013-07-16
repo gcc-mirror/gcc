@@ -14,7 +14,43 @@ package runtime
 #include "go-string.h"
 
 // NOTE(rsc): Everything here could use cas if contention became an issue.
-static Lock proflock;
+static Lock proflock, alloclock;
+
+// All memory allocations are local and do not escape outside of the profiler.
+// The profiler is forbidden from referring to garbage-collected memory.
+
+static byte *pool;        // memory allocation pool
+static uintptr poolfree;  // number of bytes left in the pool
+enum {
+	Chunk = 32*PageSize,  // initial size of the pool
+};
+
+// Memory allocation local to this file.
+// There is no way to return the allocated memory back to the OS.
+static void*
+allocate(uintptr size)
+{
+	void *v;
+
+	if(size == 0)
+		return nil;
+
+	if(size >= Chunk/2)
+		return runtime_SysAlloc(size);
+
+	runtime_lock(&alloclock);
+	if(size > poolfree) {
+		pool = runtime_SysAlloc(Chunk);
+		if(pool == nil)
+			runtime_throw("runtime: cannot allocate memory");
+		poolfree = Chunk;
+	}
+	v = pool;
+	pool += size;
+	poolfree -= size;
+	runtime_unlock(&alloclock);
+	return v;
+}
 
 enum { MProf, BProf };  // profile types
 
@@ -26,6 +62,8 @@ struct Bucket
 	Bucket	*next;	// next in hash list
 	Bucket	*allnext;	// next in list of all mbuckets/bbuckets
 	int32	typ;
+	// Generally unions can break precise GC,
+	// this one is fine because it does not contain pointers.
 	union
 	{
 		struct  // typ == MProf
@@ -67,6 +105,8 @@ stkbucket(int32 typ, Location *stk, int32 nstk, bool alloc)
 
 	if(buckhash == nil) {
 		buckhash = runtime_SysAlloc(BuckHashSize*sizeof buckhash[0]);
+		if(buckhash == nil)
+			runtime_throw("runtime: cannot allocate memory");
 		mstats.buckhash_sys += BuckHashSize*sizeof buckhash[0];
 	}
 
@@ -97,7 +137,9 @@ stkbucket(int32 typ, Location *stk, int32 nstk, bool alloc)
 	if(!alloc)
 		return nil;
 
-	b = runtime_mallocgc(sizeof *b + nstk*sizeof stk[0], FlagNoProfiling, 0, 1);
+	b = allocate(sizeof *b + nstk*sizeof stk[0]);
+	if(b == nil)
+		runtime_throw("runtime: cannot allocate memory");
 	bucketmem += sizeof *b + nstk*sizeof stk[0];
 	runtime_memmove(b->stk, stk, nstk*sizeof stk[0]);
 	b->typ = typ;
@@ -115,13 +157,11 @@ stkbucket(int32 typ, Location *stk, int32 nstk, bool alloc)
 	return b;
 }
 
-// Record that a gc just happened: all the 'recent' statistics are now real.
-void
-runtime_MProf_GC(void)
+static void
+MProf_GC(void)
 {
 	Bucket *b;
-	
-	runtime_lock(&proflock);
+
 	for(b=mbuckets; b; b=b->allnext) {
 		b->allocs += b->recent_allocs;
 		b->frees += b->recent_frees;
@@ -132,6 +172,14 @@ runtime_MProf_GC(void)
 		b->recent_alloc_bytes = 0;
 		b->recent_free_bytes = 0;
 	}
+}
+
+// Record that a gc just happened: all the 'recent' statistics are now real.
+void
+runtime_MProf_GC(void)
+{
+	runtime_lock(&proflock);
+	MProf_GC();
 	runtime_unlock(&proflock);
 }
 
@@ -166,7 +214,7 @@ struct AddrEntry
 	Bucket *b;
 };
 
-static AddrHash *addrhash[1<<AddrHashBits];
+static AddrHash **addrhash;	// points to (AddrHash*)[1<<AddrHashBits]
 static AddrEntry *addrfree;
 static uintptr addrmem;
 
@@ -193,7 +241,7 @@ setaddrbucket(uintptr addr, Bucket *b)
 		if(ah->addr == (addr>>AddrHashShift))
 			goto found;
 
-	ah = runtime_mallocgc(sizeof *ah, FlagNoProfiling, 0, 1);
+	ah = allocate(sizeof *ah);
 	addrmem += sizeof *ah;
 	ah->next = addrhash[h];
 	ah->addr = addr>>AddrHashShift;
@@ -201,7 +249,7 @@ setaddrbucket(uintptr addr, Bucket *b)
 
 found:
 	if((e = addrfree) == nil) {
-		e = runtime_mallocgc(64*sizeof *e, FlagNoProfiling, 0, 0);
+		e = allocate(64*sizeof *e);
 		addrmem += 64*sizeof *e;
 		for(i=0; i+1<64; i++)
 			e[i].next = &e[i+1];
@@ -353,12 +401,28 @@ record(Record *r, Bucket *b)
 func MemProfile(p Slice, include_inuse_zero bool) (n int, ok bool) {
 	Bucket *b;
 	Record *r;
+	bool clear;
 
 	runtime_lock(&proflock);
 	n = 0;
-	for(b=mbuckets; b; b=b->allnext)
+	clear = true;
+	for(b=mbuckets; b; b=b->allnext) {
 		if(include_inuse_zero || b->alloc_bytes != b->free_bytes)
 			n++;
+		if(b->allocs != 0 || b->frees != 0)
+			clear = false;
+	}
+	if(clear) {
+		// Absolutely no data, suggesting that a garbage collection
+		// has not yet happened. In order to allow profiling when
+		// garbage collection is disabled from the beginning of execution,
+		// accumulate stats as if a GC just happened, and recount buckets.
+		MProf_GC();
+		n = 0;
+		for(b=mbuckets; b; b=b->allnext)
+			if(include_inuse_zero || b->alloc_bytes != b->free_bytes)
+				n++;
+	}
 	ok = false;
 	if(n <= p.__count) {
 		ok = true;
@@ -531,3 +595,8 @@ func GoroutineProfile(b Slice) (n int, ok bool) {
 	}
 }
 
+void
+runtime_mprofinit(void)
+{
+	addrhash = allocate((1<<AddrHashBits)*sizeof *addrhash);
+}

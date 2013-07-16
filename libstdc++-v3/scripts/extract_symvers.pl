@@ -67,7 +67,11 @@ while (<PVS>) {
     if ($version eq $symbol or $version eq $basever) {
 	# Emit versions or symbols bound to base versions as objects.
 	$type{$symbol} = "OBJECT";
-	$version{$symbol} = $symbol;
+	if ($version eq $basever) {
+	    $version{$symbol} = $version;
+	} else {
+	    $version{$symbol} = $symbol;
+	}
 	$size{$symbol} = 0;
     } else {
 	# Everything else without a size field is a function.
@@ -120,6 +124,10 @@ foreach $symbol (keys %type) {
     if ($type{$symbol} eq "FUNC" || $type{$symbol} eq "NOTYPE") {
 	push @lines, "$type{$symbol}:$symbol\@\@$version{$symbol}\n";
     } elsif ($type{$symbol} eq "OBJECT" and $size{$symbol} == 0) {
+	# Omit symbols bound to base version; details can differ depending
+	# on the toolchain used.
+	next if $version{$symbol} eq $basever;
+
 	push @lines, "$type{$symbol}:$size{$symbol}:$version{$symbol}\n";
     } else {
 	push @lines, "$type{$symbol}:$size{$symbol}:$symbol\@\@$version{$symbol}\n";

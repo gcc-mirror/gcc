@@ -26,16 +26,8 @@
 # define setlocale(category, locale) (locale)
 #endif
 
-/* If libintl.h is available, include it before testing for NLS. If we
-   are building with --disable-nls and another header file includes
-   libintl.h, the stubs defined down below will cause syntax errors
-   when parsing libintl.h. See http://gcc.gnu.org/bugzilla/show_bug.cgi?id=54281
-   for details.  */
-#if defined(HAVE_LIBINTL_H) || defined(ENABLE_NLS)
-# include <libintl.h>
-#endif
-
 #ifdef ENABLE_NLS
+#include <libintl.h>
 extern void gcc_init_libintl (void);
 extern size_t gcc_gettext_width (const char *);
 #else

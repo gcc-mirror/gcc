@@ -79,13 +79,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
       }
 
     template<typename _InputIterator, typename _OutputIterator,
-	     typename _UnaryOperation>
+	     typename _Tp>
       _OutputIterator
-      __transform(_InputIterator __first, _InputIterator __last,
-		  _OutputIterator __result, _UnaryOperation __unary_op)
+      __normalize(_InputIterator __first, _InputIterator __last,
+		  _OutputIterator __result, const _Tp& __factor)
       {
 	for (; __first != __last; ++__first, ++__result)
-	  *__result = __unary_op(*__first);
+	  *__result = *__first / __factor;
 	return __result;
       }
 
@@ -1648,7 +1648,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _UniformRandomNumberGenerator>
       typename binomial_distribution<_IntType>::result_type
       binomial_distribution<_IntType>::
-      _M_waiting(_UniformRandomNumberGenerator& __urng, _IntType __t)
+      _M_waiting(_UniformRandomNumberGenerator& __urng,
+		 _IntType __t, double __q)
       {
 	_IntType __x = 0;
 	double __sum = 0.0;
@@ -1663,7 +1664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __sum += __e / (__t - __x);
 	    __x += 1;
 	  }
-	while (__sum <= _M_param._M_q);
+	while (__sum <= __q);
 
 	return __x - 1;
       }
@@ -1784,12 +1785,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	    __x += __np + __naf;
 
-	    const _IntType __z = _M_waiting(__urng, __t - _IntType(__x));
+	    const _IntType __z = _M_waiting(__urng, __t - _IntType(__x),
+					    __param._M_q);
 	    __ret = _IntType(__x) + __z;
 	  }
 	else
 #endif
-	  __ret = _M_waiting(__urng, __t);
+	  __ret = _M_waiting(__urng, __t, __param._M_q);
 
 	if (__p12 != __p)
 	  __ret = __t - __ret;
@@ -2802,8 +2804,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const double __sum = std::accumulate(_M_prob.begin(),
 					   _M_prob.end(), 0.0);
       // Now normalize the probabilites.
-      __detail::__transform(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
-			  std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_prob.begin(), _M_prob.end(), _M_prob.begin(),
+			    __sum);
       // Accumulate partial sums.
       _M_cp.reserve(_M_prob.size());
       std::partial_sum(_M_prob.begin(), _M_prob.end(),
@@ -2955,8 +2957,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const double __sum = std::accumulate(_M_den.begin(),
 					   _M_den.end(), 0.0);
 
-      __detail::__transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
-			    std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_den.begin(), _M_den.end(), _M_den.begin(),
+			    __sum);
 
       _M_cp.reserve(_M_den.size());
       std::partial_sum(_M_den.begin(), _M_den.end(),
@@ -3189,14 +3191,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       //  Now normalize the densities...
-      __detail::__transform(_M_den.begin(), _M_den.end(), _M_den.begin(),
-			  std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_den.begin(), _M_den.end(), _M_den.begin(),
+			    __sum);
       //  ... and partial sums... 
-      __detail::__transform(_M_cp.begin(), _M_cp.end(), _M_cp.begin(),
-			    std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_cp.begin(), _M_cp.end(), _M_cp.begin(), __sum);
       //  ... and slopes.
-      __detail::__transform(_M_m.begin(), _M_m.end(), _M_m.begin(),
-			    std::bind2nd(std::divides<double>(), __sum));
+      __detail::__normalize(_M_m.begin(), _M_m.end(), _M_m.begin(), __sum);
+
       //  Make sure the last cumulative probablility is one.
       _M_cp[_M_cp.size() - 1] = 1.0;
      }

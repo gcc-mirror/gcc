@@ -211,6 +211,7 @@ GLIBCXX_CHECK_SC_NPROCESSORS_ONLN
 GLIBCXX_CHECK_SC_NPROC_ONLN
 GLIBCXX_CHECK_PTHREADS_NUM_PROCESSORS_NP
 GLIBCXX_CHECK_SYSCTL_HW_NCPU
+GLIBCXX_CHECK_SDT_H
 
 # Check for available headers.
 AC_CHECK_HEADERS([endian.h execinfo.h float.h fp.h ieeefp.h inttypes.h \
@@ -234,6 +235,8 @@ if $GLIBCXX_IS_NATIVE; then
 
   # For TLS support.
   GCC_CHECK_TLS
+
+  AC_CHECK_FUNCS(__cxa_thread_atexit_impl)
 
   # For iconv support.
   AM_ICONV

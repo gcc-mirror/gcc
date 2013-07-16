@@ -41,6 +41,7 @@ proc asan_link_flags { paths } {
     if { $gccpath != "" } {
       if { [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.a"]
 	   || [file exists "${gccpath}/libsanitizer/asan/.libs/libasan.${shlib_ext}"] } {
+	  append flags " -B${gccpath}/libsanitizer/asan/ "
 	  append flags " -L${gccpath}/libsanitizer/asan/.libs "
 	  append ld_library_path ":${gccpath}/libsanitizer/asan/.libs"
       }

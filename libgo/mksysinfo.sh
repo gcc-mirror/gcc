@@ -309,6 +309,13 @@ for m in SOCK_CLOEXEC SOCK_NONBLOCK; do
   fi
 done
 
+# The syscall package requires AF_LOCAL.
+if ! grep '^const AF_LOCAL ' ${OUT} >/dev/null 2>&1; then
+  if grep '^const AF_UNIX ' ${OUT} >/dev/null 2>&1; then
+    echo "const AF_LOCAL = AF_UNIX" >> ${OUT}
+  fi
+fi
+
 # pathconf constants.
 grep '^const __PC' gen-sysinfo.go |
   sed -e 's/^\(const \)__\(PC[^= ]*\)\(.*\)$/\1\2 = __\2/' >> ${OUT}

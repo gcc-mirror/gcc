@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-weak "" } */
 /* { dg-options "-fno-common" } */
+/* { dg-skip-if "" { x86_64-*-mingw* } { "*" } { "" } } */
 
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?ffoo1a" } } */
 /* { dg-final { scan-assembler "weak\[^ \t\]*\[ \t\]_?ffoo1b" } } */

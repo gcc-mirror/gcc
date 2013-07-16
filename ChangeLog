@@ -1,3 +1,31 @@
+2013-07-10  Jack Howarth  <howarth@bromo.med.uc.edu>
+
+	PR target/57792
+	* configure.ac: Use --with-sysroot=\"`xcrun --show-sdk-path`\" on darwin13 and later.
+	* configure: Regenerated.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-03-30  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.def (target_modules): Don't install libffi.
+	* Makefile.in: Regenerate.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-02-20  Andrew Sutton  <andrew.n.sutton@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2013-02-15  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* configure.ac: Set libgloss_dir for the aarch64*-*-* targets.
+	* configure: Regenerated.
+
 2013-02-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* MAINTAINERS: Explicitly add myself as AIX maintainer.

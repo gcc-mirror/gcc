@@ -11,17 +11,19 @@ enum { raceenabled = 0 };
 #endif
 
 // Initialize race detection subsystem.
-void	runtime_raceinit(void);
+uintptr	runtime_raceinit(void);
 // Finalize race detection subsystem, does not return.
 void	runtime_racefini(void);
 
 void	runtime_racemapshadow(void *addr, uintptr size);
 void	runtime_racemalloc(void *p, uintptr sz, void *pc);
 void	runtime_racefree(void *p);
-void	runtime_racegostart(int32 goid, void *pc);
-void	runtime_racegoend(int32 goid);
+uintptr	runtime_racegostart(void *pc);
+void	runtime_racegoend(void);
 void	runtime_racewritepc(void *addr, void *callpc, void *pc);
 void	runtime_racereadpc(void *addr, void *callpc, void *pc);
+void	runtime_racewriterangepc(void *addr, uintptr sz, uintptr step, void *callpc, void *pc);
+void	runtime_racereadrangepc(void *addr, uintptr sz, uintptr step, void *callpc, void *pc);
 void	runtime_racefingo(void);
 void	runtime_raceacquire(void *addr);
 void	runtime_raceacquireg(G *gp, void *addr);

@@ -31,9 +31,9 @@ program test_qp
    read (str2, *) fp3
    if (fp1 /= fp3) call abort()
    read (str3, *) fp4
-   if (fp2 /= fp4) call abort()
+   if (abs (fp2 - fp4)/fp2 > epsilon(fp2)) call abort()
    read (str4, *) fp4
-   if (fp2 /= fp4) call abort()
+   if (abs (fp2 - fp4)/fp2 > epsilon(fp2)) call abort()
 
    select case (qp)
      case (8)

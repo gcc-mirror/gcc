@@ -1721,80 +1721,144 @@
 (define_expand "vcond<mode><mode>"
   [(set (match_operand:VDQW 0 "s_register_operand" "")
 	(if_then_else:VDQW
-	  (match_operator 3 "arm_comparison_operator"
+	  (match_operator 3 "comparison_operator"
 	    [(match_operand:VDQW 4 "s_register_operand" "")
 	     (match_operand:VDQW 5 "nonmemory_operand" "")])
 	  (match_operand:VDQW 1 "s_register_operand" "")
 	  (match_operand:VDQW 2 "s_register_operand" "")))]
   "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
 {
-  rtx mask;
-  int inverse = 0, immediate_zero = 0;
-  /* See the description of "magic" bits in the 'T' case of
-     arm_print_operand.  */
   HOST_WIDE_INT magic_word = (<MODE>mode == V2SFmode || <MODE>mode == V4SFmode)
 			     ? 3 : 1;
   rtx magic_rtx = GEN_INT (magic_word);
-  
-  mask = gen_reg_rtx (<V_cmp_result>mode);
-  
-  if (operands[5] == CONST0_RTX (<MODE>mode))
-    immediate_zero = 1;
-  else if (!REG_P (operands[5]))
-    operands[5] = force_reg (<MODE>mode, operands[5]);
-  
+  int inverse = 0;
+  int swap_bsl_operands = 0;
+  rtx mask = gen_reg_rtx (<V_cmp_result>mode);
+  rtx tmp = gen_reg_rtx (<V_cmp_result>mode);
+
+  rtx (*base_comparison) (rtx, rtx, rtx, rtx);
+  rtx (*complimentary_comparison) (rtx, rtx, rtx, rtx);
+
   switch (GET_CODE (operands[3]))
     {
     case GE:
-      emit_insn (gen_neon_vcge<mode> (mask, operands[4], operands[5],
-				      magic_rtx));
-      break;
-    
-    case GT:
-      emit_insn (gen_neon_vcgt<mode> (mask, operands[4], operands[5],
-				      magic_rtx));
-      break;
-    
-    case EQ:
-      emit_insn (gen_neon_vceq<mode> (mask, operands[4], operands[5],
-				      magic_rtx));
-      break;
-    
     case LE:
-      if (immediate_zero)
-	emit_insn (gen_neon_vcle<mode> (mask, operands[4], operands[5],
-					magic_rtx));
-      else
-	emit_insn (gen_neon_vcge<mode> (mask, operands[5], operands[4],
-					magic_rtx));
+    case EQ:
+      if (!REG_P (operands[5])
+	  && (operands[5] != CONST0_RTX (<MODE>mode)))
+	operands[5] = force_reg (<MODE>mode, operands[5]);
       break;
-    
+    default:
+      if (!REG_P (operands[5]))
+	operands[5] = force_reg (<MODE>mode, operands[5]);
+    }
+
+  switch (GET_CODE (operands[3]))
+    {
     case LT:
-      if (immediate_zero)
-	emit_insn (gen_neon_vclt<mode> (mask, operands[4], operands[5],
-					magic_rtx));
-      else
-	emit_insn (gen_neon_vcgt<mode> (mask, operands[5], operands[4],
-					magic_rtx));
-      break;
-    
-    case NE:
-      emit_insn (gen_neon_vceq<mode> (mask, operands[4], operands[5],
-				      magic_rtx));
+    case UNLT:
       inverse = 1;
+      /* Fall through.  */
+    case GE:
+    case UNGE:
+    case ORDERED:
+    case UNORDERED:
+      base_comparison = gen_neon_vcge<mode>;
+      complimentary_comparison = gen_neon_vcgt<mode>;
       break;
-    
+    case LE:
+    case UNLE:
+      inverse = 1;
+      /* Fall through.  */
+    case GT:
+    case UNGT:
+      base_comparison = gen_neon_vcgt<mode>;
+      complimentary_comparison = gen_neon_vcge<mode>;
+      break;
+    case EQ:
+    case NE:
+    case UNEQ:
+      base_comparison = gen_neon_vceq<mode>;
+      complimentary_comparison = gen_neon_vceq<mode>;
+      break;
     default:
       gcc_unreachable ();
     }
-  
-  if (inverse)
+
+  switch (GET_CODE (operands[3]))
+    {
+    case LT:
+    case LE:
+    case GT:
+    case GE:
+    case EQ:
+      /* The easy case.  Here we emit one of vcge, vcgt or vceq.
+	 As a LT b <=> b GE a && a LE b <=> b GT a.  Our transformations are:
+	 a GE b -> a GE b
+	 a GT b -> a GT b
+	 a LE b -> b GE a
+	 a LT b -> b GT a
+	 a EQ b -> a EQ b  */
+
+      if (!inverse)
+	emit_insn (base_comparison (mask, operands[4], operands[5], magic_rtx));
+      else
+	emit_insn (complimentary_comparison (mask, operands[5], operands[4], magic_rtx));
+      break;
+    case UNLT:
+    case UNLE:
+    case UNGT:
+    case UNGE:
+    case NE:
+      /* Vector compare returns false for lanes which are unordered, so if we use
+	 the inverse of the comparison we actually want to emit, then
+	 swap the operands to BSL, we will end up with the correct result.
+	 Note that a NE NaN and NaN NE b are true for all a, b.
+
+	 Our transformations are:
+	 a GE b -> !(b GT a)
+	 a GT b -> !(b GE a)
+	 a LE b -> !(a GT b)
+	 a LT b -> !(a GE b)
+	 a NE b -> !(a EQ b)  */
+
+      if (inverse)
+	emit_insn (base_comparison (mask, operands[4], operands[5], magic_rtx));
+      else
+	emit_insn (complimentary_comparison (mask, operands[5], operands[4], magic_rtx));
+
+      swap_bsl_operands = 1;
+      break;
+    case UNEQ:
+      /* We check (a > b ||  b > a).  combining these comparisons give us
+	 true iff !(a != b && a ORDERED b), swapping the operands to BSL
+	 will then give us (a == b ||  a UNORDERED b) as intended.  */
+
+      emit_insn (gen_neon_vcgt<mode> (mask, operands[4], operands[5], magic_rtx));
+      emit_insn (gen_neon_vcgt<mode> (tmp, operands[5], operands[4], magic_rtx));
+      emit_insn (gen_ior<v_cmp_result>3 (mask, mask, tmp));
+      swap_bsl_operands = 1;
+      break;
+    case UNORDERED:
+       /* Operands are ORDERED iff (a > b || b >= a).
+	 Swapping the operands to BSL will give the UNORDERED case.  */
+     swap_bsl_operands = 1;
+     /* Fall through.  */
+    case ORDERED:
+      emit_insn (gen_neon_vcgt<mode> (tmp, operands[4], operands[5], magic_rtx));
+      emit_insn (gen_neon_vcge<mode> (mask, operands[5], operands[4], magic_rtx));
+      emit_insn (gen_ior<v_cmp_result>3 (mask, mask, tmp));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (swap_bsl_operands)
     emit_insn (gen_neon_vbsl<mode> (operands[0], mask, operands[2],
 				    operands[1]));
   else
     emit_insn (gen_neon_vbsl<mode> (operands[0], mask, operands[1],
 				    operands[2]));
-
   DONE;
 })
 

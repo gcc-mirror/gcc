@@ -6,8 +6,9 @@ int bar();
 int blah(int);
 void t(int);
 
+static int
 __attribute__((always_inline)) 
-int foo (int n, int* v, int r)
+foo (int n, int* v, int r)
 {
   int flag = 0;
   if (r > n)

@@ -644,7 +644,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __h._M_rehash(__do_rehash.second, __saved_state);
 
 	for (; __first != __last; ++__first)
-	  this->insert(*__first);
+	  __h._M_insert(*__first, __unique_keys());
       }
 
   /**
@@ -956,7 +956,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::swap(_M_ranged_hash(), __x._M_ranged_hash());
       }
 
-    protected:
       const _ExtractKey&
       _M_extract() const { return __ebo_extract_key::_S_cget(*this); }
 

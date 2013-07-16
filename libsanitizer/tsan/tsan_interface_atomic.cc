@@ -18,25 +18,42 @@
 // http://www.hpl.hp.com/personal/Hans_Boehm/c++mm/
 
 #include "sanitizer_common/sanitizer_placement_new.h"
+#include "sanitizer_common/sanitizer_stacktrace.h"
 #include "tsan_interface_atomic.h"
 #include "tsan_flags.h"
 #include "tsan_rtl.h"
 
 using namespace __tsan;  // NOLINT
 
+#define SCOPED_ATOMIC(func, ...) \
+    const uptr callpc = (uptr)__builtin_return_address(0); \
+    uptr pc = __sanitizer::StackTrace::GetCurrentPc(); \
+    pc = __sanitizer::StackTrace::GetPreviousInstructionPc(pc); \
+    mo = ConvertOrder(mo); \
+    mo = flags()->force_seq_cst_atomics ? (morder)mo_seq_cst : mo; \
+    ThreadState *const thr = cur_thread(); \
+    AtomicStatInc(thr, sizeof(*a), mo, StatAtomic##func); \
+    ScopedAtomic sa(thr, callpc, __FUNCTION__); \
+    return Atomic##func(thr, pc, __VA_ARGS__); \
+/**/
+
 class ScopedAtomic {
  public:
   ScopedAtomic(ThreadState *thr, uptr pc, const char *func)
       : thr_(thr) {
-    CHECK_EQ(thr_->in_rtl, 1);  // 1 due to our own ScopedInRtl member.
+    CHECK_EQ(thr_->in_rtl, 0);
+    ProcessPendingSignals(thr);
+    FuncEntry(thr_, pc);
     DPrintf("#%d: %s\n", thr_->tid, func);
+    thr_->in_rtl++;
   }
   ~ScopedAtomic() {
-    CHECK_EQ(thr_->in_rtl, 1);
+    thr_->in_rtl--;
+    CHECK_EQ(thr_->in_rtl, 0);
+    FuncExit(thr_);
   }
  private:
   ThreadState *thr_;
-  ScopedInRtl in_rtl_;
 };
 
 // Some shortcuts.
@@ -210,16 +227,19 @@ a128 func_cas(volatile a128 *v, a128 cmp, a128 xch) {
 }
 #endif
 
-#define SCOPED_ATOMIC(func, ...) \
-    mo = ConvertOrder(mo); \
-    mo = flags()->force_seq_cst_atomics ? (morder)mo_seq_cst : mo; \
-    ThreadState *const thr = cur_thread(); \
-    ProcessPendingSignals(thr); \
-    const uptr pc = (uptr)__builtin_return_address(0); \
-    AtomicStatInc(thr, sizeof(*a), mo, StatAtomic##func); \
-    ScopedAtomic sa(thr, pc, __FUNCTION__); \
-    return Atomic##func(thr, pc, __VA_ARGS__); \
-/**/
+template<typename T>
+static int SizeLog() {
+  if (sizeof(T) <= 1)
+    return kSizeLog1;
+  else if (sizeof(T) <= 2)
+    return kSizeLog2;
+  else if (sizeof(T) <= 4)
+    return kSizeLog4;
+  else
+    return kSizeLog8;
+  // For 16-byte atomics we also use 8-byte memory access,
+  // this leads to false negatives only in very obscure cases.
+}
 
 template<typename T>
 static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a,
@@ -227,14 +247,17 @@ static T AtomicLoad(ThreadState *thr, uptr pc, const volatile T *a,
   CHECK(IsLoadOrder(mo));
   // This fast-path is critical for performance.
   // Assume the access is atomic.
-  if (!IsAcquireOrder(mo) && sizeof(T) <= sizeof(a))
+  if (!IsAcquireOrder(mo) && sizeof(T) <= sizeof(a)) {
+    MemoryReadAtomic(thr, pc, (uptr)a, SizeLog<T>());
     return *a;
+  }
   SyncVar *s = CTX()->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, false);
   thr->clock.set(thr->tid, thr->fast_state.epoch());
   thr->clock.acquire(&s->clock);
   T v = *a;
   s->mtx.ReadUnlock();
   __sync_synchronize();
+  MemoryReadAtomic(thr, pc, (uptr)a, SizeLog<T>());
   return v;
 }
 
@@ -242,6 +265,7 @@ template<typename T>
 static void AtomicStore(ThreadState *thr, uptr pc, volatile T *a, T v,
     morder mo) {
   CHECK(IsStoreOrder(mo));
+  MemoryWriteAtomic(thr, pc, (uptr)a, SizeLog<T>());
   // This fast-path is critical for performance.
   // Assume the access is atomic.
   // Strictly saying even relaxed store cuts off release sequence,
@@ -263,6 +287,7 @@ static void AtomicStore(ThreadState *thr, uptr pc, volatile T *a, T v,
 
 template<typename T, T (*F)(volatile T *v, T op)>
 static T AtomicRMW(ThreadState *thr, uptr pc, volatile T *a, T v, morder mo) {
+  MemoryWriteAtomic(thr, pc, (uptr)a, SizeLog<T>());
   SyncVar *s = CTX()->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, true);
   thr->clock.set(thr->tid, thr->fast_state.epoch());
   if (IsAcqRelOrder(mo))
@@ -322,6 +347,7 @@ template<typename T>
 static bool AtomicCAS(ThreadState *thr, uptr pc,
     volatile T *a, T *c, T v, morder mo, morder fmo) {
   (void)fmo;  // Unused because llvm does not pass it yet.
+  MemoryWriteAtomic(thr, pc, (uptr)a, SizeLog<T>());
   SyncVar *s = CTX()->synctab.GetOrCreateAndLock(thr, pc, (uptr)a, true);
   thr->clock.set(thr->tid, thr->fast_state.epoch());
   if (IsAcqRelOrder(mo))

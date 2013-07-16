@@ -1,3 +1,166 @@
+2013-07-09  Janis Johnson  <janisjo@codesourcery.com>
+
+	* config.host (powerpc-*-eabispe*): Add t-fdpbit to tmake_file.
+
+2013-06-19  Alan Modra  <amodra@gmail.com>
+
+	Apply mainline patches
+	2013-06-04  Alan Modra  <amodra@gmail.com>
+	* config/rs6000/ibm-ldouble.c: Enable for little-endian.
+
+	2013-04-25  Alan Modra  <amodra@gmail.com>
+	* config.host: Match little-endian powerpc-linux.
+
+2013-06-08  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline:
+	2013-06-08  Walter Lee  <walt@tilera.com>
+
+	* config/tilepro/atomic.h: Don't include stdint.h or features.h.
+	Replace int64_t with long long.  Add __extension__ where
+	appropriate.
+
+2013-06-06  Douglas B Rupp  <rupp@adacore.com>
+
+	* config.host (arm-wrs-vxworks): Configure with other soft float.
+
+2013-05-31  Richard Henderson  <rth@redhat.com>
+
+	PR target/49146
+	* unwind-dw2.c (UNWIND_COLUMN_IN_RANGE): New macro.
+	(execute_cfa_program): Use it when storing to fs->regs.
+
+2013-05-31  Release Manager
+
+	* GCC 4.8.1 released.
+
+2013-04-11  Julian Brown  <julian@codesourcery.com>
+
+	* config/arm/linux-atomic.c (SUBWORD_SYNC_OP, SUBWORD_VAL_CAS)
+	(SUBWORD_TEST_AND_SET): Use signed char/short types instead of
+	unsigned char/unsigned short.
+	(__sync_val_compare_and_swap_{1,2}): Handle signed argument.
+
+2013-04-06  John David Anglin  <dave.anglin@nrc-cnrc.gc.ca>
+
+	PR other/55274
+	* config/t-slibgcc-hpux (SHLIB_MAPFILES): Define.
+
+2013-03-26  Robert Mason  <rbmj@verizon.net>
+
+	PR target/54805
+
+	Backport from mainline:
+	2013-03-20  Robert Mason  <rbmj@verizon.net>
+
+	* config/vxlib-tls.c (__gthread_get_tsd_data,)
+	(__gthread_set_tsd_data, __gthread_enter_tsd_dtor_context,)
+	(__gthread_leave_tsd_dtor_context): Add prototypes.
+	(tls_delete_hook): Update.
+
+2013-03-26  Walter Lee  <walt@tilera.com>
+
+	Backport from mainline:
+	2013-03-26  Walter Lee  <walt@tilera.com>
+
+	* config/tilegx/t-crtstuff: Add -fno-asynchronous-unwind-tables
+	-mcmodel=large to CRTSTUFF_T_CFLAGS_S variable.
+
+2013-03-22  Release Manager
+
+	* GCC 4.8.0 released.
+
+2013-03-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/53265
+	* unwind-dw2.c (execute_cfa_program): Avoid
+	-Waggressive-array-optimizations warnings for DW_CFA_GNU_window_save
+	on targets with DWARF_FRAME_REGISTERS < 32.
+
+2013-03-13  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/49880
+	* config/sh/lib1funcs.S (sdivsi3_i4, udivsi3_i4): Enable for SH2A.
+	(sdivsi3, udivsi3): Remove SH4 check and always compile these functions.
+
+2013-03-07  Sriraman Tallam  <tmsriram@google.com>
+
+	* config/i386/cpuinfo.c (get_intel_cpu): Fix cpuid codes for
+	sandybridge processors.
+
+2013-03-06  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/56529
+	* config/sh/lib1funcs.S (udivsi3_i4i, sdivsi3_i4i): Add __SH2A__ to
+	inclusion list.
+
+2013-03-04  Edgar E. Iglesias <edgar.iglesias@gmail.com>
+
+	* config/microblaze/crti.S: Setup stack protection at entry
+
+2013-03-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs.S (__ashrdi3, __lshrdi3, __ashldi3)
+	(__rotldi3): Shift bytewise if applicable.
+
+2013-03-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/sync-cache.c
+	(__aarch64_sync_cache_range): Silence warnings.
+
+2013-02-25  Catherine Moore  <clm@codesourcery.com>
+
+	Revert:
+	2013-02-24  Catherine Moore  <clm@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips16.S:  Don't build for microMIPS.
+	* config/mips/linux-unwind.h: Handle microMIPS frame.
+	* config/mips/crtn.S (fini, init): New labels.
+
+2013-02-24  Catherine Moore  <clm@codesourcery.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+	    Chao-ying Fu  <fu@mips.com>
+
+	* config/mips/mips16.S:  Don't build for microMIPS.
+	* config/mips/linux-unwind.h: Handle microMIPS frame.
+	* config/mips/crtn.S (fini, init): New labels.
+
+2012-02-19  Edgar E. Iglesias  <edgar.iglesias@gmail.com>
+	* config/microblaze/modsi3.S (modsi3): Fix case with 0x80000000 
+	as dividend.
+
+2013-02-16  Alan Modra  <amodra@gmail.com>
+
+	PR target/55431
+	* config/rs6000/linux-unwind.h (ppc_linux_aux_vector): Delete.
+	(ppc_fallback_frame_state): Always set up save locations for fp
+	and altivec.  Don't bother with non-callee-saved regs, r0-r13
+	except for r2 on ppc64, fr0-fr13, v0-v19, vscr.
+
+2013-02-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/54222
+	* config/avr/t-avr (LIB2FUNCS_EXCLUDE): Add: _usmulUHA, _usmulUSA,
+	_ssmulHA, _ssmulSA.
+	(LIB1ASMFUNCS): Add: _muldi3_6, _mulsidi3, _umulsidi3, _usmuluha3,
+	_ssmulha3, _usmulusa3, _ssmulsa3.
+	* config/avr/lib1funcs.S (__muldi3_6): Break out of __muldi3.
+	(__muldi3): XCALL __muldi3_6 instead of rcall.
+	(__umulsidi3, __mulsidi3): New functions.
+	(do_prologue_saves, do_epilogue_restores): New .macros.
+	(__divdi3_moddi3): Use them.
+	* config/avr/lib1funcs-fixed.S (__usmuluha3, __ssmulha3)
+	(__usmulusa3, __ssmulsa3): New functions.
+
+2013-02-11  Iain Sandoe  <iain@codesourcery.com>
+	    Jack Howarth  <howarth@bromo.med.uc.edu>
+	    Patrick Marlier  <patrick.marlier@gmail.com>
+
+	PR libitm/55693
+	* config/darwin-crt-tm.c: Remove dummy functions hack.
+
 2013-02-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/54222
