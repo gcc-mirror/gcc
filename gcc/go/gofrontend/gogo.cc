@@ -3380,7 +3380,7 @@ Function::set_closure_type()
   st->push_field(Struct_field(Typed_identifier(".$f", voidptr_type,
 					       this->location_)));
 
-  unsigned int index = 0;
+  unsigned int index = 1;
   for (Closure_fields::const_iterator p = this->closure_fields_.begin();
        p != this->closure_fields_.end();
        ++p, ++index)
