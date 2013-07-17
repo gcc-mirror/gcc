@@ -1,3 +1,7 @@
+2013-07-17  Iain Sandoe  <iain@codesourcery.com>
+
+	* config/rs6000/darwin.h (REGISTER_NAMES): Add HTM registers.
+
 2013-07-17  Yvan Roux  <yvan.roux@linaro.org>
 
 	PR target/57909
