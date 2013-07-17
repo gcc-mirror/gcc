@@ -9771,11 +9771,8 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   if (icode == 0)
     internal_error ("bad builtin fcode");
 
-  if (!TARGET_ZEC12)
-    error ("Transactional execution builtins require zEC12 or later\n");
-
-  if (!TARGET_HTM && TARGET_ZEC12)
-    error ("Transactional execution builtins not enabled (-mtx)\n");
+  if (!TARGET_HTM)
+    error ("Transactional execution builtins not enabled (-mhtm)\n");
 
   /* Set a flag in the machine specific cfun part in order to support
      saving/restoring of FPRs.  */
