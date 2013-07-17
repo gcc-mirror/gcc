@@ -12018,8 +12018,16 @@ gen_movmem_ldrd_strd (rtx *operands)
       dst = adjust_address (dst, HImode, 0);
       src = adjust_address (src, HImode, 0);
       reg0 = gen_reg_rtx (SImode);
-      emit_insn (gen_unaligned_loadhiu (reg0, src));
-      emit_insn (gen_unaligned_storehi (dst, gen_lowpart (HImode, reg0)));
+      if (src_aligned)
+        emit_insn (gen_zero_extendhisi2 (reg0, src));
+      else
+        emit_insn (gen_unaligned_loadhiu (reg0, src));
+
+      if (dst_aligned)
+        emit_insn (gen_movhi (dst, gen_lowpart(HImode, reg0)));
+      else
+        emit_insn (gen_unaligned_storehi (dst, gen_lowpart (HImode, reg0)));
+
       src = next_consecutive_mem (src);
       dst = next_consecutive_mem (dst);
       if (len == 2)
