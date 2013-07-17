@@ -1,3 +1,9 @@
+2013-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57895
+	* gfortran.dg/dollar_sym_3.f: New.
+	* gfortran.dg/dollar_sym_1.f90: Update dg-error.
+
 2013-07-16  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/55654

@@ -1,3 +1,11 @@
+2013-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57895
+	* match.c (gfc_match_name): Ensure that the error
+	message regarding -fdollar-ok gets printed.
+	(gfc_match_common): Avoid multiple freeing.
+
 2013-07-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57912
@@ -149,7 +157,7 @@
 
 	PR fortran/37336
 	* trans-decl.c (init_intent_out_dt): Call finalizer
-	when approriate.
+	when appropriate.
 
 2013-06-08  Tobias Burnus  <burnus@net-b.de>
 
@@ -650,7 +658,7 @@
 2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56782
-	* frontend-passes.c (callback_reduction):  Dont't do
+	* frontend-passes.c (callback_reduction):  Don't do
 	any simplification if there is only a single element
 	which has an iterator.
 
