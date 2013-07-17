@@ -109,8 +109,8 @@ case "${target_cpu}" in
 	ARCH=x86
 	;;
   s390|s390x)
+	XCFLAGS="${XCFLAGS} -mzarch -mhtm -Wa,-march=zEC12"
 	ARCH=s390
-	XCFLAGS="${XCFLAGS} -mzarch"
 	;;
 
   *)

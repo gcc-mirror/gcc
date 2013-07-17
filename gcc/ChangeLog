@@ -1,3 +1,10 @@
+2013-07-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: (s390_expand_builtin): Allow -mhtm to be
+	enabled without -march=zEC12.
+	* config/s390/s390.h (TARGET_HTM): Do not require EC12 machine
+	flags to be set.
+
 2013-07-16  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips.h (ISA_HAS_FP4): Correct formatting.
