@@ -1,3 +1,9 @@
+2013-07-17  Yvan Roux  <yvan.roux@linaro.org>
+
+	PR target/57909
+	* config/arm/arm.c (gen_movmem_ldrd_strd): Fix unaligned load/store
+	usage in HI mode.
+
 2013-07-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.c: (s390_expand_builtin): Allow -mhtm to be
