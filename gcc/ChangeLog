@@ -1,3 +1,18 @@
+2013-07-17  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Backport From mainline:
+	2013-07-03  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_simd_expand_builtin): Handle AARCH64_SIMD_STORE1.
+	* config/aarch64/aarch64-simd-builtins.def (ld1): New.
+	(st1): Likewise.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_ld1<VALL:mode>): New.
+	(aarch64_st1<VALL:mode>): Likewise.
+	* config/aarch64/arm_neon.h
+	(vld1<q>_<fpsu><8, 16, 32, 64>): Convert to RTL builtins.
+
 2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-11 trunk r200901.
