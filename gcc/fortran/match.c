@@ -556,8 +556,8 @@ gfc_match_name (char *buffer)
 
   if (c == '$' && !gfc_option.flag_dollar_ok)
     {
-      gfc_error ("Invalid character '$' at %C. Use -fdollar-ok to allow it "
-		 "as an extension");
+      gfc_fatal_error ("Invalid character '$' at %L. Use -fdollar-ok to allow "
+		       "it as an extension", &old_loc);
       return MATCH_ERROR;
     }
 
@@ -4520,10 +4520,6 @@ syntax:
   gfc_syntax_error (ST_COMMON);
 
 cleanup:
-  if (old_blank_common)
-    old_blank_common->common_next = NULL;
-  else
-    gfc_current_ns->blank_common.head = NULL;
   gfc_free_array_spec (as);
   return MATCH_ERROR;
 }
