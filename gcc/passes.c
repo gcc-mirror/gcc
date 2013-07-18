@@ -1282,13 +1282,26 @@ init_optimization_passes (void)
 {
   struct opt_pass **p;
 
+#define INSERT_PASSES_AFTER(PASS) \
+  p = &(PASS);
+
+#define PUSH_INSERT_PASSES_WITHIN(PASS) \
+  { \
+    struct opt_pass **p = &(PASS).pass.sub;
+
+#define POP_INSERT_PASSES() \
+  }
+
 #define NEXT_PASS(PASS)  (p = next_pass_1 (p, &((PASS).pass)))
+
+#define TERMINATE_PASS_LIST() \
+  *p = NULL;
 
  /* All passes needed to lower the function into shape optimizers can
     operate on.  These passes are always run first on the function, but
     backend might produce already lowered functions that are not processed
     by these passes.  */
-  p = &all_lowering_passes;
+  INSERT_PASSES_AFTER (all_lowering_passes)
   NEXT_PASS (pass_warn_unused_result);
   NEXT_PASS (pass_diagnose_omp_blocks);
   NEXT_PASS (pass_diagnose_tm_blocks);
@@ -1302,15 +1315,14 @@ init_optimization_passes (void)
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_expand_omp);
   NEXT_PASS (pass_build_cgraph_edges);
-  *p = NULL;
+  TERMINATE_PASS_LIST ()
 
   /* Interprocedural optimization passes.  */
-  p = &all_small_ipa_passes;
+  INSERT_PASSES_AFTER (all_small_ipa_passes)
   NEXT_PASS (pass_ipa_free_lang_data);
   NEXT_PASS (pass_ipa_function_and_variable_visibility);
   NEXT_PASS (pass_early_local_passes);
-    {
-      struct opt_pass **p = &pass_early_local_passes.pass.sub;
+  PUSH_INSERT_PASSES_WITHIN (pass_early_local_passes)
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_init_datastructures);
 
@@ -1320,8 +1332,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_inline_parameters);
       NEXT_PASS (pass_early_inline);
       NEXT_PASS (pass_all_early_optimizations);
-	{
-	  struct opt_pass **p = &pass_all_early_optimizations.pass.sub;
+      PUSH_INSERT_PASSES_WITHIN (pass_all_early_optimizations)
 	  NEXT_PASS (pass_remove_cgraph_callee_edges);
 	  NEXT_PASS (pass_rename_ssa_copies);
 	  NEXT_PASS (pass_ccp);
@@ -1346,23 +1357,22 @@ init_optimization_passes (void)
 	     early optimizations again.  It is thus good idea to do this
 	     late.  */
           NEXT_PASS (pass_split_functions);
-	}
+      POP_INSERT_PASSES ()
       NEXT_PASS (pass_release_ssa_names);
       NEXT_PASS (pass_rebuild_cgraph_edges);
       NEXT_PASS (pass_inline_parameters);
-    }
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_ipa_free_inline_summary);
   NEXT_PASS (pass_ipa_tree_profile);
-    {
-      struct opt_pass **p = &pass_ipa_tree_profile.pass.sub;
+  PUSH_INSERT_PASSES_WITHIN (pass_ipa_tree_profile)
       NEXT_PASS (pass_feedback_split_functions);
-    }
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
-  *p = NULL;
+  TERMINATE_PASS_LIST ()
 
-  p = &all_regular_ipa_passes;
+  INSERT_PASSES_AFTER (all_regular_ipa_passes)
   NEXT_PASS (pass_ipa_whole_program_visibility);
   NEXT_PASS (pass_ipa_profile);
   NEXT_PASS (pass_ipa_cp);
@@ -1370,28 +1380,27 @@ init_optimization_passes (void)
   NEXT_PASS (pass_ipa_inline);
   NEXT_PASS (pass_ipa_pure_const);
   NEXT_PASS (pass_ipa_reference);
-  *p = NULL;
+  TERMINATE_PASS_LIST ()
 
-  p = &all_lto_gen_passes;
+  INSERT_PASSES_AFTER (all_lto_gen_passes)
   NEXT_PASS (pass_ipa_lto_gimple_out);
   NEXT_PASS (pass_ipa_lto_finish_out);  /* This must be the last LTO pass.  */
-  *p = NULL;
+  TERMINATE_PASS_LIST ()
 
   /* Simple IPA passes executed after the regular passes.  In WHOPR mode the
      passes are executed after partitioning and thus see just parts of the
      compiled unit.  */
-  p = &all_late_ipa_passes;
+  INSERT_PASSES_AFTER (all_late_ipa_passes)
   NEXT_PASS (pass_ipa_pta);
-  *p = NULL;
+  TERMINATE_PASS_LIST ()
 
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
-  p = &all_passes;
+  INSERT_PASSES_AFTER (all_passes)
   NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_all_optimizations);
-    {
-      struct opt_pass **p = &pass_all_optimizations.pass.sub;
+  PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)
       NEXT_PASS (pass_remove_cgraph_callee_edges);
       /* Initial scalar cleanups before alias computation.
 	 They ensure memory accesses are not indirect wherever possible.  */
@@ -1454,8 +1463,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
       NEXT_PASS (pass_tree_loop);
-	{
-	  struct opt_pass **p = &pass_tree_loop.pass.sub;
+      PUSH_INSERT_PASSES_WITHIN (pass_tree_loop)
 	  NEXT_PASS (pass_tree_loop_init);
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_copy_prop);
@@ -1467,21 +1475,19 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_loop_distribution);
 	  NEXT_PASS (pass_copy_prop);
 	  NEXT_PASS (pass_graphite);
-	    {
-	      struct opt_pass **p = &pass_graphite.pass.sub;
+	  PUSH_INSERT_PASSES_WITHIN (pass_graphite)
 	      NEXT_PASS (pass_graphite_transforms);
 	      NEXT_PASS (pass_lim);
 	      NEXT_PASS (pass_copy_prop);
 	      NEXT_PASS (pass_dce_loop);
-	    }
+	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_iv_canon);
 	  NEXT_PASS (pass_parallelize_loops);
 	  NEXT_PASS (pass_if_conversion);
 	  NEXT_PASS (pass_vectorize);
-	    {
-	      struct opt_pass **p = &pass_vectorize.pass.sub;
+          PUSH_INSERT_PASSES_WITHIN (pass_vectorize)
 	      NEXT_PASS (pass_dce_loop);
-	    }
+          POP_INSERT_PASSES ()
           NEXT_PASS (pass_predcom);
 	  NEXT_PASS (pass_complete_unroll);
 	  NEXT_PASS (pass_slp_vectorize);
@@ -1489,7 +1495,7 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_iv_optimize);
 	  NEXT_PASS (pass_lim);
 	  NEXT_PASS (pass_tree_loop_done);
-	}
+      POP_INSERT_PASSES ()
       NEXT_PASS (pass_lower_vector_ssa);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc);
@@ -1524,10 +1530,9 @@ init_optimization_passes (void)
       NEXT_PASS (pass_rename_ssa_copies);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
-    }
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_all_optimizations_g);
-    {
-      struct opt_pass **p = &pass_all_optimizations_g.pass.sub;
+  PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations_g)
       NEXT_PASS (pass_remove_cgraph_callee_edges);
       NEXT_PASS (pass_strip_predict_hints);
       /* Lower remaining pieces of GIMPLE.  */
@@ -1551,14 +1556,13 @@ init_optimization_passes (void)
       NEXT_PASS (pass_late_warn_uninitialized);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);
-    }
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_tm_init);
-    {
-      struct opt_pass **p = &pass_tm_init.pass.sub;
+  PUSH_INSERT_PASSES_WITHIN (pass_tm_init)
       NEXT_PASS (pass_tm_mark);
       NEXT_PASS (pass_tm_memopt);
       NEXT_PASS (pass_tm_edges);
-    }
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
   NEXT_PASS (pass_asan_O0);
@@ -1573,8 +1577,7 @@ init_optimization_passes (void)
   NEXT_PASS (pass_expand);
 
   NEXT_PASS (pass_rest_of_compilation);
-    {
-      struct opt_pass **p = &pass_rest_of_compilation.pass.sub;
+  PUSH_INSERT_PASSES_WITHIN (pass_rest_of_compilation)
       NEXT_PASS (pass_instantiate_virtual_regs);
       NEXT_PASS (pass_into_cfg_layout_mode);
       NEXT_PASS (pass_jump);
@@ -1594,16 +1597,15 @@ init_optimization_passes (void)
 	 sooner, but we want the profile feedback to work more
 	 efficiently.  */
       NEXT_PASS (pass_loop2);
-	{
-	  struct opt_pass **p = &pass_loop2.pass.sub;
+      PUSH_INSERT_PASSES_WITHIN (pass_loop2)
 	  NEXT_PASS (pass_rtl_loop_init);
 	  NEXT_PASS (pass_rtl_move_loop_invariants);
 	  NEXT_PASS (pass_rtl_unswitch);
 	  NEXT_PASS (pass_rtl_unroll_and_peel_loops);
 	  NEXT_PASS (pass_rtl_doloop);
 	  NEXT_PASS (pass_rtl_loop_done);
-	  *p = NULL;
-	}
+	  TERMINATE_PASS_LIST ()
+      POP_INSERT_PASSES ()
       NEXT_PASS (pass_web);
       NEXT_PASS (pass_rtl_cprop);
       NEXT_PASS (pass_cse2);
@@ -1628,8 +1630,7 @@ init_optimization_passes (void)
       NEXT_PASS (pass_ira);
       NEXT_PASS (pass_reload);
       NEXT_PASS (pass_postreload);
-	{
-	  struct opt_pass **p = &pass_postreload.pass.sub;
+      PUSH_INSERT_PASSES_WITHIN (pass_postreload)
 	  NEXT_PASS (pass_postreload_cse);
 	  NEXT_PASS (pass_gcse2);
 	  NEXT_PASS (pass_split_after_reload);
@@ -1651,11 +1652,10 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_split_before_sched2);
 	  NEXT_PASS (pass_sched2);
 	  NEXT_PASS (pass_stack_regs);
-	    {
-	      struct opt_pass **p = &pass_stack_regs.pass.sub;
+	  PUSH_INSERT_PASSES_WITHIN (pass_stack_regs)
 	      NEXT_PASS (pass_split_before_regstack);
 	      NEXT_PASS (pass_stack_regs_run);
-	    }
+	  POP_INSERT_PASSES ()
 	  NEXT_PASS (pass_compute_alignments);
 	  NEXT_PASS (pass_duplicate_computed_gotos);
 	  NEXT_PASS (pass_variable_tracking);
@@ -1669,13 +1669,17 @@ init_optimization_passes (void)
 	  NEXT_PASS (pass_set_nothrow_function_flags);
 	  NEXT_PASS (pass_dwarf2_frame);
 	  NEXT_PASS (pass_final);
-	}
+      POP_INSERT_PASSES ()
       NEXT_PASS (pass_df_finish);
-    }
+  POP_INSERT_PASSES ()
   NEXT_PASS (pass_clean_state);
-  *p = NULL;
+  TERMINATE_PASS_LIST ()
 
+#undef INSERT_PASSES_AFTER
+#undef PUSH_INSERT_PASSES_WITHIN
+#undef POP_INSERT_PASSES
 #undef NEXT_PASS
+#undef TERMINATE_PASS_LIST
 
   /* Register the passes with the tree dump code.  */
   register_dump_files (all_lowering_passes, PROP_gimple_any);
