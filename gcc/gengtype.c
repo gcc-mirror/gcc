@@ -4682,7 +4682,10 @@ write_roots (pair_p variables, bool emit_pch)
       for (o = v->opt; o; o = o->next)
 	if (strcmp (o->name, "deletable") == 0
 	    || strcmp (o->name, "if_marked") == 0)
-	  skip_p = 1;
+	  {
+	    skip_p = 1;
+	    break;
+	  }
 
       if (skip_p)
 	continue;

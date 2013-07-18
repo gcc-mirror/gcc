@@ -1,3 +1,11 @@
+2013-07-18  Chang  <pchang9@cs.wisc.edu>
+
+	* read-rtl.c (validate_const_int): Once an invalid character is
+	seen, quit the loop.
+
+	* gengtype.c (write_roots): Similarly once we find the "deletable"
+	or "if_marked" option.
+
 2013-07-18  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/arm/arm.md (attribute "insn"): Delete values "mrs", "msr",
