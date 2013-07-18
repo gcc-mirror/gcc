@@ -67,12 +67,12 @@
 
 (define_insn_reservation "cortex_a53_alu" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "alu_reg,simple_alu_imm"))
+       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "alu_shift,alu_shift_reg"))
+       (eq_attr "type" "arlo_shift,arlo_shift_reg"))
   "cortex_a53_slot_any")
 
 ;; Forwarding path for unshifted operands.

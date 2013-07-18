@@ -88,8 +88,8 @@
 ;; ALU instruction with an immediate operand can dual-issue.
 (define_insn_reservation "cortex_a7_alu_imm" 2
   (and (eq_attr "tune" "cortexa7")
-       (and (ior (eq_attr "type" "simple_alu_imm")
-                 (ior (eq_attr "type" "simple_alu_shift")
+       (and (ior (eq_attr "type" "arlo_imm")
+                 (ior (eq_attr "type" "extend")
                       (and (eq_attr "insn" "mov")
                            (not (eq_attr "length" "8")))))
             (eq_attr "neon_type" "none")))
@@ -99,13 +99,13 @@
 ;; with a younger immediate-based instruction.
 (define_insn_reservation "cortex_a7_alu_reg" 2
   (and (eq_attr "tune" "cortexa7")
-       (and (eq_attr "type" "alu_reg")
+       (and (eq_attr "type" "arlo_reg,shift,shift_reg")
             (eq_attr "neon_type" "none")))
   "cortex_a7_ex1")
 
 (define_insn_reservation "cortex_a7_alu_shift" 2
   (and (eq_attr "tune" "cortexa7")
-       (and (eq_attr "type" "alu_shift,alu_shift_reg")
+       (and (eq_attr "type" "arlo_shift,arlo_shift_reg")
             (eq_attr "neon_type" "none")))
   "cortex_a7_ex1")
 

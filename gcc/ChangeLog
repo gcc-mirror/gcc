@@ -1,3 +1,178 @@
+2013-07-18  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/arm.md (attribute "type"): Rename "simple_alu_imm" to
+	"arlo_imm".  Rename "alu_reg" to "arlo_reg".  Rename "simple_alu_shift" to
+	"extend".  Split "alu_shift" into "shift" and "arlo_shift".  Split
+	"alu_shift_reg" into "shift_reg" and "arlo_shift_reg".  List types
+	in alphabetical order.
+	(attribute "core_cycles"): Update for attribute changes.
+	(arm_addsi3): Likewise.
+	(addsi3_compare0): Likewise.
+	(addsi3_compare0_scratch): Likewise.
+	(addsi3_compare_op1): Likewise.
+	(addsi3_compare_op2): Likewise.
+	(compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1): Likewise.
+	(addsi3_carryin_shift_<optab>): Likewise.
+	(subsi3_carryin_shift): Likewise.
+	(rsbsi3_carryin_shift): Likewise.
+	(arm_subsi3_insn): Likewise.
+	(subsi3_compare0): Likewise.
+	(subsi3_compare): Likewise.
+	(arm_andsi3_insn): Likewise.
+	(thumb1_andsi3_insn): Likewise.
+	(andsi3_compare0): Likewise.
+	(andsi3_compare0_scratch): Likewise.
+	(zeroextractsi_compare0_scratch
+	(andsi_not_shiftsi_si): Likewise.
+	(iorsi3_insn): Likewise.
+	(iorsi3_compare0): Likewise.
+	(iorsi3_compare0_scratch): Likewise.
+	(arm_xorsi3): Likewise.
+	(thumb1_xorsi3_insn): Likewise.
+	(xorsi3_compare0): Likewise.
+	(xorsi3_compare0_scratch): Likewise.
+	(satsi_<SAT:code>_shift): Likewise.
+	(rrx): Likewise.
+	(arm_shiftsi3): Likewise.
+	(shiftsi3_compare0): Likewise.
+	(not_shiftsi): Likewise.
+	(not_shiftsi_compare0): Likewise.
+	(not_shiftsi_compare0_scratch): Likewise.
+	(arm_one_cmplsi2): Likewise.
+	(thumb_one_complsi2): Likewise.
+	(notsi_compare0): Likewise.
+	(notsi_compare0_scratch): Likewise.
+	(thumb1_zero_extendhisi2): Likewise.
+	(arm_zero_extendhisi2): Likewise.
+	(arm_zero_extendhisi2_v6): Likewise.
+	(arm_zero_extendhisi2addsi): Likewise.
+	(thumb1_zero_extendqisi2): Likewise.
+	(thumb1_zero_extendqisi2_v6): Likewise.
+	(arm_zero_extendqisi2): Likewise.
+	(arm_zero_extendqisi2_v6): Likewise.
+	(arm_zero_extendqisi2addsi): Likewise.
+	(thumb1_extendhisi2): Likewise.
+	(arm_extendhisi2): Likewise.
+	(arm_extendhisi2_v6): Likewise.
+	(arm_extendqisi): Likewise.
+	(arm_extendqisi_v6): Likewise.
+	(arm_extendqisi2addsi): Likewise.
+	(thumb1_extendqisi2): Likewise.
+	(thumb1_movdi_insn): Likewise.
+	(arm_movsi_insn): Likewise.
+	(movsi_compare0): Likewise.
+	(movhi_insn_arch4): Likewise.
+	(movhi_bytes): Likewise.
+	(arm_movqi_insn): Likewise.
+	(thumb1_movqi_insn): Likewise.
+	(arm32_movhf): Likewise.
+	(thumb1_movhf): Likewise.
+	(arm_movsf_soft_insn): Likewise.
+	(thumb1_movsf_insn): Likewise.
+	(movdf_soft_insn): Likewise.
+	(thumb_movdf_insn): Likewise.
+	(arm_cmpsi_insn): Likewise.
+	(cmpsi_shiftsi): Likewise.
+	(cmpsi_shiftsi_swp): Likewise.
+	(arm_cmpsi_negshiftsi_si): Likewise.
+	(movsicc_insn): Likewise.
+	(movsfcc_soft_insn): Likewise.
+	(arith_shiftsi): Likewise.
+	(arith_shiftsi_compare0
+	(arith_shiftsi_compare0_scratch
+	(sub_shiftsi): Likewise.
+	(sub_shiftsi_compare0
+	(sub_shiftsi_compare0_scratch
+	(and_scc): Likewise.
+	(cond_move): Likewise.
+	(if_plus_move): Likewise.
+	(if_move_plus): Likewise.
+	(if_move_not): Likewise.
+	(if_not_move): Likewise.
+	(if_shift_move): Likewise.
+	(if_move_shift): Likewise.
+	(if_shift_shift): Likewise.
+	(if_not_arith): Likewise.
+	(if_arith_not): Likewise.
+	(cond_move_not): Likewise.
+	(thumb1_ashlsi3): Set type attribute.
+	(thumb1_ashrsi3): Likewise.
+	(thumb1_lshrsi3): Likewise.
+	(thumb1_rotrsi3): Likewise.
+	(shiftsi3_compare0_scratch): Likewise.
+	* config/arm/neon.md (neon_mov<mode>): Update for attribute changes.
+	(neon_mov<mode>): Likewise.
+	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si): Update for attribute
+	changes.
+	(thumb2_movsi_insn): Likewise.
+	(thumb2_cmpsi_neg_shiftsi): Likewise.
+	(thumb2_extendqisi_v6): Likewise.
+	(thumb2_zero_extendhisi2_v6): Likewise.
+	(thumb2_zero_extendqisi2_v6): Likewise.
+	(thumb2_shiftsi3_short): Likewise.
+	(thumb2_addsi3_compare0_scratch): Likewise.
+	(orsi_not_shiftsi_si): Likewise.
+	* config/arm/vfp.md (arm_movsi_vfp): Update for attribute changes.
+	* config/arm/arm-fixed.md (arm_ssatsihi_shift): Update for attribute
+	changes.
+	* config/arm/arm1020e.md (1020alu_op): Update for attribute changes.
+	(1020alu_shift_op): Likewise.
+	(1020alu_shift_reg_op): Likewise.
+	* config/arm/arm1026ejs.md (alu_op): Update for attribute changes.
+	(alu_shift_op): Likewise.
+	(alu_shift_reg_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Update for attribute changes.
+	(11_alu_shift_op): Likewise.
+	(11_alu_shift_reg_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Update for attribute changes.
+	(9_alu_shift_reg_op): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Update for attribute changes.
+	(cortex_a15_alu_shift): Likewise.
+	(cortex_a15_alu_shift_reg): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Update for attribute changes.
+	(cortex_a5_alu_shift): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu) : Update for attribute
+	changes.
+	(cortex_a53_alu_shift): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_imm): Update for attribute
+	changes.
+	(cortex_a7_alu_reg): Likewise.
+	(cortex_a7_alu_shift): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute changes.
+	(cortex_a8_alu_shift): Likewise.
+	(cortex_a8_alu_shift_reg): Likewise.
+	(cortex_a8_mov): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Update for attribute changes.
+	(cortex_a9_dp_shift): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update for attribute changes.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Update for attribute changes.
+	(cortex_r4_mov): Likewise.
+	(cortex_r4_alu_shift): Likewise.
+	(cortex_r4_alu_shift_reg): Likewise.
+	* config/arm/fa526.md (526_alu_op): Update for attribute changes.
+	(526_alu_shift_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Update for attribute changes.
+	* config/arm/fa626te.md (626te_alu_op): Update for attribute changes.
+	(626te_alu_shift_op): Likewise.
+	* config/arm/fa726te.md (726te_shift_op): Update for attribute changes.
+	(726te_alu_op): Likewise.
+	(726te_alu_shift_op): Likewise.
+	(726te_alu_shift_reg_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Update for attribute changes.
+	(mp626_alu_shift_op): Likewise.
+	* config/arm/marvell-pj4.md (pj4_alu_e1): Update for attribute changes.
+	(pj4_alu_e1_conds): Likewise.
+	(pj4_alu): Likewise.
+	(pj4_alu_conds): Likewise.
+	(pj4_shift): Likewise.
+	(pj4_shift_conds): Likewise.
+	(pj4_alu_shift): Likewise.
+	(pj4_alu_shift_conds): Likewise.
+	* config/arm/arm.c (xscale_sched_adjust_cost): Update for attribute changes.
+	(cortexa7_older_only): Likewise.
+	(cortexa7_younger): Likewise.
+
 2013-07-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* ipa-pure-const.c (generate_summary): Rename to...
