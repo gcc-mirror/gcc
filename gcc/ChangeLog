@@ -1,3 +1,8 @@
+2013-07-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* ipa-pure-const.c (generate_summary): Rename to...
+	(pure_const_generate_summary): ... this.
+
 2013-07-17  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/rs6000/darwin.h (REGISTER_NAMES): Add HTM registers.
