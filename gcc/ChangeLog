@@ -1,3 +1,10 @@
+2013-07-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* passes.c (init_optimization_passes): Introduce macros for
+	constructing the tree of passes (INSERT_PASSES_AFTER,
+	PUSH_INSERT_PASSES_WITHIN, POP_INSERT_PASSES,
+	TERMINATE_PASS_LIST).
+
 2013-07-18  Vladimir Makarov  <vmakarov@redhat.com>
 	    Wei Mi  <wmi@google.com>
 
