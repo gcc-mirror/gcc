@@ -1,5 +1,14 @@
 2013-07-18  David Malcolm  <dmalcolm@redhat.com>
 
+	* passes.def: New.
+
+	* passes.c (init_optimization_passes): Move the construction of
+	the pass hierarchy into a new passes.def file.
+
+	* Makefile.in (passes.o): Add dependency on passes.def.
+
+2013-07-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* passes.c (init_optimization_passes): Introduce macros for
 	constructing the tree of passes (INSERT_PASSES_AFTER,
 	PUSH_INSERT_PASSES_WITHIN, POP_INSERT_PASSES,
