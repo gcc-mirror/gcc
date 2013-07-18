@@ -1,3 +1,12 @@
+2013-07-18  Vladimir Makarov  <vmakarov@redhat.com>
+	    Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/57878
+	* lra-assigns.c (assign_by_spills): Move non_reload_pseudos to the
+	top.
+	(reload_pseudo_compare_func): Check nregs first for reload
+	pseudos.
+
 2013-07-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* tree-pass.h (pass_ipa_lto_wpa_fixup): Remove redundant decl.
