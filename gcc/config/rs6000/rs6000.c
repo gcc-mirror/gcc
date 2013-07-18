@@ -2966,7 +2966,10 @@ rs6000_option_override_internal (bool global_init_p)
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_VSX)
 	    msg = N_("-mvsx requires hardware floating point");
 	  else
-	    rs6000_isa_flags &= ~ OPTION_MASK_VSX;
+	    {
+	      rs6000_isa_flags &= ~ OPTION_MASK_VSX;
+	      rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
+	    }
 	}
       else if (TARGET_PAIRED_FLOAT)
 	msg = N_("-mvsx and -mpaired are incompatible");
@@ -2993,6 +2996,16 @@ rs6000_option_override_internal (bool global_init_p)
 	  rs6000_isa_flags_explicit |= OPTION_MASK_VSX;
 	}
     }
+
+  /* If hard-float/altivec/vsx were explicitly turned off then don't allow
+     the -mcpu setting to enable options that conflict. */
+  if ((!TARGET_HARD_FLOAT || !TARGET_ALTIVEC || !TARGET_VSX)
+      && (rs6000_isa_flags_explicit & (OPTION_MASK_SOFT_FLOAT
+				       | OPTION_MASK_ALTIVEC
+				       | OPTION_MASK_VSX)) != 0)
+    rs6000_isa_flags &= ~((OPTION_MASK_P8_VECTOR | OPTION_MASK_CRYPTO
+			   | OPTION_MASK_DIRECT_MOVE)
+		         & ~rs6000_isa_flags_explicit);
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "before defaults", rs6000_isa_flags);

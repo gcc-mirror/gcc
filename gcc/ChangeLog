@@ -1,3 +1,8 @@
+2013-07-18  Pat Haugen <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Adjust flag
+	interaction for new Power8 flags and VSX.
+
 2013-07-18  Sriraman Tallam  <tmsriram@google.com>
 
 	PR middle-end/57698
