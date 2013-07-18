@@ -1,3 +1,8 @@
+2013-07-18  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.c (microblaze_expand_prologue):
+	Add check for flag_stack_usage to handle -fstack-usage support
+
 2013-07-18  Pat Haugen <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_option_override_internal): Adjust flag
