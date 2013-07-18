@@ -116,6 +116,11 @@ struct regno_assign_info
 /* Map regno to the corresponding regno assignment info.  */
 static struct regno_assign_info *regno_assign_info;
 
+/* All inherited, subreg or optional pseudos created before last spill
+   sub-pass.  Such pseudos are permitted to get memory instead of hard
+   regs.  */
+static bitmap_head non_reload_pseudos;
+
 /* Process a pseudo copy with execution frequency COPY_FREQ connecting
    REGNO1 and REGNO2 to form threads.  */
 static void
@@ -193,6 +198,15 @@ reload_pseudo_compare_func (const void *v1p, const void *v2p)
      guarantee assignment to all reload registers.  */
   if ((diff = (ira_class_hard_regs_num[cl1]
 	       - ira_class_hard_regs_num[cl2])) != 0)
+    return diff;
+  if ((diff
+       = (ira_reg_class_max_nregs[cl2][lra_reg_info[r2].biggest_mode]
+	  - ira_reg_class_max_nregs[cl1][lra_reg_info[r1].biggest_mode])) != 0
+      /* The code below executes rarely as nregs == 1 in most cases.
+	 So we should not worry about using faster data structures to
+	 check reload pseudos.  */
+      && ! bitmap_bit_p (&non_reload_pseudos, r1)
+      && ! bitmap_bit_p (&non_reload_pseudos, r2))
     return diff;
   if ((diff = (regno_assign_info[regno_assign_info[r2].first].freq
 	       - regno_assign_info[regno_assign_info[r1].first].freq)) != 0)
@@ -1155,7 +1169,6 @@ assign_by_spills (void)
   rtx insn;
   basic_block bb;
   bitmap_head changed_insns, do_not_assign_nonreload_pseudos;
-  bitmap_head non_reload_pseudos;
   unsigned int u;
   bitmap_iterator bi;
   bool reload_p;
