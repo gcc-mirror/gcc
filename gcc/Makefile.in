@@ -2743,7 +2743,7 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    hosthooks.h $(CGRAPH_H) $(COVERAGE_H) $(TREE_PASS_H) $(TREE_DUMP_H) \
    $(GGC_H) $(OPTS_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
    gt-passes.h $(DF_H) $(PREDICT_H) $(LTO_STREAMER_H) \
-   $(PLUGIN_H) $(IPA_UTILS_H)
+   $(PLUGIN_H) $(IPA_UTILS_H) passes.def
 
 plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(HASH_TABLE_H) $(DIAGNOSTIC_CORE_H) $(TREE_H) $(TREE_PASS_H) \
