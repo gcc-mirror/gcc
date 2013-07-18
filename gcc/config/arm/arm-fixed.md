@@ -383,7 +383,6 @@
   "ssat%?\\t%0, #16, %2%S1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "insn" "sat")
    (set_attr "shift" "1")
    (set_attr "type" "arlo_shift")])
 
@@ -393,5 +392,5 @@
   "TARGET_INT_SIMD"
   "usat%?\\t%0, #16, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")
-   (set_attr "insn" "sat")])
+   (set_attr "predicable_short_it" "no")]
+)
