@@ -1,3 +1,7 @@
+2013-07-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/pr42611.c: Move dg-error to correct line.
+
 2013-07-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57895

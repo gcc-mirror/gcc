@@ -9,11 +9,11 @@
   : sizeof (__SIZE_TYPE__) == sizeof (long) ? __LONG_MAX__		\
   : sizeof (__SIZE_TYPE__) == sizeof (long long) ? __LONG_LONG_MAX__	\
   : __INTMAX_MAX__)
-struct S { int a; char b[L]; };
+struct S { int a; char b[L]; };	/* { dg-error "type .struct S. is too large" } */
 
 void
 foo (void)
 {
-  struct S s;				/* { dg-error "is too large" } */
+  struct S s;
   asm volatile ("" : : "r" (&s));
 }
