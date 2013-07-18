@@ -1,3 +1,11 @@
+2013-07-18  Sriraman Tallam  <tmsriram@google.com>
+
+	PR middle-end/57698
+	* gcc.c-torture/compile/pr57698.c: New test.
+	* gcc.c-torture/compile/pr43791.c: Remove prune output
+	directive.
+	* gcc.c-torture/compile/pr44043.c: Ditto.
+
 2013-07-18  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/57878

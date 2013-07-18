@@ -85,5 +85,3 @@ int raw_sendmsg(struct sock *sk, struct msghdr *msg, size_t len)
 {
   raw_send_hdrinc(sk, msg->msg_iov, len, (void *)0, msg->msg_flags);
 }
-
-/* { dg-prune-output "(inlining failed in call to always_inline.*indirect function call with a yet undetermined callee|called from here)" } */
