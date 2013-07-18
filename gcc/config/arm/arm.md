@@ -257,15 +257,21 @@
 ;
 ; Instruction classification:
 ;
-; alu_reg            any alu instruction that doesn't hit memory or fp
-;                    regs or have a shifted source operand and does not have
-;                    an immediate operand.  This is also the default.
-; alu_shift          any data instruction that doesn't hit memory or fp.
-;                    regs, but has a source operand shifted by a constant.
-; alu_shift_reg      any data instruction that doesn't hit memory or fp.
+; arlo_imm           any arithmetic or logical instruction that doesn't have
+;                    a shifted operand and has an immediate operand.  This
+;                    excludes MOV, MVN and RSB(S) immediate.
+; arlo_reg           any arithmetic or logical instruction that doesn't have
+;                    a shifted or an immediate operand.  This excludes
+;                    MOV and MVN but includes MOVT.  This is also the default.
+; arlo_shift         any arithmetic or logical instruction that has a source
+;                    operand shifted by a constant.  This excludes
+;                    simple shifts.
+; arlo_shift_reg     as arlo_shift, with the shift amount specified in a
+;                    register.
 ; block              blockage insn, this blocks all functional units.
 ; branch             branch.
 ; call               subroutine call.
+; extend             extend instruction (SXTB, SXTH, UXTB, UXTH).
 ; f_2_r              transfer from float to core (no memory needed).
 ; f_cvt              conversion between float and integral.
 ; f_flag             transfer of co-processor flags to the CPSR.
@@ -296,11 +302,9 @@
 ; muls               integer multiply, flag setting.
 ; r_2_f              transfer from core to float.
 ; sdiv               signed division.
-; simple_alu_imm     simple alu instruction that doesn't hit memory or fp
-;                    regs or have a shifted source operand and has an
-;                    immediate operand.  This currently only tracks very basic
-;                    immediate alu operations.
-; simple_alu_shift   simple alu instruction with a shifted source operand.
+; shift              simple shift operation (LSL, LSR, ASR, ROR) with an
+;                    immediate.
+; shift_reg          simple shift by a register.
 ; smlad              signed multiply accumulate dual.
 ; smladx             signed multiply accumulate dual reverse.
 ; smlal              signed multiply accumulate long.
@@ -401,89 +405,92 @@
 ; wmmx_wxor
 
 (define_attr "type"
- "simple_alu_imm,\
-  alu_reg,\
-  simple_alu_shift,\
-  alu_shift,\
-  alu_shift_reg,\
+ "arlo_imm,\
+  arlo_reg,\
+  arlo_shift,\
+  arlo_shift_reg,\
   block,\
-  float,\
-  fdivd,\
-  fdivs,\
-  fmuls,\
-  fmuld,\
-  fmacs,\
-  fmacd,\
-  ffmas,\
-  ffmad,\
-  f_rints,\
-  f_rintd,\
-  f_minmaxs,\
-  f_minmaxd,\
-  f_flag,\
-  f_loads,\
-  f_loadd,\
-  f_stores,\
-  f_stored,\
-  f_2_r,\
-  r_2_f,\
-  f_cvt,\
-  f_sels,\
-  f_seld,\
   branch,\
   call,\
+  complex,\
+  extend,\
+  f_2_r,\
+  f_cvt,\
+  f_flag,\
+  f_loadd,\
+  f_loads,\
+  f_minmaxd,\
+  f_minmaxs,\
+  f_rintd,\
+  f_rints,\
+  f_seld,\
+  f_sels,\
+  f_stored,\
+  f_stores,\
+  faddd,\
+  fadds,\
+  fcmpd,\
+  fcmps,\
+  fconstd,\
+  fconsts,\
+  fcpys,\
+  fdivd,\
+  fdivs,\
+  ffarithd,\
+  ffariths,\
+  ffmad,\
+  ffmas,\
+  float,\
+  fmacd,\
+  fmacs,\
+  fmuld,\
+  fmuls,\
   load_byte,\
   load1,\
   load2,\
   load3,\
   load4,\
+  mla,\
+  mlas,\
+  mul,\
+  muls,\
+  r_2_f,\
+  sdiv,\
+  shift,\
+  shift_reg,\
+  smlad,\
+  smladx,\
+  smlal,\
+  smlald,\
+  smlals,\
+  smlalxy,\
+  smlawx,\
+  smlawy,\
+  smlaxy,\
+  smlsd,\
+  smlsdx,\
+  smlsld,\
+  smmla,\
+  smmul,\
+  smmulr,\
+  smuad,\
+  smuadx,\
+  smull,\
+  smulls,\
+  smulwy,\
+  smulxy,\
+  smusd,\
+  smusdx,\
   store1,\
   store2,\
   store3,\
   store4,\
-  fconsts,\
-  fconstd,\
-  fadds,\
-  faddd,\
-  ffariths,\
-  ffarithd,\
-  fcmps,\
-  fcmpd,\
-  fcpys,\
-  smulxy,\
-  smlaxy,\
-  smlalxy,\
-  smulwy,\
-  smlawx,\
-  mul,\
-  muls,\
-  mla,\
-  mlas,\
-  umull,\
-  umulls,\
+  udiv,\
+  umaal,\
   umlal,\
   umlals,\
-  smull,\
-  smulls,\
-  smlal,\
-  smlals,\
-  smlawy,\
-  smuad,\
-  smuadx,\
-  smlad,\
-  smladx,\
-  smusd,\
-  smusdx,\
-  smlsd,\
-  smlsdx,\
-  smmul,\
-  smmulr,\
-  smmla,\
-  umaal,\
-  smlald,\
-  smlsld,\
-  sdiv,\
-  udiv,\
+  umull,\
+  umulls,\
   wmmx_tandc,\
   wmmx_tbcst,\
   wmmx_textrc,\
@@ -543,7 +550,7 @@
   wmmx_wunpckih,\
   wmmx_wunpckil,\
   wmmx_wxor"
-  (const_string "alu_reg"))
+  (const_string "arlo_reg"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
 (define_attr "mul32" "no,yes"
@@ -686,8 +693,8 @@
 ; than one on the main cpu execution unit.
 (define_attr "core_cycles" "single,multi"
   (if_then_else (eq_attr "type"
-    "simple_alu_imm, alu_reg,\
-    simple_alu_shift, alu_shift, float, fdivd, fdivs,\
+    "arlo_imm, arlo_reg,\
+    extend, shift, arlo_shift, float, fdivd, fdivs,\
     wmmx_wor, wmmx_wxor, wmmx_wand, wmmx_wandn, wmmx_wmov, wmmx_tmcrr,\
     wmmx_tmrrc, wmmx_wldr, wmmx_wstr, wmmx_tmcr, wmmx_tmrc, wmmx_wadd,\
     wmmx_wsub, wmmx_wmul, wmmx_wmac, wmmx_wavg2, wmmx_tinsr, wmmx_textrm,\
@@ -968,8 +975,8 @@
    (set_attr "predicable" "yes")
    (set_attr "arch" "t2,*,*,*,t2,t2,*,*,a,t2,t2,*")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "simple_alu_imm")
-		      (const_string "alu_reg")))
+		      (const_string "arlo_imm")
+		      (const_string "arlo_reg")))
  ]
 )
 
@@ -1050,7 +1057,7 @@
    sub%.\\t%0, %1, #%n2
    add%.\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm, simple_alu_imm, *")]
+   (set_attr "type" "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*addsi3_compare0_scratch"
@@ -1066,7 +1073,7 @@
    cmn%?\\t%0, %1"
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
-   (set_attr "type" "simple_alu_imm, simple_alu_imm, *")
+   (set_attr "type" "arlo_imm,arlo_imm,*")
    ]
 )
 
@@ -1153,7 +1160,7 @@
    sub%.\\t%0, %1, #%n2
    add%.\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type"  "simple_alu_imm,simple_alu_imm,*")]
+   (set_attr "type"  "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*addsi3_compare_op2"
@@ -1170,7 +1177,7 @@
    add%.\\t%0, %1, %2
    sub%.\\t%0, %1, #%n2"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm,simple_alu_imm,*")]
+   (set_attr "type" "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*compare_addsi2_op0"
@@ -1186,7 +1193,7 @@
    cmn%?\\t%0, %1"
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
-   (set_attr "type" "simple_alu_imm,simple_alu_imm,*")]
+   (set_attr "type" "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*compare_addsi2_op1"
@@ -1202,7 +1209,7 @@
    cmn%?\\t%0, %1"
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
-   (set_attr "type" "simple_alu_imm,simple_alu_imm,*")]
+   (set_attr "type" "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*addsi3_carryin_<optab>"
@@ -1244,8 +1251,8 @@
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
    (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*addsi3_carryin_clobercc_<optab>"
@@ -1322,8 +1329,8 @@
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
    (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift")
-                     (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+                     (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*rsbsi3_carryin_shift"
@@ -1339,8 +1346,8 @@
   [(set_attr "conds" "use")
    (set_attr "predicable" "yes")
    (set (attr "type") (if_then_else (match_operand 4 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 ; transform ((x << y) - 1) to ~(~(x-1) << y)  Where X is a constant.
@@ -1607,7 +1614,7 @@
   "
   [(set_attr "length" "4,4,4,4,16")
    (set_attr "predicable" "yes")
-   (set_attr "type"  "*,simple_alu_imm,*,*,*")]
+   (set_attr "type"  "*,arlo_imm,*,*,*")]
 )
 
 (define_peephole2
@@ -1637,7 +1644,7 @@
    sub%.\\t%0, %1, %2
    rsb%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "type"  "simple_alu_imm,*,*")]
+   (set_attr "type"  "arlo_imm,*,*")]
 )
 
 (define_insn "subsi3_compare"
@@ -1652,7 +1659,7 @@
    sub%.\\t%0, %1, %2
    rsb%.\\t%0, %2, %1"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm,*,*")]
+   (set_attr "type" "arlo_imm,*,*")]
 )
 
 (define_expand "subsf3"
@@ -2588,7 +2595,7 @@
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no,yes,no,no,no")
    (set_attr "type"
-     "simple_alu_imm,simple_alu_imm,*,*,simple_alu_imm")]
+     "arlo_imm,arlo_imm,*,*,arlo_imm")]
 )
 
 (define_insn "*thumb1_andsi3_insn"
@@ -2598,7 +2605,7 @@
   "TARGET_THUMB1"
   "and\\t%0, %2"
   [(set_attr "length" "2")
-   (set_attr "type"  "simple_alu_imm")
+   (set_attr "type"  "arlo_imm")
    (set_attr "conds" "set")])
 
 (define_insn "*andsi3_compare0"
@@ -2615,7 +2622,7 @@
    bic%.\\t%0, %1, #%B2
    and%.\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm,simple_alu_imm,*")]
+   (set_attr "type" "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*andsi3_compare0_scratch"
@@ -2631,7 +2638,7 @@
    bic%.\\t%2, %0, #%B1
    tst%?\\t%0, %1"
   [(set_attr "conds" "set")
-   (set_attr "type"  "simple_alu_imm,simple_alu_imm,*")]
+   (set_attr "type"  "arlo_imm,arlo_imm,*")]
 )
 
 (define_insn "*zeroextractsi_compare0_scratch"
@@ -2655,7 +2662,7 @@
   [(set_attr "conds" "set")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "simple_alu_imm")]
+   (set_attr "type" "arlo_imm")]
 )
 
 (define_insn_and_split "*ne_zeroextractsi"
@@ -3205,8 +3212,8 @@
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
    (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*andsi_notsi_si_compare0"
@@ -3365,7 +3372,7 @@
    (set_attr "arch" "32,t2,t2,32,32")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no,yes,no,no,no")
-   (set_attr "type" "simple_alu_imm,*,simple_alu_imm,*,*")]
+   (set_attr "type" "arlo_imm,*,arlo_imm,*,*")]
 )
 
 (define_insn "*thumb1_iorsi3_insn"
@@ -3400,7 +3407,7 @@
   "TARGET_32BIT"
   "orr%.\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm,*")]
+   (set_attr "type" "arlo_imm,*")]
 )
 
 (define_insn "*iorsi3_compare0_scratch"
@@ -3412,7 +3419,7 @@
   "TARGET_32BIT"
   "orr%.\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm, *")]
+   (set_attr "type" "arlo_imm,*")]
 )
 
 (define_expand "xordi3"
@@ -3538,7 +3545,7 @@
   [(set_attr "length" "4,4,4,16")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no,yes,no,no")
-   (set_attr "type"  "simple_alu_imm,*,*,*")]
+   (set_attr "type"  "arlo_imm,*,*,*")]
 )
 
 (define_insn "*thumb1_xorsi3_insn"
@@ -3549,7 +3556,7 @@
   "eor\\t%0, %2"
   [(set_attr "length" "2")
    (set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm")]
+   (set_attr "type" "arlo_imm")]
 )
 
 (define_insn "*xorsi3_compare0"
@@ -3562,7 +3569,7 @@
   "TARGET_32BIT"
   "eor%.\\t%0, %1, %2"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm,*")]
+   (set_attr "type" "arlo_imm,*")]
 )
 
 (define_insn "*xorsi3_compare0_scratch"
@@ -3573,7 +3580,7 @@
   "TARGET_32BIT"
   "teq%?\\t%0, %1"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm, *")]
+   (set_attr "type" "arlo_imm,*")]
 )
 
 ; By splitting (IOR (AND (NOT A) (NOT B)) C) as D = AND (IOR A B) (NOT C), 
@@ -4057,7 +4064,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "insn" "sat")
    (set_attr "shift" "3")
-   (set_attr "type" "alu_shift")])
+   (set_attr "type" "arlo_shift")])
 
 ;; Shift and rotation insns
 
@@ -4160,6 +4167,7 @@
   "TARGET_THUMB1"
   "lsl\\t%0, %1, %2"
   [(set_attr "length" "2")
+   (set_attr "type" "shift,shift_reg")
    (set_attr "conds" "set")])
 
 (define_expand "ashrdi3"
@@ -4243,7 +4251,7 @@
   "mov\\t%0, %1, rrx"
   [(set_attr "conds" "use")
    (set_attr "insn" "mov")
-   (set_attr "type" "alu_shift")]
+   (set_attr "type" "arlo_shift")]
 )
 
 (define_expand "ashrsi3"
@@ -4265,6 +4273,7 @@
   "TARGET_THUMB1"
   "asr\\t%0, %1, %2"
   [(set_attr "length" "2")
+   (set_attr "type" "shift,shift_reg")
    (set_attr "conds" "set")])
 
 (define_expand "lshrdi3"
@@ -4361,6 +4370,7 @@
   "TARGET_THUMB1"
   "lsr\\t%0, %1, %2"
   [(set_attr "length" "2")
+   (set_attr "type" "shift,shift_reg")
    (set_attr "conds" "set")])
 
 (define_expand "rotlsi3"
@@ -4406,68 +4416,64 @@
 		     (match_operand:SI 2 "register_operand" "l")))]
   "TARGET_THUMB1"
   "ror\\t%0, %0, %2"
-  [(set_attr "length" "2")]
+  [(set_attr "type" "shift_reg")
+   (set_attr "length" "2")]
 )
 
 (define_insn "*arm_shiftsi3"
-  [(set (match_operand:SI   0 "s_register_operand" "=r")
+  [(set (match_operand:SI   0 "s_register_operand" "=r,r")
 	(match_operator:SI  3 "shift_operator"
-	 [(match_operand:SI 1 "s_register_operand"  "r")
-	  (match_operand:SI 2 "reg_or_int_operand" "rM")]))]
+	 [(match_operand:SI 1 "s_register_operand"  "r,r")
+	  (match_operand:SI 2 "reg_or_int_operand" "M,r")]))]
   "TARGET_32BIT"
   "* return arm_output_shift(operands, 0);"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "1")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+   (set_attr "type" "arlo_shift,arlo_shift_reg")]
 )
 
 (define_insn "*shiftsi3_compare"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operator:SI 3 "shift_operator"
-			  [(match_operand:SI 1 "s_register_operand" "r")
-			   (match_operand:SI 2 "arm_rhs_operand" "rM")])
+			  [(match_operand:SI 1 "s_register_operand" "r,r")
+			   (match_operand:SI 2 "arm_rhs_operand" "M,r")])
                     (const_int 0)))
-   (set (match_operand:SI 0 "s_register_operand" "=r")
+   (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))]
   "TARGET_32BIT"
   "* return arm_output_shift(operands, 1);"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+   (set_attr "type"  "arlo_shift,arlo_shift_reg")]
 )
 
 (define_insn "*shiftsi3_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (match_operator:SI 3 "shift_operator"
-			  [(match_operand:SI 1 "s_register_operand" "r")
-			   (match_operand:SI 2 "arm_rhs_operand" "rM")])
+			  [(match_operand:SI 1 "s_register_operand" "r,r")
+			   (match_operand:SI 2 "arm_rhs_operand" "M,r")])
 			 (const_int 0)))
-   (set (match_operand:SI 0 "s_register_operand" "=r")
+   (set (match_operand:SI 0 "s_register_operand" "=r,r")
 	(match_op_dup 3 [(match_dup 1) (match_dup 2)]))]
   "TARGET_32BIT"
   "* return arm_output_shift(operands, 1);"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+   (set_attr "type" "arlo_shift,arlo_shift_reg")]
 )
 
 (define_insn "*shiftsi3_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
 	(compare:CC_NOOV (match_operator:SI 3 "shift_operator"
-			  [(match_operand:SI 1 "s_register_operand" "r")
-			   (match_operand:SI 2 "arm_rhs_operand" "rM")])
+			  [(match_operand:SI 1 "s_register_operand" "r,r")
+			   (match_operand:SI 2 "arm_rhs_operand" "M,r")])
 			 (const_int 0)))
-   (clobber (match_scratch:SI 0 "=r"))]
+   (clobber (match_scratch:SI 0 "=r,r"))]
   "TARGET_32BIT"
   "* return arm_output_shift(operands, 1);"
   [(set_attr "conds" "set")
-   (set_attr "shift" "1")]
+   (set_attr "shift" "1")
+   (set_attr "type" "shift,shift_reg")]
 )
 
 (define_insn "*not_shiftsi"
@@ -4482,7 +4488,7 @@
    (set_attr "shift" "1")
    (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*not_shiftsi_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -4499,7 +4505,7 @@
    (set_attr "shift" "1")
    (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*not_shiftsi_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -4515,7 +4521,7 @@
    (set_attr "shift" "1")
    (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 ;; We don't really have extzv, but defining this using shifts helps
 ;; to reduce register pressure later on.
@@ -5536,7 +5542,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 				       (const_int 2) (const_int 4))
 			 (const_int 4)])
-   (set_attr "type" "simple_alu_shift, load_byte")]
+   (set_attr "type" "extend,load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2"
@@ -5546,7 +5552,7 @@
   "@
    #
    ldr%(h%)\\t%0, %1"
-  [(set_attr "type" "alu_shift,load_byte")
+  [(set_attr "type" "arlo_shift,load_byte")
    (set_attr "predicable" "yes")]
 )
 
@@ -5558,7 +5564,7 @@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "simple_alu_shift,load_byte")]
+   (set_attr "type" "extend,load_byte")]
 )
 
 (define_insn "*arm_zero_extendhisi2addsi"
@@ -5567,7 +5573,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "uxtah%?\\t%0, %2, %1"
-  [(set_attr "type" "alu_shift")
+  [(set_attr "type" "arlo_shift")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")]
 )
@@ -5617,7 +5623,7 @@
    #
    ldrb\\t%0, %1"
   [(set_attr "length" "4,2")
-   (set_attr "type" "alu_shift,load_byte")
+   (set_attr "type" "arlo_shift,load_byte")
    (set_attr "pool_range" "*,32")]
 )
 
@@ -5629,7 +5635,7 @@
    uxtb\\t%0, %1
    ldrb\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr "type" "simple_alu_shift,load_byte")]
+   (set_attr "type" "extend,load_byte")]
 )
 
 (define_insn "*arm_zero_extendqisi2"
@@ -5640,7 +5646,7 @@
    #
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
   [(set_attr "length" "8,4")
-   (set_attr "type" "alu_shift,load_byte")
+   (set_attr "type" "arlo_shift,load_byte")
    (set_attr "predicable" "yes")]
 )
 
@@ -5651,7 +5657,7 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr "type" "simple_alu_shift,load_byte")
+  [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")]
 )
 
@@ -5664,7 +5670,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "insn" "xtab")
-   (set_attr "type" "alu_shift")]
+   (set_attr "type" "arlo_shift")]
 )
 
 (define_split
@@ -5827,7 +5833,7 @@
 			 [(if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 2) (const_int 4))
 			  (const_int 4)])
-   (set_attr "type" "simple_alu_shift,load_byte")
+   (set_attr "type" "extend,load_byte")
    (set_attr "pool_range" "*,1018")]
 )
 
@@ -5886,7 +5892,7 @@
    #
    ldr%(sh%)\\t%0, %1"
   [(set_attr "length" "8,4")
-   (set_attr "type" "alu_shift,load_byte")
+   (set_attr "type" "arlo_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -5900,7 +5906,7 @@
   "@
    sxth%?\\t%0, %1
    ldr%(sh%)\\t%0, %1"
-  [(set_attr "type" "simple_alu_shift,load_byte")
+  [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "pool_range" "*,256")
@@ -5987,7 +5993,7 @@
    #
    ldr%(sb%)\\t%0, %1"
   [(set_attr "length" "8,4")
-   (set_attr "type" "alu_shift,load_byte")
+   (set_attr "type" "arlo_shift,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -6001,7 +6007,7 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr "type" "simple_alu_shift,load_byte")
+  [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,256")
    (set_attr "neg_pool_range" "*,244")]
@@ -6013,7 +6019,7 @@
 		 (match_operand:SI 2 "s_register_operand" "r")))]
   "TARGET_INT_SIMD"
   "sxtab%?\\t%0, %2, %1"
-  [(set_attr "type" "alu_shift")
+  [(set_attr "type" "arlo_shift")
    (set_attr "insn" "xtab")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")]
@@ -6115,7 +6121,7 @@
 			  (const_int 2)
 			  (if_then_else (eq_attr "is_arch6" "yes")
 					(const_int 4) (const_int 6))])
-   (set_attr "type" "simple_alu_shift,load_byte,load_byte")]
+   (set_attr "type" "extend,load_byte,load_byte")]
 )
 
 (define_expand "extendsfdf2"
@@ -6490,7 +6496,7 @@
    movw%?\\t%0, %1
    ldr%?\\t%0, %1
    str%?\\t%1, %0"
-  [(set_attr "type" "*,simple_alu_imm,simple_alu_imm,simple_alu_imm,load1,store1")
+  [(set_attr "type" "*,arlo_imm,arlo_imm,arlo_imm,load1,store1")
    (set_attr "insn" "mov,mov,mvn,mov,*,*")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,*,4096,*")
@@ -6793,7 +6799,7 @@
    cmp%?\\t%0, #0
    sub%.\\t%0, %1, #0"
   [(set_attr "conds" "set")
-   (set_attr "type" "simple_alu_imm,simple_alu_imm")]
+   (set_attr "type" "arlo_imm,arlo_imm")]
 )
 
 ;; Subroutine to store a half word from a register into memory.
@@ -7212,9 +7218,9 @@
    (set_attr "neg_pool_range" "*,*,*,244")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 1 "const_int_operand" "")
-                                        (const_string "simple_alu_imm" )
+                                        (const_string "arlo_imm" )
                                         (const_string "*"))
-                          (const_string "simple_alu_imm")
+                          (const_string "arlo_imm")
                           (const_string "store1")
                           (const_string "load1")])]
 )
@@ -7229,7 +7235,7 @@
    mvn%?\\t%0, #%B1\\t%@ movhi"
   [(set_attr "predicable" "yes")
    (set_attr "insn" "mov, mov,mvn")
-   (set_attr "type" "simple_alu_imm,*,simple_alu_imm")]
+   (set_attr "type" "arlo_imm,*,arlo_imm")]
 )
 
 (define_expand "thumb_movhi_clobber"
@@ -7368,7 +7374,7 @@
    str%(b%)\\t%1, %0
    ldr%(b%)\\t%0, %1
    str%(b%)\\t%1, %0"
-  [(set_attr "type" "*,*,simple_alu_imm,simple_alu_imm,simple_alu_imm,load1, store1, load1, store1")
+  [(set_attr "type" "*,*,arlo_imm,arlo_imm,arlo_imm,load1, store1, load1, store1")
    (set_attr "insn" "mov,mov,mov,mov,mvn,*,*,*,*")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,yes,yes,no,no,no,no,no,no")
@@ -7390,7 +7396,7 @@
    mov\\t%0, %1
    mov\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr "type" "simple_alu_imm,load1,store1,*,*,simple_alu_imm")
+   (set_attr "type" "arlo_imm,load1,store1,*,*,arlo_imm")
    (set_attr "insn" "*,*,*,mov,mov,mov")
    (set_attr "pool_range" "*,32,*,*,*,*")
    (set_attr "conds" "clob,nocond,nocond,nocond,nocond,clob")])
@@ -8481,7 +8487,7 @@
    (set_attr "arch" "t2,t2,any,any")
    (set_attr "length" "2,2,4,4")
    (set_attr "predicable" "yes")
-   (set_attr "type" "*,*,*,simple_alu_imm")]
+   (set_attr "type" "*,*,*,arlo_imm")]
 )
 
 (define_insn "*cmpsi_shiftsi"
@@ -8495,7 +8501,7 @@
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*cmpsi_shiftsi_swp"
   [(set (reg:CC_SWP CC_REGNUM)
@@ -8508,7 +8514,7 @@
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*arm_cmpsi_negshiftsi_si"
   [(set (reg:CC_Z CC_REGNUM)
@@ -8521,8 +8527,8 @@
   "cmn%?\\t%0, %2%S1"
   [(set_attr "conds" "set")
    (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-				    (const_string "alu_shift")
-				    (const_string "alu_shift_reg")))
+				    (const_string "arlo_shift")
+				    (const_string "arlo_shift_reg")))
    (set_attr "predicable" "yes")]
 )
 
@@ -9174,13 +9180,13 @@
    (set_attr "insn" "mov,mvn,mov,mvn,mov,mov,mvn,mvn")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 2 "const_int_operand" "")
-                                        (const_string "simple_alu_imm")
+                                        (const_string "arlo_imm")
                                         (const_string "*"))
-                          (const_string "simple_alu_imm")
+                          (const_string "arlo_imm")
                           (if_then_else (match_operand 1 "const_int_operand" "")
-                                        (const_string "simple_alu_imm")
+                                        (const_string "arlo_imm")
                                         (const_string "*"))
-                          (const_string "simple_alu_imm")
+                          (const_string "arlo_imm")
                           (const_string "*")
                           (const_string "*")
                           (const_string "*")
@@ -10062,7 +10068,7 @@
 			  (if_then_else
 			   (match_operand:SI 3 "mult_operator" "")
 			   (const_string "no") (const_string "yes"))])
-   (set_attr "type" "alu_shift,alu_shift,alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift,arlo_shift,arlo_shift_reg")])
 
 (define_split
   [(set (match_operand:SI 0 "s_register_operand" "")
@@ -10099,7 +10105,7 @@
   [(set_attr "conds" "set")
    (set_attr "shift" "4")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*arith_shiftsi_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -10116,7 +10122,7 @@
   [(set_attr "conds" "set")
    (set_attr "shift" "4")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*sub_shiftsi"
   [(set (match_operand:SI 0 "s_register_operand" "=r,r")
@@ -10129,7 +10135,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "shift" "3")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*sub_shiftsi_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -10147,7 +10153,7 @@
   [(set_attr "conds" "set")
    (set_attr "shift" "3")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 (define_insn "*sub_shiftsi_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -10163,7 +10169,7 @@
   [(set_attr "conds" "set")
    (set_attr "shift" "3")
    (set_attr "arch" "32,a")
-   (set_attr "type" "alu_shift,alu_shift_reg")])
+   (set_attr "type" "arlo_shift,arlo_shift_reg")])
 
 
 (define_insn_and_split "*and_scc"
@@ -11171,9 +11177,9 @@
    (set_attr "length" "4,4,8,8")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 3 "const_int_operand" "")
-                                        (const_string "simple_alu_imm" )
+                                        (const_string "arlo_imm" )
                                         (const_string "*"))
-                          (const_string "simple_alu_imm")
+                          (const_string "arlo_imm")
                           (const_string "*")
                           (const_string "*")])]
 )
@@ -11213,9 +11219,9 @@
    (set_attr "length" "4,4,8,8")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 3 "const_int_operand" "")
-                                        (const_string "simple_alu_imm" )
+                                        (const_string "arlo_imm" )
                                         (const_string "*"))
-                          (const_string "simple_alu_imm")
+                          (const_string "arlo_imm")
                           (const_string "*")
                           (const_string "*")])]
 )
@@ -11474,8 +11480,8 @@
    (set_attr "length" "4,8,8")
    (set_attr "insn" "mov")
    (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*ifcompare_move_shift"
@@ -11514,8 +11520,8 @@
    (set_attr "length" "4,8,8")
    (set_attr "insn" "mov")
    (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*ifcompare_shift_shift"
@@ -11557,8 +11563,8 @@
    (set (attr "type") (if_then_else
 		        (and (match_operand 2 "const_int_operand" "")
                              (match_operand 4 "const_int_operand" ""))
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*ifcompare_not_arith"

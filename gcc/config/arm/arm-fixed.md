@@ -385,7 +385,7 @@
    (set_attr "predicable_short_it" "no")
    (set_attr "insn" "sat")
    (set_attr "shift" "1")
-   (set_attr "type" "alu_shift")])
+   (set_attr "type" "arlo_shift")])
 
 (define_insn "arm_usatsihi"
   [(set (match_operand:HI 0 "s_register_operand" "=r")

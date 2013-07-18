@@ -53,7 +53,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,*,simple_alu_imm,simple_alu_imm,load1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
+   (set_attr "type" "*,*,arlo_imm,arlo_imm,load1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
    (set_attr "neon_type" "*,*,*,*,*,*,neon_mcr,neon_mrc,neon_vmov,*,*")
    (set_attr "insn" "mov,mov,mvn,mov,*,*,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")

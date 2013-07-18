@@ -78,24 +78,24 @@
 ;; for the purposes of the dual-issue constraints above.
 (define_insn_reservation "cortex_r4_alu" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (and (eq_attr "type" "alu_reg,simple_alu_imm")
+       (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
             (not (eq_attr "insn" "mov"))))
   "cortex_r4_alu")
 
 (define_insn_reservation "cortex_r4_mov" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (and (eq_attr "type" "alu_reg,simple_alu_imm")
+       (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
             (eq_attr "insn" "mov")))
   "cortex_r4_mov")
 
 (define_insn_reservation "cortex_r4_alu_shift" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "simple_alu_shift,alu_shift"))
+       (eq_attr "type" "extend,arlo_shift"))
   "cortex_r4_alu")
 
 (define_insn_reservation "cortex_r4_alu_shift_reg" 2
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "alu_shift_reg"))
+       (eq_attr "type" "arlo_shift_reg"))
   "cortex_r4_alu_shift_reg")
 
 ;; An ALU instruction followed by an ALU instruction with no early dep.

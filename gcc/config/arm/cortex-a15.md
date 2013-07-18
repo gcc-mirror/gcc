@@ -61,14 +61,14 @@
 ;; Simple ALU without shift
 (define_insn_reservation "cortex_a15_alu" 2
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "alu_reg,simple_alu_imm")
+       (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
             (eq_attr "neon_type" "none")))
   "ca15_issue1,(ca15_sx1,ca15_sx1_alu)|(ca15_sx2,ca15_sx2_alu)")
 
 ;; ALU ops with immediate shift
 (define_insn_reservation "cortex_a15_alu_shift" 3
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "simple_alu_shift,alu_shift")
+       (and (eq_attr "type" "extend,arlo_shift")
             (eq_attr "neon_type" "none")))
   "ca15_issue1,(ca15_sx1,ca15_sx1+ca15_sx1_shf,ca15_sx1_alu)\
 	       |(ca15_sx2,ca15_sx2+ca15_sx2_shf,ca15_sx2_alu)")
@@ -76,7 +76,7 @@
 ;; ALU ops with register controlled shift
 (define_insn_reservation "cortex_a15_alu_shift_reg" 3
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "alu_shift_reg")
+       (and (eq_attr "type" "arlo_shift_reg")
 	    (eq_attr "neon_type" "none")))
   "(ca15_issue2,ca15_sx1+ca15_sx2,ca15_sx1_shf,ca15_sx2_alu)\
    |(ca15_issue1,(ca15_issue1+ca15_sx2,ca15_sx1+ca15_sx2_shf)\

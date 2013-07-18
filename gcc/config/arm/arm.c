@@ -8653,7 +8653,7 @@ xscale_sched_adjust_cost (rtx insn, rtx link, rtx dep, int * cost)
 	 instruction we depend on is another ALU instruction, then we may
 	 have to account for an additional stall.  */
       if (shift_opnum != 0
-	  && (attr_type == TYPE_ALU_SHIFT || attr_type == TYPE_ALU_SHIFT_REG))
+	  && (attr_type == TYPE_ARLO_SHIFT || attr_type == TYPE_ARLO_SHIFT_REG))
 	{
 	  rtx shifted_operand;
 	  int opno;
@@ -8939,7 +8939,9 @@ cortexa7_older_only (rtx insn)
 
   switch (get_attr_type (insn))
     {
-    case TYPE_ALU_REG:
+    case TYPE_ARLO_REG:
+    case TYPE_SHIFT:
+    case TYPE_SHIFT_REG:
     case TYPE_LOAD_BYTE:
     case TYPE_LOAD1:
     case TYPE_STORE1:
@@ -8985,8 +8987,8 @@ cortexa7_younger (FILE *file, int verbose, rtx insn)
 
   switch (get_attr_type (insn))
     {
-    case TYPE_SIMPLE_ALU_IMM:
-    case TYPE_SIMPLE_ALU_SHIFT:
+    case TYPE_ARLO_IMM:
+    case TYPE_EXTEND:
     case TYPE_BRANCH:
     case TYPE_CALL:
       return true;
