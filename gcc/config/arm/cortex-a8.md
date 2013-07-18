@@ -88,7 +88,7 @@
        (ior (and (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
 		      (eq_attr "neon_type" "none"))
 		 (not (eq_attr "insn" "mov,mvn")))
-            (eq_attr "insn" "clz")))
+            (eq_attr "type" "clz")))
   "cortex_a8_default")
 
 (define_insn_reservation "cortex_a8_alu_shift" 2

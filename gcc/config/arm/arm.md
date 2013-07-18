@@ -250,7 +250,7 @@
 ;; scheduling information.
 
 (define_attr "insn"
-        "mov,mvn,clz,mrs,msr,xtab,sat,other"
+        "mov,mvn,other"
         (const_string "other"))
 
 ; TYPE attribute is used to classify instructions for use in scheduling.
@@ -271,6 +271,7 @@
 ; block              blockage insn, this blocks all functional units.
 ; branch             branch.
 ; call               subroutine call.
+; clz                count leading zeros (CLZ).
 ; extend             extend instruction (SXTB, SXTH, UXTB, UXTH).
 ; f_2_r              transfer from float to core (no memory needed).
 ; f_cvt              conversion between float and integral.
@@ -412,7 +413,7 @@
   block,\
   branch,\
   call,\
-  complex,\
+  clz,\
   extend,\
   f_2_r,\
   f_cvt,\
@@ -4036,8 +4037,8 @@
   else
     return "usat%?\t%0, %1, %3";
 }
-  [(set_attr "predicable" "yes")
-   (set_attr "insn" "sat")])
+  [(set_attr "predicable" "yes")]
+)
 
 (define_insn "*satsi_<SAT:code>_shift"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -4062,7 +4063,6 @@
     return "usat%?\t%0, %1, %4%S3";
 }
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "sat")
    (set_attr "shift" "3")
    (set_attr "type" "arlo_shift")])
 
@@ -5669,7 +5669,6 @@
   "uxtab%?\\t%0, %2, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "insn" "xtab")
    (set_attr "type" "arlo_shift")]
 )
 
@@ -6020,7 +6019,6 @@
   "TARGET_INT_SIMD"
   "sxtab%?\\t%0, %2, %1"
   [(set_attr "type" "arlo_shift")
-   (set_attr "insn" "xtab")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")]
 )
@@ -12472,7 +12470,7 @@
   "TARGET_32BIT && arm_arch5"
   "clz%?\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "clz")])
+   (set_attr "type" "clz")])
 
 (define_insn "rbitsi2"
   [(set (match_operand:SI 0 "s_register_operand" "=r")
@@ -12480,7 +12478,7 @@
   "TARGET_32BIT && arm_arch_thumb2"
   "rbit%?\\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "clz")])
+   (set_attr "type" "clz")])
 
 (define_expand "ctzsi2"
  [(set (match_operand:SI           0 "s_register_operand" "")

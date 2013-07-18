@@ -1,5 +1,20 @@
 2013-07-18  Sofiane Naci  <sofiane.naci@arm.com>
 
+	* config/arm/arm.md (attribute "insn"): Delete values "mrs", "msr",
+	"xtab" and "sat".  Move value "clz" from here to ...
+	(attriubte "type"): ... here.
+	(satsi_<SAT:code>): Delete "insn" attribute.
+	(satsi_<SAT:code>_shift): Likewise.
+	(arm_zero_extendqisi2addsi): Likewise.
+	(arm_extendqisi2addsi): Likewise.
+	(clzsi2): Update for attribute changes.
+	(rbitsi2): Likewise.
+	* config/arm/arm-fixed.md (arm_ssatsihi_shift): Delete "insn" attribute.
+	(arm_usatsihi): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute change.
+
+2013-07-18  Sofiane Naci  <sofiane.naci@arm.com>
+
 	* config/arm/arm.md (attribute "type"): Rename "simple_alu_imm" to
 	"arlo_imm".  Rename "alu_reg" to "arlo_reg".  Rename "simple_alu_shift" to
 	"extend".  Split "alu_shift" into "shift" and "arlo_shift".  Split
