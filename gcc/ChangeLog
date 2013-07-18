@@ -1,3 +1,7 @@
+2013-07-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-pass.h (pass_ipa_lto_wpa_fixup): Remove redundant decl.
+
 2013-07-18  Chang  <pchang9@cs.wisc.edu>
 
 	* read-rtl.c (validate_const_int): Once an invalid character is
