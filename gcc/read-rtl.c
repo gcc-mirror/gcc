@@ -803,7 +803,10 @@ validate_const_int (const char *string)
     valid = 0;
   for (; *cp; cp++)
     if (! ISDIGIT (*cp))
-      valid = 0;
+      {
+        valid = 0;
+	break;
+      }
   if (!valid)
     fatal_with_file_and_line ("invalid decimal constant \"%s\"\n", string);
 }
