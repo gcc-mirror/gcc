@@ -1,3 +1,9 @@
+2013-07-18  Sriraman Tallam  <tmsriram@google.com>
+
+	PR middle-end/57698
+	* tree-inline.c (expand_call_inline): Emit errors during
+	early_inlining only if optimization is not turned on.
+
 2013-07-18  David Malcolm  <dmalcolm@redhat.com>
 
 	* passes.def: New.
