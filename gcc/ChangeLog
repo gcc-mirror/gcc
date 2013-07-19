@@ -1,3 +1,7 @@
+2013-07-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/arm_neon.h (vabs_s64): New function
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516

@@ -17395,6 +17395,12 @@ vabs_f32 (float32x2_t __a)
   return __builtin_aarch64_absv2sf (__a);
 }
 
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vabs_s64 (int64x1_t __a)
+{
+  return __builtin_llabs (__a);
+}
+
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
 vabsq_f32 (float32x4_t __a)
 {
