@@ -1,3 +1,11 @@
+2013-07-19  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc.target/i386/bmi-1.c: Extend with new instrinsics.
+	Fix scan patterns.
+	* gcc.target/i386/bmi-2.c: Ditto.
+	* gcc.target/i386/bmi-bextr-4.c: New.
+	* gcc.target/i386/bmi-bextr-5.c: Ditto.
+
 2013-07-16  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/55656
