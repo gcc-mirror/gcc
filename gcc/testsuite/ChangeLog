@@ -1,3 +1,10 @@
+2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* lib/target-supports.exp (check_effective_target_cilkplus): New proc.
+	* gcc.dg/cilk-plus/cilk-plus.exp: only run if
+	check_effective_target_cilkplus.
+	* g++.dg/cilk-plus/cilk-plus.exp: Same.
+
 2013-07-18  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/pr57744.c: Fix typo.
