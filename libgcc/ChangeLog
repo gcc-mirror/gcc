@@ -1,3 +1,11 @@
+2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57516
+	* config/avr/lib1funcs-fixed.S (__roundqq3, __rounduqq3)
+	(__round_s2_const, __round_u2_const)
+	(__round_s4_const, __round_u4_const, __round_x8):
+	Saturate result if addition result cannot be represented.
+
 2013-07-15  Matthias Klose  <doko@ubuntu.com>
 
 	* libgcc2.c: Don't include <limits.h>.

@@ -1464,12 +1464,13 @@ DEFUN  __roundqq3
     ;; Add-Saturate 2^{-RP-1}
     add     A0, C0
     brvc 0f
-    ldi     A0, 0x7f
+    ldi     C0, 0x7f
+    rjmp 9f
 0:  ;; Mask out bits beyond RP
     lsl     C0
     neg     C0
     and     C0, A0
-    mov     C1, __tmp_reg__
+9:  mov     C1, __tmp_reg__
     ret
 ENDF  __roundqq3
 #endif /* L_roundqq3 */
@@ -1488,12 +1489,13 @@ DEFUN  __rounduqq3
     ;; Add-Saturate 2^{-RP-1}
     add     A0, C0
     brcc 0f
-    ldi     A0, 0xff
+    ldi     C0, 0xff
+    rjmp 9f
 0:  ;; Mask out bits beyond RP
     lsl     C0
     neg     C0
     and     C0, A0
-    mov     C1, __tmp_reg__
+9:  mov     C1, __tmp_reg__
     ret
 ENDF  __rounduqq3
 #endif /* L_rounduqq3 */
@@ -1565,16 +1567,17 @@ ENDF  __rounduha3
 
 DEFUN  __round_s2_const
     brvc 2f
-    ldi     A1, 0x7f
+    ldi     C1, 0x7f
     rjmp 1f
     ;; FALLTHRU (Barrier)
 ENDF  __round_s2_const
 
 DEFUN __round_u2_const
     brcc 2f
-    ldi     A1, 0xff
+    ldi     C1, 0xff
 1:
-    ldi     A0, 0xff
+    ldi     C0, 0xff
+    rjmp 9f
 2:
     ;; Saturation is performed now.
     ;; Currently, we have C[] = 2^{-RP-1}
@@ -1586,7 +1589,7 @@ DEFUN __round_u2_const
     ;; Clear the bits beyond the rounding point.
     and     C0, A0
     and     C1, A1
-    ret
+9:  ret
 ENDF  __round_u2_const
 
 #endif /* L_round_2_const */
@@ -1681,18 +1684,19 @@ ENDF  __roundusa3
 
 DEFUN  __round_s4_const
     brvc 2f
-    ldi     A3, 0x7f
+    ldi     C3, 0x7f
     rjmp 1f
     ;; FALLTHRU (Barrier)
 ENDF  __round_s4_const
 
 DEFUN __round_u4_const
     brcc 2f
-    ldi     A3, 0xff
+    ldi     C3, 0xff
 1:
-    ldi     A2, 0xff
-    ldi     A1, 0xff
-    ldi     A0, 0xff
+    ldi     C2, 0xff
+    ldi     C1, 0xff
+    ldi     C0, 0xff
+    rjmp 9f
 2:
     ;; Saturation is performed now.
     ;; Currently, we have C[] = 2^{-RP-1}
@@ -1707,7 +1711,7 @@ DEFUN __round_u4_const
     and     C1, A1
     and     C2, A2
     and     C3, A3
-    ret
+9:  ret
 ENDF  __round_u4_const
 
 #endif /* L_round_4_const */
@@ -1847,12 +1851,13 @@ DEFUN __round_x8
 1:  ;; Unsigned
     brcc    3f
     ;; Unsigned overflow: A[] = 0xff...
-2:  ldi     A7, 0xff
-    ldi     A6, 0xff
-    wmov    A0, A6
-    wmov    A2, A6
-    wmov    A4, A6
-    bld     A7, 7
+2:  ldi     C7, 0xff
+    ldi     C6, 0xff
+    wmov    C0, C6
+    wmov    C2, C6
+    wmov    C4, C6
+    bld     C7, 7
+    rjmp 9f
 3:
     ;;  C[] = -C[] - C[]
     push    A0
@@ -1869,7 +1874,7 @@ DEFUN __round_x8
     and     C5, A5
     and     C6, A6
     and     C7, A7
-    ;; Epilogue
+9:  ;; Epilogue
     pop r29
     pop r28
     pop r17
