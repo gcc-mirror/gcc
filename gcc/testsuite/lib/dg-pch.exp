@@ -64,6 +64,12 @@ proc dg-flags-pch { subdir test otherflags options suffix } {
     if ![runtest_file_p $runtests $test] {
 	return
     }
+
+    if { [istarget "powerpc-ibm-aix*"] } {
+	set torture_execute_xfail "powerpc-ibm-aix*"
+	return
+    }
+
     set nshort "$subdir/[file tail $test]"
     set bname "[file rootname [file tail $nshort]]"
 
