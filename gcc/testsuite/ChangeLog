@@ -6,6 +6,10 @@
 
 	* lib/dg-pch.exp (dg-flags-pch): Skip on AIX.
 
+	* g++.dg/debug/pr56819.C: Skip on AIX.
+	* g++.dg/ext/vector23.C: Ignore vector ABI warning.
+	* g++.dg/guality/guality.exp: Skip on AIX.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516

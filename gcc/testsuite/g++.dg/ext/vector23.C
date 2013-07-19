@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-std=gnu++1y -Wsign-conversion" } */
+// Ignore warning on some powerpc-linux configurations.
+// { dg-prune-output "non-standard ABI extension" }
 
 typedef double vecd __attribute__((vector_size(4*sizeof(double))));
 typedef float vecf __attribute__((vector_size(8*sizeof(float))));
