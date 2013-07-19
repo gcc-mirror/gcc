@@ -10,6 +10,8 @@
 	* g++.dg/ext/vector23.C: Ignore vector ABI warning.
 	* g++.dg/guality/guality.exp: Skip on AIX.
 
+	* g++.old-deja/g++.other/init19.C: Require cxa_atext.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516
