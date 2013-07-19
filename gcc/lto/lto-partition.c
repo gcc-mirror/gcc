@@ -444,7 +444,7 @@ void
 lto_balanced_map (void)
 {
   int n_nodes = 0;
-  int n_varpool_nodes = 0, varpool_pos = 0;
+  int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
   struct cgraph_node **postorder =
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   struct cgraph_node **order = XNEWVEC (struct cgraph_node *, cgraph_max_uid);
@@ -684,6 +684,7 @@ lto_balanced_map (void)
 	  best_i = i;
 	  best_n_nodes = lto_symtab_encoder_size (partition->encoder);
 	  best_total_size = total_size;
+	  best_varpool_pos = varpool_pos;
 	}
       if (cgraph_dump_file)
 	fprintf (cgraph_dump_file, "Step %i: added %s/%i, size %i, cost %i/%i "
@@ -701,6 +702,7 @@ lto_balanced_map (void)
 		fprintf (cgraph_dump_file, "Unwinding %i insertions to step %i\n",
 			 i - best_i, best_i);
 	      undo_partition (partition, best_n_nodes);
+	      varpool_pos = best_varpool_pos;
 	    }
 	  i = best_i;
  	  /* When we are finished, avoid creating empty partition.  */
