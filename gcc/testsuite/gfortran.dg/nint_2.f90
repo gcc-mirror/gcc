@@ -4,7 +4,7 @@
 ! http://gcc.gnu.org/ml/fortran/2005-04/msg00139.html
 !
 ! { dg-do run }
-! { dg-xfail-run-if "PR 33271, math library bug" { powerpc-ibm-aix powerpc*-*-linux* *-*-mingw* } { "-O0" } { "" } }
+! { dg-xfail-run-if "PR 33271, math library bug" { powerpc-ibm-aix* powerpc*-*-linux* *-*-mingw* } { "-O0" } { "" } }
   real(kind=8) :: a
   integer(kind=8) :: i1, i2
   real :: b

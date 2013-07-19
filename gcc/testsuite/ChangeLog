@@ -1,6 +1,8 @@
 2013-07-19  David Edelsohn  <dje.gcc@gmail.com>
 
-	* gfortran.fortran-torture/execute/intrinsic_nearest.x: Skip AIX.
+	* gfortran.fortran-torture/execute/intrinsic_nearest.x: Skip on AIX.
+	* gfortran.dg/nint_2.f90: Correct AIX target name to skip.
+	* gfortran.dg/guality/guality.exp: Skip on AIX.
 
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
