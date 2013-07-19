@@ -1,3 +1,8 @@
+2013-07-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vabs_s64): Added
+	new testcase.
+
 2013-07-19  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.fortran-torture/execute/intrinsic_nearest.x: Skip on AIX.

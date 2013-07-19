@@ -32,6 +32,18 @@ test_vaddd_s64_2 (int64x1_t a, int64x1_t b, int64x1_t c, int64x1_t d)
 		     vqaddd_s64 (a, d));
 }
 
+/* { dg-final { scan-assembler-times "\\tabs\\td\[0-9\]+, d\[0-9\]+" 1 } } */
+
+int64x1_t
+test_vabs_s64 (int64x1_t a)
+{
+  uint64x1_t res;
+  force_simd (a);
+  res = vabs_s64 (a);
+  force_simd (res);
+  return res;
+}
+
 /* { dg-final { scan-assembler-times "\\tcmeq\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 1 } } */
 
 uint64x1_t
