@@ -8,6 +8,11 @@ if { [istarget *-*-darwin*] } {
   return
 }
 
+if { [istarget "powerpc-ibm-aix*"] } {
+    set torture_execute_xfail "powerpc-ibm-aix*"
+    return
+}
+
 dg-init
 
 global GDB
