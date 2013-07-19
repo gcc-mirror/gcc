@@ -1,5 +1,10 @@
 2013-06-20  Jan Hubicka  <jh@suse.cz>
 
+	* lto-partition.c (lto_balanced_map): Fix -fno-toplevel-reorder
+	partitioning of variables.
+
+2013-06-20  Jan Hubicka  <jh@suse.cz>
+
 	* lto.c (read_cgraph_and_symbols): Set cgraph state.
 
 2013-06-19  Jan Hubicka  <jh@suse.cz>
