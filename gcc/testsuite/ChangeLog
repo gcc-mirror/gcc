@@ -12,6 +12,10 @@
 
 	* g++.old-deja/g++.other/init19.C: Require cxa_atext.
 
+	* gcc.misc-tests/gcov-14.c: Skip on AIX.
+
+	* gcc.dg/simulate-thread/simulate-thread.exp: Skip on AIX.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516

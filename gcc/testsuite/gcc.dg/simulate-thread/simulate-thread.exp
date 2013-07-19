@@ -20,6 +20,11 @@ load_lib gcc-dg.exp
 load_lib gcc-simulate-thread.exp
 load_lib torture-options.exp
 
+if { [istarget "powerpc-ibm-aix*"] } {
+    set torture_execute_xfail "powerpc-ibm-aix*"
+    return
+}
+
 dg-init
 torture-init
 set-torture-options [list \
