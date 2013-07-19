@@ -1,3 +1,9 @@
+2013-07-19  Chung-Ju Wu  <jasonwucj@gmail.com>
+	    Shiva Chen  <shiva0217@gmail.com>
+
+	* MAINTAINERS (nds32 port): Add Chung-Ju Wu and Shiva Chen as
+	nds32 port maintainers.
+
 2013-07-17  Tim Shen  <timshen91@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
