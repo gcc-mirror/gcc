@@ -19,6 +19,10 @@
 
 load_lib gcc-dg.exp
 
+if { ![check_effective_target_cilkplus] } {
+    return;
+}
+
 dg-init
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -fcilkplus" " "
 dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cilk-plus/AN/*.c]] " -O0 -fcilkplus" " "
