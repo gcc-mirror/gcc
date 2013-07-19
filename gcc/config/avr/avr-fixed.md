@@ -447,49 +447,18 @@
 ;; "roundqq3_const"  "rounduqq3_const"
 ;; "roundhq3_const"  "rounduhq3_const"  "roundha3_const"  "rounduha3_const"
 ;; "roundsq3_const"  "roundusq3_const"  "roundsa3_const"  "roundusa3_const"
-(define_expand "round<mode>3_const"
-  [(parallel [(match_operand:ALL124QA 0 "register_operand" "")
-              (match_operand:ALL124QA 1 "register_operand" "")
-              (match_operand:HI 2 "const_int_operand" "")])]
+(define_insn "round<mode>3_const"
+  [(set (match_operand:ALL124QA 0 "register_operand"                  "=d")
+        (unspec:ALL124QA [(match_operand:ALL124QA 1 "register_operand" "0")
+                          (match_operand:HI 2 "const_int_operand"      "n")
+                          (const_int 0)]
+                         UNSPEC_ROUND))]
   ""
   {
-    // The rounding point RP is $2.  The smallest fractional
-    // bit that is not cleared by the rounding is 2^(-RP).
-
-    enum machine_mode imode = int_mode_for_mode (<MODE>mode);
-    int fbit = (int) GET_MODE_FBIT (<MODE>mode);
-
-    // Add-Saturate  1/2 * 2^(-RP)
-
-    double_int i_add = double_int_zero.set_bit (fbit-1 - INTVAL (operands[2]));
-    rtx x_add = const_fixed_from_double_int (i_add, <MODE>mode);
-
-    if (SIGNED_FIXED_POINT_MODE_P (<MODE>mode))
-      emit_move_insn (operands[0],
-                      gen_rtx_SS_PLUS (<MODE>mode, operands[1], x_add));
-    else
-      emit_move_insn (operands[0],
-                      gen_rtx_US_PLUS (<MODE>mode, operands[1], x_add));
-
-    // Keep  all bits from RP and higher:   ... 2^(-RP)
-    // Clear all bits from RP+1 and lower:              2^(-RP-1) ...
-    // Rounding point                           ^^^^^^^
-    // Added above                                      ^^^^^^^^^
-
-    rtx xreg = simplify_gen_subreg (imode, operands[0], <MODE>mode, 0);
-    rtx xmask = immed_double_int_const (-i_add - i_add, imode);
-
-    if (SImode == imode)
-      emit_insn (gen_andsi3 (xreg, xreg, xmask));
-    else if (HImode == imode)
-      emit_insn (gen_andhi3 (xreg, xreg, xmask));
-    else if (QImode == imode)
-      emit_insn (gen_andqi3 (xreg, xreg, xmask));
-    else
-      gcc_unreachable();
-
-    DONE;
-  })
+    return avr_out_round (insn, operands);
+  }
+  [(set_attr "cc" "clobber")
+   (set_attr "adjust_len" "round")])
 
 
 ;; "*roundqq3.libgcc"  "*rounduqq3.libgcc"

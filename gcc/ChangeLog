@@ -1,3 +1,17 @@
+2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57516
+	* config/avr/avr-fixed.md (round<mode>3_const): Turn expander to insn.
+	* config/avr/avr.md (adjust_len): Add `round'.
+	* config/avr/avr-protos.h (avr_out_round): New prototype.
+	(avr_out_plus): Add `out_label' argument.
+	* config/avr/avr.c (avr_out_plus_1): Add `out_label' argument.
+	(avr_out_plus): Pass down `out_label' to avr_out_plus_1.
+	Handle the case where `insn' is just a pattern.
+	(avr_out_bitop): Handle the case where `insn' is just a pattern.
+	(avr_out_round): New function.
+	(avr_adjust_insn_length): Handle ADJUST_LEN_ROUND.
+
 2013-07-18  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.c (microblaze_expand_prologue):
