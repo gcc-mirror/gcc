@@ -4,6 +4,8 @@
 	* gfortran.dg/nint_2.f90: Correct AIX target name to skip.
 	* gfortran.dg/guality/guality.exp: Skip on AIX.
 
+	* lib/dg-pch.exp (dg-flags-pch): Skip on AIX.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516
