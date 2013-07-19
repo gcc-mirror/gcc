@@ -1,3 +1,11 @@
+2013-07-19  Wei Mi  <wmi@google.com>
+
+	Backport from mainline:
+	2013-07-18  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/57878
+	* g++.dg/pr57518.C: New test.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-19 trunk r201051.

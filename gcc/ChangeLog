@@ -1,3 +1,14 @@
+2013-07-19 Wei Mi  <wmi@google.com>
+
+	Backport from mainline:
+	2013-07-18  Vladimir Makarov  <vmakarov@redhat.com>
+		    Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/57878
+	* lra-assigns.c (assign_by_spills): Move non_reload_pseudos to the
+	top. Promote lra_assert to gcc_assert.
+	(reload_pseudo_compare_func): Check regs first for reload pseudos.
+
 2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-19 trunk r201051.
