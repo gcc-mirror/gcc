@@ -1,3 +1,7 @@
+2013-07-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.fortran-torture/execute/intrinsic_nearest.x: Skip AIX.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516
