@@ -1,20 +1,3 @@
-2013-07-20  Iain Sandoe  <iain@codesourcery.com>
-
-	PR target/51784
-	* config/i386/i386.c (output_set_got) [TARGET_MACHO]: Adjust to emit a
-	second label for nonlocal goto receivers. Don't output pic base labels
-	unless we're producing PIC; mark that action unreachable().
-	(ix86_save_reg): If the function contains a nonlocal label, save the
-	PIC base reg.
-	* config/darwin-protos.h (machopic_should_output_picbase_label): New.
-	* gcc/config/darwin.c (emitted_pic_label_num): New GTY. 
-	(update_pic_label_number_if_needed): New.
-	(machopic_output_function_base_name): Adjust for nonlocal receiver
-	case.
-	(machopic_should_output_picbase_label): New.
-	* config/i386/i386.md (enum unspecv): UNSPECV_NLGR: New.
-	(nonlocal_goto_receiver): New insn and split.
-
 2013-07-20  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/vabs_intrinsic_1.c: New file.
