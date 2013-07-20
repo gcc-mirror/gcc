@@ -1,5 +1,5 @@
 /* PR tree-optimization/53366 */
-/* { dg-do run } */
+/* { dg-do run { target { size32plus } } } */
 
 extern void abort (void);
 
