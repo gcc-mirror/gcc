@@ -1,3 +1,7 @@
+2013-07-20  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.dg/pr57154.c: Add dg-require-effective-target scheduling.
+
 2013-07-19  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c (test_vabs_s64): Added

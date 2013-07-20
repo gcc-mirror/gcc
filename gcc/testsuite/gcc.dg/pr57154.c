@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fschedule-insns" } */
+/* { dg-require-effective-target scheduling } */
 
 #define PF_FROZEN 0x00010000
 #define likely(x)      __builtin_expect(!!(x), 1)
