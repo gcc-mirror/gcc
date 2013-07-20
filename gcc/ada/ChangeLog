@@ -1,3 +1,8 @@
+2013-07-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/57934
+	* gcc-interface/ada.h (CAT): Fix typo.
+
 2013-07-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* einfo.adb (Get_Pragma): Handle the retrieval of delayed
