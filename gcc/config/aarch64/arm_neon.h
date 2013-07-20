@@ -4468,83 +4468,6 @@ vabds_f32 (float32_t a, float32_t b)
   return result;
 }
 
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vabs_s8 (int8x8_t a)
-{
-  int8x8_t result;
-  __asm__ ("abs %0.8b,%1.8b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vabs_s16 (int16x4_t a)
-{
-  int16x4_t result;
-  __asm__ ("abs %0.4h,%1.4h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vabs_s32 (int32x2_t a)
-{
-  int32x2_t result;
-  __asm__ ("abs %0.2s,%1.2s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vabsq_s8 (int8x16_t a)
-{
-  int8x16_t result;
-  __asm__ ("abs %0.16b,%1.16b"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vabsq_s16 (int16x8_t a)
-{
-  int16x8_t result;
-  __asm__ ("abs %0.8h,%1.8h"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vabsq_s32 (int32x4_t a)
-{
-  int32x4_t result;
-  __asm__ ("abs %0.4s,%1.4s"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vabsq_s64 (int64x2_t a)
-{
-  int64x2_t result;
-  __asm__ ("abs %0.2d,%1.2d"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
 __extension__ static __inline int16_t __attribute__ ((__always_inline__))
 vaddlv_s8 (int8x8_t a)
 {
@@ -17395,6 +17318,30 @@ vabs_f32 (float32x2_t __a)
   return __builtin_aarch64_absv2sf (__a);
 }
 
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vabs_f64 (float64x1_t __a)
+{
+  return __builtin_fabs (__a);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vabs_s8 (int8x8_t __a)
+{
+  return __builtin_aarch64_absv8qi (__a);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vabs_s16 (int16x4_t __a)
+{
+  return __builtin_aarch64_absv4hi (__a);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vabs_s32 (int32x2_t __a)
+{
+  return __builtin_aarch64_absv2si (__a);
+}
+
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vabs_s64 (int64x1_t __a)
 {
@@ -17411,6 +17358,30 @@ __extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
 vabsq_f64 (float64x2_t __a)
 {
   return __builtin_aarch64_absv2df (__a);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vabsq_s8 (int8x16_t __a)
+{
+  return __builtin_aarch64_absv16qi (__a);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vabsq_s16 (int16x8_t __a)
+{
+  return __builtin_aarch64_absv8hi (__a);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vabsq_s32 (int32x4_t __a)
+{
+  return __builtin_aarch64_absv4si (__a);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vabsq_s64 (int64x2_t __a)
+{
+  return __builtin_aarch64_absv2di (__a);
 }
 
 /* vadd */

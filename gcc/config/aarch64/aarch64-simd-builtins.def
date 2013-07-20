@@ -347,7 +347,7 @@
   BUILTIN_VDQF (UNOP, frecpe, 0)
   BUILTIN_VDQF (BINOP, frecps, 0)
 
-  BUILTIN_VDQF (UNOP, abs, 2)
+  BUILTIN_VALLDI (UNOP, abs, 2)
 
   VAR1 (UNOP, vec_unpacks_hi_, 10, v4sf)
   VAR1 (BINOP, float_truncate_hi_, 0, v4sf)

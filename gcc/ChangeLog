@@ -1,3 +1,13 @@
+2013-07-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_fold_builtin): Fold abs in all modes.
+	* config/aarch64/aarch64-simd-builtins.def
+	(abs): Enable for all modes.
+	* config/aarch64/arm_neon.h
+	(vabs<q>_s<8,16,32,64): Rewrite using builtins.
+	(vabs_f64): Add missing intrinsic.
+
 2013-07-19  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/arm_neon.h (vabs_s64): New function
