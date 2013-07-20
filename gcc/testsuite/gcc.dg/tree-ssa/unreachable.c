@@ -11,5 +11,5 @@ main()
     return 1;
   return 0;
 }
-/* { dg-final { scan-tree-dump-not "bad_boy" "optimized"} } */
+/* { dg-final { scan-tree-dump-not "bad_boy" "optimized" { target { ! keeps_null_pointer_checks } } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
