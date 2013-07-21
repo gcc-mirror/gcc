@@ -1,6 +1,6 @@
-// condition_variable -*- C++ -*-
+// Compatibility symbols for previous versions, C++0x bits -*- C++ -*-
 
-// Copyright (C) 2008-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -22,62 +22,36 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <condition_variable>
+#include <bits/c++config.h>
+
+#if __cplusplus < 201103L
+# error "compatibility-condvar-c++0x.cc must be compiled with -std=gnu++11"
+#endif
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
+#define condition_variable_any condition_variable_anyXX
+#include <condition_variable>
+#undef condition_variable_any
+
+// XXX GLIBCXX_ABI Deprecated
+// gcc-4.9.0
+// std::condition_variable_any replaced with std::_V2::condition_variable_any
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-#ifdef __GTHREAD_COND_INIT
-  condition_variable::condition_variable() noexcept = default;
-#else
-  condition_variable::condition_variable() noexcept
+  class condition_variable_any
   {
-    __GTHREAD_COND_INIT_FUNCTION(&_M_cond);
-  }
-#endif
+    condition_variable			_M_cond;
+    mutex				_M_mutex;
 
-  condition_variable::~condition_variable() noexcept
-  {
-    // XXX no thread blocked
-    /* int __e = */ __gthread_cond_destroy(&_M_cond);
-    // if __e == EBUSY then blocked
-  }
-
-  void
-  condition_variable::wait(unique_lock<mutex>& __lock)
-  {
-    int __e = __gthread_cond_wait(&_M_cond, __lock.mutex()->native_handle());
-
-    if (__e)
-      __throw_system_error(__e);
-  }
-
-  void
-  condition_variable::notify_one() noexcept
-  {
-    int __e = __gthread_cond_signal(&_M_cond);
-
-    // XXX not in spec
-    // EINVAL
-    if (__e)
-      __throw_system_error(__e);
-  }
-
-  void
-  condition_variable::notify_all() noexcept
-  {
-    int __e = __gthread_cond_broadcast(&_M_cond);
-
-    // XXX not in spec
-    // EINVAL
-    if (__e)
-      __throw_system_error(__e);
-  }
-
+  public:
+    condition_variable_any() noexcept;
+    ~condition_variable_any() noexcept;
+  };
+  condition_variable_any::condition_variable_any() noexcept = default;
+  condition_variable_any::~condition_variable_any() noexcept = default;
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
+} // namespace std
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1
