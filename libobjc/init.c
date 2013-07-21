@@ -338,7 +338,7 @@ objc_tree_insert_class (Class class)
     }
   
   /* If the list was finished but the class hasn't been inserted, we
-     don't have an existing class hierarchy that can accomodate it.
+     don't have an existing class hierarchy that can accommodate it.
      Create a new one.  */
   __objc_class_tree_list = list_cons (NULL, __objc_class_tree_list);
   __objc_class_tree_list->head = __objc_tree_insert_class (NULL, class);
@@ -839,7 +839,7 @@ __objc_create_classes_tree (struct objc_module *module)
   struct objc_symtab *symtab = module->symtab;
   int i;
 
-  /* Iterate thru classes defined in this module and insert them in
+  /* Iterate through classes defined in this module and insert them in
      the classes tree hierarchy.  */
   for (i = 0; i < symtab->cls_def_cnt; i++)
     {
@@ -878,7 +878,7 @@ __objc_call_load_callback (struct objc_module *module)
       struct objc_symtab *symtab = module->symtab;
       int i;
       
-      /* Iterate thru classes defined in this module and call the callback
+      /* Iterate through classes defined in this module and call the callback
 	 for each one.  */
       for (i = 0; i < symtab->cls_def_cnt; i++)
 	{
