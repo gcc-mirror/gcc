@@ -4909,7 +4909,7 @@ expand_omp_for (struct omp_region *region)
       FALLTHRU_EDGE (region->cont)->flags &= ~EDGE_ABNORMAL;
     }
   else
-    /* If there isnt a continue then this is a degerate case where
+    /* If there isn't a continue then this is a degerate case where
        the introduction of abnormal edges during lowering will prevent
        original loops from being detected.  Fix that up.  */
     loops_state_set (LOOPS_NEED_FIXUP);

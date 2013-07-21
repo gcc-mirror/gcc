@@ -1651,7 +1651,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	case '0': case '1': case '2': case '3': case '4':
 	case '5': case '6': case '7': case '8': case '9':
 	  /* If caller provided constraints pointer, look up
-	     the maching constraint.  Otherwise, our caller should have
+	     the matching constraint.  Otherwise, our caller should have
 	     given us the proper matching constraint, but we can't
 	     actually fail the check if they didn't.  Indicate that
 	     results are inconclusive.  */

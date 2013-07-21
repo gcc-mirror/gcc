@@ -1,3 +1,7 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* lto-partition.c: Fix typos.
+
 2013-06-20  Jan Hubicka  <jh@suse.cz>
 
 	* lto-partition.c (lto_balanced_map): Fix -fno-toplevel-reorder

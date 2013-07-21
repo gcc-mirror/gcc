@@ -881,7 +881,7 @@ traverse_enum_types (htab_trav callback, void *info)
 /* Process an "include" directive, starting with the optional space
    after the "include".  Read in the file and use HANDLE_DIRECTIVE
    to process each unknown directive.  LINENO is the line number on
-   which the "include" occured.  */
+   which the "include" occurred.  */
 
 static void
 handle_include (int lineno, directive_handler_t handle_directive)
@@ -1027,7 +1027,7 @@ parse_include (const char *arg)
 }
 
 /* The main routine for reading .md files.  Try to process all the .md
-   files specified on the command line and return true if no error occured.
+   files specified on the command line and return true if no error occurred.
 
    ARGC and ARGV are the arguments to main.
 
