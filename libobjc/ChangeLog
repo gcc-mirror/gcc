@@ -1,3 +1,12 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* class.c: Fix typos.
+	* encoding.c: Likewise.
+	* init.c: Likewise.
+	* objc-private/runtime.h: Likewise.
+	* objc/runtime.h: Likewise.
+	* objc-sync.c: Likewise.
+
 2013-07-04  Kai Tietz  <ktietz@redhat.com>
 
 	* exception.c: Add check for SjLj to SEH blocks.

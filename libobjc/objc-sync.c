@@ -390,7 +390,7 @@ objc_sync_exit (id object)
 	      node->usage_count--;
 	      /* Normally, we do not reset object to nil here.  We'll
 		 leave the lock associated with that object, at zero
-		 usage count.  This makes it slighly more efficient to
+		 usage count.  This makes it slightly more efficient to
 		 provide a lock for that object if (as likely)
 		 requested again.  If the object is deallocated, we
 		 don't care.  It will never match a new lock that is

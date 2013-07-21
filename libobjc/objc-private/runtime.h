@@ -32,7 +32,7 @@ The original list was:
 #include "objc/hash.h"
 #include "objc/objc-list.h"
 
-but can almost certainly be shrinked down.  */
+but can almost certainly be shrunk down.  */
 
 #ifndef __objc_private_runtime_INCLUDE_GNU
 #define __objc_private_runtime_INCLUDE_GNU
@@ -42,7 +42,7 @@ but can almost certainly be shrinked down.  */
 #include <stdio.h>
 #include <ctype.h>
 
-#include <stddef.h>		/* so noone else will get system versions */
+#include <stddef.h>		/* so no one else will get system versions */
 #include <assert.h>
 
 extern BOOL __objc_add_class_to_hash (Class);   /* (objc-class.c) */

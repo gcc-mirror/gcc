@@ -764,7 +764,7 @@ objc_get_meta_class (const char *name)
 }
 
 /* This is not used by GCC, but the clang compiler seems to use it
-   when targetting the GNU runtime.  That's wrong, but we have it to
+   when targeting the GNU runtime.  That's wrong, but we have it to
    be compatible.  */
 Class
 objc_lookup_class (const char *name)
