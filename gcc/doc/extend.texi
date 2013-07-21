@@ -11044,7 +11044,7 @@ A memory transaction commits all changes to memory in an atomic way,
 as visible to other threads. If the transaction fails it is rolled back
 and all side effects discarded.
 
-Generally there is no guarantee that a memory transaction ever suceeds
+Generally there is no guarantee that a memory transaction ever succeeds
 and suitable fallback code always needs to be supplied.
 
 @deftypefn {RTM Function} {unsigned} _xbegin ()

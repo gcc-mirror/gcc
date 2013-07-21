@@ -259,7 +259,7 @@ file. All entries following a @var{file} pertain to that source file
 until the next @var{file} entry.
 @end smallexample
 
-Here is a sample when @option{-i} is used in conjuction with @option{-b} option:
+Here is a sample when @option{-i} is used in conjunction with @option{-b} option:
 
 @smallexample
 file:array.cc
