@@ -202,7 +202,7 @@ set_fpu_rounding_mode (int round)
 
   __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
 
-  cw &= ~FPU_RC_MASK;
+  cw &= ~_FPU_RC_MASK;
   cw |= round_mode;
 
   __asm__ __volatile__ ("fldcw\t%0" : : "m" (cw));
@@ -214,7 +214,7 @@ set_fpu_rounding_mode (int round)
       __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
 
       /* The SSE round control bits are shifted by 3 bits.  */
-      cw_sse &= ~(FPU_RC_MASK << 3);
+      cw_sse &= ~(_FPU_RC_MASK << 3);
       cw_sse |= round_mode << 3;
 
       __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
@@ -228,7 +228,7 @@ get_fpu_rounding_mode (void)
 
   __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
 
-  cw &= FPU_RC_MASK;
+  cw &= _FPU_RC_MASK;
 
   switch (cw)
     {
