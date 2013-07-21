@@ -16161,7 +16161,7 @@ knows that the target of the jump is not compressed.
 @opindex mno-interlink-mips16
 Aliases of @option{-minterlink-compressed} and
 @option{-mno-interlink-compressed}.  These options predate the microMIPS ASE
-and are retained for backwards compatiblity.
+and are retained for backwards compatibility.
 
 @item -mabi=32
 @itemx -mabi=o64
