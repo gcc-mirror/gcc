@@ -93,7 +93,8 @@ am__DEPENDENCIES_1 =
 am__objects_2 = compatibility.lo compatibility-debug_list.lo \
 	compatibility-debug_list-2.lo $(am__objects_1)
 am__objects_3 = compatibility-c++0x.lo compatibility-atomic-c++0x.lo \
-	compatibility-thread-c++0x.lo compatibility-chrono.lo
+	compatibility-thread-c++0x.lo compatibility-chrono.lo \
+	compatibility-condvar.lo
 am_libstdc___la_OBJECTS = $(am__objects_2) $(am__objects_3)
 libstdc___la_OBJECTS = $(am_libstdc___la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -352,7 +353,8 @@ cxx11_sources = \
 	compatibility-c++0x.cc \
 	compatibility-atomic-c++0x.cc \
 	compatibility-thread-c++0x.cc \
-	compatibility-chrono.cc
+	compatibility-chrono.cc \
+	compatibility-condvar.cc
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
 libstdc___la_LIBADD = \
@@ -852,6 +854,11 @@ compatibility-thread-c++0x.o: compatibility-thread-c++0x.cc
 compatibility-chrono.lo: compatibility-chrono.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 compatibility-chrono.o: compatibility-chrono.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+compatibility-condvar.lo: compatibility-condvar.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+compatibility-condvar.o: compatibility-condvar.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 # Symbol versioning for shared libraries.

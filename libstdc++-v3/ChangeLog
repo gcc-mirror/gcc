@@ -1,3 +1,14 @@
+2013-07-21  Jonathan Wakely  <jwakely.gcc@gmail.com>
+
+	PR libstdc++/54352
+	* include/std/condition_variable (condition_variable_any): Move into
+	inline namespace _V2 and replace mutex member with shared_ptr<mutex>.
+	* src/c++11/condition_variable.cc (condition_variable_any): Move
+	definitions to ...
+	* src/c++11/compatibility-condvar.cc (condition_variable_any): Here.
+	* src/Makefile.am: Add new source file.
+	* src/Makefile.in: Regenerate.
+
 2013-07-09  Tim Shen  <timshen91@gmail.com>
 
 	Implement class regex_traits.

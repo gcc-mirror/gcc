@@ -51,7 +51,8 @@ cxx11_sources = \
 	compatibility-c++0x.cc \
 	compatibility-atomic-c++0x.cc \
 	compatibility-thread-c++0x.cc \
-	compatibility-chrono.cc
+	compatibility-chrono.cc \
+	compatibility-condvar.cc
 
 libstdc___la_SOURCES = $(cxx98_sources) $(cxx11_sources)
 
@@ -101,6 +102,11 @@ compatibility-thread-c++0x.o: compatibility-thread-c++0x.cc
 compatibility-chrono.lo: compatibility-chrono.cc
 	$(LTCXXCOMPILE) -std=gnu++11 -c $<
 compatibility-chrono.o: compatibility-chrono.cc
+	$(CXXCOMPILE) -std=gnu++11 -c $<
+
+compatibility-condvar.lo: compatibility-condvar.cc
+	$(LTCXXCOMPILE) -std=gnu++11 -c $<
+compatibility-condvar.o: compatibility-condvar.cc
 	$(CXXCOMPILE) -std=gnu++11 -c $<
 
 # A note on compatibility and static libraries.

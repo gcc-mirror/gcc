@@ -36,7 +36,12 @@
 #else
 
 #include <chrono>
-#include <mutex> // unique_lock
+#include <mutex>
+#include <ext/concurrence.h>
+#include <bits/alloc_traits.h>
+#include <bits/allocator.h>
+#include <bits/unique_ptr.h>
+#include <bits/shared_ptr.h>
 
 #if defined(_GLIBCXX_HAS_GTHREADS) && defined(_GLIBCXX_USE_C99_STDINT_TR1)
 
@@ -165,13 +170,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   };
 
+  inline namespace _V2 {
+
   /// condition_variable_any
   // Like above, but mutex is not required to have try_lock.
   class condition_variable_any
   {
     typedef chrono::system_clock	__clock_t;
     condition_variable			_M_cond;
-    mutex				_M_mutex;
+    shared_ptr<mutex>			_M_mutex;
 
     // scoped unlock - unlocks in ctor, re-locks in dtor
     template<typename _Lock>
@@ -194,9 +201,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
   public:
-
-    condition_variable_any() noexcept;
-    ~condition_variable_any() noexcept;
+    condition_variable_any() : _M_mutex(std::make_shared<mutex>()) { }
+    ~condition_variable_any() = default;
 
     condition_variable_any(const condition_variable_any&) = delete;
     condition_variable_any& operator=(const condition_variable_any&) = delete;
@@ -204,14 +210,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     notify_one() noexcept
     {
-      lock_guard<mutex> __lock(_M_mutex);
+      lock_guard<mutex> __lock(*_M_mutex);
       _M_cond.notify_one();
     }
 
     void
     notify_all() noexcept
     {
-      lock_guard<mutex> __lock(_M_mutex);
+      lock_guard<mutex> __lock(*_M_mutex);
       _M_cond.notify_all();
     }
 
@@ -219,10 +225,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       wait(_Lock& __lock)
       {
-	unique_lock<mutex> __my_lock(_M_mutex);
+	shared_ptr<mutex> __mutex = _M_mutex;
+	unique_lock<mutex> __my_lock(*__mutex);
 	_Unlock<_Lock> __unlock(__lock);
-	// _M_mutex must be unlocked before re-locking __lock so move
-	// ownership of _M_mutex lock to an object with shorter lifetime.
+	// *__mutex must be unlocked before re-locking __lock so move
+	// ownership of *__mutex lock to an object with shorter lifetime.
 	unique_lock<mutex> __my_lock2(std::move(__my_lock));
 	_M_cond.wait(__my_lock2);
       }
@@ -241,10 +248,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait_until(_Lock& __lock,
 		 const chrono::time_point<_Clock, _Duration>& __atime)
       {
-	unique_lock<mutex> __my_lock(_M_mutex);
+	shared_ptr<mutex> __mutex = _M_mutex;
+	unique_lock<mutex> __my_lock(*__mutex);
 	_Unlock<_Lock> __unlock(__lock);
-	// _M_mutex must be unlocked before re-locking __lock so move
-	// ownership of _M_mutex lock to an object with shorter lifetime.
+	// *__mutex must be unlocked before re-locking __lock so move
+	// ownership of *__mutex lock to an object with shorter lifetime.
 	unique_lock<mutex> __my_lock2(std::move(__my_lock));
 	return _M_cond.wait_until(__my_lock2, __atime);
       }
@@ -274,6 +282,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const chrono::duration<_Rep, _Period>& __rtime, _Predicate __p)
       { return wait_until(__lock, __clock_t::now() + __rtime, std::move(__p)); }
   };
+
+  } // end inline namespace
 
   // @} group condition_variables
 _GLIBCXX_END_NAMESPACE_VERSION
