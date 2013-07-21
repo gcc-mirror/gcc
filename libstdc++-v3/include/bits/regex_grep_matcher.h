@@ -64,6 +64,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_set_pos(int __i, int __j, const _PatternCursor& __pc);
 
       void
+      _M_set_range(int __i, const _PatternCursor& __pc)
+      {
+        typedef const _SpecializedCursor<_FwdIterT>& _CursorT;
+        _CursorT __c = static_cast<_CursorT>(__pc);
+        _M_results.at(__i).first = __c._M_begin();
+        _M_results.at(__i).second = __c._M_end();
+      }
+
+      void
       _M_set_matched(int __i, bool __is_matched)
       { _M_results.at(__i).matched = __is_matched; }
 
@@ -111,9 +120,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
   public:
     _Grep_matcher(_PatternCursor&                   __p,
-		  _Results&                         __r,
-		  const _AutomatonPtr&              __automaton,
-		  regex_constants::match_flag_type  __flags);
+                  _Results&                         __r,
+                  const _AutomatonPtr&              __automaton,
+                  regex_constants::match_flag_type  __flags)
+    : _M_nfa(static_pointer_cast<_Nfa>(__automaton)),
+      _M_pattern(__p), _M_results(__r)
+    { }
+
+    void _M_match();
+
+    void _M_search_from_first();
 
   private:
     _StateSet
