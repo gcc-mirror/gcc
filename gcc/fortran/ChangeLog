@@ -1,3 +1,8 @@
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57894
+	* check.c (min_max_args): Add keyword= check.
+
 2013-07-17  Mikael Morin  <mikael@gcc.gnu.org>
 	    Tobias Burnus  <burnus@net-b.de>
 
