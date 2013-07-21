@@ -233,7 +233,7 @@ read_sf_internal (st_parameter_dt *dtp, int * length)
     {
       *length = 0;
       /* Just return something that isn't a NULL pointer, otherwise the
-         caller thinks an error occured.  */
+         caller thinks an error occurred.  */
       return (char*) empty_string;
     }
 
@@ -292,7 +292,7 @@ read_sf (st_parameter_dt *dtp, int * length)
     {
       *length = 0;
       /* Just return something that isn't a NULL pointer, otherwise the
-         caller thinks an error occured.  */
+         caller thinks an error occurred.  */
       return (char*) empty_string;
     }
 
@@ -512,7 +512,7 @@ read_block_form4 (st_parameter_dt *dtp, int * nbytes)
     {
       *nbytes = 0;
       /* Just return something that isn't a NULL pointer, otherwise the
-         caller thinks an error occured.  */
+         caller thinks an error occurred.  */
       return empty_string;
     }
 

@@ -1235,7 +1235,7 @@ gfc_conv_expr_present (gfc_symbol * sym)
      as actual argument to denote absent dummies. For array descriptors,
      we thus also need to check the array descriptor.  For BT_CLASS, it
      can also occur for scalars and F2003 due to type->class wrapping and
-     class->class wrapping.  Note futher that BT_CLASS always uses an
+     class->class wrapping.  Note further that BT_CLASS always uses an
      array descriptor for arrays, also for explicit-shape/assumed-size.  */
 
   if (!sym->attr.allocatable
@@ -2829,7 +2829,7 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind,
   /* We can compare via memcpy if the strings are known to be equal
      in length and they are
      - kind=1
-     - kind=4 and the comparision is for (in)equality.  */
+     - kind=4 and the comparison is for (in)equality.  */
 
   if (INTEGER_CST_P (len1) && INTEGER_CST_P (len2)
       && tree_int_cst_equal (len1, len2)
