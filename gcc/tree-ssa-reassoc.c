@@ -1386,7 +1386,7 @@ undistribute_ops_list (enum tree_code opcode,
 	}
     }
 
-  /* Process the (operand, code) pairs in order of most occurence.  */
+  /* Process the (operand, code) pairs in order of most occurrence.  */
   candidates2 = sbitmap_alloc (length);
   while (!cvec.is_empty ())
     {
