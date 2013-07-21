@@ -1043,7 +1043,7 @@ extern void enumerate_modes (void (*f) (const char *, int, int, int, int, int,
 }
 #endif
 
-/* Let code know whether we are targetting VMS without need of
+/* Let code know whether we are targeting VMS without need of
    intrusive preprocessor directives.  */
 #ifndef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 0

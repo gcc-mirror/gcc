@@ -131,7 +131,7 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
 
 #define REGNO_PC  67  /* ARG_POINTER_REGNUM  */
 
-/* asm string contruction helpers.  */
+/* asm string construction helpers.  */
 
 #define STR(TEXT) #TEXT
 /* stringify expanded TEXT, surrounding it with double quotes.  */

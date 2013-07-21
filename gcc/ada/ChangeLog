@@ -1,3 +1,15 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* gcc-interface/gigi.h: Likewise.
+	* gcc-interface/trans.c: Likewise.
+	* gcc-interface/utils2.c: Likewise.
+	* gnat_rm.texi: Likewise.
+	* gnat_ugn.texi: Likewise.
+	* raise-gcc.c: Likewise.
+	* sigtramp-ppcvxw.c: Likewise.
+	* sysdep.c: Likewise.
+	* terminals.c: Likewise.
+
 2013-07-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/57934
