@@ -1,5 +1,11 @@
 2013-07-21  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/35862
+	* libgfortran.h (GFC_FPE_DOWNWARD, GFC_FPE_TONEAREST,
+	GFC_FPE_TOWARDZERO, GFC_FPE_UPWARD): New defines.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57894
 	* check.c (min_max_args): Add keyword= check.
 

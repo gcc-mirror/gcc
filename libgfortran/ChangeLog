@@ -1,3 +1,27 @@
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	PR fortran/35862
+	* libgfortran.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): New prototypes.
+	* config/fpu-387.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): New functions.
+	* config/fpu-aix.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* config/fpu-generic.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* config/fpu-glibc.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* config/fpu-sysv.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Ditto.
+	* configure.ac: Check for fp_rnd and fp_rnd_t.
+	* io/io.h (enum unit_round): Use GFC_FPE_* for the value.
+	* io/read.c (convert_real): Set FP ronding mode.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2013-06-24  Tobias Burnus  <burnus@net-b.de>
 
 	* configure.ac: Check for fp_except and fp_except_t.

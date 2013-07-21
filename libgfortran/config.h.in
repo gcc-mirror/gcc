@@ -411,6 +411,12 @@
 /* Define to 1 if the system has the type `fp_except_t'. */
 #undef HAVE_FP_EXCEPT_T
 
+/* Define to 1 if the system has the type `fp_rnd'. */
+#undef HAVE_FP_RND
+
+/* Define to 1 if the system has the type `fp_rnd_t'. */
+#undef HAVE_FP_RND_T
+
 /* fp_trap is present */
 #undef HAVE_FP_TRAP
 

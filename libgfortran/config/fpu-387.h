@@ -88,7 +88,7 @@ has_sse (void)
 #endif
 }
 
-/* i387 -- see linux <fpu_control.h> header file for details.  */
+/* i387 exceptions -- see linux <fpu_control.h> header file for details.  */
 #define _FPU_MASK_IM  0x01
 #define _FPU_MASK_DM  0x02
 #define _FPU_MASK_ZM  0x04
@@ -99,7 +99,18 @@ has_sse (void)
 
 #define _FPU_EX_ALL   0x3f
 
-void set_fpu (void)
+/* i387 rounding modes.  */
+
+#define _FPU_RC_NEAREST 0x0
+#define _FPU_RC_DOWN    0x400
+#define _FPU_RC_UP      0x800
+#define _FPU_RC_ZERO    0xc00
+
+#define _FPU_RC_MASK    0xc00
+
+
+void
+set_fpu (void)
 {
   int excepts = 0;
   unsigned short cw;
@@ -163,4 +174,73 @@ get_fpu_except_flags (void)
   if (excepts & _FPU_MASK_PM) result |= GFC_FPE_INEXACT;
 
   return result;
+}
+
+void
+set_fpu_rounding_mode (int round)
+{
+  int round_mode;
+  unsigned short cw;
+
+  switch (round)
+    {
+    case GFC_FPE_TONEAREST:
+      round_mode = _FPU_RC_NEAREST;
+      break;
+    case GFC_FPE_UPWARD:
+      round_mode = _FPU_RC_UP;
+      break;
+    case GFC_FPE_DOWNWARD:
+      round_mode = _FPU_RC_DOWN;
+      break;
+    case GFC_FPE_TOWARDZERO:
+      round_mode = _FPU_RC_ZERO;
+      break;
+    default:
+      return; /* Should be unreachable.  */
+    }
+
+  __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
+
+  cw &= ~FPU_RC_MASK;
+  cw |= round_mode;
+
+  __asm__ __volatile__ ("fldcw\t%0" : : "m" (cw));
+
+  if (has_sse())
+    {
+      unsigned int cw_sse;
+
+      __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
+
+      /* The SSE round control bits are shifted by 3 bits.  */
+      cw_sse &= ~(FPU_RC_MASK << 3);
+      cw_sse |= round_mode << 3;
+
+      __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
+    }
+}
+
+int
+get_fpu_rounding_mode (void)
+{
+  unsigned short cw;
+
+  __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
+
+  cw &= FPU_RC_MASK;
+
+  switch (cw)
+    {
+    case _FPU_RC_NEAREST:
+      return GFC_FPE_TONEAREST;
+    case _FPU_RC_UP:
+      return GFC_FPE_UPWARD;
+    case _FPU_RC_DOWN:
+      return GFC_FPE_DOWNWARD;
+    case _FPU_RC_ZERO:
+      return GFC_FPE_TOWARDZERO;
+    default:
+      return GFC_FPE_INVALID; /* Should be unreachable.  */
+    }
 }
