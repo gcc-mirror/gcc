@@ -4383,7 +4383,7 @@ cleanup_all_empty_eh (void)
     2) MUST_NOT_THROW regions that became dead because of 1) are optimized out
     3) Info about regions that are containing instructions, and regions
        reachable via local EH edges is collected
-    4) Eh tree is pruned for regions no longer neccesary.
+    4) Eh tree is pruned for regions no longer necessary.
 
    TODO: Push MUST_NOT_THROW regions to the root of the EH tree.
 	 Unify those that have the same failure decl and locus.

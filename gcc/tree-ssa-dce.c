@@ -1110,7 +1110,7 @@ forward_edge_to_pdom (edge e, basic_block post_dom_bb)
   e2 = redirect_edge_and_branch (e, post_dom_bb);
   cfg_altered = true;
 
-  /* If edge was already around, no updating is neccesary.  */
+  /* If edge was already around, no updating is necessary.  */
   if (e2 != e)
     return e2;
 

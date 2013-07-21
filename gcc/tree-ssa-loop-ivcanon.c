@@ -376,7 +376,7 @@ tree_estimate_loop_size (struct loop *loop, edge exit, edge edge_to_cancel, stru
    is dead and that some instructions will be eliminated after
    peeling.
 
-   Loop body is likely going to simplify futher, this is difficult
+   Loop body is likely going to simplify further, this is difficult
    to guess, we just decrease the result by 1/3.  */
 
 static unsigned HOST_WIDE_INT
@@ -782,7 +782,7 @@ try_unroll_loop_completely (struct loop *loop,
 	 storing or cumulating the return value.  */
       else if (size.num_pure_calls_on_hot_path
 	       /* One IV increment, one test, one ivtmp store
-		  and one usefull stmt.  That is about minimal loop
+		  and one useful stmt.  That is about minimal loop
 		  doing pure call.  */
 	       && (size.non_call_stmts_on_hot_path
 		   <= 3 + size.num_pure_calls_on_hot_path))
