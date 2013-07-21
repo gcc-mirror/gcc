@@ -231,7 +231,7 @@ db_phases (int phases)
 
    If it is determined that indeed an action should be taken, that
    is, if one action filter matches the exception being propagated,
-   then control should be transfered to landing-pad.
+   then control should be transferred to landing-pad.
 
    A null first-action-index indicates that there are only cleanups
    to run there.
