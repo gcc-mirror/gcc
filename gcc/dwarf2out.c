@@ -22703,7 +22703,7 @@ string_cst_pool_decl (tree t)
    of exprloc or after DW_OP_{,bit_}piece, and val_addr can't be
    resolved.  Replace it (both DW_OP_addr and DW_OP_stack_value)
    with DW_OP_GNU_implicit_pointer if possible
-   and return true, if unsuccesful, return false.  */
+   and return true, if unsuccessful, return false.  */
 
 static bool
 optimize_one_addr_into_implicit_ptr (dw_loc_descr_ref loc)

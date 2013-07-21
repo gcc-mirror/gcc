@@ -10163,7 +10163,7 @@ get_atomic_generic_size (location_t loc, tree function,
     {
       int size;
       tree type = TREE_TYPE ((*params)[x]);
-      /* __atomic_compare_exchange has a bool in the 4th postion, skip it.  */
+      /* __atomic_compare_exchange has a bool in the 4th position, skip it.  */
       if (n_param == 6 && x == 3)
         continue;
       if (!POINTER_TYPE_P (type))

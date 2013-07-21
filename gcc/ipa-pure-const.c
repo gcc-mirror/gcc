@@ -1080,7 +1080,7 @@ ignore_edge (struct cgraph_edge *e)
 
 /* Return true if NODE is self recursive function.
    ??? self recursive and indirectly recursive funcions should
-   be the same, so this function seems unnecesary.  */
+   be the same, so this function seems unnecessary.  */
 
 static bool
 self_recursive_p (struct cgraph_node *node)

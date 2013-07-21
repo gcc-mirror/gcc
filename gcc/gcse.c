@@ -3323,7 +3323,7 @@ hoist_code (void)
 		    }
 		}
 	      else
-		/* Punt, no point hoisting a single occurence.  */
+		/* Punt, no point hoisting a single occurrence.  */
 		occrs_to_hoist.release ();
 
 	      if (flag_ira_hoist_pressure

@@ -221,7 +221,7 @@ static GTY(()) tree shadow_ptr_types[2];
 /* This type represents a reference to a memory region.  */
 struct asan_mem_ref
 {
-  /* The expression of the begining of the memory region.  */
+  /* The expression of the beginning of the memory region.  */
   tree start;
 
   /* The size of the access (can be 1, 2, 4, 8, 16 for now).  */
