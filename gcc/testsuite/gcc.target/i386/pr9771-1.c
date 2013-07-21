@@ -28,7 +28,7 @@ void foo()
   *adr = save;
 }
 
-/* This must not be inlined becuase main() requires the frame pointer
+/* This must not be inlined because main() requires the frame pointer
    for stack alignment.  */
 void test(void) __attribute__((noinline));
 void test(void)

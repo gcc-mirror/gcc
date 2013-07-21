@@ -161,7 +161,7 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   */
   printf ("%s", p); /* { dg-warning "format" "bad argument types" } */
   /* The historical behavior is to allow signed / unsigned types
-     interchangably as arguments.  For values representable in both types,
+     interchangeably as arguments.  For values representable in both types,
      such usage may be correct.  For now preserve the behavior of GCC
      in such cases.
   */

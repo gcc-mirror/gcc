@@ -1,3 +1,41 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* c-c++-common/pr41779.c: Fix typos.
+	* gcc.c-torture/compile/20031125-2.c: Likewise.
+	* gcc.c-torture/compile/20040621-1.c: Likewise.
+	* gcc.c-torture/execute/20020418-1.c: Likewise.
+	* gcc.dg/20020108-1.c: Likewise.
+	* gcc.dg/atomic-generic-aux.c: Likewise.
+	* gcc.dg/builtin-complex-err-2.c: Likewise.
+	* gcc.dg/decl-1.c: Likewise.
+	* gcc.dg/di-sync-multithread.c: Likewise.
+	* gcc.dg/format/c90-printf-1.c: Likewise.
+	* gcc.dg/format/ms_c90-printf-1.c: Likewise.
+	* gcc.dg/long-long-compare-1.c: Likewise.
+	* gcc.dg/plugin/start_unit_plugin.c: Likewise.
+	* gcc.dg/pr17055-1.c: Likewise.
+	* gcc.dg/pr27095.c: Likewise.
+	* gcc.dg/torture/fp-int-convert.h: Likewise.
+	* gcc.dg/tree-prof/inliner-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030731-1.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-6.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-19.c: Likewise.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr21001.c: Likewise.
+	* gcc.dg/tree-ssa/pr42585.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-5.c: Likewise.
+	* gcc.dg/vect/vect-cond-5.c: Likewise.
+	* gcc.dg/weak/typeof-2.c: Likewise.
+	* gcc.target/aarch64/aapcs64/abitest-common.h: Likewise.
+	* gcc.target/arm/naked-1.c: Likewise.
+	* gcc.target/i386/pr9771-1.c: Likewise.
+	* gcc.target/sparc/sparc-constant-1.c: Likewise.
+	* gcc.target/sparc/struct-ret-check.c: Likewise.
+	* gcc.target/x86_64/abi/test_struct_returning.c: Likewise.
+	* gfortran.dg/c_ptr_tests_8_funcs.c: Likewise.
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h: Likewise.
+
 2013-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56937

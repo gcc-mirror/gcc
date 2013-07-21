@@ -20,7 +20,7 @@ void tuned_STREAM_Copy()
 /* Check that the memory references are based on &a and &c, with appropriate
    offsets.  Ideally, we would want each of them to appear once in the output.
    However, due to a bug in jump threading, we end up peeling one iteration from
-   the loop, which creates an additional occurence.  */
+   the loop, which creates an additional occurrence.  */
 
 /* { dg-final { scan-tree-dump-times "MEM.(base: &|symbol: )a," 2 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "MEM.(base: &|symbol: )c," 2 "optimized" } } */

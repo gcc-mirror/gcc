@@ -66,8 +66,8 @@ worker (void* data)
       /* OK, lets try and do some stuff to the workspace - by the end
          of the main loop our area should be the same as it is now - i.e. 0.  */
 
-      /* Push the arithmetic section upto 128 - one of the threads will
-         case this to carry accross the 32bit boundary.  */
+      /* Push the arithmetic section up to 128 - one of the threads will
+         case this to carry across the 32bit boundary.  */
       for (tmp2 = 0; tmp2 < 64; tmp2++)
 	{
 	  /* Add 2 using the two different adds.  */

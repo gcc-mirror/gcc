@@ -96,7 +96,7 @@ int main (void)
   /* If the caller does an unconditional adjustment it will skip
      the mov, and then we can fail the test based on check's value 
      We pass a valid pointer to a save area in order to check if 
-     caller incorrectly wrote to the save area aswell. There may
+     caller incorrectly wrote to the save area as well. There may
      be a case where the unimp check and skip is correct, but the
      write to the save area still occurs. */
 
