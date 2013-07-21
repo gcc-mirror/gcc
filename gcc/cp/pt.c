@@ -7204,7 +7204,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       int use_partial_inst_tmpl = false;
 
       if (template_type == error_mark_node)
-	/* An error occured while building the template TEMPL, and a
+	/* An error occurred while building the template TEMPL, and a
 	   diagnostic has most certainly been emitted for that
 	   already.  Let's propagate that error.  */
 	return error_mark_node;

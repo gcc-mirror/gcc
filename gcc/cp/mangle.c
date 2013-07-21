@@ -1446,7 +1446,7 @@ write_closure_type_name (const tree type)
 /* Convert NUMBER to ascii using base BASE and generating at least
    MIN_DIGITS characters. BUFFER points to the _end_ of the buffer
    into which to store the characters. Returns the number of
-   characters generated (these will be layed out in advance of where
+   characters generated (these will be laid out in advance of where
    BUFFER points).  */
 
 static int

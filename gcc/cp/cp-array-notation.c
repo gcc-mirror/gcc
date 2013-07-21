@@ -810,7 +810,7 @@ cp_expand_cond_array_notations (tree orig_stmt)
 			&no_rank))
 	return error_mark_node;
       /* If the condition has a zero rank, then handle array notations in body
-	 seperately.  */
+	 separately.  */
       if (cond_rank == 0)
 	return orig_stmt;
       if (cond_rank != yes_rank && yes_rank != 0)
