@@ -1,4 +1,10 @@
 2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35862
+	* config/fpu-387.h (set_fpu_rounding_mode,
+	get_fpu_rounding_mode): Add missing _ to fix build.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
 	    Uros Bizjak  <ubizjak@gmail.com>
 
 	PR fortran/35862
