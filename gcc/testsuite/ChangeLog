@@ -1,3 +1,9 @@
+2013-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56937
+	* gfortran.dg/dependency_42.f90:  New test.
+	* gfortran.dg/dependency_43.f90:  New test.
+
 2013-07-21  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/35862
