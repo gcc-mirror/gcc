@@ -2096,7 +2096,7 @@ picochip_expand_prologue (void)
 
   /* Save the link registers. We could try to save just one register
      here. This would reduce the amount of stack space required.
-     There hasnt been a good reason to do that so far. */
+     There hasn't been a good reason to do that so far. */
   if (!picochip_can_eliminate_link_sp_save ())
     picochip_emit_save_register (gen_rtx_REG (SImode, LINK_REGNUM),
 				 special_save_offset);
@@ -3630,7 +3630,7 @@ memory_just_off (rtx opnd1, rtx opnd2)
   }
 
   /* Peepholing 2 STW/LDWs has the restriction that the resulting STL/LDL's address
-     should be 4 byte aligned. We can currently guarentee that only if the base
+     should be 4 byte aligned. We can currently guarantee that only if the base
      address is FP(R13) and the offset is aligned. */
 
   if (reg1 == reg2 && reg1 == 13 && abs(offset1-offset2) == 2 && minimum(offset1, offset2) % 4 == 0)
@@ -3660,7 +3660,7 @@ registers_just_off (rtx opnd1, rtx opnd2)
            LDL r[3:2],[r11]
 
    NOTE:
-   1. The LDWs themselves only guarentee that r11 will be a 2-byte
+   1. The LDWs themselves only guarantee that r11 will be a 2-byte
    aligned address. Only FP can be assumed to be 4 byte aligned.
    2. The progression of addresses and the register numbers should
    be similar. For eg., if you swap r2 and r3 in the above instructions,
@@ -3883,7 +3883,7 @@ picochip_final_prescan_insn (rtx insn, rtx * opvec ATTRIBUTE_UNUSED,
   if (GET_MODE (insn) == TImode || !picochip_schedule_type == DFA_TYPE_SPEED)
     picochip_reset_vliw (insn);
 
-  /* No VLIW scheduling occured, so don't go any further. */
+  /* No VLIW scheduling occurred, so don't go any further. */
   if (picochip_schedule_type != DFA_TYPE_SPEED)
     return;
 

@@ -11253,7 +11253,7 @@ s390_sched_score (rtx insn)
 }
 
 /* This function is called via hook TARGET_SCHED_REORDER before
-   issueing one insn from list READY which contains *NREADYP entries.
+   issuing one insn from list READY which contains *NREADYP entries.
    For target z10 it reorders load instructions to avoid early load
    conflicts in the floating point pipeline  */
 static int

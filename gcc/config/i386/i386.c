@@ -2030,7 +2030,7 @@ static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
   /* X86_TUNE_PAD_RETURNS */
   m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC,
 
-  /* X86_TUNE_PAD_SHORT_FUNCTION: Pad short funtion.  */
+  /* X86_TUNE_PAD_SHORT_FUNCTION: Pad short function.  */
   m_ATOM,
 
   /* X86_TUNE_EXT_80387_CONSTANTS */
@@ -29707,7 +29707,7 @@ ix86_get_function_versions_dispatcher (void *decl)
 
   /* Find the default version and make it the first node.  */
   first_v = node_v;
-  /* Go to the beginnig of the chain.  */
+  /* Go to the beginning of the chain.  */
   while (first_v->prev != NULL)
     first_v = first_v->prev;
   default_version_info = first_v;
@@ -35861,7 +35861,7 @@ ix86_pad_short_function (void)
     }
 }
 
-/* Fix up a Windows system unwinder issue.  If an EH region falls thru into
+/* Fix up a Windows system unwinder issue.  If an EH region falls through into
    the epilogue, the Windows system unwinder will apply epilogue logic and
    produce incorrect offsets.  This can be avoided by adding a nop between
    the last insn that can throw and the first insn of the epilogue.  */
@@ -35883,7 +35883,7 @@ ix86_seh_fixup_eh_fallthru (void)
       if (insn == NULL)
 	continue;
 
-      /* We only care about preceeding insns that can throw.  */
+      /* We only care about preceding insns that can throw.  */
       insn = prev_active_insn (insn);
       if (insn == NULL || !can_throw_internal (insn))
 	continue;
@@ -36655,7 +36655,7 @@ ix86_expand_vector_init_interleave (enum machine_mode mode,
       op0 = gen_reg_rtx (mode);
       emit_move_insn (op0, gen_lowpart (mode, op1));
 
-      /* Load even elements into the second positon.  */
+      /* Load even elements into the second position.  */
       emit_insn (gen_load_even (op0,
 				force_reg (inner_mode,
 					   ops [i + i + 1]),
@@ -41179,7 +41179,7 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 
 /* Helper function of ix86_expand_mul_widen_evenodd.  Return true
    if op is CONST_VECTOR with all odd elements equal to their
-   preceeding element.  */
+   preceding element.  */
 
 static bool
 const_vector_equal_evenodd_p (rtx op)

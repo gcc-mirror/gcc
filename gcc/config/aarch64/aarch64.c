@@ -2288,7 +2288,7 @@ aarch64_expand_epilogue (bool for_sibcall)
 	 However the dwarf emitter only understands a constant
 	 register offset.
 
-	 The solution choosen here is to use the otherwise unused IP0
+	 The solution chosen here is to use the otherwise unused IP0
 	 as a temporary register to hold the current SP value.  The
 	 CFA is described using IP0 then SP is modified.  */
 

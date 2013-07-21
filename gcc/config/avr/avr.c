@@ -7541,7 +7541,7 @@ avr_rotate_bytes (rtx operands[])
 		gcc_assert (move[blocked].links != -1);
 		/* Replace src of  blocking move with scratch reg.  */
 		move[move[blocked].links].src = scratch;
-		/* Make dependent on scratch move occuring.  */
+		/* Make dependent on scratch move occurring.  */
 		move[blocked].links = size;
 		size=size+1;
 	      }

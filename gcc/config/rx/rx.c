@@ -1112,7 +1112,7 @@ static unsigned int
 rx_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
 			  const_tree type ATTRIBUTE_UNUSED)
 {
-  /* Older versions of the RX backend aligned all on-stack arguements
+  /* Older versions of the RX backend aligned all on-stack arguments
      to 32-bits.  The RX C ABI however says that they should be
      aligned to their natural alignment.  (See section 5.2.2 of the ABI).  */
   if (TARGET_GCC_ABI)
