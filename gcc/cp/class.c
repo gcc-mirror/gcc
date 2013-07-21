@@ -5864,7 +5864,7 @@ layout_class_type (tree t, tree *virtuals_p)
   /* Maps offsets (represented as INTEGER_CSTs) to a TREE_LIST of
      types that appear at that offset.  */
   splay_tree empty_base_offsets;
-  /* True if the last field layed out was a bit-field.  */
+  /* True if the last field laid out was a bit-field.  */
   bool last_field_was_bitfield = false;
   /* The location at which the next field should be inserted.  */
   tree *next_field;
@@ -6829,7 +6829,7 @@ fixed_type_or_null (tree instance, int *nonnull, int *cdtorp)
    INSTANCE is really a pointer. Return negative if this is a
    ctor/dtor. There the dynamic type is known, but this might not be
    the most derived base of the original object, and hence virtual
-   bases may not be layed out according to this type.
+   bases may not be laid out according to this type.
 
    Used to determine whether the virtual function table is needed
    or not.
