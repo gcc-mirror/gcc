@@ -852,7 +852,7 @@ may_need_named_section_p (lto_symtab_encoder_t encoder, symtab_node node)
    of the same name in partition ENCODER (or in whole compilation unit if
    ENCODER is NULL) and if so, mangle the statics.  Always mangle all
    conflicting statics, so we reduce changes of silently miscompiling
-   asm statemnets refering to them by symbol name.  */
+   asm statemnets referring to them by symbol name.  */
 
 static void
 rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
@@ -902,7 +902,7 @@ rename_statics (lto_symtab_encoder_t encoder, symtab_node node)
 	    || lto_symtab_encoder_lookup (encoder, s) != LCC_NOT_FOUND))
       {
         if (privatize_symbol_name (s))
-	  /* Re-start from beggining since we do not know how many symbols changed a name.  */
+	  /* Re-start from beginning since we do not know how many symbols changed a name.  */
 	  s = symtab_node_for_asm (name);
         else s = s->symbol.next_sharing_asm_name;
       }

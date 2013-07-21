@@ -874,7 +874,7 @@ symtab_alias_ultimate_target (symtab_node node, enum availability *availability)
 
   /* To determine visibility of the target, we follow ELF semantic of aliases.
      Here alias is an alternative assembler name of a given definition. Its
-     availablity prevails the availablity of its target (i.e. static alias of
+     availability prevails the availability of its target (i.e. static alias of
      weak definition is available.
 
      Weakref is a different animal (and not part of ELF per se). It is just
