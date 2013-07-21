@@ -20,7 +20,7 @@ __atomic_exchange (size_t size, void *obj, void *val, void *ret, int model)
 
 
 /* Note that the external version of this routine has the boolean weak/strong
-   parameter removed.  This is required by teh external library.  */
+   parameter removed.  This is required by the external library.  */
 bool
 __atomic_compare_exchange (size_t size, void *obj, void *expected,
 			   void *desired, int model1, int model2)

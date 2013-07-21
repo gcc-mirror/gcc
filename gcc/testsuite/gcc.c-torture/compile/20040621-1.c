@@ -1,4 +1,4 @@
-/* This test woudl cause partial redundancies too complex for PRE
+/* This test would cause partial redundancies too complex for PRE
    to insert using a single temporary due to them not being GIMPLE
    expressions.  */
 int ssbgst (int c, int k)

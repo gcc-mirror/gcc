@@ -190,7 +190,7 @@ void check_all (Type class, unsigned long size)
        is given to the f_* functions, otherwise a conforming program
        could notice the struct changing already before the function returns.
        This temporary struct could be anywhere.  For GCC it will be on
-       stack, but noone is forbidding that it could be a static variable
+       stack, but no one is forbidding that it could be a static variable
        if there's no threading or proper locking.  Nobody in his right mind
        will not use the stack for that.  */
     case MEM: assert (*(unsigned char*)struct_addr == 42 && rdi == rax); break;

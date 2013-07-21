@@ -53,7 +53,7 @@ int main ()
   return 0;
 }
 
-/* Double reduction with cond_expr is not supported, since eventhough the order 
+/* Double reduction with cond_expr is not supported, since even though the order 
    of computation is the same, but vector results should be reduced to scalar
    result, which can'be done for cond_expr.  */
 /* { dg-final { scan-tree-dump-times "OUTER LOOP VECTORIZED" 1 "vect" { xfail *-*-* } } } */

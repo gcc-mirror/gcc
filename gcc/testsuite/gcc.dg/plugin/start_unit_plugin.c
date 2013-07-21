@@ -1,7 +1,7 @@
 /* This plugin tests the correct operation of a PLUGIN_START_UNIT callback.
  * By the time a PLUGIN_START_UNIT callback is invoked, the frontend 
  * initialization should have completed. At least the different *_type_nodes
- * should have been created. This plugin creates an artifical global 
+ * should have been created. This plugin creates an artificial global 
  * interger variable.
  * 
 */
