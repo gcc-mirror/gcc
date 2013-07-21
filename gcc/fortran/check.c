@@ -2328,16 +2328,85 @@ gfc_check_logical (gfc_expr *a, gfc_expr *kind)
 /* Min/max family.  */
 
 static bool
-min_max_args (gfc_actual_arglist *arg)
+min_max_args (gfc_actual_arglist *args)
 {
-  if (arg == NULL || arg->next == NULL)
+  gfc_actual_arglist *arg;
+  int i, j, nargs, *nlabels, nlabelless;
+  bool a1 = false, a2 = false;
+
+  if (args == NULL || args->next == NULL)
     {
       gfc_error ("Intrinsic '%s' at %L must have at least two arguments",
 		 gfc_current_intrinsic, gfc_current_intrinsic_where);
       return false;
     }
 
+  if (!args->name)
+    a1 = true;
+
+  if (!args->next->name)
+    a2 = true;
+
+  nargs = 0;
+  for (arg = args; arg; arg = arg->next)
+    if (arg->name)
+      nargs++;
+
+  if (nargs == 0)
+    return true;
+
+  /* Note: Having a keywordless argument after an "arg=" is checked before.  */
+  nlabelless = 0;
+  nlabels = XALLOCAVEC (int, nargs);
+  for (arg = args, i = 0; arg; arg = arg->next, i++)
+    if (arg->name)
+      {
+	int n;
+	char *endp;
+
+	if (arg->name[0] != 'a' || arg->name[1] < '1' || arg->name[1] > '9')
+	  goto unknown;
+	n = strtol (&arg->name[1], &endp, 10);
+	if (endp[0] != '\0')
+	  goto unknown;
+	if (n <= 0)
+	  goto unknown;
+	if (n <= nlabelless)
+	  goto duplicate;
+	nlabels[i] = n;
+	if (n == 1)
+	  a1 = true;
+	if (n == 2)
+	  a2 = true;
+      }
+    else
+      nlabelless++;
+
+  if (!a1 || !a2)
+    {
+      gfc_error ("Missing '%s' argument to the %s intrinsic at %L",
+	         !a1 ? "a1" : "a2", gfc_current_intrinsic,
+		 gfc_current_intrinsic_where);
+      return false;
+    }
+
+  /* Check for duplicates.  */
+  for (i = 0; i < nargs; i++)
+    for (j = i + 1; j < nargs; j++)
+      if (nlabels[i] == nlabels[j])
+	goto duplicate;
+
   return true;
+
+duplicate:
+  gfc_error ("Duplicate argument '%s' at %L to intrinsic %s", arg->name,
+	     &arg->expr->where, gfc_current_intrinsic);
+  return false;
+
+unknown:
+  gfc_error ("Unknown argument '%s' at %L to intrinsic %s", arg->name,
+	     &arg->expr->where, gfc_current_intrinsic);
+  return false;
 }
 
 
@@ -2345,7 +2414,6 @@ static bool
 check_rest (bt type, int kind, gfc_actual_arglist *arglist)
 {
   gfc_actual_arglist *arg, *tmp;
-
   gfc_expr *x;
   int m, n;
 
