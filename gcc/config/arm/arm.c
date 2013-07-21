@@ -24362,7 +24362,7 @@ arm_expand_epilogue (bool really_return)
   func_type = arm_current_func_type ();
 
   /* Naked functions don't have epilogue.  Hence, generate return pattern, and
-     let output_return_instruction take care of instruction emition if any.  */
+     let output_return_instruction take care of instruction emission if any.  */
   if (IS_NAKED (func_type)
       || (IS_VOLATILE (func_type) && TARGET_ABORT_NORETURN))
     {

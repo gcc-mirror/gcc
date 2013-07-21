@@ -14596,7 +14596,7 @@ rs6000_check_sdmode (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 /* Classify a register type.  Because the FMRGOW/FMRGEW instructions only work
    on traditional floating point registers, and the VMRGOW/VMRGEW instructions
    only work on the traditional altivec registers, note if an altivec register
-   was choosen.  */
+   was chosen.  */
 
 static enum rs6000_reg_type
 register_to_reg_type (rtx reg, bool *is_altivec)
