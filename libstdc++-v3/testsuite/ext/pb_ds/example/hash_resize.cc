@@ -36,7 +36,7 @@
 
 /**
  * This example shows how to externally manipulate the size of a hash-based
- * container object throught its resize-policy object.
+ * container object through its resize-policy object.
  **/
 
 #include <functional>
