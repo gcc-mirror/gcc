@@ -632,7 +632,7 @@ encode_type (tree type, int curtype, int format)
 	      tree int_type = type;
 	      if (flag_next_runtime)
 		{
-		  /* Another legacy kludge for compatiblity with
+		  /* Another legacy kludge for compatibility with
 		     gcc-3.3: 32-bit longs are encoded as 'l' or 'L',
 		     but not always.  For typedefs, we need to use 'i'
 		     or 'I' instead if encoding a struct field, or a

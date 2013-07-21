@@ -76,7 +76,7 @@ along with GCC; see the file COPYING3.  If not see
    For example, at present, any target that includes an implementation of
    the NeXT runtime needs to place Objective-C meta-data into specific
    named sections.  This should _not_ be done for the GNU runtime, and the
-   folowing macro is used to attach Objective-C private attributes that may
+   following macro is used to attach Objective-C private attributes that may
    be used to identify the runtime for which the meta-data are intended.  */
 
 #define OBJCMETA(DECL,VERS,KIND)					\
@@ -477,7 +477,7 @@ build_protocol_template (void)
   objc_finish_struct (objc_protocol_template, decls);
 }
 
-/* --- names, decls + identifers --- */
+/* --- names, decls + identifiers --- */
 
 static void
 build_selector_table_decl (void)
