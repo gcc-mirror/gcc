@@ -83,7 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 	   b) early small interprocedural passes.
 
 	      Those are interprocedural passes executed only at compilation
-	      time.  These include, for exmaple, transational memory lowering,
+	      time.  These include, for example, transational memory lowering,
 	      unreachable code removal and other simple transformations.
 
 	   c) IP analysis stage.  All interprocedural passes do their

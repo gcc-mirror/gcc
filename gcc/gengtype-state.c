@@ -244,7 +244,7 @@ s_expr_writer::write_any_indent (int leading_spaces)
 }
 
 /* Write the beginning of a new s-expresion e.g. "(!foo "
-   The writer automatically adds whitespace to show the hierachical
+   The writer automatically adds whitespace to show the hierarchical
    structure of the expressions, so each one starts on a new line,
    and any within it will be at an increased indentation level.  */
 void

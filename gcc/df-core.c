@@ -961,7 +961,7 @@ df_worklist_propagate_backward (struct dataflow *dataflow,
    DATAFLOW is problem we are solving, PENDING is worklist of basic blocks we
    need to visit.
    BLOCK_IN_POSTORDER is array of size N_BLOCKS specifying postorder in BBs and
-   BBINDEX_TO_POSTORDER is array mapping back BB->index to postorder possition.
+   BBINDEX_TO_POSTORDER is array mapping back BB->index to postorder position.
    PENDING will be freed.
 
    The worklists are bitmaps indexed by postorder positions.  

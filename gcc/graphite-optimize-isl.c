@@ -165,9 +165,9 @@ getTileMap(isl_ctx *ctx, int scheduleDimensions, int tileSize)
       tileMap = isl_basic_map_add_constraint(tileMap, c);
     }
 
-  /* Project out auxilary dimensions.
+  /* Project out auxiliary dimensions.
 
-     The auxilary dimensions are transformed into existentially quantified ones.
+     The auxiliary dimensions are transformed into existentially quantified ones.
      This reduces the number of visible scattering dimensions and allows Cloog
      to produces better code.  */
   tileMap = isl_basic_map_project_out(tileMap, isl_dim_out,

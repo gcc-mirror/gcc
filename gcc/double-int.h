@@ -190,7 +190,7 @@ struct double_int
   bool operator == (double_int cst2) const;
   bool operator != (double_int cst2) const;
 
-  /* Please migrate away from using these member variables publically.  */
+  /* Please migrate away from using these member variables publicly.  */
 
   unsigned HOST_WIDE_INT low;
   HOST_WIDE_INT high;

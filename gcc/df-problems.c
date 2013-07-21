@@ -115,7 +115,7 @@ df_print_bb_index (basic_block bb, FILE *file)
    block.  The id field in the ref is used to index into these sets.
    See df.h for details.
 
-   If the DF_RD_PRUNE_DEAD_DEFS changable flag is set, only DEFs reaching
+   If the DF_RD_PRUNE_DEAD_DEFS changeable flag is set, only DEFs reaching
    existing uses are included in the global reaching DEFs set, or in other
    words only DEFs that are still live.  This is a kind of pruned version
    of the traditional reaching definitions problem that is much less
