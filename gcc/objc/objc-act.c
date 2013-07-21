@@ -1401,7 +1401,7 @@ objc_maybe_build_component_ref (tree object, tree property_ident)
 		     object.component dot-syntax without a declared
 		     property (this is valid for classes too).  Look
 		     for getter/setter methods and internally declare
-		     an artifical property based on them if found.  */
+		     an artificial property based on them if found.  */
 		  x = maybe_make_artificial_property_decl (NULL_TREE,
 							   NULL_TREE,
 							   rprotos,

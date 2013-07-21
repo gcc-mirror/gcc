@@ -9088,7 +9088,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   cp_lexer_save_tokens (parser->lexer);
   attrs_location = cp_lexer_peek_token (parser->lexer)->location;
   if (c_dialect_objc ())
-    /* In obj-c++, seing '[[' might be the either the beginning of
+    /* In obj-c++, seeing '[[' might be the either the beginning of
        c++11 attributes, or a nested objc-message-expression.  So
        let's parse the c++11 attributes tentatively.  */
     cp_parser_parse_tentatively (parser);

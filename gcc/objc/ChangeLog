@@ -1,3 +1,11 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* objc-act.c: Fix typos.
+	* objc-encoding.c: Likewise.
+	* objc-gnu-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+
 2013-05-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call):

@@ -583,7 +583,7 @@ build_v1_protocol_template (void)
   objc_finish_struct (objc_protocol_template, decls);
 }
 
-/* --- names, decls identifers --- */
+/* --- names, decls identifiers --- */
 
 static tree
 next_runtime_abi_01_super_superclassfield_id (void)
