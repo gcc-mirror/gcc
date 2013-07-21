@@ -513,6 +513,7 @@ fi
 # Check for SysV fpsetmask
 LIBGFOR_CHECK_FPSETMASK
 AC_CHECK_TYPES([fp_except,fp_except_t], [], [], [[#include <ieeefp.h>]])
+AC_CHECK_TYPES([fp_rnd,fp_rnd_t], [], [], [[#include <ieeefp.h>]])
 
 # Check for AIX fp_trap and fp_enable
 AC_CHECK_FUNC([fp_trap],[have_fp_trap=yes AC_DEFINE([HAVE_FP_TRAP],[1],[fp_trap is present])])

@@ -1,5 +1,10 @@
 2013-07-21  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/35862
+	* gfortran.dg/round_4.f90: New.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57894
 	* gfortran.dg/min_max_conformance_2.f90: New.
 

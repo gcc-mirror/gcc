@@ -129,6 +129,24 @@ int
 convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
 {
   char *endptr = NULL;
+  int round_mode, old_round_mode;
+
+  switch (dtp->u.p.current_unit->round_status)
+    {
+      case ROUND_COMPATIBLE:
+	/* FIXME: As NEAREST but round away from zero for a tie.  */
+      case ROUND_UNSPECIFIED:
+	/* Should not occur.  */
+      case ROUND_PROCDEFINED:
+	round_mode = ROUND_NEAREST;
+	break;
+      default:
+	round_mode = dtp->u.p.current_unit->round_status;
+	break;
+    }
+
+  old_round_mode = get_fpu_rounding_mode();
+  set_fpu_rounding_mode (round_mode);
 
   switch (length)
     {
@@ -166,6 +184,8 @@ convert_real (st_parameter_dt *dtp, void *dest, const char *buffer, int length)
     default:
       internal_error (&dtp->common, "Unsupported real kind during IO");
     }
+
+  set_fpu_rounding_mode (old_round_mode);
 
   if (buffer == endptr)
     {
