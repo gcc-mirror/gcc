@@ -3079,14 +3079,10 @@ avr_out_xload (rtx insn ATTRIBUTE_UNUSED, rtx *op, int *plen)
   xop[2] = lpm_addr_reg_rtx;
   xop[3] = AVR_HAVE_LPMX ? op[0] : lpm_reg_rtx;
 
-  if (plen)
-    *plen = 0;
+  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, -1);
 
   avr_asm_len ("sbrc %1,7" CR_TAB
-               "ld %3,%a2" CR_TAB
-               "sbrs %1,7", xop, plen, 3);
-
-  avr_asm_len (AVR_HAVE_LPMX ? "lpm %3,%a2" : "lpm", xop, plen, 1);
+               "ld %3,%a2", xop, plen, 2);
 
   if (REGNO (xop[0]) != REGNO (xop[3]))
     avr_asm_len ("mov %0,%3", xop, plen, 1);
