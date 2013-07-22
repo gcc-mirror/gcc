@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-options "-O0" }
 !
 ! Test that for CAF components _gfortran_caf_deregister is called
 ! Test that norealloc happens for CAF components during assignment

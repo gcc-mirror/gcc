@@ -1,5 +1,12 @@
 2013-07-22  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/57906
+	PR fortran/52052
+	* coarray/lib_realloc_1.f90: Permit optimization.
+	* gfortran.dg/coarray_31.f90: New.
+
+2013-07-22  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57762
 	* gfortran.dg/class_array_7.f03: Fix memory leak.
 

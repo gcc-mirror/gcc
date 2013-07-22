@@ -7589,9 +7589,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  if ((c->ts.type == BT_DERIVED && !c->attr.pointer)
 	      || (c->ts.type == BT_CLASS && !CLASS_DATA (c)->attr.class_pointer))
- 	    {
- 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
- 				      decl, cdecl, NULL_TREE);
+	    {
+	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				      decl, cdecl, NULL_TREE);
 
 	      /* The finalizer frees allocatable components.  */
 	      called_dealloc_with_status
@@ -7737,8 +7737,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				  cdecl, NULL_TREE);
 	  dcmp = fold_build3_loc (input_location, COMPONENT_REF, ctype, dest,
 				  cdecl, NULL_TREE);
+
 	  if (c->attr.codimension)
-	    gfc_add_modify (&fnblock, dcmp, comp);
+	    {
+	      if (c->ts.type == BT_CLASS)
+		{
+		  comp = gfc_class_data_get (comp);
+		  dcmp = gfc_class_data_get (dcmp);
+		}
+	      gfc_conv_descriptor_data_set (&fnblock, dcmp,
+					   gfc_conv_descriptor_data_get (comp));
+	    }
 	  else
 	    {
 	      tmp = structure_alloc_comps (c->ts.u.derived, comp, dcmp,
