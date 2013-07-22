@@ -4959,7 +4959,7 @@ the function prologue.  Normally, the profiling code comes after.
 @cindex tail calls
 
 @deftypefn {Target Hook} bool TARGET_FUNCTION_OK_FOR_SIBCALL (tree @var{decl}, tree @var{exp})
-True if it is ok to do sibling call optimization for the specified
+True if it is OK to do sibling call optimization for the specified
 call expression @var{exp}.  @var{decl} will be the called function,
 or @code{NULL} if this is an indirect call.
 
@@ -9861,7 +9861,7 @@ needed.
 
 @deftypefn {Target Hook} bool TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P (const_tree @var{fndecl})
 @cindex inlining
-This target hook returns @code{true} if it is ok to inline @var{fndecl}
+This target hook returns @code{true} if it is OK to inline @var{fndecl}
 into the current function, despite its having target-specific
 attributes, @code{false} otherwise.  By default, if a function has a
 target specific attribute attached to it, it will not be inlined.

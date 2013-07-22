@@ -16489,7 +16489,7 @@ namespace std @{
     template <class T> struct A @{ @};
   @}
   using namespace debug __attribute ((__strong__));
-  template <> struct A<int> @{ @};   // @r{ok to specialize}
+  template <> struct A<int> @{ @};   // @r{OK to specialize}
 
   template <class T> void f (A<T>);
 @}
