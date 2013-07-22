@@ -1,3 +1,7 @@
+2013-07-22  Marek Polacek  <polacek@redhat.com>
+
+	* gimplify.c: Don't include gimple.h twice.
+
 2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/constraints.md (Pd): Allow TARGET_THUMB
