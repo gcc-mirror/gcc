@@ -66,13 +66,14 @@
 ;; ALU operations with no shifted operand
 (define_insn_reservation "alu_op" 1 
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg"))
+      (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
+                       mov_imm,mov_reg,mvn_imm,mvn_reg"))
  "a_e,a_m,a_w")
 
 ;; ALU operations with a shift-by-constant operand
 (define_insn_reservation "alu_shift_op" 1 
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "extend,arlo_shift"))
+      (eq_attr "type" "extend,arlo_shift,mov_shift,mvn_shift"))
  "a_e,a_m,a_w")
 
 ;; ALU operations with a shift-by-register operand
@@ -81,7 +82,7 @@
 ;; the execute stage.
 (define_insn_reservation "alu_shift_reg_op" 2 
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "arlo_shift_reg"))
+      (eq_attr "type" "arlo_shift_reg,mov_shift_reg,mvn_shift_reg"))
  "a_e*2,a_m,a_w")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

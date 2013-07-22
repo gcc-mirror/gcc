@@ -32,7 +32,9 @@
 (define_insn_reservation "cortex_m4_alu" 1
   (and (eq_attr "tune" "cortexm4")
        (ior (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,extend,\
-                             arlo_shift,arlo_shift_reg")
+                             arlo_shift,arlo_shift_reg,\
+                             mov_imm,mov_reg,mov_shift,mov_shift_reg,\
+                             mvn_imm,mvn_reg,mvn_shift,mvn_shift_reg")
 	    (ior (eq_attr "mul32" "yes")
 		 (eq_attr "mul64" "yes"))))
   "cortex_m4_ex")

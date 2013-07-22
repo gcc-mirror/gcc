@@ -61,8 +61,7 @@
     }
 }
  [(set_attr "neon_type" "neon_int_1,*,neon_vmov,*,neon_mrrc,neon_mcr_2_mcrr,*,*,*")
-  (set_attr "type" "*,f_stored,*,f_loadd,*,*,arlo_reg,load2,store2")
-  (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
+  (set_attr "type" "*,f_stored,*,f_loadd,*,*,mov_reg,load2,store2")
   (set_attr "length" "4,4,4,4,4,4,8,8,8")
   (set_attr "arm_pool_range"     "*,*,*,1020,*,*,*,1020,*")
   (set_attr "thumb2_pool_range"     "*,*,*,1018,*,*,*,1018,*")
@@ -107,8 +106,7 @@
 }
   [(set_attr "neon_type" "neon_int_1,neon_stm_2,neon_vmov,neon_ldm_2,\
                           neon_mrrc,neon_mcr_2_mcrr,*,*,*")
-   (set_attr "type" "*,*,*,*,*,*,arlo_reg,load4,store4")
-   (set_attr "insn" "*,*,*,*,*,*,mov,*,*")
+   (set_attr "type" "*,*,*,*,*,*,mov_reg,load4,store4")
    (set_attr "length" "4,8,4,8,8,8,16,8,16")
    (set_attr "arm_pool_range" "*,*,*,1020,*,*,*,1020,*")
    (set_attr "thumb2_pool_range" "*,*,*,1018,*,*,*,1018,*")
