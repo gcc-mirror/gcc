@@ -16832,6 +16832,11 @@ mips_option_override (void)
 
   /* End of code shared with GAS.  */
 
+  /* The R5900 FPU only supports single precision.  */
+  if (TARGET_MIPS5900 && TARGET_HARD_FLOAT_ABI && TARGET_DOUBLE_FLOAT)
+    error ("unsupported combination: %s",
+	   "-march=r5900 -mhard-float -mdouble-float");
+
   /* If a -mlong* option was given, check that it matches the ABI,
      otherwise infer the -mlong* setting from the other options.  */
   if ((target_flags_explicit & MASK_LONG64) != 0)
@@ -17139,6 +17144,9 @@ mips_option_override (void)
      filling.  Registering the pass must be done at start up.  It's
      convenient to do it here.  */
   register_pass (&insert_pass_mips_machine_reorg2);
+
+  if (TARGET_HARD_FLOAT_ABI && TARGET_MIPS5900)
+    REAL_MODE_FORMAT (SFmode) = &spu_single_format;
 }
 
 /* Swap the register information for registers I and I + 1, which

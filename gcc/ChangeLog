@@ -1,3 +1,13 @@
+2013-07-22  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config.gcc (mips*-*-*): Add --with-fpu support.  Make single the
+	default for R5900 targets.
+	* config/mips/mips.h (OPTION_DEFAULT_SPECS): Handle --with-fpu.
+	(ISA_HAS_LDC1_SDC1): Set to false for TARGET_MIPS5900.
+	* config/mips/mips.c (mips_option_override): Report an error for
+	-march=r5900 -mhard-float -mdouble-float.  Use spu_single_format
+	for -march=r5900 -mhard-float.
+
 2013-07-22  Chang  <pchang9@cs.wisc.edu>
 
 	* df-problems.c (can_move_insns_across): Exit loop once we
