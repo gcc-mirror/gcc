@@ -1,3 +1,28 @@
+2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/constraints.md (Pd): Allow TARGET_THUMB
+	instead of TARGET_THUMB1.
+	(Pz): New constraint.
+	* config/arm/arm.md (arm_addsi3): Add alternatives for 16-bit
+	encodings.
+	(compare_negsi_si): Likewise.
+	(compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1): Likewise.
+	(addsi3_carryin_<optab>): Likewise.
+	(addsi3_carryin_alt2_<optab>): Likewise.
+	(addsi3_carryin_shift_<optab>): Disable cond_exec variant
+	for arm_restrict_it.
+	(subsi3_carryin): Likewise.
+	(arm_subsi3_insn): Add alternatives for 16-bit encoding.
+	(minmax_arithsi): Disable for arm_restrict_it.
+	(minmax_arithsi_non_canon): Adjust for arm_restrict_it.
+	(satsi_<SAT:code>): Disable cond_exec variant for arm_restrict_it.
+	(satsi_<SAT:code>_shift): Likewise.
+	(arm_shiftsi3): Add alternative for 16-bit encoding.
+	(arm32_movhf): Disable for arm_restrict_it.
+	(arm_cmpdi_unsigned): Add alternatives for 16-bit encoding.
+	(arm_movtas_ze): Disable cond_exec variant for arm_restrict_it.
+
 2013-07-22  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/arm/arm.md (attribute "insn"): Delete.
