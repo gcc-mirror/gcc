@@ -30,6 +30,11 @@
 # include <cpuid.h>
 #endif
 
+#include <cstdio>
+
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -126,8 +131,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
 
     result_type __ret;
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+    read(fileno(_M_file), reinterpret_cast<void*>(&__ret), sizeof(result_type));
+#else
     std::fread(reinterpret_cast<void*>(&__ret), sizeof(result_type),
 	       1, _M_file);
+#endif
     return __ret;
   }
 
