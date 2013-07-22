@@ -1880,7 +1880,7 @@ needed.",
 DEFHOOK
 (function_attribute_inlinable_p,
  "@cindex inlining\n\
-This target hook returns @code{true} if it is ok to inline @var{fndecl}\n\
+This target hook returns @code{true} if it is OK to inline @var{fndecl}\n\
 into the current function, despite its having target-specific\n\
 attributes, @code{false} otherwise.  By default, if a function has a\n\
 target specific attribute attached to it, it will not be inlined.",
@@ -2529,7 +2529,7 @@ The default value of this hook is based on target's libc.",
    this is an indirect call.  */
 DEFHOOK
 (function_ok_for_sibcall,
- "True if it is ok to do sibling call optimization for the specified\n\
+ "True if it is OK to do sibling call optimization for the specified\n\
 call expression @var{exp}.  @var{decl} will be the called function,\n\
 or @code{NULL} if this is an indirect call.\n\
 \n\
