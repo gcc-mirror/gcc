@@ -1,5 +1,6 @@
 /* PR tree-optimization/53366 */
 /* { dg-do run { target { size32plus } } } */
+/* { dg-require-effective-target size32plus } */
 
 extern void abort (void);
 
