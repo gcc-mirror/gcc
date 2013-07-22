@@ -975,7 +975,10 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 			&& as->lower[n]
 			&& as->upper[n]->expr_type == EXPR_CONSTANT
 			&& as->lower[n]->expr_type == EXPR_CONSTANT))
-		    packed = PACKED_PARTIAL;
+		    {
+		      packed = PACKED_PARTIAL;
+		      break;
+		    }
 		}
 	    }
 	  else

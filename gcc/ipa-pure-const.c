@@ -1431,7 +1431,10 @@ propagate_nothrow (void)
 	    }
           for (ie = node->indirect_calls; ie; ie = ie->next_callee)
 	    if (ie->can_throw_external)
-	      can_throw = true;
+	      {
+		can_throw = true;
+		break;
+	      }
 	  w_info = (struct ipa_dfs_info *) w->symbol.aux;
 	  w = w_info->next_cycle;
 	}

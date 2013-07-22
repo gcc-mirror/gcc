@@ -1,3 +1,15 @@
+2013-07-22  Chang  <pchang9@cs.wisc.edu>
+
+	* df-problems.c (can_move_insns_across): Exit loop once we
+	find a non-fixed, non-global register.
+
+	* ipa-pure-const.c (propagate_nothrow): Exit loop after
+	setting can_throw.
+
+	* omega.c (omega_eliminate_red): Break after setting red_found.
+	(omega_problem_has_red_equations): Similarly after setting found.
+	(omega_query_variable): Similarly after setting coupled.
+
 2013-07-22  Marek Polacek  <polacek@redhat.com>
 
 	* gimplify.c: Don't include gimple.h twice.

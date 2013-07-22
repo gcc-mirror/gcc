@@ -1,3 +1,8 @@
+2013-07-22  Chang  <pchang9@cs.wisc.edu>
+
+	* trans-decl.c (gfc_build_dummy_array_decl): Exit loop after
+	setting PACKED_PARTIAL.
+
 2013-07-22  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-array.c (gfc_array_allocate): Correct memory-leak patch.

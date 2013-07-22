@@ -4040,7 +4040,10 @@ can_move_insns_across (rtx from, rtx to, rtx across_from, rtx across_to,
 	  if (i < FIRST_PSEUDO_REGISTER
 	      && ! fixed_regs[i]
 	      && ! global_regs[i])
-	    fail = 1;
+	    {
+	      fail = 1;
+	      break;
+	    }
 	}
     }
 
