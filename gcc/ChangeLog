@@ -1,3 +1,8 @@
+2013-07-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (nonlocal_goto_receiver): Delete insn if
+	it is not needed after split.
+
 2013-07-20  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/51784
