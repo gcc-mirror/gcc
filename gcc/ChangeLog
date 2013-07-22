@@ -1,3 +1,34 @@
+2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/predicates.md (shiftable_operator_strict_it):
+	New predicate.
+	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si):
+	Disable cond_exec version for arm_restrict_it.
+	(thumb2_smaxsi3): Convert to generate cond_exec.
+	(thumb2_sminsi3): Likewise.
+	(thumb32_umaxsi3): Likewise.
+	(thumb2_uminsi3): Likewise.
+	(thumb2_abssi2): Adjust constraints for arm_restrict_it.
+	(thumb2_neg_abssi2): Likewise.
+	(thumb2_mov_scc): Add alternative for 16-bit encoding.
+	(thumb2_movsicc_insn): Adjust alternatives.
+	(thumb2_mov_negscc): Disable for arm_restrict_it.
+	(thumb2_mov_negscc_strict_it): New pattern.
+	(thumb2_mov_notscc_strict_it): New pattern.
+	(thumb2_mov_notscc): Disable for arm_restrict_it.
+	(thumb2_ior_scc): Likewise.
+	(thumb2_ior_scc_strict_it): New pattern.
+	(thumb2_cond_move): Adjust for arm_restrict_it.
+	(thumb2_cond_arith): Disable for arm_restrict_it.
+	(thumb2_cond_arith_strict_it): New pattern.
+	(thumb2_cond_sub): Adjust for arm_restrict_it.
+	(thumb2_movcond): Likewise.
+	(thumb2_extendqisi_v6): Disable cond_exec variant for arm_restrict_it.
+	(thumb2_zero_extendhisi2_v6): Likewise.
+	(thumb2_zero_extendqisi2_v6): Likewise.
+	(orsi_notsi_si): Likewise.
+	(orsi_not_shiftsi_si): Likewise.
+
 2013-07-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.c (avr_out_xload): No SBIS around LPM so that
