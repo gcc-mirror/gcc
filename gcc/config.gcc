@@ -3091,6 +3091,16 @@ if test x$with_float = x; then
   esac
 fi
 
+# Infer a default setting for --with-fpu.
+if test x$with_fpu = x; then
+  case ${target} in
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      # The R5900 FPU only supports single precision.
+      with_fpu=single
+      ;;
+  esac
+fi
+
 # Support --with-fpmath.
 if test x$with_fpmath != x; then
   case ${target} in
@@ -3469,7 +3479,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch arch_32 arch_64 float tune tune_32 tune_64 divide llsc mips-plt synci"
+		supported_defaults="abi arch arch_32 arch_64 float fpu tune tune_32 tune_64 divide llsc mips-plt synci"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -3477,6 +3487,16 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown floating point type used in --with-float=$with_float" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_fpu} in
+		"" | single | double)
+			# OK
+			;;
+		*)
+			echo "Unknown fpu type used in --with-fpu=$with_fpu" 1>&2
 			exit 1
 			;;
 		esac
