@@ -19491,8 +19491,8 @@ processor (which corresponds to erratum #13 of the AT697E processor).
 
 @item -mfix-ut699
 @opindex mfix-ut699
-Enable the documented workarounds for the floating-point errata of the UT699
-processor.
+Enable the documented workarounds for the floating-point errata and the data
+cache nullify errata of the UT699 processor.
 @end table
 
 These @samp{-m} options are supported in addition to the above
