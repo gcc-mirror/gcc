@@ -245,14 +245,6 @@
   (set_attr "length" "4")
   (set_attr "pool_range" "250")])
 
-;; The instruction used to implement a particular pattern.  This
-;; information is used by pipeline descriptions to provide accurate
-;; scheduling information.
-
-(define_attr "insn"
-        "mov,mvn,other"
-        (const_string "other"))
-
 ; TYPE attribute is used to classify instructions for use in scheduling.
 ;
 ; Instruction classification:
@@ -298,9 +290,18 @@
 ; load4              load 4 words from memory to arm registers.
 ; mla                integer multiply accumulate.
 ; mlas               integer multiply accumulate, flag setting.
-; mov                integer move.
+; mov_imm            simple MOV instruction that moves an immediate to
+;                    register.  This includes MOVW, but not MOVT.
+; mov_reg            simple MOV instruction that moves a register to another
+;                    register.  This includes MOVW, but not MOVT.
+; mov_shift          simple MOV instruction, shifted operand by a constant.
+; mov_shift_reg      simple MOV instruction, shifted operand by a register.
 ; mul                integer multiply.
 ; muls               integer multiply, flag setting.
+; mvn_imm            inverting move instruction, immediate.
+; mvn_reg            inverting move instruction, register.
+; mvn_shift          inverting move instruction, shifted operand by a constant.
+; mvn_shift_reg      inverting move instruction, shifted operand by a register.
 ; r_2_f              transfer from core to float.
 ; sdiv               signed division.
 ; shift              simple shift operation (LSL, LSR, ASR, ROR) with an
@@ -453,8 +454,16 @@
   load4,\
   mla,\
   mlas,\
+  mov_imm,\
+  mov_reg,\
+  mov_shift,\
+  mov_shift_reg,\
   mul,\
   muls,\
+  mvn_imm,\
+  mvn_reg,\
+  mvn_shift,\
+  mvn_shift_reg,\
   r_2_f,\
   sdiv,\
   shift,\
@@ -4250,8 +4259,7 @@
   "TARGET_32BIT"
   "mov\\t%0, %1, rrx"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "mov_shift")]
 )
 
 (define_expand "ashrsi3"
@@ -4486,9 +4494,8 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "shift" "1")
-   (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
-   (set_attr "type" "arlo_shift,arlo_shift_reg")])
+   (set_attr "type" "mvn_shift,mvn_shift_reg")])
 
 (define_insn "*not_shiftsi_compare0"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -4503,9 +4510,8 @@
   "mvn%.\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
-   (set_attr "type" "arlo_shift,arlo_shift_reg")])
+   (set_attr "type" "mvn_shift,mvn_shift_reg")])
 
 (define_insn "*not_shiftsi_compare0_scratch"
   [(set (reg:CC_NOOV CC_REGNUM)
@@ -4519,9 +4525,8 @@
   "mvn%.\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "insn" "mvn")
    (set_attr "arch" "32,a")
-   (set_attr "type" "arlo_shift,arlo_shift_reg")])
+   (set_attr "type" "mvn_shift,mvn_shift_reg")])
 
 ;; We don't really have extzv, but defining this using shifts helps
 ;; to reduce register pressure later on.
@@ -5249,7 +5254,7 @@
    (set_attr "predicable_short_it" "yes,no")
    (set_attr "arch" "t2,*")
    (set_attr "length" "4")
-   (set_attr "insn" "mvn")]
+   (set_attr "type" "mvn_reg")]
 )
 
 (define_insn "*thumb1_one_cmplsi2"
@@ -5258,7 +5263,7 @@
   "TARGET_THUMB1"
   "mvn\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr "insn" "mvn")]
+   (set_attr "type" "mvn_reg")]
 )
 
 (define_insn "*notsi_compare0"
@@ -5270,7 +5275,7 @@
   "TARGET_32BIT"
   "mvn%.\\t%0, %1"
   [(set_attr "conds" "set")
-   (set_attr "insn" "mvn")]
+   (set_attr "type" "mvn_reg")]
 )
 
 (define_insn "*notsi_compare0_scratch"
@@ -5281,7 +5286,7 @@
   "TARGET_32BIT"
   "mvn%.\\t%0, %1"
   [(set_attr "conds" "set")
-   (set_attr "insn" "mvn")]
+   (set_attr "type" "mvn_reg")]
 )
 
 ;; Fixed <--> Floating conversion insns
@@ -6378,8 +6383,7 @@
     }
   }"
   [(set_attr "length" "4,4,6,2,2,6,4,4")
-   (set_attr "type" "*,*,*,load2,store2,load2,store2,*")
-   (set_attr "insn" "*,mov,*,*,*,*,*,mov")
+   (set_attr "type" "*,mov_reg,*,load2,store2,load2,store2,mov_reg")
    (set_attr "pool_range" "*,*,*,*,*,1018,*,*")]
 )
 
@@ -6494,8 +6498,7 @@
    movw%?\\t%0, %1
    ldr%?\\t%0, %1
    str%?\\t%1, %0"
-  [(set_attr "type" "*,arlo_imm,arlo_imm,arlo_imm,load1,store1")
-   (set_attr "insn" "mov,mov,mvn,mov,*,*")
+  [(set_attr "type" "mov_reg,mov_imm,mvn_imm,mov_imm,load1,store1")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,*,4096,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*")]
@@ -7211,14 +7214,13 @@
    str%(h%)\\t%1, %0\\t%@ movhi
    ldr%(h%)\\t%0, %1\\t%@ movhi"
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "mov,mvn,*,*")
    (set_attr "pool_range" "*,*,*,256")
    (set_attr "neg_pool_range" "*,*,*,244")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 1 "const_int_operand" "")
-                                        (const_string "arlo_imm" )
-                                        (const_string "*"))
-                          (const_string "arlo_imm")
+                                        (const_string "mov_imm" )
+                                        (const_string "mov_reg"))
+                          (const_string "mvn_imm")
                           (const_string "store1")
                           (const_string "load1")])]
 )
@@ -7232,8 +7234,7 @@
    mov%?\\t%0, %1\\t%@ movhi
    mvn%?\\t%0, #%B1\\t%@ movhi"
   [(set_attr "predicable" "yes")
-   (set_attr "insn" "mov, mov,mvn")
-   (set_attr "type" "arlo_imm,*,arlo_imm")]
+   (set_attr "type" "mov_imm,mov_reg,mvn_imm")]
 )
 
 (define_expand "thumb_movhi_clobber"
@@ -7372,8 +7373,7 @@
    str%(b%)\\t%1, %0
    ldr%(b%)\\t%0, %1
    str%(b%)\\t%1, %0"
-  [(set_attr "type" "*,*,arlo_imm,arlo_imm,arlo_imm,load1, store1, load1, store1")
-   (set_attr "insn" "mov,mov,mov,mov,mvn,*,*,*,*")
+  [(set_attr "type" "mov_reg,mov_reg,mov_imm,mov_imm,mvn_imm,load1,store1,load1,store1")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,yes,yes,no,no,no,no,no,no")
    (set_attr "arch" "t2,any,any,t2,any,t2,t2,any,any")
@@ -7394,8 +7394,7 @@
    mov\\t%0, %1
    mov\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr "type" "arlo_imm,load1,store1,*,*,arlo_imm")
-   (set_attr "insn" "*,*,*,mov,mov,mov")
+   (set_attr "type" "arlo_imm,load1,store1,mov_reg,mov_imm,mov_imm")
    (set_attr "pool_range" "*,32,*,*,*,*")
    (set_attr "conds" "clob,nocond,nocond,nocond,nocond,clob")])
 
@@ -7460,8 +7459,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,*,*")
-   (set_attr "insn" "*,*,mov,mov")
+   (set_attr "type" "load1,store1,mov_reg,mov_reg")
    (set_attr "length" "4,4,4,8")
    (set_attr "predicable" "yes")]
 )
@@ -7496,8 +7494,7 @@
     }
   "
   [(set_attr "length" "2")
-   (set_attr "type" "*,load1,store1,*,*")
-   (set_attr "insn" "mov,*,*,mov,mov")
+   (set_attr "type" "mov_reg,load1,store1,mov_reg,mov_reg")
    (set_attr "pool_range" "*,1018,*,*,*")
    (set_attr "conds" "clob,nocond,nocond,nocond,nocond")])
 
@@ -7551,8 +7548,7 @@
    ldr%?\\t%0, %1\\t%@ float
    str%?\\t%1, %0\\t%@ float"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "*,load1,store1")
-   (set_attr "insn" "mov,*,*")
+   (set_attr "type" "mov_reg,load1,store1")
    (set_attr "arm_pool_range" "*,4096,*")
    (set_attr "thumb2_pool_range" "*,4094,*")
    (set_attr "arm_neg_pool_range" "*,4084,*")
@@ -7575,9 +7571,8 @@
    mov\\t%0, %1
    mov\\t%0, %1"
   [(set_attr "length" "2")
-   (set_attr "type" "*,load1,store1,load1,store1,*,*")
+   (set_attr "type" "*,load1,store1,load1,store1,mov_reg,mov_reg")
    (set_attr "pool_range" "*,*,*,1018,*,*,*")
-   (set_attr "insn" "*,*,*,*,*,mov,mov")
    (set_attr "conds" "clob,nocond,nocond,nocond,nocond,nocond,nocond")]
 )
 
@@ -7708,8 +7703,7 @@
     }
   "
   [(set_attr "length" "4,2,2,6,4,4")
-   (set_attr "type" "*,load2,store2,load2,store2,*")
-   (set_attr "insn" "*,*,*,*,*,mov")
+   (set_attr "type" "*,load2,store2,load2,store2,mov_reg")
    (set_attr "pool_range" "*,*,*,1018,*,*")]
 )
 
@@ -9175,20 +9169,19 @@
   }
   [(set_attr "length" "4,4,4,4,8,8,8,8")
    (set_attr "conds" "use")
-   (set_attr "insn" "mov,mvn,mov,mvn,mov,mov,mvn,mvn")
    (set_attr_alternative "type"
                          [(if_then_else (match_operand 2 "const_int_operand" "")
-                                        (const_string "arlo_imm")
-                                        (const_string "*"))
-                          (const_string "arlo_imm")
+                                        (const_string "mov_imm")
+                                        (const_string "mov_reg"))
+                          (const_string "mvn_imm")
                           (if_then_else (match_operand 1 "const_int_operand" "")
-                                        (const_string "arlo_imm")
-                                        (const_string "*"))
-                          (const_string "arlo_imm")
-                          (const_string "*")
-                          (const_string "*")
-                          (const_string "*")
-                          (const_string "*")])]
+                                        (const_string "mov_imm")
+                                        (const_string "mov_reg"))
+                          (const_string "mvn_imm")
+                          (const_string "mov_reg")
+                          (const_string "mov_reg")
+                          (const_string "mov_reg")
+                          (const_string "mov_reg")])]
 )
 
 (define_insn "*movsfcc_soft_insn"
@@ -9202,7 +9195,7 @@
    mov%D3\\t%0, %2
    mov%d3\\t%0, %1"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")]
+   (set_attr "type" "mov_reg")]
 )
 
 
@@ -10195,7 +10188,7 @@
     operands[5] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
   }
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")
+   (set_attr "type" "mov_reg")
    (set_attr "length" "8")]
 )
 
@@ -10442,7 +10435,7 @@
     return \"\";
   "
   [(set_attr "conds" "use")
-   (set_attr "insn" "mov")
+   (set_attr "type" "mov_reg")
    (set_attr "length" "4,4,8")]
 )
 
@@ -11405,7 +11398,7 @@
    mov%d4\\t%0, %1\;mvn%D4\\t%0, %2
    mvn%d4\\t%0, #%B1\;mvn%D4\\t%0, %2"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mvn")
+   (set_attr "type" "mvn_reg")
    (set_attr "length" "4,8,8")]
 )
 
@@ -11438,7 +11431,7 @@
    mov%D4\\t%0, %1\;mvn%d4\\t%0, %2
    mvn%D4\\t%0, #%B1\;mvn%d4\\t%0, %2"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mvn")
+   (set_attr "type" "mvn_reg")
    (set_attr "length" "4,8,8")]
 )
 
@@ -11476,10 +11469,9 @@
   [(set_attr "conds" "use")
    (set_attr "shift" "2")
    (set_attr "length" "4,8,8")
-   (set_attr "insn" "mov")
    (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-		      (const_string "arlo_shift")
-		      (const_string "arlo_shift_reg")))]
+		      (const_string "mov_shift")
+		      (const_string "mov_shift_reg")))]
 )
 
 (define_insn "*ifcompare_move_shift"
@@ -11516,10 +11508,9 @@
   [(set_attr "conds" "use")
    (set_attr "shift" "2")
    (set_attr "length" "4,8,8")
-   (set_attr "insn" "mov")
    (set (attr "type") (if_then_else (match_operand 3 "const_int_operand" "")
-		      (const_string "arlo_shift")
-		      (const_string "arlo_shift_reg")))]
+		      (const_string "mov_shift")
+		      (const_string "mov_shift_reg")))]
 )
 
 (define_insn "*ifcompare_shift_shift"
@@ -11557,12 +11548,11 @@
   [(set_attr "conds" "use")
    (set_attr "shift" "1")
    (set_attr "length" "8")
-   (set_attr "insn" "mov")
    (set (attr "type") (if_then_else
 		        (and (match_operand 2 "const_int_operand" "")
                              (match_operand 4 "const_int_operand" ""))
-		      (const_string "arlo_shift")
-		      (const_string "arlo_shift_reg")))]
+		      (const_string "mov_shift")
+		      (const_string "mov_shift_reg")))]
 )
 
 (define_insn "*ifcompare_not_arith"
@@ -11594,7 +11584,7 @@
   "TARGET_ARM"
   "mvn%d5\\t%0, %1\;%I6%D5\\t%0, %2, %3"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mvn")
+   (set_attr "type" "mvn_reg")
    (set_attr "length" "8")]
 )
 
@@ -11627,7 +11617,7 @@
   "TARGET_ARM"
   "mvn%D5\\t%0, %1\;%I6%d5\\t%0, %2, %3"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mvn")
+   (set_attr "type" "mvn_reg")
    (set_attr "length" "8")]
 )
 
@@ -12075,7 +12065,7 @@
    mvn%D4\\t%0, %2
    mov%d4\\t%0, %1\;mvn%D4\\t%0, %2"
   [(set_attr "conds" "use")
-   (set_attr "insn" "mvn")
+   (set_attr "type" "mvn_reg")
    (set_attr "length" "4,8")]
 )
 

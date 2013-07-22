@@ -1,3 +1,99 @@
+2013-07-22  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/arm.md (attribute "insn"): Delete.
+	(attribute "type"): Add "mov_imm", "mov_reg", "mov_shift",
+	"mov_shift_reg", "mvn_imm", "mvn_reg", "mvn_shift" and "mvn_shift_reg".
+	(not_shiftsi): Update for attribute change.
+	(not_shiftsi_compare0): Likewise.
+	(not_shiftsi_compare0_scratch): Likewise.
+	(arm_one_cmplsi2): Likewise.
+	(thumb1_one_cmplsi2): Likewise.
+	(notsi_compare0): Likewise.
+	(notsi_compare0_scratch): Likewise.
+	(thumb1_movdi_insn): Likewise.
+	(arm_movsi_insn): Likewise.
+	(movhi_insn_arch4): Likewise.
+	(movhi_bytes): Likewise.
+	(arm_movqi_insn): Likewise.
+	(thumb1_movqi_insn): Likewise.
+	(arm32_movhf): Likewise.
+	(thumb1_movhf): Likewise.
+	(arm_movsf_soft_insn): Likewise.
+	(thumb1_movsf_insn): Likewise.
+	(thumb_movdf_insn): Likewise.
+	(movsicc_insn): Likewise.
+	(movsfcc_soft_insn): Likewise.
+	(and_scc): Likewise.
+	(cond_move): Likewise.
+	(if_move_not): Likewise.
+	(if_not_move): Likewise.
+	(if_shift_move): Likewise.
+	(if_move_shift): Likewise.
+	(if_shift_shift): Likewise.
+	(if_not_arith): Likewise.
+	(if_arith_not): Likewise.
+	(cond_move_not): Likewise.
+	* config/arm/neon.md (neon_mov<mode>): Update for attribute change.
+	(neon_mov<mode>): Likewise.
+	* config/arm/vfp.md (arm_movsi_vfp): Update for attribute change.
+	(thumb2_movsi_vfp): Likewise.
+	(movsf_vfp): Likewise.
+	(thumb2_movsf_vfp): Likewise.
+	* config/arm/arm.c (xscale_sched_adjust_cost): Update for attribute change.
+	(cortexa7_older_only): Likewise.
+	(cortexa7_younger): Likewise.
+	* config/arm/arm1020e.md (1020alu_op): Update for attribute change.
+	(1020alu_shift_op): Likewise.
+	(1020alu_shift_reg_op): Likewise.
+	* config/arm/arm1026ejs.md (alu_op): Update for attribute change.
+	(alu_shift_op): Likewise.
+	(alu_shift_reg_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Update for attribute change.
+	(11_alu_shift_op): Likewise.
+	(11_alu_shift_reg_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Update for attribute change.
+	(9_alu_shift_reg_op): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Update for attribute change.
+	(cortex_a15_alu_shift): Likewise.
+	(cortex_a15_alu_shift_reg): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Update for attribute change.
+	(cortex_a5_alu_shift): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Update for attribute change.
+	(cortex_a53_alu_shift): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_imm): Update for attribute change.
+	(cortex_a7_alu_reg): Likewise.
+	(cortex_a7_alu_shift): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute change.
+	(cortex_a8_alu_shift): Likewise.
+	(cortex_a8_alu_shift_reg): Likewise.
+	(cortex_a8_mov): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Update for attribute change.
+	(cortex_a9_dp_shift): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update for attribute change.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Update for attribute change.
+	(cortex_r4_mov): Likewise.
+	(cortex_r4_alu_shift): Likewise.
+	(cortex_r4_alu_shift_reg): Likewise.
+	* config/arm/fa526.md (526_alu_op): Update for attribute change.
+	(526_alu_shift_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Update for attribute change.
+	* config/arm/fa626te.md (626te_alu_op): Update for attribute change.
+	(626te_alu_shift_op): Likewise.
+	* config/arm/fa726te.md (726te_shift_op): Update for attribute change.
+	(726te_alu_op): Likewise.
+	(726te_alu_shift_op): Likewise.
+	(726te_alu_shift_reg_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Update for attribute change.
+	(mp626_alu_shift_op): Likewise.
+	* config/arm/marvell-pj4.md (pj4_alu_e1): Update for attribute change.
+	(pj4_alu_e1_conds): Likewise.
+	(pj4_alu): Likewise.
+	(pj4_alu_conds): Likewise.
+	(pj4_shift): Likewise.
+	(pj4_shift_conds): Likewise.
+	(pj4_alu_shift): Likewise.
+	(pj4_alu_shift_conds): Likewise.
+
 2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/predicates.md (shiftable_operator_strict_it):

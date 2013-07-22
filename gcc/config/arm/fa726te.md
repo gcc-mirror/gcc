@@ -78,15 +78,15 @@
 ;; Move instructions.
 (define_insn_reservation "726te_shift_op" 1
   (and (eq_attr "tune" "fa726te")
-       (eq_attr "insn" "mov,mvn"))
+       (eq_attr "type" "mov_imm,mov_reg,mov_shift,mov_shift_reg,\
+                        mvn_imm,mvn_reg,mvn_shift,mvn_shift_reg"))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 
 ;; ALU operations with no shifted operand will finished in 1 cycle
 ;; Other ALU instructions 2 cycles.
 (define_insn_reservation "726te_alu_op" 1
  (and (eq_attr "tune" "fa726te")
-      (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
-           (not (eq_attr "insn" "mov,mvn"))))
+      (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg"))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 
 ;; ALU operations with a shift-by-register operand.
@@ -95,14 +95,12 @@
 ;; it takes 3 cycles.
 (define_insn_reservation "726te_alu_shift_op" 3
  (and (eq_attr "tune" "fa726te")
-      (and (eq_attr "type" "extend,arlo_shift")
-           (not (eq_attr "insn" "mov,mvn"))))
+      (eq_attr "type" "extend,arlo_shift"))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 
 (define_insn_reservation "726te_alu_shift_reg_op" 3
  (and (eq_attr "tune" "fa726te")
-      (and (eq_attr "type" "arlo_shift_reg")
-           (not (eq_attr "insn" "mov,mvn"))))
+      (eq_attr "type" "arlo_shift_reg"))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Multiplication Instructions
