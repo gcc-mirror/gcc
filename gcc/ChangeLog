@@ -1,3 +1,8 @@
+2013-07-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_out_xload): No SBIS around LPM so that
+	instruction sequence is 1 byte shorter.
+
 2013-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (nonlocal_goto_receiver): Delete insn if
