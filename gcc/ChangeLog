@@ -1,3 +1,9 @@
+2013-07-22  Eric Christopher  <echristo@gmail.com>
+
+	* dwarf2out.c (die_odr_checksum): New function to use
+	CHECKSUM_ macros and ULEB128 for DIE tag.
+	(generate_type_signature): Use.
+	
 2013-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc (sparc*-*-*): Accept leon3 processor.
