@@ -1,3 +1,8 @@
+2013-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (DERIVED_FROM_P): Pass tf_none to lookup_base, not
+	tf_warning_or_error.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
 	* class.c: Fix typos.
