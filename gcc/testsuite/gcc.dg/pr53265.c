@@ -1,6 +1,7 @@
 /* PR tree-optimization/53265 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -Wall" } */
+/* { dg-require-effective-target size32plus } */
 
 void bar (void *);
 int baz (int);

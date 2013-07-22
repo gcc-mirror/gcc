@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 
 struct S0 { int  f0, f1, f2; };
 
