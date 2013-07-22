@@ -666,6 +666,7 @@ gfc_build_class_symbol (gfc_typespec *ts, symbol_attribute *attr,
 
       fclass->attr.extension = ts->u.derived->attr.extension + 1;
       fclass->attr.alloc_comp = ts->u.derived->attr.alloc_comp;
+      fclass->attr.coarray_comp = ts->u.derived->attr.coarray_comp;
     }
 
   fclass->attr.is_class = 1;

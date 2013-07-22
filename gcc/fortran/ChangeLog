@@ -1,3 +1,11 @@
+2013-07-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57906
+	PR fortran/52052
+	* class.c (gfc_build_class_symbol): Set coarray_comp.
+	* trans-array.c (structure_alloc_comps): For coarrays,
+	directly use the data pointer address.
+
 2013-07-22  Chang  <pchang9@cs.wisc.edu>
 
 	* trans-decl.c (gfc_build_dummy_array_decl): Exit loop after
