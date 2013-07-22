@@ -54,4 +54,5 @@ program main
   if (trim (print_type ("a", a)) .ne. "a is extended_type") call abort
   call reallocate (a)
   if (trim (print_type ("a", a)) .ne. "a is base_type") call abort
+  deallocate (a)
 end program main
