@@ -1,11 +1,15 @@
+2013-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/52816
+	* g++.dg/cpp0x/decltype56.C: New.
+
 2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/pr53265.c: Correct line number in dg-message.
 
 2013-07-22  Diego Novillo  <dnovillo@google.com>
 
-	* testsuite/g++.dg/pr57878.C: Do not force -m32.  Use
-	target ilp32.
+	* g++.dg/pr57878.C: Do not force -m32.  Use target ilp32.
 
 2013-07-22  Georg-Johann Lay  <avr@gjlay.de>
 
@@ -61,7 +65,8 @@
 	* gcc.target/sparc/struct-ret-check.c: Likewise.
 	* gcc.target/x86_64/abi/test_struct_returning.c: Likewise.
 	* gfortran.dg/c_ptr_tests_8_funcs.c: Likewise.
-	* objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h: Likewise.
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h:
+	Likewise.
 
 2013-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
