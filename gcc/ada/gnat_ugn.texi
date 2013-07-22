@@ -2316,7 +2316,7 @@ are unlikely to be able to be passed.
 
 Note that in the case of GNAT running
 on a platform that supports HP Ada 83, a higher degree of compatibility
-can be guaranteed, and in particular records are layed out in an identical
+can be guaranteed, and in particular records are laid out in an identical
 manner in the two compilers. Note also that if output from two different
 compilers is mixed, the program is responsible for dealing with elaboration
 issues. Probably the safest approach is to write the main program in the
@@ -26171,7 +26171,7 @@ would prefer this precondition to be considered True at run time).
 
 @noindent
 To deal with the portability issue, and with the problem of
-mathematical versus run-time intepretation of the expressions in
+mathematical versus run-time interpretation of the expressions in
 assertions, GNAT provides comprehensive control over the handling
 of intermediate overflow. GNAT can operate in three modes, and
 furthemore, permits separate selection of operating modes for

@@ -1132,6 +1132,24 @@ proc check_effective_target_static_libgfortran { } {
     } "-static"]
 }
 
+# Return 1 if cilk-plus is supported by the target, 0 otherwise.
+ 
+proc check_effective_target_cilkplus { } {
+    # Skip cilk-plus tests on int16 and size16 targets for now.
+    # The cilk-plus tests are not generic enough to cover these
+    # cases and would throw hundreds of FAILs.
+    if { [check_effective_target_int16]
+	 || ![check_effective_target_size32plus] } {
+	return 0;
+    }
+
+    # Skip AVR, its RAM is too small and too many tests would fail.
+    if { [istarget avr-*-*] } {
+	return 0;
+    }
+    return 1
+}
+
 proc check_linker_plugin_available { } {
   return [check_no_compiler_messages_nocache linker_plugin executable {
      int main() { return 0; }
@@ -2834,6 +2852,27 @@ proc check_effective_target_powerpc_vsx_ok { } {
 		return 0;
 	    }
 	} "-mvsx"]
+    } else {
+	return 0
+    }
+}
+
+# Return 1 if this is a PowerPC target supporting -mhtm
+
+proc check_effective_target_powerpc_htm_ok { } {
+    if { ([istarget powerpc*-*-*]
+         && ![istarget powerpc-*-linux*paired*])
+	 || [istarget rs6000-*-*] } {
+	# HTM is not supported on AIX yet.
+	if { [istarget powerpc*-*-aix*] } {
+	    return 0
+	}
+	return [check_no_compiler_messages powerpc_htm_ok object {
+	    int main (void) {
+		asm volatile ("tbegin. 0");
+		return 0;
+	    }
+	} "-mhtm"]
     } else {
 	return 0
     }

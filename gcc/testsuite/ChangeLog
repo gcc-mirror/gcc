@@ -1,3 +1,207 @@
+2013-07-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/pr57344-2.x: New. Skip int16.
+	* gcc.dg/pr53265.c: Add dg-require-effective-target size32plus.
+	* gcc.dg/torture/pr53366-1.c: Same.
+	* gcc.dg/torture/pr57381.c: Add dg-require-effective-target int32plus.
+	* gcc.dg/torture/pr56488.c: Same.
+	* gcc.dg/torture/pr57584.c: Same.
+	* gcc.dg/tree-ssa/pr57385.c: Same.
+	* gcc.dg/pr57154.c: Add dg-require-effective-target scheduling.
+
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* c-c++-common/pr41779.c: Fix typos.
+	* gcc.c-torture/compile/20031125-2.c: Likewise.
+	* gcc.c-torture/compile/20040621-1.c: Likewise.
+	* gcc.c-torture/execute/20020418-1.c: Likewise.
+	* gcc.dg/20020108-1.c: Likewise.
+	* gcc.dg/atomic-generic-aux.c: Likewise.
+	* gcc.dg/builtin-complex-err-2.c: Likewise.
+	* gcc.dg/decl-1.c: Likewise.
+	* gcc.dg/di-sync-multithread.c: Likewise.
+	* gcc.dg/format/c90-printf-1.c: Likewise.
+	* gcc.dg/format/ms_c90-printf-1.c: Likewise.
+	* gcc.dg/long-long-compare-1.c: Likewise.
+	* gcc.dg/plugin/start_unit_plugin.c: Likewise.
+	* gcc.dg/pr17055-1.c: Likewise.
+	* gcc.dg/pr27095.c: Likewise.
+	* gcc.dg/torture/fp-int-convert.h: Likewise.
+	* gcc.dg/tree-prof/inliner-1.c: Likewise.
+	* gcc.dg/tree-ssa/20030731-1.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-6.c: Likewise.
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Likewise.
+	* gcc.dg/tree-ssa/loop-19.c: Likewise.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr21001.c: Likewise.
+	* gcc.dg/tree-ssa/pr42585.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-5.c: Likewise.
+	* gcc.dg/vect/vect-cond-5.c: Likewise.
+	* gcc.dg/weak/typeof-2.c: Likewise.
+	* gcc.target/aarch64/aapcs64/abitest-common.h: Likewise.
+	* gcc.target/arm/naked-1.c: Likewise.
+	* gcc.target/i386/pr9771-1.c: Likewise.
+	* gcc.target/sparc/sparc-constant-1.c: Likewise.
+	* gcc.target/sparc/struct-ret-check.c: Likewise.
+	* gcc.target/x86_64/abi/test_struct_returning.c: Likewise.
+	* gfortran.dg/c_ptr_tests_8_funcs.c: Likewise.
+	* objc-obj-c++-shared/objc-test-suite-next-encode-assist-impl.h: Likewise.
+
+2013-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56937
+	* gfortran.dg/dependency_42.f90:  New test.
+	* gfortran.dg/dependency_43.f90:  New test.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35862
+	* gfortran.dg/round_4.f90: New.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57894
+	* gfortran.dg/min_max_conformance_2.f90: New.
+
+2013-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57620
+	* c-c++-common/raw-string-2.c (s12, u12, U12, L12): Remove.
+	(main): Don't test {s,u,U,L}12.
+	* c-c++-common/raw-string-13.c: New test.
+	* c-c++-common/raw-string-14.c: New test.
+	* c-c++-common/raw-string-15.c: New test.
+	* c-c++-common/raw-string-16.c: New test.
+
+2013-07-20  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/vabs_intrinsic_1.c: New file.
+
+2013-07-20  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.dg/pr57154.c: Add dg-require-effective-target scheduling.
+
+	* gcc.dg/tree-ssa/pr21090.c: Do vrp1 scan check only for
+	target { ! keeps_null_pointer_checks }.
+	* gcc.dg/tree-ssa/unreachable.c: Do optimized scan check only for
+	target { ! keeps_null_pointer_checks }.
+
+	* gcc.dg/torture/pr53366-1.c: Only run for target { size32plus }.
+	* gcc.dg/torture/pr56488.c: Likewise.
+
+2013-07-19  Ian Bolton  <ian.bolton@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vabs_s64): Added
+	new testcase.
+
+2013-07-19  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.fortran-torture/execute/intrinsic_nearest.x: Skip on AIX.
+	* gfortran.dg/nint_2.f90: Correct AIX target name to skip.
+	* gfortran.dg/guality/guality.exp: Skip on AIX.
+
+	* lib/dg-pch.exp (dg-flags-pch): Skip on AIX.
+
+	* g++.dg/debug/pr56819.C: Skip on AIX.
+	* g++.dg/ext/vector23.C: Ignore vector ABI warning.
+	* g++.dg/guality/guality.exp: Skip on AIX.
+
+	* g++.old-deja/g++.other/init19.C: Require cxa_atext.
+
+	* gcc.misc-tests/gcov-14.c: Skip on AIX.
+
+	* gcc.dg/simulate-thread/simulate-thread.exp: Skip on AIX.
+
+2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/57516
+	* gcc.target/avr/torture/builtins-4-roundfx.c (test2hr, test2k):
+	Adjust to corrected rounding.
+
+2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* lib/target-supports.exp (check_effective_target_cilkplus): New proc.
+	* gcc.dg/cilk-plus/cilk-plus.exp: only run if
+	check_effective_target_cilkplus.
+	* g++.dg/cilk-plus/cilk-plus.exp: Same.
+
+2013-07-18  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/pr57744.c: Fix typo.
+
+2013-07-18  Sriraman Tallam  <tmsriram@google.com>
+
+	PR middle-end/57698
+	* gcc.c-torture/compile/pr57698.c: New test.
+	* gcc.c-torture/compile/pr43791.c: Remove prune output
+	directive.
+	* gcc.c-torture/compile/pr44043.c: Ditto.
+
+2013-07-18  Wei Mi  <wmi@google.com>
+
+	PR rtl-optimization/57878
+	* g++.dg/pr57518.C: New test.
+
+2013-07-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/pr42611.c: Move dg-error to correct line.
+
+2013-07-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57895
+	* gfortran.dg/dollar_sym_3.f: New.
+	* gfortran.dg/dollar_sym_1.f90: Update dg-error.
+
+2013-07-16  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/55654
+	PR target/55656
+	PR target/55657
+	* obj-c++.dg/cxx-ivars-3.mm: Use NSObject instead of Object.
+	* obj-c++.dg/strings/const-cfstring-5.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-10.mm: Likewise.
+	* obj-c++.dg/torture/strings/const-str-9.mm: Likewise.
+	* objc.dg/image-info.m: Likewise.
+	* objc.dg/symtab-1.m: Likewise.
+	* objc.dg/torture/strings/const-str-10.m: Likewise.
+	* objc.dg/torture/strings/const-str-11.m: Likewise.
+	* objc.dg/torture/strings/const-str-9.m: Likewise.
+	* objc.dg/zero-link-1.m: Likewise.
+	* objc.dg/zero-link-2.m: Likewise.
+	* objc.dg/no-extra-load.m: Avoid Foundation.h.
+	* objc.dg/objc-foreach-4.m: Likewise.
+	* objc.dg/objc-foreach-5.m: Likewise.
+	* obj-c++.dg/proto-lossage-7.mm: Use NSObject instead of Object
+	(for Darwin).
+	* obj-c++.dg/strings/const-str-12.mm: Likewise.
+	* obj-c++.dg/syntax-error-1.mm: Likewise.
+	* objc.dg/method-6.m: Likewise.
+	* objc.dg/pr23214.m: Likewise.
+	* objc.dg/proto-lossage-7.m: Likewise.
+	* objc.dg/strings/const-str-12b.m: Likewise.
+	* objc.dg/zero-link-3.m: Likewise.
+	* obj-c++.dg/method-12.mm: Skip on Darwin versions without 'Object'.
+	* objc.dg/encode-7-next-64bit.m: Use NSObject instead of Object,
+	adjust headers, interfaces and encoded types to reflect current system
+	versions.  Add FIXME and outputs from current system compiler for
+	reference.
+
+2013-07-15  Cong Hou  <congh@google.com>
+
+	* gcc.target/i386/l_fma_float_1.c: Update the instruction to be
+	counted.
+	* gcc.target/i386/l_fma_float_3.c: Likewise.
+	* gcc.target/i386/l_fma_double_1.c: Likewise.
+	* gcc.target/i386/l_fma_double_3.c: Likewise.
+
+2013-07-15  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_htm_ok): New
+	function to test if HTM is available.
+	* gcc.target/powerpc/htm-xl-intrin-1.c: New test.
+	* gcc.target/powerpc/htm-builtin-1.c: New test.
+
 2013-07-15  Tobias Burnus  <burnus@net-b.de>
 
 	* gfortran.dg/coarray_lib_realloc_1.f90: New.
@@ -33,7 +237,7 @@
 
 	PR target/57362
 	* g++.dg/ext/pr57362.C: New.
-	
+
 2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57631

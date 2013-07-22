@@ -2303,7 +2303,7 @@ produce_symtab (struct output_block *ob)
 
   /* Write the symbol table.
      First write everything defined and then all declarations.
-     This is neccesary to handle cases where we have duplicated symbols.  */
+     This is necessary to handle cases where we have duplicated symbols.  */
   for (lsei = lsei_start (encoder);
        !lsei_end_p (lsei); lsei_next (&lsei))
     {

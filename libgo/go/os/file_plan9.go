@@ -104,7 +104,6 @@ func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
 		append = true
 	}
 
-	syscall.ForkLock.RLock()
 	if (create && trunc) || excl {
 		fd, e = syscall.Create(name, flag, syscallMode(perm))
 	} else {
@@ -117,7 +116,6 @@ func OpenFile(name string, flag int, perm FileMode) (file *File, err error) {
 			}
 		}
 	}
-	syscall.ForkLock.RUnlock()
 
 	if e != nil {
 		return nil, &PathError{"open", name, e}
@@ -246,13 +244,23 @@ func (f *File) pread(b []byte, off int64) (n int, err error) {
 
 // write writes len(b) bytes to the File.
 // It returns the number of bytes written and an error, if any.
+// Since Plan 9 preserves message boundaries, never allow
+// a zero-byte write.
 func (f *File) write(b []byte) (n int, err error) {
+	if len(b) == 0 {
+		return 0, nil
+	}
 	return syscall.Write(f.fd, b)
 }
 
 // pwrite writes len(b) bytes to the File starting at byte offset off.
 // It returns the number of bytes written and an error, if any.
+// Since Plan 9 preserves message boundaries, never allow
+// a zero-byte write.
 func (f *File) pwrite(b []byte, off int64) (n int, err error) {
+	if len(b) == 0 {
+		return 0, nil
+	}
 	return syscall.Pwrite(f.fd, b, off)
 }
 
@@ -300,7 +308,7 @@ func Rename(oldname, newname string) error {
 	d.Null()
 	d.Name = newname
 
-	var buf [syscall.STATFIXLEN]byte
+	buf := make([]byte, syscall.STATFIXLEN+len(d.Name))
 	n, err := d.Marshal(buf[:])
 	if err != nil {
 		return &PathError{"rename", oldname, err}

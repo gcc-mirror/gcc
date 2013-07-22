@@ -9771,11 +9771,8 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   if (icode == 0)
     internal_error ("bad builtin fcode");
 
-  if (!TARGET_ZEC12)
-    error ("Transactional execution builtins require zEC12 or later\n");
-
-  if (!TARGET_HTM && TARGET_ZEC12)
-    error ("Transactional execution builtins not enabled (-mtx)\n");
+  if (!TARGET_HTM)
+    error ("Transactional execution builtins not enabled (-mhtm)\n");
 
   /* Set a flag in the machine specific cfun part in order to support
      saving/restoring of FPRs.  */
@@ -11256,7 +11253,7 @@ s390_sched_score (rtx insn)
 }
 
 /* This function is called via hook TARGET_SCHED_REORDER before
-   issueing one insn from list READY which contains *NREADYP entries.
+   issuing one insn from list READY which contains *NREADYP entries.
    For target z10 it reorders load instructions to avoid early load
    conflicts in the floating point pipeline  */
 static int

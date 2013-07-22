@@ -8,6 +8,7 @@
 
 #include "runtime.h"
 #include "defs.h"
+#include "signal_unix.h"
 
 extern SigTab runtime_sigtab[];
 
@@ -22,7 +23,21 @@ runtime_initsig(void)
 		t = &runtime_sigtab[i];
 		if((t->flags == 0) || (t->flags & SigDefault))
 			continue;
-		runtime_setsig(i, false, true);
+
+		// For some signals, we respect an inherited SIG_IGN handler
+		// rather than insist on installing our own default handler.
+		// Even these signals can be fetched using the os/signal package.
+		switch(t->sig) {
+		case SIGHUP:
+		case SIGINT:
+			if(runtime_getsig(i) == GO_SIG_IGN) {
+				t->flags = SigNotify | SigIgnored;
+				continue;
+			}
+		}
+
+		t->flags |= SigHandling;
+		runtime_setsig(i, runtime_sighandler, true);
 	}
 }
 
@@ -32,15 +47,48 @@ runtime_sigenable(uint32 sig)
 	int32 i;
 	SigTab *t;
 
+	t = nil;
 	for(i = 0; runtime_sigtab[i].sig != -1; i++) {
-		// ~0 means all signals.
-		if(~sig == 0 || runtime_sigtab[i].sig == (int32)sig) {
+		if(runtime_sigtab[i].sig == (int32)sig) {
 			t = &runtime_sigtab[i];
-			if(t->flags & SigDefault) {
-				runtime_setsig(i, false, true);
-				t->flags &= ~SigDefault;  // make this idempotent
-			}
+			break;
 		}
+	}
+
+	if(t == nil)
+		return;
+
+	if((t->flags & SigNotify) && !(t->flags & SigHandling)) {
+		t->flags |= SigHandling;
+		if(runtime_getsig(i) == GO_SIG_IGN)
+			t->flags |= SigIgnored;
+		runtime_setsig(i, runtime_sighandler, true);
+	}
+}
+
+void
+runtime_sigdisable(uint32 sig)
+{
+	int32 i;
+	SigTab *t;
+
+	t = nil;
+	for(i = 0; runtime_sigtab[i].sig != -1; i++) {
+		if(runtime_sigtab[i].sig == (int32)sig) {
+			t = &runtime_sigtab[i];
+			break;
+		}
+	}
+
+	if(t == nil)
+		return;
+
+	if((t->flags & SigNotify) && (t->flags & SigHandling)) {
+		t->flags &= ~SigHandling;
+		if(t->flags & SigIgnored)
+			runtime_setsig(i, GO_SIG_IGN, true);
+		else
+			runtime_setsig(i, GO_SIG_DFL, true);
 	}
 }
 
@@ -61,4 +109,45 @@ runtime_resetcpuprofiler(int32 hz)
 		runtime_setprof(true);
 	}
 	runtime_m()->profilehz = hz;
+}
+
+void
+os_sigpipe(void)
+{
+	int32 i;
+
+	for(i = 0; runtime_sigtab[i].sig != -1; i++)
+		if(runtime_sigtab[i].sig == SIGPIPE)
+			break;
+	runtime_setsig(i, GO_SIG_DFL, false);
+	runtime_raise(SIGPIPE);
+}
+
+void
+runtime_crash(void)
+{
+	int32 i;
+
+#ifdef GOOS_darwin
+	// OS X core dumps are linear dumps of the mapped memory,
+	// from the first virtual byte to the last, with zeros in the gaps.
+	// Because of the way we arrange the address space on 64-bit systems,
+	// this means the OS X core file will be >128 GB and even on a zippy
+	// workstation can take OS X well over an hour to write (uninterruptible).
+	// Save users from making that mistake.
+	if(sizeof(void*) == 8)
+		return;
+#endif
+
+	for(i = 0; runtime_sigtab[i].sig != -1; i++)
+		if(runtime_sigtab[i].sig == SIGABRT)
+			break;
+	runtime_setsig(i, GO_SIG_DFL, false);
+	runtime_raise(SIGABRT);
+}
+
+void
+runtime_raise(int32 sig)
+{
+	raise(sig);
 }

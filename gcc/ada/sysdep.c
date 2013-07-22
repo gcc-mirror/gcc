@@ -721,7 +721,7 @@ __gnat_localtime_tzoff (const time_t *timer, const int *is_historic, long *off)
       && SystemTimeToTzSpecificLocalTime (&tzi, &utc_sys_time, &local_sys_time)
       && SystemTimeToFileTime (&local_sys_time, &local_time.ft_time);
 
-    /* An error has occured, return invalid_tzoff */
+    /* An error has occurred, return invalid_tzoff */
 
     if (!status) {
       *off = __gnat_invalid_tzoff;

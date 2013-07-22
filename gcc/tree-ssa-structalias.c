@@ -4457,7 +4457,7 @@ find_func_aliases_for_builtin_call (gimple t)
 	}
       /* printf-style functions may have hooks to set pointers to
 	 point to somewhere into the generated string.  Leave them
-	 for a later excercise...  */
+	 for a later exercise...  */
       default:
 	/* Fallthru to general call handling.  */;
       }
@@ -5015,7 +5015,7 @@ find_func_clobbers (gimple origt)
 	    return;
 	  /* printf-style functions may have hooks to set pointers to
 	     point to somewhere into the generated string.  Leave them
-	     for a later excercise...  */
+	     for a later exercise...  */
 	  default:
 	    /* Fallthru to general call handling.  */;
 	  }

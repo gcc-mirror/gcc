@@ -3,7 +3,8 @@
 // license that can be found in the LICENSE file.
 
 // Package json implements encoding and decoding of JSON objects as defined in
-// RFC 4627.
+// RFC 4627. The mapping between JSON objects and Go values is described
+// in the documentation for the Marshal and Unmarshal functions.
 //
 // See "JSON and Go" for an introduction to this package:
 // http://golang.org/doc/articles/json_and_go.html
@@ -38,8 +39,8 @@ import (
 //
 // Floating point, integer, and Number values encode as JSON numbers.
 //
-// String values encode as JSON strings, with each invalid UTF-8 sequence
-// replaced by the encoding of the Unicode replacement character U+FFFD.
+// String values encode as JSON strings. InvalidUTF8Error will be returned
+// if an invalid UTF-8 sequence is encountered.
 // The angle brackets "<" and ">" are escaped to "\u003c" and "\u003e"
 // to keep some browsers from misinterpreting JSON output as HTML.
 //
@@ -86,9 +87,21 @@ import (
 // underscores and slashes.
 //
 // Anonymous struct fields are usually marshaled as if their inner exported fields
-// were fields in the outer struct, subject to the usual Go visibility rules.
+// were fields in the outer struct, subject to the usual Go visibility rules amended
+// as described in the next paragraph.
 // An anonymous struct field with a name given in its JSON tag is treated as
-// having that name instead of as anonymous.
+// having that name, rather than being anonymous.
+//
+// The Go visibility rules for struct fields are amended for JSON when
+// deciding which field to marshal or unmarshal. If there are
+// multiple fields at the same level, and that level is the least
+// nested (and would therefore be the nesting level selected by the
+// usual Go rules), the following extra rules apply:
+//
+// 1) Of those fields, if any are JSON-tagged, only tagged fields are considered,
+// even if there are multiple untagged fields that would otherwise conflict.
+// 2) If there is exactly one field (tagged or not according to the first rule), that is selected.
+// 3) Otherwise there are multiple fields, and all are ignored; no error occurs.
 //
 // Handling of anonymous struct fields is new in Go 1.1.
 // Prior to Go 1.1, anonymous struct fields were ignored. To force ignoring of
@@ -187,8 +200,10 @@ func (e *UnsupportedValueError) Error() string {
 	return "json: unsupported value: " + e.Str
 }
 
+// An InvalidUTF8Error is returned by Marshal when attempting
+// to encode a string value with invalid UTF-8 sequences.
 type InvalidUTF8Error struct {
-	S string
+	S string // the whole string value that caused the error
 }
 
 func (e *InvalidUTF8Error) Error() string {
@@ -654,25 +669,76 @@ func typeFields(t reflect.Type) []field {
 
 	sort.Sort(byName(fields))
 
-	// Remove fields with annihilating name collisions
-	// and also fields shadowed by fields with explicit JSON tags.
-	name := ""
+	// Delete all fields that are hidden by the Go rules for embedded fields,
+	// except that fields with JSON tags are promoted.
+
+	// The fields are sorted in primary order of name, secondary order
+	// of field index length. Loop over names; for each name, delete
+	// hidden fields by choosing the one dominant field that survives.
 	out := fields[:0]
-	for _, f := range fields {
-		if f.name != name {
-			name = f.name
-			out = append(out, f)
+	for advance, i := 0, 0; i < len(fields); i += advance {
+		// One iteration per name.
+		// Find the sequence of fields with the name of this first field.
+		fi := fields[i]
+		name := fi.name
+		for advance = 1; i+advance < len(fields); advance++ {
+			fj := fields[i+advance]
+			if fj.name != name {
+				break
+			}
+		}
+		if advance == 1 { // Only one field with this name
+			out = append(out, fi)
 			continue
 		}
-		if n := len(out); n > 0 && out[n-1].name == name && (!out[n-1].tag || f.tag) {
-			out = out[:n-1]
+		dominant, ok := dominantField(fields[i : i+advance])
+		if ok {
+			out = append(out, dominant)
 		}
 	}
-	fields = out
 
+	fields = out
 	sort.Sort(byIndex(fields))
 
 	return fields
+}
+
+// dominantField looks through the fields, all of which are known to
+// have the same name, to find the single field that dominates the
+// others using Go's embedding rules, modified by the presence of
+// JSON tags. If there are multiple top-level fields, the boolean
+// will be false: This condition is an error in Go and we skip all
+// the fields.
+func dominantField(fields []field) (field, bool) {
+	// The fields are sorted in increasing index-length order. The winner
+	// must therefore be one with the shortest index length. Drop all
+	// longer entries, which is easy: just truncate the slice.
+	length := len(fields[0].index)
+	tagged := -1 // Index of first tagged field.
+	for i, f := range fields {
+		if len(f.index) > length {
+			fields = fields[:i]
+			break
+		}
+		if f.tag {
+			if tagged >= 0 {
+				// Multiple tagged fields at the same level: conflict.
+				// Return no field.
+				return field{}, false
+			}
+			tagged = i
+		}
+	}
+	if tagged >= 0 {
+		return fields[tagged], true
+	}
+	// All remaining fields have the same length. If there's more than one,
+	// we have a conflict (two fields named "X" at the same level) and we
+	// return no field.
+	if len(fields) > 1 {
+		return field{}, false
+	}
+	return fields[0], true
 }
 
 var fieldCache struct {

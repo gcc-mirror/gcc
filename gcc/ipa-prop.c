@@ -682,7 +682,7 @@ mark_modified (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef ATTRIBUTE_UNUSED,
   return true;
 }
 
-/* Return true if a load from a formal parameter PARM_LOAD is known to retreive
+/* Return true if a load from a formal parameter PARM_LOAD is known to retrieve
    a value known not to be modified in this function before reaching the
    statement STMT.  PARM_AINFO is a pointer to a structure containing temporary
    information about the parameter.  */

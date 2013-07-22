@@ -793,7 +793,7 @@ objc_EXPORT Protocol *objc_getProtocol (const char *name);
 objc_EXPORT Protocol **objc_copyProtocolList (unsigned int *numberOfReturnedProtocols);
 
 /* Add a protocol to a class, and return YES if it was done
-   succesfully, and NO if not.  At the moment, NO should only happen
+   successfully, and NO if not.  At the moment, NO should only happen
    if class_ or protocol are nil, if the protocol is not a Protocol
    object or if the class already conforms to the protocol.  */
 objc_EXPORT BOOL class_addProtocol (Class class_, Protocol *protocol);
@@ -1114,7 +1114,7 @@ objc_EXPORT unsigned objc_get_type_qualifiers (const char *type);
   These functions are used by objc_sizeof_type and objc_alignof_type
   functions to compute the size and alignment of structures. The
   previous method of computing the size and alignment of a structure
-  was not working on some architectures, particulary on AIX, and in
+  was not working on some architectures, particularly on AIX, and in
   the presence of bitfields inside the structure.  */
 struct objc_struct_layout
 {

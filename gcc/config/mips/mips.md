@@ -2367,7 +2367,7 @@
 		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
 			      (match_operand:ANYF 2 "register_operand" "f"))
 		   (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+  "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
    && HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2382,7 +2382,7 @@
 		   (mult:ANYF (match_operand:ANYF 1 "register_operand" "f")
 			      (match_operand:ANYF 2 "register_operand" "f"))
 		   (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+  "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
    && HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2397,7 +2397,7 @@
 	 (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
 		    (match_operand:ANYF 2 "register_operand" "f"))
 	 (match_operand:ANYF 3 "register_operand" "f")))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+  "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
    && !HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2412,7 +2412,7 @@
 	 (mult:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
 		    (match_operand:ANYF 2 "register_operand" "f"))
 	 (match_operand:ANYF 3 "register_operand" "0")))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+  "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
    && !HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2427,7 +2427,7 @@
 		   (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
 			      (match_operand:ANYF 3 "register_operand" "f"))
 		   (match_operand:ANYF 1 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+  "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
    && HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2442,7 +2442,7 @@
 		   (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
 			      (match_operand:ANYF 3 "register_operand" "f"))
 		   (match_operand:ANYF 1 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+  "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
    && HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2457,7 +2457,7 @@
 	 (match_operand:ANYF 1 "register_operand" "f")
 	 (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
 		    (match_operand:ANYF 3 "register_operand" "f"))))]
-  "ISA_HAS_NMADD4_NMSUB4 (<MODE>mode)
+  "ISA_HAS_NMADD4_NMSUB4
    && TARGET_FUSED_MADD
    && !HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"
@@ -2472,7 +2472,7 @@
 	 (match_operand:ANYF 1 "register_operand" "f")
 	 (mult:ANYF (match_operand:ANYF 2 "register_operand" "f")
 		    (match_operand:ANYF 3 "register_operand" "0"))))]
-  "ISA_HAS_NMADD3_NMSUB3 (<MODE>mode)
+  "ISA_HAS_NMADD3_NMSUB3
    && TARGET_FUSED_MADD
    && !HONOR_SIGNED_ZEROS (<MODE>mode)
    && !HONOR_NANS (<MODE>mode)"

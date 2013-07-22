@@ -2,7 +2,7 @@
    VRP did not insert ASSERT_EXPRs when the variable tested in a
    COND_EXPR is a single-use variable.  By propagating the definition
    of the single-use variable into the COND_EXPR, we can get useful
-   range infomation out of the conditional.  */
+   range information out of the conditional.  */
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -fno-tree-dominator-opts -fdump-tree-vrp1-details" } */

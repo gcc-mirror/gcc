@@ -117,7 +117,7 @@ extern enum picochip_dfa_type picochip_schedule_type;
 #define FUNCTION_BOUNDARY 8
 
 /* This is the biggest alignment that can be allowed on this machine.
-   Since the STANs have only 256 byte memory, it doesnt make sense
+   Since the STANs have only 256 byte memory, it doesn't make sense
    to have alignments greater than 32 bytes. Hence the value */
 #define MAX_OFILE_ALIGNMENT 32*8
 
@@ -243,7 +243,7 @@ extern enum picochip_dfa_type picochip_schedule_type;
    encoding.
    Also r12 is put towards the end for leaf functions. Since leaf functions
    do not have any calls, the prologue/epilogue for them wouldnt save up/
-   restore its value. So, it doesnt make sense for us to use it in the middle,
+   restore its value. So, it doesn't make sense for us to use it in the middle,
    if we can avoid it. */
 #define REG_ALLOC_ORDER {5,4,3,2,1,0,12,6,7,8,9,10,11,14,16,0,0,0,0,0}
 #define LEAF_REG_ALLOC_ORDER {5,4,3,2,1,0,6,7,8,9,10,11,14,12,16,0,0,0,0,0}

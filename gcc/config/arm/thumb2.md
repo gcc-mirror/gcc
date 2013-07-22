@@ -35,7 +35,7 @@
   "bic%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
-   (set_attr "type" "alu_shift")]
+   (set_attr "type" "arlo_shift")]
 )
 
 (define_insn_and_split "*thumb2_smaxsi3"
@@ -283,7 +283,7 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "*,simple_alu_imm,simple_alu_imm,simple_alu_imm,*,load1,load1,store1,store1")
+  [(set_attr "type" "*,arlo_imm,arlo_imm,arlo_imm,*,load1,load1,store1,store1")
    (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
@@ -336,7 +336,7 @@
   "cmn%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "type" "alu_shift")]
+   (set_attr "type" "arlo_shift")]
 )
 
 (define_insn_and_split "*thumb2_mov_scc"
@@ -815,7 +815,7 @@
   "@
    sxtb%?\\t%0, %1
    ldr%(sb%)\\t%0, %1"
-  [(set_attr "type" "simple_alu_shift,load_byte")
+  [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
@@ -828,7 +828,7 @@
   "@
    uxth%?\\t%0, %1
    ldr%(h%)\\t%0, %1"
-  [(set_attr "type" "simple_alu_shift,load_byte")
+  [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
@@ -841,7 +841,7 @@
   "@
    uxtb%(%)\\t%0, %1
    ldr%(b%)\\t%0, %1\\t%@ zero_extendqisi2"
-  [(set_attr "type" "simple_alu_shift,load_byte")
+  [(set_attr "type" "extend,load_byte")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,4094")
    (set_attr "neg_pool_range" "*,250")]
@@ -933,8 +933,8 @@
    (set_attr "shift" "1")
    (set_attr "length" "2")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift")
-		      (const_string "alu_shift_reg")))]
+		      (const_string "arlo_shift")
+		      (const_string "arlo_shift_reg")))]
 )
 
 (define_insn "*thumb2_mov<mode>_shortim"
@@ -1056,7 +1056,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,2,4,4")
-   (set_attr "type"   "simple_alu_imm,*,simple_alu_imm,*")]
+   (set_attr "type"   "arlo_imm,*,arlo_imm,*")]
 )
 
 (define_insn "*thumb2_mulsi_short"
@@ -1180,7 +1180,7 @@
   "orn%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
-   (set_attr "type" "alu_shift")]
+   (set_attr "type" "arlo_shift")]
 )
 
 (define_peephole2

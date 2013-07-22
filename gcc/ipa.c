@@ -548,8 +548,8 @@ static bool
 comdat_can_be_unshared_p_1 (symtab_node node)
 {
   /* When address is taken, we don't know if equality comparison won't
-     break eventaully. Exception are virutal functions and vtables, where
-     this is not possible by language standard.  */
+     break eventually. Exception are virutal functions and vtables,
+     where this is not possible by language standard.  */
   if (!DECL_VIRTUAL_P (node->symbol.decl)
       && address_taken_from_non_vtable_p (node))
     return false;

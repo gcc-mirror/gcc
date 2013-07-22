@@ -19,6 +19,8 @@ import (
 	"errors"
 	"io"
 	"math/big"
+	"net"
+	"strconv"
 	"time"
 )
 
@@ -360,16 +362,18 @@ const (
 // id-kp-timeStamping           OBJECT IDENTIFIER ::= { id-kp 8 }
 // id-kp-OCSPSigning            OBJECT IDENTIFIER ::= { id-kp 9 }
 var (
-	oidExtKeyUsageAny             = asn1.ObjectIdentifier{2, 5, 29, 37, 0}
-	oidExtKeyUsageServerAuth      = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 1}
-	oidExtKeyUsageClientAuth      = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 2}
-	oidExtKeyUsageCodeSigning     = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 3}
-	oidExtKeyUsageEmailProtection = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 4}
-	oidExtKeyUsageIPSECEndSystem  = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 5}
-	oidExtKeyUsageIPSECTunnel     = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 6}
-	oidExtKeyUsageIPSECUser       = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 7}
-	oidExtKeyUsageTimeStamping    = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 8}
-	oidExtKeyUsageOCSPSigning     = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 9}
+	oidExtKeyUsageAny                        = asn1.ObjectIdentifier{2, 5, 29, 37, 0}
+	oidExtKeyUsageServerAuth                 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 1}
+	oidExtKeyUsageClientAuth                 = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 2}
+	oidExtKeyUsageCodeSigning                = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 3}
+	oidExtKeyUsageEmailProtection            = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 4}
+	oidExtKeyUsageIPSECEndSystem             = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 5}
+	oidExtKeyUsageIPSECTunnel                = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 6}
+	oidExtKeyUsageIPSECUser                  = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 7}
+	oidExtKeyUsageTimeStamping               = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 8}
+	oidExtKeyUsageOCSPSigning                = asn1.ObjectIdentifier{1, 3, 6, 1, 5, 5, 7, 3, 9}
+	oidExtKeyUsageMicrosoftServerGatedCrypto = asn1.ObjectIdentifier{1, 3, 6, 1, 4, 1, 311, 10, 3, 3}
+	oidExtKeyUsageNetscapeServerGatedCrypto  = asn1.ObjectIdentifier{2, 16, 840, 1, 113730, 4, 1}
 )
 
 // ExtKeyUsage represents an extended set of actions that are valid for a given key.
@@ -387,6 +391,8 @@ const (
 	ExtKeyUsageIPSECUser
 	ExtKeyUsageTimeStamping
 	ExtKeyUsageOCSPSigning
+	ExtKeyUsageMicrosoftServerGatedCrypto
+	ExtKeyUsageNetscapeServerGatedCrypto
 )
 
 // extKeyUsageOIDs contains the mapping between an ExtKeyUsage and its OID.
@@ -404,6 +410,8 @@ var extKeyUsageOIDs = []struct {
 	{ExtKeyUsageIPSECUser, oidExtKeyUsageIPSECUser},
 	{ExtKeyUsageTimeStamping, oidExtKeyUsageTimeStamping},
 	{ExtKeyUsageOCSPSigning, oidExtKeyUsageOCSPSigning},
+	{ExtKeyUsageMicrosoftServerGatedCrypto, oidExtKeyUsageMicrosoftServerGatedCrypto},
+	{ExtKeyUsageNetscapeServerGatedCrypto, oidExtKeyUsageNetscapeServerGatedCrypto},
 }
 
 func extKeyUsageFromOID(oid asn1.ObjectIdentifier) (eku ExtKeyUsage, ok bool) {
@@ -458,6 +466,7 @@ type Certificate struct {
 	// Subject Alternate Name values
 	DNSNames       []string
 	EmailAddresses []string
+	IPAddresses    []net.IP
 
 	// Name constraints
 	PermittedDNSDomainsCritical bool // if true then the name constraints are marked critical.
@@ -660,6 +669,13 @@ func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{
 			return nil, err
 		}
 
+		if p.N.Sign() <= 0 {
+			return nil, errors.New("x509: RSA modulus is not a positive number")
+		}
+		if p.E <= 0 {
+			return nil, errors.New("x509: RSA public exponent is not a positive number")
+		}
+
 		pub := &rsa.PublicKey{
 			E: p.E,
 			N: p.N,
@@ -713,7 +729,6 @@ func parsePublicKey(algo PublicKeyAlgorithm, keyData *publicKeyInfo) (interface{
 	default:
 		return nil, nil
 	}
-	panic("unreachable")
 }
 
 func parseCertificate(in *certificate) (*Certificate, error) {
@@ -828,6 +843,13 @@ func parseCertificate(in *certificate) (*Certificate, error) {
 					case 2:
 						out.DNSNames = append(out.DNSNames, string(v.Bytes))
 						parsedName = true
+					case 7:
+						switch len(v.Bytes) {
+						case net.IPv4len, net.IPv6len:
+							out.IPAddresses = append(out.IPAddresses, v.Bytes)
+						default:
+							return nil, errors.New("x509: certificate contained IP address of length " + strconv.Itoa(len(v.Bytes)))
+						}
 					}
 				}
 
@@ -1072,11 +1094,22 @@ func buildExtensions(template *Certificate) (ret []pkix.Extension, err error) {
 		n++
 	}
 
-	if len(template.DNSNames) > 0 {
+	if len(template.DNSNames) > 0 || len(template.EmailAddresses) > 0 || len(template.IPAddresses) > 0 {
 		ret[n].Id = oidExtensionSubjectAltName
-		rawValues := make([]asn1.RawValue, len(template.DNSNames))
-		for i, name := range template.DNSNames {
-			rawValues[i] = asn1.RawValue{Tag: 2, Class: 2, Bytes: []byte(name)}
+		var rawValues []asn1.RawValue
+		for _, name := range template.DNSNames {
+			rawValues = append(rawValues, asn1.RawValue{Tag: 2, Class: 2, Bytes: []byte(name)})
+		}
+		for _, email := range template.EmailAddresses {
+			rawValues = append(rawValues, asn1.RawValue{Tag: 1, Class: 2, Bytes: []byte(email)})
+		}
+		for _, rawIP := range template.IPAddresses {
+			// If possible, we always want to encode IPv4 addresses in 4 bytes.
+			ip := rawIP.To4()
+			if ip == nil {
+				ip = rawIP
+			}
+			rawValues = append(rawValues, asn1.RawValue{Tag: 7, Class: 2, Bytes: ip})
 		}
 		ret[n].Value, err = asn1.Marshal(rawValues)
 		if err != nil {

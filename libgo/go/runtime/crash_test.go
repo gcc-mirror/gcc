@@ -7,21 +7,33 @@ package runtime_test
 import (
 	"io/ioutil"
 	"os"
-	// "os/exec"
+	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 	"text/template"
 )
 
-type crashTest struct {
-	Cgo bool
+// testEnv excludes GOGCTRACE from the environment
+// to prevent its output from breaking tests that
+// are trying to parse other command output.
+func testEnv(cmd *exec.Cmd) *exec.Cmd {
+	if cmd.Env != nil {
+		panic("environment already set")
+	}
+	for _, env := range os.Environ() {
+		if strings.HasPrefix(env, "GOGCTRACE=") {
+			continue
+		}
+		cmd.Env = append(cmd.Env, env)
+	}
+	return cmd
 }
 
-// This test is a separate program, because it is testing
-// both main (m0) and non-main threads (m).
+func executeTest(t *testing.T, templ string, data interface{}) string {
+	checkStaleRuntime(t)
 
-func testCrashHandler(t *testing.T, ct *crashTest) {
-	st := template.Must(template.New("crashSource").Parse(crashSource))
+	st := template.Must(template.New("crashSource").Parse(templ))
 
 	dir, err := ioutil.TempDir("", "go-build")
 	if err != nil {
@@ -34,30 +46,79 @@ func testCrashHandler(t *testing.T, ct *crashTest) {
 	if err != nil {
 		t.Fatalf("failed to create %v: %v", src, err)
 	}
-	err = st.Execute(f, ct)
+	err = st.Execute(f, data)
 	if err != nil {
 		f.Close()
 		t.Fatalf("failed to execute template: %v", err)
 	}
 	f.Close()
 
-	/*
-		 gccgo does not have a go command.
+	got, _ := testEnv(exec.Command("go", "run", src)).CombinedOutput()
+	return string(got)
+}
 
-		got, err := exec.Command("go", "run", src).CombinedOutput()
-		if err != nil {
-			t.Fatalf("program exited with error: %v\n%v", err, string(got))
-		}
-		want := "main: recovered done\nnew-thread: recovered done\nsecond-new-thread: recovered done\nmain-again: recovered done\n"
-		if string(got) != string(want) {
-			t.Fatalf("expected %q, but got %q", string(want), string(got))
-		}
+func checkStaleRuntime(t *testing.T) {
+	// 'go run' uses the installed copy of runtime.a, which may be out of date.
+	out, err := testEnv(exec.Command("go", "list", "-f", "{{.Stale}}", "runtime")).CombinedOutput()
+	if err != nil {
+		t.Fatalf("failed to execute 'go list': %v\n%v", err, string(out))
+	}
+	if string(out) != "false\n" {
+		t.Fatalf("Stale runtime.a. Run 'go install runtime'.")
+	}
+}
 
+func testCrashHandler(t *testing.T, cgo bool) {
+	/* gccgo does not have a go command
+	type crashTest struct {
+		Cgo bool
+	}
+	got := executeTest(t, crashSource, &crashTest{Cgo: cgo})
+	want := "main: recovered done\nnew-thread: recovered done\nsecond-new-thread: recovered done\nmain-again: recovered done\n"
+	if got != want {
+		t.Fatalf("expected %q, but got %q", want, got)
+	}
 	*/
 }
 
 func TestCrashHandler(t *testing.T) {
-	testCrashHandler(t, &crashTest{Cgo: false})
+	testCrashHandler(t, false)
+}
+
+func testDeadlock(t *testing.T, source string) {
+	/* gccgo does not have a go command.
+	got := executeTest(t, source, nil)
+	want := "fatal error: all goroutines are asleep - deadlock!\n"
+	if !strings.HasPrefix(got, want) {
+		t.Fatalf("expected %q, but got %q", want, got)
+	}
+	*/
+}
+
+func TestSimpleDeadlock(t *testing.T) {
+	testDeadlock(t, simpleDeadlockSource)
+}
+
+func TestInitDeadlock(t *testing.T) {
+	testDeadlock(t, initDeadlockSource)
+}
+
+func TestLockedDeadlock(t *testing.T) {
+	testDeadlock(t, lockedDeadlockSource)
+}
+
+func TestLockedDeadlock2(t *testing.T) {
+	testDeadlock(t, lockedDeadlockSource2)
+}
+
+func TestGoexitDeadlock(t *testing.T) {
+	/* gccgo does not have a go command
+	got := executeTest(t, goexitDeadlockSource, nil)
+	want := ""
+	if got != want {
+		t.Fatalf("expected %q, but got %q", want, got)
+	}
+	*/
 }
 
 const crashSource = `
@@ -101,5 +162,64 @@ func main() {
 	testInNewThread("new-thread")
 	testInNewThread("second-new-thread")
 	test("main-again")
+}
+`
+
+const simpleDeadlockSource = `
+package main
+func main() {
+	select {}
+}
+`
+
+const initDeadlockSource = `
+package main
+func init() {
+	select {}
+}
+func main() {
+}
+`
+
+const lockedDeadlockSource = `
+package main
+import "runtime"
+func main() {
+	runtime.LockOSThread()
+	select {}
+}
+`
+
+const lockedDeadlockSource2 = `
+package main
+import (
+	"runtime"
+	"time"
+)
+func main() {
+	go func() {
+		runtime.LockOSThread()
+		select {}
+	}()
+	time.Sleep(time.Millisecond)
+	select {}
+}
+`
+
+const goexitDeadlockSource = `
+package main
+import (
+      "runtime"
+)
+
+func F() {
+      for i := 0; i < 10; i++ {
+      }
+}
+
+func main() {
+      go F()
+      go F()
+      runtime.Goexit()
 }
 `

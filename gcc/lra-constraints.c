@@ -4203,7 +4203,7 @@ need_for_call_save_p (int regno)
 	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])));
 }
 
-/* Global registers occuring in the current EBB.  */
+/* Global registers occurring in the current EBB.  */
 static bitmap_head ebb_global_regs;
 
 /* Return true if we need a split for hard register REGNO or pseudo

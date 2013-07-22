@@ -56,3 +56,16 @@ get_fpu_except_flags (void)
 {
   return 0;
 }
+
+
+int
+get_fpu_rounding_mode (void)
+{   
+  return 0;
+}               
+
+
+void
+set_fpu_rounding_mode (int round __attribute__((unused)))
+{
+}

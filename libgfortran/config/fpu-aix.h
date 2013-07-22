@@ -116,3 +116,75 @@ get_fpu_except_flags (void)
 
   return result;
 }
+
+
+int
+get_fpu_rounding_mode (void)
+{
+  int rnd_mode;
+
+  rnd_mode = fegetround ();
+
+  switch (rnd_mode)
+    {
+#ifdef FE_TONEAREST
+      case FE_TONEAREST:
+	return GFC_FPE_TONEAREST;
+#endif
+
+#ifdef FE_UPWARD
+      case FE_UPWARD:
+	return GFC_FPE_UPWARD;
+#endif
+
+#ifdef FE_DOWNWARD
+      case FE_DOWNWARD:
+	return GFC_FPE_DOWNWARD;
+#endif
+
+#ifdef FE_TOWARDZERO
+      case FE_TOWARDZERO:
+	return GFC_FPE_TOWARDZERO;
+#endif
+      default:
+	return GFC_FPE_INVALID;
+    }
+}
+
+
+void
+set_fpu_rounding_mode (int mode)
+{
+  int rnd_mode;
+
+  switch (mode)
+    {
+#ifdef FE_TONEAREST
+      case GFC_FPE_TONEAREST:
+	rnd_mode = FE_TONEAREST;
+	break;
+#endif
+
+#ifdef FE_UPWARD
+      case GFC_FPE_UPWARD:
+	rnd_mode = FE_UPWARD;
+	break;
+#endif
+
+#ifdef FE_DOWNWARD
+      case GFC_FPE_DOWNWARD:
+	rnd_mode = FE_DOWNWARD;
+	break;
+#endif
+
+#ifdef FE_TOWARDZERO
+      case GFC_FPE_TOWARDZERO:
+	rnd_mode = FE_TOWARDZERO;
+	break;
+#endif
+      default:
+	return;
+    }
+
+  fesetround (rnd_mode);
+}

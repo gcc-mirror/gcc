@@ -87,6 +87,8 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 moxie port		Anthony Green		green@moxielogic.com
+nds32 port		Chung-Ju Wu		jasonwucj@gmail.com
+nds32 port		Shiva Chen		shiva0217@gmail.com
 pdp11 port		Paul Koning		ni1d@arrl.net
 picochip port		Daniel Towner		dant@picochip.com
 rl78 port		DJ Delorie		dj@redhat.com
@@ -500,6 +502,7 @@ Tom Rix						trix@redhat.com
 Craig Rodrigues					rodrigc@gcc.gnu.org
 Erven Rohou					erven.rohou@inria.fr
 Ira Rosen					irar@il.ibm.com
+Yvan Roux					yvan.roux@linaro.org
 Maciej W. Rozycki				macro@linux-mips.org
 Silvius Rus					rus@google.com
 Matthew Sachs					msachs@apple.com
@@ -512,6 +515,7 @@ Dodji Seketeli					dodji@gcc.gnu.org
 Svein Seldal					svein@dev.seldal.com
 Thiemo Seufer					ths@networkno.de
 Marcus Shawcroft				marcus.shawcroft@arm.com
+Tim Shen					timshen91@gmail.com
 Sharad Singhai					singhai@google.com
 Johannes Singler				singler@kit.edu
 Franz Sirl					franz.sirl-kernel@lauterbach.com

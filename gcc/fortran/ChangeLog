@@ -1,3 +1,40 @@
+2013-07-21   Ondřej Bílka  <neleai@seznam.cz>
+
+	* trans-decl.c: Fix comment typos.
+	* trans-expr.c: Ditto.
+
+2013-07-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56937
+	* dependency.c (gfc_dep_resolver):  Treat identical
+	array subscripts as identical; don't unconditionally
+	return a dependency if an array subscript is found.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/35862
+	* libgfortran.h (GFC_FPE_DOWNWARD, GFC_FPE_TONEAREST,
+	GFC_FPE_TOWARDZERO, GFC_FPE_UPWARD): New defines.
+
+2013-07-21  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57894
+	* check.c (min_max_args): Add keyword= check.
+
+2013-07-17  Mikael Morin  <mikael@gcc.gnu.org>
+	    Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57895
+	* match.c (gfc_match_name): Ensure that the error
+	message regarding -fdollar-ok gets printed.
+	(gfc_match_common): Avoid multiple freeing.
+
+2013-07-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57912
+	* trans-expr.c (gfc_trans_scalar_assign): Correct if
+	condition for caf realloc.
+
 2013-07-15  Tobias Burnus  <burnus@net-b.de>
 
 	* trans-array.h (gfc_deallocate_alloc_comp_no_caf,
@@ -143,7 +180,7 @@
 
 	PR fortran/37336
 	* trans-decl.c (init_intent_out_dt): Call finalizer
-	when approriate.
+	when appropriate.
 
 2013-06-08  Tobias Burnus  <burnus@net-b.de>
 
@@ -644,7 +681,7 @@
 2013-04-08  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56782
-	* frontend-passes.c (callback_reduction):  Dont't do
+	* frontend-passes.c (callback_reduction):  Don't do
 	any simplification if there is only a single element
 	which has an iterator.
 

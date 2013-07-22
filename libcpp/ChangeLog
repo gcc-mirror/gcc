@@ -1,3 +1,9 @@
+2013-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/57620
+	* lex.c (lex_raw_string): Undo phase1 and phase2 transformations
+	between R" and final " rather than only in between R"del( and )del".
+
 2013-07-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/57824

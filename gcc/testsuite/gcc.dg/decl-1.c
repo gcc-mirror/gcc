@@ -3,7 +3,7 @@
    Source: Neil Booth, 12 Feb 2002.
 
    In the declaration of proc, x must be parsed as a typedef name (C99
-   6.7.5.3 p11.  Also see C89 DR #009, which was erroneously ommitted
+   6.7.5.3 p11.  Also see C89 DR #009, which was erroneously omitted
    from C99, and resubmitted as DR #249: if in a parameter
    declaration, an identifier can be read as a typedef name or a
    paramter name, it is read as a typedef name).  */

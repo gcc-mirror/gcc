@@ -25,6 +25,7 @@ extern void machopic_validate_stub_or_non_lazy_ptr (const char *);
 extern void machopic_output_function_base_name (FILE *);
 extern const char *machopic_indirection_name (rtx, bool);
 extern const char *machopic_mcount_stub_name (void);
+extern bool machopic_should_output_picbase_label (void);
 
 #ifdef RTX_CODE
 

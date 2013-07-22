@@ -59,7 +59,7 @@ struct GTY(()) symtab_node_base
   /* True when alias is a weakref.  */
   unsigned weakref : 1;
   /* C++ frontend produce same body aliases and extra name aliases for
-     virutal functions and vtables that are obviously equivalent.
+     virtual functions and vtables that are obviously equivalent.
      Those aliases are bit special, especially because C++ frontend
      visibility code is so ugly it can not get them right at first time
      and their visibility needs to be copied from their "masters" at

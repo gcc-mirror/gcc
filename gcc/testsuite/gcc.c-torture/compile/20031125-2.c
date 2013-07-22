@@ -1,7 +1,7 @@
 struct BlobSpan {
 	int right;
 };
-/* This test makes sure we don't accidently cause a bad insertion to occur
+/* This test makes sure we don't accidentally cause a bad insertion to occur
    by choosing the wrong variable name so that we end up with a use not
    dominated by a def. */
 void render_blob_line(struct BlobSpan blobdata) {

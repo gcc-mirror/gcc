@@ -77,10 +77,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __throw_system_error(__e);
   }
 
-  condition_variable_any::condition_variable_any() noexcept = default;
-
-  condition_variable_any::~condition_variable_any() noexcept = default;
-
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

@@ -1325,7 +1325,7 @@ aarch64_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
 
   switch (fcode)
     {
-      BUILTIN_VDQF (UNOP, abs, 2)
+      BUILTIN_VALLDI (UNOP, abs, 2)
 	return fold_build1 (ABS_EXPR, type, args[0]);
 	break;
       BUILTIN_VALLDI (BINOP, cmge, 0)

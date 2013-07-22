@@ -1,3 +1,8 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* c-common.c: Fix typos.
+	* c-common.h: Likewise.
+
 2013-07-13  Lubos Lunak  <l.lunak@suse.cz>
 
 	PR c++/55203

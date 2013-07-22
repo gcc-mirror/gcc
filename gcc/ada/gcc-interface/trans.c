@@ -64,7 +64,7 @@
    instead.  */
 #define ALLOCA_THRESHOLD 1000
 
-/* Let code below know whether we are targetting VMS without need of
+/* Let code below know whether we are targeting VMS without need of
    intrusive preprocessor directives.  */
 #ifndef TARGET_ABI_OPEN_VMS
 #define TARGET_ABI_OPEN_VMS 0
@@ -9163,7 +9163,7 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
   /* Pick the GNAT node of which we'll take the sloc to assign to the GCC node
      end_locus when there is one.  We consider only GNAT nodes with a possible
      End_Label attached.  If the End_Label actually was unassigned, fallback
-     on the orginal node.  We'd better assign an explicit sloc associated with
+     on the original node.  We'd better assign an explicit sloc associated with
      the outer construct in any case.  */
 
   switch (Nkind (gnat_node))

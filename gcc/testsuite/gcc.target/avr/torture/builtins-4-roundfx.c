@@ -72,11 +72,11 @@ DEFTEST1 (long long accum, llk)
 
 static void test2hr (void)
 {
-  TEST2 (hr, 1, 0x7f, 0x40);
-  TEST2 (hr, 2, 0x7f, 0b1100000);
-  TEST2 (hr, 3, 0x7f, 0b1110000);
-  TEST2 (hr, 4, 0x7f, 0b1111000);
-
+  TEST2 (hr, 1, 0x7f, 0x7f);
+  TEST2 (hr, 2, 0x70, 0x7f);
+  TEST2 (hr, 3, 0x78, 0x7f);
+  TEST2 (hr, 4, 0x7f, 0x7f);
+ 
   TEST2 (uhr, 1, 0x7f, 0x80);
   TEST2 (uhr, 2, 0x7f, 0x80);
   TEST2 (uhr, 3, 0x7f, 0x80);
@@ -85,10 +85,13 @@ static void test2hr (void)
 
 void test2k (void)
 {
-  TEST2 (k, 1, 0x7fffffff, 0x7fff8000 | 0b100000000000000);
-  TEST2 (k, 2, 0x7fffffff, 0x7fff8000 | 0b110000000000000);
-  TEST2 (k, 3, 0x7fffffff, 0x7fff8000 | 0b111000000000000);
-  TEST2 (k, 4, 0x7fffffff, 0x7fff8000 | 0b111100000000000);
+  TEST2 (k, 1, 0x7fffff00, 0x7fffffff);
+  TEST2 (k, 2, 0x7ffffff0, 0x7fffffff);
+  TEST2 (k, 2, 0x7ffff000, 0x7fffffff);
+  TEST2 (k, 3, 0x7ffff000, 0x7ffff000);
+  TEST2 (k, 3, 0x7ffff800, 0x7fffffff);
+  TEST2 (k, 3, 0x7ffff7ff, 0x7ffff000);
+  TEST2 (k, 4, 0x7ffff7ff, 0x7ffff800);
 
   TEST2 (uk, 1, 0x7fffffff, 1ul << 31);
   TEST2 (uk, 2, 0x7fffffff, 1ul << 31);

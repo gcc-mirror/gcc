@@ -19,7 +19,7 @@ typedef unsigned long UTItype;
    and unsigned integer types I and U and the floating-point type F,
    where P is the binary precision of the floating point type.  We
    test conversions of the values 0, 1, 0x7...f, 0x8...0, 0xf...f.  We
-   also test conversions of values half way inbetween two
+   also test conversions of values half way between two
    representable values (rounding both ways), just above half way, and
    just below half way.  */
 #define TEST_I_F(I, U, F, P)					\

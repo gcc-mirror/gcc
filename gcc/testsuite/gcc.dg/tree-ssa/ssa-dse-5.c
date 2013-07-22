@@ -12,7 +12,7 @@ f1 (int i, int j, int k)
   x = j; 
 } 
 
-/* The assignment "i = 3" is partialy dead.  Our DSE pass doesn't handle
+/* The assignment "i = 3" is partially dead.  Our DSE pass doesn't handle
    detection of partially dead assignments.
 
    There's two outputs which would indicate that the optimization was

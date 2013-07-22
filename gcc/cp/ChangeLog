@@ -1,3 +1,15 @@
+2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
+
+	* class.c: Fix typos.
+	* cp-array-notation.c: Likewise.
+	* cp-objcp-common.c: Likewise.
+	* decl.c: Likewise.
+	* init.c: Likewise.
+	* mangle.c: Likewise.
+	* parser.c: Likewise.
+	* pt.c: Likewise.
+	* semantics.c: Likewise.
+
 2013-07-14  Adam Butcher  <adam@jessamine.co.uk>
 
 	* semantics.c (build_lambda_expr),

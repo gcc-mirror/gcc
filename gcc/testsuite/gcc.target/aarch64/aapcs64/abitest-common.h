@@ -86,7 +86,7 @@ extern void dumpregs () __asm("myfunc");
 
 #ifdef RUNTIME_ENDIANNESS_CHECK
 #ifndef RUNTIME_ENDIANNESS_CHECK_FUNCTION_DEFINED
-/* This helper funtion defined to detect whether there is any incompatibility
+/* This helper function defined to detect whether there is any incompatibility
    issue on endianness between compilation time and run-time environments.
    TODO: review the implementation when the work of big-endian support in A64
    GCC starts.

@@ -906,7 +906,7 @@ register_hooks (void)
    CONST.  */
 
 static void
-generate_summary (void)
+pure_const_generate_summary (void)
 {
   struct cgraph_node *node;
 
@@ -1080,7 +1080,7 @@ ignore_edge (struct cgraph_edge *e)
 
 /* Return true if NODE is self recursive function.
    ??? self recursive and indirectly recursive funcions should
-   be the same, so this function seems unnecesary.  */
+   be the same, so this function seems unnecessary.  */
 
 static bool
 self_recursive_p (struct cgraph_node *node)
@@ -1513,7 +1513,7 @@ struct ipa_opt_pass_d pass_ipa_pure_const =
   0,					/* todo_flags_start */
   0                                     /* todo_flags_finish */
  },
- generate_summary,		        /* generate_summary */
+ pure_const_generate_summary,		/* generate_summary */
  pure_const_write_summary,		/* write_summary */
  pure_const_read_summary,		/* read_summary */
  NULL,					/* write_optimization_summary */

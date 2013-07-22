@@ -1,4 +1,4 @@
-/* This file provides auxilliary functions for c_ptr_tests_8.  */
+/* This file provides auxiliary functions for c_ptr_tests_8.  */
 
 #include <stdio.h>
 #include <stdlib.h>

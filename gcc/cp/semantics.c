@@ -6478,7 +6478,7 @@ typedef struct GTY(()) constexpr_call {
   constexpr_fundef *fundef;
   /* Parameter bindings environment.  A TREE_LIST where each TREE_PURPOSE
      is a parameter _DECL and the TREE_VALUE is the value of the parameter.
-     Note: This arrangement is made to accomodate the use of
+     Note: This arrangement is made to accommodate the use of
      iterative_hash_template_arg (see pt.c).  If you change this
      representation, also change the hash calculation in
      cxx_eval_call_expression.  */
@@ -6684,7 +6684,7 @@ cxx_bind_parameters_in_call (const constexpr_call *old_call, tree t,
       tree x, arg;
       tree type = parms ? TREE_TYPE (parms) : void_type_node;
       /* For member function, the first argument is a pointer to the implied
-         object.  And for an object contruction, don't bind `this' before
+         object.  And for an object construction, don't bind `this' before
          it is fully constructed.  */
       if (i == 0 && DECL_CONSTRUCTOR_P (fun))
         goto next;
@@ -8385,7 +8385,7 @@ check_automatic_or_tls (tree ref)
    C++0x [expr.const] used to say
 
    6 An expression is a potential constant expression if it is
-     a constant expression where all occurences of function
+     a constant expression where all occurrences of function
      parameters are replaced by arbitrary constant expressions
      of the appropriate type.
 

@@ -226,7 +226,7 @@ init_shadowed_var_for_decl (void)
 					   tree_decl_map_eq, 0);
 }
 
-/* Return true if stmt can fall thru.  Used by block_may_fallthru
+/* Return true if stmt can fall through.  Used by block_may_fallthru
    default case.  */
 
 bool

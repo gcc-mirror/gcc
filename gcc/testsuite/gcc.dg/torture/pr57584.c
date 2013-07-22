@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 
 typedef int int32_t;
 typedef unsigned char uint8_t;

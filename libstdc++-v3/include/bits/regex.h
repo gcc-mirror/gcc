@@ -2185,6 +2185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_SpecializedCursor<_Bi_iter> __cs(__s, __e);
       __detail::_SpecializedResults<_Bi_iter, _Alloc> __r(__sz, __cs, __m);
       __detail::_Grep_matcher __matcher(__cs, __r, __a, __flags);
+      __matcher._M_match();
       return __m[0].matched;
     }
 
@@ -2324,11 +2325,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _Ch_type, typename _Rx_traits>
     inline bool
     regex_search(_Bi_iter __first, _Bi_iter __last,
-		 match_results<_Bi_iter, _Alloc>& __m,
-		 const basic_regex<_Ch_type, _Rx_traits>& __re,
-		 regex_constants::match_flag_type __flags
-		 = regex_constants::match_default)
-    { return false; }
+                 match_results<_Bi_iter, _Alloc>& __m,
+                 const basic_regex<_Ch_type, _Rx_traits>& __re,
+                 regex_constants::match_flag_type __flags
+                 = regex_constants::match_default)
+    {
+      __detail::_AutomatonPtr __a = __re._M_get_automaton();
+      __detail::_Automaton::_SizeT __sz = __a->_M_sub_count();
+      __detail::_SpecializedCursor<_Bi_iter> __cs(__first, __last);
+      __detail::_SpecializedResults<_Bi_iter, _Alloc> __r(__sz, __cs, __m);
+      for (auto __cur = __first; __cur != __last; ++__cur) // Any KMP-like algo?
+        {
+          __detail::_SpecializedCursor<_Bi_iter> __curs(__cur, __last);
+          __detail::_Grep_matcher __matcher(__curs, __r, __a, __flags);
+          __matcher._M_search_from_first();
+          if (__m[0].matched)
+            {
+              __r._M_set_range(__m.size(),
+                               __detail::_SpecializedCursor<_Bi_iter>
+                                 {__first, __m[0].first});
+              __r._M_set_range(__m.size()+1,
+                               __detail::_SpecializedCursor<_Bi_iter>
+                                 {__m[0].second, __last});
+              __r._M_set_matched(__m.size(),
+                                 __m.prefix().first != __m.prefix().second);
+              __r._M_set_matched(__m.size()+1,
+                                 __m.suffix().first != __m.suffix().second);
+              return true;
+            }
+        }
+      return false;
+    }
+
 
   /**
    * Searches for a regular expression within a range.

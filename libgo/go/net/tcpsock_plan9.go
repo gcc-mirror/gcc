@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// TCP sockets for Plan 9
-
 package net
 
 import (
@@ -89,7 +87,7 @@ func dialTCP(net string, laddr, raddr *TCPAddr, deadline time.Time) (*TCPConn, e
 	switch net {
 	case "tcp", "tcp4", "tcp6":
 	default:
-		return nil, UnknownNetworkError(net)
+		return nil, &OpError{"dial", net, raddr, UnknownNetworkError(net)}
 	}
 	if raddr == nil {
 		return nil, &OpError{"dial", net, nil, errMissingAddress}
@@ -98,7 +96,7 @@ func dialTCP(net string, laddr, raddr *TCPAddr, deadline time.Time) (*TCPConn, e
 	if err != nil {
 		return nil, err
 	}
-	return &TCPConn{conn{fd}}, nil
+	return newTCPConn(fd), nil
 }
 
 // TCPListener is a TCP network listener.  Clients should typically
@@ -141,7 +139,7 @@ func (l *TCPListener) Close() error {
 	}
 	if _, err := l.fd.ctl.WriteString("hangup"); err != nil {
 		l.fd.ctl.Close()
-		return err
+		return &OpError{"close", l.fd.ctl.Name(), l.fd.laddr, err}
 	}
 	return l.fd.ctl.Close()
 }
@@ -161,17 +159,21 @@ func (l *TCPListener) SetDeadline(t time.Time) error {
 // File returns a copy of the underlying os.File, set to blocking
 // mode.  It is the caller's responsibility to close f when finished.
 // Closing l does not affect f, and closing f does not affect l.
-func (l *TCPListener) File() (f *os.File, err error) { return l.fd.dup() }
+//
+// The returned os.File's file descriptor is different from the
+// connection's.  Attempting to change properties of the original
+// using this duplicate may or may not have the desired effect.
+func (l *TCPListener) File() (f *os.File, err error) { return l.dup() }
 
 // ListenTCP announces on the TCP address laddr and returns a TCP
 // listener.  Net must be "tcp", "tcp4", or "tcp6".  If laddr has a
-// port of 0, it means to listen on some available port.  The caller
-// can use l.Addr() to retrieve the chosen address.
+// port of 0, ListenTCP will choose an available port.  The caller can
+// use the Addr method of TCPListener to retrieve the chosen address.
 func ListenTCP(net string, laddr *TCPAddr) (*TCPListener, error) {
 	switch net {
 	case "tcp", "tcp4", "tcp6":
 	default:
-		return nil, UnknownNetworkError(net)
+		return nil, &OpError{"listen", net, laddr, UnknownNetworkError(net)}
 	}
 	if laddr == nil {
 		laddr = &TCPAddr{}

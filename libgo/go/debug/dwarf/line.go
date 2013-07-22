@@ -112,7 +112,7 @@ func (d *Data) readUnitLine(i int, u *unit) error {
 func (d *Data) readAddressRanges(off Offset, base uint64, u *unit) error {
 	b := makeBuf(d, u, "ranges", off, d.ranges[off:])
 	var highest uint64
-	switch u.addrsize {
+	switch u.addrsize() {
 	case 1:
 		highest = 0xff
 	case 2:

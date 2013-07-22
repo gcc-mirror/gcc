@@ -103,11 +103,8 @@ namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  inline _Grep_matcher::
-  _Grep_matcher(_PatternCursor& __p, _Results& __r,
-		const _AutomatonPtr& __nfa,
-		regex_constants::match_flag_type __flags)
-  : _M_nfa(static_pointer_cast<_Nfa>(__nfa)), _M_pattern(__p), _M_results(__r)
+  inline void _Grep_matcher::
+  _M_match()
   {
     __detail::_StateSet __t = this->_M_e_closure(_M_nfa->_M_start());
     for (; !_M_pattern._M_at_end(); _M_pattern._M_next())
@@ -115,6 +112,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     _M_results._M_set_matched(0,
                               __includes_some(_M_nfa->_M_final_states(), __t));
+  }
+
+  inline void _Grep_matcher::
+  _M_search_from_first()
+  {
+    __detail::_StateSet __t = this->_M_e_closure(_M_nfa->_M_start());
+    for (; !_M_pattern._M_at_end(); _M_pattern._M_next())
+      {
+        if (__includes_some(_M_nfa->_M_final_states(), __t)) // KISS
+          {
+            _M_results._M_set_matched(0, true);
+            return;
+          }
+        __t = this->_M_e_closure(__move(_M_pattern, *_M_nfa, __t));
+      }
+    _M_results._M_set_matched(0, false);
   }
 
   // Creates the e-closure set for the initial state __i.

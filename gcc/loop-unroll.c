@@ -1632,7 +1632,7 @@ unroll_loop_stupid (struct loop *loop)
 	 for a loop to be really simple.  We could update the counts, but the
 	 problem is that we are unable to decide which exit will be taken
 	 (not really true in case the number of iterations is constant,
-	 but noone will do anything with this information, so we do not
+	 but no one will do anything with this information, so we do not
 	 worry about it).  */
       desc->simple_p = false;
     }

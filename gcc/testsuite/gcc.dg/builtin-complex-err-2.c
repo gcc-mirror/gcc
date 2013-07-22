@@ -1,4 +1,4 @@
-/* Test __builtin_complex errors.  Verify it does nto allow quiet
+/* Test __builtin_complex errors.  Verify it does not allow quiet
    creation of complex types in C90.  */
 /* { dg-do compile } */
 /* { dg-options "-std=c90 -pedantic-errors" } */

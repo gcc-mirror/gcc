@@ -91,7 +91,6 @@ var wincleantests = []PathTest{
 }
 
 func TestClean(t *testing.T) {
-	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
 	tests := cleantests
 	if runtime.GOOS == "windows" {
 		for i := range tests {
@@ -108,22 +107,20 @@ func TestClean(t *testing.T) {
 		}
 	}
 
-	var ms runtime.MemStats
-	runtime.ReadMemStats(&ms)
-	allocs := -ms.Mallocs
-	const rounds = 100
-	for i := 0; i < rounds; i++ {
-		for _, test := range tests {
-			filepath.Clean(test.result)
+	if runtime.GOMAXPROCS(0) > 1 {
+		t.Log("skipping AllocsPerRun checks; GOMAXPROCS>1")
+		return
+	}
+
+	t.Log("Skipping AllocsPerRun for gccgo")
+	return
+
+	for _, test := range tests {
+		allocs := testing.AllocsPerRun(100, func() { filepath.Clean(test.result) })
+		if allocs > 0 {
+			t.Errorf("Clean(%q): %v allocs, want zero", test.result, allocs)
 		}
 	}
-	runtime.ReadMemStats(&ms)
-	allocs += ms.Mallocs
-	/* Fails with gccgo, which has no escape analysis.
-	if allocs >= rounds {
-		t.Errorf("Clean cleaned paths: %d allocations per test round, want zero", allocs/rounds)
-	}
-	*/
 }
 
 const sep = filepath.Separator
@@ -159,10 +156,36 @@ var splitlisttests = []SplitListTest{
 	{string([]byte{lsep, 'a', lsep, 'b'}), []string{"", "a", "b"}},
 }
 
+var winsplitlisttests = []SplitListTest{
+	// quoted
+	{`"a"`, []string{`a`}},
+
+	// semicolon
+	{`";"`, []string{`;`}},
+	{`"a;b"`, []string{`a;b`}},
+	{`";";`, []string{`;`, ``}},
+	{`;";"`, []string{``, `;`}},
+
+	// partially quoted
+	{`a";"b`, []string{`a;b`}},
+	{`a; ""b`, []string{`a`, ` b`}},
+	{`"a;b`, []string{`a;b`}},
+	{`""a;b`, []string{`a`, `b`}},
+	{`"""a;b`, []string{`a;b`}},
+	{`""""a;b`, []string{`a`, `b`}},
+	{`a";b`, []string{`a;b`}},
+	{`a;b";c`, []string{`a`, `b;c`}},
+	{`"a";b";c`, []string{`a`, `b;c`}},
+}
+
 func TestSplitList(t *testing.T) {
-	for _, test := range splitlisttests {
+	tests := splitlisttests
+	if runtime.GOOS == "windows" {
+		tests = append(tests, winsplitlisttests...)
+	}
+	for _, test := range tests {
 		if l := filepath.SplitList(test.list); !reflect.DeepEqual(l, test.result) {
-			t.Errorf("SplitList(%q) = %s, want %s", test.list, l, test.result)
+			t.Errorf("SplitList(%#q) = %#q, want %#q", test.list, l, test.result)
 		}
 	}
 }

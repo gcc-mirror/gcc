@@ -2384,7 +2384,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       cookie_size = targetm.cxx.get_cookie_size (elt_type);
       gcc_assert (TREE_CODE (cookie_size) == INTEGER_CST);
       gcc_checking_assert (TREE_INT_CST (cookie_size).ult (max_size));
-      /* Unconditionally substract the cookie size.  This decreases the
+      /* Unconditionally subtract the cookie size.  This decreases the
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
       max_size -= TREE_INT_CST (cookie_size);

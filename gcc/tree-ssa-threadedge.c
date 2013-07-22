@@ -585,7 +585,7 @@ cond_arg_set_in_bb (edge e, basic_block bb)
   gimple last = last_stmt (e->dest);
 
   /* E->dest does not have to end with a control transferring
-     instruction.  This can occurr when we try to extend a jump
+     instruction.  This can occur when we try to extend a jump
      threading opportunity deeper into the CFG.  In that case
      it is safe for this check to return false.  */
   if (!last)

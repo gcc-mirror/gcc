@@ -3905,6 +3905,10 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
 	     for inlining, but we can't do that because frontends overwrite
 	     the body.  */
 	  && !cg_edge->callee->local.redefined_extern_inline
+	  /* During early inline pass, report only when optimization is
+	     not turned on.  */
+	  && (cgraph_global_info_ready
+	      || !optimize)
 	  /* PR 20090218-1_0.c. Body can be provided by another module. */
 	  && (reason != CIF_BODY_NOT_AVAILABLE || !flag_generate_lto))
 	{

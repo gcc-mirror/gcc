@@ -238,3 +238,12 @@ makemap (const struct __go_map_type *t)
   __builtin_memcpy (ret, &map, sizeof (void *));
   return (uintptr_t) ret;
 }
+
+extern _Bool ismapkey (const struct __go_type_descriptor *)
+  __asm__ (GOSYM_PREFIX "reflect.ismapkey");
+
+_Bool
+ismapkey (const struct __go_type_descriptor *typ)
+{
+  return typ != NULL && typ->__hashfn != __go_type_hash_error;
+}

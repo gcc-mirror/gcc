@@ -594,7 +594,7 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 	     After removing the best edge, the final result will be ABCD/ ACBD.
 	     It does not add jump compared with the previous order.  But it
-	     reduces the possiblity of long jumps.  */
+	     reduces the possibility of long jumps.  */
 	  if (best_edge && for_size
 	      && (EDGE_COUNT (best_edge->dest->succs) > 1
 		 || EDGE_COUNT (best_edge->dest->preds) > 1))

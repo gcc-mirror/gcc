@@ -295,7 +295,7 @@ nt_spawnve (char *exe, char **argv, char *env, struct TTY_Process *process)
 
      Note that using backslash to escape embedded quotes requires
      additional special handling if an embedded quote is already
-     preceeded by backslash, or if an arg requiring quoting ends with
+     preceded by backslash, or if an arg requiring quoting ends with
      backslash.  In such cases, the run of escape characters needs to be
      doubled.  For consistency, we apply this special handling as long
      as the escape character is not quote.
@@ -1332,7 +1332,7 @@ __gnat_setup_child_communication
 #endif
 
 #ifdef TIOCSCTTY
-  /* make the tty the controling terminal */
+  /* make the tty the controlling terminal */
   status = ioctl (desc->slave_fd, TIOCSCTTY, 0);
 #endif
 
@@ -1420,7 +1420,7 @@ int __gnat_terminate_process (pty_desc *desc)
   return kill (desc->child_pid, SIGKILL);
 }
 
-/* __gnat_tty_waitpid - wait for the child proces to die
+/* __gnat_tty_waitpid - wait for the child process to die
  *
  * PARAMETERS
  *   desc pty_desc structure

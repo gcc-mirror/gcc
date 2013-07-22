@@ -44,20 +44,20 @@ func sysSocket(f, t, p int) (int, error) {
 func accept(fd int) (int, syscall.Sockaddr, error) {
 	nfd, sa, err := syscall.Accept4(fd, syscall.SOCK_NONBLOCK|syscall.SOCK_CLOEXEC)
 	// The accept4 system call was introduced in Linux 2.6.28.  If
-	// we get an ENOSYS error, fall back to using accept.
-	if err == nil || err != syscall.ENOSYS {
+	// we get an ENOSYS or EINVAL error, fall back to using accept.
+	if err == nil || (err != syscall.ENOSYS && err != syscall.EINVAL) {
 		return nfd, sa, err
 	}
 
 	// See ../syscall/exec_unix.go for description of ForkLock.
-	// It is okay to hold the lock across syscall.Accept
+	// It is probably okay to hold the lock across syscall.Accept
 	// because we have put fd.sysfd into non-blocking mode.
-	syscall.ForkLock.RLock()
+	// However, a call to the File method will put it back into
+	// blocking mode. We can't take that risk, so no use of ForkLock here.
 	nfd, sa, err = syscall.Accept(fd)
 	if err == nil {
 		syscall.CloseOnExec(nfd)
 	}
-	syscall.ForkLock.RUnlock()
 	if err != nil {
 		return -1, nil, err
 	}

@@ -196,7 +196,7 @@ enum memmodel
   MEMMODEL_LAST = 6
 };
 
-/* Suppose that higher bits are target dependant. */
+/* Suppose that higher bits are target dependent. */
 #define MEMMODEL_MASK ((1<<16)-1)
 
 /* Support for user-provided GGC and PCH markers.  The first parameter

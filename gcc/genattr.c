@@ -335,7 +335,7 @@ main (int argc, char **argv)
       printf ("typedef void *state_t;\n\n");
     }
 
-  /* Special-purpose atributes should be tested with if, not #ifdef.  */
+  /* Special-purpose attributes should be tested with if, not #ifdef.  */
   const char * const special_attrs[] = { "length", "enabled", 0 };
   for (const char * const *p = special_attrs; *p; p++)
     {

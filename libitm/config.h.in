@@ -12,6 +12,9 @@
 /* Define if your assembler supports .cfi_* directives. */
 #undef HAVE_AS_CFI_PSEUDO_OP
 
+/* Define to 1 if the assembler supports HTM. */
+#undef HAVE_AS_HTM
+
 /* Define to 1 if the assembler supports RTM. */
 #undef HAVE_AS_RTM
 
@@ -35,6 +38,9 @@
 
 /* Define to 1 if target has a weakref that works like the ELF one. */
 #undef HAVE_ELF_STYLE_WEAKREF
+
+/* Define to 1 if you have the `getauxval' function. */
+#undef HAVE_GETAUXVAL
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
@@ -80,6 +86,9 @@
 
 /* Define to 1 if the target supports __sync_*_compare_and_swap */
 #undef HAVE_SYNC_BUILTINS
+
+/* Define to 1 if you have the <sys/auxv.h> header file. */
+#undef HAVE_SYS_AUXV_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H

@@ -10,9 +10,9 @@ typedef double adouble __attribute__((aligned(sizeof (double))));
 #include "l_fma_1.h"
 
 /* { dg-final { scan-assembler-times "vfmadd132pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfmadd213pd" 4  } } */
+/* { dg-final { scan-assembler-times "vfmadd231pd" 4  } } */
 /* { dg-final { scan-assembler-times "vfmsub132pd" 4  } } */
-/* { dg-final { scan-assembler-times "vfmsub213pd" 4  } } */
+/* { dg-final { scan-assembler-times "vfmsub231pd" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmadd132pd" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmadd231pd" 4  } } */
 /* { dg-final { scan-assembler-times "vfnmsub132pd" 4  } } */

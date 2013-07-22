@@ -743,8 +743,15 @@ internal_proto(gf_strerror);
 
 extern void set_fpu (void);
 internal_proto(set_fpu);
+
 extern int get_fpu_except_flags (void);
 internal_proto(get_fpu_except_flags);
+
+extern void set_fpu_rounding_mode (int round);
+internal_proto(set_fpu_rounding_mode);
+
+extern int get_fpu_rounding_mode (void);
+internal_proto(get_fpu_rounding_mode);
 
 /* memory.c */
 

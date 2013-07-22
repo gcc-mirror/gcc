@@ -143,7 +143,7 @@ struct GTY(()) ipa_ancestor_jf_data
    the size of the type) is clobbered with an unknown value.  When
    agg_preserved is false or the type of the containing jump function is
    different, all unlisted parts are assumed to be unknown and all values must
-   fullfill is_gimple_ip_invariant.  */
+   fulfill is_gimple_ip_invariant.  */
 
 typedef struct GTY(()) ipa_agg_jf_item
 {
@@ -192,7 +192,7 @@ typedef struct GTY (()) ipa_jump_func
 } ipa_jump_func_t;
 
 
-/* Return the offset of the component that is decribed by a known type jump
+/* Return the offset of the component that is described by a known type jump
    function JFUNC.  */
 
 static inline HOST_WIDE_INT
