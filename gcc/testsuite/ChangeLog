@@ -1,3 +1,7 @@
+2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/pr53265.c: Correct line number in dg-message.
+
 2013-07-22  Diego Novillo  <dnovillo@google.com>
 
 	* testsuite/g++.dg/pr57878.C: Do not force -m32.  Use
