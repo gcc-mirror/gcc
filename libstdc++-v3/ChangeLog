@@ -1,3 +1,10 @@
+2013-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57920
+	* src/c++11/random.cc (random_device::_M_getval): If possible, use
+	read instead of std::fread.
+	* include/std/random: Do not include <cstdio> unnecessarily.
+
 2013-07-21  Tim Shen  <timshen91@gmail.com>
 
 	Partially implement regex_search.
