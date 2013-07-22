@@ -5209,7 +5209,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      &se->pre, &set_descriptor_block, &overflow,
 			      expr3_elem_size, nelems, expr3, ts);
 
-  if (dimension)
+  if (status == NULL_TREE && dimension)
     {
 
       var_overflow = gfc_create_var (integer_type_node, "overflow");
@@ -5223,8 +5223,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
       error = build_call_expr_loc (input_location, gfor_fndecl_runtime_error,
 				   1, msg);
     }
-
-  if (status != NULL_TREE)
+  else if (status != NULL_TREE)
     {
       tree status_type = TREE_TYPE (status);
       stmtblock_t set_status_block;
@@ -8525,10 +8524,12 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       && !sym->attr.save && !sym->attr.result
       && !sym->ns->proc_name->attr.is_main_program)
     {
+      gfc_expr *e;
+      e = has_finalizer ? gfc_lval_expr_from_sym (sym) : NULL;
       tmp = gfc_trans_dealloc_allocated (sym->backend_decl,
-					 sym->attr.codimension,
-					 has_finalizer
-					 ? gfc_lval_expr_from_sym (sym) : NULL);
+					 sym->attr.codimension, e);
+      if (e)
+	gfc_free_expr (e);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 
