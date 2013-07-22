@@ -5209,29 +5209,31 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 			      &se->pre, &set_descriptor_block, &overflow,
 			      expr3_elem_size, nelems, expr3, ts);
 
-  if (status == NULL_TREE && dimension)
+  if (dimension)
     {
-
       var_overflow = gfc_create_var (integer_type_node, "overflow");
       gfc_add_modify (&se->pre, var_overflow, overflow);
 
-      /* Generate the block of code handling overflow.  */
-      msg = gfc_build_addr_expr (pchar_type_node,
-		gfc_build_localized_cstring_const
+      if (status == NULL_TREE)
+	{
+	  /* Generate the block of code handling overflow.  */
+	  msg = gfc_build_addr_expr (pchar_type_node,
+		    gfc_build_localized_cstring_const
   			("Integer overflow when calculating the amount of "
   			 "memory to allocate"));
-      error = build_call_expr_loc (input_location, gfor_fndecl_runtime_error,
-				   1, msg);
-    }
-  else if (status != NULL_TREE)
-    {
-      tree status_type = TREE_TYPE (status);
-      stmtblock_t set_status_block;
+	  error = build_call_expr_loc (input_location,
+				       gfor_fndecl_runtime_error, 1, msg);
+	}
+      else
+	{
+	  tree status_type = TREE_TYPE (status);
+	  stmtblock_t set_status_block;
 
-      gfc_start_block (&set_status_block);
-      gfc_add_modify (&set_status_block, status,
-		      build_int_cst (status_type, LIBERROR_ALLOCATION));
-      error = gfc_finish_block (&set_status_block);
+	  gfc_start_block (&set_status_block);
+	  gfc_add_modify (&set_status_block, status,
+			  build_int_cst (status_type, LIBERROR_ALLOCATION));
+	  error = gfc_finish_block (&set_status_block);
+	}
     }
 
   gfc_start_block (&elseblock);

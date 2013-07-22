@@ -1,5 +1,9 @@
 2013-07-22  Tobias Burnus  <burnus@net-b.de>
 
+	* trans-array.c (gfc_array_allocate): Correct memory-leak patch.
+
+2013-07-22  Tobias Burnus  <burnus@net-b.de>
+
 	* trans-array.c (gfc_array_allocate,
 	gfc_trans_deferred_array): Plug memory leak.
 
