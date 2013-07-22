@@ -170,9 +170,9 @@
   		    && ival > 1020 && ival <= 1275")))
 
 (define_constraint "Pd"
-  "@internal In Thumb-1 state a constant in the range 0 to 7"
+  "@internal In Thumb state a constant in the range 0 to 7"
   (and (match_code "const_int")
-       (match_test "TARGET_THUMB1 && ival >= 0 && ival <= 7")))
+       (match_test "TARGET_THUMB && ival >= 0 && ival <= 7")))
 
 (define_constraint "Pe"
   "@internal In Thumb-1 state a constant in the range 256 to +510"
@@ -213,6 +213,11 @@
   "@internal In Thumb-2 state a constant in the range 0 to 255"
   (and (match_code "const_int")
        (match_test "TARGET_THUMB2 && ival >= 0 && ival <= 255")))
+
+(define_constraint "Pz"
+  "@internal In Thumb-2 state the constant 0"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB2 && (ival == 0)")))
 
 (define_constraint "G"
  "In ARM/Thumb-2 state the floating-point constant 0."
