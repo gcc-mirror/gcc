@@ -1,3 +1,8 @@
+2013-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/57914
+	* libsupc++/atexit_thread.cc (run): Delete cleanup elts.
+
 2013-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57920
