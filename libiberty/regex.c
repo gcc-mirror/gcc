@@ -3396,7 +3396,7 @@ PREFIX(regex_compile) (const char *ARG_PREFIX(pattern),
 			       class.  */
 			    PATFETCH (c);
 
-			    /* Now we have to go though the whole table
+			    /* Now we have to go through the whole table
 			       and find all characters which have the same
 			       first level weight.
 
