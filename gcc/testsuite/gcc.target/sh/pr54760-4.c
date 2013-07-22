@@ -1,5 +1,5 @@
 /* Check that the GBR address optimization does not combine a gbr store
-   and its use when a function call is in-between, when GBR is a call used
+   and its use when a function call is in between, when GBR is a call used
    register, i.e. it is invalidated by function calls.  */
 /* { dg-do compile { target "sh*-*-*" } } */
 /* { dg-options "-O1 -fcall-used-gbr" } */
