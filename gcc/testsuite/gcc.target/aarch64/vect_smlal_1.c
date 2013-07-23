@@ -4,11 +4,11 @@
 typedef signed char S8_t;
 typedef signed short S16_t;
 typedef signed int S32_t;
-typedef signed long S64_t;
+typedef signed long long S64_t;
 typedef signed char *__restrict__ pS8_t;
 typedef signed short *__restrict__ pS16_t;
 typedef signed int *__restrict__ pS32_t;
-typedef signed long *__restrict__ pS64_t;
+typedef signed long long *__restrict__ pS64_t;
 typedef unsigned char U8_t;
 typedef unsigned short U16_t;
 typedef unsigned int U32_t;
@@ -16,7 +16,7 @@ typedef unsigned long U64_t;
 typedef unsigned char *__restrict__ pU8_t;
 typedef unsigned short *__restrict__ pU16_t;
 typedef unsigned int *__restrict__ pU32_t;
-typedef unsigned long *__restrict__ pU64_t;
+typedef unsigned long long *__restrict__ pU64_t;
 
 extern void abort ();
 

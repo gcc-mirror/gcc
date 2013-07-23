@@ -8,8 +8,10 @@
 #include "fcvt.x"
 
 /* { dg-final { scan-assembler-times "fcvtzu\tw\[0-9\]+, *d\[0-9\]" 2 } } */
-/* { dg-final { scan-assembler-times "fcvtps\tx\[0-9\]+, *d\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtps\tx\[0-9\]+, *d\[0-9\]" 1 {target lp64} } } */
+/* { dg-final { scan-assembler-times "fcvtps\tw\[0-9\]+, *d\[0-9\]" 1 {target ilp32} } } */
 /* { dg-final { scan-assembler-times "fcvtpu\tw\[0-9\]+, *d\[0-9\]" 2 } } */
-/* { dg-final { scan-assembler-times "fcvtms\tx\[0-9\]+, *d\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "fcvtms\tx\[0-9\]+, *d\[0-9\]" 1 {target lp64} } } */
+/* { dg-final { scan-assembler-times "fcvtms\tw\[0-9\]+, *d\[0-9\]" 1 {target ilp32} } } */
 /* { dg-final { scan-assembler-times "fcvtmu\tw\[0-9\]+, *d\[0-9\]" 2 } } */
 /* { dg-final { scan-assembler-times "fcvtau\tw\[0-9\]+, *d\[0-9\]" 2 } } */
