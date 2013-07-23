@@ -1,5 +1,9 @@
 2013-07-23  Alexander Monakov  <amonakov@ispras.ru>
 
+	* elf.c (elf_syminfo): Loop over the elf_syminfo_data chain.
+
+2013-07-23  Alexander Monakov  <amonakov@ispras.ru>
+
 	* elf.c (backtrace_initialize): Pass elf_fileline_fn to
 	dl_iterate_phdr callbacks.
 
