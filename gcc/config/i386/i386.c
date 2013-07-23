@@ -35725,7 +35725,10 @@ ix86_pad_returns (void)
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    if (EDGE_FREQUENCY (e) && e->src->index >= 0
 		&& !(e->flags & EDGE_FALLTHRU))
-	      replace = true;
+	      {
+		replace = true;
+		break;
+	      }
 	}
       if (!replace)
 	{

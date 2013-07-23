@@ -2802,7 +2802,10 @@ computed_jump_p (const_rtx insn)
 	    if (GET_CODE (XVECEXP (pat, 0, i)) == USE
 		&& (GET_CODE (XEXP (XVECEXP (pat, 0, i), 0))
 		    == LABEL_REF))
-	      has_use_labelref = 1;
+	      {
+	        has_use_labelref = 1;
+	        break;
+	      }
 
 	  if (! has_use_labelref)
 	    for (i = len - 1; i >= 0; i--)
