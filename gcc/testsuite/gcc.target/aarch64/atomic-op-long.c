@@ -39,5 +39,7 @@ atomic_fetch_or_RELAXED (long a)
   return __atomic_fetch_or (&v, a, __ATOMIC_RELAXED);
 }
 
-/* { dg-final { scan-assembler-times "ldxr\tx\[0-9\]+, \\\[x\[0-9\]+\\\]" 6 } } */
-/* { dg-final { scan-assembler-times "stxr\tw\[0-9\]+, x\[0-9\]+, \\\[x\[0-9\]+\\\]" 6 } } */
+/* { dg-final { scan-assembler-times "ldxr\tx\[0-9\]+, \\\[x\[0-9\]+\\\]" 6 {target lp64} } } */
+/* { dg-final { scan-assembler-times "ldxr\tw\[0-9\]+, \\\[x\[0-9\]+\\\]" 6 {target ilp32} } } */
+/* { dg-final { scan-assembler-times "stxr\tw\[0-9\]+, x\[0-9\]+, \\\[x\[0-9\]+\\\]" 6 {target lp64} } } */
+/* { dg-final { scan-assembler-times "stxr\tw\[0-9\]+, w\[0-9\]+, \\\[x\[0-9\]+\\\]" 6 {target ilp32} } } */
