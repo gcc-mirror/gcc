@@ -1,5 +1,52 @@
 2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* config/aarch64/aarch64.c (POINTER_BYTES): New define.
+	(aarch64_load_symref_appropriately): In the case of
+	SYMBOL_SMALL_ABSOLUTE, use the mode of 'dest' instead of Pmode
+	to generate new rtx; likewise to the case of SYMBOL_SMALL_GOT.
+	(aarch64_expand_mov_immediate): In the case of SYMBOL_FORCE_TO_MEM,
+	change to pass 'ptr_mode' to force_const_mem and zero-extend 'mem'
+	if 'mode' doesn't equal to 'ptr_mode'.
+	(aarch64_output_mi_thunk): Add an assertion on the alignment of
+	'vcall_offset'; change to call aarch64_emit_move differently depending
+	on whether 'Pmode' equals to 'ptr_mode' or not; use 'POINTER_BYTES'
+	to calculate the upper bound of 'vcall_offset'.
+	(aarch64_cannot_force_const_mem): Change to also return true if
+	mode != ptr_mode.
+	(aarch64_legitimize_reload_address): In the case of large
+	displacements, add new local variable 'xmode' and an assertion
+	based on it; change to use 'xmode' to generate the new rtx and
+	reload.
+	(aarch64_asm_trampoline_template): Change to generate the template
+	differently depending on TARGET_ILP32 or not; change to use
+	'POINTER_BYTES' in the argument passed to assemble_aligned_integer.
+	(aarch64_trampoline_size): Removed.
+	(aarch64_trampoline_init): Add new local constant 'tramp_code_sz'
+	and replace immediate literals with it.  Change to use 'ptr_mode'
+	instead of 'DImode' and call convert_memory_address if the mode
+	of 'fnaddr' doesn't equal to 'ptr_mode'.
+	(aarch64_elf_asm_constructor): Change to use assemble_aligned_integer
+	to output symbol.
+	(aarch64_elf_asm_destructor): Likewise.
+	* config/aarch64/aarch64.h (TRAMPOLINE_SIZE): Change to be dependent
+	on TARGET_ILP32 instead of aarch64_trampoline_size.
+	* config/aarch64/aarch64.md (movsi_aarch64): Add new alternatives
+	of 'mov' between WSP and W registers as well as 'adr' and 'adrp'.
+	(loadwb_pair<GPI:mode>_<PTR:mode>): Rename to ...
+	(loadwb_pair<GPI:mode>_<P:mode>): ... this.  Replace PTR with P.
+	(storewb_pair<GPI:mode>_<PTR:mode>): Likewise; rename to ...
+	(storewb_pair<GPI:mode>_<P:mode>): ... this.
+	(add_losym): Change to 'define_expand' and call gen_add_losym_<mode>
+	depending on the value of 'mode'.
+	(add_losym_<mode>): New.
+	(ldr_got_small_<mode>): New, based on ldr_got_small.
+	(ldr_got_small): Remove.
+	(ldr_got_small_sidi): New.
+	* config/aarch64/iterators.md (P): New.
+	(PTR): Change to 'ptr_mode' in the condition.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* config.gcc (aarch64*-*-*): Support --with-abi.
 	(aarch64*-*-elf): Support --with-multilib-list.
 	(aarch64*-*-linux*): Likewise.
