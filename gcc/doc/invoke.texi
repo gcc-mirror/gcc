@@ -19343,10 +19343,10 @@ the rules of the ABI@.
 Set the instruction set, register set, and instruction scheduling parameters
 for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{hypersparc},
-@samp{leon}, @samp{sparclite}, @samp{f930}, @samp{f934}, @samp{sparclite86x},
-@samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc},
-@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
-and @samp{niagara4}.
+@samp{leon}, @samp{leon3}, @samp{sparclite}, @samp{f930}, @samp{f934},
+@samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
+@samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
+@samp{niagara3} and @samp{niagara4}.
 
 Native Solaris and GNU/Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
@@ -19365,7 +19365,7 @@ implementations.
 cypress
 
 @item v8
-supersparc, hypersparc, leon
+supersparc, hypersparc, leon, leon3
 
 @item sparclite
 f930, f934, sparclite86x
@@ -19427,10 +19427,11 @@ option @option{-mcpu=@var{cpu_type}} does.
 The same values for @option{-mcpu=@var{cpu_type}} can be used for
 @option{-mtune=@var{cpu_type}}, but the only useful values are those
 that select a particular CPU implementation.  Those are @samp{cypress},
-@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{f930}, @samp{f934},
-@samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, @samp{ultrasparc3},
-@samp{niagara}, @samp{niagara2}, @samp{niagara3} and @samp{niagara4}.  With
-native Solaris and GNU/Linux toolchains, @samp{native} can also be used.
+@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{leon3}, @samp{f930},
+@samp{f934}, @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
+@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3} and
+@samp{niagara4}.  With native Solaris and GNU/Linux toolchains, @samp{native}
+can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus
