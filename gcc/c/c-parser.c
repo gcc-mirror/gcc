@@ -6238,7 +6238,7 @@ struct c_generic_association
 {
   /* The location of the starting token of the type.  */
   location_t type_location;
-  /* The association's type, or NULL_TREE for 'default'..  */
+  /* The association's type, or NULL_TREE for 'default'.  */
   tree type;
   /* The association's expression.  */
   struct c_expr expression;
