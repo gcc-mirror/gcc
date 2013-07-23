@@ -1,3 +1,11 @@
+2013-07-23  Tom Tromey  <tromey@redhat.com>
+	    Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (struct c_generic_association): New.
+	(c_generic_association_d): New typedef.
+	(c_parser_generic_selection): New function.
+	(c_parser_postfix_expression): Handle RID_GENERIC.
+
 2013-07-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57793

@@ -105,7 +105,7 @@ enum rid
   RID_FRACT, RID_ACCUM,
 
   /* C11 */
-  RID_ALIGNAS,
+  RID_ALIGNAS, RID_GENERIC,
 
   /* This means to warn that this is a C++ keyword, and then treat it
      as a normal identifier.  */

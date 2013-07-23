@@ -1,3 +1,8 @@
+2013-07-23  Tom Tromey  <tromey@redhat.com>
+
+	* c-common.h (enum rid) <RID_GENERIC>: New constant.
+	* c-common.c (c_common_reswords): Add _Generic.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
 	* c-common.c: Fix typos.
