@@ -1,3 +1,7 @@
+2013-07-23  Nicklas Bo Jensen  <nbjensen@gmail.com>
+
+	* doc/md.texi (Machine-Specific Peephole Optimizers): Fix a typo.
+
 2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Also return
