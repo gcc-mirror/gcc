@@ -12,7 +12,7 @@ typedef signed long long *__restrict__ pS64_t;
 typedef unsigned char U8_t;
 typedef unsigned short U16_t;
 typedef unsigned int U32_t;
-typedef unsigned long U64_t;
+typedef unsigned long long U64_t;
 typedef unsigned char *__restrict__ pU8_t;
 typedef unsigned short *__restrict__ pU16_t;
 typedef unsigned int *__restrict__ pU32_t;

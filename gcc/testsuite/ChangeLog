@@ -1,5 +1,9 @@
 2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* gcc.target/aarch64/vect_smlal_1.c: Replace 'long' with 'long long'.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* gcc.target/aarch64/test-ptr-arg-on-stack-1.c: New test.
 
 2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
