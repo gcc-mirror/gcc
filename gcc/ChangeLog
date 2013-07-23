@@ -1,5 +1,10 @@
 2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define _ILP32
+	and __ILP32__ when the ILP32 model is in use.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* config/aarch64/aarch64.c (POINTER_BYTES): New define.
 	(aarch64_load_symref_appropriately): In the case of
 	SYMBOL_SMALL_ABSOLUTE, use the mode of 'dest' instead of Pmode
