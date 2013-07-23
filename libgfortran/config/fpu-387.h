@@ -102,11 +102,11 @@ has_sse (void)
 /* i387 rounding modes.  */
 
 #define _FPU_RC_NEAREST 0x0
-#define _FPU_RC_DOWN    0x400
-#define _FPU_RC_UP      0x800
-#define _FPU_RC_ZERO    0xc00
+#define _FPU_RC_DOWN    0x1
+#define _FPU_RC_UP      0x2
+#define _FPU_RC_ZERO    0x3
 
-#define _FPU_RC_MASK    0xc00
+#define _FPU_RC_MASK    0x3
 
 
 void
@@ -202,8 +202,9 @@ set_fpu_rounding_mode (int round)
 
   __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
 
-  cw &= ~_FPU_RC_MASK;
-  cw |= round_mode;
+  /* The x87 round control bits are shifted by 10 bits.  */
+  cw &= ~(_FPU_RC_MASK << 10);
+  cw |= round_mode << 10;
 
   __asm__ __volatile__ ("fldcw\t%0" : : "m" (cw));
 
@@ -213,9 +214,9 @@ set_fpu_rounding_mode (int round)
 
       __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw_sse));
 
-      /* The SSE round control bits are shifted by 3 bits.  */
-      cw_sse &= ~(_FPU_RC_MASK << 3);
-      cw_sse |= round_mode << 3;
+      /* The SSE round control bits are shifted by 13 bits.  */
+      cw_sse &= ~(_FPU_RC_MASK << 13);
+      cw_sse |= round_mode << 13;
 
       __asm__ __volatile__ ("%vldmxcsr\t%0" : : "m" (cw_sse));
     }
@@ -224,13 +225,27 @@ set_fpu_rounding_mode (int round)
 int
 get_fpu_rounding_mode (void)
 {
+  int round_mode;
+
+#ifdef __x86_64__
+  unsigned int cw;
+
+  __asm__ __volatile__ ("%vstmxcsr\t%0" : "=m" (cw));
+
+  /* The SSE round control bits are shifted by 13 bits.  */
+  round_mode = cw >> 13;
+#else
   unsigned short cw;
 
   __asm__ __volatile__ ("fnstcw\t%0" : "=m" (cw));
 
-  cw &= _FPU_RC_MASK;
+  /* The x87 round control bits are shifted by 10 bits.  */
+  round_mode = cw >> 10;
+#endif
 
-  switch (cw)
+  round_mode &= _FPU_RC_MASK;
+
+  switch (round_mode)
     {
     case _FPU_RC_NEAREST:
       return GFC_FPE_TONEAREST;

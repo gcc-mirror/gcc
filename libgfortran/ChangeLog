@@ -1,4 +1,9 @@
-2013-07-21   Ondřej Bílka  <neleai@seznam.cz>
+2013-07-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/fpu-387.h (get_fpu_rounding_mode): Read rounding mode
+	from SSE mxcsr register on x86_64.
+
+2013-07-21  Ondřej Bílka  <neleai@seznam.cz>
 
 	* io/transfer.c: Fix comment typos.
 
