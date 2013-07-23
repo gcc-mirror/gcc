@@ -454,12 +454,46 @@ elf_syminfo (struct backtrace_state *state, uintptr_t pc,
 	     void *data)
 {
   struct elf_syminfo_data *edata;
-  struct elf_symbol *sym;
+  struct elf_symbol *sym = NULL;
 
-  edata = (struct elf_syminfo_data *) state->syminfo_data;
-  sym = ((struct elf_symbol *)
-	 bsearch (&pc, edata->symbols, edata->count,
-		  sizeof (struct elf_symbol), elf_symbol_search));
+  if (!state->threaded)
+    {
+      for (edata = (struct elf_syminfo_data *) state->syminfo_data;
+	   edata != NULL;
+	   edata = edata->next)
+	{
+	  sym = ((struct elf_symbol *)
+		 bsearch (&pc, edata->symbols, edata->count,
+			  sizeof (struct elf_symbol), elf_symbol_search));
+	  if (sym != NULL)
+	    break;
+	}
+    }
+  else
+    {
+      struct elf_syminfo_data **pp;
+
+      pp = (struct elf_syminfo_data **) (void *) &state->syminfo_data;
+      while (1)
+	{
+	  edata = *pp;
+	  /* Atomic load.  */
+	  while (!__sync_bool_compare_and_swap (pp, edata, edata))
+	    edata = *pp;
+
+	  if (edata == NULL)
+	    break;
+
+	  sym = ((struct elf_symbol *)
+		 bsearch (&pc, edata->symbols, edata->count,
+			  sizeof (struct elf_symbol), elf_symbol_search));
+	  if (sym != NULL)
+	    break;
+
+	  pp = &edata->next;
+	}
+    }
+
   if (sym == NULL)
     callback (data, pc, NULL, 0);
   else
