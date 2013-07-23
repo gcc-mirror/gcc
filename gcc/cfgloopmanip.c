@@ -343,7 +343,11 @@ remove_path (edge e)
     FOR_EACH_EDGE (ae, ei, e->src->succs)
       if (ae != e && ae->dest != EXIT_BLOCK_PTR && !bitmap_bit_p (seen, ae->dest->index)
 	  && ae->flags & EDGE_IRREDUCIBLE_LOOP)
-	irred_invalidated = true;
+	{
+	  irred_invalidated = true;
+	  break;
+	}
+
   for (i = 0; i < nrem; i++)
     {
       bb = rem_bbs[i];

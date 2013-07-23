@@ -2178,8 +2178,8 @@ subst_dup (rtx pattern, int n_alt, int n_subst_alt)
 	  if (XVEC (pattern, i) == NULL)
 	    break;
 	case 'E':
-	  for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
-	    if (code != MATCH_DUP && code != MATCH_OP_DUP)
+	  if (code != MATCH_DUP && code != MATCH_OP_DUP)
+	    for (j = XVECLEN (pattern, i) - 1; j >= 0; --j)
 	      XVECEXP (pattern, i, j) = subst_dup (XVECEXP (pattern, i, j),
 						   n_alt, n_subst_alt);
 	  break;

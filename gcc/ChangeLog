@@ -1,3 +1,21 @@
+2013-07-22  Po-Chun Chang  <pchang9@cs.wisc.edu>
+
+	* reload.c (find_reloads): Exit loop once we find this operand
+	cannot be reloaded somehow for this alternative.
+
+	* reload.c (find_reloads): Exit loop once we find a hard register.
+
+	* rtlanal.c (computed_jump_p): Exit loop once we find label
+	reference is used.
+
+	* i386.c (ix86_pad_returns): Exit loop after setting replace.
+
+	* cfgloopmanip.c (remove_path): Exit loop after setting
+	irred_invalidated.
+
+	* gensupport.c (subst_dup): Avoid loop if code is not
+	MATCH_DUP nor MATCH_OP_DUP.
+
 2013-07-23  Nicklas Bo Jensen  <nbjensen@gmail.com>
 
 	* doc/md.texi (Machine-Specific Peephole Optimizers): Fix a typo.
@@ -161,7 +179,7 @@
 	-march=r5900 -mhard-float -mdouble-float.  Use spu_single_format
 	for -march=r5900 -mhard-float.
 
-2013-07-22  Chang  <pchang9@cs.wisc.edu>
+2013-07-22  Po-Chun Chang  <pchang9@cs.wisc.edu>
 
 	* df-problems.c (can_move_insns_across): Exit loop once we
 	find a non-fixed, non-global register.
@@ -433,7 +451,7 @@
 
 	* tree-pass.h (pass_ipa_lto_wpa_fixup): Remove redundant decl.
 
-2013-07-18  Chang  <pchang9@cs.wisc.edu>
+2013-07-18  Po-Chun Chang  <pchang9@cs.wisc.edu>
 
 	* read-rtl.c (validate_const_int): Once an invalid character is
 	seen, quit the loop.
