@@ -273,6 +273,7 @@ struct	M
 	GCStats	gcstats;
 	bool	racecall;
 	bool	needextram;
+	bool	dropextram;	// for gccgo: drop after call is done.
 	void*	racepc;
 	void	(*waitunlockf)(Lock*);
 	void*	waitlock;
@@ -450,6 +451,7 @@ extern	G*	runtime_lastg;
 extern	M*	runtime_allm;
 extern	P**	runtime_allp;
 extern	int32	runtime_gomaxprocs;
+extern	uint32	runtime_needextram;
 extern	bool	runtime_singleproc;
 extern	uint32	runtime_panicking;
 extern	uint32	runtime_gcwaiting;		// gc is waiting to run
@@ -518,6 +520,8 @@ G*	runtime_malg(int32, byte**, size_t*);
 void	runtime_mpreinit(M*);
 void	runtime_minit(void);
 void	runtime_unminit(void);
+void	runtime_needm(void);
+void	runtime_dropm(void);
 void	runtime_signalstack(byte*, int32);
 MCache*	runtime_allocmcache(void);
 void	runtime_freemcache(MCache*);
