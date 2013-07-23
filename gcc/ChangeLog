@@ -1,3 +1,37 @@
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config.gcc (aarch64*-*-*): Support --with-abi.
+	(aarch64*-*-elf): Support --with-multilib-list.
+	(aarch64*-*-linux*): Likewise.
+	(supported_defaults): Add abi to aarch64*-*-*.
+	* configure.ac: Mention AArch64 for --with-multilib-list.
+	* configure: Re-generated.
+	* config/aarch64/biarchilp32.h: New file.
+	* config/aarch64/biarchlp64.h: New file.
+	* config/aarch64/aarch64-elf.h (ENDIAN_SPEC): New define.
+	(ABI_SPEC): Ditto.
+	(MULTILIB_DEFAULTS): Ditto.
+	(DRIVER_SELF_SPECS): Ditto.
+	(ASM_SPEC): Update to also substitute -mabi.
+	* config/aarch64/aarch64-elf-raw.h (LINK_SPEC): Add linker script
+	file whose name depends on -mabi= and -mbig-endian.
+	* config/aarch64/aarch64.h (LONG_TYPE_SIZE): Change to depend on
+	TARGET_ILP32.
+	(POINTER_SIZE): New define.
+	(POINTERS_EXTEND_UNSIGNED): Ditto.
+	(enum aarch64_abi_type): New enumeration tag.
+	(AARCH64_ABI_LP64, AARCH64_ABI_ILP32): New enumerators.
+	(AARCH64_ABI_DEFAULT): Define to AARCH64_ABI_LP64 if undefined.
+	(TARGET_ILP32): New define.
+	* config/aarch64/aarch64.opt (mabi): New.
+	(aarch64_abi): New.
+	(ilp32, lp64): New values for -mabi.
+	* config/aarch64/t-aarch64 (comma): New define.
+	(MULTILIB_OPTIONS): Ditto.
+	(MULTILIB_DIRNAMES): Ditto.
+	* config/aarch64/t-aarch64-linux (MULTIARCH_DIRNAME): New define.
+	* doc/invoke.texi: Document -mabi for AArch64.
+
 2013-07-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.md: Explain asm print modifier 'r' for REG.

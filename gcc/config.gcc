@@ -498,6 +498,26 @@ then
 fi
 
 case ${target} in
+aarch64*-*-*)
+	case ${with_abi} in
+	"")
+		if test "x$with_multilib_list" = xilp32; then
+			tm_file="aarch64/biarchilp32.h ${tm_file}"
+		else
+			tm_file="aarch64/biarchlp64.h ${tm_file}"
+		fi
+		;;
+	ilp32)
+		tm_file="aarch64/biarchilp32.h ${tm_file}"
+		;;
+	lp64)
+		tm_file="aarch64/biarchlp64.h ${tm_file}"
+		;;
+	*)
+		echo "Unknown ABI used in --with-abi=$with_abi"
+		exit 1
+	esac
+	;;
 i[34567]86-*-*)
 	if test "x$with_abi" != x; then
 		echo "This target does not support --with-abi."
@@ -828,6 +848,22 @@ aarch64*-*-elf)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 		;;
 	esac
+	aarch64_multilibs="${with_multilib_list}"
+	if test "$aarch64_multilibs" = "default"; then
+		aarch64_multilibs="lp64,ilp32"
+	fi
+	aarch64_multilibs=`echo $aarch64_multilibs | sed -e 's/,/ /g'`
+	for aarch64_multilib in ${aarch64_multilibs}; do
+		case ${aarch64_multilib} in
+		ilp32 | lp64 )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${aarch64_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${aarch64_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
 aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
@@ -838,6 +874,24 @@ aarch64*-*-linux*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 		;;
 	esac
+	aarch64_multilibs="${with_multilib_list}"
+	if test "$aarch64_multilibs" = "default"; then
+		# TODO: turn on ILP32 multilib build after its support is mature.
+		# aarch64_multilibs="lp64,ilp32"
+		aarch64_multilibs="lp64"
+	fi
+	aarch64_multilibs=`echo $aarch64_multilibs | sed -e 's/,/ /g'`
+	for aarch64_multilib in ${aarch64_multilibs}; do
+		case ${aarch64_multilib} in
+		ilp32 | lp64 )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${aarch64_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${aarch64_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
@@ -3158,7 +3212,7 @@ fi
 supported_defaults=
 case "${target}" in
 	aarch64*-*-*)
-		supported_defaults="cpu arch"
+		supported_defaults="abi cpu arch"
 		for which in cpu arch; do
 
 			eval "val=\$with_$which"

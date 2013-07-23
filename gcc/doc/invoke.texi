@@ -470,7 +470,7 @@ Objective-C and Objective-C++ Dialects}.
 @c so users have a clue at guessing where the ones they want will be.
 
 @emph{AArch64 Options}
-@gccoptlist{-mbig-endian  -mlittle-endian @gol
+@gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian @gol
 -mgeneral-regs-only @gol
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
 -mstrict-align @gol
@@ -10971,6 +10971,17 @@ platform.
 These options are defined for AArch64 implementations:
 
 @table @gcctabopt
+
+@item -mabi=@var{name}
+@opindex mabi
+Generate code for the specified data model.  Permissible values
+are @samp{ilp32} for SysV-like data model where int, long int and pointer
+are 32-bit, and @samp{lp64} for SysV-like data model where int is 32-bit,
+but long int and pointer are 64-bit.
+
+The default depends on the specific target configuration.  Note that
+the LP64 and ILP32 ABIs are not link-compatible; you must compile your
+entire program with the same ABI, and link with a compatible set of libraries.
 
 @item -mbig-endian
 @opindex mbig-endian
