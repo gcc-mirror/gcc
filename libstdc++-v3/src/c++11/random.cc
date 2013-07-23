@@ -30,8 +30,6 @@
 # include <cpuid.h>
 #endif
 
-#include <cstdio>
-
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 #endif
