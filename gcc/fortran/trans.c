@@ -1568,7 +1568,7 @@ gfc_set_backend_locus (locus * loc)
 }
 
 
-/* Restore the saved locus. Only used in conjonction with
+/* Restore the saved locus. Only used in conjunction with
    gfc_save_backend_locus, to free the memory when we are done.  */
 
 void
