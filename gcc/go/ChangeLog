@@ -1,3 +1,8 @@
+2013-07-23  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c: Don't #include "except.h".
+	* Make-lang.in (go/go-lang.o): Don't depend on $(EXCEPT_H).
+
 2013-06-18  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::immutable_struct): Add is_hidden
