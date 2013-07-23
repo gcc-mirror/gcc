@@ -1,3 +1,8 @@
+2013-07-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/linux-unwind.h: Use the proper dwarf to hard reg
+	mapping for FPRs when creating the fallback framestate.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/57516
