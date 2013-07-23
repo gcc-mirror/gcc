@@ -1,3 +1,8 @@
+2013-07-23  Alexander Monakov  <amonakov@ispras.ru>
+
+	* elf.c (backtrace_initialize): Pass elf_fileline_fn to
+	dl_iterate_phdr callbacks.
+
 2013-03-25  Ian Lance Taylor  <iant@google.com>
 
 	* alloc.c: #include <sys/types.h>.
