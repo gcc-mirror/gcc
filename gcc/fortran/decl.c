@@ -8255,7 +8255,7 @@ match_procedure_in_type (void)
 	}
 
       /* See if we already have a binding with this name in the symtree which
-	 would be an error.  If a GENERIC already targetted this binding, it may
+	 would be an error.  If a GENERIC already targeted this binding, it may
 	 be already there but then typebound is still NULL.  */
       stree = gfc_find_symtree (ns->tb_sym_root, name);
       if (stree && stree->n.tb)

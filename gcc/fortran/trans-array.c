@@ -994,7 +994,7 @@ get_array_ref_dim_for_loop_dim (gfc_ss *ss, int loop_dim)
 
    'eltype' == NULL signals that the temporary should be a class object.
    The 'initial' expression is used to obtain the size of the dynamic
-   type; otherwise the allocation and initialisation proceeds as for any
+   type; otherwise the allocation and initialization proceeds as for any
    other expression
 
    PRE, POST, INITIAL, DYNAMIC and DEALLOC are as for

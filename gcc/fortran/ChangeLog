@@ -1,3 +1,10 @@
+2013-07-23   Ondřej Bílka  <neleai@seznam.cz>
+
+	* decl.c: Fix comment typos.
+	* interface.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans.c: Likewise.
+
 2013-07-22  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57906
@@ -20,7 +27,7 @@
 	* trans-array.c (gfc_array_allocate,
 	gfc_trans_deferred_array): Plug memory leak.
 
-2013-07-21   Ondřej Bílka  <neleai@seznam.cz>
+2013-07-21  Ondřej Bílka  <neleai@seznam.cz>
 
 	* trans-decl.c: Fix comment typos.
 	* trans-expr.c: Ditto.
