@@ -1,3 +1,7 @@
+2013-07-23  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-parser.c (struct c_generic_association): Fix typo.
+
 2013-07-23  Tom Tromey  <tromey@redhat.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
