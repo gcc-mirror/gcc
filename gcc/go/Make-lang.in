@@ -240,7 +240,7 @@ GO_RUNTIME_H = go/gofrontend/runtime.h go/gofrontend/runtime.def
 GO_AST_DUMP_H = go/gofrontend/ast-dump.h go/gofrontend/string-dump.h
 
 go/go-backend.o: go/go-backend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-	$(TM_H) $(RTL_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H) \
+	$(TM_H) $(TREE_H) $(TM_P_H) output.h $(TARGET_H) \
 	$(COMMON_TARGET_H)
 
 CFLAGS-go/go-lang.o += -DDEFAULT_TARGET_VERSION=\"$(version)\" \
