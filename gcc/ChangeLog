@@ -1,3 +1,7 @@
+2013-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC Options): Document new leon3 processor value.
+
 2013-07-22  Po-Chun Chang  <pchang9@cs.wisc.edu>
 
 	* reload.c (find_reloads): Exit loop once we find this operand
