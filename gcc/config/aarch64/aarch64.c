@@ -382,8 +382,13 @@ aarch64_hard_regno_mode_ok (unsigned regno, enum machine_mode mode)
   if (GET_MODE_CLASS (mode) == MODE_CC)
     return regno == CC_REGNUM;
 
-  if (regno == SP_REGNUM || regno == FRAME_POINTER_REGNUM
-      || regno == ARG_POINTER_REGNUM)
+  if (regno == SP_REGNUM)
+    /* The purpose of comparing with ptr_mode is to support the
+       global register variable associated with the stack pointer
+       register via the syntax of asm ("wsp") in ILP32.  */
+    return mode == Pmode || mode == ptr_mode;
+
+  if (regno == FRAME_POINTER_REGNUM || regno == ARG_POINTER_REGNUM)
     return mode == Pmode;
 
   if (GP_REGNUM_P (regno) && ! aarch64_vect_struct_mode_p (mode))
