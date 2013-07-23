@@ -1,3 +1,8 @@
+2013-07-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/random: Add back <cstdio> include.
+	* src/c++11/random.cc: Don't include <cstdio> here.
+
 2013-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/57914
