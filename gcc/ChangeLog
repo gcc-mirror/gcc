@@ -1,3 +1,7 @@
+2013-07-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Explain asm print modifier 'r' for REG.
+
 2013-07-22  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 	    Anton Blanchard <anton@au1.ibm.com>
 
