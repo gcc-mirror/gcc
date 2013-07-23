@@ -862,7 +862,7 @@ backtrace_initialize (struct backtrace_state *state, int descriptor,
   pd.state = state;
   pd.error_callback = error_callback;
   pd.data = data;
-  pd.fileline_fn = fileline_fn;
+  pd.fileline_fn = &elf_fileline_fn;
   pd.found_sym = &found_sym;
   pd.found_dwarf = &found_dwarf;
 
