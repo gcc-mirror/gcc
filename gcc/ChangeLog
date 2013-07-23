@@ -1,3 +1,93 @@
+2013-07-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (xor<mode>3): Move 128-bit boolean
+	expanders to rs6000.md.
+	(ior<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(nor<mode>3): Likewise.
+	(andc<mode>3): Likewise.
+	(eqv<mode>3): Likewise.
+	(nand<mode>3): Likewise.
+	(orc<mode>3): Likewise.
+
+	* config/rs6000/rs6000-protos.h (rs6000_split_logical): New
+	declaration.
+
+	* config/rs6000/rs6000.c (rs6000_split_logical_inner): Add support
+	to split multi-word logical operations.
+	(rs6000_split_logical_di): Likewise.
+	(rs6000_split_logical): Likewise.
+
+	* config/rs6000/vsx.md (VSX_L2): Delete, no longer used.
+	(vsx_and<mode>3_32bit): Move 128-bit logical insns to rs6000.md,
+	and allow TImode operations in 32-bit.
+	(vsx_and<mode>3_64bit): Likewise.
+	(vsx_ior<mode>3_32bit): Likewise.
+	(vsx_ior<mode>3_64bit): Likewise.
+	(vsx_xor<mode>3_32bit): Likewise.
+	(vsx_xor<mode>3_64bit): Likewise.
+	(vsx_one_cmpl<mode>2_32bit): Likewise.
+	(vsx_one_cmpl<mode>2_64bit): Likewise.
+	(vsx_nor<mode>3_32bit): Likewise.
+	(vsx_nor<mode>3_64bit): Likewise.
+	(vsx_andc<mode>3_32bit): Likewise.
+	(vsx_andc<mode>3_64bit): Likewise.
+	(vsx_eqv<mode>3_32bit): Likewise.
+	(vsx_eqv<mode>3_64bit): Likewise.
+	(vsx_nand<mode>3_32bit): Likewise.
+	(vsx_nand<mode>3_64bit): Likewise.
+	(vsx_orc<mode>3_32bit): Likewise.
+	(vsx_orc<mode>3_64bit): Likewise.
+
+	* config/rs6000/rs6000.h (VLOGICAL_REGNO_P): Always allow vector
+	logical types in GPRs.
+
+	* config/rs6000/altivec.md (altivec_and<mode>3): Move 128-bit
+	logical insns to rs6000.md, and allow TImode operations in
+	32-bit.
+	(altivec_ior<mode>3): Likewise.
+	(altivec_xor<mode>3): Likewise.
+	(altivec_one_cmpl<mode>2): Likewise.
+	(altivec_nor<mode>3): Likewise.
+	(altivec_andc<mode>3): Likewise.
+
+	* config/rs6000/rs6000.md (BOOL_128): New mode iterators and mode
+	attributes for moving the 128-bit logical operations into
+	rs6000.md.
+	(BOOL_REGS_OUTPUT): Likewise.
+	(BOOL_REGS_OP1): Likewise.
+	(BOOL_REGS_OP2): Likewise.
+	(BOOL_REGS_UNARY): Likewise.
+	(BOOL_REGS_AND_CR0): Likewise.
+	(one_cmpl<mode>2): Add support for DI logical operations on
+	32-bit, splitting the operations to 32-bit.
+	(anddi3): Likewise.
+	(iordi3): Likewise.
+	(xordi3): Likewise.
+	(and<mode>3, 128-bit types): Rewrite 2013-06-06 logical operator
+	changes to combine the 32/64-bit code, allow logical operations on
+	TI mode in 32-bit, and to use similar match_operator patterns like
+	scalar mode uses.  Combine the Altivec and VSX code for logical
+	operations, and move it here.
+	(ior<mode>3, 128-bit types): Likewise.
+	(xor<mode>3, 128-bit types): Likewise.
+	(one_cmpl<mode>3, 128-bit types): Likewise.
+	(nor<mode>3, 128-bit types): Likewise.
+	(andc<mode>3, 128-bit types): Likewise.
+	(eqv<mode>3, 128-bit types): Likewise.
+	(nand<mode>3, 128-bit types): Likewise.
+	(orc<mode>3, 128-bit types): Likewise.
+	(and<mode>3_internal): Likewise.
+	(bool<mode>3_internal): Likewise.
+	(boolc<mode>3_internal1): Likewise.
+	(boolc<mode>3_internal2): Likewise.
+	(boolcc<mode>3_internal1): Likewise.
+	(boolcc<mode>3_internal2): Likewise.
+	(eqv<mode>3_internal1): Likewise.
+	(eqv<mode>3_internal2): Likewise.
+	(one_cmpl1<mode>3_internal): Likewise.
+
 2013-07-23  David Holsgrove <david.holsgrove@xilinx.com>
 
 	* config/microblaze/microblaze.c (microblaze_expand_prologue):
