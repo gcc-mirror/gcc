@@ -166,20 +166,21 @@ runtime_sighandler (int sig, Siginfo *info,
   int i;
 
   m = runtime_m ();
+
+#ifdef SIGPROF
+  if (sig == SIGPROF)
+    {
+      if (m != NULL && gp != m->g0 && gp != m->gsignal)
+	runtime_sigprof ();
+      return;
+    }
+#endif
+
   if (m == NULL)
     {
       runtime_badsignal (sig);
       return;
     }
-
-#ifdef SIGPROF
-  if (sig == SIGPROF)
-    {
-      if (gp != runtime_m ()->g0 && gp != runtime_m ()->gsignal)
-	runtime_sigprof ();
-      return;
-    }
-#endif
 
   for (i = 0; runtime_sigtab[i].sig != -1; ++i)
     {
