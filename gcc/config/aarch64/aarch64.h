@@ -49,6 +49,11 @@
 	    break;					\
 	}						\
 							\
+      if (TARGET_ILP32)					\
+	{						\
+	  cpp_define (parse_in, "_ILP32");		\
+	  cpp_define (parse_in, "__ILP32__");		\
+	}						\
     } while (0)
 
 
