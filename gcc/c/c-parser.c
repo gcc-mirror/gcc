@@ -6232,6 +6232,225 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
   return true;
 }
 
+/* This represents a single generic-association.  */
+
+struct c_generic_association
+{
+  /* The location of the starting token of the type.  */
+  location_t type_location;
+  /* The association's type, or NULL_TREE for 'default'..  */
+  tree type;
+  /* The association's expression.  */
+  struct c_expr expression;
+};
+
+/* Parse a generic-selection.  (C11 6.5.1.1).
+   
+   generic-selection:
+     _Generic ( assignment-expression , generic-assoc-list )
+     
+   generic-assoc-list:
+     generic-association
+     generic-assoc-list , generic-association
+   
+   generic-association:
+     type-name : assignment-expression
+     default : assignment-expression
+*/
+
+static struct c_expr
+c_parser_generic_selection (c_parser *parser)
+{
+  vec<c_generic_association> associations = vNULL;
+  struct c_expr selector, error_expr;
+  tree selector_type;
+  struct c_generic_association matched_assoc;
+  bool match_found = false;
+  location_t generic_loc, selector_loc;
+
+  error_expr.original_code = ERROR_MARK;
+  error_expr.original_type = NULL;
+  error_expr.value = error_mark_node;
+  matched_assoc.type_location = UNKNOWN_LOCATION;
+  matched_assoc.type = NULL_TREE;
+  matched_assoc.expression = error_expr;
+
+  gcc_assert (c_parser_next_token_is_keyword (parser, RID_GENERIC));
+  generic_loc = c_parser_peek_token (parser)->location;
+  c_parser_consume_token (parser);
+  if (!flag_isoc11)
+    {
+      if (flag_isoc99)
+	pedwarn (generic_loc, OPT_Wpedantic,
+		 "ISO C99 does not support %<_Generic%>");
+      else
+	pedwarn (generic_loc, OPT_Wpedantic,
+		 "ISO C90 does not support %<_Generic%>");
+    }
+
+  if (!c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
+    return error_expr;
+
+  c_inhibit_evaluation_warnings++;
+  selector_loc = c_parser_peek_token (parser)->location;
+  selector = c_parser_expr_no_commas (parser, NULL);
+  selector = default_function_array_conversion (selector_loc, selector);
+  c_inhibit_evaluation_warnings--;
+
+  if (selector.value == error_mark_node)
+    {
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+      return selector;
+    }
+  selector_type = TREE_TYPE (selector.value);
+  /* In ISO C terms, rvalues (including the controlling expression of
+     _Generic) do not have qualified types.  */
+  if (TREE_CODE (selector_type) != ARRAY_TYPE)
+    selector_type = TYPE_MAIN_VARIANT (selector_type);
+  /* In ISO C terms, _Noreturn is not part of the type of expressions
+     such as &abort, but in GCC it is represented internally as a type
+     qualifier.  */
+  if (FUNCTION_POINTER_TYPE_P (selector_type)
+      && TYPE_QUALS (TREE_TYPE (selector_type)) != TYPE_UNQUALIFIED)
+    selector_type
+      = build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (selector_type)));
+
+  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+    {
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+      return error_expr;
+    }
+
+  while (1)
+    {
+      struct c_generic_association assoc, *iter;
+      unsigned int ix;
+      c_token *token = c_parser_peek_token (parser);
+
+      assoc.type_location = token->location;
+      if (token->type == CPP_KEYWORD && token->keyword == RID_DEFAULT)
+	{
+	  c_parser_consume_token (parser);
+	  assoc.type = NULL_TREE;
+	}
+      else
+	{
+	  struct c_type_name *type_name;
+
+	  type_name = c_parser_type_name (parser);
+	  if (type_name == NULL)
+	    {
+	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	      goto error_exit;
+	    }
+	  assoc.type = groktypename (type_name, NULL, NULL);
+	  if (assoc.type == error_mark_node)
+	    {
+	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	      goto error_exit;
+	    }
+
+	  if (TREE_CODE (assoc.type) == FUNCTION_TYPE)
+	    error_at (assoc.type_location,
+		      "%<_Generic%> association has function type");
+	  else if (!COMPLETE_TYPE_P (assoc.type))
+	    error_at (assoc.type_location,
+		      "%<_Generic%> association has incomplete type");
+
+	  if (variably_modified_type_p (assoc.type, NULL_TREE))
+	    error_at (assoc.type_location,
+		      "%<_Generic%> association has "
+		      "variable length type");
+	}
+
+      if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+	{
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	  goto error_exit;
+	}
+
+      assoc.expression = c_parser_expr_no_commas (parser, NULL);
+      if (assoc.expression.value == error_mark_node)
+	{
+	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+	  goto error_exit;
+	}
+
+      for (ix = 0; associations.iterate (ix, &iter); ++ix)
+	{
+	  if (assoc.type == NULL_TREE)
+	    {
+	      if (iter->type == NULL_TREE)
+		{
+		  error_at (assoc.type_location,
+			    "duplicate %<default%> case in %<_Generic%>");
+		  inform (iter->type_location, "original %<default%> is here");
+		}
+	    }
+	  else if (iter->type != NULL_TREE)
+	    {
+	      if (comptypes (assoc.type, iter->type))
+		{
+		  error_at (assoc.type_location,
+			    "%<_Generic%> specifies two compatible types");
+		  inform (iter->type_location, "compatible type is here");
+		}
+	    }
+	}
+
+      if (assoc.type == NULL_TREE)
+	{
+	  if (!match_found)
+	    {
+	      matched_assoc = assoc;
+	      match_found = true;
+	    }
+	}
+      else if (comptypes (assoc.type, selector_type))
+	{
+	  if (!match_found || matched_assoc.type == NULL_TREE)
+	    {
+	      matched_assoc = assoc;
+	      match_found = true;
+	    }
+	  else
+	    {
+	      error_at (assoc.type_location,
+			"%<_Generic> selector matches multiple associations");
+	      inform (matched_assoc.type_location,
+		      "other match is here");
+	    }
+	}
+
+      associations.safe_push (assoc);
+
+      if (c_parser_peek_token (parser)->type != CPP_COMMA)
+	break;
+      c_parser_consume_token (parser);
+    }
+
+  associations.release ();
+
+  if (!c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
+    {
+      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
+      return error_expr;
+    }
+
+  if (!match_found)
+    {
+      error_at (selector_loc, "%<_Generic%> selector of type %qT is not "
+		"compatible with any association",
+		selector_type);
+      return error_expr;
+    }
+
+  return matched_assoc.expression;
+
+ error_exit:
+  associations.release ();
+  return error_expr;
+}
 
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2).
 
@@ -6255,6 +6474,7 @@ c_parser_get_builtin_args (c_parser *parser, const char *bname,
      constant
      string-literal
      ( expression )
+     generic-selection
 
    GNU extensions:
 
@@ -6822,6 +7042,9 @@ c_parser_postfix_expression (c_parser *parser)
 	    tree type = groktypename (t1, NULL, NULL);
 	    expr.value = objc_build_encode_expr (type);
 	  }
+	  break;
+	case RID_GENERIC:
+	  expr = c_parser_generic_selection (parser);
 	  break;
 	default:
 	  c_parser_error (parser, "expected expression");
