@@ -1,3 +1,9 @@
+2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Reverse
+	two operands for little-endian.
+
 2013-07-23  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.c (mips_case_values_threshold): New.
