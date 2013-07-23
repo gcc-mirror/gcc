@@ -2540,10 +2540,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /**
        * @brief Provides a singular iterator, useful for indicating
        * one-past-the-end of a range.
-       * @todo Implement this function.
        * @doctodo
        */
-      regex_iterator();
+      regex_iterator()
+      : _M_match()
+      { }
       
       /**
        * Constructs a %regex_iterator...
@@ -2551,77 +2552,125 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param __b  [IN] One-past-the-end of the text range to search.
        * @param __re [IN] The regular expression to match.
        * @param __m  [IN] Policy flags for match rules.
-       * @todo Implement this function.
        * @doctodo
        */
       regex_iterator(_Bi_iter __a, _Bi_iter __b, const regex_type& __re,
 		     regex_constants::match_flag_type __m
-		     = regex_constants::match_default);
+		     = regex_constants::match_default)
+      : _M_begin(__a), _M_end(__b), _M_pregex(&__re), _M_flags(__m), _M_match()
+      { regex_search(_M_begin, _M_end, _M_match, *_M_pregex, _M_flags); }
 
       /**
        * Copy constructs a %regex_iterator.
-       * @todo Implement this function.
        * @doctodo
        */
-      regex_iterator(const regex_iterator& __rhs);
+      regex_iterator(const regex_iterator& __rhs) = default;
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       regex_iterator&
-      operator=(const regex_iterator& __rhs);
+      operator=(const regex_iterator& __rhs) = default;
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       bool
-      operator==(const regex_iterator& __rhs);
+      operator==(const regex_iterator& __rhs) const;
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       bool
-      operator!=(const regex_iterator& __rhs);
+      operator!=(const regex_iterator& __rhs) const
+      { return !(*this == __rhs); }
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       const value_type&
-      operator*();
+      operator*() const
+      { return _M_match; }
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       const value_type*
-      operator->();
+      operator->() const
+      { return &_M_match; }
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       regex_iterator&
       operator++();
       
       /**
-       * @todo Implement this function.
        * @doctodo
        */
       regex_iterator
-      operator++(int);
+      operator++(int)
+      {
+        auto __tmp = *this;
+        ++(*this);
+        return __tmp;
+      }
       
     private:
       // these members are shown for exposition only:
-      _Bi_iter                         begin;
-      _Bi_iter                         end;
-      const regex_type*                pregex;
-      regex_constants::match_flag_type flags;
-      match_results<_Bi_iter>          match;
+      _Bi_iter                         _M_begin;
+      _Bi_iter                         _M_end;
+      const regex_type*                _M_pregex;
+      regex_constants::match_flag_type _M_flags;
+      match_results<_Bi_iter>          _M_match;
     };
+
+  template<typename _Bi_iter,
+	   typename _Ch_type,
+	   typename _Rx_traits>
+    bool
+    regex_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
+    operator==(const regex_iterator& __rhs) const
+    {
+      return (_M_match.empty() && __rhs._M_match.empty())
+        || (_M_begin == __rhs._M_begin
+            && _M_end == __rhs._M_end
+            && _M_pregex == __rhs._M_pregex
+            && _M_flags == __rhs._M_flags
+            && _M_match[0] == __rhs._M_match[0]);
+    }
+
+  template<typename _Bi_iter,
+	   typename _Ch_type,
+	   typename _Rx_traits>
+    regex_iterator<_Bi_iter, _Ch_type, _Rx_traits>&
+    regex_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
+    operator++()
+    {
+      if (_M_match[0].matched)
+        {
+          auto __start = _M_match[0].second;
+          if (_M_match[0].first == _M_match[0].second)
+            if (__start == _M_end)
+              {
+                _M_match = value_type();
+                return *this;
+              }
+            else
+              {
+                if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags
+                                 | regex_constants::match_not_null
+                                 | regex_constants::match_continuous))
+                  return *this;
+                else
+                  ++__start;
+              }
+          _M_flags |= regex_constants::match_prev_avail;
+          if (!regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
+            _M_match = value_type();
+        }
+      return *this;
+    }
   
   typedef regex_iterator<const char*>             cregex_iterator;
   typedef regex_iterator<string::const_iterator>  sregex_iterator;
@@ -2639,8 +2688,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * value of an iterator of this class is a std::sub_match object.
    */
   template<typename _Bi_iter,
-	   typename _Ch_type = typename iterator_traits<_Bi_iter>::value_type,
-	   typename _Rx_traits = regex_traits<_Ch_type> >
+           typename _Ch_type = typename iterator_traits<_Bi_iter>::value_type,
+           typename _Rx_traits = regex_traits<_Ch_type> >
     class regex_token_iterator
     {
     public:
@@ -2654,13 +2703,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       /**
        * @brief Default constructs a %regex_token_iterator.
-       * @todo Implement this function.
        * 
        * A default-constructed %regex_token_iterator is a singular iterator
        * that will compare equal to the one-past-the-end value for any
        * iterator of the same type.
        */
-      regex_token_iterator();
+      regex_token_iterator()
+      : _M_position(), _M_result(nullptr), _M_suffix(), _M_n(0), _M_subs()
+      { }
       
       /**
        * Constructs a %regex_token_iterator...
@@ -2679,31 +2729,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *                          subexpression from a match within the text.
        * @param __m          [IN] Policy flags for match rules.
        *
-       * @todo Implement this function.
        * @doctodo
        */
       regex_token_iterator(_Bi_iter __a, _Bi_iter __b, const regex_type& __re,
 			   int __submatch = 0,
 			   regex_constants::match_flag_type __m
-			   = regex_constants::match_default);
-
-      /**
-       * Constructs a %regex_token_iterator...
-       * @param __a          [IN] The start of the text to search.
-       * @param __b          [IN] One-past-the-end of the text to search.
-       * @param __re         [IN] The regular expression to search for.
-       * @param __submatches [IN] A list of subexpressions to return for each
-       *                        regular expression match within the text.
-       * @param __m          [IN] Policy flags for match rules.
-       *
-       * @todo Implement this function.
-       * @doctodo
-       */
-      regex_token_iterator(_Bi_iter __a, _Bi_iter __b,
-			   const regex_type& __re,
-			   const std::vector<int>& __submatches,
-			   regex_constants::match_flag_type __m
-			     = regex_constants::match_default);
+			   = regex_constants::match_default)
+      : _M_position(__a, __b, __re, __m), _M_subs(1, __submatch), _M_n(0)
+      { _M_init(__a, __b); }
 
       /**
        * Constructs a %regex_token_iterator...
@@ -2713,8 +2746,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @param __submatches [IN] A list of subexpressions to return for each
        *                          regular expression match within the text.
        * @param __m          [IN] Policy flags for match rules.
-       
-       * @todo Implement this function.
+       *
+       * @doctodo
+       */
+      regex_token_iterator(_Bi_iter __a, _Bi_iter __b,
+			   const regex_type& __re,
+			   const std::vector<int>& __submatches,
+			   regex_constants::match_flag_type __m
+			     = regex_constants::match_default)
+      : _M_position(__a, __b, __re, __m), _M_subs(__submatches), _M_n(0)
+      { _M_init(__a, __b); }
+
+      /**
+       * Constructs a %regex_token_iterator...
+       * @param __a          [IN] The start of the text to search.
+       * @param __b          [IN] One-past-the-end of the text to search.
+       * @param __re         [IN] The regular expression to search for.
+       * @param __submatches [IN] A list of subexpressions to return for each
+       *                          regular expression match within the text.
+       * @param __m          [IN] Policy flags for match rules.
+       *
+       * @doctodo
+       */
+      regex_token_iterator(_Bi_iter __a, _Bi_iter __b,
+			   const regex_type& __re,
+                           initializer_list<int> __submatches,
+			   regex_constants::match_flag_type __m
+			     = regex_constants::match_default)
+      : _M_position(__a, __b, __re, __m), _M_subs(__submatches), _M_n(0)
+      { _M_init(__a, __b); }
+
+      /**
+       * Constructs a %regex_token_iterator...
+       * @param __a          [IN] The start of the text to search.
+       * @param __b          [IN] One-past-the-end of the text to search.
+       * @param __re         [IN] The regular expression to search for.
+       * @param __submatches [IN] A list of subexpressions to return for each
+       *                          regular expression match within the text.
+       * @param __m          [IN] Policy flags for match rules.
+       *
        * @doctodo
        */
       template<std::size_t _Nm>
@@ -2722,74 +2792,200 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			     const regex_type& __re,
 			     const int (&__submatches)[_Nm],
 			     regex_constants::match_flag_type __m
-			     = regex_constants::match_default);
+			     = regex_constants::match_default)
+      : _M_position(__a, __b, __re, __m),
+      _M_subs(__submatches, *(&__submatches+1)), _M_n(0)
+      { _M_init(__a, __b); }
 
       /**
        * @brief Copy constructs a %regex_token_iterator.
        * @param __rhs [IN] A %regex_token_iterator to copy.
-       * @todo Implement this function.
        */
-      regex_token_iterator(const regex_token_iterator& __rhs);
+      regex_token_iterator(const regex_token_iterator& __rhs)
+      : _M_position(__rhs.position), _M_subs(__rhs.subs), _M_n(__rhs.N),
+      _M_result(__rhs.result), _M_suffix(__rhs.suffix),
+      _M_has_m1(__rhs._M_has_m1)
+      {
+        if (__rhs._M_result == &__rhs._M_suffix)
+          _M_result = &_M_suffix;
+      }
 
       /**
        * @brief Assigns a %regex_token_iterator to another.
        * @param __rhs [IN] A %regex_token_iterator to copy.
-       * @todo Implement this function.
        */
       regex_token_iterator&
       operator=(const regex_token_iterator& __rhs);
 
       /**
        * @brief Compares a %regex_token_iterator to another for equality.
-       * @todo Implement this function.
        */
       bool
       operator==(const regex_token_iterator& __rhs) const;
 
       /**
        * @brief Compares a %regex_token_iterator to another for inequality.
-       * @todo Implement this function.
        */
       bool
-      operator!=(const regex_token_iterator& __rhs) const;
+      operator!=(const regex_token_iterator& __rhs) const
+      { return !(*this == __rhs); }
 
       /**
        * @brief Dereferences a %regex_token_iterator.
-       * @todo Implement this function.
        */
       const value_type&
-      operator*() const;
+      operator*() const
+      { return *_M_result; }
 
       /**
        * @brief Selects a %regex_token_iterator member.
-       * @todo Implement this function.
        */
       const value_type*
-      operator->() const;
+      operator->() const
+      { return _M_result; }
 
       /**
        * @brief Increments a %regex_token_iterator.
-       * @todo Implement this function.
        */
       regex_token_iterator&
       operator++();
 
       /**
        * @brief Postincrements a %regex_token_iterator.
-       * @todo Implement this function.
        */
       regex_token_iterator
-      operator++(int);
+      operator++(int)
+      {
+        auto __tmp = *this;
+        ++(*this);
+        return __tmp;
+      }
 
     private: // data members for exposition only:
-      typedef regex_iterator<_Bi_iter, _Ch_type, _Rx_traits> position_iterator;
+      typedef regex_iterator<_Bi_iter, _Ch_type, _Rx_traits> _Position;
 
-      position_iterator __position;
-      const value_type* __result;
-      value_type        __suffix;
-      std::size_t       __n;
-      std::vector<int>  __subs;
+      void
+      _M_init(_Bi_iter __a, _Bi_iter __b);
+
+      const value_type&
+      _M_current_match() const
+      {
+        if (_M_subs[_M_n] == -1)
+          return (*_M_position).prefix();
+        else
+          return (*_M_position)[_M_subs[_M_n]];
+      }
+
+      bool
+      _M_end_of_seq() const
+      { return _M_result != nullptr; }
+
+      _Position _M_position;
+      const value_type* _M_result;
+      value_type        _M_suffix;
+      std::size_t       _M_n;
+      std::vector<int>  _M_subs;
+
+      bool              _M_has_m1; // subs contains -1
     };
+
+  template<typename _Bi_iter,
+           typename _Ch_type,
+           typename _Rx_traits>
+    regex_token_iterator<_Bi_iter, _Ch_type, _Rx_traits>&
+    regex_token_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
+    operator=(const regex_token_iterator& __rhs)
+    {
+      _M_position = __rhs._M_position;
+      _M_subs = __rhs._M_subs;
+      _M_n = __rhs._M_n;
+      _M_result = __rhs._M_result;
+      _M_suffix = __rhs._M_suffix;
+      _M_has_m1 = __rhs._M_has_m1;
+      if (__rhs._M_result == &__rhs._M_suffix)
+        _M_result = &_M_suffix;
+    }
+
+  template<typename _Bi_iter,
+           typename _Ch_type,
+           typename _Rx_traits>
+    bool
+    regex_token_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
+    operator==(const regex_token_iterator& __rhs) const
+    {
+      if (_M_end_of_seq() && __rhs._M_end_of_seq())
+        return true;
+      if (_M_suffix.matched && __rhs._M_suffix.matched
+          && _M_suffix == __rhs._M_suffix)
+        return true;
+      if (_M_end_of_seq() || _M_suffix.matched
+          || __rhs._M_end_of_seq() || __rhs._M_suffix.matched)
+        return false;
+      return _M_position == __rhs._M_position
+        && _M_n == __rhs._M_n
+        && _M_subs == __rhs._M_subs;
+    }
+
+  template<typename _Bi_iter,
+           typename _Ch_type,
+           typename _Rx_traits>
+    regex_token_iterator<_Bi_iter, _Ch_type, _Rx_traits>&
+    regex_token_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
+    operator++()
+    {
+      _Position __prev = _M_position;
+      if (_M_suffix.matched)
+        *this = regex_token_iterator();
+      else if (_M_n + 1 < _M_subs.size())
+        {
+          _M_n++;
+          _M_result = &_M_current_match();
+        }
+      else
+        {
+          _M_n = 0;
+          ++_M_position;
+          if (_M_position != _Position())
+            _M_result = &_M_current_match();
+          else if (_M_has_m1 && __prev->suffix().length() != 0)
+            {
+              _M_suffix.matched = true;
+              _M_suffix.first = __prev->suffix().first;
+              _M_suffix.second = __prev->suffix().second;
+              _M_result = &_M_suffix;
+            }
+          else
+            *this = regex_token_iterator();
+        }
+      return *this;
+    }
+
+  template<typename _Bi_iter,
+           typename _Ch_type,
+           typename _Rx_traits>
+    void
+    regex_token_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
+    _M_init(_Bi_iter __a, _Bi_iter __b)
+    {
+      _M_has_m1 = false;
+      for (auto __it : _M_subs)
+        if (__it == -1)
+          {
+            _M_has_m1 = true;
+            break;
+          }
+      if (_M_position != _Position())
+        _M_result = &_M_current_match();
+      else if (_M_has_m1)
+        {
+          _M_suffix.matched = true;
+          _M_suffix.first = __a;
+          _M_suffix.second = __b;
+          _M_result = &_M_suffix;
+        }
+      else
+        _M_result = nullptr;
+    }
 
   /** @brief Token iterator for C-style NULL-terminated strings. */
   typedef regex_token_iterator<const char*>             cregex_token_iterator;
