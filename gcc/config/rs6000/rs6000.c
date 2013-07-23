@@ -28520,7 +28520,10 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	  enum machine_mode omode = insn_data[icode].operand[0].mode;
 	  enum machine_mode imode = insn_data[icode].operand[1].mode;
 
-	  if (swapped)
+          /* For little-endian, the two input operands must be swapped
+             (or swapped back) to ensure proper right-to-left numbering
+             from 0 to 2N-1.  */
+	  if (swapped ^ !BYTES_BIG_ENDIAN)
 	    x = op0, op0 = op1, op1 = x;
 	  if (imode != V16QImode)
 	    {
