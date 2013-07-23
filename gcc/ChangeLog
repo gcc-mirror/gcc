@@ -1,3 +1,9 @@
+2013-07-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk
+	and define TARGET_ASM_OUTPUT_MI_THUNK and
+	TARGET_ASM_CAN_OUTPUT_MI_THUNK.
+
 2013-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (SPARC Options): Document new leon3 processor value.

@@ -2221,3 +2221,5 @@
   [(set_attr "type"     "arith")
   (set_attr "mode"      "SI")
   (set_attr "length"    "4")])
+
+(include "sync.md")
