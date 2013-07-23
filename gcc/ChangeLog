@@ -1,3 +1,8 @@
+2013-07-23  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_case_values_threshold): New.
+	(TARGET_CASE_VALUES_THRESHOLD): Define.
+
 2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Anton Blanchard <anton@au1.ibm.com>
 
