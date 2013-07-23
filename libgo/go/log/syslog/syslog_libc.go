@@ -23,17 +23,17 @@ type libcConn int
 
 func syslog_c(int, *byte)
 
-func (libcConn) writeString(p Priority, hostname, tag, msg string) (int, error) {
+func (libcConn) writeString(p Priority, hostname, tag, msg, nl string) error {
 	timestamp := time.Now().Format(time.RFC3339)
-	log := fmt.Sprintf("%s %s %s[%d]: %s", timestamp, hostname, tag, os.Getpid(), msg)
+	log := fmt.Sprintf("%s %s %s[%d]: %s%s", timestamp, hostname, tag, os.Getpid(), msg, nl)
 	buf, err := syscall.BytePtrFromString(log)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	syscall.Entersyscall()
 	syslog_c(int(p), buf)
 	syscall.Exitsyscall()
-	return len(msg), nil
+	return nil
 }
 
 func (libcConn) close() error {
