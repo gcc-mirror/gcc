@@ -1612,11 +1612,12 @@ aarch64_pad_arg_upward (enum machine_mode mode, const_tree type)
   if (!BYTES_BIG_ENDIAN)
     return true;
 
-  /* Otherwise, integral types and floating point types are padded downward:
+  /* Otherwise, integral, floating-point and pointer types are padded downward:
      the least significant byte of a stack argument is passed at the highest
      byte address of the stack slot.  */
   if (type
-      ? (INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type))
+      ? (INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type)
+	 || POINTER_TYPE_P (type))
       : (SCALAR_INT_MODE_P (mode) || SCALAR_FLOAT_MODE_P (mode)))
     return false;
 
