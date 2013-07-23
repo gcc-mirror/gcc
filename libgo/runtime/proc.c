@@ -397,7 +397,8 @@ enum { MaxGomaxprocs = 1<<8 };
 Sched	runtime_sched;
 int32	runtime_gomaxprocs;
 bool	runtime_singleproc;
-bool	runtime_iscgo;
+bool	runtime_iscgo = true;
+uint32	runtime_needextram = 1;
 uint32	runtime_gcwaiting;
 M	runtime_m0;
 G	runtime_g0;	 // idle goroutine for m0
@@ -901,8 +902,8 @@ runtime_mstart(void* mp)
 
 #ifdef USING_SPLIT_STACK
 	{
-	  int dont_block_signals = 0;
-	  __splitstack_block_signals(&dont_block_signals, nil);
+		int dont_block_signals = 0;
+		__splitstack_block_signals(&dont_block_signals, nil);
 	}
 #endif
 
@@ -944,7 +945,7 @@ struct CgoThreadStart
 // Allocate a new m unassociated with any thread.
 // Can use p for allocation context if needed.
 M*
-runtime_allocm(P *p)
+runtime_allocm(P *p, int32 stacksize, byte** ret_g0_stack, size_t* ret_g0_stacksize)
 {
 	M *mp;
 
@@ -961,7 +962,7 @@ runtime_allocm(P *p)
 
 	mp = runtime_mal(sizeof *mp);
 	mcommoninit(mp);
-	mp->g0 = runtime_malg(-1, nil, nil);
+	mp->g0 = runtime_malg(stacksize, ret_g0_stack, ret_g0_stacksize);
 
 	if(p == m->p)
 		releasep();
@@ -1006,6 +1007,9 @@ static void unlockextra(M*);
 //
 // When the callback is done with the m, it calls dropm to
 // put the m back on the list.
+//
+// Unlike the gc toolchain, we start running on curg, since we are
+// just going to return and let the caller continue.
 void
 runtime_needm(void)
 {
@@ -1027,18 +1031,40 @@ runtime_needm(void)
 	mp->needextram = mp->schedlink == nil;
 	unlockextra(mp->schedlink);
 
-	// Install m and g (= m->g0) and set the stack bounds
-	// to match the current stack. We don't actually know
-	// how big the stack is, like we don't know how big any
-	// scheduling stack is, but we assume there's at least 32 kB,
-	// which is more than enough for us.
-	runtime_setmg(mp, mp->g0);
+	// Install m and g (= m->curg).
+	runtime_setmg(mp, mp->curg);
 
-	// We assume that the split stack support has been initialized
-	// for this new thread.
+	// Initialize g's context as in mstart.
+	initcontext();
+	g->status = Gsyscall;
+	g->entry = nil;
+	g->param = nil;
+#ifdef USING_SPLIT_STACK
+	__splitstack_getcontext(&g->stack_context[0]);
+#else
+	g->gcinitial_sp = &mp;
+	g->gcstack_size = 0;
+	g->gcnext_sp = &mp;
+#endif
+	getcontext(&g->context);
+
+	if(g->entry != nil) {
+		// Got here from mcall.
+		void (*pfn)(G*) = (void (*)(G*))g->entry;
+		G* gp = (G*)g->param;
+		pfn(gp);
+		*(int*)0x22 = 0x22;
+	}
 
 	// Initialize this thread to use the m.
 	runtime_minit();
+
+#ifdef USING_SPLIT_STACK
+	{
+		int dont_block_signals = 0;
+		__splitstack_block_signals(&dont_block_signals, nil);
+	}
+#endif
 }
 
 // newextram allocates an m and puts it on the extra list.
@@ -1049,15 +1075,17 @@ runtime_newextram(void)
 {
 	M *mp, *mnext;
 	G *gp;
+	byte *g0_sp, *sp;
+	size_t g0_spsize, spsize;
 
 	// Create extra goroutine locked to extra m.
 	// The goroutine is the context in which the cgo callback will run.
 	// The sched.pc will never be returned to, but setting it to
 	// runtime.goexit makes clear to the traceback routines where
 	// the goroutine stack ends.
-	mp = runtime_allocm(nil);
-	gp = runtime_malg(StackMin, nil, nil);
-	gp->status = Gsyscall;
+	mp = runtime_allocm(nil, StackMin, &g0_sp, &g0_spsize);
+	gp = runtime_malg(StackMin, &sp, &spsize);
+	gp->status = Gdead;
 	mp->curg = gp;
 	mp->locked = LockInternal;
 	mp->lockedg = gp;
@@ -1071,6 +1099,16 @@ runtime_newextram(void)
 	runtime_lastg = gp;
 	runtime_unlock(&runtime_sched);
 	gp->goid = runtime_xadd64(&runtime_sched.goidgen, 1);
+
+	// The context for gp will be set up in runtime_needm.  But
+	// here we need to set up the context for g0.
+	getcontext(&mp->g0->context);
+	mp->g0->context.uc_stack.ss_sp = g0_sp;
+#ifdef MAKECONTEXT_STACK_TOP
+	mp->g0->context.uc_stack.ss_sp += g0_spsize;
+#endif
+	mp->g0->context.uc_stack.ss_size = g0_spsize;
+	makecontext(&mp->g0->context, kickoff, 0);
 
 	// Add m to the extra list.
 	mnext = lockextra(true);
@@ -1113,6 +1151,8 @@ runtime_dropm(void)
 	// After the call to setmg we can only call nosplit functions.
 	mp = m;
 	runtime_setmg(nil, nil);
+
+	mp->curg->status = Gdead;
 
 	mnext = lockextra(true);
 	mp->schedlink = mnext;
@@ -1159,6 +1199,29 @@ unlockextra(M *mp)
 	runtime_atomicstorep(&runtime_extram, mp);
 }
 
+static int32
+countextra()
+{
+	M *mp, *mc;
+	int32 c;
+
+	for(;;) {
+		mp = runtime_atomicloadp(&runtime_extram);
+		if(mp == MLOCKED) {
+			runtime_osyield();
+			continue;
+		}
+		if(!runtime_casp(&runtime_extram, mp, MLOCKED)) {
+			runtime_osyield();
+			continue;
+		}
+		c = 0;
+		for(mc = mp; mc != nil; mc = mc->schedlink)
+			c++;
+		runtime_atomicstorep(&runtime_extram, mp);
+		return c;
+	}
+}
 
 // Create a new m.  It will start off with a call to fn, or else the scheduler.
 static void
@@ -1166,7 +1229,7 @@ newm(void(*fn)(void), P *p)
 {
 	M *mp;
 
-	mp = runtime_allocm(p);
+	mp = runtime_allocm(p, -1, nil, nil);
 	mp->nextp = p;
 	mp->mstartfn = fn;
 
@@ -2348,7 +2411,7 @@ checkdead(void)
 	int32 run, grunning, s;
 
 	// -1 for sysmon
-	run = runtime_sched.mcount - runtime_sched.nmidle - runtime_sched.mlocked - 1;
+	run = runtime_sched.mcount - runtime_sched.nmidle - runtime_sched.mlocked - 1 - countextra();
 	if(run > 0)
 		return;
 	if(run < 0) {

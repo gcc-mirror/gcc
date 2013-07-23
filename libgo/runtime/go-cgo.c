@@ -35,6 +35,9 @@ syscall_cgocall ()
   M* m;
   G* g;
 
+  if (runtime_needextram && runtime_cas (&runtime_needextram, 1, 0))
+    runtime_newextram ();
+
   m = runtime_m ();
   ++m->ncgocall;
   g = runtime_g ();
@@ -71,7 +74,24 @@ syscall_cgocalldone ()
 void
 syscall_cgocallback ()
 {
+  M *mp;
+
+  mp = runtime_m ();
+  if (mp == NULL)
+    {
+      runtime_needm ();
+      mp = runtime_m ();
+      mp->dropextram = true;
+    }
+
   runtime_exitsyscall ();
+
+  mp = runtime_m ();
+  if (mp->needextram)
+    {
+      mp->needextram = 0;
+      runtime_newextram ();
+    }
 }
 
 /* Prepare to return to C/C++ code from a callback to Go code.  */
@@ -79,7 +99,15 @@ syscall_cgocallback ()
 void
 syscall_cgocallbackdone ()
 {
+  M *mp;
+
   runtime_entersyscall ();
+  mp = runtime_m ();
+  if (mp->dropextram && runtime_g ()->ncgo == 0)
+    {
+      mp->dropextram = false;
+      runtime_dropm ();
+    }
 }
 
 /* Allocate memory and save it in a list visible to the Go garbage
