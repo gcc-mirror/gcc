@@ -1,5 +1,9 @@
 2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
 
+	* gcc.target/aarch64/test-ptr-arg-on-stack-1.c: New test.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
 	* gcc.dg/20020219-1.c: Skip the test on aarch64*-*-* in ilp32.
 	* gcc.target/aarch64/aapcs64/test_18.c (struct y): Change the field
 	type from long to long long.
