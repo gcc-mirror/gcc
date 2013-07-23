@@ -1,3 +1,9 @@
+2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Correct
+	selection of field for vector splat in little endian mode.
+
 2013-07-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vector.md (xor<mode>3): Move 128-bit boolean

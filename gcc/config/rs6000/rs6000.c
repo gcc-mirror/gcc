@@ -28460,9 +28460,10 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	      break;
 	  if (i == 16)
 	    {
+	      int field = BYTES_BIG_ENDIAN ? elt / 2 : 7 - elt / 2;
 	      x = gen_reg_rtx (V8HImode);
 	      emit_insn (gen_altivec_vsplth (x, gen_lowpart (V8HImode, op0),
-					     GEN_INT (elt / 2)));
+					     GEN_INT (field)));
 	      emit_move_insn (target, gen_lowpart (V16QImode, x));
 	      return true;
 	    }
@@ -28478,9 +28479,10 @@ altivec_expand_vec_perm_const (rtx operands[4])
 	      break;
 	  if (i == 16)
 	    {
+	      int field = BYTES_BIG_ENDIAN ? elt / 4 : 3 - elt / 4;
 	      x = gen_reg_rtx (V4SImode);
 	      emit_insn (gen_altivec_vspltw (x, gen_lowpart (V4SImode, op0),
-					     GEN_INT (elt / 4)));
+					     GEN_INT (field)));
 	      emit_move_insn (target, gen_lowpart (V16QImode, x));
 	      return true;
 	    }
