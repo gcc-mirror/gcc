@@ -20,6 +20,10 @@
 #define EPOLL_CLOEXEC 02000000
 #endif
 
+#ifndef HAVE_EPOLL_CREATE1
+extern int epoll_create1(int __flags);
+#endif
+
 typedef struct epoll_event EpollEvent;
 
 static int32
