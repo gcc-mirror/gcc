@@ -12351,7 +12351,8 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     case ALTIVEC_BUILTIN_MASK_FOR_LOAD:
     case ALTIVEC_BUILTIN_MASK_FOR_STORE:
       {
-	int icode = (int) CODE_FOR_altivec_lvsr;
+	int icode = (BYTES_BIG_ENDIAN ? (int) CODE_FOR_altivec_lvsr
+		     : (int) CODE_FOR_altivec_lvsl);
 	enum machine_mode tmode = insn_data[icode].operand[0].mode;
 	enum machine_mode mode = insn_data[icode].operand[1].mode;
 	tree arg;
