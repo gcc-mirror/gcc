@@ -30,13 +30,14 @@
 # include <cpuid.h>
 #endif
 
+#include <cstdio>
+
 #ifdef _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-
   namespace
   {
     static unsigned long
@@ -72,7 +73,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 #endif
   }
 
-
   void
   random_device::_M_init(const std::string& token)
   {
@@ -102,8 +102,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
       std::__throw_runtime_error(__N("random_device::"
 				     "random_device(const std::string&)"));
 
-    _M_file = std::fopen(fname, "rb");
-    if (! _M_file)
+    _M_file = static_cast<void*>(std::fopen(fname, "rb"));
+    if (!_M_file)
       goto fail;
   }
 
@@ -117,23 +117,24 @@ namespace std _GLIBCXX_VISIBILITY(default)
   random_device::_M_fini()
   {
     if (_M_file)
-      std::fclose(_M_file);
+      std::fclose(static_cast<FILE*>(_M_file));
   }
 
   random_device::result_type
   random_device::_M_getval()
   {
 #if (defined __i386__ || defined __x86_64__) && defined _GLIBCXX_X86_RDRAND
-    if (! _M_file)
+    if (!_M_file)
       return __x86_rdrand();
 #endif
 
     result_type __ret;
 #ifdef _GLIBCXX_HAVE_UNISTD_H
-    read(fileno(_M_file), reinterpret_cast<void*>(&__ret), sizeof(result_type));
+    read(fileno(static_cast<FILE*>(_M_file)),
+	 static_cast<void*>(&__ret), sizeof(result_type));
 #else
-    std::fread(reinterpret_cast<void*>(&__ret), sizeof(result_type),
-	       1, _M_file);
+    std::fread(static_cast<void*>(&__ret), sizeof(result_type),
+	       1, static_cast<FILE*>(_M_file));
 #endif
     return __ret;
   }
