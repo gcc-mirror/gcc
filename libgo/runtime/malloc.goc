@@ -319,7 +319,7 @@ runtime_mallocinit(void)
 {
 	byte *p;
 	uintptr arena_size, bitmap_size;
-	extern byte end[];
+	extern byte _end[];
 	byte *want;
 	uintptr limit;
 
@@ -408,7 +408,7 @@ runtime_mallocinit(void)
 		// So adjust it upward a little bit ourselves: 1/4 MB to get
 		// away from the running binary image and then round up
 		// to a MB boundary.
-		want = (byte*)(((uintptr)end + (1<<18) + (1<<20) - 1)&~((1<<20)-1));
+		want = (byte*)(((uintptr)_end + (1<<18) + (1<<20) - 1)&~((1<<20)-1));
 		if(0xffffffff - (uintptr)want <= bitmap_size + arena_size)
 		  want = 0;
 		p = runtime_SysReserve(want, bitmap_size + arena_size);
