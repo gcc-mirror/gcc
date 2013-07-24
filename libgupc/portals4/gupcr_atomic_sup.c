@@ -47,7 +47,7 @@ static ptl_handle_md_t gupcr_atomic_md;
 /** Atomic local access MD counting events handle */
 static ptl_handle_ct_t gupcr_atomic_md_ct;
 /** Atomic local access MD event queue handle */
-static ptl_handle_ct_t gupcr_atomic_md_eq;
+static ptl_handle_eq_t gupcr_atomic_md_eq;
 /** Atomic number of received ACKs on local md */
 static ptl_size_t gupcr_atomic_md_count;
 

@@ -46,7 +46,7 @@ static ptl_handle_le_t gupcr_coll_le;
 /** Collectives shared access LE counting events handle */
 static ptl_handle_ct_t gupcr_coll_le_ct;
 /** Collectives shared access LE events queue handle */
-static ptl_handle_ct_t gupcr_coll_le_eq;
+static ptl_handle_eq_t gupcr_coll_le_eq;
 /** Collectives number of received signals (PUT/ATOMIC) through LE */
 static ptl_size_t gupcr_coll_signal_cnt;
 
@@ -55,7 +55,7 @@ static ptl_handle_md_t gupcr_coll_md;
 /** Collectives local access MD counting events handle */
 static ptl_handle_ct_t gupcr_coll_md_ct;
 /** Collectives local access MD event queue handle */
-static ptl_handle_ct_t gupcr_coll_md_eq;
+static ptl_handle_eq_t gupcr_coll_md_eq;
 /** Collectives number of received ACKs on local md */
 static ptl_size_t gupcr_coll_ack_cnt;
 

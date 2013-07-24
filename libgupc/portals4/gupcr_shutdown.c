@@ -102,7 +102,7 @@ static ptl_handle_md_t gupcr_shutdown_md;
 /** Shutdown memory MD event counter */
 static ptl_handle_ct_t gupcr_shutdown_md_ct;
 /** Shutdown memory MD event queue */
-static ptl_handle_ct_t gupcr_shutdown_md_eq;
+static ptl_handle_eq_t gupcr_shutdown_md_eq;
 
 /** Shutdown pthread ID */
 static pthread_t gupcr_shutdown_pthread_id;
