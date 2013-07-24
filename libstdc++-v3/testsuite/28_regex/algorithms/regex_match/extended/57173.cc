@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++11" }
 
 //
-// 2013-07-17  Tim Shen <timshen91@gmail.com>
+// 2013-07-23  Tim Shen <timshen91@gmail.com>
 //
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
@@ -21,32 +21,25 @@
 // <http://www.gnu.org/licenses/>.
 
 // 28.11.3 regex_search
-// Tests BRE against a std::string target.
+// Tests Extended against a std::string target.
 
 #include <regex>
 #include <testsuite_hooks.h>
+#include <iostream>
 
+// libstdc++/57173
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::regex  re("as\\(df\\)", std::regex::basic);
-  std::string target("xxasdfyy");
+  std::regex  re("/asdf(/.*)", std::regex::extended);
+  std::string target("/asdf/qwerty");
   std::smatch m;
 
-  VERIFY( std::regex_search(target, m, re) );
-
-  VERIFY( m.size()  == re.mark_count()+1 );
-  VERIFY( m.empty() == false );
-  VERIFY( m.prefix().matched == (m.prefix().first != m.prefix().second) );
-  VERIFY( std::string(m.prefix().first, m.prefix().second) == "xx" );
-  VERIFY( m.suffix().matched == (m.suffix().first != m.suffix().second) );
-  VERIFY( std::string(m.suffix().first, m.suffix().second) == "yy" );
-  VERIFY( m[0].matched == true );
-  VERIFY( std::string(m[0].first, m[0].second) == "asdf" );
-  VERIFY( m[1].matched == true );
-  VERIFY( std::string(m[1].first, m[1].second) == "df" );
+  VERIFY( std::regex_match(target, m, re) );
+  VERIFY( m.size() == 2 );
+  VERIFY( std::string(m[1].first, m[1].second) == "/qwerty");
 }
 
 int
