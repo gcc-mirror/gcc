@@ -110,6 +110,15 @@ func (sa *RawSockaddrUnix) getLen() (int, error) {
 	return n, nil
 }
 
+func (sa *RawSockaddrUnix) adjustAbstract(sl Socklen_t) Socklen_t {
+	if sa.Path[0] == '@' {
+		sa.Path[0] = 0
+		// Don't count trailing NUL for abstract address.
+		sl--
+	}
+	return sl
+}
+
 type RawSockaddrLinklayer struct {
 	Family   uint16
 	Protocol uint16
