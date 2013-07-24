@@ -64,6 +64,10 @@ func (sa *RawSockaddrUnix) getLen() (int, error) {
 	return n, nil
 }
 
+func (sa *RawSockaddrUnix) adjustAbstract(sl Socklen_t) Socklen_t {
+	return sl
+}
+
 type RawSockaddr struct {
 	Family uint16
 	Data   [14]int8
