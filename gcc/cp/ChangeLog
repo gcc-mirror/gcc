@@ -1,3 +1,10 @@
+2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57942
+	* typeck.c (ptr_reasonably_similar): Use COMPARE_STRICT if one of
+	the target types is incomplete; return a bool, not an int.
+	* cp-tree.h (ptr_reasonably_similar): Adjust declaration.
+
 2013-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (DERIVED_FROM_P): Pass tf_none to lookup_base, not

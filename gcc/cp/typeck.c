@@ -8599,10 +8599,10 @@ error_type_p (const_tree type)
     }
 }
 
-/* Returns 1 if to and from are (possibly multi-level) pointers to the same
+/* Returns true if to and from are (possibly multi-level) pointers to the same
    type or inheritance-related types, regardless of cv-quals.  */
 
-int
+bool
 ptr_reasonably_similar (const_tree to, const_tree from)
 {
   for (; ; to = TREE_TYPE (to), from = TREE_TYPE (from))
@@ -8614,7 +8614,7 @@ ptr_reasonably_similar (const_tree to, const_tree from)
 	return !error_type_p (to);
 
       if (TREE_CODE (to) != TREE_CODE (from))
-	return 0;
+	return false;
 
       if (TREE_CODE (from) == OFFSET_TYPE
 	  && comptypes (TYPE_OFFSET_BASETYPE (to),
@@ -8624,19 +8624,24 @@ ptr_reasonably_similar (const_tree to, const_tree from)
 
       if (TREE_CODE (to) == VECTOR_TYPE
 	  && vector_types_convertible_p (to, from, false))
-	return 1;
+	return true;
 
       if (TREE_CODE (to) == INTEGER_TYPE
 	  && TYPE_PRECISION (to) == TYPE_PRECISION (from))
-	return 1;
+	return true;
 
       if (TREE_CODE (to) == FUNCTION_TYPE)
 	return !error_type_p (to) && !error_type_p (from);
 
       if (!TYPE_PTR_P (to))
-	return comptypes
-	  (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from),
-	   COMPARE_BASE | COMPARE_DERIVED);
+	{
+	  /* When either type is incomplete avoid DERIVED_FROM_P,
+	     which may call complete_type (c++/57942).  */
+	  bool b = !COMPLETE_TYPE_P (to) || !COMPLETE_TYPE_P (from);
+	  return comptypes
+	    (TYPE_MAIN_VARIANT (to), TYPE_MAIN_VARIANT (from),
+	     b ? COMPARE_STRICT : COMPARE_BASE | COMPARE_DERIVED);
+	}
     }
 }
 
