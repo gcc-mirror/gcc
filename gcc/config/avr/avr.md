@@ -140,7 +140,7 @@
   "out_bitop, plus, addto_sp,
    tsthi, tstpsi, tstsi, compare, compare64, call,
    mov8, mov16, mov24, mov32, reload_in16, reload_in24, reload_in32,
-   ufract, sfract,
+   ufract, sfract, round,
    xload, lpm, movmem,
    ashlqi, ashrqi, lshrqi,
    ashlhi, ashrhi, lshrhi,

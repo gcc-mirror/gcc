@@ -369,14 +369,13 @@ machopic_gen_offset (rtx orig)
 
 static GTY(()) const char * function_base_func_name;
 static GTY(()) int current_pic_label_num;
+static GTY(()) int emitted_pic_label_num;
 
-void
-machopic_output_function_base_name (FILE *file)
+static void
+update_pic_label_number_if_needed (void)
 {
   const char *current_name;
 
-  /* If dynamic-no-pic is on, we should not get here.  */
-  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
   /* When we are generating _get_pc thunks within stubs, there is no current
      function.  */
   if (current_function_decl)
@@ -394,7 +393,28 @@ machopic_output_function_base_name (FILE *file)
       ++current_pic_label_num;
       function_base_func_name = "L_machopic_stub_dummy";
     }
-  fprintf (file, "L%011d$pb", current_pic_label_num);
+}
+
+void
+machopic_output_function_base_name (FILE *file)
+{
+  /* If dynamic-no-pic is on, we should not get here.  */
+  gcc_assert (!MACHO_DYNAMIC_NO_PIC_P);
+
+  update_pic_label_number_if_needed ();
+  fprintf (file, "L%d$pb", current_pic_label_num);
+}
+
+bool
+machopic_should_output_picbase_label (void)
+{
+  update_pic_label_number_if_needed ();
+
+  if (current_pic_label_num == emitted_pic_label_num)
+    return false;
+
+  emitted_pic_label_num = current_pic_label_num;
+  return true;
 }
 
 /* The suffix attached to non-lazy pointer symbols.  */

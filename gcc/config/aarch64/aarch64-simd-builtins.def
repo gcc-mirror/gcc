@@ -256,3 +256,10 @@
   BUILTIN_VALL (BINOP, uzp2)
   BUILTIN_VALL (BINOP, trn1)
   BUILTIN_VALL (BINOP, trn2)
+
+  /* Implemented by aarch64_ld1<VALL:mode>.  */
+  BUILTIN_VALL (LOAD1, ld1)
+
+  /* Implemented by aarch64_st1<VALL:mode>.  */
+  BUILTIN_VALL (STORE1, st1)
+
