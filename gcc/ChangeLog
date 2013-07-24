@@ -1,3 +1,9 @@
+2013-07-24  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57968
+	* mode-switching.c (create_pre_exit): Allow instructions that
+	don't set a return register to need a non-exit mode.
+
 2013-07-24  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 	    Anton Blanchard <anton@au1.ibm.com>
 
