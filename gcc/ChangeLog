@@ -112,9 +112,11 @@
 
 2013-07-23  David Holsgrove <david.holsgrove@xilinx.com>
 
-	* config/microblaze/microblaze.c: Add microblaze_asm_output_mi_thunk
-	and define TARGET_ASM_OUTPUT_MI_THUNK and
-	TARGET_ASM_CAN_OUTPUT_MI_THUNK.
+	* config/microblaze/sync.md: New file.
+	* config/microblaze/microblaze.md: Include sync.md
+	* config/microblaze/microblaze.c: Add print_operand 'y'.
+	* config/microblaze/constraints.md: Add memory_contraint
+	'Q' which is a single register.
 
 2013-07-23  Eric Botcazou  <ebotcazou@adacore.com>
 
