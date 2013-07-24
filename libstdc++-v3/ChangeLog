@@ -1,3 +1,11 @@
+2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (random_device): Avoid using the FILE type.
+	* include/std/random: Do not include <cstdio>.
+	* src/c++11/random.cc: ... include it here.
+	(random_device::_M_init, random_device::_M_fini,
+	random_device::_M_getval): Cast back and forth void* and FILE*.
+
 2013-07-24  Tim Shen  <timshen91@gmail.com>
 
 	Reimplment matcher using Depth-first search(backtracking).
@@ -24,8 +32,8 @@
 	New.
 	* testsuite/28_regex/iterators/regex_token_iterator/char/string_01.cc:
 	New.
-	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/string_01.cc:
-	New.
+	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/
+	string_01.cc: New.
 
 2013-07-23  Paolo Carlini  <paolo.carlini@oracle.com>
 
