@@ -936,8 +936,12 @@
    (match_operand:V16QI 3 "vlogical_operand" "")]
   "VECTOR_MEM_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
-  emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1], operands[2],
-				       operands[3]));
+  if (BYTES_BIG_ENDIAN)
+    emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
+    	      				 operands[2], operands[3]));
+  else
+    emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[2],
+    	      				 operands[1], operands[3]));
   DONE;
 })
 

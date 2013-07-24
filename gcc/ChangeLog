@@ -1,3 +1,11 @@
+2013-07-24  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* vector.md (vec_realign_load_<mode>): Reorder input operands to
+	vperm for little endian.
+	* rs6000.c (rs6000_expand_builtin): Use lvsr instead of lvsl to
+	create the control mask for a vperm for little endian.
+
 2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Anton Blanchard <anton@au1.ibm.com>
 
