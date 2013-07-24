@@ -1,3 +1,8 @@
+2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57942
+	* g++.dg/inherit/pr57942.C: New.
+
 2013-07-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/bool2.h: New file, test the code generation
