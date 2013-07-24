@@ -41,11 +41,24 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 	uintptr npages;
 	MSpan *s;
 	void *v;
+	bool incallback;
 
 	m = runtime_m();
 	g = runtime_g();
-	if(g->status == Gsyscall)
-		dogc = 0;
+
+	incallback = false;
+	if(m->mcache == nil && g->ncgo > 0) {
+		// For gccgo this case can occur when a cgo or SWIG function
+		// has an interface return type and the function
+		// returns a non-pointer, so memory allocation occurs
+		// after syscall.Cgocall but before syscall.CgocallDone.
+		// We treat it as a callback.
+		runtime_exitsyscall();
+		m = runtime_m();
+		incallback = true;
+		dogc = false;
+	}
+
 	if(runtime_gcwaiting && g != m->g0 && m->locks == 0 && dogc) {
 		runtime_gosched();
 		m = runtime_m();
@@ -129,6 +142,10 @@ runtime_mallocgc(uintptr size, uint32 flag, int32 dogc, int32 zeroed)
 		runtime_racemalloc(v, size, m->racepc);
 		m->racepc = nil;
 	}
+
+	if(incallback)
+		runtime_entersyscall();
+
 	return v;
 }
 
