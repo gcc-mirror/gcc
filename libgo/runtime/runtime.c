@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <signal.h>
 #include <unistd.h>
 
 #include "config.h"
@@ -231,4 +232,50 @@ int64
 runtime_pprof_runtime_cyclesPerSecond(void)
 {
 	return runtime_tickspersecond();
+}
+
+// Called to initialize a new m (including the bootstrap m).
+// Called on the parent thread (main thread in case of bootstrap), can allocate memory.
+void
+runtime_mpreinit(M *mp)
+{
+	mp->gsignal = runtime_malg(32*1024, &mp->gsignalstack, &mp->gsignalstacksize);	// OS X wants >=8K, Linux >=2K
+}
+
+// Called to initialize a new m (including the bootstrap m).
+// Called on the new thread, can not allocate memory.
+void
+runtime_minit(void)
+{
+	M* m;
+	sigset_t sigs;
+
+	// Initialize signal handling.
+	m = runtime_m();
+	runtime_signalstack(m->gsignalstack, m->gsignalstacksize);
+	if (sigemptyset(&sigs) != 0)
+		runtime_throw("sigemptyset");
+	sigprocmask(SIG_SETMASK, &sigs, nil);
+}
+
+// Called from dropm to undo the effect of an minit.
+void
+runtime_unminit(void)
+{
+	runtime_signalstack(nil, 0);
+}
+
+
+void
+runtime_signalstack(byte *p, int32 n)
+{
+	stack_t st;
+
+	st.ss_sp = p;
+	st.ss_size = n;
+	st.ss_flags = 0;
+	if(p == nil)
+		st.ss_flags = SS_DISABLE;
+	if(sigaltstack(&st, nil) < 0)
+		*(int *)0xf1 = 0xf1;
 }
