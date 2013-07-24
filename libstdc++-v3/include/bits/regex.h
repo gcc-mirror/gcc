@@ -2185,8 +2185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_SpecializedCursor<_Bi_iter> __cs(__s, __e);
       __detail::_SpecializedResults<_Bi_iter, _Alloc> __r(__sz, __cs, __m);
       __detail::_Grep_matcher __matcher(__cs, __r, __a, __flags);
-      __matcher._M_match();
-      return __m[0].matched;
+      return __matcher._M_dfs_match();
     }
 
   /**
@@ -2338,8 +2337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         {
           __detail::_SpecializedCursor<_Bi_iter> __curs(__cur, __last);
           __detail::_Grep_matcher __matcher(__curs, __r, __a, __flags);
-          __matcher._M_search_from_first();
-          if (__m[0].matched)
+          if (__matcher._M_dfs_search_from_first())
             {
               __r._M_set_range(__m.size(),
                                __detail::_SpecializedCursor<_Bi_iter>

@@ -1,3 +1,19 @@
+2013-07-24  Tim Shen  <timshen91@gmail.com>
+
+	Reimplment matcher using Depth-first search(backtracking).
+	PR libstdc++/53622
+	PR libstdc++/57173
+	* include/bits/regex.h: regex_match() and regex_search().
+	* include/bits/regex_cursor.h: Fix _M_set_pos().
+	* include/bits/regex_grep_matcher.h: add _M_dfs_match().
+	* include/bits/regex_grep_matcher.tcc: Implement it.
+	* testsuite/28_regex/algorithms/regex_match/extended/string_group_01.cc:
+	New.
+	* testsuite/28_regex/algorithms/regex_match/extended/string_group_02.cc:
+	New.
+	* testsuite/28_regex/algorithms/regex_search/basic/string_01.cc:
+	Remove xfail.
+
 2013-07-23  Tim Shen  <timshen91@gmail.com>
 
 	Implement regex_iterator and regex_token_iterator.
