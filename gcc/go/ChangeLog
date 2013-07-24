@@ -1,3 +1,9 @@
+2013-07-24  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::non_zero_size_type): If a struct has a
+	fields, recreate those fields with the first one with a non-zero
+	size.
+
 2013-07-23  Ian Lance Taylor  <iant@google.com>
 
 	* go-backend.c: Don't #include "rtl.h".
