@@ -330,12 +330,10 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			break;
 		      }
 		    if (!targetm.calls.function_value_regno_p (copy_start))
-		      {
-			last_insn = return_copy;
-			continue;
-		      }
-		    copy_num
-		      = hard_regno_nregs[copy_start][GET_MODE (copy_reg)];
+		      copy_num = 0;
+		    else
+		      copy_num
+			= hard_regno_nregs[copy_start][GET_MODE (copy_reg)];
 
 		    /* If the return register is not likely spilled, - as is
 		       the case for floating point on SH4 - then it might
@@ -371,6 +369,11 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			    && OBJECT_P (SET_SRC (return_copy_pat)))
 			  forced_late_switch = 1;
 			break;
+		      }
+		    if (copy_num == 0)
+		      {
+			last_insn = return_copy;
+			continue;
 		      }
 
 		    if (copy_start >= ret_start
