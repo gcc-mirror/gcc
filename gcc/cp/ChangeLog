@@ -1,3 +1,16 @@
+2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57981
+	* decl.c (check_default_argument): Take a tsubst_flags_t parameter.
+	(grokparms): Adjust.
+	* parser.c (cp_parser_late_parse_one_default_arg): Likewise.
+	* pt.c (tsubst_default_argument, tsubst_default_arguments): Take
+	a tsubst_flags_t parameter.
+	(tsubst_decl): Adjust.
+	* call.c (convert_default_arg): Likewise.
+	* cp-tree.h (check_default_argument, tsubst_default_argument):
+	Update declarations.
+
 2013-07-12  Jason Merrill  <jason@redhat.com>
 
 	* init.c (build_vec_init): Value-initialize the rest of the array.

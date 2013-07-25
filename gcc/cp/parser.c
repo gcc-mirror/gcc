@@ -22566,7 +22566,8 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
       /* In a non-template class, check conversions now.  In a template,
 	 we'll wait and instantiate these as needed.  */
       if (TREE_CODE (decl) == PARM_DECL)
-	parsed_arg = check_default_argument (parmtype, parsed_arg);
+	parsed_arg = check_default_argument (parmtype, parsed_arg,
+					     tf_warning_or_error);
       else
 	{
 	  int flags = LOOKUP_IMPLICIT;
