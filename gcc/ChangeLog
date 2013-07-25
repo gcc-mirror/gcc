@@ -1,3 +1,7 @@
+2013-07-25  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config.gcc (hppa-*-openbsd*): Don't set tmake_file.
+
 2013-07-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57960
