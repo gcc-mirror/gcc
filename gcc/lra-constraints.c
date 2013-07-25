@@ -1940,7 +1940,8 @@ process_alt_operands (int only_alternative)
 		      && ira_class_hard_regs_num[this_alternative] > 0
 		      && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
 					       [this_alternative][0],
-					       GET_MODE (op)))
+					       GET_MODE
+					       (*curr_id->operand_loc[nop])))
 		    goto fail;
 		  losers++;
 		}
