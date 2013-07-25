@@ -1,12 +1,17 @@
 2013-07-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
+	* config/arm/arm.md (*sibcall_insn): Remove unnecessary space.
+
+2013-07-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
 	PR target/19599
 	PR target/57731
 	PR target/57748
-	* config/arm/arm.md ("*sibcall_value_insn): Replace use of
+	* config/arm/arm.md ("*sibcall_insn): Replace use of
 	Ss with US. Adjust output for v5 and v4t.
 	(*sibcall_value_insn): Likewise and loosen predicate on
 	operand0.
+
 	* config/arm/constraints.md ("Ss"): Rename to US.
 
 2013-07-25  Terry Guo  <terry.guo@arm.com>
