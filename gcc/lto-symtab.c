@@ -80,6 +80,9 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Redirect incomming references.  */
   ipa_clone_referring ((symtab_node)prevailing_node, &node->symbol.ref_list);
 
+  if (node->symbol.decl != prevailing_node->symbol.decl)
+    cgraph_release_function_body (node);
+
   /* Finally remove the replaced node.  */
   cgraph_remove_node (node);
 }
