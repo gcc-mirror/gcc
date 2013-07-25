@@ -9630,7 +9630,7 @@
   else
     {
       if (arm_arch5 || arm_arch4t)
-	return \" bx%?\\t%0\\t%@ indirect register sibling call\";
+	return \"bx%?\\t%0\\t%@ indirect register sibling call\";
       else
 	return \"mov%?\\t%|pc, %0\\t%@ indirect register sibling call\";
     }
