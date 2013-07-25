@@ -1,3 +1,10 @@
+2013-07-25  Sterling Augustine  <saugustine@google.com>
+
+	* dwarf2out.c (size_of_pubnames): Move code to...
+	(include_pubname_in_output): ...here.  New.
+	(want_pubnames): Rearrange.
+	(output_pubnames): Call include_pubname_in_output.  Move assertion.
+
 2013-07-25  Cameron McInally  <cameron.mcinally@nyu.edu>
 
 	* doc/extend.texi: Fix return types for __builtin_ia32_cmp*s builtins.
