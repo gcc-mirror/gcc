@@ -791,12 +791,6 @@ requirements of the license of GCC.
     <listitem><para>Add the overload.
     </para></listitem></varlistentry>
 
-    <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#844">844</link>:
-	<emphasis>complex pow return type is ambiguous</emphasis>
-    </term>
-    <listitem><para>In C++11 mode, remove the pow(complex&lt;T&gt;, int) signature.
-    </para></listitem></varlistentry>
-
     <varlistentry><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="../ext/lwg-defects.html#853">853</link>:
 	<emphasis>to_string needs updating with zero and one</emphasis>
     </term>

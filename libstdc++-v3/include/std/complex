@@ -88,11 +88,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp> complex<_Tp> log(const complex<_Tp>&);
   /// Return complex base 10 logarithm of @a z.
   template<typename _Tp> complex<_Tp> log10(const complex<_Tp>&);
-#if __cplusplus < 201103L
-  // DR 844.
   /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, int);
-#endif
   /// Return @a x to the @a y'th power.
   template<typename _Tp> complex<_Tp> pow(const complex<_Tp>&, const _Tp&);
   /// Return @a x to the @a y'th power.
@@ -955,7 +952,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 26.2.8/9  pow(__x, __y): Returns the complex power base of __x
   //                          raised to the __y-th power.  The branch
   //                          cut is on the negative axis.
-#if __cplusplus < 201103L
   template<typename _Tp>
     complex<_Tp>
     __complex_pow_unsigned(complex<_Tp> __x, unsigned __n)
@@ -972,8 +968,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __y;
     }
 
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // In C++11 mode we used to implement the resolution of
   // DR 844. complex pow return type is ambiguous.
+  // thus the following overload was disabled in that mode.  However, doing
+  // that causes all sorts of issues, see, for example:
+  //   http://gcc.gnu.org/ml/libstdc++/2013-01/msg00058.html
+  // and also PR57974.
   template<typename _Tp>
     inline complex<_Tp>
     pow(const complex<_Tp>& __z, int __n)
@@ -982,7 +982,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	? complex<_Tp>(1) / std::__complex_pow_unsigned(__z, -(unsigned)__n)
         : std::__complex_pow_unsigned(__z, __n);
     }
-#endif
 
   template<typename _Tp>
     complex<_Tp>
