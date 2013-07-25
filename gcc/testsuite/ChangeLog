@@ -1,3 +1,13 @@
+2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57981
+	* g++.dg/cpp0x/pr57981.C: New.
+
+2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57880
+	* g++.dg/cpp1y/udlit-empty-string-neg.C: New.
+
 2013-07-25  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57960
