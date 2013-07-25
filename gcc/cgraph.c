@@ -1384,15 +1384,18 @@ cgraph_remove_node (struct cgraph_node *node)
      itself is kept in the cgraph even after it is compiled.  Check whether
      we are done with this body and reclaim it proactively if this is the case.
      */
-  n = cgraph_get_node (node->symbol.decl);
-  if (!n
-      || (!n->clones && !n->clone_of && !n->global.inlined_to
-	  && (cgraph_global_info_ready
-	      && (TREE_ASM_WRITTEN (n->symbol.decl)
-		  || DECL_EXTERNAL (n->symbol.decl)
-		  || !n->symbol.analyzed
-		  || n->symbol.in_other_partition))))
-    cgraph_release_function_body (node);
+  if (cgraph_state != CGRAPH_LTO_STREAMING)
+    {
+      n = cgraph_get_node (node->symbol.decl);
+      if (!n
+	  || (!n->clones && !n->clone_of && !n->global.inlined_to
+	      && (cgraph_global_info_ready
+		  && (TREE_ASM_WRITTEN (n->symbol.decl)
+		      || DECL_EXTERNAL (n->symbol.decl)
+		      || !n->symbol.analyzed
+		      || (!flag_wpa && n->symbol.in_other_partition)))))
+	cgraph_release_function_body (node);
+    }
 
   node->symbol.decl = NULL;
   if (node->call_site_hash)

@@ -1,3 +1,11 @@
+2013-07-25  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Release function body.
+	* cgraph.c (cgraph_remove_node): Do not release function body
+	when in cgraph streaming.
+	* ipa.c (process_references, symtab_remove_unreachable_nodes): Objects
+	in other partitions are not considered reachable; fix handling of clones.
+
 2013-07-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
 	* config/arm/arm.md (*sibcall_insn): Remove unnecessary space.
