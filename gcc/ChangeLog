@@ -1,3 +1,9 @@
+2013-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-fixed.md (ssmulsa3, usmulusa3):
+	Adjust for arm_restrict_it.
+	Remove trailing whitespace.
+
 2013-07-25  Mark Kettenis  <kettenis@openbsd.org>
 
 	* config/pa/pa.c (pa_trampoline_init): Emit __enable_execute_stack
