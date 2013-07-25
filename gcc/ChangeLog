@@ -1,3 +1,13 @@
+2013-07-25  Cameron McInally  <cameron.mcinally@nyu.edu>
+
+	* doc/extend.texi: Fix return types for __builtin_ia32_cmp*s builtins.
+
+2013-07-25  Cameron McInally  <cameron.mcinally@nyu.edu>
+
+	PR target/38836
+	* doc/extend.texi: Remove obsolete builtins. Fix
+	typo for __builtin_ia32_loadss and __builtin_ia32_cmpnltss.
+
 2013-07-25  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (release_function_body): Break out from ...
@@ -8,8 +18,8 @@
 	(create_specialized_node): Update.
 	* lto-cgraph.c (output_node_opt_summary): Do not translate old_tree
 	into index.
-	* cgraphclones.c (cgraph_create_virtual_clone): Do not copy DECL_ARGUMENTS,
-	DECL_INITIAL and DECL_RESULT.
+	* cgraphclones.c (cgraph_create_virtual_clone): Do not copy
+	DECL_ARGUMENTS, DECL_INITIAL and DECL_RESULT.
 	* ipa-prop.c (ipa_populate_param_decls): Look for origin of clones.
 	* tree-inline.c (initialize_cfun): Initialize DECL_ARGUMENTS and
 	DECL_RESULT.
@@ -44,7 +54,8 @@
 	* cgraph.c (cgraph_remove_node): Do not release function body
 	when in cgraph streaming.
 	* ipa.c (process_references, symtab_remove_unreachable_nodes): Objects
-	in other partitions are not considered reachable; fix handling of clones.
+	in other partitions are not considered reachable; fix handling of
+	clones.
 
 2013-07-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
@@ -57,8 +68,7 @@
 	PR target/57748
 	* config/arm/arm.md ("*sibcall_insn): Replace use of
 	Ss with US. Adjust output for v5 and v4t.
-	(*sibcall_value_insn): Likewise and loosen predicate on
-	operand0.
+	(*sibcall_value_insn): Likewise and loosen predicate on operand0.
 
 	* config/arm/constraints.md ("Ss"): Rename to US.
 
@@ -85,8 +95,7 @@
 	(toplev.o): Add CONTEXT_H to dependencies.
 	(context.o): New.
 
-	* toplev.c (general_init): Create the singleton gcc::context
-	instance.
+	* toplev.c (general_init): Create the singleton gcc::context instance.
 
 	* context.c: New.
 
@@ -365,7 +374,7 @@
 	* dwarf2out.c (die_odr_checksum): New function to use
 	CHECKSUM_ macros and ULEB128 for DIE tag.
 	(generate_type_signature): Use.
-	
+
 2013-07-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc (sparc*-*-*): Accept leon3 processor.
