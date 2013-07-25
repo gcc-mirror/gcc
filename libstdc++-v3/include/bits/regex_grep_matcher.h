@@ -127,16 +127,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_pattern(__p), _M_results(__r)
     { }
 
+    // Set matched when string exactly match the pattern.
     void
     _M_match();
 
+    // Set matched when some prefix of the string matches the pattern.
     void
     _M_search_from_first();
 
+    // TODO: in the future this function will be _M_match, in another class.
     bool
     _M_dfs_match()
     { return _M_dfs<true>(_M_nfa->_M_start()); }
 
+    // TODO: in the future this function will be _M_search_from_first,
+    // in another class.
     bool
     _M_dfs_search_from_first()
     { return _M_dfs<false>(_M_nfa->_M_start()); }
