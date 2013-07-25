@@ -1,3 +1,9 @@
+2013-07-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57639
+	* interface.c (compare_parameter): Check for class_ok.
+	* simplify.c (gfc_simplify_same_type_as): Ditto.
+
 2013-07-23   Ondřej Bílka  <neleai@seznam.cz>
 
 	* decl.c: Fix comment typos.

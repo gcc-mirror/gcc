@@ -1966,7 +1966,8 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
     }
 
   /* F2008, 12.5.2.5; IR F08/0073.  */
-  if (formal->ts.type == BT_CLASS && actual->expr_type != EXPR_NULL
+  if (formal->ts.type == BT_CLASS && formal->attr.class_ok
+      && actual->expr_type != EXPR_NULL
       && ((CLASS_DATA (formal)->attr.class_pointer
 	   && !formal->attr.intent == INTENT_IN)
           || CLASS_DATA (formal)->attr.allocatable))
@@ -1978,6 +1979,10 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
 			formal->name, &actual->where);
 	  return 0;
 	}
+
+      if (!gfc_expr_attr (actual).class_ok)
+	return 0;
+
       if (!gfc_compare_derived_types (CLASS_DATA (actual)->ts.u.derived,
 				      CLASS_DATA (formal)->ts.u.derived))
 	{
