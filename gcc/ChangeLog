@@ -1,5 +1,8 @@
 2013-07-25  Mark Kettenis  <kettenis@openbsd.org>
 
+	* config/pa/pa.c (pa_trampoline_init): Emit __enable_execute_stack
+	libcall if HAVE_ENABLE_EXECUTE_STACK is defined.
+
 	* config.gcc (hppa-*-openbsd*): Don't set tmake_file.
 
 2013-07-25  Vladimir Makarov  <vmakarov@redhat.com>
