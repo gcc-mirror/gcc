@@ -1,3 +1,12 @@
+2013-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vpkpx): Handle little endian.
+	(altivec_vpks<VI_char>ss): Likewise.
+	(altivec_vpks<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>um): Likewise.
+
 2013-07-24  David Malcolm  <dmalcolm@redhat.com>
 
 	Introduce context class.
