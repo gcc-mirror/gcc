@@ -1131,7 +1131,6 @@ hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} dbxelf.h elfos.h openbsd.h openbsd-stdint.h openbsd-libpthread.h \
 		 pa/pa-openbsd.h pa/pa32-regs.h pa/pa32-openbsd.h"
-	tmake_file="${tmake_file} pa/t-openbsd"
 	extra_options="${extra_options} openbsd.opt"
 	gas=yes
 	gnu_ld=yes
