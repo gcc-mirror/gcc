@@ -1,5 +1,11 @@
 2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/57976
+	* doc/xml/manual/status_cxx2011.xml: Note missing time_get::get and
+	time_get::do_get.
+
+2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/bits/random.h (random_device): Avoid using the FILE type.
 	* include/std/random: Do not include <cstdio>.
 	* src/c++11/random.cc: ... include it here.
