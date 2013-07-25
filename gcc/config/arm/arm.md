@@ -960,7 +960,7 @@
   "@
    add%?\\t%0, %0, %2
    add%?\\t%0, %1, %2
-   add%?\\t%0, %2
+   add%?\\t%0, %1, %2
    add%?\\t%0, %1, %2
    add%?\\t%0, %1, %2
    add%?\\t%0, %1, %2
@@ -1247,7 +1247,7 @@
                  (LTUGEU:SI (reg:<cnb> CC_REGNUM) (const_int 0))))]
   "TARGET_32BIT"
   "@
-   adc%?\\t%0, %1
+   adc%?\\t%0, %1, %2
    adc%?\\t%0, %1, %2
    sbc%?\\t%0, %1, #%B2"
   [(set_attr "conds" "use")
@@ -1264,7 +1264,7 @@
                  (match_operand:SI 2 "arm_rhs_operand" "l,rI,K")))]
   "TARGET_32BIT"
   "@
-   adc%?\\t%0, %1
+   adc%?\\t%0, %1, %2
    adc%?\\t%0, %1, %2
    sbc%?\\t%0, %1, #%B2"
   [(set_attr "conds" "use")

@@ -1,5 +1,10 @@
 2013-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (arm_addsi3, addsi3_carryin_<optab>,
+	addsi3_carryin_alt2_<optab>): Correct output template.
+
+2013-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm-fixed.md (ssmulsa3, usmulusa3):
 	Adjust for arm_restrict_it.
 	Remove trailing whitespace.
