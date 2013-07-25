@@ -1,3 +1,9 @@
+2013-07-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57960
+	* lra-constraints.c (process_alt_operands): Use the right mode
+	when checking strict_low.
+
 2013-07-25  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_cgraph_replace_node): Release function body.
