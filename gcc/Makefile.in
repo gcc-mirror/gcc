@@ -986,6 +986,7 @@ PLUGIN_H = plugin.h $(GCC_PLUGIN_H)
 PLUGIN_VERSION_H = plugin-version.h configargs.h
 LIBFUNCS_H = libfuncs.h $(HASHTAB_H)
 GRAPHITE_HTAB_H = graphite-htab.h graphite-clast-to-gimple.h $(HASH_TABLE_H)
+CONTEXT_H = context.h
 
 #
 # Now figure out from those variables how to compile and link.
@@ -1200,6 +1201,7 @@ OBJS = \
 	combine.o \
 	combine-stack-adj.o \
 	compare-elim.o \
+	context.o \
 	convert.o \
 	coverage.o \
 	cppbuiltin.o \
@@ -2729,7 +2731,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(OPTS_H) params.def tree-mudflap.h $(TREE_PASS_H) $(GIMPLE_H) \
    tree-ssa-alias.h $(PLUGIN_H) realmpfr.h tree-diagnostic.h \
    $(TREE_PRETTY_PRINT_H) opts-diagnostic.h $(COMMON_TARGET_H) \
-   tsan.h diagnostic-color.h
+   tsan.h diagnostic-color.h $(CONTEXT_H)
 
 hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 
@@ -3487,6 +3489,8 @@ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
    regrename.h
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		$(out_file) $(OUTPUT_OPTION)
+context.o: context.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
+   $(CONTEXT_H)
 
 $(common_out_object_file): $(common_out_file) $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(COMMON_TARGET_H) $(COMMON_TARGET_DEF_H) $(PARAMS_H) \
