@@ -1,3 +1,12 @@
+2013-07-25  Tim Shen  <timshen91@gmail.com>
+
+	Add documents and comments.
+	* include/bits/regex.h: Documents and comments.
+	* include/bits/regex_grep_matcher.h: Likewise.
+	* include/bits/regex_grep_matcher.tcc: Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/char/string_position_01.cc:
+	New.
+
 2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/57976

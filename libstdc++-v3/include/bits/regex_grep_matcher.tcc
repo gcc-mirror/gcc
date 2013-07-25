@@ -121,6 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         case _S_opcode_alternative:
           // Greedy mode by default. For non-greedy mode,
           // swap _M_alt and _M_next.
+          // TODO: Add greedy mode option.
           __ret = _M_dfs<__match_mode>(__state._M_alt)
             || _M_dfs<__match_mode>(__state._M_next);
           break;
