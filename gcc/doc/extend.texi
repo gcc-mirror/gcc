@@ -9925,8 +9925,6 @@ v8qi __builtin_ia32_pmaxub (v8qi, v8qi)
 v4hi __builtin_ia32_pmaxsw (v4hi, v4hi)
 v8qi __builtin_ia32_pminub (v8qi, v8qi)
 v4hi __builtin_ia32_pminsw (v4hi, v4hi)
-int __builtin_ia32_pextrw (v4hi, int)
-v4hi __builtin_ia32_pinsrw (v4hi, int, int)
 int __builtin_ia32_pmovmskb (v8qi)
 void __builtin_ia32_maskmovq (v8qi, v8qi, char *)
 void __builtin_ia32_movntq (di *, di)
@@ -9957,26 +9955,26 @@ v4sf __builtin_ia32_addss (v4sf, v4sf)
 v4sf __builtin_ia32_subss (v4sf, v4sf)
 v4sf __builtin_ia32_mulss (v4sf, v4sf)
 v4sf __builtin_ia32_divss (v4sf, v4sf)
-v4si __builtin_ia32_cmpeqps (v4sf, v4sf)
-v4si __builtin_ia32_cmpltps (v4sf, v4sf)
-v4si __builtin_ia32_cmpleps (v4sf, v4sf)
-v4si __builtin_ia32_cmpgtps (v4sf, v4sf)
-v4si __builtin_ia32_cmpgeps (v4sf, v4sf)
-v4si __builtin_ia32_cmpunordps (v4sf, v4sf)
-v4si __builtin_ia32_cmpneqps (v4sf, v4sf)
-v4si __builtin_ia32_cmpnltps (v4sf, v4sf)
-v4si __builtin_ia32_cmpnleps (v4sf, v4sf)
-v4si __builtin_ia32_cmpngtps (v4sf, v4sf)
-v4si __builtin_ia32_cmpngeps (v4sf, v4sf)
-v4si __builtin_ia32_cmpordps (v4sf, v4sf)
-v4si __builtin_ia32_cmpeqss (v4sf, v4sf)
-v4si __builtin_ia32_cmpltss (v4sf, v4sf)
-v4si __builtin_ia32_cmpless (v4sf, v4sf)
-v4si __builtin_ia32_cmpunordss (v4sf, v4sf)
-v4si __builtin_ia32_cmpneqss (v4sf, v4sf)
-v4si __builtin_ia32_cmpnlts (v4sf, v4sf)
-v4si __builtin_ia32_cmpnless (v4sf, v4sf)
-v4si __builtin_ia32_cmpordss (v4sf, v4sf)
+v4sf __builtin_ia32_cmpeqps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpltps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpleps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpgtps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpgeps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpunordps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpneqps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpnltps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpnleps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpngtps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpngeps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpordps (v4sf, v4sf)
+v4sf __builtin_ia32_cmpeqss (v4sf, v4sf)
+v4sf __builtin_ia32_cmpltss (v4sf, v4sf)
+v4sf __builtin_ia32_cmpless (v4sf, v4sf)
+v4sf __builtin_ia32_cmpunordss (v4sf, v4sf)
+v4sf __builtin_ia32_cmpneqss (v4sf, v4sf)
+v4sf __builtin_ia32_cmpnltss (v4sf, v4sf)
+v4sf __builtin_ia32_cmpnless (v4sf, v4sf)
+v4sf __builtin_ia32_cmpordss (v4sf, v4sf)
 v4sf __builtin_ia32_maxps (v4sf, v4sf)
 v4sf __builtin_ia32_maxss (v4sf, v4sf)
 v4sf __builtin_ia32_minps (v4sf, v4sf)
@@ -10010,18 +10008,12 @@ int __builtin_ia32_movmskps (v4sf)
 The following built-in functions are available when @option{-msse} is used.
 
 @table @code
-@item v4sf __builtin_ia32_loadaps (float *)
-Generates the @code{movaps} machine instruction as a load from memory.
-@item void __builtin_ia32_storeaps (float *, v4sf)
-Generates the @code{movaps} machine instruction as a store to memory.
 @item v4sf __builtin_ia32_loadups (float *)
 Generates the @code{movups} machine instruction as a load from memory.
 @item void __builtin_ia32_storeups (float *, v4sf)
 Generates the @code{movups} machine instruction as a store to memory.
-@item v4sf __builtin_ia32_loadsss (float *)
+@item v4sf __builtin_ia32_loadss (float *)
 Generates the @code{movss} machine instruction as a load from memory.
-@item void __builtin_ia32_storess (float *, v4sf)
-Generates the @code{movss} machine instruction as a store to memory.
 @item v4sf __builtin_ia32_loadhps (v4sf, const v2sf *)
 Generates the @code{movhps} machine instruction as a load from memory.
 @item v4sf __builtin_ia32_loadlps (v4sf, const v2sf *)
@@ -10205,18 +10197,10 @@ v2df __builtin_ia32_hsubpd (v2df, v2df)
 v4sf __builtin_ia32_hsubps (v4sf, v4sf)
 v16qi __builtin_ia32_lddqu (char const *)
 void __builtin_ia32_monitor (void *, unsigned int, unsigned int)
-v2df __builtin_ia32_movddup (v2df)
 v4sf __builtin_ia32_movshdup (v4sf)
 v4sf __builtin_ia32_movsldup (v4sf)
 void __builtin_ia32_mwait (unsigned int, unsigned int)
 @end smallexample
-
-The following built-in functions are available when @option{-msse3} is used.
-
-@table @code
-@item v2df __builtin_ia32_loadddup (double const *)
-Generates the @code{movddup} machine instruction as a load from memory.
-@end table
 
 The following built-in functions are available when @option{-mssse3} is used.
 All of them generate the machine instruction that is part of the name
@@ -11000,7 +10984,6 @@ v2sf __builtin_ia32_pfrcp (v2sf)
 v2sf __builtin_ia32_pfrcpit1 (v2sf, v2sf)
 v2sf __builtin_ia32_pfrcpit2 (v2sf, v2sf)
 v2sf __builtin_ia32_pfrsqrt (v2sf)
-v2sf __builtin_ia32_pfrsqrtit1 (v2sf, v2sf)
 v2sf __builtin_ia32_pfsub (v2sf, v2sf)
 v2sf __builtin_ia32_pfsubr (v2sf, v2sf)
 v2sf __builtin_ia32_pi2fd (v2si)
