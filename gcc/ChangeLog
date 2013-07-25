@@ -1,3 +1,19 @@
+2013-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce context class.
+
+	* Makefile.in (CONTEXT_H): New.
+	(OBJS): Add context.o.
+	(toplev.o): Add CONTEXT_H to dependencies.
+	(context.o): New.
+
+	* toplev.c (general_init): Create the singleton gcc::context
+	instance.
+
+	* context.c: New.
+
+	* context.h: New.
+
 2013-07-24  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/57968
