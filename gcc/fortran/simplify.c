@@ -2300,7 +2300,8 @@ gfc_simplify_same_type_as (gfc_expr *a, gfc_expr *b)
 
   /* Return .false. if the dynamic type can never be the
      same.  */
-  if ((a->ts.type == BT_CLASS || b->ts.type == BT_CLASS)
+  if (((a->ts.type == BT_CLASS && gfc_expr_attr (a).class_ok)
+       || (b->ts.type == BT_CLASS && gfc_expr_attr (b).class_ok))
       && !gfc_type_compatible (&a->ts, &b->ts)
       && !gfc_type_compatible (&b->ts, &a->ts))
     return gfc_get_logical_expr (gfc_default_logical_kind, &a->where, false);
