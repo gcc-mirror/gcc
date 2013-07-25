@@ -130,6 +130,10 @@ ipa_populate_param_decls (struct cgraph_node *node,
   tree parm;
   int param_num;
 
+  /* We do not copy DECL_ARGUMENTS to virtual clones.  */
+  while (node->clone_of)
+    node = node->clone_of;
+
   fndecl = node->symbol.decl;
   fnargs = DECL_ARGUMENTS (fndecl);
   param_num = 0;
@@ -166,6 +170,7 @@ ipa_initialize_node_params (struct cgraph_node *node)
   if (!info->descriptors.exists ())
     {
       int param_count;
+      gcc_assert (!node->clone_of);
 
       param_count = count_formal_params (node->symbol.decl);
       if (param_count)

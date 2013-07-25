@@ -1,3 +1,19 @@
+2013-07-25  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (release_function_body): Break out from ...
+	(cgraph_release_function_body): ... this one; also release DECL_RESULT
+	and DECL_ARGUMENTS.
+	* ipa-cp.c (get_replacement_map): Add parm_num argument; do not set
+	old_tree in the map.
+	(create_specialized_node): Update.
+	* lto-cgraph.c (output_node_opt_summary): Do not translate old_tree
+	into index.
+	* cgraphclones.c (cgraph_create_virtual_clone): Do not copy DECL_ARGUMENTS,
+	DECL_INITIAL and DECL_RESULT.
+	* ipa-prop.c (ipa_populate_param_decls): Look for origin of clones.
+	* tree-inline.c (initialize_cfun): Initialize DECL_ARGUMENTS and
+	DECL_RESULT.
+
 2013-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_addsi3, addsi3_carryin_<optab>,

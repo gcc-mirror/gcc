@@ -1266,17 +1266,16 @@ cgraph_node_remove_callers (struct cgraph_node *node)
   node->callers = NULL;
 }
 
-/* Release memory used to represent body of function NODE.
-   Use this only for functions that are released before being translated to
-   target code (i.e. RTL).  Functions that are compiled to RTL and beyond
-   are free'd in final.c via free_after_compilation().  */
+/* Helper function for cgraph_release_function_body and free_lang_data.
+   It releases body from function DECL without having to inspect its
+   possibly non-existent symtab node.  */
 
 void
-cgraph_release_function_body (struct cgraph_node *node)
+release_function_body (tree decl)
 {
-  if (DECL_STRUCT_FUNCTION (node->symbol.decl))
+  if (DECL_STRUCT_FUNCTION (decl))
     {
-      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
+      push_cfun (DECL_STRUCT_FUNCTION (decl));
       if (cfun->cfg
 	  && current_loops)
 	{
@@ -1299,19 +1298,35 @@ cgraph_release_function_body (struct cgraph_node *node)
       if (cfun->value_histograms)
 	free_histograms ();
       pop_cfun();
-      gimple_set_body (node->symbol.decl, NULL);
-      node->ipa_transforms_to_apply.release ();
+      gimple_set_body (decl, NULL);
       /* Struct function hangs a lot of data that would leak if we didn't
          removed all pointers to it.   */
-      ggc_free (DECL_STRUCT_FUNCTION (node->symbol.decl));
-      DECL_STRUCT_FUNCTION (node->symbol.decl) = NULL;
+      ggc_free (DECL_STRUCT_FUNCTION (decl));
+      DECL_STRUCT_FUNCTION (decl) = NULL;
     }
-  DECL_SAVED_TREE (node->symbol.decl) = NULL;
+  DECL_SAVED_TREE (decl) = NULL;
+}
+
+/* Release memory used to represent body of function NODE.
+   Use this only for functions that are released before being translated to
+   target code (i.e. RTL).  Functions that are compiled to RTL and beyond
+   are free'd in final.c via free_after_compilation().  */
+
+void
+cgraph_release_function_body (struct cgraph_node *node)
+{
+  node->ipa_transforms_to_apply.release ();
+  if (!node->abstract_and_needed && cgraph_state != CGRAPH_STATE_PARSING)
+    {
+      DECL_RESULT (node->symbol.decl) = NULL;
+      DECL_ARGUMENTS (node->symbol.decl) = NULL;
+    }
   /* If the node is abstract and needed, then do not clear DECL_INITIAL
      of its associated function function declaration because it's
      needed to emit debug info later.  */
   if (!node->abstract_and_needed && DECL_INITIAL (node->symbol.decl))
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
+  release_function_body (node->symbol.decl);
 }
 
 /* Remove the node from cgraph.  */
