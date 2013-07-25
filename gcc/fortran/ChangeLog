@@ -1,5 +1,12 @@
 2013-07-25  Janus Weil  <janus@gcc.gnu.org>
 
+	PR fortran/57966
+	* resolve.c (resolve_typebound_function): Make sure the declared type,
+	including its type-bound procedures, is resolved before resolving the
+	actual type-bound call.
+
+2013-07-25  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/57639
 	* interface.c (compare_parameter): Check for class_ok.
 	* simplify.c (gfc_simplify_same_type_as): Ditto.
