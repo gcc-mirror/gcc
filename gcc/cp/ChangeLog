@@ -1,3 +1,24 @@
+2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57981
+	* decl.c (check_default_argument): Take a tsubst_flags_t parameter.
+	(grokparms): Adjust.
+	* parser.c (cp_parser_late_parse_one_default_arg): Likewise.
+	* pt.c (tsubst_default_argument, tsubst_default_arguments): Take
+	a tsubst_flags_t parameter.
+	(tsubst_decl): Adjust.
+	* call.c (convert_default_arg): Likewise.
+	* cp-tree.h (check_default_argument, tsubst_default_argument):
+	Update declarations.
+
+2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57880
+	* parser.c (cp_parser_operator, case CPP_WSTRING, CPP_STRING16,
+	CPP_STRING32, CPP_UTF8STRING, CPP_WSTRING_USERDEF,
+	CPP_STRING16_USERDEF, CPP_STRING32_USERDEF, CPP_UTF8STRING_USERDEF):
+	Fix string_len management, tidy.
+
 2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57942
