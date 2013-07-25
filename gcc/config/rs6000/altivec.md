@@ -1047,7 +1047,13 @@
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VPKPX))]
   "TARGET_ALTIVEC"
-  "vpkpx %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpkpx %0,%1,%2\";
+    else
+      return \"vpkpx %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpks<VI_char>ss"
@@ -1056,7 +1062,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_SIGN_SIGN_SAT))]
   "<VI_unit>"
-  "vpks<VI_char>ss %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpks<VI_char>ss %0,%1,%2\";
+    else
+      return \"vpks<VI_char>ss %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpks<VI_char>us"
@@ -1065,7 +1077,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_SIGN_UNS_SAT))]
   "<VI_unit>"
-  "vpks<VI_char>us %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpks<VI_char>us %0,%1,%2\";
+    else
+      return \"vpks<VI_char>us %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpku<VI_char>us"
@@ -1074,7 +1092,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_UNS_UNS_SAT))]
   "<VI_unit>"
-  "vpku<VI_char>us %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpku<VI_char>us %0,%1,%2\";
+    else
+      return \"vpku<VI_char>us %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpku<VI_char>um"
@@ -1083,7 +1107,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_UNS_UNS_MOD))]
   "<VI_unit>"
-  "vpku<VI_char>um %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpku<VI_char>um %0,%1,%2\";
+    else
+      return \"vpku<VI_char>um %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "*altivec_vrl<VI_char>"
