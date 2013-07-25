@@ -2480,7 +2480,7 @@ gather_edges_for_value (struct ipcp_value *val, int caller_count)
    Return it or NULL if for some reason it cannot be created.  */
 
 static struct ipa_replace_map *
-get_replacement_map (tree value, tree parm)
+get_replacement_map (tree value, tree parm, int parm_num)
 {
   tree req_type = TREE_TYPE (parm);
   struct ipa_replace_map *replace_map;
@@ -2514,7 +2514,8 @@ get_replacement_map (tree value, tree parm)
       print_generic_expr (dump_file, value, 0);
       fprintf (dump_file, "\n");
     }
-  replace_map->old_tree = parm;
+  replace_map->old_tree = NULL;
+  replace_map->parm_num = parm_num;
   replace_map->new_tree = value;
   replace_map->replace_p = true;
   replace_map->ref_p = false;
@@ -2696,7 +2697,7 @@ create_specialized_node (struct cgraph_node *node,
 	{
 	  struct ipa_replace_map *replace_map;
 
-	  replace_map = get_replacement_map (t, ipa_get_param (info, i));
+	  replace_map = get_replacement_map (t, ipa_get_param (info, i), i);
 	  if (replace_map)
 	    vec_safe_push (replace_trees, replace_map);
 	}
