@@ -10133,6 +10133,11 @@ pa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 				    gen_reg_rtx (Pmode),
 				    gen_reg_rtx (Pmode)));
     }
+
+#ifdef HAVE_ENABLE_EXECUTE_STACK
+  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
+		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+#endif
 }
 
 /* Perform any machine-specific adjustment in the address of the trampoline.
