@@ -1,3 +1,7 @@
+2013-07-25  Terry Guo  <terry.guo@arm.com>
+
+	* gcc.target/arm/thumb1-Os-mult.c: New test case.
+
 2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57942

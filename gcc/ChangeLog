@@ -1,3 +1,8 @@
+2013-07-25  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (thumb1_size_rtx_costs): Assign proper cost for
+	shift_add/shift_sub0/shift_sub1 RTXs.
+
 2013-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Anton Blanchard <anton@au1.ibm.com>
 
