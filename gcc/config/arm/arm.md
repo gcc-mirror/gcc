@@ -9619,7 +9619,7 @@
 )
 
 (define_insn "*sibcall_insn"
- [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "Cs,Ss"))
+ [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "Cs, US"))
 	(match_operand 1 "" ""))
   (return)
   (use (match_operand 2 "" ""))]
@@ -9630,7 +9630,7 @@
   else
     {
       if (arm_arch5 || arm_arch4t)
-	return \" bx\\t%0\\t%@ indirect register sibling call\";
+	return \" bx%?\\t%0\\t%@ indirect register sibling call\";
       else
 	return \"mov%?\\t%|pc, %0\\t%@ indirect register sibling call\";
     }
@@ -9639,8 +9639,8 @@
 )
 
 (define_insn "*sibcall_value_insn"
- [(set (match_operand 0 "s_register_operand" "")
-       (call (mem:SI (match_operand:SI 1 "call_insn_operand" "Cs,Ss"))
+ [(set (match_operand 0 "" "")
+       (call (mem:SI (match_operand:SI 1 "call_insn_operand" "Cs,US"))
 	     (match_operand 2 "" "")))
   (return)
   (use (match_operand 3 "" ""))]
@@ -9651,7 +9651,7 @@
   else
     {
       if (arm_arch5 || arm_arch4t)
-	return \"bx\\t%1\";
+	return \"bx%?\\t%1\";
       else
 	return \"mov%?\\t%|pc, %1\\t@ indirect sibling call \";
     }
