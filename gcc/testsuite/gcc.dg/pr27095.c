@@ -5,6 +5,9 @@
    to the load from the GOT this also contains the name of the function so for
    each call the function name would appear twice.  */
 /* { dg-options "-O2 -mno-relax-pic-calls" { target mips*-*-* } } */
+/* For epiphany, use -mshort-calls to avoid loading the address in two
+   steps using lowpart and highpart.  */
+/* { dg-options "-O2 -mshort-calls" { target epiphany-*-* } } */ 
 
 extern void *memset (void *, int, __SIZE_TYPE__);
 extern __SIZE_TYPE__ strlen (const char *);

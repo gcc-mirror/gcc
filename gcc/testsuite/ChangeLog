@@ -34,6 +34,9 @@
 	* gcc.c-torture/execute/zerolen-2.x: Likewise.
 	* gcc.c-torture/execute/builtins/stpcpy-chk.x: Likewise.
 
+	* gcc.dg/pr27095.c: For Epiphany, add -mshort-calls.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise. 
+
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/minmax_minus.c: Scan for absence of mov.
