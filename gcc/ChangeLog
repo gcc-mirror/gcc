@@ -1,3 +1,10 @@
+2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* combine.c (simplify_comparison): Re-canonicalize operands
+	where appropriate.	
+	* config/arm/arm.md (movcond_addsi): New splitter.
+
 2013-07-25  Sterling Augustine  <saugustine@google.com>
 
 	* dwarf2out.c (size_of_pubnames): Move code to...
