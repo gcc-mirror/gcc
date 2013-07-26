@@ -1,3 +1,38 @@
+2013-07-26  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	Skip tests that make assumptions about struct layout that don't hold
+	on epiphany:
+	* g++.dg/cpp0x/cast.C: Skip for epiphany-*-*.
+	* g++.dg/cpp0x/iop.C: Likewise.
+	* g++.dg/cpp0x/named_refs.C: Likewise.
+	* g++.dg/cpp0x/rv1p.C: Likewise.
+	* g++.dg/cpp0x/rv2p.C: Likewise.
+	* g++.dg/cpp0x/rv3p.C: Likewise.
+	* g++.dg/cpp0x/rv4p.C: Likewise.
+	* g++.dg/cpp0x/rv5p.C: Likewise.
+	* g++.dg/cpp0x/rv6p.C: Likewise.
+	* g++.dg/cpp0x/rv7p.C: Likewise.
+	* g++.dg/cpp0x/rv8p.C: Likewise.
+	* g++.dg/ext/strncpy-chk1.C: Likewise.
+	* gcc.dg/builtin-object-size-10.c: Likewise.
+	* gcc.dg/builtin-object-size-11.c: Likewise.
+	* gcc.dg/builtin-stringop-chk-1.c: Likewise.
+	* gcc.dg/pr25805.c: Likewise.
+	* gcc.c-torture/execute/builtins/memcpy-chk.x: New file.
+	* gcc.c-torture/execute/builtins/memmove-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/mempcpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/memset-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/snprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/sprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/stpcpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strcat-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strcpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strncat-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/strncpy-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/vsnprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/builtins/vsprintf-chk.x: Likewise.
+	* gcc.c-torture/execute/zerolen-2.x: Likewise.
+
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/minmax_minus.c: Scan for absence of mov.

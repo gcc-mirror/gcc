@@ -8,6 +8,7 @@
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
+// { dg-skip-if "packed attribute missing for struct one" { "epiphany-*-*" } { "*" } { "" } }
 
 template <bool> struct sa;
 template <> struct sa<true> {};
