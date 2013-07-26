@@ -1,3 +1,8 @@
+2013-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57101
+	* g++.dg/cpp0x/pr57101.C: New.
+
 2013-07-26  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/neg_1.c: New test.
