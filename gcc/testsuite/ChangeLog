@@ -3,6 +3,8 @@
 	* gcc.target/powerpc/ppc-vector-memcpy.c: Test use of VMX for
 	memcpy not initializers.
 
+	* gcc.dg/guality/guality.exp: Skip on AIX.
+
 2013-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57101
