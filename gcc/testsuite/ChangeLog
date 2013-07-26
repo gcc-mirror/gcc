@@ -37,6 +37,9 @@
 	* gcc.dg/pr27095.c: For Epiphany, add -mshort-calls.
 	* gcc.dg/tree-ssa/loop-1.c: Likewise. 
 
+	* gcc.dg/torture/pr37868.c: Disable for epiphany.
+	* gcc.dg/sibcall-6.c: Enable for epiphany.
+
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/minmax_minus.c: Scan for absence of mov.
