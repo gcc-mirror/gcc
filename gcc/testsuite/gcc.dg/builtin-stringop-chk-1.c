@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -std=gnu99 -ftrack-macro-expansion=0" } */
 /* { dg-additional-options "-mstructure-size-boundary=8" { target arm*-*-* } } */
+// { dg-skip-if "packed attribute missing for t" { "epiphany-*-*" } { "*" } { "" } }
 
 extern void abort (void);
 

@@ -1,6 +1,7 @@
 // PR c++/40502
 // { dg-do compile }
 // { dg-options "-O2" }
+// { dg-skip-if "packed attribute missing for struct A" { "epiphany-*-*" } { "*" } { "" } }
 
 struct A { char x[12], y[35]; };
 struct B { char z[50]; };
