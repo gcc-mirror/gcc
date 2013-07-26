@@ -2041,12 +2041,17 @@
 )
 
 (define_insn "neg<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(neg:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  [(set (match_operand:GPI 0 "register_operand" "=r,w")
+	(neg:GPI (match_operand:GPI 1 "register_operand" "r,w")))]
   ""
-  "neg\\t%<w>0, %<w>1"
+  "@
+   neg\\t%<w>0, %<w>1
+   neg\\t%<rtn>0<vas>, %<rtn>1<vas>"
   [(set_attr "v8type" "alu")
-   (set_attr "mode" "<MODE>")]
+   (set_attr "simd_type" "*,simd_negabs")
+   (set_attr "simd" "*,yes")
+   (set_attr "mode" "<MODE>")
+   (set_attr "simd_mode" "<MODE>")]
 )
 
 ;; zero_extend version of above

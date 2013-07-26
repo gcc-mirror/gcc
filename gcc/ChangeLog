@@ -1,3 +1,8 @@
+2013-07-26  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (neg<mode>2): Offer alternative that
+	uses vector registers.
+
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Richard Earnshaw  <richard.earnshaw@arm.com>
 
