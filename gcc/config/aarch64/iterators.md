@@ -283,6 +283,12 @@
 		    (V2DI "") (V2SF "")
 		    (V4SF "") (V2DF "")])
 
+;; Register Type Name and Vector Arrangement Specifier for when
+;; we are doing scalar for DI and SIMD for SI (ignoring all but
+;; lane 0).
+(define_mode_attr rtn [(DI "d") (SI "")])
+(define_mode_attr vas [(DI "") (SI ".2s")])
+
 ;; Map a floating point mode to the appropriate register name prefix
 (define_mode_attr s [(SF "s") (DF "d")])
 

@@ -2,6 +2,7 @@
 
 	* config/aarch64/aarch64.md (neg<mode>2): Offer alternative that
 	uses vector registers.
+	* config/aarch64/iterators.md: Add attributes rtn and vas.
 
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
             Richard Earnshaw  <richard.earnshaw@arm.com>
