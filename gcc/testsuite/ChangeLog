@@ -1,3 +1,7 @@
+2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/minmax_minus.c: Scan for absence of mov.
+
 2013-07-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/ppc-vector-memcpy.c: Test use of VMX for
