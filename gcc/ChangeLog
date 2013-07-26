@@ -1,3 +1,17 @@
+2013-07-26  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (die_checksum_ordered): Don't include template
+	instantiations in signature.
+	(is_template_parameter): New function.
+	(is_template_instantiation): New function.
+	(generate_skeleton_bottom_up): Don't include template instantiations
+	in type unit DIE.
+	(generate_skeleton): Likewise.
+	(break_out_comdat_types): Move recursive call to break out nested
+	types earlier.
+	(prune_unused_types_mark_generic_parms_dies): Call
+	is_template_parameter.
+
 2013-07-26  Ian Bolton  <ian.bolton@arm.com>
 
 	* config/aarch64/aarch64.md (neg<mode>2): Offer alternative that
