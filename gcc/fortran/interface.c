@@ -3078,7 +3078,8 @@ check_some_aliasing (gfc_formal_arglist *f, gfc_actual_arglist *a)
 	    break;
 	  f2_intent = p[j].f->sym->attr.intent;
 	  if ((f1_intent == INTENT_IN && f2_intent == INTENT_OUT)
-	      || (f1_intent == INTENT_OUT && f2_intent == INTENT_IN))
+	      || (f1_intent == INTENT_OUT && f2_intent == INTENT_IN)
+	      || (f1_intent == INTENT_OUT && f2_intent == INTENT_OUT))
 	    {
 	      gfc_warning ("Same actual argument associated with INTENT(%s) "
 			   "argument '%s' and INTENT(%s) argument '%s' at %L",

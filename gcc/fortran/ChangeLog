@@ -1,3 +1,8 @@
+2013-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57991
+	* interface.c (check_some_aliasing): Also warn for intent OUT/OUT.
+
 2013-07-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57285
