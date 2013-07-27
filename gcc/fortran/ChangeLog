@@ -1,3 +1,8 @@
+2013-07-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57285
+	* check.c (dim_rank_check): Re-enable this check for CLASS arrays.
+
 2013-07-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57966
