@@ -1,3 +1,8 @@
+2013-07-27  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_compute_frame_size):
+	Also reserve space for saving UNKNOWN_REGNUM for leaf functions.
+
 2013-07-26  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (die_checksum_ordered): Don't include template

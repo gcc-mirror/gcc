@@ -884,6 +884,11 @@ struct epiphany_frame_info
   int      stld_sz;             /* Current load/store data size for offset
 				   adjustment. */
   int      need_fp;             /* value to override "frame_pointer_needed */
+  /* FIRST_SLOT is the slot that is saved first, at the very start of
+     the frame, with a POST_MODIFY to allocate the frame, if the size fits,
+     or at least the parm and register save areas, otherwise.
+     In the case of a large frame, LAST_SLOT is the slot that is saved last,
+     with a POST_MODIFY to allocate the rest of the frame.  */
   int first_slot, last_slot, first_slot_offset, last_slot_offset;
   int first_slot_size;
   int small_threshold;
@@ -1069,7 +1074,10 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
 	 to be a lot of code complexity for little gain.  */
       || (reg_size > 8 && optimize))
     reg_size = EPIPHANY_STACK_ALIGN (reg_size);
-  if (total_size + reg_size <= (unsigned) epiphany_stack_offset
+  if (((total_size + reg_size
+	/* Reserve space for UNKNOWN_REGNUM.  */
+	+ EPIPHANY_STACK_ALIGN (4))
+       <= (unsigned) epiphany_stack_offset)
       && !interrupt_p
       && crtl->is_leaf && !frame_pointer_needed)
     {
@@ -1108,7 +1116,7 @@ epiphany_compute_frame_size (int size /* # of var. bytes allocated.  */)
       if (total_size + reg_size <= (unsigned) epiphany_stack_offset)
 	{
 	  gcc_assert (first_slot < 0);
-	  gcc_assert (reg_size == 0);
+	  gcc_assert (reg_size == 0 || reg_size == epiphany_stack_offset);
 	  last_slot_offset = EPIPHANY_STACK_ALIGN (total_size + reg_size);
 	}
       else
