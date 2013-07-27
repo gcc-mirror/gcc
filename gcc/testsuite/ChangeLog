@@ -1,3 +1,8 @@
+2013-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57991
+	* gfortran.dg/warn_alias.f90: New.
+
 2013-07-27  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57285
