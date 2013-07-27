@@ -19,5 +19,5 @@ int foo (int *p)
   return tem0 + tem1 + tem2 + tem3;
 }
 
-/* { dg-final { scan-tree-dump "vectorization is not profitable" "slp" } } */
+/* { dg-final { scan-tree-dump "vectorization is not profitable" "slp" { xfail  vect_no_align } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */

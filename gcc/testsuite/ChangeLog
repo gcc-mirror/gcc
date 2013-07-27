@@ -1,4 +1,11 @@
-2013-07-26  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/vect/pr57705.c: Adjust for a !vect_pack_trunc target.
+	* gcc.dg/vect/pr57741-2.c: Require a vect_float target.
+	* gcc.dg/vect/pr57741-3.c: Likewise.
+	* gcc.dg/vect/bb-slp-32.c: XFAIL for a vect_no_align target.
+
+2013-07-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	Skip tests that make assumptions about struct layout that don't hold
 	on epiphany:
