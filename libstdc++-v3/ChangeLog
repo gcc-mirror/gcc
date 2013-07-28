@@ -37,10 +37,8 @@
 	* include/bits/regex_cursor.h: Fix _M_set_pos().
 	* include/bits/regex_grep_matcher.h: add _M_dfs_match().
 	* include/bits/regex_grep_matcher.tcc: Implement it.
-	* testsuite/28_regex/algorithms/regex_match/extended/string_group_01.cc:
-	New.
-	* testsuite/28_regex/algorithms/regex_match/extended/string_group_02.cc:
-	New.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc: New.
 	* testsuite/28_regex/algorithms/regex_search/basic/string_01.cc:
 	Remove xfail.
 
