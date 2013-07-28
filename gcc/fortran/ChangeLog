@@ -1,3 +1,9 @@
+2013-07-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/58009
+	* expr.c (gfc_check_vardef_context):  Check for same values in
+	vector expression subscripts.
+
 2013-07-27  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57991

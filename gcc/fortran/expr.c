@@ -4700,6 +4700,7 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
   bool unlimited;
   symbol_attribute attr;
   gfc_ref* ref;
+  int i;
 
   if (e->expr_type == EXPR_VARIABLE)
     {
@@ -4922,5 +4923,49 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
     }
 
+  /* Check for same value in vector expression subscript.  */
+
+  if (e->rank > 0)
+    for (ref = e->ref; ref != NULL; ref = ref->next)
+      if (ref->type == REF_ARRAY && ref->u.ar.type == AR_SECTION)
+	for (i = 0; i < GFC_MAX_DIMENSIONS
+	       && ref->u.ar.dimen_type[i] != 0; i++)
+	  if (ref->u.ar.dimen_type[i] == DIMEN_VECTOR)
+	    {
+	      gfc_expr *arr = ref->u.ar.start[i];
+	      if (arr->expr_type == EXPR_ARRAY)
+		{
+		  gfc_constructor *c, *n;
+		  gfc_expr *ec, *en;
+		  
+		  for (c = gfc_constructor_first (arr->value.constructor);
+		       c != NULL; c = gfc_constructor_next (c))
+		    {
+		      if (c == NULL || c->iterator != NULL)
+			continue;
+		      
+		      ec = c->expr;
+
+		      for (n = gfc_constructor_next (c); n != NULL;
+			   n = gfc_constructor_next (n))
+			{
+			  if (n->iterator != NULL)
+			    continue;
+			  
+			  en = n->expr;
+			  if (gfc_dep_compare_expr (ec, en) == 0)
+			    {
+			      gfc_error_now ("Elements with the same value at %L"
+					     " and %L in vector subscript"
+					     " in a variable definition"
+					     " context (%s)", &(ec->where),
+					     &(en->where), context);
+			      return false;
+			    }
+			}
+		    }
+		}
+	    }
+  
   return true;
 }
