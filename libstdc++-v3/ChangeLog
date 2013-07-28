@@ -1,3 +1,8 @@
+2013-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/57914
+	* libsupc++/atexit_thread.cc (run): Delete cleanup elts.
+
 2013-06-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/profile/vector (emplace(iterator, _Args&&...)): Define.
