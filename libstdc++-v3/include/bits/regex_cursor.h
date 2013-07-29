@@ -45,6 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     virtual ~_PatternCursor() { };
     virtual void _M_next() = 0;
+    virtual void _M_prev() = 0;
     virtual bool _M_at_end() const = 0;
   };
 
@@ -65,6 +66,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_next()
       { ++_M_c; }
+
+      void
+      _M_prev()
+      { --_M_c; }
 
       _FwdIterT
       _M_pos() const

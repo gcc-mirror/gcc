@@ -22,7 +22,11 @@
 #include <testsuite_hooks.h>
 #include <testsuite_tr1.h>
 
+// In C++11 mode we used to implement the resolution of
 // DR 844. complex pow return type is ambiguous.
+// However, doing that causes all sorts of issues, see, for example:
+//   http://gcc.gnu.org/ml/libstdc++/2013-01/msg00058.html
+// and also PR57974.
 void test01()
 {
   bool test __attribute__((unused)) = true;
@@ -37,9 +41,7 @@ void test01()
   const double       d1 = 1.0;
   const long double ld1 = 1.0l;
 
-  check_ret_type<cmplx_d_type>(std::pow(cmplx_f_type(f1, f1), i1));
-  VERIFY( std::pow(cmplx_f_type(f1, f1), i1)
-	  == std::pow(cmplx_d_type(f1, f1), double(i1)) );
+  check_ret_type<cmplx_f_type>(std::pow(cmplx_f_type(f1, f1), i1));
   check_ret_type<cmplx_d_type>(std::pow(cmplx_d_type(d1, d1), i1));
   check_ret_type<cmplx_ld_type>(std::pow(cmplx_ld_type(ld1, ld1), i1));
 }

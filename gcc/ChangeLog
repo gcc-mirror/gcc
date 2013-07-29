@@ -1,3 +1,645 @@
+2013-07-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
+
+	* config/s390/s390.md ("movcc"): Swap load and store instructions.
+
+2013-07-27  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.c (epiphany_compute_frame_size):
+	Also reserve space for saving UNKNOWN_REGNUM for leaf functions.
+
+2013-07-26  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (die_checksum_ordered): Don't include template
+	instantiations in signature.
+	(is_template_parameter): New function.
+	(is_template_instantiation): New function.
+	(generate_skeleton_bottom_up): Don't include template instantiations
+	in type unit DIE.
+	(generate_skeleton): Likewise.
+	(break_out_comdat_types): Move recursive call to break out nested
+	types earlier.
+	(prune_unused_types_mark_generic_parms_dies): Call
+	is_template_parameter.
+
+2013-07-26  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.md (neg<mode>2): Offer alternative that
+	uses vector registers.
+	* config/aarch64/iterators.md: Add attributes rtn and vas.
+
+2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+            Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* combine.c (simplify_comparison): Re-canonicalize operands
+	where appropriate.	
+	* config/arm/arm.md (movcond_addsi): New splitter.
+
+2013-07-25  Sterling Augustine  <saugustine@google.com>
+
+	* dwarf2out.c (size_of_pubnames): Move code to...
+	(include_pubname_in_output): ...here.  New.
+	(want_pubnames): Rearrange.
+	(output_pubnames): Call include_pubname_in_output.  Move assertion.
+
+2013-07-25  Cameron McInally  <cameron.mcinally@nyu.edu>
+
+	* doc/extend.texi: Fix return types for __builtin_ia32_cmp*s builtins.
+
+2013-07-25  Cameron McInally  <cameron.mcinally@nyu.edu>
+
+	PR target/38836
+	* doc/extend.texi: Remove obsolete builtins. Fix
+	typo for __builtin_ia32_loadss and __builtin_ia32_cmpnltss.
+
+2013-07-25  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (release_function_body): Break out from ...
+	(cgraph_release_function_body): ... this one; also release DECL_RESULT
+	and DECL_ARGUMENTS.
+	* ipa-cp.c (get_replacement_map): Add parm_num argument; do not set
+	old_tree in the map.
+	(create_specialized_node): Update.
+	* lto-cgraph.c (output_node_opt_summary): Do not translate old_tree
+	into index.
+	* cgraphclones.c (cgraph_create_virtual_clone): Do not copy
+	DECL_ARGUMENTS, DECL_INITIAL and DECL_RESULT.
+	* ipa-prop.c (ipa_populate_param_decls): Look for origin of clones.
+	* tree-inline.c (initialize_cfun): Initialize DECL_ARGUMENTS and
+	DECL_RESULT.
+
+2013-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_addsi3, addsi3_carryin_<optab>,
+	addsi3_carryin_alt2_<optab>): Correct output template.
+
+2013-07-25  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm-fixed.md (ssmulsa3, usmulusa3):
+	Adjust for arm_restrict_it.
+	Remove trailing whitespace.
+
+2013-07-25  Mark Kettenis  <kettenis@openbsd.org>
+
+	* config/pa/pa.c (pa_trampoline_init): Emit __enable_execute_stack
+	libcall if HAVE_ENABLE_EXECUTE_STACK is defined.
+
+	* config.gcc (hppa-*-openbsd*): Don't set tmake_file.
+
+2013-07-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57960
+	* lra-constraints.c (process_alt_operands): Use the right mode
+	when checking strict_low.
+
+2013-07-25  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Release function body.
+	* cgraph.c (cgraph_remove_node): Do not release function body
+	when in cgraph streaming.
+	* ipa.c (process_references, symtab_remove_unreachable_nodes): Objects
+	in other partitions are not considered reachable; fix handling of
+	clones.
+
+2013-07-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	* config/arm/arm.md (*sibcall_insn): Remove unnecessary space.
+
+2013-07-25  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
+
+	PR target/19599
+	PR target/57731
+	PR target/57748
+	* config/arm/arm.md ("*sibcall_insn): Replace use of
+	Ss with US. Adjust output for v5 and v4t.
+	(*sibcall_value_insn): Likewise and loosen predicate on operand0.
+
+	* config/arm/constraints.md ("Ss"): Rename to US.
+
+2013-07-25  Terry Guo  <terry.guo@arm.com>
+
+	* config/arm/arm.c (thumb1_size_rtx_costs): Assign proper cost for
+	shift_add/shift_sub0/shift_sub1 RTXs.
+
+2013-07-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vpkpx): Handle little endian.
+	(altivec_vpks<VI_char>ss): Likewise.
+	(altivec_vpks<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>us): Likewise.
+	(altivec_vpku<VI_char>um): Likewise.
+
+2013-07-24  David Malcolm  <dmalcolm@redhat.com>
+
+	Introduce context class.
+
+	* Makefile.in (CONTEXT_H): New.
+	(OBJS): Add context.o.
+	(toplev.o): Add CONTEXT_H to dependencies.
+	(context.o): New.
+
+	* toplev.c (general_init): Create the singleton gcc::context instance.
+
+	* context.c: New.
+
+	* context.h: New.
+
+2013-07-24  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	PR rtl-optimization/57968
+	* mode-switching.c (create_pre_exit): Allow instructions that
+	don't set a return register to need a non-exit mode.
+
+2013-07-24  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/vector.md (vec_realign_load_<mode>): Reorder input
+	operands to vperm for little endian.
+	* config/rs6000/rs6000.c (rs6000_expand_builtin): Use lvsr instead
+	of lvsl to create the control mask for a vperm for little endian.
+
+2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Reverse
+	two operands for little-endian.
+
+2013-07-23  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.c (mips_case_values_threshold): New.
+	(TARGET_CASE_VALUES_THRESHOLD): Define.
+
+2013-07-23  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Correct
+	selection of field for vector splat in little endian mode.
+
+2013-07-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/vector.md (xor<mode>3): Move 128-bit boolean
+	expanders to rs6000.md.
+	(ior<mode>3): Likewise.
+	(and<mode>3): Likewise.
+	(one_cmpl<mode>2): Likewise.
+	(nor<mode>3): Likewise.
+	(andc<mode>3): Likewise.
+	(eqv<mode>3): Likewise.
+	(nand<mode>3): Likewise.
+	(orc<mode>3): Likewise.
+
+	* config/rs6000/rs6000-protos.h (rs6000_split_logical): New
+	declaration.
+
+	* config/rs6000/rs6000.c (rs6000_split_logical_inner): Add support
+	to split multi-word logical operations.
+	(rs6000_split_logical_di): Likewise.
+	(rs6000_split_logical): Likewise.
+
+	* config/rs6000/vsx.md (VSX_L2): Delete, no longer used.
+	(vsx_and<mode>3_32bit): Move 128-bit logical insns to rs6000.md,
+	and allow TImode operations in 32-bit.
+	(vsx_and<mode>3_64bit): Likewise.
+	(vsx_ior<mode>3_32bit): Likewise.
+	(vsx_ior<mode>3_64bit): Likewise.
+	(vsx_xor<mode>3_32bit): Likewise.
+	(vsx_xor<mode>3_64bit): Likewise.
+	(vsx_one_cmpl<mode>2_32bit): Likewise.
+	(vsx_one_cmpl<mode>2_64bit): Likewise.
+	(vsx_nor<mode>3_32bit): Likewise.
+	(vsx_nor<mode>3_64bit): Likewise.
+	(vsx_andc<mode>3_32bit): Likewise.
+	(vsx_andc<mode>3_64bit): Likewise.
+	(vsx_eqv<mode>3_32bit): Likewise.
+	(vsx_eqv<mode>3_64bit): Likewise.
+	(vsx_nand<mode>3_32bit): Likewise.
+	(vsx_nand<mode>3_64bit): Likewise.
+	(vsx_orc<mode>3_32bit): Likewise.
+	(vsx_orc<mode>3_64bit): Likewise.
+
+	* config/rs6000/rs6000.h (VLOGICAL_REGNO_P): Always allow vector
+	logical types in GPRs.
+
+	* config/rs6000/altivec.md (altivec_and<mode>3): Move 128-bit
+	logical insns to rs6000.md, and allow TImode operations in
+	32-bit.
+	(altivec_ior<mode>3): Likewise.
+	(altivec_xor<mode>3): Likewise.
+	(altivec_one_cmpl<mode>2): Likewise.
+	(altivec_nor<mode>3): Likewise.
+	(altivec_andc<mode>3): Likewise.
+
+	* config/rs6000/rs6000.md (BOOL_128): New mode iterators and mode
+	attributes for moving the 128-bit logical operations into
+	rs6000.md.
+	(BOOL_REGS_OUTPUT): Likewise.
+	(BOOL_REGS_OP1): Likewise.
+	(BOOL_REGS_OP2): Likewise.
+	(BOOL_REGS_UNARY): Likewise.
+	(BOOL_REGS_AND_CR0): Likewise.
+	(one_cmpl<mode>2): Add support for DI logical operations on
+	32-bit, splitting the operations to 32-bit.
+	(anddi3): Likewise.
+	(iordi3): Likewise.
+	(xordi3): Likewise.
+	(and<mode>3, 128-bit types): Rewrite 2013-06-06 logical operator
+	changes to combine the 32/64-bit code, allow logical operations on
+	TI mode in 32-bit, and to use similar match_operator patterns like
+	scalar mode uses.  Combine the Altivec and VSX code for logical
+	operations, and move it here.
+	(ior<mode>3, 128-bit types): Likewise.
+	(xor<mode>3, 128-bit types): Likewise.
+	(one_cmpl<mode>3, 128-bit types): Likewise.
+	(nor<mode>3, 128-bit types): Likewise.
+	(andc<mode>3, 128-bit types): Likewise.
+	(eqv<mode>3, 128-bit types): Likewise.
+	(nand<mode>3, 128-bit types): Likewise.
+	(orc<mode>3, 128-bit types): Likewise.
+	(and<mode>3_internal): Likewise.
+	(bool<mode>3_internal): Likewise.
+	(boolc<mode>3_internal1): Likewise.
+	(boolc<mode>3_internal2): Likewise.
+	(boolcc<mode>3_internal1): Likewise.
+	(boolcc<mode>3_internal2): Likewise.
+	(eqv<mode>3_internal1): Likewise.
+	(eqv<mode>3_internal2): Likewise.
+	(one_cmpl1<mode>3_internal): Likewise.
+
+2013-07-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/microblaze.c (microblaze_expand_prologue):
+	Rename flag_stack_usage to flag_stack_usage_info.
+
+2013-07-23  David Holsgrove <david.holsgrove@xilinx.com>
+
+	* config/microblaze/sync.md: New file.
+	* config/microblaze/microblaze.md: Include sync.md
+	* config/microblaze/microblaze.c: Add print_operand 'y'.
+	* config/microblaze/constraints.md: Add memory_contraint
+	'Q' which is a single register.
+
+2013-07-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (SPARC Options): Document new leon3 processor value.
+
+2013-07-22  Po-Chun Chang  <pchang9@cs.wisc.edu>
+
+	* reload.c (find_reloads): Exit loop once we find this operand
+	cannot be reloaded somehow for this alternative.
+
+	* reload.c (find_reloads): Exit loop once we find a hard register.
+
+	* rtlanal.c (computed_jump_p): Exit loop once we find label
+	reference is used.
+
+	* i386.c (ix86_pad_returns): Exit loop after setting replace.
+
+	* cfgloopmanip.c (remove_path): Exit loop after setting
+	irred_invalidated.
+
+	* gensupport.c (subst_dup): Avoid loop if code is not
+	MATCH_DUP nor MATCH_OP_DUP.
+
+2013-07-23  Nicklas Bo Jensen  <nbjensen@gmail.com>
+
+	* doc/md.texi (Machine-Specific Peephole Optimizers): Fix a typo.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Also return
+	true for SP_REGNUM if mode == ptr_mode.
+	* config/aarch64/aarch64.h (ADDITIONAL_REGISTER_NAMES): Add "wsp"
+	with value R0_REGNUM + 31.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_pad_arg_upward): In big-endian,
+	pad pointer-typed argument downward.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_CPU_CPP_BUILTINS): Define _ILP32
+	and __ILP32__ when the ILP32 model is in use.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64.c (POINTER_BYTES): New define.
+	(aarch64_load_symref_appropriately): In the case of
+	SYMBOL_SMALL_ABSOLUTE, use the mode of 'dest' instead of Pmode
+	to generate new rtx; likewise to the case of SYMBOL_SMALL_GOT.
+	(aarch64_expand_mov_immediate): In the case of SYMBOL_FORCE_TO_MEM,
+	change to pass 'ptr_mode' to force_const_mem and zero-extend 'mem'
+	if 'mode' doesn't equal to 'ptr_mode'.
+	(aarch64_output_mi_thunk): Add an assertion on the alignment of
+	'vcall_offset'; change to call aarch64_emit_move differently depending
+	on whether 'Pmode' equals to 'ptr_mode' or not; use 'POINTER_BYTES'
+	to calculate the upper bound of 'vcall_offset'.
+	(aarch64_cannot_force_const_mem): Change to also return true if
+	mode != ptr_mode.
+	(aarch64_legitimize_reload_address): In the case of large
+	displacements, add new local variable 'xmode' and an assertion
+	based on it; change to use 'xmode' to generate the new rtx and
+	reload.
+	(aarch64_asm_trampoline_template): Change to generate the template
+	differently depending on TARGET_ILP32 or not; change to use
+	'POINTER_BYTES' in the argument passed to assemble_aligned_integer.
+	(aarch64_trampoline_size): Removed.
+	(aarch64_trampoline_init): Add new local constant 'tramp_code_sz'
+	and replace immediate literals with it.  Change to use 'ptr_mode'
+	instead of 'DImode' and call convert_memory_address if the mode
+	of 'fnaddr' doesn't equal to 'ptr_mode'.
+	(aarch64_elf_asm_constructor): Change to use assemble_aligned_integer
+	to output symbol.
+	(aarch64_elf_asm_destructor): Likewise.
+	* config/aarch64/aarch64.h (TRAMPOLINE_SIZE): Change to be dependent
+	on TARGET_ILP32 instead of aarch64_trampoline_size.
+	* config/aarch64/aarch64.md (movsi_aarch64): Add new alternatives
+	of 'mov' between WSP and W registers as well as 'adr' and 'adrp'.
+	(loadwb_pair<GPI:mode>_<PTR:mode>): Rename to ...
+	(loadwb_pair<GPI:mode>_<P:mode>): ... this.  Replace PTR with P.
+	(storewb_pair<GPI:mode>_<PTR:mode>): Likewise; rename to ...
+	(storewb_pair<GPI:mode>_<P:mode>): ... this.
+	(add_losym): Change to 'define_expand' and call gen_add_losym_<mode>
+	depending on the value of 'mode'.
+	(add_losym_<mode>): New.
+	(ldr_got_small_<mode>): New, based on ldr_got_small.
+	(ldr_got_small): Remove.
+	(ldr_got_small_sidi): New.
+	* config/aarch64/iterators.md (P): New.
+	(PTR): Change to 'ptr_mode' in the condition.
+
+2013-07-23  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config.gcc (aarch64*-*-*): Support --with-abi.
+	(aarch64*-*-elf): Support --with-multilib-list.
+	(aarch64*-*-linux*): Likewise.
+	(supported_defaults): Add abi to aarch64*-*-*.
+	* configure.ac: Mention AArch64 for --with-multilib-list.
+	* configure: Re-generated.
+	* config/aarch64/biarchilp32.h: New file.
+	* config/aarch64/biarchlp64.h: New file.
+	* config/aarch64/aarch64-elf.h (ENDIAN_SPEC): New define.
+	(ABI_SPEC): Ditto.
+	(MULTILIB_DEFAULTS): Ditto.
+	(DRIVER_SELF_SPECS): Ditto.
+	(ASM_SPEC): Update to also substitute -mabi.
+	* config/aarch64/aarch64-elf-raw.h (LINK_SPEC): Add linker script
+	file whose name depends on -mabi= and -mbig-endian.
+	* config/aarch64/aarch64.h (LONG_TYPE_SIZE): Change to depend on
+	TARGET_ILP32.
+	(POINTER_SIZE): New define.
+	(POINTERS_EXTEND_UNSIGNED): Ditto.
+	(enum aarch64_abi_type): New enumeration tag.
+	(AARCH64_ABI_LP64, AARCH64_ABI_ILP32): New enumerators.
+	(AARCH64_ABI_DEFAULT): Define to AARCH64_ABI_LP64 if undefined.
+	(TARGET_ILP32): New define.
+	* config/aarch64/aarch64.opt (mabi): New.
+	(aarch64_abi): New.
+	(ilp32, lp64): New values for -mabi.
+	* config/aarch64/t-aarch64 (comma): New define.
+	(MULTILIB_OPTIONS): Ditto.
+	(MULTILIB_DIRNAMES): Ditto.
+	* config/aarch64/t-aarch64-linux (MULTIARCH_DIRNAME): New define.
+	* doc/invoke.texi: Document -mabi for AArch64.
+
+2013-07-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.md: Explain asm print modifier 'r' for REG.
+
+2013-07-22  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+	    Anton Blanchard <anton@au1.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_vector_init): Fix
+	endianness when selecting field to splat.
+
+2013-07-22  Eric Christopher  <echristo@gmail.com>
+
+	* dwarf2out.c (die_odr_checksum): New function to use
+	CHECKSUM_ macros and ULEB128 for DIE tag.
+	(generate_type_signature): Use.
+
+2013-07-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (sparc*-*-*): Accept leon3 processor.
+	(sparc-leon*-*): Merge with sparc*-*-* and add leon3 support.
+	* doc/invoke.texi (SPARC Options): Adjust -mfix-ut699 entry.
+	* config/sparc/sparc-opts.h (enum processor_type): Add PROCESSOR_LEON3.
+	* config/sparc/sparc.opt (enum processor_type): Add leon3.
+	(mfix-ut699): Adjust comment.
+	* config/sparc/sparc.h (TARGET_CPU_leon3): New define.
+	(CPP_CPU32_DEFAULT_SPEC): Add leon3 support.
+	(CPP_CPU_SPEC): Likewise.
+	(ASM_CPU_SPEC): Likewise.
+	* config/sparc/sparc.c (leon3_cost): New constant.
+	(sparc_option_override): Add leon3 support.
+	(mem_ref): New function.
+	(sparc_gate_work_around_errata): Return true if -mfix-ut699 is enabled.
+	(sparc_do_work_around_errata): Look into the instruction in the delay
+	slot and adjust accordingly.  Add fix for the data cache nullify issues
+	of the UT699.  Change insertion position for the NOP.
+	* config/sparc/leon.md (leon_fpalu, leon_fpmds, write_buf): Delete.
+	(leon3_load): New reservation.
+	(leon_store): Bump latency to 2.
+	(grfpu): New automaton.
+	(grfpu_alu): New unit.
+	(grfpu_ds): Likewise.
+	(leon_fp_alu): Adjust.
+	(leon_fp_mult): Delete.
+	(leon_fp_div): Split into leon_fp_divs and leon_fp_divd.
+	(leon_fp_sqrt): Split into leon_fp_sqrts and leon_fp_sqrtd.
+	* config/sparc/sparc.md (cpu): Add leon3.
+	* config/sparc/sync.md (atomic_exchangesi): Disable if -mfix-ut699.
+	(swapsi): Likewise.
+	(atomic_test_and_set): Likewise.
+	(ldstub): Likewise.
+
+2013-07-22  Jürgen Urban  <JuergenUrban@gmx.de>
+
+	* config.gcc (mips*-*-*): Add --with-fpu support.  Make single the
+	default for R5900 targets.
+	* config/mips/mips.h (OPTION_DEFAULT_SPECS): Handle --with-fpu.
+	(ISA_HAS_LDC1_SDC1): Set to false for TARGET_MIPS5900.
+	* config/mips/mips.c (mips_option_override): Report an error for
+	-march=r5900 -mhard-float -mdouble-float.  Use spu_single_format
+	for -march=r5900 -mhard-float.
+
+2013-07-22  Po-Chun Chang  <pchang9@cs.wisc.edu>
+
+	* df-problems.c (can_move_insns_across): Exit loop once we
+	find a non-fixed, non-global register.
+
+	* ipa-pure-const.c (propagate_nothrow): Exit loop after
+	setting can_throw.
+
+	* omega.c (omega_eliminate_red): Break after setting red_found.
+	(omega_problem_has_red_equations): Similarly after setting found.
+	(omega_query_variable): Similarly after setting coupled.
+
+2013-07-22  Marek Polacek  <polacek@redhat.com>
+
+	* gimplify.c: Don't include gimple.h twice.
+
+2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/constraints.md (Pd): Allow TARGET_THUMB
+	instead of TARGET_THUMB1.
+	(Pz): New constraint.
+	* config/arm/arm.md (arm_addsi3): Add alternatives for 16-bit
+	encodings.
+	(compare_negsi_si): Likewise.
+	(compare_addsi2_op0): Likewise.
+	(compare_addsi2_op1): Likewise.
+	(addsi3_carryin_<optab>): Likewise.
+	(addsi3_carryin_alt2_<optab>): Likewise.
+	(addsi3_carryin_shift_<optab>): Disable cond_exec variant
+	for arm_restrict_it.
+	(subsi3_carryin): Likewise.
+	(arm_subsi3_insn): Add alternatives for 16-bit encoding.
+	(minmax_arithsi): Disable for arm_restrict_it.
+	(minmax_arithsi_non_canon): Adjust for arm_restrict_it.
+	(satsi_<SAT:code>): Disable cond_exec variant for arm_restrict_it.
+	(satsi_<SAT:code>_shift): Likewise.
+	(arm_shiftsi3): Add alternative for 16-bit encoding.
+	(arm32_movhf): Disable for arm_restrict_it.
+	(arm_cmpdi_unsigned): Add alternatives for 16-bit encoding.
+	(arm_movtas_ze): Disable cond_exec variant for arm_restrict_it.
+
+2013-07-22  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/arm.md (attribute "insn"): Delete.
+	(attribute "type"): Add "mov_imm", "mov_reg", "mov_shift",
+	"mov_shift_reg", "mvn_imm", "mvn_reg", "mvn_shift" and "mvn_shift_reg".
+	(not_shiftsi): Update for attribute change.
+	(not_shiftsi_compare0): Likewise.
+	(not_shiftsi_compare0_scratch): Likewise.
+	(arm_one_cmplsi2): Likewise.
+	(thumb1_one_cmplsi2): Likewise.
+	(notsi_compare0): Likewise.
+	(notsi_compare0_scratch): Likewise.
+	(thumb1_movdi_insn): Likewise.
+	(arm_movsi_insn): Likewise.
+	(movhi_insn_arch4): Likewise.
+	(movhi_bytes): Likewise.
+	(arm_movqi_insn): Likewise.
+	(thumb1_movqi_insn): Likewise.
+	(arm32_movhf): Likewise.
+	(thumb1_movhf): Likewise.
+	(arm_movsf_soft_insn): Likewise.
+	(thumb1_movsf_insn): Likewise.
+	(thumb_movdf_insn): Likewise.
+	(movsicc_insn): Likewise.
+	(movsfcc_soft_insn): Likewise.
+	(and_scc): Likewise.
+	(cond_move): Likewise.
+	(if_move_not): Likewise.
+	(if_not_move): Likewise.
+	(if_shift_move): Likewise.
+	(if_move_shift): Likewise.
+	(if_shift_shift): Likewise.
+	(if_not_arith): Likewise.
+	(if_arith_not): Likewise.
+	(cond_move_not): Likewise.
+	* config/arm/neon.md (neon_mov<mode>): Update for attribute change.
+	(neon_mov<mode>): Likewise.
+	* config/arm/vfp.md (arm_movsi_vfp): Update for attribute change.
+	(thumb2_movsi_vfp): Likewise.
+	(movsf_vfp): Likewise.
+	(thumb2_movsf_vfp): Likewise.
+	* config/arm/arm.c (xscale_sched_adjust_cost): Update for attribute
+	change.
+	(cortexa7_older_only): Likewise.
+	(cortexa7_younger): Likewise.
+	* config/arm/arm1020e.md (1020alu_op): Update for attribute change.
+	(1020alu_shift_op): Likewise.
+	(1020alu_shift_reg_op): Likewise.
+	* config/arm/arm1026ejs.md (alu_op): Update for attribute change.
+	(alu_shift_op): Likewise.
+	(alu_shift_reg_op): Likewise.
+	* config/arm/arm1136jfs.md (11_alu_op): Update for attribute change.
+	(11_alu_shift_op): Likewise.
+	(11_alu_shift_reg_op): Likewise.
+	* config/arm/arm926ejs.md (9_alu_op): Update for attribute change.
+	(9_alu_shift_reg_op): Likewise.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Update for attribute
+	change.
+	(cortex_a15_alu_shift): Likewise.
+	(cortex_a15_alu_shift_reg): Likewise.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Update for attribute change.
+	(cortex_a5_alu_shift): Likewise.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Update for attribute
+	change.
+	(cortex_a53_alu_shift): Likewise.
+	* config/arm/cortex-a7.md (cortex_a7_alu_imm): Update for attribute
+	change.
+	(cortex_a7_alu_reg): Likewise.
+	(cortex_a7_alu_shift): Likewise.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute change.
+	(cortex_a8_alu_shift): Likewise.
+	(cortex_a8_alu_shift_reg): Likewise.
+	(cortex_a8_mov): Likewise.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Update for attribute change.
+	(cortex_a9_dp_shift): Likewise.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update for attribute change.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Update for attribute change.
+	(cortex_r4_mov): Likewise.
+	(cortex_r4_alu_shift): Likewise.
+	(cortex_r4_alu_shift_reg): Likewise.
+	* config/arm/fa526.md (526_alu_op): Update for attribute change.
+	(526_alu_shift_op): Likewise.
+	* config/arm/fa606te.md (606te_alu_op): Update for attribute change.
+	* config/arm/fa626te.md (626te_alu_op): Update for attribute change.
+	(626te_alu_shift_op): Likewise.
+	* config/arm/fa726te.md (726te_shift_op): Update for attribute change.
+	(726te_alu_op): Likewise.
+	(726te_alu_shift_op): Likewise.
+	(726te_alu_shift_reg_op): Likewise.
+	* config/arm/fmp626.md (mp626_alu_op): Update for attribute change.
+	(mp626_alu_shift_op): Likewise.
+	* config/arm/marvell-pj4.md (pj4_alu_e1): Update for attribute change.
+	(pj4_alu_e1_conds): Likewise.
+	(pj4_alu): Likewise.
+	(pj4_alu_conds): Likewise.
+	(pj4_shift): Likewise.
+	(pj4_shift_conds): Likewise.
+	(pj4_alu_shift): Likewise.
+	(pj4_alu_shift_conds): Likewise.
+
+2013-07-22  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/predicates.md (shiftable_operator_strict_it):
+	New predicate.
+	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si):
+	Disable cond_exec version for arm_restrict_it.
+	(thumb2_smaxsi3): Convert to generate cond_exec.
+	(thumb2_sminsi3): Likewise.
+	(thumb32_umaxsi3): Likewise.
+	(thumb2_uminsi3): Likewise.
+	(thumb2_abssi2): Adjust constraints for arm_restrict_it.
+	(thumb2_neg_abssi2): Likewise.
+	(thumb2_mov_scc): Add alternative for 16-bit encoding.
+	(thumb2_movsicc_insn): Adjust alternatives.
+	(thumb2_mov_negscc): Disable for arm_restrict_it.
+	(thumb2_mov_negscc_strict_it): New pattern.
+	(thumb2_mov_notscc_strict_it): New pattern.
+	(thumb2_mov_notscc): Disable for arm_restrict_it.
+	(thumb2_ior_scc): Likewise.
+	(thumb2_ior_scc_strict_it): New pattern.
+	(thumb2_cond_move): Adjust for arm_restrict_it.
+	(thumb2_cond_arith): Disable for arm_restrict_it.
+	(thumb2_cond_arith_strict_it): New pattern.
+	(thumb2_cond_sub): Adjust for arm_restrict_it.
+	(thumb2_movcond): Likewise.
+	(thumb2_extendqisi_v6): Disable cond_exec variant for arm_restrict_it.
+	(thumb2_zero_extendhisi2_v6): Likewise.
+	(thumb2_zero_extendqisi2_v6): Likewise.
+	(orsi_notsi_si): Likewise.
+	(orsi_not_shiftsi_si): Likewise.
+
+2013-07-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.c (avr_out_xload): No SBIS around LPM so that
+	instruction sequence is 1 byte shorter.
+
 2013-07-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (nonlocal_goto_receiver): Delete insn if
@@ -12,7 +654,7 @@
 	(ix86_save_reg): If the function contains a nonlocal label, save the
 	PIC base reg.
 	* config/darwin-protos.h (machopic_should_output_picbase_label): New.
-	* gcc/config/darwin.c (emitted_pic_label_num): New GTY. 
+	* gcc/config/darwin.c (emitted_pic_label_num): New GTY.
 	(update_pic_label_number_if_needed): New.
 	(machopic_output_function_base_name): Adjust for nonlocal receiver
 	case.
@@ -93,7 +735,7 @@
 
 	* tree-pass.h (pass_ipa_lto_wpa_fixup): Remove redundant decl.
 
-2013-07-18  Chang  <pchang9@cs.wisc.edu>
+2013-07-18  Po-Chun Chang  <pchang9@cs.wisc.edu>
 
 	* read-rtl.c (validate_const_int): Once an invalid character is
 	seen, quit the loop.
@@ -112,15 +754,16 @@
 	(arm_extendqisi2addsi): Likewise.
 	(clzsi2): Update for attribute changes.
 	(rbitsi2): Likewise.
-	* config/arm/arm-fixed.md (arm_ssatsihi_shift): Delete "insn" attribute.
+	* config/arm/arm-fixed.md (arm_ssatsihi_shift): Delete "insn"
+	attribute.
 	(arm_usatsihi): Likewise.
 	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute change.
 
 2013-07-18  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/arm/arm.md (attribute "type"): Rename "simple_alu_imm" to
-	"arlo_imm".  Rename "alu_reg" to "arlo_reg".  Rename "simple_alu_shift" to
-	"extend".  Split "alu_shift" into "shift" and "arlo_shift".  Split
+	"arlo_imm".  Rename "alu_reg" to "arlo_reg".  Rename "simple_alu_shift"
+	to "extend".  Split "alu_shift" into "shift" and "arlo_shift".  Split
 	"alu_shift_reg" into "shift_reg" and "arlo_shift_reg".  List types
 	in alphabetical order.
 	(attribute "core_cycles"): Update for attribute changes.
@@ -221,8 +864,8 @@
 	(shiftsi3_compare0_scratch): Likewise.
 	* config/arm/neon.md (neon_mov<mode>): Update for attribute changes.
 	(neon_mov<mode>): Likewise.
-	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si): Update for attribute
-	changes.
+	* config/arm/thumb2.md (thumb_andsi_not_shiftsi_si): Update for
+	attribute changes.
 	(thumb2_movsi_insn): Likewise.
 	(thumb2_cmpsi_neg_shiftsi): Likewise.
 	(thumb2_extendqisi_v6): Likewise.
@@ -245,10 +888,12 @@
 	(11_alu_shift_reg_op): Likewise.
 	* config/arm/arm926ejs.md (9_alu_op): Update for attribute changes.
 	(9_alu_shift_reg_op): Likewise.
-	* config/arm/cortex-a15.md (cortex_a15_alu): Update for attribute changes.
+	* config/arm/cortex-a15.md (cortex_a15_alu): Update for attribute
+	changes.
 	(cortex_a15_alu_shift): Likewise.
 	(cortex_a15_alu_shift_reg): Likewise.
-	* config/arm/cortex-a5.md (cortex_a5_alu): Update for attribute changes.
+	* config/arm/cortex-a5.md (cortex_a5_alu): Update for attribute
+	changes.
 	(cortex_a5_alu_shift): Likewise.
 	* config/arm/cortex-a53.md (cortex_a53_alu) : Update for attribute
 	changes.
@@ -257,14 +902,17 @@
 	changes.
 	(cortex_a7_alu_reg): Likewise.
 	(cortex_a7_alu_shift): Likewise.
-	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute changes.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute
+	changes.
 	(cortex_a8_alu_shift): Likewise.
 	(cortex_a8_alu_shift_reg): Likewise.
 	(cortex_a8_mov): Likewise.
 	* config/arm/cortex-a9.md (cortex_a9_dp): Update for attribute changes.
 	(cortex_a9_dp_shift): Likewise.
-	* config/arm/cortex-m4.md (cortex_m4_alu): Update for attribute changes.
-	* config/arm/cortex-r4.md (cortex_r4_alu): Update for attribute changes.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update for attribute
+	changes.
+	* config/arm/cortex-r4.md (cortex_r4_alu): Update for attribute
+	changes.
 	(cortex_r4_mov): Likewise.
 	(cortex_r4_alu_shift): Likewise.
 	(cortex_r4_alu_shift_reg): Likewise.
@@ -287,7 +935,8 @@
 	(pj4_shift_conds): Likewise.
 	(pj4_alu_shift): Likewise.
 	(pj4_alu_shift_conds): Likewise.
-	* config/arm/arm.c (xscale_sched_adjust_cost): Update for attribute changes.
+	* config/arm/arm.c (xscale_sched_adjust_cost): Update for attribute
+	changes.
 	(cortexa7_older_only): Likewise.
 	(cortexa7_younger): Likewise.
 
@@ -389,7 +1038,8 @@
 	(htm_init_builtins): Likewise.
 	(rs6000_expand_builtin): Add support for HTM builtin functions.
 	(rs6000_init_builtins): Likewise.
-	(rs6000_invalid_builtin, rs6000_opt_mask): Add support for -mhtm option.
+	(rs6000_invalid_builtin, rs6000_opt_mask): Add support for -mhtm
+	option.
 	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Add support for -mhtm.
 	(TARGET_HTM, MASK_HTM): Define macros.
 	(FIRST_PSEUDO_REGISTER): Adjust for new HTM SPR registers.
@@ -503,8 +1153,7 @@
 
 2013-07-10  Vladimir Makarov  <vmakarov@redhat.com>
 
-	* lra-constraints.c (curr_insn_transform): Switch off optional
-	reloads.
+	* lra-constraints.c (curr_insn_transform): Switch off optional reloads.
 
 2013-07-10  Joseph Myers  <joseph@codesourcery.com>
 
@@ -1573,7 +2222,7 @@
 	SSA names into the expanded expression that take part in
 	abnormal coalescing.
 
-2013-06-19    <singhai@google.com>
+2013-06-19  Sharad Singhai  <singhai@google.com>
 
 	* gcov.c (print_usage): Handle new option.
 	(process_args): Ditto.
@@ -4416,7 +5065,7 @@
 	* gcse.c (compute_ld_motion_mems): If a non-simple MEM is
 	found in a REG_EQUAL note, invalidate it.
 
-2013-05-17   Easwaran Raman  <eraman@google.com>
+2013-05-17  Easwaran Raman  <eraman@google.com>
 
 	* tree-ssa-reassoc.c (find_insert_point): New function.
 	(insert_stmt_after): Likewise.
@@ -9322,7 +9971,7 @@
 	* configure.ac: Likewise
 	* configure: Regenerated.
 
-2013-03-27 Kai Tietz  <ktietz@redhat.com>
+2013-03-27  Kai Tietz  <ktietz@redhat.com>
 
 	* config/i386/cygwin-stdint.h: Add support for cygwin x64 target.
 	* config/i386/t-cygwin-w64: New file.

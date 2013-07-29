@@ -58,8 +58,13 @@ namespace {
   void run (void *p)
   {
     elt *e = static_cast<elt*>(p);
-    for (; e; e = e->next)
-      e->destructor (e->object);
+    while (e)
+      {
+	elt *old_e = e;
+	e->destructor (e->object);
+	e = e->next;
+	delete (old_e);
+      }
   }
 
   // Run the stack of cleanups for the current thread.
@@ -67,9 +72,15 @@ namespace {
   {
     void *e;
     if (__gthread_active_p ())
-      e = __gthread_getspecific (key);
+      {
+	e = __gthread_getspecific (key);
+	__gthread_setspecific (key, NULL);
+      }
     else
-      e = single_thread;
+      {
+	e = single_thread;
+	single_thread = NULL;
+      }
     run (e);
   }
 

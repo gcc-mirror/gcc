@@ -305,7 +305,16 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
     new_decl = copy_node (old_decl);
   else
     new_decl = build_function_decl_skip_args (old_decl, args_to_skip, false);
+
+  /* These pointers represent function body and will be populated only when clone
+     is materialized.  */
+  gcc_assert (new_decl != old_decl);
   DECL_STRUCT_FUNCTION (new_decl) = NULL;
+  DECL_ARGUMENTS (new_decl) = NULL;
+  DECL_INITIAL (new_decl) = NULL;
+  DECL_RESULT (new_decl) = NULL; 
+  /* We can not do DECL_RESULT (new_decl) = NULL; here because of LTO partitioning
+     sometimes storing only clone decl instead of original.  */
 
   /* Generate a new name for the new version. */
   DECL_NAME (new_decl) = clone_function_name (old_decl, suffix);

@@ -16832,6 +16832,11 @@ mips_option_override (void)
 
   /* End of code shared with GAS.  */
 
+  /* The R5900 FPU only supports single precision.  */
+  if (TARGET_MIPS5900 && TARGET_HARD_FLOAT_ABI && TARGET_DOUBLE_FLOAT)
+    error ("unsupported combination: %s",
+	   "-march=r5900 -mhard-float -mdouble-float");
+
   /* If a -mlong* option was given, check that it matches the ABI,
      otherwise infer the -mlong* setting from the other options.  */
   if ((target_flags_explicit & MASK_LONG64) != 0)
@@ -17139,6 +17144,9 @@ mips_option_override (void)
      filling.  Registering the pass must be done at start up.  It's
      convenient to do it here.  */
   register_pass (&insert_pass_mips_machine_reorg2);
+
+  if (TARGET_HARD_FLOAT_ABI && TARGET_MIPS5900)
+    REAL_MODE_FORMAT (SFmode) = &spu_single_format;
 }
 
 /* Swap the register information for registers I and I + 1, which
@@ -18605,6 +18613,18 @@ mips_expand_vec_minmax (rtx target, rtx op0, rtx op1,
   x = gen_rtx_IOR (vmode, t0, t1);
   emit_insn (gen_rtx_SET (VOIDmode, target, x));
 }
+
+/* Implement TARGET_CASE_VALUES_THRESHOLD.  */
+
+unsigned int
+mips_case_values_threshold (void)
+{
+  /* In MIPS16 mode using a larger case threshold generates smaller code.  */
+  if (TARGET_MIPS16 && optimize_size)
+    return 10;
+  else
+    return default_case_values_threshold ();
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -18835,6 +18855,9 @@ mips_expand_vec_minmax (rtx target, rtx op0, rtx op1,
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST_OK
 #define TARGET_VECTORIZE_VEC_PERM_CONST_OK mips_vectorize_vec_perm_const_ok
+
+#undef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD mips_case_values_threshold
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

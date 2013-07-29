@@ -90,7 +90,7 @@ fn7 (void)
     baz (b);
 }
 
-/* { dg-message "note: containing loop" "" { target *-*-* } 88 } */
+/* { dg-message "note: containing loop" "" { target *-*-* } 89 } */
 
 const void *va, *vb, *vc, *vd, *ve;
 const void *vf[4];

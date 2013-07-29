@@ -21,7 +21,7 @@
 ;; The following register constraints have been used:
 ;; - in ARM/Thumb-2 state: t, w, x, y, z
 ;; - in Thumb state: h, b
-;; - in both states: l, c, k, q
+;; - in both states: l, c, k, q, US
 ;; In ARM state, 'l' is an alias for 'r'
 ;; 'f' and 'v' were previously used for FPA and MAVERICK registers.
 
@@ -170,9 +170,9 @@
   		    && ival > 1020 && ival <= 1275")))
 
 (define_constraint "Pd"
-  "@internal In Thumb-1 state a constant in the range 0 to 7"
+  "@internal In Thumb state a constant in the range 0 to 7"
   (and (match_code "const_int")
-       (match_test "TARGET_THUMB1 && ival >= 0 && ival <= 7")))
+       (match_test "TARGET_THUMB && ival >= 0 && ival <= 7")))
 
 (define_constraint "Pe"
   "@internal In Thumb-1 state a constant in the range 256 to +510"
@@ -213,6 +213,11 @@
   "@internal In Thumb-2 state a constant in the range 0 to 255"
   (and (match_code "const_int")
        (match_test "TARGET_THUMB2 && ival >= 0 && ival <= 255")))
+
+(define_constraint "Pz"
+  "@internal In Thumb-2 state the constant 0"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB2 && (ival == 0)")))
 
 (define_constraint "G"
  "In ARM/Thumb-2 state the floating-point constant 0."
@@ -412,6 +417,12 @@
 						   0)
 		   && GET_CODE (XEXP (op, 0)) != POST_INC")))
 
+(define_constraint "US"
+ "@internal
+  US is a symbol reference."
+ (match_code "symbol_ref")
+)
+
 ;; We used to have constraint letters for S and R in ARM state, but
 ;; all uses of these now appear to have been removed.
 
@@ -419,8 +430,3 @@
 ;; this wasn't really a valid memory constraint.  Again, all uses of
 ;; this now seem to have been removed.
 
-(define_constraint "Ss"
- "@internal
-  Ss is a symbol reference."
- (match_code "symbol_ref")
-)

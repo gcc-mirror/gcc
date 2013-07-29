@@ -4,6 +4,7 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target tls_runtime }
 // { dg-require-effective-target pthread }
+// { dg-require-effective-target non_bionic }
 // { dg-options -pthread }
 // { dg-add-options tls }
 

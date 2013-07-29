@@ -470,7 +470,7 @@ Objective-C and Objective-C++ Dialects}.
 @c so users have a clue at guessing where the ones they want will be.
 
 @emph{AArch64 Options}
-@gccoptlist{-mbig-endian  -mlittle-endian @gol
+@gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian @gol
 -mgeneral-regs-only @gol
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large @gol
 -mstrict-align @gol
@@ -10972,6 +10972,17 @@ These options are defined for AArch64 implementations:
 
 @table @gcctabopt
 
+@item -mabi=@var{name}
+@opindex mabi
+Generate code for the specified data model.  Permissible values
+are @samp{ilp32} for SysV-like data model where int, long int and pointer
+are 32-bit, and @samp{lp64} for SysV-like data model where int is 32-bit,
+but long int and pointer are 64-bit.
+
+The default depends on the specific target configuration.  Note that
+the LP64 and ILP32 ABIs are not link-compatible; you must compile your
+entire program with the same ABI, and link with a compatible set of libraries.
+
 @item -mbig-endian
 @opindex mbig-endian
 Generate big-endian code.  This is the default when GCC is configured for an
@@ -19332,10 +19343,10 @@ the rules of the ABI@.
 Set the instruction set, register set, and instruction scheduling parameters
 for machine type @var{cpu_type}.  Supported values for @var{cpu_type} are
 @samp{v7}, @samp{cypress}, @samp{v8}, @samp{supersparc}, @samp{hypersparc},
-@samp{leon}, @samp{sparclite}, @samp{f930}, @samp{f934}, @samp{sparclite86x},
-@samp{sparclet}, @samp{tsc701}, @samp{v9}, @samp{ultrasparc},
-@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3},
-and @samp{niagara4}.
+@samp{leon}, @samp{leon3}, @samp{sparclite}, @samp{f930}, @samp{f934},
+@samp{sparclite86x}, @samp{sparclet}, @samp{tsc701}, @samp{v9},
+@samp{ultrasparc}, @samp{ultrasparc3}, @samp{niagara}, @samp{niagara2},
+@samp{niagara3} and @samp{niagara4}.
 
 Native Solaris and GNU/Linux toolchains also support the value @samp{native},
 which selects the best architecture option for the host processor.
@@ -19354,7 +19365,7 @@ implementations.
 cypress
 
 @item v8
-supersparc, hypersparc, leon
+supersparc, hypersparc, leon, leon3
 
 @item sparclite
 f930, f934, sparclite86x
@@ -19416,10 +19427,11 @@ option @option{-mcpu=@var{cpu_type}} does.
 The same values for @option{-mcpu=@var{cpu_type}} can be used for
 @option{-mtune=@var{cpu_type}}, but the only useful values are those
 that select a particular CPU implementation.  Those are @samp{cypress},
-@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{f930}, @samp{f934},
-@samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc}, @samp{ultrasparc3},
-@samp{niagara}, @samp{niagara2}, @samp{niagara3} and @samp{niagara4}.  With
-native Solaris and GNU/Linux toolchains, @samp{native} can also be used.
+@samp{supersparc}, @samp{hypersparc}, @samp{leon}, @samp{leon3}, @samp{f930},
+@samp{f934}, @samp{sparclite86x}, @samp{tsc701}, @samp{ultrasparc},
+@samp{ultrasparc3}, @samp{niagara}, @samp{niagara2}, @samp{niagara3} and
+@samp{niagara4}.  With native Solaris and GNU/Linux toolchains, @samp{native}
+can also be used.
 
 @item -mv8plus
 @itemx -mno-v8plus
@@ -19491,8 +19503,8 @@ processor (which corresponds to erratum #13 of the AT697E processor).
 
 @item -mfix-ut699
 @opindex mfix-ut699
-Enable the documented workarounds for the floating-point errata of the UT699
-processor.
+Enable the documented workarounds for the floating-point errata and the data
+cache nullify errata of the UT699 processor.
 @end table
 
 These @samp{-m} options are supported in addition to the above

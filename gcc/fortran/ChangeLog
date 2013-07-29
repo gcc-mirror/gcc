@@ -1,4 +1,62 @@
-2013-07-21   Ondřej Bílka  <neleai@seznam.cz>
+2013-07-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/58009
+	* expr.c (gfc_check_vardef_context):  Check for same values in
+	vector expression subscripts.
+
+2013-07-27  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57991
+	* interface.c (check_some_aliasing): Also warn for intent OUT/OUT.
+
+2013-07-27  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57285
+	* check.c (dim_rank_check): Re-enable this check for CLASS arrays.
+
+2013-07-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57966
+	* resolve.c (resolve_typebound_function): Make sure the declared type,
+	including its type-bound procedures, is resolved before resolving the
+	actual type-bound call.
+
+2013-07-25  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57639
+	* interface.c (compare_parameter): Check for class_ok.
+	* simplify.c (gfc_simplify_same_type_as): Ditto.
+
+2013-07-23   Ondřej Bílka  <neleai@seznam.cz>
+
+	* decl.c: Fix comment typos.
+	* interface.c: Likewise.
+	* trans-array.c: Likewise.
+	* trans.c: Likewise.
+
+2013-07-22  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57906
+	PR fortran/52052
+	* class.c (gfc_build_class_symbol): Set coarray_comp.
+	* trans-array.c (structure_alloc_comps): For coarrays,
+	directly use the data pointer address.
+
+2013-07-22  Chang  <pchang9@cs.wisc.edu>
+
+	* trans-decl.c (gfc_build_dummy_array_decl): Exit loop after
+	setting PACKED_PARTIAL.
+
+2013-07-22  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (gfc_array_allocate): Correct memory-leak patch.
+
+2013-07-22  Tobias Burnus  <burnus@net-b.de>
+
+	* trans-array.c (gfc_array_allocate,
+	gfc_trans_deferred_array): Plug memory leak.
+
+2013-07-21  Ondřej Bílka  <neleai@seznam.cz>
 
 	* trans-decl.c: Fix comment typos.
 	* trans-expr.c: Ditto.

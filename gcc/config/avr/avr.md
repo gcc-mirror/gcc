@@ -32,6 +32,7 @@
 ;;  o  Displacement for (mem (plus (reg) (const_int))) operands.
 ;;  p  POST_INC or PRE_DEC address as a pointer (X, Y, Z)
 ;;  r  POST_INC or PRE_DEC address as a register (r26, r28, r30)
+;;  r  Print a REG without the register prefix 'r'.
 ;; T/T Print operand suitable for BLD/BST instruction, i.e. register and
 ;;     bit number.  This gets 2 operands: The first %T gets a REG_P and
 ;;     just cashes the operand for the next %T.  The second %T gets

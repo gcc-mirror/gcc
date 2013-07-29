@@ -42,6 +42,7 @@ __go_undefer (_Bool *frame)
     {
       struct __go_defer_stack *d;
       void (*pfn) (void *);
+      M *m;
 
       d = g->defer;
       pfn = d->__pfn;
@@ -51,7 +52,14 @@ __go_undefer (_Bool *frame)
 	(*pfn) (d->__arg);
 
       g->defer = d->__next;
-      __go_free (d);
+
+      /* This may be called by a cgo callback routine to defer the
+	 call to syscall.CgocallBackDone, in which case we will not
+	 have a memory context.  Don't try to free anything in that
+	 case--the GC will release it later.  */
+      m = runtime_m ();
+      if (m != NULL && m->mcache != NULL)
+	__go_free (d);
 
       /* Since we are executing a defer function here, we know we are
 	 returning from the calling function.  If the calling

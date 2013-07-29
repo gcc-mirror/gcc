@@ -9,10 +9,10 @@
 
 struct y
 {
-  long p;
-  long q;
-  long r;
-  long s;
+  long long p;
+  long long q;
+  long long r;
+  long long s;
 } v = { 1, 2, 3, 4 };
 
 struct z

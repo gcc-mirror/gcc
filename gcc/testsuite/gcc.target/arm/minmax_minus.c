@@ -8,5 +8,4 @@ foo (int a, int b, int c)
   return c - MAX (a, b);
 }
 
-/* { dg-final { scan-assembler "rsbge" } } */
-/* { dg-final { scan-assembler "rsblt" } } */
+/* { dg-final { scan-assembler-not "mov" } } */

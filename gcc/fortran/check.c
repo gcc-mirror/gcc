@@ -608,9 +608,6 @@ dim_rank_check (gfc_expr *dim, gfc_expr *array, int allow_assumed)
   if (dim->expr_type != EXPR_CONSTANT)
     return true;
 
-  if (array->ts.type == BT_CLASS)
-    return true;
-
   if (array->expr_type == EXPR_FUNCTION && array->value.function.isym
       && array->value.function.isym->id == GFC_ISYM_SPREAD)
     rank = array->rank + 1;

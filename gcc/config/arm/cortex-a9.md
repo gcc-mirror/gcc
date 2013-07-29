@@ -80,18 +80,17 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; which can go down E2 without any problem.
 (define_insn_reservation "cortex_a9_dp" 2
   (and (eq_attr "tune" "cortexa9")
-         (ior (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
-                        (eq_attr "neon_type" "none"))
-	      (and (and (eq_attr "type" "arlo_shift_reg,extend,arlo_shift")
-			(eq_attr "insn" "mov"))
-                 (eq_attr "neon_type" "none"))))
+       (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
+                             mov_imm,mov_reg,mvn_imm,mvn_reg,\
+                             mov_shift_reg,mov_shift")
+            (eq_attr "neon_type" "none")))
   "cortex_a9_p0_default|cortex_a9_p1_default")
 
 ;; An instruction using the shifter will go down E1.
 (define_insn_reservation "cortex_a9_dp_shift" 3
    (and (eq_attr "tune" "cortexa9")
-	(and (eq_attr "type" "arlo_shift_reg,extend,arlo_shift")
-	     (not (eq_attr "insn" "mov"))))
+        (eq_attr "type" "arlo_shift_reg,extend,arlo_shift,\
+                         mvn_shift,mvn_shift_reg"))
    "cortex_a9_p0_shift | cortex_a9_p1_shift")
 
 ;; Loads have a latency of 4 cycles.

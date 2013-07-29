@@ -3022,6 +3022,7 @@ static void compute_section_prefix (dw_die_ref);
 static int is_type_die (dw_die_ref);
 static int is_comdat_die (dw_die_ref);
 static int is_symbol_die (dw_die_ref);
+static inline bool is_template_instantiation (dw_die_ref);
 static void assign_symbol_names (dw_die_ref);
 static void break_out_includes (dw_die_ref);
 static int is_declaration_die (dw_die_ref);
@@ -6076,22 +6077,29 @@ die_checksum_ordered (dw_die_ref die, struct md5_ctx *ctx, int *mark)
   CHECKSUM_ATTR (attrs.at_type);
   CHECKSUM_ATTR (attrs.at_friend);
 
-  /* Checksum the child DIEs, except for nested types and member functions.  */
+  /* Checksum the child DIEs.  */
   c = die->die_child;
   if (c) do {
     dw_attr_ref name_attr;
 
     c = c->die_sib;
     name_attr = get_AT (c, DW_AT_name);
-    if ((is_type_die (c) || c->die_tag == DW_TAG_subprogram)
-        && name_attr != NULL)
+    if (is_template_instantiation (c))
       {
+	/* Ignore instantiations of member type and function templates.  */
+      }
+    else if (name_attr != NULL
+	     && (is_type_die (c) || c->die_tag == DW_TAG_subprogram))
+      {
+	/* Use a shallow checksum for named nested types and member
+	   functions.  */
         CHECKSUM_ULEB128 ('S');
         CHECKSUM_ULEB128 (c->die_tag);
         CHECKSUM_STRING (AT_string (name_attr));
       }
     else
       {
+	/* Use a deep checksum for other children.  */
         /* Mark this DIE so it gets processed when unmarking.  */
         if (c->die_mark == 0)
           c->die_mark = -1;
@@ -6100,6 +6108,14 @@ die_checksum_ordered (dw_die_ref die, struct md5_ctx *ctx, int *mark)
   } while (c != die->die_child);
 
   CHECKSUM_ULEB128 (0);
+}
+
+/* Add a type name and tag to a hash.  */
+static void
+die_odr_checksum (int tag, const char *name, md5_ctx *ctx)
+{
+  CHECKSUM_ULEB128 (tag);
+  CHECKSUM_STRING (name);
 }
 
 #undef CHECKSUM
@@ -6142,8 +6158,8 @@ generate_type_signature (dw_die_ref die, comdat_type_node *type_node)
       if (parent != NULL)
         checksum_die_context (parent, &ctx);
 
-      md5_process_bytes (&die->die_tag, sizeof (die->die_tag), &ctx);
-      md5_process_bytes (name, strlen (name) + 1, &ctx);
+      /* Checksum the current DIE. */
+      die_odr_checksum (die->die_tag, name, &ctx);
       md5_finish_ctx (&ctx, checksum);
 
       add_AT_data8 (type_node->root_die, DW_AT_GNU_odr_signature, &checksum[8]);
@@ -6494,6 +6510,36 @@ is_class_die (dw_die_ref c)
 {
   return c && (c->die_tag == DW_TAG_class_type
                || c->die_tag == DW_TAG_structure_type);
+}
+
+/* Return non-zero if this DIE is a template parameter.  */
+
+static inline bool
+is_template_parameter (dw_die_ref die)
+{
+  switch (die->die_tag)
+    {
+    case DW_TAG_template_type_param:
+    case DW_TAG_template_value_param:
+    case DW_TAG_GNU_template_template_param:
+    case DW_TAG_GNU_template_parameter_pack:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Return non-zero if this DIE represents a template instantiation.  */
+
+static inline bool
+is_template_instantiation (dw_die_ref die)
+{
+  dw_die_ref c;
+
+  if (!is_type_die (die) && die->die_tag != DW_TAG_subprogram)
+    return false;
+  FOR_EACH_CHILD (die, c, if (is_template_parameter (c)) return true);
+  return false;
 }
 
 static char *
@@ -7055,17 +7101,30 @@ generate_skeleton_bottom_up (skeleton_chain_node *parent)
     node.new_die = NULL;
     if (is_declaration_die (c))
       {
-        /* Clone the existing DIE, move the original to the skeleton
-           tree (which is in the main CU), and put the clone, with
-           all the original's children, where the original came from.  */
-        dw_die_ref clone = clone_die (c);
-        move_all_children (c, clone);
+	if (is_template_instantiation (c))
+	  {
+	    /* Instantiated templates do not need to be cloned into the
+	       type unit.  Just move the DIE and its children back to
+	       the skeleton tree (in the main CU).  */
+	    remove_child_with_prev (c, prev);
+	    add_child_die (parent->new_die, c);
+	    c = prev;
+	  }
+	else
+	  {
+	    /* Clone the existing DIE, move the original to the skeleton
+	       tree (which is in the main CU), and put the clone, with
+	       all the original's children, where the original came from
+	       (which is about to be moved to the type unit).  */
+	    dw_die_ref clone = clone_die (c);
+	    move_all_children (c, clone);
 
-        replace_child (c, clone, prev);
-        generate_skeleton_ancestor_tree (parent);
-        add_child_die (parent->new_die, c);
-        node.new_die = c;
-        c = clone;
+	    replace_child (c, clone, prev);
+	    generate_skeleton_ancestor_tree (parent);
+	    add_child_die (parent->new_die, c);
+	    node.new_die = c;
+	    c = clone;
+	  }
       }
     generate_skeleton_bottom_up (&node);
   } while (next != NULL);
@@ -7083,8 +7142,11 @@ generate_skeleton (dw_die_ref die)
   node.parent = NULL;
 
   /* If this type definition is nested inside another type,
-     always leave at least a declaration in its place.  */
-  if (die->die_parent != NULL && is_type_die (die->die_parent))
+     and is not an instantiation of a template, always leave
+     at least a declaration in its place.  */
+  if (die->die_parent != NULL
+      && is_type_die (die->die_parent)
+      && !is_template_instantiation (die))
     node.new_die = clone_as_declaration (die);
 
   generate_skeleton_bottom_up (&node);
@@ -7159,6 +7221,9 @@ break_out_comdat_types (dw_die_ref die)
         dw_die_ref replacement;
 	comdat_type_node_ref type_node;
 
+        /* Break out nested types into their own type units.  */
+        break_out_comdat_types (c);
+
         /* Create a new type unit DIE as the root for the new tree, and
            add it to the list of comdat types.  */
         unit = new_die (DW_TAG_type_unit, NULL, NULL);
@@ -7177,9 +7242,6 @@ break_out_comdat_types (dw_die_ref die)
 	   from the main CU (or replace it with a skeleton if necessary).  */
 	replacement = remove_child_or_replace_with_skeleton (unit, c, prev);
 	type_node->skeleton_die = replacement;
-
-        /* Break out nested types into their own type units.  */
-        break_out_comdat_types (c);
 
         /* Add the DIE to the new compunit.  */
 	add_child_die (unit, c);
@@ -7878,6 +7940,32 @@ unmark_all_dies (dw_die_ref die)
       unmark_all_dies (AT_ref (a));
 }
 
+/* Calculate if the entry should appear in the final output file.  It may be
+   from a pruned a type.  */
+
+static bool
+include_pubname_in_output (vec<pubname_entry, va_gc> *table, pubname_entry *p)
+{
+  if (table == pubname_table)
+    {
+      /* Enumerator names are part of the pubname table, but the
+         parent DW_TAG_enumeration_type die may have been pruned.
+         Don't output them if that is the case.  */
+      if (p->die->die_tag == DW_TAG_enumerator &&
+          (p->die->die_parent == NULL
+           || !p->die->die_parent->die_perennial_p))
+        return false;
+
+      /* Everything else in the pubname table is included.  */
+      return true;
+    }
+
+  /* The pubtypes table shouldn't include types that have been
+     pruned.  */
+  return (p->die->die_offset != 0
+          || !flag_eliminate_unused_debug_types);
+}
+
 /* Return the size of the .debug_pubnames or .debug_pubtypes table
    generated for the compilation unit.  */
 
@@ -7890,9 +7978,7 @@ size_of_pubnames (vec<pubname_entry, va_gc> *names)
 
   size = DWARF_PUBNAMES_HEADER_SIZE;
   FOR_EACH_VEC_ELT (*names, i, p)
-    if (names != pubtype_table
-	|| p->die->die_offset != 0
-	|| !flag_eliminate_unused_debug_types)
+    if (include_pubname_in_output (names, p))
       size += strlen (p->name) + DWARF_OFFSET_SIZE + 1;
 
   size += DWARF_OFFSET_SIZE;
@@ -8722,9 +8808,9 @@ output_comp_unit (dw_die_ref die, int output_if_empty)
 static inline bool
 want_pubnames (void)
 {
-  return (debug_generate_pub_sections != -1
-	  ? debug_generate_pub_sections
-	  : targetm.want_debug_pub_sections);
+  if (debug_generate_pub_sections != -1)
+    return debug_generate_pub_sections;
+  return targetm.want_debug_pub_sections;
 }
 
 /* Add the DW_AT_GNU_pubnames and DW_AT_GNU_pubtypes attributes.  */
@@ -9086,23 +9172,13 @@ output_pubnames (vec<pubname_entry, va_gc> *names)
 
   FOR_EACH_VEC_ELT (*names, i, pub)
     {
-      /* Enumerator names are part of the pubname table, but the parent
-         DW_TAG_enumeration_type die may have been pruned.  Don't output
-         them if that is the case.  */
-      if (pub->die->die_tag == DW_TAG_enumerator &&
-          (pub->die->die_parent == NULL
-	   || !pub->die->die_parent->die_perennial_p))
-        continue;
-
-      /* We shouldn't see pubnames for DIEs outside of the main CU.  */
-      if (names == pubname_table && pub->die->die_tag != DW_TAG_enumerator)
-	gcc_assert (pub->die->die_mark);
-
-      if (names != pubtype_table
-	  || pub->die->die_offset != 0
-	  || !flag_eliminate_unused_debug_types)
+      if (include_pubname_in_output (names, pub))
 	{
 	  dw_offset die_offset = pub->die->die_offset;
+
+          /* We shouldn't see pubnames for DIEs outside of the main CU.  */
+          if (names == pubname_table && pub->die->die_tag != DW_TAG_enumerator)
+            gcc_assert (pub->die->die_mark);
 
 	  /* If we're putting types in their own .debug_types sections,
 	     the .debug_pubtypes table will still point to the compile
@@ -22161,17 +22237,8 @@ prune_unused_types_mark_generic_parms_dies (dw_die_ref die)
   c = die->die_child;
   do
     {
-      switch (c->die_tag)
-	{
-	case DW_TAG_template_type_param:
-	case DW_TAG_template_value_param:
-	case DW_TAG_GNU_template_template_param:
-	case DW_TAG_GNU_template_parameter_pack:
-	  prune_unused_types_mark (c, 1);
-	  break;
-	default:
-	  break;
-	}
+      if (is_template_parameter (c))
+	prune_unused_types_mark (c, 1);
       c = c->die_sib;
     } while (c && c != die->die_child);
 }

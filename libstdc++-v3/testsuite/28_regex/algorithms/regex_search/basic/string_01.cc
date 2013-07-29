@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++11" }
-// { dg-do run { xfail *-*-* } }
 
 //
 // 2013-07-17  Tim Shen <timshen91@gmail.com>
@@ -32,7 +31,7 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::regex  re("as(df)", std::regex::basic);
+  std::regex  re("as\\(df\\)", std::regex::basic);
   std::string target("xxasdfyy");
   std::smatch m;
 

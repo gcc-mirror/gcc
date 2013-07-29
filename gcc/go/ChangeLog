@@ -1,3 +1,20 @@
+2013-07-24  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::non_zero_size_type): If a struct has a
+	fields, recreate those fields with the first one with a non-zero
+	size.
+
+2013-07-23  Ian Lance Taylor  <iant@google.com>
+
+	* go-backend.c: Don't #include "rtl.h".
+	(go_imported_unsafe): Don't call init_varasm_once.
+	* Make-lang.in (go/go-backend.o): Don't depend on $(RTL_H).
+
+2013-07-23  Ian Lance Taylor  <iant@google.com>
+
+	* go-lang.c: Don't #include "except.h".
+	* Make-lang.in (go/go-lang.o): Don't depend on $(EXCEPT_H).
+
 2013-06-18  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::immutable_struct): Add is_hidden

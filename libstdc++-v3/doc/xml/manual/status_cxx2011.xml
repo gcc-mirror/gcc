@@ -1265,16 +1265,18 @@ particular release.
       <entry/>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.5.1</entry>
       <entry>Class template <code>time_get</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Missing <code>get</code> and <code>do_get</code></entry>
     </row>
     <row>
+      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>22.4.5.2</entry>
       <entry>Class template <code>time_get_byname</code></entry>
-      <entry>Y</entry>
-      <entry/>
+      <entry>Partial</entry>
+      <entry>Likewise</entry>
     </row>
     <row>
       <entry>22.4.5.3</entry>

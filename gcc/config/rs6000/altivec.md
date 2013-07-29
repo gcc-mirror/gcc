@@ -1040,66 +1040,20 @@
   [(set_attr "type" "veccomplex")])
 
 
-;; logical ops.  Have the logical ops follow the memory ops in
-;; terms of whether to prefer VSX or Altivec
-
-;; AND has a clobber to be consistant with VSX, which adds splitters for using
-;; the GPR registers.
-(define_insn "*altivec_and<mode>3"
-  [(set (match_operand:VM 0 "register_operand" "=v")
-        (and:VM (match_operand:VM 1 "register_operand" "v")
-		(match_operand:VM 2 "register_operand" "v")))
-   (clobber (match_scratch:CC 3 "=X"))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vand %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*altivec_ior<mode>3"
-  [(set (match_operand:VM 0 "register_operand" "=v")
-        (ior:VM (match_operand:VM 1 "register_operand" "v")
-		(match_operand:VM 2 "register_operand" "v")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vor %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*altivec_xor<mode>3"
-  [(set (match_operand:VM 0 "register_operand" "=v")
-        (xor:VM (match_operand:VM 1 "register_operand" "v")
-		(match_operand:VM 2 "register_operand" "v")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vxor %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*altivec_one_cmpl<mode>2"
-  [(set (match_operand:VM 0 "register_operand" "=v")
-        (not:VM (match_operand:VM 1 "register_operand" "v")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vnor %0,%1,%1"
-  [(set_attr "type" "vecsimple")])
-  
-(define_insn "*altivec_nor<mode>3"
-  [(set (match_operand:VM 0 "register_operand" "=v")
-	(and:VM (not:VM (match_operand:VM 1 "register_operand" "v"))
-		(not:VM (match_operand:VM 2 "register_operand" "v"))))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vnor %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
-(define_insn "*altivec_andc<mode>3"
-  [(set (match_operand:VM 0 "register_operand" "=v")
-        (and:VM (not:VM (match_operand:VM 2 "register_operand" "v"))
-		(match_operand:VM 1 "register_operand" "v")))]
-  "VECTOR_MEM_ALTIVEC_P (<MODE>mode)"
-  "vandc %0,%1,%2"
-  [(set_attr "type" "vecsimple")])
-
+;; Vector pack/unpack
 (define_insn "altivec_vpkpx"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V4SI 1 "register_operand" "v")
                       (match_operand:V4SI 2 "register_operand" "v")]
 		     UNSPEC_VPKPX))]
   "TARGET_ALTIVEC"
-  "vpkpx %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpkpx %0,%1,%2\";
+    else
+      return \"vpkpx %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpks<VI_char>ss"
@@ -1108,7 +1062,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_SIGN_SIGN_SAT))]
   "<VI_unit>"
-  "vpks<VI_char>ss %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpks<VI_char>ss %0,%1,%2\";
+    else
+      return \"vpks<VI_char>ss %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpks<VI_char>us"
@@ -1117,7 +1077,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_SIGN_UNS_SAT))]
   "<VI_unit>"
-  "vpks<VI_char>us %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpks<VI_char>us %0,%1,%2\";
+    else
+      return \"vpks<VI_char>us %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpku<VI_char>us"
@@ -1126,7 +1092,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_UNS_UNS_SAT))]
   "<VI_unit>"
-  "vpku<VI_char>us %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpku<VI_char>us %0,%1,%2\";
+    else
+      return \"vpku<VI_char>us %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vpku<VI_char>um"
@@ -1135,7 +1107,13 @@
 			    (match_operand:VP 2 "register_operand" "v")]
 			   UNSPEC_VPACK_UNS_UNS_MOD))]
   "<VI_unit>"
-  "vpku<VI_char>um %0,%1,%2"
+  "*
+  {
+    if (BYTES_BIG_ENDIAN)
+      return \"vpku<VI_char>um %0,%1,%2\";
+    else
+      return \"vpku<VI_char>um %0,%2,%1\";
+  }"
   [(set_attr "type" "vecperm")])
 
 (define_insn "*altivec_vrl<VI_char>"

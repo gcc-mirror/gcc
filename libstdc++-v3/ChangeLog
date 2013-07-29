@@ -1,3 +1,77 @@
+2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/complex (pow(const complex<>&, int)): Enable in
+	C++11 mode too.
+	* testsuite/26_numerics/complex/dr844.cc: Adjust.
+	* doc/xml/manual/intro.xml: Update.
+
+2013-07-25  Tim Shen  <timshen91@gmail.com>
+
+	Add documents and comments.
+	* include/bits/regex.h: Documents and comments.
+	* include/bits/regex_grep_matcher.h: Likewise.
+	* include/bits/regex_grep_matcher.tcc: Likewise.
+	* testsuite/28_regex/iterators/regex_iterator/char/
+	string_position_01.cc: New.
+
+2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/57976
+	* doc/xml/manual/status_cxx2011.xml: Note missing time_get::get and
+	time_get::do_get.
+
+2013-07-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/bits/random.h (random_device): Avoid using the FILE type.
+	* include/std/random: Do not include <cstdio>.
+	* src/c++11/random.cc: ... include it here.
+	(random_device::_M_init, random_device::_M_fini,
+	random_device::_M_getval): Cast back and forth void* and FILE*.
+
+2013-07-24  Tim Shen  <timshen91@gmail.com>
+
+	Reimplment matcher using Depth-first search(backtracking).
+	PR libstdc++/53622
+	PR libstdc++/57173
+	* include/bits/regex.h: regex_match() and regex_search().
+	* include/bits/regex_cursor.h: Fix _M_set_pos().
+	* include/bits/regex_grep_matcher.h: add _M_dfs_match().
+	* include/bits/regex_grep_matcher.tcc: Implement it.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/basic/string_01.cc:
+	Remove xfail.
+
+2013-07-23  Tim Shen  <timshen91@gmail.com>
+
+	Implement regex_iterator and regex_token_iterator.
+	* include/bits/regex.h: regex_iterator and regex_token_iterator.
+	* testsuite/28_regex/iterators/regex_iterator/char/string_01.cc:
+	New.
+	* testsuite/28_regex/iterators/regex_iterator/wchar_t/string_01.cc:
+	New.
+	* testsuite/28_regex/iterators/regex_token_iterator/char/string_01.cc:
+	New.
+	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/
+	string_01.cc: New.
+
+2013-07-23  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/std/random: Add back <cstdio> include.
+	* src/c++11/random.cc: Don't include <cstdio> here.
+
+2013-07-22  Jason Merrill  <jason@redhat.com>
+
+	PR libstdc++/57914
+	* libsupc++/atexit_thread.cc (run): Delete cleanup elts.
+
+2013-07-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57920
+	* src/c++11/random.cc (random_device::_M_getval): If possible, use
+	read instead of std::fread.
+	* include/std/random: Do not include <cstdio> unnecessarily.
+
 2013-07-21  Tim Shen  <timshen91@gmail.com>
 
 	Partially implement regex_search.

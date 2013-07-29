@@ -1320,8 +1320,7 @@ enum languages { lang_c, lang_cplusplus, lang_java };
 /* Nonzero iff TYPE is derived from PARENT. Ignores accessibility and
    ambiguity issues.  */
 #define DERIVED_FROM_P(PARENT, TYPE) \
-  (lookup_base ((TYPE), (PARENT), ba_any, NULL, tf_warning_or_error)\
-   != NULL_TREE)
+  (lookup_base ((TYPE), (PARENT), ba_any, NULL, tf_none) != NULL_TREE)
 
 /* Gives the visibility specification for a class type.  */
 #define CLASSTYPE_VISIBILITY(TYPE)		\
@@ -5223,7 +5222,7 @@ extern tree static_fn_type			(tree);
 extern void revert_static_member_fn		(tree);
 extern void fixup_anonymous_aggr		(tree);
 extern tree compute_array_index_type		(tree, tree, tsubst_flags_t);
-extern tree check_default_argument		(tree, tree);
+extern tree check_default_argument		(tree, tree, tsubst_flags_t);
 typedef int (*walk_namespaces_fn)		(tree, void *);
 extern int walk_namespaces			(walk_namespaces_fn,
 						 void *);
@@ -5505,7 +5504,8 @@ extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
-extern tree tsubst_default_argument		(tree, tree, tree);
+extern tree tsubst_default_argument		(tree, tree, tree,
+						 tsubst_flags_t);
 extern tree tsubst (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
 						 tree, bool, bool);
@@ -6023,7 +6023,7 @@ extern tree convert_for_initialization		(tree, tree, tree, int,
 extern int comp_ptr_ttypes			(tree, tree);
 extern bool comp_ptr_ttypes_const		(tree, tree);
 extern bool error_type_p			(const_tree);
-extern int ptr_reasonably_similar		(const_tree, const_tree);
+extern bool ptr_reasonably_similar		(const_tree, const_tree);
 extern tree build_ptrmemfunc			(tree, tree, int, bool,
 						 tsubst_flags_t);
 extern int cp_type_quals			(const_tree);

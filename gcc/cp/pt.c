@@ -184,7 +184,7 @@ static int coerce_template_template_parms (tree, tree, tsubst_flags_t,
 					   tree, tree);
 static bool template_template_parm_bindings_ok_p (tree, tree);
 static int template_args_equal (tree, tree);
-static void tsubst_default_arguments (tree);
+static void tsubst_default_arguments (tree, tsubst_flags_t);
 static tree for_each_template_parm_r (tree *, int *, void *);
 static tree copy_default_args_to_explicit_spec_1 (tree, tree);
 static void copy_default_args_to_explicit_spec (tree);
@@ -9875,7 +9875,7 @@ tsubst_aggr_type (tree t,
    FN), which has the indicated TYPE.  */
 
 tree
-tsubst_default_argument (tree fn, tree type, tree arg)
+tsubst_default_argument (tree fn, tree type, tree arg, tsubst_flags_t complain)
 {
   tree saved_class_ptr = NULL_TREE;
   tree saved_class_ref = NULL_TREE;
@@ -9915,7 +9915,7 @@ tsubst_default_argument (tree fn, tree type, tree arg)
      stack.  */
   ++function_depth;
   arg = tsubst_expr (arg, DECL_TI_ARGS (fn),
-		     tf_warning_or_error, NULL_TREE,
+		     complain, NULL_TREE,
 		     /*integral_constant_expression_p=*/false);
   --function_depth;
   pop_deferring_access_checks();
@@ -9927,12 +9927,13 @@ tsubst_default_argument (tree fn, tree type, tree arg)
       cp_function_chain->x_current_class_ref = saved_class_ref;
     }
 
-  if (errorcount+sorrycount > errs)
+  if (errorcount+sorrycount > errs
+      && (complain & tf_warning_or_error))
     inform (input_location,
 	    "  when instantiating default argument for call to %D", fn);
 
   /* Make sure the default argument is reasonable.  */
-  arg = check_default_argument (type, arg);
+  arg = check_default_argument (type, arg, complain);
 
   pop_access_scope (fn);
 
@@ -9942,7 +9943,7 @@ tsubst_default_argument (tree fn, tree type, tree arg)
 /* Substitute into all the default arguments for FN.  */
 
 static void
-tsubst_default_arguments (tree fn)
+tsubst_default_arguments (tree fn, tsubst_flags_t complain)
 {
   tree arg;
   tree tmpl_args;
@@ -9963,7 +9964,8 @@ tsubst_default_arguments (tree fn)
     if (TREE_PURPOSE (arg))
       TREE_PURPOSE (arg) = tsubst_default_argument (fn,
 						    TREE_VALUE (arg),
-						    TREE_PURPOSE (arg));
+						    TREE_PURPOSE (arg),
+						    complain);
 }
 
 /* Substitute the ARGS into the T, which is a _DECL.  Return the
@@ -10323,7 +10325,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    if (!member
 		&& !PRIMARY_TEMPLATE_P (gen_tmpl)
 		&& !uses_template_parms (argvec))
-	      tsubst_default_arguments (r);
+	      tsubst_default_arguments (r, complain);
 	  }
 	else
 	  DECL_TEMPLATE_INFO (r) = NULL_TREE;

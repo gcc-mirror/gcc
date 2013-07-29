@@ -5686,6 +5686,8 @@ resolve_compcall (gfc_expr* e, const char **name)
 }
 
 
+static bool resolve_fl_derived (gfc_symbol *sym);
+
 
 /* Resolve a typebound function, or 'method'. First separate all
    the non-CLASS references by calling resolve_compcall directly.  */
@@ -5772,6 +5774,9 @@ resolve_typebound_function (gfc_expr* e)
 
   /* Get the CLASS declared type.  */
   declared = get_declared_from_expr (&class_ref, &new_ref, e, true);
+  
+  if (!resolve_fl_derived (declared))
+    return false;
 
   /* Weed out cases of the ultimate component being a derived type.  */
   if ((class_ref && class_ref->u.c.component->ts.type == BT_DERIVED)

@@ -220,7 +220,7 @@
    (match_operand:SI 1 "memory_operand" "")
    (match_operand:SI 2 "register_operand" "")
    (match_operand:SI 3 "const_int_operand" "")]
-  "TARGET_V8 || TARGET_V9"
+  "(TARGET_V8 || TARGET_V9) && !sparc_fix_ut699"
 {
   enum memmodel model = (enum memmodel) INTVAL (operands[3]);
 
@@ -236,7 +236,7 @@
 			    UNSPECV_SWAP))
    (set (match_dup 1)
 	(match_operand:SI 2 "register_operand" "0"))]
-  "TARGET_V8 || TARGET_V9"
+  "(TARGET_V8 || TARGET_V9) && !sparc_fix_ut699"
   "swap\t%1, %0"
   [(set_attr "type" "multi")])
 
@@ -244,7 +244,7 @@
   [(match_operand:QI 0 "register_operand" "")
    (match_operand:QI 1 "memory_operand" "")
    (match_operand:SI 2 "const_int_operand" "")]
-  ""
+  "!sparc_fix_ut699"
 {
   enum memmodel model = (enum memmodel) INTVAL (operands[2]);
   rtx ret;
@@ -268,6 +268,6 @@
 	(unspec_volatile:QI [(match_operand:QI 1 "memory_operand" "+m")]
 			    UNSPECV_LDSTUB))
    (set (match_dup 1) (const_int -1))]
-  ""
+  "!sparc_fix_ut699"
   "ldstub\t%1, %0"
   [(set_attr "type" "multi")])

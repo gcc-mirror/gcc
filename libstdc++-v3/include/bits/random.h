@@ -1638,9 +1638,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     union
     {
-    FILE*        _M_file;
-    mt19937      _M_mt;
-  };
+      void*      _M_file;
+      mt19937    _M_mt;
+    };
   };
 
   /* @} */ // group random_generators

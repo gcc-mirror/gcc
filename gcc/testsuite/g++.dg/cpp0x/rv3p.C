@@ -4,6 +4,7 @@
 
 // { dg-do compile }
 // { dg-options "-std=c++0x" }
+// { dg-skip-if "packed attribute missing for struct one/three/five/seven" { "epiphany-*-*" } { "*" } { "" } }
 
 template <bool> struct sa;
 template <> struct sa<true> {};

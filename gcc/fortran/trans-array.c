@@ -994,7 +994,7 @@ get_array_ref_dim_for_loop_dim (gfc_ss *ss, int loop_dim)
 
    'eltype' == NULL signals that the temporary should be a class object.
    The 'initial' expression is used to obtain the size of the dynamic
-   type; otherwise the allocation and initialisation proceeds as for any
+   type; otherwise the allocation and initialization proceeds as for any
    other expression
 
    PRE, POST, INITIAL, DYNAMIC and DEALLOC are as for
@@ -5211,28 +5211,29 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   if (dimension)
     {
-
       var_overflow = gfc_create_var (integer_type_node, "overflow");
       gfc_add_modify (&se->pre, var_overflow, overflow);
 
-      /* Generate the block of code handling overflow.  */
-      msg = gfc_build_addr_expr (pchar_type_node,
-		gfc_build_localized_cstring_const
+      if (status == NULL_TREE)
+	{
+	  /* Generate the block of code handling overflow.  */
+	  msg = gfc_build_addr_expr (pchar_type_node,
+		    gfc_build_localized_cstring_const
   			("Integer overflow when calculating the amount of "
   			 "memory to allocate"));
-      error = build_call_expr_loc (input_location, gfor_fndecl_runtime_error,
-				   1, msg);
-    }
+	  error = build_call_expr_loc (input_location,
+				       gfor_fndecl_runtime_error, 1, msg);
+	}
+      else
+	{
+	  tree status_type = TREE_TYPE (status);
+	  stmtblock_t set_status_block;
 
-  if (status != NULL_TREE)
-    {
-      tree status_type = TREE_TYPE (status);
-      stmtblock_t set_status_block;
-
-      gfc_start_block (&set_status_block);
-      gfc_add_modify (&set_status_block, status,
-		      build_int_cst (status_type, LIBERROR_ALLOCATION));
-      error = gfc_finish_block (&set_status_block);
+	  gfc_start_block (&set_status_block);
+	  gfc_add_modify (&set_status_block, status,
+			  build_int_cst (status_type, LIBERROR_ALLOCATION));
+	  error = gfc_finish_block (&set_status_block);
+	}
     }
 
   gfc_start_block (&elseblock);
@@ -7588,9 +7589,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  if ((c->ts.type == BT_DERIVED && !c->attr.pointer)
 	      || (c->ts.type == BT_CLASS && !CLASS_DATA (c)->attr.class_pointer))
- 	    {
- 	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
- 				      decl, cdecl, NULL_TREE);
+	    {
+	      comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				      decl, cdecl, NULL_TREE);
 
 	      /* The finalizer frees allocatable components.  */
 	      called_dealloc_with_status
@@ -7736,8 +7737,17 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 				  cdecl, NULL_TREE);
 	  dcmp = fold_build3_loc (input_location, COMPONENT_REF, ctype, dest,
 				  cdecl, NULL_TREE);
+
 	  if (c->attr.codimension)
-	    gfc_add_modify (&fnblock, dcmp, comp);
+	    {
+	      if (c->ts.type == BT_CLASS)
+		{
+		  comp = gfc_class_data_get (comp);
+		  dcmp = gfc_class_data_get (dcmp);
+		}
+	      gfc_conv_descriptor_data_set (&fnblock, dcmp,
+					   gfc_conv_descriptor_data_get (comp));
+	    }
 	  else
 	    {
 	      tmp = structure_alloc_comps (c->ts.u.derived, comp, dcmp,
@@ -8525,10 +8535,12 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
       && !sym->attr.save && !sym->attr.result
       && !sym->ns->proc_name->attr.is_main_program)
     {
+      gfc_expr *e;
+      e = has_finalizer ? gfc_lval_expr_from_sym (sym) : NULL;
       tmp = gfc_trans_dealloc_allocated (sym->backend_decl,
-					 sym->attr.codimension,
-					 has_finalizer
-					 ? gfc_lval_expr_from_sym (sym) : NULL);
+					 sym->attr.codimension, e);
+      if (e)
+	gfc_free_expr (e);
       gfc_add_expr_to_block (&cleanup, tmp);
     }
 

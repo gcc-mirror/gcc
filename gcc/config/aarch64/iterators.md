@@ -76,9 +76,15 @@
 ;; Vector modes for moves.
 (define_mode_iterator VDQM [V8QI V16QI V4HI V8HI V2SI V4SI])
 
+;; This mode iterator allows :P to be used for patterns that operate on
+;; addresses in different modes.  In LP64, only DI will match, while in
+;; ILP32, either can match.
+(define_mode_iterator P [(SI "ptr_mode == SImode || Pmode == SImode")
+			 (DI "ptr_mode == DImode || Pmode == DImode")])
+
 ;; This mode iterator allows :PTR to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
-(define_mode_iterator PTR [(SI "Pmode == SImode") (DI "Pmode == DImode")])
+(define_mode_iterator PTR [(SI "ptr_mode == SImode") (DI "ptr_mode == DImode")])
 
 ;; Vector Float modes.
 (define_mode_iterator VDQF [V2SF V4SF V2DF])
@@ -276,6 +282,12 @@
 		    (V2SI "") (V4SI  "")
 		    (V2DI "") (V2SF "")
 		    (V4SF "") (V2DF "")])
+
+;; Register Type Name and Vector Arrangement Specifier for when
+;; we are doing scalar for DI and SIMD for SI (ignoring all but
+;; lane 0).
+(define_mode_attr rtn [(DI "d") (SI "")])
+(define_mode_attr vas [(DI "") (SI ".2s")])
 
 ;; Map a floating point mode to the appropriate register name prefix
 (define_mode_attr s [(SF "s") (DF "d")])

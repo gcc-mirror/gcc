@@ -227,6 +227,30 @@ struct processor_costs leon_costs = {
 };
 
 static const
+struct processor_costs leon3_costs = {
+  COSTS_N_INSNS (1), /* int load */
+  COSTS_N_INSNS (1), /* int signed load */
+  COSTS_N_INSNS (1), /* int zeroed load */
+  COSTS_N_INSNS (1), /* float load */
+  COSTS_N_INSNS (1), /* fmov, fneg, fabs */
+  COSTS_N_INSNS (1), /* fadd, fsub */
+  COSTS_N_INSNS (1), /* fcmp */
+  COSTS_N_INSNS (1), /* fmov, fmovr */
+  COSTS_N_INSNS (1), /* fmul */
+  COSTS_N_INSNS (14), /* fdivs */
+  COSTS_N_INSNS (15), /* fdivd */
+  COSTS_N_INSNS (22), /* fsqrts */
+  COSTS_N_INSNS (23), /* fsqrtd */
+  COSTS_N_INSNS (5), /* imul */
+  COSTS_N_INSNS (5), /* imulX */
+  0, /* imul bit factor */
+  COSTS_N_INSNS (35), /* idiv */
+  COSTS_N_INSNS (35), /* idivX */
+  COSTS_N_INSNS (1), /* movcc/movr */
+  0, /* shift penalty */
+};
+
+static const
 struct processor_costs sparclet_costs = {
   COSTS_N_INSNS (3), /* int load */
   COSTS_N_INSNS (3), /* int signed load */
@@ -805,17 +829,31 @@ char sparc_hard_reg_printed[8];
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
+/* Return the memory reference contained in X if any, zero otherwise.  */
+
+static rtx
+mem_ref (rtx x)
+{
+  if (GET_CODE (x) == SIGN_EXTEND || GET_CODE (x) == ZERO_EXTEND)
+    x = XEXP (x, 0);
+
+  if (MEM_P (x))
+    return x;
+
+  return NULL_RTX;
+}
+
 /* We use a machine specific pass to enable workarounds for errata.
    We need to have the (essentially) final form of the insn stream in order
    to properly detect the various hazards.  Therefore, this machine specific
    pass runs as late as possible.  The pass is inserted in the pass pipeline
-   at the end of sparc_options_override.  */
+   at the end of sparc_option_override.  */
 
 static bool
 sparc_gate_work_around_errata (void)
 {
-  /* The only erratum we handle for now is that of the AT697F processor.  */
-  return sparc_fix_at697f != 0;
+  /* The only errata we handle are those of the AT697F and UT699.  */
+  return sparc_fix_at697f != 0 || sparc_fix_ut699 != 0;
 }
 
 static unsigned int
@@ -823,14 +861,22 @@ sparc_do_work_around_errata (void)
 {
   rtx insn, next;
 
+  /* Force all instructions to be split into their final form.  */
+  split_all_insns_noflow ();
+
   /* Now look for specific patterns in the insn stream.  */
   for (insn = get_insns (); insn; insn = next)
     {
       bool insert_nop = false;
       rtx set;
 
+      /* Look into the instruction in a delay slot.  */
+      if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	insn = XVECEXP (PATTERN (insn), 0, 1);
+
       /* Look for a single-word load into an odd-numbered FP register.  */
-      if (NONJUMP_INSN_P (insn)
+      if (sparc_fix_at697f
+	  && NONJUMP_INSN_P (insn)
 	  && (set = single_set (insn)) != NULL_RTX
 	  && GET_MODE_SIZE (GET_MODE (SET_SRC (set))) == 4
 	  && MEM_P (SET_SRC (set))
@@ -845,13 +891,13 @@ sparc_do_work_around_errata (void)
 
 	  /* If the insn has a delay slot, then it cannot be problematic.  */
 	  next = next_active_insn (insn);
+	  if (!next)
+	    break;
 	  if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	    code = -1;
-	  else
-	    {
-	      extract_insn (next);
-	      code = INSN_CODE (next);
-	    }
+	    continue;
+
+	  extract_insn (next);
+	  code = INSN_CODE (next);
 
 	  switch (code)
 	    {
@@ -897,12 +943,60 @@ sparc_do_work_around_errata (void)
 	      break;
 	    }
 	}
+
+      /* Look for a single-word load into an integer register.  */
+      else if (sparc_fix_ut699
+	       && NONJUMP_INSN_P (insn)
+	       && (set = single_set (insn)) != NULL_RTX
+	       && GET_MODE_SIZE (GET_MODE (SET_SRC (set))) <= 4
+	       && mem_ref (SET_SRC (set)) != NULL_RTX
+	       && REG_P (SET_DEST (set))
+	       && REGNO (SET_DEST (set)) < 32)
+	{
+	  /* There is no problem if the second memory access has a data
+	     dependency on the first single-cycle load.  */
+	  rtx x = SET_DEST (set);
+
+	  /* If the insn has a delay slot, then it cannot be problematic.  */
+	  next = next_active_insn (insn);
+	  if (!next)
+	    break;
+	  if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
+	    continue;
+
+	  /* Look for a second memory access to/from an integer register.  */
+	  if ((set = single_set (next)) != NULL_RTX)
+	    {
+	      rtx src = SET_SRC (set);
+	      rtx dest = SET_DEST (set);
+	      rtx mem;
+
+	      /* LDD is affected.  */
+	      if ((mem = mem_ref (src)) != NULL_RTX
+		  && REG_P (dest)
+		  && REGNO (dest) < 32
+		  && !reg_mentioned_p (x, XEXP (mem, 0)))
+		insert_nop = true;
+
+	      /* STD is *not* affected.  */
+	      else if ((mem = mem_ref (dest)) != NULL_RTX
+		       && GET_MODE_SIZE (GET_MODE (mem)) <= 4
+		       && (src == const0_rtx
+			   || (REG_P (src)
+			       && REGNO (src) < 32
+			       && REGNO (src) != REGNO (x)))
+		       && !reg_mentioned_p (x, XEXP (mem, 0)))
+		insert_nop = true;
+	    }
+	}
+
       else
 	next = NEXT_INSN (insn);
 
       if (insert_nop)
-	emit_insn_after (gen_nop (), insn);
+	emit_insn_before (gen_nop (), next);
     }
+
   return 0;
 }
 
@@ -1019,6 +1113,7 @@ sparc_option_override (void)
     { TARGET_CPU_supersparc, PROCESSOR_SUPERSPARC },
     { TARGET_CPU_hypersparc, PROCESSOR_HYPERSPARC },
     { TARGET_CPU_leon, PROCESSOR_LEON },
+    { TARGET_CPU_leon3, PROCESSOR_LEON3 },
     { TARGET_CPU_sparclite, PROCESSOR_F930 },
     { TARGET_CPU_sparclite86x, PROCESSOR_SPARCLITE86X },
     { TARGET_CPU_sparclet, PROCESSOR_TSC701 },
@@ -1033,7 +1128,7 @@ sparc_option_override (void)
   };
   const struct cpu_default *def;
   /* Table of values for -m{cpu,tune}=.  This must match the order of
-     the PROCESSOR_* enumeration.  */
+     the enum processor_type in sparc-opts.h.  */
   static struct cpu_table {
     const char *const name;
     const int disable;
@@ -1047,6 +1142,7 @@ sparc_option_override (void)
     { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
     /* LEON */
     { "leon",		MASK_ISA, MASK_V8|MASK_FPU },
+    { "leon3",		MASK_ISA, MASK_V8|MASK_FPU },
     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
@@ -1294,6 +1390,9 @@ sparc_option_override (void)
       break;
     case PROCESSOR_LEON:
       sparc_costs = &leon_costs;
+      break;
+    case PROCESSOR_LEON3:
+      sparc_costs = &leon3_costs;
       break;
     case PROCESSOR_SPARCLET:
     case PROCESSOR_TSC701:

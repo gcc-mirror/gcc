@@ -49,6 +49,11 @@
 	    break;					\
 	}						\
 							\
+      if (TARGET_ILP32)					\
+	{						\
+	  cpp_define (parse_in, "_ILP32");		\
+	  cpp_define (parse_in, "__ILP32__");		\
+	}						\
     } while (0)
 
 
@@ -95,7 +100,9 @@
 
 #define INT_TYPE_SIZE		32
 
-#define LONG_TYPE_SIZE		64	/* XXX This should be an option */
+#define LONG_TYPE_SIZE		(TARGET_ILP32 ? 32 : 64)
+
+#define POINTER_SIZE		(TARGET_ILP32 ? 32 : 64)
 
 #define LONG_LONG_TYPE_SIZE	64
 
@@ -271,7 +278,7 @@ extern unsigned long aarch64_tune_flags;
     R_ALIASES(16), R_ALIASES(17), R_ALIASES(18), R_ALIASES(19), \
     R_ALIASES(20), R_ALIASES(21), R_ALIASES(22), R_ALIASES(23), \
     R_ALIASES(24), R_ALIASES(25), R_ALIASES(26), R_ALIASES(27), \
-    R_ALIASES(28), R_ALIASES(29), R_ALIASES(30), /* 31 omitted  */ \
+    R_ALIASES(28), R_ALIASES(29), R_ALIASES(30), {"wsp", R0_REGNUM + 31}, \
     V_ALIASES(0),  V_ALIASES(1),  V_ALIASES(2),  V_ALIASES(3),  \
     V_ALIASES(4),  V_ALIASES(5),  V_ALIASES(6),  V_ALIASES(7),  \
     V_ALIASES(8),  V_ALIASES(9),  V_ALIASES(10), V_ALIASES(11), \
@@ -520,6 +527,18 @@ typedef struct GTY (()) machine_function
 } machine_function;
 #endif
 
+/* Which ABI to use.  */
+enum aarch64_abi_type
+{
+  AARCH64_ABI_LP64 = 0,
+  AARCH64_ABI_ILP32 = 1
+};
+
+#ifndef AARCH64_ABI_DEFAULT
+#define AARCH64_ABI_DEFAULT AARCH64_ABI_LP64
+#endif
+
+#define TARGET_ILP32	(aarch64_abi & AARCH64_ABI_ILP32)
 
 enum arm_pcs
 {
@@ -694,7 +713,18 @@ do {									     \
 
 #define NO_FUNCTION_CSE	1
 
+/* Specify the machine mode that the hardware addresses have.
+   After generation of rtl, the compiler makes no further distinction
+   between pointers and any other objects of this machine mode.  */
 #define Pmode		DImode
+
+/* A C expression whose value is zero if pointers that need to be extended
+   from being `POINTER_SIZE' bits wide to `Pmode' are sign-extended and
+   greater then zero if they are zero-extended and less then zero if the
+   ptr_extend instruction should be used.  */
+#define POINTERS_EXTEND_UNSIGNED 1
+
+/* Mode of a function address in a call instruction (for indexing purposes).  */
 #define FUNCTION_MODE	Pmode
 
 #define SELECT_CC_MODE(OP, X, Y)	aarch64_select_cc_mode (OP, X, Y)
@@ -715,7 +745,8 @@ do {									     \
 
 #define RETURN_ADDR_RTX aarch64_return_addr
 
-#define TRAMPOLINE_SIZE	aarch64_trampoline_size ()
+/* 3 insns + padding + 2 pointer-sized entries.  */
+#define TRAMPOLINE_SIZE	(TARGET_ILP32 ? 24 : 32)
 
 /* Trampolines contain dwords, so must be dword aligned.  */
 #define TRAMPOLINE_ALIGNMENT 64

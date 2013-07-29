@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "simple-object.h"
 #include "tm.h"
-#include "rtl.h"
 #include "tree.h"
 #include "tm_p.h"
 #include "intl.h"
@@ -90,12 +89,6 @@ void
 go_imported_unsafe (void)
 {
   flag_strict_aliasing = false;
-
-  /* This is a real hack.  init_varasm_once has already grabbed an
-     alias set, which we don't want when we aren't doing strict
-     aliasing.  We reinitialize to make it do it again.  This should
-     be OK in practice since we haven't really done anything yet.  */
-  init_varasm_once ();
 
   /* Let the backend know that the options have changed.  */
   targetm.override_options_after_change ();

@@ -7578,7 +7578,7 @@ so here's a silly made-up example:
   "/* @r{determine 1 does not overlap 0 and 2} */"
   [(set (match_dup 4) (match_dup 1))
    (set (match_dup 0) (match_dup 4))
-   (set (match_dup 2) (match_dup 4))]
+   (set (match_dup 2) (match_dup 4))
    (set (match_dup 3) (match_dup 4))]
   "")
 @end smallexample

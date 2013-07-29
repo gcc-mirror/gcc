@@ -498,6 +498,26 @@ then
 fi
 
 case ${target} in
+aarch64*-*-*)
+	case ${with_abi} in
+	"")
+		if test "x$with_multilib_list" = xilp32; then
+			tm_file="aarch64/biarchilp32.h ${tm_file}"
+		else
+			tm_file="aarch64/biarchlp64.h ${tm_file}"
+		fi
+		;;
+	ilp32)
+		tm_file="aarch64/biarchilp32.h ${tm_file}"
+		;;
+	lp64)
+		tm_file="aarch64/biarchlp64.h ${tm_file}"
+		;;
+	*)
+		echo "Unknown ABI used in --with-abi=$with_abi"
+		exit 1
+	esac
+	;;
 i[34567]86-*-*)
 	if test "x$with_abi" != x; then
 		echo "This target does not support --with-abi."
@@ -828,6 +848,22 @@ aarch64*-*-elf)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 		;;
 	esac
+	aarch64_multilibs="${with_multilib_list}"
+	if test "$aarch64_multilibs" = "default"; then
+		aarch64_multilibs="lp64,ilp32"
+	fi
+	aarch64_multilibs=`echo $aarch64_multilibs | sed -e 's/,/ /g'`
+	for aarch64_multilib in ${aarch64_multilibs}; do
+		case ${aarch64_multilib} in
+		ilp32 | lp64 )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${aarch64_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${aarch64_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
 aarch64*-*-linux*)
 	tm_file="${tm_file} dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h"
@@ -838,6 +874,24 @@ aarch64*-*-linux*)
 		tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 		;;
 	esac
+	aarch64_multilibs="${with_multilib_list}"
+	if test "$aarch64_multilibs" = "default"; then
+		# TODO: turn on ILP32 multilib build after its support is mature.
+		# aarch64_multilibs="lp64,ilp32"
+		aarch64_multilibs="lp64"
+	fi
+	aarch64_multilibs=`echo $aarch64_multilibs | sed -e 's/,/ /g'`
+	for aarch64_multilib in ${aarch64_multilibs}; do
+		case ${aarch64_multilib} in
+		ilp32 | lp64 )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${aarch64_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${aarch64_multilib} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
 	;;
 alpha*-*-linux*)
 	tm_file="elfos.h ${tm_file} alpha/elf.h alpha/linux.h alpha/linux-elf.h glibc-stdint.h"
@@ -1077,7 +1131,6 @@ hppa*-*-openbsd*)
 	target_cpu_default="MASK_PA_11"
 	tm_file="${tm_file} dbxelf.h elfos.h openbsd.h openbsd-stdint.h openbsd-libpthread.h \
 		 pa/pa-openbsd.h pa/pa32-regs.h pa/pa32-openbsd.h"
-	tmake_file="${tmake_file} pa/t-openbsd"
 	extra_options="${extra_options} openbsd.opt"
 	gas=yes
 	gnu_ld=yes
@@ -3091,6 +3144,16 @@ if test x$with_float = x; then
   esac
 fi
 
+# Infer a default setting for --with-fpu.
+if test x$with_fpu = x; then
+  case ${target} in
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      # The R5900 FPU only supports single precision.
+      with_fpu=single
+      ;;
+  esac
+fi
+
 # Support --with-fpmath.
 if test x$with_fpmath != x; then
   case ${target} in
@@ -3148,7 +3211,7 @@ fi
 supported_defaults=
 case "${target}" in
 	aarch64*-*-*)
-		supported_defaults="cpu arch"
+		supported_defaults="abi cpu arch"
 		for which in cpu arch; do
 
 			eval "val=\$with_$which"
@@ -3469,7 +3532,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch arch_32 arch_64 float tune tune_32 tune_64 divide llsc mips-plt synci"
+		supported_defaults="abi arch arch_32 arch_64 float fpu tune tune_32 tune_64 divide llsc mips-plt synci"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -3477,6 +3540,16 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown floating point type used in --with-float=$with_float" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_fpu} in
+		"" | single | double)
+			# OK
+			;;
+		*)
+			echo "Unknown fpu type used in --with-fpu=$with_fpu" 1>&2
 			exit 1
 			;;
 		esac
@@ -3642,7 +3715,7 @@ case "${target}" in
 			case ${val} in
 			"" | sparc | sparcv9 | sparc64 \
 			| v7 | cypress \
-			| v8 | supersparc | hypersparc | leon \
+			| v8 | supersparc | hypersparc | leon | leon3 \
 			| sparclite | f930 | f934 | sparclite86x \
 			| sparclet | tsc701 \
 			| v9 | ultrasparc | ultrasparc3 | niagara | niagara2 \
@@ -3799,15 +3872,6 @@ case ${target} in
 		cxx_target_objs="${cxx_target_objs} sh-c.o"
 		;;
 
-	sparc-leon*-*)
-		if test x$with_tune = x ; then
-		  with_tune=leon;
-		fi
-
-		# The SPARC port checks this value at compile-time.
-		target_cpu_default2="TARGET_CPU_$with_cpu"
-		;;
-
 	sparc*-*-*)
 		# Some standard aliases.
 		case x$with_cpu in
@@ -3818,6 +3882,17 @@ case ${target} in
 			with_cpu=v9
 			;;
 		esac
+
+		if test x$with_tune = x ; then
+		      case ${target} in
+		      *-leon-*)
+			  with_tune=leon
+			  ;;
+		      *-leon[3-9]*)
+			  with_tune=leon3
+			  ;;
+		      esac
+		fi
 
 		# The SPARC port checks this value at compile-time.
 		target_cpu_default2="TARGET_CPU_$with_cpu"
