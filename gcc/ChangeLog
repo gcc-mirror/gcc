@@ -6,6 +6,10 @@
 	* predicates.md (float_operation): Allow patterns with three
 	basic sub-patterns.
 
+	PR rtl-optimization/58021
+	* mode-switching.c (create_pre_exit): Always split off preceding
+	insns if we are not at the basic block head.
+
 2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/linux.h (GLIBC_DYNAMIC_LINKER): Handle `-mnan=2008'.
