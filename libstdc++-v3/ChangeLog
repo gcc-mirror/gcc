@@ -1,5 +1,9 @@
 2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	Revert last commit.
+
+2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* include/profile/unordered_map (unordered_map<>,
 	unordered_multimap<>): Clean-up constructors and assignment
 	operators to match debug-mode.
