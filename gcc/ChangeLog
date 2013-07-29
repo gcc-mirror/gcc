@@ -1,3 +1,37 @@
+2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/linux.h (GLIBC_DYNAMIC_LINKER): Handle `-mnan=2008'.
+	(UCLIBC_DYNAMIC_LINKER): New macro.
+	* config/mips/linux64.h (GLIBC_DYNAMIC_LINKER32): Handle
+	`-mnan=2008'.
+	(GLIBC_DYNAMIC_LINKER64, GLIBC_DYNAMIC_LINKERN32): Likewise.
+	(UCLIBC_DYNAMIC_LINKER32): Undefine macro first.  Handle
+	`-mnan=2008'.
+	(UCLIBC_DYNAMIC_LINKER64): Redefine macro.
+	(UCLIBC_DYNAMIC_LINKERN32): Likewise.
+	* config/mips/mips-modes.def: Remove RESET_FLOAT_FORMAT calls
+	for SF and DF modes.  Use ieee_quad_format for TF mode.
+	* config/mips/mips-opts.h (mips_ieee_754_setting): New enum.
+	* config/mips/mips.c (mips_file_start): Output a `.nan' directive.
+	(mips_option_override): Handle `-mnan=legacy'.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Handle
+	`-mabs=2008' and `-mnan=2008'.
+	(OPTION_DEFAULT_SPECS): Add "nan" default.
+	(ASM_SPEC): Handle `-mnan='.
+	[!HAVE_AS_NAN] (HAVE_AS_NAN): New macro.
+	* config/mips/mips.md (abs<mode>2): Handle `-mabs=2008', update
+	comment accordingly.
+	(neg<mode>2): Likewise.
+	* config/mips/mips.opt (mabs, mnan): New options.
+	* doc/install.texi (Configuration): Document `--with-nan=' option.
+	* doc/invoke.texi (Option Summary): List MIPS `-mabs=' and
+	`-mnan=' options.
+	(MIPS Options): Document them.
+	* config.gcc <mips*-*-*>: Handle `--with-nan='.
+	* configure.ac <mips*-*-*>: Check for GAS `-mnan=2008' support.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
 2013-07-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (float post-reload splitters): Do not check

@@ -26019,6 +26019,41 @@ $as_echo "$gcc_cv_ld_mips_personality_relaxation" >&6; }
 $as_echo "#define HAVE_LD_PERSONALITY_RELAXATION 1" >>confdefs.h
 
     fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for -mnan= support" >&5
+$as_echo_n "checking assembler for -mnan= support... " >&6; }
+if test "${gcc_cv_as_mips_nan+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_mips_nan=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mnan=2008 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_mips_nan=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_mips_nan" >&5
+$as_echo "$gcc_cv_as_mips_nan" >&6; }
+if test $gcc_cv_as_mips_nan = yes; then
+
+$as_echo "#define HAVE_AS_NAN 1" >>confdefs.h
+
+fi
+    if test x$gcc_cv_as_mips_nan = xno \
+       && test x$with_nan != x; then
+      as_fn_error "Requesting --with-nan= requires assembler support for -mnan=" "$LINENO" 5
+    fi
     ;;
 esac
 

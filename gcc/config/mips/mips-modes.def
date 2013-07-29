@@ -17,12 +17,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-/* MIPS has a quirky almost-IEEE format for all its
-   floating point.  */
-RESET_FLOAT_FORMAT (SF, mips_single_format);
-RESET_FLOAT_FORMAT (DF, mips_double_format);
-
-FLOAT_MODE (TF, 16, mips_quad_format);
+FLOAT_MODE (TF, 16, ieee_quad_format);
 
 /* Vector modes.  */
 VECTOR_MODES (INT, 4);        /* V4QI  V2HI      */

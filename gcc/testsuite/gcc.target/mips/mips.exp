@@ -276,8 +276,10 @@ foreach option {
 
 # Add -mfoo= options to mips_option_groups.
 foreach option {
+    abs
     branch-cost
     code-readable
+    nan
     r10k-cache-barrier
     tune
 } {
@@ -705,6 +707,18 @@ proc mips-dg-init {} {
 	    "-msoft-float",
 	    #endif
 
+	    #ifdef __mips_abs2008
+	    "-mabs=2008",
+	    #else
+	    "-mabs=legacy",
+	    #endif
+
+	    #ifdef __mips_nan2008
+	    "-mnan=2008",
+	    #else
+	    "-mnan=legacy",
+	    #endif
+
 	    #if __mips_fpr == 64
 	    "-mfp64",
 	    #else
@@ -826,6 +840,8 @@ proc mips-dg-finish {} {
 #            |                           |
 #         -mfp64                      -mfp32
 #            |                           |
+#         -mabs=2008/-mabs=legacy     <no option>
+#            |                           |
 #         -mhard-float                -msoft-float
 #            |                           |
 #         -mno-sym32                  -msym32
@@ -913,6 +929,8 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mips3d" "-mpaired-single"
     mips_option_dependency options "-mpaired-single" "-mfp64"
     mips_option_dependency options "-mfp64" "-mhard-float"
+    mips_option_dependency options "-mabs=2008" "-mhard-float"
+    mips_option_dependency options "-mabs=legacy" "-mhard-float"
     mips_option_dependency options "-mrelax-pic-calls" "-mno-plt"
     mips_option_dependency options "-mrelax-pic-calls" "-mabicalls"
     mips_option_dependency options "-mrelax-pic-calls" "-mexplicit-relocs"

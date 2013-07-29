@@ -1221,6 +1221,24 @@ ISA for floating-point arithmetics.  You can select either @samp{sse} which
 enables @option{-msse2} or @samp{avx} which enables @option{-mavx} by default.
 This option is only supported on i386 and x86-64 targets.
 
+@item --with-nan=@var{encoding}
+On MIPS targets, set the default encoding convention to use for the
+special not-a-number (NaN) IEEE 754 floating-point data.  The
+possibilities for @var{encoding} are:
+@table @code
+@item legacy
+Use the legacy encoding, as with the @option{-mnan=legacy} command-line
+option.
+@item 2008
+Use the 754-2008 encoding, as with the @option{-mnan=2008} command-line
+option.
+@end table
+To use this configuration option you must have an assembler version
+installed that supports the @option{-mnan=} command-line option too.
+In the absence of this configuration option the default convention is
+the legacy encoding, as when neither of the @option{-mnan=2008} and
+@option{-mnan=legacy} command-line options has been used.
+
 @item --with-divide=@var{type}
 Specify how the compiler should generate code for checking for
 division by zero.  This option is only supported on the MIPS target.

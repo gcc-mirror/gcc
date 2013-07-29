@@ -3532,7 +3532,7 @@ case "${target}" in
 		;;
 
 	mips*-*-*)
-		supported_defaults="abi arch arch_32 arch_64 float fpu tune tune_32 tune_64 divide llsc mips-plt synci"
+		supported_defaults="abi arch arch_32 arch_64 float fpu nan tune tune_32 tune_64 divide llsc mips-plt synci"
 
 		case ${with_float} in
 		"" | soft | hard)
@@ -3550,6 +3550,16 @@ case "${target}" in
 			;;
 		*)
 			echo "Unknown fpu type used in --with-fpu=$with_fpu" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_nan} in
+		"" | 2008 | legacy)
+			# OK
+			;;
+		*)
+			echo "Unknown NaN encoding used in --with-nan=$with_nan" 1>&2
 			exit 1
 			;;
 		esac
@@ -3913,7 +3923,7 @@ case ${target} in
 esac
 
 t=
-all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu divide llsc mips-plt synci tls"
+all_defaults="abi cpu cpu_32 cpu_64 arch arch_32 arch_64 tune tune_32 tune_64 schedule float mode fpu nan divide llsc mips-plt synci tls"
 for option in $all_defaults
 do
 	eval "val=\$with_"`echo $option | sed s/-/_/g`
