@@ -4637,6 +4637,17 @@ proc check_effective_target_newlib {} {
     }]
 }
 
+# Return true if this is NOT a Bionic target.
+
+proc check_effective_target_non_bionic {} {
+    return [check_no_compiler_messages non_bionic object {
+	#include <ctype.h>
+	#if defined (__BIONIC__)
+	#error FOO
+	#endif
+    }]
+}
+
 # Return 1 if
 #   (a) an error of a few ULP is expected in string to floating-point
 #       conversion functions; and
