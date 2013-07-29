@@ -1,3 +1,11 @@
+2013-07-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuvyrkov  <maxim@kugelworks.com>
+
+	* lib/target-supports.exp (check_effective_target_non_bionic): New
+	effective-target test.
+	* g++.dg/tls/thread_local4.C: Disable test for Bionic.
+	* g++.dg/tls/thread_local4g.C: Ditto.
+
 2013-07-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/58009
