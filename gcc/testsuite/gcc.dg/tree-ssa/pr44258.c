@@ -39,5 +39,7 @@ int foo (int b)
   *e_u = u;
 }
 
-/* { dg-final { scan-tree-dump-times "Created a replacement" 0 "esra"} } */
+/* Epiphany has struct alignment/padding that avoids the overlap of
+   str.b1 and val.b2.  */
+/* { dg-final { scan-tree-dump-times "Created a replacement" 0 "esra" { target { ! "epiphany-*-*" } } } } */
 /* { dg-final { cleanup-tree-dump "esra" } } */

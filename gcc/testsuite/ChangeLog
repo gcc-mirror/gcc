@@ -1,3 +1,7 @@
+2013-07-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/tree-ssa/pr44258.c: Disable scan test for Epiphany.
+
 2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57948
