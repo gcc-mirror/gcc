@@ -1,3 +1,23 @@
+2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/mips/fabs-2008.c: New test case.
+	* gcc.target/mips/fabs-legacy.c: New test case.
+	* gcc.target/mips/fabsf-2008.c: New test case.
+	* gcc.target/mips/fabsf-legacy.c: New test case.
+	* gcc.target/mips/fneg-2008.c: New test case.
+	* gcc.target/mips/fneg-legacy.c: New test case.
+	* gcc.target/mips/fneg-2008.c: New test case.
+	* gcc.target/mips/fneg-legacy.c: New test case.
+	* gcc.target/mips/nan-2008.c: New test case.
+	* gcc.target/mips/nan-legacy.c: New test case.
+	* gcc.target/mips/nanf-2008.c: New test case.
+	* gcc.target/mips/nanf-legacy.c: New test case.
+	* gcc.target/mips/nans-2008.c: New test case.
+	* gcc.target/mips/nans-legacy.c: New test case.
+	* gcc.target/mips/nansf-2008.c: New test case.
+	* gcc.target/mips/nansf-legacy.c: New test case.
+	* gcc.target/mips/mips.exp: Handle `-mabs=' and `-mnan='.
+
 2013-07-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuvyrkov  <maxim@kugelworks.com>
 

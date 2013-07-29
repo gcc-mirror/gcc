@@ -205,6 +205,24 @@ mfused-madd
 Target Report Mask(FUSED_MADD)
 Generate floating-point multiply-add instructions
 
+mabs=
+Target RejectNegative Joined Enum(mips_ieee_754_value) Var(mips_abs) Init(MIPS_IEEE_754_DEFAULT)
+-mabs=MODE	Select the IEEE 754 ABS/NEG instruction execution mode
+
+mnan=
+Target RejectNegative Joined Enum(mips_ieee_754_value) Var(mips_nan) Init(MIPS_IEEE_754_DEFAULT)
+-mnan=ENCODING	Select the IEEE 754 NaN data encoding
+
+Enum
+Name(mips_ieee_754_value) Type(int)
+Known MIPS IEEE 754 settings (for use with the -mabs= and -mnan= options):
+
+EnumValue
+Enum(mips_ieee_754_value) String(2008) Value(MIPS_IEEE_754_2008)
+
+EnumValue
+Enum(mips_ieee_754_value) String(legacy) Value(MIPS_IEEE_754_LEGACY)
+
 mgp32
 Target Report RejectNegative InverseMask(64BIT)
 Use 32-bit general registers

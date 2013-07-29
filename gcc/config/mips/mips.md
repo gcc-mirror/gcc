@@ -2711,14 +2711,15 @@
 ;; Do not use the integer abs macro instruction, since that signals an
 ;; exception on -2147483648 (sigh).
 
-;; abs.fmt is an arithmetic instruction and treats all NaN inputs as
-;; invalid; it does not clear their sign bits.  We therefore can't use
-;; abs.fmt if the signs of NaNs matter.
+;; The "legacy" (as opposed to "2008") form of ABS.fmt is an arithmetic
+;; instruction that treats all NaN inputs as invalid; it does not clear
+;; their sign bit.  We therefore can't use that form if the signs of
+;; NaNs matter.
 
 (define_insn "abs<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(abs:ANYF (match_operand:ANYF 1 "register_operand" "f")))]
-  "!HONOR_NANS (<MODE>mode)"
+  "mips_abs == MIPS_IEEE_754_2008 || !HONOR_NANS (<MODE>mode)"
   "abs.<fmt>\t%0,%1"
   [(set_attr "type" "fabs")
    (set_attr "mode" "<UNITMODE>")])
@@ -2793,14 +2794,15 @@
   [(set_attr "alu_type"	"sub")
    (set_attr "mode"	"DI")])
 
-;; neg.fmt is an arithmetic instruction and treats all NaN inputs as
-;; invalid; it does not flip their sign bit.  We therefore can't use
-;; neg.fmt if the signs of NaNs matter.
+;; The "legacy" (as opposed to "2008") form of NEG.fmt is an arithmetic
+;; instruction that treats all NaN inputs as invalid; it does not flip
+;; their sign bit.  We therefore can't use that form if the signs of
+;; NaNs matter.
 
 (define_insn "neg<mode>2"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
 	(neg:ANYF (match_operand:ANYF 1 "register_operand" "f")))]
-  "!HONOR_NANS (<MODE>mode)"
+  "mips_abs == MIPS_IEEE_754_2008 || !HONOR_NANS (<MODE>mode)"
   "neg.<fmt>\t%0,%1"
   [(set_attr "type" "fneg")
    (set_attr "mode" "<UNITMODE>")])
