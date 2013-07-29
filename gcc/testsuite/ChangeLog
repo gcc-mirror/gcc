@@ -1,3 +1,8 @@
+2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57948
+	* g++.dg/conversion/ambig2.C: New.
+
 2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gcc.target/mips/fabs-2008.c: New test case.
@@ -85,7 +90,7 @@
 	* gcc.c-torture/execute/builtins/stpcpy-chk.x: Likewise.
 
 	* gcc.dg/pr27095.c: For Epiphany, add -mshort-calls.
-	* gcc.dg/tree-ssa/loop-1.c: Likewise. 
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
 
 	* gcc.dg/torture/pr37868.c: Disable for epiphany.
 	* gcc.dg/sibcall-6.c: Enable for epiphany.
