@@ -2260,7 +2260,10 @@ gfc_trans_transfer (gfc_code * code)
 	    {
 	      for (n = 0; n < ref->u.ar.dimen; n++)
 		if (ref->u.ar.dimen_type[n] == DIMEN_VECTOR)
-		  seen_vector = true;
+		  {
+		    seen_vector = true;
+		    break;
+		  }
 	    }
 
 	  if (seen_vector && last_dt == READ)

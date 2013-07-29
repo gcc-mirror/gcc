@@ -4188,7 +4188,10 @@ gfc_match_call (void)
   i = 0;
   for (a = arglist; a; a = a->next)
     if (a->expr == NULL)
-      i = 1;
+      {
+	i = 1;
+	break;
+      }
 
   if (i)
     {

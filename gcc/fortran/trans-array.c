@@ -4456,7 +4456,10 @@ set_loop_bounds (gfc_loopinfo *loop)
       for (ss = loop->ss; ss != gfc_ss_terminator; ss = ss->loop_chain)
 	if (ss->info->type != GFC_SS_SCALAR && ss->info->type != GFC_SS_TEMP
 	    && ss->info->type != GFC_SS_REFERENCE && !ss->info->can_be_null_ref)
-	  nonoptional_arr = true;
+	  {
+	    nonoptional_arr = true;
+	    break;
+	  }
 
       /* We use one SS term, and use that to determine the bounds of the
 	 loop for this dimension.  We try to pick the simplest term.  */
