@@ -1,3 +1,16 @@
+2013-07-22  Po Chang  <pchang9@cs.wisc.edu>
+
+	* match.c (gfc_match_call): Exit loop after setting i.
+
+	* resolve.c (resolve_variable): Exit loop after setting seen.
+
+	* expr.c (gfc_check_pointer_assign): Exit loop after setting warn.
+
+	* trans-array.c (set_loop_bounds): Exit loop after setting
+	nonoptional_arr.
+
+	* trans-io.c (gfc_trans_transfer): Exit loop after setting seen_vector.
+
 2013-07-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/58009

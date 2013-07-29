@@ -4908,7 +4908,10 @@ resolve_variable (gfc_expr *e)
 	    for (formal = entry->sym->formal; formal; formal = formal->next)
 	      {
 		if (formal->sym && sym->name == formal->sym->name)
-		  seen = true;
+		  {
+		    seen = true;
+		    break;
+		  }
 	      }
 
 	  /*  If it has not been seen as a dummy, this is an error.  */

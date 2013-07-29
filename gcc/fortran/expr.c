@@ -3764,7 +3764,10 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	    ns && ns->proc_name && ns->proc_name->attr.flavor != FL_PROCEDURE;
 	    ns = ns->parent)
 	if (ns->parent == lvalue->symtree->n.sym->ns)
-	  warn = true;
+	  {
+	    warn = true;
+	    break;
+	  }
 
       if (warn)
 	gfc_warning ("Pointer at %L in pointer assignment might outlive the "
