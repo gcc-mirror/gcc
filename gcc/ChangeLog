@@ -1,3 +1,16 @@
+2013-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (float post-reload splitters): Do not check
+	for subregs of SSE registers.
+
+2013-07-29  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/57954
+	PR target/57988
+	* config/i386/i386.md (post-reload splitter
+	to avoid partial SSE reg dependency stalls): New pattern.
+
 2013-07-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("movcc"): Swap load and store instructions.
@@ -28,10 +41,10 @@
 	* config/aarch64/iterators.md: Add attributes rtn and vas.
 
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Richard Earnshaw  <richard.earnshaw@arm.com>
+	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* combine.c (simplify_comparison): Re-canonicalize operands
-	where appropriate.	
+	where appropriate.
 	* config/arm/arm.md (movcond_addsi): New splitter.
 
 2013-07-25  Sterling Augustine  <saugustine@google.com>
