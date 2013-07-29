@@ -85,6 +85,7 @@ htm_init ()
 static inline uint32_t
 htm_begin ()
 {
+  __asm volatile (".machine \"all\"  \n\t");
   return __builtin_tbegin_nofloat (NULL);
 }
 
@@ -97,12 +98,14 @@ htm_begin_success (uint32_t begin_ret)
 static inline void
 htm_commit ()
 {
+  __asm volatile (".machine \"all\"  \n\t");
   __builtin_tend ();
 }
 
 static inline void
 htm_abort ()
 {
+  __asm volatile (".machine \"all\"  \n\t");
   __builtin_tabort (_HTM_FIRST_USER_ABORT_CODE);
 }
 
@@ -115,6 +118,7 @@ htm_abort_should_retry (uint32_t begin_ret)
 static inline bool
 htm_transaction_active ()
 {
+  __asm volatile (".machine \"all\"  \n\t");
   return __builtin_tx_nesting_depth() != 0;
 }
 

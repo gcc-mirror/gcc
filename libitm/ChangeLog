@@ -1,3 +1,10 @@
+2013-07-29  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/target.h (htm_begin, htm_commit, htm_abort)
+	(htm_transaction_active): Enable zEC12 instructions in the
+	assembler.
+	* configure.tgt: Remove -Wa,-march=zEC12 from XCFLAGS.
+
 2013-07-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* acinclude.m4: Add htm asm check for s390.
