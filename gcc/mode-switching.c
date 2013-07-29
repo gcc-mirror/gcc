@@ -420,7 +420,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			|| (GET_MODE_CLASS (GET_MODE (ret_reg)) != MODE_INT
 			    && nregs != 1));
 
-	    if (INSN_P (last_insn))
+	    if (!NOTE_INSN_BASIC_BLOCK_P (last_insn))
 	      {
 		before_return_copy
 		  = emit_note_before (NOTE_INSN_DELETED, last_insn);
@@ -428,9 +428,8 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 		   require a different mode than MODE_EXIT, so if we might
 		   have such instructions, keep them in a separate block
 		   from pre_exit.  */
-		if (last_insn != BB_HEAD (src_bb))
-		  src_bb = split_block (src_bb,
-					PREV_INSN (before_return_copy))->dest;
+		src_bb = split_block (src_bb,
+				      PREV_INSN (before_return_copy))->dest;
 	      }
 	    else
 	      before_return_copy = last_insn;
