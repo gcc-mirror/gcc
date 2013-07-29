@@ -1,3 +1,12 @@
+2013-07-29  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* include/std/atomic (compare_exchange_weak, compare_exchange_strong):
+	Add call to __cmpexch_failure_order.
+	* testsuite/util/testsuite_common_types.h
+	(compare_exchange_order_lowering): New generator.
+	* testsuite/29_atomics/atomic/requirements/compare_exchange_lowering.cc:
+	New test.
+
 2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/complex (pow(const complex<>&, int)): Enable in
