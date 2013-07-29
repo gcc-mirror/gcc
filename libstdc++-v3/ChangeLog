@@ -1,3 +1,11 @@
+2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/profile/unordered_map (unordered_map<>,
+	unordered_multimap<>): Clean-up constructors and assignment
+	operators to match debug-mode.
+	* include/profile/unordered_set (unordered_set<>,
+	unordered_multiset<>): Likewise.
+
 2013-07-22  Jason Merrill  <jason@redhat.com>
 
 	PR libstdc++/57914

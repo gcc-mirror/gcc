@@ -73,10 +73,7 @@ namespace __profile
 		    const key_equal& __eql = key_equal(),
 		    const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      { }
 
       template<typename _InputIterator>
         unordered_map(_InputIterator __f, _InputIterator __l,
@@ -85,31 +82,15 @@ namespace __profile
 		      const key_equal& __eql = key_equal(),
 		      const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      { }
 
-      unordered_map(const unordered_map& __x)
-      : _Base(__x) 
-      { 
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      unordered_map(const unordered_map&) = default;
 
       unordered_map(const _Base& __x)
       : _Base(__x) 
-      { 
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      { }
 
-      unordered_map(unordered_map&& __x)
-      : _Base(std::move(__x)) 
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-        __profcxx_hashtable_construct2(this);
-      }
+      unordered_map(unordered_map&&) = default;
 
       unordered_map(initializer_list<value_type> __l,
 		    size_type __n = 0,
@@ -119,21 +100,10 @@ namespace __profile
       : _Base(__l, __n, __hf, __eql, __a) { }
 
       unordered_map&
-      operator=(const unordered_map& __x)
-      {
-	*static_cast<_Base*>(this) = __x;
-	return *this;
-      }
+      operator=(const unordered_map&) = default;
 
       unordered_map&
-      operator=(unordered_map&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(unordered_map&&) = default;
 
       unordered_map&
       operator=(initializer_list<value_type> __l)
@@ -141,13 +111,6 @@ namespace __profile
 	this->clear();
 	this->insert(__l);
 	return *this;
-      }
-
-      ~unordered_map() noexcept
-      {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(),
-				     _Base::size());
-        _M_profile_destruct();
       }
 
       _Base&
@@ -374,9 +337,8 @@ namespace __profile
 			 const key_equal& __eql = key_equal(),
 			 const allocator_type& __a = allocator_type())
       : _Base(__n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      { }
+
       template<typename _InputIterator>
         unordered_multimap(_InputIterator __f, _InputIterator __l,
 			   size_type __n = 0,
@@ -384,27 +346,15 @@ namespace __profile
 			   const key_equal& __eql = key_equal(),
 			   const allocator_type& __a = allocator_type())
       : _Base(__f, __l, __n, __hf, __eql, __a)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      { }
 
-      unordered_multimap(const unordered_multimap& __x)
-      : _Base(__x)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      unordered_multimap(const unordered_multimap&) = default;
 
       unordered_multimap(const _Base& __x)
       : _Base(__x)
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      { }
 
-      unordered_multimap(unordered_multimap&& __x)
-      : _Base(std::move(__x))
-      {
-        __profcxx_hashtable_construct(this, _Base::bucket_count());
-      }
+      unordered_multimap(unordered_multimap&&) = default;
 
       unordered_multimap(initializer_list<value_type> __l,
 			 size_type __n = 0,
@@ -414,21 +364,10 @@ namespace __profile
       : _Base(__l, __n, __hf, __eql, __a) { }
 
       unordered_multimap&
-      operator=(const unordered_multimap& __x)
-      {
-	*static_cast<_Base*>(this) = __x;
-	return *this;
-      }
+      operator=(const unordered_multimap&) = default;
 
       unordered_multimap&
-      operator=(unordered_multimap&& __x)
-      {
-	// NB: DR 1204.
-	// NB: DR 675.
-	this->clear();
-	this->swap(__x);
-	return *this;
-      }
+      operator=(unordered_multimap&&) = default;
 
       unordered_multimap&
       operator=(initializer_list<value_type> __l)
@@ -436,13 +375,6 @@ namespace __profile
 	this->clear();
 	this->insert(__l);
 	return *this;
-      }
-
-      ~unordered_multimap() noexcept
-      {
-        __profcxx_hashtable_destruct(this, _Base::bucket_count(), 
-				     _Base::size());
-        _M_profile_destruct();
       }
 
       void
