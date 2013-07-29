@@ -587,7 +587,7 @@
 ; After mode-switching, floating point operations, fp_sfuncs and calls
 ; must exhibit the use of the control register, lest the setting of the
 ; control register could be deleted or moved.  OTOH a use of a hard register
-; greatly coundounds optimizers like the rtl loop optimizers or combine.
+; greatly counfounds optimizers like the rtl loop optimizers or combine.
 ; Therefore, we put an extra pass immediately after the mode switching pass
 ; that inserts the USEs of the control registers, and sets a flag in struct
 ; machine_function that float_operation can henceforth only match with that
@@ -1057,6 +1057,28 @@
   [(parallel [(set (match_dup 0) (match_dup 4))
 	      (clobber (reg:CC CC_REGNUM))])]
 )
+
+(define_peephole2
+  [(match_parallel 3 "float_operation"
+     [(set (match_operand:SI 0 "gpr_operand" "")
+	   (mult:SI
+	      (match_operand:SI 1 "gpr_operand" "")
+	      (match_operand:SI 2 "gpr_operand" "")))
+      (clobber (reg:CC_FP CCFP_REGNUM))])]
+  "prev_active_insn (peep2_next_insn (0))
+   && get_attr_sched_use_fpu (prev_active_insn (peep2_next_insn (0)))
+   && peep2_regno_dead_p (1, CC_REGNUM)
+   && get_attr_sched_use_fpu (next_active_insn (peep2_next_insn (0)))
+   && find_reg_note (insn, REG_EQUAL, NULL_RTX) != NULL_RTX
+   && GET_CODE (XEXP (find_reg_note (insn, REG_EQUAL, NULL_RTX), 0)) == MULT
+   && CONST_INT_P (XEXP (XEXP (find_reg_note (insn, REG_EQUAL, NULL_RTX), 0),
+			 1))"
+  [(parallel [(set (match_dup 0) (ashift:SI (match_dup 1) (match_dup 4)))
+	      (clobber (reg:CC CC_REGNUM))])]
+{
+  operands[4]
+    = XEXP (XEXP (find_reg_note (curr_insn, REG_EQUAL, NULL_RTX), 0), 1);
+})
 
 (define_expand "mulsi3"
   [(parallel
@@ -2529,6 +2551,106 @@
 }
   [(set_attr "length" "8")
    (set_attr "type" "v2fp")])
+
+(define_expand "ashlv2si3"
+  [(parallel
+     [(set (match_operand:V2SI 0 "gpr_operand" "")
+	   (ashift:V2SI (match_operand:V2SI 1 "gpr_operand" "")
+			(match_operand:SI 2 "general_operand")))
+      (use (match_dup 3))
+      (clobber (reg:CC_FP CCFP_REGNUM))])]
+  ""
+{
+  if (const_int_operand (operands[2], VOIDmode))
+    operands[3]
+      = copy_to_mode_reg (SImode, GEN_INT (1 << INTVAL (operands[2])));
+  else
+    {
+      int o, i;
+      rtx xop[2], last_out = pc_rtx;
+
+      for (o = 0; o <= UNITS_PER_WORD; o += UNITS_PER_WORD)
+	{
+	  for (i = 0; i < 2; i++)
+	    {
+	      xop[i]
+		= (i == 2 ? operands[2]
+		   : simplify_gen_subreg (SImode, operands[i], V2SImode, o));
+	      gcc_assert (!reg_overlap_mentioned_p (last_out, xop[i])
+			  /* ??? reg_overlap_mentioned_p doesn't understand
+			     about multi-word SUBREGs.  */
+			  || (GET_CODE (last_out) == SUBREG
+			      && GET_CODE (xop[i]) == SUBREG
+			      && SUBREG_REG (last_out) == SUBREG_REG (xop[i])
+			      && ((SUBREG_BYTE (last_out) & -UNITS_PER_WORD)
+				  != (SUBREG_BYTE (xop[i]) & -UNITS_PER_WORD))));
+	    }
+	  emit_insn (gen_ashlsi3 (xop[0], xop[1], operands[2]));
+	  last_out = xop[0];
+	}
+      DONE;
+    }
+})
+
+(define_insn_and_split "*ashlv2si3_i"
+  [(match_parallel 3 "float_operation"
+     [(set (match_operand:V2SI 0 "gpr_operand" "=&r,*1*2")
+	   (ashift:V2SI (match_operand:V2SI 1 "gpr_operand" "r,r")
+			(match_operand 2 "const_int_operand" "n,n")))
+      (use (match_operand:SI 4 "gpr_operand" "r,r"))
+      (clobber (reg:CC_FP CCFP_REGNUM))])]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel
+     [(set (match_dup 5) (mult:SI (match_dup 6) (match_dup 4)))
+	   (clobber (reg:CC_FP CCFP_REGNUM))
+	   (match_dup 9)
+	   (match_dup 10)])
+   (parallel
+     [(set (match_dup 7) (mult:SI (match_dup 8) (match_dup 4)))
+	   (clobber (reg:CC_FP CCFP_REGNUM))
+	   (match_dup 9)
+	   (match_dup 10)])]
+{
+  operands[5] = simplify_gen_subreg (SImode, operands[0], V2SImode, 0);
+  operands[6] = simplify_gen_subreg (SImode, operands[1], V2SImode, 0);
+  operands[7] = simplify_gen_subreg (SImode, operands[0],
+				     V2SImode, UNITS_PER_WORD);
+  operands[8] = simplify_gen_subreg (SImode, operands[1],
+				     V2SImode, UNITS_PER_WORD);
+  gcc_assert (!reg_overlap_mentioned_p (operands[5], operands[8]));
+  gcc_assert (!reg_overlap_mentioned_p (operands[5], operands[4]));
+  operands[9] = XVECEXP (operands[3], 0, XVECLEN (operands[3], 0) - 2);
+  operands[10] = XVECEXP (operands[3], 0, XVECLEN (operands[3], 0) - 1);
+  rtx insn
+    = (gen_rtx_PARALLEL
+	(VOIDmode,
+	 gen_rtvec
+	  (4,
+	   gen_rtx_SET (VOIDmode, operands[5],
+			gen_rtx_MULT (SImode, operands[6], operands[4])),
+	   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CC_FPmode, CCFP_REGNUM)),
+	   operands[9], operands[10])));
+  insn = emit_insn (insn);
+  add_reg_note (insn, REG_EQUAL,
+		gen_rtx_ASHIFT (SImode, operands[6], operands[2]));
+  insn
+    = (gen_rtx_PARALLEL
+	(VOIDmode,
+	 gen_rtvec
+	  (4,
+	   gen_rtx_SET (VOIDmode, operands[7],
+			gen_rtx_MULT (SImode, operands[8], operands[4])),
+	   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CC_FPmode, CCFP_REGNUM)),
+	   operands[9], operands[10])));
+  insn = emit_insn (insn);
+  add_reg_note (insn, REG_EQUAL,
+		gen_rtx_ASHIFT (SImode, operands[7], operands[2]));
+  DONE;
+}
+  [(set_attr "length" "8")
+   (set_attr "type" "fp_int")])
 
 (define_expand "mul<mode>3"
   [(parallel
