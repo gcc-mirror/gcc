@@ -1,3 +1,11 @@
+2013-07-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (*isub_i+2): New peephole.
+	(ashlv2si3): New expander.
+	(*ashlv2si3_i): New define_insn_and_split.
+	* predicates.md (float_operation): Allow patterns with three
+	basic sub-patterns.
+
 2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/linux.h (GLIBC_DYNAMIC_LINKER): Handle `-mnan=2008'.
