@@ -1,3 +1,9 @@
+2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57948
+	* call.c (initialize_reference): Don't crash when reference_binding
+	returns a conv with conv->kind == ck_ambig.
+
 2013-07-29  Jason Merrill  <jason@redhat.com>
 
 	* mangle.c (write_name): Check for null context.
