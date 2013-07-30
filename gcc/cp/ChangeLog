@@ -1,3 +1,8 @@
+2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57947
+	* call.c (is_std_init_list): Return false if cxx_dialect == cxx98.
+
 2013-07-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57901

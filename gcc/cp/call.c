@@ -9396,6 +9396,8 @@ is_std_init_list (tree type)
   /* Look through typedefs.  */
   if (!TYPE_P (type))
     return false;
+  if (cxx_dialect == cxx98)
+    return false;
   type = TYPE_MAIN_VARIANT (type);
   return (CLASS_TYPE_P (type)
 	  && CP_TYPE_CONTEXT (type) == std_node
