@@ -89,8 +89,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	OPCODE, OP2;				\
 	.set	reorder
 
+#if __mips >= 4
+/* Coprocessor moves are interlocked from the MIPS IV ISA up.  */
+#define DELAYf(T, OPCODE, OP2) DELAYt (T, OPCODE, OP2)
+#else
 /* Use "OPCODE. OP2" and jump to T.  */
 #define DELAYf(T, OPCODE, OP2) OPCODE, OP2; jr T
+#endif
 
 /* MOVE_SF_BYTE0(D)
 	Move the first single-precision floating-point argument between

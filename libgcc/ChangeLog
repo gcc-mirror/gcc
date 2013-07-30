@@ -1,3 +1,8 @@
+2013-07-30  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/mips16.S (DELAYf): Alias to DELAYt for the MIPS IV
+	ISA and up.
+
 2013-07-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/linux-unwind.h: Use the proper dwarf to hard reg
