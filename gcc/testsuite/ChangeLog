@@ -1,3 +1,7 @@
+2013-07-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/pr57637.c: New testcase.
+
 2013-07-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	PR tree-optimization/57993

@@ -1,3 +1,10 @@
+2013-07-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	PR rtl-optimization/57637
+	* function.c (move_insn_for_shrink_wrap): Also check the
+	GEN set of the LIVE problem for the liveness analysis
+	if it exists, otherwise give up.
+
 2013-07-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	PR tree-optimization/57993

@@ -5506,22 +5506,45 @@ move_insn_for_shrink_wrap (basic_block bb, rtx insn,
 	 except for any part that overlaps SRC (next loop).  */
       bb_uses = &DF_LR_BB_INFO (bb)->use;
       bb_defs = &DF_LR_BB_INFO (bb)->def;
-      for (i = dregno; i < end_dregno; i++)
+      if (df_live)
 	{
-	  if (REGNO_REG_SET_P (bb_uses, i) || REGNO_REG_SET_P (bb_defs, i))
-	    next_block = NULL;
-	  CLEAR_REGNO_REG_SET (live_out, i);
-	  CLEAR_REGNO_REG_SET (live_in, i);
-	}
+	  for (i = dregno; i < end_dregno; i++)
+	    {
+	      if (REGNO_REG_SET_P (bb_uses, i) || REGNO_REG_SET_P (bb_defs, i)
+		  || REGNO_REG_SET_P (&DF_LIVE_BB_INFO (bb)->gen, i))
+		next_block = NULL;
+	      CLEAR_REGNO_REG_SET (live_out, i);
+	      CLEAR_REGNO_REG_SET (live_in, i);
+	    }
 
-      /* Check whether BB clobbers SRC.  We need to add INSN to BB if so.
-	 Either way, SRC is now live on entry.  */
-      for (i = sregno; i < end_sregno; i++)
+	  /* Check whether BB clobbers SRC.  We need to add INSN to BB if so.
+	     Either way, SRC is now live on entry.  */
+	  for (i = sregno; i < end_sregno; i++)
+	    {
+	      if (REGNO_REG_SET_P (bb_defs, i)
+		  || REGNO_REG_SET_P (&DF_LIVE_BB_INFO (bb)->gen, i))
+		next_block = NULL;
+	      SET_REGNO_REG_SET (live_out, i);
+	      SET_REGNO_REG_SET (live_in, i);
+	    }
+	}
+      else
 	{
-	  if (REGNO_REG_SET_P (bb_defs, i))
-	    next_block = NULL;
-	  SET_REGNO_REG_SET (live_out, i);
-	  SET_REGNO_REG_SET (live_in, i);
+	  /* DF_LR_BB_INFO (bb)->def does not comprise the DF_REF_PARTIAL and
+	     DF_REF_CONDITIONAL defs.  So if DF_LIVE doesn't exist, i.e.
+	     at -O1, just give up searching NEXT_BLOCK.  */
+	  next_block = NULL;
+	  for (i = dregno; i < end_dregno; i++)
+	    {
+	      CLEAR_REGNO_REG_SET (live_out, i);
+	      CLEAR_REGNO_REG_SET (live_in, i);
+	    }
+
+	  for (i = sregno; i < end_sregno; i++)
+	    {
+	      SET_REGNO_REG_SET (live_out, i);
+	      SET_REGNO_REG_SET (live_in, i);
+	    }
 	}
 
       /* If we don't need to add the move to BB, look for a single
