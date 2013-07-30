@@ -6016,7 +6016,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
       || TREE_CODE (t) == MODIFY_EXPR)
     {
       member = TREE_OPERAND (t, 0);
-      init = unshare_expr (TREE_OPERAND (t, 1));
+      init = break_out_target_exprs (TREE_OPERAND (t, 1));
     }
   else if (TREE_CODE (t) == CALL_EXPR)
     {
@@ -6024,7 +6024,7 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
       /* We don't use build_cplus_new here because it complains about
 	 abstract bases.  Leaving the call unwrapped means that it has the
 	 wrong type, but cxx_eval_constant_expression doesn't care.  */
-      init = unshare_expr (t);
+      init = break_out_target_exprs (t);
     }
   else if (TREE_CODE (t) == DECL_EXPR)
     /* Declaring a temporary, don't add it to the CONSTRUCTOR.  */
@@ -6261,7 +6261,7 @@ constexpr_fn_retval (tree body)
       }
 
     case RETURN_EXPR:
-      return unshare_expr (TREE_OPERAND (body, 0));
+      return break_out_target_exprs (TREE_OPERAND (body, 0));
 
     case DECL_EXPR:
       if (TREE_CODE (DECL_EXPR_DECL (body)) == USING_DECL)
