@@ -1,3 +1,12 @@
+2013-07-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (lto/lto.o:): Depend on CONTEXT_H and
+	PASS_MANAGER_H.
+
+	* lto.c (do_whole_program_analysis): Update for move of
+	all_regular_ipa_passes from a global to a field of class
+	pass_manager.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
 	* lto-partition.c: Fix typos.

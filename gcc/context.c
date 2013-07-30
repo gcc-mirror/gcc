@@ -22,6 +22,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "ggc.h"
 #include "context.h"
+#include "pass_manager.h"
 
 /* The singleton holder of global state: */
 gcc::context *g;
+
+gcc::context::context()
+{
+  passes_ = new gcc::pass_manager (this);
+}

@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "lto-partition.h"
 #include "data-streamer.h"
+#include "context.h"
+#include "pass_manager.h"
 
 static GTY(()) tree first_personality_decl;
 
@@ -3694,7 +3696,7 @@ do_whole_program_analysis (void)
   bitmap_obstack_initialize (NULL);
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
-  execute_ipa_pass_list (all_regular_ipa_passes);
+  execute_ipa_pass_list (g->get_passes ()->all_regular_ipa_passes);
   symtab_remove_unreachable_nodes (false, dump_file);
 
   if (cgraph_dump_file)

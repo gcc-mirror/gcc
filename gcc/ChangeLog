@@ -1,3 +1,90 @@
+2013-07-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (PASS_MANAGER_H): New.
+	(lto-cgraph.o): Depend on CONTEXT_H and PASS_MANAGER_H.
+	(passes.o): Likewise.
+	(statistics.o): Likewise.
+	(cgraphunit.o): Likewise.
+	(context.o): Depend on PASS_MANAGER_H.
+
+	* pass_manager.h: New.
+
+	* cgraphunit.c (cgraph_add_new_function): Update for moves
+	of globals to fields of pass_manager.
+	(analyze_function): Likewise.
+	(expand_function): Likewise.
+	(ipa_passes): Likewise.
+	(compile): Likewise.
+
+	* context.c (context::context): New.
+	* context.h  (context::context): New.
+	(context::get_passes): New.
+	(context::passes_): New.
+
+	* lto-cgraph.c (input_node): Update for moves of globals to
+	fields of pass_manager.
+
+	* passes.c (all_passes): Remove, in favor of a field of the
+	same name within the new class pass_manager.
+	(all_small_ipa_passes): Likewise.
+	(all_lowering_passes): Likewise.
+	(all_regular_ipa_passes): Likewise.
+	(all_late_ipa_passes): Likewise.
+	(all_lto_gen_passes): Likewise.
+	(passes_by_id): Likewise.
+	(passes_by_id_size): Likewise.
+	(gcc_pass_lists): Remove, in favor of "pass_lists" field within
+	the new class pass_manager.
+	(set_pass_for_id): Convert to...
+	(pass_manager::set_pass_for_id): ...method.
+	(get_pass_for_id): Convert to...
+	(pass_manager::get_pass_for_id): ...method.
+	(register_one_dump_file): Move body of implementation into...
+	(pass_manager::register_one_dump_file): ...here.
+	(register_dump_files_1): Convert to...
+	(pass_manager::register_dump_files_1): ...method.
+	(register_dump_files): Convert to...
+	(pass_manager::register_dump_files): ...method.
+	(create_pass_tab): Update for moves of globals to fields of
+	pass_manager.
+	(dump_passes): Move body of implementation into...
+	(pass_manager::dump_passes): ...here.
+	(register_pass): Move body of implementation into...
+	(pass_manager::register_pass): ...here.
+	(init_optimization_passes): Convert into...
+	(pass_manager::pass_manager): ...constructor for new
+	pass_manager class, and initialize the pass_lists array.
+	(check_profile_consistency): Update for moves of globals to
+	fields of pass_manager.
+	(dump_profile_report): Move body of implementation into...
+	(pass_manager::dump_profile_report): ...here.
+	(ipa_write_summaries_1): Update for moves of pass lists from
+	being globals to fields of pass_manager.
+	(ipa_write_optimization_summaries): Likewise.
+	(ipa_read_summaries):  Likewise.
+	(ipa_read_optimization_summaries): Likewise.
+	(execute_all_ipa_stmt_fixups): Likewise.
+
+	* statistics.c (statistics_fini): Update for moves of globals to
+	fields of pass_manager.
+
+	* toplev.c (general_init): Replace call to
+	init_optimization_passes with construction of the pass_manager
+	instance.
+
+	* tree-pass.h (all_passes): Remove, in favor of a field of the
+	same name within the new class pass_manager.
+	(all_small_ipa_passes): Likewise.
+	(all_lowering_passes): Likewise.
+	(all_regular_ipa_passes): Likewise.
+	(all_lto_gen_passes): Likewise.
+	(all_late_ipa_passes): Likewise.
+	(passes_by_id): Likewise.
+	(passes_by_id_size): Likewise.
+	(gcc_pass_lists): Remove, in favor of "pass_lists" field within
+	the new class pass_manager.
+	(get_pass_for_id): Remove.
+
 2013-07-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config.gcc (arm): Require 64-bit host-wide-int for all ARM target

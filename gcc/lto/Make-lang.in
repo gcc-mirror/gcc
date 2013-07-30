@@ -85,7 +85,8 @@ lto/lto.o: lto/lto.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(OPTS_H) \
 	langhooks.h $(VEC_H) $(BITMAP_H) pointer-set.h $(IPA_PROP_H) \
 	$(COMMON_H) debug.h $(GIMPLE_H) $(LTO_H) $(LTO_TREE_H) \
 	$(LTO_TAGS_H) $(LTO_STREAMER_H) $(SPLAY_TREE_H) gt-lto-lto.h \
-	$(TREE_STREAMER_H) $(DATA_STREAMER_H) lto/lto-partition.h
+	$(TREE_STREAMER_H) $(DATA_STREAMER_H) lto/lto-partition.h \
+	$(CONTEXT_H) $(PIPELINE_H)
 lto/lto-partition.o: lto/lto-partition.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	toplev.h $(TREE_H) $(TM_H) \
 	$(CGRAPH_H) $(TIMEVAR_H) \
