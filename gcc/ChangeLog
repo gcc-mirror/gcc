@@ -1,5 +1,10 @@
 2013-07-30  Richard Earnshaw  <rearnsha@arm.com>
 
+	* config.gcc (arm): Require 64-bit host-wide-int for all ARM target
+	configs.
+
+2013-07-30  Richard Earnshaw  <rearnsha@arm.com>
+
 	* arm.md (mulhi3): New expand pattern.
 
 2013-07-30  Jan Hubicka  <jh@suse.cz>
