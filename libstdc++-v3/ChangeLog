@@ -1,3 +1,20 @@
+2013-07-30  Tim Shen  <timshen91@gmail.com>
+
+	Thompson matcher refactored. Fix grouping problem.
+	* include/bits/regex.h: Use a dispatcher _M_get_matcher().
+	* include/bits/regex_compiler.h: Tweak for auto switching.
+	* include/bits/regex_grep_matcher.h: Class structure.
+	* include/bits/regex_grep_matcher.tcc: _BFSMatcher(Thompson
+	matcher) refactoring.
+	* include/bits/regex_nfa.h: Change _Results's interfaces.
+	* include/std/regex: Includes <map> and <queue>.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/string_dispatch_01.cc:
+	New.
+
 2013-07-29  Nathan Froyd  <froydnj@gcc.gnu.org>
 
 	* include/std/atomic (compare_exchange_weak, compare_exchange_strong):
