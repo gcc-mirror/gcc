@@ -32,13 +32,83 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+namespace
+{
+  // A stack of states used in evaluating the NFA.
+  typedef std::stack<std::__detail::_StateIdT,
+                     std::vector<std::__detail::_StateIdT>
+		     > _StateStack;
+
+  // Obtains the next state set given the current state set __s and the current
+  // input character.
+  inline std::__detail::_StateSet
+  __move(const std::__detail::_PatternCursor& __p,
+         const std::__detail::_Nfa& __nfa,
+         const std::__detail::_StateSet& __s)
+  {
+    std::__detail::_StateSet __m;
+    for (std::__detail::_StateSet::const_iterator __i = __s.begin();
+	 __i != __s.end(); ++__i)
+      {
+	if (*__i == std::__detail::_S_invalid_state_id)
+	  continue;
+
+	const std::__detail::_State& __state = __nfa[*__i];
+	if (__state._M_opcode == std::__detail::_S_opcode_match
+	    && __state._M_matches(__p))
+	  __m.insert(__state._M_next);
+      }
+    return __m;
+  }
+
+  // returns true if (__s intersect __t) is not empty
+  inline bool
+  __includes_some(const std::__detail::_StateSet& __s,
+                  const std::__detail::_StateSet& __t)
+  {
+    if (__s.size() > 0 && __t.size() > 0)
+      {
+	std::__detail::_StateSet::const_iterator __first = __s.begin();
+	std::__detail::_StateSet::const_iterator __second = __t.begin();
+	while (__first != __s.end() && __second != __t.end())
+	  {
+	    if (*__first < *__second)
+	      ++__first;
+	    else if (*__second < *__first)
+	      ++__second;
+	    else
+	      return true;
+	  }
+      }
+    return false;
+  }
+
+  // If an identified state __u is not already in the current state set __e,
+  // insert it and push it on the current state stack __s.
+  inline void
+  __add_visited_state(const std::__detail::_StateIdT __u,
+                      _StateStack&                  __s,
+                      std::__detail::_StateSet&      __e)
+  {
+    if (__e.count(__u) == 0)
+      {
+	__e.insert(__u);
+	__s.push(__u);
+      }
+  }
+
+} // anonymous namespace
+
 namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  // _M_dfs() take a state, along with current string cursor(_M_pattern),
+  // trying to match current state with current character.
+  // Only _S_opcode_match will consume a character.
   // TODO: This is too slow. Try to compile the NFA to a DFA.
   template<bool __match_mode>
-    bool _DFSMatcher::
+    bool _Grep_matcher::
     _M_dfs(_StateIdT __i)
     {
       if (__i == _S_invalid_state_id)
@@ -56,162 +126,116 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             || _M_dfs<__match_mode>(__state._M_next);
           break;
         case _S_opcode_subexpr_begin:
-          __state._M_tagger(_M_str_cur, _M_results);
+          __state._M_tagger(_M_pattern, _M_results);
           __ret = _M_dfs<__match_mode>(__state._M_next);
           break;
         case _S_opcode_subexpr_end:
-          __state._M_tagger(_M_str_cur, _M_results);
+          __state._M_tagger(_M_pattern, _M_results);
           __ret = _M_dfs<__match_mode>(__state._M_next);
           _M_results._M_set_matched(__state._M_subexpr, __ret);
           break;
         case _S_opcode_match:
-          if (!_M_str_cur._M_at_end() && __state._M_matches(_M_str_cur))
+          if (!_M_pattern._M_at_end() && __state._M_matches(_M_pattern))
             {
-              _M_str_cur._M_next();
+              _M_pattern._M_next();
               __ret = _M_dfs<__match_mode>(__state._M_next);
-              _M_str_cur._M_prev();
+              _M_pattern._M_prev();
             }
           break;
         case _S_opcode_accept:
           if (__match_mode)
-            __ret = _M_str_cur._M_at_end();
+            __ret = _M_pattern._M_at_end();
           else
             __ret = true;
           break;
         default:
-          _GLIBCXX_DEBUG_ASSERT(false);
+          _GLIBCXX_DEBUG_ASSERT( false );
         }
       return __ret;
     }
 
-  template<bool __match_mode>
-    bool _BFSMatcher::
-    _M_main_loop()
-    {
-      while (!_M_str_cur._M_at_end())
-        {
-          if (!__match_mode)
-            if (_M_includes_some())
-              return true;
-          _M_move();
-          _M_str_cur._M_next();
-          _M_e_closure();
-        }
-      return _M_includes_some();
-    }
-
-  // The SPFA approach.
-  void _BFSMatcher::
-  _M_e_closure()
+  inline void _Grep_matcher::
+  _M_match()
   {
-    std::queue<_StateIdT> __q;
-    std::vector<bool> __in_q(_M_nfa->size(), false);
-    for (auto& __it : _M_current)
-      {
-        __in_q[__it.first] = true;
-        __q.push(__it.first);
-      }
-    while (!__q.empty())
-      {
-        auto __u = __q.front();
-        __q.pop();
-        __in_q[__u] = false;
-        const auto& __state = (*_M_nfa)[__u];
+    __detail::_StateSet __t = this->_M_e_closure(_M_nfa->_M_start());
+    for (; !_M_pattern._M_at_end(); _M_pattern._M_next())
+      __t = this->_M_e_closure(__move(_M_pattern, *_M_nfa, __t));
 
-        // Can be implemented using method, but there're too much arguments.
-        auto __add_visited_state = [&](_StateIdT __v)
-        {
-          if (__v == _S_invalid_state_id)
-            return;
-          if (_M_match_less_than(__u, __v))
-            {
-              _M_current[__v] = _M_current[__u]->_M_clone();
-              // if a state is updated, it's outgoing neighbors should be
-              // reconsidered too. Push them to the queue.
-              if (!__in_q[__v])
-                {
-                  __in_q[__v] = true;
-                  __q.push(__v);
-                }
-            }
-        };
+    _M_results._M_set_matched(0,
+                              __includes_some(_M_nfa->_M_final_states(), __t));
+  }
 
-        switch (__state._M_opcode)
+  inline void _Grep_matcher::
+  _M_search_from_first()
+  {
+    __detail::_StateSet __t = this->_M_e_closure(_M_nfa->_M_start());
+    for (; !_M_pattern._M_at_end(); _M_pattern._M_next())
+      {
+        if (__includes_some(_M_nfa->_M_final_states(), __t)) // KISS
           {
-            case _S_opcode_alternative:
-              __add_visited_state(__state._M_next);
-              __add_visited_state(__state._M_alt);
-              break;
-            case _S_opcode_subexpr_begin:
-              __state._M_tagger(_M_str_cur, *_M_current[__u]);
-              __add_visited_state(__state._M_next);
-              break;
-            case _S_opcode_subexpr_end:
-              __state._M_tagger(_M_str_cur, *_M_current[__u]);
-              _M_current[__u]->_M_set_matched(__state._M_subexpr, true);
-              __add_visited_state(__state._M_next);
-              break;
-            case _S_opcode_match:
-              break;
-            case _S_opcode_accept:
-              __add_visited_state(__state._M_next);
-              break;
-            default:
-              _GLIBCXX_DEBUG_ASSERT(false);
+            _M_results._M_set_matched(0, true);
+            return;
           }
+        __t = this->_M_e_closure(__move(_M_pattern, *_M_nfa, __t));
       }
+    _M_results._M_set_matched(0, false);
   }
 
-  void _BFSMatcher::
-  _M_move()
+  // Creates the e-closure set for the initial state __i.
+  inline _StateSet _Grep_matcher::
+  _M_e_closure(_StateIdT __i)
   {
-    decltype(_M_current) __next;
-    for (auto& __it : _M_current)
+    _StateSet __s;
+    __s.insert(__i);
+    _StateStack __stack;
+    __stack.push(__i);
+    return this->_M_e_closure(__stack, __s);
+  }
+
+  // Creates the e-closure set for an arbitrary state set __s.
+  inline _StateSet _Grep_matcher::
+  _M_e_closure(const _StateSet& __s)
+  {
+    _StateStack __stack;
+    for (_StateSet::const_iterator __i = __s.begin(); __i != __s.end(); ++__i)
+      __stack.push(*__i);
+    return this->_M_e_closure(__stack, __s);
+  }
+
+  inline _StateSet _Grep_matcher::
+  _M_e_closure(_StateStack& __stack, const _StateSet& __s)
+  {
+    _StateSet __e = __s;
+    while (!__stack.empty())
       {
-        const auto& __state = (*_M_nfa)[__it.first];
-        if (__state._M_opcode == _S_opcode_match
-            && __state._M_matches(_M_str_cur))
-          if (_M_match_less_than(__it.first, __state._M_next)
-              && __state._M_next != _S_invalid_state_id)
-            __next[__state._M_next] = __it.second->_M_clone();
-      }
-    _M_current = move(__next);
-  }
-
-  bool _BFSMatcher::
-  _M_match_less_than(_StateIdT __u, _StateIdT __v) const
-  {
-    if (_M_current.count(__u) == 0)
-      return false;
-    if (_M_current.count(__v) > 0)
-      return true;
-    // TODO: Greedy and Non-greedy support
-    return true;
-  }
-
-  bool _BFSMatcher::
-  _M_includes_some() const
-  {
-    auto& __s = _M_nfa->_M_final_states();
-    auto& __t = _M_current;
-    if (__s.size() > 0 && __t.size() > 0)
-      {
-	auto __first = __s.begin();
-	auto __second = __t.begin();
-	while (__first != __s.end() && __second != __t.end())
+	_StateIdT __t = __stack.top(); __stack.pop();
+	if (__t == _S_invalid_state_id)
+	  continue;
+	// for each __u with edge from __t to __u labeled e do ...
+	const _State& __state = _M_nfa->operator[](__t);
+	switch (__state._M_opcode)
 	  {
-	    if (*__first < __second->first)
-	      ++__first;
-	    else if (__second->first < *__first)
-	      ++__second;
-	    else
-              {
-                _M_results._M_assign(*__second->second);
-                return true;
-              }
+	  case _S_opcode_alternative:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    __add_visited_state(__state._M_alt, __stack, __e);
+	    break;
+	  case _S_opcode_subexpr_begin:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    __state._M_tagger(_M_pattern, _M_results);
+	    break;
+	  case _S_opcode_subexpr_end:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    __state._M_tagger(_M_pattern, _M_results);
+	    _M_results._M_set_matched(__state._M_subexpr, true);
+	    break;
+	  case _S_opcode_accept:
+	    __add_visited_state(__state._M_next, __stack, __e);
+	    break;
+	  default:
+	    break;
 	  }
       }
-    return false;
+    return __e;
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION
