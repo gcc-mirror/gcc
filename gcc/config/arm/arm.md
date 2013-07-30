@@ -1725,6 +1725,20 @@
 
 ;; Multiplication insns
 
+(define_expand "mulhi3"
+  [(set (match_operand:HI 0 "s_register_operand" "")
+	(mult:HI (match_operand:HI 1 "s_register_operand" "")
+		 (match_operand:HI 2 "s_register_operand" "")))]
+  "TARGET_DSP_MULTIPLY"
+  "
+  {
+    rtx result = gen_reg_rtx (SImode);
+    emit_insn (gen_mulhisi3 (result, operands[1], operands[2]));
+    emit_move_insn (operands[0], gen_lowpart (HImode, result));
+    DONE;
+  }"
+)
+
 (define_expand "mulsi3"
   [(set (match_operand:SI          0 "s_register_operand" "")
 	(mult:SI (match_operand:SI 2 "s_register_operand" "")
