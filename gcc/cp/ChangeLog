@@ -1,3 +1,9 @@
+2013-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58022
+	* typeck2.c (abstract_virtuals_error_sfinae): Don't remember
+	lookup in SFINAE context.
+
 2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57981
