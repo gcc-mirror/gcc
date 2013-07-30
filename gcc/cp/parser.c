@@ -24145,7 +24145,9 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	case CPP_SEMICOLON:
 	case CPP_CLOSE_BRACE:
 	case CPP_CLOSE_SQUARE:
-	  if (depth == 0)
+	  if (depth == 0
+	      /* Handle correctly int n = sizeof ... ( p );  */
+	      && !(nsdmi && token->type == CPP_ELLIPSIS))
 	    done = true;
 	  /* Update DEPTH, if necessary.  */
 	  else if (token->type == CPP_CLOSE_PAREN
