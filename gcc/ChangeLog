@@ -1,3 +1,13 @@
+2013-07-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	PR tree-optimization/57993
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Record
+	replaced statement in the candidate table.
+	(phi_add_costs): Return infinite cost when the hidden basis does
+	not dominate all phis on which the candidate is dependent.
+	(replace_one_candidate): Record replaced statement in the
+	candidate table.
+
 2013-07-29  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/epiphany/epiphany.md (*isub_i+2): New peephole.

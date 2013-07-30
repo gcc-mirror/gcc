@@ -1,3 +1,8 @@
+2013-07-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	PR tree-optimization/57993
+	* gcc.dg/torture/pr57993.c: New test.
+
 2013-07-29  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/tree-ssa/pr44258.c: Disable scan test for Epiphany.

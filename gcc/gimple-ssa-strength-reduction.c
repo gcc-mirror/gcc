@@ -1882,6 +1882,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump)
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
+	  c->cand_stmt = copy_stmt;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = copy_stmt;
 	}
@@ -2178,6 +2179,18 @@ phi_add_costs (gimple phi, slsr_cand_t c, int one_add_cost)
   unsigned i;
   int cost = 0;
   slsr_cand_t phi_cand = base_cand_from_table (gimple_phi_result (phi));
+
+  /* If we work our way back to a phi that isn't dominated by the hidden
+     basis, this isn't a candidate for replacement.  Indicate this by
+     returning an unreasonably high cost.  It's not easy to detect
+     these situations when determining the basis, so we defer the
+     decision until now.  */
+  basic_block phi_bb = gimple_bb (phi);
+  slsr_cand_t basis = lookup_cand (c->basis);
+  basic_block basis_bb = gimple_bb (basis->cand_stmt);
+
+  if (phi_bb == basis_bb || !dominated_by_p (CDI_DOMINATORS, phi_bb, basis_bb))
+    return COST_INFINITE;
 
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
@@ -3226,6 +3239,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 	  gimple_set_location (copy_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, copy_stmt, false);
+	  c->cand_stmt = copy_stmt;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = copy_stmt;
@@ -3238,6 +3252,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 							   NULL_TREE);
 	  gimple_set_location (cast_stmt, gimple_location (c->cand_stmt));
 	  gsi_replace (&gsi, cast_stmt, false);
+	  c->cand_stmt = cast_stmt;
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = cast_stmt;
