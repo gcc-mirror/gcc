@@ -1,6 +1,14 @@
 2013-07-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57530
+	* symbol.c (gfc_type_compatible): A type is type compatible with
+	a class if both have the same declared type.
+	* interface.c (compare_type): Reject CLASS/TYPE even if they
+	are type compatible.
+
+2013-07-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57530
 	* trans-expr.c (gfc_trans_class_assign): Handle CLASS array
 	functions.
 	(gfc_trans_pointer_assign): Ditto and support pointer assignment of
