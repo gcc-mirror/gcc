@@ -330,6 +330,7 @@ arm*-*-*)
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
+	need_64bit_hwint=yes
 	extra_options="${extra_options} arm/arm-tables.opt"
 	;;
 avr-*-*)
@@ -943,10 +944,6 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	    tmake_file="$tmake_file arm/t-linux-androideabi"
 	    ;;
 	esac
-  	# The BPABI long long divmod functions return a 128-bit value in
-	# registers r0-r3.  Correctly modeling that requires the use of
-	# TImode.
-	need_64bit_hwint=yes
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
 	with_tls=${with_tls:-gnu}
@@ -955,10 +952,6 @@ arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
 	tmake_file="arm/t-arm arm/t-arm-elf arm/t-bpabi"
 	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
-	# The BPABI long long divmod functions return a 128-bit value in
-	# registers r0-r3.  Correctly modeling that requires the use of
-	# TImode.
-	need_64bit_hwint=yes
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
 	;;
@@ -967,10 +960,6 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems*)
 	arm*eb-*-eabi*)
 	  tm_defines="${tm_defines} TARGET_BIG_ENDIAN_DEFAULT=1"
 	esac
-	# The BPABI long long divmod functions return a 128-bit value in
-	# registers r0-r3.  Correctly modeling that requires the use of
-	# TImode.
-	need_64bit_hwint=yes
 	default_use_cxa_atexit=yes
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/bpabi.h"
 	tmake_file="arm/t-arm arm/t-arm-elf"
