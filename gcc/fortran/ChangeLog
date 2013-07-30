@@ -1,3 +1,11 @@
+2013-07-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57530
+	* trans-expr.c (gfc_trans_class_assign): Handle CLASS array
+	functions.
+	(gfc_trans_pointer_assign): Ditto and support pointer assignment of
+	a polymorphic var to a nonpolymorphic var.
+
 2013-07-22  Po Chang  <pchang9@cs.wisc.edu>
 
 	* match.c (gfc_match_call): Exit loop after setting i.
