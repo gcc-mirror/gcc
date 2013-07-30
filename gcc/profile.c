@@ -885,12 +885,16 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
       t = (int) hist->type;
 
       aact_count = act_count[t];
-      act_count[t] += hist->n_counters;
+      if (act_count[t])
+        act_count[t] += hist->n_counters;
 
       gimple_add_histogram_value (cfun, stmt, hist);
       hist->hvalue.counters =  XNEWVEC (gcov_type, hist->n_counters);
       for (j = 0; j < hist->n_counters; j++)
-	hist->hvalue.counters[j] = aact_count[j];
+        if (aact_count[t])
+	  hist->hvalue.counters[j] = aact_count[j];
+	else
+	  hist->hvalue.counters[j] = 0;
     }
 
   for (t = 0; t < GCOV_N_VALUE_COUNTERS; t++)
