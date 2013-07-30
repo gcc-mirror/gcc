@@ -1,3 +1,7 @@
+2013-07-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (mulhi3): New expand pattern.
+
 2013-07-30  Jan Hubicka  <jh@suse.cz>
 	    Martin Liska  <marxin.liska@gmail.com>
 
