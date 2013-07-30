@@ -4489,6 +4489,9 @@ gfc_type_compatible (gfc_typespec *ts1, gfc_typespec *ts2)
   if (is_derived1 && is_derived2)
     return gfc_compare_derived_types (ts1->u.derived, ts2->u.derived);
 
+  if (is_derived1 && is_class2)
+    return gfc_compare_derived_types (ts1->u.derived,
+				      ts2->u.derived->components->ts.u.derived);
   if (is_class1 && is_derived2)
     return gfc_type_is_extension_of (ts1->u.derived->components->ts.u.derived,
 				     ts2->u.derived);
