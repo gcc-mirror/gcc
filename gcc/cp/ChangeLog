@@ -1,3 +1,9 @@
+2013-07-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57901
+	* semantics.c (build_data_member_initialization, constexpr_fn_retval):
+	Use break_out_target_exprs instead of unshare_expr.
+
 2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57948
