@@ -33,13 +33,24 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  std::regex  re("/asdf(/.*)", std::regex::extended);
-  std::string target("/asdf/qwerty");
-  std::smatch m;
+  {
+    std::regex  re("/asdf(/.*)", std::regex::extended);
+    std::string target("/asdf/qwerty");
+    std::smatch m;
 
-  VERIFY( std::regex_match(target, m, re) );
-  VERIFY( m.size() == 2 );
-  VERIFY( std::string(m[1].first, m[1].second) == "/qwerty");
+    VERIFY( std::regex_match(target, m, re) );
+    VERIFY( m.size() == 2 );
+    VERIFY( std::string(m[1].first, m[1].second) == "/qwerty");
+  }
+  {
+    std::regex  re("/asdf(/.*)()\\2", std::regex::extended);
+    std::string target("/asdf/qwerty");
+    std::smatch m;
+
+    VERIFY( std::regex_match(target, m, re) );
+    VERIFY( m.size() == 3 );
+    VERIFY( std::string(m[1].first, m[1].second) == "/qwerty");
+  }
 }
 
 int
