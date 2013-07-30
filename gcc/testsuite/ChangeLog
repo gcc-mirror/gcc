@@ -1,3 +1,8 @@
+2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57673
+	* g++.dg/cpp0x/nsdmi-sizeof.C: New.
+
 2013-07-30  Steve Ellcey  <sellcey@mips.com>
 
 	* gcc.target/mips/code-readable-1.c: Increase switch size.
