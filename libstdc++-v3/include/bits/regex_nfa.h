@@ -39,24 +39,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-  /// Provides a generic facade for a templated match_results.
-  struct _Results
-  {
-    virtual
-    ~_Results()
-    { }
-    virtual void _M_set_pos(int __i, int __j, const _PatternCursor& __p) = 0;
-    virtual void _M_set_matched(int __i, bool __is_matched) = 0;
-    virtual std::unique_ptr<_Results> _M_clone() const = 0;
-    virtual void _M_assign(const _Results& __rhs) = 0;
-  };
-
-  class _Grep_matcher;
-  class _Automaton;
-
-  /// Generic shared pointer to an automaton.
-  typedef std::shared_ptr<_Automaton> _AutomatonPtr;
-
   /// Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
   class _Automaton
   {
@@ -70,17 +52,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     virtual _SizeT
     _M_sub_count() const = 0;
 
-    virtual std::unique_ptr<_Grep_matcher>
-    _M_get_matcher(_PatternCursor&                   __p,
-                   _Results&                         __r,
-                   const _AutomatonPtr&              __automaton,
-                   regex_constants::match_flag_type  __flags) = 0;
-
 #ifdef _GLIBCXX_DEBUG
     virtual std::ostream&
     _M_dot(std::ostream& __ostr) const = 0;
 #endif
   };
+
+  /// Generic shared pointer to an automaton.  
+  typedef std::shared_ptr<_Automaton> _AutomatonPtr;
 
   /// Operation codes that define the type of transitions within the base NFA
   /// that represents the regular expression.
@@ -92,6 +71,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_opcode_subexpr_end   =   5,
       _S_opcode_match         = 100,
       _S_opcode_accept        = 255
+  };
+
+  /// Provides a generic facade for a templated match_results.
+  struct _Results
+  {
+    virtual void _M_set_pos(int __i, int __j, const _PatternCursor& __p) = 0;
+    virtual void _M_set_matched(int __i, bool __is_matched) = 0;
   };
 
   /// Tags current state (for subexpr begin/end).
@@ -127,6 +113,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __r._M_set_pos(_M_index, 1, __pc); }
 
       int       _M_index;
+      _FwdIterT _M_pos;
     };
 
   /// Indicates if current state matches cursor current.
@@ -288,9 +275,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef regex_constants::syntax_option_type _FlagT;
 
     _Nfa(_FlagT __f)
-    : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-    // TODO: BFS by default. Your choice. Need to be set by the compiler.
-    _M_has_back_ref(false)
+    : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0)
     { }
 
     ~_Nfa()
@@ -349,16 +334,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return this->size()-1;
     }
 
-    void
-    _M_set_back_ref(bool __b)
-    { _M_has_back_ref = __b; }
-
-    std::unique_ptr<_Grep_matcher>
-    _M_get_matcher(_PatternCursor&                   __p,
-                   _Results&                         __r,
-                   const _AutomatonPtr&              __automaton,
-                   regex_constants::match_flag_type  __flags);
-
 #ifdef _GLIBCXX_DEBUG
     std::ostream&
     _M_dot(std::ostream& __ostr) const;
@@ -369,7 +344,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateIdT  _M_start_state;
     _StateSet  _M_accepting_states;
     _SizeT     _M_subexpr_count;
-    bool       _M_has_back_ref;
   };
 
   /// Describes a sequence of one or more %_State, its current start

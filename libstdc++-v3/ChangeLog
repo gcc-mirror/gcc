@@ -1,3 +1,7 @@
+2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert last commit.
+
 2013-07-30  Tim Shen  <timshen91@gmail.com>
 
 	Thompson matcher refactored. Fix grouping problem.
@@ -12,8 +16,8 @@
 	For both matchers.
 	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc:
 	For both matchers.
-	* testsuite/28_regex/algorithms/regex_match/extended/string_dispatch_01.cc:
-	New.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: New.
 
 2013-07-29  Nathan Froyd  <froydnj@gcc.gnu.org>
 
