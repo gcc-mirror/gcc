@@ -194,6 +194,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "cfgloop.h"
 #include "regset.h"     /* FIXME: For reg_obstack.  */
+#include "context.h"
+#include "pass_manager.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -478,6 +480,7 @@ cgraph_finalize_function (tree decl, bool nested)
 void
 cgraph_add_new_function (tree fndecl, bool lowered)
 {
+  gcc::pass_manager *passes = g->get_passes ();
   struct cgraph_node *node;
   switch (cgraph_state)
     {
@@ -508,7 +511,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	    gimple_register_cfg_hooks ();
 	    bitmap_obstack_initialize (NULL);
-	    execute_pass_list (all_lowering_passes);
+	    execute_pass_list (passes->all_lowering_passes);
 	    execute_pass_list (pass_early_local_passes.pass.sub);
 	    bitmap_obstack_release (NULL);
 	    pop_cfun ();
@@ -640,7 +643,7 @@ analyze_function (struct cgraph_node *node)
 
 	  gimple_register_cfg_hooks ();
 	  bitmap_obstack_initialize (NULL);
-	  execute_pass_list (all_lowering_passes);
+	  execute_pass_list (g->get_passes ()->all_lowering_passes);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  compact_blocks ();
@@ -1588,7 +1591,7 @@ expand_function (struct cgraph_node *node)
   /* Signal the start of passes.  */
   invoke_plugin_callbacks (PLUGIN_ALL_PASSES_START, NULL);
 
-  execute_pass_list (all_passes);
+  execute_pass_list (g->get_passes ()->all_passes);
 
   /* Signal the end of passes.  */
   invoke_plugin_callbacks (PLUGIN_ALL_PASSES_END, NULL);
@@ -1807,6 +1810,8 @@ output_in_order (void)
 static void
 ipa_passes (void)
 {
+  gcc::pass_manager *passes = g->get_passes ();
+
   set_cfun (NULL);
   current_function_decl = NULL;
   gimple_register_cfg_hooks ();
@@ -1816,7 +1821,7 @@ ipa_passes (void)
 
   if (!in_lto_p)
     {
-      execute_ipa_pass_list (all_small_ipa_passes);
+      execute_ipa_pass_list (passes->all_small_ipa_passes);
       if (seen_error ())
 	return;
     }
@@ -1843,14 +1848,15 @@ ipa_passes (void)
       cgraph_process_new_functions ();
 
       execute_ipa_summary_passes
-	((struct ipa_opt_pass_d *) all_regular_ipa_passes);
+	((struct ipa_opt_pass_d *) passes->all_regular_ipa_passes);
     }
 
   /* Some targets need to handle LTO assembler output specially.  */
   if (flag_generate_lto)
     targetm.asm_out.lto_start ();
 
-  execute_ipa_summary_passes ((struct ipa_opt_pass_d *) all_lto_gen_passes);
+  execute_ipa_summary_passes ((struct ipa_opt_pass_d *)
+			      passes->all_lto_gen_passes);
 
   if (!in_lto_p)
     ipa_write_summaries ();
@@ -1859,7 +1865,7 @@ ipa_passes (void)
     targetm.asm_out.lto_end ();
 
   if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
-    execute_ipa_pass_list (all_regular_ipa_passes);
+    execute_ipa_pass_list (passes->all_regular_ipa_passes);
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
   bitmap_obstack_release (NULL);
@@ -1985,7 +1991,7 @@ compile (void)
 
   cgraph_materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
-  execute_ipa_pass_list (all_late_ipa_passes);
+  execute_ipa_pass_list (g->get_passes ()->all_late_ipa_passes);
   symtab_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
   verify_symtab ();

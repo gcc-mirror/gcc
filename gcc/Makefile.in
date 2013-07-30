@@ -987,6 +987,7 @@ PLUGIN_VERSION_H = plugin-version.h configargs.h
 LIBFUNCS_H = libfuncs.h $(HASHTAB_H)
 GRAPHITE_HTAB_H = graphite-htab.h graphite-clast-to-gimple.h $(HASH_TABLE_H)
 CONTEXT_H = context.h
+PASS_MANAGER_H = pass_manager.h
 
 #
 # Now figure out from those variables how to compile and link.
@@ -2183,7 +2184,8 @@ lto-cgraph.o: lto-cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
    $(HASHTAB_H) langhooks.h $(BASIC_BLOCK_H) \
    $(TREE_FLOW_H) $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) $(DIAGNOSTIC_CORE_H) \
    $(EXCEPT_H) $(TIMEVAR_H) pointer-set.h $(LTO_STREAMER_H) \
-   $(GCOV_IO_H) $(DATA_STREAMER_H) $(TREE_STREAMER_H) $(TREE_PASS_H) profile.h
+   $(GCOV_IO_H) $(DATA_STREAMER_H) $(TREE_STREAMER_H) $(TREE_PASS_H) \
+   profile.h $(CONTEXT_H) $(PASS_MANAGER_H)
 lto-streamer-in.o: lto-streamer-in.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) toplev.h $(DIAGNOSTIC_CORE_H) $(EXPR_H) $(FLAGS_H) $(PARAMS_H) \
    input.h $(HASHTAB_H) $(BASIC_BLOCK_H) $(TREE_FLOW_H) $(TREE_PASS_H) \
@@ -2745,7 +2747,8 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    hosthooks.h $(CGRAPH_H) $(COVERAGE_H) $(TREE_PASS_H) $(TREE_DUMP_H) \
    $(GGC_H) $(OPTS_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
    gt-passes.h $(DF_H) $(PREDICT_H) $(LTO_STREAMER_H) \
-   $(PLUGIN_H) $(IPA_UTILS_H) passes.def
+   $(PLUGIN_H) $(IPA_UTILS_H) passes.def \
+   $(CONTEXT_H) $(PASS_MANAGER_H)
 
 plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(HASH_TABLE_H) $(DIAGNOSTIC_CORE_H) $(TREE_H) $(TREE_PASS_H) \
@@ -2786,7 +2789,8 @@ function.o : function.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_ERROR_
    $(TREE_PASS_H) $(DF_H) $(PARAMS_H) bb-reorder.h \
    $(COMMON_TARGET_H)
 statistics.o : statistics.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_PASS_H) $(TREE_DUMP_H) $(HASH_TABLE_H) statistics.h $(FUNCTION_H)
+   $(TREE_PASS_H) $(TREE_DUMP_H) $(HASH_TABLE_H) statistics.h \
+   $(FUNCTION_H) $(CONTEXT_H) $(PASS_MANAGER_H)
 stmt.o : stmt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DUMPFILE_H) $(TM_H) \
    $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(FUNCTION_H) insn-config.h hard-reg-set.h $(EXPR_H) \
@@ -2908,7 +2912,8 @@ cgraphunit.o : cgraphunit.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(FIBHEAP_H) output.h $(PARAMS_H) $(RTL_H) $(IPA_PROP_H) \
    gt-cgraphunit.h tree-iterator.h $(COVERAGE_H) $(TREE_DUMP_H) \
    $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(IPA_UTILS_H) $(CFGLOOP_H) \
-   $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H) $(GCC_PLUGIN_H) plugin.h
+   $(LTO_STREAMER_H) output.h $(REGSET_H) $(EXCEPT_H) $(GCC_PLUGIN_H) \
+   plugin.h $(CONTEXT_H) $(PASS_MANAGER_H)
 cgraphclones.o : cgraphclones.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) toplev.h $(DIAGNOSTIC_CORE_H) $(FLAGS_H) $(GGC_H) \
    $(TARGET_H) $(CGRAPH_H) intl.h pointer-set.h $(FUNCTION_H) $(GIMPLE_H) \
@@ -3490,7 +3495,7 @@ $(out_object_file): $(out_file) $(CONFIG_H) coretypes.h $(TM_H) $(TREE_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
 		$(out_file) $(OUTPUT_OPTION)
 context.o: context.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(GGC_H) \
-   $(CONTEXT_H)
+   $(CONTEXT_H) $(PASS_MANAGER_H)
 
 $(common_out_object_file): $(common_out_file) $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(COMMON_TARGET_H) $(COMMON_TARGET_DEF_H) $(PARAMS_H) \

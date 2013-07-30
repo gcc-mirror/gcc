@@ -47,6 +47,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcov-io.h"
 #include "tree-pass.h"
 #include "profile.h"
+#include "context.h"
+#include "pass_manager.h"
 
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node>  nodes);
@@ -936,6 +938,7 @@ input_node (struct lto_file_decl_data *file_data,
 	    enum LTO_symtab_tags tag,
 	    vec<symtab_node> nodes)
 {
+  gcc::pass_manager *passes = g->get_passes ();
   tree fn_decl;
   struct cgraph_node *node;
   struct bitpack_d bp;
@@ -981,8 +984,8 @@ input_node (struct lto_file_decl_data *file_data,
       struct opt_pass *pass;
       int pid = streamer_read_hwi (ib);
 
-      gcc_assert (pid < passes_by_id_size);
-      pass = passes_by_id[pid];
+      gcc_assert (pid < passes->passes_by_id_size);
+      pass = passes->passes_by_id[pid];
       node->ipa_transforms_to_apply.safe_push ((struct ipa_opt_pass_d *) pass);
     }
 

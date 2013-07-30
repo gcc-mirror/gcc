@@ -1158,10 +1158,10 @@ general_init (const char *argv0)
      processing.  */
   init_ggc_heuristics();
 
-  /* Create the singleton holder for global state.  */
+  /* Create the singleton holder for global state.
+     Doing so also creates the pass manager and with it the passes.  */
   g = new gcc::context();
 
-  init_optimization_passes ();
   statistics_early_init ();
   finish_params ();
 }
