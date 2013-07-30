@@ -1,5 +1,9 @@
 2013-07-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/57901
+	* semantics.c (build_data_member_initialization, constexpr_fn_retval):
+	Use break_out_target_exprs instead of unshare_expr.
+
 	PR c++/58022
 	* typeck2.c (abstract_virtuals_error_sfinae): Don't remember
 	lookup in SFINAE context.
