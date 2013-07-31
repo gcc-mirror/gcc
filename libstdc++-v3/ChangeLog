@@ -1,3 +1,11 @@
+2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56627
+	* include/bits/stl_bvector.h: Use friend struct hash intead of
+	friend class hash to work around useless warnings produced by
+	some compilers.
+	* include/std/bitset: Likewise.
+
 2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert last commit.
