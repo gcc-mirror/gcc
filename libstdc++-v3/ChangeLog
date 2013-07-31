@@ -1,5 +1,13 @@
 2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR libstdc++/56627
+	* include/bits/stl_bvector.h: Use friend struct hash intead of
+	friend class hash to work around useless warnings produced by
+	some compilers.
+	* include/std/bitset: Likewise.
+
+2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* src/c++11/functexcept.cc: Do not include the whole <regex>.
 	* src/c++11/regex.cc: Likewise.
 
