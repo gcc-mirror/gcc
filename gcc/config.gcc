@@ -327,6 +327,7 @@ am33_2.0-*-linux*)
 arm*-*-*)
 	cpu_type=arm
 	extra_headers="mmintrin.h arm_neon.h"
+	extra_objs="aarch-common.o"
 	target_type_format_char='%'
 	c_target_objs="arm-c.o"
 	cxx_target_objs="arm-c.o"
@@ -559,7 +560,11 @@ x86_64-*-*)
 	fi
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
-arm*-*-* | mips*-*-* | sh*-*-* | sparc*-*-*)
+arm*-*-*)
+	tm_p_file="${tm_p_file} arm/aarch-common-protos.h"
+	tm_file="vxworks-dummy.h ${tm_file}"
+	;;
+mips*-*-* | sh*-*-* | sparc*-*-*)
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 esac

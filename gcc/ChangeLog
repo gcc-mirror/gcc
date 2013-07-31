@@ -1,3 +1,36 @@
+2013-07-31  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config.gcc (arm*-*-*): Add aarch-common.o to extra_objs.  Add
+	aarch-common-protos.h to extra_headers.
+	(arm*-*-*): Add arm/aarch-common-protos.h to tm_p_file.
+	* config/arm/arm.c (arm_early_load_addr_dep): Move from here to ...
+	(arm_early_store_addr_dep): Likewise.
+	(arm_no_early_alu_shift_dep: Likewise.
+	(arm_no_early_alu_shift_value_dep: Likewise.
+	(arm_no_early_mul_dep: Likewise.
+	(arm_no_early_store_addr_dep: Likewise.
+	(arm_mac_accumulator_is_mul_result: Likewise.
+	(arm_mac_accumulator_is_result: Likewise.
+	* config/arm/aarch-common.c: ... here.  New file.
+	* config/arm/arm-protos.h (arm_early_load_addr_dep): Move from here to ...
+	(arm_early_store_addr_dep): Likewise.
+	(arm_no_early_alu_shift_dep: Likewise.
+	(arm_no_early_alu_shift_value_dep: Likewise.
+	(arm_no_early_mul_dep: Likewise.
+	(arm_no_early_store_addr_dep: Likewise.
+	(arm_mac_accumulator_is_mul_result: Likewise.
+	(arm_mac_accumulator_is_result: Likewise.
+	* config/arm/aarch-common-protos.h: ... here.  New file.
+	* config/arm/t-arm (aarch-common.o): Define.
+
+2013-07-31  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/arm.md: Include new file "types.md".
+	(define_attr "type"): Move from here to ...
+	(define_attr "mul32"): Likewise.
+	(define_attr "mul64"): Likewise.
+	* config/arm/types.md: ... here.  New file.
+
 2013-07-31  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (*-*-rtems*): Use __cxa_atexit by default.
