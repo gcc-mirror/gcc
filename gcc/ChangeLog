@@ -1,3 +1,15 @@
+2013-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (pass-instances.def): New.
+	(passes.o): Replace dependency on passes.def with one on
+	pass-instances.def
+
+	* gen-pass-instances.awk: New.
+
+	* passes.c (pass_manager::pass_manager): Use pass-instances.def
+	rather than passes.def, updating local definition of NEXT_PASS
+	macro to add an extra NUM parameter (currently unused).
+
 2013-07-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (PASS_MANAGER_H): New.
