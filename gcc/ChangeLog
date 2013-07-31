@@ -1,3 +1,7 @@
+2013-07-31  Jan-Benedict Glaw  <jbglaw@owl.de>
+
+	* gen-pass-instances.awk: Fix offset of substr().
+
 2013-07-31  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (pass-instances.def): New.
