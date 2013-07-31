@@ -32,31 +32,16 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  {
-    std::regex  re("zxcv/(one.*)abc", std::regex::extended);
-    std::string target("zxcv/onetwoabc");
-    std::smatch m;
+  std::regex  re("zxcv/(one.*)abc", std::regex::extended);
+  std::string target("zxcv/onetwoabc");
+  std::smatch m;
 
-    VERIFY( std::regex_search(target, m, re) );
-    VERIFY( m.size() == 2 );
-    VERIFY( m[0].matched == true );
-    VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );
-    VERIFY( m[1].matched == true );
-    VERIFY( std::string(m[1].first, m[1].second) == "onetwo" );
-  }
-
-  {
-    std::regex  re("zxcv/(one.*)abc()\\2", std::regex::extended);
-    std::string target("zxcv/onetwoabc");
-    std::smatch m;
-
-    VERIFY( std::regex_search(target, m, re) );
-    VERIFY( m.size() == 3 );
-    VERIFY( m[0].matched == true );
-    VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );
-    VERIFY( m[1].matched == true );
-    VERIFY( std::string(m[1].first, m[1].second) == "onetwo" );
-  }
+  VERIFY( std::regex_search(target, m, re) );
+  VERIFY( m.size() == 2 );
+  VERIFY( m[0].matched == true );
+  VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );
+  VERIFY( m[1].matched == true );
+  VERIFY( std::string(m[1].first, m[1].second) == "onetwo" );
 }
 
 int

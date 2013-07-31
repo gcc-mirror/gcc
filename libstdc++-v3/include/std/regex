@@ -44,8 +44,6 @@
 #include <iterator>
 #include <locale>
 #include <memory>
-#include <map>
-#include <queue>
 #include <set>
 #include <sstream>
 #include <stack>
