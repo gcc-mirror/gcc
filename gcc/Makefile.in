@@ -2737,6 +2737,10 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
 
 hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 
+pass-instances.def: $(srcdir)/passes.def $(srcdir)/gen-pass-instances.awk
+	$(AWK) -f $(srcdir)/gen-pass-instances.awk \
+	  $(srcdir)/passes.def > pass-instances.def
+
 passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(FUNCTION_H) $(FLAGS_H) $(INPUT_H) $(INSN_ATTR_H) output.h \
    $(DIAGNOSTIC_CORE_H) debug.h insn-config.h intl.h $(RECOG_H) toplev.h \
@@ -2747,7 +2751,7 @@ passes.o : passes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    hosthooks.h $(CGRAPH_H) $(COVERAGE_H) $(TREE_PASS_H) $(TREE_DUMP_H) \
    $(GGC_H) $(OPTS_H) $(TREE_FLOW_H) $(TREE_INLINE_H) \
    gt-passes.h $(DF_H) $(PREDICT_H) $(LTO_STREAMER_H) \
-   $(PLUGIN_H) $(IPA_UTILS_H) passes.def \
+   $(PLUGIN_H) $(IPA_UTILS_H) pass-instances.def \
    $(CONTEXT_H) $(PASS_MANAGER_H)
 
 plugin.o : plugin.c $(PLUGIN_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h \

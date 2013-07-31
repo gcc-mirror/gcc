@@ -1315,12 +1315,12 @@ pass_manager::pass_manager (context *ctxt)
 #define POP_INSERT_PASSES() \
   }
 
-#define NEXT_PASS(PASS)  (p = next_pass_1 (p, &((PASS).pass)))
+#define NEXT_PASS(PASS, NUM)  (p = next_pass_1 (p, &((PASS).pass)))
 
 #define TERMINATE_PASS_LIST() \
   *p = NULL;
 
-#include "passes.def"
+#include "pass-instances.def"
 
 #undef INSERT_PASSES_AFTER
 #undef PUSH_INSERT_PASSES_WITHIN
