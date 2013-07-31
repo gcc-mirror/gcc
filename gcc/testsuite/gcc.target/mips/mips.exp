@@ -1164,7 +1164,7 @@ proc mips-dg-options { args } {
 	if { [mips_using_mips16_p options]
 	     && ![mips_same_option_p $abi "-mabi=32"]
 	     && ![mips_same_option_p $abi "-mabi=o64"]
-	     && (![mips_have_option_p options "addressing=absolute"]
+	     && ([mips_have_option_p options "-mabicalls"]
 		 || [mips_have_option_p options "-mhard-float"]) } {
 	    if { [mips_test_option_p options mips16] } {
 		mips_make_test_option options "addressing=absolute"
