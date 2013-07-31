@@ -34,6 +34,9 @@
     }                                     \
   while (0)
 
+#undef TARGET_LIBGCC_SDATA_SECTION
+#define TARGET_LIBGCC_SDATA_SECTION ".sdata"
+
 #undef CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_rtems)"
 

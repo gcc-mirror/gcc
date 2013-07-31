@@ -760,6 +760,7 @@ case ${target} in
     yes) thread_file='rtems' ;;
   esac
   extra_options="${extra_options} rtems.opt"
+  default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
   ;;
 *-*-uclinux*)
