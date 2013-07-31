@@ -164,6 +164,11 @@ enum processor_flags
 #define S390_TDC_INFINITY (S390_TDC_POSITIVE_INFINITY \
 			  | S390_TDC_NEGATIVE_INFINITY )
 
+/* This is used by float.h to define the float_t and double_t data
+   types.  For historical reasons both are double on s390 what cannot
+   be changed anymore.  */
+#define TARGET_FLT_EVAL_METHOD 1
+
 /* Target machine storage layout.  */
 
 /* Everything is big-endian.  */
