@@ -1,4 +1,4 @@
-2013-07-31  Jan-Benedict Glaw  <jbglaw@owl.de>
+2013-07-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* gen-pass-instances.awk: Fix offset of substr().
 
