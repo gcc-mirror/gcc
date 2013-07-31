@@ -1,3 +1,8 @@
+2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/c++11/functexcept.cc: Do not include the whole <regex>.
+	* src/c++11/regex.cc: Likewise.
+
 2013-07-31  Tim Shen  <timshen91@gmail.com>
 
 	Revert last commit.
