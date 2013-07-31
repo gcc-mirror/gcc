@@ -42,5 +42,7 @@ VECTOR_MODES (FLOAT, 8);      /*             V4HF V2SF */
 VECTOR_MODES (FLOAT, 16);     /*       V8HF  V4SF V2DF */
 VECTOR_MODES (FLOAT, 32);     /*       V16HF V8SF V4DF */
 
-/* Replacement for TImode that only is allowed in GPRs.  */
+/* Replacement for TImode that only is allowed in GPRs.  We also use PTImode
+   for quad memory atomic operations to force getting an even/odd register
+   combination.  */
 PARTIAL_INT_MODE (TI);
