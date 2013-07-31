@@ -1,3 +1,35 @@
+2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (fusion_gpr_addis): New predicates
+	to support power8 load fusion.
+	(fusion_gpr_mem_load): Likewise.
+
+	* config/rs6000/rs6000-modes.def (PTImode): Update a comment.
+
+	* config/rs6000/rs6000-protos.h (fusion_gpr_load_p): New
+	declarations for power8 load fusion.
+	(emit_fusion_gpr_load): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If
+	tuning for power8, turn on fusion mode by default.  Turn on sign
+	extending fusion mode if normal fusion mode is on, and we are at
+	-O2 or -O3.
+	(fusion_gpr_load_p): New function, return true if we can fuse an
+	addis instruction with a dependent load to a GPR.
+	(emit_fusion_gpr_load): Emit the instructions for power8 load
+	fusion to GPRs.
+
+	* config/rs6000/vsx.md (VSX_M2): New iterator for fusion
+	peepholes.
+	(VSX load fusion peepholes): New peepholes to fuse together an
+	addi instruction with a VSX load instruction.
+
+	* config/rs6000/rs6000.md (GPR load fusion peepholes): New
+	peepholes to fuse an addis instruction with a load to a GPR base
+	register.  If we are supporting sign extending fusions, convert
+	sign extending loads to zero extending loads and add an explicit
+	sign extension.
+
 2013-07-31  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config.gcc (arm*-*-*): Add aarch-common.o to extra_objs.  Add
