@@ -55,7 +55,7 @@ function handle_line()
 		else
 			pass_counts[pass_name] = 1;
 		printf "%s, %s%s\n",
-			substr(line, 0, pass_starts_at + len_of_pass_name - 1),
+			substr(line, 1, pass_starts_at + len_of_pass_name - 1),
 			pass_counts[pass_name],
 			substr(line, pass_starts_at + len_of_pass_name);
 	} else {
