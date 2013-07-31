@@ -1,3 +1,8 @@
+2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_sizeof_pack): Check cp_parser_identifier
+	return value for error_mark_node.
+
 2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/57673
