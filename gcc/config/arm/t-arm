@@ -78,6 +78,11 @@ $(srcdir)/config/arm/arm-tables.opt: $(srcdir)/config/arm/genopt.sh \
 	$(SHELL) $(srcdir)/config/arm/genopt.sh $(srcdir)/config/arm > \
 		$(srcdir)/config/arm/arm-tables.opt
 
+aarch-common.o: $(srcdir)/config/arm/aarch-common.c $(CONFIG_H) $(SYSTEM_H) \
+    coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/aarch-common.c
+
 arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
