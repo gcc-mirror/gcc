@@ -1,3 +1,8 @@
+2013-07-31  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (*-*-rtems*): Use __cxa_atexit by default.
+	* config/rs6000/rtems.h (TARGET_LIBGCC_SDATA_SECTION): Define.
+
 2013-07-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* gen-pass-instances.awk: Fix offset of substr().
