@@ -60,19 +60,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  const _SpecializedCursor<_FwdIterT>& __cursor,
 			  match_results<_FwdIterT, _Alloc>& __m);
 
-      ~_SpecializedResults()
-      {
-        if (_M_managed)
-          delete &_M_results;
-      }
-
-    private:
-      _SpecializedResults(const _SpecializedResults& __rhs)
-      : _M_results(*new match_results<_FwdIterT, _Alloc>(__rhs._M_results)),
-      _M_managed(true)
-      { }
-
-    public:
       void
       _M_set_pos(int __i, int __j, const _PatternCursor& __pc);
 
@@ -89,20 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_set_matched(int __i, bool __is_matched)
       { _M_results.at(__i).matched = __is_matched; }
 
-      std::unique_ptr<_Results>
-      _M_clone() const
-      { return unique_ptr<_Results>(new _SpecializedResults(*this)); }
-
-      void
-      _M_assign(const _Results& __rhs)
-      {
-        auto __r = static_cast<const _SpecializedResults*>(&__rhs);
-        _M_results = __r->_M_results;
-      }
-
     private:
       match_results<_FwdIterT, _Alloc>& _M_results;
-      bool                              _M_managed;
     };
 
   template<typename _FwdIterT, typename _Alloc>
@@ -110,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _SpecializedResults(const _Automaton::_SizeT __size,
     			const _SpecializedCursor<_FwdIterT>& __cursor,
                         match_results<_FwdIterT, _Alloc>& __m)
-    : _M_results(__m), _M_managed(false)
+    : _M_results(__m)
     {
       _M_results.clear();
       _M_results.reserve(__size + 2);
@@ -130,10 +105,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef const _SpecializedCursor<_FwdIterT>& _CursorT;
       _CursorT __c = static_cast<_CursorT>(__pc);
       if (__j == 0)
-        _M_results.at(__i).first = __c._M_pos();
+	_M_results.at(__i).first = __c._M_pos();
       else
         _M_results.at(__i).second = __c._M_pos();
     }
+
+  /// A stack of states used in evaluating the NFA.
+  typedef std::stack<_StateIdT, std::vector<_StateIdT> > _StateStack;
 
   /// Executes a regular expression NFA/DFA over a range using a
   /// variant of the parallel execution algorithm featured in the grep
@@ -146,110 +124,45 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   const _AutomatonPtr&              __automaton,
                   regex_constants::match_flag_type  __flags)
     : _M_nfa(static_pointer_cast<_Nfa>(__automaton)),
-      _M_str_cur(__p), _M_results(__r)
-    { }
-
-    virtual
-    ~_Grep_matcher()
+      _M_pattern(__p), _M_results(__r)
     { }
 
     // Set matched when string exactly match the pattern.
-    virtual bool
-    _M_match() = 0;
+    void
+    _M_match();
 
     // Set matched when some prefix of the string matches the pattern.
-    virtual bool
-    _M_search_from_first() = 0;
+    void
+    _M_search_from_first();
 
-  protected:
-    const std::shared_ptr<_Nfa>        _M_nfa;
-    _PatternCursor&                    _M_str_cur;
-    _Results&                          _M_results;
-  };
-
-  // Time complexity: exponential
-  // Space complexity: O(_M_str_cur.size())
-  // _M_dfs() take a state, along with current string cursor(_M_str_cur),
-  // trying to match current state with current character.
-  // Only _S_opcode_match will consume a character.
-  class _DFSMatcher
-  : public _Grep_matcher
-  {
-  public:
-    _DFSMatcher(_PatternCursor&                   __p,
-                _Results&                         __r,
-                const _AutomatonPtr&              __automaton,
-                regex_constants::match_flag_type  __flags)
-    : _Grep_matcher(__p, __r, __automaton, __flags)
-    { }
-
+    // TODO: in the future this function will be _M_match, in another class.
     bool
-    _M_match()
+    _M_dfs_match()
     { return _M_dfs<true>(_M_nfa->_M_start()); }
 
+    // TODO: in the future this function will be _M_search_from_first,
+    // in another class.
     bool
-    _M_search_from_first()
+    _M_dfs_search_from_first()
     { return _M_dfs<false>(_M_nfa->_M_start()); }
 
   private:
+    _StateSet
+    _M_e_closure(_StateIdT __i);
+
+    _StateSet
+    _M_e_closure(const _StateSet& __s);
+
+    _StateSet
+    _M_e_closure(_StateStack& __stack, const _StateSet& __s);
+
     template<bool __match_mode>
       bool
       _M_dfs(_StateIdT __i);
-  };
 
-  // It's essentially a variant of Single-Source-Shortest-Path problem, where,
-  // the matching results is the final distance and should be minimized.
-  // Instead of using Dijkstra Algorithm, I pick up the queue-optimizaed
-  // (BFS-like) Bellman-Ford algorithm,
-  // SPFA(http://en.wikipedia.org/wiki/Shortest_Path_Faster_Algorithm).
-  //
-  // Every entry of _M_current saves the solution(grouping status) for every
-  // matching head. When states transfer, solutions will be compared and
-  // deduplicated(based on which greedy mode we have).
-  //
-  // Time complexity: O(_M_str_cur.size() * _M_nfa.size())
-  // Space complexity: O(_M_nfa.size() * _M_nfa.mark_count())
-  class _BFSMatcher
-  : public _Grep_matcher
-  {
-  public:
-    _BFSMatcher(_PatternCursor&                   __p,
-                _Results&                         __r,
-                const _AutomatonPtr&              __automaton,
-                regex_constants::match_flag_type  __flags)
-    : _Grep_matcher(__p, __r, __automaton, __flags)
-    {
-      if (_M_nfa->_M_start() != _S_invalid_state_id)
-        _M_current[_M_nfa->_M_start()] = _M_results._M_clone();
-      _M_e_closure();
-    }
-
-    bool
-    _M_match()
-    { return _M_main_loop<true>(); }
-
-    bool
-    _M_search_from_first()
-    { return _M_main_loop<false>(); }
-
-  private:
-    template<bool __match_mode>
-      bool
-      _M_main_loop();
-
-    void
-    _M_e_closure();
-
-    void
-    _M_move();
-
-    bool
-    _M_match_less_than(_StateIdT __u, _StateIdT __v) const;
-
-    bool
-    _M_includes_some() const;
-
-    std::map<_StateIdT, std::unique_ptr<_Results>>     _M_current;
+    const std::shared_ptr<_Nfa>        _M_nfa;
+    _PatternCursor&                    _M_pattern;
+    _Results&                          _M_results;
   };
 
  //@} regex-detail
