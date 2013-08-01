@@ -32,13 +32,21 @@
 #include <bits/c++config.h>
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories and
 					  // _Iter_base
-#include <bits/cpp_type_traits.h>         // for __is_integer
+#include <bits/cpp_type_traits.h>	  // for __is_integer
+#if __cplusplus >= 201103L
+# include <bits/stl_function.h>		  // for less and greater_equal
+# include <type_traits>			  // for common_type
+#endif
 #include <debug/formatter.h>
 
 namespace __gnu_debug
 {
   template<typename _Iterator, typename _Sequence>
     class _Safe_iterator;
+
+  template<typename _Sequence>
+    struct _Insert_range_from_self_is_safe
+    { enum { __value = 0 }; };
 
   // An arbitrary iterator pointer is not singular.
   inline bool
@@ -160,6 +168,123 @@ namespace __gnu_debug
     {
       __glibcxx_check_valid_range(__first, __last);
       return __first;
+    }
+
+#if __cplusplus >= 201103L
+  template<typename _Iterator, typename _Sequence,
+	   typename _InputIterator,
+	   typename _PointerType1,
+	   typename _PointerType2>
+    inline bool
+    __foreign_iterator_aux4(const _Safe_iterator<_Iterator, _Sequence>& __it,
+			    _InputIterator __other,
+			    _PointerType1, _PointerType2)
+    {
+      typedef typename std::common_type<_PointerType1,
+					_PointerType2>::type _PointerType;
+      std::less<_PointerType> __l;
+      std::greater_equal<_PointerType> __ge;
+
+      return
+	__l(std::addressof(*__other),
+	    std::addressof(*(__it._M_get_sequence()->_M_base().begin())))
+	|| __ge(std::addressof(*__other),
+		std::addressof(*(__it._M_get_sequence()->_M_base().end() - 1)) + 1);
+      
+    }
+			  
+  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+    inline bool
+    __foreign_iterator_aux3(const _Safe_iterator<_Iterator, _Sequence>& __it,
+			    _InputIterator __other,
+			    std::true_type)
+    {
+      // Only containers with all elements in contiguous memory can have their
+      // elements passed through pointers.
+      // Arithmetics is here just to make sure we are not dereferencing
+      // past-the-end iterator.
+      if (__it._M_get_sequence()->_M_base().begin()
+	  != __it._M_get_sequence()->_M_base().end())
+	if (std::__addressof(*(__it._M_get_sequence()->_M_base().end() - 1))
+	    - std::__addressof(*(__it._M_get_sequence()->_M_base().begin()))
+	    == __it._M_get_sequence()->size() - 1)
+	  return __foreign_iterator_aux4(__it, __other,
+			std::addressof(*(__it._M_get_sequence()->_M_base().begin())),
+			std::addressof(*__other));
+      return true;
+    }
+			   
+  /* Fallback overload for which we can't say, assume it is valid. */
+  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+    inline bool
+    __foreign_iterator_aux3(const _Safe_iterator<_Iterator, _Sequence>& __it,
+			    _InputIterator __other,
+			    std::false_type)
+    { return true; }
+#endif
+			   
+  /** Checks that iterators do not belong to the same sequence. */
+  template<typename _Iterator, typename _Sequence, typename _OtherIterator>
+    inline bool
+    __foreign_iterator_aux2(const _Safe_iterator<_Iterator, _Sequence>& __it,
+		const _Safe_iterator<_OtherIterator, _Sequence>& __other,
+		std::input_iterator_tag)
+    { return __it._M_get_sequence() != __other._M_get_sequence(); }
+			   
+#if __cplusplus >= 201103L
+  /* This overload detects when passing pointers to the contained elements rather
+     than using iterators.
+   */
+  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+    inline bool
+    __foreign_iterator_aux2(const _Safe_iterator<_Iterator, _Sequence>& __it,
+			    _InputIterator __other,
+			    std::random_access_iterator_tag)
+    {
+      typedef typename _Sequence::const_iterator _ItType;
+      typedef typename std::iterator_traits<_ItType>::reference _Ref;
+      return __foreign_iterator_aux3(__it, __other,
+				     std::is_lvalue_reference<_Ref>());
+    }
+#endif
+			   
+  /* Fallback overload for which we can't say, assume it is valid. */
+  template<typename _Iterator, typename _Sequence, typename _InputIterator>
+    inline bool
+    __foreign_iterator_aux2(const _Safe_iterator<_Iterator, _Sequence>&,
+			   _InputIterator,
+			   std::input_iterator_tag)
+    { return true; }
+			   
+  template<typename _Iterator, typename _Sequence,
+	   typename _Integral>
+    inline bool
+    __foreign_iterator_aux(const _Safe_iterator<_Iterator, _Sequence>& __it,
+			   _Integral __other,
+			   std::__true_type)
+    { return true; }
+
+  template<typename _Iterator, typename _Sequence,
+	   typename _InputIterator>
+    inline bool
+    __foreign_iterator_aux(const _Safe_iterator<_Iterator, _Sequence>& __it,
+			   _InputIterator __other,
+			   std::__false_type)
+    {
+      return
+	_Insert_range_from_self_is_safe<_Sequence>::__value
+	|| __foreign_iterator_aux2(__it, __other,
+				   std::__iterator_category(__it));
+    }
+
+  template<typename _Iterator, typename _Sequence,
+	   typename _InputIterator>
+    inline bool
+    __foreign_iterator(const _Safe_iterator<_Iterator, _Sequence>& __it,
+		       _InputIterator __other)
+    {
+      typedef typename std::__is_integer<_InputIterator>::__type _Integral;
+      return __foreign_iterator_aux(__it, __other, _Integral());
     }
 
   /** Checks that __s is non-NULL or __n == 0, and then returns __s. */

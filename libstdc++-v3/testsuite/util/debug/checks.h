@@ -129,7 +129,7 @@ namespace __gnu_test
       c2.assign(last, first); // Expected failure
     }
 
-  // Check that invalid range of debug !random debug iterators is detected
+  // Check that invalid range of debug not random iterators is detected
   template<typename _Tp>
     void
     check_assign3()
@@ -374,6 +374,34 @@ namespace __gnu_test
 
       cont_type c2;
       InsertRangeHelper<cont_type>::Insert(c2, last, first); // Expected failure
+    }
+
+  template<typename _Tp>
+    void
+    check_insert4()
+    {
+      bool test __attribute__((unused)) = true;
+
+      typedef _Tp cont_type;
+      typedef typename cont_type::value_type cont_val_type;
+      typedef typename CopyableValueType<cont_val_type>::value_type val_type;
+      typedef std::list<val_type> list_type;
+
+      generate_unique<val_type> gu;
+
+      list_type l;
+      for (int i = 0; i != 5; ++i)
+        l.push_back(gu.build());
+      VERIFY(l.size() == 5);
+
+      typename list_type::iterator first = l.begin(); ++first;
+      typename list_type::iterator last = first; ++last; ++last;
+
+      cont_type c1;
+      InsertRangeHelper<cont_type>::Insert(c1, l.begin(), l.end());
+      VERIFY(c1.size() == 5);
+
+      c1.insert(c1.begin(), c1.begin(), c1.end()); // Expected failure.
     }
 
   template<typename _Tp>

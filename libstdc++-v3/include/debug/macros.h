@@ -72,11 +72,11 @@ _GLIBCXX_DEBUG_VERIFY(_First != _Last,					\
 */
 #define __glibcxx_check_insert(_Position)				\
 _GLIBCXX_DEBUG_VERIFY(!_Position._M_singular(),				\
-		      _M_message(__gnu_debug::__msg_insert_singular) \
+		      _M_message(__gnu_debug::__msg_insert_singular)	\
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position));		\
 _GLIBCXX_DEBUG_VERIFY(_Position._M_attached_to(this),			\
-		      _M_message(__gnu_debug::__msg_insert_different) \
+		      _M_message(__gnu_debug::__msg_insert_different)	\
 		      ._M_sequence(*this, "this")			\
 		      ._M_iterator(_Position, #_Position))
 
@@ -101,15 +101,16 @@ _GLIBCXX_DEBUG_VERIFY(!_Position._M_is_end(),				\
  *  that it reference the sequence we are inserting into, and that the
  *  iterator range [_First, Last) is a valid (possibly empty)
  *  range. Note that this macro is only valid when the container is a
- *  _Safe_sequence and the iterator is a _Safe_iterator.
- *
- *  @todo We would like to be able to check for noninterference of
- *  _Position and the range [_First, _Last), but that can't (in
- *  general) be done.
+ *  _Safe_sequence and the _Position iterator is a _Safe_iterator.
 */
 #define __glibcxx_check_insert_range(_Position,_First,_Last)		\
 __glibcxx_check_valid_range(_First,_Last);				\
-__glibcxx_check_insert(_Position)
+__glibcxx_check_insert(_Position);					\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First),\
+		      _M_message(__gnu_debug::__msg_insert_range_from_self)\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last)			\
+		      ._M_sequence(*this, "this"))
 
 /** Verify that we can insert the values in the iterator range
  *  [_First, _Last) into *this after the iterator _Position.  Insertion
@@ -126,7 +127,12 @@ __glibcxx_check_insert(_Position)
 */
 #define __glibcxx_check_insert_range_after(_Position,_First,_Last)	\
 __glibcxx_check_valid_range(_First,_Last);				\
-__glibcxx_check_insert_after(_Position)
+__glibcxx_check_insert_after(_Position);					\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__foreign_iterator(_Position,_First),\
+		      _M_message(__gnu_debug::__msg_insert_range_from_self)\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_iterator(_Last, #_Last)			\
+		      ._M_sequence(*this, "this"))
 
 /** Verify that we can erase the element referenced by the iterator
  * _Position. We can erase the element if the _Position iterator is
@@ -332,7 +338,7 @@ _GLIBCXX_DEBUG_VERIFY(_F > 0.0f,					\
 		      _M_message(__gnu_debug::__msg_valid_load_factor)	\
                       ._M_sequence(*this, "this"))
 
-#define __glibcxx_check_equal_allocs(_Other)			\
+#define __glibcxx_check_equal_allocs(_Other)				\
 _GLIBCXX_DEBUG_VERIFY(this->get_allocator() == _Other.get_allocator(),	\
 		      _M_message(__gnu_debug::__msg_equal_allocs)	\
 		      ._M_sequence(*this, "this"))
