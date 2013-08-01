@@ -1,3 +1,10 @@
+2013-08-01  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
+	* config/aarch64/sfp-machine.h, config/aarch64/sync-cache.c,
+	* config/i386/cpuinfo.c, config/ia64/unwind-ia64.h,
+	* config/mips/vr4120-div.S: Fix license from GPL-3.0+ to
+	GPL-3.0-with-GCC-exception.
+
 2013-07-30  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config/mips/mips16.S (DELAYf): Alias to DELAYt for the MIPS IV
