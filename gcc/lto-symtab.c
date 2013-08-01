@@ -599,6 +599,13 @@ lto_symtab_merge_symbols (void)
 		  && (cnode2 = cgraph_get_node (node->symbol.decl))
 		  && cnode2 != cnode)
 		lto_cgraph_replace_node (cnode2, cnode);
+
+	      /* Abstract functions may have duplicated cgraph nodes attached;
+		 remove them.  */
+	      else if (cnode && DECL_ABSTRACT (cnode->symbol.decl)
+		       && (cnode2 = cgraph_get_node (node->symbol.decl))
+		       && cnode2 != cnode)
+		cgraph_remove_node (cnode2);
 	      symtab_insert_node_to_hashtable ((symtab_node)node);
 	    }
 	}

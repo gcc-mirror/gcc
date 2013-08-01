@@ -1,5 +1,23 @@
 2013-08-01  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_release_function_body): Use used_as_abstract_origin.
+	(cgraph_release_function_body): Likewise.
+	(cgraph_can_remove_if_no_direct_calls_p): Likewise.
+	* cgraph.h (cgrpah_node): Rename abstract_and_needed
+	to used_as_abstract_origin.
+	* tree-inline-transfrom.c (can_remove_node_now_p_1): Do not remove
+	symbols used as abstract origins.
+	* cgraphunit.c (analyze_functions): Update.
+	* ipa.c (symtab_remove_unreachable_nodes): Recompute used_as_abstract_origin.
+	* tree-inline.c (tree_function_versioning): Update
+	used_as_abstract_origin; be ready for DECL_RESULT and DECL_ARGUMENTS to be
+	NULL.
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Merge duplicated nodes for abstract functions.
+	* cgraph.h (symtab_real_symbol_p): Abstract declarations are not real symbols.
+
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
 	* profile.c (compute_value_histograms): Fix thinko.
 
 2013-08-01  Sofiane Naci  <sofiane.naci@arm.com>
