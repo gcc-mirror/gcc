@@ -1,3 +1,10 @@
+2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (peepholes for eq (reg1) (reg2/imm)):
+	Generate canonical plus rtx with negated immediate instead of minus
+	where appropriate.
+	* config/arm/arm.c (thumb2_reorg): Handle ADCS <Rd>, <Rn> case.
+
 2013-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_release_function_body): Use used_as_abstract_origin.
