@@ -33822,7 +33822,7 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
   if (TARGET_64BIT
       && MEM_P (x)
       && GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && rclass == GENERAL_REGS
+      && INTEGER_CLASS_P (rclass)
       && !offsettable_memref_p (x))
     {
       sri->icode = (in_p
@@ -33838,12 +33838,8 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
      intermediate register on 32bit targets.  */
   if (!TARGET_64BIT
       && !in_p && mode == QImode
-      && (rclass == GENERAL_REGS
-	  || rclass == LEGACY_REGS
-	  || rclass == NON_Q_REGS
-	  || rclass == SIREG
-	  || rclass == DIREG
-	  || rclass == INDEX_REGS))
+      && INTEGER_CLASS_P (rclass)
+      && MAYBE_NON_Q_CLASS_P (rclass))
     {
       int regno;
 
