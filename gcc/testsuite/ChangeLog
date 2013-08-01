@@ -1,3 +1,7 @@
+2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/pr46972-2.c: New test.
+
 2013-08-01  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.dg/vect/vect-iv-5.c: Make xfail conditional with !arm_neon_ok.
