@@ -1,3 +1,9 @@
+2013-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (MAYBE_NON_Q_CLASS_P): New.
+	* config/i386/i386.c (ix86_secondary_reload): Use INTEGER_CLASS_P and
+	MAYBE_NON_Q_CLASS_P where appropriate.
+
 2013-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.h (release_function_body): Declare.
@@ -26,13 +32,16 @@
 	* tree-inline-transfrom.c (can_remove_node_now_p_1): Do not remove
 	symbols used as abstract origins.
 	* cgraphunit.c (analyze_functions): Update.
-	* ipa.c (symtab_remove_unreachable_nodes): Recompute used_as_abstract_origin.
+	* ipa.c (symtab_remove_unreachable_nodes): Recompute
+	used_as_abstract_origin.
 	* tree-inline.c (tree_function_versioning): Update
-	used_as_abstract_origin; be ready for DECL_RESULT and DECL_ARGUMENTS to be
-	NULL.
+	used_as_abstract_origin; be ready for DECL_RESULT and
+	DECL_ARGUMENTS to be NULL.
 
-	* lto-symtab.c (lto_symtab_merge_symbols): Merge duplicated nodes for abstract functions.
-	* cgraph.h (symtab_real_symbol_p): Abstract declarations are not real symbols.
+	* lto-symtab.c (lto_symtab_merge_symbols): Merge duplicated nodes
+	for abstract functions.
+	* cgraph.h (symtab_real_symbol_p): Abstract declarations are not
+	real symbols.
 
 2013-08-01  Jan Hubicka  <jh@suse.cz>
 
@@ -74,8 +83,7 @@
 	(emit_fusion_gpr_load): Emit the instructions for power8 load
 	fusion to GPRs.
 
-	* config/rs6000/vsx.md (VSX_M2): New iterator for fusion
-	peepholes.
+	* config/rs6000/vsx.md (VSX_M2): New iterator for fusion peepholes.
 	(VSX load fusion peepholes): New peepholes to fuse together an
 	addi instruction with a VSX load instruction.
 
@@ -92,21 +100,22 @@
 	(arm*-*-*): Add arm/aarch-common-protos.h to tm_p_file.
 	* config/arm/arm.c (arm_early_load_addr_dep): Move from here to ...
 	(arm_early_store_addr_dep): Likewise.
-	(arm_no_early_alu_shift_dep: Likewise.
-	(arm_no_early_alu_shift_value_dep: Likewise.
-	(arm_no_early_mul_dep: Likewise.
-	(arm_no_early_store_addr_dep: Likewise.
-	(arm_mac_accumulator_is_mul_result: Likewise.
-	(arm_mac_accumulator_is_result: Likewise.
+	(arm_no_early_alu_shift_dep): Likewise.
+	(arm_no_early_alu_shift_value_dep): Likewise.
+	(arm_no_early_mul_dep): Likewise.
+	(arm_no_early_store_addr_dep): Likewise.
+	(arm_mac_accumulator_is_mul_result): Likewise.
+	(arm_mac_accumulator_is_result): Likewise.
 	* config/arm/aarch-common.c: ... here.  New file.
-	* config/arm/arm-protos.h (arm_early_load_addr_dep): Move from here to ...
+	* config/arm/arm-protos.h (arm_early_load_addr_dep): Move from
+	here to ...
 	(arm_early_store_addr_dep): Likewise.
-	(arm_no_early_alu_shift_dep: Likewise.
-	(arm_no_early_alu_shift_value_dep: Likewise.
-	(arm_no_early_mul_dep: Likewise.
-	(arm_no_early_store_addr_dep: Likewise.
-	(arm_mac_accumulator_is_mul_result: Likewise.
-	(arm_mac_accumulator_is_result: Likewise.
+	(arm_no_early_alu_shift_dep): Likewise.
+	(arm_no_early_alu_shift_value_dep): Likewise.
+	(arm_no_early_mul_dep): Likewise.
+	(arm_no_early_store_addr_dep): Likewise.
+	(arm_mac_accumulator_is_mul_result): Likewise.
+	(arm_mac_accumulator_is_result): Likewise.
 	* config/arm/aarch-common-protos.h: ... here.  New file.
 	* config/arm/t-arm (aarch-common.o): Define.
 

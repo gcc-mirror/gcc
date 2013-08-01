@@ -1288,12 +1288,15 @@ enum reg_class
 #define MAYBE_FLOAT_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), FLOAT_REGS)
 #define MAYBE_SSE_CLASS_P(CLASS) \
-  reg_classes_intersect_p (SSE_REGS, (CLASS))
+  reg_classes_intersect_p ((CLASS), SSE_REGS)
 #define MAYBE_MMX_CLASS_P(CLASS) \
-  reg_classes_intersect_p (MMX_REGS, (CLASS))
+  reg_classes_intersect_p ((CLASS), MMX_REGS)
 
 #define Q_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), Q_REGS)
+
+#define MAYBE_NON_Q_CLASS_P(CLASS) \
+  reg_classes_intersect_p ((CLASS), NON_Q_REGS)
 
 /* Give names of register classes as strings for dump file.  */
 
