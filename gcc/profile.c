@@ -891,7 +891,7 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
       gimple_add_histogram_value (cfun, stmt, hist);
       hist->hvalue.counters =  XNEWVEC (gcov_type, hist->n_counters);
       for (j = 0; j < hist->n_counters; j++)
-        if (aact_count[t])
+        if (aact_count)
 	  hist->hvalue.counters[j] = aact_count[j];
 	else
 	  hist->hvalue.counters[j] = 0;
