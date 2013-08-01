@@ -1,3 +1,12 @@
+2013-08-01  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
+
+	Backport from mainline
+	2013-05-13  Ganesh Gopalasubramanian  
+		    <Ganesh.Gopalasubramanian@amd.com>
+
+	* config/i386/i386.c (processor_target_table): Modified default
+	alignment values for AMD BD and BT architectures.
+
 2013-07-31  Sriraman Tallam  <tmsriram@google.com>
 
 	* config/i386/i386.c (dispatch_function_versions): Fix array

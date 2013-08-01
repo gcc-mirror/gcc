@@ -2438,11 +2438,11 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&generic32_cost, 16, 7, 16, 7, 16},
   {&generic64_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
-  {&bdver1_cost, 32, 24, 32, 7, 32},
-  {&bdver2_cost, 32, 24, 32, 7, 32},
-  {&bdver3_cost, 32, 24, 32, 7, 32},
-  {&btver1_cost, 32, 24, 32, 7, 32},
-  {&btver2_cost, 32, 24, 32, 7, 32},
+  {&bdver1_cost, 16, 10, 16, 7, 11},
+  {&bdver2_cost, 16, 10, 16, 7, 11},
+  {&bdver3_cost, 16, 10, 16, 7, 11},
+  {&btver1_cost, 16, 10, 16, 7, 11},
+  {&btver2_cost, 16, 10, 16, 7, 11},
   {&atom_cost, 16, 15, 16, 7, 16}
 };
 
