@@ -1,3 +1,11 @@
+2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/54537
+	* include/tr1/cmath: Remove pow(double,double) overload, remove a
+	duplicated comment about DR 550. Add a comment to explain the
+	issue.
+	* testsuite/tr1/8_c_compatibility/cmath/pow_cmath.cc: New.
+
 2013-07-31  Tim Shen  <timshen91@gmail.com>
 
 	Thompson matcher refactored. Fix grouping problem.

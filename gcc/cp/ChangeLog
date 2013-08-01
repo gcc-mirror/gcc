@@ -1,3 +1,12 @@
+2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/54537
+	* cp-tree.h: Check OVL_USED with OVERLOAD_CHECK.
+	* name-lookup.c (do_nonmember_using_decl): Make sure we have an
+	OVERLOAD before calling OVL_USED. Call diagnose_name_conflict
+	instead of issuing an error without mentioning the conflicting
+	declaration.
+
 2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_sizeof_pack): Check cp_parser_identifier
