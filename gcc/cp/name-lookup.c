@@ -2316,8 +2316,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 				TYPE_ARG_TYPES (TREE_TYPE (decl)))
 		  && ! decls_match (fn, decl))
-		error ("%q#D conflicts with previous using declaration %q#D",
-		       decl, fn);
+		diagnose_name_conflict (decl, fn);
 
 	      dup = duplicate_decls (decl, fn, is_friend);
 	      /* If DECL was a redeclaration of FN -- even an invalid
@@ -2549,7 +2548,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		  if (new_fn == old_fn)
 		    /* The function already exists in the current namespace.  */
 		    break;
-		  else if (OVL_USED (tmp1))
+		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_USED (tmp1))
 		    continue; /* this is a using decl */
 		  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
 				      TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
@@ -2564,7 +2563,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 			break;
 		      else
 			{
-			  error ("%qD is already declared in this scope", name);
+			  diagnose_name_conflict (new_fn, old_fn);
 			  break;
 			}
 		    }

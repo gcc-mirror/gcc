@@ -1,3 +1,11 @@
+2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR c++/54537
+	* g++.dg/overload/using3.C: New.
+	* g++.dg/overload/using2.C: Adjust.
+	* g++.dg/lookup/using9.C: Likewise.
+
 2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/pr46972-2.c: New test.
