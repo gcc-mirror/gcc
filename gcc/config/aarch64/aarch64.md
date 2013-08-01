@@ -310,6 +310,7 @@
 (include "aarch64-generic.md")
 (include "large.md")
 (include "small.md")
+(include "../arm/cortex-a53.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
