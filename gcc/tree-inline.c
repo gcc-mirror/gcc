@@ -5085,6 +5085,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   DECL_ARTIFICIAL (new_decl) = 1;
   DECL_ABSTRACT_ORIGIN (new_decl) = DECL_ORIGIN (old_decl);
+  if (DECL_ORIGIN (old_decl) == old_decl)
+    old_version_node->used_as_abstract_origin = true;
   DECL_FUNCTION_PERSONALITY (new_decl) = DECL_FUNCTION_PERSONALITY (old_decl);
 
   /* Prepare the data structures for the tree copy.  */
@@ -5122,6 +5124,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION
     (DECL_STRUCT_FUNCTION (old_decl));
+  DECL_RESULT (new_decl) = DECL_RESULT (old_decl);
+  DECL_ARGUMENTS (new_decl) = DECL_ARGUMENTS (old_decl);
   initialize_cfun (new_decl, old_decl,
 		   old_entry_block->count);
   DECL_STRUCT_FUNCTION (new_decl)->gimple_df->ipa_pta

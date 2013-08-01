@@ -87,6 +87,7 @@ can_remove_node_now_p_1 (struct cgraph_node *node)
      the callgraph so references can point to it.  */
   return (!node->symbol.address_taken
 	  && !ipa_ref_has_aliases_p (&node->symbol.ref_list)
+	  && !node->used_as_abstract_origin
 	  && cgraph_can_remove_if_no_direct_calls_p (node)
 	  /* Inlining might enable more devirtualizing, so we want to remove
 	     those only after all devirtualizable virtual calls are processed.

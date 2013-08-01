@@ -234,20 +234,23 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
      This is mostly when they can be referenced externally.  Inline clones
      are special since their declarations are shared with master clone and thus
      cgraph_can_remove_if_no_direct_calls_and_refs_p should not be called on them.  */
-  FOR_EACH_DEFINED_FUNCTION (node)
-    if (!node->global.inlined_to
-	&& !node->symbol.in_other_partition
-	&& (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
-	    /* Keep around virtual functions for possible devirtualization.  */
-	    || (before_inlining_p
-		&& DECL_VIRTUAL_P (node->symbol.decl))))
-      {
-        gcc_assert (!node->global.inlined_to);
-	pointer_set_insert (reachable, node);
-	enqueue_node ((symtab_node)node, &first, reachable);
-      }
-    else
-      gcc_assert (!node->symbol.aux);
+  FOR_EACH_FUNCTION (node)
+    {
+      node->used_as_abstract_origin = false;
+      if (node->symbol.definition
+	  && !node->global.inlined_to
+	  && (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
+	      /* Keep around virtual functions for possible devirtualization.  */
+	      || (before_inlining_p
+		  && DECL_VIRTUAL_P (node->symbol.decl))))
+	{
+	  gcc_assert (!node->global.inlined_to);
+	  pointer_set_insert (reachable, node);
+	  enqueue_node ((symtab_node)node, &first, reachable);
+	}
+      else
+	gcc_assert (!node->symbol.aux);
+     }
 
   /* Mark variables that are obviously needed.  */
   FOR_EACH_DEFINED_VARIABLE (vnode)
@@ -272,6 +275,13 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	node->symbol.aux = (void *)2;
       else
 	{
+	  if (DECL_ABSTRACT_ORIGIN (node->symbol.decl))
+	    {
+	      struct cgraph_node *origin_node
+	      = cgraph_get_create_real_symbol_node (DECL_ABSTRACT_ORIGIN (node->symbol.decl));
+	      origin_node->used_as_abstract_origin = true;
+	      enqueue_node ((symtab_node) origin_node, &first, reachable);
+	    }
 	  /* If any symbol in a comdat group is reachable, force
 	     all other in the same comdat group to be also reachable.  */
 	  if (node->symbol.same_comdat_group)

@@ -303,7 +303,7 @@ struct GTY(()) cgraph_node {
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
-  unsigned abstract_and_needed : 1;
+  unsigned used_as_abstract_origin : 1;
   /* Set once the function is lowered (i.e. its CFG is built).  */
   unsigned lowered : 1;
   /* Set once the function has been instantiated and its callee
@@ -1347,12 +1347,12 @@ symtab_real_symbol_p (symtab_node node)
 {
   struct cgraph_node *cnode;
 
+  if (DECL_ABSTRACT (node->symbol.decl))
+    return false;
   if (!is_a <cgraph_node> (node))
     return true;
   cnode = cgraph (node);
   if (cnode->global.inlined_to)
-    return false;
-  if (cnode->abstract_and_needed)
     return false;
   return true;
 }
