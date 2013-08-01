@@ -4886,6 +4886,20 @@ free_lang_data_in_decl (tree decl)
 
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
+      struct cgraph_node *node;
+      if (!(node = cgraph_get_node (decl))
+	  || (!node->symbol.definition && !node->clones))
+	{
+	  if (node)
+	    cgraph_release_function_body (node);
+	  else
+	    {
+	      release_function_body (decl);
+	      DECL_ARGUMENTS (decl) = NULL;
+	      DECL_RESULT (decl) = NULL;
+	      DECL_INITIAL (decl) = error_mark_node;
+	    }
+	}
       if (gimple_has_body_p (decl))
 	{
 	  tree t;

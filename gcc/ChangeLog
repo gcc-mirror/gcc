@@ -1,3 +1,9 @@
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (release_function_body): Declare.
+	* tree.c (free_lang_data_in_decl): Free, parameters and return values
+	of unused delcarations.
+
 2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (minmax_arithsi_non_canon): Emit canonical RTL form
