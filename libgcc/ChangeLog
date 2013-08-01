@@ -1,3 +1,12 @@
+2013-08-01  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
+	Backport from trunk: Fix licenses on several libgcc files.
+
+	* config/aarch64/sfp-machine.h, config/aarch64/sync-cache.c,
+	* config/i386/cpuinfo.c, config/ia64/unwind-ia64.h,
+	* config/mips/vr4120-div.S: Fix license from GPL-3.0+ to
+	GPL-3.0-with-GCC-exception.
+
 2013-07-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-19 trunk r201051.
