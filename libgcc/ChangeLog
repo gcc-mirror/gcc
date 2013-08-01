@@ -1,3 +1,11 @@
+2013-08-01  Maxim Kuvyrkov  <maxim@kugelworks.com>
+
+	Backport from trunk: Fix licenses on several libgcc files.
+
+	* config/ia64/unwind-ia64.h,
+	* config/mips/vr4120-div.S: Fix license from GPL-3.0+ to
+	GPL-3.0-with-GCC-exception.
+
 2013-06-08  Walter Lee  <walt@tilera.com>
 
 	Backport from mainline:
