@@ -1,3 +1,7 @@
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (compute_value_histograms): Fix thinko.
+
 2013-08-01  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config.gcc (aarch64*-*-*): Add aarch-common.o to extra_objs.  Add
