@@ -1,5 +1,10 @@
 2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm.md (minmax_arithsi_non_canon): Emit canonical RTL form
+	when subtracting a constant.
+
+2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/arm.md (peepholes for eq (reg1) (reg2/imm)):
 	Generate canonical plus rtx with negated immediate instead of minus
 	where appropriate.

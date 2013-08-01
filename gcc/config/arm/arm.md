@@ -3717,8 +3717,7 @@
                              (match_dup 2))))
    (cond_exec (match_op_dup 5 [(reg:CC CC_REGNUM) (const_int 0)])
               (set (match_dup 0)
-                   (minus:SI (match_dup 1)
-                             (match_dup 3))))]
+                   (match_dup 6)))]
   {
   enum machine_mode mode = SELECT_CC_MODE (GET_CODE (operands[1]),
                                            operands[2], operands[3]);
@@ -3731,6 +3730,10 @@
   else
     rc = reverse_condition (rc);
   operands[5] = gen_rtx_fmt_ee (rc, SImode, operands[2], operands[3]);
+  if (CONST_INT_P (operands[3]))
+    operands[6] = plus_constant (SImode, operands[1], -INTVAL (operands[3]));
+  else
+    operands[6] = gen_rtx_MINUS (SImode, operands[1], operands[3]);
   }
   [(set_attr "conds" "clob")
    (set (attr "length")
