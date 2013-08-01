@@ -606,6 +606,7 @@ void debug_cgraph_node (struct cgraph_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
 void cgraph_release_function_body (struct cgraph_node *);
+void release_function_body (tree);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
