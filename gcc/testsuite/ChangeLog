@@ -1,3 +1,7 @@
+2013-08-01  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.dg/vect/vect-iv-5.c: Make xfail conditional with !arm_neon_ok.
+
 2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/fusion.c: New file, test power8 fusion
