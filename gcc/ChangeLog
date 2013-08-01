@@ -1,3 +1,10 @@
+2013-08-01  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md (define_attr "type"): Delete.
+	Include "../arm/types.md".  Define "type" attribute for all patterns.
+	* config/aarch64/aarch64-simd.md (move_lo_quad_<mode>): Update for
+	attribute changes.
+
 2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/predicates.md (fusion_gpr_addis): New predicates
