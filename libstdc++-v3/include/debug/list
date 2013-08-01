@@ -791,4 +791,13 @@ namespace __debug
 } // namespace __debug
 } // namespace std
 
+#ifndef _GLIBCXX_DEBUG_PEDANTIC
+namespace __gnu_debug
+{
+  template<class _Tp, class _Alloc>
+    struct _Insert_range_from_self_is_safe<std::__debug::list<_Tp, _Alloc> >
+    { enum { __value = 1 }; };
+}
+#endif
+
 #endif

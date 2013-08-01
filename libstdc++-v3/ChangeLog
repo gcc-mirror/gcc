@@ -1,3 +1,40 @@
+2013-08-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/57779
+	* include/debug/formatter.h (_Debug_msg_id): Add
+	__msg_insert_itself_range entry.
+	* include/debug/functions.h (_Insert_range_from_self_is_safe<>):
+	New, indicate container types supporting self range insertion in
+	GNU implementation.
+	(__foreign_iterator): New, check if an iterator points to a given
+	sequence.
+	* include/debug/macros.h (__glibcxx_check_insert_range): Add check
+	using __foreign_iterator.
+	(__gibcxx_check_insert_range_after): Likewise.
+	* include/debug/string (_Insert_range_from_self_is_safe<>):
+	Partially specialized to mark __gnu_debug::basic_string<> as
+	supporting self range insert.
+	* include/debug/list (_Insert_range_from_self_is_safe<>):
+	Partially specialized to mark std::list as supporting self range
+	insert if _GLIBCXX_DEBUG_PEDANTIC is not defined.
+	* include/debug/forward_list (_Insert_range_from_self_is_safe<>):
+	Likewise.
+	* src/c++11/debug.cc (_S_debug_messages): Add
+	__msg_insert_itself_range_entry message.
+	(_Error_formatter::_Parameter::_M_print_description): Display
+	iterator sequence address rather than sequence address when the
+	parameter type is an iterator.
+	(_Error_formatter::_M_print_word): Enhance behavior when
+	displaying a word with an appended '\n'.
+	* testsuite/util/debug/checks.h (check_insert4<>): New.
+	* testsuite/23_containers/deque/debug/insert5_neg.cc: New.
+	* testsuite/23_containers/vector/debug/insert5_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert6_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/57779_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert5_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after4_neg.cc:
+	Likewise.
+
 2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/54537
