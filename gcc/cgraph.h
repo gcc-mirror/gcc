@@ -597,6 +597,12 @@ symtab_node symtab_alias_ultimate_target (symtab_node,
 					  enum availability *avail = NULL);
 bool symtab_resolve_alias (symtab_node node, symtab_node target);
 void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target);
+bool symtab_for_node_and_aliases (symtab_node,
+				  bool (*) (symtab_node, void *),
+				  void *,
+				  bool);
+symtab_node symtab_nonoverwritable_alias (symtab_node);
+enum availability symtab_node_availability (symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
