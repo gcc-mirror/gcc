@@ -1,3 +1,7 @@
+2013-08-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/neon-for-64bits-2.c: Delete.
+
 2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
 	    Peter Bergner  <bergner@vnet.ibm.com>
 
