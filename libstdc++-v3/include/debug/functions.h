@@ -33,6 +33,7 @@
 #include <bits/stl_iterator_base_types.h> // for iterator_traits, categories and
 					  // _Iter_base
 #include <bits/cpp_type_traits.h>	  // for __is_integer
+#include <bits/move.h>                    // for __addressof and addressof
 #if __cplusplus >= 201103L
 # include <bits/stl_function.h>		  // for less and greater_equal
 # include <type_traits>			  // for common_type
@@ -126,8 +127,8 @@ namespace __gnu_debug
     inline bool
     __valid_range_aux(const _InputIterator& __first,
 		      const _InputIterator& __last, std::__false_type)
-  { return __valid_range_aux2(__first, __last,
-			      std::__iterator_category(__first)); }
+    { return __valid_range_aux2(__first, __last,
+				std::__iterator_category(__first)); }
 
   /** Don't know what these iterators are, or if they are even
    *  iterators (we may get an integral type for InputIterator), so
@@ -182,15 +183,14 @@ namespace __gnu_debug
     {
       typedef typename std::common_type<_PointerType1,
 					_PointerType2>::type _PointerType;
-      std::less<_PointerType> __l;
-      std::greater_equal<_PointerType> __ge;
+      constexpr std::less<_PointerType> __l;
+      constexpr std::greater_equal<_PointerType> __ge;
 
-      return
-	__l(std::addressof(*__other),
-	    std::addressof(*(__it._M_get_sequence()->_M_base().begin())))
-	|| __ge(std::addressof(*__other),
-		std::addressof(*(__it._M_get_sequence()->_M_base().end() - 1)) + 1);
-      
+      return (__l(std::addressof(*__other),
+		  std::addressof(*(__it._M_get_sequence()->_M_base().begin())))
+	      || __ge(std::addressof(*__other),
+		      std::addressof(*(__it._M_get_sequence()->_M_base().end()
+				       - 1)) + 1));
     }
 			  
   template<typename _Iterator, typename _Sequence, typename _InputIterator>
@@ -205,12 +205,13 @@ namespace __gnu_debug
       // past-the-end iterator.
       if (__it._M_get_sequence()->_M_base().begin()
 	  != __it._M_get_sequence()->_M_base().end())
-	if (std::__addressof(*(__it._M_get_sequence()->_M_base().end() - 1))
-	    - std::__addressof(*(__it._M_get_sequence()->_M_base().begin()))
+	if (std::addressof(*(__it._M_get_sequence()->_M_base().end() - 1))
+	    - std::addressof(*(__it._M_get_sequence()->_M_base().begin()))
 	    == __it._M_get_sequence()->size() - 1)
-	  return __foreign_iterator_aux4(__it, __other,
-			std::addressof(*(__it._M_get_sequence()->_M_base().begin())),
-			std::addressof(*__other));
+	  return (__foreign_iterator_aux4
+		  (__it, __other,
+		   std::addressof(*(__it._M_get_sequence()->_M_base().begin())),
+		   std::addressof(*__other)));
       return true;
     }
 			   
@@ -232,8 +233,8 @@ namespace __gnu_debug
     { return __it._M_get_sequence() != __other._M_get_sequence(); }
 			   
 #if __cplusplus >= 201103L
-  /* This overload detects when passing pointers to the contained elements rather
-     than using iterators.
+  /* This overload detects when passing pointers to the contained elements
+     rather than using iterators.
    */
   template<typename _Iterator, typename _Sequence, typename _InputIterator>
     inline bool
@@ -271,10 +272,9 @@ namespace __gnu_debug
 			   _InputIterator __other,
 			   std::__false_type)
     {
-      return
-	_Insert_range_from_self_is_safe<_Sequence>::__value
-	|| __foreign_iterator_aux2(__it, __other,
-				   std::__iterator_category(__it));
+      return (_Insert_range_from_self_is_safe<_Sequence>::__value
+	      || __foreign_iterator_aux2(__it, __other,
+					 std::__iterator_category(__it)));
     }
 
   template<typename _Iterator, typename _Sequence,

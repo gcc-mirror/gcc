@@ -1,3 +1,14 @@
+2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58049
+	* include/debug/functions.h: Include <bits/move.h>; minor formatting
+	changes.
+	(__foreign_iterator_aux4): Declare __l and __ge constexpr.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::operator->):
+	Use __addressof.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::
+	operator->): Likewise.
+
 2013-08-01  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/57779
