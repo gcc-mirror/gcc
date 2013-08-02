@@ -1892,7 +1892,7 @@ process_alt_operands (int only_alternative)
 
 	      /* For asms, verify that the class for this alternative is possible
 		 for the mode that is specified.  */
-	      if (!no_regs_p && REG_P (op) && INSN_CODE (curr_insn) < 0)
+	      if (!no_regs_p && INSN_CODE (curr_insn) < 0)
 		{
 		  int i;
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)

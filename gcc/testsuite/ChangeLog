@@ -1,3 +1,8 @@
+2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58048
+	* gcc.target/i386/pr58048.c: New.
+
 2013-08-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/arm/neon-for-64bits-2.c: Delete.
