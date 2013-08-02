@@ -1,3 +1,10 @@
+2013-08-02  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/types.md (define_attr "type"): Add "load_acq" and "store_rel".
+	* config/arm/cortex-a53.md (cortex_a53_load1): Update for attribute
+	changes.
+	(cortex_a53_store1): Likewise.
+
 2013-08-01  Jan Hubicka  <jh@suse.cz>
 
 	* ipa.c (symtab_remove_unreachable_nodes): Nodes in other partitions are

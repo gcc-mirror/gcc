@@ -57,6 +57,7 @@
 ; float              floating point arithmetic operation.
 ; fmac[d,s]          double/single floating point multiply-accumulate.
 ; fmul[d,s]          double/single floating point multiply.
+; load_acq           load-acquire.
 ; load_byte          load byte(s) from memory to arm registers.
 ; load1              load 1 word from memory to arm registers.
 ; load2              load 2 words from memory to arm registers.
@@ -105,6 +106,7 @@
 ; smulxy             signed multiply, 16x16-bit, 32-bit accumulate.
 ; smusd              signed dual multiply subtract.
 ; smusdx             signed dual multiply subtract reverse.
+; store_rel          store-release.
 ; store1             store 1 word to memory from arm registers.
 ; store2             store 2 words to memory from arm registers.
 ; store3             store 3 words to memory from arm registers.
@@ -221,6 +223,7 @@
   fmacs,\
   fmuld,\
   fmuls,\
+  load_acq,\
   load_byte,\
   load1,\
   load2,\
@@ -265,6 +268,7 @@
   smulxy,\
   smusd,\
   smusdx,\
+  store_rel,\
   store1,\
   store2,\
   store3,\
