@@ -1,3 +1,8 @@
+2013-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_emit_membar_for_model) <SMM_TSO>: Add
+	the implied StoreLoad barrier for atomic operations if before.
+
 2013-07-11  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-11 trunk r200901.

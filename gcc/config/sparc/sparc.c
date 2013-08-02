@@ -10929,6 +10929,11 @@ sparc_emit_membar_for_model (enum memmodel model,
       /* Total Store Ordering: all memory transactions with store semantics
 	 are followed by an implied StoreStore.  */
       implied |= StoreStore;
+
+      /* If we're not looking for a raw barrer (before+after), then atomic
+	 operations get the benefit of being both load and store.  */
+      if (load_store == 3 && before_after == 1)
+	implied |= StoreLoad;
       /* FALLTHRU */
 
     case SMM_PSO:
