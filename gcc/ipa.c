@@ -239,6 +239,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
       node->used_as_abstract_origin = false;
       if (node->symbol.definition
 	  && !node->global.inlined_to
+	  && !node->symbol.in_other_partition
 	  && (!cgraph_can_remove_if_no_direct_calls_and_refs_p (node)
 	      /* Keep around virtual functions for possible devirtualization.  */
 	      || (before_inlining_p
