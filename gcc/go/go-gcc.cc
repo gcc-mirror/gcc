@@ -1521,10 +1521,11 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 	TREE_PUBLIC(decl) = 1;
     }
   else
-    {
-      make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
-      resolve_unique_section(decl, 1, 0);
-    }
+    make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
+
+  // These variables are often unneeded in the final program, so put
+  // them in their own section so that linker GC can discard them.
+  resolve_unique_section(decl, 1, 1);
 
   rest_of_decl_compilation(decl, 1, 0);
 }
