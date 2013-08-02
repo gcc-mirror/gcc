@@ -3600,6 +3600,40 @@ init_insn_rhs_dead_pseudo_p (int regno)
   return false;
 }
 
+/* Return TRUE if REGNO has a reverse equivalence.  The equivalence is
+   reverse only if we have one init insn with given REGNO as a
+   source.  */
+static bool
+reverse_equiv_p (int regno)
+{
+  rtx insns, set;
+
+  if ((insns = ira_reg_equiv[regno].init_insns) == NULL_RTX)
+    return false;
+  if (! INSN_P (XEXP (insns, 0))
+      || XEXP (insns, 1) != NULL_RTX)
+    return false;
+  if ((set = single_set (XEXP (insns, 0))) == NULL_RTX)
+    return false;
+  return REG_P (SET_SRC (set)) && (int) REGNO (SET_SRC (set)) == regno;
+}
+
+/* Return TRUE if REGNO was reloaded in an equivalence init insn.  We
+   call this function only for non-reverse equivalence.  */
+static bool
+contains_reloaded_insn_p (int regno)
+{
+  rtx set;
+  rtx list = ira_reg_equiv[regno].init_insns;
+
+  for (; list != NULL_RTX; list = XEXP (list, 1))
+    if ((set = single_set (XEXP (list, 0))) == NULL_RTX
+	|| ! REG_P (SET_DEST (set))
+	|| (int) REGNO (SET_DEST (set)) != regno)
+      return true;
+  return false;
+}
+
 /* Entry function of LRA constraint pass.  Return true if the
    constraint pass did change the code.	 */
 bool
@@ -3643,7 +3677,6 @@ lra_constraints (bool first_p)
 	else if ((x = get_equiv_substitution (reg)) != reg)
 	  {
 	    bool pseudo_p = contains_reg_p (x, false, false);
-	    rtx set, insns;
 
 	    /* After RTL transformation, we can not guarantee that
 	       pseudo in the substitution was not reloaded which might
@@ -3675,13 +3708,13 @@ lra_constraints (bool first_p)
 		   removed the insn.  When the equiv can be a
 		   constant, the right hand side of the init insn can
 		   be a pseudo.  */
-		|| (! ((insns = ira_reg_equiv[i].init_insns) != NULL_RTX
-		       && INSN_P (XEXP (insns, 0))
-		       && XEXP (insns, 1) == NULL_RTX
-		       && (set = single_set (XEXP (insns, 0))) != NULL_RTX
-		       && REG_P (SET_SRC (set))
-		       && (int) REGNO (SET_SRC (set)) == i)
-		    && init_insn_rhs_dead_pseudo_p (i))
+		|| (! reverse_equiv_p (i)
+		    && (init_insn_rhs_dead_pseudo_p (i)
+			/* If we reloaded the pseudo in an equivalence
+			   init insn, we can not remove the equiv init
+			   insns and the init insns might write into
+			   const memory in this case.  */
+			|| contains_reloaded_insn_p (i)))
 		/* Prevent access beyond equivalent memory for
 		   paradoxical subregs.  */
 		|| (MEM_P (x)
