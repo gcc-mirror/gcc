@@ -1,3 +1,15 @@
+2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cp-tree.h (finish_stmt): Do not declare.
+	* decl.c (finish_stmt): Do not define.
+	* parser.c (cp_parser_expression_statement,
+	cp_parser_declaration_statement,
+	cp_parser_transaction_cancel): Don't call finish_stmt.
+	* semantics.c (finish_expr_stmt, finish_if_stmt,
+	finish_while_stmt, finish_do_stmt, finish_return_stmt,
+	finish_for_stmt, finish_switch_stmt, finish_compound_stmt,
+	finish_transaction_stmt): Likewise.
+
 2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
 
 	PR c++/54537

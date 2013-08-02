@@ -9419,8 +9419,6 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
     statement = finish_stmt_expr_expr (statement, in_statement_expr);
   else if (statement)
     statement = finish_expr_stmt (statement);
-  else
-    finish_stmt ();
 
   return statement;
 }
@@ -10472,9 +10470,6 @@ cp_parser_declaration_statement (cp_parser* parser)
 
   /* Free any declarators allocated.  */
   obstack_free (&declarator_obstack, p);
-
-  /* Finish off the statement.  */
-  finish_stmt ();
 }
 
 /* Some dependent statements (like `if (cond) statement'), are
@@ -28609,7 +28604,6 @@ cp_parser_transaction_cancel (cp_parser *parser)
 
   stmt = build_tm_abort_call (token->location, is_outer);
   add_stmt (stmt);
-  finish_stmt ();
 
   return stmt;
 }

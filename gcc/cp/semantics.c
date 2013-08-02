@@ -641,8 +641,6 @@ finish_expr_stmt (tree expr)
       r = add_stmt (expr);
     }
 
-  finish_stmt ();
-
   return r;
 }
 
@@ -707,7 +705,6 @@ finish_if_stmt (tree if_stmt)
   tree scope = IF_SCOPE (if_stmt);
   IF_SCOPE (if_stmt) = NULL;
   add_stmt (do_poplevel (scope));
-  finish_stmt ();
 }
 
 /* Begin a while-statement.  Returns a newly created WHILE_STMT if
@@ -740,7 +737,6 @@ void
 finish_while_stmt (tree while_stmt)
 {
   WHILE_BODY (while_stmt) = do_poplevel (WHILE_BODY (while_stmt));
-  finish_stmt ();
 }
 
 /* Begin a do-statement.  Returns a newly created DO_STMT if
@@ -778,7 +774,6 @@ finish_do_stmt (tree cond, tree do_stmt)
 {
   cond = maybe_convert_cond (cond);
   DO_COND (do_stmt) = cond;
-  finish_stmt ();
 }
 
 /* Finish a return-statement.  The EXPRESSION returned, if any, is as
@@ -815,7 +810,6 @@ finish_return_stmt (tree expr)
   TREE_NO_WARNING (r) |= no_warning;
   r = maybe_cleanup_point_expr_void (r);
   r = add_stmt (r);
-  finish_stmt ();
 
   return r;
 }
@@ -941,8 +935,6 @@ finish_for_stmt (tree for_stmt)
       *scope_ptr = NULL;
       add_stmt (do_poplevel (scope));
     }
-
-  finish_stmt ();
 }
 
 /* Begin a range-for-statement.  Returns a new RANGE_FOR_STMT.
@@ -1076,7 +1068,6 @@ finish_switch_stmt (tree switch_stmt)
   SWITCH_STMT_BODY (switch_stmt) =
     pop_stmt_list (SWITCH_STMT_BODY (switch_stmt));
   pop_switch ();
-  finish_stmt ();
 
   scope = SWITCH_STMT_SCOPE (switch_stmt);
   SWITCH_STMT_SCOPE (switch_stmt) = NULL;
@@ -1298,7 +1289,6 @@ finish_compound_stmt (tree stmt)
 
   /* ??? See c_end_compound_stmt wrt statement expressions.  */
   add_stmt (stmt);
-  finish_stmt ();
 }
 
 /* Finish an asm-statement, whose components are a STRING, some
@@ -5208,7 +5198,6 @@ finish_transaction_stmt (tree stmt, tree compound_stmt, int flags, tree noex)
 
   if (compound_stmt)
     finish_compound_stmt (compound_stmt);
-  finish_stmt ();
 }
 
 /* Build a __transaction_atomic or __transaction_relaxed expression.  If
