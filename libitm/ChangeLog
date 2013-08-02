@@ -1,3 +1,40 @@
+2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	Backports from mainline:
+	2013-04-23  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/sjlj.S: New file.
+	* config/s390/target.h: New file.
+	* configure.tgt: Set options for S/390.
+
+	2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/target.h: Include htmintrin.h.
+	(_HTM_ITM_RETRIES): New macro definition.
+	(htm_available, htm_init, htm_begin, htm_begin_success)
+	(htm_commit, htm_abort, htm_abort_should_retry): New functions.
+
+	2013-07-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* acinclude.m4: Add htm asm check for s390.
+	* configure.tgt: Add -mhtm and -Wa,-march=zEC12 to the
+	options.
+	* configure: Regenerate.
+	* config/s390/target.h: Remove __HTM__ check.
+	(htm_available): Call getauxval to get hwcaps and check
+	whether	HTM is available or not.
+
+	2013-07-29  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/target.h (htm_begin, htm_commit, htm_abort)
+	(htm_transaction_active): Enable zEC12 instructions in the
+	assembler.
+	* configure.tgt: Remove -Wa,-march=zEC12 from XCFLAGS.
+
+	2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure.tgt: Add -msoft-float to XCFLAGS.
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.

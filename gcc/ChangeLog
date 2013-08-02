@@ -1,3 +1,70 @@
+2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	Backports from mainline:
+	2013-06-27  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: Rename UNSPEC_CCU_TO_INT to
+	UNSPEC_STRCMPCC_TO_INT and UNSPEC_CCZ_TO_INT to UNSPEC_CC_TO_INT.
+	(struct machine_function): Add tbegin_p.
+	(s390_canonicalize_comparison): Fold CC mode compares to
+	conditional jump if possible.
+	(s390_emit_jump): Return the emitted jump.
+	(s390_branch_condition_mask, s390_branch_condition_mnemonic):
+	Handle CCRAWmode compares.
+	(s390_option_override): Default to -mhtm if available.
+	(s390_reg_clobbered_rtx): Handle floating point regs as well.
+	(s390_regs_ever_clobbered): Use s390_regs_ever_clobbered also for
+	FPRs instead of df_regs_ever_live_p.
+	(s390_optimize_nonescaping_tx): New function.
+	(s390_init_frame_layout): Extend clobbered_regs array to cover
+	FPRs as well.
+	(s390_emit_prologue): Call s390_optimize_nonescaping_tx.
+	(s390_expand_tbegin): New function.
+	(enum s390_builtin): New enum definition.
+	(code_for_builtin): New array definition.
+	(s390_init_builtins): New function.
+	(s390_expand_builtin): New function.
+	(TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTIN): Define.
+	* common/config/s390/s390-common.c (processor_flags_table): Add
+	PF_TX.
+	* config/s390/predicates.md (s390_comparison): Handle CCRAWmode.
+	(s390_alc_comparison): Likewise.
+	* config/s390/s390-modes.def: Add CCRAWmode.
+	* config/s390/s390.h (processor_flags): Add PF_TX.
+	(TARGET_CPU_HTM): Define macro.
+	(TARGET_HTM): Define macro.
+	(TARGET_CPU_CPP_BUILTINS): Define __HTM__ for htm.
+	* config/s390/s390.md: Rename UNSPEC_CCU_TO_INT to
+	UNSPEC_STRCMPCC_TO_INT and UNSPEC_CCZ_TO_INT to UNSPEC_CC_TO_INT.
+	(UNSPECV_TBEGIN, UNSPECV_TBEGINC, UNSPECV_TEND, UNSPECV_TABORT)
+	(UNSPECV_ETND, UNSPECV_NTSTG, UNSPECV_PPA): New unspecv enum
+	values.
+	(TBEGIN_MASK, TBEGINC_MASK): New constants.
+	("*cc_to_int"): Move up.
+	("*mov<mode>cc", "*cjump_64", "*cjump_31"): Accept integer
+	constants other than 0.
+	("*ccraw_to_int"): New insn and splitter definition.
+	("tbegin", "tbegin_nofloat", "tbegin_retry")
+	("tbegin_retry_nofloat", "tbeginc", "tend", "tabort")
+	("tx_assist"): New expander.
+	("tbegin_1", "tbegin_nofloat_1", "*tbeginc_1", "*tend_1")
+	("*tabort_1", "etnd", "ntstg", "*ppa"): New insn definition.
+	* config/s390/s390.opt: Add -mhtm option.
+	* config/s390/s390-protos.h (s390_emit_jump): Add return type.
+	* config/s390/htmxlintrin.h: New file.
+	* config/s390/htmintrin.h: New file.
+	* config/s390/s390intrin.h: New file.
+	* doc/extend.texi: Document htm builtins.
+	* config.gcc: Add the new header files to extra_headers.
+
+	2013-07-17  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.c: (s390_expand_builtin): Allow -mhtm to be
+	enabled without -march=zEC12.
+	* config/s390/s390.h (TARGET_HTM): Do not require EC12 machine
+	flags to be set.
+
 2013-08-01  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	Backport from mainline
