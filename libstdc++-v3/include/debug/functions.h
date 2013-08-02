@@ -183,8 +183,8 @@ namespace __gnu_debug
     {
       typedef typename std::common_type<_PointerType1,
 					_PointerType2>::type _PointerType;
-      constexpr std::less<_PointerType> __l;
-      constexpr std::greater_equal<_PointerType> __ge;
+      constexpr std::less<_PointerType> __l = {};
+      constexpr std::greater_equal<_PointerType> __ge = {};
 
       return (__l(std::addressof(*__other),
 		  std::addressof(*(__it._M_get_sequence()->_M_base().begin())))

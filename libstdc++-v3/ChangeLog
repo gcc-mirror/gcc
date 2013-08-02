@@ -1,5 +1,10 @@
 2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/debug/functions.h (__foreign_iterator_aux4):
+	Initialize __l and __ge.
+
+2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/58049
 	* include/debug/functions.h: Include <bits/move.h>; minor formatting
 	changes.
