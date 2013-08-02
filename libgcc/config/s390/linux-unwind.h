@@ -31,6 +31,8 @@ static _Unwind_Reason_Code
 s390_fallback_frame_state (struct _Unwind_Context *context,
 			   _Unwind_FrameState *fs)
 {
+  static const unsigned char dwarf_to_fpr_map[16] =
+    { 0, 2, 4, 6, 1, 3, 5, 7, 8, 10, 12, 14, 9, 11, 13, 15 };
   unsigned char *pc = context->ra;
   long new_cfa;
   int i;
@@ -112,7 +114,7 @@ s390_fallback_frame_state (struct _Unwind_Context *context,
     {
       fs->regs.reg[16+i].how = REG_SAVED_OFFSET;
       fs->regs.reg[16+i].loc.offset =
-	(long)&regs->fprs[i] - new_cfa;
+	(long)&regs->fprs[dwarf_to_fpr_map[i]] - new_cfa;
     }
 
   /* Load return addr from PSW into dummy register 32.  */

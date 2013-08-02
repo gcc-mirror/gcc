@@ -452,6 +452,7 @@ s390*-*-*)
 	cpu_type=s390
 	need_64bit_hwint=yes
 	extra_options="${extra_options} fused-madd.opt"
+	extra_headers="s390intrin.h htmintrin.h htmxlintrin.h"
 	;;
 # Note the 'l'; we need to be able to match e.g. "shle" or "shl".
 sh[123456789lbe]*-*-* | sh-*-*)
@@ -734,6 +735,7 @@ case ${target} in
     yes) thread_file='rtems' ;;
   esac
   extra_options="${extra_options} rtems.opt"
+  default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
   ;;
 *-*-uclinux*)

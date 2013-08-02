@@ -262,7 +262,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, tsubst_flags_t complain)
      so that we can check again once it is completed. This makes sense
      only for objects for which we have a declaration or at least a
      name.  */
-  if (!COMPLETE_TYPE_P (type))
+  if (!COMPLETE_TYPE_P (type) && (complain & tf_error))
     {
       void **slot;
       struct pending_abstract_type *pat;

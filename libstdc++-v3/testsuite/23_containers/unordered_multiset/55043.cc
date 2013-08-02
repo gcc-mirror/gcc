@@ -30,7 +30,7 @@ struct MoveOnly
 };
 
 struct equal {
-  bool operator()(const MoveOnly&, const MoveOnly) const { return true; }
+  bool operator()(const MoveOnly&, const MoveOnly&) const { return true; }
 };
 struct hash {
   std::size_t operator()(const MoveOnly&) const { return 0; }

@@ -160,7 +160,7 @@ AC_SUBST(libtool_VERSION)
 AC_STDC_HEADERS
 AC_HEADER_TIME
 ACX_HEADER_STRING
-AC_CHECK_HEADERS(unistd.h semaphore.h sys/time.h malloc.h)
+AC_CHECK_HEADERS(unistd.h semaphore.h sys/time.h sys/auxv.h malloc.h)
 
 GCC_HEADER_STDINT(gstdint.h)
 
@@ -193,7 +193,7 @@ AC_LINK_IFELSE(
    [AC_MSG_ERROR([Pthreads are required to build libitm])])])
 
 # Check for functions needed.
-AC_CHECK_FUNCS(strtoull memalign posix_memalign)
+AC_CHECK_FUNCS(strtoull memalign posix_memalign getauxval)
 
 # Check for broken semaphore implementation on darwin.
 # sem_init returns: sem_init error: Function not implemented.
@@ -245,6 +245,7 @@ LIBITM_CHECK_SYNC_BUILTINS
 LIBITM_CHECK_64BIT_SYNC_BUILTINS
 LIBITM_CHECK_AS_AVX
 LIBITM_CHECK_AS_RTM
+LIBITM_CHECK_AS_HTM
 
 GCC_CHECK_ELF_STYLE_WEAKREF
 
