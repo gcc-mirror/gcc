@@ -1014,4 +1014,88 @@ symtab_resolve_alias (symtab_node node, symtab_node target)
     symtab_alias_ultimate_target (target, NULL)->symbol.address_taken = true;
   return true;
 }
+
+/* Call calback on NODE and aliases associated to NODE. 
+   When INCLUDE_OVERWRITABLE is false, overwritable aliases and thunks are
+   skipped. */
+
+bool
+symtab_for_node_and_aliases (symtab_node node,
+			     bool (*callback) (symtab_node, void *),
+			     void *data,
+			     bool include_overwritable)
+{
+  int i;
+  struct ipa_ref *ref;
+
+  if (callback (node, data))
+    return true;
+  for (i = 0; ipa_ref_list_referring_iterate (&node->symbol.ref_list, i, ref); i++)
+    if (ref->use == IPA_REF_ALIAS)
+      {
+	symtab_node alias = ref->referring;
+	if (include_overwritable
+	    || symtab_node_availability (alias) > AVAIL_OVERWRITABLE)
+          if (symtab_for_node_and_aliases (alias, callback, data,
+					   include_overwritable))
+	    return true;
+      }
+  return false;
+}
+
+/* Worker searching nonoverwritable alias.  */
+
+static bool
+symtab_nonoverwritable_alias_1 (symtab_node node, void *data)
+{
+  if (decl_binds_to_current_def_p (node->symbol.decl))
+    {
+      *(symtab_node *)data = node;
+      return true;
+    }
+  return false;
+}
+
+/* If NODE can not be overwriten by static or dynamic linker to point to different
+   definition, return NODE. Otherwise look for alias with such property and if
+   none exists, introduce new one.  */
+
+symtab_node
+symtab_nonoverwritable_alias (symtab_node node)
+{
+  tree new_decl;
+  symtab_node new_node = NULL;
+  symtab_for_node_and_aliases (node, symtab_nonoverwritable_alias_1,
+		               (void *)&new_node, true);
+  if (new_node)
+    return new_node;
+
+  new_decl = copy_node (node->symbol.decl);
+  DECL_NAME (new_decl) = clone_function_name (node->symbol.decl, "localalias");
+  if (TREE_CODE (new_decl) == FUNCTION_DECL)
+    DECL_STRUCT_FUNCTION (new_decl) = NULL;
+  DECL_INITIAL (new_decl) = NULL;
+  SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
+  SET_DECL_RTL (new_decl, NULL);
+
+  /* Update the properties.  */
+  DECL_EXTERNAL (new_decl) = 0;
+  if (DECL_ONE_ONLY (node->symbol.decl))
+    DECL_SECTION_NAME (new_decl) = NULL;
+  DECL_COMDAT_GROUP (new_decl) = 0;
+  TREE_PUBLIC (new_decl) = 0;
+  DECL_COMDAT (new_decl) = 0;
+  DECL_WEAK (new_decl) = 0;
+  DECL_VIRTUAL_P (new_decl) = 0;
+  if (TREE_CODE (new_decl) == FUNCTION_DECL)
+    {
+      DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
+      DECL_STATIC_DESTRUCTOR (new_decl) = 0;
+      new_node = (symtab_node) cgraph_create_function_alias (new_decl, node->symbol.decl);
+    }
+  else
+    new_node = (symtab_node) varpool_create_variable_alias (new_decl, node->symbol.decl);
+  symtab_resolve_alias (new_node, node);  
+  return new_node;
+}
 #include "gt-symtab.h"

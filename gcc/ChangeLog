@@ -1,3 +1,14 @@
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <marxin.liska@gmail.com>
+
+	* cgraph.c (cgraph_function_body_availability): Do not check cgrpah flags.
+	* cgraph.h (symtab_for_node_and_aliases, symtab_nonoverwritable_alias,
+	symtab_node_availability): Declare.
+	* ipa.c (can_replace_by_local_alias): New.
+	(function_and_variable_visibility): Use it.
+	* symtab.c (symtab_for_node_and_aliases, symtab_nonoverwritable_alias_1,
+	symtab_nonoverwritable_alias): New.
+
 2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/57963
