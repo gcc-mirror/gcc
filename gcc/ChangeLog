@@ -1,3 +1,10 @@
+2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57963
+	* lra-constraints.c (reverse_equiv_p, contains_reloaded_insn_p):
+	New.
+	(lra_constraints): Use them.
+
 2013-08-02  Sofiane Naci  <sofiane.naci@arm.com>
 
 	* config/arm/types.md (define_attr "type"): Add "load_acq" and "store_rel".
