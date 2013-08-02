@@ -3582,6 +3582,12 @@ Function::make_descriptor_wrapper(Gogo* gogo, Named_object* no,
   Named_object* dno = gogo->start_function(name, new_fntype, false, loc);
   dno->func_value()->is_descriptor_wrapper_ = true;
 
+  // Put the wrapper in a unique section so that it can be discarded
+  // by the linker if it is not needed.  Every top-level function will
+  // get a wrapper, in case there is a reference other than a call
+  // from some other package, but most will not need one.
+  dno->func_value()->set_in_unique_section();
+
   gogo->start_block(loc);
 
   Expression* fn = Expression::make_func_reference(no, NULL, loc);
