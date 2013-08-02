@@ -173,7 +173,6 @@ namespace __gnu_debug
        *  @brief Iterator dereference.
        *  @pre iterator is dereferenceable
        *  @todo Make this correct w.r.t. iterators that return proxies
-       *  @todo Use addressof() instead of & operator
        */
       pointer
       operator->() const
@@ -181,7 +180,7 @@ namespace __gnu_debug
 	_GLIBCXX_DEBUG_VERIFY(this->_M_dereferenceable(),
 			      _M_message(__msg_bad_deref)
 			      ._M_iterator(*this, "this"));
-	return &*_M_current;
+	return std::__addressof(*_M_current);
       }
 
       // ------ Input iterator requirements ------
