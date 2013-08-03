@@ -1,4 +1,5 @@
 2013-08-02  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <marxin.liska@gmail.com>
 
 	* cgraphunit.c (add_new_function): Fix logic when adding from
 	late IPA pass.
