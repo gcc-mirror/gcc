@@ -1,3 +1,12 @@
+2013-08-03  Jason Merrill  <jason@redhat.com>
+
+	DR 1430
+	PR c++/51239
+	* pt.c (pack_expansion_args_count): Rename from
+	any_pack_expanson_args_p.
+	(coerce_template_parms): Reject pack expansion to
+	non-pack template parameter of alias template.
+
 2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (dump_aggr_type): Use specialized pretty printer
