@@ -1,3 +1,10 @@
+2013-08-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Update
+	candidate table when replacing a candidate statement.
+	(replace_rhs_if_not_dup): Likewise.
+	(replace_one_candidate): Likewise.
+
 2013-08-02  Jan Hubicka  <jh@suse.cz>
 	    Martin Liska  <marxin.liska@gmail.com>
 

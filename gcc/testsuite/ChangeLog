@@ -1,3 +1,7 @@
+2013-08-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/torture/pr57993-2.cpp: New.
+
 2013-08-02  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/ipa/ipa-1.c: Update.
