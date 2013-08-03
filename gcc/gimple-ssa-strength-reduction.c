@@ -1911,6 +1911,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, double_int bump)
 	      gimple_assign_set_rhs_with_ops (&gsi, code,
 					      basis_name, bump_tree);
 	      update_stmt (gsi_stmt (gsi));
+              c->cand_stmt = gsi_stmt (gsi);
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		stmt_to_print = gsi_stmt (gsi);
 	    }
@@ -3114,6 +3115,7 @@ replace_rhs_if_not_dup (enum tree_code new_code, tree new_rhs1, tree new_rhs2,
       gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
       gimple_assign_set_rhs_with_ops (&gsi, new_code, new_rhs1, new_rhs2);
       update_stmt (gsi_stmt (gsi));
+      c->cand_stmt = gsi_stmt (gsi);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	return gsi_stmt (gsi);
@@ -3219,6 +3221,7 @@ replace_one_candidate (slsr_cand_t c, unsigned i, tree basis_name)
 	  gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
 	  gimple_assign_set_rhs_with_ops (&gsi, MINUS_EXPR, basis_name, rhs2);
 	  update_stmt (gsi_stmt (gsi));
+          c->cand_stmt = gsi_stmt (gsi);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    stmt_to_print = gsi_stmt (gsi);
