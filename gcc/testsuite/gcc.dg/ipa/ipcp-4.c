@@ -61,8 +61,8 @@ main (int argc, char *argv[])
 /* { dg-final { scan-ipa-dump "Creating a specialized node of g1.*for all known contexts" "cp" } } */
 /* { dg-final { scan-ipa-dump "Creating a specialized node of g2.*for all known contexts" "cp" } } */
 /* { dg-final { scan-ipa-dump-not "Creating a specialized node of h.*for all known contexts" "cp" } } */
-/* { dg-final { scan-ipa-dump-times "replacing param a with const 7" 2 "cp"  } } */
-/* { dg-final { scan-ipa-dump "replacing param a with const 11" "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "replacing param .0 a with const 7" 2 "cp"  } } */
+/* { dg-final { scan-ipa-dump "replacing param .0 a with const 11" "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
 
 

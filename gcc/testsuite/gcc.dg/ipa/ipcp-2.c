@@ -94,6 +94,6 @@ top2 (int q)
 }
 
 /* { dg-final { scan-ipa-dump-times "Creating a specialized node of foo" 1 "cp" } } */
-/* { dg-final { scan-ipa-dump-times "replacing param p with const 0" 3 "cp"  } } */
-/* { dg-final { scan-ipa-dump "replacing param s with const 4" "cp"  } } */
+/* { dg-final { scan-ipa-dump-times "replacing param .. p with const 0" 3 "cp"  } } */
+/* { dg-final { scan-ipa-dump "replacing param .0 s with const 4" "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */

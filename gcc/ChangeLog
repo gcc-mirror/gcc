@@ -1,3 +1,25 @@
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (gather_context_independent_values): Use ipa_get_param_move_cost.
+	(get_replacement_map): Remove PARAM; move parameter folding into tree-inline.c
+	(create_specialized_node): Update.
+	* ipa-prop.c (ipa_populate_param_decls): Do not look for origins;
+	assert that we have gimple body; update move_cost.
+	(count_formal_params): Assert that we have gimple body.
+	(ipa_dump_param): New function.
+	(ipa_alloc_node_params): Break out from ...
+	(ipa_initialize_node_params): ... here.
+	(ipa_get_vector_of_formal_parms): ICE when used in WPA.
+	(ipa_write_node_info): Stream move costs.
+	(ipa_read_node_info): Read move costs.
+	(ipa_update_after_lto_read): Do not recompute node params.
+	* ipa-prop.h (ipa_param_descriptor): Add move_cost.
+	(ipa_get_param): Check we are not in WPA.
+	(ipa_get_param_move_cost): New.
+	* tree-inline.c (tree_function_versioning): Fold replacement as needed.
+	* ipa-inline-analysis.c (inline_node_duplication_hook): Expect only
+	parm numbers to be present.
+
 2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/58048

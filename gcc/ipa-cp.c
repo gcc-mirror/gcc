@@ -1758,13 +1758,12 @@ gather_context_independent_values (struct ipa_node_params *info,
 	    }
 	  else if (removable_params_cost
 		   && !ipa_is_param_used (info, i))
-	    *removable_params_cost
-	      += estimate_move_cost (TREE_TYPE (ipa_get_param (info, i)));
+	    *removable_params_cost += ipa_get_param_move_cost (info, i);
 	}
       else if (removable_params_cost
 	       && !ipa_is_param_used (info, i))
 	*removable_params_cost
-	  += estimate_move_cost (TREE_TYPE (ipa_get_param (info, i)));
+	  += ipa_get_param_move_cost (info, i);
 
       if (known_aggs)
 	{
@@ -1933,8 +1932,8 @@ estimate_local_effects (struct cgraph_node *node)
 	    {
 	      fprintf (dump_file, " - estimates for value ");
 	      print_ipcp_constant_value (dump_file, val->value);
-	      fprintf (dump_file, " for parameter ");
-	      print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+	      fprintf (dump_file, " for ");
+	      ipa_dump_param (dump_file, info, i);
 	      fprintf (dump_file, ": time_benefit: %i, size: %i\n",
 		       time_benefit, size);
 	    }
@@ -1990,8 +1989,8 @@ estimate_local_effects (struct cgraph_node *node)
 		{
 		  fprintf (dump_file, " - estimates for value ");
 		  print_ipcp_constant_value (dump_file, val->value);
-		  fprintf (dump_file, " for parameter ");
-		  print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+		  fprintf (dump_file, " for ");
+	          ipa_dump_param (dump_file, info, i);
 		  fprintf (dump_file, "[%soffset: " HOST_WIDE_INT_PRINT_DEC
 				       "]: time_benefit: %i, size: %i\n",
 				       plats->aggs_by_ref ? "ref " : "",
@@ -2480,36 +2479,17 @@ gather_edges_for_value (struct ipcp_value *val, int caller_count)
    Return it or NULL if for some reason it cannot be created.  */
 
 static struct ipa_replace_map *
-get_replacement_map (tree value, tree parm, int parm_num)
+get_replacement_map (struct ipa_node_params *info, tree value, int parm_num)
 {
-  tree req_type = TREE_TYPE (parm);
   struct ipa_replace_map *replace_map;
 
-  if (!useless_type_conversion_p (req_type, TREE_TYPE (value)))
-    {
-      if (fold_convertible_p (req_type, value))
-	value = fold_build1 (NOP_EXPR, req_type, value);
-      else if (TYPE_SIZE (req_type) == TYPE_SIZE (TREE_TYPE (value)))
-	value = fold_build1 (VIEW_CONVERT_EXPR, req_type, value);
-      else
-	{
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "    const ");
-	      print_generic_expr (dump_file, value, 0);
-	      fprintf (dump_file, "  can't be converted to param ");
-	      print_generic_expr (dump_file, parm, 0);
-	      fprintf (dump_file, "\n");
-	    }
-	  return NULL;
-	}
-    }
 
   replace_map = ggc_alloc_ipa_replace_map ();
   if (dump_file)
     {
-      fprintf (dump_file, "    replacing param ");
-      print_generic_expr (dump_file, parm, 0);
+      fprintf (dump_file, "    replacing ");
+      ipa_dump_param (dump_file, info, parm_num);
+  
       fprintf (dump_file, " with const ");
       print_generic_expr (dump_file, value, 0);
       fprintf (dump_file, "\n");
@@ -2697,7 +2677,7 @@ create_specialized_node (struct cgraph_node *node,
 	{
 	  struct ipa_replace_map *replace_map;
 
-	  replace_map = get_replacement_map (t, ipa_get_param (info, i), i);
+	  replace_map = get_replacement_map (info, t, i);
 	  if (replace_map)
 	    vec_safe_push (replace_trees, replace_map);
 	}
@@ -2781,8 +2761,8 @@ find_more_scalar_values_for_callers_subset (struct cgraph_node *node,
 	    {
 	      fprintf (dump_file, "    adding an extra known scalar value ");
 	      print_ipcp_constant_value (dump_file, newval);
-	      fprintf (dump_file, " for parameter ");
-	      print_generic_expr (dump_file, ipa_get_param (info, i), 0);
+	      fprintf (dump_file, " for ");
+	      ipa_dump_param (dump_file, info, i);
 	      fprintf (dump_file, "\n");
 	    }
 
@@ -3352,9 +3332,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
     {
       fprintf (dump_file, " - considering value ");
       print_ipcp_constant_value (dump_file, val->value);
-      fprintf (dump_file, " for parameter ");
-      print_generic_expr (dump_file, ipa_get_param (IPA_NODE_REF (node),
-						    index), 0);
+      fprintf (dump_file, " for ");
+      ipa_dump_param (dump_file, IPA_NODE_REF (node), index);
       if (offset != -1)
 	fprintf (dump_file, ", offset: " HOST_WIDE_INT_PRINT_DEC, offset);
       fprintf (dump_file, " (caller_count: %i)\n", caller_count);

@@ -5150,17 +5150,43 @@ tree_function_versioning (tree old_decl, tree new_decl,
 	      {
 		int i = replace_info->parm_num;
 		tree parm;
+		tree req_type;
+
 		for (parm = DECL_ARGUMENTS (old_decl); i; parm = DECL_CHAIN (parm))
 		  i --;
 		replace_info->old_tree = parm;
+		req_type = TREE_TYPE (parm);
+		if (!useless_type_conversion_p (req_type, TREE_TYPE (replace_info->new_tree)))
+		  {
+		    if (fold_convertible_p (req_type, replace_info->new_tree))
+		      replace_info->new_tree = fold_build1 (NOP_EXPR, req_type, replace_info->new_tree);
+		    else if (TYPE_SIZE (req_type) == TYPE_SIZE (TREE_TYPE (replace_info->new_tree)))
+		      replace_info->new_tree = fold_build1 (VIEW_CONVERT_EXPR, req_type, replace_info->new_tree);
+		    else
+		      {
+			if (dump_file)
+			  {
+			    fprintf (dump_file, "    const ");
+			    print_generic_expr (dump_file, replace_info->new_tree, 0);
+			    fprintf (dump_file, "  can't be converted to param ");
+			    print_generic_expr (dump_file, parm, 0);
+			    fprintf (dump_file, "\n");
+			  }
+			replace_info->old_tree = NULL;
+		      }
+		  }
 	      }
-	    gcc_assert (TREE_CODE (replace_info->old_tree) == PARM_DECL);
-	    init = setup_one_parameter (&id, replace_info->old_tree,
-	    			        replace_info->new_tree, id.src_fn,
-				        NULL,
-				        &vars);
-	    if (init)
-	      init_stmts.safe_push (init);
+	    else
+	      gcc_assert (TREE_CODE (replace_info->old_tree) == PARM_DECL);
+	    if (replace_info->old_tree)
+	      {
+		init = setup_one_parameter (&id, replace_info->old_tree,
+					    replace_info->new_tree, id.src_fn,
+					    NULL,
+					    &vars);
+		if (init)
+		  init_stmts.safe_push (init);
+	      }
 	  }
       }
   /* Copy the function's arguments.  */
