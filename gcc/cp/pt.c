@@ -6542,18 +6542,22 @@ coerce_template_parameter_pack (tree parms,
   return argument_pack;
 }
 
-/* Returns true if the template argument vector ARGS contains
-   any pack expansions, false otherwise.  */
+/* Returns the number of pack expansions in the template argument vector
+   ARGS.  */
 
-static bool
-any_pack_expanson_args_p (tree args)
+static int
+pack_expansion_args_count (tree args)
 {
   int i;
+  int count = 0;
   if (args)
     for (i = 0; i < TREE_VEC_LENGTH (args); ++i)
-      if (PACK_EXPANSION_P (TREE_VEC_ELT (args, i)))
-	return true;
-  return false;
+      {
+	tree elt = TREE_VEC_ELT (args, i);
+	if (elt && PACK_EXPANSION_P (elt))
+	  ++count;
+      }
+  return count;
 }
 
 /* Convert all template arguments to their appropriate types, and
@@ -6588,6 +6592,7 @@ coerce_template_parms (tree parms,
      subtract it from nparms to get the number of non-variadic
      parameters.  */
   int variadic_p = 0;
+  int variadic_args_p = 0;
   int post_variadic_parms = 0;
 
   if (args == error_mark_node)
@@ -6617,11 +6622,14 @@ coerce_template_parms (tree parms,
   if (!post_variadic_parms)
     inner_args = expand_template_argument_pack (inner_args);
 
+  /* Count any pack expansion args.  */
+  variadic_args_p = pack_expansion_args_count (inner_args);
+
   nargs = inner_args ? NUM_TMPL_ARGS (inner_args) : 0;
   if ((nargs > nparms && !variadic_p)
       || (nargs < nparms - variadic_p
 	  && require_all_args
-	  && !any_pack_expanson_args_p (inner_args)
+	  && !variadic_args_p
 	  && (!use_default_args
 	      || (TREE_VEC_ELT (parms, nargs) != error_mark_node
                   && !TREE_PURPOSE (TREE_VEC_ELT (parms, nargs))))))
@@ -6642,6 +6650,33 @@ coerce_template_parms (tree parms,
 	    error ("provided for %q+D", in_decl);
 	}
 
+      return error_mark_node;
+    }
+  /* We can't pass a pack expansion to a non-pack parameter of an alias
+     template (DR 1430).  */
+  else if (in_decl && DECL_ALIAS_TEMPLATE_P (in_decl)
+	   && variadic_args_p
+	   && nargs - variadic_args_p < nparms - variadic_p)
+    {
+      if (complain & tf_error)
+	{
+	  for (int i = 0; i < TREE_VEC_LENGTH (inner_args); ++i)
+	    {
+	      tree arg = TREE_VEC_ELT (inner_args, i);
+	      tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+
+	      if (PACK_EXPANSION_P (arg)
+		  && !template_parameter_pack_p (parm))
+		{
+		  error ("pack expansion argument for non-pack parameter "
+			 "%qD of alias template %qD", parm, in_decl);
+		  inform (DECL_SOURCE_LOCATION (parm), "declared here");
+		  goto found;
+		}
+	    }
+	  gcc_unreachable ();
+	found:;
+	}
       return error_mark_node;
     }
 
