@@ -1,3 +1,11 @@
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (dump_aggr_type): Use specialized pretty printer
+	functions instead of pp_character.
+	(dump_type_prefix): Likewise.
+	(dump_simple_decl): Likewise.
+	(type_to_string): Likewise.
+
 2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cp-tree.h (finish_stmt): Do not declare.

@@ -418,7 +418,7 @@ print_ada_macros (pretty_printer *pp, cpp_hashnode **macros, int max_ada_macros)
 
 	  pp_string (pp, ";  --  ");
 	  pp_string (pp, sloc.file);
-	  pp_character (pp, ':');
+	  pp_colon (pp);
 	  pp_scalar (pp, "%d", sloc.line);
 	  pp_newline (pp);
 	}
@@ -1253,7 +1253,7 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
 			{
 			  append_withs (s1, limited_access);
 			  pp_string (buffer, s1);
-			  pp_character (buffer, '.');
+			  pp_dot (buffer);
 			}
 		      free (s1);
 		    }
@@ -1375,7 +1375,7 @@ dump_ada_double_name (pretty_printer *buffer, tree t1, tree t2, const char *s)
       pp_scalar (buffer, "%d", TYPE_UID (TREE_TYPE (t1)));
     }
 
-  pp_character (buffer, '_');
+  pp_underscore (buffer);
 
   if (DECL_NAME (t1))
     pp_ada_tree_identifier (buffer, DECL_NAME (t2), t2, false);
@@ -1489,7 +1489,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
   if (num_args > 0)
     {
       pp_space (buffer);
-      pp_character (buffer, '(');
+      pp_left_paren (buffer);
     }
 
   if (TREE_CODE (func) == FUNCTION_DECL)
@@ -1550,7 +1550,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 
       if (num < num_args)
 	{
-	  pp_character (buffer, ';');
+	  pp_semicolon (buffer);
 
 	  if (num_args > 2)
 	    newline_and_indent (buffer, spc + INDENT_INCR);
@@ -1566,7 +1566,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
     }
 
   if (num_args > 0)
-    pp_character (buffer, ')');
+    pp_right_paren (buffer);
   return num_args;
 }
 
@@ -1577,7 +1577,7 @@ static void
 dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
 {
   int first = 1;
-  pp_character (buffer, '(');
+  pp_left_paren (buffer);
 
   for (; TREE_CODE (node) == ARRAY_TYPE; node = TREE_TYPE (node))
     {
@@ -1606,7 +1606,7 @@ dump_ada_array_domains (pretty_printer *buffer, tree node, int spc)
       else
 	pp_string (buffer, "size_t");
     }
-  pp_character (buffer, ')');
+  pp_right_paren (buffer);
 }
 
 /* Dump in BUFFER file:line information related to NODE.  */
@@ -1706,7 +1706,7 @@ dump_template_types (pretty_printer *buffer, tree types,
   for (i = 0; i < len; i++)
     {
       tree elem = TREE_VEC_ELT (types, i);
-      pp_character (buffer, '_');
+      pp_underscore (buffer);
       if (!dump_generic_ada_node (buffer, elem, 0, cpp_check, spc, false, true))
 	{
 	  pp_string (buffer, "unknown");
@@ -2215,7 +2215,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 
 	  if (tree_int_cst_sgn (val) < 0)
 	    {
-	      pp_character (buffer, '-');
+	      pp_minus (buffer);
 	      high = ~high + !low;
 	      low = -low;
 	    }
@@ -2986,7 +2986,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
  	  dump_generic_ada_node
 	    (buffer, TYPE_NAME (TREE_TYPE (t)), type, cpp_check,
 	     spc, false, true);
-  	  pp_character (buffer, ')');
+  	  pp_right_paren (buffer);
 
 	  print_ada_methods (buffer, TREE_TYPE (t), cpp_check, spc);
 	}
@@ -3226,7 +3226,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type,
   dump_generic_ada_node
     (buffer, TREE_TYPE (type), type, cpp_check, spc, false, true);
   package_prefix = true;
-  pp_character (buffer, ')');
+  pp_right_paren (buffer);
 
   if (is_union)
     {
@@ -3236,7 +3236,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type,
 
       dump_generic_ada_node
 	(buffer, TREE_TYPE (type), type, cpp_check, spc, false, true);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
     }
 
   if (bitfield_used)
@@ -3246,7 +3246,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type,
       pp_string (buffer, "pragma Pack (");
       dump_generic_ada_node
 	(buffer, TREE_TYPE (type), type, cpp_check, spc, false, true);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
       bitfield_used = false;
     }
 

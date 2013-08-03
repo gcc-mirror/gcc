@@ -1,3 +1,17 @@
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-ada-spec.c (print_ada_macros): Use specialized pretty printer
+	functions instead of pp_character.
+	(pp_ada_tree_identifier): Likewise.
+	(dump_ada_double_name): Likewise.
+	(dump_ada_function_declaration): Likewise.
+	(dump_ada_array_domains): Likewise.
+	(dump_template_types): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_ada_declaration): Likewise.
+	(print_ada_struct_decl): Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+
 2013-07-23  Tom Tromey  <tromey@redhat.com>
 
 	* c-common.h (enum rid) <RID_GENERIC>: New constant.

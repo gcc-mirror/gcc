@@ -306,7 +306,7 @@ diagnostic_show_locus (diagnostic_context * context,
   pp_newline (context->printer);
   saved_prefix = pp_get_prefix (context->printer);
   pp_set_prefix (context->printer, NULL);
-  pp_character (context->printer, ' ');
+  pp_space (context->printer);
   while (max_width > 0 && *line != '\0')
     {
       char c = *line == '\t' ? ' ' : *line;

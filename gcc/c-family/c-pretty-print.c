@@ -920,7 +920,7 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
       HOST_WIDE_INT high = TREE_INT_CST_HIGH (i);
       if (tree_int_cst_sgn (i) < 0)
 	{
-	  pp_character (pp, '-');
+	  pp_minus (pp);
 	  high = ~high + !low;
 	  low = -low;
 	}
