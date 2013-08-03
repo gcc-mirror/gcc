@@ -749,6 +749,13 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       add_node_to (encoder, node, true);
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)node);
       add_references (encoder, &node->symbol.ref_list);
+      /* For proper debug info, we need to ship the origins, too.  */
+      if (DECL_ABSTRACT_ORIGIN (node->symbol.decl))
+	{
+	  struct cgraph_node *origin_node
+	  = cgraph_get_node (DECL_ABSTRACT_ORIGIN (node->symbol.decl));
+	  add_node_to (encoder, origin_node, true);
+	}
     }
   for (lsei = lsei_start_variable_in_partition (in_encoder);
        !lsei_end_p (lsei); lsei_next_variable_in_partition (&lsei))
@@ -758,6 +765,13 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       lto_set_symtab_encoder_in_partition (encoder, (symtab_node)vnode);
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
       add_references (encoder, &vnode->symbol.ref_list);
+      /* For proper debug info, we need to ship the origins, too.  */
+      if (DECL_ABSTRACT_ORIGIN (vnode->symbol.decl))
+	{
+	  struct varpool_node *origin_node
+	  = varpool_get_node (DECL_ABSTRACT_ORIGIN (node->symbol.decl));
+	  lto_set_symtab_encoder_in_partition (encoder, (symtab_node)origin_node);
+	}
     }
   /* Pickle in also the initializer of all referenced readonly variables
      to help folding.  Constant pool variables are not shared, so we must

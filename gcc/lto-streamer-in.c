@@ -851,7 +851,7 @@ input_struct_function_base (struct function *fn, struct data_in *data_in,
 
 static void
 input_function (tree fn_decl, struct data_in *data_in,
-		struct lto_input_block *ib)
+		struct lto_input_block *ib, struct lto_input_block *ib_cfg)
 {
   struct function *fn;
   enum LTO_tags tag;
@@ -859,13 +859,30 @@ input_function (tree fn_decl, struct data_in *data_in,
   basic_block bb;
   struct cgraph_node *node;
 
-  fn = DECL_STRUCT_FUNCTION (fn_decl);
   tag = streamer_read_record_start (ib);
-
-  gimple_register_cfg_hooks ();
   lto_tag_check (tag, LTO_function);
 
+  /* Read decls for parameters and args.  */
+  DECL_RESULT (fn_decl) = stream_read_tree (ib, data_in);
+  DECL_ARGUMENTS (fn_decl) = streamer_read_chain (ib, data_in);
+
+  /* Read the tree of lexical scopes for the function.  */
+  DECL_INITIAL (fn_decl) = stream_read_tree (ib, data_in);
+
+  if (!streamer_read_uhwi (ib))
+    return;
+
+  push_struct_function (fn_decl);
+  fn = DECL_STRUCT_FUNCTION (fn_decl);
+  init_tree_ssa (fn);
+  /* We input IL in SSA form.  */
+  cfun->gimple_df->in_ssa_p = true;
+
+  gimple_register_cfg_hooks ();
+
+  node = cgraph_get_create_node (fn_decl);
   input_struct_function_base (fn, data_in, ib);
+  input_cfg (ib_cfg, fn, node->count_materialization_scale);
 
   /* Read all the SSA names.  */
   input_ssa_names (ib, data_in, fn);
@@ -873,11 +890,8 @@ input_function (tree fn_decl, struct data_in *data_in,
   /* Read the exception handling regions in the function.  */
   input_eh_regions (ib, data_in, fn);
 
-  /* Read the tree of lexical scopes for the function.  */
-  DECL_INITIAL (fn_decl) = stream_read_tree (ib, data_in);
   gcc_assert (DECL_INITIAL (fn_decl));
   DECL_SAVED_TREE (fn_decl) = NULL_TREE;
-  node = cgraph_get_create_node (fn_decl);
 
   /* Read all the basic blocks.  */
   tag = streamer_read_record_start (ib);
@@ -987,28 +1001,21 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
 
   if (section_type == LTO_section_function_body)
     {
-      struct function *fn = DECL_STRUCT_FUNCTION (fn_decl);
       struct lto_in_decl_state *decl_state;
       struct cgraph_node *node = cgraph_get_node (fn_decl);
       unsigned from;
 
       gcc_checking_assert (node);
-      push_cfun (fn);
-      init_tree_ssa (fn);
-
-      /* We input IL in SSA form.  */
-      cfun->gimple_df->in_ssa_p = true;
 
       /* Use the function's decl state. */
       decl_state = lto_get_function_in_decl_state (file_data, fn_decl);
       gcc_assert (decl_state);
       file_data->current_decl_state = decl_state;
 
-      input_cfg (&ib_cfg, fn, node->count_materialization_scale);
 
       /* Set up the struct function.  */
       from = data_in->reader_cache->nodes.length ();
-      input_function (fn_decl, data_in, &ib_main);
+      input_function (fn_decl, data_in, &ib_main, &ib_cfg);
       /* And fixup types we streamed locally.  */
 	{
 	  struct streamer_tree_cache_d *cache = data_in->reader_cache;

@@ -1,3 +1,10 @@
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Do not push struct function.
+	* lto-partition.c (get_symbol_class): Handle abstracts correctly.
+	(may_need_named_section_p): Even abstract origins may need
+	named section.
+
 2013-07-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (lto/lto.o:): Depend on CONTEXT_H and

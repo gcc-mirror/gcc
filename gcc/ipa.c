@@ -371,7 +371,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	  if (!pointer_set_contains (body_needed_for_clonning, node->symbol.decl))
 	    cgraph_release_function_body (node);
 	  else if (!node->clone_of)
-	    gcc_assert (DECL_RESULT (node->symbol.decl));
+	    gcc_assert (in_lto_p || DECL_RESULT (node->symbol.decl));
 	  if (node->symbol.definition)
 	    {
 	      if (file)
@@ -382,7 +382,7 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 	}
       else
 	gcc_assert (node->clone_of || !cgraph_function_with_gimple_body_p (node)
-		    || DECL_RESULT (node->symbol.decl));
+		    || in_lto_p || DECL_RESULT (node->symbol.decl));
     }
 
   /* Inline clones might be kept around so their materializing allows further
