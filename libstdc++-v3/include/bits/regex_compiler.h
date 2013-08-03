@@ -44,9 +44,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     typedef unsigned int _StateT;
 
-    static constexpr _StateT _S_state_at_start    = 1 << 0;
-    static constexpr _StateT _S_state_in_brace    = 1 << 2;
-    static constexpr _StateT _S_state_in_bracket  = 1 << 3;
+    static constexpr _StateT _S_state_in_brace    = 1 << 0;
+    static constexpr _StateT _S_state_in_bracket  = 1 << 1;
 
     virtual ~_Scanner_base() { };
   };
@@ -77,8 +76,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_token_anychar,
 	_S_token_backref,
 	_S_token_bracket_begin,
+	_S_token_bracket_inverse_begin,
 	_S_token_bracket_end,
-	_S_token_inverse_class,
 	_S_token_char_class_name,
 	_S_token_closure0,
 	_S_token_closure1,
@@ -97,7 +96,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_token_opt,
 	_S_token_or,
 	_S_token_ord_char,
-	_S_token_quoted_char,
 	_S_token_subexpr_begin,
 	_S_token_subexpr_end,
 	_S_token_word_begin,
@@ -108,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Scanner(_IteratorT __begin, _IteratorT __end, _FlagT __flags,
 	       std::locale __loc)
       : _M_current(__begin) , _M_end(__end) , _M_flags(__flags),
-        _M_ctype(std::use_facet<_CtypeT>(__loc)), _M_state(_S_state_at_start)
+        _M_ctype(std::use_facet<_CtypeT>(__loc)), _M_state(0)
       { _M_advance(); }
 
       void
@@ -219,9 +217,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (__c == _M_ctype.widen('['))
 	{
-	  _M_curToken = _S_token_bracket_begin;
-	  _M_state |= (_S_state_in_bracket | _S_state_at_start);
-	  ++_M_current;
+          if (*++_M_current == _M_ctype.widen('^'))
+            {
+              _M_curToken = _S_token_bracket_inverse_begin;
+              ++_M_current;
+            }
+          else
+            _M_curToken = _S_token_bracket_begin;
+	  _M_state |= _S_state_in_bracket;
 	  return;
 	}
       else if (__c == _M_ctype.widen('\\'))
@@ -304,14 +307,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Scanner<_InputIterator>::
     _M_scan_in_bracket()
     {
-      if (_M_state & _S_state_at_start && *_M_current == _M_ctype.widen('^'))
-	{
-	  _M_curToken = _S_token_inverse_class;
-	  _M_state &= ~_S_state_at_start;
-	  ++_M_current;
-	  return;
-	}
-      else if (*_M_current == _M_ctype.widen('['))
+      if (*_M_current == _M_ctype.widen('['))
 	{
 	  ++_M_current;
 	  if (_M_current == _M_end)
@@ -347,21 +343,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (*_M_current == _M_ctype.widen(']'))
 	{
-	  if (!(_M_flags & regex_constants::ECMAScript)
-	      || !(_M_state & _S_state_at_start))
-	    {
-	      // special case: only if  _not_ chr first after
-	      // '[' or '[^' and if not ECMAscript
-	      _M_curToken = _S_token_bracket_end;
-	      ++_M_current;
-	      return;
-	    }
+          _M_curToken = _S_token_bracket_end;
+          _M_state &= ~_S_state_in_bracket;
+          ++_M_current;
+          return;
 	}
+      else if (*_M_current == _M_ctype.widen('\\'))
+        {
+	  _M_eat_escape();
+	  return;
+        }
       _M_curToken = _S_token_collelem_single;
       _M_curValue.assign(1, *_M_current);
       ++_M_current;
     }
 
+  // TODO implement it.
   template<typename _InputIterator>
     void
     _Scanner<_InputIterator>::
@@ -463,10 +460,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_curToken = _S_token_backref;
 	  _M_curValue.assign(1, __c);
 	}
+      else if (_M_state & _S_state_in_bracket)
+        {
+          if (__c == _M_ctype.widen('-')
+              || __c == _M_ctype.widen('[')
+              || __c == _M_ctype.widen(']'))
+            {
+              _M_curToken = _S_token_ord_char;
+              _M_curValue.assign(1, __c);
+            }
+          else if ((_M_flags & regex_constants::ECMAScript)
+                   && __c == _M_ctype.widen('b'))
+            {
+              _M_curToken = _S_token_ord_char;
+              _M_curValue.assign(1, _M_ctype.widen(' '));
+            }
+          else
+            __throw_regex_error(regex_constants::error_escape);
+        }
       else
 	__throw_regex_error(regex_constants::error_escape);
     }
-
 
   // Eats a character class or throwns an exception.
   // current point to ':' delimiter on entry, char after ']' on return
@@ -549,6 +563,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_token_bracket_begin:
 	  ostr << "bracket-begin\n";
 	  break;
+	case _S_token_bracket_inverse_begin:
+          ostr << "bracket-inverse-begin\n";
+          break;
 	case _S_token_bracket_end:
 	  ostr << "bracket-end\n";
 	  break;
@@ -606,9 +623,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_token_ord_char:
 	  ostr << "ordinary character: \"" << _M_value() << "\"\n";
 	  break;
-	case _S_token_quoted_char:
-	  ostr << "quoted char\n";
-	  break;
 	case _S_token_subexpr_begin:
 	  ostr << "subexpr begin\n";
 	  break;
@@ -624,6 +638,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_token_unknown:
 	  ostr << "-- unknown token --\n";
 	  break;
+        default:
+          _GLIBCXX_DEBUG_ASSERT(false);
       }
       return ostr;
     }
@@ -650,7 +666,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Scanner<_InIter>                              _ScannerT;
       typedef typename _ScannerT::_TokenT                    _TokenT;
       typedef std::stack<_StateSeq, std::vector<_StateSeq> > _StackT;
-      typedef _RangeMatcher<_InIter, _TraitsT>               _RMatcherT;
+      typedef _BracketMatcher<_InIter, _TraitsT>             _BMatcherT;
 
       // accepts a specific token or returns false.
       bool
@@ -659,7 +675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_disjunction();
 
-      bool
+      void
       _M_alternative();
 
       bool
@@ -668,7 +684,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_assertion();
 
-      bool
+      void
       _M_quantifier();
 
       bool
@@ -678,31 +694,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_bracket_expression();
 
       bool
-      _M_bracket_list(_RMatcherT& __matcher);
+      _M_bracket_list(_BMatcherT& __matcher);
 
       bool
-      _M_follow_list(_RMatcherT& __matcher);
+      _M_follow_list(_BMatcherT& __matcher);
+
+      void
+      _M_expression_term(_BMatcherT& __matcher);
 
       bool
-      _M_follow_list2(_RMatcherT& __matcher);
+      _M_range_expression(_BMatcherT& __matcher);
 
       bool
-      _M_expression_term(_RMatcherT& __matcher);
+      _M_start_range(_BMatcherT& __matcher);
 
       bool
-      _M_range_expression(_RMatcherT& __matcher);
+      _M_collating_symbol(_BMatcherT& __matcher);
 
       bool
-      _M_start_range(_RMatcherT& __matcher);
+      _M_equivalence_class(_BMatcherT& __matcher);
 
       bool
-      _M_collating_symbol(_RMatcherT& __matcher);
-
-      bool
-      _M_equivalence_class(_RMatcherT& __matcher);
-
-      bool
-      _M_character_class(_RMatcherT& __matcher);
+      _M_character_class(_BMatcherT& __matcher);
 
       int
       _M_cur_int_value(int __radix);
@@ -712,6 +725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StringT       _M_cur_value;
       _Nfa           _M_state_store;
       _StackT        _M_stack;
+      _FlagT         _M_flags;
     };
 
   template<typename _InIter, typename _TraitsT>
@@ -719,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler(const _InIter& __b, const _InIter& __e, _TraitsT& __traits,
 	      _Compiler<_InIter, _TraitsT>::_FlagT __flags)
     : _M_traits(__traits), _M_scanner(__b, __e, __flags, _M_traits.getloc()),
-      _M_state_store(__flags)
+      _M_state_store(__flags), _M_flags(__flags)
     {
       typedef _StartTagger<_InIter, _TraitsT> _Start;
       typedef _EndTagger<_InIter, _TraitsT> _End;
@@ -743,8 +757,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { 
       if (token == _M_scanner._M_token())
 	{
-	  _M_cur_value = _M_scanner._M_value();
-	  _M_scanner._M_advance();
+          _M_cur_value = _M_scanner._M_value();
+          _M_scanner._M_advance();
 	  return true;
 	}
       return false;
@@ -766,7 +780,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _InIter, typename _TraitsT>
-    bool
+    void
     _Compiler<_InIter, _TraitsT>::
     _M_alternative()
     {
@@ -780,9 +794,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_stack.pop();
 	    }
 	  _M_stack.push(__re);
-	  return true;
 	}
-      return false;
     }
 
   template<typename _InIter, typename _TraitsT>
@@ -829,7 +841,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _InIter, typename _TraitsT>
-    bool
+    void
     _Compiler<_InIter, _TraitsT>::
     _M_quantifier()
     {
@@ -841,7 +853,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __r._M_append(__r._M_front());
 	  _M_stack.pop();
 	  _M_stack.push(__r);
-	  return true;
+	  return;
 	}
       if (_M_match_token(_ScannerT::_S_token_closure1))
 	{
@@ -852,7 +864,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			_M_insert_alt(_S_invalid_state_id,
 				      _M_stack.top()._M_front()));
 	  _M_stack.top()._M_append(__r);
-	  return true;
+	  return;
 	}
       if (_M_match_token(_ScannerT::_S_token_opt))
 	{
@@ -861,7 +873,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _StateSeq __r(_M_stack.top(), -1);
 	  _M_stack.pop();
 	  _M_stack.push(__r);
-	  return true;
+	  return;
 	}
       if (_M_match_token(_ScannerT::_S_token_interval_begin))
 	{
@@ -897,9 +909,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	  if (!_M_match_token(_ScannerT::_S_token_interval_end))
 	    __throw_regex_error(regex_constants::error_brace);
-	  return true;
+	  return;
 	}
-      return false;
     }
 
   template<typename _InIter, typename _TraitsT>
@@ -922,15 +933,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  _M_stack.push(_StateSeq(_M_state_store,
                                   _M_state_store._M_insert_matcher
-                                  (_CMatcher(_M_cur_value[0], _M_traits))));
-	  return true;
-	}
-      if (_M_match_token(_ScannerT::_S_token_quoted_char))
-	{
-	  // note that in the ECMA grammar, this case covers backrefs.
-	  _M_stack.push(_StateSeq(_M_state_store,
-				  _M_state_store._M_insert_matcher
-				  (_CMatcher(_M_cur_value[0], _M_traits))));
+                                  (_CMatcher(_M_cur_value[0], _M_flags, _M_traits))));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_backref))
@@ -966,124 +969,74 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_InIter, _TraitsT>::
     _M_bracket_expression()
     {
-      if (_M_match_token(_ScannerT::_S_token_bracket_begin))
-	{
-	  _RMatcherT __matcher(_M_match_token(_ScannerT::_S_token_line_begin),
-			       _M_traits);
-	  if (!_M_bracket_list(__matcher)
-	      || !_M_match_token(_ScannerT::_S_token_bracket_end))
-	    __throw_regex_error(regex_constants::error_brack);
-	  _M_stack.push(_StateSeq(_M_state_store,
-				  _M_state_store._M_insert_matcher(__matcher)));
-	  return true;
-	}
-      return false;
-    }
-
-  // If the dash is the last character in the bracket expression, it is not
-  // special.
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_bracket_list(_RMatcherT& __matcher)
-    {
-      if (_M_follow_list(__matcher))
-	{
-	  if (_M_match_token(_ScannerT::_S_token_dash))
-	    __matcher._M_add_char(_M_cur_value[0]);
-	  return true;
-	}
-      return false;
-    }
-
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_follow_list(_RMatcherT& __matcher)
-    { return _M_expression_term(__matcher) && _M_follow_list2(__matcher); }
-
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_follow_list2(_RMatcherT& __matcher)
-    {
-      if (_M_expression_term(__matcher))
-	return _M_follow_list2(__matcher);
+      bool __inverse =
+        _M_match_token(_ScannerT::_S_token_bracket_inverse_begin);
+      if (!(__inverse || _M_match_token(_ScannerT::_S_token_bracket_begin)))
+        return false;
+      _BMatcherT __matcher( __inverse, _M_flags, _M_traits);
+      // special case: only if  _not_ chr first after
+      // '[' or '[^' or if ECMAscript
+      if (!_M_bracket_list(__matcher) // list is empty
+          && !(_M_flags & regex_constants::ECMAScript))
+        __throw_regex_error(regex_constants::error_brack);
+      _M_stack.push(_StateSeq(_M_state_store,
+                              _M_state_store._M_insert_matcher(__matcher)));
       return true;
     }
 
   template<typename _InIter, typename _TraitsT>
-    bool
+    bool // list is non-empty
     _Compiler<_InIter, _TraitsT>::
-    _M_expression_term(_RMatcherT& __matcher)
+    _M_bracket_list(_BMatcherT& __matcher)
     {
-      return (_M_collating_symbol(__matcher)
-	      || _M_character_class(__matcher)
-	      || _M_equivalence_class(__matcher)
-	      || (_M_start_range(__matcher)
-		  && _M_range_expression(__matcher)));
-    }
-
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_range_expression(_RMatcherT& __matcher)
-    {
-      if (!_M_collating_symbol(__matcher))
-	if (!_M_match_token(_ScannerT::_S_token_dash))
-	  __throw_regex_error(regex_constants::error_range);
-      __matcher._M_make_range();
+      if (_M_match_token(_ScannerT::_S_token_bracket_end))
+        return false;
+      _M_expression_term(__matcher);
+      _M_bracket_list(__matcher);
       return true;
     }
 
   template<typename _InIter, typename _TraitsT>
-    bool
+    void
     _Compiler<_InIter, _TraitsT>::
-    _M_start_range(_RMatcherT& __matcher)
-    { return _M_match_token(_ScannerT::_S_token_dash); }
-
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_collating_symbol(_RMatcherT& __matcher)
+    _M_expression_term(_BMatcherT& __matcher)
     {
-      if (_M_match_token(_ScannerT::_S_token_collelem_single))
-	{
-	  __matcher._M_add_char(_M_cur_value[0]);
-	  return true;
-	}
       if (_M_match_token(_ScannerT::_S_token_collsymbol))
 	{
 	  __matcher._M_add_collating_element(_M_cur_value);
-	  return true;
+	  return;
 	}
-      return false;
-    }
-
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_equivalence_class(_RMatcherT& __matcher)
-    {
       if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
 	{
 	  __matcher._M_add_equivalence_class(_M_cur_value);
-	  return true;
+	  return;
 	}
-      return false;
-    }
-
-  template<typename _InIter, typename _TraitsT>
-    bool
-    _Compiler<_InIter, _TraitsT>::
-    _M_character_class(_RMatcherT& __matcher)
-    {
       if (_M_match_token(_ScannerT::_S_token_char_class_name))
 	{
 	  __matcher._M_add_character_class(_M_cur_value);
-	  return true;
+	  return;
 	}
-      return false;
+      if (_M_match_token(_ScannerT::_S_token_collelem_single)) // [a
+        {
+          auto __ch = _M_cur_value[0];
+          if (_M_match_token(_ScannerT::_S_token_dash)) // [a-
+            {
+              // If the dash is the last character in the bracket expression,
+              // it is not special.
+              if (_M_scanner._M_token() == _ScannerT::_S_token_bracket_end)
+                __matcher._M_add_char(_M_cur_value[0]); // [a-] <=> [a\-]
+              else // [a-z]
+                {
+                  if (!_M_match_token(_ScannerT::_S_token_collelem_single))
+                    __throw_regex_error(regex_constants::error_range);
+                  __matcher._M_make_range(__ch, _M_cur_value[0]);
+                }
+            }
+          else // [a]
+            __matcher._M_add_char(__ch);
+          return;
+        }
+      __throw_regex_error(regex_constants::error_brack);
     }
 
   template<typename _InIter, typename _TraitsT>

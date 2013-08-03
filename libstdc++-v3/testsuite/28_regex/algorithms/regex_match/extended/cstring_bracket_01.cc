@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++11" }
 
 //
-// 2013-07-23  Tim Shen <timshen91@gmail.com>
+// 2013-08-01  Tim Shen <timshen91@gmail.com>
 //
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
@@ -21,41 +21,40 @@
 // <http://www.gnu.org/licenses/>.
 
 // 28.11.2 regex_match
-// Tests Extended grouping against a std::string target.
+// Tests Extended bracket expression against a C-string.
 
 #include <regex>
 #include <testsuite_hooks.h>
 
-// libstdc++/53622
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
 
   {
-    std::regex  re("zxcv/(one.*)abc", std::regex::extended);
-    std::string target("zxcv/onetwoabc");
-    std::smatch m;
-
-    VERIFY( std::regex_match(target, m, re) );
-    VERIFY( m.size() == 2 );
-    VERIFY( m[0].matched == true );
-    VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );
-    VERIFY( m[1].matched == true );
-    VERIFY( std::string(m[1].first, m[1].second) == "onetwo" );
+    std::regex  re("pre/[za-x]", std::regex::extended);
+    VERIFY( std::regex_match("pre/z", re) );
+    VERIFY( std::regex_match("pre/a", re) );
+    VERIFY( !std::regex_match("pre/y", re) );
   }
-
   {
-    std::regex  re("zxcv/(one.*)abc()\\2", std::regex::extended);
-    std::string target("zxcv/onetwoabc");
-    std::smatch m;
-
-    VERIFY( std::regex_match(target, m, re) );
-    VERIFY( m.size() == 3 );
-    VERIFY( m[0].matched == true );
-    VERIFY( std::string(m[0].first, m[0].second) == "zxcv/onetwoabc" );
-    VERIFY( m[1].matched == true );
-    VERIFY( std::string(m[1].first, m[1].second) == "onetwo" );
+    std::regex  re("pre/[[:uPPer:]]", std::regex::extended);
+    VERIFY( std::regex_match("pre/Z", re) );
+    VERIFY( !std::regex_match("pre/_", re) );
+    VERIFY( !std::regex_match("pre/a", re) );
+    VERIFY( !std::regex_match("pre/0", re) );
+  }
+  {
+    std::regex  re("pre/[[:lOWer:]]", std::regex::extended | std::regex::icase);
+    VERIFY( std::regex_match("pre/Z", re) );
+    VERIFY( std::regex_match("pre/a", re) );
+  }
+  {
+    std::regex  re("pre/[[:w:][.tilde.]]", std::regex::extended);
+    VERIFY( std::regex_match("pre/~", re) );
+    VERIFY( std::regex_match("pre/_", re) );
+    VERIFY( std::regex_match("pre/a", re) );
+    VERIFY( std::regex_match("pre/0", re) );
   }
 }
 

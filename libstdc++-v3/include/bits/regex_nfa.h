@@ -129,6 +129,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       int       _M_index;
     };
 
+  // TODO For now we use an all-in-one comparator. In the future there may be
+  // optimizations based on regex_traits::translate and regex_transform.
+  template<typename _InIterT, typename _TraitsT>
+    struct _Comparator
+    {
+      typedef regex_constants::syntax_option_type _FlagT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef std::basic_string<_CharT>           _StringT;
+
+      _Comparator(_FlagT __flags, const _TraitsT& __traits)
+      : _M_flags(__flags), _M_traits(__traits)
+      { }
+
+      bool
+      _M_equ(_CharT __a, _CharT __b) const;
+
+      bool
+      _M_le(_CharT __a, _CharT __b) const;
+
+      _FlagT                              _M_flags;
+      _TraitsT                            _M_traits;
+    };
+
   /// Indicates if current state matches cursor current.
   typedef std::function<bool (const _PatternCursor&)> _Matcher;
 
@@ -140,12 +163,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Matches a single character
   template<typename _InIterT, typename _TraitsT>
     struct _CharMatcher
+    : public _Comparator<_InIterT, _TraitsT>
     {
-      typedef typename _TraitsT::char_type char_type;
+      typedef _Comparator<_InIterT, _TraitsT>     _BaseT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef regex_constants::syntax_option_type _FlagT;
 
       explicit
-      _CharMatcher(char_type __c, const _TraitsT& __t = _TraitsT())
-      : _M_traits(__t), _M_c(_M_traits.translate(__c))
+      _CharMatcher(_CharT __c, _FlagT __flags, const _TraitsT& __t)
+      : _BaseT(__flags, __t), _M_c(__c)
       { }
 
       bool
@@ -153,55 +179,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef const _SpecializedCursor<_InIterT>& _CursorT;
 	_CursorT __c = static_cast<_CursorT>(__pc);
-	return _M_traits.translate(__c._M_current()) == _M_c;
+        return this->_M_equ(__c._M_current(), _M_c);
       }
 
-      const _TraitsT& _M_traits;
-      char_type       _M_c;
+      _CharT       _M_c;
     };
 
   /// Matches a character range (bracket expression)
   template<typename _InIterT, typename _TraitsT>
-    struct _RangeMatcher
+    struct _BracketMatcher
+    : public _Comparator<_InIterT, _TraitsT>
     {
-      typedef typename _TraitsT::char_type _CharT;
-      typedef std::basic_string<_CharT>    _StringT;
+      typedef _Comparator<_InIterT, _TraitsT>     _BaseT;
+      typedef typename _TraitsT::char_class_type  _CharClassT;
+      typedef regex_constants::syntax_option_type _FlagT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef std::basic_string<_CharT>           _StringT;
 
       explicit
-      _RangeMatcher(bool __is_non_matching, const _TraitsT& __t = _TraitsT())
-      : _M_traits(__t), _M_is_non_matching(__is_non_matching)
+      _BracketMatcher(bool __is_non_matching,
+                    _FlagT __flags,
+                    const _TraitsT& __t)
+      : _BaseT(__flags, __t), _M_flags(__flags), _M_traits(__t),
+      _M_is_non_matching(__is_non_matching), _M_class_set(0)
       { }
 
       bool
-      operator()(const _PatternCursor& __pc) const
-      {
-	typedef const _SpecializedCursor<_InIterT>& _CursorT;
-	_CursorT __c = static_cast<_CursorT>(__pc);
-	return true;
-      }
+      operator()(const _PatternCursor& __pc) const;
 
       void
       _M_add_char(_CharT __c)
-      { }
+      { _M_char_set.push_back(__c); }
 
       void
       _M_add_collating_element(const _StringT& __s)
-      { }
+      {
+        auto __st = _M_traits.lookup_collatename(&*__s.begin(), &*__s.end());
+        if (__st.empty())
+          __throw_regex_error(regex_constants::error_collate);
+        // TODO: digraph
+        _M_char_set.push_back(__st[0]);
+      }
 
       void
       _M_add_equivalence_class(const _StringT& __s)
-      { }
+      {
+        _M_add_character_class(
+          _M_traits.transform_primary(&*__s.begin(), &*__s.end()));
+      }
 
       void
       _M_add_character_class(const _StringT& __s)
-      { }
+      {
+        auto __st = _M_traits.lookup_classname(
+          &*__s.begin(), &*__s.end(), (_M_flags & regex_constants::icase));
+        if (__st == 0)
+          __throw_regex_error(regex_constants::error_ctype);
+        _M_class_set |= __st;
+      }
 
       void
-      _M_make_range()
-      { }
+      _M_make_range(_CharT __l, _CharT __r)
+      {
+        if (!this->_M_le(__l, __r))
+          __throw_regex_error(regex_constants::error_range);
+        _M_range_set.push_back(make_pair(__l, __r));
+      }
 
-      const _TraitsT& _M_traits;
-      bool            _M_is_non_matching;
+      _FlagT                              _M_flags;
+      _TraitsT                            _M_traits;
+      bool                                _M_is_non_matching;
+      std::vector<_CharT>                 _M_char_set;
+      std::vector<pair<_CharT, _CharT>>   _M_range_set;
+      _CharClassT                         _M_class_set;
     };
 
   /// Identifies a state in the NFA.

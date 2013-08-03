@@ -1,3 +1,16 @@
+2013-08-03  Tim Shen  <timshen91@gmail.com>
+
+	Implement bracket expression.
+	* include/bits/regex.h: Remove constexpr from "|=", etc.
+	* include/bits/regex_compiler.h: Parse bracket expression.
+	* include/bits/regex_nfa.h: _Comparator and _BracketMatcher(old
+	_RangeMatcher).
+	* include/bits/regex_nfa.tcc: Implement them.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc:
+	from regex_search to regex_match.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	cstring_bracket_01.cc: New.
+
 2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/debug/functions.h (__foreign_iterator_aux4):
