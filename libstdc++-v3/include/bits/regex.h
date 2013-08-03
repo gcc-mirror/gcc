@@ -95,15 +95,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           operator~() const
           { return _RegexMask(~_M_base, ~_M_extended); }
 
-          constexpr _RegexMask&
+          _RegexMask&
           operator&=(_RegexMask __other)
           { return *this = (*this) & __other; }
 
-          constexpr _RegexMask&
+          _RegexMask&
           operator|=(_RegexMask __other)
           { return *this = (*this) | __other; }
 
-          constexpr _RegexMask&
+          _RegexMask&
           operator^=(_RegexMask __other)
           { return *this = (*this) ^ __other; }
 
@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
               __fctyp.tolower(&*__v.begin(), &*__v.end());
               return this->transform(&*__v.begin(), &*__v.end());
             }
-          __catch (...)
+          __catch (std::bad_cast)
             {
             }
           return string_type();
@@ -519,7 +519,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         };
 
       std::string __s(__last - __first, '?');
-      string_type a(__first, __last);
       __fctyp.narrow(__first, __last, '?', &*__s.begin());
 
       for (unsigned int __i = 0; *__collatenames[__i]; __i++)

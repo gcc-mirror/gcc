@@ -35,6 +35,64 @@ namespace __detail
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+  template<typename _InIterT, typename _TraitsT>
+    bool _BracketMatcher<_InIterT, _TraitsT>::
+    operator()(const _PatternCursor& __pc) const
+    {
+      typedef const _SpecializedCursor<_InIterT>& _CursorT;
+      _CursorT __c = static_cast<_CursorT>(__pc);
+      _CharT __ch = __c._M_current();
+      bool __ret = false;
+      for (auto __c : _M_char_set)
+        if (this->_M_equ(__c, __ch))
+          {
+            __ret = true;
+            break;
+          }
+      if (!__ret && _M_traits.isctype(__ch, _M_class_set))
+        __ret = true;
+      else
+        {
+          for (auto& __it : _M_range_set)
+            if (this->_M_le(__it.first, __ch) && this->_M_le(__ch, __it.second))
+              {
+                __ret = true;
+                break;
+              }
+        }
+      if (_M_is_non_matching)
+        __ret = !__ret;
+      return __ret;
+    }
+
+  template<typename _InIterT, typename _TraitsT>
+    bool _Comparator<_InIterT, _TraitsT>::
+    _M_equ(_CharT __a, _CharT __b) const
+    {
+      if (_M_flags & regex_constants::icase)
+        return _M_traits.translate_nocase(__a)
+          == _M_traits.translate_nocase(__b);
+      if (_M_flags & regex_constants::collate)
+        return _M_traits.translate(__a) == _M_traits.translate(__b);
+      return __a == __b;
+    }
+
+  template<typename _InIterT, typename _TraitsT>
+    bool _Comparator<_InIterT, _TraitsT>::
+    _M_le(_CharT __a, _CharT __b) const
+    {
+      _StringT __str1 = _StringT(1,
+                                 _M_flags & regex_constants::icase
+                                 ? _M_traits.translate_nocase(__a)
+                                 : _M_traits.translate(__a));
+      _StringT __str2 = _StringT(1,
+                                 _M_flags & regex_constants::icase
+                                 ? _M_traits.translate_nocase(__b)
+                                 : _M_traits.translate(__b));
+      return _M_traits.transform(__str1.begin(), __str1.end())
+        <= _M_traits.transform(__str2.begin(), __str2.end());
+    }
+
 #ifdef _GLIBCXX_DEBUG
 inline std::ostream& _State::
 _M_print(std::ostream& ostr) const
