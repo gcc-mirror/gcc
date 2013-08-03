@@ -323,13 +323,10 @@ cgraph_process_new_functions (void)
 	  if (!node->symbol.analyzed)
 	    analyze_function (node);
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
+	  if (cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
-	      /* When not optimizing, be sure we run early local passes anyway
-		 to expand OMP.  */
-	      || !optimize)
 	    execute_pass_list (pass_early_local_passes.pass.sub);
-	  else
+	  else if (inline_summary_vec != NULL)
 	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
@@ -1327,8 +1324,8 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 
 /* Produce assembler for thunk NODE.  */
 
-static void
-assemble_thunk (struct cgraph_node *node)
+void
+expand_thunk (struct cgraph_node *node)
 {
   bool this_adjusting = node->thunk.this_adjusting;
   HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
@@ -1420,7 +1417,9 @@ assemble_thunk (struct cgraph_node *node)
       /* Build call to the function being thunked.  */
       if (!VOID_TYPE_P (restype))
 	{
-	  if (!is_gimple_reg_type (restype))
+	  if (DECL_BY_REFERENCE (resdecl))
+	    restmp = gimple_fold_indirect_ref (resdecl);
+	  else if (!is_gimple_reg_type (restype))
 	    {
 	      restmp = resdecl;
 	      add_local_decl (cfun, restmp);
@@ -1436,82 +1435,97 @@ assemble_thunk (struct cgraph_node *node)
       if (this_adjusting)
         vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
 					virtual_offset));
-      else
+      else if (nargs)
         vargs.quick_push (a);
-      for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
-	vargs.quick_push (arg);
+
+      if (nargs)
+        for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
+	  vargs.quick_push (arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       vargs.release ();
       gimple_call_set_from_thunk (call, true);
       if (restmp)
-        gimple_call_set_lhs (call, restmp);
+	{
+          gimple_call_set_lhs (call, restmp);
+	  gcc_assert (useless_type_conversion_p (TREE_TYPE (restmp),
+						 TREE_TYPE (TREE_TYPE (alias))));
+	}
       gsi_insert_after (&bsi, call, GSI_NEW_STMT);
-
-      if (restmp && !this_adjusting)
-        {
-	  tree true_label = NULL_TREE;
-
-	  if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
+      if (!(gimple_call_flags (call) & ECF_NORETURN))
+	{
+	  if (restmp && !this_adjusting
+	      && (fixed_offset || virtual_offset))
 	    {
-	      gimple stmt;
-	      /* If the return type is a pointer, we need to
-		 protect against NULL.  We know there will be an
-		 adjustment, because that's why we're emitting a
-		 thunk.  */
-	      then_bb = create_basic_block (NULL, (void *) 0, bb);
-	      return_bb = create_basic_block (NULL, (void *) 0, then_bb);
-	      else_bb = create_basic_block (NULL, (void *) 0, else_bb);
-	      add_bb_to_loop (then_bb, bb->loop_father);
-	      add_bb_to_loop (return_bb, bb->loop_father);
-	      add_bb_to_loop (else_bb, bb->loop_father);
-	      remove_edge (single_succ_edge (bb));
-	      true_label = gimple_block_label (then_bb);
-	      stmt = gimple_build_cond (NE_EXPR, restmp,
-	      				build_zero_cst (TREE_TYPE (restmp)),
-	      			        NULL_TREE, NULL_TREE);
-	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
-	      make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-	      make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-	      make_edge (return_bb, EXIT_BLOCK_PTR, 0);
-	      make_edge (then_bb, return_bb, EDGE_FALLTHRU);
-	      make_edge (else_bb, return_bb, EDGE_FALLTHRU);
-	      bsi = gsi_last_bb (then_bb);
-	    }
+	      tree true_label = NULL_TREE;
 
-	  restmp = thunk_adjust (&bsi, restmp, /*this_adjusting=*/0,
-			         fixed_offset, virtual_offset);
-	  if (true_label)
-	    {
-	      gimple stmt;
-	      bsi = gsi_last_bb (else_bb);
-	      stmt = gimple_build_assign (restmp,
-					  build_zero_cst (TREE_TYPE (restmp)));
-	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
-	      bsi = gsi_last_bb (return_bb);
+	      if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
+		{
+		  gimple stmt;
+		  /* If the return type is a pointer, we need to
+		     protect against NULL.  We know there will be an
+		     adjustment, because that's why we're emitting a
+		     thunk.  */
+		  then_bb = create_basic_block (NULL, (void *) 0, bb);
+		  return_bb = create_basic_block (NULL, (void *) 0, then_bb);
+		  else_bb = create_basic_block (NULL, (void *) 0, else_bb);
+		  add_bb_to_loop (then_bb, bb->loop_father);
+		  add_bb_to_loop (return_bb, bb->loop_father);
+		  add_bb_to_loop (else_bb, bb->loop_father);
+		  remove_edge (single_succ_edge (bb));
+		  true_label = gimple_block_label (then_bb);
+		  stmt = gimple_build_cond (NE_EXPR, restmp,
+					    build_zero_cst (TREE_TYPE (restmp)),
+					    NULL_TREE, NULL_TREE);
+		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+		  make_edge (bb, then_bb, EDGE_TRUE_VALUE);
+		  make_edge (bb, else_bb, EDGE_FALSE_VALUE);
+		  make_edge (return_bb, EXIT_BLOCK_PTR, 0);
+		  make_edge (then_bb, return_bb, EDGE_FALLTHRU);
+		  make_edge (else_bb, return_bb, EDGE_FALLTHRU);
+		  bsi = gsi_last_bb (then_bb);
+		}
+
+	      restmp = thunk_adjust (&bsi, restmp, /*this_adjusting=*/0,
+				     fixed_offset, virtual_offset);
+	      if (true_label)
+		{
+		  gimple stmt;
+		  bsi = gsi_last_bb (else_bb);
+		  stmt = gimple_build_assign (restmp,
+					      build_zero_cst (TREE_TYPE (restmp)));
+		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+		  bsi = gsi_last_bb (return_bb);
+		}
 	    }
+	  else
+	    gimple_call_set_tail (call, true);
+
+	  /* Build return value.  */
+	  ret = gimple_build_return (restmp);
+	  gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
 	}
       else
-        gimple_call_set_tail (call, true);
-
-      /* Build return value.  */
-      ret = gimple_build_return (restmp);
-      gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
+	{
+	  gimple_call_set_tail (call, true);
+	  remove_edge (single_succ_edge (bb));
+	}
 
       delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
+#ifdef ENABLE_CHECKING
+      verify_flow_info ();
+#endif
 
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
       node->thunk.thunk_p = false;
-      cgraph_node_remove_callees (node);
+      rebuild_cgraph_edges ();
       cgraph_add_new_function (thunk_fndecl, true);
       bitmap_obstack_release (NULL);
     }
   current_function_decl = NULL;
   set_cfun (NULL);
 }
-
-
 
 /* Assemble thunks and aliases associated to NODE.  */
 
@@ -1529,7 +1543,7 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 
 	e = e->next_caller;
 	assemble_thunks_and_aliases (thunk);
-        assemble_thunk (thunk);
+        expand_thunk (thunk);
       }
     else
       e = e->next_caller;
