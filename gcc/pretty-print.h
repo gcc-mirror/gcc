@@ -238,7 +238,7 @@ pp_base_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_left_brace(PP)       pp_character (PP, '{')
 #define pp_right_brace(PP)      pp_character (PP, '}')
 #define pp_semicolon(PP)        pp_character (PP, ';')
-#define pp_comma(PP)            pp_string (PP, ", ")
+#define pp_comma(PP)            pp_character (PP, ',')
 #define pp_dot(PP)              pp_character (PP, '.')
 #define pp_colon(PP)            pp_character (PP, ':')
 #define pp_colon_colon(PP)      pp_string (PP, "::")
@@ -260,6 +260,7 @@ pp_base_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 #define pp_quote(PP)            pp_character (PP, '\'')
 #define pp_backquote(PP)        pp_character (PP, '`')
 #define pp_doublequote(PP)      pp_character (PP, '"')
+#define pp_underscore(PP)       pp_character (PP, '_')
 #define pp_newline_and_flush(PP)     \
   do {                               \
     pp_newline (PP);                 \

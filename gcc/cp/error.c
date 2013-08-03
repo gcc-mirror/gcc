@@ -663,7 +663,7 @@ dump_aggr_type (tree t, int flags)
       if (lambda_function (t))
 	dump_parameters (FUNCTION_FIRST_USER_PARMTYPE (lambda_function (t)),
 			 flags);
-      pp_character(cxx_pp, '>');
+      pp_greater (cxx_pp);
     }
   else
     pp_cxx_tree_identifier (cxx_pp, name);
@@ -710,13 +710,13 @@ dump_type_prefix (tree t, int flags)
 				     TYPE_ATTRIBUTES (sub));
 	  }
 	if (TYPE_PTR_P (t))
-	  pp_character(cxx_pp, '*');
+	  pp_star (cxx_pp);
 	else if (TREE_CODE (t) == REFERENCE_TYPE)
 	{
 	  if (TYPE_REF_IS_RVALUE (t))
 	    pp_string (cxx_pp, "&&");
 	  else
-	    pp_character (cxx_pp, '&');
+	    pp_ampersand (cxx_pp);
 	}
 	pp_base (cxx_pp)->padding = pp_before;
 	pp_cxx_cv_qualifier_seq (cxx_pp, t);
@@ -946,7 +946,7 @@ dump_simple_decl (tree t, tree type, int flags)
     {
       if (TREE_CODE (t) == FIELD_DECL && DECL_NORMAL_CAPTURE_P (t))
 	{
-	  pp_character (cxx_pp, '<');
+	  pp_less (cxx_pp);
 	  pp_string (cxx_pp, IDENTIFIER_POINTER (DECL_NAME (t)) + 2);
 	  pp_string (cxx_pp, " capture>");
 	}
@@ -2870,7 +2870,7 @@ type_to_string (tree typ, int verbose)
       /* And remember the start of the aka dump.  */
       aka_start = obstack_object_size (ob);
       dump_type (aka, flags);
-      pp_character (cxx_pp, '}');
+      pp_right_brace (cxx_pp);
       p = (char*)obstack_base (ob);
       /* If they are identical, cut off the aka with a NUL.  */
       if (memcmp (p, p+aka_start, len) == 0)

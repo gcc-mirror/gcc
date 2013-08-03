@@ -280,14 +280,14 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
     CASE_CONVERT:
-      pp_character (buffer, '(');
+      pp_left_paren (buffer);
       dump_generic_node (buffer, TREE_TYPE (lhs), spc, flags, false);
       pp_string (buffer, ") ");
       if (op_prio (rhs) < op_code_prio (rhs_code))
 	{
-	  pp_character (buffer, '(');
+	  pp_left_paren (buffer);
 	  dump_generic_node (buffer, rhs, spc, flags, false);
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 	}
       else
 	dump_generic_node (buffer, rhs, spc, flags, false);
@@ -302,7 +302,7 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
     case ABS_EXPR:
       pp_string (buffer, "ABS_EXPR <");
       dump_generic_node (buffer, rhs, spc, flags, false);
-      pp_character (buffer, '>');
+      pp_greater (buffer);
       break;
 
     default:
@@ -317,23 +317,23 @@ dump_unary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  break;
 	}
       else if (rhs_code == BIT_NOT_EXPR)
-	pp_character (buffer, '~');
+	pp_complement (buffer);
       else if (rhs_code == TRUTH_NOT_EXPR)
-	pp_character (buffer, '!');
+	pp_exclamation (buffer);
       else if (rhs_code == NEGATE_EXPR)
-	pp_character (buffer, '-');
+	pp_minus (buffer);
       else
 	{
-	  pp_character (buffer, '[');
+	  pp_left_bracket (buffer);
 	  pp_string (buffer, tree_code_name [rhs_code]);
 	  pp_string (buffer, "] ");
 	}
 
       if (op_prio (rhs) < op_code_prio (rhs_code))
 	{
-	  pp_character (buffer, '(');
+	  pp_left_paren (buffer);
 	  dump_generic_node (buffer, rhs, spc, flags, false);
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 	}
       else
 	dump_generic_node (buffer, rhs, spc, flags, false);
@@ -370,16 +370,16 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
-      pp_character (buffer, '>');
+      pp_greater (buffer);
       break;
 
     default:
       if (op_prio (gimple_assign_rhs1 (gs)) <= op_code_prio (code))
 	{
-	  pp_character (buffer, '(');
+	  pp_left_paren (buffer);
 	  dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags,
 			     false);
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 	}
       else
 	dump_generic_node (buffer, gimple_assign_rhs1 (gs), spc, flags, false);
@@ -388,10 +388,10 @@ dump_binary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       pp_space (buffer);
       if (op_prio (gimple_assign_rhs2 (gs)) <= op_code_prio (code))
 	{
-	  pp_character (buffer, '(');
+	  pp_left_paren (buffer);
 	  dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags,
 			     false);
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 	}
       else
 	dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
@@ -418,7 +418,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-      pp_character (buffer, '>');
+      pp_greater (buffer);
       break;
 
     case FMA_EXPR:
@@ -517,7 +517,7 @@ dump_gimple_assign (pretty_printer *buffer, gimple gs, int spc, int flags)
 	{
 	  dump_generic_node (buffer, gimple_assign_lhs (gs), spc, flags, false);
 	  pp_space (buffer);
-	  pp_character (buffer, '=');
+	  pp_equal (buffer);
 
 	  if (gimple_assign_nontemporal_move_p (gs))
 	    pp_string (buffer, "{nt}");
@@ -585,7 +585,7 @@ dump_gimple_call_args (pretty_printer *buffer, gimple gs, int flags)
     {
       if (gimple_call_num_args (gs) > 0)
         {
-          pp_character (buffer, ',');
+          pp_comma (buffer);
           pp_space (buffer);
         }
 
@@ -621,9 +621,9 @@ pp_points_to_solution (pretty_printer *buffer, struct pt_solution *pt)
 	{
 	  pp_string (buffer, "D.");
 	  pp_decimal_int (buffer, i);
-	  pp_character (buffer, ' ');
+	  pp_space (buffer);
 	}
-      pp_character (buffer, '}');
+      pp_right_brace (buffer);
       if (pt->vars_contains_global)
 	pp_string (buffer, " (glob)");
     }
@@ -669,7 +669,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
           pp_string (buffer, ", ");
           dump_gimple_call_args (buffer, gs, flags);
         }
-      pp_character (buffer, '>');
+      pp_greater (buffer);
     }
   else
     {
@@ -689,7 +689,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
 	print_call_name (buffer, fn, flags);
       pp_string (buffer, " (");
       dump_gimple_call_args (buffer, gs, flags);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
       if (!(flags & TDF_RHS_ONLY))
 	pp_semicolon (buffer);
     }
@@ -698,7 +698,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
     {
       pp_string (buffer, " [static-chain: ");
       dump_generic_node (buffer, gimple_call_chain (gs), spc, flags, false);
-      pp_character (buffer, ']');
+      pp_right_bracket (buffer);
     }
 
   if (gimple_call_return_slot_opt_p (gs))
@@ -786,12 +786,12 @@ dump_gimple_switch (pretty_printer *buffer, gimple gs, int spc, int flags)
       tree case_label = gimple_switch_label (gs, i);
       gcc_checking_assert (case_label != NULL_TREE);
       dump_generic_node (buffer, case_label, spc, flags, false);
-      pp_character (buffer, ' ');
+      pp_space (buffer);
       dump_generic_node (buffer, CASE_LABEL (case_label), spc, flags, false);
       if (i < gimple_switch_num_labels (gs) - 1)
         pp_string (buffer, ", ");
     }
-  pp_character (buffer, '>');
+  pp_greater (buffer);
 }
 
 
@@ -817,7 +817,7 @@ dump_gimple_cond (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_cond_rhs (gs), spc, flags, false);
       if (!(flags & TDF_RHS_ONLY))
 	{
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 
 	  if (gimple_cond_true_label (gs))
 	    {
@@ -851,7 +851,7 @@ dump_gimple_label (pretty_printer *buffer, gimple gs, int spc, int flags)
   else
     {
       dump_generic_node (buffer, label, spc, flags, false);
-      pp_character (buffer, ':');
+      pp_colon (buffer);
     }
   if (DECL_NONLOCAL (label))
     pp_string (buffer, " [non-local]");
@@ -884,7 +884,7 @@ dump_gimple_bind (pretty_printer *buffer, gimple gs, int spc, int flags)
   if (flags & TDF_RAW)
     dump_gimple_fmt (buffer, spc, flags, "%G <", gs);
   else
-    pp_character (buffer, '{');
+    pp_left_brace (buffer);
   if (!(flags & TDF_SLIM))
     {
       tree var;
@@ -901,9 +901,9 @@ dump_gimple_bind (pretty_printer *buffer, gimple gs, int spc, int flags)
   dump_gimple_seq (buffer, gimple_bind_body (gs), spc + 2, flags);
   newline_and_indent (buffer, spc);
   if (flags & TDF_RAW)
-    pp_character (buffer, '>');
+    pp_greater (buffer);
   else
-    pp_character (buffer, '}');
+    pp_right_brace (buffer);
 }
 
 
@@ -931,26 +931,26 @@ dump_gimple_try (pretty_printer *buffer, gimple gs, int spc, int flags)
     {
       pp_string (buffer, "try");
       newline_and_indent (buffer, spc + 2);
-      pp_character (buffer, '{');
+      pp_left_brace (buffer);
       pp_newline (buffer);
 
       dump_gimple_seq (buffer, gimple_try_eval (gs), spc + 4, flags);
       newline_and_indent (buffer, spc + 2);
-      pp_character (buffer, '}');
+      pp_right_brace (buffer);
 
       if (gimple_try_kind (gs) == GIMPLE_TRY_CATCH)
 	{
 	  newline_and_indent (buffer, spc);
 	  pp_string (buffer, "catch");
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	}
       else if (gimple_try_kind (gs) == GIMPLE_TRY_FINALLY)
 	{
 	  newline_and_indent (buffer, spc);
 	  pp_string (buffer, "finally");
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	}
       else
 	pp_string (buffer, " <UNKNOWN GIMPLE_TRY> {");
@@ -958,7 +958,7 @@ dump_gimple_try (pretty_printer *buffer, gimple gs, int spc, int flags)
       pp_newline (buffer);
       dump_gimple_seq (buffer, gimple_try_cleanup (gs), spc + 4, flags);
       newline_and_indent (buffer, spc + 2);
-      pp_character (buffer, '}');
+      pp_right_brace (buffer);
     }
 }
 
@@ -1139,10 +1139,10 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  switch (gimple_omp_for_cond (gs, i))
 	    {
 	    case LT_EXPR:
-	      pp_character (buffer, '<');
+	      pp_less (buffer);
 	      break;
 	    case GT_EXPR:
-	      pp_character (buffer, '>');
+	      pp_greater (buffer);
 	      break;
 	    case LE_EXPR:
 	      pp_string (buffer, "<=");
@@ -1163,17 +1163,17 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  pp_string (buffer, " = ");
 	  dump_generic_node (buffer, gimple_omp_for_incr (gs, i), spc,
 			     flags, false);
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 	}
 
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
     }
 }
@@ -1194,11 +1194,11 @@ dump_gimple_omp_continue (pretty_printer *buffer, gimple gs, int spc, int flags)
       pp_string (buffer, "#pragma omp continue (");
       dump_generic_node (buffer, gimple_omp_continue_control_def (gs),
 	  		 spc, flags, false);
-      pp_character (buffer, ',');
+      pp_comma (buffer);
       pp_space (buffer);
       dump_generic_node (buffer, gimple_omp_continue_control_use (gs),
 	  		 spc, flags, false);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
     }
 }
 
@@ -1221,11 +1221,11 @@ dump_gimple_omp_single (pretty_printer *buffer, gimple gs, int spc, int flags)
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
     }
 }
@@ -1251,17 +1251,17 @@ dump_gimple_omp_sections (pretty_printer *buffer, gimple gs, int spc,
 	  pp_string (buffer, " <");
 	  dump_generic_node (buffer, gimple_omp_sections_control (gs), spc,
 			     flags, false);
-	  pp_character (buffer, '>');
+	  pp_greater (buffer);
 	}
       dump_omp_clauses (buffer, gimple_omp_sections_clauses (gs), spc, flags);
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
     }
 }
@@ -1294,11 +1294,11 @@ dump_gimple_omp_block (pretty_printer *buffer, gimple gs, int spc, int flags)
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
     }
 }
@@ -1320,16 +1320,16 @@ dump_gimple_omp_critical (pretty_printer *buffer, gimple gs, int spc,
 	  pp_string (buffer, " (");
 	  dump_generic_node (buffer, gimple_omp_critical_name (gs), spc,
 			     flags, false);
-	  pp_character (buffer, ')');
+	  pp_right_paren (buffer);
 	}
       if (!gimple_seq_empty_p (gimple_omp_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, gimple_omp_body (gs), spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
     }
 }
@@ -1427,12 +1427,12 @@ dump_gimple_transaction (pretty_printer *buffer, gimple gs, int spc, int flags)
       if (!gimple_seq_empty_p (gimple_transaction_body (gs)))
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, gimple_transaction_body (gs),
 			   spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
     }
 }
@@ -1508,7 +1508,7 @@ dump_gimple_asm (pretty_printer *buffer, gimple gs, int spc, int flags)
 	}
 
       newline_and_indent (buffer, spc);
-      pp_character (buffer, '>');
+      pp_greater (buffer);
     }
   else
     {
@@ -1634,7 +1634,7 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
 	  expanded_location xloc;
 
 	  xloc = expand_location (gimple_phi_arg_location (phi, i));
-	  pp_character (buffer, '[');
+	  pp_left_bracket (buffer);
 	  if (xloc.file)
 	    {
 	      pp_string (buffer, xloc.file);
@@ -1647,13 +1647,13 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
 	}
       dump_generic_node (buffer, gimple_phi_arg_def (phi, i), spc, flags,
 			 false);
-      pp_character (buffer, '(');
+      pp_left_paren (buffer);
       pp_decimal_int (buffer, gimple_phi_arg_edge (phi, i)->src->index);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
       if (i < gimple_phi_num_args (phi) - 1)
 	pp_string (buffer, ", ");
     }
-  pp_character (buffer, '>');
+  pp_greater (buffer);
 }
 
 
@@ -1696,11 +1696,11 @@ dump_gimple_omp_parallel (pretty_printer *buffer, gimple gs, int spc,
       if (body && gimple_code (gimple_seq_first_stmt (body)) != GIMPLE_BIND)
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, body, spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
       else if (body)
 	{
@@ -1753,11 +1753,11 @@ dump_gimple_omp_task (pretty_printer *buffer, gimple gs, int spc,
       if (body && gimple_code (gimple_seq_first_stmt (body)) != GIMPLE_BIND)
 	{
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '{');
+	  pp_left_brace (buffer);
 	  pp_newline (buffer);
 	  dump_gimple_seq (buffer, body, spc + 4, flags);
 	  newline_and_indent (buffer, spc + 2);
-	  pp_character (buffer, '}');
+	  pp_right_brace (buffer);
 	}
       else if (body)
 	{
@@ -1791,9 +1791,9 @@ dump_gimple_omp_atomic_load (pretty_printer *buffer, gimple gs, int spc,
       dump_generic_node (buffer, gimple_omp_atomic_load_lhs (gs),
 	  		 spc, flags, false);
       pp_space (buffer);
-      pp_character (buffer, '=');
+      pp_equal (buffer);
       pp_space (buffer);
-      pp_character (buffer, '*');
+      pp_star (buffer);
       dump_generic_node (buffer, gimple_omp_atomic_load_rhs (gs),
 	  		 spc, flags, false);
     }
@@ -1817,10 +1817,10 @@ dump_gimple_omp_atomic_store (pretty_printer *buffer, gimple gs, int spc,
       pp_string (buffer, "#pragma omp atomic_store ");
       if (gimple_omp_atomic_need_value_p (gs))
 	pp_string (buffer, "[needed] ");
-      pp_character (buffer, '(');
+      pp_left_paren (buffer);
       dump_generic_node (buffer, gimple_omp_atomic_store_val (gs),
 	  		 spc, flags, false);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
     }
 }
 
@@ -1844,14 +1844,14 @@ dump_gimple_mem_ops (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, vdef, spc + 2, flags, false);
       pp_string (buffer, " = VDEF <");
       dump_generic_node (buffer, vuse, spc + 2, flags, false);
-      pp_character (buffer, '>');
+      pp_greater (buffer);
       newline_and_indent (buffer, spc);
     }
   else if (vuse != NULL_TREE)
     {
       pp_string (buffer, "# VUSE <");
       dump_generic_node (buffer, vuse, spc + 2, flags, false);
-      pp_character (buffer, '>');
+      pp_greater (buffer);
       newline_and_indent (buffer, spc);
     }
 }
@@ -1874,7 +1874,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
   if ((flags & TDF_LINENO) && gimple_has_location (gs))
     {
       expanded_location xloc = expand_location (gimple_location (gs));
-      pp_character (buffer, '[');
+      pp_left_bracket (buffer);
       if (xloc.file)
 	{
 	  pp_string (buffer, xloc.file);
@@ -2155,12 +2155,12 @@ pp_cfg_jump (pretty_printer *buffer, basic_block bb)
 
   pp_string (buffer, "goto <bb ");
   pp_decimal_int (buffer, bb->index);
-  pp_character (buffer, '>');
+  pp_greater (buffer);
   if (stmt && gimple_code (stmt) == GIMPLE_LABEL)
     {
       pp_string (buffer, " (");
       dump_generic_node (buffer, gimple_label_label (stmt), 0, 0, false);
-      pp_character (buffer, ')');
+      pp_right_paren (buffer);
       pp_semicolon (buffer);
     }
   else
@@ -2215,7 +2215,7 @@ dump_implicit_edges (pretty_printer *buffer, basic_block bb, int indent,
 	{
 	  expanded_location goto_xloc;
 	  goto_xloc = expand_location (e->goto_locus);
-	  pp_character (buffer, '[');
+	  pp_left_bracket (buffer);
 	  if (goto_xloc.file)
 	    {
 	      pp_string (buffer, goto_xloc.file);
@@ -2304,7 +2304,7 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
       if (!virtual_operand_p (gimple_phi_result (phi))
 	  || (dump_flags & TDF_VOPS))
 	{
-	  pp_character (pp, '|');
+	  pp_bar (pp);
 	  pp_write_text_to_stream (pp);
 	  pp_string (pp, "# ");
 	  pp_gimple_stmt_1 (pp, phi, 0, dump_flags);
@@ -2316,7 +2316,7 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
-      pp_character (pp, '|');
+      pp_bar (pp);
       pp_write_text_to_stream (pp);
       pp_gimple_stmt_1 (pp, stmt, 0, dump_flags);
       pp_newline (pp);

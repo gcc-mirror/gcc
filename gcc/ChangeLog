@@ -1,3 +1,51 @@
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_underscore): New.
+	(pp_comma): Tidy.
+	* gimple-pretty-print.c (dump_unary_rhs): Use specialized pretty
+	printer functions instead of pp_character.
+	(dump_binary_rhs): Likewise.
+	(dump_ternary_rhs): Likewise.
+	(dump_gimple_call_args): Likewise.
+	(pp_points_to_solution): Likewise.
+	(dump_gimple_call): Likewise.
+	(dump_gimple_switch): Likewise.
+	(dump_gimple_cond): Likewise.
+	(dump_gimple_bind): Likewise.
+	(dump_gimple_try): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_omp_continue): Likewise.
+	(dump_gimple_omp_single): Likewise.
+	(dump_gimple_omp_sections): Likewise.
+	(dump_gimple_omp_block): Likewise.
+	(dump_gimple_omp_critical): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_asm): Likewise.
+	(dump_gimple_phi): Likewise.
+	(dump_gimple_omp_parallel): Likewise.
+	(dump_gimple_omp_task): Likewise.
+	(dump_gimple_omp_atomic_load): Likewise.
+	(dump_gimple_omp_atomic_store): Likewise.
+	(dump_gimple_mem_ops): Likewise.
+	(pp_gimple_stmt_1): Likewise.
+	(pp_cfg_jump): Likewise.
+	(dump_implicit_edges): Likewise.
+	(gimple_dump_bb_for_graph): Likewise.
+	* graph.c (draw_cfg_node): Likewise.
+	* langhooks.c (lhd_print_error_function): Likewise.
+	* sched-vis.c (print_exp): Likewise.
+	(print_value): Likewise.
+	(print_pattern): Likewise.
+	(print_insn): Likewise.
+	(rtl_dump_bb_for_graph): Likewise.
+	* tree-pretty-print.c (dump_function_declaration): Likewise.
+	(dump_array_domain): Likewise.
+	(dump_omp_clause): Likewise.
+	(dump_location): Likewise.
+	(dump_generic_node): Likewise.
+	(print_struct_decl): Likewise.
+	* diagnostic.c (diagnostic_show_locus): Use pp_space.
+
 2013-08-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Update

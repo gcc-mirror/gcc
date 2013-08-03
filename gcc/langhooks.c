@@ -446,7 +446,7 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 	      if (fndecl)
 		{
 		  expanded_location s = expand_location (*locus);
-		  pp_character (context->printer, ',');
+		  pp_comma (context->printer);
 		  pp_newline (context->printer);
 		  if (s.file != NULL)
 		    {
@@ -467,7 +467,7 @@ lhd_print_error_function (diagnostic_context *context, const char *file,
 			       identifier_to_locale (lang_hooks.decl_printable_name (fndecl, 2)));
 		}
 	    }
-	  pp_character (context->printer, ':');
+	  pp_colon (context->printer);
 	}
 
       diagnostic_set_last_function (context, diagnostic);

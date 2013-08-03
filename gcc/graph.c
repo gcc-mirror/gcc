@@ -109,10 +109,10 @@ draw_cfg_node (pretty_printer *pp, int funcdef_no, basic_block bb)
     pp_string (pp, "EXIT");
   else
     {
-      pp_character (pp, '{');
+      pp_left_brace (pp);
       pp_write_text_to_stream (pp);
       dump_bb_for_graph (pp, bb);
-      pp_character (pp, '}');
+      pp_right_brace (pp);
     }
 
   pp_string (pp, "\"];\n\n");
