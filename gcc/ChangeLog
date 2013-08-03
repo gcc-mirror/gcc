@@ -1,3 +1,27 @@
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (compute_ltrans_boundary): Add abstract origins into
+	boundaries.
+	* lto-streamer-out.c (tree_is_indexable): Results decls and
+	parm decls are not indexable.
+	(DFS_write_tree_body): Do not follow args and results.
+	(hash_tree): Likewise.
+	(output_functions): Rearrange so struct function is needed
+	only when real body is output; be able to also ouptut abstract
+	functions; output DECL_ARGUMENTS and DECL_RESULT.
+	(lto_output): When not in WPA, ale store abstract functions.
+	(write_symbol): Do not care about RESULT_DECL.
+	(output_symbol_p): Handle correctly sbtract decls.
+	* lto-streamer-in.c (input_function): Rearrange so struct
+	function can be NULL at entry; allow streaming of
+	functions w/o body; store DECL_ARGUMENTS and DECL_RESULT.
+	* ipa.c (symtab_remove_unreachable_nodes): Silence confused
+	sanity check during LTO.
+	* tree-streamer-out.c (write_ts_decl_non_common_tree_pointers): Skip
+	RESULT_DECl and DECL_ARGUMENTS.
+	* tree-streamer-in.c (lto_input_ts_decl_non_common_tree_pointers):
+	Likewise.
+
 2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (pp_underscore): New.
