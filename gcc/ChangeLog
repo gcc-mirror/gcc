@@ -1,5 +1,14 @@
 2013-08-02  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (add_new_function): Fix logic when adding from
+	late IPA pass.
+	(assemble_thunk): Rename to ...
+	(expand_thunk); .. this one; export; get it working with general functions;
+	make produced gimple valid.
+	* cgraph.h (expand_thunk): Declare.
+
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-cp.c (gather_context_independent_values): Use ipa_get_param_move_cost.
 	(get_replacement_map): Remove PARAM; move parameter folding into tree-inline.c
 	(create_specialized_node): Update.
