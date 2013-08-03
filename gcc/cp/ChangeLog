@@ -1,5 +1,9 @@
 2013-08-03  Jason Merrill  <jason@redhat.com>
 
+	DR 1286
+	* pt.c (get_underlying_template): New.
+	(convert_template_argument, lookup_template_class_1): Use it.
+
 	DR 1430
 	PR c++/51239
 	* pt.c (pack_expansion_args_count): Rename from

@@ -5111,6 +5111,34 @@ alias_template_specialization_p (const_tree t)
 	  && DECL_ALIAS_TEMPLATE_P (TYPE_TI_TEMPLATE (t)));
 }
 
+/* Return either TMPL or another template that it is equivalent to under DR
+   1286: An alias that just changes the name of a template is equivalent to
+   the other template.  */
+
+static tree
+get_underlying_template (tree tmpl)
+{
+  gcc_assert (TREE_CODE (tmpl) == TEMPLATE_DECL);
+  while (DECL_ALIAS_TEMPLATE_P (tmpl))
+    {
+      tree result = DECL_ORIGINAL_TYPE (DECL_TEMPLATE_RESULT (tmpl));
+      if (TYPE_TEMPLATE_INFO (result))
+	{
+	  tree sub = TYPE_TI_TEMPLATE (result);
+	  if (PRIMARY_TEMPLATE_P (sub)
+	      && same_type_p (result, TREE_TYPE (sub)))
+	    {
+	      /* The alias type is equivalent to the pattern of the
+		 underlying template, so strip the alias.  */
+	      tmpl = sub;
+	      continue;
+	    }
+	}
+      break;
+    }
+  return tmpl;
+}
+
 /* Subroutine of convert_nontype_argument. Converts EXPR to TYPE, which
    must be a function or a pointer-to-function type, as specified
    in [temp.arg.nontype]: disambiguate EXPR if it is an overload set,
@@ -6319,6 +6347,9 @@ convert_template_argument (tree parm,
 	      tree parmparm = DECL_INNERMOST_TEMPLATE_PARMS (parm);
 	      tree argparm;
 
+	      /* Strip alias templates that are equivalent to another
+		 template.  */
+	      arg = get_underlying_template (arg);
               argparm = DECL_INNERMOST_TEMPLATE_PARMS (arg);
 
 	      if (coerce_template_template_parms (parmparm, argparm,
@@ -7176,6 +7207,13 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
     }
 
   complain &= ~tf_user;
+
+  /* An alias that just changes the name of a template is equivalent to the
+     other template, so if any of the arguments are pack expansions, strip
+     the alias to avoid problems with a pack expansion passed to a non-pack
+     alias template parameter (DR 1430).  */
+  if (pack_expansion_args_count (INNERMOST_TEMPLATE_ARGS (arglist)))
+    templ = get_underlying_template (templ);
 
   if (DECL_TEMPLATE_TEMPLATE_PARM_P (templ))
     {
