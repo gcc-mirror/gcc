@@ -1,3 +1,15 @@
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/ipa-1.c: Update.
+	* gcc.dg/ipa/ipa-2.c: Update.
+	* gcc.dg/ipa/ipa-3.c: Update.
+	* gcc.dg/ipa/ipa-4.c: Update.
+	* gcc.dg/ipa/ipa-5.c: Update.
+	* gcc.dg/ipa/ipa-7.c: Update.
+	* gcc.dg/ipa/ipa-8.c: Update.
+	* gcc.dg/ipa/ipcp-1.c: Update.
+	* gcc.dg/ipa/ipcp-2.c: Update.
+
 2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/58048
