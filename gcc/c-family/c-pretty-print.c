@@ -370,7 +370,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 	      pp_c_type_specifier (pp, t);
 	      if (TYPE_PRECISION (t) != prec)
 		{
-		  pp_string (pp, ":");
+		  pp_colon (pp);
 		  pp_decimal_int (pp, prec);
 		}
 	    }
@@ -393,7 +393,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 		  gcc_unreachable ();
 		}
 	      pp_decimal_int (pp, prec);
-	      pp_string (pp, ">");
+	      pp_greater (pp);
 	    }
 	}
       break;
@@ -1920,9 +1920,9 @@ pp_c_relational_expression (c_pretty_printer *pp, tree e)
       else if (code == GT_EXPR)
 	pp_greater (pp);
       else if (code == LE_EXPR)
-	pp_string (pp, "<=");
+	pp_less_equal (pp);
       else if (code == GE_EXPR)
-	pp_string (pp, ">=");
+	pp_greater_equal (pp);
       pp_c_whitespace (pp);
       pp_c_shift_expression (pp, TREE_OPERAND (e, 1));
       break;
@@ -2032,7 +2032,7 @@ pp_c_logical_and_expression (c_pretty_printer *pp, tree e)
     {
       pp_c_logical_and_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_string (pp, "&&");
+      pp_ampersand_ampersand (pp);
       pp_c_whitespace (pp);
       pp_c_inclusive_or_expression (pp, TREE_OPERAND (e, 1));
     }
@@ -2052,7 +2052,7 @@ pp_c_logical_or_expression (c_pretty_printer *pp, tree e)
     {
       pp_c_logical_or_expression (pp, TREE_OPERAND (e, 0));
       pp_c_whitespace (pp);
-      pp_string (pp, "||");
+      pp_bar_bar (pp);
       pp_c_whitespace (pp);
       pp_c_logical_and_expression (pp, TREE_OPERAND (e, 1));
     }

@@ -714,7 +714,7 @@ dump_type_prefix (tree t, int flags)
 	else if (TREE_CODE (t) == REFERENCE_TYPE)
 	{
 	  if (TYPE_REF_IS_RVALUE (t))
-	    pp_string (cxx_pp, "&&");
+	    pp_ampersand_ampersand (cxx_pp);
 	  else
 	    pp_ampersand (cxx_pp);
 	}
@@ -1060,7 +1060,7 @@ dump_decl (tree t, int flags)
 
     case SCOPE_REF:
       dump_type (TREE_OPERAND (t, 0), flags);
-      pp_string (cxx_pp, "::");
+      pp_colon_colon (cxx_pp);
       dump_decl (TREE_OPERAND (t, 1), TFF_UNQUALIFIED_NAME);
       break;
 
@@ -1075,9 +1075,9 @@ dump_decl (tree t, int flags)
       dump_decl (ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_left_bracket (cxx_pp);
       dump_decl (ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_string (cxx_pp, ":");
+      pp_colon (cxx_pp);
       dump_decl (ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_string (cxx_pp, ":");
+      pp_colon (cxx_pp);
       dump_decl (ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_bracket (cxx_pp);
       break;
@@ -2072,9 +2072,9 @@ dump_expr (tree t, int flags)
       dump_expr (ARRAY_NOTATION_ARRAY (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_left_bracket (cxx_pp);
       dump_expr (ARRAY_NOTATION_START (t), flags | TFF_EXPR_IN_PARENS);
-      pp_string (cxx_pp, ":");
+      pp_colon (cxx_pp);
       dump_expr (ARRAY_NOTATION_LENGTH (t), flags | TFF_EXPR_IN_PARENS);
-      pp_string (cxx_pp, ":");
+      pp_colon (cxx_pp);
       dump_expr (ARRAY_NOTATION_STRIDE (t), flags | TFF_EXPR_IN_PARENS);
       pp_cxx_right_bracket (cxx_pp);
       break;

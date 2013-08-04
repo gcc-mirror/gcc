@@ -436,7 +436,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-      pp_string (buffer, ">");
+      pp_greater (buffer);
       break;
     
     case VEC_PERM_EXPR:
@@ -446,7 +446,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-      pp_string (buffer, ">");
+      pp_greater (buffer);
       break;
 
     case REALIGN_LOAD_EXPR:
@@ -456,7 +456,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-      pp_string (buffer, ">");
+      pp_greater (buffer);
       break;
 
     case COND_EXPR:
@@ -474,7 +474,7 @@ dump_ternary_rhs (pretty_printer *buffer, gimple gs, int spc, int flags)
       dump_generic_node (buffer, gimple_assign_rhs2 (gs), spc, flags, false);
       pp_string (buffer, ", ");
       dump_generic_node (buffer, gimple_assign_rhs3 (gs), spc, flags, false);
-      pp_string (buffer, ">");
+      pp_greater (buffer);
       break;
 
     default:
@@ -757,7 +757,7 @@ dump_gimple_call (pretty_printer *buffer, gimple gs, int spc, int flags)
       if (props & PR_READONLY)
 	pp_string (buffer, "readOnly ");
 
-      pp_string (buffer, "]");
+      pp_right_bracket (buffer);
     }
 }
 
@@ -1145,10 +1145,10 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 	      pp_greater (buffer);
 	      break;
 	    case LE_EXPR:
-	      pp_string (buffer, "<=");
+	      pp_less_equal (buffer);
 	      break;
 	    case GE_EXPR:
-	      pp_string (buffer, ">=");
+	      pp_greater_equal (buffer);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -1420,7 +1420,7 @@ dump_gimple_transaction (pretty_printer *buffer, gimple gs, int spc, int flags)
 		}
 	      if (subcode)
 		pp_printf (buffer, "0x%x ", subcode);
-	      pp_string (buffer, "]");
+	      pp_right_bracket (buffer);
 	    }
 	}
 
@@ -1641,7 +1641,7 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
 	      pp_string (buffer, " : ");
 	    }
 	  pp_decimal_int (buffer, xloc.line);
-	  pp_string (buffer, ":");
+	  pp_colon (buffer);
 	  pp_decimal_int (buffer, xloc.column);
 	  pp_string (buffer, "] ");
 	}
@@ -1881,7 +1881,7 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
 	  pp_string (buffer, " : ");
 	}
       pp_decimal_int (buffer, xloc.line);
-      pp_string (buffer, ":");
+      pp_colon (buffer);
       pp_decimal_int (buffer, xloc.column);
       pp_string (buffer, "] ");
     }

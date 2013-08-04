@@ -1,3 +1,10 @@
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (dump_type_prefix): Use specialized pretty printer
+	functions instead of pp_string or operators and punctuators.
+	(dump_decl): Likewise.
+	(dump_expr): Likewise.
+
 2013-08-03  Jason Merrill  <jason@redhat.com>
 
 	DR 1286

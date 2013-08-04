@@ -1,3 +1,21 @@
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_bar_bar): New.
+	(pp_ampersand_ampersand): Likewise.
+	(pp_less_equal): Likewise.
+	(pp_greater_equal): Likewise.
+	* gimple-pretty-print.c (dump_ternary_rhs): Use specialized pretty
+	printer functions instead of pp_string or operators and punctuators.
+	(dump_gimple_call): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_phi): Likewise.
+	(pp_gimple_stmt_1): Likewise.
+	* sched-vis.c (print_insn): Likewise.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* tree-pretty-print.c (dump_block_node): Likewise.
+	(dump_generic_node): Likewise.
+
 2013-08-02  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c (compute_ltrans_boundary): Add abstract origins into

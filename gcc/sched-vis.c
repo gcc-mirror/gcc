@@ -690,7 +690,7 @@ print_insn (pretty_printer *pp, const_rtx x, int verbose)
     case JUMP_TABLE_DATA:
       pp_string (pp, "jump_table_data{\n");
       print_pattern (pp, PATTERN (x), verbose);
-      pp_string (pp, "}");
+      pp_right_brace (pp);
       break;
     case BARRIER:
       pp_string (pp, "barrier");
