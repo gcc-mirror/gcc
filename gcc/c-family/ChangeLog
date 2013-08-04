@@ -1,3 +1,9 @@
+2013-08-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58072
+	* c-common.c (c_parse_error): Catch user-defined literal tokens and
+	provide useful error strings.
+
 2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-ada-spec.c (pp_ada_tree_identifier): Use specialized pretty

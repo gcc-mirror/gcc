@@ -9352,6 +9352,18 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
       free (message);
       message = NULL;
     }
+  else if (token_type == CPP_CHAR_USERDEF
+	   || token_type == CPP_WCHAR_USERDEF
+	   || token_type == CPP_CHAR16_USERDEF
+	   || token_type == CPP_CHAR32_USERDEF)
+    message = catenate_messages (gmsgid,
+				 " before user-defined character literal");
+  else if (token_type == CPP_STRING_USERDEF
+	   || token_type == CPP_WSTRING_USERDEF
+	   || token_type == CPP_STRING16_USERDEF
+	   || token_type == CPP_STRING32_USERDEF
+	   || token_type == CPP_UTF8STRING_USERDEF)
+    message = catenate_messages (gmsgid, " before user-defined string literal");
   else if (token_type == CPP_STRING
 	   || token_type == CPP_WSTRING
 	   || token_type == CPP_STRING16
