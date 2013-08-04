@@ -1,5 +1,14 @@
 2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* c-ada-spec.c (pp_ada_tree_identifier): Use specialized pretty
+	printer functions instead of pp_string or operators and punctuators.
+	(dump_generic_ada_node): Likewise.
+	* c-pretty-print.c (pp_c_type_specifier): Likewise.
+	(pp_c_relational_expression): Likewise.
+	(pp_c_logical_or_expression): Likewise.
+
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* c-ada-spec.c (print_ada_macros): Use specialized pretty printer
 	functions instead of pp_character.
 	(pp_ada_tree_identifier): Likewise.

@@ -1266,7 +1266,7 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
                 {
                   pp_string (buffer, "Class_");
                   pp_string (buffer, s);
-                  pp_string (buffer, ".");
+                  pp_dot (buffer);
                 }
 
             }
@@ -1626,7 +1626,7 @@ dump_sloc (pretty_printer *buffer, tree node)
   if (xloc.file)
     {
       pp_string (buffer, xloc.file);
-      pp_string (buffer, ":");
+      pp_colon (buffer);
       pp_decimal_int (buffer, xloc.line);
     }
 }
@@ -1886,14 +1886,14 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	      bool first = true;
 	      spc += INDENT_INCR;
 	      newline_and_indent (buffer, spc - 1);
-	      pp_string (buffer, "(");
+	      pp_left_paren (buffer);
 	      for (; value; value = TREE_CHAIN (value))
 		{
 		  if (first)
 		    first = false;
 		  else
 		    {
-		      pp_string (buffer, ",");
+		      pp_comma (buffer);
 		      newline_and_indent (buffer, spc);
 		    }
 
@@ -1907,7 +1907,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	      dump_generic_ada_node
 		(buffer, DECL_NAME (type) ? type : TYPE_NAME (node), type,
 		 cpp_check, spc, 0, true);
-	      pp_string (buffer, ")");
+	      pp_right_paren (buffer);
 	    }
 	  else
 	    {
@@ -2032,7 +2032,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 		pp_string (buffer, "pragma Convention (C, ");
 		dump_generic_ada_node
 		  (buffer, type, 0, cpp_check, spc, false, true);
-		pp_string (buffer, ")");
+		pp_right_paren (buffer);
 	      }
 	}
       else
