@@ -1,3 +1,8 @@
+2013-08-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58072
+	* g++.dg/cpp0x/pr58072.C: New.
+
 2013-08-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
 
 	* gcc.dg/torture/pr57993-2.cpp: New.
