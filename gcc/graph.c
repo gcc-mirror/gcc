@@ -56,26 +56,6 @@ open_graph_file (const char *base, const char *mode)
   return fp;
 }
 
-/* Return a pretty-print buffer for output to file FP.  */
-
-static pretty_printer *
-init_graph_slim_pretty_print (FILE *fp)
-{
-  static bool initialized = false;
-  static pretty_printer graph_slim_pp;
-
-  if (! initialized)
-    {
-      pp_construct (&graph_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
-      initialized = true;
-    }
-  else
-    gcc_assert (! pp_last_position_in_text (&graph_slim_pp));
-
-  graph_slim_pp.buffer->stream = fp;
-  return &graph_slim_pp;
-}
-
 /* Draw a basic block BB belonging to the function with FUNCDEF_NO
    as its unique number.  */
 static void
@@ -297,7 +277,10 @@ print_graph_cfg (const char *base, struct function *fun)
 {
   const char *funcname = function_name (fun);
   FILE *fp = open_graph_file (base, "a");
-  pretty_printer *pp = init_graph_slim_pretty_print (fp);
+  pretty_printer graph_slim_pp;
+  pp_construct (&graph_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
+  graph_slim_pp.buffer->stream = fp;
+  pretty_printer *const pp = &graph_slim_pp;
   pp_printf (pp, "subgraph \"%s\" {\n"
 	         "\tcolor=\"black\";\n"
 		 "\tlabel=\"%s\";\n",
@@ -313,7 +296,10 @@ print_graph_cfg (const char *base, struct function *fun)
 static void
 start_graph_dump (FILE *fp, const char *base)
 {
-  pretty_printer *pp = init_graph_slim_pretty_print (fp);
+  pretty_printer graph_slim_pp;
+  pp_construct (&graph_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
+  graph_slim_pp.buffer->stream = fp;
+  pretty_printer *const pp = &graph_slim_pp;
   pp_string (pp, "digraph \"");
   pp_write_text_to_stream (pp);
   pp_string (pp, base);
