@@ -1,3 +1,8 @@
+2013-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58080
+	* g++.dg/cpp0x/pr58080.C: New.
+
 2013-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	* lib/plugin-support.exp (plugin-test-execute): Add -fno-rtti
