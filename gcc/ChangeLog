@@ -1,3 +1,9 @@
+2013-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/57708
+	* recog.c (peep2_find_free_register): Validate all regs in a
+	multi-reg mode.
+
 2013-08-05  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/57602
