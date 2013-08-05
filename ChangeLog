@@ -17,12 +17,6 @@
 	* configure.ac: Sync from binutils.
 	* configure: Regenerate.
 
-2013-07-10  Jack Howarth  <howarth@bromo.med.uc.edu>
-
-	PR target/57792
-	* configure.ac: Use --with-sysroot=\"`xcrun --show-sdk-path`\" on darwin13 and later.
-	* configure: Regenerated.
-
 2013-06-14  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.
