@@ -47,6 +47,8 @@ class context;
 class pass_manager
 {
 public:
+  void *operator new (size_t sz);
+
   pass_manager(context *ctxt);
 
   void register_pass (struct register_pass_info *pass_info);

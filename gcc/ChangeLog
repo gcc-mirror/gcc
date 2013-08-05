@@ -1,5 +1,9 @@
 2013-08-05  David Malcolm  <dmalcolm@redhat.com>
 
+	* passes.c (pass_manager::operator new): New.
+
+2013-08-05  David Malcolm  <dmalcolm@redhat.com>
+
 	Handwritten part of conversion of passes to C++ classes.
 
 	* Makefile.in (PASS_MANAGER_H): Add dep on pass-instances.def.
