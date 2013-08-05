@@ -8,6 +8,7 @@
 #include "gimple.h"
 #include "tree-pass.h"
 #include "intl.h"
+#include "context.h"
 
 int plugin_is_GPL_compatible;
 
@@ -53,7 +54,7 @@ int plugin_init (struct plugin_name_args *plugin_info,
 {
   struct register_pass_info p;
 
-  p.pass = &one_pass.pass;
+  p.pass = make_one_pass (g);
   p.reference_pass_name = "cfg";
   p.ref_pass_instance_number = 1;
   p.pos_op = PASS_POS_INSERT_AFTER;

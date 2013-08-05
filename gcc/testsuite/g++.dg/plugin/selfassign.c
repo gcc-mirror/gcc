@@ -15,6 +15,7 @@
 #include "intl.h"
 #include "plugin-version.h"
 #include "diagnostic.h"
+#include "context.h"
 
 int plugin_is_GPL_compatible;
 
@@ -309,7 +310,7 @@ plugin_init (struct plugin_name_args *plugin_info,
     return 1;
 
   /* Self-assign detection should happen after SSA is constructed.  */
-  pass_info.pass = &pass_warn_self_assign.pass;
+  pass_info.pass = make_pass_warn_self_assign (g);
   pass_info.reference_pass_name = "ssa";
   pass_info.ref_pass_instance_number = 1;
   pass_info.pos_op = PASS_POS_INSERT_AFTER;

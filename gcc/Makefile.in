@@ -987,7 +987,7 @@ PLUGIN_VERSION_H = plugin-version.h configargs.h
 LIBFUNCS_H = libfuncs.h $(HASHTAB_H)
 GRAPHITE_HTAB_H = graphite-htab.h graphite-clast-to-gimple.h $(HASH_TABLE_H)
 CONTEXT_H = context.h
-PASS_MANAGER_H = pass_manager.h
+PASS_MANAGER_H = pass_manager.h pass-instances.def
 
 #
 # Now figure out from those variables how to compile and link.
@@ -2733,7 +2733,7 @@ toplev.o : toplev.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(OPTS_H) params.def tree-mudflap.h $(TREE_PASS_H) $(GIMPLE_H) \
    tree-ssa-alias.h $(PLUGIN_H) realmpfr.h tree-diagnostic.h \
    $(TREE_PRETTY_PRINT_H) opts-diagnostic.h $(COMMON_TARGET_H) \
-   tsan.h diagnostic-color.h $(CONTEXT_H)
+   tsan.h diagnostic-color.h $(CONTEXT_H) $(PASS_MANAGER_H)
 
 hwint.o : hwint.c $(CONFIG_H) $(SYSTEM_H) $(DIAGNOSTIC_CORE_H)
 

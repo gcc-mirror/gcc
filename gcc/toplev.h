@@ -28,7 +28,6 @@ extern int toplev_main (int, char **);
 extern void rest_of_decl_compilation (tree, int, int);
 extern void rest_of_type_compilation (tree, int);
 extern void init_optimization_passes (void);
-extern void finish_optimization_passes (void);
 extern bool enable_rtl_dump_file (void);
 
 /* In except.c.  Initialize exception handling.  This is used by the Ada
