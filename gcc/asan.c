@@ -842,25 +842,12 @@ asan_init_shadow_ptr_types (void)
   initialize_sanitizer_builtins ();
 }
 
-/* Asan pretty-printer, used for buidling of the description STRING_CSTs.  */
-static pretty_printer asan_pp;
-static bool asan_pp_initialized;
-
-/* Initialize asan_pp.  */
-
-static void
-asan_pp_initialize (void)
-{
-  pp_construct (&asan_pp, /* prefix */NULL, /* line-width */0);
-  asan_pp_initialized = true;
-}
-
-/* Create ADDR_EXPR of STRING_CST with asan_pp text.  */
+/* Create ADDR_EXPR of STRING_CST with the PP pretty printer text.  */
 
 static tree
-asan_pp_string (void)
+asan_pp_string (pretty_printer *pp)
 {
-  const char *buf = pp_formatted_text (&asan_pp);
+  const char *buf = pp_formatted_text (pp);
   size_t len = strlen (buf);
   tree ret = build_string (len + 1, buf);
   TREE_TYPE (ret)
@@ -950,9 +937,9 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
     asan_init_shadow_ptr_types ();
 
   /* First of all, prepare the description string.  */
-  if (!asan_pp_initialized)
-    asan_pp_initialize ();
-
+  pretty_printer asan_pp;
+  pp_construct (&asan_pp, /* prefix */NULL, /* line-width */0);
+  
   pp_clear_output_area (&asan_pp);
   if (DECL_NAME (current_function_decl))
     pp_tree_identifier (&asan_pp, DECL_NAME (current_function_decl));
@@ -978,7 +965,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 	pp_string (&asan_pp, "9 <unknown>");
       pp_space (&asan_pp);
     }
-  str_cst = asan_pp_string ();
+  str_cst = asan_pp_string (&asan_pp);
 
   /* Emit the prologue sequence.  */
   base = expand_binop (Pmode, add_optab, base, GEN_INT (base_offset),
@@ -1976,8 +1963,8 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   tree str_cst, refdecl = decl;
   vec<constructor_elt, va_gc> *vinner = NULL;
 
-  if (!asan_pp_initialized)
-    asan_pp_initialize ();
+  pretty_printer asan_pp;
+  pp_construct (&asan_pp, /* prefix */NULL, /* line-width */0);
 
   pp_clear_output_area (&asan_pp);
   if (DECL_NAME (decl))
@@ -1988,7 +1975,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   pp_left_paren (&asan_pp);
   pp_string (&asan_pp, main_input_filename);
   pp_right_paren (&asan_pp);
-  str_cst = asan_pp_string ();
+  str_cst = asan_pp_string (&asan_pp);
 
   if (asan_needs_local_alias (decl))
     {
