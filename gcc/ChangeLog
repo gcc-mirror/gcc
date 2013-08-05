@@ -1,5 +1,27 @@
 2013-08-05  David Malcolm  <dmalcolm@redhat.com>
 
+	Rewrite how instances of passes are cloned to remove assumptions
+	about their sizes (thus allowing pass subclasses to have
+	additional data fields, albeit non-GC-managed ones at this point).
+
+	* passes.c (make_pass_instance): Now that passes have clone
+	methods, rewrite this function to eliminate XNEW and memcpy
+	calls that used hardcoded sizes.  Since this function no longer
+	creates pass instances, rename it to...
+	(add_pass_instance): ...this.  Document the old way that passes
+	were numbered and flagged, and rework this function to continue
+	using it.
+	(next_pass_1): Add an initial_pass argument for use by
+	add_pass_instance.
+	(position_pass): When adding multiple instances of a pass, use
+	the pass's clone method, rather than relying on the XNEW/memcpy
+	within the former make_pass_instance (now add_pass_instance).
+	(pass_manager::pass_manager): When invoking next_pass_1, also
+	supply the initial instance of the current pass within the
+	pass manager.
+
+2013-08-05  David Malcolm  <dmalcolm@redhat.com>
+
 	This is the automated part of the conversion of passes from C
 	structs to C++ classes.
 
