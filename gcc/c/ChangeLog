@@ -1,3 +1,7 @@
+2013-08-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-objc-common.c (c_initialize_diagnostics): Don't call pp_base.
+
 2013-07-23  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-parser.c (struct c_generic_association): Fix typo.

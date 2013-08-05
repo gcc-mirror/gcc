@@ -190,7 +190,7 @@ mf_varname_tree (tree decl)
   }
 
   /* Return the lot as a new STRING_CST.  */
-  buf_contents = pp_base_formatted_text (buf);
+  buf_contents = pp_formatted_text (buf);
   result = mf_build_string (buf_contents);
   pp_clear_output_area (buf);
 

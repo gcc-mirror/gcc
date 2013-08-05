@@ -211,7 +211,7 @@ diagnostic_inhibit_notes (diagnostic_context * context)
    Zero means don't wrap lines.  */
 #define diagnostic_line_cutoff(DC) ((DC)->printer->wrapping.line_cutoff)
 
-#define diagnostic_flush_buffer(DC) pp_base_flush ((DC)->printer)
+#define diagnostic_flush_buffer(DC) pp_flush ((DC)->printer)
 
 /* True if the last module or file in which a diagnostic was reported is
    different from the current one.  */

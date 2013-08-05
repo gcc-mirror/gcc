@@ -138,7 +138,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
 
   base = context->printer;
   pp = XNEW (cxx_pretty_printer);
-  memcpy (pp_base (pp), base, sizeof (pretty_printer));
+  memcpy (pp, base, sizeof (pretty_printer));
   pp_cxx_pretty_printer_init (pp);
   context->printer = (pretty_printer *) pp;
 

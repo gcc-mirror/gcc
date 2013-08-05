@@ -3112,7 +3112,7 @@ percent_K_format (text_info *text)
 /* Print the identifier ID to PRETTY-PRINTER.  */
 
 void
-pp_base_tree_identifier (pretty_printer *pp, tree id)
+pp_tree_identifier (pretty_printer *pp, tree id)
 {
   if (pp_translate_identifiers (pp))
     {

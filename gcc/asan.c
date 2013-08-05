@@ -860,7 +860,7 @@ asan_pp_initialize (void)
 static tree
 asan_pp_string (void)
 {
-  const char *buf = pp_base_formatted_text (&asan_pp);
+  const char *buf = pp_formatted_text (&asan_pp);
   size_t len = strlen (buf);
   tree ret = build_string (len + 1, buf);
   TREE_TYPE (ret)
@@ -955,7 +955,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 
   pp_clear_output_area (&asan_pp);
   if (DECL_NAME (current_function_decl))
-    pp_base_tree_identifier (&asan_pp, DECL_NAME (current_function_decl));
+    pp_tree_identifier (&asan_pp, DECL_NAME (current_function_decl));
   else
     pp_string (&asan_pp, "<unknown>");
   pp_space (&asan_pp);
@@ -972,7 +972,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 	{
 	  pp_decimal_int (&asan_pp, IDENTIFIER_LENGTH (DECL_NAME (decl)));
 	  pp_space (&asan_pp);
-	  pp_base_tree_identifier (&asan_pp, DECL_NAME (decl));
+	  pp_tree_identifier (&asan_pp, DECL_NAME (decl));
 	}
       else
 	pp_string (&asan_pp, "9 <unknown>");
@@ -1981,7 +1981,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
 
   pp_clear_output_area (&asan_pp);
   if (DECL_NAME (decl))
-    pp_base_tree_identifier (&asan_pp, DECL_NAME (decl));
+    pp_tree_identifier (&asan_pp, DECL_NAME (decl));
   else
     pp_string (&asan_pp, "<unknown>");
   pp_space (&asan_pp);
