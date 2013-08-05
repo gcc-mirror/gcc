@@ -1,5 +1,11 @@
 2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* graph.c (init_graph_slim_pretty_print): Remove.
+	(print_graph_cfg): Do not call it.  Use local pretty printer.
+	(start_graph_dump): Likewise.
+
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* gimple-pretty-print.c (buffer): Remove.
 	(initialized): Likewise.
 	(maybe_init_pretty_print): Likewise.
