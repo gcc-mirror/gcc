@@ -1,3 +1,12 @@
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* asan.c (asan_pp): Remove.
+	(asan_pp_initialized): Likewise.
+	(asan_pp_initialize): Likewise.
+	(asan_pp_string): Take a pretty_printer parameter.  Adjust callers.
+	(asan_emit_stack_protection): Tidy.  Use local pretty printer.
+	(asan_add_global): Likewise.
+
 2013-08-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (pp_base): Remove.  Adjust dependent macros.
