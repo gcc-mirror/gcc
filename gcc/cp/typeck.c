@@ -43,7 +43,7 @@ static tree pfn_from_ptrmemfunc (tree);
 static tree delta_from_ptrmemfunc (tree);
 static tree convert_for_assignment (tree, tree, impl_conv_rhs, tree, int,
 				    tsubst_flags_t, int);
-static tree cp_pointer_int_sum (enum tree_code, tree, tree);
+static tree cp_pointer_int_sum (enum tree_code, tree, tree, tsubst_flags_t);
 static tree rationalize_conditional_expr (enum tree_code, tree, 
 					  tsubst_flags_t);
 static int comp_ptr_ttypes_real (tree, tree, int);
@@ -4064,7 +4064,8 @@ cp_build_binary_op (location_t location,
 	    }
 	  return cp_pointer_int_sum (code,
 				     ptr_operand, 
-				     int_operand);
+				     int_operand,
+				     complain);
 	}
       common = 1;
       break;
@@ -4894,7 +4895,8 @@ build_x_vec_perm_expr (location_t loc,
    of pointer PTROP and integer INTOP.  */
 
 static tree
-cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
+cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop,
+		    tsubst_flags_t complain)
 {
   tree res_type = TREE_TYPE (ptrop);
 
@@ -4906,7 +4908,8 @@ cp_pointer_int_sum (enum tree_code resultcode, tree ptrop, tree intop)
   complete_type (TREE_TYPE (res_type));
 
   return pointer_int_sum (input_location, resultcode, ptrop,
-			  fold_if_not_in_template (intop));
+			  fold_if_not_in_template (intop),
+			  complain & tf_warning_or_error);
 }
 
 /* Return a tree for the difference of pointers OP0 and OP1.

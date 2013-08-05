@@ -4284,7 +4284,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 
 tree
 pointer_int_sum (location_t loc, enum tree_code resultcode,
-		 tree ptrop, tree intop)
+		 tree ptrop, tree intop, bool complain)
 {
   tree size_exp, ret;
 
@@ -4293,14 +4293,20 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 
   if (TREE_CODE (TREE_TYPE (result_type)) == VOID_TYPE)
     {
-      pedwarn (loc, OPT_Wpointer_arith,
-	       "pointer of type %<void *%> used in arithmetic");
+      if (complain && warn_pointer_arith)
+	pedwarn (loc, OPT_Wpointer_arith,
+		 "pointer of type %<void *%> used in arithmetic");
+      else if (!complain)
+	return error_mark_node;
       size_exp = integer_one_node;
     }
   else if (TREE_CODE (TREE_TYPE (result_type)) == FUNCTION_TYPE)
     {
-      pedwarn (loc, OPT_Wpointer_arith,
-	       "pointer to a function used in arithmetic");
+      if (complain && warn_pointer_arith)
+	pedwarn (loc, OPT_Wpointer_arith,
+		 "pointer to a function used in arithmetic");
+      else if (!complain)
+	return error_mark_node;
       size_exp = integer_one_node;
     }
   else

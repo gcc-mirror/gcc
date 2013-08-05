@@ -1,3 +1,9 @@
+2013-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58080
+	* c-common.c (pointer_int_sum): Add bool parameter.
+	* c-common.h (pointer_int_sum): Adjust declaration.
+
 2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.c (print_c_tree): Simplify.  Use non-static local
