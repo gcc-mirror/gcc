@@ -438,7 +438,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   streamer_write_hwi_stream (ob->main_stream,
 			     node->ipa_transforms_to_apply.length ());
   FOR_EACH_VEC_ELT (node->ipa_transforms_to_apply, i, pass)
-    streamer_write_hwi_stream (ob->main_stream, pass->pass.static_pass_number);
+    streamer_write_hwi_stream (ob->main_stream, pass->static_pass_number);
 
   if (tag == LTO_symtab_analyzed_node)
     {

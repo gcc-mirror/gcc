@@ -82,6 +82,54 @@ struct opt_pass *current_pass;
 
 static void register_pass_name (struct opt_pass *, const char *);
 
+/* Most passes are single-instance (within their context) and thus don't
+   need to implement cloning, but passes that support multiple instances
+   *must* provide their own implementation of the clone method.
+
+   Handle this by providing a default implemenation, but make it a fatal
+   error to call it.  */
+
+opt_pass *
+opt_pass::clone ()
+{
+  internal_error ("pass %s does not support cloning", name);
+}
+
+bool
+opt_pass::gate ()
+{
+  return true;
+}
+
+unsigned int
+opt_pass::execute ()
+{
+  return 0;
+}
+
+opt_pass::opt_pass(const pass_data &data, context *ctxt)
+  : pass_data(data),
+    sub(NULL),
+    next(NULL),
+    static_pass_number(0),
+    ctxt_(ctxt)
+{
+}
+
+
+void
+pass_manager::execute_early_local_passes ()
+{
+  execute_pass_list (pass_early_local_passes_1->sub);
+}
+
+unsigned int
+pass_manager::execute_pass_mode_switching ()
+{
+  return pass_mode_switching_1->execute ();
+}
+
+
 /* Call from anywhere to find out what pass this is.  Useful for
    printing out debugging information deep inside an service
    routine.  */
@@ -224,6 +272,7 @@ rest_of_type_compilation (tree type, int toplev)
 
 
 void
+pass_manager::
 finish_optimization_passes (void)
 {
   int i;
@@ -233,16 +282,16 @@ finish_optimization_passes (void)
   timevar_push (TV_DUMP);
   if (profile_arc_flag || flag_test_coverage || flag_branch_probabilities)
     {
-      dump_start (pass_profile.pass.static_pass_number, NULL);
+      dump_start (pass_profile_1->static_pass_number, NULL);
       end_branch_prob ();
-      dump_finish (pass_profile.pass.static_pass_number);
+      dump_finish (pass_profile_1->static_pass_number);
     }
 
   if (optimize > 0)
     {
-      dump_start (pass_profile.pass.static_pass_number, NULL);
+      dump_start (pass_profile_1->static_pass_number, NULL);
       print_combine_total_stats ();
-      dump_finish (pass_profile.pass.static_pass_number);
+      dump_finish (pass_profile_1->static_pass_number);
     }
 
   /* Do whatever is necessary to finish printing the graphs.  */
@@ -550,7 +599,7 @@ register_dump_files_1 (struct opt_pass *pass, int properties)
 
       /* If we have a gate, combine the properties that we could have with
          and without the pass being examined.  */
-      if (pass->gate)
+      if (pass->has_gate)
         properties &= new_properties;
       else
         properties = new_properties;
@@ -679,7 +728,7 @@ dump_one_pass (struct opt_pass *pass, int pass_indent)
   const char *pn;
   bool is_on, is_really_on;
 
-  is_on = (pass->gate == NULL) ? true : pass->gate();
+  is_on = pass->has_gate ? pass->gate() : true;
   is_really_on = override_gate_status (pass, current_function_decl, is_on);
 
   if (pass->static_pass_number <= 0)
@@ -1310,12 +1359,23 @@ pass_manager::pass_manager (context *ctxt)
 
 #define PUSH_INSERT_PASSES_WITHIN(PASS) \
   { \
-    struct opt_pass **p = &(PASS).pass.sub;
+    struct opt_pass **p = &(PASS ## _1)->sub;
 
 #define POP_INSERT_PASSES() \
   }
 
-#define NEXT_PASS(PASS, NUM)  (p = next_pass_1 (p, &((PASS).pass)))
+#define NEXT_PASS(PASS, NUM) \
+  do { \
+    gcc_assert (NULL == PASS ## _ ## NUM); \
+    if ((NUM) == 1)                              \
+      PASS ## _1 = make_##PASS (ctxt_);          \
+    else                                         \
+      {                                          \
+        gcc_assert (PASS ## _1);                 \
+        PASS ## _ ## NUM = PASS ## _1->clone (); \
+      }                                          \
+    p = next_pass_1 (p, PASS ## _ ## NUM);  \
+  } while (0)
 
 #define TERMINATE_PASS_LIST() \
   *p = NULL;
@@ -1541,7 +1601,7 @@ pass_manager::dump_profile_report () const
 		fprintf (stderr, "      ");
 
 	      /* Size/time units change across gimple and RTL.  */
-	      if (i == pass_expand.pass.static_pass_number)
+	      if (i == pass_expand_1->static_pass_number)
 		fprintf (stderr, "|----------");
 	      else
 		{
@@ -1778,11 +1838,11 @@ execute_ipa_summary_passes (struct ipa_opt_pass_d *ipa_pass)
 {
   while (ipa_pass)
     {
-      struct opt_pass *pass = &ipa_pass->pass;
+      struct opt_pass *pass = ipa_pass;
 
       /* Execute all of the IPA_PASSes in the list.  */
-      if (ipa_pass->pass.type == IPA_PASS
-	  && (!pass->gate || pass->gate ())
+      if (ipa_pass->type == IPA_PASS
+	  && ((!pass->has_gate) || pass->gate ())
 	  && ipa_pass->generate_summary)
 	{
 	  pass_init_dump_file (pass);
@@ -1799,7 +1859,7 @@ execute_ipa_summary_passes (struct ipa_opt_pass_d *ipa_pass)
 
 	  pass_fini_dump_file (pass);
 	}
-      ipa_pass = (struct ipa_opt_pass_d *)ipa_pass->pass.next;
+      ipa_pass = (struct ipa_opt_pass_d *)ipa_pass->next;
     }
 }
 
@@ -1809,7 +1869,7 @@ static void
 execute_one_ipa_transform_pass (struct cgraph_node *node,
 				struct ipa_opt_pass_d *ipa_pass)
 {
-  struct opt_pass *pass = &ipa_pass->pass;
+  struct opt_pass *pass = ipa_pass;
   unsigned int todo_after = 0;
 
   current_pass = pass;
@@ -1933,7 +1993,7 @@ execute_one_pass (struct opt_pass *pass)
 
   /* Check whether gate check should be avoided.
      User controls the value of the gate through the parameter "gate_status". */
-  gate_status = (pass->gate == NULL) ? true : pass->gate();
+  gate_status = pass->has_gate ? pass->gate() : true;
   gate_status = override_gate_status (pass, current_function_decl, gate_status);
 
   /* Override gate with plugin.  */
@@ -1990,7 +2050,7 @@ execute_one_pass (struct opt_pass *pass)
     timevar_push (pass->tv_id);
 
   /* Do it!  */
-  if (pass->execute)
+  if (pass->has_execute)
     {
       todo_after = pass->execute ();
       do_per_function (clear_last_verified, NULL);
@@ -2066,7 +2126,7 @@ ipa_write_summaries_2 (struct opt_pass *pass, struct lto_out_decl_state *state)
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_summary
-	  && (!pass->gate || pass->gate ()))
+	  && ((!pass->has_gate) || pass->gate ()))
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2182,7 +2242,7 @@ ipa_write_optimization_summaries_1 (struct opt_pass *pass, struct lto_out_decl_s
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
       if (pass->type == IPA_PASS
 	  && ipa_pass->write_optimization_summary
-	  && (!pass->gate || pass->gate ()))
+	  && ((!pass->has_gate) || pass->gate ()))
 	{
 	  /* If a timevar is present, start it.  */
 	  if (pass->tv_id)
@@ -2259,7 +2319,7 @@ ipa_read_summaries_1 (struct opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if (pass->gate == NULL || pass->gate ())
+      if ((!pass->has_gate) || pass->gate ())
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_summary)
 	    {
@@ -2310,7 +2370,7 @@ ipa_read_optimization_summaries_1 (struct opt_pass *pass)
       gcc_assert (!cfun);
       gcc_assert (pass->type == SIMPLE_IPA_PASS || pass->type == IPA_PASS);
 
-      if (pass->gate == NULL || pass->gate ())
+      if ((!pass->has_gate) || pass->gate ())
 	{
 	  if (pass->type == IPA_PASS && ipa_pass->read_optimization_summary)
 	    {
@@ -2388,7 +2448,7 @@ execute_ipa_stmt_fixups (struct opt_pass *pass,
     {
       /* Execute all of the IPA_PASSes in the list.  */
       if (pass->type == IPA_PASS
-	  && (!pass->gate || pass->gate ()))
+	  && ((!pass->has_gate) || pass->gate ()))
 	{
 	  struct ipa_opt_pass_d *ipa_pass = (struct ipa_opt_pass_d *) pass;
 

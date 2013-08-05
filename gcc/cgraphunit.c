@@ -325,7 +325,7 @@ cgraph_process_new_functions (void)
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	  if (cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
-	    execute_pass_list (pass_early_local_passes.pass.sub);
+	    g->get_passes ()->execute_early_local_passes ();
 	  else if (inline_summary_vec != NULL)
 	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
@@ -509,7 +509,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	    gimple_register_cfg_hooks ();
 	    bitmap_obstack_initialize (NULL);
 	    execute_pass_list (passes->all_lowering_passes);
-	    execute_pass_list (pass_early_local_passes.pass.sub);
+	    passes->execute_early_local_passes ();
 	    bitmap_obstack_release (NULL);
 	    pop_cfun ();
 
@@ -534,7 +534,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	gimple_register_cfg_hooks ();
 	bitmap_obstack_initialize (NULL);
 	if (!gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
-	  execute_pass_list (pass_early_local_passes.pass.sub);
+	  g->get_passes ()->execute_early_local_passes ();
 	bitmap_obstack_release (NULL);
 	pop_cfun ();
 	expand_function (node);

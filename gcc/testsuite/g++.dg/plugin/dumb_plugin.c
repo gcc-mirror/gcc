@@ -11,6 +11,7 @@
 #include "intl.h"
 #include "toplev.h"
 #include "diagnostic.h"
+#include "context.h"
 
 int plugin_is_GPL_compatible;
 
@@ -124,7 +125,7 @@ plugin_init (struct plugin_name_args *plugin_info,
       return 1;
     }
 
-  pass_info.pass = &pass_dumb_plugin_example.pass;
+  pass_info.pass = make_pass_dumb_plugin_example (g);
   pass_info.reference_pass_name = ref_pass_name;
   pass_info.ref_pass_instance_number = ref_instance_number;
   pass_info.pos_op = PASS_POS_INSERT_AFTER;

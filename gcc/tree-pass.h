@@ -34,9 +34,8 @@ enum opt_pass_type
   IPA_PASS
 };
 
-/* Describe one pass; this is the common part shared across different pass
-   types.  */
-struct opt_pass
+/* Metadata for a pass, non-varying across all instances of a pass.  */
+struct pass_data
 {
   /* Optimization pass type.  */
   enum opt_pass_type type;
@@ -48,23 +47,13 @@ struct opt_pass
   /* The -fopt-info optimization group flags as defined in dumpfile.h. */
   unsigned int optinfo_flags;
 
-  /* If non-null, this pass and all sub-passes are executed only if
-     the function returns true.  */
-  bool (*gate) (void);
+  /* If true, this pass has its own implementation of the opt_pass::gate
+     method.  */
+  bool has_gate;
 
-  /* This is the code to run.  If null, then there should be sub-passes
-     otherwise this pass does nothing.  The return value contains
-     TODOs to execute in addition to those in TODO_flags_finish.   */
-  unsigned int (*execute) (void);
-
-  /* A list of sub-passes to run, dependent on gate predicate.  */
-  struct opt_pass *sub;
-
-  /* Next in the list of passes to run, independent of gate predicate.  */
-  struct opt_pass *next;
-
-  /* Static pass number, used as a fragment of the dump file name.  */
-  int static_pass_number;
+  /* If true, this pass has its own implementation of the opt_pass::execute
+     method.  */
+  bool has_execute;
 
   /* The timevar id associated with this pass.  */
   /* ??? Ideally would be dynamically assigned.  */
@@ -80,16 +69,72 @@ struct opt_pass
   unsigned int todo_flags_finish;
 };
 
-/* Description of GIMPLE pass.  */
-struct gimple_opt_pass
+namespace gcc
 {
-  struct opt_pass pass;
+  class context;
+} // namespace gcc
+
+/* An instance of a pass.  This is also "pass_data" to minimize the
+   changes in existing code.  */
+class opt_pass : public pass_data
+{
+public:
+  virtual ~opt_pass () { }
+
+  /* Create a copy of this pass.
+
+     Passes that can have multiple instances must provide their own
+     implementation of this, to ensure that any sharing of state between
+     this instance and the copy is "wired up" correctly.
+
+     The default implementation prints an error message and aborts.  */
+  virtual opt_pass *clone ();
+
+  /* If has_gate is set, this pass and all sub-passes are executed only if
+     the function returns true.  */
+  virtual bool gate ();
+
+  /* This is the code to run.  If has_execute is false, then there should
+     be sub-passes otherwise this pass does nothing.
+     The return value contains TODOs to execute in addition to those in
+     TODO_flags_finish.   */
+  virtual unsigned int execute ();
+
+protected:
+  opt_pass(const pass_data&, gcc::context *);
+
+public:
+  /* A list of sub-passes to run, dependent on gate predicate.  */
+  struct opt_pass *sub;
+
+  /* Next in the list of passes to run, independent of gate predicate.  */
+  struct opt_pass *next;
+
+  /* Static pass number, used as a fragment of the dump file name.  */
+  int static_pass_number;
+
+protected:
+  gcc::context *ctxt_;
+};
+
+/* Description of GIMPLE pass.  */
+class gimple_opt_pass : public opt_pass
+{
+protected:
+  gimple_opt_pass(const pass_data& data, gcc::context *ctxt)
+    : opt_pass(data, ctxt)
+  {
+  }
 };
 
 /* Description of RTL pass.  */
-struct rtl_opt_pass
+class rtl_opt_pass : public opt_pass
 {
-  struct opt_pass pass;
+protected:
+  rtl_opt_pass(const pass_data& data, gcc::context *ctxt)
+    : opt_pass(data, ctxt)
+  {
+  }
 };
 
 struct varpool_node;
@@ -98,10 +143,9 @@ struct lto_symtab_encoder_d;
 
 /* Description of IPA pass with generate summary, write, execute, read and
    transform stages.  */
-struct ipa_opt_pass_d
+class ipa_opt_pass_d : public opt_pass
 {
-  struct opt_pass pass;
-
+public:
   /* IPA passes can analyze function body and variable initializers
       using this hook and produce summary.  */
   void (*generate_summary) (void);
@@ -127,13 +171,42 @@ struct ipa_opt_pass_d
   unsigned int function_transform_todo_flags_start;
   unsigned int (*function_transform) (struct cgraph_node *);
   void (*variable_transform) (struct varpool_node *);
+
+protected:
+  ipa_opt_pass_d(const pass_data& data, gcc::context *ctxt,
+                 void (*generate_summary) (void),
+                 void (*write_summary) (void),
+                 void (*read_summary) (void),
+                 void (*write_optimization_summary) (void),
+                 void (*read_optimization_summary) (void),
+                 void (*stmt_fixup) (struct cgraph_node *, gimple *),
+                 unsigned int function_transform_todo_flags_start,
+                 unsigned int (*function_transform) (struct cgraph_node *),
+                 void (*variable_transform) (struct varpool_node *))
+    : opt_pass(data, ctxt),
+	       generate_summary(generate_summary),
+	       write_summary(write_summary),
+	       read_summary(read_summary),
+	       write_optimization_summary(write_optimization_summary),
+	       read_optimization_summary(read_optimization_summary),
+	       stmt_fixup(stmt_fixup),
+	       function_transform_todo_flags_start(
+	         function_transform_todo_flags_start),
+	       function_transform(function_transform),
+	       variable_transform(variable_transform)
+  {
+  }
 };
 
 /* Description of simple IPA pass.  Simple IPA passes have just one execute
    hook.  */
-struct simple_ipa_opt_pass
+class simple_ipa_opt_pass : public opt_pass
 {
-  struct opt_pass pass;
+protected:
+  simple_ipa_opt_pass(const pass_data& data, gcc::context *ctxt)
+    : opt_pass(data, ctxt)
+  {
+  }
 };
 
 /* Pass properties.  */

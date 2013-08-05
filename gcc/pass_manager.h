@@ -58,6 +58,12 @@ public:
 
   void dump_profile_report () const;
 
+  void finish_optimization_passes ();
+
+  /* Access to specific passes, so that the majority can be private.  */
+  void execute_early_local_passes ();
+  unsigned int execute_pass_mode_switching ();
+
 public:
   /* The root of the compilation pass tree, once constructed.  */
   opt_pass *all_passes;
@@ -80,6 +86,37 @@ private:
 
 private:
   context *ctxt_;
+
+  /* References to all of the individual passes.
+     These fields are generated via macro expansion.
+
+     For example:
+         NEXT_PASS (pass_build_cfg, 1);
+     within pass-instances.def means that there is a field:
+         opt_pass *pass_build_cfg_1;
+
+     Similarly, the various:
+        NEXT_PASS (pass_copy_prop, 1);
+        ...
+        NEXT_PASS (pass_copy_prop, 8);
+     in pass-instances.def lead to fields:
+        opt_pass *pass_copy_prop_1;
+        ...
+        opt_pass *pass_copy_prop_8;  */
+
+#define INSERT_PASSES_AFTER(PASS)
+#define PUSH_INSERT_PASSES_WITHIN(PASS)
+#define POP_INSERT_PASSES()
+#define NEXT_PASS(PASS, NUM) opt_pass *PASS ## _ ## NUM
+#define TERMINATE_PASS_LIST()
+
+#include "pass-instances.def"
+
+#undef INSERT_PASSES_AFTER
+#undef PUSH_INSERT_PASSES_WITHIN
+#undef POP_INSERT_PASSES
+#undef NEXT_PASS
+#undef TERMINATE_PASS_LIST
 
 }; // class pass_manager
 
