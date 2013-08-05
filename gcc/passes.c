@@ -1339,6 +1339,13 @@ pass_manager::register_pass (struct register_pass_info *pass_info)
 				        -> all_passes
 */
 
+void *
+pass_manager::operator new (size_t sz)
+{
+  /* Ensure that all fields of the pass manager are zero-initialized.  */
+  return xcalloc (1, sz);
+}
+
 pass_manager::pass_manager (context *ctxt)
 : all_passes(NULL), all_small_ipa_passes(NULL), all_lowering_passes(NULL),
   all_regular_ipa_passes(NULL), all_lto_gen_passes(NULL),
