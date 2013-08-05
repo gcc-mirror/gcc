@@ -1,3 +1,158 @@
+2013-08-03  Tim Shen  <timshen91@gmail.com>
+
+	Implement bracket expression.
+	* include/bits/regex.h: Remove constexpr from "|=", etc.
+	* include/bits/regex_compiler.h: Parse bracket expression.
+	* include/bits/regex_nfa.h: _Comparator and _BracketMatcher(old
+	_RangeMatcher).
+	* include/bits/regex_nfa.tcc: Implement them.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc:
+	from regex_search to regex_match.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	cstring_bracket_01.cc: New.
+
+2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/debug/functions.h (__foreign_iterator_aux4):
+	Initialize __l and __ge.
+
+2013-08-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58049
+	* include/debug/functions.h: Include <bits/move.h>; minor formatting
+	changes.
+	(__foreign_iterator_aux4): Declare __l and __ge constexpr.
+	* include/debug/safe_iterator.h (_Safe_iterator<>::operator->):
+	Use __addressof.
+	* include/debug/safe_local_iterator.h (_Safe_local_iterator<>::
+	operator->): Likewise.
+
+2013-08-01  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/57779
+	* include/debug/formatter.h (_Debug_msg_id): Add
+	__msg_insert_itself_range entry.
+	* include/debug/functions.h (_Insert_range_from_self_is_safe<>):
+	New, indicate container types supporting self range insertion in
+	GNU implementation.
+	(__foreign_iterator): New, check if an iterator points to a given
+	sequence.
+	* include/debug/macros.h (__glibcxx_check_insert_range): Add check
+	using __foreign_iterator.
+	(__gibcxx_check_insert_range_after): Likewise.
+	* include/debug/string (_Insert_range_from_self_is_safe<>):
+	Partially specialized to mark __gnu_debug::basic_string<> as
+	supporting self range insert.
+	* include/debug/list (_Insert_range_from_self_is_safe<>):
+	Partially specialized to mark std::list as supporting self range
+	insert if _GLIBCXX_DEBUG_PEDANTIC is not defined.
+	* include/debug/forward_list (_Insert_range_from_self_is_safe<>):
+	Likewise.
+	* src/c++11/debug.cc (_S_debug_messages): Add
+	__msg_insert_itself_range_entry message.
+	(_Error_formatter::_Parameter::_M_print_description): Display
+	iterator sequence address rather than sequence address when the
+	parameter type is an iterator.
+	(_Error_formatter::_M_print_word): Enhance behavior when
+	displaying a word with an appended '\n'.
+	* testsuite/util/debug/checks.h (check_insert4<>): New.
+	* testsuite/23_containers/deque/debug/insert5_neg.cc: New.
+	* testsuite/23_containers/vector/debug/insert5_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/insert6_neg.cc: Likewise.
+	* testsuite/23_containers/vector/debug/57779_neg.cc: Likewise.
+	* testsuite/23_containers/list/debug/insert5_neg.cc: Likewise.
+	* testsuite/23_containers/forward_list/debug/insert_after4_neg.cc:
+	Likewise.
+
+2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
+
+	PR c++/54537
+	* include/tr1/cmath: Remove pow(double,double) overload, remove a
+	duplicated comment about DR 550. Add a comment to explain the
+	issue.
+	* testsuite/tr1/8_c_compatibility/cmath/pow_cmath.cc: New.
+
+2013-07-31  Tim Shen  <timshen91@gmail.com>
+
+	Thompson matcher refactored. Fix grouping problem.
+	* include/bits/regex.h: Use a dispatcher _M_get_matcher().
+	* include/bits/regex_compiler.h: Tweak for auto switching.
+	* include/bits/regex_grep_matcher.h: Class structure.
+	* include/bits/regex_grep_matcher.tcc: _BFSMatcher(Thompson
+	matcher) refactoring.
+	* include/bits/regex_nfa.h: Change _Results's interfaces.
+	* include/std/regex: Includes <map> and <queue>.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: New.
+
+2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/56627
+	* include/bits/stl_bvector.h: Use friend struct hash intead of
+	friend class hash to work around useless warnings produced by
+	some compilers.
+	* include/std/bitset: Likewise.
+
+2013-07-31  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* src/c++11/functexcept.cc: Do not include the whole <regex>.
+	* src/c++11/regex.cc: Likewise.
+
+2013-07-31  Tim Shen  <timshen91@gmail.com>
+
+	Revert last commit.
+
+2013-07-31  Tim Shen  <timshen91@gmail.com>
+
+	Thompson matcher refactored. Fix grouping problem.
+	* include/bits/regex.h: Use a dispatcher _M_get_matcher().
+	* include/bits/regex_compiler.h: Tweak for auto switching.
+	* include/bits/regex_grep_matcher.h: Class structure.
+	* include/bits/regex_grep_matcher.tcc: _BFSMatcher(Thompson
+	matcher) refactoring.
+	* include/bits/regex_nfa.h: Change _Results's interfaces.
+	* include/std/regex: Includes <map> and <queue>.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: New.
+
+2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert last commit.
+
+2013-07-30  Tim Shen  <timshen91@gmail.com>
+
+	Thompson matcher refactored. Fix grouping problem.
+	* include/bits/regex.h: Use a dispatcher _M_get_matcher().
+	* include/bits/regex_compiler.h: Tweak for auto switching.
+	* include/bits/regex_grep_matcher.h: Class structure.
+	* include/bits/regex_grep_matcher.tcc: _BFSMatcher(Thompson
+	matcher) refactoring.
+	* include/bits/regex_nfa.h: Change _Results's interfaces.
+	* include/std/regex: Includes <map> and <queue>.
+	* testsuite/28_regex/algorithms/regex_match/extended/53622.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/57173.cc:
+	For both matchers.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: New.
+
+2013-07-29  Nathan Froyd  <froydnj@gcc.gnu.org>
+
+	* include/std/atomic (compare_exchange_weak, compare_exchange_strong):
+	Add call to __cmpexch_failure_order.
+	* testsuite/util/testsuite_common_types.h
+	(compare_exchange_order_lowering): New generator.
+	* testsuite/29_atomics/atomic/requirements/compare_exchange_lowering.cc:
+	New test.
+
 2013-07-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/std/complex (pow(const complex<>&, int)): Enable in

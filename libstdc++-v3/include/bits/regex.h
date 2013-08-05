@@ -95,15 +95,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           operator~() const
           { return _RegexMask(~_M_base, ~_M_extended); }
 
-          constexpr _RegexMask&
+          _RegexMask&
           operator&=(_RegexMask __other)
           { return *this = (*this) & __other; }
 
-          constexpr _RegexMask&
+          _RegexMask&
           operator|=(_RegexMask __other)
           { return *this = (*this) | __other; }
 
-          constexpr _RegexMask&
+          _RegexMask&
           operator^=(_RegexMask __other)
           { return *this = (*this) ^ __other; }
 
@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
               __fctyp.tolower(&*__v.begin(), &*__v.end());
               return this->transform(&*__v.begin(), &*__v.end());
             }
-          __catch (...)
+          __catch (std::bad_cast)
             {
             }
           return string_type();
@@ -519,7 +519,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         };
 
       std::string __s(__last - __first, '?');
-      string_type a(__first, __last);
       __fctyp.narrow(__first, __last, '?', &*__s.begin());
 
       for (unsigned int __i = 0; *__collatenames[__i]; __i++)
@@ -2175,7 +2174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     regex_match(_Bi_iter                                 __s,
                 _Bi_iter                                 __e,
-                match_results<_Bi_iter, _Alloc>&     __m,
+                match_results<_Bi_iter, _Alloc>&         __m,
                 const basic_regex<_Ch_type, _Rx_traits>& __re,
                 regex_constants::match_flag_type         __flags
                                = regex_constants::match_default)
@@ -2184,8 +2183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_Automaton::_SizeT __sz = __a->_M_sub_count();
       __detail::_SpecializedCursor<_Bi_iter> __cs(__s, __e);
       __detail::_SpecializedResults<_Bi_iter, _Alloc> __r(__sz, __cs, __m);
-      __detail::_Grep_matcher __matcher(__cs, __r, __a, __flags);
-      return __matcher._M_dfs_match();
+      return __a->_M_get_matcher(__cs, __r, __a, __flags)->_M_match();
     }
 
   /**
@@ -2336,8 +2334,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (auto __cur = __first; __cur != __last; ++__cur) // Any KMP-like algo?
         {
           __detail::_SpecializedCursor<_Bi_iter> __curs(__cur, __last);
-          __detail::_Grep_matcher __matcher(__curs, __r, __a, __flags);
-          if (__matcher._M_dfs_search_from_first())
+          auto __matcher = __a->_M_get_matcher(__curs, __r, __a, __flags);
+          if (__matcher->_M_search_from_first())
             {
               __r._M_set_range(__m.size(),
                                __detail::_SpecializedCursor<_Bi_iter>

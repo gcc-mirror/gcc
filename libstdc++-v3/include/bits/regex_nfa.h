@@ -39,6 +39,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+  /// Provides a generic facade for a templated match_results.
+  struct _Results
+  {
+    virtual
+    ~_Results()
+    { }
+    virtual void _M_set_pos(int __i, int __j, const _PatternCursor& __p) = 0;
+    virtual void _M_set_matched(int __i, bool __is_matched) = 0;
+    virtual std::unique_ptr<_Results> _M_clone() const = 0;
+    virtual void _M_assign(const _Results& __rhs) = 0;
+  };
+
+  class _Grep_matcher;
+  class _Automaton;
+
+  /// Generic shared pointer to an automaton.
+  typedef std::shared_ptr<_Automaton> _AutomatonPtr;
+
   /// Base class for, um, automata.  Could be an NFA or a DFA.  Your choice.
   class _Automaton
   {
@@ -52,14 +70,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     virtual _SizeT
     _M_sub_count() const = 0;
 
+    virtual std::unique_ptr<_Grep_matcher>
+    _M_get_matcher(_PatternCursor&                   __p,
+                   _Results&                         __r,
+                   const _AutomatonPtr&              __automaton,
+                   regex_constants::match_flag_type  __flags) = 0;
+
 #ifdef _GLIBCXX_DEBUG
     virtual std::ostream&
     _M_dot(std::ostream& __ostr) const = 0;
 #endif
   };
-
-  /// Generic shared pointer to an automaton.  
-  typedef std::shared_ptr<_Automaton> _AutomatonPtr;
 
   /// Operation codes that define the type of transitions within the base NFA
   /// that represents the regular expression.
@@ -71,13 +92,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_opcode_subexpr_end   =   5,
       _S_opcode_match         = 100,
       _S_opcode_accept        = 255
-  };
-
-  /// Provides a generic facade for a templated match_results.
-  struct _Results
-  {
-    virtual void _M_set_pos(int __i, int __j, const _PatternCursor& __p) = 0;
-    virtual void _M_set_matched(int __i, bool __is_matched) = 0;
   };
 
   /// Tags current state (for subexpr begin/end).
@@ -113,7 +127,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { __r._M_set_pos(_M_index, 1, __pc); }
 
       int       _M_index;
-      _FwdIterT _M_pos;
+    };
+
+  // TODO For now we use an all-in-one comparator. In the future there may be
+  // optimizations based on regex_traits::translate and regex_transform.
+  template<typename _InIterT, typename _TraitsT>
+    struct _Comparator
+    {
+      typedef regex_constants::syntax_option_type _FlagT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef std::basic_string<_CharT>           _StringT;
+
+      _Comparator(_FlagT __flags, const _TraitsT& __traits)
+      : _M_flags(__flags), _M_traits(__traits)
+      { }
+
+      bool
+      _M_equ(_CharT __a, _CharT __b) const;
+
+      bool
+      _M_le(_CharT __a, _CharT __b) const;
+
+      _FlagT                              _M_flags;
+      _TraitsT                            _M_traits;
     };
 
   /// Indicates if current state matches cursor current.
@@ -127,12 +163,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Matches a single character
   template<typename _InIterT, typename _TraitsT>
     struct _CharMatcher
+    : public _Comparator<_InIterT, _TraitsT>
     {
-      typedef typename _TraitsT::char_type char_type;
+      typedef _Comparator<_InIterT, _TraitsT>     _BaseT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef regex_constants::syntax_option_type _FlagT;
 
       explicit
-      _CharMatcher(char_type __c, const _TraitsT& __t = _TraitsT())
-      : _M_traits(__t), _M_c(_M_traits.translate(__c))
+      _CharMatcher(_CharT __c, _FlagT __flags, const _TraitsT& __t)
+      : _BaseT(__flags, __t), _M_c(__c)
       { }
 
       bool
@@ -140,55 +179,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	typedef const _SpecializedCursor<_InIterT>& _CursorT;
 	_CursorT __c = static_cast<_CursorT>(__pc);
-	return _M_traits.translate(__c._M_current()) == _M_c;
+        return this->_M_equ(__c._M_current(), _M_c);
       }
 
-      const _TraitsT& _M_traits;
-      char_type       _M_c;
+      _CharT       _M_c;
     };
 
   /// Matches a character range (bracket expression)
   template<typename _InIterT, typename _TraitsT>
-    struct _RangeMatcher
+    struct _BracketMatcher
+    : public _Comparator<_InIterT, _TraitsT>
     {
-      typedef typename _TraitsT::char_type _CharT;
-      typedef std::basic_string<_CharT>    _StringT;
+      typedef _Comparator<_InIterT, _TraitsT>     _BaseT;
+      typedef typename _TraitsT::char_class_type  _CharClassT;
+      typedef regex_constants::syntax_option_type _FlagT;
+      typedef typename _TraitsT::char_type        _CharT;
+      typedef std::basic_string<_CharT>           _StringT;
 
       explicit
-      _RangeMatcher(bool __is_non_matching, const _TraitsT& __t = _TraitsT())
-      : _M_traits(__t), _M_is_non_matching(__is_non_matching)
+      _BracketMatcher(bool __is_non_matching,
+                    _FlagT __flags,
+                    const _TraitsT& __t)
+      : _BaseT(__flags, __t), _M_flags(__flags), _M_traits(__t),
+      _M_is_non_matching(__is_non_matching), _M_class_set(0)
       { }
 
       bool
-      operator()(const _PatternCursor& __pc) const
-      {
-	typedef const _SpecializedCursor<_InIterT>& _CursorT;
-	_CursorT __c = static_cast<_CursorT>(__pc);
-	return true;
-      }
+      operator()(const _PatternCursor& __pc) const;
 
       void
       _M_add_char(_CharT __c)
-      { }
+      { _M_char_set.push_back(__c); }
 
       void
       _M_add_collating_element(const _StringT& __s)
-      { }
+      {
+        auto __st = _M_traits.lookup_collatename(&*__s.begin(), &*__s.end());
+        if (__st.empty())
+          __throw_regex_error(regex_constants::error_collate);
+        // TODO: digraph
+        _M_char_set.push_back(__st[0]);
+      }
 
       void
       _M_add_equivalence_class(const _StringT& __s)
-      { }
+      {
+        _M_add_character_class(
+          _M_traits.transform_primary(&*__s.begin(), &*__s.end()));
+      }
 
       void
       _M_add_character_class(const _StringT& __s)
-      { }
+      {
+        auto __st = _M_traits.lookup_classname(
+          &*__s.begin(), &*__s.end(), (_M_flags & regex_constants::icase));
+        if (__st == 0)
+          __throw_regex_error(regex_constants::error_ctype);
+        _M_class_set |= __st;
+      }
 
       void
-      _M_make_range()
-      { }
+      _M_make_range(_CharT __l, _CharT __r)
+      {
+        if (!this->_M_le(__l, __r))
+          __throw_regex_error(regex_constants::error_range);
+        _M_range_set.push_back(make_pair(__l, __r));
+      }
 
-      const _TraitsT& _M_traits;
-      bool            _M_is_non_matching;
+      _FlagT                              _M_flags;
+      _TraitsT                            _M_traits;
+      bool                                _M_is_non_matching;
+      std::vector<_CharT>                 _M_char_set;
+      std::vector<pair<_CharT, _CharT>>   _M_range_set;
+      _CharClassT                         _M_class_set;
     };
 
   /// Identifies a state in the NFA.
@@ -275,7 +338,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef regex_constants::syntax_option_type _FlagT;
 
     _Nfa(_FlagT __f)
-    : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0)
+    : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
+    // TODO: BFS by default. Your choice. Need to be set by the compiler.
+    _M_has_back_ref(false)
     { }
 
     ~_Nfa()
@@ -334,6 +399,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return this->size()-1;
     }
 
+    void
+    _M_set_back_ref(bool __b)
+    { _M_has_back_ref = __b; }
+
+    std::unique_ptr<_Grep_matcher>
+    _M_get_matcher(_PatternCursor&                   __p,
+                   _Results&                         __r,
+                   const _AutomatonPtr&              __automaton,
+                   regex_constants::match_flag_type  __flags);
+
 #ifdef _GLIBCXX_DEBUG
     std::ostream&
     _M_dot(std::ostream& __ostr) const;
@@ -344,6 +419,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _StateIdT  _M_start_state;
     _StateSet  _M_accepting_states;
     _SizeT     _M_subexpr_count;
+    bool       _M_has_back_ref;
   };
 
   /// Describes a sequence of one or more %_State, its current start

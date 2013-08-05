@@ -798,13 +798,14 @@ write_name (tree decl, const int ignore_local_scope)
 
   context = decl_mangling_context (decl);
 
+  gcc_assert (context != NULL_TREE);
+
   /* A decl in :: or ::std scope is treated specially.  The former is
      mangled using <unscoped-name> or <unscoped-template-name>, the
      latter with a special substitution.  Also, a name that is
      directly in a local function scope is also mangled with
      <unscoped-name> rather than a full <nested-name>.  */
-  if (context == NULL
-      || context == global_namespace
+  if (context == global_namespace
       || DECL_NAMESPACE_STD_P (context)
       || (ignore_local_scope
 	  && (TREE_CODE (context) == FUNCTION_DECL
@@ -837,10 +838,10 @@ write_name (tree decl, const int ignore_local_scope)
 	     directly in that function's scope, either decl or one of
 	     its enclosing scopes.  */
 	  tree local_entity = decl;
-	  while (context != NULL && context != global_namespace)
+	  while (context != global_namespace)
 	    {
 	      /* Make sure we're always dealing with decls.  */
-	      if (context != NULL && TYPE_P (context))
+	      if (TYPE_P (context))
 		context = TYPE_NAME (context);
 	      /* Is this a function?  */
 	      if (TREE_CODE (context) == FUNCTION_DECL
@@ -883,9 +884,10 @@ write_unscoped_name (const tree decl)
   else
     {
       /* If not, it should be either in the global namespace, or directly
-	 in a local function scope.  */
+	 in a local function scope.  A lambda can also be mangled in the
+	 scope of a default argument.  */
       gcc_assert (context == global_namespace
-		  || context != NULL
+		  || TREE_CODE (context) == PARM_DECL
 		  || TREE_CODE (context) == FUNCTION_DECL);
 
       write_unqualified_name (decl);

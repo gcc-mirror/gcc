@@ -8843,6 +8843,11 @@ mips_file_start (void)
     fprintf (asm_out_file, "\t.section .gcc_compiled_long%d\n"
 	     "\t.previous\n", TARGET_LONG64 ? 64 : 32);
 
+  /* Record the NaN encoding.  */
+  if (HAVE_AS_NAN || mips_nan != MIPS_IEEE_754_DEFAULT)
+    fprintf (asm_out_file, "\t.nan\t%s\n",
+	     mips_nan == MIPS_IEEE_754_2008 ? "2008" : "legacy");
+
 #ifdef HAVE_AS_GNU_ATTRIBUTE
   {
     int attr;
@@ -16978,6 +16983,15 @@ mips_option_override (void)
 	    warning (0, "cannot use small-data accesses for %qs",
 		     "-mabicalls");
 	}
+    }
+
+  /* Pre-IEEE 754-2008 MIPS hardware has a quirky almost-IEEE format
+     for all its floating point.  */
+  if (mips_nan != MIPS_IEEE_754_2008)
+    {
+      REAL_MODE_FORMAT (SFmode) = &mips_single_format;
+      REAL_MODE_FORMAT (DFmode) = &mips_double_format;
+      REAL_MODE_FORMAT (TFmode) = &mips_quad_format;
     }
 
   /* Make sure that the user didn't turn off paired single support when

@@ -872,5 +872,22 @@ namespace __gnu_test
 	  = &_Concept::__constraint;
       }
   };
+
+#if __cplusplus >= 201103L
+  // Generator to test lowering requirements for compare-and-exchange.
+  template<std::memory_order _Torder>
+  struct compare_exchange_order_lowering
+  {
+    template<typename _Tp>
+      void
+      operator()()
+      {
+        std::atomic<_Tp> __x;
+        _Tp __expected = 0;
+        __x.compare_exchange_strong(__expected, 1, _Torder);
+        __x.compare_exchange_weak(__expected, 1, _Torder);
+      }
+  };
+#endif
 } // namespace __gnu_test
 #endif

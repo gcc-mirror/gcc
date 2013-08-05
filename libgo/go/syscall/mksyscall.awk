@@ -53,7 +53,7 @@ BEGIN {
     }
 
     # Sets a[1] = //sysnb, a[2] == function name.
-    split(line, a, "[ 	(]*")
+    split(line, a, "[ 	(]+")
     gofnname = a[2]
 
     off = match(line, "\\([^()]*\\)")
@@ -78,7 +78,7 @@ BEGIN {
 	next
     }
 
-    split(line, a, "[ 	(]*")
+    split(line, a, "[ 	(]+")
     cfnname = substr(a[1], 3, length(a[1]) - 2)
 
     off = match(line, "\\([^()]*\\)")

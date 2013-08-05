@@ -292,7 +292,11 @@
   bool inserted = MACHINE_FUNCTION (cfun)->control_use_inserted;
   int i;
 
-  if (count == 2)
+  if (count == 2
+      /* Vector ashift has an extra use for the constant factor required to
+	 implement the shift as multiply.  */
+      || (count == 3 && GET_CODE (XVECEXP (op, 0, 0)) == SET
+	  && GET_CODE (XEXP (XVECEXP (op, 0, 0), 1)) == ASHIFT))
     return !inserted;
 
   /* combine / recog will pass any old garbage here before checking the
@@ -302,7 +306,7 @@
 
   i = 1;
   if (count > 4)
-    for (i = 4; i < count; i++)
+    for (i = 2; i < count; i++)
       {
 	rtx x = XVECEXP (op, 0, i);
 

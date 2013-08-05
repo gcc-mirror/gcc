@@ -30,7 +30,7 @@
 #include <system_error>
 #include <future>
 #include <functional>
-#include <regex>
+#include <bits/regex_error.h>
 
 #ifdef _GLIBCXX_USE_NLS
 # include <libintl.h>

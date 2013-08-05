@@ -252,12 +252,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i,
 			    memory_order __m = memory_order_seq_cst) noexcept
-      { return compare_exchange_weak(__e, __i, __m, __m); }
+      { return compare_exchange_weak(__e, __i, __m,
+                                     __cmpexch_failure_order(__m)); }
 
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
-      { return compare_exchange_weak(__e, __i, __m, __m); }
+      { return compare_exchange_weak(__e, __i, __m,
+                                     __cmpexch_failure_order(__m)); }
 
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s, 
@@ -276,12 +278,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i,
 			       memory_order __m = memory_order_seq_cst) noexcept
-      { return compare_exchange_strong(__e, __i, __m, __m); }
+      { return compare_exchange_strong(__e, __i, __m,
+                                       __cmpexch_failure_order(__m)); }
 
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
-      { return compare_exchange_strong(__e, __i, __m, __m); }
+      { return compare_exchange_strong(__e, __i, __m,
+                                       __cmpexch_failure_order(__m)); }
     };
 
 

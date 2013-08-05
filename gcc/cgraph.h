@@ -303,7 +303,7 @@ struct GTY(()) cgraph_node {
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */
-  unsigned abstract_and_needed : 1;
+  unsigned used_as_abstract_origin : 1;
   /* Set once the function is lowered (i.e. its CFG is built).  */
   unsigned lowered : 1;
   /* Set once the function has been instantiated and its callee
@@ -597,6 +597,12 @@ symtab_node symtab_alias_ultimate_target (symtab_node,
 					  enum availability *avail = NULL);
 bool symtab_resolve_alias (symtab_node node, symtab_node target);
 void fixup_same_cpp_alias_visibility (symtab_node node, symtab_node target);
+bool symtab_for_node_and_aliases (symtab_node,
+				  bool (*) (symtab_node, void *),
+				  void *,
+				  bool);
+symtab_node symtab_nonoverwritable_alias (symtab_node);
+enum availability symtab_node_availability (symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -606,6 +612,7 @@ void debug_cgraph_node (struct cgraph_node *);
 void cgraph_remove_edge (struct cgraph_edge *);
 void cgraph_remove_node (struct cgraph_node *);
 void cgraph_release_function_body (struct cgraph_node *);
+void release_function_body (tree);
 void cgraph_node_remove_callees (struct cgraph_node *node);
 struct cgraph_edge *cgraph_create_edge (struct cgraph_node *,
 					struct cgraph_node *,
@@ -709,6 +716,7 @@ void fixup_same_cpp_alias_visibility (symtab_node, symtab_node target, tree);
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
 void cgraph_reset_node (struct cgraph_node *);
+void expand_thunk (struct cgraph_node *);
 
 /* In cgraphclones.c  */
 
@@ -1347,12 +1355,12 @@ symtab_real_symbol_p (symtab_node node)
 {
   struct cgraph_node *cnode;
 
+  if (DECL_ABSTRACT (node->symbol.decl))
+    return false;
   if (!is_a <cgraph_node> (node))
     return true;
   cnode = cgraph (node);
   if (cnode->global.inlined_to)
-    return false;
-  if (cnode->abstract_and_needed)
     return false;
   return true;
 }

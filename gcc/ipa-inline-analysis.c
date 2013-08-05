@@ -1101,12 +1101,13 @@ inline_node_duplication_hook (struct cgraph_node *src,
       known_vals.safe_grow_cleared (count);
       for (i = 0; i < count; i++)
 	{
-	  tree t = ipa_get_param (parms_info, i);
 	  struct ipa_replace_map *r;
 
 	  for (j = 0; vec_safe_iterate (dst->clone.tree_map, j, &r); j++)
 	    {
-	      if (r->old_tree == t && r->replace_p && !r->ref_p)
+	      if (((!r->old_tree && r->parm_num == i)
+		   || (r->old_tree && r->old_tree == ipa_get_param (parms_info, i)))
+		   && r->replace_p && !r->ref_p)
 		{
 		  known_vals[i] = r->new_tree;
 		  break;

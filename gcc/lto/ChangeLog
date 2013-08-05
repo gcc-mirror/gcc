@@ -1,3 +1,19 @@
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Do not push struct function.
+	* lto-partition.c (get_symbol_class): Handle abstracts correctly.
+	(may_need_named_section_p): Even abstract origins may need
+	named section.
+
+2013-07-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (lto/lto.o:): Depend on CONTEXT_H and
+	PASS_MANAGER_H.
+
+	* lto.c (do_whole_program_analysis): Update for move of
+	all_regular_ipa_passes from a global to a field of class
+	pass_manager.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
 	* lto-partition.c: Fix typos.

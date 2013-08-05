@@ -9419,8 +9419,6 @@ cp_parser_expression_statement (cp_parser* parser, tree in_statement_expr)
     statement = finish_stmt_expr_expr (statement, in_statement_expr);
   else if (statement)
     statement = finish_expr_stmt (statement);
-  else
-    finish_stmt ();
 
   return statement;
 }
@@ -10472,9 +10470,6 @@ cp_parser_declaration_statement (cp_parser* parser)
 
   /* Free any declarators allocated.  */
   obstack_free (&declarator_obstack, p);
-
-  /* Finish off the statement.  */
-  finish_stmt ();
 }
 
 /* Some dependent statements (like `if (cond) statement'), are
@@ -23140,6 +23135,8 @@ cp_parser_sizeof_pack (cp_parser *parser)
 
   cp_token *token = cp_lexer_peek_token (parser->lexer);
   tree name = cp_parser_identifier (parser);
+  if (name == error_mark_node)
+    return error_mark_node;
   /* The name is not qualified.  */
   parser->scope = NULL_TREE;
   parser->qualifying_scope = NULL_TREE;
@@ -24145,7 +24142,9 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
 	case CPP_SEMICOLON:
 	case CPP_CLOSE_BRACE:
 	case CPP_CLOSE_SQUARE:
-	  if (depth == 0)
+	  if (depth == 0
+	      /* Handle correctly int n = sizeof ... ( p );  */
+	      && !(nsdmi && token->type == CPP_ELLIPSIS))
 	    done = true;
 	  /* Update DEPTH, if necessary.  */
 	  else if (token->type == CPP_CLOSE_PAREN
@@ -28605,7 +28604,6 @@ cp_parser_transaction_cancel (cp_parser *parser)
 
   stmt = build_tm_abort_call (token->location, is_outer);
   add_stmt (stmt);
-  finish_stmt ();
 
   return stmt;
 }

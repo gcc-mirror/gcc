@@ -22,7 +22,8 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <regex>
+#include <stdexcept>
+#include <bits/regex_error.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

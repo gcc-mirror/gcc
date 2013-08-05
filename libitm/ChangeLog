@@ -1,3 +1,7 @@
+2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure.tgt: Add -msoft-float to XCFLAGS.
+
 2013-07-29  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/target.h (htm_begin, htm_commit, htm_abort)

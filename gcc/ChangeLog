@@ -1,3 +1,562 @@
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* graph.c (init_graph_slim_pretty_print): Remove.
+	(print_graph_cfg): Do not call it.  Use local pretty printer.
+	(start_graph_dump): Likewise.
+
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* gimple-pretty-print.c (buffer): Remove.
+	(initialized): Likewise.
+	(maybe_init_pretty_print): Likewise.
+	(print_gimple_stmt): Do not call it.  Use non-static local
+	pretty_printer variable.
+	(print_gimple_expr): Likewise.
+	(print_gimple_seq): Likewise.
+	(gimple_dump_bb): Likewise.
+
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* asan.c (asan_pp): Remove.
+	(asan_pp_initialized): Likewise.
+	(asan_pp_initialize): Likewise.
+	(asan_pp_string): Take a pretty_printer parameter.  Adjust callers.
+	(asan_emit_stack_protection): Tidy.  Use local pretty printer.
+	(asan_add_global): Likewise.
+
+2013-08-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_base): Remove.  Adjust dependent macros.
+	* diagnostic.h (diagnostic_flush_buffer): Adjust.
+	* pretty-print.c (pp_formatted_text_data): Likewise.
+	(pp_indent): Rename from pp_base_indent.
+	(pp_format): Rename from pp_base_format.
+	(pp_output_formatted_text): Rename from pp_base_output_formatted_text.
+	(pp_format_verbatim): Rename from pp_base_format_verbatim.
+	(pp_flush): Rename from pp_base_flush.
+	(pp_set_line_maximum_length): Rename from
+	pp_base_set_line_maximum_length.
+	(pp_clear_output_area): Rename from pp_base_clear_output_area.
+	(pp_set_prefix): Rename from pp_base_set_prefix.
+	(pp_destroy_prefix): Rename from pp_base_destroy_prefix.
+	(pp_emit_prefix): Rename from pp_base_emit_prefix.
+	(pp_append_text): Rename from pp_base_append_text.
+	(pp_formatted_text): Rename from pp_base_formatted_text.
+	(pp_last_position_in_text): Rename from pp_base_last_position_in_text.
+	(pp_remaining_character_count_for_line): Rename from
+	pp_base_remaining_character_count_for_line.
+	(pp_newline): Rename from pp_base_newline.
+	(pp_character): Rename from pp_base_character.
+	(pp_string): Rename from pp_base_string.
+	(pp_maybe_space): Rename from pp_base_maybe_space.
+	* asan.c (asan_pp_string): Adjust.
+	(asan_emit_stack_protection): Likewise.
+	(asan_add_global): Likewise.
+	* sched-vis.c (str_pattern_slim): Adjust pretty printer function call.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* tree-pretty-print.c (pp_tree_identifier): Rename from
+	pp_base_tree_identifier.
+	* tree-pretty-print.h (pp_tree_identifier): Remove macro definition.
+	Declare as function.
+
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_bar_bar): New.
+	(pp_ampersand_ampersand): Likewise.
+	(pp_less_equal): Likewise.
+	(pp_greater_equal): Likewise.
+	* gimple-pretty-print.c (dump_ternary_rhs): Use specialized pretty
+	printer functions instead of pp_string or operators and punctuators.
+	(dump_gimple_call): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_phi): Likewise.
+	(pp_gimple_stmt_1): Likewise.
+	* sched-vis.c (print_insn): Likewise.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* tree-pretty-print.c (dump_block_node): Likewise.
+	(dump_generic_node): Likewise.
+
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c (compute_ltrans_boundary): Add abstract origins into
+	boundaries.
+	* lto-streamer-out.c (tree_is_indexable): Results decls and
+	parm decls are not indexable.
+	(DFS_write_tree_body): Do not follow args and results.
+	(hash_tree): Likewise.
+	(output_functions): Rearrange so struct function is needed
+	only when real body is output; be able to also ouptut abstract
+	functions; output DECL_ARGUMENTS and DECL_RESULT.
+	(lto_output): When not in WPA, ale store abstract functions.
+	(write_symbol): Do not care about RESULT_DECL.
+	(output_symbol_p): Handle correctly sbtract decls.
+	* lto-streamer-in.c (input_function): Rearrange so struct
+	function can be NULL at entry; allow streaming of
+	functions w/o body; store DECL_ARGUMENTS and DECL_RESULT.
+	* ipa.c (symtab_remove_unreachable_nodes): Silence confused
+	sanity check during LTO.
+	* tree-streamer-out.c (write_ts_decl_non_common_tree_pointers): Skip
+	RESULT_DECl and DECL_ARGUMENTS.
+	* tree-streamer-in.c (lto_input_ts_decl_non_common_tree_pointers):
+	Likewise.
+
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_underscore): New.
+	(pp_comma): Tidy.
+	* gimple-pretty-print.c (dump_unary_rhs): Use specialized pretty
+	printer functions instead of pp_character.
+	(dump_binary_rhs): Likewise.
+	(dump_ternary_rhs): Likewise.
+	(dump_gimple_call_args): Likewise.
+	(pp_points_to_solution): Likewise.
+	(dump_gimple_call): Likewise.
+	(dump_gimple_switch): Likewise.
+	(dump_gimple_cond): Likewise.
+	(dump_gimple_bind): Likewise.
+	(dump_gimple_try): Likewise.
+	(dump_gimple_omp_for): Likewise.
+	(dump_gimple_omp_continue): Likewise.
+	(dump_gimple_omp_single): Likewise.
+	(dump_gimple_omp_sections): Likewise.
+	(dump_gimple_omp_block): Likewise.
+	(dump_gimple_omp_critical): Likewise.
+	(dump_gimple_transaction): Likewise.
+	(dump_gimple_asm): Likewise.
+	(dump_gimple_phi): Likewise.
+	(dump_gimple_omp_parallel): Likewise.
+	(dump_gimple_omp_task): Likewise.
+	(dump_gimple_omp_atomic_load): Likewise.
+	(dump_gimple_omp_atomic_store): Likewise.
+	(dump_gimple_mem_ops): Likewise.
+	(pp_gimple_stmt_1): Likewise.
+	(pp_cfg_jump): Likewise.
+	(dump_implicit_edges): Likewise.
+	(gimple_dump_bb_for_graph): Likewise.
+	* graph.c (draw_cfg_node): Likewise.
+	* langhooks.c (lhd_print_error_function): Likewise.
+	* sched-vis.c (print_exp): Likewise.
+	(print_value): Likewise.
+	(print_pattern): Likewise.
+	(print_insn): Likewise.
+	(rtl_dump_bb_for_graph): Likewise.
+	* tree-pretty-print.c (dump_function_declaration): Likewise.
+	(dump_array_domain): Likewise.
+	(dump_omp_clause): Likewise.
+	(dump_location): Likewise.
+	(dump_generic_node): Likewise.
+	(print_struct_decl): Likewise.
+	* diagnostic.c (diagnostic_show_locus): Use pp_space.
+
+2013-08-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Update
+	candidate table when replacing a candidate statement.
+	(replace_rhs_if_not_dup): Likewise.
+	(replace_one_candidate): Likewise.
+
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <marxin.liska@gmail.com>
+
+	* cgraphunit.c (add_new_function): Fix logic when adding from
+	late IPA pass.
+	(assemble_thunk): Rename to ...
+	(expand_thunk); .. this one; export; get it working with general functions;
+	make produced gimple valid.
+	* cgraph.h (expand_thunk): Declare.
+
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (gather_context_independent_values): Use ipa_get_param_move_cost.
+	(get_replacement_map): Remove PARAM; move parameter folding into tree-inline.c
+	(create_specialized_node): Update.
+	* ipa-prop.c (ipa_populate_param_decls): Do not look for origins;
+	assert that we have gimple body; update move_cost.
+	(count_formal_params): Assert that we have gimple body.
+	(ipa_dump_param): New function.
+	(ipa_alloc_node_params): Break out from ...
+	(ipa_initialize_node_params): ... here.
+	(ipa_get_vector_of_formal_parms): ICE when used in WPA.
+	(ipa_write_node_info): Stream move costs.
+	(ipa_read_node_info): Read move costs.
+	(ipa_update_after_lto_read): Do not recompute node params.
+	* ipa-prop.h (ipa_param_descriptor): Add move_cost.
+	(ipa_get_param): Check we are not in WPA.
+	(ipa_get_param_move_cost): New.
+	* tree-inline.c (tree_function_versioning): Fold replacement as needed.
+	* ipa-inline-analysis.c (inline_node_duplication_hook): Expect only
+	parm numbers to be present.
+
+2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58048
+	* lra-constraints.c (process_alt_operands): Don't check asm
+	operand on register.
+
+2013-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_emit_membar_for_model) <SMM_TSO>: Add
+	the implied StoreLoad barrier for atomic operations if before.
+
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <marxin.liska@gmail.com>
+
+	* cgraph.c (cgraph_function_body_availability): Do not check cgrpah flags.
+	* cgraph.h (symtab_for_node_and_aliases, symtab_nonoverwritable_alias,
+	symtab_node_availability): Declare.
+	* ipa.c (can_replace_by_local_alias): New.
+	(function_and_variable_visibility): Use it.
+	* symtab.c (symtab_for_node_and_aliases, symtab_nonoverwritable_alias_1,
+	symtab_nonoverwritable_alias): New.
+
+2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57963
+	* lra-constraints.c (reverse_equiv_p, contains_reloaded_insn_p):
+	New.
+	(lra_constraints): Use them.
+
+2013-08-02  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/types.md (define_attr "type"): Add "load_acq" and "store_rel".
+	* config/arm/cortex-a53.md (cortex_a53_load1): Update for attribute
+	changes.
+	(cortex_a53_store1): Likewise.
+
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (symtab_remove_unreachable_nodes): Nodes in other partitions are
+	not needed.
+
+2013-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (MAYBE_NON_Q_CLASS_P): New.
+	* config/i386/i386.c (ix86_secondary_reload): Use INTEGER_CLASS_P and
+	MAYBE_NON_Q_CLASS_P where appropriate.
+
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (release_function_body): Declare.
+	* tree.c (free_lang_data_in_decl): Free, parameters and return values
+	of unused delcarations.
+
+2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (minmax_arithsi_non_canon): Emit canonical RTL form
+	when subtracting a constant.
+
+2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (peepholes for eq (reg1) (reg2/imm)):
+	Generate canonical plus rtx with negated immediate instead of minus
+	where appropriate.
+	* config/arm/arm.c (thumb2_reorg): Handle ADCS <Rd>, <Rn> case.
+
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_release_function_body): Use used_as_abstract_origin.
+	(cgraph_release_function_body): Likewise.
+	(cgraph_can_remove_if_no_direct_calls_p): Likewise.
+	* cgraph.h (cgrpah_node): Rename abstract_and_needed
+	to used_as_abstract_origin.
+	* tree-inline-transfrom.c (can_remove_node_now_p_1): Do not remove
+	symbols used as abstract origins.
+	* cgraphunit.c (analyze_functions): Update.
+	* ipa.c (symtab_remove_unreachable_nodes): Recompute
+	used_as_abstract_origin.
+	* tree-inline.c (tree_function_versioning): Update
+	used_as_abstract_origin; be ready for DECL_RESULT and
+	DECL_ARGUMENTS to be NULL.
+
+	* lto-symtab.c (lto_symtab_merge_symbols): Merge duplicated nodes
+	for abstract functions.
+	* cgraph.h (symtab_real_symbol_p): Abstract declarations are not
+	real symbols.
+
+2013-08-01  Jan Hubicka  <jh@suse.cz>
+
+	* profile.c (compute_value_histograms): Fix thinko.
+
+2013-08-01  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config.gcc (aarch64*-*-*): Add aarch-common.o to extra_objs.  Add
+	aarch-common-protos.h to extra_headers.
+	(aarch64*-*-*): Add arm/aarch-common-protos.h to tm_p_file.
+	* config/aarch64/aarch64.md: Include "../arm/cortex-a53.md".
+	* config/aarch64/t-aarch64 (aarch-common.o): Define.
+
+2013-08-01  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/aarch64/aarch64.md (define_attr "type"): Delete.
+	Include "../arm/types.md".  Define "type" attribute for all patterns.
+	* config/aarch64/aarch64-simd.md (move_lo_quad_<mode>): Update for
+	attribute changes.
+
+2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/predicates.md (fusion_gpr_addis): New predicates
+	to support power8 load fusion.
+	(fusion_gpr_mem_load): Likewise.
+
+	* config/rs6000/rs6000-modes.def (PTImode): Update a comment.
+
+	* config/rs6000/rs6000-protos.h (fusion_gpr_load_p): New
+	declarations for power8 load fusion.
+	(emit_fusion_gpr_load): Likewise.
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): If
+	tuning for power8, turn on fusion mode by default.  Turn on sign
+	extending fusion mode if normal fusion mode is on, and we are at
+	-O2 or -O3.
+	(fusion_gpr_load_p): New function, return true if we can fuse an
+	addis instruction with a dependent load to a GPR.
+	(emit_fusion_gpr_load): Emit the instructions for power8 load
+	fusion to GPRs.
+
+	* config/rs6000/vsx.md (VSX_M2): New iterator for fusion peepholes.
+	(VSX load fusion peepholes): New peepholes to fuse together an
+	addi instruction with a VSX load instruction.
+
+	* config/rs6000/rs6000.md (GPR load fusion peepholes): New
+	peepholes to fuse an addis instruction with a load to a GPR base
+	register.  If we are supporting sign extending fusions, convert
+	sign extending loads to zero extending loads and add an explicit
+	sign extension.
+
+2013-07-31  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config.gcc (arm*-*-*): Add aarch-common.o to extra_objs.  Add
+	aarch-common-protos.h to extra_headers.
+	(arm*-*-*): Add arm/aarch-common-protos.h to tm_p_file.
+	* config/arm/arm.c (arm_early_load_addr_dep): Move from here to ...
+	(arm_early_store_addr_dep): Likewise.
+	(arm_no_early_alu_shift_dep): Likewise.
+	(arm_no_early_alu_shift_value_dep): Likewise.
+	(arm_no_early_mul_dep): Likewise.
+	(arm_no_early_store_addr_dep): Likewise.
+	(arm_mac_accumulator_is_mul_result): Likewise.
+	(arm_mac_accumulator_is_result): Likewise.
+	* config/arm/aarch-common.c: ... here.  New file.
+	* config/arm/arm-protos.h (arm_early_load_addr_dep): Move from
+	here to ...
+	(arm_early_store_addr_dep): Likewise.
+	(arm_no_early_alu_shift_dep): Likewise.
+	(arm_no_early_alu_shift_value_dep): Likewise.
+	(arm_no_early_mul_dep): Likewise.
+	(arm_no_early_store_addr_dep): Likewise.
+	(arm_mac_accumulator_is_mul_result): Likewise.
+	(arm_mac_accumulator_is_result): Likewise.
+	* config/arm/aarch-common-protos.h: ... here.  New file.
+	* config/arm/t-arm (aarch-common.o): Define.
+
+2013-07-31  Sofiane Naci  <sofiane.naci@arm.com>
+
+	* config/arm/arm.md: Include new file "types.md".
+	(define_attr "type"): Move from here to ...
+	(define_attr "mul32"): Likewise.
+	(define_attr "mul64"): Likewise.
+	* config/arm/types.md: ... here.  New file.
+
+2013-07-31  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (*-*-rtems*): Use __cxa_atexit by default.
+	* config/rs6000/rtems.h (TARGET_LIBGCC_SDATA_SECTION): Define.
+
+2013-07-31  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* gen-pass-instances.awk: Fix offset of substr().
+
+2013-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (pass-instances.def): New.
+	(passes.o): Replace dependency on passes.def with one on
+	pass-instances.def
+
+	* gen-pass-instances.awk: New.
+
+	* passes.c (pass_manager::pass_manager): Use pass-instances.def
+	rather than passes.def, updating local definition of NEXT_PASS
+	macro to add an extra NUM parameter (currently unused).
+
+2013-07-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (PASS_MANAGER_H): New.
+	(lto-cgraph.o): Depend on CONTEXT_H and PASS_MANAGER_H.
+	(passes.o): Likewise.
+	(statistics.o): Likewise.
+	(cgraphunit.o): Likewise.
+	(context.o): Depend on PASS_MANAGER_H.
+
+	* pass_manager.h: New.
+
+	* cgraphunit.c (cgraph_add_new_function): Update for moves
+	of globals to fields of pass_manager.
+	(analyze_function): Likewise.
+	(expand_function): Likewise.
+	(ipa_passes): Likewise.
+	(compile): Likewise.
+
+	* context.c (context::context): New.
+	* context.h  (context::context): New.
+	(context::get_passes): New.
+	(context::passes_): New.
+
+	* lto-cgraph.c (input_node): Update for moves of globals to
+	fields of pass_manager.
+
+	* passes.c (all_passes): Remove, in favor of a field of the
+	same name within the new class pass_manager.
+	(all_small_ipa_passes): Likewise.
+	(all_lowering_passes): Likewise.
+	(all_regular_ipa_passes): Likewise.
+	(all_late_ipa_passes): Likewise.
+	(all_lto_gen_passes): Likewise.
+	(passes_by_id): Likewise.
+	(passes_by_id_size): Likewise.
+	(gcc_pass_lists): Remove, in favor of "pass_lists" field within
+	the new class pass_manager.
+	(set_pass_for_id): Convert to...
+	(pass_manager::set_pass_for_id): ...method.
+	(get_pass_for_id): Convert to...
+	(pass_manager::get_pass_for_id): ...method.
+	(register_one_dump_file): Move body of implementation into...
+	(pass_manager::register_one_dump_file): ...here.
+	(register_dump_files_1): Convert to...
+	(pass_manager::register_dump_files_1): ...method.
+	(register_dump_files): Convert to...
+	(pass_manager::register_dump_files): ...method.
+	(create_pass_tab): Update for moves of globals to fields of
+	pass_manager.
+	(dump_passes): Move body of implementation into...
+	(pass_manager::dump_passes): ...here.
+	(register_pass): Move body of implementation into...
+	(pass_manager::register_pass): ...here.
+	(init_optimization_passes): Convert into...
+	(pass_manager::pass_manager): ...constructor for new
+	pass_manager class, and initialize the pass_lists array.
+	(check_profile_consistency): Update for moves of globals to
+	fields of pass_manager.
+	(dump_profile_report): Move body of implementation into...
+	(pass_manager::dump_profile_report): ...here.
+	(ipa_write_summaries_1): Update for moves of pass lists from
+	being globals to fields of pass_manager.
+	(ipa_write_optimization_summaries): Likewise.
+	(ipa_read_summaries):  Likewise.
+	(ipa_read_optimization_summaries): Likewise.
+	(execute_all_ipa_stmt_fixups): Likewise.
+
+	* statistics.c (statistics_fini): Update for moves of globals to
+	fields of pass_manager.
+
+	* toplev.c (general_init): Replace call to
+	init_optimization_passes with construction of the pass_manager
+	instance.
+
+	* tree-pass.h (all_passes): Remove, in favor of a field of the
+	same name within the new class pass_manager.
+	(all_small_ipa_passes): Likewise.
+	(all_lowering_passes): Likewise.
+	(all_regular_ipa_passes): Likewise.
+	(all_lto_gen_passes): Likewise.
+	(all_late_ipa_passes): Likewise.
+	(passes_by_id): Likewise.
+	(passes_by_id_size): Likewise.
+	(gcc_pass_lists): Remove, in favor of "pass_lists" field within
+	the new class pass_manager.
+	(get_pass_for_id): Remove.
+
+2013-07-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config.gcc (arm): Require 64-bit host-wide-int for all ARM target
+	configs.
+
+2013-07-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.md (mulhi3): New expand pattern.
+
+2013-07-30  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <marxin.liska@gmail.com>
+
+	* profile.c (compute_value_histograms): Do not ICE when
+	there is mismatch only on some counters.
+
+2013-07-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	PR rtl-optimization/57637
+	* function.c (move_insn_for_shrink_wrap): Also check the
+	GEN set of the LIVE problem for the liveness analysis
+	if it exists, otherwise give up.
+
+2013-07-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	PR tree-optimization/57993
+	* gimple-ssa-strength-reduction.c (replace_mult_candidate): Record
+	replaced statement in the candidate table.
+	(phi_add_costs): Return infinite cost when the hidden basis does
+	not dominate all phis on which the candidate is dependent.
+	(replace_one_candidate): Record replaced statement in the
+	candidate table.
+
+2013-07-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/epiphany/epiphany.md (*isub_i+2): New peephole.
+	(ashlv2si3): New expander.
+	(*ashlv2si3_i): New define_insn_and_split.
+	* predicates.md (float_operation): Allow patterns with three
+	basic sub-patterns.
+
+	PR rtl-optimization/58021
+	* mode-switching.c (create_pre_exit): Always split off preceding
+	insns if we are not at the basic block head.
+
+2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config/mips/linux.h (GLIBC_DYNAMIC_LINKER): Handle `-mnan=2008'.
+	(UCLIBC_DYNAMIC_LINKER): New macro.
+	* config/mips/linux64.h (GLIBC_DYNAMIC_LINKER32): Handle
+	`-mnan=2008'.
+	(GLIBC_DYNAMIC_LINKER64, GLIBC_DYNAMIC_LINKERN32): Likewise.
+	(UCLIBC_DYNAMIC_LINKER32): Undefine macro first.  Handle
+	`-mnan=2008'.
+	(UCLIBC_DYNAMIC_LINKER64): Redefine macro.
+	(UCLIBC_DYNAMIC_LINKERN32): Likewise.
+	* config/mips/mips-modes.def: Remove RESET_FLOAT_FORMAT calls
+	for SF and DF modes.  Use ieee_quad_format for TF mode.
+	* config/mips/mips-opts.h (mips_ieee_754_setting): New enum.
+	* config/mips/mips.c (mips_file_start): Output a `.nan' directive.
+	(mips_option_override): Handle `-mnan=legacy'.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Handle
+	`-mabs=2008' and `-mnan=2008'.
+	(OPTION_DEFAULT_SPECS): Add "nan" default.
+	(ASM_SPEC): Handle `-mnan='.
+	[!HAVE_AS_NAN] (HAVE_AS_NAN): New macro.
+	* config/mips/mips.md (abs<mode>2): Handle `-mabs=2008', update
+	comment accordingly.
+	(neg<mode>2): Likewise.
+	* config/mips/mips.opt (mabs, mnan): New options.
+	* doc/install.texi (Configuration): Document `--with-nan=' option.
+	* doc/invoke.texi (Option Summary): List MIPS `-mabs=' and
+	`-mnan=' options.
+	(MIPS Options): Document them.
+	* config.gcc <mips*-*-*>: Handle `--with-nan='.
+	* configure.ac <mips*-*-*>: Check for GAS `-mnan=2008' support.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+
+2013-07-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (float post-reload splitters): Do not check
+	for subregs of SSE registers.
+
+2013-07-29  Uros Bizjak  <ubizjak@gmail.com>
+	    H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/57954
+	PR target/57988
+	* config/i386/i386.md (post-reload splitter
+	to avoid partial SSE reg dependency stalls): New pattern.
+
 2013-07-29  Dominik Vogt  <vogt@linux.vnet.ibm.com>
 
 	* config/s390/s390.md ("movcc"): Swap load and store instructions.
@@ -28,10 +587,10 @@
 	* config/aarch64/iterators.md: Add attributes rtn and vas.
 
 2013-07-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
-            Richard Earnshaw  <richard.earnshaw@arm.com>
+	    Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* combine.c (simplify_comparison): Re-canonicalize operands
-	where appropriate.	
+	where appropriate.
 	* config/arm/arm.md (movcond_addsi): New splitter.
 
 2013-07-25  Sterling Augustine  <saugustine@google.com>
@@ -108,7 +667,7 @@
 
 	PR target/19599
 	PR target/57731
-	PR target/57748
+	PR target/57837
 	* config/arm/arm.md ("*sibcall_insn): Replace use of
 	Ss with US. Adjust output for v5 and v4t.
 	(*sibcall_value_insn): Likewise and loosen predicate on operand0.

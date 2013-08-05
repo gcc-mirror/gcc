@@ -97,14 +97,6 @@ extern bool arm_tls_referenced_p (rtx);
 extern int arm_coproc_mem_operand (rtx, bool);
 extern int neon_vector_mem_operand (rtx, int, bool);
 extern int neon_struct_mem_operand (rtx);
-extern int arm_no_early_store_addr_dep (rtx, rtx);
-extern int arm_early_store_addr_dep (rtx, rtx);
-extern int arm_early_load_addr_dep (rtx, rtx);
-extern int arm_no_early_alu_shift_dep (rtx, rtx);
-extern int arm_no_early_alu_shift_value_dep (rtx, rtx);
-extern int arm_no_early_mul_dep (rtx, rtx);
-extern int arm_mac_accumulator_is_result (rtx, rtx);
-extern int arm_mac_accumulator_is_mul_result (rtx, rtx);
 
 extern int tls_mentioned_p (rtx);
 extern int symbol_mentioned_p (rtx);

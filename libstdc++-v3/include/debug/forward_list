@@ -796,6 +796,13 @@ namespace __gnu_debug
       _S_Is_Beginnest(_BaseIt __it, const _Sequence* __seq)
       { return _S_Is(__it, __seq); }
     };
+
+#ifndef _GLIBCXX_DEBUG_PEDANTIC
+  template<class _Tp, class _Alloc>
+    struct _Insert_range_from_self_is_safe<
+      std::__debug::forward_list<_Tp, _Alloc> >
+      { enum { __value = 1 }; };
+#endif
 }
 
 #endif

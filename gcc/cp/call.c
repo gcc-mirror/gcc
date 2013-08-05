@@ -9282,10 +9282,14 @@ initialize_reference (tree type, tree expr,
       return error_mark_node;
     }
 
-  gcc_assert (conv->kind == ck_ref_bind);
-
-  /* Perform the conversion.  */
-  expr = convert_like (conv, expr, complain);
+  if (conv->kind == ck_ref_bind)
+    /* Perform the conversion.  */
+    expr = convert_like (conv, expr, complain);
+  else if (conv->kind == ck_ambig)
+    /* We gave an error in build_user_type_conversion_1.  */
+    expr = error_mark_node;
+  else
+    gcc_unreachable ();
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -9391,6 +9395,8 @@ is_std_init_list (tree type)
 {
   /* Look through typedefs.  */
   if (!TYPE_P (type))
+    return false;
+  if (cxx_dialect == cxx98)
     return false;
   type = TYPE_MAIN_VARIANT (type);
   return (CLASS_TYPE_P (type)

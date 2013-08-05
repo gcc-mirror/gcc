@@ -528,7 +528,7 @@ template<typename _Alloc>
     typedef _Bvector_base<_Alloc>			 _Base;
 
 #if __cplusplus >= 201103L
-    template<typename> friend class hash;
+    template<typename> friend struct hash;
 #endif
 
   public:

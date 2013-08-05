@@ -46,6 +46,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "lto-partition.h"
 #include "data-streamer.h"
+#include "context.h"
+#include "pass_manager.h"
 
 static GTY(()) tree first_personality_decl;
 
@@ -223,7 +225,6 @@ lto_materialize_function (struct cgraph_node *node)
 
 	  gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
-	  push_struct_function (decl);
 	  announce_function (decl);
 	  lto_input_function_body (file_data, decl, data);
 	  if (DECL_FUNCTION_PERSONALITY (decl) && !first_personality_decl)
@@ -231,7 +232,6 @@ lto_materialize_function (struct cgraph_node *node)
 	  lto_stats.num_function_bodies++;
 	  lto_free_section_data (file_data, LTO_section_function_body, name,
 				 data, len);
-	  pop_cfun ();
 	  ggc_collect ();
 	}
     }
@@ -3694,7 +3694,7 @@ do_whole_program_analysis (void)
   bitmap_obstack_initialize (NULL);
   cgraph_state = CGRAPH_STATE_IPA_SSA;
 
-  execute_ipa_pass_list (all_regular_ipa_passes);
+  execute_ipa_pass_list (g->get_passes ()->all_regular_ipa_passes);
   symtab_remove_unreachable_nodes (false, dump_file);
 
   if (cgraph_dump_file)

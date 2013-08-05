@@ -489,35 +489,9 @@ extern struct gimple_opt_pass pass_inline_parameters;
 extern struct gimple_opt_pass pass_update_address_taken;
 extern struct gimple_opt_pass pass_convert_switch;
 
-/* The root of the compilation pass tree, once constructed.  */
-extern struct opt_pass *all_passes, *all_small_ipa_passes, *all_lowering_passes,
-                       *all_regular_ipa_passes, *all_lto_gen_passes, *all_late_ipa_passes;
-
-/* Define a list of pass lists so that both passes.c and plugins can easily
-   find all the pass lists.  */
-#define GCC_PASS_LISTS \
-  DEF_PASS_LIST (all_lowering_passes) \
-  DEF_PASS_LIST (all_small_ipa_passes) \
-  DEF_PASS_LIST (all_regular_ipa_passes) \
-  DEF_PASS_LIST (all_lto_gen_passes) \
-  DEF_PASS_LIST (all_passes)
-
-#define DEF_PASS_LIST(LIST) PASS_LIST_NO_##LIST,
-enum
-{
-  GCC_PASS_LISTS
-  PASS_LIST_NUM
-};
-#undef DEF_PASS_LIST
-
-/* This is used by plugins, and should also be used in
-   passes.c:register_pass.  */
-extern struct opt_pass **gcc_pass_lists[];
-
 /* Current optimization pass.  */
 extern struct opt_pass *current_pass;
 
-extern struct opt_pass * get_pass_for_id (int);
 extern bool execute_one_pass (struct opt_pass *);
 extern void execute_pass_list (struct opt_pass *);
 extern void execute_ipa_pass_list (struct opt_pass *);
@@ -546,9 +520,6 @@ extern void register_pass (struct register_pass_info *);
    throughout the compilation -- we will be able to mark the affected loops
    directly in jump threading, and avoid peeling them next time.  */
 extern bool first_pass_instance;
-
-extern struct opt_pass **passes_by_id;
-extern int passes_by_id_size;
 
 /* Declare for plugins.  */
 extern void do_per_function_toporder (void (*) (void *), void *);

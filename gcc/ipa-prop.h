@@ -320,6 +320,7 @@ struct ipa_param_descriptor
      says how many there are.  If any use could not be described by means of
      ipa-prop structures, this is IPA_UNDESCRIBED_USE.  */
   int controlled_uses;
+  unsigned int move_cost : 31;
   /* The parameter is used.  */
   unsigned used : 1;
 };
@@ -377,7 +378,17 @@ ipa_get_param_count (struct ipa_node_params *info)
 static inline tree
 ipa_get_param (struct ipa_node_params *info, int i)
 {
+  gcc_checking_assert (!flag_wpa);
   return info->descriptors[i].decl;
+}
+
+/* Return the move cost of Ith formal parameter of the function corresponding
+   to INFO.  */
+
+static inline int
+ipa_get_param_move_cost (struct ipa_node_params *info, int i)
+{
+  return info->descriptors[i].move_cost;
 }
 
 /* Set the used flag corresponding to the Ith formal parameter of the function
@@ -653,6 +664,7 @@ int ipa_get_param_decl_index (struct ipa_node_params *, tree);
 tree ipa_value_from_jfunc (struct ipa_node_params *info,
 			   struct ipa_jump_func *jfunc);
 unsigned int ipcp_transform_function (struct cgraph_node *node);
+void ipa_dump_param (FILE *, struct ipa_node_params *info, int i);
 
 
 /* From tree-sra.c:  */

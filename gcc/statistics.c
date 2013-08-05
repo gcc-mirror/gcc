@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "statistics.h"
 #include "hash-table.h"
 #include "function.h"
+#include "context.h"
+#include "pass_manager.h"
 
 static int statistics_dump_nr;
 static int statistics_dump_flags;
@@ -235,6 +237,7 @@ statistics_fini_1 (statistics_counter_t **slot, opt_pass *pass)
 void
 statistics_fini (void)
 {
+  gcc::pass_manager *passes = g->get_passes ();
   if (!statistics_dump_file)
     return;
 
@@ -243,10 +246,10 @@ statistics_fini (void)
       unsigned i;
       for (i = 0; i < nr_statistics_hashes; ++i)
 	if (statistics_hashes[i].is_created ()
-	    && get_pass_for_id (i) != NULL)
+	    && passes->get_pass_for_id (i) != NULL)
 	  statistics_hashes[i]
 	    .traverse_noresize <opt_pass *, statistics_fini_1>
-	    (get_pass_for_id (i));
+	    (passes->get_pass_for_id (i));
     }
 
   dump_end (statistics_dump_nr, statistics_dump_file);

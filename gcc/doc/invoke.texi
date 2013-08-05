@@ -750,7 +750,8 @@ Objective-C and Objective-C++ Dialects}.
 -mabi=@var{abi}  -mabicalls  -mno-abicalls @gol
 -mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot @gol
 -mgp32  -mgp64  -mfp32  -mfp64  -mhard-float  -msoft-float @gol
--mno-float -msingle-float  -mdouble-float  @gol
+-mno-float  -msingle-float  -mdouble-float @gol
+-mabs=@var{mode}  -mnan=@var{encoding} @gol
 -mdsp  -mno-dsp  -mdspr2  -mno-dspr2 @gol
 -mmcu -mmno-mcu @gol
 -meva -mno-eva @gol
@@ -16323,6 +16324,48 @@ operations.
 @opindex mdouble-float
 Assume that the floating-point coprocessor supports double-precision
 operations.  This is the default.
+
+@item -mabs=2008
+@itemx -mabs=legacy
+@opindex mabs=2008
+@opindex mabs=legacy
+These options control the treatment of the special not-a-number (NaN)
+IEEE 754 floating-point data with the @code{abs.@i{fmt}} and
+@code{neg.@i{fmt}} machine instructions.
+
+By default or when the @option{-mabs=legacy} is used the legacy
+treatment is selected.  In this case these instructions are considered
+arithmetic and avoided where correct operation is required and the
+input operand might be a NaN.  A longer sequence of instructions that
+manipulate the sign bit of floating-point datum manually is used
+instead unless the @option{-ffinite-math-only} option has also been
+specified.
+
+The @option{-mabs=2008} option selects the IEEE 754-2008 treatment.  In
+this case these instructions are considered non-arithmetic and therefore
+operating correctly in all cases, including in particular where the
+input operand is a NaN.  These instructions are therefore always used
+for the respective operations.
+
+@item -mnan=2008
+@itemx -mnan=legacy
+@opindex mnan=2008
+@opindex mnan=legacy
+These options control the encoding of the special not-a-number (NaN)
+IEEE 754 floating-point data.
+
+The @option{-mnan=legacy} option selects the legacy encoding.  In this
+case quiet NaNs (qNaNs) are denoted by the first bit of their trailing
+significand field being 0, whereas signalling NaNs (sNaNs) are denoted
+by the first bit of their trailing significand field being 1.
+
+The @option{-mnan=2008} option selects the IEEE 754-2008 encoding.  In
+this case qNaNs are denoted by the first bit of their trailing
+significand field being 1, whereas sNaNs are denoted by the first bit of
+their trailing significand field being 0.
+
+The default is @option{-mnan=legacy} unless GCC has been configured with
+@option{--with-nan=2008}.
 
 @item -mllsc
 @itemx -mno-llsc

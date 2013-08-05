@@ -40,6 +40,14 @@
 ;; it to use gprs as well as vsx registers.
 (define_mode_iterator VSX_M [V16QI V8HI V4SI V2DI V4SF V2DF])
 
+(define_mode_iterator VSX_M2 [V16QI
+			      V8HI
+			      V4SI
+			      V2DI
+			      V4SF
+			      V2DF
+			      (TI	"TARGET_VSX_TIMODE")])
+
 ;; Map into the appropriate load/store name based on the type
 (define_mode_attr VSm  [(V16QI "vw4")
 			(V8HI  "vw4")
@@ -1446,3 +1454,27 @@
 }"
   [(set_attr "length" "20")
    (set_attr "type" "veccomplex")])
+
+
+;; Power8 Vector fusion.  The fused ops must be physically adjacent.
+(define_peephole
+  [(set (match_operand:P 0 "base_reg_operand" "")
+	(match_operand:P 1 "short_cint_operand" ""))
+   (set (match_operand:VSX_M2 2 "vsx_register_operand" "")
+	(mem:VSX_M2 (plus:P (match_dup 0)
+			    (match_operand:P 3 "int_reg_operand" ""))))]
+  "TARGET_P8_FUSION"
+  "li %0,%1\t\t\t# vector load fusion\;lx<VSX_M2:VSm>x %x2,%0,%3"  
+  [(set_attr "length" "8")
+   (set_attr "type" "vecload")])
+
+(define_peephole
+  [(set (match_operand:P 0 "base_reg_operand" "")
+	(match_operand:P 1 "short_cint_operand" ""))
+   (set (match_operand:VSX_M2 2 "vsx_register_operand" "")
+	(mem:VSX_M2 (plus:P (match_operand:P 3 "int_reg_operand" "")
+			    (match_dup 0))))]
+  "TARGET_P8_FUSION"
+  "li %0,%1\t\t\t# vector load fusion\;lx<VSX_M2:VSm>x %x2,%0,%3"  
+  [(set_attr "length" "8")
+   (set_attr "type" "vecload")])

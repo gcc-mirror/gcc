@@ -22,14 +22,23 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace gcc {
 
+class pass_manager;
+
 /* GCC's internal state can be divided into zero or more
    "parallel universe" of state; an instance of this class is one such
    context of state.  */
 class context
 {
 public:
+  context();
 
-  /* Currently empty.  */
+  /* Pass-management.  */
+
+  pass_manager *get_passes () { gcc_assert (passes_); return passes_; }
+
+private:
+  /* Pass-management.  */
+  pass_manager *passes_;
 
 }; // class context
 

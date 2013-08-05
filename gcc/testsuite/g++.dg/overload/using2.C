@@ -45,7 +45,7 @@ using std::C1;
   extern "C" void exit (int) throw ();
   extern "C" void *malloc (__SIZE_TYPE__) throw () __attribute__((malloc));
 
-  void abort (void) throw ();
+  void abort (void) throw (); // { dg-message "previous" }
   void _exit (int) throw (); // { dg-error "conflicts" "conflicts" }
                              // { dg-message "void _exit" "_exit" { target *-*-* } 49 }
 
@@ -54,14 +54,14 @@ using std::C1;
                            // { dg-message "void C1" "C1" { target *-*-* } 53 }
 
   extern "C" void c2 (void) throw ();
-  void C2 (void) throw ();
+  void C2 (void) throw (); // { dg-message "previous" }
 
   int C3 (int) throw ();
 
 using std::malloc;
-using std::abort; // { dg-error "already declared" }
+using std::abort; // { dg-error "conflicts" }
 using std::c2;
-using std::C2; // { dg-error "already declared" }
+using std::C2; // { dg-error "conflicts" }
 
 using std::c3; using other::c3;
 using std::C3; using other::C3;

@@ -138,12 +138,12 @@ mf_varname_tree (tree decl)
 
     if (sourceline != 0)
       {
-        pp_string (buf, ":");
+        pp_colon (buf);
         pp_decimal_int (buf, sourceline);
 
         if (sourcecolumn != 0)
           {
-            pp_string (buf, ":");
+            pp_colon (buf);
             pp_decimal_int (buf, sourcecolumn);
           }
       }
@@ -165,7 +165,7 @@ mf_varname_tree (tree decl)
       pp_string (buf, ") ");
     }
   else
-    pp_string (buf, " ");
+    pp_space (buf);
 
   /* Add <variable-declaration>, possibly demangled.  */
   {
@@ -190,7 +190,7 @@ mf_varname_tree (tree decl)
   }
 
   /* Return the lot as a new STRING_CST.  */
-  buf_contents = pp_base_formatted_text (buf);
+  buf_contents = pp_formatted_text (buf);
   result = mf_build_string (buf_contents);
   pp_clear_output_area (buf);
 

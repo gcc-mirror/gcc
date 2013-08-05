@@ -27,6 +27,13 @@ enum mips_code_readable_setting {
   CODE_READABLE_YES
 };
 
+/* Enumerates the setting of the -mabs and -mnan options.  */
+enum mips_ieee_754_setting {
+  MIPS_IEEE_754_DEFAULT,
+  MIPS_IEEE_754_LEGACY,
+  MIPS_IEEE_754_2008
+};
+
 /* Enumerates the setting of the -mr10k-cache-barrier option.  */
 enum mips_r10k_cache_barrier_setting {
   R10K_CACHE_BARRIER_NONE,

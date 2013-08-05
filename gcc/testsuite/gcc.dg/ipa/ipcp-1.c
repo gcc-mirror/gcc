@@ -46,7 +46,7 @@ main (int argc, char *argv[])
 
 
 /* { dg-final { scan-ipa-dump "Creating a specialized node of f.*for all known contexts" "cp" } } */
-/* { dg-final { scan-ipa-dump "replacing param a with const 7" "cp"  } } */
+/* { dg-final { scan-ipa-dump "replacing param .0 a with const 7" "cp"  } } */
 /* { dg-final { cleanup-ipa-dump "cp" } } */
 
 

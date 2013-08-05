@@ -194,6 +194,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "except.h"
 #include "cfgloop.h"
 #include "regset.h"     /* FIXME: For reg_obstack.  */
+#include "context.h"
+#include "pass_manager.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -321,13 +323,10 @@ cgraph_process_new_functions (void)
 	  if (!node->symbol.analyzed)
 	    analyze_function (node);
 	  push_cfun (DECL_STRUCT_FUNCTION (fndecl));
-	  if ((cgraph_state == CGRAPH_STATE_IPA_SSA
+	  if (cgraph_state == CGRAPH_STATE_IPA_SSA
 	      && !gimple_in_ssa_p (DECL_STRUCT_FUNCTION (fndecl)))
-	      /* When not optimizing, be sure we run early local passes anyway
-		 to expand OMP.  */
-	      || !optimize)
 	    execute_pass_list (pass_early_local_passes.pass.sub);
-	  else
+	  else if (inline_summary_vec != NULL)
 	    compute_inline_parameters (node, true);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
@@ -478,6 +477,7 @@ cgraph_finalize_function (tree decl, bool nested)
 void
 cgraph_add_new_function (tree fndecl, bool lowered)
 {
+  gcc::pass_manager *passes = g->get_passes ();
   struct cgraph_node *node;
   switch (cgraph_state)
     {
@@ -508,7 +508,7 @@ cgraph_add_new_function (tree fndecl, bool lowered)
 	    push_cfun (DECL_STRUCT_FUNCTION (fndecl));
 	    gimple_register_cfg_hooks ();
 	    bitmap_obstack_initialize (NULL);
-	    execute_pass_list (all_lowering_passes);
+	    execute_pass_list (passes->all_lowering_passes);
 	    execute_pass_list (pass_early_local_passes.pass.sub);
 	    bitmap_obstack_release (NULL);
 	    pop_cfun ();
@@ -640,7 +640,7 @@ analyze_function (struct cgraph_node *node)
 
 	  gimple_register_cfg_hooks ();
 	  bitmap_obstack_initialize (NULL);
-	  execute_pass_list (all_lowering_passes);
+	  execute_pass_list (g->get_passes ()->all_lowering_passes);
 	  free_dominance_info (CDI_POST_DOMINATORS);
 	  free_dominance_info (CDI_DOMINATORS);
 	  compact_blocks ();
@@ -925,7 +925,7 @@ analyze_functions (void)
 		{
 		  struct cgraph_node *origin_node
 	    	  = cgraph_get_node (DECL_ABSTRACT_ORIGIN (decl));
-		  origin_node->abstract_and_needed = true;
+		  origin_node->used_as_abstract_origin = true;
 		}
 	    }
 	  else
@@ -1324,8 +1324,8 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 
 /* Produce assembler for thunk NODE.  */
 
-static void
-assemble_thunk (struct cgraph_node *node)
+void
+expand_thunk (struct cgraph_node *node)
 {
   bool this_adjusting = node->thunk.this_adjusting;
   HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
@@ -1417,7 +1417,9 @@ assemble_thunk (struct cgraph_node *node)
       /* Build call to the function being thunked.  */
       if (!VOID_TYPE_P (restype))
 	{
-	  if (!is_gimple_reg_type (restype))
+	  if (DECL_BY_REFERENCE (resdecl))
+	    restmp = gimple_fold_indirect_ref (resdecl);
+	  else if (!is_gimple_reg_type (restype))
 	    {
 	      restmp = resdecl;
 	      add_local_decl (cfun, restmp);
@@ -1433,82 +1435,97 @@ assemble_thunk (struct cgraph_node *node)
       if (this_adjusting)
         vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
 					virtual_offset));
-      else
+      else if (nargs)
         vargs.quick_push (a);
-      for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
-	vargs.quick_push (arg);
+
+      if (nargs)
+        for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
+	  vargs.quick_push (arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       vargs.release ();
       gimple_call_set_from_thunk (call, true);
       if (restmp)
-        gimple_call_set_lhs (call, restmp);
+	{
+          gimple_call_set_lhs (call, restmp);
+	  gcc_assert (useless_type_conversion_p (TREE_TYPE (restmp),
+						 TREE_TYPE (TREE_TYPE (alias))));
+	}
       gsi_insert_after (&bsi, call, GSI_NEW_STMT);
-
-      if (restmp && !this_adjusting)
-        {
-	  tree true_label = NULL_TREE;
-
-	  if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
+      if (!(gimple_call_flags (call) & ECF_NORETURN))
+	{
+	  if (restmp && !this_adjusting
+	      && (fixed_offset || virtual_offset))
 	    {
-	      gimple stmt;
-	      /* If the return type is a pointer, we need to
-		 protect against NULL.  We know there will be an
-		 adjustment, because that's why we're emitting a
-		 thunk.  */
-	      then_bb = create_basic_block (NULL, (void *) 0, bb);
-	      return_bb = create_basic_block (NULL, (void *) 0, then_bb);
-	      else_bb = create_basic_block (NULL, (void *) 0, else_bb);
-	      add_bb_to_loop (then_bb, bb->loop_father);
-	      add_bb_to_loop (return_bb, bb->loop_father);
-	      add_bb_to_loop (else_bb, bb->loop_father);
-	      remove_edge (single_succ_edge (bb));
-	      true_label = gimple_block_label (then_bb);
-	      stmt = gimple_build_cond (NE_EXPR, restmp,
-	      				build_zero_cst (TREE_TYPE (restmp)),
-	      			        NULL_TREE, NULL_TREE);
-	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
-	      make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-	      make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-	      make_edge (return_bb, EXIT_BLOCK_PTR, 0);
-	      make_edge (then_bb, return_bb, EDGE_FALLTHRU);
-	      make_edge (else_bb, return_bb, EDGE_FALLTHRU);
-	      bsi = gsi_last_bb (then_bb);
-	    }
+	      tree true_label = NULL_TREE;
 
-	  restmp = thunk_adjust (&bsi, restmp, /*this_adjusting=*/0,
-			         fixed_offset, virtual_offset);
-	  if (true_label)
-	    {
-	      gimple stmt;
-	      bsi = gsi_last_bb (else_bb);
-	      stmt = gimple_build_assign (restmp,
-					  build_zero_cst (TREE_TYPE (restmp)));
-	      gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
-	      bsi = gsi_last_bb (return_bb);
+	      if (TREE_CODE (TREE_TYPE (restmp)) == POINTER_TYPE)
+		{
+		  gimple stmt;
+		  /* If the return type is a pointer, we need to
+		     protect against NULL.  We know there will be an
+		     adjustment, because that's why we're emitting a
+		     thunk.  */
+		  then_bb = create_basic_block (NULL, (void *) 0, bb);
+		  return_bb = create_basic_block (NULL, (void *) 0, then_bb);
+		  else_bb = create_basic_block (NULL, (void *) 0, else_bb);
+		  add_bb_to_loop (then_bb, bb->loop_father);
+		  add_bb_to_loop (return_bb, bb->loop_father);
+		  add_bb_to_loop (else_bb, bb->loop_father);
+		  remove_edge (single_succ_edge (bb));
+		  true_label = gimple_block_label (then_bb);
+		  stmt = gimple_build_cond (NE_EXPR, restmp,
+					    build_zero_cst (TREE_TYPE (restmp)),
+					    NULL_TREE, NULL_TREE);
+		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+		  make_edge (bb, then_bb, EDGE_TRUE_VALUE);
+		  make_edge (bb, else_bb, EDGE_FALSE_VALUE);
+		  make_edge (return_bb, EXIT_BLOCK_PTR, 0);
+		  make_edge (then_bb, return_bb, EDGE_FALLTHRU);
+		  make_edge (else_bb, return_bb, EDGE_FALLTHRU);
+		  bsi = gsi_last_bb (then_bb);
+		}
+
+	      restmp = thunk_adjust (&bsi, restmp, /*this_adjusting=*/0,
+				     fixed_offset, virtual_offset);
+	      if (true_label)
+		{
+		  gimple stmt;
+		  bsi = gsi_last_bb (else_bb);
+		  stmt = gimple_build_assign (restmp,
+					      build_zero_cst (TREE_TYPE (restmp)));
+		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
+		  bsi = gsi_last_bb (return_bb);
+		}
 	    }
+	  else
+	    gimple_call_set_tail (call, true);
+
+	  /* Build return value.  */
+	  ret = gimple_build_return (restmp);
+	  gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
 	}
       else
-        gimple_call_set_tail (call, true);
-
-      /* Build return value.  */
-      ret = gimple_build_return (restmp);
-      gsi_insert_after (&bsi, ret, GSI_NEW_STMT);
+	{
+	  gimple_call_set_tail (call, true);
+	  remove_edge (single_succ_edge (bb));
+	}
 
       delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
+#ifdef ENABLE_CHECKING
+      verify_flow_info ();
+#endif
 
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
       node->thunk.thunk_p = false;
-      cgraph_node_remove_callees (node);
+      rebuild_cgraph_edges ();
       cgraph_add_new_function (thunk_fndecl, true);
       bitmap_obstack_release (NULL);
     }
   current_function_decl = NULL;
   set_cfun (NULL);
 }
-
-
 
 /* Assemble thunks and aliases associated to NODE.  */
 
@@ -1526,7 +1543,7 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 
 	e = e->next_caller;
 	assemble_thunks_and_aliases (thunk);
-        assemble_thunk (thunk);
+        expand_thunk (thunk);
       }
     else
       e = e->next_caller;
@@ -1588,7 +1605,7 @@ expand_function (struct cgraph_node *node)
   /* Signal the start of passes.  */
   invoke_plugin_callbacks (PLUGIN_ALL_PASSES_START, NULL);
 
-  execute_pass_list (all_passes);
+  execute_pass_list (g->get_passes ()->all_passes);
 
   /* Signal the end of passes.  */
   invoke_plugin_callbacks (PLUGIN_ALL_PASSES_END, NULL);
@@ -1807,6 +1824,8 @@ output_in_order (void)
 static void
 ipa_passes (void)
 {
+  gcc::pass_manager *passes = g->get_passes ();
+
   set_cfun (NULL);
   current_function_decl = NULL;
   gimple_register_cfg_hooks ();
@@ -1816,7 +1835,7 @@ ipa_passes (void)
 
   if (!in_lto_p)
     {
-      execute_ipa_pass_list (all_small_ipa_passes);
+      execute_ipa_pass_list (passes->all_small_ipa_passes);
       if (seen_error ())
 	return;
     }
@@ -1843,14 +1862,15 @@ ipa_passes (void)
       cgraph_process_new_functions ();
 
       execute_ipa_summary_passes
-	((struct ipa_opt_pass_d *) all_regular_ipa_passes);
+	((struct ipa_opt_pass_d *) passes->all_regular_ipa_passes);
     }
 
   /* Some targets need to handle LTO assembler output specially.  */
   if (flag_generate_lto)
     targetm.asm_out.lto_start ();
 
-  execute_ipa_summary_passes ((struct ipa_opt_pass_d *) all_lto_gen_passes);
+  execute_ipa_summary_passes ((struct ipa_opt_pass_d *)
+			      passes->all_lto_gen_passes);
 
   if (!in_lto_p)
     ipa_write_summaries ();
@@ -1859,7 +1879,7 @@ ipa_passes (void)
     targetm.asm_out.lto_end ();
 
   if (!flag_ltrans && (in_lto_p || !flag_lto || flag_fat_lto_objects))
-    execute_ipa_pass_list (all_regular_ipa_passes);
+    execute_ipa_pass_list (passes->all_regular_ipa_passes);
   invoke_plugin_callbacks (PLUGIN_ALL_IPA_PASSES_END, NULL);
 
   bitmap_obstack_release (NULL);
@@ -1985,7 +2005,7 @@ compile (void)
 
   cgraph_materialize_all_clones ();
   bitmap_obstack_initialize (NULL);
-  execute_ipa_pass_list (all_late_ipa_passes);
+  execute_ipa_pass_list (g->get_passes ()->all_late_ipa_passes);
   symtab_remove_unreachable_nodes (true, dump_file);
 #ifdef ENABLE_CHECKING
   verify_symtab ();

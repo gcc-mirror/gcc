@@ -1156,6 +1156,11 @@ namespace __gnu_debug
   typedef basic_string<wchar_t> wstring;
 #endif
 
+  template<typename _CharT, typename _Traits, typename _Allocator>
+    struct _Insert_range_from_self_is_safe<
+      __gnu_debug::basic_string<_CharT, _Traits, _Allocator> >
+      { enum { __value = 1 }; };
+
 } // namespace __gnu_debug
 
 #endif

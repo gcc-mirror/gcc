@@ -1,3 +1,123 @@
+2013-08-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58072
+	* g++.dg/cpp0x/pr58072.C: New.
+
+2013-08-03  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	* gcc.dg/torture/pr57993-2.cpp: New.
+
+2013-08-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/ipa/ipa-1.c: Update.
+	* gcc.dg/ipa/ipa-2.c: Update.
+	* gcc.dg/ipa/ipa-3.c: Update.
+	* gcc.dg/ipa/ipa-4.c: Update.
+	* gcc.dg/ipa/ipa-5.c: Update.
+	* gcc.dg/ipa/ipa-7.c: Update.
+	* gcc.dg/ipa/ipa-8.c: Update.
+	* gcc.dg/ipa/ipcp-1.c: Update.
+	* gcc.dg/ipa/ipcp-2.c: Update.
+
+2013-08-02  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58048
+	* gcc.target/i386/pr58048.c: New.
+
+2013-08-02  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/neon-for-64bits-2.c: Delete.
+
+2013-08-01  Fabien Chêne  <fabien@gcc.gnu.org>
+	    Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR c++/54537
+	* g++.dg/overload/using3.C: New.
+	* g++.dg/overload/using2.C: Adjust.
+	* g++.dg/lookup/using9.C: Likewise.
+
+2013-08-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/arm/pr46972-2.c: New test.
+
+2013-08-01  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.dg/vect/vect-iv-5.c: Make xfail conditional with !arm_neon_ok.
+
+2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/fusion.c: New file, test power8 fusion
+	support.
+
+2013-07-31  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options): Test for mabicalls
+	rather than addressing!=absolute when deciding how to handle MIPS16
+	when the test forces an ABI.
+
+2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57673
+	* g++.dg/cpp0x/nsdmi-sizeof.C: New.
+
+2013-07-30  Steve Ellcey  <sellcey@mips.com>
+
+	* gcc.target/mips/code-readable-1.c: Increase switch size.
+	* gcc.target/mips/code-readable-2.c: Ditto.
+	* gcc.target/mips/code-readable-3.c: Ditto.
+	* gcc.target/mips/code-readable-4.c: Ditto.
+
+2013-07-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57947
+	* g++.dg/parse/crash63.C: New.
+
+2013-07-30  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57530
+	* gfortran.dg/pointer_assign_8.f90: New.
+	* gfortran.dg/pointer_assign_9.f90: New.
+	* gfortran.dg/pointer_assign_10.f90: New.
+	* gfortran.dg/pointer_assign_11.f90: New.
+
+2013-07-30  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/pr57637.c: New testcase.
+
+2013-07-29  Bill Schmidt  <wschmidt@vnet.linux.ibm.com>
+
+	PR tree-optimization/57993
+	* gcc.dg/torture/pr57993.c: New test.
+
+2013-07-29  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/tree-ssa/pr44258.c: Disable scan test for Epiphany.
+
+2013-07-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57948
+	* g++.dg/conversion/ambig2.C: New.
+
+2013-07-29  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/mips/fabs-2008.c: New test case.
+	* gcc.target/mips/fabs-legacy.c: New test case.
+	* gcc.target/mips/fabsf-2008.c: New test case.
+	* gcc.target/mips/fabsf-legacy.c: New test case.
+	* gcc.target/mips/fneg-2008.c: New test case.
+	* gcc.target/mips/fneg-legacy.c: New test case.
+	* gcc.target/mips/fneg-2008.c: New test case.
+	* gcc.target/mips/fneg-legacy.c: New test case.
+	* gcc.target/mips/nan-2008.c: New test case.
+	* gcc.target/mips/nan-legacy.c: New test case.
+	* gcc.target/mips/nanf-2008.c: New test case.
+	* gcc.target/mips/nanf-legacy.c: New test case.
+	* gcc.target/mips/nans-2008.c: New test case.
+	* gcc.target/mips/nans-legacy.c: New test case.
+	* gcc.target/mips/nansf-2008.c: New test case.
+	* gcc.target/mips/nansf-legacy.c: New test case.
+	* gcc.target/mips/mips.exp: Handle `-mabs=' and `-mnan='.
+
 2013-07-29  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuvyrkov  <maxim@kugelworks.com>
 
@@ -65,7 +185,7 @@
 	* gcc.c-torture/execute/builtins/stpcpy-chk.x: Likewise.
 
 	* gcc.dg/pr27095.c: For Epiphany, add -mshort-calls.
-	* gcc.dg/tree-ssa/loop-1.c: Likewise. 
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
 
 	* gcc.dg/torture/pr37868.c: Disable for epiphany.
 	* gcc.dg/sibcall-6.c: Enable for epiphany.

@@ -1,3 +1,63 @@
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.c (print_c_tree): Simplify.  Use non-static local
+	c_pretty_printer variable.
+
+2013-08-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer): Derive from pretty_printer.
+	(pp_base): Remove.
+	(pp_c_base): Likewise.  Adjust users.
+	* c-pretty-print.c (pp_c_maybe_whitespace): Adjust.
+	(pp_c_whitespace): Do not call pp_base.
+	(pp_c_left_paren): Likewise.
+	(pp_c_right_paren): Likewise.
+	(pp_c_left_brace): Likewise.
+	(pp_c_right_brace): Likewise.
+	(pp_c_left_bracket): Likewise.
+	(pp_c_right_bracket): Likewise.
+	(pp_c_dot): Likewise.
+	(pp_c_ampersand): Likewise.
+	(pp_c_star): Likewise.
+	(pp_c_arrow): Likewise.
+	(pp_c_semicolon): Likewise.
+	(pp_c_complement): Likewise.
+	(pp_c_exclamation): Likewise.
+	(pp_c_direct_declarator): Likewise.
+	(pp_c_ws_string): Likewise.
+	(pp_c_identifier): Likewise.
+	(pp_c_statement): Likewise.
+	(print_c_tree): Likewise.
+
+2013-08-04  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR c++/58072
+	* c-common.c (c_parse_error): Catch user-defined literal tokens and
+	provide useful error strings.
+
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-ada-spec.c (pp_ada_tree_identifier): Use specialized pretty
+	printer functions instead of pp_string or operators and punctuators.
+	(dump_generic_ada_node): Likewise.
+	* c-pretty-print.c (pp_c_type_specifier): Likewise.
+	(pp_c_relational_expression): Likewise.
+	(pp_c_logical_or_expression): Likewise.
+
+2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-ada-spec.c (print_ada_macros): Use specialized pretty printer
+	functions instead of pp_character.
+	(pp_ada_tree_identifier): Likewise.
+	(dump_ada_double_name): Likewise.
+	(dump_ada_function_declaration): Likewise.
+	(dump_ada_array_domains): Likewise.
+	(dump_template_types): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_ada_declaration): Likewise.
+	(print_ada_struct_decl): Likewise.
+	* c-pretty-print.c (pp_c_integer_constant): Likewise.
+
 2013-07-23  Tom Tromey  <tromey@redhat.com>
 
 	* c-common.h (enum rid) <RID_GENERIC>: New constant.
