@@ -1506,22 +1506,40 @@ gate_auto_inc_dec (void)
 }
 
 
-struct rtl_opt_pass pass_inc_dec =
+namespace {
+
+const pass_data pass_data_inc_dec =
 {
- {
-  RTL_PASS,
-  "auto_inc_dec",                       /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_auto_inc_dec,                    /* gate */
-  rest_of_handle_auto_inc_dec,          /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_AUTO_INC_DEC,                      /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish,                       /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "auto_inc_dec", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_AUTO_INC_DEC, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
 };
+
+class pass_inc_dec : public rtl_opt_pass
+{
+public:
+  pass_inc_dec(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_inc_dec, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_auto_inc_dec (); }
+  unsigned int execute () { return rest_of_handle_auto_inc_dec (); }
+
+}; // class pass_inc_dec
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_inc_dec (gcc::context *ctxt)
+{
+  return new pass_inc_dec (ctxt);
+}

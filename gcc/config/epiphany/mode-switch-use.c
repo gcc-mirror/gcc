@@ -71,22 +71,39 @@ insert_uses (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_mode_switch_use =
+namespace {
+
+const pass_data pass_data_mode_switch_use =
 {
- {
-  RTL_PASS,
-  "mode_switch_use",			/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  NULL,					/* gate */
-  insert_uses,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "mode_switch_use", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_mode_switch_use : public rtl_opt_pass
+{
+public:
+  pass_mode_switch_use(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_mode_switch_use, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return insert_uses (); }
+
+}; // class pass_mode_switch_use
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_mode_switch_use (gcc::context *ctxt)
+{
+  return new pass_mode_switch_use (ctxt);
+}

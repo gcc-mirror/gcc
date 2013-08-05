@@ -177,25 +177,42 @@ lower_function_body (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_lower_cf =
+namespace {
+
+const pass_data pass_data_lower_cf =
 {
- {
-  GIMPLE_PASS,
-  "lower",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  lower_function_body,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_gimple_any,			/* properties_required */
-  PROP_gimple_lcf,			/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "lower", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  PROP_gimple_lcf, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_lower_cf : public gimple_opt_pass
+{
+public:
+  pass_lower_cf(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_lower_cf, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return lower_function_body (); }
+
+}; // class pass_lower_cf
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_lower_cf (gcc::context *ctxt)
+{
+  return new pass_lower_cf (ctxt);
+}
 
 
 

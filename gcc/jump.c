@@ -139,25 +139,42 @@ cleanup_barriers (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_cleanup_barriers =
+namespace {
+
+const pass_data pass_data_cleanup_barriers =
 {
- {
-  RTL_PASS,
-  "barriers",                           /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  cleanup_barriers,                     /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "barriers", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_cleanup_barriers : public rtl_opt_pass
+{
+public:
+  pass_cleanup_barriers(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_cleanup_barriers, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return cleanup_barriers (); }
+
+}; // class pass_cleanup_barriers
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_cleanup_barriers (gcc::context *ctxt)
+{
+  return new pass_cleanup_barriers (ctxt);
+}
 
 
 /* Initialize LABEL_NUSES and JUMP_LABEL fields, add REG_LABEL_TARGET

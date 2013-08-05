@@ -9584,25 +9584,43 @@ gate_vrp (void)
   return flag_tree_vrp != 0;
 }
 
-struct gimple_opt_pass pass_vrp =
+namespace {
+
+const pass_data pass_data_vrp =
 {
- {
-  GIMPLE_PASS,
-  "vrp",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_vrp,				/* gate */
-  execute_vrp,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_VRP,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_update_ssa
+  GIMPLE_PASS, /* type */
+  "vrp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_VRP, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa
     | TODO_verify_ssa
-    | TODO_verify_flow			/* todo_flags_finish */
- }
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_vrp : public gimple_opt_pass
+{
+public:
+  pass_vrp(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_vrp, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_vrp (ctxt_); }
+  bool gate () { return gate_vrp (); }
+  unsigned int execute () { return execute_vrp (); }
+
+}; // class pass_vrp
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_vrp (gcc::context *ctxt)
+{
+  return new pass_vrp (ctxt);
+}

@@ -16337,25 +16337,42 @@ mips_machine_reorg2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_mips_machine_reorg2 =
+namespace {
+
+const pass_data pass_data_mips_machine_reorg2 =
 {
- {
-  RTL_PASS,
-  "mach2",				/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  NULL,					/* gate */
-  mips_machine_reorg2,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_MACH_DEP,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_rtl_sharing,		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "mach2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_mips_machine_reorg2 : public rtl_opt_pass
+{
+public:
+  pass_mips_machine_reorg2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_mips_machine_reorg2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return mips_machine_reorg2 (); }
+
+}; // class pass_mips_machine_reorg2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_mips_machine_reorg2 (gcc::context *ctxt)
+{
+  return new pass_mips_machine_reorg2 (ctxt);
+}
 
 struct register_pass_info insert_pass_mips_machine_reorg2 =
 {

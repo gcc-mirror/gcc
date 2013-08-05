@@ -1504,25 +1504,45 @@ rest_of_handle_branch_target_load_optimize1 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_branch_target_load_optimize1 =
+namespace {
+
+const pass_data pass_data_branch_target_load_optimize1 =
 {
- {
-  RTL_PASS,
-  "btl1",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_branch_target_load_optimize1,      /* gate */
-  rest_of_handle_branch_target_load_optimize1,   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,	                        /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing,              /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "btl1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_branch_target_load_optimize1 : public rtl_opt_pass
+{
+public:
+  pass_branch_target_load_optimize1(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_branch_target_load_optimize1, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_branch_target_load_optimize1 (); }
+  unsigned int execute () {
+    return rest_of_handle_branch_target_load_optimize1 ();
+  }
+
+}; // class pass_branch_target_load_optimize1
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_branch_target_load_optimize1 (gcc::context *ctxt)
+{
+  return new pass_branch_target_load_optimize1 (ctxt);
+}
 
 static bool
 gate_handle_branch_target_load_optimize2 (void)
@@ -1553,22 +1573,42 @@ rest_of_handle_branch_target_load_optimize2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_branch_target_load_optimize2 =
+namespace {
+
+const pass_data pass_data_branch_target_load_optimize2 =
 {
- {
-  RTL_PASS,
-  "btl2",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_branch_target_load_optimize2,      /* gate */
-  rest_of_handle_branch_target_load_optimize2,   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,				/* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "btl2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_branch_target_load_optimize2 : public rtl_opt_pass
+{
+public:
+  pass_branch_target_load_optimize2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_branch_target_load_optimize2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_branch_target_load_optimize2 (); }
+  unsigned int execute () {
+    return rest_of_handle_branch_target_load_optimize2 ();
+  }
+
+}; // class pass_branch_target_load_optimize2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_branch_target_load_optimize2 (gcc::context *ctxt)
+{
+  return new pass_branch_target_load_optimize2 (ctxt);
+}

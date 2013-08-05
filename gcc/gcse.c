@@ -4148,46 +4148,82 @@ execute_rtl_hoist (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_rtl_pre =
+namespace {
+
+const pass_data pass_data_rtl_pre =
 {
- {
-  RTL_PASS,
-  "rtl pre",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_rtl_pre,                         /* gate */
-  execute_rtl_pre,    			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_PRE,                               /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "rtl pre", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_PRE, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
 
-struct rtl_opt_pass pass_rtl_hoist =
+class pass_rtl_pre : public rtl_opt_pass
 {
- {
-  RTL_PASS,
-  "hoist",                              /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_rtl_hoist,                       /* gate */
-  execute_rtl_hoist,  			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_HOIST,                             /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+public:
+  pass_rtl_pre(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_pre, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_rtl_pre (); }
+  unsigned int execute () { return execute_rtl_pre (); }
+
+}; // class pass_rtl_pre
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_pre (gcc::context *ctxt)
+{
+  return new pass_rtl_pre (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_rtl_hoist =
+{
+  RTL_PASS, /* type */
+  "hoist", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_HOIST, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_rtl_hoist : public rtl_opt_pass
+{
+public:
+  pass_rtl_hoist(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_hoist, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_rtl_hoist (); }
+  unsigned int execute () { return execute_rtl_hoist (); }
+
+}; // class pass_rtl_hoist
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_hoist (gcc::context *ctxt)
+{
+  return new pass_rtl_hoist (ctxt);
+}
 
 #include "gt-gcse.h"

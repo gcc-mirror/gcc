@@ -1853,23 +1853,40 @@ gate_tree_if_conversion (void)
 	  || flag_tree_loop_if_convert_stores == 1);
 }
 
-struct gimple_opt_pass pass_if_conversion =
+namespace {
+
+const pass_data pass_data_if_conversion =
 {
- {
-  GIMPLE_PASS,
-  "ifcvt",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_tree_if_conversion,		/* gate */
-  main_tree_if_conversion,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_stmts | TODO_verify_flow
-                                        /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ifcvt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_stmts | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_if_conversion : public gimple_opt_pass
+{
+public:
+  pass_if_conversion(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_if_conversion, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_if_conversion (); }
+  unsigned int execute () { return main_tree_if_conversion (); }
+
+}; // class pass_if_conversion
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_if_conversion (gcc::context *ctxt)
+{
+  return new pass_if_conversion (ctxt);
+}

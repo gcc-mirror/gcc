@@ -2715,25 +2715,45 @@ compute_inline_parameters_for_current (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_inline_parameters = 
+namespace {
+
+const pass_data pass_data_inline_parameters =
 {
- {
-  GIMPLE_PASS,
-  "inline_param",		/* name */
-  OPTGROUP_INLINE,		/* optinfo_flags */
-  NULL,			/* gate */
-  compute_inline_parameters_for_current,	/* execute */
-  NULL,			/* sub */
-  NULL,			/* next */
-  0,				/* static_pass_number */
-  TV_INLINE_PARAMETERS,	/* tv_id */
-  0,				/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  0				/* todo_flags_finish */
-  }
+  GIMPLE_PASS, /* type */
+  "inline_param", /* name */
+  OPTGROUP_INLINE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_INLINE_PARAMETERS, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_inline_parameters : public gimple_opt_pass
+{
+public:
+  pass_inline_parameters(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_inline_parameters, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_inline_parameters (ctxt_); }
+  unsigned int execute () {
+    return compute_inline_parameters_for_current ();
+  }
+
+}; // class pass_inline_parameters
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_inline_parameters (gcc::context *ctxt)
+{
+  return new pass_inline_parameters (ctxt);
+}
 
 
 /* Estimate benefit devirtualizing indirect edge IE, provided KNOWN_VALS and

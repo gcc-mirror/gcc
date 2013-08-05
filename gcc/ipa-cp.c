@@ -3652,32 +3652,51 @@ cgraph_gate_cp (void)
   return flag_ipa_cp && optimize;
 }
 
-struct ipa_opt_pass_d pass_ipa_cp =
+namespace {
+
+const pass_data pass_data_ipa_cp =
 {
- {
-  IPA_PASS,
-  "cp",				/* name */
-  OPTGROUP_NONE,                /* optinfo_flags */
-  cgraph_gate_cp,		/* gate */
-  ipcp_driver,			/* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_IPA_CONSTANT_PROP,		/* tv_id */
-  0,				/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  TODO_dump_symtab |
-  TODO_remove_functions         /* todo_flags_finish */
- },
- ipcp_generate_summary,			/* generate_summary */
- ipcp_write_summary,			/* write_summary */
- ipcp_read_summary,			/* read_summary */
- ipa_prop_write_all_agg_replacement,	/* write_optimization_summary */
- ipa_prop_read_all_agg_replacement,	/* read_optimization_summary */
- NULL,			 		/* stmt_fixup */
- 0,					/* TODOs */
- ipcp_transform_function,		/* function_transform */
- NULL,					/* variable_transform */
+  IPA_PASS, /* type */
+  "cp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_CONSTANT_PROP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_dump_symtab | TODO_remove_functions ), /* todo_flags_finish */
 };
+
+class pass_ipa_cp : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_cp(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_cp, ctxt,
+		     ipcp_generate_summary, /* generate_summary */
+		     ipcp_write_summary, /* write_summary */
+		     ipcp_read_summary, /* read_summary */
+		     ipa_prop_write_all_agg_replacement, /*
+		     write_optimization_summary */
+		     ipa_prop_read_all_agg_replacement, /*
+		     read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     ipcp_transform_function, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return cgraph_gate_cp (); }
+  unsigned int execute () { return ipcp_driver (); }
+
+}; // class pass_ipa_cp
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_cp (gcc::context *ctxt)
+{
+  return new pass_ipa_cp (ctxt);
+}

@@ -1988,34 +1988,51 @@ lto_output (void)
 #endif
 }
 
-struct ipa_opt_pass_d pass_ipa_lto_gimple_out =
+namespace {
+
+const pass_data pass_data_ipa_lto_gimple_out =
 {
- {
-  IPA_PASS,
-  "lto_gimple_out",	                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_lto_out,			        /* gate */
-  NULL,		                	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_LTO_GIMPLE_OUT,		        /* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,            			/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- },
- NULL,		                        /* generate_summary */
- lto_output,           			/* write_summary */
- NULL,		         		/* read_summary */
- lto_output,           			/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- NULL,			                /* function_transform */
- NULL					/* variable_transform */
+  IPA_PASS, /* type */
+  "lto_gimple_out", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_IPA_LTO_GIMPLE_OUT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_lto_gimple_out : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_lto_gimple_out(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_lto_gimple_out, ctxt,
+		     NULL, /* generate_summary */
+		     lto_output, /* write_summary */
+		     NULL, /* read_summary */
+		     lto_output, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_lto_out (); }
+
+}; // class pass_ipa_lto_gimple_out
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_lto_gimple_out (gcc::context *ctxt)
+{
+  return new pass_ipa_lto_gimple_out (ctxt);
+}
 
 
 /* Write each node in encoded by ENCODER to OB, as well as those reachable
@@ -2443,31 +2460,48 @@ produce_asm_for_decls (void)
 }
 
 
-struct ipa_opt_pass_d pass_ipa_lto_finish_out =
+namespace {
+
+const pass_data pass_data_ipa_lto_finish_out =
 {
- {
-  IPA_PASS,
-  "lto_decls_out",	                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_lto_out,			        /* gate */
-  NULL,        	                        /* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_LTO_DECL_OUT,		        /* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,            			/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- },
- NULL,		                        /* generate_summary */
- produce_asm_for_decls,			/* write_summary */
- NULL,		         		/* read_summary */
- produce_asm_for_decls,			/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- NULL,			                /* function_transform */
- NULL					/* variable_transform */
+  IPA_PASS, /* type */
+  "lto_decls_out", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_IPA_LTO_DECL_OUT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_lto_finish_out : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_lto_finish_out(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_lto_finish_out, ctxt,
+		     NULL, /* generate_summary */
+		     produce_asm_for_decls, /* write_summary */
+		     NULL, /* read_summary */
+		     produce_asm_for_decls, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_lto_out (); }
+
+}; // class pass_ipa_lto_finish_out
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_lto_finish_out (gcc::context *ctxt)
+{
+  return new pass_ipa_lto_finish_out (ctxt);
+}

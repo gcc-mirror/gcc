@@ -41,25 +41,42 @@ gate_tree_loop (void)
   return flag_tree_loop_optimize != 0;
 }
 
-struct gimple_opt_pass pass_tree_loop =
+namespace {
+
+const pass_data pass_data_tree_loop =
 {
- {
-  GIMPLE_PASS,
-  "loop",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_loop,			/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LOOP,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "loop", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_TREE_LOOP, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_tree_loop : public gimple_opt_pass
+{
+public:
+  pass_tree_loop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tree_loop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_loop (); }
+
+}; // class pass_tree_loop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tree_loop (gcc::context *ctxt)
+{
+  return new pass_tree_loop (ctxt);
+}
 
 /* Loop optimizer initialization.  */
 
@@ -80,25 +97,42 @@ tree_ssa_loop_init (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_tree_loop_init =
+namespace {
+
+const pass_data pass_data_tree_loop_init =
 {
- {
-  GIMPLE_PASS,
-  "loopinit",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  NULL,					/* gate */
-  tree_ssa_loop_init,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "loopinit", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_tree_loop_init : public gimple_opt_pass
+{
+public:
+  pass_tree_loop_init(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tree_loop_init, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return tree_ssa_loop_init (); }
+
+}; // class pass_tree_loop_init
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tree_loop_init (gcc::context *ctxt)
+{
+  return new pass_tree_loop_init (ctxt);
+}
 
 /* Loop invariant motion pass.  */
 
@@ -117,25 +151,44 @@ gate_tree_ssa_loop_im (void)
   return flag_tree_loop_im != 0;
 }
 
-struct gimple_opt_pass pass_lim =
+namespace {
+
+const pass_data pass_data_lim =
 {
- {
-  GIMPLE_PASS,
-  "lim",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_ssa_loop_im,		/* gate */
-  tree_ssa_loop_im,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_LIM,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "lim", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_LIM, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_lim : public gimple_opt_pass
+{
+public:
+  pass_lim(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_lim, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_lim (ctxt_); }
+  bool gate () { return gate_tree_ssa_loop_im (); }
+  unsigned int execute () { return tree_ssa_loop_im (); }
+
+}; // class pass_lim
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_lim (gcc::context *ctxt)
+{
+  return new pass_lim (ctxt);
+}
 
 /* Loop unswitching pass.  */
 
@@ -154,25 +207,43 @@ gate_tree_ssa_loop_unswitch (void)
   return flag_unswitch_loops != 0;
 }
 
-struct gimple_opt_pass pass_tree_unswitch =
+namespace {
+
+const pass_data pass_data_tree_unswitch =
 {
- {
-  GIMPLE_PASS,
-  "unswitch",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_ssa_loop_unswitch,		/* gate */
-  tree_ssa_loop_unswitch,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LOOP_UNSWITCH,		/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "unswitch", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_LOOP_UNSWITCH, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_tree_unswitch : public gimple_opt_pass
+{
+public:
+  pass_tree_unswitch(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tree_unswitch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_ssa_loop_unswitch (); }
+  unsigned int execute () { return tree_ssa_loop_unswitch (); }
+
+}; // class pass_tree_unswitch
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tree_unswitch (gcc::context *ctxt)
+{
+  return new pass_tree_unswitch (ctxt);
+}
 
 /* Predictive commoning.  */
 
@@ -191,25 +262,43 @@ gate_tree_predictive_commoning (void)
   return flag_predictive_commoning != 0;
 }
 
-struct gimple_opt_pass pass_predcom =
+namespace {
+
+const pass_data pass_data_predcom =
 {
- {
-  GIMPLE_PASS,
-  "pcom",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_predictive_commoning,	/* gate */
-  run_tree_predictive_commoning,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_PREDCOM,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa_only_virtuals 	/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "pcom", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_PREDCOM, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa_only_virtuals, /* todo_flags_finish */
 };
+
+class pass_predcom : public gimple_opt_pass
+{
+public:
+  pass_predcom(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_predcom, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_predictive_commoning (); }
+  unsigned int execute () { return run_tree_predictive_commoning (); }
+
+}; // class pass_predcom
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_predcom (gcc::context *ctxt)
+{
+  return new pass_predcom (ctxt);
+}
 
 /* Loop autovectorization.  */
 
@@ -228,26 +317,43 @@ gate_tree_vectorize (void)
   return flag_tree_vectorize;
 }
 
-struct gimple_opt_pass pass_vectorize =
+namespace {
+
+const pass_data pass_data_vectorize =
 {
- {
-  GIMPLE_PASS,
-  "vect",                               /* name */
-  OPTGROUP_LOOP
-  | OPTGROUP_VEC,                       /* optinfo_flags */
-  gate_tree_vectorize,                  /* gate */
-  tree_vectorize,                       /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_TREE_VECTORIZATION,                /* tv_id */
-  PROP_cfg | PROP_ssa,                  /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "vect", /* name */
+  OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_VECTORIZATION, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_vectorize : public gimple_opt_pass
+{
+public:
+  pass_vectorize(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_vectorize, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_vectorize (); }
+  unsigned int execute () { return tree_vectorize (); }
+
+}; // class pass_vectorize
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_vectorize (gcc::context *ctxt)
+{
+  return new pass_vectorize (ctxt);
+}
 
 /* GRAPHITE optimizations.  */
 
@@ -278,45 +384,80 @@ gate_graphite_transforms (void)
   return flag_graphite != 0;
 }
 
-struct gimple_opt_pass pass_graphite =
+namespace {
+
+const pass_data pass_data_graphite =
 {
- {
-  GIMPLE_PASS,
-  "graphite0",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_graphite_transforms,		/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_GRAPHITE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "graphite0", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_GRAPHITE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
 
-struct gimple_opt_pass pass_graphite_transforms =
+class pass_graphite : public gimple_opt_pass
 {
- {
-  GIMPLE_PASS,
-  "graphite",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_graphite_transforms,		/* gate */
-  graphite_transforms,       		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_GRAPHITE_TRANSFORMS,  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+public:
+  pass_graphite(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_graphite, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_graphite_transforms (); }
+
+}; // class pass_graphite
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_graphite (gcc::context *ctxt)
+{
+  return new pass_graphite (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_graphite_transforms =
+{
+  GIMPLE_PASS, /* type */
+  "graphite", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_GRAPHITE_TRANSFORMS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_graphite_transforms : public gimple_opt_pass
+{
+public:
+  pass_graphite_transforms(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_graphite_transforms, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_graphite_transforms (); }
+  unsigned int execute () { return graphite_transforms (); }
+
+}; // class pass_graphite_transforms
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_graphite_transforms (gcc::context *ctxt)
+{
+  return new pass_graphite_transforms (ctxt);
+}
 
 /* Check the correctness of the data dependence analyzers.  */
 
@@ -336,25 +477,43 @@ gate_check_data_deps (void)
   return flag_check_data_deps != 0;
 }
 
-struct gimple_opt_pass pass_check_data_deps =
+namespace {
+
+const pass_data pass_data_check_data_deps =
 {
- {
-  GIMPLE_PASS,
-  "ckdd",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_check_data_deps,	        	/* gate */
-  check_data_deps,       		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_CHECK_DATA_DEPS,  	        	/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                             	/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ckdd", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CHECK_DATA_DEPS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_check_data_deps : public gimple_opt_pass
+{
+public:
+  pass_check_data_deps(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_check_data_deps, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_check_data_deps (); }
+  unsigned int execute () { return check_data_deps (); }
+
+}; // class pass_check_data_deps
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_check_data_deps (gcc::context *ctxt)
+{
+  return new pass_check_data_deps (ctxt);
+}
 
 /* Canonical induction variable creation pass.  */
 
@@ -373,25 +532,43 @@ gate_tree_ssa_loop_ivcanon (void)
   return flag_tree_loop_ivcanon != 0;
 }
 
-struct gimple_opt_pass pass_iv_canon =
+namespace {
+
+const pass_data pass_data_iv_canon =
 {
- {
-  GIMPLE_PASS,
-  "ivcanon",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_ssa_loop_ivcanon,		/* gate */
-  tree_ssa_loop_ivcanon,	       	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LOOP_IVCANON,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ivcanon", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_LOOP_IVCANON, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_iv_canon : public gimple_opt_pass
+{
+public:
+  pass_iv_canon(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_iv_canon, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_ssa_loop_ivcanon (); }
+  unsigned int execute () { return tree_ssa_loop_ivcanon (); }
+
+}; // class pass_iv_canon
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_iv_canon (gcc::context *ctxt)
+{
+  return new pass_iv_canon (ctxt);
+}
 
 /* Propagation of constants using scev.  */
 
@@ -401,27 +578,44 @@ gate_scev_const_prop (void)
   return flag_tree_scev_cprop;
 }
 
-struct gimple_opt_pass pass_scev_cprop =
+namespace {
+
+const pass_data pass_data_scev_cprop =
 {
- {
-  GIMPLE_PASS,
-  "sccp",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_scev_const_prop,			/* gate */
-  scev_const_prop,	       		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_SCEV_CONST,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_update_ssa_only_virtuals
-					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "sccp", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_SCEV_CONST, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg
+    | TODO_update_ssa_only_virtuals ), /* todo_flags_finish */
 };
+
+class pass_scev_cprop : public gimple_opt_pass
+{
+public:
+  pass_scev_cprop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_scev_cprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_scev_const_prop (); }
+  unsigned int execute () { return scev_const_prop (); }
+
+}; // class pass_scev_cprop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_scev_cprop (gcc::context *ctxt)
+{
+  return new pass_scev_cprop (ctxt);
+}
 
 /* Record bounds on numbers of iterations of loops.  */
 
@@ -436,25 +630,42 @@ tree_ssa_loop_bounds (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_record_bounds =
+namespace {
+
+const pass_data pass_data_record_bounds =
 {
- {
-  GIMPLE_PASS,
-  "*record_bounds",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  tree_ssa_loop_bounds,		       	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LOOP_BOUNDS,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0			              	/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*record_bounds", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_LOOP_BOUNDS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_record_bounds : public gimple_opt_pass
+{
+public:
+  pass_record_bounds(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_record_bounds, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return tree_ssa_loop_bounds (); }
+
+}; // class pass_record_bounds
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_record_bounds (gcc::context *ctxt)
+{
+  return new pass_record_bounds (ctxt);
+}
 
 /* Complete unrolling of loops.  */
 
@@ -475,25 +686,43 @@ gate_tree_complete_unroll (void)
   return true;
 }
 
-struct gimple_opt_pass pass_complete_unroll =
+namespace {
+
+const pass_data pass_data_complete_unroll =
 {
- {
-  GIMPLE_PASS,
-  "cunroll",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_complete_unroll,		/* gate */
-  tree_complete_unroll,		       	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_COMPLETE_UNROLL,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "cunroll", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_COMPLETE_UNROLL, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_complete_unroll : public gimple_opt_pass
+{
+public:
+  pass_complete_unroll(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_complete_unroll, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_complete_unroll (); }
+  unsigned int execute () { return tree_complete_unroll (); }
+
+}; // class pass_complete_unroll
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_complete_unroll (gcc::context *ctxt)
+{
+  return new pass_complete_unroll (ctxt);
+}
 
 /* Complete unrolling of inner loops.  */
 
@@ -522,25 +751,43 @@ gate_tree_complete_unroll_inner (void)
   return optimize >= 2;
 }
 
-struct gimple_opt_pass pass_complete_unrolli =
+namespace {
+
+const pass_data pass_data_complete_unrolli =
 {
- {
-  GIMPLE_PASS,
-  "cunrolli",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_complete_unroll_inner,	/* gate */
-  tree_complete_unroll_inner,	       	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_COMPLETE_UNROLL,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_flow			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "cunrolli", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_COMPLETE_UNROLL, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
 };
+
+class pass_complete_unrolli : public gimple_opt_pass
+{
+public:
+  pass_complete_unrolli(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_complete_unrolli, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_complete_unroll_inner (); }
+  unsigned int execute () { return tree_complete_unroll_inner (); }
+
+}; // class pass_complete_unrolli
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_complete_unrolli (gcc::context *ctxt)
+{
+  return new pass_complete_unrolli (ctxt);
+}
 
 /* Parallelization.  */
 
@@ -561,25 +808,43 @@ tree_parallelize_loops (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_parallelize_loops =
+namespace {
+
+const pass_data pass_data_parallelize_loops =
 {
- {
-  GIMPLE_PASS,
-  "parloops",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_parallelize_loops,		/* gate */
-  tree_parallelize_loops,      		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_PARALLELIZE_LOOPS,  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_flow			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "parloops", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PARALLELIZE_LOOPS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
 };
+
+class pass_parallelize_loops : public gimple_opt_pass
+{
+public:
+  pass_parallelize_loops(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_parallelize_loops, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_parallelize_loops (); }
+  unsigned int execute () { return tree_parallelize_loops (); }
+
+}; // class pass_parallelize_loops
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_parallelize_loops (gcc::context *ctxt)
+{
+  return new pass_parallelize_loops (ctxt);
+}
 
 /* Prefetching.  */
 
@@ -598,25 +863,43 @@ gate_tree_ssa_loop_prefetch (void)
   return flag_prefetch_loop_arrays > 0;
 }
 
-struct gimple_opt_pass pass_loop_prefetch =
+namespace {
+
+const pass_data pass_data_loop_prefetch =
 {
- {
-  GIMPLE_PASS,
-  "aprefetch",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_ssa_loop_prefetch,		/* gate */
-  tree_ssa_loop_prefetch,	       	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_PREFETCH,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "aprefetch", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PREFETCH, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_loop_prefetch : public gimple_opt_pass
+{
+public:
+  pass_loop_prefetch(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_loop_prefetch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_ssa_loop_prefetch (); }
+  unsigned int execute () { return tree_ssa_loop_prefetch (); }
+
+}; // class pass_loop_prefetch
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_loop_prefetch (gcc::context *ctxt)
+{
+  return new pass_loop_prefetch (ctxt);
+}
 
 /* Induction variable optimizations.  */
 
@@ -636,25 +919,43 @@ gate_tree_ssa_loop_ivopts (void)
   return flag_ivopts != 0;
 }
 
-struct gimple_opt_pass pass_iv_optimize =
+namespace {
+
+const pass_data pass_data_iv_optimize =
 {
- {
-  GIMPLE_PASS,
-  "ivopts",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_tree_ssa_loop_ivopts,		/* gate */
-  tree_ssa_loop_ivopts,		       	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_LOOP_IVOPTS,	  		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ivopts", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_LOOP_IVOPTS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa, /* todo_flags_finish */
 };
+
+class pass_iv_optimize : public gimple_opt_pass
+{
+public:
+  pass_iv_optimize(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_iv_optimize, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_ssa_loop_ivopts (); }
+  unsigned int execute () { return tree_ssa_loop_ivopts (); }
+
+}; // class pass_iv_optimize
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_iv_optimize (gcc::context *ctxt)
+{
+  return new pass_iv_optimize (ctxt);
+}
 
 /* Loop optimizer finalization.  */
 
@@ -667,23 +968,39 @@ tree_ssa_loop_done (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_tree_loop_done =
+namespace {
+
+const pass_data pass_data_tree_loop_done =
 {
- {
-  GIMPLE_PASS,
-  "loopdone",				/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  NULL,					/* gate */
-  tree_ssa_loop_done,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_verify_flow			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "loopdone", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_tree_loop_done : public gimple_opt_pass
+{
+public:
+  pass_tree_loop_done(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tree_loop_done, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return tree_ssa_loop_done (); }
+
+}; // class pass_tree_loop_done
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tree_loop_done (gcc::context *ctxt)
+{
+  return new pass_tree_loop_done (ctxt);
+}

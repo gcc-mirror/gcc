@@ -1262,22 +1262,40 @@ compute_object_sizes (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_object_sizes =
+namespace {
+
+const pass_data pass_data_object_sizes =
 {
- {
-  GIMPLE_PASS,
-  "objsz",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  compute_object_sizes,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa	                /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "objsz", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_object_sizes : public gimple_opt_pass
+{
+public:
+  pass_object_sizes(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_object_sizes, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_object_sizes (ctxt_); }
+  unsigned int execute () { return compute_object_sizes (); }
+
+}; // class pass_object_sizes
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_object_sizes (gcc::context *ctxt)
+{
+  return new pass_object_sizes (ctxt);
+}

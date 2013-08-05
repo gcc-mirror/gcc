@@ -2065,22 +2065,40 @@ gate_strlen (void)
   return flag_optimize_strlen != 0;
 }
 
-struct gimple_opt_pass pass_strlen =
+namespace {
+
+const pass_data pass_data_strlen =
 {
- {
-  GIMPLE_PASS,
-  "strlen",			/* name */
-  OPTGROUP_NONE,                /* optinfo_flags */
-  gate_strlen,			/* gate */
-  tree_ssa_strlen,		/* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_TREE_STRLEN,		/* tv_id */
-  PROP_cfg | PROP_ssa,		/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  TODO_verify_ssa		/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "strlen", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_STRLEN, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_strlen : public gimple_opt_pass
+{
+public:
+  pass_strlen(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_strlen, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_strlen (); }
+  unsigned int execute () { return tree_ssa_strlen (); }
+
+}; // class pass_strlen
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_strlen (gcc::context *ctxt)
+{
+  return new pass_strlen (ctxt);
+}

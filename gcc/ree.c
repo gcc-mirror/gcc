@@ -940,23 +940,40 @@ gate_handle_ree (void)
   return (optimize > 0 && flag_ree);
 }
 
-struct rtl_opt_pass pass_ree =
+namespace {
+
+const pass_data pass_data_ree =
 {
- {
-  RTL_PASS,
-  "ree",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_ree,                      /* gate */
-  rest_of_handle_ree,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REE,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish
-    | TODO_verify_rtl_sharing,          /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "ree", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_REE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_ree : public rtl_opt_pass
+{
+public:
+  pass_ree(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_ree, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_ree (); }
+  unsigned int execute () { return rest_of_handle_ree (); }
+
+}; // class pass_ree
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_ree (gcc::context *ctxt)
+{
+  return new pass_ree (ctxt);
+}

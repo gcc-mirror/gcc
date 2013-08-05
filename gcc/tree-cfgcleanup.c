@@ -989,22 +989,41 @@ gate_merge_phi (void)
   return 1;
 }
 
-struct gimple_opt_pass pass_merge_phi =
+namespace {
+
+const pass_data pass_data_merge_phi =
 {
- {
-  GIMPLE_PASS,
-  "mergephi",			/* name */
-  OPTGROUP_NONE,                /* optinfo_flags */
-  gate_merge_phi,		/* gate */
-  merge_phi_nodes,		/* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_TREE_MERGE_PHI,		/* tv_id */
-  PROP_cfg | PROP_ssa,		/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  TODO_verify_ssa               /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "mergephi", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_MERGE_PHI, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_merge_phi : public gimple_opt_pass
+{
+public:
+  pass_merge_phi(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_merge_phi, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_merge_phi (ctxt_); }
+  bool gate () { return gate_merge_phi (); }
+  unsigned int execute () { return merge_phi_nodes (); }
+
+}; // class pass_merge_phi
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_merge_phi (gcc::context *ctxt)
+{
+  return new pass_merge_phi (ctxt);
+}

@@ -3442,47 +3442,81 @@ gate_intra_sra (void)
 }
 
 
-struct gimple_opt_pass pass_sra_early =
+namespace {
+
+const pass_data pass_data_sra_early =
 {
- {
-  GIMPLE_PASS,
-  "esra",	 			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_intra_sra,			/* gate */
-  early_intra_sra,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SRA,				/* tv_id */
-  PROP_cfg | PROP_ssa,                  /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa
-  | TODO_verify_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "esra", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SRA, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
 };
 
-struct gimple_opt_pass pass_sra =
+class pass_sra_early : public gimple_opt_pass
 {
- {
-  GIMPLE_PASS,
-  "sra",	 			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_intra_sra,			/* gate */
-  late_intra_sra,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SRA,				/* tv_id */
-  PROP_cfg | PROP_ssa,                  /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  TODO_update_address_taken,		/* todo_flags_start */
-  TODO_update_ssa
-  | TODO_verify_ssa			/* todo_flags_finish */
- }
+public:
+  pass_sra_early(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_sra_early, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_intra_sra (); }
+  unsigned int execute () { return early_intra_sra (); }
+
+}; // class pass_sra_early
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_sra_early (gcc::context *ctxt)
+{
+  return new pass_sra_early (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_sra =
+{
+  GIMPLE_PASS, /* type */
+  "sra", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SRA, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  TODO_update_address_taken, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
 };
+
+class pass_sra : public gimple_opt_pass
+{
+public:
+  pass_sra(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_sra, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_intra_sra (); }
+  unsigned int execute () { return late_intra_sra (); }
+
+}; // class pass_sra
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_sra (gcc::context *ctxt)
+{
+  return new pass_sra (ctxt);
+}
 
 
 /* Return true iff PARM (which must be a parm_decl) is an unused scalar
@@ -5018,22 +5052,40 @@ ipa_early_sra_gate (void)
   return flag_ipa_sra && dbg_cnt (eipa_sra);
 }
 
-struct gimple_opt_pass pass_early_ipa_sra =
+namespace {
+
+const pass_data pass_data_early_ipa_sra =
 {
- {
-  GIMPLE_PASS,
-  "eipa_sra",	 			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  ipa_early_sra_gate,			/* gate */
-  ipa_early_sra,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_SRA,				/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_dump_symtab              	/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "eipa_sra", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_SRA, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_dump_symtab, /* todo_flags_finish */
 };
+
+class pass_early_ipa_sra : public gimple_opt_pass
+{
+public:
+  pass_early_ipa_sra(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_early_ipa_sra, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return ipa_early_sra_gate (); }
+  unsigned int execute () { return ipa_early_sra (); }
+
+}; // class pass_early_ipa_sra
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_early_ipa_sra (gcc::context *ctxt)
+{
+  return new pass_early_ipa_sra (ctxt);
+}

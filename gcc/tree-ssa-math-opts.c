@@ -636,26 +636,44 @@ execute_cse_reciprocals (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_cse_reciprocals =
+namespace {
+
+const pass_data pass_data_cse_reciprocals =
 {
- {
-  GIMPLE_PASS,
-  "recip",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_cse_reciprocals,			/* gate */
-  execute_cse_reciprocals,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts                /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "recip", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts ), /* todo_flags_finish */
 };
+
+class pass_cse_reciprocals : public gimple_opt_pass
+{
+public:
+  pass_cse_reciprocals(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_cse_reciprocals, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_cse_reciprocals (); }
+  unsigned int execute () { return execute_cse_reciprocals (); }
+
+}; // class pass_cse_reciprocals
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_cse_reciprocals (gcc::context *ctxt)
+{
+  return new pass_cse_reciprocals (ctxt);
+}
 
 /* Records an occurrence at statement USE_STMT in the vector of trees
    STMTS if it is dominated by *TOP_BB or dominates it or this basic block
@@ -1535,26 +1553,44 @@ gate_cse_sincos (void)
   return optimize;
 }
 
-struct gimple_opt_pass pass_cse_sincos =
+namespace {
+
+const pass_data pass_data_cse_sincos =
 {
- {
-  GIMPLE_PASS,
-  "sincos",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_cse_sincos,			/* gate */
-  execute_cse_sincos,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa | TODO_verify_ssa
-    | TODO_verify_stmts                 /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "sincos", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_stmts ), /* todo_flags_finish */
 };
+
+class pass_cse_sincos : public gimple_opt_pass
+{
+public:
+  pass_cse_sincos(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_cse_sincos, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_cse_sincos (); }
+  unsigned int execute () { return execute_cse_sincos (); }
+
+}; // class pass_cse_sincos
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_cse_sincos (gcc::context *ctxt)
+{
+  return new pass_cse_sincos (ctxt);
+}
 
 /* A symbolic number is used to detect byte permutation and selection
    patterns.  Therefore the field N contains an artificial number
@@ -2008,25 +2044,43 @@ gate_optimize_bswap (void)
   return flag_expensive_optimizations && optimize;
 }
 
-struct gimple_opt_pass pass_optimize_bswap =
+namespace {
+
+const pass_data pass_data_optimize_bswap =
 {
- {
-  GIMPLE_PASS,
-  "bswap",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_optimize_bswap,                  /* gate */
-  execute_optimize_bswap,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "bswap", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_optimize_bswap : public gimple_opt_pass
+{
+public:
+  pass_optimize_bswap(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_optimize_bswap, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_optimize_bswap (); }
+  unsigned int execute () { return execute_optimize_bswap (); }
+
+}; // class pass_optimize_bswap
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_optimize_bswap (gcc::context *ctxt)
+{
+  return new pass_optimize_bswap (ctxt);
+}
 
 /* Return true if stmt is a type conversion operation that can be stripped
    when used in a widening multiply operation.  */
@@ -2795,24 +2849,41 @@ gate_optimize_widening_mul (void)
   return flag_expensive_optimizations && optimize;
 }
 
-struct gimple_opt_pass pass_optimize_widening_mul =
+namespace {
+
+const pass_data pass_data_optimize_widening_mul =
 {
- {
-  GIMPLE_PASS,
-  "widening_mul",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_optimize_widening_mul,		/* gate */
-  execute_optimize_widening_mul,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa
-  | TODO_verify_stmts
-  | TODO_update_ssa                     /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "widening_mul", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
 };
+
+class pass_optimize_widening_mul : public gimple_opt_pass
+{
+public:
+  pass_optimize_widening_mul(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_optimize_widening_mul, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_optimize_widening_mul (); }
+  unsigned int execute () { return execute_optimize_widening_mul (); }
+
+}; // class pass_optimize_widening_mul
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_optimize_widening_mul (gcc::context *ctxt)
+{
+  return new pass_optimize_widening_mul (ctxt);
+}

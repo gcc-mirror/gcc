@@ -2410,26 +2410,42 @@ rewrite_into_ssa (void)
 }
 
 
-struct gimple_opt_pass pass_build_ssa =
+namespace {
+
+const pass_data pass_data_build_ssa =
 {
- {
-  GIMPLE_PASS,
-  "ssa",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  rewrite_into_ssa,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SSA_OTHER,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  PROP_ssa,				/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa
-    | TODO_remove_unused_locals		/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ssa", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SSA_OTHER, /* tv_id */
+  PROP_cfg, /* properties_required */
+  PROP_ssa, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_remove_unused_locals ), /* todo_flags_finish */
 };
+
+class pass_build_ssa : public gimple_opt_pass
+{
+public:
+  pass_build_ssa(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_build_ssa, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rewrite_into_ssa (); }
+
+}; // class pass_build_ssa
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_build_ssa (gcc::context *ctxt)
+{
+  return new pass_build_ssa (ctxt);
+}
 
 
 /* Mark the definition of VAR at STMT and BB as interesting for the

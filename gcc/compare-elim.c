@@ -651,24 +651,41 @@ gate_compare_elim_after_reload (void)
   return flag_compare_elim_after_reload;
 }
 
-struct rtl_opt_pass pass_compare_elim_after_reload =
+namespace {
+
+const pass_data pass_data_compare_elim_after_reload =
 {
- {
-  RTL_PASS,
-  "cmpelim",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_compare_elim_after_reload,	/* gate */
-  execute_compare_elim_after_reload,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_df_finish
-  | TODO_df_verify
-  | TODO_verify_rtl_sharing		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "cmpelim", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_df_verify
+    | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_compare_elim_after_reload : public rtl_opt_pass
+{
+public:
+  pass_compare_elim_after_reload(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_compare_elim_after_reload, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_compare_elim_after_reload (); }
+  unsigned int execute () { return execute_compare_elim_after_reload (); }
+
+}; // class pass_compare_elim_after_reload
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_compare_elim_after_reload (gcc::context *ctxt)
+{
+  return new pass_compare_elim_after_reload (ctxt);
+}

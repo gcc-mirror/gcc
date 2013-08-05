@@ -1155,31 +1155,51 @@ gate_reference (void)
 	  && !seen_error ());
 }
 
-struct ipa_opt_pass_d pass_ipa_reference =
+namespace {
+
+const pass_data pass_data_ipa_reference =
 {
- {
-  IPA_PASS,
-  "static-var",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_reference,			/* gate */
-  propagate,			        /* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_REFERENCE,		        /* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- },
- NULL,				        /* generate_summary */
- NULL,					/* write_summary */
- NULL,				 	/* read_summary */
- ipa_reference_write_optimization_summary,/* write_optimization_summary */
- ipa_reference_read_optimization_summary,/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- NULL,			                /* function_transform */
- NULL					/* variable_transform */
+  IPA_PASS, /* type */
+  "static-var", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_REFERENCE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_reference : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_reference(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_reference, ctxt,
+		     NULL, /* generate_summary */
+		     NULL, /* write_summary */
+		     NULL, /* read_summary */
+		     ipa_reference_write_optimization_summary, /*
+		     write_optimization_summary */
+		     ipa_reference_read_optimization_summary, /*
+		     read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_reference (); }
+  unsigned int execute () { return propagate (); }
+
+}; // class pass_ipa_reference
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_reference (gcc::context *ctxt)
+{
+  return new pass_ipa_reference (ctxt);
+}

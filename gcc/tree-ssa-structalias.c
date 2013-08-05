@@ -6960,48 +6960,82 @@ gate_tree_pta (void)
 /* A dummy pass to cause points-to information to be computed via
    TODO_rebuild_alias.  */
 
-struct gimple_opt_pass pass_build_alias =
+namespace {
+
+const pass_data pass_data_build_alias =
 {
- {
-  GIMPLE_PASS,
-  "alias",		    /* name */
-  OPTGROUP_NONE,            /* optinfo_flags */
-  gate_tree_pta,	    /* gate */
-  NULL,                     /* execute */
-  NULL,                     /* sub */
-  NULL,                     /* next */
-  0,                        /* static_pass_number */
-  TV_NONE,                  /* tv_id */
-  PROP_cfg | PROP_ssa,      /* properties_required */
-  0,			    /* properties_provided */
-  0,                        /* properties_destroyed */
-  0,                        /* todo_flags_start */
-  TODO_rebuild_alias        /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "alias", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_rebuild_alias, /* todo_flags_finish */
 };
+
+class pass_build_alias : public gimple_opt_pass
+{
+public:
+  pass_build_alias(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_build_alias, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_pta (); }
+
+}; // class pass_build_alias
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_build_alias (gcc::context *ctxt)
+{
+  return new pass_build_alias (ctxt);
+}
 
 /* A dummy pass to cause points-to information to be computed via
    TODO_rebuild_alias.  */
 
-struct gimple_opt_pass pass_build_ealias =
+namespace {
+
+const pass_data pass_data_build_ealias =
 {
- {
-  GIMPLE_PASS,
-  "ealias",		    /* name */
-  OPTGROUP_NONE,            /* optinfo_flags */
-  gate_tree_pta,	    /* gate */
-  NULL,                     /* execute */
-  NULL,                     /* sub */
-  NULL,                     /* next */
-  0,                        /* static_pass_number */
-  TV_NONE,                  /* tv_id */
-  PROP_cfg | PROP_ssa,      /* properties_required */
-  0,			    /* properties_provided */
-  0,                        /* properties_destroyed */
-  0,                        /* todo_flags_start */
-  TODO_rebuild_alias        /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ealias", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_rebuild_alias, /* todo_flags_finish */
 };
+
+class pass_build_ealias : public gimple_opt_pass
+{
+public:
+  pass_build_ealias(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_build_ealias, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_pta (); }
+
+}; // class pass_build_ealias
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_build_ealias (gcc::context *ctxt)
+{
+  return new pass_build_ealias (ctxt);
+}
 
 
 /* Return true if we should execute IPA PTA.  */
@@ -7359,22 +7393,40 @@ ipa_pta_execute (void)
   return 0;
 }
 
-struct simple_ipa_opt_pass pass_ipa_pta =
+namespace {
+
+const pass_data pass_data_ipa_pta =
 {
- {
-  SIMPLE_IPA_PASS,
-  "pta",		                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_ipa_pta,			/* gate */
-  ipa_pta_execute,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_PTA,		        /* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa                       /* todo_flags_finish */
- }
+  SIMPLE_IPA_PASS, /* type */
+  "pta", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_PTA, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa, /* todo_flags_finish */
 };
+
+class pass_ipa_pta : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_pta(gcc::context *ctxt)
+    : simple_ipa_opt_pass(pass_data_ipa_pta, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ipa_pta (); }
+  unsigned int execute () { return ipa_pta_execute (); }
+
+}; // class pass_ipa_pta
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_pta (gcc::context *ctxt)
+{
+  return new pass_ipa_pta (ctxt);
+}

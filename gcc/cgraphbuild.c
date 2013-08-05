@@ -370,25 +370,42 @@ build_cgraph_edges (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_build_cgraph_edges =
+namespace {
+
+const pass_data pass_data_build_cgraph_edges =
 {
- {
-  GIMPLE_PASS,
-  "*build_cgraph_edges",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  build_cgraph_edges,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*build_cgraph_edges", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_build_cgraph_edges : public gimple_opt_pass
+{
+public:
+  pass_build_cgraph_edges(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_build_cgraph_edges, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return build_cgraph_edges (); }
+
+}; // class pass_build_cgraph_edges
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_build_cgraph_edges (gcc::context *ctxt)
+{
+  return new pass_build_cgraph_edges (ctxt);
+}
 
 /* Record references to functions and other variables present in the
    initial value of DECL, a variable.
@@ -478,25 +495,43 @@ cgraph_rebuild_references (void)
   record_eh_tables (node, cfun);
 }
 
-struct gimple_opt_pass pass_rebuild_cgraph_edges =
+namespace {
+
+const pass_data pass_data_rebuild_cgraph_edges =
 {
- {
-  GIMPLE_PASS,
-  "*rebuild_cgraph_edges",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  rebuild_cgraph_edges,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_CGRAPH,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*rebuild_cgraph_edges", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_CGRAPH, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_rebuild_cgraph_edges : public gimple_opt_pass
+{
+public:
+  pass_rebuild_cgraph_edges(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_rebuild_cgraph_edges, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_rebuild_cgraph_edges (ctxt_); }
+  unsigned int execute () { return rebuild_cgraph_edges (); }
+
+}; // class pass_rebuild_cgraph_edges
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_rebuild_cgraph_edges (gcc::context *ctxt)
+{
+  return new pass_rebuild_cgraph_edges (ctxt);
+}
 
 
 static unsigned int
@@ -506,22 +541,42 @@ remove_cgraph_callee_edges (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_remove_cgraph_callee_edges =
+namespace {
+
+const pass_data pass_data_remove_cgraph_callee_edges =
 {
- {
-  GIMPLE_PASS,
-  "*remove_cgraph_callee_edges",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  remove_cgraph_callee_edges,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0,					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*remove_cgraph_callee_edges", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_remove_cgraph_callee_edges : public gimple_opt_pass
+{
+public:
+  pass_remove_cgraph_callee_edges(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_remove_cgraph_callee_edges, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () {
+    return new pass_remove_cgraph_callee_edges (ctxt_);
+  }
+  unsigned int execute () { return remove_cgraph_callee_edges (); }
+
+}; // class pass_remove_cgraph_callee_edges
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_remove_cgraph_callee_edges (gcc::context *ctxt)
+{
+  return new pass_remove_cgraph_callee_edges (ctxt);
+}

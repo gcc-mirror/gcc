@@ -138,22 +138,40 @@ rest_of_handle_initialize_regs (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_initialize_regs =
+namespace {
+
+const pass_data pass_data_initialize_regs =
 {
- {
-  RTL_PASS,
-  "init-regs",                          /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_initialize_regs,                 /* gate */
-  rest_of_handle_initialize_regs,       /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish                        /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "init-regs", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_df_finish, /* todo_flags_finish */
 };
+
+class pass_initialize_regs : public rtl_opt_pass
+{
+public:
+  pass_initialize_regs(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_initialize_regs, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_initialize_regs (); }
+  unsigned int execute () { return rest_of_handle_initialize_regs (); }
+
+}; // class pass_initialize_regs
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_initialize_regs (gcc::context *ctxt)
+{
+  return new pass_initialize_regs (ctxt);
+}

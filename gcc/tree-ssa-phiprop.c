@@ -394,23 +394,40 @@ gate_phiprop (void)
   return flag_tree_phiprop;
 }
 
-struct gimple_opt_pass pass_phiprop =
+namespace {
+
+const pass_data pass_data_phiprop =
 {
- {
-  GIMPLE_PASS,
-  "phiprop",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_phiprop,			/* gate */
-  tree_ssa_phiprop,		/* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_TREE_PHIPROP,		/* tv_id */
-  PROP_cfg | PROP_ssa,		/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  TODO_update_ssa
-  | TODO_verify_ssa		/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "phiprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PHIPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
 };
+
+class pass_phiprop : public gimple_opt_pass
+{
+public:
+  pass_phiprop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_phiprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_phiprop (); }
+  unsigned int execute () { return tree_ssa_phiprop (); }
+
+}; // class pass_phiprop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_phiprop (gcc::context *ctxt)
+{
+  return new pass_phiprop (ctxt);
+}

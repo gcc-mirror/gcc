@@ -1088,25 +1088,42 @@ execute_init_datastructures (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_init_datastructures =
+namespace {
+
+const pass_data pass_data_init_datastructures =
 {
- {
-  GIMPLE_PASS,
-  "*init_datastructures",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_init_datastructures,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*init_datastructures", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_init_datastructures : public gimple_opt_pass
+{
+public:
+  pass_init_datastructures(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_init_datastructures, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_init_datastructures (); }
+
+}; // class pass_init_datastructures
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_init_datastructures (gcc::context *ctxt)
+{
+  return new pass_init_datastructures (ctxt);
+}
 
 /* Deallocate memory associated with SSA data structures for FNDECL.  */
 
@@ -1698,25 +1715,43 @@ gate_warn_uninitialized (void)
   return warn_uninitialized != 0;
 }
 
-struct gimple_opt_pass pass_early_warn_uninitialized =
+namespace {
+
+const pass_data pass_data_early_warn_uninitialized =
 {
- {
-  GIMPLE_PASS,
-  "*early_warn_uninitialized",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_warn_uninitialized,		/* gate */
-  execute_early_warn_uninitialized,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_UNINIT,			/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*early_warn_uninitialized", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_UNINIT, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_early_warn_uninitialized : public gimple_opt_pass
+{
+public:
+  pass_early_warn_uninitialized(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_early_warn_uninitialized, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_warn_uninitialized (); }
+  unsigned int execute () { return execute_early_warn_uninitialized (); }
+
+}; // class pass_early_warn_uninitialized
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_early_warn_uninitialized (gcc::context *ctxt)
+{
+  return new pass_early_warn_uninitialized (ctxt);
+}
 
 
 /* If necessary, rewrite the base of the reference tree *TP from
@@ -2130,22 +2165,38 @@ execute_update_addresses_taken (void)
   timevar_pop (TV_ADDRESS_TAKEN);
 }
 
-struct gimple_opt_pass pass_update_address_taken =
+namespace {
+
+const pass_data pass_data_update_address_taken =
 {
- {
-  GIMPLE_PASS,
-  "addressables",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_ADDRESS_TAKEN,			/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_address_taken             /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "addressables", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  false, /* has_execute */
+  TV_ADDRESS_TAKEN, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_address_taken, /* todo_flags_finish */
 };
+
+class pass_update_address_taken : public gimple_opt_pass
+{
+public:
+  pass_update_address_taken(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_update_address_taken, ctxt)
+  {}
+
+  /* opt_pass methods: */
+
+}; // class pass_update_address_taken
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_update_address_taken (gcc::context *ctxt)
+{
+  return new pass_update_address_taken (ctxt);
+}

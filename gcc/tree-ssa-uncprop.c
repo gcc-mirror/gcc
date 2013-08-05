@@ -585,22 +585,41 @@ gate_uncprop (void)
   return flag_tree_dom != 0;
 }
 
-struct gimple_opt_pass pass_uncprop =
+namespace {
+
+const pass_data pass_data_uncprop =
 {
- {
-  GIMPLE_PASS,
-  "uncprop",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_uncprop,				/* gate */
-  tree_ssa_uncprop,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SSA_UNCPROP,			/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa	                /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "uncprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SSA_UNCPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_uncprop : public gimple_opt_pass
+{
+public:
+  pass_uncprop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_uncprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_uncprop (ctxt_); }
+  bool gate () { return gate_uncprop (); }
+  unsigned int execute () { return tree_ssa_uncprop (); }
+
+}; // class pass_uncprop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_uncprop (gcc::context *ctxt)
+{
+  return new pass_uncprop (ctxt);
+}

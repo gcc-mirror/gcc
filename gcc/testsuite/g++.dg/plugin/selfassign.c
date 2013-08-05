@@ -264,25 +264,43 @@ gate_warn_self_assign (void)
   return true;
 }
 
-static struct gimple_opt_pass pass_warn_self_assign =
+namespace {
+
+const pass_data pass_data_warn_self_assign =
 {
-  {
-    GIMPLE_PASS,
-    "warn_self_assign",                   /* name */
-    OPTGROUP_NONE,                        /* optinfo_flags */
-    gate_warn_self_assign,                /* gate */
-    execute_warn_self_assign,             /* execute */
-    NULL,                                 /* sub */
-    NULL,                                 /* next */
-    0,                                    /* static_pass_number */
-    TV_NONE,                              /* tv_id */
-    PROP_ssa,                             /* properties_required */
-    0,                                    /* properties_provided */
-    0,                                    /* properties_destroyed */
-    0,                                    /* todo_flags_start */
-    0					  /* todo_flags_finish */
-  }
+  GIMPLE_PASS, /* type */
+  "warn_self_assign", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_warn_self_assign : public gimple_opt_pass
+{
+public:
+  pass_warn_self_assign(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_warn_self_assign, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_warn_self_assign (); }
+  unsigned int execute () { return execute_warn_self_assign (); }
+
+}; // class pass_warn_self_assign
+
+} // anon namespace
+
+static gimple_opt_pass *
+make_pass_warn_self_assign (gcc::context *ctxt)
+{
+  return new pass_warn_self_assign (ctxt);
+}
 
 /* The initialization routine exposed to and called by GCC. The spec of this
    function is defined in gcc/gcc-plugin.h.

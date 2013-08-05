@@ -919,28 +919,46 @@ gate_dominator (void)
   return flag_tree_dom != 0;
 }
 
-struct gimple_opt_pass pass_dominator =
+namespace {
+
+const pass_data pass_data_dominator =
 {
- {
-  GIMPLE_PASS,
-  "dom",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_dominator,			/* gate */
-  tree_ssa_dominator_optimize,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SSA_DOMINATOR_OPTS,		/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_update_ssa
+  GIMPLE_PASS, /* type */
+  "dom", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SSA_DOMINATOR_OPTS, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_update_ssa
     | TODO_verify_ssa
-    | TODO_verify_flow			/* todo_flags_finish */
- }
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_dominator : public gimple_opt_pass
+{
+public:
+  pass_dominator(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_dominator, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_dominator (ctxt_); }
+  bool gate () { return gate_dominator (); }
+  unsigned int execute () { return tree_ssa_dominator_optimize (); }
+
+}; // class pass_dominator
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_dominator (gcc::context *ctxt)
+{
+  return new pass_dominator (ctxt);
+}
 
 
 /* Given a conditional statement CONDSTMT, convert the
@@ -3094,25 +3112,43 @@ eliminate_degenerate_phis (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_phi_only_cprop =
+namespace {
+
+const pass_data pass_data_phi_only_cprop =
 {
- {
-  GIMPLE_PASS,
-  "phicprop",                           /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_dominator,                       /* gate */
-  eliminate_degenerate_phis,            /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_TREE_PHI_CPROP,                    /* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,                                    /* properties_provided */
-  0,		                        /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_verify_ssa
+  GIMPLE_PASS, /* type */
+  "phicprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PHI_CPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_verify_ssa
     | TODO_verify_stmts
-    | TODO_update_ssa			/* todo_flags_finish */
- }
+    | TODO_update_ssa ), /* todo_flags_finish */
 };
+
+class pass_phi_only_cprop : public gimple_opt_pass
+{
+public:
+  pass_phi_only_cprop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_phi_only_cprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_phi_only_cprop (ctxt_); }
+  bool gate () { return gate_dominator (); }
+  unsigned int execute () { return eliminate_degenerate_phis (); }
+
+}; // class pass_phi_only_cprop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_phi_only_cprop (gcc::context *ctxt)
+{
+  return new pass_phi_only_cprop (ctxt);
+}
