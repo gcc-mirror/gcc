@@ -2363,7 +2363,7 @@ verify_cgraph_node (struct cgraph_node *node)
       error ("inline clone in same comdat group list");
       error_found = true;
     }
-  if (!node->symbol.definition && node->local.local)
+  if (!node->symbol.definition && !node->symbol.in_other_partition && node->local.local)
     {
       error ("local symbols must be defined");
       error_found = true;

@@ -1,3 +1,11 @@
+2013-08-05  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/57602
+	* cgraph.c (verify_cgraph_node): Accept local flags from other partitions.
+	* ipa.c (symtab_remove_unreachable_nodes): Do not clear local flag.
+	(function_and_variable_visibility): Likewise.
+	* trans-mem.c (ipa_tm_create_version): TM versions are not local.
+
 2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* graph.c (init_graph_slim_pretty_print): Remove.
