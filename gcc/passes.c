@@ -1167,68 +1167,77 @@ is_pass_explicitly_enabled_or_disabled (struct opt_pass *pass,
   return false;
 }
 
-/* Look at the static_pass_number and duplicate the pass
-   if it is already added to a list. */
 
-static struct opt_pass *
-make_pass_instance (struct opt_pass *pass, bool track_duplicates)
+/* Update static_pass_number for passes (and the flag
+   TODO_mark_first_instance).
+
+   Passes are constructed with static_pass_number preinitialized to 0
+
+   This field is used in two different ways: initially as instance numbers
+   of their kind, and then as ids within the entire pass manager.
+
+   Within pass_manager::pass_manager:
+
+   * In add_pass_instance(), as called by next_pass_1 in
+     NEXT_PASS in init_optimization_passes
+
+   * When the initial instance of a pass within a pass manager is seen,
+     it is flagged, and its static_pass_number is set to -1
+
+   * On subsequent times that it is seen, the static pass number
+     is decremented each time, so that if there are e.g. 4 dups,
+     they have static_pass_number -4, 2, 3, 4 respectively (note
+     how the initial one is negative and gives the count); these
+     can be thought of as instance numbers of the specific pass
+
+   * Within the register_dump_files () traversal, set_pass_for_id()
+     is called on each pass, using these instance numbers to create
+     dumpfile switches, and then overwriting them with a pass id,
+     which are global to the whole pass manager (based on
+     (TDI_end + current value of extra_dump_files_in_use) )  */
+
+static void
+add_pass_instance (struct opt_pass *new_pass, bool track_duplicates,
+		   opt_pass *initial_pass)
 {
-  /* A nonzero static_pass_number indicates that the
-     pass is already in the list.  */
-  if (pass->static_pass_number)
+  /* Are we dealing with the first pass of its kind, or a clone?  */
+  if (new_pass != initial_pass)
     {
-      struct opt_pass *new_pass;
-
-      if (pass->type == GIMPLE_PASS
-          || pass->type == RTL_PASS
-          || pass->type == SIMPLE_IPA_PASS)
-        {
-          new_pass = XNEW (struct opt_pass);
-          memcpy (new_pass, pass, sizeof (struct opt_pass));
-        }
-      else if (pass->type == IPA_PASS)
-        {
-          new_pass = (struct opt_pass *)XNEW (struct ipa_opt_pass_d);
-          memcpy (new_pass, pass, sizeof (struct ipa_opt_pass_d));
-        }
-      else
-        gcc_unreachable ();
-
-      new_pass->next = NULL;
-
+      /* We're dealing with a clone.  */
       new_pass->todo_flags_start &= ~TODO_mark_first_instance;
 
       /* Indicate to register_dump_files that this pass has duplicates,
          and so it should rename the dump file.  The first instance will
          be -1, and be number of duplicates = -static_pass_number - 1.
          Subsequent instances will be > 0 and just the duplicate number.  */
-      if ((pass->name && pass->name[0] != '*') || track_duplicates)
+      if ((new_pass->name && new_pass->name[0] != '*') || track_duplicates)
         {
-          pass->static_pass_number -= 1;
-          new_pass->static_pass_number = -pass->static_pass_number;
+          initial_pass->static_pass_number -= 1;
+          new_pass->static_pass_number = -initial_pass->static_pass_number;
 	}
-      return new_pass;
     }
   else
     {
-      pass->todo_flags_start |= TODO_mark_first_instance;
-      pass->static_pass_number = -1;
+      /* We're dealing with the first pass of its kind.  */
+      new_pass->todo_flags_start |= TODO_mark_first_instance;
+      new_pass->static_pass_number = -1;
 
-      invoke_plugin_callbacks (PLUGIN_NEW_PASS, pass);
+      invoke_plugin_callbacks (PLUGIN_NEW_PASS, new_pass);
     }
-  return pass;
 }
 
 /* Add a pass to the pass list. Duplicate the pass if it's already
    in the list.  */
 
 static struct opt_pass **
-next_pass_1 (struct opt_pass **list, struct opt_pass *pass)
+next_pass_1 (struct opt_pass **list, struct opt_pass *pass,
+	     struct opt_pass *initial_pass)
 {
   /* Every pass should have a name so that plugins can refer to them.  */
   gcc_assert (pass->name != NULL);
 
-  *list = make_pass_instance (pass, false);
+  add_pass_instance (pass, false, initial_pass);
+  *list = pass;
 
   return &(*list)->next;
 }
@@ -1278,7 +1287,16 @@ position_pass (struct register_pass_info *new_pass_info,
           struct opt_pass *new_pass;
           struct pass_list_node *new_pass_node;
 
-	  new_pass = make_pass_instance (new_pass_info->pass, true);
+	  if (new_pass_info->ref_pass_instance_number == 0)
+	    {
+	      new_pass = new_pass_info->pass->clone ();
+	      add_pass_instance (new_pass, true, new_pass_info->pass);
+	    }
+	  else
+	    {
+	      new_pass = new_pass_info->pass;
+	      add_pass_instance (new_pass, true, new_pass);
+	    }
 
           /* Insert the new pass instance based on the positioning op.  */
           switch (new_pass_info->pos_op)
@@ -1484,7 +1502,7 @@ pass_manager::pass_manager (context *ctxt)
         gcc_assert (PASS ## _1);                 \
         PASS ## _ ## NUM = PASS ## _1->clone (); \
       }                                          \
-    p = next_pass_1 (p, PASS ## _ ## NUM);  \
+    p = next_pass_1 (p, PASS ## _ ## NUM, PASS ## _1);  \
   } while (0)
 
 #define TERMINATE_PASS_LIST() \
