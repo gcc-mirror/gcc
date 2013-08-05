@@ -1,5 +1,16 @@
 2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
+	* gimple-pretty-print.c (buffer): Remove.
+	(initialized): Likewise.
+	(maybe_init_pretty_print): Likewise.
+	(print_gimple_stmt): Do not call it.  Use non-static local
+	pretty_printer variable.
+	(print_gimple_expr): Likewise.
+	(print_gimple_seq): Likewise.
+	(gimple_dump_bb): Likewise.
+
+2013-08-05  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
 	* asan.c (asan_pp): Remove.
 	(asan_pp_initialized): Likewise.
 	(asan_pp_initialize): Likewise.

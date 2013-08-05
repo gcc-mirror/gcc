@@ -36,9 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INDENT(SPACE)							\
   do { int i; for (i = 0; i < SPACE; i++) pp_space (buffer); } while (0)
 
-static pretty_printer buffer;
-static bool initialized = false;
-
 #define GIMPLE_NIY do_niy (buffer,gs)
 
 /* Try to print on BUFFER a default message for the unrecognized
@@ -49,22 +46,6 @@ do_niy (pretty_printer *buffer, gimple gs)
 {
   pp_printf (buffer, "<<< Unknown GIMPLE statement: %s >>>\n",
 	     gimple_code_name[(int) gimple_code (gs)]);
-}
-
-
-/* Initialize the pretty printer on FILE if needed.  */
-
-static void
-maybe_init_pretty_print (FILE *file)
-{
-  if (!initialized)
-    {
-      pp_construct (&buffer, NULL, 0);
-      pp_needs_newline (&buffer) = true;
-      initialized = true;
-    }
-
-  buffer.buffer->stream = file;
 }
 
 
@@ -93,7 +74,10 @@ debug_gimple_stmt (gimple gs)
 void
 print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
 {
-  maybe_init_pretty_print (file);
+  pretty_printer buffer;
+  pp_construct (&buffer, NULL, 0);
+  pp_needs_newline (&buffer) = true;
+  buffer.buffer->stream = file;
   pp_gimple_stmt_1 (&buffer, g, spc, flags);
   pp_newline_and_flush (&buffer);
 }
@@ -122,7 +106,10 @@ void
 print_gimple_expr (FILE *file, gimple g, int spc, int flags)
 {
   flags |= TDF_RHS_ONLY;
-  maybe_init_pretty_print (file);
+  pretty_printer buffer;
+  pp_construct (&buffer, NULL, 0);
+  pp_needs_newline (&buffer) = true;
+  buffer.buffer->stream = file;
   pp_gimple_stmt_1 (&buffer, g, spc, flags);
   pp_flush (&buffer);
 }
@@ -155,7 +142,10 @@ dump_gimple_seq (pretty_printer *buffer, gimple_seq seq, int spc, int flags)
 void
 print_gimple_seq (FILE *file, gimple_seq seq, int spc, int flags)
 {
-  maybe_init_pretty_print (file);
+  pretty_printer buffer;
+  pp_construct (&buffer, NULL, 0);
+  pp_needs_newline (&buffer) = true;
+  buffer.buffer->stream = file;
   dump_gimple_seq (&buffer, seq, spc, flags);
   pp_newline_and_flush (&buffer);
 }
@@ -2279,7 +2269,10 @@ gimple_dump_bb (FILE *file, basic_block bb, int indent, int flags)
   dump_gimple_bb_header (file, bb, indent, flags);
   if (bb->index >= NUM_FIXED_BLOCKS)
     {
-      maybe_init_pretty_print (file);
+      pretty_printer buffer;
+      pp_construct (&buffer, NULL, 0);
+      pp_needs_newline (&buffer) = true;
+      buffer.buffer->stream = file;
       gimple_dump_bb_buff (&buffer, bb, indent, flags);
     }
   dump_gimple_bb_footer (file, bb, indent, flags);
