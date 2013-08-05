@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* A pointer to the formatted diagnostic message.  */
 #define pp_formatted_text_data(PP) \
-   ((const char *) obstack_base (pp_base (PP)->buffer->obstack))
+   ((const char *) obstack_base ((PP)->buffer->obstack))
 
 /* Format an integer given by va_arg (ARG, type-specifier T) where
    type-specifier is a precision modifier as indicated by PREC.  F is
@@ -207,7 +207,7 @@ pp_append_r (pretty_printer *pp, const char *start, int length)
    the column position to the current indentation level, assuming that a
    newline has just been written to the buffer.  */
 void
-pp_base_indent (pretty_printer *pp)
+pp_indent (pretty_printer *pp)
 {
   int n = pp_indentation (pp);
   int i;
@@ -252,10 +252,10 @@ pp_base_indent (pretty_printer *pp)
 
 /* Formatting phases 1 and 2: render TEXT->format_spec plus
    TEXT->args_ptr into a series of chunks in PP->buffer->args[].
-   Phase 3 is in pp_base_format_text.  */
+   Phase 3 is in pp_format_text.  */
 
 void
-pp_base_format (pretty_printer *pp, text_info *text)
+pp_format (pretty_printer *pp, text_info *text)
 {
   output_buffer *buffer = pp->buffer;
   const char *p;
@@ -617,7 +617,7 @@ pp_base_format (pretty_printer *pp, text_info *text)
 
 /* Format of a message pointed to by TEXT.  */
 void
-pp_base_output_formatted_text (pretty_printer *pp)
+pp_output_formatted_text (pretty_printer *pp)
 {
   unsigned int chunk;
   output_buffer *buffer = pp_buffer (pp);
@@ -627,7 +627,7 @@ pp_base_output_formatted_text (pretty_printer *pp)
   gcc_assert (buffer->obstack == &buffer->formatted_obstack);
   gcc_assert (buffer->line_length == 0);
 
-  /* This is a third phase, first 2 phases done in pp_base_format_args.
+  /* This is a third phase, first 2 phases done in pp_format_args.
      Now we actually print it.  */
   for (chunk = 0; args[chunk]; chunk++)
     pp_string (pp, args[chunk]);
@@ -641,7 +641,7 @@ pp_base_output_formatted_text (pretty_printer *pp)
 /* Helper subroutine of output_verbatim and verbatim. Do the appropriate
    settings needed by BUFFER for a verbatim formatting.  */
 void
-pp_base_format_verbatim (pretty_printer *pp, text_info *text)
+pp_format_verbatim (pretty_printer *pp, text_info *text)
 {
   /* Set verbatim mode.  */
   pp_wrapping_mode_t oldmode = pp_set_verbatim_wrapping (pp);
@@ -656,7 +656,7 @@ pp_base_format_verbatim (pretty_printer *pp, text_info *text)
 
 /* Flush the content of BUFFER onto the attached stream.  */
 void
-pp_base_flush (pretty_printer *pp)
+pp_flush (pretty_printer *pp)
 {
   pp_write_text_to_stream (pp);
   pp_clear_state (pp);
@@ -667,7 +667,7 @@ pp_base_flush (pretty_printer *pp)
    output in line-wrapping mode.  A LENGTH value 0 suppresses
    line-wrapping.  */
 void
-pp_base_set_line_maximum_length (pretty_printer *pp, int length)
+pp_set_line_maximum_length (pretty_printer *pp, int length)
 {
   pp_line_cutoff (pp) = length;
   pp_set_real_maximum_length (pp);
@@ -675,7 +675,7 @@ pp_base_set_line_maximum_length (pretty_printer *pp, int length)
 
 /* Clear PRETTY-PRINTER output area text info.  */
 void
-pp_base_clear_output_area (pretty_printer *pp)
+pp_clear_output_area (pretty_printer *pp)
 {
   obstack_free (pp->buffer->obstack, obstack_base (pp->buffer->obstack));
   pp->buffer->line_length = 0;
@@ -683,7 +683,7 @@ pp_base_clear_output_area (pretty_printer *pp)
 
 /* Set PREFIX for PRETTY-PRINTER.  */
 void
-pp_base_set_prefix (pretty_printer *pp, const char *prefix)
+pp_set_prefix (pretty_printer *pp, const char *prefix)
 {
   pp->prefix = prefix;
   pp_set_real_maximum_length (pp);
@@ -693,7 +693,7 @@ pp_base_set_prefix (pretty_printer *pp, const char *prefix)
 
 /* Free PRETTY-PRINTER's prefix, a previously malloc()'d string.  */
 void
-pp_base_destroy_prefix (pretty_printer *pp)
+pp_destroy_prefix (pretty_printer *pp)
 {
   if (pp->prefix != NULL)
     {
@@ -704,7 +704,7 @@ pp_base_destroy_prefix (pretty_printer *pp)
 
 /* Write out PRETTY-PRINTER's prefix.  */
 void
-pp_base_emit_prefix (pretty_printer *pp)
+pp_emit_prefix (pretty_printer *pp)
 {
   if (pp->prefix != NULL)
     {
@@ -717,7 +717,7 @@ pp_base_emit_prefix (pretty_printer *pp)
 	case DIAGNOSTICS_SHOW_PREFIX_ONCE:
 	  if (pp->emitted_prefix)
 	    {
-	      pp_base_indent (pp);
+	      pp_indent (pp);
 	      break;
 	    }
 	  pp_indentation (pp) += 3;
@@ -757,7 +757,7 @@ pp_construct (pretty_printer *pp, const char *prefix, int maximum_length)
    whitespace if appropriate.  The caller must ensure that it is
    safe to do so.  */
 void
-pp_base_append_text (pretty_printer *pp, const char *start, const char *end)
+pp_append_text (pretty_printer *pp, const char *start, const char *end)
 {
   /* Emit prefix and skip whitespace if we're starting a new line.  */
   if (pp->buffer->line_length == 0)
@@ -773,7 +773,7 @@ pp_base_append_text (pretty_printer *pp, const char *start, const char *end)
 /* Finishes constructing a NULL-terminated character string representing
    the PRETTY-PRINTED text.  */
 const char *
-pp_base_formatted_text (pretty_printer *pp)
+pp_formatted_text (pretty_printer *pp)
 {
   obstack_1grow (pp->buffer->obstack, '\0');
   return pp_formatted_text_data (pp);
@@ -782,7 +782,7 @@ pp_base_formatted_text (pretty_printer *pp)
 /*  Return a pointer to the last character emitted in PRETTY-PRINTER's
     output area.  A NULL pointer means no character available.  */
 const char *
-pp_base_last_position_in_text (const pretty_printer *pp)
+pp_last_position_in_text (const pretty_printer *pp)
 {
   const char *p = NULL;
   struct obstack *text = pp->buffer->obstack;
@@ -795,7 +795,7 @@ pp_base_last_position_in_text (const pretty_printer *pp)
 /* Return the amount of characters PRETTY-PRINTER can accept to
    make a full line.  Meaningful only in line-wrapping mode.  */
 int
-pp_base_remaining_character_count_for_line (pretty_printer *pp)
+pp_remaining_character_count_for_line (pretty_printer *pp)
 {
   return pp->maximum_length - pp->buffer->line_length;
 }
@@ -839,7 +839,7 @@ pp_verbatim (pretty_printer *pp, const char *msg, ...)
 
 /* Have PRETTY-PRINTER start a new line.  */
 void
-pp_base_newline (pretty_printer *pp)
+pp_newline (pretty_printer *pp)
 {
   obstack_1grow (pp->buffer->obstack, '\n');
   pp_needs_newline (pp) = false;
@@ -848,7 +848,7 @@ pp_base_newline (pretty_printer *pp)
 
 /* Have PRETTY-PRINTER add a CHARACTER.  */
 void
-pp_base_character (pretty_printer *pp, int c)
+pp_character (pretty_printer *pp, int c)
 {
   if (pp_is_wrapping_line (pp)
       && pp_remaining_character_count_for_line (pp) <= 0)
@@ -864,7 +864,7 @@ pp_base_character (pretty_printer *pp, int c)
 /* Append a STRING to the output area of PRETTY-PRINTER; the STRING may
    be line-wrapped if in appropriate mode.  */
 void
-pp_base_string (pretty_printer *pp, const char *str)
+pp_string (pretty_printer *pp, const char *str)
 {
   pp_maybe_wrap_text (pp, str, str + (str ? strlen (str) : 0));
 }
@@ -872,12 +872,12 @@ pp_base_string (pretty_printer *pp, const char *str)
 /* Maybe print out a whitespace if needed.  */
 
 void
-pp_base_maybe_space (pretty_printer *pp)
+pp_maybe_space (pretty_printer *pp)
 {
-  if (pp_base (pp)->padding != pp_none)
+  if (pp->padding != pp_none)
     {
       pp_space (pp);
-      pp_base (pp)->padding = pp_none;
+      pp->padding = pp_none;
     }
 }
 

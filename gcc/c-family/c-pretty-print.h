@@ -26,35 +26,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 
 
-typedef enum
+enum pp_c_pretty_print_flags
   {
      pp_c_flag_abstract = 1 << 1,
      pp_c_flag_gnu_v3 = 1 << 2,
      pp_c_flag_last_bit = 3
-  } pp_c_pretty_print_flags;
+  };
 
 
 /* The data type used to bundle information necessary for pretty-printing
    a C or C++ entity.  */
-typedef struct c_pretty_print_info c_pretty_printer;
+struct c_pretty_printer;
 
 /* The type of a C pretty-printer 'member' function.  */
 typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
 
 /* The datatype that contains information necessary for pretty-printing
    a tree that represents a C construct.  Any pretty-printer for a
-   language using C/c++ syntax can derive from this datatype and reuse
-   facilities provided here.  It can do so by having a subobject of type
-   c_pretty_printer and override the macro pp_c_base to return a pointer
-   to that subobject.  Such a pretty-printer has the responsibility to
-   initialize the pp_base() part, then call pp_c_pretty_printer_init
-   to set up the components that are specific to the C pretty-printer.
-   A derived pretty-printer can override any function listed in the
-   vtable below.  See cp/cxx-pretty-print.h and cp/cxx-pretty-print.c
-   for an example of derivation.  */
-struct c_pretty_print_info
+   language using C syntax can derive from this datatype and reuse
+   facilities provided here.  A derived pretty-printer can override
+   any function listed in the vtable below.  See cp/cxx-pretty-print.h
+   and cp/cxx-pretty-print.c for an example of derivation.  */
+struct c_pretty_printer : pretty_printer
 {
-  pretty_printer base;
   /* Points to the first element of an array of offset-list.
      Not used yet.  */
   int *offset_list;
@@ -91,70 +85,40 @@ struct c_pretty_print_info
   c_pretty_print_fn expression;
 };
 
-/* Override the pp_base macro.  Derived pretty-printers should not
-   touch this macro.  Instead they should override pp_c_base instead.  */
-#undef pp_base
-#define pp_base(PP)  (&pp_c_base (PP)->base)
-
-
 #define pp_c_tree_identifier(PPI, ID)              \
    pp_c_identifier (PPI, IDENTIFIER_POINTER (ID))
 
-#define pp_declaration(PPI, T)                    \
-   pp_c_base (PPI)->declaration (pp_c_base (PPI), T)
-#define pp_declaration_specifiers(PPI, D)         \
-   pp_c_base (PPI)->declaration_specifiers (pp_c_base (PPI), D)
-#define pp_abstract_declarator(PP, D)             \
-   pp_c_base (PP)->abstract_declarator (pp_c_base (PP), D)
-#define pp_type_specifier_seq(PPI, D)             \
-   pp_c_base (PPI)->type_specifier_seq (pp_c_base (PPI), D)
-#define pp_declarator(PPI, D)                     \
-   pp_c_base (PPI)->declarator (pp_c_base (PPI), D)
-#define pp_direct_declarator(PPI, D)              \
-   pp_c_base (PPI)->direct_declarator (pp_c_base (PPI), D)
+#define pp_declaration(PP, T)           (PP)->declaration (PP, T)
+#define pp_declaration_specifiers(PP, D)         \
+   (PP)->declaration_specifiers (PP, D)
+#define pp_abstract_declarator(PP, D)   (PP)->abstract_declarator (PP, D)
+#define pp_type_specifier_seq(PP, D)    (PP)->type_specifier_seq (PP, D)
+#define pp_declarator(PP, D)            (PP)->declarator (PP, D)
+#define pp_direct_declarator(PP, D)     (PP)->direct_declarator (PP, D)
 #define pp_direct_abstract_declarator(PP, D)      \
-   pp_c_base (PP)->direct_abstract_declarator (pp_c_base (PP), D)
-#define pp_ptr_operator(PP, D)                    \
-   pp_c_base (PP)->ptr_operator (pp_c_base (PP), D)
-#define pp_parameter_list(PPI, T)                 \
-  pp_c_base (PPI)->parameter_list (pp_c_base (PPI), T)
-#define pp_type_id(PPI, D)                        \
-  pp_c_base (PPI)->type_id (pp_c_base (PPI), D)
-#define pp_simple_type_specifier(PP, T)           \
-  pp_c_base (PP)->simple_type_specifier (pp_c_base (PP), T)
-#define pp_function_specifier(PP, D)              \
-  pp_c_base (PP)->function_specifier (pp_c_base (PP), D)
+   (PP)->direct_abstract_declarator (PP, D)
+#define pp_ptr_operator(PP, D)          (PP)->ptr_operator (PP, D)
+#define pp_parameter_list(PP, T)        (PP)->parameter_list (PP, T)
+#define pp_type_id(PP, D)               (PP)->type_id (PP, D)
+#define pp_simple_type_specifier(PP, T) (PP)->simple_type_specifier (PP, T)
+#define pp_function_specifier(PP, D)    (PP)->function_specifier (PP, D)
 #define pp_storage_class_specifier(PP, D)         \
-  pp_c_base (PP)->storage_class_specifier (pp_c_base (PP), D);
+  (PP)->storage_class_specifier (PP, D);
 
-#define pp_statement(PPI, S)                      \
-  pp_c_base (PPI)->statement (pp_c_base (PPI), S)
+#define pp_statement(PP, S)             (PP)->statement (PP, S)
 
-#define pp_constant(PP, E) \
-  pp_c_base (PP)->constant (pp_c_base (PP), E)
-#define pp_id_expression(PP, E)  \
-  pp_c_base (PP)->id_expression (pp_c_base (PP), E)
-#define pp_primary_expression(PPI, E)             \
-  pp_c_base (PPI)->primary_expression (pp_c_base (PPI), E)
-#define pp_postfix_expression(PPI, E)             \
-  pp_c_base (PPI)->postfix_expression (pp_c_base (PPI), E)
-#define pp_unary_expression(PPI, E)               \
-  pp_c_base (PPI)->unary_expression (pp_c_base (PPI), E)
-#define pp_initializer(PPI, E)                    \
-  pp_c_base (PPI)->initializer (pp_c_base (PPI), E)
-#define pp_multiplicative_expression(PPI, E)      \
-  pp_c_base (PPI)->multiplicative_expression (pp_c_base (PPI), E)
-#define pp_conditional_expression(PPI, E)         \
-  pp_c_base (PPI)->conditional_expression (pp_c_base (PPI), E)
-#define pp_assignment_expression(PPI, E)          \
-   pp_c_base (PPI)->assignment_expression (pp_c_base (PPI), E)
-#define pp_expression(PP, E)                      \
-   pp_c_base (PP)->expression (pp_c_base (PP), E)
+#define pp_constant(PP, E)              (PP)->constant (PP, E)
+#define pp_id_expression(PP, E)         (PP)->id_expression (PP, E)
+#define pp_primary_expression(PP, E)    (PP)->primary_expression (PP, E)
+#define pp_postfix_expression(PP, E)    (PP)->postfix_expression (PP, E)
+#define pp_unary_expression(PP, E)      (PP)->unary_expression (PP, E)
+#define pp_initializer(PP, E)           (PP)->initializer (PP, E)
+#define pp_multiplicative_expression(PP, E)      \
+  (PP)->multiplicative_expression (PP, E)
+#define pp_conditional_expression(PP, E) (PP)->conditional_expression (PP, E)
+#define pp_assignment_expression(PP, E) (PP)->assignment_expression (PP, E)
+#define pp_expression(PP, E)            (PP)->expression (PP, E)
 
-
-/* Returns the c_pretty_printer base object of PRETTY-PRINTER.  This
-   macro must be overridden by any subclass of c_pretty_print_info.  */
-#define pp_c_base(PP)  (PP)
 
 extern void pp_c_pretty_printer_init (c_pretty_printer *);
 void pp_c_whitespace (c_pretty_printer *);

@@ -1,3 +1,56 @@
+2013-08-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (pp_c_base): Remove.
+	(cxx_pretty_printer): Derive from c_pretty_printer.
+	Adjust macros using pp_c_base.
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Do not call pp_base.
+	* cxx-pretty-print.c (pp_cxx_nonconsecutive_character): Likewise.
+	(pp_cxx_colon_colon): Likewise.
+	(pp_cxx_separate_with): Likewise.
+	(pp_cxx_storage_class_specifier): Do not call pp_c_base.
+	(pp_cxx_expression_list): Likewise.
+	(pp_cxx_space_for_pointer_operator): Likewise.
+	(pp_cxx_init_declarator): Likewise.
+	(pp_cxx_call_argument_list): Likewise.
+	(pp_cxx_constant): Likewise.
+	(pp_cxx_postfix_expression): Likewise.
+	(pp_cxx_new_expression): Likewise.
+	(pp_cxx_unary_expression): Likewise.
+	(pp_cxx_cast_expression): Likewise.
+	(pp_cxx_conditional_expression): Likewise.
+	(pp_cxx_assignment_expression): Likewise.
+	(pp_cxx_expression): Likewise.
+	(pp_cxx_function_specifier): Likewise.
+	(pp_cxx_decl_specifier_seq): Likewise.
+	(pp_cxx_simple_type_specifier): Likewise.
+	(pp_cxx_type_specifier_seq): Likewise.
+	(pp_cxx_ptr_operator): Likewise.
+	(pp_cxx_parameter_declaration_clause): Likewise.
+	(pp_cxx_direct_declarator): Likewise.
+	(pp_cxx_direct_abstract_declarator): Likewise.
+	(pp_cxx_type_id): Likewise.
+	(pp_cxx_statement): Likewise.
+	(pp_cxx_pretty_printer_init): Tidy.
+	* error.c (init_error): Do not use pp_base.
+	(dump_aggr_type): Likewise.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_global_iord): Likewise.
+	(dump_decl): Likewise.
+	(dump_function_decl): Likewise.
+	(dump_ref_qualifier): Likewise.
+	(reinit_cxx_pp): Likewise.
+	(decl_as_dwarf_string): Likewise.
+	(lang_decl_dwarf_name): Likewise.
+	(type_to_string): Likewise.
+	(cv_to_string): Likewise.
+	(cxx_print_error_function): Likewise.
+	(cp_diagnostic_starter): Likewise.
+	(cp_diagnostic_finalizer): Likewise.
+	(cp_print_error_function): Likewise.
+	(print_instantiation_context): Likewise.
+	(cp_printer): Likewise.
+
 2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (dump_type_prefix): Use specialized pretty printer

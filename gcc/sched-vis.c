@@ -859,7 +859,7 @@ str_pattern_slim (const_rtx x)
 {
   pretty_printer *pp = init_rtl_slim_pretty_print (NULL);
   print_pattern (pp, x, 0);
-  return pp_base_formatted_text (pp);
+  return pp_formatted_text (pp);
 }
 
 /* Emit a slim dump of X (an insn) to stderr.  */

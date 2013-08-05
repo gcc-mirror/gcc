@@ -1,3 +1,38 @@
+2013-08-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_base): Remove.  Adjust dependent macros.
+	* diagnostic.h (diagnostic_flush_buffer): Adjust.
+	* pretty-print.c (pp_formatted_text_data): Likewise.
+	(pp_indent): Rename from pp_base_indent.
+	(pp_format): Rename from pp_base_format.
+	(pp_output_formatted_text): Rename from pp_base_output_formatted_text.
+	(pp_format_verbatim): Rename from pp_base_format_verbatim.
+	(pp_flush): Rename from pp_base_flush.
+	(pp_set_line_maximum_length): Rename from
+	pp_base_set_line_maximum_length.
+	(pp_clear_output_area): Rename from pp_base_clear_output_area.
+	(pp_set_prefix): Rename from pp_base_set_prefix.
+	(pp_destroy_prefix): Rename from pp_base_destroy_prefix.
+	(pp_emit_prefix): Rename from pp_base_emit_prefix.
+	(pp_append_text): Rename from pp_base_append_text.
+	(pp_formatted_text): Rename from pp_base_formatted_text.
+	(pp_last_position_in_text): Rename from pp_base_last_position_in_text.
+	(pp_remaining_character_count_for_line): Rename from
+	pp_base_remaining_character_count_for_line.
+	(pp_newline): Rename from pp_base_newline.
+	(pp_character): Rename from pp_base_character.
+	(pp_string): Rename from pp_base_string.
+	(pp_maybe_space): Rename from pp_base_maybe_space.
+	* asan.c (asan_pp_string): Adjust.
+	(asan_emit_stack_protection): Likewise.
+	(asan_add_global): Likewise.
+	* sched-vis.c (str_pattern_slim): Adjust pretty printer function call.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* tree-pretty-print.c (pp_tree_identifier): Rename from
+	pp_base_tree_identifier.
+	* tree-pretty-print.h (pp_tree_identifier): Remove macro definition.
+	Declare as function.
+
 2013-08-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (pp_bar_bar): New.

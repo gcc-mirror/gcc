@@ -108,7 +108,7 @@ init_error (void)
   diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = cp_printer;
 
-  pp_construct (pp_base (cxx_pp), NULL, 0);
+  pp_construct (cxx_pp, NULL, 0);
   pp_cxx_pretty_printer_init (cxx_pp);
 }
 
@@ -654,7 +654,7 @@ dump_aggr_type (tree t, int flags)
       if (flags & TFF_CLASS_KEY_OR_ENUM)
 	pp_string (cxx_pp, M_("<anonymous>"));
       else
-	pp_printf (pp_base (cxx_pp), M_("<anonymous %s>"), variety);
+	pp_printf (cxx_pp, M_("<anonymous %s>"), variety);
     }
   else if (LAMBDA_TYPE_P (t))
     {
@@ -706,8 +706,7 @@ dump_type_prefix (tree t, int flags)
 	  {
 	    pp_cxx_whitespace (cxx_pp);
 	    pp_cxx_left_paren (cxx_pp);
-	    pp_c_attributes_display (pp_c_base (cxx_pp),
-				     TYPE_ATTRIBUTES (sub));
+	    pp_c_attributes_display (cxx_pp, TYPE_ATTRIBUTES (sub));
 	  }
 	if (TYPE_PTR_P (t))
 	  pp_star (cxx_pp);
@@ -718,7 +717,7 @@ dump_type_prefix (tree t, int flags)
 	  else
 	    pp_ampersand (cxx_pp);
 	}
-	pp_base (cxx_pp)->padding = pp_before;
+	cxx_pp->padding = pp_before;
 	pp_cxx_cv_qualifier_seq (cxx_pp, t);
       }
       break;
@@ -736,7 +735,7 @@ dump_type_prefix (tree t, int flags)
 	}
       pp_cxx_star (cxx_pp);
       pp_cxx_cv_qualifier_seq (cxx_pp, t);
-      pp_base (cxx_pp)->padding = pp_before;
+      cxx_pp->padding = pp_before;
       break;
 
       /* This can be reached without a pointer when dealing with
@@ -782,7 +781,7 @@ dump_type_prefix (tree t, int flags)
     case FIXED_POINT_TYPE:
     case NULLPTR_TYPE:
       dump_type (t, flags);
-      pp_base (cxx_pp)->padding = pp_before;
+      cxx_pp->padding = pp_before;
       break;
 
     default:
@@ -829,7 +828,7 @@ dump_type_suffix (tree t, int flags)
 	   anyway; they may in g++, but we'll just pretend otherwise.  */
 	dump_parameters (arg, flags & ~TFF_FUNCTION_DEFAULT_ARGUMENTS);
 
-	pp_base (cxx_pp)->padding = pp_before;
+	cxx_pp->padding = pp_before;
 	pp_cxx_cv_qualifiers (cxx_pp, type_memfn_quals (t));
 	dump_ref_qualifier (t, flags);
 	dump_exception_spec (TYPE_RAISES_EXCEPTIONS (t), flags);
@@ -918,7 +917,7 @@ dump_global_iord (tree t)
   else
     gcc_unreachable ();
 
-  pp_printf (pp_base (cxx_pp), p, input_filename);
+  pp_printf (cxx_pp, p, input_filename);
 }
 
 static void
@@ -1048,7 +1047,7 @@ dump_decl (tree t, int flags)
 	  flags &= ~TFF_UNQUALIFIED_NAME;
 	  if (DECL_NAME (t) == NULL_TREE)
             {
-              if (!(pp_c_base (cxx_pp)->flags & pp_c_flag_gnu_v3))
+              if (!(cxx_pp->flags & pp_c_flag_gnu_v3))
                 pp_cxx_ws_string (cxx_pp, M_("{anonymous}"));
               else
                 pp_cxx_ws_string (cxx_pp, M_("(anonymous namespace)"));
@@ -1457,14 +1456,14 @@ dump_function_decl (tree t, int flags)
 
       if (TREE_CODE (fntype) == METHOD_TYPE)
 	{
-	  pp_base (cxx_pp)->padding = pp_before;
+	  cxx_pp->padding = pp_before;
 	  pp_cxx_cv_qualifier_seq (cxx_pp, class_of_this_parm (fntype));
 	  dump_ref_qualifier (fntype, flags);
 	}
 
       if (flags & TFF_EXCEPTION_SPECIFICATION)
 	{
-	  pp_base (cxx_pp)->padding = pp_before;
+	  cxx_pp->padding = pp_before;
 	  dump_exception_spec (exceptions, flags);
 	}
 
@@ -1549,7 +1548,7 @@ dump_ref_qualifier (tree t, int flags ATTRIBUTE_UNUSED)
 {
   if (FUNCTION_REF_QUALIFIED (t))
     {
-      pp_base (cxx_pp)->padding = pp_before;
+      cxx_pp->padding = pp_before;
       if (FUNCTION_RVALUE_QUALIFIED (t))
         pp_cxx_ws_string (cxx_pp, "&&");
       else
@@ -2615,7 +2614,7 @@ static void
 reinit_cxx_pp (void)
 {
   pp_clear_output_area (cxx_pp);
-  pp_base (cxx_pp)->padding = pp_none;
+  cxx_pp->padding = pp_none;
   pp_indentation (cxx_pp) = 0;
   pp_needs_newline (cxx_pp) = false;
   cxx_pp->enclosing_scope = current_function_decl;
@@ -2659,10 +2658,10 @@ decl_as_dwarf_string (tree decl, int flags)
   const char *name;
   /* Curiously, reinit_cxx_pp doesn't reset the flags field, so setting the flag
      here will be adequate to get the desired behaviour.  */
-  pp_c_base (cxx_pp)->flags |= pp_c_flag_gnu_v3;
+  cxx_pp->flags |= pp_c_flag_gnu_v3;
   name = decl_as_string (decl, flags);
   /* Subsequent calls to the pretty printer shouldn't use this style.  */
-  pp_c_base (cxx_pp)->flags &= ~pp_c_flag_gnu_v3;
+  cxx_pp->flags &= ~pp_c_flag_gnu_v3;
   return name;
 }
 
@@ -2691,10 +2690,10 @@ lang_decl_dwarf_name (tree decl, int v, bool translate)
   const char *name;
   /* Curiously, reinit_cxx_pp doesn't reset the flags field, so setting the flag
      here will be adequate to get the desired behaviour.  */
-  pp_c_base (cxx_pp)->flags |= pp_c_flag_gnu_v3;
+  cxx_pp->flags |= pp_c_flag_gnu_v3;
   name = lang_decl_name (decl, v, translate);
   /* Subsequent calls to the pretty printer shouldn't use this style.  */
-  pp_c_base (cxx_pp)->flags &= ~pp_c_flag_gnu_v3;
+  cxx_pp->flags &= ~pp_c_flag_gnu_v3;
   return name;
 }
 
@@ -2861,7 +2860,7 @@ type_to_string (tree typ, int verbose)
       && !uses_template_parms (typ))
     {
       int aka_start; char *p;
-      struct obstack *ob = pp_base (cxx_pp)->buffer->obstack;
+      struct obstack *ob = cxx_pp->buffer->obstack;
       /* Remember the end of the initial dump.  */
       int len = obstack_object_size (ob);
       tree aka = strip_typedefs (typ);
@@ -2943,7 +2942,7 @@ static const char *
 cv_to_string (tree p, int v)
 {
   reinit_cxx_pp ();
-  pp_base (cxx_pp)->padding = v ? pp_before : pp_none;
+  cxx_pp->padding = v ? pp_before : pp_none;
   pp_cxx_cv_qualifier_seq (cxx_pp, p);
   return pp_formatted_text (cxx_pp);
 }
@@ -2954,7 +2953,7 @@ cxx_print_error_function (diagnostic_context *context, const char *file,
 			  diagnostic_info *diagnostic)
 {
   lhd_print_error_function (context, file, diagnostic);
-  pp_base_set_prefix (context->printer, file);
+  pp_set_prefix (context->printer, file);
   maybe_print_instantiation_context (context);
 }
 
@@ -2966,7 +2965,7 @@ cp_diagnostic_starter (diagnostic_context *context,
   cp_print_error_function (context, diagnostic);
   maybe_print_instantiation_context (context);
   maybe_print_constexpr_context (context);
-  pp_base_set_prefix (context->printer, diagnostic_build_prefix (context,
+  pp_set_prefix (context->printer, diagnostic_build_prefix (context,
 								 diagnostic));
 }
 
@@ -2975,7 +2974,7 @@ cp_diagnostic_finalizer (diagnostic_context *context,
 			 diagnostic_info *diagnostic)
 {
   virt_loc_aware_diagnostic_finalizer (context, diagnostic);
-  pp_base_destroy_prefix (context->printer);
+  pp_destroy_prefix (context->printer);
 }
 
 /* Print current function onto BUFFER, in the process of reporting
@@ -2996,10 +2995,10 @@ cp_print_error_function (diagnostic_context *context,
       char *new_prefix = (file && abstract_origin == NULL)
 			 ? file_name_as_prefix (context, file) : NULL;
 
-      pp_base_set_prefix (context->printer, new_prefix);
+      pp_set_prefix (context->printer, new_prefix);
 
       if (current_function_decl == NULL)
-	pp_base_string (context->printer, _("At global scope:"));
+	pp_string (context->printer, _("At global scope:"));
       else
 	{
 	  tree fndecl, ao;
@@ -3062,8 +3061,8 @@ cp_print_error_function (diagnostic_context *context,
 	      if (fndecl)
 		{
 		  expanded_location s = expand_location (*locus);
-		  pp_base_character (context->printer, ',');
-		  pp_base_newline (context->printer);
+		  pp_character (context->printer, ',');
+		  pp_newline (context->printer);
 		  if (s.file != NULL)
 		    {
 		      if (context->show_column && s.column != 0)
@@ -3083,12 +3082,12 @@ cp_print_error_function (diagnostic_context *context,
 			       cxx_printable_name_translate (fndecl, 2));
 		}
 	    }
-	  pp_base_character (context->printer, ':');
+	  pp_character (context->printer, ':');
 	}
-      pp_base_newline (context->printer);
+      pp_newline (context->printer);
 
       diagnostic_set_last_function (context, diagnostic);
-      pp_base_destroy_prefix (context->printer);
+      pp_destroy_prefix (context->printer);
       context->printer->prefix = old_prefix;
     }
 }
@@ -3267,7 +3266,7 @@ print_instantiation_partial_context (diagnostic_context *context,
     }
   print_instantiation_partial_context_line (context, NULL, loc,
 					    /*recursive_p=*/false);
-  pp_base_newline (context->printer);
+  pp_newline (context->printer);
 }
 
 /* Called from cp_thing to print the template context for an error.  */
@@ -3287,7 +3286,7 @@ print_instantiation_context (void)
 {
   print_instantiation_partial_context
     (global_dc, current_instantiation (), input_location);
-  pp_base_newline (global_dc->printer);
+  pp_newline (global_dc->printer);
   diagnostic_flush_buffer (global_dc);
 }
 
@@ -3312,7 +3311,7 @@ maybe_print_constexpr_context (diagnostic_context *context)
 	pp_verbatim (context->printer,
 		     _("%r%s:%d:%R   in constexpr expansion of %qs"),
 		     "locus", xloc.file, xloc.line, s);
-      pp_base_newline (context->printer);
+      pp_newline (context->printer);
     }
 }
 
@@ -3384,7 +3383,7 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       return false;
     }
 
-  pp_base_string (pp, result);
+  pp_string (pp, result);
   if (set_locus && t != NULL)
     *text->locus = location_of (t);
   return true;
