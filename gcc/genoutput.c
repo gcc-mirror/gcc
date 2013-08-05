@@ -404,9 +404,9 @@ output_insn_data (void)
 	}
 
       if (d->name && d->name[0] != '*')
-	printf ("    (insn_gen_fn) gen_%s,\n", d->name);
+	printf ("    { (insn_gen_fn::stored_funcptr) gen_%s },\n", d->name);
       else
-	printf ("    0,\n");
+	printf ("    { 0 },\n");
 
       printf ("    &operand_data[%d],\n", d->operand_number);
       printf ("    %d,\n", d->n_generator_args);

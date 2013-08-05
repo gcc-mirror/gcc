@@ -1,3 +1,13 @@
+2013-08-05  Oleg Endo <olegendo@gcc.gnu.org>
+
+	PR other/12081
+	* recog.h (rtx (*insn_gen_fn) (rtx, ...)): Replace typedef with	new
+	class insn_gen_fn.
+	* expr.c (move_by_pieces_1, store_by_pieces_2): Replace argument
+	rtx (*) (rtx, ...) with insn_gen_fn.
+	* genoutput.c (output_insn_data): Cast gen_? function pointers to
+	insn_gen_fn::stored_funcptr.  Add initializer braces.
+
 2013-08-05  David Malcolm  <dmalcolm@redhat.com>
 
 	Rewrite how instances of passes are cloned to remove assumptions
