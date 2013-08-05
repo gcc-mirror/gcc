@@ -253,25 +253,42 @@ execute_build_cfg (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_build_cfg =
+namespace {
+
+const pass_data pass_data_build_cfg =
 {
- {
-  GIMPLE_PASS,
-  "cfg",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_build_cfg,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_CFG,				/* tv_id */
-  PROP_gimple_leh, 			/* properties_required */
-  PROP_cfg | PROP_loops,		/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_stmts			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "cfg", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_CFG, /* tv_id */
+  PROP_gimple_leh, /* properties_required */
+  ( PROP_cfg | PROP_loops ), /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_stmts, /* todo_flags_finish */
 };
+
+class pass_build_cfg : public gimple_opt_pass
+{
+public:
+  pass_build_cfg(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_build_cfg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_build_cfg (); }
+
+}; // class pass_build_cfg
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_build_cfg (gcc::context *ctxt)
+{
+  return new pass_build_cfg (ctxt);
+}
 
 
 /* Return true if T is a computed goto.  */
@@ -7890,25 +7907,42 @@ split_critical_edges (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_split_crit_edges =
+namespace {
+
+const pass_data pass_data_split_crit_edges =
 {
- {
-  GIMPLE_PASS,
-  "crited",                          /* name */
-  OPTGROUP_NONE,                 /* optinfo_flags */
-  NULL,                          /* gate */
-  split_critical_edges,          /* execute */
-  NULL,                          /* sub */
-  NULL,                          /* next */
-  0,                             /* static_pass_number */
-  TV_TREE_SPLIT_EDGES,           /* tv_id */
-  PROP_cfg,                      /* properties required */
-  PROP_no_crit_edges,            /* properties_provided */
-  0,                             /* properties_destroyed */
-  0,                             /* todo_flags_start */
-  TODO_verify_flow               /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "crited", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SPLIT_EDGES, /* tv_id */
+  PROP_cfg, /* properties_required */
+  PROP_no_crit_edges, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
 };
+
+class pass_split_crit_edges : public gimple_opt_pass
+{
+public:
+  pass_split_crit_edges(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_split_crit_edges, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return split_critical_edges (); }
+
+}; // class pass_split_crit_edges
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_split_crit_edges (gcc::context *ctxt)
+{
+  return new pass_split_crit_edges (ctxt);
+}
 
 
 /* Build a ternary operation and gimplify it.  Emit code before GSI.
@@ -8044,25 +8078,42 @@ extract_true_false_edges_from_block (basic_block b,
     }
 }
 
-struct gimple_opt_pass pass_warn_function_return =
+namespace {
+
+const pass_data pass_data_warn_function_return =
 {
- {
-  GIMPLE_PASS,
-  "*warn_function_return",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_warn_function_return,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*warn_function_return", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_warn_function_return : public gimple_opt_pass
+{
+public:
+  pass_warn_function_return(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_warn_function_return, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_warn_function_return (); }
+
+}; // class pass_warn_function_return
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_warn_function_return (gcc::context *ctxt)
+{
+  return new pass_warn_function_return (ctxt);
+}
 
 /* Emit noreturn warnings.  */
 
@@ -8081,25 +8132,43 @@ gate_warn_function_noreturn (void)
   return warn_suggest_attribute_noreturn;
 }
 
-struct gimple_opt_pass pass_warn_function_noreturn =
+namespace {
+
+const pass_data pass_data_warn_function_noreturn =
 {
- {
-  GIMPLE_PASS,
-  "*warn_function_noreturn",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_warn_function_noreturn,		/* gate */
-  execute_warn_function_noreturn,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*warn_function_noreturn", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_warn_function_noreturn : public gimple_opt_pass
+{
+public:
+  pass_warn_function_noreturn(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_warn_function_noreturn, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_warn_function_noreturn (); }
+  unsigned int execute () { return execute_warn_function_noreturn (); }
+
+}; // class pass_warn_function_noreturn
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_warn_function_noreturn (gcc::context *ctxt)
+{
+  return new pass_warn_function_noreturn (ctxt);
+}
 
 
 /* Walk a gimplified function and warn for functions whose return value is
@@ -8180,25 +8249,43 @@ gate_warn_unused_result (void)
   return flag_warn_unused_result;
 }
 
-struct gimple_opt_pass pass_warn_unused_result =
+namespace {
+
+const pass_data pass_data_warn_unused_result =
 {
-  {
-    GIMPLE_PASS,
-    "*warn_unused_result",		/* name */
-    OPTGROUP_NONE,                        /* optinfo_flags */
-    gate_warn_unused_result,		/* gate */
-    run_warn_unused_result,		/* execute */
-    NULL,				/* sub */
-    NULL,				/* next */
-    0,					/* static_pass_number */
-    TV_NONE,				/* tv_id */
-    PROP_gimple_any,			/* properties_required */
-    0,					/* properties_provided */
-    0,					/* properties_destroyed */
-    0,					/* todo_flags_start */
-    0,					/* todo_flags_finish */
-  }
+  GIMPLE_PASS, /* type */
+  "*warn_unused_result", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_warn_unused_result : public gimple_opt_pass
+{
+public:
+  pass_warn_unused_result(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_warn_unused_result, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_warn_unused_result (); }
+  unsigned int execute () { return run_warn_unused_result (); }
+
+}; // class pass_warn_unused_result
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_warn_unused_result (gcc::context *ctxt)
+{
+  return new pass_warn_unused_result (ctxt);
+}
 
 
 /* Garbage collection support for edge_def.  */

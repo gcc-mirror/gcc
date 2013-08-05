@@ -795,25 +795,42 @@ compute_alignments (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_compute_alignments =
+namespace {
+
+const pass_data pass_data_compute_alignments =
 {
- {
-  RTL_PASS,
-  "alignments",                         /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  compute_alignments,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing               /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "alignments", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_compute_alignments : public rtl_opt_pass
+{
+public:
+  pass_compute_alignments(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_compute_alignments, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return compute_alignments (); }
+
+}; // class pass_compute_alignments
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_compute_alignments (gcc::context *ctxt)
+{
+  return new pass_compute_alignments (ctxt);
+}
 
 
 /* Make a pass over all insns and compute their actual lengths by shortening
@@ -4409,25 +4426,42 @@ rest_of_handle_final (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_final =
+namespace {
+
+const pass_data pass_data_final =
 {
- {
-  RTL_PASS,
-  "final",                              /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_final,                 /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_FINAL,                             /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "final", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_FINAL, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_final : public rtl_opt_pass
+{
+public:
+  pass_final(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_final, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_handle_final (); }
+
+}; // class pass_final
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_final (gcc::context *ctxt)
+{
+  return new pass_final (ctxt);
+}
 
 
 static unsigned int
@@ -4438,25 +4472,42 @@ rest_of_handle_shorten_branches (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_shorten_branches =
+namespace {
+
+const pass_data pass_data_shorten_branches =
 {
- {
-  RTL_PASS,
-  "shorten",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_shorten_branches,      /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_SHORTEN_BRANCH,                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "shorten", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_SHORTEN_BRANCH, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_shorten_branches : public rtl_opt_pass
+{
+public:
+  pass_shorten_branches(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_shorten_branches, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_handle_shorten_branches (); }
+
+}; // class pass_shorten_branches
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_shorten_branches (gcc::context *ctxt)
+{
+  return new pass_shorten_branches (ctxt);
+}
 
 
 static unsigned int
@@ -4585,22 +4636,39 @@ rest_of_clean_state (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_clean_state =
+namespace {
+
+const pass_data pass_data_clean_state =
 {
- {
-  RTL_PASS,
-  "*clean_state",                       /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_clean_state,                  /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_FINAL,                             /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  PROP_rtl,                             /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "*clean_state", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_FINAL, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  PROP_rtl, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_clean_state : public rtl_opt_pass
+{
+public:
+  pass_clean_state(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_clean_state, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_clean_state (); }
+
+}; // class pass_clean_state
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_clean_state (gcc::context *ctxt)
+{
+  return new pass_clean_state (ctxt);
+}

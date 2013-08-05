@@ -2001,25 +2001,42 @@ set_nothrow_function_flags (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_set_nothrow_function_flags =
+namespace {
+
+const pass_data pass_data_set_nothrow_function_flags =
 {
- {
-  RTL_PASS,
-  "nothrow",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  set_nothrow_function_flags,           /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "nothrow", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_set_nothrow_function_flags : public rtl_opt_pass
+{
+public:
+  pass_set_nothrow_function_flags(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_set_nothrow_function_flags, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return set_nothrow_function_flags (); }
+
+}; // class pass_set_nothrow_function_flags
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_set_nothrow_function_flags (gcc::context *ctxt)
+{
+  return new pass_set_nothrow_function_flags (ctxt);
+}
 
 
 /* Various hooks for unwind library.  */
@@ -2615,25 +2632,43 @@ gate_convert_to_eh_region_ranges (void)
   return true;
 }
 
-struct rtl_opt_pass pass_convert_to_eh_region_ranges =
+namespace {
+
+const pass_data pass_data_convert_to_eh_region_ranges =
 {
- {
-  RTL_PASS,
-  "eh_ranges",                          /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_convert_to_eh_region_ranges,	/* gate */
-  convert_to_eh_region_ranges,          /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0              			/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "eh_ranges", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_convert_to_eh_region_ranges : public rtl_opt_pass
+{
+public:
+  pass_convert_to_eh_region_ranges(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_convert_to_eh_region_ranges, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_convert_to_eh_region_ranges (); }
+  unsigned int execute () { return convert_to_eh_region_ranges (); }
+
+}; // class pass_convert_to_eh_region_ranges
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_convert_to_eh_region_ranges (gcc::context *ctxt)
+{
+  return new pass_convert_to_eh_region_ranges (ctxt);
+}
 
 static void
 push_uleb128 (vec<uchar, va_gc> **data_area, unsigned int value)

@@ -88,25 +88,44 @@ execute_cleanup_cfg_post_optimizing (void)
   return todo;
 }
 
-struct gimple_opt_pass pass_cleanup_cfg_post_optimizing =
+namespace {
+
+const pass_data pass_data_cleanup_cfg_post_optimizing =
 {
- {
-  GIMPLE_PASS,
-  "optimized",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_cleanup_cfg_post_optimizing,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_CLEANUP_CFG,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_remove_unused_locals             /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "optimized", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_CLEANUP_CFG, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_remove_unused_locals, /* todo_flags_finish */
 };
+
+class pass_cleanup_cfg_post_optimizing : public gimple_opt_pass
+{
+public:
+  pass_cleanup_cfg_post_optimizing(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_cleanup_cfg_post_optimizing, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () {
+    return execute_cleanup_cfg_post_optimizing ();
+  }
+
+}; // class pass_cleanup_cfg_post_optimizing
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_cleanup_cfg_post_optimizing (gcc::context *ctxt)
+{
+  return new pass_cleanup_cfg_post_optimizing (ctxt);
+}
 
 /* IPA passes, compilation of earlier functions or inlining
    might have changed some properties, such as marked functions nothrow,
@@ -211,22 +230,40 @@ execute_fixup_cfg (void)
   return todo;
 }
 
-struct gimple_opt_pass pass_fixup_cfg =
+namespace {
+
+const pass_data pass_data_fixup_cfg =
 {
- {
-  GIMPLE_PASS,
-  "*free_cfg_annotations",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_fixup_cfg,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*free_cfg_annotations", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_fixup_cfg : public gimple_opt_pass
+{
+public:
+  pass_fixup_cfg(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_fixup_cfg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_fixup_cfg (ctxt_); }
+  unsigned int execute () { return execute_fixup_cfg (); }
+
+}; // class pass_fixup_cfg
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_fixup_cfg (gcc::context *ctxt)
+{
+  return new pass_fixup_cfg (ctxt);
+}

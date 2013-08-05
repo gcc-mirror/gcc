@@ -330,25 +330,43 @@ gate_all_early_local_passes (void)
   return (!seen_error () && !in_lto_p);
 }
 
-struct simple_ipa_opt_pass pass_early_local_passes =
+namespace {
+
+const pass_data pass_data_early_local_passes =
 {
- {
-  SIMPLE_IPA_PASS,
-  "early_local_cleanups",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_all_early_local_passes,		/* gate */
-  execute_all_early_local_passes,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_EARLY_LOCAL,			/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_remove_functions	 		/* todo_flags_finish */
- }
+  SIMPLE_IPA_PASS, /* type */
+  "early_local_cleanups", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_EARLY_LOCAL, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_remove_functions, /* todo_flags_finish */
 };
+
+class pass_early_local_passes : public simple_ipa_opt_pass
+{
+public:
+  pass_early_local_passes(gcc::context *ctxt)
+    : simple_ipa_opt_pass(pass_data_early_local_passes, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_all_early_local_passes (); }
+  unsigned int execute () { return execute_all_early_local_passes (); }
+
+}; // class pass_early_local_passes
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_early_local_passes (gcc::context *ctxt)
+{
+  return new pass_early_local_passes (ctxt);
+}
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -360,25 +378,42 @@ gate_all_early_optimizations (void)
 	  && !seen_error ());
 }
 
-static struct gimple_opt_pass pass_all_early_optimizations =
+namespace {
+
+const pass_data pass_data_all_early_optimizations =
 {
- {
-  GIMPLE_PASS,
-  "early_optimizations",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_all_early_optimizations,		/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "early_optimizations", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_all_early_optimizations : public gimple_opt_pass
+{
+public:
+  pass_all_early_optimizations(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_all_early_optimizations, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_all_early_optimizations (); }
+
+}; // class pass_all_early_optimizations
+
+} // anon namespace
+
+static gimple_opt_pass *
+make_pass_all_early_optimizations (gcc::context *ctxt)
+{
+  return new pass_all_early_optimizations (ctxt);
+}
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -388,25 +423,42 @@ gate_all_optimizations (void)
   return optimize >= 1 && !optimize_debug;
 }
 
-static struct gimple_opt_pass pass_all_optimizations =
+namespace {
+
+const pass_data pass_data_all_optimizations =
 {
- {
-  GIMPLE_PASS,
-  "*all_optimizations",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_all_optimizations,		/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_OPTIMIZE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*all_optimizations", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_OPTIMIZE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_all_optimizations : public gimple_opt_pass
+{
+public:
+  pass_all_optimizations(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_all_optimizations, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_all_optimizations (); }
+
+}; // class pass_all_optimizations
+
+} // anon namespace
+
+static gimple_opt_pass *
+make_pass_all_optimizations (gcc::context *ctxt)
+{
+  return new pass_all_optimizations (ctxt);
+}
 
 /* Gate: execute, or not, all of the non-trivial optimizations.  */
 
@@ -416,25 +468,42 @@ gate_all_optimizations_g (void)
   return optimize >= 1 && optimize_debug;
 }
 
-static struct gimple_opt_pass pass_all_optimizations_g =
+namespace {
+
+const pass_data pass_data_all_optimizations_g =
 {
- {
-  GIMPLE_PASS,
-  "*all_optimizations_g",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_all_optimizations_g,		/* gate */
-  NULL,					/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_OPTIMIZE,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "*all_optimizations_g", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_OPTIMIZE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_all_optimizations_g : public gimple_opt_pass
+{
+public:
+  pass_all_optimizations_g(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_all_optimizations_g, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_all_optimizations_g (); }
+
+}; // class pass_all_optimizations_g
+
+} // anon namespace
+
+static gimple_opt_pass *
+make_pass_all_optimizations_g (gcc::context *ctxt)
+{
+  return new pass_all_optimizations_g (ctxt);
+}
 
 static bool
 gate_rest_of_compilation (void)
@@ -444,25 +513,42 @@ gate_rest_of_compilation (void)
   return !(rtl_dump_and_exit || flag_syntax_only || seen_error ());
 }
 
-static struct rtl_opt_pass pass_rest_of_compilation =
+namespace {
+
+const pass_data pass_data_rest_of_compilation =
 {
- {
-  RTL_PASS,
-  "*rest_of_compilation",               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_rest_of_compilation,             /* gate */
-  NULL,                                 /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REST_OF_COMPILATION,               /* tv_id */
-  PROP_rtl,                             /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "*rest_of_compilation", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_REST_OF_COMPILATION, /* tv_id */
+  PROP_rtl, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_rest_of_compilation : public rtl_opt_pass
+{
+public:
+  pass_rest_of_compilation(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rest_of_compilation, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_rest_of_compilation (); }
+
+}; // class pass_rest_of_compilation
+
+} // anon namespace
+
+static rtl_opt_pass *
+make_pass_rest_of_compilation (gcc::context *ctxt)
+{
+  return new pass_rest_of_compilation (ctxt);
+}
 
 static bool
 gate_postreload (void)
@@ -470,25 +556,42 @@ gate_postreload (void)
   return reload_completed;
 }
 
-static struct rtl_opt_pass pass_postreload =
+namespace {
+
+const pass_data pass_data_postreload =
 {
- {
-  RTL_PASS,
-  "*all-postreload",                        /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_postreload,                      /* gate */
-  NULL,                                 /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_POSTRELOAD,                        /* tv_id */
-  PROP_rtl,                             /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing               /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "*all-postreload", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_POSTRELOAD, /* tv_id */
+  PROP_rtl, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_postreload : public rtl_opt_pass
+{
+public:
+  pass_postreload(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_postreload, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_postreload (); }
+
+}; // class pass_postreload
+
+} // anon namespace
+
+static rtl_opt_pass *
+make_pass_postreload (gcc::context *ctxt)
+{
+  return new pass_postreload (ctxt);
+}
 
 
 

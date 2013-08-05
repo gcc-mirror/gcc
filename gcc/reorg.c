@@ -3852,25 +3852,43 @@ rest_of_handle_delay_slots (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_delay_slots =
+namespace {
+
+const pass_data pass_data_delay_slots =
 {
- {
-  RTL_PASS,
-  "dbr",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_delay_slots,              /* gate */
-  rest_of_handle_delay_slots,           /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_DBR_SCHED,                         /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "dbr", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_DBR_SCHED, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_delay_slots : public rtl_opt_pass
+{
+public:
+  pass_delay_slots(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_delay_slots, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_delay_slots (); }
+  unsigned int execute () { return rest_of_handle_delay_slots (); }
+
+}; // class pass_delay_slots
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_delay_slots (gcc::context *ctxt)
+{
+  return new pass_delay_slots (ctxt);
+}
 
 /* Machine dependent reorg pass.  */
 static bool
@@ -3887,22 +3905,40 @@ rest_of_handle_machine_reorg (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_machine_reorg =
+namespace {
+
+const pass_data pass_data_machine_reorg =
 {
- {
-  RTL_PASS,
-  "mach",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_machine_reorg,            /* gate */
-  rest_of_handle_machine_reorg,         /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_MACH_DEP,                          /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "mach", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_machine_reorg : public rtl_opt_pass
+{
+public:
+  pass_machine_reorg(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_machine_reorg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_machine_reorg (); }
+  unsigned int execute () { return rest_of_handle_machine_reorg (); }
+
+}; // class pass_machine_reorg
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_machine_reorg (gcc::context *ctxt)
+{
+  return new pass_machine_reorg (ctxt);
+}

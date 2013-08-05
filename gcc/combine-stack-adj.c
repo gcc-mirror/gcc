@@ -643,22 +643,40 @@ rest_of_handle_stack_adjustments (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_stack_adjustments =
+namespace {
+
+const pass_data pass_data_stack_adjustments =
 {
- {
-  RTL_PASS,
-  "csa",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_stack_adjustments,        /* gate */
-  rest_of_handle_stack_adjustments,     /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_COMBINE_STACK_ADJUST,              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "csa", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_COMBINE_STACK_ADJUST, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_stack_adjustments : public rtl_opt_pass
+{
+public:
+  pass_stack_adjustments(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_stack_adjustments, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_stack_adjustments (); }
+  unsigned int execute () { return rest_of_handle_stack_adjustments (); }
+
+}; // class pass_stack_adjustments
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_stack_adjustments (gcc::context *ctxt)
+{
+  return new pass_stack_adjustments (ctxt);
+}

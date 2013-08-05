@@ -10218,23 +10218,40 @@ gate_handle_var_tracking (void)
 
 
 
-struct rtl_opt_pass pass_variable_tracking =
+namespace {
+
+const pass_data pass_data_variable_tracking =
 {
- {
-  RTL_PASS,
-  "vartrack",                           /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_var_tracking,             /* gate */
-  variable_tracking_main,               /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_VAR_TRACKING,                      /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing
-   | TODO_verify_flow                   /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "vartrack", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_VAR_TRACKING, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_rtl_sharing | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_variable_tracking : public rtl_opt_pass
+{
+public:
+  pass_variable_tracking(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_variable_tracking, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_var_tracking (); }
+  unsigned int execute () { return variable_tracking_main (); }
+
+}; // class pass_variable_tracking
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_variable_tracking (gcc::context *ctxt)
+{
+  return new pass_variable_tracking (ctxt);
+}

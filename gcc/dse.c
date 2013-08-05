@@ -3729,42 +3729,78 @@ gate_dse2 (void)
     && dbg_cnt (dse2);
 }
 
-struct rtl_opt_pass pass_rtl_dse1 =
+namespace {
+
+const pass_data pass_data_rtl_dse1 =
 {
- {
-  RTL_PASS,
-  "dse1",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_dse1,                            /* gate */
-  rest_of_handle_dse,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_DSE1,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "dse1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_DSE1, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
 
-struct rtl_opt_pass pass_rtl_dse2 =
+class pass_rtl_dse1 : public rtl_opt_pass
 {
- {
-  RTL_PASS,
-  "dse2",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_dse2,                            /* gate */
-  rest_of_handle_dse,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_DSE2,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+public:
+  pass_rtl_dse1(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_dse1, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_dse1 (); }
+  unsigned int execute () { return rest_of_handle_dse (); }
+
+}; // class pass_rtl_dse1
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_dse1 (gcc::context *ctxt)
+{
+  return new pass_rtl_dse1 (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_rtl_dse2 =
+{
+  RTL_PASS, /* type */
+  "dse2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_DSE2, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_rtl_dse2 : public rtl_opt_pass
+{
+public:
+  pass_rtl_dse2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_dse2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_dse2 (); }
+  unsigned int execute () { return rest_of_handle_dse (); }
+
+}; // class pass_rtl_dse2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_dse2 (gcc::context *ctxt)
+{
+  return new pass_rtl_dse2 (ctxt);
+}

@@ -3292,25 +3292,42 @@ gate_handle_stack_regs (void)
 #endif
 }
 
-struct rtl_opt_pass pass_stack_regs =
+namespace {
+
+const pass_data pass_data_stack_regs =
 {
- {
-  RTL_PASS,
-  "*stack_regs",                        /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_stack_regs,               /* gate */
-  NULL,					/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REG_STACK,                         /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "*stack_regs", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  false, /* has_execute */
+  TV_REG_STACK, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_stack_regs : public rtl_opt_pass
+{
+public:
+  pass_stack_regs(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_stack_regs, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_stack_regs (); }
+
+}; // class pass_stack_regs
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_stack_regs (gcc::context *ctxt)
+{
+  return new pass_stack_regs (ctxt);
+}
 
 /* Convert register usage from flat register file usage to a stack
    register file.  */
@@ -3324,22 +3341,39 @@ rest_of_handle_stack_regs (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_stack_regs_run =
+namespace {
+
+const pass_data pass_data_stack_regs_run =
 {
- {
-  RTL_PASS,
-  "stack",                              /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_stack_regs,            /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REG_STACK,                         /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "stack", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_REG_STACK, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_stack_regs_run : public rtl_opt_pass
+{
+public:
+  pass_stack_regs_run(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_stack_regs_run, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_handle_stack_regs (); }
+
+}; // class pass_stack_regs_run
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_stack_regs_run (gcc::context *ctxt)
+{
+  return new pass_stack_regs_run (ctxt);
+}

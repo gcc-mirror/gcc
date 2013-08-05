@@ -1235,23 +1235,41 @@ execute_rtl_store_motion (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_rtl_store_motion =
+namespace {
+
+const pass_data pass_data_rtl_store_motion =
 {
- {
-  RTL_PASS,
-  "store_motion",                       /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_rtl_store_motion,                /* gate */
-  execute_rtl_store_motion,		/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_LSM,                               /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "store_motion", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_LSM, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_rtl_store_motion : public rtl_opt_pass
+{
+public:
+  pass_rtl_store_motion(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_store_motion, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_rtl_store_motion (); }
+  unsigned int execute () { return execute_rtl_store_motion (); }
+
+}; // class pass_rtl_store_motion
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_store_motion (gcc::context *ctxt)
+{
+  return new pass_rtl_store_motion (ctxt);
+}

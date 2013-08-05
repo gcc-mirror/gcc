@@ -459,25 +459,42 @@ rest_of_pass_free_cfg (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_free_cfg =
+namespace {
+
+const pass_data pass_data_free_cfg =
 {
- {
-  RTL_PASS,
-  "*free_cfg",                          /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_pass_free_cfg,                /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  PROP_cfg,                             /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0,                                    /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "*free_cfg", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  PROP_cfg, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_free_cfg : public rtl_opt_pass
+{
+public:
+  pass_free_cfg(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_free_cfg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_pass_free_cfg (); }
+
+}; // class pass_free_cfg
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_free_cfg (gcc::context *ctxt)
+{
+  return new pass_free_cfg (ctxt);
+}
 
 /* Return RTX to emit after when we want to emit code on the entry of function.  */
 rtx
@@ -3297,45 +3314,79 @@ outof_cfg_layout_mode (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_into_cfg_layout_mode =
+namespace {
+
+const pass_data pass_data_into_cfg_layout_mode =
 {
- {
-  RTL_PASS,
-  "into_cfglayout",                     /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  into_cfg_layout_mode,                 /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_CFG,                               /* tv_id */
-  0,                                    /* properties_required */
-  PROP_cfglayout,                       /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "into_cfglayout", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_CFG, /* tv_id */
+  0, /* properties_required */
+  PROP_cfglayout, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
 
-struct rtl_opt_pass pass_outof_cfg_layout_mode =
+class pass_into_cfg_layout_mode : public rtl_opt_pass
 {
- {
-  RTL_PASS,
-  "outof_cfglayout",                    /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  outof_cfg_layout_mode,                /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_CFG,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  PROP_cfglayout,                       /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+public:
+  pass_into_cfg_layout_mode(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_into_cfg_layout_mode, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return into_cfg_layout_mode (); }
+
+}; // class pass_into_cfg_layout_mode
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_into_cfg_layout_mode (gcc::context *ctxt)
+{
+  return new pass_into_cfg_layout_mode (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_outof_cfg_layout_mode =
+{
+  RTL_PASS, /* type */
+  "outof_cfglayout", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_CFG, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  PROP_cfglayout, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_outof_cfg_layout_mode : public rtl_opt_pass
+{
+public:
+  pass_outof_cfg_layout_mode(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_outof_cfg_layout_mode, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return outof_cfg_layout_mode (); }
+
+}; // class pass_outof_cfg_layout_mode
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_outof_cfg_layout_mode (gcc::context *ctxt)
+{
+  return new pass_outof_cfg_layout_mode (ctxt);
+}
 
 
 /* Link the basic blocks in the correct order, compacting the basic

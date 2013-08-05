@@ -2900,45 +2900,81 @@ predictor_name (enum br_predictor predictor)
   return predictor_info[predictor].name;
 }
 
-struct gimple_opt_pass pass_profile =
+namespace {
+
+const pass_data pass_data_profile =
 {
- {
-  GIMPLE_PASS,
-  "profile_estimate",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_estimate_probability,		/* gate */
-  tree_estimate_probability_driver,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_BRANCH_PROB,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "profile_estimate", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_BRANCH_PROB, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
 
-struct gimple_opt_pass pass_strip_predict_hints =
+class pass_profile : public gimple_opt_pass
 {
- {
-  GIMPLE_PASS,
-  "*strip_predict_hints",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  strip_predict_hints,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_BRANCH_PROB,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa			/* todo_flags_finish */
- }
+public:
+  pass_profile(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_profile, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_estimate_probability (); }
+  unsigned int execute () { return tree_estimate_probability_driver (); }
+
+}; // class pass_profile
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_profile (gcc::context *ctxt)
+{
+  return new pass_profile (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_strip_predict_hints =
+{
+  GIMPLE_PASS, /* type */
+  "*strip_predict_hints", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_BRANCH_PROB, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_strip_predict_hints : public gimple_opt_pass
+{
+public:
+  pass_strip_predict_hints(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_strip_predict_hints, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_strip_predict_hints (ctxt_); }
+  unsigned int execute () { return strip_predict_hints (); }
+
+}; // class pass_strip_predict_hints
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_strip_predict_hints (gcc::context *ctxt)
+{
+  return new pass_strip_predict_hints (ctxt);
+}
 
 /* Rebuild function frequencies.  Passes are in general expected to
    maintain profile by hand, however in some cases this is not possible:

@@ -7449,26 +7449,44 @@ rest_of_handle_cse (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_cse =
+namespace {
+
+const pass_data pass_data_cse =
 {
- {
-  RTL_PASS,
-  "cse1",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_cse,                      /* gate */
-  rest_of_handle_cse,			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_CSE,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "cse1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CSE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_cse : public rtl_opt_pass
+{
+public:
+  pass_cse(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_cse, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_cse (); }
+  unsigned int execute () { return rest_of_handle_cse (); }
+
+}; // class pass_cse
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_cse (gcc::context *ctxt)
+{
+  return new pass_cse (ctxt);
+}
 
 
 static bool
@@ -7511,26 +7529,44 @@ rest_of_handle_cse2 (void)
 }
 
 
-struct rtl_opt_pass pass_cse2 =
+namespace {
+
+const pass_data pass_data_cse2 =
 {
- {
-  RTL_PASS,
-  "cse2",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_cse2,                     /* gate */
-  rest_of_handle_cse2,			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_CSE2,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "cse2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CSE2, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_cse2 : public rtl_opt_pass
+{
+public:
+  pass_cse2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_cse2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_cse2 (); }
+  unsigned int execute () { return rest_of_handle_cse2 (); }
+
+}; // class pass_cse2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_cse2 (gcc::context *ctxt)
+{
+  return new pass_cse2 (ctxt);
+}
 
 static bool
 gate_handle_cse_after_global_opts (void)
@@ -7571,23 +7607,43 @@ rest_of_handle_cse_after_global_opts (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_cse_after_global_opts =
+namespace {
+
+const pass_data pass_data_cse_after_global_opts =
 {
- {
-  RTL_PASS,
-  "cse_local",                          /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_cse_after_global_opts,    /* gate */
-  rest_of_handle_cse_after_global_opts, /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_CSE,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "cse_local", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CSE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_cse_after_global_opts : public rtl_opt_pass
+{
+public:
+  pass_cse_after_global_opts(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_cse_after_global_opts, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_cse_after_global_opts (); }
+  unsigned int execute () {
+    return rest_of_handle_cse_after_global_opts ();
+  }
+
+}; // class pass_cse_after_global_opts
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_cse_after_global_opts (gcc::context *ctxt)
+{
+  return new pass_cse_after_global_opts (ctxt);
+}

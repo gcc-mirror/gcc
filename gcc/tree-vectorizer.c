@@ -197,28 +197,44 @@ gate_vect_slp (void)
           || flag_tree_slp_vectorize == 1);
 }
 
-struct gimple_opt_pass pass_slp_vectorize =
+namespace {
+
+const pass_data pass_data_slp_vectorize =
 {
- {
-  GIMPLE_PASS,
-  "slp",                                /* name */
-  OPTGROUP_LOOP
-  | OPTGROUP_VEC,                       /* optinfo_flags */
-  gate_vect_slp,                        /* gate */
-  execute_vect_slp,                     /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_TREE_SLP_VECTORIZATION,            /* tv_id */
-  PROP_ssa | PROP_cfg,                  /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_ssa
-    | TODO_update_ssa
-    | TODO_verify_stmts                 /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "slp", /* name */
+  OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SLP_VECTORIZATION, /* tv_id */
+  ( PROP_ssa | PROP_cfg ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_update_ssa
+    | TODO_verify_stmts ), /* todo_flags_finish */
 };
+
+class pass_slp_vectorize : public gimple_opt_pass
+{
+public:
+  pass_slp_vectorize(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_slp_vectorize, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_vect_slp (); }
+  unsigned int execute () { return execute_vect_slp (); }
+
+}; // class pass_slp_vectorize
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_slp_vectorize (gcc::context *ctxt)
+{
+  return new pass_slp_vectorize (ctxt);
+}
 
 
 /* Increase alignment of global arrays to improve vectorization potential.
@@ -272,23 +288,40 @@ gate_increase_alignment (void)
 }
 
 
-struct simple_ipa_opt_pass pass_ipa_increase_alignment =
+namespace {
+
+const pass_data pass_data_ipa_increase_alignment =
 {
- {
-  SIMPLE_IPA_PASS,
-  "increase_alignment",                 /* name */
-  OPTGROUP_LOOP
-  | OPTGROUP_VEC,                       /* optinfo_flags */
-  gate_increase_alignment,              /* gate */
-  increase_alignment,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_IPA_OPT,                           /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  SIMPLE_IPA_PASS, /* type */
+  "increase_alignment", /* name */
+  OPTGROUP_LOOP | OPTGROUP_VEC, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_OPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_increase_alignment : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_increase_alignment(gcc::context *ctxt)
+    : simple_ipa_opt_pass(pass_data_ipa_increase_alignment, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_increase_alignment (); }
+  unsigned int execute () { return increase_alignment (); }
+
+}; // class pass_ipa_increase_alignment
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_increase_alignment (gcc::context *ctxt)
+{
+  return new pass_ipa_increase_alignment (ctxt);
+}

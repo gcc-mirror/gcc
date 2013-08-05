@@ -58,25 +58,43 @@ gate_dumb_plugin_example (void)
   return true;
 }
 
-static struct gimple_opt_pass pass_dumb_plugin_example =
+namespace {
+
+const pass_data pass_data_dumb_plugin_example =
 {
-  {
-    GIMPLE_PASS,
-    "dumb_plugin_example",                /* name */
-    OPTGROUP_NONE,                        /* optinfo_flags */
-    gate_dumb_plugin_example,             /* gate */
-    execute_dumb_plugin_example,          /* execute */
-    NULL,                                 /* sub */
-    NULL,                                 /* next */
-    0,                                    /* static_pass_number */
-    TV_NONE,                              /* tv_id */
-    PROP_cfg,                             /* properties_required */
-    0,                                    /* properties_provided */
-    0,                                    /* properties_destroyed */
-    0,                                    /* todo_flags_start */
-    0					  /* todo_flags_finish */
-  }
+  GIMPLE_PASS, /* type */
+  "dumb_plugin_example", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_dumb_plugin_example : public gimple_opt_pass
+{
+public:
+  pass_dumb_plugin_example(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_dumb_plugin_example, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_dumb_plugin_example (); }
+  unsigned int execute () { return execute_dumb_plugin_example (); }
+
+}; // class pass_dumb_plugin_example
+
+} // anon namespace
+
+static gimple_opt_pass *
+make_pass_dumb_plugin_example (gcc::context *ctxt)
+{
+  return new pass_dumb_plugin_example (ctxt);
+}
 
 /* Initialization function that GCC calls. This plugin takes an argument
    that specifies the name of the reference pass and an instance number,

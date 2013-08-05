@@ -397,23 +397,40 @@ gate_tracer (void)
   return (optimize > 0 && flag_tracer && flag_reorder_blocks);
 }
 
-struct gimple_opt_pass pass_tracer =
+namespace {
+
+const pass_data pass_data_tracer =
 {
- {
-  GIMPLE_PASS,
-  "tracer",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_tracer,                          /* gate */
-  tracer,                               /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_TRACER,                            /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_update_ssa
-    | TODO_verify_ssa                   /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "tracer", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TRACER, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
 };
+
+class pass_tracer : public gimple_opt_pass
+{
+public:
+  pass_tracer(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tracer, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tracer (); }
+  unsigned int execute () { return tracer (); }
+
+}; // class pass_tracer
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tracer (gcc::context *ctxt)
+{
+  return new pass_tracer (ctxt);
+}

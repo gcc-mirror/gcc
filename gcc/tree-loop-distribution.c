@@ -1589,22 +1589,40 @@ gate_tree_loop_distribution (void)
     || flag_tree_loop_distribute_patterns;
 }
 
-struct gimple_opt_pass pass_loop_distribution =
+namespace {
+
+const pass_data pass_data_loop_distribution =
 {
- {
-  GIMPLE_PASS,
-  "ldist",			/* name */
-  OPTGROUP_LOOP,                /* optinfo_flags */
-  gate_tree_loop_distribution,  /* gate */
-  tree_loop_distribution,       /* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_TREE_LOOP_DISTRIBUTION,    /* tv_id */
-  PROP_cfg | PROP_ssa,		/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  TODO_verify_ssa               /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ldist", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_LOOP_DISTRIBUTION, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_loop_distribution : public gimple_opt_pass
+{
+public:
+  pass_loop_distribution(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_loop_distribution, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tree_loop_distribution (); }
+  unsigned int execute () { return tree_loop_distribution (); }
+
+}; // class pass_loop_distribution
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_loop_distribution (gcc::context *ctxt)
+{
+  return new pass_loop_distribution (ctxt);
+}

@@ -4480,26 +4480,43 @@ rest_of_handle_if_conversion (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_rtl_ifcvt =
+namespace {
+
+const pass_data pass_data_rtl_ifcvt =
 {
- {
-  RTL_PASS,
-  "ce1",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_if_conversion,            /* gate */
-  rest_of_handle_if_conversion,         /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_IFCVT,                             /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "ce1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IFCVT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing | 0 ), /* todo_flags_finish */
 };
+
+class pass_rtl_ifcvt : public rtl_opt_pass
+{
+public:
+  pass_rtl_ifcvt(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_ifcvt, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_if_conversion (); }
+  unsigned int execute () { return rest_of_handle_if_conversion (); }
+
+}; // class pass_rtl_ifcvt
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_ifcvt (gcc::context *ctxt)
+{
+  return new pass_rtl_ifcvt (ctxt);
+}
 
 static bool
 gate_handle_if_after_combine (void)
@@ -4518,25 +4535,43 @@ rest_of_handle_if_after_combine (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_if_after_combine =
+namespace {
+
+const pass_data pass_data_if_after_combine =
 {
- {
-  RTL_PASS,
-  "ce2",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_if_after_combine,         /* gate */
-  rest_of_handle_if_after_combine,      /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_IFCVT,                             /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "ce2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IFCVT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_if_after_combine : public rtl_opt_pass
+{
+public:
+  pass_if_after_combine(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_if_after_combine, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_if_after_combine (); }
+  unsigned int execute () { return rest_of_handle_if_after_combine (); }
+
+}; // class pass_if_after_combine
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_if_after_combine (gcc::context *ctxt)
+{
+  return new pass_if_after_combine (ctxt);
+}
 
 
 static bool
@@ -4554,22 +4589,40 @@ rest_of_handle_if_after_reload (void)
 }
 
 
-struct rtl_opt_pass pass_if_after_reload =
+namespace {
+
+const pass_data pass_data_if_after_reload =
 {
- {
-  RTL_PASS,
-  "ce3",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_if_after_reload,          /* gate */
-  rest_of_handle_if_after_reload,       /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_IFCVT2,                            /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "ce3", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IFCVT2, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_if_after_reload : public rtl_opt_pass
+{
+public:
+  pass_if_after_reload(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_if_after_reload, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_if_after_reload (); }
+  unsigned int execute () { return rest_of_handle_if_after_reload (); }
+
+}; // class pass_if_after_reload
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_if_after_reload (gcc::context *ctxt)
+{
+  return new pass_if_after_reload (ctxt);
+}

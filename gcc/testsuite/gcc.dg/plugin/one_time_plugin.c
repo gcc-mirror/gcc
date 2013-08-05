@@ -28,25 +28,43 @@ static unsigned int one_pass_exec (void)
  return 0;
 }
 
-struct gimple_opt_pass one_pass = 
+namespace {
+
+const pass_data pass_data_one_pass =
 {
-  {
-  GIMPLE_PASS,
-  "cfg",                           /* name */
-  OPTGROUP_NONE,                         /* optinfo_flags */
-  one_pass_gate,                         /* gate */
-  one_pass_exec,       /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  PROP_gimple_any,                      /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0					/* todo_flags_finish */
-  }
+  GIMPLE_PASS, /* type */
+  "cfg", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class one_pass : public gimple_opt_pass
+{
+public:
+  one_pass(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_one_pass, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return one_pass_gate (); }
+  unsigned int execute () { return one_pass_exec (); }
+
+}; // class one_pass
+
+} // anon namespace
+
+gimple_opt_pass *
+make_one_pass (gcc::context *ctxt)
+{
+  return new one_pass (ctxt);
+}
 
 
 int plugin_init (struct plugin_name_args *plugin_info,

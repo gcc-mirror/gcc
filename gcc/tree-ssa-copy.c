@@ -823,24 +823,42 @@ gate_copy_prop (void)
   return flag_tree_copy_prop != 0;
 }
 
-struct gimple_opt_pass pass_copy_prop =
+namespace {
+
+const pass_data pass_data_copy_prop =
 {
- {
-  GIMPLE_PASS,
-  "copyprop",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_copy_prop,			/* gate */
-  execute_copy_prop,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_COPY_PROP,			/* tv_id */
-  PROP_ssa | PROP_cfg,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_verify_ssa
-    | TODO_update_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "copyprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_COPY_PROP, /* tv_id */
+  ( PROP_ssa | PROP_cfg ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_verify_ssa
+    | TODO_update_ssa ), /* todo_flags_finish */
 };
+
+class pass_copy_prop : public gimple_opt_pass
+{
+public:
+  pass_copy_prop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_copy_prop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_copy_prop (ctxt_); }
+  bool gate () { return gate_copy_prop (); }
+  unsigned int execute () { return execute_copy_prop (); }
+
+}; // class pass_copy_prop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_copy_prop (gcc::context *ctxt)
+{
+  return new pass_copy_prop (ctxt);
+}

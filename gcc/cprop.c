@@ -1913,23 +1913,42 @@ execute_rtl_cprop (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_rtl_cprop =
+namespace {
+
+const pass_data pass_data_rtl_cprop =
 {
- {
-  RTL_PASS,
-  "cprop",                              /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_rtl_cprop,                       /* gate */
-  execute_rtl_cprop,  			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_CPROP,                             /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "cprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CPROP, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_rtl_cprop : public rtl_opt_pass
+{
+public:
+  pass_rtl_cprop(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_cprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_rtl_cprop (ctxt_); }
+  bool gate () { return gate_rtl_cprop (); }
+  unsigned int execute () { return execute_rtl_cprop (); }
+
+}; // class pass_rtl_cprop
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_cprop (gcc::context *ctxt)
+{
+  return new pass_rtl_cprop (ctxt);
+}

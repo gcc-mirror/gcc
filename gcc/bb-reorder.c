@@ -2179,25 +2179,43 @@ rest_of_handle_reorder_blocks (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_reorder_blocks =
+namespace {
+
+const pass_data pass_data_reorder_blocks =
 {
- {
-  RTL_PASS,
-  "bbro",                               /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_reorder_blocks,           /* gate */
-  rest_of_handle_reorder_blocks,        /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REORDER_BLOCKS,                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing,              /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "bbro", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_REORDER_BLOCKS, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_reorder_blocks : public rtl_opt_pass
+{
+public:
+  pass_reorder_blocks(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_reorder_blocks, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_reorder_blocks (); }
+  unsigned int execute () { return rest_of_handle_reorder_blocks (); }
+
+}; // class pass_reorder_blocks
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_reorder_blocks (gcc::context *ctxt)
+{
+  return new pass_reorder_blocks (ctxt);
+}
 
 /* Duplicate the blocks containing computed gotos.  This basically unfactors
    computed gotos that were factored early on in the compilation process to
@@ -2327,25 +2345,43 @@ done:
   return 0;
 }
 
-struct rtl_opt_pass pass_duplicate_computed_gotos =
+namespace {
+
+const pass_data pass_data_duplicate_computed_gotos =
 {
- {
-  RTL_PASS,
-  "compgotos",                          /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_duplicate_computed_gotos,        /* gate */
-  duplicate_computed_gotos,             /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REORDER_BLOCKS,                    /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing,/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "compgotos", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_REORDER_BLOCKS, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_duplicate_computed_gotos : public rtl_opt_pass
+{
+public:
+  pass_duplicate_computed_gotos(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_duplicate_computed_gotos, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_duplicate_computed_gotos (); }
+  unsigned int execute () { return duplicate_computed_gotos (); }
+
+}; // class pass_duplicate_computed_gotos
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_duplicate_computed_gotos (gcc::context *ctxt)
+{
+  return new pass_duplicate_computed_gotos (ctxt);
+}
 
 static bool
 gate_handle_partition_blocks (void)
@@ -2533,22 +2569,40 @@ partition_hot_cold_basic_blocks (void)
   return TODO_verify_flow | TODO_verify_rtl_sharing;
 }
 
-struct rtl_opt_pass pass_partition_blocks =
+namespace {
+
+const pass_data pass_data_partition_blocks =
 {
- {
-  RTL_PASS,
-  "bbpart",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_partition_blocks,         /* gate */
-  partition_hot_cold_basic_blocks,      /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_REORDER_BLOCKS,                    /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "bbpart", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_REORDER_BLOCKS, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_partition_blocks : public rtl_opt_pass
+{
+public:
+  pass_partition_blocks(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_partition_blocks, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_partition_blocks (); }
+  unsigned int execute () { return partition_hot_cold_basic_blocks (); }
+
+}; // class pass_partition_blocks
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_partition_blocks (gcc::context *ctxt)
+{
+  return new pass_partition_blocks (ctxt);
+}

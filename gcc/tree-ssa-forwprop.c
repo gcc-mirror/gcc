@@ -3548,23 +3548,41 @@ gate_forwprop (void)
   return flag_tree_forwprop;
 }
 
-struct gimple_opt_pass pass_forwprop =
+namespace {
+
+const pass_data pass_data_forwprop =
 {
- {
-  GIMPLE_PASS,
-  "forwprop",			/* name */
-  OPTGROUP_NONE,                /* optinfo_flags */
-  gate_forwprop,		/* gate */
-  ssa_forward_propagate_and_combine,	/* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_TREE_FORWPROP,		/* tv_id */
-  PROP_cfg | PROP_ssa,		/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  TODO_update_ssa
-  | TODO_verify_ssa		/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "forwprop", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_FORWPROP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa ), /* todo_flags_finish */
 };
+
+class pass_forwprop : public gimple_opt_pass
+{
+public:
+  pass_forwprop(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_forwprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_forwprop (ctxt_); }
+  bool gate () { return gate_forwprop (); }
+  unsigned int execute () { return ssa_forward_propagate_and_combine (); }
+
+}; // class pass_forwprop
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_forwprop (gcc::context *ctxt)
+{
+  return new pass_forwprop (ctxt);
+}

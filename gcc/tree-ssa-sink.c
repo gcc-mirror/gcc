@@ -586,25 +586,41 @@ gate_sink (void)
   return flag_tree_sink != 0;
 }
 
-struct gimple_opt_pass pass_sink_code =
+namespace {
+
+const pass_data pass_data_sink_code =
 {
- {
-  GIMPLE_PASS,
-  "sink",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_sink,				/* gate */
-  do_sink,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SINK,				/* tv_id */
-  PROP_no_crit_edges | PROP_cfg
-    | PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_update_ssa
-    | TODO_verify_ssa
-    | TODO_verify_flow			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "sink", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SINK, /* tv_id */
+  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_update_ssa | TODO_verify_ssa
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_sink_code : public gimple_opt_pass
+{
+public:
+  pass_sink_code(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_sink_code, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_sink (); }
+  unsigned int execute () { return do_sink (); }
+
+}; // class pass_sink_code
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_sink_code (gcc::context *ctxt)
+{
+  return new pass_sink_code (ctxt);
+}

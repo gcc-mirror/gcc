@@ -1012,25 +1012,44 @@ local_function_and_variable_visibility (void)
   return function_and_variable_visibility (flag_whole_program && !flag_lto);
 }
 
-struct simple_ipa_opt_pass pass_ipa_function_and_variable_visibility =
+namespace {
+
+const pass_data pass_data_ipa_function_and_variable_visibility =
 {
- {
-  SIMPLE_IPA_PASS,
-  "visibility",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  local_function_and_variable_visibility,/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_CGRAPHOPT,				/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_remove_functions | TODO_dump_symtab /* todo_flags_finish */
- }
+  SIMPLE_IPA_PASS, /* type */
+  "visibility", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_CGRAPHOPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
 };
+
+class pass_ipa_function_and_variable_visibility : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_function_and_variable_visibility(gcc::context *ctxt)
+    : simple_ipa_opt_pass(pass_data_ipa_function_and_variable_visibility, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () {
+    return local_function_and_variable_visibility ();
+  }
+
+}; // class pass_ipa_function_and_variable_visibility
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_function_and_variable_visibility (gcc::context *ctxt)
+{
+  return new pass_ipa_function_and_variable_visibility (ctxt);
+}
 
 /* Free inline summary.  */
 
@@ -1041,25 +1060,42 @@ free_inline_summary (void)
   return 0;
 }
 
-struct simple_ipa_opt_pass pass_ipa_free_inline_summary =
+namespace {
+
+const pass_data pass_data_ipa_free_inline_summary =
 {
- {
-  SIMPLE_IPA_PASS,
-  "*free_inline_summary",		/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  free_inline_summary,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_FREE_INLINE_SUMMARY,		/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  SIMPLE_IPA_PASS, /* type */
+  "*free_inline_summary", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_FREE_INLINE_SUMMARY, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_free_inline_summary : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_free_inline_summary(gcc::context *ctxt)
+    : simple_ipa_opt_pass(pass_data_ipa_free_inline_summary, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return free_inline_summary (); }
+
+}; // class pass_ipa_free_inline_summary
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_free_inline_summary (gcc::context *ctxt)
+{
+  return new pass_ipa_free_inline_summary (ctxt);
+}
 
 /* Do not re-run on ltrans stage.  */
 
@@ -1080,34 +1116,56 @@ whole_program_function_and_variable_visibility (void)
   return 0;
 }
 
-struct ipa_opt_pass_d pass_ipa_whole_program_visibility =
+namespace {
+
+const pass_data pass_data_ipa_whole_program_visibility =
 {
- {
-  IPA_PASS,
-  "whole-program",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_whole_program_function_and_variable_visibility,/* gate */
-  whole_program_function_and_variable_visibility,/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_CGRAPHOPT,				/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_remove_functions | TODO_dump_symtab /* todo_flags_finish */
- },
- NULL,					/* generate_summary */
- NULL,					/* write_summary */
- NULL,					/* read_summary */
- NULL,					/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- NULL,					/* function_transform */
- NULL,					/* variable_transform */
+  IPA_PASS, /* type */
+  "whole-program", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CGRAPHOPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_remove_functions | TODO_dump_symtab ), /* todo_flags_finish */
 };
+
+class pass_ipa_whole_program_visibility : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_whole_program_visibility(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_whole_program_visibility, ctxt,
+		     NULL, /* generate_summary */
+		     NULL, /* write_summary */
+		     NULL, /* read_summary */
+		     NULL, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () {
+    return gate_whole_program_function_and_variable_visibility ();
+  }
+  unsigned int execute () {
+    return whole_program_function_and_variable_visibility ();
+  }
+
+}; // class pass_ipa_whole_program_visibility
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_whole_program_visibility (gcc::context *ctxt)
+{
+  return new pass_ipa_whole_program_visibility (ctxt);
+}
 
 /* Entry in the histogram.  */
 
@@ -1427,34 +1485,52 @@ gate_ipa_profile (void)
   return flag_ipa_profile;
 }
 
-struct ipa_opt_pass_d pass_ipa_profile =
+namespace {
+
+const pass_data pass_data_ipa_profile =
 {
- {
-  IPA_PASS,
-  "profile_estimate",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_ipa_profile,			/* gate */
-  ipa_profile,			        /* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_PROFILE,		        /* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- },
- ipa_profile_generate_summary,	        /* generate_summary */
- ipa_profile_write_summary,		/* write_summary */
- ipa_profile_read_summary,		/* read_summary */
- NULL,					/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- NULL,			                /* function_transform */
- NULL					/* variable_transform */
+  IPA_PASS, /* type */
+  "profile_estimate", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_PROFILE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_profile : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_profile(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_profile, ctxt,
+		     ipa_profile_generate_summary, /* generate_summary */
+		     ipa_profile_write_summary, /* write_summary */
+		     ipa_profile_read_summary, /* read_summary */
+		     NULL, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ipa_profile (); }
+  unsigned int execute () { return ipa_profile (); }
+
+}; // class pass_ipa_profile
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_profile (gcc::context *ctxt)
+{
+  return new pass_ipa_profile (ctxt);
+}
 
 /* Generate and emit a static constructor or destructor.  WHICH must
    be one of 'I' (for a constructor) or 'D' (for a destructor).  BODY
@@ -1738,31 +1814,49 @@ gate_ipa_cdtor_merge (void)
   return !targetm.have_ctors_dtors || (optimize && in_lto_p);
 }
 
-struct ipa_opt_pass_d pass_ipa_cdtor_merge =
+namespace {
+
+const pass_data pass_data_ipa_cdtor_merge =
 {
- {
-  IPA_PASS,
-  "cdtor",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_ipa_cdtor_merge,			/* gate */
-  ipa_cdtor_merge,		        /* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_CGRAPHOPT,			        /* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- },
- NULL,				        /* generate_summary */
- NULL,					/* write_summary */
- NULL,					/* read_summary */
- NULL,					/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- NULL,			                /* function_transform */
- NULL					/* variable_transform */
+  IPA_PASS, /* type */
+  "cdtor", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_CGRAPHOPT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_cdtor_merge : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_cdtor_merge(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_cdtor_merge, ctxt,
+		     NULL, /* generate_summary */
+		     NULL, /* write_summary */
+		     NULL, /* read_summary */
+		     NULL, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ipa_cdtor_merge (); }
+  unsigned int execute () { return ipa_cdtor_merge (); }
+
+}; // class pass_ipa_cdtor_merge
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_cdtor_merge (gcc::context *ctxt)
+{
+  return new pass_ipa_cdtor_merge (ctxt);
+}

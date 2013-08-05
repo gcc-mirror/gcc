@@ -2241,26 +2241,45 @@ gate_asan (void)
 				DECL_ATTRIBUTES (current_function_decl));
 }
 
-struct gimple_opt_pass pass_asan =
+namespace {
+
+const pass_data pass_data_asan =
 {
- {
-  GIMPLE_PASS,
-  "asan",				/* name  */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  gate_asan,				/* gate  */
-  asan_instrument,			/* execute  */
-  NULL,					/* sub  */
-  NULL,					/* next  */
-  0,					/* static_pass_number  */
-  TV_NONE,				/* tv_id  */
-  PROP_ssa | PROP_cfg | PROP_gimple_leh,/* properties_required  */
-  0,					/* properties_provided  */
-  0,					/* properties_destroyed  */
-  0,					/* todo_flags_start  */
-  TODO_verify_flow | TODO_verify_stmts
-  | TODO_update_ssa			/* todo_flags_finish  */
- }
+  GIMPLE_PASS, /* type */
+  "asan", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_flow | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
 };
+
+class pass_asan : public gimple_opt_pass
+{
+public:
+  pass_asan(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_asan, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_asan (ctxt_); }
+  bool gate () { return gate_asan (); }
+  unsigned int execute () { return asan_instrument (); }
+
+}; // class pass_asan
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_asan (gcc::context *ctxt)
+{
+  return new pass_asan (ctxt);
+}
 
 static bool
 gate_asan_O0 (void)
@@ -2268,25 +2287,43 @@ gate_asan_O0 (void)
   return !optimize && gate_asan ();
 }
 
-struct gimple_opt_pass pass_asan_O0 =
+namespace {
+
+const pass_data pass_data_asan_O0 =
 {
- {
-  GIMPLE_PASS,
-  "asan0",				/* name  */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  gate_asan_O0,				/* gate  */
-  asan_instrument,			/* execute  */
-  NULL,					/* sub  */
-  NULL,					/* next  */
-  0,					/* static_pass_number  */
-  TV_NONE,				/* tv_id  */
-  PROP_ssa | PROP_cfg | PROP_gimple_leh,/* properties_required  */
-  0,					/* properties_provided  */
-  0,					/* properties_destroyed  */
-  0,					/* todo_flags_start  */
-  TODO_verify_flow | TODO_verify_stmts
-  | TODO_update_ssa			/* todo_flags_finish  */
- }
+  GIMPLE_PASS, /* type */
+  "asan0", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_ssa | PROP_cfg | PROP_gimple_leh ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_flow | TODO_verify_stmts
+    | TODO_update_ssa ), /* todo_flags_finish */
 };
+
+class pass_asan_O0 : public gimple_opt_pass
+{
+public:
+  pass_asan_O0(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_asan_O0, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_asan_O0 (); }
+  unsigned int execute () { return asan_instrument (); }
+
+}; // class pass_asan_O0
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_asan_O0 (gcc::context *ctxt)
+{
+  return new pass_asan_O0 (ctxt);
+}
 
 #include "gt-asan.h"

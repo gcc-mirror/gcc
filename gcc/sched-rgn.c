@@ -3617,44 +3617,80 @@ rest_of_handle_sched2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_sched =
+namespace {
+
+const pass_data pass_data_sched =
 {
- {
-  RTL_PASS,
-  "sched1",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_sched,                    /* gate */
-  rest_of_handle_sched,                 /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_SCHED,                             /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "sched1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_SCHED, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
 
-struct rtl_opt_pass pass_sched2 =
+class pass_sched : public rtl_opt_pass
 {
- {
-  RTL_PASS,
-  "sched2",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_sched2,                   /* gate */
-  rest_of_handle_sched2,                /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_SCHED2,                            /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+public:
+  pass_sched(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_sched, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_sched (); }
+  unsigned int execute () { return rest_of_handle_sched (); }
+
+}; // class pass_sched
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_sched (gcc::context *ctxt)
+{
+  return new pass_sched (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_sched2 =
+{
+  RTL_PASS, /* type */
+  "sched2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_SCHED2, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_sched2 : public rtl_opt_pass
+{
+public:
+  pass_sched2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_sched2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_sched2 (); }
+  unsigned int execute () { return rest_of_handle_sched2 (); }
+
+}; // class pass_sched2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_sched2 (gcc::context *ctxt)
+{
+  return new pass_sched2 (ctxt);
+}

@@ -5505,25 +5505,42 @@ free_lang_data (void)
 }
 
 
-struct simple_ipa_opt_pass pass_ipa_free_lang_data =
+namespace {
+
+const pass_data pass_data_ipa_free_lang_data =
 {
- {
-  SIMPLE_IPA_PASS,
-  "*free_lang_data",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  free_lang_data,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_FREE_LANG_DATA,		/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  SIMPLE_IPA_PASS, /* type */
+  "*free_lang_data", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_FREE_LANG_DATA, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_ipa_free_lang_data : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_free_lang_data(gcc::context *ctxt)
+    : simple_ipa_opt_pass(pass_data_ipa_free_lang_data, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return free_lang_data (); }
+
+}; // class pass_ipa_free_lang_data
+
+} // anon namespace
+
+simple_ipa_opt_pass *
+make_pass_ipa_free_lang_data (gcc::context *ctxt)
+{
+  return new pass_ipa_free_lang_data (ctxt);
+}
 
 /* The backbone of is_attribute_p().  ATTR_LEN is the string length of
    ATTR_NAME.  Also used internally by remove_attribute().  */

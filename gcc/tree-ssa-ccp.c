@@ -2121,27 +2121,45 @@ gate_ccp (void)
 }
 
 
-struct gimple_opt_pass pass_ccp =
+namespace {
+
+const pass_data pass_data_ccp =
 {
- {
-  GIMPLE_PASS,
-  "ccp",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_ccp,				/* gate */
-  do_ssa_ccp,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_CCP,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa
-  | TODO_update_address_taken
-  | TODO_verify_stmts			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ccp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_CCP, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_update_address_taken
+    | TODO_verify_stmts ), /* todo_flags_finish */
 };
+
+class pass_ccp : public gimple_opt_pass
+{
+public:
+  pass_ccp(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_ccp, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_ccp (ctxt_); }
+  bool gate () { return gate_ccp (); }
+  unsigned int execute () { return do_ssa_ccp (); }
+
+}; // class pass_ccp
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_ccp (gcc::context *ctxt)
+{
+  return new pass_ccp (ctxt);
+}
 
 
 
@@ -2521,23 +2539,40 @@ execute_fold_all_builtins (void)
 }
 
 
-struct gimple_opt_pass pass_fold_builtins =
+namespace {
+
+const pass_data pass_data_fold_builtins =
 {
- {
-  GIMPLE_PASS,
-  "fab",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_fold_all_builtins,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa
-    | TODO_update_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "fab", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa | TODO_update_ssa ), /* todo_flags_finish */
 };
+
+class pass_fold_builtins : public gimple_opt_pass
+{
+public:
+  pass_fold_builtins(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_fold_builtins, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_fold_builtins (ctxt_); }
+  unsigned int execute () { return execute_fold_all_builtins (); }
+
+}; // class pass_fold_builtins
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_fold_builtins (gcc::context *ctxt)
+{
+  return new pass_fold_builtins (ctxt);
+}

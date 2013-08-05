@@ -3040,25 +3040,42 @@ execute_jump (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_jump =
+namespace {
+
+const pass_data pass_data_jump =
 {
- {
-  RTL_PASS,
-  "jump",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_jump,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_JUMP,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_rtl_sharing,		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "jump", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_JUMP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_jump : public rtl_opt_pass
+{
+public:
+  pass_jump(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_jump, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_jump (); }
+
+}; // class pass_jump
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_jump (gcc::context *ctxt)
+{
+  return new pass_jump (ctxt);
+}
 
 static unsigned int
 execute_jump2 (void)
@@ -3067,22 +3084,39 @@ execute_jump2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_jump2 =
+namespace {
+
+const pass_data pass_data_jump2 =
 {
- {
-  RTL_PASS,
-  "jump2",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_jump2,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_JUMP,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_rtl_sharing,		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "jump2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_JUMP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_jump2 : public rtl_opt_pass
+{
+public:
+  pass_jump2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_jump2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_jump2 (); }
+
+}; // class pass_jump2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_jump2 (gcc::context *ctxt)
+{
+  return new pass_jump2 (ctxt);
+}

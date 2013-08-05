@@ -1000,25 +1000,43 @@ sparc_do_work_around_errata (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_work_around_errata =
+namespace {
+
+const pass_data pass_data_work_around_errata =
 {
- {
-  RTL_PASS,
-  "errata",				/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  sparc_gate_work_around_errata,	/* gate */
-  sparc_do_work_around_errata,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_MACH_DEP,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_rtl_sharing,		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "errata", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_work_around_errata : public rtl_opt_pass
+{
+public:
+  pass_work_around_errata(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_work_around_errata, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return sparc_gate_work_around_errata (); }
+  unsigned int execute () { return sparc_do_work_around_errata (); }
+
+}; // class pass_work_around_errata
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_work_around_errata (gcc::context *ctxt)
+{
+  return new pass_work_around_errata (ctxt);
+}
 
 struct register_pass_info insert_pass_work_around_errata =
 {
