@@ -2359,22 +2359,13 @@ pp_c_pretty_printer_init (c_pretty_printer *pp)
 void
 print_c_tree (FILE *file, tree t)
 {
-  static c_pretty_printer pp_rec;
-  static bool initialized = 0;
-  c_pretty_printer *pp = &pp_rec;
-
-  if (!initialized)
-    {
-      initialized = 1;
-      pp_construct (pp, NULL, 0);
-      pp_c_pretty_printer_init (pp);
-      pp_needs_newline (pp) = true;
-    }
-  pp->buffer->stream = file;
-
-  pp_statement (pp, t);
-
-  pp_newline_and_flush (pp);
+  c_pretty_printer pp;
+  pp_construct (&pp, NULL, 0);
+  pp_c_pretty_printer_init (&pp);
+  pp_needs_newline (&pp) = true;
+  pp.buffer->stream = file;
+  pp_statement (&pp, t);
+  pp_newline_and_flush (&pp);
 }
 
 /* Print the tree T in full, on stderr.  */
