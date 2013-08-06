@@ -1,3 +1,18 @@
+2013-08-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hashtable_alloc): New.
+	(_ReuseOrAllocNode, _AllocNode): Adapt to use latter rather than
+	_Hashtable.
+	(_Before_begin<>): Remove.
+	* include/bits/hashtable.h (_Hashtable): Inherit from
+	_Hashtable_alloc and adapt. Restore _M_before_begin field.
+	* python/libstdcxx/v6/printers.py (StdHashtableIterator): Adapt
+	access to hashtable before begin.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Adapt dg-error line number.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Likewise.
+
 2013-08-03  Tim Shen  <timshen91@gmail.com>
 
 	Implement bracket expression.
