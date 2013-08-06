@@ -1525,7 +1525,9 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
 
   // These variables are often unneeded in the final program, so put
   // them in their own section so that linker GC can discard them.
-  resolve_unique_section(decl, 1, 1);
+  resolve_unique_section(decl,
+			 compute_reloc_for_constant (init_tree),
+			 1);
 
   rest_of_decl_compilation(decl, 1, 0);
 }

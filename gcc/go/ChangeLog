@@ -1,3 +1,8 @@
+2013-08-06  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::immutable_struct_set_init): Use
+	compute_reloc_for_constant.
+
 2013-08-02  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (immutable_struct_set_init): Always call
