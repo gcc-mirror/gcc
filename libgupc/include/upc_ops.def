@@ -1,0 +1,164 @@
+/* UPc Operation (used in  collectives and atomic ops).  */
+
+/*
+- Supported AMO integer types are UPC_INT, UPC_UINT, UPC_LONG, UPC_ULONG,
+UPC_INT32, UPC_UINT32, UPC_INT64, and UPC_UINT64.
+- Supported AMO floating-point types are UPC_FLOAT and UPC_DOUBLE.
+- Supported AMO accessors are UPC_GET, UPC_SET, and UPC_CSWAP.
+- Supported AMO bit-wise operations are UPC_AND, UPC_OR, and UPC_XOR.
+- Supported AMO numeric operations are UPC_ADD, UPC_SUB, UPC_MULT, UPC_INC,
+UPC_DEC, UPC_MAX, and UPC_MIN.   */
+
+upc_op = {
+    op_upc_name = "UPC_ADD";
+    op_name = "add";
+    op_op = "+";
+    op_bit = 0;
+    op_c_value = "(1LL << 0)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_MULT";
+    op_name = "mult";
+    op_op = "*";
+    op_bit = 1;
+    op_c_value = "(1LL << 1)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_AND";
+    op_name = "and";
+    op_op = "&";
+    op_bit = 2;
+    op_c_value = "(1LL << 2)";
+    op_mode = "logical";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_OR";
+    op_name = "or";
+    op_op = "|";
+    op_bit = 3;
+    op_c_value = "(1LL << 3)";
+    op_mode = "logical";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_XOR";
+    op_name = "xor";
+    op_op = "^";
+    op_bit = 4;
+    op_c_value = "(1LL << 4)";
+    op_mode = "logical";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_LOGAND";
+    op_name = "logand";
+    op_bit = 5;
+    op_c_value = "(1LL << 5)";
+    op_mode = "logical";
+  };
+upc_op = {
+    op_upc_name = "UPC_LOGOR";
+    op_name = "logor";
+    op_bit = 6;
+    op_c_value = "(1LL << 6)";
+    op_mode = "logical";
+  };
+upc_op = {
+    op_upc_name = "UPC_MIN";
+    op_name = "min";
+    op_bit = 7;
+    op_c_value = "(1LL << 7)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_MAX";
+    op_name = "max";
+    op_bit = 8;
+    op_c_value = "(1LL << 8)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_GET";
+    op_name = "get";
+    op_bit = 9;
+    op_c_value = "(1LL << 9)";
+    op_mode = "access";
+    op_atomic_ok;
+    op_require_fetch_ptr;
+    op_null_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_SET";
+    op_name = "set";
+    op_bit = 10;
+    op_c_value = "(1LL << 10)";
+    op_mode = "access";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_CSWAP";
+    op_name = "compare_exchange";
+    op_bit = 11;
+    op_c_value = "(1LL << 11)";
+    op_mode = "access";
+    op_atomic_ok;
+    op_require_operand1;
+    op_require_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_SUB";
+    op_name = "sub";
+    op_op = "-";
+    op_bit = 12;
+    op_c_value = "(1LL << 12)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_require_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_INC";
+    op_name = "inc";
+    op_op = "+";
+    op_bit = 13;
+    op_c_value = "(1LL << 13)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_null_operand1;
+    op_null_operand2;
+  };
+upc_op = {
+    op_upc_name = "UPC_DEC";
+    op_name = "dec";
+    op_op = "-";
+    op_bit = 14;
+    op_c_value = "(1LL << 14)";
+    op_mode = "numeric";
+    op_atomic_ok;
+    op_null_operand1;
+    op_null_operand2;
+  };

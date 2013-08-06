@@ -89,6 +89,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define C64K (64*KILOBYTE)
 #define MEGABYTE (KILOBYTE*KILOBYTE)
 
+#ifndef LONG_LONG_BITS
+#define LONG_LONG_BITS (__SIZEOF_LONG_LONG__ * 8)
+#endif /* LONG_LONG_BITS */
+
+#ifndef SIZE_T_BITS
+#define SIZE_T_BITS (__SIZEOF_SIZE_T__ * 8)
+#endif /* SIZE_T_BITS */
+
 //begin detect_target64
 #if (defined(_LP64) && _LP64) \
     || (defined(_MIPS_SZPTR) && (_MIPS_SZPTR == 64)) \

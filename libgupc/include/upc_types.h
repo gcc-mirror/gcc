@@ -81,4 +81,17 @@ typedef unsigned long upc_op_t;
 #define UPC_MIN         (1UL<<7)
 #define UPC_MAX         (1UL<<8)
 
+#define UPC_ADD_OP         0
+#define UPC_MULT_OP        1
+#define UPC_AND_OP         2
+#define UPC_OR_OP          3
+#define UPC_XOR_OP         4
+#define UPC_LOGAND_OP      5
+#define UPC_LOGOR_OP       6
+#define UPC_MIN_OP         7
+#define UPC_MAX_OP         8
+
+#define UPC_FIRST_OP       UPC_ADD_OP
+#define UPC_LAST_OP        UPC_MAX_OP
+
 #endif /* _UPC_TYPES_H_ */

@@ -517,6 +517,8 @@ dependencies = { module=all-target-libjava; on=all-target-boehm-gc; };
 dependencies = { module=all-target-libjava; on=all-target-libffi; };
 dependencies = { module=configure-target-libobjc; on=configure-target-boehm-gc; };
 dependencies = { module=all-target-libobjc; on=all-target-boehm-gc; };
+dependencies = { module=all-target-libgupc; on=all-target-libbacktrace; };
+dependencies = { module=all-target-libgupc; on=all-target-libatomic; };
 dependencies = { module=configure-target-libstdc++-v3; on=configure-target-libgomp; };
 dependencies = { module=configure-target-libsanitizer; on=all-target-libstdc++-v3; };
 // parallel_list.o and parallel_settings.o depend on omp.h, which is

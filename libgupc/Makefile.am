@@ -31,6 +31,7 @@ LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
         $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
+
 UPC_HDRS = include/upc_atomic.h include/upc_castable.h \
            include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
@@ -76,15 +77,25 @@ AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 
 LIBGUPC_SRCDIR = $(top_srcdir)/$(targ_runtime_dir)
 
-EXTRA_DIST =
 MOSTLYCLEANFILES =
 UPC_RUNTIME_SRC =
 
+EXTRA_DIST = gen-inline-libgupc.pl gen-upc-ld-script.pl
+
+LIBGUPC_COLL_SRCDIR = $(top_srcdir)/collectives
+LIBGUPC_INC_SRCDIR = $(top_srcdir)/include
+LIBGUPC_PORTALS4_SRCDIR = $(top_srcdir)/portals4
+LIBGUPC_SMP_SRCDIR = $(top_srcdir)/smp
+UPC_OPS_DEF = $(LIBGUPC_INC_SRCDIR)/upc_ops.def
+UPC_TYPES_DEF = $(LIBGUPC_INC_SRCDIR)/upc_types.def
+
+EXTRA_DIST += $(UPC_OPS_DEFS) $(UPC_TYPES_DEF)
+
+AUTOGEN = autogen
+
 if LIBGUPC_SMP_RUNTIME
 
-EXTRA_DIST += gcc-upc-lib.in \
-              gen-inline-libgupc.pl \
-              gen-upc-ld-script.pl
+EXTRA_DIST += smp/gcc-upc-lib.in
 
 if LIBGUPC_PTHREADS
 libgupc_pt = libgupc_pt.la
@@ -120,9 +131,24 @@ if LIBGUPC_BACKTRACE_SUP
 endif
 endif
 
+if MAINTAINER_MODE
+
+UPC_ATOMIC_DEF = $(LIBGUPC_SMP_SRCDIR)/upc_atomic.def
+UPC_ATOMIC_TPL = $(LIBGUPC_SMP_SRCDIR)/upc_atomic.tpl
+UPC_ATOMIC_UPC = $(LIBGUPC_SMP_SRCDIR)/upc_atomic.upc
+
+EXTRA_DIST += $(UPC_ATOMIC_DEF) $(UPC_ATOMIC_TPL)
+
+$(UPC_ATOMIC_UPC): $(UPC_ATOMIC_DEF) $(UPC_ATOMIC_TPL) \
+			$(UPC_OP_DEF) $(UPC_TYPE_DEF)
+	cd $(LIBGUPC_SMP_SRCDIR); \
+	$(AUTOGEN) -L ../include upc_atomic.def
+endif
+
 UPC_RUNTIME_SRC += smp/upc_access.c smp/upc_accessg.c smp/upc_access.h \
 	smp/upc_addr.c smp/upc_affinity.h $(UPC_AFFINITY_SUP) \
 	smp/upc_allocg.upc smp/upc_alloc.upc \
+	smp/upc_atomic.upc \
 	$(UPC_BACKTRACE_SUP) \
 	smp/upc_barrier.upc smp/upc_castable.upc smp/upc_config.h \
 	smp/upc_debug.h smp/upc_debug.c \
@@ -142,8 +168,7 @@ endif   ### LIBGUPC_SMP_RUNTIME ####
 
 if LIBGUPC_PORTALS4_RUNTIME
 
-EXTRA_DIST += gcc-upc-lib.in \
-              gen-gupc-inline-lib.pl
+EXTRA_DIST += portals4/gcc-upc-lib.in
 
 UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_addr.c \
@@ -193,9 +218,7 @@ EXTRA_DIST += $(DX_CONFIG)
 
 # We need full pathnames here, because vpath won't find
 # the files if they don't exist yet.
-LIBGUPC_COLL_SRCDIR=$(top_srcdir)/collectives
 UPC_COLL_PREFIX_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_prefix_reduce.upc
-LIBGUPC_PORTALS4_SRCDIR=$(top_srcdir)/portals4
 UPC_COLL_REDUCE_UPC = $(LIBGUPC_PORTALS4_SRCDIR)/gupcr_coll_reduce.upc
 
 if MAINTAINER_MODE
@@ -229,7 +252,6 @@ if LIBGUPC_GENERIC_COLLECTIVES
 
 # We need full pathnames here, because vpath won't find
 # the files if they don't exist yet.
-LIBGUPC_COLL_SRCDIR=$(top_srcdir)/collectives
 UPC_COLL_PREFIX_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_prefix_reduce.upc
 UPC_COLL_REDUCE_UPC = $(LIBGUPC_COLL_SRCDIR)/upc_coll_reduce.upc
 
@@ -285,7 +307,8 @@ libgupc_la_SOURCES = $(UPC_RUNTIME_SRC)
 libgupc_version_info = -version-info $(libtool_VERSION)
 libgupc_la_LDFLAGS = $(libgupc_version_info)
 libgupc_la_LINK = $(LINK) $(libgupc_la_LDFLAGS)
-libgupc_la_LIBADD =
+libgupc_la_LIBADD = \
+	../libatomic/libatomic_convenience.la
 libgupc_la_DEPENDENCIES = $(libgupc_la_LIBADD)
 
 if LIBGUPC_PTHREADS

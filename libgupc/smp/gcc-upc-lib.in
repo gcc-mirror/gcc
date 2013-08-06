@@ -76,6 +76,12 @@ extern const int THREADS;
 #define __UPC_THREADS_MODEL__ "process"
 #endif
 
+/* Support for atomics as specified in version 1.3 of the UPC spec.  */
+#define __UPC_ATOMIC__ 1
+
+/* Opaque data type for referencing UPC atomic domains.  */
+typedef shared struct upc_atomicdomain_struct upc_atomicdomain_t;
+
 /* Place configuration information required by the Berkeley
    UPC compilation system into the object file. */
 static const char GCCUPCConfig[]

@@ -1,0 +1,5 @@
+Autogen Definitions upc_atomic;
+
+#include upc_types.def
+#include upc_ops.def
+

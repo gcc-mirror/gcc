@@ -1,3 +1,23 @@
+2013-08-06  Gary Funck  <gary@intrepid.com>
+
+	Implement atomic operations library for SMP runtime.
+	../Makefile.def: Add dependencies for libatomic and libbacktrace.
+	../Makefile.in: Re-generate.
+	Makefile.am: Add gen-inline-libgupc.pl gen-upc-ld-script.pl.
+	Add autogen rules to build smp/upc_atomic.upc.
+	Makefile.in: Re-generate.
+	include/upc_atomic.h: Add UPC_*_OP definitions.
+	include/upc_ops.def: New. Describe UPC atomic operations.
+	include/upc_types.def: New. Describe UPC atomic types.
+	include/upc_types.h: Add UPC_*_OP definitions.
+	smp/gcc-upc-lib.in: Define __UPC_ATOMIC__ and add typedef
+	for upc_atomicdomain_t.
+	smp/upc_atomic.def: New. Autogen definition file for upc_atomic.upc.
+	smp/upc_atomic.tpl: New. Autogen template file for upc_atomic.upc.
+	smp/upc_atomic.upc: New. Generate from smp/upc_atomic.def.
+	smp/upc_config.h: Add defines for LONG_LONG_BITS and SIZE_T_BITS.
+	smp/upc_main.c: (__upc_fatal) Fix bug in handling of variadic args.
+
 2013-07-24  Nenad Vukicevic  <nenad@intrepid.com>
 
 	portals4/gupcr_atomic_sup.c: Use correct type for EQ declaration.

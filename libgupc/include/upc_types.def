@@ -1,0 +1,196 @@
+/*
+- Supported AMO integer types are UPC_INT, UPC_UINT, UPC_LONG, UPC_ULONG,
+UPC_INT32, UPC_UINT32, UPC_INT64, and UPC_UINT64.
+- Supported AMO floating-point types are UPC_FLOAT and UPC_DOUBLE.
+- Supported AMO accessors are UPC_GET, UPC_SET, and UPC_CSWAP.
+- Supported AMO bit-wise operations are UPC_AND, UPC_OR, and UPC_XOR.
+- Supported AMO numeric operations are UPC_ADD, UPC_SUB, UPC_MULT, UPC_INC,
+UPC_DEC, UPC_MAX, and UPC_MIN.   */
+
+upc_type = {
+    type_upc_name = "UPC_CHAR";
+    type_abbrev = "C";
+    type_c_name = "char";
+    type_value = 1;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_UCHAR";
+    type_abbrev = "UC";
+    type_c_name = "unsigned char";
+    type_value = 2;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_SHORT";
+    type_abbrev = "S";
+    type_c_name = "short";
+    type_value = 3;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_USHORT";
+    type_abbrev = "US";
+    type_c_name = "unsigned short";
+    type_value = 4;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_INT";
+    type_abbrev = "I";
+    type_c_name = "int";
+    type_value = 5;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_UINT";
+    type_abbrev = "UI";
+    type_c_name = "unsigned int";
+    type_value = 6;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_LONG";
+    type_abbrev = "L";
+    type_c_name = "long";
+    type_value = 7;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_ULONG";
+    type_abbrev = "UL";
+    type_c_name = "unsigned long";
+    type_value = 8;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_LLONG";
+    type_abbrev = "LL";
+    type_c_name = "long long";
+    type_value = 9;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_ULLONG";
+    type_abbrev = "ULL";
+    type_c_name = "unsigned long long";
+    type_value = 10;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_INT8";
+    type_abbrev = "I8";
+    type_c_name = "int8_t";
+    type_value = 11;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_UINT8";
+    type_abbrev = "UI8";
+    type_c_name = "uint8_t";
+    type_value = 12;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_INT16";
+    type_abbrev = "I16";
+    type_c_name = "int16_t";
+    type_value = 13;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_UINT16";
+    type_abbrev = "UI16";
+    type_c_name = "uint16_t";
+    type_value = 14;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_INT32";
+    type_abbrev = "I32";
+    type_c_name = "int32_t";
+    type_value = 15;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_UINT32";
+    type_abbrev = "UI32";
+    type_c_name = "uint32_t";
+    type_value = 16;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_INT64";
+    type_abbrev = "I64";
+    type_c_name = "int64_t";
+    type_value = 17;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_UINT64";
+    type_abbrev = "UI64";
+    type_c_name = "uint64_t";
+    type_value = 18;
+    type_atomic_ok;
+    type_numeric_op_ok;
+    type_bit_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_FLOAT";
+    type_abbrev = "F";
+    type_c_name = "float";
+    type_value = 19;
+    type_floating_point;
+    type_atomic_ok;
+    type_numeric_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_DOUBLE";
+    type_abbrev = "D";
+    type_c_name = "double";
+    type_value = 20;
+    type_floating_point;
+    type_atomic_ok;
+    type_numeric_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_LDOUBLE";
+    type_abbrev = "LD";
+    type_c_name = "long double";
+    type_value = 21;
+    type_floating_point;
+    type_numeric_op_ok;
+  };
+upc_type = {
+    type_upc_name = "UPC_PTS";
+    type_abbrev = "PTS";
+    type_c_name = "shared void *";
+    type_value = 22;
+    type_atomic_ok;
+  };

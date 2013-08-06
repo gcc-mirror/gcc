@@ -1098,7 +1098,7 @@ __upc_fatal (const char *fmt, ...)
   if (__upc_err_filename && __upc_err_linenum)
     bp += sprintf (bp, "at %s:%u ", __upc_err_filename, __upc_err_linenum);
   bp += sprintf (bp, "UPC error: ");
-  va_start (args, fmt);
+  va_start (ap, fmt);
   va_copy (args, ap);
   bp += vsprintf (bp, fmt, args);
   va_end (args);

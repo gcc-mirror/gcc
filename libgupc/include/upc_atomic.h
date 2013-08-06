@@ -39,6 +39,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define  UPC_INC    (1UL<<13)
 #define  UPC_DEC    (1UL<<14)
 
+#define  UPC_GET_OP    9
+#define  UPC_SET_OP    10
+#define  UPC_CSWAP_OP  11
+#define  UPC_SUB_OP    12
+#define  UPC_INC_OP    13
+#define  UPC_DEC_OP    14
+
 /* Preferred mode of optimization of a domain.  */
 typedef int upc_atomichint_t;
 /* Preferred mode of optimization values.  */
