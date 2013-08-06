@@ -1,4 +1,9 @@
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/57539
+	* gcc.dg/ipa/pr57539.c: New test.
+
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
 	    Bernd Edlinger <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/torture/pr58041.c (foo): Accept z by reference.
