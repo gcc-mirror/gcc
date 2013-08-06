@@ -1,3 +1,9 @@
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/58041
+	* gcc.dg/torture/pr58041.c: New test.
+	* gcc.target/arm/pr58041.c: Likewise.
+
 2013-08-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57306

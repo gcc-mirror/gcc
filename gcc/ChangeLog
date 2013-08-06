@@ -1,3 +1,9 @@
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/58041
+	* gimple-ssa-strength-reduction.c (replace_ref): Make sure built
+	MEM_REF has proper alignment information.
+
 2013-08-05  Oleg Endo <olegendo@gcc.gnu.org>
 
 	PR other/12081
