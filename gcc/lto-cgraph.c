@@ -376,7 +376,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bool boundary_p;
   intptr_t ref;
   bool in_other_partition = false;
-  struct cgraph_node *clone_of;
+  struct cgraph_node *clone_of, *ultimate_clone_of;
   struct ipa_opt_pass_d *pass;
   int i;
   bool alias_p;
@@ -423,7 +423,16 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
     else
       clone_of = clone_of->clone_of;
 
-  if (LTO_symtab_analyzed_node)
+  /* See if body of the master function is output.  If not, we are seeing only
+     an declaration and we do not need to pass down clone tree. */
+  ultimate_clone_of = clone_of;
+  while (ultimate_clone_of && ultimate_clone_of->clone_of)
+    ultimate_clone_of = ultimate_clone_of->clone_of;
+
+  if (clone_of && !lto_symtab_encoder_encode_body_p (encoder, ultimate_clone_of))
+    clone_of = NULL;
+
+  if (tag == LTO_symtab_analyzed_node)
     gcc_assert (clone_of || !node->clone_of);
   if (!clone_of)
     streamer_write_hwi_stream (ob->main_stream, LCC_NOT_FOUND);

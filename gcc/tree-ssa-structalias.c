@@ -7088,8 +7088,9 @@ ipa_pta_execute (void)
       /* Nodes without a body are not interesting.  Especially do not
          visit clones at this point for now - we get duplicate decls
 	 there for inline clones at least.  */
-      if (!cgraph_function_with_gimple_body_p (node))
+      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
 	continue;
+      cgraph_get_body (node);
 
       gcc_assert (!node->clone_of);
 
@@ -7122,7 +7123,7 @@ ipa_pta_execute (void)
       basic_block bb;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node))
+      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
 	continue;
 
       if (dump_file)
@@ -7231,7 +7232,7 @@ ipa_pta_execute (void)
       struct cgraph_edge *e;
 
       /* Nodes without a body are not interesting.  */
-      if (!cgraph_function_with_gimple_body_p (node))
+      if (!cgraph_function_with_gimple_body_p (node) || node->clone_of)
 	continue;
 
       fn = DECL_STRUCT_FUNCTION (node->symbol.decl);

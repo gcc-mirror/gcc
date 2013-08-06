@@ -1581,6 +1581,7 @@ expand_function (struct cgraph_node *node)
   announce_function (decl);
   node->process = 0;
   gcc_assert (node->lowered);
+  cgraph_get_body (node);
 
   /* Generate RTL for the body of DECL.  */
 

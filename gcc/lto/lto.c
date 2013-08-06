@@ -192,48 +192,19 @@ static void
 lto_materialize_function (struct cgraph_node *node)
 {
   tree decl;
-  struct lto_file_decl_data *file_data;
-  const char *data, *name;
-  size_t len;
 
   decl = node->symbol.decl;
   /* Read in functions with body (analyzed nodes)
      and also functions that are needed to produce virtual clones.  */
   if ((cgraph_function_with_gimple_body_p (node) && node->symbol.analyzed)
+      || node->used_as_abstract_origin
       || has_analyzed_clone_p (node))
     {
       /* Clones don't need to be read.  */
       if (node->clone_of)
 	return;
-
-      /* Load the function body only if not operating in WPA mode.  In
-	 WPA mode, the body of the function is not needed.  */
-      if (!flag_wpa)
-	{
-	  file_data = node->symbol.lto_file_data;
-	  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
-
-	  /* We may have renamed the declaration, e.g., a static function.  */
-	  name = lto_get_decl_name_mapping (file_data, name);
-
-	  data = lto_get_section_data (file_data, LTO_section_function_body,
-				       name, &len);
-	  if (!data)
-	    fatal_error ("%s: section %s is missing",
-			 file_data->file_name,
-			 name);
-
-	  gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
-
-	  announce_function (decl);
-	  lto_input_function_body (file_data, decl, data);
-	  if (DECL_FUNCTION_PERSONALITY (decl) && !first_personality_decl)
-	    first_personality_decl = DECL_FUNCTION_PERSONALITY (decl);
-	  lto_stats.num_function_bodies++;
-	  lto_free_section_data (file_data, LTO_section_function_body, name,
-				 data, len);
-	  ggc_collect ();
-	}
+      if (DECL_FUNCTION_PERSONALITY (decl) && !first_personality_decl)
+	first_personality_decl = DECL_FUNCTION_PERSONALITY (decl);
     }
 
   /* Let the middle end know about the function.  */

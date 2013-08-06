@@ -701,6 +701,7 @@ gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
 bool cgraph_propagate_frequency (struct cgraph_node *node);
 struct cgraph_node * cgraph_function_node (struct cgraph_node *,
 					   enum availability *avail = NULL);
+bool cgraph_get_body (struct cgraph_node *node);
 
 /* In cgraphunit.c  */
 struct asm_node *add_asm_node (tree);

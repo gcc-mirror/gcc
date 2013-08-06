@@ -1,3 +1,16 @@
+2013-08-06  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_get_body): New function based on lto.c
+	implementation.
+	* cgraph.h (cgraph_get_body): Declare.
+	* cgraphclones.c (cgraph_create_virtual_clone): Commonize WPA and LTO paths.
+	* cgraphunit.c (expand_function): Get body prior expanding.
+	* ipa.c (function_and_variable_visibility): Use gimple_has_body_p test.
+	* lto-cgraph.c (lto_output_node): Do not stream bodies we don't really need.
+	* passes.c (do_per_function_toporder): Get body.
+	* tree-inline.c (expand_call_inline): Get body prior inlining it.
+	* tree-ssa-structalias.c (ipa_pta_execute): Get body; skip clones.
+
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR fortran/57987
