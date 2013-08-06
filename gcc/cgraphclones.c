@@ -295,7 +295,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   size_t i;
   struct ipa_replace_map *map;
 
-  if (!flag_wpa)
+  if (!in_lto_p)
     gcc_checking_assert  (tree_versionable_function_p (old_decl));
 
   gcc_assert (old_node->local.can_change_signature || !args_to_skip);
@@ -829,6 +829,8 @@ cgraph_materialize_all_clones (void)
 	  if (node->clone_of && node->symbol.decl != node->clone_of->symbol.decl
 	      && !gimple_has_body_p (node->symbol.decl))
 	    {
+	      if (!node->clone_of->clone_of)
+		cgraph_get_body (node->clone_of);
 	      if (gimple_has_body_p (node->clone_of->symbol.decl))
 	        {
 		  if (cgraph_dump_file)

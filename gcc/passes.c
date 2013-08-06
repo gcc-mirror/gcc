@@ -1597,6 +1597,7 @@ do_per_function_toporder (void (*callback) (void *data), void *data)
 	  node->process = 0;
 	  if (cgraph_function_with_gimple_body_p (node))
 	    {
+	      cgraph_get_body (node);
 	      push_cfun (DECL_STRUCT_FUNCTION (node->symbol.decl));
 	      callback (data);
 	      free_dominance_info (CDI_DOMINATORS);

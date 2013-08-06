@@ -3939,6 +3939,7 @@ expand_call_inline (basic_block bb, gimple stmt, copy_body_data *id)
       goto egress;
     }
   fn = cg_edge->callee->symbol.decl;
+  cgraph_get_body (cg_edge->callee);
 
 #ifdef ENABLE_CHECKING
   if (cg_edge->callee->symbol.decl != id->dst_node->symbol.decl)

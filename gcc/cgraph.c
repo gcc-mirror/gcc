@@ -2707,4 +2707,44 @@ cgraph_function_node (struct cgraph_node *node, enum availability *availability)
   return node;
 }
 
+/* When doing LTO, read NODE's body from disk if it is not already present.  */
+
+bool
+cgraph_get_body (struct cgraph_node *node)
+{
+  struct lto_file_decl_data *file_data;
+  const char *data, *name;
+  size_t len;
+  tree decl = node->symbol.decl;
+
+  if (DECL_RESULT (decl))
+    return false;
+
+  gcc_assert (in_lto_p);
+
+  file_data = node->symbol.lto_file_data;
+  name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  /* We may have renamed the declaration, e.g., a static function.  */
+  name = lto_get_decl_name_mapping (file_data, name);
+
+  data = lto_get_section_data (file_data, LTO_section_function_body,
+			       name, &len);
+  if (!data)
+    {
+	dump_cgraph_node (stderr, node);
+    fatal_error ("%s: section %s is missing",
+		 file_data->file_name,
+		 name);
+    }
+
+  gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
+
+  lto_input_function_body (file_data, decl, data);
+  lto_stats.num_function_bodies++;
+  lto_free_section_data (file_data, LTO_section_function_body, name,
+			 data, len);
+  return true;
+}
+
 #include "gt-cgraph.h"
