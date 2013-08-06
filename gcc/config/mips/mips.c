@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-globals.h"
 #include "opts.h"
 #include "tree-pass.h"
+#include "context.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -16374,13 +16375,6 @@ make_pass_mips_machine_reorg2 (gcc::context *ctxt)
   return new pass_mips_machine_reorg2 (ctxt);
 }
 
-struct register_pass_info insert_pass_mips_machine_reorg2 =
-{
-  &pass_mips_machine_reorg2.pass,	/* pass */
-  "dbr",				/* reference_pass_name */
-  1,					/* ref_pass_instance_number */
-  PASS_POS_INSERT_AFTER			/* po_op */
-};
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
@@ -17174,6 +17168,14 @@ mips_option_override (void)
   /* We register a second machine specific reorg pass after delay slot
      filling.  Registering the pass must be done at start up.  It's
      convenient to do it here.  */
+  opt_pass *new_pass = make_pass_mips_machine_reorg2 (g);
+  struct register_pass_info insert_pass_mips_machine_reorg2 =
+    {
+      new_pass,		/* pass */
+      "dbr",			/* reference_pass_name */
+      1,			/* ref_pass_instance_number */
+      PASS_POS_INSERT_AFTER	/* po_op */
+    };
   register_pass (&insert_pass_mips_machine_reorg2);
 
   if (TARGET_HARD_FLOAT_ABI && TARGET_MIPS5900)

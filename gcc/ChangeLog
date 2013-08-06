@@ -1,3 +1,10 @@
+2013-08-06  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/mips/mips.c (insert_pass_mips_machine_reorg2): Move
+	into...
+	(mips_option_override): ...here, porting to new C++ API for
+	passes.
+
 2013-08-06  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_get_body): New function based on lto.c
