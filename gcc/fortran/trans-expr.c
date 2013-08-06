@@ -5664,7 +5664,15 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
     }
   else if (pointer || procptr)
     {
-      if (!expr || expr->expr_type == EXPR_NULL)
+      if (ts->type == BT_CLASS && !procptr)
+	{
+	  gfc_init_se (&se, NULL);
+	  gfc_conv_structure (&se, gfc_class_initializer (ts, expr), 1);
+	  gcc_assert (TREE_CODE (se.expr) == CONSTRUCTOR);
+	  TREE_STATIC (se.expr) = 1;
+	  return se.expr;
+	}
+      else if (!expr || expr->expr_type == EXPR_NULL)
 	return fold_convert (type, null_pointer_node);
       else
 	{
@@ -5683,7 +5691,7 @@ gfc_conv_initializer (gfc_expr * expr, gfc_typespec * ts, tree type,
 	case BT_CLASS:
 	  gfc_init_se (&se, NULL);
 	  if (ts->type == BT_CLASS && expr->expr_type == EXPR_NULL)
-	    gfc_conv_structure (&se, gfc_class_null_initializer(ts, expr), 1);
+	    gfc_conv_structure (&se, gfc_class_initializer (ts, expr), 1);
 	  else
 	    gfc_conv_structure (&se, expr, 1);
 	  gcc_assert (TREE_CODE (se.expr) == CONSTRUCTOR);
@@ -5993,7 +6001,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr)
     {
       /* NULL initialization for CLASS components.  */
       tmp = gfc_trans_structure_assign (dest,
-					gfc_class_null_initializer (&cm->ts, expr));
+					gfc_class_initializer (&cm->ts, expr));
       gfc_add_expr_to_block (&block, tmp);
     }
   else if (cm->attr.dimension && !cm->attr.proc_pointer)

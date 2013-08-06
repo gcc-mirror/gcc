@@ -1,3 +1,13 @@
+2013-08-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57306
+	* class.c (gfc_class_null_initializer): Rename to
+	'gfc_class_initializer'. Treat non-NULL init-exprs.
+	* gfortran.h (gfc_class_null_initializer): Update prototype.
+	* trans-decl.c (gfc_get_symbol_decl): Treat class variables.
+	* trans-expr.c (gfc_conv_initializer): Ditto.
+	(gfc_trans_subcomponent_assign): Renamed gfc_class_null_initializer.
+
 2013-07-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57530
