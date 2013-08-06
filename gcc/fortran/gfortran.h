@@ -2983,7 +2983,7 @@ void gfc_add_class_array_ref (gfc_expr *);
 bool gfc_is_class_array_ref (gfc_expr *, bool *);
 bool gfc_is_class_scalar_expr (gfc_expr *);
 bool gfc_is_class_container_ref (gfc_expr *e);
-gfc_expr *gfc_class_null_initializer (gfc_typespec *, gfc_expr *);
+gfc_expr *gfc_class_initializer (gfc_typespec *, gfc_expr *);
 unsigned int gfc_hash_value (gfc_symbol *);
 bool gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
 				gfc_array_spec **, bool);

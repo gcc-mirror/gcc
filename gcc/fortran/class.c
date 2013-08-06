@@ -412,12 +412,12 @@ gfc_is_class_container_ref (gfc_expr *e)
 }
 
 
-/* Build a NULL initializer for CLASS pointers,
-   initializing the _data component to NULL and
-   the _vptr component to the declared type.  */
+/* Build an initializer for CLASS pointers,
+   initializing the _data component to the init_expr (or NULL) and the _vptr
+   component to the corresponding type (or the declared type, given by ts).  */
 
 gfc_expr *
-gfc_class_null_initializer (gfc_typespec *ts, gfc_expr *init_expr)
+gfc_class_initializer (gfc_typespec *ts, gfc_expr *init_expr)
 {
   gfc_expr *init;
   gfc_component *comp;
@@ -430,6 +430,8 @@ gfc_class_null_initializer (gfc_typespec *ts, gfc_expr *init_expr)
 
   if (is_unlimited_polymorphic && init_expr)
     vtab = gfc_find_intrinsic_vtab (&ts->u.derived->components->ts);
+  else if (init_expr && init_expr->expr_type != EXPR_NULL)
+    vtab = gfc_find_derived_vtab (init_expr->ts.u.derived);
   else
     vtab = gfc_find_derived_vtab (ts->u.derived);
 
@@ -442,6 +444,8 @@ gfc_class_null_initializer (gfc_typespec *ts, gfc_expr *init_expr)
       gfc_constructor *ctor = gfc_constructor_get();
       if (strcmp (comp->name, "_vptr") == 0 && vtab)
 	ctor->expr = gfc_lval_expr_from_sym (vtab);
+      else if (init_expr && init_expr->expr_type != EXPR_NULL)
+	  ctor->expr = gfc_copy_expr (init_expr);
       else
 	ctor->expr = gfc_get_null_expr (NULL);
       gfc_constructor_append (&init->value.constructor, ctor);

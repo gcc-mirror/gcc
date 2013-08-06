@@ -1491,14 +1491,14 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	 SAVE is specified otherwise they need to be reinitialized
 	 every time the procedure is entered. The TREE_STATIC is
 	 in this case due to -fmax-stack-var-size=.  */
+
       DECL_INITIAL (decl) = gfc_conv_initializer (sym->value, &sym->ts,
-						  TREE_TYPE (decl),
-						  sym->attr.dimension
-						  || (sym->attr.codimension
-						      && sym->attr.allocatable),
-						  sym->attr.pointer
-						  || sym->attr.allocatable,
-						  sym->attr.proc_pointer);
+				    TREE_TYPE (decl), sym->attr.dimension
+				    || (sym->attr.codimension
+					&& sym->attr.allocatable),
+				    sym->attr.pointer || sym->attr.allocatable
+				    || sym->ts.type == BT_CLASS,
+				    sym->attr.proc_pointer);
     }
 
   if (!TREE_STATIC (decl)
