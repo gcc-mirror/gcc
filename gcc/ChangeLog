@@ -1,3 +1,20 @@
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR middle-end/58041
+	* gimple-ssa-strength-reduction.c (replace_ref): Make sure built
+	MEM_REF has proper alignment information.
+
+2013-08-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR rtl-optimization/57708
+	* recog.c (peep2_find_free_register): Validate all regs in a
+	multi-reg mode.
+
+2013-08-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_emit_membar_for_model) <SMM_TSO>: Add
+	the implied StoreLoad barrier for atomic operations if before.
+
 2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	Backports from mainline:
