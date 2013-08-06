@@ -1,5 +1,10 @@
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
 
+	PR fortran/57987
+	* gfortran.dg/pr57987.f90: New test.
+
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
 	PR middle-end/58041
 	* gcc.dg/torture/pr58041.c: New test.
 	* gcc.target/arm/pr58041.c: Likewise.

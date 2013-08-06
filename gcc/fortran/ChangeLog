@@ -1,3 +1,9 @@
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR fortran/57987
+	* trans-decl.c (gfc_generate_function_code): Never call
+	cgraph_finalize_function on nested functions.
+
 2013-08-06  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57306

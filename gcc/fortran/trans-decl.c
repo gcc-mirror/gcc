@@ -5643,14 +5643,16 @@ gfc_generate_function_code (gfc_namespace * ns)
     }
   current_function_decl = old_context;
 
-  if (decl_function_context (fndecl) && gfc_option.coarray != GFC_FCOARRAY_LIB
-      && has_coarray_vars)
-    /* Register this function with cgraph just far enough to get it
-       added to our parent's nested function list.
-       If there are static coarrays in this function, the nested _caf_init
-       function has already called cgraph_create_node, which also created
-       the cgraph node for this function.  */
-    (void) cgraph_create_node (fndecl);
+  if (decl_function_context (fndecl))
+    {
+      /* Register this function with cgraph just far enough to get it
+	 added to our parent's nested function list.
+	 If there are static coarrays in this function, the nested _caf_init
+	 function has already called cgraph_create_node, which also created
+	 the cgraph node for this function.  */
+      if (!has_coarray_vars || gfc_option.coarray != GFC_FCOARRAY_LIB)
+	(void) cgraph_create_node (fndecl);
+    }
   else
     cgraph_finalize_function (fndecl, true);
 
