@@ -1,3 +1,7 @@
+2013-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert the last commit.
+
 2013-08-06  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Hashtable_alloc): New.
