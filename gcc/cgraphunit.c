@@ -404,17 +404,20 @@ referred_to_p (symtab_node node)
 }
 
 /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
-   logic in effect.  If NESTED is true, then our caller cannot stand to have
+   logic in effect.  If NO_COLLECT is true, then our caller cannot stand to have
    the garbage collector run at the moment.  We would need to either create
    a new GC context, or just not compile right now.  */
 
 void
-cgraph_finalize_function (tree decl, bool nested)
+cgraph_finalize_function (tree decl, bool no_collect)
 {
   struct cgraph_node *node = cgraph_get_create_node (decl);
 
   if (node->symbol.definition)
     {
+      /* Nested functions should only be defined once.  */
+      gcc_assert (!DECL_CONTEXT (decl)
+		  || TREE_CODE (DECL_CONTEXT (decl)) !=	FUNCTION_DECL);
       cgraph_reset_node (node);
       node->local.redefined_extern_inline = true;
     }
@@ -453,7 +456,7 @@ cgraph_finalize_function (tree decl, bool nested)
   if (warn_unused_parameter)
     do_warn_unused_parameter (decl);
 
-  if (!nested)
+  if (!no_collect)
     ggc_collect ();
 
   if (cgraph_state == CGRAPH_STATE_CONSTRUCTION
