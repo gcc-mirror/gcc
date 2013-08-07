@@ -1,3 +1,8 @@
+2013-08-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/plugin-support.exp (plugin-test-execute): Add -fno-rtti
+	to optstr when building plugins on darwin.
+
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/57539
