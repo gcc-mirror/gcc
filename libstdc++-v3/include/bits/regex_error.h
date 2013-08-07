@@ -45,7 +45,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @name 5.3 Error Types
    */
   //@{
- 
+
   enum error_type
     {
       _S_error_collate,

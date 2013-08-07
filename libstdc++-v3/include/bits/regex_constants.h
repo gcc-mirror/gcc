@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   typedef unsigned int syntax_option_type;
 
-  /** 
+  /**
    * Specifies that the matching of regular expressions against a character
    * sequence shall be performed without regard to case.
    */
@@ -139,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * identical to syntax_option_type extended, except that C-style escape
    * sequences are supported.  These sequences are:
    * \\\\, \\a, \\b, \\f, \\n, \\r, \\t , \\v, \\&apos;, &apos;,
-   * and \\ddd (where ddd is one, two, or three octal digits).  
+   * and \\ddd (where ddd is one, two, or three octal digits).
    */
   constexpr syntax_option_type awk        = 1 << _S_awk;
 
@@ -154,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    * Specifies that the grammar recognized by the regular expression engine is
    * that used by POSIX utility grep when given the -E option in
-   * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type 
+   * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type
    * extended, except that newlines are treated as whitespace.
    */
   constexpr syntax_option_type egrep      = 1 << _S_egrep;
@@ -215,35 +215,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * expression shall not match [last, last).
    */
   constexpr match_flag_type match_not_eol     = 1 << _S_not_eol;
-   
+
   /**
    * The expression \\b is not matched against the sub-sequence
    * [first,first).
    */
   constexpr match_flag_type match_not_bow     = 1 << _S_not_bow;
-   
+
   /**
    * The expression \\b should not be matched against the sub-sequence
    * [last,last).
    */
   constexpr match_flag_type match_not_eow     = 1 << _S_not_eow;
-   
+
   /**
    * If more than one match is possible then any match is an acceptable
    * result.
    */
   constexpr match_flag_type match_any         = 1 << _S_any;
-   
+
   /**
    * The expression does not match an empty sequence.
    */
   constexpr match_flag_type match_not_null    = 1 << _S_not_null;
-   
+
   /**
    * The expression only matches a sub-sequence that begins at first .
    */
   constexpr match_flag_type match_continuous  = 1 << _S_continuous;
-   
+
   /**
    * --first is a valid iterator position.  When this flag is set then the
    * flags match_not_bol and match_not_bow are ignored by the regular
@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * operations all non-overlapping occurrences of the regular expression
    * are located and replaced, and sections of the input that did not match
    * the expression are copied unchanged to the output string.
-   * 
+   *
    * Format strings (from ECMA-262 [15.5.4.11]):
    * @li $$  The dollar-sign itself ($)
    * @li $&  The matched substring.
