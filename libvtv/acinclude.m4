@@ -30,17 +30,6 @@ dnl  - lots of tools, like CC and CXX
 dnl
 AC_DEFUN([LIBVTV_CONFIGURE], [
 
-  # Use same top-level configure hooks in libgcc/libstdc++/libvtv.
-  AC_ARG_ENABLE(vtable-verify,
-  [  --enable-vtable-verify    Enable vtable verification feature ],
-  [case "$enableval" in
-   yes) enable_vtable_verify=yes ;;
-   no)  enable_vtable_verify=no ;;
-   *)   enable_vtable_verify=no;;
-   esac],
-  [enable_vtable_verify=no])
-  AM_CONDITIONAL(ENABLE_VTABLE_VERIFY, test $enable_vtable_verify = yes)
-
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
   # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.

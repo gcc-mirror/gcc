@@ -19,7 +19,11 @@
 ## along with this library; see the file COPYING3.  If not see
 ## <http://www.gnu.org/licenses/>.
 
+if ENABLE_VTABLE_VERIFY
 SUBDIRS = testsuite
+else
+SUBDIRS = 
+endif
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
