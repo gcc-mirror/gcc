@@ -1,5 +1,9 @@
 2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	* include/ext/atomicity.h: Add #pragma GCC system_header.
+
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR libstdc++/58098
 	* include/bits/random.h (cauchy_distribution<>::min,
 	extreme_value_distribution<>::min, normal_distribution<>::min,
