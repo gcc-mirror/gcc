@@ -795,6 +795,53 @@ compute_alignments (void)
   return 0;
 }
 
+/* Grow the LABEL_ALIGN array after new labels are created.  */
+
+static void 
+grow_label_align (void)
+{
+  int old = max_labelno;
+  int n_labels;
+  int n_old_labels;
+
+  max_labelno = max_label_num ();
+
+  n_labels = max_labelno - min_labelno + 1;
+  n_old_labels = old - min_labelno + 1;
+
+  label_align = XRESIZEVEC (struct label_alignment, label_align, n_labels);
+
+  /* Range of labels grows monotonically in the function.  Failing here
+     means that the initialization of array got lost.  */
+  gcc_assert (n_old_labels <= n_labels);
+
+  memset (label_align + n_old_labels, 0,
+          (n_labels - n_old_labels) * sizeof (struct label_alignment));
+}
+
+/* Update the already computed alignment information.  LABEL_PAIRS is a vector
+   made up of pairs of labels for which the alignment information of the first
+   element will be copied from that of the second element.  */
+
+void
+update_alignments (vec<rtx> &label_pairs)
+{
+  unsigned int i = 0;
+  rtx iter, label;
+
+  if (max_labelno != max_label_num ())
+    grow_label_align ();
+
+  FOR_EACH_VEC_ELT (label_pairs, i, iter)
+    if (i & 1)
+      {
+	LABEL_TO_ALIGNMENT (label) = LABEL_TO_ALIGNMENT (iter);
+	LABEL_TO_MAX_SKIP (label) = LABEL_TO_MAX_SKIP (iter);
+      }
+    else
+      label = iter;
+}
+
 namespace {
 
 const pass_data pass_data_compute_alignments =
@@ -869,25 +916,7 @@ shorten_branches (rtx first)
   uid_shuid = XNEWVEC (int, max_uid);
 
   if (max_labelno != max_label_num ())
-    {
-      int old = max_labelno;
-      int n_labels;
-      int n_old_labels;
-
-      max_labelno = max_label_num ();
-
-      n_labels = max_labelno - min_labelno + 1;
-      n_old_labels = old - min_labelno + 1;
-
-      label_align = XRESIZEVEC (struct label_alignment, label_align, n_labels);
-
-      /* Range of labels grows monotonically in the function.  Failing here
-         means that the initialization of array got lost.  */
-      gcc_assert (n_old_labels <= n_labels);
-
-      memset (label_align + n_old_labels, 0,
-	      (n_labels - n_old_labels) * sizeof (struct label_alignment));
-    }
+    grow_label_align ();
 
   /* Initialize label_align and set up uid_shuid to be strictly
      monotonically rising with insn order.  */
