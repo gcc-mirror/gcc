@@ -1236,6 +1236,8 @@ strip_typedefs (tree t)
 	    result =
 	      build_method_type_directly (class_type, type,
 					  TREE_CHAIN (arg_types));
+	    result
+	      = build_ref_qualified_type (result, type_memfn_rqual (t));
 	  }
 	else
 	  {
