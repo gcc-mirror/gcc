@@ -1,3 +1,10 @@
+2013-08-07  Oleg Endo <olegendo@gcc.gnu.org>
+
+	PR other/12081
+	config/rs6000/rs6000.c (gen_2arg_fn_t): Remove typedef.
+	(rs6000_emit_swdiv, rs6000_emit_swrsqrt): Don't cast result of GEN_FCN
+	to gen_2arg_fn_t.
+
 2013-08-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* rtl.h (update_alignments): Declare.
