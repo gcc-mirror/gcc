@@ -1,5 +1,13 @@
 2013-08-07  David Malcolm  <dmalcolm@redhat.com>
 
+	* config/rl78/rl78.c (rl78_devirt_pass): Convert from a struct to...
+	(pass_rl78_devirt): ...new subclass of rtl_opt_pass along with...
+	(pass_data_rl78_devirt): ...new pass_data instance and...
+	(make_pass_rl78_devirt): ...new function.
+	(rl78_asm_file_start): Port pass registration to new C++ API.
+
+2013-08-07  David Malcolm  <dmalcolm@redhat.com>
+
 	* coretypes.h (rtl_opt_pass): Add.
 	(gcc::context): Add.
 	* config/epiphany/epiphany.c (pass_mode_switch_use): New.
