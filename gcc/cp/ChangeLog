@@ -1,3 +1,8 @@
+2013-08-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/57825
+	* tree.c (strip_typedefs) [METHOD_TYPE]: Preserve ref-qualifier.
+
 2013-07-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57901
