@@ -66,6 +66,15 @@ public:
   void execute_early_local_passes ();
   unsigned int execute_pass_mode_switching ();
 
+  /* Various passes are manually cloned by epiphany. */
+  opt_pass *get_pass_split_all_insns () const {
+    return pass_split_all_insns_1;
+  }
+  opt_pass *get_pass_mode_switching () const {
+    return pass_mode_switching_1;
+  }
+  opt_pass *get_pass_peephole2 () const { return pass_peephole2_1; }
+
 public:
   /* The root of the compilation pass tree, once constructed.  */
   opt_pass *all_passes;
