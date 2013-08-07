@@ -24,7 +24,7 @@ sparc.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(FUNCTION_H) $(EXCEPT_H) $(EXPR_H) $(OPTABS_H) $(RECOG_H) \
   $(DIAGNOSTIC_CORE_H) $(GGC_H) $(TM_P_H) debug.h $(TARGET_H) \
   $(TARGET_DEF_H) $(COMMON_TARGET_H) $(GIMPLE_H) $(TREE_PASS_H) \
-  langhooks.h reload.h $(PARAMS_H) $(DF_H) $(OPTS_H) \
+  langhooks.h reload.h $(PARAMS_H) $(DF_H) $(OPTS_H) $(CONTEXT_H) \
   gt-sparc.h
 
 sparc-c.o: $(srcdir)/config/sparc/sparc-c.c \

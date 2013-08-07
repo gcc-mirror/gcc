@@ -1,3 +1,10 @@
+2013-08-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/sparc/sparc.c (insert_pass_work_around_errata): Move
+	into...
+	(sparc_option_override): ...and port to new C++ pass API.
+	* config/sparc/t-sparc (sparc.o): Add dep on CONTEXT_H
+
 2013-08-07  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (htm_expand_builtin) <case 0>: Remove.
