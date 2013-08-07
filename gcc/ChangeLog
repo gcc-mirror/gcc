@@ -1,3 +1,7 @@
+2013-08-07  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (htm_expand_builtin) <case 0>: Remove.
+
 2013-08-06  Caroline Tice  <cmtice@google.com>
 
 	* gcc.c (VTABLE_VERIFICATION_SPEC): New definition.

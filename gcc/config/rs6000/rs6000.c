@@ -11148,9 +11148,6 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 
 	switch (nopnds)
 	  {
-	  case 0:
-	    pat = GEN_FCN (icode) (NULL_RTX);
-	    break;
 	  case 1:
 	    pat = GEN_FCN (icode) (op[0]);
 	    break;
