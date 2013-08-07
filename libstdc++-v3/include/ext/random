@@ -791,7 +791,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       result_type
       min() const
       { result_type __res;
-	__res.fill(std::numeric_limits<_RealType>::min());
+	__res.fill(std::numeric_limits<_RealType>::lowest());
 	return __res; }
 
       /**
