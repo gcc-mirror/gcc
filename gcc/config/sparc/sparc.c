@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "opts.h"
 #include "tree-pass.h"
+#include "context.h"
 
 /* Processor costs */
 
@@ -1038,14 +1039,6 @@ make_pass_work_around_errata (gcc::context *ctxt)
   return new pass_work_around_errata (ctxt);
 }
 
-struct register_pass_info insert_pass_work_around_errata =
-{
-  &pass_work_around_errata.pass,	/* pass */
-  "dbr",				/* reference_pass_name */
-  1,					/* ref_pass_instance_number */
-  PASS_POS_INSERT_AFTER			/* po_op */
-};
-
 /* Helpers for TARGET_DEBUG_OPTIONS.  */
 static void
 dump_target_flag_bits (const int flags)
@@ -1495,6 +1488,14 @@ sparc_option_override (void)
      (essentially) final form of the insn stream to work on.
      Registering the pass must be done at start up.  It's convenient to
      do it here.  */
+  opt_pass *errata_pass = make_pass_work_around_errata (g);
+  struct register_pass_info insert_pass_work_around_errata =
+    {
+      errata_pass,		/* pass */
+      "dbr",			/* reference_pass_name */
+      1,			/* ref_pass_instance_number */
+      PASS_POS_INSERT_AFTER	/* po_op */
+    };
   register_pass (&insert_pass_work_around_errata);
 }
 
