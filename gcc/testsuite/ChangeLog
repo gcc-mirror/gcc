@@ -1,3 +1,7 @@
+2013-08-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn9.adb: New test.
+
 2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/46206
