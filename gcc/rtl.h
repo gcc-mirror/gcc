@@ -2749,6 +2749,7 @@ extern void simplify_using_condition (rtx, rtx *, bitmap);
 
 /* In final.c  */
 extern unsigned int compute_alignments (void);
+extern void update_alignments (vec<rtx> &);
 extern int asm_str_count (const char *templ);
 
 struct rtl_hooks

@@ -1856,10 +1856,15 @@ update_reg_unused_notes (rtx insn, rtx redundant_insn)
     }
 }
 
-/* Return the label before INSN, or put a new label there.  */
+static vec <rtx> sibling_labels;
+
+/* Return the label before INSN, or put a new label there.  If SIBLING is
+   non-zero, it is another label associated with the new label (if any),
+   typically the former target of the jump that will be redirected to
+   the new label.  */
 
 static rtx
-get_label_before (rtx insn)
+get_label_before (rtx insn, rtx sibling)
 {
   rtx label;
 
@@ -1874,6 +1879,11 @@ get_label_before (rtx insn)
       label = gen_label_rtx ();
       emit_label_after (label, prev);
       LABEL_NUSES (label) = 0;
+      if (sibling)
+	{
+	  sibling_labels.safe_push (label);
+	  sibling_labels.safe_push (sibling);
+	}
     }
   return label;
 }
@@ -2219,7 +2229,7 @@ fill_simple_delay_slots (int non_jumps_p)
 	      rtx new_label = next_real_insn (next_trial);
 
 	      if (new_label != 0)
-		new_label = get_label_before (new_label);
+		new_label = get_label_before (new_label, JUMP_LABEL (trial));
 	      else
 		new_label = find_end_label (simple_return_rtx);
 
@@ -2770,7 +2780,7 @@ fill_slots_from_thread (rtx insn, rtx condition, rtx thread,
       else if (LABEL_P (new_thread))
 	label = new_thread;
       else
-	label = get_label_before (new_thread);
+	label = get_label_before (new_thread, JUMP_LABEL (insn));
 
       if (label)
 	{
@@ -3321,7 +3331,7 @@ relax_delay_slots (rtx first)
 	      
 	      /* Now emit a label before the special USE insn, and
 		 redirect our jump to the new label.  */
-	      target_label = get_label_before (PREV_INSN (tmp));
+	      target_label = get_label_before (PREV_INSN (tmp), target_label);
 	      reorg_redirect_jump (delay_insn, target_label);
 	      next = insn;
 	      continue;
@@ -3495,7 +3505,7 @@ make_return_insns (rtx first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
       {
-	rtx t = get_label_before (insn);
+	rtx t = get_label_before (insn, NULL_RTX);
 	if (PATTERN (insn) == ret_rtx)
 	  real_return_label = t;
 	else
@@ -3823,6 +3833,12 @@ dbr_schedule (rtx first)
       fprintf (dump_file, "\n");
 #endif
       fprintf (dump_file, "\n");
+    }
+
+  if (!sibling_labels.is_empty ())
+    {
+      update_alignments (sibling_labels);
+      sibling_labels.release ();
     }
 
   free_resource_info ();

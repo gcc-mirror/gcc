@@ -1,5 +1,20 @@
 2013-08-07  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* rtl.h (update_alignments): Declare.
+	* final.c (grow_label_align): New function extracted from...
+	(shorten_branches): ...here.  Call it.
+	(update_alignments): New function.
+	* reorg.c (sibling_labels): New variable.
+	(get_label_before): Add SIBLING parameter.  If it is non-zero, push
+	the new label along with it onto the sibling_labels vector.
+	(fill_simple_delay_slots): Adjust call to get_label_before.
+	(fill_slots_from_thread): Likewise.
+	(relax_delay_slots): Likewise.
+	(make_return_insns): Likewise.
+	(dbr_schedule): Invoke update_alignment on the sibling_labels vector.
+
+2013-08-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* diagnostic.c (diagnostic_classify_diagnostic): Accept zero index and
 	document its semantics.
 	(diagnostic_report_diagnostic): Adjust accordingly.
