@@ -184,9 +184,7 @@ m4_changequote(,)
 case $target in
 	aarch64*-*-* | \
 	alpha*-*-* | \
-	arm*-*-*eabi* | \
-	arm*-*-rtems* | \
-	arm*-*-symbianelf* | \
+	arm*-*-* | \
 	x86_64-*-* | \
 	ia64-*-* | \
 	hppa*64*-*-* | \
