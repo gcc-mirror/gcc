@@ -34,7 +34,7 @@ test01()
   std::student_t_distribution<> u;
   VERIFY( u.n() == 1.0 );
   typedef std::student_t_distribution<>::result_type result_type;
-  VERIFY( u.min() == std::numeric_limits<result_type>::min() );
+  VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 

@@ -35,7 +35,7 @@ test01()
   VERIFY( u.mean() == 0.0 );
   VERIFY( u.stddev() == 1.0 );
   typedef std::normal_distribution<>::result_type result_type;
-  VERIFY( u.min() == std::numeric_limits<result_type>::min() );
+  VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
