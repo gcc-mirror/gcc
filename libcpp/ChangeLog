@@ -1,3 +1,8 @@
+2013-08-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	* configure.ac: Set need_64bit_hwint for all arm targets.
+	* configure: Regenerated.
+
 2013-07-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR preprocessor/57620
