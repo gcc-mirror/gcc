@@ -1,3 +1,39 @@
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58098
+	* include/bits/random.h (cauchy_distribution<>::min,
+	extreme_value_distribution<>::min, normal_distribution<>::min,
+	student_t_distribution<>::min): Fix.
+	* include/ext/random (normal_mv_distribution<>::min): Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/parms.cc:
+	Adjust.
+	testsuite/26_numerics/random/cauchy_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/
+	parms.cc: Likewise.
+	testsuite/26_numerics/random/extreme_value_distribution/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/default.cc: Likewise.
+
+	* testsuite/26_numerics/random/exponential_distribution/cons/parms.cc:
+	Minor tweak.
+	* testsuite/26_numerics/random/exponential_distribution/cons/default.cc:
+	Likewise.
+
+	* testsuite/ext/von_mises_distribution/*: Move to...
+	* testsuite/ext/random/von_mises_distribution/*: ... here.
+	* testsuite/ext/triangular_distribution/*: Move to...
+	* testsuite/ext/random/triangular_distribution/*: ... here.
+
 2013-08-06  Caroline Tice  <cmtice@google.com>
 
 	* fragment.am: Add XTEMPLATE_FLAGS.

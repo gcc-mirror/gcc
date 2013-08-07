@@ -35,7 +35,7 @@ test01()
   VERIFY( u.a() == 5.0 );
   VERIFY( u.b() == 2.0 );
   typedef std::extreme_value_distribution<>::result_type result_type;
-  VERIFY( u.min() == std::numeric_limits<result_type>::min() );
+  VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 
