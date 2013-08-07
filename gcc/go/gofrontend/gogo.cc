@@ -3133,7 +3133,8 @@ Check_return_statements_traverse::function(Named_object* no)
     return TRAVERSE_CONTINUE;
 
   if (func->block()->may_fall_through())
-    error_at(func->location(), "control reaches end of non-void function");
+    error_at(func->block()->end_location(),
+	     "missing return at end of function");
 
   return TRAVERSE_CONTINUE;
 }
