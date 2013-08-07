@@ -1,3 +1,17 @@
+2013-08-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* coretypes.h (rtl_opt_pass): Add.
+	(gcc::context): Add.
+	* config/epiphany/epiphany.c (pass_mode_switch_use): New.
+	(epiphany_init): Port to new C++ pass API.
+	(epiphany_optimize_mode_switching): Likewise.
+	* pass_manager.h (pass_manager::get_pass_split_all_insns): New.
+	(pass_manager::get_pass_mode_switching): New.
+	(pass_manager::get_pass_peephole2): New.
+	* mode-switching.c (pass_mode_switching): Add clone method.
+	* recog.c (pass_peephole2): Add clone method.
+	(pass_split_all_insns): Add clone method.
+
 2013-08-06  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/mips/mips.c (insert_pass_mips_machine_reorg2): Move
