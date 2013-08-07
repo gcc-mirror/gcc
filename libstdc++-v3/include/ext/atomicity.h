@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_ATOMICITY_H
 #define _GLIBCXX_ATOMICITY_H	1
 
+#pragma GCC system_header
+
 #include <bits/c++config.h>
 #include <bits/gthr.h>
 #include <bits/atomic_word.h>
