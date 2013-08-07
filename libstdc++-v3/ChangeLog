@@ -1,3 +1,20 @@
+2013-08-07  Tim Shen  <timshen91@gmail.com>
+
+	* include/Makefile.am: Adjust to new files.
+	* include/Makefile.in: Regenerate.
+	* include/bits/regex.h: Adjust to new interfaces.
+	* include/bits/regex_automaton.h: New.
+	* include/bits/regex_automaton.tcc: New.
+	* include/bits/regex_compiler.h: Adjust to new files.
+	* include/bits/regex_compiler.tcc: New.
+	* include/bits/regex_constants.h: Tail spaces.
+	* include/bits/regex_error.h: Likewise.
+	* include/bits/regex_executor.h: New.
+	* include/bits/regex_executor.tcc: New.
+	* include/std/regex: Adjust to new files.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: Adjust to new interfaces.
+
 2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* include/ext/atomicity.h: Add #pragma GCC system_header.
