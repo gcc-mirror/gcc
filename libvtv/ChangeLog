@@ -1,3 +1,11 @@
+2013-08-07  Benjamin Kosnik  <bkoz@rehat.com>
+
+	* Makefile.am (SUBDIRS): Protect with ENABLE_VTABLE_VERIFY.
+	* Makefile.in: Regenerate.
+	* acinclude.m4 (LIBVTV_CONFIGURE): Move parts to..
+	* configure.ac: ...here. Make configure more verbose, re-order.
+	* configure: Regenerate.
+
 2013-08-02  Caroline Tice  <cmtice@google.com>
 
 	Initial check-in of new vtable verification feature.

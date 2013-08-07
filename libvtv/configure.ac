@@ -20,6 +20,34 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
+# Use same top-level configure hooks in libgcc/libstdc++/libvtv.
+AC_MSG_CHECKING([for --enable-vtable-verify])
+AC_ARG_ENABLE(vtable-verify,
+[  --enable-vtable-verify    Enable vtable verification feature ],
+[case "$enableval" in
+ yes) enable_vtable_verify=yes ;;
+ no)  enable_vtable_verify=no ;;
+ *)   enable_vtable_verify=no;;
+ esac],
+[enable_vtable_verify=no])
+AC_MSG_RESULT($enable_vtable_verify)
+
+# See if supported.
+unset VTV_SUPPORTED
+AC_MSG_CHECKING([for host support for vtable verification])
+. ${srcdir}/configure.tgt
+AC_MSG_RESULT($VTV_SUPPORTED)
+
+# Decide if it's usable.
+use_vtable_verify=no
+if test "x$VTV_SUPPORTED" = "xyes"; then
+  if test "x$enable_vtable_verify" = "xyes"; then
+    use_vtable_verify=yes
+    AC_MSG_NOTICE(using vtable verification)
+  fi
+fi 
+AM_CONDITIONAL(ENABLE_VTABLE_VERIFY, test $use_vtable_verify = yes)
+
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 AC_CANONICAL_SYSTEM
@@ -30,6 +58,8 @@ GCC_LIBSTDCXX_RAW_CXX_FLAGS
 AM_INIT_AUTOMAKE(foreign no-dist)
 AM_ENABLE_MULTILIB(, ..)
 AM_MAINTAINER_MODE
+
+LIBVTV_CONFIGURE
 
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
@@ -101,13 +131,6 @@ if test "${multilib}" = "yes"; then
 else
   multilib_arg=
 fi
-
-LIBVTV_CONFIGURE
-
-# Get target configury.
-unset VTV_SUPPORTED
-. ${srcdir}/configure.tgt
-AM_CONDITIONAL(VTV_SUPPORTED, [test "x$VTV_SUPPORTED" = "xyes"])
 
 AC_CONFIG_FILES([Makefile])
 

@@ -37,7 +37,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 subdir = .
-DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
+DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/../mkinstalldirs $(srcdir)/../depcomp \
 	$(am__libvtv_include_HEADERS_DIST)
@@ -127,7 +127,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = testsuite
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AR = @AR@
@@ -265,7 +265,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 toplevel_builddir = @toplevel_builddir@
 toplevel_srcdir = @toplevel_srcdir@
-SUBDIRS = testsuite
+@ENABLE_VTABLE_VERIFY_FALSE@SUBDIRS = 
+@ENABLE_VTABLE_VERIFY_TRUE@SUBDIRS = testsuite
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # May be used by toolexeclibdir.
