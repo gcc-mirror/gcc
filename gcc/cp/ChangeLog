@@ -1,3 +1,9 @@
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/46206
+	* name-lookup.c (lookup_name_real_1): Handle iter->type before
+	iter->value.
+
 2013-08-06  Caroline Tice  <cmtice@google.com>
 
 	* Make-lang.in (*CXX_AND_OBJCXX_OBJS):  Add vtable-class-hierarchy.o to
