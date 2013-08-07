@@ -370,6 +370,10 @@ mtune=
 Target RejectNegative Joined Var(ix86_tune_string)
 Schedule code for given CPU
 
+mtune-ctrl=
+Target RejectNegative Joined Var(ix86_tune_ctrl_string)
+Fine grain control of tune features
+
 mabi=
 Target RejectNegative Joined Var(ix86_abi) Enum(calling_abi) Init(SYSV_ABI)
 Generate code that conforms to the given ABI

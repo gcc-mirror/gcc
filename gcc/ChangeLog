@@ -1,3 +1,11 @@
+2013-08-07  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.opt: New option -mtune-ctrl=.
+	* config/i386/x86-tune.def: New file.
+	* config/i386/i386.h: include x86-tune.def.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Parsing -mtune-ctrl= option and set tune features.
+
 2013-08-07  Oleg Endo <olegendo@gcc.gnu.org>
 
 	PR other/12081
