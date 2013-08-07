@@ -1,3 +1,36 @@
+2013-08-06  Caroline Tice  <cmtice@google.com>
+
+	* gcc.c (VTABLE_VERIFICATION_SPEC): New definition.
+	(LINK_COMMAND_SPEC): Add VTABLE_VERIFICATION_SPEC.
+	* tree-pass.h: Add pass_vtable_verify.
+	* varasm.c (assemble_variable): Add code to properly set the comdat
+	section and name for the .vtable_map_vars section.
+	(assemble_vtyv_preinit_initializer): New function.
+	(default_sectin_type_flags):  Make sure .vtable_map_vars section has
+	LINK_ONCE flag.
+	* output.h: Add function decl for assemble_vtv_preinit_initializer.
+	* vtable-verify.c: New file.
+	* vtable-verify.h: New file.
+	* flag-types.h (enum vtv_priority): Defintions for flag_vtable_verify
+	initialiation levels.
+	* timevar.def (TV_VTABLE_VERIFICATION): New definition.
+	* passes.def: Insert pass_vtable_verify.
+	* aclocal.m4: Reorder includes.
+	* doc/invoke.texi:  Document the -fvtable-verify=, -fvtv-debug, and
+	-fvtv-counts options.
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Add vtv_start*.o,
+	as appropriate, if -fvtable-verify=... is used.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Add vtv_end*.o as appropriate, if
+	-fvtable-verify=... is used.
+	* Makefile.in (OBJS):  Add vtable-verify.o to list.
+	(vtable-verify.o): Add new build rule.
+	(GTFILES): Add vtable-verify.c to list.
+	* common.opt (fvtable-verify=): New flag.
+	(vtv_priority): Values for fvtable-verify= flag.
+	(fvtv-counts): New flag.
+	(fvtv-debug): New flag.
+	* tree.h (save_vtable_map_decl): New extern function decl.
+
 2013-08-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/rl78/rl78.c (rl78_devirt_pass): Convert from a struct to...

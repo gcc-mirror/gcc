@@ -1,3 +1,43 @@
+2013-08-06  Caroline Tice  <cmtice@google.com>
+
+	* fragment.am: Add XTEMPLATE_FLAGS.
+	* configure.ac: Add definitions for --enable-vtable-verify.
+	* acinclude.m4:  Add --enable-vtable-verify and
+	--disable-vtable-verify; define --enable-vtable-verify; define
+	VTV_CXXFLAGS, VTV_PCH_CXXFLAGS and VTV_CXXLINKFLAGS.
+	* config/abi/pre/gnu.ver: Export symbols for vtable verification.
+	* libsupc++/Makefile.am: Define vtv_sources and add it to
+	libsupc___la_SOURCES and libsupc__convenience_la_SOURCES.
+	* libsupc++/vtv_stubs.cc: New file.
+	* include/Makefile.am: Add VTV_PCH_CXXFLAGS to PCHFLAGS.
+	* src/Makefile.am: Add VTV_CXXFLAGS to AM_CXXFLAGS; add
+	VTV_CXXLINKFLAGS to CXXLINK.
+	* src/c++98/Makefile.am: Comment out XTEMPLATE_FLAGS; add VTV_CXXFLAGS
+	to AM_CXXFLAGS; add VTV_CXXXLINKFLAGS to CXXLINK.
+	* src/C++11/Makefile.am: Ditto.
+	* doc/xml/manual/configure.xml: Add entry for --enable-vtable-verify.
+	* scripts/testsuite_flags.in: Add cxxvtvflags to Usage; cause
+	cxxvtvflags to use VTV_CXXFLAGS and VTV_CXXLINKFLAGS.
+	* testsuite/lib/libstdc++.exp: Add cxxvtvflags; add code to locate
+	libvtv if --enable-vtable-verify was used; set cxxvtvflags; add
+	cxxvtvflags to cxx_final.
+	* testsuite/18_support/bad_exception/23591_thread-1.c: Add
+	-fvtable-verify=none to compiler flags.
+	* testsuite/17_intro/freestanding.cc: Add -fvtable-verify=none
+	to compiler flags.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* python/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* libsupc++/Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* po/Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++11/Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
 2013-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert the last commit.

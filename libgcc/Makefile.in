@@ -39,6 +39,7 @@ enable_shared = @enable_shared@
 double_type_size = @double_type_size@
 long_double_type_size = @long_double_type_size@
 decimal_float = @decimal_float@
+enable_vtable_verify = @enable_vtable_verify@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 
@@ -971,6 +972,22 @@ crtendS$(objext): $(srcdir)/crtstuff.c
 # This is a version of crtbegin for -static links.
 crtbeginT$(objext): $(srcdir)/crtstuff.c
 	$(crt_compile) $(CRTSTUFF_T_CFLAGS) -c $< -DCRT_BEGIN -DCRTSTUFFT_O
+
+ifeq ($(enable_vtable_verify),yes)
+# These are used in vtable verification; see comments in source files for
+# more details.
+vtv_start$(objext): $(srcdir)/vtv_start.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $(srcdir)/vtv_start.c
+
+vtv_end$(objext): $(srcdir)/vtv_end.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $(srcdir)/vtv_end.c
+
+vtv_start_preinit$(objext): $(srcdir)/vtv_start_preinit.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $(srcdir)/vtv_start_preinit.c
+
+vtv_end_preinit$(objext): $(srcdir)/vtv_end_preinit.c
+	$(crt_compile) $(CRTSTUFF_T_CFLAGS_S) -c $(srcdir)/vtv_end_preinit.c
+endif
 endif
 
 ifeq ($(CUSTOM_CRTIN),)

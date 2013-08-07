@@ -1473,6 +1473,7 @@ OBJS = \
 	varasm.o \
 	varpool.o \
 	vmsdbgout.o \
+	vtable-verify.o \
 	web.o \
 	xcoffout.o \
 	$(out_object_file) \
@@ -2644,6 +2645,12 @@ tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DUMPFILE_H) $(TM_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) \
    $(CFGLOOP_H) $(TREE_PASS_H) $(TREE_VECTORIZER_H) \
    $(TREE_PRETTY_PRINT_H)
+vtable-verify.o: vtable-verify.c vtable-verify.h $(CONFIG_H) \
+   $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) cp/cp-tree.h $(TM_P_H) \
+   $(BASIC_BLOCK_H) output.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(TREE_PASS_H) \
+   $(TIMEVAR_H) $(CFGLOOP_H) $(FLAGS_H)  $(TREE_INLINE_H) $(SCEV_H) \
+   $(DIAGNOSTIC_CORE_H) $(GIMPLE_PRETTY_PRINT_H) toplev.h langhooks.h \
+   gt-vtable-verify.h
 tree-loop-distribution.o: tree-loop-distribution.c $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(TREE_FLOW_H) $(CFGLOOP_H) $(TREE_DATA_REF_H) $(TREE_PASS_H)
 tree-parloops.o: tree-parloops.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
@@ -3817,6 +3824,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/lto-streamer.h \
   $(srcdir)/target-globals.h \
   $(srcdir)/ipa-inline.h \
+  $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/tsan.c \
   @all_gtfiles@

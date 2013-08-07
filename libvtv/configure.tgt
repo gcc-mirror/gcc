@@ -1,0 +1,38 @@
+# -*- shell-script -*-
+#   Copyright (C) 2013 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not see <http://www.gnu.org/licenses/>.
+
+# This is the target specific configuration file.  This is invoked by the
+# autoconf generated configure script.  Putting it in a separate shell file
+# lets us skip running autoconf when modifying target specific information.
+
+# Filter out unsupported systems.
+case "${target}" in
+  x86_64-*-linux* | i?86-*-linux*)
+	VTV_SUPPORTED=yes
+	;;
+  powerpc*-*-linux*)
+	;;
+  sparc*-*-linux*)
+	;;
+  arm*-*-linux*)
+	;;
+  x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
+	VTV_SUPPORTED=no
+	;;
+  *)
+	UNSUPPORTED=1
+	;;
+esac

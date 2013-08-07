@@ -1,3 +1,13 @@
+2013-08-02  Caroline Tice  <cmtice@google.com>
+
+	* configure.ac: Add target-libvtv to target_libraries; disable libvtv
+	on non-linux systems; add target-libvtv to noconfigdirs; add
+	libsupc++/.libs to C++ library search paths.
+	* configure: Regenerated.
+	* Makefile.def: Add libvtv to target_modules; make libvtv depend on
+	libstdc++ and libgcc.
+	* Makefile.in: Regenerated.
+
 2013-07-19  Yvan Roux  <yvan.roux@linaro.org>
 
 	* MAINTAINERS (Write After Approval): Add myself.

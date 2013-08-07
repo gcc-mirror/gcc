@@ -26,6 +26,7 @@ include $(top_srcdir)/fragment.am
 # separately too.
 # 1) separate libsupc++.la
 toolexeclib_LTLIBRARIES = libsupc++.la
+
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
 
@@ -96,8 +97,13 @@ sources = \
 	vmi_class_type_info.cc \
 	vterminate.cc
 
-libsupc___la_SOURCES = $(sources) $(c_sources)
-libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
+if ENABLE_VTABLE_VERIFY
+  vtv_sources = \
+	vtv_stubs.cc
+endif
+
+libsupc___la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
+libsupc__convenience_la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
 
 cp-demangle.c:
 	rm -f $@
@@ -282,3 +288,8 @@ uninstall-bitsHEADERS:
 	  q=`echo $$p | sed -e 's,.*/,,'`; \
 	  rm -f $(DESTDIR)$(bitsdir)/$$q; \
 	done
+
+
+# By adding these files here, automake will remove them for 'make clean'
+CLEANFILES = stamp-*
+
