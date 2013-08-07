@@ -1,3 +1,7 @@
+2013-08-03  Caroline Tice4  <cmtice@google.com>
+
+	* gcc_update: Add libvtv files.
+	
 2013-06-06  Brooks Moses  <bmoses@google.com>
 
 	* testsuite-management/validate_failures.py: Fix handling of

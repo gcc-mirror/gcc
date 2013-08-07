@@ -197,6 +197,10 @@ extern void assemble_end_function (tree, const char *);
    initial value (that will be done by the caller).  */
 extern void assemble_variable (tree, int, int, int);
 
+/* Put the vtable verification constructor initialization function
+   into the preinit array.  */
+extern void assemble_vtv_preinit_initializer (tree);
+
 /* Compute the alignment of variable specified by DECL.
    DONT_OUTPUT_DATA is from assemble_variable.  */
 extern void align_variable (tree decl, bool dont_output_data);

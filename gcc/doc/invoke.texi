@@ -191,6 +191,8 @@ in the following sections.
 -ftemplate-depth=@var{n} @gol
 -fno-threadsafe-statics -fuse-cxa-atexit  -fno-weak  -nostdinc++ @gol
 -fno-default-inline  -fvisibility-inlines-hidden @gol
+-fvtable-verify=@var{std|preinit|none} @gol
+-fvtv-counts -fvtv-debug @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
 -Wabi  -Wconversion-null  -Wctor-dtor-privacy @gol
@@ -318,6 +320,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-tree-sra@r{[}-@var{n}@r{]} @gol
 -fdump-tree-forwprop@r{[}-@var{n}@r{]} @gol
 -fdump-tree-fre@r{[}-@var{n}@r{]} @gol
+-fdump-tree-vtable-verify @gol
 -fdump-tree-vrp@r{[}-@var{n}@r{]} @gol
 -ftree-vectorizer-verbose=@var{n} @gol
 -fdump-tree-storeccp@r{[}-@var{n}@r{]} @gol
@@ -2301,6 +2304,56 @@ objects are different, so changing one does not change the other;
 and that pointers to function members defined in different shared
 objects may not compare equal.  When this flag is given, it is a
 violation of the ODR to define types with the same name differently.
+
+@item -fvtable-verify=@var{std|preinit|none}
+@opindex fvtable-verify
+Turn on (or off, if using @option{-fvtable-verify=none}) the security
+feature that verifies at runtime, for every virtual call that is made, that
+the vtable pointer through which the call is made is valid for the type of
+the object, and has not been corrupted or overwritten.  If an invalid vtable
+pointer is detected (at runtime), an error is reported and execution of the
+program is immediately halted.
+
+This option causes runtime data structures to be built, at program start up,
+for verifying the vtable pointers.  The options @code{std} and @code{preinit}
+control the timing of when these data structures are built.  In both cases the
+data structures are built before execution reaches 'main'.  The
+@option{-fvtable-verify=std} causes these data structure to be built after the
+shared libraries have been loaded and initialized.
+@option{-fvtable-verify=preinit} causes them to be built before the shared
+libraries have been loaded and initialized.
+
+If this option appears multiple times in the compiler line, with different
+values specified, 'none' will take highest priority over both 'std' and
+'preinit'; 'preinit' will take priority over 'std'.
+
+@item -fvtv-debug
+@opindex (fvtv-debug)
+Causes debug versions of the runtime functions for the vtable verification 
+feature to be called.  This assumes the @option{-fvtable-verify=std} or
+@option{-fvtable-verify=preinit} has been used.  This flag will also cause the
+compiler to keep track of which vtable pointers it found for each class, and
+record that information in the file ``vtv_set_ptr_data.log'', in the dump
+file directory on the user's machine.
+
+Note:  This feature APPENDS data to the log file. If you want a fresh log
+file, be sure to delete any existing one.
+
+@item -fvtv-counts
+@opindex (fvtv-counts)
+This is a debugging flag.  When used in conjunction with
+@option{-fvtable-verify=std} or @option{-fvtable-verify=preinit}, this
+causes the compiler to keep track of the total number of virtual calls
+it encountered and the number of verifications it inserted.  It also
+counts the number of calls to certain runtime library functions
+that it inserts.  This information, for each compilation unit, is written
+to a file named ``vtv_count_data.log'', in the dump_file directory on
+the user's machine.   It also counts the size of the vtable pointer sets
+for each class, and writes this information to ``vtv_class_set_sizes.log''
+in the same directory.
+
+Note:  This feature APPENDS data to the log files.  To get a fresh log
+files, be sure to delete any existing ones.
 
 @item -fno-weak
 @opindex fno-weak

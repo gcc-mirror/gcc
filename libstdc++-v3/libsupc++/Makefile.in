@@ -105,10 +105,13 @@ am__objects_1 = array_type_info.lo atexit_arm.lo atexit_thread.lo \
 	pointer_type_info.lo pure.lo si_class_type_info.lo tinfo.lo \
 	tinfo2.lo vec.lo vmi_class_type_info.lo vterminate.lo
 @GLIBCXX_HOSTED_TRUE@am__objects_2 = cp-demangle.lo
-am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2)
+@ENABLE_VTABLE_VERIFY_TRUE@am__objects_3 = vtv_stubs.lo
+am_libsupc___la_OBJECTS = $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3)
 libsupc___la_OBJECTS = $(am_libsupc___la_OBJECTS)
 libsupc__convenience_la_LIBADD =
-am_libsupc__convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
+am_libsupc__convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3)
 libsupc__convenience_la_OBJECTS =  \
 	$(am_libsupc__convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -235,6 +238,9 @@ SYMVER_FILE = @SYMVER_FILE@
 TOPLEVEL_INCLUDES = @TOPLEVEL_INCLUDES@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
+VTV_CXXFLAGS = @VTV_CXXFLAGS@
+VTV_CXXLINKFLAGS = @VTV_CXXLINKFLAGS@
+VTV_PCH_CXXFLAGS = @VTV_PCH_CXXFLAGS@
 WARN_FLAGS = @WARN_FLAGS@
 WERROR = @WERROR@
 XMLLINT = @XMLLINT@
@@ -331,6 +337,8 @@ toolexecdir = $(glibcxx_toolexecdir)
 toolexeclibdir = $(glibcxx_toolexeclibdir)
 @ENABLE_WERROR_FALSE@WERROR_FLAG = 
 @ENABLE_WERROR_TRUE@WERROR_FLAG = $(WERROR)
+@ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
+@ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
 
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
@@ -348,6 +356,7 @@ AM_CPPFLAGS = $(GLIBCXX_INCLUDES)
 # separately too.
 # 1) separate libsupc++.la
 toolexeclib_LTLIBRARIES = libsupc++.la
+
 # 2) integrated libsupc++convenience.la that is to be a part of libstdc++.a
 noinst_LTLIBRARIES = libsupc++convenience.la
 std_HEADERS = \
@@ -414,8 +423,11 @@ sources = \
 	vmi_class_type_info.cc \
 	vterminate.cc
 
-libsupc___la_SOURCES = $(sources) $(c_sources)
-libsupc__convenience_la_SOURCES = $(sources) $(c_sources)
+@ENABLE_VTABLE_VERIFY_TRUE@vtv_sources = \
+@ENABLE_VTABLE_VERIFY_TRUE@	vtv_stubs.cc
+
+libsupc___la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
+libsupc__convenience_la_SOURCES = $(sources) $(c_sources) $(vtv_sources)
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually
@@ -499,6 +511,9 @@ CXXLINK = \
 # prepending each of $(*_HEADERS) with VPATH below.
 stddir = $(gxx_include_dir)
 bitsdir = $(gxx_include_dir)/bits
+
+# By adding these files here, automake will remove them for 'make clean'
+CLEANFILES = stamp-*
 all: all-am
 
 .SUFFIXES:
@@ -683,6 +698,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)

@@ -1,3 +1,16 @@
+2013-08-06  Caroline Tice  <cmtice@google.com>
+
+	config.host (extra_parts): Add vtv_start.o, vtv_end.o
+	vtv_start_preinit.o and vtv_end_preinit.o.
+	configure.ac: Add code to check/set enable_vtable_verify.
+	Makefile.in: Add rules to build vtv_*.o, if enable_vtable_verify is
+	true.
+	vtv_start_preinit.c: New file.
+	vtv_end_preinit.c: New file.
+	vtv_start.c: New file.
+	vtv_end.c: New file.
+	configure: Regenerated.
+
 2013-08-01  Maxim Kuvyrkov  <maxim@kugelworks.com>
 
 	* config/aarch64/sfp-machine.h, config/aarch64/sync-cache.c,

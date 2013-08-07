@@ -1,3 +1,35 @@
+2013-08-06  Caroline Tice  <cmtice@google.com>
+
+	* Make-lang.in (*CXX_AND_OBJCXX_OBJS):  Add vtable-class-hierarchy.o to
+	list.
+	(vtable-class-hierarchy.o): Add build rule.
+	* cp-tree.h (vtv_start_verification_constructor_init_function): New
+	extern function decl.
+	(vtv_finish_verification_constructor_init_function): New extern
+	function decl.
+	(build_vtbl_address): New extern function decl.
+	(get_mangled_vtable_map_var_name): New extern function decl.
+	(vtv_compute_class_hierarchy_transitive_closure): New extern function
+	decl.
+	(vtv_generate_init_routine): New extern function decl.
+	(vtv_save_class_info): New extern function decl.
+	(vtv_recover_class_info): New extern function decl.
+	(vtv_build_vtable_verify_fndecl): New extern function decl.
+	* class.c (finish_struct_1): Add call to vtv_save_class_info if
+	flag_vtable_verify is true.
+	* config-lang.in: Add vtable-class-hierarchy.c to gtfiles list.
+	* vtable-class-hierarchy.c: New file.
+	* mangle.c (get_mangled_vtable_map_var_name):  New function.
+	* decl2.c (start_objects): Update function comment.
+	(cp_write_global_declarations):  Call vtv_recover_class_info,
+	vtv_compute_class_hierarchy_transitive_closure and
+	vtv_build_vtable_verify_fndecl, before calling
+	finalize_compilation_unit, and call vtv_generate_init_rount after, IFF
+	flag_vtable_verify is true.
+	(vtv_start_verification_constructor_init_function): New function.
+	(vtv_finish_verification_constructor_init_function): New function.
+	* init.c (build_vtbl_address): Remove static qualifier from function.
+
 2013-08-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/57825

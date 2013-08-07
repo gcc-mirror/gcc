@@ -80,7 +80,8 @@ CXX_AND_OBJCXX_OBJS = cp/call.o cp/decl.o cp/expr.o cp/pt.o cp/typeck2.o \
  cp/typeck.o cp/cvt.o cp/except.o cp/friend.o cp/init.o cp/method.o \
  cp/search.o cp/semantics.o cp/tree.o cp/repo.o cp/dump.o cp/optimize.o \
  cp/mangle.o cp/cp-objcp-common.o cp/name-lookup.o cp/cxx-pretty-print.o \
- cp/cp-gimplify.o cp/cp-array-notation.o cp/lambda.o $(CXX_C_OBJS)
+ cp/cp-gimplify.o cp/cp-array-notation.o cp/lambda.o \
+ cp/vtable-class-hierarchy.o $(CXX_C_OBJS)
 
 # Language-specific object files for C++.
 CXX_OBJS = cp/cp-lang.o c-family/stub-objc.o $(CXX_AND_OBJCXX_OBJS)
@@ -341,7 +342,12 @@ cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
   c-family/c-objc.h tree-pretty-print.h $(CXX_PARSER_H) $(TIMEVAR_H)
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
 	$(TM_H) coretypes.h pointer-set.h tree-iterator.h $(SPLAY_TREE_H)
-
+cp/vtable-class-hierarchy.o: cp/vtable-class-hierarchy.c \
+  $(TM_H) $(TIMEVAR_H) $(CXX_TREE_H) intl.h $(CXX_PARSER_H) cp/decl.h \
+  $(FLAGS_H) $(DIAGNOSTIC_CORE_H) output.h $(CGRAPH_H) c-family/c-common.h \
+  c-family/c-objc.h $(PLUGIN_H) \
+  tree-iterator.h vtable-verify.h $(GIMPLE_H) \
+  gt-cp-vtable-class-hierarchy.h
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) $(TIMEVAR_H) gt-cp-name-lookup.h $(PARAMS_H) \
 	$(DIAGNOSTIC_CORE_H) $(FLAGS_H) debug.h pointer-set.h

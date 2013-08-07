@@ -382,6 +382,18 @@
    </para>
  </listitem></varlistentry>
 
+ <varlistentry><term><code>--enable-vtable-verify</code>[default]</term>
+ <listitem>
+    <para>Use <code>-fvtable-verify=std</code> to compile the C++
+    runtime with instrumentation for vtable verification. All virtual
+    functions in the standard library will be verified at runtime.
+    Types impacted include <classname>locale</classname> and
+    <classname>iostream</classname>, and others.  Disabling means that
+    the C++ runtime is compiled without support for vtable
+    verification. By default, this option is off.
+     </para>
+ </listitem></varlistentry>
+
 </variablelist>
 
 </section>
