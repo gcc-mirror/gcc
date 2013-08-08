@@ -1,6 +1,16 @@
+2013-08-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (TOOLS_LIBS): Pick C object files from the
+	compiler build and use standard library variables.
+	(../../vxaddr2line$(exeext): Do not depend on targext.o and adjust.
+	(gnatmake-re): Do not depend on targext.o.
+	(gnatlink-re): Do not depend on link.o and targext.o.
+	(../../gnatmake$(exeext): Likewise.
+	(../../gnatlink$(exeext): Likewise.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
-	* gcc-interface/gigi.h: Likewise.
+	* gcc-interface/gigi.h: Fix typos.
 	* gcc-interface/trans.c: Likewise.
 	* gcc-interface/utils2.c: Likewise.
 	* gnat_rm.texi: Likewise.
