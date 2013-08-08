@@ -1,3 +1,15 @@
+2013-08-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from mainline:
+	2013-08-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/neon.md (movmisalign<mode>): Disable when we
+	don't allow unaligned accesses.
+	(*movmisalign<mode>_neon_store): Likewise.
+	(*movmisalign<mode>_neon_load): Likewise.
+	(*movmisalign<mode>_neon_store): Likewise.
+	(*movmisalign<mode>_neon_load): Likewise.
+
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR middle-end/58041
