@@ -1,3 +1,11 @@
+2013-08-08  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (emit_spill_move): Remove assert.
+	(process_alt_operands): Add more debugging
+	output.  Increase reject for spilling into memory.  Decrease
+	reject for reloading scratch.
+	(split_reg): Use HARD_REGNO_CALLER_SAVE_MODE.
+
 2013-08-08  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add nan2008.
