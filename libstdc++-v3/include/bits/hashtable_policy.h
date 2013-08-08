@@ -102,25 +102,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return std::get<0>(std::forward<_Tp>(__x)); }
   };
 
+  template<typename _NodeAlloc>
+    struct _Hashtable_alloc;
+
   // Functor recycling a pool of nodes and using allocation once the pool is
   // empty.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash,
-	   typename _RehashPolicy, typename _Traits>
+  template<typename _NodeAlloc>
     struct _ReuseOrAllocNode
     {
     private:
-      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
-				     _Equal, _H1, _H2, _Hash,
-				     _RehashPolicy, _Traits>;
-      using __val_alloc_type = typename __hashtable::_Value_alloc_type;
-      using __val_alloc_traits = typename __hashtable::_Value_alloc_traits;
-      using __node_alloc_traits = typename __hashtable::_Node_alloc_traits;
-      using __node_type = typename __hashtable::__node_type;
+      using __node_alloc_type = _NodeAlloc;
+      using __hashtable_alloc = _Hashtable_alloc<__node_alloc_type>;
+      using __value_alloc_type = typename __hashtable_alloc::__value_alloc_type;
+      using __value_alloc_traits =
+	typename __hashtable_alloc::__value_alloc_traits;
+      using __node_alloc_traits =
+	typename __hashtable_alloc::__node_alloc_traits;
+      using __node_type = typename __hashtable_alloc::__node_type;
 
     public:
-      _ReuseOrAllocNode(__node_type* __nodes, __hashtable& __h)
+      _ReuseOrAllocNode(__node_type* __nodes, __hashtable_alloc& __h)
 	: _M_nodes(__nodes), _M_h(__h) { }
       _ReuseOrAllocNode(const _ReuseOrAllocNode&) = delete;
 
@@ -136,12 +137,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __node_type* __node = _M_nodes;
 	      _M_nodes = _M_nodes->_M_next();
 	      __node->_M_nxt = nullptr;
-	      __val_alloc_type __a(_M_h._M_node_allocator());
-	      __val_alloc_traits::destroy(__a, __node->_M_valptr());
+	      __value_alloc_type __a(_M_h._M_node_allocator());
+	      __value_alloc_traits::destroy(__a, __node->_M_valptr());
 	      __try
 		{
-		  __val_alloc_traits::construct(__a, __node->_M_valptr(),
-						std::forward<_Arg>(__arg));
+		  __value_alloc_traits::construct(__a, __node->_M_valptr(),
+						  std::forward<_Arg>(__arg));
 		}
 	      __catch(...)
 		{
@@ -157,24 +158,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       mutable __node_type* _M_nodes;
-      __hashtable& _M_h;
+      __hashtable_alloc& _M_h;
     };
 
   // Functor similar to the previous one but without any pool of node to recycle.
-  template<typename _Key, typename _Value, typename _Alloc,
-	   typename _ExtractKey, typename _Equal,
-	   typename _H1, typename _H2, typename _Hash,
-	   typename _RehashPolicy, typename _Traits>
+  template<typename _NodeAlloc>
     struct _AllocNode
     {
     private:
-      using __hashtable = _Hashtable<_Key, _Value, _Alloc, _ExtractKey,
-				     _Equal, _H1, _H2, _Hash,
-				     _RehashPolicy, _Traits>;
-      using __node_type = typename __hashtable::__node_type;
+      using __hashtable_alloc = _Hashtable_alloc<_NodeAlloc>;
+      using __node_type = typename __hashtable_alloc::__node_type;
 
     public:
-      _AllocNode(__hashtable& __h)
+      _AllocNode(__hashtable_alloc& __h)
 	: _M_h(__h) { }
 
       template<typename _Arg>
@@ -183,7 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return _M_h._M_allocate_node(std::forward<_Arg>(__arg)); }
 
     private:
-      __hashtable& _M_h;
+      __hashtable_alloc& _M_h;
     };
 
   // Auxiliary types used for all instantiations of _Hashtable nodes
@@ -247,6 +243,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Value>
     struct _Hash_node_value_base : _Hash_node_base
     {
+      typedef _Value value_type;
+
       __gnu_cxx::__aligned_buffer<_Value> _M_storage;
 
       _Value*
@@ -336,9 +334,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __node_type = typename __base_type::__node_type;
 
     public:
-      typedef _Value                                   value_type;
-      typedef std::ptrdiff_t                           difference_type;
-      typedef std::forward_iterator_tag                iterator_category;
+      typedef _Value					value_type;
+      typedef std::ptrdiff_t				difference_type;
+      typedef std::forward_iterator_tag			iterator_category;
 
       using pointer = typename std::conditional<__constant_iterators,
 						const _Value*, _Value*>::type;
@@ -387,12 +385,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __node_type = typename __base_type::__node_type;
 
     public:
-      typedef _Value                                   value_type;
-      typedef std::ptrdiff_t                           difference_type;
-      typedef std::forward_iterator_tag                iterator_category;
+      typedef _Value					value_type;
+      typedef std::ptrdiff_t				difference_type;
+      typedef std::forward_iterator_tag			iterator_category;
 
-      typedef const _Value*                            pointer;
-      typedef const _Value&                            reference;
+      typedef const _Value*				pointer;
+      typedef const _Value&				reference;
 
       _Node_const_iterator()
       : __base_type(0) { }
@@ -499,8 +497,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     static const std::size_t _S_growth_factor = 2;
 
-    float                _M_max_load_factor;
-    mutable std::size_t  _M_next_resize;
+    float		_M_max_load_factor;
+    mutable std::size_t	_M_next_resize;
   };
 
   // Base classes for std::_Hashtable.  We define these base classes
@@ -697,9 +695,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __unique_keys = typename __hashtable_base::__unique_keys;
       using __ireturn_type = typename __hashtable_base::__ireturn_type;
-      using __node_gen_type = _AllocNode<_Key, _Value, _Alloc, _ExtractKey,
-					 _Equal, _H1, _H2, _Hash,
-					 _RehashPolicy, _Traits>;
+      using __node_type = _Hash_node<_Value, _Traits::__hash_cached::value>;
+      using __node_alloc_type =
+	typename __alloctr_rebind<_Alloc, __node_type>::__type;
+      using __node_gen_type = _AllocNode<__node_alloc_type>;
 
       __hashtable&
       _M_conjure_hashtable()
@@ -979,8 +978,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Hashtable_ebo_helper() = default;
 
-      _Hashtable_ebo_helper(const _Tp& __tp) : _Tp(__tp)
-      { }
+      template<typename _OtherTp>
+	_Hashtable_ebo_helper(_OtherTp&& __tp)
+	  : _Tp(std::forward<_OtherTp>(__tp))
+	{ }
 
       static const _Tp&
       _S_cget(const _Hashtable_ebo_helper& __eboh)
@@ -997,8 +998,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       _Hashtable_ebo_helper() = default;
 
-      _Hashtable_ebo_helper(const _Tp& __tp) : _M_tp(__tp)
-      { }
+      template<typename _OtherTp>
+	_Hashtable_ebo_helper(_OtherTp&& __tp)
+	  : _M_tp(std::forward<_OtherTp>(__tp))
+	{ }
 
       static const _Tp&
       _S_cget(const _Hashtable_ebo_helper& __eboh)
@@ -1431,15 +1434,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					       _H1, _H2, _Hash, __cache>;
       using __hash_code_base = typename __base_type::__hash_code_base;
     public:
-      typedef _Value                                   value_type;
+      typedef _Value					value_type;
       typedef typename std::conditional<__constant_iterators,
 					const _Value*, _Value*>::type
 						       pointer;
       typedef typename std::conditional<__constant_iterators,
 					const _Value&, _Value&>::type
 						       reference;
-      typedef std::ptrdiff_t                           difference_type;
-      typedef std::forward_iterator_tag                iterator_category;
+      typedef std::ptrdiff_t				difference_type;
+      typedef std::forward_iterator_tag			iterator_category;
 
       _Local_iterator() = default;
 
@@ -1487,11 +1490,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __hash_code_base = typename __base_type::__hash_code_base;
 
     public:
-      typedef _Value                                   value_type;
-      typedef const _Value*                            pointer;
-      typedef const _Value&                            reference;
-      typedef std::ptrdiff_t                           difference_type;
-      typedef std::forward_iterator_tag                iterator_category;
+      typedef _Value					value_type;
+      typedef const _Value*				pointer;
+      typedef const _Value&				reference;
+      typedef std::ptrdiff_t				difference_type;
+      typedef std::forward_iterator_tag			iterator_category;
 
       _Local_const_iterator() = default;
 
@@ -1551,11 +1554,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private _Hashtable_ebo_helper<0, _Equal>
   {
   public:
-    typedef _Key                                    key_type;
-    typedef _Value                                  value_type;
-    typedef _Equal                                  key_equal;
-    typedef std::size_t                             size_type;
-    typedef std::ptrdiff_t                          difference_type;
+    typedef _Key					key_type;
+    typedef _Value					value_type;
+    typedef _Equal					key_equal;
+    typedef std::size_t					size_type;
+    typedef std::ptrdiff_t				difference_type;
 
     using __traits_type = _Traits;
     using __hash_cached = typename __traits_type::__hash_cached;
@@ -1597,9 +1600,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					__hash_code, __hash_cached::value>;
 
   protected:
-    using __node_base = __detail::_Hash_node_base;
-    using __bucket_type = __node_base*;
-
     _Hashtable_base(const _ExtractKey& __ex, const _H1& __h1, const _H2& __h2,
 		    const _Hash& __hash, const _Equal& __eq)
     : __hash_code_base(__ex, __h1, __h2, __hash), _EqualEBO(__eq)
@@ -1787,22 +1787,135 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   /**
-   * This type is to combine a _Hash_node_base instance with an allocator
-   * instance through inheritance to benefit from EBO when possible.
+   * This type deals with all allocation and keeps an allocator instance through
+   * inheritance to benefit from EBO when possible.
    */
   template<typename _NodeAlloc>
-    struct _Before_begin : public _NodeAlloc
+    struct _Hashtable_alloc : private _Hashtable_ebo_helper<0, _NodeAlloc>
     {
-      _Hash_node_base _M_node;
+    private:
+      using __ebo_node_alloc = _Hashtable_ebo_helper<0, _NodeAlloc>;
+    public:
+      using __node_type = typename _NodeAlloc::value_type;
+      using __node_alloc_type = _NodeAlloc;
+      // Use __gnu_cxx to benefit from _S_always_equal and al.
+      using __node_alloc_traits = __gnu_cxx::__alloc_traits<__node_alloc_type>;
 
-      _Before_begin(const _Before_begin&) = default;
-      _Before_begin(_Before_begin&&) = default;
+      using __value_type = typename __node_type::value_type;
+      using __value_alloc_type =
+	typename __alloctr_rebind<__node_alloc_type, __value_type>::__type;
+      using __value_alloc_traits = std::allocator_traits<__value_alloc_type>;
+
+      using __node_base = __detail::_Hash_node_base;
+      using __bucket_type = __node_base*;      
+      using __bucket_alloc_type =
+	typename __alloctr_rebind<__node_alloc_type, __bucket_type>::__type;
+      using __bucket_alloc_traits = std::allocator_traits<__bucket_alloc_type>;
+
+      _Hashtable_alloc(const _Hashtable_alloc&) = default;
+      _Hashtable_alloc(_Hashtable_alloc&&) = default;
 
       template<typename _Alloc>
-	_Before_begin(_Alloc&& __a)
-	  : _NodeAlloc(std::forward<_Alloc>(__a))
+	_Hashtable_alloc(_Alloc&& __a)
+	  : __ebo_node_alloc(std::forward<_Alloc>(__a))
 	{ }
+
+      __node_alloc_type&
+      _M_node_allocator()
+      { return __ebo_node_alloc::_S_get(*this); }
+
+      const __node_alloc_type&
+      _M_node_allocator() const
+      { return __ebo_node_alloc::_S_cget(*this); }
+
+      template<typename... _Args>
+	__node_type*
+	_M_allocate_node(_Args&&... __args);
+
+      void
+      _M_deallocate_node(__node_type* __n);
+
+      // Deallocate the linked list of nodes pointed to by __n
+      void
+      _M_deallocate_nodes(__node_type* __n);
+
+      __bucket_type*
+      _M_allocate_buckets(std::size_t __n);
+
+      void
+      _M_deallocate_buckets(__bucket_type*, std::size_t __n);
     };
+
+  // Definitions of class template _Hashtable_alloc's out-of-line member
+  // functions.
+  template<typename _NodeAlloc>
+    template<typename... _Args>
+      typename _Hashtable_alloc<_NodeAlloc>::__node_type*
+      _Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&... __args)
+      {
+	auto __nptr = __node_alloc_traits::allocate(_M_node_allocator(), 1);
+	__node_type* __n = std::__addressof(*__nptr);
+	__try
+	  {
+	    __value_alloc_type __a(_M_node_allocator());
+	    ::new ((void*)__n) __node_type();
+	    __value_alloc_traits::construct(__a, __n->_M_valptr(),
+					    std::forward<_Args>(__args)...);
+	    return __n;
+	  }
+	__catch(...)
+	  {
+	    __node_alloc_traits::deallocate(_M_node_allocator(), __nptr, 1);
+	    __throw_exception_again;
+	  }
+      }
+
+  template<typename _NodeAlloc>
+    void
+    _Hashtable_alloc<_NodeAlloc>::_M_deallocate_node(__node_type* __n)
+    {
+      typedef typename __node_alloc_traits::pointer _Ptr;
+      auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__n);
+      __value_alloc_type __a(_M_node_allocator());
+      __value_alloc_traits::destroy(__a, __n->_M_valptr());
+      __n->~__node_type();
+      __node_alloc_traits::deallocate(_M_node_allocator(), __ptr, 1);
+    }
+
+  template<typename _NodeAlloc>
+    void
+    _Hashtable_alloc<_NodeAlloc>::_M_deallocate_nodes(__node_type* __n)
+    {
+      while (__n)
+	{
+	  __node_type* __tmp = __n;
+	  __n = __n->_M_next();
+	  _M_deallocate_node(__tmp);
+	}
+    }
+
+  template<typename _NodeAlloc>
+    typename _Hashtable_alloc<_NodeAlloc>::__bucket_type*
+    _Hashtable_alloc<_NodeAlloc>::_M_allocate_buckets(std::size_t __n)
+    {
+      __bucket_alloc_type __alloc(_M_node_allocator());
+
+      auto __ptr = __bucket_alloc_traits::allocate(__alloc, __n);
+      __bucket_type* __p = std::__addressof(*__ptr);
+      __builtin_memset(__p, 0, __n * sizeof(__bucket_type));
+      return __p;
+    }
+
+  template<typename _NodeAlloc>
+    void
+    _Hashtable_alloc<_NodeAlloc>::_M_deallocate_buckets(__bucket_type* __bkts,
+							std::size_t __n)
+    {
+      typedef typename __bucket_alloc_traits::pointer _Ptr;
+      auto __ptr = std::pointer_traits<_Ptr>::pointer_to(*__bkts);
+      __bucket_alloc_type __alloc(_M_node_allocator());
+      __bucket_alloc_traits::deallocate(__alloc, __ptr, __n);
+    }
 
  //@} hashtable-detail
 _GLIBCXX_END_NAMESPACE_VERSION
