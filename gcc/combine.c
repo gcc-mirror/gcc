@@ -5803,8 +5803,15 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		return x;
 	    }
 
-	  /* If the code changed, return a whole new comparison.  */
-	  if (new_code != code)
+	  /* If the code changed, return a whole new comparison.
+	     We also need to avoid using SUBST in cases where
+	     simplify_comparison has widened a comparison with a CONST_INT,
+	     since in that case the wider CONST_INT may fail the sanity
+	     checks in do_SUBST.  */
+	  if (new_code != code
+	      || (CONST_INT_P (op1)
+		  && GET_MODE (op0) != GET_MODE (XEXP (x, 0))
+		  && GET_MODE (op0) != GET_MODE (XEXP (x, 1))))
 	    return gen_rtx_fmt_ee (new_code, mode, op0, op1);
 
 	  /* Otherwise, keep this operation, but maybe change its operands.
