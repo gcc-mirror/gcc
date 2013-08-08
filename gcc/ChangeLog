@@ -1,3 +1,8 @@
+2013-08-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/58065
+	* config/arm/arm.h (MALLOC_ABI_ALIGNMENT): Define.
+
 2013-08-07  Xinliang David Li  <davidxl@google.com>
 
 	* config/i386/i386.opt: New option -mtune-ctrl=.

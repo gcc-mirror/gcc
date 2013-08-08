@@ -645,6 +645,8 @@ extern int prefer_neon_for_64bits;
 
 #define BIGGEST_ALIGNMENT (ARM_DOUBLEWORD_ALIGN ? DOUBLEWORD_ALIGNMENT : 32)
 
+#define MALLOC_ABI_ALIGNMENT  BIGGEST_ALIGNMENT
+
 /* XXX Blah -- this macro is used directly by libobjc.  Since it
    supports no vector modes, cut out the complexity and fall back
    on BIGGEST_FIELD_ALIGNMENT.  */
