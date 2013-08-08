@@ -1,3 +1,15 @@
+2013-08-08  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mti-linux.h (SYSROOT_SUFFIX_SPEC): Add nan2008.
+	* config/mips/t-mti-elf (MULTILIB_OPTIONS): Make mips16 and
+	micromips incompatible.  Add nan2008.
+	(MULTILIB_DIRNAMES): Add nan2008.
+	(MULTILIB_EXCEPTIONS): Remove mips16/micromips entry.
+	* config/mips/t-mti-linux (MULTILIB_OPTIONS): Make mips16
+	and micromips incompatible.  Add nan2008.
+	(MULTILIB_DIRNAMES): Add nan2008.
+	(MULTILIB_EXCEPTIONS): Remove mips16/micromips entry.
+
 2013-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	PR rtl-optimization/58079
