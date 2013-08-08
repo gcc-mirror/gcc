@@ -242,7 +242,7 @@
   [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
 	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
 		     UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
      are non-registers (e.g. memory := constant, which can be created by the
@@ -256,7 +256,7 @@
   [(set (match_operand:VDX 0 "neon_permissive_struct_operand"	"=Um")
 	(unspec:VDX [(match_operand:VDX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vst1.<V_sz_elem>\t{%P1}, %A0"
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
@@ -265,7 +265,7 @@
 	(unspec:VDX [(match_operand:VDX 1 "neon_permissive_struct_operand"
 									" Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%P0}, %A1"
   [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
@@ -273,7 +273,7 @@
   [(set (match_operand:VQX 0 "neon_permissive_struct_operand"  "=Um")
 	(unspec:VQX [(match_operand:VQX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vst1.<V_sz_elem>\t{%q1}, %A0"
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
@@ -282,7 +282,7 @@
 	(unspec:VQX [(match_operand:VQX 1 "neon_permissive_struct_operand"
 									" Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%q0}, %A1"
   [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
