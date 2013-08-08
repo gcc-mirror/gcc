@@ -1,3 +1,9 @@
+2013-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR rtl-optimization/58079
+	* combine.c (combine_simplify_rtx): Avoid using SUBST if
+	simplify_comparison has widened a comparison with an integer.
+
 2013-08-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/neon.md (movmisalign<mode>): Disable when we
