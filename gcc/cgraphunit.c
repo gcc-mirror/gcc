@@ -1677,6 +1677,7 @@ expand_function (struct cgraph_node *node)
   /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
      points to the dead function body.  */
   cgraph_node_remove_callees (node);
+  ipa_remove_all_references (&node->symbol.ref_list);
 }
 
 

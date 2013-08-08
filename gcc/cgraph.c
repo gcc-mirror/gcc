@@ -2537,55 +2537,75 @@ verify_cgraph_node (struct cgraph_node *node)
     {
       if (this_cfun->cfg)
 	{
+	  pointer_set_t *stmts = pointer_set_create ();
+	  int i;
+	  struct ipa_ref *ref;
+
 	  /* Reach the trees by walking over the CFG, and note the
 	     enclosing basic-blocks in the call edges.  */
 	  FOR_EACH_BB_FN (this_block, this_cfun)
-	    for (gsi = gsi_start_bb (this_block);
-                 !gsi_end_p (gsi);
-                 gsi_next (&gsi))
-	      {
-		gimple stmt = gsi_stmt (gsi);
-		if (is_gimple_call (stmt))
-		  {
-		    struct cgraph_edge *e = cgraph_edge (node, stmt);
-		    tree decl = gimple_call_fndecl (stmt);
-		    if (e)
-		      {
-			if (e->aux)
-			  {
-			    error ("shared call_stmt:");
-			    cgraph_debug_gimple_stmt (this_cfun, stmt);
-			    error_found = true;
-			  }
-			if (!e->indirect_unknown_callee)
-			  {
-			    if (verify_edge_corresponds_to_fndecl (e, decl))
-			      {
-				error ("edge points to wrong declaration:");
-				debug_tree (e->callee->symbol.decl);
-				fprintf (stderr," Instead of:");
-				debug_tree (decl);
-				error_found = true;
-			      }
-			  }
-			else if (decl)
-			  {
-			    error ("an indirect edge with unknown callee "
-				   "corresponding to a call_stmt with "
-				   "a known declaration:");
-			    error_found = true;
-			    cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
-			  }
-			e->aux = (void *)1;
-		      }
-		    else if (decl)
-		      {
-			error ("missing callgraph edge for call stmt:");
-			cgraph_debug_gimple_stmt (this_cfun, stmt);
-			error_found = true;
-		      }
-		  }
+	    {
+	      for (gsi = gsi_start_phis (this_block);
+		   !gsi_end_p (gsi); gsi_next (&gsi))
+		pointer_set_insert (stmts, gsi_stmt (gsi));
+	      for (gsi = gsi_start_bb (this_block);
+		   !gsi_end_p (gsi);
+		   gsi_next (&gsi))
+		{
+		  gimple stmt = gsi_stmt (gsi);
+		  pointer_set_insert (stmts, stmt);
+		  if (is_gimple_call (stmt))
+		    {
+		      struct cgraph_edge *e = cgraph_edge (node, stmt);
+		      tree decl = gimple_call_fndecl (stmt);
+		      if (e)
+			{
+			  if (e->aux)
+			    {
+			      error ("shared call_stmt:");
+			      cgraph_debug_gimple_stmt (this_cfun, stmt);
+			      error_found = true;
+			    }
+			  if (!e->indirect_unknown_callee)
+			    {
+			      if (verify_edge_corresponds_to_fndecl (e, decl))
+				{
+				  error ("edge points to wrong declaration:");
+				  debug_tree (e->callee->symbol.decl);
+				  fprintf (stderr," Instead of:");
+				  debug_tree (decl);
+				  error_found = true;
+				}
+			    }
+			  else if (decl)
+			    {
+			      error ("an indirect edge with unknown callee "
+				     "corresponding to a call_stmt with "
+				     "a known declaration:");
+			      error_found = true;
+			      cgraph_debug_gimple_stmt (this_cfun, e->call_stmt);
+			    }
+			  e->aux = (void *)1;
+			}
+		      else if (decl)
+			{
+			  error ("missing callgraph edge for call stmt:");
+			  cgraph_debug_gimple_stmt (this_cfun, stmt);
+			  error_found = true;
+			}
+		    }
+		}
 	      }
+	    for (i = 0;
+		 ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref);
+		 i++)
+	      if (ref->stmt && !pointer_set_contains (stmts, ref->stmt))
+		{
+		  error ("reference to dead statement");
+		  cgraph_debug_gimple_stmt (this_cfun, ref->stmt);
+		  error_found = true;
+		}
+	    pointer_set_destroy (stmts);
 	}
       else
 	/* No CFG available?!  */

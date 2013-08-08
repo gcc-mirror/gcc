@@ -1223,6 +1223,7 @@ split_function (struct split_point *split_point)
       DECL_FUNCTION_CODE (node->symbol.decl) = (enum built_in_function) 0;
     }
   cgraph_node_remove_callees (cur_node);
+  ipa_remove_all_references (&cur_node->symbol.ref_list);
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->symbol.decl) = 1;
   if (dump_file)
