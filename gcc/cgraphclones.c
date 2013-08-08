@@ -876,7 +876,12 @@ cgraph_materialize_all_clones (void)
     }
   FOR_EACH_FUNCTION (node)
     if (!node->symbol.analyzed && node->callees)
-      cgraph_node_remove_callees (node);
+      {
+        cgraph_node_remove_callees (node);
+	ipa_remove_all_references (&node->symbol.ref_list);
+      }
+    else
+      ipa_clear_stmts_in_references ((symtab_node)node);
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Materialization Call site updates done.\n");
 #ifdef ENABLE_CHECKING

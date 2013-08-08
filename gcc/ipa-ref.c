@@ -218,6 +218,7 @@ ipa_ref_has_aliases_p (struct ipa_ref_list *ref_list)
 {
   struct ipa_ref *ref;
   int i;
+
   for (i = 0; ipa_ref_list_referring_iterate (ref_list, i, ref); i++)
     if (ref->use == IPA_REF_ALIAS)
       return true;
@@ -234,7 +235,7 @@ ipa_find_reference (symtab_node referring_node, symtab_node referred_node,
   struct ipa_ref *r = NULL;
   int i;
 
-  FOR_EACH_VEC_SAFE_ELT (referring_node->symbol.ref_list.references, i, r)
+  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
     if (r->referred == referred_node
 	&& (in_lto_p || r->stmt == stmt))
       return r;
@@ -250,7 +251,20 @@ ipa_remove_stmt_references (symtab_node referring_node, gimple stmt)
   struct ipa_ref *r = NULL;
   int i;
 
-  FOR_EACH_VEC_SAFE_ELT (referring_node->symbol.ref_list.references, i, r)
+  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
     if (r->stmt == stmt)
       ipa_remove_reference (r);
+}
+
+/* Remove all stmt references in non-speculative references.
+   Those are not maintained during inlining & clonning. */
+
+void
+ipa_clear_stmts_in_references (symtab_node referring_node)
+{
+  struct ipa_ref *r = NULL;
+  int i;
+
+  for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
+    r->stmt = NULL;
 }

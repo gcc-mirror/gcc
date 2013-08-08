@@ -414,6 +414,7 @@ inline_transform (struct cgraph_node *node)
 
   for (e = node->callees; e; e = e->next_callee)
     cgraph_redirect_edge_call_stmt_to_callee (e);
+  ipa_remove_all_references (&node->symbol.ref_list);
 
   timevar_push (TV_INTEGRATION);
   if (node->callees)

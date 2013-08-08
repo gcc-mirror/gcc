@@ -1,3 +1,19 @@
+2013-08-08  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphbuild.c (build_cgraph_edges): Do not walk into debugs.
+	(make_pass_rebuild_cgraph_edges): Also clear references.
+	* cgraph.c (verify_cgraph_node): Add basic ipa-ref verifier.
+	* ipa-inline-transform.c (inline_transform): Remove all references
+	after inlining.
+	* cgraphunit.c (expand_function): Remove all references after expansion.
+	* ipa-ref.c (ipa_ref_has_aliases_p): Fix formatting.
+	(ipa_find_reference): Rewrite to iterator.
+	(remove_stmt_references): Likewise.
+	(ipa_clear_stmts_in_references): New function.
+	* ipa-ref.h (ipa_clear_stmts_in_references): Declare.
+	* cgraphclones.c (cgraph_materialize_all_clones): Remove or clear references.
+	* ipa-split.c (split_function): Remove references in split function.
+
 2013-08-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/57431

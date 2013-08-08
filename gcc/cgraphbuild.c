@@ -318,6 +318,9 @@ build_cgraph_edges (void)
 	  gimple stmt = gsi_stmt (gsi);
 	  tree decl;
 
+	  if (is_gimple_debug (stmt))
+	    continue;
+
 	  if (is_gimple_call (stmt))
 	    {
 	      int freq = compute_call_stmt_bb_frequency (current_function_decl,
@@ -537,7 +540,9 @@ make_pass_rebuild_cgraph_edges (gcc::context *ctxt)
 static unsigned int
 remove_cgraph_callee_edges (void)
 {
-  cgraph_node_remove_callees (cgraph_get_node (current_function_decl));
+  struct cgraph_node *node = cgraph_get_node (current_function_decl);
+  cgraph_node_remove_callees (node);
+  ipa_remove_all_references (&node->symbol.ref_list);
   return 0;
 }
 

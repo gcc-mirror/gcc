@@ -2011,6 +2011,7 @@ early_inliner (void)
 #ifdef ENABLE_CHECKING
   verify_cgraph_node (node);
 #endif
+  ipa_remove_all_references (&node->symbol.ref_list);
 
   /* Even when not optimizing or not inlining inline always-inline
      functions.  */
