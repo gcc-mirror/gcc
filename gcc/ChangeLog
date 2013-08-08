@@ -1,5 +1,11 @@
 2013-08-08  Richard Earnshaw  <rearnsha@arm.com>
 
+	PR target/57431
+	* arm/neon.md (neon_vld1_dupdi): New expand pattern.
+	(neon_vld1_dup<mode> VD iterator): Iterate over VD not VDX.
+
+2013-08-08  Richard Earnshaw  <rearnsha@arm.com>
+
 	PR target/56979
 	* arm.c (aapcs_vfp_allocate): Decompose the argument if the
 	suggested mode for the assignment isn't compatible with the
