@@ -1,3 +1,8 @@
+2013-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/bits/regex.h: Replace _A, _B, _C, _R by _Ap, _Bp,
+	_Cp, _Rp.
+
 2013-08-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/hashtable_policy.h (_Hashtable_alloc): New.
