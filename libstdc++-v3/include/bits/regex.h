@@ -995,18 +995,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                  const basic_regex<_CharT, _TraitsT>&,
                                  regex_constants::match_flag_type);
 
-      template<typename _B, typename _A, typename _C, typename _R>
+      template<typename _Bp, typename _Ap, typename _Cp, typename _Rp>
         friend bool
-        regex_match(_B, _B,
-                    match_results<_B, _A>&,
-                    const basic_regex<_C, _R>&,
+        regex_match(_Bp, _Bp,
+                    match_results<_Bp, _Ap>&,
+                    const basic_regex<_Cp, _Rp>&,
                     regex_constants::match_flag_type);
 
-      template<typename _B, typename _A, typename _C, typename _R>
+      template<typename _Bp, typename _Ap, typename _Cp, typename _Rp>
         friend bool
-        regex_search(_B, _B,
-                     match_results<_B, _A>&,
-                     const basic_regex<_C, _R>&,
+        regex_search(_Bp, _Bp,
+                     match_results<_Bp, _Ap>&,
+                     const basic_regex<_Cp, _Rp>&,
                      regex_constants::match_flag_type);
 
       flag_type     _M_flags;
@@ -2111,16 +2111,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename, typename, typename, typename>
         friend class __detail::_BFSExecutor;
 
-      template<typename _B, typename _A, typename _Ch_type, typename _Rx_traits>
+      template<typename _Bp, typename _Ap, typename _Ch_type, typename _Rx_traits>
         friend bool
-        regex_match(_B, _B, match_results<_B, _A>&,
+        regex_match(_Bp, _Bp, match_results<_Bp, _Ap>&,
                     const basic_regex<_Ch_type,
                     _Rx_traits>&,
                     regex_constants::match_flag_type);
 
-      template<typename _B, typename _A, typename _Ch_type, typename _Rx_traits>
+      template<typename _Bp, typename _Ap, typename _Ch_type, typename _Rx_traits>
         friend bool
-        regex_search(_B, _B, match_results<_B, _A>&,
+        regex_search(_Bp, _Bp, match_results<_Bp, _Ap>&,
                      const basic_regex<_Ch_type,
                      _Rx_traits>&,
                      regex_constants::match_flag_type);
