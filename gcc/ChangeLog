@@ -1,5 +1,9 @@
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
+	 * ipa-ref.c (ipa_clear_stmts_in_references): Clear lto_stmt_uid, too.
+
+2013-08-09  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_resolve_speculation): Cut frequency to
 	CGRAPH_FREQ_MAX.
 	(dump_cgraph_node): Dump profile-id.

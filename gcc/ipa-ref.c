@@ -311,5 +311,8 @@ ipa_clear_stmts_in_references (symtab_node referring_node)
 
   for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
     if (!r->speculative)
-      r->stmt = NULL;
+      {
+	r->stmt = NULL;
+	r->lto_stmt_uid = 0;
+      }
 }
