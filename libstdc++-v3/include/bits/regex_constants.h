@@ -77,87 +77,125 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * elements @c ECMAScript, @c basic, @c extended, @c awk, @c grep, @c egrep
    * %set.
    */
-  typedef unsigned int syntax_option_type;
+  enum syntax_option_type
+    {
+      /**
+       * Specifies that the matching of regular expressions against a character
+       * sequence shall be performed without regard to case.
+       */
+      icase      = 1 << _S_icase,
 
-  /**
-   * Specifies that the matching of regular expressions against a character
-   * sequence shall be performed without regard to case.
-   */
-  constexpr syntax_option_type icase      = 1 << _S_icase;
+      /**
+       * Specifies that when a regular expression is matched against a character
+       * container sequence, no sub-expression matches are to be stored in the
+       * supplied match_results structure.
+       */
+      nosubs     = 1 << _S_nosubs,
 
-  /**
-   * Specifies that when a regular expression is matched against a character
-   * container sequence, no sub-expression matches are to be stored in the
-   * supplied match_results structure.
-   */
-  constexpr syntax_option_type nosubs     = 1 << _S_nosubs;
+      /**
+       * Specifies that the regular expression engine should pay more attention to
+       * the speed with which regular expressions are matched, and less to the
+       * speed with which regular expression objects are constructed. Otherwise
+       * it has no detectable effect on the program output.
+       */
+      optimize   = 1 << _S_optimize,
 
-  /**
-   * Specifies that the regular expression engine should pay more attention to
-   * the speed with which regular expressions are matched, and less to the
-   * speed with which regular expression objects are constructed. Otherwise
-   * it has no detectable effect on the program output.
-   */
-  constexpr syntax_option_type optimize   = 1 << _S_optimize;
+      /**
+       * Specifies that character ranges of the form [a-b] should be locale
+       * sensitive.
+       */
+      collate    = 1 << _S_collate,
 
-  /**
-   * Specifies that character ranges of the form [a-b] should be locale
-   * sensitive.
-   */
-  constexpr syntax_option_type collate    = 1 << _S_collate;
+      /**
+       * Specifies that the grammar recognized by the regular expression engine is
+       * that used by ECMAScript in ECMA-262 [Ecma International, ECMAScript
+       * Language Specification, Standard Ecma-262, third edition, 1999], as
+       * modified in section [28.13].  This grammar is similar to that defined
+       * in the PERL scripting language but extended with elements found in the
+       * POSIX regular expression grammar.
+       */
+      ECMAScript = 1 << _S_ECMAScript,
 
-  /**
-   * Specifies that the grammar recognized by the regular expression engine is
-   * that used by ECMAScript in ECMA-262 [Ecma International, ECMAScript
-   * Language Specification, Standard Ecma-262, third edition, 1999], as
-   * modified in section [28.13].  This grammar is similar to that defined
-   * in the PERL scripting language but extended with elements found in the
-   * POSIX regular expression grammar.
-   */
-  constexpr syntax_option_type ECMAScript = 1 << _S_ECMAScript;
+      /**
+       * Specifies that the grammar recognized by the regular expression engine is
+       * that used by POSIX basic regular expressions in IEEE Std 1003.1-2001,
+       * Portable Operating System Interface (POSIX), Base Definitions and
+       * Headers, Section 9, Regular Expressions [IEEE, Information Technology --
+       * Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+       */
+      basic      = 1 << _S_basic,
 
-  /**
-   * Specifies that the grammar recognized by the regular expression engine is
-   * that used by POSIX basic regular expressions in IEEE Std 1003.1-2001,
-   * Portable Operating System Interface (POSIX), Base Definitions and
-   * Headers, Section 9, Regular Expressions [IEEE, Information Technology --
-   * Portable Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
-   */
-  constexpr syntax_option_type basic      = 1 << _S_basic;
+      /**
+       * Specifies that the grammar recognized by the regular expression engine is
+       * that used by POSIX extended regular expressions in IEEE Std 1003.1-2001,
+       * Portable Operating System Interface (POSIX), Base Definitions and Headers,
+       * Section 9, Regular Expressions.
+       */
+      extended   = 1 << _S_extended,
 
-  /**
-   * Specifies that the grammar recognized by the regular expression engine is
-   * that used by POSIX extended regular expressions in IEEE Std 1003.1-2001,
-   * Portable Operating System Interface (POSIX), Base Definitions and Headers,
-   * Section 9, Regular Expressions.
-   */
-  constexpr syntax_option_type extended   = 1 << _S_extended;
+      /**
+       * Specifies that the grammar recognized by the regular expression engine is
+       * that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
+       * identical to syntax_option_type extended, except that C-style escape
+       * sequences are supported.  These sequences are:
+       * \\\\, \\a, \\b, \\f, \\n, \\r, \\t , \\v, \\&apos,, &apos,,
+       * and \\ddd (where ddd is one, two, or three octal digits).
+       */
+      awk        = 1 << _S_awk,
 
-  /**
-   * Specifies that the grammar recognized by the regular expression engine is
-   * that used by POSIX utility awk in IEEE Std 1003.1-2001.  This option is
-   * identical to syntax_option_type extended, except that C-style escape
-   * sequences are supported.  These sequences are:
-   * \\\\, \\a, \\b, \\f, \\n, \\r, \\t , \\v, \\&apos;, &apos;,
-   * and \\ddd (where ddd is one, two, or three octal digits).
-   */
-  constexpr syntax_option_type awk        = 1 << _S_awk;
+      /**
+       * Specifies that the grammar recognized by the regular expression engine is
+       * that used by POSIX utility grep in IEEE Std 1003.1-2001.  This option is
+       * identical to syntax_option_type basic, except that newlines are treated
+       * as whitespace.
+       */
+      grep       = 1 << _S_grep,
 
-  /**
-   * Specifies that the grammar recognized by the regular expression engine is
-   * that used by POSIX utility grep in IEEE Std 1003.1-2001.  This option is
-   * identical to syntax_option_type basic, except that newlines are treated
-   * as whitespace.
-   */
-  constexpr syntax_option_type grep       = 1 << _S_grep;
+      /**
+       * Specifies that the grammar recognized by the regular expression engine is
+       * that used by POSIX utility grep when given the -E option in
+       * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type
+       * extended, except that newlines are treated as whitespace.
+       */
+      egrep      = 1 << _S_egrep,
+    };
 
-  /**
-   * Specifies that the grammar recognized by the regular expression engine is
-   * that used by POSIX utility grep when given the -E option in
-   * IEEE Std 1003.1-2001.  This option is identical to syntax_option_type
-   * extended, except that newlines are treated as whitespace.
-   */
-  constexpr syntax_option_type egrep      = 1 << _S_egrep;
+  constexpr inline syntax_option_type
+  operator&(syntax_option_type __a, syntax_option_type __b)
+  {
+    return (syntax_option_type)(static_cast<unsigned int>(__a)
+                                & static_cast<unsigned int>(__b));
+  }
+
+  constexpr inline syntax_option_type
+  operator|(syntax_option_type __a, syntax_option_type __b)
+  {
+    return (syntax_option_type)(static_cast<unsigned int>(__a)
+                                | static_cast<unsigned int>(__b));
+  }
+
+  constexpr inline syntax_option_type
+  operator^(syntax_option_type __a, syntax_option_type __b)
+  {
+    return (syntax_option_type)(static_cast<unsigned int>(__a)
+                                ^ static_cast<unsigned int>(__b));
+  }
+
+  constexpr inline syntax_option_type
+  operator~(syntax_option_type __a)
+  { return (syntax_option_type)(~static_cast<unsigned int>(__a)); }
+
+  inline syntax_option_type&
+  operator&=(syntax_option_type& __a, syntax_option_type __b)
+  { return __a = __a & __b; }
+
+  inline syntax_option_type&
+  operator|=(syntax_option_type& __a, syntax_option_type __b)
+  { return __a = __a | __b; }
+
+  inline syntax_option_type&
+  operator^=(syntax_option_type& __a, syntax_option_type __b)
+  { return __a = __a ^ __b; }
 
   //@}
 

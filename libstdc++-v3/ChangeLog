@@ -1,3 +1,8 @@
+2013-08-09  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_constants.h: Change syntax_option_type to enum
+	type.
+
 2013-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* include/bits/regex.h: Replace _A, _B, _C, _R by _Ap, _Bp,
