@@ -1,3 +1,26 @@
+2013-08-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (get_lane_signed): Remove.
+	(get_lane_unsigned): Likewise.
+	(dup_lane_scalar): Likewise.
+	(get_lane): enable for VALL.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_dup_lane_scalar<mode>): Remove.
+	(aarch64_get_lane_signed<mode>): Likewise.
+	(aarch64_get_lane_unsigned<mode>): Likewise.
+	(aarch64_get_lane_extend<GPI:mode><VDQQH:mode>): New.
+	(aarch64_get_lane_zero_extendsi<mode>): Likewise.
+	(aarch64_get_lane<mode>): Enable for all vector modes.
+	(aarch64_get_lanedi): Remove misleading constraints.
+	* config/aarch64/arm_neon.h
+	(__aarch64_vget_lane_any): Define.
+	(__aarch64_vget<q>_lane_<fpsu><8,16,32,64>): Likewise.
+	(vget<q>_lane_<fpsu><8,16,32,64>): Use __aarch64_vget_lane macros.
+	(vdup<bhsd>_lane_<su><8,16,32,64>): Likewise.
+	* config/aarch64/iterators.md (VDQQH): New.
+	(VDQQHS): Likewise.
+	(vwcore): Likewise.
+
 2013-08-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Add GAS check for LEON instructions on SPARC.
