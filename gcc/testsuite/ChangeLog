@@ -1,3 +1,7 @@
+2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* gcc.target/arm/lp1189445.c: New testcase.
+
 2013-08-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.dg/torture/pr58079.c: New test.
