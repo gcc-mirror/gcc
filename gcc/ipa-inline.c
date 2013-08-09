@@ -1388,6 +1388,17 @@ add_new_edges_to_heap (fibheap_t heap, vec<cgraph_edge_p> new_edges)
     }
 }
 
+/* Remove EDGE from the fibheap.  */
+
+static void
+heap_edge_removal_hook (struct cgraph_edge *e, void *data)
+{
+  if (e->aux)
+    {
+      fibheap_delete_node ((fibheap_t)data, (fibnode_t)e->aux);
+      e->aux = NULL;
+    }
+}
 
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap ordered in
@@ -1406,9 +1417,13 @@ inline_small_functions (void)
   vec<cgraph_edge_p> new_indirect_edges = vNULL;
   int initial_size = 0;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_edge_hook_list *edge_removal_hook_holder;
 
   if (flag_indirect_inlining)
     new_indirect_edges.create (8);
+
+  edge_removal_hook_holder
+    = cgraph_add_edge_removal_hook (&heap_edge_removal_hook, edge_heap);
 
   /* Compute overall unit size and other global parameters used by badness
      metrics.  */
@@ -1663,6 +1678,7 @@ inline_small_functions (void)
 	     initial_size, overall_size,
 	     initial_size ? overall_size * 100 / (initial_size) - 100: 0);
   BITMAP_FREE (updated_nodes);
+  cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
 }
 
 /* Flatten NODE.  Performed both during early inlining and

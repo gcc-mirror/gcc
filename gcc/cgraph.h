@@ -483,6 +483,24 @@ struct GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"))) cgrap
   unsigned int call_stmt_cannot_inline_p : 1;
   /* Can this call throw externally?  */
   unsigned int can_throw_external : 1;
+  /* Edges with SPECULATIVE flag represents indirect calls that was
+     speculatively turned into direct (i.e. by profile feedback).
+     The final code sequence will have form:
+
+     if (call_target == expected_fn)
+       expected_fn ();
+     else
+       call_target ();
+
+     Every speculative call is represented by three components attached
+     to a same call statement:
+     1) a direct call (to expected_fn)
+     2) an indirect call (to call_target)
+     3) a IPA_REF_ADDR refrence to expected_fn.
+
+     Optimizers may later redirect direct call to clone, so 1) and 3)
+     do not need to necesarily agree with destination.  */
+  unsigned int speculative : 1;
 };
 
 #define CGRAPH_FREQ_BASE 1000
@@ -629,7 +647,7 @@ struct cgraph_node * cgraph_add_thunk (struct cgraph_node *, tree, tree, bool, H
 				       HOST_WIDE_INT, tree, tree);
 struct cgraph_node *cgraph_node_for_asm (tree);
 struct cgraph_edge *cgraph_edge (struct cgraph_node *, gimple);
-void cgraph_set_call_stmt (struct cgraph_edge *, gimple);
+void cgraph_set_call_stmt (struct cgraph_edge *, gimple, bool update_speculative = true);
 void cgraph_update_edges_for_call_stmt (gimple, tree, gimple);
 struct cgraph_local_info *cgraph_local_info (tree);
 struct cgraph_global_info *cgraph_global_info (tree);
@@ -641,7 +659,7 @@ void cgraph_call_edge_duplication_hooks (struct cgraph_edge *,
 				         struct cgraph_edge *);
 
 void cgraph_redirect_edge_callee (struct cgraph_edge *, struct cgraph_node *);
-void cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
+struct cgraph_edge *cgraph_make_edge_direct (struct cgraph_edge *, struct cgraph_node *);
 bool cgraph_only_called_directly_p (struct cgraph_node *);
 
 bool cgraph_function_possibly_inlined_p (tree);
@@ -702,6 +720,14 @@ bool cgraph_propagate_frequency (struct cgraph_node *node);
 struct cgraph_node * cgraph_function_node (struct cgraph_node *,
 					   enum availability *avail = NULL);
 bool cgraph_get_body (struct cgraph_node *node);
+void
+cgraph_turn_edge_to_speculative (struct cgraph_edge *,
+				 struct cgraph_node *,
+				 gcov_type, int);
+void cgraph_speculative_call_info (struct cgraph_edge *,
+				   struct cgraph_edge *&,
+				   struct cgraph_edge *&,
+				   struct ipa_ref *&);
 
 /* In cgraphunit.c  */
 struct asm_node *add_asm_node (tree);
@@ -735,7 +761,8 @@ struct cgraph_node * cgraph_create_virtual_clone (struct cgraph_node *old_node,
 						  const char *clone_name);
 struct cgraph_node *cgraph_find_replacement_node (struct cgraph_node *);
 bool cgraph_remove_node_and_inline_clones (struct cgraph_node *, struct cgraph_node *);
-void cgraph_set_call_stmt_including_clones (struct cgraph_node *, gimple, gimple);
+void cgraph_set_call_stmt_including_clones (struct cgraph_node *, gimple, gimple,
+					    bool update_speculative = true);
 void cgraph_create_edge_including_clones (struct cgraph_node *,
 					  struct cgraph_node *,
 					  gimple, gimple, gcov_type, int,

@@ -1,5 +1,67 @@
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphbuild.c (cgraph_rebuild_references): Rebuild only non-speculative
+	refs.
+	* cgraph.c (cgraph_update_edge_in_call_site_hash): New function.
+	(cgraph_add_edge_to_call_site_hash): Deal with speculative calls.
+	(cgraph_set_call_stmt): Likewise.
+	(cgraph_create_edge_1): Fix release checking compilatoin;
+	clear lto_stmt_uid.
+	(cgraph_free_edge): Free indirect info.
+	(cgraph_turn_edge_to_speculative): New function.
+	(cgraph_speculative_call_info): New function.
+	(cgraph_make_edge_direct): Return direct edge; handle speculation.
+	(cgraph_redirect_edge_call_stmt_to_callee): Expand speculative
+	edges.
+	(dump_cgraph_node): Dump speculation.
+	(verify_edge_count_and_frequency): Accept speculative edges.
+	(verify_edge_corresponds_to_fndecl): Handle partitioned cgraph.
+	(verify_cgraph_node): Handle speculation.
+	* cgraph.h (cgraph_edge): Add SPECULATIVE flag.
+	(cgraph_set_call_stmt): Update prototype.
+	(cgraph_make_edge_direct): Update prototype.
+	(cgraph_speculative_call_info): Declare.
+	* ipa-cp.c (ipcp_discover_new_direct_edges): Be ready for edge
+	to change; update call of ipa_find_references.
+	* ipa-ref.c (ipa_record_reference): Fix return value; clear
+	lto_stmt_uid and speculative flags.
+	(ipa_dump_references): Dump speculation.
+	(ipa_clone_references): Clone speculative flag.
+	(ipa_clone_referring): Likewise.
+	(ipa_clone_ref): New function.
+	(ipa_find_reference): Look into lto_stmt_uids
+	(ipa_clear_stmts_in_references): Do not clear speculative calls.
+	* ipa-ref.h (ipa_ref): Add lto_stmt_uid and speculative flags.
+	(ipa_find_reference): Update declaration.
+	(ipa_clone_ref): Declare.
+	* lto-cgraph.c (lto_output_edge): Make lto_stmt_uids start from 0;
+	stream speculative flag.
+	(lto_output_ref): Stream statements uids and speculation.
+	(input_ref): Likewise.
+	(input_edge): Stream speuclation.
+	* cgraphclones.c (cgraph_clone_edge): Clone speculation.
+	(cgraph_set_call_stmt_including_clones): Handle speculation.
+	* ipa-inline.c (heap_edge_removal_hook): New function.
+	(inline_small_functions): Register it.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Bounds checking;
+	also initialize refs.
+	* ipa-prop.c (ipa_make_edge_direct_to_target): Be ready for
+	edge to change.
+	(try_make_edge_direct_simple_call): Likewise.
+	(try_make_edge_direct_simple_call): Likewise.
+	(update_indirect_edges_after_inlining): Likewise.
+	(remove_described_reference): Look proper lto_stmt_uid.
+	(propagate_controlled_uses): Likewise.
+	(propagate_controlled_uses): Liekwise.
+	* tree-inline.c (copy_bb): Copy speculative edges.
+	(redirect_all_calls): New function.
+	(copy_cfg_body): Do redirection after loop info
+	is updated.
+	(delete_unreachable_blocks_update_callgraph): Updadte
+	speculation.
+
+2013-08-09  Jan Hubicka  <jh@suse.cz>
+
 	* lto-streamer-out.c (output_function): Renumber PHIs.
 	* lto-streamer-in.c (input_function): Likewise.
 

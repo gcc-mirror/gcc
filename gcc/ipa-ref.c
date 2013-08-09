@@ -38,7 +38,7 @@ ipa_record_reference (symtab_node referring_node,
 		      symtab_node referred_node,
 		      enum ipa_ref_use use_type, gimple stmt)
 {
-  struct ipa_ref *ref;
+  struct ipa_ref *ref, *ref2;
   struct ipa_ref_list *list, *list2;
   ipa_ref_t *old_references;
 
@@ -56,14 +56,16 @@ ipa_record_reference (symtab_node referring_node,
   ref->referring = referring_node;
   ref->referred = referred_node;
   ref->stmt = stmt;
+  ref->lto_stmt_uid = 0;
   ref->use = use_type;
+  ref->speculative = 0;
 
   /* If vector was moved in memory, update pointers.  */
   if (old_references != list->references->address ())
     {
       int i;
-      for (i = 0; ipa_ref_list_reference_iterate (list, i, ref); i++)
-	ipa_ref_referred_ref_list (ref)->referring[ref->referred_index] = ref;
+      for (i = 0; ipa_ref_list_reference_iterate (list, i, ref2); i++)
+	ipa_ref_referred_ref_list (ref2)->referring[ref2->referred_index] = ref2;
     }
   return ref;
 }
@@ -155,6 +157,8 @@ ipa_dump_references (FILE * file, struct ipa_ref_list *list)
                symtab_node_asm_name (ref->referred),
                ref->referred->symbol.order,
 	       ipa_ref_use_name [ref->use]);
+      if (ref->speculative)
+	fprintf (file, " (speculative)");
     }
   fprintf (file, "\n");
 }
@@ -172,8 +176,29 @@ ipa_dump_referring (FILE * file, struct ipa_ref_list *list)
                symtab_node_asm_name (ref->referring),
                ref->referring->symbol.order,
 	       ipa_ref_use_name [ref->use]);
+      if (ref->speculative)
+	fprintf (file, " (speculative)");
     }
   fprintf (file, "\n");
+}
+
+/* Clone reference REF to DEST_NODE and set its stmt to STMT.  */
+
+struct ipa_ref *
+ipa_clone_ref (struct ipa_ref *ref,
+	       symtab_node dest_node,
+	       gimple stmt)
+{
+  bool speculative = ref->speculative;
+  unsigned int stmt_uid = ref->lto_stmt_uid;
+  struct ipa_ref *ref2;
+
+  ref2 = ipa_record_reference (dest_node,
+			       ref->referred,
+			       ref->use, stmt);
+  ref2->speculative = speculative;
+  ref2->lto_stmt_uid = stmt_uid;
+  return ref2;
 }
 
 /* Clone all references from SRC to DEST_NODE or DEST_VARPOOL_NODE.  */
@@ -182,12 +207,19 @@ void
 ipa_clone_references (symtab_node dest_node,
 		      struct ipa_ref_list *src)
 {
-  struct ipa_ref *ref;
+  struct ipa_ref *ref, *ref2;
   int i;
   for (i = 0; ipa_ref_list_reference_iterate (src, i, ref); i++)
-    ipa_record_reference (dest_node,
-			  ref->referred,
-			  ref->use, ref->stmt);
+    {
+      bool speculative = ref->speculative;
+      unsigned int stmt_uid = ref->lto_stmt_uid;
+
+      ref2 = ipa_record_reference (dest_node,
+				   ref->referred,
+				   ref->use, ref->stmt);
+      ref2->speculative = speculative;
+      ref2->lto_stmt_uid = stmt_uid;
+    }
 }
 
 /* Clone all referring from SRC to DEST_NODE or DEST_VARPOOL_NODE.  */
@@ -196,12 +228,19 @@ void
 ipa_clone_referring (symtab_node dest_node,
 		    struct ipa_ref_list *src)
 {
-  struct ipa_ref *ref;
+  struct ipa_ref *ref, *ref2;
   int i;
   for (i = 0; ipa_ref_list_referring_iterate (src, i, ref); i++)
-    ipa_record_reference (ref->referring,
-			  dest_node,
-			  ref->use, ref->stmt);
+    {
+      bool speculative = ref->speculative;
+      unsigned int stmt_uid = ref->lto_stmt_uid;
+
+      ref2 = ipa_record_reference (ref->referring,
+				   dest_node,
+				   ref->use, ref->stmt);
+      ref2->speculative = speculative;
+      ref2->lto_stmt_uid = stmt_uid;
+    }
 }
 
 /* Return true when execution of REF can lead to return from
@@ -230,14 +269,17 @@ ipa_ref_has_aliases_p (struct ipa_ref_list *ref_list)
 
 struct ipa_ref *
 ipa_find_reference (symtab_node referring_node, symtab_node referred_node,
-		    gimple stmt)
+		    gimple stmt, unsigned int lto_stmt_uid)
 {
   struct ipa_ref *r = NULL;
   int i;
 
   for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
     if (r->referred == referred_node
-	&& (in_lto_p || r->stmt == stmt))
+	&& !r->speculative
+	&& ((stmt && r->stmt == stmt)
+	    || (lto_stmt_uid && r->lto_stmt_uid == lto_stmt_uid)
+	    || (!stmt && !lto_stmt_uid && !r->stmt && !r->lto_stmt_uid)))
       return r;
   return NULL;
 }
@@ -257,7 +299,9 @@ ipa_remove_stmt_references (symtab_node referring_node, gimple stmt)
 }
 
 /* Remove all stmt references in non-speculative references.
-   Those are not maintained during inlining & clonning. */
+   Those are not maintained during inlining & clonning. 
+   The exception are speculative references that are updated along
+   with callgraph edges associated with them.  */
 
 void
 ipa_clear_stmts_in_references (symtab_node referring_node)
@@ -266,5 +310,6 @@ ipa_clear_stmts_in_references (symtab_node referring_node)
   int i;
 
   for (i = 0; ipa_ref_list_reference_iterate (&referring_node->symbol.ref_list, i, r); i++)
-    r->stmt = NULL;
+    if (!r->speculative)
+      r->stmt = NULL;
 }

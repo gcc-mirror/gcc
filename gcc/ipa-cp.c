@@ -2278,14 +2278,15 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 					       aggvals);
       if (target)
 	{
+	  bool agg_contents = ie->indirect_info->agg_contents;
+	  bool polymorphic = ie->indirect_info->polymorphic;
+	  bool param_index = ie->indirect_info->param_index;
 	  struct cgraph_edge *cs = ipa_make_edge_direct_to_target (ie, target);
 	  found = true;
 
-	  if (cs && !ie->indirect_info->agg_contents
-	      && !ie->indirect_info->polymorphic)
+	  if (cs && !agg_contents && !polymorphic)
 	    {
 	      struct ipa_node_params *info = IPA_NODE_REF (node);
-	      int param_index = ie->indirect_info->param_index;
 	      int c = ipa_get_controlled_uses (info, param_index);
 	      if (c != IPA_UNDESCRIBED_USE)
 		{
@@ -2299,7 +2300,7 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 		  if (c == 0
 		      && (to_del = ipa_find_reference ((symtab_node) node,
 						       (symtab_node) cs->callee,
-						       NULL)))
+						       NULL, 0)))
 		    {
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			fprintf (dump_file, "       and even removing its "

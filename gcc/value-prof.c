@@ -1248,7 +1248,7 @@ check_ic_target (gimple call_stmt, struct cgraph_node *target)
     old call
  */
 
-static gimple
+gimple
 gimple_ic (gimple icall_stmt, struct cgraph_node *direct_call,
 	   int prob, gcov_type count, gcov_type all)
 {
