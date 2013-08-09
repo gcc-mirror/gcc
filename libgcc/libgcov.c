@@ -1121,6 +1121,21 @@ __gcov_one_value_profiler (gcov_type *counters, gcov_type value)
 
 #ifdef L_gcov_indirect_call_profiler
 
+/* These two variables are used to actually track caller and callee.  Keep
+   them in TLS memory so races are not common (they are written to often).
+   The variables are set directly by GCC instrumented code, so declaration
+   here must match one in tree-profile.c  */
+
+#ifdef HAVE_CC_TLS
+__thread 
+#endif
+void * __gcov_indirect_call_callee;
+#ifdef HAVE_CC_TLS
+__thread 
+#endif
+gcov_type * __gcov_indirect_call_counters;
+
+
 /* By default, the C++ compiler will use function addresses in the
    vtable entries.  Setting TARGET_VTABLE_USES_DESCRIPTORS to nonzero
    tells the compiler to use function descriptors instead.  The value
@@ -1140,16 +1155,15 @@ __gcov_one_value_profiler (gcov_type *counters, gcov_type value)
 
 /* Tries to determine the most common value among its inputs. */
 void
-__gcov_indirect_call_profiler (gcov_type* counter, gcov_type value,
-			       void* cur_func, void* callee_func)
+__gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
 {
   /* If the C++ virtual tables contain function descriptors then one
      function may have multiple descriptors and we need to dereference
      the descriptors to see if they point to the same function.  */
-  if (cur_func == callee_func
-      || (VTABLE_USES_DESCRIPTORS && callee_func
-	  && *(void **) cur_func == *(void **) callee_func))
-    __gcov_one_value_profiler_body (counter, value);
+  if (cur_func == __gcov_indirect_call_callee
+      || (VTABLE_USES_DESCRIPTORS && __gcov_indirect_call_callee
+	  && *(void **) cur_func == *(void **) __gcov_indirect_call_callee))
+    __gcov_one_value_profiler_body (__gcov_indirect_call_counters, value);
 }
 #endif
 

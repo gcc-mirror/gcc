@@ -1,3 +1,10 @@
+2013-08-06  Jan Hubicka  <jh@suse.cz>
+
+	* libgcov.c (__gcov_indirect_call_callee,
+	__gcov_indirect_call_counters): New global vars.
+	(__gcov_indirect_call_profiler): replace by ...
+	(__gcov_indirect_call_profiler_v2) ... this one.
+
 2013-08-06  Caroline Tice  <cmtice@google.com>
 
 	* config.host (extra_parts): Add vtv_start.o, vtv_end.o
