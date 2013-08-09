@@ -1,3 +1,7 @@
+2013-08-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (print_ada_declaration): Prevent accessing null asm name
+
 2013-08-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58080
