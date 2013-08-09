@@ -1,3 +1,8 @@
+2013-08-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c: Update expected
+	output of vdup intrinsics.
+
 2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* gcc.target/arm/lp1189445.c: New testcase.

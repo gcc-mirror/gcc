@@ -357,20 +357,6 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "aarch64_dup_lane_scalar<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=w, r")
-	(vec_select:<VEL>
-	  (match_operand:VDQ 1 "register_operand" "w, w")
-	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i")])
-        ))]
-  "TARGET_SIMD"
-  "@
-   dup\\t%<Vetype>0, %1.<Vetype>[%2]
-   umov\\t%<vw>0, %1.<Vetype>[%2]"
-  [(set_attr "simd_type" "simd_dup, simd_movgp")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
 (define_insn "aarch64_simd_dup<mode>"
   [(set (match_operand:VDQF 0 "register_operand" "=w")
         (vec_duplicate:VDQF (match_operand:<VEL> 1 "register_operand" "w")))]
@@ -2147,45 +2133,50 @@
   DONE;
 })
 
-(define_insn "aarch64_get_lane_signed<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=r")
-	(sign_extend:<VEL>
+;; Lane extraction with sign extension to general purpose register.
+(define_insn "*aarch64_get_lane_extend<GPI:mode><VDQQH:mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(sign_extend:GPI
 	  (vec_select:<VEL>
-	    (match_operand:VQ_S 1 "register_operand" "w")
+	    (match_operand:VDQQH 1 "register_operand" "w")
 	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
   "TARGET_SIMD"
-  "smov\\t%0, %1.<Vetype>[%2]"
+  "smov\\t%<GPI:w>0, %1.<VDQQH:Vetype>[%2]"
+  [(set_attr "simd_type" "simd_movgp")
+   (set_attr "simd_mode" "<VDQQH:MODE>")]
+)
+
+(define_insn "*aarch64_get_lane_zero_extendsi<mode>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zero_extend:SI
+	  (vec_select:<VEL>
+	    (match_operand:VDQQH 1 "register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
+  "TARGET_SIMD"
+  "umov\\t%w0, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_movgp")
    (set_attr "simd_mode" "<MODE>")]
 )
 
-(define_insn "aarch64_get_lane_unsigned<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=r")
-	(zero_extend:<VEL>
-	  (vec_select:<VEL>
-	    (match_operand:VDQ 1 "register_operand" "w")
-	    (parallel [(match_operand:SI 2 "immediate_operand" "i")]))))]
-  "TARGET_SIMD"
-  "umov\\t%<vw>0, %1.<Vetype>[%2]"
-  [(set_attr "simd_type" "simd_movgp")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
+;; Lane extraction of a value, neither sign nor zero extension
+;; is guaranteed so upper bits should be considered undefined.
 (define_insn "aarch64_get_lane<mode>"
-  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+  [(set (match_operand:<VEL> 0 "register_operand" "=r, w")
 	(vec_select:<VEL>
-	    (match_operand:VDQF 1 "register_operand" "w")
-	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])))]
+	  (match_operand:VALL 1 "register_operand" "w, w")
+	  (parallel [(match_operand:SI 2 "immediate_operand" "i, i")])))]
   "TARGET_SIMD"
-  "mov\\t%0.<Vetype>[0], %1.<Vetype>[%2]"
-  [(set_attr "simd_type" "simd_ins")
+  "@
+   umov\\t%<vwcore>0, %1.<Vetype>[%2]
+   dup\\t%<Vetype>0, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_movgp, simd_dup")
    (set_attr "simd_mode" "<MODE>")]
 )
 
 (define_expand "aarch64_get_lanedi"
-  [(match_operand:DI 0 "register_operand" "=r")
-   (match_operand:DI 1 "register_operand" "w")
-   (match_operand:SI 2 "immediate_operand" "i")]
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:SI 2 "immediate_operand")]
   "TARGET_SIMD"
 {
   aarch64_simd_lane_bounds (operands[2], 0, 1);

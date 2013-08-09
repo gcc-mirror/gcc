@@ -193,7 +193,7 @@ test_vcltzd_s64 (int64x1_t a)
   return res;
 }
 
-/* { dg-final { scan-assembler-times "aarch64_dup_lane_scalarv16qi"  2 } } */
+/* { dg-final { scan-assembler-times "aarch64_get_lanev16qi" 2 } } */
 
 int8x1_t
 test_vdupb_lane_s8 (int8x16_t a)
@@ -207,7 +207,7 @@ test_vdupb_lane_u8 (uint8x16_t a)
   return vdupb_lane_u8 (a, 2);
 }
 
-/* { dg-final { scan-assembler-times "aarch64_dup_lane_scalarv8hi"  2 } } */
+/* { dg-final { scan-assembler-times "aarch64_get_lanev8hi" 2 } } */
 
 int16x1_t
 test_vduph_lane_s16 (int16x8_t a)
@@ -221,7 +221,7 @@ test_vduph_lane_u16 (uint16x8_t a)
   return vduph_lane_u16 (a, 2);
 }
 
-/* { dg-final { scan-assembler-times "aarch64_dup_lane_scalarv4si"  2 } } */
+/* { dg-final { scan-assembler-times "aarch64_get_lanev4si" 2 } } */
 
 int32x1_t
 test_vdups_lane_s32 (int32x4_t a)
@@ -235,7 +235,7 @@ test_vdups_lane_u32 (uint32x4_t a)
   return vdups_lane_u32 (a, 2);
 }
 
-/* { dg-final { scan-assembler-times "aarch64_dup_lane_scalarv2di"  2 } } */
+/* { dg-final { scan-assembler-times "aarch64_get_lanev2di" 2 } } */
 
 int64x1_t
 test_vdupd_lane_s64 (int64x2_t a)
