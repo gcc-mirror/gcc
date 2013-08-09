@@ -137,8 +137,7 @@
 
 2013-07-31  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	* gcc.target/powerpc/fusion.c: New file, test power8 fusion
-	support.
+	* gcc.target/powerpc/fusion.c: New file, test power8 fusion support.
 
 2013-07-31  Richard Sandiford  <rdsandiford@googlemail.com>
 
@@ -338,8 +337,7 @@
 2013-07-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/bool2.h: New file, test the code generation
-	of logical operations for power5, altivec, power7, and power8
-	systems.
+	of logical operations for power5, altivec, power7, and power8 systems.
 	* gcc.target/powerpc/bool2-p5.c: Likewise.
 	* gcc.target/powerpc/bool2-av.c: Likewise.
 	* gcc.target/powerpc/bool2-p7.c: Likewise.
@@ -548,8 +546,7 @@
 
 	PR middle-end/57698
 	* gcc.c-torture/compile/pr57698.c: New test.
-	* gcc.c-torture/compile/pr43791.c: Remove prune output
-	directive.
+	* gcc.c-torture/compile/pr43791.c: Remove prune output directive.
 	* gcc.c-torture/compile/pr44043.c: Ditto.
 
 2013-07-18  Wei Mi  <wmi@google.com>
