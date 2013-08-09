@@ -5652,8 +5652,7 @@ scalar_transfer:
 
   if (expr->ts.type == BT_CHARACTER)
     {
-      tree direct;
-      tree indirect;
+      tree direct, indirect, free;
 
       ptr = convert (gfc_get_pchar_type (expr->ts.kind), source);
       tmpdecl = gfc_create_var (gfc_get_pchar_type (expr->ts.kind),
@@ -5685,6 +5684,13 @@ scalar_transfer:
 			     dest_word_len, source_bytes);
       tmp = build3_v (COND_EXPR, tmp, direct, indirect);
       gfc_add_expr_to_block (&se->pre, tmp);
+
+      /* Free the temporary string, if necessary.  */
+      free = gfc_call_free (tmpdecl);
+      tmp = fold_build2_loc (input_location, GT_EXPR, boolean_type_node,
+			     dest_word_len, source_bytes);
+      tmp = build3_v (COND_EXPR, tmp, free, build_empty_stmt (input_location));
+      gfc_add_expr_to_block (&se->post, tmp);
 
       se->expr = tmpdecl;
       se->string_length = fold_convert (gfc_charlen_type_node, dest_word_len);

@@ -1,3 +1,9 @@
+2013-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58058
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Free the temporary
+	string, if necessary.
+
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR fortran/57987
