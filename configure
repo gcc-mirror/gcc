@@ -3223,7 +3223,7 @@ if test -d ${srcdir}/libvtv; then
 $as_echo_n "checking for libvtv support... " >&6; }
 	if (srcdir=${srcdir}/libvtv; \
 		. ${srcdir}/configure.tgt; \
-		test -n "$UNSUPPORTED")
+		test "$VTV_SUPPORTED" != "yes")
 	then
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
