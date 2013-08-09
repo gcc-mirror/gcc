@@ -3055,12 +3055,10 @@ match_io_iterator (io_kind k, gfc_code **result)
   if (gfc_match_char (')') != MATCH_YES)
     goto syntax;
 
-  new_code = gfc_get_code ();
-  new_code->op = EXEC_DO;
+  new_code = gfc_get_code (EXEC_DO);
   new_code->ext.iterator = iter;
 
-  new_code->block = gfc_get_code ();
-  new_code->block->op = EXEC_DO;
+  new_code->block = gfc_get_code (EXEC_DO);
   new_code->block->next = head;
 
   *result = new_code;
@@ -3117,8 +3115,7 @@ match_io_element (io_kind k, gfc_code **cpp)
       return MATCH_ERROR;
     }
 
-  cp = gfc_get_code ();
-  cp->op = EXEC_TRANSFER;
+  cp = gfc_get_code (EXEC_TRANSFER);
   cp->expr1 = expr;
   if (k != M_INQUIRE)
     cp->ext.dt = current_dt;
@@ -3180,8 +3177,7 @@ terminate_io (gfc_code *io_code)
   if (io_code == NULL)
     io_code = new_st.block;
 
-  c = gfc_get_code ();
-  c->op = EXEC_DT_END;
+  c = gfc_get_code (EXEC_DT_END);
 
   /* Point to structure that is already there */
   c->ext.dt = new_st.ext.dt;
@@ -3751,8 +3747,7 @@ get_io_list:
 
   new_st.op = (k == M_READ) ? EXEC_READ : EXEC_WRITE;
   new_st.ext.dt = dt;
-  new_st.block = gfc_get_code ();
-  new_st.block->op = new_st.op;
+  new_st.block = gfc_get_code (new_st.op);
   new_st.block->next = io_code;
 
   terminate_io (io_code);
@@ -3961,8 +3956,7 @@ gfc_match_inquire (void)
       if (gfc_implicit_pure (NULL))
 	gfc_current_ns->proc_name->attr.implicit_pure = 0;
 
-      new_st.block = gfc_get_code ();
-      new_st.block->op = EXEC_IOLENGTH;
+      new_st.block = gfc_get_code (EXEC_IOLENGTH);
       terminate_io (code);
       new_st.block->next = code;
       return MATCH_YES;

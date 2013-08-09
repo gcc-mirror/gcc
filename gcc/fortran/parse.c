@@ -1095,7 +1095,7 @@ new_level (gfc_code *q)
 {
   gfc_code *p;
 
-  p = q->block = gfc_get_code ();
+  p = q->block = gfc_get_code (EXEC_NOP);
 
   gfc_state_stack->head = gfc_state_stack->tail = p;
 
@@ -1111,7 +1111,7 @@ add_statement (void)
 {
   gfc_code *p;
 
-  p = gfc_get_code ();
+  p = XCNEW (gfc_code);
   *p = new_st;
 
   p->loc = gfc_current_locus;
