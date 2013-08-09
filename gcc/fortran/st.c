@@ -41,14 +41,16 @@ gfc_clear_new_st (void)
 }
 
 
-/* Get a gfc_code structure.  */
+/* Get a gfc_code structure, initialized with the current locus
+   and a statement code 'op'.  */
 
 gfc_code *
-gfc_get_code (void)
+gfc_get_code (gfc_exec_op op)
 {
   gfc_code *c;
 
   c = XCNEW (gfc_code);
+  c->op = op;
   c->loc = gfc_current_locus;
   return c;
 }

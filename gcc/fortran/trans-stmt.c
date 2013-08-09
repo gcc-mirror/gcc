@@ -5232,14 +5232,13 @@ gfc_trans_allocate (gfc_code * code)
 				(gfc_find_intrinsic_vtab (&rhs->ts));
 	      gfc_add_component_ref (ppc, "_copy");
 
-	      ppc_code = gfc_get_code ();
+	      ppc_code = gfc_get_code (EXEC_CALL);
 	      ppc_code->resolved_sym = ppc->symtree->n.sym;
 	      /* Although '_copy' is set to be elemental in class.c, it is
 		 not staying that way.  Find out why, sometime....  */
 	      ppc_code->resolved_sym->attr.elemental = 1;
 	      ppc_code->ext.actual = actual;
 	      ppc_code->expr1 = ppc;
-	      ppc_code->op = EXEC_CALL;
 	      /* Since '_copy' is elemental, the scalarizer will take care
 		 of arrays in gfc_trans_call.  */
 	      tmp = gfc_trans_call (ppc_code, true, NULL, NULL, false);

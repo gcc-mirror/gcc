@@ -2820,7 +2820,7 @@ bool gfc_check_vardef_context (gfc_expr*, bool, bool, bool, const char*);
 extern gfc_code new_st;
 
 void gfc_clear_new_st (void);
-gfc_code *gfc_get_code (void);
+gfc_code *gfc_get_code (gfc_exec_op);
 gfc_code *gfc_append_code (gfc_code *, gfc_code *);
 void gfc_free_statement (gfc_code *);
 void gfc_free_statements (gfc_code *);

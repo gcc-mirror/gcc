@@ -1,5 +1,27 @@
 2013-08-09  Janus Weil  <janus@gcc.gnu.org>
 
+	* gfortran.h (gfc_get_code): Modified prototype.
+	* class.c (finalize_component, finalization_scalarizer,
+	finalization_get_offset, finalizer_insert_packed_call,
+	generate_finalization_wrapper, gfc_find_derived_vtab,
+	gfc_find_intrinsic_vtab): Use 'gfc_get_code'.
+	* io.c (match_io_iterator, match_io_element, terminate_io, get_io_list,
+	gfc_match_inquire): Call 'gfc_get_code' with argument.
+	* match.c (match_simple_forall, gfc_match_forall, gfc_match_goto,
+	gfc_match_nullify, gfc_match_call, match_simple_where, gfc_match_where):
+	Ditto.
+	* parse.c (new_level): Ditto.
+	(add_statement): Use XCNEW.
+	* resolve.c (resolve_entries, resolve_allocate_expr,
+	resolve_select_type, build_assignment, build_init_assign): Call
+	'gfc_get_code' with argument.
+	* st.c (gfc_get_code): Add argument 'op'.
+	* trans-expr.c (gfc_trans_class_array_init_assign): Call 'gfc_get_code'
+	with argument.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
+2013-08-09  Janus Weil  <janus@gcc.gnu.org>
+
 	PR fortran/58058
 	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Free the temporary
 	string, if necessary.
