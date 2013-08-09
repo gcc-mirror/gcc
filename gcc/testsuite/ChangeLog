@@ -1,3 +1,7 @@
+2013-08-09  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* gcc.dg/lower-subreg-1.c: Skip aarch64*-*-*.
+
 2013-08-09  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58058
