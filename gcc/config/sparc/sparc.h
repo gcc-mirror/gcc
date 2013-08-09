@@ -236,7 +236,7 @@ extern enum cmodel sparc_cmodel;
 #if TARGET_CPU_DEFAULT == TARGET_CPU_leon \
  || TARGET_CPU_DEFAULT == TARGET_CPU_leon3
 #define CPP_CPU32_DEFAULT_SPEC "-D__leon__ -D__sparc_v8__"
-#define ASM_CPU32_DEFAULT_SPEC ""
+#define ASM_CPU32_DEFAULT_SPEC AS_LEON_FLAG
 #endif
 
 #endif
@@ -332,8 +332,8 @@ extern enum cmodel sparc_cmodel;
 %{mcpu=v8:-Av8} \
 %{mcpu=supersparc:-Av8} \
 %{mcpu=hypersparc:-Av8} \
-%{mcpu=leon:-Av8} \
-%{mcpu=leon3:-Av8} \
+%{mcpu=leon:" AS_LEON_FLAG "} \
+%{mcpu=leon3:" AS_LEON_FLAG "} \
 %{mv8plus:-Av8plus} \
 %{mcpu=v9:-Av9} \
 %{mcpu=ultrasparc:%{!mv8plus:-Av9a}} \
@@ -1756,6 +1756,12 @@ extern int sparc_indent_opcode;
 #define AS_NIAGARA4_FLAG "-xarch=sparc4"
 #else
 #define AS_NIAGARA4_FLAG "-Av9" AS_NIAGARA3_FLAG
+#endif
+
+#ifdef HAVE_AS_LEON
+#define AS_LEON_FLAG "-Aleon"
+#else
+#define AS_LEON_FLAG "-Av8"
 #endif
 
 /* We use gcc _mcount for profiling.  */

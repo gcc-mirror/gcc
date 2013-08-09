@@ -161,7 +161,8 @@
    (match_operand:SI 5 "const_int_operand" "")		;; is_weak
    (match_operand:SI 6 "const_int_operand" "")		;; mod_s
    (match_operand:SI 7 "const_int_operand" "")]		;; mod_f
-  "TARGET_V9 && (<MODE>mode != DImode || TARGET_ARCH64 || TARGET_V8PLUS)"
+  "(TARGET_V9 || TARGET_LEON3)
+   && (<MODE>mode != DImode || TARGET_ARCH64 || TARGET_V8PLUS)"
 {
   sparc_expand_compare_and_swap (operands);
   DONE;
@@ -176,7 +177,7 @@
 	     [(match_operand:I48MODE 2 "register_operand" "")
 	      (match_operand:I48MODE 3 "register_operand" "")]
 	     UNSPECV_CAS))])]
-  "TARGET_V9"
+  "TARGET_V9 || TARGET_LEON3"
   "")
 
 (define_insn "*atomic_compare_and_swap<mode>_1"
@@ -187,7 +188,7 @@
 	  [(match_operand:I48MODE 2 "register_operand" "r")
 	   (match_operand:I48MODE 3 "register_operand" "0")]
 	  UNSPECV_CAS))]
-  "TARGET_V9 && (<MODE>mode == SImode || TARGET_ARCH64)"
+  "(TARGET_V9 || TARGET_LEON3) && (<MODE>mode != DImode || TARGET_ARCH64)"
   "cas<modesuffix>\t%1, %2, %0"
   [(set_attr "type" "multi")])
 
