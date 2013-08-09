@@ -1,3 +1,8 @@
+2013-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58058
+	* gfortran.dg/transfer_intrinsic_6.f90: New.
+
 2013-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:
