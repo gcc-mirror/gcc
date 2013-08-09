@@ -1,3 +1,22 @@
+2013-08-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Add GAS check for LEON instructions on SPARC.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* config.gcc (with_cpu): Remove sparc-leon*-* and deal with LEON in the
+	sparc*-*-* block.
+	* config/sparc/sparc.opt (LEON, LEON3): New masks.
+	* config/sparc/sparc.h (ASM_CPU32_DEFAULT_SPEC): Set to AS_LEON_FLAG
+	for LEON or LEON3.
+	(ASM_CPU_SPEC): Pass AS_LEON_FLAG if -mcpu=leon or -mcpu=leon3.
+	(AS_LEON_FLAG): New macro.
+	* config/sparc/sparc.c (sparc_option_override): Set MASK_LEON for leon
+	and MASK_LEON3 for leon3 and unset them if HAVE_AS_LEON is not defined.
+	Deal with LEON and LEON3 for the memory model.
+	* config/sparc/sync.m (atomic_compare_and_swap<mode>): Enable for LEON3
+	(atomic_compare_and_swap<mode>_1): Likewise.
+	(*atomic_compare_and_swap<mode>_1): Likewise.
+
 2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	* config/arm/neon.md (vcond): Fix floating-point vector
@@ -58,13 +77,13 @@
 2013-08-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/57431
-	* arm/neon.md (neon_vld1_dupdi): New expand pattern.
+	* config/arm/arm/neon.md (neon_vld1_dupdi): New expand pattern.
 	(neon_vld1_dup<mode> VD iterator): Iterate over VD not VDX.
 
 2013-08-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/56979
-	* arm.c (aapcs_vfp_allocate): Decompose the argument if the
+	* config/arm/arm.c (aapcs_vfp_allocate): Decompose the argument if the
 	suggested mode for the assignment isn't compatible with the
 	registers required.
 

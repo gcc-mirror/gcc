@@ -1151,9 +1151,8 @@ sparc_option_override (void)
     /* TI TMS390Z55 supersparc */
     { "supersparc",	MASK_ISA, MASK_V8 },
     { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
-    /* LEON */
-    { "leon",		MASK_ISA, MASK_V8|MASK_FPU },
-    { "leon3",		MASK_ISA, MASK_V8|MASK_FPU },
+    { "leon",		MASK_ISA, MASK_V8|MASK_LEON|MASK_FPU },
+    { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3|MASK_FPU },
     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
@@ -1313,6 +1312,9 @@ sparc_option_override (void)
 #ifndef HAVE_AS_SPARC4
 		   & ~MASK_CBCOND
 #endif
+#ifndef HAVE_AS_LEON
+		   & ~(MASK_LEON | MASK_LEON3)
+#endif
 		   );
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
@@ -1441,6 +1443,10 @@ sparc_option_override (void)
       /* Choose the most relaxed model for the processor.  */
       else if (TARGET_V9)
 	sparc_memory_model = SMM_RMO;
+      else if (TARGET_LEON3)
+	sparc_memory_model = SMM_TSO;
+      else if (TARGET_LEON)
+	sparc_memory_model = SMM_SC;
       else if (TARGET_V8)
 	sparc_memory_model = SMM_PSO;
       else
