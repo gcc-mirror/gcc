@@ -1,3 +1,8 @@
+2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/neon.md (vcond): Fix floating-point vector
+	comparisons against 0.
+
 2013-08-08  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (emit_spill_move): Remove assert.
