@@ -1,3 +1,11 @@
+2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	Backport from mainline:
+	2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
+
+	* config/arm/neon.md (vcond): Fix floating-point vector
+	comparisons against 0.
+
 2013-08-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline:
