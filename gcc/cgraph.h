@@ -435,6 +435,10 @@ struct GTY(()) cgraph_indirect_call_info
   int param_index;
   /* ECF flags determined from the caller.  */
   int ecf_flags;
+  /* Profile_id of common target obtrained from profile.  */
+  int common_target_id;
+  /* Probability that call will land in function with COMMON_TARGET_ID.  */
+  int common_target_probability;
 
   /* Set when the call is a virtual call with the parameter being the
      associated object pointer rather than a simple direct call.  */

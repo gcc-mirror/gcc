@@ -1,5 +1,22 @@
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_resolve_speculation): Cut frequency to
+	CGRAPH_FREQ_MAX.
+	(dump_cgraph_node): Dump profile-id.
+	* cgraph.h (cgraph_indirect_call_info): Add common_target_id
+	and common_target_probability.
+	* lto-cgraph.c (lto_output_edge): Stream common targets.
+	(lto_output_node): Stream profile ids.
+	(input_node): Stream profile ids.
+	(input_edge): Stream common targets.
+	* lto-streamer-in.c (fixup_call_stmt_edges_1): Fix formatting.
+	* ipa.c: Include value-prof.h
+	(ipa_profile_generate_summary): Turn indirect call statement histograms
+	into common targets.
+	(ipa_profile): Turn common targets into speculative edges.
+
+2013-08-09  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (cgraph_node): Add profile_id.
 	* value-prof.c (cgraph_node_map): Turn into pointer_map.
 	(init_node_map): Rewrite to handle hashes increas of incremental

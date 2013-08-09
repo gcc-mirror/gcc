@@ -1176,6 +1176,8 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
     }
   edge->count += e2->count;
   edge->frequency += e2->frequency;
+  if (edge->frequency > CGRAPH_FREQ_MAX)
+    edge->frequency = CGRAPH_FREQ_MAX;
   edge->speculative = false;
   e2->speculative = false;
   if (e2->indirect_unknown_callee || e2->inline_failed)
@@ -1801,6 +1803,9 @@ dump_cgraph_node (FILE *f, struct cgraph_node *node)
     fprintf (f, "  Availability: %s\n",
 	     cgraph_availability_names [cgraph_function_body_availability (node)]);
 
+  if (node->profile_id)
+    fprintf (f, "  Profile id: %i\n",
+	     node->profile_id);
   fprintf (f, "  Function flags:");
   if (node->count)
     fprintf (f, " executed "HOST_WIDEST_INT_PRINT_DEC"x",
