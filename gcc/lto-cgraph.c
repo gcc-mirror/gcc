@@ -273,12 +273,13 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 
   bp = bitpack_create (ob->main_stream);
   uid = (!gimple_has_body_p (edge->caller->symbol.decl)
-	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt));
+	 ? edge->lto_stmt_uid : gimple_uid (edge->call_stmt) + 1);
   bp_pack_enum (&bp, cgraph_inline_failed_enum,
 	        CIF_N_REASONS, edge->inline_failed);
   bp_pack_var_len_unsigned (&bp, uid);
   bp_pack_var_len_unsigned (&bp, edge->frequency);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
+  bp_pack_value (&bp, edge->speculative, 1);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
   bp_pack_value (&bp, edge->can_throw_external, 1);
   if (edge->indirect_unknown_callee)
@@ -589,13 +590,24 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 {
   struct bitpack_d bp;
   int nref;
+  int uid = ref->lto_stmt_uid;
+  struct cgraph_node *node;
 
   bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, ref->use, 2);
+  bp_pack_value (&bp, ref->speculative, 1);
   streamer_write_bitpack (&bp);
   nref = lto_symtab_encoder_lookup (encoder, ref->referred);
   gcc_assert (nref != LCC_NOT_FOUND);
   streamer_write_hwi_stream (ob->main_stream, nref);
+  
+  node = dyn_cast <cgraph_node> (ref->referring);
+  if (node)
+    {
+      if (ref->stmt)
+	uid = gimple_uid (ref->stmt) + 1;
+      streamer_write_hwi_stream (ob->main_stream, uid);
+    }
 }
 
 /* Stream out profile_summary to OB.  */
@@ -1116,11 +1128,17 @@ input_ref (struct lto_input_block *ib,
   symtab_node node = NULL;
   struct bitpack_d bp;
   enum ipa_ref_use use;
+  bool speculative;
+  struct ipa_ref *ref;
 
   bp = streamer_read_bitpack (ib);
   use = (enum ipa_ref_use) bp_unpack_value (&bp, 2);
+  speculative = (enum ipa_ref_use) bp_unpack_value (&bp, 1);
   node = nodes[streamer_read_hwi (ib)];
-  ipa_record_reference (referring_node, node, use, NULL);
+  ref = ipa_record_reference (referring_node, node, use, NULL);
+  ref->speculative = speculative;
+  if (is_a <cgraph_node> (referring_node))
+    ref->lto_stmt_uid = streamer_read_hwi (ib);
 }
 
 /* Read an edge from IB.  NODES points to a vector of previously read nodes for
@@ -1167,6 +1185,7 @@ input_edge (struct lto_input_block *ib, vec<symtab_node> nodes,
     edge = cgraph_create_edge (caller, callee, NULL, count, freq);
 
   edge->indirect_inlining_edge = bp_unpack_value (&bp, 1);
+  edge->speculative = bp_unpack_value (&bp, 1);
   edge->lto_stmt_uid = stmt_id;
   edge->inline_failed = inline_failed;
   edge->call_stmt_cannot_inline_p = bp_unpack_value (&bp, 1);

@@ -483,8 +483,15 @@ cgraph_rebuild_references (void)
   basic_block bb;
   struct cgraph_node *node = cgraph_get_node (current_function_decl);
   gimple_stmt_iterator gsi;
+  struct ipa_ref *ref;
+  int i;
 
-  ipa_remove_all_references (&node->symbol.ref_list);
+  /* Keep speculative references for further cgraph edge expansion.  */
+  for (i = 0; ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref);)
+    if (!ref->speculative)
+      ipa_remove_reference (ref);
+    else
+      i++;
 
   node->count = ENTRY_BLOCK_PTR->count;
 
