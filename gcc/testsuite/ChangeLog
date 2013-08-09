@@ -1,3 +1,11 @@
+2013-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert:
+	2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/46206
+	* g++.dg/lookup/typedef2.C: New.
+
 2013-08-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c: Update expected

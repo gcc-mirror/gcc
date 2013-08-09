@@ -4740,11 +4740,11 @@ lookup_name_real_1 (tree name, int prefer_type, int nonclass, bool block_p,
 	  continue;
 
 	/* If this is the kind of thing we're looking for, we're done.  */
-	if ((flags & LOOKUP_PREFER_TYPES)
-	    && qualify_lookup (iter->type, flags))
-	  binding = iter->type;
-	else if (qualify_lookup (iter->value, flags))
+	if (qualify_lookup (iter->value, flags))
 	  binding = iter->value;
+	else if ((flags & LOOKUP_PREFER_TYPES)
+		 && qualify_lookup (iter->type, flags))
+	  binding = iter->type;
 	else
 	  binding = NULL_TREE;
 
