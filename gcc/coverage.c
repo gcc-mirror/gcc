@@ -539,6 +539,28 @@ coverage_compute_lineno_checksum (void)
   return chksum;
 }
 
+/* Compute profile ID.  This is better to be unique in whole program.  */
+
+unsigned
+coverage_compute_profile_id (struct cgraph_node *n)
+{
+  expanded_location xloc
+    = expand_location (DECL_SOURCE_LOCATION (n->symbol.decl));
+  unsigned chksum = xloc.line;
+
+  chksum = coverage_checksum_string (chksum, xloc.file);
+  chksum = coverage_checksum_string
+    (chksum, IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (n->symbol.decl)));
+  if (first_global_object_name)
+    chksum = coverage_checksum_string
+      (chksum, first_global_object_name);
+  chksum = coverage_checksum_string
+    (chksum, aux_base_name);
+
+  /* Non-negative integers are hopefully small enough to fit in all targets.  */
+  return chksum & 0x7fffffff;
+}
+
 /* Compute cfg checksum for the current function.
    The checksum is calculated carefully so that
    source code changes that doesn't affect the control flow graph

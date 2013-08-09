@@ -103,6 +103,8 @@ extern void gimple_gen_average_profiler (histogram_value, unsigned, unsigned);
 extern void gimple_gen_ior_profiler (histogram_value, unsigned, unsigned);
 extern void stream_out_histogram_value (struct output_block *, histogram_value);
 extern void stream_in_histogram_value (struct lto_input_block *, gimple);
+extern struct cgraph_node* find_func_by_profile_id (int func_id);
+
 
 /* In profile.c.  */
 extern void init_branch_prob (void);

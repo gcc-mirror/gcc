@@ -1,5 +1,30 @@
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.h (cgraph_node): Add profile_id.
+	* value-prof.c (cgraph_node_map): Turn into pointer_map.
+	(init_node_map): Rewrite to handle hashes increas of incremental
+	IDs.
+	(del_node_map): Update.
+	(find_func_by_funcdef_no): Replace by ...
+	(find_func_by_profile_id): ... this one.
+	(gimple_ic_transform): Do not remove useful histograms when
+	speculation is not done; dump info when indirect call removal
+	can happen at LTO.
+	* value-prof.h (find_func_by_profile_id, gimple_ic): Declare.
+	* gcov-io.h (__gcov_indirect_call_profiler): Replace by ...
+	(__gcov_indirect_call_profiler_v2): .. this one.
+	* profile.h (init_node_map): Update.
+	* coverage.c (coverage_compute_profile_id): New function.
+	* coverage.h (coverage_compute_profile_id): Declare.
+	* tree-profile.c (init_ic_make_global_vars): Make
+	__gcov_indirect_call_callee and  __gcov_indirect_call_counters global.
+	(gimple_init_edge_profiler): Update prototype of
+	__gcov_indirect_call_profiler.
+	(gimple_gen_ic_func_profiler): Simplify.
+	(tree_profiling): Use init_node_map
+
+2013-08-09  Jan Hubicka  <jh@suse.cz>
+
 	* cgraphbuild.c (cgraph_rebuild_references): Rebuild only non-speculative
 	refs.
 	* cgraph.c (cgraph_update_edge_in_call_site_hash): New function.

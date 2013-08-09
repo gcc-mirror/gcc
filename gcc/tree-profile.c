@@ -57,8 +57,8 @@ static GTY(()) tree ptr_void;
 /* Do initialization work for the edge profiler.  */
 
 /* Add code:
-   static gcov*	__gcov_indirect_call_counters; // pointer to actual counter
-   static void*	__gcov_indirect_call_callee; // actual callee address
+   __thread gcov*	__gcov_indirect_call_counters; // pointer to actual counter
+   __thread  void*	__gcov_indirect_call_callee; // actual callee address
 */
 static void
 init_ic_make_global_vars (void)
@@ -72,7 +72,8 @@ init_ic_make_global_vars (void)
 		  get_identifier ("__gcov_indirect_call_callee"),
 		  ptr_void);
   TREE_STATIC (ic_void_ptr_var) = 1;
-  TREE_PUBLIC (ic_void_ptr_var) = 0;
+  TREE_PUBLIC (ic_void_ptr_var) = 1;
+  DECL_EXTERNAL (ic_void_ptr_var) = 1;
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
   if (targetm.have_tls)
@@ -87,7 +88,8 @@ init_ic_make_global_vars (void)
 		  get_identifier ("__gcov_indirect_call_counters"),
 		  gcov_type_ptr);
   TREE_STATIC (ic_gcov_type_ptr_var) = 1;
-  TREE_PUBLIC (ic_gcov_type_ptr_var) = 0;
+  TREE_PUBLIC (ic_gcov_type_ptr_var) = 1;
+  DECL_EXTERNAL (ic_gcov_type_ptr_var) = 1;
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
   if (targetm.have_tls)
@@ -155,14 +157,14 @@ gimple_init_edge_profiler (void)
 
       init_ic_make_global_vars ();
 
-      /* void (*) (gcov_type *, gcov_type, void *, void *)  */
+      /* void (*) (gcov_type, void *)  */
       ic_profiler_fn_type
 	       = build_function_type_list (void_type_node,
-					  gcov_type_ptr, gcov_type_node,
+					  gcov_type_node,
 					  ptr_void,
-					  ptr_void, NULL_TREE);
+					  NULL_TREE);
       tree_indirect_call_profiler_fn
-	      = build_fn_decl ("__gcov_indirect_call_profiler",
+	      = build_fn_decl ("__gcov_indirect_call_profiler_v2",
 				     ic_profiler_fn_type);
       TREE_NOTHROW (tree_indirect_call_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_indirect_call_profiler_fn)
@@ -352,7 +354,7 @@ gimple_gen_ic_func_profiler (void)
   struct cgraph_node * c_node = cgraph_get_node (current_function_decl);
   gimple_stmt_iterator gsi;
   gimple stmt1, stmt2;
-  tree tree_uid, cur_func, counter_ptr, ptr_var, void0;
+  tree tree_uid, cur_func, void0;
 
   if (cgraph_only_called_directly_p (c_node))
     return;
@@ -361,27 +363,20 @@ gimple_gen_ic_func_profiler (void)
 
   /* Insert code:
 
-    stmt1: __gcov_indirect_call_profiler (__gcov_indirect_call_counters,
-					  current_function_funcdef_no,
-					  &current_function_decl,
-					  __gcov_indirect_call_callee);
+    stmt1: __gcov_indirect_call_profiler_v2 (profile_id,
+					     &current_function_decl)
    */
-  gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
+  gsi = gsi_after_labels (split_edge (single_succ_edge (ENTRY_BLOCK_PTR)));
 
   cur_func = force_gimple_operand_gsi (&gsi,
 				       build_addr (current_function_decl,
 						   current_function_decl),
 				       true, NULL_TREE,
 				       true, GSI_SAME_STMT);
-  counter_ptr = force_gimple_operand_gsi (&gsi, ic_gcov_type_ptr_var,
-					  true, NULL_TREE, true,
-					  GSI_SAME_STMT);
-  ptr_var = force_gimple_operand_gsi (&gsi, ic_void_ptr_var,
-				      true, NULL_TREE, true,
-				      GSI_SAME_STMT);
-  tree_uid = build_int_cst (gcov_type_node, current_function_funcdef_no);
-  stmt1 = gimple_build_call (tree_indirect_call_profiler_fn, 4,
-			     counter_ptr, tree_uid, cur_func, ptr_var);
+  tree_uid = build_int_cst
+	      (gcov_type_node, cgraph_get_node (current_function_decl)->profile_id);
+  stmt1 = gimple_build_call (tree_indirect_call_profiler_fn, 2,
+			     tree_uid, cur_func);
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
 
   /* Set __gcov_indirect_call_callee to 0,
@@ -461,7 +456,7 @@ tree_profiling (void)
      cgraphunit.c:ipa_passes().  */
   gcc_assert (cgraph_state == CGRAPH_STATE_IPA_SSA);
 
-  init_node_map();
+  init_node_map (true);
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {

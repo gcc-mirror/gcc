@@ -300,6 +300,8 @@ struct GTY(()) cgraph_node {
   int count_materialization_scale;
   /* Unique id of the node.  */
   int uid;
+  /* ID assigned by the profiling.  */
+  unsigned int profile_id;
 
   /* Set when decl is an abstract function pointed to by the
      ABSTRACT_DECL_ORIGIN of a reachable function.  */

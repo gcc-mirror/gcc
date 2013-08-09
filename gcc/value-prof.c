@@ -1173,24 +1173,67 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   return true;
 }
 
-static vec<cgraph_node_ptr> cgraph_node_map
-    = vNULL;
+static pointer_map_t *cgraph_node_map;
 
-/* Initialize map from FUNCDEF_NO to CGRAPH_NODE.  */
+/* Initialize map from PROFILE_ID to CGRAPH_NODE.
+   When LOCAL is true, the PROFILE_IDs are computed.  when it is false we assume
+   that the PROFILE_IDs was already assigned.  */
 
 void
-init_node_map (void)
+init_node_map (bool local)
 {
   struct cgraph_node *n;
+  cgraph_node_map = pointer_map_create ();
 
-  if (get_last_funcdef_no ())
-    cgraph_node_map.safe_grow_cleared (get_last_funcdef_no ());
-
-  FOR_EACH_FUNCTION (n)
-    {
-      if (DECL_STRUCT_FUNCTION (n->symbol.decl))
-        cgraph_node_map[DECL_STRUCT_FUNCTION (n->symbol.decl)->funcdef_no] = n;
-    }
+  FOR_EACH_DEFINED_FUNCTION (n)
+    if (cgraph_function_with_gimple_body_p (n)
+	&& !cgraph_only_called_directly_p (n))
+      {
+	void **val;
+	if (local)
+	  {
+	    n->profile_id = coverage_compute_profile_id (n);
+	    while ((val = pointer_map_contains (cgraph_node_map,
+						(void *)(size_t)n->profile_id))
+		   || !n->profile_id)
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Local profile-id %i conflict"
+			   " with nodes %s/%i %s/%i\n",
+			   n->profile_id,
+			   cgraph_node_name (n),
+			   n->symbol.order,
+			   symtab_node_name (*(symtab_node*)val),
+			   (*(symtab_node *)val)->symbol.order);
+		n->profile_id = (n->profile_id + 1) & 0x7fffffff;
+	      }
+	  }
+	else if (!n->profile_id)
+	  {
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Node %s/%i has no profile-id"
+		       " (profile feedback missing?)\n",
+		       cgraph_node_name (n),
+		       n->symbol.order);
+	    continue;
+	  }
+	else if ((val = pointer_map_contains (cgraph_node_map,
+					      (void *)(size_t)n->profile_id)))
+	  {
+	    if (dump_file)
+	      fprintf (dump_file,
+		       "Node %s/%i has IP profile-id %i conflict. "
+		       "Giving up.\n",
+		       cgraph_node_name (n),
+		       n->symbol.order,
+		       n->profile_id);
+	    *val = NULL;
+	    continue;
+	  }
+	*pointer_map_insert (cgraph_node_map,
+			     (void *)(size_t)n->profile_id) = (void *)n;
+      }
 }
 
 /* Delete the CGRAPH_NODE_MAP.  */
@@ -1198,27 +1241,20 @@ init_node_map (void)
 void
 del_node_map (void)
 {
-   cgraph_node_map.release ();
+  pointer_map_destroy (cgraph_node_map);
 }
 
 /* Return cgraph node for function with pid */
 
-static inline struct cgraph_node*
-find_func_by_funcdef_no (int func_id)
+struct cgraph_node*
+find_func_by_profile_id (int profile_id)
 {
-  int max_id = get_last_funcdef_no ();
-  if (func_id >= max_id || cgraph_node_map[func_id] == NULL)
-    {
-      if (flag_profile_correction)
-        inform (DECL_SOURCE_LOCATION (current_function_decl),
-                "Inconsistent profile: indirect call target (%d) does not exist", func_id);
-      else
-        error ("Inconsistent profile: indirect call target (%d) does not exist", func_id);
-
-      return NULL;
-    }
-
-  return cgraph_node_map[func_id];
+  void **val = pointer_map_contains (cgraph_node_map,
+				     (void *)(size_t)profile_id);
+  if (val)
+    return (struct cgraph_node *)*val;
+  else
+    return NULL;
 }
 
 /* Perform sanity check on the indirect call target. Due to race conditions,
@@ -1415,10 +1451,12 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   val = histogram->hvalue.counters [0];
   count = histogram->hvalue.counters [1];
   all = histogram->hvalue.counters [2];
-  gimple_remove_histogram_value (cfun, stmt, histogram);
 
   if (4 * count <= 3 * all)
-    return false;
+    {
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+      return false;
+    }
 
   bb_all = gimple_bb (stmt)->count;
   /* The order of CHECK_COUNTER calls is important -
@@ -1426,16 +1464,31 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
      and we want to make count <= all <= bb_all. */
   if ( check_counter (stmt, "ic", &all, &bb_all, bb_all)
       || check_counter (stmt, "ic", &count, &all, all))
-    return false;
+    {
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+      return false;
+    }
 
   if (all > 0)
     prob = GCOV_COMPUTE_SCALE (count, all);
   else
     prob = 0;
-  direct_call = find_func_by_funcdef_no ((int)val);
+  direct_call = find_func_by_profile_id ((int)val);
 
   if (direct_call == NULL)
-    return false;
+    {
+      if (val)
+	{
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, "Indirect call -> direct call from other module");
+	      print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
+	      fprintf (dump_file, "=> %i (will resolve only with LTO)\n", (int)val);
+	    }
+	}
+      return false;
+    }
+  gimple_remove_histogram_value (cfun, stmt, histogram);
 
   if (!check_ic_target (stmt, direct_call))
     return false;
