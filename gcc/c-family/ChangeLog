@@ -1,3 +1,7 @@
+2013-08-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* c-ada-spec.c (print_ada_declaration): Prevent accessing null asm name
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.
