@@ -908,6 +908,11 @@ input_function (tree fn_decl, struct data_in *data_in,
   FOR_ALL_BB (bb)
     {
       gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	}
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
@@ -917,7 +922,14 @@ input_function (tree fn_decl, struct data_in *data_in,
   stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
   FOR_ALL_BB (bb)
     {
-      gimple_stmt_iterator bsi = gsi_start_bb (bb);
+      gimple_stmt_iterator bsi = gsi_start_phis (bb);
+      while (!gsi_end_p (bsi))
+	{
+	  gimple stmt = gsi_stmt (bsi);
+	  gsi_next (&bsi);
+	  stmts[gimple_uid (stmt)] = stmt;
+	}
+      bsi = gsi_start_bb (bb);
       while (!gsi_end_p (bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);
