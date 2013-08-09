@@ -1,3 +1,8 @@
+2013-08-09  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (output_function): Renumber PHIs.
+	* lto-streamer-in.c (input_function): Likewise.
+
 2013-08-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (get_lane_signed): Remove.
