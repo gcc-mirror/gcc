@@ -19,6 +19,7 @@
 # lets us skip running autoconf when modifying target specific information.
 
 # Filter out unsupported systems.
+VTV_SUPPORTED=no
 case "${target}" in
   x86_64-*-linux* | i?86-*-linux*)
 	VTV_SUPPORTED=yes
@@ -30,9 +31,7 @@ case "${target}" in
   arm*-*-linux*)
 	;;
   x86_64-*-darwin[1]* | i?86-*-darwin[1]*)
-	VTV_SUPPORTED=no
 	;;
   *)
-	UNSUPPORTED=1
 	;;
 esac

@@ -561,7 +561,7 @@ if test -d ${srcdir}/libvtv; then
 	AC_MSG_CHECKING([for libvtv support])
 	if (srcdir=${srcdir}/libvtv; \
 		. ${srcdir}/configure.tgt; \
-		test -n "$UNSUPPORTED")
+		test "$VTV_SUPPORTED" != "yes")
 	then
 	    AC_MSG_RESULT([no])
 	    noconfigdirs="$noconfigdirs target-libvtv"
