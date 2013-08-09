@@ -13,7 +13,7 @@
 	* config/sparc/sparc.c (sparc_option_override): Set MASK_LEON for leon
 	and MASK_LEON3 for leon3 and unset them if HAVE_AS_LEON is not defined.
 	Deal with LEON and LEON3 for the memory model.
-	* config/sparc/sync.m (atomic_compare_and_swap<mode>): Enable for LEON3
+	* config/sparc/sync.md (atomic_compare_and_swap<mode>): Enable if LEON3
 	(atomic_compare_and_swap<mode>_1): Likewise.
 	(*atomic_compare_and_swap<mode>_1): Likewise.
 
