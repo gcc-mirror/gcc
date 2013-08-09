@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
+#include "value-prof.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
@@ -1291,8 +1292,40 @@ ipa_profile_generate_summary (void)
 	int size = 0;
         for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	  {
-	    time += estimate_num_insns (gsi_stmt (gsi), &eni_time_weights);
-	    size += estimate_num_insns (gsi_stmt (gsi), &eni_size_weights);
+	    gimple stmt = gsi_stmt (gsi);
+	    if (gimple_code (stmt) == GIMPLE_CALL
+		&& !gimple_call_fndecl (stmt))
+	      {
+		histogram_value h;
+		h = gimple_histogram_value_of_type
+		      (DECL_STRUCT_FUNCTION (node->symbol.decl),
+		       stmt, HIST_TYPE_INDIR_CALL);
+		/* No need to do sanity check: gimple_ic_transform already
+		   takes away bad histograms.  */
+		if (h)
+		  {
+		    /* counter 0 is target, counter 1 is number of execution we called target,
+		       counter 2 is total number of executions.  */
+		    if (h->hvalue.counters[2])
+		      {
+			struct cgraph_edge * e = cgraph_edge (node, stmt);
+			e->indirect_info->common_target_id
+			  = h->hvalue.counters [0];
+			e->indirect_info->common_target_probability
+			  = GCOV_COMPUTE_SCALE (h->hvalue.counters [1], h->hvalue.counters [2]);
+			if (e->indirect_info->common_target_probability > REG_BR_PROB_BASE)
+			  {
+			    if (dump_file)
+			      fprintf (dump_file, "Probability capped to 1\n");
+			    e->indirect_info->common_target_probability = REG_BR_PROB_BASE;
+			  }
+		      }
+		    gimple_remove_histogram_value (DECL_STRUCT_FUNCTION (node->symbol.decl),
+						    stmt, h);
+		  }
+	      }
+	    time += estimate_num_insns (stmt, &eni_time_weights);
+	    size += estimate_num_insns (stmt, &eni_size_weights);
 	  }
 	account_time_size (hashtable, histogram, bb->count, time, size);
       }
@@ -1374,6 +1407,53 @@ ipa_profile (void)
   bool something_changed = false;
   int i;
   gcov_type overall_time = 0, cutoff = 0, cumulated = 0, overall_size = 0;
+
+  /* Produce speculative calls: we saved common traget from porfiling into
+     e->common_target_id.  Now, at link time, we can look up corresponding
+     function node and produce speculative call.  */
+  if (in_lto_p)
+    {
+      struct cgraph_edge *e;
+      struct cgraph_node *n,*n2;
+
+      init_node_map (false);
+      FOR_EACH_DEFINED_FUNCTION (n)
+	{
+	  bool update = false;
+
+	  for (e = n->indirect_calls; e; e = e->next_callee)
+	    if (e->indirect_info->common_target_id)
+	      {
+		n2 = find_func_by_profile_id (e->indirect_info->common_target_id);
+		if (n2)
+		  {
+		    if (dump_file)
+		      {
+			fprintf (dump_file, "Indirect call -> direct call from"
+				 " other module %s/%i => %s/%i, prob %3.2f\n",
+				 xstrdup (cgraph_node_name (n)), n->symbol.order,
+				 xstrdup (cgraph_node_name (n2)), n2->symbol.order,
+				 e->indirect_info->common_target_probability
+				 / (float)REG_BR_PROB_BASE);
+		      }
+		    cgraph_turn_edge_to_speculative
+		      (e, n2,
+		       apply_scale (e->count,
+				    e->indirect_info->common_target_probability),
+		       apply_scale (e->frequency,
+				    e->indirect_info->common_target_probability));
+		    update = true;
+		  }
+		else
+		  if (dump_file)
+		    fprintf (dump_file, "Function with profile-id %i not found.\n",
+			     e->indirect_info->common_target_id);
+	       }
+	     if (update)
+	       inline_update_overall_summary (n);
+	   }
+	del_node_map ();
+    }
 
   if (dump_file)
     dump_histogram (dump_file, histogram);

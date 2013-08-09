@@ -299,6 +299,14 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
 			     | ECF_NOVOPS)));
     }
   streamer_write_bitpack (&bp);
+  if (edge->indirect_unknown_callee)
+    {
+      streamer_write_hwi_stream (ob->main_stream,
+			         edge->indirect_info->common_target_id);
+      if (edge->indirect_info->common_target_id)
+	streamer_write_hwi_stream
+	   (ob->main_stream, edge->indirect_info->common_target_probability);
+    }
 }
 
 /* Return if LIST contain references from other partitions.  */
@@ -519,6 +527,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
     }
+  streamer_write_hwi_stream (ob->main_stream, node->profile_id);
 }
 
 /* Output the varpool NODE to OB. 
@@ -1057,6 +1066,7 @@ input_node (struct lto_file_decl_data *file_data,
     }
   if (node->symbol.alias && !node->symbol.analyzed && node->symbol.weakref)
     node->symbol.alias_target = get_alias_symbol (node->symbol.decl);
+  node->profile_id = streamer_read_hwi (ib);
   return node;
 }
 
@@ -1205,6 +1215,9 @@ input_edge (struct lto_input_block *ib, vec<symtab_node> nodes,
       if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_RETURNS_TWICE;
       edge->indirect_info->ecf_flags = ecf_flags;
+      edge->indirect_info->common_target_id = streamer_read_hwi (ib);
+      if (edge->indirect_info->common_target_id)
+        edge->indirect_info->common_target_probability = streamer_read_hwi (ib);
     }
 }
 
