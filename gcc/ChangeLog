@@ -1,3 +1,10 @@
+2013-08-10  Jan Hubicka  <jh@suse.cz>
+
+	Workaround binutils PR14342
+	* tree-profile.c (init_ic_make_global_vars): Add LTO path.
+	(gimple_init_edge_profiler): Likewise.
+	(gimple_gen_ic_func_profiler): Likewise.
+
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_create_edge_1): Clear speculative flag.

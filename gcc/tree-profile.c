@@ -67,13 +67,28 @@ init_ic_make_global_vars (void)
 
   ptr_void = build_pointer_type (void_type_node);
 
-  ic_void_ptr_var
-    = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		  get_identifier ("__gcov_indirect_call_callee"),
-		  ptr_void);
+  /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
+  if (flag_lto)
+    {
+      ic_void_ptr_var
+	= build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		      get_identifier ("__gcov_indirect_call_callee_ltopriv"),
+		      ptr_void);
+      TREE_PUBLIC (ic_void_ptr_var) = 1;
+      DECL_COMMON (ic_void_ptr_var) = 1;
+      DECL_VISIBILITY (ic_void_ptr_var) = VISIBILITY_HIDDEN;
+      DECL_VISIBILITY_SPECIFIED (ic_void_ptr_var) = true;
+    }
+  else
+    {
+      ic_void_ptr_var
+	= build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		      get_identifier ("__gcov_indirect_call_callee"),
+		      ptr_void);
+      TREE_PUBLIC (ic_void_ptr_var) = 1;
+      DECL_EXTERNAL (ic_void_ptr_var) = 1;
+    }
   TREE_STATIC (ic_void_ptr_var) = 1;
-  TREE_PUBLIC (ic_void_ptr_var) = 1;
-  DECL_EXTERNAL (ic_void_ptr_var) = 1;
   DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
   DECL_INITIAL (ic_void_ptr_var) = NULL;
   if (targetm.have_tls)
@@ -83,13 +98,28 @@ init_ic_make_global_vars (void)
   varpool_finalize_decl (ic_void_ptr_var);
 
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
-  ic_gcov_type_ptr_var
-    = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		  get_identifier ("__gcov_indirect_call_counters"),
-		  gcov_type_ptr);
+  /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
+  if (flag_lto)
+    {
+      ic_gcov_type_ptr_var
+	= build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		      get_identifier ("__gcov_indirect_call_counters_ltopriv"),
+		      gcov_type_ptr);
+      TREE_PUBLIC (ic_gcov_type_ptr_var) = 1;
+      DECL_COMMON (ic_gcov_type_ptr_var) = 1;
+      DECL_VISIBILITY (ic_gcov_type_ptr_var) = VISIBILITY_HIDDEN;
+      DECL_VISIBILITY_SPECIFIED (ic_gcov_type_ptr_var) = true;
+    }
+  else
+    {
+      ic_gcov_type_ptr_var
+	= build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		      get_identifier ("__gcov_indirect_call_counters"),
+		      gcov_type_ptr);
+      TREE_PUBLIC (ic_gcov_type_ptr_var) = 1;
+      DECL_EXTERNAL (ic_gcov_type_ptr_var) = 1;
+    }
   TREE_STATIC (ic_gcov_type_ptr_var) = 1;
-  TREE_PUBLIC (ic_gcov_type_ptr_var) = 1;
-  DECL_EXTERNAL (ic_gcov_type_ptr_var) = 1;
   DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
   DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
   if (targetm.have_tls)
@@ -157,15 +187,31 @@ gimple_init_edge_profiler (void)
 
       init_ic_make_global_vars ();
 
-      /* void (*) (gcov_type, void *)  */
-      ic_profiler_fn_type
-	       = build_function_type_list (void_type_node,
-					  gcov_type_node,
-					  ptr_void,
-					  NULL_TREE);
-      tree_indirect_call_profiler_fn
-	      = build_fn_decl ("__gcov_indirect_call_profiler_v2",
-				     ic_profiler_fn_type);
+      /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
+      if (flag_lto)
+        {
+	  /* void (*) (gcov_type, void *)  */
+	  ic_profiler_fn_type
+		   = build_function_type_list (void_type_node,
+					      gcov_type_ptr, gcov_type_node,
+					      ptr_void, ptr_void,
+					      NULL_TREE);
+	  tree_indirect_call_profiler_fn
+		  = build_fn_decl ("__gcov_indirect_call_profiler",
+					 ic_profiler_fn_type);
+        }
+      else
+        {
+	  /* void (*) (gcov_type, void *)  */
+	  ic_profiler_fn_type
+		   = build_function_type_list (void_type_node,
+					      gcov_type_node,
+					      ptr_void,
+					      NULL_TREE);
+	  tree_indirect_call_profiler_fn
+		  = build_fn_decl ("__gcov_indirect_call_profiler_v2",
+					 ic_profiler_fn_type);
+        }
       TREE_NOTHROW (tree_indirect_call_profiler_fn) = 1;
       DECL_ATTRIBUTES (tree_indirect_call_profiler_fn)
 	= tree_cons (get_identifier ("leaf"), NULL,
@@ -375,8 +421,25 @@ gimple_gen_ic_func_profiler (void)
 				       true, GSI_SAME_STMT);
   tree_uid = build_int_cst
 	      (gcov_type_node, cgraph_get_node (current_function_decl)->profile_id);
-  stmt1 = gimple_build_call (tree_indirect_call_profiler_fn, 2,
-			     tree_uid, cur_func);
+  /* Workaround for binutils bug 14342.  Once it is fixed, remove lto path.  */
+  if (flag_lto)
+    {
+      tree counter_ptr, ptr_var;
+      counter_ptr = force_gimple_operand_gsi (&gsi, ic_gcov_type_ptr_var,
+					      true, NULL_TREE, true,
+					      GSI_SAME_STMT);
+      ptr_var = force_gimple_operand_gsi (&gsi, ic_void_ptr_var,
+					  true, NULL_TREE, true,
+					  GSI_SAME_STMT);
+
+      stmt1 = gimple_build_call (tree_indirect_call_profiler_fn, 4,
+				 counter_ptr, tree_uid, cur_func, ptr_var);
+    }
+  else
+    {
+      stmt1 = gimple_build_call (tree_indirect_call_profiler_fn, 2,
+				 tree_uid, cur_func);
+    }
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
 
   /* Set __gcov_indirect_call_callee to 0,
