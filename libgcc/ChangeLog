@@ -1,3 +1,10 @@
+2013-08-10  Jan Hubicka  <jh@suse.cz>
+
+	Work around binutils PR14342
+	* Makefile.in: Add _gcov_indirect_call_profiler_v2 symbol.
+	* libgcov.c (L_gcov_indirect_call_profiler): Restore original API.
+	(L_gcov_indirect_call_profiler_v2): New.
+
 2013-08-06  Jan Hubicka  <jh@suse.cz>
 
 	* libgcov.c (__gcov_indirect_call_callee,

@@ -858,7 +858,7 @@ LIBGCOV = _gcov _gcov_merge_add _gcov_merge_single _gcov_merge_delta \
     _gcov_execv _gcov_execvp _gcov_execve _gcov_reset _gcov_dump \
     _gcov_interval_profiler _gcov_pow2_profiler _gcov_one_value_profiler \
     _gcov_indirect_call_profiler _gcov_average_profiler _gcov_ior_profiler \
-    _gcov_merge_ior
+    _gcov_merge_ior _gcov_indirect_call_profiler_v2
 
 libgcov-objects = $(patsubst %,%$(objext),$(LIBGCOV))
 
