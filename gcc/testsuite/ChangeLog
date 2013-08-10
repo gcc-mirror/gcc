@@ -1,3 +1,10 @@
+2013-08-09  Xinliang David Li  <davidxl@google.com>
+
+	* gcc.target/i386/memcpy-strategy-1.c: New test.
+	* gcc.target/i386/memcpy-strategy-2.c: Ditto.
+	* gcc.target/i386/memset-strategy-1.c: Ditto.
+	* gcc.target/i386/memcpy-strategy-3.c: Ditto.
+
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-prof/crossmodule-indircall-1.c: New testcase.

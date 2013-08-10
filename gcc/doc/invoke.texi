@@ -652,6 +652,7 @@ Objective-C and Objective-C++ Dialects}.
 -mbmi2 -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
+-mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} 
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double -mlong-double-64 -mlong-double-80 @gol
 -mregparm=@var{num}  -msseregparm @gol
@@ -14650,6 +14651,24 @@ Expand into an inline loop.
 @item libcall
 Always use a library call.
 @end table
+
+@item -mmemcpy-strategy=@var{strategy}
+@opindex mmemcpy-strategy=@var{strategy}
+Override the internal decision heuristic to decide if @code{__builtin_memcpy}
+should be inlined and what inline algorithm to use when the expected size
+of the copy operation is known. @var{strategy} 
+is a comma-separated list of @var{alg}:@var{max_size}:@var{dest_align} triplets. 
+@var{alg} is specified in @option{-mstringop-strategy}, @var{max_size} specifies
+the max byte size with which inline algorithm @var{alg} is allowed.  For the last
+triplet, the @var{max_size} must be @code{-1}. The @var{max_size} of the triplets
+in the list must be specified in increasing order.  The minimal byte size for 
+@var{alg} is @code{0} for the first triplet and @code{@var{max_size} + 1} of the 
+preceding range.
+
+@item -mmemset-strategy=@var{strategy}
+@opindex mmemset-strategy=@var{strategy}
+The option is similar to @option{-mmemcpy-strategy=} except that it is to control
+@code{__builtin_memset} expansion.
 
 @item -momit-leaf-frame-pointer
 @opindex momit-leaf-frame-pointer
