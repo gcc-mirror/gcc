@@ -316,6 +316,14 @@ mstack-arg-probe
 Target Report Mask(STACK_PROBE) Save
 Enable stack probing
 
+mmemcpy-strategy=
+Target RejectNegative Joined Var(ix86_tune_memcpy_strategy)
+Specify memcpy expansion strategy when expected size is known
+
+mmemset-strategy=
+Target RejectNegative Joined Var(ix86_tune_memset_strategy)
+Specify memset expansion strategy when expected size is known
+
 mstringop-strategy=
 Target RejectNegative Joined Enum(stringop_alg) Var(ix86_stringop_alg) Init(no_stringop)
 Chose strategy to generate stringop using

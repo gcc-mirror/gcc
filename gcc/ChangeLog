@@ -1,3 +1,15 @@
+2013-08-09  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/stringop.def: New file.
+	* config/i386/stringop.opt: New file.
+	* config/i386/i386-opts.h: Include stringopt.def.
+	* config/i386/i386.opt: Include stringopt.opt.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Override default size based stringop inline strategies
+	with options.
+	* config/i386/i386.c (ix86_parse_stringop_strategy_string):
+	New function.
+
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
 	 * ipa-ref.c (ipa_clear_stmts_in_references): Clear lto_stmt_uid, too.
