@@ -873,6 +873,7 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
 
   edge->indirect_info = NULL;
   edge->indirect_inlining_edge = 0;
+  edge->speculative = false;
 
   return edge;
 }
