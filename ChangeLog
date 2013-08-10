@@ -1,3 +1,7 @@
+2013-08-09  Carlos O'Donell  <carlos@redhat.com>
+
+	* MAINTAINERS (Write After Approval): Update email.
+
 2013-08-08  Benjamin Kosnik  <bkoz@redhat.com>
 
 	* configure.ac: Adjust to check VTV_SUPPORTED.
