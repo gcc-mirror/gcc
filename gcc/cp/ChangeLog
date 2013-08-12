@@ -1,3 +1,7 @@
+2013-08-13  Adam Butcher  <adam@jessamine.co.uk>
+
+	* pt.c: Grammar fix in comments ("it's" to "its").
+
 2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (warn_extern_redeclared_static, duplicate_decls,

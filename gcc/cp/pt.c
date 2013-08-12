@@ -1986,7 +1986,7 @@ determine_specialization (tree template_id,
 	  tree decl_arg_types;
 
 	  /* This is an ordinary member function.  However, since
-	     we're here, we can assume it's enclosing class is a
+	     we're here, we can assume its enclosing class is a
 	     template class.  For example,
 
 	       template <typename T> struct S { void f(); };
@@ -4337,7 +4337,7 @@ check_default_tmpl_args (tree decl, tree parms, bool is_primary,
 	  || DECL_INITIALIZED_IN_CLASS_P (decl)))
     /* We already checked these parameters when the template was
        declared, so there's no need to do it again now.  This function
-       was defined in class scope, but we're processing it's body now
+       was defined in class scope, but we're processing its body now
        that the class is complete.  */
     return true;
 
@@ -7555,7 +7555,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	the one of #0.
 
 	When we encounter #1, we want to store the partial instantiation
-	of M (template<class T> S<int>::M<T>) in it's CLASSTYPE_TI_TEMPLATE.
+	of M (template<class T> S<int>::M<T>) in its CLASSTYPE_TI_TEMPLATE.
 
 	For all cases other than this "explicit specialization of member of a
 	class template", we just want to store the most general template into
