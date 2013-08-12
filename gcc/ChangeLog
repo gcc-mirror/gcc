@@ -1,3 +1,10 @@
+2013-08-12  Marek Polacek  <polacek@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/57980
+	* tree-tailcall.c (process_assignment): Call build_minus_one_cst
+	when creating -1 constant.
+
 2013-08-10  Jan Hubicka  <jh@suse.cz>
 
 	Workaround binutils PR14342.
