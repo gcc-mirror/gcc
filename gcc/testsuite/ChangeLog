@@ -1,3 +1,8 @@
+2013-08-12  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57980
+	* gcc.dg/pr57980.c: New test.
+
 2013-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56666

@@ -326,11 +326,7 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
       return true;
 
     case NEGATE_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-        *m = build_real (TREE_TYPE (op0), dconstm1);
-      else
-        *m = build_int_cst (TREE_TYPE (op0), -1);
-
+      *m = build_minus_one_cst (TREE_TYPE (op0));
       *ass_var = dest;
       return true;
 
@@ -339,11 +335,7 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
         *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
       else
         {
-          if (FLOAT_TYPE_P (TREE_TYPE (non_ass_var)))
-            *m = build_real (TREE_TYPE (non_ass_var), dconstm1);
-          else
-            *m = build_int_cst (TREE_TYPE (non_ass_var), -1);
-
+	  *m = build_minus_one_cst (TREE_TYPE (non_ass_var));
           *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
         }
 
