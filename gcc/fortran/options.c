@@ -109,6 +109,7 @@ gfc_init_options (unsigned int decoded_options_count,
   gfc_option.warn_align_commons = 1;
   gfc_option.warn_real_q_constant = 0;
   gfc_option.warn_unused_dummy_argument = 0;
+  gfc_option.warn_zerotrip = 0;
   gfc_option.warn_realloc_lhs = 0;
   gfc_option.warn_realloc_lhs_all = 0;
   gfc_option.warn_compare_reals = 0;
@@ -466,6 +467,7 @@ set_Wall (int setting)
   gfc_option.warn_real_q_constant = setting;
   gfc_option.warn_unused_dummy_argument = setting;
   gfc_option.warn_target_lifetime = setting;
+  gfc_option.warn_zerotrip = setting;
 
   warn_return_type = setting;
   warn_uninitialized = setting;
@@ -745,6 +747,10 @@ gfc_handle_option (size_t scode, const char *arg, int value,
 
     case OPT_Wunused_dummy_argument:
       gfc_option.warn_unused_dummy_argument = value;
+      break;
+
+    case OPT_Wzerotrip:
+      gfc_option.warn_zerotrip = value;
       break;
 
     case OPT_fall_intrinsics:

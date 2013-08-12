@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-Wall" }
 ! Program to check corner cases for DO statements.
 program do_1
   implicit none
