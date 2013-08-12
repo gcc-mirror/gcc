@@ -1572,6 +1572,16 @@ CXXABI_1.3.8 {
 
     __cxa_throw_bad_array_length;
     _Z*St16bad_array_length*;
+
+    # Virtual table verification stub functions.
+    _Z17__VLTRegisterPair*;
+    _Z22__VLTRegisterPairDebug*;
+    _Z16__VLTRegisterSet*;
+    _Z21__VLTRegisterSetDebug*;
+    _Z24__VLTVerifyVtablePointer*;
+    _Z29__VLTVerifyVtablePointerDebug*;
+    __VLTChangePermission;
+
 } CXXABI_1.3.7;
 
 # Symbols in the support library (libsupc++) supporting transactional memory.

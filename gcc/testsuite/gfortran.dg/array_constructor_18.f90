@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options "-Wzerotrip" }
 ! Tests the fix for PR32875, in which the character length for the
 ! array constructor would get lost in simplification and would lead
 ! the error 'Not Implemented: complex character array constructor'.

@@ -169,6 +169,12 @@ typedef const struct basic_block_def *const_basic_block;
    in target.h.  */
 typedef int reg_class_t;
 
+class rtl_opt_pass;
+
+namespace gcc {
+  class context;
+}
+
 #else
 
 struct _dont_use_rtx_here_;

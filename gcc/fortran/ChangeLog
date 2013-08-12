@@ -1,3 +1,60 @@
+2013-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56666
+	* gfortran.h (gfc_option_t):  Add warn_zerotrip.
+	* invoke.texi (-Wzerotrip):  Document option.
+	* lang.opt (Wzerotrip):  Add.
+	* options.c (gfc_init_options):  Initialize warn_zerotrip.
+	(set_Wall): Add handling of warn_zerotrip.
+	(gfc_handle_option):  Handle OPT_Wzerotrip.
+	* resolve.c (gfc_resolve_iterator): Honor
+	gfc_option.warn_zerotrip; update error message to show
+	how to suppress the warning.
+
+2013-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (gfc_get_code): Modified prototype.
+	* class.c (finalize_component, finalization_scalarizer,
+	finalization_get_offset, finalizer_insert_packed_call,
+	generate_finalization_wrapper, gfc_find_derived_vtab,
+	gfc_find_intrinsic_vtab): Use 'gfc_get_code'.
+	* io.c (match_io_iterator, match_io_element, terminate_io, get_io_list,
+	gfc_match_inquire): Call 'gfc_get_code' with argument.
+	* match.c (match_simple_forall, gfc_match_forall, gfc_match_goto,
+	gfc_match_nullify, gfc_match_call, match_simple_where, gfc_match_where):
+	Ditto.
+	* parse.c (new_level): Ditto.
+	(add_statement): Use XCNEW.
+	* resolve.c (resolve_entries, resolve_allocate_expr,
+	resolve_select_type, build_assignment, build_init_assign): Call
+	'gfc_get_code' with argument.
+	* st.c (gfc_get_code): Add argument 'op'.
+	* trans-expr.c (gfc_trans_class_array_init_assign): Call 'gfc_get_code'
+	with argument.
+	* trans-stmt.c (gfc_trans_allocate): Ditto.
+
+2013-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58058
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Free the temporary
+	string, if necessary.
+
+2013-08-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR fortran/57987
+	* trans-decl.c (gfc_generate_function_code): Never call
+	cgraph_finalize_function on nested functions.
+
+2013-08-06  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57306
+	* class.c (gfc_class_null_initializer): Rename to
+	'gfc_class_initializer'. Treat non-NULL init-exprs.
+	* gfortran.h (gfc_class_null_initializer): Update prototype.
+	* trans-decl.c (gfc_get_symbol_decl): Treat class variables.
+	* trans-expr.c (gfc_conv_initializer): Ditto.
+	(gfc_trans_subcomponent_assign): Renamed gfc_class_null_initializer.
+
 2013-07-30  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57530

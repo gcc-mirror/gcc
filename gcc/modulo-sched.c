@@ -3351,24 +3351,41 @@ rest_of_handle_sms (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_sms =
+namespace {
+
+const pass_data pass_data_sms =
 {
- {
-  RTL_PASS,
-  "sms",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_sms,                      /* gate */
-  rest_of_handle_sms,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_SMS,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish
-    | TODO_verify_flow
-    | TODO_verify_rtl_sharing           /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "sms", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_SMS, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_flow
+    | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_sms : public rtl_opt_pass
+{
+public:
+  pass_sms(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_sms, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_sms (); }
+  unsigned int execute () { return rest_of_handle_sms (); }
+
+}; // class pass_sms
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_sms (gcc::context *ctxt)
+{
+  return new pass_sms (ctxt);
+}

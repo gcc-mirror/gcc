@@ -49,6 +49,7 @@
 #include "rl78-protos.h"
 #include "dumpfile.h"
 #include "tree-pass.h"
+#include "context.h"
 
 static inline bool is_interrupt_func (const_tree decl);
 static inline bool is_brk_interrupt_func (const_tree decl);
@@ -129,29 +130,44 @@ devirt_pass (void)
 /* This pass converts virtual instructions using virtual registers, to
    real instructions using real registers.  Rather than run it as
    reorg, we reschedule it before vartrack to help with debugging.  */
-static struct opt_pass rl78_devirt_pass =
+namespace {
+
+const pass_data pass_data_rl78_devirt =
 {
-  RTL_PASS,
-  "devirt",
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  devirt_gate,
-  devirt_pass,
-  NULL,
-  NULL,
-  212,
-  TV_MACH_DEP,
-  0, 0, 0,
-  0,
-  0
+  RTL_PASS, /* type */
+  "devirt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
 
-static struct register_pass_info rl78_devirt_info =
+class pass_rl78_devirt : public rtl_opt_pass
 {
-  & rl78_devirt_pass,
-  "vartrack",
-  1,
-  PASS_POS_INSERT_BEFORE
+public:
+  pass_rl78_devirt(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rl78_devirt, ctxt)
+  {
+  }
+
+  /* opt_pass methods: */
+  bool gate () { return devirt_gate (); }
+  unsigned int execute () { return devirt_pass (); }
 };
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rl78_devirt (gcc::context *ctxt)
+{
+  return new pass_rl78_devirt (ctxt);
+}
+
 
 #undef  TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START rl78_asm_file_start
@@ -166,6 +182,15 @@ rl78_asm_file_start (void)
       fprintf (asm_out_file, "r%d\t=\t0x%x\n", 8 + i, 0xffef0 + i);
       fprintf (asm_out_file, "r%d\t=\t0x%x\n", 16 + i, 0xffee8 + i);
     }
+
+  opt_pass *rl78_devirt_pass = make_pass_rl78_devirt (g);
+  struct register_pass_info rl78_devirt_info =
+    {
+      rl78_devirt_pass,
+      "vartrack",
+      1,
+      PASS_POS_INSERT_BEFORE
+    };
 
   register_pass (& rl78_devirt_info);
 }

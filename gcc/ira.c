@@ -4775,25 +4775,42 @@ rest_of_handle_ira (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_ira =
+namespace {
+
+const pass_data pass_data_ira =
 {
- {
-  RTL_PASS,
-  "ira",                                /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_ira,		        /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_IRA,	                        /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_do_not_ggc_collect               /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "ira", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_IRA, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_do_not_ggc_collect, /* todo_flags_finish */
 };
+
+class pass_ira : public rtl_opt_pass
+{
+public:
+  pass_ira(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_ira, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_handle_ira (); }
+
+}; // class pass_ira
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_ira (gcc::context *ctxt)
+{
+  return new pass_ira (ctxt);
+}
 
 static unsigned int
 rest_of_handle_reload (void)
@@ -4802,22 +4819,39 @@ rest_of_handle_reload (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_reload =
+namespace {
+
+const pass_data pass_data_reload =
 {
- {
-  RTL_PASS,
-  "reload",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_reload,	        /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_RELOAD,	                        /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "reload", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_RELOAD, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_reload : public rtl_opt_pass
+{
+public:
+  pass_reload(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_reload, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_handle_reload (); }
+
+}; // class pass_reload
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_reload (gcc::context *ctxt)
+{
+  return new pass_reload (ctxt);
+}

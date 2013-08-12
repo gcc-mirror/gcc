@@ -84,7 +84,7 @@ proc libstdc++_init { testfile } {
     global env
     global v3-sharedlib v3-libgomp
     global srcdir blddir objdir tool_root_dir
-    global cc cxx cxxflags cxxpchflags cxxldflags
+    global cc cxx cxxflags cxxpchflags cxxldflags cxxvtvflags
     global includes
     global gluefile wrap_flags
     global ld_library_path
@@ -157,6 +157,17 @@ proc libstdc++_init { testfile } {
     }
     v3track libgompdir 3
 
+    # Locate libvtv. This is only required for --enable-vtable-verify.
+    set v3-libvtv 0
+    set libvtvdir [lookfor_file $blddir/../libvtv .libs/libvtv.$shlib_ext]
+    if {$libvtvdir != ""} {
+	set v3-libvtv 1
+        set libvtvdir [file dirname $libvtvdir]
+	append ld_library_path_tmp ":${libvtvdir}"
+	verbose -log "libvtv support detected"
+    }
+    v3track libvtvdir 3
+
     # Locate libstdc++ shared library. (ie libstdc++.so.)
     set v3-sharedlib 0
     set sharedlibdir [lookfor_file $blddir src/.libs/libstdc++.$shlib_ext]
@@ -214,6 +225,7 @@ proc libstdc++_init { testfile } {
     set cxx [transform "g++"]
     set cxxflags "-D_GLIBCXX_ASSERT -fmessage-length=0"
     set cxxpchflags ""
+    set cxxvtvflags ""
     set cxxldflags ""
     set cc [transform "gcc"]
     # Locate testsuite_hooks.h and other testsuite headers.
@@ -261,6 +273,7 @@ proc libstdc++_init { testfile } {
 	set cxx [exec sh $flags_file --build-cxx]
 	set cxxflags [exec sh $flags_file --cxxflags]
 	set cxxpchflags [exec sh $flags_file --cxxpchflags]
+	set cxxvtvflags [exec sh $flags_file --cxxvtvflags]
 	set cxxldflags [exec sh $flags_file --cxxldflags]
 	set cc [exec sh $flags_file --build-cc]
 	set includes [exec sh $flags_file --build-includes]
@@ -424,6 +437,7 @@ proc v3_target_compile { source dest type options } {
     global wrap_flags
     global cxx
     global cxxflags
+    global cxxvtvflags
     global cxxldflags
     global includes
     global STATIC_LIBCXXFLAGS
@@ -438,6 +452,7 @@ proc v3_target_compile { source dest type options } {
     set cxx_final [concat $cxx_final $cxxlibglossflags]
     set cxx_final [concat $cxx_final $STATIC_LIBCXXFLAGS]
     set cxx_final [concat $cxx_final $cxxflags]
+    set cxx_final [concat $cxx_final $cxxvtvflags]
     set cxx_final [concat $cxx_final $includes]
 
     # Flag setting based on type argument.

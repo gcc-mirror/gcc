@@ -387,6 +387,12 @@
 #endif
 
 
+/* Define if your assembler supports LEON instructions. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_LEON
+#endif
+
+
 /* Define if the assembler won't complain about a line such as # 0 "" 2. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_LINE_ZERO

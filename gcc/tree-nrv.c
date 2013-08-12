@@ -269,25 +269,43 @@ gate_pass_return_slot (void)
   return optimize > 0;
 }
 
-struct gimple_opt_pass pass_nrv =
+namespace {
+
+const pass_data pass_data_nrv =
 {
- {
-  GIMPLE_PASS,
-  "nrv",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_pass_return_slot,		/* gate */
-  tree_nrv,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_NRV,				/* tv_id */
-  PROP_ssa | PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "nrv", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_NRV, /* tv_id */
+  ( PROP_ssa | PROP_cfg ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_nrv : public gimple_opt_pass
+{
+public:
+  pass_nrv(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_nrv, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_pass_return_slot (); }
+  unsigned int execute () { return tree_nrv (); }
+
+}; // class pass_nrv
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_nrv (gcc::context *ctxt)
+{
+  return new pass_nrv (ctxt);
+}
 
 /* Determine (pessimistically) whether DEST is available for NRV
    optimization, where DEST is expected to be the LHS of a modify
@@ -355,22 +373,39 @@ execute_return_slot_opt (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_return_slot =
+namespace {
+
+const pass_data pass_data_return_slot =
 {
- {
-  GIMPLE_PASS,
-  "retslot",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_return_slot_opt,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "retslot", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_return_slot : public gimple_opt_pass
+{
+public:
+  pass_return_slot(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_return_slot, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_return_slot_opt (); }
+
+}; // class pass_return_slot
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_return_slot (gcc::context *ctxt)
+{
+  return new pass_return_slot (ctxt);
+}

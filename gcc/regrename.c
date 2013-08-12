@@ -1842,23 +1842,40 @@ gate_handle_regrename (void)
   return (optimize > 0 && (flag_rename_registers));
 }
 
-struct rtl_opt_pass pass_regrename =
+namespace {
+
+const pass_data pass_data_regrename =
 {
- {
-  RTL_PASS,
-  "rnreg",                              /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_regrename,                /* gate */
-  regrename_optimize,                   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_RENAME_REGISTERS,                  /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "rnreg", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_RENAME_REGISTERS, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing | 0 ), /* todo_flags_finish */
 };
+
+class pass_regrename : public rtl_opt_pass
+{
+public:
+  pass_regrename(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_regrename, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_regrename (); }
+  unsigned int execute () { return regrename_optimize (); }
+
+}; // class pass_regrename
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_regrename (gcc::context *ctxt)
+{
+  return new pass_regrename (ctxt);
+}

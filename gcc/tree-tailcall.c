@@ -326,11 +326,7 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
       return true;
 
     case NEGATE_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-        *m = build_real (TREE_TYPE (op0), dconstm1);
-      else
-        *m = build_int_cst (TREE_TYPE (op0), -1);
-
+      *m = build_minus_one_cst (TREE_TYPE (op0));
       *ass_var = dest;
       return true;
 
@@ -339,11 +335,7 @@ process_assignment (gimple stmt, gimple_stmt_iterator call, tree *m,
         *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
       else
         {
-          if (FLOAT_TYPE_P (TREE_TYPE (non_ass_var)))
-            *m = build_real (TREE_TYPE (non_ass_var), dconstm1);
-          else
-            *m = build_int_cst (TREE_TYPE (non_ass_var), -1);
-
+	  *m = build_minus_one_cst (TREE_TYPE (non_ass_var));
           *a = fold_build1 (NEGATE_EXPR, TREE_TYPE (non_ass_var), non_ass_var);
         }
 
@@ -1048,42 +1040,79 @@ execute_tail_calls (void)
   return tree_optimize_tail_calls_1 (true);
 }
 
-struct gimple_opt_pass pass_tail_recursion =
+namespace {
+
+const pass_data pass_data_tail_recursion =
 {
- {
-  GIMPLE_PASS,
-  "tailr",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_tail_calls,			/* gate */
-  execute_tail_recursion,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa	                /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "tailr", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
 
-struct gimple_opt_pass pass_tail_calls =
+class pass_tail_recursion : public gimple_opt_pass
 {
- {
-  GIMPLE_PASS,
-  "tailc",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_tail_calls,			/* gate */
-  execute_tail_calls,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa	                /* todo_flags_finish */
- }
+public:
+  pass_tail_recursion(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tail_recursion, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_tail_recursion (ctxt_); }
+  bool gate () { return gate_tail_calls (); }
+  unsigned int execute () { return execute_tail_recursion (); }
+
+}; // class pass_tail_recursion
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tail_recursion (gcc::context *ctxt)
+{
+  return new pass_tail_recursion (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_tail_calls =
+{
+  GIMPLE_PASS, /* type */
+  "tailc", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_tail_calls : public gimple_opt_pass
+{
+public:
+  pass_tail_calls(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_tail_calls, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_tail_calls (); }
+  unsigned int execute () { return execute_tail_calls (); }
+
+}; // class pass_tail_calls
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_tail_calls (gcc::context *ctxt)
+{
+  return new pass_tail_calls (ctxt);
+}

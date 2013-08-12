@@ -2107,7 +2107,31 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
     assemble_noswitch_variable (decl, name, sect, align);
   else
     {
-      switch_to_section (sect);
+      /* The following bit of code ensures that vtable_map 
+         variables are not only in the comdat section, but that
+         each variable has its own unique comdat name.  If this
+         code is removed, the variables end up in the same section
+         with a single comdat name.
+
+         FIXME:  resolve_unique_section needs to deal better with
+         decls with both DECL_SECTION_NAME and DECL_ONE_ONLY.  Once
+         that is fixed, this if-else statement can be replaced with
+         a single call to "switch_to_section (sect)".  */
+      if (sect->named.name
+	  && (strcmp (sect->named.name, ".vtable_map_vars") == 0))
+	{
+#if defined (OBJECT_FORMAT_ELF)
+          targetm.asm_out.named_section (sect->named.name,
+					 sect->named.common.flags
+				         | SECTION_LINKONCE,
+			    	         DECL_NAME (decl));
+          in_section = sect;
+#else
+          switch_to_section (sect);
+#endif
+        }
+      else
+	switch_to_section (sect);
       if (align > BITS_PER_UNIT)
 	ASM_OUTPUT_ALIGN (asm_out_file, floor_log2 (align / BITS_PER_UNIT));
       assemble_variable_contents (decl, name, dont_output_data);
@@ -2118,6 +2142,23 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 	  assemble_zeros (asan_red_zone_size (size));
 	}
     }
+}
+
+
+/* Given a function declaration (FN_DECL), this function assembles the
+   function into the .preinit_array section.  */
+
+void
+assemble_vtv_preinit_initializer (tree fn_decl)
+{
+  section *sect;
+  unsigned flags = SECTION_WRITE;
+  rtx symbol = XEXP (DECL_RTL (fn_decl), 0);
+
+  flags |= SECTION_NOTYPE;
+  sect = get_section (".preinit_array", flags, fn_decl);
+  switch_to_section (sect);
+  assemble_addr_to_section (symbol, sect);
 }
 
 /* Return 1 if type TYPE contains any pointers.  */
@@ -6044,6 +6085,9 @@ default_section_type_flags (tree decl, const char *name, int reloc)
     }
 
   if (decl && DECL_P (decl) && DECL_ONE_ONLY (decl))
+    flags |= SECTION_LINKONCE;
+
+  if (strcmp (name, ".vtable_map_vars") == 0)
     flags |= SECTION_LINKONCE;
 
   if (decl && TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))

@@ -755,14 +755,42 @@ input_ssa_names (struct lto_input_block *ib, struct data_in *data_in,
    so they point to STMTS.  */
 
 static void
-fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts)
+fixup_call_stmt_edges_1 (struct cgraph_node *node, gimple *stmts,
+			 struct function *fn)
 {
   struct cgraph_edge *cedge;
+  struct ipa_ref *ref;
+  unsigned int i;
+
   for (cedge = node->callees; cedge; cedge = cedge->next_callee)
-    cedge->call_stmt = stmts[cedge->lto_stmt_uid];
+    {
+      if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
+        fatal_error ("Cgraph edge statement index out of range");
+      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      if (!cedge->call_stmt)
+        fatal_error ("Cgraph edge statement index not found");
+    }
   for (cedge = node->indirect_calls; cedge; cedge = cedge->next_callee)
-    cedge->call_stmt = stmts[cedge->lto_stmt_uid];
+    {
+      if (gimple_stmt_max_uid (fn) < cedge->lto_stmt_uid)
+        fatal_error ("Cgraph edge statement index out of range");
+      cedge->call_stmt = stmts[cedge->lto_stmt_uid - 1];
+      if (!cedge->call_stmt)
+        fatal_error ("Cgraph edge statement index not found");
+    }
+  for (i = 0;
+       ipa_ref_list_reference_iterate (&node->symbol.ref_list, i, ref);
+       i++)
+    if (ref->lto_stmt_uid)
+      {
+	if (gimple_stmt_max_uid (fn) < ref->lto_stmt_uid)
+	  fatal_error ("Reference statement index out of range");
+	ref->stmt = stmts[ref->lto_stmt_uid - 1];
+	if (!ref->stmt)
+	  fatal_error ("Reference statement index not found");
+      }
 }
+
 
 /* Fixup call_stmt pointers in NODE and all clones.  */
 
@@ -770,15 +798,17 @@ static void
 fixup_call_stmt_edges (struct cgraph_node *orig, gimple *stmts)
 {
   struct cgraph_node *node;
+  struct function *fn;
 
   while (orig->clone_of)
     orig = orig->clone_of;
+  fn = DECL_STRUCT_FUNCTION (orig->symbol.decl);
 
-  fixup_call_stmt_edges_1 (orig, stmts);
+  fixup_call_stmt_edges_1 (orig, stmts, fn);
   if (orig->clones)
     for (node = orig->clones; node != orig;)
       {
-	fixup_call_stmt_edges_1 (node, stmts);
+	fixup_call_stmt_edges_1 (node, stmts, fn);
 	if (node->clones)
 	  node = node->clones;
 	else if (node->next_sibling_clone)
@@ -908,6 +938,11 @@ input_function (tree fn_decl, struct data_in *data_in,
   FOR_ALL_BB (bb)
     {
       gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple stmt = gsi_stmt (gsi);
+	  gimple_set_uid (stmt, inc_gimple_stmt_max_uid (cfun));
+	}
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
 	  gimple stmt = gsi_stmt (gsi);
@@ -917,7 +952,14 @@ input_function (tree fn_decl, struct data_in *data_in,
   stmts = (gimple *) xcalloc (gimple_stmt_max_uid (fn), sizeof (gimple));
   FOR_ALL_BB (bb)
     {
-      gimple_stmt_iterator bsi = gsi_start_bb (bb);
+      gimple_stmt_iterator bsi = gsi_start_phis (bb);
+      while (!gsi_end_p (bsi))
+	{
+	  gimple stmt = gsi_stmt (bsi);
+	  gsi_next (&bsi);
+	  stmts[gimple_uid (stmt)] = stmt;
+	}
+      bsi = gsi_start_bb (bb);
       while (!gsi_end_p (bsi))
 	{
 	  gimple stmt = gsi_stmt (bsi);

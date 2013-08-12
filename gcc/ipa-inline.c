@@ -1388,6 +1388,17 @@ add_new_edges_to_heap (fibheap_t heap, vec<cgraph_edge_p> new_edges)
     }
 }
 
+/* Remove EDGE from the fibheap.  */
+
+static void
+heap_edge_removal_hook (struct cgraph_edge *e, void *data)
+{
+  if (e->aux)
+    {
+      fibheap_delete_node ((fibheap_t)data, (fibnode_t)e->aux);
+      e->aux = NULL;
+    }
+}
 
 /* We use greedy algorithm for inlining of small functions:
    All inline candidates are put into prioritized heap ordered in
@@ -1406,9 +1417,13 @@ inline_small_functions (void)
   vec<cgraph_edge_p> new_indirect_edges = vNULL;
   int initial_size = 0;
   struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_edge_hook_list *edge_removal_hook_holder;
 
   if (flag_indirect_inlining)
     new_indirect_edges.create (8);
+
+  edge_removal_hook_holder
+    = cgraph_add_edge_removal_hook (&heap_edge_removal_hook, edge_heap);
 
   /* Compute overall unit size and other global parameters used by badness
      metrics.  */
@@ -1663,6 +1678,7 @@ inline_small_functions (void)
 	     initial_size, overall_size,
 	     initial_size ? overall_size * 100 / (initial_size) - 100: 0);
   BITMAP_FREE (updated_nodes);
+  cgraph_remove_edge_removal_hook (edge_removal_hook_holder);
 }
 
 /* Flatten NODE.  Performed both during early inlining and
@@ -2011,6 +2027,7 @@ early_inliner (void)
 #ifdef ENABLE_CHECKING
   verify_cgraph_node (node);
 #endif
+  ipa_remove_all_references (&node->symbol.ref_list);
 
   /* Even when not optimizing or not inlining inline always-inline
      functions.  */
@@ -2086,25 +2103,42 @@ early_inliner (void)
   return todo;
 }
 
-struct gimple_opt_pass pass_early_inline =
+namespace {
+
+const pass_data pass_data_early_inline =
 {
- {
-  GIMPLE_PASS,
-  "einline",	 			/* name */
-  OPTGROUP_INLINE,                      /* optinfo_flags */
-  NULL,					/* gate */
-  early_inliner,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_EARLY_INLINING,			/* tv_id */
-  PROP_ssa,                             /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                 			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "einline", /* name */
+  OPTGROUP_INLINE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_EARLY_INLINING, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_early_inline : public gimple_opt_pass
+{
+public:
+  pass_early_inline(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_early_inline, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return early_inliner (); }
+
+}; // class pass_early_inline
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_early_inline (gcc::context *ctxt)
+{
+  return new pass_early_inline (ctxt);
+}
 
 
 /* When to run IPA inlining.  Inlining of always-inline functions
@@ -2119,32 +2153,49 @@ gate_ipa_inline (void)
   return optimize || flag_lto || flag_wpa;
 }
 
-struct ipa_opt_pass_d pass_ipa_inline =
+namespace {
+
+const pass_data pass_data_ipa_inline =
 {
- {
-  IPA_PASS,
-  "inline",				/* name */
-  OPTGROUP_INLINE,                      /* optinfo_flags */
-  gate_ipa_inline,			/* gate */
-  ipa_inline,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_INLINING,      		/* tv_id */
-  0,	                                /* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  TODO_remove_functions,		/* todo_flags_finish */
-  TODO_dump_symtab 
-  | TODO_remove_functions		/* todo_flags_finish */
- },
- inline_generate_summary,		/* generate_summary */
- inline_write_summary,			/* write_summary */
- inline_read_summary,			/* read_summary */
- NULL,					/* write_optimization_summary */
- NULL,					/* read_optimization_summary */
- NULL,					/* stmt_fixup */
- 0,					/* TODOs */
- inline_transform,			/* function_transform */
- NULL,					/* variable_transform */
+  IPA_PASS, /* type */
+  "inline", /* name */
+  OPTGROUP_INLINE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_INLINING, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  TODO_remove_functions, /* todo_flags_start */
+  ( TODO_dump_symtab | TODO_remove_functions ), /* todo_flags_finish */
 };
+
+class pass_ipa_inline : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_inline(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_inline, ctxt,
+		     inline_generate_summary, /* generate_summary */
+		     inline_write_summary, /* write_summary */
+		     inline_read_summary, /* read_summary */
+		     NULL, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     inline_transform, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ipa_inline (); }
+  unsigned int execute () { return ipa_inline (); }
+
+}; // class pass_ipa_inline
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_inline (gcc::context *ctxt)
+{
+  return new pass_ipa_inline (ctxt);
+}

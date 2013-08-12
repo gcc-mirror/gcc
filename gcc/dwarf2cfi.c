@@ -3370,24 +3370,42 @@ gate_dwarf2_frame (void)
   return dwarf2out_do_frame ();
 }
 
-struct rtl_opt_pass pass_dwarf2_frame =
+namespace {
+
+const pass_data pass_data_dwarf2_frame =
 {
- {
-  RTL_PASS,
-  "dwarf2",			/* name */
-  OPTGROUP_NONE,                /* optinfo_flags */
-  gate_dwarf2_frame,		/* gate */
-  execute_dwarf2_frame,		/* execute */
-  NULL,				/* sub */
-  NULL,				/* next */
-  0,				/* static_pass_number */
-  TV_FINAL,			/* tv_id */
-  0,				/* properties_required */
-  0,				/* properties_provided */
-  0,				/* properties_destroyed */
-  0,				/* todo_flags_start */
-  0				/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "dwarf2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_FINAL, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_dwarf2_frame : public rtl_opt_pass
+{
+public:
+  pass_dwarf2_frame(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_dwarf2_frame, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_dwarf2_frame (); }
+  unsigned int execute () { return execute_dwarf2_frame (); }
+
+}; // class pass_dwarf2_frame
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_dwarf2_frame (gcc::context *ctxt)
+{
+  return new pass_dwarf2_frame (ctxt);
+}
 
 #include "gt-dwarf2cfi.h"

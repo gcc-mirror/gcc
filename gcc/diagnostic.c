@@ -554,7 +554,8 @@ default_diagnostic_finalizer (diagnostic_context *context ATTRIBUTE_UNUSED,
 
 /* Interface to specify diagnostic kind overrides.  Returns the
    previous setting, or DK_UNSPECIFIED if the parameters are out of
-   range.  */
+   range.  If OPTION_INDEX is zero, the new setting is for all the
+   diagnostics.  */
 diagnostic_t
 diagnostic_classify_diagnostic (diagnostic_context *context,
 				int option_index,
@@ -563,7 +564,7 @@ diagnostic_classify_diagnostic (diagnostic_context *context,
 {
   diagnostic_t old_kind;
 
-  if (option_index <= 0
+  if (option_index < 0
       || option_index >= context->n_opts
       || new_kind >= DK_LAST_DIAGNOSTIC_KIND)
     return DK_UNSPECIFIED;
@@ -695,9 +696,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       /* This tests for #pragma diagnostic changes.  */
       if (context->n_classification_history > 0)
 	{
-	  int i;
 	  /* FIXME: Stupid search.  Optimize later. */
-	  for (i = context->n_classification_history - 1; i >= 0; i --)
+	  for (int i = context->n_classification_history - 1; i >= 0; i --)
 	    {
 	      if (linemap_location_before_p
 		  (line_table,
@@ -709,7 +709,9 @@ diagnostic_report_diagnostic (diagnostic_context *context,
 		      i = context->classification_history[i].option;
 		      continue;
 		    }
-		  if (context->classification_history[i].option == diagnostic->option_index)
+		  int option = context->classification_history[i].option;
+		  /* The option 0 is for all the diagnostics.  */
+		  if (option == 0 || option == diagnostic->option_index)
 		    {
 		      diag_class = context->classification_history[i].kind;
 		      if (diag_class != DK_UNSPECIFIED)

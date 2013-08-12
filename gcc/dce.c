@@ -786,25 +786,43 @@ gate_ud_dce (void)
     && dbg_cnt (dce_ud);
 }
 
-struct rtl_opt_pass pass_ud_rtl_dce =
+namespace {
+
+const pass_data pass_data_ud_rtl_dce =
 {
- {
-  RTL_PASS,
-  "ud_dce",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_ud_dce,                          /* gate */
-  rest_of_handle_ud_dce,                /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_DCE,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "ud_dce", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_DCE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_ud_rtl_dce : public rtl_opt_pass
+{
+public:
+  pass_ud_rtl_dce(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_ud_rtl_dce, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ud_dce (); }
+  unsigned int execute () { return rest_of_handle_ud_dce (); }
+
+}; // class pass_ud_rtl_dce
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_ud_rtl_dce (gcc::context *ctxt)
+{
+  return new pass_ud_rtl_dce (ctxt);
+}
 
 
 /* -------------------------------------------------------------------------
@@ -1201,22 +1219,40 @@ gate_fast_dce (void)
     && dbg_cnt (dce_fast);
 }
 
-struct rtl_opt_pass pass_fast_rtl_dce =
+namespace {
+
+const pass_data pass_data_fast_rtl_dce =
 {
- {
-  RTL_PASS,
-  "rtl_dce",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_fast_dce,                        /* gate */
-  rest_of_handle_fast_dce,              /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_DCE,                               /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "rtl_dce", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_DCE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_fast_rtl_dce : public rtl_opt_pass
+{
+public:
+  pass_fast_rtl_dce(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_fast_rtl_dce, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_fast_dce (); }
+  unsigned int execute () { return rest_of_handle_fast_dce (); }
+
+}; // class pass_fast_rtl_dce
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_fast_rtl_dce (gcc::context *ctxt)
+{
+  return new pass_fast_rtl_dce (ctxt);
+}

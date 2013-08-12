@@ -1,4 +1,4 @@
-// { dg-options "-x c -std=gnu++0x -lsupc++" }
+// { dg-options "-x c -std=gnu++0x -lsupc++ -fvtable-verify=none" }
 
 // Copyright (C) 2010-2013 Free Software Foundation, Inc.
 //

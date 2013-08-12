@@ -4786,26 +4786,43 @@ gate_pre (void)
   return flag_tree_pre != 0;
 }
 
-struct gimple_opt_pass pass_pre =
+namespace {
+
+const pass_data pass_data_pre =
 {
- {
-  GIMPLE_PASS,
-  "pre",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_pre,				/* gate */
-  do_pre,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_PRE,				/* tv_id */
-  PROP_no_crit_edges | PROP_cfg
-    | PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  TODO_rebuild_alias,			/* todo_flags_start */
-  TODO_verify_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "pre", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_PRE, /* tv_id */
+  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  TODO_rebuild_alias, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_pre : public gimple_opt_pass
+{
+public:
+  pass_pre(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_pre, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_pre (); }
+  unsigned int execute () { return do_pre (); }
+
+}; // class pass_pre
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_pre (gcc::context *ctxt)
+{
+  return new pass_pre (ctxt);
+}
 
 
 /* Gate and execute functions for FRE.  */
@@ -4839,22 +4856,41 @@ gate_fre (void)
   return flag_tree_fre != 0;
 }
 
-struct gimple_opt_pass pass_fre =
+namespace {
+
+const pass_data pass_data_fre =
 {
- {
-  GIMPLE_PASS,
-  "fre",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_fre,				/* gate */
-  execute_fre,				/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_FRE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "fre", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_FRE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_fre : public gimple_opt_pass
+{
+public:
+  pass_fre(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_fre, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_fre (ctxt_); }
+  bool gate () { return gate_fre (); }
+  unsigned int execute () { return execute_fre (); }
+
+}; // class pass_fre
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_fre (gcc::context *ctxt)
+{
+  return new pass_fre (ctxt);
+}

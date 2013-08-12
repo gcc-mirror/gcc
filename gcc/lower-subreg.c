@@ -1689,43 +1689,79 @@ rest_of_handle_lower_subreg2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_lower_subreg =
+namespace {
+
+const pass_data pass_data_lower_subreg =
 {
- {
-  RTL_PASS,
-  "subreg1",	                        /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_lower_subreg,             /* gate */
-  rest_of_handle_lower_subreg,          /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_LOWER_SUBREG,                      /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "subreg1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_LOWER_SUBREG, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
 };
 
-struct rtl_opt_pass pass_lower_subreg2 =
+class pass_lower_subreg : public rtl_opt_pass
 {
- {
-  RTL_PASS,
-  "subreg2",	                        /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_lower_subreg,             /* gate */
-  rest_of_handle_lower_subreg2,          /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_LOWER_SUBREG,                      /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+public:
+  pass_lower_subreg(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_lower_subreg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_lower_subreg (); }
+  unsigned int execute () { return rest_of_handle_lower_subreg (); }
+
+}; // class pass_lower_subreg
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_lower_subreg (gcc::context *ctxt)
+{
+  return new pass_lower_subreg (ctxt);
+}
+
+namespace {
+
+const pass_data pass_data_lower_subreg2 =
+{
+  RTL_PASS, /* type */
+  "subreg2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_LOWER_SUBREG, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_lower_subreg2 : public rtl_opt_pass
+{
+public:
+  pass_lower_subreg2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_lower_subreg2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_lower_subreg (); }
+  unsigned int execute () { return rest_of_handle_lower_subreg2 (); }
+
+}; // class pass_lower_subreg2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_lower_subreg2 (gcc::context *ctxt)
+{
+  return new pass_lower_subreg2 (ctxt);
+}

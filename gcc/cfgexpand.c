@@ -4906,25 +4906,42 @@ gimple_expand_cfg (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_expand =
+namespace {
+
+const pass_data pass_data_expand =
 {
- {
-  RTL_PASS,
-  "expand",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  gimple_expand_cfg,			/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_EXPAND,				/* tv_id */
-  PROP_ssa | PROP_gimple_leh | PROP_cfg
+  RTL_PASS, /* type */
+  "expand", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_EXPAND, /* tv_id */
+  ( PROP_ssa | PROP_gimple_leh | PROP_cfg
     | PROP_gimple_lcx
-    | PROP_gimple_lvec,			/* properties_required */
-  PROP_rtl,                             /* properties_provided */
-  PROP_ssa | PROP_trees,		/* properties_destroyed */
-  TODO_verify_ssa | TODO_verify_flow
-    | TODO_verify_stmts,		/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+    | PROP_gimple_lvec ), /* properties_required */
+  PROP_rtl, /* properties_provided */
+  ( PROP_ssa | PROP_trees ), /* properties_destroyed */
+  ( TODO_verify_ssa | TODO_verify_flow
+    | TODO_verify_stmts ), /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_expand : public rtl_opt_pass
+{
+public:
+  pass_expand(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_expand, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return gimple_expand_cfg (); }
+
+}; // class pass_expand
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_expand (gcc::context *ctxt)
+{
+  return new pass_expand (ctxt);
+}

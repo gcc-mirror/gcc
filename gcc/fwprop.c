@@ -1485,27 +1485,44 @@ fwprop (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_rtl_fwprop =
+namespace {
+
+const pass_data pass_data_rtl_fwprop =
 {
- {
-  RTL_PASS,
-  "fwprop1",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_fwprop,				/* gate */
-  fwprop,				/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_FWPROP,                            /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish
-    | TODO_verify_flow
-    | TODO_verify_rtl_sharing           /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "fwprop1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_FWPROP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_flow
+    | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_rtl_fwprop : public rtl_opt_pass
+{
+public:
+  pass_rtl_fwprop(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_fwprop, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_fwprop (); }
+  unsigned int execute () { return fwprop (); }
+
+}; // class pass_rtl_fwprop
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_fwprop (gcc::context *ctxt)
+{
+  return new pass_rtl_fwprop (ctxt);
+}
 
 static unsigned int
 fwprop_addr (void)
@@ -1535,22 +1552,40 @@ fwprop_addr (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_rtl_fwprop_addr =
+namespace {
+
+const pass_data pass_data_rtl_fwprop_addr =
 {
- {
-  RTL_PASS,
-  "fwprop2",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_fwprop,				/* gate */
-  fwprop_addr,				/* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_FWPROP,                            /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing  /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "fwprop2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_FWPROP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_rtl_fwprop_addr : public rtl_opt_pass
+{
+public:
+  pass_rtl_fwprop_addr(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_rtl_fwprop_addr, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_fwprop (); }
+  unsigned int execute () { return fwprop_addr (); }
+
+}; // class pass_rtl_fwprop_addr
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_rtl_fwprop_addr (gcc::context *ctxt)
+{
+  return new pass_rtl_fwprop_addr (ctxt);
+}

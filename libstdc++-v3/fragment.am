@@ -19,6 +19,12 @@ else
 WERROR_FLAG=
 endif
 
+if ENABLE_EXTERN_TEMPLATE
+XTEMPLATE_FLAGS = -fno-implicit-templates
+else
+XTEMPLATE_FLAGS =
+endif
+
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \

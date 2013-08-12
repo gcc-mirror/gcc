@@ -3124,32 +3124,53 @@ peep2_find_free_register (int from, int to, const char *class_str,
       regno = raw_regno;
 #endif
 
-      /* Don't allocate fixed registers.  */
-      if (fixed_regs[regno])
-	continue;
-      /* Don't allocate global registers.  */
-      if (global_regs[regno])
-	continue;
-      /* Make sure the register is of the right class.  */
-      if (! TEST_HARD_REG_BIT (reg_class_contents[cl], regno))
-	continue;
-      /* And can support the mode we need.  */
+      /* Can it support the mode we need?  */
       if (! HARD_REGNO_MODE_OK (regno, mode))
-	continue;
-      /* And that we don't create an extra save/restore.  */
-      if (! call_used_regs[regno] && ! df_regs_ever_live_p (regno))
-	continue;
-      if (! targetm.hard_regno_scratch_ok (regno))
-	continue;
-
-      /* And we don't clobber traceback for noreturn functions.  */
-      if ((regno == FRAME_POINTER_REGNUM || regno == HARD_FRAME_POINTER_REGNUM)
-	  && (! reload_completed || frame_pointer_needed))
 	continue;
 
       success = 1;
-      for (j = hard_regno_nregs[regno][mode] - 1; j >= 0; j--)
+      for (j = 0; success && j < hard_regno_nregs[regno][mode]; j++)
 	{
+	  /* Don't allocate fixed registers.  */
+	  if (fixed_regs[regno + j])
+	    {
+	      success = 0;
+	      break;
+	    }
+	  /* Don't allocate global registers.  */
+	  if (global_regs[regno + j])
+	    {
+	      success = 0;
+	      break;
+	    }
+	  /* Make sure the register is of the right class.  */
+	  if (! TEST_HARD_REG_BIT (reg_class_contents[cl], regno + j))
+	    {
+	      success = 0;
+	      break;
+	    }
+	  /* And that we don't create an extra save/restore.  */
+	  if (! call_used_regs[regno + j] && ! df_regs_ever_live_p (regno + j))
+	    {
+	      success = 0;
+	      break;
+	    }
+
+	  if (! targetm.hard_regno_scratch_ok (regno + j))
+	    {
+	      success = 0;
+	      break;
+	    }
+
+	  /* And we don't clobber traceback for noreturn functions.  */
+	  if ((regno + j == FRAME_POINTER_REGNUM
+	       || regno + j == HARD_FRAME_POINTER_REGNUM)
+	      && (! reload_completed || frame_pointer_needed))
+	    {
+	      success = 0;
+	      break;
+	    }
+
 	  if (TEST_HARD_REG_BIT (*reg_set, regno + j)
 	      || TEST_HARD_REG_BIT (live, regno + j))
 	    {
@@ -3157,6 +3178,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	      break;
 	    }
 	}
+
       if (success)
 	{
 	  add_to_hard_reg_set (reg_set, mode, regno);
@@ -3756,26 +3778,46 @@ rest_of_handle_peephole2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_peephole2 =
+namespace {
+
+const pass_data pass_data_peephole2 =
 {
- {
-  RTL_PASS,
-  "peephole2",                          /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_peephole2,                /* gate */
-  rest_of_handle_peephole2,             /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_PEEPHOLE2,                         /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing |
-  0                                    /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "peephole2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_PEEPHOLE2, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing | 0 ), /* todo_flags_finish */
 };
+
+class pass_peephole2 : public rtl_opt_pass
+{
+public:
+  pass_peephole2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_peephole2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  /* The epiphany backend creates a second instance of this pass, so we need
+     a clone method.  */
+  opt_pass * clone () { return new pass_peephole2 (ctxt_); }
+  bool gate () { return gate_handle_peephole2 (); }
+  unsigned int execute () { return rest_of_handle_peephole2 (); }
+
+}; // class pass_peephole2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_peephole2 (gcc::context *ctxt)
+{
+  return new pass_peephole2 (ctxt);
+}
 
 static unsigned int
 rest_of_handle_split_all_insns (void)
@@ -3784,25 +3826,45 @@ rest_of_handle_split_all_insns (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_split_all_insns =
+namespace {
+
+const pass_data pass_data_split_all_insns =
 {
- {
-  RTL_PASS,
-  "split1",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_split_all_insns,       /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "split1", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_split_all_insns : public rtl_opt_pass
+{
+public:
+  pass_split_all_insns(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_split_all_insns, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  /* The epiphany backend creates a second instance of this pass, so
+     we need a clone method.  */
+  opt_pass * clone () { return new pass_split_all_insns (ctxt_); }
+  unsigned int execute () { return rest_of_handle_split_all_insns (); }
+
+}; // class pass_split_all_insns
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_split_all_insns (gcc::context *ctxt)
+{
+  return new pass_split_all_insns (ctxt);
+}
 
 static unsigned int
 rest_of_handle_split_after_reload (void)
@@ -3815,25 +3877,42 @@ rest_of_handle_split_after_reload (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_split_after_reload =
+namespace {
+
+const pass_data pass_data_split_after_reload =
 {
- {
-  RTL_PASS,
-  "split2",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,                                 /* gate */
-  rest_of_handle_split_after_reload,    /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "split2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_split_after_reload : public rtl_opt_pass
+{
+public:
+  pass_split_after_reload(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_split_after_reload, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return rest_of_handle_split_after_reload (); }
+
+}; // class pass_split_after_reload
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_split_after_reload (gcc::context *ctxt)
+{
+  return new pass_split_after_reload (ctxt);
+}
 
 static bool
 gate_handle_split_before_regstack (void)
@@ -3860,25 +3939,45 @@ rest_of_handle_split_before_regstack (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_split_before_regstack =
+namespace {
+
+const pass_data pass_data_split_before_regstack =
 {
- {
-  RTL_PASS,
-  "split3",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_split_before_regstack,    /* gate */
-  rest_of_handle_split_before_regstack, /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "split3", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_split_before_regstack : public rtl_opt_pass
+{
+public:
+  pass_split_before_regstack(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_split_before_regstack, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_split_before_regstack (); }
+  unsigned int execute () {
+    return rest_of_handle_split_before_regstack ();
+  }
+
+}; // class pass_split_before_regstack
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_split_before_regstack (gcc::context *ctxt)
+{
+  return new pass_split_before_regstack (ctxt);
+}
 
 static bool
 gate_handle_split_before_sched2 (void)
@@ -3899,25 +3998,43 @@ rest_of_handle_split_before_sched2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_split_before_sched2 =
+namespace {
+
+const pass_data pass_data_split_before_sched2 =
 {
- {
-  RTL_PASS,
-  "split4",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_split_before_sched2,      /* gate */
-  rest_of_handle_split_before_sched2,   /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_flow                      /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "split4", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_flow, /* todo_flags_finish */
 };
+
+class pass_split_before_sched2 : public rtl_opt_pass
+{
+public:
+  pass_split_before_sched2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_split_before_sched2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_split_before_sched2 (); }
+  unsigned int execute () { return rest_of_handle_split_before_sched2 (); }
+
+}; // class pass_split_before_sched2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_split_before_sched2 (gcc::context *ctxt)
+{
+  return new pass_split_before_sched2 (ctxt);
+}
 
 /* The placement of the splitting that we do for shorten_branches
    depends on whether regstack is used by the target or not.  */
@@ -3931,22 +4048,40 @@ gate_do_final_split (void)
 #endif
 }
 
-struct rtl_opt_pass pass_split_for_shorten_branches =
+namespace {
+
+const pass_data pass_data_split_for_shorten_branches =
 {
- {
-  RTL_PASS,
-  "split5",                             /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_do_final_split,                  /* gate */
-  split_all_insns_noflow,               /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_NONE,                              /* tv_id */
-  0,                                    /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_verify_rtl_sharing               /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "split5", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
+
+class pass_split_for_shorten_branches : public rtl_opt_pass
+{
+public:
+  pass_split_for_shorten_branches(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_split_for_shorten_branches, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_do_final_split (); }
+  unsigned int execute () { return split_all_insns_noflow (); }
+
+}; // class pass_split_for_shorten_branches
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_split_for_shorten_branches (gcc::context *ctxt)
+{
+  return new pass_split_for_shorten_branches (ctxt);
+}

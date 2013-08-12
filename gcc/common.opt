@@ -2311,6 +2311,30 @@ Enum(symbol_visibility) String(hidden) Value(VISIBILITY_HIDDEN)
 EnumValue
 Enum(symbol_visibility) String(protected) Value(VISIBILITY_PROTECTED)
 
+fvtable-verify=
+Common Joined RejectNegative Enum(vtv_priority) Var(flag_vtable_verify) Init(VTV_NO_PRIORITY)
+Validate vtable pointers before using them.
+
+Enum
+Name(vtv_priority) Type(enum vtv_priority) UnknownError(unknown vtable verify initialization priority %qs)
+
+EnumValue
+Enum(vtv_priority) String(none) Value(VTV_NO_PRIORITY)
+
+EnumValue
+Enum(vtv_priority) String(std) Value(VTV_STANDARD_PRIORITY)
+
+EnumValue
+Enum(vtv_priority) String(preinit) Value(VTV_PREINIT_PRIORITY)
+
+fvtv-counts
+Common Var(flag_vtv_counts)
+Output vtable verification counters.
+
+fvtv-debug
+Common Var(flag_vtv_debug)
+Output vtable verification pointer sets information.
+
 fvpt
 Common Report Var(flag_value_profile_transformations) Optimization
 Use expression value profiles in optimizations

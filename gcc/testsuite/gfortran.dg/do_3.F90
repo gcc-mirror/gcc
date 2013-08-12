@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-std=legacy -ffree-line-length-none -fno-range-check -fwrapv" }
+! { dg-options "-std=legacy -ffree-line-length-none -fno-range-check -fwrapv -Wzerotrip" }
 program test
   integer :: count
   integer :: i

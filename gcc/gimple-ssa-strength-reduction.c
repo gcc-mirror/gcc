@@ -1728,11 +1728,23 @@ dump_incr_vec (void)
 static void
 replace_ref (tree *expr, slsr_cand_t c)
 {
-  tree add_expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (c->base_expr),
-			       c->base_expr, c->stride);
-  tree mem_ref = fold_build2 (MEM_REF, TREE_TYPE (*expr), add_expr,
-			      double_int_to_tree (c->cand_type, c->index));
-  
+  tree add_expr, mem_ref, acc_type = TREE_TYPE (*expr);
+  unsigned HOST_WIDE_INT misalign;
+  unsigned align;
+
+  /* Ensure the memory reference carries the minimum alignment
+     requirement for the data type.  See PR58041.  */
+  get_object_alignment_1 (*expr, &align, &misalign);
+  if (misalign != 0)
+    align = (misalign & -misalign);
+  if (align < TYPE_ALIGN (acc_type))
+    acc_type = build_aligned_type (acc_type, align);
+
+  add_expr = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (c->base_expr),
+			  c->base_expr, c->stride);
+  mem_ref = fold_build2 (MEM_REF, acc_type, add_expr,
+			 double_int_to_tree (c->cand_type, c->index));
+
   /* Gimplify the base addressing expression for the new MEM_REF tree.  */
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
   TREE_OPERAND (mem_ref, 0)
@@ -3478,22 +3490,40 @@ gate_strength_reduction (void)
   return flag_tree_slsr;
 }
 
-struct gimple_opt_pass pass_strength_reduction =
+namespace {
+
+const pass_data pass_data_strength_reduction =
 {
- {
-  GIMPLE_PASS,
-  "slsr",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_strength_reduction,		/* gate */
-  execute_strength_reduction,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_GIMPLE_SLSR,			/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "slsr", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_GIMPLE_SLSR, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_ssa, /* todo_flags_finish */
 };
+
+class pass_strength_reduction : public gimple_opt_pass
+{
+public:
+  pass_strength_reduction(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_strength_reduction, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_strength_reduction (); }
+  unsigned int execute () { return execute_strength_reduction (); }
+
+}; // class pass_strength_reduction
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_strength_reduction (gcc::context *ctxt)
+{
+  return new pass_strength_reduction (ctxt);
+}

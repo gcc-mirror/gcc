@@ -440,22 +440,39 @@ release_dead_ssa_names (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_release_ssa_names =
+namespace {
+
+const pass_data pass_data_release_ssa_names =
 {
- {
-  GIMPLE_PASS,
-  "release_ssa",			/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  release_dead_ssa_names,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_SSA_OTHER,			/* tv_id */
-  PROP_ssa,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  TODO_remove_unused_locals,		/* todo_flags_start */
-  0					/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "release_ssa", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_SSA_OTHER, /* tv_id */
+  PROP_ssa, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  TODO_remove_unused_locals, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_release_ssa_names : public gimple_opt_pass
+{
+public:
+  pass_release_ssa_names(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_release_ssa_names, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return release_dead_ssa_names (); }
+
+}; // class pass_release_ssa_names
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_release_ssa_names (gcc::context *ctxt)
+{
+  return new pass_release_ssa_names (ctxt);
+}

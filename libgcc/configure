@@ -608,6 +608,7 @@ build_os
 build_vendor
 build_cpu
 build
+enable_vtable_verify
 enable_shared
 libgcc_topdir
 target_alias
@@ -655,6 +656,7 @@ with_target_subdir
 with_cross_host
 with_ld
 enable_shared
+enable_vtable_verify
 enable_version_specific_runtime_libs
 with_slibdir
 enable_maintainer_mode
@@ -1288,6 +1290,7 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-shared        don't provide a shared libgcc
+  --enable-vtable-verify    Enable vtable verification feature
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
@@ -2136,6 +2139,19 @@ if test "${enable_shared+set}" = set; then :
 
 else
   enable_shared=yes
+fi
+
+
+
+# Check whether --enable-vtable-verify was given.
+if test "${enable_vtable_verify+set}" = set; then :
+  enableval=$enable_vtable_verify; case "$enableval" in
+ yes) enable_vtable_verify=yes ;;
+ no)  enable_vtable_verify=no ;;
+ *)   enable_vtable_verify=no;;
+ esac
+else
+  enable_vtable_verify=no
 fi
 
 

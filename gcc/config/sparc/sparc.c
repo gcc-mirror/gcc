@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "opts.h"
 #include "tree-pass.h"
+#include "context.h"
 
 /* Processor costs */
 
@@ -1000,33 +1001,43 @@ sparc_do_work_around_errata (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_work_around_errata =
+namespace {
+
+const pass_data pass_data_work_around_errata =
 {
- {
-  RTL_PASS,
-  "errata",				/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  sparc_gate_work_around_errata,	/* gate */
-  sparc_do_work_around_errata,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_MACH_DEP,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_rtl_sharing,		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "errata", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
 
-struct register_pass_info insert_pass_work_around_errata =
+class pass_work_around_errata : public rtl_opt_pass
 {
-  &pass_work_around_errata.pass,	/* pass */
-  "dbr",				/* reference_pass_name */
-  1,					/* ref_pass_instance_number */
-  PASS_POS_INSERT_AFTER			/* po_op */
-};
+public:
+  pass_work_around_errata(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_work_around_errata, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return sparc_gate_work_around_errata (); }
+  unsigned int execute () { return sparc_do_work_around_errata (); }
+
+}; // class pass_work_around_errata
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_work_around_errata (gcc::context *ctxt)
+{
+  return new pass_work_around_errata (ctxt);
+}
 
 /* Helpers for TARGET_DEBUG_OPTIONS.  */
 static void
@@ -1140,9 +1151,8 @@ sparc_option_override (void)
     /* TI TMS390Z55 supersparc */
     { "supersparc",	MASK_ISA, MASK_V8 },
     { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
-    /* LEON */
-    { "leon",		MASK_ISA, MASK_V8|MASK_FPU },
-    { "leon3",		MASK_ISA, MASK_V8|MASK_FPU },
+    { "leon",		MASK_ISA, MASK_V8|MASK_LEON|MASK_FPU },
+    { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3|MASK_FPU },
     { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
@@ -1302,6 +1312,9 @@ sparc_option_override (void)
 #ifndef HAVE_AS_SPARC4
 		   & ~MASK_CBCOND
 #endif
+#ifndef HAVE_AS_LEON
+		   & ~(MASK_LEON | MASK_LEON3)
+#endif
 		   );
 
   /* If -mfpu or -mno-fpu was explicitly used, don't override with
@@ -1430,6 +1443,10 @@ sparc_option_override (void)
       /* Choose the most relaxed model for the processor.  */
       else if (TARGET_V9)
 	sparc_memory_model = SMM_RMO;
+      else if (TARGET_LEON3)
+	sparc_memory_model = SMM_TSO;
+      else if (TARGET_LEON)
+	sparc_memory_model = SMM_SC;
       else if (TARGET_V8)
 	sparc_memory_model = SMM_PSO;
       else
@@ -1477,6 +1494,14 @@ sparc_option_override (void)
      (essentially) final form of the insn stream to work on.
      Registering the pass must be done at start up.  It's convenient to
      do it here.  */
+  opt_pass *errata_pass = make_pass_work_around_errata (g);
+  struct register_pass_info insert_pass_work_around_errata =
+    {
+      errata_pass,		/* pass */
+      "dbr",			/* reference_pass_name */
+      1,			/* ref_pass_instance_number */
+      PASS_POS_INSERT_AFTER	/* po_op */
+    };
   register_pass (&insert_pass_work_around_errata);
 }
 

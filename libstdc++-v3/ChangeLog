@@ -1,3 +1,145 @@
+2013-08-09  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_constants.h: Change syntax_option_type to enum
+	type.
+
+2013-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/bits/regex.h: Replace _A, _B, _C, _R by _Ap, _Bp,
+	_Cp, _Rp.
+
+2013-08-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hashtable_alloc): New.
+	(_ReuseOrAllocNode, _AllocNode): Adapt to use latter rather than
+	_Hashtable.
+	(_Before_begin<>): Remove.
+	* include/bits/hashtable.h (_Hashtable): Inherit from
+	_Hashtable_alloc and adapt. Restore _M_before_begin field.
+	* src/c++11/hashtable_c++0x.cc: Add ext/alloc_traits.h include.
+	* python/libstdcxx/v6/printers.py (StdHashtableIterator): Adapt
+	access to hashtable before begin.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Adapt dg-error line number.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Likewise.
+
+2013-08-07  Tim Shen  <timshen91@gmail.com>
+
+	* include/Makefile.am: Adjust to new files.
+	* include/Makefile.in: Regenerate.
+	* include/bits/regex.h: Adjust to new interfaces.
+	* include/bits/regex_automaton.h: New.
+	* include/bits/regex_automaton.tcc: New.
+	* include/bits/regex_compiler.h: Adjust to new files.
+	* include/bits/regex_compiler.tcc: New.
+	* include/bits/regex_constants.h: Tail spaces.
+	* include/bits/regex_error.h: Likewise.
+	* include/bits/regex_executor.h: New.
+	* include/bits/regex_executor.tcc: New.
+	* include/std/regex: Adjust to new files.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_dispatch_01.cc: Adjust to new interfaces.
+
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/atomicity.h: Add #pragma GCC system_header.
+
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58098
+	* include/bits/random.h (cauchy_distribution<>::min,
+	extreme_value_distribution<>::min, normal_distribution<>::min,
+	student_t_distribution<>::min): Fix.
+	* include/ext/random (normal_mv_distribution<>::min): Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/parms.cc:
+	Adjust.
+	testsuite/26_numerics/random/cauchy_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/
+	parms.cc: Likewise.
+	testsuite/26_numerics/random/extreme_value_distribution/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/default.cc: Likewise.
+
+	* testsuite/26_numerics/random/exponential_distribution/cons/parms.cc:
+	Minor tweak.
+	* testsuite/26_numerics/random/exponential_distribution/cons/default.cc:
+	Likewise.
+
+	* testsuite/ext/von_mises_distribution/*: Move to...
+	* testsuite/ext/random/von_mises_distribution/*: ... here.
+	* testsuite/ext/triangular_distribution/*: Move to...
+	* testsuite/ext/random/triangular_distribution/*: ... here.
+
+2013-08-06  Caroline Tice  <cmtice@google.com>
+
+	* fragment.am: Add XTEMPLATE_FLAGS.
+	* configure.ac: Add definitions for --enable-vtable-verify.
+	* acinclude.m4:  Add --enable-vtable-verify and
+	--disable-vtable-verify; define --enable-vtable-verify; define
+	VTV_CXXFLAGS, VTV_PCH_CXXFLAGS and VTV_CXXLINKFLAGS.
+	* config/abi/pre/gnu.ver: Export symbols for vtable verification.
+	* libsupc++/Makefile.am: Define vtv_sources and add it to
+	libsupc___la_SOURCES and libsupc__convenience_la_SOURCES.
+	* libsupc++/vtv_stubs.cc: New file.
+	* include/Makefile.am: Add VTV_PCH_CXXFLAGS to PCHFLAGS.
+	* src/Makefile.am: Add VTV_CXXFLAGS to AM_CXXFLAGS; add
+	VTV_CXXLINKFLAGS to CXXLINK.
+	* src/c++98/Makefile.am: Comment out XTEMPLATE_FLAGS; add VTV_CXXFLAGS
+	to AM_CXXFLAGS; add VTV_CXXXLINKFLAGS to CXXLINK.
+	* src/C++11/Makefile.am: Ditto.
+	* doc/xml/manual/configure.xml: Add entry for --enable-vtable-verify.
+	* scripts/testsuite_flags.in: Add cxxvtvflags to Usage; cause
+	cxxvtvflags to use VTV_CXXFLAGS and VTV_CXXLINKFLAGS.
+	* testsuite/lib/libstdc++.exp: Add cxxvtvflags; add code to locate
+	libvtv if --enable-vtable-verify was used; set cxxvtvflags; add
+	cxxvtvflags to cxx_final.
+	* testsuite/18_support/bad_exception/23591_thread-1.c: Add
+	-fvtable-verify=none to compiler flags.
+	* testsuite/17_intro/freestanding.cc: Add -fvtable-verify=none
+	to compiler flags.
+	* configure: Regenerated.
+	* Makefile.in: Regenerated.
+	* python/Makefile.in: Regenerated.
+	* include/Makefile.in: Regenerated.
+	* libsupc++/Makefile.in: Regenerated.
+	* config.h.in: Regenerated.
+	* po/Makefile.in: Regenerated.
+	* src/Makefile.in: Regenerated.
+	* src/c++98/Makefile.in: Regenerated.
+	* src/c++11/Makefile.in: Regenerated.
+	* doc/Makefile.in: Regenerated.
+	* testsuite/Makefile.in: Regenerated.
+
+2013-08-06  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	Revert the last commit.
+
+2013-08-06  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/hashtable_policy.h (_Hashtable_alloc): New.
+	(_ReuseOrAllocNode, _AllocNode): Adapt to use latter rather than
+	_Hashtable.
+	(_Before_begin<>): Remove.
+	* include/bits/hashtable.h (_Hashtable): Inherit from
+	_Hashtable_alloc and adapt. Restore _M_before_begin field.
+	* python/libstdcxx/v6/printers.py (StdHashtableIterator): Adapt
+	access to hashtable before begin.
+	* testsuite/23_containers/unordered_set/
+	not_default_constructible_hash_neg.cc: Adapt dg-error line number.
+	* testsuite/23_containers/unordered_set/instantiation_neg.cc:
+	Likewise.
+
 2013-08-03  Tim Shen  <timshen91@gmail.com>
 
 	Implement bracket expression.

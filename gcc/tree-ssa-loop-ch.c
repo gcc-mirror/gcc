@@ -256,24 +256,41 @@ gate_ch (void)
   return flag_tree_ch != 0;
 }
 
-struct gimple_opt_pass pass_ch =
+namespace {
+
+const pass_data pass_data_ch =
 {
- {
-  GIMPLE_PASS,
-  "ch",					/* name */
-  OPTGROUP_LOOP,                        /* optinfo_flags */
-  gate_ch,				/* gate */
-  copy_loop_headers,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_CH,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_cleanup_cfg
-    | TODO_verify_ssa
-    | TODO_verify_flow			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ch", /* name */
+  OPTGROUP_LOOP, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_CH, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_cleanup_cfg | TODO_verify_ssa
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_ch : public gimple_opt_pass
+{
+public:
+  pass_ch(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_ch, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ch (); }
+  unsigned int execute () { return copy_loop_headers (); }
+
+}; // class pass_ch
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_ch (gcc::context *ctxt)
+{
+  return new pass_ch (ctxt);
+}

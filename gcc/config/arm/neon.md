@@ -242,7 +242,7 @@
   [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
 	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
 		     UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
 {
   /* This pattern is not permitted to fail during expansion: if both arguments
      are non-registers (e.g. memory := constant, which can be created by the
@@ -256,7 +256,7 @@
   [(set (match_operand:VDX 0 "neon_permissive_struct_operand"	"=Um")
 	(unspec:VDX [(match_operand:VDX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vst1.<V_sz_elem>\t{%P1}, %A0"
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
@@ -265,7 +265,7 @@
 	(unspec:VDX [(match_operand:VDX 1 "neon_permissive_struct_operand"
 									" Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%P0}, %A1"
   [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
@@ -273,7 +273,7 @@
   [(set (match_operand:VQX 0 "neon_permissive_struct_operand"  "=Um")
 	(unspec:VQX [(match_operand:VQX 1 "s_register_operand" " w")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vst1.<V_sz_elem>\t{%q1}, %A0"
   [(set_attr "neon_type" "neon_vst1_1_2_regs_vst2_2_regs")])
 
@@ -282,7 +282,7 @@
 	(unspec:VQX [(match_operand:VQX 1 "neon_permissive_struct_operand"
 									" Um")]
 		    UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN"
+  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
   "vld1.<V_sz_elem>\t{%q0}, %A1"
   [(set_attr "neon_type" "neon_vld1_1_2_regs")])
 
@@ -1671,6 +1671,7 @@
 			     ? 3 : 1;
   rtx magic_rtx = GEN_INT (magic_word);
   int inverse = 0;
+  int use_zero_form = 0;
   int swap_bsl_operands = 0;
   rtx mask = gen_reg_rtx (<V_cmp_result>mode);
   rtx tmp = gen_reg_rtx (<V_cmp_result>mode);
@@ -1681,12 +1682,16 @@
   switch (GET_CODE (operands[3]))
     {
     case GE:
+    case GT:
     case LE:
+    case LT:
     case EQ:
-      if (!REG_P (operands[5])
-	  && (operands[5] != CONST0_RTX (<MODE>mode)))
-	operands[5] = force_reg (<MODE>mode, operands[5]);
-      break;
+      if (operands[5] == CONST0_RTX (<MODE>mode))
+	{
+	  use_zero_form = 1;
+	  break;
+	}
+      /* Fall through.  */
     default:
       if (!REG_P (operands[5]))
 	operands[5] = force_reg (<MODE>mode, operands[5]);
@@ -1737,7 +1742,26 @@
 	 a GT b -> a GT b
 	 a LE b -> b GE a
 	 a LT b -> b GT a
-	 a EQ b -> a EQ b  */
+	 a EQ b -> a EQ b
+	 Note that there also exist direct comparison against 0 forms,
+	 so catch those as a special case.  */
+      if (use_zero_form)
+	{
+	  inverse = 0;
+	  switch (GET_CODE (operands[3]))
+	    {
+	    case LT:
+	      base_comparison = gen_neon_vclt<mode>;
+	      break;
+	    case LE:
+	      base_comparison = gen_neon_vcle<mode>;
+	      break;
+	    default:
+	      /* Do nothing, other zero form cases already have the correct
+		 base_comparison.  */
+	      break;
+	    }
+	}
 
       if (!inverse)
 	emit_insn (base_comparison (mask, operands[4], operands[5], magic_rtx));
@@ -4593,19 +4617,20 @@
 )
 
 (define_insn "neon_vld1_dup<mode>"
-  [(set (match_operand:VDX 0 "s_register_operand" "=w")
-        (vec_duplicate:VDX (match_operand:<V_elem> 1 "neon_struct_operand" "Um")))]
+  [(set (match_operand:VD 0 "s_register_operand" "=w")
+        (vec_duplicate:VD (match_operand:<V_elem> 1 "neon_struct_operand" "Um")))]
   "TARGET_NEON"
-{
-  if (GET_MODE_NUNITS (<MODE>mode) > 1)
-    return "vld1.<V_sz_elem>\t{%P0[]}, %A1";
-  else
-    return "vld1.<V_sz_elem>\t%h0, %A1";
-}
-  [(set (attr "neon_type")
-      (if_then_else (gt (const_string "<V_mode_nunits>") (const_string "1"))
-                    (const_string "neon_vld2_2_regs_vld1_vld2_all_lanes")
-                    (const_string "neon_vld1_1_2_regs")))]
+  "vld1.<V_sz_elem>\t{%P0[]}, %A1"
+  [(set_attr "neon_type" "neon_vld2_2_regs_vld1_vld2_all_lanes")]
+)
+
+;; Special case for DImode.  Treat it exactly like a simple load.
+(define_expand "neon_vld1_dupdi"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+        (unspec:DI [(match_operand:DI 1 "neon_struct_operand" "")]
+		   UNSPEC_VLD1))]
+  "TARGET_NEON"
+  ""
 )
 
 (define_insn "neon_vld1_dup<mode>"

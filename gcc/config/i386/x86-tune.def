@@ -1,0 +1,97 @@
+/* Definitions of target machine for GCC for IA-32.
+   Copyright (C) 2013 Free Software Foundation, Inc.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  */
+
+DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave")
+DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory")
+DEF_TUNE (X86_TUNE_ZERO_EXTEND_WITH_AND, "zero_extend_with_and")
+DEF_TUNE (X86_TUNE_UNROLL_STRLEN, "unroll_strlen")
+DEF_TUNE (X86_TUNE_BRANCH_PREDICTION_HINTS, "branch_prediction_hints")
+DEF_TUNE (X86_TUNE_DOUBLE_WITH_ADD, "double_with_add")
+DEF_TUNE (X86_TUNE_USE_SAHF, "use_sahf")
+DEF_TUNE (X86_TUNE_MOVX, "movx")
+DEF_TUNE (X86_TUNE_PARTIAL_REG_STALL, "partial_reg_stall")
+DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall")
+DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall")
+DEF_TUNE (X86_TUNE_USE_HIMODE_FIOP, "use_himode_fiop")
+DEF_TUNE (X86_TUNE_USE_SIMODE_FIOP, "use_simode_fiop")
+DEF_TUNE (X86_TUNE_USE_MOV0, "use_mov0")
+DEF_TUNE (X86_TUNE_USE_CLTD, "use_cltd")
+DEF_TUNE (X86_TUNE_USE_XCHGB, "use_xchgb")
+DEF_TUNE (X86_TUNE_SPLIT_LONG_MOVES, "split_long_moves")
+DEF_TUNE (X86_TUNE_READ_MODIFY_WRITE, "read_modify_write")
+DEF_TUNE (X86_TUNE_READ_MODIFY, "read_modify")
+DEF_TUNE (X86_TUNE_PROMOTE_QIMODE, "promote_qimode")
+DEF_TUNE (X86_TUNE_FAST_PREFIX, "fast_prefix")
+DEF_TUNE (X86_TUNE_SINGLE_STRINGOP, "single_stringop")
+DEF_TUNE (X86_TUNE_QIMODE_MATH, "qimode_math")
+DEF_TUNE (X86_TUNE_HIMODE_MATH, "himode_math")
+DEF_TUNE (X86_TUNE_PROMOTE_QI_REGS, "promote_qi_regs")
+DEF_TUNE (X86_TUNE_PROMOTE_HI_REGS, "promote_hi_regs")
+DEF_TUNE (X86_TUNE_SINGLE_POP, "single_pop")
+DEF_TUNE (X86_TUNE_DOUBLE_POP, "double_pop")
+DEF_TUNE (X86_TUNE_SINGLE_PUSH, "single_push")
+DEF_TUNE (X86_TUNE_DOUBLE_PUSH, "double_push")
+DEF_TUNE (X86_TUNE_INTEGER_DFMODE_MOVES, "integer_dfmode_moves")
+DEF_TUNE (X86_TUNE_PARTIAL_REG_DEPENDENCY, "partial_reg_dependency")
+DEF_TUNE (X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY, "sse_partial_reg_dependency")
+DEF_TUNE (X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL, "sse_unaligned_load_optimal")
+DEF_TUNE (X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL, "sse_unaligned_store_optimal")
+DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optimal")
+DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs")
+DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores")
+DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor")
+DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall")
+DEF_TUNE (X86_TUNE_PROLOGUE_USING_MOVE, "prologue_using_move")
+DEF_TUNE (X86_TUNE_EPILOGUE_USING_MOVE, "epilogue_using_move")
+DEF_TUNE (X86_TUNE_SHIFT1, "shift1")
+DEF_TUNE (X86_TUNE_USE_FFREEP, "use_ffreep")
+DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_TO_VEC, "inter_unit_moves_to_vec")
+DEF_TUNE (X86_TUNE_INTER_UNIT_MOVES_FROM_VEC, "inter_unit_moves_from_vec")
+DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions")
+DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit")
+DEF_TUNE (X86_TUNE_SCHEDULE, "schedule")
+DEF_TUNE (X86_TUNE_USE_BT, "use_bt")
+DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec")
+DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns")
+DEF_TUNE (X86_TUNE_PAD_SHORT_FUNCTION, "pad_short_function")
+DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants")
+DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode")
+DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul")
+DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM32_MEM, "slow_imul_imm32_mem")
+DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8")
+DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or")
+DEF_TUNE (X86_TUNE_NOT_UNPAIRABLE, "not_unpairable")
+DEF_TUNE (X86_TUNE_NOT_VECTORMODE, "not_vectormode")
+DEF_TUNE (X86_TUNE_USE_VECTOR_FP_CONVERTS, "use_vector_fp_converts")
+DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts")
+DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH, "fuse_cmp_and_branch")
+DEF_TUNE (X86_TUNE_OPT_AGU, "opt_agu")
+DEF_TUNE (X86_TUNE_VECTORIZE_DOUBLE, "vectorize_double")
+DEF_TUNE (X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL, "software_prefetching_beneficial")
+DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal")
+DEF_TUNE (X86_TUNE_REASSOC_INT_TO_PARALLEL, "reassoc_int_to_parallel")
+DEF_TUNE (X86_TUNE_REASSOC_FP_TO_PARALLEL, "reassoc_fp_to_parallel")
+DEF_TUNE (X86_TUNE_GENERAL_REGS_SSE_SPILL, "general_regs_sse_spill")
+DEF_TUNE (X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE, "avoid_mem_opnd_for_cmove")
+DEF_TUNE (X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS, "split_mem_opnd_for_fp_converts")

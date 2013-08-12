@@ -1,3 +1,7 @@
+2013-08-06  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (lto_materialize_function): Do not read body anymore.
+
 2013-08-02  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_materialize_function): Do not push struct function.

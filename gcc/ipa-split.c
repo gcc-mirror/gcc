@@ -1223,6 +1223,7 @@ split_function (struct split_point *split_point)
       DECL_FUNCTION_CODE (node->symbol.decl) = (enum built_in_function) 0;
     }
   cgraph_node_remove_callees (cur_node);
+  ipa_remove_all_references (&cur_node->symbol.ref_list);
   if (!split_part_return_p)
     TREE_THIS_VOLATILE (node->symbol.decl) = 1;
   if (dump_file)
@@ -1624,25 +1625,43 @@ gate_split_functions (void)
 	  && !profile_arc_flag && !flag_branch_probabilities);
 }
 
-struct gimple_opt_pass pass_split_functions =
+namespace {
+
+const pass_data pass_data_split_functions =
 {
- {
-  GIMPLE_PASS,
-  "fnsplit",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_split_functions,			/* gate */
-  execute_split_functions,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_FNSPLIT,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_all      			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "fnsplit", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_FNSPLIT, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_all, /* todo_flags_finish */
 };
+
+class pass_split_functions : public gimple_opt_pass
+{
+public:
+  pass_split_functions(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_split_functions, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_split_functions (); }
+  unsigned int execute () { return execute_split_functions (); }
+
+}; // class pass_split_functions
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_split_functions (gcc::context *ctxt)
+{
+  return new pass_split_functions (ctxt);
+}
 
 /* Gate feedback driven function splitting pass.
    We don't need to split when profiling at all, we are producing
@@ -1666,22 +1685,40 @@ execute_feedback_split_functions (void)
   return retval;
 }
 
-struct gimple_opt_pass pass_feedback_split_functions =
+namespace {
+
+const pass_data pass_data_feedback_split_functions =
 {
- {
-  GIMPLE_PASS,
-  "feedback_fnsplit",			/* name */
-  OPTGROUP_NONE,                      /* optinfo_flags */
-  gate_feedback_split_functions,	/* gate */
-  execute_feedback_split_functions,	/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_IPA_FNSPLIT,			/* tv_id */
-  PROP_cfg,				/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_all      			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "feedback_fnsplit", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_FNSPLIT, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_all, /* todo_flags_finish */
 };
+
+class pass_feedback_split_functions : public gimple_opt_pass
+{
+public:
+  pass_feedback_split_functions(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_feedback_split_functions, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_feedback_split_functions (); }
+  unsigned int execute () { return execute_feedback_split_functions (); }
+
+}; // class pass_feedback_split_functions
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_feedback_split_functions (gcc::context *ctxt)
+{
+  return new pass_feedback_split_functions (ctxt);
+}

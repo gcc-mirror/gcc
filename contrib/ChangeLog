@@ -1,3 +1,7 @@
+2013-08-03  Caroline Tice4  <cmtice@google.com>
+
+	* gcc_update: Add libvtv files.
+	
 2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
 	* update-copyright.py: Add libgupc to the default list. Add

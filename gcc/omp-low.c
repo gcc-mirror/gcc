@@ -6018,25 +6018,43 @@ gate_expand_omp (void)
   return (flag_openmp != 0 && !seen_error ());
 }
 
-struct gimple_opt_pass pass_expand_omp =
+namespace {
+
+const pass_data pass_data_expand_omp =
 {
- {
-  GIMPLE_PASS,
-  "ompexp",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_expand_omp,			/* gate */
-  execute_expand_omp,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_gimple_any,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                      		/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "ompexp", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_expand_omp : public gimple_opt_pass
+{
+public:
+  pass_expand_omp(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_expand_omp, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_expand_omp (); }
+  unsigned int execute () { return execute_expand_omp (); }
+
+}; // class pass_expand_omp
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_expand_omp (gcc::context *ctxt)
+{
+  return new pass_expand_omp (ctxt);
+}
 
 /* Routines to lower OpenMP directives into OMP-GIMPLE.  */
 
@@ -7193,25 +7211,42 @@ execute_lower_omp (void)
   return 0;
 }
 
-struct gimple_opt_pass pass_lower_omp =
+namespace {
+
+const pass_data pass_data_lower_omp =
 {
- {
-  GIMPLE_PASS,
-  "omplower",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  NULL,					/* gate */
-  execute_lower_omp,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_gimple_any,			/* properties_required */
-  PROP_gimple_lomp,			/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0                                     /* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "omplower", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  PROP_gimple_lomp, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_lower_omp : public gimple_opt_pass
+{
+public:
+  pass_lower_omp(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_lower_omp, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return execute_lower_omp (); }
+
+}; // class pass_lower_omp
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_lower_omp (gcc::context *ctxt)
+{
+  return new pass_lower_omp (ctxt);
+}
 
 /* The following is a utility to diagnose OpenMP structured block violations.
    It is not part of the "omplower" pass, as that's invoked too late.  It
@@ -7457,24 +7492,44 @@ gate_diagnose_omp_blocks (void)
   return flag_openmp != 0;
 }
 
-struct gimple_opt_pass pass_diagnose_omp_blocks =
+namespace {
+
+const pass_data pass_data_diagnose_omp_blocks =
 {
-  {
-    GIMPLE_PASS,
-    "*diagnose_omp_blocks",		/* name */
-    OPTGROUP_NONE,                      /* optinfo_flags */
-    gate_diagnose_omp_blocks,		/* gate */
-    diagnose_omp_structured_block_errors,	/* execute */
-    NULL,				/* sub */
-    NULL,				/* next */
-    0,					/* static_pass_number */
-    TV_NONE,				/* tv_id */
-    PROP_gimple_any,			/* properties_required */
-    0,					/* properties_provided */
-    0,					/* properties_destroyed */
-    0,					/* todo_flags_start */
-    0,					/* todo_flags_finish */
-  }
+  GIMPLE_PASS, /* type */
+  "*diagnose_omp_blocks", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  PROP_gimple_any, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_diagnose_omp_blocks : public gimple_opt_pass
+{
+public:
+  pass_diagnose_omp_blocks(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_diagnose_omp_blocks, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_diagnose_omp_blocks (); }
+  unsigned int execute () {
+    return diagnose_omp_structured_block_errors ();
+  }
+
+}; // class pass_diagnose_omp_blocks
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_diagnose_omp_blocks (gcc::context *ctxt)
+{
+  return new pass_diagnose_omp_blocks (ctxt);
+}
 
 #include "gt-omp-low.h"

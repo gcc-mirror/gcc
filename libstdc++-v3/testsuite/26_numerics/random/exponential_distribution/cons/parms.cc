@@ -34,7 +34,7 @@ test01()
   std::exponential_distribution<> u(0.5);
   VERIFY( u.lambda() == 0.5 );
   typedef std::exponential_distribution<>::result_type result_type;
-  VERIFY( u.min() == 0 );
+  VERIFY( u.min() == 0.0 );
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 

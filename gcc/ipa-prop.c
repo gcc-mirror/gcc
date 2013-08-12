@@ -2313,12 +2313,6 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
      the cgraph node too early.  */
   gcc_assert (!callee->global.inlined_to);
 
-  cgraph_make_edge_direct (ie, callee);
-  es = inline_edge_summary (ie);
-  es->call_stmt_size -= (eni_size_weights.indirect_call_cost
-			 - eni_size_weights.call_cost);
-  es->call_stmt_time -= (eni_time_weights.indirect_call_cost
-			 - eni_time_weights.call_cost);
   if (dump_file && !unreachable)
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a known target "
@@ -2326,14 +2320,19 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target)
 	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
 	       xstrdup (cgraph_node_name (ie->caller)),
 	       ie->caller->symbol.order,
-	       xstrdup (cgraph_node_name (ie->callee)),
-	       ie->callee->symbol.order);
+	       xstrdup (cgraph_node_name (callee)),
+	       callee->symbol.order);
       if (ie->call_stmt)
 	print_gimple_stmt (dump_file, ie->call_stmt, 2, TDF_SLIM);
       else
 	fprintf (dump_file, "with uid %i\n", ie->lto_stmt_uid);
-    }
-  callee = cgraph_function_or_thunk_node (callee, NULL);
+     }
+  ie = cgraph_make_edge_direct (ie, callee);
+  es = inline_edge_summary (ie);
+  es->call_stmt_size -= (eni_size_weights.indirect_call_cost
+			 - eni_size_weights.call_cost);
+  es->call_stmt_time -= (eni_time_weights.indirect_call_cost
+			 - eni_time_weights.call_cost);
 
   return ie;
 }
@@ -2374,7 +2373,7 @@ remove_described_reference (symtab_node symbol, struct ipa_cst_ref_desc *rdesc)
 
   origin = rdesc->cs;
   to_del = ipa_find_reference ((symtab_node) origin->caller, symbol,
-			       origin->call_stmt);
+			       origin->call_stmt, origin->lto_stmt_uid);
   gcc_assert (to_del);
   ipa_remove_reference (to_del);
   if (dump_file)
@@ -2408,9 +2407,11 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
 				  struct ipa_jump_func *jfunc,
 				  struct ipa_node_params *new_root_info)
 {
-  struct ipa_cst_ref_desc *rdesc;
   struct cgraph_edge *cs;
   tree target;
+  bool agg_contents = ie->indirect_info->agg_contents;
+  bool speculative = ie->speculative;
+  struct ipa_cst_ref_desc *rdesc;
 
   if (ie->indirect_info->agg_contents)
     target = ipa_find_agg_cst_for_param (&jfunc->agg,
@@ -2422,7 +2423,8 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
     return NULL;
   cs = ipa_make_edge_direct_to_target (ie, target);
 
-  if (cs && !ie->indirect_info->agg_contents
+  /* FIXME: speculative edges can be handled.  */
+  if (cs && !agg_contents && !speculative
       && jfunc->type == IPA_JF_CONST
       && (rdesc = jfunc_rdesc_usable (jfunc))
       && --rdesc->refcount == 0)
@@ -2521,7 +2523,14 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       else
 	new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
 							    new_root_info);
-      if (new_direct_edge)
+      /* If speculation was removed, then we need to do nothing.  */
+      if (new_direct_edge && new_direct_edge != ie)
+	{
+	  new_direct_edge->indirect_inlining_edge = 1;
+	  top = IPA_EDGE_REF (cs);
+	  res = true;
+	}
+      else if (new_direct_edge)
 	{
 	  new_direct_edge->indirect_inlining_edge = 1;
 	  if (new_direct_edge->call_stmt)
@@ -2532,9 +2541,9 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	  if (new_edges)
 	    {
 	      new_edges->safe_push (new_direct_edge);
-	      top = IPA_EDGE_REF (cs);
 	      res = true;
 	    }
+	  top = IPA_EDGE_REF (cs);
 	}
       else if (jfunc->type == IPA_JF_PASS_THROUGH
 	       && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
@@ -2645,7 +2654,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 		  && TREE_CODE (TREE_OPERAND (t, 0)) == FUNCTION_DECL
 		  && (n = cgraph_get_node (TREE_OPERAND (t, 0)))
 		  && (ref = ipa_find_reference ((symtab_node) new_root,
-						(symtab_node) n, NULL)))
+						(symtab_node) n, NULL, 0)))
 		{
 		  if (dump_file)
 		    fprintf (dump_file, "ipa-prop: Removing cloning-created "
@@ -2683,7 +2692,7 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 		    {
 		      struct ipa_ref *ref;
 		      ref = ipa_find_reference ((symtab_node) clone,
-						(symtab_node) n, NULL);
+						(symtab_node) n, NULL, 0);
 		      if (ref)
 			{
 			  if (dump_file)

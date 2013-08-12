@@ -4450,24 +4450,43 @@ gate_tree_ssa_reassoc (void)
   return flag_tree_reassoc != 0;
 }
 
-struct gimple_opt_pass pass_reassoc =
+namespace {
+
+const pass_data pass_data_reassoc =
 {
- {
-  GIMPLE_PASS,
-  "reassoc",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_tree_ssa_reassoc,		/* gate */
-  execute_reassoc,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_TREE_REASSOC,			/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_ssa
-  | TODO_update_ssa_only_virtuals
-  | TODO_verify_flow			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "reassoc", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_TREE_REASSOC, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_verify_ssa
+    | TODO_update_ssa_only_virtuals
+    | TODO_verify_flow ), /* todo_flags_finish */
 };
+
+class pass_reassoc : public gimple_opt_pass
+{
+public:
+  pass_reassoc(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_reassoc, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  opt_pass * clone () { return new pass_reassoc (ctxt_); }
+  bool gate () { return gate_tree_ssa_reassoc (); }
+  unsigned int execute () { return execute_reassoc (); }
+
+}; // class pass_reassoc
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_reassoc (gcc::context *ctxt)
+{
+  return new pass_reassoc (ctxt);
+}

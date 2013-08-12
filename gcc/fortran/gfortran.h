@@ -2252,6 +2252,7 @@ typedef struct
   int warn_align_commons;
   int warn_real_q_constant;
   int warn_unused_dummy_argument;
+  int warn_zerotrip;
   int warn_realloc_lhs;
   int warn_realloc_lhs_all;
   int warn_compare_reals;
@@ -2820,7 +2821,7 @@ bool gfc_check_vardef_context (gfc_expr*, bool, bool, bool, const char*);
 extern gfc_code new_st;
 
 void gfc_clear_new_st (void);
-gfc_code *gfc_get_code (void);
+gfc_code *gfc_get_code (gfc_exec_op);
 gfc_code *gfc_append_code (gfc_code *, gfc_code *);
 void gfc_free_statement (gfc_code *);
 void gfc_free_statements (gfc_code *);
@@ -2983,7 +2984,7 @@ void gfc_add_class_array_ref (gfc_expr *);
 bool gfc_is_class_array_ref (gfc_expr *, bool *);
 bool gfc_is_class_scalar_expr (gfc_expr *);
 bool gfc_is_class_container_ref (gfc_expr *e);
-gfc_expr *gfc_class_null_initializer (gfc_typespec *, gfc_expr *);
+gfc_expr *gfc_class_initializer (gfc_typespec *, gfc_expr *);
 unsigned int gfc_hash_value (gfc_symbol *);
 bool gfc_build_class_symbol (gfc_typespec *, symbol_attribute *,
 				gfc_array_spec **, bool);

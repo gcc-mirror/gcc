@@ -147,6 +147,7 @@ cgraph_clone_edge (struct cgraph_edge *e, struct cgraph_node *n,
   /* Clone flags that depend on call_stmt availability manually.  */
   new_edge->can_throw_external = e->can_throw_external;
   new_edge->call_stmt_cannot_inline_p = e->call_stmt_cannot_inline_p;
+  new_edge->speculative = e->speculative;
   if (update_original)
     {
       e->count -= new_edge->count;
@@ -295,7 +296,7 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   size_t i;
   struct ipa_replace_map *map;
 
-  if (!flag_wpa)
+  if (!in_lto_p)
     gcc_checking_assert  (tree_versionable_function_p (old_decl));
 
   gcc_assert (old_node->local.can_change_signature || !args_to_skip);
@@ -474,17 +475,21 @@ cgraph_find_replacement_node (struct cgraph_node *node)
 }
 
 /* Like cgraph_set_call_stmt but walk the clone tree and update all
-   clones sharing the same function body.  */
+   clones sharing the same function body.  
+   When WHOLE_SPECULATIVE_EDGES is true, all three components of
+   speculative edge gets updated.  Otherwise we update only direct
+   call.  */
 
 void
 cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
-				       gimple old_stmt, gimple new_stmt)
+				       gimple old_stmt, gimple new_stmt,
+				       bool update_speculative)
 {
   struct cgraph_node *node;
   struct cgraph_edge *edge = cgraph_edge (orig, old_stmt);
 
   if (edge)
-    cgraph_set_call_stmt (edge, new_stmt);
+    cgraph_set_call_stmt (edge, new_stmt, update_speculative);
 
   node = orig->clones;
   if (node)
@@ -492,7 +497,23 @@ cgraph_set_call_stmt_including_clones (struct cgraph_node *orig,
       {
 	struct cgraph_edge *edge = cgraph_edge (node, old_stmt);
 	if (edge)
-	  cgraph_set_call_stmt (edge, new_stmt);
+	  {
+	    cgraph_set_call_stmt (edge, new_stmt, update_speculative);
+	    /* If UPDATE_SPECULATIVE is false, it means that we are turning
+	       speculative call into a real code sequence.  Update the
+	       callgraph edges.  */
+	    if (edge->speculative && !update_speculative)
+	      {
+		struct cgraph_edge *direct, *indirect;
+		struct ipa_ref *ref;
+
+		gcc_assert (!edge->indirect_unknown_callee);
+		cgraph_speculative_call_info (edge, direct, indirect, ref);
+		direct->speculative = false;
+		indirect->speculative = false;
+		ref->speculative = false;
+	      }
+	  }
 	if (node->clones)
 	  node = node->clones;
 	else if (node->next_sibling_clone)
@@ -811,6 +832,7 @@ cgraph_materialize_all_clones (void)
 {
   struct cgraph_node *node;
   bool stabilized = false;
+  
 
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Materializing clones\n");
@@ -829,6 +851,8 @@ cgraph_materialize_all_clones (void)
 	  if (node->clone_of && node->symbol.decl != node->clone_of->symbol.decl
 	      && !gimple_has_body_p (node->symbol.decl))
 	    {
+	      if (!node->clone_of->clone_of)
+		cgraph_get_body (node->clone_of);
 	      if (gimple_has_body_p (node->clone_of->symbol.decl))
 	        {
 		  if (cgraph_dump_file)
@@ -874,7 +898,12 @@ cgraph_materialize_all_clones (void)
     }
   FOR_EACH_FUNCTION (node)
     if (!node->symbol.analyzed && node->callees)
-      cgraph_node_remove_callees (node);
+      {
+        cgraph_node_remove_callees (node);
+	ipa_remove_all_references (&node->symbol.ref_list);
+      }
+    else
+      ipa_clear_stmts_in_references ((symtab_node)node);
   if (cgraph_dump_file)
     fprintf (cgraph_dump_file, "Materialization Call site updates done.\n");
 #ifdef ENABLE_CHECKING

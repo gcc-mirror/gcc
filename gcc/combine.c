@@ -5803,8 +5803,15 @@ combine_simplify_rtx (rtx x, enum machine_mode op0_mode, int in_dest,
 		return x;
 	    }
 
-	  /* If the code changed, return a whole new comparison.  */
-	  if (new_code != code)
+	  /* If the code changed, return a whole new comparison.
+	     We also need to avoid using SUBST in cases where
+	     simplify_comparison has widened a comparison with a CONST_INT,
+	     since in that case the wider CONST_INT may fail the sanity
+	     checks in do_SUBST.  */
+	  if (new_code != code
+	      || (CONST_INT_P (op1)
+		  && GET_MODE (op0) != GET_MODE (XEXP (x, 0))
+		  && GET_MODE (op0) != GET_MODE (XEXP (x, 1))))
 	    return gen_rtx_fmt_ee (new_code, mode, op0, op1);
 
 	  /* Otherwise, keep this operation, but maybe change its operands.
@@ -13840,22 +13847,40 @@ rest_of_handle_combine (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_combine =
+namespace {
+
+const pass_data pass_data_combine =
 {
- {
-  RTL_PASS,
-  "combine",                            /* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_handle_combine,                  /* gate */
-  rest_of_handle_combine,               /* execute */
-  NULL,                                 /* sub */
-  NULL,                                 /* next */
-  0,                                    /* static_pass_number */
-  TV_COMBINE,                           /* tv_id */
-  PROP_cfglayout,                       /* properties_required */
-  0,                                    /* properties_provided */
-  0,                                    /* properties_destroyed */
-  0,                                    /* todo_flags_start */
-  TODO_df_finish | TODO_verify_rtl_sharing /* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "combine", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_COMBINE, /* tv_id */
+  PROP_cfglayout, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_df_finish | TODO_verify_rtl_sharing ), /* todo_flags_finish */
 };
+
+class pass_combine : public rtl_opt_pass
+{
+public:
+  pass_combine(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_combine, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_handle_combine (); }
+  unsigned int execute () { return rest_of_handle_combine (); }
+
+}; // class pass_combine
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_combine (gcc::context *ctxt)
+{
+  return new pass_combine (ctxt);
+}

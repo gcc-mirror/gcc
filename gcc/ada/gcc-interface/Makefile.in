@@ -250,10 +250,9 @@ LIBS = $(LIBINTL) $(LIBICONV) $(LIBBACKTRACE) $(LIBIBERTY) $(SYSLIBS)
 LIBDEPS = $(LIBINTL_DEP) $(LIBICONV_DEP) $(LIBBACKTRACE) $(LIBIBERTY)
 # Default is no TGT_LIB; one might be passed down or something
 TGT_LIB =
-TOOLS_LIBS = targext.o link.o ../../ggc-none.o ../../libcommon-target.a \
+TOOLS_LIBS = ../link.o ../targext.o ../../ggc-none.o ../../libcommon-target.a \
   ../../libcommon.a ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
-  ../../../libbacktrace/.libs/libbacktrace.a ../../../libiberty/libiberty.a \
-  $(SYSLIBS) $(TGT_LIB)
+  ../$(LIBBACKTRACE) ../$(LIBIBERTY) $(SYSLIBS) $(TGT_LIB)
 
 # Convert the target variable into a space separated list of architecture,
 # manufacturer, and operating system and assign each of those to its own
@@ -2491,12 +2490,12 @@ common-tools: ../stamp-tools
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ --GCC="$(GCC_LINK)" $(TOOLS_LIBS)
 
-../../vxaddr2line$(exeext): ../stamp-tools targext.o
+../../vxaddr2line$(exeext): ../stamp-tools
 	$(GNATMAKE) -c  $(ADA_INCLUDES) vxaddr2line --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) vxaddr2line
-	$(GNATLINK) -v vxaddr2line -o $@ --GCC="$(GCC_LINK)" targext.o $(CLIB)
+	$(GNATLINK) -v vxaddr2line -o $@ --GCC="$(GCC_LINK)" ../targext.o $(CLIB)
 
-gnatmake-re: ../stamp-tools link.o targext.o
+gnatmake-re: ../stamp-tools
 	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(MOST_ADA_FLAGS)"
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake
@@ -2507,7 +2506,7 @@ gnatmake-re: ../stamp-tools link.o targext.o
 # with the former version of gnatlink itself which cannot override itself.
 # gnatlink-re cannot be run at the same time as gnatmake-re, hence the
 # dependency
-gnatlink-re: ../stamp-tools link.o targext.o gnatmake-re
+gnatlink-re: ../stamp-tools gnatmake-re
 	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
@@ -2519,11 +2518,11 @@ gnatlink-re: ../stamp-tools link.o targext.o gnatmake-re
 #  stamp target in the parent directory whenever gnat1 is rebuilt
 
 # Likewise for the tools
-../../gnatmake$(exeext): $(P) b_gnatm.o link.o targext.o $(GNATMAKE_OBJS)
+../../gnatmake$(exeext): $(P) b_gnatm.o $(GNATMAKE_OBJS)
 	+$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatm.o $(GNATMAKE_OBJS) \
 		    $(TOOLS_LIBS)
 
-../../gnatlink$(exeext): $(P) b_gnatl.o link.o targext.o $(GNATLINK_OBJS)
+../../gnatlink$(exeext): $(P) b_gnatl.o $(GNATLINK_OBJS)
 	+$(GCC_LINK) $(ALL_CFLAGS) $(LDFLAGS) -o $@ b_gnatl.o $(GNATLINK_OBJS) \
 		    $(TOOLS_LIBS)
 

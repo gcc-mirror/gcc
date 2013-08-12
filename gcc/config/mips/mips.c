@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target-globals.h"
 #include "opts.h"
 #include "tree-pass.h"
+#include "context.h"
 
 /* True if X is an UNSPEC wrapper around a SYMBOL_REF or LABEL_REF.  */
 #define UNSPEC_ADDRESS_P(X)					\
@@ -16337,33 +16338,43 @@ mips_machine_reorg2 (void)
   return 0;
 }
 
-struct rtl_opt_pass pass_mips_machine_reorg2 =
+namespace {
+
+const pass_data pass_data_mips_machine_reorg2 =
 {
- {
-  RTL_PASS,
-  "mach2",				/* name */
-  OPTGROUP_NONE,			/* optinfo_flags */
-  NULL,					/* gate */
-  mips_machine_reorg2,			/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_MACH_DEP,				/* tv_id */
-  0,					/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  TODO_verify_rtl_sharing,		/* todo_flags_finish */
- }
+  RTL_PASS, /* type */
+  "mach2", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  false, /* has_gate */
+  true, /* has_execute */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_verify_rtl_sharing, /* todo_flags_finish */
 };
 
-struct register_pass_info insert_pass_mips_machine_reorg2 =
+class pass_mips_machine_reorg2 : public rtl_opt_pass
 {
-  &pass_mips_machine_reorg2.pass,	/* pass */
-  "dbr",				/* reference_pass_name */
-  1,					/* ref_pass_instance_number */
-  PASS_POS_INSERT_AFTER			/* po_op */
-};
+public:
+  pass_mips_machine_reorg2(gcc::context *ctxt)
+    : rtl_opt_pass(pass_data_mips_machine_reorg2, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute () { return mips_machine_reorg2 (); }
+
+}; // class pass_mips_machine_reorg2
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_mips_machine_reorg2 (gcc::context *ctxt)
+{
+  return new pass_mips_machine_reorg2 (ctxt);
+}
+
 
 /* Implement TARGET_ASM_OUTPUT_MI_THUNK.  Generate rtl rather than asm text
    in order to avoid duplicating too much logic from elsewhere.  */
@@ -17157,6 +17168,14 @@ mips_option_override (void)
   /* We register a second machine specific reorg pass after delay slot
      filling.  Registering the pass must be done at start up.  It's
      convenient to do it here.  */
+  opt_pass *new_pass = make_pass_mips_machine_reorg2 (g);
+  struct register_pass_info insert_pass_mips_machine_reorg2 =
+    {
+      new_pass,		/* pass */
+      "dbr",			/* reference_pass_name */
+      1,			/* ref_pass_instance_number */
+      PASS_POS_INSERT_AFTER	/* po_op */
+    };
   register_pass (&insert_pass_mips_machine_reorg2);
 
   if (TARGET_HARD_FLOAT_ABI && TARGET_MIPS5900)

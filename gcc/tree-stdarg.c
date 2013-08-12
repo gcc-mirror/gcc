@@ -985,22 +985,40 @@ finish:
 }
 
 
-struct gimple_opt_pass pass_stdarg =
+namespace {
+
+const pass_data pass_data_stdarg =
 {
- {
-  GIMPLE_PASS,
-  "stdarg",				/* name */
-  OPTGROUP_NONE,                        /* optinfo_flags */
-  gate_optimize_stdarg,			/* gate */
-  execute_optimize_stdarg,		/* execute */
-  NULL,					/* sub */
-  NULL,					/* next */
-  0,					/* static_pass_number */
-  TV_NONE,				/* tv_id */
-  PROP_cfg | PROP_ssa,			/* properties_required */
-  0,					/* properties_provided */
-  0,					/* properties_destroyed */
-  0,					/* todo_flags_start */
-  0             			/* todo_flags_finish */
- }
+  GIMPLE_PASS, /* type */
+  "stdarg", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_NONE, /* tv_id */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
 };
+
+class pass_stdarg : public gimple_opt_pass
+{
+public:
+  pass_stdarg(gcc::context *ctxt)
+    : gimple_opt_pass(pass_data_stdarg, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_optimize_stdarg (); }
+  unsigned int execute () { return execute_optimize_stdarg (); }
+
+}; // class pass_stdarg
+
+} // anon namespace
+
+gimple_opt_pass *
+make_pass_stdarg (gcc::context *ctxt)
+{
+  return new pass_stdarg (ctxt);
+}

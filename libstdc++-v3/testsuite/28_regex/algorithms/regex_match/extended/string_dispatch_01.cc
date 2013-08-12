@@ -38,12 +38,10 @@ template<typename _Bi_iter, typename _Alloc,
              regex_constants::match_flag_type         __flags
                             = regex_constants::match_default)
   {
-    __detail::_AutomatonPtr __a = __re._M_get_automaton();
-    __detail::_Automaton::_SizeT __sz = __a->_M_sub_count();
-    __detail::_SpecializedCursor<_Bi_iter> __cs(__s, __e);
-    __detail::_SpecializedResults<_Bi_iter, _Alloc> __r(__sz, __cs, __m);
-    VERIFY( dynamic_cast<__detail::_DFSMatcher *>(
-              &*__a->_M_get_matcher(__cs, __r, __a, __flags)) != nullptr );
+    VERIFY( (dynamic_cast
+             <__detail::_DFSExecutor<_Bi_iter, _Alloc, _Ch_type, _Rx_traits>*>
+             (&*__detail::__get_executor(__s, __e, __m, __re, __flags))
+             != nullptr) );
   }
 
 void
