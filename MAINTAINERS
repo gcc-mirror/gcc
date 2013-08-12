@@ -288,6 +288,7 @@ libsanitizer, asan.c	Jakub Jelinek		jakub@redhat.com
 libsanitizer, asan.c	Dodji Seketeli		dodji@redhat.com
 libsanitizer, asan.c	Kostya Serebryany	kcc@google.com
 libsanitizer, asan.c	Dmitry Vyukov		dvyukov@google.com
+libvtv	      		Caroline Tice		cmtice@google.com
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 LTO			Diego Novillo		dnovillo@google.com
@@ -537,7 +538,7 @@ Chung-Lin Tang					cltang@codesourcery.com
 Samuel Tardieu					sam@rfc1149.net
 Dinar Temirbulatov				dinar@kugelworks.com
 Kresten Krab Thorup				krab@gcc.gnu.org
-Caroline Tice					ctice@apple.com
+Caroline Tice					cmtice@google.com
 Kyrylo Tkachov					kyrylo.tkachov@arm.com
 Konrad Trifunovic				konrad.trifunovic@inria.fr
 David Ung					davidu@mips.com

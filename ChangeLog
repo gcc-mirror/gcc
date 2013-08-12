@@ -1,3 +1,8 @@
+2013-08-12  Caroline Tice  <cmtice@google.com>
+
+	* MAINTAINERS: Add myself as libvtv maintainer. Correct my email
+	address in the Write After Approval section.
+
 2013-08-09  Carlos O'Donell  <carlos@redhat.com>
 
 	* MAINTAINERS (Write After Approval): Update email.
