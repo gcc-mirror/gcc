@@ -1,3 +1,15 @@
+2013-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (floatunssi<mode>2 expand): Use MODEF mode
+	iterator instead of X87MODEF.
+
+2013-08-12  Perez Read  <netfirewall@gmail.com>
+
+	PR target/58132
+	* config/i386/i386.md (*movabs<mode>_1):  Add <ptrsize> PTR before
+	operand 0 for intel asm alternative.
+	(*movabs<mode>_2): Ditto for operand 1.
+
 2013-08-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_none.h
@@ -43,14 +55,13 @@
 	* config/i386/i386-opts.h: Include stringopt.def.
 	* config/i386/i386.opt: Include stringopt.opt.
 	* config/i386/i386.c (ix86_option_override_internal):
-	Override default size based stringop inline strategies
-	with options.
+	Override default size based stringop inline strategies with options.
 	* config/i386/i386.c (ix86_parse_stringop_strategy_string):
 	New function.
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
-	 * ipa-ref.c (ipa_clear_stmts_in_references): Clear lto_stmt_uid, too.
+	* ipa-ref.c (ipa_clear_stmts_in_references): Clear lto_stmt_uid, too.
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
@@ -73,8 +84,7 @@
 
 	* cgraph.h (cgraph_node): Add profile_id.
 	* value-prof.c (cgraph_node_map): Turn into pointer_map.
-	(init_node_map): Rewrite to handle hashes increas of incremental
-	IDs.
+	(init_node_map): Rewrite to handle hashes increas of incremental IDs.
 	(del_node_map): Update.
 	(find_func_by_funcdef_no): Replace by ...
 	(find_func_by_profile_id): ... this one.
@@ -96,8 +106,8 @@
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphbuild.c (cgraph_rebuild_references): Rebuild only non-speculative
-	refs.
+	* cgraphbuild.c (cgraph_rebuild_references): Rebuild only
+	non-speculative refs.
 	* cgraph.c (cgraph_update_edge_in_call_site_hash): New function.
 	(cgraph_add_edge_to_call_site_hash): Deal with speculative calls.
 	(cgraph_set_call_stmt): Likewise.
@@ -107,8 +117,7 @@
 	(cgraph_turn_edge_to_speculative): New function.
 	(cgraph_speculative_call_info): New function.
 	(cgraph_make_edge_direct): Return direct edge; handle speculation.
-	(cgraph_redirect_edge_call_stmt_to_callee): Expand speculative
-	edges.
+	(cgraph_redirect_edge_call_stmt_to_callee): Expand speculative edges.
 	(dump_cgraph_node): Dump speculation.
 	(verify_edge_count_and_frequency): Accept speculative edges.
 	(verify_edge_corresponds_to_fndecl): Handle partitioned cgraph.
@@ -151,10 +160,8 @@
 	(propagate_controlled_uses): Liekwise.
 	* tree-inline.c (copy_bb): Copy speculative edges.
 	(redirect_all_calls): New function.
-	(copy_cfg_body): Do redirection after loop info
-	is updated.
-	(delete_unreachable_blocks_update_callgraph): Updadte
-	speculation.
+	(copy_cfg_body): Do redirection after loop info is updated.
+	(delete_unreachable_blocks_update_callgraph): Updadte speculation.
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
@@ -250,7 +257,8 @@
 	* cgraph.c (verify_cgraph_node): Add basic ipa-ref verifier.
 	* ipa-inline-transform.c (inline_transform): Remove all references
 	after inlining.
-	* cgraphunit.c (expand_function): Remove all references after expansion.
+	* cgraphunit.c (expand_function): Remove all references after
+	expansion.
 	* ipa-ref.c (ipa_ref_has_aliases_p): Fix formatting.
 	(ipa_find_reference): Rewrite to iterator.
 	(remove_stmt_references): Likewise.
