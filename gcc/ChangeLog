@@ -1,3 +1,9 @@
+2013-08-12  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.md (floatunssi<mode>2 expand): Add new
+	expand for QI/HImode operand to produce more effictive code for
+	unsigned char(short) --> float(double) conversion.
+
 2013-08-12  Alexander Monakov  <amonakov@ispras.ru>
 
 	* doc/invoke.texi: Mention that -ftls-model does not force the final
