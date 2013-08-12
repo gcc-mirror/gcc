@@ -6,7 +6,7 @@ enum class Color1 {
 };
 
 enum struct Color2 {
-  Red, // { dg-error "previously declared here" }
+  Red, // { dg-message "previously declared here" }
   Orange,
   Yellow,
   Green,

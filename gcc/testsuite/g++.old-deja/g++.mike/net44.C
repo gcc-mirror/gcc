@@ -1,7 +1,7 @@
 // { dg-do assemble  }
 // Make sure we don't dump core
 
-enum request { q, w, e};		// { dg-error "" } 
+enum request { q, w, e};		// { dg-message "" } 
 
 class request {				// { dg-error "" } 
 public:

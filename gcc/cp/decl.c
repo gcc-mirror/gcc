@@ -1146,8 +1146,9 @@ warn_extern_redeclared_static (tree newdecl, tree olddecl)
       && DECL_ARTIFICIAL (olddecl))
     return;
 
-  permerror (input_location, "%qD was declared %<extern%> and later %<static%>", newdecl);
-  permerror (input_location, "previous declaration of %q+D", olddecl);
+  if (permerror (input_location,
+		 "%qD was declared %<extern%> and later %<static%>", newdecl))
+    inform (input_location, "previous declaration of %q+D", olddecl);
 }
 
 /* NEW_DECL is a redeclaration of OLD_DECL; both are functions or
@@ -1287,19 +1288,19 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	       && DECL_UNINLINABLE (olddecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (olddecl)))
 	{
-	  warning (OPT_Wattributes, "function %q+D redeclared as inline",
-		   newdecl);
-	  warning (OPT_Wattributes, "previous declaration of %q+D "
-		   "with attribute noinline", olddecl);
+	  if (warning (OPT_Wattributes, "function %q+D redeclared as inline",
+		       newdecl))
+	    inform (input_location, "previous declaration of %q+D "
+		    "with attribute noinline", olddecl);
 	}
       else if (DECL_DECLARED_INLINE_P (olddecl)
 	       && DECL_UNINLINABLE (newdecl)
 	       && lookup_attribute ("noinline", DECL_ATTRIBUTES (newdecl)))
 	{
-	  warning (OPT_Wattributes, "function %q+D redeclared with "
-		   "attribute noinline", newdecl);
-	  warning (OPT_Wattributes, "previous declaration of %q+D was inline",
-		   olddecl);
+	  if (warning (OPT_Wattributes, "function %q+D redeclared with "
+		       "attribute noinline", newdecl))
+	    inform (input_location, "previous declaration of %q+D was inline",
+		    olddecl);
 	}
     }
 
@@ -1485,7 +1486,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       error ("%q#D redeclared as different kind of symbol", newdecl);
       if (TREE_CODE (olddecl) == TREE_LIST)
 	olddecl = TREE_VALUE (olddecl);
-      error ("previous declaration of %q+#D", olddecl);
+      inform (input_location, "previous declaration of %q+#D", olddecl);
 
       return error_mark_node;
     }
@@ -1550,7 +1551,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
       else
 	{
 	  error ("conflicting declaration %q#D", newdecl);
-	  error ("%q+D has a previous declaration as %q#D", olddecl, olddecl);
+	  inform (input_location,
+		  "%q+D has a previous declaration as %q#D", olddecl, olddecl);
 	  return error_mark_node;
 	}
     }
@@ -1613,9 +1615,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	{
 	  error_at (DECL_SOURCE_LOCATION (newdecl), errmsg, newdecl);
 	  if (DECL_NAME (olddecl) != NULL_TREE)
-	    error ((DECL_INITIAL (olddecl) && namespace_bindings_p ())
-		   ? G_("%q+#D previously defined here")
-		   : G_("%q+#D previously declared here"), olddecl);
+	    inform (input_location,
+		    (DECL_INITIAL (olddecl) && namespace_bindings_p ())
+		    ? G_("%q+#D previously defined here")
+		    : G_("%q+#D previously declared here"), olddecl);
 	  return error_mark_node;
 	}
       else if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -1759,8 +1762,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool newdecl_is_friend)
 	  && (! DECL_TEMPLATE_SPECIALIZATION (newdecl)
 	      || DECL_TEMPLATE_SPECIALIZATION (olddecl)))
 	{
-	  warning (OPT_Wredundant_decls, "redundant redeclaration of %qD in same scope", newdecl);
-	  warning (OPT_Wredundant_decls, "previous declaration of %q+D", olddecl);
+	  if (warning (OPT_Wredundant_decls,
+		       "redundant redeclaration of %qD in same scope",
+		       newdecl))
+	    inform (input_location, "previous declaration of %q+D", olddecl);
 	}
 
       if (!(DECL_TEMPLATE_INSTANTIATION (olddecl)
@@ -11836,14 +11841,14 @@ check_elaborated_type_specifier (enum tag_types tag_code,
 	   && tag_code != typename_type)
     {
       error ("%qT referred to as %qs", type, tag_name (tag_code));
-      error ("%q+T has a previous declaration here", type);
+      inform (input_location, "%q+T has a previous declaration here", type);
       return error_mark_node;
     }
   else if (TREE_CODE (type) != ENUMERAL_TYPE
 	   && tag_code == enum_type)
     {
       error ("%qT referred to as enum", type);
-      error ("%q+T has a previous declaration here", type);
+      inform (input_location, "%q+T has a previous declaration here", type);
       return error_mark_node;
     }
   else if (!allow_template_p

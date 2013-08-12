@@ -3,5 +3,5 @@
 
 // { dg-do compile }
 
-int foo;                    // { dg-error "previous declaration" }
+int foo;                    // { dg-message "previous declaration" }
 template<int> void foo() {} // { dg-error "redeclared" }

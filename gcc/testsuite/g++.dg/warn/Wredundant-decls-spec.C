@@ -8,5 +8,5 @@ template <typename T> struct S
 
 template<> void S<int>::foo();
 
-template<> void S<double>::foo();  // { dg-warning "previous declaration" }
+template<> void S<double>::foo();  // { dg-message "previous declaration" }
 template<> void S<double>::foo();  // { dg-warning "redundant redeclaration" }

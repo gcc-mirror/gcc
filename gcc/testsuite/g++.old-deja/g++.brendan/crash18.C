@@ -7,7 +7,7 @@ public:
     Pix(const Pix&);
 
     // Friend functions so that v == x works as does x == v works
-    friend int operator==(void *v, const Pix& x) // { dg-error "previously" }
+    friend int operator==(void *v, const Pix& x) // { dg-message "previously" }
     { return v == index; }  // { dg-error "from this location" }
     // ??? should be operator!=
     friend int operator==(void *v, const Pix& x) // { dg-error "redefinition" }

@@ -1,6 +1,6 @@
 namespace N
 {
-  struct A; // { dg-error "previous declaration" "" }
+  struct A; // { dg-message "previous declaration" "" }
 }
 
 template<int I>

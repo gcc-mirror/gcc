@@ -16,7 +16,7 @@ public:
 };
 
 template <class T>
-const ccObjectInfo& cc_Array<T>::repInvariant(int) const  // { dg-error "previously declared" }
+const ccObjectInfo& cc_Array<T>::repInvariant(int) const  // { dg-message "previously declared" }
 {  return *this /* *this is required here */; }
 
 template <class T>

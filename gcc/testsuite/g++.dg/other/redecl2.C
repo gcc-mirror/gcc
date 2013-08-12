@@ -7,5 +7,5 @@ struct S {
   virtual int foo() = 0;
 };
  
-int S::foo() { return 0; } // { dg-error "defined here" }
+int S::foo() { return 0; } // { dg-message "defined here" }
 int S::foo() { return 0; } // { dg-error "redefinition" }

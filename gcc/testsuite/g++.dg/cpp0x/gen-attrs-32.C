@@ -13,7 +13,7 @@ void bar()
 
 typedef union U1 { int i; } U2 [[gnu::transparent_union]]; // { dg-warning "ignored" }
 
-static void foo2(U1) {}		// { dg-error "previously defined" }
+static void foo2(U1) {}		// { dg-message "previously defined" }
 static void foo2(U2) {}		// { dg-error "redefinition" }
 
 void bar2(U1 u1, U2 u2)

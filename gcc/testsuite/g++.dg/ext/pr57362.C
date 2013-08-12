@@ -193,7 +193,6 @@ int foo(void) { return 1; }
     }
 
 /* { dg-prune-output "attribute.* is unknown" } */
-/* { dg-prune-output "redefinition of int foo" } */
-/* { dg-prune-output "previous declaration of int foo" } */
-/* { dg-prune-output "int foo.* previously defined here" } */
+/* { dg-prune-output "missing 'target' attribute*" } */
+/* { dg-prune-output "redefinition of 'int foo" } */
 /* { dg-prune-output "No dispatcher found for" } */

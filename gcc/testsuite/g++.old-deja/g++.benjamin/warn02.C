@@ -44,11 +44,5 @@ public:
   int b;
 };
 
+extern int foo3(const char *);  // { dg-message "" } 
 extern int foo3(const char *);  // { dg-warning "" } 
-extern int foo3(const char *);  // { dg-warning "" } 
-
-
-
-
-
-

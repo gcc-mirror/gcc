@@ -3,6 +3,6 @@
 
 void foo()
 {
-    int i;             // { dg-error "previously" }
+    int i;             // { dg-message "previously" }
     union { int i; };  // { dg-error "redeclaration" }
 }

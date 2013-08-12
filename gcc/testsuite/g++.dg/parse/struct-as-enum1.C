@@ -4,7 +4,7 @@
 
 namespace N
 {
-    struct A {};	// { dg-error "previous declaration" }
+    struct A {};	// { dg-message "previous declaration" }
 }
 
 typedef enum N::A B;	// { dg-error "enum|invalid type" }

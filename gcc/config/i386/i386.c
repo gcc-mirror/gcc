@@ -29870,8 +29870,8 @@ ix86_function_versions (tree fn1, tree fn2)
 	  error_at (DECL_SOURCE_LOCATION (fn2),
 		    "missing %<target%> attribute for multi-versioned %D",
 		    fn2);
-	  error_at (DECL_SOURCE_LOCATION (fn1),
-		    "previous declaration of %D", fn1);
+	  inform (DECL_SOURCE_LOCATION (fn1),
+		  "previous declaration of %D", fn1);
 	  /* Prevent diagnosing of the same error multiple times.  */
 	  DECL_ATTRIBUTES (fn2)
 	    = tree_cons (get_identifier ("target"),

@@ -7,7 +7,7 @@ namespace D {     // { dg-error "" } reopening namespace with alias
   void f();
 }
 
-void C::f(){}     // { dg-error "" } previous definition
+void C::f(){}     // { dg-message "" } previous definition
 
 void D::f(){}     // { dg-error "" } redefinition
 

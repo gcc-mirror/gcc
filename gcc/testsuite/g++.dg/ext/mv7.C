@@ -2,7 +2,7 @@
 // { dg-options "" }
 
 __attribute__((target ("default")))
-void foo (void)	// { dg-error "previously defined here" }
+void foo (void)	// { dg-message "previously defined here" }
 {
 }
 

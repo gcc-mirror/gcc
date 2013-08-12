@@ -1,3 +1,10 @@
+2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (warn_extern_redeclared_static, duplicate_decls,
+	check_elaborated_type_specifier): Use error + inform.
+	* friend.c (make_friend_class): Likewise.
+	* semantics.c (finish_id_expression): Likewise.
+
 2013-08-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	Revert:

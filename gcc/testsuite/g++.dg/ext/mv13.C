@@ -5,7 +5,7 @@
 
 extern "C"
 __attribute__ ((target ("default")))
-int foo ()  // { dg-error "previously defined here" }
+int foo ()  // { dg-message "previously defined here" }
 {
   return 0;
 }
