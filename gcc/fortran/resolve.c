@@ -6281,8 +6281,10 @@ gfc_resolve_iterator (gfc_iterator *iter, bool real_ok, bool own_scope)
 	  sgn = mpfr_sgn (iter->step->value.real);
 	  cmp = mpfr_cmp (iter->end->value.real, iter->start->value.real);
 	}
-      if ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0))
-	gfc_warning ("DO loop at %L will be executed zero times",
+      if (gfc_option.warn_zerotrip &&
+	  ((sgn > 0 && cmp < 0) || (sgn < 0 && cmp > 0)))
+	gfc_warning ("DO loop at %L will be executed zero times"
+		     " (use -Wno-zerotrip to suppress)",
 		     &iter->step->where);
     }
 

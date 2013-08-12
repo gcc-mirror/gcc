@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-options "-fcoarray=single" }
+! { dg-options "-fcoarray=single -Wzerotrip" }
 !
 ! PR fortran/18918
 !

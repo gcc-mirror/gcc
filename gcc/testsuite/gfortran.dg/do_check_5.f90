@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! 
+! { dg-options "-Wall" }
 ! PR/fortran 38432
 ! DO-loop compile-time checks
 !

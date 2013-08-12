@@ -293,6 +293,10 @@ Wunused-dummy-argument
 Fortran Warning
 Warn about unused dummy arguments.
 
+Wzerotrip
+Fortran Warning
+Warn about zero-trip DO loops
+
 cpp
 Fortran Negative(nocpp)
 Enable preprocessing

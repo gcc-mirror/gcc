@@ -1,3 +1,16 @@
+2013-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/56666
+	* gfortran.h (gfc_option_t):  Add warn_zerotrip.
+	* invoke.texi (-Wzerotrip):  Document option.
+	* lang.opt (Wzerotrip):  Add.
+	* options.c (gfc_init_options):  Initialize warn_zerotrip.
+	(set_Wall): Add handling of warn_zerotrip.
+	(gfc_handle_option):  Handle OPT_Wzerotrip.
+	* resolve.c (gfc_resolve_iterator): Honor
+	gfc_option.warn_zerotrip; update error message to show
+	how to suppress the warning.
+
 2013-08-09  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.h (gfc_get_code): Modified prototype.
