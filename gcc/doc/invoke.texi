@@ -20929,6 +20929,9 @@ Not all targets provide complete support for this switch.
 Alter the thread-local storage model to be used (@pxref{Thread-Local}).
 The @var{model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
+Note that the choice is subject to optimization: the compiler may use
+a more efficient model for symbols not visible outside of the translation
+unit, or if @option{-fpic} is not given on the command line.
 
 The default without @option{-fpic} is @code{initial-exec}; with
 @option{-fpic} the default is @code{global-dynamic}.
