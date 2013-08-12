@@ -50,7 +50,7 @@ private:
   bool flag;
 };
 // OK
-constexpr int bar(int x, int y) // { dg-error "previously defined here" }
+constexpr int bar(int x, int y) // { dg-message "previously defined here" }
 { return x + y + x*y; }
 // ...
 // error: redefinition of bar

@@ -6,13 +6,13 @@ void f() = delete;		// { dg-error "deleted" }
 
 struct A
 {
-  A() { }			// { dg-error "previous" }
+  A() { }			// { dg-message "previous" }
   void f() = default;		// { dg-error "default" }
 };
 
 A::A() = default;		// { dg-error "redefinition" }
 
-void g() {}			// { dg-error "previous" }
+void g() {}			// { dg-message "previous" }
 void g() = delete;		// { dg-error "redefinition" }
 
 struct B // { dg-message "user-provided default constructor" }

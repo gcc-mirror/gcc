@@ -1,3 +1,7 @@
+2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/i386/i386.c (ix86_function_versions): Use error + inform.
+
 2013-08-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (floatunssi<mode>2 expand): Use MODEF mode

@@ -16,7 +16,7 @@ typedef int I;
 typedef I I;
 
 //p3--cannot redefine to a different type in a given scope
-class complex2 { /* ... */ };// { dg-error "" } .*
+class complex2 { /* ... */ };// { dg-message "" } .*
 typedef int complex2;// { dg-error "" } .*
 typedef int complex3;// { dg-message "" } .*
 class complex3 { /* ... */ };// { dg-error "" } .*

@@ -38,7 +38,7 @@ constexpr int g(int x, int n) // error: body not just ‘‘return expr’’
 } // { dg-error "not a return-statement" }
 
 constexpr int
-bar(int x, int y) { return x + y + x * y; } // { dg-error "previously" }
+bar(int x, int y) { return x + y + x * y; } // { dg-message "previously" }
 
 int bar(int x, int y)	     // { dg-error "redefinition" }
 { return x * 2 + 3 * y; }

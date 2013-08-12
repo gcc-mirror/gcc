@@ -5,7 +5,7 @@ template<int> struct A
 {
   void foo()
   {
-    typedef int T;                // { dg-error "previous" }
+    typedef int T;                // { dg-message "previous" }
     typedef __typeof__(*this) T;  // { dg-error "conflicting" }
   }
 };

@@ -6,7 +6,7 @@
 // "[Note: a namespace name or a class template name must be unique in its
 // declarative region (7.3.2, clause 14). ]"
 
-class N; // { dg-error "previous declaration" }
+class N; // { dg-message "previous declaration" }
 
 namespace N
 { // { dg-error "redeclared" }

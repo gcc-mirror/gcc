@@ -6,7 +6,7 @@ struct T { ~T(); };
 int main()
 {
   foo:
-   T t;				// { dg-error "" } redeclared
+   T t;				// { dg-message "" } redeclared
   bar:
    T t;				// { dg-error "" } redeclaration
 }

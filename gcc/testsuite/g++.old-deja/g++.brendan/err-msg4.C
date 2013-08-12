@@ -2,8 +2,8 @@
 // GROUPS passed error-messages
 class X {
 public:
-    static int x;// { dg-error "" }  previous.*
-    static int y;// { dg-error "" }  previous.*
+    static int x;// { dg-message "" }  previous.*
+    static int y;// { dg-message "" }  previous.*
 };
 
 unsigned X::x;// { dg-error "" }  conflict.*
