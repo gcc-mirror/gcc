@@ -1,5 +1,10 @@
 2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/57416
+	* g++.dg/cpp0x/pr57416.C: New.
+
+2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* g++.dg/cpp0x/constexpr-function2.C: Adjust for error -> inform
 	changes.
 	* g++.dg/cpp0x/constexpr-neg1.C: Likewise.
