@@ -19780,49 +19780,49 @@ vcvtpq_u64_f64 (float64x2_t __a)
 __extension__ static __inline int8x1_t __attribute__ ((__always_inline__))
 vdupb_lane_s8 (int8x16_t a, int const b)
 {
-  return __aarch64_vget_laneq_s8 (a, b);
+  return __aarch64_vgetq_lane_s8 (a, b);
 }
 
 __extension__ static __inline uint8x1_t __attribute__ ((__always_inline__))
 vdupb_lane_u8 (uint8x16_t a, int const b)
 {
-  return __aarch64_vget_laneq_u8 (a, b);
+  return __aarch64_vgetq_lane_u8 (a, b);
 }
 
 __extension__ static __inline int16x1_t __attribute__ ((__always_inline__))
 vduph_lane_s16 (int16x8_t a, int const b)
 {
-  return __aarch64_vget_laneq_s16 (a, b);
+  return __aarch64_vgetq_lane_s16 (a, b);
 }
 
 __extension__ static __inline uint16x1_t __attribute__ ((__always_inline__))
 vduph_lane_u16 (uint16x8_t a, int const b)
 {
-  return __aarch64_vget_laneq_u16 (a, b);
+  return __aarch64_vgetq_lane_u16 (a, b);
 }
 
 __extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
 vdups_lane_s32 (int32x4_t a, int const b)
 {
-  return __aarch64_vget_laneq_s32 (a, b);
+  return __aarch64_vgetq_lane_s32 (a, b);
 }
 
 __extension__ static __inline uint32x1_t __attribute__ ((__always_inline__))
 vdups_lane_u32 (uint32x4_t a, int const b)
 {
-  return __aarch64_vget_laneq_u32 (a, b);
+  return __aarch64_vgetq_lane_u32 (a, b);
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
 vdupd_lane_s64 (int64x2_t a, int const b)
 {
-  return __aarch64_vget_laneq_s64 (a, b);
+  return __aarch64_vgetq_lane_s64 (a, b);
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
 vdupd_lane_u64 (uint64x2_t a, int const b)
 {
-  return __aarch64_vget_laneq_s64 (a, b);
+  return __aarch64_vgetq_lane_u64 (a, b);
 }
 
 /* vld1 */
