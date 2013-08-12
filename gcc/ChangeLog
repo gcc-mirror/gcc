@@ -1,3 +1,7 @@
+2013-08-12  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (m32r-linux): Allow for tmake_file not being empty.
+
 2013-08-12  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.md (floatunssi<mode>2 expand): Add new
