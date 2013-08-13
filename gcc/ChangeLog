@@ -1,3 +1,13 @@
+2013-08-13  Marek Polacek  <polacek@redhat.com>
+
+	Backport from 4.8:
+	2013-0813  Marek Polacek  <polacek@redhat.com>
+		   Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57980
+	* tree-tailcall.c (process_assignment): Return false
+	when not dealing with integers or floats.
+
 2013-08-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline

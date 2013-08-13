@@ -1,3 +1,11 @@
+2013-08-13  Marek Polacek  <polacek@redhat.com>
+
+	Backport from 4.8:
+	2013-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57980
+	* gcc.dg/pr57980.c: New test.
+
 2013-08-11  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk:
