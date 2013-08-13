@@ -7,4 +7,4 @@ fneg_legacy (double d)
   return -d;
 }
 
-/* { dg-final { scan-assembler-not "\tneg\.d\t" } } */
+/* { dg-final { scan-assembler-not "\tneg\\.d\t" } } */

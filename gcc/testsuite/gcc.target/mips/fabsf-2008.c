@@ -7,4 +7,4 @@ fabsf_2008 (float f)
   return __builtin_fabsf (f);
 }
 
-/* { dg-final { scan-assembler "\tabs\.s\t" } } */
+/* { dg-final { scan-assembler "\tabs\\.s\t" } } */
