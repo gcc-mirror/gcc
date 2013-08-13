@@ -1,5 +1,11 @@
 2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
 
+	* gcc.target/mips/nan-legacy.c: Accept 4294967295 as an
+	alternative to -1.
+	* gcc.target/mips/nans-legacy.c: Likewise.
+
+2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
+
 	* gcc.target/mips/fabs-2008.c: Correct scan-assembler pattern
 	escapes.
 	* gcc.target/mips/fabs-legacy.c: Likewise.
