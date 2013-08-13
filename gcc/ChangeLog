@@ -1,3 +1,9 @@
+2013-08-13  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (CHECKSUM_BLOCK): New macro.
+	(attr_checksum): Hash vector contents instead of pointer.
+	(attr_checksum_ordered): Likewise.
+
 2013-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*sse2_maskmovdqu): Emit addr32 prefix

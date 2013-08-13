@@ -5432,6 +5432,7 @@ pop_compile_unit (dw_die_ref old_unit)
 }
 
 #define CHECKSUM(FOO) md5_process_bytes (&(FOO), sizeof (FOO), ctx)
+#define CHECKSUM_BLOCK(FOO, SIZE) md5_process_bytes ((FOO), (SIZE), ctx)
 #define CHECKSUM_STRING(FOO) md5_process_bytes ((FOO), strlen (FOO), ctx)
 
 /* Calculate the checksum of a location expression.  */
@@ -5475,7 +5476,9 @@ attr_checksum (dw_attr_ref at, struct md5_ctx *ctx, int *mark)
       CHECKSUM (at->dw_attr_val.v.val_double);
       break;
     case dw_val_class_vec:
-      CHECKSUM (at->dw_attr_val.v.val_vec);
+      CHECKSUM_BLOCK (at->dw_attr_val.v.val_vec.array,
+		      (at->dw_attr_val.v.val_vec.length
+		       * at->dw_attr_val.v.val_vec.elt_size));
       break;
     case dw_val_class_flag:
       CHECKSUM (at->dw_attr_val.v.val_flag);
@@ -5550,10 +5553,12 @@ die_checksum (dw_die_ref die, struct md5_ctx *ctx, int *mark)
 }
 
 #undef CHECKSUM
+#undef CHECKSUM_BLOCK
 #undef CHECKSUM_STRING
 
 /* For DWARF-4 types, include the trailing NULL when checksumming strings.  */
 #define CHECKSUM(FOO) md5_process_bytes (&(FOO), sizeof (FOO), ctx)
+#define CHECKSUM_BLOCK(FOO, SIZE) md5_process_bytes ((FOO), (SIZE), ctx)
 #define CHECKSUM_STRING(FOO) md5_process_bytes ((FOO), strlen (FOO) + 1, ctx)
 #define CHECKSUM_SLEB128(FOO) checksum_sleb128 ((FOO), ctx)
 #define CHECKSUM_ULEB128(FOO) checksum_uleb128 ((FOO), ctx)
@@ -5749,8 +5754,11 @@ attr_checksum_ordered (enum dwarf_tag tag, dw_attr_ref at,
 
     case dw_val_class_vec:
       CHECKSUM_ULEB128 (DW_FORM_block);
-      CHECKSUM_ULEB128 (sizeof (at->dw_attr_val.v.val_vec));
-      CHECKSUM (at->dw_attr_val.v.val_vec);
+      CHECKSUM_ULEB128 (at->dw_attr_val.v.val_vec.length
+			* at->dw_attr_val.v.val_vec.elt_size);
+      CHECKSUM_BLOCK (at->dw_attr_val.v.val_vec.array,
+		      (at->dw_attr_val.v.val_vec.length
+		       * at->dw_attr_val.v.val_vec.elt_size));
       break;
 
     case dw_val_class_flag:
