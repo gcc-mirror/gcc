@@ -1,3 +1,10 @@
+2013-08-13  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57980
+	* tree-tailcall.c (process_assignment): Return false
+	when not dealing with integers or floats.
+
 2013-08-12  Andrew Haley  <aph@redhat.com>
 
 	Backport from mainline:

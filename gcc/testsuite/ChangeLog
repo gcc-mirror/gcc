@@ -1,3 +1,8 @@
+2013-08-13  Marek Polacek  <polacek@redhat.com>
+
+	PR tree-optimization/57980
+	* gcc.dg/pr57980.c: New test.
+
 2013-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
