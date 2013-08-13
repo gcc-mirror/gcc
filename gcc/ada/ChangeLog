@@ -1,3 +1,16 @@
+2013-08-13  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): If
+	there is no End_Label, attach cleanup actions to the sloc of the HSS
+	node instead.
+	(Exception_Handler_to_gnu_zcx): Associate cleanup actions with the sloc
+	of the handler itself.
+	(add_cleanup): Clear column information in sloc of cleanup actions.
+	(Sloc_to_locus1): New static function.
+	(Sloc_to_locus): Call it.
+	(set_expr_location_from_node1): New static function.
+	(set_expr_location_from_node): Call it.
+
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Call_to_gnu): Deal with specific conditional
