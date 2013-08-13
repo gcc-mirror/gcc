@@ -1,3 +1,13 @@
+2013-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*sse2_maskmovdqu): Emit addr32 prefix
+	when Pmode != word_mode.  Add length_address attribute.
+	(sse3_monitor_<mode>): Merge from sse3_monitor and
+	sse3_monitor64_<mode> insn patterns.  Emit addr32 prefix when
+	Pmode != word_mode.  Update insn length attribute.
+	* config/i386/i386.c (ix86_option_override_internal): Update
+	ix86_gen_monitor selection for merged sse3_monitor insn.
+
 2013-08-13  Julian Brown  <julian@codesourcery.com>
 
 	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Don't
@@ -57,7 +67,7 @@
 2013-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/i386/t-i386 (i386.o): Rename stray PIPELINE_H to
-	PASS_MANAGER_H
+	PASS_MANAGER_H.
 
 2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 

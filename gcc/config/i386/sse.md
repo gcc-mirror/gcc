@@ -7731,9 +7731,17 @@
 		       (mem:V16QI (match_dup 0))]
 		      UNSPEC_MASKMOV))]
   "TARGET_SSE2"
-  "%vmaskmovdqu\t{%2, %1|%1, %2}"
+{
+  /* We can't use %^ here due to ASM_OUTPUT_OPCODE processing
+     that requires %v to be at the beginning of the opcode name.  */
+  if (Pmode != word_mode)
+    fputs ("\taddr32", asm_out_file);
+  return "%vmaskmovdqu\t{%2, %1|%1, %2}";
+}
   [(set_attr "type" "ssemov")
    (set_attr "prefix_data16" "1")
+   (set (attr "length_address")
+     (symbol_ref ("Pmode != word_mode")))
    ;; The implicit %rdi operand confuses default length_vex computation.
    (set (attr "length_vex")
      (symbol_ref ("3 + REX_SSE_REGNO_P (REGNO (operands[2]))")))
@@ -7781,26 +7789,18 @@
   "mwait"
   [(set_attr "length" "3")])
 
-(define_insn "sse3_monitor"
-  [(unspec_volatile [(match_operand:SI 0 "register_operand" "a")
-		     (match_operand:SI 1 "register_operand" "c")
-		     (match_operand:SI 2 "register_operand" "d")]
-		    UNSPECV_MONITOR)]
-  "TARGET_SSE3 && !TARGET_64BIT"
-  "monitor\t%0, %1, %2"
-  [(set_attr "length" "3")])
-
-(define_insn "sse3_monitor64_<mode>"
+(define_insn "sse3_monitor_<mode>"
   [(unspec_volatile [(match_operand:P 0 "register_operand" "a")
 		     (match_operand:SI 1 "register_operand" "c")
 		     (match_operand:SI 2 "register_operand" "d")]
 		    UNSPECV_MONITOR)]
-  "TARGET_SSE3 && TARGET_64BIT"
+  "TARGET_SSE3"
 ;; 64bit version is "monitor %rax,%rcx,%rdx". But only lower 32bits in
 ;; RCX and RDX are used.  Since 32bit register operands are implicitly
 ;; zero extended to 64bit, we only need to set up 32bit registers.
-  "monitor"
-  [(set_attr "length" "3")])
+  "%^monitor"
+  [(set (attr "length")
+     (symbol_ref ("(Pmode != word_mode) + 3")))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
