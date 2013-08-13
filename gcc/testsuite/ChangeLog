@@ -1,3 +1,8 @@
+2013-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56417
+	* gcc.dg/asan/pr56417.c: New test.
+
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization16.adb: New test.

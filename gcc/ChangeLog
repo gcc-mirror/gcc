@@ -1,3 +1,9 @@
+2013-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/56417
+	* asan.c (instrument_strlen_call): Fix typo in comment.
+	Use char * type even for the lhs of POINTER_PLUS_EXPR.
+
 2013-08-13  Steve Ellcey  <sellcey@mips.com>
 
 	* config/mips/mips.md (prefetch): Use lw instead of ld on

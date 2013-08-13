@@ -1635,7 +1635,7 @@ instrument_mem_region_access (tree base, tree len,
    access to the last byte of the argument; it uses the result of the
    call to deduce the offset of that last byte.
 
-   Upon completion, iff the call has actullay been instrumented, this
+   Upon completion, iff the call has actually been instrumented, this
    function returns TRUE and *ITER points to the statement logically
    following the built-in strlen function call *ITER was initially
    pointing to.  Otherwise, the function returns FALSE and *ITER
@@ -1666,10 +1666,10 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
   /* Instrument the access to the first byte of str_arg.  i.e:
 
      _1 = str_arg; instrument (_1); */
+  tree cptr_type = build_pointer_type (char_type_node);
   gimple str_arg_ssa =
     gimple_build_assign_with_ops (NOP_EXPR,
-				  make_ssa_name (build_pointer_type
-						 (char_type_node), NULL),
+				  make_ssa_name (cptr_type, NULL),
 				  str_arg, NULL);
   gimple_set_location (str_arg_ssa, loc);
   gimple_stmt_iterator gsi = *iter;
@@ -1688,8 +1688,7 @@ instrument_strlen_call (gimple_stmt_iterator *iter)
      pointer_plus expr: (_1 + len).  */
   gimple stmt =
     gimple_build_assign_with_ops (POINTER_PLUS_EXPR,
-				  make_ssa_name (TREE_TYPE (str_arg),
-						 NULL),
+				  make_ssa_name (cptr_type, NULL),
 				  gimple_assign_lhs (str_arg_ssa),
 				  len);
   gimple_set_location (stmt, loc);
