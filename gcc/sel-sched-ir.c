@@ -1141,10 +1141,10 @@ lhs_and_rhs_separable_p (rtx lhs, rtx rhs)
   if (lhs == NULL || rhs == NULL)
     return false;
 
-  /* Do not schedule CONST, CONST_INT and CONST_DOUBLE etc as rhs: no point
-     to use reg, if const can be used.  Moreover, scheduling const as rhs may
-     lead to mode mismatch cause consts don't have modes but they could be
-     merged from branches where the same const used in different modes.  */
+  /* Do not schedule constants as rhs: no point to use reg, if const
+     can be used.  Moreover, scheduling const as rhs may lead to mode
+     mismatch cause consts don't have modes but they could be merged
+     from branches where the same const used in different modes.  */
   if (CONSTANT_P (rhs))
     return false;
 

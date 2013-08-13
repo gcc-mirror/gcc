@@ -50,6 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-iterator.h"
 #include "hash-table.h"
+#include "wide-int.h"
 #include "langhooks-def.h"
 /* Different initialization, code gen and meta data generation for each
    runtime.  */
@@ -3021,8 +3022,8 @@ check_string_class_template (void)
 
 #define AT_LEAST_AS_LARGE_AS(F, T) \
   (F && TREE_CODE (F) == FIELD_DECL \
-     && (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (F))) \
-	 >= TREE_INT_CST_LOW (TYPE_SIZE (T))))
+     && (tree_to_hwi (TYPE_SIZE (TREE_TYPE (F))) \
+	 >= tree_to_hwi (TYPE_SIZE (T))))
 
   if (!AT_LEAST_AS_LARGE_AS (field_decl, ptr_type_node))
     return 0;
@@ -4878,14 +4879,9 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		     which specifies the index of the format string
 		     argument.  Add 2.  */
 		  number = TREE_VALUE (second_argument);
-		  if (number
-		      && TREE_CODE (number) == INTEGER_CST
-		      && TREE_INT_CST_HIGH (number) == 0)
-		    {
-		      TREE_VALUE (second_argument)
-			= build_int_cst (integer_type_node,
-					 TREE_INT_CST_LOW (number) + 2);
-		    }
+		  if (number && TREE_CODE (number) == INTEGER_CST)
+		    TREE_VALUE (second_argument)
+		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
 
 		  /* This is the third argument, the "first-to-check",
 		     which specifies the index of the first argument to
@@ -4893,15 +4889,9 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		     in which case we don't need to add 2.  Add 2 if not
 		     0.  */
 		  number = TREE_VALUE (third_argument);
-		  if (number
-		      && TREE_CODE (number) == INTEGER_CST
-		      && TREE_INT_CST_HIGH (number) == 0
-		      && TREE_INT_CST_LOW (number) != 0)
-		    {
-		      TREE_VALUE (third_argument)
-			= build_int_cst (integer_type_node,
-					 TREE_INT_CST_LOW (number) + 2);
-		    }
+		  if (number && TREE_CODE (number) == INTEGER_CST)
+		    TREE_VALUE (third_argument)
+		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
 		}
 	      filtered_attributes = chainon (filtered_attributes,
 					     new_attribute);
@@ -4933,15 +4923,9 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		{
 		  /* Get the value of the argument and add 2.  */
 		  tree number = TREE_VALUE (argument);
-		  if (number
-		      && TREE_CODE (number) == INTEGER_CST
-		      && TREE_INT_CST_HIGH (number) == 0
-		      && TREE_INT_CST_LOW (number) != 0)
-		    {
-		      TREE_VALUE (argument)
-			= build_int_cst (integer_type_node,
-					 TREE_INT_CST_LOW (number) + 2);
-		    }
+		  if (number && TREE_CODE (number) == INTEGER_CST)
+		    TREE_VALUE (argument)
+		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
 		  argument = TREE_CHAIN (argument);
 		}
 
@@ -8893,7 +8877,7 @@ gen_declaration (tree decl)
       if (DECL_INITIAL (decl)
 	  && TREE_CODE (DECL_INITIAL (decl)) == INTEGER_CST)
 	sprintf (errbuf + strlen (errbuf), ": " HOST_WIDE_INT_PRINT_DEC,
-		 TREE_INT_CST_LOW (DECL_INITIAL (decl)));
+		 tree_to_hwi (DECL_INITIAL (decl)));
     }
 
   return errbuf;
@@ -8933,7 +8917,7 @@ gen_type_name_0 (tree type)
 		char sz[20];
 
 		sprintf (sz, HOST_WIDE_INT_PRINT_DEC,
-			 (TREE_INT_CST_LOW
+			 (tree_to_hwi
 			  (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) + 1));
 		strcat (errbuf, sz);
 	      }

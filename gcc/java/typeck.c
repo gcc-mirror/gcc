@@ -217,7 +217,7 @@ java_array_type_length (tree array_type)
 	{
 	  tree high = TYPE_MAX_VALUE (index_type);
 	  if (TREE_CODE (high) == INTEGER_CST)
-	    return TREE_INT_CST_LOW (high) + 1;
+	    return tree_to_uhwi (high) + 1;
 	}
     }
   return -1;

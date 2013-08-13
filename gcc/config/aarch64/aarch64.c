@@ -5996,18 +5996,18 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -6036,8 +6036,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -6068,8 +6068,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -6822,7 +6822,7 @@ aarch64_simd_attr_length_move (rtx insn)
 static HOST_WIDE_INT
 aarch64_simd_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
   return MIN (align, 128);
 }
 
@@ -7401,8 +7401,8 @@ aarch64_float_const_representable_p (rtx x)
   int point_pos = 2 * HOST_BITS_PER_WIDE_INT - 1;
   int exponent;
   unsigned HOST_WIDE_INT mantissa, mask;
-  HOST_WIDE_INT m1, m2;
   REAL_VALUE_TYPE r, m;
+  bool &fail
 
   if (!CONST_DOUBLE_P (x))
     return false;
@@ -7426,16 +7426,16 @@ aarch64_float_const_representable_p (rtx x)
      WARNING: If we ever have a representation using more than 2 * H_W_I - 1
      bits for the mantissa, this can fail (low bits will be lost).  */
   real_ldexp (&m, &r, point_pos - exponent);
-  REAL_VALUE_TO_INT (&m1, &m2, m);
+  w = real_to_integer (m, &fail, HOST_BITS_PER_WIDE_INT * 2);
 
   /* If the low part of the mantissa has bits set we cannot represent
      the value.  */
-  if (m1 != 0)
+  if (w.elt (0) != 0)
     return false;
   /* We have rejected the lower HOST_WIDE_INT, so update our
      understanding of how many bits lie in the mantissa and
      look only at the high HOST_WIDE_INT.  */
-  mantissa = m2;
+  mantissa = w.elt (1);
   point_pos -= HOST_BITS_PER_WIDE_INT;
 
   /* We can only represent values with a mantissa of the form 1.xxxx.  */

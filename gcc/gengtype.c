@@ -1717,7 +1717,7 @@ open_base_files (void)
     static const char *const ifiles[] = {
       "config.h", "system.h", "coretypes.h", "tm.h",
       "hashtab.h", "splay-tree.h", "obstack.h", "bitmap.h", "input.h",
-      "tree.h", "rtl.h", "function.h", "insn-config.h", "expr.h",
+      "tree.h", "rtl.h", "wide-int.h", "function.h", "insn-config.h", "expr.h",
       "hard-reg-set.h", "basic-block.h", "cselib.h", "insn-addr.h",
       "optabs.h", "libfuncs.h", "debug.h", "ggc.h", "cgraph.h",
       "tree-flow.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
@@ -5445,6 +5445,7 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("REAL_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("FIXED_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("double_int", &pos));
+      POS_HERE (do_scalar_typedef ("wide_int", &pos));
       POS_HERE (do_scalar_typedef ("uint64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint8", &pos));
       POS_HERE (do_scalar_typedef ("uintptr_t", &pos));

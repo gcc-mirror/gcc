@@ -270,7 +270,7 @@ java/jcf-dump.o: $(CONFIG_H) $(SYSTEM_H) coretypes.h $(JAVA_TREE_H) \
   java/jcf-dump.c java/jcf-reader.c java/jcf.h java/javaop.h java/javaop.def \
   version.h $(GGC_H) intl.h java/zipfile.h $(DIAGNOSTIC_H)
 java/boehm.o: java/boehm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
-  $(TREE_H) $(JAVA_TREE_H) java/parse.h
+  $(TREE_H) $(JAVA_TREE_H) java/parse.h wide-int.h
 java/builtins.o: java/builtins.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(JAVA_TREE_H) $(GGC_H) $(FLAGS_H) $(OPTABS_H) $(EXPR_H) langhooks.h \
   gt-java-builtins.h
@@ -290,13 +290,14 @@ java/expr.o: java/expr.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h $(REAL_H) \
   java/javaop.h java/java-opcodes.h \
   java/java-except.h java/java-except.h java/parse.h \
   $(SYSTEM_H) coretypes.h $(TM_H) $(GGC_H) gt-java-expr.h $(TARGET_H) \
-  tree-iterator.h
+  tree-iterator.h wide-int.h
 java/jcf-depend.o: java/jcf-depend.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   java/jcf.h
 java/jcf-parse.o: java/jcf-parse.c $(CONFIG_H) $(JAVA_TREE_H) $(FLAGS_H) \
   input.h java/java-except.h $(SYSTEM_H) coretypes.h \
   java/parse.h $(GGC_H) debug.h $(REAL_H) gt-java-jcf-parse.h \
-  java/jcf-reader.c java/zipfile.h java/jcf.h $(BITMAP_H)
+  java/jcf-reader.c java/zipfile.h java/jcf.h $(BITMAP_H) \
+  wide-int.h
 java/jvgenmain.o: java/jvgenmain.c $(CONFIG_H) $(JAVA_TREE_H) $(SYSTEM_H) \
   coretypes.h $(TM_H) intl.h $(DIAGNOSTIC_H)
 java/lang.o: java/lang.c $(CONFIG_H) $(JAVA_TREE_H) java/jcf.h input.h \

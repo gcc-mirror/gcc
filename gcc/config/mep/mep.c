@@ -4209,7 +4209,7 @@ mep_attrlist_to_encoding (tree list, tree decl)
 	      && TREE_VALUE (TREE_VALUE (list))
 	      && TREE_CODE (TREE_VALUE (TREE_VALUE (list))) == INTEGER_CST)
 	    {
-	      int location = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE(list)));
+	      int location = tree_to_hwi (TREE_VALUE (TREE_VALUE(list)));
 	      if (location >= 0
 		  && location <= 0x1000000)
 		return 'i';
@@ -4298,7 +4298,7 @@ mep_insert_attributes (tree decl, tree *attributes)
 	      && TREE_VALUE (attr)
 	      && TREE_VALUE (TREE_VALUE(attr)))
 	    {
-	      int location = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE(attr)));
+	      int location = tree_to_hwi (TREE_VALUE (TREE_VALUE(attr)));
 	      static tree previous_value = 0;
 	      static int previous_location = 0;
 	      static tree previous_name = 0;
@@ -4714,7 +4714,7 @@ mep_output_aligned_common (FILE *stream, tree decl, const char *name,
       if (attr
 	  && TREE_VALUE (attr)
 	  && TREE_VALUE (TREE_VALUE(attr)))
-	location = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE(attr)));
+	location = tree_to_hwi (TREE_VALUE (TREE_VALUE(attr)));
       if (location == -1)
 	return;
       if (global)

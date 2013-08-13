@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "plugin.h"
 #include "cgraph.h"
+#include "wide-int.h"
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -4801,7 +4802,8 @@ check_array_designated_initializer (constructor_elt *ce,
       if (TREE_CODE (ce->index) == INTEGER_CST)
 	{
 	  /* A C99 designator is OK if it matches the current index.  */
-	  if (TREE_INT_CST_LOW (ce->index) == index)
+	  if (tree_fits_uhwi_p (ce->index) 
+	      && tree_to_uhwi (ce->index) == index)
 	    return true;
 	  else
 	    sorry ("non-trivial designated initializers not supported");
@@ -5088,12 +5090,11 @@ reshape_init_array_1 (tree elt_type, tree max_index, reshape_iter *d,
       if (integer_all_onesp (max_index))
 	return new_init;
 
-      if (host_integerp (max_index, 1))
-	max_index_cst = tree_low_cst (max_index, 1);
+      if (tree_fits_uhwi_p (max_index))
+	max_index_cst = tree_to_uhwi (max_index);
       /* sizetype is sign extended, not zero extended.  */
       else
-	max_index_cst = tree_low_cst (fold_convert (size_type_node, max_index),
-				      1);
+	max_index_cst = tree_to_uhwi (fold_convert (size_type_node, max_index));
     }
 
   /* Loop until there are no more initializers.  */
@@ -9986,7 +9987,7 @@ grokdeclarator (const cp_declarator *declarator,
     {
       error ("size of array %qs is too large", name);
       /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_low_cst().  */
+	 crash in tree_to_uhwi ().  */
       type = error_mark_node;
     }
 
@@ -12607,9 +12608,9 @@ finish_enum_value_list (tree enumtype)
 	 enumeration.  We must do this before the type of MINNODE and
 	 MAXNODE are transformed, since tree_int_cst_min_precision relies
 	 on the TREE_TYPE of the value it is passed.  */
-      bool unsignedp = tree_int_cst_sgn (minnode) >= 0;
-      int lowprec = tree_int_cst_min_precision (minnode, unsignedp);
-      int highprec = tree_int_cst_min_precision (maxnode, unsignedp);
+      signop sgn = tree_int_cst_sgn (minnode) >= 0 ? UNSIGNED : SIGNED;
+      int lowprec = tree_int_cst_min_precision (minnode, sgn);
+      int highprec = tree_int_cst_min_precision (maxnode, sgn);
       int precision = MAX (lowprec, highprec);
       unsigned int itk;
       bool use_short_enum;
@@ -12641,7 +12642,7 @@ finish_enum_value_list (tree enumtype)
           underlying_type = integer_types[itk];
           if (underlying_type != NULL_TREE
 	      && TYPE_PRECISION (underlying_type) >= precision
-              && TYPE_UNSIGNED (underlying_type) == unsignedp)
+              && TYPE_SIGN (underlying_type) == sgn)
             break;
         }
       if (itk == itk_none)
@@ -12688,12 +12689,12 @@ finish_enum_value_list (tree enumtype)
 	= build_distinct_type_copy (underlying_type);
       TYPE_PRECISION (ENUM_UNDERLYING_TYPE (enumtype)) = precision;
       set_min_and_max_values_for_integral_type
-        (ENUM_UNDERLYING_TYPE (enumtype), precision, unsignedp);
+        (ENUM_UNDERLYING_TYPE (enumtype), precision, sgn);
 
       /* If -fstrict-enums, still constrain TYPE_MIN/MAX_VALUE.  */
       if (flag_strict_enums)
 	set_min_and_max_values_for_integral_type (enumtype, precision,
-						  unsignedp);
+						  sgn);
     }
   else
     underlying_type = ENUM_UNDERLYING_TYPE (enumtype);
@@ -12817,14 +12818,14 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 		value = error_mark_node;
 	      else
 		{
-		  double_int di = TREE_INT_CST (prev_value)
-				  .add_with_sign (double_int_one,
-						  false, &overflowed);
+		  tree type = TREE_TYPE (prev_value);
+		  signop sgn = TYPE_SIGN (type);
+		  wide_int wi = (max_wide_int (prev_value)
+				 .add (1, sgn, &overflowed));
 		  if (!overflowed)
 		    {
-		      tree type = TREE_TYPE (prev_value);
-		      bool pos = TYPE_UNSIGNED (type) || !di.is_negative ();
-		      if (!double_int_fits_to_tree_p (type, di))
+		      bool pos = !wi.neg_p (sgn);
+		      if (!wi.fits_to_tree_p (type))
 			{
 			  unsigned int itk;
 			  for (itk = itk_int; itk != itk_none; itk++)
@@ -12832,7 +12833,7 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 			      type = integer_types[itk];
 			      if (type != NULL_TREE
 				  && (pos || !TYPE_UNSIGNED (type))
-				  && double_int_fits_to_tree_p (type, di))
+				  && wi.fits_to_tree_p (type))
 				break;
 			    }
 			  if (type && cxx_dialect < cxx11
@@ -12844,7 +12845,7 @@ incremented enumerator value is too large for %<long%>");
 		      if (type == NULL_TREE)
 			overflowed = true;
 		      else
-			value = double_int_to_tree (type, di);
+			value = wide_int_to_tree (type, wi);
 		    }
 
 		  if (overflowed)

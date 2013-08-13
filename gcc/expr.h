@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 /* For optimize_size */
 #include "flags.h"
-/* For host_integerp, tree_low_cst, fold_convert, size_binop, ssize_int,
+/* For tree_fits_uhwi_p, tree_to_uhwi, fold_convert, size_binop, ssize_int,
    TREE_CODE, TYPE_SIZE, int_size_in_bytes,    */
 #include "tree.h"
 /* For GET_MODE_BITSIZE, word_mode */
@@ -94,8 +94,8 @@ struct locate_and_pad_arg_data
 #define ADD_PARM_SIZE(TO, INC)					\
 do {								\
   tree inc = (INC);						\
-  if (host_integerp (inc, 0))					\
-    (TO).constant += tree_low_cst (inc, 0);			\
+  if (tree_fits_shwi_p (inc))					\
+    (TO).constant += tree_to_shwi (inc);			\
   else if ((TO).var == 0)					\
     (TO).var = fold_convert (ssizetype, inc);			\
   else								\
@@ -106,8 +106,8 @@ do {								\
 #define SUB_PARM_SIZE(TO, DEC)					\
 do {								\
   tree dec = (DEC);						\
-  if (host_integerp (dec, 0))					\
-    (TO).constant -= tree_low_cst (dec, 0);			\
+  if (tree_fits_shwi_p (dec))					\
+    (TO).constant -= tree_to_shwi (dec);			\
   else if ((TO).var == 0)					\
     (TO).var = size_binop (MINUS_EXPR, ssize_int (0),		\
 			   fold_convert (ssizetype, dec));	\

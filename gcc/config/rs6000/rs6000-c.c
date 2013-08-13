@@ -26,6 +26,7 @@
 #include "tm.h"
 #include "cpplib.h"
 #include "tree.h"
+#include "wide-int.h"
 #include "c-family/c-common.h"
 #include "c-family/c-pragma.h"
 #include "diagnostic-core.h"
@@ -4195,8 +4196,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       mode = TYPE_MODE (arg1_type);
       if ((mode == V2DFmode || mode == V2DImode) && VECTOR_MEM_VSX_P (mode)
 	  && TREE_CODE (arg2) == INTEGER_CST
-	  && TREE_INT_CST_HIGH (arg2) == 0
-	  && (TREE_INT_CST_LOW (arg2) == 0 || TREE_INT_CST_LOW (arg2) == 1))
+	  && wide_int::ltu_p (arg2, 2))
 	{
 	  tree call = NULL_TREE;
 
@@ -4280,9 +4280,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       /* If we can use the VSX xxpermdi instruction, use that for insert.  */
       mode = TYPE_MODE (arg1_type);
       if ((mode == V2DFmode || mode == V2DImode) && VECTOR_UNIT_VSX_P (mode)
-	  && TREE_CODE (arg2) == INTEGER_CST
-	  && TREE_INT_CST_HIGH (arg2) == 0
-	  && (TREE_INT_CST_LOW (arg2) == 0 || TREE_INT_CST_LOW (arg2) == 1))
+	  && tree_fits_uhwi_p (arg2)
+	  && wide_int::ltu_p (arg2, 2))
 	{
 	  tree call = NULL_TREE;
 

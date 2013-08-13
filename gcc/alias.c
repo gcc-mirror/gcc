@@ -338,9 +338,10 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
   if (MEM_EXPR (mem) != get_spill_slot_decl (false)
       && (ref->offset < 0
 	  || (DECL_P (ref->base)
-	      && (!host_integerp (DECL_SIZE (ref->base), 1)
-		  || (TREE_INT_CST_LOW (DECL_SIZE ((ref->base)))
-		      < (unsigned HOST_WIDE_INT)(ref->offset + ref->size))))))
+	      && (DECL_SIZE (ref->base) == NULL_TREE
+		  || TREE_CODE (DECL_SIZE (ref->base)) != INTEGER_CST
+		  || wide_int::ltu_p (DECL_SIZE (ref->base),
+				      ref->offset + ref->size)))))
     return false;
 
   return true;
@@ -1473,9 +1474,7 @@ rtx_equal_for_memref_p (const_rtx x, const_rtx y)
 
     case VALUE:
     CASE_CONST_UNIQUE:
-      /* There's no need to compare the contents of CONST_DOUBLEs or
-	 CONST_INTs because pointer equality is a good enough
-	 comparison for these nodes.  */
+      /* Pointer equality guarantees equality for these nodes.  */
       return 0;
 
     default:
@@ -2278,15 +2277,23 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
     {
       tree xoffset = component_ref_field_offset (x);
       tree field = TREE_OPERAND (x, 1);
-
-      if (! host_integerp (xoffset, 1))
+      addr_wide_int woffset;
+      if (TREE_CODE (xoffset) != INTEGER_CST)
 	{
 	  *known_p = false;
 	  return;
 	}
-      *offset += (tree_low_cst (xoffset, 1)
-		  + (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
-		     / BITS_PER_UNIT));
+
+      woffset = xoffset;
+      woffset += (addr_wide_int (DECL_FIELD_BIT_OFFSET (field))
+		  .udiv_trunc (BITS_PER_UNIT));
+
+      if (!woffset.fits_uhwi_p ())
+	{
+	  *known_p = false;
+	  return;
+	}
+      *offset += woffset.to_uhwi ();
 
       x = TREE_OPERAND (x, 0);
     }

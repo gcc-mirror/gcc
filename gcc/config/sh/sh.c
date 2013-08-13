@@ -1127,7 +1127,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
 				      DECL_ATTRIBUTES (current_function_decl));
       if (trapa_attr)
 	fprintf (stream, "trapa	#%ld",
-		 (long) TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (trapa_attr))));
+		 (long) tree_to_hwi (TREE_VALUE (TREE_VALUE (trapa_attr))));
       else if (sh_cfun_interrupt_handler_p ())
 	{
 	  if (sh_cfun_resbank_handler_p ())
@@ -9575,7 +9575,7 @@ sh2a_handle_function_vector_handler_attribute (tree * node, tree name,
 	       name);
       *no_add_attrs = true;
     }
-  else if (TREE_INT_CST_LOW (TREE_VALUE (args)) > 255)
+  else if (tree_to_hwi (TREE_VALUE (args)) > 255)
     {
       /* The argument value must be between 0 to 255.  */
       warning (OPT_Wattributes,
@@ -9624,7 +9624,7 @@ sh2a_get_function_vector_number (rtx x)
 	{
 	  if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
 	    {
-	      num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
+	      num = tree_to_hwi (TREE_VALUE (TREE_VALUE (list)));
 	      return num;
 	    }
 

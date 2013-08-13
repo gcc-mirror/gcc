@@ -1997,6 +1997,13 @@ prune_insertions_deletions (int n_elems)
 	bitmap_clear_bit (pre_delete_map[i], j);
     }
 
+  if (dump_file)
+    {
+      dump_bitmap_vector (dump_file, "pre_insert_map", "", pre_insert_map, n_edges);
+      dump_bitmap_vector (dump_file, "pre_delete_map", "", pre_delete_map,
+			   last_basic_block);
+    }
+
   sbitmap_free (prune_exprs);
   free (insertions);
   free (deletions);

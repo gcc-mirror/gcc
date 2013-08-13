@@ -5857,7 +5857,7 @@ va_list_skip_additions (tree lhs)
       if (!CONVERT_EXPR_CODE_P (code)
 	  && ((code != PLUS_EXPR && code != POINTER_PLUS_EXPR)
 	      || TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST
-	      || !host_integerp (gimple_assign_rhs2 (stmt), 1)))
+	      || !tree_fits_uhwi_p (gimple_assign_rhs2 (stmt))))
 	return stmt;
 
       lhs = gimple_assign_rhs1 (stmt);
@@ -5983,10 +5983,10 @@ alpha_stdarg_optimize_hook (struct stdarg_info *si, const_gimple stmt)
 	  else
 	    goto escapes;
 
-	  if (!host_integerp (gimple_assign_rhs2 (arg2_stmt), 0))
+	  if (!tree_fits_shwi_p (gimple_assign_rhs2 (arg2_stmt)))
 	    goto escapes;
 
-	  sub = tree_low_cst (gimple_assign_rhs2 (arg2_stmt), 0);
+	  sub = tree_to_shwi (gimple_assign_rhs2 (arg2_stmt));
 	  if (code2 == MINUS_EXPR)
 	    sub = -sub;
 	  if (sub < -48 || sub > -32)

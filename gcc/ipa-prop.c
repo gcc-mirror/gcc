@@ -284,7 +284,7 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 		       item->offset);
 	      if (TYPE_P (item->value))
 		fprintf (f, "clobber of " HOST_WIDE_INT_PRINT_DEC " bits",
-			 tree_low_cst (TYPE_SIZE (item->value), 1));
+			 tree_to_uhwi (TYPE_SIZE (item->value)));
 	      else
 		{
 		  fprintf (f, "cst: ");
@@ -1026,7 +1026,7 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       || max_size == -1
       || max_size != size)
     return;
-  offset += mem_ref_offset (base).low * BITS_PER_UNIT;
+  offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
   ssa = TREE_OPERAND (base, 0);
   if (TREE_CODE (ssa) != SSA_NAME
       || !SSA_NAME_IS_DEFAULT_DEF (ssa)
@@ -1081,7 +1081,7 @@ get_ancestor_addr_info (gimple assign, tree *obj_p, HOST_WIDE_INT *offset)
       || TREE_CODE (SSA_NAME_VAR (parm)) != PARM_DECL)
     return NULL_TREE;
 
-  *offset += mem_ref_offset (expr).low * BITS_PER_UNIT;
+  *offset += mem_ref_offset (expr).to_short_addr () * BITS_PER_UNIT;
   *obj_p = obj;
   return expr;
 }
@@ -1217,7 +1217,7 @@ type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
   fld = TYPE_FIELDS (type);
   if (!fld || !POINTER_TYPE_P (TREE_TYPE (fld))
       || TREE_CODE (TREE_TYPE (TREE_TYPE (fld))) != METHOD_TYPE
-      || !host_integerp (DECL_FIELD_OFFSET (fld), 1))
+      || !tree_fits_uhwi_p (DECL_FIELD_OFFSET (fld)))
     return false;
 
   if (method_ptr)
@@ -1225,7 +1225,7 @@ type_like_member_ptr_p (tree type, tree *method_ptr, tree *delta)
 
   fld = DECL_CHAIN (fld);
   if (!fld || INTEGRAL_TYPE_P (fld)
-      || !host_integerp (DECL_FIELD_OFFSET (fld), 1))
+      || !tree_fits_uhwi_p (DECL_FIELD_OFFSET (fld)))
     return false;
   if (delta)
     *delta = fld;
@@ -1295,13 +1295,13 @@ determine_known_aggregate_parts (gimple call, tree arg,
       if (TREE_CODE (arg) == SSA_NAME)
 	{
 	  tree type_size;
-          if (!host_integerp (TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg))), 1))
+          if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)))))
             return;
 	  check_ref = true;
 	  arg_base = arg;
 	  arg_offset = 0;
 	  type_size = TYPE_SIZE (TREE_TYPE (TREE_TYPE (arg)));
-	  arg_size = tree_low_cst (type_size, 1);
+	  arg_size = tree_to_uhwi (type_size);
 	  ao_ref_init_from_ptr_and_size (&r, arg_base, NULL_TREE);
 	}
       else if (TREE_CODE (arg) == ADDR_EXPR)
@@ -1902,7 +1902,7 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
   cs = ipa_note_param_call (node, index, call);
   ii = cs->indirect_info;
   ii->offset = anc_offset;
-  ii->otr_token = tree_low_cst (OBJ_TYPE_REF_TOKEN (target), 1);
+  ii->otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
   ii->otr_type = TREE_TYPE (TREE_TYPE (OBJ_TYPE_REF_OBJECT (target)));
   ii->polymorphic = 1;
 }
@@ -2114,7 +2114,7 @@ ipa_intraprocedural_devirtualization (gimple call)
   if (!binfo)
     return NULL_TREE;
   token = OBJ_TYPE_REF_TOKEN (otr);
-  fndecl = gimple_get_virt_method_for_binfo (tree_low_cst (token, 1),
+  fndecl = gimple_get_virt_method_for_binfo (tree_to_uhwi (token),
 					     binfo);
   return fndecl;
 }
@@ -3410,9 +3410,8 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 		  if (TYPE_ALIGN (type) > align)
 		    align = TYPE_ALIGN (type);
 		}
-	      misalign += (tree_to_double_int (off)
-			   .sext (TYPE_PRECISION (TREE_TYPE (off))).low
-			   * BITS_PER_UNIT);
+	      misalign += (addr_wide_int (off).sext (TYPE_PRECISION (TREE_TYPE (off)))
+			   * BITS_PER_UNIT).to_short_addr ();
 	      misalign = misalign & (align - 1);
 	      if (misalign != 0)
 		align = (misalign & -misalign);

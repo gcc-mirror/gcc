@@ -338,7 +338,7 @@ GFORTRAN_TRANS_DEPS = fortran/gfortran.h fortran/libgfortran.h \
     fortran/trans-const.h fortran/trans-const.h fortran/trans.h \
     fortran/trans-stmt.h fortran/trans-types.h \
     $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TM_H) coretypes.h $(GGC_H) \
-    fortran/iso-c-binding.def fortran/iso-fortran-env.def
+    fortran/iso-c-binding.def fortran/iso-fortran-env.def wide-int.h
 
 CFLAGS-fortran/cpp.o += $(TARGET_SYSTEM_ROOT_DEFINE)
 fortran/f95-lang.o: $(GFORTRAN_TRANS_DEPS) fortran/mathbuiltins.def \
@@ -373,3 +373,4 @@ fortran/cpp.o: fortran/cpp.c incpath.h incpath.o cppbuiltin.h
 fortran/scanner.o: fortran/scanner.h
 CFLAGS-fortran/module.o += $(ZLIBINC)
 fortran/module.o: fortran/scanner.h
+fortran/target-memory.o: wide-int.h

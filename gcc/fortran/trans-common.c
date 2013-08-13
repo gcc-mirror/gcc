@@ -397,8 +397,8 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	gfc_warning ("Named COMMON block '%s' at %L shall be of the "
 		     "same size as elsewhere (%lu vs %lu bytes)", com->name,
 		     &com->where,
-		     (unsigned long) TREE_INT_CST_LOW (size),
-		     (unsigned long) TREE_INT_CST_LOW (DECL_SIZE_UNIT (decl)));
+		     (unsigned long) tree_to_uhwi (size),
+		     (unsigned long) tree_to_uhwi (DECL_SIZE_UNIT (decl)));
 
       if (tree_int_cst_lt (DECL_SIZE_UNIT (decl), size))
 	{

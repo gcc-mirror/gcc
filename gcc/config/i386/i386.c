@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "tree-pass.h"
 #include "tree-flow.h"
+#include "wide-int.h"
 #include "context.h"
 #include "pass_manager.h"
 
@@ -5603,7 +5604,7 @@ ix86_function_regparm (const_tree type, const_tree decl)
       attr = lookup_attribute ("regparm", TYPE_ATTRIBUTES (type));
       if (attr)
 	{
-	  regparm = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr)));
+	  regparm = tree_to_hwi (TREE_VALUE (TREE_VALUE (attr)));
 	  return regparm;
 	}
     }
@@ -5730,7 +5731,7 @@ ix86_keep_aggregate_return_pointer (tree fntype)
       attr = lookup_attribute ("callee_pop_aggregate_return",
 			       TYPE_ATTRIBUTES (fntype));
       if (attr)
-	return (TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (attr))) == 0);
+	return (tree_to_hwi (TREE_VALUE (TREE_VALUE (attr))) == 0);
 
       /* For 32-bit MS-ABI the default is to keep aggregate
          return pointer.  */
@@ -6399,7 +6400,7 @@ classify_argument (enum machine_mode mode, const_tree type,
 		      for (i = (int_bit_position (field)
 				+ (bit_offset % 64)) / 8 / 8;
 			   i < ((int_bit_position (field) + (bit_offset % 64))
-			        + tree_low_cst (DECL_SIZE (field), 0)
+			        + tree_to_shwi (DECL_SIZE (field))
 				+ 63) / 8 / 8; i++)
 			classes[i] =
 			  merge_classes (X86_64_INTEGER_CLASS,
@@ -25694,8 +25695,7 @@ ix86_data_alignment (tree type, int align, bool opt)
       && AGGREGATE_TYPE_P (type)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
-	  || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
+      && (wide_int::geu_p (TYPE_SIZE (type), max_align))
       && align < max_align)
     align = max_align;
 
@@ -25706,8 +25706,8 @@ ix86_data_alignment (tree type, int align, bool opt)
       if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
-	      || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+	  && (wide_int::geu_p (TYPE_SIZE (type), 128))
+	  && align < 128)
 	return 128;
     }
 
@@ -25816,13 +25816,13 @@ ix86_local_alignment (tree exp, enum machine_mode mode,
       && TARGET_SSE)
     {
       if (AGGREGATE_TYPE_P (type)
-	   && (va_list_type_node == NULL_TREE
-	       || (TYPE_MAIN_VARIANT (type)
-		   != TYPE_MAIN_VARIANT (va_list_type_node)))
-	   && TYPE_SIZE (type)
-	   && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	   && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 16
-	       || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+	  && (va_list_type_node == NULL_TREE
+	      || (TYPE_MAIN_VARIANT (type)
+		  != TYPE_MAIN_VARIANT (va_list_type_node)))
+	  && TYPE_SIZE (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+	  && (wide_int::geu_p (TYPE_SIZE (type), 16))
+	  && align < 128)
 	return 128;
     }
   if (TREE_CODE (type) == ARRAY_TYPE)
@@ -28842,7 +28842,7 @@ ix86_builtin_tm_load (tree type)
 {
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      switch (tree_low_cst (TYPE_SIZE (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE (type)))
 	{
 	case 64:
 	  return builtin_decl_explicit (BUILT_IN_TM_LOAD_M64);
@@ -28862,7 +28862,7 @@ ix86_builtin_tm_store (tree type)
 {
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      switch (tree_low_cst (TYPE_SIZE (type), 1))
+      switch (tree_to_uhwi (TYPE_SIZE (type)))
 	{
 	case 64:
 	  return builtin_decl_explicit (BUILT_IN_TM_STORE_M64);
@@ -32175,8 +32175,8 @@ get_element_number (tree vec_type, tree arg)
 {
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
-  if (!host_integerp (arg, 1)
-      || (elt = tree_low_cst (arg, 1), elt > max))
+  if (!tree_fits_uhwi_p (arg)
+      || (elt = tree_to_uhwi (arg), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;
@@ -38179,7 +38179,7 @@ void ix86_emit_swsqrtsf (rtx res, rtx a, enum machine_mode mode,
   e2 = gen_reg_rtx (mode);
   e3 = gen_reg_rtx (mode);
 
-  real_from_integer (&r, VOIDmode, -3, -1, 0);
+  real_from_integer (&r, VOIDmode, -3, SIGNED);
   mthree = CONST_DOUBLE_FROM_REAL_VALUE (r, SFmode);
 
   real_arithmetic (&r, NEGATE_EXPR, &dconsthalf, NULL);

@@ -378,7 +378,7 @@ c_lex_one_token (c_parser *parser, c_token *token)
       break;
     case CPP_PRAGMA:
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
-      token->pragma_kind = (enum pragma_kind) TREE_INT_CST_LOW (token->value);
+      token->pragma_kind = (enum pragma_kind) tree_to_hwi (token->value);
       token->value = NULL;
       break;
     default:
@@ -9210,8 +9210,8 @@ c_parser_omp_clause_collapse (c_parser *parser, tree list)
   if (num == error_mark_node)
     return list;
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
-      || !host_integerp (num, 0)
-      || (n = tree_low_cst (num, 0)) <= 0
+      || !tree_fits_shwi_p (num)
+      || (n = tree_to_shwi (num)) <= 0
       || (int) n != n)
     {
       error_at (loc,
@@ -10261,7 +10261,7 @@ c_parser_omp_for_loop (location_t loc,
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_low_cst (OMP_CLAUSE_COLLAPSE_EXPR (cl), 0);
+      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
 
   gcc_assert (collapse >= 1);
 

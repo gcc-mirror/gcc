@@ -861,10 +861,10 @@ mf_xform_derefs_1 (gimple_stmt_iterator *iter, tree *tp,
           addr = build1 (ADDR_EXPR, build_pointer_type (type), t);
 
         limit = fold_build2_loc (location, MINUS_EXPR, mf_uintptr_type,
-                             fold_build2_loc (location, PLUS_EXPR, mf_uintptr_type,
-					  fold_convert (mf_uintptr_type, addr),
-					  size),
-                             integer_one_node);
+				 fold_build2_loc (location, PLUS_EXPR, mf_uintptr_type,
+						  fold_convert (mf_uintptr_type, addr),
+						  size),
+				 integer_one_node);
       }
       break;
 

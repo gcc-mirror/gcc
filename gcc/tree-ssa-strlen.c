@@ -205,10 +205,10 @@ get_stridx (tree exp)
 
   s = string_constant (exp, &o);
   if (s != NULL_TREE
-      && (o == NULL_TREE || host_integerp (o, 0))
+      && (o == NULL_TREE || tree_fits_shwi_p (o))
       && TREE_STRING_LENGTH (s) > 0)
     {
-      HOST_WIDE_INT offset = o ? tree_low_cst (o, 0) : 0;
+      HOST_WIDE_INT offset = o ? tree_to_shwi (o) : 0;
       const char *p = TREE_STRING_POINTER (s);
       int max = TREE_STRING_LENGTH (s) - 1;
 
@@ -836,16 +836,16 @@ adjust_last_stmt (strinfo si, gimple stmt, bool is_strcat)
     }
 
   len = gimple_call_arg (last.stmt, 2);
-  if (host_integerp (len, 1))
+  if (tree_fits_uhwi_p (len))
     {
-      if (!host_integerp (last.len, 1)
+      if (!tree_fits_uhwi_p (last.len)
 	  || integer_zerop (len)
-	  || (unsigned HOST_WIDE_INT) tree_low_cst (len, 1)
-	     != (unsigned HOST_WIDE_INT) tree_low_cst (last.len, 1) + 1)
+	  || (unsigned HOST_WIDE_INT) tree_to_uhwi (len)
+	     != (unsigned HOST_WIDE_INT) tree_to_uhwi (last.len) + 1)
 	return;
       /* Don't adjust the length if it is divisible by 4, it is more efficient
 	 to store the extra '\0' in that case.  */
-      if ((((unsigned HOST_WIDE_INT) tree_low_cst (len, 1)) & 3) == 0)
+      if ((((unsigned HOST_WIDE_INT) tree_to_uhwi (len)) & 3) == 0)
 	return;
     }
   else if (TREE_CODE (len) == SSA_NAME)
@@ -1300,7 +1300,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
     return;
 
   if (olddsi != NULL
-      && host_integerp (len, 1)
+      && tree_fits_uhwi_p (len)
       && !integer_zerop (len))
     adjust_last_stmt (olddsi, stmt, false);
 
@@ -1326,8 +1326,8 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi)
       si = NULL;
       /* Handle memcpy (x, "abcd", 5) or
 	 memcpy (x, "abc\0uvw", 7).  */
-      if (!host_integerp (len, 1)
-	  || (unsigned HOST_WIDE_INT) tree_low_cst (len, 1)
+      if (!tree_fits_uhwi_p (len)
+	  || (unsigned HOST_WIDE_INT) tree_to_uhwi (len)
 	     <= (unsigned HOST_WIDE_INT) ~idx)
 	return;
     }
@@ -1616,11 +1616,11 @@ handle_pointer_plus (gimple_stmt_iterator *gsi)
   if (idx < 0)
     {
       tree off = gimple_assign_rhs2 (stmt);
-      if (host_integerp (off, 1)
-	  && (unsigned HOST_WIDE_INT) tree_low_cst (off, 1)
+      if (tree_fits_uhwi_p (off)
+	  && (unsigned HOST_WIDE_INT) tree_to_uhwi (off)
 	     <= (unsigned HOST_WIDE_INT) ~idx)
 	ssa_ver_to_stridx[SSA_NAME_VERSION (lhs)]
-	    = ~(~idx - (int) tree_low_cst (off, 1));
+	    = ~(~idx - (int) tree_to_uhwi (off));
       return;
     }
 

@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "target.h"
 #include "cgraph.h"
+#include "wide-int.h"
 
 /* Debugging support.  */
 
@@ -1503,7 +1504,7 @@ write_integer_cst (const tree cst)
 {
   int sign = tree_int_cst_sgn (cst);
 
-  if (TREE_INT_CST_HIGH (cst) + (sign < 0))
+  if (!cst_fits_shwi_p (cst))
     {
       /* A bignum. We do this in chunks, each of which fits in a
 	 HOST_WIDE_INT.  */
@@ -1529,8 +1530,7 @@ write_integer_cst (const tree cst)
 
       type = c_common_signed_or_unsigned_type (1, TREE_TYPE (cst));
       base = build_int_cstu (type, chunk);
-      n = build_int_cst_wide (type,
-			      TREE_INT_CST_LOW (cst), TREE_INT_CST_HIGH (cst));
+      n = wide_int_to_tree (type, cst);
 
       if (sign < 0)
 	{
@@ -1545,7 +1545,7 @@ write_integer_cst (const tree cst)
 
 	  done = integer_zerop (d);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR, type, n, tmp);
-	  c = hwint_to_ascii (TREE_INT_CST_LOW (tmp), 10, ptr,
+	  c = hwint_to_ascii (tree_to_hwi (tmp), 10, ptr,
 			      done ? 1 : chunk_digits);
 	  ptr -= c;
 	  count += c;
@@ -1557,7 +1557,7 @@ write_integer_cst (const tree cst)
   else
     {
       /* A small num.  */
-      unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (cst);
+      unsigned HOST_WIDE_INT low = tree_to_hwi (cst);
 
       if (sign < 0)
 	{
@@ -3223,12 +3223,12 @@ write_array_type (const tree type)
 	{
 	  /* The ABI specifies that we should mangle the number of
 	     elements in the array, not the largest allowed index.  */
-	  double_int dmax = tree_to_double_int (max) + double_int_one;
+	  addr_wide_int wmax = addr_wide_int (max) + 1;
 	  /* Truncate the result - this will mangle [0, SIZE_INT_MAX]
 	     number of elements as zero.  */
-	  dmax = dmax.zext (TYPE_PRECISION (TREE_TYPE (max)));
-	  gcc_assert (dmax.fits_uhwi ());
-	  write_unsigned_number (dmax.low);
+	  wmax = wmax.zext (TYPE_PRECISION (TREE_TYPE (max)));
+	  gcc_assert (wmax.fits_uhwi_p ());
+	  write_unsigned_number (wmax.to_uhwi ());
 	}
       else
 	{

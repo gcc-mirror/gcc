@@ -1139,7 +1139,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      multiplication sequence when profitable.  */
   c = TREE_REAL_CST (arg1);
   n = real_to_integer (&c);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
   c_is_int = real_identical (&c, &cint);
 
   if (c_is_int
@@ -1185,7 +1185,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
   /* Optimize pow(x,0.75) = sqrt(x) * sqrt(sqrt(x)) unless we are
      optimizing for space.  Don't do this optimization if we don't have
      a hardware sqrt insn.  */
-  real_from_integer (&dconst3_4, VOIDmode, 3, 0, 0);
+  real_from_integer (&dconst3_4, VOIDmode, 3, SIGNED);
   SET_REAL_EXP (&dconst3_4, REAL_EXP (&dconst3_4) - 2);
 
   if (flag_unsafe_math_optimizations
@@ -1249,7 +1249,7 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      Do not calculate the powi factor when n/2 = 0.  */
   real_arithmetic (&c2, MULT_EXPR, &c, &dconst2);
   n = real_to_integer (&c2);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
   c2_is_int = real_identical (&c2, &cint);
 
   if (flag_unsafe_math_optimizations
@@ -1297,11 +1297,11 @@ gimple_expand_builtin_pow (gimple_stmt_iterator *gsi, location_t loc,
      different from pow(x, 1./3.) due to rounding and behavior with
      negative x, we need to constrain this transformation to unsafe
      math and positive x or finite math.  */
-  real_from_integer (&dconst3, VOIDmode, 3, 0, 0);
+  real_from_integer (&dconst3, VOIDmode, 3, SIGNED);
   real_arithmetic (&c2, MULT_EXPR, &c, &dconst3);
   real_round (&c2, mode, &c2);
   n = real_to_integer (&c2);
-  real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+  real_from_integer (&cint, VOIDmode, n, SIGNED);
   real_arithmetic (&c2, RDIV_EXPR, &cint, &dconst3);
   real_convert (&c2, mode, &c2);
 
@@ -1492,10 +1492,10 @@ execute_cse_sincos (void)
 		    }
 		  else
 		    {
-		      if (!host_integerp (arg1, 0))
+		      if (!tree_fits_shwi_p (arg1))
 			break;
-
-		      n = TREE_INT_CST_LOW (arg1);
+		      
+		      n = tree_to_shwi (arg1);
 		      result = gimple_expand_builtin_powi (&gsi, loc, arg0, n);
 		    }
 
@@ -1753,7 +1753,7 @@ find_bswap_1 (gimple stmt, struct symbolic_number *n, int limit)
 	case RSHIFT_EXPR:
 	case LROTATE_EXPR:
 	case RROTATE_EXPR:
-	  if (!do_shift_rotate (code, n, (int)TREE_INT_CST_LOW (rhs2)))
+	  if (!do_shift_rotate (code, n, (int)tree_to_hwi (rhs2)))
 	    return NULL_TREE;
 	  break;
 	CASE_CONVERT:
@@ -1846,7 +1846,7 @@ find_bswap (gimple stmt)
      increase that number by three  here in order to also
      cover signed -> unsigned converions of the src operand as can be seen
      in libgcc, and for initial shift/and operation of the src operand.  */
-  limit = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
+  limit = tree_to_hwi (TYPE_SIZE_UNIT (gimple_expr_type (stmt)));
   limit += 1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit);
   source_expr =  find_bswap_1 (stmt, &n, limit);
 

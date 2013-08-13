@@ -1633,8 +1633,8 @@ dump_case_nodes (FILE *f, struct case_node *root,
 
   dump_case_nodes (f, root->left, indent_step, indent_level);
 
-  low = tree_low_cst (root->low, 0);
-  high = tree_low_cst (root->high, 0);
+  low = tree_to_shwi (root->low);
+  high = tree_to_shwi (root->high);
 
   fputs (";; ", f);
   if (high == low)
@@ -1711,7 +1711,7 @@ expand_switch_as_decision_tree_p (tree range,
      who knows...  */
   max_ratio = optimize_insn_for_size_p () ? 3 : 10;
   if (count < case_values_threshold ()
-      || ! host_integerp (range, /*pos=*/1)
+      || ! tree_fits_uhwi_p (range)
       || compare_tree_int (range, max_ratio * count) > 0)
     return true;
 
@@ -1876,7 +1876,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 
   /* Get table of labels to jump to, in order of case index.  */
 
-  ncases = tree_low_cst (range, 0) + 1;
+  ncases = tree_to_shwi (range) + 1;
   labelvec = XALLOCAVEC (rtx, ncases);
   memset (labelvec, 0, ncases * sizeof (rtx));
 
@@ -1886,11 +1886,11 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
 	 value since that should fit in a HOST_WIDE_INT while the
 	 actual values may not.  */
       HOST_WIDE_INT i_low
-	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				     n->low, minval), 1);
+	= tree_to_uhwi (fold_build2 (MINUS_EXPR, index_type,
+				     n->low, minval));
       HOST_WIDE_INT i_high
-	= tree_low_cst (fold_build2 (MINUS_EXPR, index_type,
-				     n->high, minval), 1);
+	= tree_to_uhwi (fold_build2 (MINUS_EXPR, index_type,
+				     n->high, minval));
       HOST_WIDE_INT i;
 
       for (i = i_low; i <= i_high; i ++)
@@ -2088,9 +2088,7 @@ expand_case (gimple stmt)
 	 original type.  Make sure to drop overflow flags.  */
       low = fold_convert (index_type, low);
       if (TREE_OVERFLOW (low))
-	low = build_int_cst_wide (index_type,
-				  TREE_INT_CST_LOW (low),
-				  TREE_INT_CST_HIGH (low));
+	low = wide_int_to_tree (index_type, low);
 
       /* The canonical from of a case label in GIMPLE is that a simple case
 	 has an empty CASE_HIGH.  For the casesi and tablejump expanders,
@@ -2099,9 +2097,7 @@ expand_case (gimple stmt)
 	high = low;
       high = fold_convert (index_type, high);
       if (TREE_OVERFLOW (high))
-	high = build_int_cst_wide (index_type,
-				   TREE_INT_CST_LOW (high),
-				   TREE_INT_CST_HIGH (high));
+	high = wide_int_to_tree (index_type, high);
 
       basic_block case_bb = label_to_block_fn (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);

@@ -825,8 +825,7 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 	*walk_subtrees = 0;
 
       else if (TREE_CODE (*tp) == INTEGER_CST)
-	*tp = build_int_cst_wide (new_type, TREE_INT_CST_LOW (*tp),
-				  TREE_INT_CST_HIGH (*tp));
+	*tp = wide_int_to_tree (new_type, *tp);
       else
 	{
 	  *tp = copy_node (*tp);
@@ -1000,8 +999,7 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	*walk_subtrees = 0;
 
       else if (TREE_CODE (*tp) == INTEGER_CST)
-	*tp = build_int_cst_wide (new_type, TREE_INT_CST_LOW (*tp),
-				  TREE_INT_CST_HIGH (*tp));
+	*tp = wide_int_to_tree (new_type, *tp);
       else
 	{
 	  *tp = copy_node (*tp);
@@ -1192,7 +1190,7 @@ remap_eh_region_tree_nr (tree old_t_nr, copy_body_data *id)
 {
   int old_nr, new_nr;
 
-  old_nr = tree_low_cst (old_t_nr, 0);
+  old_nr = tree_to_shwi (old_t_nr);
   new_nr = remap_eh_region_nr (old_nr, id);
 
   return build_int_cst (integer_type_node, new_nr);

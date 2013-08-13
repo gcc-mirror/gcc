@@ -837,13 +837,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 		align_cap = get_mode_alignment (ptr_mode);
 	      }
 
-	    if (!host_integerp (TYPE_SIZE (gnu_type), 1)
+	    if (!tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 		|| compare_tree_int (TYPE_SIZE (gnu_type), size_cap) > 0)
 	      align = 0;
 	    else if (compare_tree_int (TYPE_SIZE (gnu_type), align_cap) > 0)
 	      align = align_cap;
 	    else
-	      align = ceil_pow2 (tree_low_cst (TYPE_SIZE (gnu_type), 1));
+	      align = ceil_pow2 (tree_to_uhwi (TYPE_SIZE (gnu_type)));
 
 	    /* But make sure not to under-align the object.  */
 	    if (align <= TYPE_ALIGN (gnu_type))
@@ -1478,10 +1478,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	    && const_flag
 	    && gnu_expr && TREE_CONSTANT (gnu_expr)
 	    && AGGREGATE_TYPE_P (gnu_type)
-	    && host_integerp (TYPE_SIZE_UNIT (gnu_type), 1)
+	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (gnu_type))
 	    && !(TYPE_IS_PADDING_P (gnu_type)
-		 && !host_integerp (TYPE_SIZE_UNIT
-				    (TREE_TYPE (TYPE_FIELDS (gnu_type))), 1)))
+		 && !tree_fits_uhwi_p (TYPE_SIZE_UNIT
+				       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
 	  static_p = true;
 
 	/* Now create the variable or the constant and set various flags.  */
@@ -3480,7 +3480,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 			gnu_size = DECL_SIZE (gnu_old_field);
 			if (RECORD_OR_UNION_TYPE_P (gnu_field_type)
 			    && !TYPE_FAT_POINTER_P (gnu_field_type)
-			    && host_integerp (TYPE_SIZE (gnu_field_type), 1))
+			    && tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type)))
 			  gnu_field_type
 			    = make_packable_type (gnu_field_type, true);
 		      }
@@ -4521,7 +4521,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 							NULL_TREE))
 		  {
 		    unsigned int size
-		      = TREE_INT_CST_LOW (TYPE_SIZE (gnu_return_type));
+		      = tree_to_hwi (TYPE_SIZE (gnu_return_type));
 		    unsigned int i = BITS_PER_UNIT;
 		    enum machine_mode mode;
 
@@ -4899,22 +4899,22 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 
 	      /* Consider an alignment as suspicious if the alignment/size
 		 ratio is greater or equal to the byte/bit ratio.  */
-	      if (host_integerp (size, 1)
-		  && align >= TREE_INT_CST_LOW (size) * BITS_PER_UNIT)
+	      if (tree_fits_uhwi_p (size)
+		  && align >= tree_to_uhwi (size) * BITS_PER_UNIT)
 		post_error_ne ("?suspiciously large alignment specified for&",
 			       Expression (Alignment_Clause (gnat_entity)),
 			       gnat_entity);
 	    }
 	}
       else if (Is_Atomic (gnat_entity) && !gnu_size
-	       && host_integerp (TYPE_SIZE (gnu_type), 1)
+	       && tree_fits_uhwi_p (TYPE_SIZE (gnu_type))
 	       && integer_pow2p (TYPE_SIZE (gnu_type)))
 	align = MIN (BIGGEST_ALIGNMENT,
-		     tree_low_cst (TYPE_SIZE (gnu_type), 1));
+		     tree_to_uhwi (TYPE_SIZE (gnu_type)));
       else if (Is_Atomic (gnat_entity) && gnu_size
-	       && host_integerp (gnu_size, 1)
+	       && tree_fits_uhwi_p (gnu_size)
 	       && integer_pow2p (gnu_size))
-	align = MIN (BIGGEST_ALIGNMENT, tree_low_cst (gnu_size, 1));
+	align = MIN (BIGGEST_ALIGNMENT, tree_to_uhwi (gnu_size));
 
       /* See if we need to pad the type.  If we did, and made a record,
 	 the name of the new type may be changed.  So get it back for
@@ -5560,7 +5560,7 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
       && !Strict_Alignment (gnat_type)
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
-      && host_integerp (TYPE_SIZE (gnu_type), 1))
+      && tree_fits_uhwi_p (TYPE_SIZE (gnu_type)))
     gnu_type = make_packable_type (gnu_type, false);
 
   if (Has_Atomic_Components (gnat_array))
@@ -6488,7 +6488,7 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   if (!needs_strict_alignment
       && RECORD_OR_UNION_TYPE_P (gnu_field_type)
       && !TYPE_FAT_POINTER_P (gnu_field_type)
-      && host_integerp (TYPE_SIZE (gnu_field_type), 1)
+      && tree_fits_uhwi_p (TYPE_SIZE (gnu_field_type))
       && (packed == 1
 	  || (gnu_size
 	      && (tree_int_cst_lt (gnu_size, TYPE_SIZE (gnu_field_type))
@@ -7477,11 +7477,11 @@ annotate_value (tree gnu_size)
       if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST)
 	{
 	  tree op1 = TREE_OPERAND (gnu_size, 1);
-	  double_int signed_op1
-	    = tree_to_double_int (op1).sext (TYPE_PRECISION (sizetype));
-	  if (signed_op1.is_negative ())
+	  wide_int signed_op1
+	    = wide_int::from_tree (op1).sforce_to_size (TYPE_PRECISION (sizetype));
+	  if (signed_op1.neg_p (SIGNED))
 	    {
-	      op1 = double_int_to_tree (sizetype, -signed_op1);
+	      op1 = wide_int_to_tree (sizetype, -signed_op1);
 	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
 	    }
 	}
@@ -8348,7 +8348,7 @@ create_field_decl_from (tree old_field, tree field_type, tree record_type,
 {
   tree t = TREE_VALUE (purpose_member (old_field, pos_list));
   tree pos = TREE_VEC_ELT (t, 0), bitpos = TREE_VEC_ELT (t, 2);
-  unsigned int offset_align = tree_low_cst (TREE_VEC_ELT (t, 1), 1);
+  unsigned int offset_align = tree_to_uhwi (TREE_VEC_ELT (t, 1));
   tree new_pos, new_field;
   unsigned int i;
   subst_pair *s;

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "debug.h"
 #include "target.h"
+#include "wide-int.h"
 
 /* We may keep statistics about how long which files took to compile.  */
 static int header_time, body_time;
@@ -47,9 +48,9 @@ static tree interpret_float (const cpp_token *, unsigned int, const char *,
 			     enum overflow_type *);
 static tree interpret_fixed (const cpp_token *, unsigned int);
 static enum integer_type_kind narrowest_unsigned_type
-	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
+	(const wide_int &, unsigned int);
 static enum integer_type_kind narrowest_signed_type
-	(unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT, unsigned int);
+	(const wide_int &, unsigned int);
 static enum cpp_ttype lex_string (const cpp_token *, tree *, bool, bool);
 static tree lex_charconst (const cpp_token *);
 static void update_header_times (const char *);
@@ -525,9 +526,7 @@ c_lex_with_flags (tree *value, location_t *loc, unsigned char *cpp_flags,
    there isn't one.  */
 
 static enum integer_type_kind
-narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
-			 unsigned HOST_WIDE_INT high,
-			 unsigned int flags)
+narrowest_unsigned_type (const wide_int &val, unsigned int flags)
 {
   int itk;
 
@@ -546,9 +545,7 @@ narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
 	continue;
       upper = TYPE_MAX_VALUE (integer_types[itk]);
 
-      if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
-	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high
-	      && TREE_INT_CST_LOW (upper) >= low))
+      if (wide_int::geu_p (upper, val))
 	return (enum integer_type_kind) itk;
     }
 
@@ -557,8 +554,7 @@ narrowest_unsigned_type (unsigned HOST_WIDE_INT low,
 
 /* Ditto, but narrowest signed type.  */
 static enum integer_type_kind
-narrowest_signed_type (unsigned HOST_WIDE_INT low,
-		       unsigned HOST_WIDE_INT high, unsigned int flags)
+narrowest_signed_type (const wide_int &val, unsigned int flags)
 {
   int itk;
 
@@ -569,7 +565,6 @@ narrowest_signed_type (unsigned HOST_WIDE_INT low,
   else
     itk = itk_long_long;
 
-
   for (; itk < itk_none; itk += 2 /* skip signed types */)
     {
       tree upper;
@@ -578,9 +573,7 @@ narrowest_signed_type (unsigned HOST_WIDE_INT low,
 	continue;
       upper = TYPE_MAX_VALUE (integer_types[itk]);
 
-      if ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) > high
-	  || ((unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (upper) == high
-	      && TREE_INT_CST_LOW (upper) >= low))
+      if (wide_int::geu_p (upper, val))
 	return (enum integer_type_kind) itk;
     }
 
@@ -596,6 +589,8 @@ interpret_integer (const cpp_token *token, unsigned int flags,
   enum integer_type_kind itk;
   cpp_num integer;
   cpp_options *options = cpp_get_options (parse_in);
+  HOST_WIDE_INT ival[2];
+  wide_int wval;
 
   *overflow = OT_NONE;
 
@@ -604,18 +599,22 @@ interpret_integer (const cpp_token *token, unsigned int flags,
   if (integer.overflow)
     *overflow = OT_OVERFLOW;
 
+  ival[0] = integer.low;
+  ival[1] = integer.high;
+  wval = wide_int::from_array (ival, 2, HOST_BITS_PER_WIDE_INT * 2);
+
   /* The type of a constant with a U suffix is straightforward.  */
   if (flags & CPP_N_UNSIGNED)
-    itk = narrowest_unsigned_type (integer.low, integer.high, flags);
+    itk = narrowest_unsigned_type (wval, flags);
   else
     {
       /* The type of a potentially-signed integer constant varies
 	 depending on the base it's in, the standard in use, and the
 	 length suffixes.  */
       enum integer_type_kind itk_u
-	= narrowest_unsigned_type (integer.low, integer.high, flags);
+	= narrowest_unsigned_type (wval, flags);
       enum integer_type_kind itk_s
-	= narrowest_signed_type (integer.low, integer.high, flags);
+	= narrowest_signed_type (wval, flags);
 
       /* In both C89 and C99, octal and hex constants may be signed or
 	 unsigned, whichever fits tighter.  We do not warn about this
@@ -667,7 +666,7 @@ interpret_integer (const cpp_token *token, unsigned int flags,
 	   : "integer constant is too large for %<long%> type");
     }
 
-  value = build_int_cst_wide (type, integer.low, integer.high);
+  value = wide_int_to_tree (type, wval);
 
   /* Convert imaginary to a complex type.  */
   if (flags & CPP_N_IMAGINARY)
@@ -1154,9 +1153,9 @@ lex_charconst (const cpp_token *token)
   /* Cast to cppchar_signed_t to get correct sign-extension of RESULT
      before possibly widening to HOST_WIDE_INT for build_int_cst.  */
   if (unsignedp || (cppchar_signed_t) result >= 0)
-    value = build_int_cst_wide (type, result, 0);
+    value = build_int_cst (type, result);
   else
-    value = build_int_cst_wide (type, (cppchar_signed_t) result, -1);
+    value = build_int_cst (type, (cppchar_signed_t) result);
 
   return value;
 }

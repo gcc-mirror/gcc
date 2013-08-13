@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-common.h"
+#include "wide-int.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
    diagnostic messages in convert_for_assignment.  */
@@ -4736,9 +4737,8 @@ build_c_cast (location_t loc, tree type, tree expr)
 	    }
 	  else if (TREE_OVERFLOW (value))
 	    /* Reset VALUE's overflow flags, ensuring constant sharing.  */
-	    value = build_int_cst_wide (TREE_TYPE (value),
-					TREE_INT_CST_LOW (value),
-					TREE_INT_CST_HIGH (value));
+	    value = wide_int_to_tree (TREE_TYPE (value),
+				      value);
 	}
     }
 
@@ -6798,7 +6798,7 @@ push_init_level (int implicit, struct obstack * braced_init_obstack)
   else if (TREE_CODE (constructor_type) == ARRAY_TYPE)
     {
       constructor_type = TREE_TYPE (constructor_type);
-      push_array_bounds (tree_low_cst (constructor_index, 1));
+      push_array_bounds (tree_to_uhwi (constructor_index));
       constructor_depth++;
     }
 
@@ -7597,20 +7597,20 @@ set_nonincremental_init_from_string (tree str,
     {
       if (wchar_bytes == 1)
 	{
-	  val[1] = (unsigned char) *p++;
-	  val[0] = 0;
+	  val[0] = (unsigned char) *p++;
+	  val[1] = 0;
 	}
       else
 	{
-	  val[0] = 0;
 	  val[1] = 0;
+	  val[0] = 0;
 	  for (byte = 0; byte < wchar_bytes; byte++)
 	    {
 	      if (BYTES_BIG_ENDIAN)
 		bitpos = (wchar_bytes - byte - 1) * charwidth;
 	      else
 		bitpos = byte * charwidth;
-	      val[bitpos < HOST_BITS_PER_WIDE_INT]
+	      val[bitpos % HOST_BITS_PER_WIDE_INT]
 		|= ((unsigned HOST_WIDE_INT) ((unsigned char) *p++))
 		   << (bitpos % HOST_BITS_PER_WIDE_INT);
 	    }
@@ -7621,24 +7621,26 @@ set_nonincremental_init_from_string (tree str,
 	  bitpos = ((wchar_bytes - 1) * charwidth) + HOST_BITS_PER_CHAR;
 	  if (bitpos < HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (val[1] & (((HOST_WIDE_INT) 1) << (bitpos - 1)))
+	      if (val[0] & (((HOST_WIDE_INT) 1) << (bitpos - 1)))
 		{
-		  val[1] |= ((HOST_WIDE_INT) -1) << bitpos;
-		  val[0] = -1;
+		  val[0] |= ((HOST_WIDE_INT) -1) << bitpos;
+		  val[1] = -1;
 		}
 	    }
 	  else if (bitpos == HOST_BITS_PER_WIDE_INT)
 	    {
-	      if (val[1] < 0)
-		val[0] = -1;
+	      if (val[0] < 0)
+		val[1] = -1;
 	    }
-	  else if (val[0] & (((HOST_WIDE_INT) 1)
+	  else if (val[1] & (((HOST_WIDE_INT) 1)
 			     << (bitpos - 1 - HOST_BITS_PER_WIDE_INT)))
-	    val[0] |= ((HOST_WIDE_INT) -1)
+	    val[1] |= ((HOST_WIDE_INT) -1)
 		      << (bitpos - HOST_BITS_PER_WIDE_INT);
 	}
 
-      value = build_int_cst_wide (type, val[1], val[0]);
+      value = wide_int_to_tree (type, 
+				wide_int::from_array (val, 2, 
+						      HOST_BITS_PER_WIDE_INT * 2));
       add_pending_init (purpose, value, NULL_TREE, true,
                         braced_init_obstack);
     }
@@ -8348,7 +8350,7 @@ process_init_element (struct c_expr value, bool implicit,
 	  /* Now output the actual element.  */
 	  if (value.value)
 	    {
-	      push_array_bounds (tree_low_cst (constructor_index, 1));
+	      push_array_bounds (tree_to_uhwi (constructor_index));
 	      output_init_element (value.value, value.original_type,
 				   strict_string, elttype,
 				   constructor_index, 1, implicit,
@@ -9144,7 +9146,7 @@ c_finish_bc_stmt (location_t loc, tree *label_p, bool is_break)
     }
   else if (TREE_CODE (label) == LABEL_DECL)
     ;
-  else switch (TREE_INT_CST_LOW (label))
+  else switch (tree_to_hwi (label))
     {
     case 0:
       if (is_break)

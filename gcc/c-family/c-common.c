@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "cgraph.h"
 #include "target-def.h"
+#include "wide-int-print.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -832,7 +833,7 @@ finish_fname_decls (void)
       for (saved = TREE_PURPOSE (stack); saved; saved = TREE_CHAIN (saved))
 	{
 	  tree decl = TREE_PURPOSE (saved);
-	  unsigned ix = TREE_INT_CST_LOW (TREE_VALUE (saved));
+	  unsigned ix = tree_to_hwi (TREE_VALUE (saved));
 
 	  *fname_vars[ix].decl = decl;
 	}
@@ -2418,7 +2419,7 @@ shorten_binary_op (tree result_type, tree op0, tree op1, bool bitwise)
 
   arg0 = c_common_get_narrower (op0, &unsigned0);
   arg1 = c_common_get_narrower (op1, &unsigned1);
-
+  
   /* UNS is 1 if the operation to be done is an unsigned one.  */
   uns = TYPE_UNSIGNED (result_type);
 
@@ -3451,7 +3452,7 @@ c_common_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (mode == DImode)
     return unsignedp ? unsigned_intDI_type_node : intDI_type_node;
-
+  
 #if HOST_BITS_PER_WIDE_INT >= 64
   if (mode == TYPE_MODE (intTI_type_node))
     return unsignedp ? unsigned_intTI_type_node : intTI_type_node;
@@ -3967,7 +3968,7 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
   /* If one of the operands must be floated, we cannot optimize.  */
   real1 = TREE_CODE (TREE_TYPE (primop0)) == REAL_TYPE;
   real2 = TREE_CODE (TREE_TYPE (primop1)) == REAL_TYPE;
-
+  
   /* If first arg is constant, swap the args (changing operation
      so value is preserved), for canonicalization.  Don't do this if
      the second arg is 0.  */
@@ -4052,9 +4053,10 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	{
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
-	  primop1 = force_fit_type_double (*restype_ptr,
-					   tree_to_double_int (primop1),
-					   0, TREE_OVERFLOW (primop1));
+	  primop1 = force_fit_type (*restype_ptr,
+				    wide_int (primop1).force_to_size (TYPE_PRECISION (*restype_ptr),
+								      TYPE_SIGN (TREE_TYPE (primop1))),
+				    0, TREE_OVERFLOW (primop1));
 	}
       if (type != *restype_ptr)
 	{
@@ -4366,8 +4368,7 @@ pointer_int_sum (location_t loc, enum tree_code resultcode,
 			      convert (TREE_TYPE (intop), size_exp), 1);
     intop = convert (sizetype, t);
     if (TREE_OVERFLOW_P (intop) && !TREE_OVERFLOW (t))
-      intop = build_int_cst_wide (TREE_TYPE (intop), TREE_INT_CST_LOW (intop),
-				  TREE_INT_CST_HIGH (intop));
+      intop = wide_int_to_tree (TREE_TYPE (intop), intop);
   }
 
   /* Create the sum or difference.  */
@@ -4490,7 +4491,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
 
     case ERROR_MARK:
       return expr;
-
+      
     case INTEGER_CST:
       return integer_zerop (expr) ? truthvalue_false_node
 				  : truthvalue_true_node;
@@ -4740,7 +4741,7 @@ c_type_hash (const void *p)
   if (TREE_CODE (TYPE_SIZE (t)) != INTEGER_CST)
     size = 0;
   else
-    size = TREE_INT_CST_LOW (TYPE_SIZE (t));
+    size = tree_to_hwi (TYPE_SIZE (t));
   return ((size << 24) | (n_elements << shift));
 }
 
@@ -4748,7 +4749,7 @@ static GTY((param_is (union tree_node))) htab_t type_hash_table;
 
 /* Return the typed-based alias set for T, which may be an expression
    or a type.  Return -1 if we don't do anything special.  */
-
+ 
 alias_set_type
 c_common_get_alias_set (tree t)
 {
@@ -5419,7 +5420,7 @@ c_common_nodes_and_builtins (void)
   }
 
   /* This node must not be shared.  */
-  void_zero_node = make_node (INTEGER_CST);
+  void_zero_node = make_int_cst (1);
   TREE_TYPE (void_zero_node) = void_type_node;
 
   void_list_node = build_void_list_node ();
@@ -5608,7 +5609,7 @@ c_common_nodes_and_builtins (void)
 	    (build_decl (UNKNOWN_LOCATION,
 		         TYPE_DECL, get_identifier (pname),
 	  	         ptype));
-
+	  
 	}
     }
 
@@ -5630,7 +5631,7 @@ c_common_nodes_and_builtins (void)
 
   /* Create the built-in __null node.  It is important that this is
      not shared.  */
-  null_node = make_node (INTEGER_CST);
+  null_node = make_int_cst (1);
   TREE_TYPE (null_node) = c_common_type_for_size (POINTER_SIZE, 0);
 
   /* Since builtin_types isn't gc'ed, don't export these nodes.  */
@@ -6008,22 +6009,12 @@ c_add_case_label (location_t loc, splay_tree cases, tree cond, tree orig_type,
 static void
 match_case_to_enum_1 (tree key, tree type, tree label)
 {
-  char buf[2 + 2*HOST_BITS_PER_WIDE_INT/4 + 1];
+  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
-  /* ??? Not working too hard to print the double-word value.
-     Should perhaps be done with %lwd in the diagnostic routines?  */
-  if (TREE_INT_CST_HIGH (key) == 0)
-    snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_UNSIGNED,
-	      TREE_INT_CST_LOW (key));
-  else if (!TYPE_UNSIGNED (type)
-	   && TREE_INT_CST_HIGH (key) == -1
-	   && TREE_INT_CST_LOW (key) != 0)
-    snprintf (buf, sizeof (buf), "-" HOST_WIDE_INT_PRINT_UNSIGNED,
-	      -TREE_INT_CST_LOW (key));
+  if (tree_fits_hwi_p (key, TYPE_SIGN (type)))
+    print_dec (key, buf, TYPE_SIGN (type));
   else
-    snprintf (buf, sizeof (buf), HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-	      (unsigned HOST_WIDE_INT) TREE_INT_CST_HIGH (key),
-	      (unsigned HOST_WIDE_INT) TREE_INT_CST_LOW (key));
+    print_hex (key, buf);
 
   if (TYPE_NAME (type) == 0)
     warning_at (DECL_SOURCE_LOCATION (CASE_LABEL (label)),
@@ -6930,11 +6921,11 @@ get_priority (tree args, bool is_destructor)
 
   arg = TREE_VALUE (args);
   arg = default_conversion (arg);
-  if (!host_integerp (arg, /*pos=*/0)
+  if (!tree_fits_shwi_p (arg)
       || !INTEGRAL_TYPE_P (TREE_TYPE (arg)))
     goto invalid;
 
-  pri = tree_low_cst (arg, /*pos=*/0);
+  pri = tree_to_shwi (arg);
   if (pri < 0 || pri > MAX_INIT_PRIORITY)
     goto invalid;
 
@@ -7068,7 +7059,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
   tree ident = TREE_VALUE (args);
 
   *no_add_attrs = true;
-
+  
   if (TREE_CODE (ident) != IDENTIFIER_NODE)
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
@@ -7931,11 +7922,11 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
   for (; args; args = TREE_CHAIN (args))
     {
       tree position = TREE_VALUE (args);
+      wide_int p;
 
       if (TREE_CODE (position) != INTEGER_CST
-	  || TREE_INT_CST_HIGH (position)
-	  || TREE_INT_CST_LOW (position) < 1
-	  || TREE_INT_CST_LOW (position) > arg_count )
+	  || (p = wide_int (position)).ltu_p (1)
+	  || p.gtu_p (arg_count) )
 	{
 	  warning (OPT_Wattributes,
 	           "alloc_size parameter outside range");
@@ -8358,14 +8349,14 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 
   size = TREE_VALUE (args);
 
-  if (!host_integerp (size, 1))
+  if (!tree_fits_uhwi_p (size))
     {
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       return NULL_TREE;
     }
 
   /* Get the vector size (in bytes).  */
-  vecsize = tree_low_cst (size, 1);
+  vecsize = tree_to_uhwi (size);
 
   /* We need to provide for vector pointers, vector arrays, and
      functions returning vectors.  For example:
@@ -8391,14 +8382,14 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
       || (!SCALAR_FLOAT_MODE_P (orig_mode)
 	  && GET_MODE_CLASS (orig_mode) != MODE_INT
 	  && !ALL_SCALAR_FIXED_POINT_MODE_P (orig_mode))
-      || !host_integerp (TYPE_SIZE_UNIT (type), 1)
+      || !tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
       || TREE_CODE (type) == BOOLEAN_TYPE)
     {
       error ("invalid vector type for attribute %qE", name);
       return NULL_TREE;
     }
 
-  if (vecsize % tree_low_cst (TYPE_SIZE_UNIT (type), 1))
+  if (vecsize % tree_to_uhwi (TYPE_SIZE_UNIT (type)))
     {
       error ("vector size not an integral multiple of component size");
       return NULL;
@@ -8411,7 +8402,7 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
     }
 
   /* Calculate how many units fit in the vector.  */
-  nunits = vecsize / tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  nunits = vecsize / tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (nunits & (nunits - 1))
     {
       error ("number of components of the vector not a power of two");
@@ -8573,7 +8564,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
       if (TREE_VALUE (attr))
 	{
 	  tree p = TREE_VALUE (TREE_VALUE (attr));
-	  pos = TREE_INT_CST_LOW (p);
+	  pos = tree_to_hwi (p);
 	}
 
       /* The sentinel must be one of the varargs, i.e.
@@ -8646,13 +8637,14 @@ check_nonnull_arg (void * ARG_UNUSED (ctx), tree param,
 static bool
 get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 {
-  /* Verify the arg number is a constant.  */
-  if (TREE_CODE (arg_num_expr) != INTEGER_CST
-      || TREE_INT_CST_HIGH (arg_num_expr) != 0)
+  /* Verify the arg number is a small constant.  */
+  if (cst_fits_uhwi_p (arg_num_expr))
+    {
+      *valp = tree_to_hwi (arg_num_expr);
+      return true;
+    }
+  else
     return false;
-
-  *valp = TREE_INT_CST_LOW (arg_num_expr);
-  return true;
 }
 
 /* Handle a "nothrow" attribute; arguments as in
@@ -8850,7 +8842,7 @@ parse_optimize_options (tree args, bool attr_p)
       if (TREE_CODE (value) == INTEGER_CST)
 	{
 	  char buffer[20];
-	  sprintf (buffer, "-O%ld", (long) TREE_INT_CST_LOW (value));
+	  sprintf (buffer, "-O%ld", (long) tree_to_hwi (value));
 	  vec_safe_push (optimize_args, ggc_strdup (buffer));
 	}
 
@@ -9072,11 +9064,10 @@ check_function_arguments_recurse (void (*callback)
 	    /* Extract the argument number, which was previously checked
 	       to be valid.  */
 	    format_num_expr = TREE_VALUE (TREE_VALUE (attrs));
+	    
+	    gcc_assert (tree_fits_uhwi_p (format_num_expr));
 
-	    gcc_assert (TREE_CODE (format_num_expr) == INTEGER_CST
-			&& !TREE_INT_CST_HIGH (format_num_expr));
-
-	    format_num = TREE_INT_CST_LOW (format_num_expr);
+	    format_num = tree_to_uhwi (format_num_expr);
 
 	    for (inner_arg = first_call_expr_arg (param, &iter), i = 1;
 		 inner_arg != 0;
@@ -9330,7 +9321,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
 	   || token_type == CPP_CHAR16
 	   || token_type == CPP_CHAR32)
     {
-      unsigned int val = TREE_INT_CST_LOW (value);
+      unsigned int val = tree_to_hwi (value);
       const char *prefix;
 
       switch (token_type)
@@ -9584,8 +9575,7 @@ fold_offsetof_1 (tree expr)
 	  return error_mark_node;
 	}
       off = size_binop_loc (input_location, PLUS_EXPR, DECL_FIELD_OFFSET (t),
-			    size_int (tree_low_cst (DECL_FIELD_BIT_OFFSET (t),
-						    1)
+			    size_int (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (t))
 				      / BITS_PER_UNIT));
       break;
 
@@ -9949,7 +9939,7 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
     {
       error ("size of array is too large");
       /* If we proceed with the array type as it is, we'll eventually
-	 crash in tree_low_cst().  */
+	 crash in tree_to_uhwi().  */
       type = error_mark_node;
     }
 
@@ -10007,7 +9997,7 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params)
   if (!INTEGRAL_TYPE_P (type) && !POINTER_TYPE_P (type))
     goto incompatible;
 
-  size = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
     return size;
 
@@ -10166,7 +10156,7 @@ get_atomic_generic_size (location_t loc, tree function,
       return 0;
     }
 
-  size_0 = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type_0)), 1);
+  size_0 = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type_0)));
 
   /* Zero size objects are not allowed.  */
   if (size_0 == 0)
@@ -10191,7 +10181,7 @@ get_atomic_generic_size (location_t loc, tree function,
 		    function);
 	  return 0;
 	}
-      size = tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type)), 1);
+      size = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
       if (size != size_0)
 	{
 	  error_at (loc, "size mismatch in argument %d of %qE", x + 1,
@@ -10206,7 +10196,7 @@ get_atomic_generic_size (location_t loc, tree function,
       tree p = (*params)[x];
       if (TREE_CODE (p) == INTEGER_CST)
         {
-	  int i = tree_low_cst (p, 1);
+	  int i = tree_to_uhwi (p);
 	  if (i < 0 || (i & MEMMODEL_MASK) >= MEMMODEL_LAST)
 	    {
 	      warning_at (loc, OPT_Winvalid_memory_model,
@@ -10375,7 +10365,7 @@ resolve_overloaded_atomic_compare_exchange (location_t loc, tree function,
        bool fn(T* mem, T* desired, T* return, weak, success, failure)
      into
        bool fn ((In *)mem, (In *)expected, (In) *desired, weak, succ, fail)  */
-
+  
   p0 = (*params)[0];
   p1 = (*params)[1];
   p2 = (*params)[2];
@@ -11054,24 +11044,24 @@ warn_for_sign_compare (location_t location,
       if (TREE_CODE (op1) == BIT_NOT_EXPR)
 	op1 = c_common_get_narrower (TREE_OPERAND (op1, 0), &unsignedp1);
 
-      if (host_integerp (op0, 0) || host_integerp (op1, 0))
+      if (tree_fits_shwi_p (op0) || tree_fits_shwi_p (op1))
         {
           tree primop;
           HOST_WIDE_INT constant, mask;
           int unsignedp;
           unsigned int bits;
 
-          if (host_integerp (op0, 0))
+          if (tree_fits_shwi_p (op0))
             {
               primop = op1;
               unsignedp = unsignedp1;
-              constant = tree_low_cst (op0, 0);
+              constant = tree_to_shwi (op0);
             }
           else
             {
               primop = op0;
               unsignedp = unsignedp0;
-              constant = tree_low_cst (op1, 0);
+              constant = tree_to_shwi (op1);
             }
 
           bits = TYPE_PRECISION (TREE_TYPE (primop));
@@ -11149,7 +11139,7 @@ do_warn_double_promotion (tree result_type, tree type1, tree type2,
    early on, later parts of the compiler can always do the reverse
    translation and get back the corresponding typedef name.  For
    example, given:
-
+   
 	typedef struct S MY_TYPE;
 	MY_TYPE object;
 
@@ -11511,8 +11501,8 @@ convert_vector_to_pointer_for_subscript (location_t loc,
       tree type1;
 
       if (TREE_CODE (index) == INTEGER_CST)
-        if (!host_integerp (index, 1)
-            || ((unsigned HOST_WIDE_INT) tree_low_cst (index, 1)
+        if (!tree_fits_uhwi_p (index)
+            || ((unsigned HOST_WIDE_INT) tree_to_uhwi (index)
                >= TYPE_VECTOR_SUBPARTS (type)))
           warning_at (loc, OPT_Warray_bounds, "index value is out of bound");
 

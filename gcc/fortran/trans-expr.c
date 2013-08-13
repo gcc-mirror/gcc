@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 #include "trans-stmt.h"
 #include "dependency.h"
-
+#include "wide-int.h"
 
 /* Convert a scalar to an array descriptor. To be used for assumed-rank
    arrays.  */
@@ -2081,13 +2081,14 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
   HOST_WIDE_INT m;
   unsigned HOST_WIDE_INT n;
   int sgn;
+  wide_int wrhs = rhs;
 
   /* If exponent is too large, we won't expand it anyway, so don't bother
      with large integer values.  */
-  if (!TREE_INT_CST (rhs).fits_shwi ())
+  if (!wrhs.fits_shwi_p ())
     return 0;
 
-  m = TREE_INT_CST (rhs).to_shwi ();
+  m = wrhs.to_shwi ();
   /* There's no ABS for HOST_WIDE_INT, so here we go. It also takes care
      of the asymmetric range of the integer type.  */
   n = (unsigned HOST_WIDE_INT) (m < 0 ? -m : m);
@@ -2622,11 +2623,11 @@ gfc_string_to_single_character (tree len, tree str, int kind)
 {
 
   if (len == NULL
-      || !INTEGER_CST_P (len) || TREE_INT_CST_HIGH (len) != 0
+      || !cst_fits_uhwi_p (len)
       || !POINTER_TYPE_P (TREE_TYPE (str)))
     return NULL_TREE;
 
-  if (TREE_INT_CST_LOW (len) == 1)
+  if (tree_to_hwi (len) == 1)
     {
       str = fold_convert (gfc_get_pchar_type (kind), str);
       return build_fold_indirect_ref_loc (input_location, str);
@@ -2638,8 +2639,8 @@ gfc_string_to_single_character (tree len, tree str, int kind)
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (str, 0), 0)) == STRING_CST
       && array_ref_low_bound (TREE_OPERAND (str, 0))
 	 == TREE_OPERAND (TREE_OPERAND (str, 0), 1)
-      && TREE_INT_CST_LOW (len) > 1
-      && TREE_INT_CST_LOW (len)
+      && tree_to_uhwi (len) > 1
+      && tree_to_uhwi (len)
 	 == (unsigned HOST_WIDE_INT)
 	    TREE_STRING_LENGTH (TREE_OPERAND (TREE_OPERAND (str, 0), 0)))
     {
@@ -2736,8 +2737,9 @@ gfc_optimize_len_trim (tree len, tree str, int kind)
       && TREE_CODE (TREE_OPERAND (TREE_OPERAND (str, 0), 0)) == STRING_CST
       && array_ref_low_bound (TREE_OPERAND (str, 0))
 	 == TREE_OPERAND (TREE_OPERAND (str, 0), 1)
-      && TREE_INT_CST_LOW (len) >= 1
-      && TREE_INT_CST_LOW (len)
+      && tree_fits_uhwi_p (len)
+      && tree_to_uhwi (len) >= 1
+      && tree_to_uhwi (len)
 	 == (unsigned HOST_WIDE_INT)
 	    TREE_STRING_LENGTH (TREE_OPERAND (TREE_OPERAND (str, 0), 0)))
     {

@@ -812,7 +812,7 @@ cp_lexer_get_preprocessor_token (cp_lexer *lexer, cp_token *token)
     {
       /* We smuggled the cpp_token->u.pragma value in an INTEGER_CST.  */
       token->pragma_kind = ((enum pragma_kind)
-			    TREE_INT_CST_LOW (token->u.value));
+			    tree_to_hwi (token->u.value));
       token->u.value = NULL_TREE;
     }
 }
@@ -3852,7 +3852,7 @@ cp_parser_userdef_string_literal (cp_token *token)
   tree name = cp_literal_operator_id (IDENTIFIER_POINTER (suffix_id));
   tree value = USERDEF_LITERAL_VALUE (literal);
   int len = TREE_STRING_LENGTH (value)
-	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
+	/ tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
   tree decl, result;
   vec<tree, va_gc> *args;
 
@@ -26461,8 +26461,8 @@ cp_parser_omp_clause_collapse (cp_parser *parser, tree list, location_t location
     return list;
   num = fold_non_dependent_expr (num);
   if (!INTEGRAL_TYPE_P (TREE_TYPE (num))
-      || !host_integerp (num, 0)
-      || (n = tree_low_cst (num, 0)) <= 0
+      || !tree_fits_shwi_p (num)
+      || (n = tree_to_shwi (num)) <= 0
       || (int) n != n)
     {
       error_at (loc, "collapse argument needs positive constant integer expression");
@@ -27565,7 +27565,7 @@ cp_parser_omp_for_loop (cp_parser *parser, tree clauses, tree *par_clauses)
 
   for (cl = clauses; cl; cl = OMP_CLAUSE_CHAIN (cl))
     if (OMP_CLAUSE_CODE (cl) == OMP_CLAUSE_COLLAPSE)
-      collapse = tree_low_cst (OMP_CLAUSE_COLLAPSE_EXPR (cl), 0);
+      collapse = tree_to_shwi (OMP_CLAUSE_COLLAPSE_EXPR (cl));
 
   gcc_assert (collapse >= 1);
 

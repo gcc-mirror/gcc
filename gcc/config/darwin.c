@@ -1271,22 +1271,18 @@ darwin_mergeable_constant_section (tree exp,
     {
       tree size = TYPE_SIZE_UNIT (TREE_TYPE (exp));
 
-      if (TREE_CODE (size) == INTEGER_CST
-	  && TREE_INT_CST_LOW (size) == 4
-	  && TREE_INT_CST_HIGH (size) == 0)
-        return darwin_sections[literal4_section];
-      else if (TREE_CODE (size) == INTEGER_CST
-	       && TREE_INT_CST_LOW (size) == 8
-	       && TREE_INT_CST_HIGH (size) == 0)
-        return darwin_sections[literal8_section];
-      else if (HAVE_GAS_LITERAL16
-	       && TARGET_64BIT
-               && TREE_CODE (size) == INTEGER_CST
-               && TREE_INT_CST_LOW (size) == 16
-               && TREE_INT_CST_HIGH (size) == 0)
-        return darwin_sections[literal16_section];
-      else
-        return readonly_data_section;
+      if (TREE_CODE (size) == INTEGER_CST)
+	{
+	  wide_int wsize = size;
+	  if (wsize == 4)
+	    return darwin_sections[literal4_section];
+	  else if (wsize == 8)
+	    return darwin_sections[literal8_section];
+	  else if (HAVE_GAS_LITERAL16
+		   && TARGET_64BIT
+		   && wsize == 16)
+	    return darwin_sections[literal16_section];
+	}
     }
 
   return readonly_data_section;
@@ -1491,7 +1487,7 @@ machopic_select_section (tree decl,
 
   zsize = (DECL_P (decl) 
 	   && (TREE_CODE (decl) == VAR_DECL || TREE_CODE (decl) == CONST_DECL) 
-	   && tree_low_cst (DECL_SIZE_UNIT (decl), 1) == 0);
+	   && tree_to_uhwi (DECL_SIZE_UNIT (decl)) == 0);
 
   one = DECL_P (decl) 
 	&& TREE_CODE (decl) == VAR_DECL 
@@ -1634,7 +1630,7 @@ machopic_select_section (tree decl,
       static bool warned_objc_46 = false;
       /* We shall assert that zero-sized objects are an error in ObjC 
          meta-data.  */
-      gcc_assert (tree_low_cst (DECL_SIZE_UNIT (decl), 1) != 0);
+      gcc_assert (tree_to_uhwi (DECL_SIZE_UNIT (decl)) != 0);
       
       /* ??? This mechanism for determining the metadata section is
 	 broken when LTO is in use, since the frontend that generated
@@ -2171,7 +2167,7 @@ darwin_asm_declare_object_name (FILE *file,
 	machopic_define_symbol (DECL_RTL (decl));
     }
 
-  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 
 #ifdef DEBUG_DARWIN_MEM_ALLOCATORS
 fprintf (file, "# dadon: %s %s (%llu, %u) local %d weak %d"

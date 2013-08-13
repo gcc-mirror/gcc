@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-types.h"
 #include "target-memory.h"
+#include "wide-int.h"
 
 /* --------------------------------------------------------------- */ 
 /* Calculate the size of an expression.  */
@@ -251,8 +252,8 @@ encode_derived (gfc_expr *source, unsigned char *buffer, size_t buffer_size)
       gcc_assert (cmp);
       if (!c->expr)
 	continue;
-      ptr = TREE_INT_CST_LOW(DECL_FIELD_OFFSET(cmp->backend_decl))
-	    + TREE_INT_CST_LOW(DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
+      ptr = tree_to_hwi (DECL_FIELD_OFFSET(cmp->backend_decl))
+	    + tree_to_hwi (DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
 
       if (c->expr->expr_type == EXPR_NULL)
 	{
@@ -427,7 +428,7 @@ gfc_interpret_logical (int kind, unsigned char *buffer, size_t buffer_size,
 {
   tree t = native_interpret_expr (gfc_get_logical_type (kind), buffer,
 				  buffer_size);
-  *logical = tree_to_double_int (t).is_zero () ? 0 : 1;
+  *logical = wide_int (t).zero_p () ? 0 : 1;
   return size_logical (kind);
 }
 
@@ -545,9 +546,9 @@ gfc_interpret_derived (unsigned char *buffer, size_t buffer_size, gfc_expr *resu
 	 i.e. there are, e.g., no bit fields.  */
 
       gcc_assert (cmp->backend_decl);
-      ptr = TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (cmp->backend_decl));
+      ptr = tree_to_hwi (DECL_FIELD_BIT_OFFSET (cmp->backend_decl));
       gcc_assert (ptr % 8 == 0);
-      ptr = ptr/8 + TREE_INT_CST_LOW (DECL_FIELD_OFFSET (cmp->backend_decl));
+      ptr = ptr/8 + tree_to_hwi (DECL_FIELD_OFFSET (cmp->backend_decl));
 
       gfc_target_interpret_expr (&buffer[ptr], buffer_size - ptr, e, true);
     }
@@ -659,8 +660,8 @@ expr_to_char (gfc_expr *e, unsigned char *data, unsigned char *chk, size_t len)
 	  gcc_assert (cmp && cmp->backend_decl);
 	  if (!c->expr)
 	    continue;
-	    ptr = TREE_INT_CST_LOW(DECL_FIELD_OFFSET(cmp->backend_decl))
-			+ TREE_INT_CST_LOW(DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
+	    ptr = tree_to_hwi (DECL_FIELD_OFFSET(cmp->backend_decl))
+			+ tree_to_hwi (DECL_FIELD_BIT_OFFSET(cmp->backend_decl))/8;
 	  expr_to_char (c->expr, &data[ptr], &chk[ptr], len);
 	}
       return len;

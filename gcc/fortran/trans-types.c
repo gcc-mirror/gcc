@@ -861,8 +861,6 @@ gfc_init_types (void)
   int index;
   tree type;
   unsigned n;
-  unsigned HOST_WIDE_INT hi;
-  unsigned HOST_WIDE_INT lo;
 
   /* Create and name the types.  */
 #define PUSH_TYPE(name, node) \
@@ -954,13 +952,10 @@ gfc_init_types (void)
      descriptor.  */
 
   n = TYPE_PRECISION (gfc_array_index_type) - GFC_DTYPE_SIZE_SHIFT;
-  lo = ~ (unsigned HOST_WIDE_INT) 0;
-  if (n > HOST_BITS_PER_WIDE_INT)
-    hi = lo >> (2*HOST_BITS_PER_WIDE_INT - n);
-  else
-    hi = 0, lo >>= HOST_BITS_PER_WIDE_INT - n;
-  gfc_max_array_element_size
-    = build_int_cst_wide (long_unsigned_type_node, lo, hi);
+  gfc_max_array_element_size 
+    = wide_int_to_tree (long_unsigned_type_node, 
+			wide_int::max_value (n, UNSIGNED, 
+					     TYPE_PRECISION (long_unsigned_type_node)));
 
   boolean_type_node = gfc_get_logical_type (gfc_default_logical_kind);
   boolean_true_node = build_int_cst (boolean_type_node, 1);
@@ -1449,7 +1444,7 @@ gfc_get_dtype (tree type)
       if (tree_int_cst_lt (gfc_max_array_element_size, size))
 	gfc_fatal_error ("Array element size too big at %C");
 
-      i += TREE_INT_CST_LOW (size) << GFC_DTYPE_SIZE_SHIFT;
+      i += tree_to_hwi (size) << GFC_DTYPE_SIZE_SHIFT;
     }
   dtype = build_int_cst (gfc_array_index_type, i);
 
@@ -1887,7 +1882,7 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   if (stride)
     rtype = build_range_type (gfc_array_index_type, gfc_index_zero_node,
 			      int_const_binop (MINUS_EXPR, stride,
-					       integer_one_node));
+					       build_int_cst (TREE_TYPE (stride), 1)));
   else
     rtype = gfc_array_range_type;
   arraytype = build_array_type (etype, rtype);

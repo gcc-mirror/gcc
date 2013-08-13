@@ -32,8 +32,9 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "java-tree.h"
 #include "parse.h"
 #include "diagnostic-core.h"
+#include "wide-int.h"
 
-static void mark_reference_fields (tree, double_int *, unsigned int,
+static void mark_reference_fields (tree, wide_int *, unsigned int,
 				   int *, int *, int *, HOST_WIDE_INT *);
 
 /* A procedure-based object descriptor.  We know that our
@@ -47,7 +48,7 @@ static void mark_reference_fields (tree, double_int *, unsigned int,
 /* Recursively mark reference fields.  */
 static void
 mark_reference_fields (tree field,
-		       double_int *mask,
+		       wide_int *mask,
 		       unsigned int ubit,
 		       int *pointer_after_end,
 		       int *all_bits_set,
@@ -136,16 +137,17 @@ get_boehm_type_descriptor (tree type)
   int last_set_index = 0;
   HOST_WIDE_INT last_view_index = -1;
   int pointer_after_end = 0;
-  double_int mask;
+  wide_int mask;
   tree field, value, value_type;
-
-  mask = double_int_zero;
 
   /* If the GC wasn't requested, just use a null pointer.  */
   if (! flag_use_boehm_gc)
     return null_pointer_node;
 
   value_type = java_type_for_mode (ptr_mode, 1);
+
+  mask = wide_int::zero (TYPE_PRECISION (value_type));
+
   /* If we have a type of unknown size, use a proc.  */
   if (int_size_in_bytes (type) == -1)
     goto procedure_object_descriptor;
@@ -194,7 +196,7 @@ get_boehm_type_descriptor (tree type)
          that we don't have to emit reflection data for run time
          marking. */
       count = 0;
-      mask = double_int_zero;
+      mask = wide_int::zero (TYPE_PRECISION (value_type));
       ++last_set_index;
       while (last_set_index)
 	{
@@ -203,13 +205,13 @@ get_boehm_type_descriptor (tree type)
 	  last_set_index >>= 1;
 	  ++count;
 	}
-      value = double_int_to_tree (value_type, mask);
+      value = wide_int_to_tree (value_type, mask);
     }
   else if (! pointer_after_end)
     {
       /* Bottom two bits for bitmap mark type are 01.  */
       mask = mask.set_bit (0);
-      value = double_int_to_tree (value_type, mask);
+      value = wide_int_to_tree (value_type, mask);
     }
   else
     {
@@ -233,5 +235,5 @@ uses_jv_markobj_p (tree dtable)
      point in asserting unless we hit the bad case.  */
   gcc_assert (!flag_reduced_reflection || TARGET_VTABLE_USES_DESCRIPTORS == 0);
   v = (*CONSTRUCTOR_ELTS (dtable))[3].value;
-  return (PROCEDURE_OBJECT_DESCRIPTOR == TREE_INT_CST_LOW (v));
+  return (PROCEDURE_OBJECT_DESCRIPTOR == tree_to_hwi (v));
 }

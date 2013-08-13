@@ -95,38 +95,8 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
 
   switch (code)
     {
-    case CONST_INT:
-      if (GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
-	{
-	  double_int di_x = double_int::from_shwi (INTVAL (x));
-	  double_int di_c = double_int::from_shwi (c);
-
-	  bool overflow;
-	  double_int v = di_x.add_with_sign (di_c, false, &overflow);
-	  if (overflow)
-	    gcc_unreachable ();
-
-	  return immed_double_int_const (v, mode);
-	}
-
-      return gen_int_mode (INTVAL (x) + c, mode);
-
-    case CONST_DOUBLE:
-      {
-	double_int di_x = double_int::from_pair (CONST_DOUBLE_HIGH (x),
-						 CONST_DOUBLE_LOW (x));
-	double_int di_c = double_int::from_shwi (c);
-
-	bool overflow;
-	double_int v = di_x.add_with_sign (di_c, false, &overflow);
-	if (overflow)
-	  /* Sorry, we have no way to represent overflows this wide.
-	     To fix, add constant support wider than CONST_DOUBLE.  */
-	  gcc_assert (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_DOUBLE_INT);
-
-	return immed_double_int_const (v, mode);
-      }
-
+    CASE_CONST_SCALAR_INT:
+      return immed_wide_int_const (wide_int (std::make_pair (x, mode)) + c, mode);
     case MEM:
       /* If this is a reference to the constant pool, try replacing it with
 	 a reference to a new constant.  If the resulting address isn't
@@ -270,10 +240,10 @@ int_expr_size (tree exp)
       gcc_assert (size);
     }
 
-  if (size == 0 || !host_integerp (size, 0))
+  if (size == 0 || !tree_fits_shwi_p (size))
     return -1;
 
-  return tree_low_cst (size, 0);
+  return tree_to_shwi (size);
 }
 
 /* Return a copy of X in which all memory references

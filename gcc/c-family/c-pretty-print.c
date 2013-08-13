@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "tree-iterator.h"
 #include "diagnostic.h"
+#include "wide-int-print.h"
 
 /* Translate if being used for diagnostics, but not for dump files or
    __PRETTY_FUNCTION.  */
@@ -581,8 +582,8 @@ pp_c_direct_abstract_declarator (c_pretty_printer *pp, tree t)
 	  tree maxval = TYPE_MAX_VALUE (TYPE_DOMAIN (t));
 	  tree type = TREE_TYPE (maxval);
 
-	  if (host_integerp (maxval, 0))
-	    pp_wide_integer (pp, tree_low_cst (maxval, 0) + 1);
+	  if (tree_fits_shwi_p (maxval))
+	    pp_wide_integer (pp, tree_to_shwi (maxval) + 1);
 	  else
 	    pp_expression (pp, fold_build2 (PLUS_EXPR, type, maxval,
 					    build_int_cst (type, 1)));
@@ -910,22 +911,20 @@ pp_c_integer_constant (c_pretty_printer *pp, tree i)
     ? TYPE_CANONICAL (TREE_TYPE (i))
     : TREE_TYPE (i);
 
-  if (host_integerp (i, 0))
-    pp_wide_integer (pp, TREE_INT_CST_LOW (i));
-  else if (host_integerp (i, 1))
-    pp_unsigned_wide_integer (pp, TREE_INT_CST_LOW (i));
+  if (tree_fits_shwi_p (i))
+    pp_wide_integer (pp, tree_to_shwi (i));
+  else if (tree_fits_uhwi_p (i))
+    pp_unsigned_wide_integer (pp, tree_to_uhwi (i));
   else
     {
-      unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (i);
-      HOST_WIDE_INT high = TREE_INT_CST_HIGH (i);
-      if (tree_int_cst_sgn (i) < 0)
+      wide_int wi = i;
+
+      if (wi.lt_p (i, 0, TYPE_SIGN (TREE_TYPE (i))))
 	{
 	  pp_minus (pp);
-	  high = ~high + !low;
-	  low = -low;
+	  wi = -wi;
 	}
-      sprintf (pp_buffer (pp)->digit_buffer, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-	       (unsigned HOST_WIDE_INT) high, (unsigned HOST_WIDE_INT) low);
+      print_hex (wi, pp_buffer (pp)->digit_buffer);
       pp_string (pp, pp_buffer (pp)->digit_buffer);
     }
   if (TYPE_UNSIGNED (type))
@@ -949,10 +948,10 @@ pp_c_character_constant (c_pretty_printer *pp, tree c)
   if (type == wchar_type_node)
     pp_character (pp, 'L');
   pp_quote (pp);
-  if (host_integerp (c, TYPE_UNSIGNED (type)))
-    pp_c_char (pp, tree_low_cst (c, TYPE_UNSIGNED (type)));
+  if (tree_fits_hwi_p (c, TYPE_SIGN (type)))
+    pp_c_char (pp, tree_to_hwi (c, TYPE_SIGN (type)));
   else
-    pp_scalar (pp, "\\x%x", (unsigned) TREE_INT_CST_LOW (c));
+    pp_scalar (pp, "\\x%x", (unsigned) tree_to_hwi (c));
   pp_quote (pp);
 }
 
@@ -1591,8 +1590,8 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
 	if (type
 	    && tree_int_cst_equal (TYPE_SIZE (type), TREE_OPERAND (e, 1)))
 	  {
-	    HOST_WIDE_INT bitpos = tree_low_cst (TREE_OPERAND (e, 2), 0);
-	    HOST_WIDE_INT size = tree_low_cst (TYPE_SIZE (type), 0);
+	    HOST_WIDE_INT bitpos = tree_to_shwi (TREE_OPERAND (e, 2));
+	    HOST_WIDE_INT size = tree_to_shwi (TYPE_SIZE (type));
 	    if ((bitpos % size) == 0)
 	      {
 		pp_c_left_paren (pp);

@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "splay-tree.h"
 #include "gimple.h" /* gimple_has_body_p */
 #include "hash-table.h"
+#include "wide-int.h"
+
 
 static tree bot_manip (tree *, int *, void *);
 static tree bot_replace (tree *, int *, void *);
@@ -1692,7 +1694,7 @@ debug_binfo (tree elem)
   fprintf (stderr, "type \"%s\", offset = " HOST_WIDE_INT_PRINT_DEC
 	   "\nvtable type:\n",
 	   TYPE_NAME_STRING (BINFO_TYPE (elem)),
-	   TREE_INT_CST_LOW (BINFO_OFFSET (elem)));
+	   tree_to_hwi (BINFO_OFFSET (elem)));
   debug_tree (BINFO_TYPE (elem));
   if (BINFO_VTABLE (elem))
     fprintf (stderr, "vtable decl \"%s\"\n",
@@ -1708,7 +1710,7 @@ debug_binfo (tree elem)
       tree fndecl = TREE_VALUE (virtuals);
       fprintf (stderr, "%s [%ld =? %ld]\n",
 	       IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (fndecl)),
-	       (long) n, (long) TREE_INT_CST_LOW (DECL_VINDEX (fndecl)));
+	       (long) n, (long) tree_to_hwi (DECL_VINDEX (fndecl)));
       ++n;
       virtuals = TREE_CHAIN (virtuals);
     }
@@ -2601,8 +2603,7 @@ cp_tree_equal (tree t1, tree t2)
   switch (code1)
     {
     case INTEGER_CST:
-      return TREE_INT_CST_LOW (t1) == TREE_INT_CST_LOW (t2)
-	&& TREE_INT_CST_HIGH (t1) == TREE_INT_CST_HIGH (t2);
+      return wide_int::eq_p (t1, t2);
 
     case REAL_CST:
       return REAL_VALUES_EQUAL (TREE_REAL_CST (t1), TREE_REAL_CST (t2));
@@ -3240,7 +3241,7 @@ handle_init_priority_attribute (tree* node,
       return NULL_TREE;
     }
 
-  pri = TREE_INT_CST_LOW (initp_expr);
+  pri = tree_to_hwi (initp_expr);
 
   type = strip_array_types (type);
 

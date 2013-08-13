@@ -1962,9 +1962,7 @@ scan_omp_1_op (tree *tp, int *walk_subtrees, void *data)
 	      if (tem != TREE_TYPE (t))
 		{
 		  if (TREE_CODE (t) == INTEGER_CST)
-		    *tp = build_int_cst_wide (tem,
-					      TREE_INT_CST_LOW (t),
-					      TREE_INT_CST_HIGH (t));
+		    *tp = wide_int_to_tree (tem, t);
 		  else
 		    TREE_TYPE (t) = tem;
 		}
@@ -5753,7 +5751,7 @@ expand_omp_atomic (struct omp_region *region)
   HOST_WIDE_INT index;
 
   /* Make sure the type is one of the supported sizes.  */
-  index = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+  index = tree_to_uhwi (TYPE_SIZE_UNIT (type));
   index = exact_log2 (index);
   if (index >= 0 && index <= 4)
     {
@@ -6511,9 +6509,9 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
 
   /* When possible, use a strict equality expression.  This can let VRP
      type optimizations deduce the value and remove a copy.  */
-  if (host_integerp (fd->loop.step, 0))
+  if (tree_fits_shwi_p (fd->loop.step))
     {
-      HOST_WIDE_INT step = TREE_INT_CST_LOW (fd->loop.step);
+      HOST_WIDE_INT step = tree_to_shwi (fd->loop.step);
       if (step == 1 || step == -1)
 	cond_code = EQ_EXPR;
     }
@@ -6531,7 +6529,7 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
       /* Optimize: v = 0; is usually cheaper than v = some_other_constant.  */
       vinit = fd->loop.n1;
       if (cond_code == EQ_EXPR
-	  && host_integerp (fd->loop.n2, 0)
+	  && tree_fits_shwi_p (fd->loop.n2)
 	  && ! integer_zerop (fd->loop.n2))
 	vinit = build_int_cst (TREE_TYPE (fd->loop.v), 0);
 

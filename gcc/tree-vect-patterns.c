@@ -776,8 +776,8 @@ vect_recog_pow_pattern (vec<gimple> *stmts, tree *type_in,
   *type_out = NULL_TREE;
 
   /* Catch squaring.  */
-  if ((host_integerp (exp, 0)
-       && tree_low_cst (exp, 0) == 2)
+  if ((tree_fits_shwi_p (exp)
+       && tree_to_shwi (exp) == 2)
       || (TREE_CODE (exp) == REAL_CST
           && REAL_VALUES_EQUAL (TREE_REAL_CST (exp), dconst2)))
     {
@@ -1625,14 +1625,14 @@ vect_recog_rotate_pattern (vec<gimple> *stmts, tree *type_in, tree *type_out)
 
   if (TREE_CODE (def) == INTEGER_CST)
     {
-      if (!host_integerp (def, 1)
-	  || (unsigned HOST_WIDE_INT) tree_low_cst (def, 1)
+      if (!tree_fits_uhwi_p (def)
+	  || (unsigned HOST_WIDE_INT) tree_to_uhwi (def)
 	     >= GET_MODE_PRECISION (TYPE_MODE (type))
 	  || integer_zerop (def))
 	return NULL;
       def2 = build_int_cst (stype,
 			    GET_MODE_PRECISION (TYPE_MODE (type))
-			    - tree_low_cst (def, 1));
+			    - tree_to_uhwi (def));
     }
   else
     {
@@ -2055,7 +2055,7 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
       return pattern_stmt;
     }
 
-  if (!host_integerp (oprnd1, TYPE_UNSIGNED (itype))
+  if (!tree_fits_hwi_p (oprnd1, TYPE_SIGN (itype))
       || integer_zerop (oprnd1)
       || prec > HOST_BITS_PER_WIDE_INT)
     return NULL;
@@ -2069,7 +2069,7 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
     {
       unsigned HOST_WIDE_INT mh, ml;
       int pre_shift, post_shift;
-      unsigned HOST_WIDE_INT d = tree_low_cst (oprnd1, 1)
+      unsigned HOST_WIDE_INT d = tree_to_uhwi (oprnd1)
 				 & GET_MODE_MASK (TYPE_MODE (itype));
       tree t1, t2, t3, t4;
 
@@ -2186,7 +2186,7 @@ vect_recog_divmod_pattern (vec<gimple> *stmts,
     {
       unsigned HOST_WIDE_INT ml;
       int post_shift;
-      HOST_WIDE_INT d = tree_low_cst (oprnd1, 0);
+      HOST_WIDE_INT d = tree_to_shwi (oprnd1);
       unsigned HOST_WIDE_INT abs_d;
       bool add = false;
       tree t1, t2, t3, t4;

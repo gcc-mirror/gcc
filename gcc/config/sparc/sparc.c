@@ -54,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "opts.h"
 #include "tree-pass.h"
 #include "context.h"
+#include "wide-int.h"
 
 /* Processor costs */
 
@@ -6313,7 +6314,7 @@ function_arg_record_value_1 (const_tree type, HOST_WIDE_INT startbitpos,
 	      if (integer_zerop (DECL_SIZE (field)))
 		continue;
 
-	      if (host_integerp (bit_position (field), 1))
+	      if (tree_fits_uhwi_p (bit_position (field)))
 		bitpos += int_bit_position (field);
 	    }
 
@@ -6461,7 +6462,7 @@ function_arg_record_value_2 (const_tree type, HOST_WIDE_INT startbitpos,
 	      if (integer_zerop (DECL_SIZE (field)))
 		continue;
 
-	      if (host_integerp (bit_position (field), 1))
+	      if (tree_fits_uhwi_p (bit_position (field)))
 		bitpos += int_bit_position (field);
 	    }
 
@@ -7128,10 +7129,10 @@ sparc_struct_value_rtx (tree fndecl, int incoming)
 
 	  /* Calculate the return object size */
 	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (fndecl));
-	  rtx size_rtx = GEN_INT (TREE_INT_CST_LOW (size) & 0xfff);
+	  rtx size_rtx = GEN_INT (tree_to_hwi (size) & 0xfff);
 	  /* Construct a temporary return value */
 	  rtx temp_val
-	    = assign_stack_local (Pmode, TREE_INT_CST_LOW (size), 0);
+	    = assign_stack_local (Pmode, tree_to_hwi (size), 0);
 
 	  /* Implement SPARC 32-bit psABI callee return struct checking:
 
@@ -10470,31 +10471,31 @@ sparc_handle_vis_mul8x16 (tree *n_elts, int fncode, tree inner_type,
       for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
-				 TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, i)));
+	    = sparc_vis_mul8x16 (tree_to_hwi (VECTOR_CST_ELT (cst0, i)),
+				 tree_to_hwi (VECTOR_CST_ELT (cst1, i)));
 	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     case CODE_FOR_fmul8x16au_vis:
-      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 0));
+      scale = tree_to_hwi (VECTOR_CST_ELT (cst1, 0));
 
       for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
+	    = sparc_vis_mul8x16 (tree_to_hwi (VECTOR_CST_ELT (cst0, i)),
 				 scale);
 	  n_elts[i] = build_int_cst (inner_type, val);
 	}
       break;
 
     case CODE_FOR_fmul8x16al_vis:
-      scale = TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, 1));
+      scale = tree_to_hwi (VECTOR_CST_ELT (cst1, 1));
 
       for (i = 0; i < num; ++i)
 	{
 	  int val
-	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
+	    = sparc_vis_mul8x16 (tree_to_hwi (VECTOR_CST_ELT (cst0, i)),
 				 scale);
 	  n_elts[i] = build_int_cst (inner_type, val);
 	}
@@ -10554,7 +10555,7 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    n_elts[i] = build_int_cst (inner_type,
-				       TREE_INT_CST_LOW
+				       tree_to_hwi
 				         (VECTOR_CST_ELT (arg0, i)) << 4);
 	  return build_vector (rtype, n_elts);
 	}
@@ -10609,30 +10610,33 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	  && TREE_CODE (arg1) == VECTOR_CST
 	  && TREE_CODE (arg2) == INTEGER_CST)
 	{
-	  bool overflow = false;
-	  double_int result = TREE_INT_CST (arg2);
-	  double_int tmp;
+	  bool overflow, overall_overflow = false;
+	  wide_int result = wide_int::from_tree (arg2);
+	  wide_int tmp;
 	  unsigned i;
 
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      double_int e0 = TREE_INT_CST (VECTOR_CST_ELT (arg0, i));
-	      double_int e1 = TREE_INT_CST (VECTOR_CST_ELT (arg1, i));
+	      wide_int e0 = wide_int::from_tree (VECTOR_CST_ELT (arg0, i));
+	      wide_int e1 = wide_int::from_tree (VECTOR_CST_ELT (arg1, i));
 
-	      bool neg1_ovf, neg2_ovf, add1_ovf, add2_ovf;
+	      tmp = e1.neg (&overflow);
+	      overall_overflow |= overall_overflow;
+	      tmp = e0.add (tmp, SIGNED, &overflow);
+	      overall_overflow |= overall_overflow;
+	      if (tmp.neg_p (SIGNED))
+		{
+		  tmp = tmp.neg (&overflow);
+		  overall_overflow |= overall_overflow;
+		}
 
-	      tmp = e1.neg_with_overflow (&neg1_ovf);
-	      tmp = e0.add_with_sign (tmp, false, &add1_ovf);
-	      if (tmp.is_negative ())
-		tmp = tmp.neg_with_overflow (&neg2_ovf);
-
-	      result = result.add_with_sign (tmp, false, &add2_ovf);
-	      overflow |= neg1_ovf | neg2_ovf | add1_ovf | add2_ovf;
+	      result = result.add (tmp, SIGNED, &overflow);
+	      overall_overflow |= overall_overflow;
 	    }
 
-	  gcc_assert (!overflow);
+	  gcc_assert (!overall_overflow);
 
-	  return build_int_cst_wide (rtype, result.low, result.high);
+	  return wide_int_to_tree (rtype, result);
 	}
 
     default:

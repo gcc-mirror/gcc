@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "ipa-reference.h"
 #include "tree-ssa-alias.h"
+#include "wide-int.h"
 
 
 /* This structure is used to map a gimple statement to a label,
@@ -591,7 +592,7 @@ struct tree_niter_desc
 			   a loop (provided that assumptions == true and
 			   may_be_zero == false), more precisely the number
 			   of executions of the latch of the loop.  */
-  double_int max;	/* The upper bound on the number of iterations of
+  max_wide_int max;     /* The upper bound on the number of iterations of
 			   the loop.  */
 
   /* The simplified shape of the exit condition.  The loop exits if

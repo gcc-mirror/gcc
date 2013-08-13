@@ -348,15 +348,13 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
       else
         test[k].bits++;
 
-      lo = tree_low_cst (int_const_binop (MINUS_EXPR,
-					  CASE_LOW (cs), minval),
-			 1);
+      lo = tree_to_uhwi (int_const_binop (MINUS_EXPR,
+					  CASE_LOW (cs), minval));
       if (CASE_HIGH (cs) == NULL_TREE)
 	hi = lo;
       else
-	hi = tree_low_cst (int_const_binop (MINUS_EXPR, 
-					    CASE_HIGH (cs), minval),
-			   1);
+	hi = tree_to_uhwi (int_const_binop (MINUS_EXPR, 
+					    CASE_HIGH (cs), minval));
 
       for (j = lo; j <= hi; j++)
         if (j >= HOST_BITS_PER_WIDE_INT)
@@ -438,7 +436,13 @@ emit_case_bit_tests (gimple swtch, tree index_expr,
         if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
-      tmp = build_int_cst_wide (word_type_node, test[k].lo, test[k].hi);
+      HOST_WIDE_INT a[2];
+
+      a[0] = test[k].lo;
+      a[1] = test[k].hi;
+      tmp = wide_int_to_tree (word_type_node, 
+			      wide_int::from_array (a, 2, 
+						    TYPE_PRECISION (word_type_node)));
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
@@ -691,13 +695,13 @@ static bool
 check_range (struct switch_conv_info *info)
 {
   gcc_assert (info->range_size);
-  if (!host_integerp (info->range_size, 1))
+  if (!tree_fits_uhwi_p (info->range_size))
     {
       info->reason = "index range way too large or otherwise unusable";
       return false;
     }
 
-  if ((unsigned HOST_WIDE_INT) tree_low_cst (info->range_size, 1)
+  if ((unsigned HOST_WIDE_INT) tree_to_uhwi (info->range_size)
       > ((unsigned) info->count * SWITCH_CONVERSION_BRANCH_RATIO))
     {
       info->reason = "the maximum range-branch ratio exceeded";
@@ -799,7 +803,7 @@ create_temp_arrays (struct switch_conv_info *info)
   info->target_inbound_names = info->default_values + info->phi_count;
   info->target_outbound_names = info->target_inbound_names + info->phi_count;
   for (i = 0; i < info->phi_count; i++)
-    vec_alloc (info->constructors[i], tree_low_cst (info->range_size, 1) + 1);
+    vec_alloc (info->constructors[i], tree_to_uhwi (info->range_size) + 1);
 }
 
 /* Free the arrays created by create_temp_arrays().  The vectors that are
@@ -878,7 +882,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      info->constructors[k]->quick_push (elt);
 	    }
 
-	  pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
+	  pos = int_const_binop (PLUS_EXPR, pos, build_int_cst (TREE_TYPE (pos), 1));
 	}
       gcc_assert (tree_int_cst_equal (pos, CASE_LOW (cs)));
 
@@ -903,7 +907,7 @@ build_constructors (gimple swtch, struct switch_conv_info *info)
 	      elt.value = unshare_expr_without_location (val);
 	      info->constructors[j]->quick_push (elt);
 
-	      pos = int_const_binop (PLUS_EXPR, pos, integer_one_node);
+	      pos = int_const_binop (PLUS_EXPR, pos, build_int_cst (TREE_TYPE (pos), 1));
 	    } while (!tree_int_cst_lt (high, pos)
 		     && tree_int_cst_lt (low, pos));
 	  j++;
@@ -958,12 +962,12 @@ array_value_type (gimple swtch, tree type, int num,
 
   FOR_EACH_VEC_SAFE_ELT (info->constructors[num], i, elt)
     {
-      double_int cst;
+      wide_int cst;
 
       if (TREE_CODE (elt->value) != INTEGER_CST)
 	return type;
 
-      cst = TREE_INT_CST (elt->value);
+      cst = elt->value;
       while (1)
 	{
 	  unsigned int prec = GET_MODE_BITSIZE (mode);

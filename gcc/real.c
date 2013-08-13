@@ -29,6 +29,7 @@
 #include "realmpfr.h"
 #include "tm_p.h"
 #include "dfp.h"
+#include "wide-int.h"
 
 /* The floating point model used internally is not exactly IEEE 754
    compliant, and close to the description in the ISO C99 standard,
@@ -1377,42 +1378,38 @@ real_to_integer (const REAL_VALUE_TYPE *r)
     }
 }
 
-/* Likewise, but to an integer pair, HI+LOW.  */
+/* Likewise, but producing a wide-int of PRECISION.  If
+   the value cannot be represented in precision, FAIL is set to
+   TRUE.  */
 
-void
-real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
-		  const REAL_VALUE_TYPE *r)
+wide_int
+real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
 {
-  REAL_VALUE_TYPE t;
-  HOST_WIDE_INT low, high;
+  HOST_WIDE_INT val[2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
   int exp;
+  int words;
+  wide_int result;
+  int w;
 
   switch (r->cl)
     {
     case rvc_zero:
     underflow:
-      low = high = 0;
-      break;
+      return wide_int::zero (precision);
 
     case rvc_inf:
     case rvc_nan:
     overflow:
-      high = (unsigned HOST_WIDE_INT) 1 << (HOST_BITS_PER_WIDE_INT - 1);
+      *fail = true;
+      
       if (r->sign)
-	low = 0;
+	return wide_int::set_bit_in_zero (precision - 1, precision);
       else
-	{
-	  high--;
-	  low = -1;
-	}
-      break;
+	return ~wide_int::set_bit_in_zero (precision - 1, precision);
 
     case rvc_normal:
       if (r->decimal)
-	{
-	  decimal_real_to_integer2 (plow, phigh, r);
-	  return;
-	}
+	return decimal_real_to_integer (r, fail, precision);
 
       exp = REAL_EXP (r);
       if (exp <= 0)
@@ -1421,42 +1418,49 @@ real_to_integer2 (HOST_WIDE_INT *plow, HOST_WIDE_INT *phigh,
 	 undefined, so it doesn't matter what we return, and some callers
 	 expect to be able to use this routine for both signed and
 	 unsigned conversions.  */
-      if (exp > HOST_BITS_PER_DOUBLE_INT)
+      if (exp > precision)
 	goto overflow;
 
-      rshift_significand (&t, r, HOST_BITS_PER_DOUBLE_INT - exp);
-      if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
-	{
-	  high = t.sig[SIGSZ-1];
-	  low = t.sig[SIGSZ-2];
-	}
-      else
-	{
-	  gcc_assert (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG);
-	  high = t.sig[SIGSZ-1];
-	  high = high << (HOST_BITS_PER_LONG - 1) << 1;
-	  high |= t.sig[SIGSZ-2];
+      words = (precision + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
 
-	  low = t.sig[SIGSZ-3];
-	  low = low << (HOST_BITS_PER_LONG - 1) << 1;
-	  low |= t.sig[SIGSZ-4];
+      for (int i = 0; i < 2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT; i++)
+	val[i] = 0;
+
+#if (HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG)
+      for (int i = 0; i < words; i++)
+	{
+	  int j = SIGSZ - words + i;
+	  val[i] = (j < 0) ? 0 : r->sig[j]; 
 	}
+#else
+      gcc_assert (HOST_BITS_PER_WIDE_INT == 2*HOST_BITS_PER_LONG);
+      for (int i = 0; i < words; i++)
+	{
+	  int j = SIGSZ - (words * 2) + (i + 2) + 1;
+	  if (j < 0)
+	    val[i] = 0;
+	  else 
+	    {
+	      val[i] = r->sig[j];
+	      val[i] <<= HOST_BITS_PER_LONG;
+	      val[i] |= r->sig[j - 1];
+	    }
+	}
+#endif 
+      w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT; 
+      result = wide_int::from_array (val, 
+	  (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w, w); 
+      result = result.rshiftu ((words * HOST_BITS_PER_WIDE_INT) - exp);
+      result = result.zforce_to_size (precision);
 
       if (r->sign)
-	{
-	  if (low == 0)
-	    high = -high;
-	  else
-	    low = -low, high = ~high;
-	}
-      break;
+	return -result;
+      else
+	return result;
 
     default:
       gcc_unreachable ();
     }
-
-  *plow = low;
-  *phigh = high;
 }
 
 /* A subroutine of real_to_decimal.  Compute the quotient and remainder
@@ -2144,43 +2148,131 @@ real_from_string3 (REAL_VALUE_TYPE *r, const char *s, enum machine_mode mode)
     real_convert (r, mode, r);
 }
 
-/* Initialize R from the integer pair HIGH+LOW.  */
+/* Initialize R from a HOST_WIDE_INT.  */
 
 void
 real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
-		   unsigned HOST_WIDE_INT low, HOST_WIDE_INT high,
-		   int unsigned_p)
+		   HOST_WIDE_INT val,
+		   signop sgn)
 {
-  if (low == 0 && high == 0)
+  if (val == 0)
     get_zero (r, 0);
   else
     {
       memset (r, 0, sizeof (*r));
       r->cl = rvc_normal;
-      r->sign = high < 0 && !unsigned_p;
-      SET_REAL_EXP (r, HOST_BITS_PER_DOUBLE_INT);
+      r->sign = val < 0 && sgn == SIGNED;
+      SET_REAL_EXP (r, HOST_BITS_PER_WIDE_INT);
 
+      /* TODO: This fails for -MAXHOSTWIDEINT, wide_int version would
+	 have worked.  */
       if (r->sign)
-	{
-	  high = ~high;
-	  if (low == 0)
-	    high += 1;
-	  else
-	    low = -low;
-	}
+	val = -val;
 
       if (HOST_BITS_PER_LONG == HOST_BITS_PER_WIDE_INT)
-	{
-	  r->sig[SIGSZ-1] = high;
-	  r->sig[SIGSZ-2] = low;
-	}
+	r->sig[SIGSZ-1] = val;
       else
 	{
 	  gcc_assert (HOST_BITS_PER_LONG*2 == HOST_BITS_PER_WIDE_INT);
-	  r->sig[SIGSZ-1] = high >> (HOST_BITS_PER_LONG - 1) >> 1;
-	  r->sig[SIGSZ-2] = high;
-	  r->sig[SIGSZ-3] = low >> (HOST_BITS_PER_LONG - 1) >> 1;
-	  r->sig[SIGSZ-4] = low;
+	  r->sig[SIGSZ-1] = val >> (HOST_BITS_PER_LONG - 1) >> 1;
+	  r->sig[SIGSZ-2] = val;
+	}
+
+      normalize (r);
+    }
+
+  if (DECIMAL_FLOAT_MODE_P (mode))
+    decimal_from_integer (r);
+  else if (mode != VOIDmode)
+    real_convert (r, mode, r);
+}
+
+/* Initialize R from the integer pair HIGH+LOW.  */
+
+void
+real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
+		   wide_int val, signop sgn)
+{
+  if (val.zero_p ())
+    get_zero (r, 0);
+  else
+    {
+      unsigned int len = val.get_precision ();
+      int i, j, e=0;
+      int maxbitlen = MAX_BITSIZE_MODE_ANY_INT + HOST_BITS_PER_WIDE_INT;
+      const unsigned int realmax = SIGNIFICAND_BITS/HOST_BITS_PER_WIDE_INT * HOST_BITS_PER_WIDE_INT;
+
+      memset (r, 0, sizeof (*r));
+      r->cl = rvc_normal;
+      r->sign = val.neg_p (sgn);
+
+      if (len == 0)
+	len = 1;
+
+      /* We have to ensure we can negate the largest negative number.  */
+      val = val.force_to_size (maxbitlen, sgn);
+
+      if (r->sign)
+	val = -val;
+      else
+	val = val;
+      
+      /* Ensure a multiple of HOST_BITS_PER_WIDE_INT, ceiling, as elt
+	 won't work with precisions that are not a multiple of
+	 HOST_BITS_PER_WIDE_INT.  */
+      len += HOST_BITS_PER_WIDE_INT - 1;
+
+      /* Ensure we can represent the largest negative number.  */
+      len += 1;
+
+      len = len/HOST_BITS_PER_WIDE_INT * HOST_BITS_PER_WIDE_INT;
+
+      /* Cap the size to the size allowed by real.h.  */
+      if (len > realmax)
+	{
+	  HOST_WIDE_INT cnt_l_z;
+	  cnt_l_z = val.clz ().to_shwi ();
+
+	  if (maxbitlen - cnt_l_z > realmax)
+	    {
+	      e = maxbitlen - cnt_l_z - realmax;
+
+	      /* This value is too large, we must shift it right to
+		 preserve all the bits we can, and then bump the
+		 exponent up by that amount.  */
+	      val = val.rshiftu (e);
+	    }
+	  len = realmax;
+	}
+
+      /* Clear out top bits so elt will work with precisions that aren't
+	 a multiple of HOST_BITS_PER_WIDE_INT.  */
+      val = val.force_to_size (len, sgn);
+      len = len / HOST_BITS_PER_WIDE_INT;
+
+      SET_REAL_EXP (r, len * HOST_BITS_PER_WIDE_INT + e);
+
+      j = SIGSZ - 1;
+      if (HOST_BITS_PER_LONG == HOST_BITS_PER_WIDE_INT)
+	for (i = len - 1; i >= 0; i--)
+	  {
+	    r->sig[j--] = val.elt (i);
+	    if (j < 0)
+	      break;
+	  }
+      else
+	{
+	  gcc_assert (HOST_BITS_PER_LONG*2 == HOST_BITS_PER_WIDE_INT);
+	  for (i = len - 1; i >= 0; i--)
+	    {
+	      HOST_WIDE_INT e = val.elt (i);
+	      r->sig[j--] = e >> (HOST_BITS_PER_LONG - 1) >> 1;
+	      if (j < 0)
+		break;
+	      r->sig[j--] = e;
+	      if (j < 0)
+		break;
+	    }
 	}
 
       normalize (r);
@@ -2270,7 +2362,7 @@ ten_to_ptwo (int n)
 	  for (i = 0; i < n; ++i)
 	    t *= t;
 
-	  real_from_integer (&tens[n], VOIDmode, t, 0, 1);
+	  real_from_integer (&tens[n], VOIDmode, t, UNSIGNED);
 	}
       else
 	{
@@ -2309,7 +2401,7 @@ real_digit (int n)
   gcc_assert (n <= 9);
 
   if (n > 0 && num[n].cl == rvc_zero)
-    real_from_integer (&num[n], VOIDmode, n, 0, 1);
+    real_from_integer (&num[n], VOIDmode, wide_int (n), UNSIGNED);
 
   return &num[n];
 }

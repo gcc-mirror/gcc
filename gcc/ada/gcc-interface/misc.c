@@ -591,7 +591,7 @@ gnat_type_max_size (const_tree gnu_type)
 
   /* If we don't have a constant, see what we can get from TYPE_ADA_SIZE,
      which should stay untouched.  */
-  if (!host_integerp (max_unitsize, 1)
+  if (!tree_fits_uhwi_p (max_unitsize)
       && RECORD_OR_UNION_TYPE_P (gnu_type)
       && !TYPE_FAT_POINTER_P (gnu_type)
       && TYPE_ADA_SIZE (gnu_type))
@@ -600,7 +600,7 @@ gnat_type_max_size (const_tree gnu_type)
 
       /* If we have succeeded in finding a constant, round it up to the
 	 type's alignment and return the result in units.  */
-      if (host_integerp (max_adasize, 1))
+      if (tree_fits_uhwi_p (max_adasize))
 	max_unitsize
 	  = size_binop (CEIL_DIV_EXPR,
 			round_up (max_adasize, TYPE_ALIGN (gnu_type)),

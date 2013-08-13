@@ -330,7 +330,7 @@ typedef struct _loop_vec_info {
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->datarefs
 #define LOOP_VINFO_DDRS(L)                 (L)->ddrs
-#define LOOP_VINFO_INT_NITERS(L)           (TREE_INT_CST_LOW ((L)->num_iters))
+#define LOOP_VINFO_INT_NITERS(L)           (tree_to_hwi ((L)->num_iters))
 #define LOOP_PEELING_FOR_ALIGNMENT(L)      (L)->peeling_for_alignment
 #define LOOP_VINFO_UNALIGNED_DR(L)         (L)->unaligned_dr
 #define LOOP_VINFO_MAY_MISALIGN_STMTS(L)   (L)->may_misalign_stmts
@@ -352,8 +352,8 @@ typedef struct _loop_vec_info {
 (L)->may_alias_ddrs.length () > 0
 
 #define NITERS_KNOWN_P(n)                     \
-(host_integerp ((n),0)                        \
-&& TREE_INT_CST_LOW ((n)) > 0)
+(tree_fits_shwi_p ((n))                        \
+&& tree_to_shwi ((n)) > 0)
 
 #define LOOP_VINFO_NITERS_KNOWN_P(L)          \
 NITERS_KNOWN_P((L)->num_iters)

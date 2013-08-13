@@ -45,11 +45,11 @@ static void expand_vector_operations_1 (gimple_stmt_iterator *);
 static tree
 build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
 {
-  int width = tree_low_cst (TYPE_SIZE (inner_type), 1);
-  int n = HOST_BITS_PER_WIDE_INT / width;
-  unsigned HOST_WIDE_INT low, high, mask;
-  tree ret;
-
+  int width = tree_to_uhwi (TYPE_SIZE (inner_type));
+  int n = TYPE_PRECISION (type) / width;
+  unsigned HOST_WIDE_INT low, mask;
+  HOST_WIDE_INT a[WIDE_INT_MAX_ELTS];
+  int i;
   gcc_assert (n);
 
   if (width == HOST_BITS_PER_WIDE_INT)
@@ -60,17 +60,11 @@ build_replicated_const (tree type, tree inner_type, HOST_WIDE_INT value)
       low = (unsigned HOST_WIDE_INT) ~0 / mask * (value & mask);
     }
 
-  if (TYPE_PRECISION (type) < HOST_BITS_PER_WIDE_INT)
-    low &= ((HOST_WIDE_INT)1 << TYPE_PRECISION (type)) - 1, high = 0;
-  else if (TYPE_PRECISION (type) == HOST_BITS_PER_WIDE_INT)
-    high = 0;
-  else if (TYPE_PRECISION (type) == HOST_BITS_PER_DOUBLE_INT)
-    high = low;
-  else
-    gcc_unreachable ();
+  for (i = 0; i < n; i++)
+    a[i] = low;
 
-  ret = build_int_cst_wide (type, low, high);
-  return ret;
+  return wide_int_to_tree 
+    (type, wide_int::from_array (a, n, TYPE_PRECISION (type), false));
 }
 
 static GTY(()) tree vector_inner_type;
@@ -234,8 +228,8 @@ expand_vector_piecewise (gimple_stmt_iterator *gsi, elem_op_func f,
   tree part_width = TYPE_SIZE (inner_type);
   tree index = bitsize_int (0);
   int nunits = TYPE_VECTOR_SUBPARTS (type);
-  int delta = tree_low_cst (part_width, 1)
-	      / tree_low_cst (TYPE_SIZE (TREE_TYPE (type)), 1);
+  int delta = tree_to_uhwi (part_width)
+	      / tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)));
   int i;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -268,7 +262,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
 {
   tree result, compute_type;
   enum machine_mode mode;
-  int n_words = tree_low_cst (TYPE_SIZE_UNIT (type), 1) / UNITS_PER_WORD;
+  int n_words = tree_to_uhwi (TYPE_SIZE_UNIT (type)) / UNITS_PER_WORD;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
   /* We have three strategies.  If the type is already correct, just do
@@ -291,7 +285,7 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
   else
     {
       /* Use a single scalar operation with a mode no wider than word_mode.  */
-      mode = mode_for_size (tree_low_cst (TYPE_SIZE (type), 1), MODE_INT, 0);
+      mode = mode_for_size (tree_to_uhwi (TYPE_SIZE (type)), MODE_INT, 0);
       compute_type = lang_hooks.types.type_for_mode (mode, 1);
       result = f (gsi, compute_type, a, b, NULL_TREE, NULL_TREE, code);
       warning_at (loc, OPT_Wvector_operation_performance,
@@ -313,7 +307,7 @@ expand_vector_addition (gimple_stmt_iterator *gsi,
 			tree type, tree a, tree b, enum tree_code code)
 {
   int parts_per_word = UNITS_PER_WORD
-	  	       / tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (type)), 1);
+	  	       / tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
 
   if (INTEGRAL_TYPE_P (TREE_TYPE (type))
       && parts_per_word >= 4
@@ -404,7 +398,8 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   unsigned HOST_WIDE_INT *mulc = XALLOCAVEC (unsigned HOST_WIDE_INT, nunits);
   int prec = TYPE_PRECISION (TREE_TYPE (type));
   int dummy_int;
-  unsigned int i, unsignedp = TYPE_UNSIGNED (TREE_TYPE (type));
+  unsigned int i; 
+  signop sign_p = TYPE_SIGN (TREE_TYPE (type));
   unsigned HOST_WIDE_INT mask = GET_MODE_MASK (TYPE_MODE (TREE_TYPE (type)));
   tree *vec;
   tree cur_op, mulcst, tem;
@@ -428,7 +423,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       tree cst = VECTOR_CST_ELT (op1, i);
       unsigned HOST_WIDE_INT ml;
 
-      if (!host_integerp (cst, unsignedp) || integer_zerop (cst))
+      if (!tree_fits_hwi_p (cst, sign_p) || integer_zerop (cst))
 	return NULL_TREE;
       pre_shifts[i] = 0;
       post_shifts[i] = 0;
@@ -446,10 +441,10 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       if (mode == -2)
 	continue;
-      if (unsignedp)
+      if (sign_p == UNSIGNED)
 	{
 	  unsigned HOST_WIDE_INT mh;
-	  unsigned HOST_WIDE_INT d = tree_low_cst (cst, 1) & mask;
+	  unsigned HOST_WIDE_INT d = tree_to_uhwi (cst) & mask;
 
 	  if (d >= ((unsigned HOST_WIDE_INT) 1 << (prec - 1)))
 	    /* FIXME: Can transform this into op0 >= op1 ? 1 : 0.  */
@@ -481,9 +476,9 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		      unsigned HOST_WIDE_INT d2;
 		      int this_pre_shift;
 
-		      if (!host_integerp (cst2, 1))
+		      if (!tree_fits_uhwi_p (cst2))
 			return NULL_TREE;
-		      d2 = tree_low_cst (cst2, 1) & mask;
+		      d2 = tree_to_uhwi (cst2) & mask;
 		      if (d2 == 0)
 			return NULL_TREE;
 		      this_pre_shift = floor_log2 (d2 & -d2);
@@ -519,7 +514,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       else
 	{
-	  HOST_WIDE_INT d = tree_low_cst (cst, 0);
+	  HOST_WIDE_INT d = tree_to_shwi (cst);
 	  unsigned HOST_WIDE_INT abs_d;
 
 	  if (d == -1)
@@ -575,7 +570,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   if (use_pow2)
     {
       tree addend = NULL_TREE;
-      if (!unsignedp)
+      if (sign_p == SIGNED)
 	{
 	  tree uns_type;
 
@@ -627,7 +622,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       if (code == TRUNC_DIV_EXPR)
 	{
-	  if (unsignedp)
+	  if (sign_p == UNSIGNED)
 	    {
 	      /* q = op0 >> shift;  */
 	      cur_op = add_rshift (gsi, type, op0, shifts);
@@ -661,7 +656,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  if (op != unknown_optab
 	      && optab_handler (op, TYPE_MODE (type)) != CODE_FOR_nothing)
 	    {
-	      if (unsignedp)
+	      if (sign_p == UNSIGNED)
 		/* r = op0 & mask;  */
 		return gimplify_build2 (gsi, BIT_AND_EXPR, type, op0, mask);
 	      else if (addend != NULL_TREE)
@@ -702,7 +697,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
   switch (mode)
     {
     case 0:
-      gcc_assert (unsignedp);
+      gcc_assert (sign_p == UNSIGNED);
       /* t1 = oprnd0 >> pre_shift;
 	 t2 = t1 h* ml;
 	 q = t2 >> post_shift;  */
@@ -711,7 +706,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	return NULL_TREE;
       break;
     case 1:
-      gcc_assert (unsignedp);
+      gcc_assert (sign_p == UNSIGNED);
       for (i = 0; i < nunits; i++)
 	{
 	  shift_temps[i] = 1;
@@ -722,7 +717,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
     case 3:
     case 4:
     case 5:
-      gcc_assert (!unsignedp);
+      gcc_assert (sign_p == SIGNED);
       for (i = 0; i < nunits; i++)
 	shift_temps[i] = prec - 1;
       break;
@@ -1049,8 +1044,8 @@ vector_element (gimple_stmt_iterator *gsi, tree vect, tree idx, tree *ptmpvec)
 
       /* Given that we're about to compute a binary modulus,
 	 we don't care about the high bits of the value.  */
-      index = TREE_INT_CST_LOW (idx);
-      if (!host_integerp (idx, 1) || index >= elements)
+      index = tree_to_hwi (idx);
+      if (!tree_fits_uhwi_p (idx) || index >= elements)
 	{
 	  index &= elements - 1;
 	  idx = build_int_cst (TREE_TYPE (idx), index);
@@ -1155,7 +1150,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
       unsigned char *sel_int = XALLOCAVEC (unsigned char, elements);
 
       for (i = 0; i < elements; ++i)
-	sel_int[i] = (TREE_INT_CST_LOW (VECTOR_CST_ELT (mask, i))
+	sel_int[i] = (tree_to_hwi (VECTOR_CST_ELT (mask, i))
 		      & (2 * elements - 1));
 
       if (can_vec_perm_p (TYPE_MODE (vect_type), false, sel_int))
@@ -1181,8 +1176,8 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
         {
 	  unsigned HOST_WIDE_INT index;
 
-	  index = TREE_INT_CST_LOW (i_val);
-	  if (!host_integerp (i_val, 1) || index >= elements)
+	  index = tree_to_hwi (i_val);
+	  if (!tree_fits_uhwi_p (i_val) || index >= elements)
 	    i_val = build_int_cst (mask_elt_type, index & (elements - 1));
 
           if (two_operand_p && (index & elements) != 0)

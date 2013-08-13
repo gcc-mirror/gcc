@@ -3813,8 +3813,8 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
   {
     tree s2 = sizetree;
     if (where_pad != none
-	&& (!host_integerp (sizetree, 1)
-	    || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % round_boundary))
+	&& (!tree_fits_uhwi_p (sizetree)
+	    || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
       s2 = round_up (s2, round_boundary / BITS_PER_UNIT);
     SUB_PARM_SIZE (locate->slot_offset, s2);
   }
@@ -3856,7 +3856,7 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
 
 #ifdef PUSH_ROUNDING
   if (passed_mode != BLKmode)
-    sizetree = size_int (PUSH_ROUNDING (TREE_INT_CST_LOW (sizetree)));
+    sizetree = size_int (PUSH_ROUNDING (tree_to_hwi (sizetree)));
 #endif
 
   /* Pad_below needs the pre-rounded size to know how much to pad below
@@ -3866,8 +3866,8 @@ locate_and_pad_parm (enum machine_mode passed_mode, tree type, int in_regs,
     pad_below (&locate->offset, passed_mode, sizetree);
 
   if (where_pad != none
-      && (!host_integerp (sizetree, 1)
-	  || (tree_low_cst (sizetree, 1) * BITS_PER_UNIT) % round_boundary))
+      && (!tree_fits_uhwi_p (sizetree)
+	  || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
     sizetree = round_up (sizetree, round_boundary / BITS_PER_UNIT);
 
   ADD_PARM_SIZE (locate->size, sizetree);
@@ -3958,7 +3958,7 @@ pad_below (struct args_size *offset_ptr, enum machine_mode passed_mode, tree siz
   else
     {
       if (TREE_CODE (sizetree) != INTEGER_CST
-	  || (TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)
+	  || (tree_to_hwi (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)
 	{
 	  /* Round the size up to multiple of PARM_BOUNDARY bits.  */
 	  tree s2 = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);

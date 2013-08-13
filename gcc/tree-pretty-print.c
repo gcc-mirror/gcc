@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "value-prof.h"
 #include "predict.h"
+#include "wide-int-print.h"
 
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
@@ -269,8 +270,8 @@ dump_array_domain (pretty_printer *buffer, tree domain, int spc, int flags)
 
       if (min && max
 	  && integer_zerop (min)
-	  && host_integerp (max, 0))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (max) + 1);
+	  && tree_fits_shwi_p (max))
+	pp_wide_integer (buffer, tree_to_shwi (max) + 1);
       else
 	{
 	  if (min)
@@ -1028,32 +1029,25 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
              NB: Neither of the following divisors can be trivially
              used to recover the original literal:
 
-             TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (node)))
+             tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (node)))
 	     TYPE_PRECISION (TREE_TYPE (TREE_TYPE (node)))  */
-	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
+	  pp_wide_integer (buffer, tree_to_hwi (node));
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
-      else if (host_integerp (node, 0))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
-      else if (host_integerp (node, 1))
-	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
+      else if (tree_fits_shwi_p (node))
+	pp_wide_integer (buffer, tree_to_shwi (node));
+      else if (tree_fits_uhwi_p (node))
+	pp_unsigned_wide_integer (buffer, tree_to_uhwi (node));
       else
 	{
-	  tree val = node;
-	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
-	  HOST_WIDE_INT high = TREE_INT_CST_HIGH (val);
+	  wide_int val = node;
 
-	  if (tree_int_cst_sgn (val) < 0)
+	  if (val.neg_p (TYPE_SIGN (TREE_TYPE (node))))
 	    {
 	      pp_minus (buffer);
-	      high = ~high + !low;
-	      low = -low;
+	      val = -val;
 	    }
-	  /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
-	     systems?  */
-	  sprintf (pp_buffer (buffer)->digit_buffer,
-		   HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		   (unsigned HOST_WIDE_INT) high, low);
+	  print_hex (val, pp_buffer (buffer)->digit_buffer);
 	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	}
       break;
@@ -1301,7 +1295,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	tree field, val;
 	bool is_struct_init = false;
 	bool is_array_init = false;
-	double_int curidx = double_int_zero;
+	wide_int curidx = 0;
 	pp_left_brace (buffer);
 	if (TREE_CLOBBER_P (node))
 	  pp_string (buffer, "CLOBBER");
@@ -1316,7 +1310,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  {
 	    tree minv = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (node)));
 	    is_array_init = true;
-	    curidx = tree_to_double_int (minv);
+	    curidx = max_wide_int (minv);
 	  }
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node), ix, field, val)
 	  {
@@ -1330,7 +1324,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  }
 		else if (is_array_init
 			 && (TREE_CODE (field) != INTEGER_CST
-			     || tree_to_double_int (field) != curidx))
+			     || max_wide_int (field) != curidx))
 		  {
 		    pp_left_bracket (buffer);
 		    if (TREE_CODE (field) == RANGE_EXPR)
@@ -1341,17 +1335,17 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 			dump_generic_node (buffer, TREE_OPERAND (field, 1), spc,
 					   flags, false);
 			if (TREE_CODE (TREE_OPERAND (field, 1)) == INTEGER_CST)
-			  curidx = tree_to_double_int (TREE_OPERAND (field, 1));
+			  curidx = TREE_OPERAND (field, 1);
 		      }
 		    else
 		      dump_generic_node (buffer, field, spc, flags, false);
 		    if (TREE_CODE (field) == INTEGER_CST)
-		      curidx = tree_to_double_int (field);
+		      curidx = field;
 		    pp_string (buffer, "]=");
 		  }
 	      }
             if (is_array_init)
-	      curidx += double_int_one;
+	      curidx += 1;
 	    if (val && TREE_CODE (val) == ADDR_EXPR)
 	      if (TREE_CODE (TREE_OPERAND (val, 0)) == FUNCTION_DECL)
 		val = TREE_OPERAND (val, 0);

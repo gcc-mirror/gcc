@@ -93,8 +93,8 @@ solaris_pragma_align (cpp_reader *pfile ATTRIBUTE_UNUSED)
       return;
     }
 
-  low = TREE_INT_CST_LOW (x);
-  if (TREE_INT_CST_HIGH (x) != 0
+  low = tree_to_hwi (x);
+  if (!cst_fits_uhwi_p (x)
       || (low != 1 && low != 2 && low != 4 && low != 8 && low != 16
 	  && low != 32 && low != 64 && low != 128))
     {

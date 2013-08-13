@@ -1404,6 +1404,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SWITCHABLE_TARGET 0
 #endif
 
+/* If the target supports integers that are wider than two
+   HOST_WIDE_INTs on the host compiler, then the target should define
+   TARGET_SUPPORTS_WIDE_INT and make the appropriate fixups.
+   Otherwise the compiler really is not robust.  */
+#ifndef TARGET_SUPPORTS_WIDE_INT
+#define TARGET_SUPPORTS_WIDE_INT 0
+#endif
+
 #endif /* GCC_INSN_FLAGS_H  */
 
 #endif  /* ! GCC_DEFAULTS_H */

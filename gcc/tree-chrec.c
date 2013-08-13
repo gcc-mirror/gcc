@@ -460,7 +460,7 @@ chrec_fold_multiply (tree type,
 static tree
 tree_fold_binomial (tree type, tree n, unsigned int k)
 {
-  double_int num, denom, idx, di_res;
+  wide_int num, denom, idx, di_res;
   bool overflow;
   unsigned int i;
   tree res;
@@ -472,20 +472,20 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
     return fold_convert (type, n);
 
   /* Numerator = n.  */
-  num = TREE_INT_CST (n);
+  num = n;
 
   /* Check that k <= n.  */
-  if (num.ult (double_int::from_uhwi (k)))
+  if (num.ltu_p (k))
     return NULL_TREE;
 
   /* Denominator = 2.  */
-  denom = double_int::from_uhwi (2);
+  denom = wide_int::two (TYPE_PRECISION (TREE_TYPE (n)));
 
   /* Index = Numerator-1.  */
-  idx = num - double_int_one;
+  idx = num - 1;
 
   /* Numerator = Numerator*Index = n*(n-1).  */
-  num = num.mul_with_sign (idx, false, &overflow);
+  num = num.smul (idx, &overflow);
   if (overflow)
     return NULL_TREE;
 
@@ -495,17 +495,17 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
       --idx;
 
       /* Numerator *= Index.  */
-      num = num.mul_with_sign (idx, false, &overflow);
+      num = num.smul (idx, &overflow);
       if (overflow)
 	return NULL_TREE;
 
       /* Denominator *= i.  */
-      denom *= double_int::from_uhwi (i);
+      denom *= i;
     }
 
   /* Result = Numerator / Denominator.  */
-  di_res = num.div (denom, true, EXACT_DIV_EXPR);
-  res = build_int_cst_wide (type, di_res.low, di_res.high);
+  di_res = num.udiv_trunc (denom);
+  res = wide_int_to_tree (type, di_res);
   return int_fits_type_p (res, type) ? res : NULL_TREE;
 }
 

@@ -731,17 +731,17 @@ type_internals_preclude_sra_p (tree type, const char **msg)
 		*msg = "zero structure field size";
 	        return true;
 	      }
-	    if (!host_integerp (DECL_FIELD_OFFSET (fld), 1))
+	    if (!tree_fits_uhwi_p (DECL_FIELD_OFFSET (fld)))
 	      {
 		*msg = "structure field offset not fixed";
 		return true;
 	      }
-	    if (!host_integerp (DECL_SIZE (fld), 1))
+	    if (!tree_fits_uhwi_p (DECL_SIZE (fld)))
 	      {
 	        *msg = "structure field size not fixed";
 		return true;
 	      }
-	    if (!host_integerp (bit_position (fld), 0))
+	    if (!tree_fits_shwi_p (bit_position (fld)))
 	      {
 	        *msg = "structure field size too big";
 		return true;
@@ -978,7 +978,7 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
 	    struct access *access;
 	    HOST_WIDE_INT size;
 
-	    size = tree_low_cst (DECL_SIZE (fld), 1);
+	    size = tree_to_uhwi (DECL_SIZE (fld));
 	    access = create_access_1 (base, pos, size);
 	    access->expr = nref;
 	    access->type = ft;
@@ -997,7 +997,7 @@ completely_scalarize_record (tree base, tree decl, HOST_WIDE_INT offset,
 static void
 completely_scalarize_var (tree var)
 {
-  HOST_WIDE_INT size = tree_low_cst (DECL_SIZE (var), 1);
+  HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE (var));
   struct access *access;
 
   access = create_access_1 (var, 0, size);
@@ -1345,11 +1345,11 @@ compare_access_positions (const void *a, const void *b)
 	return TYPE_PRECISION (f2->type) - TYPE_PRECISION (f1->type);
       /* Put any integral type with non-full precision last.  */
       else if (INTEGRAL_TYPE_P (f1->type)
-	       && (TREE_INT_CST_LOW (TYPE_SIZE (f1->type))
+	       && (tree_to_hwi (TYPE_SIZE (f1->type))
 		   != TYPE_PRECISION (f1->type)))
 	return 1;
       else if (INTEGRAL_TYPE_P (f2->type)
-	       && (TREE_INT_CST_LOW (TYPE_SIZE (f2->type))
+	       && (tree_to_hwi (TYPE_SIZE (f2->type))
 		   != TYPE_PRECISION (f2->type)))
 	return -1;
       /* Stabilize the sort.  */
@@ -1411,7 +1411,7 @@ make_fancy_name_1 (tree expr)
       index = TREE_OPERAND (expr, 1);
       if (TREE_CODE (index) != INTEGER_CST)
 	break;
-      sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, TREE_INT_CST_LOW (index));
+      sprintf (buffer, HOST_WIDE_INT_PRINT_DEC, tree_to_hwi (index));
       obstack_grow (&name_obstack, buffer, strlen (buffer));
       break;
 
@@ -1425,7 +1425,7 @@ make_fancy_name_1 (tree expr)
 	{
 	  obstack_1grow (&name_obstack, '$');
 	  sprintf (buffer, HOST_WIDE_INT_PRINT_DEC,
-		   TREE_INT_CST_LOW (TREE_OPERAND (expr, 1)));
+		   tree_to_hwi (TREE_OPERAND (expr, 1)));
 	  obstack_grow (&name_obstack, buffer, strlen (buffer));
 	}
       break;
@@ -1620,14 +1620,14 @@ build_user_friendly_ref_for_offset (tree *res, tree type, HOST_WIDE_INT offset,
 		continue;
 
 	      tr_pos = bit_position (fld);
-	      if (!tr_pos || !host_integerp (tr_pos, 1))
+	      if (!tr_pos || !tree_fits_uhwi_p (tr_pos))
 		continue;
-	      pos = TREE_INT_CST_LOW (tr_pos);
+	      pos = tree_to_uhwi (tr_pos);
 	      gcc_assert (TREE_CODE (type) == RECORD_TYPE || pos == 0);
 	      tr_size = DECL_SIZE (fld);
-	      if (!tr_size || !host_integerp (tr_size, 1))
+	      if (!tr_size || !tree_fits_uhwi_p (tr_size))
 		continue;
-	      size = TREE_INT_CST_LOW (tr_size);
+	      size = tree_to_uhwi (tr_size);
 	      if (size == 0)
 		{
 		  if (pos != offset)
@@ -1650,9 +1650,9 @@ build_user_friendly_ref_for_offset (tree *res, tree type, HOST_WIDE_INT offset,
 
 	case ARRAY_TYPE:
 	  tr_size = TYPE_SIZE (TREE_TYPE (type));
-	  if (!tr_size || !host_integerp (tr_size, 1))
+	  if (!tr_size || !tree_fits_uhwi_p (tr_size))
 	    return false;
-	  el_size = tree_low_cst (tr_size, 1);
+	  el_size = tree_to_uhwi (tr_size);
 
 	  minidx = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
 	  if (TREE_CODE (minidx) != INTEGER_CST || el_size == 0)
@@ -1728,12 +1728,12 @@ maybe_add_sra_candidate (tree var)
       reject (var, "has incomplete type");
       return false;
     }
-  if (!host_integerp (TYPE_SIZE (type), 1))
+  if (!tree_fits_uhwi_p (TYPE_SIZE (type)))
     {
       reject (var, "type size not fixed");
       return false;
     }
-  if (tree_low_cst (TYPE_SIZE (type), 1) == 0)
+  if (tree_to_uhwi (TYPE_SIZE (type)) == 0)
     {
       reject (var, "type size is zero");
       return false;
@@ -2088,7 +2088,7 @@ expr_with_var_bounded_array_refs_p (tree expr)
   while (handled_component_p (expr))
     {
       if (TREE_CODE (expr) == ARRAY_REF
-	  && !host_integerp (array_ref_low_bound (expr), 0))
+	  && !tree_fits_shwi_p (array_ref_low_bound (expr)))
 	return true;
       expr = TREE_OPERAND (expr, 0);
     }
@@ -2457,7 +2457,7 @@ analyze_all_variable_accesses (void)
 	if (TREE_CODE (var) == VAR_DECL
 	    && type_consists_of_records_p (TREE_TYPE (var)))
 	  {
-	    if ((unsigned) tree_low_cst (TYPE_SIZE (TREE_TYPE (var)), 1)
+	    if ((unsigned) tree_to_uhwi (TYPE_SIZE (TREE_TYPE (var)))
 		<= max_total_scalarization_size)
 	      {
 		completely_scalarize_var (var);
@@ -2768,12 +2768,12 @@ sra_modify_expr (tree *expr, gimple_stmt_iterator *gsi, bool write)
     {
       HOST_WIDE_INT start_offset, chunk_size;
       if (bfr
-	  && host_integerp (TREE_OPERAND (bfr, 1), 1)
-	  && host_integerp (TREE_OPERAND (bfr, 2), 1))
+	  && tree_fits_uhwi_p (TREE_OPERAND (bfr, 1))
+	  && tree_fits_uhwi_p (TREE_OPERAND (bfr, 2)))
 	{
-	  chunk_size = tree_low_cst (TREE_OPERAND (bfr, 1), 1);
+	  chunk_size = tree_to_uhwi (TREE_OPERAND (bfr, 1));
 	  start_offset = access->offset
-	    + tree_low_cst (TREE_OPERAND (bfr, 2), 1);
+	    + tree_to_uhwi (TREE_OPERAND (bfr, 2));
 	}
       else
 	start_offset = chunk_size = 0;
@@ -3662,8 +3662,8 @@ find_param_candidates (void)
 	continue;
 
       if (!COMPLETE_TYPE_P (type)
-	  || !host_integerp (TYPE_SIZE (type), 1)
-          || tree_low_cst (TYPE_SIZE (type), 1) == 0
+	  || !tree_fits_uhwi_p (TYPE_SIZE (type))
+          || tree_to_uhwi (TYPE_SIZE (type)) == 0
 	  || (AGGREGATE_TYPE_P (type)
 	      && type_internals_preclude_sra_p (type, &msg)))
 	continue;
@@ -4036,9 +4036,9 @@ splice_param_accesses (tree parm, bool *ro_grp)
     }
 
   if (POINTER_TYPE_P (TREE_TYPE (parm)))
-    agg_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))), 1);
+    agg_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))));
   else
-    agg_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (parm)), 1);
+    agg_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (parm)));
   if (total_size >= agg_size)
     return NULL;
 
@@ -4057,13 +4057,13 @@ decide_one_param_reduction (struct access *repr)
   tree parm;
 
   parm = repr->base;
-  cur_parm_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (parm)), 1);
+  cur_parm_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (parm)));
   gcc_assert (cur_parm_size > 0);
 
   if (POINTER_TYPE_P (TREE_TYPE (parm)))
     {
       by_ref = true;
-      agg_size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))), 1);
+      agg_size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (parm))));
     }
   else
     {
@@ -4490,7 +4490,7 @@ sra_ipa_modify_expr (tree *expr, bool convert,
 
   if (TREE_CODE (base) == MEM_REF)
     {
-      offset += mem_ref_offset (base).low * BITS_PER_UNIT;
+      offset += mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
       base = TREE_OPERAND (base, 0);
     }
 

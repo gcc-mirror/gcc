@@ -690,88 +690,40 @@ stabstr_U (unsigned HOST_WIDE_INT num)
 static void
 stabstr_O (tree cst)
 {
-  unsigned HOST_WIDE_INT high = TREE_INT_CST_HIGH (cst);
-  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (cst);
-
-  char buf[128];
-  char *p = buf + sizeof buf;
-
-  /* GDB wants constants with no extra leading "1" bits, so
-     we need to remove any sign-extension that might be
-     present.  */
-  {
-    const unsigned int width = TYPE_PRECISION (TREE_TYPE (cst));
-    if (width == HOST_BITS_PER_DOUBLE_INT)
-      ;
-    else if (width > HOST_BITS_PER_WIDE_INT)
-      high &= (((HOST_WIDE_INT) 1 << (width - HOST_BITS_PER_WIDE_INT)) - 1);
-    else if (width == HOST_BITS_PER_WIDE_INT)
-      high = 0;
-    else
-      high = 0, low &= (((HOST_WIDE_INT) 1 << width) - 1);
-  }
+  wide_int wcst = cst;
+  int prec = wcst.get_precision ();
+  int res_pres = prec % 3;
+  int i;
+  unsigned int digit;
 
   /* Leading zero for base indicator.  */
   stabstr_C ('0');
 
   /* If the value is zero, the base indicator will serve as the value
      all by itself.  */
-  if (high == 0 && low == 0)
+  if (wcst.zero_p ())
     return;
 
-  /* If the high half is zero, we need only print the low half normally.  */
-  if (high == 0)
-    NUMBER_FMT_LOOP (p, low, 8);
-  else
+  /* GDB wants constants with no extra leading "1" bits, so
+     we need to remove any sign-extension that might be
+     present.  */
+  if (res_pres == 1)
     {
-      /* When high != 0, we need to print enough zeroes from low to
-	 give the digits from high their proper place-values.  Hence
-	 NUMBER_FMT_LOOP cannot be used.  */
-      const int n_digits = HOST_BITS_PER_WIDE_INT / 3;
-      int i;
-
-      for (i = 1; i <= n_digits; i++)
-	{
-	  unsigned int digit = low % 8;
-	  low /= 8;
-	  *--p = '0' + digit;
-	}
-
-      /* Octal digits carry exactly three bits of information.  The
-	 width of a HOST_WIDE_INT is not normally a multiple of three.
-	 Therefore, the next digit printed probably needs to carry
-	 information from both low and high.  */
-      if (HOST_BITS_PER_WIDE_INT % 3 != 0)
-	{
-	  const int n_leftover_bits = HOST_BITS_PER_WIDE_INT % 3;
-	  const int n_bits_from_high = 3 - n_leftover_bits;
-
-	  const unsigned HOST_WIDE_INT
-	    low_mask = (((unsigned HOST_WIDE_INT)1) << n_leftover_bits) - 1;
-	  const unsigned HOST_WIDE_INT
-	    high_mask = (((unsigned HOST_WIDE_INT)1) << n_bits_from_high) - 1;
-
-	  unsigned int digit;
-
-	  /* At this point, only the bottom n_leftover_bits bits of low
-	     should be set.  */
-	  gcc_assert (!(low & ~low_mask));
-
-	  digit = (low | ((high & high_mask) << n_leftover_bits));
-	  high >>= n_bits_from_high;
-
-	  *--p = '0' + digit;
-	}
-
-      /* Now we can format high in the normal manner.  However, if
-	 the only bits of high that were set were handled by the
-	 digit split between low and high, high will now be zero, and
-	 we don't want to print extra digits in that case.  */
-      if (high)
-	NUMBER_FMT_LOOP (p, high, 8);
+      digit = wcst.extract_to_hwi (prec - 1, 1) & 0x1;
+      stabstr_C ('0' + digit);
+    }
+  else if (res_pres == 2)
+    {
+      digit = wcst.extract_to_hwi (prec - 2, 2) & 0x3;
+      stabstr_C ('0' + digit);
     }
 
-  obstack_grow (&stabstr_ob, p, (buf + sizeof buf) - p);
+  prec -= res_pres;
+  for (i = prec - 3; i <= 0; i = i - 3)
+    {
+      digit = wcst.extract_to_hwi (i, 3) & 0x7;
+      stabstr_C ('0' + digit);
+    }
 }
 
 /* Called whenever it is safe to break a stabs string into multiple
@@ -1519,9 +1471,9 @@ dbxout_type_fields (tree type)
 	  /* Omit fields whose position or size are variable or too large to
 	     represent.  */
 	  || (TREE_CODE (tem) == FIELD_DECL
-	      && (! host_integerp (bit_position (tem), 0)
+	      && (! tree_fits_shwi_p (bit_position (tem))
 		  || ! DECL_SIZE (tem)
-		  || ! host_integerp (DECL_SIZE (tem), 1))))
+		  || ! tree_fits_uhwi_p (DECL_SIZE (tem)))))
 	continue;
 
       else if (TREE_CODE (tem) != CONST_DECL)
@@ -1566,7 +1518,7 @@ dbxout_type_fields (tree type)
 	      stabstr_C (',');
 	      stabstr_D (int_bit_position (tem));
 	      stabstr_C (',');
-	      stabstr_D (tree_low_cst (DECL_SIZE (tem), 1));
+	      stabstr_D (tree_to_uhwi (DECL_SIZE (tem)));
 	      stabstr_C (';');
 	    }
 	}
@@ -1610,9 +1562,9 @@ dbxout_type_method_1 (tree decl)
   stabstr_C (c1);
   stabstr_C (c2);
 
-  if (DECL_VINDEX (decl) && host_integerp (DECL_VINDEX (decl), 0))
+  if (DECL_VINDEX (decl) && tree_fits_shwi_p (DECL_VINDEX (decl)))
     {
-      stabstr_D (tree_low_cst (DECL_VINDEX (decl), 0));
+      stabstr_D (tree_to_shwi (DECL_VINDEX (decl)));
       stabstr_C (';');
       dbxout_type (DECL_CONTEXT (decl), 0);
       stabstr_C (';');
@@ -1718,23 +1670,23 @@ dbxout_range_type (tree type, tree low, tree high)
     }
 
   stabstr_C (';');
-  if (low && host_integerp (low, 0))
+  if (low && tree_fits_shwi_p (low))
     {
       if (print_int_cst_bounds_in_octal_p (type, low, high))
         stabstr_O (low);
       else
-        stabstr_D (tree_low_cst (low, 0));
+        stabstr_D (tree_to_shwi (low));
     }
   else
     stabstr_C ('0');
 
   stabstr_C (';');
-  if (high && host_integerp (high, 0))
+  if (high && tree_fits_shwi_p (high))
     {
       if (print_int_cst_bounds_in_octal_p (type, low, high))
         stabstr_O (high);
       else
-        stabstr_D (tree_low_cst (high, 0));
+        stabstr_D (tree_to_shwi (high));
       stabstr_C (';');
     }
   else
@@ -1864,7 +1816,7 @@ dbxout_type (tree type, int full)
 	 Sun dbx crashes if we do.  */
       if (! full || !COMPLETE_TYPE_P (type)
 	  /* No way in DBX fmt to describe a variable size.  */
-	  || ! host_integerp (TYPE_SIZE (type), 1))
+	  || ! tree_fits_uhwi_p (TYPE_SIZE (type)))
 	return;
       break;
     case TYPE_DEFINED:
@@ -1889,7 +1841,7 @@ dbxout_type (tree type, int full)
 	 && !full)
 	|| !COMPLETE_TYPE_P (type)
 	/* No way in DBX fmt to describe a variable size.  */
-	|| ! host_integerp (TYPE_SIZE (type), 1))
+	|| ! tree_fits_uhwi_p (TYPE_SIZE (type)))
       {
 	typevec[TYPE_SYMTAB_ADDRESS (type)].status = TYPE_XREF;
 	return;
@@ -2147,7 +2099,7 @@ dbxout_type (tree type, int full)
 	     && !full)
 	    || !COMPLETE_TYPE_P (type)
 	    /* No way in DBX fmt to describe a variable size.  */
-	    || ! host_integerp (TYPE_SIZE (type), 1))
+	    || ! tree_fits_uhwi_p (TYPE_SIZE (type)))
 	  {
 	    /* If the type is just a cross reference, output one
 	       and mark the type as partially described.
@@ -2210,10 +2162,10 @@ dbxout_type (tree type, int full)
 		     	 offset within the vtable where we must look
 		     	 to find the necessary adjustment.  */
 		      stabstr_D
-			(tree_low_cst (BINFO_VPTR_FIELD (child), 0)
+			(tree_to_shwi (BINFO_VPTR_FIELD (child))
 			 * BITS_PER_UNIT);
 		    else
-		      stabstr_D (tree_low_cst (BINFO_OFFSET (child), 0)
+		      stabstr_D (tree_to_shwi (BINFO_OFFSET (child))
 				       * BITS_PER_UNIT);
 		    stabstr_C (',');
 		    dbxout_type (BINFO_TYPE (child), 0);
@@ -2228,11 +2180,11 @@ dbxout_type (tree type, int full)
 		    stabstr_C (':');
 		    dbxout_type (BINFO_TYPE (child), full);
 		    stabstr_C (',');
-		    stabstr_D (tree_low_cst (BINFO_OFFSET (child), 0)
+		    stabstr_D (tree_to_shwi (BINFO_OFFSET (child))
 				     * BITS_PER_UNIT);
 		    stabstr_C (',');
 		    stabstr_D
-		      (tree_low_cst (TYPE_SIZE (BINFO_TYPE (child)), 0)
+		      (tree_to_shwi (TYPE_SIZE (BINFO_TYPE (child)))
 		       * BITS_PER_UNIT);
 		    stabstr_C (';');
 		  }
@@ -2299,11 +2251,8 @@ dbxout_type (tree type, int full)
           if (TREE_CODE (value) == CONST_DECL)
             value = DECL_INITIAL (value);
 
-	  if (TREE_INT_CST_HIGH (value) == 0)
-	    stabstr_D (TREE_INT_CST_LOW (value));
-	  else if (TREE_INT_CST_HIGH (value) == -1
-		   && (HOST_WIDE_INT) TREE_INT_CST_LOW (value) < 0)
-	    stabstr_D (TREE_INT_CST_LOW (value));
+	  if (cst_fits_shwi_p (value))
+	    stabstr_D (tree_to_hwi (value));
 	  else
 	    stabstr_O (value);
 
@@ -2516,9 +2465,9 @@ dbxout_expand_expr (tree expr)
 	  return NULL;
 	if (offset != NULL)
 	  {
-	    if (!host_integerp (offset, 0))
+	    if (!tree_fits_shwi_p (offset))
 	      return NULL;
-	    x = adjust_address_nv (x, mode, tree_low_cst (offset, 0));
+	    x = adjust_address_nv (x, mode, tree_to_shwi (offset));
 	  }
 	if (bitpos != 0)
 	  x = adjust_address_nv (x, mode, bitpos / BITS_PER_UNIT);
@@ -2796,7 +2745,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 		/* Do not generate a tag for records of variable size,
 		   since this type can not be properly described in the
 		   DBX format, and it confuses some tools such as objdump.  */
-		&& host_integerp (TYPE_SIZE (type), 1))
+		&& tree_fits_uhwi_p (TYPE_SIZE (type)))
 	      {
 		tree name = TYPE_NAME (type);
 		if (TREE_CODE (name) == TYPE_DECL)
@@ -2912,7 +2861,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	 ??? Why do we skip emitting the type and location in this case?  */
       if (TREE_STATIC (decl) && TREE_READONLY (decl)
 	  && DECL_INITIAL (decl) != 0
-	  && host_integerp (DECL_INITIAL (decl), 0)
+	  && tree_fits_shwi_p (DECL_INITIAL (decl))
 	  && ! TREE_ASM_WRITTEN (decl)
 	  && (DECL_FILE_SCOPE_P (decl)
 	      || TREE_CODE (DECL_CONTEXT (decl)) == BLOCK
@@ -2924,7 +2873,7 @@ dbxout_symbol (tree decl, int local ATTRIBUTE_UNUSED)
 	  if (TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE
 	      || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
 	    {
-	      HOST_WIDE_INT ival = TREE_INT_CST_LOW (DECL_INITIAL (decl));
+	      HOST_WIDE_INT ival = tree_to_hwi (DECL_INITIAL (decl));
 
 	      dbxout_begin_complex_stabs ();
 	      dbxout_symbol_name (decl, NULL, 'c');

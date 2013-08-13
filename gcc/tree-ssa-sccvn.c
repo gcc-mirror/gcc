@@ -654,11 +654,11 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2)
     }
   else if (INTEGRAL_TYPE_P (vr1->type)
 	   && (TYPE_PRECISION (vr1->type)
-	       != TREE_INT_CST_LOW (TYPE_SIZE (vr1->type))))
+	       != tree_to_hwi (TYPE_SIZE (vr1->type))))
     return false;
   else if (INTEGRAL_TYPE_P (vr2->type)
 	   && (TYPE_PRECISION (vr2->type)
-	       != TREE_INT_CST_LOW (TYPE_SIZE (vr2->type))))
+	       != tree_to_hwi (TYPE_SIZE (vr2->type))))
     return false;
 
   i = 0;
@@ -778,8 +778,8 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	case MEM_REF:
 	  /* The base address gets its own vn_reference_op_s structure.  */
 	  temp.op0 = TREE_OPERAND (ref, 1);
-	  if (host_integerp (TREE_OPERAND (ref, 1), 0))
-	    temp.off = TREE_INT_CST_LOW (TREE_OPERAND (ref, 1));
+	  if (tree_fits_shwi_p (TREE_OPERAND (ref, 1)))
+	    temp.off = tree_to_shwi (TREE_OPERAND (ref, 1));
 	  break;
 	case BIT_FIELD_REF:
 	  /* Record bits and position.  */
@@ -799,15 +799,15 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		&& TREE_CODE (this_offset) == INTEGER_CST)
 	      {
 		tree bit_offset = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1));
-		if (TREE_INT_CST_LOW (bit_offset) % BITS_PER_UNIT == 0)
+		if (tree_to_hwi (bit_offset) % BITS_PER_UNIT == 0)
 		  {
-		    double_int off
-		      = tree_to_double_int (this_offset)
-			+ tree_to_double_int (bit_offset)
-			.rshift (BITS_PER_UNIT == 8
-				   ? 3 : exact_log2 (BITS_PER_UNIT));
-		    if (off.fits_shwi ())
-		      temp.off = off.low;
+		    addr_wide_int off
+		      = (addr_wide_int (this_offset)
+			 + addr_wide_int (bit_offset)
+			 .rshiftu (BITS_PER_UNIT == 8
+				   ? 3 : exact_log2 (BITS_PER_UNIT)));
+		    if (off.fits_shwi_p ())
+		      temp.off = off.to_shwi ();
 		  }
 	      }
 	  }
@@ -823,11 +823,11 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      && TREE_CODE (temp.op1) == INTEGER_CST
 	      && TREE_CODE (temp.op2) == INTEGER_CST)
 	    {
-	      double_int off = tree_to_double_int (temp.op0);
-	      off += -tree_to_double_int (temp.op1);
-	      off *= tree_to_double_int (temp.op2);
-	      if (off.fits_shwi ())
-		temp.off = off.low;
+	      addr_wide_int off = temp.op0;
+	      off += -addr_wide_int (temp.op1);
+	      off *= addr_wide_int (temp.op2);
+	      if (off.fits_shwi_p ())
+		temp.off = off.to_shwi();
 	    }
 	  break;
 	case VAR_DECL:
@@ -879,7 +879,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  break;
 	case IMAGPART_EXPR:
 	  /* This is only interesting for its constant offset.  */
-	  temp.off = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (ref)));
+	  temp.off = tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (ref)));
 	  break;
 	default:
 	  gcc_unreachable ();
@@ -932,10 +932,10 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
     }
   if (size_tree != NULL_TREE)
     {
-      if (!host_integerp (size_tree, 1))
+      if (!tree_fits_uhwi_p (size_tree))
 	size = -1;
       else
-	size = TREE_INT_CST_LOW (size_tree);
+	size = tree_to_uhwi (size_tree);
     }
 
   /* Initially, maxsize is the same as the accessed element size.
@@ -991,7 +991,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 
 	/* And now the usual component-reference style ops.  */
 	case BIT_FIELD_REF:
-	  offset += tree_low_cst (op->op1, 0);
+	  offset += tree_to_shwi (op->op1);
 	  break;
 
 	case COMPONENT_REF:
@@ -1002,13 +1002,13 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	       parts manually.  */
 
 	    if (op->op1
-		|| !host_integerp (DECL_FIELD_OFFSET (field), 1))
+		|| !tree_fits_uhwi_p (DECL_FIELD_OFFSET (field)))
 	      max_size = -1;
 	    else
 	      {
-		offset += (TREE_INT_CST_LOW (DECL_FIELD_OFFSET (field))
+		offset += (tree_to_uhwi (DECL_FIELD_OFFSET (field))
 			   * BITS_PER_UNIT);
-		offset += TREE_INT_CST_LOW (DECL_FIELD_BIT_OFFSET (field));
+		offset += tree_to_hwi (DECL_FIELD_BIT_OFFSET (field));
 	      }
 	    break;
 	  }
@@ -1016,15 +1016,15 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	case ARRAY_RANGE_REF:
 	case ARRAY_REF:
 	  /* We recorded the lower bound and the element size.  */
-	  if (!host_integerp (op->op0, 0)
-	      || !host_integerp (op->op1, 0)
-	      || !host_integerp (op->op2, 0))
+	  if (!tree_fits_shwi_p (op->op0)
+	      || !tree_fits_shwi_p (op->op1)
+	      || !tree_fits_shwi_p (op->op2))
 	    max_size = -1;
 	  else
 	    {
-	      HOST_WIDE_INT hindex = TREE_INT_CST_LOW (op->op0);
-	      hindex -= TREE_INT_CST_LOW (op->op1);
-	      hindex *= TREE_INT_CST_LOW (op->op2);
+	      HOST_WIDE_INT hindex = tree_to_shwi (op->op0);
+	      hindex -= tree_to_shwi (op->op1);
+	      hindex *= tree_to_shwi (op->op2);
 	      hindex *= BITS_PER_UNIT;
 	      offset += hindex;
 	    }
@@ -1147,13 +1147,13 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
-      double_int off = tree_to_double_int (mem_op->op0);
-      off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
-      off += double_int::from_shwi (addr_offset);
-      mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
+      addr_wide_int off = addr_wide_int (mem_op->op0)
+	.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+      off += addr_offset;
+      mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
-      if (host_integerp (mem_op->op0, 0))
-	mem_op->off = TREE_INT_CST_LOW (mem_op->op0);
+      if (tree_fits_shwi_p (mem_op->op0))
+	mem_op->off = tree_to_shwi (mem_op->op0);
       else
 	mem_op->off = -1;
     }
@@ -1170,7 +1170,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
   vn_reference_op_t mem_op = &(*ops)[i - 1];
   gimple def_stmt;
   enum tree_code code;
-  double_int off;
+  addr_wide_int off;
 
   def_stmt = SSA_NAME_DEF_STMT (op->op0);
   if (!is_gimple_assign (def_stmt))
@@ -1181,8 +1181,8 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       && code != POINTER_PLUS_EXPR)
     return;
 
-  off = tree_to_double_int (mem_op->op0);
-  off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+  off = addr_wide_int (mem_op->op0)
+    .sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1199,7 +1199,7 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  || TREE_CODE (addr_base) != MEM_REF)
 	return;
 
-      off += double_int::from_shwi (addr_offset);
+      off += addr_offset;
       off += mem_ref_offset (addr_base);
       op->op0 = TREE_OPERAND (addr_base, 0);
     }
@@ -1212,13 +1212,13 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
 	  || TREE_CODE (ptroff) != INTEGER_CST)
 	return;
 
-      off += tree_to_double_int (ptroff);
+      off += ptroff;
       op->op0 = ptr;
     }
 
-  mem_op->op0 = double_int_to_tree (TREE_TYPE (mem_op->op0), off);
-  if (host_integerp (mem_op->op0, 0))
-    mem_op->off = TREE_INT_CST_LOW (mem_op->op0);
+  mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
+  if (tree_fits_shwi_p (mem_op->op0))
+    mem_op->off = tree_to_shwi (mem_op->op0);
   else
     mem_op->off = -1;
   if (TREE_CODE (op->op0) == SSA_NAME)
@@ -1298,7 +1298,7 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	  && compare_tree_int (op->op0, TREE_STRING_LENGTH (arg0->op0)) < 0)
 	return build_int_cst_type (op->type,
 				   (TREE_STRING_POINTER (arg0->op0)
-				    [TREE_INT_CST_LOW (op->op0)]));
+				    [tree_to_hwi (op->op0)]));
     }
 
   return NULL_TREE;
@@ -1370,11 +1370,11 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	       && TREE_CODE (vro->op1) == INTEGER_CST
 	       && TREE_CODE (vro->op2) == INTEGER_CST)
 	{
-	  double_int off = tree_to_double_int (vro->op0);
-	  off += -tree_to_double_int (vro->op1);
-	  off *= tree_to_double_int (vro->op2);
-	  if (off.fits_shwi ())
-	    vro->off = off.low;
+	  addr_wide_int off = vro->op0;
+	  off += -addr_wide_int (vro->op1);
+	  off *= addr_wide_int (vro->op2);
+	  if (off.fits_shwi_p ())
+	    vro->off = off.to_shwi ();
 	}
     }
 
@@ -1582,16 +1582,16 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
   if (is_gimple_reg_type (vr->type)
       && gimple_call_builtin_p (def_stmt, BUILT_IN_MEMSET)
       && integer_zerop (gimple_call_arg (def_stmt, 1))
-      && host_integerp (gimple_call_arg (def_stmt, 2), 1)
+      && tree_fits_uhwi_p (gimple_call_arg (def_stmt, 2))
       && TREE_CODE (gimple_call_arg (def_stmt, 0)) == ADDR_EXPR)
     {
       tree ref2 = TREE_OPERAND (gimple_call_arg (def_stmt, 0), 0);
       tree base2;
       HOST_WIDE_INT offset2, size2, maxsize2;
       base2 = get_ref_base_and_extent (ref2, &offset2, &size2, &maxsize2);
-      size2 = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2)) * 8;
+      size2 = tree_to_uhwi (gimple_call_arg (def_stmt, 2)) * 8;
       if ((unsigned HOST_WIDE_INT)size2 / 8
-	  == TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2))
+	  == tree_to_uhwi (gimple_call_arg (def_stmt, 2))
 	  && maxsize2 != -1
 	  && operand_equal_p (base, base2, 0)
 	  && offset2 <= offset
@@ -1694,7 +1694,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	    {
 	      tree val = NULL_TREE;
 	      HOST_WIDE_INT elsz
-		= TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (TREE_TYPE (rhs1))));
+		= tree_to_hwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (rhs1))));
 	      if (gimple_assign_rhs_code (def_stmt2) == COMPLEX_EXPR)
 		{
 		  if (off == 0)
@@ -1831,7 +1831,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	       || TREE_CODE (gimple_call_arg (def_stmt, 0)) == SSA_NAME)
 	   && (TREE_CODE (gimple_call_arg (def_stmt, 1)) == ADDR_EXPR
 	       || TREE_CODE (gimple_call_arg (def_stmt, 1)) == SSA_NAME)
-	   && host_integerp (gimple_call_arg (def_stmt, 2), 1))
+	   && tree_fits_uhwi_p (gimple_call_arg (def_stmt, 2)))
     {
       tree lhs, rhs;
       ao_ref r;
@@ -1858,10 +1858,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  if (!tem)
 	    return (void *)-1;
 	  if (TREE_CODE (tem) == MEM_REF
-	      && host_integerp (TREE_OPERAND (tem, 1), 1))
+	      && tree_fits_uhwi_p (TREE_OPERAND (tem, 1)))
 	    {
 	      lhs = TREE_OPERAND (tem, 0);
-	      lhs_offset += TREE_INT_CST_LOW (TREE_OPERAND (tem, 1));
+	      lhs_offset += tree_to_uhwi (TREE_OPERAND (tem, 1));
 	    }
 	  else if (DECL_P (tem))
 	    lhs = build_fold_addr_expr (tem);
@@ -1884,10 +1884,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  if (!tem)
 	    return (void *)-1;
 	  if (TREE_CODE (tem) == MEM_REF
-	      && host_integerp (TREE_OPERAND (tem, 1), 1))
+	      && tree_fits_uhwi_p (TREE_OPERAND (tem, 1)))
 	    {
 	      rhs = TREE_OPERAND (tem, 0);
-	      rhs_offset += TREE_INT_CST_LOW (TREE_OPERAND (tem, 1));
+	      rhs_offset += tree_to_uhwi (TREE_OPERAND (tem, 1));
 	    }
 	  else if (DECL_P (tem))
 	    rhs = build_fold_addr_expr (tem);
@@ -1898,14 +1898,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
 	  && TREE_CODE (rhs) != ADDR_EXPR)
 	return (void *)-1;
 
-      copy_size = TREE_INT_CST_LOW (gimple_call_arg (def_stmt, 2));
+      copy_size = tree_to_hwi (gimple_call_arg (def_stmt, 2));
 
       /* The bases of the destination and the references have to agree.  */
       if ((TREE_CODE (base) != MEM_REF
 	   && !DECL_P (base))
 	  || (TREE_CODE (base) == MEM_REF
 	      && (TREE_OPERAND (base, 0) != lhs
-		  || !host_integerp (TREE_OPERAND (base, 1), 1)))
+		  || !tree_fits_uhwi_p (TREE_OPERAND (base, 1))))
 	  || (DECL_P (base)
 	      && (TREE_CODE (lhs) != ADDR_EXPR
 		  || TREE_OPERAND (lhs, 0) != base)))
@@ -1914,7 +1914,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_)
       /* And the access has to be contained within the memcpy destination.  */
       at = offset / BITS_PER_UNIT;
       if (TREE_CODE (base) == MEM_REF)
-	at += TREE_INT_CST_LOW (TREE_OPERAND (base, 1));
+	at += tree_to_hwi (TREE_OPERAND (base, 1));
       if (lhs_offset > at
 	  || lhs_offset + copy_size < at + maxsize / BITS_PER_UNIT)
 	return (void *)-1;
@@ -3217,12 +3217,12 @@ simplify_binary_expression (gimple stmt)
   /* Pointer plus constant can be represented as invariant address.
      Do so to allow further propatation, see also tree forwprop.  */
   if (code == POINTER_PLUS_EXPR
-      && host_integerp (op1, 1)
+      && tree_fits_uhwi_p (op1)
       && TREE_CODE (op0) == ADDR_EXPR
       && is_gimple_min_invariant (op0))
     return build_invariant_address (TREE_TYPE (op0),
 				    TREE_OPERAND (op0, 0),
-				    TREE_INT_CST_LOW (op1));
+				    tree_to_uhwi (op1));
 
   /* Avoid folding if nothing changed.  */
   if (op0 == gimple_assign_rhs1 (stmt)

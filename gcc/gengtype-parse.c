@@ -230,6 +230,17 @@ require_template_declaration (const char *tmpl_name)
   /* Read the comma-separated list of identifiers.  */
   while (token () != '>')
     {
+      if (token () == ENUM)
+	{
+	  advance ();
+	  str = concat (str, "enum ", (char *) 0);
+	  continue;
+	}
+      if (token () == NUM)
+	{
+	  str = concat (str, advance (), (char *) 0);
+	  continue;
+	}
       const char *id = require2 (ID, ',');
       if (id == NULL)
 	id = ",";

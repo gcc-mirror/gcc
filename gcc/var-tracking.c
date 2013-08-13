@@ -3523,6 +3523,23 @@ loc_cmp (rtx x, rtx y)
       default:
 	gcc_unreachable ();
       }
+  if (CONST_WIDE_INT_P (x))
+    {
+      /* Compare the vector length first.  */
+      if (CONST_WIDE_INT_NUNITS (x) >= CONST_WIDE_INT_NUNITS (y))
+	return 1;
+      else if (CONST_WIDE_INT_NUNITS (x) < CONST_WIDE_INT_NUNITS (y))
+	return -1;
+
+      /* Compare the vectors elements.  */;
+      for (j = CONST_WIDE_INT_NUNITS (x) - 1; j >= 0 ; j--)
+	{
+	  if (CONST_WIDE_INT_ELT (x, j) < CONST_WIDE_INT_ELT (y, j))
+	    return -1;
+	  if (CONST_WIDE_INT_ELT (x, j) > CONST_WIDE_INT_ELT (y, j))
+	    return 1;
+	}
+    }
 
   return 0;
 }
@@ -6269,9 +6286,9 @@ prepare_call_arguments (basic_block bb, rtx insn)
 			  && DECL_INITIAL (SYMBOL_REF_DECL (l->loc)))
 			{
 			  initial = DECL_INITIAL (SYMBOL_REF_DECL (l->loc));
-			  if (host_integerp (initial, 0))
+			  if (tree_fits_shwi_p (initial))
 			    {
-			      item = GEN_INT (tree_low_cst (initial, 0));
+			      item = GEN_INT (tree_to_shwi (initial));
 			      item = gen_rtx_CONCAT (indmode, mem, item);
 			      call_arguments
 				= gen_rtx_EXPR_LIST (VOIDmode, item,
@@ -6350,7 +6367,7 @@ prepare_call_arguments (basic_block bb, rtx insn)
 	= TYPE_MODE (TREE_TYPE (OBJ_TYPE_REF_EXPR (obj_type_ref)));
       rtx clobbered = gen_rtx_MEM (mode, this_arg);
       HOST_WIDE_INT token
-	= tree_low_cst (OBJ_TYPE_REF_TOKEN (obj_type_ref), 0);
+	= tree_to_shwi (OBJ_TYPE_REF_TOKEN (obj_type_ref));
       if (token)
 	clobbered = plus_constant (mode, clobbered,
 				   token * GET_MODE_SIZE (mode));
@@ -8648,7 +8665,7 @@ emit_note_insn_var_location (variable_def **varp, emit_note_data *data)
       ++n_var_parts;
     }
   type_size_unit = TYPE_SIZE_UNIT (TREE_TYPE (decl));
-  if ((unsigned HOST_WIDE_INT) last_limit < TREE_INT_CST_LOW (type_size_unit))
+  if ((unsigned HOST_WIDE_INT) last_limit < tree_to_uhwi (type_size_unit))
     complete = false;
 
   if (! flag_var_tracking_uninit)

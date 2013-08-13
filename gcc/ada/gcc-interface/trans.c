@@ -4196,7 +4196,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	    gnu_actual
 	      = unchecked_convert (DECL_ARG_TYPE (gnu_formal),
 				   convert (gnat_type_for_size
-					    (TREE_INT_CST_LOW (gnu_size), 1),
+					    (tree_to_hwi (gnu_size), 1),
 					    integer_zero_node),
 				   false);
 	  else

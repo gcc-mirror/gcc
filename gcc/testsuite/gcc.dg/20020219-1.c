@@ -1,5 +1,5 @@
 /* PR c/4389
-   This testcase failed because host_integerp (x, 0) was returning
+   This testcase failed because tree_fits_shwi_p (x) was returning
    1 even for constants bigger than 2^31.  It fails under under hppa
    hpux without -mdisable-indexing because the pointer x - 1 is used
    as the base address of an indexed load.  Because the struct A is not

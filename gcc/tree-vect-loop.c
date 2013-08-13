@@ -1241,7 +1241,7 @@ vect_analyze_loop_form (struct loop *loop)
 	  dump_generic_expr (MSG_NOTE, TDF_DETAILS, number_of_iterations);
         }
     }
-  else if (TREE_INT_CST_LOW (number_of_iterations) == 0)
+  else if (tree_to_hwi (number_of_iterations) == 0)
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3046,10 +3046,10 @@ vect_model_reduction_cost (stmt_vec_info stmt_info, enum tree_code reduc_code,
 	}
       else
 	{
-	  int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
+	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
 	  tree bitsize =
 	    TYPE_SIZE (TREE_TYPE (gimple_assign_lhs (orig_stmt)));
-	  int element_bitsize = tree_low_cst (bitsize, 1);
+	  int element_bitsize = tree_to_uhwi (bitsize);
 	  int nelements = vec_size_in_bits / element_bitsize;
 
 	  optab = optab_for_tree_code (code, vectype, optab_default);
@@ -3558,7 +3558,7 @@ get_initial_def_for_reduction (gimple stmt, tree init_val,
       if (SCALAR_FLOAT_TYPE_P (scalar_type))
         init_value = build_real (scalar_type, TREE_REAL_CST (init_val));
       else
-        init_value = build_int_cst (scalar_type, TREE_INT_CST_LOW (init_val));
+        init_value = build_int_cst (scalar_type, tree_to_hwi (init_val));
     }
   else
     init_value = init_val;
@@ -4058,8 +4058,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
       enum tree_code shift_code = ERROR_MARK;
       bool have_whole_vector_shift = true;
       int bit_offset;
-      int element_bitsize = tree_low_cst (bitsize, 1);
-      int vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
+      int element_bitsize = tree_to_uhwi (bitsize);
+      int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
       tree vec_temp;
 
       if (optab_handler (vec_shr_optab, mode) != CODE_FOR_nothing)
@@ -4136,7 +4136,7 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple stmt,
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using scalar code. ");
 
-          vec_size_in_bits = tree_low_cst (TYPE_SIZE (vectype), 1);
+          vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype));
           FOR_EACH_VEC_ELT (new_phis, i, new_phi)
             {
               if (gimple_code (new_phi) == GIMPLE_PHI)
@@ -5815,19 +5815,17 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vectorization_factor),
 		      expected_iterations / vectorization_factor);
   loop->nb_iterations_upper_bound
-    = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (vectorization_factor),
-					    FLOOR_DIV_EXPR);
+    = loop->nb_iterations_upper_bound.udiv_floor (vectorization_factor);
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-      && loop->nb_iterations_upper_bound != double_int_zero)
-    loop->nb_iterations_upper_bound = loop->nb_iterations_upper_bound - double_int_one;
+      && !loop->nb_iterations_upper_bound.zero_p ())
+    loop->nb_iterations_upper_bound = loop->nb_iterations_upper_bound - 1;
   if (loop->any_estimate)
     {
       loop->nb_iterations_estimate
-        = loop->nb_iterations_estimate.udiv (double_int::from_uhwi (vectorization_factor),
-					     FLOOR_DIV_EXPR);
+        = loop->nb_iterations_estimate.udiv_floor (vectorization_factor);
        if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	   && loop->nb_iterations_estimate != double_int_zero)
-	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - double_int_one;
+	   && !loop->nb_iterations_estimate.zero_p ())
+	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - 1;
     }
 
   if (dump_enabled_p ())

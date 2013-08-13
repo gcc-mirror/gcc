@@ -393,12 +393,12 @@ encode_array (tree type, int curtype, int format)
 	 array.  */
       sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
     }
-  else if (TREE_INT_CST_LOW (TYPE_SIZE (array_of)) == 0)
+  else if (tree_to_hwi (TYPE_SIZE (array_of)) == 0)
    sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC, (HOST_WIDE_INT)0);
   else
     sprintf (buffer, "[" HOST_WIDE_INT_PRINT_DEC,
-	     TREE_INT_CST_LOW (an_int_cst)
-	      / TREE_INT_CST_LOW (TYPE_SIZE (array_of)));
+	     tree_to_hwi (an_int_cst)
+	      / tree_to_hwi (TYPE_SIZE (array_of)));
 
   obstack_grow (&util_obstack, buffer, strlen (buffer));
   encode_type (array_of, curtype, format);
@@ -425,7 +425,7 @@ encode_vector (tree type, int curtype, int format)
   sprintf (buffer, "![" HOST_WIDE_INT_PRINT_DEC ",%d",
 	   /* We want to compute the equivalent of sizeof (<vector>).
 	      Code inspired by c_sizeof_or_alignof_type.  */
-	   ((TREE_INT_CST_LOW (TYPE_SIZE_UNIT (type))
+	   ((tree_to_hwi (TYPE_SIZE_UNIT (type))
 	     / (TYPE_PRECISION (char_type_node) / BITS_PER_UNIT))),
 	   /* We want to compute the equivalent of __alignof__
 	      (<vector>).  Code inspired by
@@ -820,7 +820,7 @@ encode_field (tree field_decl, int curtype, int format)
      between GNU and NeXT runtimes.  */
   if (DECL_BIT_FIELD_TYPE (field_decl))
     {
-      int size = tree_low_cst (DECL_SIZE (field_decl), 1);
+      int size = tree_to_uhwi (DECL_SIZE (field_decl));
 
       if (flag_next_runtime)
 	encode_next_bitfield (size);

@@ -1199,7 +1199,7 @@ generate_v1_objc_protocol_extension (tree proto_interface,
     build_v1_objc_protocol_extension_template ();
 
   /* uint32_t size */
-  size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_protocol_extension_template));
+  size = tree_to_hwi (TYPE_SIZE_UNIT (objc_protocol_extension_template));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, size));
 
   /* Try for meaningful diagnostics.  */
@@ -1343,7 +1343,7 @@ generate_v1_property_table (tree context, tree klass_ctxt)
 						  is_proto ? context
 							   : klass_ctxt);
 
-  init_val = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_v1_property_template));
+  init_val = tree_to_hwi (TYPE_SIZE_UNIT (objc_v1_property_template));
   if (is_proto)
     snprintf (buf, BUFSIZE, "_OBJC_ProtocolPropList_%s",
 	      IDENTIFIER_POINTER (PROTOCOL_NAME (context)));
@@ -1723,7 +1723,7 @@ build_v1_category_initializer (tree type, tree cat_name, tree class_name,
 
   if (flag_objc_abi >= 1)
     {
-      int val = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_category_template));
+      int val = tree_to_hwi (TYPE_SIZE_UNIT (objc_category_template));
       expr = build_int_cst (NULL_TREE, val);
       CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, expr);
       ltyp = objc_prop_list_ptr;
@@ -1825,7 +1825,7 @@ generate_objc_class_ext (tree property_list, tree context)
     build_objc_class_ext_template ();
 
   /* uint32_t size */
-  size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_class_ext_template));
+  size = tree_to_hwi (TYPE_SIZE_UNIT (objc_class_ext_template));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, size));
 
   ltyp = const_string_type_node;

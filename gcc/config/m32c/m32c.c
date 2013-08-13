@@ -2935,8 +2935,8 @@ function_vector_handler (tree * node ATTRIBUTE_UNUSED,
                 name);
       *no_add_attrs = true;
     }
-  else if (TREE_INT_CST_LOW (TREE_VALUE (args)) < 18
-           || TREE_INT_CST_LOW (TREE_VALUE (args)) > 255)
+  else if (tree_to_hwi (TREE_VALUE (args)) < 18
+           || tree_to_hwi (TREE_VALUE (args)) > 255)
     {
       /* The argument value must be between 18 to 255.  */
       warning (OPT_Wattributes,
@@ -2968,7 +2968,7 @@ current_function_special_page_vector (rtx x)
         {
           if (is_attribute_p ("function_vector", TREE_PURPOSE (list)))
             {
-              num = TREE_INT_CST_LOW (TREE_VALUE (TREE_VALUE (list)));
+              num = tree_to_hwi (TREE_VALUE (TREE_VALUE (list)));
               return num;
             }
 

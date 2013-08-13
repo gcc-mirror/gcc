@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cp-tree.h"
 #include "flags.h"
 #include "diagnostic-core.h"
+#include "wide-int.h"
 
 static tree
 process_init_constructor (tree type, tree init, tsubst_flags_t complain);
@@ -979,7 +980,7 @@ digest_init_r (tree type, tree init, bool nested, int flags,
 	    }
 	  if (TYPE_DOMAIN (type) != 0 && TREE_CONSTANT (TYPE_SIZE (type)))
 	    {
-	      int size = TREE_INT_CST_LOW (TYPE_SIZE (type));
+	      int size = tree_to_hwi (TYPE_SIZE (type));
 	      size = (size + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
 	      /* In C it is ok to subtract 1 from the length of the string
 		 because it's ok to ignore the terminating null char that is
@@ -1118,12 +1119,11 @@ process_init_constructor_array (tree type, tree init,
     {
       tree domain = TYPE_DOMAIN (type);
       if (domain && TREE_CONSTANT (TYPE_MAX_VALUE (domain)))
-	len = (tree_to_double_int (TYPE_MAX_VALUE (domain))
-	       - tree_to_double_int (TYPE_MIN_VALUE (domain))
-	       + double_int_one)
-	      .ext (TYPE_PRECISION (TREE_TYPE (domain)),
-		    TYPE_UNSIGNED (TREE_TYPE (domain)))
-	      .low;
+	len = (addr_wide_int (TYPE_MAX_VALUE (domain))
+	       - TYPE_MIN_VALUE (domain) + 1)
+	  .ext (TYPE_PRECISION (TREE_TYPE (domain)),
+		TYPE_SIGN (TREE_TYPE (domain)))
+	  .to_uhwi ();
       else
 	unbounded = true;  /* Take as many as there are.  */
     }

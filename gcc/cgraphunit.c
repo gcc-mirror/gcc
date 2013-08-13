@@ -1632,7 +1632,7 @@ expand_function (struct cgraph_node *node)
 				   larger_than_size))
 	{
 	  unsigned int size_as_int
-	    = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (ret_type));
+	    = tree_to_hwi (TYPE_SIZE_UNIT (ret_type));
 
 	  if (compare_tree_int (TYPE_SIZE_UNIT (ret_type), size_as_int) == 0)
 	    warning (OPT_Wlarger_than_, "size of return value of %q+D is %u bytes",

@@ -695,7 +695,7 @@ gimple_add_tmp_var (tree tmp)
   /* Later processing assumes that the object size is constant, which might
      not be true at this point.  Force the use of a constant upper bound in
      this case.  */
-  if (!host_integerp (DECL_SIZE_UNIT (tmp), 1))
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (tmp)))
     force_constant_size (tmp);
 
   DECL_CONTEXT (tmp) = current_function_decl;
@@ -1711,11 +1711,7 @@ preprocess_case_label_vec_for_gimple (vec<tree> labels,
 		  low = CASE_HIGH (labels[i - 1]);
 		  if (!low)
 		    low = CASE_LOW (labels[i - 1]);
-		  if ((TREE_INT_CST_LOW (low) + 1
-		       != TREE_INT_CST_LOW (high))
-		      || (TREE_INT_CST_HIGH (low)
-			  + (TREE_INT_CST_LOW (high) == 0)
-			  != TREE_INT_CST_HIGH (high)))
+		  if ((wide_int (low) + 1) != high)
 		    break;
 		}
 	      if (i == len)
@@ -4320,12 +4316,12 @@ gimple_fold_indirect_ref (tree t)
       if (TREE_CODE (addr) == ADDR_EXPR
 	  && TREE_CODE (TREE_TYPE (addrtype)) == VECTOR_TYPE
 	  && useless_type_conversion_p (type, TREE_TYPE (TREE_TYPE (addrtype)))
-	  && host_integerp (off, 1))
+	  && tree_fits_uhwi_p (off))
 	{
-          unsigned HOST_WIDE_INT offset = tree_low_cst (off, 1);
+          unsigned HOST_WIDE_INT offset = tree_to_uhwi (off);
           tree part_width = TYPE_SIZE (type);
           unsigned HOST_WIDE_INT part_widthi
-            = tree_low_cst (part_width, 0) / BITS_PER_UNIT;
+            = tree_to_shwi (part_width) / BITS_PER_UNIT;
           unsigned HOST_WIDE_INT indexi = offset * BITS_PER_UNIT;
           tree index = bitsize_int (indexi);
           if (offset / part_widthi
@@ -4349,9 +4345,7 @@ gimple_fold_indirect_ref (tree t)
 	  || DECL_P (TREE_OPERAND (addr, 0)))
 	return fold_build2 (MEM_REF, type,
 			    addr,
-			    build_int_cst_wide (ptype,
-						TREE_INT_CST_LOW (off),
-						TREE_INT_CST_HIGH (off)));
+			    wide_int_to_tree (ptype, off));
     }
 
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */

@@ -124,6 +124,9 @@ rtx cc0_rtx;
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
      htab_t const_int_htab;
 
+static GTY ((if_marked ("ggc_marked_p"), param_is (struct rtx_def)))
+     htab_t const_wide_int_htab;
+
 /* A hash table storing memory attribute structures.  */
 static GTY ((if_marked ("ggc_marked_p"), param_is (struct mem_attrs)))
      htab_t mem_attrs_htab;
@@ -149,6 +152,11 @@ static void set_used_decls (tree);
 static void mark_label_nuses (rtx);
 static hashval_t const_int_htab_hash (const void *);
 static int const_int_htab_eq (const void *, const void *);
+#if TARGET_SUPPORTS_WIDE_INT
+static hashval_t const_wide_int_htab_hash (const void *);
+static int const_wide_int_htab_eq (const void *, const void *);
+static rtx lookup_const_wide_int (rtx);
+#endif
 static hashval_t const_double_htab_hash (const void *);
 static int const_double_htab_eq (const void *, const void *);
 static rtx lookup_const_double (rtx);
@@ -185,6 +193,43 @@ const_int_htab_eq (const void *x, const void *y)
   return (INTVAL ((const_rtx) x) == *((const HOST_WIDE_INT *) y));
 }
 
+#if TARGET_SUPPORTS_WIDE_INT
+/* Returns a hash code for X (which is a really a CONST_WIDE_INT).  */
+
+static hashval_t
+const_wide_int_htab_hash (const void *x)
+{
+  int i;
+  HOST_WIDE_INT hash = 0;
+  const_rtx xr = (const_rtx) x;
+
+  for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
+    hash += CONST_WIDE_INT_ELT (xr, i);
+
+  return (hashval_t) hash;
+}
+
+/* Returns nonzero if the value represented by X (which is really a
+   CONST_WIDE_INT) is the same as that given by Y (which is really a
+   CONST_WIDE_INT).  */
+
+static int
+const_wide_int_htab_eq (const void *x, const void *y)
+{
+  int i;
+  const_rtx xr = (const_rtx)x;
+  const_rtx yr = (const_rtx)y;
+  if (CONST_WIDE_INT_NUNITS (xr) != CONST_WIDE_INT_NUNITS (yr))
+    return 0;
+
+  for (i = 0; i < CONST_WIDE_INT_NUNITS (xr); i++)
+    if (CONST_WIDE_INT_ELT (xr, i) != CONST_WIDE_INT_ELT (yr, i))
+      return 0;
+  
+  return 1;
+}
+#endif
+
 /* Returns a hash code for X (which is really a CONST_DOUBLE).  */
 static hashval_t
 const_double_htab_hash (const void *x)
@@ -192,7 +237,7 @@ const_double_htab_hash (const void *x)
   const_rtx const value = (const_rtx) x;
   hashval_t h;
 
-  if (GET_MODE (value) == VOIDmode)
+  if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (value) == VOIDmode)
     h = CONST_DOUBLE_LOW (value) ^ CONST_DOUBLE_HIGH (value);
   else
     {
@@ -212,7 +257,7 @@ const_double_htab_eq (const void *x, const void *y)
 
   if (GET_MODE (a) != GET_MODE (b))
     return 0;
-  if (GET_MODE (a) == VOIDmode)
+  if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (a) == VOIDmode)
     return (CONST_DOUBLE_LOW (a) == CONST_DOUBLE_LOW (b)
 	    && CONST_DOUBLE_HIGH (a) == CONST_DOUBLE_HIGH (b));
   else
@@ -478,6 +523,7 @@ const_fixed_from_fixed_value (FIXED_VALUE_TYPE value, enum machine_mode mode)
   return lookup_const_fixed (fixed);
 }
 
+#if TARGET_SUPPORTS_WIDE_INT == 0
 /* Constructs double_int from rtx CST.  */
 
 double_int
@@ -497,17 +543,70 @@ rtx_to_double_int (const_rtx cst)
   
   return r;
 }
+#endif
 
+#if TARGET_SUPPORTS_WIDE_INT
+/* Determine whether WIDE_INT, already exists in the hash table.  If
+   so, return its counterpart; otherwise add it to the hash table and
+   return it.  */
 
-/* Return a CONST_DOUBLE or CONST_INT for a value specified as
-   a double_int.  */
-
-rtx
-immed_double_int_const (double_int i, enum machine_mode mode)
+static rtx
+lookup_const_wide_int (rtx wint)
 {
-  return immed_double_const (i.low, i.high, mode);
+  void **slot = htab_find_slot (const_wide_int_htab, wint, INSERT);
+  if (*slot == 0)
+    *slot = wint;
+
+  return (rtx) *slot;
+}
+#endif
+
+/* V contains a wide_int.  A CONST_INT or CONST_WIDE_INT (if
+   TARGET_SUPPORTS_WIDE_INT is defined) or CONST_DOUBLE if
+   TARGET_SUPPORTS_WIDE_INT is not defined is produced based on the
+   number of HOST_WIDE_INTs that are necessary to represent the value
+   in compact form.  */
+rtx
+immed_wide_int_const (const wide_int &v, enum machine_mode mode)
+{
+  unsigned int len = v.get_len ();
+  unsigned int prec = GET_MODE_PRECISION (mode);
+
+  /* Allow truncation but not extension since we do not know if the
+     number is signed or unsigned.  */
+  gcc_assert (prec <= v.get_precision ());
+
+  if (len < 2 || prec <= HOST_BITS_PER_WIDE_INT)
+    return gen_int_mode (v.elt (0), mode);
+
+#if TARGET_SUPPORTS_WIDE_INT
+  {
+    unsigned int i;
+    rtx value;
+    unsigned int blocks_needed 
+      = (prec + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT;
+
+    if (len > blocks_needed)
+      len = blocks_needed;
+
+    value = const_wide_int_alloc (len);
+
+    /* It is so tempting to just put the mode in here.  Must control
+       myself ... */
+    PUT_MODE (value, VOIDmode);
+    HWI_PUT_NUM_ELEM (CONST_WIDE_INT_VEC (value), len);
+
+    for (i = 0; i < len; i++)
+      CONST_WIDE_INT_ELT (value, i) = v.elt (i);
+
+    return lookup_const_wide_int (value);
+  }
+#else
+  return immed_double_const (v.elt (0), v.elt (1), mode);
+#endif
 }
 
+#if TARGET_SUPPORTS_WIDE_INT == 0
 /* Return a CONST_DOUBLE or CONST_INT for a value specified as a pair
    of ints: I0 is the low-order word and I1 is the high-order word.
    For values that are larger than HOST_BITS_PER_DOUBLE_INT, the
@@ -559,6 +658,7 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, enum machine_mode mode)
 
   return lookup_const_double (value);
 }
+#endif
 
 rtx
 gen_rtx_REG (enum machine_mode mode, unsigned int regno)
@@ -1540,12 +1640,12 @@ get_mem_align_offset (rtx mem, unsigned int align)
 	  tree bit_offset = DECL_FIELD_BIT_OFFSET (field);
 
 	  if (!byte_offset
-	      || !host_integerp (byte_offset, 1)
-	      || !host_integerp (bit_offset, 1))
+	      || !tree_fits_uhwi_p (byte_offset)
+	      || !tree_fits_uhwi_p (bit_offset))
 	    return -1;
 
-	  offset += tree_low_cst (byte_offset, 1);
-	  offset += tree_low_cst (bit_offset, 1) / BITS_PER_UNIT;
+	  offset += tree_to_uhwi (byte_offset);
+	  offset += tree_to_uhwi (bit_offset) / BITS_PER_UNIT;
 
 	  if (inner == NULL_TREE)
 	    {
@@ -1769,10 +1869,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	    {
 	      attrs.expr = t2;
 	      attrs.offset_known_p = false;
-	      if (host_integerp (off_tree, 1))
+	      if (tree_fits_uhwi_p (off_tree))
 		{
 		  attrs.offset_known_p = true;
-		  attrs.offset = tree_low_cst (off_tree, 1);
+		  attrs.offset = tree_to_uhwi (off_tree);
 		  apply_bitpos = bitpos;
 		}
 	    }
@@ -1799,10 +1899,10 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
       attrs.align = MAX (attrs.align, obj_align);
     }
 
-  if (host_integerp (new_size, 1))
+  if (tree_fits_uhwi_p (new_size))
     {
       attrs.size_known_p = true;
-      attrs.size = tree_low_cst (new_size, 1);
+      attrs.size = tree_to_uhwi (new_size);
     }
 
   /* If we modified OFFSET based on T, then subtract the outstanding
@@ -2272,15 +2372,15 @@ widen_memory_access (rtx memref, enum machine_mode mode, HOST_WIDE_INT offset)
 	      && attrs.offset >= 0)
 	    break;
 
-	  if (! host_integerp (offset, 1))
+	  if (! tree_fits_uhwi_p (offset))
 	    {
 	      attrs.expr = NULL_TREE;
 	      break;
 	    }
 
 	  attrs.expr = TREE_OPERAND (attrs.expr, 0);
-	  attrs.offset += tree_low_cst (offset, 1);
-	  attrs.offset += (tree_low_cst (DECL_FIELD_BIT_OFFSET (field), 1)
+	  attrs.offset += tree_to_uhwi (offset);
+	  attrs.offset += (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (field))
 			   / BITS_PER_UNIT);
 	}
       /* Similarly for the decl.  */
@@ -5647,11 +5747,15 @@ init_emit_once (void)
   enum machine_mode mode;
   enum machine_mode double_mode;
 
-  /* Initialize the CONST_INT, CONST_DOUBLE, CONST_FIXED, and memory attribute
-     hash tables.  */
+  /* Initialize the CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
+     CONST_FIXED, and memory attribute hash tables.  */
   const_int_htab = htab_create_ggc (37, const_int_htab_hash,
 				    const_int_htab_eq, NULL);
 
+#if TARGET_SUPPORTS_WIDE_INT
+  const_wide_int_htab = htab_create_ggc (37, const_wide_int_htab_hash,
+					 const_wide_int_htab_eq, NULL);
+#endif
   const_double_htab = htab_create_ggc (37, const_double_htab_hash,
 				       const_double_htab_eq, NULL);
 
@@ -5715,9 +5819,9 @@ init_emit_once (void)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  REAL_VALUE_FROM_INT (dconst0,   0,  0, double_mode);
-  REAL_VALUE_FROM_INT (dconst1,   1,  0, double_mode);
-  REAL_VALUE_FROM_INT (dconst2,   2,  0, double_mode);
+  REAL_VALUE_FROM_INT (dconst0,   0, double_mode);
+  REAL_VALUE_FROM_INT (dconst1,   1, double_mode);
+  REAL_VALUE_FROM_INT (dconst2,   2, double_mode);
 
   dconstm1 = dconst1;
   dconstm1.sign = 1;

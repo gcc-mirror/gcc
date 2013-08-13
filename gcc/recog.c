@@ -1145,7 +1145,7 @@ immediate_operand (rtx op, enum machine_mode mode)
 					    : mode, op));
 }
 
-/* Returns 1 if OP is an operand that is a CONST_INT.  */
+/* Returns 1 if OP is an operand that is a CONST_INT of mode MODE.  */
 
 int
 const_int_operand (rtx op, enum machine_mode mode)
@@ -1160,8 +1160,64 @@ const_int_operand (rtx op, enum machine_mode mode)
   return 1;
 }
 
+#if TARGET_SUPPORTS_WIDE_INT
+/* Returns 1 if OP is an operand that is a CONST_INT or CONST_WIDE_INT
+   of mode MODE.  */
+int
+const_scalar_int_operand (rtx op, enum machine_mode mode)
+{
+  if (!CONST_SCALAR_INT_P (op))
+    return 0;
+
+  if (CONST_INT_P (op))
+    return const_int_operand (op, mode);
+
+  if (mode != VOIDmode)
+    {
+      int prec = GET_MODE_PRECISION (mode);
+      int bitsize = GET_MODE_BITSIZE (mode);
+      
+      if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
+	return 0;
+      
+      if (prec == bitsize)
+	return 1;
+      else
+	{
+	  /* Multiword partial int.  */
+	  HOST_WIDE_INT x 
+	    = CONST_WIDE_INT_ELT (op, CONST_WIDE_INT_NUNITS (op) - 1);
+	  return (wide_int::sext (x, prec & (HOST_BITS_PER_WIDE_INT - 1))
+		  == x);
+	}
+    }
+  return 1;
+}
+
+/* Returns 1 if OP is an operand that is a CONST_WIDE_INT of mode
+   MODE.  This most likely is not as useful as
+   const_scalar_int_operand, but is here for consistancy.  */
+int
+const_wide_int_operand (rtx op, enum machine_mode mode)
+{
+  if (!CONST_WIDE_INT_P (op))
+    return 0;
+
+  return const_scalar_int_operand (op, mode);
+}
+
 /* Returns 1 if OP is an operand that is a constant integer or constant
-   floating-point number.  */
+   floating-point number of MODE.  */
+
+int
+const_double_operand (rtx op, enum machine_mode mode)
+{
+  return (GET_CODE (op) == CONST_DOUBLE)
+	  && (GET_MODE (op) == mode || mode == VOIDmode);
+}
+#else
+/* Returns 1 if OP is an operand that is a constant integer or constant
+   floating-point number of MODE.  */
 
 int
 const_double_operand (rtx op, enum machine_mode mode)
@@ -1177,8 +1233,9 @@ const_double_operand (rtx op, enum machine_mode mode)
 	  && (mode == VOIDmode || GET_MODE (op) == mode
 	      || GET_MODE (op) == VOIDmode));
 }
-
-/* Return 1 if OP is a general operand that is not an immediate operand.  */
+#endif
+/* Return 1 if OP is a general operand that is not an immediate
+   operand of mode MODE.  */
 
 int
 nonimmediate_operand (rtx op, enum machine_mode mode)
@@ -1186,7 +1243,8 @@ nonimmediate_operand (rtx op, enum machine_mode mode)
   return (general_operand (op, mode) && ! CONSTANT_P (op));
 }
 
-/* Return 1 if OP is a register reference or immediate value of mode MODE.  */
+/* Return 1 if OP is a register reference or immediate value of mode
+   MODE.  */
 
 int
 nonmemory_operand (rtx op, enum machine_mode mode)

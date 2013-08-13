@@ -612,6 +612,12 @@ print_rtx (const_rtx in_rtx)
 	  fprintf (outfile, " [%s]", s);
 	}
       break;
+
+    case CONST_WIDE_INT:
+      if (! flag_simple)
+	fprintf (outfile, " ");
+      hwivec_output_hex (outfile, CONST_WIDE_INT_VEC (in_rtx));
+      break;
 #endif
 
     case CODE_LABEL:

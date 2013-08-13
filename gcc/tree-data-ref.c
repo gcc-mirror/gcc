@@ -772,8 +772,8 @@ dr_analyze_innermost (struct data_reference *dr, struct loop *nest)
     {
       if (!integer_zerop (TREE_OPERAND (base, 1)))
 	{
-	  double_int moff = mem_ref_offset (base);
-	  tree mofft = double_int_to_tree (sizetype, moff);
+	  addr_wide_int moff = mem_ref_offset (base);
+	  tree mofft = wide_int_to_tree (sizetype, moff);
 	  if (!poffset)
 	    poffset = mofft;
 	  else
@@ -1369,10 +1369,10 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
   if (!loop_nest)
     {
       aff_tree off1, off2;
-      double_int size1, size2;
+      max_wide_int size1, size2;
       get_inner_reference_aff (DR_REF (a), &off1, &size1);
       get_inner_reference_aff (DR_REF (b), &off2, &size2);
-      aff_combination_scale (&off1, double_int_minus_one);
+      aff_combination_scale (&off1, -1);
       aff_combination_add (&off2, &off1);
       if (aff_comb_cannot_overlap_p (&off2, size1, size2))
 	return false;
@@ -1747,15 +1747,15 @@ analyze_ziv_subscript (tree chrec_a,
 static tree
 max_stmt_executions_tree (struct loop *loop)
 {
-  double_int nit;
+  max_wide_int nit;
 
   if (!max_stmt_executions (loop, &nit))
     return chrec_dont_know;
 
-  if (!double_int_fits_to_tree_p (unsigned_type_node, nit))
+  if (!nit.fits_to_tree_p (unsigned_type_node))
     return chrec_dont_know;
 
-  return double_int_to_tree (unsigned_type_node, nit);
+  return wide_int_to_tree (unsigned_type_node, nit);
 }
 
 /* Determine whether the CHREC is always positive/negative.  If the expression
@@ -2833,16 +2833,16 @@ gcd_of_steps_may_divide_p (const_tree chrec, const_tree cst)
   HOST_WIDE_INT cd = 0, val;
   tree step;
 
-  if (!host_integerp (cst, 0))
+  if (!tree_fits_shwi_p (cst))
     return true;
-  val = tree_low_cst (cst, 0);
+  val = tree_to_shwi (cst);
 
   while (TREE_CODE (chrec) == POLYNOMIAL_CHREC)
     {
       step = CHREC_RIGHT (chrec);
-      if (!host_integerp (step, 0))
+      if (!tree_fits_shwi_p (step))
 	return true;
-      cd = gcd (cd, tree_low_cst (step, 0));
+      cd = gcd (cd, tree_to_shwi (step));
       chrec = CHREC_LEFT (chrec);
     }
 

@@ -142,28 +142,27 @@ avr_log_set_caller_f (const char *caller)
    Splits last digit of *CST (taken as unsigned) in BASE and returns it.  */
 
 static unsigned
-avr_double_int_pop_digit (double_int *cst, unsigned base)
+avr_wide_int_pop_digit (wide_int *cst, unsigned base)
 {
-  double_int drem;
+  wide_int wrem;
 
-  *cst = cst->udivmod (double_int::from_uhwi (base), (int) FLOOR_DIV_EXPR,
-                       &drem);
+  *cst = cst->udivmod_floor (base, &wrem);
 
-  return (unsigned) drem.to_uhwi();
+  return (unsigned) wrem.to_uhwi();
 }
 
 
 /* Dump VAL as hex value to FILE.  */
 
 static void
-avr_dump_double_int_hex (FILE *file, double_int val)
+avr_dump_wide_int_hex (FILE *file, wide_int val)
 {
   unsigned digit[4];
 
-  digit[0] = avr_double_int_pop_digit (&val, 1 << 16);
-  digit[1] = avr_double_int_pop_digit (&val, 1 << 16);
-  digit[2] = avr_double_int_pop_digit (&val, 1 << 16);
-  digit[3] = avr_double_int_pop_digit (&val, 1 << 16);
+  digit[0] = avr_wide_int_pop_digit (&val, 1 << 16);
+  digit[1] = avr_wide_int_pop_digit (&val, 1 << 16);
+  digit[2] = avr_wide_int_pop_digit (&val, 1 << 16);
+  digit[3] = avr_wide_int_pop_digit (&val, 1 << 16);
 
   fprintf (file, "0x");
 
@@ -232,7 +231,7 @@ avr_log_vadump (FILE *file, const char *fmt, va_list ap)
               break;
 
             case 'D':
-              dump_double_int (file, va_arg (ap, double_int), false);
+	      dump_double_int (file, va_arg (ap, double_int), false);
               break;
 
             case 'X':

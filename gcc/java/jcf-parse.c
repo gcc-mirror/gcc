@@ -40,6 +40,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "cgraph.h"
 #include "bitmap.h"
 #include "target.h"
+#include "wide-int.h"
 
 #ifdef HAVE_LOCALE_H
 #include <locale.h>
@@ -1039,14 +1040,14 @@ get_constant (JCF *jcf, int index)
     case CONSTANT_Long:
       {
 	unsigned HOST_WIDE_INT num;
-	double_int val;
+	wide_int val;
 
 	num = JPOOL_UINT (jcf, index);
-	val = double_int::from_uhwi (num).llshift (32, 64);
+	val = wide_int (num).sforce_to_size (32).lshift_widen (32, 64);
 	num = JPOOL_UINT (jcf, index + 1);
-	val |= double_int::from_uhwi (num);
+	val |= wide_int (num);
 
-	value = double_int_to_tree (long_type_node, val);
+	value = wide_int_to_tree (long_type_node, val);
 	break;
       }
 

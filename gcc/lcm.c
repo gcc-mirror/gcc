@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "sbitmap.h"
 #include "dumpfile.h"
 
+#define LCM_DEBUG_INFO 1
 /* Edge based LCM routines.  */
 static void compute_antinout_edge (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
 static void compute_earliest (struct edge_list *, int, sbitmap *, sbitmap *,
@@ -106,6 +107,7 @@ compute_antinout_edge (sbitmap *antloc, sbitmap *transp, sbitmap *antin,
   /* We want a maximal solution, so make an optimistic initialization of
      ANTIN.  */
   bitmap_vector_ones (antin, last_basic_block);
+  bitmap_vector_clear (antout, last_basic_block);
 
   /* Put every block on the worklist; this is necessary because of the
      optimistic initialization of ANTIN above.  */
@@ -432,6 +434,7 @@ pre_edge_lcm (int n_exprs, sbitmap *transp,
 
   /* Allocate an extra element for the exit block in the laterin vector.  */
   laterin = sbitmap_vector_alloc (last_basic_block + 1, n_exprs);
+  bitmap_vector_clear (laterin, last_basic_block);
   compute_laterin (edge_list, earliest, antloc, later, laterin);
 
 #ifdef LCM_DEBUG_INFO

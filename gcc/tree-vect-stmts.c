@@ -4911,7 +4911,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
      nested within an outer-loop that is being vectorized.  */
 
   if (nested_in_vect_loop
-      && (TREE_INT_CST_LOW (DR_STEP (dr))
+      && (tree_to_hwi (DR_STEP (dr))
 	  % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0))
     {
       gcc_assert (alignment_support_scheme != dr_explicit_realign_optimized);

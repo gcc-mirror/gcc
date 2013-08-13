@@ -108,7 +108,7 @@ vect_get_smallest_scalar_type (gimple stmt, HOST_WIDE_INT *lhs_size_unit,
   tree scalar_type = gimple_expr_type (stmt);
   HOST_WIDE_INT lhs, rhs;
 
-  lhs = rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
+  lhs = rhs = tree_to_hwi (TYPE_SIZE_UNIT (scalar_type));
 
   if (is_gimple_assign (stmt)
       && (gimple_assign_cast_p (stmt)
@@ -118,7 +118,7 @@ vect_get_smallest_scalar_type (gimple stmt, HOST_WIDE_INT *lhs_size_unit,
     {
       tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (stmt));
 
-      rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (rhs_type));
+      rhs = tree_to_hwi (TYPE_SIZE_UNIT (rhs_type));
       if (rhs < lhs)
         scalar_type = rhs_type;
     }
@@ -541,16 +541,16 @@ vect_slp_analyze_data_ref_dependence (struct data_dependence_relation *ddr)
     return true;
 
   /* Check the types.  */
-  type_size_a = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
-  type_size_b = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
+  type_size_a = tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra))));
+  type_size_b = tree_to_hwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb))));
 
   if (type_size_a != type_size_b
       || !types_compatible_p (TREE_TYPE (DR_REF (dra)),
                               TREE_TYPE (DR_REF (drb))))
     return true;
 
-  init_a = TREE_INT_CST_LOW (DR_INIT (dra));
-  init_b = TREE_INT_CST_LOW (DR_INIT (drb));
+  init_a = tree_to_hwi (DR_INIT (dra));
+  init_b = tree_to_hwi (DR_INIT (drb));
 
   /* Two different locations - no dependence.  */
   if (init_a != init_b)
@@ -653,7 +653,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   if (loop && nested_in_vect_loop_p (loop, stmt))
     {
       tree step = DR_STEP (dr);
-      HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+      HOST_WIDE_INT dr_step = tree_to_hwi (step);
 
       if (dr_step % GET_MODE_SIZE (TYPE_MODE (vectype)) == 0)
         {
@@ -681,7 +681,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   if (!loop)
     {
       tree step = DR_STEP (dr);
-      HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+      HOST_WIDE_INT dr_step = tree_to_hwi (step);
 
       if (dr_step % GET_MODE_SIZE (TYPE_MODE (vectype)) != 0)
 	{
@@ -771,7 +771,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   /* Modulo alignment.  */
   misalign = size_binop (FLOOR_MOD_EXPR, misalign, alignment);
 
-  if (!host_integerp (misalign, 1))
+  if (!tree_fits_uhwi_p (misalign))
     {
       /* Negative or overflowed misalignment value.  */
       if (dump_enabled_p ())
@@ -780,7 +780,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
       return false;
     }
 
-  SET_DR_MISALIGNMENT (dr, TREE_INT_CST_LOW (misalign));
+  SET_DR_MISALIGNMENT (dr, tree_to_hwi (misalign));
 
   if (dump_enabled_p ())
     {
@@ -957,10 +957,10 @@ vect_verify_datarefs_alignment (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 static bool
 not_size_aligned (tree exp)
 {
-  if (!host_integerp (TYPE_SIZE (TREE_TYPE (exp)), 1))
+  if (!tree_fits_uhwi_p (TYPE_SIZE (TREE_TYPE (exp))))
     return true;
 
-  return (TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (exp)))
+  return (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (exp)))
 	  > get_object_alignment (exp));
 }
 
@@ -1979,12 +1979,12 @@ vect_analyze_group_access (struct data_reference *dr)
 {
   tree step = DR_STEP (dr);
   tree scalar_type = TREE_TYPE (DR_REF (dr));
-  HOST_WIDE_INT type_size = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
+  HOST_WIDE_INT type_size = tree_to_hwi (TYPE_SIZE_UNIT (scalar_type));
   gimple stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
-  HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+  HOST_WIDE_INT dr_step = tree_to_hwi (step);
   HOST_WIDE_INT groupsize, last_accessed_element = 1;
   bool slp_impossible = false;
   struct loop *loop = NULL;
@@ -2103,8 +2103,8 @@ vect_analyze_group_access (struct data_reference *dr)
 
           /* Check that the distance between two accesses is equal to the type
              size. Otherwise, we have gaps.  */
-          diff = (TREE_INT_CST_LOW (DR_INIT (data_ref))
-                  - TREE_INT_CST_LOW (prev_init)) / type_size;
+          diff = (tree_to_hwi (DR_INIT (data_ref))
+                  - tree_to_hwi (prev_init)) / type_size;
 	  if (diff != 1)
 	    {
 	      /* FORNOW: SLP of accesses with gaps is not supported.  */
@@ -2284,7 +2284,7 @@ vect_analyze_data_ref_access (struct data_reference *dr)
   /* Consecutive?  */
   if (TREE_CODE (step) == INTEGER_CST)
     {
-      HOST_WIDE_INT dr_step = TREE_INT_CST_LOW (step);
+      HOST_WIDE_INT dr_step = tree_to_hwi (step);
       if (!tree_int_cst_compare (step, TYPE_SIZE_UNIT (scalar_type))
 	  || (dr_step < 0
 	      && !compare_tree_int (TYPE_SIZE_UNIT (scalar_type), -dr_step)))
@@ -2506,11 +2506,11 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	  /* Check that the data-refs have the same constant size and step.  */
 	  tree sza = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dra)));
 	  tree szb = TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (drb)));
-	  if (!host_integerp (sza, 1)
-	      || !host_integerp (szb, 1)
+	  if (!tree_fits_uhwi_p (sza)
+	      || !tree_fits_uhwi_p (szb)
 	      || !tree_int_cst_equal (sza, szb)
-	      || !host_integerp (DR_STEP (dra), 0)
-	      || !host_integerp (DR_STEP (drb), 0)
+	      || !tree_fits_shwi_p (DR_STEP (dra))
+	      || !tree_fits_shwi_p (DR_STEP (drb))
 	      || !tree_int_cst_equal (DR_STEP (dra), DR_STEP (drb)))
 	    break;
 
@@ -2525,19 +2525,19 @@ vect_analyze_data_ref_accesses (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
 	    break;
 
 	  /* Sorting has ensured that DR_INIT (dra) <= DR_INIT (drb).  */
-	  HOST_WIDE_INT init_a = TREE_INT_CST_LOW (DR_INIT (dra));
-	  HOST_WIDE_INT init_b = TREE_INT_CST_LOW (DR_INIT (drb));
+	  HOST_WIDE_INT init_a = tree_to_hwi (DR_INIT (dra));
+	  HOST_WIDE_INT init_b = tree_to_hwi (DR_INIT (drb));
 	  gcc_assert (init_a < init_b);
 
 	  /* If init_b == init_a + the size of the type * k, we have an
 	     interleaving, and DRA is accessed before DRB.  */
-	  HOST_WIDE_INT type_size_a = TREE_INT_CST_LOW (sza);
+	  HOST_WIDE_INT type_size_a = tree_to_hwi (sza);
 	  if ((init_b - init_a) % type_size_a != 0)
 	    break;
 
 	  /* The step (if not zero) is greater than the difference between
 	     data-refs' inits.  This splits groups into suitable sizes.  */
-	  HOST_WIDE_INT step = TREE_INT_CST_LOW (DR_STEP (dra));
+	  HOST_WIDE_INT step = tree_to_hwi (DR_STEP (dra));
 	  if (step != 0 && step <= (init_b - init_a))
 	    break;
 
@@ -2695,8 +2695,8 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	{
 	  if (off == NULL_TREE)
 	    {
-	      double_int moff = mem_ref_offset (base);
-	      off = double_int_to_tree (sizetype, moff);
+	      addr_wide_int moff = mem_ref_offset (base);
+	      off = wide_int_to_tree (sizetype, moff);
 	    }
 	  else
 	    off = size_binop (PLUS_EXPR, off,
@@ -2792,9 +2792,9 @@ vect_check_gather (gimple stmt, loop_vec_info loop_vinfo, tree *basep,
 	    }
 	  break;
 	case MULT_EXPR:
-	  if (scale == 1 && host_integerp (op1, 0))
+	  if (scale == 1 && tree_fits_shwi_p (op1))
 	    {
-	      scale = tree_low_cst (op1, 0);
+	      scale = tree_to_shwi (op1);
 	      off = op0;
 	      continue;
 	    }
@@ -4790,7 +4790,7 @@ vect_supportable_dr_alignment (struct data_reference *dr,
 	{
 	  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 	  if ((nested_in_vect_loop
-	       && (TREE_INT_CST_LOW (DR_STEP (dr))
+	       && (tree_to_hwi (DR_STEP (dr))
 	 	   != GET_MODE_SIZE (TYPE_MODE (vectype))))
               || !loop_vinfo)
 	    return dr_explicit_realign;

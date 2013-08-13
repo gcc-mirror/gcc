@@ -44,6 +44,7 @@ The Free Software Foundation is independent of Sun Microsystems, Inc.  */
 #include "ggc.h"
 #include "tree-iterator.h"
 #include "target.h"
+#include "wide-int.h"
 
 static void flush_quick_stack (void);
 static void push_value (tree);
@@ -1049,8 +1050,8 @@ build_newarray (int atype_value, tree length)
   tree prim_type = decode_newarray_type (atype_value);
   tree type
     = build_java_array_type (prim_type,
-			     host_integerp (length, 0) == INTEGER_CST
-			     ? tree_low_cst (length, 0) : -1);
+			     tree_fits_shwi_p (length)
+			     ? tree_to_shwi (length) : -1);
 
   /* Pass a reference to the primitive type class and save the runtime
      some work.  */
@@ -1069,8 +1070,8 @@ build_anewarray (tree class_type, tree length)
 {
   tree type
     = build_java_array_type (class_type,
-			     host_integerp (length, 0)
-			     ? tree_low_cst (length, 0) : -1);
+			     tree_fits_shwi_p (length)
+			     ? tree_to_shwi (length) : -1);
 
   return build_call_nary (promote_type (type),
 			  build_address_of (soft_anewarray_node),
@@ -1258,7 +1259,7 @@ expand_java_pushc (int ival, tree type)
   else if (type == float_type_node || type == double_type_node)
     {
       REAL_VALUE_TYPE x;
-      REAL_VALUE_FROM_INT (x, ival, 0, TYPE_MODE (type));
+      REAL_VALUE_FROM_INT (x, ival, TYPE_MODE (type));
       value = build_real (type, x);
     }
   else
@@ -2672,7 +2673,7 @@ build_jni_stub (tree method)
      special way, we would do that here.  */
   for (tem = method_args; tem != NULL_TREE; tem = DECL_CHAIN (tem))
     {
-      int arg_bits = TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (tem)));
+      int arg_bits = tree_to_hwi (TYPE_SIZE (TREE_TYPE (tem)));
 #ifdef PARM_BOUNDARY
       arg_bits = (((arg_bits + PARM_BOUNDARY - 1) / PARM_BOUNDARY)
                   * PARM_BOUNDARY);

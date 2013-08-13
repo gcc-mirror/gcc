@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "tree-inline.h"
 #include "target.h"
+#include "wide-int.h"
+#include "wide-int-print.h"
 
 /* This file contains functions for building the Control Flow Graph (CFG)
    for a function tree.  */
@@ -1379,12 +1381,12 @@ group_case_labels_stmt (gimple stmt)
 	{
 	  tree merge_case = gimple_switch_label (stmt, i);
 	  basic_block merge_bb = label_to_block (CASE_LABEL (merge_case));
-	  double_int bhp1 = tree_to_double_int (base_high) + double_int_one;
+	  wide_int bhp1 = wide_int (base_high) + 1;
 
 	  /* Merge the cases if they jump to the same place,
 	     and their ranges are consecutive.  */
 	  if (merge_bb == base_bb
-	      && tree_to_double_int (CASE_LOW (merge_case)) == bhp1)
+	      && wide_int (CASE_LOW (merge_case)) == bhp1)
 	    {
 	      base_high = CASE_HIGH (merge_case) ?
 		  CASE_HIGH (merge_case) : CASE_LOW (merge_case);
@@ -2694,24 +2696,25 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 
       if (TREE_CODE (t) == BIT_FIELD_REF)
 	{
-	  if (!host_integerp (TREE_OPERAND (t, 1), 1)
-	      || !host_integerp (TREE_OPERAND (t, 2), 1))
+	  if (!tree_fits_uhwi_p (TREE_OPERAND (t, 1))
+	      || !tree_fits_uhwi_p (TREE_OPERAND (t, 2)))
 	    {
 	      error ("invalid position or size operand to BIT_FIELD_REF");
 	      return t;
 	    }
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (t))
 	      && (TYPE_PRECISION (TREE_TYPE (t))
-		  != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
+		  != tree_to_uhwi (TREE_OPERAND (t, 1))))
 	    {
 	      error ("integral result type precision does not match "
 		     "field size of BIT_FIELD_REF");
 	      return t;
 	    }
 	  else if (!INTEGRAL_TYPE_P (TREE_TYPE (t))
+		   && !AGGREGATE_TYPE_P (TREE_TYPE (t))
 		   && TYPE_MODE (TREE_TYPE (t)) != BLKmode
 		   && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (t)))
-		       != TREE_INT_CST_LOW (TREE_OPERAND (t, 1))))
+		       != tree_to_uhwi (TREE_OPERAND (t, 1))))
 	    {
 	      error ("mode precision of non-integral result does not "
 		     "match field size of BIT_FIELD_REF");
@@ -3520,7 +3523,7 @@ verify_gimple_assign_binary (gimple stmt)
 	   only allow shifting by a constant multiple of the element size.  */
 	if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
 	    && (TREE_CODE (rhs2) != INTEGER_CST
-		|| !div_if_zero_remainder (EXACT_DIV_EXPR, rhs2,
+		|| !div_if_zero_remainder (rhs2,
 					   TYPE_SIZE (TREE_TYPE (rhs1_type)))))
 	  {
 	    error ("non-element sized vector shift of floating point vector");
@@ -6270,7 +6273,7 @@ move_stmt_eh_region_tree_nr (tree old_t_nr, struct move_stmt_d *p)
 {
   int old_nr, new_nr;
 
-  old_nr = tree_low_cst (old_t_nr, 0);
+  old_nr = tree_to_shwi (old_t_nr);
   new_nr = move_stmt_eh_region_nr (old_nr, p);
 
   return build_int_cst (integer_type_node, new_nr);
@@ -7160,13 +7163,13 @@ print_loop (FILE *file, struct loop *loop, int indent, int verbosity)
   if (loop->any_upper_bound)
     {
       fprintf (file, ", upper_bound = ");
-      dump_double_int (file, loop->nb_iterations_upper_bound, true);
+      print_decu (loop->nb_iterations_upper_bound, file);
     }
 
   if (loop->any_estimate)
     {
       fprintf (file, ", estimate = ");
-      dump_double_int (file, loop->nb_iterations_estimate, true);
+      print_decu (loop->nb_iterations_estimate, file);
     }
   fprintf (file, ")\n");
 

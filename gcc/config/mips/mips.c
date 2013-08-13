@@ -5136,7 +5136,7 @@ mips_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
       && type != 0
       && TREE_CODE (type) == RECORD_TYPE
       && TYPE_SIZE_UNIT (type)
-      && host_integerp (TYPE_SIZE_UNIT (type), 1))
+      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
     {
       tree field;
 
@@ -5145,7 +5145,7 @@ mips_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
 	if (TREE_CODE (field) == FIELD_DECL
 	    && SCALAR_FLOAT_TYPE_P (TREE_TYPE (field))
 	    && TYPE_PRECISION (TREE_TYPE (field)) == BITS_PER_WORD
-	    && host_integerp (bit_position (field), 0)
+	    && tree_fits_shwi_p (bit_position (field))
 	    && int_bit_position (field) % BITS_PER_WORD == 0)
 	  break;
 
@@ -14915,7 +14915,7 @@ r10k_safe_mem_expr_p (tree expr, HOST_WIDE_INT offset)
     return false;
 
   offset += bitoffset / BITS_PER_UNIT;
-  return offset >= 0 && offset < tree_low_cst (DECL_SIZE_UNIT (inner), 1);
+  return offset >= 0 && offset < tree_to_uhwi (DECL_SIZE_UNIT (inner));
 }
 
 /* A for_each_rtx callback for which DATA points to the instruction

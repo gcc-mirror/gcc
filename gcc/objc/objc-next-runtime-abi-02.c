@@ -2318,7 +2318,7 @@ generate_v2_meth_descriptor_table (tree chain, tree protocol,
 
   decl = start_var_decl (method_list_template, buf);
 
-  entsize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_method_template));
+  entsize = tree_to_hwi (TYPE_SIZE_UNIT (objc_method_template));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, entsize));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (NULL_TREE, size));
   initlist =
@@ -2432,7 +2432,7 @@ generate_v2_property_table (tree context, tree klass_ctxt)
 						  is_proto ? context
 							   : klass_ctxt);
 
-  init_val = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_v2_property_template));
+  init_val = tree_to_hwi (TYPE_SIZE_UNIT (objc_v2_property_template));
   if (is_proto)
     snprintf (buf, BUFSIZE, "_OBJC_ProtocolPropList_%s",
 	      IDENTIFIER_POINTER (PROTOCOL_NAME (context)));
@@ -2507,7 +2507,7 @@ build_v2_protocol_initializer (tree type, tree protocol_name, tree protocol_list
 
   /* const uint32_t size;  = sizeof(struct protocol_t) */
   expr = build_int_cst (integer_type_node,
-	      TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_v2_protocol_template)));
+	      tree_to_hwi (TYPE_SIZE_UNIT (objc_v2_protocol_template)));
   CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE, expr);
   /* const uint32_t flags; = 0 */
   CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE, integer_zero_node);
@@ -2621,7 +2621,7 @@ generate_v2_dispatch_table (tree chain, const char *name, tree attr)
 
   decl = start_var_decl  (method_list_template, name);
 
-  init_val = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_method_template));
+  init_val = tree_to_hwi (TYPE_SIZE_UNIT (objc_method_template));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
 			  build_int_cst (integer_type_node, init_val));
   CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
@@ -2848,7 +2848,7 @@ build_v2_ivar_list_initializer (tree class_name, tree type, tree field_decl)
 			      build_int_cst (integer_type_node, val));
 
       /* Set size.  */
-      val = TREE_INT_CST_LOW (DECL_SIZE_UNIT (field_decl));
+      val = tree_to_hwi (DECL_SIZE_UNIT (field_decl));
       CONSTRUCTOR_APPEND_ELT (ivar, NULL_TREE,
 			      build_int_cst (integer_type_node, val));
 
@@ -2917,7 +2917,7 @@ generate_v2_ivars_list (tree chain, const char *name, tree attr, tree templ)
 
   initlist = build_v2_ivar_list_initializer (CLASS_NAME (templ),
 					     objc_v2_ivar_template, chain);
-  ivar_t_size = TREE_INT_CST_LOW  (TYPE_SIZE_UNIT (objc_v2_ivar_template));
+  ivar_t_size = tree_to_hwi  (TYPE_SIZE_UNIT (objc_v2_ivar_template));
 
   decl = start_var_decl (ivar_list_template, name);
   CONSTRUCTOR_APPEND_ELT (inits, NULL_TREE,
@@ -3175,7 +3175,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 				    buf, meta_clac_meth);
     }
 
-  instanceStart = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_v2_class_template));
+  instanceStart = tree_to_hwi (TYPE_SIZE_UNIT (objc_v2_class_template));
 
   /* Currently there are no class ivars and generation of class
      variables for the root of the inheritance has been removed.  It
@@ -3185,7 +3185,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 
   class_ivars = NULL_TREE;
   /* TODO: Add total size of class variables when implemented. */
-  instanceSize = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (objc_v2_class_template));
+  instanceSize = tree_to_hwi (TYPE_SIZE_UNIT (objc_v2_class_template));
 
   /* So now build the META CLASS structs.  */
   /* static struct class_ro_t  _OBJC_METACLASS_Foo = { ... }; */
@@ -3267,7 +3267,7 @@ generate_v2_class_structs (struct imp_entry *impent)
 
   if (field && TREE_CODE (field) == FIELD_DECL)
     instanceSize = int_byte_position (field) * BITS_PER_UNIT
-		   + tree_low_cst (DECL_SIZE (field), 0);
+		   + tree_to_shwi (DECL_SIZE (field));
   else
     instanceSize = 0;
   instanceSize /= BITS_PER_UNIT;

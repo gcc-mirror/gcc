@@ -575,9 +575,9 @@ ao_ref_init_from_ptr_and_size (ao_ref *ref, tree ptr, tree size)
       ref->offset = 0;
     }
   if (size
-      && host_integerp (size, 0)
-      && TREE_INT_CST_LOW (size) * 8 / 8 == TREE_INT_CST_LOW (size))
-    ref->max_size = ref->size = TREE_INT_CST_LOW (size) * 8;
+      && tree_fits_shwi_p (size)
+      && tree_to_shwi (size) * 8 / 8 == tree_to_shwi (size))
+    ref->max_size = ref->size = tree_to_shwi (size) * 8;
   else
     ref->max_size = ref->size = -1;
   ref->ref_alias_set = 0;
@@ -871,7 +871,7 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   tree ptrtype1, dbase2;
   HOST_WIDE_INT offset1p = offset1, offset2p = offset2;
   HOST_WIDE_INT doffset1, doffset2;
-  double_int moff;
+  addr_wide_int moff;
 
   gcc_checking_assert ((TREE_CODE (base1) == MEM_REF
 			|| TREE_CODE (base1) == TARGET_MEM_REF)
@@ -883,10 +883,10 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
      so that the resulting offset adjustment is positive.  */
   moff = mem_ref_offset (base1);
   moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-  if (moff.is_negative ())
-    offset2p += (-moff).low;
+  if (moff.neg_p (SIGNED))
+    offset2p += (-moff).to_short_addr ();
   else
-    offset1p += moff.low;
+    offset1p += moff.to_short_addr ();
 
   /* If only one reference is based on a variable, they cannot alias if
      the pointer access is beyond the extent of the variable access.
@@ -957,12 +957,12 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (TREE_CODE (dbase2) == MEM_REF
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
     {
-      double_int moff = mem_ref_offset (dbase2);
+      addr_wide_int moff = mem_ref_offset (dbase2);
       moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-      if (moff.is_negative ())
-	doffset1 -= (-moff).low;
+      if (moff.neg_p (SIGNED))
+	doffset1 -= (-moff).to_short_addr ();
       else
-	doffset2 -= moff.low;
+	doffset2 -= moff.to_short_addr ();
     }
 
   /* If either reference is view-converted, give up now.  */
@@ -1048,21 +1048,21 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
 		      && operand_equal_p (TMR_INDEX2 (base1),
 					  TMR_INDEX2 (base2), 0))))))
     {
-      double_int moff;
+      addr_wide_int moff;
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */
       moff = mem_ref_offset (base1);
       moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-      if (moff.is_negative ())
-	offset2 += (-moff).low;
+      if (moff.neg_p (SIGNED))
+	offset2 += (-moff).to_short_addr ();
       else
-	offset1 += moff.low;
+	offset1 += moff.to_shwi ();
       moff = mem_ref_offset (base2);
       moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-      if (moff.is_negative ())
-	offset1 += (-moff).low;
+      if (moff.neg_p (SIGNED))
+	offset1 += (-moff).to_short_addr ();
       else
-	offset2 += moff.low;
+	offset2 += moff.to_short_addr ();
       return ranges_overlap_p (offset1, max_size1, offset2, max_size2);
     }
   if (!ptr_derefs_may_alias_p (ptr1, ptr2))
@@ -2005,15 +2005,15 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	      if (!tree_int_cst_equal (TREE_OPERAND (base, 1),
 				       TREE_OPERAND (ref->base, 1)))
 		{
-		  double_int off1 = mem_ref_offset (base);
+		  addr_wide_int off1 = mem_ref_offset (base);
 		  off1 = off1.lshift (BITS_PER_UNIT == 8
 				      ? 3 : exact_log2 (BITS_PER_UNIT));
-		  off1 = off1 + double_int::from_shwi (offset);
-		  double_int off2 = mem_ref_offset (ref->base);
+		  off1 += offset;
+		  addr_wide_int off2 = mem_ref_offset (ref->base);
 		  off2 = off2.lshift (BITS_PER_UNIT == 8
 				      ? 3 : exact_log2 (BITS_PER_UNIT));
-		  off2 = off2 + double_int::from_shwi (ref_offset);
-		  if (off1.fits_shwi () && off2.fits_shwi ())
+		  off2 += ref_offset;
+		  if (off1.fits_shwi_p () && off2.fits_shwi_p ())
 		    {
 		      offset = off1.to_shwi ();
 		      ref_offset = off2.to_shwi ();
@@ -2055,7 +2055,7 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	      tree len = gimple_call_arg (stmt, 2);
 	      tree base = NULL_TREE;
 	      HOST_WIDE_INT offset = 0;
-	      if (!host_integerp (len, 0))
+	      if (!tree_fits_shwi_p (len))
 		return false;
 	      if (TREE_CODE (dest) == ADDR_EXPR)
 		base = get_addr_base_and_unit_offset (TREE_OPERAND (dest, 0),
@@ -2065,7 +2065,7 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 	      if (base
 		  && base == ao_ref_base (ref))
 		{
-		  HOST_WIDE_INT size = TREE_INT_CST_LOW (len);
+		  HOST_WIDE_INT size = tree_to_hwi (len);
 		  if (offset <= ref->offset / BITS_PER_UNIT
 		      && (offset + size
 		          >= ((ref->offset + ref->max_size + BITS_PER_UNIT - 1)

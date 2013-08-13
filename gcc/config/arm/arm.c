@@ -4349,18 +4349,18 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	if (count == -1
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !host_integerp (TYPE_MAX_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
 	    || !TYPE_MIN_VALUE (index)
-	    || !host_integerp (TYPE_MIN_VALUE (index), 1)
+	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || count < 0)
 	  return -1;
 
-	count *= (1 + tree_low_cst (TYPE_MAX_VALUE (index), 1)
-		      - tree_low_cst (TYPE_MIN_VALUE (index), 1));
+	count *= (1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
+		      - tree_to_uhwi (TYPE_MIN_VALUE (index)));
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -4389,8 +4389,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -4421,8 +4421,8 @@ aapcs_vfp_sub_candidate (const_tree type, enum machine_mode *modep)
 	  }
 
 	/* There must be no padding.  */
-	if (!host_integerp (TYPE_SIZE (type), 1)
-	    || (tree_low_cst (TYPE_SIZE (type), 1)
+	if (!tree_fits_uhwi_p (TYPE_SIZE (type))
+	    || (tree_to_uhwi (TYPE_SIZE (type))
 		!= count * GET_MODE_BITSIZE (*modep)))
 	  return -1;
 
@@ -9242,8 +9242,9 @@ vfp3_const_double_index (rtx x)
   int sign, exponent;
   unsigned HOST_WIDE_INT mantissa, mant_hi;
   unsigned HOST_WIDE_INT mask;
-  HOST_WIDE_INT m1, m2;
   int point_pos = 2 * HOST_BITS_PER_WIDE_INT - 1;
+  bool fail;
+  wide_int w;
 
   if (!TARGET_VFP3 || !CONST_DOUBLE_P (x))
     return -1;
@@ -9263,9 +9264,9 @@ vfp3_const_double_index (rtx x)
      WARNING: If there's ever a VFP version which uses more than 2 * H_W_I - 1
      bits for the mantissa, this may fail (low bits would be lost).  */
   real_ldexp (&m, &r, point_pos - exponent);
-  REAL_VALUE_TO_INT (&m1, &m2, m);
-  mantissa = m1;
-  mant_hi = m2;
+  w = real_to_integer (m, &fail, HOST_BITS_PER_WIDE_INT * 2);
+  mantissa = w.elt (0);
+  mant_hi = w.elt (1);
 
   /* If there are bits set in the low part of the mantissa, we can't
      represent this value.  */
@@ -26650,7 +26651,7 @@ arm_builtin_vectorized_function (tree fndecl, tree type_out, tree type_in)
 static HOST_WIDE_INT
 arm_vector_alignment (const_tree type)
 {
-  HOST_WIDE_INT align = tree_low_cst (TYPE_SIZE (type), 0);
+  HOST_WIDE_INT align = tree_to_shwi (TYPE_SIZE (type));
 
   if (TARGET_AAPCS_BASED)
     align = MIN (align, 64);

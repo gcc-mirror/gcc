@@ -712,7 +712,7 @@ jump_function_from_stmt (tree *arg, gimple stmt)
 						&offset);
       if (tem
 	  && TREE_CODE (tem) == MEM_REF
-	  && (mem_ref_offset (tem) + double_int::from_shwi (offset)).is_zero ())
+	  && (mem_ref_offset (tem) + offset).zero_p ())
 	{
 	  *arg = TREE_OPERAND (tem, 0);
 	  return true;
@@ -1303,7 +1303,7 @@ add_or_mark_expr (basic_block bb, tree exp,
 
   if (TREE_CODE (exp) == MEM_REF
       && TREE_CODE (TREE_OPERAND (exp, 0)) == SSA_NAME
-      && host_integerp (TREE_OPERAND (exp, 1), 0)
+      && tree_fits_shwi_p (TREE_OPERAND (exp, 1))
       && (size = int_size_in_bytes (TREE_TYPE (exp))) > 0)
     {
       tree name = TREE_OPERAND (exp, 0);
@@ -1318,7 +1318,7 @@ add_or_mark_expr (basic_block bb, tree exp,
       map.phase = 0;
       map.bb = 0;
       map.store = store;
-      map.offset = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      map.offset = tree_to_shwi (TREE_OPERAND (exp, 1));
       map.size = size;
 
       slot = seen_ssa_names.find_slot (&map, INSERT);
@@ -1951,14 +1951,14 @@ hoist_adjacent_loads (basic_block bb0, basic_block bb1,
       tree_offset2 = bit_position (field2);
       tree_size2 = DECL_SIZE (field2);
 
-      if (!host_integerp (tree_offset1, 1)
-	  || !host_integerp (tree_offset2, 1)
-	  || !host_integerp (tree_size2, 1))
+      if (!tree_fits_uhwi_p (tree_offset1)
+	  || !tree_fits_uhwi_p (tree_offset2)
+	  || !tree_fits_uhwi_p (tree_size2))
 	continue;
 
-      offset1 = TREE_INT_CST_LOW (tree_offset1);
-      offset2 = TREE_INT_CST_LOW (tree_offset2);
-      size2 = TREE_INT_CST_LOW (tree_size2);
+      offset1 = tree_to_uhwi (tree_offset1);
+      offset2 = tree_to_uhwi (tree_offset2);
+      size2 = tree_to_uhwi (tree_size2);
       align1 = DECL_ALIGN (field1) % param_align_bits;
 
       if (offset1 % BITS_PER_UNIT != 0)

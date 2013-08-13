@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "basic-block.h"
 #include "double-int.h"
+#include "wide-int.h"
 
 #include "bitmap.h"
 #include "sbitmap.h"
@@ -63,7 +64,7 @@ struct GTY ((chain_next ("%h.next"))) nb_iter_bound {
         overflows (as MAX + 1 is sometimes produced as the estimate on number
 	of executions of STMT).
      b) it is consistent with the result of number_of_iterations_exit.  */
-  double_int bound;
+  max_wide_int bound;
 
   /* True if the statement will cause the loop to be leaved the (at most)
      BOUND + 1-st time it is executed, that is, all the statements after it
@@ -147,12 +148,12 @@ struct GTY ((chain_next ("%h.next"))) loop {
 
   /* An integer guaranteed to be greater or equal to nb_iterations.  Only
      valid if any_upper_bound is true.  */
-  double_int nb_iterations_upper_bound;
+  max_wide_int nb_iterations_upper_bound;
 
   /* An integer giving an estimate on nb_iterations.  Unlike
      nb_iterations_upper_bound, there is no guarantee that it is at least
      nb_iterations.  */
-  double_int nb_iterations_estimate;
+  max_wide_int nb_iterations_estimate;
 
   bool any_upper_bound;
   bool any_estimate;
@@ -293,13 +294,13 @@ extern unsigned expected_loop_iterations (const struct loop *);
 extern rtx doloop_condition_get (rtx);
 
 void estimate_numbers_of_iterations_loop (struct loop *);
-void record_niter_bound (struct loop *, double_int, bool, bool);
-bool estimated_loop_iterations (struct loop *, double_int *);
-bool max_loop_iterations (struct loop *, double_int *);
+void record_niter_bound (struct loop *, const max_wide_int &, bool, bool);
+bool estimated_loop_iterations (struct loop *, max_wide_int *);
+bool max_loop_iterations (struct loop *, max_wide_int *);
 HOST_WIDE_INT estimated_loop_iterations_int (struct loop *);
 HOST_WIDE_INT max_loop_iterations_int (struct loop *);
-bool max_stmt_executions (struct loop *, double_int *);
-bool estimated_stmt_executions (struct loop *, double_int *);
+bool max_stmt_executions (struct loop *, max_wide_int *);
+bool estimated_stmt_executions (struct loop *, max_wide_int *);
 HOST_WIDE_INT max_stmt_executions_int (struct loop *);
 HOST_WIDE_INT estimated_stmt_executions_int (struct loop *);
 

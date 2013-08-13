@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "obstack.h"
 #include "debug.h"
+#include "wide-int-print.h"
 
 /* We dump this information from the debug hooks.  This gives us a
    stable and maintainable API to hook into.  In order to work
@@ -728,12 +729,12 @@ go_format_type (struct godump_container *container, tree type,
 	  && tree_int_cst_sgn (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) == 0
 	  && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
 	  && TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INTEGER_CST
-	  && host_integerp (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0))
+	  && tree_fits_shwi_p (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
 	{
 	  char buf[100];
 
 	  snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC "+1",
-		    tree_low_cst (TYPE_MAX_VALUE (TYPE_DOMAIN (type)), 0));
+		    tree_to_shwi (TYPE_MAX_VALUE (TYPE_DOMAIN (type))));
 	  obstack_grow (ob, buf, strlen (buf));
 	}
       obstack_1grow (ob, ']');
@@ -967,7 +968,7 @@ go_output_typedef (struct godump_container *container, tree decl)
 	  const char *name;
 	  struct macro_hash_value *mhval;
 	  void **slot;
-	  char buf[100];
+	  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
 
 	  name = IDENTIFIER_POINTER (TREE_PURPOSE (element));
 
@@ -981,18 +982,15 @@ go_output_typedef (struct godump_container *container, tree decl)
 	  if (*slot != NULL)
 	    macro_hash_del (*slot);
 
-	  if (host_integerp (TREE_VALUE (element), 0))
+	  if (tree_fits_shwi_p (TREE_VALUE (element)))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DEC,
-		     tree_low_cst (TREE_VALUE (element), 0));
-	  else if (host_integerp (TREE_VALUE (element), 1))
+		     tree_to_shwi (TREE_VALUE (element)));
+	  else if (tree_fits_uhwi_p (TREE_VALUE (element)))
 	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_UNSIGNED,
 		     ((unsigned HOST_WIDE_INT)
-		      tree_low_cst (TREE_VALUE (element), 1)));
+		      tree_to_uhwi (TREE_VALUE (element))));
 	  else
-	    snprintf (buf, sizeof buf, HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		     ((unsigned HOST_WIDE_INT)
-		      TREE_INT_CST_HIGH (TREE_VALUE (element))),
-		     TREE_INT_CST_LOW (TREE_VALUE (element)));
+	    print_hex (wide_int (element), buf);
 
 	  mhval->value = xstrdup (buf);
 	  *slot = mhval;

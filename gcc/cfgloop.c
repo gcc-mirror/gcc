@@ -332,7 +332,8 @@ alloc_loop (void)
   loop->exits = ggc_alloc_cleared_loop_exit ();
   loop->exits->next = loop->exits->prev = loop->exits;
   loop->can_be_parallel = false;
-
+  loop->nb_iterations_upper_bound = 0;
+  loop->nb_iterations_estimate = 0;
   return loop;
 }
 

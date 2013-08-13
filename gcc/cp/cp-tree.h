@@ -2804,7 +2804,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* The number of levels of template parameters given by NODE.  */
 #define TMPL_PARMS_DEPTH(NODE) \
-  ((HOST_WIDE_INT) TREE_INT_CST_LOW (TREE_PURPOSE (NODE)))
+  ((HOST_WIDE_INT) tree_to_hwi (TREE_PURPOSE (NODE)))
 
 /* The TEMPLATE_DECL instantiated or specialized by NODE.  This
    TEMPLATE_DECL will be the immediate parent, not the most general
@@ -3684,7 +3684,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Accessor macros for C++ template decl nodes.  */
 
 /* The DECL_TEMPLATE_PARMS are a list.  The TREE_PURPOSE of each node
-   is a INT_CST whose TREE_INT_CST_LOW indicates the level of the
+   is a INT_CST whose tree_to_hwi indicates the level of the
    template parameters, with 1 being the outermost set of template
    parameters.  The TREE_VALUE is a vector, whose elements are the
    template parameters at each level.  Each element in the vector is a

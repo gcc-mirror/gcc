@@ -488,7 +488,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	 into unreachable (or trap when debugging experience is supposed
 	 to be good).  */
       if (!elt->is_exit
-	  && elt->bound.ult (double_int::from_uhwi (npeeled)))
+	  && elt->bound.ltu_p (max_wide_int (npeeled)))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
 	  gimple stmt = gimple_build_call
@@ -505,7 +505,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	}
       /* If we know the exit will be taken after peeling, update.  */
       else if (elt->is_exit
-	       && elt->bound.ule (double_int::from_uhwi (npeeled)))
+	       && elt->bound.leu_p (max_wide_int (npeeled)))
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
@@ -545,7 +545,7 @@ remove_redundant_iv_tests (struct loop *loop)
       /* Exit is pointless if it won't be taken before loop reaches
 	 upper bound.  */
       if (elt->is_exit && loop->any_upper_bound
-          && loop->nb_iterations_upper_bound.ult (elt->bound))
+          && loop->nb_iterations_upper_bound.ltu_p (elt->bound))
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
@@ -562,8 +562,7 @@ remove_redundant_iv_tests (struct loop *loop)
 	      || !integer_zerop (niter.may_be_zero)
 	      || !niter.niter
 	      || TREE_CODE (niter.niter) != INTEGER_CST
-	      || !loop->nb_iterations_upper_bound.ult
-		   (tree_to_double_int (niter.niter)))
+	      || !loop->nb_iterations_upper_bound.ltu_p (niter.niter))
 	    continue;
 	  
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -672,9 +671,9 @@ try_unroll_loop_completely (struct loop *loop,
      If the number of execution of loop is determined by standard induction
      variable test, then EXIT and EDGE_TO_CANCEL are the two edges leaving
      from the iv test.  */
-  if (host_integerp (niter, 1))
+  if (tree_fits_uhwi_p (niter))
     {
-      n_unroll = tree_low_cst (niter, 1);
+      n_unroll = tree_to_uhwi (niter);
       n_unroll_found = true;
       edge_to_cancel = EDGE_SUCC (exit->src, 0);
       if (edge_to_cancel == exit)
@@ -943,7 +942,7 @@ canonicalize_loop_induction_variables (struct loop *loop,
      by find_loop_niter_by_eval.  Be sure to keep it for future.  */
   if (niter && TREE_CODE (niter) == INTEGER_CST)
     {
-      record_niter_bound (loop, tree_to_double_int (niter),
+      record_niter_bound (loop, niter,
 			  exit == single_likely_exit (loop), true);
     }
 

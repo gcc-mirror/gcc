@@ -29,21 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "c-pragma.h"
 #include "cpp-id-data.h"
-
-/* Adapted from hwint.h to use the Ada prefix.  */
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-# if HOST_BITS_PER_WIDE_INT == 64
-#  define ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-     "16#%" HOST_LONG_FORMAT "x%016" HOST_LONG_FORMAT "x#"
-# else
-#  define ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-     "16#%" HOST_LONG_FORMAT "x%08" HOST_LONG_FORMAT "x#"
-# endif
-#else
-  /* We can assume that 'long long' is at least 64 bits.  */
-# define ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX \
-    "16#%" HOST_LONG_LONG_FORMAT "x%016" HOST_LONG_LONG_FORMAT "x#"
-#endif /* HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG */
+#include "wide-int.h"
 
 /* Local functions, macros and variables.  */
 static int dump_generic_ada_node (pretty_printer *, tree, tree,
@@ -1794,7 +1780,7 @@ dump_ada_template (pretty_printer *buffer, tree t,
 static bool
 is_simple_enum (tree node)
 {
-  unsigned HOST_WIDE_INT count = 0;
+  HOST_WIDE_INT count = 0;
   tree value;
 
   for (value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
@@ -1804,9 +1790,9 @@ is_simple_enum (tree node)
       if (TREE_CODE (int_val) != INTEGER_CST)
 	int_val = DECL_INITIAL (int_val);
 
-      if (!host_integerp (int_val, 0))
+      if (!tree_fits_shwi_p (int_val))
 	return false;
-      else if (TREE_INT_CST_LOW (int_val) != count)
+      else if (tree_to_shwi (int_val) != count)
 	return false;
 
       count++;
@@ -2203,25 +2189,24 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	 to generate the (0 .. -1) range for flexible array members.  */
       if (TREE_TYPE (node) == sizetype)
 	node = fold_convert (ssizetype, node);
-      if (host_integerp (node, 0))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
-      else if (host_integerp (node, 1))
-	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
+      if (tree_fits_shwi_p (node))
+	pp_wide_integer (buffer, tree_to_shwi (node));
+      else if (tree_fits_uhwi_p (node))
+	pp_unsigned_wide_integer (buffer, tree_to_uhwi (node));
       else
 	{
-	  tree val = node;
-	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
-	  HOST_WIDE_INT high = TREE_INT_CST_HIGH (val);
-
-	  if (tree_int_cst_sgn (val) < 0)
+	  wide_int val = node;
+	  int i;
+	  if (val.neg_p (SIGNED))
 	    {
 	      pp_minus (buffer);
-	      high = ~high + !low;
-	      low = -low;
+	      val = -val;
 	    }
 	  sprintf (pp_buffer (buffer)->digit_buffer,
-		   ADA_HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		   (unsigned HOST_WIDE_INT) high, low);
+		   "16#%" HOST_LONG_FORMAT "x", val.elt (val.get_len () - 1)); 
+	  for (i = val.get_len () - 2; i <= 0; i--)
+	    sprintf (pp_buffer (buffer)->digit_buffer,
+		     HOST_WIDE_INT_PRINT_PADDED_HEX, val.elt (i));
 	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
 	}
       break;

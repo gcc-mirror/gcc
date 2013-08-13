@@ -57,7 +57,7 @@ ITYPE	{IWORD}({WS}{IWORD})*
     /* Include '::' in identifiers to capture C++ scope qualifiers.  */
 ID	{CID}({HWS}::{HWS}{CID})*
 EOID	[^[:alnum:]_]
-CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend
+CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static
 
 %x in_struct in_struct_comment in_comment
 %option warn noyywrap nounput nodefault perf-report
@@ -110,6 +110,7 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend
 "const"/{EOID}			/* don't care */
 {CXX_KEYWORD}/{EOID}			|
 "~"					|
+"^"					|
 "&"					{
     *yylval = XDUPVAR (const char, yytext, yyleng, yyleng + 1);
     return IGNORABLE_CXX_KEYWORD;

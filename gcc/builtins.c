@@ -339,8 +339,8 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       if (TREE_CODE (addr) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
 	{
-	  align = (TREE_INT_CST_LOW (TREE_OPERAND (addr, 1))
-		    & -TREE_INT_CST_LOW (TREE_OPERAND (addr, 1)));
+	  align = (tree_to_hwi (TREE_OPERAND (addr, 1))
+		   & -tree_to_hwi (TREE_OPERAND (addr, 1)));
 	  align *= BITS_PER_UNIT;
 	  addr = TREE_OPERAND (addr, 0);
 	}
@@ -357,7 +357,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	    {
 	      unsigned HOST_WIDE_INT step = 1;
 	      if (TMR_STEP (exp))
-		step = TREE_INT_CST_LOW (TMR_STEP (exp));
+		step = tree_to_hwi (TMR_STEP (exp));
 	      align = MIN (align, (step & -step) * BITS_PER_UNIT);
 	    }
 	  if (TMR_INDEX2 (exp))
@@ -379,7 +379,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	  bitpos += ptr_bitpos;
 	  if (TREE_CODE (exp) == MEM_REF
 	      || TREE_CODE (exp) == TARGET_MEM_REF)
-	    bitpos += mem_ref_offset (exp).low * BITS_PER_UNIT;
+	    bitpos += mem_ref_offset (exp).to_short_addr () * BITS_PER_UNIT;
 	}
     }
   else if (TREE_CODE (exp) == STRING_CST)
@@ -408,23 +408,23 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
 	}
       else
 	next_offset = NULL;
-      if (host_integerp (offset, 1))
+      if (tree_fits_uhwi_p (offset))
 	{
 	  /* Any overflow in calculating offset_bits won't change
 	     the alignment.  */
 	  unsigned offset_bits
-	    = ((unsigned) tree_low_cst (offset, 1) * BITS_PER_UNIT);
+	    = ((unsigned) tree_to_uhwi (offset) * BITS_PER_UNIT);
 
 	  if (offset_bits)
 	    inner = MIN (inner, (offset_bits & -offset_bits));
 	}
       else if (TREE_CODE (offset) == MULT_EXPR
-	       && host_integerp (TREE_OPERAND (offset, 1), 1))
+	       && tree_fits_uhwi_p (TREE_OPERAND (offset, 1)))
 	{
 	  /* Any overflow in calculating offset_factor won't change
 	     the alignment.  */
 	  unsigned offset_factor
-	    = ((unsigned) tree_low_cst (TREE_OPERAND (offset, 1), 1)
+	    = ((unsigned) tree_to_uhwi (TREE_OPERAND (offset, 1))
 	       * BITS_PER_UNIT);
 
 	  if (offset_factor)
@@ -515,7 +515,7 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
   else if (TREE_CODE (exp) == INTEGER_CST)
     {
       *alignp = BIGGEST_ALIGNMENT;
-      *bitposp = ((TREE_INT_CST_LOW (exp) * BITS_PER_UNIT)
+      *bitposp = ((tree_to_hwi (exp) * BITS_PER_UNIT)
 		  & (BIGGEST_ALIGNMENT - 1));
       return true;
     }
@@ -624,10 +624,10 @@ c_strlen (tree src, int only_value)
      a null character if we can represent it as a single HOST_WIDE_INT.  */
   if (offset_node == 0)
     offset = 0;
-  else if (! host_integerp (offset_node, 0))
+  else if (!tree_fits_shwi_p (offset_node))
     offset = -1;
   else
-    offset = tree_low_cst (offset_node, 0);
+    offset = tree_to_shwi (offset_node);
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
@@ -665,27 +665,31 @@ c_getstr (tree src)
 
   if (offset_node == 0)
     return TREE_STRING_POINTER (src);
-  else if (!host_integerp (offset_node, 1)
+  else if (!tree_fits_uhwi_p (offset_node)
 	   || compare_tree_int (offset_node, TREE_STRING_LENGTH (src) - 1) > 0)
     return 0;
 
-  return TREE_STRING_POINTER (src) + tree_low_cst (offset_node, 1);
+  return TREE_STRING_POINTER (src) + tree_to_uhwi (offset_node);
 }
 
-/* Return a CONST_INT or CONST_DOUBLE corresponding to target reading
+/* Return a constant integer corresponding to target reading
    GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 
 static rtx
 c_readstr (const char *str, enum machine_mode mode)
 {
-  HOST_WIDE_INT c[2];
+  wide_int c;
   HOST_WIDE_INT ch;
   unsigned int i, j;
+  HOST_WIDE_INT tmp[MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT];
+  unsigned int len = (GET_MODE_PRECISION (mode) + HOST_BITS_PER_WIDE_INT - 1)
+    / HOST_BITS_PER_WIDE_INT;
+
+  for (i = 0; i < len; i++)
+    tmp[i] = 0;
 
   gcc_assert (GET_MODE_CLASS (mode) == MODE_INT);
 
-  c[0] = 0;
-  c[1] = 0;
   ch = 1;
   for (i = 0; i < GET_MODE_SIZE (mode); i++)
     {
@@ -696,13 +700,14 @@ c_readstr (const char *str, enum machine_mode mode)
 	  && GET_MODE_SIZE (mode) >= UNITS_PER_WORD)
 	j = j + UNITS_PER_WORD - 2 * (j % UNITS_PER_WORD) - 1;
       j *= BITS_PER_UNIT;
-      gcc_assert (j < HOST_BITS_PER_DOUBLE_INT);
 
       if (ch)
 	ch = (unsigned char) str[i];
-      c[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
+      tmp[j / HOST_BITS_PER_WIDE_INT] |= ch << (j % HOST_BITS_PER_WIDE_INT);
     }
-  return immed_double_const (c[0], c[1], mode);
+  
+  c = wide_int::from_array (tmp, len, GET_MODE_PRECISION (mode));
+  return immed_wide_int_const (c, mode);
 }
 
 /* Cast a target constant CST to target CHAR and if that value fits into
@@ -718,7 +723,9 @@ target_char_cast (tree cst, char *p)
       || CHAR_TYPE_SIZE > HOST_BITS_PER_WIDE_INT)
     return 1;
 
-  val = TREE_INT_CST_LOW (cst);
+  /* Do not care if it fits or not right here.  */
+  val = tree_to_hwi (cst);
+
   if (CHAR_TYPE_SIZE < HOST_BITS_PER_WIDE_INT)
     val &= (((unsigned HOST_WIDE_INT) 1) << CHAR_TYPE_SIZE) - 1;
 
@@ -3179,7 +3186,7 @@ expand_builtin_mempcpy_args (tree dest, tree src, tree len,
 	return NULL_RTX;
 
       /* If LEN is not constant, call the normal function.  */
-      if (! host_integerp (len, 1))
+      if (! tree_fits_uhwi_p (len))
 	return NULL_RTX;
 
       len_rtx = expand_normal (len);
@@ -3414,7 +3421,7 @@ expand_builtin_strncpy (tree exp, rtx target)
       tree slen = c_strlen (src, 1);
 
       /* We must be passed a constant len and src parameter.  */
-      if (!host_integerp (len, 1) || !slen || !host_integerp (slen, 1))
+      if (!tree_fits_uhwi_p (len) || !slen || !tree_fits_uhwi_p (slen))
 	return NULL_RTX;
 
       slen = size_binop_loc (loc, PLUS_EXPR, slen, ssize_int (1));
@@ -3428,15 +3435,15 @@ expand_builtin_strncpy (tree exp, rtx target)
 	  const char *p = c_getstr (src);
 	  rtx dest_mem;
 
-	  if (!p || dest_align == 0 || !host_integerp (len, 1)
-	      || !can_store_by_pieces (tree_low_cst (len, 1),
+	  if (!p || dest_align == 0 || !tree_fits_uhwi_p (len)
+	      || !can_store_by_pieces (tree_to_uhwi (len),
 				       builtin_strncpy_read_str,
 				       CONST_CAST (char *, p),
 				       dest_align, false))
 	    return NULL_RTX;
 
 	  dest_mem = get_memory_rtx (dest, len);
-	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
+	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_strncpy_read_str,
 			   CONST_CAST (char *, p), dest_align, false, 0);
 	  dest_mem = force_operand (XEXP (dest_mem, 0), target);
@@ -3569,13 +3576,13 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
        * the coefficients by pieces (in the required modes).
        * We can't pass builtin_memset_gen_str as that emits RTL.  */
       c = 1;
-      if (host_integerp (len, 1)
-	  && can_store_by_pieces (tree_low_cst (len, 1),
+      if (tree_fits_uhwi_p (len)
+	  && can_store_by_pieces (tree_to_uhwi (len),
 				  builtin_memset_read_str, &c, dest_align,
 				  true))
 	{
 	  val_rtx = force_reg (val_mode, val_rtx);
-	  store_by_pieces (dest_mem, tree_low_cst (len, 1),
+	  store_by_pieces (dest_mem, tree_to_uhwi (len),
 			   builtin_memset_gen_str, val_rtx, dest_align,
 			   true, 0);
 	}
@@ -3594,11 +3601,11 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 
   if (c)
     {
-      if (host_integerp (len, 1)
-	  && can_store_by_pieces (tree_low_cst (len, 1),
+      if (tree_fits_uhwi_p (len)
+	  && can_store_by_pieces (tree_to_uhwi (len),
 				  builtin_memset_read_str, &c, dest_align,
 				  true))
-	store_by_pieces (dest_mem, tree_low_cst (len, 1),
+	store_by_pieces (dest_mem, tree_to_uhwi (len),
 			 builtin_memset_read_str, &c, dest_align, true, 0);
       else if (!set_storage_via_setmem (dest_mem, len_rtx,
 					gen_int_mode (c, val_mode),
@@ -4503,7 +4510,7 @@ expand_builtin_frame_address (tree fndecl, tree exp)
   if (call_expr_nargs (exp) == 0)
     /* Warning about missing arg was already issued.  */
     return const0_rtx;
-  else if (! host_integerp (CALL_EXPR_ARG (exp, 0), 1))
+  else if (! tree_fits_uhwi_p (CALL_EXPR_ARG (exp, 0)))
     {
       if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FRAME_ADDRESS)
 	error ("invalid argument to %<__builtin_frame_address%>");
@@ -4515,7 +4522,7 @@ expand_builtin_frame_address (tree fndecl, tree exp)
     {
       rtx tem
 	= expand_builtin_return_addr (DECL_FUNCTION_CODE (fndecl),
-				      tree_low_cst (CALL_EXPR_ARG (exp, 0), 1));
+				      tree_to_uhwi (CALL_EXPR_ARG (exp, 0)));
 
       /* Some ports cannot access arbitrary stack frames.  */
       if (tem == NULL)
@@ -4569,7 +4576,7 @@ expand_builtin_alloca (tree exp, bool cannot_accumulate)
 
   /* Compute the alignment.  */
   align = (alloca_with_align
-	   ? TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1))
+	   ? tree_to_hwi (CALL_EXPR_ARG (exp, 1))
 	   : BIGGEST_ALIGNMENT);
 
   /* Allocate the desired space.  */
@@ -5010,12 +5017,13 @@ expand_builtin_signbit (tree exp, rtx target)
 
   if (bitpos < GET_MODE_BITSIZE (rmode))
     {
-      double_int mask = double_int_zero.set_bit (bitpos);
+      wide_int mask = wide_int::set_bit_in_zero (bitpos, 
+						 GET_MODE_PRECISION (rmode));
 
       if (GET_MODE_SIZE (imode) > GET_MODE_SIZE (rmode))
 	temp = gen_lowpart (rmode, temp);
       temp = expand_binop (rmode, and_optab, temp,
-			   immed_double_int_const (mask, rmode),
+			   immed_wide_int_const (mask, rmode),
 			   NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
   else
@@ -5401,7 +5409,7 @@ expand_builtin_atomic_compare_exchange (enum machine_mode mode, tree exp,
 
   weak = CALL_EXPR_ARG (exp, 3);
   is_weak = false;
-  if (host_integerp (weak, 0) && tree_low_cst (weak, 0) != 0)
+  if (tree_fits_shwi_p (weak) && tree_to_shwi (weak) != 0)
     is_weak = true;
 
   oldval = expect;
@@ -8031,8 +8039,9 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	{
 	  tree itype = TREE_TYPE (TREE_TYPE (fndecl));
 	  tree ftype = TREE_TYPE (arg);
-	  double_int val;
+	  wide_int val;
 	  REAL_VALUE_TYPE r;
+	  bool fail = false;
 
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
@@ -8058,9 +8067,10 @@ fold_builtin_int_roundingfn (location_t loc, tree fndecl, tree arg)
 	      gcc_unreachable ();
 	    }
 
-	  real_to_integer2 ((HOST_WIDE_INT *)&val.low, &val.high, &r);
-	  if (double_int_fits_to_tree_p (itype, val))
-	    return double_int_to_tree (itype, val);
+	  val = real_to_integer (&r, &fail, 
+				 TYPE_PRECISION (itype));
+	  if (!fail)
+	    return wide_int_to_tree (itype, val);
 	}
     }
 
@@ -8093,102 +8103,40 @@ fold_builtin_bitop (tree fndecl, tree arg)
   /* Optimize for constant argument.  */
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
-      HOST_WIDE_INT hi, width, result;
-      unsigned HOST_WIDE_INT lo;
-      tree type;
-
-      type = TREE_TYPE (arg);
-      width = TYPE_PRECISION (type);
-      lo = TREE_INT_CST_LOW (arg);
-
-      /* Clear all the bits that are beyond the type's precision.  */
-      if (width > HOST_BITS_PER_WIDE_INT)
-	{
-	  hi = TREE_INT_CST_HIGH (arg);
-	  if (width < HOST_BITS_PER_DOUBLE_INT)
-	    hi &= ~((unsigned HOST_WIDE_INT) (-1)
-		    << (width - HOST_BITS_PER_WIDE_INT));
-	}
-      else
-	{
-	  hi = 0;
-	  if (width < HOST_BITS_PER_WIDE_INT)
-	    lo &= ~((unsigned HOST_WIDE_INT) (-1) << width);
-	}
+      wide_int warg = arg;
+      wide_int result;
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
 	CASE_INT_FN (BUILT_IN_FFS):
-	  if (lo != 0)
-	    result = ffs_hwi (lo);
-	  else if (hi != 0)
-	    result = HOST_BITS_PER_WIDE_INT + ffs_hwi (hi);
-	  else
-	    result = 0;
+	  result = warg.ffs ();
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLZ):
-	  if (hi != 0)
-	    result = width - floor_log2 (hi) - 1 - HOST_BITS_PER_WIDE_INT;
-	  else if (lo != 0)
-	    result = width - floor_log2 (lo) - 1;
-	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = width;
+	  result = warg.clz ();
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CTZ):
-	  if (lo != 0)
-	    result = ctz_hwi (lo);
-	  else if (hi != 0)
-	    result = HOST_BITS_PER_WIDE_INT + ctz_hwi (hi);
-	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (type), result))
-	    result = width;
+	  result = warg.ctz ();
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLRSB):
-	  if (width > 2 * HOST_BITS_PER_WIDE_INT)
-	    return NULL_TREE;
-	  if (width > HOST_BITS_PER_WIDE_INT
-	      && (hi & ((unsigned HOST_WIDE_INT) 1
-			<< (width - HOST_BITS_PER_WIDE_INT - 1))) != 0)
-	    {
-	      hi = ~hi & ~((unsigned HOST_WIDE_INT) (-1)
-			   << (width - HOST_BITS_PER_WIDE_INT - 1));
-	      lo = ~lo;
-	    }
-	  else if (width <= HOST_BITS_PER_WIDE_INT
-		   && (lo & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
-	    lo = ~lo & ~((unsigned HOST_WIDE_INT) (-1) << (width - 1));
-	  if (hi != 0)
-	    result = width - floor_log2 (hi) - 2 - HOST_BITS_PER_WIDE_INT;
-	  else if (lo != 0)
-	    result = width - floor_log2 (lo) - 2;
-	  else
-	    result = width - 1;
+	  result = warg.clrsb ();
 	  break;
 
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
-	  result = 0;
-	  while (lo)
-	    result++, lo &= lo - 1;
-	  while (hi)
-	    result++, hi &= (unsigned HOST_WIDE_INT) hi - 1;
+	  result = warg.popcount ();
 	  break;
 
 	CASE_INT_FN (BUILT_IN_PARITY):
-	  result = 0;
-	  while (lo)
-	    result++, lo &= lo - 1;
-	  while (hi)
-	    result++, hi &= (unsigned HOST_WIDE_INT) hi - 1;
-	  result &= 1;
+	  result = warg.parity ();
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
 
-      return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), result);
+      return wide_int_to_tree (TREE_TYPE (TREE_TYPE (fndecl)), result);
     }
 
   return NULL_TREE;
@@ -8205,13 +8153,7 @@ fold_builtin_bswap (tree fndecl, tree arg)
   /* Optimize constant value.  */
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
-      HOST_WIDE_INT hi, width, r_hi = 0;
-      unsigned HOST_WIDE_INT lo, r_lo = 0;
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
-
-      width = TYPE_PRECISION (type);
-      lo = TREE_INT_CST_LOW (arg);
-      hi = TREE_INT_CST_HIGH (arg);
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
@@ -8219,35 +8161,16 @@ fold_builtin_bswap (tree fndecl, tree arg)
 	  case BUILT_IN_BSWAP32:
 	  case BUILT_IN_BSWAP64:
 	    {
-	      int s;
-
-	      for (s = 0; s < width; s += 8)
-		{
-		  int d = width - s - 8;
-		  unsigned HOST_WIDE_INT byte;
-
-		  if (s < HOST_BITS_PER_WIDE_INT)
-		    byte = (lo >> s) & 0xff;
-		  else
-		    byte = (hi >> (s - HOST_BITS_PER_WIDE_INT)) & 0xff;
-
-		  if (d < HOST_BITS_PER_WIDE_INT)
-		    r_lo |= byte << d;
-		  else
-		    r_hi |= byte << (d - HOST_BITS_PER_WIDE_INT);
-		}
+	      signop sgn = TYPE_SIGN (type);
+	      tree result = 
+		wide_int_to_tree (type, 
+				  wide_int (arg)
+				  .force_to_size (TYPE_PRECISION (type), sgn).bswap ());
+	      return result;
 	    }
-
-	    break;
-
 	default:
 	  gcc_unreachable ();
 	}
-
-      if (width < HOST_BITS_PER_WIDE_INT)
-	return build_int_cst (type, r_lo);
-      else
-	return build_int_cst_wide (type, r_lo, r_hi);
     }
 
   return NULL_TREE;
@@ -8309,7 +8232,7 @@ fold_builtin_logarithm (location_t loc, tree fndecl, tree arg,
 	    /* Prepare to do logN(exp10(exponent) -> exponent*logN(10).  */
 	    {
 	      REAL_VALUE_TYPE dconst10;
-	      real_from_integer (&dconst10, VOIDmode, 10, 0, 0);
+	      real_from_integer (&dconst10, VOIDmode, 10, SIGNED);
 	      x = build_real (type, dconst10);
 	    }
 	    exponent = CALL_EXPR_ARG (arg, 0);
@@ -8462,7 +8385,7 @@ fold_builtin_pow (location_t loc, tree fndecl, tree arg0, tree arg1, tree type)
 
       /* Check for an integer exponent.  */
       n = real_to_integer (&c);
-      real_from_integer (&cint, VOIDmode, n, n < 0 ? -1 : 0, 0);
+      real_from_integer (&cint, VOIDmode, n, SIGNED);
       if (real_identical (&c, &cint))
 	{
 	  /* Attempt to evaluate pow at compile-time, unless this should
@@ -8560,9 +8483,9 @@ fold_builtin_powi (location_t loc, tree fndecl ATTRIBUTE_UNUSED,
   if (real_onep (arg0))
     return omit_one_operand_loc (loc, type, build_real (type, dconst1), arg1);
 
-  if (host_integerp (arg1, 0))
+  if (tree_fits_shwi_p (arg1))
     {
-      HOST_WIDE_INT c = TREE_INT_CST_LOW (arg1);
+      HOST_WIDE_INT c = tree_to_shwi (arg1);
 
       /* Evaluate powi at compile-time.  */
       if (TREE_CODE (arg0) == REAL_CST
@@ -8659,7 +8582,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
       || ! validate_arg (len, INTEGER_TYPE))
     return NULL_TREE;
 
-  if (! host_integerp (len, 1))
+  if (! tree_fits_uhwi_p (len))
     return NULL_TREE;
 
   /* If the LEN parameter is zero, return DEST.  */
@@ -8689,7 +8612,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
   if (! var_decl_component_p (var))
     return NULL_TREE;
 
-  length = tree_low_cst (len, 1);
+  length = tree_to_uhwi (len);
   if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
@@ -8704,7 +8627,7 @@ fold_builtin_memset (location_t loc, tree dest, tree c, tree len,
       if (CHAR_BIT != 8 || BITS_PER_UNIT != 8 || HOST_BITS_PER_WIDE_INT > 64)
 	return NULL_TREE;
 
-      cval = TREE_INT_CST_LOW (c);
+      cval = tree_to_hwi (c);
       cval &= 0xff;
       cval |= cval << 8;
       cval |= cval << 16;
@@ -8792,9 +8715,9 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  if (!dest_align || !src_align)
 	    return NULL_TREE;
 	  if (readonly_data_expr (src)
-	      || (host_integerp (len, 1)
+	      || (tree_fits_uhwi_p (len)
 		  && (MIN (src_align, dest_align) / BITS_PER_UNIT
-		      >= (unsigned HOST_WIDE_INT) tree_low_cst (len, 1))))
+		      >= (unsigned HOST_WIDE_INT) tree_to_uhwi (len))))
 	    {
 	      tree fn = builtin_decl_implicit (BUILT_IN_MEMCPY);
 	      if (!fn)
@@ -8817,8 +8740,8 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	      destvar = TREE_OPERAND (dest, 0);
 	      dest_base = get_ref_base_and_extent (destvar, &dest_offset,
 						   &size, &maxsize);
-	      if (host_integerp (len, 1))
-		maxsize = tree_low_cst (len, 1);
+	      if (tree_fits_uhwi_p (len))
+		maxsize = tree_to_uhwi (len);
 	      else
 		maxsize = -1;
 	      src_offset /= BITS_PER_UNIT;
@@ -8834,20 +8757,19 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	      else if (TREE_CODE (src_base) == MEM_REF
 		       && TREE_CODE (dest_base) == MEM_REF)
 		{
-		  double_int off;
+		  addr_wide_int off;
 		  if (! operand_equal_p (TREE_OPERAND (src_base, 0),
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return NULL_TREE;
-		  off = mem_ref_offset (src_base) +
-					double_int::from_shwi (src_offset);
-		  if (!off.fits_shwi ())
+		  off = mem_ref_offset (src_base) + src_offset;
+		  if (!off.fits_shwi_p ())
 		    return NULL_TREE;
-		  src_offset = off.low;
-		  off = mem_ref_offset (dest_base) +
-					double_int::from_shwi (dest_offset);
-		  if (!off.fits_shwi ())
+		  src_offset = off.to_shwi ();
+
+		  off = mem_ref_offset (dest_base) + dest_offset;
+		  if (!off.fits_shwi_p ())
 		    return NULL_TREE;
-		  dest_offset = off.low;
+		  dest_offset = off.to_shwi ();
 		  if (ranges_overlap_p (src_offset, maxsize,
 					dest_offset, maxsize))
 		    return NULL_TREE;
@@ -8884,7 +8806,7 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 	  return NULL_TREE;
 	}
 
-      if (!host_integerp (len, 0))
+      if (!tree_fits_shwi_p (len))
 	return NULL_TREE;
       /* FIXME:
          This logic lose for arguments like (type *)malloc (sizeof (type)),
@@ -9172,7 +9094,7 @@ fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
       const char *p1;
 
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || !host_integerp (len, 1))
+	  || !tree_fits_uhwi_p (len))
 	return NULL_TREE;
 
       p1 = c_getstr (arg1);
@@ -9185,7 +9107,7 @@ fold_builtin_memchr (location_t loc, tree arg1, tree arg2, tree len, tree type)
 	  if (target_char_cast (arg2, &c))
 	    return NULL_TREE;
 
-	  r = (const char *) memchr (p1, c, tree_low_cst (len, 1));
+	  r = (const char *) memchr (p1, c, tree_to_uhwi (len));
 
 	  if (r == NULL)
 	    return build_int_cst (TREE_TYPE (arg1), 0);
@@ -9224,11 +9146,11 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
 
   /* If all arguments are constant, and the value of len is not greater
      than the lengths of arg1 and arg2, evaluate at compile-time.  */
-  if (host_integerp (len, 1) && p1 && p2
+  if (tree_fits_uhwi_p (len) && p1 && p2
       && compare_tree_int (len, strlen (p1) + 1) <= 0
       && compare_tree_int (len, strlen (p2) + 1) <= 0)
     {
-      const int r = memcmp (p1, p2, tree_low_cst (len, 1));
+      const int r = memcmp (p1, p2, tree_to_uhwi (len));
 
       if (r > 0)
 	return integer_one_node;
@@ -9240,7 +9162,7 @@ fold_builtin_memcmp (location_t loc, tree arg1, tree arg2, tree len)
 
   /* If len parameter is one, return an expression corresponding to
      (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
+  if (tree_fits_uhwi_p (len) && tree_to_uhwi (len) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
       tree cst_uchar_ptr_node
@@ -9352,9 +9274,9 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
   p1 = c_getstr (arg1);
   p2 = c_getstr (arg2);
 
-  if (host_integerp (len, 1) && p1 && p2)
+  if (tree_fits_uhwi_p (len) && p1 && p2)
     {
-      const int i = strncmp (p1, p2, tree_low_cst (len, 1));
+      const int i = strncmp (p1, p2, tree_to_uhwi (len));
       if (i > 0)
 	return integer_one_node;
       else if (i < 0)
@@ -9400,7 +9322,7 @@ fold_builtin_strncmp (location_t loc, tree arg1, tree arg2, tree len)
 
   /* If len parameter is one, return an expression corresponding to
      (*(const unsigned char*)arg1 - (const unsigned char*)arg2).  */
-  if (host_integerp (len, 1) && tree_low_cst (len, 1) == 1)
+  if (tree_fits_uhwi_p (len) && tree_to_uhwi (len) == 1)
     {
       tree cst_uchar_node = build_type_variant (unsigned_char_type_node, 1, 0);
       tree cst_uchar_ptr_node
@@ -9858,7 +9780,7 @@ fold_builtin_load_exponent (location_t loc, tree arg0, tree arg1,
       /* If both arguments are constant, then try to evaluate it.  */
       if ((ldexp || REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2)
 	  && TREE_CODE (arg0) == REAL_CST && !TREE_OVERFLOW (arg0)
-	  && host_integerp (arg1, 0))
+	  && tree_fits_shwi_p (arg1))
         {
 	  /* Bound the maximum adjustment to twice the range of the
 	     mode's valid exponents.  Use abs to ensure the range is
@@ -9868,7 +9790,7 @@ fold_builtin_load_exponent (location_t loc, tree arg0, tree arg1,
 		 - REAL_MODE_FORMAT (TYPE_MODE (type))->emin);
 
 	  /* Get the user-requested adjustment.  */
-	  const HOST_WIDE_INT req_exp_adj = tree_low_cst (arg1, 0);
+	  const HOST_WIDE_INT req_exp_adj = tree_to_shwi (arg1);
 
 	  /* The requested adjustment must be inside this range.  This
 	     is a preliminary cap to avoid things like overflow, we
@@ -12338,7 +12260,7 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
   if (orig && !validate_arg (orig, POINTER_TYPE))
     return NULL_TREE;
 
-  if (!host_integerp (destsize, 1))
+  if (!tree_fits_uhwi_p (destsize))
     return NULL_TREE;
 
   /* Check whether the format is a literal string constant.  */
@@ -12352,7 +12274,7 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
   if (!init_target_chars ())
     return NULL_TREE;
 
-  destlen = tree_low_cst (destsize, 1);
+  destlen = tree_to_uhwi (destsize);
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
   if (strchr (fmt_str, target_percent) == NULL)
@@ -12397,10 +12319,10 @@ fold_builtin_snprintf (location_t loc, tree dest, tree destsize, tree fmt,
 	return NULL_TREE;
 
       retval = c_strlen (orig, 1);
-      if (!retval || !host_integerp (retval, 1))  
+      if (!retval || !tree_fits_uhwi_p (retval))  
 	return NULL_TREE;
 
-      origlen = tree_low_cst (retval, 1);
+      origlen = tree_to_uhwi (retval);
       /* We could expand this as
 	 memcpy (str1, str2, cst - 1); str1[cst - 1] = '\0';
 	 or to
@@ -12462,7 +12384,7 @@ expand_builtin_object_size (tree exp)
       return const0_rtx;
     }
 
-  object_size_type = tree_low_cst (ost, 0);
+  object_size_type = tree_to_shwi (ost);
 
   return object_size_type < 2 ? constm1_rtx : const0_rtx;
 }
@@ -12491,10 +12413,10 @@ expand_builtin_memory_chk (tree exp, rtx target, enum machine_mode mode,
   len = CALL_EXPR_ARG (exp, 2);
   size = CALL_EXPR_ARG (exp, 3);
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_RTX;
 
-  if (host_integerp (len, 1) || integer_all_onesp (size))
+  if (tree_fits_uhwi_p (len) || integer_all_onesp (size))
     {
       tree fn;
 
@@ -12625,22 +12547,22 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
   if (!len || !size)
     return;
 
-  if (! host_integerp (size, 1) || integer_all_onesp (size))
+  if (! tree_fits_uhwi_p (size) || integer_all_onesp (size))
     return;
 
   if (is_strlen)
     {
       len = c_strlen (len, 1);
-      if (! len || ! host_integerp (len, 1) || tree_int_cst_lt (len, size))
+      if (! len || ! tree_fits_uhwi_p (len) || tree_int_cst_lt (len, size))
 	return;
     }
   else if (fcode == BUILT_IN_STRNCAT_CHK)
     {
       tree src = CALL_EXPR_ARG (exp, 1);
-      if (! src || ! host_integerp (len, 1) || tree_int_cst_lt (len, size))
+      if (! src || ! tree_fits_uhwi_p (len) || tree_int_cst_lt (len, size))
 	return;
       src = c_strlen (src, 1);
-      if (! src || ! host_integerp (src, 1))
+      if (! src || ! tree_fits_uhwi_p (src))
 	{
 	  warning_at (loc, 0, "%Kcall to %D might overflow destination buffer",
 		      exp, get_callee_fndecl (exp));
@@ -12649,7 +12571,7 @@ maybe_emit_chk_warning (tree exp, enum built_in_function fcode)
       else if (tree_int_cst_lt (src, size))
 	return;
     }
-  else if (! host_integerp (len, 1) || ! tree_int_cst_lt (size, len))
+  else if (! tree_fits_uhwi_p (len) || ! tree_int_cst_lt (size, len))
     return;
 
   warning_at (loc, 0, "%Kcall to %D will always overflow destination buffer",
@@ -12673,7 +12595,7 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
   size = CALL_EXPR_ARG (exp, 2);
   fmt = CALL_EXPR_ARG (exp, 3);
 
-  if (! host_integerp (size, 1) || integer_all_onesp (size))
+  if (! tree_fits_uhwi_p (size) || integer_all_onesp (size))
     return;
 
   /* Check whether the format is a literal string constant.  */
@@ -12701,7 +12623,7 @@ maybe_emit_sprintf_chk_warning (tree exp, enum built_in_function fcode)
 	return;
 
       len = c_strlen (arg, 1);
-      if (!len || ! host_integerp (len, 1))
+      if (!len || ! tree_fits_uhwi_p (len))
 	return;
     }
   else
@@ -12744,6 +12666,7 @@ fold_builtin_object_size (tree ptr, tree ost)
 {
   unsigned HOST_WIDE_INT bytes;
   int object_size_type;
+  int precision = TYPE_PRECISION (TREE_TYPE (ptr));
 
   if (!validate_arg (ptr, POINTER_TYPE)
       || !validate_arg (ost, INTEGER_TYPE))
@@ -12756,7 +12679,7 @@ fold_builtin_object_size (tree ptr, tree ost)
       || compare_tree_int (ost, 3) > 0)
     return NULL_TREE;
 
-  object_size_type = tree_low_cst (ost, 0);
+  object_size_type = tree_to_shwi (ost);
 
   /* __builtin_object_size doesn't evaluate side-effects in its arguments;
      if there are any side-effects, it returns (size_t) -1 for types 0 and 1
@@ -12766,21 +12689,24 @@ fold_builtin_object_size (tree ptr, tree ost)
 
   if (TREE_CODE (ptr) == ADDR_EXPR)
     {
-      bytes = compute_builtin_object_size (ptr, object_size_type);
-      if (double_int_fits_to_tree_p (size_type_node,
-				     double_int::from_uhwi (bytes)))
-	return build_int_cstu (size_type_node, bytes);
+
+      wide_int wbytes 
+	= wide_int::from_uhwi (compute_builtin_object_size (ptr, object_size_type),
+			       precision);
+      if (wbytes.fits_to_tree_p (size_type_node))
+	return wide_int_to_tree (size_type_node, wbytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
     {
       /* If object size is not known yet, delay folding until
        later.  Maybe subsequent passes will help determining
        it.  */
+      wide_int wbytes;
       bytes = compute_builtin_object_size (ptr, object_size_type);
+      wbytes = wide_int::from_uhwi (bytes, precision);
       if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
-          && double_int_fits_to_tree_p (size_type_node,
-					double_int::from_uhwi (bytes)))
-	return build_int_cstu (size_type_node, bytes);
+          && wbytes.fits_to_tree_p (size_type_node))
+	return wide_int_to_tree (size_type_node, wbytes);
     }
 
   return NULL_TREE;
@@ -12822,17 +12748,17 @@ fold_builtin_memory_chk (location_t loc, tree fndecl,
 	}
     }
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_TREE;
 
   if (! integer_all_onesp (size))
     {
-      if (! host_integerp (len, 1))
+      if (! tree_fits_uhwi_p (len))
 	{
 	  /* If LEN is not constant, try MAXLEN too.
 	     For MAXLEN only allow optimizing into non-_ocs function
 	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! host_integerp (maxlen, 1))
+	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
 	    {
 	      if (fcode == BUILT_IN_MEMPCPY_CHK && ignore)
 		{
@@ -12904,18 +12830,18 @@ fold_builtin_stxcpy_chk (location_t loc, tree fndecl, tree dest,
   if (fcode == BUILT_IN_STRCPY_CHK && operand_equal_p (src, dest, 0))
     return fold_convert_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), dest);
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_TREE;
 
   if (! integer_all_onesp (size))
     {
       len = c_strlen (src, 1);
-      if (! len || ! host_integerp (len, 1))
+      if (! len || ! tree_fits_uhwi_p (len))
 	{
 	  /* If LEN is not constant, try MAXLEN too.
 	     For MAXLEN only allow optimizing into non-_ocs function
 	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! host_integerp (maxlen, 1))
+	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
 	    {
 	      if (fcode == BUILT_IN_STPCPY_CHK)
 		{
@@ -12991,17 +12917,17 @@ fold_builtin_stxncpy_chk (location_t loc, tree dest, tree src,
          return build_call_expr_loc (loc, fn, 4, dest, src, len, size);
     }
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_TREE;
 
   if (! integer_all_onesp (size))
     {
-      if (! host_integerp (len, 1))
+      if (! tree_fits_uhwi_p (len))
 	{
 	  /* If LEN is not constant, try MAXLEN too.
 	     For MAXLEN only allow optimizing into non-_ocs function
 	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! host_integerp (maxlen, 1))
+	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
 	    return NULL_TREE;
 	}
       else
@@ -13040,7 +12966,7 @@ fold_builtin_strcat_chk (location_t loc, tree fndecl, tree dest,
   if (p && *p == '\0')
     return omit_one_operand_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), dest, src);
 
-  if (! host_integerp (size, 1) || ! integer_all_onesp (size))
+  if (! tree_fits_uhwi_p (size) || ! integer_all_onesp (size))
     return NULL_TREE;
 
   /* If __builtin_strcat_chk is used, assume strcat is available.  */
@@ -13074,15 +13000,15 @@ fold_builtin_strncat_chk (location_t loc, tree fndecl,
   else if (integer_zerop (len))
     return omit_one_operand_loc (loc, TREE_TYPE (TREE_TYPE (fndecl)), dest, src);
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_TREE;
 
   if (! integer_all_onesp (size))
     {
       tree src_len = c_strlen (src, 1);
       if (src_len
-	  && host_integerp (src_len, 1)
-	  && host_integerp (len, 1)
+	  && tree_fits_uhwi_p (src_len)
+	  && tree_fits_uhwi_p (len)
 	  && ! tree_int_cst_lt (len, src_len))
 	{
 	  /* If LEN >= strlen (SRC), optimize into __strcat_chk.  */
@@ -13131,7 +13057,7 @@ fold_builtin_sprintf_chk_1 (location_t loc, int nargs, tree *args,
   if (!validate_arg (fmt, POINTER_TYPE))
     return NULL_TREE;
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_TREE;
 
   len = NULL_TREE;
@@ -13162,7 +13088,7 @@ fold_builtin_sprintf_chk_1 (location_t loc, int nargs, tree *args,
 	      if (validate_arg (arg, POINTER_TYPE))
 		{
 		  len = c_strlen (arg, 1);
-		  if (! len || ! host_integerp (len, 1))
+		  if (! len || ! tree_fits_uhwi_p (len))
 		    len = NULL_TREE;
 		}
 	    }
@@ -13239,17 +13165,17 @@ fold_builtin_snprintf_chk_1 (location_t loc, int nargs, tree *args,
   if (!validate_arg (fmt, POINTER_TYPE))
     return NULL_TREE;
 
-  if (! host_integerp (size, 1))
+  if (! tree_fits_uhwi_p (size))
     return NULL_TREE;
 
   if (! integer_all_onesp (size))
     {
-      if (! host_integerp (len, 1))
+      if (! tree_fits_uhwi_p (len))
 	{
 	  /* If LEN is not constant, try MAXLEN too.
 	     For MAXLEN only allow optimizing into non-_ocs function
 	     if SIZE is >= MAXLEN, never convert to __ocs_fail ().  */
-	  if (maxlen == NULL_TREE || ! host_integerp (maxlen, 1))
+	  if (maxlen == NULL_TREE || ! tree_fits_uhwi_p (maxlen))
 	    return NULL_TREE;
 	}
       else
@@ -13894,10 +13820,10 @@ do_mpfr_bessel_n (tree arg1, tree arg2, tree type,
   /* To proceed, MPFR must exactly represent the target floating point
      format, which only happens when the target base equals two.  */
   if (REAL_MODE_FORMAT (TYPE_MODE (type))->b == 2
-      && host_integerp (arg1, 0)
+      && tree_fits_shwi_p (arg1)
       && TREE_CODE (arg2) == REAL_CST && !TREE_OVERFLOW (arg2))
     {
-      const HOST_WIDE_INT n = tree_low_cst(arg1, 0);
+      const HOST_WIDE_INT n = tree_to_shwi (arg1);
       const REAL_VALUE_TYPE *const ra = &TREE_REAL_CST (arg2);
 
       if (n == (long)n

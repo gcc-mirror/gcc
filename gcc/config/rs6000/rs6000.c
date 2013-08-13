@@ -3777,7 +3777,7 @@ rs6000_builtin_support_vector_misalignment (enum machine_mode mode,
 	     it's word aligned.  */
 	  if (rs6000_vector_alignment_reachable (type, is_packed))
             {
-              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
+              int element_size = tree_to_hwi (TYPE_SIZE (type));
 
               if (element_size == 64 || element_size == 32)
                return true;
@@ -5844,13 +5844,13 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (!DECL_SIZE_UNIT (decl))
 	    return false;
 
-	  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+	  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
 	    return false;
-
-	  dsize = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  
+	  dsize = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  if (dsize > 32768)
 	    return false;
-
+	  
 	  return dalign / BITS_PER_UNIT >= dsize;
 	}
     }
@@ -5870,8 +5870,8 @@ offsettable_ok_by_alignment (rtx op, HOST_WIDE_INT offset,
 	  if (TREE_CODE (decl) == STRING_CST)
 	    dsize = TREE_STRING_LENGTH (decl);
 	  else if (TYPE_SIZE_UNIT (type)
-		   && host_integerp (TYPE_SIZE_UNIT (type), 1))
-	    dsize = tree_low_cst (TYPE_SIZE_UNIT (type), 1);
+		   && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+	    dsize = tree_to_uhwi (TYPE_SIZE_UNIT (type));
 	  else
 	    return false;
 	  if (dsize > 32768)
@@ -8460,7 +8460,7 @@ rs6000_darwin64_record_arg_advance_recurse (CUMULATIVE_ARGS *cum,
 	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
-	    && host_integerp (bit_position (f), 1))
+	    && tree_fits_uhwi_p (bit_position (f)))
 	  bitpos += int_bit_position (f);
 
 	/* ??? FIXME: else assume zero offset.  */
@@ -8937,7 +8937,7 @@ rs6000_darwin64_record_arg_recurse (CUMULATIVE_ARGS *cum, const_tree type,
 	mode = TYPE_MODE (ftype);
 
 	if (DECL_SIZE (f) != 0
-	    && host_integerp (bit_position (f), 1))
+	    && tree_fits_uhwi_p (bit_position (f)))
 	  bitpos += int_bit_position (f);
 
 	/* ??? FIXME: else assume zero offset.  */
@@ -10675,7 +10675,7 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
+	  || tree_to_hwi (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
 	  return const0_rtx;
@@ -10720,7 +10720,7 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       return const0_rtx;
     }
   else
-    cr6_form_int = TREE_INT_CST_LOW (cr6_form);
+    cr6_form_int = tree_to_hwi (cr6_form);
 
   gcc_assert (mode0 == mode1);
 
@@ -11211,7 +11211,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 4-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg2) & ~0xf)
+	  || tree_to_hwi (arg2) & ~0xf)
 	{
 	  error ("argument 3 must be a 4-bit unsigned literal");
 	  return const0_rtx;
@@ -11229,7 +11229,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 2-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg2) & ~0x3)
+	  || tree_to_hwi (arg2) & ~0x3)
 	{
 	  error ("argument 3 must be a 2-bit unsigned literal");
 	  return const0_rtx;
@@ -11241,7 +11241,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
       /* Only allow 1-bit unsigned literals.  */
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg2) & ~0x1)
+	  || tree_to_hwi (arg2) & ~0x1)
 	{
 	  error ("argument 3 must be a 1-bit unsigned literal");
 	  return const0_rtx;
@@ -11254,7 +11254,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 	 range and prepare arguments.  */
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
+	  || !IN_RANGE (TREE_INT_CST_ELT (arg1, 0), 0, 1))
 	{
 	  error ("argument 2 must be 0 or 1");
 	  return const0_rtx;
@@ -11262,7 +11262,7 @@ rs6000_expand_ternop_builtin (enum insn_code icode, tree exp, rtx target)
 
       STRIP_NOPS (arg2);
       if (TREE_CODE (arg2) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg2), 0, 15))
+	  || !IN_RANGE (TREE_INT_CST_ELT (arg2, 0), 0, 15))
 	{
 	  error ("argument 3 must be in the range 0..15");
 	  return const0_rtx;
@@ -11445,7 +11445,7 @@ altivec_expand_dst_builtin (tree exp, rtx target ATTRIBUTE_UNUSED,
 	*expandedp = true;
 	STRIP_NOPS (arg2);
 	if (TREE_CODE (arg2) != INTEGER_CST
-	    || TREE_INT_CST_LOW (arg2) & ~0x3)
+	    || tree_to_hwi (arg2) & ~0x3)
 	  {
 	    error ("argument to %qs must be a 2-bit unsigned literal", d->name);
 	    return const0_rtx;
@@ -11499,8 +11499,8 @@ get_element_number (tree vec_type, tree arg)
 {
   unsigned HOST_WIDE_INT elt, max = TYPE_VECTOR_SUBPARTS (vec_type) - 1;
 
-  if (!host_integerp (arg, 1)
-      || (elt = tree_low_cst (arg, 1), elt > max))
+  if (!tree_fits_uhwi_p (arg)
+      || (elt = tree_to_uhwi (arg), elt > max))
     {
       error ("selector must be an integer constant in the range 0..%wi", max);
       return 0;
@@ -11692,7 +11692,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 	return const0_rtx;
 
       if (TREE_CODE (arg0) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg0) & ~0x3)
+	  || tree_to_hwi (arg0) & ~0x3)
 	{
 	  error ("argument to dss must be a 2-bit unsigned literal");
 	  return const0_rtx;
@@ -11901,7 +11901,7 @@ spe_expand_builtin (tree exp, rtx target, bool *expandedp)
     case SPE_BUILTIN_EVSTWWO:
       arg1 = CALL_EXPR_ARG (exp, 2);
       if (TREE_CODE (arg1) != INTEGER_CST
-	  || TREE_INT_CST_LOW (arg1) & ~0x1f)
+	  || tree_to_hwi (arg1) & ~0x1f)
 	{
 	  error ("argument 2 must be a 5-bit unsigned literal");
 	  return const0_rtx;
@@ -12027,7 +12027,7 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       return const0_rtx;
     }
   else
-    form_int = TREE_INT_CST_LOW (form);
+    form_int = tree_to_hwi (form);
 
   gcc_assert (mode0 == mode1);
 
@@ -12099,7 +12099,7 @@ spe_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       return const0_rtx;
     }
   else
-    form_int = TREE_INT_CST_LOW (form);
+    form_int = tree_to_hwi (form);
 
   gcc_assert (mode0 == mode1);
 
@@ -28217,7 +28217,7 @@ rs6000_emit_swrsqrt (rtx dst, rtx src)
   gcc_assert (code != CODE_FOR_nothing);
 
   /* Load up the constant 1.5 either as a scalar, or as a vector.  */
-  real_from_integer (&dconst3_2, VOIDmode, 3, 0, 0);
+  real_from_integer (&dconst3_2, VOIDmode, 3, SIGNED);
   SET_REAL_EXP (&dconst3_2, REAL_EXP (&dconst3_2) - 1);
 
   halfthree = rs6000_load_constant_and_splat (mode, dconst3_2);

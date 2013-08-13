@@ -11173,24 +11173,24 @@ avr_expand_delay_cycles (rtx operands0)
 
 /* Return VAL * BASE + DIGIT.  BASE = 0 is shortcut for BASE = 2^{32}   */
 
-static double_int
-avr_double_int_push_digit (double_int val, int base,
-                           unsigned HOST_WIDE_INT digit)
+static wide_int
+avr_wide_int_push_digit (wide_int val, int base,
+			 unsigned HOST_WIDE_INT digit)
 {
   val = 0 == base
-    ? val.llshift (32, 64)
-    : val * double_int::from_uhwi (base);
+    ? val.llshift (32)
+    : val * base;
 
-  return val + double_int::from_uhwi (digit);
+  return val + digit;
 }
 
 
 /* Compute the image of x under f, i.e. perform   x --> f(x)    */
 
 static int
-avr_map (double_int f, int x)
+avr_map (wide_int f, int x)
 {
-  return 0xf & f.lrshift (4*x, 64).to_uhwi ();
+  return 0xf & f.lrshift (4*x).to_uhwi ();
 }
 
 
@@ -11215,7 +11215,7 @@ enum
   };
 
 static unsigned
-avr_map_metric (double_int a, int mode)
+avr_map_metric (wide_int a, int mode)
 {
   unsigned i, metric = 0;
 
@@ -11248,7 +11248,7 @@ avr_map_metric (double_int a, int mode)
 bool
 avr_has_nibble_0xf (rtx ival)
 {
-  return 0 != avr_map_metric (rtx_to_double_int (ival), MAP_MASK_PREIMAGE_F);
+  return 0 != avr_map_metric (wide_int::from_rtx (ival), MAP_MASK_PREIMAGE_F);
 }
 
 
@@ -11282,7 +11282,7 @@ typedef struct
   int cost;
 
   /* The composition F o G^-1 (*, arg) for some function F */
-  double_int map;
+  wide_int map;
 
   /* For debug purpose only */
   const char *str;
@@ -11313,12 +11313,12 @@ static const avr_map_op_t avr_map_op[] =
    If result.cost < 0 then such a decomposition does not exist.  */
 
 static avr_map_op_t
-avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
+avr_map_decompose (wide_int f, const avr_map_op_t *g, bool val_const_p)
 {
   int i;
   bool val_used_p = 0 != avr_map_metric (f, MAP_MASK_PREIMAGE_F);
   avr_map_op_t f_ginv = *g;
-  double_int ginv = double_int::from_uhwi (g->ginv);
+  wide_int ginv = wide_int::from_uhwi (g->ginv);
 
   f_ginv.cost = -1;
 
@@ -11338,7 +11338,7 @@ avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
             return f_ginv;
         }
 
-      f_ginv.map = avr_double_int_push_digit (f_ginv.map, 16, x);
+      f_ginv.map = avr_wide_int_push_digit (f_ginv.map, 16, x);
     }
 
   /* Step 2:  Compute the cost of the operations.
@@ -11390,7 +11390,7 @@ avr_map_decompose (double_int f, const avr_map_op_t *g, bool val_const_p)
    is different to its source position.  */
 
 static void
-avr_move_bits (rtx *xop, double_int map, bool fixp_p, int *plen)
+avr_move_bits (rtx *xop, wide_int map, bool fixp_p, int *plen)
 {
   int bit_dest, b;
 
@@ -11443,7 +11443,7 @@ avr_move_bits (rtx *xop, double_int map, bool fixp_p, int *plen)
 const char*
 avr_out_insert_bits (rtx *op, int *plen)
 {
-  double_int map = rtx_to_double_int (op[1]);
+  wide_int map = wide_int::from_rtx (op[1]);
   unsigned mask_fixed;
   bool fixp_p = true;
   rtx xop[4];
@@ -11891,7 +11891,7 @@ avr_expand_builtin (tree exp, rtx target,
       if (TREE_CODE (CALL_EXPR_ARG (exp, 1)) != INTEGER_CST)
         break;
 
-      int rbit = (int) TREE_INT_CST_LOW (CALL_EXPR_ARG (exp, 1));
+      int rbit = (int) tree_to_hwi (CALL_EXPR_ARG (exp, 1));
 
       if (rbit >= (int) GET_MODE_FBIT (mode))
         {
@@ -12034,7 +12034,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
         tree tval = arg[2];
         tree tmap;
         tree map_type = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
-        double_int map;
+        wide_int map;
         bool changed = false;
         unsigned i;
         avr_map_op_t best_g;
@@ -12047,8 +12047,8 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             break;
           }
 
-        map = tree_to_double_int (arg[0]);
-        tmap = double_int_to_tree (map_type, map);
+        map = wide_int::from_tree (arg[0]);
+        tmap = wide_int_to_tree (map_type, map);
 
         if (TREE_CODE (tval) != INTEGER_CST
             && 0 == avr_map_metric (map, MAP_MASK_PREIMAGE_F))
@@ -12075,7 +12075,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
             /* Inserting bits known at compile time is easy and can be
                performed by AND and OR with appropriate masks.  */
 
-            int bits = TREE_INT_CST_LOW (tbits);
+            int bits = tree_to_hwi (tbits);
             int mask_ior = 0, mask_and = 0xff;
 
             for (i = 0; i < 8; i++)
@@ -12152,7 +12152,7 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
         /* Use map o G^-1 instead of original map to undo the effect of G.  */
 
-        tmap = double_int_to_tree (map_type, best_g.map);
+        tmap = wide_int_to_tree (map_type, best_g.map);
 
         return build_call_expr (fndecl, 3, tmap, tbits, tval);
       } /* AVR_BUILTIN_INSERT_BITS */

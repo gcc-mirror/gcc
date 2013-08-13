@@ -708,8 +708,10 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
-      v = iterative_hash_host_wide_int (TREE_INT_CST_LOW (t), v);
-      v = iterative_hash_host_wide_int (TREE_INT_CST_HIGH (t), v);
+      int i; 
+      v = iterative_hash_host_wide_int (TREE_INT_CST_NUNITS (t), v);
+      for (i = 0; i < TREE_INT_CST_NUNITS (t); i++)
+	v = iterative_hash_host_wide_int (TREE_INT_CST_ELT (t, i), v);
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_REAL_CST))
@@ -1620,14 +1622,24 @@ output_cfg (struct output_block *ob, struct function *fn)
       streamer_write_hwi (ob, loop->any_upper_bound);
       if (loop->any_upper_bound)
 	{
-	  streamer_write_uhwi (ob, loop->nb_iterations_upper_bound.low);
-	  streamer_write_hwi (ob, loop->nb_iterations_upper_bound.high);
+	  int len = loop->nb_iterations_upper_bound.get_len ();
+	  int i;
+
+	  streamer_write_uhwi (ob, loop->nb_iterations_upper_bound.get_precision ());
+	  streamer_write_uhwi (ob, len);
+	  for (i = 0; i < len; i++)
+	    streamer_write_hwi (ob, loop->nb_iterations_upper_bound.elt (i));
 	}
       streamer_write_hwi (ob, loop->any_estimate);
       if (loop->any_estimate)
 	{
-	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.low);
-	  streamer_write_hwi (ob, loop->nb_iterations_estimate.high);
+	  int len = loop->nb_iterations_estimate.get_len ();
+	  int i;
+
+	  streamer_write_uhwi (ob, loop->nb_iterations_estimate.get_precision ());
+	  streamer_write_uhwi (ob, len);
+	  for (i = 0; i < len; i++)
+	    streamer_write_hwi (ob, loop->nb_iterations_estimate.elt (i));
 	}
     }
 
@@ -2261,7 +2273,7 @@ write_symbol (struct streamer_tree_cache_d *cache,
   if (kind == GCCPK_COMMON
       && DECL_SIZE_UNIT (t)
       && TREE_CODE (DECL_SIZE_UNIT (t)) == INTEGER_CST)
-    size = TREE_INT_CST_LOW (DECL_SIZE_UNIT (t));
+    size = tree_to_hwi (DECL_SIZE_UNIT (t));
   else
     size = 0;
 

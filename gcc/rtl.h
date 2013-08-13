@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_RTL_H
 #define GCC_RTL_H
 
+#include <utility>
 #include "statistics.h"
 #include "machmode.h"
 #include "input.h"
@@ -28,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "fixed-value.h"
 #include "alias.h"
 #include "hashtab.h"
+#include "wide-int.h"
 #include "flags.h"
 
 /* Value used by some passes to "recognize" noop moves as valid
@@ -249,6 +251,14 @@ struct GTY(()) object_block {
   vec<rtx, va_gc> *anchors;
 };
 
+struct GTY((variable_size)) hwivec_def {
+  int num_elem;		/* number of elements */
+  HOST_WIDE_INT elem[1];
+};
+
+#define HWI_GET_NUM_ELEM(HWIVEC)	((HWIVEC)->num_elem)
+#define HWI_PUT_NUM_ELEM(HWIVEC, NUM)	((HWIVEC)->num_elem = (NUM))
+
 /* RTL expression ("rtx").  */
 
 struct GTY((chain_next ("RTX_NEXT (&%h)"),
@@ -344,6 +354,7 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
     struct block_symbol block_sym;
     struct real_value rv;
     struct fixed_value fv;
+    struct hwivec_def hwiv;
   } GTY ((special ("rtx_def"), desc ("GET_CODE (&%0)"))) u;
 };
 
@@ -383,12 +394,12 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
    for a variable number of things.  The principle use is inside
    PARALLEL expressions.  */
 
+#define NULL_RTVEC (rtvec) 0
+
 struct GTY((variable_size)) rtvec_def {
   int num_elem;		/* number of elements */
   rtx GTY ((length ("%h.num_elem"))) elem[1];
 };
-
-#define NULL_RTVEC (rtvec) 0
 
 #define GET_NUM_ELEM(RTVEC)		((RTVEC)->num_elem)
 #define PUT_NUM_ELEM(RTVEC, NUM)	((RTVEC)->num_elem = (NUM))
@@ -399,12 +410,38 @@ struct GTY((variable_size)) rtvec_def {
 /* Predicate yielding nonzero iff X is an rtx for a memory location.  */
 #define MEM_P(X) (GET_CODE (X) == MEM)
 
+#if TARGET_SUPPORTS_WIDE_INT
+
+/* Match CONST_*s that can represent compile-time constant integers.  */
+#define CASE_CONST_SCALAR_INT \
+   case CONST_INT: \
+   case CONST_WIDE_INT
+
+/* Match CONST_*s for which pointer equality corresponds to value 
+   equality.  */
+#define CASE_CONST_UNIQUE \
+   case CONST_INT: \
+   case CONST_WIDE_INT: \
+   case CONST_DOUBLE: \
+   case CONST_FIXED
+
+/* Match all CONST_* rtxes.  */
+#define CASE_CONST_ANY \
+   case CONST_INT: \
+   case CONST_WIDE_INT: \
+   case CONST_DOUBLE: \
+   case CONST_FIXED: \
+   case CONST_VECTOR
+
+#else
+
 /* Match CONST_*s that can represent compile-time constant integers.  */
 #define CASE_CONST_SCALAR_INT \
    case CONST_INT: \
    case CONST_DOUBLE
 
-/* Match CONST_*s for which pointer equality corresponds to value equality.  */
+/* Match CONST_*s for which pointer equality corresponds to value 
+equality.  */
 #define CASE_CONST_UNIQUE \
    case CONST_INT: \
    case CONST_DOUBLE: \
@@ -416,9 +453,16 @@ struct GTY((variable_size)) rtvec_def {
    case CONST_DOUBLE: \
    case CONST_FIXED: \
    case CONST_VECTOR
+#endif
+
+
+
 
 /* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
 #define CONST_INT_P(X) (GET_CODE (X) == CONST_INT)
+
+/* Predicate yielding nonzero iff X is an rtx for a constant integer.  */
+#define CONST_WIDE_INT_P(X) (GET_CODE (X) == CONST_WIDE_INT)
 
 /* Predicate yielding nonzero iff X is an rtx for a constant fixed-point.  */
 #define CONST_FIXED_P(X) (GET_CODE (X) == CONST_FIXED)
@@ -432,8 +476,13 @@ struct GTY((variable_size)) rtvec_def {
   (GET_CODE (X) == CONST_DOUBLE && GET_MODE (X) == VOIDmode)
 
 /* Predicate yielding true iff X is an rtx for a integer const.  */
+#if TARGET_SUPPORTS_WIDE_INT
+#define CONST_SCALAR_INT_P(X) \
+  (CONST_INT_P (X) || CONST_WIDE_INT_P (X))
+#else
 #define CONST_SCALAR_INT_P(X) \
   (CONST_INT_P (X) || CONST_DOUBLE_AS_INT_P (X))
+#endif
 
 /* Predicate yielding true iff X is an rtx for a double-int.  */
 #define CONST_DOUBLE_AS_FLOAT_P(X) \
@@ -594,6 +643,13 @@ struct GTY((variable_size)) rtvec_def {
 			       __FUNCTION__);				\
      &_rtx->u.hwint[_n]; }))
 
+#define XHWIVEC_ELT(HWIVEC, I) __extension__				\
+(*({ __typeof (HWIVEC) const _hwivec = (HWIVEC); const int _i = (I);	\
+     if (_i < 0 || _i >= HWI_GET_NUM_ELEM (_hwivec))			\
+       hwivec_check_failed_bounds (_hwivec, _i, __FILE__, __LINE__,	\
+				  __FUNCTION__);			\
+     &_hwivec->elem[_i]; }))
+
 #define XCWINT(RTX, N, C) __extension__					\
 (*({ __typeof (RTX) const _rtx = (RTX);					\
      if (GET_CODE (_rtx) != (C))					\
@@ -630,6 +686,11 @@ struct GTY((variable_size)) rtvec_def {
 				    __FUNCTION__);			\
    &_symbol->u.block_sym; })
 
+#define HWIVEC_CHECK(RTX,C) __extension__				\
+({ __typeof (RTX) const _symbol = (RTX);				\
+   RTL_CHECKC1 (_symbol, 0, C);						\
+   &_symbol->u.hwiv; })
+
 extern void rtl_check_failed_bounds (const_rtx, int, const char *, int,
 				     const char *)
     ATTRIBUTE_NORETURN;
@@ -650,6 +711,9 @@ extern void rtl_check_failed_code_mode (const_rtx, enum rtx_code, enum machine_m
     ATTRIBUTE_NORETURN;
 extern void rtl_check_failed_block_symbol (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
+extern void hwivec_check_failed_bounds (const_rtvec, int, const char *, int,
+					const char *)
+    ATTRIBUTE_NORETURN;
 extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 				       const char *)
     ATTRIBUTE_NORETURN;
@@ -662,12 +726,14 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 #define RTL_CHECKC2(RTX, N, C1, C2) ((RTX)->u.fld[N])
 #define RTVEC_ELT(RTVEC, I)	    ((RTVEC)->elem[I])
 #define XWINT(RTX, N)		    ((RTX)->u.hwint[N])
+#define XHWIVEC_ELT(HWIVEC, I)	    ((HWIVEC)->elem[I])
 #define XCWINT(RTX, N, C)	    ((RTX)->u.hwint[N])
 #define XCMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMPRV(RTX, C, M)	    (&(RTX)->u.rv)
 #define XCNMPFV(RTX, C, M)	    (&(RTX)->u.fv)
 #define BLOCK_SYMBOL_CHECK(RTX)	    (&(RTX)->u.block_sym)
+#define HWIVEC_CHECK(RTX,C)	    (&(RTX)->u.hwiv)
 
 #endif
 
@@ -810,8 +876,8 @@ extern void rtl_check_failed_flag (const char *, const_rtx, const char *,
 #define XCCFI(RTX, N, C)      (RTL_CHECKC1 (RTX, N, C).rt_cfi)
 #define XCCSELIB(RTX, N, C)   (RTL_CHECKC1 (RTX, N, C).rt_cselib)
 
-#define XCVECEXP(RTX, N, M, C)	RTVEC_ELT (XCVEC (RTX, N, C), M)
-#define XCVECLEN(RTX, N, C)	GET_NUM_ELEM (XCVEC (RTX, N, C))
+#define XCVECEXP(RTX, N, M, C) RTVEC_ELT (XCVEC (RTX, N, C), M)
+#define XCVECLEN(RTX, N, C)    GET_NUM_ELEM (XCVEC (RTX, N, C))
 
 #define XC2EXP(RTX, N, C1, C2)      (RTL_CHECKC2 (RTX, N, C1, C2).rt_rtx)
 
@@ -1152,9 +1218,19 @@ rhs_regno (const_rtx x)
 #define INTVAL(RTX) XCWINT(RTX, 0, CONST_INT)
 #define UINTVAL(RTX) ((unsigned HOST_WIDE_INT) INTVAL (RTX))
 
+/* For a CONST_WIDE_INT, CONST_WIDE_INT_NUNITS is the number of
+   elements actually needed to represent the constant.
+   CONST_WIDE_INT_ELT gets one of the elements.  0 is the least
+   significant HOST_WIDE_INT.  */
+#define CONST_WIDE_INT_VEC(RTX) HWIVEC_CHECK (RTX, CONST_WIDE_INT)
+#define CONST_WIDE_INT_NUNITS(RTX) HWI_GET_NUM_ELEM (CONST_WIDE_INT_VEC (RTX))
+#define CONST_WIDE_INT_ELT(RTX, N) XHWIVEC_ELT (CONST_WIDE_INT_VEC (RTX), N) 
+
 /* For a CONST_DOUBLE:
+#if TARGET_SUPPORTS_WIDE_INT == 0
    For a VOIDmode, there are two integers CONST_DOUBLE_LOW is the
      low-order word and ..._HIGH the high-order.
+#endif
    For a float, there is a REAL_VALUE_TYPE structure, and
      CONST_DOUBLE_REAL_VALUE(r) is a pointer to it.  */
 #define CONST_DOUBLE_LOW(r) XCMWINT (r, 0, CONST_DOUBLE, VOIDmode)
@@ -1308,6 +1384,83 @@ struct address_info {
   /* True if this is an RTX_AUTOINC address.  */
   bool autoinc_p;
 };
+
+#ifndef GENERATOR_FILE
+
+/* Accessors for rtx_mode. */
+static inline rtx
+get_rtx (const rtx_mode_t p)
+{
+  return p.first;
+}
+
+static inline enum machine_mode
+get_mode (const rtx_mode_t p)
+{
+  return p.second;
+}
+
+/* Specialization of to_shwi1 function in wide-int.h for rtl.  This
+   cannot be in wide-int.h because of circular includes.  */
+template<>
+inline const HOST_WIDE_INT*
+wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED, 
+		       unsigned int *l, unsigned int *p, const rtx_mode_t& rp)
+{
+  const rtx rcst = get_rtx (rp);
+  enum machine_mode mode = get_mode (rp);
+
+  *p = GET_MODE_PRECISION (mode);
+
+  switch (GET_CODE (rcst))
+    {
+    case CONST_INT:
+      *l = 1;
+      return &INTVAL (rcst);
+      
+    case CONST_WIDE_INT:
+      *l = CONST_WIDE_INT_NUNITS (rcst);
+      return &CONST_WIDE_INT_ELT (rcst, 0);
+      
+    case CONST_DOUBLE:
+      *l = 2;
+      return &CONST_DOUBLE_LOW (rcst);
+      
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Specialization of to_shwi2 function in wide-int.h for rtl.  This
+   cannot be in wide-int.h because of circular includes.  */
+template<>
+inline const HOST_WIDE_INT*
+wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED, 
+		       unsigned int *l, const rtx_mode_t& rp)
+{
+  const rtx rcst = get_rtx (rp);
+
+  switch (GET_CODE (rcst))
+    {
+    case CONST_INT:
+      *l = 1;
+      return &INTVAL (rcst);
+      
+    case CONST_WIDE_INT:
+      *l = CONST_WIDE_INT_NUNITS (rcst);
+      return &CONST_WIDE_INT_ELT (rcst, 0);
+      
+    case CONST_DOUBLE:
+      *l = 2;
+      return &CONST_DOUBLE_LOW (rcst);
+      
+    default:
+      gcc_unreachable ();
+    }
+}
+
+#endif
+
 
 extern void init_rtlanal (void);
 extern int rtx_cost (rtx, enum rtx_code, int, bool);
@@ -1764,6 +1917,12 @@ extern rtx plus_constant (enum machine_mode, rtx, HOST_WIDE_INT);
 /* In rtl.c */
 extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
 #define rtx_alloc(c) rtx_alloc_stat (c MEM_STAT_INFO)
+extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
+#define rtx_alloc_v(c, SZ) rtx_alloc_stat_v (c MEM_STAT_INFO, SZ)
+#define const_wide_int_alloc(NWORDS)				\
+  rtx_alloc_v (CONST_WIDE_INT,					\
+	       (sizeof (struct hwivec_def)			\
+		+ ((NWORDS)-1) * sizeof (HOST_WIDE_INT)))	\
 
 extern rtvec rtvec_alloc (int);
 extern rtvec shallow_copy_rtvec (rtvec);
@@ -1820,10 +1979,17 @@ extern void start_sequence (void);
 extern void push_to_sequence (rtx);
 extern void push_to_sequence2 (rtx, rtx);
 extern void end_sequence (void);
+#if TARGET_SUPPORTS_WIDE_INT == 0
 extern double_int rtx_to_double_int (const_rtx);
-extern rtx immed_double_int_const (double_int, enum machine_mode);
+#endif
+extern void hwivec_output_hex (FILE *, const_hwivec);
+#ifndef GENERATOR_FILE
+extern rtx immed_wide_int_const (const wide_int &cst, enum machine_mode mode);
+#endif
+#if TARGET_SUPPORTS_WIDE_INT == 0
 extern rtx immed_double_const (HOST_WIDE_INT, HOST_WIDE_INT,
 			       enum machine_mode);
+#endif
 
 /* In loop-iv.c  */
 

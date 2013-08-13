@@ -313,20 +313,20 @@ init_eh (void)
       /* Cache the interesting field offsets so that we have
 	 easy access from rtl.  */
       sjlj_fc_call_site_ofs
-	= (tree_low_cst (DECL_FIELD_OFFSET (f_cs), 1)
-	   + tree_low_cst (DECL_FIELD_BIT_OFFSET (f_cs), 1) / BITS_PER_UNIT);
+	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_cs))
+	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_cs)) / BITS_PER_UNIT);
       sjlj_fc_data_ofs
-	= (tree_low_cst (DECL_FIELD_OFFSET (f_data), 1)
-	   + tree_low_cst (DECL_FIELD_BIT_OFFSET (f_data), 1) / BITS_PER_UNIT);
+	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_data))
+	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_data)) / BITS_PER_UNIT);
       sjlj_fc_personality_ofs
-	= (tree_low_cst (DECL_FIELD_OFFSET (f_per), 1)
-	   + tree_low_cst (DECL_FIELD_BIT_OFFSET (f_per), 1) / BITS_PER_UNIT);
+	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_per))
+	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_per)) / BITS_PER_UNIT);
       sjlj_fc_lsda_ofs
-	= (tree_low_cst (DECL_FIELD_OFFSET (f_lsda), 1)
-	   + tree_low_cst (DECL_FIELD_BIT_OFFSET (f_lsda), 1) / BITS_PER_UNIT);
+	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_lsda))
+	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_lsda)) / BITS_PER_UNIT);
       sjlj_fc_jbuf_ofs
-	= (tree_low_cst (DECL_FIELD_OFFSET (f_jbuf), 1)
-	   + tree_low_cst (DECL_FIELD_BIT_OFFSET (f_jbuf), 1) / BITS_PER_UNIT);
+	= (tree_to_uhwi (DECL_FIELD_OFFSET (f_jbuf))
+	   + tree_to_uhwi (DECL_FIELD_BIT_OFFSET (f_jbuf)) / BITS_PER_UNIT);
     }
 }
 
@@ -2050,8 +2050,8 @@ expand_builtin_eh_common (tree region_nr_t)
   HOST_WIDE_INT region_nr;
   eh_region region;
 
-  gcc_assert (host_integerp (region_nr_t, 0));
-  region_nr = tree_low_cst (region_nr_t, 0);
+  gcc_assert (tree_fits_shwi_p (region_nr_t));
+  region_nr = tree_to_shwi (region_nr_t);
 
   region = (*cfun->eh->region_array)[region_nr];
 
@@ -2145,7 +2145,7 @@ expand_builtin_eh_return_data_regno (tree exp)
       return constm1_rtx;
     }
 
-  iwhich = tree_low_cst (which, 1);
+  iwhich = tree_to_uhwi (which);
   iwhich = EH_RETURN_DATA_REGNO (iwhich);
   if (iwhich == INVALID_REGNUM)
     return constm1_rtx;
@@ -2381,7 +2381,7 @@ collect_one_action_chain (action_hash_type ar_hash, eh_region region)
 	      {
 		/* Retrieve the filter from the head of the filter list
 		   where we have stored it (see assign_filter_values).  */
-		int filter = TREE_INT_CST_LOW (TREE_VALUE (c->filter_list));
+		int filter = tree_to_hwi (TREE_VALUE (c->filter_list));
 		next = add_action_record (ar_hash, filter, 0);
 	      }
 	    else
@@ -2408,7 +2408,7 @@ collect_one_action_chain (action_hash_type ar_hash, eh_region region)
 		flt_node = c->filter_list;
 		for (; flt_node; flt_node = TREE_CHAIN (flt_node))
 		  {
-		    int filter = TREE_INT_CST_LOW (TREE_VALUE (flt_node));
+		    int filter = tree_to_hwi (TREE_VALUE (flt_node));
 		    next = add_action_record (ar_hash, filter, next);
 		  }
 	      }

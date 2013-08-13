@@ -292,8 +292,8 @@ gfc_build_io_library_fndecls (void)
 			    = build_pointer_type (gfc_intio_type_node);
   types[IOPARM_type_parray] = pchar_type_node;
   types[IOPARM_type_pchar] = pchar_type_node;
-  pad_size = 16 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (pchar_type_node));
-  pad_size += 32 * TREE_INT_CST_LOW (TYPE_SIZE_UNIT (integer_type_node));
+  pad_size = 16 * tree_to_hwi (TYPE_SIZE_UNIT (pchar_type_node));
+  pad_size += 32 * tree_to_hwi (TYPE_SIZE_UNIT (integer_type_node));
   pad_idx = build_index_type (size_int (pad_size - 1));
   types[IOPARM_type_pad] = build_array_type (char_type_node, pad_idx);
 

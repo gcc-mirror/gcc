@@ -285,7 +285,7 @@ dump_mem_details (FILE *file, tree base, tree step,
   fprintf (file, "(base ");
   print_generic_expr (file, base, TDF_SLIM);
   fprintf (file, ", step ");
-  if (cst_and_fits_in_hwi (step))
+  if (cst_fits_shwi_p (step))
     fprintf (file, HOST_WIDE_INT_PRINT_DEC, int_cst_value (step));
   else
     print_generic_expr (file, step, TDF_TREE);
@@ -326,7 +326,7 @@ find_or_create_group (struct mem_ref_group **groups, tree base, tree step)
 
       /* If step is an integer constant, keep the list of groups sorted
          by decreasing step.  */
-        if (cst_and_fits_in_hwi ((*groups)->step) && cst_and_fits_in_hwi (step)
+        if (cst_fits_shwi_p ((*groups)->step) && cst_fits_shwi_p (step)
             && int_cst_value ((*groups)->step) < int_cst_value (step))
 	break;
     }
@@ -434,12 +434,12 @@ idx_analyze_ref (tree base, tree *index, void *data)
   step = iv.step;
 
   if (TREE_CODE (ibase) == POINTER_PLUS_EXPR
-      && cst_and_fits_in_hwi (TREE_OPERAND (ibase, 1)))
+      && cst_fits_shwi_p (TREE_OPERAND (ibase, 1)))
     {
       idelta = int_cst_value (TREE_OPERAND (ibase, 1));
       ibase = TREE_OPERAND (ibase, 0);
     }
-  if (cst_and_fits_in_hwi (ibase))
+  if (cst_fits_shwi_p (ibase))
     {
       idelta += int_cst_value (ibase);
       ibase = build_int_cst (TREE_TYPE (ibase), 0);
@@ -448,7 +448,7 @@ idx_analyze_ref (tree base, tree *index, void *data)
   if (TREE_CODE (base) == ARRAY_REF)
     {
       stepsize = array_ref_element_size (base);
-      if (!cst_and_fits_in_hwi (stepsize))
+      if (!cst_fits_shwi_p (stepsize))
 	return false;
       imult = int_cst_value (stepsize);
       step = fold_build2 (MULT_EXPR, sizetype,
@@ -505,7 +505,7 @@ analyze_ref (struct loop *loop, tree *ref_p, tree *base,
   for (; TREE_CODE (ref) == COMPONENT_REF; ref = TREE_OPERAND (ref, 0))
     {
       off = DECL_FIELD_BIT_OFFSET (TREE_OPERAND (ref, 1));
-      bit_offset = TREE_INT_CST_LOW (off);
+      bit_offset = tree_to_hwi (off);
       gcc_assert (bit_offset % BITS_PER_UNIT == 0);
 
       *delta += bit_offset / BITS_PER_UNIT;
@@ -546,7 +546,7 @@ gather_memory_references_ref (struct loop *loop, struct mem_ref_group **refs,
 
   /* Limit non-constant step prefetching only to the innermost loops and 
      only when the step is loop invariant in the entire loop nest. */
-  if (!cst_and_fits_in_hwi (step))
+  if (!cst_fits_shwi_p (step))
     {
       if (loop->inner != NULL)
         {
@@ -660,7 +660,7 @@ prune_ref_by_self_reuse (struct mem_ref *ref)
   bool backward;
 
   /* If the step size is non constant, we cannot calculate prefetch_mod.  */
-  if (!cst_and_fits_in_hwi (ref->group->step))
+  if (!cst_fits_shwi_p (ref->group->step))
     return;
 
   step = int_cst_value (ref->group->step);
@@ -770,7 +770,7 @@ prune_ref_by_group_reuse (struct mem_ref *ref, struct mem_ref *by,
   int align_unit;
 
   /* If the step is non constant we cannot calculate prefetch_before.  */
-  if (!cst_and_fits_in_hwi (ref->group->step)) {
+  if (!cst_fits_shwi_p (ref->group->step)) {
     return;
   }
 
@@ -1135,7 +1135,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 
   for (ap = 0; ap < n_prefetches; ap++)
     {
-      if (cst_and_fits_in_hwi (ref->group->step))
+      if (cst_fits_shwi_p (ref->group->step))
         {
           /* Determine the address to prefetch.  */
           delta = (ahead + ap * ref->prefetch_mod) *
@@ -1449,8 +1449,8 @@ add_subscript_strides (tree access_fn, unsigned stride,
       if ((unsigned) loop_depth (aloop) <= min_depth)
 	continue;
 
-      if (host_integerp (step, 0))
-	astep = tree_low_cst (step, 0);
+      if (tree_fits_shwi_p (step))
+	astep = tree_to_shwi (step);
       else
 	astep = L1_CACHE_LINE_SIZE;
 
@@ -1499,8 +1499,8 @@ self_reuse_distance (data_reference_p dr, unsigned *loop_sizes, unsigned n,
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
 	  stride = TYPE_SIZE_UNIT (TREE_TYPE (ref));
-	  if (host_integerp (stride, 1))
-	    astride = tree_low_cst (stride, 1);
+	  if (tree_fits_uhwi_p (stride))
+	    astride = tree_to_uhwi (stride);
 	  else
 	    astride = L1_CACHE_LINE_SIZE;
 

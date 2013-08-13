@@ -1135,7 +1135,7 @@ get_block_for_decl (tree decl)
      constant size.  */
   if (DECL_SIZE_UNIT (decl) == NULL)
     return NULL;
-  if (!host_integerp (DECL_SIZE_UNIT (decl), 1))
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (decl)))
     return NULL;
 
   /* Find out which section should contain DECL.  We cannot put it into
@@ -1901,7 +1901,7 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
 {
   unsigned HOST_WIDE_INT size, rounded;
 
-  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
   rounded = size;
 
   if (flag_asan && asan_protect_global (decl))
@@ -1948,11 +1948,11 @@ assemble_variable_contents (tree decl, const char *name,
 	  && !initializer_zerop (DECL_INITIAL (decl)))
 	/* Output the actual data.  */
 	output_constant (DECL_INITIAL (decl),
-			 tree_low_cst (DECL_SIZE_UNIT (decl), 1),
+			 tree_to_uhwi (DECL_SIZE_UNIT (decl)),
 			 get_variable_align (decl));
       else
 	/* Leave space for it.  */
-	assemble_zeros (tree_low_cst (DECL_SIZE_UNIT (decl), 1));
+	assemble_zeros (tree_to_uhwi (DECL_SIZE_UNIT (decl)));
     }
 }
 
@@ -2138,7 +2138,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
       if (asan_protected)
 	{
 	  unsigned HOST_WIDE_INT int size
-	    = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	    = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  assemble_zeros (asan_red_zone_size (size));
 	}
     }
@@ -2721,7 +2721,7 @@ decode_addr_const (tree exp, struct addr_const *value)
   while (1)
     {
       if (TREE_CODE (target) == COMPONENT_REF
-	  && host_integerp (byte_position (TREE_OPERAND (target, 1)), 0))
+	  && tree_fits_shwi_p (byte_position (TREE_OPERAND (target, 1))))
 	{
 	  offset += int_byte_position (TREE_OPERAND (target, 1));
 	  target = TREE_OPERAND (target, 0);
@@ -2729,14 +2729,14 @@ decode_addr_const (tree exp, struct addr_const *value)
       else if (TREE_CODE (target) == ARRAY_REF
 	       || TREE_CODE (target) == ARRAY_RANGE_REF)
 	{
-	  offset += (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (target)), 1)
-		     * tree_low_cst (TREE_OPERAND (target, 1), 0));
+	  offset += (tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (target)))
+		     * tree_to_shwi (TREE_OPERAND (target, 1)));
 	  target = TREE_OPERAND (target, 0);
 	}
       else if (TREE_CODE (target) == MEM_REF
 	       && TREE_CODE (TREE_OPERAND (target, 0)) == ADDR_EXPR)
 	{
-	  offset += mem_ref_offset (target).low;
+	  offset += mem_ref_offset (target).to_short_addr ();
 	  target = TREE_OPERAND (TREE_OPERAND (target, 0), 0);
 	}
       else if (TREE_CODE (target) == INDIRECT_REF
@@ -2816,8 +2816,8 @@ const_hash_1 (const tree exp)
   switch (code)
     {
     case INTEGER_CST:
-      p = (char *) &TREE_INT_CST (exp);
-      len = sizeof TREE_INT_CST (exp);
+      p = (char *) &TREE_INT_CST_ELT (exp, 0);
+      len = sizeof TREE_INT_CST_NUNITS (exp) * sizeof (HOST_WIDE_INT);
       break;
 
     case REAL_CST:
@@ -3523,6 +3523,7 @@ const_rtx_hash_1 (rtx *xp, void *data)
   enum rtx_code code;
   hashval_t h, *hp;
   rtx x;
+  int i;
 
   x = *xp;
   code = GET_CODE (x);
@@ -3533,12 +3534,12 @@ const_rtx_hash_1 (rtx *xp, void *data)
     {
     case CONST_INT:
       hwi = INTVAL (x);
+
     fold_hwi:
       {
 	int shift = sizeof (hashval_t) * CHAR_BIT;
 	const int n = sizeof (HOST_WIDE_INT) / sizeof (hashval_t);
-	int i;
-
+	
 	h ^= (hashval_t) hwi;
 	for (i = 1; i < n; ++i)
 	  {
@@ -3548,8 +3549,16 @@ const_rtx_hash_1 (rtx *xp, void *data)
       }
       break;
 
+    case CONST_WIDE_INT:
+      hwi = GET_MODE_PRECISION (mode);
+      {
+	for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
+	  hwi ^= CONST_WIDE_INT_ELT (x, i);
+	goto fold_hwi;
+      }
+
     case CONST_DOUBLE:
-      if (mode == VOIDmode)
+      if (TARGET_SUPPORTS_WIDE_INT == 0 && mode == VOIDmode)
 	{
 	  hwi = CONST_DOUBLE_LOW (x) ^ CONST_DOUBLE_HIGH (x);
 	  goto fold_hwi;
@@ -4640,8 +4649,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
 	exp = build1 (ADDR_EXPR, saved_type, TREE_OPERAND (exp, 0));
       /* Likewise for constant ints.  */
       else if (TREE_CODE (exp) == INTEGER_CST)
-	exp = build_int_cst_wide (saved_type, TREE_INT_CST_LOW (exp),
-				  TREE_INT_CST_HIGH (exp));
+	exp = wide_int_to_tree (saved_type, exp);
 
     }
 
@@ -4681,7 +4689,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align)
   if (TREE_CODE (exp) == FDESC_EXPR)
     {
 #ifdef ASM_OUTPUT_FDESC
-      HOST_WIDE_INT part = tree_low_cst (TREE_OPERAND (exp, 1), 0);
+      HOST_WIDE_INT part = tree_to_shwi (TREE_OPERAND (exp, 1));
       tree decl = TREE_OPERAND (exp, 0);
       ASM_OUTPUT_FDESC (asm_out_file, decl, part);
 #else
@@ -4779,7 +4787,7 @@ array_size_for_constructor (tree val)
   tree max_index;
   unsigned HOST_WIDE_INT cnt;
   tree index, value, tmp;
-  double_int i;
+  addr_wide_int i;
 
   /* This code used to attempt to handle string constants that are not
      arrays of single-bytes, but nothing else does, so there's no point in
@@ -4801,14 +4809,13 @@ array_size_for_constructor (tree val)
 
   /* Compute the total number of array elements.  */
   tmp = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (val)));
-  i = tree_to_double_int (max_index) - tree_to_double_int (tmp);
-  i += double_int_one;
+  i = addr_wide_int (max_index) - tmp + 1;
 
   /* Multiply by the array element unit size to find number of bytes.  */
-  i *= tree_to_double_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
+  i *= addr_wide_int (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (val))));
 
-  gcc_assert (i.fits_uhwi ());
-  return i.low;
+  gcc_assert (i.fits_uhwi_p ());
+  return i.to_uhwi ();
 }
 
 /* Other datastructures + helpers for output_constructor.  */
@@ -4848,9 +4855,9 @@ output_constructor_array_range (oc_local_state *local)
     = int_size_in_bytes (TREE_TYPE (local->type));
 
   HOST_WIDE_INT lo_index
-    = tree_low_cst (TREE_OPERAND (local->index, 0), 0);
+    = tree_to_shwi (TREE_OPERAND (local->index, 0));
   HOST_WIDE_INT hi_index
-    = tree_low_cst (TREE_OPERAND (local->index, 1), 0);
+    = tree_to_shwi (TREE_OPERAND (local->index, 1));
   HOST_WIDE_INT index;
 
   unsigned int align2
@@ -4888,11 +4895,9 @@ output_constructor_regular_field (oc_local_state *local)
 	 sign-extend the result because Ada has negative DECL_FIELD_OFFSETs
 	 but we are using an unsigned sizetype.  */
       unsigned prec = TYPE_PRECISION (sizetype);
-      double_int idx = tree_to_double_int (local->index)
-		       - tree_to_double_int (local->min_index);
-      idx = idx.sext (prec);
-      fieldpos = (tree_low_cst (TYPE_SIZE_UNIT (TREE_TYPE (local->val)), 1)
-		  * idx.low);
+      addr_wide_int idx 
+	= (addr_wide_int (local->index) - local->min_index).sext (prec);
+      fieldpos = (idx * TYPE_SIZE_UNIT (TREE_TYPE (local->val))).to_shwi ();
     }
   else if (local->field != NULL_TREE)
     fieldpos = int_byte_position (local->field);
@@ -4941,7 +4946,7 @@ output_constructor_regular_field (oc_local_state *local)
 	  gcc_assert (!fieldsize || !DECL_CHAIN (local->field));
 	}
       else
-	fieldsize = tree_low_cst (DECL_SIZE_UNIT (local->field), 1);
+	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));
     }
   else
     fieldsize = int_size_in_bytes (TREE_TYPE (local->type));
@@ -4966,15 +4971,15 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
   /* Bit size of this element.  */
   HOST_WIDE_INT ebitsize
     = (local->field
-       ? tree_low_cst (DECL_SIZE (local->field), 1)
-       : tree_low_cst (TYPE_SIZE (TREE_TYPE (local->type)), 1));
+       ? tree_to_uhwi (DECL_SIZE (local->field))
+       : tree_to_uhwi (TYPE_SIZE (TREE_TYPE (local->type))));
 
   /* Relative index of this element if this is an array component.  */
   HOST_WIDE_INT relative_index
     = (!local->field
        ? (local->index
-	  ? (tree_low_cst (local->index, 0)
-	     - tree_low_cst (local->min_index, 0))
+	  ? (tree_to_shwi (local->index)
+	     - tree_to_shwi (local->min_index))
 	  : local->last_relative_index + 1)
        : 0);
 
@@ -5085,22 +5090,13 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	     the word boundary in the INTEGER_CST. We can
 	     only select bits from the LOW or HIGH part
 	     not from both.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT
-	      && shift + this_time > HOST_BITS_PER_WIDE_INT)
-	    {
-	      this_time = shift + this_time - HOST_BITS_PER_WIDE_INT;
-	      shift = HOST_BITS_PER_WIDE_INT;
-	    }
+	  if ((shift / HOST_BITS_PER_WIDE_INT)
+ 	      != ((shift + this_time) / HOST_BITS_PER_WIDE_INT))
+	    this_time = (shift + this_time) & (HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Now get the bits from the appropriate constant word.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT)
-	    value = TREE_INT_CST_LOW (local->val);
-	  else
-	    {
-	      gcc_assert (shift < HOST_BITS_PER_DOUBLE_INT);
-	      value = TREE_INT_CST_HIGH (local->val);
-	      shift -= HOST_BITS_PER_WIDE_INT;
-	    }
+	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
+	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Get the result. This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
@@ -5120,19 +5116,13 @@ output_constructor_bitfield (oc_local_state *local, unsigned int bit_offset)
 	     the word boundary in the INTEGER_CST. We can
 	     only select bits from the LOW or HIGH part
 	     not from both.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT
-	      && shift + this_time > HOST_BITS_PER_WIDE_INT)
+	  if ((shift / HOST_BITS_PER_WIDE_INT)
+	      != ((shift + this_time) / HOST_BITS_PER_WIDE_INT))
 	    this_time = (HOST_BITS_PER_WIDE_INT - shift);
 
 	  /* Now get the bits from the appropriate constant word.  */
-	  if (shift < HOST_BITS_PER_WIDE_INT)
-	    value = TREE_INT_CST_LOW (local->val);
-	  else
-	    {
-	      gcc_assert (shift < HOST_BITS_PER_DOUBLE_INT);
-	      value = TREE_INT_CST_HIGH (local->val);
-	      shift -= HOST_BITS_PER_WIDE_INT;
-	    }
+	  value = TREE_INT_CST_ELT (local->val, shift / HOST_BITS_PER_WIDE_INT);
+	  shift = shift & (HOST_BITS_PER_WIDE_INT - 1);
 
 	  /* Get the result. This works only when:
 	     1 <= this_time <= HOST_BITS_PER_WIDE_INT.  */
@@ -7084,7 +7074,7 @@ place_block_symbol (rtx symbol)
     {
       decl = SYMBOL_REF_DECL (symbol);
       alignment = get_variable_align (decl);
-      size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+      size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
       if (flag_asan && asan_protect_global (decl))
 	{
 	  size += asan_red_zone_size (size);
@@ -7249,7 +7239,7 @@ output_object_block (struct object_block *block)
 	  HOST_WIDE_INT size;
 	  decl = SYMBOL_REF_DECL (symbol);
 	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
-	  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
+	  size = tree_to_uhwi (DECL_SIZE_UNIT (decl));
 	  offset += size;
 	  if (flag_asan && asan_protect_global (decl))
 	    {
