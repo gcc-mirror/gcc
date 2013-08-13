@@ -648,11 +648,11 @@ build_atomic_load (tree src)
       (build_qualified_type (void_type_node, TYPE_QUAL_VOLATILE));
   tree mem_model = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
   tree orig_src = src;
-  tree type = TREE_TYPE (src);
-  tree t, val;
+  tree t, addr, val;
   unsigned int size;
   int fncode;
 
+  /* Remove conversions to get the address of the underlying object.  */
   src = remove_conversions (src, false);
   size = resolve_atomic_size (TREE_TYPE (src));
   if (size == 0)
@@ -661,10 +661,13 @@ build_atomic_load (tree src)
   fncode = (int) BUILT_IN_ATOMIC_LOAD_N + exact_log2 (size) + 1;
   t = builtin_decl_implicit ((enum built_in_function) fncode);
 
-  src = build_unary_op (ADDR_EXPR, ptr_type, src);
-  val = build_call_expr (t, 2, src, mem_model);
+  addr = build_unary_op (ADDR_EXPR, ptr_type, src);
+  val = build_call_expr (t, 2, addr, mem_model);
 
-  return unchecked_convert (type, val, true);
+  /* First reinterpret the loaded bits in the original type of the load,
+     then convert to the expected result type.  */
+  t = fold_build1 (VIEW_CONVERT_EXPR, TREE_TYPE (src), val);
+  return convert (TREE_TYPE (orig_src), t);
 }
 
 /* Build an atomic store from SRC to the underlying atomic object in DEST.  */
@@ -677,10 +680,11 @@ build_atomic_store (tree dest, tree src)
       (build_qualified_type (void_type_node, TYPE_QUAL_VOLATILE));
   tree mem_model = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
   tree orig_dest = dest;
-  tree t, int_type;
+  tree t, int_type, addr;
   unsigned int size;
   int fncode;
 
+  /* Remove conversions to get the address of the underlying object.  */
   dest = remove_conversions (dest, false);
   size = resolve_atomic_size (TREE_TYPE (dest));
   if (size == 0)
@@ -690,10 +694,20 @@ build_atomic_store (tree dest, tree src)
   t = builtin_decl_implicit ((enum built_in_function) fncode);
   int_type = gnat_type_for_size (BITS_PER_UNIT * size, 1);
 
-  dest = build_unary_op (ADDR_EXPR, ptr_type, dest);
-  src = unchecked_convert (int_type, src, true);
+  /* First convert the bits to be stored to the original type of the store,
+     then reinterpret them in the effective type.  But if the original type
+     is a padded type with the same size, convert to the inner type instead,
+     as we don't want to artificially introduce a CONSTRUCTOR here.  */
+  if (TYPE_IS_PADDING_P (TREE_TYPE (dest))
+      && TYPE_SIZE (TREE_TYPE (dest))
+	 == TYPE_SIZE (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (dest)))))
+    src = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (dest))), src);
+  else
+    src = convert (TREE_TYPE (dest), src);
+  src = fold_build1 (VIEW_CONVERT_EXPR, int_type, src);
+  addr = build_unary_op (ADDR_EXPR, ptr_type, dest);
 
-  return build_call_expr (t, 3, dest, src, mem_model);
+  return build_call_expr (t, 3, addr, src, mem_model);
 }
 
 /* Make a binary operation of kind OP_CODE.  RESULT_TYPE is the type
