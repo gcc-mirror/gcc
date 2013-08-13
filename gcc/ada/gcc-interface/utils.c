@@ -2573,7 +2573,7 @@ potential_alignment_gap (tree prev_field, tree curr_field, tree offset)
   if (!prev_field)
     return false;
 
-  /* If the previous field is a union type, then return False: The only
+  /* If the previous field is a union type, then return false: The only
      time when such a field is not the last field of the record is when
      there are other components at fixed positions after it (meaning there
      was a rep clause for every field), in which case we don't want the

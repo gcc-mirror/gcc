@@ -385,13 +385,13 @@ void
 gnat_init_gcc_fp (void)
 {
   /* Disable FP optimizations that ignore the signedness of zero if
-     S'Signed_Zeros is True, but don't override the user if not.  */
+     S'Signed_Zeros is true, but don't override the user if not.  */
   if (Signed_Zeros_On_Target)
     flag_signed_zeros = 1;
   else if (!global_options_set.x_flag_signed_zeros)
     flag_signed_zeros = 0;
 
-  /* Assume that FP operations can trap if S'Machine_Overflow is True,
+  /* Assume that FP operations can trap if S'Machine_Overflow is true,
      but don't override the user if not.
 
      ??? Alpha/VMS enables FP traps without declaring it.  */
