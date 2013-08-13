@@ -6930,9 +6930,7 @@ rs6000_legitimize_reload_address (rtx x, enum machine_mode mode,
       && GET_CODE (XEXP (x, 1)) == CONST_INT
       && reg_offset_p
       && !SPE_VECTOR_MODE (mode)
-      && !(TARGET_E500_DOUBLE && (mode == DFmode || mode == TFmode
-				  || mode == DDmode || mode == TDmode
-				  || mode == DImode))
+      && !(TARGET_E500_DOUBLE && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
       && (!VECTOR_MODE_P (mode) || VECTOR_MEM_NONE_P (mode)))
     {
       HOST_WIDE_INT val = INTVAL (XEXP (x, 1));

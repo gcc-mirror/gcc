@@ -1,3 +1,9 @@
+2013-08-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Don't
+	perform invalid legitimization on greater-than-word-size modes for
+	TARGET_E500_DOUBLE.
+
 2013-08-13  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* ira.c (setup_class_translate_array): Use aclass instead of cl
