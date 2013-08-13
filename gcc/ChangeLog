@@ -1,3 +1,8 @@
+2013-08-13  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.md (prefetch): Use lw instead of ld on
+	loongson in 32bit mode.
+
 2013-08-13  Nick Clifton  <nickc@redhat.com>
 
 	* config.gcc: (avr-linux): Allow for tmake_file not being empty.
