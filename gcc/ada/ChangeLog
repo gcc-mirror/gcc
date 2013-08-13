@@ -1,5 +1,10 @@
 2013-08-13  Thomas Quinot  <quinot@adacore.com>
 
+	* gcc-interface/trans.c (set_end_locus_from_node): Clear column info
+	for the end_locus of a block if it does not come from an End_Label.
+
+2013-08-13  Thomas Quinot  <quinot@adacore.com>
+
 	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): If
 	there is no End_Label, attach cleanup actions to the sloc of the HSS
 	node instead.
