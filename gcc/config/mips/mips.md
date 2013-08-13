@@ -6673,8 +6673,13 @@
   "ISA_HAS_PREFETCH && TARGET_EXPLICIT_RELOCS"
 {
   if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_3A)
-    /* Loongson 2[ef] and Loongson 3a use load to $0 to perform prefetching.  */
-    return "ld\t$0,%a0";
+    {
+      /* Loongson 2[ef] and Loongson 3a use load to $0 for prefetching.  */
+      if (TARGET_64BIT)
+        return "ld\t$0,%a0";
+      else
+        return "lw\t$0,%a0";
+    }
   operands[1] = mips_prefetch_cookie (operands[1], operands[2]);
   return "pref\t%1,%a0";
 }
