@@ -726,7 +726,7 @@ bool cgraph_propagate_frequency (struct cgraph_node *node);
 struct cgraph_node * cgraph_function_node (struct cgraph_node *,
 					   enum availability *avail = NULL);
 bool cgraph_get_body (struct cgraph_node *node);
-void
+struct cgraph_edge *
 cgraph_turn_edge_to_speculative (struct cgraph_edge *,
 				 struct cgraph_node *,
 				 gcov_type, int);
@@ -783,6 +783,7 @@ struct cgraph_node *cgraph_function_versioning (struct cgraph_node *,
 						basic_block, const char *);
 void tree_function_versioning (tree, tree, vec<ipa_replace_map_p, va_gc> *,
 			       bool, bitmap, bool, bitmap, basic_block);
+struct cgraph_edge *cgraph_resolve_speculation (struct cgraph_edge *, tree);
 
 /* In cgraphbuild.c  */
 unsigned int rebuild_cgraph_edges (void);
@@ -1397,5 +1398,17 @@ symtab_real_symbol_p (symtab_node node)
   if (cnode->global.inlined_to)
     return false;
   return true;
+}
+
+/* Return true if NODE can be discarded by linker from the binary.  */
+
+static inline bool
+symtab_can_be_discarded (symtab_node node)
+{
+  return (DECL_EXTERNAL (node->symbol.decl)
+	  || (DECL_ONE_ONLY (node->symbol.decl)
+	      && node->symbol.resolution != LDPR_PREVAILING_DEF
+	      && node->symbol.resolution != LDPR_PREVAILING_DEF_IRONLY
+	      && node->symbol.resolution != LDPR_PREVAILING_DEF_IRONLY_EXP));
 }
 #endif  /* GCC_CGRAPH_H  */

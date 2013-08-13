@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 
 int ncalls_inlined;
 int nfunctions_inlined;
+bool speculation_removed;
 
 /* Scale frequency of NODE edges by FREQ_SCALE.  */
 
@@ -134,6 +135,7 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
 		     bool update_original, int *overall_size)
 {
   struct cgraph_node *inlining_into;
+  struct cgraph_edge *next;
 
   if (e->caller->global.inlined_to)
     inlining_into = e->caller->global.inlined_to;
@@ -186,9 +188,17 @@ clone_inlined_nodes (struct cgraph_edge *e, bool duplicate,
   e->callee->global.inlined_to = inlining_into;
 
   /* Recursively clone all bodies.  */
-  for (e = e->callee->callees; e; e = e->next_callee)
-    if (!e->inline_failed)
-      clone_inlined_nodes (e, duplicate, update_original, overall_size);
+  for (e = e->callee->callees; e; e = next)
+    {
+      next = e->next_callee;
+      if (!e->inline_failed)
+        clone_inlined_nodes (e, duplicate, update_original, overall_size);
+      if (e->speculative && !speculation_useful_p (e, true))
+	{
+	  cgraph_resolve_speculation (e, NULL);
+	  speculation_removed = true;
+	}
+    }
 }
 
 
@@ -218,6 +228,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
   bool predicated = inline_edge_summary (e)->predicate != NULL;
 #endif
 
+  speculation_removed = false;
   /* Don't inline inlined edges.  */
   gcc_assert (e->inline_failed);
   /* Don't even think of inlining inline clone.  */
@@ -267,6 +278,7 @@ inline_call (struct cgraph_edge *e, bool update_original,
      error due to INLINE_SIZE_SCALE roudoff errors.  */
   gcc_assert (!update_overall_summary || !overall_size || new_edges_found
 	      || abs (estimated_growth - (new_size - old_size)) <= 1
+	      || speculation_removed
 	      /* FIXME: a hack.  Edges with false predicate are accounted
 		 wrong, we should remove them from callgraph.  */
 	      || predicated);
