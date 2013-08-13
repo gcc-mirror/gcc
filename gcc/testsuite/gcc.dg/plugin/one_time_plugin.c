@@ -12,22 +12,6 @@
 
 int plugin_is_GPL_compatible;
 
-static bool one_pass_gate (void)
-{
-  return true;
-}
-
-static unsigned int one_pass_exec (void)
-{
-  static int counter = 0;
-
-  if (counter > 0) {
-    printf ("Executed more than once \n");
- }
- counter++;
- return 0;
-}
-
 namespace {
 
 const pass_data pass_data_one_pass =
@@ -53,12 +37,28 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return one_pass_gate (); }
-  unsigned int execute () { return one_pass_exec (); }
+  bool gate ();
+  unsigned int execute ();
 
 }; // class one_pass
 
 } // anon namespace
+
+bool one_pass::gate (void)
+{
+  return true;
+}
+
+unsigned int one_pass::execute ()
+{
+  static int counter = 0;
+
+  if (counter > 0) {
+    printf ("Executed more than once \n");
+ }
+ counter++;
+ return 0;
+}
 
 gimple_opt_pass *
 make_one_pass (gcc::context *ctxt)
