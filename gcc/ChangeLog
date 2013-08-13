@@ -1,3 +1,13 @@
+2013-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-08-12  Perez Read  <netfirewall@gmail.com>
+
+	PR target/58132
+	* config/i386/i386.md (*movabs<mode>_1):  Add <ptrsize> PTR before
+	operand 0 for intel asm alternative.
+	(*movabs<mode>_2): Ditto for operand 1.
+
 2013-08-09  Zhenqiang Chen  <zhenqiang.chen@linaro.org>
 
 	Backport from mainline:
@@ -63,8 +73,7 @@
 	(s390_expand_builtin): New function.
 	(TARGET_INIT_BUILTINS): Define.
 	(TARGET_EXPAND_BUILTIN): Define.
-	* common/config/s390/s390-common.c (processor_flags_table): Add
-	PF_TX.
+	* common/config/s390/s390-common.c (processor_flags_table): Add PF_TX.
 	* config/s390/predicates.md (s390_comparison): Handle CCRAWmode.
 	(s390_alc_comparison): Likewise.
 	* config/s390/s390-modes.def: Add CCRAWmode.
@@ -105,7 +114,7 @@
 2013-08-01  Ganesh Gopalasubramanian  <Ganesh.Gopalasubramanian@amd.com>
 
 	Backport from mainline
-	2013-05-13  Ganesh Gopalasubramanian  
+	2013-05-13  Ganesh Gopalasubramanian
 		    <Ganesh.Gopalasubramanian@amd.com>
 
 	* config/i386/i386.c (processor_target_table): Modified default
@@ -162,7 +171,7 @@
 	(ix86_save_reg): If the function contains a nonlocal label, save the
 	PIC base reg.
 	* config/darwin-protos.h (machopic_should_output_picbase_label): New.
-	* gcc/config/darwin.c (emitted_pic_label_num): New GTY. 
+	* gcc/config/darwin.c (emitted_pic_label_num): New GTY.
 	(update_pic_label_number_if_needed): New.
 	(machopic_output_function_base_name): Adjust for nonlocal receiver
 	case.
@@ -244,7 +253,7 @@
 2013-07-10  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backport from 2013-07-10 trunk r200870.
-	
+
 	PR target/57506
 	* config/avr/avr-mcus.def (atmega16hva, atmega16hva2, atmega16hvb)
 	(atmega16m1, atmega16u4, atmega32a, atmega32c1, atmega32hvb)
