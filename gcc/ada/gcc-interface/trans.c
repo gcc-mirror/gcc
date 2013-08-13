@@ -4022,9 +4022,19 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* Set up to move the copy back to the original if needed.  */
 	  if (!in_param)
 	    {
-	      gnu_stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig,
-					  gnu_temp);
+	      /* If the original is a COND_EXPR whose first arm isn't meant to
+		 be further used, just deal with the second arm.  This is very
+		 likely the conditional expression built for a check.  */
+	      if (TREE_CODE (gnu_orig) == COND_EXPR
+		  && TREE_CODE (TREE_OPERAND (gnu_orig, 1)) == COMPOUND_EXPR
+		  && integer_zerop
+		     (TREE_OPERAND (TREE_OPERAND (gnu_orig, 1), 1)))
+		gnu_orig = TREE_OPERAND (gnu_orig, 2);
+
+	      gnu_stmt
+		= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig, gnu_temp);
 	      set_expr_location_from_node (gnu_stmt, gnat_node);
+
 	      append_to_statement_list (gnu_stmt, &gnu_after_list);
 	    }
 	}

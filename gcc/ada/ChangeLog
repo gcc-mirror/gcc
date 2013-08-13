@@ -1,5 +1,10 @@
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): Deal with specific conditional
+	expressions for misaligned actual parameters.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (can_equal_min_or_max_val_p): Be prepared for
 	values outside of the range of the type.
 
