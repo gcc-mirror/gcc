@@ -5153,7 +5153,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
 	 to conflict with Comp2 and an alias set copy is required.
 
 	 The language rules ensure the parent type is already frozen here.  */
-      if (Is_Derived_Type (gnat_entity))
+      if (Is_Derived_Type (gnat_entity) && !type_annotate_only)
 	{
 	  tree gnu_parent_type = gnat_to_gnu_type (Etype (gnat_entity));
 	  relate_alias_sets (gnu_type, gnu_parent_type,
