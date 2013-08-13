@@ -1,3 +1,26 @@
+2013-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_turn_edge_to_speculative): Return newly
+	introduced edge; fix typo in sanity check.
+	(cgraph_resolve_speculation): Export; improve diagnostic.
+	(cgraph_redirect_edge_call_stmt_to_callee): Better diagnostic; cancel
+	speculation at type mismatch.
+	* cgraph.h (cgraph_turn_edge_to_speculative): Update.
+	(cgraph_resolve_speculation): Declare.
+	(symtab_can_be_discarded): New function.
+	* value-prof.c (gimple_ic_transform): Remove actual transform code.
+	* ipa-inline-transform.c (speculation_removed): New global var.
+	(clone_inlined_nodes): See if speculation can be removed.
+	(inline_call): If speculations was removed, we growths may not match.
+	* ipa-inline.c (can_inline_edge_p): Add DISREGARD_LIMITS parameter.
+	(speculation_useful_p): New function.
+	(resolve_noninline_speculation): New function.
+	(inline_small_functions): Resolve useless speculations.
+	* ipa-inline.h (speculation_useful_p): Declare
+	* ipa.c (can_replace_by_local_alias): Simplify.
+	(ipa_profile): Produce speculative calls in non-lto, too;
+	add simple cost model; produce local aliases.
+
 2013-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* config/i386/t-i386 (i386.o): Rename stray PIPELINE_H to

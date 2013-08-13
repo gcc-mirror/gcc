@@ -1040,9 +1040,11 @@ cgraph_set_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
 
    At this time the function just creates the direct call,
    the referencd representing the if conditional and attaches
-   them all to the orginal indirect call statement.  */
+   them all to the orginal indirect call statement.  
 
-void
+   Return direct edge created.  */
+
+struct cgraph_edge *
 cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 				 struct cgraph_node *n2,
 				 gcov_type direct_count,
@@ -1073,6 +1075,7 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 			      IPA_REF_ADDR, e->call_stmt);
   ref->lto_stmt_uid = e->lto_stmt_uid;
   ref->speculative = e->speculative;
+  return e2;
 }
 
 /* Speculative call consist of three components:
@@ -1107,7 +1110,7 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
       if (e2->call_stmt)
 	{
 	  e = cgraph_edge (e->caller, e2->call_stmt);
-	  gcc_assert (!e->speculative && !e->indirect_unknown_callee);
+	  gcc_assert (e->speculative && !e->indirect_unknown_callee);
 	}
       else
 	for (e = e->caller->callees; 
@@ -1147,7 +1150,7 @@ cgraph_redirect_edge_callee (struct cgraph_edge *e, struct cgraph_node *n)
    Remove the speculative call sequence and return edge representing the call.
    It is up to caller to redirect the call as appropriate. */
 
-static struct cgraph_edge *
+struct cgraph_edge *
 cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
 {
   struct cgraph_edge *e2;
@@ -1159,12 +1162,21 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
     {
       if (dump_file)
 	{
-	  fprintf (dump_file, "Speculative indirect call %s/%i => %s/%i has "
-		   "turned out to have contradicitng known target ",
-		   xstrdup (cgraph_node_name (edge->caller)), edge->caller->symbol.order,
-		   xstrdup (cgraph_node_name (e2->callee)), e2->callee->symbol.order);
-	  print_generic_expr (dump_file, callee_decl, 0);
-          fprintf (dump_file, "\n");
+	  if (callee_decl)
+	    {
+	      fprintf (dump_file, "Speculative indirect call %s/%i => %s/%i has "
+		       "turned out to have contradicting known target ",
+		       xstrdup (cgraph_node_name (edge->caller)), edge->caller->symbol.order,
+		       xstrdup (cgraph_node_name (e2->callee)), e2->callee->symbol.order);
+	      print_generic_expr (dump_file, callee_decl, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	  else
+	    {
+	      fprintf (dump_file, "Removing speculative call %s/%i => %s/%i\n",
+		       xstrdup (cgraph_node_name (edge->caller)), edge->caller->symbol.order,
+		       xstrdup (cgraph_node_name (e2->callee)), e2->callee->symbol.order);
+	    }
 	}
     }
   else
@@ -1264,12 +1276,24 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       cgraph_speculative_call_info (e, e, e2, ref);
       if (gimple_call_fndecl (e->call_stmt))
 	e = cgraph_resolve_speculation (e, gimple_call_fndecl (e->call_stmt));
+      if (!gimple_check_call_matching_types (e->call_stmt, e->callee->symbol.decl,
+					     true))
+	{
+	  e = cgraph_resolve_speculation (e, NULL);
+	  if (dump_file)
+	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
+		     "Type mismatch.\n",
+		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
+	}
       else
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Expanding speculative call of %s/%i -> %s/%i\n",
+	    fprintf (dump_file, "Expanding speculative call of %s/%i -> %s/%i count:"
+		     HOST_WIDEST_INT_PRINT_DEC"\n",
 		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
-		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
+		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order,
+		     (HOST_WIDEST_INT)e->count);
 	  gcc_assert (e2->speculative);
 	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->symbol.decl));
 	  new_stmt = gimple_ic (e->call_stmt, cgraph (ref->referred),
