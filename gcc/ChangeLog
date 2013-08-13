@@ -1,3 +1,8 @@
+2013-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/i386/t-i386 (i386.o): Rename stray PIPELINE_H to
+	PASS_MANAGER_H
+
 2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* config/i386/i386.c (ix86_function_versions): Use error + inform.
