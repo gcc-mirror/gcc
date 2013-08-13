@@ -1,3 +1,8 @@
+2013-08-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.c (setup_class_translate_array): Use aclass instead of cl
+	for classes not fully covered by allocno classes.
+
 2013-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57661

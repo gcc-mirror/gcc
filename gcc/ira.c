@@ -1111,8 +1111,8 @@ setup_class_translate_array (enum reg_class *class_translate,
 	      min_cost = INT_MAX;
 	      for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
 		{
-		  cost = (ira_memory_move_cost[mode][cl][0]
-			  + ira_memory_move_cost[mode][cl][1]);
+		  cost = (ira_memory_move_cost[mode][aclass][0]
+			  + ira_memory_move_cost[mode][aclass][1]);
 		  if (min_cost > cost)
 		    min_cost = cost;
 		}
