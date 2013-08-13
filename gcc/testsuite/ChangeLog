@@ -1,5 +1,8 @@
 2013-08-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/57661
+	* g++.dg/opt/pr57661.C: New test.
+
 	PR sanitizer/56417
 	* gcc.dg/asan/pr56417.c: New test.
 

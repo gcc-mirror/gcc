@@ -1,5 +1,12 @@
 2013-08-13  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/57661
+	* tree-inline.h (struct copy_body_data): Add blocks_to_copy field.
+	* tree-inline.c (tree_function_versioning): Initialize it.
+	(remap_gimple_stmt): Return GIMPLE_NOP for MEM_REF lhs clobber stmts
+	if id->blocks_to_copy and MEM_REF's SSA_NAME is defined in a block
+	that is not being copied.
+
 	PR sanitizer/56417
 	* asan.c (instrument_strlen_call): Fix typo in comment.
 	Use char * type even for the lhs of POINTER_PLUS_EXPR.
