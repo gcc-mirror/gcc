@@ -9228,9 +9228,13 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
   gnat_node = Present (gnat_end_label) ? gnat_end_label : gnat_node;
 
   /* Some expanded subprograms have neither an End_Label nor a Sloc
-     attached.  Notify that to callers.  */
+     attached.  Notify that to callers.  For a block statement with no
+     End_Label, clear column information, so that the tree for a
+     transient block does not receive the sloc of a source condition.  */
 
-  if (!Sloc_to_locus (Sloc (gnat_node), &end_locus))
+  if (!Sloc_to_locus1 (Sloc (gnat_node), &end_locus,
+                       No (gnat_end_label) &&
+                       (Nkind (gnat_node) == N_Block_Statement)))
     return false;
 
   switch (TREE_CODE (gnu_node))
