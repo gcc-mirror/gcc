@@ -1,3 +1,7 @@
+2013-08-13  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/pr57980.c: Use vector of two elements, not just one.
+
 2013-08-13  David Malcolm  <dmalcolm@redhat.com>
 
 	Example of converting global state to per-pass state.
