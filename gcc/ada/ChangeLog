@@ -1,3 +1,17 @@
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace True with true.
+	(is_cplusplus_method): Likewise, and False with false.
+	(components_need_strict_alignment): Likewise.
+	* gcc-interface/misc.c (gnat_init_gcc_fp): Likewise.
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Likewise.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(add_cleanup): Likewise.
+	(Sloc_to_locus1): Likewise.
+	(Sloc_to_locus): Likewise.
+	(set_expr_location_from_node): Likewise.
+	* gcc-interface/utils.c (potential_alignment_gap): Likewise.
+
 2013-08-13  Thomas Quinot  <quinot@adacore.com>
 
 	* gcc-interface/trans.c (set_end_locus_from_node): Clear column info

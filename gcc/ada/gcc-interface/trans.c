@@ -2721,7 +2721,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
       /* First, if we have computed a small number of invariant conditions for
 	 range checks applied to the iteration variable, then initialize these
-	 conditions in front of the loop.  Otherwise, leave them set to True.
+	 conditions in front of the loop.  Otherwise, leave them set to true.
 
 	 ??? The heuristics need to be improved, by taking into account the
 	     following datapoints:
@@ -4658,7 +4658,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
            implicit transient block does not incorrectly inherit the slocs
            of a decision, which would otherwise confuse control flow based
            coverage analysis tools.  */
-	set_expr_location_from_node1 (gnu_result, gnat_node, True);
+	set_expr_location_from_node1 (gnu_result, gnat_node, true);
     }
   else
     gnu_result = gnu_inner_block;
@@ -7416,7 +7416,7 @@ static void
 add_cleanup (tree gnu_cleanup, Node_Id gnat_node)
 {
   if (Present (gnat_node))
-    set_expr_location_from_node1 (gnu_cleanup, gnat_node, True);
+    set_expr_location_from_node1 (gnu_cleanup, gnat_node, true);
   append_to_statement_list (gnu_cleanup, &current_stmt_group->cleanups);
 }
 
@@ -9032,7 +9032,7 @@ maybe_implicit_deref (tree exp)
 /* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a source code
    location and false if it doesn't.  In the former case, set the Gigi global
    variable REF_FILENAME to the simple debug file name as given by sinput.
-   If clear_column is True, set column information to 0.  */
+   If clear_column is true, set column information to 0.  */
 
 static bool
 Sloc_to_locus1 (Source_Ptr Sloc, location_t *locus, bool clear_column)
@@ -9073,7 +9073,7 @@ Sloc_to_locus1 (Source_Ptr Sloc, location_t *locus, bool clear_column)
 bool
 Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
 {
-  return Sloc_to_locus1 (Sloc, locus, False);
+  return Sloc_to_locus1 (Sloc, locus, false);
 }
 
 /* Similar to set_expr_location, but start with the Sloc of GNAT_NODE and
@@ -9095,7 +9095,7 @@ set_expr_location_from_node1 (tree node, Node_Id gnat_node, bool clear_column)
 static void
 set_expr_location_from_node (tree node, Node_Id gnat_node)
 {
-  set_expr_location_from_node1 (node, gnat_node, False);
+  set_expr_location_from_node1 (node, gnat_node, false);
 }
 
 /* More elaborate version of set_expr_location_from_node to be used in more

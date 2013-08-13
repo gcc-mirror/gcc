@@ -4830,7 +4830,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
   if (is_type && (!gnu_decl || this_made_decl))
     {
       /* Process the attributes, if not already done.  Note that the type is
-	 already defined so we cannot pass True for IN_PLACE here.  */
+	 already defined so we cannot pass true for IN_PLACE here.  */
       process_attributes (&gnu_type, &attr_list, false, gnat_entity);
 
       /* Tell the middle-end that objects of tagged types are guaranteed to
@@ -5449,26 +5449,26 @@ bool
 is_cplusplus_method (Entity_Id gnat_entity)
 {
   if (Convention (gnat_entity) != Convention_CPP)
-    return False;
+    return false;
 
   /* This is the main case: C++ method imported as a primitive operation.  */
   if (Is_Dispatching_Operation (gnat_entity))
-    return True;
+    return true;
 
   /* A thunk needs to be handled like its associated primitive operation.  */
   if (Is_Subprogram (gnat_entity) && Is_Thunk (gnat_entity))
-    return True;
+    return true;
 
   /* C++ classes with no virtual functions can be imported as limited
      record types, but we need to return true for the constructors.  */
   if (Is_Constructor (gnat_entity))
-    return True;
+    return true;
 
   /* This is set on the E_Subprogram_Type built for a dispatching call.  */
   if (Is_Dispatch_Table_Entity (gnat_entity))
-    return True;
+    return true;
 
-  return False;
+  return false;
 }
 
 /* Finalize the processing of From_With_Type incomplete types.  */
@@ -6727,13 +6727,13 @@ components_need_strict_alignment (Node_Id component_list)
       Entity_Id gnat_field = Defining_Entity (component_decl);
 
       if (Is_Aliased (gnat_field))
-	return True;
+	return true;
 
       if (Strict_Alignment (Etype (gnat_field)))
-	return True;
+	return true;
     }
 
-  return False;
+  return false;
 }
 
 /* Return true if TYPE is a type with variable size or a padding type with a
