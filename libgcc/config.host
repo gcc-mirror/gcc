@@ -740,7 +740,6 @@ mips*-*-netbsd*)			# NetBSD/mips, either endian.
 mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm"
-	# Check for MicroMIPS support.
 	case ${host} in
 		mips64r5900* | mipsr5900*)
 			# The MIPS16 support code uses floating point

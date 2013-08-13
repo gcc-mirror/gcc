@@ -1,3 +1,7 @@
+2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* config.host <mips*-*-linux*>: Remove a stray comment.
+
 2013-08-10  Jan Hubicka  <jh@suse.cz>
 
 	Work around binutils PR14342
