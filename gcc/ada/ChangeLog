@@ -1,5 +1,10 @@
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (can_equal_min_or_max_val_p): Be prepared for
+	values outside of the range of the type.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils2.c (build_atomic_load): Do a mere view-conversion
 	to the original type before converting to the result type.
 	(build_atomic_store): First do a conversion to the original type before
