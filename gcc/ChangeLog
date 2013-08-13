@@ -1,3 +1,12 @@
+2013-08-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
+	2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57459
+	* lra-constraints.c (update_ebb_live_info): Fix typo for operand
+	type when setting live regs.
+
 2013-08-13  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -4396,7 +4396,7 @@ update_ebb_live_info (rtx head, rtx tail)
 	  bitmap_clear_bit (&live_regs, reg->regno);
       /* Mark each used value as live.  */
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
-	if (reg->type == OP_IN
+	if (reg->type != OP_OUT
 	    && bitmap_bit_p (&check_only_regs, reg->regno))
 	  bitmap_set_bit (&live_regs, reg->regno);
       /* It is quite important to remove dead move insns because it

@@ -1,3 +1,11 @@
+2013-08-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Backport from mainline
+	2013-06-06  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/57459
+	* gcc.target/i386/pr57459.c: New test.
+
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/loop_optimization16.adb: New test.
@@ -13,8 +21,8 @@
 	Backport from mainline
 	2013-08-12  Perez Read  <netfirewall@gmail.com>
 
-         PR target/58132
-         * gcc.target/i386/movabs-1.c: New test.
+        PR target/58132
+        * gcc.target/i386/movabs-1.c: New test.
 
 2013-08-11  Janus Weil  <janus@gcc.gnu.org>
 
