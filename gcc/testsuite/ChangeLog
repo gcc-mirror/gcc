@@ -1,3 +1,8 @@
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/valued_proc.adb: New test.
+	* gnat.dg/valued_proc_pkg.ads: New helper.
+
 2013-08-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/57661
