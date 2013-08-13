@@ -33,13 +33,16 @@ class one_pass : public gimple_opt_pass
 {
 public:
   one_pass(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_one_pass, ctxt)
+    : gimple_opt_pass(pass_data_one_pass, ctxt),
+      counter(0)
   {}
 
   /* opt_pass methods: */
   bool gate ();
   unsigned int execute ();
 
+private:
+  int counter;
 }; // class one_pass
 
 } // anon namespace
@@ -51,8 +54,6 @@ bool one_pass::gate (void)
 
 unsigned int one_pass::execute ()
 {
-  static int counter = 0;
-
   if (counter > 0) {
     printf ("Executed more than once \n");
  }

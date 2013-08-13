@@ -1,5 +1,13 @@
 2013-08-13  David Malcolm  <dmalcolm@redhat.com>
 
+	Example of converting global state to per-pass state.
+
+	* gcc.dg/plugin/one_time_plugin.c (one_pass::execute): Convert
+	global state "static int counter" to...
+	(one_pass::counter): ...this instance data.
+
+2013-08-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/plugin/one_time_plugin.c: (one_pass_gate): Convert
 	to member function...
 	(one_pass::gate): ...this.
