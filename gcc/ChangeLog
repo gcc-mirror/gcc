@@ -1,3 +1,7 @@
+2013-08-13  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: (avr-linux): Allow for tmake_file not being empty.
+
 2013-08-13  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_turn_edge_to_speculative): Return newly
