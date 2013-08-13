@@ -1,3 +1,11 @@
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (build_atomic_load): Do a mere view-conversion
+	to the original type before converting to the result type.
+	(build_atomic_store): First do a conversion to the original type before
+	view-converting to the effective type, but deal with a padded type
+	specially.
+
 2013-08-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (TOOLS_LIBS): Pick C object files from the
