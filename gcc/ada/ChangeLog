@@ -1,5 +1,10 @@
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not bother about alias
+	sets of derived types in ASIS mode.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace True with true.
 	(is_cplusplus_method): Likewise, and False with false.
 	(components_need_strict_alignment): Likewise.
