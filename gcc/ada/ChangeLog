@@ -1,3 +1,8 @@
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (can_equal_min_or_max_val_p): Be prepared for
+	values outside of the range of the type.
+
 2013-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Last_Bit>: Add kludge
