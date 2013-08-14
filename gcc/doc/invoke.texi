@@ -637,6 +637,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
+-mtune-ctrl=@var{feature-list} -mdump-tune-features -mno-default @gol
 -mfpmath=@var{unit} @gol
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float @gol
@@ -14428,6 +14429,27 @@ perform run-time CPU detection must compile separate files for each
 supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
+
+@item -mdump-tune-features
+@opindex mdump-tune-features
+This option instructs GCC to dump the names of the x86 performance 
+tuning features and default settings. The names can be used in 
+@option{-mtune-ctrl=@var{feature-list}}.
+
+@item -mtune-ctrl=@var{feature-list}
+@opindex mtune-ctrl=@var{feature-list}
+This option is used to do fine grain control of x86 code generation features.
+@var{feature-list} is a comma separated list of @var{feature} names. See also
+@option{-mdump-tune-features}. When specified, the @var{feature} will be turned
+on if it is not preceded with @code{^}, otherwise, it will be turned off. 
+@option{-mtune-ctrl=@var{feature-list}} is intended to be used by GCC
+developers. Using it may lead to code paths not covered by testing and can
+potentially result in compiler ICEs or runtime errors.
+
+@item -mno-default
+@opindex mno-default
+This option instructs GCC to turn off all tunable features. See also 
+@option{-mtune-ctrl=@var{feature-list}} and @option{-mdump-tune-features}.
 
 @item -mcld
 @opindex mcld
