@@ -1,5 +1,7 @@
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
+	* gcc.target/arm/pr19599.c: Skip for -mthumb.
+
 	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Move dg-do
 	to be the first test directive.
 	* gcc.target/arm/atomic-op-acq_rel.c: Likewise.
