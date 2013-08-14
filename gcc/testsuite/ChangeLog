@@ -1,3 +1,8 @@
+2013-08-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57662
+	* gcc.dg/pr57662.c: New test.
+
 2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* gcc.target/mips/nan-legacy.c: Accept 4294967295 as an

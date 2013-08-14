@@ -1,3 +1,10 @@
+2013-08-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57662
+	* sel-sched.c (code_motion_process_successors): When the current insn
+	is removed after the recursive traversal, break from the loop.
+	Add comments and debug printouts.
+
 2013-08-14  Jakub Jelinek  <jakub@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 
