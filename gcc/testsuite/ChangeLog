@@ -45,6 +45,8 @@
 	PR testsuite/52641
 	* gcc.c-torture/execute/pr56799.x: New file.
 
+	* gcc.dg/c99-stdint-1.c [avr-*-*]: Update line number for dg-bogus.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.

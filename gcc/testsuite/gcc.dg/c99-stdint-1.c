@@ -214,7 +214,7 @@ test_max (void)
 void
 test_misc_limits (void)
 {
-/* { dg-bogus  "size" "ptrdiff is 16bits" { xfail avr-*-* } 218 } */
+/* { dg-bogus  "size" "ptrdiff is 16bits" { xfail avr-*-* } 56 } */
   CHECK_SIGNED_LIMITS_2(__PTRDIFF_TYPE__, PTRDIFF_MIN, PTRDIFF_MAX, -65535L, 65535L);
 #ifndef SIGNAL_SUPPRESS
   CHECK_LIMITS_2(sig_atomic_t, SIG_ATOMIC_MIN, SIG_ATOMIC_MAX, -127, 127, 255);
