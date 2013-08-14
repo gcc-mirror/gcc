@@ -1,3 +1,11 @@
+2013-08-14  Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/58067
+	* config/i386/i386.c (ix86_delegitimize_address): For CM_MEDIUM_PIC
+	and CM_LARGE_PIC ix86_cmodel fall thru into the -m32 code, handle
+	there also UNSPEC_PLTOFF.
+
 2013-08-14  Marek Polacek  <polacek@redhat.com>
 
 	* ipa-inline-analysis.c (add_clause): Avoid shifting integer
