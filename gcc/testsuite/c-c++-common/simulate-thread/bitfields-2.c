@@ -1,4 +1,4 @@
-/* { dg-do link } */
+/* { dg-do link { target { ! int16 } } } */
 /* { dg-options "--param allow-store-data-races=0" } */
 /* { dg-final { simulate-thread } } */
 

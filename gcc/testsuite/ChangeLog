@@ -64,6 +64,19 @@
 	* c-c++-common/scal-to-vec1.c: Add !int16 and large_double conditions
 	to tests that assume int/double are larger than short/float.
 
+	PR testsuite/52641
+	* c-c++-common/simulate-thread/bitfields-2.c: Run test only for
+	target { ! int16 }.
+	* gcc.dg/tree-ssa/pr54245.c: Do slsr scan only for target { ! int16 }.
+	* gcc.dg/tree-ssa/slsr-1.c: Adjust multiplicators to scan for for
+	target { int16 }.  Restrict existing tests to target { int32 }
+	where appropriate.
+	* gcc.dg/tree-ssa/slsr-2.c, gcc.dg/tree-ssa/slsr-27.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-28.c, gcc.dg/tree-ssa/slsr-29.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-3.c, gcc.dg/tree-ssa/ssa-ccp-23.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_int32): New proc.
+
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.
