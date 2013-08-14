@@ -35,6 +35,6 @@ Cyc_string_ungetc (int ignore, struct _fat_ptr *sptr)
 /* Whether the structs are totally scalarized or not depends on the
    MOVE_RATIO macro definition in the back end.  The scalarization will
    not take place when using small values for MOVE_RATIO.  */
-/* { dg-final { scan-tree-dump-times "struct _fat_ptr _ans" 0 "optimized" { target { ! "arm*-*-* powerpc*-*-* s390*-*-* sh*-*-*" } } } } */
-/* { dg-final { scan-tree-dump-times "struct _fat_ptr _T2" 0 "optimized" { target { ! "arm*-*-* powerpc*-*-* s390*-*-* sh*-*-*" } } } } */
+/* { dg-final { scan-tree-dump-times "struct _fat_ptr _ans" 0 "optimized" { target { ! "arm*-*-* avr-*-* powerpc*-*-* s390*-*-* sh*-*-*" } } } } */
+/* { dg-final { scan-tree-dump-times "struct _fat_ptr _T2" 0 "optimized" { target { ! "arm*-*-* avr-*-* powerpc*-*-* s390*-*-* sh*-*-*" } } } } */
 /* { dg-final { cleanup-tree-dump "optimized" } } */
