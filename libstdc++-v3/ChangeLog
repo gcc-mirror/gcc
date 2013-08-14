@@ -1,6 +1,7 @@
 2013-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
-	* src/c++98/compatibility.cc (_ZTIe): Use const_cast to avoid warning.
+	* src/c++98/compatibility.cc (_ZTIe): Use (const cast *)
+	to avoid -Wcast-qual warnings.
 	(_ZTIPe): Ditto.
 	(ZTIPKe): Ditto.
 
