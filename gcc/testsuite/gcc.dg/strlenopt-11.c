@@ -59,12 +59,18 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "strlen \\(" 3 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 7 "strlen" } } */
+/* avr has BIGGEST_ALIGNMENT 8, allowing fold_builtin_memory_op
+   to expand the memcpy call at the end of fn1.  */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 7 "strlen" { target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 6 "strlen" { target { avr-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "stpcpy \\(" 0 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.0. = " 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.6. = " 1 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.9. = " 1 "strlen" } } */
+/* Where the memcpy is expanded, the assignemts to elements of l are
+   propagated.  */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.0. = " 1 "strlen" { target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.6. = " 1 "strlen" { target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;\[\n\r\]*  l.9. = " 1 "strlen" { target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "  _\[0-9\]* = strlen \\(\[^\n\r\]*;" 3 "strlen" { target { avr-*-* } } } } */
 /* { dg-final { cleanup-tree-dump "strlen" } } */

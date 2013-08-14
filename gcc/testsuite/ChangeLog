@@ -54,6 +54,12 @@
 
 	* gcc.dg/pr46647.c: xfail for avr-*-*.
 
+	* gcc.dg/strlenopt-10.c [avr-*-*]: Reduce number of expected
+	memcpy by one.
+	* gcc.dg/strlenopt-11.c [avr-*-*]: Likewise.
+	Expect l to be optimized away.
+	* gcc.dg/strlenopt-13.c [avr-*-*]: Likewise.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.
