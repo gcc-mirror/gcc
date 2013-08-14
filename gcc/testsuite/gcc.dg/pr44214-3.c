@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-ccp1" } */
 
-typedef double v2df __attribute__ ((vector_size (16)));
+typedef double v2df __attribute__ ((vector_size (2 * sizeof (double))));
 
 void do_div (v2df *a, v2df *b)
 {
