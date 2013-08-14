@@ -15,6 +15,6 @@ void foo (A a, int i)
     {
     case A::Val0: break;	// { dg-error "" }
     case 1: break;
-    case 2.0: break;
+    case 2.0: break;            // { dg-error "" }
     }
 }
