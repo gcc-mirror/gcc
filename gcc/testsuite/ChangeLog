@@ -52,6 +52,8 @@
 	* gcc.dg/pr44214-1.c (v2df): Define size using sizeof (double).
 	* gcc.dg/pr44214-3.c (v2df): Likewise.
 
+	* gcc.dg/pr46647.c: xfail for avr-*-*.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.
