@@ -1,3 +1,17 @@
+2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Move dg-do
+	to be the first test directive.
+	* gcc.target/arm/atomic-op-acq_rel.c: Likewise.
+	* gcc.target/arm/atomic-op-acquire.c: Likewise.
+	* gcc.target/arm/atomic-op-char.c: Likewise.
+	* gcc.target/arm/atomic-op-consume.c: Likewise.
+	* gcc.target/arm/atomic-op-int.c: Likewise.
+	* gcc.target/arm/atomic-op-relaxed.c: Likewise.
+	* gcc.target/arm/atomic-op-release.c: Likewise.
+	* gcc.target/arm/atomic-op-seq_cst.c: Likewise.
+	* gcc.target/arm/atomic-op-short.c: Likewise.
+
 2013-08-14  Andrey Belevantsev  <abel@ispras.ru>
 
 	PR rtl-optimization/57662
