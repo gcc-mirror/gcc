@@ -1,3 +1,11 @@
+2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51912
+	* cp-tree.h (LOOKUP_NO_NON_INTEGRAL): Add.
+	* decl.c (case_conversion): Use it.
+	* call.c (standard_conversion): Likewise.
+	(implicit_conversion): Adjust.
+
 2013-08-13  Adam Butcher  <adam@jessamine.co.uk>
 
 	* pt.c: Grammar fix in comments ("it's" to "its").

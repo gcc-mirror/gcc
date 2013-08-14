@@ -3103,7 +3103,9 @@ case_conversion (tree type, tree value)
     {
       if (INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P (type))
 	type = type_promotes_to (type);
-      value = perform_implicit_conversion (type, value, tf_warning_or_error);
+      value = (perform_implicit_conversion_flags
+	       (type, value, tf_warning_or_error,
+		LOOKUP_IMPLICIT | LOOKUP_NO_NON_INTEGRAL));
     }
   return cxx_constant_value (value);
 }
