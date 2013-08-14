@@ -517,16 +517,21 @@ extern __attribute__((used, weak)) const char _ZTSe[2] = "e";
 extern __attribute__((used, weak)) const char _ZTSPe[3] = "Pe";
 extern __attribute__((used, weak)) const char _ZTSPKe[4] = "PKe";
 extern __attribute__((used, weak)) const void * const _ZTIe[2]
-  = { (const void *) &_ZTVN10__cxxabiv123__fundamental_type_infoE[2],
-      (const void *) _ZTSe };
+  = { reinterpret_cast<const void *>
+      (&_ZTVN10__cxxabiv123__fundamental_type_infoE[2]),
+      reinterpret_cast<const void *>(_ZTSe) };
 extern __attribute__((used, weak)) const void * const _ZTIPe[4]
-  = { (const void *) &_ZTVN10__cxxabiv119__pointer_type_infoE[2],
-      (const void *) _ZTSPe, (const void *) 0L,
-      (const void *) _ZTIe };
+  = { reinterpret_cast<const void *>
+      (&_ZTVN10__cxxabiv119__pointer_type_infoE[2]),
+      reinterpret_cast<const void *>(_ZTSPe),
+      reinterpret_cast<const void *>(0L),
+      reinterpret_cast<const void *>(_ZTIe) };
 extern __attribute__((used, weak)) const void * const _ZTIPKe[4]
-  = { (const void *) &_ZTVN10__cxxabiv119__pointer_type_infoE[2],
-      (const void *) _ZTSPKe, (const void *) 1L,
-      (const void *) _ZTIe };
+  = { reinterpret_cast<const void *>
+      (&_ZTVN10__cxxabiv119__pointer_type_infoE[2]),
+      reinterpret_cast<const void *>(_ZTSPKe),
+      reinterpret_cast<const void *>(1L),
+      reinterpret_cast<const void *>(_ZTIe) };
 #endif // _GLIBCXX_LONG_DOUBLE_COMPAT
 
 #ifdef _GLIBCXX_SYMVER_DARWIN
