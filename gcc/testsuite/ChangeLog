@@ -47,6 +47,8 @@
 
 	* gcc.dg/c99-stdint-1.c [avr-*-*]: Update line number for dg-bogus.
 
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Also skip for avr.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.
