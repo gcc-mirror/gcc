@@ -1,3 +1,9 @@
+2013-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58145
+	* tree-sra.c (build_ref_for_offset): If prev_base has
+	TREE_THIS_VOLATILE or TREE_SIDE_EFFECTS, propagate it to MEM_REF.
+
 2013-08-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/htmxlintrin.h: Add file missing from last commit.
