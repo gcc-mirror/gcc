@@ -1,3 +1,8 @@
+2013-08-14  Marek Polacek  <polacek@redhat.com>
+
+	* ipa-inline-analysis.c (add_clause): Avoid shifting integer
+	NUM_CONDITIONS bit positions.
+
 2013-08-13  Cary Coutant  <ccoutant@google.com>
 
 	* dwarf2out.c (CHECKSUM_BLOCK): New macro.
