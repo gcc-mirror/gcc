@@ -1,3 +1,8 @@
+2013-08-14  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.c (ix86_option_override_internal):
+	Remove unused variable and field.
+
 2013-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/57949
@@ -20,7 +25,7 @@
 2013-08-14  Xinliang David Li  <davidxl@google.com>
 
 	* config/i386/i386.c (ix86_option_override_internal):
-	Fix potential unitialized variable error.
+	Fix uninitialized variable error.
 
 2013-08-14  Xinliang David Li  <davidxl@google.com>
 

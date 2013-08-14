@@ -2792,7 +2792,6 @@ static const char *stringop_alg_names[] = {
 
 struct stringop_size_range
 {
-  int min;
   int max;
   stringop_alg alg;
   bool noalign;
@@ -2815,7 +2814,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
 
   do
     {
-      int mins = 0, maxs;
+      int maxs;
       stringop_alg alg;
       char alg_name[128];
       char align[16];
@@ -2831,7 +2830,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
           return;
         }
 
-      if (n > 0 && (maxs < (mins = input_ranges[n - 1].max + 1) && maxs != -1))
+      if (n > 0 && (maxs < (input_ranges[n - 1].max + 1) && maxs != -1))
         {
           error ("size ranges of option %s should be increasing",
                  is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
@@ -2855,7 +2854,6 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
           return;
         }
 
-      input_ranges[n].min = mins;
       input_ranges[n].max = maxs;
       input_ranges[n].alg = alg;
       if (!strcmp (align, "align"))
