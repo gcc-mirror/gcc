@@ -1,3 +1,16 @@
+2013-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*sse2_maskmovdqu): Emit addr32 prefix
+	when Pmode != word_mode.  Add length_address attribute.
+	(sse3_monitor_<mode>): Merge from sse3_monitor and
+	sse3_monitor64_<mode> insn patterns.  Emit addr32 prefix when
+	Pmode != word_mode.  Update insn length attribute.
+	* config/i386/i386.c (ix86_option_override_internal): Update
+	ix86_gen_monitor selection for merged sse3_monitor insn.
+
 2013-08-14  Jakub Jelinek  <jakub@redhat.com>
 	    Alexandre Oliva  <aoliva@redhat.com>
 
