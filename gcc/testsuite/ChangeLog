@@ -60,6 +60,10 @@
 	Expect l to be optimized away.
 	* gcc.dg/strlenopt-13.c [avr-*-*]: Likewise.
 
+	PR testsuite/52641
+	* c-c++-common/scal-to-vec1.c: Add !int16 and large_double conditions
+	to tests that assume int/double are larger than short/float.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.

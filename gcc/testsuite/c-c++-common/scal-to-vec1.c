@@ -26,13 +26,13 @@ int main (int argc, char *argv[]) {
     int     i = 12;
     double  d = 3.;
 
-    v1 = i + v0;        /* { dg-error "conversion of scalar \[^\\n\]* to vector" } */
+    v1 = i + v0;        /* { dg-error "conversion of scalar \[^\\n\]* to vector" "scalar to vector" { target { ! int16 } } } */
     v1 = 99999 + v0;    /* { dg-error "conversion of scalar \[^\\n\]* to vector" } */
 
-    f1 = d + f0;        /* { dg-error "conversion of scalar \[^\\n\]* to vector" } */
-    f1 = 1.3 + f0;      /* { dg-error "conversion of scalar \[^\\n\]* to vector" } */
+    f1 = d + f0;        /* { dg-error "conversion of scalar \[^\\n\]* to vector" "scalar to vector" { target { large_double } } } */
+    f1 = 1.3 + f0;      /* { dg-error "conversion of scalar \[^\\n\]* to vector" "scalar to vector" { target { large_double } } } */
     f1 = sll + f0;      /* { dg-error "conversion of scalar \[^\\n\]* to vector" } */
-    f1 = ((int)998769576) + f0; /* { dg-error "conversion of scalar \[^\\n\]* to vector" } */
+    f1 = ((int)998769576) + f0; /* { dg-error "conversion of scalar \[^\\n\]* to vector" "scalar to vector" { target { ! int16 } } } */
 
     /* convert.c should take care of this.  */
     i1 = sfl + i0;      /* { dg-error "can't convert value to a vector|invalid operands" } */
