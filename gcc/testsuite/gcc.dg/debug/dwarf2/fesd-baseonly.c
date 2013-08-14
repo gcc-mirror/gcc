@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-gdwarf-2 -dA -femit-struct-debug-baseonly" }
+// { dg-options "-gdwarf -dA -femit-struct-debug-baseonly" }
 // { dg-final { scan-assembler "timespec.*DW_AT_name" } }
 // { dg-final { scan-assembler-not "tv_sec.*DW_AT_name" } }
 // { dg-final { scan-assembler-not "tv_nsec.*DW_AT_name" } }

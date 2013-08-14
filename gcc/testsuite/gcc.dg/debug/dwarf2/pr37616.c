@@ -2,7 +2,7 @@
 /* Test that one can put breakpoints onto continue, exitlab and break
    and actually see program reaching those breakpoints.  */
 /* { dg-do compile } */
-/* { dg-options "-O0 -gdwarf-2 -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 
 extern void abort (void);
 
