@@ -1,3 +1,9 @@
+2013-08-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/htmxlintrin.h: Add file missing from last commit.
+	* config/s390/htmintrin.h: Likewise.
+	* config/s390/s390intrin.h: Likewise.
+
 2013-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
