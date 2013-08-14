@@ -1,6 +1,6 @@
 /* Test that we have line information for the line
    with local variable initializations.  */
-/* { dg-options "-O0 -g -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 /* { dg-final { scan-assembler ".loc 1 8 0|\[#/!\]\[ \t\]+line 8" } } */
 
 
