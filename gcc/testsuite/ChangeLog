@@ -76,6 +76,8 @@
 	* gcc.dg/tree-ssa/slsr-3.c, gcc.dg/tree-ssa/ssa-ccp-23.c: Likewise.
 	* lib/target-supports.exp (check_effective_target_int32): New proc.
 
+	* gcc.dg/tree-ssa/pr42585.c: Add avr-*-* to list of targets to
+	exclude from scan test.
 
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
