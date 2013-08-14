@@ -1,3 +1,16 @@
+2013-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/57949
+	* doc/invoke.texi: Add documentation of mcompat-align-parm
+	option.
+	* config/rs6000/rs6000.opt: Add mcompat-align-parm option.
+	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): For AIX
+	and Linux, correct BLKmode alignment when 128-bit alignment is
+	required and compatibility flag is not set.
+	(rs6000_gimplify_va_arg): For AIX and Linux, honor specified
+	alignment for zero-size arguments when compatibility flag is not
+	set.
+
 2013-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58145
