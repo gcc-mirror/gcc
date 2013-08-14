@@ -1,3 +1,9 @@
+2013-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/57949
+	* gcc.target/powerpc/pr57949-1.c: New.
+	* gcc.target/powerpc/pr57949-2.c: New.
+
 2013-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58145
