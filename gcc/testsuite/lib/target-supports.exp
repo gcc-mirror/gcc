@@ -1723,6 +1723,15 @@ proc check_effective_target_x32 { } {
     }]
 }
 
+# Return 1 if we're generating 32-bit integers using default
+# options, 0 otherwise.
+
+proc check_effective_target_int32 { } {
+    return [check_no_compiler_messages int32 object {
+	int dummy[sizeof (int) == 4 ? 1 : -1];
+    }]
+}
+
 # Return 1 if we're generating 32-bit or larger integers using default
 # options, 0 otherwise.
 
