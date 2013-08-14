@@ -1,3 +1,9 @@
+2013-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* src/c++98/compatibility.cc (_ZTIe): Use const_cast to avoid warning.
+	(_ZTIPe): Ditto.
+	(ZTIPKe): Ditto.
+
 2013-08-09  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_constants.h: Change syntax_option_type to enum
@@ -5,8 +11,7 @@
 
 2013-08-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* include/bits/regex.h: Replace _A, _B, _C, _R by _Ap, _Bp,
-	_Cp, _Rp.
+	* include/bits/regex.h: Replace _A, _B, _C, _R by _Ap, _Bp, _Cp, _Rp.
 
 2013-08-08  François Dumont  <fdumont@gcc.gnu.org>
 

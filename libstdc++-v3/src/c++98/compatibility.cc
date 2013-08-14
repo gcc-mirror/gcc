@@ -516,15 +516,18 @@ extern void *_ZTVN10__cxxabiv119__pointer_type_infoE[];
 extern __attribute__((used, weak)) const char _ZTSe[2] = "e";
 extern __attribute__((used, weak)) const char _ZTSPe[3] = "Pe";
 extern __attribute__((used, weak)) const char _ZTSPKe[4] = "PKe";
+// const_casts are used to avoid -Wcast-qual warnings
 extern __attribute__((used, weak)) const void * const _ZTIe[2]
   = { (void *) &_ZTVN10__cxxabiv123__fundamental_type_infoE[2],
-      (void *) _ZTSe };
+      const_cast<char*>(_ZTSe) };
 extern __attribute__((used, weak)) const void * const _ZTIPe[4]
   = { (void *) &_ZTVN10__cxxabiv119__pointer_type_infoE[2],
-      (void *) _ZTSPe, (void *) 0L, (void *) _ZTIe };
+      const_cast<char*>(_ZTSPe), (void *) 0L,
+      const_cast<void* const*>(_ZTIe) };
 extern __attribute__((used, weak)) const void * const _ZTIPKe[4]
   = { (void *) &_ZTVN10__cxxabiv119__pointer_type_infoE[2],
-      (void *) _ZTSPKe, (void *) 1L, (void *) _ZTIe };
+      const_cast<char*>(_ZTSPKe), (void *) 1L,
+      const_cast<void* const*>(_ZTIe) };
 #endif // _GLIBCXX_LONG_DOUBLE_COMPAT
 
 #ifdef _GLIBCXX_SYMVER_DARWIN
