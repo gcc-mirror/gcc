@@ -1,4 +1,8 @@
 2013-08-14  Xinliang David Li  <davidxl@google.com>
+	* config/i386/i386.c (ix86_option_override_internal):
+	Fix potential unitialized variable error.
+
+2013-08-14  Xinliang David Li  <davidxl@google.com>
 
 	* config/i386/i386.opt: Define two new options.
 	* config/i386/x86-tune.def: Add arch selector field in macros.
