@@ -2815,7 +2815,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
 
   do
     {
-      int mins, maxs;
+      int mins = 0, maxs;
       stringop_alg alg;
       char alg_name[128];
       char align[16];
