@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -gdwarf-2 -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 void e(int);
 __attribute__ ((always_inline)) inline int
 t(int function_parameter)

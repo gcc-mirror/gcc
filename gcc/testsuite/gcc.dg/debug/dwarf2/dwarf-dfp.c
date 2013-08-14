@@ -2,7 +2,7 @@
 
 /* { dg-do compile */
 /* { dg-require-effective-target dfp } */
-/* { dg-options "-O0 -gdwarf-2 -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 /* { dg-final { scan-assembler "0x10.*DW_AT_encoding" } } */
 /* { dg-final { scan-assembler "0x4.*DW_AT_byte_size" } } */
 /* { dg-final { scan-assembler "0x8.*DW_AT_byte_size" } } */

@@ -1,3 +1,47 @@
+2013-08-14  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.dg/debug/dwarf2/dwarf2.exp: Replace -gdwarf-2 with -gdwarf.
+	* gcc.dg/debug/dwarf2/dwarf-die7.c: Likewise.
+	* gcc.dg/debug/dwarf2/static1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-dfp.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-any.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-uninit.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die1.c: Likewise.
+	* gcc.dg/debug/dwarf2/var1.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr29609-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die3.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-merge.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char1.c: Likewise.
+	* gcc.dg/debug/dwarf2/discriminator.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char2.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-baseonly.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr36690-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/const-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/ipa-cp1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char3.c: Likewise.
+	* gcc.dg/debug/dwarf2/var2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr36690-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr31230.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Likewise.
+	* gcc.dg/debug/dwarf2/short-circuit.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr36690-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-reduced.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr37616.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die2.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline1.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-sys.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr29609-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/asm-line1.c: Likewise.
+	* gcc.dg/debug/dwarf2/c99-typedef1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-macro.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-none.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr51410.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-file1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die6.c: Likewise.
+	* gcc.dg/debug/dwarf2/const-2b.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die5.c: Likewise.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.

@@ -1,7 +1,7 @@
 /* PR debug/29609 */
 /* Verify that breakpoint on both goto failure; stmts is hit.  */
 /* { dg-do compile } */
-/* { dg-options "-O0 -gdwarf-2 -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 
 extern void abort (void);
 int x;
