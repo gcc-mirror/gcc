@@ -49,6 +49,9 @@
 
 	* gcc.dg/torture/stackalign/builtin-apply-2.c: Also skip for avr.
 
+	* gcc.dg/pr44214-1.c (v2df): Define size using sizeof (double).
+	* gcc.dg/pr44214-3.c (v2df): Likewise.
+
 2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
 
 	* gcc.target/arm/pr19599.c: Skip for -mthumb.
