@@ -557,10 +557,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       reference
       operator[](size_type __pos)
       {
-        // allow pos == size() as v3 extension:
+        // Allow pos == size() both in C++98 mode, as v3 extension,
+	// and in C++11 mode.
 	_GLIBCXX_DEBUG_ASSERT(__pos <= this->size());
-        // but be strict in pedantic mode:
-	_GLIBCXX_DEBUG_PEDASSERT(__pos < this->size());
+        // In pedantic mode be strict in C++98 mode.
+	_GLIBCXX_DEBUG_PEDASSERT(__cplusplus >= 201103L
+				 || __pos < this->size());
 	this->_M_leak();
 	return this->_M_data()[__pos];
       }

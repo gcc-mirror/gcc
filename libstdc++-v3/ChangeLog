@@ -1,3 +1,16 @@
+2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58163
+	* include/bits/basic_string.h (basic_string<>::operator[]): Fix
+	_GLIBCXX_DEBUG_PEDASSERT check vs C++11.
+	* include/ext/vstring.h: Likewise.
+	* testsuite/21_strings/basic_string/element_access/char/58163.cc:
+	New.
+	* testsuite/21_strings/basic_string/element_access/wchar_t/58163.cc:
+	Likewise.
+	* testsuite/ext/vstring/element_access/char/58163.cc: Likewise.
+	* testsuite/ext/vstring/element_access/wchar_t/58163.cc: Likewise.
+
 2013-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* src/c++98/compatibility.cc (_ZTIe): Use
