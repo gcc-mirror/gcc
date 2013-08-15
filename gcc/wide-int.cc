@@ -1963,13 +1963,13 @@ wide_int_ro::mul_internal (bool high, bool full,
      needed by vpn.  */
 
   unsigned HOST_HALF_WIDE_INT
-    u[2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
+    u[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
   unsigned HOST_HALF_WIDE_INT
-    v[2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
+    v[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
   /* The '2' in 'R' is because we are internally doing a full
      multiply.  */
   unsigned HOST_HALF_WIDE_INT
-    r[2 * 2 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
+    r[2 * 4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
   HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << HOST_BITS_PER_HALF_WIDE_INT) - 1;
 
   /* If the top level routine did not really pass in an overflow, then
