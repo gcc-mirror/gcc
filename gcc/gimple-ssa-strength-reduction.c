@@ -1742,7 +1742,7 @@ replace_ref (tree *expr, slsr_cand_t c)
 			  c->base_expr, c->stride);
   mem_ref = fold_build2 (MEM_REF, acc_type, add_expr,
 			 wide_int_to_tree (c->cand_type, c->index));
-  
+
   /* Gimplify the base addressing expression for the new MEM_REF tree.  */
   gimple_stmt_iterator gsi = gsi_for_stmt (c->cand_stmt);
   TREE_OPERAND (mem_ref, 0)
