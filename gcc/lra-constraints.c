@@ -1388,7 +1388,7 @@ process_alt_operands (int only_alternative)
   for (nalt = 0; nalt < n_alternatives; nalt++)
     {
       /* Loop over operands for one constraint alternative.  */
-#ifdef HAVE_ATTR_enabled
+#if HAVE_ATTR_enabled
       if (curr_id->alternative_enabled_p != NULL
 	  && ! curr_id->alternative_enabled_p[nalt])
 	continue;

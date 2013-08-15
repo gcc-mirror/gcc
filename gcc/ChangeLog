@@ -1,3 +1,11 @@
+2013-08-15  David Given  <dg@cowlark.com>
+
+	Backport from mainline
+	2013-04-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (process_alt_operands): Use #if HAVE_ATTR_enable
+	instead of #ifdef.
+
 2013-08-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58145
