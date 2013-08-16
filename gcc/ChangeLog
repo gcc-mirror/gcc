@@ -1,5 +1,9 @@
 2013-08-16  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/58164
+	* gimple.c (walk_stmt_load_store_addr_ops): For visit_addr
+	walk gimple_goto_dest of GIMPLE_GOTO.
+
 	PR tree-optimization/58165
 	* tree-call-cdce.c (shrink_wrap_one_built_in_call): If
 	bi_call must be the last stmt in a bb, don't split_block, instead
