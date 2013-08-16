@@ -157,7 +157,7 @@ wide_int_ro::from_double_int (double_int di, unsigned int prec)
 wide_int_ro
 wide_int_ro::from_rtx (const rtx_mode_t r)
 {
-  const_rtx x = get_rtx (r); 
+  const_rtx x = get_rtx (r);
   enum machine_mode mode = get_mode (r);
   wide_int result;
   unsigned int prec = GET_MODE_PRECISION (mode);
@@ -349,7 +349,7 @@ wide_int_ro::max_value (unsigned int type_prec, signop sgn,
 
   if (type_prec == 0)
     return wide_int::zero (result_prec
-			   ? result_prec 
+			   ? result_prec
 			   : TYPE_PRECISION (integer_type_node));
 
   if (sgn == UNSIGNED)
@@ -379,7 +379,7 @@ wide_int_ro::min_value (unsigned int type_prec, signop sgn,
 
   if (type_prec == 0)
     return wide_int_ro::zero (result_prec
-			      ? result_prec 
+			      ? result_prec
 			      : TYPE_PRECISION (integer_type_node));
 
   if (sgn == UNSIGNED)
@@ -1247,7 +1247,7 @@ wide_int_ro::clear_undef (signop sgn)
 
 /* Return THIS & OP1.  */
 wide_int_ro
-wide_int_ro::and_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::and_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 			unsigned int prec,
 			const HOST_WIDE_INT *op1, unsigned int op1len)
 {
@@ -1307,7 +1307,7 @@ wide_int_ro::and_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return THIS & ~OP1.  */
 wide_int_ro
-wide_int_ro::and_not_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::and_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 			    unsigned int prec,
 			    const HOST_WIDE_INT *op1, unsigned int op1len)
 {
@@ -1367,7 +1367,7 @@ wide_int_ro::and_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return THIS | OP1.  */
 wide_int_ro
-wide_int_ro::or_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::or_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 		       unsigned int prec,
 		       const HOST_WIDE_INT *op1, unsigned int op1len)
 {
@@ -1427,7 +1427,7 @@ wide_int_ro::or_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return THIS | ~OP1.  */
 wide_int_ro
-wide_int_ro::or_not_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::or_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 			   unsigned int prec,
 			   const HOST_WIDE_INT *op1, unsigned int op1len)
 {
@@ -1487,7 +1487,7 @@ wide_int_ro::or_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return the exclusive ior (xor) of THIS and OP1.  */
 wide_int_ro
-wide_int_ro::xor_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::xor_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 			unsigned int prec,
 			const HOST_WIDE_INT *op1, unsigned int op1len)
 {
@@ -1557,7 +1557,7 @@ wide_int_ro::abs () const
 
 /* Add of THIS and OP1.  No overflow is detected.  */
 wide_int_ro
-wide_int_ro::add_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::add_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 			unsigned int prec,
 			const HOST_WIDE_INT *op1, unsigned int op1len,
 			signop sgn, bool *overflow)
@@ -1601,7 +1601,7 @@ wide_int_ro::add_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 	  int p = (result.len == BLOCKS_NEEDED (prec)
 		   ? HOST_BITS_PER_WIDE_INT
 		   : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
-	  HOST_WIDE_INT x = (result.val[result.len - 1] ^ o0) 
+	  HOST_WIDE_INT x = (result.val[result.len - 1] ^ o0)
 	    & (result.val[result.len - 1] ^ o1);
 	  x = (x >> p) & 1;
 	  *overflow = (x != 0);
@@ -1861,7 +1861,7 @@ wi_pack (unsigned HOST_WIDE_INT *result,
   while (i < in_len - 2)
     {
       result[j++] = (unsigned HOST_WIDE_INT)input[i]
-	| ((unsigned HOST_WIDE_INT)input[i + 1] 
+	| ((unsigned HOST_WIDE_INT)input[i + 1]
 	   << HOST_BITS_PER_HALF_WIDE_INT);
       i += 2;
     }
@@ -1981,7 +1981,7 @@ wide_int_ro::mul_internal (bool high, bool full,
   /* If we need to check for overflow, we can only do half wide
      multiplies quickly because we need to look at the top bits to
      check for the overflow.  */
-  if ((high || full || needs_overflow) 
+  if ((high || full || needs_overflow)
       && (prec <= HOST_BITS_PER_HALF_WIDE_INT))
     {
       HOST_WIDE_INT r;
@@ -2003,7 +2003,7 @@ wide_int_ro::mul_internal (bool high, bool full,
 	{
 	  HOST_WIDE_INT upper;
 	  HOST_WIDE_INT sm
-	    = (r << (HOST_BITS_PER_WIDE_INT - prec)) 
+	    = (r << (HOST_BITS_PER_WIDE_INT - prec))
 	    >> (HOST_BITS_PER_WIDE_INT - 1);
 	  mask = ((HOST_WIDE_INT)1 << prec) - 1;
 	  sm &= mask;
@@ -2201,7 +2201,7 @@ wide_int_ro::popcount () const
 /* Subtract of THIS and OP1.  If the pointer to OVERFLOW is not 0, set
    OVERFLOW if the value overflows.  */
 wide_int_ro
-wide_int_ro::sub_large (const HOST_WIDE_INT *op0, unsigned int op0len, 
+wide_int_ro::sub_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 			unsigned int prec,
 			const HOST_WIDE_INT *op1, unsigned int op1len,
 			signop sgn, bool *overflow)
@@ -2331,7 +2331,7 @@ wide_int_ro::divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 	b_divisor[i] = (b_divisor[i] << s)
 	  | (b_divisor[i-1] >> (HOST_BITS_PER_HALF_WIDE_INT - s));
       b_divisor[0] = b_divisor[0] << s;
-      
+
       b_dividend[m] = b_dividend[m-1] >> (HOST_BITS_PER_HALF_WIDE_INT - s);
       for (i = m - 1; i > 0; i--)
 	b_dividend[i] = (b_dividend[i] << s)
@@ -2510,7 +2510,7 @@ wide_int_ro::divmod_internal (bool compute_quotient,
     {
       if (top_bit_of (dividend, dividend_len, dividend_prec))
 	{
-	  u0 = sub_large (wide_int (0).val, 1, 
+	  u0 = sub_large (wide_int (0).val, 1,
 			  dividend_prec, dividend, dividend_len, UNSIGNED);
 	  dividend = u0.val;
 	  dividend_len = u0.len;
@@ -2518,7 +2518,7 @@ wide_int_ro::divmod_internal (bool compute_quotient,
 	}
       if (top_bit_of (divisor, divisor_len, divisor_prec))
 	{
-	  u1 = sub_large (wide_int (0).val, 1, 
+	  u1 = sub_large (wide_int (0).val, 1,
 			  divisor_prec, divisor, divisor_len, UNSIGNED);
 	  divisor = u1.val;
 	  divisor_len = u1.len;
@@ -2717,7 +2717,7 @@ wide_int_ro::rshiftu_large (unsigned int cnt) const
 
   /* Extract_to_hwi sign extends.  So we need to fix that up.  */
   if (small_prec)
-    result.val [result.len - 1] 
+    result.val [result.len - 1]
       = zext_hwi (result.val [result.len - 1], small_prec);
   else if (result.val[result.len - 1] < 0)
     {
@@ -2872,8 +2872,8 @@ wide_int_ro::debug_vaa (const char* fmt, int r,
   char buf0[MAX_SIZE];
   char buf1[MAX_SIZE];
   if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r, 
-	     dumpa (o0, l0, p0, buf0), 
+    fprintf (wide_int_dump_file, fmt, r,
+	     dumpa (o0, l0, p0, buf0),
 	     dumpa (o1, l1, p1, buf1));
 }
 
@@ -3053,7 +3053,7 @@ wide_int_ro::debug_wwa (const char* fmt, const wide_int_ro &r,
   char buf1[MAX_SIZE];
   char buf2[MAX_SIZE];
   if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1), 
+    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1),
 	     dumpa (o1, l1, p1, buf2));
 }
 

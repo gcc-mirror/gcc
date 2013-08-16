@@ -182,7 +182,7 @@ along with GCC; see the file COPYING3.  If not see
                 tree t = ...
                 wide_int x = t + 6;
 
-     assuming t is a int_cst.   
+     assuming t is a int_cst.
 
    Note that the bits above the precision are not defined and the
    algorithms used here are careful not to depend on their value.  In
@@ -350,7 +350,7 @@ class GTY(()) wide_int_ro {
   wide_int_ro (const rtx_mode_t& op0) {
     *this = wide_int_ro::from_rtx (op0);
   }
-  /* 
+  /*
    * Conversions.
    */
 
@@ -364,7 +364,7 @@ class GTY(()) wide_int_ro {
   from_hwi (HOST_WIDE_INT op0, const_tree type)
   {
     unsigned int prec = TYPE_PRECISION (type);
-    
+
     if (TYPE_UNSIGNED (type))
       return wide_int_ro::from_uhwi (op0, prec);
     else
@@ -376,7 +376,7 @@ class GTY(()) wide_int_ro {
   inline static wide_int_ro
   from_shwi (HOST_WIDE_INT op0, enum machine_mode mode)
   {
-    unsigned int prec = GET_MODE_PRECISION (mode); 
+    unsigned int prec = GET_MODE_PRECISION (mode);
     return wide_int_ro::from_shwi (op0, prec);
   }
 
@@ -388,10 +388,10 @@ class GTY(()) wide_int_ro {
     unsigned int prec = GET_MODE_PRECISION (mode);
     return wide_int_ro::from_uhwi (op0, prec);
   }
-  
+
   static wide_int_ro from_array (const HOST_WIDE_INT* op0,
 				 unsigned int len,
-				 unsigned int precision, 
+				 unsigned int precision,
 				 bool need_canon = true);
 
   static wide_int_ro from_double_int (double_int, unsigned int precision);
@@ -403,19 +403,19 @@ class GTY(()) wide_int_ro {
 
   /* Return THIS as a signed HOST_WIDE_INT.  If THIS does not fit in
      PREC, the information is lost. */
-  inline HOST_WIDE_INT 
+  inline HOST_WIDE_INT
   to_shwi (unsigned int prec = 0) const
   {
     HOST_WIDE_INT result;
-    
+
     if (prec == 0)
       prec = precision;
-    
+
     if (prec < HOST_BITS_PER_WIDE_INT)
       result = sext_hwi (val[0], prec);
     else
       result = val[0];
-    
+
     return result;
   }
 
@@ -425,15 +425,15 @@ class GTY(()) wide_int_ro {
   inline unsigned HOST_WIDE_INT to_uhwi (unsigned int prec = 0) const
   {
     HOST_WIDE_INT result;
-    
+
     if (prec == 0)
       prec = precision;
-    
+
     if (prec < HOST_BITS_PER_WIDE_INT)
       result = zext_hwi (val[0], prec);
     else
       result = val[0];
-    
+
     return result;
   }
 
@@ -446,7 +446,7 @@ class GTY(()) wide_int_ro {
     return val[0];
   }
 
-  /* 
+  /*
    * Largest and smallest values that are represented in a TYPE_PREC.
    * RESULT_PREC is the precision of the value that the answer is
    * returned within.  The default value of 0 says return the answer
@@ -459,7 +459,7 @@ class GTY(()) wide_int_ro {
    * wide-ints and int-csts.
    */
   static wide_int_ro max_value (unsigned int type_prec,
-				signop sgn, 
+				signop sgn,
 				unsigned int result_prec = 0);
 
   /* Produce the largest number that is represented in TYPE. The
@@ -473,7 +473,7 @@ class GTY(()) wide_int_ro {
   /* Produce the largest number that is represented in MODE. The
      precision are taken from mode.  SGN must be SIGNED or
      UNSIGNED.  */
-  inline static wide_int_ro 
+  inline static wide_int_ro
   max_value (enum machine_mode mode, signop sgn)
   {
     unsigned int prec = GET_MODE_PRECISION (mode);
@@ -481,12 +481,12 @@ class GTY(()) wide_int_ro {
   }
 
   static wide_int_ro min_value (unsigned int type_prec,
-				signop sgn, 
+				signop sgn,
 				unsigned int result_prec = 0);
 
   /* Produce the smallest number that is represented in TYPE. The
      precision and sign are taken from TYPE.  */
-  inline static 
+  inline static
   wide_int_ro min_value (const_tree type)
   {
     unsigned int prec = TYPE_PRECISION (type);
@@ -496,14 +496,14 @@ class GTY(()) wide_int_ro {
   /* Produce the smallest number that is represented in MODE. The
      precision are taken from mode.  SGN must be SIGNED or
      UNSIGNED.  */
-  inline static 
+  inline static
   wide_int_ro min_value (enum machine_mode mode, signop sgn)
   {
     unsigned int prec = GET_MODE_PRECISION (mode);
     return min_value (prec, sgn, prec);
   }
 
-  /* 
+  /*
    * Small constants.  These are generally only needed in the places
    * where the precision must be provided.  For instance in binary
    * operations where the other operand has a precision, or for use
@@ -516,7 +516,7 @@ class GTY(()) wide_int_ro {
   {
     return wide_int_ro::from_shwi (-1, prec);
   }
- 
+
   /* Return a wide int of 0 with precision PREC.  */
   inline static wide_int_ro
   zero (unsigned int prec)
@@ -564,7 +564,7 @@ class GTY(()) wide_int_ro {
     return i >= len ? sign_mask () : val[i];
   }
 
-  /* 
+  /*
    * Comparative functions.
    */
 
@@ -573,12 +573,12 @@ class GTY(()) wide_int_ro {
   minus_one_p () const
   {
     HOST_WIDE_INT x;
-    
+
     if (precision && precision < HOST_BITS_PER_WIDE_INT)
       x = sext_hwi (val[0], precision);
     else
       x = val[0];
-    
+
     return len == 1 && x == (HOST_WIDE_INT)-1;
   }
 
@@ -587,7 +587,7 @@ class GTY(()) wide_int_ro {
   zero_p () const
   {
     HOST_WIDE_INT x;
-    
+
     if (precision && precision < HOST_BITS_PER_WIDE_INT)
       x = sext_hwi (val[0], precision);
     else if (len == 0)
@@ -597,7 +597,7 @@ class GTY(()) wide_int_ro {
       }
     else
       x = val[0];
-    
+
     return len == 1 && x == 0;
   }
 
@@ -606,15 +606,15 @@ class GTY(()) wide_int_ro {
   one_p () const
   {
     HOST_WIDE_INT x;
-    
+
     if (precision && precision < HOST_BITS_PER_WIDE_INT)
       x = zext_hwi (val[0], precision);
     else
       x = val[0];
-    
+
     return len == 1 && x == 1;
   }
-  
+
   /* Return true if THIS is negative based on the interpretation of SGN.
      For UNSIGNED, this is always false.  This is correct even if
      precision is 0.  */
@@ -623,10 +623,10 @@ class GTY(()) wide_int_ro {
   {
     if (sgn == UNSIGNED)
       return false;
-    
+
     if (precision == 0)
       return (len == 1 && val[0] < 0);
-    
+
     return sign_mask () != 0;
   }
 
@@ -637,7 +637,7 @@ class GTY(()) wide_int_ro {
    * comparisons cannot be operators since they are inherently signed or
    * unsigned and C++ has no such operators.
    */
-  
+
   /* Return true if THIS == C.  If both operands have non zero
      precisions, the precisions must be the same.  */
   template <typename T>
@@ -649,16 +649,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
-    
+
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, false);
-    
+
     if (p1 == 0)
       /* There are prec 0 types and we need to do this to check their
 	 min and max values.  */
-      result = (len == cl) && (val[0] == s[0]); 
+      result = (len == cl) && (val[0] == s[0]);
     else if (p1 < HOST_BITS_PER_WIDE_INT)
       {
 	unsigned HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << p1) - 1;
@@ -668,10 +668,10 @@ class GTY(()) wide_int_ro {
       result = val[0] == s[0];
     else
       result = eq_p_large (val, len, p1, s, cl);
-    
+
     if (result)
       gcc_assert (len == cl);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_vwa ("wide_int_ro:: %d = (%s == %s)\n", result, *this, s, cl, p2);
 #endif
@@ -679,7 +679,7 @@ class GTY(()) wide_int_ro {
   }
 
   /* Return true of C1 == C2.  If both parameters have non zero
-     precisions, then those precisions must be equal.  */  
+     precisions, then those precisions must be equal.  */
   template <typename T1, typename T2>
   static inline bool
   eq_p (const T1 &c1, const T2 &c2)
@@ -690,15 +690,15 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s1, *s2;  /* Returned data */
     unsigned int cl1, cl2;         /* array lengths  */
     unsigned int p1, p2;           /* precisions */
-    
+
     s1 = to_shwi1 (ws1, &cl1, &p1, c1);
     s2 = to_shwi1 (ws2, &cl2, &p2, c2);
     check_precision (&p1, &p2, true, false);
-    
+
     if (p1 == 0)
       /* There are prec 0 types and we need to do this to check their
 	 min and max values.  */
-      result = (cl1 == cl2) && (s1[0] == s2[0]); 
+      result = (cl1 == cl2) && (s1[0] == s2[0]);
     else if (p1 < HOST_BITS_PER_WIDE_INT)
       {
 	unsigned HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << p1) - 1;
@@ -708,7 +708,7 @@ class GTY(()) wide_int_ro {
       result = s1[0] == s2[0];
     else
       result = eq_p_large (s1, cl1, p1, s2, cl2);
-    
+
     return result;
   }
 
@@ -753,11 +753,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT
 	&& p2 <= HOST_BITS_PER_WIDE_INT)
       {
@@ -768,13 +768,13 @@ class GTY(()) wide_int_ro {
       }
     else
       result = lts_p_large (val, len, p1, s, cl, p2);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_vwa ("wide_int_ro:: %d = (%s lts_p %s\n", result, *this, s, cl, p2);
 #endif
     return result;
   }
-  
+
   /* Return true if C1 < C2 using signed comparisons.  */
   template <typename T1, typename T2>
   static inline bool
@@ -786,11 +786,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s1, *s2;  /* Returned data */
     unsigned int cl1, cl2;         /* array lengths  */
     unsigned int p1, p2;           /* precisions */
-    
+
     s1 = to_shwi1 (ws1, &cl1, &p1, c1);
     s2 = to_shwi1 (ws2, &cl2, &p2, c2);
     check_precision (&p1, &p2, false, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT
 	&& p2 <= HOST_BITS_PER_WIDE_INT)
       {
@@ -800,7 +800,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = lts_p_large (s1, cl1, p1, s2, cl2, p2);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_vaa ("wide_int_ro:: %d = (%s lts_p %s\n", result, s1, cl1, p1, s2, cl2, p2);
 #endif
@@ -817,11 +817,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT
 	&& p2 <= HOST_BITS_PER_WIDE_INT)
       {
@@ -831,7 +831,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = ltu_p_large (val, len, p1, s, cl, p2);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_vwa ("wide_int_ro:: %d = (%s ltu_p %s)\n", result, *this, s, cl, p2);
 #endif
@@ -849,11 +849,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s1, *s2;  /* Returned data */
     unsigned int cl1, cl2;         /* array lengths  */
     unsigned int p1, p2;           /* precisions */
-    
+
     s1 = to_shwi1 (ws1, &cl1, &p1, c1);
     s2 = to_shwi1 (ws2, &cl2, &p2, c2);
     check_precision (&p1, &p2, false, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT
 	&& p2 <= HOST_BITS_PER_WIDE_INT)
       {
@@ -898,7 +898,7 @@ class GTY(()) wide_int_ro {
   {
     return !gts_p (c);
   }
-  
+
   /* Return true if C1 <= C2 using signed comparisons.  */
   template <typename T1, typename T2>
   static inline bool
@@ -906,7 +906,7 @@ class GTY(()) wide_int_ro {
   {
     return !gts_p (c1, c2);
   }
-  
+
   /* Return true if THIS <= C using unsigned comparisons.  */
   template <typename T>
   inline bool
@@ -944,7 +944,7 @@ class GTY(()) wide_int_ro {
     else
       return gtu_p (c1, c2);
   }
-  
+
   /* Return true if THIS > C using signed comparisons.  */
   template <typename T>
   inline bool
@@ -1054,11 +1054,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int prec;
-    
+
     s = to_shwi1 (ws, &cl, &prec, c);
     if (prec == 0)
       prec = precision;
-    
+
     if (precision <= HOST_BITS_PER_WIDE_INT
 	&& prec <= HOST_BITS_PER_WIDE_INT)
       {
@@ -1074,7 +1074,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = cmps_large (val, len, precision, s, cl, prec);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_vwa ("wide_int_ro:: %d = (%s cmps %s)\n", result, *this, s, cl, prec);
 #endif
@@ -1092,11 +1092,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int prec;
-    
+
     s = to_shwi1 (ws, &cl, &prec, c);
     if (prec == 0)
       prec = precision;
-    
+
     if (precision <= HOST_BITS_PER_WIDE_INT
 	&& prec <= HOST_BITS_PER_WIDE_INT)
       {
@@ -1112,11 +1112,11 @@ class GTY(()) wide_int_ro {
       }
     else
       result = cmpu_large (val, len, precision, s, cl, prec);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_vwa ("wide_int_ro:: %d = (%s cmpu %s)\n", result, *this, s, cl, prec);
 #endif
-    
+
     return result;
   }
 
@@ -1149,8 +1149,8 @@ class GTY(()) wide_int_ro {
 
   bool fits_to_tree_p (const_tree type) const;
 
-  /* 
-   * Min and max 
+  /*
+   * Min and max
    */
 
   /* Return the signed or unsigned min of THIS and C. */
@@ -1162,12 +1162,12 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
-    
+
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (sgn == SIGNED)
       return lts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
     else
@@ -1193,9 +1193,9 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
-    
+
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
     if (sgn == SIGNED)
@@ -1213,7 +1213,7 @@ class GTY(()) wide_int_ro {
     else
       return gtu_p (op1) ? (*this) : op1;
   }
-  
+
   /* Return the signed min of THIS and C. */
   template <typename T>
   inline wide_int_ro
@@ -1223,22 +1223,22 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
-    
+
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     return lts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
   }
-  
+
   /* Return the signed min of THIS and OP1. */
   inline wide_int_ro
   smin (const wide_int_ro &op1) const
   {
     return lts_p (op1) ? (*this) : op1;
   }
-  
+
   /* Return the signed max of THIS and C. */
   template <typename T>
   inline wide_int_ro
@@ -1248,12 +1248,12 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
-    
+
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     return gts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
   }
 
@@ -1273,7 +1273,7 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
 
     s = to_shwi1 (ws, &cl, &p2, c);
@@ -1296,26 +1296,26 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-  
+
     p1 = precision;
-    
+
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     return gtu_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
   }
-  
+
   /* Return the unsigned max of THIS and OP1. */
   inline wide_int_ro
   umax (const wide_int_ro &op1) const
   {
     return gtu_p (op1) ? (*this) : op1;
   }
-  
-  /* 
+
+  /*
    * Extension, these do not change the precision.
    */
-  
+
   /* Return THIS extended to PREC.  The signness of the extension is
      specified by OP.  */
   inline wide_int_ro
@@ -1328,12 +1328,12 @@ class GTY(()) wide_int_ro {
   }
   wide_int_ro sext (unsigned int offset) const;
   wide_int_ro zext (unsigned int offset) const;
-  
-  /* 
+
+  /*
    * Size changing.  These change the underlying precision and are not
    * available for max_wide_int or addr_wide_int.
    */
-  
+
   wide_int_ro force_to_size (unsigned int precision, signop sgn) const;
 
   /* Return THIS forced to the size PREC.  This is sign extended if
@@ -1343,7 +1343,7 @@ class GTY(()) wide_int_ro {
   {
     return force_to_size (prec, SIGNED);
   }
-  
+
   /* Return THIS forced to the size PREC.  This is zero extended if
      needed. */
   inline wide_int_ro
@@ -1352,7 +1352,7 @@ class GTY(()) wide_int_ro {
     return force_to_size (prec, UNSIGNED);
   }
 
-  /* 
+  /*
    * Masking, and Insertion
    */
 
@@ -1381,11 +1381,11 @@ class GTY(()) wide_int_ro {
 	return ((val[0] << (HOST_BITS_PER_WIDE_INT - precision))
 		>> (HOST_BITS_PER_WIDE_INT - 1));
       }
-    
+
     /* VRP appears to be badly broken and this is a very ugly fix.  */
     if (i >= 0)
       return val[i] >> (HOST_BITS_PER_WIDE_INT - 1);
-    
+
     gcc_unreachable ();
 #if 0
     return val[len - 1] >> (HOST_BITS_PER_WIDE_INT - 1);
@@ -1394,7 +1394,7 @@ class GTY(()) wide_int_ro {
 
   void clear_undef (signop sgn);
 
-  /* 
+  /*
    * Logicals
    */
 
@@ -1408,11 +1408,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1421,7 +1421,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = and_large (val, len, p1, s, cl);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s & %s)\n", result, *this, s, cl, p2);
 #endif
@@ -1438,11 +1438,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1451,7 +1451,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = and_not_large (val, len, p1, s, cl);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s &~ %s)\n", result, *this, s, cl, p2);
 #endif
@@ -1464,16 +1464,16 @@ class GTY(()) wide_int_ro {
   {
     wide_int_ro result;
     int l0 = len - 1;
-    
+
     result.len = len;
     result.precision = precision;
-    
+
     while (l0 >= 0)
       {
 	result.val[l0] = ~val[l0];
 	l0--;
       }
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_ww ("wide_int_ro:: %s = (~ %s)\n", result, *this);
 #endif
@@ -1490,11 +1490,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1503,7 +1503,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = or_large (val, len, p1, s, cl);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s | %s)\n", result, *this, s, cl, p2);
 #endif
@@ -1520,11 +1520,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1550,11 +1550,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1563,13 +1563,13 @@ class GTY(()) wide_int_ro {
       }
     else
       result = xor_large (val, len, p1, s, cl);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s ^ %s)\n", result, *this, s, cl, p2);
 #endif
     return result;
   }
-  
+
   /*
    * Arithmetic operation functions, alpha sorted (except divmod).
    */
@@ -1585,11 +1585,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1600,7 +1600,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = add_large (val, len, p1, s, cl, UNSIGNED, 0);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s + %s)\n", result, *this, s, cl, p2);
 #endif
@@ -1619,11 +1619,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1644,7 +1644,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = add_large (val, len, p1, s, cl, sgn, overflow);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_waav ("wide_int_ro:: %s = (%s + %s) O=%d\n",
 		result, val, len, p1, s, cl, p1, *overflow);
@@ -1672,11 +1672,11 @@ class GTY(()) wide_int_ro {
     unsigned int cl;
     bool overflow = false;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1705,18 +1705,18 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     return mul_internal (false, false,
 			 val, len, p1,
 			 s, cl, sgn, overflow, true);
   }
-  
+
   /* Signed multiply THIS and C.  The result is the same precision
      as the operands.  OVERFLOW is set true if the result overflows,
      false otherwise.  */
@@ -1726,7 +1726,7 @@ class GTY(()) wide_int_ro {
   {
     return mul (c, SIGNED, overflow);
   }
-  
+
   /* Unsigned multiply THIS and C.  The result is the same precision
      as the operands.  OVERFLOW is set true if the result overflows,
      false otherwise.  */
@@ -1748,11 +1748,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     return mul_internal (false, true,
 			 val, len, p1,
 			 s, cl, sgn, 0, false);
@@ -1788,11 +1788,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     return mul_internal (true, false,
 			 val, len, p1,
 			 s, cl, sgn, 0, false);
@@ -1810,7 +1810,7 @@ class GTY(()) wide_int_ro {
   neg () const
   {
     wide_int_ro z = wide_int_ro::from_shwi (0, precision);
-    
+
     gcc_checking_assert (precision);
     return z - *this;
   }
@@ -1821,10 +1821,10 @@ class GTY(()) wide_int_ro {
   neg (bool *overflow) const
   {
     wide_int_ro z = wide_int_ro::from_shwi (0, precision);
-    
+
     gcc_checking_assert (precision);
     *overflow = only_sign_bit_p ();
-    
+
     return z - *this;
   }
 
@@ -1841,11 +1841,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1856,7 +1856,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = sub_large (val, len, p1, s, cl, UNSIGNED, 0);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s - %s)\n", result, *this, s, cl, p2);
 #endif
@@ -1874,11 +1874,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, true, true);
-    
+
     if (p1 <= HOST_BITS_PER_WIDE_INT)
       {
 	result.len = 1;
@@ -1899,7 +1899,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = sub_large (val, len, p1, s, cl, sgn, overflow);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_waav ("wide_int_ro:: %s = (%s - %s) O=%d\n",
 		result, val, len, p1, s, cl, p1, *overflow);
@@ -1907,7 +1907,7 @@ class GTY(()) wide_int_ro {
     return result;
   }
 
-  /* 
+  /*
    * Division and mod.  These are the ones that are actually used in
    * the compiler.  More can be added where they are needed.
    */
@@ -1925,13 +1925,13 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
     *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     return divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 			    &remainder, false, overflow);
   }
@@ -1966,16 +1966,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     return divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 			    &remainder, false, overflow);
-    
+
     if (quotient.neg_p (sgn) && !remainder.zero_p ())
       return quotient - 1;
     return quotient;
@@ -1988,7 +1988,7 @@ class GTY(()) wide_int_ro {
   {
     return div_floor (c, UNSIGNED);
   }
-  
+
   /* Signed divide with floor truncation of result.  */
   template <typename T>
   inline wide_int_ro
@@ -2011,16 +2011,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 				&remainder, true, overflow);
-    
+
     if (!quotient.neg_p (sgn) && !remainder.zero_p ())
       return quotient + 1;
     return quotient;
@@ -2040,13 +2040,13 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 				&remainder, true, overflow);
     if (!remainder.zero_p ())
@@ -2054,11 +2054,11 @@ class GTY(()) wide_int_ro {
 	wide_int_ro divisor = wide_int_ro::from_array (s, cl, precision);
 	if (sgn == SIGNED)
 	  {
-	    wide_int_ro p_remainder 
+	    wide_int_ro p_remainder
 	      = remainder.neg_p (SIGNED) ? -remainder : remainder;
 	    wide_int_ro p_divisor = divisor.neg_p (SIGNED) ? -divisor : divisor;
 	    p_divisor = p_divisor.rshiftu_large (1);
-	    
+	
 	    if (p_divisor.gts_p (p_remainder))
 	      {
 		if (quotient.neg_p (SIGNED))
@@ -2076,7 +2076,7 @@ class GTY(()) wide_int_ro {
       }
     return quotient;
   }
-  
+
   /* Divide DIVISOR into THIS producing both the quotient and
      remainder.  The result is the same size as the operands.  The
      sign is specified in SGN.  The output is truncated.  */
@@ -2088,11 +2088,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     return divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 			    remainder, true, 0);
   }
@@ -2125,11 +2125,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 				remainder, true, 0);
     if (quotient.neg_p (sgn) && !(*remainder).zero_p ())
@@ -2162,13 +2162,13 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     divmod_internal (false, val, len, p1, s, cl, p2, sgn,
 		     &remainder, true, overflow);
     return remainder;
@@ -2204,16 +2204,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 				&remainder, true, overflow);
-    
+
     if (quotient.neg_p (sgn) && !remainder.zero_p ())
       return remainder + wide_int_ro::from_array (s, cl, precision);
     return remainder;
@@ -2242,16 +2242,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 				&remainder, true, overflow);
-    
+
     if (!quotient.neg_p (sgn) && !remainder.zero_p ())
       return  remainder - wide_int_ro::from_array (s, cl, precision);
     return remainder;
@@ -2271,16 +2271,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     unsigned int p1, p2;
-    
+
     if (overflow)
       *overflow = false;
     p1 = precision;
     s = to_shwi1 (ws, &cl, &p2, c);
     check_precision (&p1, &p2, false, true);
-    
+
     quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
 				&remainder, true, overflow);
-    
+
     if (!remainder.zero_p ())
       {
 	wide_int_ro divisor = wide_int_ro::from_array (s, cl, precision);
@@ -2289,7 +2289,7 @@ class GTY(()) wide_int_ro {
 	    wide_int_ro p_remainder = remainder.neg_p (SIGNED) ? -remainder : remainder;
 	    wide_int_ro p_divisor = divisor.neg_p (SIGNED) ? -divisor : divisor;
 	    p_divisor = p_divisor.rshiftu_large (1);
-	    
+	
 	    if (p_divisor.gts_p (p_remainder))
 	      {
 		if (quotient.neg_p (SIGNED))
@@ -2308,7 +2308,7 @@ class GTY(()) wide_int_ro {
     return remainder;
   }
 
-  /* 
+  /*
    * Shifting rotating and extracting.  For the default wide_int, the
    * bitsize is optional and defaults to the precision of the value
    * being shifted, but for addr_wide_int and max_wide_int the
@@ -2322,7 +2322,7 @@ class GTY(()) wide_int_ro {
      width of *THIS used for truncating the shift amount.  See the
      definition of Op.TRUNC for how to set TRUNC_OP.  */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   lshift (const T &c, unsigned int bitsize = 0, ShiftOp trunc_op = NONE) const
   {
     wide_int_ro result;
@@ -2330,11 +2330,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     HOST_WIDE_INT shift;
-    
+
     s = to_shwi2 (ws, &cl, c);
-    
+
     gcc_checking_assert (precision);
-    
+
     shift = trunc_shift (s, cl, bitsize, trunc_op);
     if (shift == -1)
       result = wide_int_ro::zero (precision);
@@ -2349,7 +2349,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = lshift_large (shift, precision);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s << %s)\n", result, *this, s, cl, 0);
 #endif
@@ -2360,7 +2360,7 @@ class GTY(()) wide_int_ro {
      precision.  C must be non-negative.  This function is only
      available for the default wide-int form.  */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   lshift_widen (const T &c, unsigned int res_prec) const
   {
     wide_int_ro result;
@@ -2368,16 +2368,16 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     HOST_WIDE_INT shift;
-    
+
     s = to_shwi2 (ws, &cl, c);
-    
+
     gcc_checking_assert (precision);
     gcc_checking_assert (res_prec);
-    
+
     shift = s[0];
-    
+
     gcc_checking_assert (shift >= 0);
-    
+
     if (shift == 0 && res_prec == precision)
       result = *this;
     /* Handle the simple case quickly.   */
@@ -2389,7 +2389,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = lshift_large (shift, res_prec);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s <<W %s)\n", result, *this, s, cl, 0);
 #endif
@@ -2399,15 +2399,15 @@ class GTY(()) wide_int_ro {
   /* Rotate THIS left by C within PREC.  If PREC is 0, the precsion of
      THIS is used for PREC.  The result is the precision of THIS. */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   lrotate (const T &c, unsigned int prec = 0) const
   {
     HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
     const HOST_WIDE_INT *s;
     unsigned int cl;
-    
+
     s = to_shwi2 (ws, &cl, c);
-    
+
     return lrotate ((unsigned HOST_WIDE_INT)s[0], prec);
   }
 
@@ -2417,22 +2417,22 @@ class GTY(()) wide_int_ro {
   inline wide_int_ro lrotate (unsigned HOST_WIDE_INT cnt, unsigned int prec = 0) const
   {
     wide_int_ro left, right, result;
-    
+
     gcc_checking_assert (precision);
-    
+
     if (prec == 0)
       prec = precision;
-    
+
     left = lshift (cnt);
     right = rshiftu (prec - cnt);
-    
+
     if (prec != precision)
       {
 	left = left.zforce_to_size (precision);
 	right = right.zforce_to_size (precision);
       }
     result = left | right;
-    
+
     return result;
   }
 
@@ -2440,7 +2440,7 @@ class GTY(()) wide_int_ro {
      truncating the shift amount.  SGN indicates the sign.  TRUNC_OP
      indicates the truncation option.  C must be non-negative.  */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   rshift (const T &c, signop sgn, unsigned int bitsize = 0,
 	  ShiftOp trunc_op = NONE) const
   {
@@ -2454,7 +2454,7 @@ class GTY(()) wide_int_ro {
      is width of *THIS used for truncating the shift amount.  See the
      definition of Op.TRUNC for how to set TRUNC_OP.  */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   rshiftu (const T &c, unsigned int bitsize = 0, ShiftOp trunc_op = NONE) const
   {
     wide_int_ro result;
@@ -2462,11 +2462,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     HOST_WIDE_INT shift;
-    
+
     s = to_shwi2 (ws, &cl, c);
     gcc_checking_assert (precision);
     shift = trunc_shift (s, cl, bitsize, trunc_op);
-    
+
     if (shift == 0)
       result = *this;
     else if (shift == -1)
@@ -2486,7 +2486,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = rshiftu_large (shift);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s >>U %s)\n", result, *this, s, cl, 0);
 #endif
@@ -2497,7 +2497,7 @@ class GTY(()) wide_int_ro {
      the width of *THIS used for truncating the shift amount.  See the
      definition of Op.TRUNC for how to set TRUNC_OP.  */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   rshifts (const T &c, unsigned int bitsize = 0, ShiftOp trunc_op = NONE) const
   {
     wide_int_ro result;
@@ -2505,11 +2505,11 @@ class GTY(()) wide_int_ro {
     const HOST_WIDE_INT *s;
     unsigned int cl;
     HOST_WIDE_INT shift;
-    
+
     s = to_shwi2 (ws, &cl, c);
     gcc_checking_assert (precision);
     shift = trunc_shift (s, cl, bitsize, trunc_op);
-    
+
     if (shift == 0)
       result = *this;
     else if (shift == -1)
@@ -2534,7 +2534,7 @@ class GTY(()) wide_int_ro {
       }
     else
       result = rshifts_large (shift);
-    
+
 #ifdef DEBUG_WIDE_INT
     debug_wwa ("wide_int_ro:: %s = (%s >>S %s)\n", result, *this, s, cl, 0);
 #endif
@@ -2545,13 +2545,13 @@ class GTY(()) wide_int_ro {
      of THIS is used for PREC.  The result has the precision of
      THIS.  */
   template <typename T>
-  inline wide_int_ro 
+  inline wide_int_ro
   rrotate (const T &c, unsigned int prec = 0) const
   {
     HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
     const HOST_WIDE_INT *s;
     unsigned int cl;
-    
+
     s = to_shwi2 (ws, &cl, c);
     return rrotate ((unsigned HOST_WIDE_INT) s[0], prec);
   }
@@ -2559,26 +2559,26 @@ class GTY(()) wide_int_ro {
   /* Rotate THIS left by CNT within PREC.  If PREC is 0, the precsion
      of THIS is used for PREC.  The result has the precision of THIS.
      CNT must be non-negative.  */
-  inline wide_int_ro 
+  inline wide_int_ro
   rrotate (unsigned HOST_WIDE_INT cnt, unsigned int prec = 0) const
   {
     wide_int_ro left, right, result;
-    
+
     gcc_checking_assert (precision);
-    
+
     if (prec == 0)
       prec = precision;
-    
+
     left = lshift (prec - cnt);
     right = rshiftu (cnt);
-    
+
     if (prec != precision)
       {
 	left = left.zforce_to_size (precision);
 	right = right.zforce_to_size (precision);
       }
     result = left | right;
-    
+
     return result;
   }
 
@@ -2603,7 +2603,7 @@ class GTY(()) wide_int_ro {
 			 const HOST_WIDE_INT *, unsigned int, unsigned int);
   static inline void check_precision (unsigned int *p1, unsigned int *p2,
 				      bool check_eq, bool check_zero);
- 
+
 
   /* Logicals.  */
   wide_int_ro static and_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
@@ -2653,13 +2653,13 @@ class GTY(()) wide_int_ro {
   static wide_int_ro from_rtx (const rtx_mode_t);
 
   /* If SHIFT_COUNT_TRUNCATED is defined, truncate CNT.
-     
+
      At first look, the shift truncation code does not look right.
      Shifts (and rotates) are done according to the precision of the
      mode but the shift count is truncated according to the bitsize of
      the mode.  This is how real hardware works (Knuth's mix machine
      is the only known exception to this rule, but it was never real).
-     
+
      On an ideal machine, like Knuth's mix machine, a shift count is a
      word long and all of the bits of that word are examined to
      compute the shift amount.  But on real hardware, especially on
@@ -2668,13 +2668,13 @@ class GTY(()) wide_int_ro {
      the cycle time of the machine so corners are cut to keep this
      fast.  A comparison of an entire 64 bit word would take something
      like 6 gate delays before the shifting can even start.
-     
+
      So real hardware only looks at a small part of the shift amount.
      On IBM machines, this tends to be 1 more than what is necessary
      to encode the shift amount.  The rest of the world looks at only
      the minimum number of bits.  This means that only 3 gate delays
      are necessary to set up the shifter.
-     
+
      On the other hand, right shifts and rotates must be according to
      the precision or the operation does not make any sense.
 
@@ -2690,12 +2690,12 @@ class GTY(()) wide_int_ro {
      function that is internal to GCC.  */
 
   inline int
-  trunc_shift (const HOST_WIDE_INT *cnt, 
+  trunc_shift (const HOST_WIDE_INT *cnt,
 	       unsigned int len ATTRIBUTE_UNUSED,
 	       unsigned int bitsize, ShiftOp trunc_op) const
   {
     gcc_checking_assert (cnt[0] >= 0);
-    
+
     if (trunc_op == TRUNC)
       {
 	gcc_checking_assert (bitsize != 0);
@@ -2933,7 +2933,7 @@ class GTY(()) wide_int : public wide_int_ro {
     *this = *this & c;
     return *this;
   }
-  
+
   /* |= C */
   template <typename T>
   wide_int &operator |= (const T &c)
