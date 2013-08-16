@@ -4811,12 +4811,14 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		   && (bitpos == 0 || bitpos == mode_bitsize / 2))
 	    result = store_expr (from, XEXP (to_rtx, bitpos != 0), false,
 				 nontemporal);
-	  else if (bitpos + bitsize <= mode_bitsize / 2)
+	  else if (bitpos + bitsize <= mode_bitsize / 2
+		   && bitpos+bitsize <= mode_bitsize)
 	    result = store_field (XEXP (to_rtx, 0), bitsize, bitpos,
 				  bitregion_start, bitregion_end,
 				  mode1, from,
 				  get_alias_set (to), nontemporal);
-	  else if (bitpos >= mode_bitsize / 2)
+	  else if (bitpos >= mode_bitsize / 2
+		   && bitpos+bitsize <= mode_bitsize)
 	    result = store_field (XEXP (to_rtx, 1), bitsize,
 				  bitpos - mode_bitsize / 2,
 				  bitregion_start, bitregion_end,
@@ -4835,8 +4837,12 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	    }
 	  else
 	    {
+	      HOST_WIDE_INT extra = 0;
+              if (bitpos+bitsize > mode_bitsize)
+                extra = bitpos+bitsize - mode_bitsize;
 	      rtx temp = assign_stack_temp (GET_MODE (to_rtx),
-					    GET_MODE_SIZE (GET_MODE (to_rtx)));
+					    GET_MODE_SIZE (GET_MODE (to_rtx))
+					    + extra);
 	      write_complex_part (temp, XEXP (to_rtx, 0), false);
 	      write_complex_part (temp, XEXP (to_rtx, 1), true);
 	      result = store_field (temp, bitsize, bitpos,
