@@ -726,15 +726,28 @@ shrink_wrap_one_built_in_call (gimple bi_call)
      return false and do not do any transformation for
      the call.  */
   if (nconds == 0)
-    return false;
+    {
+      conds.release ();
+      return false;
+    }
 
   bi_call_bb = gimple_bb (bi_call);
 
-  /* Now find the join target bb -- split
-     bi_call_bb if needed.  */
-  bi_call_bsi = gsi_for_stmt (bi_call);
+  /* Now find the join target bb -- split bi_call_bb if needed.  */
+  if (stmt_ends_bb_p (bi_call))
+    {
+      /* If the call must be the last in the bb, don't split the block,
+	 it could e.g. have EH edges.  */
+      join_tgt_in_edge_from_call = find_fallthru_edge (bi_call_bb->succs);
+      if (join_tgt_in_edge_from_call == NULL)
+	{
+	  conds.release ();
+	  return false;
+	}
+    }
+  else
+    join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
 
-  join_tgt_in_edge_from_call = split_block (bi_call_bb, bi_call);
   bi_call_bsi = gsi_for_stmt (bi_call);
 
   join_tgt_bb = join_tgt_in_edge_from_call->dest;
