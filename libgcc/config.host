@@ -741,13 +741,13 @@ mips*-*-linux*)				# Linux MIPS, either endian.
 	extra_parts="$extra_parts crtfastmath.o"
 	tmake_file="${tmake_file} t-crtfm"
 	case ${host} in
-		mips64r5900* | mipsr5900*)
-			# The MIPS16 support code uses floating point
-			# instructions that are not supported on r5900.
-			;;
-		*)
-			tmake_file="${tmake_file} mips/t-mips16"
-			;;
+	  mips64r5900* | mipsr5900*)
+	    # The MIPS16 support code uses floating point
+	    # instructions that are not supported on r5900.
+	    ;;
+	  *)
+	    tmake_file="${tmake_file} mips/t-mips16 t-slibgcc-libgcc"
+	    ;;
 	esac
 	md_unwind_header=mips/linux-unwind.h
 	if test "${ac_cv_sizeof_long_double}" = 16; then
