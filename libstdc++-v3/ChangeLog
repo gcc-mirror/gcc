@@ -1,3 +1,8 @@
+2013-08-16  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (regex_traits<>::transform_primary):
+	Avoid past-the-end dereferences.
+
 2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58163
