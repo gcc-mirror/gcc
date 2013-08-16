@@ -106,20 +106,14 @@ mf_build_string (const char *string)
 static tree
 mf_varname_tree (tree decl)
 {
-  static pretty_printer buf_rec;
-  static int initialized = 0;
-  pretty_printer *buf = & buf_rec;
   const char *buf_contents;
   tree result;
 
   gcc_assert (decl);
 
-  if (!initialized)
-    {
-      pp_construct (buf, /* prefix */ NULL, /* line-width */ 0);
-      initialized = 1;
-    }
-  pp_clear_output_area (buf);
+  pretty_printer buf;
+  pp_construct (&buf, /* prefix */ NULL, /* line-width */ 0);
+  pp_clear_output_area (&buf);
 
   /* Add FILENAME[:LINENUMBER[:COLUMNNUMBER]].  */
   {
@@ -134,17 +128,17 @@ mf_varname_tree (tree decl)
     if (sourcefile == NULL)
       sourcefile = "<unknown file>";
 
-    pp_string (buf, sourcefile);
+    pp_string (&buf, sourcefile);
 
     if (sourceline != 0)
       {
-        pp_colon (buf);
-        pp_decimal_int (buf, sourceline);
+        pp_colon (&buf);
+        pp_decimal_int (&buf, sourceline);
 
         if (sourcecolumn != 0)
           {
-            pp_colon (buf);
-            pp_decimal_int (buf, sourcecolumn);
+            pp_colon (&buf);
+            pp_decimal_int (&buf, sourcecolumn);
           }
       }
   }
@@ -152,7 +146,7 @@ mf_varname_tree (tree decl)
   if (current_function_decl != NULL_TREE)
     {
       /* Add (FUNCTION) */
-      pp_string (buf, " (");
+      pp_string (&buf, " (");
       {
         const char *funcname = NULL;
         if (DECL_NAME (current_function_decl))
@@ -160,12 +154,12 @@ mf_varname_tree (tree decl)
         if (funcname == NULL)
           funcname = "anonymous fn";
 
-        pp_string (buf, funcname);
+        pp_string (&buf, funcname);
       }
-      pp_string (buf, ") ");
+      pp_string (&buf, ") ");
     }
   else
-    pp_space (buf);
+    pp_space (&buf);
 
   /* Add <variable-declaration>, possibly demangled.  */
   {
@@ -186,13 +180,13 @@ mf_varname_tree (tree decl)
     if (declname == NULL)
       declname = "<unnamed variable>";
 
-    pp_string (buf, declname);
+    pp_string (&buf, declname);
   }
 
   /* Return the lot as a new STRING_CST.  */
-  buf_contents = pp_formatted_text (buf);
+  buf_contents = ggc_strdup (pp_formatted_text (&buf));
   result = mf_build_string (buf_contents);
-  pp_clear_output_area (buf);
+  pp_clear_output_area (&buf);
 
   return result;
 }
