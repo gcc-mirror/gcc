@@ -1,3 +1,8 @@
+2013-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58165
+	* g++.dg/opt/pr58165.C: New test.
+
 2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51912
