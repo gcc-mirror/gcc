@@ -559,6 +559,12 @@ type_p
 create_user_defined_type (const char *type_name, struct fileloc *pos)
 {
   type_p ty = find_structure (type_name, TYPE_USER_STRUCT);
+
+  /* We might have already seen an incomplete decl of the given type,
+     in which case we won't have yet seen a GTY((user)), and the type will
+     only have kind "TYPE_STRUCT".  Mark it as a user struct.  */
+  ty->kind = TYPE_USER_STRUCT;
+
   ty->u.s.line = *pos;
   ty->u.s.bitmap = get_lang_bitmap (pos->file);
   do_typedef (type_name, ty, pos);
