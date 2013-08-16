@@ -1,3 +1,15 @@
+2013-08-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* sched-vis.c (rtl_slim_pp_initialized): Remove.
+	(rtl_slim_pp): Likewise.
+	(init_rtl_slim_pretty_print): Likewise.
+	(dump_value_slim):  Don't call it.  Use local pretty printer.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	(str_pattern_slim): Likewise.
+	* tree-mudflap.c (mf_varname_tree): Use local pretty printer.
+	Simplify.
+
 2013-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58164
