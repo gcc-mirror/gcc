@@ -1,3 +1,9 @@
+2013-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype.c (create_user_defined_type): Ensure that the kind
+	is set to TYPE_USER_STRUCT, fixing a bug seen when an incomplete
+	declaration is seen before the GTY((user)) marking.
+
 2013-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/58105
