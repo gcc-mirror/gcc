@@ -1541,7 +1541,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   if (TREE_CODE (t) != TREE_BINFO)
     {
       tree binfo;
-      binfo = gimple_extract_devirt_binfo_from_cst (t);
+      binfo = gimple_extract_devirt_binfo_from_cst
+		 (t, ie->indirect_info->otr_type);
       if (!binfo)
 	return NULL_TREE;
       binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);

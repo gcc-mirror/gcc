@@ -11864,6 +11864,21 @@ types_same_for_odr (tree type1, tree type2)
   return true;
 }
 
+/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
+
+tree
+obj_type_ref_class (tree ref)
+{
+  gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
+  ref = TREE_TYPE (ref);
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  ref = TREE_TYPE (ref);
+  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE);
+  ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  return TREE_TYPE (ref);
+}
+
 /* Try to find a base info of BINFO that would have its field decl at offset
    OFFSET within the BINFO type and which is of EXPECTED_TYPE.  If it can be
    found, return, otherwise return NULL_TREE.  */
