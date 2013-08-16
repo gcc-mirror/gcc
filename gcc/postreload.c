@@ -303,12 +303,14 @@ reload_cse_simplify_set (rtx set, rtx insn)
 	      switch (extend_op)
 		{
 		case ZERO_EXTEND:
-		  result = wide_int (std::make_pair (this_rtx, GET_MODE (src)))
-			    .zext (word_mode);
+		  result = wide_int (std::make_pair (this_rtx, GET_MODE (src)));
+		  if (GET_MODE_PRECISION (GET_MODE (src)) > GET_MODE_PRECISION (word_mode))
+		    result = result.zext (GET_MODE_PRECISION (word_mode));
 		  break;
 		case SIGN_EXTEND:
-		  result = wide_int (std::make_pair (this_rtx, GET_MODE (src)))
-			    .sext (word_mode);
+		  result = wide_int (std::make_pair (this_rtx, GET_MODE (src)));
+		  if (GET_MODE_PRECISION (GET_MODE (src)) > GET_MODE_PRECISION (word_mode))
+		    result = result.sext (GET_MODE_PRECISION (word_mode));
 		  break;
 		default:
 		  gcc_unreachable ();
