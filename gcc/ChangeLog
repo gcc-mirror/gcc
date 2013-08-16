@@ -1,3 +1,9 @@
+2013-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype.c (type_for_name): Add special-case support for
+	locating types within the "gcc::" namespace.
+	(open_base_files): Emit a "using namespace gcc" directive.
+
 2013-08-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/58160
