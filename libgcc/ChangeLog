@@ -1,3 +1,16 @@
+2013-08-16  Maciej W. Rozycki  <macro@codesourcery.com>
+            Catherine Moore  <clm@codesourcery.com>
+            Richard Sandiford <rdsandiford@googlemail.com>
+
+	* config/mips/mips16.S (CE_STARTFN, CE_ENDFN): New macros.
+	(RET_FUNCTION): Use them in place of STARTFN and ENDFN.
+	(CALL_STUB_NO_RET): Likewise.
+	(CALL_STUB_RET): Likewise.
+	* config/mips/libgcc-mips16.ver: Remove __mips16_call_stub and
+	__mips16_ret call/return stub symbols.
+	* config.host <mips*-*-linux>: For non-R5900 add t-slibgcc-libgcc
+	to tmake_file.
+
 2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
 
 	* config.host <mips*-*-linux*>: Remove a stray comment.
