@@ -29922,7 +29922,7 @@ make_resolver_func (const tree default_decl,
   DECL_IGNORED_P (decl) = 0;
   /* IFUNC resolvers have to be externally visible.  */
   TREE_PUBLIC (decl) = 1;
-  DECL_UNINLINABLE (decl) = 0;
+  DECL_UNINLINABLE (decl) = 1;
 
   /* Resolver is not external, body is generated.  */
   DECL_EXTERNAL (decl) = 0;

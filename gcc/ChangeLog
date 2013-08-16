@@ -1,3 +1,8 @@
+2013-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/58105
+	* config/i386/i386.c (make_resolver_func): Set DECL_UNINLINABLE.
+
 2013-08-16  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Add new
@@ -5,8 +10,7 @@
 	(gimple_fold_call): Use it.
 	* gimple.h (gimple_extract_devirt_binfo_from_cst): Update prototype.
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Update.
-	* ipa-prop.c (ipa_analyze_virtual_call_uses): Use
-	obj_type_ref_class.
+	* ipa-prop.c (ipa_analyze_virtual_call_uses): Use obj_type_ref_class.
 	(try_make_edge_direct_virtual_call): Likewise.
 	* tree.c (obj_type_ref_class): New.
 	* tree.h (obj_type_ref_class): Use it.
@@ -43,15 +47,13 @@
 2013-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/57949
-	* doc/invoke.texi: Add documentation of mcompat-align-parm
-	option.
+	* doc/invoke.texi: Add documentation of mcompat-align-parm option.
 	* config/rs6000/rs6000.opt: Add mcompat-align-parm option.
 	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): For AIX
 	and Linux, correct BLKmode alignment when 128-bit alignment is
 	required and compatibility flag is not set.
-	(rs6000_gimplify_va_arg): For AIX and Linux, honor specified
-	alignment for zero-size arguments when compatibility flag is not
-	set.
+	(rs6000_gimplify_va_arg): For AIX and Linux, honor specified alignment
+	for zero-size arguments when compatibility flag is not set.
 
 2013-08-14  Jakub Jelinek  <jakub@redhat.com>
 
