@@ -220,19 +220,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         string_type
         transform_primary(_Fwd_iter __first, _Fwd_iter __last) const
         {
-          __try
-            {
-              typedef std::ctype<char_type> __ctype_type;
-              const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
-              std::vector<char_type> __v(__first, __last);
-              // FIXME : this is not entirely correct
-              __fctyp.tolower(&*__v.begin(), &*__v.end());
-              return this->transform(&*__v.begin(), &*__v.end());
-            }
-          __catch (std::bad_cast)
-            {
-            }
-          return string_type();
+          typedef std::ctype<char_type> __ctype_type;
+          const __ctype_type& __fctyp(use_facet<__ctype_type>(_M_locale));
+          std::vector<char_type> __s(__first, __last);
+          // FIXME : this is not entirely correct
+          __fctyp.tolower(__s.data(), __s.data() + __s.size());
+          return this->transform(__s.data(), __s.data() + __s.size());
         }
 
       /**
@@ -572,7 +565,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::string __s(__last - __first, '?');
       __fctyp.narrow(__first, __last, '?', &__s[0]);
-      __cctyp.tolower(&*__s.begin(), &*__s.end());
+      __cctyp.tolower(&*__s.begin(), &*__s.begin() + __s.size());
       for (_ClassnameEntry* __it = __classnames;
            __it < *(&__classnames + 1);
            ++__it)
