@@ -1740,9 +1740,17 @@
 ;; Match the second insn (lbz, lhz, lwz, ld) in fusing the combination of addis
 ;; and loads to GPR registers on power8.
 (define_predicate "fusion_gpr_mem_load"
-  (match_code "mem")
+  (match_code "mem,sign_extend,zero_extend")
 {
   rtx addr;
+
+  /* Handle sign/zero extend.  */
+  if (GET_CODE (op) == ZERO_EXTEND
+      || (TARGET_P8_FUSION_SIGN && GET_CODE (op) == SIGN_EXTEND))
+    {
+      op = XEXP (op, 0);
+      mode = GET_MODE (op);
+    }
 
   if (!MEM_P (op))
     return 0;

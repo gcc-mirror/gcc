@@ -1,3 +1,34 @@
+2013-08-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58160
+	* config/rs6000/predicates.md (fusion_gpr_mem_load): Allow the
+	memory rtx to contain ZERO_EXTEND and SIGN_EXTEND.
+
+	* config/rs6000/rs6000-protos.h (fusion_gpr_load_p): Pass operands
+	array instead of each individual operand as a separate argument.
+	(emit_fusion_gpr_load): Likewise.
+	(expand_fusion_gpr_load): Add new function declaration.
+
+	* config/rs6000/rs6000.c (fusion_gpr_load_p): Change the calling
+	signature to have the operands passed as an array, instead of as
+	separate arguments.  Allow ZERO_EXTEND to be in the memory
+	address, and also SIGN_EXTEND if -mpower8-fusion-sign.  Do not
+	depend on the register live/dead flags when peepholes are run.
+	(expand_fusion_gpr_load): New function to be called from the
+	peephole2 pass, to change the register that addis sets to be the
+	target register.
+	(emit_fusion_gpr_load): Change the calling signature to have the
+	operands passed as an array, instead of as separate arguments.
+	Allow ZERO_EXTEND to be in the memory address, and also
+	SIGN_EXTEND if -mpower8-fusion-sign.
+
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_GPR): Delete unused
+	unspec enumeration.
+	(power8 fusion peephole/peephole2): Rework the fusion peepholes to
+	adjust the register addis loads up in the peephole2 pass.  Do not
+	depend on the register live/dead state when the peephole pass is
+	done.
+
 2013-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype.c (create_user_defined_type): Ensure that the kind
