@@ -1903,7 +1903,7 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
   ii = cs->indirect_info;
   ii->offset = anc_offset;
   ii->otr_token = tree_low_cst (OBJ_TYPE_REF_TOKEN (target), 1);
-  ii->otr_type = TREE_TYPE (TREE_TYPE (OBJ_TYPE_REF_OBJECT (target)));
+  ii->otr_type = obj_type_ref_class (target);
   ii->polymorphic = 1;
 }
 
@@ -2453,7 +2453,8 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   if (TREE_CODE (binfo) != TREE_BINFO)
     {
-      binfo = gimple_extract_devirt_binfo_from_cst (binfo);
+      binfo = gimple_extract_devirt_binfo_from_cst
+		 (binfo, ie->indirect_info->otr_type);
       if (!binfo)
         return NULL;
     }

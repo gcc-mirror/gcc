@@ -1007,13 +1007,14 @@ gimple_fold_builtin (gimple stmt)
    represented by a declaration (i.e. a global or automatically allocated one)
    or NULL if it cannot be found or is not safe.  CST is expected to be an
    ADDR_EXPR of such object or the function will return NULL.  Currently it is
-   safe to use such binfo only if it has no base binfo (i.e. no ancestors).  */
+   safe to use such binfo only if it has no base binfo (i.e. no ancestors)
+   EXPECTED_TYPE is type of the class virtual belongs to.  */
 
 tree
-gimple_extract_devirt_binfo_from_cst (tree cst)
+gimple_extract_devirt_binfo_from_cst (tree cst, tree expected_type)
 {
   HOST_WIDE_INT offset, size, max_size;
-  tree base, type, expected_type, binfo;
+  tree base, type, binfo;
   bool last_artificial = false;
 
   if (!flag_devirtualize
@@ -1022,7 +1023,6 @@ gimple_extract_devirt_binfo_from_cst (tree cst)
     return NULL_TREE;
 
   cst = TREE_OPERAND (cst, 0);
-  expected_type = TREE_TYPE (cst);
   base = get_ref_base_and_extent (cst, &offset, &size, &max_size);
   type = TREE_TYPE (base);
   if (!DECL_P (base)
@@ -1108,7 +1108,8 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
       else
 	{
 	  tree obj = OBJ_TYPE_REF_OBJECT (callee);
-	  tree binfo = gimple_extract_devirt_binfo_from_cst (obj);
+	  tree binfo = gimple_extract_devirt_binfo_from_cst
+		 (obj, obj_type_ref_class (callee));
 	  if (binfo)
 	    {
 	      HOST_WIDE_INT token

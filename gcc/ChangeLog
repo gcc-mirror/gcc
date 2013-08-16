@@ -1,3 +1,16 @@
+2013-08-16  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Add new
+	arugment expected_type.
+	(gimple_fold_call): Use it.
+	* gimple.h (gimple_extract_devirt_binfo_from_cst): Update prototype.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Update.
+	* ipa-prop.c (ipa_analyze_virtual_call_uses): Use
+	obj_type_ref_class.
+	(try_make_edge_direct_virtual_call): Likewise.
+	* tree.c (obj_type_ref_class): New.
+	* tree.h (obj_type_ref_class): Use it.
+
 2013-08-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* sched-vis.c (rtl_slim_pp_initialized): Remove.
