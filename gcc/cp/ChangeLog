@@ -1,3 +1,35 @@
+2013-08-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (dump_scope): Add a cxx_pretty_printer parameter.
+	Adjust callers.
+	(dump_template_argument): Likewise.
+	(dump_template_argument_list): Likewise.
+	(dump_template_parameter): Likewise.
+	(dump_template_bindings): Likewise.
+	(dump_alias_template_specialization): Likewise.
+	(dump_type): Likewise.
+	(dump_typename): Likewise.
+	(dump_aggr_type): Likewise.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_global_iord): Likewise.
+	(dump_simple_decl): Likewise.
+	(dump_decl): Likewise.
+	(dump_template_decl): Likewise.
+	(dump_function_decl): Likewise.
+	(dump_parameters): Likewise.
+	(dump_ref_qualifier): Likewise.
+	(dump_exception_spec): Likewise.
+	(dump_function_name): Likewise.
+	(dump_template_parms): Likewise.
+	(dump_call_expr_args): Likewise.
+	(dump_aggr_init_expr_args): Likewise.
+	(dump_expr_list): Likewise.
+	(dump_expr_init_vec): Likewise.
+	(dump_expr): Likewise.
+	(dump_binary_op): Likewise.
+	(dump_unary_op): Likewise.
+
 2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51912
