@@ -1,3 +1,10 @@
+2013-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* src/c++98/compatibility.cc (_ZTIe): Use
+	reinterpret_cast<const cast *> to avoid -Wcast-qual warnings.
+	(_ZTIPe): Ditto.
+	(ZTIPKe): Ditto.
+
 2013-05-15  Jonathan Wakely  <jwakely.gcc@gmail.com>
 
 	* include/bits/basic_string.h (getline): Fix doxygen comments.
