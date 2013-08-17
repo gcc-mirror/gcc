@@ -1,3 +1,13 @@
+2013-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-08-12  Perez Read  <netfirewall@gmail.com>
+
+	PR target/58132
+	* config/i386/i386.md (*movabs<mode>_1):  Add <ptrsize> PTR before
+	operand 0 for intel asm alternative.
+	(*movabs<mode>_2): Ditto for operand 1.
+
 2013-08-13  Marek Polacek  <polacek@redhat.com>
 
 	Backport from 4.8:
@@ -14,7 +24,7 @@
 	2013-02-14  Steven Bosscher  <steven@gcc.gnu.org>
 
 	* collect2-aix.h: Define F_LOADONLY.
-	
+
 2013-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (sparc_emit_membar_for_model) <SMM_TSO>: Add
