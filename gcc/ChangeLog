@@ -1,3 +1,8 @@
+2013-08-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58179
+	* tree.c (obj_type_ref_class): Do not ICE on non-method calls.
+
 2013-08-16  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (rs6000_get_timebase_ppc32): Add length
