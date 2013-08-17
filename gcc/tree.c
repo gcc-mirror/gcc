@@ -11873,7 +11873,11 @@ obj_type_ref_class (tree ref)
   ref = TREE_TYPE (ref);
   gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
   ref = TREE_TYPE (ref);
-  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE);
+  /* We look for type THIS points to.  ObjC also builds
+     OBJ_TYPE_REF with non-method calls, Their first parameter
+     ID however also corresponds to class type. */
+  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE
+		       || TREE_CODE (ref) == FUNCTION_TYPE);
   ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
   gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
   return TREE_TYPE (ref);
