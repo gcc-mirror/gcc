@@ -1,3 +1,8 @@
+2013-08-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (rs6000_get_timebase_ppc32): Add length
+	attribute.
+
 2013-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gengtype.c (type_for_name): Add special-case support for
