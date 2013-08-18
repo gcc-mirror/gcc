@@ -1,3 +1,10 @@
+2013-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58006
+	* tree-parloops.c (take_address_of): Don't ICE if get_name
+	returns NULL.
+	(eliminate_local_variables_stmt): Remove clobber stmts.
+
 2013-08-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cgraphunit.c (handle_alias_pairs): Reset the alias flag after the

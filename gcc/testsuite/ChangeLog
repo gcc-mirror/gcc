@@ -1,3 +1,8 @@
+2013-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58006
+	* g++.dg/opt/pr58006.C: New test.
+
 2013-08-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/linker_alias.ads: New test.
