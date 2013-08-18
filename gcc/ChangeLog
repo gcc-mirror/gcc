@@ -1,3 +1,8 @@
+2013-08-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (handle_alias_pairs): Reset the alias flag after the
+	error message is issued for an alias to undefined symbol.
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_create_indirect_edge): Discover

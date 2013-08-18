@@ -1,3 +1,7 @@
+2013-08-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/linker_alias.ads: New test.
+
 2013-08-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58164
