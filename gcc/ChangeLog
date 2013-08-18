@@ -1,3 +1,15 @@
+2013-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_create_indirect_edge): Discover
+	polymorphic calls and record basic info into indirect_info.
+	* gimple-fold.c (gimple_fold_call): When doing BINFO based
+	devirtualization, ignore objc function calls.
+	* ipa-cp.c (initialize_node_lattices): Be ready for polymorphic
+	call with no parm index info.
+	* ipa-prop.c (ipa_analyze_call_uses): Likewise.
+	* tree.c (virtual_method_call_p): New function.
+	* tree.h (virtual_method_call_p): Declare.
+
 2013-08-16  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58179

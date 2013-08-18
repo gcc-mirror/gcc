@@ -1922,7 +1922,7 @@ ipa_analyze_call_uses (struct cgraph_node *node,
     return;
   if (TREE_CODE (target) == SSA_NAME)
     ipa_analyze_indirect_call_uses (node, info, parms_ainfo, call, target);
-  else if (TREE_CODE (target) == OBJ_TYPE_REF)
+  else if (virtual_method_call_p (target))
     ipa_analyze_virtual_call_uses (node, info, call, target);
 }
 
