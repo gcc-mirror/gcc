@@ -1,3 +1,12 @@
+2013-08-18  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.h: _S_opcode_backref.
+	* include/bits/regex_automaton.tcc: Backref automaton support.
+	* include/bits/regex_compiler.tcc: Parsing support.
+	* include/bits/regex_executor.h: Add _M_traits for _DFSExecutor.
+	* include/bits/regex_executor.tcc: Add _S_opcode_backref support.
+	* testsuite/28_regex/algorithms/regex_match/ecma/string_backref.cc: New.
+
 2013-08-16  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h (regex_traits<>::transform_primary):
