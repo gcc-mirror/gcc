@@ -1162,11 +1162,11 @@ __gcov_indirect_call_profiler (gcov_type* counter, gcov_type value,
    The variables are set directly by GCC instrumented code, so declaration
    here must match one in tree-profile.c  */
 
-#ifdef HAVE_CC_TLS
+#if defined(HAVE_CC_TLS) && !defined (USE_EMUTLS)
 __thread 
 #endif
 void * __gcov_indirect_call_callee;
-#ifdef HAVE_CC_TLS
+#if defined(HAVE_CC_TLS) && !defined (USE_EMUTLS) 
 __thread 
 #endif
 gcov_type * __gcov_indirect_call_counters;

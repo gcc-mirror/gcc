@@ -1,3 +1,10 @@
+2013-08-18  Iain Sandoe  <iain@codesourcery.com>
+
+	PR gcov-profile/58127
+	* libgcov.c (__gcov_indirect_call_callee): Don't make this a
+	__thread var for emulated TLS.
+	(__gcov_indirect_call_counters): Likewise.
+
 2013-08-16  Maciej W. Rozycki  <macro@codesourcery.com>
             Catherine Moore  <clm@codesourcery.com>
             Richard Sandiford <rdsandiford@googlemail.com>
