@@ -63,8 +63,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           __ret = _M_dfs<__match_mode>(__state._M_next);
           break;
         case _S_opcode_subexpr_end:
-          __ret = _M_dfs<__match_mode>(__state._M_next);
           __results.at(__state._M_subexpr).second = __current;
+          __results.at(__state._M_subexpr).matched = true;
+          __ret = _M_dfs<__match_mode>(__state._M_next);
           __results.at(__state._M_subexpr).matched = __ret;
           break;
         case _S_opcode_match:
@@ -74,6 +75,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
               __ret = _M_dfs<__match_mode>(__state._M_next);
               --__current;
             }
+          break;
+        // First fetch the matched result from __results as __submatch;
+        // then compare it with
+        // (__current, __current + (__submatch.second - __submatch.first))
+        // If matched, keep going; else just return to try another state.
+        case _S_opcode_backref:
+          {
+            auto& __submatch = __results.at(__state._M_backref_index);
+            if (!__submatch.matched)
+              break;
+            auto __last = __current;
+            for (auto __tmp = __submatch.first;
+                 __last != __end && __tmp != __submatch.second;
+                 ++__tmp)
+              ++__last;
+            if (_M_traits.transform(__submatch.first, __submatch.second)
+                == _M_traits.transform(__current, __last))
+              {
+                auto __backup = __current;
+                __current = __last;
+                __ret = _M_dfs<__match_mode>(__state._M_next);
+                __current = __backup;
+              }
+          }
           break;
         case _S_opcode_accept:
           if (__match_mode)

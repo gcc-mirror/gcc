@@ -745,8 +745,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_match_token(_ScannerT::_S_token_backref))
 	{
 	  // __m.push(_Matcher::_S_opcode_ordchar, _M_cur_value);
-          _M_state_store._M_set_backref(true);
-	  //return true;
+	  _M_stack.push(_StateSeqT(_M_state_store, _M_state_store.
+                                   _M_insert_backref(_M_cur_int_value(10))));
+	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
 	{

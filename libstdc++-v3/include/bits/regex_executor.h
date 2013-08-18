@@ -82,10 +82,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           __it.matched = false;
       }
 
-      _BiIter   _M_current;
-      _BiIter   _M_end;
+      _BiIter    _M_current;
+      _BiIter    _M_end;
       _ResultsT& _M_results;
-      _FlagT    _M_flags;
+      _FlagT     _M_flags;
     };
 
   template<typename _BiIter, typename _Alloc,
@@ -96,16 +96,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _RegexT;
-      typedef typename _BaseT::_ResultsT                    _ResultsT;
+      typedef typename _BaseT::_ResultsT                   _ResultsT;
       typedef regex_constants::match_flag_type             _FlagT;
 
       _DFSExecutor(_BiIter        __begin,
                    _BiIter        __end,
-                   _ResultsT&      __results,
+                   _ResultsT&     __results,
                    const _RegexT& __nfa,
                    _FlagT         __flags)
       : _BaseT(__begin, __end, __results, __flags, __nfa._M_sub_count()),
-        _M_nfa(__nfa)
+        _M_traits(_TraitsT()), _M_nfa(__nfa)
       { }
 
       bool
@@ -121,6 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         bool
         _M_dfs(_StateIdT __i);
 
+      _TraitsT       _M_traits;
       const _RegexT& _M_nfa;
     };
 
