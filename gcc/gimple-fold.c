@@ -1105,7 +1105,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
 	  changed = true;
 	}
-      else
+      else if (virtual_method_call_p (callee))
 	{
 	  tree obj = OBJ_TYPE_REF_OBJECT (callee);
 	  tree binfo = gimple_extract_devirt_binfo_from_cst
