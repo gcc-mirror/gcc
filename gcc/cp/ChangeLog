@@ -1,3 +1,9 @@
+2013-08-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58083
+	* name-lookup.c (push_class_level_binding_1): It's OK to push a
+	lambda type after the enclosing type is complete.
+
 2013-08-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (dump_scope): Add a cxx_pretty_printer parameter.
