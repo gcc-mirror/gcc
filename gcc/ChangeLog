@@ -1,3 +1,8 @@
+2013-08-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi (-fcilkplus): Clarify that implementation is
+	incomplete.
+
 2013-08-19  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* target.def (TARGET_LIBC_HAS_FUNCTION): New target hook.
