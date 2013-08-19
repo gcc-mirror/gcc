@@ -21409,8 +21409,7 @@ rs6000_emit_prologue (void)
 	  HOST_WIDE_INT offset;
 
 	  if (!(strategy & SAVE_INLINE_GPRS))
-	    ool_adjust = 8 * (info->first_gp_reg_save
-			      - (FIRST_SAVRES_REGISTER + 1));
+	    ool_adjust = 8 * (info->first_gp_reg_save - FIRST_SAVED_GP_REGNO);
 	  offset = info->spe_gp_save_offset + frame_off - ool_adjust;
 	  spe_save_area_ptr = gen_rtx_REG (Pmode, 11);
 	  save_off = frame_off - offset;
@@ -22652,8 +22651,7 @@ rs6000_emit_epilogue (int sibcall)
 	     anew to every function.  */
 
 	  if (!restoring_GPRs_inline)
-	    ool_adjust = 8 * (info->first_gp_reg_save
-			      - (FIRST_SAVRES_REGISTER + 1));
+	    ool_adjust = 8 * (info->first_gp_reg_save - FIRST_SAVED_GP_REGNO);
 	  frame_reg_rtx = gen_rtx_REG (Pmode, 11);
 	  emit_insn (gen_addsi3 (frame_reg_rtx, old_frame_reg_rtx,
 				 GEN_INT (info->spe_gp_save_offset
