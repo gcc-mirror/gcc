@@ -8,6 +8,14 @@
 	* gcc.dg/tree-ssa/vrp55.c: Use keeps_null_pointer_checks to determine
 	correct test response.
 
+	PR testsuite/52641
+	* gcc.dg/tree-ssa/pr31261.c [int16]: Change expected unsigned type.
+	* gcc.dg/tree-ssa/ssa-pre-21.c [! size32plus]: Mark as xfail.
+	* gcc.dg/tree-ssa/vector-4.c (SItype): New typedef.
+	(v4si): Use it.
+	* gcc.dg/tree-ssa/ssa-pre-30.c: Test requires int32.
+	* gcc.dg/tree-ssa/vrp58.c: Adjust scan expression for int16.
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/type-inheritance-1.C: New testcase.
