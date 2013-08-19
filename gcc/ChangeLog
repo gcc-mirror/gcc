@@ -1,3 +1,16 @@
+2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_FABSD32): New DFP ABS builtin.
+	(BUILT_IN_FABSD64): Likewise.
+	(BUILT_IN_FABSD128): Likewise.
+	* builtins.c (expand_builtin): Add support for new DFP ABS builtins.
+	(fold_builtin_1): Likewise.
+	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping destination
+	and source operands.
+	(*abstd2_fpr): Likewise.
+	(*nabstd2_fpr): Likewise.
+
 2013-08-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/mips/mips.c (mips_adjust_insn_length): Add checks for

@@ -1,3 +1,9 @@
+2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/dfp-dd-2.c: New test.
+	* gcc.target/powerpc/dfp-td-2.c: Likewise.
+	* gcc.target/powerpc/dfp-td-3.c: Likewise.
+
 2013-08-19  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mulsize-1.c: Check for SLL as well as SUBU.

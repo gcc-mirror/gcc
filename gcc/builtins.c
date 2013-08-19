@@ -5889,6 +5889,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   switch (fcode)
     {
     CASE_FLT_FN (BUILT_IN_FABS):
+    case BUILT_IN_FABSD32:
+    case BUILT_IN_FABSD64:
+    case BUILT_IN_FABSD128:
       target = expand_builtin_fabs (exp, target, subtarget);
       if (target)
 	return target;
@@ -10338,6 +10341,9 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
       return fold_builtin_strlen (loc, type, arg0);
 
     CASE_FLT_FN (BUILT_IN_FABS):
+    case BUILT_IN_FABSD32:
+    case BUILT_IN_FABSD64:
+    case BUILT_IN_FABSD128:
       return fold_builtin_fabs (loc, arg0, type);
 
     case BUILT_IN_ABS:
