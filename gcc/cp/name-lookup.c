@@ -392,6 +392,17 @@ pop_binding (tree id, tree decl)
     }
 }
 
+/* Remove the bindings for the decls of the current level and leave
+   the current scope.  */
+
+void
+pop_bindings_and_leave_scope (void)
+{
+  for (tree t = getdecls (); t; t = DECL_CHAIN (t))
+    pop_binding (DECL_NAME (t), t);
+  leave_scope ();
+}
+
 /* Strip non dependent using declarations.  */
 
 tree

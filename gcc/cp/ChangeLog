@@ -1,3 +1,15 @@
+2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_lambda_introducer, cp_parser_decltype_expr):
+	Use cp_parser_lookup_name_simple.
+
+2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.h (pop_bindings_and_leave_scope): Declare.
+	* name-lookup.c (pop_bindings_and_leave_scope): Define.
+	* parser.c (cp_parser_lambda_declarator_opt,
+	cp_parser_direct_declarator, cp_parser_cache_defarg): Use it.
+
 2013-08-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58083
