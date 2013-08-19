@@ -1,3 +1,8 @@
+2013-08-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46271
+	* openmp.c (resolve_omp_clauses): Bugfix for procedure pointers.
+
 2013-08-12  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/56666
