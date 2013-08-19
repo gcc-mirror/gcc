@@ -1811,13 +1811,15 @@ have support for @option{-pthread}.
 @item -fcilkplus
 @opindex fcilkplus
 @cindex Enable Cilk Plus
-Enable the usage of Cilk Language extension features for C/C++.  When the flag
-@option{-fcilkplus} is specified, all the Cilk Plus components are converted 
-to the appropriate C/C++ code.  The present implementation follows ABI version 
-0.9.  There are four major parts to Cilk Plus language 
-extension: Array Notations, Cilk Keywords, SIMD annotations and elemental 
-functions.  Detailed information about Cilk Plus can be found at 
-@w{@uref{http://www.cilkplus.org}}. 
+Enable the usage of Cilk Plus language extension features for C/C++.
+When the option @option{-fcilkplus} is specified, enable the usage of
+the Cilk Plus Language extension features for C/C++.  The present
+implementation follows ABI version 0.9.  This is an experimental
+feature that is only partially complete, and whose interface may
+change in future versions of GCC as the official specification
+changes.  Currently only the array notation feature of the language
+specification has been implemented.  More features will be implemented
+in subsequent release cycles.
 
 @item -fgnu-tm
 @opindex fgnu-tm
