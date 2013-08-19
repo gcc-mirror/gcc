@@ -2201,6 +2201,13 @@ set via @code{__attribute__}.",
  unsigned int, (tree decl, const char *name, int reloc),
  default_section_type_flags)
 
+DEFHOOK
+(libc_has_function,
+ "This hook determines whether a function from a class of functions\n\
+@var{fn_class} is present at the runtime.",
+ bool, (enum function_class fn_class),
+ default_libc_has_function)
+
 /* True if new jumps cannot be created, to replace existing ones or
    not, at the current point in the compilation.  */
 DEFHOOK

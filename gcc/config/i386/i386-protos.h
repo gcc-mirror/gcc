@@ -173,6 +173,8 @@ extern int ix86_mode_after (int, int, rtx);
 extern int ix86_mode_entry (int);
 extern int ix86_mode_exit (int);
 
+extern bool ix86_libc_has_function (enum function_class fn_class);
+
 #ifdef HARD_CONST
 extern void ix86_emit_mode_set (int, int, HARD_REG_SET);
 #endif

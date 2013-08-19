@@ -163,3 +163,6 @@ do {									\
 #define TARGET_USE_JCR_SECTION 0
 
 #define TARGET_AIX_VERSION 51
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

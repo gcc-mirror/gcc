@@ -1040,18 +1040,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #endif /* old constraint mechanism in use */
 
-/* Determine whether the entire c99 runtime
-   is present in the runtime library.  */
-#ifndef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS 0
-#endif
-
-/* Determine whether the target runtime library has
-   a sincos implementation following the GNU extension.  */
-#ifndef TARGET_HAS_SINCOS
-#define TARGET_HAS_SINCOS 0
-#endif
-
 /* Determin whether the target runtime library is Bionic */
 #ifndef TARGET_HAS_BIONIC
 #define TARGET_HAS_BIONIC 0

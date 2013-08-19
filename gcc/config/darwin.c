@@ -3357,6 +3357,19 @@ darwin_rename_builtins (void)
     }
 }
 
+bool
+darwin_libc_has_function (enum function_class fn_class)
+{
+  if (fn_class == function_sincos)
+    return false;
+  if (fn_class == function_c99_math_complex
+      || fn_class == function_c99_misc)
+    return (TARGET_64BIT
+	    || strverscmp (darwin_macosx_version_min, "10.3") >= 0);
+
+  return true;
+}
+
 static hashval_t
 cfstring_hash (const void *ptr)
 {
