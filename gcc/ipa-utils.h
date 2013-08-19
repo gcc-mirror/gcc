@@ -36,7 +36,6 @@ struct ipa_dfs_info {
 };
 
 
-
 /* In ipa-utils.c  */
 void ipa_print_order (FILE*, const char *, struct cgraph_node**, int);
 int ipa_reduced_postorder (struct cgraph_node **, bool, bool,
@@ -46,7 +45,48 @@ vec<cgraph_node_ptr> ipa_get_nodes_in_cycle (struct cgraph_node *);
 int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
 
+/* In ipa-devirt.c  */
 
+struct odr_type_d;
+typedef odr_type_d *odr_type;
+void build_type_inheritance_graph (void);
+vec <cgraph_node *>
+possible_polymorphic_call_targets (tree, HOST_WIDE_INT,
+				   bool *final = NULL,
+				   void **cache_token = NULL);
+odr_type get_odr_type (tree, bool insert = false);
+void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT);
+
+/* Return vector containing possible targets of polymorphic call E.
+   If FINALP is non-NULL, store true if the list is complette. 
+   CACHE_TOKEN (if non-NULL) will get stored to an unique ID of entry
+   in the target cache.  If user needs to visit every target list
+   just once, it can memoize them.
+
+   Returned vector is placed into cache.  It is NOT caller's responsibility
+   to free it.  The vector can be freed on cgraph_remove_node call if
+   the particular node is a virtual function present in the cache.  */
+
+inline vec <cgraph_node *>
+possible_polymorphic_call_targets (struct cgraph_edge *e,
+				   bool *final = NULL,
+				   void **cache_token = NULL)
+{
+  gcc_checking_assert (e->indirect_info->polymorphic);
+  return possible_polymorphic_call_targets (e->indirect_info->otr_type,
+					    e->indirect_info->otr_token,
+					    final, cache_token);
+}
+
+/* Dump possible targets of a polymorphic call E into F.  */
+
+inline void
+dump_possible_polymorphic_call_targets (FILE *f, struct cgraph_edge *e)
+{
+  gcc_checking_assert (e->indirect_info->polymorphic);
+  dump_possible_polymorphic_call_targets (f, e->indirect_info->otr_type,
+					  e->indirect_info->otr_token);
+}
 #endif  /* GCC_IPA_UTILS_H  */
 
 

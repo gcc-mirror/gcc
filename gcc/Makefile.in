@@ -1275,6 +1275,7 @@ OBJS = \
 	init-regs.o \
 	internal-fn.o \
 	ipa-cp.o \
+	ipa-devirt.o \
 	ipa-split.o \
 	ipa-inline.o \
 	ipa-inline-analysis.o \
@@ -2945,6 +2946,9 @@ ipa.o : ipa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(TREE_PASS_H) $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
    $(IPA_UTILS_H) tree-inline.h $(HASH_TABLE_H) profile.h $(PARAMS_H) \
    $(LTO_STREAMER_H) $(DATA_STREAMER_H)
+ipa-devirt.o : ipa-devirt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
+   $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
+   $(IPA_UTILS_H) $(HASH_TABLE_H) 
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
@@ -3784,7 +3788,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/cselib.h $(srcdir)/basic-block.h  $(srcdir)/ipa-ref.h $(srcdir)/cgraph.h \
   $(srcdir)/reload.h $(srcdir)/caller-save.c $(srcdir)/symtab.c \
   $(srcdir)/alias.c $(srcdir)/bitmap.c $(srcdir)/cselib.c $(srcdir)/cgraph.c \
-  $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c \
+  $(srcdir)/ipa-prop.c $(srcdir)/ipa-cp.c $(srcdir)/ipa-utils.h \
   $(srcdir)/dbxout.c \
   $(srcdir)/dwarf2out.h \
   $(srcdir)/dwarf2asm.c \
@@ -3826,7 +3830,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-inline.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
-  $(srcdir)/tsan.c \
+  $(srcdir)/tsan.c $(srcdir)/ipa-devirt.c \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

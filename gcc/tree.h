@@ -5980,6 +5980,7 @@ extern bool types_same_for_odr (tree type1, tree type2);
 extern tree get_ref_base_and_extent (tree, HOST_WIDE_INT *,
 				     HOST_WIDE_INT *, HOST_WIDE_INT *);
 extern bool contains_bitfld_component_ref_p (const_tree);
+extern bool type_in_anonymous_namespace_p (tree);
 
 /* In tree-nested.c */
 extern tree build_addr (tree, tree);
