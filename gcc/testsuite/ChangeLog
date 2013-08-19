@@ -1,3 +1,7 @@
+2013-08-19  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/avr/progmem-error-1.cpp: Update linenumber of error.
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/type-inheritance-1.C: New testcase.
