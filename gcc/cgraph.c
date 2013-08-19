@@ -1292,10 +1292,13 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       struct ipa_ref *ref;
 
       cgraph_speculative_call_info (e, e, e2, ref);
-      if (gimple_call_fndecl (e->call_stmt))
-	e = cgraph_resolve_speculation (e, gimple_call_fndecl (e->call_stmt));
-      if (!gimple_check_call_matching_types (e->call_stmt, e->callee->symbol.decl,
-					     true))
+      /* If there already is an direct call (i.e. as a result of inliner's substitution),
+ 	 forget about speculating.  */
+      if (decl)
+	e = cgraph_resolve_speculation (e, decl);
+      /* If types do not match, speculation was likely wrong.  */
+      else if (!gimple_check_call_matching_types (e->call_stmt, e->callee->symbol.decl,
+						  true))
 	{
 	  e = cgraph_resolve_speculation (e, NULL);
 	  if (dump_file)
@@ -1304,6 +1307,7 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
 		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
 	}
+      /* Expand speculation into GIMPLE code.  */
       else
 	{
 	  if (dump_file)

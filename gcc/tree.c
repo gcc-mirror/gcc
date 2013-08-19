@@ -11845,11 +11845,8 @@ types_same_for_odr (tree type1, tree type2)
 
   /* Check for anonymous namespaces. Those have !TREE_PUBLIC
      on the corresponding TYPE_STUB_DECL.  */
-  if (TYPE_STUB_DECL (type1) != TYPE_STUB_DECL (type2)
-      && (!TYPE_STUB_DECL (type1)
-	  || !TYPE_STUB_DECL (type2)
-	  || !TREE_PUBLIC (TYPE_STUB_DECL (type1))
-	  || !TREE_PUBLIC (TYPE_STUB_DECL (type2))))
+  if (type_in_anonymous_namespace_p (type1)
+      || type_in_anonymous_namespace_p (type2))
     return false;
 
   if (!TYPE_NAME (type1))
@@ -11902,6 +11899,14 @@ obj_type_ref_class (tree ref)
   ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
   gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
   return TREE_TYPE (ref);
+}
+
+/* Return true if T is in anonymous namespace.  */
+
+bool
+type_in_anonymous_namespace_p (tree t)
+{
+  return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
 
 /* Try to find a base info of BINFO that would have its field decl at offset

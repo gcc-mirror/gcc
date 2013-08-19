@@ -1,3 +1,23 @@
+2013-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* Makeifle-in (ipa-devirt.o): New.
+	(GTFILES): Add ipa-utils.h and ipa-devirt.c
+	* cgraphunit.c (decide_is_symbol_needed): Do not care about virtuals.
+	(analyze_functions): Look into possible targets of polymorphic call.
+	* dumpfile.c (dump_files): Add type-inheritance dump.
+	* dumpfile.h (TDI_inheritance): New.
+	* ipa-devirt.c: New file.
+	* ipa-utils.h (odr_type_d): Forward declare.
+	(odr_type): New type.
+	(build_type_inheritance_graph): Declare.
+	(possible_polymorphic_call_targets): Declare and introduce inline
+	variant when only edge is pased.
+	(dump_possible_polymorphic_call_targets): Likewise.
+	* timevar.def (TV_IPA_INHERITANCE, TV_IPA_VIRTUAL_CALL): New.
+	* tree.c (type_in_anonymous_namespace_p): Break out from ...
+	(types_same_for_odr): ... here.
+	* tree.h (type_in_anonymous_namespace_p): Declare.
+
 2013-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58006
