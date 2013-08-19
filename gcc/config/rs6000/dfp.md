@@ -394,11 +394,14 @@
   "")
 
 (define_insn "*negtd2_fpr"
-  [(set (match_operand:TD 0 "gpc_reg_operand" "=d")
-	(neg:TD (match_operand:TD 1 "gpc_reg_operand" "d")))]
+  [(set (match_operand:TD 0 "gpc_reg_operand" "=d,d")
+	(neg:TD (match_operand:TD 1 "gpc_reg_operand" "0,d")))]
   "TARGET_HARD_FLOAT && TARGET_FPRS"
-  "fneg %0,%1"
-  [(set_attr "type" "fp")])
+  "@
+   fneg %0,%1
+   fneg %0,%1\;fmr %L0,%L1"
+  [(set_attr "type" "fp")
+   (set_attr "length" "4,8")])
 
 (define_expand "abstd2"
   [(set (match_operand:TD 0 "gpc_reg_operand" "")

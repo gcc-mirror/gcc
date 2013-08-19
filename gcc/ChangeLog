@@ -1,3 +1,10 @@
+2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Backport from mainline
+	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping destination
+	and source operands.
+
 2013-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58006
