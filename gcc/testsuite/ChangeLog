@@ -5,6 +5,9 @@
 	* gcc.dg/tree-ssa/ssa-dom-thread-4.c [avr-*-*]: Expect 6 times
 	"Threaded".
 
+	* gcc.dg/tree-ssa/vrp55.c: Use keeps_null_pointer_checks to determine
+	correct test response.
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/type-inheritance-1.C: New testcase.

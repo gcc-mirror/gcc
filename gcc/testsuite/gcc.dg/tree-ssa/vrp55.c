@@ -9,6 +9,7 @@ fu (char *p, int x)
     arf ();
 }
 
-/* { dg-final { scan-tree-dump-times "Threaded jump" 1 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Threaded jump" 1 "vrp1" { target { ! keeps_null_pointer_checks } } } } */
+/* { dg-final { scan-tree-dump-times "Threaded jump" 0 "vrp1" { target {   keeps_null_pointer_checks } } } } */
 /* { dg-final { cleanup-tree-dump "vrp1" } } */
 
