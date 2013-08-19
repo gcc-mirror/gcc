@@ -104,8 +104,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #define TARGET_POSIX_IO
 
-#define TARGET_C99_FUNCTIONS 1
-#define TARGET_HAS_SINCOS 1
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION gnu_libc_has_function
 
 /* Link -lasan early on the command line.  For -static-libasan, don't link
    it for -shared link, the executable should be compiled with -static-libasan

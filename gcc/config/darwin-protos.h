@@ -123,3 +123,4 @@ extern bool darwin_kextabi_p (void);
 extern void darwin_override_options (void);
 extern void darwin_patch_builtins (void);
 extern void darwin_rename_builtins (void);
+extern bool darwin_libc_has_function (enum function_class fn_class);

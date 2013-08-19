@@ -813,6 +813,10 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define NO_IMPLICIT_EXTERN_C
 
+/* mmix-knuth-mmixware target has no support of C99 runtime */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 /* These are checked.  */
 #define DOLLARS_IN_IDENTIFIERS 0
 #define NO_DOLLAR_IN_LABEL

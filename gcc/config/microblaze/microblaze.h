@@ -892,6 +892,10 @@ do {									 \
 %{pg:-start-group -lxilprofile -lgloss -lxil -lc -lm -end-group } \
 %{!pg:-start-group -lgloss -lxil -lc -lm -end-group }} "
 
+/* microblaze-unknown-elf target has no support of C99 runtime */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 

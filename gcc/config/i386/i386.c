@@ -5729,6 +5729,14 @@ ix86_function_type_abi (const_tree fntype)
   return ix86_abi;
 }
 
+/* We add this as a workaround in order to use libc_has_function
+   hook in i386.md.  */
+bool
+ix86_libc_has_function (enum function_class fn_class)
+{
+  return targetm.libc_has_function (fn_class);
+}
+
 static bool
 ix86_function_ms_hook_prologue (const_tree fn)
 {

@@ -94,9 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC "%{m31&m64}%{mesa&mzarch}%{march=*} \
                   -alshd=%b.lst"
 
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS 1
-
 #define ENTRY_SPEC "%{mmain:-entry=_start} \
                     %{!mmain:-entry=0}"
 
@@ -115,3 +112,7 @@ along with GCC; see the file COPYING3.  If not see
 #define MATH_LIBRARY "CLBM"
 #define LIBSTDCXX "CPP2"
 #endif /* ! _TPF_H */
+
+/* We redefine this hook so the version from elfos.h header won't be used.  */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION default_libc_has_function

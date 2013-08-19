@@ -874,10 +874,6 @@ void add_framework_path (char *);
 
 #define TARGET_POSIX_IO
 
-/* All new versions of Darwin have C99 functions.  */
-
-#define TARGET_C99_FUNCTIONS 1
-
 #define WINT_TYPE "int"
 
 /* Every program on darwin links against libSystem which contains the pthread

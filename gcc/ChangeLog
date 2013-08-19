@@ -1,3 +1,79 @@
+2013-08-19  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* target.def (TARGET_LIBC_HAS_FUNCTION): New target hook.
+	* builtins.c (default_libc_has_function): New.
+	(gnu_libc_has_function): Ditto.
+	(no_c99_libc_has_function): Ditto.
+	(expand_builtin_cexpi): Using new target hook TARGET_LIBC_HAS_FUNCTION
+	instead of TARGET_HAS_SINCOS and TARGET_C99_FUNCTIONS.
+	(fold_builtin_sincos): Likewise.
+	(fold_builtin_cexp): Likewise.
+	* builtins.def (DEF_C94_BUILTIN): Likewise.
+	(DEF_C99_BUILTIN): Likewise.
+	(DEF_C99_C90RES_BUILTIN): Likewise.
+	(DEF_C99_COMPL_BUILTIN): New define. Change all complex c99 builtin
+	definitions to using this define.
+	* config/darwin-protos.h (darwin_libc_has_function): New.
+	* config/darwin.c: (darwin_libc_has_function: Ditto.
+	* config/alpha/linux.h: Remove TARGET_C99_FUNCTIONS and
+	TARGET_HAS_SINCOS. Redefine TARGET_LIBC_HAS_FUNCTION.
+	* config/darwin.h: Ditto.
+	* config/elfos.h: Ditto.
+	* config/freebsd.h: Ditto.
+	* config/i386/cygming.h: Ditto.
+	* config/i386/djgpp.h: Ditto.
+	* config/i386/i386-interix.h: Ditto.
+	* config/microblaze/microblaze.h: Ditto.
+	* config/mmix/mmix.h: Ditto.
+	* config/gnu-user.h: Ditto.
+	* config/ia64/hpux.h: Ditto.
+	* config/pa/pa-hpux.h: Ditto.
+	* config/pdp11/pdp11.h: Ditto.
+	* config/picochip/picochip.h: Ditto.
+	* config/linux.h: Ditto.
+	* config/netbsd.h: Ditto.
+	* config/openbsd.h: Ditto.
+	* config/rs6000/aix43.h: Ditto.
+	* config/rs6000/aix51.h: Ditto.
+	* config/rs6000/aix52.h: Ditto.
+	* config/rs6000/aix53.h: Ditto.
+	* config/rs6000/aix61.h: Ditto.
+	* config/rs6000/darwin.h: Ditto.
+	* config/rs6000/linux.h: Ditto.
+	* config/rs6000/linux64.h: Ditto.
+	* config/s390/tpf.h: Ditto.
+	* config/sol2-10.h: Ditto.
+	* config/sol2.h: Ditto.
+	* config/vms/vms.h: Ditto.
+	* config/vxworks.h: Ditto.
+	* config/linux-android.c (linux_android_libc_has_function):
+	New linux-specific implementation of TARGET_LIBC_HAS_FUNCTION.
+	* config/linux-protos.h (linux_android_libc_has_function):
+	New declaration.
+	* config/i386/i386.c (ix86_libc_has_function): New.
+	* config/i386/i386-protos.h
+	(ix86_libc_has_function): New declaration.
+	* config/i386/i386.md
+	("isinfxf2"): Change condition for TARGET_LIBC_HAS_FUNCTION.
+	("isinf<mode>2): Likewise.
+	* convert.c (convert_to_integer): Using new target hook
+	TARGET_LIBC_HAS_FUNCTION istead of TARGET_HAS_SINCOS and
+	TARGET_C99_FUNCTIONS.
+	* fortran/f95-lang.c (gfc_init_builtin_functions): Ditto.
+	* tree-ssa-math-opts.c (execute_cse_sincos): Ditto.
+	* coretypes.h (function_class): New enum for different
+	classes of functions.
+	* defaults.h: Remove TARGET_C99_FUNCTIONS and TARGET_HAS_SINCOS.
+	* doc/tm.texi.in (TARGET_C99_FUNCTIONS): Remove documentation.
+	(TARGET_HAS_SINCOS): Likewise.
+	(TARGET_LIBC_HAS_FUNCTION): New.
+	* doc/tm.texi: Regenerated.
+	* targhooks.h (default_libc_has_function): New declaration.
+	(no_c99_libc_has_function): Ditto.
+	(gnu_libc_has_function): Ditto.
+	* system.h: Add the poisoning of TARGET_C99_FUNCTIONS
+	and TARGET_HAS_SINCOS.
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* Makeifle-in (ipa-devirt.o): New.
@@ -12761,21 +12837,21 @@
 
 2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
-	* target.def (TARGET_HAS_IFUNC_P): New target hook.
-	* doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
-	* doc/tm.texi: Regenerate.
-	* targhooks.h (default_has_ifunc_p): New.
-	* targhooks.c (default_has_ifunc_p): Ditto.
-	* config/linux-protos.h: New file.
-	* config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
+	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* gcc/doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* gcc/doc/tm.texi: Regenerate.
+	* gcc/targhooks.h (default_has_ifunc_p): New.
+	* gcc/targhooks.c (default_has_ifunc_p): Ditto.
+	* gcc/config/linux-protos.h: New file.
+	* gcc/config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
 	this hook for linux which disables support of indirect functions in
 	android.
-	* config/linux-android.c: New file.
-	* config/t-linux-android.c: Ditto.
-	* config.gcc: Added new object file linux-android.o.
-	* config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	* gcc/config/linux-android.c: New file.
+	* gcc/config/t-linux-android.c: Ditto.
+	* gcc/config.gcc: Added new object file linux-android.o.
+	* gcc/config/i386/i386.c (ix86_get_function_versions_dispatcher):
 	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
-	* varasm.c (do_assemble_alias): Likewise.
+	* gcc/varasm.c (do_assemble_alias): Likewise.
 	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
 	doesn't support indirect functions.
 	* configure: Regenerate.

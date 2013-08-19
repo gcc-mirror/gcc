@@ -171,6 +171,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef MATH_LIBRARY
 #define MATH_LIBRARY ""
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 #define SIZE_TYPE (TARGET_64BIT ? "long long unsigned int" : "unsigned int")
 #define PTRDIFF_TYPE (TARGET_64BIT ? "long long int" : "int")
 

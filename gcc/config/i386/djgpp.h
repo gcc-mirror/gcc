@@ -127,6 +127,9 @@ along with GCC; see the file COPYING3.  If not see
    in libgcc, nor call one in main().  */
 #define HAS_INIT_SECTION
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 /* Definitions for types and sizes. Wide characters are 16-bits long so
    Win32 compiler add-ons will be wide character compatible.  */
 #undef WCHAR_TYPE_SIZE

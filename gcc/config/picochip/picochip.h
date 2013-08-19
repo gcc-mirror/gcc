@@ -656,4 +656,8 @@ enum picochip_builtins
    not detecting this. */
 #define HAVE_AS_LEB128 1
 
+/* picochip-unknown-none target has no support of C99 runtime */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 /* The End */
