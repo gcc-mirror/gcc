@@ -16,6 +16,8 @@
 	* gcc.dg/tree-ssa/ssa-pre-30.c: Test requires int32.
 	* gcc.dg/tree-ssa/vrp58.c: Adjust scan expression for int16.
 
+	* gcc.dg/tree-ssa/vrp87.c [avr-*-*] (dg-additional-options): New.
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/type-inheritance-1.C: New testcase.
