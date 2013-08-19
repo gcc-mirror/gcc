@@ -1,3 +1,7 @@
+2013-08-19  Dehao Chen  <dehao@google.com>
+
+	* dwarf2.def (DW_AT_GNU_discriminator): New attribute.
+
 2013-08-02  Caroline Tice  <cmtice@google.com>
 
 	* vtv-change-permission.h: New file.
