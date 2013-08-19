@@ -847,7 +847,7 @@ resolve_omp_clauses (gfc_code *code)
     for (n = omp_clauses->lists[list]; n; n = n->next)
       {
 	n->sym->mark = 0;
-	if (n->sym->attr.flavor == FL_VARIABLE)
+	if (n->sym->attr.flavor == FL_VARIABLE || n->sym->attr.proc_pointer)
 	  continue;
 	if (n->sym->attr.flavor == FL_PROCEDURE
 	    && n->sym->result == n->sym
@@ -876,8 +876,6 @@ resolve_omp_clauses (gfc_code *code)
 		if (el)
 		  continue;
 	      }
-	    if (n->sym->attr.proc_pointer)
-	      continue;
 	  }
 	gfc_error ("Object '%s' is not a variable at %L", n->sym->name,
 		   &code->loc);
