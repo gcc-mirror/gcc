@@ -2,6 +2,9 @@
 
 	* gcc.target/avr/progmem-error-1.cpp: Update linenumber of error.
 
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c [avr-*-*]: Expect 6 times
+	"Threaded".
+
 2013-08-18  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/type-inheritance-1.C: New testcase.
