@@ -1,3 +1,14 @@
+2013-08-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57490
+	* cp-array-notation.c (cp_expand_cond_array_notations): Added a
+	check for truth values.
+	(expand_array_notation_exprs): Added truth values case.  Removed an
+	unwanted else.  Added for-loop to walk through subtrees in default
+	case.
+	* call.c (build_cxx_call): Inherited the type of the array notation for
+	certain built-in array notation functions.
+
 2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_lambda_introducer, cp_parser_decltype_expr):

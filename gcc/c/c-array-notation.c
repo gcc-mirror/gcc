@@ -906,6 +906,8 @@ fix_conditional_array_notations_1 (tree stmt)
     cond = COND_EXPR_COND (stmt);
   else if (TREE_CODE (stmt) == SWITCH_EXPR)
     cond = SWITCH_COND (stmt);
+  else if (truth_value_p (TREE_CODE (stmt)))
+    cond = TREE_OPERAND (stmt, 0);
   else
     /* Otherwise dont even touch the statement.  */
     return stmt;
@@ -1232,6 +1234,12 @@ expand_array_notation_exprs (tree t)
     case BIND_EXPR:
       t = expand_array_notation_exprs (BIND_EXPR_BODY (t));
       return t;
+    case TRUTH_ORIF_EXPR:
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_XOR_EXPR:
+    case TRUTH_NOT_EXPR:
     case COND_EXPR:
       t = fix_conditional_array_notations (t);
 
@@ -1246,8 +1254,6 @@ expand_array_notation_exprs (tree t)
 	    COND_EXPR_ELSE (t) =
 	      expand_array_notation_exprs (COND_EXPR_ELSE (t));
 	}
-      else
-	t = expand_array_notation_exprs (t);
       return t;
     case STATEMENT_LIST:
       {
@@ -1284,6 +1290,10 @@ expand_array_notation_exprs (tree t)
 	 Replace those with just void zero node.  */
       t = void_zero_node;
     default:
+      for (int ii = 0; ii < TREE_CODE_LENGTH (TREE_CODE (t)); ii++)
+	if (contains_array_notation_expr (TREE_OPERAND (t, ii)))
+	  TREE_OPERAND (t, ii) =
+	    expand_array_notation_exprs (TREE_OPERAND (t, ii));
       return t;
     }
   return t;

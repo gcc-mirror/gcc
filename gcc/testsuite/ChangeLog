@@ -1,3 +1,8 @@
+2013-08-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+	
+	PR c/57490
+	* c-c++-common/cilk-plus/AN/pr57490.c: New test.
+
 2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/dfp-dd-2.c: New test.
