@@ -1739,7 +1739,7 @@ open_base_files (void)
       "tree-flow.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",
       "except.h", "output.h", "gimple.h", "cfgloop.h",
       "target.h", "ipa-prop.h", "lto-streamer.h", "target-globals.h",
-      "ipa-inline.h", "dwarf2out.h", "context.h", NULL
+      "ipa-inline.h", "dwarf2out.h", NULL
     };
     const char *const *ifp;
     outf_p gtype_desc_c;

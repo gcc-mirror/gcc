@@ -44,18 +44,12 @@ namespace gcc {
 
 class context;
 
-class GTY((user)) pass_manager
+class pass_manager
 {
 public:
-  /* Ensure that instances are allocated in the GC-managed heap.  */
   void *operator new (size_t sz);
 
   pass_manager(context *ctxt);
-
-  /* GTY((user)) methods.  */
-  void gt_ggc_mx ();
-  void gt_pch_nx ();
-  void gt_pch_nx_with_op (gt_pointer_operator op, void *cookie);
 
   void register_pass (struct register_pass_info *pass_info);
   void register_one_dump_file (struct opt_pass *pass);
@@ -140,3 +134,4 @@ private:
 } // namespace gcc
 
 #endif /* ! GCC_PASS_MANAGER_H */
+
