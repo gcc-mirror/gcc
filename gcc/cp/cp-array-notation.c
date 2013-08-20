@@ -857,6 +857,19 @@ cp_expand_cond_array_notations (tree orig_stmt)
 	  return error_mark_node;
 	}
     }
+  else if (truth_value_p (TREE_CODE (orig_stmt)))
+    {
+      size_t left_rank = 0, right_rank = 0;
+      tree left_expr = TREE_OPERAND (orig_stmt, 0);
+      tree right_expr = TREE_OPERAND (orig_stmt, 1);
+      if (!find_rank (EXPR_LOCATION (left_expr), left_expr, left_expr, true,
+		      &left_rank)
+	  || !find_rank (EXPR_LOCATION (right_expr), right_expr, right_expr,
+			 true, &right_rank))
+	return error_mark_node;
+      if (right_rank == 0 && left_rank == 0)
+	return orig_stmt;
+    }
 
   if (!find_rank (EXPR_LOCATION (orig_stmt), orig_stmt, orig_stmt, true,
 		  &rank))
@@ -1213,6 +1226,12 @@ expand_array_notation_exprs (tree t)
       if (TREE_OPERAND (t, 0) == error_mark_node)
 	return TREE_OPERAND (t, 0); 
       return t;
+    case TRUTH_ANDIF_EXPR:
+    case TRUTH_ORIF_EXPR:
+    case TRUTH_AND_EXPR:
+    case TRUTH_OR_EXPR:
+    case TRUTH_XOR_EXPR:
+    case TRUTH_NOT_EXPR:
     case COND_EXPR:
       t = cp_expand_cond_array_notations (t);
       if (TREE_CODE (t) == COND_EXPR)
@@ -1222,8 +1241,6 @@ expand_array_notation_exprs (tree t)
 	  COND_EXPR_ELSE (t) =
 	    expand_array_notation_exprs (COND_EXPR_ELSE (t));
 	}
-      else
-	t = expand_array_notation_exprs (t);
       return t;
     case FOR_STMT:
       if (contains_array_notation_expr (FOR_COND (t)))

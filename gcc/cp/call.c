@@ -7177,6 +7177,33 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       && !check_builtin_function_arguments (fndecl, nargs, argarray))
     return error_mark_node;
 
+    /* If it is a built-in array notation function, then the return type of
+     the function is the element type of the array passed in as array 
+     notation (i.e. the first parameter of the function).  */
+  if (flag_enable_cilkplus && TREE_CODE (fn) == CALL_EXPR) 
+    {
+      enum built_in_function bif = 
+	is_cilkplus_reduce_builtin (CALL_EXPR_FN (fn));
+      if (bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ADD
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUL
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
+	{ 
+	  /* for bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO or
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO or
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO or 
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_NONZERO or
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND or
+             BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
+	     The pre-defined return-type is the correct one.  */
+	  tree array_ntn = CALL_EXPR_ARG (fn, 0); 
+	  TREE_TYPE (fn) = TREE_TYPE (array_ntn); 
+	  return fn;
+	}
+    }
+
   /* Some built-in function calls will be evaluated at compile-time in
      fold ().  Set optimize to 1 when folding __builtin_constant_p inside
      a constexpr function so that fold_builtin_1 doesn't fold it to 0.  */
