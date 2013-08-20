@@ -1,3 +1,11 @@
+2013-08-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58119
+	* cp-tree.h (WILDCARD_TYPE_P): Split out from...
+	(MAYBE_CLASS_TYPE_P): ...here.
+	* cvt.c (build_expr_type_conversion): Don't complain about a
+	template that can't match the desired type category.
+
 2012-12-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54170
