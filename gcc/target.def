@@ -1967,7 +1967,7 @@ DEFHOOK
 should use the narrowest mode possible.  It should return @code{false} if\n\
 these accesses should use the bitfield container type.\n\
 \n\
-The default is @code{!TARGET_STRICT_ALIGN}.",
+The default is @code{false}.",
  bool, (void),
  hook_bool_void_false)
 

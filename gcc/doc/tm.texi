@@ -1267,7 +1267,7 @@ This target hook should return @code{true} if accesses to volatile bitfields
 should use the narrowest mode possible.  It should return @code{false} if
 these accesses should use the bitfield container type.
 
-The default is @code{!TARGET_STRICT_ALIGN}.
+The default is @code{false}.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_MEMBER_TYPE_FORCES_BLK (const_tree @var{field}, enum machine_mode @var{mode})
