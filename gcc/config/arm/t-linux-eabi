@@ -18,6 +18,8 @@
 
 # We do not build a Thumb multilib for Linux because the definition of
 # CLEAR_INSN_CACHE in linux-gas.h does not work in Thumb mode.
+# If you set MULTILIB_OPTIONS to a non-empty value you should also set
+# MULTILIB_DEFAULTS in linux-elf.h.
 MULTILIB_OPTIONS	=
 MULTILIB_DIRNAMES	=
 
