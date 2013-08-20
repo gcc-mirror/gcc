@@ -299,6 +299,7 @@ Plugin			Le-Chun Wu		lcwu@google.com
 register allocation	Peter Bergner		bergner@vnet.ibm.com
 register allocation	Kenneth Zadeck		zadeck@naturalbridge.com
 register allocation	Seongbae Park		seongbae.park@gmail.com
+RTL optimizers		Steven Bosscher		steven@gcc.gnu.org
 selective scheduling	Andrey Belevantsev	abel@ispras.ru
 
 Note that while reviewers can approve changes to parts of the compiler
@@ -330,7 +331,6 @@ Ian Bolton					ian.bolton@arm.com
 Andrea Bona					andrea.bona@st.com
 Paolo Bonzini					bonzini@gnu.org
 Neil Booth					neil@daikokuya.co.uk
-Steven Bosscher					steven@gcc.gnu.org
 Robert Bowdidge					bowdidge@apple.com
 Joel Brobecker					brobecker@gnat.com
 Dave Brolley					brolley@redhat.com
