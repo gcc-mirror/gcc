@@ -194,7 +194,7 @@ dwarf debugging code	Cary Coutant		ccoutant@google.com
 c++ runtime libs	Paolo Carlini		paolo.carlini@oracle.com
 c++ runtime libs	Gabriel Dos Reis	gdr@integrable-solutions.net
 c++ runtime libs	Ulrich Drepper		drepper@gmail.com
-c++ runtime libs	Benjamin Kosnik		bkoz@redhat.com
+c++ runtime libs	Benjamin De Kosnik	bkoz@gnu.org
 c++ runtime libs	Loren J. Rittle		ljrittle@acm.org
 c++ runtime libs	Jonathan Wakely		redi@gcc.gnu.org
 *synthetic multiply	Torbjorn Granlund	tege@swox.com
