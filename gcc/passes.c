@@ -82,6 +82,58 @@ struct opt_pass *current_pass;
 
 static void register_pass_name (struct opt_pass *, const char *);
 
+void*
+opt_pass::operator new (size_t sz)
+{
+  return ggc_internal_cleared_alloc_stat (sz MEM_STAT_INFO);
+}
+
+void opt_pass::gt_ggc_mx ()
+{
+  ::gt_ggc_mx (ctxt_);
+  ::gt_ggc_mx (sub);
+
+  /* Avoid deep stack usage by iteratively walking the chain of "next"
+     passes, rather than recursing (analogous to the chain_next/chain_prev
+     GTY options).  */
+
+  /* "this" has already been marked.
+     Mark a chain of as-yet-unmarked passes.  */
+  opt_pass *limit = this->next;
+  while (ggc_test_and_set_mark (limit))
+    limit = limit->next;
+
+  /* "limit" is the first in the chain that wasn't just marked, either
+     because it is NULL, or because it was already marked.
+     Hence all of the passes in the half-open interval:
+	[this->next...limit)
+     have just been marked: visit them.  */
+  for (opt_pass *iter = this->next; iter != limit; iter = iter->next)
+    iter->gt_ggc_mx ();
+}
+
+void opt_pass::gt_pch_nx ()
+{
+  ::gt_pch_nx (ctxt_);
+  ::gt_pch_nx (sub);
+
+  /* Analogous to opt_pass::gt_ggc_mx.  */
+  opt_pass *limit = this->next;
+  while (gt_pch_note_object (limit, limit, ::gt_pch_nx_with_op<opt_pass>))
+    limit = limit->next;
+
+ for (opt_pass *iter = this->next; iter != limit; iter = iter->next)
+    iter->gt_pch_nx ();
+
+}
+
+void opt_pass::gt_pch_nx_with_op (gt_pointer_operator op, void *cookie)
+{
+  op (&(ctxt_), cookie);
+  op (&(sub), cookie);
+  op (&(next), cookie);
+}
+
 /* Most passes are single-instance (within their context) and thus don't
    need to implement cloning, but passes that support multiple instances
    *must* provide their own implementation of the clone method.
@@ -116,6 +168,92 @@ opt_pass::opt_pass(const pass_data &data, context *ctxt)
 {
 }
 
+void
+pass_manager::gt_ggc_mx ()
+{
+  /* We want to efficiently visit all pass objects without incurring deep
+     call chains that could blow the stack.
+
+     Although there are multiple fields referencing passes within the
+     pass_manager, *almost* all of the underlying pass instances are
+     referenced by the passes_by_id array.
+
+     Specifically, passes are in the passes_by_id array if they have
+     register_one_dump_file called on them, which requires them to have
+     a name, and for that name to *not* begin with "*".  Currently
+     there are 25 passes with a "*" prefix and thus not in the array.
+
+     Each pass holds references to its sub and next, so visiting a pass
+     will potentially trigger a recursive traversal through these
+     neighbours - if these passes haven't been visited yet.
+
+     By walking the passes_by_id array *backwards*, in the common case
+     this leads to us walking the pass tree from the leaf passes first,
+     eventually reaching the trunk passes, and hence none of the calls
+     should recurse, given that at each point in the iteration pass->sub
+     and pass->next will already have been marked.
+
+     Having walked the array, we then walk the higher-level fields,
+     again in bottom-up order, which will ensure that we visit all
+     remaining passes.  Most of the passes will have already been
+     visited, which should minimize further recursion.  */
+  for (int i = passes_by_id_size ; i > 0; )
+    ::gt_ggc_mx (passes_by_id[--i]);
+
+  ::gt_ggc_mx (all_late_ipa_passes);
+  ::gt_ggc_mx (all_lto_gen_passes);
+  ::gt_ggc_mx (all_regular_ipa_passes);
+  ::gt_ggc_mx (all_lowering_passes);
+  ::gt_ggc_mx (all_small_ipa_passes);
+  ::gt_ggc_mx (all_passes);
+}
+
+void
+pass_manager::gt_pch_nx ()
+{
+  /* Analogous to pass_manager::gt_ggc_mx */
+  for (int i = passes_by_id_size ; i > 0; )
+    ::gt_pch_nx (passes_by_id[--i]);
+
+  ::gt_pch_nx (all_late_ipa_passes);
+  ::gt_pch_nx (all_lto_gen_passes);
+  ::gt_pch_nx (all_regular_ipa_passes);
+  ::gt_pch_nx (all_lowering_passes);
+  ::gt_pch_nx (all_small_ipa_passes);
+  ::gt_pch_nx (all_passes);
+}
+
+void
+pass_manager::gt_pch_nx_with_op (gt_pointer_operator op, void *cookie)
+{
+  /* Unlike the _mx and _nx hooks, we must visit *every* field, since
+     they must each be reconstructed when reading the data back from
+     disk.  */
+  op (&(all_passes), cookie);
+  op (&(all_small_ipa_passes), cookie);
+  op (&(all_lowering_passes), cookie);
+  op (&(all_regular_ipa_passes), cookie);
+  op (&(all_lto_gen_passes), cookie);
+  op (&(all_late_ipa_passes), cookie);
+
+  for (int i = 0; i < passes_by_id_size; i++)
+    op (&(passes_by_id[i]), cookie);
+
+#define INSERT_PASSES_AFTER(PASS)
+#define PUSH_INSERT_PASSES_WITHIN(PASS)
+#define POP_INSERT_PASSES()
+#define NEXT_PASS(PASS, NUM) op (&(PASS ## _ ## NUM), cookie);
+#define TERMINATE_PASS_LIST()
+
+#include "pass-instances.def"
+
+#undef INSERT_PASSES_AFTER
+#undef PUSH_INSERT_PASSES_WITHIN
+#undef POP_INSERT_PASSES
+#undef NEXT_PASS
+#undef TERMINATE_PASS_LIST
+
+}
 
 void
 pass_manager::execute_early_local_passes ()
@@ -1464,7 +1602,7 @@ void *
 pass_manager::operator new (size_t sz)
 {
   /* Ensure that all fields of the pass manager are zero-initialized.  */
-  return xcalloc (1, sz);
+  return ggc_internal_cleared_alloc_stat (sz MEM_STAT_INFO);
 }
 
 pass_manager::pass_manager (context *ctxt)

@@ -276,4 +276,50 @@ ggc_alloc_cleared_gimple_statement_d_stat (size_t s MEM_STAT_DECL)
     ggc_internal_cleared_alloc_stat (s PASS_MEM_STAT);
 }
 
+/* gengtype will autogenerate traversal functions (in gtype-desc.c) for
+   all GTY-marked types that it sees are referenced by a GTY marker.
+
+   Unfortunately, it will not generate traveral functions for types that
+   are only referenced by GTY((user)) types.
+
+   The following templates are a substitute, providing equivalent
+   traversal functions for such types.  They are instantiated for
+   types whose objects that are traversed during GC/PCH, and are
+   called *every time* that an instance of type T is traversed during
+   GC/PCH.
+
+   They require the presence of the following member functions
+
+     void gt_ggc_mx ();
+     void gt_pch_nx ();
+     void gt_pch_nx_with_op (gt_pointer_operator op, void *cookie);
+
+   within class T, which are called *once* per object - the first
+   time the object is visited during the traversal.  */
+
+template<class T>
+inline void gt_ggc_mx (T *p)
+{
+  if (ggc_test_and_set_mark (p))
+    p->gt_ggc_mx ();
+}
+
+template<class T>
+void gt_pch_nx_with_op (void *this_obj, void *p,
+			gt_pointer_operator op, void *cookie)
+{
+  if (p == this_obj)
+    {
+      T *t = static_cast<T *>(p);
+      t->gt_pch_nx_with_op (op, cookie);
+    }
+}
+
+template<class T>
+inline void gt_pch_nx (T *p)
+{
+  if (gt_pch_note_object (p, p, gt_pch_nx_with_op<T>))
+    p->gt_pch_nx ();
+}
+
 #endif
