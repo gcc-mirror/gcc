@@ -258,12 +258,7 @@ get_default_value (tree var)
 	  val.mask = double_int_minus_one;
 	}
     }
-  else if (is_gimple_assign (stmt)
-	   /* Value-returning GIMPLE_CALL statements assign to
-	      a variable, and are treated similarly to GIMPLE_ASSIGN.  */
-	   || (is_gimple_call (stmt)
-	       && gimple_call_lhs (stmt) != NULL_TREE)
-	   || gimple_code (stmt) == GIMPLE_PHI)
+  else if (is_gimple_assign (stmt))
     {
       tree cst;
       if (gimple_assign_single_p (stmt)
@@ -274,9 +269,19 @@ get_default_value (tree var)
 	  val.value = cst;
 	}
       else
-	/* Any other variable defined by an assignment or a PHI node
-	   is considered UNDEFINED.  */
-	val.lattice_val = UNDEFINED;
+	{
+	  /* Any other variable defined by an assignment is considered
+	     UNDEFINED.  */
+	  val.lattice_val = UNDEFINED;
+	}
+    }
+  else if ((is_gimple_call (stmt)
+	    && gimple_call_lhs (stmt) != NULL_TREE)
+	   || gimple_code (stmt) == GIMPLE_PHI)
+    {
+      /* A variable defined by a call or a PHI node is considered
+	 UNDEFINED.  */
+      val.lattice_val = UNDEFINED;
     }
   else
     {
