@@ -1,3 +1,58 @@
+2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert my last two changes, r201865 and r201864:
+
+	Revert r201865:
+	2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Make opt_pass and gcc::pass_manager be GC-managed, so that pass
+	instances can own GC refs.
+
+	* Makefile.in (GTFILES): Add pass_manager.h and tree-pass.h.
+	* context.c (gcc::context::gt_ggc_mx): Traverse passes_.
+	(gcc::context::gt_pch_nx): Likewise.
+	(gcc::context::gt_pch_nx):  Likewise.
+	* ggc.h (gt_ggc_mx <T>): New.
+	(gt_pch_nx_with_op <T>): New.
+	(gt_pch_nx <T>): New.
+	* passes.c (opt_pass::gt_ggc_mx): New.
+	(opt_pass::gt_pch_nx): New.
+	(opt_pass::gt_pch_nx_with_op): New.
+	(pass_manager::gt_ggc_mx): New.
+	(pass_manager::gt_pch_nx): New.
+	(pass_manager::gt_pch_nx_with_op): New.
+	(pass_manager::operator new): Use
+	ggc_internal_cleared_alloc_stat rather than xcalloc.
+	* pass_manager.h (class pass_manager): Add GTY((user)) marking.
+	(pass_manager::gt_ggc_mx): New.
+	(pass_manager::gt_pch_nx): New.
+	(pass_manager::gt_pch_nx_with_op): New.
+	* tree-pass.h (class opt_pass): Add GTY((user)) marking.
+	(opt_pass::operator new): New.
+	(opt_pass::gt_ggc_mx): New.
+	(opt_pass::gt_pch_nx): New.
+	(opt_pass::gt_pch_nx_with_op): New.
+
+	Revert r201864:
+	2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (GTFILES): Add context.h.
+	* context.c (gcc::context::operator new): New.
+	(gcc::context::gt_ggc_mx): New.
+	(gcc::context::gt_pch_nx): New.
+	(gcc::context::gt_pch_nx): New.
+	* context.h (gcc::context): Add GTY((user)) marking.
+	(gcc::context::operator new): New.
+	(gcc::context::gt_ggc_mx): New.
+	(gcc::context::gt_pch_nx): New.
+	(gcc::context::gt_pch_nx): New.
+	(g): Add GTY marking.
+	(gt_ggc_mx (gcc::context *)): New.
+	(gt_pch_nx (gcc::context *)): New.
+	(gt_pch_nx (gcc::context *ctxt, gt_pointer_operator op,
+	void *cookie)): New.
+	* gengtype.c (open_base_files) <ifiles>: Add context.h.
+
 2013-08-20  Alexey Makhalov  <makhaloff@gmail.com>
 
 	* dce.c (fini_dce): Call df_analyze again just in case

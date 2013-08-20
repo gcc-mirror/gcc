@@ -76,21 +76,10 @@ namespace gcc
 
 /* An instance of a pass.  This is also "pass_data" to minimize the
    changes in existing code.  */
-class GTY((user)) opt_pass : public pass_data
+class opt_pass : public pass_data
 {
 public:
-  /* Ensure that instances are allocated in the GC-managed heap.  */
-  void *operator new (size_t sz);
-
   virtual ~opt_pass () { }
-
-  /* GTY((user)) methods, to be called once per traversal.
-     opt_pass subclasses with additional GC-managed data should override
-     these, chain up to the base class implementation, then walk their
-     extra fields.  */
-  virtual void gt_ggc_mx ();
-  virtual void gt_pch_nx ();
-  virtual void gt_pch_nx_with_op (gt_pointer_operator op, void *cookie);
 
   /* Create a copy of this pass.
 
