@@ -1187,8 +1187,7 @@ const_scalar_int_operand (rtx op, enum machine_mode mode)
 	  /* Multiword partial int.  */
 	  HOST_WIDE_INT x 
 	    = CONST_WIDE_INT_ELT (op, CONST_WIDE_INT_NUNITS (op) - 1);
-	  return (wide_int::sext (x, prec & (HOST_BITS_PER_WIDE_INT - 1))
-		  == x);
+	  return (sext_hwi (x, prec & (HOST_BITS_PER_WIDE_INT - 1)) == x);
 	}
     }
   return 1;

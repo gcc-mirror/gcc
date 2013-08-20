@@ -867,7 +867,8 @@ expand_subword_shift (enum machine_mode op1_mode, optab binoptab,
 			      outof_input, const1_rtx, 0, unsignedp, methods);
       if (shift_mask == BITS_PER_WORD - 1)
 	{
-	  tmp = immed_wide_int_const (wide_int::minus_one (op1_mode), op1_mode);
+	  tmp = immed_wide_int_const 
+	    (wide_int::minus_one (GET_MODE_PRECISION (op1_mode)), op1_mode);
 	  tmp = simplify_expand_binop (op1_mode, xor_optab, op1, tmp,
 				       0, true, methods);
 	}
