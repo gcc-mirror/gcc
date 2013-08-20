@@ -91,6 +91,12 @@ esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
 
+AC_GNU_SOURCE
+AC_CHECK_FUNCS([__secure_getenv])
+
+AC_GNU_SOURCE
+AC_CHECK_FUNCS([secure_getenv])
+
 # Check for programs.
 m4_rename([_AC_ARG_VAR_PRECIOUS],[real_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])

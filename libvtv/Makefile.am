@@ -30,7 +30,7 @@ ACLOCAL_AMFLAGS = -I .. -I ../config
 # May be used by toolexeclibdir.
 gcc_version := $(shell cat $(top_srcdir)/../gcc/BASE-VER)
 
-DEFS = 
+DEFS = @DEFS@
 AM_CPPFLAGS = -I$(top_srcdir)/../include
 AM_CFLAGS = $(XCFLAGS)
 AM_CCASFLAGS = $(XCFLAGS)
