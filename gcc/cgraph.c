@@ -701,6 +701,8 @@ cgraph_add_edge_to_call_site_hash (struct cgraph_edge *e)
   if (*slot)
     {
       gcc_assert (((struct cgraph_edge *)*slot)->speculative);
+      if (e->callee)
+	*slot = e;
       return;
     }
   gcc_assert (!*slot || e->speculative);
@@ -1083,8 +1085,10 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
   e2 = cgraph_create_edge (n, n2, e->call_stmt, direct_count, direct_frequency);
   initialize_inline_failed (e2);
   e2->speculative = true;
-  e2->call_stmt = e->call_stmt;
-  e2->can_throw_external = e->can_throw_external;
+  if (TREE_NOTHROW (n2->symbol.decl))
+    e2->can_throw_external = false;
+  else
+    e2->can_throw_external = e->can_throw_external;
   e2->lto_stmt_uid = e->lto_stmt_uid;
   e->count -= e2->count;
   e->frequency -= e2->frequency;
