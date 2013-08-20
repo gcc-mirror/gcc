@@ -1,3 +1,8 @@
+2013-08-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53655
+	* gfortran.dg/intent_out_8.f90: New.
+
 2013-08-20  Teresa Johnson  <tejohnson@google.com>
 
 	PR rtl-optimizations/57451
