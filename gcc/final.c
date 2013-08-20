@@ -1650,11 +1650,25 @@ reemit_insn_block_notes (void)
   rtx insn, note;
 
   insn = get_insns ();
-  if (!active_insn_p (insn))
-    insn = next_active_insn (insn);
-  for (; insn; insn = next_active_insn (insn))
+  for (; insn; insn = next_insn (insn))
     {
       tree this_block;
+
+      /* Prevent lexical blocks from straddling section boundaries.  */
+      if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+        {
+          for (tree s = cur_block; s != DECL_INITIAL (cfun->decl);
+               s = BLOCK_SUPERCONTEXT (s))
+            {
+              rtx note = emit_note_before (NOTE_INSN_BLOCK_END, insn);
+              NOTE_BLOCK (note) = s;
+              note = emit_note_after (NOTE_INSN_BLOCK_BEG, insn);
+              NOTE_BLOCK (note) = s;
+            }
+        }
+
+      if (!active_insn_p (insn))
+        continue;
 
       /* Avoid putting scope notes between jump table and its label.  */
       if (JUMP_TABLE_DATA_P (insn))
