@@ -955,7 +955,7 @@
 2013-07-18  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/57878
-	* g++.dg/pr57518.C: New test.
+	* g++.dg/pr57878.C: New test.
 
 2013-07-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
