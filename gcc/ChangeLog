@@ -1,3 +1,8 @@
+2013-08-20  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* tree-ssa-ccp.c (get_default_value): Remove redundant condition
+	checks.
+
 2013-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	Make opt_pass and gcc::pass_manager be GC-managed, so that pass
