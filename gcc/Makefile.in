@@ -3831,6 +3831,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
   $(srcdir)/tsan.c $(srcdir)/ipa-devirt.c \
+  $(srcdir)/context.h \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,
