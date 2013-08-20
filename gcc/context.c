@@ -42,18 +42,18 @@ gcc::context::context()
 void
 gcc::context::gt_ggc_mx ()
 {
-  /* Currently a no-op.  */
+  ::gt_ggc_mx (passes_);
 }
 
 void
 gcc::context::gt_pch_nx ()
 {
-  /* Currently a no-op.  */
+  ::gt_pch_nx (passes_);
 }
 
 void
 gcc::context::gt_pch_nx (gt_pointer_operator op ATTRIBUTE_UNUSED,
 			 void *cookie ATTRIBUTE_UNUSED)
 {
-  /* Currently a no-op.  */
+  op (&passes_, cookie);
 }
