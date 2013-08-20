@@ -2632,6 +2632,14 @@ reinit_cxx_pp (void)
   cxx_pp->enclosing_scope = current_function_decl;
 }
 
+/* Same as pp_formatted_text, except the return string is a separate
+   copy and has a GGC storage duration, e.g. an indefinite lifetime.  */
+
+inline const char *
+pp_ggc_formatted_text (pretty_printer *pp)
+{
+  return ggc_strdup (pp_formatted_text (pp));
+}
 
 /* Exported interface to stringifying types, exprs and decls under TFF_*
    control.  */
@@ -2642,7 +2650,7 @@ type_as_string (tree typ, int flags)
   reinit_cxx_pp ();
   pp_translate_identifiers (cxx_pp) = false;
   dump_type (cxx_pp, typ, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 const char *
@@ -2650,7 +2658,7 @@ type_as_string_translate (tree typ, int flags)
 {
   reinit_cxx_pp ();
   dump_type (cxx_pp, typ, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 const char *
@@ -2659,7 +2667,7 @@ expr_as_string (tree decl, int flags)
   reinit_cxx_pp ();
   pp_translate_identifiers (cxx_pp) = false;
   dump_expr (cxx_pp, decl, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 /* Wrap decl_as_string with options appropriate for dwarf.  */
@@ -2683,7 +2691,7 @@ decl_as_string (tree decl, int flags)
   reinit_cxx_pp ();
   pp_translate_identifiers (cxx_pp) = false;
   dump_decl (cxx_pp, decl, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 const char *
@@ -2691,7 +2699,7 @@ decl_as_string_translate (tree decl, int flags)
 {
   reinit_cxx_pp ();
   dump_decl (cxx_pp, decl, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 /* Wrap lang_decl_name with options appropriate for dwarf.  */
@@ -2738,7 +2746,7 @@ lang_decl_name (tree decl, int v, bool translate)
   else
     dump_decl (cxx_pp, DECL_NAME (decl), TFF_PLAIN_IDENTIFIER);
 
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 /* Return the location of a tree passed to %+ formats.  */
@@ -2782,7 +2790,7 @@ decl_to_string (tree decl, int verbose)
 
   reinit_cxx_pp ();
   dump_decl (cxx_pp, decl, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 static const char *
@@ -2790,7 +2798,7 @@ expr_to_string (tree decl)
 {
   reinit_cxx_pp ();
   dump_expr (cxx_pp, decl, 0);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 static const char *
@@ -2804,7 +2812,7 @@ fndecl_to_string (tree fndecl, int verbose)
     flags |= TFF_FUNCTION_DEFAULT_ARGUMENTS;
   reinit_cxx_pp ();
   dump_decl (cxx_pp, fndecl, flags);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 
@@ -2844,7 +2852,7 @@ parm_to_string (int p)
     pp_string (cxx_pp, "'this'");
   else
     pp_decimal_int (cxx_pp, p + 1);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 static const char *
@@ -2887,7 +2895,7 @@ type_to_string (tree typ, int verbose)
       if (memcmp (p, p+aka_start, len) == 0)
 	p[len] = '\0';
     }
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 static const char *
@@ -2920,7 +2928,7 @@ args_to_string (tree p, int verbose)
       if (TREE_CHAIN (p))
 	pp_separate_with_comma (cxx_pp);
     }
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 /* Pretty-print a deduction substitution (from deduction_tsubst_fntype).  P
@@ -2947,7 +2955,7 @@ subst_to_string (tree p)
   pp_cxx_whitespace (cxx_pp);
   dump_template_bindings (cxx_pp, tparms, targs, NULL);
   pp_cxx_right_bracket (cxx_pp);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 static const char *
@@ -2956,7 +2964,7 @@ cv_to_string (tree p, int v)
   reinit_cxx_pp ();
   cxx_pp->padding = v ? pp_before : pp_none;
   pp_cxx_cv_qualifier_seq (cxx_pp, p);
-  return pp_formatted_text (cxx_pp);
+  return pp_ggc_formatted_text (cxx_pp);
 }
 
 /* Langhook for print_error_function.  */
