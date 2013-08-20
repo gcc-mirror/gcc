@@ -1,3 +1,9 @@
+2013-08-20  Alan Modra  <amodra@gmail.com>
+
+	* floatformat.h (floatformat_ibm_long_double): Delete.
+	(floatformat_ibm_long_double_big): Declare.
+	(floatformat_ibm_long_double_little): Declare.
+
 2013-08-19  Dehao Chen  <dehao@google.com>
 
 	* dwarf2.def (DW_AT_GNU_discriminator): New attribute.
