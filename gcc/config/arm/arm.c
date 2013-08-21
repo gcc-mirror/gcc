@@ -4355,7 +4355,9 @@ aapcs_vfp_allocate (CUMULATIVE_ARGS *pcum, enum machine_mode mode,
     if (((pcum->aapcs_vfp_regs_free >> regno) & mask) == mask)
       {
 	pcum->aapcs_vfp_reg_alloc = mask << regno;
-	if (mode == BLKmode || (mode == TImode && !TARGET_NEON))
+	if (mode == BLKmode
+	    || (mode == TImode && ! TARGET_NEON)
+	    || ! arm_hard_regno_mode_ok (FIRST_VFP_REGNUM + regno, mode))
 	  {
 	    int i;
 	    int rcount = pcum->aapcs_vfp_rcount;

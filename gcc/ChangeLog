@@ -1,3 +1,10 @@
+2013-08-21  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/56979
+	* arm.c (aapcs_vfp_allocate): Decompose the argument if the
+	suggested mode for the assignment isn't compatible with the
+	registers required.
+
 2013-08-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
