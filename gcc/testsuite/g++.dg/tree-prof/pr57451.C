@@ -1,4 +1,3 @@
-// { dg-do run }
 // { dg-require-effective-target freorder }
 // { dg-options "-O2 -freorder-blocks-and-partition -g" }
 

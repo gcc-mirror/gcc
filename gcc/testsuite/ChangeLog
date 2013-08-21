@@ -1,3 +1,7 @@
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/tree-prof/pr57451.C: Remove spurious dg-do directive.
+
 2013-08-21  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: New test.
