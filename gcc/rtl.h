@@ -711,7 +711,7 @@ extern void rtl_check_failed_code_mode (const_rtx, enum rtx_code, enum machine_m
     ATTRIBUTE_NORETURN;
 extern void rtl_check_failed_block_symbol (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
-extern void hwivec_check_failed_bounds (const_rtvec, int, const char *, int,
+extern void hwivec_check_failed_bounds (const_hwivec, int, const char *, int,
 					const char *)
     ATTRIBUTE_NORETURN;
 extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
