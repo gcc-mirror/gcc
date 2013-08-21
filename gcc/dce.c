@@ -745,17 +745,6 @@ fini_dce (bool fast)
       bitmap_obstack_release (&dce_blocks_bitmap_obstack);
       bitmap_obstack_release (&dce_tmp_bitmap_obstack);
     }
-
-  /* If DCE removes the last reference to a hard register, we want
-     to recompute REGS_EVER_LIVE and the global life information.
-
-     Ideally we'd look at REGS_EVER_LIVE before and after and only
-     rerun DF analysis if something changed.  */
-  if (!df_in_progress)
-    {
-      df_compute_regs_ever_live (true);
-      df_analyze ();
-    }
 }
 
 
