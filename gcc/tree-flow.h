@@ -750,7 +750,7 @@ bool may_be_nonaddressable_p (tree expr);
 
 /* In tree-ssa-threadupdate.c.  */
 extern bool thread_through_all_blocks (bool);
-extern void register_jump_thread (edge, edge, edge);
+extern void register_jump_thread (vec<edge>);
 
 /* In gimplify.c  */
 tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);
