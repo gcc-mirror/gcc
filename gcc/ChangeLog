@@ -1,3 +1,8 @@
+2013-08-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Don't nest
+	comment.
+
 2013-08-21  Jeff Law  <law@redhat.com>
 
 	* tree-vrp.c (simplify_stmt_for_jump_threading): Try to
