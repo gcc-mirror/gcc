@@ -1,3 +1,14 @@
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_new_method_call_1): Use INDIRECT_REF_P.
+	* cp-tree.h (REFERENCE_REF_P): Likewise.
+	* semantics.c (finish_offsetof): Likewise.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56130
+	* semantics.c (finish_id_expression): Handle deprecated references.
+
 2013-08-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58119
