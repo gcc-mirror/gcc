@@ -1,3 +1,8 @@
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56134
+	* g++.dg/ext/attr-alias-3.C: New.
+
 2013-08-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/53655
@@ -175,7 +180,7 @@
 	* gcc.dg/tree-ssa/pr42585.c: Add avr-*-* to list of targets to
 	exclude from scan test.
 
-	* gcc.dg/debug/dwarf2/global-used-types.c: Request dwarf output. 
+	* gcc.dg/debug/dwarf2/global-used-types.c: Request dwarf output.
 	* gcc.dg/debug/dwarf2/inline2.c: Likewise.
 	* gcc.dg/debug/dwarf2/inline3.c: Likewise.
 	* gcc.dg/debug/dwarf2/pr37726.c: Likewise.
