@@ -1271,6 +1271,7 @@ register_jump_thread (vec<edge> path)
      throughout.  */
   edge e = path[0];
   edge e2 = path[1];
+  edge e3;
 
   if (path.length () <= 2)
     e3 = NULL;
