@@ -1,3 +1,7 @@
+2013-08-20  Martin Liska  <marxin.liska@gmail.com>
+
+	* ipa.c (ipa_profile_read_summary): Fix buffer overflow.
+
 2013-08-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Don't nest

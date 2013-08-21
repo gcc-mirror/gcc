@@ -1397,7 +1397,7 @@ ipa_profile_read_summary (void)
 static unsigned int
 ipa_profile (void)
 {
-  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_node **order;
   struct cgraph_edge *e;
   int order_pos;
   bool something_changed = false;
@@ -1575,6 +1575,7 @@ ipa_profile (void)
 	     nuseless, nuseless * 100.0 / nindirect,
 	     nconverted, nconverted * 100.0 / nindirect);
 
+  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
     {
