@@ -96,7 +96,7 @@
 ])
 
 ;; All vector modes including V?TImode, used in move patterns.
-(define_mode_iterator V16
+(define_mode_iterator VMOVE
   [(V32QI "TARGET_AVX") V16QI
    (V16HI "TARGET_AVX") V8HI
    (V8SI "TARGET_AVX") V4SI
@@ -435,8 +435,8 @@
 ;; This is essential for maintaining stable calling conventions.
 
 (define_expand "mov<mode>"
-  [(set (match_operand:V16 0 "nonimmediate_operand")
-	(match_operand:V16 1 "nonimmediate_operand"))]
+  [(set (match_operand:VMOVE 0 "nonimmediate_operand")
+	(match_operand:VMOVE 1 "nonimmediate_operand"))]
   "TARGET_SSE"
 {
   ix86_expand_vector_move (<MODE>mode, operands);
@@ -444,8 +444,8 @@
 })
 
 (define_insn "*mov<mode>_internal"
-  [(set (match_operand:V16 0 "nonimmediate_operand"               "=x,x ,m")
-	(match_operand:V16 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
+  [(set (match_operand:VMOVE 0 "nonimmediate_operand"               "=x,x ,m")
+	(match_operand:VMOVE 1 "nonimmediate_or_sse_const_operand"  "C ,xm,x"))]
   "TARGET_SSE
    && (register_operand (operands[0], <MODE>mode)
        || register_operand (operands[1], <MODE>mode))"
@@ -586,7 +586,7 @@
 })
 
 (define_expand "push<mode>1"
-  [(match_operand:V16 0 "register_operand")]
+  [(match_operand:VMOVE 0 "register_operand")]
   "TARGET_SSE"
 {
   ix86_expand_push (<MODE>mode, operands[0]);
@@ -594,8 +594,8 @@
 })
 
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:V16 0 "nonimmediate_operand")
-	(match_operand:V16 1 "nonimmediate_operand"))]
+  [(set (match_operand:VMOVE 0 "nonimmediate_operand")
+	(match_operand:VMOVE 1 "nonimmediate_operand"))]
   "TARGET_SSE"
 {
   ix86_expand_vector_move_misalign (<MODE>mode, operands);
