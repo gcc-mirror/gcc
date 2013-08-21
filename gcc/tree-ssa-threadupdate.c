@@ -1264,8 +1264,19 @@ thread_through_all_blocks (bool may_peel_loop_headers)
    after fixing the SSA graph.  */
 
 void
-register_jump_thread (edge e, edge e2, edge e3)
+register_jump_thread (vec<edge> path)
 {
+  /* Convert PATH into 3 edge representation we've been using.  This
+     is temporary until we convert this file to use a path representation
+     throughout.  */
+  edge e = path[0];
+  edge e2 = path[1];
+
+  if (path.length () <= 2)
+    e3 = NULL;
+  else
+    e3 = path[path.length () - 1];
+
   /* This can occur if we're jumping to a constant address or
      or something similar.  Just get out now.  */
   if (e2 == NULL)
