@@ -2975,7 +2975,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
-  (TREE_CODE (NODE) == INDIRECT_REF			\
+  (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
    && (TREE_CODE (TREE_TYPE (TREE_OPERAND ((NODE), 0)))	\
        == REFERENCE_TYPE))
