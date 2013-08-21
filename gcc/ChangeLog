@@ -1,3 +1,9 @@
+2013-08-21  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Try to
+	simplify assignments too.  If the RHS collapses to a singleton
+	range, then return the value for the range.
+
 2013-08-21  Kirill Yukhin  <kirill.yukhin@intel.com>
 
         * config/i386/sse.md (V16): Rename to...
