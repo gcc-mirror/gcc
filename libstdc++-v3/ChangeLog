@@ -1,3 +1,11 @@
+2013-08-22  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h: Executor caller.
+	* include/bits/regex_executor.h: Fix empty grouping problem.
+	* include/bits/regex_executor.tcc: Same.
+	* testsuite/28_regex/algorithms/regex_match/ecma/cstring_emptygroup.cc:
+	  New.
+
 2013-08-20  Phil Muldoon  <pmuldoon@redhat.com>
 
 	PR libstdc++/53477

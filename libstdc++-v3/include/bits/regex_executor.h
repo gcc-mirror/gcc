@@ -28,11 +28,16 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// TODO: convert comments to doxygen format.
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename, typename>
     class basic_regex;
+
+  template<typename>
+    class sub_match;
 
   template<typename, typename>
     class match_results;
@@ -52,19 +57,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class _Executor
     {
     public:
-      typedef match_results<_BiIter, _Alloc>   _ResultsT;
-      typedef regex_constants::match_flag_type _FlagT;
+      typedef match_results<_BiIter, _Alloc>          _ResultsT;
+      typedef std::vector<sub_match<_BiIter>, _Alloc> _ResultsVec;
+      typedef regex_constants::match_flag_type        _FlagT;
 
       virtual
       ~_Executor()
       { }
 
       // Set matched when string exactly match the pattern.
-      virtual bool
+      virtual void
       _M_match() = 0;
 
       // Set matched when some prefix of the string matches the pattern.
-      virtual bool
+      virtual void
       _M_search_from_first() = 0;
 
     protected:
@@ -74,20 +80,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                 _ResultsT& __results,
                 _FlagT     __flags,
                 _SizeT     __size)
-      : _M_current(__begin), _M_end(__end),
-        _M_results(__results), _M_flags(__flags)
+      : _M_current(__begin), _M_end(__end), _M_results(__results),
+        _M_flags(__flags)
       {
-        __results.resize(__size + 2);
-        for (auto __it : __results)
-          __it.matched = false;
+        __size += 2;
+        _M_results.resize(__size);
+        for (auto __i = 0; __i < __size; __i++)
+          _M_results[__i].matched = false;
       }
 
-      _BiIter    _M_current;
-      _BiIter    _M_end;
-      _ResultsT& _M_results;
-      _FlagT     _M_flags;
+      _BiIter       _M_current;
+      _BiIter       _M_end;
+      _ResultsVec&  _M_results;
+      _FlagT        _M_flags;
     };
 
+  // A _DFSExecutor perform a DFS on given NFA and input string. At the very
+  // beginning the executor stands in the start state, then it try every
+  // possible state transition in current state recursively. Some state
+  // transitions consume input string, say, a single-char-matcher or a
+  // back-reference matcher; some not, like assertion or other anchor nodes.
+  // When the input is exhausted and the current state is an accepting state,
+  // the whole executor return true.
+  //
+  // TODO: This approach is exponentially slow for certain input.
+  //       Try to compile the NFA to a DFA.
+  //
+  // Time complexity: exponential
+  // Space complexity: O(__end - __begin)
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
     class _DFSExecutor
@@ -97,6 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _RegexT;
       typedef typename _BaseT::_ResultsT                   _ResultsT;
+      typedef typename _BaseT::_ResultsVec                 _ResultsVec;
       typedef regex_constants::match_flag_type             _FlagT;
 
       _DFSExecutor(_BiIter        __begin,
@@ -105,37 +126,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                    const _RegexT& __nfa,
                    _FlagT         __flags)
       : _BaseT(__begin, __end, __results, __flags, __nfa._M_sub_count()),
-        _M_traits(_TraitsT()), _M_nfa(__nfa)
+        _M_traits(_TraitsT()), _M_nfa(__nfa), _M_results_ret(this->_M_results)
       { }
 
-      bool
+      void
       _M_match()
-      { return _M_dfs<true>(_M_nfa._M_start()); }
+      { _M_dfs<true>(_M_nfa._M_start()); }
 
-      bool
+      void
       _M_search_from_first()
-      { return _M_dfs<false>(_M_nfa._M_start()); }
+      { _M_dfs<false>(_M_nfa._M_start()); }
 
     private:
       template<bool __match_mode>
         bool
         _M_dfs(_StateIdT __i);
 
+      _ResultsVec    _M_results_ret;
       _TraitsT       _M_traits;
       const _RegexT& _M_nfa;
     };
 
-  // It's essentially a variant of Single-Source-Shortest-Path problem, where,
-  // the matching results is the final distance and should be minimized.
-  // Instead of using Dijkstra Algorithm, I pick up the queue-optimizaed
-  // (BFS-like) Bellman-Ford algorithm,
-  // SPFA(http://en.wikipedia.org/wiki/Shortest_Path_Faster_Algorithm).
+  // Like the DFS approach, it try every possible state transition; Unlike DFS,
+  // it uses a queue instead of a stack to store matching states. It's a BFS
+  // approach.
+  //
+  // Russ Cox's article(http://swtch.com/~rsc/regexp/regexp1.html) explained
+  // this algorithm clearly.
   //
   // Every entry of _M_covered saves the solution(grouping status) for every
-  // matching head. When states transfer, solutions will be compared and
+  // matching head. When states transit, solutions will be compared and
   // deduplicated(based on which greedy mode we have).
   //
-  // Time complexity: O(_M_str_cur.size() * _M_nfa.size())
+  // Time complexity: O((__end - __begin) * _M_nfa.size())
   // Space complexity: O(_M_nfa.size() * _M_nfa.mark_count())
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
@@ -146,12 +169,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Executor<_BiIter, _Alloc, _CharT, _TraitsT> _BaseT;
       typedef _NFA<_CharT, _TraitsT>                       _RegexT;
       typedef typename _BaseT::_ResultsT                   _ResultsT;
-      typedef std::unique_ptr<_ResultsT>                   _ResultsPtr;
+      typedef typename _BaseT::_ResultsVec                 _ResultsVec;
+      typedef std::unique_ptr<_ResultsVec>                 _ResultsPtr;
       typedef regex_constants::match_flag_type             _FlagT;
 
       _BFSExecutor(_BiIter        __begin,
                    _BiIter        __end,
-                   _ResultsT&      __results,
+                   _ResultsT&     __results,
                    const _RegexT& __nfa,
                    _FlagT         __flags)
       : _BaseT(__begin, __end, __results, __flags, __nfa._M_sub_count()),
@@ -159,21 +183,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
         if (_M_nfa._M_start() != _S_invalid_state_id)
           _M_covered[_M_nfa._M_start()] =
-            _ResultsPtr(new _ResultsT(this->_M_results));
+            _ResultsPtr(new _ResultsVec(this->_M_results));
         _M_e_closure();
       }
 
-      bool
+      void
       _M_match()
-      { return _M_main_loop<true>(); }
+      { _M_main_loop<true>(); }
 
-      bool
+      void
       _M_search_from_first()
-      { return _M_main_loop<false>(); }
+      { _M_main_loop<false>(); }
 
     private:
       template<bool __match_mode>
-        bool
+        void
         _M_main_loop();
 
       void
@@ -183,13 +207,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_move();
 
       bool
-      _M_match_less_than(_StateIdT __u, _StateIdT __v) const;
+      _M_match_less_than(const _ResultsVec& __u, const _ResultsVec& __v) const;
 
       bool
       _M_includes_some() const;
 
       std::map<_StateIdT, _ResultsPtr>     _M_covered;
-      const _RegexT& _M_nfa;
+      const _RegexT&                       _M_nfa;
     };
 
  //@} regex-detail
