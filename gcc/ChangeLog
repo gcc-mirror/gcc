@@ -1,3 +1,8 @@
+2013-08-22  Jan Hubicka  <jh@susue.cz>
+
+	* ipa.c (function_and_variable_visibility): First remember function was global
+	and then make it local.
+
 2013-08-22  Julian Brown  <julian@codesourcery.com>
 
 	* configure.ac: Add aarch64 to list of arches which use "nop" in
