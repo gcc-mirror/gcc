@@ -1,5 +1,9 @@
 2013-08-22  Jan Hubicka  <jh@susue.cz>
 
+	* timevar.c (validate_phases): Add cast.
+
+2013-08-22  Jan Hubicka  <jh@susue.cz>
+
 	* timevar.c (validate_phases): Use size_t for memory.
 	* timevar.h (struct timevar_time_def): Use size_t for ggc_mem.
 

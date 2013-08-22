@@ -465,7 +465,8 @@ validate_phases (FILE *fp)
       if (phase_wall > total->wall)
 	fprintf (fp, "wall    %24.18e > %24.18e\n", phase_wall, total->wall);
       if (phase_ggc_mem > total->ggc_mem)
-	fprintf (fp, "ggc_mem %24lu > %24lu\n", phase_ggc_mem, total->ggc_mem);
+	fprintf (fp, "ggc_mem %24lu > %24lu\n", (unsigned long)phase_ggc_mem,
+		 (unsigned long)total->ggc_mem);
       gcc_unreachable ();
     }
 }
