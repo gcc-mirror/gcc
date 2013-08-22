@@ -1097,6 +1097,10 @@ this is the right mode to use for certain pointers.
 @item OImode
 ``Octa Integer'' (?) mode represents a thirty-two-byte integer.
 
+@findex XImode
+@item XImode
+``Hexadeca Integer'' (?) mode represents a sixty-four-byte integer.
+
 @findex QFmode
 @item QFmode
 ``Quarter-Floating'' mode represents a quarter-precision (single byte)

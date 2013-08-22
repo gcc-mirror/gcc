@@ -648,7 +648,8 @@ Objective-C and Objective-C++ Dialects}.
 -mrecip -mrecip=@var{opt} @gol
 -mvzeroupper -mprefer-avx128 @gol
 -mmmx  -msse  -msse2 -msse3 -mssse3 -msse4.1 -msse4.2 -msse4 -mavx @gol
--mavx2 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
+-mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd @gol
+-maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
 -mbmi2 -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
@@ -14368,11 +14369,20 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-avx
 @itemx -mavx2
 @itemx -mno-avx2
+@itemx -mavx512f
+@itemx -mno-avx512f
+@need 800
+@itemx -mavx512pf
+@itemx -mno-avx512pf
+@itemx -mavx512er
+@itemx -mno-avx512er
+@itemx -mavx512cd
+@itemx -mno-avx512cd
 @itemx -maes
 @itemx -mno-aes
 @itemx -mpclmul
-@need 800
 @itemx -mno-pclmul
+@need 800
 @itemx -mfsgsbase
 @itemx -mno-fsgsbase
 @itemx -mrdrnd
@@ -14384,8 +14394,8 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -msse4a
 @itemx -mno-sse4a
 @itemx -mfma4
-@need 800
 @itemx -mno-fma4
+@need 800
 @itemx -mxop
 @itemx -mno-xop
 @itemx -mlwp
@@ -14412,8 +14422,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex m3dnow
 @opindex mno-3dnow
 These switches enable or disable the use of instructions in the MMX, SSE,
-SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, F16C,
-FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2, LZCNT, RTM or 3DNow!@:
+SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
+AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2,
+LZCNT, RTM or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and

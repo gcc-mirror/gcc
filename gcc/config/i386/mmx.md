@@ -78,9 +78,9 @@
 
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand"
-    "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r   ,?!Ym,x,x,x,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
+    "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r   ,?!Ym,v,v,v,m,*x,*x,*x,m ,r ,Yi,!Ym,*Yi")
 	(match_operand:MMXMODE 1 "vector_move_operand"
-    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Yn,r   ,C,x,m,x,C ,*x,m ,*x,Yj,r ,*Yj,!Yn"))]
+    "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!Yn,r   ,C,v,m,v,C ,*x,m ,*x,Yj,r ,*Yj,!Yn"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
 {
@@ -127,6 +127,9 @@
 	  return "%vmovq\t{%1, %0|%0, %1}";
 	case MODE_TI:
 	  return "%vmovdqa\t{%1, %0|%0, %1}";
+
+	case MODE_XI:
+	  return "vmovdqa64\t{%g1, %g0|%g0, %g1}";
 
 	case MODE_V2SF:
 	  if (TARGET_AVX && REG_P (operands[0]))
@@ -182,7 +185,11 @@
      (cond [(eq_attr "alternative" "2")
 	      (const_string "SI")
 	    (eq_attr "alternative" "11,12,15,16")
-	      (cond [(match_test "<MODE>mode == V2SFmode")
+	      (cond [(ior (match_test "EXT_REX_SSE_REGNO_P (REGNO (operands[0]))")
+			  (and (match_test "REG_P (operands[1])")
+			       (match_test "EXT_REX_SSE_REGNO_P (REGNO (operands[1]))")))
+			(const_string "XI")
+		     (match_test "<MODE>mode == V2SFmode")
 		       (const_string "V4SF")
 		     (ior (not (match_test "TARGET_SSE2"))
 			  (match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL"))

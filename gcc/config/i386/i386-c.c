@@ -306,6 +306,14 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AVX__");
   if (isa_flag & OPTION_MASK_ISA_AVX2)
     def_or_undef (parse_in, "__AVX2__");
+  if (isa_flag & OPTION_MASK_ISA_AVX512F)
+    def_or_undef (parse_in, "__AVX512F__");
+  if (isa_flag & OPTION_MASK_ISA_AVX512ER)
+    def_or_undef (parse_in, "__AVX512ER__");
+  if (isa_flag & OPTION_MASK_ISA_AVX512CD)
+    def_or_undef (parse_in, "__AVX512CD__");
+  if (isa_flag & OPTION_MASK_ISA_AVX512PF)
+    def_or_undef (parse_in, "__AVX512PF__");
   if (isa_flag & OPTION_MASK_ISA_FMA)
     def_or_undef (parse_in, "__FMA__");
   if (isa_flag & OPTION_MASK_ISA_RTM)
