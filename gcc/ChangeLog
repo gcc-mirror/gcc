@@ -1,3 +1,9 @@
+2013-08-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/linux.h (TARGET_LIBC_HAS_FUNCTION): Define as
+	gnu_libc_has_function.
+	* config/s390/tpf.h: Likewise.
+
 2013-08-22  Jan Hubicka  <jh@susue.cz>
 
 	* timevar.c (validate_phases): Add cast.
