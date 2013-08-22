@@ -1,3 +1,147 @@
+2013-08-22  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_SET): New.
+	(OPTION_MASK_ISA_AVX512CD_SET): Ditto.
+	(OPTION_MASK_ISA_AVX512PF_SET): Ditto.
+	(OPTION_MASK_ISA_AVX512ER_SET): Ditto.
+	(OPTION_MASK_ISA_AVX2_UNSET): Update.
+	(OPTION_MASK_ISA_AVX512F_UNSET): New.
+	(OPTION_MASK_ISA_AVX512CD_UNSET): Ditto.
+	(OPTION_MASK_ISA_AVX512PF_UNSET): Ditto.
+	(OPTION_MASK_ISA_AVX512ER_UNSET): Ditto.
+	(ix86_handle_option): Handle OPT_mavx512f, OPT_mavx512cd,
+	OPT_mavx512pf, OPT_mavx512er cases.
+	* config/i386/constraints.md (v): New constraint.
+	(Yi, Yj): Replace SSE_REGS with ALL_SSE_REGS.
+	* config/i386/cpuid.h (bit_AVX512F, bit_AVX512PF, bit_AVX512ER)
+	(bit_AVX512CD): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512F, AVX512ER, AVX512PF, AVX512CD features.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Conditionally define __AVX512F__, __AVX512ER__, __AVX512CD__,
+	__AVX512PF__.
+	* config/i386/i386-modes.def (VECTOR_MODES (INT, 128))
+	(VECTOR_MODES (FLOAT, 128), INT_MODE (XI, 64)): New modes.
+	* config/i386/i386.c (regclass_map, dbx_register_map)
+	(dbx64_register_map, svr4_dbx_register_map): Add new SSE registers.
+	(gate_insert_vzeroupper): Disable vzeroupper for TARGET_AVX512F.
+	(ix86_target_string): Define -mavx512f, -mavx512er, -mavx512cd,
+	-mavx512pf options.
+	(ix86_option_override_internal): Define PTA_AVX512F, PTA_AVX512ER,
+	PTA_AVX512PF, PTA_AVX512CD.  Handle -mavx512f, -mavx512er, -mavx512cd,
+	-mavx512pf options.  Fix formatting.
+	(ix86_conditional_register_usage): Squash EXT_REX_SSE_REGs for 32-bit
+	targets.  Squash EVEX_SSE_REGS if AVX512F is disabled.
+	(ix86_valid_target_attribute_inner_p): Handle -mavx512f, -mavx512er,
+	-mavx512cd, -mavx512pf options.
+	(standard_sse_constant_opcode): Add vpternlogd for 512-bit modes.
+	(print_reg, ix86_print_operand): Handle 'g' to output 512-bit operands.
+	(ix86_preferred_output_reload_class): Replace SSE_REGS with
+	ALL_SSE_REGS.
+	(ix86_hard_regno_mode_ok): Support 512-bit registers.
+	(ix86_set_reg_reg_cost): Ditto.
+	(x86_order_regs_for_local_alloc): Ditto.
+	(MAX_VECT_LEN): Extend to 64-byte.
+	(ix86_spill_class): Replace SSE_REGS with ALL_SSE_REGS.
+	* config/i386/i386.h (TARGET_AVX512F, TARGET_AVX512PF)
+	(TARGET_AVX512ER, TARGET_AVX512CD): New.
+	(BIGGEST_ALIGNMENT): Extend to 512-bits.
+	(FIRST_PSEUDO_REGISTER, FIXED_REGISTERS): Add new registers.
+	(CALL_USED_REGISTERS, REG_ALLOC_ORDER): Likewise.
+	(VALID_AVX512F_SCALAR_MODE, VALID_AVX512F_REG_MODE): New.
+	(SSE_REG_MODE_P): Support new modes.
+	(FIRST_MMX_REG, FIRST_REX_INT_REG, FIRST_REX_SSE_REG): Add comments.
+	(FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG): New.
+	(reg_class, REG_CLASS_NAMES): Add EVEX_SSE_REGS, ALL_SSE_REGS.
+	(SSE_CLASS_P, MAYBE_SSE_CLASS_P): Replace SSE_REGS with ALL_SSE_REGS.
+	(REG_CLASS_CONTENTS): Add new registers.
+	(SSE_REGNO_P, SSE_REGNO, HARD_REGNO_RENAME_OK): Support new registers.
+	(EXT_REX_SSE_REGNO_P): New.
+	(HI_REGISTER_NAMES): Add new registers.
+	* config/i386/i386.md: Define constants for new registers.
+	(mode): Add new 512-bit modes.
+	(prefix): Support evex prefix.
+	(isa): Support avx512f, noavx512f, fma_avx512f.
+	(ssemodesuffix): Add new 512-bit modes.
+	(movxi): New.
+	(*movxi_internal_avx512f): Ditto.
+	(*movdi_internal): Replace constraint "x" with the new constraint "v".
+	Support MODE_XI.
+	(*movsi_internal): Likewise.
+	(*movdf_internal): Likewise.
+	(*movsf_internal): Likewise.
+	(*fop_<mode>_comm_sse): Replace constraint "x" with new constraint "v".
+	(<code><mode>3): Likewise.
+	* config/i386/i386.opt (mavx512f, mavx512pf, mavx512er, mavx512cd): New.
+	* config/i386/mmx.md (*mov<mode>_internal): Replace constraint "x"
+	with the new constraint "v".
+	* config/i386/sse.md (*mov<mode>_internal): Support new registers and
+	modes.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix>): Replace constraint "x"
+	with the new constraint "v".
+	(<sse2>_loaddqu<avxsizesuffix>): Likewise.
+	(<sse2>_storedqu<avxsizesuffix>): Likewise.
+	(*<plusminus_insn><mode>3): Likewise.
+	(<sse>_vm<plusminus_insn><mode>3): Likewise.
+	(*mul<mode>3): Likewise.
+	(<sse>_vmmul<mode>3): Likewise.
+	(<sse>_div<mode>3): Likewise.
+	(<sse>_vmdiv<mode>3): Likewise.
+	(<sse>_sqrt<mode>2): Likewise.
+	(<sse>_vmsqrt<mode>2): Likewise.
+	(*<code><mode>3_finite): Likewise.
+	(*<code><mode>3) <smaxmin>: Likewise.
+	(<sse>_vm<code><mode>3): Likewise.
+	(*<code><mode>3) <any_logic>: Likewise.
+	(*fma_fmadd_<mode>): Likewise.
+	(*fma_fmsub_<mode>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(*fma_fnmsub_<mode>): Likewise.
+	(*fma_fmaddsub_<mode>): Likewise.
+	(*fma_fmsubadd_<mode>): Likewise.
+	(*fmai_fmadd_<mode>): Likewise.
+	(*fmai_fmsub_<mode>): Likewise.
+	(*fmai_fnmadd_<mode>): Likewise.
+	(*fmai_fnmsub_<mode>): Likewise.
+	(sse_cvtsi2ss): Likewise.
+	(sse_cvtsi2ssq): Likewise.
+	(sse_cvtss2si): Likewise.
+	(sse_cvtss2si_2): Likewise.
+	(sse_cvtss2siq): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(sse_cvttss2si): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(float<sseintvecmodelower><mode>2): Likewise.
+	(sse2_cvtsd2si_2): Likewise.
+	(sse2_cvtsd2siq_2): Likewise.
+	(*<plusminus_insn><mode>3): Likewise.
+	(*<sse2_avx2>_<plusminus_insn><mode>3): Likewise.
+	(*<sse4_1_avx2>_mul<mode>3): Likewise.
+	(ashr<mode>3): Likewise.
+	(<shift_insn><mode>3): Likewise.
+	(avx2_<code><mode>3): Likewise.
+	(*avx2_<code><mode>3): Likewise.
+	(*andnot<mode>3): Likewise.
+	(*<code><mode>3) <any_logic>: Likewise.
+	(abs<mode>2): Likewise.
+	(avx2_permvar<mode>): Likewise.
+	(avx2_perm<mode>_1): Likewise.
+	(*avx_vpermilp<mode>): Likewise.
+	(avx_vpermilvar<mode>3): Likewise.
+	(avx2_ashrv<mode>): Likewise.
+	(avx2_<shift_insn>v<mode>): Likewise.
+	* doc/invoke.texi: Document -mavx512f, -mavx512pf, -mavx512er,
+	-mavx512cd.
+	* doc/rtl.texi: Document XImode.
+
 2013-08-21  Jeff Law  <law@redhat.com>
 
 	* tree-flow.h (register_jump_thread): Pass vector of edges

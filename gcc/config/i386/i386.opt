@@ -517,6 +517,22 @@ mavx2
 Target Report Mask(ISA_AVX2) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and AVX2 built-in functions and code generation
 
+mavx512f
+Target Report Mask(ISA_AVX512F) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F built-in functions and code generation
+
+mavx512pf
+Target Report Mask(ISA_AVX512PF) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512PF built-in functions and code generation
+
+mavx512er
+Target Report Mask(ISA_AVX512ER) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512ER built-in functions and code generation
+
+mavx512cd
+Target Report Mask(ISA_AVX512CD) Var(ix86_isa_flags) Save
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2 and AVX512F and AVX512CD built-in functions and code generation
+
 mfma
 Target Report Mask(ISA_FMA) Var(ix86_isa_flags) Save
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and FMA built-in functions and code generation
