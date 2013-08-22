@@ -2211,7 +2211,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__re._M_automaton == nullptr)
         return false;
-      if (__detail::__get_executor(__s, __e, __m, __re, __flags)->_M_match())
+      __detail::__get_executor(__s, __e, __m, __re, __flags)->_M_match();
+      if (__m.size() > 0 && __m[0].matched)
         {
           for (auto __it : __m)
             if (!__it.matched)
@@ -2371,22 +2372,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__re._M_automaton == nullptr)
         return false;
       for (auto __cur = __first; __cur != __last; ++__cur) // Any KMP-like algo?
-        if (__detail::__get_executor(__cur, __last, __m, __re, __flags)
-              ->_M_search_from_first())
-          {
-            for (auto __it : __m)
-              if (!__it.matched)
-                __it.first = __it.second = __last;
-            __m.at(__m.size()).first = __first;
-            __m.at(__m.size()).second = __m[0].first;
-            __m.at(__m.size()+1).first = __m[0].second;
-            __m.at(__m.size()+1).second = __last;
-            __m.at(__m.size()).matched =
-              (__m.prefix().first != __m.prefix().second);
-            __m.at(__m.size()+1).matched =
-              (__m.suffix().first != __m.suffix().second);
-            return true;
-          }
+        {
+          __detail::__get_executor(__cur, __last, __m, __re, __flags)
+            ->_M_search_from_first();
+          if (__m.size() > 0 && __m[0].matched)
+	    {
+	      for (auto __it : __m)
+		if (!__it.matched)
+		  __it.first = __it.second = __last;
+	      __m.at(__m.size()).first = __first;
+	      __m.at(__m.size()).second = __m[0].first;
+	      __m.at(__m.size()+1).first = __m[0].second;
+	      __m.at(__m.size()+1).second = __last;
+	      __m.at(__m.size()).matched =
+		(__m.prefix().first != __m.prefix().second);
+	      __m.at(__m.size()+1).matched =
+		(__m.suffix().first != __m.suffix().second);
+	      return true;
+	    }
+        }
       return false;
     }
 
