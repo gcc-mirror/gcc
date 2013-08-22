@@ -111,8 +111,8 @@ along with GCC; see the file COPYING3.  If not see
 /* IBM copies these libraries over with these names.  */
 #define MATH_LIBRARY "CLBM"
 #define LIBSTDCXX "CPP2"
-#endif /* ! _TPF_H */
 
-/* We redefine this hook so the version from elfos.h header won't be used.  */
 #undef TARGET_LIBC_HAS_FUNCTION
-#define TARGET_LIBC_HAS_FUNCTION default_libc_has_function
+#define TARGET_LIBC_HAS_FUNCTION gnu_libc_has_function
+
+#endif /* ! _TPF_H */
