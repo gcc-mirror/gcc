@@ -71,9 +71,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT    _M_next;             // outgoing transition
       union // Since they are mutual exclusive.
       {
-        _StateIdT    _M_alt;            // for _S_opcode_alternative
-        unsigned int _M_subexpr;        // for _S_opcode_subexpr_*
-        unsigned int _M_backref_index;  // for _S_opcode_backref
+	_StateIdT    _M_alt;            // for _S_opcode_alternative
+	unsigned int _M_subexpr;        // for _S_opcode_subexpr_*
+	unsigned int _M_backref_index;  // for _S_opcode_backref
       };
       _MatcherT    _M_matches;          // for _S_opcode_match
 
@@ -83,17 +83,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _State(const _MatcherT& __m)
       : _M_opcode(_S_opcode_match), _M_next(_S_invalid_state_id),
-        _M_matches(__m)
+	_M_matches(__m)
       { }
 
       _State(_OpcodeT __opcode, unsigned __index)
       : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
       {
-        if (__opcode == _S_opcode_subexpr_begin
-            || __opcode == _S_opcode_subexpr_end)
-          _M_subexpr = __index;
-        else if (__opcode == _S_opcode_backref)
-          _M_backref_index = __index;
+	if (__opcode == _S_opcode_subexpr_begin
+	    || __opcode == _S_opcode_subexpr_end)
+	  _M_subexpr = __index;
+	else if (__opcode == _S_opcode_backref)
+	  _M_backref_index = __index;
       }
 
       _State(_StateIdT __next, _StateIdT __alt)
@@ -162,40 +162,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT
       _M_insert_accept()
       {
-        this->push_back(_StateT(_S_opcode_accept));
-        _M_accepting_states.insert(this->size()-1);
-        return this->size()-1;
+	this->push_back(_StateT(_S_opcode_accept));
+	_M_accepting_states.insert(this->size()-1);
+	return this->size()-1;
       }
 
       _StateIdT
       _M_insert_alt(_StateIdT __next, _StateIdT __alt)
       {
-        this->push_back(_StateT(__next, __alt));
-        return this->size()-1;
+	this->push_back(_StateT(__next, __alt));
+	return this->size()-1;
       }
 
       _StateIdT
       _M_insert_matcher(_MatcherT __m)
       {
-        this->push_back(_StateT(__m));
-        return this->size()-1;
+	this->push_back(_StateT(__m));
+	return this->size()-1;
       }
 
       _StateIdT
       _M_insert_subexpr_begin()
       {
-        auto __id = _M_subexpr_count++;
-        _M_paren_stack.push_back(__id);
-        this->push_back(_StateT(_S_opcode_subexpr_begin, __id));
-        return this->size()-1;
+	auto __id = _M_subexpr_count++;
+	_M_paren_stack.push_back(__id);
+	this->push_back(_StateT(_S_opcode_subexpr_begin, __id));
+	return this->size()-1;
       }
 
       _StateIdT
       _M_insert_subexpr_end()
       {
-        this->push_back(_StateT(_S_opcode_subexpr_end, _M_paren_stack.back()));
-        _M_paren_stack.pop_back();
-        return this->size()-1;
+	this->push_back(_StateT(_S_opcode_subexpr_end, _M_paren_stack.back()));
+	_M_paren_stack.pop_back();
+	return this->size()-1;
       }
 
       _StateIdT
@@ -225,27 +225,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       // Constructs a single-node sequence
       _StateSeq(_RegexT& __ss, _StateIdT __s,
-                _StateIdT __e = _S_invalid_state_id)
+		_StateIdT __e = _S_invalid_state_id)
       : _M_nfa(__ss), _M_start(__s), _M_end1(__s), _M_end2(__e)
       { }
       // Constructs a split sequence from two other sequencces
       _StateSeq(const _StateSeq& __e1, const _StateSeq& __e2)
       : _M_nfa(__e1._M_nfa),
-        _M_start(_M_nfa._M_insert_alt(__e1._M_start, __e2._M_start)),
-        _M_end1(__e1._M_end1), _M_end2(__e2._M_end1)
+	_M_start(_M_nfa._M_insert_alt(__e1._M_start, __e2._M_start)),
+	_M_end1(__e1._M_end1), _M_end2(__e2._M_end1)
       { }
 
       // Constructs a split sequence from a single sequence
       _StateSeq(const _StateSeq& __e, _StateIdT __id)
       : _M_nfa(__e._M_nfa),
-        _M_start(_M_nfa._M_insert_alt(__id, __e._M_start)),
-        _M_end1(__id), _M_end2(__e._M_end1)
+	_M_start(_M_nfa._M_insert_alt(__id, __e._M_start)),
+	_M_end1(__id), _M_end2(__e._M_end1)
       { }
 
       // Constructs a copy of a %_StateSeq
       _StateSeq(const _StateSeq& __rhs)
       : _M_nfa(__rhs._M_nfa), _M_start(__rhs._M_start),
-        _M_end1(__rhs._M_end1), _M_end2(__rhs._M_end2)
+	_M_end1(__rhs._M_end1), _M_end2(__rhs._M_end2)
       { }
 
       _StateSeq& operator=(const _StateSeq& __rhs);

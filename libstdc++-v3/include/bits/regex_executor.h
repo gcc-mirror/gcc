@@ -76,17 +76,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     protected:
       typedef typename _NFA<_CharT, _TraitsT>::_SizeT _SizeT;
       _Executor(_BiIter    __begin,
-                _BiIter    __end,
-                _ResultsT& __results,
-                _FlagT     __flags,
-                _SizeT     __size)
+		_BiIter    __end,
+		_ResultsT& __results,
+		_FlagT     __flags,
+		_SizeT     __size)
       : _M_current(__begin), _M_end(__end), _M_results(__results),
-        _M_flags(__flags)
+	_M_flags(__flags)
       {
-        __size += 2;
-        _M_results.resize(__size);
-        for (auto __i = 0; __i < __size; __i++)
-          _M_results[__i].matched = false;
+	__size += 2;
+	_M_results.resize(__size);
+	for (auto __i = 0; __i < __size; __i++)
+	  _M_results[__i].matched = false;
       }
 
       _BiIter       _M_current;
@@ -121,12 +121,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef regex_constants::match_flag_type             _FlagT;
 
       _DFSExecutor(_BiIter        __begin,
-                   _BiIter        __end,
-                   _ResultsT&     __results,
-                   const _RegexT& __nfa,
-                   _FlagT         __flags)
+		   _BiIter        __end,
+		   _ResultsT&     __results,
+		   const _RegexT& __nfa,
+		   _FlagT         __flags)
       : _BaseT(__begin, __end, __results, __flags, __nfa._M_sub_count()),
-        _M_traits(_TraitsT()), _M_nfa(__nfa), _M_results_ret(this->_M_results)
+	_M_traits(_TraitsT()), _M_nfa(__nfa), _M_results_ret(this->_M_results)
       { }
 
       void
@@ -139,8 +139,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       template<bool __match_mode>
-        bool
-        _M_dfs(_StateIdT __i);
+	bool
+	_M_dfs(_StateIdT __i);
 
       _ResultsVec    _M_results_ret;
       _TraitsT       _M_traits;
@@ -174,17 +174,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef regex_constants::match_flag_type             _FlagT;
 
       _BFSExecutor(_BiIter        __begin,
-                   _BiIter        __end,
-                   _ResultsT&     __results,
-                   const _RegexT& __nfa,
-                   _FlagT         __flags)
+		   _BiIter        __end,
+		   _ResultsT&     __results,
+		   const _RegexT& __nfa,
+		   _FlagT         __flags)
       : _BaseT(__begin, __end, __results, __flags, __nfa._M_sub_count()),
-        _M_nfa(__nfa)
+	_M_nfa(__nfa)
       {
-        if (_M_nfa._M_start() != _S_invalid_state_id)
-          _M_covered[_M_nfa._M_start()] =
-            _ResultsPtr(new _ResultsVec(this->_M_results));
-        _M_e_closure();
+	if (_M_nfa._M_start() != _S_invalid_state_id)
+	  _M_covered[_M_nfa._M_start()] =
+	    _ResultsPtr(new _ResultsVec(this->_M_results));
+	_M_e_closure();
       }
 
       void
@@ -197,8 +197,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     private:
       template<bool __match_mode>
-        void
-        _M_main_loop();
+	void
+	_M_main_loop();
 
       void
       _M_e_closure();
