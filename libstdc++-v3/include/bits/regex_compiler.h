@@ -49,10 +49,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       _BracketMatcher(bool __is_non_matching,
-                      const _TraitsT& __t,
-                      _FlagT __flags)
+		      const _TraitsT& __t,
+		      _FlagT __flags)
       : _M_is_non_matching(__is_non_matching), _M_traits(__t),
-        _M_flags(__flags), _M_class_set(0)
+	_M_flags(__flags), _M_class_set(0)
       { }
 
       bool
@@ -61,40 +61,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_add_char(_CharT __c)
       {
-        if (_M_flags & regex_constants::collate)
-          if (_M_is_icase())
-            _M_char_set.push_back(_M_traits.translate_nocase(__c));
-          else
-            _M_char_set.push_back(_M_traits.translate(__c));
-        else
-          _M_char_set.push_back(__c);
+	if (_M_flags & regex_constants::collate)
+	  if (_M_is_icase())
+	    _M_char_set.push_back(_M_traits.translate_nocase(__c));
+	  else
+	    _M_char_set.push_back(_M_traits.translate(__c));
+	else
+	  _M_char_set.push_back(__c);
       }
 
       void
       _M_add_collating_element(const _StringT& __s)
       {
-        auto __st = _M_traits.lookup_collatename(&*__s.begin(), &*__s.end());
-        if (__st.empty())
-          __throw_regex_error(regex_constants::error_collate);
-        // TODO: digraph
-        _M_char_set.push_back(__st[0]);
+	auto __st = _M_traits.lookup_collatename(&*__s.begin(), &*__s.end());
+	if (__st.empty())
+	  __throw_regex_error(regex_constants::error_collate);
+	// TODO: digraph
+	_M_char_set.push_back(__st[0]);
       }
 
       void
       _M_add_equivalence_class(const _StringT& __s)
       {
-        _M_add_character_class(
-          _M_traits.transform_primary(&*__s.begin(), &*__s.end()));
+	_M_add_character_class(
+	  _M_traits.transform_primary(&*__s.begin(), &*__s.end()));
       }
 
       void
       _M_add_character_class(const _StringT& __s)
       {
-        auto __st = _M_traits.
-          lookup_classname(&*__s.begin(), &*__s.end(), _M_is_icase());
-        if (__st == 0)
-          __throw_regex_error(regex_constants::error_ctype);
-        _M_class_set |= __st;
+	auto __st = _M_traits.
+	  lookup_classname(&*__s.begin(), &*__s.end(), _M_is_icase());
+	if (__st == 0)
+	  __throw_regex_error(regex_constants::error_ctype);
+	_M_class_set |= __st;
       }
 
       void
@@ -108,11 +108,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StringT
       _M_get_str(_CharT __c) const
       {
-        auto __s = _StringT(1,
-                            _M_is_icase()
-                            ? _M_traits.translate_nocase(__c)
-                            : _M_traits.translate(__c));
-        return _M_traits.transform(__s.begin(), __s.end());
+	auto __s = _StringT(1,
+			    _M_is_icase()
+			    ? _M_traits.translate_nocase(__c)
+			    : _M_traits.translate(__c));
+	return _M_traits.transform(__s.begin(), __s.end());
       }
 
       _TraitsT                              _M_traits;
@@ -177,9 +177,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
       _Scanner(_InputIter __begin, _InputIter __end,
-               _FlagT __flags, std::locale __loc)
+	       _FlagT __flags, std::locale __loc)
       : _M_current(__begin) , _M_end(__end) , _M_flags(__flags),
-        _M_ctype(std::use_facet<_CtypeT>(__loc)), _M_state(0)
+	_M_ctype(std::use_facet<_CtypeT>(__loc)), _M_state(0)
       { _M_advance(); }
 
       void
@@ -238,7 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef regex_constants::syntax_option_type _FlagT;
 
       _Compiler(_InputIter __b, _InputIter __e,
-                const _TraitsT& __traits, _FlagT __flags);
+		const _TraitsT& __traits, _FlagT __flags);
 
       std::shared_ptr<_RegexT>
       _M_get_nfa() const

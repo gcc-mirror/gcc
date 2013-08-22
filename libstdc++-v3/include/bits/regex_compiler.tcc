@@ -98,13 +98,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (__c == _M_ctype.widen('['))
 	{
-          if (*++_M_current == _M_ctype.widen('^'))
-            {
-              _M_curToken = _S_token_bracket_inverse_begin;
-              ++_M_current;
-            }
-          else
-            _M_curToken = _S_token_bracket_begin;
+	  if (*++_M_current == _M_ctype.widen('^'))
+	    {
+	      _M_curToken = _S_token_bracket_inverse_begin;
+	      ++_M_current;
+	    }
+	  else
+	    _M_curToken = _S_token_bracket_begin;
 	  _M_state |= _S_state_in_bracket;
 	  return;
 	}
@@ -223,16 +223,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (*_M_current == _M_ctype.widen(']'))
 	{
-          _M_curToken = _S_token_bracket_end;
-          _M_state &= ~_S_state_in_bracket;
-          ++_M_current;
-          return;
+	  _M_curToken = _S_token_bracket_end;
+	  _M_state &= ~_S_state_in_bracket;
+	  ++_M_current;
+	  return;
 	}
       else if (*_M_current == _M_ctype.widen('\\'))
-        {
+	{
 	  _M_eat_escape();
 	  return;
-        }
+	}
       _M_curToken = _S_token_collelem_single;
       _M_curValue.assign(1, *_M_current);
       ++_M_current;
@@ -341,23 +341,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_curValue.assign(1, __c);
 	}
       else if (_M_state & _S_state_in_bracket)
-        {
-          if (__c == _M_ctype.widen('-')
-              || __c == _M_ctype.widen('[')
-              || __c == _M_ctype.widen(']'))
-            {
-              _M_curToken = _S_token_ord_char;
-              _M_curValue.assign(1, __c);
-            }
-          else if ((_M_flags & regex_constants::ECMAScript)
-                   && __c == _M_ctype.widen('b'))
-            {
-              _M_curToken = _S_token_ord_char;
-              _M_curValue.assign(1, _M_ctype.widen(' '));
-            }
-          else
-            __throw_regex_error(regex_constants::error_escape);
-        }
+	{
+	  if (__c == _M_ctype.widen('-')
+	      || __c == _M_ctype.widen('[')
+	      || __c == _M_ctype.widen(']'))
+	    {
+	      _M_curToken = _S_token_ord_char;
+	      _M_curValue.assign(1, __c);
+	    }
+	  else if ((_M_flags & regex_constants::ECMAScript)
+		   && __c == _M_ctype.widen('b'))
+	    {
+	      _M_curToken = _S_token_ord_char;
+	      _M_curValue.assign(1, _M_ctype.widen(' '));
+	    }
+	  else
+	    __throw_regex_error(regex_constants::error_escape);
+	}
       else
 	__throw_regex_error(regex_constants::error_escape);
     }
@@ -444,8 +444,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  ostr << "bracket-begin\n";
 	  break;
 	case _S_token_bracket_inverse_begin:
-          ostr << "bracket-inverse-begin\n";
-          break;
+	  ostr << "bracket-inverse-begin\n";
+	  break;
 	case _S_token_bracket_end:
 	  ostr << "bracket-end\n";
 	  break;
@@ -518,8 +518,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	case _S_token_unknown:
 	  ostr << "-- unknown token --\n";
 	  break;
-        default:
-          _GLIBCXX_DEBUG_ASSERT(false);
+	default:
+	  _GLIBCXX_DEBUG_ASSERT(false);
       }
       return ostr;
     }
@@ -528,7 +528,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InputIter, typename _CharT, typename _TraitsT>
     _Compiler<_InputIter, _CharT, _TraitsT>::
     _Compiler(_InputIter __b, _InputIter __e,
-              const _TraitsT& __traits, _FlagT __flags)
+	      const _TraitsT& __traits, _FlagT __flags)
     : _M_traits(__traits), _M_scanner(__b, __e, __flags, _M_traits.getloc()),
       _M_state_store(__flags), _M_flags(__flags)
     {
@@ -551,8 +551,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (token == _M_scanner._M_token())
 	{
-          _M_cur_value = _M_scanner._M_value();
-          _M_scanner._M_advance();
+	  _M_cur_value = _M_scanner._M_value();
+	  _M_scanner._M_advance();
 	  return true;
 	}
       return false;
@@ -714,39 +714,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_match_token(_ScannerT::_S_token_anychar))
 	{
-          const static auto&
-          __any_matcher = [](_CharT) -> bool
-          { return true; };
+	  const static auto&
+	  __any_matcher = [](_CharT) -> bool
+	  { return true; };
 
 	  _M_stack.push(_StateSeqT(_M_state_store,
-                                  _M_state_store._M_insert_matcher
-                                  (__any_matcher)));
+				  _M_state_store._M_insert_matcher
+				  (__any_matcher)));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_ord_char))
 	{
-          auto __c = _M_cur_value[0];
-          __detail::_Matcher<_CharT> f;
-          if (_M_flags & regex_constants::icase)
-            {
-              auto __traits = this->_M_traits;
-              __c = __traits.translate_nocase(__c);
-              f = [__traits, __c](_CharT __ch) -> bool
-              { return __traits.translate_nocase(__ch) == __c; };
-            }
-          else
-            f = [__c](_CharT __ch) -> bool
-            { return __ch == __c; };
+	  auto __c = _M_cur_value[0];
+	  __detail::_Matcher<_CharT> f;
+	  if (_M_flags & regex_constants::icase)
+	    {
+	      auto __traits = this->_M_traits;
+	      __c = __traits.translate_nocase(__c);
+	      f = [__traits, __c](_CharT __ch) -> bool
+	      { return __traits.translate_nocase(__ch) == __c; };
+	    }
+	  else
+	    f = [__c](_CharT __ch) -> bool
+	    { return __ch == __c; };
 
 	  _M_stack.push(_StateSeqT(_M_state_store,
-                                   _M_state_store._M_insert_matcher(f)));
+				   _M_state_store._M_insert_matcher(f)));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_backref))
 	{
 	  // __m.push(_Matcher::_S_opcode_ordchar, _M_cur_value);
 	  _M_stack.push(_StateSeqT(_M_state_store, _M_state_store.
-                                   _M_insert_backref(_M_cur_int_value(10))));
+				   _M_insert_backref(_M_cur_int_value(10))));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
@@ -776,17 +776,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_bracket_expression()
     {
       bool __inverse =
-        _M_match_token(_ScannerT::_S_token_bracket_inverse_begin);
+	_M_match_token(_ScannerT::_S_token_bracket_inverse_begin);
       if (!(__inverse || _M_match_token(_ScannerT::_S_token_bracket_begin)))
-        return false;
+	return false;
       _BMatcherT __matcher( __inverse, _M_traits, _M_flags);
       // special case: only if  _not_ chr first after
       // '[' or '[^' or if ECMAscript
       if (!_M_bracket_list(__matcher) // list is empty
-          && !(_M_flags & regex_constants::ECMAScript))
-        __throw_regex_error(regex_constants::error_brack);
+	  && !(_M_flags & regex_constants::ECMAScript))
+	__throw_regex_error(regex_constants::error_brack);
       _M_stack.push(_StateSeqT(_M_state_store,
-                              _M_state_store._M_insert_matcher(__matcher)));
+			      _M_state_store._M_insert_matcher(__matcher)));
       return true;
     }
 
@@ -796,7 +796,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_bracket_list(_BMatcherT& __matcher)
     {
       if (_M_match_token(_ScannerT::_S_token_bracket_end))
-        return false;
+	return false;
       _M_expression_term(__matcher);
       _M_bracket_list(__matcher);
       return true;
@@ -823,25 +823,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return;
 	}
       if (_M_match_token(_ScannerT::_S_token_collelem_single)) // [a
-        {
-          auto __ch = _M_cur_value[0];
-          if (_M_match_token(_ScannerT::_S_token_dash)) // [a-
-            {
-              // If the dash is the last character in the bracket expression,
-              // it is not special.
-              if (_M_scanner._M_token() == _ScannerT::_S_token_bracket_end)
-                __matcher._M_add_char(_M_cur_value[0]); // [a-] <=> [a\-]
-              else // [a-z]
-                {
-                  if (!_M_match_token(_ScannerT::_S_token_collelem_single))
-                    __throw_regex_error(regex_constants::error_range);
-                  __matcher._M_make_range(__ch, _M_cur_value[0]);
-                }
-            }
-          else // [a]
-            __matcher._M_add_char(__ch);
-          return;
-        }
+	{
+	  auto __ch = _M_cur_value[0];
+	  if (_M_match_token(_ScannerT::_S_token_dash)) // [a-
+	    {
+	      // If the dash is the last character in the bracket expression,
+	      // it is not special.
+	      if (_M_scanner._M_token() == _ScannerT::_S_token_bracket_end)
+		__matcher._M_add_char(_M_cur_value[0]); // [a-] <=> [a\-]
+	      else // [a-z]
+		{
+		  if (!_M_match_token(_ScannerT::_S_token_collelem_single))
+		    __throw_regex_error(regex_constants::error_range);
+		  __matcher._M_make_range(__ch, _M_cur_value[0]);
+		}
+	    }
+	  else // [a]
+	    __matcher._M_add_char(__ch);
+	  return;
+	}
       __throw_regex_error(regex_constants::error_brack);
     }
 
@@ -863,32 +863,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       auto __oldch = __ch;
       if (_M_flags & regex_constants::collate)
-        if (_M_is_icase())
-          __ch = _M_traits.translate_nocase(__ch);
-        else
-          __ch = _M_traits.translate(__ch);
+	if (_M_is_icase())
+	  __ch = _M_traits.translate_nocase(__ch);
+	else
+	  __ch = _M_traits.translate(__ch);
 
       bool __ret = false;
       for (auto __c : _M_char_set)
-        if (__c == __ch)
-          {
-            __ret = true;
-            break;
-          }
+	if (__c == __ch)
+	  {
+	    __ret = true;
+	    break;
+	  }
       if (!__ret && _M_traits.isctype(__oldch, _M_class_set))
-        __ret = true;
+	__ret = true;
       else
-        {
-          _StringT __s = _M_get_str(__ch);
-          for (auto& __it : _M_range_set)
-            if (__it.first <= __s && __s <= __it.second)
-              {
-                __ret = true;
-                break;
-              }
-        }
+	{
+	  _StringT __s = _M_get_str(__ch);
+	  for (auto& __it : _M_range_set)
+	    if (__it.first <= __s && __s <= __it.second)
+	      {
+		__ret = true;
+		break;
+	      }
+	}
       if (_M_is_non_matching)
-        __ret = !__ret;
+	__ret = !__ret;
       return __ret;
     }
 

@@ -1,5 +1,16 @@
 2013-08-22  Tim Shen  <timshen91@gmail.com>
 
+	* include/bits/regex.h: Replace 8 spaces in indentation with a tab.
+	* include/bits/regex_automaton.h: Same.
+	* include/bits/regex_automaton.tcc: Same.
+	* include/bits/regex_compiler.h: Same.
+	* include/bits/regex_compiler.tcc: Same.
+	* include/bits/regex_constants.h: Same.
+	* include/bits/regex_executor.h: Same.
+	* include/bits/regex_executor.tcc: Same.
+
+2013-08-22  Tim Shen  <timshen91@gmail.com>
+
 	* include/bits/regex.h: Executor caller.
 	* include/bits/regex_executor.h: Fix empty grouping problem.
 	* include/bits/regex_executor.tcc: Same.

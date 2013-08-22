@@ -164,21 +164,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   operator&(syntax_option_type __a, syntax_option_type __b)
   {
     return (syntax_option_type)(static_cast<unsigned int>(__a)
-                                & static_cast<unsigned int>(__b));
+				& static_cast<unsigned int>(__b));
   }
 
   constexpr inline syntax_option_type
   operator|(syntax_option_type __a, syntax_option_type __b)
   {
     return (syntax_option_type)(static_cast<unsigned int>(__a)
-                                | static_cast<unsigned int>(__b));
+				| static_cast<unsigned int>(__b));
   }
 
   constexpr inline syntax_option_type
   operator^(syntax_option_type __a, syntax_option_type __b)
   {
     return (syntax_option_type)(static_cast<unsigned int>(__a)
-                                ^ static_cast<unsigned int>(__b));
+				^ static_cast<unsigned int>(__b));
   }
 
   constexpr inline syntax_option_type
