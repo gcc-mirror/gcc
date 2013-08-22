@@ -1,3 +1,33 @@
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (output_buffer::output_buffer): Declare.
+	(pretty_printer::pretty_printer): Likewise.
+	(pp_construct): Remove.
+	* pretty-print.c (output_buffer::output_buffer): Define.
+	(pretty_printer::pretty_printer): Rename from pp_construct.  Simplify.
+	* gimple-pretty-print.c (print_gimple_stmt): Do not call pp_construct.
+	(print_gimple_expr): Likewise.
+	(print_gimple_seq): Likewise.
+	(gimple_dump_bb): Likewise.
+	* sched-vis.c (dump_value_slim): Likewise.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	(str_pattern_slim): Likewise.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* graph.c (print_graph_cfg): Likewise.
+	(start_graph_dump): Likewise.
+	* tree-pretty-print.c (maybe_init_pretty_print): Likewise.  Use
+	placement-new.
+	* diagnostic.c (diagnostic_initialize): Simplify early diagnostic
+	pretty printer initialization.
+	* coretypes.h (diagnostic_context): Remove superflous type alias
+	declaration.
+	(pretty_printer): Likewise.  Declare directly as a class.
+	(pretty_print_info): Remove declaration as class.
+	* asan.c (asan_emit_stack_protection): Remove call to pp_construct
+	and pp_clear_output_area.
+	(asan_add_global): Likewise.
+
 2013-08-22  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (analyze_functions) Use update_type_inheritance_graph.

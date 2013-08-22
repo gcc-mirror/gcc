@@ -49,6 +49,8 @@ typedef void (*c_pretty_print_fn) (c_pretty_printer *, tree);
    and cp/cxx-pretty-print.c for an example of derivation.  */
 struct c_pretty_printer : pretty_printer
 {
+  c_pretty_printer ();
+
   /* Points to the first element of an array of offset-list.
      Not used yet.  */
   int *offset_list;
@@ -120,7 +122,6 @@ struct c_pretty_printer : pretty_printer
 #define pp_expression(PP, E)            (PP)->expression (PP, E)
 
 
-extern void pp_c_pretty_printer_init (c_pretty_printer *);
 void pp_c_whitespace (c_pretty_printer *);
 void pp_c_left_paren (c_pretty_printer *);
 void pp_c_right_paren (c_pretty_printer *);

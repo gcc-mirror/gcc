@@ -31,6 +31,7 @@ enum cxx_pretty_printer_flags
 
 struct cxx_pretty_printer : c_pretty_printer
 {
+  cxx_pretty_printer ();
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
 };
@@ -59,7 +60,6 @@ struct cxx_pretty_printer : c_pretty_printer
 #define pp_cxx_tree_identifier(PP, T) \
   pp_c_tree_identifier (PP, T)
 
-void pp_cxx_pretty_printer_init (cxx_pretty_printer *);
 void pp_cxx_begin_template_argument_list (cxx_pretty_printer *);
 void pp_cxx_end_template_argument_list (cxx_pretty_printer *);
 void pp_cxx_colon_colon (cxx_pretty_printer *);

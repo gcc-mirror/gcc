@@ -1,3 +1,14 @@
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (init_error): Remove calls to pp_construct and
+	pp_cxx_pretty_printer_init.  Initialize cxx_pp with placement-new.
+	* cxx-pretty-print.h (cxx_pretty_printer::cxx_pretty_printer): Declare.
+	(cxx_pretty_printer_init): Remove.
+	* cxx-pretty-print.c (cxx_pretty_printer::cxx_pretty_printer):
+	Rename from cxx_pretty_printer_init.  Adjust.
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Simplify
+	initialization of C++ diagnostics pretty printer.
+
 2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* call.c (build_new_method_call_1): Use INDIRECT_REF_P.

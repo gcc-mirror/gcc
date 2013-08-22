@@ -938,9 +938,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 
   /* First of all, prepare the description string.  */
   pretty_printer asan_pp;
-  pp_construct (&asan_pp, /* prefix */NULL, /* line-width */0);
-  
-  pp_clear_output_area (&asan_pp);
+
   if (DECL_NAME (current_function_decl))
     pp_tree_identifier (&asan_pp, DECL_NAME (current_function_decl));
   else
@@ -1963,9 +1961,7 @@ asan_add_global (tree decl, tree type, vec<constructor_elt, va_gc> *v)
   vec<constructor_elt, va_gc> *vinner = NULL;
 
   pretty_printer asan_pp;
-  pp_construct (&asan_pp, /* prefix */NULL, /* line-width */0);
 
-  pp_clear_output_area (&asan_pp);
   if (DECL_NAME (decl))
     pp_tree_identifier (&asan_pp, DECL_NAME (decl));
   else

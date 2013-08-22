@@ -73,9 +73,7 @@ struct cl_option;
 struct cl_decoded_option;
 struct cl_option_handlers;
 struct diagnostic_context;
-typedef struct diagnostic_context diagnostic_context;
-struct pretty_print_info;
-typedef struct pretty_print_info pretty_printer;
+struct pretty_printer;
 
 /* Address space number for named address space support.  */
 typedef unsigned char addr_space_t;

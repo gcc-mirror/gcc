@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "predict.h"
 
+#include <new>                           // For placement-new.
+
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
 static void pretty_print_string (pretty_printer *, const char*);
@@ -3059,7 +3061,7 @@ maybe_init_pretty_print (FILE *file)
 {
   if (!initialized)
     {
-      pp_construct (&buffer, /* prefix */NULL, /* line-width */0);
+      new (&buffer) pretty_printer ();
       pp_needs_newline (&buffer) = true;
       pp_translate_identifiers (&buffer) = false;
       initialized = 1;

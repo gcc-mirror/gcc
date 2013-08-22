@@ -766,7 +766,6 @@ void
 dump_value_slim (FILE *f, const_rtx x, int verbose)
 {
   pretty_printer rtl_slim_pp;
-  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
   rtl_slim_pp.buffer->stream = f;
   print_value (&rtl_slim_pp, x, verbose);
   pp_flush (&rtl_slim_pp);
@@ -778,7 +777,6 @@ void
 dump_insn_slim (FILE *f, const_rtx x)
 {
   pretty_printer rtl_slim_pp;
-  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
   rtl_slim_pp.buffer->stream = f;
   print_insn_with_notes (&rtl_slim_pp, x);
   pp_flush (&rtl_slim_pp);
@@ -793,7 +791,6 @@ dump_rtl_slim (FILE *f, const_rtx first, const_rtx last,
 {
   const_rtx insn, tail;
   pretty_printer rtl_slim_pp;
-  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
   rtl_slim_pp.buffer->stream = f;
 
   tail = last ? NEXT_INSN (last) : NULL_RTX;
@@ -842,7 +839,6 @@ const char *
 str_pattern_slim (const_rtx x)
 {
   pretty_printer rtl_slim_pp;
-  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
   print_pattern (&rtl_slim_pp, x, 0);
   return ggc_strdup (pp_formatted_text (&rtl_slim_pp));
 }

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-objc-common.h"
 
+#include <new>                          // For placement new.
+
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool);
 
@@ -183,16 +185,11 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base;
-  c_pretty_printer *pp;
-
   c_common_initialize_diagnostics (context);
 
-  base = context->printer;
-  pp = XNEW (c_pretty_printer);
-  memcpy (pp, base, sizeof (pretty_printer));
-  pp_c_pretty_printer_init (pp);
-  context->printer = (pretty_printer *) pp;
+  pretty_printer *base = context->printer;
+  c_pretty_printer *pp = XNEW (c_pretty_printer);
+  context->printer = new (pp) c_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
   XDELETE (base);

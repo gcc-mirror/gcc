@@ -2432,34 +2432,33 @@ typedef c_pretty_print_fn pp_fun;
 
 /* Initialization of a C++ pretty-printer object.  */
 
-void
-pp_cxx_pretty_printer_init (cxx_pretty_printer *pp)
+cxx_pretty_printer::cxx_pretty_printer ()
+  : c_pretty_printer (),
+    enclosing_scope (global_namespace)
 {
-  pp_c_pretty_printer_init (pp);
-  pp_set_line_maximum_length (pp, 0);
+  pp_set_line_maximum_length (this, 0);
 
-  pp->declaration = (pp_fun) pp_cxx_declaration;
-  pp->declaration_specifiers = (pp_fun) pp_cxx_decl_specifier_seq;
-  pp->function_specifier = (pp_fun) pp_cxx_function_specifier;
-  pp->type_specifier_seq = (pp_fun) pp_cxx_type_specifier_seq;
-  pp->declarator = (pp_fun) pp_cxx_declarator;
-  pp->direct_declarator = (pp_fun) pp_cxx_direct_declarator;
-  pp->parameter_list = (pp_fun) pp_cxx_parameter_declaration_clause;
-  pp->type_id = (pp_fun) pp_cxx_type_id;
-  pp->abstract_declarator = (pp_fun) pp_cxx_abstract_declarator;
-  pp->direct_abstract_declarator = (pp_fun) pp_cxx_direct_abstract_declarator;
-  pp->simple_type_specifier = (pp_fun) pp_cxx_simple_type_specifier;
+  declaration = (pp_fun) pp_cxx_declaration;
+  declaration_specifiers = (pp_fun) pp_cxx_decl_specifier_seq;
+  function_specifier = (pp_fun) pp_cxx_function_specifier;
+  type_specifier_seq = (pp_fun) pp_cxx_type_specifier_seq;
+  declarator = (pp_fun) pp_cxx_declarator;
+  direct_declarator = (pp_fun) pp_cxx_direct_declarator;
+  parameter_list = (pp_fun) pp_cxx_parameter_declaration_clause;
+  type_id = (pp_fun) pp_cxx_type_id;
+  abstract_declarator = (pp_fun) pp_cxx_abstract_declarator;
+  direct_abstract_declarator = (pp_fun) pp_cxx_direct_abstract_declarator;
+  simple_type_specifier = (pp_fun) pp_cxx_simple_type_specifier;
 
   /* pp->statement = (pp_fun) pp_cxx_statement;  */
 
-  pp->constant = (pp_fun) pp_cxx_constant;
-  pp->id_expression = (pp_fun) pp_cxx_id_expression;
-  pp->primary_expression = (pp_fun) pp_cxx_primary_expression;
-  pp->postfix_expression = (pp_fun) pp_cxx_postfix_expression;
-  pp->unary_expression = (pp_fun) pp_cxx_unary_expression;
-  pp->multiplicative_expression = (pp_fun) pp_cxx_multiplicative_expression;
-  pp->conditional_expression = (pp_fun) pp_cxx_conditional_expression;
-  pp->assignment_expression = (pp_fun) pp_cxx_assignment_expression;
-  pp->expression = (pp_fun) pp_cxx_expression;
-  pp->enclosing_scope = global_namespace;
+  constant = (pp_fun) pp_cxx_constant;
+  id_expression = (pp_fun) pp_cxx_id_expression;
+  primary_expression = (pp_fun) pp_cxx_primary_expression;
+  postfix_expression = (pp_fun) pp_cxx_postfix_expression;
+  unary_expression = (pp_fun) pp_cxx_unary_expression;
+  multiplicative_expression = (pp_fun) pp_cxx_multiplicative_expression;
+  conditional_expression = (pp_fun) pp_cxx_conditional_expression;
+  assignment_expression = (pp_fun) pp_cxx_assignment_expression;
+  expression = (pp_fun) pp_cxx_expression;
 }

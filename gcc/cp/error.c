@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "pointer-set.h"
 #include "c-family/c-objc.h"
 
+#include <new>                    // For placement-new.
+
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
 
@@ -109,8 +111,7 @@ init_error (void)
   diagnostic_finalizer (global_dc) = cp_diagnostic_finalizer;
   diagnostic_format_decoder (global_dc) = cp_printer;
 
-  pp_construct (cxx_pp, NULL, 0);
-  pp_cxx_pretty_printer_init (cxx_pp);
+  new (cxx_pp) cxx_pretty_printer ();
 }
 
 /* Dump a scope, if deemed necessary.  */
