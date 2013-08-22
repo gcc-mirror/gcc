@@ -112,8 +112,6 @@ mf_varname_tree (tree decl)
   gcc_assert (decl);
 
   pretty_printer buf;
-  pp_construct (&buf, /* prefix */ NULL, /* line-width */ 0);
-  pp_clear_output_area (&buf);
 
   /* Add FILENAME[:LINENUMBER[:COLUMNNUMBER]].  */
   {

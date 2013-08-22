@@ -1,5 +1,10 @@
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-objc-common.c (c_initialize_diagnostics): Simplify C pretty
+	printer initialization.
+
 2013-08-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
-	
+
 	PR c/57490
 	* c-array-notation.c (fix_conditional_array_notations_1): Added a
 	check for truth values.

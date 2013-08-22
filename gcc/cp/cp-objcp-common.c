@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cxx-pretty-print.h"
 #include "cp-objcp-common.h"
 
+#include <new>                       // For placement new.
+
 /* Special routine to get the alias set for C++.  */
 
 alias_set_type
@@ -131,19 +133,14 @@ cp_var_mod_type_p (tree type, tree fn)
 void
 cxx_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base;
-  cxx_pretty_printer *pp;
-
   c_common_initialize_diagnostics (context);
 
-  base = context->printer;
-  pp = XNEW (cxx_pretty_printer);
-  memcpy (pp, base, sizeof (pretty_printer));
-  pp_cxx_pretty_printer_init (pp);
-  context->printer = (pretty_printer *) pp;
+  pretty_printer *base = context->printer;
+  cxx_pretty_printer *pp = XNEW (cxx_pretty_printer);
+  context->printer = new (pp) cxx_pretty_printer ();
 
-  /* It is safe to free this object because it was previously malloc()'d.  */
-  free (base);
+  /* It is safe to free this object because it was previously XNEW()'d.  */
+  XDELETE (base);
 }
 
 /* This compares two types for equivalence ("compatible" in C-based languages).

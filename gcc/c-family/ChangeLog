@@ -1,3 +1,12 @@
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (pp_c_pretty_printer_init): Remove.
+	(c_pretty_printer::c_pretty_printer): Declare.
+	* c-pretty-print.c (pretty_printer::c_pretty_printer): Rename from
+	c_pretty_printer_init.  Adjust.
+	(print_c_tree): Do not call c_pretty_printer_init.
+	* c-ada-spec.c (dump_ads): Remove call to pp_construct.
+
 2013-08-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (print_ada_declaration): Prevent accessing null asm name

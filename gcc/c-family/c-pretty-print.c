@@ -2318,39 +2318,37 @@ pp_c_statement (c_pretty_printer *pp, tree stmt)
 
 /* Initialize the PRETTY-PRINTER for handling C codes.  */
 
-void
-pp_c_pretty_printer_init (c_pretty_printer *pp)
+c_pretty_printer::c_pretty_printer ()
+  : pretty_printer ()
 {
-  pp->offset_list               = 0;
+  offset_list               = 0;
+  flags			= 0;
+  declaration               = pp_c_declaration;
+  declaration_specifiers    = pp_c_declaration_specifiers;
+  declarator                = pp_c_declarator;
+  direct_declarator         = pp_c_direct_declarator;
+  type_specifier_seq        = pp_c_specifier_qualifier_list;
+  abstract_declarator       = pp_c_abstract_declarator;
+  direct_abstract_declarator = pp_c_direct_abstract_declarator;
+  ptr_operator              = pp_c_pointer;
+  parameter_list            = pp_c_parameter_type_list;
+  type_id                   = pp_c_type_id;
+  simple_type_specifier     = pp_c_type_specifier;
+  function_specifier        = pp_c_function_specifier;
+  storage_class_specifier   = pp_c_storage_class_specifier;
 
-  pp->flags			= 0;
+  statement                 = pp_c_statement;
 
-  pp->declaration               = pp_c_declaration;
-  pp->declaration_specifiers    = pp_c_declaration_specifiers;
-  pp->declarator                = pp_c_declarator;
-  pp->direct_declarator         = pp_c_direct_declarator;
-  pp->type_specifier_seq        = pp_c_specifier_qualifier_list;
-  pp->abstract_declarator       = pp_c_abstract_declarator;
-  pp->direct_abstract_declarator = pp_c_direct_abstract_declarator;
-  pp->ptr_operator              = pp_c_pointer;
-  pp->parameter_list            = pp_c_parameter_type_list;
-  pp->type_id                   = pp_c_type_id;
-  pp->simple_type_specifier     = pp_c_type_specifier;
-  pp->function_specifier        = pp_c_function_specifier;
-  pp->storage_class_specifier   = pp_c_storage_class_specifier;
-
-  pp->statement                 = pp_c_statement;
-
-  pp->constant                  = pp_c_constant;
-  pp->id_expression             = pp_c_id_expression;
-  pp->primary_expression        = pp_c_primary_expression;
-  pp->postfix_expression        = pp_c_postfix_expression;
-  pp->unary_expression          = pp_c_unary_expression;
-  pp->initializer               = pp_c_initializer;
-  pp->multiplicative_expression = pp_c_multiplicative_expression;
-  pp->conditional_expression    = pp_c_conditional_expression;
-  pp->assignment_expression     = pp_c_assignment_expression;
-  pp->expression                = pp_c_expression;
+  constant                  = pp_c_constant;
+  id_expression             = pp_c_id_expression;
+  primary_expression        = pp_c_primary_expression;
+  postfix_expression        = pp_c_postfix_expression;
+  unary_expression          = pp_c_unary_expression;
+  initializer               = pp_c_initializer;
+  multiplicative_expression = pp_c_multiplicative_expression;
+  conditional_expression    = pp_c_conditional_expression;
+  assignment_expression     = pp_c_assignment_expression;
+  expression                = pp_c_expression;
 }
 
 
@@ -2360,8 +2358,7 @@ void
 print_c_tree (FILE *file, tree t)
 {
   c_pretty_printer pp;
-  pp_construct (&pp, NULL, 0);
-  pp_c_pretty_printer_init (&pp);
+
   pp_needs_newline (&pp) = true;
   pp.buffer->stream = file;
   pp_statement (&pp, t);

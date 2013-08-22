@@ -25,9 +25,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "diagnostic-color.h"
 
+#include <new>                    // For placement-new.
+
 #if HAVE_ICONV
 #include <iconv.h>
 #endif
+
+// Default construct an output buffer.
+
+output_buffer::output_buffer ()
+  : formatted_obstack (),
+    chunk_obstack (),
+    obstack (&formatted_obstack),
+    cur_chunk_array (),
+    stream (stderr),
+    line_length (),
+    digit_buffer ()
+{
+  obstack_init (&formatted_obstack);
+  obstack_init (&chunk_obstack);
+}
 
 /* A pointer to the formatted diagnostic message.  */
 #define pp_formatted_text_data(PP) \
@@ -736,19 +753,24 @@ pp_emit_prefix (pretty_printer *pp)
 
 /* Construct a PRETTY-PRINTER with PREFIX and of MAXIMUM_LENGTH
    characters per line.  */
-void
-pp_construct (pretty_printer *pp, const char *prefix, int maximum_length)
+
+pretty_printer::pretty_printer (const char *p, int l)
+  : buffer (new (XCNEW (output_buffer)) output_buffer ()),
+    prefix (),
+    padding (pp_none),
+    maximum_length (),
+    indent_skip (),
+    wrapping (),
+    format_decoder (),
+    emitted_prefix (),
+    need_newline (),
+    translate_identifiers(true),
+    show_color ()
 {
-  memset (pp, 0, sizeof (pretty_printer));
-  pp->buffer = XCNEW (output_buffer);
-  obstack_init (&pp->buffer->chunk_obstack);
-  obstack_init (&pp->buffer->formatted_obstack);
-  pp->buffer->obstack = &pp->buffer->formatted_obstack;
-  pp->buffer->stream = stderr;
-  pp_line_cutoff (pp) = maximum_length;
-  pp_prefixing_rule (pp) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
-  pp_set_prefix (pp, prefix);
-  pp_translate_identifiers (pp) = true;
+  pp_line_cutoff (this) = l;
+  /* By default, we emit prefixes once per message.  */
+  pp_prefixing_rule (this) = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+  pp_set_prefix (this, p);
 }
 
 /* Append a string delimited by START and END to the output area of

@@ -73,6 +73,8 @@ struct chunk_info
    whose fields should not be accessed directly by clients.  */
 struct output_buffer
 {
+  output_buffer ();
+
   /* Obstack where the text is built up.  */
   struct obstack formatted_obstack;
 
@@ -157,8 +159,12 @@ typedef bool (*printer_fn) (pretty_printer *, text_info *, const char *,
 /* The data structure that contains the bare minimum required to do
    proper pretty-printing.  Clients may derived from this structure
    and add additional fields they need.  */
-struct pretty_print_info
+struct pretty_printer
 {
+  // Default construct a pretty printer with specified prefix
+  // and a maximum line length cut off limit.
+  explicit pretty_printer (const char* = NULL, int = 0);
+
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;
 
@@ -283,7 +289,6 @@ pp_get_prefix (const pretty_printer *pp) { return pp->prefix; }
 
 #define pp_buffer(PP) (PP)->buffer
 
-extern void pp_construct (pretty_printer *, const char *, int);
 extern void pp_set_line_maximum_length (pretty_printer *, int);
 extern void pp_set_prefix (pretty_printer *, const char *);
 extern void pp_destroy_prefix (pretty_printer *);

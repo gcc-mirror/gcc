@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic.h"
 #include "diagnostic-color.h"
 
+#include <new>                     // For placement new.
+
 #define pedantic_warning_kind(DC)			\
   ((DC)->pedantic_errors ? DK_ERROR : DK_WARNING)
 #define permissive_error_kind(DC) ((DC)->permissive ? DK_WARNING : DK_ERROR)
@@ -120,11 +122,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   /* Allocate a basic pretty-printer.  Clients will replace this a
      much more elaborated pretty-printer if they wish.  */
   context->printer = XNEW (pretty_printer);
-  pp_construct (context->printer, NULL, 0);
-  /* By default, diagnostics are sent to stderr.  */
-  context->printer->buffer->stream = stderr;
-  /* By default, we emit prefixes once per message.  */
-  context->printer->wrapping.rule = DIAGNOSTICS_SHOW_PREFIX_ONCE;
+  new (context->printer) pretty_printer ();
 
   memset (context->diagnostic_count, 0, sizeof context->diagnostic_count);
   context->some_warnings_are_errors = false;

@@ -3304,7 +3304,6 @@ dump_ads (const char *source_file,
     {
       pretty_printer pp;
 
-      pp_construct (&pp, NULL, 0);
       pp_needs_newline (&pp) = true;
       pp.buffer->stream = f;
 
