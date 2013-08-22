@@ -1,3 +1,9 @@
+2013-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58185
+	* match.c (copy_ts_from_selector_to_associate): Only build class
+	container for polymorphic selector. Some cleanup.
+
 2013-08-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/53655
