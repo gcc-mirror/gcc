@@ -976,6 +976,8 @@ analyze_functions (void)
           cgraph_process_new_functions ();
 	}
     }
+  if (optimize && flag_devirtualize)
+    update_type_inheritance_graph ();
 
   /* Collect entry points to the unit.  */
   if (cgraph_dump_file)
