@@ -37,10 +37,10 @@ along with GCC; see the file COPYING3.  If not see
 	  names and types are the same.
 
      OTR = OBJ_TYPE_REF
-       This is Gimple representation of type information of a polymorphic call.
+       This is the Gimple representation of type information of a polymorphic call.
        It contains two parameters:
 	 otr_type is a type of class whose method is called.
-	 otr_token is index into virtual table where address is taken.
+	 otr_token is the index into virtual table where address is taken.
 
      BINFO
        This is the type inheritance information attached to each tree
@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
        vector.  Members of this vectors are not BINFOs associated
        with a base type.  Rather they are new copies of BINFOs
        (base BINFOs). Their virtual tables may differ from
-       virtual table of the base type.  Also BINFO_OFFSET specify
+       virtual table of the base type.  Also BINFO_OFFSET specifies
        offset of the base within the type.
 
        In the case of single inheritance, the virtual table is shared
@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
      token
        This is an index of virtual method in virtual table associated
        to the type defining it. Token can be looked up from OBJ_TYPE_REF
-       or from DECL_VINDEX of given virtual table.
+       or from DECL_VINDEX of a given virtual table.
 
      polymorphic (indirect) call
        This is callgraph represention of virtual method call.  Every
@@ -86,7 +86,7 @@ along with GCC; see the file COPYING3.  If not see
 
      We reconstruct it based on types of methods we see in the unit.
      This means that the graph is not complete. Types with no methods are not
-     inserted to the graph.  Also types without virtual methods are not
+     inserted into the graph.  Also types without virtual methods are not
      represented at all, though it may be easy to add this.
   
      The inheritance graph is represented as follows:
@@ -95,7 +95,7 @@ along with GCC; see the file COPYING3.  If not see
        to one or more tree type nodes that are equivalent by ODR rule.
        (the multiple type nodes appear only with linktime optimization)
 
-       Edges are repsented by odr_type->base and odr_type->derived_types.
+       Edges are represented by odr_type->base and odr_type->derived_types.
        At the moment we do not track offsets of types for multiple inheritance.
        Adding this is easy.
 
@@ -117,26 +117,36 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "gimple.h"
 
+/* Pointer set of all call targets appearing in the cache.  */
+static pointer_set_t *cached_polymorphic_call_targets;
+
 /* The node of type inheritance graph.  For each type unique in
    One Defintion Rule (ODR) sense, we produce one node linking all 
    main variants of types equivalent to it, bases and derived types.  */
 
 struct GTY(()) odr_type_d
 {
-  /* Unique ID indexing the type in odr_types array.  */
-  int id;
   /* leader type.  */
   tree type;
   /* All bases.  */
   vec<odr_type> GTY((skip)) bases;
   /* All derrived types with virtual methods seen in unit.  */
   vec<odr_type> GTY((skip)) derived_types;
+
+  /* Unique ID indexing the type in odr_types array.  */
+  int id;
   /* Is it in anonymous namespace? */
   bool anonymous_namespace;
 };
 
 
-/* Return true if BINFO corresponds to a type with virtual methods.  */
+/* Return true if BINFO corresponds to a type with virtual methods. 
+
+   Every type has several BINFOs.  One is the BINFO associated by the type
+   while other represents bases of derived types.  The BINFOs representing
+   bases do not have BINFO_VTABLE pointer set when this is the single
+   inheritance (because vtables are shared).  Look up the BINFO of type
+   and check presence of its vtable.  */
 
 static inline bool
 polymorphic_type_binfo_p (tree binfo)
@@ -184,7 +194,7 @@ odr_hasher::hash (const value_type *odr_type)
   return hash_type_name (odr_type->type);
 }
 
-/* Compare types operations T1 and T2 and return true if they are
+/* Compare types T1 and T2 and return true if they are
    equivalent.  */
 
 inline bool
@@ -200,7 +210,7 @@ odr_hasher::equal (const value_type *t1, const compare_type *ct2)
   return types_same_for_odr (t1->type, t2);
 }
 
-/* Free a phi operation structure VP.  */
+/* Free ODR type V.  */
 
 inline void
 odr_hasher::remove (value_type *v)
@@ -259,6 +269,7 @@ get_odr_type (tree type, bool insert)
       val->type = type;
       val->bases = vNULL;
       val->derived_types = vNULL;
+      val->anonymous_namespace = type_in_anonymous_namespace_p (type);
       *slot = val;
       for (i = 0; i < BINFO_N_BASE_BINFOS (binfo); i++)
 	/* For now record only polymorphic types. other are
@@ -289,7 +300,7 @@ dump_odr_type (FILE *f, odr_type t, int indent=0)
   unsigned int i;
   fprintf (f, "%*s type %i: ", indent * 2, "", t->id);
   print_generic_expr (f, t->type, TDF_SLIM);
-  fprintf (f, "\n");
+  fprintf (f, "%s\n", t->anonymous_namespace ? " (anonymous namespace)":"");
   if (TYPE_NAME (t->type))
     {
       fprintf (f, "%*s defined at: %s:%i\n", indent * 2, "",
@@ -318,6 +329,8 @@ static void
 dump_type_inheritance_graph (FILE *f)
 {
   unsigned int i;
+  if (!odr_types_ptr)
+    return;
   fprintf (f, "\n\nType inheritance graph:\n");
   for (i = 0; i < odr_types.length(); i++)
     {
@@ -383,7 +396,11 @@ maybe_record_node (vec <cgraph_node *> &nodes,
       && !pointer_set_insert (inserted, target)
       && (target_node = cgraph_get_node (target)) != NULL
       && symtab_real_symbol_p ((symtab_node)target_node))
-    nodes.safe_push (target_node);
+    {
+      pointer_set_insert (cached_polymorphic_call_targets,
+			  target_node);
+      nodes.safe_push (target_node);
+    }
 }
 
 /* See if BINFO's type match OTR_TYPE.  If so, lookup method
@@ -430,6 +447,8 @@ record_binfo (vec <cgraph_node *> &nodes,
     /* Walking bases that have no virtual method is pointless excercise.  */
     if (polymorphic_type_binfo_p (base_binfo))
       record_binfo (nodes, base_binfo, otr_type,
+		    /* In the case of single inheritance, the virtual table
+		       is shared with the outer type.  */
 		    BINFO_VTABLE (base_binfo) ? base_binfo : type_binfo,
 		    otr_token, inserted,
 		    matched_vtables);
@@ -517,16 +536,18 @@ polymorphic_call_target_hasher::remove (value_type *v)
 typedef hash_table <polymorphic_call_target_hasher>
    polymorphic_call_target_hash_type;
 static polymorphic_call_target_hash_type polymorphic_call_target_hash;
-pointer_set_t *cached_polymorphic_call_targets;
 
 /* Destroy polymorphic call target query cache.  */
 
 static void
 free_polymorphic_call_targets_hash ()
 {
-  polymorphic_call_target_hash.dispose ();
-  pointer_set_destroy (cached_polymorphic_call_targets);
-  cached_polymorphic_call_targets = NULL;
+  if (cached_polymorphic_call_targets)
+    {
+      polymorphic_call_target_hash.dispose ();
+      pointer_set_destroy (cached_polymorphic_call_targets);
+      cached_polymorphic_call_targets = NULL;
+    }
 }
 
 /* When virtual function is removed, we may need to flush the cache.  */
@@ -534,7 +555,8 @@ free_polymorphic_call_targets_hash ()
 static void
 devirt_node_removal_hook (struct cgraph_node *n, void *d ATTRIBUTE_UNUSED)
 {
-  if (pointer_set_contains (cached_polymorphic_call_targets, n))
+  if (cached_polymorphic_call_targets
+      && pointer_set_contains (cached_polymorphic_call_targets, n))
     free_polymorphic_call_targets_hash ();
 }
 
@@ -663,4 +685,47 @@ dump_possible_polymorphic_call_targets (FILE *f,
   fprintf (f, "\n");
 }
 
+
+/* Return true if N can be possibly target of a polymorphic call of
+   OTR_TYPE/OTR_TOKEN.  */
+
+bool
+possible_polymorphic_call_target_p (tree otr_type,
+				    HOST_WIDE_INT otr_token,
+				    struct cgraph_node *n)
+{
+  vec <cgraph_node *> targets;
+  unsigned int i;
+
+  if (!odr_hash.is_created ())
+    return true;
+  targets = possible_polymorphic_call_targets (otr_type, otr_token);
+  for (i = 0; i < targets.length (); i++)
+    if (n == targets[i])
+      return true;
+  return false;
+}
+
+
+/* After callgraph construction new external nodes may appear.
+   Add them into the graph.  */
+
+void
+update_type_inheritance_graph (void)
+{
+  struct cgraph_node *n;
+
+  if (!odr_hash.is_created ())
+    return;
+  free_polymorphic_call_targets_hash ();
+  timevar_push (TV_IPA_INHERITANCE);
+  /* We reconstruct the graph starting of types of all methods seen in the
+     the unit.  */
+  FOR_EACH_FUNCTION (n)
+    if (DECL_VIRTUAL_P (n->symbol.decl)
+	&& !n->symbol.definition
+	&& symtab_real_symbol_p ((symtab_node)n))
+      get_odr_type (method_class_type (TREE_TYPE (n->symbol.decl)), true);
+  timevar_pop (TV_IPA_INHERITANCE);
+}
 #include "gt-ipa-devirt.h"

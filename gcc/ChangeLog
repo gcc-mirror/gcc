@@ -1,3 +1,24 @@
+2013-08-22  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (analyze_functions) Use update_type_inheritance_graph.
+	* ipa-utils.h (update_type_inheritance_graph): Declare.
+	(possible_polymorphic_call_target_p): Declare.
+	(possible_polymorphic_call_target_p): New.
+	* ipa-devirt.c: Update toplevel comments.
+	(cached_polymorphic_call_targets): Move up.
+	(odr_type_d): Move ID down.
+	(polymorphic_type_binfo_p): Update comment.
+	(odr_hasher::remove): Likewise;
+	(get_odr_type): Set anonymous_namespace.
+	(dump_odr_type): Dump it.
+	(dump_type_inheritance_graph): Do not ICE when there are no ODR types.
+	(maybe_record_node): Record node in cached_polymorphic_call_targets.
+	(record_binfo): Add comment.
+	(free_polymorphic_call_targets_hash): Do not ICE when cache is not built.
+	(devirt_node_removal_hook): Do not iCE when cache is freed.
+	(possible_polymorphic_call_target_p): New predicate.
+	(update_type_inheritance_graph): New function.
+
 2013-08-22  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>
