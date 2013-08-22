@@ -1,3 +1,8 @@
+2013-08-22  Jan Hubicka  <jh@susue.cz>
+
+	* timevar.c (validate_phases): Use size_t for memory.
+	* timevar.h (struct timevar_time_def): Use size_t for ggc_mem.
+
 2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (output_buffer::output_buffer): Declare.

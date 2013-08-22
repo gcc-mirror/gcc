@@ -430,7 +430,7 @@ validate_phases (FILE *fp)
   double phase_user = 0.0;
   double phase_sys = 0.0;
   double phase_wall = 0.0;
-  unsigned phase_ggc_mem = 0;
+  size_t phase_ggc_mem = 0;
   static char phase_prefix[] = "phase ";
   const double tolerance = 1.000001;  /* One part in a million.  */
 
@@ -465,7 +465,7 @@ validate_phases (FILE *fp)
       if (phase_wall > total->wall)
 	fprintf (fp, "wall    %24.18e > %24.18e\n", phase_wall, total->wall);
       if (phase_ggc_mem > total->ggc_mem)
-	fprintf (fp, "ggc_mem %24u > %24u\n", phase_ggc_mem, total->ggc_mem);
+	fprintf (fp, "ggc_mem %24lu > %24lu\n", phase_ggc_mem, total->ggc_mem);
       gcc_unreachable ();
     }
 }
