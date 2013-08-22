@@ -1,3 +1,9 @@
+2013-08-22  Julian Brown  <julian@codesourcery.com>
+
+	* configure.ac: Add aarch64 to list of arches which use "nop" in
+	debug_line test.
+	* configure: Regenerate.
+
 2013-08-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/linux.h (TARGET_LIBC_HAS_FUNCTION): Define as
