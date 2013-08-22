@@ -1,3 +1,8 @@
+2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56380
+	* g++.dg/template/error54.C: New.
+
 2013-08-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58185

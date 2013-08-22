@@ -1,3 +1,9 @@
+2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56380
+	* class.c (check_field_decls): Check for const mutable and const
+	reference data members.
+
 2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* error.c (init_error): Remove calls to pp_construct and
