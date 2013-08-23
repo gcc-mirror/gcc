@@ -1650,7 +1650,7 @@ reemit_insn_block_notes (void)
   rtx insn, note;
 
   insn = get_insns ();
-  for (; insn; insn = next_insn (insn))
+  for (; insn; insn = NEXT_INSN (insn))
     {
       tree this_block;
 
