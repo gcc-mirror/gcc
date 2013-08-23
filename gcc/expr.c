@@ -710,64 +710,32 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
   if (mode == oldmode)
     return x;
 
-  /* There is one case that we must handle specially: If we are
-     converting a CONST_INT into a mode whose size is larger than
-     HOST_BITS_PER_WIDE_INT and we are to interpret the constant as
-     unsigned, gen_lowpart will do the wrong if the constant appears
-     negative.  What we want to do is make the high-order word of the
-     constant zero, not all ones.  */
-
-  if (unsignedp && GET_MODE_CLASS (mode) == MODE_INT
-      && GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
-      && CONST_INT_P (x) && INTVAL (x) < 0)
+  if (CONST_SCALAR_INT_P (x) 
+      && GET_MODE_CLASS (mode) == MODE_INT
+      && (oldmode == VOIDmode || GET_MODE_CLASS (oldmode) == MODE_INT))
     {
-      wide_int val = std::make_pair (x, mode);
-      /* We need to zero extend VAL.  */
-      if (oldmode != VOIDmode)
-	val = val.zext (GET_MODE_PRECISION (oldmode));
-
-      return immed_wide_int_const (val, mode);
+      wide_int w = std::make_pair (x, mode);
+      /* If the caller did not tell us the old mode, then there is
+	 not much to do with respect to canonization.  */
+      if (oldmode != VOIDmode
+	  && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (oldmode))
+	w = w.ext (GET_MODE_PRECISION (oldmode), unsignedp ? UNSIGNED : SIGNED);
+      return immed_wide_int_const (w, mode);
     }
 
   /* We can do this with a gen_lowpart if both desired and current modes
      are integer, and this is either a constant integer, a register, or a
-     non-volatile MEM.  Except for the constant case where MODE is no
-     wider than HOST_BITS_PER_WIDE_INT, we must be narrowing the operand.  */
+     non-volatile MEM. */
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_CLASS (oldmode) == MODE_INT
+      && GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (oldmode)
+      && ((MEM_P (x) && !MEM_VOLATILE_P (x) && direct_load[(int) mode])
+          || (REG_P (x)
+              && (!HARD_REGISTER_P (x)
+                  || HARD_REGNO_MODE_OK (REGNO (x), mode))
+              && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x)))))
 
-  if ((CONST_INT_P (x)
-       && GET_MODE_PRECISION (mode) <= HOST_BITS_PER_WIDE_INT)
-      || (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_CLASS (oldmode) == MODE_INT
-	  && (CONST_SCALAR_INT_P (x)
-	      || (GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (oldmode)
-		  && ((MEM_P (x) && ! MEM_VOLATILE_P (x)
-		       && direct_load[(int) mode])
-		      || (REG_P (x)
-			  && (! HARD_REGISTER_P (x)
-			      || HARD_REGNO_MODE_OK (REGNO (x), mode))
-			  && TRULY_NOOP_TRUNCATION_MODES_P (mode,
-							    GET_MODE (x))))))))
-    {
-      /* ?? If we don't know OLDMODE, we have to assume here that
-	 X does not need sign- or zero-extension.   This may not be
-	 the case, but it's the best we can do.  */
-      if (CONST_INT_P (x) && oldmode != VOIDmode
-	  && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (oldmode))
-	{
-	  HOST_WIDE_INT val = INTVAL (x);
-
-	  /* We must sign or zero-extend in this case.  Start by
-	     zero-extending, then sign extend if we need to.  */
-	  val &= GET_MODE_MASK (oldmode);
-	  if (! unsignedp
-	      && val_signbit_known_set_p (oldmode, val))
-	    val |= ~GET_MODE_MASK (oldmode);
-
-	  return gen_int_mode (val, mode);
-	}
-
-      return gen_lowpart (mode, x);
-    }
+   return gen_lowpart (mode, x);
 
   /* Converting from integer constant into mode is always equivalent to an
      subreg operation.  */
