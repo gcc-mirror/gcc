@@ -902,6 +902,37 @@ pp_maybe_space (pretty_printer *pp)
       pp->padding = pp_none;
     }
 }
+
+// Add a newline to the pretty printer PP and flush formatted text.
+
+void
+pp_newline_and_flush (pretty_printer *pp)
+{
+  pp_newline (pp);
+  pp_flush (pp);
+  pp_needs_newline (pp) = false;
+}
+
+// Add a newline to the pretty printer PP, followed by indentation.
+
+void
+pp_newline_and_indent (pretty_printer *pp, int n)
+{
+  pp_indentation (pp) += n;
+  pp_newline (pp);
+  pp_indent (pp);
+  pp_needs_newline (pp) = false;
+}
+
+// Add separator C, followed by a single whitespace.
+
+void
+pp_separate_with (pretty_printer *pp, char c)
+{
+  pp_character (pp, c);
+  pp_space (pp);
+}
+
 
 /* The string starting at P has LEN (at least 1) bytes left; if they
    start with a valid UTF-8 sequence, return the length of that
