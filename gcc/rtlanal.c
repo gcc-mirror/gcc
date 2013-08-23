@@ -4034,7 +4034,7 @@ nonzero_bits1 (const_rtx x, enum machine_mode mode, const_rtx known_x,
 	  && mode_width < BITS_PER_WORD
 	  && (UINTVAL (x) & ((unsigned HOST_WIDE_INT) 1 << (mode_width - 1)))
 	     != 0)
-	return UINTVAL (x) | ((unsigned HOST_WIDE_INT) (-1) << mode_width);
+	return UINTVAL (x) | (HOST_WIDE_INT_M1U << mode_width);
 #endif
 
       return UINTVAL (x);

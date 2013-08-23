@@ -271,13 +271,13 @@ rshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
     ;
   else if ((prec - count) >= HOST_BITS_PER_WIDE_INT)
     {
-      *hv &= ~((HOST_WIDE_INT) (-1) << (prec - count - HOST_BITS_PER_WIDE_INT));
+      *hv &= ~(HOST_WIDE_INT_M1U << (prec - count - HOST_BITS_PER_WIDE_INT));
       *hv |= signmask << (prec - count - HOST_BITS_PER_WIDE_INT);
     }
   else
     {
       *hv = signmask;
-      *lv &= ~((unsigned HOST_WIDE_INT) (-1) << (prec - count));
+      *lv &= ~(HOST_WIDE_INT_M1U << (prec - count));
       *lv |= signmask << (prec - count);
     }
 }
@@ -328,13 +328,13 @@ lshift_double (unsigned HOST_WIDE_INT l1, HOST_WIDE_INT h1,
     ;
   else if (prec >= HOST_BITS_PER_WIDE_INT)
     {
-      *hv &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+      *hv &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
       *hv |= signmask << (prec - HOST_BITS_PER_WIDE_INT);
     }
   else
     {
       *hv = signmask;
-      *lv &= ~((unsigned HOST_WIDE_INT) (-1) << prec);
+      *lv &= ~(HOST_WIDE_INT_M1U << prec);
       *lv |= signmask << prec;
     }
 }

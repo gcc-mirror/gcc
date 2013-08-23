@@ -8133,14 +8133,13 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	{
 	  hi = TREE_INT_CST_HIGH (arg);
 	  if (width < HOST_BITS_PER_DOUBLE_INT)
-	    hi &= ~((unsigned HOST_WIDE_INT) (-1)
-		    << (width - HOST_BITS_PER_WIDE_INT));
+	    hi &= ~(HOST_WIDE_INT_M1U << (width - HOST_BITS_PER_WIDE_INT));
 	}
       else
 	{
 	  hi = 0;
 	  if (width < HOST_BITS_PER_WIDE_INT)
-	    lo &= ~((unsigned HOST_WIDE_INT) (-1) << width);
+	    lo &= ~(HOST_WIDE_INT_M1U << width);
 	}
 
       switch (DECL_FUNCTION_CODE (fndecl))
@@ -8179,13 +8178,13 @@ fold_builtin_bitop (tree fndecl, tree arg)
 	      && (hi & ((unsigned HOST_WIDE_INT) 1
 			<< (width - HOST_BITS_PER_WIDE_INT - 1))) != 0)
 	    {
-	      hi = ~hi & ~((unsigned HOST_WIDE_INT) (-1)
+	      hi = ~hi & ~(HOST_WIDE_INT_M1U
 			   << (width - HOST_BITS_PER_WIDE_INT - 1));
 	      lo = ~lo;
 	    }
 	  else if (width <= HOST_BITS_PER_WIDE_INT
 		   && (lo & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
-	    lo = ~lo & ~((unsigned HOST_WIDE_INT) (-1) << (width - 1));
+	    lo = ~lo & ~(HOST_WIDE_INT_M1U << (width - 1));
 	  if (hi != 0)
 	    result = width - floor_log2 (hi) - 2 - HOST_BITS_PER_WIDE_INT;
 	  else if (lo != 0)
