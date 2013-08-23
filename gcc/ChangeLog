@@ -1,3 +1,8 @@
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (analyze_functions): Do basic devirtualization;
+	do not walk base classes of anonymous types.
+
 2013-08-23  Kaz Kojima  <kkojima@gcc.gnu.org>
 
 	PR rtl-optimization/58220
