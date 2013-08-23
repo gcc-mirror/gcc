@@ -1,3 +1,9 @@
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutiobs.net>
+
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Call a
+	destructor for the early printer.
+	* error.c (type_to_string): Use pp_buffer.
+
 2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/56380

@@ -140,6 +140,7 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   context->printer = new (pp) cxx_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
+  base->~pretty_printer ();
   XDELETE (base);
 }
 

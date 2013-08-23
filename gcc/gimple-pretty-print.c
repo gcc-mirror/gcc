@@ -2249,7 +2249,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
       pp_newline_and_flush (buffer);
       gcc_checking_assert (DECL_STRUCT_FUNCTION (current_function_decl));
       dump_histograms_for_stmt (DECL_STRUCT_FUNCTION (current_function_decl),
-				buffer->buffer->stream, stmt);
+				pp_buffer(buffer)->stream, stmt);
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);

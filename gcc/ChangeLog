@@ -1,3 +1,24 @@
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* diagnostic.c (diagnostic_set_caret_max_width): Use pp_buffer.
+	* gimple-pretty-print.c (gimple_dump_bb_buff): Likewise.
+	* pretty-print.c (pp_formatted_text_data): Likewise.
+	(pp_write_text_to_stream): Likewise.
+	(pp_write_text_as_dot_label_to_stream): Likewise.
+	(pp_append_r): Likewise.
+	(pp_format): Likewise.
+	(pp_flush): Likewise.
+	(pp_clear_output_area): Likewise.
+	(pp_append_text): Likewise.
+	(pp_formatted_text): Likewise.
+	(pp_remaining_character_count_for_line): Likewise.
+	(pp_newline): Likewise.
+	(pp_character): Likewise.
+	(output_buffer::~output_buffer): Define.
+	(pretty_printer::~pretty_printer): Destruct output buffer.
+	* pretty-print.h (output_buffer::~output_buffer): Declare.
+	(pretty_printer::~pretty_printer): Declare virtual.
+
 2013-08-24  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR other/57324
