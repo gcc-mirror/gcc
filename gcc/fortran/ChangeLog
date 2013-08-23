@@ -1,3 +1,9 @@
+2013-08-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57843
+	* interface.c (gfc_extend_assign): Look for type-bound assignment
+	procedures before non-typebound.
+
 2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.c (gfc_conv_section_startstride): Move &loop->pre access
