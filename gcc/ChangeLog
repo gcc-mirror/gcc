@@ -1,3 +1,13 @@
+2013-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/config/i386/predicates.md (ext_sse_reg_operand): New.
+	* gcc/config/i386/i386.md (*movti_internal): Use
+	predicate to determine if EVEX is needed.
+	(*movsi_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+	* gcc/config/i386/mmx.md (*mov<mode>_internal): Ditto.
+
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58209
