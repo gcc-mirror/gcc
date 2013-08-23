@@ -110,7 +110,11 @@ extern char sizeof_long_long_must_be_8[sizeof(long long) == 8 ? 1 : -1];
 #endif
 
 
+#define HOST_WIDE_INT_UC(X) HOST_WIDE_INT_C(X ## U)
 #define HOST_WIDE_INT_1 HOST_WIDE_INT_C(1)
+#define HOST_WIDE_INT_1U HOST_WIDE_INT_UC(1)
+#define HOST_WIDE_INT_M1 HOST_WIDE_INT_C(-1)
+#define HOST_WIDE_INT_M1U HOST_WIDE_INT_UC(-1)
 
 /* This is a magic identifier which allows GCC to figure out the type
    of HOST_WIDE_INT for %wd specifier checks.  You must issue this

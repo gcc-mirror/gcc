@@ -5381,7 +5381,7 @@ cse_insn (rtx insn)
 	      && CONST_INT_P (width)
 	      && INTVAL (width) < HOST_BITS_PER_WIDE_INT
 	      && ! (INTVAL (src_const)
-		    & ((HOST_WIDE_INT) (-1) << INTVAL (width))))
+		    & (HOST_WIDE_INT_M1U << INTVAL (width))))
 	    /* Exception: if the value is constant,
 	       and it won't be truncated, record it.  */
 	    ;

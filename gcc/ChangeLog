@@ -1,3 +1,24 @@
+2013-08-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR other/57324
+	* hwint.h (HOST_WIDE_INT_UC, HOST_WIDE_INT_1U, HOST_WIDE_INT_M1,
+	HOST_WIDE_INT_M1U): New macros.
+	* fold-const.c (sign_bit_p, build_range_check, fold_unary_loc,
+	fold_binary_loc, fold_ternary_loc): Use the new macros. Use an
+	unsigned -1 for lshift.
+	* cse.c (cse_insn): Likewise.
+	* double-int.c (rshift_double, lshift_double): Likewise.
+	* builtins.c (fold_builtin_bitop): Likewise.
+	* combine.c (force_to_mode): Likewise.
+	* tree.c (integer_pow2p, tree_log2, tree_floor_log2): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation,
+	simplify_const_binary_operation): Likewise.
+	* tree-stdarg.c (va_list_counter_bump, va_list_ptr_read,
+	check_va_list_escapes): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	* expmed.c (expand_smod_pow2): Likewise.
+	* tree-ssa-structalias.c (UNKNOWN_OFFSET): Use HOST_WIDE_INT_MIN.
+
 2013-08-23  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_turn_edge_to_speculative): Mark target node

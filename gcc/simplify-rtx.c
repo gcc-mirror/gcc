@@ -2018,14 +2018,13 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  /* Test against the signed lower bound.  */
 	  if (width > HOST_BITS_PER_WIDE_INT)
 	    {
-	      th = (unsigned HOST_WIDE_INT) (-1)
-		   << (width - HOST_BITS_PER_WIDE_INT - 1);
+	      th = HOST_WIDE_INT_M1U << (width - HOST_BITS_PER_WIDE_INT - 1);
 	      tl = 0;
 	    }
 	  else
 	    {
 	      th = -1;
-	      tl = (unsigned HOST_WIDE_INT) (-1) << (width - 1);
+	      tl = HOST_WIDE_INT_M1U << (width - 1);
 	    }
 	  real_from_integer (&t, VOIDmode, tl, th, 0);
 	  if (REAL_VALUES_LESS (x, t))
@@ -4191,7 +4190,7 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 
 	  /* Sign-extend the result for arithmetic right shifts.  */
 	  if (code == ASHIFTRT && arg0s < 0 && arg1 > 0)
-	    val |= ((unsigned HOST_WIDE_INT) (-1)) << (width - arg1);
+	    val |= HOST_WIDE_INT_M1U << (width - arg1);
 	  break;
 
 	case ROTATERT:

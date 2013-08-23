@@ -8129,8 +8129,8 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	      /* If MODE is narrower than HOST_WIDE_INT and CVAL is a negative
 		 number, sign extend it.  */
 	      if (width > 0 && width < HOST_BITS_PER_WIDE_INT
-		  && (cval & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
-		cval |= (unsigned HOST_WIDE_INT) -1 << width;
+		  && (cval & (HOST_WIDE_INT_1U << (width - 1))) != 0)
+		cval |= HOST_WIDE_INT_M1U << width;
 
 	      y = simplify_gen_binary (AND, GET_MODE (x),
 				       XEXP (x, 0), GEN_INT (cval));
@@ -8158,8 +8158,8 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	   number, sign extend it.  */
 
 	if (width < HOST_BITS_PER_WIDE_INT
-	    && (smask & ((unsigned HOST_WIDE_INT) 1 << (width - 1))) != 0)
-	  smask |= (unsigned HOST_WIDE_INT) (-1) << width;
+	    && (smask & (HOST_WIDE_INT_1U << (width - 1))) != 0)
+	  smask |= HOST_WIDE_INT_M1U << width;
 
 	if (CONST_INT_P (XEXP (x, 1))
 	    && exact_log2 (- smask) >= 0

@@ -2051,12 +2051,12 @@ integer_pow2p (const_tree expr)
   if (prec == HOST_BITS_PER_DOUBLE_INT)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       high = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
+	low &= ~(HOST_WIDE_INT_M1U << prec);
     }
 
   if (high == 0 && low == 0)
@@ -2115,12 +2115,12 @@ tree_log2 (const_tree expr)
   if (prec == HOST_BITS_PER_DOUBLE_INT)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       high = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
+	low &= ~(HOST_WIDE_INT_M1U << prec);
     }
 
   return (high != 0 ? HOST_BITS_PER_WIDE_INT + exact_log2 (high)
@@ -2152,12 +2152,12 @@ tree_floor_log2 (const_tree expr)
   if (prec == HOST_BITS_PER_DOUBLE_INT || prec == 0)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       high = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
+	low &= ~(HOST_WIDE_INT_M1U << prec);
     }
 
   return (high != 0 ? HOST_BITS_PER_WIDE_INT + floor_log2 (high)
