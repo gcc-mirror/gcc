@@ -1,3 +1,13 @@
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_newline_and_flush): Declare.  Remove macro
+	definition.
+	(pp_newline_and_indent): Likewise.
+	(pp_separate_with): Likewise.
+	* pretty-print.c (pp_newline_and_flush): Define.
+	(pp_newline_and_indent): Likewise.
+	(pp_separate_with): Likewise.
+
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58218
