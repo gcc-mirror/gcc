@@ -4221,6 +4221,22 @@ Struct_field::is_field_name(const std::string& name) const
     }
 }
 
+// Return whether this field is an embedded built-in type.
+
+bool
+Struct_field::is_embedded_builtin(Gogo* gogo) const
+{
+  const std::string& name(this->field_name());
+  // We know that a field is an embedded type if it is anonymous.
+  // We can decide if it is a built-in type by checking to see if it is
+  // registered globally under the field's name.
+  // This allows us to distinguish between embedded built-in types and
+  // embedded types that are aliases to built-in types.
+  return (this->is_anonymous()
+          && !Gogo::is_hidden_name(name)
+          && gogo->lookup_global(name.c_str()) != NULL);
+}
+
 // Class Struct_type.
 
 // A hash table used to find identical unnamed structs so that they
@@ -4835,11 +4851,16 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 
       ++q;
       go_assert(q->is_field_name("pkgPath"));
-      if (!Gogo::is_hidden_name(pf->field_name()))
-	fvals->push_back(Expression::make_nil(bloc));
+      bool is_embedded_builtin = pf->is_embedded_builtin(gogo);
+      if (!Gogo::is_hidden_name(pf->field_name()) && !is_embedded_builtin)
+        fvals->push_back(Expression::make_nil(bloc));
       else
 	{
-	  std::string n = Gogo::hidden_name_pkgpath(pf->field_name());
+	  std::string n;
+          if (is_embedded_builtin)
+            n = gogo->package_name();
+          else
+            n = Gogo::hidden_name_pkgpath(pf->field_name());
 	  Expression* s = Expression::make_string(n, bloc);
 	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 	}
