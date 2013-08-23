@@ -1,3 +1,13 @@
+2013-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58209
+	* tree-tailcall.c (process_assignment): Handle POINTER_PLUS_EXPR.
+	(find_tail_calls): Give up for pointer result types if m is non-NULL.
+	(adjust_return_value_with_ops): For PLUS_EXPR and pointer result type
+	emit POINTER_PLUS_EXPR.
+	(create_tailcall_accumulator): For pointer result type accumulate in
+	sizetype type.
+
 2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* configure.ac: Add backslashes missing from the last change.
