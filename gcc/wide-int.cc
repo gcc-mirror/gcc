@@ -1545,7 +1545,7 @@ wide_int_ro::abs () const
   gcc_checking_assert (precision);
 
   if (sign_mask ())
-    result = neg ();
+    result = -*this;
   else
     result = *this;
 

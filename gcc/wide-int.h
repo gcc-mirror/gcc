@@ -1800,19 +1800,7 @@ class GTY(()) wide_int_ro {
 
   /* Negate this.  */
   inline wide_int_ro operator - () const {
-    wide_int_ro r;
-    r = wide_int_ro (0) - *this;
-    return r;
-  }
-
-  /* Negate THIS.  */
-  inline wide_int_ro
-  neg () const
-  {
-    wide_int_ro z = wide_int_ro::from_shwi (0, precision);
-
-    gcc_checking_assert (precision);
-    return z - *this;
+    return wide_int_ro (0) - *this;
   }
 
   /* Negate THIS.  OVERFLOW is set true if the value cannot be
@@ -1820,12 +1808,11 @@ class GTY(()) wide_int_ro {
   inline wide_int_ro
   neg (bool *overflow) const
   {
-    wide_int_ro z = wide_int_ro::from_shwi (0, precision);
-
     gcc_checking_assert (precision);
+
     *overflow = only_sign_bit_p ();
 
-    return z - *this;
+    return wide_int_ro (0) - *this;
   }
 
   wide_int_ro parity () const;
