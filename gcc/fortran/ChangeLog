@@ -1,3 +1,9 @@
+2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/57798
+	* trans-array.c (gfc_conv_ss_startstride, set_loop_bounds,
+	gfc_set_delta): Generate preliminary code before the outermost loop.
+
 2013-08-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57843

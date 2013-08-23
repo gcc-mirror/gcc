@@ -1,3 +1,8 @@
+2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/57798
+	* gfortran.dg/inline_sum_5.f90: New.
+
 2013-08-23  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/57843
