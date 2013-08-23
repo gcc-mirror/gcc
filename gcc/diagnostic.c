@@ -104,7 +104,7 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
 {
   /* One minus to account for the leading empty space.  */
   value = value ? value - 1 
-    : (isatty (fileno (context->printer->buffer->stream))
+    : (isatty (fileno (pp_buffer (context->printer)->stream))
        ? getenv_columns () - 1: INT_MAX);
   
   if (value <= 0) 

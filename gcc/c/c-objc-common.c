@@ -92,6 +92,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 {
   tree t = NULL_TREE;
   tree name;
+  // FIXME: the next cast should be a dynamic_cast, when it is permitted.
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
 
@@ -192,6 +193,7 @@ c_initialize_diagnostics (diagnostic_context *context)
   context->printer = new (pp) c_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
+  base->~pretty_printer ();
   XDELETE (base);
 }
 

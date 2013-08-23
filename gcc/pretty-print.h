@@ -74,6 +74,7 @@ struct chunk_info
 struct output_buffer
 {
   output_buffer ();
+  ~output_buffer ();
 
   /* Obstack where the text is built up.  */
   struct obstack formatted_obstack;
@@ -164,6 +165,8 @@ struct pretty_printer
   // Default construct a pretty printer with specified prefix
   // and a maximum line length cut off limit.
   explicit pretty_printer (const char* = NULL, int = 0);
+
+  virtual ~pretty_printer ();
 
   /* Where we print external representation of ENTITY.  */
   output_buffer *buffer;

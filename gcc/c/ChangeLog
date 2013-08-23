@@ -1,3 +1,8 @@
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-objc-common.c (c_tree_printer): Document the nature of the cast.
+	(c_initialize_diagnostics): Call a destructor for the early printer.
+
 2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-objc-common.c (c_initialize_diagnostics): Simplify C pretty

@@ -2881,7 +2881,7 @@ type_to_string (tree typ, int verbose)
       && !uses_template_parms (typ))
     {
       int aka_start; char *p;
-      struct obstack *ob = cxx_pp->buffer->obstack;
+      struct obstack *ob = pp_buffer (cxx_pp)->obstack;
       /* Remember the end of the initial dump.  */
       int len = obstack_object_size (ob);
       tree aka = strip_typedefs (typ);
