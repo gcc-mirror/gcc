@@ -3081,9 +3081,7 @@ public:
   bool multiple_of_p (const wide_int_ro &factor,
 		      signop sgn,
 		      fixed_wide_int *multiple) const {
-    return wide_int_ro::multiple_of_p (factor,
-				       sgn,
-				       reinterpret_cast <wide_int *> (multiple));
+    return wide_int_ro::multiple_of_p (factor, sgn, multiple));
   }
 
   /* Conversion to and from GMP integer representations.  */
@@ -3336,7 +3334,7 @@ public:
   }
   template <typename T>
   inline fixed_wide_int sdivmod_floor (const T &c, fixed_wide_int *mod) const {
-    return wide_int_ro::sdivmod_floor (c, reinterpret_cast <wide_int *> (mod));
+    return wide_int_ro::sdivmod_floor (c, mod);
   }
 
   /* Shifting rotating and extracting.  */
