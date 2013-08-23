@@ -1,3 +1,9 @@
+2013-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58218
+	* config/i386/x86-64.h (TARGET_SECTION_TYPE_FLAGS): Define.
+	* config/i386/i386.c (x86_64_elf_section_type_flags): New function.
+
 2013-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	* gcc/config/i386/predicates.md (ext_sse_reg_operand): New.
