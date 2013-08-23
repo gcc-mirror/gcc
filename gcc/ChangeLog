@@ -1,5 +1,8 @@
 2013-08-23  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-utils.h (method_class_type): Declare.
+	* ipa-devirt.c (method_class_type): Export.
+
 	* cgraphunit.c (analyze_functions): Do basic devirtualization;
 	do not walk base classes of anonymous types.
 

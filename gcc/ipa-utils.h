@@ -59,6 +59,7 @@ odr_type get_odr_type (tree, bool insert = false);
 void dump_possible_polymorphic_call_targets (FILE *, tree, HOST_WIDE_INT);
 bool possible_polymorphic_call_target_p (tree, HOST_WIDE_INT,
 					 struct cgraph_node *n);
+tree method_class_type (tree);
 
 /* Return vector containing possible targets of polymorphic call E.
    If FINALP is non-NULL, store true if the list is complette. 

@@ -342,7 +342,7 @@ dump_type_inheritance_graph (FILE *f)
 /* Given method type T, return type of class it belongs to.
    Lookup this pointer and get its type.    */
 
-static tree
+tree
 method_class_type (tree t)
 {
   tree first_parm_type = TREE_VALUE (TYPE_ARG_TYPES (t));
