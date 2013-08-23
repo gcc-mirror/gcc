@@ -1,3 +1,10 @@
+2013-08-23  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/58220
+	PR regression/58221
+	* final.c (reemit_insn_block_notes): Use NEXT_INSN to
+	handle SEQUENCE insns properly.
+
 2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* pretty-print.h (pp_newline_and_flush): Declare.  Remove macro
