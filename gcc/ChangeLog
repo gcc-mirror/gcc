@@ -1,5 +1,9 @@
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/58218
+	* config/i386/x86-64.h (TARGET_SECTION_TYPE_FLAGS): Define.
+	* config/i386/i386.c (x86_64_elf_section_type_flags): New function.
+
 	PR tree-optimization/58209
 	* tree-tailcall.c (find_tail_calls): Give up for pointer result types
 	if m or a is non-NULL.

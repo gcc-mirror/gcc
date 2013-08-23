@@ -1,5 +1,8 @@
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/58218
+	* gcc.target/i386/pr58218.c: New test.
+
 	PR tree-optimization/58209
 	* gcc.c-torture/execute/pr58209.c: New test.
 
