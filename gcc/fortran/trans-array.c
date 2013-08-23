@@ -3715,7 +3715,7 @@ evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
 /* Calculate the lower bound of an array section.  */
 
 static void
-gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
+gfc_conv_section_startstride (stmtblock_t * block, gfc_ss * ss, int dim)
 {
   gfc_expr *stride = NULL;
   tree desc;
@@ -3744,12 +3744,12 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
-  evaluate_bound (&loop->pre, info->start, ar->start, desc, dim, true);
+  evaluate_bound (block, info->start, ar->start, desc, dim, true);
 
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
      is an expression with side-effects.  */
-  evaluate_bound (&loop->pre, info->end, ar->end, desc, dim, false);
+  evaluate_bound (block, info->end, ar->end, desc, dim, false);
 
   /* Calculate the stride.  */
   if (stride == NULL)
@@ -3758,8 +3758,8 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
     {
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, stride, gfc_array_index_type);
-      gfc_add_block_to_block (&loop->pre, &se.pre);
-      info->stride[dim] = gfc_evaluate_now (se.expr, &loop->pre);
+      gfc_add_block_to_block (block, &se.pre);
+      info->stride[dim] = gfc_evaluate_now (se.expr, block);
     }
 }
 
@@ -3838,7 +3838,7 @@ done:
 	    gfc_conv_ss_descriptor (&loop->pre, ss, !loop->array_parameter);
 
 	  for (n = 0; n < ss->dimen; n++)
-	    gfc_conv_section_startstride (loop, ss, ss->dim[n]);
+	    gfc_conv_section_startstride (&loop->pre, ss, ss->dim[n]);
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -6727,10 +6727,10 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	      gcc_assert (ar->dimen_type[n + ndim] == DIMEN_THIS_IMAGE);
 
 	      /* Make sure the call to gfc_conv_section_startstride won't
-	         generate unnecessary code to calculate stride.  */
+		 generate unnecessary code to calculate stride.  */
 	      gcc_assert (ar->stride[n + ndim] == NULL);
 
-	      gfc_conv_section_startstride (&loop, ss, n + ndim);
+	      gfc_conv_section_startstride (&loop.pre, ss, n + ndim);
 	      loop.from[n + loop.dimen] = info->start[n + ndim];
 	      loop.to[n + loop.dimen]   = info->end[n + ndim];
 	    }

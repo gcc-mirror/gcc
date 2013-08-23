@@ -1,3 +1,9 @@
+2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_section_startstride): Move &loop->pre access
+	to the callers.
+	(gfc_conv_ss_startstride, gfc_conv_expr_descriptor): Update callers.
+
 2013-08-22  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58185
