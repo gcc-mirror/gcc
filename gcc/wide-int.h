@@ -3081,7 +3081,7 @@ public:
   bool multiple_of_p (const wide_int_ro &factor,
 		      signop sgn,
 		      fixed_wide_int *multiple) const {
-    return wide_int_ro::multiple_of_p (factor, sgn, multiple));
+    return wide_int_ro::multiple_of_p (factor, sgn, multiple);
   }
 
   /* Conversion to and from GMP integer representations.  */
