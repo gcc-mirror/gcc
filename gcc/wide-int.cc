@@ -338,9 +338,16 @@ wide_int_ro::from_mpz (const_tree type, mpz_t val, bool wrap)
  * Largest and smallest values in a mode.
  */
 
-/* Produce the largest SGNed number that is represented in TYPE_PREC.
-   The resulting number is placed in a wide int of size RESULT_PREC.
-   IF RESULT_PREC is 0, answer will have TYPE_PREC precision. */
+/* Largest and smallest values that are represented in a TYPE_PREC.
+   RESULT_PREC is the precision of the value that the answer is
+   returned within.  The default value of 0 says return the answer
+   with TYPE_PREC precision.
+
+   TODO: There is still code from the double_int era that trys to
+   make up for the fact that double int's could not represent the
+   min and max values of all types.  This code should be removed
+   because the min and max values can always be represented in
+   wide-ints and int-csts.  */
 wide_int_ro
 wide_int_ro::max_value (unsigned int type_prec, signop sgn,
 			unsigned int result_prec)
