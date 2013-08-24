@@ -321,8 +321,8 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
 }
 
 
-static void
-pp_cxx_constant (cxx_pretty_printer *pp, tree t)
+void
+cxx_pretty_printer::constant (tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -330,23 +330,23 @@ pp_cxx_constant (cxx_pretty_printer *pp, tree t)
       {
 	const bool in_parens = PAREN_STRING_LITERAL_P (t);
 	if (in_parens)
-	  pp_cxx_left_paren (pp);
-	pp_c_constant (pp, t);
+	  pp_cxx_left_paren (this);
+	c_pretty_printer::constant (t);
 	if (in_parens)
-	  pp_cxx_right_paren (pp);
+	  pp_cxx_right_paren (this);
       }
       break;
 
     case INTEGER_CST:
       if (NULLPTR_TYPE_P (TREE_TYPE (t)))
 	{
-	  pp_string (pp, "nullptr");
+	  pp_string (this, "nullptr");
 	  break;
 	}
       /* else fall through.  */
 
     default:
-      pp_c_constant (pp, t);
+      c_pretty_printer::constant (t);
       break;
     }
 }
@@ -372,7 +372,7 @@ pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
 void
 pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
 {
-  pp_cxx_constant (pp, USERDEF_LITERAL_VALUE (t));
+  pp_constant (pp, USERDEF_LITERAL_VALUE (t));
   pp_cxx_id_expression (pp, USERDEF_LITERAL_SUFFIX_ID (t));
 }
 
@@ -420,7 +420,7 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
     case REAL_CST:
     case COMPLEX_CST:
     case STRING_CST:
-      pp_cxx_constant (pp, t);
+      pp_constant (pp, t);
       break;
 
     case USERDEF_LITERAL:
@@ -1041,7 +1041,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case INTEGER_CST:
     case REAL_CST:
     case COMPLEX_CST:
-      pp_cxx_constant (pp, t);
+      pp_constant (pp, t);
       break;
 
     case USERDEF_LITERAL:
@@ -2452,7 +2452,6 @@ cxx_pretty_printer::cxx_pretty_printer ()
 
   /* pp->statement = (pp_fun) pp_cxx_statement;  */
 
-  constant = (pp_fun) pp_cxx_constant;
   id_expression = (pp_fun) pp_cxx_id_expression;
   primary_expression = (pp_fun) pp_cxx_primary_expression;
   postfix_expression = (pp_fun) pp_cxx_postfix_expression;
