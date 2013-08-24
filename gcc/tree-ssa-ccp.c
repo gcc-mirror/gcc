@@ -1173,7 +1173,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	    }
 	  else 
 	    {
-	      if (shift.neg_p (SIGNED))
+	      if (shift.neg_p ())
 		{
 		  shift = -shift;
 		  if (code == RROTATE_EXPR)
@@ -1210,7 +1210,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	    }
 	  else 
 	    {
-	      if (shift.neg_p (SIGNED))
+	      if (shift.neg_p ())
 		{
 		  shift = -shift;
 		  if (code == RSHIFT_EXPR)
@@ -1327,7 +1327,7 @@ bit_value_binop_1 (enum tree_code code, tree type,
 	    o2mask = r2mask;
 	  }
 	/* If the most significant bits are not known we know nothing.  */
-	if (o1mask.neg_p (SIGNED) || o2mask.neg_p (SIGNED))
+	if (o1mask.neg_p () || o2mask.neg_p ())
 	  break;
 
 	/* For comparisons the signedness is in the comparison operands.  */

@@ -183,13 +183,13 @@ div_if_zero_remainder (const_tree arg1, const_tree arg2)
 	 precision by 1 bit, iff the top bit is set.  */
       if (sgn == UNSIGNED)
 	{
-	  if (warg1.neg_p (SIGNED))
+	  if (warg1.neg_p ())
 	    warg1 = warg1.force_to_size (warg1.get_precision () + 1, sgn);
 	  sgn = SIGNED;
 	}
       else
 	{
-	  if (warg2.neg_p (SIGNED))
+	  if (warg2.neg_p ())
 	    warg2 = warg2.force_to_size (warg2.get_precision () + 1, sgn2);
 	}
     }
@@ -979,7 +979,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 
     case RSHIFT_EXPR:
     case LSHIFT_EXPR:
-      if (arg2.neg_p (SIGNED))
+      if (arg2.neg_p ())
 	{
 	  arg2 = -arg2;
 	  if (code == RSHIFT_EXPR)
@@ -999,7 +999,7 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
       
     case RROTATE_EXPR:
     case LROTATE_EXPR:
-      if (arg2.neg_p (SIGNED))
+      if (arg2.neg_p ())
 	{
 	  arg2 = -arg2;
 	  if (code == RROTATE_EXPR)
@@ -7180,7 +7180,7 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
       /* As we canonicalize A - 2 to A + -2 get rid of that sign for
 	 the purpose of this canonicalization.  */
       if (TYPE_SIGN (TREE_TYPE (arg1)) == SIGNED
-	  && wide_int (arg1).neg_p (SIGNED)
+	  && wide_int (arg1).neg_p ()
 	  && negate_expr_p (arg1)
 	  && code == PLUS_EXPR)
 	{
@@ -12323,7 +12323,7 @@ fold_binary_loc (location_t loc,
 	  && TYPE_SIGN (type) == SIGNED
 	  && TREE_CODE (arg1) == INTEGER_CST
 	  && !TREE_OVERFLOW (arg1)
-	  && wide_int (arg1).neg_p (SIGNED)
+	  && wide_int (arg1).neg_p ()
 	  && !TYPE_OVERFLOW_TRAPS (type)
 	  /* Avoid this transformation if C is INT_MIN, i.e. C == -C.  */
 	  && !sign_bit_p (arg1, arg1))

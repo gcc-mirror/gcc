@@ -61,7 +61,7 @@ print_decs (const wide_int &wi, char *buf)
   if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
       || (wi.get_len () == 1))
     {
-      if (wi.neg_p (SIGNED))
+      if (wi.neg_p ())
       	sprintf (buf, "-" HOST_WIDE_INT_PRINT_UNSIGNED, -wi.to_shwi ());
       else
 	sprintf (buf, HOST_WIDE_INT_PRINT_DEC, wi.to_shwi ());
@@ -88,7 +88,7 @@ void
 print_decu (const wide_int &wi, char *buf)
 {
   if ((wi.get_precision () <= HOST_BITS_PER_WIDE_INT)
-      || (wi.get_len () == 1 && !wi.neg_p (SIGNED)))
+      || (wi.get_len () == 1 && !wi.neg_p ()))
     sprintf (buf, HOST_WIDE_INT_PRINT_UNSIGNED, wi.to_uhwi ());
   else
     print_hex (wi, buf);
@@ -114,7 +114,7 @@ print_hex (const wide_int &wi, char *buf)
     buf += sprintf (buf, "0x0");
   else
     {
-      if (wi.neg_p (SIGNED))
+      if (wi.neg_p ())
 	{
 	  int j;
 	  /* If the number is negative, we may need to pad value with

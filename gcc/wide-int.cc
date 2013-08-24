@@ -1662,7 +1662,7 @@ wide_int_ro::clz () const
       else if (!CLZ_DEFINED_VALUE_AT_ZERO (mode, count))
 	count = precision;
     }
-  else if (neg_p (SIGNED))
+  else if (neg_p ())
     count = 0;
   else
     {
@@ -1712,7 +1712,7 @@ wide_int_ro::clrsb () const
 {
   gcc_checking_assert (precision);
 
-  if (neg_p (SIGNED))
+  if (neg_p ())
     return operator ~ ().clz () - 1;
 
   return clz () - 1;

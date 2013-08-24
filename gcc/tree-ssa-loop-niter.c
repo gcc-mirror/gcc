@@ -2432,11 +2432,11 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 
       bnd = derive_constant_upper_bound (op0);
 
-      if (cst.neg_p (SIGNED))
+      if (cst.neg_p ())
 	{
 	  cst = -cst;
 	  /* Avoid CST == 0x80000...  */
-	  if (cst.neg_p (SIGNED))
+	  if (cst.neg_p ())
 	    return max;;
 
 	  /* OP0 + CST.  We need to check that

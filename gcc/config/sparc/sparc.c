@@ -10624,7 +10624,7 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 	      overall_overflow |= overall_overflow;
 	      tmp = e0.add (tmp, SIGNED, &overflow);
 	      overall_overflow |= overall_overflow;
-	      if (tmp.neg_p (SIGNED))
+	      if (tmp.neg_p ())
 		{
 		  tmp = tmp.neg (&overflow);
 		  overall_overflow |= overall_overflow;

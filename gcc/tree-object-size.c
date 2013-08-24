@@ -192,7 +192,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
       if (sz != unknown[object_size_type])
 	{
 	  addr_wide_int dsz = addr_wide_int (sz) - mem_ref_offset (pt_var);
-	  if (dsz.neg_p (SIGNED))
+	  if (dsz.neg_p ())
 	    sz = 0;
 	  else if (dsz.fits_uhwi_p ())
 	    sz = dsz.to_uhwi ();

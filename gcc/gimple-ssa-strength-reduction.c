@@ -1824,7 +1824,7 @@ cand_abs_increment (slsr_cand_t c)
 {
   max_wide_int increment = cand_increment (c);
 
-  if (!address_arithmetic_p && increment.neg_p (SIGNED))
+  if (!address_arithmetic_p && increment.neg_p ())
     increment = -increment;
 
   return increment;
@@ -1872,7 +1872,7 @@ replace_mult_candidate (slsr_cand_t c, tree basis_name, const max_wide_int &bump
 	 types, introduce a cast.  */
       if (!useless_type_conversion_p (target_type, TREE_TYPE (basis_name)))
 	basis_name = introduce_cast_before_cand (c, target_type, basis_name);
-      if (bump.neg_p (SIGNED)) 
+      if (bump.neg_p ()) 
 	{
 	  code = MINUS_EXPR;
 	  bump = -bump;
@@ -2005,7 +2005,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
       tree bump_tree;
       enum tree_code code = PLUS_EXPR;
       max_wide_int bump = increment * c->stride;
-      if (bump.neg_p (SIGNED))
+      if (bump.neg_p ())
 	{
 	  code = MINUS_EXPR;
 	  bump = -bump;
@@ -2018,7 +2018,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
   else
     {
       int i;
-      bool negate_incr = (!address_arithmetic_p && increment.neg_p (SIGNED));
+      bool negate_incr = (!address_arithmetic_p && increment.neg_p ());
       i = incr_vec_index (negate_incr ? -increment : increment);
       gcc_assert (i >= 0);
 
@@ -2312,7 +2312,7 @@ record_increment (slsr_cand_t c, const max_wide_int &increment_in, bool is_phi_a
 
   /* Treat increments that differ only in sign as identical so as to
      share initializers, unless we are generating pointer arithmetic.  */
-  if (!address_arithmetic_p && increment.neg_p (SIGNED))
+  if (!address_arithmetic_p && increment.neg_p ())
     increment = -increment;
 
   for (i = 0; i < incr_vec_len; i++)
@@ -3044,7 +3044,7 @@ all_phi_incrs_profitable (slsr_cand_t c, gimple phi)
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
 	      max_wide_int increment = arg_cand->index - basis->index;
 
-	      if (!address_arithmetic_p && increment.neg_p (SIGNED))
+	      if (!address_arithmetic_p && increment.neg_p ())
 		increment = -increment;
 
 	      j = incr_vec_index (increment);

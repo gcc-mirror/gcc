@@ -309,11 +309,6 @@ class GTY(()) wide_int_ro
   /* Internal representation.  */
 
 protected:
-  /* VAL is set to a size that is capable of computing a full
-     multiplication on the largest mode that is represented on the
-     target.  Currently there is a part of tree-vrp that requires 2x +
-     2 bits of precision where x is the precision of the variables
-     being optimized.  */
   HOST_WIDE_INT val[WIDE_INT_MAX_ELTS];
   unsigned short len;
   unsigned int precision;
@@ -372,7 +367,7 @@ public:
   bool minus_one_p () const;
   bool zero_p () const;
   bool one_p () const;
-  bool neg_p (signop) const;
+  bool neg_p (signop sgn = SIGNED) const;
   bool multiple_of_p (const wide_int_ro &, signop, wide_int_ro *) const;
 
   /* Comparisons, note that only equality is an operator.  The other
@@ -1117,11 +1112,6 @@ wide_int_ro::zero_p () const
 
   if (precision && precision < HOST_BITS_PER_WIDE_INT)
     x = sext_hwi (val[0], precision);
-  else if (len == 0)
-    {
-      gcc_assert (precision == 0);
-      return true;
-    }
   else
     x = val[0];
 
@@ -2495,13 +2485,13 @@ wide_int_ro::div_round (const T &c, signop sgn, bool *overflow) const
       if (sgn == SIGNED)
 	{
 	  wide_int_ro p_remainder
-	    = remainder.neg_p (SIGNED) ? -remainder : remainder;
-	  wide_int_ro p_divisor = divisor.neg_p (SIGNED) ? -divisor : divisor;
+	    = remainder.neg_p () ? -remainder : remainder;
+	  wide_int_ro p_divisor = divisor.neg_p () ? -divisor : divisor;
 	  p_divisor = p_divisor.rshiftu_large (1);
 
 	  if (p_divisor.gts_p (p_remainder))
 	    {
-	      if (quotient.neg_p (SIGNED))
+	      if (quotient.neg_p ())
 		return quotient - 1;
 	      else
 		return quotient + 1;
@@ -2726,14 +2716,14 @@ wide_int_ro::mod_round (const T &c, signop sgn, bool *overflow) const
       wide_int_ro divisor = wide_int_ro::from_array (s, cl, precision);
       if (sgn == SIGNED)
 	{
-	  wide_int_ro p_remainder = (remainder.neg_p (SIGNED)
+	  wide_int_ro p_remainder = (remainder.neg_p ()
 				     ? -remainder : remainder);
-	  wide_int_ro p_divisor = divisor.neg_p (SIGNED) ? -divisor : divisor;
+	  wide_int_ro p_divisor = divisor.neg_p () ? -divisor : divisor;
 	  p_divisor = p_divisor.rshiftu_large (1);
 
 	  if (p_divisor.gts_p (p_remainder))
 	    {
-	      if (quotient.neg_p (SIGNED))
+	      if (quotient.neg_p ())
 		return remainder + divisor;
 	      else
 		return remainder - divisor;
@@ -3542,7 +3532,7 @@ template <int bitsize>
 inline fixed_wide_int <bitsize>
 fixed_wide_int <bitsize>::from_wide_int (const wide_int &w)
 {
-  if (w.neg_p (SIGNED))
+  if (w.neg_p ())
     return w.sforce_to_size (bitsize);
   return w.zforce_to_size (bitsize);
 }
@@ -3583,7 +3573,7 @@ inline fixed_wide_int <bitsize>::fixed_wide_int (unsigned HOST_WIDE_INT op0)
   : wide_int_ro (op0)
 {
   precision = bitsize;
-  if (neg_p (SIGNED))
+  if (neg_p ())
     static_cast <wide_int_ro &> (*this) = zext (HOST_BITS_PER_WIDE_INT);
 }
 
@@ -3593,7 +3583,7 @@ inline fixed_wide_int <bitsize>::fixed_wide_int (unsigned int op0)
 {
   precision = bitsize;
   if (sizeof (int) == sizeof (HOST_WIDE_INT)
-      && neg_p (SIGNED))
+      && neg_p ())
     *this = zext (HOST_BITS_PER_WIDE_INT);
 }
 
@@ -3651,7 +3641,7 @@ fixed_wide_int <bitsize>::operator = (const_tree t)
   precision = bitsize;
 
   /* This is logically top_bit_set_p.  */
-  if (TYPE_SIGN (type) == UNSIGNED && neg_p (SIGNED))
+  if (TYPE_SIGN (type) == UNSIGNED && neg_p ())
     static_cast <wide_int_ro &> (*this) = zext (TYPE_PRECISION (type));
 
   return *this;
@@ -3685,7 +3675,7 @@ fixed_wide_int <bitsize>::operator = (unsigned HOST_WIDE_INT op0)
   precision = bitsize;
 
   /* This is logically top_bit_set_p.  */
-  if (neg_p (SIGNED))
+  if (neg_p ())
     static_cast <wide_int_ro &> (*this) = zext (HOST_BITS_PER_WIDE_INT);
 
   return *this;
@@ -3699,7 +3689,7 @@ fixed_wide_int <bitsize>::operator = (unsigned int op0)
   precision = bitsize;
 
   if (sizeof (int) == sizeof (HOST_WIDE_INT)
-      && neg_p (SIGNED))
+      && neg_p ())
     *this = zext (HOST_BITS_PER_WIDE_INT);
 
   return *this;

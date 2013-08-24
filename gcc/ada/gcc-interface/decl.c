@@ -7479,7 +7479,7 @@ annotate_value (tree gnu_size)
 	  tree op1 = TREE_OPERAND (gnu_size, 1);
 	  wide_int signed_op1
 	    = wide_int::from_tree (op1).sforce_to_size (TYPE_PRECISION (sizetype));
-	  if (signed_op1.neg_p (SIGNED))
+	  if (signed_op1.neg_p ())
 	    {
 	      op1 = wide_int_to_tree (sizetype, -signed_op1);
 	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));

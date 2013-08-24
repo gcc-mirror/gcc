@@ -3787,35 +3787,35 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case LSHIFTRT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p (SIGNED))
+	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
 	    return NULL_RTX;
 
 	  result = wop0.rshiftu (pop1, bitsize, TRUNC);
 	  break;
 	  
 	case ASHIFTRT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p (SIGNED))
+	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
 	    return NULL_RTX;
 
 	  result = wop0.rshifts (pop1, bitsize, TRUNC);
 	  break;
 	  
 	case ASHIFT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p (SIGNED))
+	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
 	    return NULL_RTX;
 
 	  result = wop0.lshift (pop1, bitsize, TRUNC);
 	  break;
 	  
 	case ROTATE:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p (SIGNED))
+	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
 	    return NULL_RTX;
 
 	  result = wop0.lrotate (pop1);
 	  break;
 	  
 	case ROTATERT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p (SIGNED))
+	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
 	    return NULL_RTX;
 
 	  result = wop0.rrotate (pop1);

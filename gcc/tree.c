@@ -1257,7 +1257,7 @@ wide_int_to_tree (tree type, const wide_int_ro &pcst)
 
 	  if (cst.minus_one_p ())
 	    ix = 0;
-	  else if (!cst.neg_p (SIGNED))
+	  else if (!cst.neg_p ())
 	    {
 	      if (prec < HOST_BITS_PER_WIDE_INT)
 		{
@@ -1410,7 +1410,7 @@ cache_integer_cst (tree t)
 
 	  if (integer_minus_onep (t))
 	    ix = 0;
-	  else if (!wide_int (t).neg_p (SIGNED))
+	  else if (!wide_int (t).neg_p ())
 	    {
 	      if (prec < HOST_BITS_PER_WIDE_INT)
 		{
@@ -6842,7 +6842,7 @@ tree_int_cst_sgn (const_tree t)
     return 0;
   else if (TYPE_UNSIGNED (TREE_TYPE (t)))
     return 1;
-  else if (w.neg_p (SIGNED))
+  else if (w.neg_p ())
     return -1;
   else
     return 1;
@@ -8557,8 +8557,8 @@ retry:
       wd = type_low_bound;
       if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_low_bound)))
 	{
-	  int c_neg = (!unsc && wc.neg_p (SIGNED));
-	  int t_neg = (unsc && wd.neg_p (SIGNED));
+	  int c_neg = (!unsc && wc.neg_p ());
+	  int t_neg = (unsc && wd.neg_p ());
 
 	  if (c_neg && !t_neg)
 	    return false;
@@ -8578,8 +8578,8 @@ retry:
       wd = type_high_bound;
       if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_high_bound)))
 	{
-	  int c_neg = (!unsc && wc.neg_p (SIGNED));
-	  int t_neg = (unsc && wd.neg_p (SIGNED));
+	  int c_neg = (!unsc && wc.neg_p ());
+	  int t_neg = (unsc && wd.neg_p ());
 
 	  if (t_neg && !c_neg)
 	    return false;
@@ -8600,7 +8600,7 @@ retry:
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
-  if (TYPE_UNSIGNED (type) && !unsc && wc.neg_p (SIGNED))
+  if (TYPE_UNSIGNED (type) && !unsc && wc.neg_p ())
     return false;
 
   /* Second, narrower types always fit in wider ones.  */
@@ -8608,7 +8608,7 @@ retry:
     return true;
 
   /* Third, unsigned integers with top bit set never fit signed types.  */
-  if (! TYPE_UNSIGNED (type) && unsc && wc.neg_p (SIGNED))
+  if (! TYPE_UNSIGNED (type) && unsc && wc.neg_p ())
     return false;
 
   /* If we haven't been able to decide at this point, there nothing more we

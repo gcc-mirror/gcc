@@ -5110,8 +5110,8 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  cst2v = wide_int (cst2).zforce_to_size (nprec);
 	  if (TYPE_SIGN (TREE_TYPE (val)) == SIGNED)
 	    {
-	      valn = valv.sext (nprec).neg_p (SIGNED);
-	      cst2n = cst2v.sext (nprec).neg_p (SIGNED);
+	      valn = valv.sext (nprec).neg_p ();
+	      cst2n = cst2v.sext (nprec).neg_p ();
 	    }
 	  /* If CST2 doesn't have most significant bit set,
 	     but VAL is negative, we have comparison like
@@ -5154,7 +5154,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		  sgnbit = wide_int::zero (nprec);
 		  goto lt_expr;
 		}
-	      if (!cst2n && cst2v.sext (nprec).neg_p (SIGNED))
+	      if (!cst2n && cst2v.sext (nprec).neg_p ())
 		sgnbit = wide_int::set_bit_in_zero (nprec - 1, nprec);
 	      if (!sgnbit.zero_p ())
 		{

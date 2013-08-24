@@ -407,7 +407,7 @@ add_elt_to_tree (tree expr, tree type, tree elt, max_wide_int scale,
 			 fold_build2 (MULT_EXPR, type1, elt,
 				      wide_int_to_tree (type1, scale)));
 
-  if (scale.neg_p (SIGNED))
+  if (scale.neg_p ())
     {
       code = MINUS_EXPR;
       scale = -scale;
@@ -450,7 +450,7 @@ aff_combination_to_tree (aff_tree *comb)
 
   /* Ensure that we get x - 1, not x + (-1) or x + 0xff..f if x is
      unsigned.  */
-  if (comb->offset.neg_p (SIGNED))
+  if (comb->offset.neg_p ())
     {
       off = -comb->offset;
       sgn = -1;
@@ -901,12 +901,12 @@ aff_comb_cannot_overlap_p (aff_tree *diff, const max_wide_int &size1, const max_
     return false;
 
   d = diff->offset;
-  if (d.neg_p (SIGNED))
+  if (d.neg_p ())
     {
       /* The second object is before the first one, we succeed if the last
 	 element of the second object is before the start of the first one.  */
       bound = d + size2 - 1;
-      return bound.neg_p (SIGNED);
+      return bound.neg_p ();
     }
   else
     {

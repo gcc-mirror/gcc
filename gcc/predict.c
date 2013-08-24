@@ -1260,7 +1260,7 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       loop_count = tem.div_trunc (compare_step, SIGNED, &overflow);
       overall_overflow |= overflow;
 
-      if ((!compare_step.neg_p (SIGNED))
+      if ((!compare_step.neg_p ())
           ^ (compare_code == LT_EXPR || compare_code == LE_EXPR))
 	{
 	  /* (loop_bound - compare_bound) / compare_step */
@@ -1281,9 +1281,9 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
 	++compare_count;
       if (loop_bound_code == LE_EXPR || loop_bound_code == GE_EXPR)
 	++loop_count;
-      if (compare_count.neg_p (SIGNED))
+      if (compare_count.neg_p ())
         compare_count = 0;
-      if (loop_count.neg_p (SIGNED))
+      if (loop_count.neg_p ())
         loop_count = 0;
       if (loop_count.zero_p ())
 	probability = 0;

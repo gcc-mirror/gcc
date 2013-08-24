@@ -6718,7 +6718,7 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (offset)
     {
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (bit_offset.neg_p (SIGNED))
+      if (bit_offset.neg_p ())
         {
 	  addr_wide_int mask
 	    = addr_wide_int::mask (BITS_PER_UNIT == 8
