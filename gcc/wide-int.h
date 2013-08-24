@@ -247,15 +247,15 @@ along with GCC; see the file COPYING3.  If not see
    on any platform is 64 bits.  When that changes, then it is likely
    that a target hook should be defined so that targets can make this
    value larger for those targets.  */
-#define addr_max_bitsize (64)
+const int addr_max_bitsize = 64;
 
 /* This is the internal precision used when doing any address
    arithmetic.  The '4' is really 3 + 1.  Three of the bits are for
    the number of extra bits needed to do bit addresses and single bit is
    allow everything to be signed without loosing any precision.  Then
    everything is rounded up to the next HWI for efficiency.  */
-#define addr_max_precision \
-  ((addr_max_bitsize + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1))
+const int addr_max_precision
+  = ((addr_max_bitsize + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1));
 
 enum ShiftOp {
   NONE,
