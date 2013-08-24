@@ -1,3 +1,8 @@
+2013-08-23  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-pre.c (do_regular_insertion): Include the expression in
+	the debugging dump when the expression is fully redundant.
+
 2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* diagnostic.c (diagnostic_set_caret_max_width): Use pp_buffer.
