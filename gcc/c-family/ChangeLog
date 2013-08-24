@@ -1,3 +1,15 @@
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::constant): Now a virtual
+	member function.
+	(pp_constant): Adjust.
+	(pp_c_constant): Remove.
+	* c-pretty-print.c (c_pretty_printer::constant): Rename from
+	pp_c_constant.  Adjust.
+	(pp_c_constant)
+	(pp_c_primary_expression): Call pp_constant in lieu of pp_c_constant.
+	(c_pretty_printer::c_pretty_printer): Remove assignment to constant.
+
 2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.h (pp_c_pretty_printer_init): Remove.

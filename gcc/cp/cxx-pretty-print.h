@@ -32,6 +32,8 @@ enum cxx_pretty_printer_flags
 struct cxx_pretty_printer : c_pretty_printer
 {
   cxx_pretty_printer ();
+
+  virtual void constant (tree);
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
 };

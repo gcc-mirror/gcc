@@ -1130,7 +1130,7 @@ pp_c_complex_expr (c_pretty_printer *pp, tree e)
       character-constant   */
 
 void
-pp_c_constant (c_pretty_printer *pp, tree e)
+c_pretty_printer::constant (tree e)
 {
   const enum tree_code code = TREE_CODE (e);
 
@@ -1140,38 +1140,38 @@ pp_c_constant (c_pretty_printer *pp, tree e)
       {
 	tree type = TREE_TYPE (e);
 	if (type == boolean_type_node)
-	  pp_c_bool_constant (pp, e);
+	  pp_c_bool_constant (this, e);
 	else if (type == char_type_node)
-	  pp_c_character_constant (pp, e);
+	  pp_c_character_constant (this, e);
 	else if (TREE_CODE (type) == ENUMERAL_TYPE
-		 && pp_c_enumeration_constant (pp, e))
+		 && pp_c_enumeration_constant (this, e))
 	  ;
 	else
-	  pp_c_integer_constant (pp, e);
+	  pp_c_integer_constant (this, e);
       }
       break;
 
     case REAL_CST:
-      pp_c_floating_constant (pp, e);
+      pp_c_floating_constant (this, e);
       break;
 
     case FIXED_CST:
-      pp_c_fixed_constant (pp, e);
+      pp_c_fixed_constant (this, e);
       break;
 
     case STRING_CST:
-      pp_c_string_literal (pp, e);
+      pp_c_string_literal (this, e);
       break;
 
     case COMPLEX_CST:
       /* Sometimes, we are confused and we think a complex literal
          is a constant.  Such thing is a compound literal which
          grammatically belongs to postfix-expr production.  */
-      pp_c_compound_literal (pp, e);
+      pp_c_compound_literal (this, e);
       break;
 
     default:
-      pp_unsupported_tree (pp, e);
+      pp_unsupported_tree (this, e);
       break;
     }
 }
@@ -1236,7 +1236,7 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
     case REAL_CST:
     case FIXED_CST:
     case STRING_CST:
-      pp_c_constant (pp, e);
+      pp_constant (pp, e);
       break;
 
     case TARGET_EXPR:
@@ -1357,7 +1357,7 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
 	      {
 		pp_c_left_bracket (pp);
 		if (TREE_PURPOSE (init))
-		  pp_c_constant (pp, TREE_PURPOSE (init));
+		  pp_constant (pp, TREE_PURPOSE (init));
 		pp_c_right_bracket (pp);
 	      }
 	    pp_c_whitespace (pp);
@@ -2339,7 +2339,6 @@ c_pretty_printer::c_pretty_printer ()
 
   statement                 = pp_c_statement;
 
-  constant                  = pp_c_constant;
   id_expression             = pp_c_id_expression;
   primary_expression        = pp_c_primary_expression;
   postfix_expression        = pp_c_postfix_expression;
