@@ -1,3 +1,12 @@
+2013-08-24  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk:
+	2013-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58185
+	* match.c (copy_ts_from_selector_to_associate): Only build class
+	container for polymorphic selector. Some cleanup.
+
 2013-08-11  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk:
