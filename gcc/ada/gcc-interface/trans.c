@@ -257,6 +257,8 @@ static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static void validate_unchecked_conversion (Node_Id);
 static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id);
+static void set_expr_location_from_node1 (tree, Node_Id, bool);
+static bool Sloc_to_locus1 (Source_Ptr, location_t *, bool);
 static bool set_end_locus_from_node (tree, Node_Id);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, bool, bool, bool);
@@ -2391,7 +2393,10 @@ can_equal_min_or_max_val_p (tree val, tree type, bool max)
   if (TREE_CODE (val) != INTEGER_CST)
     return true;
 
-  return tree_int_cst_equal (val, min_or_max_val) == 1;
+  if (max)
+    return tree_int_cst_lt (val, min_or_max_val) == 0;
+  else
+    return tree_int_cst_lt (min_or_max_val, val) == 0;
 }
 
 /* Return true if VAL (of type TYPE) can equal the minimum value of TYPE.
@@ -2716,7 +2721,7 @@ Loop_Statement_to_gnu (Node_Id gnat_node)
 
       /* First, if we have computed a small number of invariant conditions for
 	 range checks applied to the iteration variable, then initialize these
-	 conditions in front of the loop.  Otherwise, leave them set to True.
+	 conditions in front of the loop.  Otherwise, leave them set to true.
 
 	 ??? The heuristics need to be improved, by taking into account the
 	     following datapoints:
@@ -4019,9 +4024,19 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  /* Set up to move the copy back to the original if needed.  */
 	  if (!in_param)
 	    {
-	      gnu_stmt = build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig,
-					  gnu_temp);
+	      /* If the original is a COND_EXPR whose first arm isn't meant to
+		 be further used, just deal with the second arm.  This is very
+		 likely the conditional expression built for a check.  */
+	      if (TREE_CODE (gnu_orig) == COND_EXPR
+		  && TREE_CODE (TREE_OPERAND (gnu_orig, 1)) == COMPOUND_EXPR
+		  && integer_zerop
+		     (TREE_OPERAND (TREE_OPERAND (gnu_orig, 1), 1)))
+		gnu_orig = TREE_OPERAND (gnu_orig, 2);
+
+	      gnu_stmt
+		= build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_orig, gnu_temp);
 	      set_expr_location_from_node (gnu_stmt, gnat_node);
+
 	      append_to_statement_list (gnu_stmt, &gnu_after_list);
 	    }
 	}
@@ -4458,6 +4473,10 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
   tree gnu_result;
   tree gnu_expr;
   Node_Id gnat_temp;
+  /* Node providing the sloc for the cleanup actions.  */
+  Node_Id gnat_cleanup_loc_node = (Present (End_Label (gnat_node)) ?
+                                   End_Label (gnat_node) :
+                                   gnat_node);
 
   /* The GCC exception handling mechanism can handle both ZCX and SJLJ schemes
      and we have our own SJLJ mechanism.  To call the GCC mechanism, we call
@@ -4507,7 +4526,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
 
       /* When we exit this block, restore the saved value.  */
       add_cleanup (build_call_n_expr (set_jmpbuf_decl, 1, gnu_jmpsave_decl),
-		   End_Label (gnat_node));
+		   gnat_cleanup_loc_node);
     }
 
   /* If we are to call a function when exiting this block, add a cleanup
@@ -4515,7 +4534,7 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
      so we must register this cleanup after the EH cleanup just above.  */
   if (at_end)
     add_cleanup (build_call_n_expr (gnat_to_gnu (At_End_Proc (gnat_node)), 0),
-		 End_Label (gnat_node));
+		 gnat_cleanup_loc_node);
 
   /* Now build the tree for the declarations and statements inside this block.
      If this is SJLJ, set our jmp_buf as the current buffer.  */
@@ -4628,14 +4647,18 @@ Handled_Sequence_Of_Statements_to_gnu (Node_Id gnat_node)
       /* Now make the TRY_CATCH_EXPR for the block.  */
       gnu_result = build2 (TRY_CATCH_EXPR, void_type_node,
 			   gnu_inner_block, gnu_handlers);
-      /* Set a location.  We need to find a uniq location for the dispatching
+      /* Set a location.  We need to find a unique location for the dispatching
 	 code, otherwise we can get coverage or debugging issues.  Try with
 	 the location of the end label.  */
       if (Present (End_Label (gnat_node))
 	  && Sloc_to_locus (Sloc (End_Label (gnat_node)), &locus))
 	SET_EXPR_LOCATION (gnu_result, locus);
       else
-	set_expr_location_from_node (gnu_result, gnat_node);
+        /* Clear column information so that the exception handler of an
+           implicit transient block does not incorrectly inherit the slocs
+           of a decision, which would otherwise confuse control flow based
+           coverage analysis tools.  */
+	set_expr_location_from_node1 (gnu_result, gnat_node, true);
     }
   else
     gnu_result = gnu_inner_block;
@@ -4830,9 +4853,10 @@ Exception_Handler_to_gnu_zcx (Node_Id gnat_node)
   add_stmt_with_node (build_call_n_expr (begin_handler_decl, 1,
 					 gnu_incoming_exc_ptr),
 		      gnat_node);
-  /* ??? We don't seem to have an End_Label at hand to set the location.  */
+  /* We don't have an End_Label at hand to set the location of the cleanup
+     actions, so we use that of the exception handler itself instead.  */
   add_cleanup (build_call_n_expr (end_handler_decl, 1, gnu_incoming_exc_ptr),
-	       Empty);
+	       gnat_node);
   add_stmt_list (Statements (gnat_node));
   gnat_poplevel ();
 
@@ -7384,13 +7408,15 @@ mark_visited (tree t)
 }
 
 /* Add GNU_CLEANUP, a cleanup action, to the current code group and
-   set its location to that of GNAT_NODE if present.  */
+   set its location to that of GNAT_NODE if present, but with column info
+   cleared so that conditional branches generated as part of the cleanup
+   code do not interfere with coverage analysis tools.  */
 
 static void
 add_cleanup (tree gnu_cleanup, Node_Id gnat_node)
 {
   if (Present (gnat_node))
-    set_expr_location_from_node (gnu_cleanup, gnat_node);
+    set_expr_location_from_node1 (gnu_cleanup, gnat_node, true);
   append_to_statement_list (gnu_cleanup, &current_stmt_group->cleanups);
 }
 
@@ -9005,10 +9031,11 @@ maybe_implicit_deref (tree exp)
 
 /* Convert SLOC into LOCUS.  Return true if SLOC corresponds to a source code
    location and false if it doesn't.  In the former case, set the Gigi global
-   variable REF_FILENAME to the simple debug file name as given by sinput.  */
+   variable REF_FILENAME to the simple debug file name as given by sinput.
+   If clear_column is true, set column information to 0.  */
 
-bool
-Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
+static bool
+Sloc_to_locus1 (Source_Ptr Sloc, location_t *locus, bool clear_column)
 {
   if (Sloc == No_Location)
     return false;
@@ -9022,7 +9049,7 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
     {
       Source_File_Index file = Get_Source_File_Index (Sloc);
       Logical_Line_Number line = Get_Logical_Line_Number (Sloc);
-      Column_Number column = Get_Column_Number (Sloc);
+      Column_Number column = (clear_column ? 0 : Get_Column_Number (Sloc));
       struct line_map *map = LINEMAPS_ORDINARY_MAP_AT (line_table, file - 1);
 
       /* We can have zero if pragma Source_Reference is in effect.  */
@@ -9041,18 +9068,34 @@ Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
   return true;
 }
 
+/* Similar to the above, not clearing the column information.  */
+
+bool
+Sloc_to_locus (Source_Ptr Sloc, location_t *locus)
+{
+  return Sloc_to_locus1 (Sloc, locus, false);
+}
+
 /* Similar to set_expr_location, but start with the Sloc of GNAT_NODE and
    don't do anything if it doesn't correspond to a source location.  */
 
 static void
-set_expr_location_from_node (tree node, Node_Id gnat_node)
+set_expr_location_from_node1 (tree node, Node_Id gnat_node, bool clear_column)
 {
   location_t locus;
 
-  if (!Sloc_to_locus (Sloc (gnat_node), &locus))
+  if (!Sloc_to_locus1 (Sloc (gnat_node), &locus, clear_column))
     return;
 
   SET_EXPR_LOCATION (node, locus);
+}
+
+/* Similar to the above, not clearing the column information.  */
+
+static void
+set_expr_location_from_node (tree node, Node_Id gnat_node)
+{
+  set_expr_location_from_node1 (node, gnat_node, false);
 }
 
 /* More elaborate version of set_expr_location_from_node to be used in more
@@ -9185,9 +9228,13 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
   gnat_node = Present (gnat_end_label) ? gnat_end_label : gnat_node;
 
   /* Some expanded subprograms have neither an End_Label nor a Sloc
-     attached.  Notify that to callers.  */
+     attached.  Notify that to callers.  For a block statement with no
+     End_Label, clear column information, so that the tree for a
+     transient block does not receive the sloc of a source condition.  */
 
-  if (!Sloc_to_locus (Sloc (gnat_node), &end_locus))
+  if (!Sloc_to_locus1 (Sloc (gnat_node), &end_locus,
+                       No (gnat_end_label) &&
+                       (Nkind (gnat_node) == N_Block_Statement)))
     return false;
 
   switch (TREE_CODE (gnu_node))

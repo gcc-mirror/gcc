@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-gdwarf-2 -dA --param ggc-min-expand=0 --param ggc-min-heapsize=0" } */
+/* { dg-options "-gdwarf -dA --param ggc-min-expand=0 --param ggc-min-heapsize=0" } */
 /* { dg-final { scan-assembler-times "DIE.*DW_TAG_array_type" 1  } } */
 /* { dg-final { scan-assembler-times "DIE.*DW_TAG_subrange_type" 1  } } */
 

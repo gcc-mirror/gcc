@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -gdwarf-2 -dA" } */
+/* { dg-options "-O2 -gdwarf -dA" } */
 /* { dg-final { scan-assembler "DW_TAG_variable" } } */
 /* PR debug/21828 */
 

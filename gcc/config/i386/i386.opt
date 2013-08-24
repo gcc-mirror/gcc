@@ -382,6 +382,13 @@ mtune-ctrl=
 Target RejectNegative Joined Var(ix86_tune_ctrl_string)
 Fine grain control of tune features
 
+mno-default
+Target RejectNegative Var(ix86_tune_no_default) Init(0)
+Clear all tune features
+
+mdump-tune-features
+Target RejectNegative Var(ix86_dump_tunes) Init(0)
+
 mabi=
 Target RejectNegative Joined Var(ix86_abi) Enum(calling_abi) Init(SYSV_ABI)
 Generate code that conforms to the given ABI

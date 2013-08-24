@@ -3131,7 +3131,7 @@ finish_id_expression (tree id_expression,
 	      error (VAR_P (decl)
 		     ? G_("use of local variable with automatic storage from containing function")
 		     : G_("use of parameter from containing function"));
-	      error ("  %q+#D declared here", decl);
+	      inform (input_location, "%q+#D declared here", decl);
 	      return error_mark_node;
 	    }
 	}

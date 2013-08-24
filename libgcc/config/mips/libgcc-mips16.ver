@@ -45,42 +45,4 @@ GCC_4.4.0 {
   __mips16_floatsidf
   __mips16_floatunsidf
   __mips16_fix_truncdfsi
-  __mips16_ret_sf
-  __mips16_ret_sc
-  __mips16_ret_df
-  __mips16_ret_dc
-  __mips16_call_stub_1
-  __mips16_call_stub_5
-  __mips16_call_stub_2
-  __mips16_call_stub_6
-  __mips16_call_stub_9
-  __mips16_call_stub_10
-  __mips16_call_stub_sf_0
-  __mips16_call_stub_sf_1
-  __mips16_call_stub_sf_5
-  __mips16_call_stub_sf_2
-  __mips16_call_stub_sf_6
-  __mips16_call_stub_sf_9
-  __mips16_call_stub_sf_10
-  __mips16_call_stub_sc_0
-  __mips16_call_stub_sc_1
-  __mips16_call_stub_sc_5
-  __mips16_call_stub_sc_2
-  __mips16_call_stub_sc_6
-  __mips16_call_stub_sc_9
-  __mips16_call_stub_sc_10
-  __mips16_call_stub_df_0
-  __mips16_call_stub_df_1
-  __mips16_call_stub_df_5
-  __mips16_call_stub_df_2
-  __mips16_call_stub_df_6
-  __mips16_call_stub_df_9
-  __mips16_call_stub_df_10
-  __mips16_call_stub_dc_0
-  __mips16_call_stub_dc_1
-  __mips16_call_stub_dc_5
-  __mips16_call_stub_dc_2
-  __mips16_call_stub_dc_6
-  __mips16_call_stub_dc_9
-  __mips16_call_stub_dc_10
 }

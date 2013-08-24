@@ -337,7 +337,7 @@ add_clause (conditions conditions, struct predicate *p, clause_t clause)
          and thus there is no point for looking for them.  */
       if (cc1->code == CHANGED || cc1->code == IS_NOT_CONSTANT)
 	continue;
-      for (c2 = c1 + 1; c2 <= NUM_CONDITIONS; c2++)
+      for (c2 = c1 + 1; c2 < NUM_CONDITIONS; c2++)
 	if (clause & (1 << c2))
 	  {
 	    condition *cc1 =

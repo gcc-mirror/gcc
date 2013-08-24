@@ -262,7 +262,7 @@ extern const struct processor_costs ix86_size_cost;
 /* Feature tests against the various tunings.  */
 enum ix86_tune_indices {
 #undef DEF_TUNE
-#define DEF_TUNE(tune, name) tune,
+#define DEF_TUNE(tune, name, selector) tune,
 #include "x86-tune.def"
 #undef DEF_TUNE
 X86_TUNE_LAST

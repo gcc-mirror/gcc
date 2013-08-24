@@ -11967,6 +11967,46 @@ types_same_for_odr (tree type1, tree type2)
   return true;
 }
 
+/* TARGET is a call target of GIMPLE call statement
+   (obtained by gimple_call_fn).  Return true if it is
+   OBJ_TYPE_REF representing an virtual call of C++ method.
+   (As opposed to OBJ_TYPE_REF representing objc calls
+   through a cast where middle-end devirtualization machinery
+   can't apply.) */
+
+bool
+virtual_method_call_p (tree target)
+{
+  if (TREE_CODE (target) != OBJ_TYPE_REF)
+    return false;
+  target = TREE_TYPE (target);
+  gcc_checking_assert (TREE_CODE (target) == POINTER_TYPE);
+  target = TREE_TYPE (target);
+  if (TREE_CODE (target) == FUNCTION_TYPE)
+    return false;
+  gcc_checking_assert (TREE_CODE (target) == METHOD_TYPE);
+  return true;
+}
+
+/* REF is OBJ_TYPE_REF, return the class the ref corresponds to.  */
+
+tree
+obj_type_ref_class (tree ref)
+{
+  gcc_checking_assert (TREE_CODE (ref) == OBJ_TYPE_REF);
+  ref = TREE_TYPE (ref);
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  ref = TREE_TYPE (ref);
+  /* We look for type THIS points to.  ObjC also builds
+     OBJ_TYPE_REF with non-method calls, Their first parameter
+     ID however also corresponds to class type. */
+  gcc_checking_assert (TREE_CODE (ref) == METHOD_TYPE
+		       || TREE_CODE (ref) == FUNCTION_TYPE);
+  ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
+  gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
+  return TREE_TYPE (ref);
+}
+
 /* Try to find a base info of BINFO that would have its field decl at offset
    OFFSET within the BINFO type and which is of EXPECTED_TYPE.  If it can be
    found, return, otherwise return NULL_TREE.  */

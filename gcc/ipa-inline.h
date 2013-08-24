@@ -226,6 +226,7 @@ inline_hints do_estimate_edge_hints (struct cgraph_edge *edge);
 void initialize_growth_caches (void);
 void free_growth_caches (void);
 void compute_inline_parameters (struct cgraph_node *, bool);
+bool speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining);
 
 /* In ipa-inline-transform.c  */
 bool inline_call (struct cgraph_edge *, bool, vec<cgraph_edge_p> *, int *, bool);

@@ -637,6 +637,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{i386 and x86-64 Options}
 @gccoptlist{-mtune=@var{cpu-type}  -march=@var{cpu-type} @gol
+-mtune-ctrl=@var{feature-list} -mdump-tune-features -mno-default @gol
 -mfpmath=@var{unit} @gol
 -masm=@var{dialect}  -mno-fancy-math-387 @gol
 -mno-fp-ret-in-387  -msoft-float @gol
@@ -870,7 +871,8 @@ See RS/6000 and PowerPC Options.
 -msave-toc-indirect -mno-save-toc-indirect @gol
 -mpower8-fusion -mno-mpower8-fusion -mpower8-vector -mno-power8-vector @gol
 -mcrypto -mno-crypto -mdirect-move -mno-direct-move @gol
--mquad-memory -mno-quad-memory}
+-mquad-memory -mno-quad-memory @gol
+-mcompat-align-parm -mno-compat-align-parm}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -14429,6 +14431,27 @@ supported architecture, using the appropriate flags.  In particular,
 the file containing the CPU detection code should be compiled without
 these options.
 
+@item -mdump-tune-features
+@opindex mdump-tune-features
+This option instructs GCC to dump the names of the x86 performance 
+tuning features and default settings. The names can be used in 
+@option{-mtune-ctrl=@var{feature-list}}.
+
+@item -mtune-ctrl=@var{feature-list}
+@opindex mtune-ctrl=@var{feature-list}
+This option is used to do fine grain control of x86 code generation features.
+@var{feature-list} is a comma separated list of @var{feature} names. See also
+@option{-mdump-tune-features}. When specified, the @var{feature} will be turned
+on if it is not preceded with @code{^}, otherwise, it will be turned off. 
+@option{-mtune-ctrl=@var{feature-list}} is intended to be used by GCC
+developers. Using it may lead to code paths not covered by testing and can
+potentially result in compiler ICEs or runtime errors.
+
+@item -mno-default
+@opindex mno-default
+This option instructs GCC to turn off all tunable features. See also 
+@option{-mtune-ctrl=@var{feature-list}} and @option{-mdump-tune-features}.
+
 @item -mcld
 @opindex mcld
 This option instructs GCC to emit a @code{cld} instruction in the prologue
@@ -18395,6 +18418,22 @@ stack location in the function prologue if the function calls through
 a pointer on AIX and 64-bit Linux systems.  If the TOC value is not
 saved in the prologue, it is saved just before the call through the
 pointer.  The @option{-mno-save-toc-indirect} option is the default.
+
+@item -mcompat-align-parm
+@itemx -mno-compat-align-parm
+@opindex mcompat-align-parm
+Generate (do not generate) code to pass structure parameters with a
+maximum alignment of 64 bits, for compatibility with older versions
+of GCC.
+
+Older versions of GCC (prior to 4.9.0) incorrectly did not align a
+structure parameter on a 128-bit boundary when that structure contained
+a member requiring 128-bit alignment.  This is corrected in more
+recent versions of GCC.  This option may be used to generate code
+that is compatible with functions compiled with older versions of
+GCC.
+
+The @option{-mno-compat-align-parm} option is the default.
 @end table
 
 @node RX Options
@@ -20929,6 +20968,9 @@ Not all targets provide complete support for this switch.
 Alter the thread-local storage model to be used (@pxref{Thread-Local}).
 The @var{model} argument should be one of @code{global-dynamic},
 @code{local-dynamic}, @code{initial-exec} or @code{local-exec}.
+Note that the choice is subject to optimization: the compiler may use
+a more efficient model for symbols not visible outside of the translation
+unit, or if @option{-fpic} is not given on the command line.
 
 The default without @option{-fpic} is @code{initial-exec}; with
 @option{-fpic} the default is @code{global-dynamic}.

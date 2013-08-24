@@ -1001,7 +1001,7 @@ avr-*-*)
 	    tm_file="${tm_file} ${cpu_type}/avrlibc.h"
 	    tm_defines="${tm_defines} WITH_AVRLIBC"
 	fi
-	tmake_file="avr/t-avr avr/t-multilib"
+	tmake_file="${tmake_file} avr/t-avr avr/t-multilib"
 	use_gcc_stdint=wrap
 	extra_gcc_objs="driver-avr.o avr-devices.o"
 	extra_objs="avr-devices.o avr-log.o"
@@ -1705,8 +1705,7 @@ m32r-*-rtems*)
  	;;
 m32r-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} m32r/linux.h"
-	# We override the tmake_file for linux -- why?
-	tmake_file="m32r/t-linux t-slibgcc"
+	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'
@@ -1714,8 +1713,7 @@ m32r-*-linux*)
  	;;
 m32rle-*-linux*)
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h m32r/little.h ${tm_file} m32r/linux.h"
-	# We override the tmake_file for linux -- why?
-	tmake_file="m32r/t-linux t-slibgcc"
+	tmake_file="${tmake_file} m32r/t-linux t-slibgcc"
 	gnu_ld=yes
 	if test x$enable_threads = xyes; then
 		thread_file='posix'

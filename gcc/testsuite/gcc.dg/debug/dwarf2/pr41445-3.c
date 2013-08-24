@@ -2,7 +2,7 @@
 /* Test that token after multi-line function-like macro use
    gets correct locus even when preprocessing separately.  */
 /* { dg-do compile } */
-/* { dg-options "-save-temps -g -O0 -dA -fno-merge-debug-strings" } */
+/* { dg-options "-save-temps -gdwarf -O0 -dA -fno-merge-debug-strings" } */
 
 #define A(a,b)
 int varh;/*

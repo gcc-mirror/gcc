@@ -1431,8 +1431,6 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   gimple stmt = gsi_stmt (*gsi);
   histogram_value histogram;
   gcov_type val, count, all, bb_all;
-  gcov_type prob;
-  gimple modify;
   struct cgraph_node *direct_call;
 
   if (gimple_code (stmt) != GIMPLE_CALL)
@@ -1452,12 +1450,6 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
   count = histogram->hvalue.counters [1];
   all = histogram->hvalue.counters [2];
 
-  if (4 * count <= 3 * all)
-    {
-      gimple_remove_histogram_value (cfun, stmt, histogram);
-      return false;
-    }
-
   bb_all = gimple_bb (stmt)->count;
   /* The order of CHECK_COUNTER calls is important -
      since check_counter can correct the third parameter
@@ -1469,10 +1461,9 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
       return false;
     }
 
-  if (all > 0)
-    prob = GCOV_COMPUTE_SCALE (count, all);
-  else
-    prob = 0;
+  if (4 * count <= 3 * all)
+    return false;
+
   direct_call = find_func_by_profile_id ((int)val);
 
   if (direct_call == NULL)
@@ -1488,12 +1479,21 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
 	}
       return false;
     }
-  gimple_remove_histogram_value (cfun, stmt, histogram);
 
   if (!check_ic_target (stmt, direct_call))
-    return false;
-
-  modify = gimple_ic (stmt, direct_call, prob, count, all);
+    {
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Indirect call -> direct call ");
+	  print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
+	  fprintf (dump_file, "=> ");
+	  print_generic_expr (dump_file, direct_call->symbol.decl, TDF_SLIM);
+	  fprintf (dump_file, " transformation skipped because of type mismatch");
+	  print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	}
+      gimple_remove_histogram_value (cfun, stmt, histogram);
+      return false;
+    }
 
   if (dump_file)
     {
@@ -1501,10 +1501,8 @@ gimple_ic_transform (gimple_stmt_iterator *gsi)
       print_generic_expr (dump_file, gimple_call_fn (stmt), TDF_SLIM);
       fprintf (dump_file, "=> ");
       print_generic_expr (dump_file, direct_call->symbol.decl, TDF_SLIM);
-      fprintf (dump_file, " transformation on insn ");
+      fprintf (dump_file, " transformation on insn postponned to ipa-profile");
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
-      fprintf (dump_file, " to ");
-      print_gimple_stmt (dump_file, modify, 0, TDF_SLIM);
       fprintf (dump_file, "hist->count "HOST_WIDEST_INT_PRINT_DEC
 	       " hist->all "HOST_WIDEST_INT_PRINT_DEC"\n", count, all);
     }

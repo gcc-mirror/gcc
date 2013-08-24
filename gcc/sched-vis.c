@@ -47,10 +47,6 @@ along with GCC; see the file COPYING3.  If not see
    It is also possible to obtain a string for a single pattern as a string
    pointer, via str_pattern_slim, but this usage is discouraged.  */
 
-/* A pretty-printer for slim rtl printing.  */
-static bool rtl_slim_pp_initialized = false;
-static pretty_printer rtl_slim_pp;
-
 /* For insns we print patterns, and for some patterns we print insns...  */
 static void print_insn_with_notes (pretty_printer *, const_rtx);
 
@@ -760,24 +756,6 @@ print_insn_with_notes (pretty_printer *pp, const_rtx x)
       }
 }
 
-/* Return a pretty-print buffer set up to print to file F.  */
-
-static pretty_printer *
-init_rtl_slim_pretty_print (FILE *f)
-{
-  if (! rtl_slim_pp_initialized)
-    {
-      pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
-      rtl_slim_pp_initialized = true;
-    }
-  else
-    /* Clean out any data that str_insn_slim may have left here.  */
-    pp_clear_output_area (&rtl_slim_pp);
-
-  rtl_slim_pp.buffer->stream = f;
-  return &rtl_slim_pp;
-}
-
 /* Print X, an RTL value node, to file F in slim format.  Include
    additional information if VERBOSE is nonzero.
 
@@ -787,9 +765,11 @@ init_rtl_slim_pretty_print (FILE *f)
 void
 dump_value_slim (FILE *f, const_rtx x, int verbose)
 {
-  pretty_printer *pp = init_rtl_slim_pretty_print (f);
-  print_value (pp, x, verbose);
-  pp_flush (pp);
+  pretty_printer rtl_slim_pp;
+  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
+  rtl_slim_pp.buffer->stream = f;
+  print_value (&rtl_slim_pp, x, verbose);
+  pp_flush (&rtl_slim_pp);
 }
 
 /* Emit a slim dump of X (an insn) to the file F, including any register
@@ -797,9 +777,11 @@ dump_value_slim (FILE *f, const_rtx x, int verbose)
 void
 dump_insn_slim (FILE *f, const_rtx x)
 {
-  pretty_printer *pp = init_rtl_slim_pretty_print (f);
-  print_insn_with_notes (pp, x);
-  pp_flush (pp);
+  pretty_printer rtl_slim_pp;
+  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
+  rtl_slim_pp.buffer->stream = f;
+  print_insn_with_notes (&rtl_slim_pp, x);
+  pp_flush (&rtl_slim_pp);
 }
 
 /* Same as above, but stop at LAST or when COUNT == 0.
@@ -810,19 +792,21 @@ dump_rtl_slim (FILE *f, const_rtx first, const_rtx last,
 	       int count, int flags ATTRIBUTE_UNUSED)
 {
   const_rtx insn, tail;
-  pretty_printer *pp = init_rtl_slim_pretty_print (f);
+  pretty_printer rtl_slim_pp;
+  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
+  rtl_slim_pp.buffer->stream = f;
 
   tail = last ? NEXT_INSN (last) : NULL_RTX;
   for (insn = first;
        (insn != NULL) && (insn != tail) && (count != 0);
        insn = NEXT_INSN (insn))
     {
-      print_insn_with_notes (pp, insn);
+      print_insn_with_notes (&rtl_slim_pp, insn);
       if (count > 0)
         count--;
     }
 
-  pp_flush (pp);
+  pp_flush (&rtl_slim_pp);
 }
 
 /* Dumps basic block BB to pretty-printer PP in slim form and without and
@@ -857,9 +841,10 @@ rtl_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
 const char *
 str_pattern_slim (const_rtx x)
 {
-  pretty_printer *pp = init_rtl_slim_pretty_print (NULL);
-  print_pattern (pp, x, 0);
-  return pp_formatted_text (pp);
+  pretty_printer rtl_slim_pp;
+  pp_construct (&rtl_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
+  print_pattern (&rtl_slim_pp, x, 0);
+  return ggc_strdup (pp_formatted_text (&rtl_slim_pp));
 }
 
 /* Emit a slim dump of X (an insn) to stderr.  */

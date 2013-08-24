@@ -768,11 +768,7 @@ bool
 can_replace_by_local_alias (symtab_node node)
 {
   return (symtab_node_availability (node) > AVAIL_OVERWRITABLE
-	  && !DECL_EXTERNAL (node->symbol.decl)
-	  && (!DECL_ONE_ONLY (node->symbol.decl)
-	      || node->symbol.resolution == LDPR_PREVAILING_DEF
-	      || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
-	      || node->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP));
+	  && !symtab_can_be_discarded (node));
 }
 
 /* Mark visibility of all functions.
@@ -1407,53 +1403,9 @@ ipa_profile (void)
   bool something_changed = false;
   int i;
   gcov_type overall_time = 0, cutoff = 0, cumulated = 0, overall_size = 0;
-
-  /* Produce speculative calls: we saved common traget from porfiling into
-     e->common_target_id.  Now, at link time, we can look up corresponding
-     function node and produce speculative call.  */
-  if (in_lto_p)
-    {
-      struct cgraph_edge *e;
-      struct cgraph_node *n,*n2;
-
-      init_node_map (false);
-      FOR_EACH_DEFINED_FUNCTION (n)
-	{
-	  bool update = false;
-
-	  for (e = n->indirect_calls; e; e = e->next_callee)
-	    if (e->indirect_info->common_target_id)
-	      {
-		n2 = find_func_by_profile_id (e->indirect_info->common_target_id);
-		if (n2)
-		  {
-		    if (dump_file)
-		      {
-			fprintf (dump_file, "Indirect call -> direct call from"
-				 " other module %s/%i => %s/%i, prob %3.2f\n",
-				 xstrdup (cgraph_node_name (n)), n->symbol.order,
-				 xstrdup (cgraph_node_name (n2)), n2->symbol.order,
-				 e->indirect_info->common_target_probability
-				 / (float)REG_BR_PROB_BASE);
-		      }
-		    cgraph_turn_edge_to_speculative
-		      (e, n2,
-		       apply_scale (e->count,
-				    e->indirect_info->common_target_probability),
-		       apply_scale (e->frequency,
-				    e->indirect_info->common_target_probability));
-		    update = true;
-		  }
-		else
-		  if (dump_file)
-		    fprintf (dump_file, "Function with profile-id %i not found.\n",
-			     e->indirect_info->common_target_id);
-	       }
-	     if (update)
-	       inline_update_overall_summary (n);
-	   }
-	del_node_map ();
-    }
+  struct cgraph_node *n,*n2;
+  int nindirect = 0, ncommon = 0, nunknown = 0, nuseless = 0, nconverted = 0;
+  bool node_map_initialized = false;
 
   if (dump_file)
     dump_histogram (dump_file, histogram);
@@ -1522,6 +1474,106 @@ ipa_profile (void)
     }
   histogram.release();
   free_alloc_pool (histogram_pool);
+
+  /* Produce speculative calls: we saved common traget from porfiling into
+     e->common_target_id.  Now, at link time, we can look up corresponding
+     function node and produce speculative call.  */
+
+  FOR_EACH_DEFINED_FUNCTION (n)
+    {
+      bool update = false;
+
+      for (e = n->indirect_calls; e; e = e->next_callee)
+	{
+	  if (n->count)
+	    nindirect++;
+	  if (e->indirect_info->common_target_id)
+	    {
+	      if (!node_map_initialized)
+	        init_node_map (false);
+	      node_map_initialized = true;
+	      ncommon++;
+	      n2 = find_func_by_profile_id (e->indirect_info->common_target_id);
+	      if (n2)
+		{
+		  if (dump_file)
+		    {
+		      fprintf (dump_file, "Indirect call -> direct call from"
+			       " other module %s/%i => %s/%i, prob %3.2f\n",
+			       xstrdup (cgraph_node_name (n)), n->symbol.order,
+			       xstrdup (cgraph_node_name (n2)), n2->symbol.order,
+			       e->indirect_info->common_target_probability
+			       / (float)REG_BR_PROB_BASE);
+		    }
+		  if (e->indirect_info->common_target_probability
+		      < REG_BR_PROB_BASE / 2)
+		    {
+		      nuseless++;
+		      if (dump_file)
+			fprintf (dump_file,
+				 "Not speculating: probability is too low.\n");
+		    }
+		  else if (!cgraph_maybe_hot_edge_p (e))
+		    {
+		      nuseless++;
+		      if (dump_file)
+			fprintf (dump_file,
+				 "Not speculating: call is cold.\n");
+		    }
+		  else if (cgraph_function_body_availability (n2)
+			   <= AVAIL_OVERWRITABLE
+			   && symtab_can_be_discarded ((symtab_node) n2))
+		    {
+		      nuseless++;
+		      if (dump_file)
+			fprintf (dump_file,
+				 "Not speculating: target is overwritable "
+				 "and can be discarded.\n");
+		    }
+		  else
+		    {
+		      /* Target may be overwritable, but profile says that
+			 control flow goes to this particular implementation
+			 of N2.  Speculate on the local alias to allow inlining.
+		       */
+		      if (!symtab_can_be_discarded ((symtab_node) n2))
+			n2 = cgraph (symtab_nonoverwritable_alias ((symtab_node)n2));
+		      nconverted++;
+		      cgraph_turn_edge_to_speculative
+			(e, n2,
+			 apply_scale (e->count,
+				      e->indirect_info->common_target_probability),
+			 apply_scale (e->frequency,
+				      e->indirect_info->common_target_probability));
+		      update = true;
+		    }
+		}
+	      else
+		{
+		  if (dump_file)
+		    fprintf (dump_file, "Function with profile-id %i not found.\n",
+			     e->indirect_info->common_target_id);
+		  nunknown++;
+		}
+	    }
+	 }
+       if (update)
+	 inline_update_overall_summary (n);
+     }
+  if (node_map_initialized)
+    del_node_map ();
+  if (dump_file && nindirect)
+    fprintf (dump_file,
+	     "%i indirect calls trained.\n"
+	     "%i (%3.2f%%) have common target.\n"
+	     "%i (%3.2f%%) targets was not found.\n"
+	     "%i (%3.2f%%) speculations seems useless.\n"
+	     "%i (%3.2f%%) speculations produced.\n",
+	     nindirect,
+	     ncommon, ncommon * 100.0 / nindirect,
+	     nunknown, nunknown * 100.0 / nindirect,
+	     nuseless, nuseless * 100.0 / nindirect,
+	     nconverted, nconverted * 100.0 / nindirect);
 
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)

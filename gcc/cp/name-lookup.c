@@ -3062,8 +3062,10 @@ push_class_level_binding_1 (tree name, tree x)
   if (name == error_mark_node)
     return false;
 
-  /* Check for invalid member names.  */
-  gcc_assert (TYPE_BEING_DEFINED (current_class_type));
+  /* Check for invalid member names.  But don't worry about a default
+     argument-scope lambda being pushed after the class is complete.  */
+  gcc_assert (TYPE_BEING_DEFINED (current_class_type)
+	      || LAMBDA_TYPE_P (TREE_TYPE (decl)));
   /* Check that we're pushing into the right binding level.  */
   gcc_assert (current_class_type == class_binding_level->this_entity);
 

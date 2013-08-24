@@ -854,7 +854,7 @@ unsigned get_gimple_rhs_num_ops (enum tree_code);
 gimple gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
 const char *gimple_decl_printable_name (tree, int);
 tree gimple_get_virt_method_for_binfo (HOST_WIDE_INT, tree);
-tree gimple_extract_devirt_binfo_from_cst (tree);
+tree gimple_extract_devirt_binfo_from_cst (tree, tree);
 
 /* Returns true iff T is a scalar register variable.  */
 extern bool is_gimple_reg (tree);

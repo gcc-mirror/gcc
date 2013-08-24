@@ -7,4 +7,4 @@ fabs_legacy (double d)
   return __builtin_fabs (d);
 }
 
-/* { dg-final { scan-assembler-not "\tabs\.d\t" } } */
+/* { dg-final { scan-assembler-not "\tabs\\.d\t" } } */

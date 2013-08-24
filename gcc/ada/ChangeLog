@@ -1,3 +1,58 @@
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not bother about alias
+	sets of derived types in ASIS mode.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace True with true.
+	(is_cplusplus_method): Likewise, and False with false.
+	(components_need_strict_alignment): Likewise.
+	* gcc-interface/misc.c (gnat_init_gcc_fp): Likewise.
+	* gcc-interface/trans.c (Loop_Statement_to_gnu): Likewise.
+	(Handled_Sequence_Of_Statements_to_gnu): Likewise.
+	(add_cleanup): Likewise.
+	(Sloc_to_locus1): Likewise.
+	(Sloc_to_locus): Likewise.
+	(set_expr_location_from_node): Likewise.
+	* gcc-interface/utils.c (potential_alignment_gap): Likewise.
+
+2013-08-13  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/trans.c (set_end_locus_from_node): Clear column info
+	for the end_locus of a block if it does not come from an End_Label.
+
+2013-08-13  Thomas Quinot  <quinot@adacore.com>
+
+	* gcc-interface/trans.c (Handled_Sequence_Of_Statements_to_gnu): If
+	there is no End_Label, attach cleanup actions to the sloc of the HSS
+	node instead.
+	(Exception_Handler_to_gnu_zcx): Associate cleanup actions with the sloc
+	of the handler itself.
+	(add_cleanup): Clear column information in sloc of cleanup actions.
+	(Sloc_to_locus1): New static function.
+	(Sloc_to_locus): Call it.
+	(set_expr_location_from_node1): New static function.
+	(set_expr_location_from_node): Call it.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Deal with specific conditional
+	expressions for misaligned actual parameters.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (can_equal_min_or_max_val_p): Be prepared for
+	values outside of the range of the type.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils2.c (build_atomic_load): Do a mere view-conversion
+	to the original type before converting to the result type.
+	(build_atomic_store): First do a conversion to the original type before
+	view-converting to the effective type, but deal with a padded type
+	specially.
+
 2013-08-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (TOOLS_LIBS): Pick C object files from the

@@ -115,6 +115,10 @@ typedef struct copy_body_data
   /* Entry basic block to currently copied body.  */
   basic_block entry_bb;
 
+  /* For partial function versioning, bitmap of bbs to be copied,
+     otherwise NULL.  */
+  bitmap blocks_to_copy;
+
   /* Debug statements that need processing.  */
   vec<gimple> debug_stmts;
 

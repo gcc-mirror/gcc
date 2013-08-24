@@ -1387,6 +1387,23 @@ remap_gimple_stmt (gimple stmt, copy_body_data *id)
 	    }
 	}
 
+      /* For *ptr_N ={v} {CLOBBER}, if ptr_N is SSA_NAME defined
+	 in a block that we aren't copying during tree_function_versioning,
+	 just drop the clobber stmt.  */
+      if (id->blocks_to_copy && gimple_clobber_p (stmt))
+	{
+	  tree lhs = gimple_assign_lhs (stmt);
+	  if (TREE_CODE (lhs) == MEM_REF
+	      && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME)
+	    {
+	      gimple def_stmt = SSA_NAME_DEF_STMT (TREE_OPERAND (lhs, 0));
+	      if (gimple_bb (def_stmt)
+		  && !bitmap_bit_p (id->blocks_to_copy,
+				    gimple_bb (def_stmt)->index))
+		return gimple_build_nop ();
+	    }
+	}
+
       if (gimple_debug_bind_p (stmt))
 	{
 	  copy = gimple_build_debug_bind (gimple_debug_bind_get_var (stmt),
@@ -5161,6 +5178,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
   id.src_node = old_version_node;
   id.dst_node = new_version_node;
   id.src_cfun = DECL_STRUCT_FUNCTION (old_decl);
+  id.blocks_to_copy = blocks_to_copy;
   if (id.src_node->ipa_transforms_to_apply.exists ())
     {
       vec<ipa_opt_pass> old_transforms_to_apply

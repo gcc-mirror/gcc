@@ -16,10 +16,10 @@
 
 // keywords: name spaces, overloading
 
-int global0;			// { dg-error "" } 
+int global0;			// { dg-message "" } 
 int global0 ();			// { dg-error "" } 
 
-int global1 ();			// { dg-error "" } xref for below
+int global1 ();			// { dg-message "" } xref for below
 int global1;			// { dg-error "" } caught
 
 struct struct_0 {
@@ -34,13 +34,13 @@ struct struct_1 {
 
 void function_0 ()
 {
-	int function_0_local;	// { dg-error "" } 
+	int function_0_local;	// { dg-message "" } 
 	extern int function_0_local ();	// { dg-error "" } 
 }
 
 void function_1 ()
 {
-	int function_1_local ();        // { dg-error "" } 
+	int function_1_local ();        // { dg-message "" } 
 	extern int function_1_local;	// { dg-error "" } 
 }
 

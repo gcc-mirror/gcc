@@ -3,7 +3,7 @@
 
 struct A
 {
-  A() { }			// { dg-error "defined" }
+  A() { }			// { dg-message "defined" }
   ~A() = default;		// { dg-error "defaulted" }
 };
 

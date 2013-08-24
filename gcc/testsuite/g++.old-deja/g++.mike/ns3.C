@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-int i;		// { dg-error "" } 
+int i;		// { dg-message "" } 
 
 namespace i {	// { dg-error "" } 
 }

@@ -70,7 +70,10 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "strlen \\(" 2 "strlen" } } */
-/* { dg-final { scan-tree-dump-times "memcpy \\(" 8 "strlen" } } */
+/* avr has BIGGEST_ALIGNMENT 8, allowing fold_builtin_memory_op
+   to expand the memcpy call at the end of fn2.  */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 8 "strlen" { target { ! avr-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "memcpy \\(" 7 "strlen" { target { avr-*-* } } } } */
 /* { dg-final { scan-tree-dump-times "strcpy \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strcat \\(" 0 "strlen" } } */
 /* { dg-final { scan-tree-dump-times "strchr \\(" 0 "strlen" } } */

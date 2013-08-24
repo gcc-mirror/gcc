@@ -1,3 +1,292 @@
+2013-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58006
+	* tree-parloops.c (take_address_of): Don't ICE if get_name
+	returns NULL.
+	(eliminate_local_variables_stmt): Remove clobber stmts.
+
+2013-08-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (handle_alias_pairs): Reset the alias flag after the
+	error message is issued for an alias to undefined symbol.
+
+2013-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_create_indirect_edge): Discover
+	polymorphic calls and record basic info into indirect_info.
+	* gimple-fold.c (gimple_fold_call): When doing BINFO based
+	devirtualization, ignore objc function calls.
+	* ipa-cp.c (initialize_node_lattices): Be ready for polymorphic
+	call with no parm index info.
+	* ipa-prop.c (ipa_analyze_call_uses): Likewise.
+	* tree.c (virtual_method_call_p): New function.
+	* tree.h (virtual_method_call_p): Declare.
+
+2013-08-16  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58179
+	* tree.c (obj_type_ref_class): Do not ICE on non-method calls.
+
+2013-08-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (rs6000_get_timebase_ppc32): Add length
+	attribute.
+
+2013-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype.c (type_for_name): Add special-case support for
+	locating types within the "gcc::" namespace.
+	(open_base_files): Emit a "using namespace gcc" directive.
+
+2013-08-16  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58160
+	* config/rs6000/predicates.md (fusion_gpr_mem_load): Allow the
+	memory rtx to contain ZERO_EXTEND and SIGN_EXTEND.
+
+	* config/rs6000/rs6000-protos.h (fusion_gpr_load_p): Pass operands
+	array instead of each individual operand as a separate argument.
+	(emit_fusion_gpr_load): Likewise.
+	(expand_fusion_gpr_load): Add new function declaration.
+
+	* config/rs6000/rs6000.c (fusion_gpr_load_p): Change the calling
+	signature to have the operands passed as an array, instead of as
+	separate arguments.  Allow ZERO_EXTEND to be in the memory
+	address, and also SIGN_EXTEND if -mpower8-fusion-sign.  Do not
+	depend on the register live/dead flags when peepholes are run.
+	(expand_fusion_gpr_load): New function to be called from the
+	peephole2 pass, to change the register that addis sets to be the
+	target register.
+	(emit_fusion_gpr_load): Change the calling signature to have the
+	operands passed as an array, instead of as separate arguments.
+	Allow ZERO_EXTEND to be in the memory address, and also
+	SIGN_EXTEND if -mpower8-fusion-sign.
+
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_GPR): Delete unused
+	unspec enumeration.
+	(power8 fusion peephole/peephole2): Rework the fusion peepholes to
+	adjust the register addis loads up in the peephole2 pass.  Do not
+	depend on the register live/dead state when the peephole pass is
+	done.
+
+2013-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gengtype.c (create_user_defined_type): Ensure that the kind
+	is set to TYPE_USER_STRUCT, fixing a bug seen when an incomplete
+	declaration is seen before the GTY((user)) marking.
+
+2013-08-16  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/58105
+	* config/i386/i386.c (make_resolver_func): Set DECL_UNINLINABLE.
+
+2013-08-16  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_extract_devirt_binfo_from_cst): Add new
+	arugment expected_type.
+	(gimple_fold_call): Use it.
+	* gimple.h (gimple_extract_devirt_binfo_from_cst): Update prototype.
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Update.
+	* ipa-prop.c (ipa_analyze_virtual_call_uses): Use obj_type_ref_class.
+	(try_make_edge_direct_virtual_call): Likewise.
+	* tree.c (obj_type_ref_class): New.
+	* tree.h (obj_type_ref_class): Use it.
+
+2013-08-16  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* sched-vis.c (rtl_slim_pp_initialized): Remove.
+	(rtl_slim_pp): Likewise.
+	(init_rtl_slim_pretty_print): Likewise.
+	(dump_value_slim):  Don't call it.  Use local pretty printer.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	(str_pattern_slim): Likewise.
+	* tree-mudflap.c (mf_varname_tree): Use local pretty printer.
+	Simplify.
+
+2013-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58164
+	* gimple.c (walk_stmt_load_store_addr_ops): For visit_addr
+	walk gimple_goto_dest of GIMPLE_GOTO.
+
+	PR tree-optimization/58165
+	* tree-call-cdce.c (shrink_wrap_one_built_in_call): If
+	bi_call must be the last stmt in a bb, don't split_block, instead
+	use fallthru edge from it and give up if there is none.
+	Release conds vector when returning early.
+
+2013-08-14  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.c (ix86_option_override_internal):
+	Remove unused variable and field.
+
+2013-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/57949
+	* doc/invoke.texi: Add documentation of mcompat-align-parm option.
+	* config/rs6000/rs6000.opt: Add mcompat-align-parm option.
+	* config/rs6000/rs6000.c (rs6000_function_arg_boundary): For AIX
+	and Linux, correct BLKmode alignment when 128-bit alignment is
+	required and compatibility flag is not set.
+	(rs6000_gimplify_va_arg): For AIX and Linux, honor specified alignment
+	for zero-size arguments when compatibility flag is not set.
+
+2013-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58145
+	* tree-sra.c (build_ref_for_offset): If prev_base has
+	TREE_THIS_VOLATILE or TREE_SIDE_EFFECTS, propagate it to MEM_REF.
+
+2013-08-14  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.c (ix86_option_override_internal):
+	Fix uninitialized variable error.
+
+2013-08-14  Xinliang David Li  <davidxl@google.com>
+
+	* config/i386/i386.opt: Define two new options.
+	* config/i386/x86-tune.def: Add arch selector field in macros.
+	* config/i386/i386.h: Adjust macro definition.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Refactor the code.
+	(parse_mtune_ctrl_str): New function.
+	(set_ix86_tune_features): New function.
+	(ix86_function_specific_restore): Call the new helper function.
+
+2013-08-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57662
+	* sel-sched.c (code_motion_process_successors): When the current insn
+	is removed after the recursive traversal, break from the loop.
+	Add comments and debug printouts.
+
+2013-08-14  Jakub Jelinek  <jakub@redhat.com>
+	    Alexandre Oliva  <aoliva@redhat.com>
+
+	PR target/58067
+	* config/i386/i386.c (ix86_delegitimize_address): For CM_MEDIUM_PIC
+	and CM_LARGE_PIC ix86_cmodel fall thru into the -m32 code, handle
+	there also UNSPEC_PLTOFF.
+
+2013-08-14  Marek Polacek  <polacek@redhat.com>
+
+	* ipa-inline-analysis.c (add_clause): Avoid shifting integer
+	NUM_CONDITIONS bit positions.
+
+2013-08-13  Cary Coutant  <ccoutant@google.com>
+
+	* dwarf2out.c (CHECKSUM_BLOCK): New macro.
+	(attr_checksum): Hash vector contents instead of pointer.
+	(attr_checksum_ordered): Likewise.
+
+2013-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*sse2_maskmovdqu): Emit addr32 prefix
+	when Pmode != word_mode.  Add length_address attribute.
+	(sse3_monitor_<mode>): Merge from sse3_monitor and
+	sse3_monitor64_<mode> insn patterns.  Emit addr32 prefix when
+	Pmode != word_mode.  Update insn length attribute.
+	* config/i386/i386.c (ix86_option_override_internal): Update
+	ix86_gen_monitor selection for merged sse3_monitor insn.
+
+2013-08-13  Julian Brown  <julian@codesourcery.com>
+
+	* config/rs6000/rs6000.c (rs6000_legitimize_reload_address): Don't
+	perform invalid legitimization on greater-than-word-size modes for
+	TARGET_E500_DOUBLE.
+
+2013-08-13  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* ira.c (setup_class_translate_array): Use aclass instead of cl
+	for classes not fully covered by allocno classes.
+
+2013-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57661
+	* tree-inline.h (struct copy_body_data): Add blocks_to_copy field.
+	* tree-inline.c (tree_function_versioning): Initialize it.
+	(remap_gimple_stmt): Return GIMPLE_NOP for MEM_REF lhs clobber stmts
+	if id->blocks_to_copy and MEM_REF's SSA_NAME is defined in a block
+	that is not being copied.
+
+	PR sanitizer/56417
+	* asan.c (instrument_strlen_call): Fix typo in comment.
+	Use char * type even for the lhs of POINTER_PLUS_EXPR.
+
+2013-08-13  Steve Ellcey  <sellcey@mips.com>
+
+	* config/mips/mips.md (prefetch): Use lw instead of ld on
+	loongson in 32bit mode.
+
+2013-08-13  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc: (avr-linux): Allow for tmake_file not being empty.
+
+2013-08-13  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_turn_edge_to_speculative): Return newly
+	introduced edge; fix typo in sanity check.
+	(cgraph_resolve_speculation): Export; improve diagnostic.
+	(cgraph_redirect_edge_call_stmt_to_callee): Better diagnostic; cancel
+	speculation at type mismatch.
+	* cgraph.h (cgraph_turn_edge_to_speculative): Update.
+	(cgraph_resolve_speculation): Declare.
+	(symtab_can_be_discarded): New function.
+	* value-prof.c (gimple_ic_transform): Remove actual transform code.
+	* ipa-inline-transform.c (speculation_removed): New global var.
+	(clone_inlined_nodes): See if speculation can be removed.
+	(inline_call): If speculations was removed, we growths may not match.
+	* ipa-inline.c (can_inline_edge_p): Add DISREGARD_LIMITS parameter.
+	(speculation_useful_p): New function.
+	(resolve_noninline_speculation): New function.
+	(inline_small_functions): Resolve useless speculations.
+	* ipa-inline.h (speculation_useful_p): Declare
+	* ipa.c (can_replace_by_local_alias): Simplify.
+	(ipa_profile): Produce speculative calls in non-lto, too;
+	add simple cost model; produce local aliases.
+
+2013-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* config/i386/t-i386 (i386.o): Rename stray PIPELINE_H to
+	PASS_MANAGER_H.
+
+2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* config/i386/i386.c (ix86_function_versions): Use error + inform.
+
+2013-08-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (floatunssi<mode>2 expand): Use MODEF mode
+	iterator instead of X87MODEF.
+
+2013-08-12  Perez Read  <netfirewall@gmail.com>
+
+	PR target/58132
+	* config/i386/i386.md (*movabs<mode>_1):  Add <ptrsize> PTR before
+	operand 0 for intel asm alternative.
+	(*movabs<mode>_2): Ditto for operand 1.
+
+2013-08-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_none.h
+	(vdup<bhsd>_lane_<su><8,16,32,64>): Fix macro call.
+
+2013-08-12  Nick Clifton  <nickc@redhat.com>
+
+	* config.gcc (m32r-linux): Allow for tmake_file not being empty.
+
+2013-08-12  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.md (floatunssi<mode>2 expand): Add new
+	expand for QI/HImode operand to produce more effictive code for
+	unsigned char(short) --> float(double) conversion.
+
+2013-08-12  Alexander Monakov  <amonakov@ispras.ru>
+
+	* doc/invoke.texi: Mention that -ftls-model does not force the final
+	model.
+
 2013-08-12  Marek Polacek  <polacek@redhat.com>
 	    Marc Glisse  <marc.glisse@inria.fr>
 
@@ -23,14 +312,13 @@
 	* config/i386/i386-opts.h: Include stringopt.def.
 	* config/i386/i386.opt: Include stringopt.opt.
 	* config/i386/i386.c (ix86_option_override_internal):
-	Override default size based stringop inline strategies
-	with options.
+	Override default size based stringop inline strategies with options.
 	* config/i386/i386.c (ix86_parse_stringop_strategy_string):
 	New function.
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
-	 * ipa-ref.c (ipa_clear_stmts_in_references): Clear lto_stmt_uid, too.
+	* ipa-ref.c (ipa_clear_stmts_in_references): Clear lto_stmt_uid, too.
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
@@ -53,8 +341,7 @@
 
 	* cgraph.h (cgraph_node): Add profile_id.
 	* value-prof.c (cgraph_node_map): Turn into pointer_map.
-	(init_node_map): Rewrite to handle hashes increas of incremental
-	IDs.
+	(init_node_map): Rewrite to handle hashes increas of incremental IDs.
 	(del_node_map): Update.
 	(find_func_by_funcdef_no): Replace by ...
 	(find_func_by_profile_id): ... this one.
@@ -76,8 +363,8 @@
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
-	* cgraphbuild.c (cgraph_rebuild_references): Rebuild only non-speculative
-	refs.
+	* cgraphbuild.c (cgraph_rebuild_references): Rebuild only
+	non-speculative refs.
 	* cgraph.c (cgraph_update_edge_in_call_site_hash): New function.
 	(cgraph_add_edge_to_call_site_hash): Deal with speculative calls.
 	(cgraph_set_call_stmt): Likewise.
@@ -87,8 +374,7 @@
 	(cgraph_turn_edge_to_speculative): New function.
 	(cgraph_speculative_call_info): New function.
 	(cgraph_make_edge_direct): Return direct edge; handle speculation.
-	(cgraph_redirect_edge_call_stmt_to_callee): Expand speculative
-	edges.
+	(cgraph_redirect_edge_call_stmt_to_callee): Expand speculative edges.
 	(dump_cgraph_node): Dump speculation.
 	(verify_edge_count_and_frequency): Accept speculative edges.
 	(verify_edge_corresponds_to_fndecl): Handle partitioned cgraph.
@@ -131,10 +417,8 @@
 	(propagate_controlled_uses): Liekwise.
 	* tree-inline.c (copy_bb): Copy speculative edges.
 	(redirect_all_calls): New function.
-	(copy_cfg_body): Do redirection after loop info
-	is updated.
-	(delete_unreachable_blocks_update_callgraph): Updadte
-	speculation.
+	(copy_cfg_body): Do redirection after loop info is updated.
+	(delete_unreachable_blocks_update_callgraph): Updadte speculation.
 
 2013-08-09  Jan Hubicka  <jh@suse.cz>
 
@@ -230,7 +514,8 @@
 	* cgraph.c (verify_cgraph_node): Add basic ipa-ref verifier.
 	* ipa-inline-transform.c (inline_transform): Remove all references
 	after inlining.
-	* cgraphunit.c (expand_function): Remove all references after expansion.
+	* cgraphunit.c (expand_function): Remove all references after
+	expansion.
 	* ipa-ref.c (ipa_ref_has_aliases_p): Fix formatting.
 	(ipa_find_reference): Rewrite to iterator.
 	(remove_stmt_references): Likewise.

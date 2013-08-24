@@ -1004,7 +1004,7 @@ analyze_functions (void)
 
 /* Translate the ugly representation of aliases as alias pairs into nice
    representation in callgraph.  We don't handle all cases yet,
-   unforutnately.  */
+   unfortunately.  */
 
 static void
 handle_alias_pairs (void)
@@ -1016,10 +1016,11 @@ handle_alias_pairs (void)
     {
       symtab_node target_node = symtab_node_for_asm (p->target);
 
-      /* Weakrefs with target not defined in current unit are easy to handle; they
-	 behave just as external variables except we need to note the alias flag
-	 to later output the weakref pseudo op into asm file.  */
-      if (!target_node && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)) != NULL)
+      /* Weakrefs with target not defined in current unit are easy to handle:
+	 they behave just as external variables except we need to note the
+	 alias flag to later output the weakref pseudo op into asm file.  */
+      if (!target_node
+	  && lookup_attribute ("weakref", DECL_ATTRIBUTES (p->decl)) != NULL)
 	{
 	  symtab_node node = symtab_get_node (p->decl);
 	  if (node)
@@ -1034,6 +1035,9 @@ handle_alias_pairs (void)
       else if (!target_node)
 	{
 	  error ("%q+D aliased to undefined symbol %qE", p->decl, p->target);
+	  symtab_node node = symtab_get_node (p->decl);
+	  if (node)
+	    node->symbol.alias = false;
 	  alias_pairs->unordered_remove (i);
 	  continue;
 	}

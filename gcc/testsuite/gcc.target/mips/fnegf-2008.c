@@ -7,4 +7,4 @@ fnegf_2008 (float f)
   return -f;
 }
 
-/* { dg-final { scan-assembler "\tneg\.s\t" } } */
+/* { dg-final { scan-assembler "\tneg\\.s\t" } } */

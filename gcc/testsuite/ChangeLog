@@ -1,3 +1,299 @@
+2013-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58006
+	* g++.dg/opt/pr58006.C: New test.
+
+2013-08-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/linker_alias.ads: New test.
+
+2013-08-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58164
+	* gcc.c-torture/compile/pr58164.c: New test.
+
+	PR tree-optimization/58165
+	* g++.dg/opt/pr58165.C: New test.
+
+2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51912
+	* g++.dg/cpp0x/enum28.C: New.
+	* g++.dg/cpp0x/enum15.C: Adjust.
+
+2013-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/57949
+	* gcc.target/powerpc/pr57949-1.c: New.
+	* gcc.target/powerpc/pr57949-2.c: New.
+
+2013-08-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58145
+	* gcc.dg/pr58145-1.c: New test.
+	* gcc.dg/pr58145-2.c: New test.
+
+2013-08-14  Joern Rennecke <joern.rennecke@embecosm.com>
+
+	* gcc.dg/debug/dwarf2/dwarf2.exp: Replace -gdwarf-2 with -gdwarf.
+	* gcc.dg/debug/dwarf2/dwarf-die7.c: Likewise.
+	* gcc.dg/debug/dwarf2/static1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-dfp.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-any.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-uninit.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die1.c: Likewise.
+	* gcc.dg/debug/dwarf2/var1.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr29609-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/aranges-fnsec-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die3.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-merge.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char1.c: Likewise.
+	* gcc.dg/debug/dwarf2/discriminator.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char2.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-baseonly.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr36690-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/const-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/ipa-cp1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-char3.c: Likewise.
+	* gcc.dg/debug/dwarf2/var2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr36690-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr31230.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-float.c: Likewise.
+	* gcc.dg/debug/dwarf2/short-circuit.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr36690-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-reduced.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr37616.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die2.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline1.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-sys.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr29609-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/asm-line1.c: Likewise.
+	* gcc.dg/debug/dwarf2/c99-typedef1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-macro.c: Likewise.
+	* gcc.dg/debug/dwarf2/fesd-none.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr51410.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-file1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die6.c: Likewise.
+	* gcc.dg/debug/dwarf2/const-2b.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-die5.c: Likewise.
+
+	PR testsuite/52641
+	* gcc.c-torture/execute/pr56799.x: New file.
+
+	* gcc.dg/c99-stdint-1.c [avr-*-*]: Update line number for dg-bogus.
+
+	* gcc.dg/torture/stackalign/builtin-apply-2.c: Also skip for avr.
+
+	* gcc.dg/pr44214-1.c (v2df): Define size using sizeof (double).
+	* gcc.dg/pr44214-3.c (v2df): Likewise.
+
+	* gcc.dg/pr46647.c: xfail for avr-*-*.
+
+	* gcc.dg/strlenopt-10.c [avr-*-*]: Reduce number of expected
+	memcpy by one.
+	* gcc.dg/strlenopt-11.c [avr-*-*]: Likewise.
+	Expect l to be optimized away.
+	* gcc.dg/strlenopt-13.c [avr-*-*]: Likewise.
+
+	PR testsuite/52641
+	* c-c++-common/scal-to-vec1.c: Add !int16 and large_double conditions
+	to tests that assume int/double are larger than short/float.
+
+	PR testsuite/52641
+	* c-c++-common/simulate-thread/bitfields-2.c: Run test only for
+	target { ! int16 }.
+	* gcc.dg/tree-ssa/pr54245.c: Do slsr scan only for target { ! int16 }.
+	* gcc.dg/tree-ssa/slsr-1.c: Adjust multiplicators to scan for for
+	target { int16 }.  Restrict existing tests to target { int32 }
+	where appropriate.
+	* gcc.dg/tree-ssa/slsr-2.c, gcc.dg/tree-ssa/slsr-27.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-28.c, gcc.dg/tree-ssa/slsr-29.c: Likewise.
+	* gcc.dg/tree-ssa/slsr-3.c, gcc.dg/tree-ssa/ssa-ccp-23.c: Likewise.
+	* lib/target-supports.exp (check_effective_target_int32): New proc.
+
+	* gcc.dg/tree-ssa/pr42585.c: Add avr-*-* to list of targets to
+	exclude from scan test.
+
+	* gcc.dg/debug/dwarf2/global-used-types.c: Request dwarf output. 
+	* gcc.dg/debug/dwarf2/inline2.c: Likewise.
+	* gcc.dg/debug/dwarf2/inline3.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr37726.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-4.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-5.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41445-6.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41543.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr41695.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr43237.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr47939-4.c: Likewise.
+	* gcc.dg/debug/dwarf2/pr53948.c: Likewise.
+	* gcc.dg/debug/dwarf2/struct-loc1.c: Likewise.
+
+2013-08-14  Janis Johnson  <janisjo@codesourcery.com>
+
+	* gcc.target/arm/pr19599.c: Skip for -mthumb.
+
+	* gcc.target/arm/atomic-comp-swap-release-acquire.c: Move dg-do
+	to be the first test directive.
+	* gcc.target/arm/atomic-op-acq_rel.c: Likewise.
+	* gcc.target/arm/atomic-op-acquire.c: Likewise.
+	* gcc.target/arm/atomic-op-char.c: Likewise.
+	* gcc.target/arm/atomic-op-consume.c: Likewise.
+	* gcc.target/arm/atomic-op-int.c: Likewise.
+	* gcc.target/arm/atomic-op-relaxed.c: Likewise.
+	* gcc.target/arm/atomic-op-release.c: Likewise.
+	* gcc.target/arm/atomic-op-seq_cst.c: Likewise.
+	* gcc.target/arm/atomic-op-short.c: Likewise.
+
+2013-08-14  Andrey Belevantsev  <abel@ispras.ru>
+
+	PR rtl-optimization/57662
+	* gcc.dg/pr57662.c: New test.
+
+2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/mips/nan-legacy.c: Accept 4294967295 as an
+	alternative to -1.
+	* gcc.target/mips/nans-legacy.c: Likewise.
+
+2013-08-13  Maciej W. Rozycki  <macro@codesourcery.com>
+
+	* gcc.target/mips/fabs-2008.c: Correct scan-assembler pattern
+	escapes.
+	* gcc.target/mips/fabs-legacy.c: Likewise.
+	* gcc.target/mips/fabsf-2008.c: Likewise.
+	* gcc.target/mips/fabsf-legacy.c: Likewise.
+	* gcc.target/mips/fneg-2008.c: Likewise.
+	* gcc.target/mips/fneg-legacy.c: Likewise.
+	* gcc.target/mips/fnegf-2008.c: Likewise.
+	* gcc.target/mips/fnegf-legacy.c: Likewise.
+	* gcc.target/mips/nan-2008.c: Likewise.
+	* gcc.target/mips/nan-legacy.c: Likewise.
+	* gcc.target/mips/nanf-2008.c: Likewise.
+	* gcc.target/mips/nanf-legacy.c: Likewise.
+	* gcc.target/mips/nans-2008.c: Likewise.
+	* gcc.target/mips/nans-legacy.c: Likewise.
+	* gcc.target/mips/nansf-2008.c: Likewise.
+	* gcc.target/mips/nansf-legacy.c: Likewise.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/valued_proc.adb: New test.
+	* gnat.dg/valued_proc_pkg.ads: New helper.
+
+2013-08-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/57661
+	* g++.dg/opt/pr57661.C: New test.
+
+	PR sanitizer/56417
+	* gcc.dg/asan/pr56417.c: New test.
+
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/loop_optimization16.adb: New test.
+	* gnat.dg/loop_optimization16_pkg.ad[sb]: New helper.
+
+2013-08-13  Marek Polacek  <polacek@redhat.com>
+
+	* gcc.dg/pr57980.c: Use vector of two elements, not just one.
+
+2013-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	Example of converting global state to per-pass state.
+
+	* gcc.dg/plugin/one_time_plugin.c (one_pass::execute): Convert
+	global state "static int counter" to...
+	(one_pass::counter): ...this instance data.
+
+2013-08-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/one_time_plugin.c: (one_pass_gate): Convert
+	to member function...
+	(one_pass::gate): ...this.
+	(one_pass_exec): Convert to member function...
+	(one_pass::impl_execute): ...this.
+
+2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/57416
+	* g++.dg/cpp0x/pr57416.C: New.
+
+2013-08-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-function2.C: Adjust for error -> inform
+	changes.
+	* g++.dg/cpp0x/constexpr-neg1.C: Likewise.
+	* g++.dg/cpp0x/defaulted2.C: Likewise.
+	* g++.dg/cpp0x/defaulted31.C: Likewise.
+	* g++.dg/cpp0x/error6.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-32.C: Likewise.
+	* g++.dg/cpp0x/override2.C: Likewise.
+	* g++.dg/cpp0x/parse1.C: Likewise.
+	* g++.dg/cpp0x/scoped_enum.C: Likewise.
+	* g++.dg/cpp0x/temp_default4.C: Likewise.
+	* g++.dg/ext/attrib32.C: Likewise.
+	* g++.dg/ext/gnu-inline-global-reject.C: Likewise.
+	* g++.dg/ext/mv13.C: Likewise.
+	* g++.dg/ext/mv7.C: Likewise.
+	* g++.dg/ext/mv9.C: Likewise.
+	* g++.dg/ext/pr57362.C: Likewise.
+	* g++.dg/ext/typeof10.C: Likewise.
+	* g++.dg/lookup/anon6.C: Likewise.
+	* g++.dg/lookup/crash6.C: Likewise.
+	* g++.dg/lookup/name-clash5.C: Likewise.
+	* g++.dg/lookup/name-clash6.C: Likewise.
+	* g++.dg/other/anon4.C: Likewise.
+	* g++.dg/other/error15.C: Likewise.
+	* g++.dg/other/error8.C: Likewise.
+	* g++.dg/other/redecl2.C: Likewise.
+	* g++.dg/parse/crash16.C: Likewise.
+	* g++.dg/parse/crash21.C: Likewise.
+	* g++.dg/parse/crash38.C: Likewise.
+	* g++.dg/parse/redef2.C: Likewise.
+	* g++.dg/parse/struct-as-enum1.C: Likewise.
+	* g++.dg/template/crash39.C: Likewise.
+	* g++.dg/template/redecl3.C: Likewise.
+	* g++.dg/tls/diag-3.C: Likewise.
+	* g++.dg/warn/Wredundant-decls-spec.C: Likewise.
+	* g++.old-deja/g++.benjamin/typedef01.C: Likewise.
+	* g++.old-deja/g++.benjamin/warn02.C: Likewise.
+	* g++.old-deja/g++.brendan/crash16.C: Likewise.
+	* g++.old-deja/g++.brendan/crash18.C: Likewise.
+	* g++.old-deja/g++.brendan/err-msg4.C: Likewise.
+	* g++.old-deja/g++.brendan/redecl1.C: Likewise.
+	* g++.old-deja/g++.brendan/static3.C: Likewise.
+	* g++.old-deja/g++.bugs/900127_02.C: Likewise.
+	* g++.old-deja/g++.jason/binding.C: Likewise.
+	* g++.old-deja/g++.jason/crash4.C: Likewise.
+	* g++.old-deja/g++.jason/crash7.C: Likewise.
+	* g++.old-deja/g++.jason/lineno.C: Likewise.
+	* g++.old-deja/g++.jason/scoping7.C: Likewise.
+	* g++.old-deja/g++.mike/misc3.C: Likewise.
+	* g++.old-deja/g++.mike/net44.C: Likewise.
+	* g++.old-deja/g++.mike/ns3.C: Likewise.
+	* g++.old-deja/g++.ns/alias4.C: Likewise.
+	* g++.old-deja/g++.ns/ns11.C: Likewise.
+	* g++.old-deja/g++.other/crash23.C: Likewise.
+	* g++.old-deja/g++.other/decl8.C: Likewise.
+	* g++.old-deja/g++.other/linkage3.C: Likewise.
+	* g++.old-deja/g++.other/typeck1.C: Likewise.
+	* g++.old-deja/g++.other/typedef5.C: Likewise.
+	* g++.old-deja/g++.pt/explicit34.C: Likewise.
+	* g++.old-deja/g++.pt/friend36.C: Likewise.
+	* obj-c++.dg/method-8.mm: Likewise.
+	* obj-c++.dg/tls/diag-3.mm: Likewise.
+
+2013-08-12  Perez Read  <netfirewall@gmail.com>
+
+         PR target/58132
+         * gcc.target/i386/movabs-1.c: New test.
+
 2013-08-12  Marek Polacek  <polacek@redhat.com>
 
 	PR tree-optimization/57980

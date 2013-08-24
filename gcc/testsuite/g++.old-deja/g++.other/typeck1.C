@@ -4,7 +4,7 @@ extern int a[][];   // { dg-error "" } invalid multidimensional array
 extern int b[7][];  // { dg-error "" } invalid multidimensional array
 extern int c[][7];  // OK
 
-extern int (*i)[];  // { dg-error "" } previous declaration
+extern int (*i)[];  // { dg-message "" } previous declaration
 extern int (*i)[7]; // { dg-error "" } conflicting types for `i'
 
 extern int m[];
