@@ -1,5 +1,10 @@
 2013-08-23  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_turn_edge_to_speculative):
+	Fix debug output.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
 	* tree.h (TYPE_FINAL_P, DECL_FINAL_P): New macros.
 	(tree_decl_with_vis): Add FINAL field.
 
