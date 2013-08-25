@@ -1422,7 +1422,7 @@ pp_c_brace_enclosed_initializer_list (c_pretty_printer *pp, tree l)
        identifier  */
 
 void
-pp_c_id_expression (c_pretty_printer *pp, tree t)
+c_pretty_printer::id_expression (tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -1433,15 +1433,15 @@ pp_c_id_expression (c_pretty_printer *pp, tree t)
     case FUNCTION_DECL:
     case FIELD_DECL:
     case LABEL_DECL:
-      pp_c_tree_decl_identifier (pp, t);
+      pp_c_tree_decl_identifier (this, t);
       break;
 
     case IDENTIFIER_NODE:
-      pp_c_tree_identifier (pp, t);
+      pp_c_tree_identifier (this, t);
       break;
 
     default:
-      pp_unsupported_tree (pp, t);
+      pp_unsupported_tree (this, t);
       break;
     }
 }
@@ -1645,7 +1645,7 @@ pp_c_postfix_expression (c_pretty_printer *pp, tree e)
     case ADDR_EXPR:
       if (TREE_CODE (TREE_OPERAND (e, 0)) == FUNCTION_DECL)
 	{
-	  pp_c_id_expression (pp, TREE_OPERAND (e, 0));
+          pp_id_expression (pp, TREE_OPERAND (e, 0));
 	  break;
 	}
       /* else fall through.  */
@@ -2339,7 +2339,6 @@ c_pretty_printer::c_pretty_printer ()
 
   statement                 = pp_c_statement;
 
-  id_expression             = pp_c_id_expression;
   primary_expression        = pp_c_primary_expression;
   postfix_expression        = pp_c_postfix_expression;
   unary_expression          = pp_c_unary_expression;
