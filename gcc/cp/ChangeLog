@@ -1,3 +1,14 @@
+2013-08-25  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::primary_expression): Now
+	an overrider of c_pretty_printer::primary_expression.
+	* cxx-pretty-print.c (cxx_pretty_printer::primary_expression):
+	Rename from pp_cxx_primary_expression.  Adjust.
+	(pp_cxx_postfix_expression): Use pp_primary_expression.
+	(pp_cxx_ctor_initializer): Likewise.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	primary_expression.
+
 2013-08-23  Jan Hubicka  <jh@suse.cz>
 
 	* cp-tree.h (struct lang_type_class): Free is_final bit.
