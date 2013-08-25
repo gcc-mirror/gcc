@@ -1,3 +1,7 @@
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-14.C: Fix typo.
+
 2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/57798

@@ -30,5 +30,5 @@ main()
   return b->foo();
 }
 
-/* { dg-final { scan-tree-dump-nop "A::foo" 0 "ssa"} } */
+/* { dg-final { scan-tree-dump-not "A::foo" "ssa"} } */
 /* { dg-final { cleanup-tree-dump "ssa" } } */
