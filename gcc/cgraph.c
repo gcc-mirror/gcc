@@ -1076,8 +1076,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 
   if (dump_file)
     {
-      fprintf (dump_file, "Indirect call -> direct call from"
-	       " other module %s/%i => %s/%i\n",
+      fprintf (dump_file, "Indirect call -> speculative call"
+	       " %s/%i => %s/%i\n",
 	       xstrdup (cgraph_node_name (n)), n->symbol.order,
 	       xstrdup (cgraph_node_name (n2)), n2->symbol.order);
     }
