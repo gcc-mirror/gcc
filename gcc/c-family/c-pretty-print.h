@@ -52,6 +52,7 @@ struct c_pretty_printer : pretty_printer
   c_pretty_printer ();
 
   virtual void constant (tree);
+  virtual void id_expression (tree);
   /* Points to the first element of an array of offset-list.
      Not used yet.  */
   int *offset_list;
@@ -77,7 +78,6 @@ struct c_pretty_printer : pretty_printer
 
   c_pretty_print_fn statement;
 
-  c_pretty_print_fn id_expression;
   c_pretty_print_fn primary_expression;
   c_pretty_print_fn postfix_expression;
   c_pretty_print_fn unary_expression;
@@ -110,7 +110,7 @@ struct c_pretty_printer : pretty_printer
 #define pp_statement(PP, S)             (PP)->statement (PP, S)
 
 #define pp_constant(PP, E)              (PP)->constant (E)
-#define pp_id_expression(PP, E)         (PP)->id_expression (PP, E)
+#define pp_id_expression(PP, E)         (PP)->id_expression (E)
 #define pp_primary_expression(PP, E)    (PP)->primary_expression (PP, E)
 #define pp_postfix_expression(PP, E)    (PP)->postfix_expression (PP, E)
 #define pp_unary_expression(PP, E)      (PP)->unary_expression (PP, E)
@@ -169,7 +169,6 @@ void pp_c_cast_expression (c_pretty_printer *, tree);
 void pp_c_postfix_expression (c_pretty_printer *, tree);
 void pp_c_primary_expression (c_pretty_printer *, tree);
 void pp_c_init_declarator (c_pretty_printer *, tree);
-void pp_c_id_expression (c_pretty_printer *, tree);
 void pp_c_ws_string (c_pretty_printer *, const char *);
 void pp_c_identifier (c_pretty_printer *, const char *);
 void pp_c_string_literal (c_pretty_printer *, tree);

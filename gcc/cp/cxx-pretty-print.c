@@ -355,15 +355,15 @@ cxx_pretty_printer::constant (tree t)
       unqualified-id
       qualified-id   */
 
-static inline void
-pp_cxx_id_expression (cxx_pretty_printer *pp, tree t)
+void
+cxx_pretty_printer::id_expression (tree t)
 {
   if (TREE_CODE (t) == OVERLOAD)
     t = OVL_CURRENT (t);
   if (DECL_P (t) && DECL_CONTEXT (t))
-    pp_cxx_qualified_id (pp, t);
+    pp_cxx_qualified_id (this, t);
   else
-    pp_cxx_unqualified_id (pp, t);
+    pp_cxx_unqualified_id (this, t);
 }
 
 /* user-defined literal:
@@ -373,7 +373,7 @@ void
 pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
 {
   pp_constant (pp, USERDEF_LITERAL_VALUE (t));
-  pp_cxx_id_expression (pp, USERDEF_LITERAL_SUFFIX_ID (t));
+  pp_id_expression (pp, USERDEF_LITERAL_SUFFIX_ID (t));
 }
 
 
@@ -436,7 +436,7 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
     case OVERLOAD:
     case CONST_DECL:
     case TEMPLATE_DECL:
-      pp_cxx_id_expression (pp, t);
+      pp_id_expression (pp, t);
       break;
 
     case RESULT_DECL:
@@ -1543,14 +1543,14 @@ pp_cxx_direct_declarator (cxx_pretty_printer *pp, tree t)
 	       parameter pack.  */
 	    pp_cxx_ws_string (pp, "...");
 		      
-	  pp_cxx_id_expression (pp, DECL_NAME (t));
+	  pp_id_expression (pp, DECL_NAME (t));
 	}
       pp_cxx_abstract_declarator (pp, TREE_TYPE (t));
       break;
 
     case FUNCTION_DECL:
       pp_cxx_space_for_pointer_operator (pp, TREE_TYPE (TREE_TYPE (t)));
-      pp_cxx_id_expression (pp, t);
+      pp_id_expression (pp, t);
       pp_cxx_parameter_declaration_clause (pp, t);
 
       if (DECL_NONSTATIC_MEMBER_FUNCTION_P (t))
@@ -2452,7 +2452,6 @@ cxx_pretty_printer::cxx_pretty_printer ()
 
   /* pp->statement = (pp_fun) pp_cxx_statement;  */
 
-  id_expression = (pp_fun) pp_cxx_id_expression;
   primary_expression = (pp_fun) pp_cxx_primary_expression;
   postfix_expression = (pp_fun) pp_cxx_postfix_expression;
   unary_expression = (pp_fun) pp_cxx_unary_expression;
