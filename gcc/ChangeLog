@@ -1,3 +1,8 @@
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (TYPE_FINAL_P, DECL_FINAL_P): New macros.
+	(tree_decl_with_vis): Add FINAL field.
+
 2013-08-23  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-pre.c (do_regular_insertion): Include the expression in

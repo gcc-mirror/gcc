@@ -715,6 +715,9 @@ struct GTY(()) tree_base {
 
        DECL_NONLOCAL_FRAME in
 	   VAR_DECL
+
+       TYPE_FINAL_P in
+	   RECORD_TYPE, UNION_TYPE and QUAL_UNION_TYPE
 */
 
 struct GTY(()) tree_typed {
@@ -2314,6 +2317,10 @@ enum cv_qualifier
 #define TYPE_CONTAINS_PLACEHOLDER_INTERNAL(NODE) \
   (TYPE_CHECK (NODE)->type_common.contains_placeholder_bits)
 
+/* Nonzero if RECORD_TYPE represents a final derivation of class.  */
+#define TYPE_FINAL_P(NODE) \
+  (RECORD_OR_UNION_CHECK (NODE)->base.default_def_flag)
+
 /* The debug output functions use the symtab union field to store
    information specific to the debugging format.  The different debug
    output hooks store different types in the union field.  These three
@@ -3224,7 +3231,9 @@ struct GTY(()) tree_decl_with_vis {
  unsigned init_priority_p : 1;
  /* Used by C++ only.  Might become a generic decl flag.  */
  unsigned shadowed_for_var_p : 1;
- /* 14 unused bits. */
+ /* Belong to FUNCTION_DECL exclusively.  */
+ unsigned final : 1;
+ /* 13 unused bits. */
 };
 
 extern tree decl_debug_expr_lookup (tree);
@@ -3473,6 +3482,11 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    have any "target" attribute set. */
 #define DECL_FUNCTION_VERSIONED(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->function_decl.versioned_function)
+
+/* In FUNCTION_DECL that represent an virtual method this is set when
+   the method is final.  */
+#define DECL_FINAL_P(NODE)\
+   (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.final)
 
 /* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
    arguments/result/saved_tree fields by front ends.   It was either inherit
