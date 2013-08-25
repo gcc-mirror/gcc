@@ -35,6 +35,7 @@ struct cxx_pretty_printer : c_pretty_printer
 
   void constant (tree);
   void id_expression (tree);
+  void primary_expression (tree);
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
 };

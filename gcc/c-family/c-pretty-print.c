@@ -1212,7 +1212,7 @@ pp_c_identifier (c_pretty_printer *pp, const char *id)
       ( expression )   */
 
 void
-pp_c_primary_expression (c_pretty_printer *pp, tree e)
+c_pretty_printer::primary_expression (tree e)
 {
   switch (TREE_CODE (e))
     {
@@ -1222,49 +1222,49 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
     case CONST_DECL:
     case FUNCTION_DECL:
     case LABEL_DECL:
-      pp_c_tree_decl_identifier (pp, e);
+      pp_c_tree_decl_identifier (this, e);
       break;
 
     case IDENTIFIER_NODE:
-      pp_c_tree_identifier (pp, e);
+      pp_c_tree_identifier (this, e);
       break;
 
     case ERROR_MARK:
-      pp->translate_string ("<erroneous-expression>");
+      translate_string ("<erroneous-expression>");
       break;
 
     case RESULT_DECL:
-      pp->translate_string ("<return-value>");
+      translate_string ("<return-value>");
       break;
 
     case INTEGER_CST:
     case REAL_CST:
     case FIXED_CST:
     case STRING_CST:
-      pp_constant (pp, e);
+      constant (e);
       break;
 
     case TARGET_EXPR:
-      pp_c_ws_string (pp, "__builtin_memcpy");
-      pp_c_left_paren (pp);
-      pp_ampersand (pp);
-      pp_primary_expression (pp, TREE_OPERAND (e, 0));
-      pp_separate_with (pp, ',');
-      pp_ampersand (pp);
-      pp_initializer (pp, TREE_OPERAND (e, 1));
+      pp_c_ws_string (this, "__builtin_memcpy");
+      pp_c_left_paren (this);
+      pp_ampersand (this);
+      primary_expression (TREE_OPERAND (e, 0));
+      pp_separate_with (this, ',');
+      pp_ampersand (this);
+      pp_initializer (this, TREE_OPERAND (e, 1));
       if (TREE_OPERAND (e, 2))
 	{
-	  pp_separate_with (pp, ',');
-	  pp_c_expression (pp, TREE_OPERAND (e, 2));
+	  pp_separate_with (this, ',');
+	  pp_c_expression (this, TREE_OPERAND (e, 2));
 	}
-      pp_c_right_paren (pp);
+      pp_c_right_paren (this);
       break;
 
     default:
       /* FIXME:  Make sure we won't get into an infinite loop.  */
-      pp_c_left_paren (pp);
-      pp_expression (pp, e);
-      pp_c_right_paren (pp);
+      pp_c_left_paren (this);
+      pp_expression (this, e);
+      pp_c_right_paren (this);
       break;
     }
 }
@@ -1356,7 +1356,7 @@ pp_c_initializer_list (c_pretty_printer *pp, tree e)
 	    if (code == RECORD_TYPE || code == UNION_TYPE)
 	      {
 		pp_c_dot (pp);
-		pp_c_primary_expression (pp, TREE_PURPOSE (init));
+		pp_primary_expression (pp, TREE_PURPOSE (init));
 	      }
 	    else
 	      {
@@ -2119,7 +2119,7 @@ pp_c_assignment_expression (c_pretty_printer *pp, tree e)
   Implementation note:  instead of going through the usual recursion
   chain, I take the liberty of dispatching nodes to the appropriate
   functions.  This makes some redundancy, but it worths it. That also
-  prevents a possible infinite recursion between pp_c_primary_expression ()
+  prevents a possible infinite recursion between pp_primary_expression ()
   and pp_c_expression ().  */
 
 void
@@ -2344,7 +2344,6 @@ c_pretty_printer::c_pretty_printer ()
 
   statement                 = pp_c_statement;
 
-  primary_expression        = pp_c_primary_expression;
   postfix_expression        = pp_c_postfix_expression;
   unary_expression          = pp_c_unary_expression;
   initializer               = pp_c_initializer;

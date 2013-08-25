@@ -407,8 +407,8 @@ pp_cxx_userdef_literal (cxx_pretty_printer *pp, tree t)
      __is_trivial ( type-id )
      __is_union ( type-id )  */
 
-static void
-pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
+void
+cxx_pretty_printer::primary_expression (tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -416,11 +416,11 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
     case REAL_CST:
     case COMPLEX_CST:
     case STRING_CST:
-      pp_constant (pp, t);
+      constant (t);
       break;
 
     case USERDEF_LITERAL:
-      pp_cxx_userdef_literal (pp, t);
+      pp_cxx_userdef_literal (this, t);
       break;
 
     case BASELINK:
@@ -432,36 +432,36 @@ pp_cxx_primary_expression (cxx_pretty_printer *pp, tree t)
     case OVERLOAD:
     case CONST_DECL:
     case TEMPLATE_DECL:
-      pp_id_expression (pp, t);
+      id_expression (t);
       break;
 
     case RESULT_DECL:
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
-      pp_cxx_unqualified_id (pp, t);
+      pp_cxx_unqualified_id (this, t);
       break;
 
     case STMT_EXPR:
-      pp_cxx_left_paren (pp);
-      pp_cxx_statement (pp, STMT_EXPR_STMT (t));
-      pp_cxx_right_paren (pp);
+      pp_cxx_left_paren (this);
+      pp_cxx_statement (this, STMT_EXPR_STMT (t));
+      pp_cxx_right_paren (this);
       break;
 
     case TRAIT_EXPR:
-      pp_cxx_trait_expression (pp, t);
+      pp_cxx_trait_expression (this, t);
       break;
 
     case VA_ARG_EXPR:
-      pp_cxx_va_arg_expression (pp, t);
+      pp_cxx_va_arg_expression (this, t);
       break;
 
     case OFFSETOF_EXPR:
-      pp_cxx_offsetof_expression (pp, t);
+      pp_cxx_offsetof_expression (this, t);
       break;
 
     default:
-      pp_c_primary_expression (pp, t);
+      c_pretty_printer::primary_expression (t);
       break;
     }
 }
@@ -591,7 +591,7 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
     case CONST_DECL:
     case TEMPLATE_DECL:
     case RESULT_DECL:
-      pp_cxx_primary_expression (pp, t);
+      pp_primary_expression (pp, t);
       break;
 
     case DYNAMIC_CAST_EXPR:
@@ -1069,7 +1069,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case TEMPLATE_PARM_INDEX:
     case TEMPLATE_TEMPLATE_PARM:
     case STMT_EXPR:
-      pp_cxx_primary_expression (pp, t);
+      pp_primary_expression (pp, t);
       break;
 
     case CALL_EXPR:
@@ -1608,9 +1608,9 @@ pp_cxx_ctor_initializer (cxx_pretty_printer *pp, tree t)
       bool is_pack = PACK_EXPANSION_P (purpose);
 
       if (is_pack)
-	pp_cxx_primary_expression (pp, PACK_EXPANSION_PATTERN (purpose));
+	pp_primary_expression (pp, PACK_EXPANSION_PATTERN (purpose));
       else
-	pp_cxx_primary_expression (pp, purpose);
+	pp_primary_expression (pp, purpose);
       pp_cxx_call_argument_list (pp, TREE_VALUE (t));
       if (is_pack)
 	pp_cxx_ws_string (pp, "...");
@@ -2448,7 +2448,6 @@ cxx_pretty_printer::cxx_pretty_printer ()
 
   /* pp->statement = (pp_fun) pp_cxx_statement;  */
 
-  primary_expression = (pp_fun) pp_cxx_primary_expression;
   postfix_expression = (pp_fun) pp_cxx_postfix_expression;
   unary_expression = (pp_fun) pp_cxx_unary_expression;
   multiplicative_expression = (pp_fun) pp_cxx_multiplicative_expression;
