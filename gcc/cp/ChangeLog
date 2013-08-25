@@ -1,3 +1,11 @@
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (struct lang_type_class): Free is_final bit.
+	(CLASSTYPE_FINAL): Define using TYPE_FINAL_P.
+	(DECL_FINAL_P): Remove.
+	* pt.c (instantiate_class_template_1): Guard that CLASSTYPE_FINAL
+	is called on CLASS_TYPE_P.
+
 2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.c (M_): Remove.
