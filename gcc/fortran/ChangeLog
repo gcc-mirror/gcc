@@ -1,3 +1,13 @@
+2013-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/58146
+	* array.c (gfc_ref_dimen_size):  If possible, use
+	gfc_dep_difference to calculate array refrence
+	sizes.  Fall back to integer code otherwise.
+	* dependency.c (discard_nops).  Move up.
+	Also discarde widening integer conversions.
+	(gfc_dep_compare_expr):  Use discard_nops.
+
 2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/57798

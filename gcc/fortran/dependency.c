@@ -240,6 +240,46 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 	return -2;      
 }
 
+/* Helper function to look through parens, unary plus and widening
+   integer conversions.  */
+
+static gfc_expr*
+discard_nops (gfc_expr *e)
+{
+  gfc_actual_arglist *arglist;
+
+  if (e == NULL)
+    return NULL;
+
+  while (true)
+    {
+      if (e->expr_type == EXPR_OP
+	  && (e->value.op.op == INTRINSIC_UPLUS
+	      || e->value.op.op == INTRINSIC_PARENTHESES))
+	{
+	  e = e->value.op.op1;
+	  continue;
+	}
+
+      if (e->expr_type == EXPR_FUNCTION && e->value.function.isym
+	  && e->value.function.isym->id == GFC_ISYM_CONVERSION
+	  && e->ts.type == BT_INTEGER)
+	{
+	  arglist = e->value.function.actual;
+	  if (arglist->expr->ts.type == BT_INTEGER
+	      && e->ts.kind > arglist->expr->ts.kind)
+	    {
+	      e = arglist->expr;
+	      continue;
+	    }
+	}
+      break;
+    }
+
+  return e;
+}
+
+
 /* Compare two expressions.  Return values:
    * +1 if e1 > e2
    * 0 if e1 == e2
@@ -252,59 +292,13 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 int
 gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
 {
-  gfc_actual_arglist *args1;
-  gfc_actual_arglist *args2;
   int i;
-  gfc_expr *n1, *n2;
-
-  n1 = NULL;
-  n2 = NULL;
 
   if (e1 == NULL && e2 == NULL)
     return 0;
 
-  /* Remove any integer conversion functions to larger types.  */
-  if (e1->expr_type == EXPR_FUNCTION && e1->value.function.isym
-      && e1->value.function.isym->id == GFC_ISYM_CONVERSION
-      && e1->ts.type == BT_INTEGER)
-    {
-      args1 = e1->value.function.actual;
-      if (args1->expr->ts.type == BT_INTEGER
-	  && e1->ts.kind > args1->expr->ts.kind)
-	n1 = args1->expr;
-    }
-
-  if (e2->expr_type == EXPR_FUNCTION && e2->value.function.isym
-      && e2->value.function.isym->id == GFC_ISYM_CONVERSION
-      && e2->ts.type == BT_INTEGER)
-    {
-      args2 = e2->value.function.actual;
-      if (args2->expr->ts.type == BT_INTEGER
-	  && e2->ts.kind > args2->expr->ts.kind)
-	n2 = args2->expr;
-    }
-
-  if (n1 != NULL)
-    {
-      if (n2 != NULL)
-	return gfc_dep_compare_expr (n1, n2);
-      else
-	return gfc_dep_compare_expr (n1, e2);
-    }
-  else
-    {
-      if (n2 != NULL)
-	return gfc_dep_compare_expr (e1, n2);
-    }
-  
-  if (e1->expr_type == EXPR_OP
-      && (e1->value.op.op == INTRINSIC_UPLUS
-	  || e1->value.op.op == INTRINSIC_PARENTHESES))
-    return gfc_dep_compare_expr (e1->value.op.op1, e2);
-  if (e2->expr_type == EXPR_OP
-      && (e2->value.op.op == INTRINSIC_UPLUS
-	  || e2->value.op.op == INTRINSIC_PARENTHESES))
-    return gfc_dep_compare_expr (e1, e2->value.op.op1);
+  e1 = discard_nops (e1);
+  e2 = discard_nops (e2);
 
   if (e1->expr_type == EXPR_OP && e1->value.op.op == INTRINSIC_PLUS)
     {
@@ -498,21 +492,6 @@ gfc_dep_compare_expr (gfc_expr *e1, gfc_expr *e2)
     default:
       return -2;
     }
-}
-
-
-/* Helper function to look through parens and unary plus.  */
-
-static gfc_expr*
-discard_nops (gfc_expr *e)
-{
-
-  while (e && e->expr_type == EXPR_OP
-	 && (e->value.op.op == INTRINSIC_UPLUS
-	     || e->value.op.op == INTRINSIC_PARENTHESES))
-    e = e->value.op.op1;
-
-  return e;
 }
 
 
