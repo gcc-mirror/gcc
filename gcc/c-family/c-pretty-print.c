@@ -29,10 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "diagnostic.h"
 
-/* Translate if being used for diagnostics, but not for dump files or
-   __PRETTY_FUNCTION.  */
-#define M_(msgid) (pp_translate_identifiers (pp) ? _(msgid) : (msgid))
-
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
    codes we used to have in the past.  Following a structured
@@ -341,7 +337,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
   switch (code)
     {
     case ERROR_MARK:
-      pp_c_ws_string (pp, M_("<type-error>"));
+      pp->translate_string ("<type-error>");
       break;
 
     case IDENTIFIER_NODE:
@@ -379,15 +375,15 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 	      switch (code)
 		{
 		case INTEGER_TYPE:
-		  pp_string (pp, (TYPE_UNSIGNED (t)
-				  ? M_("<unnamed-unsigned:")
-				  : M_("<unnamed-signed:")));
+		  pp->translate_string (TYPE_UNSIGNED (t)
+                                        ? "<unnamed-unsigned:"
+                                        : "<unnamed-signed:");
 		  break;
 		case REAL_TYPE:
-		  pp_string (pp, M_("<unnamed-float:"));
+		  pp->translate_string ("<unnamed-float:");
 		  break;
 		case FIXED_POINT_TYPE:
-		  pp_string (pp, M_("<unnamed-fixed:"));
+		  pp->translate_string ("<unnamed-fixed:");
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -402,7 +398,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       if (DECL_NAME (t))
 	pp_id_expression (pp, t);
       else
-	pp_c_ws_string (pp, M_("<typedef-error>"));
+	pp->translate_string ("<typedef-error>");
       break;
 
     case UNION_TYPE:
@@ -415,12 +411,12 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       else if (code == ENUMERAL_TYPE)
 	pp_c_ws_string (pp, "enum");
       else
-	pp_c_ws_string (pp, M_("<tag-error>"));
+	pp->translate_string ("<tag-error>");
 
       if (TYPE_NAME (t))
 	pp_id_expression (pp, TYPE_NAME (t));
       else
-	pp_c_ws_string (pp, M_("<anonymous>"));
+	pp->translate_string ("<anonymous>");
       break;
 
     default:
@@ -1187,6 +1183,15 @@ pp_c_ws_string (c_pretty_printer *pp, const char *str)
   pp->padding = pp_before;
 }
 
+void
+c_pretty_printer::translate_string (const char *gmsgid)
+{
+  if (pp_translate_identifiers (this))
+    pp_c_ws_string (this, _(gmsgid));
+  else
+    pp_c_ws_string (this, gmsgid);
+}
+
 /* Pretty-print an IDENTIFIER_NODE, which may contain UTF-8 sequences
    that need converting to the locale encoding, preceded by whitespace
    is necessary.  */
@@ -1225,11 +1230,11 @@ pp_c_primary_expression (c_pretty_printer *pp, tree e)
       break;
 
     case ERROR_MARK:
-      pp_c_ws_string (pp, M_("<erroneous-expression>"));
+      pp->translate_string ("<erroneous-expression>");
       break;
 
     case RESULT_DECL:
-      pp_c_ws_string (pp, M_("<return-value>"));
+      pp->translate_string ("<return-value>");
       break;
 
     case INTEGER_CST:
@@ -2155,7 +2160,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
 	  && !DECL_ARTIFICIAL (SSA_NAME_VAR (e)))
 	pp_c_expression (pp, SSA_NAME_VAR (e));
       else
-	pp_c_ws_string (pp, M_("<unknown>"));
+	pp->translate_string ("<unknown>");
       break;
 
     case POSTINCREMENT_EXPR:

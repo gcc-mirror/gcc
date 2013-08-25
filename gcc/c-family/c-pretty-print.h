@@ -51,6 +51,9 @@ struct c_pretty_printer : pretty_printer
 {
   c_pretty_printer ();
 
+  // Format string, possibly translated.
+  void translate_string (const char *);
+
   virtual void constant (tree);
   virtual void id_expression (tree);
   /* Points to the first element of an array of offset-list.

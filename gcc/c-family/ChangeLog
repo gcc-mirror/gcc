@@ -1,3 +1,12 @@
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::translate_string): Declare.
+	* c-pretty-print.c (M_): Remove.
+	(c_pretty_printer::translate_string): Define.
+	(pp_c_type_specifier): Use it.
+	(pp_c_primary_expression): Likewise.
+	(pp_c_expression): Likewise.
+
 2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.h (c_pretty_printer::id_expression): Now a
