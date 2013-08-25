@@ -2056,7 +2056,7 @@ wide_int_ro::mul_internal (bool high, bool full,
 
   /* The 2 is for a full mult.  */
   memset (r, 0, half_blocks_needed * 2
-	  * HOST_BITS_PER_HALF_WIDE_INT / BITS_PER_UNIT);
+	  * HOST_BITS_PER_HALF_WIDE_INT / CHAR_BIT);
 
   for (j = 0; j < half_blocks_needed; j++)
     {
