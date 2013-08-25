@@ -1843,7 +1843,6 @@ wide_int_ro::zforce_to_size (unsigned int prec) const
 inline HOST_WIDE_INT
 wide_int_ro::sign_mask () const
 {
-  int i = len - 1;
   if (precision < HOST_BITS_PER_WIDE_INT)
     {
       /* We don't allow a int:0 inside a struct to get this far,
@@ -1853,14 +1852,13 @@ wide_int_ro::sign_mask () const
 	      >> (HOST_BITS_PER_WIDE_INT - 1));
     }
 
-  /* VRP appears to be badly broken and this is a very ugly fix.  */
-  if (i >= 0)
-    return val[i] >> (HOST_BITS_PER_WIDE_INT - 1);
-
-  gcc_unreachable ();
-#if 0
-  return val[len - 1] >> (HOST_BITS_PER_WIDE_INT - 1);
-#endif
+  /* TREE_VRP is not able to see that it is not possible for len to be
+     0.  So without this test, it warns about this which causes
+     bootstrap failures.  */
+  if (len < 1)
+    gcc_unreachable ();
+  else
+    return val[len - 1] >> (HOST_BITS_PER_WIDE_INT - 1);
 }
 
 /* Return THIS & C.  */

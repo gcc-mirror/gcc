@@ -171,6 +171,12 @@ wide_int_ro::from_rtx (const rtx_mode_t r)
     case CONST_INT:
       result.val[0] = INTVAL (x);
       result.len = 1;
+
+#if 0
+      if (prec != HOST_BITS_PER_WIDE_INT)
+	gcc_assert (result.val[0] == sext_hwi (result.val[0], prec));
+#endif
+
 #ifdef DEBUG_WIDE_INT
       debug_wh ("wide_int:: %s = from_rtx ("HOST_WIDE_INT_PRINT_HEX")\n",
 		result, INTVAL (x));
