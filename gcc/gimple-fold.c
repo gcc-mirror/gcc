@@ -3097,7 +3097,7 @@ tree
 gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
 {
   unsigned HOST_WIDE_INT offset, size;
-  tree v, fn, vtable;
+  tree v, fn, vtable, init;
 
   vtable = v = BINFO_VTABLE (known_binfo);
   /* If there is no virtual methods table, leave the OBJ_TYPE_REF alone.  */
@@ -3117,14 +3117,24 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
   v = TREE_OPERAND (v, 0);
 
   if (TREE_CODE (v) != VAR_DECL
-      || !DECL_VIRTUAL_P (v)
-      || !DECL_INITIAL (v)
-      || DECL_INITIAL (v) == error_mark_node)
+      || !DECL_VIRTUAL_P (v))
     return NULL_TREE;
+  init = ctor_for_folding (v);
+
+  /* The virtual tables should always be born with constructors.
+     and we always should assume that they are avaialble for
+     folding.  At the moment we do not stream them in all cases,
+     but it should never happen that ctor seem unreachable.  */
+  gcc_assert (init);
+  if (init == error_mark_node)
+    {
+      gcc_assert (in_lto_p);
+      return NULL_TREE;
+    }
   gcc_checking_assert (TREE_CODE (TREE_TYPE (v)) == ARRAY_TYPE);
   size = tree_low_cst (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))), 1);
   offset += token * size;
-  fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), DECL_INITIAL (v),
+  fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
 			    offset, size, vtable);
   if (!fn || integer_zerop (fn))
     return NULL_TREE;

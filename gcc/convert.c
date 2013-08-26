@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "convert.h"
 #include "diagnostic-core.h"
+#include "target.h"
 #include "langhooks.h"
 
 /* Convert EXPR to some pointer or reference type TYPE.
@@ -404,7 +405,7 @@ convert_to_integer (tree type, tree expr)
         {
 	CASE_FLT_FN (BUILT_IN_CEIL):
 	  /* Only convert in ISO C99 mode.  */
-	  if (!TARGET_C99_FUNCTIONS)
+	  if (!targetm.libc_has_function (function_c99_misc))
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -420,7 +421,7 @@ convert_to_integer (tree type, tree expr)
 
 	CASE_FLT_FN (BUILT_IN_FLOOR):
 	  /* Only convert in ISO C99 mode.  */
-	  if (!TARGET_C99_FUNCTIONS)
+	  if (!targetm.libc_has_function (function_c99_misc))
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -436,7 +437,7 @@ convert_to_integer (tree type, tree expr)
 
 	CASE_FLT_FN (BUILT_IN_ROUND):
 	  /* Only convert in ISO C99 mode.  */
-	  if (!TARGET_C99_FUNCTIONS)
+	  if (!targetm.libc_has_function (function_c99_misc))
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)
@@ -457,7 +458,7 @@ convert_to_integer (tree type, tree expr)
 	  /* ... Fall through ...  */
 	CASE_FLT_FN (BUILT_IN_RINT):
 	  /* Only convert in ISO C99 mode.  */
-	  if (!TARGET_C99_FUNCTIONS)
+	  if (!targetm.libc_has_function (function_c99_misc))
 	    break;
 	  if (outprec < TYPE_PRECISION (integer_type_node)
 	      || (outprec == TYPE_PRECISION (integer_type_node)

@@ -6,7 +6,7 @@ typedef long long int64;
 typedef unsigned int uint32;
 typedef unsigned long long uint64;
 namespace std {
-  typedef unsigned int size_t;
+  typedef __SIZE_TYPE__ size_t;
   template<class _CharT>
   struct char_traits;
   template<typename _Tp>
@@ -22,7 +22,7 @@ namespace std {
     return static_cast<_Tp&&>(__t);
   }
 }
-typedef unsigned int size_t;
+typedef __SIZE_TYPE__ size_t;
 extern "C++" {
   inline void* operator new(std::size_t, void* __p) noexcept {
     return __p;

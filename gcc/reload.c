@@ -680,8 +680,8 @@ find_valid_class (enum machine_mode outer ATTRIBUTE_UNUSED,
 	    if (HARD_REGNO_MODE_OK (regno, inner))
 	      {
 		good = 1;
-		if (! TEST_HARD_REG_BIT (reg_class_contents[rclass], regno + n)
-		    || ! HARD_REGNO_MODE_OK (regno + n, outer))
+		if (TEST_HARD_REG_BIT (reg_class_contents[rclass], regno + n)
+		    && ! HARD_REGNO_MODE_OK (regno + n, outer))
 		  bad = 1;
 	      }
 	  }

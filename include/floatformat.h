@@ -128,7 +128,8 @@ extern const struct floatformat floatformat_ia64_spill_little;
 extern const struct floatformat floatformat_ia64_quad_big;
 extern const struct floatformat floatformat_ia64_quad_little;
 /* IBM long double (double+double).  */
-extern const struct floatformat floatformat_ibm_long_double;
+extern const struct floatformat floatformat_ibm_long_double_big;
+extern const struct floatformat floatformat_ibm_long_double_little;
 
 /* Convert from FMT to a double.
    FROM is the address of the extended float.

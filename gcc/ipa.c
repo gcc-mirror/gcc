@@ -574,9 +574,13 @@ static bool
 comdat_can_be_unshared_p_1 (symtab_node node)
 {
   /* When address is taken, we don't know if equality comparison won't
-     break eventually. Exception are virutal functions and vtables,
-     where this is not possible by language standard.  */
+     break eventually. Exception are virutal functions, C++
+     constructors/destructors and vtables, where this is not possible by
+     language standard.  */
   if (!DECL_VIRTUAL_P (node->symbol.decl)
+      && (TREE_CODE (node->symbol.decl) != FUNCTION_DECL
+	  || (!DECL_CXX_CONSTRUCTOR_P (node->symbol.decl)
+	      && !DECL_CXX_DESTRUCTOR_P (node->symbol.decl)))
       && address_taken_from_non_vtable_p (node))
     return false;
 
@@ -968,10 +972,10 @@ function_and_variable_visibility (bool whole_program)
 	  && !vnode->symbol.weakref)
 	{
 	  gcc_assert (in_lto_p || whole_program || !TREE_PUBLIC (vnode->symbol.decl));
-	  symtab_make_decl_local (vnode->symbol.decl);
 	  vnode->symbol.unique_name = ((vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY
 				       || vnode->symbol.resolution == LDPR_PREVAILING_DEF_IRONLY_EXP)
 				       && TREE_PUBLIC (vnode->symbol.decl));
+	  symtab_make_decl_local (vnode->symbol.decl);
 	  if (vnode->symbol.same_comdat_group)
 	    symtab_dissolve_same_comdat_group_list ((symtab_node) vnode);
 	  vnode->symbol.resolution = LDPR_PREVAILING_DEF_IRONLY;
@@ -1397,7 +1401,7 @@ ipa_profile_read_summary (void)
 static unsigned int
 ipa_profile (void)
 {
-  struct cgraph_node **order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
+  struct cgraph_node **order;
   struct cgraph_edge *e;
   int order_pos;
   bool something_changed = false;
@@ -1575,6 +1579,7 @@ ipa_profile (void)
 	     nuseless, nuseless * 100.0 / nindirect,
 	     nconverted, nconverted * 100.0 / nindirect);
 
+  order = XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   order_pos = ipa_reverse_postorder (order);
   for (i = order_pos - 1; i >= 0; i--)
     {

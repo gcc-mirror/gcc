@@ -3457,8 +3457,10 @@ finish_id_expression (tree id_expression,
 	}
     }
 
-  if (TREE_DEPRECATED (decl))
-    warn_deprecated_use (decl, NULL_TREE);
+  /* Handle references (c++/56130).  */
+  tree t = REFERENCE_REF_P (decl) ? TREE_OPERAND (decl, 0) : decl;
+  if (TREE_DEPRECATED (t))
+    warn_deprecated_use (t, NULL_TREE);
 
   return decl;
 }
@@ -3691,7 +3693,7 @@ finish_offsetof (tree expr)
       || TREE_CODE (TREE_TYPE (expr)) == METHOD_TYPE
       || TREE_TYPE (expr) == unknown_type_node)
     {
-      if (TREE_CODE (expr) == INDIRECT_REF)
+      if (INDIRECT_REF_P (expr))
 	error ("second operand of %<offsetof%> is neither a single "
 	       "identifier nor a sequence of member accesses and "
 	       "array references");

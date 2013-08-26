@@ -3041,7 +3041,6 @@ void
 ipa_print_node_params (FILE *f, struct cgraph_node *node)
 {
   int i, count;
-  tree temp;
   struct ipa_node_params *info;
 
   if (!node->symbol.definition)
@@ -3054,12 +3053,7 @@ ipa_print_node_params (FILE *f, struct cgraph_node *node)
     {
       int c;
 
-      temp = ipa_get_param (info, i);
-      if (TREE_CODE (temp) == PARM_DECL)
-	fprintf (f, "    param %d : %s", i,
-                 (DECL_NAME (temp)
-                  ? (*lang_hooks.decl_printable_name) (temp, 2)
-                  : "(unnamed)"));
+      ipa_dump_param (f, info, i);
       if (ipa_is_param_used (info, i))
 	fprintf (f, " used");
       c = ipa_get_controlled_uses (info, i);

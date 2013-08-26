@@ -9273,15 +9273,27 @@ static vec<tree> equiv_stack;
 static tree
 simplify_stmt_for_jump_threading (gimple stmt, gimple within_stmt)
 {
-  /* We only use VRP information to simplify conditionals.  This is
-     overly conservative, but it's unclear if doing more would be
-     worth the compile time cost.  */
-  if (gimple_code (stmt) != GIMPLE_COND)
-    return NULL;
+  if (gimple_code (stmt) == GIMPLE_COND)
+    return vrp_evaluate_conditional (gimple_cond_code (stmt),
+				     gimple_cond_lhs (stmt),
+				     gimple_cond_rhs (stmt), within_stmt);
 
-  return vrp_evaluate_conditional (gimple_cond_code (stmt),
-				   gimple_cond_lhs (stmt),
-				   gimple_cond_rhs (stmt), within_stmt);
+  if (gimple_code (stmt) == GIMPLE_ASSIGN)
+    {
+      value_range_t new_vr = VR_INITIALIZER;
+      tree lhs = gimple_assign_lhs (stmt);
+
+      if (TREE_CODE (lhs) == SSA_NAME
+	  && (INTEGRAL_TYPE_P (TREE_TYPE (lhs))
+	      || POINTER_TYPE_P (TREE_TYPE (lhs))))
+	{
+	  extract_range_from_assignment (&new_vr, stmt);
+	  if (range_int_cst_singleton_p (&new_vr))
+	    return new_vr.min;
+	}
+    }
+
+  return NULL_TREE;
 }
 
 /* Blocks which have more than one predecessor and more than

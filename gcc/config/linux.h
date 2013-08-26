@@ -95,15 +95,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKERX32, UCLIBC_DYNAMIC_LINKERX32, \
 			 BIONIC_DYNAMIC_LINKERX32)
 
-/* Determine whether the entire c99 runtime
-   is present in the runtime library.  */
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
-
-/* Whether we have sincos that follows the GNU extension.  */
-#undef TARGET_HAS_SINCOS
-#define TARGET_HAS_SINCOS (OPTION_GLIBC || OPTION_BIONIC)
-
 /* Whether we have Bionic libc runtime */
 #undef TARGET_HAS_BIONIC
 #define TARGET_HAS_BIONIC (OPTION_BIONIC)
+
+/* Determine what functions are present at the runtime;
+   this includes full c99 runtime and sincos.  */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION linux_android_libc_has_function

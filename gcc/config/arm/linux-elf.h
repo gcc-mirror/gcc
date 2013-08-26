@@ -44,9 +44,9 @@
 
 #define SUBTARGET_EXTRA_LINK_SPEC " -m " TARGET_LINKER_EMULATION " -p"
 
+/* We do not have any MULTILIB_OPTIONS specified, so there are no
+   MULTILIB_DEFAULTS.  */
 #undef  MULTILIB_DEFAULTS
-#define MULTILIB_DEFAULTS \
-	{ "marm", "mlittle-endian", "mfloat-abi=hard", "mno-thumb-interwork" }
 
 /* Now we define the strings used to build the spec file.  */
 #undef  LIB_SPEC

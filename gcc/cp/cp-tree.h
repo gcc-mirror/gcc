@@ -1416,7 +1416,6 @@ struct GTY(()) lang_type_class {
   unsigned has_complex_move_ctor : 1;
   unsigned has_complex_move_assign : 1;
   unsigned has_constexpr_ctor : 1;
-  unsigned is_final : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -1425,7 +1424,7 @@ struct GTY(()) lang_type_class {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 2;
+  unsigned dummy : 3;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -1535,7 +1534,7 @@ struct GTY((variable_size)) lang_type {
 
 /* Nonzero means that NODE (a class type) is final */
 #define CLASSTYPE_FINAL(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->is_final)
+  TYPE_FINAL_P (NODE)
 
 
 /* Nonzero means that this _CLASSTYPE node overloads operator=(X&).  */
@@ -2122,9 +2121,10 @@ struct GTY((variable_size)) lang_decl {
 #define SET_DECL_LANGUAGE(NODE, LANGUAGE) \
   (DECL_LANG_SPECIFIC (NODE)->u.base.language = (LANGUAGE))
 
-/* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
+/* For FUNCTION_DECLs and TEMPLATE_DECLs: nonzero means that this function
+   is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) \
-  (LANG_DECL_FN_CHECK (NODE)->constructor_attr)
+  DECL_CXX_CONSTRUCTOR_P (STRIP_TEMPLATE (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
@@ -2153,9 +2153,10 @@ struct GTY((variable_size)) lang_decl {
 #define DECL_MOVE_CONSTRUCTOR_P(NODE) \
   (DECL_CONSTRUCTOR_P (NODE) && move_fn_p (NODE))
 
-/* Nonzero if NODE is a destructor.  */
+/* Nonzero if NODE (a FUNCTION_DECL or TEMPLATE_DECL)
+   is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
-  (LANG_DECL_FN_CHECK (NODE)->destructor_attr)
+  DECL_CXX_DESTRUCTOR_P (STRIP_TEMPLATE (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
    specialized in-charge constructor, in-charge deleting constructor,
@@ -2399,10 +2400,6 @@ struct GTY((variable_size)) lang_decl {
 /* True (in a FUNCTION_DECL) if NODE is a function declared with
    an override virt-specifier */
 #define DECL_OVERRIDE_P(NODE) (TREE_LANG_FLAG_0 (NODE))
-
-/* True (in a FUNCTION_DECL) if NODE is a function declared with
-   a final virt-specifier */
-#define DECL_FINAL_P(NODE) (TREE_LANG_FLAG_1 (NODE))
 
 /* The thunks associated with NODE, a FUNCTION_DECL.  */
 #define DECL_THUNKS(NODE) \
@@ -2975,7 +2972,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
-  (TREE_CODE (NODE) == INDIRECT_REF			\
+  (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
    && (TREE_CODE (TREE_TYPE (TREE_OPERAND ((NODE), 0)))	\
        == REFERENCE_TYPE))

@@ -1,3 +1,164 @@
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_DESTRUCTOR_P): Use
+	middle-end flag.
+
+2013-08-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::unary_expression):
+	Declare as overrider.
+	(cxx_pretty_printer::multiplicative_expression): Likewise.
+	(cxx_pretty_printer::conditional_expression): Likewise.
+	(cxx_pretty_printer::assignment_expression): Likewise.
+	(cxx_pretty_printer::expression): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::unary_expression):
+	Rename from pp_cxx_unary_expression.  Adjust.
+	(cxx_pretty_printer::multiplicative_expression): Rename from
+	pp_cxx_multiplicative_expression.  Adjust.
+	(cxx_pretty_printer::conditional_expression): Rename from
+	pp_cxx_conditional_expression.  Adjust.
+	(cxx_pretty_printer::assignment_expression): Rename from
+	pp_cxx_assignment_expression.  Adjust.
+	(cxx_pretty_printer::expression): Rename from pp_cxx_expression.
+	Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Dot not assign to
+	unary_expression, multiplicative_expression,
+	conditional_expression, assignment_expression, expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::postfix_expression):
+	Declare as overrider.
+	* cxx-pretty-print.c (cxx_pretty_printer::postfix_expression):
+	Rename from pp_cxx_postfix_expression.  Adjust.
+	(pp_cxx_expression): Use pp_postfix_expression.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	postfix_expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::primary_expression): Now
+	an overrider of c_pretty_printer::primary_expression.
+	* cxx-pretty-print.c (cxx_pretty_printer::primary_expression):
+	Rename from pp_cxx_primary_expression.  Adjust.
+	(pp_cxx_postfix_expression): Use pp_primary_expression.
+	(pp_cxx_ctor_initializer): Likewise.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	primary_expression.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (struct lang_type_class): Free is_final bit.
+	(CLASSTYPE_FINAL): Define using TYPE_FINAL_P.
+	(DECL_FINAL_P): Remove.
+	* pt.c (instantiate_class_template_1): Guard that CLASSTYPE_FINAL
+	is called on CLASS_TYPE_P.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.c (M_): Remove.
+	(pp_cxx_unqualified_id): Use translate_string instead of M_.
+	(pp_cxx_canonical_template_parameter): Likewise.
+
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::id_expression): Declare.
+	* cxx-pretty-print.c (cxx_pretty_printer::id_expression): Rename
+	from pp_cxx_id_expression.  Adjust.
+	(pp_cxx_userdef_literal): Use pp_id_expression.
+	(pp_cxx_primary_expression): Likewise.
+	(pp_cxx_direct_declarator): Likewise.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	id_expression.
+
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::constant): Now a member
+	function, overriding c_pretty_printer::constant.
+	* cxx-pretty-print.c (cxx_pretty_printer::constant): Rename from
+	pp_cxx_constant.  Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to constant.
+
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutiobs.net>
+
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Call a
+	destructor for the early printer.
+	* error.c (type_to_string): Use pp_buffer.
+
+2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56380
+	* class.c (check_field_decls): Check for const mutable and const
+	reference data members.
+
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (init_error): Remove calls to pp_construct and
+	pp_cxx_pretty_printer_init.  Initialize cxx_pp with placement-new.
+	* cxx-pretty-print.h (cxx_pretty_printer::cxx_pretty_printer): Declare.
+	(cxx_pretty_printer_init): Remove.
+	* cxx-pretty-print.c (cxx_pretty_printer::cxx_pretty_printer):
+	Rename from cxx_pretty_printer_init.  Adjust.
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Simplify
+	initialization of C++ diagnostics pretty printer.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_new_method_call_1): Use INDIRECT_REF_P.
+	* cp-tree.h (REFERENCE_REF_P): Likewise.
+	* semantics.c (finish_offsetof): Likewise.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56130
+	* semantics.c (finish_id_expression): Handle deprecated references.
+
+2013-08-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58119
+	* cvt.c (build_expr_type_conversion): Don't complain about a
+	template that can't match the desired type category.
+
+2013-08-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (pp_ggc_formatted_text): New.
+	(type_as_string): Use it in lieu of pp_formatted_text.
+	(type_as_string_translate): Likewise.
+	(expr_as_string): Likewise.
+	(decl_as_string): Likewise.
+	(decl_as_string_translate): Likewise.
+	(lang_decl_name): Likewise.
+	(decl_to_string): Likewise.
+	(expr_to_string): Likewise.
+	(fndecl_to_string): Likewise.
+	(parm_to_string): Likewise.
+	(type_to_string): Likewise.
+	(args_to_string): Likewise.
+	(subst_to_string): Likewise.
+
+2013-08-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57490
+	* cp-array-notation.c (cp_expand_cond_array_notations): Added a
+	check for truth values.
+	(expand_array_notation_exprs): Added truth values case.  Removed an
+	unwanted else.  Added for-loop to walk through subtrees in default
+	case.
+	* call.c (build_cxx_call): Inherited the type of the array notation for
+	certain built-in array notation functions.
+
+2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_lambda_introducer, cp_parser_decltype_expr):
+	Use cp_parser_lookup_name_simple.
+
+2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.h (pop_bindings_and_leave_scope): Declare.
+	* name-lookup.c (pop_bindings_and_leave_scope): Define.
+	* parser.c (cp_parser_lambda_declarator_opt,
+	cp_parser_direct_declarator, cp_parser_cache_defarg): Use it.
+
 2013-08-17  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58083

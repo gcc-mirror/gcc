@@ -62,7 +62,7 @@ struct timevar_time_def
   double wall;
 
   /* Garbage collector memory.  */
-  unsigned ggc_mem;
+  size_t ggc_mem;
 };
 
 /* An enumeration of timing variable identifiers.  Constructed from

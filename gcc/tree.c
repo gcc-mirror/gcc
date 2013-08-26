@@ -2054,12 +2054,12 @@ integer_pow2p (const_tree expr)
   if (prec == HOST_BITS_PER_DOUBLE_INT)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       high = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
+	low &= ~(HOST_WIDE_INT_M1U << prec);
     }
 
   if (high == 0 && low == 0)
@@ -2118,12 +2118,12 @@ tree_log2 (const_tree expr)
   if (prec == HOST_BITS_PER_DOUBLE_INT)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       high = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
+	low &= ~(HOST_WIDE_INT_M1U << prec);
     }
 
   return (high != 0 ? HOST_BITS_PER_WIDE_INT + exact_log2 (high)
@@ -2155,12 +2155,12 @@ tree_floor_log2 (const_tree expr)
   if (prec == HOST_BITS_PER_DOUBLE_INT || prec == 0)
     ;
   else if (prec > HOST_BITS_PER_WIDE_INT)
-    high &= ~((HOST_WIDE_INT) (-1) << (prec - HOST_BITS_PER_WIDE_INT));
+    high &= ~(HOST_WIDE_INT_M1U << (prec - HOST_BITS_PER_WIDE_INT));
   else
     {
       high = 0;
       if (prec < HOST_BITS_PER_WIDE_INT)
-	low &= ~((HOST_WIDE_INT) (-1) << prec);
+	low &= ~(HOST_WIDE_INT_M1U << prec);
     }
 
   return (high != 0 ? HOST_BITS_PER_WIDE_INT + floor_log2 (high)
@@ -11948,11 +11948,8 @@ types_same_for_odr (tree type1, tree type2)
 
   /* Check for anonymous namespaces. Those have !TREE_PUBLIC
      on the corresponding TYPE_STUB_DECL.  */
-  if (TYPE_STUB_DECL (type1) != TYPE_STUB_DECL (type2)
-      && (!TYPE_STUB_DECL (type1)
-	  || !TYPE_STUB_DECL (type2)
-	  || !TREE_PUBLIC (TYPE_STUB_DECL (type1))
-	  || !TREE_PUBLIC (TYPE_STUB_DECL (type2))))
+  if (type_in_anonymous_namespace_p (type1)
+      || type_in_anonymous_namespace_p (type2))
     return false;
 
   if (!TYPE_NAME (type1))
@@ -12005,6 +12002,14 @@ obj_type_ref_class (tree ref)
   ref = TREE_VALUE (TYPE_ARG_TYPES (ref));
   gcc_checking_assert (TREE_CODE (ref) == POINTER_TYPE);
   return TREE_TYPE (ref);
+}
+
+/* Return true if T is in anonymous namespace.  */
+
+bool
+type_in_anonymous_namespace_p (tree t)
+{
+  return (TYPE_STUB_DECL (t) && !TREE_PUBLIC (TYPE_STUB_DECL (t)));
 }
 
 /* Try to find a base info of BINFO that would have its field decl at offset

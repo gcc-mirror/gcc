@@ -41,27 +41,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       switch (_M_opcode)
       {
-        case _S_opcode_alternative:
-          ostr << "alt next=" << _M_next << " alt=" << _M_alt;
-          break;
-        case _S_opcode_subexpr_begin:
-          ostr << "subexpr begin next=" << _M_next << " index=" << _M_subexpr;
-          break;
-        case _S_opcode_subexpr_end:
-          ostr << "subexpr end next=" << _M_next << " index=" << _M_subexpr;
-          break;
-        case _S_opcode_backref:
-          ostr << "backref next=" << _M_next << " index=" << _M_backref_index;
-          break;
-        case _S_opcode_match:
-          ostr << "match next=" << _M_next;
-          break;
-        case _S_opcode_accept:
-          ostr << "accept next=" << _M_next;
-          break;
-        default:
-          ostr << "unknown next=" << _M_next;
-          break;
+	case _S_opcode_alternative:
+	  ostr << "alt next=" << _M_next << " alt=" << _M_alt;
+	  break;
+	case _S_opcode_subexpr_begin:
+	  ostr << "subexpr begin next=" << _M_next << " index=" << _M_subexpr;
+	  break;
+	case _S_opcode_subexpr_end:
+	  ostr << "subexpr end next=" << _M_next << " index=" << _M_subexpr;
+	  break;
+	case _S_opcode_backref:
+	  ostr << "backref next=" << _M_next << " index=" << _M_backref_index;
+	  break;
+	case _S_opcode_match:
+	  ostr << "match next=" << _M_next;
+	  break;
+	case _S_opcode_accept:
+	  ostr << "accept next=" << _M_next;
+	  break;
+	default:
+	  ostr << "unknown next=" << _M_next;
+	  break;
       }
       return ostr;
     }
@@ -73,39 +73,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       switch (_M_opcode)
       {
-        case _S_opcode_alternative:
-          __ostr << __id << " [label=\"" << __id << "\\nALT\"];\n"
-                 << __id << " -> " << _M_next
-                 << " [label=\"epsilon\", tailport=\"s\"];\n"
-                 << __id << " -> " << _M_alt
-                 << " [label=\"epsilon\", tailport=\"n\"];\n";
-          break;
-        case _S_opcode_subexpr_begin:
-          __ostr << __id << " [label=\"" << __id << "\\nSBEGIN "
-                 << _M_subexpr << "\"];\n"
-                 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
-          break;
-        case _S_opcode_subexpr_end:
-          __ostr << __id << " [label=\"" << __id << "\\nSEND "
-                 << _M_subexpr << "\"];\n"
-                 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
-          break;
-        case _S_opcode_backref:
-          __ostr << __id << " [label=\"" << __id << "\\nBACKREF "
-                 << _M_subexpr << "\"];\n"
-                 << __id << " -> " << _M_next << " [label=\"<match>\"];\n";
-          break;
-        case _S_opcode_match:
-          __ostr << __id << " [label=\"" << __id << "\\nMATCH\"];\n"
-                 << __id << " -> " << _M_next << " [label=\"<match>\"];\n";
-          break;
-        case _S_opcode_accept:
-          __ostr << __id << " [label=\"" << __id << "\\nACC\"];\n" ;
-          break;
-        default:
-          __ostr << __id << " [label=\"" << __id << "\\nUNK\"];\n"
-                 << __id << " -> " << _M_next << " [label=\"?\"];\n";
-          break;
+	case _S_opcode_alternative:
+	  __ostr << __id << " [label=\"" << __id << "\\nALT\"];\n"
+		 << __id << " -> " << _M_next
+		 << " [label=\"epsilon\", tailport=\"s\"];\n"
+		 << __id << " -> " << _M_alt
+		 << " [label=\"epsilon\", tailport=\"n\"];\n";
+	  break;
+	case _S_opcode_subexpr_begin:
+	  __ostr << __id << " [label=\"" << __id << "\\nSBEGIN "
+		 << _M_subexpr << "\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
+	  break;
+	case _S_opcode_subexpr_end:
+	  __ostr << __id << " [label=\"" << __id << "\\nSEND "
+		 << _M_subexpr << "\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
+	  break;
+	case _S_opcode_backref:
+	  __ostr << __id << " [label=\"" << __id << "\\nBACKREF "
+		 << _M_subexpr << "\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"<match>\"];\n";
+	  break;
+	case _S_opcode_match:
+	  __ostr << __id << " [label=\"" << __id << "\\nMATCH\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"<match>\"];\n";
+	  break;
+	case _S_opcode_accept:
+	  __ostr << __id << " [label=\"" << __id << "\\nACC\"];\n" ;
+	  break;
+	default:
+	  __ostr << __id << " [label=\"" << __id << "\\nUNK\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"?\"];\n";
+	  break;
       }
       return __ostr;
     }
@@ -135,10 +135,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // _M_paren_stack is {1, 3}, for incomplete "(a.." and "(c..". At this
       // time, "\\2" is valid, but "\\1" and "\\3" are not.
       if (__index >= _M_subexpr_count)
-        __throw_regex_error(regex_constants::error_backref);
+	__throw_regex_error(regex_constants::error_backref);
       for (auto __it : _M_paren_stack)
-        if (__index == __it)
-          __throw_regex_error(regex_constants::error_backref);
+	if (__index == __it)
+	  __throw_regex_error(regex_constants::error_backref);
       _M_has_backref = true;
       this->push_back(_StateT(_S_opcode_backref, __index));
       return this->size()-1;
@@ -159,7 +159,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_push_back(_StateIdT __id)
     {
       if (_M_end1 != _S_invalid_state_id)
-        _M_nfa[_M_end1]._M_next = __id;
+	_M_nfa[_M_end1]._M_next = __id;
       _M_end1 = __id;
     }
 
@@ -169,14 +169,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_end2 != _S_invalid_state_id)
       {
-        if (_M_end2 == _M_end1)
-          _M_nfa[_M_end2]._M_alt = __id;
-        else
-          _M_nfa[_M_end2]._M_next = __id;
-        _M_end2 = _S_invalid_state_id;
+	if (_M_end2 == _M_end1)
+	  _M_nfa[_M_end2]._M_alt = __id;
+	else
+	  _M_nfa[_M_end2]._M_next = __id;
+	_M_end2 = _S_invalid_state_id;
       }
       if (_M_end1 != _S_invalid_state_id)
-        _M_nfa[_M_end1]._M_next = __id;
+	_M_nfa[_M_end1]._M_next = __id;
       _M_end1 = __id;
     }
 
@@ -186,16 +186,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_end2 != _S_invalid_state_id)
       {
-        if (_M_end2 == _M_end1)
-          _M_nfa[_M_end2]._M_alt = __rhs._M_start;
-        else
-          _M_nfa[_M_end2]._M_next = __rhs._M_start;
-        _M_end2 = _S_invalid_state_id;
+	if (_M_end2 == _M_end1)
+	  _M_nfa[_M_end2]._M_alt = __rhs._M_start;
+	else
+	  _M_nfa[_M_end2]._M_next = __rhs._M_start;
+	_M_end2 = _S_invalid_state_id;
       }
       if (__rhs._M_end2 != _S_invalid_state_id)
-        _M_end2 = __rhs._M_end2;
+	_M_end2 = __rhs._M_end2;
       if (_M_end1 != _S_invalid_state_id)
-        _M_nfa[_M_end1]._M_next = __rhs._M_start;
+	_M_nfa[_M_end1]._M_next = __rhs._M_start;
       _M_end1 = __rhs._M_end1;
     }
 

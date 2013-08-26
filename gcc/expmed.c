@@ -3697,11 +3697,11 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
   masklow = ((HOST_WIDE_INT) 1 << logd) - 1;
   if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
     {
-      masklow |= (HOST_WIDE_INT) -1 << (GET_MODE_BITSIZE (mode) - 1);
+      masklow |= HOST_WIDE_INT_M1U << (GET_MODE_BITSIZE (mode) - 1);
       maskhigh = -1;
     }
   else
-    maskhigh = (HOST_WIDE_INT) -1
+    maskhigh = HOST_WIDE_INT_M1U
 		 << (GET_MODE_BITSIZE (mode) - HOST_BITS_PER_WIDE_INT - 1);
 
   temp = expand_binop (mode, and_optab, op0,
@@ -3715,7 +3715,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
 
   temp = expand_binop (mode, sub_optab, result, const1_rtx, result,
 		       0, OPTAB_LIB_WIDEN);
-  masklow = (HOST_WIDE_INT) -1 << logd;
+  masklow = HOST_WIDE_INT_M1U << logd;
   maskhigh = -1;
   temp = expand_binop (mode, ior_optab, temp,
 		       immed_double_const (masklow, maskhigh, mode),

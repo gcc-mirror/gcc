@@ -78,3 +78,7 @@ The device has no SPH special function register. This option will be overridden 
 Waddr-space-convert
 Warning C Report Var(avr_warn_addr_space_convert) Init(0)
 Warn if the address space of an address is changed.
+
+mfract-convert-truncate
+Target Report Mask(FRACT_CONV_TRUNC)
+Allow to use truncation instead of rounding towards 0 for fractional int types

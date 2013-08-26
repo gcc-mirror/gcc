@@ -2027,6 +2027,11 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* SSE REX registers */
   SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   SSE_REGS, SSE_REGS,
+  /* AVX-512 SSE registers */
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -2040,6 +2045,8 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -2053,6 +2060,8 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
   8,9,10,11,12,13,14,15,		/* extended integer registers */
   25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
+  67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
+  75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -2118,6 +2127,8 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
 };
 
 /* Define parameter passing and return registers.  */
@@ -2310,7 +2321,6 @@ enum ix86_function_specific_strings
 
 static char *ix86_target_string (HOST_WIDE_INT, int, const char *,
 				 const char *, enum fpmath_unit, bool);
-static void ix86_debug_options (void) ATTRIBUTE_UNUSED;
 static void ix86_function_specific_save (struct cl_target_option *);
 static void ix86_function_specific_restore (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
@@ -2417,7 +2427,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
 static bool
 gate_insert_vzeroupper (void)
 {
-  return TARGET_AVX && TARGET_VZEROUPPER;
+  return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
 }
 
 static unsigned int
@@ -2507,6 +2517,10 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
+    { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
+    { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
+    { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
+    { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
     { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
@@ -2739,7 +2753,7 @@ ix86_profile_before_prologue (void)
 
 /* Function that is callable from the debugger to print the current
    options.  */
-void
+void ATTRIBUTE_UNUSED
 ix86_debug_options (void)
 {
   char *opts = ix86_target_string (ix86_isa_flags, target_flags,
@@ -3026,6 +3040,10 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_FXSR		(HOST_WIDE_INT_1 << 37)
 #define PTA_XSAVE		(HOST_WIDE_INT_1 << 38)
 #define PTA_XSAVEOPT		(HOST_WIDE_INT_1 << 39)
+#define PTA_AVX512F		(HOST_WIDE_INT_1 << 40)
+#define PTA_AVX512ER		(HOST_WIDE_INT_1 << 41)
+#define PTA_AVX512PF		(HOST_WIDE_INT_1 << 42)
+#define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -3547,6 +3565,18 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_XSAVEOPT
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEOPT))
 	  ix86_isa_flags |= OPTION_MASK_ISA_XSAVEOPT;
+	if (processor_alias_table[i].flags & PTA_AVX512F
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512F))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512F;
+	if (processor_alias_table[i].flags & PTA_AVX512ER
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512ER))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512ER;
+	if (processor_alias_table[i].flags & PTA_AVX512PF
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512PF))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512PF;
+	if (processor_alias_table[i].flags & PTA_AVX512CD
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512CD))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512CD;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -4007,22 +4037,22 @@ ix86_option_override_internal (bool main_args_p)
      TARGET_AVX with -fexpensive-optimizations and split 32-byte
      AVX unaligned load/store.  */
   if (!optimize_size)
-  {
-     if (flag_expensive_optimizations
-	   && !(target_flags_explicit & MASK_VZEROUPPER))
+    {
+      if (flag_expensive_optimizations
+	  && !(target_flags_explicit & MASK_VZEROUPPER))
 	target_flags |= MASK_VZEROUPPER;
-     if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
-	   && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+      if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
+	  && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-     if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
-	   && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+      if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
+	  && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
-     /* Enable 128-bit AVX instruction generation
-	for the auto-vectorizer.  */
-     if (TARGET_AVX128_OPTIMAL
-	   && !(target_flags_explicit & MASK_PREFER_AVX128))
+      /* Enable 128-bit AVX instruction generation
+         for the auto-vectorizer.  */
+      if (TARGET_AVX128_OPTIMAL
+	  && !(target_flags_explicit & MASK_PREFER_AVX128))
 	target_flags |= MASK_PREFER_AVX128;
-  }
+    }
 
   if (ix86_recip_name)
     {
@@ -4143,6 +4173,8 @@ ix86_conditional_register_usage (void)
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
       for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+      for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
     }
 
   /*  See the definition of CALL_USED_REGISTERS in i386.h.  */
@@ -4183,6 +4215,11 @@ ix86_conditional_register_usage (void)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+
+  /* If AVX512F is disabled, squash the registers.  */
+  if (! TARGET_AVX512F)
+    for (i = FIRST_EXT_REX_SSE_REG; i < LAST_EXT_REX_SSE_REG; i++)
+      fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
 
@@ -4322,6 +4359,10 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("aes",	OPT_maes),
     IX86_ATTR_ISA ("avx",	OPT_mavx),
     IX86_ATTR_ISA ("avx2",	OPT_mavx2),
+    IX86_ATTR_ISA ("avx512f",	OPT_mavx512f),
+    IX86_ATTR_ISA ("avx512pf",	OPT_mavx512pf),
+    IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
+    IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
@@ -4806,10 +4847,7 @@ ix86_in_large_data_p (tree exp)
    RELOC indicates whether forming the initial value of DECL requires
    link-time relocations.  */
 
-static section * x86_64_elf_select_section (tree, int, unsigned HOST_WIDE_INT)
-	ATTRIBUTE_UNUSED;
-
-static section *
+ATTRIBUTE_UNUSED static section *
 x86_64_elf_select_section (tree decl, int reloc,
 			   unsigned HOST_WIDE_INT align)
 {
@@ -4868,6 +4906,28 @@ x86_64_elf_select_section (tree decl, int reloc,
 	}
     }
   return default_elf_select_section (decl, reloc, align);
+}
+
+/* Select a set of attributes for section NAME based on the properties
+   of DECL and whether or not RELOC indicates that DECL's initializer
+   might contain runtime relocations.  */
+
+static unsigned int ATTRIBUTE_UNUSED
+x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (decl == NULL_TREE
+      && (strcmp (name, ".ldata.rel.ro") == 0
+	  || strcmp (name, ".ldata.rel.ro.local") == 0))
+    flags |= SECTION_RELRO;
+
+  if (strcmp (name, ".lbss") == 0
+      || strncmp (name, ".lbss.", 5) == 0
+      || strncmp (name, ".gnu.linkonce.lb.", 16) == 0)
+    flags |= SECTION_BSS;
+
+  return flags;
 }
 
 /* Build up a unique section name, expressed as a
@@ -5239,8 +5299,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 static tree
 ix86_handle_tm_regparm_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
     				  tree args ATTRIBUTE_UNUSED,
-				  int flags ATTRIBUTE_UNUSED,
-				  bool *no_add_attrs)
+				  int flags, bool *no_add_attrs)
 {
   tree alt;
 
@@ -5727,6 +5786,14 @@ ix86_function_type_abi (const_tree fntype)
       return abi;
     }
   return ix86_abi;
+}
+
+/* We add this as a workaround in order to use libc_has_function
+   hook in i386.md.  */
+bool
+ix86_libc_has_function (enum function_class fn_class)
+{
+  return targetm.libc_has_function (fn_class);
 }
 
 static bool
@@ -7165,8 +7232,7 @@ ix86_function_arg (cumulative_args_t cum_v, enum machine_mode omode,
    appropriate for passing a pointer to that type.  */
 
 static bool
-ix86_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
+ix86_pass_by_reference (cumulative_args_t cum_v, enum machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -8655,6 +8721,10 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
+      if (get_attr_mode (insn) == MODE_XI
+	  || get_attr_mode (insn) == MODE_V8DF
+	  || get_attr_mode (insn) == MODE_V16SF)
+	return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
       if (TARGET_AVX)
 	return "vpcmpeqd\t%0, %0, %0";
       else
@@ -8889,7 +8959,7 @@ ix86_code_end (void)
 /* Emit code for the SET_GOT patterns.  */
 
 const char *
-output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
+output_set_got (rtx dest, rtx label)
 {
   rtx xops[3];
 
@@ -14180,6 +14250,7 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, bool reverse,
    If CODE is 'q', pretend the mode is DImode.
    If CODE is 'x', pretend the mode is V4SFmode.
    If CODE is 't', pretend the mode is V8SFmode.
+   If CODE is 'g', pretend the mode is V16SFmode.
    If CODE is 'h', pretend the reg is the 'high' byte register.
    If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.
    If CODE is 'd', duplicate the operand for AVX instruction.
@@ -14225,6 +14296,8 @@ print_reg (rtx x, int code, FILE *file)
     code = 16;
   else if (code == 't')
     code = 32;
+  else if (code == 'g')
+    code = 64;
   else
     code = GET_MODE_SIZE (GET_MODE (x));
 
@@ -14298,6 +14371,14 @@ print_reg (rtx x, int code, FILE *file)
 	  fputs (hi_reg_name[regno] + 1, file);
 	  return;
 	}
+    case 64:
+      if (SSE_REG_P (x))
+        {
+          gcc_assert (!duplicated);
+          putc ('z', file);
+          fputs (hi_reg_name[REGNO (x)] + 1, file);
+          return;
+        }
       break;
     default:
       gcc_unreachable ();
@@ -14371,6 +14452,7 @@ get_some_local_dynamic_name (void)
    q --  likewise, print the DImode name of the register.
    x --  likewise, print the V4SFmode name of the register.
    t --  likewise, print the V8SFmode name of the register.
+   g --  likewise, print the V16SFmode name of the register.
    h -- print the QImode name for a "high" register, either ah, bh, ch or dh.
    y -- print "st(0)" instead of "st" as a register.
    d -- print duplicated register operand for AVX instruction.
@@ -14600,6 +14682,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case 'q':
 	case 'h':
 	case 't':
+	case 'g':
 	case 'y':
 	case 'x':
 	case 'X':
@@ -14908,6 +14991,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		size = "XMMWORD";
               break;
 	    case 32: size = "YMMWORD"; break;
+	    case 64: size = "ZMMWORD"; break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -17985,7 +18069,7 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 bool
 ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
-			rtx operands[2] ATTRIBUTE_UNUSED)
+			rtx operands[2])
 {
   /* If one of operands is memory, source and destination must match.  */
   if ((MEM_P (operands[0])
@@ -32079,9 +32163,8 @@ ix86_expand_vec_set_builtin (tree exp)
    IGNORE is nonzero if the value is to be ignored.  */
 
 static rtx
-ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
-		     int ignore ATTRIBUTE_UNUSED)
+ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
+		     enum machine_mode mode, int ignore)
 {
   const struct builtin_description *d;
   size_t i;
@@ -33905,7 +33988,7 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
      alternative: if reload cannot do this, it will still use its choice.  */
   mode = GET_MODE (x);
   if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
-    return MAYBE_SSE_CLASS_P (regclass) ? SSE_REGS : NO_REGS;
+    return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
   if (X87_FLOAT_MODE_P (mode))
     {
@@ -34372,8 +34455,23 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* We implement the move patterns for all vector modes into and
 	 out of SSE registers, even when no operation instructions
-	 are available.  OImode move is available only when AVX is
-	 enabled.  */
+	 are available.  */
+
+      /* For AVX-512 we allow, regardless of regno:
+	  - XI mode
+	  - any of 512-bit wide vector mode
+	  - any scalar mode.  */
+      if (TARGET_AVX512F
+	  && (mode == XImode
+	      || VALID_AVX512F_REG_MODE (mode)
+	      || VALID_AVX512F_SCALAR_MODE (mode)))
+	return true;
+
+      /* xmm16-xmm31 are only available for AVX-512.  */
+      if (EXT_REX_SSE_REGNO_P (regno))
+	return false;
+
+      /* OImode move is available only when AVX is enabled.  */
       return ((TARGET_AVX && mode == OImode)
 	      || VALID_AVX256_REG_MODE (mode)
 	      || VALID_SSE_REG_MODE (mode)
@@ -34525,7 +34623,8 @@ ix86_set_reg_reg_cost (enum machine_mode mode)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
-      if ((TARGET_AVX && VALID_AVX256_REG_MODE (mode))
+      if ((TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
+	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
 	  || (TARGET_MMX && VALID_MMX_REG_MODE (mode)))
@@ -35155,6 +35254,10 @@ x86_order_regs_for_local_alloc (void)
    for (i = FIRST_SSE_REG; i <= LAST_SSE_REG; i++)
      reg_alloc_order [pos++] = i;
    for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+     reg_alloc_order [pos++] = i;
+
+   /* Extended REX SSE registers.  */
+   for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
      reg_alloc_order [pos++] = i;
 
    /* x87 registers.  */
@@ -36154,9 +36257,9 @@ x86_emit_floatuns (rtx operands[2])
   emit_label (donelab);
 }
 
-/* AVX2 does support 32-byte integer vector operations,
-   thus the longest vector we are faced with is V32QImode.  */
-#define MAX_VECT_LEN	32
+/* AVX512F does support 64-byte integer vector operations,
+   thus the longest vector we are faced with is V64QImode.  */
+#define MAX_VECT_LEN	64
 
 struct expand_vec_perm_d
 {
@@ -42693,7 +42796,7 @@ ix86_spill_class (reg_class_t rclass, enum machine_mode mode)
   if (TARGET_SSE && TARGET_GENERAL_REGS_SSE_SPILL && ! TARGET_MMX
       && (mode == SImode || (TARGET_64BIT && mode == DImode))
       && INTEGER_CLASS_P (rclass))
-    return SSE_REGS;
+    return ALL_SSE_REGS;
   return NO_REGS;
 }
 

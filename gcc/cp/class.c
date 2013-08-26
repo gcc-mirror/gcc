@@ -3500,6 +3500,22 @@ check_field_decls (tree t, tree *access_decls,
       if (DECL_MUTABLE_P (x) || TYPE_HAS_MUTABLE_P (type))
 	CLASSTYPE_HAS_MUTABLE (t) = 1;
 
+      if (DECL_MUTABLE_P (x))
+	{
+	  if (CP_TYPE_CONST_P (type))
+	    {
+	      error ("member %q+D cannot be declared both %<const%> "
+		     "and %<mutable%>", x);
+	      continue;
+	    }
+	  if (TREE_CODE (type) == REFERENCE_TYPE)
+	    {
+	      error ("member %q+D cannot be declared as a %<mutable%> "
+		     "reference", x);
+	      continue;
+	    }
+	}
+
       if (! layout_pod_type_p (type))
 	/* DR 148 now allows pointers to members (which are POD themselves),
 	   to be allowed in POD structs.  */

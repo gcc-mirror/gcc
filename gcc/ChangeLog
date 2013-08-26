@@ -1,3 +1,738 @@
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/avr/avr-stdint.h (INT16_TYPE): Change default to "int".
+	(UINT16_TYPE): Change default to "unsigned int".
+
+	* config/avr/avr.opt (mfract-convert-truncate): New option.
+	* config/avr/avr.c (avr_out_fract): Unless TARGET_FRACT_CONV_TRUNC
+	is set, round negative fractional integers according to n1169
+	when converting to integer types.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_propagate_frequency): Do not assume that virtual
+	methods can not be called indirectly when their address is not taken.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Use ctor_for_folding.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (comdat_can_be_unshared_p_1): C++ constructors and destructors
+	can be unshared.
+
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* reload.c (find_valid_class): Allow classes that do not include
+	FIRST_PSEUDO_REGISTER - 1.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Fix formatting;
+	fix edge count/frequency when speculation failed; fix type check
+	for the direct call.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (ipa_print_node_params): Do not ICE during WPA.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-transform.c (inline_transform): Be ready for basic block
+	to be changed by edge redirection.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_speculative_call_info): Fix parameter order and formating;
+	add sanity check.
+	(cgraph_resolve_speculation): Add FIXME about scaling profiles.
+	(cgraph_redirect_edge_call_stmt_to_callee): Fix ICE in debug dump.
+	* ipa-inline.c (heap_edge_removal_hook): Reset node growth cache.
+	(resolve_noninline_speculation): Update callee keys, too.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (tree_decl_with_vis): Add cxx_constructor, cxx_destructor.
+	(DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P): New macros.
+
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/i386/i386.c (x86_64_elf_select_section): Put ATTRIBUTE_UNUSED
+	into proper place.
+
+2013-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_debug_options): Remove prototype.
+	(x86_64_elf_select_section): Ditto.
+	(ix86_handle_tm_regparm_attribute): Remove ATTRIBUTE_UNUSED on used
+	arguments.
+	(ix86_pass_by_reference): Ditto.
+	(output_set_got): Ditto.
+	(ix86_unary_operator_ok): Ditto.
+	(ix86_expand_builtin): Ditto.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_turn_edge_to_speculative): Fix debug output.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (TYPE_FINAL_P, DECL_FINAL_P): New macros.
+	(tree_decl_with_vis): Add FINAL field.
+
+2013-08-23  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-pre.c (do_regular_insertion): Include the expression in
+	the debugging dump when the expression is fully redundant.
+
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* diagnostic.c (diagnostic_set_caret_max_width): Use pp_buffer.
+	* gimple-pretty-print.c (gimple_dump_bb_buff): Likewise.
+	* pretty-print.c (pp_formatted_text_data): Likewise.
+	(pp_write_text_to_stream): Likewise.
+	(pp_write_text_as_dot_label_to_stream): Likewise.
+	(pp_append_r): Likewise.
+	(pp_format): Likewise.
+	(pp_flush): Likewise.
+	(pp_clear_output_area): Likewise.
+	(pp_append_text): Likewise.
+	(pp_formatted_text): Likewise.
+	(pp_remaining_character_count_for_line): Likewise.
+	(pp_newline): Likewise.
+	(pp_character): Likewise.
+	(output_buffer::~output_buffer): Define.
+	(pretty_printer::~pretty_printer): Destruct output buffer.
+	* pretty-print.h (output_buffer::~output_buffer): Declare.
+	(pretty_printer::~pretty_printer): Declare virtual.
+
+2013-08-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR other/57324
+	* hwint.h (HOST_WIDE_INT_UC, HOST_WIDE_INT_1U, HOST_WIDE_INT_M1,
+	HOST_WIDE_INT_M1U): New macros.
+	* fold-const.c (sign_bit_p, build_range_check, fold_unary_loc,
+	fold_binary_loc, fold_ternary_loc): Use the new macros. Use an
+	unsigned -1 for lshift.
+	* cse.c (cse_insn): Likewise.
+	* double-int.c (rshift_double, lshift_double): Likewise.
+	* builtins.c (fold_builtin_bitop): Likewise.
+	* combine.c (force_to_mode): Likewise.
+	* tree.c (integer_pow2p, tree_log2, tree_floor_log2): Likewise.
+	* simplify-rtx.c (simplify_const_unary_operation,
+	simplify_const_binary_operation): Likewise.
+	* tree-stdarg.c (va_list_counter_bump, va_list_ptr_read,
+	check_va_list_escapes): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	* expmed.c (expand_smod_pow2): Likewise.
+	* tree-ssa-structalias.c (UNKNOWN_OFFSET): Use HOST_WIDE_INT_MIN.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_turn_edge_to_speculative): Mark target node
+	as having address taken.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-utils.h (method_class_type): Declare.
+	* ipa-devirt.c (method_class_type): Export.
+
+	* cgraphunit.c (analyze_functions): Do basic devirtualization;
+	do not walk base classes of anonymous types.
+
+2013-08-23  Kaz Kojima  <kkojima@gcc.gnu.org>
+
+	PR rtl-optimization/58220
+	PR regression/58221
+	* final.c (reemit_insn_block_notes): Use NEXT_INSN to
+	handle SEQUENCE insns properly.
+
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (pp_newline_and_flush): Declare.  Remove macro
+	definition.
+	(pp_newline_and_indent): Likewise.
+	(pp_separate_with): Likewise.
+	* pretty-print.c (pp_newline_and_flush): Define.
+	(pp_newline_and_indent): Likewise.
+	(pp_separate_with): Likewise.
+
+2013-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58218
+	* config/i386/x86-64.h (TARGET_SECTION_TYPE_FLAGS): Define.
+	* config/i386/i386.c (x86_64_elf_section_type_flags): New function.
+
+2013-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+	* gcc/config/i386/predicates.md (ext_sse_reg_operand): New.
+	* gcc/config/i386/i386.md (*movti_internal): Use
+	predicate to determine if EVEX is needed.
+	(*movsi_internal): Ditto.
+	(*movdf_internal): Ditto.
+	(*movsf_internal): Ditto.
+	* gcc/config/i386/mmx.md (*mov<mode>_internal): Ditto.
+
+2013-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58209
+	* tree-tailcall.c (process_assignment): Handle POINTER_PLUS_EXPR.
+	(find_tail_calls): Give up for pointer result types if m is non-NULL.
+	(adjust_return_value_with_ops): For PLUS_EXPR and pointer result type
+	emit POINTER_PLUS_EXPR.
+	(create_tailcall_accumulator): For pointer result type accumulate in
+	sizetype type.
+
+2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* configure.ac: Add backslashes missing from the last change.
+	* configure: Regenerate.
+
+2013-08-22  Jan Hubicka  <jh@susue.cz>
+
+	* ipa.c (function_and_variable_visibility): First remember function
+	was global and then make it local.
+
+2013-08-22  Julian Brown  <julian@codesourcery.com>
+
+	* configure.ac: Add aarch64 to list of arches which use "nop" in
+	debug_line test.
+	* configure: Regenerate.
+
+2013-08-22  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/linux.h (TARGET_LIBC_HAS_FUNCTION): Define as
+	gnu_libc_has_function.
+	* config/s390/tpf.h: Likewise.
+
+2013-08-22  Jan Hubicka  <jh@susue.cz>
+
+	* timevar.c (validate_phases): Add cast.
+
+2013-08-22  Jan Hubicka  <jh@susue.cz>
+
+	* timevar.c (validate_phases): Use size_t for memory.
+	* timevar.h (struct timevar_time_def): Use size_t for ggc_mem.
+
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* pretty-print.h (output_buffer::output_buffer): Declare.
+	(pretty_printer::pretty_printer): Likewise.
+	(pp_construct): Remove.
+	* pretty-print.c (output_buffer::output_buffer): Define.
+	(pretty_printer::pretty_printer): Rename from pp_construct.  Simplify.
+	* gimple-pretty-print.c (print_gimple_stmt): Do not call pp_construct.
+	(print_gimple_expr): Likewise.
+	(print_gimple_seq): Likewise.
+	(gimple_dump_bb): Likewise.
+	* sched-vis.c (dump_value_slim): Likewise.
+	(dump_insn_slim): Likewise.
+	(dump_rtl_slim): Likewise.
+	(str_pattern_slim): Likewise.
+	* tree-mudflap.c (mf_varname_tree): Likewise.
+	* graph.c (print_graph_cfg): Likewise.
+	(start_graph_dump): Likewise.
+	* tree-pretty-print.c (maybe_init_pretty_print): Likewise.  Use
+	placement-new.
+	* diagnostic.c (diagnostic_initialize): Simplify early diagnostic
+	pretty printer initialization.
+	* coretypes.h (diagnostic_context): Remove superflous type alias
+	declaration.
+	(pretty_printer): Likewise.  Declare directly as a class.
+	(pretty_print_info): Remove declaration as class.
+	* asan.c (asan_emit_stack_protection): Remove call to pp_construct
+	and pp_clear_output_area.
+	(asan_add_global): Likewise.
+
+2013-08-22  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (analyze_functions) Use update_type_inheritance_graph.
+	* ipa-utils.h (update_type_inheritance_graph): Declare.
+	(possible_polymorphic_call_target_p): Declare.
+	(possible_polymorphic_call_target_p): New.
+	* ipa-devirt.c: Update toplevel comments.
+	(cached_polymorphic_call_targets): Move up.
+	(odr_type_d): Move ID down.
+	(polymorphic_type_binfo_p): Update comment.
+	(odr_hasher::remove): Likewise;
+	(get_odr_type): Set anonymous_namespace.
+	(dump_odr_type): Dump it.
+	(dump_type_inheritance_graph): Do not ICE when there are no ODR types.
+	(maybe_record_node): Record node in cached_polymorphic_call_targets.
+	(record_binfo): Add comment.
+	(free_polymorphic_call_targets_hash): Do not ICE when cache is not
+	built.
+	(devirt_node_removal_hook): Do not iCE when cache is freed.
+	(possible_polymorphic_call_target_p): New predicate.
+	(update_type_inheritance_graph): New function.
+
+2013-08-22  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_SET): New.
+	(OPTION_MASK_ISA_AVX512CD_SET): Ditto.
+	(OPTION_MASK_ISA_AVX512PF_SET): Ditto.
+	(OPTION_MASK_ISA_AVX512ER_SET): Ditto.
+	(OPTION_MASK_ISA_AVX2_UNSET): Update.
+	(OPTION_MASK_ISA_AVX512F_UNSET): New.
+	(OPTION_MASK_ISA_AVX512CD_UNSET): Ditto.
+	(OPTION_MASK_ISA_AVX512PF_UNSET): Ditto.
+	(OPTION_MASK_ISA_AVX512ER_UNSET): Ditto.
+	(ix86_handle_option): Handle OPT_mavx512f, OPT_mavx512cd,
+	OPT_mavx512pf, OPT_mavx512er cases.
+	* config/i386/constraints.md (v): New constraint.
+	(Yi, Yj): Replace SSE_REGS with ALL_SSE_REGS.
+	* config/i386/cpuid.h (bit_AVX512F, bit_AVX512PF, bit_AVX512ER)
+	(bit_AVX512CD): New.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect
+	AVX512F, AVX512ER, AVX512PF, AVX512CD features.
+	* config/i386/i386-c.c (ix86_target_macros_internal):
+	Conditionally define __AVX512F__, __AVX512ER__, __AVX512CD__,
+	__AVX512PF__.
+	* config/i386/i386-modes.def (VECTOR_MODES (INT, 128))
+	(VECTOR_MODES (FLOAT, 128), INT_MODE (XI, 64)): New modes.
+	* config/i386/i386.c (regclass_map, dbx_register_map)
+	(dbx64_register_map, svr4_dbx_register_map): Add new SSE registers.
+	(gate_insert_vzeroupper): Disable vzeroupper for TARGET_AVX512F.
+	(ix86_target_string): Define -mavx512f, -mavx512er, -mavx512cd,
+	-mavx512pf options.
+	(ix86_option_override_internal): Define PTA_AVX512F, PTA_AVX512ER,
+	PTA_AVX512PF, PTA_AVX512CD.  Handle -mavx512f, -mavx512er, -mavx512cd,
+	-mavx512pf options.  Fix formatting.
+	(ix86_conditional_register_usage): Squash EXT_REX_SSE_REGs for 32-bit
+	targets.  Squash EVEX_SSE_REGS if AVX512F is disabled.
+	(ix86_valid_target_attribute_inner_p): Handle -mavx512f, -mavx512er,
+	-mavx512cd, -mavx512pf options.
+	(standard_sse_constant_opcode): Add vpternlogd for 512-bit modes.
+	(print_reg, ix86_print_operand): Handle 'g' to output 512-bit operands.
+	(ix86_preferred_output_reload_class): Replace SSE_REGS with
+	ALL_SSE_REGS.
+	(ix86_hard_regno_mode_ok): Support 512-bit registers.
+	(ix86_set_reg_reg_cost): Ditto.
+	(x86_order_regs_for_local_alloc): Ditto.
+	(MAX_VECT_LEN): Extend to 64-byte.
+	(ix86_spill_class): Replace SSE_REGS with ALL_SSE_REGS.
+	* config/i386/i386.h (TARGET_AVX512F, TARGET_AVX512PF)
+	(TARGET_AVX512ER, TARGET_AVX512CD): New.
+	(BIGGEST_ALIGNMENT): Extend to 512-bits.
+	(FIRST_PSEUDO_REGISTER, FIXED_REGISTERS): Add new registers.
+	(CALL_USED_REGISTERS, REG_ALLOC_ORDER): Likewise.
+	(VALID_AVX512F_SCALAR_MODE, VALID_AVX512F_REG_MODE): New.
+	(SSE_REG_MODE_P): Support new modes.
+	(FIRST_MMX_REG, FIRST_REX_INT_REG, FIRST_REX_SSE_REG): Add comments.
+	(FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG): New.
+	(reg_class, REG_CLASS_NAMES): Add EVEX_SSE_REGS, ALL_SSE_REGS.
+	(SSE_CLASS_P, MAYBE_SSE_CLASS_P): Replace SSE_REGS with ALL_SSE_REGS.
+	(REG_CLASS_CONTENTS): Add new registers.
+	(SSE_REGNO_P, SSE_REGNO, HARD_REGNO_RENAME_OK): Support new registers.
+	(EXT_REX_SSE_REGNO_P): New.
+	(HI_REGISTER_NAMES): Add new registers.
+	* config/i386/i386.md: Define constants for new registers.
+	(mode): Add new 512-bit modes.
+	(prefix): Support evex prefix.
+	(isa): Support avx512f, noavx512f, fma_avx512f.
+	(ssemodesuffix): Add new 512-bit modes.
+	(movxi): New.
+	(*movxi_internal_avx512f): Ditto.
+	(*movdi_internal): Replace constraint "x" with the new constraint "v".
+	Support MODE_XI.
+	(*movsi_internal): Likewise.
+	(*movdf_internal): Likewise.
+	(*movsf_internal): Likewise.
+	(*fop_<mode>_comm_sse): Replace constraint "x" with new constraint "v".
+	(<code><mode>3): Likewise.
+	* config/i386/i386.opt (mavx512f, mavx512pf, mavx512er, mavx512cd):
+	New.
+	* config/i386/mmx.md (*mov<mode>_internal): Replace constraint "x"
+	with the new constraint "v".
+	* config/i386/sse.md (*mov<mode>_internal): Support new registers and
+	modes.
+	(<sse>_loadu<ssemodesuffix><avxsizesuffix>): Replace constraint "x"
+	with the new constraint "v".
+	(<sse2>_loaddqu<avxsizesuffix>): Likewise.
+	(<sse2>_storedqu<avxsizesuffix>): Likewise.
+	(*<plusminus_insn><mode>3): Likewise.
+	(<sse>_vm<plusminus_insn><mode>3): Likewise.
+	(*mul<mode>3): Likewise.
+	(<sse>_vmmul<mode>3): Likewise.
+	(<sse>_div<mode>3): Likewise.
+	(<sse>_vmdiv<mode>3): Likewise.
+	(<sse>_sqrt<mode>2): Likewise.
+	(<sse>_vmsqrt<mode>2): Likewise.
+	(*<code><mode>3_finite): Likewise.
+	(*<code><mode>3) <smaxmin>: Likewise.
+	(<sse>_vm<code><mode>3): Likewise.
+	(*<code><mode>3) <any_logic>: Likewise.
+	(*fma_fmadd_<mode>): Likewise.
+	(*fma_fmsub_<mode>): Likewise.
+	(*fma_fnmadd_<mode>): Likewise.
+	(*fma_fnmsub_<mode>): Likewise.
+	(*fma_fmaddsub_<mode>): Likewise.
+	(*fma_fmsubadd_<mode>): Likewise.
+	(*fmai_fmadd_<mode>): Likewise.
+	(*fmai_fmsub_<mode>): Likewise.
+	(*fmai_fnmadd_<mode>): Likewise.
+	(*fmai_fnmsub_<mode>): Likewise.
+	(sse_cvtsi2ss): Likewise.
+	(sse_cvtsi2ssq): Likewise.
+	(sse_cvtss2si): Likewise.
+	(sse_cvtss2si_2): Likewise.
+	(sse_cvtss2siq): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(sse_cvttss2si): Likewise.
+	(sse_cvtss2siq_2): Likewise.
+	(float<sseintvecmodelower><mode>2): Likewise.
+	(sse2_cvtsd2si_2): Likewise.
+	(sse2_cvtsd2siq_2): Likewise.
+	(*<plusminus_insn><mode>3): Likewise.
+	(*<sse2_avx2>_<plusminus_insn><mode>3): Likewise.
+	(*<sse4_1_avx2>_mul<mode>3): Likewise.
+	(ashr<mode>3): Likewise.
+	(<shift_insn><mode>3): Likewise.
+	(avx2_<code><mode>3): Likewise.
+	(*avx2_<code><mode>3): Likewise.
+	(*andnot<mode>3): Likewise.
+	(*<code><mode>3) <any_logic>: Likewise.
+	(abs<mode>2): Likewise.
+	(avx2_permvar<mode>): Likewise.
+	(avx2_perm<mode>_1): Likewise.
+	(*avx_vpermilp<mode>): Likewise.
+	(avx_vpermilvar<mode>3): Likewise.
+	(avx2_ashrv<mode>): Likewise.
+	(avx2_<shift_insn>v<mode>): Likewise.
+	* doc/invoke.texi: Document -mavx512f, -mavx512pf, -mavx512er,
+	-mavx512cd.
+	* doc/rtl.texi: Document XImode.
+
+2013-08-21  Jeff Law  <law@redhat.com>
+
+	* tree-flow.h (register_jump_thread): Pass vector of edges
+	instead of each important edge.
+	* tree-ssa-threadedge.c (thread_across_edge): Build the jump
+	thread path into a vector and pass that to register_jump_thread.
+	* tree-ssa-threadupdate.c (register_jump_thread): Conver the
+	passed in edge vector to the current 3-edge form.
+
+	Revert:
+	2013-08-20  Alexey Makhalov  <makhaloff@gmail.com>
+
+        * dce.c (fini_dce): Call df_analyze again just in case
+	delete_unmarked_insns removed anything.
+
+2013-08-21  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* reload.h (struct reg_equivs): Rename to ..
+	(struct reg_equivs_s): .. this.
+
+2013-08-20  Martin Liska  <marxin.liska@gmail.com>
+
+	* ipa.c (ipa_profile_read_summary): Fix buffer overflow.
+
+2013-08-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Don't nest comment.
+
+2013-08-21  Jeff Law  <law@redhat.com>
+
+	* tree-vrp.c (simplify_stmt_for_jump_threading): Try to
+	simplify assignments too.  If the RHS collapses to a singleton
+	range, then return the value for the range.
+
+2013-08-21  Kirill Yukhin  <kirill.yukhin@intel.com>
+
+        * config/i386/sse.md (V16): Rename to...
+        (VMOVE): this.
+        (mov<mode>): Update iterator name.
+        (*mov<mode>_internal): Ditto.
+        (push<mode>1): Ditto.
+        (movmisalign<mode>): Ditto.
+
+2013-08-20  Jan Hubicka  <jh@suse.cz>
+
+	PR bootstrap/58186
+	* cgraph.c (cgraph_add_edge_to_call_site_hash): Overwrite hash
+	entry for direct edges.
+	(cgraph_turn_edge_to_speculative): Fix setting of can_throw_external.
+
+2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert my last two changes, r201865 and r201864:
+
+	Revert r201865:
+	2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Make opt_pass and gcc::pass_manager be GC-managed, so that pass
+	instances can own GC refs.
+
+	* Makefile.in (GTFILES): Add pass_manager.h and tree-pass.h.
+	* context.c (gcc::context::gt_ggc_mx): Traverse passes_.
+	(gcc::context::gt_pch_nx): Likewise.
+	(gcc::context::gt_pch_nx):  Likewise.
+	* ggc.h (gt_ggc_mx <T>): New.
+	(gt_pch_nx_with_op <T>): New.
+	(gt_pch_nx <T>): New.
+	* passes.c (opt_pass::gt_ggc_mx): New.
+	(opt_pass::gt_pch_nx): New.
+	(opt_pass::gt_pch_nx_with_op): New.
+	(pass_manager::gt_ggc_mx): New.
+	(pass_manager::gt_pch_nx): New.
+	(pass_manager::gt_pch_nx_with_op): New.
+	(pass_manager::operator new): Use
+	ggc_internal_cleared_alloc_stat rather than xcalloc.
+	* pass_manager.h (class pass_manager): Add GTY((user)) marking.
+	(pass_manager::gt_ggc_mx): New.
+	(pass_manager::gt_pch_nx): New.
+	(pass_manager::gt_pch_nx_with_op): New.
+	* tree-pass.h (class opt_pass): Add GTY((user)) marking.
+	(opt_pass::operator new): New.
+	(opt_pass::gt_ggc_mx): New.
+	(opt_pass::gt_pch_nx): New.
+	(opt_pass::gt_pch_nx_with_op): New.
+
+	Revert r201864:
+	2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (GTFILES): Add context.h.
+	* context.c (gcc::context::operator new): New.
+	(gcc::context::gt_ggc_mx): New.
+	(gcc::context::gt_pch_nx): New.
+	(gcc::context::gt_pch_nx): New.
+	* context.h (gcc::context): Add GTY((user)) marking.
+	(gcc::context::operator new): New.
+	(gcc::context::gt_ggc_mx): New.
+	(gcc::context::gt_pch_nx): New.
+	(gcc::context::gt_pch_nx): New.
+	(g): Add GTY marking.
+	(gt_ggc_mx (gcc::context *)): New.
+	(gt_pch_nx (gcc::context *)): New.
+	(gt_pch_nx (gcc::context *ctxt, gt_pointer_operator op,
+	void *cookie)): New.
+	* gengtype.c (open_base_files) <ifiles>: Add context.h.
+
+2013-08-20  Alexey Makhalov  <makhaloff@gmail.com>
+
+	* dce.c (fini_dce): Call df_analyze again just in case
+	delete_unmarked_insns removed anything.
+
+2013-08-20  Teresa Johnson  <tejohnson@google.com>
+
+	PR rtl-optimizations/57451
+	* final.c (reemit_insn_block_notes): Prevent lexical blocks
+	from crossing split section boundaries.
+
+2013-08-20  Matthew Gretton-Dann  <matthew.gretton-dann@linaro.org>
+
+	* config/arm/linux-elf.h (MULTILIB_DEFAULTS): Remove definition.
+	* config/arm/t-linux-eabi (MULTILIB_OPTIONS): Document association
+	with MULTLIB_DEFAULTS.
+
+2013-08-20  Nick Clifton  <nickc@redhat.com>
+
+	* target.def (narrow_volatile_bitfield): Note that the default
+	value is false, not !TARGET_STRICT_ALIGN.
+	* doc/tm.texi: Regenerate.
+
+2013-08-20  Pavel Chupin  <pavel.v.chupin@intel.com>
+
+	Fix LIB_SPEC for systems without libpthread.
+
+	* config/gnu-user.h: Introduce GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC.
+	* config/arm/linux-eabi.h: Use GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC
+	for Android.
+	* config/i386/linux-common.h: Likewise.
+	* config/mips/linux-common.h: Likewise.
+
+2013-08-20  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+
+	* tree-ssa-ccp.c (get_default_value): Remove redundant condition
+	checks.
+
+2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	Make opt_pass and gcc::pass_manager be GC-managed, so that pass
+	instances can own GC refs.
+
+	* Makefile.in (GTFILES): Add pass_manager.h and tree-pass.h.
+	* context.c (gcc::context::gt_ggc_mx): Traverse passes_.
+	(gcc::context::gt_pch_nx): Likewise.
+	(gcc::context::gt_pch_nx):  Likewise.
+	* ggc.h (gt_ggc_mx <T>): New.
+	(gt_pch_nx_with_op <T>): New.
+	(gt_pch_nx <T>): New.
+	* passes.c (opt_pass::gt_ggc_mx): New.
+	(opt_pass::gt_pch_nx): New.
+	(opt_pass::gt_pch_nx_with_op): New.
+	(pass_manager::gt_ggc_mx): New.
+	(pass_manager::gt_pch_nx): New.
+	(pass_manager::gt_pch_nx_with_op): New.
+	(pass_manager::operator new): Use
+	ggc_internal_cleared_alloc_stat rather than xcalloc.
+	* pass_manager.h (class pass_manager): Add GTY((user)) marking.
+	(pass_manager::gt_ggc_mx): New.
+	(pass_manager::gt_pch_nx): New.
+	(pass_manager::gt_pch_nx_with_op): New.
+	* tree-pass.h (class opt_pass): Add GTY((user)) marking.
+	(opt_pass::operator new): New.
+	(opt_pass::gt_ggc_mx): New.
+	(opt_pass::gt_pch_nx): New.
+	(opt_pass::gt_pch_nx_with_op): New.
+
+2013-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (GTFILES): Add context.h.
+	* context.c (gcc::context::operator new): New.
+	(gcc::context::gt_ggc_mx): New.
+	(gcc::context::gt_pch_nx): New.
+	(gcc::context::gt_pch_nx): New.
+	* context.h (gcc::context): Add GTY((user)) marking.
+	(gcc::context::operator new): New.
+	(gcc::context::gt_ggc_mx): New.
+	(gcc::context::gt_pch_nx): New.
+	(gcc::context::gt_pch_nx): New.
+	(g): Add GTY marking.
+	(gt_ggc_mx (gcc::context *)): New.
+	(gt_pch_nx (gcc::context *)): New.
+	(gt_pch_nx (gcc::context *ctxt, gt_pointer_operator op,
+	void *cookie)): New.
+	* gengtype.c (open_base_files) <ifiles>: Add context.h.
+
+2013-08-20  Alan Modra  <amodra@gmail.com>
+
+	PR target/57865
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Correct ool_adjust.
+	(rs6000_emit_epilogue): Likewise.
+
+2013-08-19  Dehao Chen (dehao@google.com)
+
+	* value-prof.c (gimple_ic): Fix the bug of adding EH edge.
+
+2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* builtins.def (BUILT_IN_FABSD32): New DFP ABS builtin.
+	(BUILT_IN_FABSD64): Likewise.
+	(BUILT_IN_FABSD128): Likewise.
+	* builtins.c (expand_builtin): Add support for new DFP ABS builtins.
+	(fold_builtin_1): Likewise.
+	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping
+	destination and source operands.
+	(*abstd2_fpr): Likewise.
+	(*nabstd2_fpr): Likewise.
+
+2013-08-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mips/mips.c (mips_adjust_insn_length): Add checks for
+	JUMP_P and INSN_P.
+
+2013-08-19  Aldy Hernandez  <aldyh@redhat.com>
+
+	* doc/invoke.texi (-fcilkplus): Clarify that implementation is
+	incomplete.
+
+2013-08-19  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* target.def (TARGET_LIBC_HAS_FUNCTION): New target hook.
+	* builtins.c (default_libc_has_function): New.
+	(gnu_libc_has_function): Ditto.
+	(no_c99_libc_has_function): Ditto.
+	(expand_builtin_cexpi): Using new target hook TARGET_LIBC_HAS_FUNCTION
+	instead of TARGET_HAS_SINCOS and TARGET_C99_FUNCTIONS.
+	(fold_builtin_sincos): Likewise.
+	(fold_builtin_cexp): Likewise.
+	* builtins.def (DEF_C94_BUILTIN): Likewise.
+	(DEF_C99_BUILTIN): Likewise.
+	(DEF_C99_C90RES_BUILTIN): Likewise.
+	(DEF_C99_COMPL_BUILTIN): New define. Change all complex c99 builtin
+	definitions to using this define.
+	* config/darwin-protos.h (darwin_libc_has_function): New.
+	* config/darwin.c (darwin_libc_has_function): Ditto.
+	* config/alpha/linux.h: Remove TARGET_C99_FUNCTIONS and
+	TARGET_HAS_SINCOS. Redefine TARGET_LIBC_HAS_FUNCTION.
+	* config/darwin.h: Ditto.
+	* config/elfos.h: Ditto.
+	* config/freebsd.h: Ditto.
+	* config/i386/cygming.h: Ditto.
+	* config/i386/djgpp.h: Ditto.
+	* config/i386/i386-interix.h: Ditto.
+	* config/microblaze/microblaze.h: Ditto.
+	* config/mmix/mmix.h: Ditto.
+	* config/gnu-user.h: Ditto.
+	* config/ia64/hpux.h: Ditto.
+	* config/pa/pa-hpux.h: Ditto.
+	* config/pdp11/pdp11.h: Ditto.
+	* config/picochip/picochip.h: Ditto.
+	* config/linux.h: Ditto.
+	* config/netbsd.h: Ditto.
+	* config/openbsd.h: Ditto.
+	* config/rs6000/aix43.h: Ditto.
+	* config/rs6000/aix51.h: Ditto.
+	* config/rs6000/aix52.h: Ditto.
+	* config/rs6000/aix53.h: Ditto.
+	* config/rs6000/aix61.h: Ditto.
+	* config/rs6000/darwin.h: Ditto.
+	* config/rs6000/linux.h: Ditto.
+	* config/rs6000/linux64.h: Ditto.
+	* config/s390/tpf.h: Ditto.
+	* config/sol2-10.h: Ditto.
+	* config/sol2.h: Ditto.
+	* config/vms/vms.h: Ditto.
+	* config/vxworks.h: Ditto.
+	* config/linux-android.c (linux_android_libc_has_function):
+	New linux-specific implementation of TARGET_LIBC_HAS_FUNCTION.
+	* config/linux-protos.h (linux_android_libc_has_function):
+	New declaration.
+	* config/i386/i386.c (ix86_libc_has_function): New.
+	* config/i386/i386-protos.h
+	(ix86_libc_has_function): New declaration.
+	* config/i386/i386.md
+	("isinfxf2"): Change condition for TARGET_LIBC_HAS_FUNCTION.
+	("isinf<mode>2): Likewise.
+	* convert.c (convert_to_integer): Using new target hook
+	TARGET_LIBC_HAS_FUNCTION istead of TARGET_HAS_SINCOS and
+	TARGET_C99_FUNCTIONS.
+	* fortran/f95-lang.c (gfc_init_builtin_functions): Ditto.
+	* tree-ssa-math-opts.c (execute_cse_sincos): Ditto.
+	* coretypes.h (function_class): New enum for different
+	classes of functions.
+	* defaults.h: Remove TARGET_C99_FUNCTIONS and TARGET_HAS_SINCOS.
+	* doc/tm.texi.in (TARGET_C99_FUNCTIONS): Remove documentation.
+	(TARGET_HAS_SINCOS): Likewise.
+	(TARGET_LIBC_HAS_FUNCTION): New.
+	* doc/tm.texi: Regenerated.
+	* targhooks.h (default_libc_has_function): New declaration.
+	(no_c99_libc_has_function): Ditto.
+	(gnu_libc_has_function): Ditto.
+	* system.h: Add the poisoning of TARGET_C99_FUNCTIONS
+	and TARGET_HAS_SINCOS.
+
+2013-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* Makeifle-in (ipa-devirt.o): New.
+	(GTFILES): Add ipa-utils.h and ipa-devirt.c
+	* cgraphunit.c (decide_is_symbol_needed): Do not care about virtuals.
+	(analyze_functions): Look into possible targets of polymorphic call.
+	* dumpfile.c (dump_files): Add type-inheritance dump.
+	* dumpfile.h (TDI_inheritance): New.
+	* ipa-devirt.c: New file.
+	* ipa-utils.h (odr_type_d): Forward declare.
+	(odr_type): New type.
+	(build_type_inheritance_graph): Declare.
+	(possible_polymorphic_call_targets): Declare and introduce inline
+	variant when only edge is pased.
+	(dump_possible_polymorphic_call_targets): Likewise.
+	* timevar.def (TV_IPA_INHERITANCE, TV_IPA_VIRTUAL_CALL): New.
+	* tree.c (type_in_anonymous_namespace_p): Break out from ...
+	(types_same_for_odr): ... here.
+	* tree.h (type_in_anonymous_namespace_p): Declare.
+
 2013-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58006
@@ -66,8 +801,7 @@
 	unspec enumeration.
 	(power8 fusion peephole/peephole2): Rework the fusion peepholes to
 	adjust the register addis loads up in the peephole2 pass.  Do not
-	depend on the register live/dead state when the peephole pass is
-	done.
+	depend on the register live/dead state when the peephole pass is done.
 
 2013-08-16  David Malcolm  <dmalcolm@redhat.com>
 
@@ -12741,21 +13475,21 @@
 
 2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
-	* target.def (TARGET_HAS_IFUNC_P): New target hook.
-	* doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
-	* doc/tm.texi: Regenerate.
-	* targhooks.h (default_has_ifunc_p): New.
-	* targhooks.c (default_has_ifunc_p): Ditto.
-	* config/linux-protos.h: New file.
-	* config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
+	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* gcc/doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* gcc/doc/tm.texi: Regenerate.
+	* gcc/targhooks.h (default_has_ifunc_p): New.
+	* gcc/targhooks.c (default_has_ifunc_p): Ditto.
+	* gcc/config/linux-protos.h: New file.
+	* gcc/config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
 	this hook for linux which disables support of indirect functions in
 	android.
-	* config/linux-android.c: New file.
-	* config/t-linux-android.c: Ditto.
-	* config.gcc: Added new object file linux-android.o.
-	* config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	* gcc/config/linux-android.c: New file.
+	* gcc/config/t-linux-android.c: Ditto.
+	* gcc/config.gcc: Added new object file linux-android.o.
+	* gcc/config/i386/i386.c (ix86_get_function_versions_dispatcher):
 	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
-	* varasm.c (do_assemble_alias): Likewise.
+	* gcc/varasm.c (do_assemble_alias): Likewise.
 	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
 	doesn't support indirect functions.
 	* configure: Regenerate.

@@ -701,6 +701,8 @@ cgraph_add_edge_to_call_site_hash (struct cgraph_edge *e)
   if (*slot)
     {
       gcc_assert (((struct cgraph_edge *)*slot)->speculative);
+      if (e->callee)
+	*slot = e;
       return;
     }
   gcc_assert (!*slot || e->speculative);
@@ -1074,8 +1076,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 
   if (dump_file)
     {
-      fprintf (dump_file, "Indirect call -> direct call from"
-	       " other module %s/%i => %s/%i\n",
+      fprintf (dump_file, "Indirect call -> speculative call"
+	       " %s/%i => %s/%i\n",
 	       xstrdup (cgraph_node_name (n)), n->symbol.order,
 	       xstrdup (cgraph_node_name (n2)), n2->symbol.order);
     }
@@ -1083,8 +1085,10 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
   e2 = cgraph_create_edge (n, n2, e->call_stmt, direct_count, direct_frequency);
   initialize_inline_failed (e2);
   e2->speculative = true;
-  e2->call_stmt = e->call_stmt;
-  e2->can_throw_external = e->can_throw_external;
+  if (TREE_NOTHROW (n2->symbol.decl))
+    e2->can_throw_external = false;
+  else
+    e2->can_throw_external = e->can_throw_external;
   e2->lto_stmt_uid = e->lto_stmt_uid;
   e->count -= e2->count;
   e->frequency -= e2->frequency;
@@ -1093,6 +1097,7 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 			      IPA_REF_ADDR, e->call_stmt);
   ref->lto_stmt_uid = e->lto_stmt_uid;
   ref->speculative = e->speculative;
+  cgraph_mark_address_taken_node (n2);
   return e2;
 }
 
@@ -1108,8 +1113,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 
 void
 cgraph_speculative_call_info (struct cgraph_edge *e,
-			      struct cgraph_edge *&indirect,
 			      struct cgraph_edge *&direct,
+			      struct cgraph_edge *&indirect,
 			      struct ipa_ref *&reference)
 {
   struct ipa_ref *ref;
@@ -1132,16 +1137,18 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
 	}
       else
 	for (e = e->caller->callees; 
-	     e2->call_stmt != e->call_stmt || e2->lto_stmt_uid != e->lto_stmt_uid;
+	     e2->call_stmt != e->call_stmt
+	     || e2->lto_stmt_uid != e->lto_stmt_uid;
 	     e = e->next_callee)
 	  ;
     }
   gcc_assert (e->speculative && e2->speculative);
-  indirect = e;
-  direct = e2;
+  direct = e;
+  indirect = e2;
 
   reference = NULL;
-  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->symbol.ref_list,
+					      i, ref); i++)
     if (ref->speculative
 	&& ((ref->stmt && ref->stmt == e->call_stmt)
 	    || (ref->lto_stmt_uid == e->lto_stmt_uid)))
@@ -1149,6 +1156,11 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
 	reference = ref;
 	break;
       }
+
+  /* Speculative edge always consist of all three components - direct edge,
+     indirect and reference.  */
+  
+  gcc_assert (e && e2 && ref);
 }
 
 /* Redirect callee of E to N.  The function does not update underlying
@@ -1204,6 +1216,8 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
         fprintf (dump_file, "Speculative call turned into direct call.\n");
       edge = e2;
       e2 = tmp;
+      /* FIXME:  If EDGE is inlined, we should scale up the frequencies and counts
+         in the functions inlined through it.  */
     }
   edge->count += e2->count;
   edge->frequency += e2->frequency;
@@ -1292,25 +1306,44 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       struct ipa_ref *ref;
 
       cgraph_speculative_call_info (e, e, e2, ref);
-      if (gimple_call_fndecl (e->call_stmt))
-	e = cgraph_resolve_speculation (e, gimple_call_fndecl (e->call_stmt));
-      if (!gimple_check_call_matching_types (e->call_stmt, e->callee->symbol.decl,
-					     true))
+      /* If there already is an direct call (i.e. as a result of inliner's
+	 substitution), forget about speculating.  */
+      if (decl)
+	e = cgraph_resolve_speculation (e, decl);
+      /* If types do not match, speculation was likely wrong. 
+         The direct edge was posisbly redirected to the clone with a different
+	 signature.  We did not update the call statement yet, so compare it 
+	 with the reference that still points to the proper type.  */
+      else if (!gimple_check_call_matching_types (e->call_stmt,
+						  ref->referred->symbol.decl,
+						  true))
 	{
-	  e = cgraph_resolve_speculation (e, NULL);
 	  if (dump_file)
 	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
 		     "Type mismatch.\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
-		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (e->callee)),
+		     e->callee->symbol.order);
+	  e = cgraph_resolve_speculation (e, NULL);
+	  /* We are producing the final function body and will throw away the
+	     callgraph edges really soon.  Reset the counts/frequencies to
+	     keep verifier happy in the case of roundoff errors.  */
+	  e->count = gimple_bb (e->call_stmt)->count;
+	  e->frequency = compute_call_stmt_bb_frequency
+			  (e->caller->symbol.decl, gimple_bb (e->call_stmt));
 	}
+      /* Expand speculation into GIMPLE code.  */
       else
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Expanding speculative call of %s/%i -> %s/%i count:"
+	    fprintf (dump_file,
+		     "Expanding speculative call of %s/%i -> %s/%i count:"
 		     HOST_WIDEST_INT_PRINT_DEC"\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
-		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order,
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (e->callee)),
+		     e->callee->symbol.order,
 		     (HOST_WIDEST_INT)e->count);
 	  gcc_assert (e2->speculative);
 	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->symbol.decl));
@@ -1324,11 +1357,12 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 				: REG_BR_PROB_BASE / 2,
 				e->count, e->count + e2->count);
 	  e->speculative = false;
-	  cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt, false);
-	  e->frequency = compute_call_stmt_bb_frequency (e->caller->symbol.decl,
-							 gimple_bb (e->call_stmt));
-	  e2->frequency = compute_call_stmt_bb_frequency (e2->caller->symbol.decl,
-							  gimple_bb (e2->call_stmt));
+	  cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt,
+						 new_stmt, false);
+	  e->frequency = compute_call_stmt_bb_frequency
+			   (e->caller->symbol.decl, gimple_bb (e->call_stmt));
+	  e2->frequency = compute_call_stmt_bb_frequency
+			   (e2->caller->symbol.decl, gimple_bb (e2->call_stmt));
 	  e2->speculative = false;
 	  ref->speculative = false;
 	  ref->stmt = NULL;
@@ -2314,7 +2348,10 @@ cgraph_propagate_frequency (struct cgraph_node *node)
   struct cgraph_propagate_frequency_data d = {true, true, true, true};
   bool changed = false;
 
-  if (!node->local.local)
+  /* We can not propagate anything useful about externally visible functions
+     nor about virtuals.  */
+  if (!node->local.local
+      || (flag_devirtualize && DECL_VIRTUAL_P (node->symbol.decl)))
     return false;
   gcc_assert (node->symbol.analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))

@@ -29,6 +29,7 @@ enum tree_dump_index
 {
   TDI_none,			/* No dump */
   TDI_cgraph,                   /* dump function call graph.  */
+  TDI_inheritance,              /* dump type inheritance graph.  */
   TDI_tu,			/* dump the whole translation unit.  */
   TDI_class,			/* dump class hierarchy.  */
   TDI_original,			/* dump each function before optimizing it */

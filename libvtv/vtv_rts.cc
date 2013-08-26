@@ -396,7 +396,7 @@ log_memory_protection_data (char *message)
   static int log_fd = -1;
 
   if (log_fd == -1)
-    log_fd = __vtv_open_log ("vtv_memory_protection_data_%d.log");
+    log_fd = __vtv_open_log ("vtv_memory_protection_data.log");
 
   __vtv_add_to_log (log_fd, "%s", message);
 }

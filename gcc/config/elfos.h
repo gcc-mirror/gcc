@@ -433,3 +433,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ASM_OUTPUT_EXTERNAL(FILE, DECL, NAME) \
   default_elf_asm_output_external (FILE, DECL, NAME)
 #endif
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

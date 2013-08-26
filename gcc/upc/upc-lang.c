@@ -80,8 +80,6 @@ static void upc_init_ts (void);
 #define LANG_HOOKS_INIT upc_lang_init
 #undef LANG_HOOKS_FINISH
 #define LANG_HOOKS_FINISH upc_finish
-#undef LANG_HOOKS_INITIALIZE_DIAGNOSTICS
-#define LANG_HOOKS_INITIALIZE_DIAGNOSTICS upc_initialize_diagnostics
 #undef LANG_HOOKS_INIT_OPTIONS
 #define LANG_HOOKS_INIT_OPTIONS upc_init_options
 #undef LANG_HOOKS_POST_OPTIONS
@@ -93,19 +91,6 @@ static void upc_init_ts (void);
 
 /* Each front end provides its own hooks, for toplev.c.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
-
-static void
-upc_initialize_diagnostics (diagnostic_context *context)
-{
-  pretty_printer *base = context->printer;
-  c_pretty_printer *pp = (c_pretty_printer *)
-                         xmalloc (sizeof (c_pretty_printer));
-  memcpy (pp, base, sizeof (pretty_printer));
-  pp_c_pretty_printer_init (pp);
-  context->printer = (pretty_printer *) pp;
-  /* It is safe to free this object because it was previously malloc()'d.  */
-  free (base);
-}
 
 /* Set the C 99 standard (without GNU extensions if ISO).
    (borrowed from c-opts.c) */

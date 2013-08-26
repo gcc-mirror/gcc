@@ -179,9 +179,10 @@ do {								\
 #undef  TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK  ia64_hpux_reloc_rw_mask
 
-/* ia64 HPUX has the float and long double forms of math functions.  */
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS  1
+/* ia64 HPUX has the float and long double forms of math functions.
+   We redefine this hook so the version from elfos.h header won't be used.  */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION default_c99_libc_has_function
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS ia64_hpux_init_libfuncs

@@ -1926,6 +1926,10 @@ class Struct_field
   bool
   is_field_name(const std::string& name) const;
 
+  // Return whether this struct field is an embedded built-in type.
+  bool
+  is_embedded_builtin(Gogo*) const;
+
   // The field type.
   Type*
   type() const

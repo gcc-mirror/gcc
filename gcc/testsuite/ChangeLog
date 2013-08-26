@@ -1,3 +1,128 @@
+2013-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/58146
+	* gfortran.dg/bounds_check_18.f90:  New test.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-14.C: Fix typo.
+
+2013-08-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/57798
+	* gfortran.dg/inline_sum_5.f90: New.
+
+2013-08-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/57843
+	* gfortran.dg/typebound_assignment_7.f90: New.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-13.C: New testcase.
+	* g++.dg/ipa/devirt-14.C: New testcase.
+
+2013-08-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58218
+	* gcc.target/i386/pr58218.c: New test.
+
+	PR tree-optimization/58209
+	* gcc.c-torture/execute/pr58209.c: New test.
+
+2013-08-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr57744.c: Declare abort.
+
+2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56380
+	* g++.dg/template/error54.C: New.
+
+2013-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58185
+	* gfortran.dg/select_type_34.f90: New.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56130
+	* g++.dg/warn/deprecated-7.C: New.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/tree-prof/pr57451.C: Remove spurious dg-do directive.
+
+2013-08-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-vrp-thread-1.c: New test.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56134
+	* g++.dg/ext/attr-alias-3.C: New.
+
+2013-08-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/53655
+	* gfortran.dg/intent_out_8.f90: New.
+
+2013-08-20  Teresa Johnson  <tejohnson@google.com>
+
+	PR rtl-optimizations/57451
+	* g++.dg/tree-prof/pr57451.C: New test.
+
+2013-08-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58190
+	* g++.dg/pr57878.C: Use __SIZE_TYPE__.
+
+2013-08-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57490
+	* c-c++-common/cilk-plus/AN/pr57490.c: New test.
+
+2013-08-19  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/dfp-dd-2.c: New test.
+	* gcc.target/powerpc/dfp-td-2.c: Likewise.
+	* gcc.target/powerpc/dfp-td-3.c: Likewise.
+
+2013-08-19  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/mips/mulsize-1.c: Check for SLL as well as SUBU.
+	* gcc.target/mips/mulsize-2.c: Check for ADDU rather than SUBU.
+	Check for SLL too.
+
+2013-08-19  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/avr/progmem-error-1.cpp: Update linenumber of error.
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c [avr-*-*]: Expect 6 times
+	"Threaded".
+
+	* gcc.dg/tree-ssa/vrp55.c: Use keeps_null_pointer_checks to determine
+	correct test response.
+
+	PR testsuite/52641
+	* gcc.dg/tree-ssa/pr31261.c [int16]: Change expected unsigned type.
+	* gcc.dg/tree-ssa/ssa-pre-21.c [! size32plus]: Mark as xfail.
+	* gcc.dg/tree-ssa/vector-4.c (SItype): New typedef.
+	(v4si): Use it.
+	* gcc.dg/tree-ssa/ssa-pre-30.c: Test requires int32.
+	* gcc.dg/tree-ssa/vrp58.c: Adjust scan expression for int16.
+
+	* gcc.dg/tree-ssa/vrp87.c [avr-*-*] (dg-additional-options): New.
+
+2013-08-18  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/type-inheritance-1.C: New testcase.
+
+2013-08-19  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/46271
+	* gfortran.dg/gomp/proc_ptr_1.f90: New.
+
 2013-08-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58006
@@ -114,7 +239,7 @@
 	* gcc.dg/tree-ssa/pr42585.c: Add avr-*-* to list of targets to
 	exclude from scan test.
 
-	* gcc.dg/debug/dwarf2/global-used-types.c: Request dwarf output. 
+	* gcc.dg/debug/dwarf2/global-used-types.c: Request dwarf output.
 	* gcc.dg/debug/dwarf2/inline2.c: Likewise.
 	* gcc.dg/debug/dwarf2/inline3.c: Likewise.
 	* gcc.dg/debug/dwarf2/pr37726.c: Likewise.
@@ -904,7 +1029,7 @@
 2013-07-18  Wei Mi  <wmi@google.com>
 
 	PR rtl-optimization/57878
-	* g++.dg/pr57518.C: New test.
+	* g++.dg/pr57878.C: New test.
 
 2013-07-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 

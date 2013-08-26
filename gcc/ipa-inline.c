@@ -1397,6 +1397,8 @@ add_new_edges_to_heap (fibheap_t heap, vec<cgraph_edge_p> new_edges)
 static void
 heap_edge_removal_hook (struct cgraph_edge *e, void *data)
 {
+  if (e->callee)
+    reset_node_growth_cache (e->callee);
   if (e->aux)
     {
       fibheap_delete_node ((fibheap_t)data, (fibnode_t)e->aux);
@@ -1467,12 +1469,12 @@ resolve_noninline_speculation (fibheap_t edge_heap, struct cgraph_edge *edge)
       bitmap updated_nodes = BITMAP_ALLOC (NULL);
 
       cgraph_resolve_speculation (edge, NULL);
-      reset_node_growth_cache (where);
       reset_edge_caches (where);
       inline_update_overall_summary (where);
       update_caller_keys (edge_heap, where,
 			  updated_nodes, NULL);
-      reset_node_growth_cache (where);
+      update_callee_keys (edge_heap, where,
+			  updated_nodes);
       BITMAP_FREE (updated_nodes);
     }
 }

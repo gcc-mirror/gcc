@@ -1,3 +1,93 @@
+2013-08-26  Gabriel Dos Reis  <gdre@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::unary_expression): Now a
+	virtual member function.
+	(c_pretty_printer::multiplicative_expression): Likewise.
+	(c_pretty_printer::conditional_expression): Likewise.
+	(c_pretty_printer::assignment_expression): Likewise.
+	(c_pretty_printer::expression): Likewise.
+	(pp_unary_expression): Adjust.
+	(pp_multiplicative_expression): Likewise.
+	(pp_assignment_expression): Likewise.
+	(pp_conditional_expression): Likewise.
+	(pp_expression): Likewise.
+	* c-pretty-print.c (c_pretty_printer::unary_expression): Rename
+	from pp_c_unary_expression.  Adjust.
+	(c_pretty_printer::multiplicative_expression): Rename from
+	pp_c_multiplicative_expression.  Adjust.
+	(c_pretty_printer::conditional_expression): Rename from
+	pp_c_conditional_expression.  Adjust.
+	(c_pretty_printer::assignment_expression): Rename from
+	pp_c_assignment_expression.  Adjust.
+	(c_pretty_printer::expression): Rename from pp_c_expression.  Adjust.
+	(c_pretty_printer::c_pretty_printer): Do not assign to
+	unary_expression, multiplicative_expression,
+	conditional_expression, expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::postfix_expression): Now a
+	virtual member function.
+	(pp_postfix_expression): Adjust.
+	(pp_c_postfix_expression): Remove.
+	* c-pretty-print.c (c_pretty_printer::postfix_expression): Rename
+	from pp_c_postfix_expression.  Adjust.
+	(c_pretty_printer::c_pretty_printer): Do not assign to
+	postfix_expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::primary_expression): Now a
+	virtua member function.
+	(pp_primary_expression): Adjust.
+	(pp_c_primary_expression): Remove.
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Rename
+	from pp_c_primary_expression.  Adjust.
+	(pp_c_initializer_list): Use pp_primary_expression.
+	(c_pretty_printer::c_pretty_printer): Do not assign to
+	primary_expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::translate_string): Declare.
+	* c-pretty-print.c (M_): Remove.
+	(c_pretty_printer::translate_string): Define.
+	(pp_c_type_specifier): Use it.
+	(pp_c_primary_expression): Likewise.
+	(pp_c_expression): Likewise.
+
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::id_expression): Now a
+	virtual function.
+	(pp_c_id_expression): Remove.
+	(pp_id_expression): Adjust.
+	* c-pretty-print.c (c_pretty_printer::id_expression): Rename from
+	pp_c_id_expression.  Adjust.
+	(pp_c_postfix_expression): Use pp_id_expression.
+	(c_pretty_printer::c_pretty_printer): Do not assign to id_expression.
+
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::constant): Now a virtual
+	member function.
+	(pp_constant): Adjust.
+	(pp_c_constant): Remove.
+	* c-pretty-print.c (c_pretty_printer::constant): Rename from
+	pp_c_constant.  Adjust.
+	(pp_c_constant)
+	(pp_c_primary_expression): Call pp_constant in lieu of pp_c_constant.
+	(c_pretty_printer::c_pretty_printer): Remove assignment to constant.
+
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (pp_c_pretty_printer_init): Remove.
+	(c_pretty_printer::c_pretty_printer): Declare.
+	* c-pretty-print.c (pretty_printer::c_pretty_printer): Rename from
+	c_pretty_printer_init.  Adjust.
+	(print_c_tree): Do not call c_pretty_printer_init.
+	* c-ada-spec.c (dump_ads): Remove call to pp_construct.
+
 2013-08-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* c-ada-spec.c (print_ada_declaration): Prevent accessing null asm name

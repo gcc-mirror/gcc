@@ -3715,7 +3715,7 @@ evaluate_bound (stmtblock_t *block, tree *bounds, gfc_expr ** values,
 /* Calculate the lower bound of an array section.  */
 
 static void
-gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
+gfc_conv_section_startstride (stmtblock_t * block, gfc_ss * ss, int dim)
 {
   gfc_expr *stride = NULL;
   tree desc;
@@ -3744,12 +3744,12 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
 
   /* Calculate the start of the range.  For vector subscripts this will
      be the range of the vector.  */
-  evaluate_bound (&loop->pre, info->start, ar->start, desc, dim, true);
+  evaluate_bound (block, info->start, ar->start, desc, dim, true);
 
   /* Similarly calculate the end.  Although this is not used in the
      scalarizer, it is needed when checking bounds and where the end
      is an expression with side-effects.  */
-  evaluate_bound (&loop->pre, info->end, ar->end, desc, dim, false);
+  evaluate_bound (block, info->end, ar->end, desc, dim, false);
 
   /* Calculate the stride.  */
   if (stride == NULL)
@@ -3758,8 +3758,8 @@ gfc_conv_section_startstride (gfc_loopinfo * loop, gfc_ss * ss, int dim)
     {
       gfc_init_se (&se, NULL);
       gfc_conv_expr_type (&se, stride, gfc_array_index_type);
-      gfc_add_block_to_block (&loop->pre, &se.pre);
-      info->stride[dim] = gfc_evaluate_now (se.expr, &loop->pre);
+      gfc_add_block_to_block (block, &se.pre);
+      info->stride[dim] = gfc_evaluate_now (se.expr, block);
     }
 }
 
@@ -3775,6 +3775,8 @@ gfc_conv_ss_startstride (gfc_loopinfo * loop)
   tree tmp;
   gfc_ss *ss;
   tree desc;
+
+  gfc_loopinfo * const outer_loop = outermost_loop (loop);
 
   loop->dimen = 0;
   /* Determine the rank of the loop.  */
@@ -3835,10 +3837,11 @@ done:
 	  /* Get the descriptor for the array.  If it is a cross loops array,
 	     we got the descriptor already in the outermost loop.  */
 	  if (ss->parent == NULL)
-	    gfc_conv_ss_descriptor (&loop->pre, ss, !loop->array_parameter);
+	    gfc_conv_ss_descriptor (&outer_loop->pre, ss,
+				    !loop->array_parameter);
 
 	  for (n = 0; n < ss->dimen; n++)
-	    gfc_conv_section_startstride (loop, ss, ss->dim[n]);
+	    gfc_conv_section_startstride (&outer_loop->pre, ss, ss->dim[n]);
 	  break;
 
 	case GFC_SS_INTRINSIC:
@@ -3874,7 +3877,7 @@ done:
 					   fold_convert (gfc_array_index_type,
 							 rank),
 					   gfc_index_one_node);
-		    info->end[0] = gfc_evaluate_now (tmp, &loop->pre);
+		    info->end[0] = gfc_evaluate_now (tmp, &outer_loop->pre);
 		    info->start[0] = gfc_index_zero_node;
 		    info->stride[0] = gfc_index_one_node;
 		    continue;
@@ -4156,7 +4159,7 @@ done:
 	}
 
       tmp = gfc_finish_block (&block);
-      gfc_add_expr_to_block (&loop->pre, tmp);
+      gfc_add_expr_to_block (&outer_loop->pre, tmp);
     }
 
   for (loop = loop->nested; loop; loop = loop->next)
@@ -4439,6 +4442,8 @@ set_loop_bounds (gfc_loopinfo *loop)
   mpz_t i;
   bool nonoptional_arr;
 
+  gfc_loopinfo * const outer_loop = outermost_loop (loop);
+
   loopspec = loop->specloop;
 
   mpz_init (i);
@@ -4627,7 +4632,7 @@ set_loop_bounds (gfc_loopinfo *loop)
       else
 	{
 	  /* Set the delta for this section.  */
-	  info->delta[dim] = gfc_evaluate_now (loop->from[n], &loop->pre);
+	  info->delta[dim] = gfc_evaluate_now (loop->from[n], &outer_loop->pre);
 	  /* Number of iterations is (end - start + step) / step.
 	     with start = 0, this simplifies to
 	     last = end / step;
@@ -4639,7 +4644,7 @@ set_loop_bounds (gfc_loopinfo *loop)
 				 gfc_array_index_type, tmp, info->stride[dim]);
 	  tmp = fold_build2_loc (input_location, MAX_EXPR, gfc_array_index_type,
 				 tmp, build_int_cst (gfc_array_index_type, -1));
-	  loop->to[n] = gfc_evaluate_now (tmp, &loop->pre);
+	  loop->to[n] = gfc_evaluate_now (tmp, &outer_loop->pre);
 	  /* Make the loop variable start at 0.  */
 	  loop->from[n] = gfc_index_zero_node;
 	}
@@ -4715,6 +4720,8 @@ gfc_set_delta (gfc_loopinfo *loop)
   tree tmp;
   int n, dim;
 
+  gfc_loopinfo * const outer_loop = outermost_loop (loop);
+
   loopspec = loop->specloop;
 
   /* Calculate the translation from loop variables to array indices.  */
@@ -4750,7 +4757,7 @@ gfc_set_delta (gfc_loopinfo *loop)
 				     gfc_array_index_type,
 				     info->start[dim], tmp);
 
-	      info->delta[dim] = gfc_evaluate_now (tmp, &loop->pre);
+	      info->delta[dim] = gfc_evaluate_now (tmp, &outer_loop->pre);
 	    }
 	}
     }
@@ -6727,10 +6734,10 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	      gcc_assert (ar->dimen_type[n + ndim] == DIMEN_THIS_IMAGE);
 
 	      /* Make sure the call to gfc_conv_section_startstride won't
-	         generate unnecessary code to calculate stride.  */
+		 generate unnecessary code to calculate stride.  */
 	      gcc_assert (ar->stride[n + ndim] == NULL);
 
-	      gfc_conv_section_startstride (&loop, ss, n + ndim);
+	      gfc_conv_section_startstride (&loop.pre, ss, n + ndim);
 	      loop.from[n + loop.dimen] = info->start[n + ndim];
 	      loop.to[n + loop.dimen]   = info->end[n + ndim];
 	    }

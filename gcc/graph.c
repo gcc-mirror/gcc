@@ -278,7 +278,6 @@ print_graph_cfg (const char *base, struct function *fun)
   const char *funcname = function_name (fun);
   FILE *fp = open_graph_file (base, "a");
   pretty_printer graph_slim_pp;
-  pp_construct (&graph_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
   graph_slim_pp.buffer->stream = fp;
   pretty_printer *const pp = &graph_slim_pp;
   pp_printf (pp, "subgraph \"%s\" {\n"
@@ -297,7 +296,6 @@ static void
 start_graph_dump (FILE *fp, const char *base)
 {
   pretty_printer graph_slim_pp;
-  pp_construct (&graph_slim_pp, /*prefix=*/NULL, /*linewidth=*/0);
   graph_slim_pp.buffer->stream = fp;
   pretty_printer *const pp = &graph_slim_pp;
   pp_string (pp, "digraph \"");
