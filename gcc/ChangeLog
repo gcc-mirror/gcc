@@ -1,3 +1,8 @@
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (comdat_can_be_unshared_p_1): C++ constructors and destructors
+	can be unshared.
+
 2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* reload.c (find_valid_class): Allow classes that do not include
