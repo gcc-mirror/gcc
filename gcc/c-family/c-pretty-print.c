@@ -50,7 +50,6 @@ static void pp_c_char (c_pretty_printer *, int);
 static void pp_c_initializer_list (c_pretty_printer *, tree);
 static void pp_c_brace_enclosed_initializer_list (c_pretty_printer *, tree);
 
-static void pp_c_multiplicative_expression (c_pretty_printer *, tree);
 static void pp_c_additive_expression (c_pretty_printer *, tree);
 static void pp_c_shift_expression (c_pretty_printer *, tree);
 static void pp_c_relational_expression (c_pretty_printer *, tree);
@@ -59,8 +58,6 @@ static void pp_c_and_expression (c_pretty_printer *, tree);
 static void pp_c_exclusive_or_expression (c_pretty_printer *, tree);
 static void pp_c_inclusive_or_expression (c_pretty_printer *, tree);
 static void pp_c_logical_and_expression (c_pretty_printer *, tree);
-static void pp_c_conditional_expression (c_pretty_printer *, tree);
-static void pp_c_assignment_expression (c_pretty_printer *, tree);
 
 /* declarations.  */
 
@@ -1255,7 +1252,7 @@ c_pretty_printer::primary_expression (tree e)
       if (TREE_OPERAND (e, 2))
 	{
 	  pp_separate_with (this, ',');
-	  pp_c_expression (this, TREE_OPERAND (e, 2));
+	  expression (TREE_OPERAND (e, 2));
 	}
       pp_c_right_paren (this);
       break;
@@ -1619,7 +1616,7 @@ c_pretty_printer::postfix_expression (tree e)
       break;
 
     case MEM_REF:
-      pp_c_expression (this, e);
+      expression (e);
       break;
 
     case COMPLEX_CST:
@@ -1641,7 +1638,7 @@ c_pretty_printer::postfix_expression (tree e)
     case VA_ARG_EXPR:
       pp_c_ws_string (this, "__builtin_va_arg");
       pp_c_left_paren (this);
-      pp_assignment_expression (this, TREE_OPERAND (e, 0));
+      assignment_expression (TREE_OPERAND (e, 0));
       pp_separate_with (this, ',');
       pp_type_id (this, TREE_TYPE (e));
       pp_c_right_paren (this);
@@ -1721,15 +1718,15 @@ pp_c_call_argument_list (c_pretty_printer *pp, tree t)
       __imag__ unary-expression  */
 
 void
-pp_c_unary_expression (c_pretty_printer *pp, tree e)
+c_pretty_printer::unary_expression (tree e)
 {
   enum tree_code code = TREE_CODE (e);
   switch (code)
     {
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
-      pp_string (pp, code == PREINCREMENT_EXPR ? "++" : "--");
-      pp_c_unary_expression (pp, TREE_OPERAND (e, 0));
+      pp_string (this, code == PREINCREMENT_EXPR ? "++" : "--");
+      unary_expression (TREE_OPERAND (e, 0));
       break;
 
     case ADDR_EXPR:
@@ -1740,53 +1737,53 @@ pp_c_unary_expression (c_pretty_printer *pp, tree e)
     case CONJ_EXPR:
       /* String literal are used by address.  */
       if (code == ADDR_EXPR && TREE_CODE (TREE_OPERAND (e, 0)) != STRING_CST)
-	pp_ampersand (pp);
+	pp_ampersand (this);
       else if (code == INDIRECT_REF)
-	pp_c_star (pp);
+	pp_c_star (this);
       else if (code == NEGATE_EXPR)
-	pp_minus (pp);
+	pp_minus (this);
       else if (code == BIT_NOT_EXPR || code == CONJ_EXPR)
-	pp_complement (pp);
+	pp_complement (this);
       else if (code == TRUTH_NOT_EXPR)
-	pp_exclamation (pp);
-      pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
+	pp_exclamation (this);
+      pp_c_cast_expression (this, TREE_OPERAND (e, 0));
       break;
 
     case MEM_REF:
       if (TREE_CODE (TREE_OPERAND (e, 0)) == ADDR_EXPR
 	  && integer_zerop (TREE_OPERAND (e, 1)))
-	pp_c_expression (pp, TREE_OPERAND (TREE_OPERAND (e, 0), 0));
+	expression (TREE_OPERAND (TREE_OPERAND (e, 0), 0));
       else
 	{
-	  pp_c_star (pp);
+	  pp_c_star (this);
 	  if (!integer_zerop (TREE_OPERAND (e, 1)))
 	    {
-	      pp_c_left_paren (pp);
+	      pp_c_left_paren (this);
 	      if (!integer_onep (TYPE_SIZE_UNIT
 				 (TREE_TYPE (TREE_TYPE (TREE_OPERAND (e, 0))))))
-		pp_c_type_cast (pp, ptr_type_node);
+		pp_c_type_cast (this, ptr_type_node);
 	    }
-	  pp_c_cast_expression (pp, TREE_OPERAND (e, 0));
+	  pp_c_cast_expression (this, TREE_OPERAND (e, 0));
 	  if (!integer_zerop (TREE_OPERAND (e, 1)))
 	    {
-	      pp_plus (pp);
-	      pp_c_integer_constant (pp,
+	      pp_plus (this);
+	      pp_c_integer_constant (this,
 				     fold_convert (ssizetype,
 						   TREE_OPERAND (e, 1)));
-	      pp_c_right_paren (pp);
+	      pp_c_right_paren (this);
 	    }
 	}
       break;
 
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      pp_c_ws_string (pp, code == REALPART_EXPR ? "__real__" : "__imag__");
-      pp_c_whitespace (pp);
-      pp_unary_expression (pp, TREE_OPERAND (e, 0));
+      pp_c_ws_string (this, code == REALPART_EXPR ? "__real__" : "__imag__");
+      pp_c_whitespace (this);
+      unary_expression (TREE_OPERAND (e, 0));
       break;
 
     default:
-      pp_postfix_expression (pp, e);
+      postfix_expression (e);
       break;
     }
 }
@@ -1819,8 +1816,8 @@ pp_c_cast_expression (c_pretty_printer *pp, tree e)
       multiplicative-expression / cast-expression
       multiplicative-expression % cast-expression   */
 
-static void
-pp_c_multiplicative_expression (c_pretty_printer *pp, tree e)
+void
+c_pretty_printer::multiplicative_expression (tree e)
 {
   enum tree_code code = TREE_CODE (e);
   switch (code)
@@ -1828,20 +1825,20 @@ pp_c_multiplicative_expression (c_pretty_printer *pp, tree e)
     case MULT_EXPR:
     case TRUNC_DIV_EXPR:
     case TRUNC_MOD_EXPR:
-      pp_multiplicative_expression (pp, TREE_OPERAND (e, 0));
-      pp_c_whitespace (pp);
+      multiplicative_expression (TREE_OPERAND (e, 0));
+      pp_c_whitespace (this);
       if (code == MULT_EXPR)
-	pp_c_star (pp);
+	pp_c_star (this);
       else if (code == TRUNC_DIV_EXPR)
-	pp_slash (pp);
+	pp_slash (this);
       else
-	pp_modulo (pp);
-      pp_c_whitespace (pp);
-      pp_c_cast_expression (pp, TREE_OPERAND (e, 1));
+	pp_modulo (this);
+      pp_c_whitespace (this);
+      pp_c_cast_expression (this, TREE_OPERAND (e, 1));
       break;
 
     default:
-      pp_c_cast_expression (pp, e);
+      pp_c_cast_expression (this, e);
       break;
     }
 }
@@ -2069,23 +2066,23 @@ pp_c_logical_or_expression (c_pretty_printer *pp, tree e)
       logical-OR-expression
       logical-OR-expression ? expression : conditional-expression  */
 
-static void
-pp_c_conditional_expression (c_pretty_printer *pp, tree e)
+void
+c_pretty_printer::conditional_expression (tree e)
 {
   if (TREE_CODE (e) == COND_EXPR)
     {
-      pp_c_logical_or_expression (pp, TREE_OPERAND (e, 0));
-      pp_c_whitespace (pp);
-      pp_question (pp);
-      pp_c_whitespace (pp);
-      pp_expression (pp, TREE_OPERAND (e, 1));
-      pp_c_whitespace (pp);
-      pp_colon (pp);
-      pp_c_whitespace (pp);
-      pp_c_conditional_expression (pp, TREE_OPERAND (e, 2));
+      pp_c_logical_or_expression (this, TREE_OPERAND (e, 0));
+      pp_c_whitespace (this);
+      pp_question (this);
+      pp_c_whitespace (this);
+      pp_expression (this, TREE_OPERAND (e, 1));
+      pp_c_whitespace (this);
+      pp_colon (this);
+      pp_c_whitespace (this);
+      conditional_expression (TREE_OPERAND (e, 2));
     }
   else
-    pp_c_logical_or_expression (pp, e);
+    pp_c_logical_or_expression (this, e);
 }
 
 
@@ -2096,20 +2093,20 @@ pp_c_conditional_expression (c_pretty_printer *pp, tree e)
    assignment-expression: one of
       =    *=    /=    %=    +=    -=    >>=    <<=    &=    ^=    |=  */
 
-static void
-pp_c_assignment_expression (c_pretty_printer *pp, tree e)
+void
+c_pretty_printer::assignment_expression (tree e)
 {
   if (TREE_CODE (e) == MODIFY_EXPR
       || TREE_CODE (e) == INIT_EXPR)
     {
-      pp_c_unary_expression (pp, TREE_OPERAND (e, 0));
-      pp_c_whitespace (pp);
-      pp_equal (pp);
-      pp_space (pp);
-      pp_c_expression (pp, TREE_OPERAND (e, 1));
+      unary_expression (TREE_OPERAND (e, 0));
+      pp_c_whitespace (this);
+      pp_equal (this);
+      pp_space (this);
+      pp_expression (this, TREE_OPERAND (e, 1));
     }
   else
-    pp_c_conditional_expression (pp, e);
+    conditional_expression (e);
 }
 
 /* expression:
@@ -2120,27 +2117,27 @@ pp_c_assignment_expression (c_pretty_printer *pp, tree e)
   chain, I take the liberty of dispatching nodes to the appropriate
   functions.  This makes some redundancy, but it worths it. That also
   prevents a possible infinite recursion between pp_primary_expression ()
-  and pp_c_expression ().  */
+  and pp_expression ().  */
 
 void
-pp_c_expression (c_pretty_printer *pp, tree e)
+c_pretty_printer::expression (tree e)
 {
   switch (TREE_CODE (e))
     {
     case INTEGER_CST:
-      pp_c_integer_constant (pp, e);
+      pp_c_integer_constant (this, e);
       break;
 
     case REAL_CST:
-      pp_c_floating_constant (pp, e);
+      pp_c_floating_constant (this, e);
       break;
 
     case FIXED_CST:
-      pp_c_fixed_constant (pp, e);
+      pp_c_fixed_constant (this, e);
       break;
 
     case STRING_CST:
-      pp_c_string_literal (pp, e);
+      pp_c_string_literal (this, e);
       break;
 
     case IDENTIFIER_NODE:
@@ -2152,15 +2149,15 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case FIELD_DECL:
     case LABEL_DECL:
     case ERROR_MARK:
-      pp_primary_expression (pp, e);
+      primary_expression (e);
       break;
 
     case SSA_NAME:
       if (SSA_NAME_VAR (e)
 	  && !DECL_ARTIFICIAL (SSA_NAME_VAR (e)))
-	pp_c_expression (pp, SSA_NAME_VAR (e));
+	expression (SSA_NAME_VAR (e));
       else
-	pp->translate_string ("<unknown>");
+	translate_string ("<unknown>");
       break;
 
     case POSTINCREMENT_EXPR:
@@ -2185,7 +2182,7 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case CONSTRUCTOR:
     case COMPOUND_LITERAL_EXPR:
     case VA_ARG_EXPR:
-      pp_postfix_expression (pp, e);
+      postfix_expression (e);
       break;
 
     case CONJ_EXPR:
@@ -2199,107 +2196,107 @@ pp_c_expression (c_pretty_printer *pp, tree e)
     case PREDECREMENT_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
-      pp_c_unary_expression (pp, e);
+      unary_expression (e);
       break;
 
     case FLOAT_EXPR:
     case FIX_TRUNC_EXPR:
     CASE_CONVERT:
     case VIEW_CONVERT_EXPR:
-      pp_c_cast_expression (pp, e);
+      pp_c_cast_expression (this, e);
       break;
 
     case MULT_EXPR:
     case TRUNC_MOD_EXPR:
     case TRUNC_DIV_EXPR:
-      pp_multiplicative_expression (pp, e);
+      multiplicative_expression (e);
       break;
 
     case LSHIFT_EXPR:
     case RSHIFT_EXPR:
-      pp_c_shift_expression (pp, e);
+      pp_c_shift_expression (this, e);
       break;
 
     case LT_EXPR:
     case GT_EXPR:
     case LE_EXPR:
     case GE_EXPR:
-      pp_c_relational_expression (pp, e);
+      pp_c_relational_expression (this, e);
       break;
 
     case BIT_AND_EXPR:
-      pp_c_and_expression (pp, e);
+      pp_c_and_expression (this, e);
       break;
 
     case BIT_XOR_EXPR:
     case TRUTH_XOR_EXPR:
-      pp_c_exclusive_or_expression (pp, e);
+      pp_c_exclusive_or_expression (this, e);
       break;
 
     case BIT_IOR_EXPR:
-      pp_c_inclusive_or_expression (pp, e);
+      pp_c_inclusive_or_expression (this, e);
       break;
 
     case TRUTH_ANDIF_EXPR:
     case TRUTH_AND_EXPR:
-      pp_c_logical_and_expression (pp, e);
+      pp_c_logical_and_expression (this, e);
       break;
 
     case TRUTH_ORIF_EXPR:
     case TRUTH_OR_EXPR:
-      pp_c_logical_or_expression (pp, e);
+      pp_c_logical_or_expression (this, e);
       break;
 
     case EQ_EXPR:
     case NE_EXPR:
-      pp_c_equality_expression (pp, e);
+      pp_c_equality_expression (this, e);
       break;
 
     case COND_EXPR:
-      pp_conditional_expression (pp, e);
+      conditional_expression (e);
       break;
 
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
     case MINUS_EXPR:
-      pp_c_additive_expression (pp, e);
+      pp_c_additive_expression (this, e);
       break;
 
     case MODIFY_EXPR:
     case INIT_EXPR:
-      pp_assignment_expression (pp, e);
+      assignment_expression (e);
       break;
 
     case COMPOUND_EXPR:
-      pp_c_left_paren (pp);
-      pp_expression (pp, TREE_OPERAND (e, 0));
-      pp_separate_with (pp, ',');
-      pp_assignment_expression (pp, TREE_OPERAND (e, 1));
-      pp_c_right_paren (pp);
+      pp_c_left_paren (this);
+      expression (TREE_OPERAND (e, 0));
+      pp_separate_with (this, ',');
+      assignment_expression (TREE_OPERAND (e, 1));
+      pp_c_right_paren (this);
       break;
 
     case NON_LVALUE_EXPR:
     case SAVE_EXPR:
-      pp_expression (pp, TREE_OPERAND (e, 0));
+      expression (TREE_OPERAND (e, 0));
       break;
 
     case TARGET_EXPR:
-      pp_postfix_expression (pp, TREE_OPERAND (e, 1));
+      postfix_expression (TREE_OPERAND (e, 1));
       break;
 
     case BIND_EXPR:
     case GOTO_EXPR:
       /* We don't yet have a way of dumping statements in a
          human-readable format.  */
-      pp_string (pp, "({...})");
+      pp_string (this, "({...})");
       break;
 
     case C_MAYBE_CONST_EXPR:
-      pp_c_expression (pp, C_MAYBE_CONST_EXPR_EXPR (e));
+      expression (C_MAYBE_CONST_EXPR_EXPR (e));
       break;
 
     default:
-      pp_unsupported_tree (pp, e);
+      pp_unsupported_tree (this, e);
       break;
     }
 }
@@ -2344,12 +2341,7 @@ c_pretty_printer::c_pretty_printer ()
 
   statement                 = pp_c_statement;
 
-  unary_expression          = pp_c_unary_expression;
   initializer               = pp_c_initializer;
-  multiplicative_expression = pp_c_multiplicative_expression;
-  conditional_expression    = pp_c_conditional_expression;
-  assignment_expression     = pp_c_assignment_expression;
-  expression                = pp_c_expression;
 }
 
 

@@ -37,6 +37,11 @@ struct cxx_pretty_printer : c_pretty_printer
   void id_expression (tree);
   void primary_expression (tree);
   void postfix_expression (tree);
+  void unary_expression (tree);
+  void multiplicative_expression (tree);
+  void conditional_expression (tree);
+  void assignment_expression (tree);
+  void expression (tree);
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
 };

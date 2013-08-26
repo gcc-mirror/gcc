@@ -58,6 +58,11 @@ struct c_pretty_printer : pretty_printer
   virtual void id_expression (tree);
   virtual void primary_expression (tree);
   virtual void postfix_expression (tree);
+  virtual void unary_expression (tree);
+  virtual void multiplicative_expression (tree);
+  virtual void conditional_expression (tree);
+  virtual void assignment_expression (tree);
+  virtual void expression (tree);
   /* Points to the first element of an array of offset-list.
      Not used yet.  */
   int *offset_list;
@@ -83,11 +88,6 @@ struct c_pretty_printer : pretty_printer
 
   c_pretty_print_fn statement;
 
-  c_pretty_print_fn unary_expression;
-  c_pretty_print_fn multiplicative_expression;
-  c_pretty_print_fn conditional_expression;
-  c_pretty_print_fn assignment_expression;
-  c_pretty_print_fn expression;
 };
 
 #define pp_c_tree_identifier(PPI, ID)              \
@@ -116,13 +116,13 @@ struct c_pretty_printer : pretty_printer
 #define pp_id_expression(PP, E)         (PP)->id_expression (E)
 #define pp_primary_expression(PP, E)    (PP)->primary_expression (E)
 #define pp_postfix_expression(PP, E)    (PP)->postfix_expression (E)
-#define pp_unary_expression(PP, E)      (PP)->unary_expression (PP, E)
+#define pp_unary_expression(PP, E)      (PP)->unary_expression (E)
 #define pp_initializer(PP, E)           (PP)->initializer (PP, E)
 #define pp_multiplicative_expression(PP, E)      \
-  (PP)->multiplicative_expression (PP, E)
-#define pp_conditional_expression(PP, E) (PP)->conditional_expression (PP, E)
-#define pp_assignment_expression(PP, E) (PP)->assignment_expression (PP, E)
-#define pp_expression(PP, E)            (PP)->expression (PP, E)
+  (PP)->multiplicative_expression (E)
+#define pp_conditional_expression(PP, E) (PP)->conditional_expression (E)
+#define pp_assignment_expression(PP, E) (PP)->assignment_expression (E)
+#define pp_expression(PP, E)            (PP)->expression (E)
 
 
 void pp_c_whitespace (c_pretty_printer *);
@@ -162,12 +162,10 @@ void pp_c_storage_class_specifier (c_pretty_printer *, tree);
 /* Statements.  */
 void pp_c_statement (c_pretty_printer *, tree);
 /* Expressions.  */
-void pp_c_expression (c_pretty_printer *, tree);
 void pp_c_logical_or_expression (c_pretty_printer *, tree);
 void pp_c_expression_list (c_pretty_printer *, tree);
 void pp_c_constructor_elts (c_pretty_printer *, vec<constructor_elt, va_gc> *);
 void pp_c_call_argument_list (c_pretty_printer *, tree);
-void pp_c_unary_expression (c_pretty_printer *, tree);
 void pp_c_cast_expression (c_pretty_printer *, tree);
 void pp_c_init_declarator (c_pretty_printer *, tree);
 void pp_c_ws_string (c_pretty_printer *, const char *);
