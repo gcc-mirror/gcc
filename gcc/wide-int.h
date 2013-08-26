@@ -1650,7 +1650,7 @@ wide_int_ro::fits_shwi_p () const
 inline bool
 wide_int_ro::fits_uhwi_p () const
 {
-  return len == 1 || (len == 2 && val[1] == 0);
+  return (len == 1 && val[0] >= 0) || (len == 2 && val[1] == 0);
 }
 
 /* Return the signed or unsigned min of THIS and C.  */
