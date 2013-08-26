@@ -1,5 +1,10 @@
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-transform.c (inline_transform): Be ready for basic block
+	to be changed by edge redirection.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_speculative_call_info): Fix parameter order and formating;
 	add sanity check.
 	(cgraph_resolve_speculation): Add FIXME about scaling profiles.
