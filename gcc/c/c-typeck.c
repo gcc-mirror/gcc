@@ -919,6 +919,13 @@ c_common_type (tree t1, tree t2)
       || TYPE_MAIN_VARIANT (t2) == long_double_type_node)
     return long_double_type_node;
 
+  /* Likewise, prefer double to float even if same size.
+     We got a couple of embedded targets with 32 bit doubles, and the
+     pdp11 might have 64 bit floats.  */
+  if (TYPE_MAIN_VARIANT (t1) == double_type_node
+      || TYPE_MAIN_VARIANT (t2) == double_type_node)
+    return double_type_node;
+
   /* Otherwise prefer the unsigned one.  */
 
   if (TYPE_UNSIGNED (t1))
@@ -3156,7 +3163,9 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
 	}
       else if (TREE_CODE (valtype) == REAL_TYPE
 	       && (TYPE_PRECISION (valtype)
-		   < TYPE_PRECISION (double_type_node))
+		   <= TYPE_PRECISION (double_type_node))
+	       && valtype != double_type_node
+	       && valtype != long_double_type_node
 	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (valtype)))
         {
 	  if (type_generic)
