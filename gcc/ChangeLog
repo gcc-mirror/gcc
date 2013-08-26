@@ -1,5 +1,9 @@
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-prop.c (ipa_print_node_params): Do not ICE during WPA.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline-transform.c (inline_transform): Be ready for basic block
 	to be changed by edge redirection.
 
