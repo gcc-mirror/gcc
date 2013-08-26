@@ -1,5 +1,9 @@
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Use ctor_for_folding.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (comdat_can_be_unshared_p_1): C++ constructors and destructors
 	can be unshared.
 
