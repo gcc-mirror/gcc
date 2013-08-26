@@ -1,3 +1,9 @@
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-typeck.c (c_common_type): Prefer double_type_node over
+	other REAL_TYPE types with the same precision.
+	(convert_arguments): Likewise.
+
 2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-objc-common.c (c_tree_printer): Document the nature of the cast.
