@@ -7756,7 +7756,7 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
 }
 
 static bool
-ix86_return_in_memory (const_tree type, const_tree fntype)
+ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
 #ifdef SUBTARGET_RETURN_IN_MEMORY
   return SUBTARGET_RETURN_IN_MEMORY (type, fntype);
