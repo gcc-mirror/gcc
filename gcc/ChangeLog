@@ -1,3 +1,8 @@
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/i386/i386.c (x86_64_elf_select_section): Put ATTRIBUTE_UNUSED
+	into proper place.
+
 2013-08-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_debug_options): Remove prototype.
