@@ -1,3 +1,8 @@
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* tree.h (tree_decl_with_vis): Add cxx_constructor, cxx_destructor.
+	(DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P): New macros.
+
 2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/i386/i386.c (x86_64_elf_select_section): Put ATTRIBUTE_UNUSED

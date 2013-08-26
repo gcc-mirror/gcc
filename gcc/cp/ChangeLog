@@ -1,3 +1,8 @@
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_DESTRUCTOR_P): Use
+	middle-end flag.
+
 2013-08-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (cxx_pretty_printer::unary_expression):

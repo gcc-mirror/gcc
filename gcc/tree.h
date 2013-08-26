@@ -3232,8 +3232,12 @@ struct GTY(()) tree_decl_with_vis {
  /* Used by C++ only.  Might become a generic decl flag.  */
  unsigned shadowed_for_var_p : 1;
  /* Belong to FUNCTION_DECL exclusively.  */
+ unsigned cxx_constructor : 1;
+ /* Belong to FUNCTION_DECL exclusively.  */
+ unsigned cxx_destructor : 1;
+ /* Belong to FUNCTION_DECL exclusively.  */
  unsigned final : 1;
- /* 13 unused bits. */
+ /* 11 unused bits. */
 };
 
 extern tree decl_debug_expr_lookup (tree);
@@ -3482,6 +3486,18 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    have any "target" attribute set. */
 #define DECL_FUNCTION_VERSIONED(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->function_decl.versioned_function)
+
+/* In FUNCTION_DECL, this is set if this function is a C++ constructor.
+   Devirtualization machinery uses this knowledge for determing type of the
+   object constructed.  Also we assume that constructor address is not
+   important.  */
+#define DECL_CXX_CONSTRUCTOR_P(NODE)\
+   (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.cxx_constructor)
+
+/* In FUNCTION_DECL, this is set if this function is a C++ destructor.
+   Devirtualization machinery uses this to track types in destruction.  */
+#define DECL_CXX_DESTRUCTOR_P(NODE)\
+   (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.cxx_destructor)
 
 /* In FUNCTION_DECL that represent an virtual method this is set when
    the method is final.  */
