@@ -868,14 +868,14 @@ emit_max_int (void)
 	max = i->bytesize;
   if (max > mmax)
     mmax = max;
-  printf ("#define MAX_BITSIZE_MODE_ANY_INT %d*BITS_PER_UNIT\n", mmax);
+  printf ("#define MAX_BITSIZE_MODE_ANY_INT (%d*BITS_PER_UNIT)\n", mmax);
 
   mmax = 0;
   for (j = 0; j < MAX_MODE_CLASS; j++)
     for (i = modes[j]; i; i = i->next)
       if (mmax < i->bytesize)
 	mmax = i->bytesize;
-  printf ("#define MAX_BITSIZE_MODE_ANY_MODE %d*BITS_PER_UNIT\n", mmax);
+  printf ("#define MAX_BITSIZE_MODE_ANY_MODE (%d*BITS_PER_UNIT)\n", mmax);
 }
 
 static void
