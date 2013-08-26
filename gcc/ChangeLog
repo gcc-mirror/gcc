@@ -1,3 +1,8 @@
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* config/avr/avr-stdint.h (INT16_TYPE): Change default to "int".
+	(UINT16_TYPE): Change default to "unsigned int".
+
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_propagate_frequency): Do not assume that virtual

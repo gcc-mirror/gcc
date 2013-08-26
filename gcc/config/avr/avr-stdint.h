@@ -34,11 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #define SIG_ATOMIC_TYPE "char"
 
 #define INT8_TYPE "signed char"
-#define INT16_TYPE (INT_TYPE_SIZE == 16 ? "short int" : "long int")
+#define INT16_TYPE (INT_TYPE_SIZE == 16 ? "int" : "long int")
 #define INT32_TYPE (INT_TYPE_SIZE == 16 ? "long int" : "long long int")
 #define INT64_TYPE (INT_TYPE_SIZE == 16 ? "long long int" : 0)
 #define UINT8_TYPE "unsigned char"
-#define UINT16_TYPE (INT_TYPE_SIZE == 16 ? "short unsigned int" : "long unsigned int")
+#define UINT16_TYPE (INT_TYPE_SIZE == 16 ? "unsigned int" : "long unsigned int")
 #define UINT32_TYPE (INT_TYPE_SIZE == 16 ? "long unsigned int" : "long long unsigned int")
 #define UINT64_TYPE (INT_TYPE_SIZE == 16 ? "long long unsigned int" : 0)
 
