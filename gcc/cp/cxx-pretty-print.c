@@ -487,8 +487,8 @@ cxx_pretty_printer::primary_expression (tree t)
      typeid ( expression )
      typeid ( type-id )  */
 
-static void
-pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
+void
+cxx_pretty_printer::postfix_expression (tree t)
 {
   enum tree_code code = TREE_CODE (t);
 
@@ -499,7 +499,7 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
       {
 	tree fun = (code == AGGR_INIT_EXPR ? AGGR_INIT_EXPR_FN (t)
 					   : CALL_EXPR_FN (t));
-	tree saved_scope = pp->enclosing_scope;
+	tree saved_scope = enclosing_scope;
 	bool skipfirst = false;
 	tree arg;
 
@@ -528,21 +528,21 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 
 	    if (!TYPE_PTR_P (TREE_TYPE (object)))
 	      {
-		pp_cxx_postfix_expression (pp, object);
-		pp_cxx_dot (pp);
+		postfix_expression (object);
+		pp_cxx_dot (this);
 	      }
 	    else
 	      {
-		pp_cxx_postfix_expression (pp, object);
-		pp_cxx_arrow (pp);
+		postfix_expression (object);
+		pp_cxx_arrow (this);
 	      }
 	    skipfirst = true;
-	    pp->enclosing_scope = strip_pointer_operator (TREE_TYPE (object));
+	    enclosing_scope = strip_pointer_operator (TREE_TYPE (object));
 	  }
 
-	pp_cxx_postfix_expression (pp, fun);
-	pp->enclosing_scope = saved_scope;
-	pp_cxx_left_paren (pp);
+	postfix_expression (fun);
+	enclosing_scope = saved_scope;
+	pp_cxx_left_paren (this);
 	if (code == AGGR_INIT_EXPR)
 	  {
 	    aggr_init_expr_arg_iterator iter;
@@ -552,9 +552,9 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 		  skipfirst = false;
 		else
 		  {
-		    pp_cxx_expression (pp, arg);
+		    pp_cxx_expression (this, arg);
 		    if (more_aggr_init_expr_args_p (&iter))
-		      pp_cxx_separate_with (pp, ',');
+		      pp_cxx_separate_with (this, ',');
 		  }
 	      }
 	  }
@@ -567,18 +567,18 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
 		  skipfirst = false;
 		else
 		  {
-		    pp_cxx_expression (pp, arg);
+		    pp_cxx_expression (this, arg);
 		    if (more_call_expr_args_p (&iter))
-		      pp_cxx_separate_with (pp, ',');
+		      pp_cxx_separate_with (this, ',');
 		  }
 	      }
 	  }
-	pp_cxx_right_paren (pp);
+	pp_cxx_right_paren (this);
       }
       if (code == AGGR_INIT_EXPR && AGGR_INIT_VIA_CTOR_P (t))
 	{
-	  pp_cxx_separate_with (pp, ',');
-	  pp_cxx_postfix_expression (pp, AGGR_INIT_EXPR_SLOT (t));
+	  pp_cxx_separate_with (this, ',');
+	  postfix_expression (AGGR_INIT_EXPR_SLOT (t));
 	}
       break;
 
@@ -591,7 +591,7 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
     case CONST_DECL:
     case TEMPLATE_DECL:
     case RESULT_DECL:
-      pp_primary_expression (pp, t);
+      primary_expression (t);
       break;
 
     case DYNAMIC_CAST_EXPR:
@@ -599,47 +599,47 @@ pp_cxx_postfix_expression (cxx_pretty_printer *pp, tree t)
     case REINTERPRET_CAST_EXPR:
     case CONST_CAST_EXPR:
       if (code == DYNAMIC_CAST_EXPR)
-	pp_cxx_ws_string (pp, "dynamic_cast");
+	pp_cxx_ws_string (this, "dynamic_cast");
       else if (code == STATIC_CAST_EXPR)
-	pp_cxx_ws_string (pp, "static_cast");
+	pp_cxx_ws_string (this, "static_cast");
       else if (code == REINTERPRET_CAST_EXPR)
-	pp_cxx_ws_string (pp, "reinterpret_cast");
+	pp_cxx_ws_string (this, "reinterpret_cast");
       else
-	pp_cxx_ws_string (pp, "const_cast");
-      pp_cxx_begin_template_argument_list (pp);
-      pp_cxx_type_id (pp, TREE_TYPE (t));
-      pp_cxx_end_template_argument_list (pp);
-      pp_left_paren (pp);
-      pp_cxx_expression (pp, TREE_OPERAND (t, 0));
-      pp_right_paren (pp);
+	pp_cxx_ws_string (this, "const_cast");
+      pp_cxx_begin_template_argument_list (this);
+      pp_cxx_type_id (this, TREE_TYPE (t));
+      pp_cxx_end_template_argument_list (this);
+      pp_left_paren (this);
+      pp_cxx_expression (this, TREE_OPERAND (t, 0));
+      pp_right_paren (this);
       break;
 
     case EMPTY_CLASS_EXPR:
-      pp_cxx_type_id (pp, TREE_TYPE (t));
-      pp_left_paren (pp);
-      pp_right_paren (pp);
+      pp_cxx_type_id (this, TREE_TYPE (t));
+      pp_left_paren (this);
+      pp_right_paren (this);
       break;
 
     case TYPEID_EXPR:
-      pp_cxx_typeid_expression (pp, t);
+      pp_cxx_typeid_expression (this, t);
       break;
 
     case PSEUDO_DTOR_EXPR:
-      pp_cxx_postfix_expression (pp, TREE_OPERAND (t, 0));
-      pp_cxx_dot (pp);
-      pp_cxx_qualified_id (pp, TREE_OPERAND (t, 1));
-      pp_cxx_colon_colon (pp);
-      pp_complement (pp);
-      pp_cxx_unqualified_id (pp, TREE_OPERAND (t, 2));
+      postfix_expression (TREE_OPERAND (t, 0));
+      pp_cxx_dot (this);
+      pp_cxx_qualified_id (this, TREE_OPERAND (t, 1));
+      pp_cxx_colon_colon (this);
+      pp_complement (this);
+      pp_cxx_unqualified_id (this, TREE_OPERAND (t, 2));
       break;
 
     case ARROW_EXPR:
-      pp_cxx_postfix_expression (pp, TREE_OPERAND (t, 0));
-      pp_cxx_arrow (pp);
+      postfix_expression (TREE_OPERAND (t, 0));
+      pp_cxx_arrow (this);
       break;
 
     default:
-      pp_c_postfix_expression (pp, t);
+      c_pretty_printer::postfix_expression (t);
       break;
     }
 }
@@ -1085,7 +1085,7 @@ pp_cxx_expression (cxx_pretty_printer *pp, tree t)
     case PSEUDO_DTOR_EXPR:
     case AGGR_INIT_EXPR:
     case ARROW_EXPR:
-      pp_cxx_postfix_expression (pp, t);
+      pp_postfix_expression (pp, t);
       break;
 
     case NEW_EXPR:
@@ -2448,7 +2448,6 @@ cxx_pretty_printer::cxx_pretty_printer ()
 
   /* pp->statement = (pp_fun) pp_cxx_statement;  */
 
-  postfix_expression = (pp_fun) pp_cxx_postfix_expression;
   unary_expression = (pp_fun) pp_cxx_unary_expression;
   multiplicative_expression = (pp_fun) pp_cxx_multiplicative_expression;
   conditional_expression = (pp_fun) pp_cxx_conditional_expression;
