@@ -2121,9 +2121,10 @@ struct GTY((variable_size)) lang_decl {
 #define SET_DECL_LANGUAGE(NODE, LANGUAGE) \
   (DECL_LANG_SPECIFIC (NODE)->u.base.language = (LANGUAGE))
 
-/* For FUNCTION_DECLs: nonzero means that this function is a constructor.  */
+/* For FUNCTION_DECLs and TEMPLATE_DECLs: nonzero means that this function
+   is a constructor.  */
 #define DECL_CONSTRUCTOR_P(NODE) \
-  (LANG_DECL_FN_CHECK (NODE)->constructor_attr)
+  DECL_CXX_CONSTRUCTOR_P (STRIP_TEMPLATE (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a constructor for a complete
    object.  */
@@ -2152,9 +2153,10 @@ struct GTY((variable_size)) lang_decl {
 #define DECL_MOVE_CONSTRUCTOR_P(NODE) \
   (DECL_CONSTRUCTOR_P (NODE) && move_fn_p (NODE))
 
-/* Nonzero if NODE is a destructor.  */
+/* Nonzero if NODE (a FUNCTION_DECL or TEMPLATE_DECL)
+   is a destructor.  */
 #define DECL_DESTRUCTOR_P(NODE)				\
-  (LANG_DECL_FN_CHECK (NODE)->destructor_attr)
+  DECL_CXX_DESTRUCTOR_P (STRIP_TEMPLATE (NODE))
 
 /* Nonzero if NODE (a FUNCTION_DECL) is a destructor, but not the
    specialized in-charge constructor, in-charge deleting constructor,
