@@ -412,7 +412,7 @@ unsigned int
 inline_transform (struct cgraph_node *node)
 {
   unsigned int todo = 0;
-  struct cgraph_edge *e;
+  struct cgraph_edge *e, *next;
  
   /* FIXME: Currently the pass manager is adding inline transform more than
      once to some clones.  This needs revisiting after WPA cleanups.  */
@@ -424,8 +424,11 @@ inline_transform (struct cgraph_node *node)
   if (preserve_function_body_p (node))
     save_inline_function_body (node);
 
-  for (e = node->callees; e; e = e->next_callee)
-    cgraph_redirect_edge_call_stmt_to_callee (e);
+  for (e = node->callees; e; e = next)
+    {
+      next = e->next_callee;
+      cgraph_redirect_edge_call_stmt_to_callee (e);
+    }
   ipa_remove_all_references (&node->symbol.ref_list);
 
   timevar_push (TV_INTEGRATION);
