@@ -1,7 +1,18 @@
+2013-08-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_debug_options): Remove prototype.
+	(x86_64_elf_select_section): Ditto.
+	(ix86_handle_tm_regparm_attribute): Remove ATTRIBUTE_UNUSED on used
+	arguments.
+	(ix86_pass_by_reference): Ditto.
+	(ix86_return_in_memory): Ditto.
+	(output_set_got): Ditto.
+	(ix86_unary_operator_ok): Ditto.
+	(ix86_expand_builtin): Ditto.
+
 2013-08-23  Jan Hubicka  <jh@suse.cz>
 
-	* cgraph.c (cgraph_turn_edge_to_speculative):
-	Fix debug output.
+	* cgraph.c (cgraph_turn_edge_to_speculative): Fix debug output.
 
 2013-08-23  Jan Hubicka  <jh@suse.cz>
 
@@ -188,7 +199,8 @@
 	(dump_type_inheritance_graph): Do not ICE when there are no ODR types.
 	(maybe_record_node): Record node in cached_polymorphic_call_targets.
 	(record_binfo): Add comment.
-	(free_polymorphic_call_targets_hash): Do not ICE when cache is not built.
+	(free_polymorphic_call_targets_hash): Do not ICE when cache is not
+	built.
 	(devirt_node_removal_hook): Do not iCE when cache is freed.
 	(possible_polymorphic_call_target_p): New predicate.
 	(update_type_inheritance_graph): New function.
@@ -275,7 +287,8 @@
 	(*movsf_internal): Likewise.
 	(*fop_<mode>_comm_sse): Replace constraint "x" with new constraint "v".
 	(<code><mode>3): Likewise.
-	* config/i386/i386.opt (mavx512f, mavx512pf, mavx512er, mavx512cd): New.
+	* config/i386/i386.opt (mavx512f, mavx512pf, mavx512er, mavx512cd):
+	New.
 	* config/i386/mmx.md (*mov<mode>_internal): Replace constraint "x"
 	with the new constraint "v".
 	* config/i386/sse.md (*mov<mode>_internal): Support new registers and
@@ -363,8 +376,7 @@
 
 2013-08-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
-	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Don't nest
-	comment.
+	* config/sol2-10.h (TARGET_LIBC_HAS_FUNCTION): Don't nest comment.
 
 2013-08-21  Jeff Law  <law@redhat.com>
 
@@ -548,8 +560,8 @@
 	(BUILT_IN_FABSD128): Likewise.
 	* builtins.c (expand_builtin): Add support for new DFP ABS builtins.
 	(fold_builtin_1): Likewise.
-	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping destination
-	and source operands.
+	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping
+	destination and source operands.
 	(*abstd2_fpr): Likewise.
 	(*nabstd2_fpr): Likewise.
 
@@ -579,7 +591,7 @@
 	(DEF_C99_COMPL_BUILTIN): New define. Change all complex c99 builtin
 	definitions to using this define.
 	* config/darwin-protos.h (darwin_libc_has_function): New.
-	* config/darwin.c: (darwin_libc_has_function: Ditto.
+	* config/darwin.c (darwin_libc_has_function): Ditto.
 	* config/alpha/linux.h: Remove TARGET_C99_FUNCTIONS and
 	TARGET_HAS_SINCOS. Redefine TARGET_LIBC_HAS_FUNCTION.
 	* config/darwin.h: Ditto.
@@ -727,8 +739,7 @@
 	unspec enumeration.
 	(power8 fusion peephole/peephole2): Rework the fusion peepholes to
 	adjust the register addis loads up in the peephole2 pass.  Do not
-	depend on the register live/dead state when the peephole pass is
-	done.
+	depend on the register live/dead state when the peephole pass is done.
 
 2013-08-16  David Malcolm  <dmalcolm@redhat.com>
 
