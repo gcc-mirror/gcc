@@ -1,5 +1,14 @@
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_speculative_call_info): Fix parameter order and formating;
+	add sanity check.
+	(cgraph_resolve_speculation): Add FIXME about scaling profiles.
+	(cgraph_redirect_edge_call_stmt_to_callee): Fix ICE in debug dump.
+	* ipa-inline.c (heap_edge_removal_hook): Reset node growth cache.
+	(resolve_noninline_speculation): Update callee keys, too.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
 	* tree.h (tree_decl_with_vis): Add cxx_constructor, cxx_destructor.
 	(DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P): New macros.
 

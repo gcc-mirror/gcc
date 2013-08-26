@@ -1113,8 +1113,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 
 void
 cgraph_speculative_call_info (struct cgraph_edge *e,
-			      struct cgraph_edge *&indirect,
 			      struct cgraph_edge *&direct,
+			      struct cgraph_edge *&indirect,
 			      struct ipa_ref *&reference)
 {
   struct ipa_ref *ref;
@@ -1137,16 +1137,18 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
 	}
       else
 	for (e = e->caller->callees; 
-	     e2->call_stmt != e->call_stmt || e2->lto_stmt_uid != e->lto_stmt_uid;
+	     e2->call_stmt != e->call_stmt
+	     || e2->lto_stmt_uid != e->lto_stmt_uid;
 	     e = e->next_callee)
 	  ;
     }
   gcc_assert (e->speculative && e2->speculative);
-  indirect = e;
-  direct = e2;
+  direct = e;
+  indirect = e2;
 
   reference = NULL;
-  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->symbol.ref_list,
+					      i, ref); i++)
     if (ref->speculative
 	&& ((ref->stmt && ref->stmt == e->call_stmt)
 	    || (ref->lto_stmt_uid == e->lto_stmt_uid)))
@@ -1154,6 +1156,11 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
 	reference = ref;
 	break;
       }
+
+  /* Speculative edge always consist of all three components - direct edge,
+     indirect and reference.  */
+  
+  gcc_assert (e && e2 && ref);
 }
 
 /* Redirect callee of E to N.  The function does not update underlying
@@ -1209,6 +1216,8 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
         fprintf (dump_file, "Speculative call turned into direct call.\n");
       edge = e2;
       e2 = tmp;
+      /* FIXME:  If EDGE is inlined, we should scale up the frequencies and counts
+         in the functions inlined through it.  */
     }
   edge->count += e2->count;
   edge->frequency += e2->frequency;
@@ -1305,12 +1314,12 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       else if (!gimple_check_call_matching_types (e->call_stmt, e->callee->symbol.decl,
 						  true))
 	{
-	  e = cgraph_resolve_speculation (e, NULL);
 	  if (dump_file)
 	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
 		     "Type mismatch.\n",
 		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
 		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
+	  e = cgraph_resolve_speculation (e, NULL);
 	}
       /* Expand speculation into GIMPLE code.  */
       else
