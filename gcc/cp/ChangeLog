@@ -1,4 +1,14 @@
-2013-08-25  Gabriel Dos Reis  <gdr@cs.tamu.edu>
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::postfix_expression):
+	Declare as overrider.
+	* cxx-pretty-print.c (cxx_pretty_printer::postfix_expression):
+	Rename from pp_cxx_postfix_expression.  Adjust.
+	(pp_cxx_expression): Use pp_postfix_expression.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	postfix_expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (cxx_pretty_printer::primary_expression): Now
 	an overrider of c_pretty_printer::primary_expression.
