@@ -5,7 +5,6 @@
 	(ix86_handle_tm_regparm_attribute): Remove ATTRIBUTE_UNUSED on used
 	arguments.
 	(ix86_pass_by_reference): Ditto.
-	(ix86_return_in_memory): Ditto.
 	(output_set_got): Ditto.
 	(ix86_unary_operator_ok): Ditto.
 	(ix86_expand_builtin): Ditto.
