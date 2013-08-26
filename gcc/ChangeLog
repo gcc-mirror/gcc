@@ -1,3 +1,8 @@
+2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* reload.c (find_valid_class): Allow classes that do not include
+	FIRST_PSEUDO_REGISTER - 1.
+
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Fix formatting;
