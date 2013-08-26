@@ -38,7 +38,6 @@ static void pp_cxx_direct_abstract_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_declarator (cxx_pretty_printer *, tree);
 static void pp_cxx_parameter_declaration_clause (cxx_pretty_printer *, tree);
 static void pp_cxx_abstract_declarator (cxx_pretty_printer *, tree);
-static void pp_cxx_statement (cxx_pretty_printer *, tree);
 static void pp_cxx_template_parameter (cxx_pretty_printer *, tree);
 static void pp_cxx_cast_expression (cxx_pretty_printer *, tree);
 static void pp_cxx_typeid_expression (cxx_pretty_printer *, tree);
@@ -442,7 +441,7 @@ cxx_pretty_printer::primary_expression (tree t)
 
     case STMT_EXPR:
       pp_cxx_left_paren (this);
-      pp_cxx_statement (this, STMT_EXPR_STMT (t));
+      statement (STMT_EXPR_STMT (t));
       pp_cxx_right_paren (this);
       break;
 
@@ -1630,7 +1629,7 @@ pp_cxx_function_definition (cxx_pretty_printer *pp, tree t)
   pp_needs_newline (pp) = true;
   pp->enclosing_scope = DECL_CONTEXT (t);
   if (DECL_SAVED_TREE (t))
-    pp_cxx_statement (pp, DECL_SAVED_TREE (t));
+    pp->statement (DECL_SAVED_TREE (t));
   else
     pp_cxx_semicolon (pp);
   pp_newline_and_flush (pp);
@@ -1805,27 +1804,27 @@ pp_cxx_exception_declaration (cxx_pretty_printer *pp, tree t)
 
 /* Statements.  */
 
-static void
-pp_cxx_statement (cxx_pretty_printer *pp, tree t)
+void
+cxx_pretty_printer::statement (tree t)
 {
   switch (TREE_CODE (t))
     {
     case CTOR_INITIALIZER:
-      pp_cxx_ctor_initializer (pp, t);
+      pp_cxx_ctor_initializer (this, t);
       break;
 
     case USING_STMT:
-      pp_cxx_ws_string (pp, "using");
-      pp_cxx_ws_string (pp, "namespace");
+      pp_cxx_ws_string (this, "using");
+      pp_cxx_ws_string (this, "namespace");
       if (DECL_CONTEXT (t))
-	pp_cxx_nested_name_specifier (pp, DECL_CONTEXT (t));
-      pp_cxx_qualified_id (pp, USING_STMT_NAMESPACE (t));
+	pp_cxx_nested_name_specifier (this, DECL_CONTEXT (t));
+      pp_cxx_qualified_id (this, USING_STMT_NAMESPACE (t));
       break;
 
     case USING_DECL:
-      pp_cxx_ws_string (pp, "using");
-      pp_cxx_nested_name_specifier (pp, USING_DECL_SCOPE (t));
-      pp_cxx_unqualified_id (pp, DECL_NAME (t));
+      pp_cxx_ws_string (this, "using");
+      pp_cxx_nested_name_specifier (this, USING_DECL_SCOPE (t));
+      pp_cxx_unqualified_id (this, DECL_NAME (t));
       break;
 
     case EH_SPEC_BLOCK:
@@ -1834,15 +1833,15 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
       /* try-block:
 	    try compound-statement handler-seq  */
     case TRY_BLOCK:
-      pp_maybe_newline_and_indent (pp, 0);
-      pp_cxx_ws_string (pp, "try");
-      pp_newline_and_indent (pp, 3);
-      pp_cxx_statement (pp, TRY_STMTS (t));
-      pp_newline_and_indent (pp, -3);
+      pp_maybe_newline_and_indent (this, 0);
+      pp_cxx_ws_string (this, "try");
+      pp_newline_and_indent (this, 3);
+      statement (TRY_STMTS (t));
+      pp_newline_and_indent (this, -3);
       if (CLEANUP_P (t))
 	;
       else
-	pp_cxx_statement (pp, TRY_HANDLERS (t));
+	statement (TRY_HANDLERS (t));
       break;
 
       /*
@@ -1857,53 +1856,53 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 	    type-specifier-seq abstract-declarator
 	    ...   */
     case HANDLER:
-      pp_cxx_ws_string (pp, "catch");
-      pp_cxx_left_paren (pp);
-      pp_cxx_exception_declaration (pp, HANDLER_PARMS (t));
-      pp_cxx_right_paren (pp);
-      pp_indentation (pp) += 3;
-      pp_needs_newline (pp) = true;
-      pp_cxx_statement (pp, HANDLER_BODY (t));
-      pp_indentation (pp) -= 3;
-      pp_needs_newline (pp) = true;
+      pp_cxx_ws_string (this, "catch");
+      pp_cxx_left_paren (this);
+      pp_cxx_exception_declaration (this, HANDLER_PARMS (t));
+      pp_cxx_right_paren (this);
+      pp_indentation (this) += 3;
+      pp_needs_newline (this) = true;
+      statement (HANDLER_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
       break;
 
       /* selection-statement:
 	    if ( expression ) statement
 	    if ( expression ) statement else statement  */
     case IF_STMT:
-      pp_cxx_ws_string (pp, "if");
-      pp_cxx_whitespace (pp);
-      pp_cxx_left_paren (pp);
-      pp_expression (pp, IF_COND (t));
-      pp_cxx_right_paren (pp);
-      pp_newline_and_indent (pp, 2);
-      pp_cxx_statement (pp, THEN_CLAUSE (t));
-      pp_newline_and_indent (pp, -2);
+      pp_cxx_ws_string (this, "if");
+      pp_cxx_whitespace (this);
+      pp_cxx_left_paren (this);
+      pp_expression (this, IF_COND (t));
+      pp_cxx_right_paren (this);
+      pp_newline_and_indent (this, 2);
+      statement (THEN_CLAUSE (t));
+      pp_newline_and_indent (this, -2);
       if (ELSE_CLAUSE (t))
 	{
 	  tree else_clause = ELSE_CLAUSE (t);
-	  pp_cxx_ws_string (pp, "else");
+	  pp_cxx_ws_string (this, "else");
 	  if (TREE_CODE (else_clause) == IF_STMT)
-	    pp_cxx_whitespace (pp);
+	    pp_cxx_whitespace (this);
 	  else
-	    pp_newline_and_indent (pp, 2);
-	  pp_cxx_statement (pp, else_clause);
+	    pp_newline_and_indent (this, 2);
+	  statement (else_clause);
 	  if (TREE_CODE (else_clause) != IF_STMT)
-	    pp_newline_and_indent (pp, -2);
+	    pp_newline_and_indent (this, -2);
 	}
       break;
 
     case SWITCH_STMT:
-      pp_cxx_ws_string (pp, "switch");
-      pp_space (pp);
-      pp_cxx_left_paren (pp);
-      pp_expression (pp, SWITCH_STMT_COND (t));
-      pp_cxx_right_paren (pp);
-      pp_indentation (pp) += 3;
-      pp_needs_newline (pp) = true;
-      pp_cxx_statement (pp, SWITCH_STMT_BODY (t));
-      pp_newline_and_indent (pp, -3);
+      pp_cxx_ws_string (this, "switch");
+      pp_space (this);
+      pp_cxx_left_paren (this);
+      pp_expression (this, SWITCH_STMT_COND (t));
+      pp_cxx_right_paren (this);
+      pp_indentation (this) += 3;
+      pp_needs_newline (this) = true;
+      statement (SWITCH_STMT_BODY (t));
+      pp_newline_and_indent (this, -3);
       break;
 
       /* iteration-statement:
@@ -1912,70 +1911,70 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 	    for ( expression(opt) ; expression(opt) ; expression(opt) ) statement
 	    for ( declaration expression(opt) ; expression(opt) ) statement  */
     case WHILE_STMT:
-      pp_cxx_ws_string (pp, "while");
-      pp_space (pp);
-      pp_cxx_left_paren (pp);
-      pp_expression (pp, WHILE_COND (t));
-      pp_cxx_right_paren (pp);
-      pp_newline_and_indent (pp, 3);
-      pp_cxx_statement (pp, WHILE_BODY (t));
-      pp_indentation (pp) -= 3;
-      pp_needs_newline (pp) = true;
+      pp_cxx_ws_string (this, "while");
+      pp_space (this);
+      pp_cxx_left_paren (this);
+      pp_expression (this, WHILE_COND (t));
+      pp_cxx_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (WHILE_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
       break;
 
     case DO_STMT:
-      pp_cxx_ws_string (pp, "do");
-      pp_newline_and_indent (pp, 3);
-      pp_cxx_statement (pp, DO_BODY (t));
-      pp_newline_and_indent (pp, -3);
-      pp_cxx_ws_string (pp, "while");
-      pp_space (pp);
-      pp_cxx_left_paren (pp);
-      pp_expression (pp, DO_COND (t));
-      pp_cxx_right_paren (pp);
-      pp_cxx_semicolon (pp);
-      pp_needs_newline (pp) = true;
+      pp_cxx_ws_string (this, "do");
+      pp_newline_and_indent (this, 3);
+      statement (DO_BODY (t));
+      pp_newline_and_indent (this, -3);
+      pp_cxx_ws_string (this, "while");
+      pp_space (this);
+      pp_cxx_left_paren (this);
+      pp_expression (this, DO_COND (t));
+      pp_cxx_right_paren (this);
+      pp_cxx_semicolon (this);
+      pp_needs_newline (this) = true;
       break;
 
     case FOR_STMT:
-      pp_cxx_ws_string (pp, "for");
-      pp_space (pp);
-      pp_cxx_left_paren (pp);
+      pp_cxx_ws_string (this, "for");
+      pp_space (this);
+      pp_cxx_left_paren (this);
       if (FOR_INIT_STMT (t))
-	pp_cxx_statement (pp, FOR_INIT_STMT (t));
+	statement (FOR_INIT_STMT (t));
       else
-	pp_cxx_semicolon (pp);
-      pp_needs_newline (pp) = false;
-      pp_cxx_whitespace (pp);
+	pp_cxx_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_cxx_whitespace (this);
       if (FOR_COND (t))
-	pp_expression (pp, FOR_COND (t));
-      pp_cxx_semicolon (pp);
-      pp_needs_newline (pp) = false;
-      pp_cxx_whitespace (pp);
+	pp_expression (this, FOR_COND (t));
+      pp_cxx_semicolon (this);
+      pp_needs_newline (this) = false;
+      pp_cxx_whitespace (this);
       if (FOR_EXPR (t))
-	pp_expression (pp, FOR_EXPR (t));
-      pp_cxx_right_paren (pp);
-      pp_newline_and_indent (pp, 3);
-      pp_cxx_statement (pp, FOR_BODY (t));
-      pp_indentation (pp) -= 3;
-      pp_needs_newline (pp) = true;
+	pp_expression (this, FOR_EXPR (t));
+      pp_cxx_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (FOR_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
       break;
 
     case RANGE_FOR_STMT:
-      pp_cxx_ws_string (pp, "for");
-      pp_space (pp);
-      pp_cxx_left_paren (pp);
-      pp_cxx_statement (pp, RANGE_FOR_DECL (t));
-      pp_space (pp);
-      pp_needs_newline (pp) = false;
-      pp_colon (pp);
-      pp_space (pp);
-      pp_cxx_statement (pp, RANGE_FOR_EXPR (t));
-      pp_cxx_right_paren (pp);
-      pp_newline_and_indent (pp, 3);
-      pp_cxx_statement (pp, FOR_BODY (t));
-      pp_indentation (pp) -= 3;
-      pp_needs_newline (pp) = true;
+      pp_cxx_ws_string (this, "for");
+      pp_space (this);
+      pp_cxx_left_paren (this);
+      statement (RANGE_FOR_DECL (t));
+      pp_space (this);
+      pp_needs_newline (this) = false;
+      pp_colon (this);
+      pp_space (this);
+      statement (RANGE_FOR_EXPR (t));
+      pp_cxx_right_paren (this);
+      pp_newline_and_indent (this, 3);
+      statement (FOR_BODY (t));
+      pp_indentation (this) -= 3;
+      pp_needs_newline (this) = true;
       break;
 
       /* jump-statement:
@@ -1984,36 +1983,36 @@ pp_cxx_statement (cxx_pretty_printer *pp, tree t)
 	    return expression(opt) ;  */
     case BREAK_STMT:
     case CONTINUE_STMT:
-      pp_string (pp, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
-      pp_cxx_semicolon (pp);
-      pp_needs_newline (pp) = true;
+      pp_string (this, TREE_CODE (t) == BREAK_STMT ? "break" : "continue");
+      pp_cxx_semicolon (this);
+      pp_needs_newline (this) = true;
       break;
 
       /* expression-statement:
 	    expression(opt) ;  */
     case EXPR_STMT:
-      pp_expression (pp, EXPR_STMT_EXPR (t));
-      pp_cxx_semicolon (pp);
-      pp_needs_newline (pp) = true;
+      pp_expression (this, EXPR_STMT_EXPR (t));
+      pp_cxx_semicolon (this);
+      pp_needs_newline (this) = true;
       break;
 
     case CLEANUP_STMT:
-      pp_cxx_ws_string (pp, "try");
-      pp_newline_and_indent (pp, 2);
-      pp_cxx_statement (pp, CLEANUP_BODY (t));
-      pp_newline_and_indent (pp, -2);
-      pp_cxx_ws_string (pp, CLEANUP_EH_ONLY (t) ? "catch" : "finally");
-      pp_newline_and_indent (pp, 2);
-      pp_cxx_statement (pp, CLEANUP_EXPR (t));
-      pp_newline_and_indent (pp, -2);
+      pp_cxx_ws_string (this, "try");
+      pp_newline_and_indent (this, 2);
+      statement (CLEANUP_BODY (t));
+      pp_newline_and_indent (this, -2);
+      pp_cxx_ws_string (this, CLEANUP_EH_ONLY (t) ? "catch" : "finally");
+      pp_newline_and_indent (this, 2);
+      statement (CLEANUP_EXPR (t));
+      pp_newline_and_indent (this, -2);
       break;
 
     case STATIC_ASSERT:
-      pp_cxx_declaration (pp, t);
+      pp_cxx_declaration (this, t);
       break;
 
     default:
-      pp_c_statement (pp, t);
+      c_pretty_printer::statement (t);
       break;
     }
 }
@@ -2443,6 +2442,4 @@ cxx_pretty_printer::cxx_pretty_printer ()
   abstract_declarator = (pp_fun) pp_cxx_abstract_declarator;
   direct_abstract_declarator = (pp_fun) pp_cxx_direct_abstract_declarator;
   simple_type_specifier = (pp_fun) pp_cxx_simple_type_specifier;
-
-  /* pp->statement = (pp_fun) pp_cxx_statement;  */
 }

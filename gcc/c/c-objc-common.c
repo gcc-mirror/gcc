@@ -120,7 +120,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 	  t = DECL_DEBUG_EXPR (t);
 	  if (!DECL_P (t))
 	    {
-	      pp_c_expression (cpp, t);
+	      pp_expression (cpp, t);
 	      return true;
 	    }
 	}

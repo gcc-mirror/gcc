@@ -42,6 +42,8 @@ struct cxx_pretty_printer : c_pretty_printer
   void conditional_expression (tree);
   void assignment_expression (tree);
   void expression (tree);
+  void statement (tree);
+
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
 };

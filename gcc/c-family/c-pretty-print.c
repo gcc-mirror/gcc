@@ -837,7 +837,7 @@ pp_c_function_definition (c_pretty_printer *pp, tree t)
   pp_declaration_specifiers (pp, t);
   pp_declarator (pp, t);
   pp_needs_newline (pp) = true;
-  pp_statement (pp, DECL_SAVED_TREE (t));
+  pp->statement (DECL_SAVED_TREE (t));
   pp_newline_and_flush (pp);
 }
 
@@ -2306,15 +2306,15 @@ c_pretty_printer::expression (tree e)
 /* Statements.  */
 
 void
-pp_c_statement (c_pretty_printer *pp, tree stmt)
+c_pretty_printer::statement (tree stmt)
 {
   if (stmt == NULL)
     return;
 
-  if (pp_needs_newline (pp))
-    pp_newline_and_indent (pp, 0);
+  if (pp_needs_newline (this))
+    pp_newline_and_indent (this, 0);
 
-  dump_generic_node (pp, stmt, pp_indentation (pp), 0, true);
+  dump_generic_node (this, stmt, pp_indentation (this), 0, true);
 }
 
 
@@ -2339,8 +2339,6 @@ c_pretty_printer::c_pretty_printer ()
   function_specifier        = pp_c_function_specifier;
   storage_class_specifier   = pp_c_storage_class_specifier;
 
-  statement                 = pp_c_statement;
-
   initializer               = pp_c_initializer;
 }
 
@@ -2354,7 +2352,7 @@ print_c_tree (FILE *file, tree t)
 
   pp_needs_newline (&pp) = true;
   pp.buffer->stream = file;
-  pp_statement (&pp, t);
+  pp.statement (t);
   pp_newline_and_flush (&pp);
 }
 
