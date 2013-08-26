@@ -1,5 +1,10 @@
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_propagate_frequency): Do not assume that virtual
+	methods can not be called indirectly when their address is not taken.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
 	* gimple-fold.c (gimple_get_virt_method_for_binfo): Use ctor_for_folding.
 
 2013-08-26  Jan Hubicka  <jh@suse.cz>

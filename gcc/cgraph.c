@@ -2348,7 +2348,10 @@ cgraph_propagate_frequency (struct cgraph_node *node)
   struct cgraph_propagate_frequency_data d = {true, true, true, true};
   bool changed = false;
 
-  if (!node->local.local)
+  /* We can not propagate anything useful about externally visible functions
+     nor about virtuals.  */
+  if (!node->local.local
+      || (flag_devirtualize && DECL_VIRTUAL_P (node->symbol.decl)))
     return false;
   gcc_assert (node->symbol.analyzed);
   if (dump_file && (dump_flags & TDF_DETAILS))
