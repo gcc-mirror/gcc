@@ -1,5 +1,11 @@
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_redirect_edge_call_stmt_to_callee): Fix formatting;
+	fix edge count/frequency when speculation failed; fix type check
+	for the direct call.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-prop.c (ipa_print_node_params): Do not ICE during WPA.
 
 2013-08-26  Jan Hubicka  <jh@suse.cz>
