@@ -63,6 +63,9 @@ struct c_pretty_printer : pretty_printer
   virtual void conditional_expression (tree);
   virtual void assignment_expression (tree);
   virtual void expression (tree);
+
+  virtual void statement (tree);
+
   /* Points to the first element of an array of offset-list.
      Not used yet.  */
   int *offset_list;
@@ -85,8 +88,6 @@ struct c_pretty_printer : pretty_printer
   c_pretty_print_fn function_specifier;
   c_pretty_print_fn storage_class_specifier;
   c_pretty_print_fn initializer;
-
-  c_pretty_print_fn statement;
 
 };
 
@@ -159,8 +160,6 @@ void pp_c_type_id (c_pretty_printer *, tree);
 void pp_c_direct_abstract_declarator (c_pretty_printer *, tree);
 void pp_c_type_specifier (c_pretty_printer *, tree);
 void pp_c_storage_class_specifier (c_pretty_printer *, tree);
-/* Statements.  */
-void pp_c_statement (c_pretty_printer *, tree);
 /* Expressions.  */
 void pp_c_logical_or_expression (c_pretty_printer *, tree);
 void pp_c_expression_list (c_pretty_printer *, tree);
