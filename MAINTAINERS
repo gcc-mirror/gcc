@@ -178,6 +178,7 @@ libobjc			Nicola Pero		nicola.pero@meta-innovation.com
 libobjc			Andrew Pinski		pinskia@gmail.com
 libquadmath		Tobias Burnus		burnus@net-b.de
 libquadmath		Jakub Jelinek		jakub@redhat.com
+libvtv	      		Caroline Tice		cmtice@google.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 soft-fp			Joseph Myers		joseph@codesourcery.com
 scheduler (+ haifa)	Jim Wilson		wilson@tuliptree.org
@@ -288,7 +289,6 @@ libsanitizer, asan.c	Jakub Jelinek		jakub@redhat.com
 libsanitizer, asan.c	Dodji Seketeli		dodji@redhat.com
 libsanitizer, asan.c	Kostya Serebryany	kcc@google.com
 libsanitizer, asan.c	Dmitry Vyukov		dvyukov@google.com
-libvtv	      		Caroline Tice		cmtice@google.com
 loop optimizer		Zdenek Dvorak		ook@ucw.cz
 loop optimizer		Daniel Berlin		dberlin@dberlin.org
 LTO			Diego Novillo		dnovillo@google.com
