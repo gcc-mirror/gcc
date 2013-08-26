@@ -3164,8 +3164,8 @@ convert_arguments (tree typelist, vec<tree, va_gc> *values,
       else if (TREE_CODE (valtype) == REAL_TYPE
 	       && (TYPE_PRECISION (valtype)
 		   <= TYPE_PRECISION (double_type_node))
-	       && valtype != double_type_node
-	       && valtype != long_double_type_node
+	       && TYPE_MAIN_VARIANT (valtype) != double_type_node
+	       && TYPE_MAIN_VARIANT (valtype) != long_double_type_node
 	       && !DECIMAL_FLOAT_MODE_P (TYPE_MODE (valtype)))
         {
 	  if (type_generic)
