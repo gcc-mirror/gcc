@@ -3,6 +3,11 @@
 	* config/avr/avr-stdint.h (INT16_TYPE): Change default to "int".
 	(UINT16_TYPE): Change default to "unsigned int".
 
+	* config/avr/avr.opt (mfract-convert-truncate): New option.
+	* config/avr/avr.c (avr_out_fract): Unless TARGET_FRACT_CONV_TRUNC
+	is set, round negative fractional integers according to n1169
+	when converting to integer types.
+
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_propagate_frequency): Do not assume that virtual
