@@ -1,3 +1,29 @@
+2013-08-26  Gabriel Dos Reis  <gdre@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::unary_expression): Now a
+	virtual member function.
+	(c_pretty_printer::multiplicative_expression): Likewise.
+	(c_pretty_printer::conditional_expression): Likewise.
+	(c_pretty_printer::assignment_expression): Likewise.
+	(c_pretty_printer::expression): Likewise.
+	(pp_unary_expression): Adjust.
+	(pp_multiplicative_expression): Likewise.
+	(pp_assignment_expression): Likewise.
+	(pp_conditional_expression): Likewise.
+	(pp_expression): Likewise.
+	* c-pretty-print.c (c_pretty_printer::unary_expression): Rename
+	from pp_c_unary_expression.  Adjust.
+	(c_pretty_printer::multiplicative_expression): Rename from
+	pp_c_multiplicative_expression.  Adjust.
+	(c_pretty_printer::conditional_expression): Rename from
+	pp_c_conditional_expression.  Adjust.
+	(c_pretty_printer::assignment_expression): Rename from
+	pp_c_assignment_expression.  Adjust.
+	(c_pretty_printer::expression): Rename from pp_c_expression.  Adjust.
+	(c_pretty_printer::c_pretty_printer): Do not assign to
+	unary_expression, multiplicative_expression,
+	conditional_expression, expression.
+
 2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.h (c_pretty_printer::postfix_expression): Now a

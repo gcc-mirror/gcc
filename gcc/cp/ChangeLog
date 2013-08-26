@@ -1,3 +1,25 @@
+2013-08-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::unary_expression):
+	Declare as overrider.
+	(cxx_pretty_printer::multiplicative_expression): Likewise.
+	(cxx_pretty_printer::conditional_expression): Likewise.
+	(cxx_pretty_printer::assignment_expression): Likewise.
+	(cxx_pretty_printer::expression): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::unary_expression):
+	Rename from pp_cxx_unary_expression.  Adjust.
+	(cxx_pretty_printer::multiplicative_expression): Rename from
+	pp_cxx_multiplicative_expression.  Adjust.
+	(cxx_pretty_printer::conditional_expression): Rename from
+	pp_cxx_conditional_expression.  Adjust.
+	(cxx_pretty_printer::assignment_expression): Rename from
+	pp_cxx_assignment_expression.  Adjust.
+	(cxx_pretty_printer::expression): Rename from pp_cxx_expression.
+	Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Dot not assign to
+	unary_expression, multiplicative_expression,
+	conditional_expression, assignment_expression, expression.
+
 2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (cxx_pretty_printer::postfix_expression):
