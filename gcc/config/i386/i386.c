@@ -2321,7 +2321,6 @@ enum ix86_function_specific_strings
 
 static char *ix86_target_string (HOST_WIDE_INT, int, const char *,
 				 const char *, enum fpmath_unit, bool);
-static void ix86_debug_options (void) ATTRIBUTE_UNUSED;
 static void ix86_function_specific_save (struct cl_target_option *);
 static void ix86_function_specific_restore (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
@@ -2754,7 +2753,7 @@ ix86_profile_before_prologue (void)
 
 /* Function that is callable from the debugger to print the current
    options.  */
-void
+void ATTRIBUTE_UNUSED
 ix86_debug_options (void)
 {
   char *opts = ix86_target_string (ix86_isa_flags, target_flags,
@@ -4848,10 +4847,7 @@ ix86_in_large_data_p (tree exp)
    RELOC indicates whether forming the initial value of DECL requires
    link-time relocations.  */
 
-static section * x86_64_elf_select_section (tree, int, unsigned HOST_WIDE_INT)
-	ATTRIBUTE_UNUSED;
-
-static section *
+static section * ATTRIBUTE_UNUSED
 x86_64_elf_select_section (tree decl, int reloc,
 			   unsigned HOST_WIDE_INT align)
 {
@@ -5303,8 +5299,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 static tree
 ix86_handle_tm_regparm_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
     				  tree args ATTRIBUTE_UNUSED,
-				  int flags ATTRIBUTE_UNUSED,
-				  bool *no_add_attrs)
+				  int flags, bool *no_add_attrs)
 {
   tree alt;
 
@@ -7228,8 +7223,7 @@ ix86_function_arg (cumulative_args_t cum_v, enum machine_mode omode,
    appropriate for passing a pointer to that type.  */
 
 static bool
-ix86_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
+ix86_pass_by_reference (cumulative_args_t cum_v, enum machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -7762,7 +7756,7 @@ return_in_memory_ms_64 (const_tree type, enum machine_mode mode)
 }
 
 static bool
-ix86_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
+ix86_return_in_memory (const_tree type, const_tree fntype)
 {
 #ifdef SUBTARGET_RETURN_IN_MEMORY
   return SUBTARGET_RETURN_IN_MEMORY (type, fntype);
@@ -8950,7 +8944,7 @@ ix86_code_end (void)
 /* Emit code for the SET_GOT patterns.  */
 
 const char *
-output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
+output_set_got (rtx dest, rtx label)
 {
   rtx xops[3];
 
@@ -18060,7 +18054,7 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 bool
 ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
-			rtx operands[2] ATTRIBUTE_UNUSED)
+			rtx operands[2])
 {
   /* If one of operands is memory, source and destination must match.  */
   if ((MEM_P (operands[0])
@@ -32154,9 +32148,8 @@ ix86_expand_vec_set_builtin (tree exp)
    IGNORE is nonzero if the value is to be ignored.  */
 
 static rtx
-ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
-		     int ignore ATTRIBUTE_UNUSED)
+ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
+		     enum machine_mode mode, int ignore)
 {
   const struct builtin_description *d;
   size_t i;
