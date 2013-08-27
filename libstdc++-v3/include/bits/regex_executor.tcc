@@ -260,7 +260,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __size = __u.size();
       for (auto __i = 0; __i < __size; __i++)
 	{
-	  auto& __uit = __u[__i], __vit = __v[__i];
+	  auto __uit = __u[__i], __vit = __v[__i];
 	  if (__uit.matched && !__vit.matched)
 	    return true;
 	  if (!__uit.matched && __vit.matched)

@@ -1,3 +1,22 @@
+2013-08-26  Tim Shen  <timshen91@gmail.com>
+
+	* include/Makefile.am: Add regex_scanner.{h,tcc}.
+	* include/Makefile.in: Regenerate.
+	* include/bits/regex.h (match_search): Handle the `__first == __last`
+	  situation correctly.
+	* include/bits/regex_compiler.h: Move _Scanner...
+	* include/bits/regex_scanner.h: ...to here. New.
+	* include/bits/regex_compiler.tcc: Move _Scanner...
+	* include/bits/regex_scanner.tcc: ...to here, too. New.
+	* include/bits/regex_executor.tcc: Use value instead of reference for
+	  submatch.
+	* include/std/regex: Add regex_scanner.h
+	* testsuite/28_regex/algorithms/regex_match/awk/cstring_01.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/basic/empty_range.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/cstring_hex.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/empty_range.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc: New.
+
 2013-08-22  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: Replace 8 spaces in indentation with a tab.
