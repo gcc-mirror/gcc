@@ -3865,6 +3865,85 @@ vreinterpretq_u32_p16 (poly16x8_t __a)
   return (uint32x4_t) __builtin_aarch64_reinterpretv4siv8hi ((int16x8_t) __a);
 }
 
+#define __GET_LOW(__TYPE) \
+  uint64x2_t tmp = vreinterpretq_u64_##__TYPE (__a);  \
+  uint64_t lo = vgetq_lane_u64 (tmp, 0);  \
+  return vreinterpret_##__TYPE##_u64 (lo);
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vget_low_f32 (float32x4_t __a)
+{
+  __GET_LOW (f32);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vget_low_f64 (float64x2_t __a)
+{
+  return vgetq_lane_f64 (__a, 0);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vget_low_p8 (poly8x16_t __a)
+{
+  __GET_LOW (p8);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vget_low_p16 (poly16x8_t __a)
+{
+  __GET_LOW (p16);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vget_low_s8 (int8x16_t __a)
+{
+  __GET_LOW (s8);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vget_low_s16 (int16x8_t __a)
+{
+  __GET_LOW (s16);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vget_low_s32 (int32x4_t __a)
+{
+  __GET_LOW (s32);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vget_low_s64 (int64x2_t __a)
+{
+  return vgetq_lane_s64 (__a, 0);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vget_low_u8 (uint8x16_t __a)
+{
+  __GET_LOW (u8);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vget_low_u16 (uint16x8_t __a)
+{
+  __GET_LOW (u16);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vget_low_u32 (uint32x4_t __a)
+{
+  __GET_LOW (u32);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vget_low_u64 (uint64x2_t __a)
+{
+  return vgetq_lane_u64 (__a, 0);
+}
+
+#undef __GET_LOW
+
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
 vcombine_s8 (int8x8_t __a, int8x8_t __b)
 {
@@ -6778,138 +6857,6 @@ vget_high_u64 (uint64x2_t a)
 {
   uint64x1_t result;
   __asm__ ("ins %0.d[0], %1.d[1]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vget_low_f32 (float32x4_t a)
-{
-  float32x2_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
-vget_low_f64 (float64x2_t a)
-{
-  float64x1_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vget_low_p8 (poly8x16_t a)
-{
-  poly8x8_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vget_low_p16 (poly16x8_t a)
-{
-  poly16x4_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vget_low_s8 (int8x16_t a)
-{
-  int8x8_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vget_low_s16 (int16x8_t a)
-{
-  int16x4_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vget_low_s32 (int32x4_t a)
-{
-  int32x2_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vget_low_s64 (int64x2_t a)
-{
-  int64x1_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vget_low_u8 (uint8x16_t a)
-{
-  uint8x8_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vget_low_u16 (uint16x8_t a)
-{
-  uint16x4_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vget_low_u32 (uint32x4_t a)
-{
-  uint32x2_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
-           : "=w"(result)
-           : "w"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vget_low_u64 (uint64x2_t a)
-{
-  uint64x1_t result;
-  __asm__ ("ins %0.d[0], %1.d[0]"
            : "=w"(result)
            : "w"(a)
            : /* No clobbers */);

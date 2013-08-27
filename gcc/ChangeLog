@@ -1,3 +1,8 @@
+2013-08-27  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/arm_neon.h: Replace all inline asm implementations
+	of vget_low_* with implementations in terms of other intrinsics.
+
 2013-08-27  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR middle-end/57219
