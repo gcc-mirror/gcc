@@ -1,3 +1,8 @@
+2013-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57521
+	* gcc.dg/torture/pr57521.c: New testcase.
+
 2013-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/57860

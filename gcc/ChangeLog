@@ -1,3 +1,16 @@
+2013-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57521
+	* tree-if-conv.c (if_convertible_bb_p): Verify that at least
+	one edge is non-critical.
+	(find_phi_replacement_condition): Make sure to use a non-critical
+	edge.  Cleanup and remove old bug workarounds.
+	(bb_postdominates_preds): Remove.
+	(if_convertible_loop_p_1): Do not compute post-dominators.
+	(combine_blocks): Do not free post-dominators.
+	(main_tree_if_conversion): Likewise.
+	(pass_data_if_conversion): Add TODO_verify_ssa.
+
 2013-08-27  DJ Delorie  <dj@redhat.com>
 
 	* config/i386/djgpp.h (ASM_DECLARE_FUNCTION_NAME): New.
