@@ -1,3 +1,7 @@
+2013-08-27  DJ Delorie  <dj@redhat.com>
+
+	* config/i386/djgpp.h (ASM_DECLARE_FUNCTION_NAME): New.
+
 2013-08-27  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* function.c (assign_parm_find_data_types): Set passed_mode and
