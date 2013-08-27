@@ -1755,6 +1755,14 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   if (nargs == 0 || nargs > 3)
     return false;
 
+  /* Ignore the argument of IFN_GOMP_SIMD_LANE, it is magic.  */
+  if (gimple_call_internal_p (stmt)
+      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
+    {
+      nargs = 0;
+      rhs_type = unsigned_type_node;
+    }
+
   for (i = 0; i < nargs; i++)
     {
       tree opvectype;
@@ -1830,11 +1838,26 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   fndecl = vectorizable_function (stmt, vectype_out, vectype_in);
   if (fndecl == NULL_TREE)
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "function is not vectorizable.");
-
-      return false;
+      if (gimple_call_internal_p (stmt)
+	  && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE
+	  && !slp_node
+	  && loop_vinfo
+	  && LOOP_VINFO_LOOP (loop_vinfo)->simduid
+	  && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
+	  && LOOP_VINFO_LOOP (loop_vinfo)->simduid
+	     == SSA_NAME_VAR (gimple_call_arg (stmt, 0)))
+	{
+	  /* We can handle IFN_GOMP_SIMD_LANE by returning a
+	     { 0, 1, 2, ... vf - 1 } vector.  */
+	  gcc_assert (nargs == 0);
+	}
+      else
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "function is not vectorizable.");
+	  return false;
+	}
     }
 
   gcc_assert (!gimple_vuse (stmt));
@@ -1932,9 +1955,30 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      vargs.quick_push (vec_oprnd0);
 	    }
 
-	  new_stmt = gimple_build_call_vec (fndecl, vargs);
-	  new_temp = make_ssa_name (vec_dest, new_stmt);
-	  gimple_call_set_lhs (new_stmt, new_temp);
+	  if (gimple_call_internal_p (stmt)
+	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
+	    {
+	      tree *v = XALLOCAVEC (tree, nunits_out);
+	      int k;
+	      for (k = 0; k < nunits_out; ++k)
+		v[k] = build_int_cst (unsigned_type_node, j * nunits_out + k);
+	      tree cst = build_vector (vectype_out, v);
+	      tree new_var
+		= vect_get_new_vect_var (vectype_out, vect_simple_var, "cst_");
+	      gimple init_stmt = gimple_build_assign (new_var, cst);
+	      new_temp = make_ssa_name (new_var, init_stmt);
+	      gimple_assign_set_lhs (init_stmt, new_temp);
+	      vect_init_vector_1 (stmt, init_stmt, NULL);
+	      new_temp = make_ssa_name (vec_dest, NULL);
+	      new_stmt = gimple_build_assign (new_temp,
+					      gimple_assign_lhs (init_stmt));
+	    }
+	  else
+	    {
+	      new_stmt = gimple_build_call_vec (fndecl, vargs);
+	      new_temp = make_ssa_name (vec_dest, new_stmt);
+	      gimple_call_set_lhs (new_stmt, new_temp);
+	    }
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	  if (j == 0)
@@ -3796,6 +3840,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   enum vect_def_type dt;
   stmt_vec_info prev_stmt_info = NULL;
   tree dataref_ptr = NULL_TREE;
+  tree dataref_offset = NULL_TREE;
   gimple ptr_incr = NULL;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
@@ -4085,9 +4130,26 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	  /* We should have catched mismatched types earlier.  */
 	  gcc_assert (useless_type_conversion_p (vectype,
 						 TREE_TYPE (vec_oprnd)));
-	  dataref_ptr = vect_create_data_ref_ptr (first_stmt, aggr_type, NULL,
-						  NULL_TREE, &dummy, gsi,
-						  &ptr_incr, false, &inv_p);
+	  bool simd_lane_access_p
+	    = STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info);
+	  if (simd_lane_access_p
+	      && TREE_CODE (DR_BASE_ADDRESS (first_dr)) == ADDR_EXPR
+	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr), 0))
+	      && integer_zerop (DR_OFFSET (first_dr))
+	      && integer_zerop (DR_INIT (first_dr))
+	      && alias_sets_conflict_p (get_alias_set (aggr_type),
+					get_alias_set (DR_REF (first_dr))))
+	    {
+	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr));
+	      dataref_offset = build_int_cst (reference_alias_ptr_type
+					      (DR_REF (first_dr)), 0);
+	    }
+	  else
+	    dataref_ptr
+	      = vect_create_data_ref_ptr (first_stmt, aggr_type,
+					  simd_lane_access_p ? loop : NULL,
+					  NULL_TREE, &dummy, gsi, &ptr_incr,
+					  simd_lane_access_p, &inv_p);
 	  gcc_assert (bb_vinfo || !inv_p);
 	}
       else
@@ -4108,8 +4170,13 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      dr_chain[i] = vec_oprnd;
 	      oprnds[i] = vec_oprnd;
 	    }
-	  dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
-					 TYPE_SIZE_UNIT (aggr_type));
+	  if (dataref_offset)
+	    dataref_offset
+	      = int_const_binop (PLUS_EXPR, dataref_offset,
+				 TYPE_SIZE_UNIT (aggr_type));
+	  else
+	    dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
+					   TYPE_SIZE_UNIT (aggr_type));
 	}
 
       if (store_lanes_p)
@@ -4161,8 +4228,10 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 		vec_oprnd = result_chain[i];
 
 	      data_ref = build2 (MEM_REF, TREE_TYPE (vec_oprnd), dataref_ptr,
-				 build_int_cst (reference_alias_ptr_type
-						(DR_REF (first_dr)), 0));
+				 dataref_offset
+				 ? dataref_offset
+				 : build_int_cst (reference_alias_ptr_type
+						  (DR_REF (first_dr)), 0));
 	      align = TYPE_ALIGN_UNIT (vectype);
 	      if (aligned_access_p (first_dr))
 		misalign = 0;
@@ -4181,8 +4250,9 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 					  TYPE_ALIGN (elem_type));
 		  misalign = DR_MISALIGNMENT (first_dr);
 		}
-	      set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
-				      misalign);
+	      if (dataref_offset == NULL_TREE)
+		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
+					misalign);
 
 	      /* Arguments are ready.  Create the new vector stmt.  */
 	      new_stmt = gimple_build_assign (data_ref, vec_oprnd);
@@ -4314,6 +4384,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   tree dummy;
   enum dr_alignment_support alignment_support_scheme;
   tree dataref_ptr = NULL_TREE;
+  tree dataref_offset = NULL_TREE;
   gimple ptr_incr = NULL;
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
   int ncopies;
@@ -4947,9 +5018,32 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       /* 1. Create the vector or array pointer update chain.  */
       if (j == 0)
-        dataref_ptr = vect_create_data_ref_ptr (first_stmt, aggr_type, at_loop,
-						offset, &dummy, gsi,
-						&ptr_incr, false, &inv_p);
+	{
+	  bool simd_lane_access_p
+	    = STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info);
+	  if (simd_lane_access_p
+	      && TREE_CODE (DR_BASE_ADDRESS (first_dr)) == ADDR_EXPR
+	      && VAR_P (TREE_OPERAND (DR_BASE_ADDRESS (first_dr), 0))
+	      && integer_zerop (DR_OFFSET (first_dr))
+	      && integer_zerop (DR_INIT (first_dr))
+	      && alias_sets_conflict_p (get_alias_set (aggr_type),
+					get_alias_set (DR_REF (first_dr)))
+	      && (alignment_support_scheme == dr_aligned
+		  || alignment_support_scheme == dr_unaligned_supported))
+	    {
+	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr));
+	      dataref_offset = build_int_cst (reference_alias_ptr_type
+					      (DR_REF (first_dr)), 0);
+	    }
+	  else
+	    dataref_ptr
+	      = vect_create_data_ref_ptr (first_stmt, aggr_type, at_loop,
+					  offset, &dummy, gsi, &ptr_incr,
+					  simd_lane_access_p, &inv_p);
+	}
+      else if (dataref_offset)
+	dataref_offset = int_const_binop (PLUS_EXPR, dataref_offset,
+					  TYPE_SIZE_UNIT (aggr_type));
       else
         dataref_ptr = bump_vector_ptr (dataref_ptr, ptr_incr, gsi, stmt,
 				       TYPE_SIZE_UNIT (aggr_type));
@@ -4999,8 +5093,10 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
 		    data_ref
 		      = build2 (MEM_REF, vectype, dataref_ptr,
-				build_int_cst (reference_alias_ptr_type
-					       (DR_REF (first_dr)), 0));
+				dataref_offset
+				? dataref_offset
+				: build_int_cst (reference_alias_ptr_type
+						 (DR_REF (first_dr)), 0));
 		    align = TYPE_ALIGN_UNIT (vectype);
 		    if (alignment_support_scheme == dr_aligned)
 		      {
@@ -5022,8 +5118,9 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 						TYPE_ALIGN (elem_type));
 			misalign = DR_MISALIGNMENT (first_dr);
 		      }
-		    set_ptr_info_alignment (get_ptr_info (dataref_ptr),
-					    align, misalign);
+		    if (dataref_offset == NULL_TREE)
+		      set_ptr_info_alignment (get_ptr_info (dataref_ptr),
+					      align, misalign);
 		    break;
 		  }
 		case dr_explicit_realign:

@@ -4020,7 +4020,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    See semantics.c for details.  */
 #define CP_OMP_CLAUSE_INFO(NODE) \
   TREE_TYPE (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_PRIVATE, \
-				     OMP_CLAUSE_COPYPRIVATE))
+				     OMP_CLAUSE_LINEAR))
 
 /* Nonzero if this transaction expression's body contains statements.  */
 #define TRANSACTION_EXPR_IS_STMT(NODE) \

@@ -287,7 +287,7 @@ DEFGSCODE(GIMPLE_OMP_ORDERED, "gimple_omp_ordered", GSS_OMP)
 
    BODY is a the sequence of statements to be executed by all threads.
 
-   CLAUSES is a TREE_LIST node with all the clauses.
+   CLAUSES is an OMP_CLAUSE chain with all the clauses.
 
    CHILD_FN is set when outlining the body of the parallel region.
    All the statements in BODY are moved into this newly created
@@ -306,7 +306,7 @@ DEFGSCODE(GIMPLE_OMP_PARALLEL, "gimple_omp_parallel", GSS_OMP_PARALLEL)
 
    BODY is a the sequence of statements to be executed by all threads.
 
-   CLAUSES is a TREE_LIST node with all the clauses.
+   CLAUSES is an OMP_CLAUSE chain with all the clauses.
 
    CHILD_FN is set when outlining the body of the explicit task region.
    All the statements in BODY are moved into this newly created
@@ -334,7 +334,7 @@ DEFGSCODE(GIMPLE_OMP_SECTION, "gimple_omp_section", GSS_OMP)
 /* OMP_SECTIONS <BODY, CLAUSES, CONTROL> represents #pragma omp sections.
 
    BODY is the sequence of statements in the sections body.
-   CLAUSES is a TREE_LIST node holding the list of associated clauses.
+   CLAUSES is an OMP_CLAUSE chain holding the list of associated clauses.
    CONTROL is a VAR_DECL used for deciding which of the sections
    to execute.  */
 DEFGSCODE(GIMPLE_OMP_SECTIONS, "gimple_omp_sections", GSS_OMP_SECTIONS)
@@ -346,7 +346,7 @@ DEFGSCODE(GIMPLE_OMP_SECTIONS_SWITCH, "gimple_omp_sections_switch", GSS_BASE)
 
 /* GIMPLE_OMP_SINGLE <BODY, CLAUSES> represents #pragma omp single
    BODY is the sequence of statements inside the single section.
-   CLAUSES is a TREE_LIST node holding the associated clauses.  */
+   CLAUSES is an OMP_CLAUSE chain holding the associated clauses.  */
 DEFGSCODE(GIMPLE_OMP_SINGLE, "gimple_omp_single", GSS_OMP_SINGLE)
 
 /* GIMPLE_PREDICT <PREDICT, OUTCOME> specifies a hint for branch prediction.

@@ -344,7 +344,6 @@ extern struct omp_region *new_omp_region (basic_block, enum gimple_code,
 					  struct omp_region *);
 extern void free_omp_regions (void);
 void omp_expand_local (basic_block);
-extern tree find_omp_clause (tree, enum omp_clause_code);
 tree copy_var_decl (tree, tree, tree);
 
 /*---------------------------------------------------------------------------

@@ -5378,7 +5378,7 @@ vectorizable_induction (gimple phi, gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
 bool
 vectorizable_live_operation (gimple stmt,
 			     gimple_stmt_iterator *gsi ATTRIBUTE_UNUSED,
-			     gimple *vec_stmt ATTRIBUTE_UNUSED)
+			     gimple *vec_stmt)
 {
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
@@ -5398,7 +5398,41 @@ vectorizable_live_operation (gimple stmt,
     return false;
 
   if (!is_gimple_assign (stmt))
-    return false;
+    {
+      if (gimple_call_internal_p (stmt)
+	  && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE
+	  && gimple_call_lhs (stmt)
+	  && loop->simduid
+	  && TREE_CODE (gimple_call_arg (stmt, 0)) == SSA_NAME
+	  && loop->simduid
+	     == SSA_NAME_VAR (gimple_call_arg (stmt, 0)))
+	{
+	  edge e = single_exit (loop);
+	  basic_block merge_bb = e->dest;
+	  imm_use_iterator imm_iter;
+	  use_operand_p use_p;
+	  tree lhs = gimple_call_lhs (stmt);
+
+	  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, lhs)
+	    {
+	      gimple use_stmt = USE_STMT (use_p);
+	      if (gimple_code (use_stmt) == GIMPLE_PHI
+		  || gimple_bb (use_stmt) == merge_bb)
+		{
+		  if (vec_stmt)
+		    {
+		      tree vfm1
+			= build_int_cst (unsigned_type_node,
+					 loop_vinfo->vectorization_factor - 1);
+		      SET_PHI_ARG_DEF (use_stmt, e->dest_idx, vfm1);
+		    }
+		  return true;
+		}
+	    }
+	}
+
+      return false;
+    }
 
   if (TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return false;

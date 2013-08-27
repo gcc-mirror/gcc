@@ -1,3 +1,129 @@
+2013-08-27  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* Makefile.in (omp-low.o): Depend on $(TARGET_H).
+	* cfgloop.h (struct loop): Add safelen, force_vect, simduid.
+	* function.h (struct function): Add has_force_vect_loops and
+	has_simduid_loops.
+	* gimple-pretty-print.c (dump_gimple_omp_for): Handle
+	GF_OMP_FOR_KIND*.
+	* gimple.c (gimple_build_omp_critical): Add KIND argument and
+	handle it.
+	* gimple.def: Update CLAUSES comments.
+	* gimple.h (enum gf_mask): Add GF_OMP_FOR_KIND_{FOR,SIMD}.
+	(gimple_build_omp_for): Add argument to prototype.
+	(gimple_omp_for_kind): New.
+	(gimple_omp_for_set_kind): New.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_LINEAR to
+	GOVD_DATA_SHARE_CLASS.
+	(enum omp_region_type): Add ORT_SIMD.
+	(gimple_add_tmp_var): Handle ORT_SIMD.
+	(gimplify_var_or_parm_decl): Same.
+	(is_gimple_stmt): Same.
+	(omp_firstprivatize_variable): Same.
+	(omp_add_variable): Only use splay_tree_insert if lookup failed.
+	(omp_notice_variable): Handle ORT_SIMD.
+	(omp_is_private): Add SIMD argument and handle it as well as
+	ORT_SIMD.
+	(omp_check_private): Handle ORT_SIMD.
+	(gimplify_scan_omp_clauses): Handle OMP_CLAUSE_LINEAR and
+	OMP_CLAUSE_SAFELEN.
+	(gimplify_adjust_omp_clauses_1): Handle GOVD_LINEAR.
+	Handle OMP_CLAUSE_LASTPRIVATE.
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_LINEAR and
+	OMP_CLAUSE_SAFELEN.
+	(gimplify_omp_for): Handle OMP_SIMD and OMP_CLAUSE_LINEAR.
+	(gimplify_expr): Handle OMP_SIMD.
+	* internal-fn.c (expand_GOMP_SIMD_LANE): New.
+	(expand_GOMP_SIMD_VF): New.
+	(expand_GOMP_SIMD_LAST_LANE): New.
+	* internal-fn.def (GOMP_SIMD_LANE): New.
+	(GOMP_SIMD_VF): New.
+	(GOMP_SIMD_LAST_LANE): New.
+	* omp-low.c: Include target.h.
+	(extract_omp_for_data): Handle OMP_SIMD, OMP_CLAUSE_LINEAR,
+	OMP_CLAUSE_SAFELEN.
+	(check_omp_nesting_restrictions): Same.
+	(omp_max_vf): New.
+	(lower_rec_simd_input_clauses): New.
+	(lower_rec_input_clauses): Handle OMP_SIMD, GF_OMP_FOR_KIND_SIMD,
+	OMP_CLAUSE_LINEAR.
+	(lower_lastprivate_clauses): Handle OMP_CLAUSE_LINEAR,
+	GF_OMP_FOR_KIND_SIMD, OMP_SIMD.
+	(expand_omp_build_assign): New.
+	(expand_omp_for_init_counts): New.
+	(expand_omp_for_init_vars): New.
+	(extract_omp_for_update_vars): New.
+	(expand_omp_for_generic): Use expand_omp_for_{init,update}_vars
+	and rewrite accordingly.
+	(expand_omp_simd): New.
+	(expand_omp_for): Use expand_omp_simd.
+	(lower_omp_for_lastprivate): Unshare vinit when appropriate.
+	(lower_omp_for): Do not lower the body.
+	* tree-data-ref (get_references_in_stmt): Allow IFN_GOMP_SIMD_LANE
+	in their own loops.
+	* tree-flow.h (find_omp_clause): Remove prototype.
+	* tree-if-conv.c (main_tree_if_conversion): Run if doing if
+	conversion, forcing vectorization of the loop, or if
+	flag_tree_vectorize.
+	(gate_tree_if_conversion): Similarly.
+	* tree-inline.c (remap_gimple_stmt): Pass for kind argument to
+	gimple_build_omp_for.
+	(copy_cfg_body): set has_force_vect_loops and has_simduid_loops.
+	* tree-parloops (create_parallel_loop): Pass kind argument to
+	gimple_build_omp_for.
+	* tree-pretty-print.c (dump_omp_clause): Add cases for
+	OMP_CLAUSE_UNIFORM, OMP_CLAUSE_LINEAR, OMP_CLAUSE_SAFELEN,
+	OMP_CLAUSE__SIMDUID_.
+	(dump_generic_node): Handle OMP_SIMD.
+	* tree-ssa-ccp.c (likely_value): Handle IFN_GOMP_SIMD*.
+	* tree-ssa-loop-ivcanon.c (tree_unroll_loops_completely_1): Do not
+	unroll OMP_SIMD loops here.
+	* tree-ssa-loop.c (gate_tree_vectorize): Run if
+	has_force_vect_loops.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependence): Handle
+	loop->safelen
+	(vect_analyze_data_refs): Handle simd loops.
+	* tree-vect-loop.c (vectorizable_live_operation): Handle
+	IFN_GOMP_SIMD*.
+	* tree-vect-stmts.c (vectorizable_call): Handle
+	IFN_GOMP_SIMD_LANE.
+	(vectorizable_store): Handle STMT_VINFO_SIMD_LANE_ACCESS_P.
+	(vectorizable_load): Same.
+	* tree-vectorizer.c: Include hash-table.h and
+	tree-ssa-propagate.h.
+	(struct simduid_to_vf): New.
+	(simduid_to_vf::hash): New.
+	(simduid_to-vf::equal): New.
+	(struct simd_array_to_simduid): New.
+	(simd_array_to_simduid::hash): New.
+	(simd_array_to_simduid::equal): New.
+	(adjust_simduid_builtins): New.
+	(struct note_simd_array_uses_struct): New.
+	(note_simd_array_uses_cb): New.
+	(note_simd_array_uses): New.
+	(vectorize_loops): Handle simd hints and adjust simd builtins
+	accordingly.
+	* tree-vectorizer.h (struct _stmt_vec_info): Add
+	simd_lane_access_p field.
+	(STMT_VINFO_SIMD_LANE_ACCESS_P): New macro.
+	* tree.c (omp_clause_num_ops): Add entries for OMP_CLAUSE_LINEAR,
+	OMP_CLAUSE_SAFELEN, OMP_CLAUSE__SIMDUID_, OMP_CLAUSE_UNIFORM.
+	(omp_clause_code_name): Same.
+	(walk_tree_1): Handle OMP_CLAUSE_UNIFORM, OMP_CLAUSE_SAFELEN,
+	OMP_CLAUSE__SIMDUID_, OMP_CLAUSE_LINEAR.
+	* tree.def (OMP_SIMD): New entry.
+	* tree.h (enum omp_clause_code): Add entries for
+	OMP_CLAUSE_LINEAR, OMP_CLAUSE_UNIFORM, OMP_CLAUSE_SAFELEN,
+	OMP_CLAUSE__SIMDUID_.
+	(OMP_CLAUSE_DECL): Adjust range for new clauses.
+	(OMP_CLAUSE_LINEAR_NO_COPYIN): New.
+	(OMP_CLAUSE_LINEAR_NO_COPYOUT): New.
+	(OMP_CLAUSE_LINEAR_STEP): New.
+	(OMP_CLAUSE_SAFELEN_EXPR): New.
+	(OMP_CLAUSE__SIMDUID__DECL): New.
+	(find_omp_clause): New prototype.
+
 2013-08-27  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Update

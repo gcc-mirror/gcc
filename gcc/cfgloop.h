@@ -168,6 +168,20 @@ struct GTY ((chain_next ("%h.next"))) loop {
      describes what is the state of the estimation.  */
   enum loop_estimation estimate_state;
 
+  /* If > 0, an integer, where the user asserted that for any
+     I in [ 0, nb_iterations ) and for any J in
+     [ I, min ( I + safelen, nb_iterations ) ), the Ith and Jth iterations
+     of the loop can be safely evaluated concurrently.  */
+  int safelen;
+
+  /* True if we should try harder to vectorize this loop.  */
+  bool force_vect;
+
+  /* For SIMD loops, this is a unique identifier of the loop, referenced
+     by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
+     builtins.  */
+  tree simduid;
+
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;
 
