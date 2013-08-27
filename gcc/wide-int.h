@@ -249,15 +249,15 @@ along with GCC; see the file COPYING3.  If not see
    on any platform is 64 bits.  When that changes, then it is likely
    that a target hook should be defined so that targets can make this
    value larger for those targets.  */
-const int addr_max_bitsize = 64;
+#define ADDR_MAX_BITSIZE 64
 
 /* This is the internal precision used when doing any address
    arithmetic.  The '4' is really 3 + 1.  Three of the bits are for
    the number of extra bits needed to do bit addresses and single bit is
    allow everything to be signed without loosing any precision.  Then
    everything is rounded up to the next HWI for efficiency.  */
-const int addr_max_precision
-  = ((addr_max_bitsize + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1));
+#define ADDR_MAX_PRECISION \
+  ((ADDR_MAX_BITSIZE + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1))
 
 /* This is used to bundle an rtx and a mode together so that the pair
    can be used as the second operand of a wide int expression.  If we
@@ -4092,7 +4092,7 @@ fixed_wide_int <bitsize>::operator -= (const fixed_wide_int <bitsize> &c)
 
 /* A wide_int_ro that has a large enough precision to do any address math
    on the target.  */
-typedef fixed_wide_int <addr_max_precision> addr_wide_int;
+typedef fixed_wide_int <ADDR_MAX_PRECISION> addr_wide_int;
 /* A wide_int_ro that has a large enough precision to do any math on the
    target.  */
 typedef fixed_wide_int <MAX_BITSIZE_MODE_ANY_INT> max_wide_int;
@@ -4132,14 +4132,14 @@ template <>
 inline const HOST_WIDE_INT*
 wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
 		       unsigned int *l, unsigned int *p,
-		       const fixed_wide_int <addr_max_precision> &y)
+		       const fixed_wide_int <ADDR_MAX_PRECISION> &y)
 {
   *p = y.get_precision ();
   *l = y.get_len ();
   return y.get_val ();
 }
 
-#if addr_max_precision != MAX_BITSIZE_MODE_ANY_INT
+#if ADDR_MAX_PRECISION != MAX_BITSIZE_MODE_ANY_INT
 template <>
 inline const HOST_WIDE_INT*
 wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
