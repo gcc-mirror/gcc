@@ -1,3 +1,7 @@
+2013-08-27  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/scalar_shift_1.c: New.
+
 2013-08-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57521
