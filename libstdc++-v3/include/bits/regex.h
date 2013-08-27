@@ -740,11 +740,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        * @throws regex_error if @p [__first, __last) is not a valid regular
        *         expression.
        */
-      template<typename _InputIterator>
-	basic_regex(_InputIterator __first, _InputIterator __last,
+      template<typename _FwdIter>
+	basic_regex(_FwdIter __first, _FwdIter __last,
 		    flag_type __f = ECMAScript)
 	: _M_flags(__f),
-	  _M_automaton(__detail::_Compiler<_InputIterator, _Ch_type, _Rx_traits>
+	  _M_automaton(__detail::_Compiler<_FwdIter, _Ch_type, _Rx_traits>
 		       (__first, __last, _M_traits, _M_flags)._M_get_nfa())
 	{ }
 
@@ -2371,7 +2371,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__re._M_automaton == nullptr)
 	return false;
-      for (auto __cur = __first; __cur != __last; ++__cur) // Any KMP-like algo?
+      auto __cur = __first;
+      // Continue when __cur == __last
+      do
 	{
 	  __detail::__get_executor(__cur, __last, __m, __re, __flags)
 	    ->_M_search_from_first();
@@ -2391,9 +2393,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return true;
 	    }
 	}
+      while (__cur++ != __last);
       return false;
     }
-
 
   /**
    * Searches for a regular expression within a range.
