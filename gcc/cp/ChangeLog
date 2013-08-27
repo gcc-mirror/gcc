@@ -1,3 +1,8 @@
+2013-08-27  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-tree.h (CP_OMP_CLAUSE_INFO): Adjust range for new clauses.
+
 2013-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokfndecl): Remove old bison hack.

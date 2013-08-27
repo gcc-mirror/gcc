@@ -1787,6 +1787,10 @@ main_tree_if_conversion (void)
     return 0;
 
   FOR_EACH_LOOP (li, loop, 0)
+    if (flag_tree_loop_if_convert == 1
+	|| flag_tree_loop_if_convert_stores == 1
+	|| flag_tree_vectorize
+	|| loop->force_vect)
     changed |= tree_if_conversion (loop);
 
   if (changed)
@@ -1811,7 +1815,8 @@ main_tree_if_conversion (void)
 static bool
 gate_tree_if_conversion (void)
 {
-  return ((flag_tree_vectorize && flag_tree_loop_if_convert != 0)
+  return (((flag_tree_vectorize || cfun->has_force_vect_loops)
+	   && flag_tree_loop_if_convert != 0)
 	  || flag_tree_loop_if_convert == 1
 	  || flag_tree_loop_if_convert_stores == 1);
 }

@@ -631,6 +631,22 @@ likely_value (gimple stmt)
   if (has_constant_operand)
     all_undefined_operands = false;
 
+  if (has_undefined_operand
+      && code == GIMPLE_CALL
+      && gimple_call_internal_p (stmt))
+    switch (gimple_call_internal_fn (stmt))
+      {
+	/* These 3 builtins use the first argument just as a magic
+	   way how to find out a decl uid.  */
+      case IFN_GOMP_SIMD_LANE:
+      case IFN_GOMP_SIMD_VF:
+      case IFN_GOMP_SIMD_LAST_LANE:
+	has_undefined_operand = false;
+	break;
+      default:
+	break;
+      }
+
   /* If the operation combines operands like COMPLEX_EXPR make sure to
      not mark the result UNDEFINED if only one part of the result is
      undefined.  */
