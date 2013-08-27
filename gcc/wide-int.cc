@@ -2404,7 +2404,12 @@ wide_int_ro::divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 
 
 /* Do a truncating divide DIVISOR into DIVIDEND.  The result is the
-   same size as the operands.  SIGN is either SIGNED or UNSIGNED.  */
+   same size as the operands.  SIGN is either SIGNED or UNSIGNED.  If
+   COMPUTE_QUOTIENT is set, the quotient is computed and returned.  If
+   it is not set, the result is undefined.  If COMPUTE_REMAINDER is
+   set, the remaineder is returned in remainder.  If it is not set,
+   the remainder is undefined.  If OFLOW is not null, it is set to the
+   overflow value.  */
 wide_int_ro
 wide_int_ro::divmod_internal (bool compute_quotient,
 			      const HOST_WIDE_INT *dividend,
@@ -2469,6 +2474,10 @@ wide_int_ro::divmod_internal (bool compute_quotient,
 
   quotient.precision = dividend_prec;
   remainder->precision = dividend_prec;
+
+  /* Initialize the incoming overflow if it has been provided.  */
+  if (oflow)
+    *oflow = false;
 
   /* If overflow is set, just get out.  There will only be grief by
      continuing.  */

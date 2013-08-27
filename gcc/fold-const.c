@@ -992,9 +992,9 @@ int_const_binop_1 (enum tree_code code, const_tree arg1, const_tree parg2,
 	/* It's unclear from the C standard whether shifts can overflow.
 	   The following code ignores overflow; perhaps a C standard
 	   interpretation ruling is needed.  */
-	res = op1.rshift (arg2, sign, GET_MODE_BITSIZE (TYPE_MODE (type)), TRUNC);
+	res = op1.rshift (arg2, sign, GET_MODE_BITSIZE (TYPE_MODE (type)));
       else
-	res = op1.lshift (arg2, GET_MODE_BITSIZE (TYPE_MODE (type)), TRUNC);
+	res = op1.lshift (arg2, GET_MODE_BITSIZE (TYPE_MODE (type)));
       break;
       
     case RROTATE_EXPR:

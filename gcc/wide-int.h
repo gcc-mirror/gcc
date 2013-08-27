@@ -259,19 +259,6 @@ const int addr_max_bitsize = 64;
 const int addr_max_precision
   = ((addr_max_bitsize + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1));
 
-enum ShiftOp {
-  NONE,
-  /* There are two uses for the wide-int shifting functions.  The
-     first use is as an emulation of the target hardware.  The
-     second use is as service routines for other optimizations.  The
-     first case needs to be identified by passing TRUNC as the value
-     of ShiftOp so that shift amount is properly handled according to the
-     SHIFT_COUNT_TRUNCATED flag.  For the second case, the shift
-     amount is always truncated by the bytesize of the mode of
-     THIS.  */
-  TRUNC
-};
-
 /* This is used to bundle an rtx and a mode together so that the pair
    can be used as the second operand of a wide int expression.  If we
    ever put modes into rtx integer constants, this should go away and
@@ -661,7 +648,7 @@ public:
   HOST_WIDE_INT extract_to_hwi (int, int) const;
 
   template <typename T>
-  wide_int_ro lshift (const T &, unsigned int = 0, ShiftOp = NONE) const;
+  wide_int_ro lshift (const T &, unsigned int = 0) const;
 
   template <typename T>
   wide_int_ro lshift_widen (const T &, unsigned int) const;
@@ -672,14 +659,13 @@ public:
   wide_int_ro lrotate (unsigned HOST_WIDE_INT, unsigned int = 0) const;
 
   template <typename T>
-  wide_int_ro rshift (const T &, signop, unsigned int = 0,
-		      ShiftOp = NONE) const;
+  wide_int_ro rshift (const T &, signop, unsigned int = 0) const;
 
   template <typename T>
-  wide_int_ro rshiftu (const T &, unsigned int = 0, ShiftOp = NONE) const;
+  wide_int_ro rshiftu (const T &, unsigned int = 0) const;
 
   template <typename T>
-  wide_int_ro rshifts (const T &, unsigned int = 0, ShiftOp = NONE) const;
+  wide_int_ro rshifts (const T &, unsigned int = 0) const;
 
   template <typename T>
   wide_int_ro rrotate (const T &, unsigned int = 0) const;
@@ -749,12 +735,10 @@ private:
 				      signop, wide_int_ro *, bool, bool *);
 
   /* Private utility routines.  */
+  int trunc_shift (const HOST_WIDE_INT *cnt, unsigned int bitsize) const;
   wide_int_ro decompress (unsigned int, unsigned int) const;
   void canonize ();
   static wide_int_ro from_rtx (const rtx_mode_t);
-
-  int trunc_shift (const HOST_WIDE_INT *, unsigned int, unsigned int,
-		   ShiftOp) const;
 
   template <typename T>
   static bool top_bit_set (T);
@@ -1650,7 +1634,10 @@ wide_int_ro::fits_shwi_p () const
 inline bool
 wide_int_ro::fits_uhwi_p () const
 {
-  return (len == 1 && val[0] >= 0) || (len == 2 && val[1] == 0);
+  return (precision <= HOST_BITS_PER_WIDE_INT)
+    || (len == 1 && val[0] >= 0) 
+    || (len == 2 && (precision >= 2 * HOST_BITS_PER_WIDE_INT) && (val[1] == 0))
+    || (len == 2 && (sext_hwi (val[1], precision & (HOST_BITS_PER_WIDE_INT - 1)) == 0));
 }
 
 /* Return the signed or unsigned min of THIS and C.  */
@@ -2358,8 +2345,6 @@ wide_int_ro::div_trunc (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2399,8 +2384,6 @@ wide_int_ro::div_floor (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2440,8 +2423,6 @@ wide_int_ro::div_ceil (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2469,8 +2450,6 @@ wide_int_ro::div_round (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2544,7 +2523,7 @@ wide_int_ro::udivmod_trunc (const T &c, wide_int_ro *mod) const
 
 /* Divide DIVISOR into THIS.  The remainder is also produced in
    REMAINDER.  The result is the same size as the operands.
-   The sign is specified in SGN.  The output is floor truncated.  */
+   The sign is specified in SGN.  The outputs is floor truncated.  */
 template <typename T>
 inline wide_int_ro
 wide_int_ro::divmod_floor (const T &c, wide_int_ro *remainder,
@@ -2579,9 +2558,10 @@ wide_int_ro::sdivmod_floor (const T &c, wide_int_ro *mod) const
 }
 
 /* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.
-   The output is truncated.  If the pointer to OVERFLOW is not 0,
-   OVERFLOW is set to true if the result overflows, false otherwise.  */
+   the same size as the operands.  The sign is specified in SGN.  The
+   output is adjusted to be compatible with truncating divide.  If the
+   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
+   overflows, false otherwise.  */
 template <typename T>
 inline wide_int_ro
 wide_int_ro::mod_trunc (const T &c, signop sgn, bool *overflow) const
@@ -2592,8 +2572,6 @@ wide_int_ro::mod_trunc (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2620,9 +2598,9 @@ wide_int_ro::umod_trunc (const T &c) const
 }
 
 /* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.
-   The output is floor truncated.  OVERFLOW is set to true if the
-   result overflows, false otherwise.  */
+   the same size as the operands.  The sign is specified in SGN.  The
+   output is adjusted to be compatible with floor divide.  OVERFLOW is
+   set to true if the result overflows, false otherwise.  */
 template <typename T>
 inline wide_int_ro
 wide_int_ro::mod_floor (const T &c, signop sgn, bool *overflow) const
@@ -2634,8 +2612,6 @@ wide_int_ro::mod_floor (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2657,9 +2633,10 @@ wide_int_ro::umod_floor (const T &c) const
 }
 
 /* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.
-   The output is ceil truncated.  If the pointer to OVERFLOW is not 0,
-   OVERFLOW is set to true if the result overflows, false otherwise.  */
+   the same size as the operands.  The sign is specified in SGN.  The
+   output is adjusted to be compatible with ceil divide.  If the
+   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
+   overflows, false otherwise.  */
 template <typename T>
 inline wide_int_ro
 wide_int_ro::mod_ceil (const T &c, signop sgn, bool *overflow) const
@@ -2671,8 +2648,6 @@ wide_int_ro::mod_ceil (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2686,9 +2661,9 @@ wide_int_ro::mod_ceil (const T &c, signop sgn, bool *overflow) const
 }
 
 /* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.
-   The output is round truncated.  OVERFLOW is set to true if the
-   result overflows, false otherwise.  */
+   the same size as the operands.  The sign is specified in SGN.  The
+   output is adjusted to be compatible with rounding divide.  OVERFLOW
+   is set to true if the result overflows, false otherwise.  */
 template <typename T>
 inline wide_int_ro
 wide_int_ro::mod_round (const T &c, signop sgn, bool *overflow) const
@@ -2700,8 +2675,6 @@ wide_int_ro::mod_round (const T &c, signop sgn, bool *overflow) const
   unsigned int cl;
   unsigned int p1, p2;
 
-  if (overflow)
-    *overflow = false;
   p1 = precision;
   s = to_shwi1 (ws, &cl, &p2, c);
   check_precision (&p1, &p2, false, true);
@@ -2738,11 +2711,10 @@ wide_int_ro::mod_round (const T &c, signop sgn, bool *overflow) const
 }
 
 /* Left shift THIS by C.  C must be non-negative.  BITSIZE is the
-   width of *THIS used for truncating the shift amount.  See the
-   definition of Op.TRUNC for how to set TRUNC_OP.  */
+   width of *THIS used for truncating the shift amount.   */
 template <typename T>
 inline wide_int_ro
-wide_int_ro::lshift (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
+wide_int_ro::lshift (const T &c, unsigned int bitsize) const
 {
   wide_int_ro result;
   HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
@@ -2754,7 +2726,7 @@ wide_int_ro::lshift (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
 
   gcc_checking_assert (precision);
 
-  shift = trunc_shift (s, cl, bitsize, trunc_op);
+  shift = trunc_shift (s, bitsize);
   if (shift == -1)
     result = wide_int_ro::zero (precision);
   else if (shift == 0)
@@ -2857,25 +2829,23 @@ wide_int_ro::lrotate (unsigned HOST_WIDE_INT cnt, unsigned int prec) const
 }
 
 /* Right shift THIS by C.  BITSIZE is the width of *THIS used for
-   truncating the shift amount.  SGN indicates the sign.  TRUNC_OP
-   indicates the truncation option.  C must be non-negative.  */
+   truncating the shift amount.  SGN indicates the sign.  C must be
+   non-negative.  */
 template <typename T>
 inline wide_int_ro
-wide_int_ro::rshift (const T &c, signop sgn, unsigned int bitsize,
-		     ShiftOp trunc_op) const
+wide_int_ro::rshift (const T &c, signop sgn, unsigned int bitsize) const
 {
   if (sgn == UNSIGNED)
-    return rshiftu (c, bitsize, trunc_op);
+    return rshiftu (c, bitsize);
   else
-    return rshifts (c, bitsize, trunc_op);
+    return rshifts (c, bitsize);
 }
 
 /* Unsigned right shift THIS by C.  C must be non-negative.  BITSIZE
-   is width of *THIS used for truncating the shift amount.  See the
-   definition of Op.TRUNC for how to set TRUNC_OP.  */
+   is width of *THIS used for truncating the shift amount. */
 template <typename T>
 inline wide_int_ro
-wide_int_ro::rshiftu (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
+wide_int_ro::rshiftu (const T &c, unsigned int bitsize) const
 {
   wide_int_ro result;
   HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
@@ -2885,7 +2855,7 @@ wide_int_ro::rshiftu (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
 
   s = to_shwi2 (ws, &cl, c);
   gcc_checking_assert (precision);
-  shift = trunc_shift (s, cl, bitsize, trunc_op);
+  shift = trunc_shift (s, bitsize);
 
   if (shift == 0)
     result = *this;
@@ -2914,11 +2884,10 @@ wide_int_ro::rshiftu (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
 }
 
 /* Signed right shift THIS by C.  C must be non-negative, BITSIZE is
-   the width of *THIS used for truncating the shift amount.  See the
-   definition of Op.TRUNC for how to set TRUNC_OP.  */
+   the width of *THIS used for truncating the shift amount.   */
 template <typename T>
 inline wide_int_ro
-wide_int_ro::rshifts (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
+wide_int_ro::rshifts (const T &c, unsigned int bitsize) const
 {
   wide_int_ro result;
   HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
@@ -2928,7 +2897,7 @@ wide_int_ro::rshifts (const T &c, unsigned int bitsize, ShiftOp trunc_op) const
 
   s = to_shwi2 (ws, &cl, c);
   gcc_checking_assert (precision);
-  shift = trunc_shift (s, cl, bitsize, trunc_op);
+  shift = trunc_shift (s, bitsize);
 
   if (shift == 0)
     result = *this;
@@ -3001,62 +2970,14 @@ wide_int_ro::rrotate (unsigned HOST_WIDE_INT cnt, unsigned int prec) const
   return result;
 }
 
-/* If SHIFT_COUNT_TRUNCATED is defined, truncate CNT.
-
-   At first look, the shift truncation code does not look right.
-   Shifts (and rotates) are done according to the precision of the
-   mode but the shift count is truncated according to the bitsize of
-   the mode.  This is how real hardware works (Knuth's mix machine
-   is the only known exception to this rule, but it was never real).
-
-   On an ideal machine, like Knuth's mix machine, a shift count is a
-   word long and all of the bits of that word are examined to
-   compute the shift amount.  But on real hardware, especially on
-   machines with fast (single cycle shifts) that takes too long.
-   On these machines, the amount of time to perform a shift dictates
-   the cycle time of the machine so corners are cut to keep this
-   fast.  A comparison of an entire 64 bit word would take something
-   like 6 gate delays before the shifting can even start.
-
-   So real hardware only looks at a small part of the shift amount.
-   On IBM machines, this tends to be 1 more than what is necessary
-   to encode the shift amount.  The rest of the world looks at only
-   the minimum number of bits.  This means that only 3 gate delays
-   are necessary to set up the shifter.
-
-   On the other hand, right shifts and rotates must be according to
-   the precision or the operation does not make any sense.
-
-   This function is called in two contexts.  If TRUNC_OP == TRUNC,
-   this function provides a count that matches the semantics of the
-   target machine depending on the value of SHIFT_COUNT_TRUNCATED.
-   Note that if SHIFT_COUNT_TRUNCATED is not defined, this function
-   may produce -1 as a value if the shift amount is greater than the
-   bitsize of the mode.  -1 is a surrogate for a very large amount.
-
-   If TRUNC_OP == NONE, then this function always truncates the shift
-   value to the bitsize because this shifting operation is a
-   function that is internal to GCC.  */
+/* Truncate the value of the shift so that the value is within the
+   BITSIZE. */
 inline int
-wide_int_ro::trunc_shift (const HOST_WIDE_INT *cnt,
-			  unsigned int len ATTRIBUTE_UNUSED,
-			  unsigned int bitsize, ShiftOp trunc_op) const
+wide_int_ro::trunc_shift (const HOST_WIDE_INT *cnt, unsigned int bitsize) const
 {
   gcc_checking_assert (cnt[0] >= 0);
 
-  if (trunc_op == TRUNC)
-    {
-      gcc_checking_assert (bitsize != 0);
-#ifdef SHIFT_COUNT_TRUNCATED
-      return cnt[0] & (bitsize - 1);
-#else
-      if (cnt[0] < bitsize && cnt[0] >= 0 && len == 1)
-	return cnt[0];
-      else
-	return -1;
-#endif
-    }
-  else if (bitsize == 0)
+  if (bitsize == 0)
     return cnt[0];
   else
     return cnt[0] & (bitsize - 1);
@@ -3477,20 +3398,19 @@ public:
   fixed_wide_int lrotate (unsigned HOST_WIDE_INT, unsigned int) const;
 
   template <typename T>
-  fixed_wide_int lshift (const T &, unsigned int = 0, ShiftOp = NONE) const;
+  fixed_wide_int lshift (const T &, unsigned int = 0) const;
 
   template <typename T>
   fixed_wide_int lshift_widen (const T &, unsigned int) const;
 
   template <typename T>
-  fixed_wide_int rshift (const T &, signop, unsigned int = 0,
-			 ShiftOp = NONE) const;
+  fixed_wide_int rshift (const T &, signop, unsigned int = 0) const;
 
   template <typename T>
-  fixed_wide_int rshiftu (const T &, unsigned int = 0, ShiftOp = NONE) const;
+  fixed_wide_int rshiftu (const T &, unsigned int = 0) const;
 
   template <typename T>
-  fixed_wide_int rshifts (const T &, unsigned int = 0,  ShiftOp = NONE) const;
+  fixed_wide_int rshifts (const T &, unsigned int = 0) const;
 
   template <typename T>
   fixed_wide_int rrotate (const T &, unsigned int) const;
@@ -4026,10 +3946,9 @@ fixed_wide_int <bitsize>::lrotate (unsigned HOST_WIDE_INT y,
 template <int bitsize>
 template <typename T>
 inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::lshift (const T &c, unsigned int bit_size,
-				  ShiftOp z) const
+fixed_wide_int <bitsize>::lshift (const T &c, unsigned int bit_size) const
 {
-  return wide_int_ro::lshift (c, bit_size, z);
+  return wide_int_ro::lshift (c, bit_size);
 }
 
 template <int bitsize>
@@ -4044,28 +3963,28 @@ fixed_wide_int <bitsize>::lshift_widen (const T &c,
 template <int bitsize>
 template <typename T>
 inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rshift (const T &c, signop sgn,
-				  unsigned int bit_size, ShiftOp z) const
+fixed_wide_int <bitsize>::rshift (const T &c, signop sgn, 
+				  unsigned int bit_size) const
 {
-  return wide_int_ro::rshift (c, sgn, bit_size, z);
+  return wide_int_ro::rshift (c, sgn, bit_size);
 }
 
 template <int bitsize>
 template <typename T>
 inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rshiftu (const T &c, unsigned int bit_size,
-				   ShiftOp z) const
+fixed_wide_int <bitsize>::rshiftu (const T &c, 
+				   unsigned int bit_size) const
 {
-  return wide_int_ro::rshiftu (c, bit_size, z);
+  return wide_int_ro::rshiftu (c, bit_size);
 }
 
 template <int bitsize>
 template <typename T>
 inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rshifts (const T &c, unsigned int bit_size,
-				   ShiftOp z) const
+fixed_wide_int <bitsize>::rshifts (const T &c,
+				   unsigned int bit_size) const
 {
-  return wide_int_ro::rshifts (c, bit_size, z);
+  return wide_int_ro::rshifts (c, bit_size);
 }
 
 template <int bitsize>

@@ -3507,9 +3507,7 @@ rtx
 simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 				 rtx op0, rtx op1)
 {
-#if TARGET_SUPPORTS_WIDE_INT == 0
   unsigned int width = GET_MODE_PRECISION (mode);
-#endif
 
   if (VECTOR_MODE_P (mode)
       && code != VEC_CONCAT
@@ -3787,40 +3785,45 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case LSHIFTRT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
-	    return NULL_RTX;
-
-	  result = wop0.rshiftu (pop1, bitsize, TRUNC);
-	  break;
-	  
 	case ASHIFTRT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
-	    return NULL_RTX;
-
-	  result = wop0.rshifts (pop1, bitsize, TRUNC);
-	  break;
-	  
 	case ASHIFT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
-	    return NULL_RTX;
-
-	  result = wop0.lshift (pop1, bitsize, TRUNC);
-	  break;
-	  
 	case ROTATE:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
-	    return NULL_RTX;
-
-	  result = wop0.lrotate (pop1);
-	  break;
-	  
 	case ROTATERT:
-	  if (wide_int (std::make_pair (op1, mode)).neg_p ())
-	    return NULL_RTX;
+	  {
+	    wide_int wop1 = pop1;
+	    if (wop1.neg_p ())
+	      return NULL_RTX;
 
-	  result = wop0.rrotate (pop1);
-	  break;
+	    if (SHIFT_COUNT_TRUNCATED)
+	      wop1 = wop1.umod_trunc (width); 
 
+	    switch (code)
+	      {
+	      case LSHIFTRT:
+		result = wop0.rshiftu (wop1, bitsize);
+		break;
+		
+	      case ASHIFTRT:
+		result = wop0.rshifts (wop1, bitsize);
+		break;
+		
+	      case ASHIFT:
+		result = wop0.lshift (wop1, bitsize);
+		break;
+		
+	      case ROTATE:
+		result = wop0.lrotate (wop1);
+		break;
+		
+	      case ROTATERT:
+		result = wop0.rrotate (wop1);
+		break;
+
+	      default:
+		gcc_unreachable ();
+	      }
+	    break;
+	  }
 	default:
 	  return NULL_RTX;
 	}
