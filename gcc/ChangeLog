@@ -1,3 +1,9 @@
+2013-08-27  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* function.c (assign_parm_find_data_types): Set passed_mode and
+	nominal_mode to the TYPE_MODE of nominal_type for the built
+	pointer type in case of the struct-pass-by-reference.
+
 2013-08-26  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* config/avr/avr-stdint.h (INT16_TYPE): Change default to "int".
