@@ -1,3 +1,7 @@
+2013-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Remove old bison hack.
+
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
 	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_DESTRUCTOR_P): Use
