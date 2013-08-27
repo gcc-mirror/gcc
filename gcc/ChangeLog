@@ -1,3 +1,10 @@
+2013-08-27  Christian Widmer  <shadow@umbrox.de>
+
+	PR target/57927
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add detection
+	of Ivy Bridge and Haswell processors.  Assume core-avx2 for unknown
+	AVX2 capable processors.
+
 2013-08-27  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/arm_neon.h: Replace all inline asm implementations
