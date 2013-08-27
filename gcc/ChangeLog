@@ -1,3 +1,9 @@
+2013-08-27  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/57219
+	* doc/extend.texi (__builtin_isinf_sign): Restrict the return
+	values to -1, 0 and 1.
+
 2013-08-27  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* config/aarch64/aarch64.md (unspec): Add UNSPEC_SISD_SSHL,
