@@ -1,3 +1,16 @@
+2013-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57860
+	PR rtl-optimization/57861
+	PR rtl-optimization/57875
+	PR rtl-optimization/57876
+	PR rtl-optimization/57877
+	* gcc.c-torture/execute/pr57860.c: New test.
+	* gcc.c-torture/execute/pr57861.c: New test.
+	* gcc.c-torture/execute/pr57875.c: New test.
+	* gcc.c-torture/execute/pr57876.c: New test.
+	* gcc.c-torture/execute/pr57877.c: New test.
+
 2013-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/58146
