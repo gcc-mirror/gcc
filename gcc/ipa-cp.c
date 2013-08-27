@@ -745,17 +745,26 @@ initialize_node_lattices (struct cgraph_node *node)
 
 /* Return the result of a (possibly arithmetic) pass through jump function
    JFUNC on the constant value INPUT.  Return NULL_TREE if that cannot be
-   determined or itself is considered an interprocedural invariant.  */
+   determined or be considered an interprocedural invariant.  */
 
 static tree
 ipa_get_jf_pass_through_result (struct ipa_jump_func *jfunc, tree input)
 {
   tree restype, res;
 
+  if (TREE_CODE (input) == TREE_BINFO)
+    {
+      if (ipa_get_jf_pass_through_type_preserved (jfunc))
+	{
+	  gcc_checking_assert (ipa_get_jf_pass_through_operation (jfunc)
+			       == NOP_EXPR);
+	  return input;
+	}
+      return NULL_TREE;
+    }
+
   if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
     return input;
-  else if (TREE_CODE (input) == TREE_BINFO)
-    return NULL_TREE;
 
   gcc_checking_assert (is_gimple_ip_invariant (input));
   if (TREE_CODE_CLASS (ipa_get_jf_pass_through_operation (jfunc))
@@ -779,9 +788,13 @@ static tree
 ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
 {
   if (TREE_CODE (input) == TREE_BINFO)
-    return get_binfo_at_offset (input,
-				ipa_get_jf_ancestor_offset (jfunc),
-				ipa_get_jf_ancestor_type (jfunc));
+    {
+      if (!ipa_get_jf_ancestor_type_preserved (jfunc))
+	return NULL;
+      return get_binfo_at_offset (input,
+				  ipa_get_jf_ancestor_offset (jfunc),
+				  ipa_get_jf_ancestor_type (jfunc));
+    }
   else if (TREE_CODE (input) == ADDR_EXPR)
     {
       tree t = TREE_OPERAND (input, 0);
@@ -1013,26 +1026,16 @@ propagate_vals_accross_pass_through (struct cgraph_edge *cs,
   struct ipcp_value *src_val;
   bool ret = false;
 
-  if (ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
-    for (src_val = src_lat->values; src_val; src_val = src_val->next)
-      ret |= add_scalar_value_to_lattice (dest_lat, src_val->value, cs,
-					  src_val, src_idx);
   /* Do not create new values when propagating within an SCC because if there
      are arithmetic functions with circular dependencies, there is infinite
      number of them and we would just make lattices bottom.  */
-  else if (edge_within_scc (cs))
+  if ((ipa_get_jf_pass_through_operation (jfunc) != NOP_EXPR)
+      and edge_within_scc (cs))
     ret = set_lattice_contains_variable (dest_lat);
   else
     for (src_val = src_lat->values; src_val; src_val = src_val->next)
       {
-	tree cstval = src_val->value;
-
-	if (TREE_CODE (cstval) == TREE_BINFO)
-	  {
-	    ret |= set_lattice_contains_variable (dest_lat);
-	    continue;
-	  }
-	cstval = ipa_get_jf_pass_through_result (jfunc, cstval);
+	tree cstval = ipa_get_jf_pass_through_result (jfunc, src_val->value);
 
 	if (cstval)
 	  ret |= add_scalar_value_to_lattice (dest_lat, cstval, cs, src_val,
