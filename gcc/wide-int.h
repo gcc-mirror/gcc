@@ -443,12 +443,18 @@ public:
 
   template <typename T>
   int cmp (const T &, signop) const;
+  template <typename T1, typename T2>
+  static int cmp (const T1 &, const T2 &, signop);
 
   template <typename T>
   int cmps (const T &) const;
+  template <typename T1, typename T2>
+  static int cmps (const T1 &, const T2 &);
 
   template <typename T>
   int cmpu (const T &) const;
+  template <typename T1, typename T2>
+  static int cmpu (const T1 &, const T2 &);
 
   bool only_sign_bit_p (unsigned int) const;
   bool only_sign_bit_p () const;
@@ -1137,38 +1143,7 @@ template <typename T>
 inline bool
 wide_int_ro::operator == (const T &c) const
 {
-  bool result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, false);
-
-  if (p1 == 0)
-    /* There are prec 0 types and we need to do this to check their
-       min and max values.  */
-    result = (len == cl) && (val[0] == s[0]);
-  else if (p1 < HOST_BITS_PER_WIDE_INT)
-    {
-      unsigned HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << p1) - 1;
-      result = (val[0] & mask) == (s[0] & mask);
-    }
-  else if (p1 == HOST_BITS_PER_WIDE_INT)
-    result = val[0] == s[0];
-  else
-    result = eq_p_large (val, len, p1, s, cl);
-
-  if (result)
-    gcc_assert (len == cl);
-
-#ifdef DEBUG_WIDE_INT
-  debug_vwa ("wide_int_ro:: %d = (%s == %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
+  return wide_int_ro::eq_p (*this, c);
 }
 
 /* Return true if C1 == C2.  If both parameters have nonzero precisions,
@@ -1219,31 +1194,7 @@ template <typename T>
 inline bool
 wide_int_ro::lts_p (const T &c) const
 {
-  bool result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT
-      && p2 <= HOST_BITS_PER_WIDE_INT)
-    {
-      gcc_assert (cl != 0);
-      HOST_WIDE_INT x0 = sext_hwi (val[0], p1);
-      HOST_WIDE_INT x1 = sext_hwi (s[0], p2);
-      result = x0 < x1;
-    }
-  else
-    result = lts_p_large (val, len, p1, s, cl, p2);
-
-#ifdef DEBUG_WIDE_INT
-  debug_vwa ("wide_int_ro:: %d = (%s lts_p %s\n", result, *this, s, cl, p2);
-#endif
-  return result;
+  return wide_int_ro::lts_p (*this, c);
 }
 
 /* Return true if C1 < C2 using signed comparisons.  */
@@ -1283,30 +1234,7 @@ template <typename T>
 inline bool
 wide_int_ro::ltu_p (const T &c) const
 {
-  bool result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT
-      && p2 <= HOST_BITS_PER_WIDE_INT)
-    {
-      unsigned HOST_WIDE_INT x0 = zext_hwi (val[0], p1);
-      unsigned HOST_WIDE_INT x1 = zext_hwi (s[0], p2);
-      result = x0 < x1;
-    }
-  else
-    result = ltu_p_large (val, len, p1, s, cl, p2);
-
-#ifdef DEBUG_WIDE_INT
-  debug_vwa ("wide_int_ro:: %d = (%s ltu_p %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
+  return wide_int_ro::ltu_p (*this, c); 
 }
 
 /* Return true if C1 < C2 using unsigned comparisons.  */
@@ -1524,27 +1452,37 @@ wide_int_ro::ge_p (const T1 &c1, const T2 &c2, signop sgn)
     return geu_p (c1, c2);
 }
 
-/* Returns -1 if THIS < C, 0 if THIS == C and 1 if A > C using
+/* Returns -1 if THIS < C, 0 if THIS == C and 1 if THIS > C using
    signed compares.  */
 template <typename T>
 inline int
 wide_int_ro::cmps (const T &c) const
 {
+  return wide_int_ro::cmps (*this, c);
+}
+
+/* Returns -1 if C1 < C2, 0 if C1 == C2 and 1 if C1 > C2 using
+   signed compares.  */
+template <typename T1, typename T2>
+inline int
+wide_int_ro::cmps (const T1 &c1, const T2 &c2)
+{
   int result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int prec;
+  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
+  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
+  unsigned int cl1, cl2;         /* array lengths  */
+  unsigned int p1, p2;           /* precisions */
 
-  s = to_shwi1 (ws, &cl, &prec, c);
-  if (prec == 0)
-    prec = precision;
+  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
+  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
+  check_precision (&p1, &p2, false, true);
 
-  if (precision <= HOST_BITS_PER_WIDE_INT
-      && prec <= HOST_BITS_PER_WIDE_INT)
+  if (p1 <= HOST_BITS_PER_WIDE_INT
+      && p2 <= HOST_BITS_PER_WIDE_INT)
     {
-      HOST_WIDE_INT x0 = sext_hwi (val[0], precision);
-      HOST_WIDE_INT x1 = sext_hwi (s[0], prec);
+      HOST_WIDE_INT x0 = sext_hwi (s1[0], p1);
+      HOST_WIDE_INT x1 = sext_hwi (s2[0], p2);
 
       if (x0 < x1)
 	result = -1;
@@ -1554,35 +1492,45 @@ wide_int_ro::cmps (const T &c) const
 	result = 0;
     }
   else
-    result = cmps_large (val, len, precision, s, cl, prec);
+    result = cmps_large (s1, cl1, p1, s2, cl2, p2);
 
 #ifdef DEBUG_WIDE_INT
-  debug_vwa ("wide_int_ro:: %d = (%s cmps %s)\n", result, *this, s, cl, prec);
+  debug_vaa ("wide_int_ro:: %d = (%s cmps %s)\n", result, s1, cl1, p1, s2, cl2, p2);
 #endif
   return result;
 }
 
-/* Returns -1 if THIS < C, 0 if THIS == C and 1 if A > C using
+/* Returns -1 if THIS < C, 0 if THIS == C and 1 if THIS > C using
    unsigned compares.  */
 template <typename T>
 int
 wide_int_ro::cmpu (const T &c) const
 {
+  return wide_int_ro::cmpu (*this, c);
+}
+
+/* Returns -1 if C1 < C2, 0 if C1 == C2 and 1 if C1 > C2 using
+   unsigned compares.  */
+template <typename T1, typename T2>
+int
+wide_int_ro::cmpu (const T1 &c1, const T2 &c2)
+{
   int result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int prec;
+  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
+  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
+  unsigned int cl1, cl2;         /* array lengths  */
+  unsigned int p1, p2;           /* precisions */
 
-  s = to_shwi1 (ws, &cl, &prec, c);
-  if (prec == 0)
-    prec = precision;
+  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
+  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
+  check_precision (&p1, &p2, false, true);
 
-  if (precision <= HOST_BITS_PER_WIDE_INT
-      && prec <= HOST_BITS_PER_WIDE_INT)
+  if (p1 <= HOST_BITS_PER_WIDE_INT
+      && p2 <= HOST_BITS_PER_WIDE_INT)
     {
-      unsigned HOST_WIDE_INT x0 = zext_hwi (val[0], precision);
-      unsigned HOST_WIDE_INT x1 = zext_hwi (s[0], prec);
+      unsigned HOST_WIDE_INT x0 = zext_hwi (s1[0], p1);
+      unsigned HOST_WIDE_INT x1 = zext_hwi (s2[0], p2);
 
       if (x0 < x1)
 	result = -1;
@@ -1592,10 +1540,10 @@ wide_int_ro::cmpu (const T &c) const
 	result = 1;
     }
   else
-    result = cmpu_large (val, len, precision, s, cl, prec);
+    result = cmpu_large (s1, cl1, p1, s2, cl2, p2);
 
 #ifdef DEBUG_WIDE_INT
-  debug_vwa ("wide_int_ro:: %d = (%s cmpu %s)\n", result, *this, s, cl, prec);
+  debug_vaa ("wide_int_ro:: %d = (%s cmpu %s)\n", result, s1, cl1, p1, s2, cl2, p2);
 #endif
 
   return result;
@@ -1611,6 +1559,18 @@ wide_int_ro::cmp (const T &c, signop sgn) const
     return cmps (c);
   else
     return cmpu (c);
+}
+
+/* Return -1, 0 or 1 depending on how C1 compares with C2.
+   Signedness is indicated by SGN.  */
+template <typename T1, typename T2>
+inline int
+wide_int_ro::cmp (const T1 &c1, const T2 &c2, signop sgn)
+{
+  if (sgn == SIGNED)
+    return wide_int_ro::cmps (c1, c2);
+  else
+    return wide_int_ro::cmpu (c1, c2);
 }
 
 /* Return true if THIS has the sign bit set to 1 and all other bits

@@ -8565,7 +8565,7 @@ retry:
 	  if ((c_neg || !t_neg) && wc.ltu_p (wd))
 	    return false;
 	}
-      else if (wc.cmp (wd, TYPE_SIGN (TREE_TYPE (type_low_bound))) < 0)
+      else if (wc.lt_p (wd, TYPE_SIGN (TREE_TYPE (type_low_bound))))
 	return false;
       ok_for_low_bound = true;
     }
@@ -8586,7 +8586,7 @@ retry:
 	  if ((t_neg || !c_neg) && wc.gtu_p (wd))
 	    return false;
 	}
-      else if (wc.cmp (wd, TYPE_SIGN (TREE_TYPE (type_high_bound))) > 0)
+      else if (wc.gt_p (wd, TYPE_SIGN (TREE_TYPE (type_high_bound))))
 	return false;
       ok_for_high_bound = true;
     }
