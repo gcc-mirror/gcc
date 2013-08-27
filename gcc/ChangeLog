@@ -1,3 +1,20 @@
+2013-08-27  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* config/aarch64/aarch64.md (unspec): Add UNSPEC_SISD_SSHL,
+	UNSPEC_SISD_USHL, UNSPEC_USHL_2S, UNSPEC_SSHL_2S, UNSPEC_SISD_NEG.
+	(<optab><mode>3_insn): Remove.
+	(aarch64_ashl_sisd_or_int_<mode>3): New Pattern.
+	(aarch64_lshr_sisd_or_int_<mode>3): Likewise.
+	(aarch64_ashr_sisd_or_int_<mode>3): Likewise.
+	(define_split for aarch64_lshr_sisd_or_int_di3): Likewise.
+	(define_split for aarch64_lshr_sisd_or_int_si3): Likewise.
+	(define_split for aarch64_ashr_sisd_or_int_di3): Likewise.
+	(define_split for aarch64_ashr_sisd_or_int_si3): Likewise.
+	(aarch64_sisd_ushl, aarch64_sisd_sshl): Likewise.
+	(aarch64_ushl_2s, aarch64_sshl_2s, aarch64_sisd_neg_qi): Likewise.
+	(ror<mode>3_insn): Likewise.
+	* config/aarch64/predicates.md (aarch64_simd_register): New.
+
 2013-08-27  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/57521

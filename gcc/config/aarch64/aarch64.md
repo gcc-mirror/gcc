@@ -88,11 +88,16 @@
     UNSPEC_NOP
     UNSPEC_PRLG_STK
     UNSPEC_RBIT
+    UNSPEC_SISD_NEG
+    UNSPEC_SISD_SSHL
+    UNSPEC_SISD_USHL
+    UNSPEC_SSHL_2S
     UNSPEC_ST2
     UNSPEC_ST3
     UNSPEC_ST4
     UNSPEC_TLS
     UNSPEC_TLSDESC
+    UNSPEC_USHL_2S
     UNSPEC_VSTRUCTDUMMY
 ])
 
@@ -3183,13 +3188,182 @@
   }
 )
 
-(define_insn "*<optab><mode>3_insn"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(SHIFT:GPI
-	 (match_operand:GPI 1 "register_operand" "r")
-	 (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "rUs<cmode>")))]
+;; Logical left shift using SISD or Integer instruction
+(define_insn "*aarch64_ashl_sisd_or_int_<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=w,w,r")
+        (ashift:GPI
+          (match_operand:GPI 1 "register_operand" "w,w,r")
+          (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "Us<cmode>,w,rUs<cmode>")))]
   ""
-  "<shift>\\t%<w>0, %<w>1, %<w>2"
+  "@
+   shl\t%<rtn>0<vas>, %<rtn>1<vas>, %2
+   ushl\t%<rtn>0<vas>, %<rtn>1<vas>, %<rtn>2<vas>
+   lsl\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "simd" "yes,yes,no")
+   (set_attr "simd_type" "simd_shift_imm,simd_shift,*")
+   (set_attr "simd_mode" "<MODE>,<MODE>,*")
+   (set_attr "v8type" "*,*,shift")
+   (set_attr "type" "*,*,shift")
+   (set_attr "mode" "*,*,<MODE>")]
+)
+
+;; Logical right shift using SISD or Integer instruction
+(define_insn "*aarch64_lshr_sisd_or_int_<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=w,w,r")
+        (lshiftrt:GPI
+          (match_operand:GPI 1 "register_operand" "w,w,r")
+          (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "Us<cmode>,w,rUs<cmode>")))]
+  ""
+  "@
+   ushr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
+   #
+   lsr\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "simd" "yes,yes,no")
+   (set_attr "simd_type" "simd_shift_imm,simd_shift,*")
+   (set_attr "simd_mode" "<MODE>,<MODE>,*")
+   (set_attr "v8type" "*,*,shift")
+   (set_attr "type" "*,*,shift")
+   (set_attr "mode" "*,*,<MODE>")]
+)
+
+(define_split
+  [(set (match_operand:DI 0 "aarch64_simd_register")
+        (lshiftrt:DI
+           (match_operand:DI 1 "aarch64_simd_register")
+           (match_operand:QI 2 "aarch64_simd_register")))]
+  "TARGET_SIMD && reload_completed"
+  [(set (match_dup 2)
+        (unspec:QI [(match_dup 2)] UNSPEC_SISD_NEG))
+   (set (match_dup 0)
+        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_SISD_USHL))]
+  ""
+)
+
+(define_split
+  [(set (match_operand:SI 0 "aarch64_simd_register")
+        (lshiftrt:SI
+           (match_operand:SI 1 "aarch64_simd_register")
+           (match_operand:QI 2 "aarch64_simd_register")))]
+  "TARGET_SIMD && reload_completed"
+  [(set (match_dup 2)
+        (unspec:QI [(match_dup 2)] UNSPEC_SISD_NEG))
+   (set (match_dup 0)
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_USHL_2S))]
+  ""
+)
+
+;; Arithmetic right shift using SISD or Integer instruction
+(define_insn "*aarch64_ashr_sisd_or_int_<mode>3"
+  [(set (match_operand:GPI 0 "register_operand" "=w,w,r")
+        (ashiftrt:GPI
+          (match_operand:GPI 1 "register_operand" "w,w,r")
+          (match_operand:QI 2 "aarch64_reg_or_shift_imm_di" "Us<cmode>,w,rUs<cmode>")))]
+  ""
+  "@
+   sshr\t%<rtn>0<vas>, %<rtn>1<vas>, %2
+   #
+   asr\t%<w>0, %<w>1, %<w>2"
+  [(set_attr "simd" "yes,yes,no")
+   (set_attr "simd_type" "simd_shift_imm,simd_shift,*")
+   (set_attr "simd_mode" "<MODE>,<MODE>,*")
+   (set_attr "v8type" "*,*,shift")
+   (set_attr "type" "*,*,shift")
+   (set_attr "mode" "*,*,<MODE>")]
+)
+
+(define_split
+  [(set (match_operand:DI 0 "aarch64_simd_register")
+        (ashiftrt:DI
+           (match_operand:DI 1 "aarch64_simd_register")
+           (match_operand:QI 2 "aarch64_simd_register")))]
+  "TARGET_SIMD && reload_completed"
+  [(set (match_dup 2)
+        (unspec:QI [(match_dup 2)] UNSPEC_SISD_NEG))
+   (set (match_dup 0)
+        (unspec:DI [(match_dup 1) (match_dup 2)] UNSPEC_SISD_SSHL))]
+  ""
+)
+
+(define_split
+  [(set (match_operand:SI 0 "aarch64_simd_register")
+        (ashiftrt:SI
+           (match_operand:SI 1 "aarch64_simd_register")
+           (match_operand:QI 2 "aarch64_simd_register")))]
+  "TARGET_SIMD && reload_completed"
+  [(set (match_dup 2)
+        (unspec:QI [(match_dup 2)] UNSPEC_SISD_NEG))
+   (set (match_dup 0)
+        (unspec:SI [(match_dup 1) (match_dup 2)] UNSPEC_SSHL_2S))]
+  ""
+)
+
+(define_insn "*aarch64_sisd_ushl"
+  [(set (match_operand:DI 0 "register_operand" "=w")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "w")
+                    (match_operand:QI 2 "register_operand" "w")]
+                   UNSPEC_SISD_USHL))]
+  "TARGET_SIMD"
+  "ushl\t%d0, %d1, %d2"
+  [(set_attr "simd" "yes")
+   (set_attr "simd_type" "simd_shift")
+   (set_attr "simd_mode" "DI")]
+)
+
+(define_insn "*aarch64_ushl_2s"
+  [(set (match_operand:SI 0 "register_operand" "=w")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "w")
+                    (match_operand:QI 2 "register_operand" "w")]
+                   UNSPEC_USHL_2S))]
+  "TARGET_SIMD"
+  "ushl\t%0.2s, %1.2s, %2.2s"
+  [(set_attr "simd" "yes")
+   (set_attr "simd_type" "simd_shift")
+   (set_attr "simd_mode" "DI")]
+)
+
+(define_insn "*aarch64_sisd_sshl"
+  [(set (match_operand:DI 0 "register_operand" "=w")
+        (unspec:DI [(match_operand:DI 1 "register_operand" "w")
+                    (match_operand:QI 2 "register_operand" "w")]
+                   UNSPEC_SISD_SSHL))]
+  "TARGET_SIMD"
+  "sshl\t%d0, %d1, %d2"
+  [(set_attr "simd" "yes")
+   (set_attr "simd_type" "simd_shift")
+   (set_attr "simd_mode" "DI")]
+)
+
+(define_insn "*aarch64_sshl_2s"
+  [(set (match_operand:SI 0 "register_operand" "=w")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "w")
+                    (match_operand:QI 2 "register_operand" "w")]
+                   UNSPEC_SSHL_2S))]
+  "TARGET_SIMD"
+  "sshl\t%0.2s, %1.2s, %2.2s"
+  [(set_attr "simd" "yes")
+   (set_attr "simd_type" "simd_shift")
+   (set_attr "simd_mode" "DI")]
+)
+
+(define_insn "*aarch64_sisd_neg_qi"
+  [(set (match_operand:QI 0 "register_operand" "=w")
+        (unspec:QI [(match_operand:QI 1 "register_operand" "w")]
+                   UNSPEC_SISD_NEG))]
+  "TARGET_SIMD"
+  "neg\t%d0, %d1"
+  [(set_attr "simd" "yes")
+   (set_attr "simd_type" "simd_negabs")
+   (set_attr "simd_mode" "QI")]
+)
+
+;; Rotate right
+(define_insn "*ror<mode>3_insn"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (rotatert:GPI
+          (match_operand:GPI 1 "register_operand" "r")
+          (match_operand:QI 2 "aarch64_reg_or_shift_imm_<mode>" "rUs<cmode>")))]
+  ""
+  "ror\\t%<w>0, %<w>1, %<w>2"
   [(set_attr "v8type" "shift")
    (set_attr "type" "shift")
    (set_attr "mode" "<MODE>")]
