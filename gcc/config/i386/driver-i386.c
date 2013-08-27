@@ -673,6 +673,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  cpu = "core-avx-i";
 	  break;
 	case 0x3c:
+	case 0x45:
+	case 0x46:
 	  /* Haswell.  */
 	  cpu = "core-avx2";
 	  break;

@@ -1,3 +1,8 @@
+2013-08-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Update
+	Haswell processor detection.
+
 2013-08-27  Christian Widmer  <shadow@umbrox.de>
 
 	PR target/57927
