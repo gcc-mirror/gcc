@@ -1,3 +1,32 @@
+2013-08-27  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (ipa_pass_through_data): New field type_preserved.
+	(ipa_ancestor_jf_data): Likewise.
+	(ipa_get_jf_pass_through_agg_preserved): Fix comment typo.
+	(ipa_get_jf_pass_through_type_preserved): New function.
+	(ipa_get_jf_ancestor_agg_preserved): Fix comment typo.
+	(ipa_get_jf_ancestor_type_preserved): New function.
+	* ipa-cp.c (ipa_get_jf_pass_through_result): Honor type_preserved
+	flag.
+	(ipa_get_jf_ancestor_result): Likewise.
+	(propagate_vals_accross_pass_through): Use
+	ipa_get_jf_pass_through_result to do all the value mappings.
+	* ipa-prop.c (ipa_print_node_jump_functions_for_edge): Dump the
+	type_preserved flag.
+	(ipa_set_jf_cst_copy): New function.
+	(ipa_set_jf_simple_pass_through): Set the type_preserved flag.
+	(ipa_set_jf_arith_pass_through): Likewise.
+	(ipa_set_ancestor_jf): Likewise.
+	(compute_complex_assign_jump_func): Set type_preserved instead of
+	punting.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+	(combine_known_type_and_ancestor_jfs): Honor type_preserved.
+	(update_jump_functions_after_inlining): Update type_preserved.
+	Explicitely create jump functions when combining one with
+	pass_through.
+	(ipa_write_jump_function): Stream the type_preserved flags.
+	(ipa_read_jump_function): Likewise.
+
 2013-08-27  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
