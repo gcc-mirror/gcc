@@ -1,3 +1,9 @@
+2013-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbhooks.py: New.
+	* configure.ac (gdbinit.in): Add import of gcc/gdbhooks.py.
+	* configure: Regenerate.
+
 2013-08-27  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.h (ipa_pass_through_data): New field type_preserved.
