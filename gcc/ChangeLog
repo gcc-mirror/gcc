@@ -1,3 +1,13 @@
+2013-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/58067
+	* config/i386/i386.md (*tls_global_dynamic_64_largepic): New insn.
+	(*tls_local_dynamic_base_64_largepic): Likewise.
+	(tls_global_dynamic_64_<mode>, tls_local_dynamic_base_64_<mode>):
+	Remove predicate from call operand.
+	* config/i386/i386.c (ix86_tls_get_addr): For -mcmodel=large -fpic
+	return sum of pic_offset_table_rtx and UNSPEC_PLTOFF of the symbol.
+
 2013-08-28  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_around_empty_block): Remove
