@@ -1,3 +1,8 @@
+2013-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58257
+	* omp-low.c (copy_var_decl): Copy over TREE_NO_WARNING flag.
+
 2013-08-28  Jan Hubicka  <jh@suse.cz>
 
 	* builtins.def (free): Declare leaf.
