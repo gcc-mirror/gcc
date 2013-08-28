@@ -1,3 +1,7 @@
+2013-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gtm-builtins.def (_ITM_free): Declare leaf.
+
 2013-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58067
@@ -26,14 +30,14 @@
 	Do not read DECL_ERROR_ISSUED.
 	(unpack_ts_decl_with_vis_value_fields): Do not read
 	DECL_DEFER_OUTPUT.
-	(lto_input_ts_binfo_tree_pointers): Do not read BINFO_INHERITANCE_CHAIN,
-        BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX
+	(lto_input_ts_binfo_tree_pointers): Do not read
+	BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX
 	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Do not
 	write DECL_ERROR_ISSUED..
 	(pack_ts_decl_with_vis_value_fields): Do not write
 	DECL_DEFER_OUTPUT.
 	(write_ts_binfo_tree_pointers): Do not read BINFO_INHERITANCE_CHAIN,
-        BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX
+	BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX.
 	* print-tree.c (print_node): Do not print DECL_ERROR_ISSUED.
 	* tree.h (tree_decl_common): Update comment.
 	(DECL_ERROR_ISSUED): Remove.
