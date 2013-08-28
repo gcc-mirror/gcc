@@ -1,3 +1,12 @@
+2013-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56977
+	* passes.c (init_optimization_passes): Move pass_fold_builtins
+	and pass_dce earlier with -Og.
+
 2013-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

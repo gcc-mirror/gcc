@@ -1,3 +1,11 @@
+2013-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-06-24  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/56977
+	* gcc.dg/pr56977.c: New testcase.
+
 2013-08-24  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/57798
