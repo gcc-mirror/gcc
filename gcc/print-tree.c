@@ -409,8 +409,6 @@ print_node (FILE *file, const char *prefix, tree node, int indent)
       if (code == FIELD_DECL && DECL_NONADDRESSABLE_P (node))
 	fputs (" nonaddressable", file);
 
-      if (code == LABEL_DECL && DECL_ERROR_ISSUED (node))
-	fputs (" error-issued", file);
       if (code == LABEL_DECL && EH_LANDING_PAD_NR (node))
 	fprintf (file, " landing-pad:%d", EH_LANDING_PAD_NR (node));
 

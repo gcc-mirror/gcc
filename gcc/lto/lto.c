@@ -1431,9 +1431,8 @@ maybe_remember_with_vars_binfo (tree t)
   n = vec_safe_length (BINFO_BASE_ACCESSES (t));
   for (i = 0; i < n; i++)
     MAYBE_REMEMBER_WITH_VARS (BINFO_BASE_ACCESS (t, i));
-  MAYBE_REMEMBER_WITH_VARS (BINFO_INHERITANCE_CHAIN (t));
-  MAYBE_REMEMBER_WITH_VARS (BINFO_SUBVTT_INDEX (t));
-  MAYBE_REMEMBER_WITH_VARS (BINFO_VPTR_INDEX (t));
+  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
+     and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
   n = BINFO_N_BASE_BINFOS (t);
   for (i = 0; i < n; i++)
     MAYBE_REMEMBER_WITH_VARS (BINFO_BASE_BINFO (t, i));
@@ -1823,7 +1822,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_ALIGN);
       if (code == LABEL_DECL)
 	{
-	  compare_values (DECL_ERROR_ISSUED);
 	  compare_values (EH_LANDING_PAD_NR);
 	  compare_values (LABEL_DECL_UID);
 	}
@@ -1854,7 +1852,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
     {
-      compare_values (DECL_DEFER_OUTPUT);
       compare_values (DECL_COMMON);
       compare_values (DECL_DLLIMPORT_P);
       compare_values (DECL_WEAK);
@@ -1865,7 +1862,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       if (code == VAR_DECL)
 	{
 	  compare_values (DECL_HARD_REGISTER);
-	  compare_values (DECL_IN_TEXT_SECTION);
+          /* DECL_IN_TEXT_SECTION is set during final asm output only.  */
 	  compare_values (DECL_IN_CONSTANT_POOL);
 	  compare_values (DECL_TLS_MODEL);
 	}
@@ -2167,12 +2164,8 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_tree_edges (BINFO_OFFSET (t1), BINFO_OFFSET (t2));
       compare_tree_edges (BINFO_VTABLE (t1), BINFO_VTABLE (t2));
       compare_tree_edges (BINFO_VPTR_FIELD (t1), BINFO_VPTR_FIELD (t2));
-      compare_tree_edges (BINFO_INHERITANCE_CHAIN (t1),
-			  BINFO_INHERITANCE_CHAIN (t2));
-      compare_tree_edges (BINFO_SUBVTT_INDEX (t1),
-			  BINFO_SUBVTT_INDEX (t2));
-      compare_tree_edges (BINFO_VPTR_INDEX (t1),
-			  BINFO_VPTR_INDEX (t2));
+      /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
+	 and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -2284,7 +2277,7 @@ unify_scc (struct streamer_tree_cache_d *cache, unsigned from,
       for (unsigned i = 0; i < scc->len; ++i)
 	{
 	  TREE_VISITED (scc->entries[i]) = 1;
-	  gcc_assert (!TREE_ASM_WRITTEN (scc->entries[i]));
+	  gcc_checking_assert (!TREE_ASM_WRITTEN (scc->entries[i]));
 	}
 
       tree *map = XALLOCAVEC (tree, 2 * len);

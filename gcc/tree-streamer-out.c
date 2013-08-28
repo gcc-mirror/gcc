@@ -180,7 +180,6 @@ pack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
       /* Note that we do not write LABEL_DECL_UID.  The reader will
 	 always assume an initial value of -1 so that the
 	 label_to_block_map is recreated by gimple_set_bb.  */
-      bp_pack_value (bp, DECL_ERROR_ISSUED (expr), 1);
       bp_pack_var_len_unsigned (bp, EH_LANDING_PAD_NR (expr));
     }
 
@@ -225,7 +224,6 @@ pack_ts_decl_wrtl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, DECL_DEFER_OUTPUT (expr), 1);
   bp_pack_value (bp, DECL_COMMON (expr), 1);
   bp_pack_value (bp, DECL_DLLIMPORT_P (expr), 1);
   bp_pack_value (bp, DECL_WEAK (expr), 1);
@@ -237,7 +235,7 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   if (TREE_CODE (expr) == VAR_DECL)
     {
       bp_pack_value (bp, DECL_HARD_REGISTER (expr), 1);
-      bp_pack_value (bp, DECL_IN_TEXT_SECTION (expr), 1);
+      /* DECL_IN_TEXT_SECTION is set during final asm output only. */
       bp_pack_value (bp, DECL_IN_CONSTANT_POOL (expr), 1);
       bp_pack_value (bp, DECL_TLS_MODEL (expr),  3);
     }
@@ -815,9 +813,8 @@ write_ts_binfo_tree_pointers (struct output_block *ob, tree expr, bool ref_p)
   FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
     stream_write_tree (ob, t, ref_p);
 
-  stream_write_tree (ob, BINFO_INHERITANCE_CHAIN (expr), ref_p);
-  stream_write_tree (ob, BINFO_SUBVTT_INDEX (expr), ref_p);
-  stream_write_tree (ob, BINFO_VPTR_INDEX (expr), ref_p);
+  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
+     and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
 }
 
 

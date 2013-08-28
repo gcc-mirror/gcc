@@ -1,3 +1,9 @@
+2013-08-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (compare_tree_sccs_1): Drop DECL_ERROR_ISSUED,
+	DECL_DEFER_OUTPUT and DECL_IN_TEXT_SECTION.
+	(unify_scc): Do checking assert.
+
 2013-08-06  Jan Hubicka  <jh@suse.cz>
 	    Martin Liska  <marxin.liska@gmail.com>
 
