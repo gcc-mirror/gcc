@@ -761,14 +761,6 @@ thread_around_empty_block (edge taken_edge,
   gimple stmt;
   tree cond;
 
-  /* This block must have a single predecessor (E->dest).  */
-  if (!single_pred_p (bb))
-    return NULL;
-
-  /* This block must have more than one successor.  */
-  if (single_succ_p (bb))
-    return NULL;
-
   /* This block can have no PHI nodes.  This is overly conservative.  */
   if (!gsi_end_p (gsi_start_phis (bb)))
     return NULL;

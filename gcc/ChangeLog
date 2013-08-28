@@ -1,3 +1,11 @@
+2013-08-28  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_around_empty_block): Remove
+	checks for the number of predecessors and successors allowed.
+	* tree-ssa-threadupdate.c (mark_threaded_blocks): Ignore requests
+	which require copying a joiner block if there is a request which
+	is a subpath that requires no joiner block copying.
+
 2013-08-28  Jan Hubicka  <jh@suse.cz>
 
 	* lto-streamer-out.c (DFS_write_tree_body): Drop
