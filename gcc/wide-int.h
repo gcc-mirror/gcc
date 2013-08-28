@@ -4203,8 +4203,6 @@ wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
 /* tree related routines.  */
 
 extern tree wide_int_to_tree (tree type, const wide_int_ro &cst);
-extern tree wide_int_to_infinite_tree (tree type, const wide_int_ro &cst,
-				       unsigned int prec);
 extern tree force_fit_type_wide (tree, const wide_int_ro &, int, bool);
 
 /* real related routines.  */
