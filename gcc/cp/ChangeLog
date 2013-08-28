@@ -1,3 +1,23 @@
+2013-08-27  Caroline Tice  <cmtice@google.com>
+
+	* vtable-class-hierarchy.c: Remove unnecessary include statements.
+	(MAX_SET_SIZE): Remove unnecessary constant.
+	(register_construction_vtables):  Make vtable_ptr_array parameter
+	into a vector; remove num_args parameter. Change array accesses to
+	vector accesses.
+	(register_other_binfo_vtables): Ditto.
+	(insert_call_to_register_set): Ditto.
+	(insert_call_to_register_pair): Ditto.
+	(output_set_info):  Ditto.  Also change warning calls to warning_at
+	calls, and fix format of warning messages.
+	(register_all_pairs): Change vtbl_ptr_array from an array into a
+	vector.  Remove num_vtable_args (replace with calls to vector length).
+	Change array stores & accesses to vector functions. Change calls to
+	register_construction_vtables, register_other_binfo_vtables,
+	insert_call_to_register_set, insert_call_to_register_pair and
+	output_set_info to match their new signatures.  Change warning to
+	warning_at and fix the format of the warning message.
+
 2013-08-27  Jakub Jelinek  <jakub@redhat.com>
 	    Aldy Hernandez  <aldyh@redhat.com>
 
