@@ -5181,6 +5181,7 @@ if test "x$subdirs" != x; then
 	done
 fi
 echo "source ${srcdir}/gdbinit.in" >> .gdbinit
+echo "python import sys; sys.path.append('${srcdir}'); import gdbhooks" >> .gdbinit
 
 gcc_tooldir='$(libsubdir)/$(libsubdir_to_prefix)$(target_noncanonical)'
 AC_SUBST(gcc_tooldir)

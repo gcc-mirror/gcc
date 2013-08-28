@@ -1,3 +1,7 @@
+2013-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* MAINTAINERS (gdbhooks.py): Add myself as maintainer.
+
 2013-08-26  Caroline Tice  <cmtice@google.com>
 
 	* MAINTAINERS:  Correct earliers update:  Move myself from libvtv
