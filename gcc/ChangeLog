@@ -1,3 +1,7 @@
+2013-08-28  Dehao Chen  <dehao@google.com>
+
+	* ipa-inline.c (edge_badness): Fix integer underflow.
+
 2013-08-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gtm-builtins.def (_ITM_free): Declare leaf.
