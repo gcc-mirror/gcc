@@ -1,3 +1,19 @@
+2013-08-20  Caroline Tice  <cmtice@google.com>
+
+	* Makefile.am (DEFS): Add "@DEFS@", to inherit defintions.
+	* Makefile.in: Regenerate.
+	* configure.ac: Add check for __secure_getenv and secure_getenv.
+	* configure: Regenerate.
+	* vtv_utils.cc : Include stdlib.h
+	(HAVE_SECURE_GETENV): Add checks and definitions for secure_getenv.
+	(log_dirs): Remove file static constant.
+	(__vtv_open_log):  Increase size of log file name.  Add the user
+	and process ids to the file name. Do not put the log files in /tmp.
+	Instead try to get the directory name from an environment variable; if
+	that fails try to use stderr.  Add O_NOFOLLOW to the flags
+	for 'open'.  Update function comment.
+	* vtv_rts.cc (log_memory_protection_data):  Remove %d from file name.
+
 2013-08-08  Benjamin Kosnik  <bkoz@rehat.com>
 	    Michael Meissner <meissner@linux.vnet.ibm.com>
 
@@ -12,6 +28,9 @@
 	* configure: Regenerate.
 
 2013-08-02  Caroline Tice  <cmtice@google.com>
+	    Benjamin Kosnik  <bkoz@redhat.com>
+	    Luis Lozano  <llozano@google.com>
+	    Geoff Pike  <gpike@google.com>
 
 	Initial check-in of new vtable verification feature.
 	* configure.ac : New file.
