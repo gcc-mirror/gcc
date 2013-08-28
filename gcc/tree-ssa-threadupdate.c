@@ -1146,16 +1146,55 @@ mark_threaded_blocks (bitmap threaded_blocks)
   edge e;
   edge_iterator ei;
 
+  /* It is possible to have jump threads in which one is a subpath
+     of the other.  ie, (A, B), (B, C), (C, D) where B is a joiner
+     block and (B, C), (C, D) where no joiner block exists.
+
+     When this occurs ignore the jump thread request with the joiner
+     block.  It's totally subsumed by the simpler jump thread request.
+
+     This results in less block copying, simpler CFGs.  More improtantly,
+     when we duplicate the joiner block, B, in this case we will create
+     a new threading opportunity that we wouldn't be able to optimize
+     until the next jump threading iteration. 
+
+     So first convert the jump thread requests which do not require a
+     joiner block.  */
   for (i = 0; i < threaded_edges.length (); i += 3)
     {
       edge e = threaded_edges[i];
-      edge *x = XNEWVEC (edge, 2);
 
-      e->aux = x;
-      THREAD_TARGET (e) = threaded_edges[i + 1];
-      THREAD_TARGET2 (e) = threaded_edges[i + 2];
-      bitmap_set_bit (tmp, e->dest->index);
+      if (threaded_edges[i + 2] == NULL)
+	{
+	  edge *x = XNEWVEC (edge, 2);
+
+	  e->aux = x;
+	  THREAD_TARGET (e) = threaded_edges[i + 1];
+	  THREAD_TARGET2 (e) = NULL;
+	  bitmap_set_bit (tmp, e->dest->index);
+	}
     }
+
+
+  /* Now iterate again, converting cases where we threaded through
+     a joiner block, but ignoring those where we have already
+     threaded through the joiner block.  */
+  for (i = 0; i < threaded_edges.length (); i += 3)
+    {
+      edge e = threaded_edges[i];
+
+      if (threaded_edges[i + 2] != NULL
+	  && threaded_edges[i + 1]->aux == NULL)
+	{
+	  edge *x = XNEWVEC (edge, 2);
+
+	  e->aux = x;
+	  THREAD_TARGET (e) = threaded_edges[i + 1];
+	  THREAD_TARGET2 (e) = threaded_edges[i + 2];
+	  bitmap_set_bit (tmp, e->dest->index);
+	}
+    }
+
 
   /* If optimizing for size, only thread through block if we don't have
      to duplicate it or it's an otherwise empty redirection block.  */
