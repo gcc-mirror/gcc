@@ -1,4 +1,10 @@
 2013-08-06  Jan Hubicka  <jh@suse.cz>
+	    Martin Liska  <marxin.liska@gmail.com>
+
+	* lto-partition.c (lto_balanced_map): Always base order on 
+	source file order.
+
+2013-08-06  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (lto_materialize_function): Do not read body anymore.
 
