@@ -1464,7 +1464,8 @@ build_aggr_init (tree exp, tree init, int flags, tsubst_flags_t complain)
   TREE_READONLY (exp) = 0;
   TREE_THIS_VOLATILE (exp) = 0;
 
-  if (init && TREE_CODE (init) != TREE_LIST
+  if (init && init != void_type_node
+      && TREE_CODE (init) != TREE_LIST
       && !(TREE_CODE (init) == TARGET_EXPR
 	   && TARGET_EXPR_DIRECT_INIT_P (init))
       && !(BRACE_ENCLOSED_INITIALIZER_P (init)

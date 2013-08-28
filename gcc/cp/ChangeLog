@@ -1,3 +1,9 @@
+2013-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58255
+	* init.c (build_aggr_init): When init == void_type_node do not
+	set LOOKUP_ONLYCONVERTING.
+
 2013-08-27  Caroline Tice  <cmtice@google.com>
 
 	* vtable-class-hierarchy.c: Remove unnecessary include statements.
