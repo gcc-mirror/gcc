@@ -1,3 +1,7 @@
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* builtins.def (free): Declare leaf.
+
 2013-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbhooks.py: New.
