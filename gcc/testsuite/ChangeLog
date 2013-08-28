@@ -185,7 +185,7 @@
 	* gcc.dg/pr58145-1.c: New test.
 	* gcc.dg/pr58145-2.c: New test.
 
-2013-08-14  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-08-14  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/debug/dwarf2/dwarf2.exp: Replace -gdwarf-2 with -gdwarf.
 	* gcc.dg/debug/dwarf2/dwarf-die7.c: Likewise.
@@ -530,7 +530,7 @@
 	* gcc.dg/ipa/pr57539.c: New test.
 
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
-	    Bernd Edlinger <bernd.edlinger@hotmail.de>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/torture/pr58041.c (foo): Accept z by reference.
 	(a): Fix constructor.
@@ -994,7 +994,7 @@
 
 	* gcc.target/aarch64/vabs_intrinsic_1.c: New file.
 
-2013-07-20  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-20  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/pr57154.c: Add dg-require-effective-target scheduling.
 
@@ -1298,7 +1298,7 @@
 	PR c++/14263
 	* g++.dg/inherit/virtual10.C: New.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR c/57821
 	* gcc.dg/large-size-array-6.c: New test.
@@ -1308,7 +1308,7 @@
 	PR c++/38634
 	* g++.dg/template/crash116.C: New.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/tree-ssa/vrp66.c: Make conditional on { target { ! int16 } } .
 	* gcc.dg/tree-ssa/vrp66-int16-sw.c: New test.
@@ -1515,7 +1515,7 @@
 
 	* g++.dg/cpp0x/sfinae47.C: New.
 
-2013-06-23  Oleg Endo <olegendo@gcc.gnu.org>
+2013-06-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52483
 	* gcc.target/sh/pr52483-1.c: New.
@@ -1707,7 +1707,7 @@
 	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of
 	accidentally placing minus sign for length instead of stride.
 
-2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/57425
 	PR rtl-optimization/57569
@@ -1751,7 +1751,7 @@
 	PR c++/51413
 	* g++.dg/ext/builtin-offsetof1.C: New.
 
-2013-06-14  Vidya Praveen <vidyapraveen@arm.com>
+2013-06-14  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect_smlal_1.c: New file.
 
@@ -1790,8 +1790,8 @@
 	* gcc.dg/tree-ssa/forwprop-27.c: New testcase.
 
 2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/atomic-p7.c: New file, add tests for atomic
 	load/store instructions on power7, power8.
@@ -1866,8 +1866,8 @@
 	in how we check __sec_reduce_mutating function's result.
 
 2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/direct-move-vint1.c: New tests for power8
 	direct move instructions.
@@ -2048,8 +2048,8 @@
 	* g++.dg/cpp0x/alias-decl-36.C: New.
 
 2013-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-builtin-1.c: New test to test
 	power8 builtin functions.
@@ -2650,7 +2650,7 @@
 	PR debug/57351
 	* gcc.dg/debug/pr57351.c: New test
 
-2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
+2013-05-23  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect-clz.c: New file.
 
@@ -2688,8 +2688,8 @@
 	* g++.dg/parse/crash62.C: New.
 
 2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/crypto-builtin-1.c: New file, test for power8
 	crypto builtins.
@@ -2979,7 +2979,7 @@
 	(alloca): Remove declaration.
 	(foo9): Replace alloca by __builtin_alloca.
 
-2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-05-14  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.c-torture/compile/limits-externdecl.c [target avr-*-*]:
 	Expect "size of array is too large" error.
@@ -3276,7 +3276,7 @@
 
 	* gcc.target/i386/sse2-init-v2di-2.c: Update scan assembler string.
 
-2013-05-03  Vidya Praveen <vidyapraveen@arm.com>
+2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/fabd.c: New file.
 
@@ -3973,12 +3973,12 @@
 
 	* gcc.dg/vect/slp-39.c: New testcase.
 
-2013-04-10  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-04-10  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR tree-optimization/55524
 	* gcc.target/epiphany/fnma-1.c: New test.
 
-2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+2013-04-10  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
 
 	* gcc.dg/tree-ssa/inline-11.c: New test
 
@@ -4661,7 +4661,7 @@
 	* gcc.dg/pr56355-1.c: New file.
 
 2013-03-20  Catherine Moore  <clm@codesourcery.com>
-	    Richard Sandiford <rdsandiford@googlemail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp: Add microMIPS support.
 	* gcc.target/mips/umips-movep-2.c: New test.
