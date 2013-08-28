@@ -13048,6 +13048,14 @@ ix86_tls_get_addr (void)
       ix86_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, sym);
     }
 
+  if (ix86_cmodel == CM_LARGE_PIC && !TARGET_PECOFF)
+    {
+      rtx unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, ix86_tls_symbol),
+				   UNSPEC_PLTOFF);
+      return gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+			   gen_rtx_CONST (Pmode, unspec));
+    }
+
   return ix86_tls_symbol;
 }
 
