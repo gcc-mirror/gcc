@@ -1,3 +1,12 @@
+2013-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-08-27  Christian Widmer  <shadow@umbrox.de>
+
+	PR target/57927
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add detection
+	of Ivy Bridge processors.
+
 2013-08-21  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/56979
