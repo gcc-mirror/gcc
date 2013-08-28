@@ -1,3 +1,25 @@
+2013-08-28  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (DFS_write_tree_body): Drop
+	BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX and BINFO_VPTR_INDEX.
+	(hash_tree): Do not hash DECL_DEFER_OUTPUT, BINFO_INHERITANCE_CHAIN,
+	BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX, DECL_IN_TEXT_SECTION.
+	* tree-streamer-in.c (unpack_ts_decl_common_value_fields):
+	Do not read DECL_ERROR_ISSUED.
+	(unpack_ts_decl_with_vis_value_fields): Do not read
+	DECL_DEFER_OUTPUT.
+	(lto_input_ts_binfo_tree_pointers): Do not read BINFO_INHERITANCE_CHAIN,
+        BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX
+	* tree-streamer-out.c (pack_ts_decl_common_value_fields): Do not
+	write DECL_ERROR_ISSUED..
+	(pack_ts_decl_with_vis_value_fields): Do not write
+	DECL_DEFER_OUTPUT.
+	(write_ts_binfo_tree_pointers): Do not read BINFO_INHERITANCE_CHAIN,
+        BINFO_SUBVTT_INDEX, BINFO_VPTR_INDEX
+	* print-tree.c (print_node): Do not print DECL_ERROR_ISSUED.
+	* tree.h (tree_decl_common): Update comment.
+	(DECL_ERROR_ISSUED): Remove.
+
 2013-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58257

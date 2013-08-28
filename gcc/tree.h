@@ -2880,8 +2880,7 @@ struct GTY(()) tree_decl_common {
   unsigned lang_flag_7 : 1;
   unsigned lang_flag_8 : 1;
 
-  /* In LABEL_DECL, this is DECL_ERROR_ISSUED.
-     In VAR_DECL and PARM_DECL, this is DECL_REGISTER.  */
+  /* In VAR_DECL and PARM_DECL, this is DECL_REGISTER.  */
   unsigned decl_flag_0 : 1;
   /* In FIELD_DECL, this is DECL_BIT_FIELD
      In VAR_DECL and FUNCTION_DECL, this is DECL_EXTERNAL.
@@ -3072,11 +3071,6 @@ struct GTY(()) tree_field_decl {
    post_landing_pad.  */
 #define EH_LANDING_PAD_NR(NODE) \
   (LABEL_DECL_CHECK (NODE)->label_decl.eh_landing_pad_nr)
-
-/* In LABEL_DECL nodes, nonzero means that an error message about
-   jumping into such a binding contour has been printed for this label.  */
-#define DECL_ERROR_ISSUED(NODE) \
-  (LABEL_DECL_CHECK (NODE)->decl_common.decl_flag_0)
 
 struct GTY(()) tree_label_decl {
   struct tree_decl_with_rtl common;

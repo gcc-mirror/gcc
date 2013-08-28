@@ -642,9 +642,8 @@ DFS_write_tree_body (struct output_block *ob,
       FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (expr), i, t)
 	DFS_follow_tree_edge (t);
 
-      DFS_follow_tree_edge (BINFO_INHERITANCE_CHAIN (expr));
-      DFS_follow_tree_edge (BINFO_SUBVTT_INDEX (expr));
-      DFS_follow_tree_edge (BINFO_VPTR_INDEX (expr));
+      /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
+	 and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
@@ -748,7 +747,6 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
       v = iterative_hash_host_wide_int (DECL_ALIGN (t), v);
       if (code == LABEL_DECL)
 	{
-	  v = iterative_hash_host_wide_int (DECL_ERROR_ISSUED (t), v);
 	  v = iterative_hash_host_wide_int (EH_LANDING_PAD_NR (t), v);
 	  v = iterative_hash_host_wide_int (LABEL_DECL_UID (t), v);
 	}
@@ -781,20 +779,19 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_WITH_VIS))
     {
-      v = iterative_hash_host_wide_int (DECL_DEFER_OUTPUT (t)
-					| (DECL_COMMON (t) << 1)
-					| (DECL_DLLIMPORT_P (t) << 2)
-					| (DECL_WEAK (t) << 3)
-					| (DECL_SEEN_IN_BIND_EXPR_P (t) << 4)
-					| (DECL_COMDAT (t) << 5)
+      v = iterative_hash_host_wide_int ((DECL_COMMON (t))
+					| (DECL_DLLIMPORT_P (t) << 1)
+					| (DECL_WEAK (t) << 2)
+					| (DECL_SEEN_IN_BIND_EXPR_P (t) << 3)
+					| (DECL_COMDAT (t) << 4)
 					| (DECL_VISIBILITY_SPECIFIED (t) << 6),
 					v);
       v = iterative_hash_host_wide_int (DECL_VISIBILITY (t), v);
       if (code == VAR_DECL)
 	{
+	  /* DECL_IN_TEXT_SECTION is set during final asm output only.  */
 	  v = iterative_hash_host_wide_int (DECL_HARD_REGISTER (t)
-					    | (DECL_IN_TEXT_SECTION (t) << 1)
-					    | (DECL_IN_CONSTANT_POOL (t) << 2),
+					    | (DECL_IN_CONSTANT_POOL (t) << 1),
 					    v);
 	  v = iterative_hash_host_wide_int (DECL_TLS_MODEL (t), v);
 	}
@@ -1021,9 +1018,8 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
       visit (BINFO_VPTR_FIELD (t));
       FOR_EACH_VEC_SAFE_ELT (BINFO_BASE_ACCESSES (t), i, b)
 	visit (b);
-      visit (BINFO_INHERITANCE_CHAIN (t));
-      visit (BINFO_SUBVTT_INDEX (t));
-      visit (BINFO_VPTR_INDEX (t));
+      /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
+	 and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_CONSTRUCTOR))
