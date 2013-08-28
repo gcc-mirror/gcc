@@ -1,3 +1,19 @@
+2013-08-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-08-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/driver-i386.c (host_detect_local_cpu): Update
+	Haswell processor detection.
+
+	Backport from mainline
+	2013-08-27  Christian Widmer  <shadow@umbrox.de>
+
+	PR target/57927
+	* config/i386/driver-i386.c (host_detect_local_cpu): Add detection
+	of Ivy Bridge and Haswell processors.  Assume core-avx2 for unknown
+	AVX2 capable processors.
+
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/58218
@@ -25,8 +41,8 @@
 	    Jakub Jelinek  <jakub@redhat.com>
 
 	Backport from mainline
-	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping destination
-	and source operands.
+	* config/rs6000/dfp.md (*negtd2_fpr): Handle non-overlapping
+	destination and source operands.
 
 2013-08-18  Jakub Jelinek  <jakub@redhat.com>
 
