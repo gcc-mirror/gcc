@@ -6293,6 +6293,9 @@ Enable dumps from all loop optimizations.
 Enable dumps from all inlining optimizations.
 @item vec
 Enable dumps from all vectorization optimizations.
+@item optall
+Enable dumps from all optimizations. This is a superset of
+the optimization groups listed above.
 @end table
 
 For example,

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fprofile-use" } */
+/* { dg-options "-O2 -fprofile-use -fopt-info" } */
 
 void process(const char *s);
 
