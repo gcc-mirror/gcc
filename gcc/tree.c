@@ -8531,11 +8531,11 @@ bool
 int_fits_type_p (const_tree c, const_tree type)
 {
   tree type_low_bound, type_high_bound;
-  bool ok_for_low_bound, ok_for_high_bound, unsc;
+  bool ok_for_low_bound, ok_for_high_bound;
   wide_int wc, wd;
+  signop sgn_c = TYPE_SIGN (TREE_TYPE (c));
 
   wc = c;
-  unsc = TYPE_UNSIGNED (TREE_TYPE (c));
 
 retry:
   type_low_bound = TYPE_MIN_VALUE (type);
@@ -8555,17 +8555,17 @@ retry:
   if (type_low_bound && TREE_CODE (type_low_bound) == INTEGER_CST)
     {
       wd = type_low_bound;
-      if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_low_bound)))
+      if (sgn_c != TYPE_SIGN (TREE_TYPE (type_low_bound)))
 	{
-	  int c_neg = (!unsc && wc.neg_p ());
-	  int t_neg = (unsc && wd.neg_p ());
+	  int c_neg = (sgn_c == SIGNED && wc.neg_p ());
+	  int t_neg = (sgn_c == UNSIGNED && wd.neg_p ());
 
 	  if (c_neg && !t_neg)
 	    return false;
 	  if ((c_neg || !t_neg) && wc.ltu_p (wd))
 	    return false;
 	}
-      else if (wc.lt_p (wd, TYPE_SIGN (TREE_TYPE (type_low_bound))))
+      else if (wc.lt_p (wd, sgn_c))
 	return false;
       ok_for_low_bound = true;
     }
@@ -8576,17 +8576,17 @@ retry:
   if (type_high_bound && TREE_CODE (type_high_bound) == INTEGER_CST)
     {
       wd = type_high_bound;
-      if (unsc != TYPE_UNSIGNED (TREE_TYPE (type_high_bound)))
+      if (sgn_c != TYPE_SIGN (TREE_TYPE (type_high_bound)))
 	{
-	  int c_neg = (!unsc && wc.neg_p ());
-	  int t_neg = (unsc && wd.neg_p ());
+	  int c_neg = (sgn_c == SIGNED && wc.neg_p ());
+	  int t_neg = (sgn_c == UNSIGNED && wd.neg_p ());
 
 	  if (t_neg && !c_neg)
 	    return false;
 	  if ((t_neg || !c_neg) && wc.gtu_p (wd))
 	    return false;
 	}
-      else if (wc.gt_p (wd, TYPE_SIGN (TREE_TYPE (type_high_bound))))
+      else if (wc.gt_p (wd, sgn_c))
 	return false;
       ok_for_high_bound = true;
     }
@@ -8600,7 +8600,7 @@ retry:
   /* Perform some generic filtering which may allow making a decision
      even if the bounds are not constant.  First, negative integers
      never fit in unsigned types, */
-  if (TYPE_UNSIGNED (type) && !unsc && wc.neg_p ())
+  if (TYPE_UNSIGNED (type) && sgn_c == SIGNED && wc.neg_p ())
     return false;
 
   /* Second, narrower types always fit in wider ones.  */
@@ -8608,7 +8608,7 @@ retry:
     return true;
 
   /* Third, unsigned integers with top bit set never fit signed types.  */
-  if (! TYPE_UNSIGNED (type) && unsc && wc.neg_p ())
+  if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED && wc.neg_p ())
     return false;
 
   /* If we haven't been able to decide at this point, there nothing more we

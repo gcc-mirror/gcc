@@ -1690,7 +1690,7 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
   /* Given a fixed-point constant, make new constant with new type,
      appropriately sign-extended or truncated.  */
   t = force_fit_type (type, wide_int::from_double_int (temp, 
-						       TYPE_PRECISION (type)), 
+						       HOST_BITS_PER_DOUBLE_INT), 
 		      -1,
 		      (temp.is_negative ()
 		       && (TYPE_UNSIGNED (type)
