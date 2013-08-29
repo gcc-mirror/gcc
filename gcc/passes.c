@@ -1370,7 +1370,19 @@ void
 register_pass (struct register_pass_info *pass_info)
 {
   g->get_passes ()->register_pass (pass_info);
+}
 
+void
+register_pass (opt_pass* pass, pass_positioning_ops pos,
+	       const char* ref_pass_name, int ref_pass_inst_number)
+{
+  register_pass_info i;
+  i.pass = pass;
+  i.reference_pass_name = ref_pass_name;
+  i.ref_pass_instance_number = ref_pass_inst_number;
+  i.pos_op = pos;
+
+  g->get_passes ()->register_pass (&i);
 }
 
 void
