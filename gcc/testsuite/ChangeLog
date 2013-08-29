@@ -1,3 +1,7 @@
+2013-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Adjust regexp.
+
 2013-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58246
