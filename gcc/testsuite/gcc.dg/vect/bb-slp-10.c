@@ -50,6 +50,6 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "unsupported alignment in basic block." 1 "slp" { xfail vect_element_align } } } */
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 1 "slp" { target vect_element_align } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp" { target vect_element_align } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

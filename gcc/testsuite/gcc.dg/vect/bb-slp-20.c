@@ -63,7 +63,7 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 1 "slp" { target vect_int_mult } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp" { target vect_int_mult } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "slp" { target vect_int_mult } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

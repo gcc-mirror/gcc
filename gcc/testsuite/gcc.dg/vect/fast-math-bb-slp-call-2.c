@@ -63,5 +63,5 @@ main ()
   return main1 ();
 }
 
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 2 "slp" { target vect_call_lrint } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp" { target vect_call_lrint } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */

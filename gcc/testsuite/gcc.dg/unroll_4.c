@@ -28,5 +28,5 @@ int foo2(void)
   return 1;
 }
 
-/* { dg-final { scan-rtl-dump-times "Turned loop into non-loop; it never loops" 1 "loop2_unroll" } } */
+/* { dg-final { scan-rtl-dump-times "loop turned into non-loop; it never loops" 1 "loop2_unroll" } } */
 /* { dg-final { cleanup-rtl-dump "loop2_unroll" } } */
