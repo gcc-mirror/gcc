@@ -3,6 +3,10 @@
 	Backported from mainline
 	2013-05-27  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/57396
+	* tree-affine.c (double_int_constant_multiple_p): Properly
+	return false for val == 0 and div != 0.
+
 	PR tree-optimization/57343
 	* tree-ssa-loop-niter.c (number_of_iterations_ne_max): Do not
 	use multiple_of_p if not TYPE_OVERFLOW_UNDEFINED.
