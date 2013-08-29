@@ -1,5 +1,11 @@
 2013-08-29  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/57287
+	* tree-ssa-copy.c (may_propagate_copy): Allow propagating
+	of default defs that appear in abnormal PHI nodes.
+
+2013-08-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/57685
 	* tree-vrp.c (register_edge_assert_for_1): Recurse only for
 	single-use operands to avoid exponential complexity.
