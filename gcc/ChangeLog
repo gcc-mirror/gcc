@@ -1,3 +1,13 @@
+2013-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57343
+	* tree-ssa-loop-niter.c (number_of_iterations_ne_max): Do not
+	use multiple_of_p if not TYPE_OVERFLOW_UNDEFINED.
+	(number_of_iterations_cond): Do not build the folded tree.
+
 2013-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58257

@@ -1,3 +1,11 @@
+2013-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57343
+	* gcc.dg/torture/pr57343.c: New testcase.
+
 2013-08-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/58257

@@ -552,10 +552,18 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
 {
   double_int max;
   mpz_t d;
+  tree type = TREE_TYPE (c);
   bool bnds_u_valid = ((no_overflow && exit_must_be_taken)
 		       || mpz_sgn (bnds->below) >= 0);
 
-  if (multiple_of_p (TREE_TYPE (c), c, s))
+  if (integer_onep (s)
+      || (TREE_CODE (c) == INTEGER_CST
+	  && TREE_CODE (s) == INTEGER_CST
+	  && tree_to_double_int (c).mod (tree_to_double_int (s),
+					 TYPE_UNSIGNED (type),
+					 EXACT_DIV_EXPR).is_zero ())
+      || (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (c))
+	  && multiple_of_p (type, c, s)))
     {
       /* If C is an exact multiple of S, then its value will be reached before
 	 the induction variable overflows (unless the loop is exited in some
@@ -572,16 +580,15 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
      the whole # of iterations analysis will fail).  */
   if (!no_overflow)
     {
-      max = double_int::mask (TYPE_PRECISION (TREE_TYPE (c))
-			     - tree_low_cst (num_ending_zeros (s), 1));
+      max = double_int::mask (TYPE_PRECISION (type)
+			      - tree_low_cst (num_ending_zeros (s), 1));
       mpz_set_double_int (bnd, max, true);
       return;
     }
 
   /* Now we know that the induction variable does not overflow, so the loop
      iterates at most (range of type / S) times.  */
-  mpz_set_double_int (bnd, double_int::mask (TYPE_PRECISION (TREE_TYPE (c))),
-		      true);
+  mpz_set_double_int (bnd, double_int::mask (TYPE_PRECISION (type)), true);
 
   /* If the induction variable is guaranteed to reach the value of C before
      overflow, ... */
@@ -1311,7 +1318,8 @@ number_of_iterations_cond (struct loop *loop,
     }
 
   /* If the loop exits immediately, there is nothing to do.  */
-  if (integer_zerop (fold_build2 (code, boolean_type_node, iv0->base, iv1->base)))
+  tree tem = fold_binary (code, boolean_type_node, iv0->base, iv1->base);
+  if (tem && integer_zerop (tem))
     {
       niter->niter = build_int_cst (unsigned_type_for (type), 0);
       niter->max = double_int_zero;
