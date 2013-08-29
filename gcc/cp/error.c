@@ -1363,6 +1363,47 @@ find_typenames (tree t)
   return ft.typenames;
 }
 
+/* Output the "[with ...]" clause for a template instantiation T iff
+   TEMPLATE_PARMS, TEMPLATE_ARGS and FLAGS are suitable.  T may be NULL if
+   formatting a deduction/substitution diagnostic rather than an
+   instantiation.  */
+
+static void
+dump_substitution (cxx_pretty_printer *pp,
+                   tree t, tree template_parms, tree template_args,
+                   int flags)
+{
+  if (template_parms != NULL_TREE && template_args != NULL_TREE
+      && !(flags & TFF_NO_TEMPLATE_BINDINGS))
+    {
+      vec<tree, va_gc> *typenames = t ? find_typenames (t) : NULL;
+      pp_cxx_whitespace (pp);
+      pp_cxx_left_bracket (pp);
+      pp->translate_string ("with");
+      pp_cxx_whitespace (pp);
+      dump_template_bindings (pp, template_parms, template_args, typenames);
+      pp_cxx_right_bracket (pp);
+    }
+}
+
+/* Dump the lambda function FN including its 'mutable' qualifier and any
+   template bindings.  */
+
+static void
+dump_lambda_function (cxx_pretty_printer *pp,
+		      tree fn, tree template_parms, tree template_args,
+		      int flags)
+{
+  /* A lambda's signature is essentially its "type".  */
+  dump_type (pp, DECL_CONTEXT (fn), flags);
+  if (!(TYPE_QUALS (class_of_this_parm (TREE_TYPE (fn))) & TYPE_QUAL_CONST))
+    {
+      pp->padding = pp_before;
+      pp_c_ws_string (pp, "mutable");
+    }
+  dump_substitution (pp, fn, template_parms, template_args, flags);
+}
+
 /* Pretty print a function decl. There are several ways we want to print a
    function declaration. The TFF_ bits in FLAGS tells us how to behave.
    As error can only apply the '#' flag once to give 0 and 1 for V, there
@@ -1379,15 +1420,6 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   int show_return = flags & TFF_RETURN_TYPE || flags & TFF_DECL_SPECIFIERS;
   int do_outer_scope = ! (flags & TFF_UNQUALIFIED_NAME);
   tree exceptions;
-  vec<tree, va_gc> *typenames = NULL;
-
-  if (DECL_NAME (t) && LAMBDA_FUNCTION_P (t))
-    {
-      /* A lambda's signature is essentially its "type", so defer.  */
-      gcc_assert (LAMBDA_TYPE_P (DECL_CONTEXT (t)));
-      dump_type (pp, DECL_CONTEXT (t), flags);
-      return;
-    }
 
   flags &= ~(TFF_UNQUALIFIED_NAME | TFF_TEMPLATE_NAME);
   if (TREE_CODE (t) == TEMPLATE_DECL)
@@ -1409,9 +1441,11 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
 	{
 	  template_parms = DECL_TEMPLATE_PARMS (tmpl);
 	  t = tmpl;
-	  typenames = find_typenames (t);
 	}
     }
+
+  if (DECL_NAME (t) && LAMBDA_FUNCTION_P (t))
+    return dump_lambda_function (pp, t, template_parms, template_args, flags);
 
   fntype = TREE_TYPE (t);
   parmtypes = FUNCTION_FIRST_USER_PARMTYPE (t);
@@ -1476,17 +1510,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
       if (show_return)
 	dump_type_suffix (pp, TREE_TYPE (fntype), flags);
 
-      /* If T is a template instantiation, dump the parameter binding.  */
-      if (template_parms != NULL_TREE && template_args != NULL_TREE
-	  && !(flags & TFF_NO_TEMPLATE_BINDINGS))
-	{
-	  pp_cxx_whitespace (pp);
-	  pp_cxx_left_bracket (pp);
-	  pp_cxx_ws_string (pp, M_("with"));
-	  pp_cxx_whitespace (pp);
-	  dump_template_bindings (pp, template_parms, template_args, typenames);
-	  pp_cxx_right_bracket (pp);
-	}
+      dump_substitution (pp, t, template_parms, template_args, flags);
     }
   else if (template_args)
     {
@@ -2950,12 +2974,7 @@ subst_to_string (tree p)
 
   reinit_cxx_pp ();
   dump_template_decl (cxx_pp, TREE_PURPOSE (p), flags);
-  pp_cxx_whitespace (cxx_pp);
-  pp_cxx_left_bracket (cxx_pp);
-  pp_cxx_ws_string (cxx_pp, M_("with"));
-  pp_cxx_whitespace (cxx_pp);
-  dump_template_bindings (cxx_pp, tparms, targs, NULL);
-  pp_cxx_right_bracket (cxx_pp);
+  dump_substitution (cxx_pp, NULL, tparms, targs, /*flags=*/0);
   return pp_ggc_formatted_text (cxx_pp);
 }
 

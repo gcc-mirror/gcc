@@ -1,3 +1,11 @@
+2013-08-29  Adam Butcher  <adam@jessamine.co.uk>
+
+	* error.c (dump_lambda_function): New function, dependent on ...
+	(dump_substitution): ... this new function, factored out of ...
+	(subst_to_string): ... here and ...
+	(dump_function_decl): ... here.  Updated to early-out with call to
+	dump_lambda_function after determining template bindings.
+
 2013-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58255
