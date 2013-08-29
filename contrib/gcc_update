@@ -385,7 +385,7 @@ case $vcs_type in
 	fi
 
 	revision=`$GCC_SVN info | awk '/Revision:/ { print $2 }'`
-	branch=`$GCC_SVN info | sed -ne "/URL:/ {
+	branch=`$GCC_SVN info | sed -ne "/^URL:/ {
 	    s,.*/trunk,trunk,
 	    s,.*/branches/,,
 	    s,.*/tags/,,
