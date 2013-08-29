@@ -880,8 +880,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	assign(const basic_string<_Ch_type, _Ch_typeraits, _Alloc>& __s,
 	       flag_type __flags = ECMAScript)
 	{
-	  basic_regex __tmp(__s, __flags);
-	  this->swap(__tmp);
+	  _M_flags = __flags;
+	  _M_automaton =
+	    __detail::_Compiler<decltype(__s.begin()), _Ch_type, _Rx_traits>
+	    (__s.begin(), __s.end(), _M_traits, _M_flags)._M_get_nfa();
 	  return *this;
 	}
 
@@ -2591,7 +2593,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     regex_constants::match_flag_type __m
 		     = regex_constants::match_default)
       : _M_begin(__a), _M_end(__b), _M_pregex(&__re), _M_flags(__m), _M_match()
-      { regex_search(_M_begin, _M_end, _M_match, *_M_pregex, _M_flags); }
+      {
+	if (!regex_search(_M_begin, _M_end, _M_match, *_M_pregex, _M_flags))
+	  *this = regex_iterator();
+      }
 
       /**
        * Copy constructs a %regex_iterator.
@@ -2905,9 +2910,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return (*_M_position)[_M_subs[_M_n]];
       }
 
-      bool
-      _M_end_of_seq() const
-      { return _M_result != nullptr; }
+      constexpr bool
+      _M_end_of_seq()
+      { return _M_result == nullptr; }
 
       _Position _M_position;
       const value_type* _M_result;

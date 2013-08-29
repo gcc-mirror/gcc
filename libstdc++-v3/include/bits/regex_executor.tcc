@@ -320,7 +320,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto __p = std::static_pointer_cast<_NFA<_CharT, _TraitsT>>
 	(__re._M_automaton);
       if (__p->_M_has_backref)
-	return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, *__p, __flags));
+	return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, *__p,
+					      __re._M_traits, __flags));
       return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, *__p, __flags));
     }
 

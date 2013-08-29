@@ -120,13 +120,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _BaseT::_ResultsVec                 _ResultsVec;
       typedef regex_constants::match_flag_type             _FlagT;
 
-      _DFSExecutor(_BiIter        __begin,
-		   _BiIter        __end,
-		   _ResultsT&     __results,
-		   const _RegexT& __nfa,
-		   _FlagT         __flags)
+      _DFSExecutor(_BiIter         __begin,
+		   _BiIter         __end,
+		   _ResultsT&      __results,
+		   const _RegexT&  __nfa,
+		   const _TraitsT& __traits,
+		   _FlagT          __flags)
       : _BaseT(__begin, __end, __results, __flags, __nfa._M_sub_count()),
-	_M_traits(_TraitsT()), _M_nfa(__nfa), _M_results_ret(this->_M_results)
+	_M_traits(__traits), _M_nfa(__nfa), _M_results_ret(this->_M_results)
       { }
 
       void
@@ -142,9 +143,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool
 	_M_dfs(_StateIdT __i);
 
-      _ResultsVec    _M_results_ret;
-      _TraitsT       _M_traits;
-      const _RegexT& _M_nfa;
+      _ResultsVec     _M_results_ret;
+      const _TraitsT& _M_traits;
+      const _RegexT&  _M_nfa;
     };
 
   // Like the DFS approach, it try every possible state transition; Unlike DFS,
