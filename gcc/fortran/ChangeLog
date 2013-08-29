@@ -1,3 +1,9 @@
+2013-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52243
+	* trans-expr.c (is_runtime_conformable):  New function.
+	* gfc_trans_assignment_1:  Use it.
+
 2013-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/58146

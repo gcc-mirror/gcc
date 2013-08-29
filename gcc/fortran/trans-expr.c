@@ -7738,6 +7738,105 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
     }
 }
 
+/* Check for assignments of the type
+
+   a = a + 4
+
+   to make sure we do not check for reallocation unneccessarily.  */
+
+
+static bool
+is_runtime_conformable (gfc_expr *expr1, gfc_expr *expr2)
+{
+  gfc_actual_arglist *a;
+  gfc_expr *e1, *e2;
+
+  switch (expr2->expr_type)
+    {
+    case EXPR_VARIABLE:
+      return gfc_dep_compare_expr (expr1, expr2) == 0;
+
+    case EXPR_FUNCTION:
+      if (expr2->value.function.esym
+	  && expr2->value.function.esym->attr.elemental)
+	{
+	  for (a = expr2->value.function.actual; a != NULL; a = a->next)
+	    {
+	      e1 = a->expr;
+	      if (e1->rank > 0 && !is_runtime_conformable (expr1, e1))
+		return false;
+	    }	 
+	  return true;
+	}
+      else if (expr2->value.function.isym
+	       && expr2->value.function.isym->elemental)
+	{
+	  for (a = expr2->value.function.actual; a != NULL; a = a->next)
+	    {
+	      e1 = a->expr;
+	      if (e1->rank > 0 && !is_runtime_conformable (expr1, e1))
+		return false;
+	    }
+	  return true;
+	}
+
+      break;
+
+    case EXPR_OP:
+      switch (expr2->value.op.op)
+	{
+	case INTRINSIC_NOT:
+	case INTRINSIC_UPLUS:
+	case INTRINSIC_UMINUS:
+	case INTRINSIC_PARENTHESES:
+	  return is_runtime_conformable (expr1, expr2->value.op.op1);
+
+	case INTRINSIC_PLUS:
+	case INTRINSIC_MINUS:
+	case INTRINSIC_TIMES:
+	case INTRINSIC_DIVIDE:
+	case INTRINSIC_POWER:
+	case INTRINSIC_AND:
+	case INTRINSIC_OR:
+	case INTRINSIC_EQV:
+	case INTRINSIC_NEQV:
+	case INTRINSIC_EQ:
+	case INTRINSIC_NE:
+	case INTRINSIC_GT:
+	case INTRINSIC_GE:
+	case INTRINSIC_LT:
+	case INTRINSIC_LE:
+	case INTRINSIC_EQ_OS:
+	case INTRINSIC_NE_OS:
+	case INTRINSIC_GT_OS:
+	case INTRINSIC_GE_OS:
+	case INTRINSIC_LT_OS:
+	case INTRINSIC_LE_OS:
+
+	  e1 = expr2->value.op.op1;
+	  e2 = expr2->value.op.op2;
+
+	  if (e1->rank == 0 && e2->rank > 0)
+	    return is_runtime_conformable (expr1, e2);
+	  else if (e1->rank > 0 && e2->rank == 0)
+	    return is_runtime_conformable (expr1, e1);
+	  else if (e1->rank > 0 && e2->rank > 0)
+	    return is_runtime_conformable (expr1, e1)
+	      && is_runtime_conformable (expr1, e2);
+	  break;
+
+	default:
+	  break;
+
+	}
+
+      break;
+
+    default:
+      break;
+    }
+  return false;
+}
 
 /* Subroutine of gfc_trans_assignment that actually scalarizes the
    assignment.  EXPR1 is the destination/LHS and EXPR2 is the source/RHS.
@@ -7935,7 +8034,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	    && gfc_is_reallocatable_lhs (expr1)
 	    && !gfc_expr_attr (expr1).codimension
 	    && !gfc_is_coindexed (expr1)
-	    && expr2->rank)
+	    && expr2->rank
+	    && !is_runtime_conformable (expr1, expr2))
 	{
 	  realloc_lhs_warning (expr1->ts.type, true, &expr1->where);
 	  ompws_flags &= ~OMPWS_SCALARIZER_WS;
