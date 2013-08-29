@@ -1,3 +1,21 @@
+2013-08-29  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (basic_regex<>::assign): Don't lose _M_traits.
+	  (regex_iterator<>::regex_iterator): Return nullptr when regex_search
+	     failed.
+	  (regex_token_iterator<>::_M_end_of_seq): Should be defined true when
+	    _M_result is(not isn't) nullptr.
+	* include/bits/regex_compiler.h: Store _Compiler::_M_traits by reference
+	  instead of by value.
+	* include/bits/regex_executor.h (_DFSExecutor<>::_DFSExecutor): Add
+	  _M_traits to _DFSExecutor.
+	* include/bits/regex_executor.tcc (__get_executor<>): Pass traits to
+	  _DFSExecutor too.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	  New.
+	* testsuite/28_regex/iterators/regex_token_iterator/wchar_t/
+	  wstring_02.cc: New.
+
 2013-08-26  Tim Shen  <timshen91@gmail.com>
 
 	* include/Makefile.am: Add regex_scanner.{h,tcc}.

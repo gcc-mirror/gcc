@@ -214,7 +214,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_traits.transform(__s.begin(), __s.end());
       }
 
-      _TraitsT                              _M_traits;
+      const _TraitsT&                       _M_traits;
       _FlagT                                _M_flags;
       bool                                  _M_is_non_matching;
       std::vector<_CharT>                   _M_char_set;
