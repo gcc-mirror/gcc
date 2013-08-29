@@ -91,7 +91,8 @@ public:
   virtual opt_pass *clone ();
 
   /* If has_gate is set, this pass and all sub-passes are executed only if
-     the function returns true.  */
+     the function returns true.
+     The default implementation returns true.  */
   virtual bool gate ();
 
   /* This is the code to run.  If has_execute is false, then there should
@@ -329,6 +330,14 @@ struct register_pass_info
                                        Do it for every instance if it is 0.  */
   enum pass_positioning_ops pos_op; /* how to insert the new pass.  */
 };
+
+/* Registers a new pass.  Either fill out the register_pass_info or specify
+   the individual parameters.  The pass object is expected to have been
+   allocated using operator new and the pass manager takes the ownership of
+   the pass object.  */
+extern void register_pass (register_pass_info *);
+extern void register_pass (opt_pass* pass, pass_positioning_ops pos,
+			   const char* ref_pass_name, int ref_pass_inst_number);
 
 extern gimple_opt_pass *make_pass_mudflap_1 (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_mudflap_2 (gcc::context *ctxt);
@@ -594,7 +603,6 @@ extern void ipa_read_summaries (void);
 extern void ipa_read_optimization_summaries (void);
 extern void register_one_dump_file (struct opt_pass *);
 extern bool function_called_by_processed_nodes_p (void);
-extern void register_pass (struct register_pass_info *);
 
 /* Set to true if the pass is called the first time during compilation of the
    current function.  Note that using this information in the optimization
