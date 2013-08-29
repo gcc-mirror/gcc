@@ -1,3 +1,8 @@
+2013-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphclones.c (cgraph_create_virtual_clone): Compute the DECL_NAME
+	of the clone from the DECL_NAME of the original function.
+
 2013-08-29  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	* passes.c (register_pass): Add overload.

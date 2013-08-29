@@ -252,7 +252,7 @@ cgraph_clone_node (struct cgraph_node *n, tree decl, gcov_type count, int freq,
   return new_node;
 }
 
-/* Create a new name for clone of DECL, add SUFFIX.  Returns an identifier.  */
+/* Return a new assembler name for a clone of DECL with SUFFIX.  */
 
 static GTY(()) unsigned int clone_fn_id_num;
 
@@ -293,8 +293,9 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
   tree old_decl = old_node->symbol.decl;
   struct cgraph_node *new_node = NULL;
   tree new_decl;
-  size_t i;
+  size_t len, i;
   struct ipa_replace_map *map;
+  char *name;
 
   if (!in_lto_p)
     gcc_checking_assert  (tree_versionable_function_p (old_decl));
@@ -318,8 +319,13 @@ cgraph_create_virtual_clone (struct cgraph_node *old_node,
      sometimes storing only clone decl instead of original.  */
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) = clone_function_name (old_decl, suffix);
-  SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
+  len = IDENTIFIER_LENGTH (DECL_NAME (old_decl));
+  name = XALLOCAVEC (char, len + strlen (suffix) + 2);
+  memcpy (name, IDENTIFIER_POINTER (DECL_NAME (old_decl)), len);
+  strcpy (name + len + 1, suffix);
+  name[len] = '.';
+  DECL_NAME (new_decl) = get_identifier (name);
+  SET_DECL_ASSEMBLER_NAME (new_decl, clone_function_name (old_decl, suffix));
   SET_DECL_RTL (new_decl, NULL);
 
   new_node = cgraph_clone_node (old_node, new_decl, old_node->count,
