@@ -225,7 +225,7 @@ report_unroll_peel (struct loop *loop, location_t locus)
       && !loop->lpt_decision.times)
     {
       dump_printf_loc (report_flags, locus,
-                       "Turned loop into non-loop; it never loops.\n");
+                       "loop turned into non-loop; it never loops.\n");
       return;
     }
 
@@ -236,13 +236,16 @@ report_unroll_peel (struct loop *loop, location_t locus)
   else if (loop->header->count)
     niters = expected_loop_iterations (loop);
 
-  dump_printf_loc (report_flags, locus,
-                   "%s loop %d times",
-                   (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY
-                    ?  "Completely unroll"
-                    : (loop->lpt_decision.decision == LPT_PEEL_SIMPLE
-                       ? "Peel" : "Unroll")),
-                   loop->lpt_decision.times);
+  if (loop->lpt_decision.decision == LPT_PEEL_COMPLETELY)
+    dump_printf_loc (report_flags, locus,
+                     "loop with %d iterations completely unrolled",
+		     loop->lpt_decision.times + 1);
+  else
+    dump_printf_loc (report_flags, locus,
+                     "loop %s %d times",
+                     (loop->lpt_decision.decision == LPT_PEEL_SIMPLE
+                       ? "peeled" : "unrolled"),
+                     loop->lpt_decision.times);
   if (profile_info)
     dump_printf (report_flags,
                  " (header execution count %d",

@@ -16,6 +16,6 @@ test(int c)
 
 /* We should do this as part of cunrolli, but our cost model do not take into account early exit
    from the last iteration.  */
-/* { dg-final { scan-tree-dump "Turned loop into non-loop; it never loops." "ivcanon"} } */
+/* { dg-final { scan-tree-dump "loop turned into non-loop; it never loops." "ivcanon"} } */
 /* { dg-final { scan-tree-dump "Last iteration exit edge was proved true." "ivcanon"} } */
 /* { dg-final { cleanup-tree-dump "ivcanon" } } */

@@ -24,6 +24,6 @@ int foo(void)
   return sum;
 }
 
-/* { dg-final { scan-tree-dump-times "Completely unroll loop 3 times" 1 "cunroll" } } */
+/* { dg-final { scan-tree-dump-times "loop with 4 iterations completely unrolled" 1 "cunroll" } } */
 
 /* { dg-final { cleanup-tree-dump "cunroll" } } */

@@ -870,11 +870,12 @@ try_unroll_loop_completely (struct loop *loop,
     {
       if (!n_unroll)
         dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
-                         "Turned loop into non-loop; it never loops.\n");
+                         "loop turned into non-loop; it never loops\n");
       else
         {
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
-                           "Completely unroll loop %d times", (int)n_unroll);
+                           "loop with %d iterations completely unrolled",
+			   (int) (n_unroll + 1));
           if (profile_info)
             dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS,
                          " (header execution count %d)",

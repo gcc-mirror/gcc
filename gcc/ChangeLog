@@ -1,3 +1,14 @@
+2013-08-29  Xinliang David Li  <davidxl@google.com>
+
+	* loop-unroll.c (report_unroll_peel): Minor message
+	change.
+	* tree-vect-loop-manip.c (vect_do_peeling_for_alignment):
+	Emit alignment peeling message with default -fopt-info.
+	(vect_loop_versioning): Emit loop version info message.
+	* tree-vectorizer.c (vectorize_loops): Minor message
+	change.
+	(execute_vect_slp): Ditto.
+
 2013-08-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cgraphclones.c (cgraph_create_virtual_clone): Compute the DECL_NAME
