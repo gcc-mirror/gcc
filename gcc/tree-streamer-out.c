@@ -240,6 +240,12 @@ pack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, DECL_TLS_MODEL (expr),  3);
     }
 
+  if (TREE_CODE (expr) == FUNCTION_DECL)
+    {
+      bp_pack_value (bp, DECL_FINAL_P (expr), 1);
+      bp_pack_value (bp, DECL_CXX_CONSTRUCTOR_P (expr), 1);
+      bp_pack_value (bp, DECL_CXX_DESTRUCTOR_P (expr), 1);
+    }
   if (VAR_OR_FUNCTION_DECL_P (expr))
     bp_pack_var_len_unsigned (bp, DECL_INIT_PRIORITY (expr));
 }
@@ -291,7 +297,10 @@ pack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   bp_pack_value (bp, TYPE_NO_FORCE_BLK (expr), 1);
   bp_pack_value (bp, TYPE_NEEDS_CONSTRUCTING (expr), 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
-    bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);
+    {
+      bp_pack_value (bp, TYPE_TRANSPARENT_AGGR (expr), 1);
+      bp_pack_value (bp, TYPE_FINAL_P (expr), 1);
+    }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     bp_pack_value (bp, TYPE_NONALIASED_COMPONENT (expr), 1);
   bp_pack_value (bp, TYPE_PACKED (expr), 1);
