@@ -1,3 +1,9 @@
+2013-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57685
+	* tree-vrp.c (register_edge_assert_for_1): Recurse only for
+	single-use operands to avoid exponential complexity.
+
 2013-08-28  Dehao Chen  <dehao@google.com>
 
 	* ipa-inline.c (edge_badness): Fix integer underflow.
