@@ -676,6 +676,11 @@ pass_manager::register_one_dump_file (struct opt_pass *pass)
   flag_name = concat (prefix, name, num, NULL);
   glob_name = concat (prefix, name, NULL);
   optgroup_flags |= pass->optinfo_flags;
+  /* For any passes that do not have an optgroup set, and which are not
+     IPA passes setup above, set the optgroup to OPTGROUP_OTHER so that
+     any dump messages are emitted properly under -fopt-info(-optall).  */
+  if (optgroup_flags == OPTGROUP_NONE)
+    optgroup_flags = OPTGROUP_OTHER;
   id = dump_register (dot_name, flag_name, glob_name, flags, optgroup_flags);
   set_pass_for_id (id, pass);
   full_name = concat (prefix, pass->name, num, NULL);

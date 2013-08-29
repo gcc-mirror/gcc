@@ -1,3 +1,24 @@
+2013-08-29  Teresa Johnson  <tejohnson@google.com>
+
+	* dumpfile.c (dump_loc): Output column number.
+	* dumpfile.h (OPTGROUP_OTHER): Add and enable under OPTGROUP_ALL.
+	* doc/invoke.texi: Document optall -fopt-info flag.
+	* profile.c (read_profile_edge_counts): Use new dump framework.
+	(compute_branch_probabilities): Ditto.
+	* passes.c (pass_manager::register_one_dump_file): Use OPTGROUP_OTHER
+	when pass not in any opt group.
+	* pass_manager.h (pass_manager::get_pass_profile): New method.
+	* value-prof.c (check_counter): Use new dump framework.
+	(check_ic_target): Ditto.
+	* coverage.c (get_coverage_counts): Ditto.
+	(coverage_init): Setup new dump framework.
+
+	* testsuite/gcc.dg/pr40209.c: Use -fopt-info.
+	* testsuite/gcc.dg/pr26570.c: Ditto.
+	* testsuite/gcc.dg/pr32773.c: Ditto.
+	* testsuite/g++.dg/tree-ssa/dom-invalid.C: Ditto.
+	* testsuite/gcc.dg/inline-dump.c: New test.
+
 2013-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58246
