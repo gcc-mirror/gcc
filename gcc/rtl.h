@@ -252,12 +252,14 @@ struct GTY(()) object_block {
 };
 
 struct GTY((variable_size)) hwivec_def {
-  int num_elem;		/* number of elements */
   HOST_WIDE_INT elem[1];
 };
 
-#define HWI_GET_NUM_ELEM(HWIVEC)	((HWIVEC)->num_elem)
-#define HWI_PUT_NUM_ELEM(HWIVEC, NUM)	((HWIVEC)->num_elem = (NUM))
+/* Number of elements of the HWIVEC if RTX is a CONST_WIDE_INT.  */
+#define CWI_GET_NUM_ELEM(RTX)					\
+  ((int)RTL_FLAG_CHECK1("CWI_GET_NUM_ELEM", (RTX), CONST_WIDE_INT)->u2.num_elem)
+#define CWI_PUT_NUM_ELEM(RTX, NUM)					\
+  (RTL_FLAG_CHECK1("CWI_PUT_NUM_ELEM", (RTX), CONST_WIDE_INT)->u2.num_elem = (NUM))
 
 /* RTL expression ("rtx").  */
 
@@ -344,6 +346,14 @@ struct GTY((chain_next ("RTX_NEXT (&%h)"),
      1 in a CONCAT is VAL_EXPR_HAS_REVERSE in var-tracking.c.
      1 in a VALUE or DEBUG_EXPR is NO_LOC_P in var-tracking.c.  */
   unsigned return_val : 1;
+
+  union {
+    /* RTXs are free to use up to 32 bit from here.  */
+
+    /* In a CONST_WIDE_INT (aka hwivec_def), this is the number of HOST_WIDE_INTs
+       in the hwivec_def.  */
+    unsigned  GTY ((tag ("CONST_WIDE_INT"))) num_elem:32;
+  } GTY ((desc ("GET_CODE (&%0)"))) u2;
 
   /* The first element of the operands of this rtx.
      The number of operands and their types are controlled
@@ -643,12 +653,14 @@ equality.  */
 			       __FUNCTION__);				\
      &_rtx->u.hwint[_n]; }))
 
-#define XHWIVEC_ELT(HWIVEC, I) __extension__				\
-(*({ __typeof (HWIVEC) const _hwivec = (HWIVEC); const int _i = (I);	\
-     if (_i < 0 || _i >= HWI_GET_NUM_ELEM (_hwivec))			\
-       hwivec_check_failed_bounds (_hwivec, _i, __FILE__, __LINE__,	\
-				  __FUNCTION__);			\
-     &_hwivec->elem[_i]; }))
+#define CWI_ELT(RTX, I) __extension__					\
+(*({ __typeof (RTX) const _rtx = (RTX);					\
+     int _max = CWI_GET_NUM_ELEM (_rtx);				\
+     const int _i = (I);						\
+     if (_i < 0 || _i >= _max)						\
+       cwi_check_failed_bounds (_rtx, _i, __FILE__, __LINE__,	\
+				__FUNCTION__);				\
+     &_rtx->u.hwiv.elem[_i]; }))
 
 #define XCWINT(RTX, N, C) __extension__					\
 (*({ __typeof (RTX) const _rtx = (RTX);					\
@@ -711,8 +723,8 @@ extern void rtl_check_failed_code_mode (const_rtx, enum rtx_code, enum machine_m
     ATTRIBUTE_NORETURN;
 extern void rtl_check_failed_block_symbol (const char *, int, const char *)
     ATTRIBUTE_NORETURN;
-extern void hwivec_check_failed_bounds (const_hwivec, int, const char *, int,
-					const char *)
+extern void cwi_check_failed_bounds (const_rtx, int, const char *, int,
+				     const char *)
     ATTRIBUTE_NORETURN;
 extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 				       const char *)
@@ -726,7 +738,7 @@ extern void rtvec_check_failed_bounds (const_rtvec, int, const char *, int,
 #define RTL_CHECKC2(RTX, N, C1, C2) ((RTX)->u.fld[N])
 #define RTVEC_ELT(RTVEC, I)	    ((RTVEC)->elem[I])
 #define XWINT(RTX, N)		    ((RTX)->u.hwint[N])
-#define XHWIVEC_ELT(HWIVEC, I)	    ((HWIVEC)->elem[I])
+#define CWI_ELT(RTX, I)		    ((RTX)->u.hwiv.elem[I])
 #define XCWINT(RTX, N, C)	    ((RTX)->u.hwint[N])
 #define XCMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
 #define XCNMWINT(RTX, N, C, M)	    ((RTX)->u.hwint[N])
@@ -1223,8 +1235,8 @@ rhs_regno (const_rtx x)
    CONST_WIDE_INT_ELT gets one of the elements.  0 is the least
    significant HOST_WIDE_INT.  */
 #define CONST_WIDE_INT_VEC(RTX) HWIVEC_CHECK (RTX, CONST_WIDE_INT)
-#define CONST_WIDE_INT_NUNITS(RTX) HWI_GET_NUM_ELEM (CONST_WIDE_INT_VEC (RTX))
-#define CONST_WIDE_INT_ELT(RTX, N) XHWIVEC_ELT (CONST_WIDE_INT_VEC (RTX), N) 
+#define CONST_WIDE_INT_NUNITS(RTX) CWI_GET_NUM_ELEM (RTX)
+#define CONST_WIDE_INT_ELT(RTX, N) CWI_ELT (RTX, N)
 
 /* For a CONST_DOUBLE:
 #if TARGET_SUPPORTS_WIDE_INT == 0
@@ -1982,7 +1994,7 @@ extern void end_sequence (void);
 #if TARGET_SUPPORTS_WIDE_INT == 0
 extern double_int rtx_to_double_int (const_rtx);
 #endif
-extern void hwivec_output_hex (FILE *, const_hwivec);
+extern void cwi_output_hex (FILE *, const_rtx);
 #ifndef GENERATOR_FILE
 extern rtx immed_wide_int_const (const wide_int &cst, enum machine_mode mode);
 #endif

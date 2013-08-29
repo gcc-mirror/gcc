@@ -225,18 +225,18 @@ rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
   return rtx_alloc_stat_v (code PASS_MEM_STAT, 0);
 }
 
-/* Write the wide constant OP0 to OUTFILE.  */
+/* Write the wide constant X to OUTFILE.  */
 
 void
-hwivec_output_hex (FILE *outfile, const_hwivec op0)
+cwi_output_hex (FILE *outfile, const_rtx x)
 {
-  int i = HWI_GET_NUM_ELEM (op0);
+  int i = CWI_GET_NUM_ELEM (x);
   gcc_assert (i > 0);
-  if (XHWIVEC_ELT (op0, i-1) == 0)
+  if (CWI_ELT (x, i-1) == 0)
     fprintf (outfile, "0x");
-  fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, XHWIVEC_ELT (op0, --i));
+  fprintf (outfile, HOST_WIDE_INT_PRINT_HEX, CWI_ELT (x, --i));
   while (--i >= 0)
-    fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX, XHWIVEC_ELT (op0, i));
+    fprintf (outfile, HOST_WIDE_INT_PRINT_PADDED_HEX, CWI_ELT (x, i));
 }
 
 
@@ -843,12 +843,12 @@ rtl_check_failed_block_symbol (const char *file, int line, const char *func)
 
 /* XXX Maybe print the vector?  */
 void
-hwivec_check_failed_bounds (const_hwivec r, int n, const char *file, int line,
-			    const char *func)
+cwi_check_failed_bounds (const_rtx x, int n, const char *file, int line,
+			 const char *func)
 {
   internal_error
     ("RTL check: access of hwi elt %d of vector with last elt %d in %s, at %s:%d",
-     n, GET_NUM_ELEM (r) - 1, func, trim_filename (file), line);
+     n, CWI_GET_NUM_ELEM (x) - 1, func, trim_filename (file), line);
 }
 
 /* XXX Maybe print the vector?  */

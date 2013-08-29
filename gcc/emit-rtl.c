@@ -594,7 +594,7 @@ immed_wide_int_const (const wide_int &v, enum machine_mode mode)
     /* It is so tempting to just put the mode in here.  Must control
        myself ... */
     PUT_MODE (value, VOIDmode);
-    HWI_PUT_NUM_ELEM (CONST_WIDE_INT_VEC (value), len);
+    CWI_PUT_NUM_ELEM (value, len);
 
     for (i = 0; i < len; i++)
       CONST_WIDE_INT_ELT (value, i) = v.elt (i);

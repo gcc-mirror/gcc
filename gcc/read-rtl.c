@@ -1352,7 +1352,6 @@ read_rtx_code (const char *code_name)
       read_name (&name);
       validate_const_wide_int (name.string);
       {
-	hwivec hwiv;
 	const char *s = name.string;
 	int len;
 	int index = 0;
@@ -1377,7 +1376,6 @@ read_rtx_code (const char *code_name)
 
 	return_rtx = const_wide_int_alloc (wlen);
 
-	hwiv = CONST_WIDE_INT_VEC (return_rtx);
 	while (pos > 0)
 	  {
 #if HOST_BITS_PER_WIDE_INT == 64
@@ -1385,13 +1383,13 @@ read_rtx_code (const char *code_name)
 #else
 	    sscanf (s + pos, "%8" HOST_WIDE_INT_PRINT "x", &wi);
 #endif
-	    XHWIVEC_ELT (hwiv, index++) = wi;
+	    CWI_ELT (return_rtx, index++) = wi;
 	    pos -= gs;
 	  }
 	strncpy (buf, s, gs - pos);
 	buf [gs - pos] = 0;
 	sscanf (buf, "%" HOST_WIDE_INT_PRINT "x", &wi);
-	XHWIVEC_ELT (hwiv, index++) = wi;
+	CWI_ELT (return_rtx, index++) = wi;
 	/* TODO: After reading, do we want to canonicalize with:
 	   value = lookup_const_wide_int (value); ? */
       }

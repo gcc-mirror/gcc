@@ -616,7 +616,7 @@ print_rtx (const_rtx in_rtx)
     case CONST_WIDE_INT:
       if (! flag_simple)
 	fprintf (outfile, " ");
-      hwivec_output_hex (outfile, CONST_WIDE_INT_VEC (in_rtx));
+      cwi_output_hex (outfile, in_rtx);
       break;
 #endif
 
