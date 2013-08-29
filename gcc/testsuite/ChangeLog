@@ -1,13 +1,26 @@
 2013-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2013-07-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/torture/pr57381.c: Add dg-require-effective-target int32plus.
+
 	2013-05-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57417
+	* gcc.dg/torture/pr57417.c: New testcase.
 
 	PR tree-optimization/57396
 	* gfortran.fortran-torture/execute/pr57396.f90: New testcase.
 
 	PR tree-optimization/57343
 	* gcc.dg/torture/pr57343.c: New testcase.
+
+	2013-05-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57381
+	* gcc.dg/torture/pr57381.c: New testcase.
 
 2013-08-28  Jakub Jelinek  <jakub@redhat.com>
 

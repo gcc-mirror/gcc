@@ -3,6 +3,13 @@
 	Backported from mainline
 	2013-05-27  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/57381
+	PR tree-optimization/57417
+	* tree-ssa-sccvn.c (vn_reference_fold_indirect): Fix test
+	for unchanged base.
+	(set_ssa_val_to): Compare addresses using
+	get_addr_base_and_unit_offset.
+
 	PR tree-optimization/57396
 	* tree-affine.c (double_int_constant_multiple_p): Properly
 	return false for val == 0 and div != 0.

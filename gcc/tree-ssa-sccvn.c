@@ -1062,7 +1062,7 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   addr_base = get_addr_base_and_unit_offset (TREE_OPERAND (op->op0, 0),
 					     &addr_offset);
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
-  if (addr_base != op->op0)
+  if (addr_base != TREE_OPERAND (op->op0, 0))
     {
       double_int off = tree_to_double_int (mem_op->op0);
       off = off.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
@@ -2555,6 +2555,7 @@ static inline bool
 set_ssa_val_to (tree from, tree to)
 {
   tree currval = SSA_VAL (from);
+  HOST_WIDE_INT toff, coff;
 
   if (from != to)
     {
@@ -2590,7 +2591,17 @@ set_ssa_val_to (tree from, tree to)
       print_generic_expr (dump_file, to, 0);
     }
 
-  if (currval != to  && !operand_equal_p (currval, to, OEP_PURE_SAME))
+  if (currval != to
+      && !operand_equal_p (currval, to, 0)
+      /* ???  For addresses involving volatile objects or types operand_equal_p
+         does not reliably detect ADDR_EXPRs as equal.  We know we are only
+	 getting invariant gimple addresses here, so can use
+	 get_addr_base_and_unit_offset to do this comparison.  */
+      && !(TREE_CODE (currval) == ADDR_EXPR
+	   && TREE_CODE (to) == ADDR_EXPR
+	   && (get_addr_base_and_unit_offset (TREE_OPERAND (currval, 0), &coff)
+	       == get_addr_base_and_unit_offset (TREE_OPERAND (to, 0), &toff))
+	   && coff == toff))
     {
       VN_INFO (from)->valnum = to;
       if (dump_file && (dump_flags & TDF_DETAILS))
