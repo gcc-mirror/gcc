@@ -1,3 +1,15 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto-streamer-out.c (hash_tree): Stream DECL_FINAL_P.
+	DECL_CXX_CONSTRUCTOR_P. DECL_CXX_DESTRUCTOR_P.
+	TYPE_FINAL_P.
+	* lto-streamer-in.c (unpack_ts_decl_with_vis_value_fields):
+	DECL_FINAL_P. DECL_CXX_CONSTRUCTOR_P and DECL_CXX_DESTRUCTOR_P.
+	(unpack_ts_type_common_value_fields): Stream TYPE_FINAL_P.
+	* tree-streamer-out.c (pack_ts_decl_with_vis_value_fields):
+	Add DECL_FINAL_P, DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P
+	(pack_ts_type_common_value_fields): Add TYPE_FINAL_P.
+
 2013-08-29  Teresa Johnson  <tejohnson@google.com>
 
 	* dumpfile.c (dump_loc): Output column number.

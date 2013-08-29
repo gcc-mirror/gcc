@@ -795,6 +795,11 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 					    v);
 	  v = iterative_hash_host_wide_int (DECL_TLS_MODEL (t), v);
 	}
+      if (TREE_CODE (t) == FUNCTION_DECL)
+	v = iterative_hash_host_wide_int (DECL_FINAL_P (t)
+					  | (DECL_CXX_CONSTRUCTOR_P (t) << 1)
+					  | (DECL_CXX_DESTRUCTOR_P (t) << 2),
+					  v);
       if (VAR_OR_FUNCTION_DECL_P (t))
 	v = iterative_hash_host_wide_int (DECL_INIT_PRIORITY (t), v);
     }
@@ -835,7 +840,10 @@ hash_tree (struct streamer_tree_cache_d *cache, tree t)
 					| (TYPE_USER_ALIGN (t) << 5)
 					| (TYPE_READONLY (t) << 6), v);
       if (RECORD_OR_UNION_TYPE_P (t))
-	v = iterative_hash_host_wide_int (TYPE_TRANSPARENT_AGGR (t), v);
+	{
+	  v = iterative_hash_host_wide_int (TYPE_TRANSPARENT_AGGR (t)
+					    | (TYPE_FINAL_P (t) << 1), v);
+	}
       else if (code == ARRAY_TYPE)
 	v = iterative_hash_host_wide_int (TYPE_NONALIASED_COMPONENT (t), v);
       v = iterative_hash_host_wide_int (TYPE_PRECISION (t), v);

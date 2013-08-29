@@ -1889,6 +1889,9 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_DISREGARD_INLINE_LIMITS);
       compare_values (DECL_PURE_P);
       compare_values (DECL_LOOPING_CONST_OR_PURE_P);
+      compare_values (DECL_FINAL_P);
+      compare_values (DECL_CXX_CONSTRUCTOR_P);
+      compare_values (DECL_CXX_DESTRUCTOR_P);
       if (DECL_BUILT_IN_CLASS (t1) != NOT_BUILT_IN)
 	compare_values (DECL_FUNCTION_CODE);
       if (DECL_STATIC_DESTRUCTOR (t1))
@@ -1902,7 +1905,10 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (TYPE_NO_FORCE_BLK);
       compare_values (TYPE_NEEDS_CONSTRUCTING);
       if (RECORD_OR_UNION_TYPE_P (t1))
-	compare_values (TYPE_TRANSPARENT_AGGR);
+	{
+	  compare_values (TYPE_TRANSPARENT_AGGR);
+	  compare_values (TYPE_FINAL_P);
+	}
       else if (code == ARRAY_TYPE)
 	compare_values (TYPE_NONALIASED_COMPONENT);
       compare_values (TYPE_PACKED);

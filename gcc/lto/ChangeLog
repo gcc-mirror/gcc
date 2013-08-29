@@ -1,3 +1,9 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto.c (compare_tree_sccs_1): Compare  DECL_FINAL_P,
+	DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P and
+	TYPE_FINAL_P.
+
 2013-08-28  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (compare_tree_sccs_1): Drop DECL_ERROR_ISSUED,
