@@ -1,5 +1,14 @@
 2013-08-30  François Dumont  <fdumont@gcc.gnu.org>
 
+	PR libstdc++/58148
+	* include/debug/functions.h (__foreign_iterator_aux4): Use
+	sequence const_pointer as common type to compare pointers. Add a
+	fallback overload in case pointers cannot be cast to sequence
+	const_pointer.
+	* testsuite/23_containers/vector/modifiers/insert/58148.cc: New.
+
+2013-08-30  François Dumont  <fdumont@gcc.gnu.org>
+
 	PR libstdc++/58191
 	* include/debug/macros.h (__glibcxx_check_partitioned_lower): Add
 	__gnu_debug::__base calls on iterators passed to internal debug

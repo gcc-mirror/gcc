@@ -36,7 +36,7 @@
 #include <bits/move.h>                    // for __addressof and addressof
 #if __cplusplus >= 201103L
 # include <bits/stl_function.h>		  // for less and greater_equal
-# include <type_traits>			  // for common_type
+# include <type_traits>			  // for is_lvalue_reference and __and_
 #endif
 #include <debug/formatter.h>
 
@@ -172,27 +172,30 @@ namespace __gnu_debug
     }
 
 #if __cplusplus >= 201103L
-  template<typename _Iterator, typename _Sequence,
-	   typename _InputIterator,
-	   typename _PointerType1,
-	   typename _PointerType2>
+  // Default implementation.
+  template<typename _Iterator, typename _Sequence>
     inline bool
     __foreign_iterator_aux4(const _Safe_iterator<_Iterator, _Sequence>& __it,
-			    _InputIterator __other,
-			    _PointerType1, _PointerType2)
+			    typename _Sequence::const_pointer __begin,
+			    typename _Sequence::const_pointer __other)
     {
-      typedef typename std::common_type<_PointerType1,
-					_PointerType2>::type _PointerType;
+      typedef typename _Sequence::const_pointer _PointerType;
       constexpr std::less<_PointerType> __l{};
-      constexpr std::greater_equal<_PointerType> __ge{};
 
-      return (__l(std::addressof(*__other),
-		  std::addressof(*(__it._M_get_sequence()->_M_base().begin())))
-	      || __ge(std::addressof(*__other),
-		      std::addressof(*(__it._M_get_sequence()->_M_base().end()
-				       - 1)) + 1));
+      return (__l(__other, __begin)
+	      || __l(std::addressof(*(__it._M_get_sequence()->_M_base().end()
+				      - 1)), __other));
     }
-			  
+
+  // Fallback when address type cannot be implicitely casted to sequence
+  // const_pointer.
+  template<typename _Iterator, typename _Sequence,
+	   typename _InputIterator>
+    inline bool
+    __foreign_iterator_aux4(const _Safe_iterator<_Iterator, _Sequence>&,
+			    _InputIterator, ...)
+    { return true; }
+
   template<typename _Iterator, typename _Sequence, typename _InputIterator>
     inline bool
     __foreign_iterator_aux3(const _Safe_iterator<_Iterator, _Sequence>& __it,
@@ -209,7 +212,7 @@ namespace __gnu_debug
 	    - std::addressof(*(__it._M_get_sequence()->_M_base().begin()))
 	    == __it._M_get_sequence()->size() - 1)
 	  return (__foreign_iterator_aux4
-		  (__it, __other,
+		  (__it,
 		   std::addressof(*(__it._M_get_sequence()->_M_base().begin())),
 		   std::addressof(*__other)));
       return true;
@@ -223,7 +226,7 @@ namespace __gnu_debug
 			    std::false_type)
     { return true; }
 #endif
-			   
+
   /** Checks that iterators do not belong to the same sequence. */
   template<typename _Iterator, typename _Sequence, typename _OtherIterator>
     inline bool
