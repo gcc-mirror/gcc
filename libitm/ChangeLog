@@ -1,5 +1,9 @@
 2013-08-30  Torvald Riegel  <triegel@redhat.com>
 
+	* config/posix/rwlock.cc: Fix initialization order.
+
+2013-08-30  Torvald Riegel  <triegel@redhat.com>
+
 	* libitm_i.h (gtm_thread): Assign an asm name to serial_lock.
 	(htm_fastpath): Assign an asm name.
 	* libitm.h (_ITM_codeProperties): Add non-ABI flags used by custom
