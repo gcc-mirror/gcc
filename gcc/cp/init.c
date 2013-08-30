@@ -500,8 +500,9 @@ perform_target_ctor (tree init)
   tree decl = current_class_ref;
   tree type = current_class_type;
 
-  finish_expr_stmt (build_aggr_init (decl, init, LOOKUP_NORMAL,
-                                     tf_warning_or_error));
+  finish_expr_stmt (build_aggr_init (decl, init,
+				     LOOKUP_NORMAL|LOOKUP_DELEGATING_CONS,
+				     tf_warning_or_error));
   if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
     {
       tree expr = build_delete (type, decl, sfk_complete_destructor,

@@ -1,3 +1,11 @@
+2013-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51424
+	* cp-tree.h (LOOKUP_DELEGATING_CONS): Add.
+	* init.c (perform_target_ctor): Use it.
+	* call.c (build_special_member_call): Diagnose self-delegating
+	constructors.
+
 2013-08-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (cxx_pretty_printer::declaration): Declare as
