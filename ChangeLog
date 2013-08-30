@@ -1,3 +1,7 @@
+2013-08-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2013-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* MAINTAINERS (gdbhooks.py): Add myself as maintainer.
