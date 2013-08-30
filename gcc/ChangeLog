@@ -1,4 +1,14 @@
-2013-08-29  Jan Hubicka  <jh@suse.cz>
+2013-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* function.c (assign_parm_setup_reg): For a parameter passed by pointer
+	and which can live in a register, always retrieve the value on entry.
+	* var-tracking.c (add_stores): Treat the copy on entry for a parameter
+	passed by invisible reference specially.
+	(emit_notes_in_bb) <MO_VAL_USE>: Emit notes before the instruction.
+	(vt_add_function_parameter): Correctly deal with a parameter passed by
+	invisible reference.
+
+2013-08-30  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (set_call_expr_flags): Fix handling of TM_PURE.
 
