@@ -426,7 +426,11 @@ Necessary when modifying @command{gperf} input files, e.g.@:
 @itemx Expect
 @itemx Tcl
 
-Necessary to run the GCC testsuite; see the section on testing for details.
+Necessary to run the GCC testsuite; see the section on testing for
+details.  Tcl 8.6 has a known regression in RE pattern handling that
+make parts of the testsuite fail.  See
+@uref{http://core.tcl.tk/tcl/tktview/267b7e2334ee2e9de34c4b00d6e72e2f1997085f}
+for more information.
 
 @item autogen version 5.5.4 (or later) and
 @itemx guile version 1.4.1 (or later)
