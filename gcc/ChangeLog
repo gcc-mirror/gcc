@@ -1,3 +1,9 @@
+2013-08-30  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/arm_neon.h (__AARCH64_UINT64_C, __AARCH64_INT64_C): New
+	arm_neon.h's internal macros to specify 64-bit constants. Avoid using
+	stdint.h's macros.
+
 2013-08-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* recog.c (verify_changes): Verify that changes[i].old is non-zero
