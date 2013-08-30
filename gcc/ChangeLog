@@ -1,3 +1,10 @@
+2013-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58277
+	* tree-ssa-strlen.c (strlen_enter_block): If do_invalidate gave up
+	after seeing too many stmts with vdef in between dombb and current
+	bb, invalidate everything.
+
 2013-08-30  Richard Biener  <rguenther@suse.de>
 
 	* fold-const.c (fold_single_bit_test): Fix overflow test.
