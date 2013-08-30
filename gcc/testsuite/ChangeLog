@@ -1,3 +1,9 @@
+2013-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58277
+	* gcc.c-torture/execute/pr58277-1.c: New test.
+	* gcc.c-torture/execute/pr58277-2.c: New test.
+
 2013-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/guality/param-1.c: New test.
