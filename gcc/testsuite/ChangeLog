@@ -1,3 +1,7 @@
+2013-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/abi/mangle33.C (dg-final): Use match count in scan RE.
+
 2013-08-30  Meador Inge  <meadori@codesourcery.com>
 
 	* gcc.dg/Warray-bounds-11.c: New testcase.
@@ -35,8 +39,8 @@
 
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
-	* gcc.dg/tree-ssa/attr-alias.c: Rename test3 to test1 to match template
-	and comment.
+	* gcc.dg/tree-ssa/attr-alias.c: Rename test3 to test1
+	to match template and comment.
 
 2013-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -76,7 +80,7 @@
 	* gcc.dg/pr58010.c: New testcase.
 
 2013-08-29  Xinliang DavidLi  <davidxl@google.com>
-	
+
 	* gcc.dg/unroll_3.c: Message change.
 	* gcc.dg/unroll_4.c: Likewise.
 	* gcc.dg/tree-ssa/cunroll-1.c: Likewise.
@@ -617,8 +621,8 @@
 
 2013-08-12  Perez Read  <netfirewall@gmail.com>
 
-         PR target/58132
-         * gcc.target/i386/movabs-1.c: New test.
+	PR target/58132
+	* gcc.target/i386/movabs-1.c: New test.
 
 2013-08-12  Marek Polacek  <polacek@redhat.com>
 
