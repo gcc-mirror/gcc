@@ -1,3 +1,7 @@
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (fold_single_bit_test): Fix overflow test.
+
 2013-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* function.c (assign_parm_setup_reg): For a parameter passed by pointer
