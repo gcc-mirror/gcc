@@ -3698,6 +3698,11 @@ inline_generate_summary (void)
 {
   struct cgraph_node *node;
 
+  /* When not optimizing, do not bother to analyze.  Inlining is still done
+     because edge redirection needs to happen there.  */
+  if (!optimize && !flag_lto && !flag_wpa)
+    return;
+
   function_insertion_hook_holder =
     cgraph_add_function_insertion_hook (&add_new_function, NULL);
 

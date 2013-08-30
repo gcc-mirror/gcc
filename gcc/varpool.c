@@ -260,10 +260,22 @@ cgraph_variable_initializer_availability (struct varpool_node *node)
     return AVAIL_NOT_AVAILABLE;
   if (!TREE_PUBLIC (node->symbol.decl))
     return AVAIL_AVAILABLE;
+  if (DECL_IN_CONSTANT_POOL (node->symbol.decl)
+      || DECL_VIRTUAL_P (node->symbol.decl))
+    return AVAIL_AVAILABLE;
+  if (node->symbol.alias && node->symbol.weakref)
+    {
+      enum availability avail;
+
+      cgraph_variable_initializer_availability
+	      (varpool_variable_node (node, &avail));
+      return avail;
+    }
   /* If the variable can be overwritten, return OVERWRITABLE.  Takes
      care of at least one notable extension - the COMDAT variables
      used to share template instantiations in C++.  */
-  if (!decl_replaceable_p (node->symbol.decl))
+  if (decl_replaceable_p (node->symbol.decl)
+      || DECL_EXTERNAL (node->symbol.decl))
     return AVAIL_OVERWRITABLE;
   return AVAIL_AVAILABLE;
 }

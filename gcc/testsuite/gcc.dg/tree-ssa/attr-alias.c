@@ -8,7 +8,7 @@ int test()
    return 0;
 }
 static int test2() __attribute__ ((alias("test")));
-static int test3() __attribute__ ((weakref)) __attribute__ ((alias("test2")));
+static int test1() __attribute__ ((weakref)) __attribute__ ((alias("test2")));
 static int test4() __attribute__ ((weakref)) __attribute__ ((alias("test")));
 main()
 {

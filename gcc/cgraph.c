@@ -2046,6 +2046,8 @@ cgraph_function_body_availability (struct cgraph_node *node)
     avail = AVAIL_NOT_AVAILABLE;
   else if (node->local.local)
     avail = AVAIL_LOCAL;
+  else if (node->symbol.alias && node->symbol.weakref)
+    cgraph_function_or_thunk_node (node, &avail);
   else if (!node->symbol.externally_visible)
     avail = AVAIL_AVAILABLE;
   /* Inline functions are safe to be analyzed even if their symbol can
