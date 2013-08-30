@@ -1,5 +1,11 @@
 2013-08-30  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58228
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Do not
+	allow invariant loads in nested loop vectorization.
+
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/58223
 	* tree-loop-distribution.c (has_anti_dependence): Rename to ...
 	(has_anti_or_output_dependence): ... this and adjust to also
