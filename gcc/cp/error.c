@@ -1044,7 +1044,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 
     case NAMESPACE_DECL:
       if (flags & TFF_DECL_SPECIFIERS)
-	pp_cxx_declaration (pp, t);
+	pp->declaration (t);
       else
 	{
 	  if (! (flags & TFF_UNQUALIFIED_NAME))
@@ -1196,7 +1196,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case STATIC_ASSERT:
-      pp_cxx_declaration (pp, t);
+      pp->declaration (t);
       break;
 
     case BASELINK:
@@ -1209,7 +1209,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
 
     case TEMPLATE_TYPE_PARM:
       if (flags & TFF_DECL_SPECIFIERS)
-	pp_cxx_declaration (pp, t);
+	pp->declaration (t);
       else
 	pp_type_id (pp, t);
       break;
