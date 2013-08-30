@@ -1663,6 +1663,8 @@ cgraph_release_function_body (struct cgraph_node *node)
   if (!node->used_as_abstract_origin && DECL_INITIAL (node->symbol.decl))
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
   release_function_body (node->symbol.decl);
+  if (node->symbol.lto_file_data)
+    lto_free_function_in_decl_state_for_node ((symtab_node) node);
 }
 
 /* Remove the node from cgraph.  */
@@ -3107,10 +3109,11 @@ cgraph_get_body (struct cgraph_node *node)
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
-  lto_input_function_body (file_data, decl, data);
+  lto_input_function_body (file_data, node->symbol.decl, data);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);
+  lto_free_function_in_decl_state_for_node ((symtab_node) node);
   return true;
 }
 

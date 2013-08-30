@@ -414,6 +414,41 @@ lto_get_function_in_decl_state (struct lto_file_decl_data *file_data,
   return slot? ((struct lto_in_decl_state*) *slot) : NULL;
 }
 
+/* Free decl_states.  */
+
+void
+lto_free_function_in_decl_state (struct lto_in_decl_state *state)
+{
+  int i;
+  for (i = 0; i < LTO_N_DECL_STREAMS; i++)
+    ggc_free (state->streams[i].trees);
+  ggc_free (state);
+}
+
+/* Free decl_states associated with NODE.  This makes it possible to furhter
+   release trees needed by the NODE's body.  */
+
+void
+lto_free_function_in_decl_state_for_node (symtab_node node)
+{
+  struct lto_in_decl_state temp;
+  void **slot;
+
+  if (!node->symbol.lto_file_data)
+    return;
+
+  temp.fn_decl = node->symbol.decl;
+  slot = htab_find_slot (node->symbol.lto_file_data->function_decl_states,
+			 &temp, NO_INSERT);
+  if (slot && *slot)
+    {
+      lto_free_function_in_decl_state ((struct lto_in_decl_state*) *slot);
+      htab_clear_slot (node->symbol.lto_file_data->function_decl_states,
+		       slot);
+    }
+  node->symbol.lto_file_data = NULL;
+}
+
 
 /* Report read pass end of the section.  */
 

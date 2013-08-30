@@ -3502,6 +3502,9 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       gcc_assert (all_file_decl_data[i]->symtab_node_encoder);
       lto_symtab_encoder_delete (all_file_decl_data[i]->symtab_node_encoder);
       all_file_decl_data[i]->symtab_node_encoder = NULL;
+      lto_free_function_in_decl_state (all_file_decl_data[i]->global_decl_state);
+      all_file_decl_data[i]->global_decl_state = NULL;
+      all_file_decl_data[i]->current_decl_state = NULL; 
     }
 
   /* Finally merge the cgraph according to the decl merging decisions.  */
