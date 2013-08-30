@@ -1,3 +1,7 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (set_call_expr_flags): Fix handling of TM_PURE.
+
 2013-08-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58228
