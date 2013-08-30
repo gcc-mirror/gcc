@@ -207,6 +207,10 @@ unsigned int help_columns
 Variable
 bool flag_opts_finished
 
+; What the sanitizer should instrument
+Variable
+unsigned int flag_sanitize
+
 ###
 Driver
 
@@ -850,13 +854,9 @@ fargument-noalias-anything
 Common Ignore
 Does nothing. Preserved for backward compatibility.
 
-fsanitize=address
-Common Report Var(flag_asan)
-Enable AddressSanitizer, a memory error detector
-
-fsanitize=thread
-Common Report Var(flag_tsan)
-Enable ThreadSanitizer, a data race detector
+fsanitize=
+Common Driver Report Joined
+Select what to sanitize
 
 fasynchronous-unwind-tables
 Common Report Var(flag_asynchronous_unwind_tables) Optimization
@@ -2602,6 +2602,9 @@ static-libasan
 Driver
 
 static-libtsan
+Driver
+
+static-libubsan
 Driver
 
 symbolic

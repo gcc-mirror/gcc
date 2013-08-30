@@ -1,3 +1,34 @@
+2013-08-30  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ubsan/div-by-zero-1.C: New test.
+	* c-c++-common/ubsan/save-expr-1.c: New test.
+	* c-c++-common/ubsan/save-expr-2.c: New test.
+	* c-c++-common/ubsan/save-expr-3.c: New test.
+	* c-c++-common/ubsan/save-expr-4.c: New test.
+	* c-c++-common/ubsan/typedef-1.c: New test.
+	* c-c++-common/ubsan/const-char-1.c: New test.
+	* c-c++-common/ubsan/const-expr.c: New test.
+	* c-c++-common/ubsan/div-by-zero-1.c: Likewise.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/shift-2.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-2.c: Likewise.
+	* lib/ubsan-dg.exp: New file.
+	* g++.dg/dg.exp: Add ubsan tests.
+	* g++.dg/ubsan/ubsan.exp: New file.
+	* gcc.dg/ubsan/ubsan.exp: New file.
+	* g++.dg/ubsan/cxx11-shift-1.C: New test.
+	* g++.dg/ubsan/cxx11-shift-2.C: New test.
+	* c-c++-common/ubsan/div-by-zero-3.c: New test.
+	* c-c++-common/ubsan/div-by-zero-1.c: New test.
+	* c-c++-common/ubsan/div-by-zero-4.c: New test.
+	* c-c++-common/ubsan/shift-3.c: New test.
+	* c-c++-common/ubsan/unreachable-1.c: New test.
+	* c-c++-common/ubsan/shift-1.c: New test.
+	* c-c++-common/ubsan/shift-2.c: New test.
+	* c-c++-common/ubsan/div-by-zero-2.c: New test.
+	* gcc.dg/ubsan/c99-shift-2.c: New test.
+	* gcc.dg/ubsan/c99-shift-1.c: New test.
+
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/tree-ssa/attr-alias.c: Rename test3 to test1 to match template

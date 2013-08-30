@@ -1938,7 +1938,7 @@ asan_global_struct (void)
 	= build_decl (UNKNOWN_LOCATION, FIELD_DECL,
 		      get_identifier (field_names[i]),
 		      (i == 0 || i == 3) ? const_ptr_type_node
-		      : build_nonstandard_integer_type (POINTER_SIZE, 1));
+		      : pointer_sized_int_node);
       DECL_CONTEXT (fields[i]) = ret;
       if (i)
 	DECL_CHAIN (fields[i - 1]) = fields[i];
@@ -2016,10 +2016,12 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_VOID = build_function_type_list (void_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR
     = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
+  tree BT_FN_VOID_PTR_PTR_PTR
+    = build_function_type_list (void_type_node, ptr_type_node,
+				ptr_type_node, ptr_type_node, NULL_TREE);
   tree BT_FN_VOID_PTR_PTRMODE
     = build_function_type_list (void_type_node, ptr_type_node,
-				build_nonstandard_integer_type (POINTER_SIZE,
-								1), NULL_TREE);
+				pointer_sized_int_node, NULL_TREE);
   tree BT_FN_VOID_INT
     = build_function_type_list (void_type_node, integer_type_node, NULL_TREE);
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
@@ -2081,6 +2083,12 @@ initialize_sanitizer_builtins (void)
 #undef ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST
 #define ATTR_TMPURE_NORETURN_NOTHROW_LEAF_LIST \
   ECF_TM_PURE | ATTR_NORETURN_NOTHROW_LEAF_LIST
+#undef ATTR_COLD_NOTHROW_LEAF_LIST
+#define ATTR_COLD_NOTHROW_LEAF_LIST \
+  /* ECF_COLD missing */ ATTR_NOTHROW_LEAF_LIST
+#undef ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST
+#define ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST \
+  /* ECF_COLD missing */ ATTR_NORETURN_NOTHROW_LEAF_LIST
 #undef DEF_SANITIZER_BUILTIN
 #define DEF_SANITIZER_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
   decl = add_builtin_function ("__builtin_" NAME, TYPE, ENUM,		\
@@ -2157,7 +2165,7 @@ asan_finish_file (void)
   /* Avoid instrumenting code in the asan ctors/dtors.
      We don't need to insert padding after the description strings,
      nor after .LASAN* array.  */
-  flag_asan = 0;
+  flag_sanitize &= ~SANITIZE_ADDRESS;
 
   tree fn = builtin_decl_implicit (BUILT_IN_ASAN_INIT);
   append_to_statement_list (build_call_expr (fn, 0), &asan_ctor_statements);
@@ -2170,7 +2178,6 @@ asan_finish_file (void)
   if (gcount)
     {
       tree type = asan_global_struct (), var, ctor;
-      tree uptr = build_nonstandard_integer_type (POINTER_SIZE, 1);
       tree dtor_statements = NULL_TREE;
       vec<constructor_elt, va_gc> *v;
       char buf[20];
@@ -2199,22 +2206,23 @@ asan_finish_file (void)
       varpool_assemble_decl (varpool_node_for_decl (var));
 
       fn = builtin_decl_implicit (BUILT_IN_ASAN_REGISTER_GLOBALS);
+      tree gcount_tree = build_int_cst (pointer_sized_int_node, gcount);
       append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
-						 build_int_cst (uptr, gcount)),
+						 gcount_tree),
 				&asan_ctor_statements);
 
       fn = builtin_decl_implicit (BUILT_IN_ASAN_UNREGISTER_GLOBALS);
       append_to_statement_list (build_call_expr (fn, 2,
 						 build_fold_addr_expr (var),
-						 build_int_cst (uptr, gcount)),
+						 gcount_tree),
 				&dtor_statements);
       cgraph_build_static_cdtor ('D', dtor_statements,
 				 MAX_RESERVED_INIT_PRIORITY - 1);
     }
   cgraph_build_static_cdtor ('I', asan_ctor_statements,
 			     MAX_RESERVED_INIT_PRIORITY - 1);
-  flag_asan = 1;
+  flag_sanitize |= SANITIZE_ADDRESS;
 }
 
 /* Instrument the current function.  */
@@ -2231,7 +2239,7 @@ asan_instrument (void)
 static bool
 gate_asan (void)
 {
-  return flag_asan != 0
+  return (flag_sanitize & SANITIZE_ADDRESS) != 0
 	  && !lookup_attribute ("no_sanitize_address",
 				DECL_ATTRIBUTES (current_function_decl));
 }

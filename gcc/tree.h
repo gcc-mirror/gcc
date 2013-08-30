@@ -4288,6 +4288,7 @@ enum tree_index
   TI_VA_LIST_FPR_COUNTER_FIELD,
   TI_BOOLEAN_TYPE,
   TI_FILEPTR_TYPE,
+  TI_POINTER_SIZED_TYPE,
 
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
@@ -4444,6 +4445,7 @@ extern GTY(()) tree global_trees[TI_MAX];
 #define va_list_fpr_counter_field	global_trees[TI_VA_LIST_FPR_COUNTER_FIELD]
 /* The C type `FILE *'.  */
 #define fileptr_type_node		global_trees[TI_FILEPTR_TYPE]
+#define pointer_sized_int_node		global_trees[TI_POINTER_SIZED_TYPE]
 
 #define boolean_type_node		global_trees[TI_BOOLEAN_TYPE]
 #define boolean_false_node		global_trees[TI_BOOLEAN_FALSE]

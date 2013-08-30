@@ -215,7 +215,7 @@ static inline void process_marked_switches (void);
 static const char *process_brace_body (const char *, const char *, const char *, int, int);
 static const struct spec_function *lookup_spec_function (const char *);
 static const char *eval_spec_function (const char *, const char *);
-static const char *handle_spec_function (const char *);
+static const char *handle_spec_function (const char *, bool *);
 static char *save_string (const char *, int);
 static void set_collect_gcc_options (void);
 static int do_spec_1 (const char *, int, const char *);
@@ -253,6 +253,7 @@ static const char *convert_filename (const char *, int, int);
 static const char *getenv_spec_function (int, const char **);
 static const char *if_exists_spec_function (int, const char **);
 static const char *if_exists_else_spec_function (int, const char **);
+static const char *sanitize_spec_function (int, const char **);
 static const char *replace_outfile_spec_function (int, const char **);
 static const char *remove_outfile_spec_function (int, const char **);
 static const char *version_compare_spec_function (int, const char **);
@@ -432,6 +433,10 @@ or with constant text in a single argument.
 	  than the OR.
 	  If %* appears in X, all of the alternatives must be starred, and
 	  only the first matching alternative is substituted.
+ %{%:function(args):X}
+	  Call function named FUNCTION with args ARGS.  If the function
+	  returns non-NULL, then X is substituted, if it returns
+	  NULL, it isn't substituted.
  %{S:X;   if S was given to GCC, substitutes X;
    T:Y;   else if T was given to GCC, substitutes Y;
     :D}   else substitutes D.  There can be as many clauses as you need.
@@ -586,6 +591,28 @@ proper position among the other output files.  */
 #define LIBTSAN_EARLY_SPEC ""
 #endif
 
+#ifndef LIBUBSAN_SPEC
+#ifdef STATIC_LIBUBSAN_LIBS
+#define ADD_STATIC_LIBUBSAN_LIBS \
+  " %{static-libubsan:" STATIC_LIBUBSAN_LIBS "}"
+#else
+#define ADD_STATIC_LIBUBSAN_LIBS
+#endif
+#ifdef LIBUBSAN_EARLY_SPEC
+#define LIBUBSAN_SPEC ADD_STATIC_LIBUBSAN_LIBS
+#elif defined(HAVE_LD_STATIC_DYNAMIC)
+#define LIBUBSAN_SPEC "%{static-libubsan:" LD_STATIC_OPTION \
+		     "} -lubsan %{static-libubsan:" LD_DYNAMIC_OPTION "}" \
+		     ADD_STATIC_LIBUBSAN_LIBS
+#else
+#define LIBUBSAN_SPEC "-lubsan" ADD_STATIC_LIBUBSAN_LIBS
+#endif
+#endif
+
+#ifndef LIBUBSAN_EARLY_SPEC
+#define LIBUBSAN_EARLY_SPEC ""
+#endif
+
 /* config.h can define LIBGCC_SPEC to override how and when libgcc.a is
    included.  */
 #ifndef LIBGCC_SPEC
@@ -708,18 +735,20 @@ proper position among the other output files.  */
 /* Linker command line options for -fsanitize= early on the command line.  */
 #ifndef SANITIZER_EARLY_SPEC
 #define SANITIZER_EARLY_SPEC "\
-%{!nostdlib:%{!nodefaultlibs:%{fsanitize=address:" LIBASAN_EARLY_SPEC "} \
-    %{fsanitize=thread:" LIBTSAN_EARLY_SPEC "}}}"
+%{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
+    %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "} \
+    %{%:sanitize(undefined):" LIBUBSAN_EARLY_SPEC "}}}"
 #endif
 
 /* Linker command line options for -fsanitize= late on the command line.  */
 #ifndef SANITIZER_SPEC
 #define SANITIZER_SPEC "\
-%{!nostdlib:%{!nodefaultlibs:%{fsanitize=address:" LIBASAN_SPEC "\
+%{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=address}\
-    %{fsanitize=thread:%e-fsanitize=address is incompatible with -fsanitize=thread}}\
-    %{fsanitize=thread:" LIBTSAN_SPEC "\
-    %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}}}"
+    %{%:sanitize(thread):%e-fsanitize=address is incompatible with -fsanitize=thread}}\
+    %{%:sanitize(thread):" LIBTSAN_SPEC "\
+    %{!pie:%{!shared:%e-fsanitize=thread linking must be done with -pie or -shared}}}\
+    %{%:sanitize(undefined):" LIBUBSAN_SPEC "}}}"
 #endif
 
 /*  This is the spec to use, once the code for creating the vtable
@@ -1333,6 +1362,7 @@ static const struct spec_function static_spec_functions[] =
   { "getenv",                   getenv_spec_function },
   { "if-exists",		if_exists_spec_function },
   { "if-exists-else",		if_exists_else_spec_function },
+  { "sanitize",			sanitize_spec_function },
   { "replace-outfile",		replace_outfile_spec_function },
   { "remove-outfile",		remove_outfile_spec_function },
   { "version-compare",		version_compare_spec_function },
@@ -5283,7 +5313,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    break;
 
 	  case ':':
-	    p = handle_spec_function (p);
+	    p = handle_spec_function (p, NULL);
 	    if (p == 0)
 	      return -1;
 	    break;
@@ -5519,10 +5549,13 @@ eval_spec_function (const char *func, const char *args)
    ARGS is processed as a spec in a separate context and split into an
    argument vector in the normal fashion.  The function returns a string
    containing a spec which we then process in the caller's context, or
-   NULL if no processing is required.  */
+   NULL if no processing is required.
+
+   If RETVAL_NONNULL is not NULL, then store a bool whether function
+   returned non-NULL.  */
 
 static const char *
-handle_spec_function (const char *p)
+handle_spec_function (const char *p, bool *retval_nonnull)
 {
   char *func, *args;
   const char *endp, *funcval;
@@ -5568,6 +5601,8 @@ handle_spec_function (const char *p)
   funcval = eval_spec_function (func, args);
   if (funcval != NULL && do_spec_1 (funcval, 0, NULL) < 0)
     p = NULL;
+  if (retval_nonnull)
+    *retval_nonnull = funcval != NULL;
 
   free (func);
   free (args);
@@ -5711,19 +5746,28 @@ handle_braces (const char *p)
 	p++, a_is_negated = true;
 
       SKIP_WHITE();
-      if (*p == '.')
-	p++, a_is_suffix = true;
-      else if (*p == ',')
-	p++, a_is_spectype = true;
+      if (*p == '%' && p[1] == ':')
+	{
+	  atom = NULL;
+	  end_atom = NULL;
+	  p = handle_spec_function (p + 2, &a_matched);
+	}
+      else
+	{
+	  if (*p == '.')
+	    p++, a_is_suffix = true;
+	  else if (*p == ',')
+	    p++, a_is_spectype = true;
 
-      atom = p;
-      while (ISIDNUM(*p) || *p == '-' || *p == '+' || *p == '='
-	     || *p == ',' || *p == '.' || *p == '@')
-	p++;
-      end_atom = p;
+	  atom = p;
+	  while (ISIDNUM(*p) || *p == '-' || *p == '+' || *p == '='
+		 || *p == ',' || *p == '.' || *p == '@')
+	    p++;
+	  end_atom = p;
 
-      if (*p == '*')
-	p++, a_is_starred = 1;
+	  if (*p == '*')
+	    p++, a_is_starred = 1;
+	}
 
       SKIP_WHITE();
       switch (*p)
@@ -5748,7 +5792,7 @@ handle_braces (const char *p)
 	  if (ordered_set)
 	    goto invalid;
 
-	  if (atom == end_atom)
+	  if (atom && atom == end_atom)
 	    {
 	      if (!n_way_choice || disj_matched || *p == '|'
 		  || a_is_negated || a_is_suffix || a_is_spectype
@@ -5773,7 +5817,9 @@ handle_braces (const char *p)
 		 match.  */
 	      if (!disj_matched && !n_way_matched)
 		{
-		  if (a_is_suffix)
+		  if (atom == NULL)
+		    /* a_matched is already set by handle_spec_function.  */;
+		  else if (a_is_suffix)
 		    a_matched = input_suffix_matches (atom, end_atom);
 		  else if (a_is_spectype)
 		    a_matched = input_spec_matches (atom, end_atom);
@@ -8068,6 +8114,27 @@ if_exists_else_spec_function (int argc, const char **argv)
     return argv[0];
 
   return argv[1];
+}
+
+/* sanitize built-in spec function.
+
+   This returns non-NULL, if sanitizing address, thread or
+   any of the undefined behavior sanitizers.  */
+
+static const char *
+sanitize_spec_function (int argc, const char **argv)
+{
+  if (argc != 1)
+    return NULL;
+
+  if (strcmp (argv[0], "address") == 0)
+    return (flag_sanitize & SANITIZE_ADDRESS) ? "" : NULL;
+  if (strcmp (argv[0], "thread") == 0)
+    return (flag_sanitize & SANITIZE_THREAD) ? "" : NULL;
+  if (strcmp (argv[0], "undefined") == 0)
+    return (flag_sanitize & SANITIZE_UNDEFINED) ? "" : NULL;
+
+  return NULL;
 }
 
 /* replace-outfile built-in spec function.

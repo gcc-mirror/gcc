@@ -1102,7 +1102,8 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
       && bss_initializer_p (decl))
     {
       if (!TREE_PUBLIC (decl)
-	  && !(flag_asan && asan_protect_global (decl)))
+	  && !((flag_sanitize & SANITIZE_ADDRESS)
+	       && asan_protect_global (decl)))
 	return lcomm_section;
       if (bss_noswitch_section)
 	return bss_noswitch_section;
@@ -1904,7 +1905,7 @@ assemble_noswitch_variable (tree decl, const char *name, section *sect,
   size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
   rounded = size;
 
-  if (flag_asan && asan_protect_global (decl))
+  if ((flag_sanitize & SANITIZE_ADDRESS) && asan_protect_global (decl))
     size += asan_red_zone_size (size);
 
   /* Don't allocate zero bytes of common,
@@ -2063,7 +2064,7 @@ assemble_variable (tree decl, int top_level ATTRIBUTE_UNUSED,
 
   align_variable (decl, dont_output_data);
 
-  if (flag_asan
+  if ((flag_sanitize & SANITIZE_ADDRESS)
       && asan_protect_global (decl))
     {
       asan_protected = true;
@@ -3376,7 +3377,8 @@ output_constant_def_contents (rtx symbol)
   /* We are no longer deferring this constant.  */
   TREE_ASM_WRITTEN (decl) = TREE_ASM_WRITTEN (exp) = 1;
 
-  if (flag_asan && TREE_CODE (exp) == STRING_CST
+  if ((flag_sanitize & SANITIZE_ADDRESS)
+      && TREE_CODE (exp) == STRING_CST
       && asan_protect_global (exp))
     {
       asan_protected = true;
@@ -6291,7 +6293,8 @@ categorize_decl_for_section (const_tree decl, int reloc)
   else if (TREE_CODE (decl) == STRING_CST)
     {
       if (flag_mudflap
-	  || (flag_asan && asan_protect_global (CONST_CAST_TREE (decl))))
+	  || ((flag_sanitize & SANITIZE_ADDRESS)
+	      && asan_protect_global (CONST_CAST_TREE (decl))))
       /* or !flag_merge_constants */
         return SECCAT_RODATA;
       else
@@ -6317,7 +6320,8 @@ categorize_decl_for_section (const_tree decl, int reloc)
       else if (reloc & targetm.asm_out.reloc_rw_mask ())
 	ret = reloc == 1 ? SECCAT_DATA_REL_RO_LOCAL : SECCAT_DATA_REL_RO;
       else if (reloc || flag_merge_constants < 2 || flag_mudflap
-	       || (flag_asan && asan_protect_global (CONST_CAST_TREE (decl))))
+	       || ((flag_sanitize & SANITIZE_ADDRESS)
+		   && asan_protect_global (CONST_CAST_TREE (decl))))
 	/* C and C++ don't allow different variables to share the same
 	   location.  -fmerge-all-constants allows even that (at the
 	   expense of not conforming).  */
@@ -7075,7 +7079,7 @@ place_block_symbol (rtx symbol)
       decl = SYMBOL_REF_DECL (symbol);
       alignment = DECL_ALIGN (decl);
       size = get_constant_size (DECL_INITIAL (decl));
-      if (flag_asan
+      if ((flag_sanitize & SANITIZE_ADDRESS)
 	  && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
 	  && asan_protect_global (DECL_INITIAL (decl)))
 	size += asan_red_zone_size (size);
@@ -7085,7 +7089,8 @@ place_block_symbol (rtx symbol)
       decl = SYMBOL_REF_DECL (symbol);
       alignment = get_variable_align (decl);
       size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
-      if (flag_asan && asan_protect_global (decl))
+      if ((flag_sanitize & SANITIZE_ADDRESS)
+	  && asan_protect_global (decl))
 	{
 	  size += asan_red_zone_size (size);
 	  alignment = MAX (alignment,
@@ -7235,7 +7240,7 @@ output_object_block (struct object_block *block)
 				      DECL_ALIGN (decl));
 	  size = get_constant_size (DECL_INITIAL (decl));
 	  offset += size;
-	  if (flag_asan
+	  if ((flag_sanitize & SANITIZE_ADDRESS)
 	      && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST
 	      && asan_protect_global (DECL_INITIAL (decl)))
 	    {
@@ -7251,7 +7256,8 @@ output_object_block (struct object_block *block)
 	  assemble_variable_contents (decl, XSTR (symbol, 0), false);
 	  size = tree_low_cst (DECL_SIZE_UNIT (decl), 1);
 	  offset += size;
-	  if (flag_asan && asan_protect_global (decl))
+	  if ((flag_sanitize & SANITIZE_ADDRESS)
+	      && asan_protect_global (decl))
 	    {
 	      size = asan_red_zone_size (size);
 	      assemble_zeros (size);

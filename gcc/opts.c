@@ -1405,6 +1405,70 @@ common_handle_option (struct gcc_options *opts,
       opts->x_exit_after_options = true;
       break;
 
+    case OPT_fsanitize_:
+      {
+	const char *p = arg;
+	while (*p != 0)
+	  {
+	    static const struct
+	    {
+	      const char *const name;
+	      unsigned int flag;
+	      size_t len;
+	    } spec[] =
+	    {
+	      { "address", SANITIZE_ADDRESS, sizeof "address" - 1 },
+	      { "thread", SANITIZE_THREAD, sizeof "thread" - 1 },
+	      { "shift", SANITIZE_SHIFT, sizeof "shift" - 1 },
+	      { "integer-divide-by-zero", SANITIZE_DIVIDE,
+		sizeof "integer-divide-by-zero" - 1 },
+	      { "undefined", SANITIZE_UNDEFINED, sizeof "undefined" - 1 },
+	      { "unreachable", SANITIZE_UNREACHABLE,
+		sizeof "unreachable" - 1 },
+	      { NULL, 0, 0 }
+	    };
+	    const char *comma;
+	    size_t len, i;
+	    bool found = false;
+
+	    comma = strchr (p, ',');
+	    if (comma == NULL)
+	      len = strlen (p);
+	    else
+	      len = comma - p;
+	    if (len == 0)
+	      {
+		p = comma + 1;
+		continue;
+	      }
+
+	    /* Check to see if the string matches an option class name.  */
+	    for (i = 0; spec[i].name != NULL; ++i)
+	      if (len == spec[i].len
+		  && memcmp (p, spec[i].name, len) == 0)
+		{
+		  /* Handle both -fsanitize and -fno-sanitize cases.  */
+		  if (value)
+		    flag_sanitize |= spec[i].flag;
+		  else
+		    flag_sanitize &= ~spec[i].flag;
+		  found = true;
+		  break;
+		}
+
+	    if (! found)
+	      warning_at (loc, 0,
+			  "unrecognized argument to -fsanitize= option: %q.*s",
+			  (int) len, p);
+
+	    if (comma == NULL)
+	      break;
+	    p = comma + 1;
+	  }
+
+	break;
+      }
+
     case OPT_O:
     case OPT_Os:
     case OPT_Ofast:

@@ -1137,7 +1137,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 
       /* For address sanitizer, never crossjump __asan_report_* builtins,
 	 otherwise errors might be reported on incorrect lines.  */
-      if (flag_asan)
+      if (flag_sanitize & SANITIZE_ADDRESS)
 	{
 	  rtx call = get_call_rtx_from (i1);
 	  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
