@@ -80,6 +80,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Redirect incomming references.  */
   ipa_clone_referring ((symtab_node)prevailing_node, &node->symbol.ref_list);
 
+  lto_free_function_in_decl_state_for_node ((symtab_node)node);
+
   if (node->symbol.decl != prevailing_node->symbol.decl)
     cgraph_release_function_body (node);
 
