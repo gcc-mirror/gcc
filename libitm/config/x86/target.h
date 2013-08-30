@@ -70,6 +70,10 @@ cpu_relax (void)
 // See gtm_thread::begin_transaction for how these functions are used.
 #ifdef HAVE_AS_RTM
 #define USE_HTM_FASTPATH
+#ifdef __x86_64__
+// Use the custom fastpath in ITM_beginTransaction.
+#define HTM_CUSTOM_FASTPATH
+#endif
 
 static inline bool
 htm_available ()

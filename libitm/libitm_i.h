@@ -87,6 +87,14 @@ enum gtm_restart_reason
 #include "dispatch.h"
 #include "containers.h"
 
+#ifdef __USER_LABEL_PREFIX__
+# define UPFX UPFX1(__USER_LABEL_PREFIX__)
+# define UPFX1(t) UPFX2(t)
+# define UPFX2(t) #t
+#else
+# define UPFX
+#endif
+
 namespace GTM HIDDEN {
 
 // This type is private to alloc.c, but needs to be defined so that
@@ -230,6 +238,7 @@ struct gtm_thread
   // be used for the next iteration of the transaction.
   // Only restart_total is reset to zero when the transaction commits, the
   // other counters are total values for all previously executed transactions.
+  // restart_total is also used by the HTM fastpath in a different way.
   uint32_t restart_reason[NUM_RESTARTS];
   uint32_t restart_total;
 
@@ -247,7 +256,9 @@ struct gtm_thread
   // The lock that provides access to serial mode.  Non-serialized
   // transactions acquire read locks; a serialized transaction aquires
   // a write lock.
-  static gtm_rwlock serial_lock;
+  // Accessed from assembly language, thus the "asm" specifier on
+  // the name, avoiding complex name mangling.
+  static gtm_rwlock serial_lock __asm__(UPFX "gtm_serial_lock");
 
   // The head of the list of all threads' transactions.
   static gtm_thread *list_of_threads;
@@ -277,15 +288,8 @@ struct gtm_thread
 
   // Invoked from assembly language, thus the "asm" specifier on
   // the name, avoiding complex name mangling.
-#ifdef __USER_LABEL_PREFIX__
-#define UPFX1(t) UPFX(t)
-#define UPFX(t) #t
   static uint32_t begin_transaction(uint32_t, const gtm_jmpbuf *)
-	__asm__(UPFX1(__USER_LABEL_PREFIX__) "GTM_begin_transaction") ITM_REGPARM;
-#else
-  static uint32_t begin_transaction(uint32_t, const gtm_jmpbuf *)
-	__asm__("GTM_begin_transaction") ITM_REGPARM;
-#endif
+	__asm__(UPFX "GTM_begin_transaction") ITM_REGPARM;
   // In eh_cpp.cc
   void revert_cpp_exceptions (gtm_transaction_cp *cp = 0);
 
@@ -338,7 +342,9 @@ extern gtm_cacheline_mask gtm_mask_stack(gtm_cacheline *, gtm_cacheline_mask);
 
 // Control variable for the HTM fastpath that uses serial mode as fallback.
 // Non-zero if the HTM fastpath is enabled. See gtm_thread::begin_transaction.
-extern uint32_t htm_fastpath;
+// Accessed from assembly language, thus the "asm" specifier on
+// the name, avoiding complex name mangling.
+extern uint32_t htm_fastpath __asm__(UPFX "gtm_htm_fastpath");
 
 } // namespace GTM
 
