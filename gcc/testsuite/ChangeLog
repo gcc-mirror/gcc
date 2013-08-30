@@ -1,3 +1,8 @@
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58010
+	* gcc.dg/pr58010.c: New testcase.
+
 2013-08-29  Xinliang DavidLi  <davidxl@google.com>
 	
 	* gcc.dg/unroll_3.c: Message change.

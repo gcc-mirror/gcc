@@ -1,3 +1,9 @@
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58010
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Remove
+	assert that we have a loop-closed PHI.
+
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* lto-symtab.c (lto_cgraph_replace_node): Free decl_in_state.
