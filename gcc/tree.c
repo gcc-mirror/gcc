@@ -9794,7 +9794,10 @@ build_common_tree_nodes (bool signed_char, bool short_double)
   }
 }
 
-/* Modify DECL for given flags.  */
+/* Modify DECL for given flags.
+   TM_PURE attribute is set only on types, so the function will modify
+   DECL's type when ECF_TM_PURE is used.  */
+
 void
 set_call_expr_flags (tree decl, int flags)
 {
@@ -9818,8 +9821,7 @@ set_call_expr_flags (tree decl, int flags)
     DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("leaf"),
 					NULL, DECL_ATTRIBUTES (decl));
   if ((flags & ECF_TM_PURE) && flag_tm)
-    DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("transaction_pure"),
-					NULL, DECL_ATTRIBUTES (decl));
+    apply_tm_attr (decl, get_identifier ("transaction_pure"));
   /* Looping const or pure is implied by noreturn.
      There is currently no way to declare looping const or looping pure alone.  */
   gcc_assert (!(flags & ECF_LOOPING_CONST_OR_PURE)
