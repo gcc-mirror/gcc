@@ -44,19 +44,25 @@ struct gtm_thread;
 //
 // In this implementation, writers are given highest priority access but
 // read-to-write upgrades do not have a higher priority than writers.
+//
+// Do not change the layout of this class; it must remain a POD type with
+// standard layout, and the SUMMARY field must be first (i.e., so the
+// assembler code can assume that its address is equal to the address of the
+// respective instance of the class).
 
 class gtm_rwlock
 {
-  pthread_mutex_t mutex;	        // Held if manipulating any field.
-  pthread_cond_t c_readers;	        // Readers wait here
-  pthread_cond_t c_writers;	        // Writers wait here for writers
-  pthread_cond_t c_confirmed_writers;	// Writers wait here for readers
-
   static const unsigned a_writer  = 1;	// An active writer.
   static const unsigned w_writer  = 2;	// The w_writers field != 0
   static const unsigned w_reader  = 4;  // The w_readers field != 0
 
   std::atomic<unsigned int> summary;	// Bitmask of the above.
+
+  pthread_mutex_t mutex;	        // Held if manipulating any field.
+  pthread_cond_t c_readers;	        // Readers wait here
+  pthread_cond_t c_writers;	        // Writers wait here for writers
+  pthread_cond_t c_confirmed_writers;	// Writers wait here for readers
+
   unsigned int a_readers;	// Nr active readers as observed by a writer
   unsigned int w_readers;	// Nr waiting readers
   unsigned int w_writers;	// Nr waiting writers

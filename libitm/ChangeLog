@@ -1,3 +1,19 @@
+2013-08-30  Torvald Riegel  <triegel@redhat.com>
+
+	* libitm_i.h (gtm_thread): Assign an asm name to serial_lock.
+	(htm_fastpath): Assign an asm name.
+	* libitm.h (_ITM_codeProperties): Add non-ABI flags used by custom
+	HTM fast paths.
+	(_ITM_actions): Likewise.
+	* config/x86/target.h (HTM_CUSTOM_FASTPATH): Enable custom fastpath on
+	x86_64.
+	* config/x86/sjlj.S (_ITM_beginTransaction): Add custom HTM fast path.
+	* config/posix/rwlock.h (gtm_rwlock): Update comments.  Move summary
+	field to the start of the structure.
+	* config/linux/rwlock.h (gtm_rwlock): Update comments.
+	* beginend.cc (gtm_thread::begin_transaction): Add retry policy
+	handling for custom HTM fast paths.
+
 2013-08-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 	Revert:
 	2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>

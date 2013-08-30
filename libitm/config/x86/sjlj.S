@@ -24,6 +24,7 @@
 
 
 #include "asmcfi.h"
+#include "config.h"
 
 #define CONCAT1(a, b) CONCAT2(a, b)
 #define CONCAT2(a, b) a ## b
@@ -52,6 +53,19 @@
 #  endif
 #endif
 
+/* These are duplicates of the canonical definitions in libitm.h.  Note that
+   the code relies on pr_uninstrumentedCode == a_runUninstrumentedCode.  */
+#define pr_uninstrumentedCode	0x02
+#define pr_hasNoAbort		0x08
+#define pr_HTMRetryableAbort	0x800000
+#define pr_HTMRetriedAfterAbort	0x1000000
+#define a_runInstrumentedCode	0x01
+#define a_runUninstrumentedCode	0x02
+#define a_tryHTMFastPath	0x20
+
+#define _XABORT_EXPLICIT	(1 << 0)
+#define _XABORT_RETRY		(1 << 1)
+
 	.text
 
 	.align 4
@@ -60,20 +74,83 @@
 SYM(_ITM_beginTransaction):
 	cfi_startproc
 #ifdef __x86_64__
+#ifdef HAVE_AS_RTM
+	/* Custom HTM fast path.  We start the HW transaction here and let
+	   gtm_thread::begin_transaction (aka GTM_begin_transaction) decide
+	   how to proceed on aborts: We either retry the fast path, or fall
+	   back to another execution method.  RTM restores all registers after
+	   a HW transaction abort, so we can do the SW setjmp after aborts,
+	   and we have to because we might choose a SW fall back.  However,
+	   we have to explicitly save/restore the first argument (edi).  */
+	cmpl	$0, SYM(gtm_htm_fastpath)(%rip)
+	jz	.Lno_htm
+	testl	$pr_hasNoAbort, %edi
+	jz	.Lno_htm
+.Lhtm_fastpath:
+	xbegin	.Ltxn_abort
+	/* Monitor the serial lock (specifically, the 32b writer/summary field
+	   at its start), and only continue if there is no serial-mode
+	   transaction.  Note that we might be just a nested transaction and
+	   our outermost transaction might be in serial mode; we check for
+	   this case in the retry policy implementation.  */
+	cmpl	$0, SYM(gtm_serial_lock)(%rip)
+	jnz	1f
+	/* Everything is good.  Run the transaction, preferably using the
+	   uninstrumented code path.  Note that the following works because
+	   pr_uninstrumentedCode == a_runUninstrumentedCode.  */
+	andl	$pr_uninstrumentedCode, %edi
+	mov	$a_runInstrumentedCode, %eax
+	cmovnz	%edi, %eax
+	ret
+	/* There is a serial-mode transaction, so abort (see htm_abort()
+	   regarding the abort code).  */
+1:	xabort	$0xff
+.Ltxn_abort:
+	/* If it might make sense to retry the HTM fast path, let the C++
+	   code decide.  */
+	testl	$(_XABORT_RETRY|_XABORT_EXPLICIT), %eax
+	jz	.Lno_htm
+	orl	$pr_HTMRetryableAbort, %edi
+	/* Let the C++ code handle the retry policy.  */
+.Lno_htm:
+#endif
 	leaq	8(%rsp), %rax
-	subq	$56, %rsp
-	cfi_def_cfa_offset(64)
-	movq	%rax, (%rsp)
-	movq	%rbx, 8(%rsp)
-	movq	%rbp, 16(%rsp)
-	movq	%r12, 24(%rsp)
-	movq	%r13, 32(%rsp)
-	movq	%r14, 40(%rsp)
-	movq	%r15, 48(%rsp)
-	movq	%rsp, %rsi
+	subq	$72, %rsp
+	cfi_adjust_cfa_offset(72)
+	/* Store edi for future HTM fast path retries.  We use a stack slot
+	   lower than the jmpbuf so that the jmpbuf's rip field will overlap
+	   with the proper return address on the stack.  */
+	movl	%edi, 8(%rsp)
+	/* Save the jmpbuf for any non-HTM-fastpath execution method.
+	   Because rsp-based addressing is 1 byte larger and we've got rax
+	   handy, use it.  */
+	movq	%rax, -64(%rax)
+	movq	%rbx, -56(%rax)
+	movq	%rbp, -48(%rax)
+	movq	%r12, -40(%rax)
+	movq	%r13, -32(%rax)
+	movq	%r14, -24(%rax)
+	movq	%r15, -16(%rax)
+	leaq	-64(%rax), %rsi
 	call	SYM(GTM_begin_transaction)
-	addq	$56, %rsp
-	cfi_def_cfa_offset(8)
+	movl	8(%rsp), %edi
+	addq	$72, %rsp
+	cfi_adjust_cfa_offset(-72)
+#ifdef HAVE_AS_RTM
+	/* If a_tryHTMFastPath was returned, then we need to retry the
+	   fast path.  We also restore edi and set pr_HTMRetriedAfterAbort
+	   to state that we have retried the fast path already (it's harmless
+	   if this bit is set even if we don't retry the fast path because it
+	   is checked iff pr_HTMRetryableAbort is set).  We clear
+	   pr_HTMRetryableAbort because it applies to a previous HW
+	   transaction attempt.  */
+	cmpl	$a_tryHTMFastPath, %eax
+	jnz	2f
+	andl	$(0xffffffff-pr_HTMRetryableAbort), %edi
+	orl	$pr_HTMRetriedAfterAbort, %edi
+	jmp	.Lhtm_fastpath
+2:
+#endif
 #else
 	leal	4(%esp), %ecx
 	movl	4(%esp), %eax
