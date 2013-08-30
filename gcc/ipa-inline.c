@@ -1904,6 +1904,10 @@ ipa_inline (void)
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int i;
   int cold;
+  bool remove_functions = false;
+
+  if (!optimize)
+    return 0;
 
   if (in_lto_p && optimize)
     ipa_update_after_lto_read ();
@@ -1984,6 +1988,7 @@ ipa_inline (void)
 		{
 		  cgraph_resolve_speculation (edge, NULL);
 		  update = true;
+		  remove_functions = true;
 		}
 	    }
 	  if (update)
@@ -2018,6 +2023,7 @@ ipa_inline (void)
 		    }
 
 		  inline_call (node->callers, true, NULL, NULL, true);
+		  remove_functions = true;
 		  if (dump_file)
 		    fprintf (dump_file,
 			     " Inlined into %s which now has %i size\n",
@@ -2048,7 +2054,7 @@ ipa_inline (void)
   /* In WPA we use inline summaries for partitioning process.  */
   if (!flag_wpa)
     inline_free_summary ();
-  return 0;
+  return remove_functions ? TODO_remove_functions : 0;
 }
 
 /* Inline always-inline function calls in NODE.  */
@@ -2292,13 +2298,13 @@ make_pass_early_inline (gcc::context *ctxt)
 /* When to run IPA inlining.  Inlining of always-inline functions
    happens during early inlining.
 
-   Enable inlining unconditoinally at -flto.  We need size estimates to
-   drive partitioning.  */
+   Enable inlining unconditoinally, because callgraph redirection
+   happens here.   */
 
 static bool
 gate_ipa_inline (void)
 {
-  return optimize || flag_lto || flag_wpa;
+  return true;
 }
 
 namespace {
@@ -2315,7 +2321,7 @@ const pass_data pass_data_ipa_inline =
   0, /* properties_provided */
   0, /* properties_destroyed */
   TODO_remove_functions, /* todo_flags_start */
-  ( TODO_dump_symtab | TODO_remove_functions ), /* todo_flags_finish */
+  ( TODO_dump_symtab ), /* todo_flags_finish */
 };
 
 class pass_ipa_inline : public ipa_opt_pass_d

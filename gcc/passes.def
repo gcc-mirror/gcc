@@ -126,7 +126,6 @@ along with GCC; see the file COPYING3.  If not see
   /* These passes are run after IPA passes on every function that is being
      output to the assembler file.  */
   INSERT_PASSES_AFTER (all_passes)
-  NEXT_PASS (pass_fixup_cfg);
   NEXT_PASS (pass_lower_eh_dispatch);
   NEXT_PASS (pass_all_optimizations);
   PUSH_INSERT_PASSES_WITHIN (pass_all_optimizations)

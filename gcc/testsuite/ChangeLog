@@ -1,3 +1,8 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Rename test3 to test1 to match template
+	and comment.
+
 2013-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/51424

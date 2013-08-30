@@ -1,3 +1,19 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_function_body_availability): Handle weakref
+	correctly.
+	* passes.def: Remove pass_fixup_cfg.
+	* ipa-inline.c (ipa_inline): When not optimizing, do not inline;
+	track when we need to remove functions.
+	(gate_ipa_inline): Execute inlining always; add comment why.
+	(pass_data_ipa_inline): Remove TODO_remove_functions.
+	* ipa-inline-analysis.c (inline_generate_summary): When not optimizing
+	do not produce summaries.
+	* symtab.c (change_decl_assembler_name): Handle renaming of weakrefs.
+	(symtab_nonoverwritable_alias): Assert we are not called on weakref.
+	* varpool.c (cgraph_variable_initializer_availability): Fix weakrefs,
+	constant pool and vtable.
+
 2013-08-30  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/arm_neon.h (__AARCH64_UINT64_C, __AARCH64_INT64_C): New
