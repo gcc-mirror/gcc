@@ -1,3 +1,34 @@
+2013-08-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::declaration): Declare as
+	overrider.
+	(cxx_pretty_printer::declaration_specifiers): Likewise.
+	(cxx_pretty_printer::function_specifier): Likewise.
+	(cxx_pretty_printer::declarator): Likewise.
+	(cxx_pretty_printer::direct_declarator): Likewise.
+	(cxx_pretty_printer::abstract_declarator): Likewise.
+	(cxx_pretty_printer::direct_abstract_declarator): Likewise.
+	(pp_cxx_declaration): Remove.
+	* cxx-pretty-print.c (cxx_pretty_printer::function_specifier):
+	Rename from pp_cxx_function_specifier.  Adjust.
+	(cxx_pretty_printer::declaration_specifiers): Rename from
+	pp_cxx_decl_specifier_seq.  Adjust.
+	(cxx_pretty_printer::direct_declarator): Rename from
+	pp_cxx_direct_declarator.  Adjust.
+	(cxx_pretty_printer::declarator): Rename from pp_cxx_declarator.
+	Adjust.
+	(cxx_pretty_printer::abstract_declarator): Rename from
+	pp_cxx_abstract_declarator.  Adjust.
+	(cxx_pretty_printer::direct_abstract_declarator): Rename from
+	pp_cxx_direct_abstract_declarator.  Adjust.
+	(cxx_pretty_printer::declaration): Rename from
+	pp_cxx_declaration.  Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	declaration, declaration_specifiers, function_specifier,
+	declarator, direct_declarator, abstract_declarator,
+	direct_abstract_declarator.
+	* error.c (dump_decl): Adjust.
+
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
 	Correct previous patch to not mark terminate as LEAF.
