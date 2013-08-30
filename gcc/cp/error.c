@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "pointer-set.h"
 #include "c-family/c-objc.h"
+#include "ubsan.h"
 
 #include <new>                    // For placement-new.
 
@@ -2006,6 +2007,12 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 		pp_cxx_arrow (pp);
 	      }
 	    skipfirst = true;
+	  }
+	if (flag_sanitize & SANITIZE_UNDEFINED
+	    && is_ubsan_builtin_p (fn))
+	  {
+	    pp_string (cxx_pp, M_("<ubsan routine call>"));
+	    break;
 	  }
 	dump_expr (pp, fn, flags | TFF_EXPR_IN_PARENS);
 	dump_call_expr_args (pp, t, flags, skipfirst);

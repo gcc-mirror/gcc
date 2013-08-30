@@ -1,3 +1,13 @@
+2013-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.am (SUBDIRS): Add ubsan.
+	* configure.ac (AC_CONFIG_FILES): Add ubsan/Makefile.
+	* merge.sh: Merge ubsan.
+	* sanitizer_common/sanitizer_report_decorator.h: Partial merge from trunk.
+	* sanitizer_common/sanitizer_printf.cc: Likewise.
+	* sanitizer_common/sanitizer_common.h: Likewise.
+	* ubsan: New directory. Import ubsan runtime from llvm.
+
 2013-06-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* sanitizer_common/sanitizer_linux.cc (MemoryMappingLayout::Next):

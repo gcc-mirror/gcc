@@ -1,3 +1,79 @@
+2013-08-30  Marek Polacek  <polacek@redhat.com>
+
+	* Makefile.in (ubsan.o): Add.
+	(c-family/c-ubsan.o): Add.
+	(builtins.o): Add ubsan.h dependency.
+	* ubsan.h: New file.
+	* ubsan.c: New file.
+	* common.opt: Add -fsanitize=undefined option.
+	(flag_sanitize): Add variable.
+	(fsanitize=): Add option.  Add Driver.
+	(fsanitize=thread): Remove option.
+	(fsanitize=address): Likewise.
+	(static-libubsan): New option.
+	* doc/invoke.texi: Document the new flag and -static-libubsan.
+	* sanitizer.def (DEF_SANITIZER_BUILTIN): Define.
+	(BUILT_IN_UBSAN_HANDLE_BUILTIN_UNREACHABLE): Define.
+	* builtin-attrs.def (ATTR_COLD): Define.
+	(ATTR_COLD_NOTHROW_LEAF_LIST): Define.
+	* builtins.def (BUILT_IN_UBSAN_HANDLE_DIVREM_OVERFLOW,
+	BUILT_IN_UBSAN_HANDLE_SHIFT_OUT_OF_BOUNDS): Define.
+	* flag-types.h (sanitize_code): New enum.
+	* opts.c (common_handle_option): Parse command line arguments
+	of -fsanitize=.  Add -fsanitize=unreachable option.
+	* varasm.c (get_variable_section): Adjust.
+	(assemble_noswitch_variable): Likewise.
+	(assemble_variable): Likewise.
+	(output_constant_def_contents): Likewise.
+	(categorize_decl_for_section): Likewise.
+	(place_block_symbol): Likewise.
+	(output_object_block): Likewise.
+	* builtins.def: Likewise.
+	* toplev.c (compile_file): Likewise.
+	(process_options): Likewise.
+	* cppbuiltin.c: Likewise.
+	* tsan.c (tsan_pass): Likewise.
+	(tsan_gate): Likewise.
+	(tsan_gate_O0): Likewise.
+	* cfgexpand.c (partition_stack_vars): Likewise.
+	(expand_stack_vars): Likewise.
+	(defer_stack_allocation): Likewise.
+	(expand_used_vars): Likewise.
+	* cfgcleanup.c (old_insns_match_p): Likewise.
+	* asan.c (asan_finish_file): Likewise.
+	(asan_instrument): Likewise.
+	(gate_asan): Likewise.
+	(initialize_sanitizer_builtins): Build BT_FN_VOID_PTR_PTR_PTR.
+	(ATTR_COLD_NOTHROW_LEAF_LIST): Define.
+	(asan_global_struct): Use pointer_sized_int_node instead
+	calling build_nonstandard_integer_type.
+	(initialize_sanitizer_builtins): Likewise.
+	(asan_finish_file): Likewise.
+	* gcc.c: Document %{%:function(args):X}.
+	(static_spec_functions): Add sanitize.
+	(handle_spec_function): Add retval_nonnull argument and if non-NULL,
+	store funcval != NULL there.
+	(do_spec_1): Adjust handle_spec_function caller.
+	(handle_braces): Allow %:function(args) as condition.
+	(sanitize_spec_function): New function.
+	(ADD_STATIC_LIBUBSAN_LIBS): Define.
+	(LIBUBSAN_SPEC): Likewise.
+	(LIBUBSAN_EARLY_SPEC): Likewise.
+	(SANITIZER_SPEC): Handle libubsan.
+	(SANITIZER_EARLY_SPEC): Likewise.
+	* config/darwin.h (LINK_COMMAND_SPEC_A): Use %:sanitize(address)
+	instead of fsanitize=address.
+	* config/arm/linux-eabi.h (ASAN_CC1_SPEC): Use %:sanitize(address)
+	instead of fsanitize=address*.
+	* builtins.c: Include ubsan.h.
+	(fold_builtin_0): Instrument __builtin_unreachable.
+	* config/rs6000/rs6000.h (FRAME_GROWS_DOWNWARD): Use flag_sanitize
+	instead of flag_asan.
+	* tree.h (enum tree_index): Add TI_POINTER_SIZED_TYPE.
+	(pointer_sized_int_node): Define.
+	* tree.c (build_common_tree_nodes): Initialize
+	pointer_sized_int_node.
+
 2013-08-30  Mike Stump  <mikestump@comcast.net>
 
 	* doc/install.texi (Prerequisites): Note regression in Tcl 8.6

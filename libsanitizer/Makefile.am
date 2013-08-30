@@ -1,13 +1,13 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 if TSAN_SUPPORTED
-SUBDIRS = interception sanitizer_common asan tsan 
+SUBDIRS = interception sanitizer_common asan tsan ubsan
 else
-SUBDIRS = interception sanitizer_common asan 
+SUBDIRS = interception sanitizer_common asan ubsan
 endif
 
 if USING_MAC_INTERPOSE
-SUBDIRS = sanitizer_common asan
+SUBDIRS = sanitizer_common asan ubsan
 endif
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS

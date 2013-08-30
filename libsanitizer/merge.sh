@@ -69,6 +69,7 @@ merge lib/asan asan
 merge lib/tsan/rtl tsan
 merge lib/sanitizer_common sanitizer_common
 merge lib/interception interception
+merge lib/ubsan ubsan
 
 rm -rf upstream
 

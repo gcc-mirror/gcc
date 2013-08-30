@@ -764,7 +764,7 @@ partition_stack_vars (void)
 	     sizes, as the shorter vars wouldn't be adequately protected.
 	     Don't do that for "large" (unsupported) alignment objects,
 	     those aren't protected anyway.  */
-	  if (flag_asan && isize != jsize
+	  if ((flag_sanitize & SANITIZE_ADDRESS) && isize != jsize
 	      && ialign * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	    break;
 
@@ -940,7 +940,7 @@ expand_stack_vars (bool (*pred) (size_t), struct stack_vars_data *data)
       alignb = stack_vars[i].alignb;
       if (alignb * BITS_PER_UNIT <= MAX_SUPPORTED_STACK_ALIGNMENT)
 	{
-	  if (flag_asan && pred)
+	  if ((flag_sanitize & SANITIZE_ADDRESS) && pred)
 	    {
 	      HOST_WIDE_INT prev_offset = frame_offset;
 	      tree repr_decl = NULL_TREE;
@@ -1110,7 +1110,7 @@ defer_stack_allocation (tree var, bool toplevel)
   /* If stack protection is enabled, *all* stack variables must be deferred,
      so that we can re-order the strings to the top of the frame.
      Similarly for Address Sanitizer.  */
-  if (flag_stack_protect || flag_asan)
+  if (flag_stack_protect || (flag_sanitize & SANITIZE_ADDRESS))
     return true;
 
   /* We handle "large" alignment via dynamic allocation.  We want to handle
@@ -1753,7 +1753,7 @@ expand_used_vars (void)
 	    expand_stack_vars (stack_protect_decl_phase_2, &data);
 	}
 
-      if (flag_asan)
+      if (flag_sanitize & SANITIZE_ADDRESS)
 	/* Phase 3, any partitions that need asan protection
 	   in addition to phase 1 and 2.  */
 	expand_stack_vars (asan_decl_phase_3, &data);

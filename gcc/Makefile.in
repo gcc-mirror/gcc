@@ -1154,7 +1154,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o tree-mudflap.o \
-  c-family/array-notation-common.o
+  c-family/array-notation-common.o c-family/c-ubsan.o
 
 # Language-independent object files.
 # We put the insn-*.o files first so that a parallel make will build
@@ -1383,6 +1383,7 @@ OBJS = \
 	tree-affine.o \
 	asan.o \
 	tsan.o \
+	ubsan.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -2028,6 +2029,10 @@ c-family/array-notation-common.o : c-family/array-notation-common.c $(TREE_H) \
 c-family/stub-objc.o : c-family/stub-objc.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-objc.h
 
+c-family/c-ubsan.o : c-family/c-ubsan.c $(CONFIG_H) $(SYSTEM_H) \
+	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-ubsan.h \
+	alloc-pool.h $(CGRAPH_H) $(GIMPLE_H) $(HASH_TABLE_H) output.h \
+	toplev.h ubsan.h
 default-c.o: config/default-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(C_TARGET_H) $(C_TARGET_DEF_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
@@ -2265,8 +2270,11 @@ tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(CGRAPH_H) $(GGC_H) \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(FUNCTION_H) \
    $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) tree-iterator.h \
-   intl.h cfghooks.h output.h options.h c-family/c-common.h tsan.h asan.h \
+   intl.h cfghooks.h output.h options.h $(C_COMMON_H) tsan.h asan.h \
    tree-ssa-propagate.h
+ubsan.o : ubsan.c ubsan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
+   output.h coretypes.h $(TREE_H) $(CGRAPH_H) $(HASHTAB_H) gt-ubsan.h \
+   toplev.h $(C_COMMON_H)
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) $(CFGLOOP_H) \
@@ -2836,7 +2844,7 @@ builtins.o : builtins.c builtins.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    hard-reg-set.h $(DIAGNOSTIC_CORE_H) hard-reg-set.h $(EXCEPT_H) \
    $(TM_P_H) $(PREDICT_H) $(LIBFUNCS_H) langhooks.h $(BASIC_BLOCK_H) \
    tree-mudflap.h realmpfr.h $(BUILTINS_DEF) $(MACHMODE_H) \
-   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) value-prof.h
+   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) value-prof.h ubsan.h
 calls.o : calls.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(EXPR_H) $(OPTABS_H) langhooks.h $(TARGET_H) \
    $(LIBFUNCS_H) $(REGS_H) $(DIAGNOSTIC_CORE_H) output.h \
@@ -3830,6 +3838,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-inline.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
+  $(srcdir)/ubsan.c \
   $(srcdir)/tsan.c $(srcdir)/ipa-devirt.c \
   @all_gtfiles@
 
