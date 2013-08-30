@@ -1,3 +1,42 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (build_vtbl_initializer): Make __cxa_deleted_virtual
+	ECF_NORETURN | ECF_LEAF
+	* cp-tree.h (build_library_fn_ptr, build_cp_library_fn_ptr,
+	push_library_fn, push_void_library_fn): Update prototype.
+	* decl.c (build_library_fn_1): Remove.
+	(push_cp_library_fn, build_cp_library_fn): Update to take ECF flags.
+	(cxx_init_decl_processing): Update; global_delete_fndecl is ECF_NOTROW;
+	__cxa_pure_virtual is ECF_NORETURN | ECF_NORETURN | ECF_LEAF.
+	(build_library_fn_1): Add ecf_flags argument; rename to ...
+	(build_library_fn): ... this one.
+	(build_cp_library_fn): Take ecf_flags; do not copy NOTHROW flag.
+	(build_library_fn_ptr): Take ecf_flags.
+	(build_cp_library_fn_ptr): Likewise.
+	(push_library_fn): Likewise.
+	(push_cp_library_fn): Likewise.
+	(push_void_library_fn): Likewise.
+	(push_throw_library_fn): All throws are ECF_NORETURN.
+	(__cxa_atexit, __cxa_thread_atexit): Add ECF_LEAF | ECF_NOTHROW attributes.
+	(expand_static_init): __cxa_guard_acquire, __cxa_guard_release,
+	__cxa_guard_abort are ECF_NOTHROW | ECF_LEAF.
+	* except.c (init_exception_processing): terminate is
+	ECF_NOTHROW | ECF_NORETURN | ECF_LEAF.
+	(declare_nothrow_library_fn): Add ecf_flags parameter.
+	(__cxa_get_exception_ptr): Is ECF_NOTHROW | ECF_PURE | ECF_LEAF |
+	ECF_TM_PURE.
+	(do_begin_catch): cxa_begin_catch and _ITM_cxa_begin_catch
+	are ECF_NOTHROW | ECF_LEAF.
+	(do_end_catch): __cxa_end_catch and _ITM_cxa_end_catch is
+	ECF_LEAF.
+	(do_allocate_exception): _cxa_allocate_exception
+	and _ITM_cxa_allocate_exception are ECF_NOTHROW | ECF_MALLOC
+	| ECF_LEAF
+	(do_free_exception): __cxa_free_exception is
+	ECF_NOTHROW | ECF_LEAF.
+	* rtti.c (build_dynamic_cast_1): __dynamic_cast
+	is ECF_LEAF | ECF_PURE | ECF_NOTHROW.
+
 2013-08-29  Adam Butcher  <adam@jessamine.co.uk>
 
 	* error.c (dump_lambda_function): New function, dependent on ...
