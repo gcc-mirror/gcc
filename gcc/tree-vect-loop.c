@@ -4373,9 +4373,8 @@ vect_finalize_reduction:
         if (!flow_bb_inside_loop_p (loop, gimple_bb (USE_STMT (use_p))))
           phis.safe_push (USE_STMT (use_p));
 
-      /* We expect to have found an exit_phi because of loop-closed-ssa
-         form.  */
-      gcc_assert (!phis.is_empty ());
+      /* While we expect to have found an exit_phi because of loop-closed-ssa
+         form we can end up without one if the scalar cycle is dead.  */
 
       FOR_EACH_VEC_ELT (phis, i, exit_phi)
         {
