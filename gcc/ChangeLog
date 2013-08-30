@@ -1,3 +1,8 @@
+2013-08-30  Mike Stump  <mikestump@comcast.net>
+
+	* doc/install.texi (Prerequisites): Note regression in Tcl 8.6
+	with RE patterns.
+
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
 	* cgraph.c (cgraph_function_body_availability): Handle weakref
