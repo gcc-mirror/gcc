@@ -1,3 +1,8 @@
+2013-08-30  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* recog.c (verify_changes): Verify that changes[i].old is non-zero
+	before applying REG_P.
+
 2013-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58277
