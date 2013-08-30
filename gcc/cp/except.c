@@ -58,8 +58,7 @@ init_exception_processing (void)
   push_namespace (std_identifier);
   tmp = build_function_type_list (void_type_node, NULL_TREE);
   terminate_node = build_cp_library_fn_ptr ("terminate", tmp,
-					    ECF_NOTHROW | ECF_NORETURN
-					    | ECF_LEAF);
+					   ECF_NOTHROW | ECF_NORETURN);
   TREE_THIS_VOLATILE (terminate_node) = 1;
   TREE_NOTHROW (terminate_node) = 1;
   pop_namespace ();
@@ -192,8 +191,7 @@ do_begin_catch (void)
   if (!get_global_value_if_present (fn, &fn))
     {
       /* Declare void* __cxa_begin_catch (void *) throw().  */
-      fn = declare_library_fn (fn, ptr_type_node, ptr_type_node,
-			       ECF_NOTHROW | ECF_LEAF);
+      fn = declare_library_fn (fn, ptr_type_node, ptr_type_node, ECF_NOTHROW);
 
       /* Create its transactional-memory equivalent.  */
       if (flag_tm)
@@ -201,8 +199,7 @@ do_begin_catch (void)
 	  tree fn2 = get_identifier ("_ITM_cxa_begin_catch");
 	  if (!get_global_value_if_present (fn2, &fn2))
 	    fn2 = declare_library_fn (fn2, ptr_type_node,
-				      ptr_type_node,
-				      ECF_NOTHROW | ECF_TM_PURE | ECF_LEAF);
+				      ptr_type_node, ECF_NOTHROW | ECF_TM_PURE);
 	  record_tm_replacement (fn, fn2);
 	}
     }
@@ -242,15 +239,14 @@ do_end_catch (tree type)
     {
       /* Declare void __cxa_end_catch ().
          This can throw if the destructor for the exception throws.  */
-      fn = push_void_library_fn (fn, void_list_node, ECF_LEAF);
+      fn = push_void_library_fn (fn, void_list_node, 0);
 
       /* Create its transactional-memory equivalent.  */
       if (flag_tm)
 	{
 	  tree fn2 = get_identifier ("_ITM_cxa_end_catch");
 	  if (!get_global_value_if_present (fn2, &fn2))
-	    fn2 = push_void_library_fn (fn2, void_list_node,
-					ECF_TM_PURE | ECF_LEAF);
+	    fn2 = push_void_library_fn (fn2, void_list_node, ECF_TM_PURE);
 	  record_tm_replacement (fn, fn2);
 	}
     }
@@ -630,7 +626,7 @@ do_allocate_exception (tree type)
     {
       /* Declare void *__cxa_allocate_exception(size_t) throw().  */
       fn = declare_library_fn (fn, ptr_type_node, size_type_node,
-			        ECF_NOTHROW | ECF_MALLOC | ECF_LEAF);
+			        ECF_NOTHROW | ECF_MALLOC);
 
       if (flag_tm)
 	{
@@ -638,8 +634,7 @@ do_allocate_exception (tree type)
 	  if (!get_global_value_if_present (fn2, &fn2))
 	    fn2 = declare_library_fn (fn2, ptr_type_node,
 				      size_type_node, 
-				      ECF_NOTHROW | ECF_MALLOC | ECF_TM_PURE 
-				      | ECF_LEAF);
+				      ECF_NOTHROW | ECF_MALLOC | ECF_TM_PURE);
 	  record_tm_replacement (fn, fn2);
 	}
     }

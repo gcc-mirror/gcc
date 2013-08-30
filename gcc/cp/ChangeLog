@@ -1,5 +1,16 @@
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
+	Correct previous patch to not mark terminate as LEAF.
+	* class.c (build_vtbl_initializer): Drop LEAF
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(push_throw_library_fn): Likewise.
+	* except.c (init_exception_processing): Likewise.
+	(do_begin_catch): Likewise.
+	(do_end_catch): Likewise.
+	(do_allocate_exception): Likewise.
+
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
 	* class.c (build_vtbl_initializer): Make __cxa_deleted_virtual
 	ECF_NORETURN | ECF_LEAF
 	* cp-tree.h (build_library_fn_ptr, build_cp_library_fn_ptr,
