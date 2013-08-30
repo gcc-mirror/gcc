@@ -1,5 +1,11 @@
 2013-08-30  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58223
+	* gcc.dg/torture/pr58223.c: New testcase.
+	* gcc.dg/tree-ssa/ldist-16.c: Flip expected behavior.
+
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/58010
 	* gcc.dg/pr58010.c: New testcase.
 
