@@ -1,3 +1,21 @@
+2013-08-30  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/58191
+	* include/debug/macros.h (__glibcxx_check_partitioned_lower): Add
+	__gnu_debug::__base calls on iterators passed to internal debug
+	check.
+	(__glibcxx_check_partitioned_lower_pred): Likewise.
+	(__glibcxx_check_partitioned_upper): Likewise.
+	(__glibcxx_check_partitioned_upper_pred): Likewise.
+	(__glibcxx_check_sorted): Likewise.
+	(__glibcxx_check_sorted_pred): Likewise.
+	(__glibcxx_check_sorted_set): Likewise.
+	(__glibcxx_check_sorted_set_pred): Likewise.
+	* include/debug/functions.h (__check_partitioned_lower):
+	Remove code to detect safe iterators.
+	(__check_partitioned_upper): Likewise.
+	(__check_sorted): Likewise.
+
 2013-08-29  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h (basic_regex<>::assign): Don't lose _M_traits.

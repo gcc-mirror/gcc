@@ -229,7 +229,9 @@ _GLIBCXX_DEBUG_VERIFY(! this->empty(),					\
 // Verify that the iterator range [_First, _Last) is sorted
 #define __glibcxx_check_sorted(_First,_Last)				\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last),	\
+ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(			\
+			__gnu_debug::__base(_First),			\
+			__gnu_debug::__base(_Last)),			\
 		      _M_message(__gnu_debug::__msg_unsorted)	        \
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last))
@@ -238,7 +240,9 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last),	\
     predicate _Pred. */
 #define __glibcxx_check_sorted_pred(_First,_Last,_Pred)			\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last, _Pred), \
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(			\
+			__gnu_debug::__base(_First),			\
+			__gnu_debug::__base(_Last), _Pred),		\
 		      _M_message(__gnu_debug::__msg_unsorted_pred)      \
                       ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
@@ -248,7 +252,8 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_sorted(_First, _Last, _Pred), \
 #define __glibcxx_check_sorted_set(_First1,_Last1,_First2)		\
 __glibcxx_check_valid_range(_First1,_Last1);				\
 _GLIBCXX_DEBUG_VERIFY(                                                  \
-  __gnu_debug::__check_sorted_set(_First1, _Last1, _First2),		\
+  __gnu_debug::__check_sorted_set(__gnu_debug::__base(_First1),		\
+				  __gnu_debug::__base(_Last1), _First2),\
   _M_message(__gnu_debug::__msg_unsorted)				\
   ._M_iterator(_First1, #_First1)					\
   ._M_iterator(_Last1, #_Last1))
@@ -257,7 +262,9 @@ _GLIBCXX_DEBUG_VERIFY(                                                  \
 #define __glibcxx_check_sorted_set_pred(_First1,_Last1,_First2,_Pred)	\
 __glibcxx_check_valid_range(_First1,_Last1);        			\
 _GLIBCXX_DEBUG_VERIFY(							\
-  __gnu_debug::__check_sorted_set(_First1, _Last1, _First2, _Pred),	\
+  __gnu_debug::__check_sorted_set(__gnu_debug::__base(_First1),		\
+				  __gnu_debug::__base(_Last1),		\
+				  _First2, _Pred),			\
   _M_message(__gnu_debug::__msg_unsorted_pred)				\
   ._M_iterator(_First1, #_First1)					\
   ._M_iterator(_Last1, #_Last1)						\
@@ -267,8 +274,9 @@ _GLIBCXX_DEBUG_VERIFY(							\
     w.r.t. the value _Value. */
 #define __glibcxx_check_partitioned_lower(_First,_Last,_Value)		\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(_First, _Last, \
-							    _Value),	\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(		\
+			__gnu_debug::__base(_First),			\
+			__gnu_debug::__base(_Last), _Value),		\
 		      _M_message(__gnu_debug::__msg_unpartitioned)      \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
@@ -276,8 +284,9 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(_First, _Last, \
 
 #define __glibcxx_check_partitioned_upper(_First,_Last,_Value)		\
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(_First, _Last, \
-							    _Value),	\
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(		\
+			__gnu_debug::__base(_First),			\
+			__gnu_debug::__base(_Last), _Value),		\
 		      _M_message(__gnu_debug::__msg_unpartitioned)      \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
@@ -287,8 +296,9 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(_First, _Last, \
     w.r.t. the value _Value and predicate _Pred. */
 #define __glibcxx_check_partitioned_lower_pred(_First,_Last,_Value,_Pred) \
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(_First, _Last, \
-							 _Value, _Pred), \
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(		\
+			__gnu_debug::__base(_First),			\
+			__gnu_debug::__base(_Last), _Value, _Pred),	\
 		      _M_message(__gnu_debug::__msg_unpartitioned_pred) \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
@@ -299,8 +309,9 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_lower(_First, _Last, \
     w.r.t. the value _Value and predicate _Pred. */
 #define __glibcxx_check_partitioned_upper_pred(_First,_Last,_Value,_Pred) \
 __glibcxx_check_valid_range(_First,_Last);				\
-_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(_First, _Last, \
-							 _Value, _Pred), \
+_GLIBCXX_DEBUG_VERIFY(__gnu_debug::__check_partitioned_upper(		\
+			__gnu_debug::__base(_First),			\
+			__gnu_debug::__base(_Last), _Value, _Pred),	\
 		      _M_message(__gnu_debug::__msg_unpartitioned_pred) \
 		      ._M_iterator(_First, #_First)			\
 		      ._M_iterator(_Last, #_Last)			\
