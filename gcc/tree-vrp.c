@@ -6137,9 +6137,10 @@ check_array_ref (location_t location, tree ref, bool ignore_off_by_one)
   low_sub = up_sub = TREE_OPERAND (ref, 1);
   up_bound = array_ref_up_bound (ref);
 
-  /* Can not check flexible arrays.  */
+  /* Can not check flexible arrays or zero-length arrays.  */
   if (!up_bound
-      || TREE_CODE (up_bound) != INTEGER_CST)
+      || TREE_CODE (up_bound) != INTEGER_CST
+      || tree_int_cst_equal (up_bound, integer_minus_one_node))
     return;
 
   /* Accesses to trailing arrays via pointers may access storage

@@ -1,3 +1,7 @@
+2013-08-30  Meador Inge  <meadori@codesourcery.com>
+
+	* tree-vrp.c (check_array_ref): Bail out on zero-length arrays.
+
 2013-08-30  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in (ubsan.o): Add.
