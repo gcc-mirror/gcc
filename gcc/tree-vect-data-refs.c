@@ -2271,10 +2271,17 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       return false;
     }
 
-  /* Allow invariant loads in loops.  */
+  /* Allow invariant loads in not nested loops.  */
   if (loop_vinfo && integer_zerop (step))
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
+      if (nested_in_vect_loop_p (loop, stmt))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "zero step in inner loop of nest");
+	  return false;
+	}
       return DR_IS_READ (dr);
     }
 
