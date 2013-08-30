@@ -1,3 +1,10 @@
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* lto-symtab.c (lto_cgraph_replace_node): Free decl_in_state.
+	* cgraph.c (cgraph_release_function_body): Free decl_in_state.
+	* lto-section-in.c (lto_free_function_in_decl_state): New function.
+	(lto_free_function_in_decl_state_for_node): New function.
+
 2013-08-29  Xinliang David Li  <davidxl@google.com>
 
 	* loop-unroll.c (report_unroll_peel): Minor message

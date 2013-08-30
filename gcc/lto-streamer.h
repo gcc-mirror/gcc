@@ -774,6 +774,8 @@ extern hashval_t lto_hash_in_decl_state (const void *);
 extern int lto_eq_in_decl_state (const void *, const void *);
 extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);
+extern void lto_free_function_in_decl_state (struct lto_in_decl_state *);
+extern void lto_free_function_in_decl_state_for_node (symtab_node);
 extern void lto_section_overrun (struct lto_input_block *) ATTRIBUTE_NORETURN;
 extern void lto_value_range_error (const char *,
 				   HOST_WIDE_INT, HOST_WIDE_INT,
