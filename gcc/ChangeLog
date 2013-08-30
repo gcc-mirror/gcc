@@ -99,12 +99,6 @@
 	* coverage.c (get_coverage_counts): Ditto.
 	(coverage_init): Setup new dump framework.
 
-	* testsuite/gcc.dg/pr40209.c: Use -fopt-info.
-	* testsuite/gcc.dg/pr26570.c: Ditto.
-	* testsuite/gcc.dg/pr32773.c: Ditto.
-	* testsuite/g++.dg/tree-ssa/dom-invalid.C: Ditto.
-	* testsuite/gcc.dg/inline-dump.c: New test.
-
 2013-08-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58246
