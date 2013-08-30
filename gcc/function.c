@@ -3101,17 +3101,27 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
     emit_move_insn (parmreg, validated_mem);
 
   /* If we were passed a pointer but the actual value can safely live
-     in a register, put it in one.  */
-  if (data->passed_pointer
-      && TYPE_MODE (TREE_TYPE (parm)) != BLKmode
-      /* If by-reference argument was promoted, demote it.  */
-      && (TYPE_MODE (TREE_TYPE (parm)) != GET_MODE (DECL_RTL (parm))
-	  || use_register_for_decl (parm)))
+     in a register, retrieve it and use it directly.  */
+  if (data->passed_pointer && TYPE_MODE (TREE_TYPE (parm)) != BLKmode)
     {
       /* We can't use nominal_mode, because it will have been set to
 	 Pmode above.  We must use the actual mode of the parm.  */
-      parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
-      mark_user_reg (parmreg);
+      if (use_register_for_decl (parm))
+	{
+	  parmreg = gen_reg_rtx (TYPE_MODE (TREE_TYPE (parm)));
+	  mark_user_reg (parmreg);
+	}
+      else
+	{
+	  int align = STACK_SLOT_ALIGNMENT (TREE_TYPE (parm),
+					    TYPE_MODE (TREE_TYPE (parm)),
+					    TYPE_ALIGN (TREE_TYPE (parm)));
+	  parmreg
+	    = assign_stack_local (TYPE_MODE (TREE_TYPE (parm)),
+				  GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parm))),
+				  align);
+	  set_mem_attributes (parmreg, parm, 1);
+	}
 
       if (GET_MODE (parmreg) != GET_MODE (DECL_RTL (parm)))
 	{

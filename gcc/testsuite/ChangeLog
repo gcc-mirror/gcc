@@ -1,3 +1,8 @@
+2013-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-1.c: New test.
+	* gcc.dg/guality/param-2.c: Likewise.
+
 2013-08-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58228
