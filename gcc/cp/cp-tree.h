@@ -5170,10 +5170,10 @@ extern void check_goto				(tree);
 extern bool check_omp_return			(void);
 extern tree make_typename_type			(tree, tree, enum tag_types, tsubst_flags_t);
 extern tree make_unbound_class_template		(tree, tree, tree, tsubst_flags_t);
-extern tree build_library_fn_ptr		(const char *, tree);
-extern tree build_cp_library_fn_ptr		(const char *, tree);
-extern tree push_library_fn			(tree, tree, tree);
-extern tree push_void_library_fn		(tree, tree);
+extern tree build_library_fn_ptr		(const char *, tree, int);
+extern tree build_cp_library_fn_ptr		(const char *, tree, int);
+extern tree push_library_fn			(tree, tree, tree, int);
+extern tree push_void_library_fn		(tree, tree, int);
 extern tree push_throw_library_fn		(tree, tree);
 extern void warn_misplaced_attr_for_class_type  (source_location location,
 						 tree class_type);
