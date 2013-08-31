@@ -1,5 +1,9 @@
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_speculative_call_info): Fix ref lookup
+
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
 	* basic-block.h (apply_scale): Make scale parmeter gcov_type.
 
 2013-08-31  Uros Bizjak  <ubizjak@gmail.com>
