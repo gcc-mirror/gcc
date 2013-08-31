@@ -1,3 +1,19 @@
+2013-08-30  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-prop.c (ipa_set_jf_known_type): Check that we add
+	only records.
+	(detect_type_change_1): Rename to ...
+	(detect_type_change): ... this one; early return on non-polymorphic
+	types.
+	(detect_type_change_ssa): Add comp_type parameter; update	
+	use of detect_type_change.
+	(compute_complex_assign_jump_func): Add param_type parameter;
+	update use of detect_type_change_ssa.
+	(compute_complex_ancestor_jump_func): Likewise.
+	(ipa_get_callee_param_type): New function.
+	(ipa_compute_jump_functions_for_edge): Compute parameter type;
+	update calls to the jump function computation functions.
+
 2013-08-30  Teresa Johnson  <tejohnson@google.com>
 	    Steven Bosscher  <steven@gcc.gnu.org>
 
