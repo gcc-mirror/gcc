@@ -80,7 +80,7 @@ input_phi (struct lto_input_block *ib, basic_block bb, struct data_in *data_in,
 
 static gimple
 input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
-		   struct function *fn, enum LTO_tags tag)
+		   enum LTO_tags tag)
 {
   gimple stmt;
   enum gimple_code code;
@@ -339,7 +339,7 @@ input_bb (struct lto_input_block *ib, enum LTO_tags tag,
   tag = streamer_read_record_start (ib);
   while (tag)
     {
-      gimple stmt = input_gimple_stmt (ib, data_in, fn, tag);
+      gimple stmt = input_gimple_stmt (ib, data_in, tag);
       gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 
       /* After the statement, expect a 0 delimiter or the EH region

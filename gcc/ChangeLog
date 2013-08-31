@@ -1,5 +1,8 @@
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
+	* gimple-streamer-in.c (input_gimple_stmt): Silence parameter unused
+	warning.
+
 	* cgraph.c (cgraph_get_body): Update call of lto_input_function_body.
 	* gimple-streamer-in.c (input_gimple_stmt): Move sanity check to ...
 	* tree-cfg.c (verify_gimple_label): ... here.
