@@ -282,9 +282,6 @@ input_gimple_stmt (struct lto_input_block *ib, struct data_in *data_in,
       if (lhs && TREE_CODE (lhs) == SSA_NAME)
 	SSA_NAME_DEF_STMT (lhs) = stmt;
     }
-  else if (code == GIMPLE_LABEL)
-    gcc_assert (emit_label_in_global_context_p (gimple_label_label (stmt))
-	        || DECL_CONTEXT (gimple_label_label (stmt)) == fn->decl);
   else if (code == GIMPLE_ASM)
     {
       unsigned i;

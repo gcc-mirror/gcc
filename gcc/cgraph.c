@@ -3111,7 +3111,7 @@ cgraph_get_body (struct cgraph_node *node)
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
-  lto_input_function_body (file_data, node->symbol.decl, data);
+  lto_input_function_body (file_data, node, data);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);

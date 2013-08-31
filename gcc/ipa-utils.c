@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic.h"
 #include "langhooks.h"
+#include "lto-streamer.h"
+#include "ipa-inline.h"
 
 /* Debugging function for postorder and inorder code. NOTE is a string
    that is printed before the nodes are printed.  ORDER is an array of
@@ -618,3 +620,174 @@ debug_varpool_node_set (varpool_node_set set)
 {
   dump_varpool_node_set (stderr, set);
 }
+
+
+/* SRC and DST are going to be merged.  Take SRC's profile and merge it into
+   DST so it is not going to be lost.  Destroy SRC's body on the way.  */
+
+void
+ipa_merge_profiles (struct cgraph_node *dst,
+		    struct cgraph_node *src)
+{
+  tree oldsrcdecl = src->symbol.decl;
+  struct function *srccfun, *dstcfun;
+  bool match = true;
+
+  if (!src->symbol.definition
+      || !dst->symbol.definition)
+    return;
+  if (src->frequency < dst->frequency)
+    src->frequency = dst->frequency;
+  if (!dst->count)
+    return;
+  if (cgraph_dump_file)
+    {
+      fprintf (cgraph_dump_file, "Merging profiles of %s/%i to %s/%i\n",
+	       xstrdup (cgraph_node_name (src)), src->symbol.order,
+	       xstrdup (cgraph_node_name (dst)), dst->symbol.order);
+    }
+  dst->count += src->count;
+
+  /* This is ugly.  We need to get both function bodies into memory.
+     If declaration is merged, we need to duplicate it to be able
+     to load body that is being replaced.  This makes symbol table
+     temporarily inconsistent.  */
+  if (src->symbol.decl == dst->symbol.decl)
+    {
+      void **slot;
+      struct lto_in_decl_state temp;
+      struct lto_in_decl_state *state;
+
+      /* We are going to move the decl, we want to remove its file decl data.
+	 and link these with the new decl. */
+      temp.fn_decl = src->symbol.decl;
+      slot = htab_find_slot (src->symbol.lto_file_data->function_decl_states,
+			     &temp, NO_INSERT);
+      state = (lto_in_decl_state *)*slot;
+      htab_clear_slot (src->symbol.lto_file_data->function_decl_states, slot);
+      gcc_assert (state);
+
+      /* Duplicate the decl and be sure it does not link into body of DST.  */
+      src->symbol.decl = copy_node (src->symbol.decl);
+      DECL_STRUCT_FUNCTION (src->symbol.decl) = NULL;
+      DECL_ARGUMENTS (src->symbol.decl) = NULL;
+      DECL_INITIAL (src->symbol.decl) = NULL;
+      DECL_RESULT (src->symbol.decl) = NULL;
+
+      /* Associate the decl state with new declaration, so LTO streamer
+ 	 can look it up.  */
+      state->fn_decl = src->symbol.decl;
+      slot = htab_find_slot (src->symbol.lto_file_data->function_decl_states,
+			     state, INSERT);
+      gcc_assert (!*slot);
+      *slot = state;
+    }
+  cgraph_get_body (src);
+  cgraph_get_body (dst);
+  srccfun = DECL_STRUCT_FUNCTION (src->symbol.decl);
+  dstcfun = DECL_STRUCT_FUNCTION (dst->symbol.decl);
+  if (n_basic_blocks_for_function (srccfun)
+      != n_basic_blocks_for_function (dstcfun))
+    {
+      if (cgraph_dump_file)
+	fprintf (cgraph_dump_file,
+		 "Giving up; number of basic block mismatch.\n");
+      match = false;
+    }
+  else if (last_basic_block_for_function (srccfun)
+	   != last_basic_block_for_function (dstcfun))
+    {
+      if (cgraph_dump_file)
+	fprintf (cgraph_dump_file,
+		 "Giving up; last block mismatch.\n");
+      match = false;
+    }
+  else 
+    {
+      basic_block srcbb, dstbb;
+
+      FOR_ALL_BB_FN (srcbb, srccfun)
+	{
+	  unsigned int i;
+
+	  dstbb = BASIC_BLOCK_FOR_FUNCTION (dstcfun, srcbb->index);
+	  if (dstbb == NULL)
+	    {
+	      if (cgraph_dump_file)
+		fprintf (cgraph_dump_file,
+			 "No matching block for bb %i.\n",
+			 srcbb->index);
+	      match = false;
+	      break;
+	    }
+	  if (EDGE_COUNT (srcbb->succs) != EDGE_COUNT (dstbb->succs))
+	    {
+	      if (cgraph_dump_file)
+		fprintf (cgraph_dump_file,
+			 "Edge count mistmatch for bb %i.\n",
+			 srcbb->index);
+	      match = false;
+	      break;
+	    }
+	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+	    {
+	      edge srce = EDGE_SUCC (srcbb, i);
+	      edge dste = EDGE_SUCC (dstbb, i);
+	      if (srce->dest->index != dste->dest->index)
+		{
+		  if (cgraph_dump_file)
+		    fprintf (cgraph_dump_file,
+			     "Succ edge mistmatch for bb %i.\n",
+			     srce->dest->index);
+		  match = false;
+		  break;
+		}
+	    }
+	}
+    }
+  if (match)
+    {
+      struct cgraph_edge *e;
+      basic_block srcbb, dstbb;
+
+      /* TODO: merge also statement histograms.  */
+      FOR_ALL_BB_FN (srcbb, srccfun)
+	{
+	  unsigned int i;
+
+	  dstbb = BASIC_BLOCK_FOR_FUNCTION (dstcfun, srcbb->index);
+	  dstbb->count += srcbb->count;
+	  for (i = 0; i < EDGE_COUNT (srcbb->succs); i++)
+	    {
+	      edge srce = EDGE_SUCC (srcbb, i);
+	      edge dste = EDGE_SUCC (dstbb, i);
+	      dste->count += srce->count;
+	    }
+	}
+      push_cfun (dstcfun);
+      counts_to_freqs ();
+      compute_function_frequency ();
+      pop_cfun ();
+      for (e = dst->callees; e; e = e->next_callee)
+	{
+	  gcc_assert (!e->speculative);
+	  e->count = gimple_bb (e->call_stmt)->count;
+	  e->frequency = compute_call_stmt_bb_frequency
+			     (dst->symbol.decl,
+			      gimple_bb (e->call_stmt));
+	}
+      for (e = dst->indirect_calls; e; e = e->next_callee)
+	{
+	  gcc_assert (!e->speculative);
+	  e->count = gimple_bb (e->call_stmt)->count;
+	  e->frequency = compute_call_stmt_bb_frequency
+			     (dst->symbol.decl,
+			      gimple_bb (e->call_stmt));
+	}
+      cgraph_release_function_body (src);
+      inline_update_overall_summary (dst);
+    }
+  /* TODO: if there is no match, we can scale up.  */
+  src->symbol.decl = oldsrcdecl;
+}
+
