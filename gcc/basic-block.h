@@ -960,7 +960,7 @@ combine_probabilities (int prob1, int prob2)
    constrained to be < REG_BR_PROB_BASE.  */
 
 static inline gcov_type
-apply_scale (gcov_type freq, int scale)
+apply_scale (gcov_type freq, gcov_type scale)
 {
   return RDIV (freq * scale, REG_BR_PROB_BASE);
 }

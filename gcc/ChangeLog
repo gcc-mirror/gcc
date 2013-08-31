@@ -1,3 +1,7 @@
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* basic-block.h (apply_scale): Make scale parmeter gcov_type.
+
 2013-08-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/alpha/alpha.c (alpha_emit_conditional_move): Update
