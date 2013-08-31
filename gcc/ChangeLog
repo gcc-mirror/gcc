@@ -1,5 +1,14 @@
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
+	* cgraph.c (cgraph_get_body): Update call of lto_input_function_body.
+	* gimple-streamer-in.c (input_gimple_stmt): Move sanity check to ...
+	* ipa-utils.c: Include lto-streamer.h, ipa-inline.h
+	(ipa_merge_profiles): New function.
+	* lto-streamer-in.c (lto_read_body): Take node instead of fn_decl.
+	(lto_input_function_body): Likewise.
+
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_speculative_call_info): Fix ref lookup
 
 2013-08-31  Jan Hubicka  <jh@suse.cz>
