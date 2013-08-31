@@ -1151,7 +1151,7 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
 					      i, ref); i++)
     if (ref->speculative
 	&& ((ref->stmt && ref->stmt == e->call_stmt)
-	    || (ref->lto_stmt_uid == e->lto_stmt_uid)))
+	    || (!ref->stmt && ref->lto_stmt_uid == e->lto_stmt_uid)))
       {
 	reference = ref;
 	break;
