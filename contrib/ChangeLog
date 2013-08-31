@@ -1,3 +1,7 @@
+2013-08-31  Diego Novillo  <dnovillo@google.com>
+
+	* testsuite-management/x86_64-unknown-linux-gnu.xfail: Update.
+
 2013-08-29  Mike Stump  <mikestump@comcast.net>
 
 	* gcc_update (configure): Update to handle svn 1.8.1.
