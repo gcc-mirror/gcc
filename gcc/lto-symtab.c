@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "plugin-api.h"
 #include "lto-streamer.h"
+#include "ipa-utils.h"
 
 /* Vector to keep track of external variables we've seen so far.  */
 vec<tree, va_gc> *lto_global_var_decls;
@@ -80,6 +81,7 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   /* Redirect incomming references.  */
   ipa_clone_referring ((symtab_node)prevailing_node, &node->symbol.ref_list);
 
+  ipa_merge_profiles (prevailing_node, node);
   lto_free_function_in_decl_state_for_node ((symtab_node)node);
 
   if (node->symbol.decl != prevailing_node->symbol.decl)

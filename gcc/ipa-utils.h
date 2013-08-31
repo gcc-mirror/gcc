@@ -44,6 +44,8 @@ void ipa_free_postorder_info (void);
 vec<cgraph_node_ptr> ipa_get_nodes_in_cycle (struct cgraph_node *);
 int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
+void ipa_merge_profiles (struct cgraph_node *dst,
+			 struct cgraph_node *src);
 
 /* In ipa-devirt.c  */
 
