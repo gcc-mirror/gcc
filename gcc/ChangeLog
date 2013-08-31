@@ -1,11 +1,16 @@
+2013-08-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Update
+	"cmp" RTX before signed_comparison_operator check to account
+	for "code" changes.
+
 2013-08-30  Jan Hubicka  <jh@suse.cz>
 
-	* ipa-prop.c (ipa_set_jf_known_type): Check that we add
-	only records.
+	* ipa-prop.c (ipa_set_jf_known_type): Check that we add only records.
 	(detect_type_change_1): Rename to ...
 	(detect_type_change): ... this one; early return on non-polymorphic
 	types.
-	(detect_type_change_ssa): Add comp_type parameter; update	
+	(detect_type_change_ssa): Add comp_type parameter; update
 	use of detect_type_change.
 	(compute_complex_assign_jump_func): Add param_type parameter;
 	update use of detect_type_change_ssa.
@@ -111,8 +116,7 @@
 	instead of flag_asan.
 	* tree.h (enum tree_index): Add TI_POINTER_SIZED_TYPE.
 	(pointer_sized_int_node): Define.
-	* tree.c (build_common_tree_nodes): Initialize
-	pointer_sized_int_node.
+	* tree.c (build_common_tree_nodes): Initialize pointer_sized_int_node.
 
 2013-08-30  Mike Stump  <mikestump@comcast.net>
 
@@ -137,9 +141,9 @@
 
 2013-08-30  Tejas Belagod  <tejas.belagod@arm.com>
 
-	* config/aarch64/arm_neon.h (__AARCH64_UINT64_C, __AARCH64_INT64_C): New
-	arm_neon.h's internal macros to specify 64-bit constants. Avoid using
-	stdint.h's macros.
+	* config/aarch64/arm_neon.h (__AARCH64_UINT64_C, __AARCH64_INT64_C):
+	New arm_neon.h's internal macros to specify 64-bit constants.
+	Avoid using stdint.h's macros.
 
 2013-08-30  Joern Rennecke  <joern.rennecke@embecosm.com>
 
@@ -201,13 +205,11 @@
 
 2013-08-29  Xinliang David Li  <davidxl@google.com>
 
-	* loop-unroll.c (report_unroll_peel): Minor message
-	change.
+	* loop-unroll.c (report_unroll_peel): Minor message change.
 	* tree-vect-loop-manip.c (vect_do_peeling_for_alignment):
 	Emit alignment peeling message with default -fopt-info.
 	(vect_loop_versioning): Emit loop version info message.
-	* tree-vectorizer.c (vectorize_loops): Minor message
-	change.
+	* tree-vectorizer.c (vectorize_loops): Minor message change.
 	(execute_vect_slp): Ditto.
 
 2013-08-29  Eric Botcazou  <ebotcazou@adacore.com>
@@ -222,14 +224,13 @@
 
 2013-08-29  Jan Hubicka  <jh@suse.cz>
 
-	* lto-streamer-out.c (hash_tree): Stream DECL_FINAL_P.
-	DECL_CXX_CONSTRUCTOR_P. DECL_CXX_DESTRUCTOR_P.
-	TYPE_FINAL_P.
-	* lto-streamer-in.c (unpack_ts_decl_with_vis_value_fields):
-	DECL_FINAL_P. DECL_CXX_CONSTRUCTOR_P and DECL_CXX_DESTRUCTOR_P.
+	* lto-streamer-out.c (hash_tree): Stream DECL_FINAL_P,
+	DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P and TYPE_FINAL_P.
+	* lto-streamer-in.c (unpack_ts_decl_with_vis_value_fields): Stream
+	DECL_FINAL_P, DECL_CXX_CONSTRUCTOR_P and DECL_CXX_DESTRUCTOR_P.
 	(unpack_ts_type_common_value_fields): Stream TYPE_FINAL_P.
 	* tree-streamer-out.c (pack_ts_decl_with_vis_value_fields):
-	Add DECL_FINAL_P, DECL_CXX_CONSTRUCTOR_P, DECL_CXX_DESTRUCTOR_P
+	Add DECL_FINAL_P, DECL_CXX_CONSTRUCTOR_P and DECL_CXX_DESTRUCTOR_P.
 	(pack_ts_type_common_value_fields): Add TYPE_FINAL_P.
 
 2013-08-29  Teresa Johnson  <tejohnson@google.com>
