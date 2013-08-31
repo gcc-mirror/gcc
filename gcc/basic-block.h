@@ -726,6 +726,7 @@ extern void compute_available (sbitmap *, sbitmap *, sbitmap *, sbitmap *);
 extern bool maybe_hot_bb_p (struct function *, const_basic_block);
 extern bool maybe_hot_edge_p (edge);
 extern bool probably_never_executed_bb_p (struct function *, const_basic_block);
+extern bool probably_never_executed_edge_p (struct function *, edge);
 extern bool optimize_bb_for_size_p (const_basic_block);
 extern bool optimize_bb_for_speed_p (const_basic_block);
 extern bool optimize_edge_for_size_p (edge);
@@ -797,6 +798,7 @@ extern bool contains_no_active_insn_p (const_basic_block);
 extern bool forwarder_block_p (const_basic_block);
 extern bool can_fallthru (basic_block, basic_block);
 extern void emit_barrier_after_bb (basic_block bb);
+extern void fixup_partitions (void);
 
 /* In cfgbuild.c.  */
 extern void find_many_sub_basic_blocks (sbitmap);

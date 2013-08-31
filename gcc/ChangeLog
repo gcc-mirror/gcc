@@ -1,3 +1,23 @@
+2013-08-30  Teresa Johnson  <tejohnson@google.com>
+	    Steven Bosscher  <steven@gcc.gnu.org>
+
+	* cfgrtl.c (fixup_new_cold_bb): New routine.
+	(commit_edge_insertions): Invoke fixup_partitions.
+	(find_partition_fixes): New routine.
+	(fixup_partitions): Ditto.
+	(verify_hot_cold_block_grouping): Update comments.
+	(rtl_verify_edges): Invoke find_partition_fixes.
+	(rtl_verify_bb_pointers): Update comments.
+	(rtl_verify_bb_layout): Ditto.
+	* basic-block.h (probably_never_executed_edge_p): Declare.
+	(fixup_partitions): Ditto.
+	* cfgcleanup.c (try_optimize_cfg): Invoke fixup_partitions.
+	* bb-reorder.c (sanitize_hot_paths): New function.
+	(find_rarely_executed_basic_blocks_and_crossing_edges): Invoke
+	sanitize_hot_paths.
+	* predict.c (probably_never_executed_edge_p): New routine.
+	* cfg.c (check_bb_profile): Add partition insanity warnings.
+
 2013-08-30  Meador Inge  <meadori@codesourcery.com>
 
 	* tree-vrp.c (check_array_ref): Bail out on zero-length arrays.
