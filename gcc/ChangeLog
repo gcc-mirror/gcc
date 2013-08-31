@@ -2,10 +2,16 @@
 
 	* cgraph.c (cgraph_get_body): Update call of lto_input_function_body.
 	* gimple-streamer-in.c (input_gimple_stmt): Move sanity check to ...
+	* tree-cfg.c (verify_gimple_label): ... here.
 	* ipa-utils.c: Include lto-streamer.h, ipa-inline.h
 	(ipa_merge_profiles): New function.
 	* lto-streamer-in.c (lto_read_body): Take node instead of fn_decl.
 	(lto_input_function_body): Likewise.
+	* ipa-utils.h (ipa_merge_profiles): Declare.
+	* lto-streamer.h (lto_input_function_body): Update prototype.
+	(emit_label_in_global_context_p): Remove.
+	* lto-symtab.c: Include ipa-utils.h
+	(lto_cgraph_replace_node): Use ipa_merge_profiles.
 
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 

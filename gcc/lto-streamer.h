@@ -834,7 +834,8 @@ extern void lto_streamer_hooks_init (void);
 /* In lto-streamer-in.c */
 extern void lto_input_cgraph (struct lto_file_decl_data *, const char *);
 extern void lto_reader_init (void);
-extern void lto_input_function_body (struct lto_file_decl_data *, tree,
+extern void lto_input_function_body (struct lto_file_decl_data *,
+				     struct cgraph_node *,
 				     const char *);
 extern void lto_input_constructors_and_inits (struct lto_file_decl_data *,
 					      const char *);
@@ -1028,14 +1029,6 @@ lto_tree_ref_encoder_get_tree (struct lto_tree_ref_encoder *encoder,
 			       unsigned int idx)
 {
   return encoder->trees[idx];
-}
-
-
-/* Return true if LABEL should be emitted in the global context.  */
-static inline bool
-emit_label_in_global_context_p (tree label)
-{
-  return DECL_NONLOCAL (label) || FORCED_LABEL (label);
 }
 
 /* Return number of encoded nodes in ENCODER.  */
