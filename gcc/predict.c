@@ -241,6 +241,22 @@ probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
   return false;
 }
 
+
+/* Return true in case edge E is probably never executed.  */
+
+bool
+probably_never_executed_edge_p (struct function *fun, edge e)
+{
+  gcc_checking_assert (fun);
+  if (profile_info && flag_branch_probabilities)
+    return ((e->count + profile_info->runs / 2) / profile_info->runs) == 0;
+  if ((!profile_info || !flag_branch_probabilities)
+      && (cgraph_get_node (fun->decl)->frequency
+	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))
+    return true;
+  return false;
+}
+
 /* Return true if NODE should be optimized for size.  */
 
 bool
