@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hashtab.h"
 #include "pointer-set.h"
 #include "output.h"
+#include "tm_p.h"
 #include "toplev.h"
 #include "ubsan.h"
 #include "c-family/c-common.h"

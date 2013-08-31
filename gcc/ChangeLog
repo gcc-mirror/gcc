@@ -1,3 +1,7 @@
+2013-08-31  Marek Polacek  <polacek@redhat.com>
+
+	* ubsan.c: Include tm_p.h.
+
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-streamer-in.c (input_gimple_stmt): Silence parameter unused
