@@ -700,6 +700,14 @@ should use @code{TARGET_HANDLE_C_OPTION} instead.
 Targets may provide a string object type that can be used within and between C, C++ and their respective Objective-C dialects. A string object might, for example, embed encoding and length information. These objects are considered opaque to the compiler and handled as references. An ideal implementation makes the composition of the string object match that of the Objective-C @code{NSString} (@code{NXString} for GNUStep), allowing efficient interworking between C-only and Objective-C code. If a target implements string objects then this hook should return a reference to such an object constructed from the normal `C' string representation provided in @var{string}. At present, the hook is used by Objective-C only, to obtain a common-format string object when the target provides one.
 @end deftypefn
 
+@deftypefn {C Target Hook} void TARGET_OBJC_DECLARE_UNRESOLVED_CLASS_REFERENCE (const char *@var{classname})
+Declare that Objective C class @var{classname} is referenced  by the current TU.
+@end deftypefn
+
+@deftypefn {C Target Hook} void TARGET_OBJC_DECLARE_CLASS_DEFINITION (const char *@var{classname})
+Declare that Objective C class @var{classname} is defined  by the current TU.
+@end deftypefn
+
 @deftypefn {C Target Hook} bool TARGET_STRING_OBJECT_REF_TYPE_P (const_tree @var{stringref})
 If a target implements string objects then this hook should return @code{true} if @var{stringref} is a valid reference to such an object.
 @end deftypefn
@@ -8256,20 +8264,6 @@ in a category); and @var{sel_name} is the name of the selector.
 
 On systems where the assembler can handle quoted names, you can use this
 macro to provide more human-readable names.
-@end defmac
-
-@defmac ASM_DECLARE_CLASS_REFERENCE (@var{stream}, @var{name})
-A C statement (sans semicolon) to output to the stdio stream
-@var{stream} commands to declare that the label @var{name} is an
-Objective-C class reference.  This is only needed for targets whose
-linkers have special support for NeXT-style runtimes.
-@end defmac
-
-@defmac ASM_DECLARE_UNRESOLVED_REFERENCE (@var{stream}, @var{name})
-A C statement (sans semicolon) to output to the stdio stream
-@var{stream} commands to declare that the label @var{name} is an
-unresolved Objective-C class reference.  This is only needed for targets
-whose linkers have special support for NeXT-style runtimes.
 @end defmac
 
 @node Initialization

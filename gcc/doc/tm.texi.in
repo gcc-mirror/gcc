@@ -696,6 +696,10 @@ should use @code{TARGET_HANDLE_C_OPTION} instead.
 
 @hook TARGET_OBJC_CONSTRUCT_STRING_OBJECT
 
+@hook TARGET_OBJC_DECLARE_UNRESOLVED_CLASS_REFERENCE
+
+@hook TARGET_OBJC_DECLARE_CLASS_DEFINITION
+
 @hook TARGET_STRING_OBJECT_REF_TYPE_P
 
 @hook TARGET_CHECK_STRING_OBJECT_FORMAT_ARG
@@ -8155,20 +8159,6 @@ in a category); and @var{sel_name} is the name of the selector.
 
 On systems where the assembler can handle quoted names, you can use this
 macro to provide more human-readable names.
-@end defmac
-
-@defmac ASM_DECLARE_CLASS_REFERENCE (@var{stream}, @var{name})
-A C statement (sans semicolon) to output to the stdio stream
-@var{stream} commands to declare that the label @var{name} is an
-Objective-C class reference.  This is only needed for targets whose
-linkers have special support for NeXT-style runtimes.
-@end defmac
-
-@defmac ASM_DECLARE_UNRESOLVED_REFERENCE (@var{stream}, @var{name})
-A C statement (sans semicolon) to output to the stdio stream
-@var{stream} commands to declare that the label @var{name} is an
-unresolved Objective-C class reference.  This is only needed for targets
-whose linkers have special support for NeXT-style runtimes.
 @end defmac
 
 @node Initialization

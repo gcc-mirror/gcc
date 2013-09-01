@@ -1,3 +1,11 @@
+2013-09-01  Iain Sandoe  <iain@codesourcery.com>
+
+	Backported from 4.8
+	2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* c-target.def (objc_declare_unresolved_class_reference,
+	objc_declare_class_definition): Add new hooks.
+
 2013-04-11  Release Manager
 
 	* GCC 4.7.3 released.

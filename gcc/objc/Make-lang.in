@@ -106,7 +106,7 @@ objc/objc-next-runtime-abi-01.o: objc/objc-next-runtime-abi-01.c \
    gt-objc-objc-next-runtime-abi-01.h \
    $(START_HDRS) \
    $(GGC_H) $(DIAGNOSTIC_CORE_H) $(FLAGS_H) input.h \
-   $(TARGET_H) output.h \
+   $(TARGET_H) \
    objc/objc-encoding.h \
    objc/objc-next-metadata-tags.h \
    objc/objc-runtime-hooks.h \

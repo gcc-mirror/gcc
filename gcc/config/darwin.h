@@ -616,8 +616,6 @@ int darwin_label_is_anonymous_local_objc_name (const char *name);
          fprintf (FILE, "\"%s\"", xname);				     \
        else if (darwin_label_is_anonymous_local_objc_name (xname))	     \
          fprintf (FILE, "L%s", xname);					     \
-       else if (!strncmp (xname, ".objc_class_name_", 17))		     \
-	 fprintf (FILE, "%s", xname);					     \
        else if (xname[0] != '"' && name_needs_quotes (xname))		     \
 	 asm_fprintf (FILE, "\"%U%s\"", xname);				     \
        else								     \
@@ -699,29 +697,6 @@ extern GTY(()) section * darwin_sections[NUM_DARWIN_SECTIONS];
 
 #undef  TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK machopic_reloc_rw_mask
-
-
-#define ASM_DECLARE_UNRESOLVED_REFERENCE(FILE,NAME)			\
-    do {								\
-	 if (FILE) {							\
-	   if (MACHOPIC_INDIRECT)					\
-	     fprintf (FILE, "\t.lazy_reference ");			\
-	   else								\
-	     fprintf (FILE, "\t.reference ");				\
-	   assemble_name (FILE, NAME);					\
-	   fprintf (FILE, "\n");					\
-	 }                                                              \
-       } while (0)
-
-#define ASM_DECLARE_CLASS_REFERENCE(FILE,NAME)				\
-    do {								\
-	 if (FILE) {							\
-	   fprintf (FILE, "\t");					\
-	   assemble_name (FILE, NAME);					\
-	   fprintf (FILE, "=0\n");					\
-	   (*targetm.asm_out.globalize_label) (FILE, NAME);		\
-	 }								\
-       } while (0)
 
 /* Globalizing directive for a label.  */
 #define GLOBAL_ASM_OP "\t.globl "

@@ -1,3 +1,14 @@
+2013-09-01  Iain Sandoe  <iain@codesourcery.com>
+
+	Backported from 4.8
+	2012-06-19  Steven Bosscher  <steven@gcc.gnu.org>
+
+	* objc-next-runtime-abi-01.c: Do not include tm.h and output.h.
+	Include c-family/c-target.h.
+	(handle_next_class_ref): Rewrite to emit top-level asm statements.
+	(handle_next_impent): Likewise.
+	* objc/Make-lang.in: Fix dependencies for objc-next-runtime-abi-01.o.
+
 2013-04-11  Release Manager
 
 	* GCC 4.7.3 released.
