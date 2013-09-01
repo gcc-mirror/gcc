@@ -1283,196 +1283,206 @@ gimple_register_type (tree t)
 
 /* End of old merging code.  */
 
+/* Remember trees that contains references to declarations.  */
+static GTY(()) vec <tree, va_gc> *tree_with_vars;
 
-
-/* A hashtable of trees that potentially refer to variables or functions
-   that must be replaced with their prevailing variant.  */
-static GTY((if_marked ("ggc_marked_p"), param_is (union tree_node))) htab_t
-  tree_with_vars;
-
-/* Remember that T is a tree that (potentially) refers to a variable
-   or function decl that may be replaced with its prevailing variant.  */
-static void
-remember_with_vars (tree t)
-{
-  *(tree *) htab_find_slot (tree_with_vars, t, INSERT) = t;
-}
-
-#define MAYBE_REMEMBER_WITH_VARS(tt) \
+#define CHECK_VAR(tt) \
   do \
     { \
-      if (tt) \
-	{ \
-	  if (VAR_OR_FUNCTION_DECL_P (tt) && TREE_PUBLIC (tt)) \
-	    remember_with_vars (t); \
-	} \
+      if ((tt) && VAR_OR_FUNCTION_DECL_P (tt) \
+	  && (TREE_PUBLIC (tt) || DECL_EXTERNAL (tt))) \
+	return true; \
     } while (0)
 
-/* Fix up fields of a tree_typed T.  */
+#define CHECK_NO_VAR(tt) \
+  gcc_checking_assert (!(tt) || !VAR_OR_FUNCTION_DECL_P (tt))
 
-static void
-maybe_remember_with_vars_typed (tree t)
+/* Check presence of pointers to decls in fields of a tree_typed T.  */
+
+static inline bool
+mentions_vars_p_typed (tree t)
 {
-  MAYBE_REMEMBER_WITH_VARS (TREE_TYPE (t));
+  CHECK_NO_VAR (TREE_TYPE (t));
+  return false;
 }
 
-/* Fix up fields of a tree_common T.  */
+/* Check presence of pointers to decls in fields of a tree_common T.  */
 
-static void
-maybe_remember_with_vars_common (tree t)
+static inline bool
+mentions_vars_p_common (tree t)
 {
-  maybe_remember_with_vars_typed (t);
-  MAYBE_REMEMBER_WITH_VARS (TREE_CHAIN (t));
+  if (mentions_vars_p_typed (t))
+    return true;
+  CHECK_NO_VAR (TREE_CHAIN (t));
+  return false;
 }
 
-/* Fix up fields of a decl_minimal T.  */
+/* Check presence of pointers to decls in fields of a decl_minimal T.  */
 
-static void
-maybe_remember_with_vars_decl_minimal (tree t)
+static inline bool
+mentions_vars_p_decl_minimal (tree t)
 {
-  maybe_remember_with_vars_common (t);
-  MAYBE_REMEMBER_WITH_VARS (DECL_NAME (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_CONTEXT (t));
+  if (mentions_vars_p_common (t))
+    return true;
+  CHECK_NO_VAR (DECL_NAME (t));
+  CHECK_VAR (DECL_CONTEXT (t));
+  return false;
 }
 
-/* Fix up fields of a decl_common T.  */
+/* Check presence of pointers to decls in fields of a decl_common T.  */
 
-static void
-maybe_remember_with_vars_decl_common (tree t)
+static inline bool
+mentions_vars_p_decl_common (tree t)
 {
-  maybe_remember_with_vars_decl_minimal (t);
-  MAYBE_REMEMBER_WITH_VARS (DECL_SIZE (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_SIZE_UNIT (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_INITIAL (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_ATTRIBUTES (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_ABSTRACT_ORIGIN (t));
+  if (mentions_vars_p_decl_minimal (t))
+    return true;
+  CHECK_VAR (DECL_SIZE (t));
+  CHECK_VAR (DECL_SIZE_UNIT (t));
+  CHECK_VAR (DECL_INITIAL (t));
+  CHECK_NO_VAR (DECL_ATTRIBUTES (t));
+  CHECK_VAR (DECL_ABSTRACT_ORIGIN (t));
+  return false;
 }
 
-/* Fix up fields of a decl_with_vis T.  */
+/* Check presence of pointers to decls in fields of a decl_with_vis T.  */
 
-static void
-maybe_remember_with_vars_decl_with_vis (tree t)
+static inline bool
+mentions_vars_p_decl_with_vis (tree t)
 {
-  maybe_remember_with_vars_decl_common (t);
+  if (mentions_vars_p_decl_common (t))
+    return true;
 
   /* Accessor macro has side-effects, use field-name here. */
-  MAYBE_REMEMBER_WITH_VARS (t->decl_with_vis.assembler_name);
-  MAYBE_REMEMBER_WITH_VARS (DECL_SECTION_NAME (t));
+  CHECK_NO_VAR (t->decl_with_vis.assembler_name);
+  CHECK_NO_VAR (DECL_SECTION_NAME (t));
+  return false;
 }
 
-/* Fix up fields of a decl_non_common T.  */
+/* Check presence of pointers to decls in fields of a decl_non_common T.  */
 
-static void
-maybe_remember_with_vars_decl_non_common (tree t)
+static inline bool
+mentions_vars_p_decl_non_common (tree t)
 {
-  maybe_remember_with_vars_decl_with_vis (t);
-  MAYBE_REMEMBER_WITH_VARS (DECL_ARGUMENT_FLD (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_RESULT_FLD (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_VINDEX (t));
+  if (mentions_vars_p_decl_with_vis (t))
+    return true;
+  CHECK_NO_VAR (DECL_ARGUMENT_FLD (t));
+  CHECK_NO_VAR (DECL_RESULT_FLD (t));
+  CHECK_NO_VAR (DECL_VINDEX (t));
+  return false;
 }
 
-/* Fix up fields of a decl_non_common T.  */
+/* Check presence of pointers to decls in fields of a decl_non_common T.  */
 
-static void
-maybe_remember_with_vars_function (tree t)
+static bool
+mentions_vars_p_function (tree t)
 {
-  maybe_remember_with_vars_decl_non_common (t);
-  MAYBE_REMEMBER_WITH_VARS (DECL_FUNCTION_PERSONALITY (t));
+  if (mentions_vars_p_decl_non_common (t))
+    return true;
+  CHECK_VAR (DECL_FUNCTION_PERSONALITY (t));
+  return false;
 }
 
-/* Fix up fields of a field_decl T.  */
+/* Check presence of pointers to decls in fields of a field_decl T.  */
 
-static void
-maybe_remember_with_vars_field_decl (tree t)
+static bool
+mentions_vars_p_field_decl (tree t)
 {
-  maybe_remember_with_vars_decl_common (t);
-  MAYBE_REMEMBER_WITH_VARS (DECL_FIELD_OFFSET (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_BIT_FIELD_TYPE (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_QUALIFIER (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_FIELD_BIT_OFFSET (t));
-  MAYBE_REMEMBER_WITH_VARS (DECL_FCONTEXT (t));
+  if (mentions_vars_p_decl_common (t))
+    return true;
+  CHECK_NO_VAR (DECL_FIELD_OFFSET (t));
+  CHECK_NO_VAR (DECL_BIT_FIELD_TYPE (t));
+  CHECK_NO_VAR (DECL_QUALIFIER (t));
+  CHECK_NO_VAR (DECL_FIELD_BIT_OFFSET (t));
+  CHECK_NO_VAR (DECL_FCONTEXT (t));
+  return false;
 }
 
-/* Fix up fields of a type T.  */
+/* Check presence of pointers to decls in fields of a type T.  */
 
-static void
-maybe_remember_with_vars_type (tree t)
+static bool
+mentions_vars_p_type (tree t)
 {
-  maybe_remember_with_vars_common (t);
-  MAYBE_REMEMBER_WITH_VARS (TYPE_CACHED_VALUES (t));
-  MAYBE_REMEMBER_WITH_VARS (TYPE_SIZE (t));
-  MAYBE_REMEMBER_WITH_VARS (TYPE_SIZE_UNIT (t));
-  MAYBE_REMEMBER_WITH_VARS (TYPE_ATTRIBUTES (t));
-  MAYBE_REMEMBER_WITH_VARS (TYPE_NAME (t));
+  if (mentions_vars_p_common (t))
+    return true;
+  CHECK_NO_VAR (TYPE_CACHED_VALUES (t));
+  CHECK_VAR (TYPE_SIZE (t));
+  CHECK_VAR (TYPE_SIZE_UNIT (t));
+  CHECK_NO_VAR (TYPE_ATTRIBUTES (t));
+  CHECK_NO_VAR (TYPE_NAME (t));
 
-  /* Accessors are for derived node types only. */
-  if (!POINTER_TYPE_P (t))
-    MAYBE_REMEMBER_WITH_VARS (TYPE_MINVAL (t));
-  MAYBE_REMEMBER_WITH_VARS (TYPE_MAXVAL (t));
+  CHECK_VAR (TYPE_MINVAL (t));
+  CHECK_VAR (TYPE_MAXVAL (t));
 
   /* Accessor is for derived node types only. */
-  MAYBE_REMEMBER_WITH_VARS (t->type_non_common.binfo);
+  CHECK_NO_VAR (t->type_non_common.binfo);
 
-  MAYBE_REMEMBER_WITH_VARS (TYPE_CONTEXT (t));
+  CHECK_VAR (TYPE_CONTEXT (t));
+  CHECK_NO_VAR (TYPE_CANONICAL (t));
+  CHECK_NO_VAR (TYPE_MAIN_VARIANT (t));
+  CHECK_NO_VAR (TYPE_NEXT_VARIANT (t));
+  return false;
 }
 
-/* Fix up fields of a BINFO T.  */
+/* Check presence of pointers to decls in fields of a BINFO T.  */
 
-static void
-maybe_remember_with_vars_binfo (tree t)
+static bool
+mentions_vars_p_binfo (tree t)
 {
   unsigned HOST_WIDE_INT i, n;
 
-  maybe_remember_with_vars_common (t);
-  MAYBE_REMEMBER_WITH_VARS (BINFO_VTABLE (t));
-  MAYBE_REMEMBER_WITH_VARS (BINFO_OFFSET (t));
-  MAYBE_REMEMBER_WITH_VARS (BINFO_VIRTUALS (t));
-  MAYBE_REMEMBER_WITH_VARS (BINFO_VPTR_FIELD (t));
+  if (mentions_vars_p_common (t))
+    return true;
+  CHECK_VAR (BINFO_VTABLE (t));
+  CHECK_NO_VAR (BINFO_OFFSET (t));
+  CHECK_NO_VAR (BINFO_VIRTUALS (t));
+  CHECK_NO_VAR (BINFO_VPTR_FIELD (t));
   n = vec_safe_length (BINFO_BASE_ACCESSES (t));
   for (i = 0; i < n; i++)
-    MAYBE_REMEMBER_WITH_VARS (BINFO_BASE_ACCESS (t, i));
+    CHECK_NO_VAR (BINFO_BASE_ACCESS (t, i));
   /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
      and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
   n = BINFO_N_BASE_BINFOS (t);
   for (i = 0; i < n; i++)
-    MAYBE_REMEMBER_WITH_VARS (BINFO_BASE_BINFO (t, i));
+    CHECK_NO_VAR (BINFO_BASE_BINFO (t, i));
+  return false;
 }
 
-/* Fix up fields of a CONSTRUCTOR T.  */
+/* Check presence of pointers to decls in fields of a CONSTRUCTOR T.  */
 
-static void
-maybe_remember_with_vars_constructor (tree t)
+static bool
+mentions_vars_p_constructor (tree t)
 {
   unsigned HOST_WIDE_INT idx;
   constructor_elt *ce;
 
-  maybe_remember_with_vars_typed (t);
+  if (mentions_vars_p_typed (t))
+    return true;
 
   for (idx = 0; vec_safe_iterate (CONSTRUCTOR_ELTS (t), idx, &ce); idx++)
     {
-      MAYBE_REMEMBER_WITH_VARS (ce->index);
-      MAYBE_REMEMBER_WITH_VARS (ce->value);
+      CHECK_NO_VAR (ce->index);
+      CHECK_VAR (ce->value);
     }
+  return false;
 }
 
-/* Fix up fields of an expression tree T.  */
+/* Check presence of pointers to decls in fields of an expression tree T.  */
 
-static void
-maybe_remember_with_vars_expr (tree t)
+static bool
+mentions_vars_p_expr (tree t)
 {
   int i;
-  maybe_remember_with_vars_typed (t);
+  if (mentions_vars_p_typed (t))
+    return true;
   for (i = TREE_OPERAND_LENGTH (t) - 1; i >= 0; --i)
-    MAYBE_REMEMBER_WITH_VARS (TREE_OPERAND (t, i));
+    CHECK_VAR (TREE_OPERAND (t, i));
+  return false;
 }
 
-/* Given a tree T fixup fields of T by replacing types with their merged
-   variant and other entities by an equal entity from an earlier compilation
-   unit, or an entity being canonical in a different way.  This includes
-   for instance integer or string constants.  */
+/* Check presence of pointers to decls that needs later fixup in T.  */
 
-static void
-maybe_remember_with_vars (tree t)
+static bool
+mentions_vars_p (tree t)
 {
   switch (TREE_CODE (t))
     {
@@ -1480,13 +1490,13 @@ maybe_remember_with_vars (tree t)
       break;
 
     case TREE_LIST:
-      MAYBE_REMEMBER_WITH_VARS (TREE_VALUE (t));
-      MAYBE_REMEMBER_WITH_VARS (TREE_PURPOSE (t));
-      MAYBE_REMEMBER_WITH_VARS (TREE_CHAIN (t));
+      CHECK_VAR (TREE_VALUE (t));
+      CHECK_VAR (TREE_PURPOSE (t));
+      CHECK_NO_VAR (TREE_CHAIN (t));
       break;
 
     case FIELD_DECL:
-      maybe_remember_with_vars_field_decl (t);
+      return mentions_vars_p_field_decl (t);
       break;
 
     case LABEL_DECL:
@@ -1494,27 +1504,28 @@ maybe_remember_with_vars (tree t)
     case PARM_DECL:
     case RESULT_DECL:
     case IMPORTED_DECL:
-      maybe_remember_with_vars_decl_common (t);
+    case NAMESPACE_DECL:
+      return mentions_vars_p_decl_common (t);
       break;
 
     case VAR_DECL:
-      maybe_remember_with_vars_decl_with_vis (t);
+      return mentions_vars_p_decl_with_vis (t);
       break;
 
     case TYPE_DECL:
-      maybe_remember_with_vars_decl_non_common (t);
+      return mentions_vars_p_decl_non_common (t);
       break;
 
     case FUNCTION_DECL:
-      maybe_remember_with_vars_function (t);
+      return mentions_vars_p_function (t);
       break;
 
     case TREE_BINFO:
-      maybe_remember_with_vars_binfo (t);
+      return mentions_vars_p_binfo (t);
       break;
 
     case PLACEHOLDER_EXPR:
-      maybe_remember_with_vars_common (t);
+      return mentions_vars_p_common (t);
       break;
 
     case BLOCK:
@@ -1524,19 +1535,26 @@ maybe_remember_with_vars (tree t)
       break;
 
     case CONSTRUCTOR:
-      maybe_remember_with_vars_constructor (t);
+      return mentions_vars_p_constructor (t);
       break;
 
     default:
       if (TYPE_P (t))
-	maybe_remember_with_vars_type (t);
-      else if (CONSTANT_CLASS_P (t))
-	MAYBE_REMEMBER_WITH_VARS (TREE_TYPE (t));
+	{
+	  if (mentions_vars_p_type (t))
+	    return true;
+	}
       else if (EXPR_P (t))
-	maybe_remember_with_vars_expr (t);
+	{
+	  if (mentions_vars_p_expr (t))
+	    return true;
+	}
+      else if (CONSTANT_CLASS_P (t))
+	CHECK_NO_VAR (TREE_TYPE (t));
       else
-	remember_with_vars (t);
+	gcc_unreachable ();
     }
+  return false;
 }
 
 
@@ -2492,7 +2510,8 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		    lto_register_function_decl_in_symtab (data_in, t, from + i);
 		  /* Scan the tree for references to global functions or
 		     variables and record those for later fixup.  */
-		  maybe_remember_with_vars (t);
+		  if (mentions_vars_p (t))
+		    vec_safe_push (tree_with_vars, t);
 		}
 	    }
 	  if (not_merged_type_same_scc)
@@ -3137,8 +3156,12 @@ lto_wpa_write_files (void)
    prevailing variant.  */
 #define LTO_SET_PREVAIL(tt) \
   do {\
-    if ((tt) && VAR_OR_FUNCTION_DECL_P (tt)) \
-      tt = lto_symtab_prevailing_decl (tt); \
+    if ((tt) && VAR_OR_FUNCTION_DECL_P (tt) \
+	&& (TREE_PUBLIC (tt) || DECL_EXTERNAL (tt))) \
+      { \
+        tt = lto_symtab_prevailing_decl (tt); \
+	fixed = true; \
+      } \
   } while (0)
 
 /* Ensure that TT isn't a replacable var of function decl.  */
@@ -3151,6 +3174,9 @@ static void
 lto_fixup_prevailing_decls (tree t)
 {
   enum tree_code code = TREE_CODE (t);
+  bool fixed = false;
+
+  gcc_checking_assert (code != CONSTRUCTOR && code != TREE_BINFO);
   LTO_NO_PREVAIL (TREE_TYPE (t));
   if (CODE_CONTAINS_STRUCT (code, TS_COMMON))
     LTO_NO_PREVAIL (TREE_CHAIN (t));
@@ -3198,7 +3224,7 @@ lto_fixup_prevailing_decls (tree t)
 
       LTO_SET_PREVAIL (TYPE_MINVAL (t));
       LTO_SET_PREVAIL (TYPE_MAXVAL (t));
-      LTO_SET_PREVAIL (t->type_non_common.binfo);
+      LTO_NO_PREVAIL (t->type_non_common.binfo);
 
       LTO_SET_PREVAIL (TYPE_CONTEXT (t));
 
@@ -3219,11 +3245,15 @@ lto_fixup_prevailing_decls (tree t)
 	case TREE_LIST:
 	  LTO_SET_PREVAIL (TREE_VALUE (t));
 	  LTO_SET_PREVAIL (TREE_PURPOSE (t));
+	  LTO_NO_PREVAIL (TREE_PURPOSE (t));
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
     }
+  /* If we fixed nothing, then we missed something seen by
+     mentions_vars_p.  */
+  gcc_checking_assert (fixed);
 }
 #undef LTO_SET_PREVAIL
 #undef LTO_NO_PREVAIL
@@ -3246,7 +3276,8 @@ lto_fixup_state (struct lto_in_decl_state *state)
       for (i = 0; i < table->size; i++)
 	{
 	  tree *tp = table->trees + i;
-	  if (VAR_OR_FUNCTION_DECL_P (*tp))
+	  if (VAR_OR_FUNCTION_DECL_P (*tp)
+	      && (TREE_PUBLIC (*tp) || DECL_EXTERNAL (*tp)))
 	    *tp = lto_symtab_prevailing_decl (*tp);
 	}
     }
@@ -3270,11 +3301,11 @@ static void
 lto_fixup_decls (struct lto_file_decl_data **files)
 {
   unsigned int i;
-  htab_iterator hi;
   tree t;
 
-  FOR_EACH_HTAB_ELEMENT (tree_with_vars, t, tree, hi)
-    lto_fixup_prevailing_decls (t);
+  if (tree_with_vars)
+    FOR_EACH_VEC_ELT ((*tree_with_vars), i, t)
+      lto_fixup_prevailing_decls (t);
 
   for (i = 0; files[i]; i++)
     {
@@ -3364,8 +3395,6 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
     }
   cgraph_state = CGRAPH_LTO_STREAMING;
 
-  tree_with_vars = htab_create_ggc (101, htab_hash_pointer, htab_eq_pointer,
-				    NULL);
   type_hash_cache = htab_create_ggc (512, tree_int_map_hash,
 				     tree_int_map_eq, NULL);
   type_pair_cache = XCNEWVEC (struct type_pair_d, GIMPLE_TYPE_PAIR_SIZE);
@@ -3481,7 +3510,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
       /* Fixup all decls.  */
       lto_fixup_decls (all_file_decl_data);
     }
-  htab_delete (tree_with_vars);
+  if (tree_with_vars)
+    ggc_free (tree_with_vars);
   tree_with_vars = NULL;
   ggc_collect ();
 
