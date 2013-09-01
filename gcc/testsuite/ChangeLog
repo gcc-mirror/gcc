@@ -1,3 +1,7 @@
+2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/linker_alias.ads: Skip on Darwin.
+
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/devirt-11.C: Use -fno-devirtualize-speuclatively
