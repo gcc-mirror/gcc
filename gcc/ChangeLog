@@ -1,3 +1,7 @@
+2013-09-01  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: Allow "const 0" operand 1 in "scc" insns.
+
 2013-09-01  Jan Hubicka  <jh@suse.cz>
 
 	* common.opt (fdevirtualize-speculatively): New function.
