@@ -101,6 +101,8 @@ along with GCC; see the file COPYING3.  If not see
 
   possible_polymorphic_call_targets returns, given an parameters found in
   indirect polymorphic edge all possible polymorphic call targets of the call.
+
+  pass_ipa_devirt performs simple speculative devirtualization.
 */
 
 #include "config.h"
@@ -116,6 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "ipa-utils.h"
 #include "gimple.h"
+#include "ipa-inline.h"
 
 /* Pointer set of all call targets appearing in the cache.  */
 static pointer_set_t *cached_polymorphic_call_targets;
@@ -728,4 +731,267 @@ update_type_inheritance_graph (void)
       get_odr_type (method_class_type (TREE_TYPE (n->symbol.decl)), true);
   timevar_pop (TV_IPA_INHERITANCE);
 }
+
+
+/* Return true if N looks like likely target of a polymorphic call.
+   Rule out cxa_pure_virtual, noreturns, function declared cold and
+   other obvious cases.  */
+
+bool
+likely_target_p (struct cgraph_node *n)
+{
+  int flags;
+  /* cxa_pure_virtual and similar things are not likely.  */
+  if (TREE_CODE (TREE_TYPE (n->symbol.decl)) != METHOD_TYPE)
+    return false;
+  flags = flags_from_decl_or_type (n->symbol.decl);
+  if (flags & ECF_NORETURN)
+    return false;
+  if (lookup_attribute ("cold",
+			DECL_ATTRIBUTES (n->symbol.decl)))
+    return false;
+  if (n->frequency < NODE_FREQUENCY_NORMAL)
+    return false;
+  return true;
+}
+
+/* The ipa-devirt pass.
+   This performs very trivial devirtualization:
+     1) when polymorphic call is known to have precisely one target,
+        turn it into direct call
+     2) when polymorphic call has only one likely target in the unit,
+        turn it into speculative call.  */
+
+static unsigned int
+ipa_devirt (void)
+{
+  struct cgraph_node *n;
+  struct pointer_set_t *bad_call_targets = pointer_set_create ();
+  struct cgraph_edge *e;
+
+  int npolymorphic = 0, nspeculated = 0, nconverted = 0, ncold = 0;
+  int nmultiple = 0, noverwritable = 0, ndevirtualized = 0, nnotdefined = 0;
+  int nwrong = 0, nok = 0, nexternal = 0;;
+
+  FOR_EACH_DEFINED_FUNCTION (n)
+    {	
+      bool update = false;
+      if (dump_file && n->indirect_calls)
+	fprintf (dump_file, "\n\nProcesing function %s/%i\n",
+		 cgraph_node_name (n), n->symbol.order);
+      for (e = n->indirect_calls; e; e = e->next_callee)
+	if (e->indirect_info->polymorphic)
+	  {
+	    struct cgraph_node *likely_target = NULL;
+	    void *cache_token;
+	    bool final;
+	    vec <cgraph_node *>targets
+	       = possible_polymorphic_call_targets
+		    (e, &final, &cache_token);
+	    unsigned int i;
+
+	    if (dump_file)
+	      dump_possible_polymorphic_call_targets 
+		(dump_file, e);
+	    npolymorphic++;
+
+	    if (final)
+	      {
+		gcc_assert (targets.length());
+		if (targets.length() == 1)
+		  {
+		    if (dump_file)
+		      fprintf (dump_file,
+			       "Devirtualizing call in %s/%i to %s/%i\n",
+			       cgraph_node_name (n), n->symbol.order,
+			       cgraph_node_name (targets[0]), targets[0]->symbol.order);
+		    cgraph_make_edge_direct (e, targets[0]);
+		    ndevirtualized++;
+		    update = true;
+		    continue;
+		  }
+	      }
+	    if (!flag_devirtualize_speculatively)
+	      continue;
+	    if (!cgraph_maybe_hot_edge_p (e))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Call is cold\n");
+		ncold++;
+		continue;
+	      }
+	    if (e->speculative)
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Call is aready speculated\n");
+		nspeculated++;
+
+		/* When dumping see if we agree with speculation.  */
+		if (!dump_file)
+		  continue;
+	      }
+	    if (pointer_set_contains (bad_call_targets,
+				      cache_token))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Target list is known to be useless\n");
+		nmultiple++;
+		continue;
+	      }
+	    for (i = 0; i < targets.length(); i++)
+	      if (likely_target_p (targets[i]))
+		{
+		  if (likely_target)
+		    {
+		      likely_target = NULL;
+		      if (dump_file)
+			fprintf (dump_file, "More than one likely target\n");
+		      nmultiple++;
+		      break;
+		    }
+		  likely_target = targets[i];
+		}
+	    if (!likely_target)
+	      {
+		pointer_set_insert (bad_call_targets, cache_token);
+	        continue;
+	      }
+	    /* This is reached only when dumping; check if we agree or disagree
+ 	       with the speculation.  */
+	    if (e->speculative)
+	      {
+		struct cgraph_edge *e2;
+		struct ipa_ref *ref;
+		cgraph_speculative_call_info (e, e2, e, ref);
+		if (cgraph_function_or_thunk_node (e2->callee, NULL)
+		    == cgraph_function_or_thunk_node (likely_target, NULL))
+		  {
+		    fprintf (dump_file, "We agree with speculation\n");
+		    nok++;
+		  }
+		else
+		  {
+		    fprintf (dump_file, "We disagree with speculation\n");
+		    nwrong++;
+		  }
+		continue;
+	      }
+	    if (!likely_target->symbol.definition)
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Target is not an definition\n");
+		nnotdefined++;
+		continue;
+	      }
+	    /* Do not introduce new references to external symbols.  While we
+	       can handle these just well, it is common for programs to
+	       incorrectly with headers defining methods they are linked
+	       with.  */
+	    if (DECL_EXTERNAL (likely_target->symbol.decl))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Target is external\n");
+		nexternal++;
+		continue;
+	      }
+	    if (cgraph_function_body_availability (likely_target)
+		<= AVAIL_OVERWRITABLE
+		&& symtab_can_be_discarded ((symtab_node) likely_target))
+	      {
+		if (dump_file)
+		  fprintf (dump_file, "Target is overwritable\n");
+		noverwritable++;
+		continue;
+	      }
+	    else
+	      {
+		if (dump_file)
+		  fprintf (dump_file,
+			   "Speculatively devirtualizing call in %s/%i to %s/%i\n",
+			   cgraph_node_name (n), n->symbol.order,
+			   cgraph_node_name (likely_target),
+			   likely_target->symbol.order);
+		if (!symtab_can_be_discarded ((symtab_node) likely_target))
+		  likely_target = cgraph (symtab_nonoverwritable_alias ((symtab_node)likely_target));
+		nconverted++;
+		update = true;
+		cgraph_turn_edge_to_speculative
+		  (e, likely_target, e->count * 8 / 10, e->frequency * 8 / 10);
+	      }
+	  }
+      if (update)
+	inline_update_overall_summary (n);
+    }
+  pointer_set_destroy (bad_call_targets);
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "%i polymorphic calls, %i devirtualized,"
+	     " %i speculatively devirtualized, %i cold\n"
+	     "%i have multiple targets, %i overwritable,"
+	     " %i already speculated (%i agree, %i disagree),"
+	     " %i external, %i not defined\n",
+	     npolymorphic, ndevirtualized, nconverted, ncold,
+	     nmultiple, noverwritable, nspeculated, nok, nwrong,
+	     nexternal, nnotdefined);
+  return ndevirtualized ? TODO_remove_functions : 0;
+}
+
+/* Gate for IPCP optimization.  */
+
+static bool
+gate_ipa_devirt (void)
+{
+  /* FIXME: We should remove the optimize check after we ensure we never run
+     IPA passes when not optimizing.  */
+  return (flag_devirtualize || flag_devirtualize_speculatively) && !in_lto_p;
+}
+
+namespace {
+
+const pass_data pass_data_ipa_devirt =
+{
+  IPA_PASS, /* type */
+  "devirt", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  true, /* has_gate */
+  true, /* has_execute */
+  TV_IPA_DEVIRT, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  ( TODO_dump_symtab ), /* todo_flags_finish */
+};
+
+class pass_ipa_devirt : public ipa_opt_pass_d
+{
+public:
+  pass_ipa_devirt(gcc::context *ctxt)
+    : ipa_opt_pass_d(pass_data_ipa_devirt, ctxt,
+		     NULL, /* generate_summary */
+		     NULL, /* write_summary */
+		     NULL, /* read_summary */
+		     NULL, /* write_optimization_summary */
+		     NULL, /* read_optimization_summary */
+		     NULL, /* stmt_fixup */
+		     0, /* function_transform_todo_flags_start */
+		     NULL, /* function_transform */
+		     NULL) /* variable_transform */
+  {}
+
+  /* opt_pass methods: */
+  bool gate () { return gate_ipa_devirt (); }
+  unsigned int execute () { return ipa_devirt (); }
+
+}; // class pass_ipa_devirt
+
+} // anon namespace
+
+ipa_opt_pass_d *
+make_pass_ipa_devirt (gcc::context *ctxt)
+{
+  return new pass_ipa_devirt (ctxt);
+}
+
 #include "gt-ipa-devirt.h"

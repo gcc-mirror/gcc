@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-ipa-inline" } */
+/* { dg-options "-O2 -fdump-ipa-inline -fno-devirtualize-speuclatively" } */
 int baz ();
 struct A
 {

@@ -365,7 +365,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdelayed-branch @gol
--fdelete-null-pointer-checks -fdevirtualize -fdse @gol
+-fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively -fdse @gol
 -fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
 -ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
@@ -6712,7 +6712,7 @@ also turns on the following optimization flags:
 -fcrossjumping @gol
 -fcse-follow-jumps  -fcse-skip-blocks @gol
 -fdelete-null-pointer-checks @gol
--fdevirtualize @gol
+-fdevirtualize -fdevirtualize-speculatively @gol
 -fexpensive-optimizations @gol
 -fgcse  -fgcse-lm  @gol
 -fhoist-adjacent-loads @gol
@@ -7256,6 +7256,15 @@ is done both within a procedure and interprocedurally as part of
 indirect inlining (@code{-findirect-inlining}) and interprocedural constant
 propagation (@option{-fipa-cp}).
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fdevirtualize-speculatively
+@opindex fdevirtualize-speculatively
+Attempt to convert calls to virtual functions to speculative direct calls.
+Based on the analysis of the type inheritance graph, determine for a given call
+the set of likely targets. If the set is small, preferably of size 1, change
+the call into an conditional deciding on direct and indirect call.  The
+speculative calls enable more optimizations, such as inlining.  When they seem
+useless after further optimization, they are converted back into original form.
 
 @item -fexpensive-optimizations
 @opindex fexpensive-optimizations
