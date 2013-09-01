@@ -111,6 +111,12 @@ ada: gnat1$(exeext) gnatbind$(exeext)
 # Tell GNU Make to ignore these, if they exist.
 .PHONY: ada
 
+CXX_LFLAGS = \
+ -B../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
+ -B../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs \
+ -L../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
+ -L../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs
+
 # There are too many Ada sources to check against here.  Let's
 # always force the recursive make.
 ifeq ($(build), $(host))
@@ -119,6 +125,7 @@ ifeq ($(build), $(host))
     # tree.
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="../../xgcc -B../../" \
+        CXX="../../xg++ -B../../ $(CXX_LFLAGS)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
         ADA_INCLUDES="-I- -I../rts" \
         GNATMAKE="../../gnatmake" \
@@ -136,6 +143,7 @@ ifeq ($(build), $(host))
 
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
+        CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
         ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
         GNATMAKE="gnatmake" \
@@ -158,6 +166,7 @@ else
     # built runtime.
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
+        CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
         ADA_INCLUDES="-I../rts"                \
         GNATMAKE="$(GNATMAKE_FOR_HOST)"      \
@@ -172,6 +181,7 @@ else
     endif
     ADA_TOOLS_FLAGS_TO_PASS=\
         CC="$(CC)" \
+        CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
         ADA_INCLUDES="-I$(RTS_DIR)../adainclude -I$(RTS_DIR)" \
         GNATMAKE="$(GNATMAKE_FOR_HOST)"      \

@@ -1,3 +1,12 @@
+2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR ada/58239
+	* Makefile.in (CXX_LFLAGS): New.
+	(TOOLS_FLAGS_TO_PASS_NATIVE): Pass CXX and CXX_LFLAGS.
+	(TOOLS_FLAGS_TO_PASS_RE): Likewise.
+	(TOOLS_FLAGS_TO_PASS_CROSS): Pass CXX.
+
 2012-03-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (mips-sgi-irix*): Remove.

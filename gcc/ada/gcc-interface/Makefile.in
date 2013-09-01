@@ -198,7 +198,7 @@ RTSDIR = rts$(subst /,_,$(MULTISUBDIR))
 # Link flags used to build gnat tools.  By default we prefer to statically
 # link with libgcc to avoid a dependency on shared libgcc (which is tricky
 # to deal with as it may conflict with the libgcc provided by the system).
-GCC_LINK_FLAGS=-static-libgcc
+GCC_LINK_FLAGS=-static-libstdc++ -static-libgcc
 
 # End of variables for you to override.
 
@@ -2275,7 +2275,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
   soext = .dylib
-  GCC_LINK_FLAGS=
+  GCC_LINK_FLAGS=-static-libstdc++
 endif
 
 # ARM Nucleus
@@ -2397,7 +2397,7 @@ TOOLS_FLAGS_TO_PASS=		\
 	"GNATLINK=$(GNATLINK)"	\
 	"GNATBIND=$(GNATBIND)"
 
-GCC_LINK=$(CC) $(GCC_LINK_FLAGS) $(ADA_INCLUDES)
+GCC_LINK=$(CXX) $(GCC_LINK_FLAGS) $(ADA_INCLUDES)
 
 # Build directory for the tools. Let's copy the target-dependent
 # sources using the same mechanism as for gnatlib. The other sources are
