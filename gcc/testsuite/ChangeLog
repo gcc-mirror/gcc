@@ -1,3 +1,7 @@
+2013-09-01  Jan Hubicka  <jh@suse.cz>	
+
+	* g++.dg/ipa/devirt-15.C: New testcase.
+
 2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/linker_alias.ads: Skip on Darwin.
