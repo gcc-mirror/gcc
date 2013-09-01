@@ -1,3 +1,7 @@
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/fork-instrumentation.c: New testcase.
+
 2013-08-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* g++.dg/abi/mangle33.C (dg-final): Use match count in scan RE.

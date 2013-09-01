@@ -1,3 +1,8 @@
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* bulitins.c (expand_builtin): Do not early exit for gcov
+	instrumented functions.
+
 2013-08-31  Marek Polacek  <polacek@redhat.com>
 
 	* ubsan.c: Include tm_p.h.
