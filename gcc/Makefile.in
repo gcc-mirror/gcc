@@ -1280,6 +1280,7 @@ OBJS = \
 	ipa-inline.o \
 	ipa-inline-analysis.o \
 	ipa-inline-transform.o \
+	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
 	ipa-reference.o \
@@ -2952,11 +2953,15 @@ varpool.o : varpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_FLOW_H) 
 ipa.o : ipa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(TREE_PASS_H) $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
-   $(IPA_UTILS_H) tree-inline.h $(HASH_TABLE_H) profile.h $(PARAMS_H) \
-   $(LTO_STREAMER_H) $(DATA_STREAMER_H)
+   $(IPA_UTILS_H) tree-inline.h profile.h $(PARAMS_H) 
+ipa-profile.o : ipa-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
+   $(TREE_PASS_H) $(GIMPLE_H) $(TARGET_H) $(GGC_H)  \
+   $(IPA_UTILS_H) $(HASH_TABLE_H) profile.h $(PARAMS_H) \
+   value-prof.h alloc-pool.h tree-inline.h $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
+   ipa-inline.h
 ipa-devirt.o : ipa-devirt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
-   $(IPA_UTILS_H) $(HASH_TABLE_H) 
+   $(IPA_UTILS_H) $(HASH_TABLE_H) ipa-inline.h ipa-utils.h $(TREE_PRETTY_PRINT_H)
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
@@ -2986,7 +2991,8 @@ ipa-inline-analysis.o : ipa-inline-analysis.c $(CONFIG_H) $(SYSTEM_H) coretypes.
    $(DIAGNOSTIC_H) $(PARAMS_H) $(TREE_PASS_H) $(CFGLOOP_H) \
    $(HASHTAB_H) $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(IPA_PROP_H) \
    $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
-   $(TREE_STREAMER_H)
+   $(TREE_STREAMER_H) ipa-utils.h tree-scalar-evolution.h $(CFGLOOP_H) \
+   alloc-pool.h
 ipa-inline-transform.o : ipa-inline-transform.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(TREE_PASS_H) \

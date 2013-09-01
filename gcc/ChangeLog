@@ -1,3 +1,25 @@
+2013-09-01  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in: Add ipa-profile.o
+	(ipa.o, ipa-devrit.o, ipa-inline-analysis.o): Adjust dependencies.
+	* cgraph.c (struct cgraph_propagate_frequency_data,
+	cgraph_propagate_frequency_1, cgraph_propagate_frequency): Move to
+	ipa-profile.c; replace cgraph_ by ipa_ prefix.
+	* cgraph.h (cgraph_propagate_frequency): Remove.
+	* ipa-inline-analysis.c: Include ipa-utils.h; drop duplicated cfgloop.h.
+	(inline_update_callee_summaries): Update.
+	* ipa-profile.c: New file.
+	* ipa-utils.h (ipa_propagate_frequency): Declare.
+	* ipa.c: Do not include pointer-set.h, hash-table.h, lto-streamer.h,
+	data-streamer.h, value-prof.h
+	(symtab_remove_unreachable_nodes): Update profile.
+	(struct histogram_entry, histogram, histogram_pool, histogram_hash,
+	account_time_size, cmp_counts, dump_histogram,
+	ipa_profile_generate_summary, ipa_profile_write_summary,
+	ipa_profile_read_summary, ipa_profile, gate_ipa_profile,
+	pass_data_ipa_profile, pass_ipa_profile, make_pass_ipa_profile):
+	Move to ipa-profile.c
+
 2013-09-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Allow "const 0" operand 1 in "scc" insns.

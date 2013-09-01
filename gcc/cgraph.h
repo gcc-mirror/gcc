@@ -722,7 +722,6 @@ void cgraph_remove_edge_duplication_hook (struct cgraph_2edge_hook_list *);
 struct cgraph_2node_hook_list *cgraph_add_node_duplication_hook (cgraph_2node_hook, void *);
 void cgraph_remove_node_duplication_hook (struct cgraph_2node_hook_list *);
 gimple cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *);
-bool cgraph_propagate_frequency (struct cgraph_node *node);
 struct cgraph_node * cgraph_function_node (struct cgraph_node *,
 					   enum availability *avail = NULL);
 bool cgraph_get_body (struct cgraph_node *node);

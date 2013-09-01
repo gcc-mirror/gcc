@@ -87,8 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-inline.h"
 #include "alloc-pool.h"
 #include "cfgloop.h"
-#include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "ipa-utils.h"
 
 /* Estimate runtime of function can easilly run into huge numbers with many
    nested loops.  Be sure we can compute time * INLINE_SIZE_SCALE * 2 in an
@@ -3102,7 +3102,7 @@ inline_update_callee_summaries (struct cgraph_node *node, int depth)
     + callee_info->estimated_self_stack_size;
   if (inline_summary (node->global.inlined_to)->estimated_stack_size < peak)
       inline_summary (node->global.inlined_to)->estimated_stack_size = peak;
-  cgraph_propagate_frequency (node);
+  ipa_propagate_frequency (node);
   for (e = node->callees; e; e = e->next_callee)
     {
       if (!e->inline_failed)
