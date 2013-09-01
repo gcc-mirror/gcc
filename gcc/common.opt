@@ -1007,6 +1007,10 @@ fdevirtualize
 Common Report Var(flag_devirtualize) Optimization
 Try to convert virtual calls to direct ones.
 
+fdevirtualize-speculatively
+Common Report Var(flag_devirtualize_speculatively) Optimization
+Perform speculative devirtualization
+
 fdiagnostics-show-location=
 Common Joined RejectNegative Enum(diagnostic_prefixing_rule)
 -fdiagnostics-show-location=[once|every-line]	How often to emit source location at the beginning of line-wrapped diagnostics
@@ -1366,7 +1370,7 @@ Common RejectNegative Joined
 
 fipa-cp
 Common Report Var(flag_ipa_cp) Optimization
-Perform Interprocedural constant propagation
+Perform interprocedural constant propagation
 
 fipa-cp-clone
 Common Report Var(flag_ipa_cp_clone) Optimization

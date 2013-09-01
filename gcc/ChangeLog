@@ -1,3 +1,21 @@
+2013-09-01  Jan Hubicka  <jh@suse.cz>
+
+	* common.opt (fdevirtualize-speculatively): New function.
+	* invoke.texi (fdevirtualize-speculatively): Document.
+	* ipa-devirt.c: Include ipa-inline.h
+	(likely_target_p): New function.
+	(ipa_devirt): New function.
+	(gate_ipa_devirt): New function.
+	(pass_data_ipa_devirt): New static var.
+	(pass_ipa_devirt): Likewise.
+	(make_pass_ipa_devirt): New function.
+	* opts.c (default_options): Add OPT_fdevirtualize_speculatively.
+	(common_handle_option): Disable devirtualization when
+	value range profiling is available.
+	* passes.def (pass_ipa_devirt): Add.
+	* timever.def (TV_IPA_DEVIRT): New timevar.
+	* tree-pass.h (make_pass_ipa_devirt): 
+
 2013-09-01  Iain Sandoe  <iain@codesourcery.com>
 
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Revise sanitizer specs to

@@ -479,6 +479,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_cp, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fipa_sra, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_falign_loops, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_falign_jumps, NULL, 1 },
@@ -1665,6 +1666,11 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_vect_cost_model = value;
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
 	opts->x_flag_tree_loop_distribute_patterns = value;
+      /* Indirect call profiling should do all useful transformations
+ 	 speculative devirutalization does.  */
+      if (!opts_set->x_flag_devirtualize_speculatively
+	  && opts->x_flag_value_profile_transformations)
+	opts->x_flag_devirtualize_speculatively = false;
       break;
 
     case OPT_fprofile_generate_:

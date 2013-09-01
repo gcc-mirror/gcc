@@ -104,6 +104,7 @@ along with GCC; see the file COPYING3.  If not see
   INSERT_PASSES_AFTER (all_regular_ipa_passes)
   NEXT_PASS (pass_ipa_whole_program_visibility);
   NEXT_PASS (pass_ipa_profile);
+  NEXT_PASS (pass_ipa_devirt);
   NEXT_PASS (pass_ipa_cp);
   NEXT_PASS (pass_ipa_cdtor_merge);
   NEXT_PASS (pass_ipa_inline);
