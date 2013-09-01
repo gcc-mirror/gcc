@@ -178,10 +178,11 @@ extern GTY(()) int darwin_ms_struct;
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenmp|ftree-parallelize-loops=*: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
-    %{%:sanitize(address): -lasan } \
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
     %{!nostdlib:%{!nodefaultlibs:\
+      %{%:sanitize(address): -lasan } \
+      %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) %(link_gcc_c_sequence)\
     }}\
     %{!nostdlib:%{!nostartfiles:%E}} %{T*} %{F*} }}}}}}}"

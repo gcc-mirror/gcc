@@ -1,3 +1,9 @@
+2013-09-01  Iain Sandoe  <iain@codesourcery.com>
+
+	* ubsan/Makefile.am (libubsan_la_LIBADD): Revise to omit
+	libinterception.la for Darwin.
+	* ubsan/Makefile.in: Regenerate.
+
 2013-08-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* Makefile.am (SUBDIRS): Add ubsan.
