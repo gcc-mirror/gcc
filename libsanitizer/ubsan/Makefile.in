@@ -35,6 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@USING_MAC_INTERPOSE_FALSE@am__append_1 = $(top_builddir)/interception/libinterception.la
 subdir = ubsan
 DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.am
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -79,8 +80,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libubsan_la_DEPENDENCIES =  \
 	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
-	$(top_builddir)/interception/libinterception.la \
-	$(am__DEPENDENCIES_1)
+	$(am__append_1) $(am__DEPENDENCIES_1)
 am__objects_1 = ubsan_diag.lo ubsan_handlers.lo ubsan_handlers_cxx.lo \
 	ubsan_type_hash.lo ubsan_value.lo
 am_libubsan_la_OBJECTS = $(am__objects_1)
@@ -253,7 +253,9 @@ ubsan_files = \
 	ubsan_value.cc
 
 libubsan_la_SOURCES = $(ubsan_files) 
-libubsan_la_LIBADD = $(top_builddir)/sanitizer_common/libsanitizer_common.la $(top_builddir)/interception/libinterception.la $(LIBSTDCXX_RAW_CXX_LDFLAGS)
+libubsan_la_LIBADD =  \
+	$(top_builddir)/sanitizer_common/libsanitizer_common.la \
+	$(am__append_1) $(LIBSTDCXX_RAW_CXX_LDFLAGS)
 libubsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` -lpthread -ldl
 
 # Work around what appears to be a GNU make bug handling MAKEFLAGS
