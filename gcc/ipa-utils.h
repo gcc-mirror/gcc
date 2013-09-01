@@ -47,6 +47,9 @@ tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src);
 
+/* In ipa-profile.c  */
+bool ipa_propagate_frequency (struct cgraph_node *node);
+
 /* In ipa-devirt.c  */
 
 struct odr_type_d;
