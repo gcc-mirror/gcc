@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-skip-if "missing alias support" { *-*-darwin* } }
 
 package Linker_Alias is
 
