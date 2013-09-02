@@ -508,6 +508,107 @@ typedef struct poly16x8x4_t
 #define __aarch64_vgetq_lane_u64(__a, __b) \
   __aarch64_vget_lane_any (v2di, (uint64_t), (int64x2_t), __a, __b)
 
+/* __aarch64_vdup_lane internal macros.  */
+#define __aarch64_vdup_lane_any(__size, __q1, __q2, __a, __b) \
+  vdup##__q1##_n_##__size (__aarch64_vget##__q2##_lane_##__size (__a, __b))
+
+#define __aarch64_vdup_lane_f32(__a, __b) \
+   __aarch64_vdup_lane_any (f32, , , __a, __b)
+#define __aarch64_vdup_lane_f64(__a, __b) (__a)
+#define __aarch64_vdup_lane_p8(__a, __b) \
+   __aarch64_vdup_lane_any (p8, , , __a, __b)
+#define __aarch64_vdup_lane_p16(__a, __b) \
+   __aarch64_vdup_lane_any (p16, , , __a, __b)
+#define __aarch64_vdup_lane_s8(__a, __b) \
+   __aarch64_vdup_lane_any (s8, , , __a, __b)
+#define __aarch64_vdup_lane_s16(__a, __b) \
+   __aarch64_vdup_lane_any (s16, , , __a, __b)
+#define __aarch64_vdup_lane_s32(__a, __b) \
+   __aarch64_vdup_lane_any (s32, , , __a, __b)
+#define __aarch64_vdup_lane_s64(__a, __b) (__a)
+#define __aarch64_vdup_lane_u8(__a, __b) \
+   __aarch64_vdup_lane_any (u8, , , __a, __b)
+#define __aarch64_vdup_lane_u16(__a, __b) \
+   __aarch64_vdup_lane_any (u16, , , __a, __b)
+#define __aarch64_vdup_lane_u32(__a, __b) \
+   __aarch64_vdup_lane_any (u32, , , __a, __b)
+#define __aarch64_vdup_lane_u64(__a, __b) (__a)
+
+/* __aarch64_vdup_laneq internal macros.  */
+#define __aarch64_vdup_laneq_f32(__a, __b) \
+   __aarch64_vdup_lane_any (f32, , q, __a, __b)
+#define __aarch64_vdup_laneq_f64(__a, __b) \
+   __aarch64_vdup_lane_any (f64, , q, __a, __b)
+#define __aarch64_vdup_laneq_p8(__a, __b) \
+   __aarch64_vdup_lane_any (p8, , q, __a, __b)
+#define __aarch64_vdup_laneq_p16(__a, __b) \
+   __aarch64_vdup_lane_any (p16, , q, __a, __b)
+#define __aarch64_vdup_laneq_s8(__a, __b) \
+   __aarch64_vdup_lane_any (s8, , q, __a, __b)
+#define __aarch64_vdup_laneq_s16(__a, __b) \
+   __aarch64_vdup_lane_any (s16, , q, __a, __b)
+#define __aarch64_vdup_laneq_s32(__a, __b) \
+   __aarch64_vdup_lane_any (s32, , q, __a, __b)
+#define __aarch64_vdup_laneq_s64(__a, __b) \
+   __aarch64_vdup_lane_any (s64, , q, __a, __b)
+#define __aarch64_vdup_laneq_u8(__a, __b) \
+   __aarch64_vdup_lane_any (u8, , q, __a, __b)
+#define __aarch64_vdup_laneq_u16(__a, __b) \
+   __aarch64_vdup_lane_any (u16, , q, __a, __b)
+#define __aarch64_vdup_laneq_u32(__a, __b) \
+   __aarch64_vdup_lane_any (u32, , q, __a, __b)
+#define __aarch64_vdup_laneq_u64(__a, __b) \
+   __aarch64_vdup_lane_any (u64, , q, __a, __b)
+
+/* __aarch64_vdupq_lane internal macros.  */
+#define __aarch64_vdupq_lane_f32(__a, __b) \
+   __aarch64_vdup_lane_any (f32, q, , __a, __b)
+#define __aarch64_vdupq_lane_f64(__a, __b) (vdupq_n_f64 (__a))
+#define __aarch64_vdupq_lane_p8(__a, __b) \
+   __aarch64_vdup_lane_any (p8, q, , __a, __b)
+#define __aarch64_vdupq_lane_p16(__a, __b) \
+   __aarch64_vdup_lane_any (p16, q, , __a, __b)
+#define __aarch64_vdupq_lane_s8(__a, __b) \
+   __aarch64_vdup_lane_any (s8, q, , __a, __b)
+#define __aarch64_vdupq_lane_s16(__a, __b) \
+   __aarch64_vdup_lane_any (s16, q, , __a, __b)
+#define __aarch64_vdupq_lane_s32(__a, __b) \
+   __aarch64_vdup_lane_any (s32, q, , __a, __b)
+#define __aarch64_vdupq_lane_s64(__a, __b) (vdupq_n_s64 (__a))
+#define __aarch64_vdupq_lane_u8(__a, __b) \
+   __aarch64_vdup_lane_any (u8, q, , __a, __b)
+#define __aarch64_vdupq_lane_u16(__a, __b) \
+   __aarch64_vdup_lane_any (u16, q, , __a, __b)
+#define __aarch64_vdupq_lane_u32(__a, __b) \
+   __aarch64_vdup_lane_any (u32, q, , __a, __b)
+#define __aarch64_vdupq_lane_u64(__a, __b) (vdupq_n_u64 (__a))
+
+/* __aarch64_vdupq_laneq internal macros.  */
+#define __aarch64_vdupq_laneq_f32(__a, __b) \
+   __aarch64_vdup_lane_any (f32, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_f64(__a, __b) \
+   __aarch64_vdup_lane_any (f64, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_p8(__a, __b) \
+   __aarch64_vdup_lane_any (p8, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_p16(__a, __b) \
+   __aarch64_vdup_lane_any (p16, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_s8(__a, __b) \
+   __aarch64_vdup_lane_any (s8, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_s16(__a, __b) \
+   __aarch64_vdup_lane_any (s16, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_s32(__a, __b) \
+   __aarch64_vdup_lane_any (s32, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_s64(__a, __b) \
+   __aarch64_vdup_lane_any (s64, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_u8(__a, __b) \
+   __aarch64_vdup_lane_any (u8, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_u16(__a, __b) \
+   __aarch64_vdup_lane_any (u16, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_u32(__a, __b) \
+   __aarch64_vdup_lane_any (u32, q, q, __a, __b)
+#define __aarch64_vdupq_laneq_u64(__a, __b) \
+   __aarch64_vdup_lane_any (u64, q, q, __a, __b)
+
 /* vadd  */
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
 vadd_s8 (int8x8_t __a, int8x8_t __b)
@@ -5675,559 +5776,6 @@ vcvtxd_f32_f64 (float64_t a)
            : /* No clobbers */);
   return result;
 }
-
-#define vdup_lane_f32(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x2_t a_ = (a);                                            \
-       float32x2_t result;                                              \
-       __asm__ ("dup %0.2s,%1.s[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_p8(a, b)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x8_t a_ = (a);                                              \
-       poly8x8_t result;                                                \
-       __asm__ ("dup %0.8b,%1.b[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_p16(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x4_t a_ = (a);                                             \
-       poly16x4_t result;                                               \
-       __asm__ ("dup %0.4h,%1.h[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_s8(a, b)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x8_t a_ = (a);                                               \
-       int8x8_t result;                                                 \
-       __asm__ ("dup %0.8b,%1.b[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_s16(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x4_t a_ = (a);                                              \
-       int16x4_t result;                                                \
-       __asm__ ("dup %0.4h,%1.h[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_s32(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t a_ = (a);                                              \
-       int32x2_t result;                                                \
-       __asm__ ("dup %0.2s,%1.s[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_s64(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x1_t a_ = (a);                                              \
-       int64x1_t result;                                                \
-       __asm__ ("ins %0.d[0],%1.d[%2]"                                  \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_u8(a, b)                                              \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x8_t a_ = (a);                                              \
-       uint8x8_t result;                                                \
-       __asm__ ("dup %0.8b,%1.b[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_u16(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x4_t a_ = (a);                                             \
-       uint16x4_t result;                                               \
-       __asm__ ("dup %0.4h,%1.h[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_u32(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t a_ = (a);                                             \
-       uint32x2_t result;                                               \
-       __asm__ ("dup %0.2s,%1.s[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdup_lane_u64(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x1_t a_ = (a);                                             \
-       uint64x1_t result;                                               \
-       __asm__ ("ins %0.d[0],%1.d[%2]"                                  \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
-vdup_n_f32 (float32_t a)
-{
-  float32x2_t result;
-  __asm__ ("dup %0.2s, %w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
-vdup_n_p8 (uint32_t a)
-{
-  poly8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
-vdup_n_p16 (uint32_t a)
-{
-  poly16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vdup_n_s8 (int32_t a)
-{
-  int8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
-vdup_n_s16 (int32_t a)
-{
-  int16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
-vdup_n_s32 (int32_t a)
-{
-  int32x2_t result;
-  __asm__ ("dup %0.2s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vdup_n_s64 (int64_t a)
-{
-  int64x1_t result;
-  __asm__ ("ins %0.d[0],%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
-vdup_n_u8 (uint32_t a)
-{
-  uint8x8_t result;
-  __asm__ ("dup %0.8b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
-vdup_n_u16 (uint32_t a)
-{
-  uint16x4_t result;
-  __asm__ ("dup %0.4h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
-vdup_n_u32 (uint32_t a)
-{
-  uint32x2_t result;
-  __asm__ ("dup %0.2s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vdup_n_u64 (uint64_t a)
-{
-  uint64x1_t result;
-  __asm__ ("ins %0.d[0],%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-#define vdupd_lane_f64(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x2_t a_ = (a);                                            \
-       float64_t result;                                                \
-       __asm__ ("dup %d0, %1.d[%2]"                                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_f32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x2_t a_ = (a);                                            \
-       float32x4_t result;                                              \
-       __asm__ ("dup %0.4s,%1.s[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_f64(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       float64x1_t a_ = (a);                                            \
-       float64x2_t result;                                              \
-       __asm__ ("dup %0.2d,%1.d[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_p8(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       poly8x8_t a_ = (a);                                              \
-       poly8x16_t result;                                               \
-       __asm__ ("dup %0.16b,%1.b[%2]"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_p16(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       poly16x4_t a_ = (a);                                             \
-       poly16x8_t result;                                               \
-       __asm__ ("dup %0.8h,%1.h[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_s8(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       int8x8_t a_ = (a);                                               \
-       int8x16_t result;                                                \
-       __asm__ ("dup %0.16b,%1.b[%2]"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_s16(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       int16x4_t a_ = (a);                                              \
-       int16x8_t result;                                                \
-       __asm__ ("dup %0.8h,%1.h[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_s32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       int32x2_t a_ = (a);                                              \
-       int32x4_t result;                                                \
-       __asm__ ("dup %0.4s,%1.s[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_s64(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       int64x1_t a_ = (a);                                              \
-       int64x2_t result;                                                \
-       __asm__ ("dup %0.2d,%1.d[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_u8(a, b)                                             \
-  __extension__                                                         \
-    ({                                                                  \
-       uint8x8_t a_ = (a);                                              \
-       uint8x16_t result;                                               \
-       __asm__ ("dup %0.16b,%1.b[%2]"                                   \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_u16(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       uint16x4_t a_ = (a);                                             \
-       uint16x8_t result;                                               \
-       __asm__ ("dup %0.8h,%1.h[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_u32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       uint32x2_t a_ = (a);                                             \
-       uint32x4_t result;                                               \
-       __asm__ ("dup %0.4s,%1.s[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-#define vdupq_lane_u64(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       uint64x1_t a_ = (a);                                             \
-       uint64x2_t result;                                               \
-       __asm__ ("dup %0.2d,%1.d[%2]"                                    \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
-
-__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vdupq_n_f32 (float32_t a)
-{
-  float32x4_t result;
-  __asm__ ("dup %0.4s, %w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vdupq_n_f64 (float64_t a)
-{
-  float64x2_t result;
-  __asm__ ("dup %0.2d, %x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
-vdupq_n_p8 (uint32_t a)
-{
-  poly8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
-vdupq_n_p16 (uint32_t a)
-{
-  poly16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vdupq_n_s8 (int32_t a)
-{
-  int8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
-vdupq_n_s16 (int32_t a)
-{
-  int16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
-vdupq_n_s32 (int32_t a)
-{
-  int32x4_t result;
-  __asm__ ("dup %0.4s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
-vdupq_n_s64 (int64_t a)
-{
-  int64x2_t result;
-  __asm__ ("dup %0.2d,%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
-vdupq_n_u8 (uint32_t a)
-{
-  uint8x16_t result;
-  __asm__ ("dup %0.16b,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
-vdupq_n_u16 (uint32_t a)
-{
-  uint16x8_t result;
-  __asm__ ("dup %0.8h,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
-vdupq_n_u32 (uint32_t a)
-{
-  uint32x4_t result;
-  __asm__ ("dup %0.4s,%w1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
-vdupq_n_u64 (uint64_t a)
-{
-  uint64x2_t result;
-  __asm__ ("dup %0.2d,%x1"
-           : "=w"(result)
-           : "r"(a)
-           : /* No clobbers */);
-  return result;
-}
-
-#define vdups_lane_f32(a, b)                                            \
-  __extension__                                                         \
-    ({                                                                  \
-       float32x4_t a_ = (a);                                            \
-       float32_t result;                                                \
-       __asm__ ("dup %s0, %1.s[%2]"                                     \
-                : "=w"(result)                                          \
-                : "w"(a_), "i"(b)                                       \
-                : /* No clobbers */);                                   \
-       result;                                                          \
-     })
 
 #define vext_f32(a, b, c)                                               \
   __extension__                                                         \
@@ -19755,54 +19303,601 @@ vcvtpq_u64_f64 (float64x2_t __a)
   return (uint64x2_t) __builtin_aarch64_lceiluv2dfv2di (__a);
 }
 
-/* vdup */
+/* vdup_n  */
 
-__extension__ static __inline int8x1_t __attribute__ ((__always_inline__))
-vdupb_lane_s8 (int8x16_t a, int const b)
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vdup_n_f32 (float32_t __a)
 {
-  return __aarch64_vgetq_lane_s8 (a, b);
+  return (float32x2_t) {__a, __a};
 }
 
-__extension__ static __inline uint8x1_t __attribute__ ((__always_inline__))
-vdupb_lane_u8 (uint8x16_t a, int const b)
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vdup_n_f64 (float64_t __a)
 {
-  return __aarch64_vgetq_lane_u8 (a, b);
+  return __a;
 }
 
-__extension__ static __inline int16x1_t __attribute__ ((__always_inline__))
-vduph_lane_s16 (int16x8_t a, int const b)
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vdup_n_p8 (poly8_t __a)
 {
-  return __aarch64_vgetq_lane_s16 (a, b);
+  return (poly8x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
 }
 
-__extension__ static __inline uint16x1_t __attribute__ ((__always_inline__))
-vduph_lane_u16 (uint16x8_t a, int const b)
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vdup_n_p16 (poly16_t __a)
 {
-  return __aarch64_vgetq_lane_u16 (a, b);
+  return (poly16x4_t) {__a, __a, __a, __a};
 }
 
-__extension__ static __inline int32x1_t __attribute__ ((__always_inline__))
-vdups_lane_s32 (int32x4_t a, int const b)
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vdup_n_s8 (int8_t __a)
 {
-  return __aarch64_vgetq_lane_s32 (a, b);
+  return (int8x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
 }
 
-__extension__ static __inline uint32x1_t __attribute__ ((__always_inline__))
-vdups_lane_u32 (uint32x4_t a, int const b)
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vdup_n_s16 (int16_t __a)
 {
-  return __aarch64_vgetq_lane_u32 (a, b);
+  return (int16x4_t) {__a, __a, __a, __a};
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vdup_n_s32 (int32_t __a)
+{
+  return (int32x2_t) {__a, __a};
 }
 
 __extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
-vdupd_lane_s64 (int64x2_t a, int const b)
+vdup_n_s64 (int64_t __a)
 {
-  return __aarch64_vgetq_lane_s64 (a, b);
+  return __a;
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vdup_n_u8 (uint8_t __a)
+{
+  return (uint8x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vdup_n_u16 (uint16_t __a)
+{
+  return (uint16x4_t) {__a, __a, __a, __a};
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vdup_n_u32 (uint32_t __a)
+{
+  return (uint32x2_t) {__a, __a};
 }
 
 __extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
-vdupd_lane_u64 (uint64x2_t a, int const b)
+vdup_n_u64 (uint64_t __a)
 {
-  return __aarch64_vgetq_lane_u64 (a, b);
+  return __a;
+}
+
+/* vdupq_n  */
+
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vdupq_n_f32 (float32_t __a)
+{
+  return (float32x4_t) {__a, __a, __a, __a};
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vdupq_n_f64 (float64_t __a)
+{
+  return (float64x2_t) {__a, __a};
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vdupq_n_p8 (uint32_t __a)
+{
+  return (poly8x16_t) {__a, __a, __a, __a, __a, __a, __a, __a,
+		       __a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vdupq_n_p16 (uint32_t __a)
+{
+  return (poly16x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vdupq_n_s8 (int32_t __a)
+{
+  return (int8x16_t) {__a, __a, __a, __a, __a, __a, __a, __a,
+		      __a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vdupq_n_s16 (int32_t __a)
+{
+  return (int16x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vdupq_n_s32 (int32_t __a)
+{
+  return (int32x4_t) {__a, __a, __a, __a};
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vdupq_n_s64 (int64_t __a)
+{
+  return (int64x2_t) {__a, __a};
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vdupq_n_u8 (uint32_t __a)
+{
+  return (uint8x16_t) {__a, __a, __a, __a, __a, __a, __a, __a,
+		       __a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vdupq_n_u16 (uint32_t __a)
+{
+  return (uint16x8_t) {__a, __a, __a, __a, __a, __a, __a, __a};
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vdupq_n_u32 (uint32_t __a)
+{
+  return (uint32x4_t) {__a, __a, __a, __a};
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vdupq_n_u64 (uint64_t __a)
+{
+  return (uint64x2_t) {__a, __a};
+}
+
+/* vdup_lane  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vdup_lane_f32 (float32x2_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_f32 (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vdup_lane_f64 (float64x1_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_f64 (__a, __b);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vdup_lane_p8 (poly8x8_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_p8 (__a, __b);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vdup_lane_p16 (poly16x4_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_p16 (__a, __b);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vdup_lane_s8 (int8x8_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_s8 (__a, __b);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vdup_lane_s16 (int16x4_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_s16 (__a, __b);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vdup_lane_s32 (int32x2_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_s32 (__a, __b);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vdup_lane_s64 (int64x1_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_s64 (__a, __b);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vdup_lane_u8 (uint8x8_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_u8 (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vdup_lane_u16 (uint16x4_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_u16 (__a, __b);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vdup_lane_u32 (uint32x2_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_u32 (__a, __b);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vdup_lane_u64 (uint64x1_t __a, const int __b)
+{
+  return __aarch64_vdup_lane_u64 (__a, __b);
+}
+
+/* vdup_laneq  */
+
+__extension__ static __inline float32x2_t __attribute__ ((__always_inline__))
+vdup_laneq_f32 (float32x4_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_f32 (__a, __b);
+}
+
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vdup_laneq_f64 (float64x2_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_f64 (__a, __b);
+}
+
+__extension__ static __inline poly8x8_t __attribute__ ((__always_inline__))
+vdup_laneq_p8 (poly8x16_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_p8 (__a, __b);
+}
+
+__extension__ static __inline poly16x4_t __attribute__ ((__always_inline__))
+vdup_laneq_p16 (poly16x8_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_p16 (__a, __b);
+}
+
+__extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
+vdup_laneq_s8 (int8x16_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_s8 (__a, __b);
+}
+
+__extension__ static __inline int16x4_t __attribute__ ((__always_inline__))
+vdup_laneq_s16 (int16x8_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_s16 (__a, __b);
+}
+
+__extension__ static __inline int32x2_t __attribute__ ((__always_inline__))
+vdup_laneq_s32 (int32x4_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_s32 (__a, __b);
+}
+
+__extension__ static __inline int64x1_t __attribute__ ((__always_inline__))
+vdup_laneq_s64 (int64x2_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_s64 (__a, __b);
+}
+
+__extension__ static __inline uint8x8_t __attribute__ ((__always_inline__))
+vdup_laneq_u8 (uint8x16_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_u8 (__a, __b);
+}
+
+__extension__ static __inline uint16x4_t __attribute__ ((__always_inline__))
+vdup_laneq_u16 (uint16x8_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_u16 (__a, __b);
+}
+
+__extension__ static __inline uint32x2_t __attribute__ ((__always_inline__))
+vdup_laneq_u32 (uint32x4_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_u32 (__a, __b);
+}
+
+__extension__ static __inline uint64x1_t __attribute__ ((__always_inline__))
+vdup_laneq_u64 (uint64x2_t __a, const int __b)
+{
+  return __aarch64_vdup_laneq_u64 (__a, __b);
+}
+
+/* vdupq_lane  */
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vdupq_lane_f32 (float32x2_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_f32 (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vdupq_lane_f64 (float64x1_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_f64 (__a, __b);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vdupq_lane_p8 (poly8x8_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_p8 (__a, __b);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vdupq_lane_p16 (poly16x4_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_p16 (__a, __b);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vdupq_lane_s8 (int8x8_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_s8 (__a, __b);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vdupq_lane_s16 (int16x4_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_s16 (__a, __b);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vdupq_lane_s32 (int32x2_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_s32 (__a, __b);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vdupq_lane_s64 (int64x1_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_s64 (__a, __b);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vdupq_lane_u8 (uint8x8_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_u8 (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vdupq_lane_u16 (uint16x4_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_u16 (__a, __b);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vdupq_lane_u32 (uint32x2_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_u32 (__a, __b);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vdupq_lane_u64 (uint64x1_t __a, const int __b)
+{
+  return __aarch64_vdupq_lane_u64 (__a, __b);
+}
+
+/* vdupq_laneq  */
+__extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
+vdupq_laneq_f32 (float32x4_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_f32 (__a, __b);
+}
+
+__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
+vdupq_laneq_f64 (float64x2_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_f64 (__a, __b);
+}
+
+__extension__ static __inline poly8x16_t __attribute__ ((__always_inline__))
+vdupq_laneq_p8 (poly8x16_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_p8 (__a, __b);
+}
+
+__extension__ static __inline poly16x8_t __attribute__ ((__always_inline__))
+vdupq_laneq_p16 (poly16x8_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_p16 (__a, __b);
+}
+
+__extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
+vdupq_laneq_s8 (int8x16_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_s8 (__a, __b);
+}
+
+__extension__ static __inline int16x8_t __attribute__ ((__always_inline__))
+vdupq_laneq_s16 (int16x8_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_s16 (__a, __b);
+}
+
+__extension__ static __inline int32x4_t __attribute__ ((__always_inline__))
+vdupq_laneq_s32 (int32x4_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_s32 (__a, __b);
+}
+
+__extension__ static __inline int64x2_t __attribute__ ((__always_inline__))
+vdupq_laneq_s64 (int64x2_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_s64 (__a, __b);
+}
+
+__extension__ static __inline uint8x16_t __attribute__ ((__always_inline__))
+vdupq_laneq_u8 (uint8x16_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_u8 (__a, __b);
+}
+
+__extension__ static __inline uint16x8_t __attribute__ ((__always_inline__))
+vdupq_laneq_u16 (uint16x8_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_u16 (__a, __b);
+}
+
+__extension__ static __inline uint32x4_t __attribute__ ((__always_inline__))
+vdupq_laneq_u32 (uint32x4_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_u32 (__a, __b);
+}
+
+__extension__ static __inline uint64x2_t __attribute__ ((__always_inline__))
+vdupq_laneq_u64 (uint64x2_t __a, const int __b)
+{
+  return __aarch64_vdupq_laneq_u64 (__a, __b);
+}
+
+/* vdupb_lane  */
+__extension__ static __inline poly8_t __attribute__ ((__always_inline__))
+vdupb_lane_p8 (poly8x8_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_p8 (__a, 0);
+}
+
+__extension__ static __inline int8_t __attribute__ ((__always_inline__))
+vdupb_lane_s8 (int8x8_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_s8 (__a, 0);
+}
+
+__extension__ static __inline uint8_t __attribute__ ((__always_inline__))
+vdupb_lane_u8 (uint8x8_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_u8 (__a, 0);
+}
+
+/* vduph_lane  */
+__extension__ static __inline poly16_t __attribute__ ((__always_inline__))
+vduph_lane_p16 (poly16x4_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_p16 (__a, 0);
+}
+
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vduph_lane_s16 (int16x4_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_s16 (__a, 0);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vduph_lane_u16 (uint16x4_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_u16 (__a, 0);
+}
+
+/* vdups_lane  */
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vdups_lane_f32 (float32x2_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_f32 (__a, 0);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vdups_lane_s32 (int32x2_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_s32 (__a, 0);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vdups_lane_u32 (uint32x2_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vget_lane_u32 (__a, 0);
+}
+
+/* vdupd_lane  */
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vdupd_lane_f64 (float64x1_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __a;
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vdupd_lane_s64 (int64x1_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __a;
+}
+
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+vdupd_lane_u64 (uint64x1_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __a;
+}
+
+/* vdupb_laneq  */
+__extension__ static __inline poly8_t __attribute__ ((__always_inline__))
+vdupb_laneq_p8 (poly8x16_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_p8 (__a, 0);
+}
+
+__extension__ static __inline int8_t __attribute__ ((__always_inline__))
+vdupb_laneq_s8 (int8x16_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_s8 (__a, 0);
+}
+
+__extension__ static __inline uint8_t __attribute__ ((__always_inline__))
+vdupb_laneq_u8 (uint8x16_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_u8 (__a, 0);
+}
+
+/* vduph_laneq  */
+__extension__ static __inline poly16_t __attribute__ ((__always_inline__))
+vduph_laneq_p16 (poly16x8_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_p16 (__a, 0);
+}
+
+__extension__ static __inline int16_t __attribute__ ((__always_inline__))
+vduph_laneq_s16 (int16x8_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_s16 (__a, 0);
+}
+
+__extension__ static __inline uint16_t __attribute__ ((__always_inline__))
+vduph_laneq_u16 (uint16x8_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_u16 (__a, 0);
+}
+
+/* vdups_laneq  */
+__extension__ static __inline float32_t __attribute__ ((__always_inline__))
+vdups_laneq_f32 (float32x4_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_f32 (__a, 0);
+}
+
+__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+vdups_laneq_s32 (int32x4_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_s32 (__a, 0);
+}
+
+__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+vdups_laneq_u32 (uint32x4_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_u32 (__a, 0);
+}
+
+/* vdupd_laneq  */
+__extension__ static __inline float64_t __attribute__ ((__always_inline__))
+vdupd_laneq_f64 (float64x2_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_f64 (__a, 0);
+}
+
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
+vdupd_laneq_s64 (int64x2_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_s64 (__a, 0);
+}
+
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
+vdupd_laneq_u64 (uint64x2_t __a, const int __attribute__ ((unused)) __b)
+{
+  return __aarch64_vgetq_lane_u64 (__a, 0);
 }
 
 /* vld1 */
@@ -25635,5 +25730,55 @@ __INTERLEAVE_LIST (zip)
 #undef __aarch64_vgetq_lane_u16
 #undef __aarch64_vgetq_lane_u32
 #undef __aarch64_vgetq_lane_u64
+
+#undef __aarch64_vdup_lane_any
+#undef __aarch64_vdup_lane_f32
+#undef __aarch64_vdup_lane_f64
+#undef __aarch64_vdup_lane_p8
+#undef __aarch64_vdup_lane_p16
+#undef __aarch64_vdup_lane_s8
+#undef __aarch64_vdup_lane_s16
+#undef __aarch64_vdup_lane_s32
+#undef __aarch64_vdup_lane_s64
+#undef __aarch64_vdup_lane_u8
+#undef __aarch64_vdup_lane_u16
+#undef __aarch64_vdup_lane_u32
+#undef __aarch64_vdup_lane_u64
+#undef __aarch64_vdup_laneq_f32
+#undef __aarch64_vdup_laneq_f64
+#undef __aarch64_vdup_laneq_p8
+#undef __aarch64_vdup_laneq_p16
+#undef __aarch64_vdup_laneq_s8
+#undef __aarch64_vdup_laneq_s16
+#undef __aarch64_vdup_laneq_s32
+#undef __aarch64_vdup_laneq_s64
+#undef __aarch64_vdup_laneq_u8
+#undef __aarch64_vdup_laneq_u16
+#undef __aarch64_vdup_laneq_u32
+#undef __aarch64_vdup_laneq_u64
+#undef __aarch64_vdupq_lane_f32
+#undef __aarch64_vdupq_lane_f64
+#undef __aarch64_vdupq_lane_p8
+#undef __aarch64_vdupq_lane_p16
+#undef __aarch64_vdupq_lane_s8
+#undef __aarch64_vdupq_lane_s16
+#undef __aarch64_vdupq_lane_s32
+#undef __aarch64_vdupq_lane_s64
+#undef __aarch64_vdupq_lane_u8
+#undef __aarch64_vdupq_lane_u16
+#undef __aarch64_vdupq_lane_u32
+#undef __aarch64_vdupq_lane_u64
+#undef __aarch64_vdupq_laneq_f32
+#undef __aarch64_vdupq_laneq_f64
+#undef __aarch64_vdupq_laneq_p8
+#undef __aarch64_vdupq_laneq_p16
+#undef __aarch64_vdupq_laneq_s8
+#undef __aarch64_vdupq_laneq_s16
+#undef __aarch64_vdupq_laneq_s32
+#undef __aarch64_vdupq_laneq_s64
+#undef __aarch64_vdupq_laneq_u8
+#undef __aarch64_vdupq_laneq_u16
+#undef __aarch64_vdupq_laneq_u32
+#undef __aarch64_vdupq_laneq_u64
 
 #endif

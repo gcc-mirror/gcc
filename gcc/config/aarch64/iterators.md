@@ -383,7 +383,7 @@
 			(V4HI "V8HI") (V8HI "V8HI")
 			(V2SI "V4SI") (V4SI "V4SI")
 			(DI   "V2DI") (V2DI "V2DI")
-			(V2SF "V2SF") (V4SF "V4SF")
+			(V2SF "V4SF") (V4SF "V4SF")
 			(V2DF "V2DF") (SI   "V4SI")
 			(HI   "V8HI") (QI   "V16QI")])
 
@@ -526,6 +526,20 @@
 
 (define_mode_attr fcvt_target [(V2DF "v2di") (V4SF "v4si") (V2SF "v2si")])
 (define_mode_attr FCVT_TARGET [(V2DF "V2DI") (V4SF "V4SI") (V2SF "V2SI")])
+
+(define_mode_attr VSWAP_WIDTH [(V8QI "V16QI") (V16QI "V8QI")
+				(V4HI "V8HI") (V8HI  "V4HI")
+				(V2SI "V4SI") (V4SI  "V2SI")
+				(DI   "V2DI") (V2DI  "DI")
+				(V2SF "V4SF") (V4SF  "V2SF")
+				(DF   "V2DF") (V2DF  "DF")])
+
+(define_mode_attr vswap_width_name [(V8QI "to_128") (V16QI "to_64")
+				    (V4HI "to_128") (V8HI  "to_64")
+				    (V2SI "to_128") (V4SI  "to_64")
+				    (DI   "to_128") (V2DI  "to_64")
+				    (V2SF "to_128") (V4SF  "to_64")
+				    (DF   "to_128") (V2DF  "to_64")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

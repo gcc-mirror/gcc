@@ -1,3 +1,8 @@
+2013-09-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c
+	(vdup<bhsd>_lane<su><8,16,32,64>): Force values to SIMD registers.
+
 2013-09-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57511
