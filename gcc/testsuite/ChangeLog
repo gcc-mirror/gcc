@@ -1,4 +1,11 @@
-2013-09-01  Jan Hubicka  <jh@suse.cz>	
+2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/21682, implement DR 565
+	* g++.dg/template/using24.C: New.
+	* g++.dg/template/using25.C: Likewise.
+	* g++.dg/template/using26.C: Likewise.
+
+2013-09-01  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/devirt-15.C: New testcase.
 
