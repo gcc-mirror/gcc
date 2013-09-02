@@ -1,3 +1,17 @@
+2013-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/PR56519
+	* gfortran.h:  Declare gfc_do_concurrent_flag as extern.
+	* resolve.c:  Rename do_concurrent_flag to gfc_do_concurrent_flag
+	and make non-static.
+	(resolve_function):  Use gfc_do_concurrent_flag instead of
+	do_concurrent_flag.
+	(pure_subroutine):  Likewise.
+	(resolve_code):  Likewise.
+	(resolve_types):  Likewise.
+	* intrinsic.c (gfc_intrinsic_sub_interface):  Raise error for
+	non-pure intrinsic subroutines within DO CONCURRENT.
+
 2013-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/52243
