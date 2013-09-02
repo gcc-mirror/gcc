@@ -2252,6 +2252,7 @@ instantiate_scev_name (basic_block instantiate_below,
   else if (res != chrec_dont_know)
     {
       if (inner_loop
+	  && def_bb->loop_father != inner_loop
 	  && !flow_loop_nested_p (def_bb->loop_father, inner_loop))
 	/* ???  We could try to compute the overall effect of the loop here.  */
 	res = chrec_dont_know;
