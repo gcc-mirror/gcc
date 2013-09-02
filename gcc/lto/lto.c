@@ -1389,7 +1389,7 @@ mentions_vars_p_field_decl (tree t)
 {
   if (mentions_vars_p_decl_common (t))
     return true;
-  CHECK_NO_VAR (DECL_FIELD_OFFSET (t));
+  CHECK_VAR (DECL_FIELD_OFFSET (t));
   CHECK_NO_VAR (DECL_BIT_FIELD_TYPE (t));
   CHECK_NO_VAR (DECL_QUALIFIER (t));
   CHECK_NO_VAR (DECL_FIELD_BIT_OFFSET (t));
@@ -3207,7 +3207,7 @@ lto_fixup_prevailing_decls (tree t)
 	LTO_SET_PREVAIL (DECL_FUNCTION_PERSONALITY (t));
       if (CODE_CONTAINS_STRUCT (code, TS_FIELD_DECL))
 	{
-	  LTO_NO_PREVAIL (DECL_FIELD_OFFSET (t));
+	  LTO_SET_PREVAIL (DECL_FIELD_OFFSET (t));
 	  LTO_NO_PREVAIL (DECL_BIT_FIELD_TYPE (t));
 	  LTO_NO_PREVAIL (DECL_QUALIFIER (t));
 	  LTO_NO_PREVAIL (DECL_FIELD_BIT_OFFSET (t));
