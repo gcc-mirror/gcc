@@ -125,10 +125,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       const _TraitsT& _M_traits;
       _ScannerT       _M_scanner;
-      _StringT        _M_value;
       _RegexT         _M_state_store;
+      _StringT        _M_value;
       _StackT         _M_stack;
       _FlagT          _M_flags;
+    };
+
+  template<typename _CharT, typename _TraitsT>
+    struct _AnyMatcher
+    {
+      explicit
+      _AnyMatcher(const _TraitsT& __traits)
+      : _M_traits(__traits)
+      { }
+
+      bool
+      operator()(_CharT __ch) const
+      {
+	return _M_traits.translate(__ch) != '\n'
+	  && _M_traits.translate(__ch) != '\r'
+	  && _M_traits.translate(__ch) != u'\u2028'
+	  && _M_traits.translate(__ch) != u'\u2029';
+      }
+
+      const _TraitsT& _M_traits;
+    };
+
+  template<typename _CharT, typename _TraitsT>
+    struct _CharMatcher
+    {
+      typedef regex_constants::syntax_option_type _FlagT;
+
+      explicit
+      _CharMatcher(_CharT __ch, const _TraitsT& __traits, _FlagT __flags)
+      : _M_ch(_M_translate(__ch)), _M_traits(__traits), _M_flags(__flags)
+      { }
+
+      bool
+      operator()(_CharT __ch) const
+      { return _M_ch == _M_translate(__ch); }
+
+      _CharT
+      _M_translate(_CharT __ch) const
+      {
+	if (_M_flags & regex_constants::icase)
+	  return _M_traits.translate_nocase(__ch);
+	else
+	  return _M_traits.translate(__ch);
+      }
+
+      const _TraitsT& _M_traits;
+      _FlagT          _M_flags;
+      _CharT          _M_ch;
     };
 
   /// Matches a character range (bracket expression)
@@ -141,9 +189,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       explicit
       _BracketMatcher(bool __is_non_matching,
-		      const _TraitsT& __t,
+		      const _TraitsT& __traits,
 		      _FlagT __flags)
-      : _M_is_non_matching(__is_non_matching), _M_traits(__t),
+      : _M_is_non_matching(__is_non_matching), _M_traits(__traits),
 	_M_flags(__flags), _M_class_set(0)
       { }
 
@@ -152,7 +200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       void
       _M_add_char(_CharT __c)
-      { _M_char_set.push_back(_M_translate(__c)); }
+      { _M_char_set.insert(_M_translate(__c)); }
 
       void
       _M_add_collating_element(const _StringT& __s)
@@ -162,7 +210,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__st.empty())
 	  __throw_regex_error(regex_constants::error_collate);
 	// TODO: digraph
-	_M_char_set.push_back(__st[0]);
+	_M_char_set.insert(_M_translate(__st[0]));
       }
 
       void
@@ -186,21 +234,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_make_range(_CharT __l, _CharT __r)
       {
-	_M_range_set.push_back(
-	  make_pair(_M_get_str(_M_translate(__l)),
-		    _M_get_str(_M_translate(__r))));
+	if (_M_flags & regex_constants::collate)
+	  _M_range_set.insert(
+	    make_pair(_M_get_str(_M_translate(__l)),
+		      _M_get_str(_M_translate(__r))));
+	else
+	  _M_range_set.insert(make_pair(_M_get_str(__l), _M_get_str(__r)));
       }
 
       _CharT
       _M_translate(_CharT __c) const
       {
-	if (_M_flags & regex_constants::collate)
-	  if (_M_is_icase())
-	    return _M_traits.translate_nocase(__c);
-	  else
-	    return _M_traits.translate(__c);
+	if (_M_is_icase())
+	  return _M_traits.translate_nocase(__c);
 	else
-	  return __c;
+	  return _M_traits.translate(__c);
       }
 
       bool
@@ -214,12 +262,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_traits.transform(__s.begin(), __s.end());
       }
 
-      const _TraitsT&                       _M_traits;
-      _FlagT                                _M_flags;
-      bool                                  _M_is_non_matching;
-      std::vector<_CharT>                   _M_char_set;
-      std::vector<pair<_StringT, _StringT>> _M_range_set;
-      _CharClassT                           _M_class_set;
+      std::set<_CharT>                   _M_char_set;
+      std::set<pair<_StringT, _StringT>> _M_range_set;
+      const _TraitsT&                    _M_traits;
+      _CharClassT                        _M_class_set;
+      _FlagT                             _M_flags;
+      bool                               _M_is_non_matching;
     };
 
  //@} regex-detail

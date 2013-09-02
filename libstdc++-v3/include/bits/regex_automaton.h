@@ -206,12 +206,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_dot(std::ostream& __ostr) const;
 #endif
 
+      std::vector<unsigned int> _M_paren_stack;
+      _StateSet                 _M_accepting_states;
       _FlagT                    _M_flags;
       _StateIdT                 _M_start_state;
-      _StateSet                 _M_accepting_states;
       _SizeT                    _M_subexpr_count;
       bool                      _M_has_backref;
-      std::vector<unsigned int> _M_paren_stack;
     };
 
   /// Describes a sequence of one or more %_State, its current start

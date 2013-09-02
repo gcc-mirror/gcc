@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++11" }
 
 //
-// 2013-08-26  Tim Shen <timshen91@gmail.com>
+// 2013-09-02  Tim Shen <timshen91@gmail.com>
 //
 // Copyright (C) 2013 Free Software Foundation, Inc.
 //
@@ -21,7 +21,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // 28.11.2 regex_match
-// Tests ECMAScript \x and \u.
+// Tests ECMAScript back-refernce against a std::string.
 
 #include <regex>
 #include <testsuite_hooks.h>
@@ -33,17 +33,41 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-  VERIFY(regex_match(":", regex("\\x3a")));
-  VERIFY(regex_match(L"\u1234", wregex(L"\\u1234")));
-  try
-    {
-      regex("\\u400x");
-      VERIFY(false);
-    }
-  catch (...)
-    {
-      VERIFY(true);
-    }
+  regex re("([A-Z])\\1*");
+  smatch m;
+  {
+    string s = "AAAA";
+    regex_match(s, m, re);
+    VERIFY( m[0].matched );
+    VERIFY( m[1].matched );
+    VERIFY( std::string(m[0].first, m[0].second) == "AAAA" );
+    VERIFY( std::string(m[1].first, m[1].second) == "A" );
+  }
+  {
+    string s = "BBBB";
+    regex_match(s, m, re);
+    VERIFY( m[0].matched );
+    VERIFY( m[1].matched );
+    VERIFY( std::string(m[0].first, m[0].second) == "BBBB" );
+    VERIFY( std::string(m[1].first, m[1].second) == "B" );
+  }
+  {
+    string s = "BBBA";
+    regex_match(s, m, re);
+    VERIFY( !m[0].matched );
+    VERIFY( !m[1].matched );
+  }
+  {
+    try
+      {
+        regex re("(a(b)(c\\1(d)))");
+        VERIFY( false );
+      }
+    catch (...)
+      {
+        VERIFY( true );
+      }
+  }
 }
 
 int
