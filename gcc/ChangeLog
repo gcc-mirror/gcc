@@ -1,3 +1,8 @@
+2013-09-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* tree-ssa-loop-ivopts.c (set_autoinc_for_original_candidates):
+	Find auto-increment use both before and after candidate.
+
 2013-09-02  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in (ubsan.o): Add $(TM_P_H) dependency.
