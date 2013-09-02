@@ -198,13 +198,21 @@ test_vcltzd_s64 (int64x1_t a)
 int8x1_t
 test_vdupb_lane_s8 (int8x16_t a)
 {
-  return vdupb_lane_s8 (a, 2);
+  int8x1_t res;
+  force_simd (a);
+  res = vdupb_laneq_s8 (a, 2);
+  force_simd (res);
+  return res;
 }
 
 uint8x1_t
 test_vdupb_lane_u8 (uint8x16_t a)
 {
-  return vdupb_lane_u8 (a, 2);
+  uint8x1_t res;
+  force_simd (a);
+  res = vdupb_laneq_u8 (a, 2);
+  force_simd (res);
+  return res;
 }
 
 /* { dg-final { scan-assembler-times "aarch64_get_lanev8hi" 2 } } */
@@ -212,13 +220,21 @@ test_vdupb_lane_u8 (uint8x16_t a)
 int16x1_t
 test_vduph_lane_s16 (int16x8_t a)
 {
-  return vduph_lane_s16 (a, 2);
+  int16x1_t res;
+  force_simd (a);
+  res = vduph_laneq_s16 (a, 2);
+  force_simd (res);
+  return res;
 }
 
 uint16x1_t
 test_vduph_lane_u16 (uint16x8_t a)
 {
-  return vduph_lane_u16 (a, 2);
+  uint16x1_t res;
+  force_simd (a);
+  res = vduph_laneq_u16 (a, 2);
+  force_simd (res);
+  return res;
 }
 
 /* { dg-final { scan-assembler-times "aarch64_get_lanev4si" 2 } } */
@@ -226,13 +242,21 @@ test_vduph_lane_u16 (uint16x8_t a)
 int32x1_t
 test_vdups_lane_s32 (int32x4_t a)
 {
-  return vdups_lane_s32 (a, 2);
+  int32x1_t res;
+  force_simd (a);
+  res = vdups_laneq_s32 (a, 2);
+  force_simd (res);
+  return res;
 }
 
 uint32x1_t
 test_vdups_lane_u32 (uint32x4_t a)
 {
-  return vdups_lane_u32 (a, 2);
+  uint32x1_t res;
+  force_simd (a);
+  res = vdups_laneq_u32 (a, 2);
+  force_simd (res);
+  return res;
 }
 
 /* { dg-final { scan-assembler-times "aarch64_get_lanev2di" 2 } } */
@@ -240,13 +264,21 @@ test_vdups_lane_u32 (uint32x4_t a)
 int64x1_t
 test_vdupd_lane_s64 (int64x2_t a)
 {
-  return vdupd_lane_s64 (a, 1);
+  int64x1_t res;
+  force_simd (a);
+  res = vdupd_laneq_s64 (a, 1);
+  force_simd (res);
+  return res;
 }
 
 uint64x1_t
 test_vdupd_lane_u64 (uint64x2_t a)
 {
-  return vdupd_lane_u64 (a, 1);
+  uint64x1_t res;
+  force_simd (a);
+  res = vdupd_laneq_u64 (a, 1);
+  force_simd (res);
+  return res;
 }
 
 /* { dg-final { scan-assembler-times "\\tcmtst\\td\[0-9\]+, d\[0-9\]+, d\[0-9\]+" 2 } } */

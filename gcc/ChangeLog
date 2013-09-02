@@ -1,3 +1,26 @@
+2013-09-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def
+	(dup_lane_scalar): Remove.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_simd_dup): Add 'w->w' alternative.
+	(aarch64_dup_lane<mode>): Allow for VALL.
+	(aarch64_dup_lane_scalar<mode>): Remove.
+	(aarch64_dup_lane_<vswap_width_name><mode>): New.
+	(aarch64_get_lane_signed<mode>): Add w->w altenative.
+	(aarch64_get_lane_unsigned<mode>): Likewise.
+	(aarch64_get_lane<mode>): Likewise.
+	* config/aarch64/aarch64.c (aarch64_evpc_dup): New.
+	(aarch64_expand_vec_perm_const_1): Use aarch64_evpc_dup.
+	* config/aarch64/iterators.md (VSWAP_WIDTH): New.
+	(VCON): Change container of V2SF.
+	(vswap_width_name): Likewise.
+	* config/aarch64/arm_neon.h
+	(__aarch64_vdup_lane_any): New.
+	(__aarch64_vdup<q>_lane<q>_<fpsu><8,16,32,64>): Likewise.
+	(vdup<q>_n_<psuf><8,16,32,64>): Convert to C implementation.
+	(vdup<q>_lane<q>_<fpsu><8,16,32,64>): Likewise.
+
 2013-09-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/56382
