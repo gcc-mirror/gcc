@@ -1,3 +1,14 @@
+2013-09-03  Alan Modra  <amodra@gmail.com>
+
+	* config.gcc (powerpc*-*-linux*): Add support for little-endian
+	multilibs to big-endian target and vice versa.
+	* config/rs6000/t-linux64: Use := assignment on all vars.
+	(MULTILIB_EXTRA_OPTS): Remove fPIC.
+	(MULTILIB_OSDIRNAMES): Specify using mapping from multilib_options.
+	* config/rs6000/t-linux64le: New file.
+	* config/rs6000/t-linux64bele: New file.
+	* config/rs6000/t-linux64lebe: New file.
+
 2013-09-02  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-inline-transform.c (inline_transform): Do not
