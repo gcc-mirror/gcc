@@ -1,3 +1,9 @@
+2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/21682, implement DR 565
+	* name-lookup.c (compparms_for_decl_and_using_decl): New.
+	(push_overloaded_decl_1, do_nonmember_using_decl): Use it.
+
 2013-08-30  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Add division by zero and shift
