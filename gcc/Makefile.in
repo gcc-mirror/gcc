@@ -2275,7 +2275,7 @@ tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    tree-ssa-propagate.h
 ubsan.o : ubsan.c ubsan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
    output.h coretypes.h $(TREE_H) $(CGRAPH_H) $(HASHTAB_H) gt-ubsan.h \
-   toplev.h $(C_COMMON_H)
+   toplev.h $(C_COMMON_H) $(TM_P_H)
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) $(CFGLOOP_H) \
