@@ -1,3 +1,9 @@
+2013-09-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/56382
+	* expr.c (emit_move_complex): Do not move complex FP values as parts if
+	the source or the destination is a single hard register.
+
 2013-09-02  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57511
