@@ -2659,6 +2659,7 @@ alpha_emit_conditional_move (rtx cmp, enum machine_mode mode)
       cmp_mode = cmp_mode == DImode ? DFmode : DImode;
       op0 = gen_lowpart (cmp_mode, tem);
       op1 = CONST0_RTX (cmp_mode);
+      cmp = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
       local_fast_math = 1;
     }
 

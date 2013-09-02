@@ -1,3 +1,12 @@
+2013-09-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2013-08-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Update
+	"cmp" RTX before signed_comparison_operator check to account
+	for "code" changes.
+
 2013-09-01  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: Allow "const 0" operand 1 in "scc" insns.
