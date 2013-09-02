@@ -1,5 +1,10 @@
 2013-09-02  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-inline-transform.c (inline_transform): Do not
+	optimize_inline_calls when not optimizing.
+
+2013-09-02  Jan Hubicka  <jh@suse.cz>
+
 	* lto-symtab.c (lto_symtab_merge_symbols): Add comments; merge
 	duplicated nodes for assembler names.
 	* symtab.c (symtab_unregister_node): Do not attempt to unlink
