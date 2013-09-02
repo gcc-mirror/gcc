@@ -1,3 +1,7 @@
+2013-09-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/arm/ivopts-orig_biv-inc.c: New testcase.
+
 2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/21682, implement DR 565
