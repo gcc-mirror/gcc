@@ -872,11 +872,13 @@ BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def cilkplus.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
-TREE_H = coretypes.h tree.h all-tree.def tree.def c-family/c-common.def \
-	$(lang_tree_files) $(MACHMODE_H) tree-check.h $(BUILTINS_DEF) \
-	$(INPUT_H) statistics.h $(VEC_H) treestruct.def $(HASHTAB_H) \
+TREE_CORE_H = tree-core.h coretypes.h all-tree.def tree.def \
+	c-family/c-common.def $(lang_tree_files) $(MACHMODE_H) \
+	$(BUILTINS_DEF) $(INPUT_H) statistics.h \
+	$(VEC_H) treestruct.def $(HASHTAB_H) \
 	double-int.h alias.h $(SYMTAB_H) $(FLAGS_H) \
 	$(REAL_H) $(FIXED_VALUE_H)
+TREE_H = tree.h $(TREE_CORE_H)  tree-check.h
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
 BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 	cfg-flags.def cfghooks.h
@@ -3795,7 +3797,8 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
   $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
-  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(SYMTAB_H) \
+  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
+  $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/fixed-value.h \
   $(srcdir)/output.h $(srcdir)/cfgloop.h \

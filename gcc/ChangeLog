@@ -67,6 +67,18 @@
 	* config/darwin.h (LINK_COMMAND_SPEC_A): Revise sanitizer specs to
 	include sanitize(undefined).
 
+2013-08-31  Diego Novillo  <dnovillo@google.com>
+
+	* Makefile.in (TREE_CORE_H): Define.
+	(TREE_H): Use.
+	(GTFILES): Add tree-core.h.
+	* builtins.c (built_in_class_names): Use BUILT_IN_LAST to
+	size the array.
+	* tree-core.h: New file.
+	Move all data structures, enum, typedefs, global
+	declarations and constants from ...
+	* tree.h: ... here.
+
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* bulitins.c (expand_builtin): Do not early exit for gcov
