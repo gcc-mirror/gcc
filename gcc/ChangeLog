@@ -1,3 +1,10 @@
+2013-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/58106
+	* ipa-prop.c (ipa_edge_duplication_hook): Always put new rdesc to the
+	linked list.  When finding the correct duplicate, also consider also
+	the caller in additon to its inlined_to node.
+
 2013-09-02  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def

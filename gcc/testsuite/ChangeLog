@@ -1,3 +1,8 @@
+2013-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/58106
+	* gcc.dg/ipa/pr58106.c: New test.
+
 2013-09-02  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/scalar_intrinsics.c

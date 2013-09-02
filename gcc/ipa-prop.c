@@ -3015,11 +3015,8 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 		= (struct ipa_cst_ref_desc *) pool_alloc (ipa_refdesc_pool);
 	      dst_rdesc->cs = dst;
 	      dst_rdesc->refcount = src_rdesc->refcount;
-	      if (dst->caller->global.inlined_to)
-		{
-		  dst_rdesc->next_duplicate = src_rdesc->next_duplicate;
-		  src_rdesc->next_duplicate = dst_rdesc;
-		}
+	      dst_rdesc->next_duplicate = src_rdesc->next_duplicate;
+	      src_rdesc->next_duplicate = dst_rdesc;
 	      dst_jf->value.constant.rdesc = dst_rdesc;
 	    }
 	  else
@@ -3034,9 +3031,14 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 	      for (dst_rdesc = src_rdesc->next_duplicate;
 		   dst_rdesc;
 		   dst_rdesc = dst_rdesc->next_duplicate)
-		if (dst_rdesc->cs->caller->global.inlined_to
-		    == dst->caller->global.inlined_to)
-		  break;
+		{
+		  struct cgraph_node *top;
+		  top = dst_rdesc->cs->caller->global.inlined_to
+		    ? dst_rdesc->cs->caller->global.inlined_to
+		    : dst_rdesc->cs->caller;
+		  if (dst->caller->global.inlined_to == top)
+		    break;
+		}
 	      gcc_assert (dst_rdesc);
 	      dst_jf->value.constant.rdesc = dst_rdesc;
 	    }
