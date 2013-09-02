@@ -598,6 +598,8 @@ tree_profiling (void)
 	    }
 	}
 
+      /* re-merge split blocks.  */
+      cleanup_tree_cfg ();
       update_ssa (TODO_update_ssa);
 
       rebuild_cgraph_edges ();
