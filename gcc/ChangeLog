@@ -1,3 +1,7 @@
+2013-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* tree-profile.c (tree_profiling): Cleanup CFG when done.
+
 2013-09-03  Alan Modra  <amodra@gmail.com>
 
 	* config.gcc (powerpc*-*-linux*): Add support for little-endian
