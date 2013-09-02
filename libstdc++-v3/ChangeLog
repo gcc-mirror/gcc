@@ -1,3 +1,26 @@
+2013-09-02  Tim Shen  <timshen91@gmail.com>
+
+	* regex_automaton.h: Rearrange _NFA's layout.
+	* include/bits/regex_compiler.h: Add _AnyMatcher and _CharMatcher.
+	  Rearrange _BracketMatcher's layout.
+	  (_BracketMatcher<>::_M_add_char): Use set instead of vector for
+	  _M_char_set.
+	  (_BracketMatcher<>::_M_add_collating_element): Likewise.
+	  (_BracketMatcher<>::_M_make_range): Likewise.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_atom): Use
+	  apropriate constructors of matchers above.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/anymatcher.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/empty_range.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/emptygroup.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/hex.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc: New.
+
 2013-08-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/58148

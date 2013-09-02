@@ -204,32 +204,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (_M_match_token(_ScannerT::_S_token_anychar))
 	{
-	  const static auto&
-	  __any_matcher = [](_CharT __ch) -> bool
-	  { return true; };
-
 	  _M_stack.push(_StateSeqT(_M_state_store,
 				  _M_state_store._M_insert_matcher
-				  (__any_matcher)));
+				  (_AnyMatcher<_CharT, _TraitsT>(_M_traits))));
 	  return true;
 	}
       if (_M_try_char())
 	{
-	  _CharT __c = _M_value[0];
-	  __detail::_Matcher<_CharT> f;
-	  if (_M_flags & regex_constants::icase)
-	    {
-	      auto __traits = this->_M_traits;
-	      __c = __traits.translate_nocase(__c);
-	      f = [__traits, __c](_CharT __ch) -> bool
-	      { return __traits.translate_nocase(__ch) == __c; };
-	    }
-	  else
-	    f = [__c](_CharT __ch) -> bool
-	    { return __ch == __c; };
-
 	  _M_stack.push(_StateSeqT(_M_state_store,
-				   _M_state_store._M_insert_matcher(f)));
+				   _M_state_store._M_insert_matcher
+				   (_CharMatcher<_CharT, _TraitsT>(_M_value[0],
+								   _M_traits,
+								   _M_flags))));
 	  return true;
 	}
       if (_M_match_token(_ScannerT::_S_token_backref))
@@ -374,26 +360,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool __ret = false;
       if (_M_traits.isctype(__ch, _M_class_set))
 	__ret = true;
+      else if (_M_char_set.count(_M_translate(__ch)))
+	__ret = true;
       else
 	{
-	  __ch = _M_translate(__ch);
-
-	  for (auto __c : _M_char_set)
-	    if (__c == __ch)
+	  _StringT __s = _M_get_str(_M_flags & regex_constants::collate
+				    ? _M_translate(__ch) : __ch);
+	  for (auto& __it : _M_range_set)
+	    if (__it.first <= __s && __s <= __it.second)
 	      {
 		__ret = true;
 		break;
 	      }
-	  if (!__ret)
-	    {
-	      _StringT __s = _M_get_str(__ch);
-	      for (auto& __it : _M_range_set)
-		if (__it.first <= __s && __s <= __it.second)
-		  {
-		    __ret = true;
-		    break;
-		  }
-	    }
 	}
       if (_M_is_non_matching)
 	return !__ret;
