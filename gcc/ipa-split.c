@@ -1537,7 +1537,9 @@ execute_split_functions (void)
      Note that we are not completely conservative about disqualifying functions
      called once.  It is possible that the caller is called more then once and
      then inlining would still benefit.  */
-  if ((!node->callers || !node->callers->next_caller)
+  if ((!node->callers
+       /* Local functions called once will be completely inlined most of time.  */
+       || (!node->callers->next_caller && node->local.local))
       && !node->symbol.address_taken
       && (!flag_lto || !node->symbol.externally_visible))
     {
