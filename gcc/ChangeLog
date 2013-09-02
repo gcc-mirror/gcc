@@ -1,3 +1,8 @@
+2013-09-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-affine.c (add_elt_to_tree): Avoid converting all pointer
+	arithmetic to sizetype.
+
 2013-09-02  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (set_autoinc_for_original_candidates):

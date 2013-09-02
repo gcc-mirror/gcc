@@ -1,3 +1,8 @@
+2013-09-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/loop-4.c: Adjust scan looking for one memory
+	reference.
+
 2013-09-02  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.target/arm/ivopts-orig_biv-inc.c: New testcase.

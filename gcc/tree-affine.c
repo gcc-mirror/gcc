@@ -377,35 +377,46 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
     type1 = sizetype;
 
   scale = double_int_ext_for_comb (scale, comb);
-  elt = fold_convert (type1, elt);
+
+  if (scale.is_minus_one ()
+      && POINTER_TYPE_P (TREE_TYPE (elt)))
+    {
+      elt = fold_build1 (NEGATE_EXPR, sizetype, convert_to_ptrofftype (elt));
+      scale = double_int_one;
+    }
 
   if (scale.is_one ())
     {
       if (!expr)
-	return fold_convert (type, elt);
+	return elt;
 
-      if (POINTER_TYPE_P (type))
-        return fold_build_pointer_plus (expr, elt);
-      return fold_build2 (PLUS_EXPR, type, expr, elt);
+      if (POINTER_TYPE_P (TREE_TYPE (expr)))
+	return fold_build_pointer_plus (expr, convert_to_ptrofftype (elt));
+      if (POINTER_TYPE_P (TREE_TYPE (elt)))
+	return fold_build_pointer_plus (elt, convert_to_ptrofftype (expr));
+      return fold_build2 (PLUS_EXPR, type1,
+			  fold_convert (type1, expr),
+			  fold_convert (type1, elt));
     }
 
   if (scale.is_minus_one ())
     {
       if (!expr)
-	return fold_convert (type, fold_build1 (NEGATE_EXPR, type1, elt));
+	return fold_build1 (NEGATE_EXPR, TREE_TYPE (elt), elt);
 
-      if (POINTER_TYPE_P (type))
-	{
-	  elt = fold_build1 (NEGATE_EXPR, type1, elt);
-	  return fold_build_pointer_plus (expr, elt);
-	}
-      return fold_build2 (MINUS_EXPR, type, expr, elt);
+      if (POINTER_TYPE_P (TREE_TYPE (expr)))
+	return fold_build_pointer_plus
+	    (expr, convert_to_ptrofftype
+	     (fold_build1 (NEGATE_EXPR, TREE_TYPE (elt), elt)));
+      return fold_build2 (MINUS_EXPR, type1,
+			  fold_convert (type1, expr),
+			  fold_convert (type1, elt));
     }
 
+  elt = fold_convert (type1, elt);
   if (!expr)
-    return fold_convert (type,
-			 fold_build2 (MULT_EXPR, type1, elt,
-				      double_int_to_tree (type1, scale)));
+    return fold_build2 (MULT_EXPR, type1, elt,
+			double_int_to_tree (type1, scale));
 
   if (scale.is_negative ())
     {
@@ -417,13 +428,14 @@ add_elt_to_tree (tree expr, tree type, tree elt, double_int scale,
 
   elt = fold_build2 (MULT_EXPR, type1, elt,
 		     double_int_to_tree (type1, scale));
-  if (POINTER_TYPE_P (type))
+  if (POINTER_TYPE_P (TREE_TYPE (expr)))
     {
       if (code == MINUS_EXPR)
         elt = fold_build1 (NEGATE_EXPR, type1, elt);
       return fold_build_pointer_plus (expr, elt);
     }
-  return fold_build2 (code, type, expr, elt);
+  return fold_build2 (code, type1,
+		      fold_convert (type1, expr), elt);
 }
 
 /* Makes tree from the affine combination COMB.  */
