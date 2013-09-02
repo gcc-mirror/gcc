@@ -1,0 +1,7 @@
+#rs6000/t-linux64leend
+
+MULTILIB_OPTIONS    += mbig
+MULTILIB_DIRNAMES   += be
+MULTILIB_OSDIRNAMES += $(subst =,.mbig=,$(subst libbe32,lib32be,$(subst libbe64,lib64be,$(subst lib,libbe,$(subst le-linux,-linux,$(MULTILIB_OSDIRNAMES))))))
+MULTILIB_OSDIRNAMES += $(subst $(if $(findstring 64,$(target)),m64,m32).,,$(filter $(if $(findstring 64,$(target)),m64,m32).mbig%,$(MULTILIB_OSDIRNAMES)))
+MULTILIB_MATCHES    := ${MULTILIB_MATCHES_ENDIAN}

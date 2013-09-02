@@ -2139,7 +2139,7 @@ powerpc*-*-linux*)
 	tmake_file="rs6000/t-fprules rs6000/t-ppcos ${tmake_file} rs6000/t-ppccomm"
 	case ${target} in
 	    powerpc*le-*-*)
-	    tm_file="${tm_file} rs6000/sysv4le.h" ;;
+		tm_file="${tm_file} rs6000/sysv4le.h" ;;
 	esac
 	maybe_biarch=yes
 	case ${target} in
@@ -2162,6 +2162,19 @@ powerpc*-*-linux*)
 		fi
 		tm_file="rs6000/biarch64.h ${tm_file} rs6000/linux64.h glibc-stdint.h"
 		tmake_file="$tmake_file rs6000/t-linux64"
+		case ${target} in
+		    powerpc*le-*-*)
+			tmake_file="$tmake_file rs6000/t-linux64le"
+			case ${enable_targets} in
+			    all | *powerpc64-* | *powerpc-*)
+				tmake_file="$tmake_file rs6000/t-linux64lebe" ;;
+			esac ;;
+		    *)
+			case ${enable_targets} in
+			    all | *powerpc64le-* | *powerpcle-*)
+				tmake_file="$tmake_file rs6000/t-linux64bele" ;;
+			esac ;;
+		esac
 		extra_options="${extra_options} rs6000/linux64.opt"
 		;;
 	    *)
