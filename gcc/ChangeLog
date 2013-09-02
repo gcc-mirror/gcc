@@ -1,3 +1,8 @@
+2013-09-02  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-split.c (execute_split_functions): Split externally visible
+	functions called once.
+
 2013-09-02  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/58106
