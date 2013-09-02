@@ -1,5 +1,12 @@
 2013-09-02  Jan Hubicka  <jh@suse.cz>
 
+	* lto-symtab.c (lto_symtab_merge_symbols): Add comments; merge
+	duplicated nodes for assembler names.
+	* symtab.c (symtab_unregister_node): Do not attempt to unlink
+	hard registers from assembler name hash.
+
+2013-09-02  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-split.c (execute_split_functions): Split externally visible
 	functions called once.
 

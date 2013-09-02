@@ -283,7 +283,8 @@ symtab_unregister_node (symtab_node node)
       else
 	*slot = replacement_node;
     }
-  unlink_from_assembler_name_hash (node, false);
+  if (!is_a <varpool_node> (node) || !DECL_HARD_REGISTER (node->symbol.decl))
+    unlink_from_assembler_name_hash (node, false);
 }
 
 /* Return symbol table node associated with DECL, if any,

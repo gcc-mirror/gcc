@@ -586,6 +586,9 @@ lto_symtab_merge_symbols (void)
       FOR_EACH_SYMBOL (node)
 	{
 	  cgraph_node *cnode, *cnode2;
+	  varpool_node *vnode;
+	  symtab_node node2;
+
 	  if (!node->symbol.analyzed && node->symbol.alias_target)
 	    {
 	      symtab_node tgt = symtab_node_for_asm (node->symbol.alias_target);
@@ -594,15 +597,29 @@ lto_symtab_merge_symbols (void)
 		symtab_resolve_alias (node, tgt);
 	    }
 	  node->symbol.aux = NULL;
-	  
+
 	  if (!(cnode = dyn_cast <cgraph_node> (node))
 	      || !cnode->clone_of
 	      || cnode->clone_of->symbol.decl != cnode->symbol.decl)
 	    {
+	      /* Builtins are not merged via decl merging.  It is however
+		 possible that tree merging unified the declaration.  We
+		 do not want duplicate entries in symbol table.  */
 	      if (cnode && DECL_BUILT_IN (node->symbol.decl)
 		  && (cnode2 = cgraph_get_node (node->symbol.decl))
 		  && cnode2 != cnode)
 		lto_cgraph_replace_node (cnode2, cnode);
+
+	      /* The user defined assembler variables are also not unified by their
+		 symbol name (since it is irrelevant), but we need to unify symbol
+		 nodes if tree merging occured.  */
+	      if ((vnode = dyn_cast <varpool_node> (node))
+		  && DECL_HARD_REGISTER (vnode->symbol.decl)
+		  && (node2 = symtab_get_node (vnode->symbol.decl))
+		  && node2 != node)
+		lto_varpool_replace_node (dyn_cast <varpool_node> (node2),
+					  vnode);
+	  
 
 	      /* Abstract functions may have duplicated cgraph nodes attached;
 		 remove them.  */
@@ -610,6 +627,7 @@ lto_symtab_merge_symbols (void)
 		       && (cnode2 = cgraph_get_node (node->symbol.decl))
 		       && cnode2 != cnode)
 		cgraph_remove_node (cnode2);
+
 	      symtab_insert_node_to_hashtable ((symtab_node)node);
 	    }
 	}
