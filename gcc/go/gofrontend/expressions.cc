@@ -1382,7 +1382,7 @@ Expression::make_func_reference(Named_object* function, Expression* closure,
 
 Func_descriptor_expression::Func_descriptor_expression(Named_object* fn)
   : Expression(EXPRESSION_FUNC_DESCRIPTOR, fn->location()),
-    fn_(fn), dfn_(NULL), dvar_(NULL)
+    fn_(fn), dvar_(NULL)
 {
   go_assert(!fn->is_function() || !fn->func_value()->needs_closure());
 }
@@ -1417,18 +1417,6 @@ Func_descriptor_expression::do_type()
   return Func_descriptor_expression::descriptor_type;
 }
 
-// Copy a Func_descriptor_expression;
-
-Expression*
-Func_descriptor_expression::do_copy()
-{
-  Func_descriptor_expression* fde =
-    Expression::make_func_descriptor(this->fn_);
-  if (this->dfn_ != NULL)
-    fde->set_descriptor_wrapper(this->dfn_);
-  return fde;
-}
-
 // The tree for a function descriptor.
 
 tree
@@ -1455,11 +1443,8 @@ Func_descriptor_expression::do_get_tree(Translate_context* context)
   Bvariable* bvar;
   if (no->package() != NULL
       || Linemap::is_predeclared_location(no->location()))
-    {
-      bvar = context->backend()->immutable_struct_reference(var_name, btype,
-							    loc);
-      go_assert(this->dfn_ == NULL);
-    }
+    bvar = context->backend()->immutable_struct_reference(var_name, btype,
+							  loc);
   else
     {
       Location bloc = Linemap::predeclared_location();
@@ -1469,8 +1454,7 @@ Func_descriptor_expression::do_get_tree(Translate_context* context)
       bvar = context->backend()->immutable_struct(var_name, is_hidden, false,
 						  btype, bloc);
       Expression_list* vals = new Expression_list();
-      go_assert(this->dfn_ != NULL);
-      vals->push_back(Expression::make_func_code_reference(this->dfn_, bloc));
+      vals->push_back(Expression::make_func_code_reference(this->fn_, bloc));
       Expression* init =
 	Expression::make_struct_composite_literal(this->type(), vals, bloc);
       Translate_context bcontext(gogo, NULL, NULL, NULL);
@@ -6792,8 +6776,8 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
     }
 
   Struct_field_list* sfl = new Struct_field_list();
-  // The type here is wrong--it should be new_fntype.  But we don't
-  // have new_fntype yet, and it doesn't really matter.
+  // The type here is wrong--it should be the C function type.  But it
+  // doesn't really matter.
   Type* vt = Type::make_pointer_type(Type::make_void_type());
   sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
   sfl->push_back(Struct_field(Typed_identifier("val.1",
@@ -6802,17 +6786,17 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
   Type* closure_type = Type::make_struct_type(sfl, loc);
   closure_type = Type::make_pointer_type(closure_type);
 
-  Function_type* new_fntype = orig_fntype->copy_with_closure(closure_type);
+  Function_type* new_fntype = orig_fntype->copy_with_names();
 
   Named_object* new_no = gogo->start_function(Gogo::thunk_name(), new_fntype,
 					      false, loc);
 
-  gogo->start_block(loc);
+  Variable* cvar = new Variable(closure_type, NULL, false, false, false, loc);
+  cvar->set_is_used();
+  Named_object* cp = Named_object::make_variable("$closure", NULL, cvar);
+  new_no->func_value()->set_closure_var(cp);
 
-  Named_object* cp = gogo->lookup("closure.0", NULL);
-  go_assert(cp != NULL
-	    && cp->is_variable()
-	    && cp->var_value()->is_parameter());
+  gogo->start_block(loc);
 
   // Field 0 of the closure is the function code pointer, field 1 is
   // the value on which to invoke the method.
@@ -6831,7 +6815,7 @@ Bound_method_expression::create_thunk(Gogo* gogo, const Method* method,
       const Typed_identifier_list* new_params = new_fntype->parameters();
       args = new Expression_list();
       for (Typed_identifier_list::const_iterator p = new_params->begin();
-	   p + 1 != new_params->end();
+	   p != new_params->end();
 	   ++p)
 	{
 	  Named_object* p_no = gogo->lookup(p->name(), NULL);
@@ -9729,21 +9713,21 @@ Call_expression::do_get_tree(Translate_context* context)
   const bool has_closure = func != NULL && func->closure() != NULL;
   const bool is_interface_method = interface_method != NULL;
 
-  int closure_arg;
+  bool has_closure_arg;
   if (has_closure)
-    closure_arg = 1;
+    has_closure_arg = true;
   else if (func != NULL)
-    closure_arg = 0;
+    has_closure_arg = false;
   else if (is_interface_method)
-    closure_arg = 0;
+    has_closure_arg = false;
   else
-    closure_arg = 1;
+    has_closure_arg = true;
 
   int nargs;
   tree* args;
   if (this->args_ == NULL || this->args_->empty())
     {
-      nargs = (is_interface_method ? 1 : 0) + closure_arg;
+      nargs = is_interface_method ? 1 : 0;
       args = nargs == 0 ? NULL : new tree[nargs];
     }
   else if (fntype->parameters() == NULL || fntype->parameters()->empty())
@@ -9752,7 +9736,7 @@ Call_expression::do_get_tree(Translate_context* context)
       go_assert(!is_interface_method
 		&& fntype->is_method()
 		&& this->args_->size() == 1);
-      nargs = 1 + closure_arg;
+      nargs = 1;
       args = new tree[nargs];
       args[0] = this->args_->front()->get_tree(context);
     }
@@ -9763,7 +9747,6 @@ Call_expression::do_get_tree(Translate_context* context)
       nargs = this->args_->size();
       int i = is_interface_method ? 1 : 0;
       nargs += i;
-      nargs += closure_arg;
       args = new tree[nargs];
 
       Typed_identifier_list::const_iterator pp = params->begin();
@@ -9787,7 +9770,7 @@ Call_expression::do_get_tree(Translate_context* context)
 	    return error_mark_node;
 	}
       go_assert(pp == params->end());
-      go_assert(i + closure_arg == nargs);
+      go_assert(i == nargs);
     }
 
   tree fntype_tree = type_to_tree(fntype->get_backend(gogo));
@@ -9806,21 +9789,23 @@ Call_expression::do_get_tree(Translate_context* context)
     return error_mark_node;
 
   tree fn;
+  tree closure_tree;
   if (func != NULL)
     {
       Named_object* no = func->named_object();
-      go_assert(!no->is_function()
-		|| !no->func_value()->is_descriptor_wrapper());
       fn = Func_expression::get_code_pointer(gogo, no, location);
-      if (has_closure)
+      if (!has_closure)
+	closure_tree = NULL_TREE;
+      else
 	{
-	  go_assert(closure_arg == 1 && nargs > 0);
-	  args[nargs - 1] = func->closure()->get_tree(context);
+	  closure_tree = func->closure()->get_tree(context);
+	  if (closure_tree == error_mark_node)
+	    return error_mark_node;
 	}
     }
   else if (!is_interface_method)
     {
-      tree closure_tree = this->fn_->get_tree(context);
+      closure_tree = this->fn_->get_tree(context);
       if (closure_tree == error_mark_node)
 	return error_mark_node;
       tree fnc = fold_convert_loc(location.gcc_location(), fntype_tree,
@@ -9834,8 +9819,6 @@ Call_expression::do_get_tree(Translate_context* context)
 			   build_fold_indirect_ref_loc(location.gcc_location(),
 						       fnc),
 			   field, NULL_TREE);
-      go_assert(closure_arg == 1 && nargs > 0);
-      args[nargs - 1] = closure_tree;
     }      
   else
     {
@@ -9843,7 +9826,7 @@ Call_expression::do_get_tree(Translate_context* context)
 					   &args[0]);
       if (fn == error_mark_node)
 	return error_mark_node;
-      go_assert(closure_arg == 0);
+      closure_tree = NULL_TREE;
     }
 
   if (fn == error_mark_node || TREE_TYPE(fn) == error_mark_node)
@@ -9893,6 +9876,32 @@ Call_expression::do_get_tree(Translate_context* context)
 
   if (func == NULL)
     fn = save_expr(fn);
+
+  if (!has_closure_arg)
+    go_assert(closure_tree == NULL_TREE);
+  else
+    {
+      // Pass the closure argument by calling the function function
+      // __go_set_closure.  In the order_evaluations pass we have
+      // ensured that if any parameters contain call expressions, they
+      // will have been moved out to temporary variables.
+
+      go_assert(closure_tree != NULL_TREE);
+      closure_tree = fold_convert_loc(location.gcc_location(), ptr_type_node,
+				      closure_tree);
+      static tree set_closure_fndecl;
+      tree set_closure = Gogo::call_builtin(&set_closure_fndecl,
+					    location,
+					    "__go_set_closure",
+					    1,
+					    void_type_node,
+					    ptr_type_node,
+					    closure_tree);
+      if (set_closure == error_mark_node)
+	return error_mark_node;
+      fn = build2_loc(location.gcc_location(), COMPOUND_EXPR,
+		      TREE_TYPE(fn), set_closure, fn);
+    }
 
   tree ret = build_call_array(excess_type != NULL_TREE ? excess_type : rettype,
 			      fn, nargs, args);
@@ -11609,25 +11618,25 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
     return Named_object::make_erroneous_name(Gogo::thunk_name());
 
   Struct_field_list* sfl = new Struct_field_list();
-  // The type here is wrong--it should be new_fntype.  But we don't
-  // have new_fntype yet, and it doesn't really matter.
+  // The type here is wrong--it should be the C function type.  But it
+  // doesn't really matter.
   Type* vt = Type::make_pointer_type(Type::make_void_type());
   sfl->push_back(Struct_field(Typed_identifier("fn.0", vt, loc)));
   sfl->push_back(Struct_field(Typed_identifier("val.1", type, loc)));
   Type* closure_type = Type::make_struct_type(sfl, loc);
   closure_type = Type::make_pointer_type(closure_type);
 
-  Function_type* new_fntype = orig_fntype->copy_with_closure(closure_type);
+  Function_type* new_fntype = orig_fntype->copy_with_names();
 
   Named_object* new_no = gogo->start_function(Gogo::thunk_name(), new_fntype,
 					      false, loc);
 
-  gogo->start_block(loc);
+  Variable* cvar = new Variable(closure_type, NULL, false, false, false, loc);
+  cvar->set_is_used();
+  Named_object* cp = Named_object::make_variable("$closure", NULL, cvar);
+  new_no->func_value()->set_closure_var(cp);
 
-  Named_object* cp = gogo->lookup("closure.0", NULL);
-  go_assert(cp != NULL
-	    && cp->is_variable()
-	    && cp->var_value()->is_parameter());
+  gogo->start_block(loc);
 
   // Field 0 of the closure is the function code pointer, field 1 is
   // the value on which to invoke the method.
@@ -11647,7 +11656,7 @@ Interface_field_reference_expression::create_thunk(Gogo* gogo,
       const Typed_identifier_list* new_params = new_fntype->parameters();
       args = new Expression_list();
       for (Typed_identifier_list::const_iterator p = new_params->begin();
-	   p + 1 != new_params->end();
+	   p != new_params->end();
 	   ++p)
 	{
 	  Named_object* p_no = gogo->lookup(p->name(), NULL);

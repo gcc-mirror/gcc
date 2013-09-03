@@ -3390,10 +3390,7 @@ Function_type::do_get_backend(Gogo* gogo)
   // When we do anything with a function value other than call it, it
   // is represented as a pointer to a struct whose first field is the
   // actual function.  So that is what we return as the type of a Go
-  // function.  The function stored in the first field always that
-  // takes one additional trailing argument: the closure pointer.  For
-  // a top-level function, this additional argument will only be
-  // passed when invoking the function indirectly, via the struct.
+  // function.
 
   Location loc = this->location();
   Btype* struct_type =
@@ -3415,15 +3412,9 @@ Function_type::do_get_backend(Gogo* gogo)
     }
 
   std::vector<Backend::Btyped_identifier> bparameters;
-  size_t last;
-  if (this->parameters_ == NULL)
+  if (this->parameters_ != NULL)
     {
-      bparameters.resize(1);
-      last = 0;
-    }
-  else
-    {
-      bparameters.resize(this->parameters_->size() + 1);
+      bparameters.resize(this->parameters_->size());
       size_t i = 0;
       for (Typed_identifier_list::const_iterator p = this->parameters_->begin();
 	   p != this->parameters_->end();
@@ -3433,12 +3424,8 @@ Function_type::do_get_backend(Gogo* gogo)
 	  bparameters[i].btype = p->type()->get_backend(gogo);
 	  bparameters[i].location = p->location();
 	}
-      last = i;
+      go_assert(i == bparameters.size());
     }
-  go_assert(last + 1 == bparameters.size());
-  bparameters[last].name = "$closure";
-  bparameters[last].btype = ptr_struct_type;
-  bparameters[last].location = loc;
 
   std::vector<Backend::Btyped_identifier> bresults;
   if (this->results_ != NULL)
@@ -3840,7 +3827,7 @@ Function_type::copy_with_receiver(Type* receiver_type) const
 // closure parameter.
 
 Function_type*
-Function_type::copy_with_closure(Type* closure_type) const
+Function_type::copy_with_names() const
 {
   Typed_identifier_list* new_params = new Typed_identifier_list();
   const Typed_identifier_list* orig_params = this->parameters_;
@@ -3858,8 +3845,6 @@ Function_type::copy_with_closure(Type* closure_type) const
 						 p->location()));
 	}
     }
-  new_params->push_back(Typed_identifier("closure.0", closure_type,
-					 this->location_));
 
   const Typed_identifier_list* orig_results = this->results_;
   Typed_identifier_list* new_results;

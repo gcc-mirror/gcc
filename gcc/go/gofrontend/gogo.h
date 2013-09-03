@@ -1050,12 +1050,6 @@ class Function
   set_in_unique_section()
   { this->in_unique_section_ = true; }
 
-  // Whether this function was created as a descriptor wrapper for
-  // another function.
-  bool
-  is_descriptor_wrapper() const
-  { return this->is_descriptor_wrapper_; }
-
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1084,10 +1078,6 @@ class Function
     go_assert(this->descriptor_ == NULL);
     this->descriptor_ = descriptor;
   }
-
-  // Build a descriptor wrapper function.
-  static Named_object*
-  make_descriptor_wrapper(Gogo*, Named_object*, Function_type*);
 
   // Return the function's decl given an identifier.
   tree
@@ -1190,9 +1180,6 @@ class Function
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
-  // True if this is a function wrapper created to put in a function
-  // descriptor.
-  bool is_descriptor_wrapper_ : 1;
 };
 
 // A snapshot of the current binding state.
