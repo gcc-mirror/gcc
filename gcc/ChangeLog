@@ -1,3 +1,13 @@
+2013-09-03  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_across_edge): Record entire path
+	when not threading through a joiner block.  Pass joiner/no joiner
+	state to register_jump_thread.
+	* tree-ssa-threadupdate.c (register_jump_thread): Get joiner/no joiner
+	state from argument rather than implying on path length.
+	Dump the entire jump thread path into debugging dump.
+	* tree-flow.h (register_jump_thread): Update prototype.
+
 2013-08-29  Xinliang David Li  <davidxl@google.com>
 
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):

@@ -1,3 +1,8 @@
+2013-09-03  Jeff Law  <law@redhat.com>
+
+	* tree-ssa/ssa-dom-thread-3.c: Update due to changes in debug
+	dump output.
+
 2013-09-03  Meador Inge  <meadori@codesourcery.com>
 
 	Revert:

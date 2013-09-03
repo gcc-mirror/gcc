@@ -901,6 +901,10 @@ thread_across_edge (gimple dummy_cond,
 	  if (dest == e->dest)
 	    goto fail;
 
+	  vec<edge> path = vNULL;
+	  path.safe_push (e);
+	  path.safe_push (taken_edge);
+
 	  /* DEST could be null for a computed jump to an absolute
 	     address.  If DEST is not null, then see if we can thread
 	     through it as well, this helps capture secondary effects
@@ -922,7 +926,10 @@ thread_across_edge (gimple dummy_cond,
 						  simplify,
 						  visited);
 		  if (e2)
-		    taken_edge = e2;
+		    {
+		      taken_edge = e2;
+		      path.safe_push (e2);
+		    }
 		}
 	      while (e2);
 	      BITMAP_FREE (visited);
@@ -931,13 +938,10 @@ thread_across_edge (gimple dummy_cond,
 	  remove_temporary_equivalences (stack);
 	  if (taken_edge)
 	    {
-	      vec<edge> path = vNULL;
 	      propagate_threaded_block_debug_into (taken_edge->dest, e->dest);
-	      path.safe_push (e);
-	      path.safe_push (taken_edge);
-	      register_jump_thread (path);
-	      path.release ();
+	      register_jump_thread (path, false);
 	    }
+	  path.release ();
 	  return;
 	}
     }
@@ -1009,7 +1013,7 @@ thread_across_edge (gimple dummy_cond,
 	      {
 		propagate_threaded_block_debug_into (e3->dest,
 						     taken_edge->dest);
-		register_jump_thread (path);
+		register_jump_thread (path, true);
 	      }
 	  }
 
