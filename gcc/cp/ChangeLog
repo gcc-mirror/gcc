@@ -1,3 +1,20 @@
+2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::type_id): Declare as
+	overrider.
+	* cxx-pretty-print.c (pp_cxx_storage_class_specifier): Remove.
+	(pp_cxx_userdef_literal): Tidy.
+	(pp_cxx_template_argument_list): Likewise.
+	(pp_cxx_typeid_expression): Likewise.
+	(pp_cxx_offsetof_expression_1): Likewise.
+	(cxx_pretty_printer::postfix_expression): Likewise.
+	(cxx_pretty_printer::unary_expression): Likewise.
+	(cxx_pretty_printer::statement): Likewise.
+	(cxx_pretty_printer::type_id): Rename from pp_cxx_type_id.
+	(c_pretty_printer::cxx_pretty_printer): Do not assign to type_id.
+	* error.c (dump_decl): Tidy.
+	(dump_expr): Likewise.
+
 2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/21682, implement DR 565

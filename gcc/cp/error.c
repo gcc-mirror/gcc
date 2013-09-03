@@ -1212,7 +1212,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       if (flags & TFF_DECL_SPECIFIERS)
 	pp->declaration (t);
       else
-	pp_type_id (pp, t);
+	pp->type_id (t);
       break;
 
     case UNBOUND_CLASS_TEMPLATE:
@@ -1908,7 +1908,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case REAL_CST:
     case STRING_CST:
     case COMPLEX_CST:
-      pp_constant (pp, t);
+      pp->constant (t);
       break;
 
     case USERDEF_LITERAL:
@@ -2538,7 +2538,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case TYPENAME_TYPE:
       /* We get here when we want to print a dependent type as an
          id-expression, without any disambiguator decoration.  */
-      pp_id_expression (pp, t);
+      pp->id_expression (t);
       break;
 
     case TEMPLATE_TYPE_PARM:
@@ -2588,7 +2588,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case BIT_FIELD_REF:
     case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
-      pp_expression (pp, t);
+      pp->expression (t);
       break;
 
     case TRUTH_AND_EXPR:
@@ -2596,7 +2596,7 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
     case TRUTH_XOR_EXPR:
       if (flags & TFF_EXPR_IN_PARENS)
 	pp_cxx_left_paren (pp);
-      pp_expression (pp, t);
+      pp->expression (t);
       if (flags & TFF_EXPR_IN_PARENS)
 	pp_cxx_right_paren (pp);
       break;

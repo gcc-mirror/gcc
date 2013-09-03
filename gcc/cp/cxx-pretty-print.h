@@ -42,6 +42,7 @@ struct cxx_pretty_printer : c_pretty_printer
   void conditional_expression (tree);
   void assignment_expression (tree);
   void expression (tree);
+  void type_id (tree);
   void statement (tree);
   void declaration (tree);
   void declaration_specifiers (tree);
