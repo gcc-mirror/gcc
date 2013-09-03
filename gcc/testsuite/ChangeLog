@@ -1,3 +1,7 @@
+2013-09-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/target-supports.exp (check_weak_available): Return true for AIX.
+
 2013-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/devirt-15.C: Fix testcase.
