@@ -3809,6 +3809,26 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
   return true;
 }
 
+/* A helper function to ensure data reference DR's base alignment
+   for STMT_INFO.  */
+
+static void
+ensure_base_align (stmt_vec_info stmt_info, struct data_reference *dr)
+{
+  if (!dr->aux)
+    return;
+
+  if (((dataref_aux *)dr->aux)->base_misaligned)
+    {
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+      tree base_decl = ((dataref_aux *)dr->aux)->base_decl;
+
+      DECL_ALIGN (base_decl) = TYPE_ALIGN (vectype);
+      DECL_USER_ALIGN (base_decl) = 1;
+      ((dataref_aux *)dr->aux)->base_misaligned = false;
+    }
+}
+
 
 /* Function vectorizable_store.
 
@@ -3820,7 +3840,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 
 static bool
 vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
-		    slp_tree slp_node)
+                    slp_tree slp_node)
 {
   tree scalar_dest;
   tree data_ref;
@@ -3981,6 +4001,8 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     }
 
   /** Transform.  **/
+
+  ensure_base_align (stmt_info, dr);
 
   if (grouped_store)
     {
@@ -4364,7 +4386,7 @@ permute_vec_elements (tree x, tree y, tree mask_vec, gimple stmt,
 
 static bool
 vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
-		   slp_tree slp_node, slp_instance slp_node_instance)
+                   slp_tree slp_node, slp_instance slp_node_instance)
 {
   tree scalar_dest;
   tree vec_dest = NULL;
@@ -4375,7 +4397,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   struct loop *loop = NULL;
   struct loop *containing_loop = (gimple_bb (stmt))->loop_father;
   bool nested_in_vect_loop = false;
-  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr;
+  struct data_reference *dr = STMT_VINFO_DATA_REF (stmt_info), *first_dr = NULL;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   tree elem_type;
   tree new_temp;
@@ -4574,6 +4596,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
                      "transform load. ncopies = %d", ncopies);
 
   /** Transform.  **/
+
+  ensure_base_align (stmt_info, dr);
 
   if (STMT_VINFO_GATHER_P (stmt_info))
     {

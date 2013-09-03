@@ -957,7 +957,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
     }
 
   free (LOOP_VINFO_BBS (loop_vinfo));
-  free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
+  vect_destroy_datarefs (loop_vinfo, NULL);
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
   LOOP_VINFO_LOOP_NEST (loop_vinfo).release ();
   LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).release ();

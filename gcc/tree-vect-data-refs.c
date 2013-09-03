@@ -763,14 +763,10 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
           dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
         }
 
-      DECL_ALIGN (base) = TYPE_ALIGN (vectype);
-      DECL_USER_ALIGN (base) = 1;
+      gcc_assert (dr->aux);
+      ((dataref_aux *)dr->aux)->base_decl = base;
+      ((dataref_aux *)dr->aux)->base_misaligned = true;
     }
-
-  /* At this point we assume that the base is aligned.  */
-  gcc_assert (base_aligned
-	      || (TREE_CODE (base) == VAR_DECL
-		  && DECL_ALIGN (base) >= TYPE_ALIGN (vectype)));
 
   /* If this is a backward running DR then first access in the larger
      vectype actually is N-1 elements before the address in the DR.

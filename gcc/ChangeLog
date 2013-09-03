@@ -1,3 +1,21 @@
+2013-08-29  Xinliang David Li  <davidxl@google.com>
+
+	* tree-vect-slp.c (destroy_bb_vec_info): Data ref cleanup.
+	* tree-vect-loop.c (destroy_bb_vec_info): Ditto.
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Delay base decl alignment adjustment.
+	* tree-vectorizer.c (vect_destroy_datarefs): New function.
+	* tree-vectorizer.h: New data structure.
+	(set_dr_misalignment): New function.
+	(dr_misalignment): Ditto.
+	* tree-vect-stmts.c (vectorizable_store): Ensure alignment.
+	(vectorizable_load): Ditto.
+	(ensure_base_align): New function.
+	(vectorize_loops): Add dbg_cnt support.
+	(execute_vect_slp): Ditto.
+	* dbgcnt.def: New debug counter.
+	* Makefile: New dependency.
+
 2013-09-03  Meador Inge  <meadori@codesourcery.com>
 
 	Revert:
