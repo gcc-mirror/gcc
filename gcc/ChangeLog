@@ -1,5 +1,11 @@
 2013-09-03  Richard Biener  <rguenther@suse.de>
 
+	* tree-affine.c (add_elt_to_tree): Fix association issue,
+	avoid useless converts and make sure to always return a
+	properly typed result.
+
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/57656
 	* fold-const.c (negate_expr_p): Fix division case.
 	(negate_expr): Likewise.
