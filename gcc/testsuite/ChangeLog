@@ -1,3 +1,8 @@
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57287
+	* gcc.dg/pr57287-2.c: Use setjmp, not __sigsetjmp.
+
 2013-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/PR56519
