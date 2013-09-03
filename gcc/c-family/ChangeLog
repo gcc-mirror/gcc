@@ -1,3 +1,44 @@
+2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-pretty-print.h (c_pretty_printer::type_id): Now a virtual
+	member function.
+	(c_pretty_printer::storage_class_specifier): Likewise.
+	(c_pretty_printer::initializer): Likewise.
+	(pp_declaration): Remove.
+	(pp_declaration_specifiers): Likewise.
+	(pp_abstract_declarator): Likewise.
+	(pp_declarator): Likewise.
+	(pp_type_id): Likewise.
+	(pp_statement): Likewise.
+	(pp_constant): Likewise.
+	(pp_id_expression): Likewise.
+	(pp_primary_expression): Likewise.
+	(pp_unary_expression): Likewise.
+	(pp_multiplicative_expression): Likewise.
+	(pp_conditional_expression): Likewise.
+	(pp_assignment_expression): Likewise.
+	(pp_expression): Likewise.
+	(pp_c_type_id): Likewise.
+	(pp_c_storage_class_specifier): Likewise.
+	* c-pretty-print.c (pp_c_type_cast): Tidy.
+	(pp_c_pointer): Likewise.
+	(pp_c_type_specifier): Likewise.
+	(pp_c_parameter_type_list): Likewise.
+	(pp_c_function_definition): Likewise.
+	(pp_c_init_declarator): Likewise.
+	(pp_c_initializer_list): Likewise.
+	(pp_c_constructor_elts): Likewise.
+	(c_pretty_printer::direct_abstract_declarator): Likewise.
+	(c_pretty_printer::declaration_specifiers): Likewise.
+	(c_pretty_printer::primary_expression): Likewise.
+	(c_pretty_printer::postfix_expression): Likewise.
+	(c_pretty_printer::type_id): Rename from pp_c_type_id.
+	(c_pretty_printer::storage_class_specifier): Rename from
+	pp_c_storage_class_specifier.
+	(c_pretty_printer::initializer): Rename from pp_c_initializer.
+	(c_pretty_printer::c_pretty_printer): Do not assign to type_id,
+	storage_class_specifier, initializer, offset_list, flags.
+
 2013-08-30  Marek Polacek  <polacek@redhat.com>
 
 	* c-ubsan.c: New file.

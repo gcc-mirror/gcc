@@ -1,3 +1,7 @@
+2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* c-objc-common.c (c_tree_printer): Tidy.
+
 2013-08-30  Marek Polacek  <polacek@redhat.com>
 
 	* c-typeck.c (build_binary_op): Add division by zero and shift
