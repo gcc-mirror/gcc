@@ -1570,14 +1570,6 @@ class Func_descriptor_expression : public Expression
  public:
   Func_descriptor_expression(Named_object* fn);
 
-  // Set the descriptor wrapper.
-  void
-  set_descriptor_wrapper(Named_object* dfn)
-  {
-    go_assert(this->dfn_ == NULL);
-    this->dfn_ = dfn;
-  }
-
   // Make the function descriptor type, so that it can be converted.
   static void
   make_func_descriptor_type();
@@ -1594,7 +1586,8 @@ class Func_descriptor_expression : public Expression
   { }
 
   Expression*
-  do_copy();
+  do_copy()
+  { return Expression::make_func_descriptor(this->fn_); }
 
   bool
   do_is_addressable() const
@@ -1612,8 +1605,6 @@ class Func_descriptor_expression : public Expression
 
   // The function for which this is the descriptor.
   Named_object* fn_;
-  // The descriptor function.
-  Named_object* dfn_;
   // The descriptor variable.
   Bvariable* dvar_;
 };

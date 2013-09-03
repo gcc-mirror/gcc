@@ -1658,46 +1658,23 @@ Statement::make_tuple_type_guard_assignment(Expression* val, Expression* ok,
 						   location);
 }
 
-// An expression statement.
+// Class Expression_statement.
 
-class Expression_statement : public Statement
+// Constructor.
+
+Expression_statement::Expression_statement(Expression* expr, bool is_ignored)
+  : Statement(STATEMENT_EXPRESSION, expr->location()),
+    expr_(expr), is_ignored_(is_ignored)
 {
- public:
-  Expression_statement(Expression* expr, bool is_ignored)
-    : Statement(STATEMENT_EXPRESSION, expr->location()),
-      expr_(expr), is_ignored_(is_ignored)
-  { }
+}
 
-  Expression*
-  expr()
-  { return this->expr_; }
+// Determine types.
 
- protected:
-  int
-  do_traverse(Traverse* traverse)
-  { return this->traverse_expression(traverse, &this->expr_); }
-
-  void
-  do_determine_types()
-  { this->expr_->determine_type_no_context(); }
-
-  void
-  do_check_types(Gogo*);
-
-  bool
-  do_may_fall_through() const;
-
-  Bstatement*
-  do_get_backend(Translate_context* context);
-
-  void
-  do_dump_statement(Ast_dump_context*) const;
-
- private:
-  Expression* expr_;
-  // Whether the value of this expression is being explicitly ignored.
-  bool is_ignored_;
-};
+void
+Expression_statement::do_determine_types()
+{
+  this->expr_->determine_type_no_context();
+}
 
 // Check the types of an expression statement.  The only check we do
 // is to possibly give an error about discarding the value of the
