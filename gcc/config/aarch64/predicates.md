@@ -26,6 +26,11 @@
 			      && GET_MODE_CLASS (GET_MODE (op)) == MODE_CC"))))
 )
 
+(define_predicate "aarch64_simd_register"
+  (and (match_code "reg")
+       (ior (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_LO_REGS")
+            (match_test "REGNO_REG_CLASS (REGNO (op)) == FP_REGS"))))
+
 (define_predicate "aarch64_reg_or_zero"
   (and (match_code "reg,subreg,const_int")
        (ior (match_operand 0 "register_operand")

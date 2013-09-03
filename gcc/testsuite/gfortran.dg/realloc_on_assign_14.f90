@@ -23,7 +23,7 @@ str = 'abc'    ! { dg-warning "Code for reallocating the allocatable variable" }
 astr = 'abc'   ! no realloc
 astr = ['abc'] ! { dg-warning "Code for reallocating the allocatable array" }
 a = reshape(a,shape(a)) ! { dg-warning "Code for reallocating the allocatable array" }
-r = sin(r)     ! { dg-warning "Code for reallocating the allocatable array" }
+r = sin(r)
 r = sin(r(1))  ! no realloc
 b = sin(r(1))  ! { dg-warning "Code for reallocating the allocatable variable" }
 

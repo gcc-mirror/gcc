@@ -53,6 +53,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 1 "slp"  { xfail *-*-* }  } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp"  { xfail *-*-* }  } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

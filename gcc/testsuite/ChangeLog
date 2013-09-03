@@ -1,3 +1,225 @@
+2013-09-01  Jan Hubicka  <jh@suse.cz>	
+
+	* g++.dg/ipa/devirt-15.C: New testcase.
+
+2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/linker_alias.ads: Skip on Darwin.
+
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-11.C: Use -fno-devirtualize-speuclatively
+	* g++.dg/tree-ssa/pr45453.C: Likewise.
+
+2013-08-31  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/fork-instrumentation.c: New testcase.
+
+2013-08-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* g++.dg/abi/mangle33.C (dg-final): Use match count in scan RE.
+
+2013-08-30  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc.dg/Warray-bounds-11.c: New testcase.
+
+2013-08-30  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/ubsan/div-by-zero-1.C: New test.
+	* c-c++-common/ubsan/save-expr-1.c: New test.
+	* c-c++-common/ubsan/save-expr-2.c: New test.
+	* c-c++-common/ubsan/save-expr-3.c: New test.
+	* c-c++-common/ubsan/save-expr-4.c: New test.
+	* c-c++-common/ubsan/typedef-1.c: New test.
+	* c-c++-common/ubsan/const-char-1.c: New test.
+	* c-c++-common/ubsan/const-expr.c: New test.
+	* c-c++-common/ubsan/div-by-zero-1.c: Likewise.
+	* c-c++-common/ubsan/shift-1.c: Likewise.
+	* c-c++-common/ubsan/shift-2.c: Likewise.
+	* c-c++-common/ubsan/div-by-zero-2.c: Likewise.
+	* lib/ubsan-dg.exp: New file.
+	* g++.dg/dg.exp: Add ubsan tests.
+	* g++.dg/ubsan/ubsan.exp: New file.
+	* gcc.dg/ubsan/ubsan.exp: New file.
+	* g++.dg/ubsan/cxx11-shift-1.C: New test.
+	* g++.dg/ubsan/cxx11-shift-2.C: New test.
+	* c-c++-common/ubsan/div-by-zero-3.c: New test.
+	* c-c++-common/ubsan/div-by-zero-1.c: New test.
+	* c-c++-common/ubsan/div-by-zero-4.c: New test.
+	* c-c++-common/ubsan/shift-3.c: New test.
+	* c-c++-common/ubsan/unreachable-1.c: New test.
+	* c-c++-common/ubsan/shift-1.c: New test.
+	* c-c++-common/ubsan/shift-2.c: New test.
+	* c-c++-common/ubsan/div-by-zero-2.c: New test.
+	* gcc.dg/ubsan/c99-shift-2.c: New test.
+	* gcc.dg/ubsan/c99-shift-1.c: New test.
+
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Rename test3 to test1
+	to match template and comment.
+
+2013-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51424
+	* g++.dg/cpp0x/dc8.C: New.
+	* g++.dg/template/meminit1.C: Adjust.
+
+2013-08-30  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/inline-dump.c: Delete inadvertant commit.
+
+2013-08-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58277
+	* gcc.c-torture/execute/pr58277-1.c: New test.
+	* gcc.c-torture/execute/pr58277-2.c: New test.
+
+2013-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/guality/param-1.c: New test.
+	* gcc.dg/guality/param-2.c: Likewise.
+
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58228
+	* gcc.dg/torture/pr58228.c: New testcase.
+
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58223
+	* gcc.dg/torture/pr58223.c: New testcase.
+	* gcc.dg/tree-ssa/ldist-16.c: Flip expected behavior.
+
+2013-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58010
+	* gcc.dg/pr58010.c: New testcase.
+
+2013-08-29  Xinliang DavidLi  <davidxl@google.com>
+
+	* gcc.dg/unroll_3.c: Message change.
+	* gcc.dg/unroll_4.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-1.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-2.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-3.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-4.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-5.c: Likewise.
+	* gcc.dg/tree-ssa/loop-23.c: Likewise.
+	* gcc.dg/tree-ssa/loop-1.c: Likewise.
+	* gcc.dg/unroll_1.c: Likewise.
+	* gcc.dg/vect/bb-slp-31.c: Likewise.
+	* gcc.dg/vect/bb-slp-14.c: Likewise.
+	* gcc.dg/vect/bb-slp-8.c: Likewise.
+	* gcc.dg/vect/bb-slp-23.c: Likewise.
+	* gcc.dg/vect/bb-slp-15.c: Likewise.
+	* gcc.dg/vect/bb-slp-9.c: Likewise.
+	* gcc.dg/vect/bb-slp-24.c: Likewise.
+	* gcc.dg/vect/bb-slp-16.c: Likewise.
+	* gcc.dg/vect/bb-slp-25.c: Likewise.
+	* gcc.dg/vect/bb-slp-17.c: Likewise.
+	* gcc.dg/vect/bb-slp-26.c: Likewise.
+	* gcc.dg/vect/bb-slp-18.c: Likewise.
+	* gcc.dg/vect/no-tree-reassoc-bb-slp-12.c: Likewise.
+	* gcc.dg/vect/bb-slp-27.c: Likewise.
+	* gcc.dg/vect/bb-slp-19.c: Likewise.
+	* gcc.dg/vect/bb-slp-28.c: Likewise.
+	* gcc.dg/vect/bb-slp-cond-1.c: Likewise.
+	* gcc.dg/vect/bb-slp-29.c: Likewise.
+	* gcc.dg/vect/bb-slp-8a.c: Likewise.
+	* gcc.dg/vect/bb-slp-pattern-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-1.c: Likewise.
+	* gcc.dg/vect/bb-slp-8b.c: Likewise.
+	* gcc.dg/vect/bb-slp-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-3.c: Likewise.
+	* gcc.dg/vect/bb-slp-10.c: Likewise.
+	* gcc.dg/vect/fast-math-bb-slp-call-1.c: Likewise.
+	* gcc.dg/vect/bb-slp-4.c: Likewise.
+	* gcc.dg/vect/bb-slp-11.c: Likewise.
+	* gcc.dg/vect/fast-math-bb-slp-call-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-5.c: Likewise.
+	* gcc.dg/vect/bb-slp-20.c: Likewise.
+	* gcc.dg/vect/bb-slp-6.c: Likewise.
+	* gcc.dg/vect/bb-slp-21.c: Likewise.
+	* gcc.dg/vect/bb-slp-30.c: Likewise.
+	* gcc.dg/vect/bb-slp-13.c: Likewise.
+	* gcc.dg/vect/bb-slp-7.c: Likewise.
+	* gcc.dg/vect/bb-slp-22.c: Likewise.
+	* gcc.dg/unroll_2.c: Likewise.
+	* g++.dg/vect/slp-pr50413.cc: Likewise.
+	* g++.dg/vect/slp-pr56812.cc: Likewise.
+	* g++.dg/vect/slp-pr50819.cc: Likewise.
+
+2013-08-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tree-ssa/ipa-cp-1.c: Adjust regexp.
+
+2013-08-29  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/pr40209.c: Use -fopt-info.
+	* gcc.dg/pr26570.c: Ditto.
+	* gcc.dg/pr32773.c: Ditto.
+	* g++.dg/tree-ssa/dom-invalid.C: Ditto.
+
+2013-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58246
+	* gcc.dg/torture/pr58246.c: New testcase.
+
+2013-08-29  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/52243
+	* gfortran.dg/realloc_on_assign_14.f90:  Remove warning made
+	obsolete by patch.
+	* gfortran.dg/realloc_on_assign_19.f90:  New test.
+
+2013-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57287
+	* gcc.dg/pr57287-2.c: New testcase.
+
+2013-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57685
+	* gcc.dg/torture/pr57685.c: New testcase.
+
+2013-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58255
+	* g++.dg/cpp0x/dc7.C: New.
+
+2013-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/58257
+	* c-c++-common/gomp/pr58257.c: New test.
+
+2013-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/56933
+	* gcc.dg/vect/pr56933.c: Properly guard runtime with check_vect ().
+
+2013-08-27  Vidya Praveen  <vidyapraveen@arm.com>
+
+	* gcc.target/aarch64/scalar_shift_1.c: New.
+
+2013-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/57521
+	* gcc.dg/torture/pr57521.c: New testcase.
+
+2013-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/57860
+	PR rtl-optimization/57861
+	PR rtl-optimization/57875
+	PR rtl-optimization/57876
+	PR rtl-optimization/57877
+	* gcc.c-torture/execute/pr57860.c: New test.
+	* gcc.c-torture/execute/pr57861.c: New test.
+	* gcc.c-torture/execute/pr57875.c: New test.
+	* gcc.c-torture/execute/pr57876.c: New test.
+	* gcc.c-torture/execute/pr57877.c: New test.
+
 2013-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/58146
@@ -158,7 +380,7 @@
 	* gcc.dg/pr58145-1.c: New test.
 	* gcc.dg/pr58145-2.c: New test.
 
-2013-08-14  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-08-14  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/debug/dwarf2/dwarf2.exp: Replace -gdwarf-2 with -gdwarf.
 	* gcc.dg/debug/dwarf2/dwarf-die7.c: Likewise.
@@ -416,8 +638,8 @@
 
 2013-08-12  Perez Read  <netfirewall@gmail.com>
 
-         PR target/58132
-         * gcc.target/i386/movabs-1.c: New test.
+	PR target/58132
+	* gcc.target/i386/movabs-1.c: New test.
 
 2013-08-12  Marek Polacek  <polacek@redhat.com>
 
@@ -503,7 +725,7 @@
 	* gcc.dg/ipa/pr57539.c: New test.
 
 2013-08-06  Martin Jambor  <mjambor@suse.cz>
-	    Bernd Edlinger <bernd.edlinger@hotmail.de>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/torture/pr58041.c (foo): Accept z by reference.
 	(a): Fix constructor.
@@ -967,7 +1189,7 @@
 
 	* gcc.target/aarch64/vabs_intrinsic_1.c: New file.
 
-2013-07-20  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-20  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/pr57154.c: Add dg-require-effective-target scheduling.
 
@@ -1271,7 +1493,7 @@
 	PR c++/14263
 	* g++.dg/inherit/virtual10.C: New.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR c/57821
 	* gcc.dg/large-size-array-6.c: New test.
@@ -1281,7 +1503,7 @@
 	PR c++/38634
 	* g++.dg/template/crash116.C: New.
 
-2013-07-04  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-07-04  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.dg/tree-ssa/vrp66.c: Make conditional on { target { ! int16 } } .
 	* gcc.dg/tree-ssa/vrp66-int16-sw.c: New test.
@@ -1488,7 +1710,7 @@
 
 	* g++.dg/cpp0x/sfinae47.C: New.
 
-2013-06-23  Oleg Endo <olegendo@gcc.gnu.org>
+2013-06-23  Oleg Endo  <olegendo@gcc.gnu.org>
 
 	PR target/52483
 	* gcc.target/sh/pr52483-1.c: New.
@@ -1680,7 +1902,7 @@
 	* c-c++-common/cilk-plus/AN/if_test.c (main2): Fixed a bug of
 	accidentally placing minus sign for length instead of stride.
 
-2013-06-16  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-06-16  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR rtl-optimization/57425
 	PR rtl-optimization/57569
@@ -1724,7 +1946,7 @@
 	PR c++/51413
 	* g++.dg/ext/builtin-offsetof1.C: New.
 
-2013-06-14  Vidya Praveen <vidyapraveen@arm.com>
+2013-06-14  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect_smlal_1.c: New file.
 
@@ -1763,8 +1985,8 @@
 	* gcc.dg/tree-ssa/forwprop-27.c: New testcase.
 
 2013-06-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/atomic-p7.c: New file, add tests for atomic
 	load/store instructions on power7, power8.
@@ -1839,8 +2061,8 @@
 	in how we check __sec_reduce_mutating function's result.
 
 2013-06-10  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/direct-move-vint1.c: New tests for power8
 	direct move instructions.
@@ -2021,8 +2243,8 @@
 	* g++.dg/cpp0x/alias-decl-36.C: New.
 
 2013-06-06  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-builtin-1.c: New test to test
 	power8 builtin functions.
@@ -2623,7 +2845,7 @@
 	PR debug/57351
 	* gcc.dg/debug/pr57351.c: New test
 
-2013-05-23  Vidya Praveen <vidyapraveen@arm.com>
+2013-05-23  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/vect-clz.c: New file.
 
@@ -2661,8 +2883,8 @@
 	* g++.dg/parse/crash62.C: New.
 
 2013-05-22  Michael Meissner  <meissner@linux.vnet.ibm.com>
-	    Pat Haugen <pthaugen@us.ibm.com>
-	    Peter Bergner <bergner@vnet.ibm.com>
+	    Pat Haugen  <pthaugen@us.ibm.com>
+	    Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/crypto-builtin-1.c: New file, test for power8
 	crypto builtins.
@@ -2952,7 +3174,7 @@
 	(alloca): Remove declaration.
 	(foo9): Replace alloca by __builtin_alloca.
 
-2013-05-14  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-05-14  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.c-torture/compile/limits-externdecl.c [target avr-*-*]:
 	Expect "size of array is too large" error.
@@ -3249,7 +3471,7 @@
 
 	* gcc.target/i386/sse2-init-v2di-2.c: Update scan assembler string.
 
-2013-05-03  Vidya Praveen <vidyapraveen@arm.com>
+2013-05-03  Vidya Praveen  <vidyapraveen@arm.com>
 
 	* gcc.target/aarch64/fabd.c: New file.
 
@@ -3946,12 +4168,12 @@
 
 	* gcc.dg/vect/slp-39.c: New testcase.
 
-2013-04-10  Joern Rennecke <joern.rennecke@embecosm.com>
+2013-04-10  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	PR tree-optimization/55524
 	* gcc.target/epiphany/fnma-1.c: New test.
 
-2013-04-10  Zhouyi Zhou <yizhouzhou@ict.ac.cn>
+2013-04-10  Zhouyi Zhou  <yizhouzhou@ict.ac.cn>
 
 	* gcc.dg/tree-ssa/inline-11.c: New test
 
@@ -4634,7 +4856,7 @@
 	* gcc.dg/pr56355-1.c: New file.
 
 2013-03-20  Catherine Moore  <clm@codesourcery.com>
-	    Richard Sandiford <rdsandiford@googlemail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* gcc.target/mips/mips.exp: Add microMIPS support.
 	* gcc.target/mips/umips-movep-2.c: New test.

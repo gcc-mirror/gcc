@@ -390,6 +390,9 @@ change_decl_assembler_name (tree decl, tree name)
       if (name == DECL_ASSEMBLER_NAME (decl))
 	return;
 
+      tree alias = (IDENTIFIER_TRANSPARENT_ALIAS (DECL_ASSEMBLER_NAME (decl))
+		    ? TREE_CHAIN (DECL_ASSEMBLER_NAME (decl))
+		    : NULL);
       if (node)
 	unlink_from_assembler_name_hash (node, true);
       if (TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (decl))
@@ -397,6 +400,11 @@ change_decl_assembler_name (tree decl, tree name)
 	warning (0, "%D renamed after being referenced in assembly", decl);
 
       SET_DECL_ASSEMBLER_NAME (decl, name);
+      if (alias)
+	{
+	  IDENTIFIER_TRANSPARENT_ALIAS (name) = 1;
+	  TREE_CHAIN (DECL_ASSEMBLER_NAME (name)) = alias;
+	}
       if (node)
 	insert_to_assembler_name_hash (node, true);
     }
@@ -1065,11 +1073,17 @@ symtab_nonoverwritable_alias (symtab_node node)
 {
   tree new_decl;
   symtab_node new_node = NULL;
+
+  /* First try to look up existing alias or base object
+     (if that is already non-overwritable).  */
+  node = symtab_alias_ultimate_target (node, NULL);
+  gcc_assert (!node->symbol.alias && !node->symbol.weakref);
   symtab_for_node_and_aliases (node, symtab_nonoverwritable_alias_1,
 		               (void *)&new_node, true);
   if (new_node)
     return new_node;
 
+  /* Otherwise create a new one.  */
   new_decl = copy_node (node->symbol.decl);
   DECL_NAME (new_decl) = clone_function_name (node->symbol.decl, "localalias");
   if (TREE_CODE (new_decl) == FUNCTION_DECL)

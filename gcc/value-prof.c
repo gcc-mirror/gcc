@@ -585,9 +585,11 @@ check_counter (gimple stmt, const char * name,
               : DECL_SOURCE_LOCATION (current_function_decl);
       if (flag_profile_correction)
         {
-	  inform (locus, "correcting inconsistent value profile: "
-		  "%s profiler overall count (%d) does not match BB count "
-                  "(%d)", name, (int)*all, (int)bb_count);
+          if (dump_enabled_p ())
+            dump_printf_loc (MSG_MISSED_OPTIMIZATION, locus,
+                             "correcting inconsistent value profile: %s "
+                             "profiler overall count (%d) does not match BB "
+                             "count (%d)", name, (int)*all, (int)bb_count);
 	  *all = bb_count;
 	  if (*count > *all)
             *count = *all;
@@ -1271,8 +1273,10 @@ check_ic_target (gimple call_stmt, struct cgraph_node *target)
      return true;
 
    locus =  gimple_location (call_stmt);
-   inform (locus, "Skipping target %s with mismatching types for icall ",
-           cgraph_node_name (target));
+   if (dump_enabled_p ())
+     dump_printf_loc (MSG_MISSED_OPTIMIZATION, locus,
+                      "Skipping target %s with mismatching types for icall ",
+                      cgraph_node_name (target));
    return false;
 }
 

@@ -209,7 +209,6 @@ unpack_ts_decl_common_value_fields (struct bitpack_d *bp, tree expr)
 
   if (TREE_CODE (expr) == LABEL_DECL)
     {
-      DECL_ERROR_ISSUED (expr) = (unsigned) bp_unpack_value (bp, 1);
       EH_LANDING_PAD_NR (expr) = (int) bp_unpack_var_len_unsigned (bp);
 
       /* Always assume an initial value of -1 for LABEL_DECL_UID to
@@ -258,7 +257,6 @@ unpack_ts_decl_wrtl_value_fields (struct bitpack_d *bp, tree expr)
 static void
 unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
 {
-  DECL_DEFER_OUTPUT (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_COMMON (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_DLLIMPORT_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_WEAK (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -270,11 +268,16 @@ unpack_ts_decl_with_vis_value_fields (struct bitpack_d *bp, tree expr)
   if (TREE_CODE (expr) == VAR_DECL)
     {
       DECL_HARD_REGISTER (expr) = (unsigned) bp_unpack_value (bp, 1);
-      DECL_IN_TEXT_SECTION (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_IN_CONSTANT_POOL (expr) = (unsigned) bp_unpack_value (bp, 1);
       DECL_TLS_MODEL (expr) = (enum tls_model) bp_unpack_value (bp,  3);
     }
 
+  if (TREE_CODE (expr) == FUNCTION_DECL)
+    {
+      DECL_FINAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      DECL_CXX_CONSTRUCTOR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+      DECL_CXX_DESTRUCTOR_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+    }
   if (VAR_OR_FUNCTION_DECL_P (expr))
     {
       priority_type p;
@@ -346,7 +349,10 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_NO_FORCE_BLK (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
+    {
+      TYPE_TRANSPARENT_AGGR (expr) = (unsigned) bp_unpack_value (bp, 1);
+      TYPE_FINAL_P (expr) = (unsigned) bp_unpack_value (bp, 1);
+    }
   else if (TREE_CODE (expr) == ARRAY_TYPE)
     TYPE_NONALIASED_COMPONENT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -923,10 +929,8 @@ lto_input_ts_binfo_tree_pointers (struct lto_input_block *ib,
       tree a = stream_read_tree (ib, data_in);
       (*BINFO_BASE_ACCESSES (expr))[i] = a;
     }
-
-  BINFO_INHERITANCE_CHAIN (expr) = stream_read_tree (ib, data_in);
-  BINFO_SUBVTT_INDEX (expr) = stream_read_tree (ib, data_in);
-  BINFO_VPTR_INDEX (expr) = stream_read_tree (ib, data_in);
+  /* Do not walk BINFO_INHERITANCE_CHAIN, BINFO_SUBVTT_INDEX
+     and BINFO_VPTR_INDEX; these are used by C++ FE only.  */
 }
 
 

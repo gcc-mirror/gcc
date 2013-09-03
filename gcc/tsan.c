@@ -713,7 +713,7 @@ tsan_pass (void)
 static bool
 tsan_gate (void)
 {
-  return flag_tsan != 0;
+  return (flag_sanitize & SANITIZE_THREAD) != 0;
 }
 
 /* Inserts __tsan_init () into the list of CTORs.  */
@@ -775,7 +775,7 @@ make_pass_tsan (gcc::context *ctxt)
 static bool
 tsan_gate_O0 (void)
 {
-  return flag_tsan != 0 && !optimize;
+  return (flag_sanitize & SANITIZE_THREAD) != 0 && !optimize;
 }
 
 namespace {

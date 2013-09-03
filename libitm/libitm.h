@@ -72,7 +72,9 @@ typedef enum
     inIrrevocableTransaction
 } _ITM_howExecuting;
 
-/* Values to describe properties of code, passed in to beginTransaction */
+/* Values to describe properties of code, passed in to beginTransaction.
+   Some of these constants are duplicated in some of the ITM_beginTransaction
+   implementations, so update those too when applying any changes.  */
 typedef enum
 {
    pr_instrumentedCode		= 0x0001,
@@ -95,10 +97,16 @@ typedef enum
    pr_exceptionBlock		= 0x1000,
    pr_hasElse			= 0x2000,
    pr_readOnly			= 0x4000,
-   pr_hasNoSimpleReads		= 0x400000
+   pr_hasNoSimpleReads		= 0x400000,
+   /* These are not part of the ABI but used for custom HTM fast paths.  See
+      ITM_beginTransaction and gtm_thread::begin_transaction.  */
+   pr_HTMRetryableAbort		= 0x800000,
+   pr_HTMRetriedAfterAbort	= 0x1000000
 } _ITM_codeProperties;
 
-/* Result from startTransaction that describes what actions to take.  */
+/* Result from startTransaction that describes what actions to take.
+   Some of these constants are duplicated in some of the ITM_beginTransaction
+   implementations, so update those too when applying any changes.  */
 typedef enum
 {
    a_runInstrumentedCode       = 0x01,
@@ -106,6 +114,7 @@ typedef enum
    a_saveLiveVariables         = 0x04,
    a_restoreLiveVariables      = 0x08,
    a_abortTransaction          = 0x10,
+   a_tryHTMFastPath            = 0x20
 } _ITM_actions;
 
 typedef struct

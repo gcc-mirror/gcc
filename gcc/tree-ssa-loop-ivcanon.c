@@ -870,11 +870,12 @@ try_unroll_loop_completely (struct loop *loop,
     {
       if (!n_unroll)
         dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
-                         "Turned loop into non-loop; it never loops.\n");
+                         "loop turned into non-loop; it never loops\n");
       else
         {
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS, locus,
-                           "Completely unroll loop %d times", (int)n_unroll);
+                           "loop with %d iterations completely unrolled",
+			   (int) (n_unroll + 1));
           if (profile_info)
             dump_printf (MSG_OPTIMIZED_LOCATIONS | TDF_DETAILS,
                          " (header execution count %d)",
@@ -1124,6 +1125,11 @@ tree_unroll_loops_completely_1 (bool may_increase_size, bool unroll_outer,
      siblings of outer loops instead.  */
   if (changed)
     return true;
+
+  /* Don't unroll #pragma omp simd loops until the vectorizer
+     attempts to vectorize those.  */
+  if (loop->force_vect)
+    return false;
 
   /* Try to unroll this loop.  */
   loop_father = loop_outer (loop);

@@ -74,6 +74,7 @@ public:
     return pass_mode_switching_1;
   }
   opt_pass *get_pass_peephole2 () const { return pass_peephole2_1; }
+  opt_pass *get_pass_profile () const { return pass_profile_1; }
 
 public:
   /* The root of the compilation pass tree, once constructed.  */

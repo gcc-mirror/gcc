@@ -1,4 +1,7 @@
 /* { dg-do run } */
+/* { dg-require-effective-target vect_double } */
+
+#include "tree-vect.h"
 
 extern void abort (void);
 void __attribute__((noinline,noclone))
@@ -17,6 +20,9 @@ int main()
 {
   double b[1024], d[2*1024], f[1024];
   int i;
+
+  check_vect ();
+
   for (i = 0; i < 2*1024; i++)
     d[i] = 1.;
   foo (b, d, f);

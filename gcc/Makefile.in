@@ -1154,7 +1154,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-omp.o c-family/c-opts.o c-family/c-pch.o \
   c-family/c-ppoutput.o c-family/c-pragma.o c-family/c-pretty-print.o \
   c-family/c-semantics.o c-family/c-ada-spec.o tree-mudflap.o \
-  c-family/array-notation-common.o
+  c-family/array-notation-common.o c-family/c-ubsan.o
 
 # Language-independent object files.
 # We put the insn-*.o files first so that a parallel make will build
@@ -1280,6 +1280,7 @@ OBJS = \
 	ipa-inline.o \
 	ipa-inline-analysis.o \
 	ipa-inline-transform.o \
+	ipa-profile.o \
 	ipa-prop.o \
 	ipa-pure-const.o \
 	ipa-reference.o \
@@ -1383,6 +1384,7 @@ OBJS = \
 	tree-affine.o \
 	asan.o \
 	tsan.o \
+	ubsan.o \
 	tree-call-cdce.o \
 	tree-cfg.o \
 	tree-cfgcleanup.o \
@@ -2031,6 +2033,11 @@ c-family/stub-objc.o : c-family/stub-objc.c $(CONFIG_H) $(SYSTEM_H) \
 c-family/stub-upc.o : c-family/stub-upc.c $(CONFIG_H) $(SYSTEM_H) \
 	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-upc.h
 
+c-family/c-ubsan.o : c-family/c-ubsan.c $(CONFIG_H) $(SYSTEM_H) \
+	coretypes.h $(TREE_H) $(C_COMMON_H) c-family/c-ubsan.h \
+	alloc-pool.h $(CGRAPH_H) $(GIMPLE_H) $(HASH_TABLE_H) output.h \
+	toplev.h ubsan.h
+
 default-c.o: config/default-c.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
   $(C_TARGET_H) $(C_TARGET_DEF_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) \
@@ -2268,8 +2275,11 @@ tsan.o : $(CONFIG_H) $(SYSTEM_H) $(TREE_H) $(TREE_INLINE_H) \
    $(TM_H) coretypes.h $(TREE_DUMP_H) $(TREE_PASS_H) $(CGRAPH_H) $(GGC_H) \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(FUNCTION_H) \
    $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_CORE_H) $(GIMPLE_H) tree-iterator.h \
-   intl.h cfghooks.h output.h options.h c-family/c-common.h tsan.h asan.h \
+   intl.h cfghooks.h output.h options.h $(C_COMMON_H) tsan.h asan.h \
    tree-ssa-propagate.h
+ubsan.o : ubsan.c ubsan.h $(CONFIG_H) $(SYSTEM_H) $(GIMPLE_H) \
+   output.h coretypes.h $(TREE_H) $(CGRAPH_H) $(HASHTAB_H) gt-ubsan.h \
+   toplev.h $(C_COMMON_H) $(TM_P_H)
 tree-ssa-tail-merge.o: tree-ssa-tail-merge.c \
    $(SYSTEM_H) $(CONFIG_H) coretypes.h $(TM_H) $(BITMAP_H) \
    $(FLAGS_H) $(TM_P_H) $(BASIC_BLOCK_H) $(CFGLOOP_H) \
@@ -2568,7 +2578,7 @@ omp-low.o : omp-low.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
    $(RTL_H) $(GIMPLE_H) $(TREE_INLINE_H) langhooks.h $(DIAGNOSTIC_CORE_H) \
    $(TREE_FLOW_H) $(FLAGS_H) $(EXPR_H) $(DIAGNOSTIC_CORE_H) \
    $(TREE_PASS_H) $(GGC_H) $(EXCEPT_H) $(SPLAY_TREE_H) $(OPTABS_H) \
-   $(CFGLOOP_H) tree-iterator.h gt-omp-low.h
+   $(CFGLOOP_H) tree-iterator.h $(TARGET_H) gt-omp-low.h
 tree-browser.o : tree-browser.c tree-browser.def $(CONFIG_H) $(SYSTEM_H) \
    coretypes.h $(HASH_TABLE_H) $(TREE_H) $(TREE_PRETTY_PRINT_H)
 omega.o : omega.c $(OMEGA_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(DUMPFILE_H) \
@@ -2839,7 +2849,7 @@ builtins.o : builtins.c builtins.h $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    hard-reg-set.h $(DIAGNOSTIC_CORE_H) hard-reg-set.h $(EXCEPT_H) \
    $(TM_P_H) $(PREDICT_H) $(LIBFUNCS_H) langhooks.h $(BASIC_BLOCK_H) \
    tree-mudflap.h realmpfr.h $(BUILTINS_DEF) $(MACHMODE_H) \
-   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) value-prof.h
+   $(DIAGNOSTIC_CORE_H) $(TREE_FLOW_H) value-prof.h ubsan.h
 calls.o : calls.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(RTL_H) \
    $(TREE_H) $(FLAGS_H) $(EXPR_H) $(OPTABS_H) langhooks.h $(TARGET_H) \
    $(LIBFUNCS_H) $(REGS_H) $(DIAGNOSTIC_CORE_H) output.h \
@@ -2947,11 +2957,15 @@ varpool.o : varpool.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_FLOW_H) 
 ipa.o : ipa.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(TREE_PASS_H) $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
-   $(IPA_UTILS_H) tree-inline.h $(HASH_TABLE_H) profile.h $(PARAMS_H) \
-   $(LTO_STREAMER_H) $(DATA_STREAMER_H)
+   $(IPA_UTILS_H) tree-inline.h profile.h $(PARAMS_H) 
+ipa-profile.o : ipa-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
+   $(TREE_PASS_H) $(GIMPLE_H) $(TARGET_H) $(GGC_H)  \
+   $(IPA_UTILS_H) $(HASH_TABLE_H) profile.h $(PARAMS_H) \
+   value-prof.h alloc-pool.h tree-inline.h $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
+   ipa-inline.h
 ipa-devirt.o : ipa-devirt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
-   $(IPA_UTILS_H) $(HASH_TABLE_H) 
+   $(IPA_UTILS_H) $(HASH_TABLE_H) ipa-inline.h ipa-utils.h $(TREE_PRETTY_PRINT_H)
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
@@ -2975,13 +2989,14 @@ ipa-inline.o : ipa-inline.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(DIAGNOSTIC_H) $(FIBHEAP_H) $(PARAMS_H) $(TREE_PASS_H) \
    $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(RTL_H) $(IPA_PROP_H) \
    $(EXCEPT_H) $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(TARGET_H) \
-   $(IPA_UTILS_H)
+   $(IPA_UTILS_H) sreal.h
 ipa-inline-analysis.o : ipa-inline-analysis.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(DIAGNOSTIC_H) $(PARAMS_H) $(TREE_PASS_H) $(CFGLOOP_H) \
    $(HASHTAB_H) $(COVERAGE_H) $(GGC_H) $(TREE_FLOW_H) $(IPA_PROP_H) \
    $(GIMPLE_PRETTY_PRINT_H) $(IPA_INLINE_H) $(LTO_STREAMER_H) $(DATA_STREAMER_H) \
-   $(TREE_STREAMER_H)
+   $(TREE_STREAMER_H) ipa-utils.h tree-scalar-evolution.h $(CFGLOOP_H) \
+   alloc-pool.h
 ipa-inline-transform.o : ipa-inline-transform.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
    $(TREE_H) langhooks.h $(TREE_INLINE_H) $(FLAGS_H) $(CGRAPH_H) intl.h \
    $(TREE_PASS_H) \
@@ -3833,6 +3848,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/ipa-inline.h \
   $(srcdir)/vtable-verify.c \
   $(srcdir)/asan.c \
+  $(srcdir)/ubsan.c \
   $(srcdir)/tsan.c $(srcdir)/ipa-devirt.c \
   @all_gtfiles@
 

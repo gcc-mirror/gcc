@@ -1,3 +1,141 @@
+2013-08-30  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Add division by zero and shift
+	instrumentation.
+	* error.c (dump_expr): Special-case ubsan builtins.
+
+2013-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51424
+	* cp-tree.h (LOOKUP_DELEGATING_CONS): Add.
+	* init.c (perform_target_ctor): Use it.
+	* call.c (build_special_member_call): Diagnose self-delegating
+	constructors.
+
+2013-08-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::declaration): Declare as
+	overrider.
+	(cxx_pretty_printer::declaration_specifiers): Likewise.
+	(cxx_pretty_printer::function_specifier): Likewise.
+	(cxx_pretty_printer::declarator): Likewise.
+	(cxx_pretty_printer::direct_declarator): Likewise.
+	(cxx_pretty_printer::abstract_declarator): Likewise.
+	(cxx_pretty_printer::direct_abstract_declarator): Likewise.
+	(pp_cxx_declaration): Remove.
+	* cxx-pretty-print.c (cxx_pretty_printer::function_specifier):
+	Rename from pp_cxx_function_specifier.  Adjust.
+	(cxx_pretty_printer::declaration_specifiers): Rename from
+	pp_cxx_decl_specifier_seq.  Adjust.
+	(cxx_pretty_printer::direct_declarator): Rename from
+	pp_cxx_direct_declarator.  Adjust.
+	(cxx_pretty_printer::declarator): Rename from pp_cxx_declarator.
+	Adjust.
+	(cxx_pretty_printer::abstract_declarator): Rename from
+	pp_cxx_abstract_declarator.  Adjust.
+	(cxx_pretty_printer::direct_abstract_declarator): Rename from
+	pp_cxx_direct_abstract_declarator.  Adjust.
+	(cxx_pretty_printer::declaration): Rename from
+	pp_cxx_declaration.  Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	declaration, declaration_specifiers, function_specifier,
+	declarator, direct_declarator, abstract_declarator,
+	direct_abstract_declarator.
+	* error.c (dump_decl): Adjust.
+
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	Correct previous patch to not mark terminate as LEAF.
+	* class.c (build_vtbl_initializer): Drop LEAF
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(push_throw_library_fn): Likewise.
+	* except.c (init_exception_processing): Likewise.
+	(do_begin_catch): Likewise.
+	(do_end_catch): Likewise.
+	(do_allocate_exception): Likewise.
+
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (build_vtbl_initializer): Make __cxa_deleted_virtual
+	ECF_NORETURN | ECF_LEAF
+	* cp-tree.h (build_library_fn_ptr, build_cp_library_fn_ptr,
+	push_library_fn, push_void_library_fn): Update prototype.
+	* decl.c (build_library_fn_1): Remove.
+	(push_cp_library_fn, build_cp_library_fn): Update to take ECF flags.
+	(cxx_init_decl_processing): Update; global_delete_fndecl is ECF_NOTROW;
+	__cxa_pure_virtual is ECF_NORETURN | ECF_NORETURN | ECF_LEAF.
+	(build_library_fn_1): Add ecf_flags argument; rename to ...
+	(build_library_fn): ... this one.
+	(build_cp_library_fn): Take ecf_flags; do not copy NOTHROW flag.
+	(build_library_fn_ptr): Take ecf_flags.
+	(build_cp_library_fn_ptr): Likewise.
+	(push_library_fn): Likewise.
+	(push_cp_library_fn): Likewise.
+	(push_void_library_fn): Likewise.
+	(push_throw_library_fn): All throws are ECF_NORETURN.
+	(__cxa_atexit, __cxa_thread_atexit): Add ECF_LEAF | ECF_NOTHROW attributes.
+	(expand_static_init): __cxa_guard_acquire, __cxa_guard_release,
+	__cxa_guard_abort are ECF_NOTHROW | ECF_LEAF.
+	* except.c (init_exception_processing): terminate is
+	ECF_NOTHROW | ECF_NORETURN | ECF_LEAF.
+	(declare_nothrow_library_fn): Add ecf_flags parameter.
+	(__cxa_get_exception_ptr): Is ECF_NOTHROW | ECF_PURE | ECF_LEAF |
+	ECF_TM_PURE.
+	(do_begin_catch): cxa_begin_catch and _ITM_cxa_begin_catch
+	are ECF_NOTHROW | ECF_LEAF.
+	(do_end_catch): __cxa_end_catch and _ITM_cxa_end_catch is
+	ECF_LEAF.
+	(do_allocate_exception): _cxa_allocate_exception
+	and _ITM_cxa_allocate_exception are ECF_NOTHROW | ECF_MALLOC
+	| ECF_LEAF
+	(do_free_exception): __cxa_free_exception is
+	ECF_NOTHROW | ECF_LEAF.
+	* rtti.c (build_dynamic_cast_1): __dynamic_cast
+	is ECF_LEAF | ECF_PURE | ECF_NOTHROW.
+
+2013-08-29  Adam Butcher  <adam@jessamine.co.uk>
+
+	* error.c (dump_lambda_function): New function, dependent on ...
+	(dump_substitution): ... this new function, factored out of ...
+	(subst_to_string): ... here and ...
+	(dump_function_decl): ... here.  Updated to early-out with call to
+	dump_lambda_function after determining template bindings.
+
+2013-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58255
+	* init.c (build_aggr_init): When init == void_type_node do not
+	set LOOKUP_ONLYCONVERTING.
+
+2013-08-27  Caroline Tice  <cmtice@google.com>
+
+	* vtable-class-hierarchy.c: Remove unnecessary include statements.
+	(MAX_SET_SIZE): Remove unnecessary constant.
+	(register_construction_vtables):  Make vtable_ptr_array parameter
+	into a vector; remove num_args parameter. Change array accesses to
+	vector accesses.
+	(register_other_binfo_vtables): Ditto.
+	(insert_call_to_register_set): Ditto.
+	(insert_call_to_register_pair): Ditto.
+	(output_set_info):  Ditto.  Also change warning calls to warning_at
+	calls, and fix format of warning messages.
+	(register_all_pairs): Change vtbl_ptr_array from an array into a
+	vector.  Remove num_vtable_args (replace with calls to vector length).
+	Change array stores & accesses to vector functions. Change calls to
+	register_construction_vtables, register_other_binfo_vtables,
+	insert_call_to_register_set, insert_call_to_register_pair and
+	output_set_info to match their new signatures.  Change warning to
+	warning_at and fix the format of the warning message.
+
+2013-08-27  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-tree.h (CP_OMP_CLAUSE_INFO): Adjust range for new clauses.
+
+2013-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Remove old bison hack.
+
 2013-08-26  Jan Hubicka  <jh@suse.cz>
 
 	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_DESTRUCTOR_P): Use

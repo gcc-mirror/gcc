@@ -1,3 +1,12 @@
+2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
+	    Iain Sandoe  <iain@codesourcery.com>
+
+	PR ada/58239
+	* gcc-interface/Makefile.in (GCC_LINK_FLAGS): Add -static-libstdc++.
+	(GCC_LINK): Use CXX instead of CC.
+	* gcc-interface/Make-lang.in (CXX_LFLAGS): New.
+	(ADA_TOOLS_FLAGS_TO_PASS): Pass CXX, and CXX_LFLAGS for native.
+
 2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Do not bother about alias

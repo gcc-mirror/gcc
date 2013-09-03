@@ -7442,6 +7442,14 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
   if (allocated != NULL)
     release_tree_vector (allocated);
 
+  if ((complain & tf_error)
+      && (flags & LOOKUP_DELEGATING_CONS)
+      && name == complete_ctor_identifier 
+      && TREE_CODE (ret) == CALL_EXPR
+      && (DECL_ABSTRACT_ORIGIN (TREE_OPERAND (CALL_EXPR_FN (ret), 0))
+	  == current_function_decl))
+    error ("constructor delegates to itself");
+
   return ret;
 }
 

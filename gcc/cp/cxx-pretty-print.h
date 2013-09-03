@@ -43,6 +43,13 @@ struct cxx_pretty_printer : c_pretty_printer
   void assignment_expression (tree);
   void expression (tree);
   void statement (tree);
+  void declaration (tree);
+  void declaration_specifiers (tree);
+  void function_specifier (tree);
+  void declarator (tree);
+  void direct_declarator (tree);
+  void abstract_declarator (tree);
+  void direct_abstract_declarator (tree);
 
   /* This is the enclosing scope of the entity being pretty-printed.  */
   tree enclosing_scope;
@@ -77,7 +84,6 @@ void pp_cxx_end_template_argument_list (cxx_pretty_printer *);
 void pp_cxx_colon_colon (cxx_pretty_printer *);
 void pp_cxx_separate_with (cxx_pretty_printer *, int);
 
-void pp_cxx_declaration (cxx_pretty_printer *, tree);
 void pp_cxx_canonical_template_parameter (cxx_pretty_printer *, tree);
 void pp_cxx_trait_expression (cxx_pretty_printer *, tree);
 void pp_cxx_va_arg_expression (cxx_pretty_printer *, tree);

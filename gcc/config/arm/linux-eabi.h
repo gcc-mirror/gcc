@@ -85,7 +85,7 @@
 		       LINUX_TARGET_LINK_SPEC " " ANDROID_LINK_SPEC)
 
 #undef  ASAN_CC1_SPEC
-#define ASAN_CC1_SPEC "%{fsanitize=*:-funwind-tables}"
+#define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
 
 #undef  CC1_SPEC
 #define CC1_SPEC							\

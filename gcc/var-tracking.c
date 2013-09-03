@@ -5836,7 +5836,24 @@ add_stores (rtx loc, const_rtx expr, void *cuip)
 	    {
 	      rtx xexpr = gen_rtx_SET (VOIDmode, loc, src);
 	      if (same_variable_part_p (src, REG_EXPR (loc), REG_OFFSET (loc)))
-		mo.type = MO_COPY;
+		{
+		  /* If this is an instruction copying (part of) a parameter
+		     passed by invisible reference to its register location,
+		     pretend it's a SET so that the initial memory location
+		     is discarded, as the parameter register can be reused
+		     for other purposes and we do not track locations based
+		     on generic registers.  */
+		  if (MEM_P (src)
+		      && REG_EXPR (loc)
+		      && TREE_CODE (REG_EXPR (loc)) == PARM_DECL
+		      && DECL_MODE (REG_EXPR (loc)) != BLKmode
+		      && MEM_P (DECL_INCOMING_RTL (REG_EXPR (loc)))
+		      && XEXP (DECL_INCOMING_RTL (REG_EXPR (loc)), 0)
+			 != arg_pointer_rtx)
+		    mo.type = MO_SET;
+		  else
+		    mo.type = MO_COPY;
+		}
 	      else
 		mo.type = MO_SET;
 	      mo.u.loc = xexpr;
@@ -9086,7 +9103,7 @@ emit_notes_in_bb (basic_block bb, dataflow_set *set)
 	      else
 		var_mem_set (set, loc, VAR_INIT_STATUS_UNINITIALIZED, NULL);
 
-	      emit_notes_for_changes (insn, EMIT_NOTE_AFTER_INSN, set->vars);
+	      emit_notes_for_changes (insn, EMIT_NOTE_BEFORE_INSN, set->vars);
 	    }
 	    break;
 
@@ -9533,12 +9550,11 @@ vt_add_function_parameter (tree parm)
 
   if (!vt_get_decl_and_offset (incoming, &decl, &offset))
     {
-      if (REG_P (incoming) || MEM_P (incoming))
+      if (MEM_P (incoming))
 	{
 	  /* This means argument is passed by invisible reference.  */
 	  offset = 0;
 	  decl = parm;
-	  incoming = gen_rtx_MEM (GET_MODE (decl_rtl), incoming);
 	}
       else
 	{

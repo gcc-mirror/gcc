@@ -1001,14 +1001,14 @@ input_function (tree fn_decl, struct data_in *data_in,
 }
 
 
-/* Read the body from DATA for function FN_DECL and fill it in.
+/* Read the body from DATA for function NODE and fill it in.
    FILE_DATA are the global decls and types.  SECTION_TYPE is either
    LTO_section_function_body or LTO_section_static_initializer.  If
    section type is LTO_section_function_body, FN must be the decl for
    that function.  */
 
 static void
-lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
+lto_read_body (struct lto_file_decl_data *file_data, struct cgraph_node *node,
 	       const char *data, enum lto_section_type section_type)
 {
   const struct lto_function_header *header;
@@ -1018,6 +1018,7 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
   int string_offset;
   struct lto_input_block ib_cfg;
   struct lto_input_block ib_main;
+  tree fn_decl = node->symbol.decl;
 
   header = (const struct lto_function_header *) data;
   cfg_offset = sizeof (struct lto_function_header);
@@ -1044,7 +1045,6 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
   if (section_type == LTO_section_function_body)
     {
       struct lto_in_decl_state *decl_state;
-      struct cgraph_node *node = cgraph_get_node (fn_decl);
       unsigned from;
 
       gcc_checking_assert (node);
@@ -1094,14 +1094,14 @@ lto_read_body (struct lto_file_decl_data *file_data, tree fn_decl,
 }
 
 
-/* Read the body of FN_DECL using DATA.  FILE_DATA holds the global
+/* Read the body of NODE using DATA.  FILE_DATA holds the global
    decls and types.  */
 
 void
 lto_input_function_body (struct lto_file_decl_data *file_data,
-			 tree fn_decl, const char *data)
+			 struct cgraph_node *node, const char *data)
 {
-  lto_read_body (file_data, fn_decl, data, LTO_section_function_body);
+  lto_read_body (file_data, node, data, LTO_section_function_body);
 }
 
 

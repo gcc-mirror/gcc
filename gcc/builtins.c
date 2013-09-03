@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "diagnostic-core.h"
 #include "builtins.h"
+#include "ubsan.h"
 
 
 #ifndef PAD_VARARGS_DOWN
@@ -5850,6 +5851,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
      set of builtins.  */
   if (!optimize
       && !called_as_built_in (fndecl)
+      && fcode != BUILT_IN_FORK
+      && fcode != BUILT_IN_EXECL
+      && fcode != BUILT_IN_EXECV
+      && fcode != BUILT_IN_EXECLP
+      && fcode != BUILT_IN_EXECLE
+      && fcode != BUILT_IN_EXECVP
+      && fcode != BUILT_IN_EXECVE
       && fcode != BUILT_IN_ALLOCA
       && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
       && fcode != BUILT_IN_FREE)
@@ -10302,6 +10310,11 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
 
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
+
+    case BUILT_IN_UNREACHABLE:
+      if (flag_sanitize & SANITIZE_UNREACHABLE)
+	return ubsan_instrument_unreachable (loc);
+      break;
 
     default:
       break;

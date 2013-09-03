@@ -8618,8 +8618,9 @@ type is @code{long double}.
 @end deftypefn
 
 @deftypefn {Built-in Function} int __builtin_isinf_sign (...)
-Similar to @code{isinf}, except the return value is negative for
-an argument of @code{-Inf}.  Note while the parameter list is an
+Similar to @code{isinf}, except the return value is -1 for
+an argument of @code{-Inf} and 1 for an argument of @code{+Inf}.
+Note while the parameter list is an
 ellipsis, this function only accepts exactly one floating-point
 argument.  GCC treats this parameter as type-generic, which means it
 does not do default promotion from float to double.

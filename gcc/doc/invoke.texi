@@ -365,7 +365,7 @@ Objective-C and Objective-C++ Dialects}.
 -fcse-follow-jumps -fcse-skip-blocks -fcx-fortran-rules @gol
 -fcx-limited-range @gol
 -fdata-sections -fdce -fdelayed-branch @gol
--fdelete-null-pointer-checks -fdevirtualize -fdse @gol
+-fdelete-null-pointer-checks -fdevirtualize -fdevirtualize-speculatively -fdse @gol
 -fearly-inlining -fipa-sra -fexpensive-optimizations -ffat-lto-objects @gol
 -ffast-math -ffinite-math-only -ffloat-store -fexcess-precision=@var{style} @gol
 -fforward-propagate -ffp-contract=@var{style} -ffunction-sections @gol
@@ -455,7 +455,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{@var{object-file-name}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib -pie -rdynamic @gol
 -s  -static -static-libgcc -static-libstdc++ @gol
--static-libasan -static-libtsan @gol
+-static-libasan -static-libtsan -static-libubsan @gol
 -shared -shared-libgcc  -symbolic @gol
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option} @gol
 -u @var{symbol}}
@@ -5208,6 +5208,14 @@ Memory access instructions will be instrumented to detect
 data race bugs.
 See @uref{http://code.google.com/p/data-race-test/wiki/ThreadSanitizer} for more details.
 
+@item -fsanitize=undefined
+Enable UndefinedBehaviorSanitizer, a fast undefined behavior detector
+Various computations will be instrumented to detect undefined behavior
+at runtime, e.g.@: division by zero or various overflows.
+While @option{-ftrapv} causes traps for signed overflows to be emitted,
+@option{-fsanitize=undefined} gives a diagnostic message.
+This currently works only for the C family of languages.
+
 @item -fdump-final-insns@r{[}=@var{file}@r{]}
 @opindex fdump-final-insns
 Dump the final internal representation (RTL) to @var{file}.  If the
@@ -6293,6 +6301,9 @@ Enable dumps from all loop optimizations.
 Enable dumps from all inlining optimizations.
 @item vec
 Enable dumps from all vectorization optimizations.
+@item optall
+Enable dumps from all optimizations. This is a superset of
+the optimization groups listed above.
 @end table
 
 For example,
@@ -6701,7 +6712,7 @@ also turns on the following optimization flags:
 -fcrossjumping @gol
 -fcse-follow-jumps  -fcse-skip-blocks @gol
 -fdelete-null-pointer-checks @gol
--fdevirtualize @gol
+-fdevirtualize -fdevirtualize-speculatively @gol
 -fexpensive-optimizations @gol
 -fgcse  -fgcse-lm  @gol
 -fhoist-adjacent-loads @gol
@@ -7245,6 +7256,15 @@ is done both within a procedure and interprocedurally as part of
 indirect inlining (@code{-findirect-inlining}) and interprocedural constant
 propagation (@option{-fipa-cp}).
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@item -fdevirtualize-speculatively
+@opindex fdevirtualize-speculatively
+Attempt to convert calls to virtual functions to speculative direct calls.
+Based on the analysis of the type inheritance graph, determine for a given call
+the set of likely targets. If the set is small, preferably of size 1, change
+the call into an conditional deciding on direct and indirect call.  The
+speculative calls enable more optimizations, such as inlining.  When they seem
+useless after further optimization, they are converted back into original form.
 
 @item -fexpensive-optimizations
 @opindex fexpensive-optimizations
@@ -10155,6 +10175,15 @@ the GCC driver automatically links against @option{libtsan}.  If
 option is not used, then this links against the shared version of
 @file{libtsan}.  The @option{-static-libtsan} option directs the GCC
 driver to link @file{libtsan} statically, without necessarily linking
+other libraries statically.
+
+@item -static-libubsan
+When the @option{-fsanitize=undefined} option is used to link a program,
+the GCC driver automatically links against @option{libubsan}.  If
+@file{libubsan} is available as a shared library, and the @option{-static}
+option is not used, then this links against the shared version of
+@file{libubsan}.  The @option{-static-libubsan} option directs the GCC
+driver to link @file{libubsan} statically, without necessarily linking
 other libraries statically.
 
 @item -static-libstdc++

@@ -446,6 +446,21 @@ check_bb_profile (basic_block bb, FILE * file, int indent, int flags)
 		 (flags & TDF_COMMENT) ? ";; " : "", s_indent,
 		 (int) lsum, (int) bb->count);
     }
+  if (BB_PARTITION (bb) == BB_COLD_PARTITION)
+    {
+      /* Warn about inconsistencies in the partitioning that are
+         currently caused by profile insanities created via optimization.  */
+      if (!probably_never_executed_bb_p (fun, bb))
+        fprintf (file, "%s%sBlock in cold partition with hot count\n",
+                 (flags & TDF_COMMENT) ? ";; " : "", s_indent);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+        {
+          if (!probably_never_executed_edge_p (fun, e))
+            fprintf (file,
+                     "%s%sBlock in cold partition with incoming hot edge\n",
+                     (flags & TDF_COMMENT) ? ";; " : "", s_indent);
+        }
+    }
 }
 
 void

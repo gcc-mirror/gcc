@@ -573,10 +573,10 @@ compile_file (void)
 	mudflap_finish_file ();
 
       /* File-scope initialization for AddressSanitizer.  */
-      if (flag_asan)
+      if (flag_sanitize & SANITIZE_ADDRESS)
         asan_finish_file ();
 
-      if (flag_tsan)
+      if (flag_sanitize & SANITIZE_THREAD)
 	tsan_finish_file ();
 
       output_shared_constant_pool ();
@@ -1542,12 +1542,12 @@ process_options (void)
     warn_stack_protect = 0;
 
   /* Address Sanitizer needs porting to each target architecture.  */
-  if (flag_asan
+  if ((flag_sanitize & SANITIZE_ADDRESS)
       && (targetm.asan_shadow_offset == NULL
 	  || !FRAME_GROWS_DOWNWARD))
     {
       warning (0, "-fsanitize=address not supported for this target");
-      flag_asan = 0;
+      flag_sanitize &= ~SANITIZE_ADDRESS;
     }
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error

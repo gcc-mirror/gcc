@@ -257,6 +257,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	    }
 	  if (jump_func->value.pass_through.agg_preserved)
 	    fprintf (f, ", agg_preserved");
+	  if (jump_func->value.pass_through.type_preserved)
+	    fprintf (f, ", type_preserved");
 	  fprintf (f, "\n");
 	}
       else if (type == IPA_JF_ANCESTOR)
@@ -268,6 +270,8 @@ ipa_print_node_jump_functions_for_edge (FILE *f, struct cgraph_edge *cs)
 	  print_generic_expr (f, jump_func->value.ancestor.type, 0);
 	  if (jump_func->value.ancestor.agg_preserved)
 	    fprintf (f, ", agg_preserved");
+	  if (jump_func->value.ancestor.type_preserved)
+	    fprintf (f, ", type_preserved");
 	  fprintf (f, "\n");
 	}
 
@@ -367,10 +371,25 @@ static void
 ipa_set_jf_known_type (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
 		       tree base_type, tree component_type)
 {
+  gcc_assert (TREE_CODE (component_type) == RECORD_TYPE
+	      && TYPE_BINFO (component_type));
   jfunc->type = IPA_JF_KNOWN_TYPE;
   jfunc->value.known_type.offset = offset,
   jfunc->value.known_type.base_type = base_type;
   jfunc->value.known_type.component_type = component_type;
+}
+
+/* Set JFUNC to be a copy of another jmp (to be used by jump function
+   combination code).  The two functions will share their rdesc.  */
+
+static void
+ipa_set_jf_cst_copy (struct ipa_jump_func *dst,
+		     struct ipa_jump_func *src)
+
+{
+  gcc_checking_assert (src->type == IPA_JF_CONST);
+  dst->type = IPA_JF_CONST;
+  dst->value.constant = src->value.constant;
 }
 
 /* Set JFUNC to be a constant jmp function.  */
@@ -406,13 +425,14 @@ ipa_set_jf_constant (struct ipa_jump_func *jfunc, tree constant,
 /* Set JFUNC to be a simple pass-through jump function.  */
 static void
 ipa_set_jf_simple_pass_through (struct ipa_jump_func *jfunc, int formal_id,
-				bool agg_preserved)
+				bool agg_preserved, bool type_preserved)
 {
   jfunc->type = IPA_JF_PASS_THROUGH;
   jfunc->value.pass_through.operand = NULL_TREE;
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = NOP_EXPR;
   jfunc->value.pass_through.agg_preserved = agg_preserved;
+  jfunc->value.pass_through.type_preserved = type_preserved;
 }
 
 /* Set JFUNC to be an arithmetic pass through jump function.  */
@@ -426,19 +446,22 @@ ipa_set_jf_arith_pass_through (struct ipa_jump_func *jfunc, int formal_id,
   jfunc->value.pass_through.formal_id = formal_id;
   jfunc->value.pass_through.operation = operation;
   jfunc->value.pass_through.agg_preserved = false;
+  jfunc->value.pass_through.type_preserved = false;
 }
 
 /* Set JFUNC to be an ancestor jump function.  */
 
 static void
 ipa_set_ancestor_jf (struct ipa_jump_func *jfunc, HOST_WIDE_INT offset,
-		     tree type, int formal_id, bool agg_preserved)
+		     tree type, int formal_id, bool agg_preserved,
+		     bool type_preserved)
 {
   jfunc->type = IPA_JF_ANCESTOR;
   jfunc->value.ancestor.formal_id = formal_id;
   jfunc->value.ancestor.offset = offset;
   jfunc->value.ancestor.type = type;
   jfunc->value.ancestor.agg_preserved = agg_preserved;
+  jfunc->value.ancestor.type_preserved = type_preserved;
 }
 
 /* Extract the acual BINFO being described by JFUNC which must be a known type
@@ -612,13 +635,16 @@ check_stmt_for_type_change (ao_ref *ao ATTRIBUTE_UNUSED, tree vdef, void *data)
 
 
 
-/* Like detect_type_change but with extra argument COMP_TYPE which will become
-   the component type part of new JFUNC of dynamic type change is detected and
-   the new base type is identified.  */
+/* Detect whether the dynamic type of ARG of COMP_TYPE has changed (before
+   callsite CALL) by looking for assignments to its virtual table pointer.  If
+   it is, return true and fill in the jump function JFUNC with relevant type
+   information or set it to unknown.  ARG is the object itself (not a pointer
+   to it, unless dereferenced).  BASE is the base of the memory access as
+   returned by get_ref_base_and_extent, as is the offset.  */
 
 static bool
-detect_type_change_1 (tree arg, tree base, tree comp_type, gimple call,
-		      struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
+detect_type_change (tree arg, tree base, tree comp_type, gimple call,
+		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
 {
   struct type_change_info tci;
   ao_ref ao;
@@ -628,7 +654,12 @@ detect_type_change_1 (tree arg, tree base, tree comp_type, gimple call,
 		       || handled_component_p (arg));
   /* Const calls cannot call virtual methods through VMT and so type changes do
      not matter.  */
-  if (!flag_devirtualize || !gimple_vuse (call))
+  if (!flag_devirtualize || !gimple_vuse (call)
+      /* Be sure expected_type is polymorphic.  */
+      || !comp_type
+      || TREE_CODE (comp_type) != RECORD_TYPE
+      || !TYPE_BINFO (comp_type)
+      || !BINFO_VTABLE (TYPE_BINFO (comp_type)))
     return false;
 
   ao_ref_init (&ao, arg);
@@ -658,40 +689,23 @@ detect_type_change_1 (tree arg, tree base, tree comp_type, gimple call,
   return true;
 }
 
-/* Detect whether the dynamic type of ARG has changed (before callsite CALL) by
-   looking for assignments to its virtual table pointer.  If it is, return true
-   and fill in the jump function JFUNC with relevant type information or set it
-   to unknown.  ARG is the object itself (not a pointer to it, unless
-   dereferenced).  BASE is the base of the memory access as returned by
-   get_ref_base_and_extent, as is the offset.  */
-
-static bool
-detect_type_change (tree arg, tree base, gimple call,
-		    struct ipa_jump_func *jfunc, HOST_WIDE_INT offset)
-{
-  return detect_type_change_1 (arg, base, TREE_TYPE (arg), call, jfunc, offset);
-}
-
 /* Like detect_type_change but ARG is supposed to be a non-dereferenced pointer
    SSA name (its dereference will become the base and the offset is assumed to
    be zero).  */
 
 static bool
-detect_type_change_ssa (tree arg, gimple call, struct ipa_jump_func *jfunc)
+detect_type_change_ssa (tree arg, tree comp_type,
+			gimple call, struct ipa_jump_func *jfunc)
 {
-  tree comp_type;
-
   gcc_checking_assert (TREE_CODE (arg) == SSA_NAME);
   if (!flag_devirtualize
-      || !POINTER_TYPE_P (TREE_TYPE (arg))
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) != RECORD_TYPE)
+      || !POINTER_TYPE_P (TREE_TYPE (arg)))
     return false;
 
-  comp_type = TREE_TYPE (TREE_TYPE (arg));
   arg = build2 (MEM_REF, ptr_type_node, arg,
 		build_int_cst (ptr_type_node, 0));
 
-  return detect_type_change_1 (arg, arg, comp_type, call, jfunc, 0);
+  return detect_type_change (arg, arg, comp_type, call, jfunc, 0);
 }
 
 /* Callback of walk_aliased_vdefs.  Flags that it has been invoked to the
@@ -967,7 +981,8 @@ static void
 compute_complex_assign_jump_func (struct ipa_node_params *info,
 				  struct param_analysis_info *parms_ainfo,
 				  struct ipa_jump_func *jfunc,
-				  gimple call, gimple stmt, tree name)
+				  gimple call, gimple stmt, tree name,
+				  tree param_type)
 {
   HOST_WIDE_INT offset, size, max_size;
   tree op1, tc_ssa, base, ssa;
@@ -1005,12 +1020,17 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
 	  ipa_set_jf_arith_pass_through (jfunc, index, op2,
 					 gimple_assign_rhs_code (stmt));
 	}
-      else if (gimple_assign_single_p (stmt)
-	       && !detect_type_change_ssa (tc_ssa, call, jfunc))
+      else if (gimple_assign_single_p (stmt))
 	{
 	  bool agg_p = parm_ref_data_pass_through_p (&parms_ainfo[index],
 						     call, tc_ssa);
-	  ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
+	  bool type_p = false;
+
+	  if (param_type && POINTER_TYPE_P (param_type))
+	    type_p = !detect_type_change_ssa (tc_ssa, TREE_TYPE (param_type),
+					      call, jfunc);
+	  if (type_p || jfunc->type == IPA_JF_UNKNOWN)
+	    ipa_set_jf_simple_pass_through (jfunc, index, agg_p, type_p);
 	}
       return;
     }
@@ -1033,13 +1053,17 @@ compute_complex_assign_jump_func (struct ipa_node_params *info,
       || offset < 0)
     return;
 
-  /* Dynamic types are changed only in constructors and destructors and  */
+  /* Dynamic types are changed in constructors and destructors.  */
   index = ipa_get_param_decl_index (info, SSA_NAME_VAR (ssa));
-  if (index >= 0
-      && !detect_type_change (op1, base, call, jfunc, offset))
-    ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (op1), index,
-			 parm_ref_data_pass_through_p (&parms_ainfo[index],
-						       call, ssa));
+  if (index >= 0 && param_type && POINTER_TYPE_P (param_type))
+    {
+      bool type_p = !detect_type_change (op1, base, TREE_TYPE (param_type),
+					 call, jfunc, offset);
+      if (type_p || jfunc->type == IPA_JF_UNKNOWN)
+	ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (op1), index,
+			     parm_ref_data_pass_through_p (&parms_ainfo[index],
+							   call, ssa), type_p);
+    }
 }
 
 /* Extract the base, offset and MEM_REF expression from a statement ASSIGN if
@@ -1112,7 +1136,7 @@ static void
 compute_complex_ancestor_jump_func (struct ipa_node_params *info,
 				    struct param_analysis_info *parms_ainfo,
 				    struct ipa_jump_func *jfunc,
-				    gimple call, gimple phi)
+				    gimple call, gimple phi, tree param_type)
 {
   HOST_WIDE_INT offset;
   gimple assign, cond;
@@ -1163,26 +1187,36 @@ compute_complex_ancestor_jump_func (struct ipa_node_params *info,
 	return;
     }
 
-  if (!detect_type_change (obj, expr, call, jfunc, offset))
+  bool type_p = false;
+  if (param_type && POINTER_TYPE_P (param_type))
+    type_p = !detect_type_change (obj, expr, TREE_TYPE (param_type),
+				  call, jfunc, offset);
+  if (type_p || jfunc->type == IPA_JF_UNKNOWN)
     ipa_set_ancestor_jf (jfunc, offset, TREE_TYPE (obj), index,
 			 parm_ref_data_pass_through_p (&parms_ainfo[index],
-						       call, parm));
+						       call, parm), type_p);
 }
 
 /* Given OP which is passed as an actual argument to a called function,
    determine if it is possible to construct a KNOWN_TYPE jump function for it
-   and if so, create one and store it to JFUNC.  */
+   and if so, create one and store it to JFUNC.
+   EXPECTED_TYPE represents a type the argument should be in  */
 
 static void
 compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
-			      gimple call)
+			      gimple call, tree expected_type)
 {
   HOST_WIDE_INT offset, size, max_size;
   tree base;
 
   if (!flag_devirtualize
       || TREE_CODE (op) != ADDR_EXPR
-      || TREE_CODE (TREE_TYPE (TREE_TYPE (op))) != RECORD_TYPE)
+      || TREE_CODE (TREE_TYPE (TREE_TYPE (op))) != RECORD_TYPE
+      /* Be sure expected_type is polymorphic.  */
+      || !expected_type
+      || TREE_CODE (expected_type) != RECORD_TYPE
+      || !TYPE_BINFO (expected_type)
+      || !BINFO_VTABLE (TYPE_BINFO (expected_type)))
     return;
 
   op = TREE_OPERAND (op, 0);
@@ -1194,11 +1228,11 @@ compute_known_type_jump_func (tree op, struct ipa_jump_func *jfunc,
       || is_global_var (base))
     return;
 
-  if (!TYPE_BINFO (TREE_TYPE (base))
-      || detect_type_change (op, base, call, jfunc, offset))
+  if (detect_type_change (op, base, expected_type, call, jfunc, offset))
     return;
 
-  ipa_set_jf_known_type (jfunc, offset, TREE_TYPE (base), TREE_TYPE (op));
+  ipa_set_jf_known_type (jfunc, offset, TREE_TYPE (base),
+			 expected_type);
 }
 
 /* Inspect the given TYPE and return true iff it has the same structure (the
@@ -1469,6 +1503,37 @@ determine_known_aggregate_parts (gimple call, tree arg,
     }
 }
 
+static tree
+ipa_get_callee_param_type (struct cgraph_edge *e, int i)
+{
+  int n;
+  tree type = (e->callee
+	       ? TREE_TYPE (e->callee->symbol.decl)
+	       : gimple_call_fntype (e->call_stmt));
+  tree t = TYPE_ARG_TYPES (type);
+
+  for (n = 0; n < i; n++)
+    {
+      if (!t)
+        break;
+      t = TREE_CHAIN (t);
+    }
+  if (t)
+    return TREE_VALUE (t);
+  if (!e->callee)
+    return NULL;
+  t = DECL_ARGUMENTS (e->callee->symbol.decl);
+  for (n = 0; n < i; n++)
+    {
+      if (!t)
+	return NULL;
+      t = TREE_CHAIN (t);
+    }
+  if (t)
+    return TREE_TYPE (t);
+  return NULL;
+}
+
 /* Compute jump function for all arguments of callsite CS and insert the
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
@@ -1493,6 +1558,7 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
     {
       struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, n);
       tree arg = gimple_call_arg (call, n);
+      tree param_type = ipa_get_callee_param_type (cs, n);
 
       if (is_gimple_ip_invariant (arg))
 	ipa_set_jf_constant (jfunc, arg, cs);
@@ -1507,7 +1573,7 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 	     for cycle.  */
 	  if (parm_preserved_before_stmt_p (&parms_ainfo[index], call, arg))
 	    {
-	      ipa_set_jf_simple_pass_through (jfunc, index, false);
+	      ipa_set_jf_simple_pass_through (jfunc, index, false, false);
 	      continue;
 	    }
 	}
@@ -1516,13 +1582,19 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 	  if (SSA_NAME_IS_DEFAULT_DEF (arg))
 	    {
 	      int index = ipa_get_param_decl_index (info, SSA_NAME_VAR (arg));
-	      if (index >= 0
-		  && !detect_type_change_ssa (arg, call, jfunc))
+	      if (index >= 0)
 		{
-		  bool agg_p;
+		  bool agg_p, type_p;
 		  agg_p = parm_ref_data_pass_through_p (&parms_ainfo[index],
 							call, arg);
-		  ipa_set_jf_simple_pass_through (jfunc, index, agg_p);
+		  if (param_type && POINTER_TYPE_P (param_type))
+		    type_p = !detect_type_change_ssa (arg, TREE_TYPE (param_type),
+						      call, jfunc);
+		  else
+		    type_p = false;
+		  if (type_p || jfunc->type == IPA_JF_UNKNOWN)
+		    ipa_set_jf_simple_pass_through (jfunc, index, agg_p,
+						    type_p);
 		}
 	    }
 	  else
@@ -1530,14 +1602,18 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
 	      gimple stmt = SSA_NAME_DEF_STMT (arg);
 	      if (is_gimple_assign (stmt))
 		compute_complex_assign_jump_func (info, parms_ainfo, jfunc,
-						  call, stmt, arg);
+						  call, stmt, arg, param_type);
 	      else if (gimple_code (stmt) == GIMPLE_PHI)
 		compute_complex_ancestor_jump_func (info, parms_ainfo, jfunc,
-						    call, stmt);
+						    call, stmt, param_type);
 	    }
 	}
       else
-	compute_known_type_jump_func (arg, jfunc, call);
+	compute_known_type_jump_func (arg, jfunc, call,
+				      param_type
+				      && POINTER_TYPE_P (param_type)
+				      ? TREE_TYPE (param_type)
+				      : NULL);
 
       if ((jfunc->type != IPA_JF_PASS_THROUGH
 	      || !ipa_get_jf_pass_through_agg_preserved (jfunc))
@@ -1881,7 +1957,8 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
       anc_offset = 0;
       index = ipa_get_param_decl_index (info, SSA_NAME_VAR (obj));
       gcc_assert (index >= 0);
-      if (detect_type_change_ssa (obj, call, &jfunc))
+      if (detect_type_change_ssa (obj, obj_type_ref_class (target),
+				  call, &jfunc))
 	return;
     }
   else
@@ -1895,7 +1972,8 @@ ipa_analyze_virtual_call_uses (struct cgraph_node *node,
       index = ipa_get_param_decl_index (info,
 					SSA_NAME_VAR (TREE_OPERAND (expr, 0)));
       gcc_assert (index >= 0);
-      if (detect_type_change (obj, expr, call, &jfunc, anc_offset))
+      if (detect_type_change (obj, expr, obj_type_ref_class (target),
+			      call, &jfunc, anc_offset))
 	return;
     }
 
@@ -2107,7 +2185,7 @@ ipa_intraprocedural_devirtualization (gimple call)
 
   jfunc.type = IPA_JF_UNKNOWN;
   compute_known_type_jump_func (OBJ_TYPE_REF_OBJECT (otr), &jfunc,
-				call);
+				call, obj_type_ref_class (otr));
   if (jfunc.type != IPA_JF_KNOWN_TYPE)
     return NULL_TREE;
   binfo = ipa_binfo_from_known_type_jfunc (&jfunc);
@@ -2129,6 +2207,12 @@ combine_known_type_and_ancestor_jfs (struct ipa_jump_func *src,
 {
   HOST_WIDE_INT combined_offset;
   tree combined_type;
+
+  if (!ipa_get_jf_ancestor_type_preserved (dst))
+    {
+      dst->type = IPA_JF_UNKNOWN;
+      return;
+    }
 
   combined_offset = ipa_get_jf_known_type_offset (src)
     + ipa_get_jf_ancestor_offset (dst);
@@ -2196,6 +2280,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
 	      dst->value.ancestor.agg_preserved &=
 		src->value.pass_through.agg_preserved;
+	      dst->value.ancestor.type_preserved &=
+		src->value.pass_through.type_preserved;
 	    }
 	  else if (src->type == IPA_JF_ANCESTOR)
 	    {
@@ -2203,6 +2289,8 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      dst->value.ancestor.offset += src->value.ancestor.offset;
 	      dst->value.ancestor.agg_preserved &=
 		src->value.ancestor.agg_preserved;
+	      dst->value.ancestor.type_preserved &=
+		src->value.ancestor.type_preserved;
 	    }
 	  else
 	    dst->type = IPA_JF_UNKNOWN;
@@ -2216,16 +2304,69 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      && (dst->value.pass_through.formal_id
 		  < ipa_get_cs_argument_count (top)))
 	    {
-	      bool agg_p;
 	      int dst_fid = dst->value.pass_through.formal_id;
 	      src = ipa_get_ith_jump_func (top, dst_fid);
-	      agg_p = dst->value.pass_through.agg_preserved;
+	      bool dst_agg_p = ipa_get_jf_pass_through_agg_preserved (dst);
 
-	      dst->type = src->type;
-	      dst->value = src->value;
+	      switch (src->type)
+		{
+		case IPA_JF_UNKNOWN:
+		  dst->type = IPA_JF_UNKNOWN;
+		  break;
+		case IPA_JF_KNOWN_TYPE:
+		  ipa_set_jf_known_type (dst,
+					 ipa_get_jf_known_type_offset (src),
+					 ipa_get_jf_known_type_base_type (src),
+					 ipa_get_jf_known_type_base_type (src));
+		  break;
+		case IPA_JF_CONST:
+		  ipa_set_jf_cst_copy (dst, src);
+		  break;
+
+		case IPA_JF_PASS_THROUGH:
+		  {
+		    int formal_id = ipa_get_jf_pass_through_formal_id (src);
+		    enum tree_code operation;
+		    operation = ipa_get_jf_pass_through_operation (src);
+
+		    if (operation == NOP_EXPR)
+		      {
+			bool agg_p, type_p;
+			agg_p = dst_agg_p
+			  && ipa_get_jf_pass_through_agg_preserved (src);
+			type_p = ipa_get_jf_pass_through_type_preserved (src)
+			  && ipa_get_jf_pass_through_type_preserved (dst);
+			ipa_set_jf_simple_pass_through (dst, formal_id,
+							agg_p, type_p);
+		      }
+		    else
+		      {
+			tree operand = ipa_get_jf_pass_through_operand (src);
+			ipa_set_jf_arith_pass_through (dst, formal_id, operand,
+						       operation);
+		      }
+		    break;
+		  }
+		case IPA_JF_ANCESTOR:
+		  {
+		    bool agg_p, type_p;
+		    agg_p = dst_agg_p
+		      && ipa_get_jf_ancestor_agg_preserved (src);
+		    type_p = ipa_get_jf_ancestor_type_preserved (src)
+		      && ipa_get_jf_pass_through_type_preserved (dst);
+		    ipa_set_ancestor_jf (dst,
+					 ipa_get_jf_ancestor_offset (src),
+					 ipa_get_jf_ancestor_type (src),
+					 ipa_get_jf_ancestor_formal_id (src),
+					 agg_p, type_p);
+		    break;
+		  }
+		default:
+		  gcc_unreachable ();
+		}
 
 	      if (src->agg.items
-		  && (agg_p || !src->agg.by_ref))
+		  && (dst_agg_p || !src->agg.by_ref))
 		{
 		  /* Currently we do not produce clobber aggregate jump
 		     functions, replace with merging when we do.  */
@@ -2233,14 +2374,6 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 
 		  dst->agg.by_ref = src->agg.by_ref;
 		  dst->agg.items = vec_safe_copy (src->agg.items);
-		}
-
-	      if (!agg_p)
-		{
-		  if (dst->type == IPA_JF_PASS_THROUGH)
-		    dst->value.pass_through.agg_preserved = false;
-		  else if (dst->type == IPA_JF_ANCESTOR)
-		    dst->value.ancestor.agg_preserved = false;
 		}
 	    }
 	  else
@@ -3703,6 +3836,7 @@ ipa_write_jump_function (struct output_block *ob,
 	  streamer_write_uhwi (ob, jump_func->value.pass_through.formal_id);
 	  bp = bitpack_create (ob->main_stream);
 	  bp_pack_value (&bp, jump_func->value.pass_through.agg_preserved, 1);
+	  bp_pack_value (&bp, jump_func->value.pass_through.type_preserved, 1);
 	  streamer_write_bitpack (&bp);
 	}
       else
@@ -3717,6 +3851,7 @@ ipa_write_jump_function (struct output_block *ob,
       streamer_write_uhwi (ob, jump_func->value.ancestor.formal_id);
       bp = bitpack_create (ob->main_stream);
       bp_pack_value (&bp, jump_func->value.ancestor.agg_preserved, 1);
+      bp_pack_value (&bp, jump_func->value.ancestor.type_preserved, 1);
       streamer_write_bitpack (&bp);
       break;
     }
@@ -3774,7 +3909,9 @@ ipa_read_jump_function (struct lto_input_block *ib,
 	  int formal_id =  streamer_read_uhwi (ib);
 	  struct bitpack_d bp = streamer_read_bitpack (ib);
 	  bool agg_preserved = bp_unpack_value (&bp, 1);
-	  ipa_set_jf_simple_pass_through (jump_func, formal_id, agg_preserved);
+	  bool type_preserved = bp_unpack_value (&bp, 1);
+	  ipa_set_jf_simple_pass_through (jump_func, formal_id, agg_preserved,
+					  type_preserved);
 	}
       else
 	{
@@ -3791,8 +3928,10 @@ ipa_read_jump_function (struct lto_input_block *ib,
 	int formal_id = streamer_read_uhwi (ib);
 	struct bitpack_d bp = streamer_read_bitpack (ib);
 	bool agg_preserved = bp_unpack_value (&bp, 1);
+	bool type_preserved = bp_unpack_value (&bp, 1);
 
-	ipa_set_ancestor_jf (jump_func, offset, type, formal_id, agg_preserved);
+	ipa_set_ancestor_jf (jump_func, offset, type, formal_id, agg_preserved,
+			     type_preserved);
 	break;
       }
     }

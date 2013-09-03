@@ -1088,8 +1088,20 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 
   if (flags & TDF_RAW)
     {
-      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
-                       gimple_omp_body (gs));
+      const char *kind;
+      switch (gimple_omp_for_kind (gs))
+	{
+	case GF_OMP_FOR_KIND_FOR:
+	  kind = "";
+	  break;
+	case GF_OMP_FOR_KIND_SIMD:
+	  kind = " simd";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      dump_gimple_fmt (buffer, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
+		       kind, gimple_omp_body (gs));
       dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       dump_gimple_fmt (buffer, spc, flags, " >,");
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
@@ -1105,7 +1117,17 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
   else
     {
-      pp_string (buffer, "#pragma omp for");
+      switch (gimple_omp_for_kind (gs))
+	{
+	case GF_OMP_FOR_KIND_FOR:
+	  pp_string (buffer, "#pragma omp for");
+	  break;
+	case GF_OMP_FOR_KIND_SIMD:
+	  pp_string (buffer, "#pragma omp simd");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
 	{
