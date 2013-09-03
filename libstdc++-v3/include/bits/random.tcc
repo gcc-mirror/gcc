@@ -1291,7 +1291,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator()(_UniformRandomNumberGenerator& __urng,
 		 const param_type& __p)
       {
-	typedef typename std::gamma_distribution<result_type>::param_type
+	typedef typename std::gamma_distribution<double>::param_type
 	  param_type;
 	
 	const double __y =
