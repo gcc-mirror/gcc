@@ -1,3 +1,7 @@
+2013-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-15.C: Fix testcase.
+
 2013-09-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/57656
