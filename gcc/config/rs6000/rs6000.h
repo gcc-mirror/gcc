@@ -2142,6 +2142,9 @@ extern int toc_initialized;
 	      fputs ("\t.lglobl\t.", FILE);				\
 	      RS6000_OUTPUT_BASENAME (FILE, alias);			\
 	      putc ('\n', FILE);					\
+	      fputs ("\t.lglobl\t", FILE);				\
+	      RS6000_OUTPUT_BASENAME (FILE, alias);			\
+	      putc ('\n', FILE);					\
 	    }								\
 	  fputs ("\t.set\t.", FILE);					\
 	  RS6000_OUTPUT_BASENAME (FILE, alias);				\

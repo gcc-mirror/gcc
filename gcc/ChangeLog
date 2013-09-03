@@ -1,3 +1,8 @@
+2013-09-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): Emit lglobl for
+	function descriptor.
+
 2013-09-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-affine.c (add_elt_to_tree): Fix association issue,
