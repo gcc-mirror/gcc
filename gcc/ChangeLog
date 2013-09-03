@@ -1,3 +1,9 @@
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR lto/58285
+	* tree-streamer-out.c: Include tm.h.
+	* Makefile.in (tree-streamer-out.o): Depend on $(TM_H).
+
 2013-09-03  Jan Hubicka  <jh@suse.cz>
 
 	* tree-profile.c (tree_profiling): Cleanup CFG when done.
