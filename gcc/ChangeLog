@@ -1,3 +1,11 @@
+2013-09-03  Meador Inge  <meadori@codesourcery.com>
+
+	Revert:
+
+	2013-08-30  Meador Inge  <meadori@codesourcery.com>
+
+	* tree-vrp.c (check_array_ref): Bail out on zero-length arrays.
+
 2013-09-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): Emit lglobl for
