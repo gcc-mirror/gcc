@@ -1,3 +1,12 @@
+2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58302
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&):
+	Fix typo in template argument.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/58302.cc: New.
+
 2013-09-02  Tim Shen  <timshen91@gmail.com>
 
 	* regex_automaton.h: Rearrange _NFA's layout.
