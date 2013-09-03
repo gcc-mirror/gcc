@@ -5965,6 +5965,55 @@ $as_echo "$gcc_cv_isl" >&6; }
   fi
 
 
+    if test "${gcc_cv_isl}" = no ; then
+
+  if test "${ENABLE_ISL_CHECK}" = yes ; then
+    _isl_saved_CFLAGS=$CFLAGS
+    _isl_saved_LDFLAGS=$LDFLAGS
+    _isl_saved_LIBS=$LIBS
+
+    CFLAGS="${_isl_saved_CFLAGS} ${islinc} ${gmpinc}"
+    LDFLAGS="${_isl_saved_LDFLAGS} ${isllibs}"
+    LIBS="${_isl_saved_LIBS} -lisl"
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for version 0.12 of ISL" >&5
+$as_echo_n "checking for version 0.12 of ISL... " >&6; }
+    if test "$cross_compiling" = yes; then :
+  gcc_cv_isl=yes
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <isl/version.h>
+   #include <string.h>
+int
+main ()
+{
+if (strncmp (isl_version (), "isl-0.12", strlen ("isl-0.12")) != 0)
+     return 1;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+  gcc_cv_isl=yes
+else
+  gcc_cv_isl=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_isl" >&5
+$as_echo "$gcc_cv_isl" >&6; }
+
+    CFLAGS=$_isl_saved_CFLAGS
+    LDFLAGS=$_isl_saved_LDFLAGS
+    LIBS=$_isl_saved_LIBS
+  fi
+
+
+    fi
   fi
 
 
