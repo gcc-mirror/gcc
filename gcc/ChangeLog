@@ -1,5 +1,10 @@
 2013-08-29  Xinliang David Li  <davidxl@google.com>
 
+	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):
+	Remove a trivial gcc_assert.
+
+2013-08-29  Xinliang David Li  <davidxl@google.com>
+
 	* tree-vect-slp.c (destroy_bb_vec_info): Data ref cleanup.
 	* tree-vect-loop.c (destroy_bb_vec_info): Ditto.
 	* tree-vect-data-refs.c (vect_compute_data_ref_alignment):

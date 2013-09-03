@@ -763,7 +763,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
           dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
         }
 
-      gcc_assert (dr->aux);
       ((dataref_aux *)dr->aux)->base_decl = base;
       ((dataref_aux *)dr->aux)->base_misaligned = true;
     }
