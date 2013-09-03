@@ -1,3 +1,11 @@
+2013-09-03  Meador Inge  <meadori@codesourcery.com>
+
+	Revert:
+
+	2013-08-30  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc.dg/Warray-bounds-11.c: New testcase.
+
 2013-09-03  David Edelsohn  <dje.gcc@gmail.com>
 
 	* lib/target-supports.exp (check_weak_available): Return true for AIX.
