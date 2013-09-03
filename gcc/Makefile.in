@@ -2186,7 +2186,7 @@ tree-streamer-in.o: tree-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \
     $(DATA_STREAMER_H) $(STREAMER_HOOKS_H) $(LTO_STREAMER_H)
 tree-streamer-out.o: tree-streamer-out.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(DIAGNOSTIC_H) $(TREE_STREAMER_H) $(DATA_STREAMER_H) \
-    $(STREAMER_HOOKS_H)
+    $(STREAMER_HOOKS_H) $(TM_H)
 streamer-hooks.o: streamer-hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
     $(STREAMER_HOOKS_H)
 lto-cgraph.o: lto-cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
