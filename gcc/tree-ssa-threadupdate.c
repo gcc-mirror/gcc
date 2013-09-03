@@ -1303,7 +1303,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
    after fixing the SSA graph.  */
 
 void
-register_jump_thread (vec<edge> path)
+register_jump_thread (vec<edge> path, bool through_joiner)
 {
   /* Convert PATH into 3 edge representation we've been using.  This
      is temporary until we convert this file to use a path representation
@@ -1312,7 +1312,7 @@ register_jump_thread (vec<edge> path)
   edge e2 = path[1];
   edge e3;
 
-  if (path.length () <= 2)
+  if (!through_joiner)
     e3 = NULL;
   else
     e3 = path[path.length () - 1];
@@ -1322,13 +1322,22 @@ register_jump_thread (vec<edge> path)
   if (e2 == NULL)
     return;
 
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      unsigned int i;
+
+      fprintf (dump_file,
+	       "  Registering jump thread %s:",
+	       through_joiner ? "(through joiner block)" : "");
+
+      for (i = 0; i < path.length (); i++)
+	fprintf (dump_file, " (%d, %d); ",
+		 path[i]->src->index, path[i]->dest->index);
+      fputc ('\n', dump_file);
+    }
+    
   if (!threaded_edges.exists ())
     threaded_edges.create (15);
-
-  if (dump_file && (dump_flags & TDF_DETAILS)
-      && e->dest != e2->src)
-    fprintf (dump_file,
-	     "  Registering jump thread around one or more intermediate blocks\n");
 
   threaded_edges.safe_push (e);
   threaded_edges.safe_push (e2);
