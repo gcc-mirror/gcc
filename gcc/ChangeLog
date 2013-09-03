@@ -1,6 +1,15 @@
 2013-09-03  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2013-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58246
+	* tree-ssa-dce.c (mark_aliased_reaching_defs_necessary_1): Properly
+	handle the dominance check inside a basic-block.
+
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2013-08-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58228
