@@ -2832,3 +2832,23 @@ runtime_proc_scan(void (*addroot)(Obj))
 {
 	addroot((Obj){(byte*)&runtime_sched, sizeof runtime_sched, 0});
 }
+
+// When a function calls a closure, it passes the closure value to
+// __go_set_closure immediately before the function call.  When a
+// function uses a closure, it calls __go_get_closure immediately on
+// function entry.  This is a hack, but it will work on any system.
+// It would be better to use the static chain register when there is
+// one.  It is also worth considering expanding these functions
+// directly in the compiler.
+
+void
+__go_set_closure(void* v)
+{
+	g->closure = v;
+}
+
+void *
+__go_get_closure(void)
+{
+	return g->closure;
+}

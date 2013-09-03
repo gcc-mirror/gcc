@@ -2263,12 +2263,11 @@ runfinq(void* dummy __attribute__ ((unused)))
 		for(; fb; fb=next) {
 			next = fb->next;
 			for(i=0; i<(uint32)fb->cnt; i++) {
-				void *params[2];
+				void *param;
 
 				f = &fb->fin[i];
-				params[0] = &f->arg;
-				params[1] = f;
-				reflect_call(f->ft, f->fn, 0, 0, params, nil);
+				param = &f->arg;
+				reflect_call(f->ft, f->fn, 0, 0, &param, nil);
 				f->fn = nil;
 				f->arg = nil;
 			}

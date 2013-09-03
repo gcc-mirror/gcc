@@ -1789,11 +1789,11 @@ class Function_type : public Type
   Function_type*
   copy_with_receiver(Type*) const;
 
-  // Return a copy of this type ignoring any receiver and adding a
-  // final closure parameter of type CLOSURE_TYPE.  This is used when
-  // creating descriptors.
+  // Return a copy of this type ignoring any receiver and using dummy
+  // names for all parameters.  This is used for thunks for method
+  // values.
   Function_type*
-  copy_with_closure(Type* closure_type) const;
+  copy_with_names() const;
 
   static Type*
   make_function_type_descriptor_type();

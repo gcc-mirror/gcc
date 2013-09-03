@@ -434,9 +434,6 @@ func (v Value) call(op string, in []Value) []Value {
 		nin++
 	}
 	firstPointer := len(in) > 0 && Kind(t.In(0).(*rtype).kind) != Ptr && v.flag&flagMethod == 0 && isMethod(v.typ)
-	if v.flag&flagMethod == 0 && !firstPointer {
-		nin++
-	}
 	params := make([]unsafe.Pointer, nin)
 	off := 0
 	if v.flag&flagMethod != 0 {
@@ -463,10 +460,6 @@ func (v Value) call(op string, in []Value) []Value {
 			params[off] = unsafe.Pointer(p)
 		}
 		off++
-	}
-	if v.flag&flagMethod == 0 && !firstPointer {
-		// Closure argument.
-		params[off] = unsafe.Pointer(&fn)
 	}
 
 	ret := make([]Value, nout)

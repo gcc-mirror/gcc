@@ -46,10 +46,9 @@ static void siftdown(int32);
 
 // Ready the goroutine e.data.
 static void
-ready(int64 now, Eface e, void *closure)
+ready(int64 now, Eface e)
 {
 	USED(now);
-	USED(closure);
 
 	runtime_ready(e.__object);
 }
@@ -166,7 +165,7 @@ timerproc(void* dummy __attribute__ ((unused)))
 {
 	int64 delta, now;
 	Timer *t;
-	void (*f)(int64, Eface, void *);
+	void (*f)(int64, Eface);
 	Eface arg;
 
 	for(;;) {
@@ -197,7 +196,8 @@ timerproc(void* dummy __attribute__ ((unused)))
 			runtime_unlock(&timers);
 			if(raceenabled)
 				runtime_raceacquire(t);
-			f(now, arg, &t->fv);
+			__go_set_closure(t->fv);
+			f(now, arg);
 			runtime_lock(&timers);
 		}
 		if(delta < 0) {
