@@ -629,6 +629,12 @@ typedef struct _stmt_vec_info {
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
 
+struct dataref_aux {
+  tree base_decl;
+  bool base_misaligned;
+  int misalignment;
+};
+
 #define VECT_MAX_COST 1000
 
 /* The maximum number of intermediate steps required in multi-step type
@@ -831,11 +837,31 @@ destroy_cost_data (void *data)
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
+inline void
+set_dr_misalignment (struct data_reference *dr, int val)
+{
+  dataref_aux *data_aux = (dataref_aux *) dr->aux;
+
+  if (!data_aux)
+    {
+      data_aux = XCNEW (dataref_aux);
+      dr->aux = data_aux;
+    }
+
+  data_aux->misalignment = val;
+}
+
+inline int
+dr_misalignment (struct data_reference *dr)
+{
+  gcc_assert (dr->aux);
+  return ((dataref_aux *) dr->aux)->misalignment;
+}
 
 /* Reflects actual alignment of first access in the vectorized loop,
    taking into account peeling/versioning if applied.  */
-#define DR_MISALIGNMENT(DR)   ((int) (size_t) (DR)->aux)
-#define SET_DR_MISALIGNMENT(DR, VAL)   ((DR)->aux = (void *) (size_t) (VAL))
+#define DR_MISALIGNMENT(DR) dr_misalignment (DR)
+#define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 
 /* Return TRUE if the data access is aligned, and FALSE otherwise.  */
 
@@ -1014,5 +1040,6 @@ void vect_pattern_recog (loop_vec_info, bb_vec_info);
 
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
+void vect_destroy_datarefs (loop_vec_info, bb_vec_info);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

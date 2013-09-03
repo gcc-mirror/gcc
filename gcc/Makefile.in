@@ -2656,7 +2656,7 @@ tree-vect-data-refs.o: tree-vect-data-refs.c $(CONFIG_H) $(SYSTEM_H) \
 tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DUMPFILE_H) $(TM_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) \
    $(CFGLOOP_H) $(TREE_PASS_H) $(TREE_VECTORIZER_H) \
-   $(TREE_PRETTY_PRINT_H)
+   $(TREE_PRETTY_PRINT_H) $(DBGCNT_H)
 vtable-verify.o: vtable-verify.c vtable-verify.h $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) cp/cp-tree.h $(TM_P_H) \
    $(BASIC_BLOCK_H) output.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(TREE_PASS_H) \
