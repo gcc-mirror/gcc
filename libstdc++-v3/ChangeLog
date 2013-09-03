@@ -1,3 +1,12 @@
+2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58302
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&):
+	Fix typo in template argument.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/58302.cc: New.
+
 2013-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	* src/c++98/compatibility.cc (_ZTIe): Use
