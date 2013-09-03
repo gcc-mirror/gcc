@@ -3,6 +3,15 @@
 	Backport from mainline
 	2013-08-30  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58228
+	* tree-vect-data-refs.c (vect_analyze_data_ref_access): Do not
+	allow invariant loads in nested loop vectorization.
+
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2013-08-30  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/58010
 	* tree-vect-loop.c (vect_create_epilog_for_reduction): Remove
 	assert that we have a loop-closed PHI.
