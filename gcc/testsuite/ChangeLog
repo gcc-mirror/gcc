@@ -1,3 +1,8 @@
+2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24926
+	* g++.dg/parse/access11.C: New.
+
 2013-09-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/warn/weak1.C: Skip on AIX.
