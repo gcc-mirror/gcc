@@ -9138,35 +9138,27 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
   // Because do_type will return an error type and thus prevent future
   // errors, check for that case now to ensure that the error gets
   // reported.
-  if (this->get_function_type() == NULL)
+  Function_type* fntype = this->get_function_type();
+  if (fntype == NULL)
     {
       if (!this->fn_->type()->is_error())
 	this->report_error(_("expected function"));
       return Expression::make_error(loc);
     }
 
-  // Recognize a call to a builtin function.
-  Func_expression* fne = this->fn_->func_expression();
-  if (fne != NULL
-      && fne->named_object()->is_function_declaration()
-      && fne->named_object()->func_declaration_value()->type()->is_builtin())
-    return new Builtin_call_expression(gogo, this->fn_, this->args_,
-				       this->is_varargs_, loc);
-
   // Handle an argument which is a call to a function which returns
   // multiple results.
   if (this->args_ != NULL
       && this->args_->size() == 1
-      && this->args_->front()->call_expression() != NULL
-      && this->fn_->type()->function_type() != NULL)
+      && this->args_->front()->call_expression() != NULL)
     {
-      Function_type* fntype = this->fn_->type()->function_type();
       size_t rc = this->args_->front()->call_expression()->result_count();
       if (rc > 1
-	  && fntype->parameters() != NULL
-	  && (fntype->parameters()->size() == rc
-	      || (fntype->is_varargs()
-		  && fntype->parameters()->size() - 1 <= rc)))
+	  && ((fntype->parameters() != NULL
+               && (fntype->parameters()->size() == rc
+                   || (fntype->is_varargs()
+                       && fntype->parameters()->size() - 1 <= rc)))
+              || fntype->is_builtin()))
 	{
 	  Call_expression* call = this->args_->front()->call_expression();
 	  Expression_list* args = new Expression_list;
@@ -9180,6 +9172,11 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	}
     }
 
+  // Recognize a call to a builtin function.
+  if (fntype->is_builtin())
+    return new Builtin_call_expression(gogo, this->fn_, this->args_,
+				       this->is_varargs_, loc);
+
   // If this call returns multiple results, create a temporary
   // variable for each result.
   size_t rc = this->result_count();
@@ -9188,8 +9185,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
       std::vector<Temporary_statement*>* temps =
 	new std::vector<Temporary_statement*>;
       temps->reserve(rc);
-      const Typed_identifier_list* results =
-	this->fn_->type()->function_type()->results();
+      const Typed_identifier_list* results = fntype->results();
       for (Typed_identifier_list::const_iterator p = results->begin();
 	   p != results->end();
 	   ++p)
@@ -9204,10 +9200,8 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 
   // Handle a call to a varargs function by packaging up the extra
   // parameters.
-  if (this->fn_->type()->function_type() != NULL
-      && this->fn_->type()->function_type()->is_varargs())
+  if (fntype->is_varargs())
     {
-      Function_type* fntype = this->fn_->type()->function_type();
       const Typed_identifier_list* parameters = fntype->parameters();
       go_assert(parameters != NULL && !parameters->empty());
       Type* varargs_type = parameters->back().type();
