@@ -1249,32 +1249,32 @@ cxx_pretty_printer::declaration_specifiers (tree t)
       double
       void  */
 
-static void
-pp_cxx_simple_type_specifier (cxx_pretty_printer *pp, tree t)
+void
+cxx_pretty_printer::simple_type_specifier (tree t)
 {
   switch (TREE_CODE (t))
     {
     case RECORD_TYPE:
     case UNION_TYPE:
     case ENUMERAL_TYPE:
-      pp_cxx_qualified_id (pp, t);
+      pp_cxx_qualified_id (this, t);
       break;
 
     case TEMPLATE_TYPE_PARM:
     case TEMPLATE_TEMPLATE_PARM:
     case TEMPLATE_PARM_INDEX:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
-      pp_cxx_unqualified_id (pp, t);
+      pp_cxx_unqualified_id (this, t);
       break;
 
     case TYPENAME_TYPE:
-      pp_cxx_ws_string (pp, "typename");
-      pp_cxx_nested_name_specifier (pp, TYPE_CONTEXT (t));
-      pp_cxx_unqualified_id (pp, TYPE_NAME (t));
+      pp_cxx_ws_string (this, "typename");
+      pp_cxx_nested_name_specifier (this, TYPE_CONTEXT (t));
+      pp_cxx_unqualified_id (this, TYPE_NAME (t));
       break;
 
     default:
-      pp_c_type_specifier (pp, t);
+      c_pretty_printer::simple_type_specifier (t);
       break;
     }
 }
@@ -1300,7 +1300,7 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
     case TYPE_DECL:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
       pp_cxx_cv_qualifier_seq (pp, t);
-      pp_cxx_simple_type_specifier (pp, t);
+      pp->simple_type_specifier (t);
       break;
 
     case METHOD_TYPE:
@@ -2427,5 +2427,4 @@ cxx_pretty_printer::cxx_pretty_printer ()
 
   type_specifier_seq = (pp_fun) pp_cxx_type_specifier_seq;
   parameter_list = (pp_fun) pp_cxx_parameter_declaration_clause;
-  simple_type_specifier = (pp_fun) pp_cxx_simple_type_specifier;
 }

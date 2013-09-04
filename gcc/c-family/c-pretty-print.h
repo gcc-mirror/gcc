@@ -69,6 +69,7 @@ struct c_pretty_printer : pretty_printer
 
   virtual void declaration (tree);
   virtual void declaration_specifiers (tree);
+  virtual void simple_type_specifier (tree);
   virtual void function_specifier (tree);
   virtual void storage_class_specifier (tree);
   virtual void declarator (tree);
@@ -88,7 +89,6 @@ struct c_pretty_printer : pretty_printer
   c_pretty_print_fn type_specifier_seq;
   c_pretty_print_fn ptr_operator;
   c_pretty_print_fn parameter_list;
-  c_pretty_print_fn simple_type_specifier;
 };
 
 #define pp_c_tree_identifier(PPI, ID)              \
@@ -97,7 +97,6 @@ struct c_pretty_printer : pretty_printer
 #define pp_type_specifier_seq(PP, D)    (PP)->type_specifier_seq (PP, D)
 #define pp_ptr_operator(PP, D)          (PP)->ptr_operator (PP, D)
 #define pp_parameter_list(PP, T)        (PP)->parameter_list (PP, T)
-#define pp_simple_type_specifier(PP, T) (PP)->simple_type_specifier (PP, T)
 
 void pp_c_whitespace (c_pretty_printer *);
 void pp_c_left_paren (c_pretty_printer *);
@@ -124,7 +123,6 @@ void pp_c_cv_qualifiers (c_pretty_printer *pp, int qualifiers, bool func_type);
 void pp_c_type_qualifier_list (c_pretty_printer *, tree);
 void pp_c_parameter_type_list (c_pretty_printer *, tree);
 void pp_c_specifier_qualifier_list (c_pretty_printer *, tree);
-void pp_c_type_specifier (c_pretty_printer *, tree);
 /* Expressions.  */
 void pp_c_logical_or_expression (c_pretty_printer *, tree);
 void pp_c_expression_list (c_pretty_printer *, tree);
