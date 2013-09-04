@@ -1,3 +1,8 @@
+2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58305
+	* g++.dg/warn/deprecated-8.C: New.
+
 2013-09-03  Jeff Law  <law@redhat.com>
 
 	* tree-ssa/ssa-dom-thread-3.c: Update due to changes in debug
