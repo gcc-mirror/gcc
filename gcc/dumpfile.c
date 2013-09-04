@@ -450,7 +450,9 @@ dump_finish (int phase)
   if (phase < 0)
     return;
   dfi = get_dump_file_info (phase);
-  if (dfi->pstream)
+  if (dfi->pstream && (!dfi->pfilename
+                       || (strcmp("stderr", dfi->pfilename) != 0
+                           && strcmp("stdout", dfi->pfilename) != 0)))
     fclose (dfi->pstream);
 
   if (dfi->alt_stream && strcmp("stderr", dfi->alt_filename) != 0

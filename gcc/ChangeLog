@@ -1,3 +1,7 @@
+2013-09-04  Teresa Johnson  <tejohnson@google.com>
+
+	* dumpfile.c (dump_finish): Don't close stderr/stdout.
+
 2013-09-04  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vaddvq_<su>64): Fix return types.
