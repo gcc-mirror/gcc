@@ -99,6 +99,7 @@
 %{mpid} \
 %{mint-register=*} \
 %{mgcc-abi:-mgcc-abi} %{!mgcc-abi:-mrx-abi} \
+%{mcpu=*} \
 "
 
 #undef  LIB_SPEC
