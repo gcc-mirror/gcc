@@ -1,3 +1,10 @@
+2013-09-04  Easwaran Raman  <eraman@google.com>
+
+	PR middle-end/57370
+	PR tree-optimization/58011
+	* gfortran.dg/reassoc_12.f90: New testcase.
+	* gcc.dg/tree-ssa/reassoc-31.c: New testcase.
+
 2013-09-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.dg/attr-weakref-1.c: Skip on AIX.
