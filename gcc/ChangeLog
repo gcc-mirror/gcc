@@ -1,3 +1,8 @@
+2013-09-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.h (ASM_OUTPUT_DEF_FROM_DECLS): Only emit
+	lglobl if not weak.
+
 2013-09-04  Easwaran Raman  <eraman@google.com>
 
 	PR middle-end/57370
