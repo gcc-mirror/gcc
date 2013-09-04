@@ -1,20 +1,20 @@
 2013-03-16  Yvan Roux <yvan.roux@linaro.org>
 
-        * include/private/gcconfig.h (AARCH64): New macro (defined only if
-        __aarch64__).
-        (CPP_WORDSZ): Define for AArch64.
-        (MACH_TYPE): Likewise.
-        (ALIGNMENT): Likewise.
-        (HBLKSIZE): Likewise.
-        (OS_TYPE): Likewise.
-        (LINUX_STACKBOTTOM): Likewise.
-        (USE_GENERIC_PUSH_REGS): Likewise.
-        (DYNAMIC_LOADING): Likewise.
-        (DATASTART): Likewise.
-        (DATAEND): Likewise.
-        (STACKBOTTOM): Likewise.
-        (NOSYS): Likewise.
-        (mach_type_known): Define for AArch64 and comment update.
+	* include/private/gcconfig.h (AARCH64): New macro (defined only if
+	__aarch64__).
+	(CPP_WORDSZ): Define for AArch64.
+	(MACH_TYPE): Likewise.
+	(ALIGNMENT): Likewise.
+	(HBLKSIZE): Likewise.
+	(OS_TYPE): Likewise.
+	(LINUX_STACKBOTTOM): Likewise.
+	(USE_GENERIC_PUSH_REGS): Likewise.
+	(DYNAMIC_LOADING): Likewise.
+	(DATASTART): Likewise.
+	(DATAEND): Likewise.
+	(STACKBOTTOM): Likewise.
+	(NOSYS): Likewise.
+	(mach_type_known): Define for AArch64 and comment update.
 
 2013-03-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
@@ -432,7 +432,7 @@
 	* configure: Regenerate.
 
 2008-09-26  Peter O'Gorman  <pogma@thewrittenword.com>
-            Steve Ellcey  <sje@cup.hp.com>
+	    Steve Ellcey  <sje@cup.hp.com>
 
 	* configure: Regenerate for new libtool.
 	* Makefile.in: Ditto.
@@ -1073,7 +1073,7 @@
 
 2004-04-25  Andreas Jaeger  <aj@suse.de>
 
-        * mark.c (GC_mark_from): Use pointer as prefetch argument.
+	* mark.c (GC_mark_from): Use pointer as prefetch argument.
 
 2004-04-06  H.J. Lu  <hongjiu.lu@intel.com>
 
