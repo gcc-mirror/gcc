@@ -2963,7 +2963,8 @@ ipa-profile.o : ipa-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRA
    ipa-inline.h
 ipa-devirt.o : ipa-devirt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
-   $(IPA_UTILS_H) $(HASH_TABLE_H) ipa-inline.h ipa-utils.h $(TREE_PRETTY_PRINT_H)
+   $(IPA_UTILS_H) $(HASH_TABLE_H) ipa-inline.h ipa-utils.h $(TREE_PRETTY_PRINT_H) \
+   $(DIAGNOSTIC_H)
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
