@@ -305,7 +305,10 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
     }
 }
 
-/* type-specifier:
+/* simple-type-specifier:
+     type-specifier
+
+   type-specifier:
       void
       char
       short
@@ -328,17 +331,17 @@ pp_c_pointer (c_pretty_printer *pp, tree t)
       __vector__   */
 
 void
-pp_c_type_specifier (c_pretty_printer *pp, tree t)
+c_pretty_printer::simple_type_specifier (tree t)
 {
   const enum tree_code code = TREE_CODE (t);
   switch (code)
     {
     case ERROR_MARK:
-      pp->translate_string ("<type-error>");
+      translate_string ("<type-error>");
       break;
 
     case IDENTIFIER_NODE:
-      pp_c_identifier (pp, IDENTIFIER_POINTER (t));
+      pp_c_identifier (this, IDENTIFIER_POINTER (t));
       break;
 
     case VOID_TYPE:
@@ -349,7 +352,7 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
       if (TYPE_NAME (t))
 	{
 	  t = TYPE_NAME (t);
-	  pp_c_type_specifier (pp, t);
+	  simple_type_specifier (t);
 	}
       else
 	{
@@ -360,11 +363,11 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 	    t = c_common_type_for_mode (TYPE_MODE (t), TYPE_UNSIGNED (t));
 	  if (TYPE_NAME (t))
 	    {
-	      pp_c_type_specifier (pp, t);
+	      simple_type_specifier (t);
 	      if (TYPE_PRECISION (t) != prec)
 		{
-		  pp_colon (pp);
-		  pp_decimal_int (pp, prec);
+		  pp_colon (this);
+		  pp_decimal_int (this, prec);
 		}
 	    }
 	  else
@@ -372,52 +375,52 @@ pp_c_type_specifier (c_pretty_printer *pp, tree t)
 	      switch (code)
 		{
 		case INTEGER_TYPE:
-		  pp->translate_string (TYPE_UNSIGNED (t)
-                                        ? "<unnamed-unsigned:"
-                                        : "<unnamed-signed:");
+		  translate_string (TYPE_UNSIGNED (t)
+                                    ? "<unnamed-unsigned:"
+                                    : "<unnamed-signed:");
 		  break;
 		case REAL_TYPE:
-		  pp->translate_string ("<unnamed-float:");
+		  translate_string ("<unnamed-float:");
 		  break;
 		case FIXED_POINT_TYPE:
-		  pp->translate_string ("<unnamed-fixed:");
+		  translate_string ("<unnamed-fixed:");
 		  break;
 		default:
 		  gcc_unreachable ();
 		}
-	      pp_decimal_int (pp, prec);
-	      pp_greater (pp);
+	      pp_decimal_int (this, prec);
+	      pp_greater (this);
 	    }
 	}
       break;
 
     case TYPE_DECL:
       if (DECL_NAME (t))
-	pp->id_expression (t);
+	id_expression (t);
       else
-	pp->translate_string ("<typedef-error>");
+	translate_string ("<typedef-error>");
       break;
 
     case UNION_TYPE:
     case RECORD_TYPE:
     case ENUMERAL_TYPE:
       if (code == UNION_TYPE)
-	pp_c_ws_string (pp, "union");
+	pp_c_ws_string (this, "union");
       else if (code == RECORD_TYPE)
-	pp_c_ws_string (pp, "struct");
+	pp_c_ws_string (this, "struct");
       else if (code == ENUMERAL_TYPE)
-	pp_c_ws_string (pp, "enum");
+	pp_c_ws_string (this, "enum");
       else
-	pp->translate_string ("<tag-error>");
+	translate_string ("<tag-error>");
 
       if (TYPE_NAME (t))
-	pp->id_expression (TYPE_NAME (t));
+	id_expression (TYPE_NAME (t));
       else
-	pp->translate_string ("<anonymous>");
+	translate_string ("<anonymous>");
       break;
 
     default:
-      pp_unsupported_tree (pp, t);
+      pp_unsupported_tree (this, t);
       break;
     }
 }
@@ -483,7 +486,7 @@ pp_c_specifier_qualifier_list (c_pretty_printer *pp, tree t)
       break;
 
     default:
-      pp_simple_type_specifier (pp, t);
+      pp->simple_type_specifier (t);
       break;
     }
   if ((pp->flags & pp_c_flag_gnu_v3) && code != POINTER_TYPE)
@@ -2328,7 +2331,6 @@ c_pretty_printer::c_pretty_printer ()
   type_specifier_seq        = pp_c_specifier_qualifier_list;
   ptr_operator              = pp_c_pointer;
   parameter_list            = pp_c_parameter_type_list;
-  simple_type_specifier     = pp_c_type_specifier;
 }
 
 
