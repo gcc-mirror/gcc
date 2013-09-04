@@ -542,17 +542,19 @@ already_processed_vertex_p (bitmap processed, int v)
 	  || !bitmap_bit_p (remaining_stmts, v));
 }
 
-/* Returns NULL when there is no anti-dependence among the successors
-   of vertex V, otherwise returns the edge with the anti-dep.  */
+/* Returns NULL when there is no anti-dependence or output-dependence
+   among the successors of vertex V, otherwise returns the edge with the
+   dependency.  */
 
 static struct graph_edge *
-has_anti_dependence (struct vertex *v)
+has_anti_or_output_dependence (struct vertex *v)
 {
   struct graph_edge *e;
 
   if (v->succ)
     for (e = v->succ; e; e = e->succ_next)
-      if (RDGE_TYPE (e) == anti_dd)
+      if (RDGE_TYPE (e) == anti_dd
+	  || RDGE_TYPE (e) == output_dd)
 	return e;
 
   return NULL;
@@ -604,11 +606,10 @@ mark_nodes_having_upstream_mem_writes (struct graph *rdg)
 		|| predecessor_has_mem_write (rdg, &(rdg->vertices[x]))
 		/* In anti dependences the read should occur before
 		   the write, this is why both the read and the write
-		   should be placed in the same partition.  */
-		|| has_anti_dependence (&(rdg->vertices[x])))
-	      {
-		bitmap_set_bit (upstream_mem_writes, x);
-	      }
+		   should be placed in the same partition.  In output
+		   dependences the writes order need to be preserved.  */
+		|| has_anti_or_output_dependence (&(rdg->vertices[x])))
+	      bitmap_set_bit (upstream_mem_writes, x);
 	  }
 
 	nodes.release ();
@@ -637,7 +638,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
   use_operand_p use_p;
   struct vertex *x = &(rdg->vertices[u]);
   gimple stmt = RDGV_STMT (x);
-  struct graph_edge *anti_dep = has_anti_dependence (x);
+  struct graph_edge *anti_dep = has_anti_or_output_dependence (x);
 
   /* Keep in the same partition the destination of an antidependence,
      because this is a store to the exact same location.  Putting this

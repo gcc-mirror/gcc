@@ -292,13 +292,10 @@ extern int dot_symbols;
 #define OPTION_GLIBC  (linux_libc == LIBC_GLIBC)
 #endif
 
-/* glibc has float and long double forms of math functions.  */
-#undef  TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS (OPTION_GLIBC)
-
-/* Whether we have sincos that follows the GNU extension.  */
-#undef  TARGET_HAS_SINCOS
-#define TARGET_HAS_SINCOS (OPTION_GLIBC)
+/* Determine what functions are present at the runtime;
+   this includes full c99 runtime and sincos.  */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION linux_android_libc_has_function
 
 #undef  TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()			\

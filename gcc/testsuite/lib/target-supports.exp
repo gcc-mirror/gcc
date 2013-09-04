@@ -226,6 +226,12 @@ proc check_weak_available { } {
         return 1
     }
 
+    # All AIX targets should support it
+
+    if { [istarget *-*-aix*] } {
+        return 1
+    }
+
     # All solaris2 targets should support it
 
     if { [istarget *-*-solaris2*] } {
@@ -1720,6 +1726,15 @@ proc check_effective_target_x32 { } {
 	int dummy[sizeof (int) == 4
 		  && sizeof (void *) == 4
 		  && sizeof (long) == 4 ? 1 : -1] = { __x86_64__ };
+    }]
+}
+
+# Return 1 if we're generating 32-bit integers using default
+# options, 0 otherwise.
+
+proc check_effective_target_int32 { } {
+    return [check_no_compiler_messages int32 object {
+	int dummy[sizeof (int) == 4 ? 1 : -1];
     }]
 }
 

@@ -87,3 +87,6 @@ extern void vms_c_register_includes (const char *, const char *, int);
 
 /* Special VMS debugger symbol to record the entry point.  */
 #define VMS_DEBUG_MAIN_POINTER "TRANSFER$BREAK$GO"
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

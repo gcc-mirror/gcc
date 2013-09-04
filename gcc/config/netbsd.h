@@ -139,6 +139,9 @@ along with GCC; see the file COPYING3.  If not see
 #undef LIBGCC_SPEC
 #define LIBGCC_SPEC NETBSD_LIBGCC_SPEC
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 /* When building shared libraries, the initialization and finalization 
    functions for the library are .init and .fini respectively.  */
 

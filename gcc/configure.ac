@@ -4219,8 +4219,9 @@ esac
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$cpu_type" in
-  alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze | mips \
-  | pa | rs6000 | score | sparc | spu | tilegx | tilepro | xstormy16 | xtensa)
+  aarch64 | alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze \
+  | mips | pa | rs6000 | score | sparc | spu | tilegx | tilepro | xstormy16 \
+  | xtensa)
     insn="nop"
     ;;
   ia64 | s390)
@@ -5180,6 +5181,7 @@ if test "x$subdirs" != x; then
 	done
 fi
 echo "source ${srcdir}/gdbinit.in" >> .gdbinit
+echo "python import sys; sys.path.append('${srcdir}'); import gdbhooks" >> .gdbinit
 
 gcc_tooldir='$(libsubdir)/$(libsubdir_to_prefix)$(target_noncanonical)'
 AC_SUBST(gcc_tooldir)

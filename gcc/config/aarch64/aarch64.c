@@ -7932,6 +7932,55 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 }
 
 static bool
+aarch64_evpc_dup (struct expand_vec_perm_d *d)
+{
+  rtx (*gen) (rtx, rtx, rtx);
+  rtx out = d->target;
+  rtx in0;
+  enum machine_mode vmode = d->vmode;
+  unsigned int i, elt, nelt = d->nelt;
+  rtx lane;
+
+  /* TODO: This may not be big-endian safe.  */
+  if (BYTES_BIG_ENDIAN)
+    return false;
+
+  elt = d->perm[0];
+  for (i = 1; i < nelt; i++)
+    {
+      if (elt != d->perm[i])
+	return false;
+    }
+
+  /* The generic preparation in aarch64_expand_vec_perm_const_1
+     swaps the operand order and the permute indices if it finds
+     d->perm[0] to be in the second operand.  Thus, we can always
+     use d->op0 and need not do any extra arithmetic to get the
+     correct lane number.  */
+  in0 = d->op0;
+  lane = GEN_INT (elt);
+
+  switch (vmode)
+    {
+    case V16QImode: gen = gen_aarch64_dup_lanev16qi; break;
+    case V8QImode: gen = gen_aarch64_dup_lanev8qi; break;
+    case V8HImode: gen = gen_aarch64_dup_lanev8hi; break;
+    case V4HImode: gen = gen_aarch64_dup_lanev4hi; break;
+    case V4SImode: gen = gen_aarch64_dup_lanev4si; break;
+    case V2SImode: gen = gen_aarch64_dup_lanev2si; break;
+    case V2DImode: gen = gen_aarch64_dup_lanev2di; break;
+    case V4SFmode: gen = gen_aarch64_dup_lanev4sf; break;
+    case V2SFmode: gen = gen_aarch64_dup_lanev2sf; break;
+    case V2DFmode: gen = gen_aarch64_dup_lanev2df; break;
+    default:
+      return false;
+    }
+
+  emit_insn (gen (out, in0, lane));
+  return true;
+}
+
+static bool
 aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 {
   rtx rperm[MAX_VECT_LEN], sel;
@@ -7987,6 +8036,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
       else if (aarch64_evpc_uzp (d))
 	return true;
       else if (aarch64_evpc_trn (d))
+	return true;
+      else if (aarch64_evpc_dup (d))
 	return true;
       return aarch64_evpc_tbl (d);
     }

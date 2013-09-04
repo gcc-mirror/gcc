@@ -4397,6 +4397,13 @@ gfc_intrinsic_sub_interface (gfc_code *c, int error_flag)
       c->resolved_sym->attr.elemental = isym->elemental;
     }
 
+  if (gfc_do_concurrent_flag && !isym->pure)
+    {
+      gfc_error ("Subroutine call to intrinsic '%s' in DO CONCURRENT "
+		 "block at %L is not PURE", name, &c->loc);
+      return MATCH_ERROR;
+    }
+
   if (gfc_pure (NULL) && !isym->pure)
     {
       gfc_error ("Subroutine call to intrinsic '%s' at %L is not PURE", name,

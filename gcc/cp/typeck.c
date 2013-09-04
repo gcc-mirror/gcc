@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
+#include "c-family/c-ubsan.h"
 #include "params.h"
 
 static tree pfn_from_ptrmemfunc (tree);
@@ -3882,6 +3883,7 @@ cp_build_binary_op (location_t location,
   tree final_type = 0;
 
   tree result;
+  tree orig_type = NULL;
 
   /* Nonzero if this is an operation like MIN or MAX which can
      safely be computed in short if both args are promoted shorts.
@@ -3905,6 +3907,15 @@ cp_build_binary_op (location_t location,
   /* Apply default conversions.  */
   op0 = orig_op0;
   op1 = orig_op1;
+
+  /* Remember whether we're doing / or %.  */
+  bool doing_div_or_mod = false;
+
+  /* Remember whether we're doing << or >>.  */
+  bool doing_shift = false;
+
+  /* Tree holding instrumentation expression.  */
+  tree instrument_expr = NULL;
 
   if (code == TRUTH_AND_EXPR || code == TRUTH_ANDIF_EXPR
       || code == TRUTH_OR_EXPR || code == TRUTH_ORIF_EXPR
@@ -4086,8 +4097,12 @@ cp_build_binary_op (location_t location,
 	{
 	  enum tree_code tcode0 = code0, tcode1 = code1;
 	  tree cop1 = fold_non_dependent_expr_sfinae (op1, tf_none);
+	  cop1 = maybe_constant_value (cop1);
 
-	  warn_for_div_by_zero (location, maybe_constant_value (cop1));
+	  if (tcode0 == INTEGER_TYPE)
+	    doing_div_or_mod = true;
+
+	  warn_for_div_by_zero (location, cop1);
 
 	  if (tcode0 == COMPLEX_TYPE || tcode0 == VECTOR_TYPE)
 	    tcode0 = TREE_CODE (TREE_TYPE (TREE_TYPE (op0)));
@@ -4125,8 +4140,11 @@ cp_build_binary_op (location_t location,
     case FLOOR_MOD_EXPR:
       {
 	tree cop1 = fold_non_dependent_expr_sfinae (op1, tf_none);
+	cop1 = maybe_constant_value (cop1);
 
-	warn_for_div_by_zero (location, maybe_constant_value (cop1));
+	if (code0 == INTEGER_TYPE)
+	  doing_div_or_mod = true;
+	warn_for_div_by_zero (location, cop1);
       }
 
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
@@ -4180,6 +4198,7 @@ cp_build_binary_op (location_t location,
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
+	  doing_shift = true;
 	  if (TREE_CODE (const_op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (const_op1, integer_zero_node))
@@ -4227,6 +4246,7 @@ cp_build_binary_op (location_t location,
 	  if (TREE_CODE (const_op1) != INTEGER_CST)
 	    const_op1 = op1;
 	  result_type = type0;
+	  doing_shift = true;
 	  if (TREE_CODE (const_op1) == INTEGER_CST)
 	    {
 	      if (tree_int_cst_lt (const_op1, integer_zero_node))
@@ -4796,8 +4816,9 @@ cp_build_binary_op (location_t location,
 
       if (shorten && none_complex)
 	{
+	  orig_type = result_type;
 	  final_type = result_type;
-	  result_type = shorten_binary_op (result_type, op0, op1, 
+	  result_type = shorten_binary_op (result_type, op0, op1,
 					   shorten == -1);
 	}
 
@@ -4863,6 +4884,36 @@ cp_build_binary_op (location_t location,
   if (build_type == NULL_TREE)
     build_type = result_type;
 
+  if ((flag_sanitize & SANITIZE_UNDEFINED)
+      && !processing_template_decl
+      && current_function_decl != 0
+      && (doing_div_or_mod || doing_shift))
+    {
+      /* OP0 and/or OP1 might have side-effects.  */
+      op0 = cp_save_expr (op0);
+      op1 = cp_save_expr (op1);
+      op0 = maybe_constant_value (fold_non_dependent_expr_sfinae (op0,
+								  tf_none));
+      op1 = maybe_constant_value (fold_non_dependent_expr_sfinae (op1,
+								  tf_none));
+      if (doing_div_or_mod)
+	{
+	  /* For diagnostics we want to use the promoted types without
+	     shorten_binary_op.  So convert the arguments to the
+	     original result_type.  */
+	  tree cop0 = op0;
+	  tree cop1 = op1;
+	  if (orig_type != NULL && result_type != orig_type)
+	    {
+	      cop0 = cp_convert (orig_type, op0, complain);
+	      cop1 = cp_convert (orig_type, op1, complain);
+	    }
+	  instrument_expr = ubsan_instrument_division (location, cop0, cop1);
+	}
+      else if (doing_shift)
+	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
+    }
+
   result = build2 (resultcode, build_type, op0, op1);
   result = fold_if_not_in_template (result);
   if (final_type != 0)
@@ -4872,6 +4923,10 @@ cp_build_binary_op (location_t location,
       && !TREE_OVERFLOW_P (op0) 
       && !TREE_OVERFLOW_P (op1))
     overflow_warning (location, result);
+
+  if ((flag_sanitize & SANITIZE_UNDEFINED) && instrument_expr != NULL)
+    result = fold_build2 (COMPOUND_EXPR, TREE_TYPE (result),
+			  instrument_expr, result);
 
   return result;
 }

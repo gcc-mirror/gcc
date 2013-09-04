@@ -285,6 +285,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #define TARGET_POSIX_IO
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 extern GTY(()) tree solaris_pending_aligns;
 extern GTY(()) tree solaris_pending_inits;
 extern GTY(()) tree solaris_pending_finis;

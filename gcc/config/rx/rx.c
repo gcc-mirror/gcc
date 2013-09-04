@@ -1021,9 +1021,9 @@ rx_gen_move_template (rtx * operands, bool is_movu)
       gcc_assert (! is_movu);
 
       if (REG_P (src) && REG_P (dest) && (REGNO (dest) == REGNO (src) + 1))
-	sprintf (out_template, "mov.L\t%H1, %H0 | mov.L\t%1, %0");
+	sprintf (out_template, "mov.L\t%%H1, %%H0 ! mov.L\t%%1, %%0");
       else
-	sprintf (out_template, "mov.L\t%1, %0 | mov.L\t%H1, %H0");
+	sprintf (out_template, "mov.L\t%%1, %%0 ! mov.L\t%%H1, %%H0");
     }
   else
     sprintf (out_template, "%s%s\t%s, %s", is_movu ? "movu" : "mov",
@@ -3270,7 +3270,7 @@ rx_ok_to_inline (tree caller, tree callee)
 static bool
 rx_enable_lra (void)
 {
-  return TARGET_ENABLE_LRA || 1;
+  return TARGET_ENABLE_LRA;
 }
 
 

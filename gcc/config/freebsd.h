@@ -52,6 +52,9 @@ along with GCC; see the file COPYING3.  If not see
 #define LINK_SSP_SPEC "%{fstack-protector|fstack-protector-all:-lssp_nonshared}"
 #endif
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 /* Use --as-needed -lgcc_s for eh support.  */
 #ifdef HAVE_LD_AS_NEEDED
 #define USE_LD_AS_NEEDED 1

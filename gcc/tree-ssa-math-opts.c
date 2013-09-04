@@ -1432,7 +1432,8 @@ execute_cse_sincos (void)
 		CASE_FLT_FN (BUILT_IN_SIN):
 		CASE_FLT_FN (BUILT_IN_CEXPI):
 		  /* Make sure we have either sincos or cexp.  */
-		  if (!TARGET_HAS_SINCOS && !TARGET_C99_FUNCTIONS)
+		  if (!targetm.libc_has_function (function_c99_math_complex)
+		      && !targetm.libc_has_function (function_sincos))
 		    break;
 
 		  arg = gimple_call_arg (stmt, 0);

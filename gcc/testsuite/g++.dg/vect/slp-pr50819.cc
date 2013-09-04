@@ -49,5 +49,5 @@ const & v2) {
   res = res + s*(v1+v2);
 }
 
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 2 "slp" } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp" } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */

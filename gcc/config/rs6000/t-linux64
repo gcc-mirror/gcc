@@ -25,8 +25,8 @@
 # it doesn't tell anything about the 32bit libraries on those systems.  Set
 # MULTILIB_OSDIRNAMES according to what is found on the target.
 
-MULTILIB_OPTIONS        = m64/m32
-MULTILIB_DIRNAMES       = 64 32
-MULTILIB_EXTRA_OPTS     = fPIC
-MULTILIB_OSDIRNAMES	= ../lib64$(call if_multiarch,:powerpc64-linux-gnu)
-MULTILIB_OSDIRNAMES    += $(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:powerpc-linux-gnu)
+MULTILIB_OPTIONS    := m64/m32
+MULTILIB_DIRNAMES   := 64 32
+MULTILIB_EXTRA_OPTS := 
+MULTILIB_OSDIRNAMES := m64=../lib64$(call if_multiarch,:powerpc64-linux-gnu)
+MULTILIB_OSDIRNAMES += m32=$(if $(wildcard $(shell echo $(SYSTEM_HEADER_DIR))/../../usr/lib32),../lib32,../lib)$(call if_multiarch,:powerpc-linux-gnu)

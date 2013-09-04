@@ -351,6 +351,7 @@ cp/vtable-class-hierarchy.o: cp/vtable-class-hierarchy.c \
 cp/name-lookup.o: cp/name-lookup.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(TM_H) $(CXX_TREE_H) $(TIMEVAR_H) gt-cp-name-lookup.h $(PARAMS_H) \
 	$(DIAGNOSTIC_CORE_H) $(FLAGS_H) debug.h pointer-set.h
+cp/lambda.o: cp/lambda.c $(CXX_TREE_H) $(CGRAPH_H) $(VEC_H) $(SYSTEM_H) coretypes.h
 
 cp/cxx-pretty-print.o: cp/cxx-pretty-print.c $(CXX_PRETTY_PRINT_H) \
   $(CONFIG_H) $(SYSTEM_H) $(TM_H) coretypes.h $(CXX_TREE_H) tree-pretty-print.h

@@ -1825,7 +1825,7 @@ destroy_bb_vec_info (bb_vec_info bb_vinfo)
         free_stmt_vec_info (stmt);
     }
 
-  free_data_refs (BB_VINFO_DATAREFS (bb_vinfo));
+  vect_destroy_datarefs (NULL, bb_vinfo);
   free_dependence_relations (BB_VINFO_DDRS (bb_vinfo));
   BB_VINFO_GROUPED_STORES (bb_vinfo).release ();
   slp_instances = BB_VINFO_SLP_INSTANCES (bb_vinfo);

@@ -482,7 +482,7 @@ struct constraint_expr
 };
 
 /* Use 0x8000... as special unknown offset.  */
-#define UNKNOWN_OFFSET ((HOST_WIDE_INT)-1 << (HOST_BITS_PER_WIDE_INT-1))
+#define UNKNOWN_OFFSET HOST_WIDE_INT_MIN
 
 typedef struct constraint_expr ce_s;
 static void get_constraint_for_1 (tree, vec<ce_s> *, bool, bool);

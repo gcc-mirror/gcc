@@ -345,7 +345,6 @@ extern struct omp_region *new_omp_region (basic_block, enum gimple_code,
 					  struct omp_region *);
 extern void free_omp_regions (void);
 void omp_expand_local (basic_block);
-extern tree find_omp_clause (tree, enum omp_clause_code);
 tree copy_var_decl (tree, tree, tree);
 
 /*---------------------------------------------------------------------------
@@ -751,7 +750,7 @@ bool may_be_nonaddressable_p (tree expr);
 
 /* In tree-ssa-threadupdate.c.  */
 extern bool thread_through_all_blocks (bool);
-extern void register_jump_thread (edge, edge, edge);
+extern void register_jump_thread (vec<edge>, bool);
 
 /* In gimplify.c  */
 tree force_gimple_operand_1 (tree, gimple_seq *, gimple_predicate, tree);

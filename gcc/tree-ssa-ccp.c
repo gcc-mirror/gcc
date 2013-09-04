@@ -271,12 +271,7 @@ get_default_value (tree var)
 	  val.mask = -1;
 	}
     }
-  else if (is_gimple_assign (stmt)
-	   /* Value-returning GIMPLE_CALL statements assign to
-	      a variable, and are treated similarly to GIMPLE_ASSIGN.  */
-	   || (is_gimple_call (stmt)
-	       && gimple_call_lhs (stmt) != NULL_TREE)
-	   || gimple_code (stmt) == GIMPLE_PHI)
+  else if (is_gimple_assign (stmt))
     {
       tree cst;
       if (gimple_assign_single_p (stmt)
@@ -287,9 +282,19 @@ get_default_value (tree var)
 	  val.value = cst;
 	}
       else
-	/* Any other variable defined by an assignment or a PHI node
-	   is considered UNDEFINED.  */
-	val.lattice_val = UNDEFINED;
+	{
+	  /* Any other variable defined by an assignment is considered
+	     UNDEFINED.  */
+	  val.lattice_val = UNDEFINED;
+	}
+    }
+  else if ((is_gimple_call (stmt)
+	    && gimple_call_lhs (stmt) != NULL_TREE)
+	   || gimple_code (stmt) == GIMPLE_PHI)
+    {
+      /* A variable defined by a call or a PHI node is considered
+	 UNDEFINED.  */
+      val.lattice_val = UNDEFINED;
     }
   else
     {
@@ -634,6 +639,22 @@ likely_value (gimple stmt)
 
   if (has_constant_operand)
     all_undefined_operands = false;
+
+  if (has_undefined_operand
+      && code == GIMPLE_CALL
+      && gimple_call_internal_p (stmt))
+    switch (gimple_call_internal_fn (stmt))
+      {
+	/* These 3 builtins use the first argument just as a magic
+	   way how to find out a decl uid.  */
+      case IFN_GOMP_SIMD_LANE:
+      case IFN_GOMP_SIMD_VF:
+      case IFN_GOMP_SIMD_LAST_LANE:
+	has_undefined_operand = false;
+	break;
+      default:
+	break;
+      }
 
   /* If the operation combines operands like COMPLEX_EXPR make sure to
      not mark the result UNDEFINED if only one part of the result is

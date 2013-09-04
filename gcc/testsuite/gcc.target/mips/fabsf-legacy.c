@@ -7,4 +7,4 @@ fabsf_legacy (float f)
   return __builtin_fabsf (f);
 }
 
-/* { dg-final { scan-assembler-not "\tabs\.s\t" } } */
+/* { dg-final { scan-assembler-not "\tabs\\.s\t" } } */

@@ -1315,7 +1315,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
   /* As an extension, allow conversion to complex type.  */
   else if (ARITHMETIC_TYPE_P (to))
     {
-      if (! (INTEGRAL_CODE_P (fcode) || fcode == REAL_TYPE)
+      if (! (INTEGRAL_CODE_P (fcode)
+	     || (fcode == REAL_TYPE && !(flags & LOOKUP_NO_NON_INTEGRAL)))
           || SCOPED_ENUM_P (from))
 	return NULL;
       conv = build_conv (ck_std, to, conv);
@@ -1682,7 +1683,7 @@ implicit_conversion (tree to, tree from, tree expr, bool c_cast_p,
      resolution, or after we've chosen one.  */
   flags &= (LOOKUP_ONLYCONVERTING|LOOKUP_NO_CONVERSION|LOOKUP_COPY_PARM
 	    |LOOKUP_NO_TEMP_BIND|LOOKUP_NO_RVAL_BIND|LOOKUP_PREFER_RVALUE
-	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT);
+	    |LOOKUP_NO_NARROWING|LOOKUP_PROTECT|LOOKUP_NO_NON_INTEGRAL);
 
   /* FIXME: actually we don't want warnings either, but we can't just
      have 'complain &= ~(tf_warning|tf_error)' because it would cause
@@ -7177,6 +7178,33 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
       && !check_builtin_function_arguments (fndecl, nargs, argarray))
     return error_mark_node;
 
+    /* If it is a built-in array notation function, then the return type of
+     the function is the element type of the array passed in as array 
+     notation (i.e. the first parameter of the function).  */
+  if (flag_enable_cilkplus && TREE_CODE (fn) == CALL_EXPR) 
+    {
+      enum built_in_function bif = 
+	is_cilkplus_reduce_builtin (CALL_EXPR_FN (fn));
+      if (bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ADD
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUL
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MAX
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MIN
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE
+	  || bif == BUILT_IN_CILKPLUS_SEC_REDUCE_MUTATING)
+	{ 
+	  /* for bif == BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_ZERO or
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO or
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO or 
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_NONZERO or
+	     BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND or
+             BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND
+	     The pre-defined return-type is the correct one.  */
+	  tree array_ntn = CALL_EXPR_ARG (fn, 0); 
+	  TREE_TYPE (fn) = TREE_TYPE (array_ntn); 
+	  return fn;
+	}
+    }
+
   /* Some built-in function calls will be evaluated at compile-time in
      fold ().  Set optimize to 1 when folding __builtin_constant_p inside
      a constexpr function so that fold_builtin_1 doesn't fold it to 0.  */
@@ -7415,6 +7443,14 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
   if (allocated != NULL)
     release_tree_vector (allocated);
 
+  if ((complain & tf_error)
+      && (flags & LOOKUP_DELEGATING_CONS)
+      && name == complete_ctor_identifier 
+      && TREE_CODE (ret) == CALL_EXPR
+      && (DECL_ABSTRACT_ORIGIN (TREE_OPERAND (CALL_EXPR_FN (ret), 0))
+	  == current_function_decl))
+    error ("constructor delegates to itself");
+
   return ret;
 }
 
@@ -7641,7 +7677,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       if (init)
 	{
-	  if (TREE_CODE (instance) == INDIRECT_REF
+	  if (INDIRECT_REF_P (instance)
 	      && integer_zerop (TREE_OPERAND (instance, 0)))
 	    return get_target_expr_sfinae (init, complain);
 	  init = build2 (INIT_EXPR, TREE_TYPE (instance), instance, init);

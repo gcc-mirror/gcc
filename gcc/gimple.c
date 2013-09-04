@@ -902,19 +902,21 @@ gimple_build_omp_critical (gimple_seq body, tree name)
 /* Build a GIMPLE_OMP_FOR statement.
 
    BODY is sequence of statements inside the for loop.
+   KIND is the `for' variant.
    CLAUSES, are any of the OMP loop construct's clauses: private, firstprivate,
    lastprivate, reductions, ordered, schedule, and nowait.
    COLLAPSE is the collapse count.
    PRE_BODY is the sequence of statements that are loop invariant.  */
 
 gimple
-gimple_build_omp_for (gimple_seq body, tree clauses, size_t collapse,
+gimple_build_omp_for (gimple_seq body, int kind, tree clauses, size_t collapse,
 		      gimple_seq pre_body)
 {
   gimple p = gimple_alloc (GIMPLE_OMP_FOR, 0);
   if (body)
     gimple_omp_set_body (p, body);
   gimple_omp_for_set_clauses (p, clauses);
+  gimple_omp_for_set_kind (p, kind);
   p->gimple_omp_for.collapse = collapse;
   p->gimple_omp_for.iter
       = ggc_alloc_cleared_vec_gimple_omp_for_iter (collapse);
@@ -4048,6 +4050,13 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	  if (TREE_CODE (op) == ADDR_EXPR)
 	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
 	}
+    }
+  else if (visit_addr
+	   && gimple_code (stmt) == GIMPLE_GOTO)
+    {
+      tree op = gimple_goto_dest (stmt);
+      if (TREE_CODE (op) == ADDR_EXPR)
+	ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
     }
 
   return ret;

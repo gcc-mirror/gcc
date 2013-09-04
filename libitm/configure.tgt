@@ -109,7 +109,7 @@ case "${target_cpu}" in
 	ARCH=x86
 	;;
   s390|s390x)
-	XCFLAGS="${XCFLAGS} -mzarch -mhtm -msoft-float"
+	XCFLAGS="${XCFLAGS} -mzarch -mhtm"
 	ARCH=s390
 	;;
 

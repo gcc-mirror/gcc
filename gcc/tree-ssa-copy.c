@@ -60,7 +60,13 @@ may_propagate_copy (tree dest, tree orig)
 
   /* If ORIG flows in from an abnormal edge, it cannot be propagated.  */
   if (TREE_CODE (orig) == SSA_NAME
-      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig))
+      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig)
+      /* If it is the default definition and an automatic variable then
+         we can though and it is important that we do to avoid
+	 uninitialized regular copies.  */
+      && !(SSA_NAME_IS_DEFAULT_DEF (orig)
+	   && (SSA_NAME_VAR (orig) == NULL_TREE
+	       || TREE_CODE (SSA_NAME_VAR (orig)) == VAR_DECL)))
     return false;
 
   /* If DEST is an SSA_NAME that flows from an abnormal edge, then it

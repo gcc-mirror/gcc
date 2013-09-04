@@ -5093,7 +5093,6 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 {
   gfc_ref *ref;
   gfc_symbol *assoc_sym;
-  int i;
 
   assoc_sym = associate->symtree->n.sym;
 
@@ -5104,9 +5103,8 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
   while (ref && ref->next)
     ref = ref->next;
 
-  if (selector->ts.type == BT_CLASS
-	&& CLASS_DATA (selector)->as
-	&& ref && ref->type == REF_ARRAY)
+  if (selector->ts.type == BT_CLASS && CLASS_DATA (selector)->as
+      && ref && ref->type == REF_ARRAY)
     {
       /* Ensure that the array reference type is set.  We cannot use
 	 gfc_resolve_expr at this point, so the usable parts of
@@ -5114,7 +5112,7 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
       if (ref->u.ar.type == AR_UNKNOWN)
 	{
 	  ref->u.ar.type = AR_ELEMENT;
-	  for (i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
+	  for (int i = 0; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
 	    if (ref->u.ar.dimen_type[i] == DIMEN_RANGE
 		|| ref->u.ar.dimen_type[i] == DIMEN_VECTOR
 		|| (ref->u.ar.dimen_type[i] == DIMEN_UNKNOWN
@@ -5133,37 +5131,19 @@ copy_ts_from_selector_to_associate (gfc_expr *associate, gfc_expr *selector)
 	selector->rank = 0;
     }
 
-  if (selector->ts.type != BT_CLASS)
+  if (selector->rank)
     {
-      /* The correct class container has to be available.  */
-      if (selector->rank)
-	{
-	  assoc_sym->attr.dimension = 1;
-	  assoc_sym->as = gfc_get_array_spec ();
-	  assoc_sym->as->rank = selector->rank;
-	  assoc_sym->as->type = AS_DEFERRED;
-	}
-      else
-	assoc_sym->as = NULL;
-
-      assoc_sym->ts.type = BT_CLASS;
-      assoc_sym->ts.u.derived = selector->ts.u.derived;
-      assoc_sym->attr.pointer = 1;
-      gfc_build_class_symbol (&assoc_sym->ts, &assoc_sym->attr,
-			      &assoc_sym->as, false);
+      assoc_sym->attr.dimension = 1;
+      assoc_sym->as = gfc_get_array_spec ();
+      assoc_sym->as->rank = selector->rank;
+      assoc_sym->as->type = AS_DEFERRED;
     }
   else
+    assoc_sym->as = NULL;
+
+  if (selector->ts.type == BT_CLASS)
     {
       /* The correct class container has to be available.  */
-      if (selector->rank)
-	{
-	  assoc_sym->attr.dimension = 1;
-	  assoc_sym->as = gfc_get_array_spec ();
-	  assoc_sym->as->rank = selector->rank;
-	  assoc_sym->as->type = AS_DEFERRED;
-	}
-      else
-	assoc_sym->as = NULL;
       assoc_sym->ts.type = BT_CLASS;
       assoc_sym->ts.u.derived = CLASS_DATA (selector)->ts.u.derived;
       assoc_sym->attr.pointer = 1;

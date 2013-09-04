@@ -666,3 +666,7 @@ extern rtx cc0_reg_rtx;
 #define COMPARE_FLAG_MODE HImode
 
 #define TARGET_HAVE_NAMED_SECTIONS false
+
+/* pdp11-unknown-aout target has no support of C99 runtime */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

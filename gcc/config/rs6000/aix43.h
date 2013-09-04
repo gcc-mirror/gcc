@@ -159,3 +159,6 @@ do {									\
 #define TARGET_USES_AIX64_OPT 1
 
 #define TARGET_AIX_VERSION 43
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

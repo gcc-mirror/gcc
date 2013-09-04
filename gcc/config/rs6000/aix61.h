@@ -190,10 +190,6 @@ do {									\
 #undef LD_INIT_SWITCH
 #define LD_INIT_SWITCH "-binitfini"
 
-/* AIX 5.2 has the float and long double forms of math functions.  */
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS  1
-
 #ifndef _AIX52
 extern long long int    atoll(const char *);  
 #endif

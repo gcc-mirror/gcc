@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-scalar-evolution.h"
 #include "tree-vectorizer.h"
 #include "diagnostic-core.h"
-
 /* Need to include rtl.h, expr.h, etc. for optabs.  */
 #include "expr.h"
 #include "optabs.h"
@@ -255,6 +254,15 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
     {
+      /* If user asserted safelen consecutive iterations can be
+	 executed concurrently, assume independence.  */
+      if (loop->safelen >= 2)
+	{
+	  if (loop->safelen < *max_vf)
+	    *max_vf = loop->safelen;
+	  return false;
+	}
+
       if (STMT_VINFO_GATHER_P (stmtinfo_a)
 	  || STMT_VINFO_GATHER_P (stmtinfo_b))
 	{
@@ -291,6 +299,15 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   /* Known data dependence.  */
   if (DDR_NUM_DIST_VECTS (ddr) == 0)
     {
+      /* If user asserted safelen consecutive iterations can be
+	 executed concurrently, assume independence.  */
+      if (loop->safelen >= 2)
+	{
+	  if (loop->safelen < *max_vf)
+	    *max_vf = loop->safelen;
+	  return false;
+	}
+
       if (STMT_VINFO_GATHER_P (stmtinfo_a)
 	  || STMT_VINFO_GATHER_P (stmtinfo_b))
 	{
@@ -746,14 +763,9 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
           dump_generic_expr (MSG_NOTE, TDF_SLIM, ref);
         }
 
-      DECL_ALIGN (base) = TYPE_ALIGN (vectype);
-      DECL_USER_ALIGN (base) = 1;
+      ((dataref_aux *)dr->aux)->base_decl = base;
+      ((dataref_aux *)dr->aux)->base_misaligned = true;
     }
-
-  /* At this point we assume that the base is aligned.  */
-  gcc_assert (base_aligned
-	      || (TREE_CODE (base) == VAR_DECL
-		  && DECL_ALIGN (base) >= TYPE_ALIGN (vectype)));
 
   /* If this is a backward running DR then first access in the larger
      vectype actually is N-1 elements before the address in the DR.
@@ -2254,10 +2266,17 @@ vect_analyze_data_ref_access (struct data_reference *dr)
       return false;
     }
 
-  /* Allow invariant loads in loops.  */
+  /* Allow invariant loads in not nested loops.  */
   if (loop_vinfo && integer_zerop (step))
     {
       GROUP_FIRST_ELEMENT (vinfo_for_stmt (stmt)) = NULL;
+      if (nested_in_vect_loop_p (loop, stmt))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "zero step in inner loop of nest");
+	  return false;
+	}
       return DR_IS_READ (dr);
     }
 
@@ -2930,6 +2949,7 @@ vect_analyze_data_refs (loop_vec_info loop_vinfo,
       stmt_vec_info stmt_info;
       tree base, offset, init;
       bool gather = false;
+      bool simd_lane_access = false;
       int vf;
 
 again:
@@ -2961,12 +2981,17 @@ again:
       if (!DR_BASE_ADDRESS (dr) || !DR_OFFSET (dr) || !DR_INIT (dr)
 	  || !DR_STEP (dr))
         {
-	  /* If target supports vector gather loads, see if they can't
-	     be used.  */
-	  if (loop_vinfo
-	      && DR_IS_READ (dr)
+	  bool maybe_gather
+	    = DR_IS_READ (dr)
 	      && !TREE_THIS_VOLATILE (DR_REF (dr))
-	      && targetm.vectorize.builtin_gather != NULL
+	      && targetm.vectorize.builtin_gather != NULL;
+	  bool maybe_simd_lane_access
+	    = loop_vinfo && loop->simduid;
+
+	  /* If target supports vector gather loads, or if this might be
+	     a SIMD lane access, see if they can't be used.  */
+	  if (loop_vinfo
+	      && (maybe_gather || maybe_simd_lane_access)
 	      && !nested_in_vect_loop_p (loop, stmt))
 	    {
 	      struct data_reference *newdr
@@ -2979,14 +3004,59 @@ again:
 		  && DR_STEP (newdr)
 		  && integer_zerop (DR_STEP (newdr)))
 		{
-		  dr = newdr;
-		  gather = true;
+		  if (maybe_simd_lane_access)
+		    {
+		      tree off = DR_OFFSET (newdr);
+		      STRIP_NOPS (off);
+		      if (TREE_CODE (DR_INIT (newdr)) == INTEGER_CST
+			  && TREE_CODE (off) == MULT_EXPR
+			  && tree_fits_uhwi_p (TREE_OPERAND (off, 1)))
+			{
+			  tree step = TREE_OPERAND (off, 1);
+			  off = TREE_OPERAND (off, 0);
+			  STRIP_NOPS (off);
+			  if (CONVERT_EXPR_P (off)
+			      && TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (off,
+									  0)))
+				 < TYPE_PRECISION (TREE_TYPE (off)))
+			    off = TREE_OPERAND (off, 0);
+			  if (TREE_CODE (off) == SSA_NAME)
+			    {
+			      gimple def = SSA_NAME_DEF_STMT (off);
+			      tree reft = TREE_TYPE (DR_REF (newdr));
+			      if (gimple_call_internal_p (def)
+				  && gimple_call_internal_fn (def)
+				  == IFN_GOMP_SIMD_LANE)
+				{
+				  tree arg = gimple_call_arg (def, 0);
+				  gcc_assert (TREE_CODE (arg) == SSA_NAME);
+				  arg = SSA_NAME_VAR (arg);
+				  if (arg == loop->simduid
+				      /* For now.  */
+				      && tree_int_cst_equal
+					   (TYPE_SIZE_UNIT (reft),
+					    step))
+				    {
+				      DR_OFFSET (newdr) = ssize_int (0);
+				      DR_STEP (newdr) = step;
+				      dr = newdr;
+				      simd_lane_access = true;
+				    }
+				}
+			    }
+			}
+		    }
+		  if (!simd_lane_access && maybe_gather)
+		    {
+		      dr = newdr;
+		      gather = true;
+		    }
 		}
-	      else
+	      if (!gather && !simd_lane_access)
 		free_data_ref (newdr);
 	    }
 
-	  if (!gather)
+	  if (!gather && !simd_lane_access)
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -3013,7 +3083,7 @@ again:
           if (bb_vinfo)
 	    break;
 
-	  if (gather)
+	  if (gather || simd_lane_access)
 	    free_data_ref (dr);
 	  return false;
         }
@@ -3046,7 +3116,7 @@ again:
           if (bb_vinfo)
 	    break;
 
-	  if (gather)
+	  if (gather || simd_lane_access)
 	    free_data_ref (dr);
           return false;
         }
@@ -3065,7 +3135,7 @@ again:
           if (bb_vinfo)
 	    break;
 
-	  if (gather)
+	  if (gather || simd_lane_access)
 	    free_data_ref (dr);
           return false;
 	}
@@ -3086,7 +3156,7 @@ again:
 	  if (bb_vinfo)
 	    break;
 
-	  if (gather)
+	  if (gather || simd_lane_access)
 	    free_data_ref (dr);
 	  return false;
 	}
@@ -3221,12 +3291,17 @@ again:
           if (bb_vinfo)
 	    break;
 
-	  if (gather)
+	  if (gather || simd_lane_access)
 	    free_data_ref (dr);
           return false;
         }
 
       STMT_VINFO_DATA_REF (stmt_info) = dr;
+      if (simd_lane_access)
+	{
+	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
+	  datarefs[i] = dr;
+	}
 
       /* Set vectype for STMT.  */
       scalar_type = TREE_TYPE (DR_REF (dr));
@@ -3247,7 +3322,7 @@ again:
           if (bb_vinfo)
 	    break;
 
-	  if (gather)
+	  if (gather || simd_lane_access)
 	    {
 	      STMT_VINFO_DATA_REF (stmt_info) = NULL;
 	      free_data_ref (dr);

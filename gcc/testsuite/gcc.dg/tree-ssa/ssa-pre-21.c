@@ -11,5 +11,5 @@ NumSift (long *array, unsigned long k)
 
 /* There should be only two loads left.  */
 
-/* { dg-final { scan-tree-dump-times "= \\\*\[^\n;\]*;" 2 "pre" } } */
+/* { dg-final { scan-tree-dump-times "= \\\*\[^\n;\]*;" 2 "pre" { xfail { ! size32plus } } } } */ /* xfail: PR tree-optimization/58169 */
 /* { dg-final { cleanup-tree-dump "pre" } } */

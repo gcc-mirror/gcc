@@ -1444,25 +1444,155 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
       ei_next (&ei);
 }
 
+
+/* Ensure that all hot bbs are included in a hot path through the
+   procedure. This is done by calling this function twice, once
+   with WALK_UP true (to look for paths from the entry to hot bbs) and
+   once with WALK_UP false (to look for paths from hot bbs to the exit).
+   Returns the updated value of COLD_BB_COUNT and adds newly-hot bbs
+   to BBS_IN_HOT_PARTITION.  */
+
+static unsigned int
+sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
+                    vec<basic_block> *bbs_in_hot_partition)
+{
+  /* Callers check this.  */
+  gcc_checking_assert (cold_bb_count);
+
+  /* Keep examining hot bbs while we still have some left to check
+     and there are remaining cold bbs.  */
+  vec<basic_block> hot_bbs_to_check = bbs_in_hot_partition->copy ();
+  while (! hot_bbs_to_check.is_empty ()
+         && cold_bb_count)
+    {
+      basic_block bb = hot_bbs_to_check.pop ();
+      vec<edge, va_gc> *edges = walk_up ? bb->preds : bb->succs;
+      edge e;
+      edge_iterator ei;
+      int highest_probability = 0;
+      int highest_freq = 0;
+      gcov_type highest_count = 0;
+      bool found = false;
+
+      /* Walk the preds/succs and check if there is at least one already
+         marked hot. Keep track of the most frequent pred/succ so that we
+         can mark it hot if we don't find one.  */
+      FOR_EACH_EDGE (e, ei, edges)
+        {
+          basic_block reach_bb = walk_up ? e->src : e->dest;
+
+          if (e->flags & EDGE_DFS_BACK)
+            continue;
+
+          if (BB_PARTITION (reach_bb) != BB_COLD_PARTITION)
+          {
+            found = true;
+            break;
+          }
+          /* The following loop will look for the hottest edge via
+             the edge count, if it is non-zero, then fallback to the edge
+             frequency and finally the edge probability.  */
+          if (e->count > highest_count)
+            highest_count = e->count;
+          int edge_freq = EDGE_FREQUENCY (e);
+          if (edge_freq > highest_freq)
+            highest_freq = edge_freq;
+          if (e->probability > highest_probability)
+            highest_probability = e->probability;
+        }
+
+      /* If bb is reached by (or reaches, in the case of !WALK_UP) another hot
+         block (or unpartitioned, e.g. the entry block) then it is ok. If not,
+         then the most frequent pred (or succ) needs to be adjusted.  In the
+         case where multiple preds/succs have the same frequency (e.g. a
+         50-50 branch), then both will be adjusted.  */
+      if (found)
+        continue;
+
+      FOR_EACH_EDGE (e, ei, edges)
+        {
+          if (e->flags & EDGE_DFS_BACK)
+            continue;
+          /* Select the hottest edge using the edge count, if it is non-zero,
+             then fallback to the edge frequency and finally the edge
+             probability.  */
+          if (highest_count)
+            {
+              if (e->count < highest_count)
+                continue;
+            }
+          else if (highest_freq)
+            {
+              if (EDGE_FREQUENCY (e) < highest_freq)
+                continue;
+            }
+          else if (e->probability < highest_probability)
+            continue;
+
+          basic_block reach_bb = walk_up ? e->src : e->dest;
+
+          /* We have a hot bb with an immediate dominator that is cold.
+             The dominator needs to be re-marked hot.  */
+          BB_SET_PARTITION (reach_bb, BB_HOT_PARTITION);
+          cold_bb_count--;
+
+          /* Now we need to examine newly-hot reach_bb to see if it is also
+             dominated by a cold bb.  */
+          bbs_in_hot_partition->safe_push (reach_bb);
+          hot_bbs_to_check.safe_push (reach_bb);
+        }
+    }
+
+  return cold_bb_count;
+}
+
+
 /* Find the basic blocks that are rarely executed and need to be moved to
    a separate section of the .o file (to cut down on paging and improve
    cache locality).  Return a vector of all edges that cross.  */
 
-static vec<edge> 
+static vec<edge>
 find_rarely_executed_basic_blocks_and_crossing_edges (void)
 {
   vec<edge> crossing_edges = vNULL;
   basic_block bb;
   edge e;
   edge_iterator ei;
+  unsigned int cold_bb_count = 0;
+  vec<basic_block> bbs_in_hot_partition = vNULL;
 
   /* Mark which partition (hot/cold) each basic block belongs in.  */
   FOR_EACH_BB (bb)
     {
       if (probably_never_executed_bb_p (cfun, bb))
-	BB_SET_PARTITION (bb, BB_COLD_PARTITION);
+        {
+          BB_SET_PARTITION (bb, BB_COLD_PARTITION);
+          cold_bb_count++;
+        }
       else
-	BB_SET_PARTITION (bb, BB_HOT_PARTITION);
+        {
+          BB_SET_PARTITION (bb, BB_HOT_PARTITION);
+          bbs_in_hot_partition.safe_push (bb);
+        }
+    }
+
+  /* Ensure that hot bbs are included along a hot path from the entry to exit.
+     Several different possibilities may include cold bbs along all paths
+     to/from a hot bb. One is that there are edge weight insanities
+     due to optimization phases that do not properly update basic block profile
+     counts. The second is that the entry of the function may not be hot, because
+     it is entered fewer times than the number of profile training runs, but there
+     is a loop inside the function that causes blocks within the function to be
+     above the threshold for hotness. This is fixed by walking up from hot bbs
+     to the entry block, and then down from hot bbs to the exit, performing
+     partitioning fixups as necessary.  */
+  if (cold_bb_count)
+    {
+      mark_dfs_back_edges ();
+      cold_bb_count = sanitize_hot_paths (true, cold_bb_count,
+                                          &bbs_in_hot_partition);
+      if (cold_bb_count)
+        sanitize_hot_paths (false, cold_bb_count, &bbs_in_hot_partition);
     }
 
   /* The format of .gcc_except_table does not allow landing pads to

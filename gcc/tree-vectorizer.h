@@ -576,6 +576,9 @@ typedef struct _stmt_vec_info {
   /* For loads only, true if this is a gather load.  */
   bool gather_p;
   bool stride_load_p;
+
+  /* For both loads and stores.  */
+  bool simd_lane_access_p;
 } *stmt_vec_info;
 
 /* Access Functions.  */
@@ -591,6 +594,7 @@ typedef struct _stmt_vec_info {
 #define STMT_VINFO_DATA_REF(S)             (S)->data_ref_info
 #define STMT_VINFO_GATHER_P(S)		   (S)->gather_p
 #define STMT_VINFO_STRIDE_LOAD_P(S)	   (S)->stride_load_p
+#define STMT_VINFO_SIMD_LANE_ACCESS_P(S)   (S)->simd_lane_access_p
 
 #define STMT_VINFO_DR_BASE_ADDRESS(S)      (S)->dr_base_address
 #define STMT_VINFO_DR_INIT(S)              (S)->dr_init
@@ -624,6 +628,12 @@ typedef struct _stmt_vec_info {
 #define HYBRID_SLP_STMT(S)                ((S)->slp_type == hybrid)
 #define PURE_SLP_STMT(S)                  ((S)->slp_type == pure_slp)
 #define STMT_SLP_TYPE(S)                   (S)->slp_type
+
+struct dataref_aux {
+  tree base_decl;
+  bool base_misaligned;
+  int misalignment;
+};
 
 #define VECT_MAX_COST 1000
 
@@ -827,11 +837,31 @@ destroy_cost_data (void *data)
 /*-----------------------------------------------------------------*/
 /* Info on data references alignment.                              */
 /*-----------------------------------------------------------------*/
+inline void
+set_dr_misalignment (struct data_reference *dr, int val)
+{
+  dataref_aux *data_aux = (dataref_aux *) dr->aux;
+
+  if (!data_aux)
+    {
+      data_aux = XCNEW (dataref_aux);
+      dr->aux = data_aux;
+    }
+
+  data_aux->misalignment = val;
+}
+
+inline int
+dr_misalignment (struct data_reference *dr)
+{
+  gcc_assert (dr->aux);
+  return ((dataref_aux *) dr->aux)->misalignment;
+}
 
 /* Reflects actual alignment of first access in the vectorized loop,
    taking into account peeling/versioning if applied.  */
-#define DR_MISALIGNMENT(DR)   ((int) (size_t) (DR)->aux)
-#define SET_DR_MISALIGNMENT(DR, VAL)   ((DR)->aux = (void *) (size_t) (VAL))
+#define DR_MISALIGNMENT(DR) dr_misalignment (DR)
+#define SET_DR_MISALIGNMENT(DR, VAL) set_dr_misalignment (DR, VAL)
 
 /* Return TRUE if the data access is aligned, and FALSE otherwise.  */
 
@@ -1010,5 +1040,6 @@ void vect_pattern_recog (loop_vec_info, bb_vec_info);
 
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
+void vect_destroy_datarefs (loop_vec_info, bb_vec_info);
 
 #endif  /* GCC_TREE_VECTORIZER_H  */

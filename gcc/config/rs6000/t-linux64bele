@@ -1,0 +1,7 @@
+#rs6000/t-linux64end
+
+MULTILIB_OPTIONS    += mlittle
+MULTILIB_DIRNAMES   += le
+MULTILIB_OSDIRNAMES += $(subst =,.mlittle=,$(subst lible32,lib32le,$(subst lible64,lib64le,$(subst lib,lible,$(subst -linux,le-linux,$(MULTILIB_OSDIRNAMES))))))
+MULTILIB_OSDIRNAMES += $(subst $(if $(findstring 64,$(target)),m64,m32).,,$(filter $(if $(findstring 64,$(target)),m64,m32).mlittle%,$(MULTILIB_OSDIRNAMES)))
+MULTILIB_MATCHES    := ${MULTILIB_MATCHES_ENDIAN}

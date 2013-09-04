@@ -66,6 +66,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 1 "slp" { target { vect_int_mult &&  { vect_pack_trunc && vect_unpack } } } } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp" { target { vect_int_mult &&  { vect_pack_trunc && vect_unpack } } } } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
 

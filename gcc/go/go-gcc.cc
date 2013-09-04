@@ -1474,8 +1474,8 @@ Gcc_backend::temporary_variable(Bfunction* function, Bblock* bblock,
 // Create a named immutable initialized data structure.
 
 Bvariable*
-Gcc_backend::immutable_struct(const std::string& name, bool, bool,
-			      Btype* btype, Location location)
+Gcc_backend::immutable_struct(const std::string& name, bool is_hidden,
+			      bool, Btype* btype, Location location)
 {
   tree type_tree = btype->get_tree();
   if (type_tree == error_mark_node)
@@ -1489,6 +1489,8 @@ Gcc_backend::immutable_struct(const std::string& name, bool, bool,
   TREE_CONSTANT(decl) = 1;
   TREE_USED(decl) = 1;
   DECL_ARTIFICIAL(decl) = 1;
+  if (!is_hidden)
+    TREE_PUBLIC(decl) = 1;
 
   // We don't call rest_of_decl_compilation until we have the
   // initializer.
@@ -1502,8 +1504,7 @@ Gcc_backend::immutable_struct(const std::string& name, bool, bool,
 
 void
 Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
-				       bool is_hidden, bool is_common, Btype*,
-				       Location,
+				       bool, bool is_common, Btype*, Location,
 				       Bexpression* initializer)
 {
   tree decl = var->get_tree();
@@ -1514,12 +1515,7 @@ Gcc_backend::immutable_struct_set_init(Bvariable* var, const std::string&,
   DECL_INITIAL(decl) = init_tree;
 
   // We can't call make_decl_one_only until we set DECL_INITIAL.
-  if (!is_common)
-    {
-      if (!is_hidden)
-	TREE_PUBLIC(decl) = 1;
-    }
-  else
+  if (is_common)
     make_decl_one_only(decl, DECL_ASSEMBLER_NAME(decl));
 
   // These variables are often unneeded in the final program, so put

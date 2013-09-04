@@ -1,6 +1,6 @@
 /* PR debug/37726 */
 /* { dg-do compile } */
-/* { dg-options "-g -O0 -dA -fno-merge-debug-strings" } */
+/* { dg-options "-gdwarf -O0 -dA -fno-merge-debug-strings" } */
 
 int foo (int parm)
 {

@@ -143,6 +143,9 @@ do {									\
 #undef LIBGCC2_LONG_DOUBLE_TYPE_SIZE
 #define LIBGCC2_LONG_DOUBLE_TYPE_SIZE 64
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
+
 /* The following are needed for us to be able to use winnt.c, but are not
    otherwise meaningful to Interix.  (The functions that use these are
    never called because we don't do DLLs.) */

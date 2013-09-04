@@ -43,6 +43,5 @@ expand_one_var (tree var, unsigned char toplevel, unsigned char really_expand)
 }
 /* We should thread the jump, through an intermediate block.  */
 /* { dg-final { scan-tree-dump-times "Threaded" 1 "dom1"} } */
-/* { dg-final { scan-tree-dump-times "one or more intermediate" 1 "dom1"} } */
-/* { dg-final { cleanup-tree-dump "dom1" } } */
+/* { dg-final { scan-tree-dump-times "Registering jump thread .through joiner block.: \\(.*\\);  \\(.*\\);  \\(.*\\);" 1 "dom1"} } */
 

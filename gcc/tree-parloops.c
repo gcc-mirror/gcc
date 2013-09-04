@@ -494,9 +494,12 @@ take_address_of (tree obj, tree type, edge entry,
       if (gsi == NULL)
 	return NULL;
       addr = TREE_OPERAND (*var_p, 0);
-      name = make_temp_ssa_name (TREE_TYPE (addr), NULL,
-				 get_name (TREE_OPERAND
-					   (TREE_OPERAND (*var_p, 0), 0)));
+      const char *obj_name
+	= get_name (TREE_OPERAND (TREE_OPERAND (*var_p, 0), 0));
+      if (obj_name)
+	name = make_temp_ssa_name (TREE_TYPE (addr), NULL, obj_name);
+      else
+	name = make_ssa_name (TREE_TYPE (addr), NULL);
       stmt = gimple_build_assign (name, addr);
       gsi_insert_on_edge_immediate (entry, stmt);
 
@@ -693,6 +696,12 @@ eliminate_local_variables_stmt (edge entry, gimple_stmt_iterator *gsi,
 	  gimple_debug_bind_reset_value (stmt);
 	  dta.changed = true;
 	}
+    }
+  else if (gimple_clobber_p (stmt))
+    {
+      stmt = gimple_build_nop ();
+      gsi_replace (gsi, stmt, false);
+      dta.changed = true;
     }
   else
     {
@@ -1686,7 +1695,7 @@ create_parallel_loop (struct loop *loop, tree loop_fn, tree data,
   t = build_omp_clause (loc, OMP_CLAUSE_SCHEDULE);
   OMP_CLAUSE_SCHEDULE_KIND (t) = OMP_CLAUSE_SCHEDULE_STATIC;
 
-  for_stmt = gimple_build_omp_for (NULL, t, 1, NULL);
+  for_stmt = gimple_build_omp_for (NULL, GF_OMP_FOR_KIND_FOR, t, 1, NULL);
   gimple_set_location (for_stmt, loc);
   gimple_omp_for_set_index (for_stmt, 0, initvar);
   gimple_omp_for_set_initial (for_stmt, 0, cvar_init);

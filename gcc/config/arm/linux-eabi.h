@@ -85,7 +85,7 @@
 		       LINUX_TARGET_LINK_SPEC " " ANDROID_LINK_SPEC)
 
 #undef  ASAN_CC1_SPEC
-#define ASAN_CC1_SPEC "%{fsanitize=*:-funwind-tables}"
+#define ASAN_CC1_SPEC "%{%:sanitize(address):-funwind-tables}"
 
 #undef  CC1_SPEC
 #define CC1_SPEC							\
@@ -99,7 +99,7 @@
 #undef  LIB_SPEC
 #define LIB_SPEC							\
   LINUX_OR_ANDROID_LD (GNU_USER_TARGET_LIB_SPEC,			\
-		       GNU_USER_TARGET_LIB_SPEC " " ANDROID_LIB_SPEC)
+		    GNU_USER_TARGET_NO_PTHREADS_LIB_SPEC " " ANDROID_LIB_SPEC)
 
 #undef	STARTFILE_SPEC
 #define STARTFILE_SPEC \

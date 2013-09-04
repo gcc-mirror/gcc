@@ -1,6 +1,6 @@
 /*
  Contributed by Dodji Seketeli <dodji@redhat.com>
- { dg-options "-g -dA -fno-merge-debug-strings" }
+ { dg-options "-gdwarf -dA -fno-merge-debug-strings" }
  { dg-do compile }
  { dg-final { scan-assembler-times "DIE \\(0x\[^\n\]*\\) DW_TAG_enumeration_type" 1 } }
  { dg-final { scan-assembler-times "DIE \\(0x\[^\n\]*\\) DW_TAG_enumerator" 2 } }

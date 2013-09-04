@@ -145,8 +145,10 @@ while (0)
 
 #define TARGET_POSIX_IO
 
-/* All new versions of OpenBSD have C99 functions.  */
-#define TARGET_C99_FUNCTIONS 1
+/* All new versions of OpenBSD have C99 functions.  We redefine this hook
+   so the version from elfos.h header won't be used.  */
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION default_libc_has_function
 
 
 /* Runtime target specification.  */

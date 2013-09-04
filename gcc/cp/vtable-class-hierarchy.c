@@ -113,29 +113,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tm.h"
-#include "timevar.h"
-#include "cpplib.h"
-#include "tree.h"
 #include "cp-tree.h"
-#include "intl.h"
-#include "c-family/c-pragma.h"
-#include "decl.h"
-#include "flags.h"
-#include "diagnostic-core.h"
 #include "output.h"
-#include "target.h"
 #include "cgraph.h"
-#include "c-family/c-common.h"
-#include "c-family/c-objc.h"
-#include "plugin.h"
 #include "tree-iterator.h"
 #include "vtable-verify.h"
 #include "gimple.h"
-#include "bitmap.h"
-#include "libiberty.h"
-
-#define MAX_SET_SIZE 5000
 
 static int num_calls_to_regset = 0;
 static int num_calls_to_regpair = 0;
@@ -508,7 +491,7 @@ build_string_from_id (tree identifier)
 
 static void
 register_construction_vtables (tree base_class, tree record_type,
-                               tree *vtable_ptr_array, int *num_args)
+                               vec<tree> *vtable_ptr_array)
 {
   tree vtbl_var_decl;
 
@@ -587,10 +570,7 @@ register_construction_vtables (tree base_class, tree record_type,
                   /* Add this vtable pointer to our set of valid
                      pointers for the base class.  */
 
-                  gcc_assert (*num_args < (MAX_SET_SIZE - 1));
-
-                  vtable_ptr_array[*num_args] = value;
-                  *num_args = *num_args + 1;
+                  vtable_ptr_array->safe_push (value);
                   current_set_size++;
                 }
             }
@@ -617,7 +597,7 @@ register_construction_vtables (tree base_class, tree record_type,
 
 static void
 register_other_binfo_vtables (tree binfo, tree base_class,
-                              tree *vtable_ptr_array, int *num_args)
+                              vec<tree> *vtable_ptr_array)
 {
   unsigned ix;
   tree base_binfo;
@@ -641,16 +621,12 @@ register_other_binfo_vtables (tree binfo, tree base_class,
                                                                base_class);
           if (!already_registered)
             {
-              gcc_assert (*num_args < (MAX_SET_SIZE - 1));
-
-              vtable_ptr_array[*num_args] = vtable_address;
-              *num_args = *num_args + 1;
+              vtable_ptr_array->safe_push (vtable_address);
               current_set_size++;
             }
         }
 
-      register_other_binfo_vtables (base_binfo, base_class, vtable_ptr_array,
-                                    num_args);
+      register_other_binfo_vtables (base_binfo, base_class, vtable_ptr_array);
     }
 }
 
@@ -735,7 +711,8 @@ write_out_current_set_data (tree base_class, int set_size)
 
   if (class_data_log_fd == -1)
     {
-      warning (0, "Unable to open log file 'vtv_class_set_sizes.log'");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "unable to open log file %<vtv_class_set_sizes.log%>: %m");
       return;
     }
 
@@ -775,11 +752,12 @@ build_key_buffer_arg (tree base_ptr_var_decl)
 }
 
 static void
-insert_call_to_register_set (tree class_name, int num_args,
-                             tree *vtbl_ptr_array, tree body, tree arg1,
+insert_call_to_register_set (tree class_name,
+                             vec<tree> *vtbl_ptr_array, tree body, tree arg1,
                              tree arg2, tree size_hint_arg)
 {
   tree call_expr;
+  int num_args = vtbl_ptr_array->length();
   char *array_arg_name = ACONCAT (("__vptr_array_",
                                    IDENTIFIER_POINTER (class_name), NULL));
   tree array_arg_type = build_array_type_nelts (build_pointer_type
@@ -808,7 +786,7 @@ insert_call_to_register_set (tree class_name, int num_args,
 
   for (k = 0; k < num_args; ++k)
     {
-      CONSTRUCTOR_APPEND_ELT (array_elements, NULL_TREE, vtbl_ptr_array[k]);
+      CONSTRUCTOR_APPEND_ELT (array_elements, NULL_TREE, (*vtbl_ptr_array)[k]);
     }
 
   initial = build_constructor (TREE_TYPE (array_arg), array_elements);
@@ -833,14 +811,18 @@ insert_call_to_register_set (tree class_name, int num_args,
 }
 
 static void
-insert_call_to_register_pair (tree vtable_address, int num_args, tree arg1,
+insert_call_to_register_pair (vec<tree> *vtbl_ptr_array, tree arg1,
                               tree arg2, tree size_hint_arg, tree str1,
                               tree str2, tree body)
 {
   tree call_expr;
+  int num_args = vtbl_ptr_array->length();
+  tree vtable_address = NULL_TREE;
 
   if (num_args == 0)
     vtable_address = build_int_cst (build_pointer_type (void_type_node), 0);
+  else
+    vtable_address = (*vtbl_ptr_array)[0];
 
   if (flag_vtv_debug)
     call_expr = build_call_expr (vlt_register_pairs_fndecl, 6, arg1, arg2,
@@ -854,11 +836,12 @@ insert_call_to_register_pair (tree vtable_address, int num_args, tree arg1,
 }
 
 static void
-output_set_info (tree record_type, tree *vtbl_ptr_array, int array_size)
+output_set_info (tree record_type, vec<tree> vtbl_ptr_array)
 {
   static int vtv_debug_log_fd = -1;
   char buffer[1024];
   int bytes_written __attribute__ ((unused));
+  int array_len = vtbl_ptr_array.length();
   const char *class_name =
               IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (record_type)));
   char *file_name = get_log_file_name ("vtv_set_ptr_data.log");
@@ -868,11 +851,12 @@ output_set_info (tree record_type, tree *vtbl_ptr_array, int array_size)
                              O_WRONLY | O_APPEND | O_CREAT, S_IRWXU);
   if (vtv_debug_log_fd == -1)
     {
-      warning (0, "Unable to open log file 'vtv_set_ptr_data.log'");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "unable to open log file %<vtv_set_ptr_data.log%>: %m");
       return;
     }
 
-  for (int i = 0; i < array_size; ++i)
+  for (int i = 0; i < array_len; ++i)
     {
       const char *vptr_name = "unknown";
       int vptr_offset = 0;
@@ -911,8 +895,7 @@ static bool
 register_all_pairs (tree body)
 {
   bool registered_at_least_one = false;
-  tree vtbl_ptr_array[MAX_SET_SIZE];
-  int num_vtable_args = 0;
+  vec<tree> *vtbl_ptr_array = NULL;
   unsigned j;
 
   for (j = 0; j < num_vtable_map_nodes; ++j)
@@ -938,7 +921,11 @@ register_all_pairs (tree body)
       new_type = build_pointer_type (TREE_TYPE (base_ptr_var_decl));
       arg1 = build1 (ADDR_EXPR, new_type, base_ptr_var_decl);
 
-      num_vtable_args = 0;
+      /* We need a fresh vector for each iteration.  */
+      if (vtbl_ptr_array)
+	vec_free (vtbl_ptr_array);
+
+      vec_alloc (vtbl_ptr_array, 10);
 
       for (i = 0; i < num_vtable_map_nodes; ++i)
         if (bitmap_bit_p (current->class_info->descendants, i))
@@ -977,25 +964,22 @@ register_all_pairs (tree body)
 
                     if (!already_registered)
                       {
-
-                        vtbl_ptr_array[num_vtable_args++] = vtable_address;
+                        vtbl_ptr_array->safe_push (vtable_address);
 
                         /* Find and handle any 'extra' vtables associated
                            with this class, via virtual inheritance.   */
                         register_construction_vtables (base_class, class_type,
-                                                       vtbl_ptr_array,
-                                                       &num_vtable_args);
+                                                       vtbl_ptr_array);
 
                         /* Find and handle any 'extra' vtables associated
                            with this class, via multiple inheritance.   */
                         register_other_binfo_vtables (binfo, base_class,
-                                                      vtbl_ptr_array,
-                                                      &num_vtable_args);
+                                                      vtbl_ptr_array);
                       }
                   }
               }
           }
-      current_set_size = num_vtable_args;
+      current_set_size = vtbl_ptr_array->length();
 
       /* Sometimes we need to initialize the set symbol even if we are
          not adding any vtable pointers to the set in the current
@@ -1009,9 +993,12 @@ register_all_pairs (tree body)
       /* If we have added vtable pointers to the set in this
          compilation unit, adjust the size hint for the set's hash
          table appropriately.  */
-      if (num_vtable_args > 0)
-        while ((size_t) num_vtable_args > size_hint)
-          size_hint <<= 1;
+      if (vtbl_ptr_array->length() > 0)
+	{
+	  unsigned len = vtbl_ptr_array->length();
+	  while ((size_t) len > size_hint)
+	    size_hint <<= 1;
+	}
       size_hint_arg = build_int_cst (size_type_node, size_hint);
 
       /* Get the key-buffer argument.  */
@@ -1023,23 +1010,23 @@ register_all_pairs (tree body)
 
       if (flag_vtv_debug)
         output_set_info (current->class_info->class_type,
-                         vtbl_ptr_array, num_vtable_args);
+                         *vtbl_ptr_array);
 
-      if (num_vtable_args > 1)
+      if (vtbl_ptr_array->length() > 1)
         {
-          insert_call_to_register_set (current->class_name, num_vtable_args,
+          insert_call_to_register_set (current->class_name,
                                        vtbl_ptr_array, body, arg1, arg2,
                                        size_hint_arg);
           registered_at_least_one = true;
         }
-      else if (num_vtable_args >= 0)
+      else
         {
 
-          if (num_vtable_args > 0
+          if (vtbl_ptr_array->length() > 0
               || (current->is_used
                   || (current->registered.size() > 0)))
             {
-              insert_call_to_register_pair (vtbl_ptr_array[0], num_vtable_args,
+              insert_call_to_register_pair (vtbl_ptr_array,
                                             arg1, arg2, size_hint_arg, str1,
                                             str2, body);
               registered_at_least_one = true;
@@ -1114,7 +1101,8 @@ write_out_vtv_count_data (void)
                              O_WRONLY | O_APPEND | O_CREAT, S_IRWXU);
   if (vtv_count_log_fd == -1)
     {
-      warning (0, "Unable to open log file 'vtv_count_data.log'");
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "unable to open log file %<vtv_count_data.log%>: %m");
       return;
     }
 

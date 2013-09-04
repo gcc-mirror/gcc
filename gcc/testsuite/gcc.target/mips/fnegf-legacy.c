@@ -7,4 +7,4 @@ fnegf_legacy (float f)
   return -f;
 }
 
-/* { dg-final { scan-assembler-not "\tneg\.s\t" } } */
+/* { dg-final { scan-assembler-not "\tneg\\.s\t" } } */

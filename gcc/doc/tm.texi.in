@@ -4221,26 +4221,7 @@ refers to the global ``variable'' @code{errno}.  (On certain systems,
 macro, a reasonable default is used.
 @end defmac
 
-@cindex C99 math functions, implicit usage
-@defmac TARGET_C99_FUNCTIONS
-When this macro is nonzero, GCC will implicitly optimize @code{sin} calls into
-@code{sinf} and similarly for other functions defined by C99 standard.  The
-default is zero because a number of existing systems lack support for these
-functions in their runtime so this macro needs to be redefined to one on
-systems that do support the C99 runtime.
-@end defmac
-
-@cindex sincos math function, implicit usage
-@defmac TARGET_HAS_SINCOS
-When this macro is nonzero, GCC will implicitly optimize calls to @code{sin}
-and @code{cos} with the same argument to a call to @code{sincos}.  The
-default is zero.  The target has to provide the following functions:
-@smallexample
-void sincos(double x, double *sin, double *cos);
-void sincosf(float x, float *sin, float *cos);
-void sincosl(long double x, long double *sin, long double *cos);
-@end smallexample
-@end defmac
+@hook TARGET_LIBC_HAS_FUNCTION
 
 @defmac NEXT_OBJC_RUNTIME
 Set this macro to 1 to use the "NeXT" Objective-C message sending conventions

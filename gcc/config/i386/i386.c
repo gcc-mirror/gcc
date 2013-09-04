@@ -1939,7 +1939,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 
 const char* ix86_tune_feature_names[X86_TUNE_LAST] = {
 #undef DEF_TUNE
-#define DEF_TUNE(tune, name) name,
+#define DEF_TUNE(tune, name, selector) name,
 #include "x86-tune.def"
 #undef DEF_TUNE
 };
@@ -1950,281 +1950,10 @@ unsigned char ix86_tune_features[X86_TUNE_LAST];
 /* Feature tests against the various tunings used to create ix86_tune_features
    based on the processor mask.  */
 static unsigned int initial_ix86_tune_features[X86_TUNE_LAST] = {
-  /* X86_TUNE_USE_LEAVE: Leave does not affect Nocona SPEC2000 results
-     negatively, so enabling for Generic64 seems like good code size
-     tradeoff.  We can't enable it for 32bit generic because it does not
-     work well with PPro base chips.  */
-  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64,
-
-  /* X86_TUNE_PUSH_MEMORY */
-  m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_ZERO_EXTEND_WITH_AND */
-  m_486 | m_PENT,
-
-  /* X86_TUNE_UNROLL_STRLEN */
-  m_486 | m_PENT | m_PPRO | m_ATOM | m_SLM | m_CORE_ALL | m_K6 | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_BRANCH_PREDICTION_HINTS: Branch hints were put in P4 based
-     on simulation result. But after P4 was made, no performance benefit
-     was observed with branch hints.  It also increases the code size.
-     As a result, icc never generates branch hints.  */
-  0,
-
-  /* X86_TUNE_DOUBLE_WITH_ADD */
-  ~m_386,
-
-  /* X86_TUNE_USE_SAHF */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC,
-
-  /* X86_TUNE_MOVX: Enable to zero extend integer registers to avoid
-     partial dependencies.  */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GEODE | m_AMD_MULTIPLE  | m_GENERIC,
-
-  /* X86_TUNE_PARTIAL_REG_STALL: We probably ought to watch for partial
-     register stalls on Generic32 compilation setting as well.  However
-     in current implementation the partial register stalls are not eliminated
-     very well - they can be introduced via subregs synthesized by combine
-     and can happen in caller/callee saving sequences.  Because this option
-     pays back little on PPro based chips and is in conflict with partial reg
-     dependencies used by Athlon/P4 based chips, it is better to leave it off
-     for generic32 for now.  */
-  m_PPRO,
-
-  /* X86_TUNE_PARTIAL_FLAG_REG_STALL */
-  m_CORE_ALL | m_GENERIC,
-
-  /* X86_TUNE_LCP_STALL: Avoid an expensive length-changing prefix stall
-   * on 16-bit immediate moves into memory on Core2 and Corei7.  */
-  m_CORE_ALL | m_GENERIC,
-
-  /* X86_TUNE_USE_HIMODE_FIOP */
-  m_386 | m_486 | m_K6_GEODE,
-
-  /* X86_TUNE_USE_SIMODE_FIOP */
-  ~(m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC),
-
-  /* X86_TUNE_USE_MOV0 */
-  m_K6,
-
-  /* X86_TUNE_USE_CLTD */
-  ~(m_PENT | m_ATOM | m_SLM | m_K6),
-
-  /* X86_TUNE_USE_XCHGB: Use xchgb %rh,%rl instead of rolw/rorw $8,rx.  */
-  m_PENT4,
-
-  /* X86_TUNE_SPLIT_LONG_MOVES */
-  m_PPRO,
-
-  /* X86_TUNE_READ_MODIFY_WRITE */
-  ~m_PENT,
-
-  /* X86_TUNE_READ_MODIFY */
-  ~(m_PENT | m_PPRO),
-
-  /* X86_TUNE_PROMOTE_QIMODE */
-  m_386 | m_486 | m_PENT | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_FAST_PREFIX */
-  ~(m_386 | m_486 | m_PENT),
-
-  /* X86_TUNE_SINGLE_STRINGOP */
-  m_386 | m_P4_NOCONA,
-
-  /* X86_TUNE_QIMODE_MATH */
-  ~0,
-
-  /* X86_TUNE_HIMODE_MATH: On PPro this flag is meant to avoid partial
-     register stalls.  Just like X86_TUNE_PARTIAL_REG_STALL this option
-     might be considered for Generic32 if our scheme for avoiding partial
-     stalls was more effective.  */
-  ~m_PPRO,
-
-  /* X86_TUNE_PROMOTE_QI_REGS */
-  0,
-
-  /* X86_TUNE_PROMOTE_HI_REGS */
-  m_PPRO,
-
-  /* X86_TUNE_SINGLE_POP: Enable if single pop insn is preferred
-     over esp addition.  */
-  m_386 | m_486 | m_PENT | m_PPRO,
-
-  /* X86_TUNE_DOUBLE_POP: Enable if double pop insn is preferred
-     over esp addition.  */
-  m_PENT,
-
-  /* X86_TUNE_SINGLE_PUSH: Enable if single push insn is preferred
-     over esp subtraction.  */
-  m_386 | m_486 | m_PENT | m_K6_GEODE,
-
-  /* X86_TUNE_DOUBLE_PUSH. Enable if double push insn is preferred
-     over esp subtraction.  */
-  m_PENT | m_K6_GEODE,
-
-  /* X86_TUNE_INTEGER_DFMODE_MOVES: Enable if integer moves are preferred
-     for DFmode copies */
-  ~(m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GEODE | m_AMD_MULTIPLE | m_GENERIC),
-
-  /* X86_TUNE_PARTIAL_REG_DEPENDENCY */
-  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_SSE_PARTIAL_REG_DEPENDENCY: In the Generic model we have a
-     conflict here in between PPro/Pentium4 based chips that thread 128bit
-     SSE registers as single units versus K8 based chips that divide SSE
-     registers to two 64bit halves.  This knob promotes all store destinations
-     to be 128bit to allow register renaming on 128bit SSE units, but usually
-     results in one extra microop on 64bit SSE units.  Experimental results
-     shows that disabling this option on P4 brings over 20% SPECfp regression,
-     while enabling it on K8 brings roughly 2.4% regression that can be partly
-     masked by careful scheduling of moves.  */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMDFAM10 | m_BDVER | m_GENERIC,
-
-  /* X86_TUNE_SSE_UNALIGNED_LOAD_OPTIMAL */
-  m_COREI7 | m_AMDFAM10 | m_BDVER | m_BTVER | m_SLM,
-
-  /* X86_TUNE_SSE_UNALIGNED_STORE_OPTIMAL */
-  m_COREI7 | m_BDVER | m_SLM,
-
-  /* X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL */
-  m_BDVER ,
-
-  /* X86_TUNE_SSE_SPLIT_REGS: Set for machines where the type and dependencies
-     are resolved on SSE register parts instead of whole registers, so we may
-     maintain just lower part of scalar values in proper format leaving the
-     upper part undefined.  */
-  m_ATHLON_K8,
-
-  /* X86_TUNE_SSE_TYPELESS_STORES */
-  m_AMD_MULTIPLE,
-
-  /* X86_TUNE_SSE_LOAD0_BY_PXOR */
-  m_PPRO | m_P4_NOCONA,
-
-  /* X86_TUNE_MEMORY_MISMATCH_STALL */
-  m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_PROLOGUE_USING_MOVE */
-  m_PPRO | m_ATHLON_K8,
-
-  /* X86_TUNE_EPILOGUE_USING_MOVE */
-  m_PPRO | m_ATHLON_K8,
-
-  /* X86_TUNE_SHIFT1 */
-  ~m_486,
-
-  /* X86_TUNE_USE_FFREEP */
-  m_AMD_MULTIPLE,
-
-  /* X86_TUNE_INTER_UNIT_MOVES_TO_VEC */
-  ~(m_AMD_MULTIPLE | m_GENERIC),
-
-  /* X86_TUNE_INTER_UNIT_MOVES_FROM_VEC */
-  ~m_ATHLON_K8,
-
-  /* X86_TUNE_INTER_UNIT_CONVERSIONS */
-  ~(m_AMDFAM10 | m_BDVER ),
-
-  /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
-     than 4 branch instructions in the 16 byte window.  */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_SCHEDULE */
-  m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_USE_BT */
-  m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_USE_INCDEC */
-  ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GENERIC),
-
-  /* X86_TUNE_PAD_RETURNS */
-  m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC,
-
-  /* X86_TUNE_PAD_SHORT_FUNCTION: Pad short function.  */
-  m_ATOM,
-
-  /* X86_TUNE_EXT_80387_CONSTANTS */
-  m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE | m_ATHLON_K8 | m_GENERIC,
-
-  /* X86_TUNE_AVOID_VECTOR_DECODE */
-  m_CORE_ALL | m_K8 | m_GENERIC64,
-
-  /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
-     and SImode multiply, but 386 and 486 do HImode multiply faster.  */
-  ~(m_386 | m_486),
-
-  /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
-     vector path on AMD machines.  */
-  m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
-
-  /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
-     machines.  */
-  m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64,
-
-  /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
-     than a MOV.  */
-  m_PENT,
-
-  /* X86_TUNE_NOT_UNPAIRABLE: NOT is not pairable on Pentium, while XOR is,
-     but one byte longer.  */
-  m_PENT,
-
-  /* X86_TUNE_NOT_VECTORMODE: On AMD K6, NOT is vector decoded with memory
-     operand that cannot be represented using a modRM byte.  The XOR
-     replacement is long decoded, so this split helps here as well.  */
-  m_K6,
-
-  /* X86_TUNE_USE_VECTOR_FP_CONVERTS: Prefer vector packed SSE conversion
-     from FP to FP. */
-  m_CORE_ALL | m_AMDFAM10 | m_GENERIC,
-
-  /* X86_TUNE_USE_VECTOR_CONVERTS: Prefer vector packed SSE conversion
-     from integer to FP. */
-  m_AMDFAM10,
-
-  /* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
-     with a subsequent conditional jump instruction into a single
-     compare-and-branch uop.  */
-  m_BDVER,
-
-  /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
-     will impact LEA instruction selection. */
-  m_ATOM | m_SLM,
-
-  /* X86_TUNE_VECTORIZE_DOUBLE: Enable double precision vector
-     instructions.  */
-  ~m_ATOM,
-
-  /* X86_TUNE_SOFTWARE_PREFETCHING_BENEFICIAL: Enable software prefetching
-     at -O3.  For the moment, the prefetching seems badly tuned for Intel
-     chips.  */
-  m_K6_GEODE | m_AMD_MULTIPLE,
-
-  /* X86_TUNE_AVX128_OPTIMAL: Enable 128-bit AVX instruction generation for
-     the auto-vectorizer.  */
-  m_BDVER | m_BTVER2,
-
-  /* X86_TUNE_REASSOC_INT_TO_PARALLEL: Try to produce parallel computations
-     during reassociation of integer computation.  */
-  m_ATOM,
-
-  /* X86_TUNE_REASSOC_FP_TO_PARALLEL: Try to produce parallel computations
-     during reassociation of fp computation.  */
-  m_ATOM | m_SLM | m_HASWELL | m_BDVER1 | m_BDVER2,
-
-  /* X86_TUNE_GENERAL_REGS_SSE_SPILL: Try to spill general regs to SSE
-     regs instead of memory.  */
-  m_CORE_ALL,
-
-  /* X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE: Try to avoid memory operands for
-     a conditional move.  */
-  m_ATOM,
-
-  /* X86_TUNE_SPLIT_MEM_OPND_FOR_FP_CONVERTS: Try to split memory operand for
-     fp converts to destination register.  */
-  m_SLM
-
+#undef DEF_TUNE
+#define DEF_TUNE(tune, name, selector) selector,
+#include "x86-tune.def"
+#undef DEF_TUNE
 };
 
 /* Feature tests against the various architecture variations.  */
@@ -2299,6 +2028,11 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* SSE REX registers */
   SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   SSE_REGS, SSE_REGS,
+  /* AVX-512 SSE registers */
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -2312,6 +2046,8 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -2325,6 +2061,8 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
   8,9,10,11,12,13,14,15,		/* extended integer registers */
   25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
+  67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
+  75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -2390,6 +2128,8 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
+  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
 };
 
 /* Define parameter passing and return registers.  */
@@ -2582,7 +2322,6 @@ enum ix86_function_specific_strings
 
 static char *ix86_target_string (HOST_WIDE_INT, int, const char *,
 				 const char *, enum fpmath_unit, bool);
-static void ix86_debug_options (void) ATTRIBUTE_UNUSED;
 static void ix86_function_specific_save (struct cl_target_option *);
 static void ix86_function_specific_restore (struct cl_target_option *);
 static void ix86_function_specific_print (FILE *, int,
@@ -2689,7 +2428,7 @@ static const char *const cpu_names[TARGET_CPU_DEFAULT_max] =
 static bool
 gate_insert_vzeroupper (void)
 {
-  return TARGET_AVX && TARGET_VZEROUPPER;
+  return TARGET_AVX && !TARGET_AVX512F && TARGET_VZEROUPPER;
 }
 
 static unsigned int
@@ -2779,6 +2518,10 @@ ix86_target_string (HOST_WIDE_INT isa, int flags, const char *arch,
     { "-mfma",		OPTION_MASK_ISA_FMA },
     { "-mxop",		OPTION_MASK_ISA_XOP },
     { "-mlwp",		OPTION_MASK_ISA_LWP },
+    { "-mavx512f",	OPTION_MASK_ISA_AVX512F },
+    { "-mavx512er",	OPTION_MASK_ISA_AVX512ER },
+    { "-mavx512cd",	OPTION_MASK_ISA_AVX512CD },
+    { "-mavx512pf",	OPTION_MASK_ISA_AVX512PF },
     { "-msse4a",	OPTION_MASK_ISA_SSE4A },
     { "-msse4.2",	OPTION_MASK_ISA_SSE4_2 },
     { "-msse4.1",	OPTION_MASK_ISA_SSE4_1 },
@@ -3011,7 +2754,7 @@ ix86_profile_before_prologue (void)
 
 /* Function that is callable from the debugger to print the current
    options.  */
-void
+void ATTRIBUTE_UNUSED
 ix86_debug_options (void)
 {
   char *opts = ix86_target_string (ix86_isa_flags, target_flags,
@@ -3064,7 +2807,6 @@ static const char *stringop_alg_names[] = {
 
 struct stringop_size_range
 {
-  int min;
   int max;
   stringop_alg alg;
   bool noalign;
@@ -3087,7 +2829,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
 
   do
     {
-      int mins, maxs;
+      int maxs;
       stringop_alg alg;
       char alg_name[128];
       char align[16];
@@ -3103,7 +2845,7 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
           return;
         }
 
-      if (n > 0 && (maxs < (mins = input_ranges[n - 1].max + 1) && maxs != -1))
+      if (n > 0 && (maxs < (input_ranges[n - 1].max + 1) && maxs != -1))
         {
           error ("size ranges of option %s should be increasing",
                  is_memset ? "-mmemset_strategy=" : "-mmemcpy_strategy=");
@@ -3127,7 +2869,6 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
           return;
         }
 
-      input_ranges[n].min = mins;
       input_ranges[n].max = maxs;
       input_ranges[n].alg = alg;
       if (!strcmp (align, "align"))
@@ -3172,6 +2913,80 @@ ix86_parse_stringop_strategy_string (char *strategy_str, bool is_memset)
 }
 
 
+/* parse -mtune-ctrl= option. When DUMP is true,
+   print the features that are explicitly set.  */
+
+static void
+parse_mtune_ctrl_str (bool dump)
+{
+  if (!ix86_tune_ctrl_string)
+    return;
+
+  char *next_feature_string = NULL;
+  char *curr_feature_string = xstrdup (ix86_tune_ctrl_string);
+  char *orig = curr_feature_string;
+  int i;
+  do
+    {
+      bool clear = false;
+
+      next_feature_string = strchr (curr_feature_string, ',');
+      if (next_feature_string)
+        *next_feature_string++ = '\0';
+      if (*curr_feature_string == '^')
+        {
+          curr_feature_string++;
+          clear = true;
+        }
+      for (i = 0; i < X86_TUNE_LAST; i++)
+        {
+          if (!strcmp (curr_feature_string, ix86_tune_feature_names[i]))
+            {
+              ix86_tune_features[i] = !clear;
+              if (dump)
+                fprintf (stderr, "Explicitly %s feature %s\n",
+                         clear ? "clear" : "set", ix86_tune_feature_names[i]);
+              break;
+            }
+        }
+      if (i == X86_TUNE_LAST)
+        error ("Unknown parameter to option -mtune-ctrl: %s",
+               clear ? curr_feature_string - 1 : curr_feature_string);
+      curr_feature_string = next_feature_string;
+    }
+  while (curr_feature_string);
+  free (orig);
+}
+
+/* Helper function to set ix86_tune_features. IX86_TUNE is the
+   processor type.  */
+
+static void
+set_ix86_tune_features (enum processor_type ix86_tune, bool dump)
+{
+  unsigned int ix86_tune_mask = 1u << ix86_tune;
+  int i;
+
+  for (i = 0; i < X86_TUNE_LAST; ++i)
+    {
+      if (ix86_tune_no_default)
+        ix86_tune_features[i] = 0;
+      else
+        ix86_tune_features[i] = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
+    }
+
+  if (dump)
+    {
+      fprintf (stderr, "List of x86 specific tuning parameter names:\n");
+      for (i = 0; i < X86_TUNE_LAST; i++)
+        fprintf (stderr, "%s : %s\n", ix86_tune_feature_names[i],
+                 ix86_tune_features[i] ? "on" : "off");
+    }
+
+  parse_mtune_ctrl_str (dump);
+}
+
+
 /* Override various settings based on options.  If MAIN_ARGS_P, the
    options are from the command line, otherwise they are from
    attributes.  */
@@ -3226,6 +3041,10 @@ ix86_option_override_internal (bool main_args_p)
 #define PTA_FXSR		(HOST_WIDE_INT_1 << 37)
 #define PTA_XSAVE		(HOST_WIDE_INT_1 << 38)
 #define PTA_XSAVEOPT		(HOST_WIDE_INT_1 << 39)
+#define PTA_AVX512F		(HOST_WIDE_INT_1 << 40)
+#define PTA_AVX512ER		(HOST_WIDE_INT_1 << 41)
+#define PTA_AVX512PF		(HOST_WIDE_INT_1 << 42)
+#define PTA_AVX512CD		(HOST_WIDE_INT_1 << 43)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -3747,6 +3566,18 @@ ix86_option_override_internal (bool main_args_p)
 	if (processor_alias_table[i].flags & PTA_XSAVEOPT
 	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_XSAVEOPT))
 	  ix86_isa_flags |= OPTION_MASK_ISA_XSAVEOPT;
+	if (processor_alias_table[i].flags & PTA_AVX512F
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512F))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512F;
+	if (processor_alias_table[i].flags & PTA_AVX512ER
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512ER))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512ER;
+	if (processor_alias_table[i].flags & PTA_AVX512PF
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512PF))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512PF;
+	if (processor_alias_table[i].flags & PTA_AVX512CD
+	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AVX512CD))
+	  ix86_isa_flags |= OPTION_MASK_ISA_AVX512CD;
 	if (processor_alias_table[i].flags & (PTA_PREFETCH_SSE | PTA_SSE))
 	  x86_prefetch_sse = true;
 
@@ -3817,43 +3648,7 @@ ix86_option_override_internal (bool main_args_p)
     error ("bad value (%s) for %stune=%s %s",
 	   ix86_tune_string, prefix, suffix, sw);
 
-  ix86_tune_mask = 1u << ix86_tune;
-  for (i = 0; i < X86_TUNE_LAST; ++i)
-    ix86_tune_features[i] = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
-
-  if (ix86_tune_ctrl_string)
-    {
-      /* parse the tune ctrl string in the following form:
-         [^]tune_name1,[^]tune_name2,..a */
-      char *next_feature_string = NULL;
-      char *curr_feature_string = xstrdup (ix86_tune_ctrl_string);
-      char *orig = curr_feature_string;
-      do {
-        bool clear = false;
-
-        next_feature_string = strchr (curr_feature_string, ',');
-	if (next_feature_string)
-          *next_feature_string++ = '\0';
-        if (*curr_feature_string == '^')
-	  {
-	    curr_feature_string++;
-	    clear = true;
-	  }
-        for (i = 0; i < X86_TUNE_LAST; i++)
-	  {
-            if (!strcmp (curr_feature_string, ix86_tune_feature_names[i]))
-	      {
-                ix86_tune_features[i] = !clear;
-                break;
-              }
-	  }
-        if (i == X86_TUNE_LAST)
-	  warning (0, "Unknown parameter to option -mtune-ctrl: %s",
-	           clear ? curr_feature_string - 1 : curr_feature_string);
-	curr_feature_string = next_feature_string;    
-      } while (curr_feature_string);
-      free (orig);
-    }
+  set_ix86_tune_features (ix86_tune, ix86_dump_tunes);
 
 #ifndef USE_IX86_FRAME_POINTER
 #define USE_IX86_FRAME_POINTER 0
@@ -4089,6 +3884,7 @@ ix86_option_override_internal (bool main_args_p)
 	gcc_unreachable ();
       }
 
+  ix86_tune_mask = 1u << ix86_tune;
   if ((!USE_IX86_FRAME_POINTER
        || (x86_accumulate_outgoing_args & ix86_tune_mask))
       && !(target_flags_explicit & MASK_ACCUMULATE_OUTGOING_ARGS)
@@ -4171,24 +3967,19 @@ ix86_option_override_internal (bool main_args_p)
       ix86_gen_leave = gen_leave_rex64;
       if (Pmode == DImode)
 	{
-	  ix86_gen_monitor = gen_sse3_monitor64_di;
 	  ix86_gen_tls_global_dynamic_64 = gen_tls_global_dynamic_64_di;
 	  ix86_gen_tls_local_dynamic_base_64
 	    = gen_tls_local_dynamic_base_64_di;
 	}
       else
 	{
-	  ix86_gen_monitor = gen_sse3_monitor64_si;
 	  ix86_gen_tls_global_dynamic_64 = gen_tls_global_dynamic_64_si;
 	  ix86_gen_tls_local_dynamic_base_64
 	    = gen_tls_local_dynamic_base_64_si;
 	}
     }
   else
-    {
-      ix86_gen_leave = gen_leave;
-      ix86_gen_monitor = gen_sse3_monitor;
-    }
+    ix86_gen_leave = gen_leave;
 
   if (Pmode == DImode)
     {
@@ -4200,6 +3991,7 @@ ix86_option_override_internal (bool main_args_p)
       ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_probe_di;
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probedi;
       ix86_gen_probe_stack_range = gen_probe_stack_rangedi;
+      ix86_gen_monitor = gen_sse3_monitor_di;
     }
   else
     {
@@ -4211,6 +4003,7 @@ ix86_option_override_internal (bool main_args_p)
       ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_probe_si;
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probesi;
       ix86_gen_probe_stack_range = gen_probe_stack_rangesi;
+      ix86_gen_monitor = gen_sse3_monitor_si;
     }
 
 #ifdef USE_IX86_CLD
@@ -4245,22 +4038,22 @@ ix86_option_override_internal (bool main_args_p)
      TARGET_AVX with -fexpensive-optimizations and split 32-byte
      AVX unaligned load/store.  */
   if (!optimize_size)
-  {
-     if (flag_expensive_optimizations
-	   && !(target_flags_explicit & MASK_VZEROUPPER))
+    {
+      if (flag_expensive_optimizations
+	  && !(target_flags_explicit & MASK_VZEROUPPER))
 	target_flags |= MASK_VZEROUPPER;
-     if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
-	   && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
+      if ((x86_avx256_split_unaligned_load & ix86_tune_mask)
+	  && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
 	target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
-     if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
-	   && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
+      if ((x86_avx256_split_unaligned_store & ix86_tune_mask)
+	  && !(target_flags_explicit & MASK_AVX256_SPLIT_UNALIGNED_STORE))
 	target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
-     /* Enable 128-bit AVX instruction generation
-	for the auto-vectorizer.  */
-     if (TARGET_AVX128_OPTIMAL
-	   && !(target_flags_explicit & MASK_PREFER_AVX128))
+      /* Enable 128-bit AVX instruction generation
+         for the auto-vectorizer.  */
+      if (TARGET_AVX128_OPTIMAL
+	  && !(target_flags_explicit & MASK_PREFER_AVX128))
 	target_flags |= MASK_PREFER_AVX128;
-  }
+    }
 
   if (ix86_recip_name)
     {
@@ -4381,6 +4174,8 @@ ix86_conditional_register_usage (void)
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
       for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+      for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
     }
 
   /*  See the definition of CALL_USED_REGISTERS in i386.h.  */
@@ -4421,6 +4216,11 @@ ix86_conditional_register_usage (void)
     for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
       if (TEST_HARD_REG_BIT (reg_class_contents[(int)FLOAT_REGS], i))
 	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+
+  /* If AVX512F is disabled, squash the registers.  */
+  if (! TARGET_AVX512F)
+    for (i = FIRST_EXT_REX_SSE_REG; i < LAST_EXT_REX_SSE_REG; i++)
+      fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
 
@@ -4454,7 +4254,7 @@ ix86_function_specific_restore (struct cl_target_option *ptr)
 {
   enum processor_type old_tune = ix86_tune;
   enum processor_type old_arch = ix86_arch;
-  unsigned int ix86_arch_mask, ix86_tune_mask;
+  unsigned int ix86_arch_mask;
   int i;
 
   ix86_arch = (enum processor_type) ptr->arch;
@@ -4478,12 +4278,7 @@ ix86_function_specific_restore (struct cl_target_option *ptr)
 
   /* Recreate the tune optimization tests */
   if (old_tune != ix86_tune)
-    {
-      ix86_tune_mask = 1u << ix86_tune;
-      for (i = 0; i < X86_TUNE_LAST; ++i)
-	ix86_tune_features[i]
-	  = !!(initial_ix86_tune_features[i] & ix86_tune_mask);
-    }
+    set_ix86_tune_features (ix86_tune, false);
 }
 
 /* Print the current options */
@@ -4565,6 +4360,10 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("aes",	OPT_maes),
     IX86_ATTR_ISA ("avx",	OPT_mavx),
     IX86_ATTR_ISA ("avx2",	OPT_mavx2),
+    IX86_ATTR_ISA ("avx512f",	OPT_mavx512f),
+    IX86_ATTR_ISA ("avx512pf",	OPT_mavx512pf),
+    IX86_ATTR_ISA ("avx512er",	OPT_mavx512er),
+    IX86_ATTR_ISA ("avx512cd",	OPT_mavx512cd),
     IX86_ATTR_ISA ("mmx",	OPT_mmmx),
     IX86_ATTR_ISA ("pclmul",	OPT_mpclmul),
     IX86_ATTR_ISA ("popcnt",	OPT_mpopcnt),
@@ -5049,10 +4848,7 @@ ix86_in_large_data_p (tree exp)
    RELOC indicates whether forming the initial value of DECL requires
    link-time relocations.  */
 
-static section * x86_64_elf_select_section (tree, int, unsigned HOST_WIDE_INT)
-	ATTRIBUTE_UNUSED;
-
-static section *
+ATTRIBUTE_UNUSED static section *
 x86_64_elf_select_section (tree decl, int reloc,
 			   unsigned HOST_WIDE_INT align)
 {
@@ -5111,6 +4907,28 @@ x86_64_elf_select_section (tree decl, int reloc,
 	}
     }
   return default_elf_select_section (decl, reloc, align);
+}
+
+/* Select a set of attributes for section NAME based on the properties
+   of DECL and whether or not RELOC indicates that DECL's initializer
+   might contain runtime relocations.  */
+
+static unsigned int ATTRIBUTE_UNUSED
+x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (decl == NULL_TREE
+      && (strcmp (name, ".ldata.rel.ro") == 0
+	  || strcmp (name, ".ldata.rel.ro.local") == 0))
+    flags |= SECTION_RELRO;
+
+  if (strcmp (name, ".lbss") == 0
+      || strncmp (name, ".lbss.", 5) == 0
+      || strncmp (name, ".gnu.linkonce.lb.", 16) == 0)
+    flags |= SECTION_BSS;
+
+  return flags;
 }
 
 /* Build up a unique section name, expressed as a
@@ -5482,8 +5300,7 @@ ix86_handle_cconv_attribute (tree *node, tree name,
 static tree
 ix86_handle_tm_regparm_attribute (tree *node, tree name ATTRIBUTE_UNUSED,
     				  tree args ATTRIBUTE_UNUSED,
-				  int flags ATTRIBUTE_UNUSED,
-				  bool *no_add_attrs)
+				  int flags, bool *no_add_attrs)
 {
   tree alt;
 
@@ -5970,6 +5787,14 @@ ix86_function_type_abi (const_tree fntype)
       return abi;
     }
   return ix86_abi;
+}
+
+/* We add this as a workaround in order to use libc_has_function
+   hook in i386.md.  */
+bool
+ix86_libc_has_function (enum function_class fn_class)
+{
+  return targetm.libc_has_function (fn_class);
 }
 
 static bool
@@ -7399,8 +7224,7 @@ ix86_function_arg (cumulative_args_t cum_v, enum machine_mode omode,
    appropriate for passing a pointer to that type.  */
 
 static bool
-ix86_pass_by_reference (cumulative_args_t cum_v ATTRIBUTE_UNUSED,
-			enum machine_mode mode ATTRIBUTE_UNUSED,
+ix86_pass_by_reference (cumulative_args_t cum_v, enum machine_mode mode,
 			const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -8883,6 +8707,10 @@ standard_sse_constant_opcode (rtx insn, rtx x)
 	}
 
     case 2:
+      if (get_attr_mode (insn) == MODE_XI
+	  || get_attr_mode (insn) == MODE_V8DF
+	  || get_attr_mode (insn) == MODE_V16SF)
+	return "vpternlogd\t{$0xFF, %g0, %g0, %g0|%g0, %g0, %g0, 0xFF}";
       if (TARGET_AVX)
 	return "vpcmpeqd\t%0, %0, %0";
       else
@@ -9117,7 +8945,7 @@ ix86_code_end (void)
 /* Emit code for the SET_GOT patterns.  */
 
 const char *
-output_set_got (rtx dest, rtx label ATTRIBUTE_UNUSED)
+output_set_got (rtx dest, rtx label)
 {
   rtx xops[3];
 
@@ -13221,6 +13049,14 @@ ix86_tls_get_addr (void)
       ix86_tls_symbol = gen_rtx_SYMBOL_REF (Pmode, sym);
     }
 
+  if (ix86_cmodel == CM_LARGE_PIC && !TARGET_PECOFF)
+    {
+      rtx unspec = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, ix86_tls_symbol),
+				   UNSPEC_PLTOFF);
+      return gen_rtx_PLUS (Pmode, pic_offset_table_rtx,
+			   gen_rtx_CONST (Pmode, unspec));
+    }
+
   return ix86_tls_symbol;
 }
 
@@ -14128,21 +13964,29 @@ ix86_delegitimize_address (rtx x)
 	    x = replace_equiv_address_nv (orig_x, x);
 	  return x;
 	}
-      if (GET_CODE (x) != CONST
-	  || GET_CODE (XEXP (x, 0)) != UNSPEC
-	  || (XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
-	      && XINT (XEXP (x, 0), 1) != UNSPEC_PCREL)
-	  || (!MEM_P (orig_x) && XINT (XEXP (x, 0), 1) != UNSPEC_PCREL))
-	return ix86_delegitimize_tls_address (orig_x);
-      x = XVECEXP (XEXP (x, 0), 0, 0);
-      if (GET_MODE (orig_x) != GET_MODE (x) && MEM_P (orig_x))
+
+      if (GET_CODE (x) == CONST
+	  && GET_CODE (XEXP (x, 0)) == UNSPEC
+	  && (XINT (XEXP (x, 0), 1) == UNSPEC_GOTPCREL
+	      || XINT (XEXP (x, 0), 1) == UNSPEC_PCREL)
+	  && (MEM_P (orig_x) || XINT (XEXP (x, 0), 1) == UNSPEC_PCREL))
 	{
-	  x = simplify_gen_subreg (GET_MODE (orig_x), x,
-				   GET_MODE (x), 0);
-	  if (x == NULL_RTX)
-	    return orig_x;
+	  x = XVECEXP (XEXP (x, 0), 0, 0);
+	  if (GET_MODE (orig_x) != GET_MODE (x) && MEM_P (orig_x))
+	    {
+	      x = simplify_gen_subreg (GET_MODE (orig_x), x,
+				       GET_MODE (x), 0);
+	      if (x == NULL_RTX)
+		return orig_x;
+	    }
+	  return x;
 	}
-      return x;
+
+      if (ix86_cmodel != CM_MEDIUM_PIC && ix86_cmodel != CM_LARGE_PIC)
+	return ix86_delegitimize_tls_address (orig_x);
+
+      /* Fall thru into the code shared with -m32 for -mcmodel=large -fpic
+	 and -mcmodel=medium -fpic.  */
     }
 
   if (GET_CODE (x) != PLUS
@@ -14179,10 +14023,12 @@ ix86_delegitimize_address (rtx x)
 
   if (GET_CODE (x) == UNSPEC
       && ((XINT (x, 1) == UNSPEC_GOT && MEM_P (orig_x) && !addend)
-	  || (XINT (x, 1) == UNSPEC_GOTOFF && !MEM_P (orig_x))))
+	  || (XINT (x, 1) == UNSPEC_GOTOFF && !MEM_P (orig_x))
+	  || (XINT (x, 1) == UNSPEC_PLTOFF && ix86_cmodel == CM_LARGE_PIC
+	      && !MEM_P (orig_x) && !addend)))
     result = XVECEXP (x, 0, 0);
 
-  if (TARGET_MACHO && darwin_local_data_pic (x)
+  if (!TARGET_64BIT && TARGET_MACHO && darwin_local_data_pic (x)
       && !MEM_P (orig_x))
     result = XVECEXP (x, 0, 0);
 
@@ -14398,6 +14244,7 @@ put_condition_code (enum rtx_code code, enum machine_mode mode, bool reverse,
    If CODE is 'q', pretend the mode is DImode.
    If CODE is 'x', pretend the mode is V4SFmode.
    If CODE is 't', pretend the mode is V8SFmode.
+   If CODE is 'g', pretend the mode is V16SFmode.
    If CODE is 'h', pretend the reg is the 'high' byte register.
    If CODE is 'y', print "st(0)" instead of "st", if the reg is stack op.
    If CODE is 'd', duplicate the operand for AVX instruction.
@@ -14443,6 +14290,8 @@ print_reg (rtx x, int code, FILE *file)
     code = 16;
   else if (code == 't')
     code = 32;
+  else if (code == 'g')
+    code = 64;
   else
     code = GET_MODE_SIZE (GET_MODE (x));
 
@@ -14516,6 +14365,14 @@ print_reg (rtx x, int code, FILE *file)
 	  fputs (hi_reg_name[regno] + 1, file);
 	  return;
 	}
+    case 64:
+      if (SSE_REG_P (x))
+        {
+          gcc_assert (!duplicated);
+          putc ('z', file);
+          fputs (hi_reg_name[REGNO (x)] + 1, file);
+          return;
+        }
       break;
     default:
       gcc_unreachable ();
@@ -14589,6 +14446,7 @@ get_some_local_dynamic_name (void)
    q --  likewise, print the DImode name of the register.
    x --  likewise, print the V4SFmode name of the register.
    t --  likewise, print the V8SFmode name of the register.
+   g --  likewise, print the V16SFmode name of the register.
    h -- print the QImode name for a "high" register, either ah, bh, ch or dh.
    y -- print "st(0)" instead of "st" as a register.
    d -- print duplicated register operand for AVX instruction.
@@ -14818,6 +14676,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	case 'q':
 	case 'h':
 	case 't':
+	case 'g':
 	case 'y':
 	case 'x':
 	case 'X':
@@ -15126,6 +14985,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 		size = "XMMWORD";
               break;
 	    case 32: size = "YMMWORD"; break;
+	    case 64: size = "ZMMWORD"; break;
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -18203,7 +18063,7 @@ ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
 bool
 ix86_unary_operator_ok (enum rtx_code code ATTRIBUTE_UNUSED,
 			enum machine_mode mode ATTRIBUTE_UNUSED,
-			rtx operands[2] ATTRIBUTE_UNUSED)
+			rtx operands[2])
 {
   /* If one of operands is memory, source and destination must match.  */
   if ((MEM_P (operands[0])
@@ -30154,7 +30014,7 @@ make_resolver_func (const tree default_decl,
   DECL_IGNORED_P (decl) = 0;
   /* IFUNC resolvers have to be externally visible.  */
   TREE_PUBLIC (decl) = 1;
-  DECL_UNINLINABLE (decl) = 0;
+  DECL_UNINLINABLE (decl) = 1;
 
   /* Resolver is not external, body is generated.  */
   DECL_EXTERNAL (decl) = 0;
@@ -32296,9 +32156,8 @@ ix86_expand_vec_set_builtin (tree exp)
    IGNORE is nonzero if the value is to be ignored.  */
 
 static rtx
-ix86_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
-		     enum machine_mode mode ATTRIBUTE_UNUSED,
-		     int ignore ATTRIBUTE_UNUSED)
+ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
+		     enum machine_mode mode, int ignore)
 {
   const struct builtin_description *d;
   size_t i;
@@ -34122,7 +33981,7 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
      alternative: if reload cannot do this, it will still use its choice.  */
   mode = GET_MODE (x);
   if (TARGET_SSE_MATH && SSE_FLOAT_MODE_P (mode))
-    return MAYBE_SSE_CLASS_P (regclass) ? SSE_REGS : NO_REGS;
+    return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
   if (X87_FLOAT_MODE_P (mode))
     {
@@ -34589,8 +34448,23 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     {
       /* We implement the move patterns for all vector modes into and
 	 out of SSE registers, even when no operation instructions
-	 are available.  OImode move is available only when AVX is
-	 enabled.  */
+	 are available.  */
+
+      /* For AVX-512 we allow, regardless of regno:
+	  - XI mode
+	  - any of 512-bit wide vector mode
+	  - any scalar mode.  */
+      if (TARGET_AVX512F
+	  && (mode == XImode
+	      || VALID_AVX512F_REG_MODE (mode)
+	      || VALID_AVX512F_SCALAR_MODE (mode)))
+	return true;
+
+      /* xmm16-xmm31 are only available for AVX-512.  */
+      if (EXT_REX_SSE_REGNO_P (regno))
+	return false;
+
+      /* OImode move is available only when AVX is enabled.  */
       return ((TARGET_AVX && mode == OImode)
 	      || VALID_AVX256_REG_MODE (mode)
 	      || VALID_SSE_REG_MODE (mode)
@@ -34742,7 +34616,8 @@ ix86_set_reg_reg_cost (enum machine_mode mode)
 
     case MODE_VECTOR_INT:
     case MODE_VECTOR_FLOAT:
-      if ((TARGET_AVX && VALID_AVX256_REG_MODE (mode))
+      if ((TARGET_AVX512F && VALID_AVX512F_REG_MODE (mode))
+	  || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	  || (TARGET_SSE2 && VALID_SSE2_REG_MODE (mode))
 	  || (TARGET_SSE && VALID_SSE_REG_MODE (mode))
 	  || (TARGET_MMX && VALID_MMX_REG_MODE (mode)))
@@ -35372,6 +35247,10 @@ x86_order_regs_for_local_alloc (void)
    for (i = FIRST_SSE_REG; i <= LAST_SSE_REG; i++)
      reg_alloc_order [pos++] = i;
    for (i = FIRST_REX_SSE_REG; i <= LAST_REX_SSE_REG; i++)
+     reg_alloc_order [pos++] = i;
+
+   /* Extended REX SSE registers.  */
+   for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
      reg_alloc_order [pos++] = i;
 
    /* x87 registers.  */
@@ -36371,9 +36250,9 @@ x86_emit_floatuns (rtx operands[2])
   emit_label (donelab);
 }
 
-/* AVX2 does support 32-byte integer vector operations,
-   thus the longest vector we are faced with is V32QImode.  */
-#define MAX_VECT_LEN	32
+/* AVX512F does support 64-byte integer vector operations,
+   thus the longest vector we are faced with is V64QImode.  */
+#define MAX_VECT_LEN	64
 
 struct expand_vec_perm_d
 {
@@ -42910,7 +42789,7 @@ ix86_spill_class (reg_class_t rclass, enum machine_mode mode)
   if (TARGET_SSE && TARGET_GENERAL_REGS_SSE_SPILL && ! TARGET_MMX
       && (mode == SImode || (TARGET_64BIT && mode == DImode))
       && INTEGER_CLASS_P (rclass))
-    return SSE_REGS;
+    return ALL_SSE_REGS;
   return NO_REGS;
 }
 

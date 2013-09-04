@@ -1,6 +1,6 @@
 /* PR debug/51410 */
 /* { dg-do compile } */
-/* { dg-options "-O0 -gdwarf-2 -dA -fno-merge-debug-strings" } */
+/* { dg-options "-O0 -gdwarf -dA -fno-merge-debug-strings" } */
 
 int x;
 

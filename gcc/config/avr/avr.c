@@ -7030,7 +7030,9 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
   RTX_CODE shift = UNKNOWN;
   bool sign_in_carry = false;
   bool msb_in_carry = false;
+  bool lsb_in_tmp_reg = false;
   bool lsb_in_carry = false;
+  bool frac_rounded = false;
   const char *code_ashift = "lsl %0";
 
 
@@ -7038,6 +7040,7 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
   /* Shorthand used below.  */                                          \
   ((sign_bytes                                                          \
     && IN_RANGE (RR, dest.regno_msb - sign_bytes + 1, dest.regno_msb))  \
+   || (offset && IN_RANGE (RR, dest.regno, dest.regno_msb))		\
    || (reg_unused_after (insn, all_regs_rtx[RR])                        \
        && !IN_RANGE (RR, dest.regno, dest.regno_msb)))
 
@@ -7112,13 +7115,119 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
   else
     gcc_unreachable();
 
+  /* If we need to round the fraction part, we might need to save/round it
+     before clobbering any of it in Step 1.  Also, we might to want to do
+     the rounding now to make use of LD_REGS.  */
+  if (SCALAR_INT_MODE_P (GET_MODE (xop[0]))
+      && SCALAR_ACCUM_MODE_P (GET_MODE (xop[1]))
+      && !TARGET_FRACT_CONV_TRUNC)
+    {
+      bool overlap
+	= (src.regno <=
+	   (offset ? dest.regno_msb - sign_bytes : dest.regno + zero_bytes - 1)
+	   && dest.regno - offset -1 >= dest.regno);
+      unsigned s0 = dest.regno - offset -1;
+      bool use_src = true;
+      unsigned sn;
+      unsigned copied_msb = src.regno_msb;
+      bool have_carry = false;
+
+      if (src.ibyte > dest.ibyte)
+	copied_msb -= src.ibyte - dest.ibyte;
+
+      for (sn = s0; sn <= copied_msb; sn++)
+	if (!IN_RANGE (sn, dest.regno, dest.regno_msb)
+	    && !reg_unused_after (insn, all_regs_rtx[sn]))
+	  use_src = false;
+      if (use_src && TEST_HARD_REG_BIT (reg_class_contents[LD_REGS], s0))
+	{
+	  avr_asm_len ("tst %0" CR_TAB "brpl 0f",
+		       &all_regs_rtx[src.regno_msb], plen, 2);
+	  sn = src.regno;
+	  if (sn < s0)
+	    {
+	      if (TEST_HARD_REG_BIT (reg_class_contents[LD_REGS], sn))
+		avr_asm_len ("cpi %0,1", &all_regs_rtx[sn], plen, 1);
+	      else
+		avr_asm_len ("sec" CR_TAB "cpc %0,__zero_reg__",
+			     &all_regs_rtx[sn], plen, 2);
+	      have_carry = true;
+	    }
+	  while (++sn < s0)
+	    avr_asm_len ("cpc %0,__zero_reg__", &all_regs_rtx[sn], plen, 1);
+	  avr_asm_len (have_carry ? "sbci %0,128" : "subi %0,129",
+		       &all_regs_rtx[s0], plen, 1);
+	  for (sn = src.regno + src.fbyte; sn <= copied_msb; sn++)
+	    avr_asm_len ("sbci %0,255", &all_regs_rtx[sn], plen, 1);
+	  avr_asm_len ("\n0:", NULL, plen, 0);
+	  frac_rounded = true;
+	}
+      else if (use_src && overlap)
+	{
+	  avr_asm_len ("clr __tmp_reg__" CR_TAB
+		       "sbrc %1,0" CR_TAB "dec __tmp_reg__", xop, plen, 1);
+	  sn = src.regno;
+	  if (sn < s0)
+	    {
+	      avr_asm_len ("add %0,__tmp_reg__", &all_regs_rtx[sn], plen, 1);
+	      have_carry = true;
+	    }
+	  while (++sn < s0)
+	    avr_asm_len ("adc %0,__tmp_reg__", &all_regs_rtx[sn], plen, 1);
+	  if (have_carry)
+	    avr_asm_len ("clt" CR_TAB "bld __tmp_reg__,7" CR_TAB
+			 "adc %0,__tmp_reg__",
+			 &all_regs_rtx[s0], plen, 1);
+	  else
+	    avr_asm_len ("lsr __tmp_reg" CR_TAB "add %0,__tmp_reg__",
+			 &all_regs_rtx[s0], plen, 2);
+	  for (sn = src.regno + src.fbyte; sn <= copied_msb; sn++)
+	    avr_asm_len ("adc %0,__zero_reg__", &all_regs_rtx[sn], plen, 1);
+	  frac_rounded = true;
+	}
+      else if (overlap)
+	{
+	  bool use_src
+	    = (TEST_HARD_REG_BIT (reg_class_contents[LD_REGS], s0)
+	       && (IN_RANGE (s0, dest.regno, dest.regno_msb)
+		   || reg_unused_after (insn, all_regs_rtx[s0])));
+	  xop[2] = all_regs_rtx[s0];
+	  unsigned sn = src.regno;
+	  if (!use_src || sn == s0)
+	    avr_asm_len ("mov __tmp_reg__,%2", xop, plen, 1);
+	  /* We need to consider to-be-discarded bits
+	     if the value is negative.  */
+	  if (sn < s0)
+	    {
+	      avr_asm_len ("tst %0" CR_TAB "brpl 0f",
+			   &all_regs_rtx[src.regno_msb], plen, 2);
+	      /* Test to-be-discarded bytes for any nozero bits.
+		 ??? Could use OR or SBIW to test two registers at once.  */
+	      if (sn < s0)
+		avr_asm_len ("cp %0,__zero_reg__", &all_regs_rtx[sn], plen, 1);
+	      while (++sn < s0)
+		avr_asm_len ("cpc %0,__zero_reg__", &all_regs_rtx[sn], plen, 1);
+	      /* Set bit 0 in __tmp_reg__ if any of the lower bits was set.  */
+	      if (use_src)
+		avr_asm_len ("breq 0f" CR_TAB
+			     "ori %2,1" "\n0:\t" "mov __tmp_reg__,%2",
+			     xop, plen, 3);
+	      else
+		avr_asm_len ("breq 0f" CR_TAB
+			     "set" CR_TAB "bld __tmp_reg__,0\n0:",
+			     xop, plen, 3);
+	    }
+	  lsb_in_tmp_reg = true;
+	}
+    }
+
   /* Step 1:  Clear bytes at the low end and copy payload bits from source
      ======   to destination.  */
 
   int step = offset < 0 ? 1 : -1;
   unsigned d0 = offset < 0 ? dest.regno : dest.regno_msb;
 
-  // We leared at least that number of registers.
+  // We cleared at least that number of registers.
   int clr_n = 0;
 
   for (; d0 >= dest.regno && d0 <= dest.regno_msb; d0 += step)
@@ -7208,6 +7317,7 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
           unsigned src_lsb = dest.regno - offset -1;
 
           if (shift == ASHIFT && src.fbyte > dest.fbyte && !lsb_in_carry
+	      && !lsb_in_tmp_reg
               && (d0 == src_lsb || d0 + stepw == src_lsb))
             {
               /* We are going to override the new LSB; store it into carry.  */
@@ -7229,7 +7339,91 @@ avr_out_fract (rtx insn, rtx operands[], bool intsigned, int *plen)
     {
       unsigned s0 = dest.regno - offset -1;
 
-      if (MAY_CLOBBER (s0))
+      /* n1169 4.1.4 says:
+	 "Conversions from a fixed-point to an integer type round toward zero."
+	 Hence, converting a fract type to integer only gives a non-zero result
+	 for -1.  */
+      if (SCALAR_INT_MODE_P (GET_MODE (xop[0]))
+	  && SCALAR_FRACT_MODE_P (GET_MODE (xop[1]))
+	  && !TARGET_FRACT_CONV_TRUNC)
+	{
+	  gcc_assert (s0 == src.regno_msb);
+	  /* Check if the input is -1.  We do that by checking if negating
+	     the input causes an integer overflow.  */
+	  unsigned sn = src.regno;
+	  avr_asm_len ("cp __zero_reg__,%0", &all_regs_rtx[sn++], plen, 1);
+	  while (sn <= s0)
+	    avr_asm_len ("cpc __zero_reg__,%0", &all_regs_rtx[sn++], plen, 1);
+
+	  /* Overflow goes with set carry.  Clear carry otherwise.  */
+	  avr_asm_len ("brvs 0f" CR_TAB "clc\n0:", NULL, plen, 2);
+	}
+      /* Likewise, when converting from accumulator types to integer, we
+	 need to round up negative values.  */
+      else if (SCALAR_INT_MODE_P (GET_MODE (xop[0]))
+	       && SCALAR_ACCUM_MODE_P (GET_MODE (xop[1]))
+	       && !TARGET_FRACT_CONV_TRUNC
+	       && !frac_rounded)
+	{
+	  bool have_carry = false;
+
+	  xop[2] = all_regs_rtx[s0];
+	  if (!lsb_in_tmp_reg && !MAY_CLOBBER (s0))
+	    avr_asm_len ("mov __tmp_reg__,%2", xop, plen, 1);
+	  avr_asm_len ("tst %0" CR_TAB "brpl 0f",
+		       &all_regs_rtx[src.regno_msb], plen, 2);
+	  if (!lsb_in_tmp_reg)
+	    {
+	      unsigned sn = src.regno;
+	      if (sn < s0)
+		{
+		  avr_asm_len ("cp __zero_reg__,%0", &all_regs_rtx[sn],
+			       plen, 1);
+		  have_carry = true;
+		}
+	      while (++sn < s0)
+		avr_asm_len ("cpc __zero_reg__,%0", &all_regs_rtx[sn], plen, 1);
+	      lsb_in_tmp_reg = !MAY_CLOBBER (s0);
+	    }
+	  /* Add in C and the rounding value 127.  */
+	  /* If the destination msb is a sign byte, and in LD_REGS,
+	     grab it as a temporary.  */
+	  if (sign_bytes
+	      && TEST_HARD_REG_BIT (reg_class_contents[LD_REGS],
+				    dest.regno_msb))
+	    {
+	      xop[3] = all_regs_rtx[dest.regno_msb];
+	      avr_asm_len ("ldi %3,127", xop, plen, 1);
+	      avr_asm_len ((have_carry && lsb_in_tmp_reg ? "adc __tmp_reg__,%3"
+			   : have_carry ? "adc %2,%3"
+			   : lsb_in_tmp_reg ? "add __tmp_reg__,%3"
+			   : "add %2,%3"),
+			   xop, plen, 1);
+	    }
+	  else
+	    {
+	      /* Fall back to use __zero_reg__ as a temporary.  */
+	      avr_asm_len ("dec __zero_reg__", NULL, plen, 1);
+	      if (have_carry)
+		avr_asm_len ("clt" CR_TAB "bld __zero_reg__,7", NULL, plen, 2);
+	      else
+		avr_asm_len ("lsr __zero_reg__", NULL, plen, 1);
+	      avr_asm_len ((have_carry && lsb_in_tmp_reg
+			   ? "adc __tmp_reg__,__zero_reg__"
+			   : have_carry ? "adc %2,__zero_reg__"
+			   : lsb_in_tmp_reg ? "add __tmp_reg__,__zero_reg__"
+			   : "add %2,__zero_reg__"),
+			   xop, plen, 1);
+	      avr_asm_len ("eor __zero_reg__,__zero_reg__", NULL, plen, 1);
+	    }
+	  for (d0 = dest.regno + zero_bytes;
+	       d0 <= dest.regno_msb - sign_bytes; d0++)
+	    avr_asm_len ("adc %0,__zero_reg__", &all_regs_rtx[d0], plen, 1);
+	  avr_asm_len (lsb_in_tmp_reg
+		       ? "\n0:\t" "lsl __tmp_reg__" : "\n0:\t" "lsl %2",
+		       xop, plen, 1);
+	}
+      else if (MAY_CLOBBER (s0))
         avr_asm_len ("lsl %0", &all_regs_rtx[s0], plen, 1);
       else
         avr_asm_len ("mov __tmp_reg__,%0" CR_TAB

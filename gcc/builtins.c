@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "diagnostic-core.h"
 #include "builtins.h"
+#include "ubsan.h"
 
 
 #ifndef PAD_VARARGS_DOWN
@@ -61,7 +62,7 @@ struct target_builtins *this_target_builtins = &default_target_builtins;
 #endif
 
 /* Define the names of the builtin function types and codes.  */
-const char *const built_in_class_names[4]
+const char *const built_in_class_names[BUILT_IN_LAST]
   = {"NOT_BUILT_IN", "BUILT_IN_FRONTEND", "BUILT_IN_MD", "BUILT_IN_NORMAL"};
 
 #define DEF_BUILTIN(X, N, C, T, LT, B, F, NA, AT, IM, COND) #X,
@@ -249,6 +250,30 @@ is_builtin_fn (tree decl)
   return TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl);
 }
 
+/* By default we assume that c99 functions are present at the runtime,
+   but sincos is not.  */
+bool
+default_libc_has_function (enum function_class fn_class)
+{
+  if (fn_class == function_c94
+      || fn_class == function_c99_misc
+      || fn_class == function_c99_math_complex)
+    return true;
+
+  return false;
+}
+
+bool
+gnu_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
+bool
+no_c99_libc_has_function (enum function_class fn_class ATTRIBUTE_UNUSED)
+{
+  return false;
+}
 
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
@@ -2555,7 +2580,7 @@ expand_builtin_cexpi (tree exp, rtx target)
       /* Compute into op1 and op2.  */
       expand_twoval_unop (sincos_optab, op0, op2, op1, 0);
     }
-  else if (TARGET_HAS_SINCOS)
+  else if (targetm.libc_has_function (function_sincos))
     {
       tree call, fn = NULL_TREE;
       tree top1, top2;
@@ -5834,6 +5859,13 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
      set of builtins.  */
   if (!optimize
       && !called_as_built_in (fndecl)
+      && fcode != BUILT_IN_FORK
+      && fcode != BUILT_IN_EXECL
+      && fcode != BUILT_IN_EXECV
+      && fcode != BUILT_IN_EXECLP
+      && fcode != BUILT_IN_EXECLE
+      && fcode != BUILT_IN_EXECVP
+      && fcode != BUILT_IN_EXECVE
       && fcode != BUILT_IN_ALLOCA
       && fcode != BUILT_IN_ALLOCA_WITH_ALIGN
       && fcode != BUILT_IN_FREE)
@@ -5873,6 +5905,9 @@ expand_builtin (tree exp, rtx target, rtx subtarget, enum machine_mode mode,
   switch (fcode)
     {
     CASE_FLT_FN (BUILT_IN_FABS):
+    case BUILT_IN_FABSD32:
+    case BUILT_IN_FABSD64:
+    case BUILT_IN_FABSD128:
       target = expand_builtin_fabs (exp, target, subtarget);
       if (target)
 	return target;
@@ -7818,7 +7853,7 @@ fold_builtin_sincos (location_t loc,
     return res;
 
   /* Canonicalize sincos to cexpi.  */
-  if (!TARGET_C99_FUNCTIONS)
+  if (!targetm.libc_has_function (function_c99_math_complex))
     return NULL_TREE;
   fn = mathfn_built_in (type, BUILT_IN_CEXPI);
   if (!fn)
@@ -7858,7 +7893,7 @@ fold_builtin_cexp (location_t loc, tree arg0, tree type)
 
   /* In case we can figure out the real part of arg0 and it is constant zero
      fold to cexpi.  */
-  if (!TARGET_C99_FUNCTIONS)
+  if (!targetm.libc_has_function (function_c99_math_complex))
     return NULL_TREE;
   ifn = mathfn_built_in (rtype, BUILT_IN_CEXPI);
   if (!ifn)
@@ -10199,6 +10234,11 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
     case BUILT_IN_CLASSIFY_TYPE:
       return fold_builtin_classify_type (NULL_TREE);
 
+    case BUILT_IN_UNREACHABLE:
+      if (flag_sanitize & SANITIZE_UNREACHABLE)
+	return ubsan_instrument_unreachable (loc);
+      break;
+
     default:
       break;
     }
@@ -10236,6 +10276,9 @@ fold_builtin_1 (location_t loc, tree fndecl, tree arg0, bool ignore)
       return fold_builtin_strlen (loc, type, arg0);
 
     CASE_FLT_FN (BUILT_IN_FABS):
+    case BUILT_IN_FABSD32:
+    case BUILT_IN_FABSD64:
+    case BUILT_IN_FABSD128:
       return fold_builtin_fabs (loc, arg0, type);
 
     case BUILT_IN_ABS:

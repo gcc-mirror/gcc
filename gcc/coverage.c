@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "hash-table.h"
 #include "tree-iterator.h"
+#include "context.h"
+#include "pass_manager.h"
+#include "tree-pass.h"
 #include "cgraph.h"
 #include "dumpfile.h"
 #include "diagnostic-core.h"
@@ -341,11 +344,13 @@ get_coverage_counts (unsigned counter, unsigned expected,
     {
       static int warned = 0;
 
-      if (!warned++)
-	inform (input_location, (flag_guess_branch_prob
-		 ? "file %s not found, execution counts estimated"
-		 : "file %s not found, execution counts assumed to be zero"),
-		da_file_name);
+      if (!warned++ && dump_enabled_p ())
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+                         (flag_guess_branch_prob
+                          ? "file %s not found, execution counts estimated"
+                          : "file %s not found, execution counts assumed to "
+                            "be zero"),
+                         da_file_name);
       return NULL;
     }
 
@@ -369,21 +374,25 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	warning_at (input_location, OPT_Wcoverage_mismatch,
 		    "the control flow of function %qE does not match "
 		    "its profile data (counter %qs)", id, ctr_names[counter]);
-      if (warning_printed)
+      if (warning_printed && dump_enabled_p ())
 	{
-	 inform (input_location, "use -Wno-error=coverage-mismatch to tolerate "
-	 	 "the mismatch but performance may drop if the function is hot");
+          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+                           "use -Wno-error=coverage-mismatch to tolerate "
+                           "the mismatch but performance may drop if the "
+                           "function is hot");
 	  
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      inform (input_location, "coverage mismatch ignored");
-	      inform (input_location, flag_guess_branch_prob
-		      ? G_("execution counts estimated")
-		      : G_("execution counts assumed to be zero"));
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+                               "coverage mismatch ignored");
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+                               flag_guess_branch_prob
+                               ? G_("execution counts estimated")
+                               : G_("execution counts assumed to be zero"));
 	      if (!flag_guess_branch_prob)
-		inform (input_location,
-			"this can result in poorly optimized code");
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
+                                 "this can result in poorly optimized code");
 	    }
 	}
 
@@ -1125,6 +1134,11 @@ coverage_init (const char *filename)
   int len = strlen (filename);
   int prefix_len = 0;
 
+  /* Since coverage_init is invoked very early, before the pass
+     manager, we need to set up the dumping explicitly. This is
+     similar to the handling in finish_optimization_passes.  */
+  dump_start (g->get_passes ()->get_pass_profile ()->static_pass_number, NULL);
+
   if (!profile_data_prefix && !IS_ABSOLUTE_PATH (filename))
     profile_data_prefix = getpwd ();
 
@@ -1167,6 +1181,8 @@ coverage_init (const char *filename)
 	  gcov_write_unsigned (bbg_file_stamp);
 	}
     }
+
+  dump_finish (g->get_passes ()->get_pass_profile ()->static_pass_number);
 }
 
 /* Performs file-level cleanup.  Close notes file, generate coverage

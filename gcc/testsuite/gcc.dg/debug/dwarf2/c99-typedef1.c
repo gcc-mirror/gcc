@@ -1,4 +1,4 @@
-// { dg-options "-std=iso9899:1999 -gdwarf-2" }
+// { dg-options "-std=iso9899:1999 -gdwarf" }
 
 void f() {
   int n = 3;

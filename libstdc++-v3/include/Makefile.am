@@ -128,6 +128,8 @@ bits_headers = \
 	${bits_srcdir}/regex.h \
 	${bits_srcdir}/regex_constants.h \
 	${bits_srcdir}/regex_error.h \
+	${bits_srcdir}/regex_scanner.h \
+	${bits_srcdir}/regex_scanner.tcc \
 	${bits_srcdir}/regex_automaton.h \
 	${bits_srcdir}/regex_automaton.tcc \
 	${bits_srcdir}/regex_compiler.h \

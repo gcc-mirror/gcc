@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-save-temps -g -dA" } */
+/* { dg-options "-save-temps -gdwarf -dA" } */
 
 typedef const struct _Harry { int dummy; } Harry_t;
 Harry_t harry;

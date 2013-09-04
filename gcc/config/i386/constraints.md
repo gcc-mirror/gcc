@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B     H           T
-;;;           h jk          v
+;;;           h jk
 
 ;; Integer register constraints.
 ;; It is not necessary to define 'r' here.
@@ -101,11 +101,11 @@
  "First SSE register (@code{%xmm0}).")
 
 (define_register_constraint "Yi"
- "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC ? SSE_REGS : NO_REGS"
+ "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC ? ALL_SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 and inter-unit moves to vector registers are enabled.")
 
 (define_register_constraint "Yj"
- "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_FROM_VEC ? SSE_REGS : NO_REGS"
+ "TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_FROM_VEC ? ALL_SSE_REGS : NO_REGS"
  "@internal Any SSE register, when SSE2 and inter-unit moves from vector registers are enabled.")
 
 (define_register_constraint "Ym"
@@ -137,6 +137,9 @@
 (define_register_constraint "Yf"
  "(ix86_fpmath & FPMATH_387) ? FLOAT_REGS : NO_REGS"
  "@internal Any x87 register when 80387 FP arithmetic is enabled.")
+
+(define_register_constraint "v" "TARGET_SSE ? ALL_SSE_REGS : NO_REGS"
+ "Any EVEX encodable SSE register (@code{%xmm0-%xmm31}).")
 
 (define_constraint "z"
   "@internal Constant call address operand."

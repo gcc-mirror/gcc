@@ -6424,10 +6424,23 @@ code_motion_process_successors (insn_t insn, av_set_t orig_ops,
         res = b;
 
       /* We have simplified the control flow below this point.  In this case,
-         the iterator becomes invalid.  We need to try again.  */
+         the iterator becomes invalid.  We need to try again.
+	 If we have removed the insn itself, it could be only an
+	 unconditional jump.  Thus, do not rescan but break immediately --
+	 we have already visited the only successor block.  */
+      if (!BLOCK_FOR_INSN (insn))
+	{
+	  if (sched_verbose >= 6)
+	    sel_print ("Not doing rescan: already visited the only successor"
+		       " of block %d\n", old_index);
+	  break;
+	}
       if (BLOCK_FOR_INSN (insn)->index != old_index
           || EDGE_COUNT (bb->succs) != old_succs)
         {
+	  if (sched_verbose >= 6)
+	    sel_print ("Rescan: CFG was simplified below insn %d, block %d\n",
+		       INSN_UID (insn), BLOCK_FOR_INSN (insn)->index);
           insn = sel_bb_end (BLOCK_FOR_INSN (insn));
           goto rescan;
         }

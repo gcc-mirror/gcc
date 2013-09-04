@@ -4745,7 +4745,8 @@ generate_local_decl (gfc_symbol * sym)
 		gfc_warning ("Dummy argument '%s' at %L was declared "
 			     "INTENT(OUT) but was not set",  sym->name,
 			     &sym->declared_at);
-	      else if (!gfc_has_default_initializer (sym->ts.u.derived))
+	      else if (!gfc_has_default_initializer (sym->ts.u.derived)
+		       && !sym->ts.u.derived->attr.zero_comp)
 		gfc_warning ("Derived-type dummy argument '%s' at %L was "
 			     "declared INTENT(OUT) but was not set and "
 			     "does not have a default initializer",

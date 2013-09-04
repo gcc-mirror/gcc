@@ -1,3 +1,389 @@
+2013-09-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::simple_type_specifier):
+	Declare as overrider.
+	* cxx-pretty-print.c (cxx_pretty_printer::simple_type_specifier):
+	Rename from pp_cxx_simple_type_specifier.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	simple_type_specifier.
+
+2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58305
+	* typeck2.c (build_functional_cast): Maybe warn_deprecated_use.
+
+2013-09-03  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (cp/lambda.o): Add dependencies.
+
+2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::type_id): Declare as
+	overrider.
+	* cxx-pretty-print.c (pp_cxx_storage_class_specifier): Remove.
+	(pp_cxx_userdef_literal): Tidy.
+	(pp_cxx_template_argument_list): Likewise.
+	(pp_cxx_typeid_expression): Likewise.
+	(pp_cxx_offsetof_expression_1): Likewise.
+	(cxx_pretty_printer::postfix_expression): Likewise.
+	(cxx_pretty_printer::unary_expression): Likewise.
+	(cxx_pretty_printer::statement): Likewise.
+	(cxx_pretty_printer::type_id): Rename from pp_cxx_type_id.
+	(c_pretty_printer::cxx_pretty_printer): Do not assign to type_id.
+	* error.c (dump_decl): Tidy.
+	(dump_expr): Likewise.
+
+2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/21682, implement DR 565
+	* name-lookup.c (compparms_for_decl_and_using_decl): New.
+	(push_overloaded_decl_1, do_nonmember_using_decl): Use it.
+
+2013-08-30  Marek Polacek  <polacek@redhat.com>
+
+	* typeck.c (cp_build_binary_op): Add division by zero and shift
+	instrumentation.
+	* error.c (dump_expr): Special-case ubsan builtins.
+
+2013-08-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51424
+	* cp-tree.h (LOOKUP_DELEGATING_CONS): Add.
+	* init.c (perform_target_ctor): Use it.
+	* call.c (build_special_member_call): Diagnose self-delegating
+	constructors.
+
+2013-08-30  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::declaration): Declare as
+	overrider.
+	(cxx_pretty_printer::declaration_specifiers): Likewise.
+	(cxx_pretty_printer::function_specifier): Likewise.
+	(cxx_pretty_printer::declarator): Likewise.
+	(cxx_pretty_printer::direct_declarator): Likewise.
+	(cxx_pretty_printer::abstract_declarator): Likewise.
+	(cxx_pretty_printer::direct_abstract_declarator): Likewise.
+	(pp_cxx_declaration): Remove.
+	* cxx-pretty-print.c (cxx_pretty_printer::function_specifier):
+	Rename from pp_cxx_function_specifier.  Adjust.
+	(cxx_pretty_printer::declaration_specifiers): Rename from
+	pp_cxx_decl_specifier_seq.  Adjust.
+	(cxx_pretty_printer::direct_declarator): Rename from
+	pp_cxx_direct_declarator.  Adjust.
+	(cxx_pretty_printer::declarator): Rename from pp_cxx_declarator.
+	Adjust.
+	(cxx_pretty_printer::abstract_declarator): Rename from
+	pp_cxx_abstract_declarator.  Adjust.
+	(cxx_pretty_printer::direct_abstract_declarator): Rename from
+	pp_cxx_direct_abstract_declarator.  Adjust.
+	(cxx_pretty_printer::declaration): Rename from
+	pp_cxx_declaration.  Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	declaration, declaration_specifiers, function_specifier,
+	declarator, direct_declarator, abstract_declarator,
+	direct_abstract_declarator.
+	* error.c (dump_decl): Adjust.
+
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	Correct previous patch to not mark terminate as LEAF.
+	* class.c (build_vtbl_initializer): Drop LEAF
+	* decl.c (cxx_init_decl_processing): Likewise.
+	(push_throw_library_fn): Likewise.
+	* except.c (init_exception_processing): Likewise.
+	(do_begin_catch): Likewise.
+	(do_end_catch): Likewise.
+	(do_allocate_exception): Likewise.
+
+2013-08-29  Jan Hubicka  <jh@suse.cz>
+
+	* class.c (build_vtbl_initializer): Make __cxa_deleted_virtual
+	ECF_NORETURN | ECF_LEAF
+	* cp-tree.h (build_library_fn_ptr, build_cp_library_fn_ptr,
+	push_library_fn, push_void_library_fn): Update prototype.
+	* decl.c (build_library_fn_1): Remove.
+	(push_cp_library_fn, build_cp_library_fn): Update to take ECF flags.
+	(cxx_init_decl_processing): Update; global_delete_fndecl is ECF_NOTROW;
+	__cxa_pure_virtual is ECF_NORETURN | ECF_NORETURN | ECF_LEAF.
+	(build_library_fn_1): Add ecf_flags argument; rename to ...
+	(build_library_fn): ... this one.
+	(build_cp_library_fn): Take ecf_flags; do not copy NOTHROW flag.
+	(build_library_fn_ptr): Take ecf_flags.
+	(build_cp_library_fn_ptr): Likewise.
+	(push_library_fn): Likewise.
+	(push_cp_library_fn): Likewise.
+	(push_void_library_fn): Likewise.
+	(push_throw_library_fn): All throws are ECF_NORETURN.
+	(__cxa_atexit, __cxa_thread_atexit): Add ECF_LEAF | ECF_NOTHROW attributes.
+	(expand_static_init): __cxa_guard_acquire, __cxa_guard_release,
+	__cxa_guard_abort are ECF_NOTHROW | ECF_LEAF.
+	* except.c (init_exception_processing): terminate is
+	ECF_NOTHROW | ECF_NORETURN | ECF_LEAF.
+	(declare_nothrow_library_fn): Add ecf_flags parameter.
+	(__cxa_get_exception_ptr): Is ECF_NOTHROW | ECF_PURE | ECF_LEAF |
+	ECF_TM_PURE.
+	(do_begin_catch): cxa_begin_catch and _ITM_cxa_begin_catch
+	are ECF_NOTHROW | ECF_LEAF.
+	(do_end_catch): __cxa_end_catch and _ITM_cxa_end_catch is
+	ECF_LEAF.
+	(do_allocate_exception): _cxa_allocate_exception
+	and _ITM_cxa_allocate_exception are ECF_NOTHROW | ECF_MALLOC
+	| ECF_LEAF
+	(do_free_exception): __cxa_free_exception is
+	ECF_NOTHROW | ECF_LEAF.
+	* rtti.c (build_dynamic_cast_1): __dynamic_cast
+	is ECF_LEAF | ECF_PURE | ECF_NOTHROW.
+
+2013-08-29  Adam Butcher  <adam@jessamine.co.uk>
+
+	* error.c (dump_lambda_function): New function, dependent on ...
+	(dump_substitution): ... this new function, factored out of ...
+	(subst_to_string): ... here and ...
+	(dump_function_decl): ... here.  Updated to early-out with call to
+	dump_lambda_function after determining template bindings.
+
+2013-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58255
+	* init.c (build_aggr_init): When init == void_type_node do not
+	set LOOKUP_ONLYCONVERTING.
+
+2013-08-27  Caroline Tice  <cmtice@google.com>
+
+	* vtable-class-hierarchy.c: Remove unnecessary include statements.
+	(MAX_SET_SIZE): Remove unnecessary constant.
+	(register_construction_vtables):  Make vtable_ptr_array parameter
+	into a vector; remove num_args parameter. Change array accesses to
+	vector accesses.
+	(register_other_binfo_vtables): Ditto.
+	(insert_call_to_register_set): Ditto.
+	(insert_call_to_register_pair): Ditto.
+	(output_set_info):  Ditto.  Also change warning calls to warning_at
+	calls, and fix format of warning messages.
+	(register_all_pairs): Change vtbl_ptr_array from an array into a
+	vector.  Remove num_vtable_args (replace with calls to vector length).
+	Change array stores & accesses to vector functions. Change calls to
+	register_construction_vtables, register_other_binfo_vtables,
+	insert_call_to_register_set, insert_call_to_register_pair and
+	output_set_info to match their new signatures.  Change warning to
+	warning_at and fix the format of the warning message.
+
+2013-08-27  Jakub Jelinek  <jakub@redhat.com>
+	    Aldy Hernandez  <aldyh@redhat.com>
+
+	* cp-tree.h (CP_OMP_CLAUSE_INFO): Adjust range for new clauses.
+
+2013-08-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokfndecl): Remove old bison hack.
+
+2013-08-26  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (DECL_CONSTRUCTOR_P, DECL_DESTRUCTOR_P): Use
+	middle-end flag.
+
+2013-08-26  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::unary_expression):
+	Declare as overrider.
+	(cxx_pretty_printer::multiplicative_expression): Likewise.
+	(cxx_pretty_printer::conditional_expression): Likewise.
+	(cxx_pretty_printer::assignment_expression): Likewise.
+	(cxx_pretty_printer::expression): Likewise.
+	* cxx-pretty-print.c (cxx_pretty_printer::unary_expression):
+	Rename from pp_cxx_unary_expression.  Adjust.
+	(cxx_pretty_printer::multiplicative_expression): Rename from
+	pp_cxx_multiplicative_expression.  Adjust.
+	(cxx_pretty_printer::conditional_expression): Rename from
+	pp_cxx_conditional_expression.  Adjust.
+	(cxx_pretty_printer::assignment_expression): Rename from
+	pp_cxx_assignment_expression.  Adjust.
+	(cxx_pretty_printer::expression): Rename from pp_cxx_expression.
+	Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Dot not assign to
+	unary_expression, multiplicative_expression,
+	conditional_expression, assignment_expression, expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::postfix_expression):
+	Declare as overrider.
+	* cxx-pretty-print.c (cxx_pretty_printer::postfix_expression):
+	Rename from pp_cxx_postfix_expression.  Adjust.
+	(pp_cxx_expression): Use pp_postfix_expression.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	postfix_expression.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::primary_expression): Now
+	an overrider of c_pretty_printer::primary_expression.
+	* cxx-pretty-print.c (cxx_pretty_printer::primary_expression):
+	Rename from pp_cxx_primary_expression.  Adjust.
+	(pp_cxx_postfix_expression): Use pp_primary_expression.
+	(pp_cxx_ctor_initializer): Likewise.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	primary_expression.
+
+2013-08-23  Jan Hubicka  <jh@suse.cz>
+
+	* cp-tree.h (struct lang_type_class): Free is_final bit.
+	(CLASSTYPE_FINAL): Define using TYPE_FINAL_P.
+	(DECL_FINAL_P): Remove.
+	* pt.c (instantiate_class_template_1): Guard that CLASSTYPE_FINAL
+	is called on CLASS_TYPE_P.
+
+2013-08-25  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.c (M_): Remove.
+	(pp_cxx_unqualified_id): Use translate_string instead of M_.
+	(pp_cxx_canonical_template_parameter): Likewise.
+
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::id_expression): Declare.
+	* cxx-pretty-print.c (cxx_pretty_printer::id_expression): Rename
+	from pp_cxx_id_expression.  Adjust.
+	(pp_cxx_userdef_literal): Use pp_id_expression.
+	(pp_cxx_primary_expression): Likewise.
+	(pp_cxx_direct_declarator): Likewise.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	id_expression.
+
+2013-08-24  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::constant): Now a member
+	function, overriding c_pretty_printer::constant.
+	* cxx-pretty-print.c (cxx_pretty_printer::constant): Rename from
+	pp_cxx_constant.  Adjust.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to constant.
+
+2013-08-23  Gabriel Dos Reis  <gdr@integrable-solutiobs.net>
+
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Call a
+	destructor for the early printer.
+	* error.c (type_to_string): Use pp_buffer.
+
+2013-08-22  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56380
+	* class.c (check_field_decls): Check for const mutable and const
+	reference data members.
+
+2013-08-22  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (init_error): Remove calls to pp_construct and
+	pp_cxx_pretty_printer_init.  Initialize cxx_pp with placement-new.
+	* cxx-pretty-print.h (cxx_pretty_printer::cxx_pretty_printer): Declare.
+	(cxx_pretty_printer_init): Remove.
+	* cxx-pretty-print.c (cxx_pretty_printer::cxx_pretty_printer):
+	Rename from cxx_pretty_printer_init.  Adjust.
+	* cp-objcp-common.c (cxx_initialize_diagnostics): Simplify
+	initialization of C++ diagnostics pretty printer.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* call.c (build_new_method_call_1): Use INDIRECT_REF_P.
+	* cp-tree.h (REFERENCE_REF_P): Likewise.
+	* semantics.c (finish_offsetof): Likewise.
+
+2013-08-21  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/56130
+	* semantics.c (finish_id_expression): Handle deprecated references.
+
+2013-08-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58119
+	* cvt.c (build_expr_type_conversion): Don't complain about a
+	template that can't match the desired type category.
+
+2013-08-20  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (pp_ggc_formatted_text): New.
+	(type_as_string): Use it in lieu of pp_formatted_text.
+	(type_as_string_translate): Likewise.
+	(expr_as_string): Likewise.
+	(decl_as_string): Likewise.
+	(decl_as_string_translate): Likewise.
+	(lang_decl_name): Likewise.
+	(decl_to_string): Likewise.
+	(expr_to_string): Likewise.
+	(fndecl_to_string): Likewise.
+	(parm_to_string): Likewise.
+	(type_to_string): Likewise.
+	(args_to_string): Likewise.
+	(subst_to_string): Likewise.
+
+2013-08-19  Balaji V. Iyer  <balaji.v.iyer@intel.com>
+
+	PR c/57490
+	* cp-array-notation.c (cp_expand_cond_array_notations): Added a
+	check for truth values.
+	(expand_array_notation_exprs): Added truth values case.  Removed an
+	unwanted else.  Added for-loop to walk through subtrees in default
+	case.
+	* call.c (build_cxx_call): Inherited the type of the array notation for
+	certain built-in array notation functions.
+
+2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (cp_parser_lambda_introducer, cp_parser_decltype_expr):
+	Use cp_parser_lookup_name_simple.
+
+2013-08-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* name-lookup.h (pop_bindings_and_leave_scope): Declare.
+	* name-lookup.c (pop_bindings_and_leave_scope): Define.
+	* parser.c (cp_parser_lambda_declarator_opt,
+	cp_parser_direct_declarator, cp_parser_cache_defarg): Use it.
+
+2013-08-17  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58083
+	* name-lookup.c (push_class_level_binding_1): It's OK to push a
+	lambda type after the enclosing type is complete.
+
+2013-08-17  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* error.c (dump_scope): Add a cxx_pretty_printer parameter.
+	Adjust callers.
+	(dump_template_argument): Likewise.
+	(dump_template_argument_list): Likewise.
+	(dump_template_parameter): Likewise.
+	(dump_template_bindings): Likewise.
+	(dump_alias_template_specialization): Likewise.
+	(dump_type): Likewise.
+	(dump_typename): Likewise.
+	(dump_aggr_type): Likewise.
+	(dump_type_prefix): Likewise.
+	(dump_type_suffix): Likewise.
+	(dump_global_iord): Likewise.
+	(dump_simple_decl): Likewise.
+	(dump_decl): Likewise.
+	(dump_template_decl): Likewise.
+	(dump_function_decl): Likewise.
+	(dump_parameters): Likewise.
+	(dump_ref_qualifier): Likewise.
+	(dump_exception_spec): Likewise.
+	(dump_function_name): Likewise.
+	(dump_template_parms): Likewise.
+	(dump_call_expr_args): Likewise.
+	(dump_aggr_init_expr_args): Likewise.
+	(dump_expr_list): Likewise.
+	(dump_expr_init_vec): Likewise.
+	(dump_expr): Likewise.
+	(dump_binary_op): Likewise.
+	(dump_unary_op): Likewise.
+
+2013-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/51912
+	* cp-tree.h (LOOKUP_NO_NON_INTEGRAL): Add.
+	* decl.c (case_conversion): Use it.
+	* call.c (standard_conversion): Likewise.
+	(implicit_conversion): Adjust.
+
 2013-08-13  Adam Butcher  <adam@jessamine.co.uk>
 
 	* pt.c: Grammar fix in comments ("it's" to "its").

@@ -1137,7 +1137,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx i1, rtx i2)
 
       /* For address sanitizer, never crossjump __asan_report_* builtins,
 	 otherwise errors might be reported on incorrect lines.  */
-      if (flag_asan)
+      if (flag_sanitize & SANITIZE_ADDRESS)
 	{
 	  rtx call = get_call_rtx_from (i1);
 	  if (call && GET_CODE (XEXP (XEXP (call, 0), 0)) == SYMBOL_REF)
@@ -2807,10 +2807,21 @@ try_optimize_cfg (int mode)
 	      df_analyze ();
 	    }
 
-#ifdef ENABLE_CHECKING
 	  if (changed)
-	    verify_flow_info ();
+            {
+              /* Edge forwarding in particular can cause hot blocks previously
+                 reached by both hot and cold blocks to become dominated only
+                 by cold blocks. This will cause the verification below to fail,
+                 and lead to now cold code in the hot section. This is not easy
+                 to detect and fix during edge forwarding, and in some cases
+                 is only visible after newly unreachable blocks are deleted,
+                 which will be done in fixup_partitions.  */
+              fixup_partitions ();
+
+#ifdef ENABLE_CHECKING
+              verify_flow_info ();
 #endif
+            }
 
 	  changed_overall |= changed;
 	  first_pass = false;

@@ -94,9 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_SPEC "%{m31&m64}%{mesa&mzarch}%{march=*} \
                   -alshd=%b.lst"
 
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS 1
-
 #define ENTRY_SPEC "%{mmain:-entry=_start} \
                     %{!mmain:-entry=0}"
 
@@ -114,4 +111,8 @@ along with GCC; see the file COPYING3.  If not see
 /* IBM copies these libraries over with these names.  */
 #define MATH_LIBRARY "CLBM"
 #define LIBSTDCXX "CPP2"
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION gnu_libc_has_function
+
 #endif /* ! _TPF_H */

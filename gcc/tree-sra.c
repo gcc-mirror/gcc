@@ -1466,6 +1466,7 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
 {
   tree prev_base = base;
   tree off;
+  tree mem_ref;
   HOST_WIDE_INT base_offset;
   unsigned HOST_WIDE_INT misalign;
   unsigned int align;
@@ -1516,7 +1517,12 @@ build_ref_for_offset (location_t loc, tree base, HOST_WIDE_INT offset,
   if (align < TYPE_ALIGN (exp_type))
     exp_type = build_aligned_type (exp_type, align);
 
-  return fold_build2_loc (loc, MEM_REF, exp_type, base, off);
+  mem_ref = fold_build2_loc (loc, MEM_REF, exp_type, base, off);
+  if (TREE_THIS_VOLATILE (prev_base))
+    TREE_THIS_VOLATILE (mem_ref) = 1;
+  if (TREE_SIDE_EFFECTS (prev_base))
+    TREE_SIDE_EFFECTS (mem_ref) = 1;
+  return mem_ref;
 }
 
 /* Construct a memory reference to a part of an aggregate BASE at the given

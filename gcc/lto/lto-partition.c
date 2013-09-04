@@ -449,11 +449,9 @@ lto_balanced_map (void)
 {
   int n_nodes = 0;
   int n_varpool_nodes = 0, varpool_pos = 0, best_varpool_pos = 0;
-  struct cgraph_node **postorder =
-    XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   struct cgraph_node **order = XNEWVEC (struct cgraph_node *, cgraph_max_uid);
   struct varpool_node **varpool_order = NULL;
-  int i, postorder_len;
+  int i;
   struct cgraph_node *node;
   int total_size = 0, best_total_size = 0;
   int partition_size;
@@ -468,24 +466,20 @@ lto_balanced_map (void)
 
   FOR_EACH_VARIABLE (vnode)
     gcc_assert (!vnode->symbol.aux);
-  /* Until we have better ordering facility, use toplogical order.
-     Include only nodes we will partition and compute estimate of program
-     size.  Note that since nodes that are not partitioned might be put into
-     multiple partitions, this is just an estimate of real size.  This is why
-     we keep partition_size updated after every partition is finalized.  */
-  postorder_len = ipa_reverse_postorder (postorder);
     
-  for (i = 0; i < postorder_len; i++)
-    {
-      node = postorder[i];
-      if (get_symbol_class ((symtab_node) node) == SYMBOL_PARTITION)
-	{
-	  order[n_nodes++] = node;
-          total_size += inline_summary (node)->size;
-	}
-    }
-  free (postorder);
+  FOR_EACH_DEFINED_FUNCTION (node)
+    if (get_symbol_class ((symtab_node) node) == SYMBOL_PARTITION)
+      {
+	order[n_nodes++] = node;
+	total_size += inline_summary (node)->size;
+      }
 
+  /* Streaming works best when the source units do not cross partition
+     boundaries much.  This is because importing function from a source
+     unit tends to import a lot of global trees defined there.  We should
+     get better about minimizing the function bounday, but until that
+     things works smoother if we order in source order.  */
+  qsort (order, n_nodes, sizeof (struct cgraph_node *), node_cmp);
   if (!flag_toplevel_reorder)
     {
       qsort (order, n_nodes, sizeof (struct cgraph_node *), node_cmp);

@@ -761,14 +761,6 @@ thread_around_empty_block (edge taken_edge,
   gimple stmt;
   tree cond;
 
-  /* This block must have a single predecessor (E->dest).  */
-  if (!single_pred_p (bb))
-    return NULL;
-
-  /* This block must have more than one successor.  */
-  if (single_succ_p (bb))
-    return NULL;
-
   /* This block can have no PHI nodes.  This is overly conservative.  */
   if (!gsi_end_p (gsi_start_phis (bb)))
     return NULL;
@@ -909,6 +901,10 @@ thread_across_edge (gimple dummy_cond,
 	  if (dest == e->dest)
 	    goto fail;
 
+	  vec<edge> path = vNULL;
+	  path.safe_push (e);
+	  path.safe_push (taken_edge);
+
 	  /* DEST could be null for a computed jump to an absolute
 	     address.  If DEST is not null, then see if we can thread
 	     through it as well, this helps capture secondary effects
@@ -930,17 +926,22 @@ thread_across_edge (gimple dummy_cond,
 						  simplify,
 						  visited);
 		  if (e2)
-		    taken_edge = e2;
+		    {
+		      taken_edge = e2;
+		      path.safe_push (e2);
+		    }
 		}
 	      while (e2);
 	      BITMAP_FREE (visited);
 	    }
 
 	  remove_temporary_equivalences (stack);
-	  if (!taken_edge)
-	    return;
-	  propagate_threaded_block_debug_into (taken_edge->dest, e->dest);
-	  register_jump_thread (e, taken_edge, NULL);
+	  if (taken_edge)
+	    {
+	      propagate_threaded_block_debug_into (taken_edge->dest, e->dest);
+	      register_jump_thread (path, false);
+	    }
+	  path.release ();
 	  return;
 	}
     }
@@ -969,9 +970,12 @@ thread_across_edge (gimple dummy_cond,
 	bitmap_clear (visited);
 	bitmap_set_bit (visited, taken_edge->dest->index);
 	bitmap_set_bit (visited, e->dest->index);
+        vec<edge> path = vNULL;
 
 	/* Record whether or not we were able to thread through a successor
 	   of E->dest.  */
+	path.safe_push (e);
+	path.safe_push (taken_edge);
 	found = false;
 	e3 = taken_edge;
 	do
@@ -988,6 +992,7 @@ thread_across_edge (gimple dummy_cond,
 
 	    if (e2)
 	      {
+		path.safe_push (e2);
 	        e3 = e2;
 		found = true;
 	      }
@@ -1008,10 +1013,11 @@ thread_across_edge (gimple dummy_cond,
 	      {
 		propagate_threaded_block_debug_into (e3->dest,
 						     taken_edge->dest);
-		register_jump_thread (e, taken_edge, e3);
+		register_jump_thread (path, true);
 	      }
 	  }
 
+        path.release();
       }
     BITMAP_FREE (visited);
   }

@@ -3,7 +3,7 @@
    varz at that spot is defined and contains 5.  Nowhere else
    in the function should be varz in the scope.  */
 /* { dg-do compile } */
-/* { dg-options "-O0 -gdwarf-2 -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 
 int cnt;
 

@@ -386,10 +386,8 @@ extern int darwin_emit_branch_islands;
 #define OFFS_ASSIGNIVAR_FAST		0xFFFEFEC0
 
 /* Old versions of Mac OS/Darwin don't have C99 functions available.  */
-#undef TARGET_C99_FUNCTIONS
-#define TARGET_C99_FUNCTIONS					\
-  (TARGET_64BIT							\
-   || strverscmp (darwin_macosx_version_min, "10.3") >= 0)
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION darwin_libc_has_function
 
 /* When generating kernel code or kexts, we don't use Altivec by
    default, as kernel code doesn't save/restore those registers.  */

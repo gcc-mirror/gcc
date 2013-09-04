@@ -4255,6 +4255,12 @@ verify_gimple_label (gimple stmt)
 
   if (TREE_CODE (decl) != LABEL_DECL)
     return true;
+  if (!DECL_NONLOCAL (decl) && !FORCED_LABEL (decl)
+      && DECL_CONTEXT (decl) != current_function_decl)
+    {
+      error ("label's context is not the current function decl");
+      err |= true;
+    }
 
   uid = LABEL_DECL_UID (decl);
   if (cfun->cfg

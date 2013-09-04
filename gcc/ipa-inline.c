@@ -113,10 +113,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "ipa-inline.h"
 #include "ipa-utils.h"
+#include "sreal.h"
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
 static gcov_type max_count;
+static sreal max_count_real, max_relbenefit_real, half_int_min_real;
 
 /* Return false when inlining edge E would lead to violating
    limits on function unit growth or stack usage growth.  
@@ -891,12 +893,26 @@ edge_badness (struct cgraph_edge *edge, bool dump)
 
   else if (max_count)
     {
+      sreal tmp, relbenefit_real, growth_real;
       int relbenefit = relative_time_benefit (callee_info, edge, edge_time);
-      badness =
-	((int)
-	 ((double) edge->count * INT_MIN / 2 / max_count / RELATIVE_TIME_BENEFIT_RANGE) *
-	 relbenefit) / growth;
-      
+
+      sreal_init(&relbenefit_real, relbenefit, 0);
+      sreal_init(&growth_real, growth, 0);
+
+      /* relative_edge_count.  */
+      sreal_init (&tmp, edge->count, 0);
+      sreal_div (&tmp, &tmp, &max_count_real);
+
+      /* relative_time_benefit.  */
+      sreal_mul (&tmp, &tmp, &relbenefit_real);
+      sreal_div (&tmp, &tmp, &max_relbenefit_real);
+
+      /* growth_f_caller.  */
+      sreal_mul (&tmp, &tmp, &half_int_min_real);
+      sreal_div (&tmp, &tmp, &growth_real);
+
+      badness = -1 * sreal_to_int (&tmp);
+ 
       /* Be sure that insanity of the profile won't lead to increasing counts
 	 in the scalling and thus to overflow in the computation above.  */
       gcc_assert (max_count >= edge->count);
@@ -1397,6 +1413,8 @@ add_new_edges_to_heap (fibheap_t heap, vec<cgraph_edge_p> new_edges)
 static void
 heap_edge_removal_hook (struct cgraph_edge *e, void *data)
 {
+  if (e->callee)
+    reset_node_growth_cache (e->callee);
   if (e->aux)
     {
       fibheap_delete_node ((fibheap_t)data, (fibnode_t)e->aux);
@@ -1467,12 +1485,12 @@ resolve_noninline_speculation (fibheap_t edge_heap, struct cgraph_edge *edge)
       bitmap updated_nodes = BITMAP_ALLOC (NULL);
 
       cgraph_resolve_speculation (edge, NULL);
-      reset_node_growth_cache (where);
       reset_edge_caches (where);
       inline_update_overall_summary (where);
       update_caller_keys (edge_heap, where,
 			  updated_nodes, NULL);
-      reset_node_growth_cache (where);
+      update_callee_keys (edge_heap, where,
+			  updated_nodes);
       BITMAP_FREE (updated_nodes);
     }
 }
@@ -1540,6 +1558,9 @@ inline_small_functions (void)
 	  if (max_count < edge->count)
 	    max_count = edge->count;
       }
+  sreal_init (&max_count_real, max_count, 0);
+  sreal_init (&max_relbenefit_real, RELATIVE_TIME_BENEFIT_RANGE, 0);
+  sreal_init (&half_int_min_real, INT_MAX / 2, 0);
   ipa_free_postorder_info ();
   initialize_growth_caches ();
 
@@ -1883,6 +1904,10 @@ ipa_inline (void)
     XCNEWVEC (struct cgraph_node *, cgraph_n_nodes);
   int i;
   int cold;
+  bool remove_functions = false;
+
+  if (!optimize)
+    return 0;
 
   if (in_lto_p && optimize)
     ipa_update_after_lto_read ();
@@ -1963,6 +1988,7 @@ ipa_inline (void)
 		{
 		  cgraph_resolve_speculation (edge, NULL);
 		  update = true;
+		  remove_functions = true;
 		}
 	    }
 	  if (update)
@@ -1997,6 +2023,7 @@ ipa_inline (void)
 		    }
 
 		  inline_call (node->callers, true, NULL, NULL, true);
+		  remove_functions = true;
 		  if (dump_file)
 		    fprintf (dump_file,
 			     " Inlined into %s which now has %i size\n",
@@ -2027,7 +2054,7 @@ ipa_inline (void)
   /* In WPA we use inline summaries for partitioning process.  */
   if (!flag_wpa)
     inline_free_summary ();
-  return 0;
+  return remove_functions ? TODO_remove_functions : 0;
 }
 
 /* Inline always-inline function calls in NODE.  */
@@ -2271,13 +2298,13 @@ make_pass_early_inline (gcc::context *ctxt)
 /* When to run IPA inlining.  Inlining of always-inline functions
    happens during early inlining.
 
-   Enable inlining unconditoinally at -flto.  We need size estimates to
-   drive partitioning.  */
+   Enable inlining unconditoinally, because callgraph redirection
+   happens here.   */
 
 static bool
 gate_ipa_inline (void)
 {
-  return optimize || flag_lto || flag_wpa;
+  return true;
 }
 
 namespace {
@@ -2294,7 +2321,7 @@ const pass_data pass_data_ipa_inline =
   0, /* properties_provided */
   0, /* properties_destroyed */
   TODO_remove_functions, /* todo_flags_start */
-  ( TODO_dump_symtab | TODO_remove_functions ), /* todo_flags_finish */
+  ( TODO_dump_symtab ), /* todo_flags_finish */
 };
 
 class pass_ipa_inline : public ipa_opt_pass_d

@@ -75,7 +75,6 @@ void
 print_gimple_stmt (FILE *file, gimple g, int spc, int flags)
 {
   pretty_printer buffer;
-  pp_construct (&buffer, NULL, 0);
   pp_needs_newline (&buffer) = true;
   buffer.buffer->stream = file;
   pp_gimple_stmt_1 (&buffer, g, spc, flags);
@@ -107,7 +106,6 @@ print_gimple_expr (FILE *file, gimple g, int spc, int flags)
 {
   flags |= TDF_RHS_ONLY;
   pretty_printer buffer;
-  pp_construct (&buffer, NULL, 0);
   pp_needs_newline (&buffer) = true;
   buffer.buffer->stream = file;
   pp_gimple_stmt_1 (&buffer, g, spc, flags);
@@ -143,7 +141,6 @@ void
 print_gimple_seq (FILE *file, gimple_seq seq, int spc, int flags)
 {
   pretty_printer buffer;
-  pp_construct (&buffer, NULL, 0);
   pp_needs_newline (&buffer) = true;
   buffer.buffer->stream = file;
   dump_gimple_seq (&buffer, seq, spc, flags);
@@ -1091,8 +1088,20 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
 
   if (flags & TDF_RAW)
     {
-      dump_gimple_fmt (buffer, spc, flags, "%G <%+BODY <%S>%nCLAUSES <", gs,
-                       gimple_omp_body (gs));
+      const char *kind;
+      switch (gimple_omp_for_kind (gs))
+	{
+	case GF_OMP_FOR_KIND_FOR:
+	  kind = "";
+	  break;
+	case GF_OMP_FOR_KIND_SIMD:
+	  kind = " simd";
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      dump_gimple_fmt (buffer, spc, flags, "%G%s <%+BODY <%S>%nCLAUSES <", gs,
+		       kind, gimple_omp_body (gs));
       dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       dump_gimple_fmt (buffer, spc, flags, " >,");
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
@@ -1108,7 +1117,17 @@ dump_gimple_omp_for (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
   else
     {
-      pp_string (buffer, "#pragma omp for");
+      switch (gimple_omp_for_kind (gs))
+	{
+	case GF_OMP_FOR_KIND_FOR:
+	  pp_string (buffer, "#pragma omp for");
+	  break;
+	case GF_OMP_FOR_KIND_SIMD:
+	  pp_string (buffer, "#pragma omp simd");
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
       dump_omp_clauses (buffer, gimple_omp_for_clauses (gs), spc, flags);
       for (i = 0; i < gimple_omp_for_collapse (gs); i++)
 	{
@@ -2252,7 +2271,7 @@ gimple_dump_bb_buff (pretty_printer *buffer, basic_block bb, int indent,
       pp_newline_and_flush (buffer);
       gcc_checking_assert (DECL_STRUCT_FUNCTION (current_function_decl));
       dump_histograms_for_stmt (DECL_STRUCT_FUNCTION (current_function_decl),
-				buffer->buffer->stream, stmt);
+				pp_buffer(buffer)->stream, stmt);
     }
 
   dump_implicit_edges (buffer, bb, indent, flags);
@@ -2270,7 +2289,6 @@ gimple_dump_bb (FILE *file, basic_block bb, int indent, int flags)
   if (bb->index >= NUM_FIXED_BLOCKS)
     {
       pretty_printer buffer;
-      pp_construct (&buffer, NULL, 0);
       pp_needs_newline (&buffer) = true;
       buffer.buffer->stream = file;
       gimple_dump_bb_buff (&buffer, bb, indent, flags);

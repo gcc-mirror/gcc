@@ -4331,10 +4331,25 @@ get_references_in_stmt (gimple stmt, vec<data_ref_loc, va_stack> *references)
   /* ASM_EXPR and CALL_EXPR may embed arbitrary side effects.
      As we cannot model data-references to not spelled out
      accesses give up if they may occur.  */
-  if ((stmt_code == GIMPLE_CALL
-       && !(gimple_call_flags (stmt) & ECF_CONST))
-      || (stmt_code == GIMPLE_ASM
-	  && (gimple_asm_volatile_p (stmt) || gimple_vuse (stmt))))
+  if (stmt_code == GIMPLE_CALL
+      && !(gimple_call_flags (stmt) & ECF_CONST))
+    {
+      /* Allow IFN_GOMP_SIMD_LANE in their own loops.  */
+      if (gimple_call_internal_p (stmt)
+	  && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
+	{
+	  struct loop *loop = gimple_bb (stmt)->loop_father;
+	  tree uid = gimple_call_arg (stmt, 0);
+	  gcc_assert (TREE_CODE (uid) == SSA_NAME);
+	  if (loop == NULL
+	      || loop->simduid != SSA_NAME_VAR (uid))
+	    clobbers_memory = true;
+	}
+      else
+	clobbers_memory = true;
+    }
+  else if (stmt_code == GIMPLE_ASM
+	   && (gimple_asm_volatile_p (stmt) || gimple_vuse (stmt)))
     clobbers_memory = true;
 
   if (!gimple_vuse (stmt))

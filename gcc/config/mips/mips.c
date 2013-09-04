@@ -12297,6 +12297,7 @@ mips_adjust_insn_length (rtx insn, int length)
   /* mips.md uses MAX_PIC_BRANCH_LENGTH as a placeholder for the length
      of a PIC long-branch sequence.  Substitute the correct value.  */
   if (length == MAX_PIC_BRANCH_LENGTH
+      && JUMP_P (insn)
       && INSN_CODE (insn) >= 0
       && get_attr_type (insn) == TYPE_BRANCH)
     {
@@ -12318,7 +12319,9 @@ mips_adjust_insn_length (rtx insn, int length)
     length += TARGET_MIPS16 ? 2 : 4;
 
   /* See how many nops might be needed to avoid hardware hazards.  */
-  if (!cfun->machine->ignore_hazard_length_p && INSN_CODE (insn) >= 0)
+  if (!cfun->machine->ignore_hazard_length_p
+      && INSN_P (insn)
+      && INSN_CODE (insn) >= 0)
     switch (get_attr_hazard (insn))
       {
       case HAZARD_NONE:

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-objc-common.h"
 
+#include <new>                          // For placement new.
+
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool);
 
@@ -90,6 +92,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 {
   tree t = NULL_TREE;
   tree name;
+  // FIXME: the next cast should be a dynamic_cast, when it is permitted.
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
 
@@ -117,7 +120,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 	  t = DECL_DEBUG_EXPR (t);
 	  if (!DECL_P (t))
 	    {
-	      pp_c_expression (cpp, t);
+	      cpp->expression (t);
 	      return true;
 	    }
 	}
@@ -140,12 +143,12 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 	  if (DECL_NAME (name))
 	    pp_identifier (cpp, lang_hooks.decl_printable_name (name, 2));
 	  else
-	    pp_type_id (cpp, t);
+	    cpp->type_id (t);
 	  return true;
 	}
       else
 	{
-	  pp_type_id (cpp, t);
+	  cpp->type_id (t);
 	  return true;
 	}
       break;
@@ -154,7 +157,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       if (TREE_CODE (t) == IDENTIFIER_NODE)
 	pp_identifier (cpp, IDENTIFIER_POINTER (t));
       else
-	pp_expression (cpp, t);
+	cpp->expression (t);
       return true;
 
     case 'V':
@@ -183,18 +186,14 @@ has_c_linkage (const_tree decl ATTRIBUTE_UNUSED)
 void
 c_initialize_diagnostics (diagnostic_context *context)
 {
-  pretty_printer *base;
-  c_pretty_printer *pp;
-
   c_common_initialize_diagnostics (context);
 
-  base = context->printer;
-  pp = XNEW (c_pretty_printer);
-  memcpy (pp, base, sizeof (pretty_printer));
-  pp_c_pretty_printer_init (pp);
-  context->printer = (pretty_printer *) pp;
+  pretty_printer *base = context->printer;
+  c_pretty_printer *pp = XNEW (c_pretty_printer);
+  context->printer = new (pp) c_pretty_printer ();
 
   /* It is safe to free this object because it was previously XNEW()'d.  */
+  base->~pretty_printer ();
   XDELETE (base);
 }
 

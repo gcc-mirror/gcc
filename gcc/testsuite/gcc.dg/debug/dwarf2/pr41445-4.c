@@ -1,6 +1,6 @@
 /* PR preprocessor/41445 */
 /* { dg-do compile } */
-/* { dg-options "-g -O0 -dA -fno-merge-debug-strings" } */
+/* { dg-options "-gdwarf -O0 -dA -fno-merge-debug-strings" } */
 
 #include "pr41445-3.c"
 

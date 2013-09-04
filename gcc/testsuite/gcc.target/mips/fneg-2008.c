@@ -7,4 +7,4 @@ fneg_2008 (double d)
   return -d;
 }
 
-/* { dg-final { scan-assembler "\tneg\.d\t" } } */
+/* { dg-final { scan-assembler "\tneg\\.d\t" } } */

@@ -1,0 +1,104 @@
+# Copyright (C) 2013 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+#
+# ubsan_link_flags -- compute library path and flags to find libubsan.
+# (originally from g++.exp)
+#
+
+proc ubsan_link_flags { paths } {
+    global srcdir
+    global ld_library_path
+    global shlib_ext
+
+    set gccpath ${paths}
+    set flags ""
+
+    set shlib_ext [get_shlib_extension]
+
+    if { $gccpath != "" } {
+      if { [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.a"]
+	   || [file exists "${gccpath}/libsanitizer/ubsan/.libs/libubsan.${shlib_ext}"] } {
+	  append flags " -B${gccpath}/libsanitizer/ubsan/ "
+	  append flags " -L${gccpath}/libsanitizer/ubsan/.libs"
+	  append ld_library_path ":${gccpath}/libsanitizer/ubsan/.libs"
+      }
+    } else {
+      global tool_root_dir
+
+      set libubsan [lookfor_file ${tool_root_dir} libubsan]
+      if { $libubsan != "" } {
+	  append flags "-L${libubsan} "
+	  append ld_library_path ":${libubsan}"
+      }
+    }
+
+    set_ld_library_path_env_vars
+
+    return "$flags"
+}
+
+#
+# ubsan_init -- called at the start of each subdir of tests
+#
+
+proc ubsan_init { args } {
+    global TEST_ALWAYS_FLAGS
+    global ALWAYS_CXXFLAGS
+    global TOOL_OPTIONS
+    global ubsan_saved_TEST_ALWAYS_FLAGS
+
+    set link_flags ""
+    if ![is_remote host] {
+	if [info exists TOOL_OPTIONS] {
+	    set link_flags "[ubsan_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	} else {
+	    set link_flags "[ubsan_link_flags [get_multilibs]]"
+	}
+    }
+
+    if [info exists TEST_ALWAYS_FLAGS] {
+	set ubsan_saved_TEST_ALWAYS_FLAGS $TEST_ALWAYS_FLAGS
+    }
+    if [info exists ALWAYS_CXXFLAGS] {
+	set ALWAYS_CXXFLAGS [concat "{ldflags=$link_flags}" $ALWAYS_CXXFLAGS]
+    } else {
+	if [info exists TEST_ALWAYS_FLAGS] {
+	    set TEST_ALWAYS_FLAGS "$link_flags $TEST_ALWAYS_FLAGS"
+	} else {
+	    set TEST_ALWAYS_FLAGS "$link_flags"
+	}
+    }
+    if { $link_flags != "" } {
+	return 1
+    }
+    return 0
+}
+
+#
+# ubsan_finish -- called at the end of each subdir of tests
+#
+
+proc ubsan_finish { args } {
+    global TEST_ALWAYS_FLAGS
+    global ubsan_saved_TEST_ALWAYS_FLAGS
+
+    if [info exists ubsan_saved_TEST_ALWAYS_FLAGS] {
+	set TEST_ALWAYS_FLAGS $ubsan_saved_TEST_ALWAYS_FLAGS
+    } else {
+	unset TEST_ALWAYS_FLAGS
+    }
+}

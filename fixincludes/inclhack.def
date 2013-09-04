@@ -569,6 +569,20 @@ fix = {
 };
 
 /*
+ * assert.h on AIX 7 redefines static_assert as _Static_assert without
+ * protecting C++.
+ */
+fix = {
+    hackname  = aix_assert;
+    mach      = "*-*-aix*";
+    files     = assert.h;
+    select    = "#define[ \t]static_assert[ \t]_Static_assert";
+    c_fix     = format;
+    c_fix_arg = "#ifndef __cplusplus\n%0\n#endif";
+    test_text = "#define static_assert _Static_assert";
+};
+
+/*
  * complex.h on AIX 5 and AIX 6 define _Complex_I and I in terms of __I,
  * which only is provided by AIX xlc C99.
  */

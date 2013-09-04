@@ -676,6 +676,11 @@ pass_manager::register_one_dump_file (struct opt_pass *pass)
   flag_name = concat (prefix, name, num, NULL);
   glob_name = concat (prefix, name, NULL);
   optgroup_flags |= pass->optinfo_flags;
+  /* For any passes that do not have an optgroup set, and which are not
+     IPA passes setup above, set the optgroup to OPTGROUP_OTHER so that
+     any dump messages are emitted properly under -fopt-info(-optall).  */
+  if (optgroup_flags == OPTGROUP_NONE)
+    optgroup_flags = OPTGROUP_OTHER;
   id = dump_register (dot_name, flag_name, glob_name, flags, optgroup_flags);
   set_pass_for_id (id, pass);
   full_name = concat (prefix, pass->name, num, NULL);
@@ -1365,7 +1370,19 @@ void
 register_pass (struct register_pass_info *pass_info)
 {
   g->get_passes ()->register_pass (pass_info);
+}
 
+void
+register_pass (opt_pass* pass, pass_positioning_ops pos,
+	       const char* ref_pass_name, int ref_pass_inst_number)
+{
+  register_pass_info i;
+  i.pass = pass;
+  i.reference_pass_name = ref_pass_name;
+  i.ref_pass_instance_number = ref_pass_inst_number;
+  i.pos_op = pos;
+
+  g->get_passes ()->register_pass (&i);
 }
 
 void

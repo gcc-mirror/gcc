@@ -1,7 +1,7 @@
 /* PR debug/36690 */
 /* Verify that break func is hit.  */
 /* { dg-do compile } */
-/* { dg-options "-O0 -gdwarf-2 -dA" } */
+/* { dg-options "-O0 -gdwarf -dA" } */
 
 int i;
 

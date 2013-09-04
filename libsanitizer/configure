@@ -14543,7 +14543,7 @@ fi
 ac_config_files="$ac_config_files Makefile"
 
 
-ac_config_files="$ac_config_files interception/Makefile sanitizer_common/Makefile asan/Makefile"
+ac_config_files="$ac_config_files interception/Makefile sanitizer_common/Makefile asan/Makefile ubsan/Makefile"
 
 
 if test "x$TSAN_SUPPORTED" = "xyes"; then
@@ -15674,6 +15674,7 @@ do
     "interception/Makefile") CONFIG_FILES="$CONFIG_FILES interception/Makefile" ;;
     "sanitizer_common/Makefile") CONFIG_FILES="$CONFIG_FILES sanitizer_common/Makefile" ;;
     "asan/Makefile") CONFIG_FILES="$CONFIG_FILES asan/Makefile" ;;
+    "ubsan/Makefile") CONFIG_FILES="$CONFIG_FILES ubsan/Makefile" ;;
     "tsan/Makefile") CONFIG_FILES="$CONFIG_FILES tsan/Makefile" ;;
 
   *) as_fn_error "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -17029,6 +17030,17 @@ _EOF
    { ml_norecursion=; unset ml_norecursion;}
  ;;
     "asan/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "ubsan/Makefile":F) cat > vpsed$$ << \_EOF
 s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
    sed -f vpsed$$ $ac_file > tmp$$

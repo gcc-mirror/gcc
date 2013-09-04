@@ -60,7 +60,7 @@ static code_stack *cs_base = NULL;
 /* Nonzero if we're inside a FORALL or DO CONCURRENT block.  */
 
 static int forall_flag;
-static int do_concurrent_flag;
+int gfc_do_concurrent_flag;
 
 /* True when we are resolving an expression that is an actual argument to
    a procedure.  */
@@ -2986,11 +2986,11 @@ resolve_function (gfc_expr *expr)
 		     forall_flag == 2 ? "mask" : "block");
 	  t = false;
 	}
-      else if (do_concurrent_flag)
+      else if (gfc_do_concurrent_flag)
 	{
 	  gfc_error ("Reference to non-PURE function '%s' at %L inside a "
 		     "DO CONCURRENT %s", name, &expr->where,
-		     do_concurrent_flag == 2 ? "mask" : "block");
+		     gfc_do_concurrent_flag == 2 ? "mask" : "block");
 	  t = false;
 	}
       else if (gfc_pure (NULL))
@@ -3059,7 +3059,7 @@ pure_subroutine (gfc_code *c, gfc_symbol *sym)
   if (forall_flag)
     gfc_error ("Subroutine call to '%s' in FORALL block at %L is not PURE",
 	       sym->name, &c->loc);
-  else if (do_concurrent_flag)
+  else if (gfc_do_concurrent_flag)
     gfc_error ("Subroutine call to '%s' in DO CONCURRENT block at %L is not "
 	       "PURE", sym->name, &c->loc);
   else if (gfc_pure (NULL))
@@ -9629,7 +9629,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
     {
       frame.current = code;
       forall_save = forall_flag;
-      do_concurrent_save = do_concurrent_flag;
+      do_concurrent_save = gfc_do_concurrent_flag;
 
       if (code->op == EXEC_FORALL)
 	{
@@ -9663,9 +9663,9 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
 		 to transform the SELECT TYPE into ASSOCIATE first.  */
 	      break;
             case EXEC_DO_CONCURRENT:
-	      do_concurrent_flag = 1;
+	      gfc_do_concurrent_flag = 1;
 	      gfc_resolve_blocks (code->block, ns);
-	      do_concurrent_flag = 2;
+	      gfc_do_concurrent_flag = 2;
 	      break;
 	    case EXEC_OMP_WORKSHARE:
 	      omp_workshare_save = omp_workshare_flag;
@@ -9684,7 +9684,7 @@ resolve_code (gfc_code *code, gfc_namespace *ns)
       if (code->op != EXEC_COMPCALL && code->op != EXEC_CALL_PPC)
 	t = gfc_resolve_expr (code->expr1);
       forall_flag = forall_save;
-      do_concurrent_flag = do_concurrent_save;
+      gfc_do_concurrent_flag = do_concurrent_save;
 
       if (!gfc_resolve_expr (code->expr2))
 	t = false;
@@ -14404,7 +14404,7 @@ resolve_types (gfc_namespace *ns)
     }
 
   forall_flag = 0;
-  do_concurrent_flag = 0;
+  gfc_do_concurrent_flag = 0;
   gfc_check_interfaces (ns);
 
   gfc_traverse_ns (ns, resolve_values);

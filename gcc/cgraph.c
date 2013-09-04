@@ -700,6 +700,8 @@ cgraph_add_edge_to_call_site_hash (struct cgraph_edge *e)
   if (*slot)
     {
       gcc_assert (((struct cgraph_edge *)*slot)->speculative);
+      if (e->callee)
+	*slot = e;
       return;
     }
   gcc_assert (!*slot || e->speculative);
@@ -924,12 +926,30 @@ cgraph_create_indirect_edge (struct cgraph_node *caller, gimple call_stmt,
 {
   struct cgraph_edge *edge = cgraph_create_edge_1 (caller, NULL, call_stmt,
 						   count, freq);
+  tree target;
 
   edge->indirect_unknown_callee = 1;
   initialize_inline_failed (edge);
 
   edge->indirect_info = cgraph_allocate_init_indirect_info ();
   edge->indirect_info->ecf_flags = ecf_flags;
+
+  /* Record polymorphic call info.  */
+  if (call_stmt
+      && (target = gimple_call_fn (call_stmt))
+      && virtual_method_call_p (target))
+    {
+      tree type = obj_type_ref_class (target);
+
+
+      /* Only record types can have virtual calls.  */
+      gcc_assert (TREE_CODE (type) == RECORD_TYPE);
+      edge->indirect_info->param_index = -1;
+      edge->indirect_info->otr_token
+	 = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
+      edge->indirect_info->otr_type = type;
+      edge->indirect_info->polymorphic = 1;
+    }
 
   edge->next_callee = caller->indirect_calls;
   if (caller->indirect_calls)
@@ -1055,8 +1075,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 
   if (dump_file)
     {
-      fprintf (dump_file, "Indirect call -> direct call from"
-	       " other module %s/%i => %s/%i\n",
+      fprintf (dump_file, "Indirect call -> speculative call"
+	       " %s/%i => %s/%i\n",
 	       xstrdup (cgraph_node_name (n)), n->symbol.order,
 	       xstrdup (cgraph_node_name (n2)), n2->symbol.order);
     }
@@ -1064,8 +1084,10 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
   e2 = cgraph_create_edge (n, n2, e->call_stmt, direct_count, direct_frequency);
   initialize_inline_failed (e2);
   e2->speculative = true;
-  e2->call_stmt = e->call_stmt;
-  e2->can_throw_external = e->can_throw_external;
+  if (TREE_NOTHROW (n2->symbol.decl))
+    e2->can_throw_external = false;
+  else
+    e2->can_throw_external = e->can_throw_external;
   e2->lto_stmt_uid = e->lto_stmt_uid;
   e->count -= e2->count;
   e->frequency -= e2->frequency;
@@ -1074,6 +1096,7 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 			      IPA_REF_ADDR, e->call_stmt);
   ref->lto_stmt_uid = e->lto_stmt_uid;
   ref->speculative = e->speculative;
+  cgraph_mark_address_taken_node (n2);
   return e2;
 }
 
@@ -1089,8 +1112,8 @@ cgraph_turn_edge_to_speculative (struct cgraph_edge *e,
 
 void
 cgraph_speculative_call_info (struct cgraph_edge *e,
-			      struct cgraph_edge *&indirect,
 			      struct cgraph_edge *&direct,
+			      struct cgraph_edge *&indirect,
 			      struct ipa_ref *&reference)
 {
   struct ipa_ref *ref;
@@ -1113,23 +1136,30 @@ cgraph_speculative_call_info (struct cgraph_edge *e,
 	}
       else
 	for (e = e->caller->callees; 
-	     e2->call_stmt != e->call_stmt || e2->lto_stmt_uid != e->lto_stmt_uid;
+	     e2->call_stmt != e->call_stmt
+	     || e2->lto_stmt_uid != e->lto_stmt_uid;
 	     e = e->next_callee)
 	  ;
     }
   gcc_assert (e->speculative && e2->speculative);
-  indirect = e;
-  direct = e2;
+  direct = e;
+  indirect = e2;
 
   reference = NULL;
-  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->symbol.ref_list, i, ref); i++)
+  for (i = 0; ipa_ref_list_reference_iterate (&e->caller->symbol.ref_list,
+					      i, ref); i++)
     if (ref->speculative
 	&& ((ref->stmt && ref->stmt == e->call_stmt)
-	    || (ref->lto_stmt_uid == e->lto_stmt_uid)))
+	    || (!ref->stmt && ref->lto_stmt_uid == e->lto_stmt_uid)))
       {
 	reference = ref;
 	break;
       }
+
+  /* Speculative edge always consist of all three components - direct edge,
+     indirect and reference.  */
+  
+  gcc_assert (e && e2 && ref);
 }
 
 /* Redirect callee of E to N.  The function does not update underlying
@@ -1185,6 +1215,8 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
         fprintf (dump_file, "Speculative call turned into direct call.\n");
       edge = e2;
       e2 = tmp;
+      /* FIXME:  If EDGE is inlined, we should scale up the frequencies and counts
+         in the functions inlined through it.  */
     }
   edge->count += e2->count;
   edge->frequency += e2->frequency;
@@ -1273,25 +1305,44 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
       struct ipa_ref *ref;
 
       cgraph_speculative_call_info (e, e, e2, ref);
-      if (gimple_call_fndecl (e->call_stmt))
-	e = cgraph_resolve_speculation (e, gimple_call_fndecl (e->call_stmt));
-      if (!gimple_check_call_matching_types (e->call_stmt, e->callee->symbol.decl,
-					     true))
+      /* If there already is an direct call (i.e. as a result of inliner's
+	 substitution), forget about speculating.  */
+      if (decl)
+	e = cgraph_resolve_speculation (e, decl);
+      /* If types do not match, speculation was likely wrong. 
+         The direct edge was posisbly redirected to the clone with a different
+	 signature.  We did not update the call statement yet, so compare it 
+	 with the reference that still points to the proper type.  */
+      else if (!gimple_check_call_matching_types (e->call_stmt,
+						  ref->referred->symbol.decl,
+						  true))
 	{
-	  e = cgraph_resolve_speculation (e, NULL);
 	  if (dump_file)
 	    fprintf (dump_file, "Not expanding speculative call of %s/%i -> %s/%i\n"
 		     "Type mismatch.\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
-		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order);
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (e->callee)),
+		     e->callee->symbol.order);
+	  e = cgraph_resolve_speculation (e, NULL);
+	  /* We are producing the final function body and will throw away the
+	     callgraph edges really soon.  Reset the counts/frequencies to
+	     keep verifier happy in the case of roundoff errors.  */
+	  e->count = gimple_bb (e->call_stmt)->count;
+	  e->frequency = compute_call_stmt_bb_frequency
+			  (e->caller->symbol.decl, gimple_bb (e->call_stmt));
 	}
+      /* Expand speculation into GIMPLE code.  */
       else
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Expanding speculative call of %s/%i -> %s/%i count:"
+	    fprintf (dump_file,
+		     "Expanding speculative call of %s/%i -> %s/%i count:"
 		     HOST_WIDEST_INT_PRINT_DEC"\n",
-		     xstrdup (cgraph_node_name (e->caller)), e->caller->symbol.order,
-		     xstrdup (cgraph_node_name (e->callee)), e->callee->symbol.order,
+		     xstrdup (cgraph_node_name (e->caller)),
+		     e->caller->symbol.order,
+		     xstrdup (cgraph_node_name (e->callee)),
+		     e->callee->symbol.order,
 		     (HOST_WIDEST_INT)e->count);
 	  gcc_assert (e2->speculative);
 	  push_cfun (DECL_STRUCT_FUNCTION (e->caller->symbol.decl));
@@ -1305,11 +1356,12 @@ cgraph_redirect_edge_call_stmt_to_callee (struct cgraph_edge *e)
 				: REG_BR_PROB_BASE / 2,
 				e->count, e->count + e2->count);
 	  e->speculative = false;
-	  cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt, new_stmt, false);
-	  e->frequency = compute_call_stmt_bb_frequency (e->caller->symbol.decl,
-							 gimple_bb (e->call_stmt));
-	  e2->frequency = compute_call_stmt_bb_frequency (e2->caller->symbol.decl,
-							  gimple_bb (e2->call_stmt));
+	  cgraph_set_call_stmt_including_clones (e->caller, e->call_stmt,
+						 new_stmt, false);
+	  e->frequency = compute_call_stmt_bb_frequency
+			   (e->caller->symbol.decl, gimple_bb (e->call_stmt));
+	  e2->frequency = compute_call_stmt_bb_frequency
+			   (e2->caller->symbol.decl, gimple_bb (e2->call_stmt));
 	  e2->speculative = false;
 	  ref->speculative = false;
 	  ref->stmt = NULL;
@@ -1610,6 +1662,8 @@ cgraph_release_function_body (struct cgraph_node *node)
   if (!node->used_as_abstract_origin && DECL_INITIAL (node->symbol.decl))
     DECL_INITIAL (node->symbol.decl) = error_mark_node;
   release_function_body (node->symbol.decl);
+  if (node->symbol.lto_file_data)
+    lto_free_function_in_decl_state_for_node ((symtab_node) node);
 }
 
 /* Remove the node from cgraph.  */
@@ -1991,6 +2045,8 @@ cgraph_function_body_availability (struct cgraph_node *node)
     avail = AVAIL_NOT_AVAILABLE;
   else if (node->local.local)
     avail = AVAIL_LOCAL;
+  else if (node->symbol.alias && node->symbol.weakref)
+    cgraph_function_or_thunk_node (node, &avail);
   else if (!node->symbol.externally_visible)
     avail = AVAIL_AVAILABLE;
   /* Inline functions are safe to be analyzed even if their symbol can
@@ -2220,128 +2276,6 @@ cgraph_set_pure_flag (struct cgraph_node *node, bool pure, bool looping)
   cgraph_for_node_thunks_and_aliases (node, cgraph_set_pure_flag_1,
 			              (void *)(size_t)(pure + (int)looping * 2),
 				      false);
-}
-
-/* Data used by cgraph_propagate_frequency.  */
-
-struct cgraph_propagate_frequency_data
-{
-  bool maybe_unlikely_executed;
-  bool maybe_executed_once;
-  bool only_called_at_startup;
-  bool only_called_at_exit;
-};
-
-/* Worker for cgraph_propagate_frequency_1.  */
-
-static bool
-cgraph_propagate_frequency_1 (struct cgraph_node *node, void *data)
-{
-  struct cgraph_propagate_frequency_data *d;
-  struct cgraph_edge *edge;
-
-  d = (struct cgraph_propagate_frequency_data *)data;
-  for (edge = node->callers;
-       edge && (d->maybe_unlikely_executed || d->maybe_executed_once
-	        || d->only_called_at_startup || d->only_called_at_exit);
-       edge = edge->next_caller)
-    {
-      if (edge->caller != node)
-	{
-          d->only_called_at_startup &= edge->caller->only_called_at_startup;
-	  /* It makes sense to put main() together with the static constructors.
-	     It will be executed for sure, but rest of functions called from
-	     main are definitely not at startup only.  */
-	  if (MAIN_NAME_P (DECL_NAME (edge->caller->symbol.decl)))
-	    d->only_called_at_startup = 0;
-          d->only_called_at_exit &= edge->caller->only_called_at_exit;
-	}
-      if (!edge->frequency)
-	continue;
-      switch (edge->caller->frequency)
-        {
-	case NODE_FREQUENCY_UNLIKELY_EXECUTED:
-	  break;
-	case NODE_FREQUENCY_EXECUTED_ONCE:
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Called by %s that is executed once\n",
-		     cgraph_node_name (edge->caller));
-	  d->maybe_unlikely_executed = false;
-	  if (inline_edge_summary (edge)->loop_depth)
-	    {
-	      d->maybe_executed_once = false;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-	        fprintf (dump_file, "  Called in loop\n");
-	    }
-	  break;
-	case NODE_FREQUENCY_HOT:
-	case NODE_FREQUENCY_NORMAL:
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "  Called by %s that is normal or hot\n",
-		     cgraph_node_name (edge->caller));
-	  d->maybe_unlikely_executed = false;
-	  d->maybe_executed_once = false;
-	  break;
-	}
-    }
-  return edge != NULL;
-}
-
-/* See if the frequency of NODE can be updated based on frequencies of its
-   callers.  */
-bool
-cgraph_propagate_frequency (struct cgraph_node *node)
-{
-  struct cgraph_propagate_frequency_data d = {true, true, true, true};
-  bool changed = false;
-
-  if (!node->local.local)
-    return false;
-  gcc_assert (node->symbol.analyzed);
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Processing frequency %s\n", cgraph_node_name (node));
-
-  cgraph_for_node_and_aliases (node, cgraph_propagate_frequency_1, &d, true);
-
-  if ((d.only_called_at_startup && !d.only_called_at_exit)
-      && !node->only_called_at_startup)
-    {
-       node->only_called_at_startup = true;
-       if (dump_file)
-         fprintf (dump_file, "Node %s promoted to only called at startup.\n",
-		  cgraph_node_name (node));
-       changed = true;
-    }
-  if ((d.only_called_at_exit && !d.only_called_at_startup)
-      && !node->only_called_at_exit)
-    {
-       node->only_called_at_exit = true;
-       if (dump_file)
-         fprintf (dump_file, "Node %s promoted to only called at exit.\n",
-		  cgraph_node_name (node));
-       changed = true;
-    }
-  /* These come either from profile or user hints; never update them.  */
-  if (node->frequency == NODE_FREQUENCY_HOT
-      || node->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED)
-    return changed;
-  if (d.maybe_unlikely_executed)
-    {
-      node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
-      if (dump_file)
-	fprintf (dump_file, "Node %s promoted to unlikely executed.\n",
-		 cgraph_node_name (node));
-      changed = true;
-    }
-  else if (d.maybe_executed_once && node->frequency != NODE_FREQUENCY_EXECUTED_ONCE)
-    {
-      node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
-      if (dump_file)
-	fprintf (dump_file, "Node %s promoted to executed once.\n",
-		 cgraph_node_name (node));
-      changed = true;
-    }
-  return changed;
 }
 
 /* Return true when NODE can not return or throw and thus
@@ -3051,10 +2985,11 @@ cgraph_get_body (struct cgraph_node *node)
 
   gcc_assert (DECL_STRUCT_FUNCTION (decl) == NULL);
 
-  lto_input_function_body (file_data, decl, data);
+  lto_input_function_body (file_data, node, data);
   lto_stats.num_function_bodies++;
   lto_free_section_data (file_data, LTO_section_function_body, name,
 			 data, len);
+  lto_free_function_in_decl_state_for_node ((symtab_node) node);
   return true;
 }
 

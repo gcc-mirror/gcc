@@ -47,6 +47,6 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "Vectorized basic-block" 0 "slp" } } */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 0 "slp" } } */
 /* { dg-final { cleanup-tree-dump "slp" } } */
   

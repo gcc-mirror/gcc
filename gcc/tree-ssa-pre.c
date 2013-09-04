@@ -3341,7 +3341,11 @@ do_regular_insertion (basic_block block, basic_block dom)
 	  if (bitmap_set_contains_value (AVAIL_OUT (dom), val))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file, "Found fully redundant value\n");
+		{
+		  fprintf (dump_file, "Found fully redundant value: ");
+		  print_pre_expr (dump_file, expr);
+		  fprintf (dump_file, "\n");
+		}
 	      continue;
 	    }
 

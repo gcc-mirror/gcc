@@ -392,6 +392,17 @@ pop_binding (tree id, tree decl)
     }
 }
 
+/* Remove the bindings for the decls of the current level and leave
+   the current scope.  */
+
+void
+pop_bindings_and_leave_scope (void)
+{
+  for (tree t = getdecls (); t; t = DECL_CHAIN (t))
+    pop_binding (DECL_NAME (t), t);
+  leave_scope ();
+}
+
 /* Strip non dependent using declarations.  */
 
 tree
@@ -2256,6 +2267,27 @@ pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
   return ret;
 }
 
+/* Helper function for push_overloaded_decl_1 and do_nonmember_using_decl.
+   Compares the parameter-type-lists of DECL1 and DECL2 and returns false
+   if they are different.  If the DECLs are template functions, the return
+   types and the template parameter lists are compared too (DR 565).  */
+
+static bool
+compparms_for_decl_and_using_decl (tree decl1, tree decl2)
+{
+  if (!compparms (TYPE_ARG_TYPES (TREE_TYPE (decl1)),
+		  TYPE_ARG_TYPES (TREE_TYPE (decl2))))
+    return false;
+
+  if (! DECL_FUNCTION_TEMPLATE_P (decl1)
+      || ! DECL_FUNCTION_TEMPLATE_P (decl2))
+    return true;
+
+  return (comp_template_parms (DECL_TEMPLATE_PARMS (decl1),
+			       DECL_TEMPLATE_PARMS (decl2))
+	  && same_type_p (TREE_TYPE (TREE_TYPE (decl1)),
+			  TREE_TYPE (TREE_TYPE (decl2))));
+}
 
 /* DECL is a FUNCTION_DECL for a non-member function, which may have
    other definitions already in place.  We get around this by making
@@ -2313,8 +2345,7 @@ push_overloaded_decl_1 (tree decl, int flags, bool is_friend)
 
 	      if (TREE_CODE (tmp) == OVERLOAD && OVL_USED (tmp)
 		  && !(flags & PUSH_USING)
-		  && compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
-				TYPE_ARG_TYPES (TREE_TYPE (decl)))
+		  && compparms_for_decl_and_using_decl (fn, decl)
 		  && ! decls_match (fn, decl))
 		diagnose_name_conflict (decl, fn);
 
@@ -2550,8 +2581,7 @@ do_nonmember_using_decl (tree scope, tree name, tree oldval, tree oldtype,
 		    break;
 		  else if (TREE_CODE (tmp1) == OVERLOAD && OVL_USED (tmp1))
 		    continue; /* this is a using decl */
-		  else if (compparms (TYPE_ARG_TYPES (TREE_TYPE (new_fn)),
-				      TYPE_ARG_TYPES (TREE_TYPE (old_fn))))
+		  else if (compparms_for_decl_and_using_decl (new_fn, old_fn))
 		    {
 		      gcc_assert (!DECL_ANTICIPATED (old_fn)
 				  || DECL_HIDDEN_FRIEND_P (old_fn));
@@ -3062,8 +3092,10 @@ push_class_level_binding_1 (tree name, tree x)
   if (name == error_mark_node)
     return false;
 
-  /* Check for invalid member names.  */
-  gcc_assert (TYPE_BEING_DEFINED (current_class_type));
+  /* Check for invalid member names.  But don't worry about a default
+     argument-scope lambda being pushed after the class is complete.  */
+  gcc_assert (TYPE_BEING_DEFINED (current_class_type)
+	      || LAMBDA_TYPE_P (TREE_TYPE (decl)));
   /* Check that we're pushing into the right binding level.  */
   gcc_assert (current_class_type == class_binding_level->this_entity);
 
