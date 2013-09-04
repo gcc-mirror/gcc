@@ -124,8 +124,11 @@ output_type_ref (struct output_block *ob, tree node)
 static bool
 tree_is_indexable (tree t)
 {
+  /* Parameters and return values of functions of variably modified types
+     must go to global stream, because they may be used in the type
+     definition.  */
   if (TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
-    return false;
+    return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
   else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
 	   && !TREE_STATIC (t))
     return false;

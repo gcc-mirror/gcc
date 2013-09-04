@@ -11853,11 +11853,6 @@ types_same_for_odr (tree type1, tree type2)
   if (type1 == type2)
     return true;
 
-  /* If types are not structuraly same, do not bother to contnue.
-     Match in the remainder of code would mean ODR violation.  */
-  if (!types_compatible_p (type1, type2))
-    return false;
-
 #ifndef ENABLE_CHECKING
   if (!in_lto_p)
     return false;
@@ -11868,7 +11863,46 @@ types_same_for_odr (tree type1, tree type2)
   if (type_in_anonymous_namespace_p (type1)
       || type_in_anonymous_namespace_p (type2))
     return false;
+  /* When assembler name of virtual table is available, it is
+     easy to compare types for equivalence.  */
+  if (TYPE_BINFO (type1) && TYPE_BINFO (type2)
+      && BINFO_VTABLE (TYPE_BINFO (type1))
+      && BINFO_VTABLE (TYPE_BINFO (type2)))
+    {
+      tree v1 = BINFO_VTABLE (TYPE_BINFO (type1));
+      tree v2 = BINFO_VTABLE (TYPE_BINFO (type2));
 
+      if (TREE_CODE (v1) == POINTER_PLUS_EXPR)
+	{
+	  if (TREE_CODE (v2) != POINTER_PLUS_EXPR
+	      || !operand_equal_p (TREE_OPERAND (v1, 1),
+			     TREE_OPERAND (v2, 1), 0))
+	    return false;
+	  v1 = TREE_OPERAND (TREE_OPERAND (v1, 0), 0);
+	  v2 = TREE_OPERAND (TREE_OPERAND (v2, 0), 0);
+	}
+      v1 = DECL_ASSEMBLER_NAME (v1);
+      v2 = DECL_ASSEMBLER_NAME (v2);
+      /* If we ever start adding random .blah suffixes after
+	 assembler names, we need to compare for match ignoring
+	 these (and update odr_type_hash, too).  */
+#ifdef ENABLE_CHECKING
+      gcc_assert (!strchr (IDENTIFIER_POINTER (v1), '.')
+		  && !strchr (IDENTIFIER_POINTER (v2), '.'));
+#endif
+      return (v1 == v2);
+    }
+
+  /* FIXME: the code comparing type names consider all instantiations of the
+     same template to have same name.  This is because we have no access
+     to template parameters.  For types with no virtual method tables
+     we thus can return false positives.  At the moment we do not need
+     to compare types in other scenarios than devirtualization.  */
+
+  /* If types are not structuraly same, do not bother to contnue.
+     Match in the remainder of code would mean ODR violation.  */
+  if (!types_compatible_p (type1, type2))
+    return false;
   if (!TYPE_NAME (type1))
     return false;
   if (!decls_same_for_odr (TYPE_NAME (type1), TYPE_NAME (type2)))

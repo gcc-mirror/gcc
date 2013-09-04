@@ -1,3 +1,18 @@
+2013-09-04  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (ipa-devirt.o): Add dependency on diagnostic.h
+	* ipa-devirt.c: Include diganostic.h
+	(odr_type_d): Add types and types_set.
+	(hash_type_name): Work for types with vtables during LTO.
+	(odr_hasher::remove): Fix comment; destroy types_set.
+	(add_type_duplicate): New function,
+	(get_odr_type): Use it.
+	(dump_type_inheritance_graph): Dump type duplicates.
+	* ipa.c (symtab_remove_unreachable_nodes): Build type inheritance
+	graph.
+	* tree.c (types_same_for_odr): Give exact answers on types with
+	virtual tables.
+
 2013-09-04  Dodji Seketeli  <dodji@redhat.com>
 
 	* tree.h (DECL_BUILT_IN, DECL_IS_BUILTIN): Add more comments

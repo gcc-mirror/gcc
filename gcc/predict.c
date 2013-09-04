@@ -232,8 +232,22 @@ bool
 probably_never_executed_bb_p (struct function *fun, const_basic_block bb)
 {
   gcc_checking_assert (fun);
-  if (profile_info && flag_branch_probabilities)
-    return ((bb->count + profile_info->runs / 2) / profile_info->runs) == 0;
+  if (profile_status_for_function (fun) == PROFILE_READ)
+    {
+      if ((bb->count * 4 + profile_info->runs / 2) / profile_info->runs > 0)
+	return false;
+      if (!bb->frequency)
+	return true;
+      if (!ENTRY_BLOCK_PTR->frequency)
+	return false;
+      if (ENTRY_BLOCK_PTR->count && ENTRY_BLOCK_PTR->count < REG_BR_PROB_BASE)
+	{
+	  return (RDIV (bb->frequency * ENTRY_BLOCK_PTR->count,
+		        ENTRY_BLOCK_PTR->frequency)
+		  < REG_BR_PROB_BASE / 4);
+	}
+      return true;
+    }
   if ((!profile_info || !flag_branch_probabilities)
       && (cgraph_get_node (fun->decl)->frequency
 	  == NODE_FREQUENCY_UNLIKELY_EXECUTED))

@@ -218,6 +218,8 @@ symtab_remove_unreachable_nodes (bool before_inlining_p, FILE *file)
 #ifdef ENABLE_CHECKING
   verify_symtab ();
 #endif
+  if (optimize && flag_devirtualize)
+    build_type_inheritance_graph ();
   if (file)
     fprintf (file, "\nReclaiming functions:");
 #ifdef ENABLE_CHECKING
