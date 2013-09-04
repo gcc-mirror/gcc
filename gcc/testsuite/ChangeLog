@@ -1,3 +1,7 @@
+2013-09-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/warn/weak1.C: Skip on AIX.
+
 2013-09-04  Easwaran Raman  <eraman@google.com>
 
 	PR middle-end/57370
