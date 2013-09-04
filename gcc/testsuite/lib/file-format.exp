@@ -38,6 +38,9 @@ proc gcc_target_object_format { } {
 	} else {
 	  set gcc_target_object_format_saved som
 	}
+    } elseif { [istarget *-*-aix*] } {
+	# AIX doesn't necessarily have objdump, so hand-code it.
+	set gcc_target_object_format_saved coff
     } else {
         set objdump_name [find_binutils_prog objdump]
         set open_file [open objfmtst.c w]
