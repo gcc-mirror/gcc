@@ -35,7 +35,7 @@ sparc_sunos4_mach_dep.s ia64_save_regs_in_stack.s
 
 # Include THREADLIBS here to ensure that the correct versions of
 # linuxthread semaphore functions get linked:
-libgcjgc_la_LIBADD = $(addobjs) $(THREADLIBS)
+libgcjgc_la_LIBADD = $(addobjs) $(THREADLIBS) $(EXTRA_TEST_LIBS)
 libgcjgc_la_DEPENDENCIES = $(addobjs)
 libgcjgc_la_LDFLAGS = $(extra_ldflags_libgc) -version-info 1:2:0 -rpath $(toolexeclibdir)
 libgcjgc_la_LINK = $(LINK) $(libgcjgc_la_LDFLAGS)

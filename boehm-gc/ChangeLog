@@ -1,3 +1,8 @@
+2013-09-04  Matthias Klose  <doko@ubuntu.com> 
+
+	* Makefile.am (libgcjgc_la_LIBADD): Add EXTRA_TEST_LIBS.
+	* Makefile.in: Regenerate.
+
 2013-03-16  Yvan Roux <yvan.roux@linaro.org>
 
 	* include/private/gcconfig.h (AARCH64): New macro (defined only if
