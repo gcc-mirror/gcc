@@ -17033,7 +17033,7 @@ vaddvq_s32 (int32x4_t __a)
   return vgetq_lane_s32 (__builtin_aarch64_reduc_splus_v4si (__a), 0);
 }
 
-__extension__ static __inline int32_t __attribute__ ((__always_inline__))
+__extension__ static __inline int64_t __attribute__ ((__always_inline__))
 vaddvq_s64 (int64x2_t __a)
 {
   return vgetq_lane_s64 (__builtin_aarch64_reduc_splus_v2di (__a), 0);
@@ -17060,7 +17060,7 @@ vaddvq_u32 (uint32x4_t __a)
 		__builtin_aarch64_reduc_uplus_v4si ((int32x4_t) __a), 0);
 }
 
-__extension__ static __inline uint32_t __attribute__ ((__always_inline__))
+__extension__ static __inline uint64_t __attribute__ ((__always_inline__))
 vaddvq_u64 (uint64x2_t __a)
 {
   return vgetq_lane_u64 ((uint64x2_t)
