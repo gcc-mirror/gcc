@@ -1,3 +1,9 @@
+2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24926
+	* class.c (finish_struct_anon_r): New.
+	(finish_struct_anon): Use it.
+
 2013-09-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (cxx_pretty_printer::simple_type_specifier):
