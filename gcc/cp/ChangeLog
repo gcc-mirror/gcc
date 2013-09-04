@@ -1,3 +1,7 @@
+2013-09-03  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (cp/lambda.o): Add dependencies.
+
 2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* cxx-pretty-print.h (cxx_pretty_printer::type_id): Declare as
