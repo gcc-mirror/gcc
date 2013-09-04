@@ -1,3 +1,10 @@
+2013-09-04  Easwaran Raman  <eraman@google.com>
+
+	PR middle-end/57370
+	* tree-ssa-reassoc.c (get_stmt_uid_with_default): New function,
+	(build_and_add_sum): Use it.
+	(appears_later_in_bb): Simplify code.
+
 2013-09-04  Teresa Johnson  <tejohnson@google.com>
 
 	* dumpfile.c (dump_finish): Don't close stderr/stdout.
