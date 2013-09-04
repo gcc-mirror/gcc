@@ -1,3 +1,8 @@
+2013-09-04  Dodji Seketeli  <dodji@redhat.com>
+
+	* tree.h (DECL_BUILT_IN, DECL_IS_BUILTIN): Add more comments
+    	explaining their differences.
+
 2013-09-04  Sandeep Kumar Singh<Sandeep.Singh2@kpitcummins.com>
 
 	* config/rx/rx.h: Add option -mcpu for target variants RX100 and RX200.

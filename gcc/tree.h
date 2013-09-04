@@ -1838,6 +1838,9 @@ extern enum machine_mode vector_type_mode (const_tree);
 #define DECL_SOURCE_FILE(NODE) LOCATION_FILE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_LINE(NODE) LOCATION_LINE (DECL_SOURCE_LOCATION (NODE))
 #define DECL_SOURCE_COLUMN(NODE) LOCATION_COLUMN (DECL_SOURCE_LOCATION (NODE))
+/* This accessor returns TRUE if the decl it operates on was created
+   by a front-end or back-end rather than by user code.  In this case
+   builtin-ness is indicated by source location.  */
 #define DECL_IS_BUILTIN(DECL) \
   (LOCATION_LOCUS (DECL_SOURCE_LOCATION (DECL)) <= BUILTINS_LOCATION)
 
@@ -2486,7 +2489,13 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_STRUCT_FUNCTION(NODE) \
   (FUNCTION_DECL_CHECK (NODE)->function_decl.f)
 
-/* In a FUNCTION_DECL, nonzero means a built in function.  */
+/* In a FUNCTION_DECL, nonzero means a built in function of a
+   standard library or more generally a built in function that is
+   recognized by optimizers and expanders.
+
+   Note that it is different from the DECL_IS_BUILTIN accessor.  For
+   instance, user declarated prototypes of C library functions are not
+   DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 
 /* For a builtin function, identify which part of the compiler defined it.  */
