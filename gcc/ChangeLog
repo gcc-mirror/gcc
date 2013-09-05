@@ -1,3 +1,8 @@
+2013-09-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_analyze_loop_operations): Properly
+	check for a definition without a basic-block.
+
 2013-09-05  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Sofiane Naci <sofiane.naci@arm.com>
 

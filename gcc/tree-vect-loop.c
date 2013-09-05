@@ -1384,7 +1384,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
                     return false;
 
                   op_def_stmt = SSA_NAME_DEF_STMT (phi_op);
-		  if (!op_def_stmt
+		  if (gimple_nop_p (op_def_stmt)
 		      || !flow_bb_inside_loop_p (loop, gimple_bb (op_def_stmt))
 		      || !vinfo_for_stmt (op_def_stmt))
                     return false;
