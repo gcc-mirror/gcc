@@ -1,3 +1,7 @@
+2013-09-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/autopar/pr49960.c: Disable partial inlining
+
 2013-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58137
