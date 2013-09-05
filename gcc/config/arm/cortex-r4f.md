@@ -83,12 +83,12 @@
 
 (define_insn_reservation "cortex_r4_mcr" 2
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "r_2_f"))
+      (eq_attr "type" "f_mcr,f_mcrr"))
  "cortex_r4_issue_ab")
 
 (define_insn_reservation "cortex_r4_mrc" 3
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "f_2_r"))
+      (eq_attr "type" "f_mrc,f_mrrc"))
  "cortex_r4_issue_ab")
 
 ;; Bypasses for normal (not early) regs.

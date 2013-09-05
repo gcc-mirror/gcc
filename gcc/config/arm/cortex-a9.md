@@ -80,10 +80,9 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; which can go down E2 without any problem.
 (define_insn_reservation "cortex_a9_dp" 2
   (and (eq_attr "tune" "cortexa9")
-       (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
-                             mov_imm,mov_reg,mvn_imm,mvn_reg,\
-                             mov_shift_reg,mov_shift")
-            (eq_attr "neon_type" "none")))
+       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
+                        mov_imm,mov_reg,mvn_imm,mvn_reg,\
+                        mov_shift_reg,mov_shift"))
   "cortex_a9_p0_default|cortex_a9_p1_default")
 
 ;; An instruction using the shifter will go down E1.
@@ -200,7 +199,7 @@ cortex_a9_store3_4, cortex_a9_store1_2,  cortex_a9_load3_4")
 ;; Pipelining for VFP instructions.
 ;; Issue happens either along load store unit or the VFP / Neon unit.
 ;; Pipeline   Instruction Classification.
-;; FPS - fcpys, ffariths, ffarithd,r_2_f,f_2_r
+;; FPS - fcpys, ffariths, ffarithd,f_mcr,f_mcrr,f_mrc,f_mrrc
 ;; FP_ADD   - fadds, faddd, fcmps (1)
 ;; FPMUL   - fmul{s,d}, fmac{s,d}, ffma{s,d}
 ;; FPDIV - fdiv{s,d}
@@ -213,7 +212,8 @@ cortex_a9_store3_4, cortex_a9_store1_2,  cortex_a9_load3_4")
 ;; fmrs, fmrrd, fmstat and fmrx - The data is available after 1 cycle.
 (define_insn_reservation "cortex_a9_fps" 2
  (and (eq_attr "tune" "cortexa9")
-      (eq_attr "type" "fcpys, fconsts, fconstd, ffariths, ffarithd, r_2_f, f_2_r, f_flag"))
+      (eq_attr "type" "fcpys, fconsts, fconstd, ffariths, ffarithd,\
+                       f_mcr, f_mcrr, f_mrc, f_mrrc, f_flag"))
  "ca9_issue_vfp_neon + ca9fps")
 
 (define_bypass 1

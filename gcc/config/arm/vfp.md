@@ -53,8 +53,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
-   (set_attr "neon_type" "*,*,*,*,*,*,neon_mcr,neon_mrc,neon_vmov,*,*")
+   (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load1,store1,f_mcr,f_mrc,fcpys,f_loads,f_stores")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
 )
@@ -101,9 +100,8 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,no")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_reg,load1,load1,store1,store1,r_2_f,f_2_r,fcpys,f_loads,f_stores")
+   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_reg,load1,load1,store1,store1,f_mcr,f_mrc,fcpys,f_loads,f_stores")
    (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4")
-   (set_attr "neon_type" "*,*,*,*,*,*,*,*,*,neon_mcr,neon_mrc,neon_vmov,*,*")
    (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
 )
@@ -146,8 +144,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "*,*,*,*,load2,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
-   (set_attr "neon_type" "*,*,*,*,*,*,*,neon_mcr_2_mcrr,neon_mrrc,neon_vmov,*,*")
+  [(set_attr "type" "*,*,*,*,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "1,4,5,6") (const_int 8)
                               (eq_attr "alternative" "2") (const_int 12)
                               (eq_attr "alternative" "3") (const_int 16)
@@ -195,8 +192,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "*,*,*,*,load2,load2,store2,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
-   (set_attr "neon_type" "*,*,*,*,*,*,*,neon_mcr_2_mcrr,neon_mrrc,neon_vmov,*,*")
+  [(set_attr "type" "*,*,*,*,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "1") (const_int 8)
                                (eq_attr "alternative" "2") (const_int 12)
                                (eq_attr "alternative" "3") (const_int 16)
@@ -264,8 +260,8 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "*,*,load1,store1,fcpys,*,r_2_f,f_2_r,*")
-   (set_attr "neon_type" "neon_vld1_1_2_regs,neon_vst1_1_2_regs_vst2_2_regs,*,*,*,*,*,*,*")
+   (set_attr "type" "neon_vld1_1_2_regs,neon_vst1_1_2_regs_vst2_2_regs,\
+                     load1,store1,fcpys,*,f_mcr,f_mrc,*")
    (set_attr "length" "4,4,4,4,4,4,4,4,8")]
 )
 
@@ -315,7 +311,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,fcpys,*,r_2_f,f_2_r,*")
+   (set_attr "type" "load1,store1,fcpys,*,f_mcr,f_mrc,*")
    (set_attr "length" "4,4,4,4,4,4,8")]
 )
 
@@ -355,8 +351,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type"
-     "r_2_f,f_2_r,fconsts,f_loads,f_stores,load1,store1,fcpys,mov_reg")
-   (set_attr "neon_type" "neon_mcr,neon_mrc,*,*,*,*,*,neon_vmov,*")
+     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fcpys,mov_reg")
    (set_attr "pool_range" "*,*,*,1020,*,4096,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,4080,*,*,*")]
 )
@@ -393,8 +388,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type"
-     "r_2_f,f_2_r,fconsts,f_loads,f_stores,load1,store1,fcpys,mov_reg")
-   (set_attr "neon_type" "neon_mcr,neon_mrc,*,*,*,*,*,neon_vmov,*")
+     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fcpys,mov_reg")
    (set_attr "pool_range" "*,*,*,1018,*,4090,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
@@ -434,9 +428,8 @@
       }
     }
   "
-  [(set_attr "type"
-     "r_2_f,f_2_r,fconstd,f_loadd,f_stored,load2,store2,ffarithd,*")
-   (set_attr "neon_type" "neon_mcr_2_mcrr,neon_mrrc,*,*,*,*,*,neon_vmov,*")
+  [(set_attr "type" "f_mcrr,f_mrrc,fconstd,f_loadd,f_stored,\
+                     load2,store2,ffarithd,*")
    (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
@@ -480,9 +473,8 @@
       }
     }
   "
-  [(set_attr "type"
-     "r_2_f,f_2_r,fconstd,f_loadd,f_stored,load2,store2,ffarithd,*")
-   (set_attr "neon_type" "neon_mcr_2_mcrr,neon_mrrc,*,*,*,*,*,neon_vmov,*")
+  [(set_attr "type" "f_mcrr,f_mrrc,fconstd,f_loadd,\
+                     f_stored,load2,store2,ffarithd,*")
    (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
@@ -517,8 +509,7 @@
    fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
-    (set_attr "type" "fcpys,fcpys,fcpys,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")
-    (set_attr "neon_type" "neon_vmov,neon_vmov,neon_vmov,neon_mcr,neon_mcr,neon_mcr,neon_mrc,neon_mrc,neon_mrc")]
+    (set_attr "type" "fcpys,fcpys,fcpys,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
 )
 
 (define_insn "*thumb2_movsfcc_vfp"
@@ -541,8 +532,7 @@
    ite\\t%D3\;fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
-    (set_attr "type" "fcpys,fcpys,fcpys,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")
-    (set_attr "neon_type" "neon_vmov,neon_vmov,neon_vmov,neon_mcr,neon_mcr,neon_mcr,neon_mrc,neon_mrc,neon_mrc")]
+    (set_attr "type" "fcpys,fcpys,fcpys,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
 )
 
 (define_insn "*movdfcc_vfp"
@@ -565,8 +555,7 @@
    fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
-    (set_attr "type" "ffarithd,ffarithd,ffarithd,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")
-    (set_attr "neon_type" "neon_vmov,neon_vmov,neon_vmov,neon_mcr_2_mcrr,neon_mcr_2_mcrr,neon_mcr_2_mcrr,neon_mrrc,neon_mrrc,neon_mrrc")]
+    (set_attr "type" "ffarithd,ffarithd,ffarithd,f_mcr,f_mcr,f_mcr,f_mrrc,f_mrrc,f_mrrc")]
 )
 
 (define_insn "*thumb2_movdfcc_vfp"
@@ -589,8 +578,7 @@
    ite\\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
-    (set_attr "type" "ffarithd,ffarithd,ffarithd,r_2_f,r_2_f,r_2_f,f_2_r,f_2_r,f_2_r")
-    (set_attr "neon_type" "neon_vmov,neon_vmov,neon_vmov,neon_mcr_2_mcrr,neon_mcr_2_mcrr,neon_mcr_2_mcrr,neon_mrrc,neon_mrrc,neon_mrrc")]
+    (set_attr "type" "ffarithd,ffarithd,ffarithd,f_mcr,f_mcr,f_mcr,f_mrrc,f_mrrc,f_mrrc")]
 )
 
 

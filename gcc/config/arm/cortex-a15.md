@@ -61,25 +61,22 @@
 ;; Simple ALU without shift
 (define_insn_reservation "cortex_a15_alu" 2
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
+       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
                              mov_imm,mov_reg,\
-                             mvn_imm,mvn_reg")
-            (eq_attr "neon_type" "none")))
+                             mvn_imm,mvn_reg"))
   "ca15_issue1,(ca15_sx1,ca15_sx1_alu)|(ca15_sx2,ca15_sx2_alu)")
 
 ;; ALU ops with immediate shift
 (define_insn_reservation "cortex_a15_alu_shift" 3
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "extend,arlo_shift,,mov_shift,mvn_shift")
-            (eq_attr "neon_type" "none")))
+       (eq_attr "type" "extend,arlo_shift,,mov_shift,mvn_shift"))
   "ca15_issue1,(ca15_sx1,ca15_sx1+ca15_sx1_shf,ca15_sx1_alu)\
 	       |(ca15_sx2,ca15_sx2+ca15_sx2_shf,ca15_sx2_alu)")
 
 ;; ALU ops with register controlled shift
 (define_insn_reservation "cortex_a15_alu_shift_reg" 3
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "arlo_shift_reg,mov_shift_reg,mvn_shift_reg")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "arlo_shift_reg,mov_shift_reg,mvn_shift_reg"))
   "(ca15_issue2,ca15_sx1+ca15_sx2,ca15_sx1_shf,ca15_sx2_alu)\
    |(ca15_issue1,(ca15_issue1+ca15_sx2,ca15_sx1+ca15_sx2_shf)\
    |(ca15_issue1+ca15_sx1,ca15_sx1+ca15_sx1_shf),ca15_sx1_alu)")
@@ -89,15 +86,13 @@
 ;; 32-bit multiplies
 (define_insn_reservation "cortex_a15_mult32" 3
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "mul32" "yes")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "mul32" "yes"))
   "ca15_issue1,ca15_mx")
 
 ;; 64-bit multiplies
 (define_insn_reservation "cortex_a15_mult64" 4
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "mul64" "yes")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "mul64" "yes"))
   "ca15_issue1,ca15_mx*2")
 
 ;; Integer divide
@@ -114,8 +109,7 @@
 ;; Block all issue pipes for a cycle
 (define_insn_reservation "cortex_a15_block" 1
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "block")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "block"))
   "ca15_issue3")
 
 ;; Branch execution Unit
@@ -124,8 +118,7 @@
 ;; No latency as there is no result
 (define_insn_reservation "cortex_a15_branch" 0
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "branch")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "branch"))
   "ca15_issue1,ca15_bx")
 
 ;; Load-store execution Unit
@@ -133,29 +126,25 @@
 ;; Loads of up to two words.
 (define_insn_reservation "cortex_a15_load1" 4
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "load_byte,load1,load2")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "load_byte,load1,load2"))
   "ca15_issue1,ca15_ls,ca15_ldr,nothing")
 
 ;; Loads of three or four words.
 (define_insn_reservation "cortex_a15_load3" 5
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "load3,load4")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "load3,load4"))
   "ca15_issue2,ca15_ls1+ca15_ls2,ca15_ldr,ca15_ldr,nothing")
 
 ;; Stores of up to two words.
 (define_insn_reservation "cortex_a15_store1" 0
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "store1,store2")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "store1,store2"))
   "ca15_issue1,ca15_ls,ca15_str")
 
 ;; Stores of three or four words.
 (define_insn_reservation "cortex_a15_store3" 0
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "store3,store4")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "store3,store4"))
   "ca15_issue2,ca15_ls1+ca15_ls2,ca15_str,ca15_str")
 
 ;; We include Neon.md here to ensure that the branch can block the Neon units.
@@ -165,8 +154,7 @@
 ;; pipeline.  The result however is available the next cycle.
 (define_insn_reservation "cortex_a15_call" 1
   (and (eq_attr "tune" "cortexa15")
-       (and (eq_attr "type" "call")
-	    (eq_attr "neon_type" "none")))
+       (eq_attr "type" "call"))
   "ca15_issue3,\
    ca15_sx1+ca15_sx2+ca15_bx+ca15_mx+ca15_cx_ij+ca15_cx_ik+ca15_ls1+ca15_ls2+\
    ca15_cx_imac1+ca15_cx_ialu1+ca15_cx_ialu2+ca15_cx_ishf+\

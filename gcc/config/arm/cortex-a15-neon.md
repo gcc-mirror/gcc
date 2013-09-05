@@ -93,389 +93,345 @@
 
 (define_insn_reservation  "cortex_a15_neon_int_1" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_int_1"))
+       (eq_attr "type" "neon_int_1"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_int_2" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_int_2"))
+       (eq_attr "type" "neon_int_2"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_int_3" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_int_3"))
+       (eq_attr "type" "neon_int_3"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_int_4" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_int_4"))
+       (eq_attr "type" "neon_int_4"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_int_5" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_int_5"))
+       (eq_attr "type" "neon_int_5"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_vqneg_vqabs" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_vqneg_vqabs"))
+       (eq_attr "type" "neon_vqneg_vqabs"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_vmov" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_vmov"))
+       (eq_attr "type" "neon_vmov"))
   "ca15_issue1,ca15_cx_ialu")
 
 (define_insn_reservation  "cortex_a15_neon_vaba" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_vaba"))
+       (eq_attr "type" "neon_vaba"))
   "ca15_issue1,ca15_cx_ialu_with_acc")
 
 (define_insn_reservation  "cortex_a15_neon_vaba_qqq" 8
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_vaba_qqq"))
+       (eq_attr "type" "neon_vaba_qqq"))
   "ca15_issue2,ca15_cx_ialu_with_acc*2")
 
 (define_insn_reservation
   "cortex_a15_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long"))
+       (eq_attr "type" "neon_mul_ddd_8_16_qdd_16_8_long_32_16_long"))
   "ca15_issue1,ca15_cx_imac")
 
 (define_insn_reservation "cortex_a15_neon_mul_qqq_8_16_32_ddd_32" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type" "neon_mul_qqq_8_16_32_ddd_32"))
+       (eq_attr "type" "neon_mul_qqq_8_16_32_ddd_32"))
   "ca15_issue1,ca15_cx_imac*2")
 
 (define_insn_reservation
   "cortex_a15_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
+       (eq_attr "type"
               "neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar"))
   "ca15_issue1,ca15_cx_imac*2")
 
 (define_insn_reservation
   "cortex_a15_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
+       (eq_attr "type"
               "neon_mla_ddd_8_16_qdd_16_8_long_32_16_long"))
   "ca15_issue1,ca15_cx_imac")
 
 (define_insn_reservation
   "cortex_a15_neon_mla_qqq_8_16" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
+       (eq_attr "type"
               "neon_mla_qqq_8_16"))
   "ca15_issue1,ca15_cx_imac*2")
 
 (define_insn_reservation
   "cortex_a15_neon_mla_ddd_32_qqd_16_ddd_32_scalar_\
-     qdd_64_32_long_scalar_qdd_64_32_long" 7
+     qdd_64_32_lotype_qdd_64_32_long" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-  "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
+       (eq_attr "type"  "neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long"))
   "ca15_issue1,ca15_cx_imac")
 
 (define_insn_reservation
   "cortex_a15_neon_mla_qqq_32_qqd_32_scalar" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mla_qqq_32_qqd_32_scalar"))
+       (eq_attr "type" "neon_mla_qqq_32_qqd_32_scalar"))
   "ca15_issue1,ca15_cx_imac*2")
 
 (define_insn_reservation
   "cortex_a15_neon_mul_ddd_16_scalar_32_16_long_scalar" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mul_ddd_16_scalar_32_16_long_scalar"))
+       (eq_attr "type" "neon_mul_ddd_16_scalar_32_16_long_scalar"))
   "ca15_issue1,ca15_cx_imac")
 
 (define_insn_reservation
   "cortex_a15_neon_mul_qqd_32_scalar" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mul_qqd_32_scalar"))
+       (eq_attr "type" "neon_mul_qqd_32_scalar"))
   "ca15_issue1,ca15_cx_imac*2")
 
 (define_insn_reservation
   "cortex_a15_neon_mla_ddd_16_scalar_qdd_32_16_long_scalar" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar"))
+       (eq_attr "type" "neon_mla_ddd_16_scalar_qdd_32_16_long_scalar"))
   "ca15_issue1,ca15_cx_imac")
 
 (define_insn_reservation
   "cortex_a15_neon_shift_1" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_shift_1"))
+       (eq_attr "type" "neon_shift_1"))
   "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
 
 (define_insn_reservation
   "cortex_a15_neon_shift_2" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_shift_2"))
+       (eq_attr "type" "neon_shift_2"))
   "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
 
 (define_insn_reservation
   "cortex_a15_neon_shift_3" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_shift_3"))
+       (eq_attr "type" "neon_shift_3"))
   "ca15_issue2,(ca15_cx_ik+ca15_cx_ishf)*2")
 
 (define_insn_reservation
   "cortex_a15_neon_vshl_ddd" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vshl_ddd"))
+       (eq_attr "type" "neon_vshl_ddd"))
   "ca15_issue1,ca15_cx_ik+ca15_cx_ishf")
 
 (define_insn_reservation
   "cortex_a15_neon_vqshl_vrshl_vqrshl_qqq" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vqshl_vrshl_vqrshl_qqq"))
+       (eq_attr "type" "neon_vqshl_vrshl_vqrshl_qqq"))
   "ca15_issue2,(ca15_cx_ik+ca15_cx_ishf)*2")
 
 (define_insn_reservation
   "cortex_a15_neon_vsra_vrsra" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vsra_vrsra"))
+       (eq_attr "type" "neon_vsra_vrsra"))
   "ca15_issue1,ca15_cx_ishf_with_acc")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vadd_ddd_vabs_dd" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vadd_ddd_vabs_dd"))
+       (eq_attr "type" "neon_fp_vadd_ddd_vabs_dd"))
   "ca15_issue1,ca15_cx_falu")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vadd_qqq_vabs_qq" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vadd_qqq_vabs_qq"))
+       (eq_attr "type" "neon_fp_vadd_qqq_vabs_qq"))
   "ca15_issue2,ca15_cx_falu_2")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vmul_ddd" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vmul_ddd"))
+       (eq_attr "type" "neon_fp_vmul_ddd"))
   "ca15_issue1,ca15_cx_fmul")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vmul_qqd" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vmul_qqd"))
+       (eq_attr "type" "neon_fp_vmul_qqd"))
   "ca15_issue2,ca15_cx_fmul_2")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vmla_ddd" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vmla_ddd"))
+       (eq_attr "type" "neon_fp_vmla_ddd"))
   "ca15_issue1,ca15_cx_fmac")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vmla_qqq" 11
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vmla_qqq"))
+       (eq_attr "type" "neon_fp_vmla_qqq"))
   "ca15_issue2,ca15_cx_fmac_2")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vmla_ddd_scalar" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vmla_ddd_scalar"))
+       (eq_attr "type" "neon_fp_vmla_ddd_scalar"))
   "ca15_issue1,ca15_cx_fmac")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vmla_qqq_scalar" 11
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vmla_qqq_scalar"))
+       (eq_attr "type" "neon_fp_vmla_qqq_scalar"))
   "ca15_issue2,ca15_cx_fmac_2")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vrecps_vrsqrts_ddd" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vrecps_vrsqrts_ddd"))
+       (eq_attr "type" "neon_fp_vrecps_vrsqrts_ddd"))
   "ca15_issue1,ca15_cx_fmac")
 
 (define_insn_reservation
   "cortex_a15_neon_fp_vrecps_vrsqrts_qqq" 11
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_fp_vrecps_vrsqrts_qqq"))
+       (eq_attr "type" "neon_fp_vrecps_vrsqrts_qqq"))
   "ca15_issue2,ca15_cx_fmac_2")
 
 (define_insn_reservation
   "cortex_a15_neon_bp_simple" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_bp_simple"))
+       (eq_attr "type" "neon_bp_simple"))
   "ca15_issue3,ca15_ls+ca15_cx_perm_2,ca15_cx_perm")
 
 (define_insn_reservation
   "cortex_a15_neon_bp_2cycle" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_bp_2cycle"))
+       (eq_attr "type" "neon_bp_2cycle"))
   "ca15_issue1,ca15_cx_perm")
 
 (define_insn_reservation
   "cortex_a15_neon_bp_3cycle" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_bp_3cycle"))
+       (eq_attr "type" "neon_bp_3cycle"))
   "ca15_issue3,ca15_cx_ialu+ca15_cx_perm_2,ca15_cx_perm")
 
 (define_insn_reservation
   "cortex_a15_neon_vld1_1_2_regs" 7
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld1_1_2_regs"))
+       (eq_attr "type" "neon_vld1_1_2_regs"))
   "ca15_issue2,ca15_ls,ca15_ldr")
 
 (define_insn_reservation
   "cortex_a15_neon_vld1_3_4_regs" 8
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld1_3_4_regs"))
+       (eq_attr "type" "neon_vld1_3_4_regs"))
   "ca15_issue3,ca15_ls1+ca15_ls2,ca15_ldr,ca15_ldr")
 
 (define_insn_reservation
   "cortex_a15_neon_vld2_2_regs_vld1_vld2_all_lanes" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld2_2_regs_vld1_vld2_all_lanes"))
+       (eq_attr "type" "neon_vld2_2_regs_vld1_vld2_all_lanes"))
   "ca15_issue3,ca15_ls,ca15_ldr")
 
 (define_insn_reservation
   "cortex_a15_neon_vld2_4_regs" 12
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld2_4_regs"))
+       (eq_attr "type" "neon_vld2_4_regs"))
   "ca15_issue3,ca15_issue3+ca15_ls1+ca15_ls2,ca15_ldr*2")
 
 (define_insn_reservation
   "cortex_a15_neon_vld3_vld4" 12
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld3_vld4"))
+       (eq_attr "type" "neon_vld3_vld4"))
   "ca15_issue3,ca15_issue3+ca15_ls1+ca15_ls2,ca15_ldr*2")
 
 (define_insn_reservation
   "cortex_a15_neon_vst1_1_2_regs_vst2_2_regs" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vst1_1_2_regs_vst2_2_regs"))
+       (eq_attr "type" "neon_vst1_1_2_regs_vst2_2_regs"))
   "ca15_issue3,ca15_issue3+ca15_cx_perm+ca15_ls1+ca15_ls2,ca15_str*2")
 
 (define_insn_reservation
   "cortex_a15_neon_vst1_3_4_regs" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vst1_3_4_regs"))
+       (eq_attr "type" "neon_vst1_3_4_regs"))
   "ca15_issue3,ca15_issue3+ca15_ls1+ca15_ls2,ca15_str*3")
 
 (define_insn_reservation
   "cortex_a15_neon_vst2_4_regs_vst3_vst4" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vst2_4_regs_vst3_vst4"))
+       (eq_attr "type" "neon_vst2_4_regs_vst3_vst4"))
   "ca15_issue3,ca15_issue3+ca15_cx_perm_2+ca15_ls1+ca15_ls2,\
    ca15_issue3+ca15_str,ca15_str*3")
 
 (define_insn_reservation
   "cortex_a15_neon_vst3_vst4" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vst3_vst4"))
+       (eq_attr "type" "neon_vst3_vst4"))
   "ca15_issue3,ca15_issue3+ca15_cx_perm_2+ca15_ls1+ca15_ls2,ca15_str*4")
 
 (define_insn_reservation
   "cortex_a15_neon_vld1_vld2_lane" 9
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld1_vld2_lane"))
+       (eq_attr "type" "neon_vld1_vld2_lane"))
   "ca15_issue3,ca15_ls,ca15_ldr")
 
 (define_insn_reservation
   "cortex_a15_neon_vld3_vld4_lane" 10
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld3_vld4_lane"))
+       (eq_attr "type" "neon_vld3_vld4_lane"))
   "ca15_issue3,ca15_issue3+ca15_ls,ca15_issue3+ca15_ldr")
 
 (define_insn_reservation
   "cortex_a15_neon_vst1_vst2_lane" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vst1_vst2_lane"))
+       (eq_attr "type" "neon_vst1_vst2_lane"))
   "ca15_issue3,ca15_cx_perm+ca15_ls,ca15_str")
 
 (define_insn_reservation
   "cortex_a15_neon_vst3_vst4_lane" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vst3_vst4_lane"))
+       (eq_attr "type" "neon_vst3_vst4_lane"))
   "ca15_issue3,ca15_issue3+ca15_cx_perm+ca15_ls1+ca15_ls2,ca15_str*2")
 
 (define_insn_reservation
   "cortex_a15_neon_vld3_vld4_all_lanes" 11
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_vld3_vld4_all_lanes"))
+       (eq_attr "type" "neon_vld3_vld4_all_lanes"))
   "ca15_issue3,ca15_issue3+ca15_ls,ca15_ldr")
 
 (define_insn_reservation
   "cortex_a15_neon_ldm_2" 20
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_ldm_2"))
+       (eq_attr "type" "neon_ldm_2"))
   "ca15_issue3*6")
 
 (define_insn_reservation
   "cortex_a15_neon_stm_2" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_stm_2"))
+       (eq_attr "type" "neon_stm_2"))
   "ca15_issue3*6")
 
 (define_insn_reservation
   "cortex_a15_neon_mcr" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mcr"))
+       (eq_attr "type" "neon_mcr"))
   "ca15_issue2,ca15_ls,ca15_cx_perm")
 
 (define_insn_reservation
   "cortex_a15_neon_mcr_2_mcrr" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mcr_2_mcrr"))
+       (eq_attr "type" "neon_mcr_2_mcrr"))
   "ca15_issue2,ca15_ls1+ca15_ls2")
 
 (define_insn_reservation
   "cortex_a15_neon_mrc" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mrc"))
+       (eq_attr "type" "neon_mrc"))
   "ca15_issue1,ca15_ls")
 
 (define_insn_reservation
   "cortex_a15_neon_mrrc" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "neon_type"
-              "neon_mrrc"))
+       (eq_attr "type" "neon_mrrc"))
   "ca15_issue2,ca15_ls1+ca15_ls2")
 
 (define_insn_reservation "cortex_a15_vfp_const" 4

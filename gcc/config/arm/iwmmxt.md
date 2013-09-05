@@ -155,7 +155,8 @@
                                  (const_int 8)
                                  (const_int 4))]
                               (const_int 4)))
-   (set_attr "type" "*,*,*,load2,store2,wmmx_wmov,wmmx_tmcrr,wmmx_tmrrc,wmmx_wldr,wmmx_wstr,r_2_f,f_2_r,ffarithd,f_loadd,f_stored")
+   (set_attr "type" "*,*,*,load2,store2,*,*,*,*,*,f_mcrr,f_mrrc,\
+                     ffarithd,f_loadd,f_stored")
    (set_attr "arm_pool_range" "*,*,*,1020,*,*,*,*,*,*,*,*,*,1020,*")
    (set_attr "arm_neg_pool_range" "*,*,*,1008,*,*,*,*,*,*,*,*,*,1008,*")]
 )
@@ -187,7 +188,8 @@
      default:
        gcc_unreachable ();
      }"
-  [(set_attr "type"           "*,*,*,*,load1,store1,wmmx_tmcr,wmmx_tmrc,wmmx_wldr,wmmx_wstr,r_2_f,f_2_r,fcpys,f_loads,f_stores")
+  [(set_attr "type"           "*,*,*,*,load1,store1,*,*,*,*,f_mcr,f_mrc,\
+                               fcpys,f_loads,f_stores")
    (set_attr "length"         "*,*,*,*,*,        *,*,*,  16,     *,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,4096,     *,*,*,1024,     *,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,     *,*,*,   *,  1012,*,*,*,1008,*")

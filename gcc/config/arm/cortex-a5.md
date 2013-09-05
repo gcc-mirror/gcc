@@ -243,12 +243,12 @@
 
 (define_insn_reservation "cortex_a5_r2f" 4
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "r_2_f"))
+       (eq_attr "type" "f_mcr,f_mcrr"))
   "cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_f2r" 2
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "f_2_r"))
+       (eq_attr "type" "f_mrc,f_mrrc"))
   "cortex_a5_ex1")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
