@@ -831,7 +831,7 @@ case ${target} in
   tmake_file=t-vxworks
   xm_defines=POSIX
   extra_options="${extra_options} vxworks.opt"
-  extra_objs=vxworks.o
+  extra_objs="$extra_objs vxworks.o"
   case ${enable_threads} in
     no) ;;
     "" | yes | vxworks) thread_file='vxworks' ;;
