@@ -37,3 +37,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
  --wrap=mmap --wrap=munmap --wrap=alloca\
  %{fmudflapth: --wrap=pthread_create\
 }} %{fmudflap|fmudflapth: --wrap=main}"
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
