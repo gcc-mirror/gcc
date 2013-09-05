@@ -738,46 +738,68 @@ propagate_threaded_block_debug_into (basic_block dest, basic_block src)
     fewvars.release ();
 }
 
-/* TAKEN_EDGE represents the an edge taken as a result of jump threading.
-   See if we can thread around TAKEN_EDGE->dest as well.  If so, return
-   the edge out of TAKEN_EDGE->dest that we can statically compute will be
-   traversed.
+/* See if TAKEN_EDGE->dest is a threadable block with no side effecs (ie, it
+   need not be duplicated as part of the CFG/SSA updating process).
 
-   We are much more restrictive as to the contents of TAKEN_EDGE->dest
-   as the path isolation code in tree-ssa-threadupdate.c isn't prepared
-   to handle copying intermediate blocks on a threaded path. 
+   If it is threadable, add it to PATH and VISITED and recurse, ultimately
+   returning TRUE from the toplevel call.   Otherwise do nothing and
+   return false.
 
-   Long term a more consistent and structured approach to path isolation
-   would be a huge help.   */
-static edge
-thread_around_empty_block (edge taken_edge,
-			   gimple dummy_cond,
-			   bool handle_dominating_asserts,
-			   tree (*simplify) (gimple, gimple),
-			   bitmap visited)
+   DUMMY_COND, HANDLE_DOMINATING_ASSERTS and SIMPLIFY are used to
+   try and simplify the condition at the end of TAKEN_EDGE->dest.  */
+static bool
+thread_around_empty_blocks (edge taken_edge,
+			    gimple dummy_cond,
+			    bool handle_dominating_asserts,
+			    tree (*simplify) (gimple, gimple),
+			    bitmap visited,
+			    vec<edge> *path)
 {
   basic_block bb = taken_edge->dest;
   gimple_stmt_iterator gsi;
   gimple stmt;
   tree cond;
 
-  /* This block can have no PHI nodes.  This is overly conservative.  */
+  /* The key property of these blocks is that they need not be duplicated
+     when threading.  Thus they can not have visible side effects such
+     as PHI nodes.  */
   if (!gsi_end_p (gsi_start_phis (bb)))
     return NULL;
 
   /* Skip over DEBUG statements at the start of the block.  */
   gsi = gsi_start_nondebug_bb (bb);
 
+  /* If the block has no statements, but does have a single successor, then
+     it's just a forwarding block and we can thread through it trivially.  */
   if (gsi_end_p (gsi))
-    return NULL;
+    {
+      if (single_succ_p (bb))
+	{
+	  taken_edge = single_succ_edge (bb);
+	  if ((taken_edge->flags & EDGE_DFS_BACK) == 0
+	      && !bitmap_bit_p (visited, taken_edge->dest->index))
+	    {
+	      bitmap_set_bit (visited, taken_edge->dest->index);
+	      path->safe_push (taken_edge);
+	      thread_around_empty_blocks (taken_edge,
+					  dummy_cond,
+					  handle_dominating_asserts,
+					  simplify,
+					  visited,
+					  path);
+	      return true;
+	    }
+	}
+      return false;
+    }
 
-  /* This block can have no statements other than its control altering
-     statement.  This is overly conservative.  */
+  /* The only real statements this block can have are a control
+     flow altering statement.  Anything else stops the thread.  */
   stmt = gsi_stmt (gsi);
   if (gimple_code (stmt) != GIMPLE_COND
       && gimple_code (stmt) != GIMPLE_GOTO
       && gimple_code (stmt) != GIMPLE_SWITCH)
-    return NULL;
+    return false;
 
   /* Extract and simplify the condition.  */
   cond = simplify_control_stmt_condition (taken_edge, stmt, dummy_cond,
@@ -788,15 +810,22 @@ thread_around_empty_block (edge taken_edge,
      path.  */
   if (cond && is_gimple_min_invariant (cond))
     {
-      edge taken_edge = find_taken_edge (bb, cond);
+      taken_edge = find_taken_edge (bb, cond);
 
       if (bitmap_bit_p (visited, taken_edge->dest->index))
-	return NULL;
+	return false;
       bitmap_set_bit (visited, taken_edge->dest->index);
-      return taken_edge;
+      path->safe_push (taken_edge);
+      thread_around_empty_blocks (taken_edge,
+				  dummy_cond,
+				  handle_dominating_asserts,
+				  simplify,
+				  visited,
+				  path);
+      return true;
     }
  
-  return NULL;
+  return false;
 }
       
 /* E1 and E2 are edges into the same basic block.  Return TRUE if the
@@ -896,51 +925,40 @@ thread_across_edge (gimple dummy_cond,
 	  edge taken_edge = find_taken_edge (e->dest, cond);
 	  basic_block dest = (taken_edge ? taken_edge->dest : NULL);
 	  bitmap visited;
-	  edge e2;
 
-	  if (dest == e->dest)
+	  /* DEST could be NULL for a computed jump to an absolute
+	     address.  */
+	  if (dest == NULL || dest == e->dest)
 	    goto fail;
 
 	  vec<edge> path = vNULL;
 	  path.safe_push (e);
 	  path.safe_push (taken_edge);
 
-	  /* DEST could be null for a computed jump to an absolute
-	     address.  If DEST is not null, then see if we can thread
-	     through it as well, this helps capture secondary effects
-	     of threading without having to re-run DOM or VRP.  */
-	  if (dest
-	      && ((e->flags & EDGE_DFS_BACK) == 0
-		  || ! cond_arg_set_in_bb (taken_edge, e->dest)))
+	  /* See if we can thread through DEST as well, this helps capture
+	     secondary effects of threading without having to re-run DOM or
+	     VRP.  */
+	  if ((e->flags & EDGE_DFS_BACK) == 0
+	       || ! cond_arg_set_in_bb (taken_edge, e->dest))
 	    {
 	      /* We don't want to thread back to a block we have already
  		 visited.  This may be overly conservative.  */
 	      visited = BITMAP_ALLOC (NULL);
 	      bitmap_set_bit (visited, dest->index);
 	      bitmap_set_bit (visited, e->dest->index);
-	      do
-		{
-		  e2 = thread_around_empty_block (taken_edge,
-						  dummy_cond,
-						  handle_dominating_asserts,
-						  simplify,
-						  visited);
-		  if (e2)
-		    {
-		      taken_edge = e2;
-		      path.safe_push (e2);
-		    }
-		}
-	      while (e2);
+	      thread_around_empty_blocks (taken_edge,
+					  dummy_cond,
+					  handle_dominating_asserts,
+					  simplify,
+					  visited,
+					  &path);
 	      BITMAP_FREE (visited);
 	    }
 
 	  remove_temporary_equivalences (stack);
-	  if (taken_edge)
-	    {
-	      propagate_threaded_block_debug_into (taken_edge->dest, e->dest);
-	      register_jump_thread (path, false);
-	    }
+	  propagate_threaded_block_debug_into (path[path.length () - 1]->dest,
+					       e->dest);
+	  register_jump_thread (path, false);
 	  path.release ();
 	  return;
 	}
@@ -958,7 +976,7 @@ thread_across_edge (gimple dummy_cond,
     This is a stopgap until we have a more structured approach to path
     isolation.  */
   {
-    edge e2, e3, taken_edge;
+    edge taken_edge;
     edge_iterator ei;
     bool found = false;
     bitmap visited = BITMAP_ALLOC (NULL);
@@ -976,28 +994,14 @@ thread_across_edge (gimple dummy_cond,
 	   of E->dest.  */
 	path.safe_push (e);
 	path.safe_push (taken_edge);
-	found = false;
-	e3 = taken_edge;
-	do
-	  {
-	    if ((e->flags & EDGE_DFS_BACK) == 0
-		|| ! cond_arg_set_in_bb (e3, e->dest))
-	      e2 = thread_around_empty_block (e3,
+	if ((e->flags & EDGE_DFS_BACK) == 0
+	    || ! cond_arg_set_in_bb (path[path.length () - 1], e->dest))
+	  found = thread_around_empty_blocks (taken_edge,
 					      dummy_cond,
 					      handle_dominating_asserts,
 					      simplify,
-					      visited);
-	    else
-	      e2 = NULL;
-
-	    if (e2)
-	      {
-		path.safe_push (e2);
-	        e3 = e2;
-		found = true;
-	      }
-	  }
-        while (e2);
+					      visited,
+					      &path);
 
 	/* If we were able to thread through a successor of E->dest, then
 	   record the jump threading opportunity.  */
@@ -1008,10 +1012,10 @@ thread_across_edge (gimple dummy_cond,
 	       (E2->src) to the final target (E3->dest), then make sure that
 	       the PHI args associated with the edges E2 and E3 are the
 	       same.  */
-	    tmp = find_edge (taken_edge->src, e3->dest);
-	    if (!tmp || phi_args_equal_on_edges (tmp, e3))
+	    tmp = find_edge (taken_edge->src, path[path.length () - 1]->dest);
+	    if (!tmp || phi_args_equal_on_edges (tmp, path[path.length () - 1]))
 	      {
-		propagate_threaded_block_debug_into (e3->dest,
+		propagate_threaded_block_debug_into (path[path.length () - 1]->dest,
 						     taken_edge->dest);
 		register_jump_thread (path, true);
 	      }
