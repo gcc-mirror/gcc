@@ -6203,8 +6203,7 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
      corresponding to that mode.  The theory is that any use that
      would cause problems with this will disable vectorization anyway.  */
   else if (!SCALAR_FLOAT_TYPE_P (scalar_type)
-	   && !INTEGRAL_TYPE_P (scalar_type)
-	   && !POINTER_TYPE_P (scalar_type))
+	   && !INTEGRAL_TYPE_P (scalar_type))
     scalar_type = lang_hooks.types.type_for_mode (inner_mode, 1);
 
   /* We can't build a vector type of elements with alignment bigger than

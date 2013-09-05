@@ -1,3 +1,13 @@
+2013-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58137
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size):
+	Do not create vectors of pointers.
+	* tree-vect-loop.c (get_initial_def_for_induction): Use proper
+	types for the components of the vector initializer.
+	* tree-cfg.c (verify_gimple_assign_binary): Remove special-casing
+	allowing pointer vectors with PLUS_EXPR/MINUS_EXPR.
+
 2013-09-05  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-prop.c (remove_described_reference): Accept missing references,
