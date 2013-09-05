@@ -28,6 +28,31 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+// TODO make comments doxygen format.
+
+// This compiler refers to "Regular Expression Matching Can Be Simple And Fast"
+// (http://swtch.com/~rsc/regexp/regexp1.html"),
+// but doesn't strictly follow it.
+//
+// When compiling, states are *chained* instead of tree- or graph-constructed.
+// It's more like structured programs: there's if statement and loop statement.
+//
+// For alternative structure(say "a|b"), aka "if statement", two branchs should
+// be constructed. However, these two shall merge to an "end_tag" at the end of
+// this operator:
+//
+//                branch1
+//              /        \
+// => begin_tag            end_tag =>
+//              \        /
+//                branch2
+//
+// This is the difference between this implementation and that in Russ's
+// article.
+//
+// That's why we introduced dummy node here ------ "end_tag" is a dummy node.
+// All dummy node will be eliminated at the end of compiling process.
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 namespace __detail
@@ -39,32 +64,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler(_FwdIter __b, _FwdIter __e,
 	      const _TraitsT& __traits, _FlagT __flags)
     : _M_traits(__traits), _M_scanner(__b, __e, __flags, _M_traits.getloc()),
-      _M_state_store(__flags), _M_flags(__flags)
+      _M_ctype(std::use_facet<std::ctype<_CharT>>(_M_traits.getloc())),
+      _M_nfa(__flags), _M_flags(__flags)
     {
-      _StateSeqT __r(_M_state_store,
-		     _M_state_store._M_insert_subexpr_begin());
-      _M_disjunction();
-      if (!_M_stack.empty())
-	{
-	  __r._M_append(_M_stack.top());
-	  _M_stack.pop();
-	}
-      __r._M_append(_M_state_store._M_insert_subexpr_end());
-      __r._M_append(_M_state_store._M_insert_accept());
-    }
-
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
-    bool
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
-    _M_match_token(_TokenT token)
-    {
-      if (token == _M_scanner._M_get_token())
-	{
-	  _M_value = _M_scanner._M_get_value();
-	  _M_scanner._M_advance();
-	  return true;
-	}
-      return false;
+      _StateSeqT __r(_M_nfa, _M_nfa._M_start());
+      __r._M_append(_M_nfa._M_insert_subexpr_begin());
+      this->_M_disjunction();
+      if (!_M_match_token(_ScannerT::_S_token_eof))
+	__throw_regex_error(regex_constants::error_paren);
+      __r._M_append(_M_pop());
+      _GLIBCXX_DEBUG_ASSERT(_M_stack.empty());
+      __r._M_append(_M_nfa._M_insert_subexpr_end());
+      __r._M_append(_M_nfa._M_insert_accept());
+      _M_nfa._M_eliminate_dummy();
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>
@@ -73,12 +85,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_disjunction()
     {
       this->_M_alternative();
-      if (_M_match_token(_ScannerT::_S_token_or))
+      // TODO empty alternative like, um, "(|asdf)"
+      while (_M_match_token(_ScannerT::_S_token_or))
 	{
-	  _StateSeqT __alt1 = _M_stack.top(); _M_stack.pop();
-	  this->_M_disjunction();
-	  _StateSeqT __alt2 = _M_stack.top(); _M_stack.pop();
-	  _M_stack.push(_StateSeqT(__alt1, __alt2));
+	  _StateSeqT __alt1 = _M_pop();
+	  this->_M_alternative();
+	  _StateSeqT __alt2 = _M_pop();
+	  auto __end = _M_nfa._M_insert_dummy();
+	  __alt1._M_append(__end);
+	  __alt2._M_append(__end);
+	  _M_stack.push(_StateSeqT(_M_nfa,
+				   _M_nfa._M_insert_alt(__alt1._M_start,
+						        __alt2._M_start),
+				   __end));
 	}
     }
 
@@ -89,15 +108,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (this->_M_term())
 	{
-	  _StateSeqT __re = _M_stack.top(); _M_stack.pop();
+	  _StateSeqT __re = _M_pop();
 	  this->_M_alternative();
-	  if (!_M_stack.empty())
-	    {
-	      __re._M_append(_M_stack.top());
-	      _M_stack.pop();
-	    }
+	  __re._M_append(_M_pop());
 	  _M_stack.push(__re);
 	}
+      else
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>
@@ -121,7 +138,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Compiler<_FwdIter, _CharT, _TraitsT>::
     _M_assertion()
     {
-      return false;
+      // temporary place holders.
+      if (_M_match_token(_ScannerT::_S_token_line_begin))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+      else if (_M_match_token(_ScannerT::_S_token_line_end))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+      else if (_M_match_token(_ScannerT::_S_token_word_bound))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+      else if (_M_match_token(_ScannerT::_S_token_neg_word_bound))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+      else if (_M_match_token(_ScannerT::_S_token_subexpr_lookahead_begin))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+      else if (_M_match_token(_ScannerT::_S_token_subexpr_neg_lookahead_begin))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_dummy()));
+      else
+	return false;
+      return true;
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>
@@ -133,67 +165,70 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  if (_M_stack.empty())
 	    __throw_regex_error(regex_constants::error_badrepeat);
-	  _StateSeqT __r(_M_stack.top(), -1);
-	  __r._M_append(__r._M_front());
-	  _M_stack.pop();
+	  auto __e = _M_pop();
+	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_alt(_S_invalid_state_id,
+						      __e._M_start));
+	  __e._M_append(__r);
 	  _M_stack.push(__r);
-	  return;
 	}
-      if (_M_match_token(_ScannerT::_S_token_closure1))
+      else if (_M_match_token(_ScannerT::_S_token_closure1))
 	{
 	  if (_M_stack.empty())
 	    __throw_regex_error(regex_constants::error_badrepeat);
-	  _StateSeqT __r(_M_state_store,
-			_M_state_store.
-			_M_insert_alt(_S_invalid_state_id,
-				      _M_stack.top()._M_front()));
-	  _M_stack.top()._M_append(__r);
-	  return;
+	  auto __e = _M_pop();
+	  __e._M_append(_M_nfa._M_insert_alt(_S_invalid_state_id, __e._M_start));
+	  _M_stack.push(__e);
 	}
-      if (_M_match_token(_ScannerT::_S_token_opt))
+      else if (_M_match_token(_ScannerT::_S_token_opt))
 	{
 	  if (_M_stack.empty())
-	  __throw_regex_error(regex_constants::error_badrepeat);
-	  _StateSeqT __r(_M_stack.top(), -1);
-	  _M_stack.pop();
+	    __throw_regex_error(regex_constants::error_badrepeat);
+	  auto __e = _M_pop();
+	  auto __end = _M_nfa._M_insert_dummy();
+	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_alt(_S_invalid_state_id,
+						      __e._M_start));
+	  __e._M_append(__end);
+	  __r._M_append(__end);
 	  _M_stack.push(__r);
-	  return;
 	}
-      if (_M_match_token(_ScannerT::_S_token_interval_begin))
+      else if (_M_match_token(_ScannerT::_S_token_interval_begin))
 	{
 	  if (_M_stack.empty())
 	    __throw_regex_error(regex_constants::error_badrepeat);
 	  if (!_M_match_token(_ScannerT::_S_token_dup_count))
 	    __throw_regex_error(regex_constants::error_badbrace);
-	  _StateSeqT __r(_M_stack.top());
+	  _StateSeqT __r(_M_pop());
+	  _StateSeqT __e(_M_nfa, _M_nfa._M_insert_dummy());
 	  int __min_rep = _M_cur_int_value(10);
-	  for (int __i = 1; __i < __min_rep; ++__i)
-	    _M_stack.top()._M_append(__r._M_clone());
+	  // {3
+	  for (int __i = 0; __i < __min_rep; ++__i)
+	    __e._M_append(__r._M_clone());
 	  if (_M_match_token(_ScannerT::_S_token_comma))
-	    if (_M_match_token(_ScannerT::_S_token_dup_count))
+	    if (_M_match_token(_ScannerT::_S_token_dup_count)) // {3,7}
 	      {
-		int __n = _M_cur_int_value(10) - __min_rep;
-		if (__n < 0)
-		  __throw_regex_error(regex_constants::error_badbrace);
-		for (int __i = 0; __i < __n; ++__i)
-		  {
-		    _StateSeqT __r(_M_state_store,
-				  _M_state_store.
-				  _M_insert_alt(_S_invalid_state_id,
-						_M_stack.top()._M_front()));
-		    _M_stack.top()._M_append(__r);
-		  }
+	        int __n = _M_cur_int_value(10) - __min_rep;
+	        if (__n < 0)
+	          __throw_regex_error(regex_constants::error_badbrace);
+	        auto __end = _M_nfa._M_insert_dummy();
+	        for (int __i = 0; __i < __n; ++__i)
+	          {
+		    auto __tmp = __r._M_clone();
+		    __e._M_append(_StateSeqT(_M_nfa, _M_nfa.
+			_M_insert_alt(__tmp._M_start, __end), __tmp._M_end));
+	          }
+		__e._M_append(__end);
 	      }
-	    else
+	    else // {3,}
 	      {
-		_StateSeqT __r(_M_stack.top(), -1);
-		__r._M_push_back(__r._M_front());
-		_M_stack.pop();
-		_M_stack.push(__r);
+		auto __tmp = __r._M_clone();
+		_StateSeqT __s(_M_nfa, _M_nfa._M_insert_alt(_S_invalid_state_id,
+							    __tmp._M_start));
+		__tmp._M_append(__s);
+		__e._M_append(__s);
 	      }
 	  if (!_M_match_token(_ScannerT::_S_token_interval_end))
 	    __throw_regex_error(regex_constants::error_brace);
-	  return;
+	  _M_stack.push(__e);
 	}
     }
 
@@ -203,46 +238,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_atom()
     {
       if (_M_match_token(_ScannerT::_S_token_anychar))
+	_M_stack.push(_StateSeqT(_M_nfa,
+				_M_nfa._M_insert_matcher
+				(_AnyMatcher<_CharT, _TraitsT>(_M_traits))));
+      else if (_M_try_char())
+	_M_stack.push(_StateSeqT(_M_nfa,
+				 _M_nfa._M_insert_matcher
+				 (_CharMatcher<_CharT, _TraitsT>(_M_value[0],
+								 _M_traits,
+								 _M_flags))));
+      else if (_M_match_token(_ScannerT::_S_token_backref))
+	_M_stack.push(_StateSeqT(_M_nfa, _M_nfa.
+				 _M_insert_backref(_M_cur_int_value(10))));
+      else if (_M_match_token(_ScannerT::_S_token_quoted_class))
 	{
-	  _M_stack.push(_StateSeqT(_M_state_store,
-				  _M_state_store._M_insert_matcher
-				  (_AnyMatcher<_CharT, _TraitsT>(_M_traits))));
-	  return true;
+	  _GLIBCXX_DEBUG_ASSERT(_M_value.size() == 1);
+	  _BMatcherT __matcher(_M_ctype.is(_CtypeT::upper, _M_value[0]),
+			       _M_traits, _M_flags);
+	  __matcher._M_add_character_class(_M_value);
+	  _M_stack.push(_StateSeqT(_M_nfa,
+		_M_nfa._M_insert_matcher(__matcher)));
 	}
-      if (_M_try_char())
+      else if (_M_match_token(_ScannerT::_S_token_subexpr_no_group_begin))
 	{
-	  _M_stack.push(_StateSeqT(_M_state_store,
-				   _M_state_store._M_insert_matcher
-				   (_CharMatcher<_CharT, _TraitsT>(_M_value[0],
-								   _M_traits,
-								   _M_flags))));
-	  return true;
-	}
-      if (_M_match_token(_ScannerT::_S_token_backref))
-	{
-	  _M_stack.push(_StateSeqT(_M_state_store, _M_state_store.
-				   _M_insert_backref(_M_cur_int_value(10))));
-	  return true;
-	}
-      if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
-	{
-	  int __mark = _M_state_store._M_sub_count();
-	  _StateSeqT __r(_M_state_store,
-			_M_state_store.
-			_M_insert_subexpr_begin());
+	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_dummy());
 	  this->_M_disjunction();
 	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
 	    __throw_regex_error(regex_constants::error_paren);
-	  if (!_M_stack.empty())
-	    {
-	      __r._M_append(_M_stack.top());
-	      _M_stack.pop();
-	    }
-	  __r._M_append(_M_state_store._M_insert_subexpr_end());
+	  __r._M_append(_M_pop());
 	  _M_stack.push(__r);
-	  return true;
 	}
-      return _M_bracket_expression();
+      else if (_M_match_token(_ScannerT::_S_token_subexpr_begin))
+	{
+	  int __mark = _M_nfa._M_sub_count();
+	  _StateSeqT __r(_M_nfa, _M_nfa._M_insert_subexpr_begin());
+	  this->_M_disjunction();
+	  if (!_M_match_token(_ScannerT::_S_token_subexpr_end))
+	    __throw_regex_error(regex_constants::error_paren);
+	  __r._M_append(_M_pop());
+	  __r._M_append(_M_nfa._M_insert_subexpr_end());
+	  _M_stack.push(__r);
+	}
+      else if (!_M_bracket_expression())
+	return false;
+      return true;
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>
@@ -255,22 +294,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (!(__neg || _M_match_token(_ScannerT::_S_token_bracket_begin)))
 	return false;
       _BMatcherT __matcher(__neg, _M_traits, _M_flags);
-      _M_bracket_list(__matcher);
-      _M_stack.push(_StateSeqT(_M_state_store,
-			      _M_state_store._M_insert_matcher(__matcher)));
+      while (!_M_match_token(_ScannerT::_S_token_bracket_end))
+	_M_expression_term(__matcher);
+      _M_stack.push(_StateSeqT(_M_nfa, _M_nfa._M_insert_matcher(__matcher)));
       return true;
-    }
-
-  template<typename _FwdIter, typename _CharT, typename _TraitsT>
-    void
-    _Compiler<_FwdIter, _CharT, _TraitsT>::
-    _M_bracket_list(_BMatcherT& __matcher)
-    {
-      if (_M_match_token(_ScannerT::_S_token_bracket_end))
-	return;
-      _M_expression_term(__matcher);
-      _M_bracket_list(__matcher);
-      return;
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>
@@ -279,27 +306,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_expression_term(_BMatcherT& __matcher)
     {
       if (_M_match_token(_ScannerT::_S_token_collsymbol))
-	{
-	  __matcher._M_add_collating_element(_M_value);
-	  return;
-	}
-      if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
-	{
-	  __matcher._M_add_equivalence_class(_M_value);
-	  return;
-	}
-      if (_M_match_token(_ScannerT::_S_token_char_class_name))
-	{
-	  __matcher._M_add_character_class(_M_value);
-	  return;
-	}
-      if (_M_try_char()) // [a
+	__matcher._M_add_collating_element(_M_value);
+      else if (_M_match_token(_ScannerT::_S_token_equiv_class_name))
+	__matcher._M_add_equivalence_class(_M_value);
+      else if (_M_match_token(_ScannerT::_S_token_char_class_name))
+	__matcher._M_add_character_class(_M_value);
+      else if (_M_try_char()) // [a
 	{
 	  auto __ch = _M_value[0];
 	  if (_M_try_char())
 	    {
-	      if (_M_value[0] == std::use_facet<std::ctype<_CharT>>
-		   (_M_traits.getloc()).widen('-')) // [a-
+	      if (_M_value[0] == '-') // [a-
 		{
 		  if (_M_try_char()) // [a-z]
 		    {
@@ -315,9 +332,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __matcher._M_add_char(_M_value[0]);
 	    }
 	  __matcher._M_add_char(__ch);
-	  return;
 	}
-      __throw_regex_error(regex_constants::error_brack);
+      else
+	__throw_regex_error(regex_constants::error_brack);
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>
@@ -339,6 +356,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else if (_M_match_token(_ScannerT::_S_token_ord_char))
 	__is_char = true;
       return __is_char;
+    }
+
+  template<typename _FwdIter, typename _CharT, typename _TraitsT>
+    bool
+    _Compiler<_FwdIter, _CharT, _TraitsT>::
+    _M_match_token(_TokenT token)
+    {
+      if (token == _M_scanner._M_get_token())
+	{
+	  _M_value = _M_scanner._M_get_value();
+	  _M_scanner._M_advance();
+	  return true;
+	}
+      return false;
     }
 
   template<typename _FwdIter, typename _CharT, typename _TraitsT>

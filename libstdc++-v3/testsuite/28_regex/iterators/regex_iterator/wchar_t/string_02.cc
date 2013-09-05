@@ -1,9 +1,11 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
+// { dg-require-namedlocale "en_US.UTF-8" }
+// { dg-do run { xfail *-*-* } }
 
 //
-// 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>
+// 2013-09-05  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2010-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -20,8 +22,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 28.11.2 regex_match
-// Tests ERE against a std::string target, exercising range {2,3}
+// 28.12.1 regex_iterator
+// Tests regex_iterator class
 
 #include <regex>
 #include <testsuite_hooks.h>
@@ -31,30 +33,27 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-	std::regex  re("a{2,3}", std::regex::extended);
-	std::string target("aa");
-	std::smatch m;
+  std::setlocale(LC_ALL, "en_US.UTF-8");
 
-	VERIFY( std::regex_match(target, m, re) );
+  std::wstring str2 = L"ä\u2009Ä\u2009ö\u2009Ö\u2009ü\u2009Ü";
 
-	VERIFY( m.size()  == re.mark_count()+1 );
-	VERIFY( m.empty() == false );
-	VERIFY( m.prefix().first == target.begin() );
-	VERIFY( m.prefix().second == target.begin() );
-	VERIFY( m.prefix().matched == false );
-	VERIFY( m.suffix().first == target.end() );
-	VERIFY( m.suffix().second == target.end() );
-	VERIFY( m.suffix().matched == false );
-	VERIFY( m[0].first == target.begin() );
-	VERIFY( m[0].second == target.end() );
-	VERIFY( m[0].matched == true );
+  std::wregex re2;
+  re2.imbue(std::locale("en_US.UTF-8"));
+
+  re2.assign(L"([[:lower:]]{0,1}[[:space:]]{0,1}[[:upper:]]{0,1})");
+
+  std::wsregex_iterator p(str2.begin(), str2.end(), re2);
+  auto a = p;
+  ++p;
+  VERIFY(a != p);
+  //for (std::wsregex_iterator p(str2.begin(), str2.end(), re2);
+  //    p != std::wsregex_iterator{}; ++p)
+  //  std::wcout << (*p)[1] << std::endl;
 }
-
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }
-

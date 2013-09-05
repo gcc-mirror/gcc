@@ -1,9 +1,9 @@
-// { dg-options "-std=c++0x" }
+// { dg-options "-std=gnu++11" }
 
 //
-// 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>
+// 2013-09-05  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2010-2013 Free Software Foundation, Inc.
+// Copyright (C) 2013 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -21,40 +21,32 @@
 // <http://www.gnu.org/licenses/>.
 
 // 28.11.2 regex_match
-// Tests ERE against a std::string target, exercising range {2,3}
+// Tests ECMAScript \d \D \s \S \w \W
 
 #include <regex>
 #include <testsuite_hooks.h>
+
+using namespace std;
 
 void
 test01()
 {
   bool test __attribute__((unused)) = true;
 
-	std::regex  re("a{2,3}", std::regex::extended);
-	std::string target("aa");
-	std::smatch m;
-
-	VERIFY( std::regex_match(target, m, re) );
-
-	VERIFY( m.size()  == re.mark_count()+1 );
-	VERIFY( m.empty() == false );
-	VERIFY( m.prefix().first == target.begin() );
-	VERIFY( m.prefix().second == target.begin() );
-	VERIFY( m.prefix().matched == false );
-	VERIFY( m.suffix().first == target.end() );
-	VERIFY( m.suffix().second == target.end() );
-	VERIFY( m.suffix().matched == false );
-	VERIFY( m[0].first == target.begin() );
-	VERIFY( m[0].second == target.end() );
-	VERIFY( m[0].matched == true );
+  VERIFY(regex_match("01", regex("\\d*")));
+  VERIFY(regex_match("asdfjkl", regex("\\D*")));
+  VERIFY(!regex_match("asdfjkl0", regex("\\D*")));
+  VERIFY(regex_match("\r\t\v\f ", regex("\\s*")));
+  VERIFY(regex_match("asdfjkl", regex("\\S*")));
+  VERIFY(!regex_match("asdfjkl\r", regex("\\S*")));
+  VERIFY(regex_match("_az", regex("\\w*")));
+  VERIFY(regex_match("!@#$%", regex("\\W*")));
+  VERIFY(!regex_match("_01234", regex("\\W*")));
 }
-
 
 int
 main()
-{ 
+{
   test01();
   return 0;
 }
-

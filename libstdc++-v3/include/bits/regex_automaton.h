@@ -56,6 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_opcode_backref       =   2,
       _S_opcode_subexpr_begin =   4,
       _S_opcode_subexpr_end   =   5,
+      _S_opcode_dummy         =   6,
       _S_opcode_match         = 100,
       _S_opcode_accept        = 255
   };
@@ -69,7 +70,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _OpcodeT     _M_opcode;           // type of outgoing transition
       _StateIdT    _M_next;             // outgoing transition
-      union // Since they are mutual exclusive.
+      union // Since they are mutually exclusive.
       {
 	_StateIdT    _M_alt;            // for _S_opcode_alternative
 	unsigned int _M_subexpr;        // for _S_opcode_subexpr_*
@@ -201,6 +202,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT
       _M_insert_backref(unsigned int __index);
 
+      _StateIdT
+      _M_insert_dummy()
+      {
+	this->push_back(_StateT(_S_opcode_dummy));
+	return this->size()-1;
+      }
+
+      _StateIdT
+      _M_insert_state(_StateT __s)
+      {
+	this->push_back(__s);
+	return this->size()-1;
+      }
+
+      // Eliminate dummy node in this NFA to make it compact.
+      void
+      _M_eliminate_dummy();
+
 #ifdef _GLIBCXX_DEBUG
       std::ostream&
       _M_dot(std::ostream& __ostr) const;
@@ -222,58 +241,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       typedef _NFA<_CharT, _TraitsT> _RegexT;
+
     public:
-      // Constructs a single-node sequence
-      _StateSeq(_RegexT& __ss, _StateIdT __s,
-		_StateIdT __e = _S_invalid_state_id)
-      : _M_nfa(__ss), _M_start(__s), _M_end1(__s), _M_end2(__e)
-      { }
-      // Constructs a split sequence from two other sequencces
-      _StateSeq(const _StateSeq& __e1, const _StateSeq& __e2)
-      : _M_nfa(__e1._M_nfa),
-	_M_start(_M_nfa._M_insert_alt(__e1._M_start, __e2._M_start)),
-	_M_end1(__e1._M_end1), _M_end2(__e2._M_end1)
+      _StateSeq(_RegexT& __nfa, _StateIdT __s)
+      : _StateSeq(__nfa, __s, __s)
       { }
 
-      // Constructs a split sequence from a single sequence
-      _StateSeq(const _StateSeq& __e, _StateIdT __id)
-      : _M_nfa(__e._M_nfa),
-	_M_start(_M_nfa._M_insert_alt(__id, __e._M_start)),
-	_M_end1(__id), _M_end2(__e._M_end1)
+      _StateSeq(_RegexT& __nfa, _StateIdT __s, _StateIdT __end)
+      : _M_nfa(__nfa), _M_start(__s), _M_end(__end)
       { }
 
-      // Constructs a copy of a %_StateSeq
-      _StateSeq(const _StateSeq& __rhs)
-      : _M_nfa(__rhs._M_nfa), _M_start(__rhs._M_start),
-	_M_end1(__rhs._M_end1), _M_end2(__rhs._M_end2)
-      { }
-
-      _StateSeq& operator=(const _StateSeq& __rhs);
-
-      _StateIdT
-      _M_front() const
-      { return _M_start; }
-
-      // Extends a sequence by one.
+      // Append a state on *this and change *this to the new sequence.
       void
-      _M_push_back(_StateIdT __id);
+      _M_append(_StateIdT __id)
+      {
+	_M_nfa[_M_end]._M_next = __id;
+	_M_end = __id;
+      }
 
-      // Extends and maybe joins a sequence.
+      // Append a sequence on *this and change *this to the new sequence.
       void
-      _M_append(_StateIdT __id);
-
-      void
-      _M_append(_StateSeq& __rhs);
+      _M_append(const _StateSeq& __s)
+      {
+	_M_nfa[_M_end]._M_next = __s._M_start;
+	_M_end = __s._M_end;
+      }
 
       // Clones an entire sequence.
-      _StateIdT
+      _StateSeq
       _M_clone();
 
-    private:
+    public:
       _RegexT&  _M_nfa;
       _StateIdT _M_start;
-      _StateIdT _M_end1;
-      _StateIdT _M_end2;
+      _StateIdT _M_end;
     };
 
  //@} regex-detail

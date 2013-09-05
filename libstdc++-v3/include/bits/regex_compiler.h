@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::shared_ptr<_RegexT>
       _M_get_nfa() const
-      { return std::shared_ptr<_RegexT>(new _RegexT(_M_state_store)); }
+      { return std::shared_ptr<_RegexT>(new _RegexT(_M_nfa)); }
 
     private:
       typedef _Scanner<_FwdIter>                              _ScannerT;
@@ -64,6 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _StateSeq<_CharT, _TraitsT>                     _StateSeqT;
       typedef std::stack<_StateSeqT, std::vector<_StateSeqT>> _StackT;
       typedef _BracketMatcher<_CharT, _TraitsT>               _BMatcherT;
+      typedef std::ctype<_CharT>                              _CtypeT;
 
       // accepts a specific token or returns false.
       bool
@@ -91,19 +92,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_bracket_expression();
 
       void
-      _M_bracket_list(_BMatcherT& __matcher);
-
-      bool
-      _M_follow_list(_BMatcherT& __matcher);
-
-      void
       _M_expression_term(_BMatcherT& __matcher);
 
       bool
       _M_range_expression(_BMatcherT& __matcher);
-
-      bool
-      _M_start_range(_BMatcherT& __matcher);
 
       bool
       _M_collating_symbol(_BMatcherT& __matcher);
@@ -120,12 +112,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       _M_try_char();
 
-      _CharT
-      _M_get_char();
+      _StateSeqT
+      _M_pop()
+      {
+	auto ret = _M_stack.top();
+	_M_stack.pop();
+	return ret;
+      }
 
       const _TraitsT& _M_traits;
+      const _CtypeT&  _M_ctype;
       _ScannerT       _M_scanner;
-      _RegexT         _M_state_store;
+      _RegexT         _M_nfa;
       _StringT        _M_value;
       _StackT         _M_stack;
       _FlagT          _M_flags;
