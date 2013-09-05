@@ -11883,13 +11883,6 @@ types_same_for_odr (tree type1, tree type2)
 	}
       v1 = DECL_ASSEMBLER_NAME (v1);
       v2 = DECL_ASSEMBLER_NAME (v2);
-      /* If we ever start adding random .blah suffixes after
-	 assembler names, we need to compare for match ignoring
-	 these (and update odr_type_hash, too).  */
-#ifdef ENABLE_CHECKING
-      gcc_assert (!strchr (IDENTIFIER_POINTER (v1), '.')
-		  && !strchr (IDENTIFIER_POINTER (v2), '.'));
-#endif
       return (v1 == v2);
     }
 
