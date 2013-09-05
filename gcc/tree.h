@@ -2494,7 +2494,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    recognized by optimizers and expanders.
 
    Note that it is different from the DECL_IS_BUILTIN accessor.  For
-   instance, user declarated prototypes of C library functions are not
+   instance, user declared prototypes of C library functions are not
    DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 
