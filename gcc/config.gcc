@@ -1018,7 +1018,7 @@ bfin*-uclinux*)
 	;;
 bfin*-linux-uclibc*)
 	tm_file="${tm_file} dbxelf.h elfos.h bfin/elf.h gnu-user.h linux.h glibc-stdint.h bfin/linux.h ./linux-sysroot-suffix.h"
-	tmake_file="bfin/t-bfin-linux t-slibgcc"
+	tmake_file="bfin/t-bfin-linux t-slibgcc t-linux-android"
 	use_collect2=no
 	;;
 bfin*-rtems*)
@@ -1053,7 +1053,7 @@ cris-*-elf | cris-*-none)
 crisv32-*-linux* | cris-*-linux*)
 	tm_file="dbxelf.h elfos.h ${tm_file} gnu-user.h linux.h glibc-stdint.h cris/linux.h"
 	# We need to avoid using t-linux, so override default tmake_file
-	tmake_file="cris/t-cris cris/t-linux t-slibgcc"
+	tmake_file="cris/t-cris cris/t-linux t-slibgcc t-linux-android"
 	extra_options="${extra_options} cris/linux.opt"
 	case $target in
 	  cris-*-*)

@@ -1,3 +1,18 @@
+2013-09-05  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* config/rs6000/linux64.h: Define OPTION_BIONIC and OPTION_UCLIBC.
+	* config/rs6000/linux.h: Ditto.
+	* alpha/linux.h: Ditto.
+	* config/bfin/uclinux.h: Define TARGET_LIBC_HAS_FUNCTION as
+	no_c99_libc_has_function.
+	* config/c6x/uclinux-elf.h: Ditto.
+	* config/lm32/uclinux-elf.h: Ditto.
+	* config/m68k/uclinux.h: Ditto.
+	* config/moxie/uclinux.h: Ditto.
+	* config.gcc (bfin*-linux-uclibc*): Add t-linux-android to tmake_file.
+	(crisv32-*-linux*, cris-*-linux*): Ditto.
+	* config/bfin/bfin.c: Include "tm_p.h".
+
 2013-09-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop.c (vect_analyze_loop_operations): Properly

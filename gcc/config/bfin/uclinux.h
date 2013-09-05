@@ -44,3 +44,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_SUPPORTS_SYNC_CALLS 1
 
 #define SUBTARGET_FDPIC_NOT_SUPPORTED
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
