@@ -1,3 +1,8 @@
+2013-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58137
+	* gcc.target/i386/pr58137.c: New testcase.
+
 2013-09-05  Martin Jambor  <mjambor@suse.cz>
 
 	* g++.dg/ipa/remref-1.C: New test.
