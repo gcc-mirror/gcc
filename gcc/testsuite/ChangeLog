@@ -1,3 +1,15 @@
+2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Vineet Gupta  <Vineet.Gupta@synopsys.com>
+
+	* gcc.c-torture/execute/20101011-1.c [__arc__] (DO_TEST): Define as 0.
+	* testsuite/gcc.target/arc: New directory.
+	* gcc.dg/torture/pr37868.c: Also skip for arc*-*-*.
+	* gcc.dg/stack-usage-1.c [__arc__] (SIZE): Define.
+	* testsuite/gcc.dg/torture/stackalign/builtin-apply-2.c
+	[__arc__] (STACK_ARGUMENTS_SIZE): Set to 0.
+	* testsuite/gcc.dg/builtin-apply2.c
+	[__arc__] (STACK_ARGUMENTS_SIZE): Set to 0.
+
 2013-09-04  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58201
