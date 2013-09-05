@@ -1,3 +1,10 @@
+2013-09-04  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58201
+	* g++.dg/torture/pr58201_0.C: New testcase.
+	* g++.dg/torture/pr58201_1.C: New testcase.
+	* g++.dg/torture/pr58201.h: New testcase.
+
 2013-09-05  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/autopar/pr49960.c: Disable partial inlining

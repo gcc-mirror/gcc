@@ -1,3 +1,9 @@
+2013-09-04  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58201
+	* cgraphunit.c (analyze_functions): Clear AUX fields
+	after processing; initialize assembler name has.
+
 2013-09-05  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-threadedge.c (thread_around_empty_blocks): Renamed
