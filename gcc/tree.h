@@ -2543,11 +2543,6 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_FINAL_P(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.final)
 
-/* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
-   arguments/result/saved_tree fields by front ends.   It was either inherit
-   FUNCTION_DECL from non_common, or inherit non_common from FUNCTION_DECL,
-   which seemed a bit strange.  */
-
 /* The source language of the translation-unit.  */
 #define TRANSLATION_UNIT_LANGUAGE(NODE) \
   (TRANSLATION_UNIT_DECL_CHECK (NODE)->translation_unit_decl.language)
