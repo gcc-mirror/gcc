@@ -1328,6 +1328,11 @@ struct GTY(()) tree_decl_non_common {
   tree vindex;
 };
 
+/* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
+   arguments/result/saved_tree fields by front ends.   It was either inherit
+   FUNCTION_DECL from non_common, or inherit non_common from FUNCTION_DECL,
+   which seemed a bit strange.  */
+
 struct GTY(()) tree_function_decl {
   struct tree_decl_non_common common;
 

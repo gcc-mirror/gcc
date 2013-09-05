@@ -1,3 +1,8 @@
+2013-09-05  Mike Stump  <mikestump@comcast.net>
+
+	* tree.h: Move documentation for tree_function_decl to tree-core.h
+	with the declaration.
+
 2013-09-05  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/58139
