@@ -1064,6 +1064,8 @@ analyze_functions (void)
 	}
       node->symbol.aux = NULL;
     }
+  for (;node; node = node->symbol.next)
+    node->symbol.aux = NULL;
   first_analyzed = cgraph_first_function ();
   first_analyzed_var = varpool_first_variable ();
   if (cgraph_dump_file)
@@ -1074,6 +1076,11 @@ analyze_functions (void)
   bitmap_obstack_release (NULL);
   pointer_set_destroy (reachable_call_targets);
   ggc_collect ();
+  /* Initialize assembler name hash, in particular we want to trigger C++
+     mangling and same body alias creation before we free DECL_ARGUMENTS
+     used by it.  */
+  if (!seen_error ())
+  symtab_initialize_asm_name_hash ();
 }
 
 /* Translate the ugly representation of aliases as alias pairs into nice
