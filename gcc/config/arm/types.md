@@ -39,11 +39,14 @@
 ; call               subroutine call.
 ; clz                count leading zeros (CLZ).
 ; extend             extend instruction (SXTB, SXTH, UXTB, UXTH).
-; f_2_r              transfer from float to core (no memory needed).
 ; f_cvt              conversion between float and integral.
 ; f_flag             transfer of co-processor flags to the CPSR.
 ; f_load[d,s]        double/single load from memory.  Used for VFP unit.
+; f_mcr              transfer arm to vfp reg.
+; f_mcrr             transfer two arm regs to vfp reg.
 ; f_minmax[d,s]      double/single floating point minimum/maximum.
+; f_mrc              transfer vfp to arm reg.
+; f_mrrc             transfer vfp to two arm regs.
 ; f_rint[d,s]        double/single floating point rount to integral.
 ; f_sel[d,s]         double/single floating byte select.
 ; f_store[d,s]       double/single store to memory.  Used for VFP unit.
@@ -77,7 +80,6 @@
 ; mvn_reg            inverting move instruction, register.
 ; mvn_shift          inverting move instruction, shifted operand by a constant.
 ; mvn_shift_reg      inverting move instruction, shifted operand by a register.
-; r_2_f              transfer from core to float.
 ; sdiv               signed division.
 ; shift              simple shift operation (LSL, LSR, ASR, ROR) with an
 ;                    immediate.
@@ -181,6 +183,71 @@
 ; wmmx_wunpckih
 ; wmmx_wunpckil
 ; wmmx_wxor
+;
+; The classification below is for NEON instructions.
+;
+; neon_bp_2cycle
+; neon_bp_3cycle
+; neon_bp_simple
+; neon_fp_vadd_ddd_vabs_dd
+; neon_fp_vadd_qqq_vabs_qq
+; neon_fp_vmla_ddd_scalar
+; neon_fp_vmla_ddd
+; neon_fp_vmla_qqq_scalar
+; neon_fp_vmla_qqq
+; neon_fp_vmul_ddd
+; neon_fp_vmul_qqd
+; neon_fp_vrecps_vrsqrts_ddd
+; neon_fp_vrecps_vrsqrts_qqq
+; neon_fp_vsum
+; neon_int_1
+; neon_int_2
+; neon_int_3
+; neon_int_4
+; neon_int_5
+; neon_ldm_2
+; neon_ldr
+; neon_mcr_2_mcrr
+; neon_mcr
+; neon_mla_ddd_16_scalar_qdd_32_16_long_scalar
+; neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long
+; neon_mla_ddd_8_16_qdd_16_8_long_32_16_long
+; neon_mla_qqq_32_qqd_32_scalar
+; neon_mla_qqq_8_16
+; neon_mrc
+; neon_mrrc
+; neon_mul_ddd_16_scalar_32_16_long_scalar
+; neon_mul_ddd_8_16_qdd_16_8_long_32_16_long
+; neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar
+; neon_mul_qqd_32_scalar
+; neon_mul_qqq_8_16_32_ddd_32
+; neon_shift_1
+; neon_shift_2
+; neon_shift_3
+; neon_stm_2
+; neon_str
+; neon_vaba_qqq
+; neon_vaba
+; neon_vld1_1_2_regs
+; neon_vld1_3_4_regs
+; neon_vld1_vld2_lane
+; neon_vld2_2_regs_vld1_vld2_all_lanes
+; neon_vld2_4_regs
+; neon_vld3_vld4_all_lanes
+; neon_vld3_vld4_lane
+; neon_vld3_vld4
+; neon_vmov
+; neon_vqneg_vqabs
+; neon_vqshl_vrshl_vqrshl_qqq
+; neon_vshl_ddd
+; neon_vsma
+; neon_vsra_vrsra
+; neon_vst1_1_2_regs_vst2_2_regs
+; neon_vst1_3_4_regs
+; neon_vst1_vst2_lane
+; neon_vst2_4_regs_vst3_vst4
+; neon_vst3_vst4_lane
+; neon_vst3_vst4
 
 (define_attr "type"
  "arlo_imm,\
@@ -192,13 +259,16 @@
   call,\
   clz,\
   extend,\
-  f_2_r,\
   f_cvt,\
   f_flag,\
   f_loadd,\
   f_loads,\
+  f_mcr,\
+  f_mcrr,\
   f_minmaxd,\
   f_minmaxs,\
+  f_mrc,\
+  f_mrrc,\
   f_rintd,\
   f_rints,\
   f_seld,\
@@ -241,7 +311,6 @@
   mvn_reg,\
   mvn_shift,\
   mvn_shift_reg,\
-  r_2_f,\
   sdiv,\
   shift,\
   shift_reg,\
@@ -337,8 +406,70 @@
   wmmx_wunpckel,\
   wmmx_wunpckih,\
   wmmx_wunpckil,\
-  wmmx_wxor"
-  (const_string "arlo_reg"))
+  wmmx_wxor,\
+  neon_bp_2cycle,\
+  neon_bp_3cycle,\
+  neon_bp_simple,\
+  neon_fp_vadd_ddd_vabs_dd,\
+  neon_fp_vadd_qqq_vabs_qq,\
+  neon_fp_vmla_ddd_scalar,\
+  neon_fp_vmla_ddd,\
+  neon_fp_vmla_qqq_scalar,\
+  neon_fp_vmla_qqq,\
+  neon_fp_vmul_ddd,\
+  neon_fp_vmul_qqd,\
+  neon_fp_vrecps_vrsqrts_ddd,\
+  neon_fp_vrecps_vrsqrts_qqq,\
+  neon_fp_vsum,\
+  neon_int_1,\
+  neon_int_2,\
+  neon_int_3,\
+  neon_int_4,\
+  neon_int_5,\
+  neon_ldm_2,\
+  neon_ldr,\
+  neon_mcr_2_mcrr,\
+  neon_mcr,\
+  neon_mla_ddd_16_scalar_qdd_32_16_long_scalar,\
+  neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_long_scalar_qdd_64_32_long,\
+  neon_mla_ddd_8_16_qdd_16_8_long_32_16_long,\
+  neon_mla_qqq_32_qqd_32_scalar,\
+  neon_mla_qqq_8_16,\
+  neon_mrc,\
+  neon_mrrc,\
+  neon_mul_ddd_16_scalar_32_16_long_scalar,\
+  neon_mul_ddd_8_16_qdd_16_8_long_32_16_long,\
+  neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar,\
+  neon_mul_qqd_32_scalar,\
+  neon_mul_qqq_8_16_32_ddd_32,\
+  neon_shift_1,\
+  neon_shift_2,\
+  neon_shift_3,\
+  neon_stm_2,\
+  neon_str,\
+  neon_vaba_qqq,\
+  neon_vaba,\
+  neon_vld1_1_2_regs,\
+  neon_vld1_3_4_regs,\
+  neon_vld1_vld2_lane,\
+  neon_vld2_2_regs_vld1_vld2_all_lanes,\
+  neon_vld2_4_regs,\
+  neon_vld3_vld4_all_lanes,\
+  neon_vld3_vld4_lane,\
+  neon_vld3_vld4,\
+  neon_vmov,\
+  neon_vqneg_vqabs,\
+  neon_vqshl_vrshl_vqrshl_qqq,\
+  neon_vshl_ddd,\
+  neon_vsma,\
+  neon_vsra_vrsra,\
+  neon_vst1_1_2_regs_vst2_2_regs,\
+  neon_vst1_3_4_regs,\
+  neon_vst1_vst2_lane,\
+  neon_vst2_4_regs_vst3_vst4,\
+  neon_vst3_vst4_lane,\
+  neon_vst3_vst4"
+    (const_string "arlo_reg"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
 (define_attr "mul32" "no,yes"

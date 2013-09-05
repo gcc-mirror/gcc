@@ -909,7 +909,7 @@
    str\\t%q1, %0"
   [(set_attr "v8type" "move2,fmovi2f,fmovf2i,*, \
 		       load2,store2,store2,fpsimd_load,fpsimd_store")
-   (set_attr "type" "mov_reg,r_2_f,f_2_r,*, \
+   (set_attr "type" "mov_reg,f_mcr,f_mrc,*, \
 		             load2,store2,store2,f_loadd,f_stored")
    (set_attr "simd_type" "*,*,*,simd_move,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,TI,DI,DI,DI,TI,TI")
@@ -964,7 +964,7 @@
   [(set_attr "v8type" "fmovi2f,fmovf2i,\
 		       fmov,fconst,fpsimd_load,\
 		       fpsimd_store,fpsimd_load,fpsimd_store,fmov")
-   (set_attr "type" "r_2_f,f_2_r,mov_reg,fconsts,\
+   (set_attr "type" "f_mcr,f_mrc,mov_reg,fconsts,\
                      f_loads,f_stores,f_loads,f_stores,mov_reg")
    (set_attr "mode" "SF")]
 )
@@ -987,7 +987,7 @@
   [(set_attr "v8type" "fmovi2f,fmovf2i,\
 		       fmov,fconst,fpsimd_load,\
 		       fpsimd_store,fpsimd_load,fpsimd_store,move")
-   (set_attr "type" "r_2_f,f_2_r,mov_reg,fconstd,\
+   (set_attr "type" "f_mcr,f_mrc,mov_reg,fconstd,\
                      f_loadd,f_stored,f_loadd,f_stored,mov_reg")
    (set_attr "mode" "DF")]
 )
@@ -1027,7 +1027,7 @@
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0"
   [(set_attr "v8type" "logic,move2,fmovi2f,fmovf2i,fconst,fconst,fpsimd_load,fpsimd_store,fpsimd_load2,fpsimd_store2")
-   (set_attr "type" "arlo_reg,mov_reg,r_2_f,f_2_r,fconstd,fconstd,\
+   (set_attr "type" "arlo_reg,mov_reg,f_mcr,f_mrc,fconstd,fconstd,\
                      f_loadd,f_stored,f_loadd,f_stored")
    (set_attr "mode" "DF,DF,DF,DF,DF,DF,TF,TF,DF,DF")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
@@ -4031,7 +4031,7 @@
   "reload_completed || reload_in_progress"
   "fmov\\t%x0, %d1"
   [(set_attr "v8type" "fmovf2i")
-   (set_attr "type" "f_2_r")
+   (set_attr "type" "f_mrc")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
   ])
@@ -4044,7 +4044,7 @@
   "reload_completed || reload_in_progress"
   "fmov\\t%x0, %1.d[1]"
   [(set_attr "v8type" "fmovf2i")
-   (set_attr "type" "f_2_r")
+   (set_attr "type" "f_mrc")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
   ])
@@ -4056,7 +4056,7 @@
   "reload_completed || reload_in_progress"
   "fmov\\t%0.d[1], %x1"
   [(set_attr "v8type" "fmovi2f")
-   (set_attr "type" "r_2_f")
+   (set_attr "type" "f_mcr")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
   ])
@@ -4067,7 +4067,7 @@
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %x1"
   [(set_attr "v8type" "fmovi2f")
-   (set_attr "type" "r_2_f")
+   (set_attr "type" "f_mcr")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
   ])
@@ -4079,7 +4079,7 @@
   "reload_completed || reload_in_progress"
   "fmov\\t%d0, %d1"
   [(set_attr "v8type" "fmovi2f")
-   (set_attr "type" "r_2_f")
+   (set_attr "type" "f_mcr")
    (set_attr "mode"   "DI")
    (set_attr "length" "4")
   ])

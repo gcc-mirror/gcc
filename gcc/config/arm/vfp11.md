@@ -77,12 +77,12 @@
 ;; Moves to/from arm regs also use the load/store pipeline.
 (define_insn_reservation "vfp_fload" 4
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_loads,f_loadd,r_2_f"))
+      (eq_attr "type" "f_loads,f_loadd,f_mcr,f_mcrr"))
  "vfp_ls")
 
 (define_insn_reservation "vfp_fstore" 4
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_stores,f_stored,f_2_r"))
+      (eq_attr "type" "f_stores,f_stored,f_mrc,f_mrrc"))
  "vfp_ls")
 
 (define_insn_reservation "vfp_to_cpsr" 4

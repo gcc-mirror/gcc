@@ -40,7 +40,7 @@
 
 (define_insn_reservation "cortex_m4_vmov_2" 2
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "f_2_r,r_2_f"))
+       (eq_attr "type" "f_mrc,f_mrrc,f_mcr,f_mcrr"))
   "cortex_m4_ex_v*2")
 
 (define_insn_reservation "cortex_m4_fmuls" 2

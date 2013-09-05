@@ -201,9 +201,9 @@
 
 (define_insn_reservation "pj4_vfp_to_core" 7
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "f_2_r,f_flag"))       "pj4_isb,nothing,nothing,vissue,vfast,nothing*2")
+       (eq_attr "type" "f_mrc,f_mrrc,f_flag")) "pj4_isb,nothing,nothing,vissue,vfast,nothing*2")
 
 (define_insn_reservation "pj4_core_to_vfp" 2
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "r_2_f"))              "pj4_isb,pj4_alu1,pj4_w1,vissue,pj4_cp")
+       (eq_attr "type" "f_mcr,f_mcrr")) "pj4_isb,pj4_alu1,pj4_w1,vissue,pj4_cp")
 

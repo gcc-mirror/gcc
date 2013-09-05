@@ -8975,7 +8975,8 @@ cortexa7_older_only (rtx insn)
     case TYPE_FMACD:
     case TYPE_FDIVS:
     case TYPE_FDIVD:
-    case TYPE_F_2_R:
+    case TYPE_F_MRC:
+    case TYPE_F_MRRC:
     case TYPE_F_FLAG:
     case TYPE_F_LOADS:
     case TYPE_F_STORES:

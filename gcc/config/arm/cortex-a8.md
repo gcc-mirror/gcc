@@ -85,9 +85,7 @@
 ;; (source read in E2 and destination available at the end of that cycle).
 (define_insn_reservation "cortex_a8_alu" 2
   (and (eq_attr "tune" "cortexa8")
-       (ior (and (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
-                 (eq_attr "neon_type" "none"))
-            (eq_attr "type" "clz")))
+       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,clz"))
   "cortex_a8_default")
 
 (define_insn_reservation "cortex_a8_alu_shift" 2
