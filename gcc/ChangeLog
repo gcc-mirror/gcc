@@ -1,3 +1,9 @@
+2013-09-05  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/58139
+	* reginfo.c (choose_hard_reg_mode): Scan through all mode classes
+	looking for widest mode.
+
 2013-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config.gcc (*-*-vxworks*): Do not override an existing extra_objs.
