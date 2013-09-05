@@ -204,9 +204,6 @@ hash_type_name (tree t)
 	}
 
       v = DECL_ASSEMBLER_NAME (v);
-#ifdef ENABLE_CHECKING
-      gcc_assert (!strchr (IDENTIFIER_POINTER (v), '.'));
-#endif
       hash = iterative_hash_hashval_t (hash, htab_hash_pointer (v));
       return hash;
     }
