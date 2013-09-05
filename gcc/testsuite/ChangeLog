@@ -1,3 +1,8 @@
+2013-09-05  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/remref-1.C: New test.
+	* g++.dg/ipa/remref-2.C: Likewise.
+
 2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/24926
