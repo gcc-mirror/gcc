@@ -86,7 +86,8 @@
 ;; ALU instruction with an immediate operand can dual-issue.
 (define_insn_reservation "cortex_a7_alu_imm" 2
   (and (eq_attr "tune" "cortexa7")
-       (ior (eq_attr "type" "arlo_imm,mov_imm,mvn_imm,extend")
+       (ior (eq_attr "type" "adr,alu_imm,alus_imm,logic_imm,logics_imm,\
+                             mov_imm,mvn_imm,extend")
             (and (eq_attr "type" "mov_reg,mov_shift,mov_shift_reg")
                  (not (eq_attr "length" "8")))))
   "cortex_a7_ex2|cortex_a7_ex1")
@@ -95,12 +96,18 @@
 ;; with a younger immediate-based instruction.
 (define_insn_reservation "cortex_a7_alu_reg" 2
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "arlo_reg,shift,shift_reg,mov_reg,mvn_reg"))
+       (eq_attr "type" "alu_reg,alus_reg,logic_reg,logics_reg,\
+                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                        bfm,rev,\
+                        shift_imm,shift_reg,mov_reg,mvn_reg"))
   "cortex_a7_ex1")
 
 (define_insn_reservation "cortex_a7_alu_shift" 2
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "arlo_shift,arlo_shift_reg,\
+       (eq_attr "type" "alu_shift_imm,alus_shift_imm,\
+                        logic_shift_imm,logics_shift_imm,\
+                        alu_shift_reg,alus_shift_reg,\
+                        logic_shift_reg,logics_shift_reg,\
                         mov_shift,mov_shift_reg,\
                         mvn_shift,mvn_shift_reg"))
   "cortex_a7_ex1")

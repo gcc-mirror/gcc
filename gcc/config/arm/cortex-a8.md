@@ -85,17 +85,24 @@
 ;; (source read in E2 and destination available at the end of that cycle).
 (define_insn_reservation "cortex_a8_alu" 2
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,clz"))
+       (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
+                        alu_reg,alus_reg,logic_reg,logics_reg,\
+                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                        adr,bfm,clz,rbit,rev,\
+                        shift_imm,shift_reg"))
   "cortex_a8_default")
 
 (define_insn_reservation "cortex_a8_alu_shift" 2
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "extend,arlo_shift"))
+       (eq_attr "type" "alu_shift_imm,alus_shift_imm,\
+                        logic_shift_imm,logics_shift_imm,\
+                        extend"))
   "cortex_a8_default")
 
 (define_insn_reservation "cortex_a8_alu_shift_reg" 2
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "arlo_shift_reg"))
+       (eq_attr "type" "alu_shift_reg,alus_shift_reg,\
+                        logic_shift_reg,logics_shift_reg"))
   "cortex_a8_default")
 
 ;; Move instructions.

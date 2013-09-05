@@ -36,7 +36,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "alu_shift_imm")]
 )
 
 ;; We use the '0' constraint for operand 1 because reload should
@@ -282,7 +282,7 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "*,arlo_imm,arlo_imm,arlo_imm,*,load1,load1,store1,store1")
+  [(set_attr "type" "*,alu_imm,alu_imm,alu_imm,*,load1,load1,store1,store1")
    (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
@@ -350,7 +350,7 @@
   "cmn%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "alus_shift_imm")]
 )
 
 (define_insn_and_split "*thumb2_mov_scc"
@@ -1102,8 +1102,8 @@
    (set_attr "shift" "1")
    (set_attr "length" "2")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "arlo_shift")
-		      (const_string "arlo_shift_reg")))]
+		      (const_string "alu_shift_imm")
+		      (const_string "alu_shift_reg")))]
 )
 
 (define_insn "*thumb2_mov<mode>_shortim"
@@ -1225,7 +1225,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,2,4,4")
-   (set_attr "type"   "arlo_imm,*,arlo_imm,*")]
+   (set_attr "type" "alus_imm,alus_reg,alus_imm,alus_reg")]
 )
 
 (define_insn "*thumb2_mulsi_short"
@@ -1351,7 +1351,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "alu_shift_imm")]
 )
 
 (define_peephole2

@@ -75,14 +75,20 @@
 ;; ALU operations with no shifted operand
 (define_insn_reservation "11_alu_op" 2
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
+      (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
+                       alu_reg,alus_reg,logic_reg,logics_reg,\
+                       adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                       adr,bfm,rev,\
+                       shift_imm,shift_reg,\
                        mov_imm,mov_reg,mvn_imm,mvn_reg"))
  "e_1,e_2,e_3,e_wb")
 
 ;; ALU operations with a shift-by-constant operand
 (define_insn_reservation "11_alu_shift_op" 2
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "type" "extend,arlo_shift,mov_shift,mvn_shift"))
+      (eq_attr "type" "alu_shift_imm,alus_shift_imm,\
+                       logic_shift_imm,logics_shift_imm,\
+                       extend,mov_shift,mvn_shift"))
  "e_1,e_2,e_3,e_wb")
 
 ;; ALU operations with a shift-by-register operand
@@ -91,7 +97,9 @@
 ;; the shift stage.
 (define_insn_reservation "11_alu_shift_reg_op" 3
  (and (eq_attr "tune" "arm1136js,arm1136jfs")
-      (eq_attr "type" "arlo_shift_reg,mov_shift_reg,mvn_shift_reg"))
+      (eq_attr "type" "alu_shift_reg,alus_shift_reg,\
+                       logic_shift_reg,logics_shift_reg,\
+                       mov_shift_reg,mvn_shift_reg"))
  "e_1*2,e_2,e_3,e_wb")
 
 ;; alu_ops can start sooner, if there is no shifter dependency

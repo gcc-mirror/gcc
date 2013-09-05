@@ -80,7 +80,11 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; which can go down E2 without any problem.
 (define_insn_reservation "cortex_a9_dp" 2
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,\
+       (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
+                        alu_reg,alus_reg,logic_reg,logics_reg,\
+                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                        adr,bfm,rev,\
+                        shift_imm,shift_reg,\
                         mov_imm,mov_reg,mvn_imm,mvn_reg,\
                         mov_shift_reg,mov_shift"))
   "cortex_a9_p0_default|cortex_a9_p1_default")
@@ -88,8 +92,11 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; An instruction using the shifter will go down E1.
 (define_insn_reservation "cortex_a9_dp_shift" 3
    (and (eq_attr "tune" "cortexa9")
-        (eq_attr "type" "arlo_shift_reg,extend,arlo_shift,\
-                         mvn_shift,mvn_shift_reg"))
+        (eq_attr "type" "alu_shift_imm,alus_shift_imm,\
+                         logic_shift_imm,logics_shift_imm,\
+                         alu_shift_reg,alus_shift_reg,\
+                         logic_shift_reg,logics_shift_reg,\
+                         extend,mvn_shift,mvn_shift_reg"))
    "cortex_a9_p0_shift | cortex_a9_p1_shift")
 
 ;; Loads have a latency of 4 cycles.

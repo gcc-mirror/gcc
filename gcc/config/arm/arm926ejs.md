@@ -58,7 +58,13 @@
 ;; ALU operations with no shifted operand
 (define_insn_reservation "9_alu_op" 1 
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg,extend,arlo_shift,\
+      (eq_attr "type" "alu_imm,alus_imm,logic_imm,logics_imm,\
+                       alu_reg,alus_reg,logic_reg,logics_reg,\
+                       adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                       adr,bfm,rev,\
+                       alu_shift_imm,alus_shift_imm,\
+                       logic_shift_imm,logics_shift_imm,\
+                       shift_imm,shift_reg,extend,\
                        mov_imm,mov_reg,mov_shift,\
                        mvn_imm,mvn_reg,mvn_shift"))
  "e,m,w")
@@ -69,7 +75,9 @@
 ;; the execute stage.
 (define_insn_reservation "9_alu_shift_reg_op" 2 
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "arlo_shift_reg,mov_shift_reg,mvn_shift_reg"))
+      (eq_attr "type" "alu_shift_reg,alus_shift_reg,\
+                       logic_shift_reg,logics_shift_reg,\
+                       mov_shift_reg,mvn_shift_reg"))
  "e*2,m,w")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
