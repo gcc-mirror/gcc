@@ -240,9 +240,6 @@
    fmovf2i,\
    fmovi2f,\
    fmul,\
-   frecpe,\
-   frecps,\
-   frecpx,\
    frint,\
    fsqrt,\
    load_acq,\
@@ -3943,29 +3940,6 @@
   "fminnm\\t%<s>0, %<s>1, %<s>2"
   [(set_attr "v8type" "fminmax")
    (set_attr "type" "f_minmax<s>")
-   (set_attr "mode" "<MODE>")]
-)
-
-(define_insn "aarch64_frecp<FRECP:frecp_suffix><mode>"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
-		    FRECP))]
-  "TARGET_FLOAT"
-  "frecp<FRECP:frecp_suffix>\\t%<s>0, %<s>1"
-  [(set_attr "v8type" "frecp<FRECP:frecp_suffix>")
-   (set_attr "type" "ffarith<s>")
-   (set_attr "mode" "<MODE>")]
-)
-
-(define_insn "aarch64_frecps<mode>"
-  [(set (match_operand:GPF 0 "register_operand" "=w")
-	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")
-		     (match_operand:GPF 2 "register_operand" "w")]
-		    UNSPEC_FRECPS))]
-  "TARGET_FLOAT"
-  "frecps\\t%<s>0, %<s>1, %<s>2"
-  [(set_attr "v8type" "frecps")
-   (set_attr "type" "ffarith<s>")
    (set_attr "mode" "<MODE>")]
 )
 

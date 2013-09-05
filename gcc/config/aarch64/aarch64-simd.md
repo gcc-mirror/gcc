@@ -4179,13 +4179,23 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "aarch64_frecp<FRECP:frecp_suffix><mode>"
+  [(set (match_operand:GPF 0 "register_operand" "=w")
+	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
+		    FRECP))]
+  "TARGET_SIMD"
+  "frecp<FRECP:frecp_suffix>\\t%<s>0, %<s>1"
+  [(set_attr "simd_type" "simd_frecp<FRECP:frecp_suffix>")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "aarch64_frecps<mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
-		     (match_operand:VDQF 2 "register_operand" "w")]
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
+		     (match_operand:VALLF 2 "register_operand" "w")]
 		    UNSPEC_FRECPS))]
   "TARGET_SIMD"
-  "frecps\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "frecps\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_frecps")
    (set_attr "simd_mode" "<MODE>")]
 )
