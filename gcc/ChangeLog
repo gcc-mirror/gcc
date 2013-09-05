@@ -1,3 +1,10 @@
+2013-09-05  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): Renamed
+	from thread_around_empty_block.  Record threading path into PATH.
+	Recurse if threading through the initial block is successful.
+	(thread_across_edge): Corresponding changes to slightly simplify.
+
 2013-09-05  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md
