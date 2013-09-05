@@ -158,6 +158,7 @@
 #define AARCH64_FL_FP         (1 << 1)	/* Has FP.  */
 #define AARCH64_FL_CRYPTO     (1 << 2)	/* Has crypto.  */
 #define AARCH64_FL_SLOWMUL    (1 << 3)	/* A slow multiply core.  */
+#define AARCH64_FL_CRC        (1 << 4)	/* Has CRC.  */
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -170,6 +171,7 @@
 
 /* Macros to test ISA flags.  */
 extern unsigned long aarch64_isa_flags;
+#define AARCH64_ISA_CRC            (aarch64_isa_flags & AARCH64_FL_CRC)
 #define AARCH64_ISA_CRYPTO         (aarch64_isa_flags & AARCH64_FL_CRYPTO)
 #define AARCH64_ISA_FP             (aarch64_isa_flags & AARCH64_FL_FP)
 #define AARCH64_ISA_SIMD           (aarch64_isa_flags & AARCH64_FL_SIMD)

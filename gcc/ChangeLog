@@ -1,3 +1,12 @@
+2013-09-05  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def: Add
+	AARCH64_OPT_EXTENSION of 'crc'.
+	* config/aarch64/aarch64.h (AARCH64_FL_CRC): New define.
+	(AARCH64_ISA_CRC): Ditto.
+	* doc/invoke.texi (-march and -mcpu feature modifiers): Add
+	description of the CRC extension.
+
 2013-09-05  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* config/rs6000/linux64.h: Define OPTION_BIONIC and OPTION_UCLIBC.
