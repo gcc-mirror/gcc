@@ -16814,123 +16814,165 @@ arm_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
     }
 }
 
-/* Generate and emit a pattern that will be recognized as STRD pattern.  If even
-   number of registers are being pushed, multiple STRD patterns are created for
-   all register pairs.  If odd number of registers are pushed, emit a
-   combination of STRDs and STR for the prologue saves.  */
+/* Generate and emit a sequence of insns equivalent to PUSH, but using
+   STR and STRD.  If an even number of registers are being pushed, one
+   or more STRD patterns are created for each register pair.  If an
+   odd number of registers are pushed, emit an initial STR followed by
+   as many STRD instructions as are needed.  This works best when the
+   stack is initially 64-bit aligned (the normal case), since it
+   ensures that each STRD is also 64-bit aligned.  */
 static void
 thumb2_emit_strd_push (unsigned long saved_regs_mask)
 {
   int num_regs = 0;
-  int i, j;
+  int i;
+  int regno;
   rtx par = NULL_RTX;
-  rtx insn = NULL_RTX;
   rtx dwarf = NULL_RTX;
-  rtx tmp, reg, tmp1;
+  rtx tmp;
+  bool first = true;
 
-  for (i = 0; i <= LAST_ARM_REGNUM; i++)
-    if (saved_regs_mask & (1 << i))
-      num_regs++;
+  num_regs = bit_count (saved_regs_mask);
 
-  gcc_assert (num_regs && num_regs <= 16);
-
-  /* Pre-decrement the stack pointer, based on there being num_regs 4-byte
-     registers to push.  */
-  tmp = gen_rtx_SET (VOIDmode,
-                     stack_pointer_rtx,
-                     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
-  RTX_FRAME_RELATED_P (tmp) = 1;
-  insn = emit_insn (tmp);
-
-  /* Create sequence for DWARF info.  */
-  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_regs + 1));
-
-  /* RTLs cannot be shared, hence create new copy for dwarf.  */
-  tmp1 = gen_rtx_SET (VOIDmode,
-                     stack_pointer_rtx,
-                     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
-  RTX_FRAME_RELATED_P (tmp1) = 1;
-  XVECEXP (dwarf, 0, 0) = tmp1;
-
+  /* Must be at least one register to save, and can't save SP or PC.  */
+  gcc_assert (num_regs > 0 && num_regs <= 14);
   gcc_assert (!(saved_regs_mask & (1 << SP_REGNUM)));
   gcc_assert (!(saved_regs_mask & (1 << PC_REGNUM)));
 
-  /* Var j iterates over all the registers to gather all the registers in
-     saved_regs_mask.  Var i gives index of register R_j in stack frame.
-     A PARALLEL RTX of register-pair is created here, so that pattern for
-     STRD can be matched.  If num_regs is odd, 1st register will be pushed
-     using STR and remaining registers will be pushed with STRD in pairs.
-     If num_regs is even, all registers are pushed with STRD in pairs.
-     Hence, skip first element for odd num_regs.  */
-  for (i = num_regs - 1, j = LAST_ARM_REGNUM; i >= (num_regs % 2); j--)
-    if (saved_regs_mask & (1 << j))
-      {
-        /* Create RTX for store.  New RTX is created for dwarf as
-           they are not sharable.  */
-        reg = gen_rtx_REG (SImode, j);
-        tmp = gen_rtx_SET (SImode,
-                           gen_frame_mem
-                           (SImode,
-                            plus_constant (Pmode, stack_pointer_rtx, 4 * i)),
-                           reg);
+  /* Create sequence for DWARF info.  All the frame-related data for
+     debugging is held in this wrapper.  */
+  dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_regs + 1));
 
-        tmp1 = gen_rtx_SET (SImode,
-                           gen_frame_mem
-                           (SImode,
-                            plus_constant (Pmode, stack_pointer_rtx, 4 * i)),
-                           reg);
-        RTX_FRAME_RELATED_P (tmp) = 1;
-        RTX_FRAME_RELATED_P (tmp1) = 1;
+  /* Describe the stack adjustment.  */
+  tmp = gen_rtx_SET (VOIDmode,
+		      stack_pointer_rtx,
+		      plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
+  RTX_FRAME_RELATED_P (tmp) = 1;
+  XVECEXP (dwarf, 0, 0) = tmp;
 
-        if (((i - (num_regs % 2)) % 2) == 1)
-          /* When (i - (num_regs % 2)) is odd, the RTX to be emitted is yet to
-             be created.  Hence create it first.  The STRD pattern we are
-             generating is :
-             [ (SET (MEM (PLUS (SP) (NUM))) (reg_t1))
-               (SET (MEM (PLUS (SP) (NUM + 4))) (reg_t2)) ]
-             where the target registers need not be consecutive.  */
-          par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+  /* Find the first register.  */
+  for (regno = 0; (saved_regs_mask & (1 << regno)) == 0; regno++)
+    ;
 
-        /* Register R_j is added in PARALLEL RTX.  If (i - (num_regs % 2)) is
-           even, the reg_j is added as 0th element and if it is odd, reg_i is
-           added as 1st element of STRD pattern shown above.  */
-        XVECEXP (par, 0, ((i - (num_regs % 2)) % 2)) = tmp;
-        XVECEXP (dwarf, 0, (i + 1)) = tmp1;
+  i = 0;
 
-        if (((i - (num_regs % 2)) % 2) == 0)
-          /* When (i - (num_regs % 2)) is even, RTXs for both the registers
-             to be loaded are generated in above given STRD pattern, and the
-             pattern can be emitted now.  */
-          emit_insn (par);
-
-        i--;
-      }
-
-  if ((num_regs % 2) == 1)
+  /* If there's an odd number of registers to push.  Start off by
+     pushing a single register.  This ensures that subsequent strd
+     operations are dword aligned (assuming that SP was originally
+     64-bit aligned).  */
+  if ((num_regs & 1) != 0)
     {
-      /* If odd number of registers are pushed, generate STR pattern to store
-         lone register.  */
-      for (; (saved_regs_mask & (1 << j)) == 0; j--);
+      rtx reg, mem, insn;
 
-      tmp1 = gen_frame_mem (SImode, plus_constant (Pmode,
-                                                   stack_pointer_rtx, 4 * i));
-      reg = gen_rtx_REG (SImode, j);
-      tmp = gen_rtx_SET (SImode, tmp1, reg);
+      reg = gen_rtx_REG (SImode, regno);
+      if (num_regs == 1)
+	mem = gen_frame_mem (Pmode, gen_rtx_PRE_DEC (Pmode,
+						     stack_pointer_rtx));
+      else
+	mem = gen_frame_mem (Pmode,
+			     gen_rtx_PRE_MODIFY
+			     (Pmode, stack_pointer_rtx,
+			      plus_constant (Pmode, stack_pointer_rtx,
+					     -4 * num_regs)));
+
+      tmp = gen_rtx_SET (VOIDmode, mem, reg);
       RTX_FRAME_RELATED_P (tmp) = 1;
-
-      emit_insn (tmp);
-
-      tmp1 = gen_rtx_SET (SImode,
-                         gen_frame_mem
-                         (SImode,
-                          plus_constant (Pmode, stack_pointer_rtx, 4 * i)),
-                          reg);
-      RTX_FRAME_RELATED_P (tmp1) = 1;
-      XVECEXP (dwarf, 0, (i + 1)) = tmp1;
+      insn = emit_insn (tmp);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+      tmp = gen_rtx_SET (VOIDmode, gen_frame_mem (Pmode, stack_pointer_rtx),
+			 reg);
+      RTX_FRAME_RELATED_P (tmp) = 1;
+      i++;
+      regno++;
+      XVECEXP (dwarf, 0, i) = tmp;
+      first = false;
     }
 
-  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
-  RTX_FRAME_RELATED_P (insn) = 1;
+  while (i < num_regs)
+    if (saved_regs_mask & (1 << regno))
+      {
+	rtx reg1, reg2, mem1, mem2;
+	rtx tmp0, tmp1, tmp2;
+	int regno2;
+
+	/* Find the register to pair with this one.  */
+	for (regno2 = regno + 1; (saved_regs_mask & (1 << regno2)) == 0;
+	     regno2++)
+	  ;
+
+	reg1 = gen_rtx_REG (SImode, regno);
+	reg2 = gen_rtx_REG (SImode, regno2);
+
+	if (first)
+	  {
+	    rtx insn;
+
+	    first = false;
+	    mem1 = gen_frame_mem (Pmode, plus_constant (Pmode,
+							stack_pointer_rtx,
+							-4 * num_regs));
+	    mem2 = gen_frame_mem (Pmode, plus_constant (Pmode,
+							stack_pointer_rtx,
+							-4 * (num_regs - 1)));
+	    tmp0 = gen_rtx_SET (VOIDmode, stack_pointer_rtx,
+				plus_constant (Pmode, stack_pointer_rtx,
+					       -4 * (num_regs)));
+	    tmp1 = gen_rtx_SET (VOIDmode, mem1, reg1);
+	    tmp2 = gen_rtx_SET (VOIDmode, mem2, reg2);
+	    RTX_FRAME_RELATED_P (tmp0) = 1;
+	    RTX_FRAME_RELATED_P (tmp1) = 1;
+	    RTX_FRAME_RELATED_P (tmp2) = 1;
+	    par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (3));
+	    XVECEXP (par, 0, 0) = tmp0;
+	    XVECEXP (par, 0, 1) = tmp1;
+	    XVECEXP (par, 0, 2) = tmp2;
+	    insn = emit_insn (par);
+	    RTX_FRAME_RELATED_P (insn) = 1;
+	    add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+	  }
+	else
+	  {
+	    mem1 = gen_frame_mem (Pmode, plus_constant (Pmode,
+							stack_pointer_rtx,
+							4 * i));
+	    mem2 = gen_frame_mem (Pmode, plus_constant (Pmode,
+							stack_pointer_rtx,
+							4 * (i + 1)));
+	    tmp1 = gen_rtx_SET (VOIDmode, mem1, reg1);
+	    tmp2 = gen_rtx_SET (VOIDmode, mem2, reg2);
+	    RTX_FRAME_RELATED_P (tmp1) = 1;
+	    RTX_FRAME_RELATED_P (tmp2) = 1;
+	    par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (2));
+	    XVECEXP (par, 0, 0) = tmp1;
+	    XVECEXP (par, 0, 1) = tmp2;
+	    emit_insn (par);
+	  }
+
+	/* Create unwind information.  This is an approximation.  */
+	tmp1 = gen_rtx_SET (VOIDmode,
+			    gen_frame_mem (Pmode,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
+							  4 * i)),
+			    reg1);
+	tmp2 = gen_rtx_SET (VOIDmode,
+			    gen_frame_mem (Pmode,
+					   plus_constant (Pmode,
+							  stack_pointer_rtx,
+							  4 * (i + 1))),
+			    reg2);
+
+	RTX_FRAME_RELATED_P (tmp1) = 1;
+	RTX_FRAME_RELATED_P (tmp2) = 1;
+	XVECEXP (dwarf, 0, i + 1) = tmp1;
+	XVECEXP (dwarf, 0, i + 2) = tmp2;
+	i += 2;
+	regno = regno2 + 1;
+      }
+    else
+      regno++;
+
   return;
 }
 
