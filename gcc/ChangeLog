@@ -1,3 +1,7 @@
+2013-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config.gcc (*-*-vxworks*): Do not override an existing extra_objs.
+
 2013-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58137
