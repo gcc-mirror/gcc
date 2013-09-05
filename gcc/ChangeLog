@@ -1,3 +1,9 @@
+2013-09-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (thumb2_emit_strd_push): Rewrite to use pre-decrement on
+	initial store.
+	* thumb2.md (thumb2_storewb_parisi): New pattern.
+
 2013-09-05  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64-option-extensions.def: Add

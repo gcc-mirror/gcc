@@ -325,6 +325,21 @@
    (set_attr "neg_pool_range" "*,*,*,250")]
 )
 
+(define_insn "*thumb2_storewb_pairsi"
+  [(set (match_operand:SI 0 "register_operand" "=&kr")
+	(plus:SI (match_operand:SI 1 "register_operand" "0")
+		 (match_operand:SI 2 "const_int_operand" "n")))
+   (set (mem:SI (plus:SI (match_dup 0) (match_dup 2)))
+	(match_operand:SI 3 "register_operand" "r"))
+   (set (mem:SI (plus:SI (match_dup 0)
+			 (match_operand:SI 5 "const_int_operand" "n")))
+	(match_operand:SI 4 "register_operand" "r"))]
+  "TARGET_THUMB2
+   && INTVAL (operands[5]) == INTVAL (operands[2]) + 4"
+  "strd\\t%3, %4, [%0, %2]!"
+  [(set_attr "type" "store2")]
+)
+
 (define_insn "*thumb2_cmpsi_neg_shiftsi"
   [(set (reg:CC CC_REGNUM)
 	(compare:CC (match_operand:SI 0 "s_register_operand" "r")
