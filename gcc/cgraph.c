@@ -1225,13 +1225,13 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
     edge->frequency = CGRAPH_FREQ_MAX;
   edge->speculative = false;
   e2->speculative = false;
+  ipa_remove_reference (ref);
   if (e2->indirect_unknown_callee || e2->inline_failed)
     cgraph_remove_edge (e2);
   else
     cgraph_remove_node_and_inline_clones (e2->callee, NULL);
   if (edge->caller->call_site_hash)
     cgraph_update_edge_in_call_site_hash (edge);
-  ipa_remove_reference (ref);
   return edge;
 }
 

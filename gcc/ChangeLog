@@ -1,3 +1,16 @@
+2013-09-05  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.c (remove_described_reference): Accept missing references,
+	return false if that hppens, otherwise return true.
+	(cgraph_node_for_jfunc): New function.
+	(try_decrement_rdesc_refcount): Likewise.
+	(try_make_edge_direct_simple_call): Use them.
+	(ipa_edge_removal_hook): Remove references from rdescs.
+	(ipa_edge_duplication_hook): Clone rdescs and their references
+	when the new edge has the same caller as the old one.
+	* cgraph.c (cgraph_resolve_speculation): Remove speculative
+	reference before removing any edges.
+
 2013-09-05  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (thumb2_emit_strd_push): Rewrite to use pre-decrement on
