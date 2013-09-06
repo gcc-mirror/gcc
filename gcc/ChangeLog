@@ -1,5 +1,16 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md
+	(*movti_aarch64): Use "multiple" for type where v8type is "move2".
+	(*movtf_aarch64): Likewise.
+	* config/arm/arm.md
+	(thumb1_movdi_insn): Use "multiple" for type where more than one
+	instruction is used for a move.
+	(*arm32_movhf): Likewise.
+	(*thumb_movdf_insn): Likewise.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types.md (type): Rename fcpys to fmov.
 	* config/arm/vfp.md
 	(*arm_movsi_vfp): Rename type fcpys as fmov.
