@@ -1,3 +1,24 @@
+2013-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md (UNSPEC_FPINT_FLOOR, UNSPEC_FPINT_BTRUNC)
+	(UNSPEC_FPINT_ROUND, UNSPEC_FPINT_CEIL, UNSPEC_FPINT_NEARBYINT)
+	(UNSPEC_FPINT_RINT): New constant definitions.
+	(FPINT, fpint_name, fpint_roundingmode): New integer iterator
+	definition with 2 attributes.
+	("<FPINT:fpint_name><BFP:mode>2", "rint<BFP:mode>2")
+	("<FPINT:fpint_name><DFP:mode>2", "rint<DFP:mode>2"): New pattern
+	definitions.
+
+2013-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/s390.md: Add "bcr_flush" value to mnemonic
+	attribute.
+	("mem_thread_fence_1"): Use bcr 14,0 for z196 and later.
+	Set the mnemonic attribute to "bcr_flush".  Set the "z196prop"
+	attribute to "z196_alone".
+	* config/s390/2827.md: Add "bcr_flush" to "ooo_groupalone" and
+	"zEC12_simple".
+
 2013-09-06  Richard Biener  <rguenther@suse.de>
 
 	* basic-block.h (class control_dependences): New.
