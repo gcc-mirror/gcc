@@ -1,3 +1,8 @@
+2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ipa-split.c (split_function): Set DECL_NO_INLINE_WARNING_P on the
+	non-inlinable part.
+
 2013-09-06  Richard Biener  <rguenther@suse.de>
 
 	* lto-streamer.h (lto_global_var_decls): Remove.
