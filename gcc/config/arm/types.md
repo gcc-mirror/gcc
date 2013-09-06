@@ -79,6 +79,7 @@
 ; float              floating point arithmetic operation.
 ; fmac[d,s]          double/single floating point multiply-accumulate.
 ; fmul[d,s]          double/single floating point multiply.
+; fsqrt[d,s]         double/single precision floating point square root.
 ; load_acq           load-acquire.
 ; load_byte          load byte(s) from memory to arm registers.
 ; load1              load 1 word from memory to arm registers.
@@ -349,6 +350,8 @@
   fmacs,\
   fmuld,\
   fmuls,\
+  fsqrts,\
+  fsqrtd,\
   load_acq,\
   load_byte,\
   load1,\

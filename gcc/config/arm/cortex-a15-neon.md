@@ -501,12 +501,12 @@
 
 (define_insn_reservation "cortex_a15_vfp_divs" 10
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "fdivs"))
+       (eq_attr "type" "fdivs, fsqrts"))
   "ca15_issue1,ca15_cx_ik")
 
 (define_insn_reservation "cortex_a15_vfp_divd" 18
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "fdivd"))
+       (eq_attr "type" "fdivd, fsqrtd"))
   "ca15_issue1,ca15_cx_ik")
 
 ;; Define bypasses.

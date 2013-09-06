@@ -67,12 +67,12 @@
 
 (define_insn_reservation "vfp_fdivs" 19
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fdivs"))
+      (eq_attr "type" "fdivs, fsqrts"))
  "ds*15")
 
 (define_insn_reservation "vfp_fdivd" 33
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fdivd"))
+      (eq_attr "type" "fdivd, fsqrtd"))
  "fmac+ds*29")
 
 ;; Moves to/from arm regs also use the load/store pipeline.

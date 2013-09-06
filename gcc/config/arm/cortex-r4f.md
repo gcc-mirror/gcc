@@ -68,7 +68,7 @@
 
 (define_insn_reservation "cortex_r4_fdivs" 17
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fdivs"))
+      (eq_attr "type" "fdivs, fsqrts"))
  "cortex_r4_issue_ab+cortex_r4_v1,cortex_r4_issue_a+cortex_r4_v1")
 
 (define_insn_reservation "cortex_r4_floads" 2
@@ -131,7 +131,7 @@
 ;; out of order.  Chances are this is not a pipelined operation.
 (define_insn_reservation "cortex_r4_fdivd" 97
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fdivd"))
+      (eq_attr "type" "fdivd, fsqrtd"))
  "cortex_r4_single_issue*3")
 
 (define_insn_reservation "cortex_r4_ffarithd" 2

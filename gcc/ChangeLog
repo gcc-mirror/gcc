@@ -1,5 +1,26 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/types.md: Split fdiv<sd> as fsqrt<sd>, fdiv<sd>.
+	* config/arm/arm.md (core_cycles): Remove fdiv.
+	* config/arm/vfp.md:
+	(*sqrtsf2_vfp): Update for attribute changes.
+	(*sqrtdf2_vfp): Likewise.
+	* config/aarch64/aarch64.md:
+	(sqrt<mode>2): Update for attribute changes.
+	* config/arm/arm1020e.md: Update with new attributes.
+	* config/arm/cortex-a15-neon.md: Update with new attributes.
+	* config/arm/cortex-a5.md: Update with new attributes.
+	* config/arm/cortex-a53.md: Update with new attributes.
+	* config/arm/cortex-a7.md: Update with new attributes.
+	* config/arm/cortex-a8-neon.md: Update with new attributes.
+	* config/arm/cortex-a9.md: Update with new attributes.
+	* config/arm/cortex-m4-fpu.md: Update with new attributes.
+	* config/arm/cortex-r4f.md: Update with new attributes.
+	* config/arm/marvell-pj4.md: Update with new attributes.
+	* config/arm/vfp11.md: Update with new attributes.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types.md
 	(type): Split f_cvt as f_cvt, f_cvtf2i, f_cvti2f.
 	* config/aarch64/aarch64.md
