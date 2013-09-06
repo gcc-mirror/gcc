@@ -1,3 +1,11 @@
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/table-intrinsics.c
+	(qtbl_tests8_< ,2,3,4>): Fix control vector parameter type.
+	(qtb_tests8_< ,2,3,4>): Likewise.
+	(qtblq_tests8_< ,2,3,4>): Likewise.
+	(qtbxq_tests8_< ,2,3,4>): Likewise.
+
 2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/warn10.ad[sb]: New test.

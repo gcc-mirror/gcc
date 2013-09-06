@@ -148,7 +148,7 @@ tb_testp8_4 (poly8x8_t r, poly8x8x4_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtbl_tests8_ (int8x16_t tab, int8x8_t idx)
+qtbl_tests8_ (int8x16_t tab, uint8x8_t idx)
 {
   return vqtbl1_s8 (tab, idx);
 }
@@ -166,7 +166,7 @@ qtbl_testp8_ (poly8x16_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtbl_tests8_2 (int8x16x2_t tab, int8x8_t idx)
+qtbl_tests8_2 (int8x16x2_t tab, uint8x8_t idx)
 {
   return vqtbl2_s8 (tab, idx);
 }
@@ -184,7 +184,7 @@ qtbl_testp8_2 (poly8x16x2_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtbl_tests8_3 (int8x16x3_t tab, int8x8_t idx)
+qtbl_tests8_3 (int8x16x3_t tab, uint8x8_t idx)
 {
   return vqtbl3_s8 (tab, idx);
 }
@@ -202,7 +202,7 @@ qtbl_testp8_3 (poly8x16x3_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtbl_tests8_4 (int8x16x4_t tab, int8x8_t idx)
+qtbl_tests8_4 (int8x16x4_t tab, uint8x8_t idx)
 {
   return vqtbl4_s8 (tab, idx);
 }
@@ -220,7 +220,7 @@ qtbl_testp8_4 (poly8x16x4_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtb_tests8_ (int8x8_t r, int8x16_t tab, int8x8_t idx)
+qtb_tests8_ (int8x8_t r, int8x16_t tab, uint8x8_t idx)
 {
   return vqtbx1_s8 (r, tab, idx);
 }
@@ -238,7 +238,7 @@ qtb_testp8_ (poly8x8_t r, poly8x16_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtb_tests8_2 (int8x8_t r, int8x16x2_t tab, int8x8_t idx)
+qtb_tests8_2 (int8x8_t r, int8x16x2_t tab, uint8x8_t idx)
 {
   return vqtbx2_s8 (r, tab, idx);
 }
@@ -256,7 +256,7 @@ qtb_testp8_2 (poly8x8_t r, poly8x16x2_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtb_tests8_3 (int8x8_t r, int8x16x3_t tab, int8x8_t idx)
+qtb_tests8_3 (int8x8_t r, int8x16x3_t tab, uint8x8_t idx)
 {
   return vqtbx3_s8 (r, tab, idx);
 }
@@ -274,7 +274,7 @@ qtb_testp8_3 (poly8x8_t r, poly8x16x3_t tab, uint8x8_t idx)
 }
 
 int8x8_t
-qtb_tests8_4 (int8x8_t r, int8x16x4_t tab, int8x8_t idx)
+qtb_tests8_4 (int8x8_t r, int8x16x4_t tab, uint8x8_t idx)
 {
   return vqtbx4_s8 (r, tab, idx);
 }
@@ -292,7 +292,7 @@ qtb_testp8_4 (poly8x8_t r, poly8x16x4_t tab, uint8x8_t idx)
 }
 
 int8x16_t
-qtblq_tests8_ (int8x16_t tab, int8x16_t idx)
+qtblq_tests8_ (int8x16_t tab, uint8x16_t idx)
 {
   return vqtbl1q_s8 (tab, idx);
 }
@@ -310,7 +310,7 @@ qtblq_testp8_ (poly8x16_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtblq_tests8_2 (int8x16x2_t tab, int8x16_t idx)
+qtblq_tests8_2 (int8x16x2_t tab, uint8x16_t idx)
 {
   return vqtbl2q_s8 (tab, idx);
 }
@@ -328,7 +328,7 @@ qtblq_testp8_2 (poly8x16x2_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtblq_tests8_3 (int8x16x3_t tab, int8x16_t idx)
+qtblq_tests8_3 (int8x16x3_t tab, uint8x16_t idx)
 {
   return vqtbl3q_s8 (tab, idx);
 }
@@ -346,7 +346,7 @@ qtblq_testp8_3 (poly8x16x3_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtblq_tests8_4 (int8x16x4_t tab, int8x16_t idx)
+qtblq_tests8_4 (int8x16x4_t tab, uint8x16_t idx)
 {
   return vqtbl4q_s8 (tab, idx);
 }
@@ -364,7 +364,7 @@ qtblq_testp8_4 (poly8x16x4_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtbxq_tests8_ (int8x16_t r, int8x16_t tab, int8x16_t idx)
+qtbxq_tests8_ (int8x16_t r, int8x16_t tab, uint8x16_t idx)
 {
   return vqtbx1q_s8 (r, tab, idx);
 }
@@ -382,7 +382,7 @@ qtbxq_testp8_ (poly8x16_t r, poly8x16_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtbxq_tests8_2 (int8x16_t r, int8x16x2_t tab, int8x16_t idx)
+qtbxq_tests8_2 (int8x16_t r, int8x16x2_t tab, uint8x16_t idx)
 {
   return vqtbx2q_s8 (r, tab, idx);
 }
@@ -400,7 +400,7 @@ qtbxq_testp8_2 (poly8x16_t r, poly8x16x2_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtbxq_tests8_3 (int8x16_t r, int8x16x3_t tab, int8x16_t idx)
+qtbxq_tests8_3 (int8x16_t r, int8x16x3_t tab, uint8x16_t idx)
 {
   return vqtbx3q_s8 (r, tab, idx);
 }
@@ -418,7 +418,7 @@ qtbxq_testp8_3 (poly8x16_t r, poly8x16x3_t tab, uint8x16_t idx)
 }
 
 int8x16_t
-qtbxq_tests8_4 (int8x16_t r, int8x16x4_t tab, int8x16_t idx)
+qtbxq_tests8_4 (int8x16_t r, int8x16x4_t tab, uint8x16_t idx)
 {
   return vqtbx4q_s8 (r, tab, idx);
 }
