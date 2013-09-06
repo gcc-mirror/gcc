@@ -46,6 +46,7 @@ int ipa_reverse_postorder (struct cgraph_node **);
 tree get_base_var (tree);
 void ipa_merge_profiles (struct cgraph_node *dst,
 			 struct cgraph_node *src);
+bool recursive_call_p (tree, tree);
 
 /* In ipa-profile.c  */
 bool ipa_propagate_frequency (struct cgraph_node *node);

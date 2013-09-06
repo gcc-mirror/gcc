@@ -1,3 +1,16 @@
+2013-09-06  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58094
+	* cgraph.h (symtab_semantically_equivalent_p): Declare.
+	* tree-tailcall.c: Include ipa-utils.h.
+	(find_tail_calls): Use it.
+	* ipa-pure-const.c (check_call): Likewise.
+	* ipa-utils.c (recursive_call_p): New function.
+	* ipa-utils.h (recursive_call_p): Dclare.
+	* symtab.c (symtab_nonoverwritable_alias): Fix formatting.
+	(symtab_semantically_equivalent_p): New function.
+	* Makefile.in (tree-tailcall.o): Update dependencies.
+
 2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ipa-split.c (split_function): Set DECL_NO_INLINE_WARNING_P on the

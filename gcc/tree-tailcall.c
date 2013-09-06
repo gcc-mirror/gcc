@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cfgloop.h"
 #include "common/common-target.h"
+#include "ipa-utils.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
    analyze the tail calls in general, passing the results to the rtl level
@@ -445,7 +446,7 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   /* We found the call, check whether it is suitable.  */
   tail_recursion = false;
   func = gimple_call_fndecl (call);
-  if (func == current_function_decl)
+  if (func && recursive_call_p (current_function_decl, func))
     {
       tree arg;
 

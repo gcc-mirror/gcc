@@ -2432,7 +2432,7 @@ tree-tailcall.o : tree-tailcall.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(FUNCTION_H) $(TM_H) coretypes.h \
    $(EXCEPT_H) $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
    $(BASIC_BLOCK_H) $(DBGCNT_H) $(GIMPLE_PRETTY_PRINT_H) $(TARGET_H) \
-   $(COMMON_TARGET_H) $(CFGLOOP_H)
+   $(COMMON_TARGET_H) $(CFGLOOP_H) ipa-utils.h
 tree-ssa-sink.o : tree-ssa-sink.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) alloc-pool.h \

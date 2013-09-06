@@ -627,6 +627,7 @@ bool symtab_for_node_and_aliases (symtab_node,
 				  bool);
 symtab_node symtab_nonoverwritable_alias (symtab_node);
 enum availability symtab_node_availability (symtab_node);
+bool symtab_semantically_equivalent_p (symtab_node, symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);

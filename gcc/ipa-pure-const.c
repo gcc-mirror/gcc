@@ -541,7 +541,8 @@ check_call (funct_state local, gimple call, bool ipa)
     }
 
   /* When not in IPA mode, we can still handle self recursion.  */
-  if (!ipa && callee_t == current_function_decl)
+  if (!ipa && callee_t
+      && recursive_call_p (current_function_decl, callee_t))
     {
       if (dump_file)
         fprintf (dump_file, "    Recursive call can loop.\n");
@@ -1079,8 +1080,9 @@ ignore_edge (struct cgraph_edge *e)
 }
 
 /* Return true if NODE is self recursive function.
-   ??? self recursive and indirectly recursive funcions should
-   be the same, so this function seems unnecessary.  */
+   Indirectly recursive functions appears as non-trivial strongly
+   connected components, so we need to care about self recursion
+   only.  */
 
 static bool
 self_recursive_p (struct cgraph_node *node)
