@@ -1,3 +1,8 @@
+2013-09-06  Caroline Tice  <cmtice@google.com>
+
+	* doc/install.texi: Add documentation for the --enable-vtable-verify
+	and the --disable-libvtv configure options.
+
 2013-09-06  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate

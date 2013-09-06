@@ -20,18 +20,6 @@ AC_ARG_ENABLE(version-specific-runtime-libs,
 [version_specific_libs=no])
 AC_MSG_RESULT($version_specific_libs)
 
-# Use same top-level configure hooks in libgcc/libstdc++/libvtv.
-AC_MSG_CHECKING([for --enable-vtable-verify])
-AC_ARG_ENABLE(vtable-verify,
-[  --enable-vtable-verify    Enable vtable verification feature ],
-[case "$enableval" in
- yes) enable_vtable_verify=yes ;;
- no)  enable_vtable_verify=no ;;
- *)   enable_vtable_verify=no;;
- esac],
-[enable_vtable_verify=no])
-AC_MSG_RESULT($enable_vtable_verify)
-
 # See if supported.
 unset VTV_SUPPORTED
 AC_MSG_CHECKING([for host support for vtable verification])
@@ -41,12 +29,9 @@ AC_MSG_RESULT($VTV_SUPPORTED)
 # Decide if it's usable.
 use_vtable_verify=no
 if test "x$VTV_SUPPORTED" = "xyes"; then
-  if test "x$enable_vtable_verify" = "xyes"; then
-    use_vtable_verify=yes
-    AC_MSG_NOTICE(using vtable verification)
-  fi
+  use_vtable_verify=yes
+  AC_MSG_NOTICE(using vtable verification)
 fi 
-AM_CONDITIONAL(ENABLE_VTABLE_VERIFY, test $use_vtable_verify = yes)
 
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html

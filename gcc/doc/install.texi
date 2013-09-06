@@ -1036,6 +1036,18 @@ and for cross builds configured with @option{--with-sysroot}, and without
 More documentation about multiarch can be found at
 @uref{http://wiki.debian.org/Multiarch}.
 
+@item --enable-vtable-verify
+Specify whether to enable or disable the vtable verification feature.
+Enabling this feature causes libstdc++ to be built with its virtual calls
+in verifiable mode.  This means that, when linked with libvtv, every
+virtual call in libstdc++ will verify the vtable pointer through which the
+call will be made before actually making the call.  If not linked with libvtv,
+the verifier will call stub functions (in libstdc++ itself) and do nothing.
+If vtable verification is disabled, then libstdc++ is not built with its
+virtual calls in verifiable mode at all.  However the libvtv library will
+still be built (see @option{--disable-libvtv} to turn off building libvtv).
+@option{--disable-vtable-verify} is the default.
+
 @item --disable-multilib
 Specify that multiple target
 libraries to support different target variants, calling
@@ -1421,6 +1433,10 @@ support for @code{libquadmath} on systems supporting it.
 
 @item --disable-libgomp
 Specify that the run-time libraries used by GOMP should not be built.
+
+@item --disable-libvtv
+Specify that the run-time libraries used by vtable verification
+should not be built.
 
 @item --with-dwarf2
 Specify that the compiler should
