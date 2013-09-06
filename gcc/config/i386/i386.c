@@ -4218,7 +4218,7 @@ ix86_conditional_register_usage (void)
 
   /* If AVX512F is disabled, squash the registers.  */
   if (! TARGET_AVX512F)
-    for (i = FIRST_EXT_REX_SSE_REG; i < LAST_EXT_REX_SSE_REG; i++)
+    for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
       fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
 }
 
