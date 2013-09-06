@@ -3104,7 +3104,7 @@ tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h alloc-pool.h \
    $(HASH_TABLE_H) $(TM_H) $(TREE_H) $(GIMPLE_H) $(CGRAPH_H) $(TREE_FLOW_H) \
    $(IPA_PROP_H) $(DIAGNOSTIC_H) statistics.h \
    $(PARAMS_H) $(TARGET_H) $(FLAGS_H) \
-   $(DBGCNT_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
+   $(DBGCNT_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H) ipa-utils.h
 tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TREE_H) $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
     $(TM_H) coretypes.h $(GIMPLE_H) $(CFGLOOP_H) \
