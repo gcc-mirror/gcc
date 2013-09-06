@@ -22,7 +22,7 @@
 # The name of the LTO compiler.
 LTO_EXE = lto1$(exeext)
 # The LTO-specific object files inclued in $(LTO_EXE).
-LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o
+LTO_OBJS = lto/lto-lang.o lto/lto.o lto/lto-object.o attribs.o lto/lto-partition.o lto/lto-symtab.o
 LTO_H = lto/lto.h $(HASHTAB_H)
 LINKER_PLUGIN_API_H = $(srcdir)/../include/plugin-api.h
 LTO_TREE_H = lto/lto-tree.h $(LINKER_PLUGIN_API_H)
@@ -95,6 +95,9 @@ lto/lto-partition.o: lto/lto-partition.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 lto/lto-object.o: lto/lto-object.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
 	$(DIAGNOSTIC_CORE_H) $(LTO_H) $(TM_H) $(LTO_STREAMER_H) \
 	../include/simple-object.h
+lto/lto-symtab.o: lto/lto-symtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
+	$(TREE_H) $(GIMPLE_H) $(GGC_H) $(HASHTAB_H) \
+	$(LTO_STREAMER_H) $(LINKER_PLUGIN_API_H)
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:

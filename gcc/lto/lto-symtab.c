@@ -30,9 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-streamer.h"
 #include "ipa-utils.h"
 
-/* Vector to keep track of external variables we've seen so far.  */
-vec<tree, va_gc> *lto_global_var_decls;
-
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */
 
