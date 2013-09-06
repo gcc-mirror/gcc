@@ -91,6 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "gimple-pretty-print.h"
 #include "ipa-inline.h"
+#include "ipa-utils.h"
 
 /* Enumeration of all aggregate reductions we can do.  */
 enum sra_mode { SRA_MODE_EARLY_IPA,   /* early call regularization */
@@ -1256,8 +1257,7 @@ scan_function (void)
 		      if (DECL_BUILT_IN_CLASS (dest) == BUILT_IN_NORMAL
 			  && DECL_FUNCTION_CODE (dest) == BUILT_IN_APPLY_ARGS)
 			encountered_apply_args = true;
-		      if (cgraph_get_node (dest)
-			  == cgraph_get_node (current_function_decl))
+		      if (recursive_call_p (current_function_decl, dest))
 			{
 			  encountered_recursive_call = true;
 			  if (!callsite_has_enough_arguments_p (stmt))
@@ -4906,6 +4906,16 @@ modify_function (struct cgraph_node *node, ipa_parm_adjustment_vec adjustments)
   return cfg_changed;
 }
 
+/* If NODE has a caller, return true.  */
+
+static bool
+has_caller_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
+{
+  if (node->callers)
+    return true;
+  return false;
+}
+
 /* Return false the function is apparently unsuitable for IPA-SRA based on it's
    attributes, return true otherwise.  NODE is the cgraph node of the current
    function.  */
@@ -4949,7 +4959,7 @@ ipa_sra_preliminary_function_checks (struct cgraph_node *node)
       return false;
     }
 
-  if (!node->callers)
+  if (!cgraph_for_node_and_aliases (node, has_caller_p, NULL, true))
     {
       if (dump_file)
 	fprintf (dump_file,
