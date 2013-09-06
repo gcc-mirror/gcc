@@ -1,5 +1,15 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md
+	(*madd<mode>): Fix type attribute.
+	(*maddsi_uxtw): Likewise.
+	(*msub<mode>): Likewise.
+	(*msubsi_uxtw): Likewise.
+	(<su_optab>maddsidi4): Likewise.
+	(<su_optab>msubsidi4): Likewise.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types.md: Split fdiv<sd> as fsqrt<sd>, fdiv<sd>.
 	* config/arm/arm.md (core_cycles): Remove fdiv.
 	* config/arm/vfp.md:
