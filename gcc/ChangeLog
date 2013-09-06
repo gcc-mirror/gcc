@@ -1,3 +1,8 @@
+2013-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (ix86_hard_regno_mode_ok): AVX modes are valid only when	
+	AVX is enabled.
+
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md
