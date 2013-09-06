@@ -1,3 +1,7 @@
+2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/arc/cond-set-use.c: New test.
+
 2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/stack_usage2.adb: New test.

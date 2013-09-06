@@ -374,6 +374,16 @@ mark_referenced_resources (rtx x, struct resources *res,
     case INSN:
     case JUMP_INSN:
 
+      if (GET_CODE (PATTERN (x)) == COND_EXEC)
+      /* In addition to the usual references, also consider all outputs
+	 as referenced, to compensate for mark_set_resources treating
+	 them as killed.  This is similar to ZERO_EXTRACT / STRICT_LOW_PART
+	 handling, execpt that we got a partial incidence instead of a partial
+	 width.  */
+      mark_set_resources (x, res, 0,
+			  include_delayed_effects
+			  ? MARK_SRC_DEST_CALL : MARK_SRC_DEST);
+
 #ifdef INSN_REFERENCES_ARE_DELAYED
       if (! include_delayed_effects
 	  && INSN_REFERENCES_ARE_DELAYED (x))
