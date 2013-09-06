@@ -1,3 +1,26 @@
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqdml<SBINQOPS:as>l_n<mode>_internal): Use
+	<vwx> iterator to ensure correct register choice.
+	(aarch64_sqdml<SBINQOPS:as>l2_n<mode>_internal): Likewise.
+	(aarch64_sqdmull_n<mode>): Likewise.
+	(aarch64_sqdmull2_n<mode>_internal): Likewise.
+	* config/aarch64/arm_neon.h
+	(vml<as><q>_lane<q>_<su>16): Use 'x' constraint for element vector.
+	(vml<as><q>_n_<su>16): Likewise.
+	(vml<as>l_high_lane<q>_<su>16): Likewise.
+	(vml<as>l_high_n_<su>16): Likewise.
+	(vml<as>l_lane<q>_<su>16): Likewise.
+	(vml<as>l_n_<su>16): Likewise.
+	(vmul<q>_lane<q>_<su>16): Likewise.
+	(vmul<q>_n_<su>16): Likewise.
+	(vmull_lane<q>_<su>16): Likewise.
+	(vmull_n_<su>16): Likewise.
+	(vmull_high_lane<q>_<su>16): Likewise.
+	(vmull_high_n_<su>16): Likewise.
+	(vqrdmulh<q>_n_s16): Likewise.
+
 2013-09-06  Tejas Belagod  <tejas.belagod@arm.com>
 
 	* config/aarch64/arm_neon.h: Fix all vdup<bhsd_lane<q> intrinsics to
