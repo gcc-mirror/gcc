@@ -106,6 +106,7 @@
 ;                    register.  This includes MOVW, but not MOVT.
 ; mov_shift          simple MOV instruction, shifted operand by a constant.
 ; mov_shift_reg      simple MOV instruction, shifted operand by a register.
+; mrs                system/special/co-processor register move.
 ; mul                integer multiply.
 ; muls               integer multiply, flag setting.
 ; multiple           more than one instruction, candidate for future
@@ -372,6 +373,7 @@
   mov_reg,\
   mov_shift,\
   mov_shift_reg,\
+  mrs,\
   mul,\
   muls,\
   multiple,\

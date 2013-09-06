@@ -74,7 +74,7 @@
                        adr,bfm,rev,\
                        shift_imm,shift_reg,\
                        mov_imm,mov_reg,mvn_imm,mvn_reg,\
-                       multiple,no_insn"))
+                       mrs,multiple,no_insn"))
  "fa626te_core")
 
 (define_insn_reservation "626te_alu_shift_op" 2

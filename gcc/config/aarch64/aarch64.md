@@ -4134,7 +4134,7 @@
   ""
   "mrs\\t%0, tpidr_el0"
   [(set_attr "v8type" "mrs")
-   (set_attr "type" "mov_reg")
+   (set_attr "type" "mrs")
    (set_attr "mode" "DI")]
 )
 

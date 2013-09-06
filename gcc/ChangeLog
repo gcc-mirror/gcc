@@ -1,5 +1,25 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/types.md (type): Add "mrs" type.
+	* config/aarch64/aarch64.md
+	(aarch64_load_tp_hard): Make type "mrs".
+	* config/arm/arm.md
+	(load_tp_hard): Make type "mrs".
+	* config/arm/cortex-a15.md: Update with new attributes.
+	* config/arm/cortex-a5.md: Update with new attributes.
+	* config/arm/cortex-a53.md: Update with new attributes.
+	* config/arm/cortex-a7.md: Update with new attributes.
+	* config/arm/cortex-a8.md: Update with new attributes.
+	* config/arm/cortex-a9.md: Update with new attributes.
+	* config/arm/cortex-m4.md: Update with new attributes.
+	* config/arm/cortex-r4.md: Update with new attributes.
+	* config/arm/fa526.md: Update with new attributes.
+	* config/arm/fa606te.md: Update with new attributes.
+	* config/arm/fa626te.md: Update with new attributes.
+	* config/arm/fa726te.md: Update with new attributes.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.md
 	(*movti_aarch64): Use "multiple" for type where v8type is "move2".
 	(*movtf_aarch64): Likewise.

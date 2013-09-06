@@ -68,7 +68,7 @@
                         shift_imm,shift_reg,\
                         mov_imm,mov_reg,\
                         mvn_imm,mvn_reg,\
-                        multiple,no_insn"))
+                        mrs,multiple,no_insn"))
   "ca15_issue1,(ca15_sx1,ca15_sx1_alu)|(ca15_sx2,ca15_sx2_alu)")
 
 ;; ALU ops with immediate shift
