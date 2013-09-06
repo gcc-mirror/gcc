@@ -3132,7 +3132,7 @@
 	(write_discriminator): Use write_unsigned_number or
 	write_signed_number as appropriate.
 	(write_template_arg_literal): Likewise.
-	(write_array_type): Use tree_to_uhwi.
+	(write_array_type): Use tree_low_cst.
 	(write_template_parm):  Use write_unsigned_number or
 	write_signed_number as appropriate.
 	(write_substitution): Adjust call to write_number.
