@@ -53,7 +53,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load1,store1,f_mcr,f_mrc,fcpys,f_loads,f_stores")
+   (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load1,store1,f_mcr,f_mrc,fmov,f_loads,f_stores")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
 )
@@ -100,7 +100,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,no")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_reg,load1,load1,store1,store1,f_mcr,f_mrc,fcpys,f_loads,f_stores")
+   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_reg,load1,load1,store1,store1,f_mcr,f_mrc,fmov,f_loads,f_stores")
    (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4")
    (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
@@ -261,7 +261,7 @@
   "
   [(set_attr "conds" "unconditional")
    (set_attr "type" "neon_vld1_1_2_regs,neon_vst1_1_2_regs_vst2_2_regs,\
-                     load1,store1,fcpys,mov_reg,f_mcr,f_mrc,multiple")
+                     load1,store1,fmov,mov_reg,f_mcr,f_mrc,multiple")
    (set_attr "length" "4,4,4,4,4,4,4,4,8")]
 )
 
@@ -311,7 +311,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,fcpys,mov_reg,f_mcr,f_mrc,multiple")
+   (set_attr "type" "load1,store1,fmov,mov_reg,f_mcr,f_mrc,multiple")
    (set_attr "length" "4,4,4,4,4,4,8")]
 )
 
@@ -351,7 +351,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type"
-     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fcpys,mov_reg")
+     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fmov,mov_reg")
    (set_attr "pool_range" "*,*,*,1020,*,4096,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,4080,*,*,*")]
 )
@@ -388,7 +388,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type"
-     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fcpys,mov_reg")
+     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fmov,mov_reg")
    (set_attr "pool_range" "*,*,*,1018,*,4090,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
@@ -509,7 +509,7 @@
    fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "4,4,8,4,4,8,4,4,8")
-    (set_attr "type" "fcpys,fcpys,fcpys,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
+    (set_attr "type" "fmov,fmov,fmov,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
 )
 
 (define_insn "*thumb2_movsfcc_vfp"
@@ -532,7 +532,7 @@
    ite\\t%D3\;fmrs%D3\\t%0, %2\;fmrs%d3\\t%0, %1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
-    (set_attr "type" "fcpys,fcpys,fcpys,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
+    (set_attr "type" "fmov,fmov,fmov,f_mcr,f_mcr,f_mcr,f_mrc,f_mrc,f_mrc")]
 )
 
 (define_insn "*movdfcc_vfp"

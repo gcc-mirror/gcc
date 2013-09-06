@@ -209,7 +209,7 @@
 
 (define_insn_reservation "cortex_a53_fpalu" 4
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fcpys, fmuls,\
+       (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fmov, fmuls,\
                         f_cvt,f_cvtf2i,f_cvti2f,\
 			fcmps, fcmpd, fcsel"))
   "cortex_a53_slot0+cortex_a53_fpadd_pipe")

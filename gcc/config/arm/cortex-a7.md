@@ -204,7 +204,7 @@
 
 (define_insn_reservation "cortex_a7_fpalu" 4
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fcpys,\
+       (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fmov,\
                         f_cvt, f_cvtf2i, f_cvti2f, fcmps, fcmpd"))
   "cortex_a7_ex1+cortex_a7_fpadd_pipe")
 

@@ -491,7 +491,7 @@
 
 (define_insn_reservation "cortex_a15_vfp_cpys" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "fcpys"))
+       (eq_attr "type" "fmov"))
   "ca15_issue1,ca15_cx_perm")
 
 (define_insn_reservation "cortex_a15_vfp_ariths" 7

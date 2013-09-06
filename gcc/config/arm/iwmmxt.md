@@ -189,7 +189,7 @@
        gcc_unreachable ();
      }"
   [(set_attr "type"           "*,*,*,*,load1,store1,*,*,*,*,f_mcr,f_mrc,\
-                               fcpys,f_loads,f_stores")
+                               fmov,f_loads,f_stores")
    (set_attr "length"         "*,*,*,*,*,        *,*,*,  16,     *,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,4096,     *,*,*,1024,     *,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,     *,*,*,   *,  1012,*,*,*,1008,*")
