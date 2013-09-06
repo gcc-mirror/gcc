@@ -994,11 +994,18 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
 	  if (CALL_P (real_insn))
 	    {
-	      /* CALL clobbers all call-used regs that aren't fixed except
-		 sp, ap, and fp.  Do this before setting the result of the
-		 call live.  */
-	      AND_COMPL_HARD_REG_SET (current_live_regs,
-				      regs_invalidated_by_call);
+	      /* Values in call-clobbered registers survive a COND_EXEC CALL
+		 if that is not executed; this matters for resoure use because
+		 they may be used by a complementarily (or more strictly)
+		 predicated instruction, or if the CALL is NORETURN.  */
+	      if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
+		{
+		  /* CALL clobbers all call-used regs that aren't fixed except
+		     sp, ap, and fp.  Do this before setting the result of the
+		     call live.  */
+		  AND_COMPL_HARD_REG_SET (current_live_regs,
+					  regs_invalidated_by_call);
+		}
 
 	      /* A CALL_INSN sets any global register live, since it may
 		 have been modified by the call.  */
