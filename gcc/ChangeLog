@@ -1,3 +1,8 @@
+2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (output_stack_usage): Be prepared for suffixes created by
+	the compiler in the function names.
+
 2013-09-06  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58094
@@ -8,8 +13,8 @@
 
 2013-09-06  Jan Hubicka  <jh@suse.cz>
 
-	* i386.c (ix86_hard_regno_mode_ok): AVX modes are valid only when	
-	AVX is enabled.
+	* config/i386/i386.c (ix86_hard_regno_mode_ok): AVX modes are valid
+	only when AVX is enabled.
 
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
