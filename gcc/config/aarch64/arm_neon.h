@@ -15973,7 +15973,7 @@ vqtbl1_p8 (poly8x16_t a, uint8x8_t b)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbl1_s8 (int8x16_t a, int8x8_t b)
+vqtbl1_s8 (int8x16_t a, uint8x8_t b)
 {
   int8x8_t result;
   __asm__ ("tbl %0.8b, {%1.16b}, %2.8b"
@@ -16006,7 +16006,7 @@ vqtbl1q_p8 (poly8x16_t a, uint8x16_t b)
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbl1q_s8 (int8x16_t a, int8x16_t b)
+vqtbl1q_s8 (int8x16_t a, uint8x16_t b)
 {
   int8x16_t result;
   __asm__ ("tbl %0.16b, {%1.16b}, %2.16b"
@@ -16028,7 +16028,7 @@ vqtbl1q_u8 (uint8x16_t a, uint8x16_t b)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbl2_s8 (int8x16x2_t tab, int8x8_t idx)
+vqtbl2_s8 (int8x16x2_t tab, uint8x8_t idx)
 {
   int8x8_t result;
   __asm__ ("ld1 {v16.16b, v17.16b}, %1\n\t"
@@ -16064,7 +16064,7 @@ vqtbl2_p8 (poly8x16x2_t tab, uint8x8_t idx)
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbl2q_s8 (int8x16x2_t tab, int8x16_t idx)
+vqtbl2q_s8 (int8x16x2_t tab, uint8x16_t idx)
 {
   int8x16_t result;
   __asm__ ("ld1 {v16.16b, v17.16b}, %1\n\t"
@@ -16100,7 +16100,7 @@ vqtbl2q_p8 (poly8x16x2_t tab, uint8x16_t idx)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbl3_s8 (int8x16x3_t tab, int8x8_t idx)
+vqtbl3_s8 (int8x16x3_t tab, uint8x8_t idx)
 {
   int8x8_t result;
   __asm__ ("ld1 {v16.16b - v18.16b}, %1\n\t"
@@ -16136,7 +16136,7 @@ vqtbl3_p8 (poly8x16x3_t tab, uint8x8_t idx)
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbl3q_s8 (int8x16x3_t tab, int8x16_t idx)
+vqtbl3q_s8 (int8x16x3_t tab, uint8x16_t idx)
 {
   int8x16_t result;
   __asm__ ("ld1 {v16.16b - v18.16b}, %1\n\t"
@@ -16172,7 +16172,7 @@ vqtbl3q_p8 (poly8x16x3_t tab, uint8x16_t idx)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbl4_s8 (int8x16x4_t tab, int8x8_t idx)
+vqtbl4_s8 (int8x16x4_t tab, uint8x8_t idx)
 {
   int8x8_t result;
   __asm__ ("ld1 {v16.16b - v19.16b}, %1\n\t"
@@ -16209,7 +16209,7 @@ vqtbl4_p8 (poly8x16x4_t tab, uint8x8_t idx)
 
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbl4q_s8 (int8x16x4_t tab, int8x16_t idx)
+vqtbl4q_s8 (int8x16x4_t tab, uint8x16_t idx)
 {
   int8x16_t result;
   __asm__ ("ld1 {v16.16b - v19.16b}, %1\n\t"
@@ -16246,7 +16246,7 @@ vqtbl4q_p8 (poly8x16x4_t tab, uint8x16_t idx)
 
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbx1_s8 (int8x8_t r, int8x16_t tab, int8x8_t idx)
+vqtbx1_s8 (int8x8_t r, int8x16_t tab, uint8x8_t idx)
 {
   int8x8_t result = r;
   __asm__ ("tbx %0.8b,{%1.16b},%2.8b"
@@ -16279,7 +16279,7 @@ vqtbx1_p8 (poly8x8_t r, poly8x16_t tab, uint8x8_t idx)
 }
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbx1q_s8 (int8x16_t r, int8x16_t tab, int8x16_t idx)
+vqtbx1q_s8 (int8x16_t r, int8x16_t tab, uint8x16_t idx)
 {
   int8x16_t result = r;
   __asm__ ("tbx %0.16b,{%1.16b},%2.16b"
@@ -16312,7 +16312,7 @@ vqtbx1q_p8 (poly8x16_t r, poly8x16_t tab, uint8x16_t idx)
 }
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbx2_s8 (int8x8_t r, int8x16x2_t tab, int8x8_t idx)
+vqtbx2_s8 (int8x8_t r, int8x16x2_t tab, uint8x8_t idx)
 {
   int8x8_t result = r;
   __asm__ ("ld1 {v16.16b, v17.16b}, %1\n\t"
@@ -16349,7 +16349,7 @@ vqtbx2_p8 (poly8x8_t r, poly8x16x2_t tab, uint8x8_t idx)
 
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbx2q_s8 (int8x16_t r, int8x16x2_t tab, int8x16_t idx)
+vqtbx2q_s8 (int8x16_t r, int8x16x2_t tab, uint8x16_t idx)
 {
   int8x16_t result = r;
   __asm__ ("ld1 {v16.16b, v17.16b}, %1\n\t"
@@ -16386,7 +16386,7 @@ vqtbx2q_p8 (poly8x16_t r, poly8x16x2_t tab, uint8x16_t idx)
 
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbx3_s8 (int8x8_t r, int8x16x3_t tab, int8x8_t idx)
+vqtbx3_s8 (int8x8_t r, int8x16x3_t tab, uint8x8_t idx)
 {
   int8x8_t result = r;
   __asm__ ("ld1 {v16.16b - v18.16b}, %1\n\t"
@@ -16423,7 +16423,7 @@ vqtbx3_p8 (poly8x8_t r, poly8x16x3_t tab, uint8x8_t idx)
 
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbx3q_s8 (int8x16_t r, int8x16x3_t tab, int8x16_t idx)
+vqtbx3q_s8 (int8x16_t r, int8x16x3_t tab, uint8x16_t idx)
 {
   int8x16_t result = r;
   __asm__ ("ld1 {v16.16b - v18.16b}, %1\n\t"
@@ -16460,7 +16460,7 @@ vqtbx3q_p8 (poly8x16_t r, poly8x16x3_t tab, uint8x16_t idx)
 
 
 __extension__ static __inline int8x8_t __attribute__ ((__always_inline__))
-vqtbx4_s8 (int8x8_t r, int8x16x4_t tab, int8x8_t idx)
+vqtbx4_s8 (int8x8_t r, int8x16x4_t tab, uint8x8_t idx)
 {
   int8x8_t result = r;
   __asm__ ("ld1 {v16.16b - v19.16b}, %1\n\t"
@@ -16497,7 +16497,7 @@ vqtbx4_p8 (poly8x8_t r, poly8x16x4_t tab, uint8x8_t idx)
 
 
 __extension__ static __inline int8x16_t __attribute__ ((__always_inline__))
-vqtbx4q_s8 (int8x16_t r, int8x16x4_t tab, int8x16_t idx)
+vqtbx4q_s8 (int8x16_t r, int8x16x4_t tab, uint8x16_t idx)
 {
   int8x16_t result = r;
   __asm__ ("ld1 {v16.16b - v19.16b}, %1\n\t"
