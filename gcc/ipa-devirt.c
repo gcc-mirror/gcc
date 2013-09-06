@@ -1114,9 +1114,7 @@ ipa_devirt (void)
 static bool
 gate_ipa_devirt (void)
 {
-  /* FIXME: We should remove the optimize check after we ensure we never run
-     IPA passes when not optimizing.  */
-  return flag_devirtualize && !in_lto_p;
+  return flag_devirtualize && !in_lto_p && optimize;
 }
 
 namespace {
