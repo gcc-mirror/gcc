@@ -1,3 +1,8 @@
+2013-09-06  Richard Biener <rguenther@suse.de>
+
+	* cfganal.c (control_dependences::~control_dependences):
+	Properly free all of the vector.
+
 2013-09-06  Kirill Yukhin  <kirill.yukhin@intel.com>
 
 	PR target/58269
