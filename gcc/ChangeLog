@@ -1,5 +1,13 @@
 2013-09-06  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/58094
+	* ipa-inline.c (has_caller_p): New function.
+	(want_inline_function_to_all_callers_p): Use it.
+	(sum_callers, inline_to_all_callers): Break out from ...
+	(ipa_inline): ... here.
+
+2013-09-06  Jan Hubicka  <jh@suse.cz>
+
 	* i386.c (ix86_hard_regno_mode_ok): AVX modes are valid only when	
 	AVX is enabled.
 
