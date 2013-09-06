@@ -831,7 +831,7 @@
    fmov\\t%s0, %s1"
   [(set_attr "v8type" "move,move,move,alu,load1,load1,store1,store1,adr,adr,fmov,fmov,fmov")
    (set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
-                     adr,adr,mov_reg,mov_reg,mov_reg")
+                     adr,adr,fmov,fmov,fmov")
    (set_attr "mode" "SI")
    (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes")]
 )
@@ -858,7 +858,7 @@
    movi\\t%d0, %1"
   [(set_attr "v8type" "move,move,move,alu,load1,load1,store1,store1,adr,adr,fmov,fmov,fmov,fmov")
    (set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,load1,load1,store1,store1,\
-                     adr,adr,mov_reg,mov_reg,mov_reg,mov_reg")
+                     adr,adr,fmov,fmov,fmov,fmov")
    (set_attr "mode" "DI")
    (set_attr "fp" "*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
    (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,yes")]
@@ -961,8 +961,8 @@
   [(set_attr "v8type" "fmovi2f,fmovf2i,\
 		       fmov,fconst,fpsimd_load,\
 		       fpsimd_store,fpsimd_load,fpsimd_store,fmov")
-   (set_attr "type" "f_mcr,f_mrc,mov_reg,fconsts,\
-                     f_loads,f_stores,f_loads,f_stores,mov_reg")
+   (set_attr "type" "f_mcr,f_mrc,fmov,fconsts,\
+                     f_loads,f_stores,f_loads,f_stores,fmov")
    (set_attr "mode" "SF")]
 )
 
@@ -984,7 +984,7 @@
   [(set_attr "v8type" "fmovi2f,fmovf2i,\
 		       fmov,fconst,fpsimd_load,\
 		       fpsimd_store,fpsimd_load,fpsimd_store,move")
-   (set_attr "type" "f_mcr,f_mrc,mov_reg,fconstd,\
+   (set_attr "type" "f_mcr,f_mrc,fmov,fconstd,\
                      f_loadd,f_stored,f_loadd,f_stored,mov_reg")
    (set_attr "mode" "DF")]
 )

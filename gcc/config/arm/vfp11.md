@@ -51,7 +51,7 @@
 
 (define_insn_reservation "vfp_ffarith" 4
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fcpys,ffariths,ffarithd,fcmps,fcmpd"))
+      (eq_attr "type" "fmov,ffariths,ffarithd,fcmps,fcmpd"))
  "fmac")
 
 (define_insn_reservation "vfp_farith" 8

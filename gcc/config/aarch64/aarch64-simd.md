@@ -1052,7 +1052,7 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "v8type" "*,fmov,*")
-   (set_attr "type" "*,mov_reg,*")
+   (set_attr "type" "*,fmov,*")
    (set_attr "simd_type" "simd_dup,*,simd_dup")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "simd" "yes,*,yes")

@@ -172,7 +172,7 @@
 ;; take four cycles, we pick that latency.
 (define_insn_reservation "cortex_a8_vfp_farith" 4
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fcpys,ffariths,ffarithd,fconsts,fconstd,fcmps,fcmpd"))
+       (eq_attr "type" "fmov,ffariths,ffarithd,fconsts,fconstd,fcmps,fcmpd"))
   "cortex_a8_vfp,cortex_a8_vfplite*3")
 
 (define_insn_reservation "cortex_a8_vfp_cvt" 7

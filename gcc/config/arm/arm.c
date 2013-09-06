@@ -8977,7 +8977,7 @@ cortexa7_older_only (rtx insn)
     case TYPE_FADDS:
     case TYPE_FFARITHD:
     case TYPE_FADDD:
-    case TYPE_FCPYS:
+    case TYPE_FMOV:
     case TYPE_F_CVT:
     case TYPE_FCMPS:
     case TYPE_FCMPD:

@@ -35,7 +35,7 @@
 
 (define_insn_reservation "cortex_m4_vmov_1" 1
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "fcpys,fconsts"))
+       (eq_attr "type" "fmov,fconsts"))
   "cortex_m4_ex_v")
 
 (define_insn_reservation "cortex_m4_vmov_2" 2

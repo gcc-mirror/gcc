@@ -71,13 +71,13 @@
 ; fadd[d,s]          double/single floating-point scalar addition.
 ; fcmp[d,s]          double/single floating-point compare.
 ; fconst[d,s]        double/single load immediate.
-; fcpys              single precision floating point cpy.
 ; fcsel              From ARMv8-A: Floating-point conditional select.
 ; fdiv[d,s]          double/single precision floating point division.
 ; ffarith[d,s]       double/single floating point abs/neg/cpy.
 ; ffma[d,s]          double/single floating point fused multiply-accumulate.
 ; float              floating point arithmetic operation.
 ; fmac[d,s]          double/single floating point multiply-accumulate.
+; fmov               floating point to floating point register move.
 ; fmul[d,s]          double/single floating point multiply.
 ; fsqrt[d,s]         double/single precision floating point square root.
 ; load_acq           load-acquire.
@@ -337,7 +337,6 @@
   fcmps,\
   fconstd,\
   fconsts,\
-  fcpys,\
   fcsel,\
   fdivd,\
   fdivs,\
@@ -348,6 +347,7 @@
   float,\
   fmacd,\
   fmacs,\
+  fmov,\
   fmuld,\
   fmuls,\
   fsqrts,\

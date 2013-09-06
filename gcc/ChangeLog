@@ -1,5 +1,40 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/types.md (type): Rename fcpys to fmov.
+	* config/arm/vfp.md
+	(*arm_movsi_vfp): Rename type fcpys as fmov.
+	(*thumb2_movsi_vfp): Likewise
+	(*movhf_vfp_neon): Likewise
+	(*movhf_vfp): Likewise
+	(*movsf_vfp): Likewise
+	(*thumb2_movsf_vfp): Likewise
+	(*movsfcc_vfp): Likewise
+	(*thumb2_movsfcc_vfp): Likewise
+	* config/aarch64/aarch64-simd.md
+	(move_lo_quad_<mode>): Replace type mov_reg with fmovs.
+	* config/aarch64/aarch64.md
+	(*movsi_aarch64): Replace type mov_reg with fmovs.
+	(*movdi_aarch64): Likewise
+	(*movsf_aarch64): Likewise
+	(*movdf_aarch64): Likewise
+	* config/arm/arm.c
+	(cortexa7_older_only): Rename TYPE_FCPYS to TYPE_FMOV.
+	* config/arm/iwmmxt.md
+	(*iwmmxt_movsi_insn): Rename type fcpys as fmov.
+	* config/arm/arm1020e.md: Update with new attributes.
+	* config/arm/cortex-a15-neon.md: Update with new attributes.
+	* config/arm/cortex-a5.md: Update with new attributes.
+	* config/arm/cortex-a53.md: Update with new attributes.
+	* config/arm/cortex-a7.md: Update with new attributes.
+	* config/arm/cortex-a8-neon.md: Update with new attributes.
+	* config/arm/cortex-a9.md: Update with new attributes.
+	* config/arm/cortex-m4-fpu.md: Update with new attributes.
+	* config/arm/cortex-r4f.md: Update with new attributes.
+	* config/arm/marvell-pj4.md: Update with new attributes.
+	* config/arm/vfp11.md: Update with new attributes.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64.md
 	(*madd<mode>): Fix type attribute.
 	(*maddsi_uxtw): Likewise.

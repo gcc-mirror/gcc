@@ -48,7 +48,7 @@
 
 (define_insn_reservation "cortex_r4_fcpys" 2
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fcpys"))
+      (eq_attr "type" "fmov"))
  "cortex_r4_issue_ab")
 
 (define_insn_reservation "cortex_r4_ffariths" 2
