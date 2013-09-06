@@ -654,13 +654,13 @@ equality.  */
      &_rtx->u.hwint[_n]; }))
 
 #define CWI_ELT(RTX, I) __extension__					\
-(*({ __typeof (RTX) const _rtx = (RTX);					\
-     int _max = CWI_GET_NUM_ELEM (_rtx);				\
+(*({ __typeof (RTX) const _cwi = (RTX);					\
+     int _max = CWI_GET_NUM_ELEM (_cwi);				\
      const int _i = (I);						\
      if (_i < 0 || _i >= _max)						\
-       cwi_check_failed_bounds (_rtx, _i, __FILE__, __LINE__,	\
+       cwi_check_failed_bounds (_cwi, _i, __FILE__, __LINE__,		\
 				__FUNCTION__);				\
-     &_rtx->u.hwiv.elem[_i]; }))
+     &_cwi->u.hwiv.elem[_i]; }))
 
 #define XCWINT(RTX, N, C) __extension__					\
 (*({ __typeof (RTX) const _rtx = (RTX);					\
