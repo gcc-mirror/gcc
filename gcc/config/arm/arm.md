@@ -6141,7 +6141,7 @@
     }
   }"
   [(set_attr "length" "4,4,6,2,2,6,4,4")
-   (set_attr "type" "multiple,mov_reg,multiple,load2,store2,load2,store2,mov_reg")
+   (set_attr "type" "multiple,multiple,multiple,load2,store2,load2,store2,multiple")
    (set_attr "pool_range" "*,*,*,*,*,1018,*,*")]
 )
 
@@ -7221,7 +7221,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,mov_reg,mov_reg")
+   (set_attr "type" "load1,store1,mov_reg,multiple")
    (set_attr "length" "4,4,4,8")
    (set_attr "predicable" "yes")]
 )
@@ -7466,7 +7466,7 @@
     }
   "
   [(set_attr "length" "4,2,2,6,4,4")
-   (set_attr "type" "multiple,load2,store2,load2,store2,mov_reg")
+   (set_attr "type" "multiple,load2,store2,load2,store2,multiple")
    (set_attr "pool_range" "*,*,*,1018,*,*")]
 )
 

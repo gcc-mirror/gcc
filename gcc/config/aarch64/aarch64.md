@@ -906,7 +906,7 @@
    str\\t%q1, %0"
   [(set_attr "v8type" "move2,fmovi2f,fmovf2i,*, \
 		       load2,store2,store2,fpsimd_load,fpsimd_store")
-   (set_attr "type" "mov_reg,f_mcr,f_mrc,*, \
+   (set_attr "type" "multiple,f_mcr,f_mrc,*, \
 		             load2,store2,store2,f_loadd,f_stored")
    (set_attr "simd_type" "*,*,*,simd_move,*,*,*,*,*")
    (set_attr "mode" "DI,DI,DI,TI,DI,DI,DI,TI,TI")
@@ -1024,7 +1024,7 @@
    ldp\\t%0, %H0, %1
    stp\\t%1, %H1, %0"
   [(set_attr "v8type" "logic,move2,fmovi2f,fmovf2i,fconst,fconst,fpsimd_load,fpsimd_store,fpsimd_load2,fpsimd_store2")
-   (set_attr "type" "logic_reg,mov_reg,f_mcr,f_mrc,fconstd,fconstd,\
+   (set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,fconstd,fconstd,\
                      f_loadd,f_stored,f_loadd,f_stored")
    (set_attr "mode" "DF,DF,DF,DF,DF,DF,TF,TF,DF,DF")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4")
