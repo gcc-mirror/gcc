@@ -1,3 +1,7 @@
+2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage2.adb: New test.
+
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/table-intrinsics.c
