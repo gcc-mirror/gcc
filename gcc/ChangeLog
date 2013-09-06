@@ -1,5 +1,18 @@
 2013-09-06  Jan Hubicka  <jh@suse.cz>
 
+	PR tree-optimization/58311
+	* ipa-devirt.c (gate_ipa_devirt): Only execute when optimizing.
+
+2013-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* Makefile.in (tree-sra.o): Update dependencies.
+	* tree-sra.c: Include ipa-utils.h
+	(scan_function): Use recursive_call_p.
+	(has_caller_p): New function.
+	(cgraph_for_node_and_aliases): Count also callers of aliases.
+
+2013-09-06  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/58094
 	* cgraph.h (symtab_semantically_equivalent_p): Declare.
 	* tree-tailcall.c: Include ipa-utils.h.
