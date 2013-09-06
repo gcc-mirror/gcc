@@ -1106,11 +1106,48 @@ symtab_nonoverwritable_alias (symtab_node node)
     {
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
       DECL_STATIC_DESTRUCTOR (new_decl) = 0;
-      new_node = (symtab_node) cgraph_create_function_alias (new_decl, node->symbol.decl);
+      new_node = (symtab_node) cgraph_create_function_alias
+				 (new_decl, node->symbol.decl);
     }
   else
-    new_node = (symtab_node) varpool_create_variable_alias (new_decl, node->symbol.decl);
+    new_node = (symtab_node) varpool_create_variable_alias (new_decl,
+							    node->symbol.decl);
   symtab_resolve_alias (new_node, node);  
+  gcc_assert (decl_binds_to_current_def_p (new_decl));
   return new_node;
+}
+
+/* Return true if A and B represents semantically equivalent symbols.  */
+
+bool
+symtab_semantically_equivalent_p (symtab_node a,
+				  symtab_node b)
+{
+  enum availability avail;
+  symtab_node ba, bb;
+
+  /* Equivalent functions are equivalent.  */
+  if (a->symbol.decl == b->symbol.decl)
+    return true;
+
+  /* If symbol is not overwritable by different implementation,
+     walk to the base object it defines.  */
+  ba = symtab_alias_ultimate_target (a, &avail);
+  if (avail >= AVAIL_AVAILABLE)
+    {
+      if (ba == b)
+	return true;
+    }
+  else
+    ba = a;
+  bb = symtab_alias_ultimate_target (b, &avail);
+  if (avail >= AVAIL_AVAILABLE)
+    {
+      if (a == bb)
+	return true;
+    }
+  else
+    bb = b;
+  return bb == ba;
 }
 #include "gt-symtab.h"

@@ -791,3 +791,14 @@ ipa_merge_profiles (struct cgraph_node *dst,
   src->symbol.decl = oldsrcdecl;
 }
 
+/* Return true if call to DEST is known to be self-recusive call withing FUNC.   */
+
+bool
+recursive_call_p (tree func, tree dest)
+{
+  struct cgraph_node *dest_node = cgraph_get_create_node (dest);
+  struct cgraph_node *cnode = cgraph_get_create_node (func);
+
+  return symtab_semantically_equivalent_p ((symtab_node)dest_node,
+					   (symtab_node)cnode);
+}
