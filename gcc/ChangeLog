@@ -1,3 +1,8 @@
+2013-09-06  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/arm_neon.h: Fix all vdup<bhsd_lane<q> intrinsics to
+	have the correct lane parameter.
+
 2013-09-06  Richard Biener <rguenther@suse.de>
 
 	* cfganal.c (control_dependences::~control_dependences):
