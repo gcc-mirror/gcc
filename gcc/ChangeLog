@@ -1,3 +1,8 @@
+2013-09-06 Claudiu Zissulescu <claziss@synopsys.com>
+
+	* resource.c (mark_target_live_regs): Compute resources taking
+	into account if a call is predicated or not.
+
 2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* toplev.c (output_stack_usage): Be prepared for suffixes created by
