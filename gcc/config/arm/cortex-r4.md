@@ -101,7 +101,8 @@
   (and (eq_attr "tune_cortexr4" "yes")
        (eq_attr "type" "alu_shift_reg,alus_shift_reg,\
                        logic_shift_reg,logics_shift_reg,\
-                       mov_shift_reg,mvn_shift_reg"))
+                       mov_shift_reg,mvn_shift_reg,\
+                       multiple,no_insn"))
   "cortex_r4_alu_shift_reg")
 
 ;; An ALU instruction followed by an ALU instruction with no early dep.

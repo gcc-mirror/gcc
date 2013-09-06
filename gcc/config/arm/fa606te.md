@@ -72,7 +72,8 @@
                        alu_shift_reg,alus_shift_reg,\
                        logic_shift_reg,logics_shift_reg,\
                        mov_imm,mov_reg,mov_shift,mov_shift_reg,\
-                       mvn_imm,mvn_reg,mvn_shift,mvn_shift_reg"))
+                       mvn_imm,mvn_reg,mvn_shift,mvn_shift_reg,\
+                       multiple,no_insn"))
  "fa606te_core")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

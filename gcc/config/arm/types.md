@@ -105,10 +105,14 @@
 ; mov_shift_reg      simple MOV instruction, shifted operand by a register.
 ; mul                integer multiply.
 ; muls               integer multiply, flag setting.
+; multiple           more than one instruction, candidate for future
+;                    splitting, or better modeling.
 ; mvn_imm            inverting move instruction, immediate.
 ; mvn_reg            inverting move instruction, register.
 ; mvn_shift          inverting move instruction, shifted operand by a constant.
 ; mvn_shift_reg      inverting move instruction, shifted operand by a register.
+; no_insn            an insn which does not represent an instruction in the
+;                    final output, thus having no impact on scheduling.
 ; rbit               reverse bits.
 ; rev                reverse bytes.
 ; sdiv               signed division.
@@ -150,6 +154,8 @@
 ; umlals             unsigned multiply accumulate long, flag setting.
 ; umull              unsigned multiply long.
 ; umulls             unsigned multiply long, flag setting.
+; untyped            insn without type information - default, and error,
+;                    case.
 ;
 ; The classification below is for instructions used by the Wireless MMX
 ; Technology. Each attribute value is used to classify an instruction of the
@@ -301,6 +307,7 @@
   branch,\
   call,\
   clz,\
+  no_insn,\
   csel,\
   extend,\
   f_cvt,\
@@ -360,10 +367,12 @@
   mov_shift_reg,\
   mul,\
   muls,\
+  multiple,\
   mvn_imm,\
   mvn_reg,\
   mvn_shift,\
   mvn_shift_reg,\
+  nop,\
   rbit,\
   rev,\
   sdiv,\
@@ -403,6 +412,7 @@
   umlals,\
   umull,\
   umulls,\
+  untyped,\
   wmmx_tandc,\
   wmmx_tbcst,\
   wmmx_textrc,\
@@ -524,7 +534,7 @@
   neon_vst2_4_regs_vst3_vst4,\
   neon_vst3_vst4_lane,\
   neon_vst3_vst4"
-    (const_string "alu_imm"))
+    (const_string "untyped"))
 
 ; Is this an (integer side) multiply with a 32-bit (or smaller) result?
 (define_attr "mul32" "no,yes"

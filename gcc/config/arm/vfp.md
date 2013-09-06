@@ -144,7 +144,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "*,*,*,*,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
+  [(set_attr "type" "multiple,multiple,multiple,multiple,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "1,4,5,6") (const_int 8)
                               (eq_attr "alternative" "2") (const_int 12)
                               (eq_attr "alternative" "3") (const_int 16)
@@ -192,7 +192,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "*,*,*,*,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
+  [(set_attr "type" "multiple,multiple,multiple,multiple,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "1") (const_int 8)
                                (eq_attr "alternative" "2") (const_int 12)
                                (eq_attr "alternative" "3") (const_int 16)
@@ -261,7 +261,7 @@
   "
   [(set_attr "conds" "unconditional")
    (set_attr "type" "neon_vld1_1_2_regs,neon_vst1_1_2_regs_vst2_2_regs,\
-                     load1,store1,fcpys,*,f_mcr,f_mrc,*")
+                     load1,store1,fcpys,mov_reg,f_mcr,f_mrc,multiple")
    (set_attr "length" "4,4,4,4,4,4,4,4,8")]
 )
 
@@ -311,7 +311,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,fcpys,*,f_mcr,f_mrc,*")
+   (set_attr "type" "load1,store1,fcpys,mov_reg,f_mcr,f_mrc,multiple")
    (set_attr "length" "4,4,4,4,4,4,8")]
 )
 
@@ -429,7 +429,7 @@
     }
   "
   [(set_attr "type" "f_mcrr,f_mrrc,fconstd,f_loadd,f_stored,\
-                     load2,store2,ffarithd,*")
+                     load2,store2,ffarithd,multiple")
    (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
@@ -474,7 +474,7 @@
     }
   "
   [(set_attr "type" "f_mcrr,f_mrrc,fconstd,f_loadd,\
-                     f_stored,load2,store2,ffarithd,*")
+                     f_stored,load2,store2,ffarithd,multiple")
    (set (attr "length") (cond [(eq_attr "alternative" "5,6,8") (const_int 8)
 			       (eq_attr "alternative" "7")
 				(if_then_else
@@ -578,7 +578,7 @@
    ite\\t%D3\;fmrrd%D3\\t%Q0, %R0, %P2\;fmrrd%d3\\t%Q0, %R0, %P1"
    [(set_attr "conds" "use")
     (set_attr "length" "6,6,10,6,6,10,6,6,10")
-    (set_attr "type" "ffarithd,ffarithd,ffarithd,f_mcr,f_mcr,f_mcr,f_mrrc,f_mrrc,f_mrrc")]
+    (set_attr "type" "ffarithd,ffarithd,ffarithd,f_mcr,f_mcr,f_mcrr,f_mrrc,f_mrrc,f_mrrc")]
 )
 
 
