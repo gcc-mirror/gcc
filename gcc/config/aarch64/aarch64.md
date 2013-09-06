@@ -3685,7 +3685,7 @@
   "TARGET_FLOAT"
   "fcvt<frint_suffix><su>\\t%<GPI:w>0, %<GPF:s>1"
   [(set_attr "v8type" "fcvtf2i")
-   (set_attr "type" "f_cvt")
+   (set_attr "type" "f_cvtf2i")
    (set_attr "mode" "<GPF:MODE>")
    (set_attr "mode2" "<GPI:MODE>")]
 )
@@ -3785,7 +3785,7 @@
   "TARGET_FLOAT"
   "fcvtzs\\t%<GPI:w>0, %<GPF:s>1"
   [(set_attr "v8type" "fcvtf2i")
-   (set_attr "type" "f_cvt")
+   (set_attr "type" "f_cvtf2i")
    (set_attr "mode" "<GPF:MODE>")
    (set_attr "mode2" "<GPI:MODE>")]
 )
@@ -3796,7 +3796,7 @@
   "TARGET_FLOAT"
   "fcvtzu\\t%<GPI:w>0, %<GPF:s>1"
   [(set_attr "v8type" "fcvtf2i")
-   (set_attr "type" "f_cvt")
+   (set_attr "type" "f_cvtf2i")
    (set_attr "mode" "<GPF:MODE>")
    (set_attr "mode2" "<GPI:MODE>")]
 )
@@ -3807,7 +3807,7 @@
   "TARGET_FLOAT"
   "scvtf\\t%<GPF:s>0, %<GPI:w>1"
   [(set_attr "v8type" "fcvti2f")
-   (set_attr "type" "f_cvt")
+   (set_attr "type" "f_cvti2f")
    (set_attr "mode" "<GPF:MODE>")
    (set_attr "mode2" "<GPI:MODE>")]
 )

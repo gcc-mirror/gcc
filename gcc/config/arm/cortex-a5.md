@@ -168,7 +168,8 @@
 
 (define_insn_reservation "cortex_a5_fpalu" 4
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fcpys, fmuls, f_cvt,\
+       (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fcpys, fmuls,\
+                        f_cvt,f_cvtf2i,f_cvti2f,\
 			fcmps, fcmpd"))
   "cortex_a5_ex1+cortex_a5_fpadd_pipe")
 

@@ -55,7 +55,9 @@
 ; clz                count leading zeros (CLZ).
 ; csel               From ARMv8-A: conditional select.
 ; extend             extend instruction (SXTB, SXTH, UXTB, UXTH).
-; f_cvt              conversion between float and integral.
+; f_cvt              conversion between float representations.
+; f_cvtf2i           conversion between float and integral types.
+; f_cvti2f           conversion between integral and float types.
 ; f_flag             transfer of co-processor flags to the CPSR.
 ; f_load[d,s]        double/single load from memory.  Used for VFP unit.
 ; f_mcr              transfer arm to vfp reg.
@@ -311,6 +313,8 @@
   csel,\
   extend,\
   f_cvt,\
+  f_cvtf2i,\
+  f_cvti2f,\
   f_flag,\
   f_loadd,\
   f_loads,\

@@ -991,7 +991,7 @@
   "ftosizs%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvtf2i")]
 )
 
 (define_insn "*truncsidf2_vfp"
@@ -1001,7 +1001,7 @@
   "ftosizd%?\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvtf2i")]
 )
 
 
@@ -1012,7 +1012,7 @@
   "ftouizs%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvtf2i")]
 )
 
 (define_insn "fixuns_truncdfsi2"
@@ -1022,7 +1022,7 @@
   "ftouizd%?\\t%0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvtf2i")]
 )
 
 
@@ -1033,7 +1033,7 @@
   "fsitos%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvti2f")]
 )
 
 (define_insn "*floatsidf2_vfp"
@@ -1043,7 +1043,7 @@
   "fsitod%?\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvti2f")]
 )
 
 
@@ -1054,7 +1054,7 @@
   "fuitos%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvti2f")]
 )
 
 (define_insn "floatunssidf2"
@@ -1064,7 +1064,7 @@
   "fuitod%?\\t%P0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "f_cvt")]
+   (set_attr "type" "f_cvti2f")]
 )
 
 
@@ -1229,7 +1229,7 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP3 && !flag_rounding_math"
   "vcvt.f32.<FCVTI32typename>\\t%0, %1, %v2"
  [(set_attr "predicable" "no")
-  (set_attr "type" "f_cvt")]
+  (set_attr "type" "f_cvti2f")]
 )
 
 ;; Not the ideal way of implementing this. Ideally we would be able to split
@@ -1246,7 +1246,7 @@
   vmov.f32\\t%0, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2
   vmov.f64\\t%P0, %1, %1\;vcvt.f64.<FCVTI32typename>\\t%P0, %P0, %v2"
  [(set_attr "predicable" "no")
-  (set_attr "type" "f_cvt")
+  (set_attr "type" "f_cvti2f")
   (set_attr "length" "8")]
 )
 

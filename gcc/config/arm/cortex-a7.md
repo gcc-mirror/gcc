@@ -205,7 +205,7 @@
 (define_insn_reservation "cortex_a7_fpalu" 4
   (and (eq_attr "tune" "cortexa7")
        (eq_attr "type" "ffariths, fadds, ffarithd, faddd, fcpys,\
-                        f_cvt, fcmps, fcmpd"))
+                        f_cvt, f_cvtf2i, f_cvti2f, fcmps, fcmpd"))
   "cortex_a7_ex1+cortex_a7_fpadd_pipe")
 
 ;; For fconsts and fconstd, 8-bit immediate data is passed directly from

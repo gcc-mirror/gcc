@@ -56,7 +56,8 @@
 
 (define_insn_reservation "vfp_farith" 8
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fadds,faddd,fconsts,fconstd,f_cvt,fmuls,fmacs,ffmas"))
+      (eq_attr "type" "fadds,faddd,fconsts,fconstd,f_cvt,f_cvtf2i,f_cvti2f,\
+                       fmuls,fmacs,ffmas"))
  "fmac")
 
 (define_insn_reservation "vfp_fmul" 9
