@@ -2281,7 +2281,7 @@
   ""
   "madd\\t%<w>0, %<w>1, %<w>2, %<w>3"
   [(set_attr "v8type" "madd")
-   (set_attr "type" "mul")
+   (set_attr "type" "mla")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -2295,7 +2295,7 @@
   ""
   "madd\\t%w0, %w1, %w2, %w3"
   [(set_attr "v8type" "madd")
-   (set_attr "type" "mul")
+   (set_attr "type" "mla")
    (set_attr "mode" "SI")]
 )
 
@@ -2308,7 +2308,7 @@
   ""
   "msub\\t%<w>0, %<w>1, %<w>2, %<w>3"
   [(set_attr "v8type" "madd")
-   (set_attr "type" "mul")
+   (set_attr "type" "mla")
    (set_attr "mode" "<MODE>")]
 )
 
@@ -2323,7 +2323,7 @@
   ""
   "msub\\t%w0, %w1, %w2, %w3"
   [(set_attr "v8type" "madd")
-   (set_attr "type" "mul")
+   (set_attr "type" "mla")
    (set_attr "mode" "SI")]
 )
 
@@ -2373,7 +2373,7 @@
   ""
   "<su>maddl\\t%0, %w1, %w2, %3"
   [(set_attr "v8type" "maddl")
-   (set_attr "type" "mul")
+   (set_attr "type" "<su>mlal")
    (set_attr "mode" "DI")]
 )
 
@@ -2387,7 +2387,7 @@
   ""
   "<su>msubl\\t%0, %w1, %w2, %3"
   [(set_attr "v8type" "maddl")
-   (set_attr "type" "mul")
+   (set_attr "type" "<su>mlal")
    (set_attr "mode" "DI")]
 )
 
