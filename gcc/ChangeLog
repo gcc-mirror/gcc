@@ -1,5 +1,13 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md
+	(*movtf_aarch64): Use neon_<ls>dm_2 as type where v8type
+	is fpsimd_<load/store>2.
+	(load_pair<mode>): Likewise.
+	(store_pair<mode>): Likewise.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types.md (type): Add "mrs" type.
 	* config/aarch64/aarch64.md
 	(aarch64_load_tp_hard): Make type "mrs".
