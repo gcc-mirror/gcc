@@ -1,5 +1,38 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/types.md
+	(type): Split f_cvt as f_cvt, f_cvtf2i, f_cvti2f.
+	* config/aarch64/aarch64.md
+	(l<fcvt_pattern><su_optab><GPF:mode><GPI:mode>2): Update with
+	new attributes.
+	(fix_trunc<GPF:mode><GPI:mode>2): Likewise.
+	(fixuns_trunc<GPF:mode><GPI:mode>2): Likewise.
+	(float<GPI:mode><GPF:mode>2): Likewise.
+	* config/arm/vfp.md
+	(*truncsisf2_vfp): Update with new attributes.
+	(*truncsidf2_vfp): Likewise.
+	(fixuns_truncsfsi2): Likewise.
+	(fixuns_truncdfsi2): Likewise.
+	(*floatsisf2_vfp): Likewise.
+	(*floatsidf2_vfp): Likewise.
+	(floatunssisf2): Likewise.
+	(floatunssidf2): Likewise.
+	(*combine_vcvt_f32_<FCVTI32typename>): Likewise.
+	(*combine_vcvt_f64_<FCVTI32typename>): Likewise.
+	* config/arm/arm1020e.md: Update with new attributes.
+	* config/arm/cortex-a15-neon.md: Update with new attributes.
+	* config/arm/cortex-a5.md: Update with new attributes.
+	* config/arm/cortex-a53.md: Update with new attributes.
+	* config/arm/cortex-a7.md: Update with new attributes.
+	* config/arm/cortex-a8-neon.md: Update with new attributes.
+	* config/arm/cortex-a9.md: Update with new attributes.
+	* config/arm/cortex-m4-fpu.md: Update with new attributes.
+	* config/arm/cortex-r4f.md: Update with new attributes.
+	* config/arm/marvell-pj4.md: Update with new attributes.
+	* config/arm/vfp11.md: Update with new attributes.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/arm_neon.h
 	(vqtbl<1,2,3,4><q>_s8): Fix control vector parameter type.
 	(vqtbx<1,2,3,4><q>_s8): Likewise.

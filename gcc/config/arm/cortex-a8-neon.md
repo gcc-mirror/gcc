@@ -177,7 +177,7 @@
 
 (define_insn_reservation "cortex_a8_vfp_cvt" 7
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "f_cvt"))
+       (eq_attr "type" "f_cvt,f_cvtf2i,f_cvti2f"))
   "cortex_a8_vfp,cortex_a8_vfplite*6")
 
 ;; NEON -> core transfers.

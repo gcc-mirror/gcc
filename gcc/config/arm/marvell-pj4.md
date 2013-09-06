@@ -209,7 +209,8 @@
 (define_insn_reservation "pj4_vfp_cpy"  4
   (and (eq_attr "tune" "marvell_pj4")
        (eq_attr "type" "fcpys,ffariths,ffarithd,fconsts,fconstd,\
-                        fcmps,fcmpd,f_cvt"))  "pj4_is,nothing*2,vissue,vfast,nothing*2")
+                        fcmps,fcmpd,f_cvt,f_cvtf2i,f_cvti2f"))
+"pj4_is,nothing*2,vissue,vfast,nothing*2")
 
 ;; Enlarge latency, and wish that more nondependent insns are
 ;; scheduled immediately after VFP load.

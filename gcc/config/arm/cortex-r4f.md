@@ -146,7 +146,7 @@
 
 (define_insn_reservation "cortex_r4_f_cvt" 8
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "f_cvt"))
+      (eq_attr "type" "f_cvt,f_cvtf2i,f_cvti2f"))
  "cortex_r4_single_issue*3")
 
 (define_insn_reservation "cortex_r4_f_memd" 8

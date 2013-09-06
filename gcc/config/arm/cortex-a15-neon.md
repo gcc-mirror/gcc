@@ -471,7 +471,7 @@
 
 (define_insn_reservation "cortex_a15_vfp_cvt" 6
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "f_cvt"))
+       (eq_attr "type" "f_cvt,f_cvtf2i,f_cvti2f"))
   "ca15_issue1,ca15_cx_vfp")
 
 (define_insn_reservation "cortex_a15_vfp_cmpd" 8
