@@ -431,7 +431,7 @@ control_dependences::control_dependences (struct edge_list *edges)
 
 control_dependences::~control_dependences ()
 {
-  for (int i = 0; i < last_basic_block; ++i)
+  for (unsigned i = 0; i < control_dependence_map.length (); ++i)
     BITMAP_FREE (control_dependence_map[i]);
   control_dependence_map.release ();
   free_edge_list (el);
