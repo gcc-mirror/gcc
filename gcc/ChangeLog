@@ -1,3 +1,8 @@
+2013-09-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate
+	edge implied equivalences into successor phis.
+
 2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* resource.c (mark_referenced_resources): Handle COND_EXEC.
