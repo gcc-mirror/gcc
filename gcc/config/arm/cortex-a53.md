@@ -72,7 +72,8 @@
                         adc_imm,adcs_imm,adc_reg,adcs_reg,\
                         adr,bfm,csel,rev,\
                         shift_imm,shift_reg,\
-                        mov_imm,mov_reg,mvn_imm,mvn_reg"))
+                        mov_imm,mov_reg,mvn_imm,mvn_reg,\
+                        multiple,no_insn"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift" 2
@@ -81,7 +82,7 @@
                         logic_shift_imm,logics_shift_imm,\
                         alu_shift_reg,alus_shift_reg,\
                         logic_shift_reg,logics_shift_reg,\
-                        mov_shift,mov_shift_reg,\
+                        extend,mov_shift,mov_shift_reg,\
                         mvn_shift,mvn_shift_reg"))
   "cortex_a53_slot_any")
 

@@ -66,7 +66,8 @@
                        logic_shift_imm,logics_shift_imm,\
                        shift_imm,shift_reg,extend,\
                        mov_imm,mov_reg,mov_shift,\
-                       mvn_imm,mvn_reg,mvn_shift"))
+                       mvn_imm,mvn_reg,mvn_shift,\
+                       multiple,no_insn"))
  "e,m,w")
 
 ;; ALU operations with a shift-by-register operand

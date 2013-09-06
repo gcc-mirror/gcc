@@ -1,5 +1,269 @@
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/arm/types.md: Add "no_insn", "multiple" and "untyped"
+	types.
+	* config/arm/arm-fixed.md: Add type attribute to all insn
+	patterns.
+	(add<mode>3): Add type attribute.
+	(add<mode>3): Likewise.
+	(usadd<mode>3): Likewise.
+	(ssadd<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(sub<mode>3): Likewise.
+	(ussub<mode>3): Likewise.
+	(sssub<mode>3): Likewise.
+	(ssmulsa3): Likewise.
+	(usmulusa3): Likewise.
+	(arm_usatsihi): Likewise.
+	* config/arm/vfp.md
+	(*movdi_vfp): Add types for all instructions.
+	(*movdi_vfp_cortexa8): Likewise.
+	(*movhf_vfp_neon): Likewise.
+	(*movhf_vfp): Likewise.
+	(*movdf_vfp): Likewise.
+	(*thumb2_movdf_vfp): Likewise.
+	(*thumb2_movdfcc_vfp): Likewise.
+	* config/arm/arm.md: Add type attribute to all insn patterns.
+	(*thumb1_adddi3): Add type attribute.
+	(*arm_adddi3): Likewise.
+	(*adddi_sesidi_di): Likewise.
+	(*adddi_zesidi_di): Likewise.
+	(*thumb1_addsi3): Likewise.
+	(addsi3_compare0): Likewise.
+	(*addsi3_compare0_scratch): Likewise.
+	(*compare_negsi_si): Likewise.
+	(cmpsi2_addneg): Likewise.
+	(*addsi3_carryin_<optab>): Likewise.
+	(*addsi3_carryin_alt2_<optab>): Likewise.
+	(*addsi3_carryin_clobercc_<optab>): Likewise.
+	(*subsi3_carryin): Likewise.
+	(*subsi3_carryin_const): Likewise.
+	(*subsi3_carryin_compare): Likewise.
+	(*subsi3_carryin_compare_const): Likewise.
+	(*arm_subdi3): Likewise.
+	(*thumb_subdi3): Likewise.
+	(*subdi_di_zesidi): Likewise.
+	(*subdi_di_sesidi): Likewise.
+	(*subdi_zesidi_di): Likewise.
+	(*subdi_sesidi_di): Likewise.
+	(*subdi_zesidi_ze): Likewise.
+	(thumb1_subsi3_insn): Likewise.
+	(*arm_subsi3_insn): Likewise.
+	(*anddi3_insn): Likewise.
+	(*anddi_zesidi_di): Likewise.
+	(*anddi_sesdi_di): Likewise.
+	(*ne_zeroextracts): Likewise.
+	(*ne_zeroextracts): Likewise.
+	(*ite_ne_zeroextr): Likewise.
+	(*ite_ne_zeroextr): Likewise.
+	(*anddi_notdi_di): Likewise.
+	(*anddi_notzesidi): Likewise.
+	(*anddi_notsesidi): Likewise.
+	(andsi_notsi_si): Likewise.
+	(thumb1_bicsi3): Likewise.
+	(*iordi3_insn): Likewise.
+	(*iordi_zesidi_di): Likewise.
+	(*iordi_sesidi_di): Likewise.
+	(*thumb1_iorsi3_insn): Likewise.
+	(*xordi3_insn): Likewise.
+	(*xordi_zesidi_di): Likewise.
+	(*xordi_sesidi_di): Likewise.
+	(*arm_xorsi3): Likewise.
+	(*andsi_iorsi3_no): Likewise.
+	(*smax_0): Likewise.
+	(*smax_m1): Likewise.
+	(*arm_smax_insn): Likewise.
+	(*smin_0): Likewise.
+	(*arm_smin_insn): Likewise.
+	(*arm_umaxsi3): Likewise.
+	(*arm_uminsi3): Likewise.
+	(*minmax_arithsi): Likewise.
+	(*minmax_arithsi_): Likewise.
+	(*satsi_<SAT:code>): Likewise.
+	(arm_ashldi3_1bit): Likewise.
+	(arm_ashrdi3_1bit): Likewise.
+	(arm_lshrdi3_1bit): Likewise.
+	(*arm_negdi2): Likewise.
+	(*thumb1_negdi2): Likewise.
+	(*arm_negsi2): Likewise.
+	(*thumb1_negsi2): Likewise.
+	(*negdi_extendsid): Likewise.
+	(*negdi_zero_extend): Likewise.
+	(*arm_abssi2): Likewise.
+	(*thumb1_abssi2): Likewise.
+	(*arm_neg_abssi2): Likewise.
+	(*thumb1_neg_abss): Likewise.
+	(one_cmpldi2): Likewise.
+	(extend<mode>di2): Likewise.
+	(*compareqi_eq0): Likewise.
+	(*arm_extendhisi2addsi): Likewise.
+	(*arm_movdi): Likewise.
+	(*thumb1_movdi_insn): Likewise.
+	(*arm_movt): Likewise.
+	(*thumb1_movsi_insn): Likewise.
+	(pic_add_dot_plus_four): Likewise.
+	(pic_add_dot_plus_eight): Likewise.
+	(tls_load_dot_plus_eight): Likewise.
+	(*thumb1_movhi_insn): Likewise.
+	(*thumb1_movsf_insn): Likewise.
+	(*movdf_soft_insn): Likewise.
+	(*thumb_movdf_insn): Likewise.
+	(cbranchsi4_insn): Likewise.
+	(cbranchsi4_scratch): Likewise.
+	(*negated_cbranchsi4): Likewise.
+	(*tbit_cbranch): Likewise.
+	(*tlobits_cbranch): Likewise.
+	(*tstsi3_cbranch): Likewise.
+	(*cbranchne_decr1): Likewise.
+	(*addsi3_cbranch): Likewise.
+	(*addsi3_cbranch_scratch): Likewise.
+	(*arm_cmpdi_insn): Likewise.
+	(*arm_cmpdi_unsig): Likewise.
+	(*arm_cmpdi_zero): Likewise.
+	(*thumb_cmpdi_zero): Likewise.
+	(*deleted_compare): Likewise.
+	(*mov_scc): Likewise.
+	(*mov_negscc): Likewise.
+	(*mov_notscc): Likewise.
+	(*cstoresi_eq0_thumb1_insn): Likewise.
+	(cstoresi_nltu_thumb1): Likewise.
+	(cstoresi_ltu_thu): Likewise.
+	(thumb1_addsi3_addgeu): Likewise.
+	(*arm_jump): Likewise.
+	(*thumb_jump): Likewise.
+	(*check_arch2): Likewise.
+	(arm_casesi_internal): Likewise.
+	(thumb1_casesi_dispatch): Likewise.
+	(*arm_indirect_jump): Likewise.
+	(*thumb1_indirect_jump): Likewise.
+	(nop): Likewise.
+	(*and_scc): Likewise.
+	(*ior_scc): Likewise.
+	(*compare_scc): Likewise.
+	(*cond_move): Likewise.
+	(*cond_arith): Likewise.
+	(*cond_sub): Likewise.
+	(*cmp_ite0): Likewise.
+	(*cmp_ite1): Likewise.
+	(*cmp_and): Likewise.
+	(*cmp_ior): Likewise.
+	(*ior_scc_scc): Likewise.
+	(*ior_scc_scc_cmp): Likewise.
+	(*and_scc_scc): Likewise.
+	(*and_scc_scc_cmp): Likewise.
+	(*and_scc_scc_nod): Likewise.
+	(*negscc): Likewise.
+	(movcond_addsi): Likewise.
+	(movcond): Likewise.
+	(*ifcompare_plus_move): Likewise.
+	(*if_plus_move): Likewise.
+	(*ifcompare_move_plus): Likewise.
+	(*if_move_plus): Likewise.
+	(*ifcompare_arith_arith): Likewise.
+	(*if_arith_arith): Likewise.
+	(*ifcompare_arith_move): Likewise.
+	(*if_arith_move): Likewise.
+	(*ifcompare_move_arith): Likewise.
+	(*if_move_arith): Likewise.
+	(*ifcompare_move_not): Likewise.
+	(*if_move_not): Likewise.
+	(*ifcompare_not_move): Likewise.
+	(*if_not_move): Likewise.
+	(*ifcompare_shift_move): Likewise.
+	(*if_shift_move): Likewise.
+	(*ifcompare_move_shift): Likewise.
+	(*if_move_shift): Likewise.
+	(*ifcompare_shift_shift): Likewise.
+	(*ifcompare_not_arith): Likewise.
+	(*ifcompare_arith_not): Likewise.
+	(*if_arith_not): Likewise.
+	(*ifcompare_neg_move): Likewise.
+	(*if_neg_move): Likewise.
+	(*ifcompare_move_neg): Likewise.
+	(*if_move_neg): Likewise.
+	(prologue_thumb1_interwork): Likewise.
+	(*cond_move_not): Likewise.
+	(*sign_extract_onebit): Likewise.
+	(*not_signextract_onebit): Likewise.
+	(stack_tie): Likewise.
+	(align_4): Likewise.
+	(align_8): Likewise.
+	(consttable_end): Likewise.
+	(consttable_1): Likewise.
+	(consttable_2): Likewise.
+	(consttable_4): Likewise.
+	(consttable_8): Likewise.
+	(consttable_16): Likewise.
+	(*thumb1_tablejump): Likewise.
+	(prefetch): Likewise.
+	(force_register_use): Likewise.
+	(thumb_eh_return): Likewise.
+	(load_tp_hard): Likewise.
+	(load_tp_soft): Likewise.
+	(tlscall): Likewise.
+	(*arm_movtas_ze): Likewise.
+	(*arm_rev): Likewise.
+	(*arm_revsh): Likewise.
+	(*arm_rev16): Likewise.
+	* config/arm/thumb2.md
+	(*thumb2_smaxsi3): Likewise.
+	(*thumb2_sminsi3): Likewise.
+	(*thumb32_umaxsi3): Likewise.
+	(*thumb2_uminsi3): Likewise.
+	(*thumb2_negdi2): Likewise.
+	(*thumb2_abssi2): Likewise.
+	(*thumb2_neg_abss): Likewise.
+	(*thumb2_movsi_insn): Likewise.
+	(tls_load_dot_plus_four): Likewise.
+	(*thumb2_movhi_insn): Likewise.
+	(*thumb2_mov_scc): Likewise.
+	(*thumb2_mov_negs): Likewise.
+	(*thumb2_mov_negs): Likewise.
+	(*thumb2_mov_nots): Likewise.
+	(*thumb2_mov_nots): Likewise.
+	(*thumb2_movsicc_): Likewise.
+	(*thumb2_movsfcc_soft_insn): Likewise.
+	(*thumb2_indirect_jump): Likewise.
+	(*thumb2_and_scc): Likewise.
+	(*thumb2_ior_scc): Likewise.
+	(*thumb2_ior_scc_strict_it): Likewise.
+	(*thumb2_cond_move): Likewise.
+	(*thumb2_cond_arith): Likewise.
+	(*thumb2_cond_ari): Likewise.
+	(*thumb2_cond_sub): Likewise.
+	(*thumb2_negscc): Likewise.
+	(*thumb2_movcond): Likewise.
+	(thumb2_casesi_internal): Likewise.
+	(thumb2_casesi_internal_pic): Likewise.
+	(*thumb2_alusi3_short): Likewise.
+	(*thumb2_mov<mode>_shortim): Likewise.
+	(*thumb2_addsi_short): Likewise.
+	(*thumb2_subsi_short): Likewise.
+	(thumb2_addsi3_compare0): Likewise.
+	(*thumb2_cbz): Likewise.
+	(*thumb2_cbnz): Likewise.
+	(*thumb2_one_cmplsi2_short): Likewise.
+	(*thumb2_negsi2_short): Likewise.
+	(*orsi_notsi_si): Likewise.
+	* config/arm/arm1020e.md: Update with new attributes.
+	* config/arm/arm1026ejs.md: Update with new attributes.
+	* config/arm/arm1136jfs.md: Update with new attributes.
+	* config/arm/arm926ejs.md: Update with new attributes.
+	* config/arm/cortex-a15.md: Update with new attributes.
+	* config/arm/cortex-a5.md: Update with new attributes.
+	* config/arm/cortex-a53.md: Update with new attributes.
+	* config/arm/cortex-a7.md: Update with new attributes.
+	* config/arm/cortex-a8.md: Update with new attributes.
+	* config/arm/cortex-a9.md: Update with new attributes.
+	* config/arm/cortex-m4.md: Update with new attributes.
+	* config/arm/cortex-r4.md: Update with new attributes.
+	* config/arm/fa526.md: Update with new attributes.
+	* config/arm/fa606te.md: Update with new attributes.
+	* config/arm/fa626te.md: Update with new attributes.
+	* config/arm/fa726te.md: Update with new attributes.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-simd.md
 	(aarch64_sqdml<SBINQOPS:as>l_n<mode>_internal): Use
 	<vwx> iterator to ensure correct register choice.

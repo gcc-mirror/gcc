@@ -25,7 +25,8 @@
   "TARGET_32BIT"
   "add%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "yes,no")])
+   (set_attr "predicable_short_it" "yes,no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "add<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
@@ -34,7 +35,8 @@
   "TARGET_INT_SIMD"
   "sadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "usadd<mode>3"
   [(set (match_operand:UQADDSUB 0 "s_register_operand" "=r")
@@ -43,7 +45,8 @@
   "TARGET_INT_SIMD"
   "uqadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "ssadd<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
@@ -52,7 +55,8 @@
   "TARGET_INT_SIMD"
   "qadd<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:FIXED 0 "s_register_operand" "=l,r")
@@ -61,7 +65,8 @@
   "TARGET_32BIT"
   "sub%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "yes,no")])
+   (set_attr "predicable_short_it" "yes,no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:ADDSUB 0 "s_register_operand" "=r")
@@ -70,7 +75,8 @@
   "TARGET_INT_SIMD"
   "ssub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "ussub<mode>3"
   [(set (match_operand:UQADDSUB 0 "s_register_operand" "=r")
@@ -80,7 +86,8 @@
   "TARGET_INT_SIMD"
   "uqsub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_reg")])
 
 (define_insn "sssub<mode>3"
   [(set (match_operand:QADDSUB 0 "s_register_operand" "=r")
@@ -89,7 +96,8 @@
   "TARGET_INT_SIMD"
   "qsub<qaddsub_suf>%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")])
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_reg")])
 
 ;; Fractional multiplies.
 
@@ -246,6 +254,7 @@
   return "";
 }
   [(set_attr "conds" "clob")
+   (set_attr "type" "multiple")
    (set (attr "length")
 	(if_then_else (eq_attr "is_thumb" "yes")
 		      (if_then_else (match_test "arm_restrict_it")
@@ -305,6 +314,7 @@
   return "";
 }
   [(set_attr "conds" "clob")
+   (set_attr "type" "multiple")
    (set (attr "length")
 	(if_then_else (eq_attr "is_thumb" "yes")
 		      (if_then_else (match_test "arm_restrict_it")
@@ -414,5 +424,6 @@
   "TARGET_INT_SIMD"
   "usat%?\\t%0, #16, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")]
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "alu_imm")]
 )
