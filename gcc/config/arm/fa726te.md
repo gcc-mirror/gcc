@@ -91,7 +91,7 @@
                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
                        adr,bfm,rev,\
                        shift_imm,shift_reg,\
-                       multiple,no_insn"))
+                       mrs,multiple,no_insn"))
   "fa726te_issue+(fa726te_alu0_pipe|fa726te_alu1_pipe)")
 
 ;; ALU operations with a shift-by-register operand.

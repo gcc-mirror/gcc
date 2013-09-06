@@ -12453,7 +12453,7 @@
   "TARGET_HARD_TP"
   "mrc%?\\tp15, 0, %0, c13, c0, 3\\t@ load_tp_hard"
   [(set_attr "predicable" "yes")
-   (set_attr "type" "mov_reg")]
+   (set_attr "type" "mrs")]
 )
 
 ;; Doesn't clobber R1-R3.  Must use r0 for the first operand.

@@ -73,7 +73,7 @@
                         adr,bfm,csel,rev,\
                         shift_imm,shift_reg,\
                         mov_imm,mov_reg,mvn_imm,mvn_reg,\
-                        multiple,no_insn"))
+                        mrs,multiple,no_insn"))
   "cortex_a53_slot_any")
 
 (define_insn_reservation "cortex_a53_alu_shift" 2

@@ -64,7 +64,7 @@
                         adr,bfm,rev,\
                         shift_imm,shift_reg,\
                         mov_imm,mov_reg,mvn_imm,mvn_reg,\
-                        multiple,no_insn"))
+                        mrs,multiple,no_insn"))
   "cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_alu_shift" 2
