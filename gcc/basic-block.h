@@ -465,6 +465,23 @@ struct edge_list
   edge *index_to_edge;
 };
 
+/* Class to compute and manage control dependences on an edge-list.  */
+class control_dependences
+{
+public:
+  control_dependences (edge_list *);
+  ~control_dependences ();
+  bitmap get_edges_dependent_on (int);
+  edge get_edge (int);
+
+private:
+  void set_control_dependence_map_bit (basic_block, int);
+  void clear_control_dependence_bitmap (basic_block);
+  void find_control_dependence (int);
+  vec<bitmap> control_dependence_map;
+  edge_list *el;
+};
+
 /* The base value for branch probability notes and edge probabilities.  */
 #define REG_BR_PROB_BASE  10000
 

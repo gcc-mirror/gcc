@@ -1,3 +1,24 @@
+2013-09-06  Richard Biener  <rguenther@suse.de>
+
+	* basic-block.h (class control_dependences): New.
+	* tree-ssa-dce.c (control_dependence_map): Remove.
+	(cd): New global.
+	(EXECUTE_IF_CONTROL_DEPENDENT): Remove.
+	(set_control_dependence_map_bit, clear_control_dependence_bitmap,
+	find_pdom, find_control_dependence, find_all_control_dependences):
+	Move to cfganal.c.
+	(mark_control_dependent_edges_necessary, find_obviously_necessary_stmts,
+	propagate_necessity, tree_dce_init, tree_dce_done,
+	perform_tree_ssa_dce): Adjust.
+	* cfganal.c (set_control_dependence_map_bit,
+	clear_control_dependence_bitmap, find_pdom, find_control_dependence,
+	find_all_control_dependences): Move from tree-ssa-dce.c and
+	implement as methods of control_dependences class.
+	(control_dependences::control_dependences): New.
+	(control_dependences::~control_dependences): Likewise.
+	(control_dependences::get_edges_dependent_on): Likewise.
+	(control_dependences::get_edge): Likewise.
+
 2013-09-04  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (types_same_for_odr): Drop overactive check.
