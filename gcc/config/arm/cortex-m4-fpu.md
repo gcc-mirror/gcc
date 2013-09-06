@@ -30,7 +30,7 @@
 ;; Integer instructions following VDIV or VSQRT complete out-of-order.
 (define_insn_reservation "cortex_m4_fdivs" 15
   (and (eq_attr "tune" "cortexm4")
-       (eq_attr "type" "fdivs"))
+       (eq_attr "type" "fdivs, fsqrts"))
   "cortex_m4_ex_v,cortex_m4_v*13")
 
 (define_insn_reservation "cortex_m4_vmov_1" 1

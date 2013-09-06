@@ -271,12 +271,12 @@ cortex_a9_store3_4, cortex_a9_store1_2,  cortex_a9_load3_4")
 ;; Division pipeline description.
 (define_insn_reservation "cortex_a9_fdivs" 15
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "fdivs"))
+       (eq_attr "type" "fdivs, fsqrts"))
   "ca9fp_ds1 + ca9_issue_vfp_neon, nothing*14")
 
 (define_insn_reservation "cortex_a9_fdivd" 25
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "fdivd"))
+       (eq_attr "type" "fdivd, fsqrtd"))
   "ca9fp_ds1 + ca9_issue_vfp_neon, nothing*24")
 
 ;; Include Neon pipeline description

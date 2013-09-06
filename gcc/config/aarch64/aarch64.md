@@ -3903,7 +3903,7 @@
   "TARGET_FLOAT"
   "fsqrt\\t%<s>0, %<s>1"
   [(set_attr "v8type" "fsqrt")
-   (set_attr "type" "fdiv<s>")
+   (set_attr "type" "fsqrt<s>")
    (set_attr "mode" "<MODE>")]
 )
 

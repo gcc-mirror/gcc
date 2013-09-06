@@ -233,14 +233,14 @@
 
 (define_insn_reservation "cortex_a5_fdivs" 14
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "fdivs"))
+       (eq_attr "type" "fdivs, fsqrts"))
   "cortex_a5_ex1, cortex_a5_fp_div_sqrt * 13")
 
 ;; ??? Similarly for fdivd.
 
 (define_insn_reservation "cortex_a5_fdivd" 29
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "fdivd"))
+       (eq_attr "type" "fdivd, fsqrtd"))
   "cortex_a5_ex1, cortex_a5_fp_div_sqrt * 28")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

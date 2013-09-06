@@ -335,7 +335,6 @@
     alus_shift_imm, alus_shift_reg, bfm, csel, rev, logic_imm, logic_reg,\
     logic_shift_imm, logic_shift_reg, logics_imm, logics_reg,\
     logics_shift_imm, logics_shift_reg, extend, shift_imm, float, fcsel,\
-    fdivd, fdivs,\
     wmmx_wor, wmmx_wxor, wmmx_wand, wmmx_wandn, wmmx_wmov, wmmx_tmcrr,\
     wmmx_tmrrc, wmmx_wldr, wmmx_wstr, wmmx_tmcr, wmmx_tmrc, wmmx_wadd,\
     wmmx_wsub, wmmx_wmul, wmmx_wmac, wmmx_wavg2, wmmx_tinsr, wmmx_textrm,\

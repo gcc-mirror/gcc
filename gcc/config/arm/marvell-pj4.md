@@ -193,11 +193,11 @@
 
 (define_insn_reservation "pj4_vfp_divs" 20
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "fdivs"))       "pj4_is,nothing*2,vissue,vdiv*18,nothing")
+       (eq_attr "type" "fdivs, fsqrts"))       "pj4_is,nothing*2,vissue,vdiv*18,nothing")
 
 (define_insn_reservation "pj4_vfp_divd" 34
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "fdivd"))       "pj4_is,nothing*2,vissue,vdiv*32,nothing")
+       (eq_attr "type" "fdivd, fsqrtd"))       "pj4_is,nothing*2,vissue,vdiv*32,nothing")
 
 (define_insn_reservation "pj4_vfp_mac"  9
   (and (eq_attr "tune" "marvell_pj4")

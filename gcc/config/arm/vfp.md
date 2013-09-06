@@ -1077,7 +1077,7 @@
   "fsqrts%?\\t%0, %1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "fdivs")]
+   (set_attr "type" "fsqrts")]
 )
 
 (define_insn "*sqrtdf2_vfp"
@@ -1087,7 +1087,7 @@
   "fsqrtd%?\\t%P0, %P1"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "fdivd")]
+   (set_attr "type" "fsqrtd")]
 )
 
 

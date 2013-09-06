@@ -159,12 +159,12 @@
 
 (define_insn_reservation "cortex_a8_vfp_divs" 37
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fdivs"))
+       (eq_attr "type" "fdivs, fsqrts"))
   "cortex_a8_vfp,cortex_a8_vfplite*36")
 
 (define_insn_reservation "cortex_a8_vfp_divd" 65
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "fdivd"))
+       (eq_attr "type" "fdivd, fsqrtd"))
   "cortex_a8_vfp,cortex_a8_vfplite*64")
 
 ;; Comparisons can actually take 7 cycles sometimes instead of four,
