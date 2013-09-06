@@ -1,3 +1,13 @@
+2013-09-06  Richard Biener  <rguenther@suse.de>
+
+	* lto-symtab.c: Move from gcc/
+	* lto.h: Include vec.h.
+	(lto_global_var_decls): Declare.
+	* lto.c (lto_global_var_decls): Move definition here.
+	* Make-lang.in (LTO_OBJS): Add lto-symtab.o.
+	(lto-symtab.o): Add.
+	* config-lang.in (gtfiles): Add lto.h.
+
 2013-08-31  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (mentions_vars_p_field_decl, lto_fixup_prevailing_decls): 

@@ -1,3 +1,11 @@
+2013-09-06  Richard Biener  <rguenther@suse.de>
+
+	* lto-streamer.h (lto_global_var_decls): Remove.
+	* Makefile.in (OBJS): Remove lto-symtab.o.
+	(lto-symtab.o): Remove.
+	(GTFILES): Remove lto-symtab.c
+	* lto-symtab.c: Move to lto/
+
 2013-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	* config/s390/s390.md (UNSPEC_FPINT_FLOOR, UNSPEC_FPINT_BTRUNC)

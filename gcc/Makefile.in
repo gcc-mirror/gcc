@@ -1320,7 +1320,6 @@ OBJS = \
 	lto-streamer-out.o \
 	lto-section-in.o \
 	lto-section-out.o \
-	lto-symtab.o \
 	lto-opts.o \
 	lto-compress.o \
 	mcf.o \
@@ -2220,9 +2219,6 @@ lto-section-out.o : lto-section-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) $(EXCEPT_H) pointer-set.h \
    $(BITMAP_H) langhooks.h $(LTO_STREAMER_H) lto-compress.h \
    $(DATA_STREAMER_H)
-lto-symtab.o: lto-symtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_H) $(GIMPLE_H) $(GGC_H) $(HASHTAB_H) \
-   $(LTO_STREAMER_H) $(LINKER_PLUGIN_API_H)
 lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(HASHTAB_H) $(GGC_H) $(BITMAP_H) $(FLAGS_H) $(OPTS_H) $(OPTIONS_H) \
    $(COMMON_TARGET_H) $(DIAGNOSTIC_H) $(LTO_STREAMER_H)
@@ -3839,7 +3835,6 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-phinodes.c \
-  $(srcdir)/lto-symtab.c \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.c \
