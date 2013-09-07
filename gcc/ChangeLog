@@ -1,3 +1,10 @@
+2013-09-06  Jan Hubicka  <jh@suse.cz>
+
+	* cgraphunit.c (expand_thunk): Get body before touching arguments.
+	* lto-streamer-out.c: Stream thunks, too.
+	* lto-streamer-in.c (input_function): Pop cfun here
+	(lto_read_body): Instead of here.
+
 2013-09-06  Caroline Tice  <cmtice@google.com>
 
 	* doc/install.texi: Add documentation for the --enable-vtable-verify

@@ -1433,7 +1433,11 @@ expand_thunk (struct cgraph_node *node)
   tree virtual_offset = NULL;
   tree alias = node->callees->callee->symbol.decl;
   tree thunk_fndecl = node->symbol.decl;
-  tree a = DECL_ARGUMENTS (thunk_fndecl);
+  tree a;
+
+  if (in_lto_p)
+    cgraph_get_body (node);
+  a = DECL_ARGUMENTS (thunk_fndecl);
 
   current_function_decl = thunk_fndecl;
 
