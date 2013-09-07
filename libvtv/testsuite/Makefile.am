@@ -39,12 +39,8 @@ check-script: ${testing_script} stamp-subdir
 	-@(chmod +x ${testing_script}; \
 	${testing_script} ${libvtv_srcdir} ${libvtv_builddir})
 
-if ENABLE_VTABLE_VERIFY
 check-am:
 	$(MAKE) $(AM_MAKEFLAGS) check-script
-else
-check-am:
-endif
 
 .PHONY: check-script
 

@@ -1,3 +1,9 @@
+2013-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/Makefile.am: Remove #if ENABLE_VTABLE_VERIFY check around
+	definition of check-am:.
+	* testsuite/Makefile.in: Regenerate.
+
 2013-09-06  Caroline Tice  <cmtice@google.com>
 
 	* Makefile.am: Remove #if ENABLE_VTABLE_VERIFY checks around
