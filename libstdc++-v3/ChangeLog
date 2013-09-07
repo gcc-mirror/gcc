@@ -1,3 +1,9 @@
+2013-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58341
+	* include/bits/stl_algobase.h (copy_backward): Fix documentation
+	per DR 1206.
+
 2013-09-05  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex_automaton.h: Add dummy node type. Rewrite
