@@ -1985,8 +1985,7 @@ lto_output (void)
       cgraph_node *node = dyn_cast <cgraph_node> (snode);
       if (node
 	  && lto_symtab_encoder_encode_body_p (encoder, node)
-	  && !node->symbol.alias
-	  && !node->thunk.thunk_p)
+	  && !node->symbol.alias)
 	{
 #ifdef ENABLE_CHECKING
 	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->symbol.decl)));
