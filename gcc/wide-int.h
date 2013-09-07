@@ -20,13 +20,13 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef WIDE_INT_H
 #define WIDE_INT_H
 
-/* Wide-int.[cc|h] implements a class that efficiently performs
-   mathematical operations on finite precision integers.  Wide-ints
+/* wide-int.[cc|h] implements a class that efficiently performs
+   mathematical operations on finite precision integers.  wide_ints
    are designed to be transient - they are not for long term storage
-   of values.  There is tight integration between wide-ints and the
+   of values.  There is tight integration between wide_ints and the
    other longer storage GCC representations (rtl and tree).
 
-   The actual precision of a wide-int depends on the flavor.  There
+   The actual precision of a wide_int depends on the flavor.  There
    are three predefined flavors:
 
      1) wide_int (the default).  This flavor does the math in the
@@ -143,7 +143,7 @@ along with GCC; see the file COPYING3.  If not see
    as long as they can be reconstructed from the top bit that is being
    represented.
 
-   There are constructors to create the various forms of wide-int from
+   There are constructors to create the various forms of wide_int from
    trees, rtl and constants.  For trees and constants, you can simply say:
 
              tree t = ...;
@@ -172,10 +172,10 @@ along with GCC; see the file COPYING3.  If not see
      without having to special case the front ends.
 
    * When a constant that has an integer type is converted to a
-     wide-int it comes in with precision 0.  For these constants the
+     wide_int it comes in with precision 0.  For these constants the
      top bit does accurately reflect the sign of that constant; this
      is an exception to the normal rule that the signedness is not
-     represented.  When used in a binary operation, the wide-int
+     represented.  When used in a binary operation, the wide_int
      implementation properly extends these constants so that they
      properly match the other operand of the computation.  This allows
      you write:

@@ -103,7 +103,7 @@ canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
 }
 
 /*
- * Conversion routines in and out of wide-int.
+ * Conversion routines in and out of wide_int.
  */
 
 /* Copy XLEN elements from XVAL to VAL.  If NEED_CANON, canonize the
@@ -254,7 +254,7 @@ wi::from_mpz (const_tree type, mpz_t x, bool wrap)
    make up for the fact that double int's could not represent the
    min and max values of all types.  This code should be removed
    because the min and max values can always be represented in
-   wide-ints and int-csts.  */
+   wide_ints and int-csts.  */
 wide_int
 wi::max_value (unsigned int precision, signop sgn)
 {
