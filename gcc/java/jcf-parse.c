@@ -1043,9 +1043,9 @@ get_constant (JCF *jcf, int index)
 	wide_int val;
 
 	num = JPOOL_UINT (jcf, index);
-	val = wide_int (num).sforce_to_size (32).lshift_widen (32, 64);
+	val = wi::lshift (wide_int::from (num, 64, SIGNED), 32);
 	num = JPOOL_UINT (jcf, index + 1);
-	val |= wide_int (num);
+	val |= num;
 
 	value = wide_int_to_tree (long_type_node, val);
 	break;

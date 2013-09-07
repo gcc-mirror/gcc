@@ -2197,7 +2197,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type,
 	{
 	  wide_int val = node;
 	  int i;
-	  if (val.neg_p ())
+	  if (wi::neg_p (val))
 	    {
 	      pp_minus (buffer);
 	      val = -val;

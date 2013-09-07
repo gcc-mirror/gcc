@@ -25,7 +25,6 @@
 #include "system.h"
 #include "errors.h"		/* for fatal */
 #include "getopt.h"
-#include "double-int.h"
 #include "version.h"		/* for version_string & pkgversion_string.  */
 #include "hashtab.h"
 #include "xregex.h"
@@ -525,7 +524,7 @@ do_typedef (const char *s, type_p t, struct fileloc *pos)
   for (p = typedefs; p != NULL; p = p->next)
     if (strcmp (p->name, s) == 0)
       {
-	if (p->type != t)
+	if (p->type != t && strcmp (s, "result_type") != 0)
 	  {
 	    error_at_line (pos, "type `%s' previously defined", s);
 	    error_at_line (&p->line, "previously defined here");
@@ -5468,7 +5467,9 @@ main (int argc, char **argv)
       POS_HERE (do_scalar_typedef ("REAL_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("FIXED_VALUE_TYPE", &pos));
       POS_HERE (do_scalar_typedef ("double_int", &pos));
-      POS_HERE (do_scalar_typedef ("wide_int", &pos));
+      POS_HERE (do_scalar_typedef ("double_int_storage", &pos));
+      POS_HERE (do_scalar_typedef ("addr_wide_int", &pos));
+      POS_HERE (do_scalar_typedef ("max_wide_int", &pos));
       POS_HERE (do_scalar_typedef ("uint64_t", &pos));
       POS_HERE (do_scalar_typedef ("uint8", &pos));
       POS_HERE (do_scalar_typedef ("uintptr_t", &pos));

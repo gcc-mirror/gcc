@@ -1285,44 +1285,44 @@ predict_iv_comparison (struct loop *loop, basic_block bb,
       max_wide_int compare_step = compare_step_var;
 
       /* (loop_bound - base) / compare_step */
-      tem = loop_bound.sub (base, SIGNED, &overflow);
+      tem = wi::sub (loop_bound, base, SIGNED, &overflow);
       overall_overflow |= overflow;
-      loop_count = tem.div_trunc (compare_step, SIGNED, &overflow);
+      loop_count = wi::div_trunc (tem, compare_step, SIGNED, &overflow);
       overall_overflow |= overflow;
 
-      if ((!compare_step.neg_p ())
+      if (!wi::neg_p (compare_step)
           ^ (compare_code == LT_EXPR || compare_code == LE_EXPR))
 	{
 	  /* (loop_bound - compare_bound) / compare_step */
-	  tem = loop_bound.sub (compare_bound, SIGNED, &overflow);
+	  tem = wi::sub (loop_bound, compare_bound, SIGNED, &overflow);
 	  overall_overflow |= overflow;
-	  compare_count = tem.div_trunc (compare_step, SIGNED, &overflow);
+	  compare_count = wi::div_trunc (tem, compare_step, SIGNED, &overflow);
 	  overall_overflow |= overflow;
 	}
       else
         {
 	  /* (compare_bound - base) / compare_step */
-	  tem = compare_bound.sub (base, SIGNED, &overflow);
+	  tem = wi::sub (compare_bound, base, SIGNED, &overflow);
 	  overall_overflow |= overflow;
-          compare_count = tem.div_trunc (compare_step, SIGNED, &overflow);
+          compare_count = wi::div_trunc (tem, compare_step, SIGNED, &overflow);
 	  overall_overflow |= overflow;
 	}
       if (compare_code == LE_EXPR || compare_code == GE_EXPR)
 	++compare_count;
       if (loop_bound_code == LE_EXPR || loop_bound_code == GE_EXPR)
 	++loop_count;
-      if (compare_count.neg_p ())
+      if (wi::neg_p (compare_count))
         compare_count = 0;
-      if (loop_count.neg_p ())
+      if (wi::neg_p (loop_count))
         loop_count = 0;
-      if (loop_count.zero_p ())
+      if (loop_count == 0)
 	probability = 0;
-      else if (compare_count.cmps (loop_count) == 1)
+      else if (wi::cmps (compare_count, loop_count) == 1)
 	probability = REG_BR_PROB_BASE;
       else
         {
 	  tem = compare_count * REG_BR_PROB_BASE;
-	  tem = tem.udiv_trunc (loop_count);
+	  tem = wi::udiv_trunc (tem, loop_count);
 	  probability = tem.to_uhwi ();
 	}
 

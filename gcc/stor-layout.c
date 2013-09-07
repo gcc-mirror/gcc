@@ -2208,8 +2208,10 @@ layout_type (tree type)
 		    && tree_int_cst_lt (ub, lb))
 		  {
 		    unsigned prec = TYPE_PRECISION (TREE_TYPE (lb));
-		    lb = wide_int_to_tree (ssizetype, addr_wide_int (lb).sext (prec));
-		    ub = wide_int_to_tree (ssizetype, addr_wide_int (ub).sext (prec));
+		    lb = wide_int_to_tree (ssizetype,
+					   wi::sext (addr_wide_int (lb), prec));
+		    ub = wide_int_to_tree (ssizetype,
+					   wi::sext (addr_wide_int (ub), prec));
 		  }
 		length
 		  = fold_convert (sizetype,
@@ -2514,8 +2516,10 @@ set_min_and_max_values_for_integral_type (tree type,
 					  int precision,
 					  signop sgn)
 {
-  TYPE_MIN_VALUE (type) = wide_int_to_tree (type, wide_int::min_value (precision, sgn));
-  TYPE_MAX_VALUE (type) = wide_int_to_tree (type, wide_int::max_value (precision, sgn));
+  TYPE_MIN_VALUE (type)
+    = wide_int_to_tree (type, wi::min_value (precision, sgn));
+  TYPE_MAX_VALUE (type)
+    = wide_int_to_tree (type, wi::max_value (precision, sgn));
 }
 
 /* Set the extreme values of TYPE based on its precision in bits,

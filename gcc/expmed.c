@@ -71,8 +71,8 @@ static inline rtx
 mask_rtx (enum machine_mode mode, int bitpos, int bitsize, bool complement)
 {
   return immed_wide_int_const 
-    (wide_int::shifted_mask (bitpos, bitsize, complement, 
-			     GET_MODE_PRECISION (mode)), mode);
+    (wi::shifted_mask (bitpos, bitsize, complement,
+		       GET_MODE_PRECISION (mode)), mode);
 }
 
 /* Test whether a value is zero of a power of two.  */
@@ -1859,8 +1859,8 @@ static rtx
 lshift_value (enum machine_mode mode, rtx value, int bitpos, int bitsize)
 {
   return 
-    immed_wide_int_const (wide_int (std::make_pair (value, mode))
-			  .zext (bitsize).lshift (bitpos), mode);
+    immed_wide_int_const (wi::lshift (wi::zext (std::make_pair (value, mode),
+						bitsize), bitpos), mode);
 }
 
 /* Extract a bit field that is split across two words
@@ -3101,7 +3101,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	{
 	  int p = GET_MODE_PRECISION (mode);
 	  wide_int val = std::make_pair (scalar_op1, mode);
-	  int shift = val.exact_log2 ().to_shwi (); 
+	  int shift = wi::exact_log2 (val);
 	  /* Perfect power of 2.  */
 	  is_neg = false;
 	  if (shift > 0)
@@ -3119,7 +3119,7 @@ expand_mult (enum machine_mode mode, rtx op0, rtx op1, rtx target,
 	      /* Any positive number that fits in a word.  */
 	      coeff = CONST_WIDE_INT_ELT (scalar_op1, 0);
 	    }
-	  else if (val.sign_mask () == 0)
+	  else if (wi::sign_mask (val) == 0)
 	    {
 	      /* Any positive number that fits in a word.  */
 	      coeff = CONST_WIDE_INT_ELT (scalar_op1, 0);
@@ -3313,12 +3313,12 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   pow2 = n + lgup - precision;
 
   /* mlow = 2^(N + lgup)/d */
-  wide_int val = wide_int::set_bit_in_zero (pow, HOST_BITS_PER_DOUBLE_INT);
-  mlow = val.udiv_trunc (d); 
+  wide_int val = wi::set_bit_in_zero (pow, HOST_BITS_PER_DOUBLE_INT);
+  mlow = wi::udiv_trunc (val, d);
 
   /* mhigh = (2^(N + lgup) + 2^(N + lgup - precision))/d */
-  val |= wide_int::set_bit_in_zero(pow2, HOST_BITS_PER_DOUBLE_INT);
-  mhigh = val.udiv_trunc (d);
+  val |= wi::set_bit_in_zero (pow2, HOST_BITS_PER_DOUBLE_INT);
+  mhigh = wi::udiv_trunc (val, d);
 
   /* If precision == N, then mlow, mhigh exceed 2^N
      (but they do not exceed 2^(N+1)).  */
@@ -3326,13 +3326,15 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   /* Reduce to lowest terms.  */
   for (post_shift = lgup; post_shift > 0; post_shift--)
     {
-      unsigned HOST_WIDE_INT ml_lo = mlow.extract_to_hwi (1, HOST_BITS_PER_WIDE_INT);
-      unsigned HOST_WIDE_INT mh_lo = mhigh.extract_to_hwi (1, HOST_BITS_PER_WIDE_INT);
+      unsigned HOST_WIDE_INT ml_lo = wi::extract_uhwi (mlow, 1,
+						       HOST_BITS_PER_WIDE_INT);
+      unsigned HOST_WIDE_INT mh_lo = wi::extract_uhwi (mhigh, 1,
+						       HOST_BITS_PER_WIDE_INT);
       if (ml_lo >= mh_lo)
 	break;
 
-      mlow = wide_int::from_uhwi (ml_lo, HOST_BITS_PER_DOUBLE_INT);
-      mhigh = wide_int::from_uhwi (mh_lo, HOST_BITS_PER_DOUBLE_INT);
+      mlow = wi::uhwi (ml_lo, HOST_BITS_PER_DOUBLE_INT);
+      mhigh = wi::uhwi (mh_lo, HOST_BITS_PER_DOUBLE_INT);
     }
 
   *post_shift_ptr = post_shift;
@@ -3346,7 +3348,7 @@ choose_multiplier (unsigned HOST_WIDE_INT d, int n, int precision,
   else
     {
       *multiplier_ptr = mhigh.to_uhwi ();
-      return mhigh.extract_to_hwi (HOST_BITS_PER_WIDE_INT, 1);
+      return wi::extract_uhwi (mhigh, HOST_BITS_PER_WIDE_INT, 1);
     }
 }
 
@@ -3675,8 +3677,8 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
      modulus.  By including the signbit in the operation, many targets
      can avoid an explicit compare operation in the following comparison
      against zero.  */
-  mask = wide_int::mask (logd, false, GET_MODE_PRECISION (mode));
-  mask = mask.set_bit (prec - 1);
+  mask = wi::mask (logd, false, GET_MODE_PRECISION (mode));
+  mask = wi::set_bit (mask, prec - 1);
 
   temp = expand_binop (mode, and_optab, op0,
 		       immed_wide_int_const (mask, mode),
@@ -3690,7 +3692,7 @@ expand_smod_pow2 (enum machine_mode mode, rtx op0, HOST_WIDE_INT d)
   temp = expand_binop (mode, sub_optab, result, const1_rtx, result,
 		       0, OPTAB_LIB_WIDEN);
 
-  mask = wide_int::mask (logd, true, GET_MODE_PRECISION (mode)); 
+  mask = wi::mask (logd, true, GET_MODE_PRECISION (mode));
   temp = expand_binop (mode, ior_optab, temp,
 		       immed_wide_int_const (mask, mode),
 		       result, 1, OPTAB_LIB_WIDEN);
@@ -4937,8 +4939,9 @@ make_tree (tree type, rtx x)
 
     case CONST_DOUBLE:
       if (TARGET_SUPPORTS_WIDE_INT == 0 && GET_MODE (x) == VOIDmode)
-	t = wide_int_to_tree (type, wide_int::from_array (&CONST_DOUBLE_LOW (x), 2,
-							  HOST_BITS_PER_WIDE_INT * 2));
+	t = wide_int_to_tree (type,
+			      wide_int::from_array (&CONST_DOUBLE_LOW (x), 2,
+						    HOST_BITS_PER_WIDE_INT * 2));
       else
 	{
 	  REAL_VALUE_TYPE d;

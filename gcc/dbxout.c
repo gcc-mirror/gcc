@@ -701,7 +701,7 @@ stabstr_O (tree cst)
 
   /* If the value is zero, the base indicator will serve as the value
      all by itself.  */
-  if (wcst.zero_p ())
+  if (wcst == 0)
     return;
 
   /* GDB wants constants with no extra leading "1" bits, so
@@ -709,19 +709,19 @@ stabstr_O (tree cst)
      present.  */
   if (res_pres == 1)
     {
-      digit = wcst.extract_to_hwi (prec - 1, 1) & 0x1;
+      digit = wi::extract_uhwi (wcst, prec - 1, 1);
       stabstr_C ('0' + digit);
     }
   else if (res_pres == 2)
     {
-      digit = wcst.extract_to_hwi (prec - 2, 2) & 0x3;
+      digit = wi::extract_uhwi (wcst, prec - 2, 2);
       stabstr_C ('0' + digit);
     }
 
   prec -= res_pres;
   for (i = prec - 3; i <= 0; i = i - 3)
     {
-      digit = wcst.extract_to_hwi (i, 3) & 0x7;
+      digit = wi::extract_uhwi (wcst, i, 3);
       stabstr_C ('0' + digit);
     }
 }

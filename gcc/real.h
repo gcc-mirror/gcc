@@ -22,6 +22,8 @@
 
 #include "machmode.h"
 #include "signop.h"
+#include "wide-int.h"
+#include "insn-modes.h"
 
 /* An expanded form of the represented number.  */
 
@@ -482,4 +484,13 @@ extern bool real_isinteger (const REAL_VALUE_TYPE *c, enum machine_mode mode);
    number, (1 - b**-p) * b**emax for a given FP format FMT as a hex
    float string.  BUF must be large enough to contain the result.  */
 extern void get_max_float (const struct real_format *, char *, size_t);
+
+#ifndef GENERATOR_FILE
+/* real related routines.  */
+extern wide_int real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
+extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
+			       const wide_int_ref &, signop);
+extern wide_int decimal_real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
+#endif
+
 #endif /* ! GCC_REAL_H */

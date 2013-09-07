@@ -1795,7 +1795,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 
   if (CODE_CONTAINS_STRUCT (code, TS_INT_CST))
     {
-      if (!wide_int::eq_p (t1, t2))
+      if (!wi::eq_p (t1, t2))
 	return false;
     }
 

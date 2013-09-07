@@ -30,7 +30,6 @@
 #endif
 #include "system.h"
 #include "errors.h"	/* For fatal.  */
-#include "double-int.h"
 #include "hashtab.h"
 #include "version.h"	/* For version_string & pkgversion_string.  */
 #include "obstack.h"

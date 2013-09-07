@@ -3011,9 +3011,9 @@ get_constraint_for_ptr_offset (tree ptr, tree offset,
   else
     {
       /* Sign-extend the offset.  */
-      addr_wide_int soffset = addr_wide_int (offset)
-	.sext (TYPE_PRECISION (TREE_TYPE (offset)));
-      if (!soffset.fits_shwi_p ())
+      addr_wide_int soffset = wi::sext (addr_wide_int (offset),
+					TYPE_PRECISION (TREE_TYPE (offset)));
+      if (!wi::fits_shwi_p (soffset))
 	rhsoffset = UNKNOWN_OFFSET;
       else
 	{

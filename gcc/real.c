@@ -1395,7 +1395,7 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
     {
     case rvc_zero:
     underflow:
-      return wide_int::zero (precision);
+      return wi::zero (precision);
 
     case rvc_inf:
     case rvc_nan:
@@ -1403,9 +1403,9 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
       *fail = true;
       
       if (r->sign)
-	return wide_int::set_bit_in_zero (precision - 1, precision);
+	return wi::set_bit_in_zero (precision - 1, precision);
       else
-	return ~wide_int::set_bit_in_zero (precision - 1, precision);
+	return ~wi::set_bit_in_zero (precision - 1, precision);
 
     case rvc_normal:
       if (r->decimal)
@@ -1450,8 +1450,8 @@ real_to_integer (const REAL_VALUE_TYPE *r, bool *fail, int precision)
       w = SIGSZ * HOST_BITS_PER_LONG + words * HOST_BITS_PER_WIDE_INT; 
       result = wide_int::from_array (val, 
 	  (w + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT, w, w); 
-      result = result.rshiftu ((words * HOST_BITS_PER_WIDE_INT) - exp);
-      result = result.zforce_to_size (precision);
+      result = wi::lrshift (result, (words * HOST_BITS_PER_WIDE_INT) - exp);
+      result = wide_int::from (result, precision, UNSIGNED);
 
       if (r->sign)
 	return -result;
@@ -2191,26 +2191,26 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 
 void
 real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
-		   wide_int val, signop sgn)
+		   const wide_int_ref &val_in, signop sgn)
 {
-  if (val.zero_p ())
+  if (val_in == 0)
     get_zero (r, 0);
   else
     {
-      unsigned int len = val.get_precision ();
+      unsigned int len = val_in.get_precision ();
       int i, j, e=0;
       int maxbitlen = MAX_BITSIZE_MODE_ANY_INT + HOST_BITS_PER_WIDE_INT;
       const unsigned int realmax = SIGNIFICAND_BITS/HOST_BITS_PER_WIDE_INT * HOST_BITS_PER_WIDE_INT;
 
       memset (r, 0, sizeof (*r));
       r->cl = rvc_normal;
-      r->sign = val.neg_p (sgn);
+      r->sign = wi::neg_p (val_in, sgn);
 
       if (len == 0)
 	len = 1;
 
       /* We have to ensure we can negate the largest negative number.  */
-      val = val.force_to_size (maxbitlen, sgn);
+      wide_int val = wide_int::from (val_in, maxbitlen, sgn);
 
       if (r->sign)
 	val = -val;
@@ -2231,7 +2231,7 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
       if (len > realmax)
 	{
 	  HOST_WIDE_INT cnt_l_z;
-	  cnt_l_z = val.clz ().to_shwi ();
+	  cnt_l_z = wi::clz (val);
 
 	  if (maxbitlen - cnt_l_z > realmax)
 	    {
@@ -2240,14 +2240,15 @@ real_from_integer (REAL_VALUE_TYPE *r, enum machine_mode mode,
 	      /* This value is too large, we must shift it right to
 		 preserve all the bits we can, and then bump the
 		 exponent up by that amount.  */
-	      val = val.rshiftu (e);
+	      val = wi::lrshift (val, e);
 	    }
 	  len = realmax;
 	}
 
       /* Clear out top bits so elt will work with precisions that aren't
 	 a multiple of HOST_BITS_PER_WIDE_INT.  */
-      val = val.force_to_size (len, sgn);
+      val = wide_int::from (val, len, sgn);
+      wi::clear_undef (val, sgn);
       len = len / HOST_BITS_PER_WIDE_INT;
 
       SET_REAL_EXP (r, len * HOST_BITS_PER_WIDE_INT + e);
@@ -2401,7 +2402,7 @@ real_digit (int n)
   gcc_assert (n <= 9);
 
   if (n > 0 && num[n].cl == rvc_zero)
-    real_from_integer (&num[n], VOIDmode, wide_int (n), UNSIGNED);
+    real_from_integer (&num[n], VOIDmode, n, UNSIGNED);
 
   return &num[n];
 }

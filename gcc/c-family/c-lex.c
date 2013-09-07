@@ -545,7 +545,7 @@ narrowest_unsigned_type (const wide_int &val, unsigned int flags)
 	continue;
       upper = TYPE_MAX_VALUE (integer_types[itk]);
 
-      if (wide_int::geu_p (upper, val))
+      if (wi::geu_p (upper, val))
 	return (enum integer_type_kind) itk;
     }
 
@@ -573,7 +573,7 @@ narrowest_signed_type (const wide_int &val, unsigned int flags)
 	continue;
       upper = TYPE_MAX_VALUE (integer_types[itk]);
 
-      if (wide_int::geu_p (upper, val))
+      if (wi::geu_p (upper, val))
 	return (enum integer_type_kind) itk;
     }
 

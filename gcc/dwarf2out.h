@@ -30,7 +30,7 @@ typedef struct dw_val_struct *dw_val_ref;
 typedef struct dw_cfi_struct *dw_cfi_ref;
 typedef struct dw_loc_descr_struct *dw_loc_descr_ref;
 typedef struct dw_loc_list_struct *dw_loc_list_ref;
-typedef struct wide_int *wide_int_ref;
+typedef wide_int *wide_int_ptr;
 
 
 /* Call frames are described using a sequence of Call Frame
@@ -183,7 +183,7 @@ typedef struct GTY(()) dw_val_struct {
       HOST_WIDE_INT GTY ((default)) val_int;
       unsigned HOST_WIDE_INT GTY ((tag ("dw_val_class_unsigned_const"))) val_unsigned;
       double_int GTY ((tag ("dw_val_class_const_double"))) val_double;
-      wide_int_ref GTY ((tag ("dw_val_class_wide_int"))) val_wide;
+      wide_int_ptr GTY ((tag ("dw_val_class_wide_int"))) val_wide;
       dw_vec_const GTY ((tag ("dw_val_class_vec"))) val_vec;
       struct dw_val_die_union
 	{

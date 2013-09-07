@@ -24,13 +24,16 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "hwint.h"
 #include "wide-int.h"
-#include "rtl.h"
 #include "tree.h"
 #include "dumpfile.h"
 
 /* This is the maximal size of the buffer needed for dump.  */
-const int MAX_SIZE = 4 * (MAX_BITSIZE_MODE_ANY_INT / 4
-		     + MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_WIDE_INT + 32);
+const unsigned int MAX_SIZE = (4 * (MAX_BITSIZE_MODE_ANY_INT / 4
+				    + (MAX_BITSIZE_MODE_ANY_INT
+				       / HOST_BITS_PER_WIDE_INT)
+				    + 32));
+
+static const HOST_WIDE_INT zeros[WIDE_INT_MAX_ELTS] = {};
 
 /*
  * Internal utilities.
@@ -45,391 +48,22 @@ const int MAX_SIZE = 4 * (MAX_BITSIZE_MODE_ANY_INT / 4
   (PREC ? (((PREC) + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT) : 1)
 #define SIGN_MASK(X) (((HOST_WIDE_INT)X) >> (HOST_BITS_PER_WIDE_INT - 1))
 
-/*
- * Conversion routines in and out of wide-int.
- */
-
-/* Convert OP0 into a wide int of PRECISION.  */
-wide_int_ro
-wide_int_ro::from_shwi (HOST_WIDE_INT op0,
-			unsigned int precision)
+static unsigned HOST_WIDE_INT
+safe_uhwi (const HOST_WIDE_INT *val, unsigned int len, unsigned int i)
 {
-  wide_int result;
-
-  result.precision = precision;
-  result.val[0] = op0;
-  result.len = 1;
-
-#ifdef DEBUG_WIDE_INT
-  debug_wh ("wide_int::from_shwi %s " HOST_WIDE_INT_PRINT_HEX ")\n",
-	    result, op0);
-#endif
-
-  return result;
+  return i < len ? val[i] : val[len - 1] < 0 ? (HOST_WIDE_INT) -1 : 0;
 }
 
-/* Convert OP0 into a wide int of PRECISION. */
-wide_int_ro
-wide_int_ro::from_uhwi (unsigned HOST_WIDE_INT op0,
-			unsigned int precision)
+/* Convert the integer in VAL to canonical form, returning its new length.
+   LEN is the number of blocks currently in VAL and PRECISION is the number
+   of bits in the integer it represents.
+
+   This function only changes the representation, not the value.  */
+static unsigned int
+canonize (HOST_WIDE_INT *val, unsigned int len, unsigned int precision)
 {
-  wide_int result;
-
-  result.precision = precision;
-  result.val[0] = op0;
-
-  /* If the top bit is a 1, we need to add another word of 0s since
-     that would not expand the right value since the infinite
-     expansion of any unsigned number must have 0s at the top.  */
-  if ((HOST_WIDE_INT)op0 < 0 && precision > HOST_BITS_PER_WIDE_INT)
-    {
-      result.val[1] = 0;
-      result.len = 2;
-    }
-  else
-    result.len = 1;
-
-#ifdef DEBUG_WIDE_INT
-  debug_wh ("wide_int::from_uhwi %s " HOST_WIDE_INT_PRINT_HEX ")\n",
-	    result, op0);
-#endif
-
-  return result;
-}
-
-/* Create a wide_int from an array of host_wide_ints in OP1 of LEN.
-   The result has PRECISION.  */
-wide_int_ro
-wide_int_ro::from_array (const HOST_WIDE_INT *op1, unsigned int len,
-			 unsigned int precision, bool need_canon)
-{
-  unsigned int i;
-  wide_int result;
-
-  result.len = len;
-  result.precision = precision;
-
-  for (i=0; i < len; i++)
-    result.val[i] = op1[i];
-
-#ifdef DEBUG_WIDE_INT
-  debug_wa ("wide_int::from_array %s = %s\n", result, op1, len, precision);
-#endif
-
-  if (need_canon)
-    result.canonize ();
-
-  return result;
-}
-
-/* Convert a double int into a wide int with precision PREC.  */
-wide_int_ro
-wide_int_ro::from_double_int (double_int di, unsigned int prec)
-{
-  HOST_WIDE_INT op = di.low;
-  wide_int result;
-
-  result.precision = prec;
-  result.len = (prec <= HOST_BITS_PER_WIDE_INT) ? 1 : 2;
-
-  if (prec < HOST_BITS_PER_WIDE_INT)
-    result.val[0] = sext_hwi (op, prec);
-  else
-    {
-      result.val[0] = op;
-      if (prec > HOST_BITS_PER_WIDE_INT)
-	{
-	  if (prec < HOST_BITS_PER_DOUBLE_INT)
-	    result.val[1] = sext_hwi (di.high, prec);
-	  else
-	    result.val[1] = di.high;
-	}
-    }
-
-  if (result.len == 2)
-    result.canonize ();
-
-  return result;
-}
-
-/* Extract a constant integer from the R.  The bits of the integer are
-   returned.  */
-wide_int_ro
-wide_int_ro::from_rtx (const rtx_mode_t r)
-{
-  const_rtx x = get_rtx (r);
-  enum machine_mode mode = get_mode (r);
-  wide_int result;
-  unsigned int prec = GET_MODE_PRECISION (mode);
-
-  gcc_assert (mode != VOIDmode);
-
-  result.precision = prec;
-
-  switch (GET_CODE (x))
-    {
-    case CONST_INT:
-      result.val[0] = INTVAL (x);
-      result.len = 1;
-
-#if 0
-      if (prec != HOST_BITS_PER_WIDE_INT)
-	gcc_assert (result.val[0] == sext_hwi (result.val[0], prec));
-#endif
-
-#ifdef DEBUG_WIDE_INT
-      debug_wh ("wide_int:: %s = from_rtx ("HOST_WIDE_INT_PRINT_HEX")\n",
-		result, INTVAL (x));
-#endif
-      break;
-
-#if TARGET_SUPPORTS_WIDE_INT
-    case CONST_WIDE_INT:
-      {
-	int i;
-	result.len = CONST_WIDE_INT_NUNITS (x);
-	
-	for (i = 0; i < result.len; i++)
-	  result.val[i] = CONST_WIDE_INT_ELT (x, i);
-      }
-      break;
-#else
-    case CONST_DOUBLE:
-      result.len = 2;
-      result.val[0] = CONST_DOUBLE_LOW (x);
-      result.val[1] = CONST_DOUBLE_HIGH (x);
-
-#ifdef DEBUG_WIDE_INT
-      debug_whh ("wide_int:: %s = from_rtx ("HOST_WIDE_INT_PRINT_HEX" "HOST_WIDE_INT_PRINT_HEX")\n",
-		 result, CONST_DOUBLE_HIGH (x), CONST_DOUBLE_LOW (x));
-#endif
-
-      break;
-#endif
-
-    default:
-      gcc_unreachable ();
-    }
-
-  return result;
-}
-
-/* Construct a wide int from a buffer of length LEN.  BUFFER will be
-   read according to byte endianess and word endianess of the target.
-   Only the lower LEN bytes of the result are set; the remaining high
-   bytes are cleared.  */
-wide_int_ro
-wide_int_ro::from_buffer (const unsigned char *buffer, int len)
-{
-  wide_int result = wide_int::zero (len * BITS_PER_UNIT);
-  int words = len / UNITS_PER_WORD;
-
-  /* We have to clear all the bits ourself, as we merely or in values
-     below.  */
-  result.len = BLOCKS_NEEDED (len*BITS_PER_UNIT);
-  for (int i = 0; i < result.len; ++i)
-    result.val[i] = 0;
-
-  for (int byte = 0; byte < len; byte++)
-    {
-      int offset;
-      int index;
-      int bitpos = byte * BITS_PER_UNIT;
-      unsigned HOST_WIDE_INT value;
-
-      if (len > UNITS_PER_WORD)
-	{
-	  int word = byte / UNITS_PER_WORD;
-
-	  if (WORDS_BIG_ENDIAN)
-	    word = (words - 1) - word;
-
-	  offset = word * UNITS_PER_WORD;
-
-	  if (BYTES_BIG_ENDIAN)
-	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
-	  else
-	    offset += byte % UNITS_PER_WORD;
-	}
-      else
-	offset = BYTES_BIG_ENDIAN ? (len - 1) - byte : byte;
-
-      value = (unsigned HOST_WIDE_INT) buffer[offset];
-
-      index = bitpos / HOST_BITS_PER_WIDE_INT;
-      result.val[index] |= value << (bitpos % HOST_BITS_PER_WIDE_INT);
-    }
-
-  result.canonize ();
-
-  return result;
-}
-
-/* Sets RESULT from THIS, the sign is taken according to SGN.  */
-void
-wide_int_ro::to_mpz (mpz_t result, signop sgn) const
-{
-  bool negative = false;
-  wide_int tmp;
-
-  if ((*this).neg_p (sgn))
-    {
-      negative = true;
-      /* We use ones complement to avoid -x80..0 edge case that -
-	 won't work on.  */
-      tmp = ~(*this);
-    }
-  else
-    tmp = *this;
-
-  mpz_import (result, tmp.len, -1, sizeof (HOST_WIDE_INT), 0, 0, tmp.val);
-
-  if (negative)
-    mpz_com (result, result);
-}
-
-/* Returns VAL converted to TYPE.  If WRAP is true, then out-of-range
-   values of VAL will be wrapped; otherwise, they will be set to the
-   appropriate minimum or maximum TYPE bound.  */
-wide_int_ro
-wide_int_ro::from_mpz (const_tree type, mpz_t val, bool wrap)
-{
-  size_t count, numb;
-  wide_int res;
-  unsigned int i;
-
-  if (!wrap)
-    {
-      mpz_t min, max;
-
-      mpz_init (min);
-      mpz_init (max);
-      get_type_static_bounds (type, min, max);
-
-      if (mpz_cmp (val, min) < 0)
-	mpz_set (val, min);
-      else if (mpz_cmp (val, max) > 0)
-	mpz_set (val, max);
-
-      mpz_clear (min);
-      mpz_clear (max);
-    }
-
-  /* Determine the number of unsigned HOST_WIDE_INTs that are required
-     for representing the value.  The code to calculate count is
-     extracted from the GMP manual, section "Integer Import and Export":
-     http://gmplib.org/manual/Integer-Import-and-Export.html  */
-  numb = 8*sizeof(HOST_WIDE_INT);
-  count = (mpz_sizeinbase (val, 2) + numb-1) / numb;
-  if (count < 1)
-    count = 1;
-
-  /* Need to initialize the number because it writes nothing for
-     zero.  */
-  for (i = 0; i < count; i++)
-    res.val[i] = 0;
-
-  res.len = count;
-
-  mpz_export (res.val, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, val);
-
-  res.precision = TYPE_PRECISION (type);
-  if (mpz_sgn (val) < 0)
-    res = -res;
-
-  return res;
-}
-
-/*
- * Largest and smallest values in a mode.
- */
-
-/* Largest and smallest values that are represented in a TYPE_PREC.
-   RESULT_PREC is the precision of the value that the answer is
-   returned within.  The default value of 0 says return the answer
-   with TYPE_PREC precision.
-
-   TODO: There is still code from the double_int era that trys to
-   make up for the fact that double int's could not represent the
-   min and max values of all types.  This code should be removed
-   because the min and max values can always be represented in
-   wide-ints and int-csts.  */
-wide_int_ro
-wide_int_ro::max_value (unsigned int type_prec, signop sgn,
-			unsigned int result_prec)
-{
-  unsigned int prec = result_prec ? result_prec : type_prec;
-
-  if (type_prec == 0)
-    return wide_int::zero (result_prec
-			   ? result_prec
-			   : TYPE_PRECISION (integer_type_node));
-
-  if (sgn == UNSIGNED)
-    {
-      if (prec <= type_prec)
-	/* The unsigned max is just all ones, for which the
-	   compressed rep is just a single HWI.  */
-	return wide_int::minus_one (prec);
-      else
-	return wide_int::mask (type_prec, false, prec);
-    }
-  else
-    /* The signed max is all ones except the top bit.  This must be
-       explicitly represented.  */
-    return wide_int::mask (type_prec-1, false, prec);
-}
-
-/* Produce the smallest SGNed number that is represented in TYPE_PREC.
-   The resulting number is placed in a wide int of size RESULT_PREC.
-   IF RESULT_PREC is 0, answer will have TYPE_PREC precision.  */
-wide_int_ro
-wide_int_ro::min_value (unsigned int type_prec, signop sgn,
-			unsigned int result_prec)
-{
-  if (result_prec == 0)
-    result_prec = type_prec;
-
-  if (type_prec == 0)
-    return wide_int_ro::zero (result_prec
-			      ? result_prec
-			      : TYPE_PRECISION (integer_type_node));
-
-  if (sgn == UNSIGNED)
-    {
-      /* The unsigned min is just all zeros, for which the compressed
-	 rep is just a single HWI.  */
-      wide_int result;
-      result.len = 1;
-      result.precision = result_prec;
-      result.val[0] = 0;
-      return result;
-    }
-  else
-    {
-      /* The signed min is all zeros except the top bit.  This must be
-	 explicitly represented.  */
-      return set_bit_in_zero (type_prec - 1, result_prec);
-    }
-}
-
-/*
- * Public utilities.
- */
-
-/* Check the upper HOST_WIDE_INTs of src to see if the length can be
-   shortened.  An upper HOST_WIDE_INT is unnecessary if it is all ones
-   or zeros and the top bit of the next lower word matches.
-
-   This function may change the representation of THIS, but does not
-   change the value that THIS represents.  It does not sign extend in
-   the case that the size of the mode is less than
-   HOST_BITS_PER_WIDE_INT.  */
-void
-wide_int_ro::canonize ()
-{
-  int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
-  int blocks_needed = BLOCKS_NEEDED (precision);
+  unsigned int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
   HOST_WIDE_INT top;
   int i;
 
@@ -442,11 +76,11 @@ wide_int_ro::canonize ()
     val[len - 1] = sext_hwi (val[len - 1], small_prec);
 
   if (len == 1)
-    return;
+    return len;
 
   top = val[len - 1];
   if (top != 0 && top != (HOST_WIDE_INT)-1)
-    return;
+    return len;
 
   /* At this point we know that the top is either 0 or -1.  Find the
      first block that is not a copy of this.  */
@@ -456,100 +90,247 @@ wide_int_ro::canonize ()
       if (x != top)
 	{
 	  if (SIGN_MASK (x) == top)
-	    {
-	      len = i + 1;
-	      return;
-	    }
+	    return i + 1;
 
 	  /* We need an extra block because the top bit block i does
 	     not match the extension.  */
-	  len = i + 2;
-	  return;
+	  return i + 2;
 	}
     }
 
   /* The number is 0 or -1.  */
-  len = 1;
+  return 1;
 }
 
-/* Copy THIS replacing the precision with PREC.  It can do any of
-   truncation, extension or copying.  This function is only available
-   with the default wide-int form as the other forms have fixed
-   precisions.  */
-wide_int_ro
-wide_int_ro::force_to_size (unsigned int prec, signop sgn) const
-{
-  wide_int result;
-  int blocks_needed = BLOCKS_NEEDED (prec);
-  int i;
+/*
+ * Conversion routines in and out of wide-int.
+ */
 
-  result.precision = prec;
-  /* If this is a value that has come in from a hwi, then it does not
-     have a proper precision.  However, it is in canonical form, so
-     just copy and zap in the precision and return.  */
-  if (precision == 0)
+/* Copy XLEN elements from XVAL to VAL.  If NEED_CANON, canonize the
+   result for an integer with precision PRECISION.  Return the length
+   of VAL (after any canonization.  */
+unsigned int
+wi::from_array (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		unsigned int xlen, unsigned int precision, bool need_canon)
+{
+  for (unsigned i = 0; i < xlen; i++)
+    val[i] = xval[i];
+  return need_canon ? canonize (val, xlen, precision) : xlen;
+}
+
+/* Construct a wide int from a buffer of length LEN.  BUFFER will be
+   read according to byte endianess and word endianess of the target.
+   Only the lower LEN bytes of the result are set; the remaining high
+   bytes are cleared.  */
+wide_int
+wi::from_buffer (const unsigned char *buffer, unsigned int buffer_len)
+{
+  unsigned int precision = buffer_len * BITS_PER_UNIT;
+  wide_int result = wide_int::create (precision);
+  unsigned int words = buffer_len / UNITS_PER_WORD;
+
+  /* We have to clear all the bits ourself, as we merely or in values
+     below.  */
+  unsigned int len = BLOCKS_NEEDED (precision);
+  HOST_WIDE_INT *val = result.write_val ();
+  for (unsigned int i = 0; i < len; ++i)
+    val[i] = 0;
+
+  for (unsigned int byte = 0; byte < buffer_len; byte++)
     {
-      /* Some zero prec numbers take 2 hwi's.  If the target prec is
-	 small, we may need to shorten it.  */
-      result.len = len;
-      if (prec <= HOST_BITS_PER_WIDE_INT)
-	result.len = 1;
-      for (int i = 0; i < result.len; ++i)
-	result.val[i] = val[i];
-      return result;
+      unsigned int offset;
+      unsigned int index;
+      unsigned int bitpos = byte * BITS_PER_UNIT;
+      unsigned HOST_WIDE_INT value;
+
+      if (buffer_len > UNITS_PER_WORD)
+	{
+	  unsigned int word = byte / UNITS_PER_WORD;
+
+	  if (WORDS_BIG_ENDIAN)
+	    word = (words - 1) - word;
+
+	  offset = word * UNITS_PER_WORD;
+
+	  if (BYTES_BIG_ENDIAN)
+	    offset += (UNITS_PER_WORD - 1) - (byte % UNITS_PER_WORD);
+	  else
+	    offset += byte % UNITS_PER_WORD;
+	}
+      else
+	offset = BYTES_BIG_ENDIAN ? (buffer_len - 1) - byte : byte;
+
+      value = (unsigned HOST_WIDE_INT) buffer[offset];
+
+      index = bitpos / HOST_BITS_PER_WIDE_INT;
+      val[index] |= value << (bitpos % HOST_BITS_PER_WIDE_INT);
     }
 
-  result.len = blocks_needed < len ? blocks_needed : len;
-  for (i = 0; i < result.len; i++)
-    result.val[i] = val[i];
+  result.set_len (canonize (val, len, precision));
 
-  if (prec == precision)
-    /* Nothing much to do.  */
-    ;
-  else if (prec > precision)
+  return result;
+}
+
+/* Sets RESULT from THIS, the sign is taken according to SGN.  */
+void
+wi::to_mpz (wide_int x, mpz_t result, signop sgn)
+{
+  bool negative = false;
+
+  if (wi::neg_p (x, sgn))
     {
-      /* Expanding */
-      int small_precision = precision & (HOST_BITS_PER_WIDE_INT - 1);
+      negative = true;
+      /* We use ones complement to avoid -x80..0 edge case that -
+	 won't work on.  */
+      x = ~x;
+    }
+
+  mpz_import (result, x.get_len (), -1, sizeof (HOST_WIDE_INT), 0, 0,
+	      x.get_val ());
+
+  if (negative)
+    mpz_com (result, result);
+}
+
+/* Returns VAL converted to TYPE.  If WRAP is true, then out-of-range
+   values of VAL will be wrapped; otherwise, they will be set to the
+   appropriate minimum or maximum TYPE bound.  */
+wide_int
+wi::from_mpz (const_tree type, mpz_t x, bool wrap)
+{
+  size_t count, numb;
+  wide_int res = wide_int::create (TYPE_PRECISION (type));
+  unsigned int i;
+
+  if (!wrap)
+    {
+      mpz_t min, max;
+
+      mpz_init (min);
+      mpz_init (max);
+      get_type_static_bounds (type, min, max);
+
+      if (mpz_cmp (x, min) < 0)
+	mpz_set (x, min);
+      else if (mpz_cmp (x, max) > 0)
+	mpz_set (x, max);
+
+      mpz_clear (min);
+      mpz_clear (max);
+    }
+
+  /* Determine the number of unsigned HOST_WIDE_INTs that are required
+     for representing the value.  The code to calculate count is
+     extracted from the GMP manual, section "Integer Import and Export":
+     http://gmplib.org/manual/Integer-Import-and-Export.html  */
+  numb = 8*sizeof(HOST_WIDE_INT);
+  count = (mpz_sizeinbase (x, 2) + numb-1) / numb;
+  if (count < 1)
+    count = 1;
+
+  /* Need to initialize the number because it writes nothing for
+     zero.  */
+  HOST_WIDE_INT *val = res.write_val ();
+  for (i = 0; i < count; i++)
+    val[i] = 0;
+
+  res.set_len (count);
+
+  mpz_export (val, &count, -1, sizeof (HOST_WIDE_INT), 0, 0, x);
+
+  if (mpz_sgn (x) < 0)
+    res = -res;
+
+  return res;
+}
+
+/*
+ * Largest and smallest values in a mode.
+ */
+
+/* Return the largest SGNed number that is representable in PRECISION bits.
+
+   TODO: There is still code from the double_int era that trys to
+   make up for the fact that double int's could not represent the
+   min and max values of all types.  This code should be removed
+   because the min and max values can always be represented in
+   wide-ints and int-csts.  */
+wide_int
+wi::max_value (unsigned int precision, signop sgn)
+{
+  if (precision == 0)
+    return shwi (0, precision);
+  else if (sgn == UNSIGNED)
+    /* The unsigned max is just all ones.  */
+    return shwi (-1, precision);
+  else
+    /* The signed max is all ones except the top bit.  This must be
+       explicitly represented.  */
+    return mask (precision - 1, false, precision);
+}
+
+/* Return the largest SGNed number that is representable in PRECISION bits.  */
+wide_int
+wi::min_value (unsigned int precision, signop sgn)
+{
+  if (precision == 0 || sgn == UNSIGNED)
+    return uhwi (0, precision);
+  else
+    /* The signed min is all zeros except the top bit.  This must be
+       explicitly represented.  */
+    return wi::set_bit_in_zero (precision - 1, precision);
+}
+
+/*
+ * Public utilities.
+ */
+
+/* Convert the number represented by XVAL, XLEN and XPRECISION, which has
+   signedness SGN, to an integer that has PRECISION bits.  Store the blocks
+   in VAL and return the number of blocks used.
+
+   This function can handle both extension (PRECISION > XPRECISION)
+   and truncation (PRECISION < XPRECISION).  */
+unsigned int
+wi::force_to_size (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		   unsigned int xlen, unsigned int xprecision,
+		   unsigned int precision, signop sgn)
+{
+  unsigned int blocks_needed = BLOCKS_NEEDED (precision);
+  unsigned int len = blocks_needed < xlen ? blocks_needed : xlen;
+  for (unsigned i = 0; i < len; i++)
+    val[i] = xval[i];
+
+  if (precision > xprecision)
+    {
+      /* Expanding.  */
+      unsigned int small_xprecision = xprecision % HOST_BITS_PER_WIDE_INT;
 
       if (sgn == UNSIGNED)
 	{
-	  /* The top block in the existing rep must be zero extended.  */
-	  if (small_precision
-	      /* We need to ensure we only extend the last block of
-		 the original number, if the number has not been
-		 compressed.  If the number has been compressed, then
-		 all the bits are significant.  */
-	      && len == BLOCKS_NEEDED (precision))
-	    result.val[len-1] = zext_hwi (result.val[len-1], small_precision);
-	  else if (len < blocks_needed
-		   && small_precision == 0
-		   && result.val[result.len - 1] < 0)
+	  if (small_xprecision && len == BLOCKS_NEEDED (xprecision))
+	    val[len - 1] = zext_hwi (val[len - 1], small_xprecision);
+	  else if (val[len - 1] < 0)
 	    {
-	      /* We need to uncompress the original value first.  */
-	      while (result.len < BLOCKS_NEEDED (precision))
-		result.val[result.len++] = (HOST_WIDE_INT)-1;
-	      /* We need to put the 0 block on top to keep the value
-		 from being sign extended.  */
-	      if (result.len < blocks_needed)
-		result.val[result.len++] = 0;
+	      while (len < BLOCKS_NEEDED (xprecision))
+		val[len++] = -1;
+	      if (small_xprecision)
+		val[len - 1] = zext_hwi (val[len - 1], small_xprecision);
+	      else
+		val[len++] = 0;
 	    }
 	}
       /* We have to do this because we cannot guarantee that there is
 	 not trash in the top block of an uncompressed value.  For a
 	 compressed value, all the bits are significant.  */
-      else if (small_precision
-	       && len == BLOCKS_NEEDED (precision))
-	result.val[len-1] = sext_hwi (result.val[len-1], small_precision);
+      else if (small_xprecision && len == BLOCKS_NEEDED (xprecision))
+	val[len - 1] = sext_hwi (val[len - 1], small_xprecision);
     }
-  else
-    result.canonize ();
+  else if (precision < xprecision)
+    /* Contracting.  */
+    len = canonize (val, len, precision);
 
-#ifdef DEBUG_WIDE_INT
-  debug_wwvs ("wide_int:: %s = force_to_size (%s, prec = %d %s)\n",
-	      result, *this, prec, sgn==UNSIGNED ? "U" : "S");
-#endif
-
-  return result;
+  return len;
 }
 
 /* This function hides the fact that we cannot rely on the bits beyond
@@ -602,9 +383,9 @@ top_bit_of (const HOST_WIDE_INT *a, unsigned int len, unsigned int prec)
 
 /* Return true if OP0 == OP1.  */
 bool
-wide_int_ro::eq_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			 unsigned int prec,
-			 const HOST_WIDE_INT *op1, unsigned int op1len)
+wi::eq_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
+		const HOST_WIDE_INT *op1, unsigned int op1len,
+		unsigned int prec)
 {
   int l0 = op0len - 1;
   unsigned int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
@@ -632,10 +413,10 @@ wide_int_ro::eq_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return true if OP0 < OP1 using signed comparisons.  */
 bool
-wide_int_ro::lts_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			  unsigned int p0,
-			  const HOST_WIDE_INT *op1, unsigned int op1len,
-			  unsigned int p1)
+wi::lts_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
+		 unsigned int p0,
+		 const HOST_WIDE_INT *op1, unsigned int op1len,
+		 unsigned int p1)
 {
   HOST_WIDE_INT s0, s1;
   unsigned HOST_WIDE_INT u0, u1;
@@ -673,10 +454,10 @@ wide_int_ro::lts_p_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 /* Returns -1 if OP0 < OP1, 0 if OP0 == OP1 and 1 if OP0 > OP1 using
    signed compares.  */
 int
-wide_int_ro::cmps_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			 unsigned int p0,
-			 const HOST_WIDE_INT *op1, unsigned int op1len,
-			 unsigned int p1)
+wi::cmps_large (const HOST_WIDE_INT *op0, unsigned int op0len,
+		unsigned int p0,
+		const HOST_WIDE_INT *op1, unsigned int op1len,
+		unsigned int p1)
 {
   HOST_WIDE_INT s0, s1;
   unsigned HOST_WIDE_INT u0, u1;
@@ -713,8 +494,8 @@ wide_int_ro::cmps_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
 /* Return true if OP0 < OP1 using unsigned comparisons.  */
 bool
-wide_int_ro::ltu_p_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
-			  const HOST_WIDE_INT *op1, unsigned int op1len, unsigned int p1)
+wi::ltu_p_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
+		 const HOST_WIDE_INT *op1, unsigned int op1len, unsigned int p1)
 {
   unsigned HOST_WIDE_INT x0;
   unsigned HOST_WIDE_INT x1;
@@ -741,8 +522,8 @@ wide_int_ro::ltu_p_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigne
 /* Returns -1 if OP0 < OP1, 0 if OP0 == OP1 and 1 if OP0 > OP1 using
    unsigned compares.  */
 int
-wide_int_ro::cmpu_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
-			 const HOST_WIDE_INT *op1, unsigned int op1len, unsigned int p1)
+wi::cmpu_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned int p0,
+		const HOST_WIDE_INT *op1, unsigned int op1len, unsigned int p1)
 {
   unsigned HOST_WIDE_INT x0;
   unsigned HOST_WIDE_INT x1;
@@ -766,526 +547,292 @@ wide_int_ro::cmpu_large (const HOST_WIDE_INT *op0, unsigned int op0len, unsigned
   return 0;
 }
 
-/* Return true if THIS has the sign bit set to 1 and all other bits are
-   zero.  */
-bool
-wide_int_ro::only_sign_bit_p (unsigned int prec) const
-{
-  int i;
-  HOST_WIDE_INT x;
-  int small_prec;
-  bool result;
-
-  if (BLOCKS_NEEDED (prec) != len)
-    {
-      result = false;
-      goto ex;
-    }
-
-  for (i=0; i < len - 1; i++)
-    if (val[i] != 0)
-      {
-	result = false;
-	goto ex;
-      }
-
-  x = val[len - 1];
-  small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  if (small_prec)
-    x = x << (HOST_BITS_PER_WIDE_INT - small_prec);
-
-  result = x == ((HOST_WIDE_INT)1) << (HOST_BITS_PER_WIDE_INT - 1);
-
- ex:
-
-#ifdef DEBUG_WIDE_INT
-  debug_vw ("wide_int:: %d = only_sign_bit_p (%s)\n", result, *this);
-#endif
-  return result;
-}
-
-/* Returns true if THIS fits into range of TYPE.  Signedness of OP0 is
-   assumed to be the same as the signedness of TYPE.  */
-bool
-wide_int_ro::fits_to_tree_p (const_tree type) const
-{
-  unsigned int type_prec = TYPE_PRECISION (type);
-
-  if (precision <= type_prec)
-    return true;
-
-  if (TYPE_SIGN (type) == UNSIGNED)
-    return *this == zext (type_prec);
-  else
-    {
-      /* For signed, we can do a couple of quick tests since the
-	 compressed rep looks like it was just sign extended.  */
-      if (len < BLOCKS_NEEDED (type_prec))
-	return true;
-
-      if (len > BLOCKS_NEEDED (type_prec))
-	return false;
-
-      return *this == sext (type_prec);
-    }
-}
-
 /*
  * Extension.
  */
 
-/* Sign extend THIS starting at OFFSET.  The precision of the result
-   are the same as THIS.  */
-wide_int_ro
-wide_int_ro::sext (unsigned int offset) const
+/* Sign-extend the number represented by XVAL and XLEN into VAL,
+   starting at OFFSET.  Return the number of blocks in VAL.  Both XVAL
+   and VAL have PRECISION bits.  */
+unsigned int
+wi::sext_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		unsigned int xlen, unsigned int precision, unsigned int offset)
 {
-  wide_int result;
-  int off;
-
-  gcc_assert (precision >= offset);
-
-  if (precision <= HOST_BITS_PER_WIDE_INT)
+  unsigned int len = offset / HOST_BITS_PER_WIDE_INT;
+  /* Extending beyond the precision is a no-op.  If we have only stored
+     OFFSET bits or fewer, the rest are already signs.  */
+  if (offset >= precision || len >= xlen)
     {
-      result.precision = precision;
-      if (offset < precision)
-	result.val[0] = sext_hwi (val[0], offset);
-      else
-	/* If offset is greater or equal to precision there is nothing
-	   to do since the internal rep is already sign extended.  */
-	result.val[0] = val[0];
-
-      result.len = 1;
+      for (unsigned i = 0; i < xlen; ++i)
+	val[i] = xval[i];
+      return xlen;
     }
-  else if (precision == offset)
-    result = *this;
-  else
+  unsigned int suboffset = offset % HOST_BITS_PER_WIDE_INT;
+  for (unsigned int i = 0; i < len; i++)
+    val[i] = xval[i];
+  if (suboffset > 0)
     {
-      result = decompress (offset, precision);
-
-      /* Now we can do the real sign extension.  */
-      off = offset & (HOST_BITS_PER_WIDE_INT - 1);
-      if (off)
-	{
-	  int block = BLOCK_OF (offset);
-	  result.val[block] = sext_hwi (val[block], off);
-	  result.len = block + 1;
-	}
-      /* We never need an extra element for sign extended values but
-	 we may need to compress.  */
-      result.canonize ();
+      val[len] = sext_hwi (xval[len], suboffset);
+      len += 1;
     }
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwv ("wide_int:: %s = (%s sext %d)\n", result, *this, offset);
-#endif
-
-  return result;
+  return canonize (val, len, precision);
 }
 
-/* Zero extend THIS starting at OFFSET.  The precision of the result
-   are the same as THIS.  */
-wide_int_ro
-wide_int_ro::zext (unsigned int offset) const
+/* Zero-extend the number represented by XVAL and XLEN into VAL,
+   starting at OFFSET.  Return the number of blocks in VAL.  Both XVAL
+   and VAL have PRECISION bits.  */
+unsigned int
+wi::zext_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		unsigned int xlen, unsigned int precision, unsigned int offset)
 {
-  wide_int result;
-  int off;
-  int block;
-
-  gcc_assert (precision >= offset);
-
-  if (precision <= HOST_BITS_PER_WIDE_INT)
+  unsigned int len = offset / HOST_BITS_PER_WIDE_INT;
+  /* Extending beyond the precision is a no-op.  If we have only stored
+     OFFSET bits or fewer, and the upper stored bit is zero, then there
+     is nothing to do.  */
+  if (offset >= precision || (len >= xlen && xval[xlen - 1] >= 0))
     {
-      result.precision = precision;
-      if (offset < precision)
-	result.val[0] = zext_hwi (val[0], offset);
-      else if (offset == precision)
-	result.val[0] = val[0];
-	/* If offset was greater than the precision we need to zero
-	   extend from the old precision since the internal rep was
-	   equivalent to sign extended.  */
-      else
-	result.val[0] = zext_hwi (val[0], precision);
-	
-      result.len = 1;
+      for (unsigned i = 0; i < xlen; ++i)
+	val[i] = xval[i];
+      return xlen;
     }
-  else if (precision == offset)
-    result = *this;
+  unsigned int suboffset = offset % HOST_BITS_PER_WIDE_INT;
+  for (unsigned int i = 0; i < len; i++)
+    val[i] = i < xlen ? xval[i] : -1;
+  if (suboffset > 0)
+    val[len] = zext_hwi (len < xlen ? xval[len] : -1, suboffset);
   else
-    {
-      result = decompress (offset, precision);
-
-      /* Now we can do the real zero extension.  */
-      off = offset & (HOST_BITS_PER_WIDE_INT - 1);
-      block = BLOCK_OF (offset);
-      if (off)
-	{
-	  result.val[block] = zext_hwi (val[block], off);
-	  result.len = block + 1;
-	}
-      else
-	/* See if we need an extra zero element to satisfy the
-	   compression rule.  */
-	if (result.val[block - 1] < 0 && offset < precision)
-	  {
-	    result.val[block] = 0;
-	    result.len += 1;
-	  }
-      result.canonize ();
-    }
-#ifdef DEBUG_WIDE_INT
-  debug_wwv ("wide_int:: %s = (%s zext %d)\n", result, *this, offset);
-#endif
-  return result;
+    val[len] = 0;
+  return canonize (val, len + 1, precision);
 }
 
 /*
  * Masking, inserting, shifting, rotating.
  */
 
-/* Return a value with a one bit inserted in THIS at BITPOS.  */
-wide_int_ro
-wide_int_ro::set_bit (unsigned int bitpos) const
-{
-  wide_int result;
-  int i, j;
-
-  if (bitpos >= precision)
-    result = *this;
-  else
-    {
-      result = decompress (bitpos, precision);
-      j = bitpos / HOST_BITS_PER_WIDE_INT;
-      i = bitpos & (HOST_BITS_PER_WIDE_INT - 1);
-      result.val[j] |= ((HOST_WIDE_INT)1) << i;
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwv ("wide_int_ro:: %s = (%s set_bit %d)\n", result, *this, bitpos);
-#endif
-  return result;
-}
-
-/* Insert a 1 bit into 0 at BITPOS producing an number with PREC.  */
-wide_int_ro
-wide_int_ro::set_bit_in_zero (unsigned int bitpos, unsigned int prec)
-{
-  wide_int result;
-  int extra_bit = 0;
-  /* We need one extra bit of 0 above the set bit for the compression
-     of the bits above the set bit when the bit that is set is the top
-     bit of a compressed number.  When setting the actual top bit
-     (non-compressed) we can just set it as there are no bits above
-     it.  */
-  if (bitpos % HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_WIDE_INT-1
-      && bitpos+1 != prec)
-    extra_bit = 1;
-  int blocks_needed = BLOCKS_NEEDED (bitpos + 1 + extra_bit);
-  int i, j;
-
-  result.precision = prec;
-  if (bitpos >= prec)
-    {
-      result.len = 1;
-      result.val[0] = 0;
-    }
-  else
-    {
-      result.len = blocks_needed;
-      for (i = 0; i < blocks_needed; i++)
-	result.val[i] = 0;
-
-      j = bitpos / HOST_BITS_PER_WIDE_INT;
-      i = bitpos & (HOST_BITS_PER_WIDE_INT - 1);
-      result.val[j] |= ((HOST_WIDE_INT)1) << i;
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_wv ("wide_int_ro:: %s = set_bit_in_zero (%d)\n", result, bitpos);
-#endif
-
-  return result;
-}
-
-/* Insert WIDTH bits from OP0 into THIS starting at START.  */
-wide_int_ro
-wide_int_ro::insert (const wide_int_ro &op0, unsigned int start,
-		     unsigned int width) const
+/* Insert WIDTH bits from Y into X starting at START.  */
+wide_int
+wi::insert (const wide_int &x, const wide_int &y, unsigned int start,
+	    unsigned int width)
 {
   wide_int result;
   wide_int mask;
   wide_int tmp;
 
+  unsigned int precision = x.get_precision ();
   if (start >= precision)
-    return *this;
+    return x;
 
-  gcc_checking_assert (op0.precision >= width);
+  gcc_checking_assert (precision >= width);
 
   if (start + width >= precision)
     width = precision - start;
 
-  mask = shifted_mask (start, width, false, precision);
-  tmp = op0.lshift_widen (start, precision);
+  mask = wi::shifted_mask (start, width, false, precision);
+  tmp = wi::lshift (wide_int::from (y, precision, UNSIGNED), start);
   result = tmp & mask;
 
-  tmp = and_not (mask);
+  tmp = wi::bit_and_not (x, mask);
   result = result | tmp;
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwwvv ("wide_int_ro:: %s = (%s insert %s start = %d width = %d)\n",
-	       result, *this, op0, start, width);
-#endif
 
   return result;
 }
 
-/* bswap THIS.  */
-wide_int_ro
-wide_int_ro::bswap () const
+/* Copy the number represented by XVAL and XLEN into VAL, setting bit BIT.
+   Return the number of blocks in VAL.  Both XVAL and VAL have PRECISION
+   bits.  */
+unsigned int
+wi::set_bit_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		   unsigned int xlen, unsigned int precision, unsigned int bit)
 {
-  wide_int result;
-  int i, s;
-  int end;
-  int len = BLOCKS_NEEDED (precision);
+  unsigned int block = bit / HOST_BITS_PER_WIDE_INT;
+  unsigned int subbit = bit % HOST_BITS_PER_WIDE_INT;
+
+  if (block + 1 >= xlen)
+    {
+      /* The operation either affects the last current block or needs
+	 a new block.  */
+      unsigned int len = block + 1;
+      for (unsigned int i = 0; i < len; i++)
+	val[i] = safe_uhwi (xval, xlen, i);
+      val[block] |= (unsigned HOST_WIDE_INT) 1 << subbit;
+
+      /* If the bit we just set is at the msb of the block, make sure
+	 that any higher bits are zeros.  */
+      if (bit + 1 < precision && bit == HOST_BITS_PER_WIDE_INT - 1)
+	val[len++] = 0;
+      return len;
+    }
+  else
+    {
+      for (unsigned int i = 0; i < xlen; i++)
+	val[i] = xval[i];
+      val[block] |= (unsigned HOST_WIDE_INT) 1 << subbit;
+      return canonize (val, xlen, precision);
+    }
+}
+
+/* bswap THIS.  */
+wide_int
+wide_int_storage::bswap () const
+{
+  wide_int result = wide_int::create (precision);
+  unsigned int i, s;
+  unsigned int len = BLOCKS_NEEDED (precision);
+  unsigned int xlen = get_len ();
+  const HOST_WIDE_INT *xval = get_val ();
+  HOST_WIDE_INT *val = result.write_val ();
 
   /* This is not a well defined operation if the precision is not a
      multiple of 8.  */
   gcc_assert ((precision & 0x7) == 0);
 
-  result.precision = precision;
-  result.len = len;
-
   for (i = 0; i < len; i++)
-    result.val[i] = 0;
+    val[i] = 0;
 
   /* Only swap the bytes that are not the padding.  */
-  if ((precision & (HOST_BITS_PER_WIDE_INT - 1))
-      && (this->len == len))
-    end = precision;
-  else
-    end = this->len * HOST_BITS_PER_WIDE_INT;
-
-  for (s = 0; s < end; s += 8)
+  for (s = 0; s < precision; s += 8)
     {
       unsigned int d = precision - s - 8;
       unsigned HOST_WIDE_INT byte;
 
-      int block = s / HOST_BITS_PER_WIDE_INT;
-      int offset = s & (HOST_BITS_PER_WIDE_INT - 1);
+      unsigned int block = s / HOST_BITS_PER_WIDE_INT;
+      unsigned int offset = s & (HOST_BITS_PER_WIDE_INT - 1);
 
-      byte = (val[block] >> offset) & 0xff;
+      byte = (safe_uhwi (xval, xlen, block) >> offset) & 0xff;
 
       block = d / HOST_BITS_PER_WIDE_INT;
       offset = d & (HOST_BITS_PER_WIDE_INT - 1);
 
-      result.val[block] |= byte << offset;
+      val[block] |= byte << offset;
     }
 
-  result.canonize ();
-
-#ifdef DEBUG_WIDE_INT
-  debug_ww ("wide_int_ro:: %s = bswap (%s)\n", result, *this);
-#endif
+  result.set_len (canonize (val, len, precision));
   return result;
 }
 
-/* Return a result mask where the lower WIDTH bits are ones and the
-   bits above that up to the precision are zeros.  The result is
-   inverted if NEGATE is true.  The result is made with PREC. */
-wide_int_ro
-wide_int_ro::mask (unsigned int width, bool negate, unsigned int prec)
+/* Fill VAL with a mask where the lower WIDTH bits are ones and the bits
+   above that up to PREC are zeros.  The result is inverted if NEGATE
+   is true.  Return the number of blocks in VAL.  */
+unsigned int
+wi::mask (HOST_WIDE_INT *val, unsigned int width, bool negate,
+	  unsigned int prec)
 {
-  wide_int result;
-  unsigned int i = 0;
-  int shift;
-
   gcc_assert (width < 4 * MAX_BITSIZE_MODE_ANY_INT);
   gcc_assert (prec <= 4 * MAX_BITSIZE_MODE_ANY_INT);
 
   if (width == prec)
     {
-      if (negate)
-	result = wide_int::zero (prec);
-      else
-	result = wide_int::minus_one (prec);
+      val[0] = negate ? 0 : -1;
+      return 1;
     }
   else if (width == 0)
     {
-      if (negate)
-	result = wide_int::minus_one (prec);
-      else
-	result = wide_int::zero (prec);
+      val[0] = negate ? -1 : 0;
+      return 1;
+    }
+
+  unsigned int i = 0;
+  while (i < width / HOST_BITS_PER_WIDE_INT)
+    val[i++] = negate ? 0 : -1;
+
+  unsigned int shift = width & (HOST_BITS_PER_WIDE_INT - 1);
+  if (shift != 0)
+    {
+      HOST_WIDE_INT last = (((unsigned HOST_WIDE_INT) 1) << shift) - 1;
+      val[i++] = negate ? ~last : last;
     }
   else
-    {
-      result.precision = prec;
+    val[i++] = negate ? -1 : 0;
 
-      while (i < width / HOST_BITS_PER_WIDE_INT)
-	result.val[i++] = negate ? 0 : (HOST_WIDE_INT)-1;
-
-      shift = width & (HOST_BITS_PER_WIDE_INT - 1);
-      if (shift != 0)
-	{
-	  HOST_WIDE_INT last = (((HOST_WIDE_INT)1) << shift) - 1;
-	  result.val[i++] = negate ? ~last : last;
-	}
-      else
-	result.val[i++] = negate ? (HOST_WIDE_INT)-1 : 0;
-      result.len = i;
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_wvv ("wide_int_ro:: %s = mask (%d, negate = %d)\n", result, width, negate);
-#endif
-  return result;
+  return i;
 }
 
-/* Return a result mask of WIDTH ones starting at START and the
-   bits above that up to the precision are zeros.  The result is
-   inverted if NEGATE is true.  */
-wide_int_ro
-wide_int_ro::shifted_mask (unsigned int start, unsigned int width,
-			   bool negate, unsigned int prec)
+/* Fill VAL with a mask where the lower START bits are zeros, the next WIDTH
+   bits are ones, and the bits above that up to PREC are zeros.  The result
+   is inverted if NEGATE is true.  Return the number of blocks in VAL.  */
+unsigned int
+wi::shifted_mask (HOST_WIDE_INT *val, unsigned int start, unsigned int width,
+		  bool negate, unsigned int prec)
 {
-  wide_int result;
-  unsigned int i = 0;
-  unsigned int shift;
-  unsigned int end = start + width;
-  HOST_WIDE_INT block;
-
   gcc_assert (start < 4 * MAX_BITSIZE_MODE_ANY_INT);
 
   if (start + width > prec)
     width = prec - start;
+  unsigned int end = start + width;
 
   if (width == 0)
     {
-      if (negate)
-	result = wide_int::minus_one (prec);
-      else
-	result = wide_int::zero (prec);
-#ifdef DEBUG_WIDE_INT
-      debug_wvvv
-	("wide_int:: %s = shifted_mask (start = %d width = %d negate = %d)\n",
-	 result, start, width, negate);
-#endif
-      return result;
+      val[0] = negate ? -1 : 0;
+      return 1;
     }
 
-  result.precision = prec;
-
+  unsigned int i = 0;
   while (i < start / HOST_BITS_PER_WIDE_INT)
-    result.val[i++] = negate ? (HOST_WIDE_INT)-1 : 0;
+    val[i++] = negate ? -1 : 0;
 
-  shift = start & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int shift = start & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift)
     {
-      block = (((HOST_WIDE_INT)1) << shift) - 1;
-      shift = (end) & (HOST_BITS_PER_WIDE_INT - 1);
+      HOST_WIDE_INT block = (((unsigned HOST_WIDE_INT) 1) << shift) - 1;
+      shift = end & (HOST_BITS_PER_WIDE_INT - 1);
       if (shift)
 	{
 	  /* case 000111000 */
-	  block = (((HOST_WIDE_INT)1) << shift) - block - 1;
-	  result.val[i++] = negate ? ~block : block;
-	  result.len = i;
-
-#ifdef DEBUG_WIDE_INT
-	  debug_wvvv
-	    ("wide_int_ro:: %s = shifted_mask (start = %d width = %d negate = %d)\n",
-	     result, start, width, negate);
-#endif
-	  return result;
+	  block = (((unsigned HOST_WIDE_INT) 1) << shift) - block - 1;
+	  val[i++] = negate ? ~block : block;
+	  return i;
 	}
       else
 	/* ...111000 */
-	result.val[i++] = negate ? block : ~block;
+	val[i++] = negate ? block : ~block;
     }
 
   while (i < end / HOST_BITS_PER_WIDE_INT)
     /* 1111111 */
-    result.val[i++] = negate ? 0 : (HOST_WIDE_INT)-1;
+    val[i++] = negate ? 0 : -1;
 
   shift = end & (HOST_BITS_PER_WIDE_INT - 1);
   if (shift != 0)
     {
       /* 000011111 */
-      block = (((HOST_WIDE_INT)1) << shift) - 1;
-      result.val[i++] = negate ? ~block : block;
+      HOST_WIDE_INT block = (((unsigned HOST_WIDE_INT) 1) << shift) - 1;
+      val[i++] = negate ? ~block : block;
     }
   else if (end < prec)
-    result.val[i++] = negate ? (HOST_WIDE_INT)-1 : 0;
+    val[i++] = negate ? -1 : 0;
 
-  result.len = i;
-
-#ifdef DEBUG_WIDE_INT
-  debug_wvvv
-    ("wide_int_ro:: %s = shifted_mask (start = %d width = %d negate = %d)\n",
-     result, start, width, negate);
-#endif
-
-  return result;
+  return i;
 }
-
-/* Ensure there are no undefined bits returned by elt ().  This is
-   useful for when we might hash the value returned by elt and want to
-   ensure the top undefined bit are in fact, defined.  If sgn is
-   UNSIGNED, the bits are zeroed, if sgn is SIGNED, then the bits are
-   copies of the top bit (aka sign bit) as determined by
-   precision.  */
-void
-wide_int_ro::clear_undef (signop sgn)
-{
-  int small_prec = precision % HOST_BITS_PER_WIDE_INT;
-  if (small_prec)
-    {
-      if (len == (precision + HOST_BITS_PER_WIDE_INT - 1) / HOST_BITS_PER_WIDE_INT)
-	{
-	  if (sgn == UNSIGNED)
-	    val[len-1] &= ((unsigned HOST_WIDE_INT)1 << small_prec) - 1;
-	  else
-	    {
-	      int cnt = HOST_BITS_PER_WIDE_INT - small_prec;
-	      val[len-1] = (val[len-1] << cnt) >> cnt;
-	    }
-	}
-    }
-  /* Do we have a int:0 inside a struct?  */
-  else if (precision == 0)
-    val[0] = 0;
-}
-
 
 /*
  * logical operations.
  */
 
-/* Return THIS & OP1.  */
-wide_int_ro
-wide_int_ro::and_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			unsigned int prec,
-			const HOST_WIDE_INT *op1, unsigned int op1len)
+/* Set VAL to OP0 & OP1.  Return the number of blocks used.  */
+unsigned int
+wi::and_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+	       unsigned int op0len, const HOST_WIDE_INT *op1,
+	       unsigned int op1len, unsigned int prec)
 {
-  wide_int result;
   int l0 = op0len - 1;
   int l1 = op1len - 1;
   bool need_canon = true;
 
-  result.len = MAX (op0len, op1len);
-  result.precision = prec;
-
+  unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
       HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask  == 0)
 	{
 	  l0 = l1;
-	  result.len = l1 + 1;
+	  len = l1 + 1;
 	}
       else
 	{
 	  need_canon = false;
 	  while (l0 > l1)
 	    {
-	      result.val[l0] = op0[l0];
+	      val[l0] = op0[l0];
 	      l0--;
 	    }
 	}
@@ -1294,13 +841,13 @@ wide_int_ro::and_large (const HOST_WIDE_INT *op0, unsigned int op0len,
     {
       HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask == 0)
-	result.len = l0 + 1;
+	len = l0 + 1;
       else
 	{
 	  need_canon = false;
 	  while (l1 > l0)
 	    {
-	      result.val[l1] = op1[l1];
+	      val[l1] = op1[l1];
 	      l1--;
 	    }
 	}
@@ -1308,44 +855,42 @@ wide_int_ro::and_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
   while (l0 >= 0)
     {
-      result.val[l0] = op0[l0] & op1[l0];
+      val[l0] = op0[l0] & op1[l0];
       l0--;
     }
 
   if (need_canon)
-    result.canonize ();
+    len = canonize (val, len, prec);
 
-  return result;
+  return len;
 }
 
-/* Return THIS & ~OP1.  */
-wide_int_ro
-wide_int_ro::and_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			    unsigned int prec,
-			    const HOST_WIDE_INT *op1, unsigned int op1len)
+/* Set VAL to OP0 & ~OP1.  Return the number of blocks used.  */
+unsigned int
+wi::and_not_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+		   unsigned int op0len, const HOST_WIDE_INT *op1,
+		   unsigned int op1len, unsigned int prec)
 {
   wide_int result;
   int l0 = op0len - 1;
   int l1 = op1len - 1;
   bool need_canon = true;
 
-  result.len = MAX (op0len, op1len);
-  result.precision = prec;
-
+  unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
       HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask != 0)
 	{
 	  l0 = l1;
-	  result.len = l1 + 1;
+	  len = l1 + 1;
 	}
       else
 	{
 	  need_canon = false;
 	  while (l0 > l1)
 	    {
-	      result.val[l0] = op0[l0];
+	      val[l0] = op0[l0];
 	      l0--;
 	    }
 	}
@@ -1354,13 +899,13 @@ wide_int_ro::and_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
     {
       HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask == 0)
-	result.len = l0 + 1;
+	len = l0 + 1;
       else
 	{
 	  need_canon = false;
 	  while (l1 > l0)
 	    {
-	      result.val[l1] = ~op1[l1];
+	      val[l1] = ~op1[l1];
 	      l1--;
 	    }
 	}
@@ -1368,44 +913,42 @@ wide_int_ro::and_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
   while (l0 >= 0)
     {
-      result.val[l0] = op0[l0] & ~op1[l0];
+      val[l0] = op0[l0] & ~op1[l0];
       l0--;
     }
 
   if (need_canon)
-    result.canonize ();
+    len = canonize (val, len, prec);
 
-  return result;
+  return len;
 }
 
-/* Return THIS | OP1.  */
-wide_int_ro
-wide_int_ro::or_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-		       unsigned int prec,
-		       const HOST_WIDE_INT *op1, unsigned int op1len)
+/* Set VAL to OP0 | OP1.  Return the number of blocks used.  */
+unsigned int
+wi::or_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+	      unsigned int op0len, const HOST_WIDE_INT *op1,
+	      unsigned int op1len, unsigned int prec)
 {
   wide_int result;
   int l0 = op0len - 1;
   int l1 = op1len - 1;
   bool need_canon = true;
 
-  result.len = MAX (op0len, op1len);
-  result.precision = prec;
-
+  unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
       HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask != 0)
 	{
 	  l0 = l1;
-	  result.len = l1 + 1;
+	  len = l1 + 1;
 	}
       else
 	{
 	  need_canon = false;
 	  while (l0 > l1)
 	    {
-	      result.val[l0] = op0[l0];
+	      val[l0] = op0[l0];
 	      l0--;
 	    }
 	}
@@ -1414,13 +957,13 @@ wide_int_ro::or_large (const HOST_WIDE_INT *op0, unsigned int op0len,
     {
       HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask != 0)
-	result.len = l0 + 1;
+	len = l0 + 1;
       else
 	{
 	  need_canon = false;
 	  while (l1 > l0)
 	    {
-	      result.val[l1] = op1[l1];
+	      val[l1] = op1[l1];
 	      l1--;
 	    }
 	}
@@ -1428,44 +971,42 @@ wide_int_ro::or_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
   while (l0 >= 0)
     {
-      result.val[l0] = op0[l0] | op1[l0];
+      val[l0] = op0[l0] | op1[l0];
       l0--;
     }
 
   if (need_canon)
-    result.canonize ();
+    len = canonize (val, len, prec);
 
-  return result;
+  return len;
 }
 
-/* Return THIS | ~OP1.  */
-wide_int_ro
-wide_int_ro::or_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			   unsigned int prec,
-			   const HOST_WIDE_INT *op1, unsigned int op1len)
+/* Set VAL to OP0 | ~OP1.  Return the number of blocks used.  */
+unsigned int
+wi::or_not_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+		  unsigned int op0len, const HOST_WIDE_INT *op1,
+		  unsigned int op1len, unsigned int prec)
 {
   wide_int result;
   int l0 = op0len - 1;
   int l1 = op1len - 1;
   bool need_canon = true;
 
-  result.len = MAX (op0len, op1len);
-  result.precision = prec;
-
+  unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
       HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       if (op1mask == 0)
 	{
 	  l0 = l1;
-	  result.len = l1 + 1;
+	  len = l1 + 1;
 	}
       else
 	{
 	  need_canon = false;
 	  while (l0 > l1)
 	    {
-	      result.val[l0] = op0[l0];
+	      val[l0] = op0[l0];
 	      l0--;
 	    }
 	}
@@ -1474,13 +1015,13 @@ wide_int_ro::or_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
     {
       HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       if (op0mask != 0)
-	result.len = l0 + 1;
+	len = l0 + 1;
       else
 	{
 	  need_canon = false;
 	  while (l1 > l0)
 	    {
-	      result.val[l1] = ~op1[l1];
+	      val[l1] = ~op1[l1];
 	      l1--;
 	    }
 	}
@@ -1488,35 +1029,33 @@ wide_int_ro::or_not_large (const HOST_WIDE_INT *op0, unsigned int op0len,
 
   while (l0 >= 0)
     {
-      result.val[l0] = op0[l0] | ~op1[l0];
+      val[l0] = op0[l0] | ~op1[l0];
       l0--;
     }
 
   if (need_canon)
-    result.canonize ();
+    len = canonize (val, len, prec);
 
-  return result;
+  return len;
 }
 
-/* Return the exclusive ior (xor) of THIS and OP1.  */
-wide_int_ro
-wide_int_ro::xor_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			unsigned int prec,
-			const HOST_WIDE_INT *op1, unsigned int op1len)
+/* Set VAL to OP0 ^ OP1.  Return the number of blocks used.  */
+unsigned int
+wi::xor_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+	       unsigned int op0len, const HOST_WIDE_INT *op1,
+	       unsigned int op1len, unsigned int prec)
 {
   wide_int result;
   int l0 = op0len - 1;
   int l1 = op1len - 1;
 
-  result.len = MAX (op0len, op1len);
-  result.precision = prec;
-
+  unsigned int len = MAX (op0len, op1len);
   if (l0 > l1)
     {
       HOST_WIDE_INT op1mask = -top_bit_of (op1, op1len, prec);
       while (l0 > l1)
 	{
-	  result.val[l0] = op0[l0] ^ op1mask;
+	  val[l0] = op0[l0] ^ op1mask;
 	  l0--;
 	}
     }
@@ -1526,56 +1065,33 @@ wide_int_ro::xor_large (const HOST_WIDE_INT *op0, unsigned int op0len,
       HOST_WIDE_INT op0mask = -top_bit_of (op0, op0len, prec);
       while (l1 > l0)
 	{
-	  result.val[l1] = op0mask ^ op1[l1];
+	  val[l1] = op0mask ^ op1[l1];
 	  l1--;
 	}
     }
 
   while (l0 >= 0)
     {
-      result.val[l0] = op0[l0] ^ op1[l0];
+      val[l0] = op0[l0] ^ op1[l0];
       l0--;
     }
 
-  result.canonize ();
-
-#ifdef DEBUG_WIDE_INT
-  debug_waa ("wide_int_ro:: %s = (%s ^ %s)\n",
-	     result, op0, op0len, prec, op1, op1len, prec);
-#endif
-  return result;
+  return canonize (val, len, prec);
 }
 
 /*
  * math
  */
 
-/* Absolute value of THIS.  */
-wide_int_ro
-wide_int_ro::abs () const
+/* Set VAL to OP0 + OP1.  If OVERFLOW is nonnull, record in *OVERFLOW
+   whether the result overflows when OP0 and OP1 are treated as having
+   signedness SGN.  Return the number of blocks in VAL.  */
+unsigned int
+wi::add_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+	       unsigned int op0len, const HOST_WIDE_INT *op1,
+	       unsigned int op1len, unsigned int prec,
+	       signop sgn, bool *overflow)
 {
-  wide_int result;
-  gcc_checking_assert (precision);
-
-  if (sign_mask ())
-    result = -*this;
-  else
-    result = *this;
-
-#ifdef DEBUG_WIDE_INT
-  debug_ww ("wide_int_ro:: %s = abs (%s)\n", result, *this);
-#endif
-  return result;
-}
-
-/* Add of THIS and OP1.  No overflow is detected.  */
-wide_int_ro
-wide_int_ro::add_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			unsigned int prec,
-			const HOST_WIDE_INT *op1, unsigned int op1len,
-			signop sgn, bool *overflow)
-{
-  wide_int result;
   unsigned HOST_WIDE_INT o0 = 0;
   unsigned HOST_WIDE_INT o1 = 0;
   unsigned HOST_WIDE_INT x = 0;
@@ -1584,26 +1100,25 @@ wide_int_ro::add_large (const HOST_WIDE_INT *op0, unsigned int op0len,
   unsigned HOST_WIDE_INT mask0, mask1;
   unsigned int i, small_prec;
 
-  result.precision = prec;
-  result.len = MAX (op0len, op1len);
+  unsigned int len = MAX (op0len, op1len);
   mask0 = -top_bit_of (op0, op0len, prec);
   mask1 = -top_bit_of (op1, op1len, prec);
   /* Add all of the explicitly defined elements.  */
 
-  for (i = 0; i < result.len; i++)
+  for (i = 0; i < len; i++)
     {
       o0 = i < op0len ? (unsigned HOST_WIDE_INT)op0[i] : mask0;
       o1 = i < op1len ? (unsigned HOST_WIDE_INT)op1[i] : mask1;
       x = o0 + o1 + carry;
-      result.val[i] = x;
+      val[i] = x;
       old_carry = carry;
       carry = carry == 0 ? x < o0 : x <= o0;
     }
 
-  if (result.len * HOST_BITS_PER_WIDE_INT < prec)
+  if (len * HOST_BITS_PER_WIDE_INT < prec)
     {
-      result.val[result.len] = mask0 + mask1 + carry;
-      result.len++;
+      val[len] = mask0 + mask1 + carry;
+      len++;
       if (overflow)
 	*overflow = false;
     }
@@ -1611,212 +1126,71 @@ wide_int_ro::add_large (const HOST_WIDE_INT *op0, unsigned int op0len,
     {
       if (sgn == SIGNED)
 	{
-	  int p = (result.len == BLOCKS_NEEDED (prec)
-		   ? HOST_BITS_PER_WIDE_INT
-		   : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
-	  HOST_WIDE_INT x = (result.val[result.len - 1] ^ o0)
-	    & (result.val[result.len - 1] ^ o1);
+	  unsigned int p = (len == BLOCKS_NEEDED (prec)
+			    ? HOST_BITS_PER_WIDE_INT
+			    : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
+	  HOST_WIDE_INT x = (val[len - 1] ^ o0) & (val[len - 1] ^ o1);
 	  x = (x >> p) & 1;
 	  *overflow = (x != 0);
 	}
       else
 	{
 	  if (old_carry)
-	    *overflow = ((unsigned HOST_WIDE_INT)result.val[result.len - 1] <= o0);
+	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] <= o0);
 	  else
-	    *overflow = ((unsigned HOST_WIDE_INT)result.val[result.len - 1] < o0);
+	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] < o0);
 	}
     }
 
   small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  if (small_prec != 0 && BLOCKS_NEEDED (prec) == result.len)
+  if (small_prec != 0 && BLOCKS_NEEDED (prec) == len)
     {
       /* Modes with weird precisions.  */
-      i = result.len - 1;
-      result.val[i] = sext_hwi (result.val[i], small_prec);
+      i = len - 1;
+      val[i] = sext_hwi (val[i], small_prec);
     }
 
-  result.canonize ();
-
-  return result;
+  return canonize (val, len, prec);
 }
 
-
-/* Count leading zeros of THIS but only looking at the bits in the
-   smallest HWI of size mode.  */
-wide_int_ro
-wide_int_ro::clz () const
+/* This is bogus.  We should always return the precision and leave the
+   caller to handle target dependencies.  */
+static int
+clz_zero (unsigned int precision)
 {
-  int i;
-  int start;
-  int count;
-  HOST_WIDE_INT v;
-  int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int count;
 
-  gcc_checking_assert (precision);
+  enum machine_mode mode = mode_for_size (precision, MODE_INT, 0);
+  if (mode == BLKmode)
+    mode_for_size (precision, MODE_PARTIAL_INT, 0);
 
-  if (zero_p ())
-    {
-      enum machine_mode mode = mode_for_size (precision, MODE_INT, 0);
-      if (mode == BLKmode)
-	mode_for_size (precision, MODE_PARTIAL_INT, 0);
-
-      /* Even if the value at zero is undefined, we have to come up
-	 with some replacement.  Seems good enough.  */
-      if (mode == BLKmode)
-	count = precision;
-      else if (!CLZ_DEFINED_VALUE_AT_ZERO (mode, count))
-	count = precision;
-    }
-  else if (neg_p ())
-    count = 0;
-  else
-    {
-      /* The high order block is special if it is the last block and the
-	 precision is not an even multiple of HOST_BITS_PER_WIDE_INT.  We
-	 have to clear out any ones above the precision before doing clz
-	 on this block.  */
-      if (BLOCKS_NEEDED (precision) == len && small_prec)
-	{
-	  v = zext_hwi (val[len - 1], small_prec);
-	  count = clz_hwi (v) - (HOST_BITS_PER_WIDE_INT - small_prec);
-	  start = len - 2;
-	  if (v != 0)
-	    {
-#ifdef DEBUG_WIDE_INT
-	      debug_vw ("wide_int:: %d = clz (%s)\n", count, *this);
-#endif
-	      return from_shwi (count, precision);
-	    }
-	}
-      else
-	{
-	  count = HOST_BITS_PER_WIDE_INT * (BLOCKS_NEEDED (precision) - len);
-	  start = len - 1;
-	}
-
-      for (i = start; i >= 0; i--)
-	{
-	  v = elt (i);
-	  count += clz_hwi (v);
-	  if (v != 0)
-	    break;
-	}
-
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_vw ("wide_int_ro:: %d = clz (%s)\n", count, *this);
-#endif
-  return from_shwi (count, precision);
+  /* Even if the value at zero is undefined, we have to come up
+     with some replacement.  Seems good enough.  */
+  if (mode == BLKmode)
+    count = precision;
+  else if (!CLZ_DEFINED_VALUE_AT_ZERO (mode, count))
+    count = precision;
+  return count;
 }
 
-/* Count the number of redundant leading bits of THIS.  Return result
-   as a HOST_WIDE_INT.  */
-wide_int_ro
-wide_int_ro::clrsb () const
+/* This is bogus.  We should always return the precision and leave the
+   caller to handle target dependencies.  */
+static int
+ctz_zero (unsigned int precision)
 {
-  gcc_checking_assert (precision);
+  unsigned int count;
 
-  if (neg_p ())
-    return operator ~ ().clz () - 1;
+  enum machine_mode mode = mode_for_size (precision, MODE_INT, 0);
+  if (mode == BLKmode)
+    mode_for_size (precision, MODE_PARTIAL_INT, 0);
 
-  return clz () - 1;
-}
-
-/* Count zeros of THIS.   */
-wide_int_ro
-wide_int_ro::ctz () const
-{
-  int i;
-  unsigned int count = 0;
-  HOST_WIDE_INT v;
-  int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
-  int end;
-  bool more_to_do;
-
-  gcc_checking_assert (precision);
-
-  if (zero_p ())
-    {
-      enum machine_mode mode = mode_for_size (precision, MODE_INT, 0);
-      if (mode == BLKmode)
-	mode_for_size (precision, MODE_PARTIAL_INT, 0);
-
-      /* Even if the value at zero is undefined, we have to come up
-	 with some replacement.  Seems good enough.  */
-      if (mode == BLKmode)
-	count = precision;
-      else if (!CTZ_DEFINED_VALUE_AT_ZERO (mode, count))
-	count = precision;
-    }
-  else
-    {
-      /* The high order block is special if it is the last block and the
-	 precision is not an even multiple of HOST_BITS_PER_WIDE_INT.  We
-	 have to clear out any ones above the precision before doing clz
-	 on this block.  */
-      if (BLOCKS_NEEDED (precision) == len && small_prec)
-	{
-	  end = len - 1;
-	  more_to_do = true;
-	}
-      else
-	{
-	  end = len;
-	  more_to_do = false;
-	}
-
-      for (i = 0; i < end; i++)
-	{
-	  v = val[i];
-	  count += ctz_hwi (v);
-	  if (v != 0)
-	    {
-#ifdef DEBUG_WIDE_INT
-	      debug_vw ("wide_int_ro:: %d = ctz (%s)\n", count, *this);
-#endif
-	      return wide_int_ro::from_shwi (count, precision);
-	    }
-	}
-
-      if (more_to_do)
-	{
-	  v = zext_hwi (val[len - 1], small_prec);
-	  count = ctz_hwi (v);
-	  /* The top word was all zeros so we have to cut it back to prec,
-	     because we are counting some of the zeros above the
-	     interesting part.  */
-	  if (count > precision)
-	    count = precision;
-	}
-      else
-	/* Skip over the blocks that are not represented.  They must be
-	   all zeros at this point.  */
-	count = precision;
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_vw ("wide_int_ro:: %d = ctz (%s)\n", count, *this);
-#endif
-  return wide_int_ro::from_shwi (count, precision);
-}
-
-/* ffs of THIS.  */
-wide_int_ro
-wide_int_ro::ffs () const
-{
-  HOST_WIDE_INT count = ctz ().to_shwi ();
-
-  if (count == precision)
-    count = 0;
-  else
-    count += 1;
-
-#ifdef DEBUG_WIDE_INT
-  debug_vw ("wide_int_ro:: %d = ffs (%s)\n", count, *this);
-#endif
-  return wide_int_ro::from_shwi (count, precision);
+  /* Even if the value at zero is undefined, we have to come up
+     with some replacement.  Seems good enough.  */
+  if (mode == BLKmode)
+    count = precision;
+  else if (!CTZ_DEFINED_VALUE_AT_ZERO (mode, count))
+    count = precision;
+  return count;
 }
 
 /* Subroutines of the multiplication and division operations.  Unpack
@@ -1826,12 +1200,13 @@ wide_int_ro::ffs () const
 static void
 wi_unpack (unsigned HOST_HALF_WIDE_INT *result,
 	   const unsigned HOST_WIDE_INT *input,
-	   int in_len, int out_len, unsigned int prec, signop sgn)
+	   unsigned int in_len, unsigned int out_len,
+	   unsigned int prec, signop sgn)
 {
-  int i;
-  int j = 0;
-  int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  int blocks_needed = BLOCKS_NEEDED (prec);
+  unsigned int i;
+  unsigned int j = 0;
+  unsigned int small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int blocks_needed = BLOCKS_NEEDED (prec);
   HOST_WIDE_INT mask;
 
   if (sgn == SIGNED)
@@ -1866,12 +1241,12 @@ wi_unpack (unsigned HOST_HALF_WIDE_INT *result,
 static void
 wi_pack (unsigned HOST_WIDE_INT *result,
 	 const unsigned HOST_HALF_WIDE_INT *input,
-	 int in_len)
+	 unsigned int in_len)
 {
-  int i = 0;
-  int j = 0;
+  unsigned int i = 0;
+  unsigned int j = 0;
 
-  while (i < in_len - 2)
+  while (i + 2 < in_len)
     {
       result[j++] = (unsigned HOST_WIDE_INT)input[i]
 	| ((unsigned HOST_WIDE_INT)input[i + 1]
@@ -1887,65 +1262,6 @@ wi_pack (unsigned HOST_WIDE_INT *result,
       | ((unsigned HOST_WIDE_INT)input[i + 1] << HOST_BITS_PER_HALF_WIDE_INT);
 }
 
-/* Return an integer that is the exact log2 of THIS.  */
-wide_int_ro
-wide_int_ro::exact_log2 () const
-{
-  int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
-  wide_int count;
-  wide_int result;
-
-  gcc_checking_assert (precision);
-  if (precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      HOST_WIDE_INT v;
-      if (small_prec)
-	v = zext_hwi (val[0], small_prec);
-      else
-	v = val[0];
-      result = wide_int_ro::from_shwi (::exact_log2 (v), precision);
-    }
-  else
-    {
-      count = ctz ();
-      if (clz () + count + 1 == precision)
-	result = count;
-      else
-	result = wide_int_ro::from_shwi (-1, precision);
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_ww ("wide_int_ro:: %s = exact_log2 (%s)\n", result, *this);
-#endif
-  return result;
-}
-
-/* Return an integer that is the floor log2 of THIS.  */
-wide_int_ro
-wide_int_ro::floor_log2 () const
-{
-  int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
-  wide_int result;
-
-  gcc_checking_assert (precision);
-  if (precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      HOST_WIDE_INT v;
-      if (small_prec)
-	v = zext_hwi (val[0], small_prec);
-      else
-	v = val[0];
-      result = wide_int_ro::from_shwi (::floor_log2 (v), precision);
-    }
-  else
-    result = wide_int_ro::from_shwi (precision, precision) - 1 - clz ();
-
-#ifdef DEBUG_WIDE_INT
-  debug_ww ("wide_int_ro:: %s = floor_log2 (%s)\n", result, *this);
-#endif
-  return result;
-}
-
 /* Multiply Op1 by Op2.  If HIGH is set, only the upper half of the
    result is returned.  If FULL is set, the entire result is returned
    in a mode that is twice the width of the inputs.  However, that
@@ -1957,15 +1273,12 @@ wide_int_ro::floor_log2 () const
    way to check for overflow than to do this.  OVERFLOW is assumed to
    be sticky so it should be initialized.  SGN controls the signedness
    and is used to check overflow or if HIGH or FULL is set.  */
-wide_int_ro
-wide_int_ro::mul_internal (bool high, bool full,
-			   const HOST_WIDE_INT *op1, unsigned int op1len,
-			   unsigned int prec,
-			   const HOST_WIDE_INT *op2, unsigned int op2len,
-			   signop sgn,  bool *overflow,
-			   bool needs_overflow)
+unsigned int
+wi::mul_internal (HOST_WIDE_INT *val, const HOST_WIDE_INT *op1,
+		  unsigned int op1len, const HOST_WIDE_INT *op2,
+		  unsigned int op2len, unsigned int prec, signop sgn,
+		  bool *overflow, bool high, bool full)
 {
-  wide_int result;
   unsigned HOST_WIDE_INT o0, o1, k, t;
   unsigned int i;
   unsigned int j;
@@ -1987,9 +1300,9 @@ wide_int_ro::mul_internal (bool high, bool full,
 
   /* If the top level routine did not really pass in an overflow, then
      just make sure that we never attempt to set it.  */
-  if (overflow == 0)
-    needs_overflow = false;
-  result.precision = prec;
+  bool needs_overflow = (overflow != 0);
+  if (needs_overflow)
+    *overflow = false;
 
   /* If we need to check for overflow, we can only do half wide
      multiplies quickly because we need to look at the top bits to
@@ -1998,7 +1311,6 @@ wide_int_ro::mul_internal (bool high, bool full,
       && (prec <= HOST_BITS_PER_HALF_WIDE_INT))
     {
       HOST_WIDE_INT r;
-      result.len = 1;
 
       if (sgn == SIGNED)
 	{
@@ -2032,20 +1344,12 @@ wide_int_ro::mul_internal (bool high, bool full,
 	      *overflow = true;
 	}
       if (full)
-	{
-	  result.val[0] = sext_hwi (r, prec * 2);
-	  result.precision = prec * 2;
-	}
+	val[0] = sext_hwi (r, prec * 2);
       else if (high)
-	result.val[0] = r >> prec;
+	val[0] = r >> prec;
       else
-	result.val[0] = sext_hwi (r, prec);
-#ifdef DEBUG_WIDE_INT
-      debug_wvasa ("wide_int_ro:: %s O=%d = (%s *%s %s)\n",
-		   result, overflow ? *overflow : 0, op1, op1len, prec,
-		   sgn==UNSIGNED ? "U" : "S", op2, op2len, prec);
-#endif
-      return result;
+	val[0] = sext_hwi (r, prec);
+      return 1;
     }
 
   /* We do unsigned mul and then correct it.  */
@@ -2124,102 +1428,66 @@ wide_int_ro::mul_internal (bool high, bool full,
   if (full)
     {
       /* compute [2prec] <- [prec] * [prec] */
-      wi_pack ((unsigned HOST_WIDE_INT*)result.val, r, 2 * half_blocks_needed);
-      result.len = blocks_needed * 2;
-      result.precision = prec * 2;
+      wi_pack ((unsigned HOST_WIDE_INT *) val, r, 2 * half_blocks_needed);
+      return canonize (val, blocks_needed * 2, prec * 2);
     }
   else if (high)
     {
       /* compute [prec] <- ([prec] * [prec]) >> [prec] */
-      wi_pack ((unsigned HOST_WIDE_INT*)&result.val [blocks_needed >> 1],
-	       r, half_blocks_needed);
-      result.len = blocks_needed;
+      wi_pack ((unsigned HOST_WIDE_INT *) val,
+	       &r[half_blocks_needed], half_blocks_needed);
+      return canonize (val, blocks_needed, prec);
     }
   else
     {
       /* compute [prec] <- ([prec] * [prec]) && ((1 << [prec]) - 1) */
-      wi_pack ((unsigned HOST_WIDE_INT*)result.val, r, half_blocks_needed);
-      result.len = blocks_needed;
+      wi_pack ((unsigned HOST_WIDE_INT *) val, r, half_blocks_needed);
+      return canonize (val, blocks_needed, prec);
     }
-
-  result.canonize ();
-
-#ifdef DEBUG_WIDE_INT
-  debug_wvasa ("wide_int_ro:: %s O=%d = (%s *%s %s)\n",
-	       result, overflow ? *overflow : 0, op1, op1len, prec,
-	       sgn==UNSIGNED ? "U" : "S", op2, op2len, prec);
-#endif
-  return result;
 }
 
-/* Compute the parity of THIS.  */
-wide_int_ro
-wide_int_ro::parity () const
+/* Compute the population count of X.  */
+int
+wi::popcount (const wide_int_ref &x)
 {
-  wide_int count = popcount ();
-  return count & 1;
-}
-
-/* Compute the population count of THIS.  */
-wide_int_ro
-wide_int_ro::popcount () const
-{
-  int i;
-  int start;
+  unsigned int i;
   int count;
-  HOST_WIDE_INT v;
-  int small_prec = precision & (HOST_BITS_PER_WIDE_INT - 1);
-  int blocks_needed = BLOCKS_NEEDED (precision);
 
-  gcc_checking_assert (precision);
+  if (x.precision == 0)
+    return 0;
 
   /* The high order block is special if it is the last block and the
      precision is not an even multiple of HOST_BITS_PER_WIDE_INT.  We
      have to clear out any ones above the precision before doing
      popcount on this block.  */
-  if (small_prec)
+  count = x.precision - x.len * HOST_BITS_PER_WIDE_INT;
+  unsigned int stop = x.len;
+  if (count < 0)
     {
-      v = zext_hwi (elt (blocks_needed - 1), small_prec);
-      count = popcount_hwi (v);
-
-      if (len == blocks_needed)
-	start = len - 2;
-      else
-	{
-	  start = len - 1;
-	  blocks_needed--;
-	}
+      count = popcount_hwi (x.uhigh () << -count);
+      stop -= 1;
     }
   else
     {
-      start = len - 1;
-      count = 0;
+      if (x.sign_mask () >= 0)
+	count = 0;
     }
 
-  if (sign_mask ())
-    count += HOST_BITS_PER_WIDE_INT * (blocks_needed - len);
+  for (i = 0; i < stop; ++i)
+    count += popcount_hwi (x.val[i]);
 
-  for (i = start; i >= 0; i--)
-    {
-      v = val[i];
-      count += popcount_hwi (v);
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_vw ("wide_int_ro:: %d = popcount (%s)\n", count, *this);
-#endif
-  return wide_int_ro::from_shwi (count, precision);
+  return count;
 }
 
-/* Subtract of THIS and OP1.  If the pointer to OVERFLOW is not 0, set
-   OVERFLOW if the value overflows.  */
-wide_int_ro
-wide_int_ro::sub_large (const HOST_WIDE_INT *op0, unsigned int op0len,
-			unsigned int prec,
-			const HOST_WIDE_INT *op1, unsigned int op1len,
-			signop sgn, bool *overflow)
+/* Set VAL to OP0 - OP1.  If OVERFLOW is nonnull, record in *OVERFLOW
+   whether the result overflows when OP0 and OP1 are treated as having
+   signedness SGN.  Return the number of blocks in VAL.  */
+unsigned int
+wi::sub_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *op0,
+	       unsigned int op0len, const HOST_WIDE_INT *op1,
+	       unsigned int op1len, unsigned int prec,
+	       signop sgn, bool *overflow)
 {
-  wide_int result;
   unsigned HOST_WIDE_INT o0 = 0;
   unsigned HOST_WIDE_INT o1 = 0;
   unsigned HOST_WIDE_INT x = 0;
@@ -2232,26 +1500,25 @@ wide_int_ro::sub_large (const HOST_WIDE_INT *op0, unsigned int op0len,
   unsigned HOST_WIDE_INT mask0, mask1;
   unsigned int i, small_prec;
 
-  result.precision = prec;
-  result.len = MAX (op0len, op1len);
+  unsigned int len = MAX (op0len, op1len);
   mask0 = -top_bit_of (op0, op0len, prec);
   mask1 = -top_bit_of (op1, op1len, prec);
 
   /* Subtract all of the explicitly defined elements.  */
-  for (i = 0; i < result.len; i++)
+  for (i = 0; i < len; i++)
     {
       o0 = i < op0len ? (unsigned HOST_WIDE_INT)op0[i] : mask0;
       o1 = i < op1len ? (unsigned HOST_WIDE_INT)op1[i] : mask1;
       x = o0 - o1 - borrow;
-      result.val[i] = x;
+      val[i] = x;
       old_borrow = borrow;
       borrow = borrow == 0 ? o0 < o1 : o0 <= o1;
     }
 
-  if (result.len * HOST_BITS_PER_WIDE_INT < prec)
+  if (len * HOST_BITS_PER_WIDE_INT < prec)
     {
-      result.val[result.len] = mask0 - mask1 - borrow;
-      result.len++;
+      val[len] = mask0 - mask1 - borrow;
+      len++;
       if (overflow)
 	*overflow = false;
     }
@@ -2259,34 +1526,31 @@ wide_int_ro::sub_large (const HOST_WIDE_INT *op0, unsigned int op0len,
     {
       if (sgn == SIGNED)
 	{
-	  int p = (result.len == BLOCKS_NEEDED (prec)
-		   ? HOST_BITS_PER_WIDE_INT
-		   : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
-	  HOST_WIDE_INT x
-	    = (((o0 ^ o1) & (result.val[result.len - 1] ^ o0)) >> p) & 1;
+	  unsigned int p = (len == BLOCKS_NEEDED (prec)
+			    ? HOST_BITS_PER_WIDE_INT
+			    : prec & (HOST_BITS_PER_WIDE_INT - 1) ) - 1;
+	  HOST_WIDE_INT x = (((o0 ^ o1) & (val[len - 1] ^ o0)) >> p) & 1;
 	  *overflow = (x != 0);
 	}
       else
 	{
 	  if (old_borrow)
-	    *overflow = ((unsigned HOST_WIDE_INT)result.val[result.len - 1] >= o0);
+	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] >= o0);
 	  else
-	    *overflow = ((unsigned HOST_WIDE_INT)result.val[result.len - 1] > o0);
+	    *overflow = ((unsigned HOST_WIDE_INT) val[len - 1] > o0);
 	}
     }
 
 
   small_prec = prec & (HOST_BITS_PER_WIDE_INT - 1);
-  if (small_prec != 0 && BLOCKS_NEEDED (prec) == result.len)
+  if (small_prec != 0 && BLOCKS_NEEDED (prec) == len)
     {
       /* Modes with weird precisions.  */
-      i = result.len - 1;
-      result.val[i] = sext_hwi (result.val[i], small_prec);
+      i = len - 1;
+      val[i] = sext_hwi (val[i], small_prec);
     }
 
-  result.canonize ();
-
-  return result;
+  return canonize (val, len, prec);
 }
 
 
@@ -2300,12 +1564,12 @@ wide_int_ro::sub_large (const HOST_WIDE_INT *op0, unsigned int op0len,
    algorithm.  M is the number of significant elements of U however
    there needs to be at least one extra element of B_DIVIDEND
    allocated, N is the number of elements of B_DIVISOR.  */
-void
-wide_int_ro::divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
-				unsigned HOST_HALF_WIDE_INT *b_remainder,
-				unsigned HOST_HALF_WIDE_INT *b_dividend,
-				unsigned HOST_HALF_WIDE_INT *b_divisor,
-				int m, int n)
+static void
+divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
+		   unsigned HOST_HALF_WIDE_INT *b_remainder,
+		   unsigned HOST_HALF_WIDE_INT *b_dividend,
+		   unsigned HOST_HALF_WIDE_INT *b_divisor,
+		   unsigned int m, unsigned int n)
 {
   /* The "digits" are a HOST_HALF_WIDE_INT which the size of half of a
      HOST_WIDE_INT and stored in the lower bits of each word.  This
@@ -2403,28 +1667,23 @@ wide_int_ro::divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *b_quotient,
 }
 
 
-/* Do a truncating divide DIVISOR into DIVIDEND.  The result is the
-   same size as the operands.  SIGN is either SIGNED or UNSIGNED.  If
-   COMPUTE_QUOTIENT is set, the quotient is computed and returned.  If
-   it is not set, the result is undefined.  If COMPUTE_REMAINDER is
-   set, the remaineder is returned in remainder.  If it is not set,
-   the remainder is undefined.  If OFLOW is not null, it is set to the
-   overflow value.  */
-wide_int_ro
-wide_int_ro::divmod_internal (bool compute_quotient,
-			      const HOST_WIDE_INT *dividend,
-			      unsigned int dividend_len,
-			      unsigned int dividend_prec,
-			      const HOST_WIDE_INT *divisor,
-			      unsigned int divisor_len,
-			      unsigned int divisor_prec,
-			      signop sgn, wide_int_ro *remainder,
-			      bool compute_remainder,
-			      bool *oflow)
+/* Divide DIVIDEND by DIVISOR, which have signedness SGN, and truncate
+   the result.  If QUOTIENT is nonnull, store the value of the quotient
+   there and return the number of blocks in it.  The return value is
+   not defined otherwise.  If REMAINDER is nonnull, store the value
+   of the remainder there and store the number of blocks in
+   *REMAINDER_LEN.  If OFLOW is not null, store in *OFLOW whether
+   the division overflowed.  */
+unsigned int
+wi::divmod_internal (HOST_WIDE_INT *quotient, unsigned int *remainder_len,
+		     HOST_WIDE_INT *remainder, const HOST_WIDE_INT *dividend,
+		     unsigned int dividend_len, unsigned int dividend_prec,
+		     const HOST_WIDE_INT *divisor, unsigned int divisor_len,
+		     unsigned int divisor_prec, signop sgn,
+		     bool *oflow)
 {
-  wide_int quotient, u0, u1;
-  int dividend_blocks_needed = 2 * BLOCKS_NEEDED (dividend_prec);
-  int divisor_blocks_needed = 2 * BLOCKS_NEEDED (divisor_prec);
+  unsigned int dividend_blocks_needed = 2 * BLOCKS_NEEDED (dividend_prec);
+  unsigned int divisor_blocks_needed = 2 * BLOCKS_NEEDED (divisor_prec);
   unsigned HOST_HALF_WIDE_INT
     b_quotient[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
   unsigned HOST_HALF_WIDE_INT
@@ -2433,7 +1692,9 @@ wide_int_ro::divmod_internal (bool compute_quotient,
     b_dividend[(4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT) + 1];
   unsigned HOST_HALF_WIDE_INT
     b_divisor[4 * MAX_BITSIZE_MODE_ANY_INT / HOST_BITS_PER_HALF_WIDE_INT];
-  int m, n;
+  unsigned int m, n;
+  HOST_WIDE_INT u0[WIDE_INT_MAX_ELTS];
+  HOST_WIDE_INT u1[WIDE_INT_MAX_ELTS];
   bool dividend_neg = false;
   bool divisor_neg = false;
   bool overflow = false;
@@ -2461,7 +1722,7 @@ wide_int_ro::divmod_internal (bool compute_quotient,
 	       zero.  */
 	    unsigned int i;
 	    bool all_zero = true;
-	    for (i = 0; i < dividend_len - 1; i++)
+	    for (i = 0; i + 1 < dividend_len; i++)
 	      if (dividend[i] != 0)
 		{
 		  all_zero = false;
@@ -2472,58 +1733,57 @@ wide_int_ro::divmod_internal (bool compute_quotient,
 	  }
     }
 
-  quotient.precision = dividend_prec;
-  remainder->precision = dividend_prec;
-
-  /* Initialize the incoming overflow if it has been provided.  */
-  if (oflow)
-    *oflow = false;
-
   /* If overflow is set, just get out.  There will only be grief by
      continuing.  */
   if (overflow)
     {
-      if (compute_remainder)
+      if (remainder)
 	{
-	  remainder->len = 1;
-	  remainder->val[0] = 0;
+	  *remainder_len = 1;
+	  remainder[0] = 0;
 	}
       if (oflow != 0)
 	*oflow = true;
-      return wide_int::zero (dividend_prec);
+      if (quotient)
+	quotient[0] = 0;
+      return 1;
     }
+
+  if (oflow)
+    *oflow = false;
 
   /* Do it on the host if you can.  */
   if (dividend_prec <= HOST_BITS_PER_WIDE_INT
       && divisor_prec <= HOST_BITS_PER_WIDE_INT)
     {
-      quotient.len = 1;
-      remainder->len = 1;
       if (sgn == SIGNED)
 	{
 	  HOST_WIDE_INT o0 = sext_hwi (dividend[0], dividend_prec);
 	  HOST_WIDE_INT o1 = sext_hwi (divisor[0], divisor_prec);
 
-	  quotient.val[0] = sext_hwi (o0 / o1, dividend_prec);
-	  remainder->val[0] = sext_hwi (o0 % o1, dividend_prec);
+	  if (quotient)
+	    quotient[0] = sext_hwi (o0 / o1, dividend_prec);
+	  if (remainder)
+	    {
+	      remainder[0] = sext_hwi (o0 % o1, dividend_prec);
+	      *remainder_len = 1;
+	    }
 	}
       else
 	{
 	  unsigned HOST_WIDE_INT o0 = zext_hwi (dividend[0], dividend_prec);
 	  unsigned HOST_WIDE_INT o1 = zext_hwi (divisor[0], divisor_prec);
 
-	  quotient.val[0] = zext_hwi (o0 / o1, dividend_prec);
-	  remainder->val[0] = zext_hwi (o0 % o1, dividend_prec);
+	  if (quotient)
+	    quotient[0] = zext_hwi (o0 / o1, dividend_prec);
+	  if (remainder)
+	    {
+	      remainder[0] = zext_hwi (o0 % o1, dividend_prec);
+	      *remainder_len = 1;
+	    }
 	}
 
-#ifdef DEBUG_WIDE_INT
-      debug_wwasa ("wide_int_ro:: (q = %s) (r = %s) = (%s /%s %s)\n",
-		   quotient, *remainder,
-		   dividend, dividend_len, dividend_prec,
-		   sgn == SIGNED ? "S" : "U",
-		     divisor, divisor_len, divisor_prec);
-#endif
-      return quotient;
+      return 1;
     }
 
   /* Make the divisor and dividend positive and remember what we
@@ -2532,18 +1792,16 @@ wide_int_ro::divmod_internal (bool compute_quotient,
     {
       if (top_bit_of (dividend, dividend_len, dividend_prec))
 	{
-	  u0 = sub_large (wide_int (0).val, 1,
-			  dividend_prec, dividend, dividend_len, UNSIGNED);
-	  dividend = u0.val;
-	  dividend_len = u0.len;
+	  dividend_len = wi::sub_large (u0, zeros, 1, dividend, dividend_len,
+					dividend_prec, UNSIGNED, 0);
+	  dividend = u0;
 	  dividend_neg = true;
 	}
       if (top_bit_of (divisor, divisor_len, divisor_prec))
 	{
-	  u1 = sub_large (wide_int (0).val, 1,
-			  divisor_prec, divisor, divisor_len, UNSIGNED);
-	  divisor = u1.val;
-	  divisor_len = u1.len;
+	  divisor_len = wi::sub_large (u1, zeros, 1, divisor, divisor_len,
+				       divisor_prec, UNSIGNED, 0);
+	  divisor = u1;
 	  divisor_neg = true;
 	}
     }
@@ -2574,250 +1832,297 @@ wide_int_ro::divmod_internal (bool compute_quotient,
 
   divmod_internal_2 (b_quotient, b_remainder, b_dividend, b_divisor, m, n);
 
-  if (compute_quotient)
+  unsigned int quotient_len = 0;
+  if (quotient)
     {
-      wi_pack ((unsigned HOST_WIDE_INT*)quotient.val, b_quotient, m);
-      quotient.len = m / 2;
-      quotient.canonize ();
+      wi_pack ((unsigned HOST_WIDE_INT *) quotient, b_quotient, m);
+      quotient_len = canonize (quotient, (m + 1) / 2, dividend_prec);
       /* The quotient is neg if exactly one of the divisor or dividend is
 	 neg.  */
       if (dividend_neg != divisor_neg)
-	quotient = -quotient;
+	quotient_len = wi::sub_large (quotient, zeros, 1, quotient,
+				      quotient_len, dividend_prec,
+				      UNSIGNED, 0);
     }
-  else
-    quotient = wide_int::zero (dividend_prec);
 
-  if (compute_remainder)
+  if (remainder)
     {
-      wi_pack ((unsigned HOST_WIDE_INT*)remainder->val, b_remainder, n);
-      if (n & 1)
-	n++;
-      remainder->len = n / 2;
-      (*remainder).canonize ();
+      wi_pack ((unsigned HOST_WIDE_INT *) remainder, b_remainder, n);
+      *remainder_len = canonize (remainder, (n + 1) / 2, dividend_prec);
       /* The remainder is always the same sign as the dividend.  */
       if (dividend_neg)
-	*remainder = -(*remainder);
-    }
-  else
-    *remainder = wide_int::zero (dividend_prec);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwasa ("wide_int_ro:: (q = %s) (r = %s) = (%s /%s %s)\n",
-	       quotient, *remainder,
-	       dividend, dividend_len, dividend_prec,
-	       sgn == SIGNED ? "S" : "U",
-		 divisor, divisor_len, divisor_prec);
-#endif
-  return quotient;
-}
-
-
-/* Return TRUE iff PRODUCT is an integral multiple of FACTOR, and return
-   the multiple in *MULTIPLE.  Otherwise return FALSE and leave *MULTIPLE
-   unchanged.  */
-bool
-wide_int_ro::multiple_of_p (const wide_int_ro &factor,
-			    signop sgn, wide_int_ro *multiple) const
-{
-  wide_int remainder;
-  wide_int quotient = divmod_trunc (factor, &remainder, sgn);
-  if (remainder.zero_p ())
-    {
-      *multiple = quotient;
-      return true;
+	*remainder_len = wi::sub_large (remainder, zeros, 1, remainder,
+					*remainder_len, dividend_prec,
+					UNSIGNED, 0);
     }
 
-  return false;
+  return quotient_len;
 }
 
 /*
  * Shifting, rotating and extraction.
  */
 
-/* Extract WIDTH bits from THIS starting at OFFSET.  The result is
-   assumed to fit in a HOST_WIDE_INT.  This function is safe in that
-   it can properly access elements that may not be explicitly
-   represented.  */
-HOST_WIDE_INT
-wide_int_ro::extract_to_hwi (int offset, int width) const
+/* Left shift XVAL by SHIFT and store the result in VAL.  Return the
+   number of blocks in VAL.  Both XVAL and VAL have PRECISION bits.  */
+unsigned int
+wi::lshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		  unsigned int xlen, unsigned int precision,
+		  unsigned int shift)
 {
-  int start_elt, end_elt, shift;
-  HOST_WIDE_INT x;
+  /* Split the shift into a whole-block shift and a subblock shift.  */
+  unsigned int skip = shift / HOST_BITS_PER_WIDE_INT;
+  unsigned int small_shift = shift % HOST_BITS_PER_WIDE_INT;
 
-  /* Get rid of the easy cases first.   */
-  if (offset >= len * HOST_BITS_PER_WIDE_INT)
-    return sign_mask ();
-  if (offset + width <= 0)
-    return 0;
+  /* The whole-block shift fills with zeros.  */
+  unsigned int len = BLOCKS_NEEDED (precision);
+  for (unsigned int i = 0; i < skip; ++i)
+    val[i] = 0;
 
-  shift = offset & (HOST_BITS_PER_WIDE_INT - 1);
-  if (offset < 0)
-    {
-      start_elt = -1;
-      end_elt = 0;
-      x = 0;
-    }
+  /* It's easier to handle the simple block case specially.  */
+  if (small_shift == 0)
+    for (unsigned int i = skip; i < len; ++i)
+      val[i] = safe_uhwi (xval, xlen, i - skip);
   else
     {
-      start_elt = offset / HOST_BITS_PER_WIDE_INT;
-      end_elt = (offset + width - 1) / HOST_BITS_PER_WIDE_INT;
-      x = start_elt >= len
-	? sign_mask ()
-	: (unsigned HOST_WIDE_INT)val[start_elt] >> shift;
+      /* The first unfilled output block is a left shift of the first
+	 block in XVAL.  The other output blocks contain bits from two
+	 consecutive input blocks.  */
+      unsigned HOST_WIDE_INT carry = 0;
+      for (unsigned int i = skip; i < len; ++i)
+	{
+	  unsigned HOST_WIDE_INT x = safe_uhwi (xval, xlen, i - skip);
+	  val[i] = (x << small_shift) | carry;
+	  carry = x >> (-small_shift % HOST_BITS_PER_WIDE_INT);
+	}
     }
-
-  if (start_elt != end_elt)
-    {
-      HOST_WIDE_INT y = end_elt == len
-	? sign_mask () : val[end_elt];
-
-      x |= y << (HOST_BITS_PER_WIDE_INT - shift);
-    }
-
-  if (width != HOST_BITS_PER_WIDE_INT)
-    x &= ((HOST_WIDE_INT)1 << width) - 1;
-
-  return x;
+  return canonize (val, len, precision);
 }
 
-
-/* Left shift THIS by CNT.  See the definition of Op.TRUNC for how to
-   set Z.  Since this is used internally, it has the ability to
-   specify the BISIZE and PRECISION independently.  This is useful
-   when inserting a small value into a larger one.  */
-wide_int_ro
-wide_int_ro::lshift_large (unsigned int cnt, unsigned int res_prec) const
+/* Right shift XVAL by SHIFT and store the result in VAL.  Return the
+   number of blocks in VAL.  The input has XPRECISION bits and the
+   output has XPRECISION - SHIFT bits.  */
+static unsigned int
+rshift_large_common (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		     unsigned int xlen, unsigned int xprecision,
+		     unsigned int shift)
 {
-  wide_int result;
-  unsigned int i;
+  /* Split the shift into a whole-block shift and a subblock shift.  */
+  unsigned int skip = shift / HOST_BITS_PER_WIDE_INT;
+  unsigned int small_shift = shift % HOST_BITS_PER_WIDE_INT;
 
-  result.precision = res_prec;
+  /* Work out how many blocks are needed to store the significant bits
+     (excluding the upper zeros or signs).  */
+  unsigned int len = BLOCKS_NEEDED (xprecision - shift);
 
-  if (cnt >= res_prec)
+  /* It's easier to handle the simple block case specially.  */
+  if (small_shift == 0)
+    for (unsigned int i = 0; i < len; ++i)
+      val[i] = safe_uhwi (xval, xlen, i + skip);
+  else
     {
-      result.val[0] = 0;
-      result.len = 1;
-      return result;
+      /* Each output block but the last is a combination of two input blocks.
+	 The last block is a right shift of the last block in XVAL.  */
+      unsigned HOST_WIDE_INT curr = safe_uhwi (xval, xlen, skip);
+      for (unsigned int i = 0; i < len; ++i)
+	{
+	  val[i] = curr >> small_shift;
+	  curr = safe_uhwi (xval, xlen, i + skip + 1);
+	  val[i] |= curr << (-small_shift % HOST_BITS_PER_WIDE_INT);
+	}
     }
-
-  for (i = 0; i < res_prec; i += HOST_BITS_PER_WIDE_INT)
-    result.val[i / HOST_BITS_PER_WIDE_INT]
-      = extract_to_hwi (i - cnt, HOST_BITS_PER_WIDE_INT);
-
-  result.len = BLOCKS_NEEDED (res_prec);
-  result.canonize ();
-
-  return result;
+  return len;
 }
 
-/* Unsigned right shift THIS by CNT.  */
-wide_int_ro
-wide_int_ro::rshiftu_large (unsigned int cnt) const
+/* Logically right shift XVAL by SHIFT and store the result in VAL.
+   Return the number of blocks in VAL.  XVAL has XPRECISION bits and
+   VAL has PRECISION bits.  */
+unsigned int
+wi::lrshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		   unsigned int xlen, unsigned int xprecision,
+		   unsigned int precision, unsigned int shift)
 {
-  wide_int result;
-  int i;
-  int small_prec = (precision - cnt) & (HOST_BITS_PER_WIDE_INT - 1);
+  unsigned int len = rshift_large_common (val, xval, xlen, xprecision, shift);
 
-  if (cnt == 0)
-    return *this;
-
-  result.precision = precision;
-
-  if (cnt >= precision)
+  /* The value we just created has precision XPRECISION - SHIFT.
+     Zero-extend it to wider precisions.  */
+  if (precision > xprecision - shift)
     {
-      result.val[0] = 0;
-      result.len = 1;
-      return result;
+      unsigned int small_prec = (xprecision - shift) % HOST_BITS_PER_WIDE_INT;
+      if (small_prec)
+	val[len - 1] = zext_hwi (val[len - 1], small_prec);
+      else if (val[len - 1] < 0)
+	{
+	  /* Add a new block with a zero. */
+	  val[len++] = 0;
+	  return len;
+	}
     }
-
-  result.len = BLOCKS_NEEDED (precision - cnt);
-
-  for (i = 0; i < result.len; i++)
-    result.val[i]
-      = extract_to_hwi ((i * HOST_BITS_PER_WIDE_INT) + cnt,
-			HOST_BITS_PER_WIDE_INT);
-
-  /* Extract_to_hwi sign extends.  So we need to fix that up.  */
-  if (small_prec)
-    result.val [result.len - 1]
-      = zext_hwi (result.val [result.len - 1], small_prec);
-  else if (result.val[result.len - 1] < 0)
-    {
-      /* Add a new block with a zero. */
-      result.val[result.len++] = 0;
-      return result;
-    }
-
-  result.canonize ();
-
-  return result;
+  return canonize (val, len, precision);
 }
 
-/* Signed right shift THIS by CNT.  */
-wide_int_ro
-wide_int_ro::rshifts_large (unsigned int cnt) const
+/* Arithmetically right shift XVAL by SHIFT and store the result in VAL.
+   Return the number of blocks in VAL.  XVAL has XPRECISION bits and
+   VAL has PRECISION bits.  */
+unsigned int
+wi::arshift_large (HOST_WIDE_INT *val, const HOST_WIDE_INT *xval,
+		   unsigned int xlen, unsigned int xprecision,
+		   unsigned int precision, unsigned int shift)
 {
-  wide_int result;
-  int i;
+  unsigned int len = rshift_large_common (val, xval, xlen, xprecision, shift);
 
-  if (cnt == 0)
-    return *this;
-
-  result.precision = precision;
-
-  if (cnt >= precision)
+  /* The value we just created has precision XPRECISION - SHIFT.
+     Sign-extend it to wider types.  */
+  if (precision > xprecision - shift)
     {
-      HOST_WIDE_INT m = sign_mask ();
-      result.val[0] = m;
-      result.len = 1;
-      return result;
+      unsigned int small_prec = (xprecision - shift) % HOST_BITS_PER_WIDE_INT;
+      if (small_prec)
+	val[len - 1] = sext_hwi (val[len - 1], small_prec);
+    }
+  return canonize (val, len, precision);
+}
+
+/* Return the number of leading (upper) zeros in X.  */
+int
+wi::clz (const wide_int_ref &x)
+{
+  /* Calculate how many bits there above the highest represented block.  */
+  int count = x.precision - x.len * HOST_BITS_PER_WIDE_INT;
+
+  unsigned HOST_WIDE_INT high = x.uhigh ();
+  if (count < 0)
+    /* The upper -COUNT bits of HIGH are not part of the value.
+       Clear them out.  */
+    high = (high << -count) >> -count;
+  else if (x.sign_mask () < 0)
+    /* The upper bit is set, so there are no leading zeros.  */
+    return 0;
+
+  /* Check whether the value is zero.  */
+  if (high == 0 && x.len == 1)
+    return clz_zero (x.precision);
+
+  /* We don't need to look below HIGH.  Either HIGH is nonzero,
+     or the top bit of the block below is nonzero; clz_hwi is
+     HOST_BITS_PER_WIDE_INT in the latter case.  */
+  return count + clz_hwi (high);
+}
+
+/* Return the number of redundant sign bits in X.  (That is, the number
+   of bits immediately below the sign bit that have the same value as
+   the sign bit.)  */
+int
+wi::clrsb (const wide_int_ref &x)
+{
+  /* Calculate how many bits there above the highest represented block.  */
+  int count = x.precision - x.len * HOST_BITS_PER_WIDE_INT;
+
+  unsigned HOST_WIDE_INT high = x.uhigh ();
+  unsigned HOST_WIDE_INT mask = -1;
+  if (count < 0)
+    {
+      /* The upper -COUNT bits of HIGH are not part of the value.
+	 Clear them from both MASK and HIGH.  */
+      mask >>= -count;
+      high &= mask;
     }
 
-  result.len = BLOCKS_NEEDED (precision - cnt);
+  /* If the top bit is 1, count the number of leading 1s.  If the top
+     bit is zero, count the number of leading zeros.  */
+  if (high > mask / 2)
+    high ^= mask;
 
-  for (i = 0; i < result.len; i++)
-    result.val[i]
-      = extract_to_hwi ((i * HOST_BITS_PER_WIDE_INT) + cnt,
-			HOST_BITS_PER_WIDE_INT);
+  /* There are no sign bits below the top block, so we don't need to look
+     beyond HIGH.  Note that clz_hwi is HOST_BITS_PER_WIDE_INT when
+     HIGH is 0.  */
+  return count + clz_hwi (high) - 1;
+}
 
-  result.canonize ();
+/* Return the number of trailing (lower) zeros in X.  */
+int
+wi::ctz (const wide_int_ref &x)
+{
+  if (x.len == 1 && x.ulow () == 0)
+    return ctz_zero (x.precision);
 
-  return result;
+  /* Having dealt with the zero case, there must be a block with a
+     nonzero bit.  We don't care about the bits above the first 1.  */
+  unsigned int i = 0;
+  while (x.val[i] == 0)
+    ++i;
+  return i * HOST_BITS_PER_WIDE_INT + ctz_hwi (x.val[i]);
+}
+
+/* If X is an exact power of 2, return the base-2 logarithm, otherwise
+   return -1.  */
+int
+wi::exact_log2 (const wide_int_ref &x)
+{
+  /* 0-precision values can only hold 0.  */
+  if (x.precision == 0)
+    return -1;
+
+  /* Reject cases where there are implicit -1 blocks above HIGH.  */
+  if (x.len * HOST_BITS_PER_WIDE_INT < x.precision && x.sign_mask () < 0)
+    return -1;
+
+  /* Set CRUX to the index of the entry that should be nonzero.
+     If the top block is zero then the next lowest block (if any)
+     must have the high bit set.  */
+  unsigned int crux = x.len - 1;
+  if (crux > 0 && x.val[crux] == 0)
+    crux -= 1;
+
+  /* Check that all lower blocks are zero.  */
+  for (unsigned int i = 0; i < crux; ++i)
+    if (x.val[i] != 0)
+      return -1;
+
+  /* Get a zero-extended form of block CRUX.  */
+  unsigned HOST_WIDE_INT hwi = x.val[crux];
+  if (crux * HOST_BITS_PER_WIDE_INT > x.precision)
+    hwi = zext_hwi (hwi, x.precision % HOST_BITS_PER_WIDE_INT);
+
+  /* Now it's down to whether HWI is a power of 2.  */
+  int res = ::exact_log2 (hwi);
+  if (res >= 0)
+    res += crux * HOST_BITS_PER_WIDE_INT;
+  return res;
+}
+
+/* Return the base-2 logarithm of X, rounding down.  Return -1 if X is 0.  */
+int
+wi::floor_log2 (const wide_int_ref &x)
+{
+  return x.precision - 1 - clz (x);
+}
+
+/* Return the index of the first (lowest) set bit in X, counting from 1.
+   Return 0 if X is 0.  */
+int
+wi::ffs (const wide_int_ref &x)
+{
+  return eq_p (x, 0) ? 0 : ctz (x) + 1;
+}
+
+/* Return true if sign-extending X to have precision PRECISION would give
+   the minimum signed value at that precision.  */
+bool
+wi::only_sign_bit_p (const wide_int_ref &x, unsigned int precision)
+{
+  return ctz (x) + 1 == int (precision);
+}
+
+/* Return true if X represents the minimum signed value.  */
+bool
+wi::only_sign_bit_p (const wide_int_ref &x)
+{
+  return only_sign_bit_p (x, x.precision);
 }
 
 /*
  * Private utilities.
  */
-
-/* Decompress THIS for at least TARGET bits into a result with
-   precision PREC.  */
-wide_int_ro
-wide_int_ro::decompress (unsigned int target, unsigned int prec) const
-{
-  wide_int result;
-  int blocks_needed = BLOCKS_NEEDED (target);
-  HOST_WIDE_INT mask;
-  int len, i;
-
-  result.precision = prec;
-  result.len = blocks_needed;
-
-  for (i = 0; i < this->len; i++)
-    result.val[i] = val[i];
-
-  len = this->len;
-
-  if (target > result.precision)
-    return result;
-
-  /* The extension that we are doing here is not sign extension, it is
-     decompression.  */
-  mask = sign_mask ();
-  while (len < blocks_needed)
-    result.val[len++] = mask;
-
-  return result;
-}
 
 void gt_ggc_mx(max_wide_int*) { }
 void gt_pch_nx(max_wide_int*,void (*)(void*, void*), void*) { }
@@ -2833,7 +2138,7 @@ static char *
 dumpa (const HOST_WIDE_INT *val, unsigned int len, unsigned int prec, char *buf)
 {
   int i;
-  int l;
+  unsigned int l;
   const char * sep = "";
 
   l = sprintf (buf, "[%d (", prec);
@@ -2854,13 +2159,14 @@ dumpa (const HOST_WIDE_INT *val, unsigned int len, unsigned int prec, char *buf)
 }
 #endif
 
+#if 0
 /* The debugging routines print results of wide operations into the
    dump files of the respective passes in which they were called.  */
 char *
 wide_int_ro::dump (char* buf) const
 {
   int i;
-  int l;
+  unsigned int l;
   const char * sep = "";
 
   l = sprintf (buf, "[%d (", precision);
@@ -2877,293 +2183,11 @@ wide_int_ro::dump (char* buf) const
   gcc_assert (l < MAX_SIZE);
   return buf;
 }
-
-#ifdef DEBUG_WIDE_INT
-
-#if 0
-#define wide_int_dump_file (dump_file ? dump_file : stdout)
-#else
-#define wide_int_dump_file (dump_file)
 #endif
 
-void
-wide_int_ro::debug_vaa (const char* fmt, int r,
-			const HOST_WIDE_INT *o0, unsigned int l0, unsigned int p0,
-			const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1)
+HOST_WIDE_INT foo (tree x)
 {
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r,
-	     dumpa (o0, l0, p0, buf0),
-	     dumpa (o1, l1, p1, buf1));
+  addr_wide_int y = x;
+  addr_wide_int z = y;
+  return z.to_shwi ();
 }
-
-void
-wide_int_ro::debug_vw (const char* fmt, int r, const wide_int_ro& o0)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r, o0.dump (buf0));
-}
-
-void
-wide_int_ro::debug_vwa (const char* fmt, int r, const wide_int_ro &o0,
-			const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r, o0.dump (buf0), dumpa (o1, l1, p1, buf1));
-}
-
-void
-wide_int_ro::debug_vwh (const char* fmt, int r, const wide_int_ro &o0,
-			HOST_WIDE_INT o1)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r, o0.dump (buf0), o1);
-}
-
-void
-wide_int_ro::debug_vww (const char* fmt, int r, const wide_int_ro &o0,
-			const wide_int_ro &o1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r, o0.dump (buf0), o1.dump (buf1));
-}
-
-void
-wide_int_ro::debug_wa (const char* fmt, const wide_int_ro &r,
-		       const HOST_WIDE_INT *o0, unsigned int l0, unsigned int p0)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), dumpa (o0, l0, p0, buf1));
-}
-
-void
-wide_int_ro::debug_waa (const char* fmt, const wide_int_ro &r,
-			const HOST_WIDE_INT *o0, unsigned int l0, unsigned int p0,
-			const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), dumpa (o0, l0, p0, buf1),
-	     dumpa (o1, l1, p1, buf2));
-}
-
-void
-wide_int_ro::debug_waav (const char* fmt, const wide_int_ro &r,
-			 const HOST_WIDE_INT *o0, unsigned int l0, unsigned int p0,
-			 const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1,
-			 int s)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), dumpa (o0, l0, p0, buf1),
-	     dumpa (o1, l1, p1, buf2), s);
-}
-
-void
-wide_int_ro::debug_wh (const char* fmt, const wide_int_ro &r,
-		       HOST_WIDE_INT o1)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o1);
-}
-
-void
-wide_int_ro::debug_whh (const char* fmt, const wide_int_ro &r,
-			HOST_WIDE_INT o1, HOST_WIDE_INT o2)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o1, o2);
-}
-
-void
-wide_int_ro::debug_wv (const char* fmt, const wide_int_ro &r, int v0)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), v0);
-}
-
-void
-wide_int_ro::debug_wvv (const char* fmt, const wide_int_ro &r,
-			int v0, int v1)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), v0, v1);
-}
-
-void
-wide_int_ro::debug_wvvv (const char* fmt, const wide_int_ro &r,
-			 int v0, int v1, int v2)
-{
-  char buf0[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), v0, v1, v2);
-}
-
-void
-wide_int_ro::debug_wvwa (const char* fmt, const wide_int_ro &r, int v0,
-			 const wide_int_ro &o0,
-			 const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), v0,
-	     o0.dump (buf1), dumpa (o1, l1, p1, buf2));
-}
-
-void
-wide_int_ro::debug_wvasa (const char* fmt, const wide_int_ro &r, int v0,
-			  const HOST_WIDE_INT *o0, unsigned int l0, unsigned int p0,
-			  const char* s,
-			  const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), v0,
-	     dumpa (o0, l0, p0, buf1), s, dumpa (o1, l1, p1, buf2));
-}
-
-void
-wide_int_ro::debug_wvww (const char* fmt, const wide_int_ro &r, int v0,
-			 const wide_int_ro &o0, const wide_int_ro &o1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), v0,
-	     o0.dump (buf1), o1.dump (buf2));
-}
-
-void
-wide_int_ro::debug_ww (const char* fmt, const wide_int_ro &r,
-		       const wide_int_ro &o0)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1));
-}
-
-void
-wide_int_ro::debug_wwa (const char* fmt, const wide_int_ro &r,
-			const wide_int_ro &o0,
-			const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1),
-	     dumpa (o1, l1, p1, buf2));
-}
-
-void
-wide_int_ro::debug_wwv (const char* fmt, const wide_int_ro &r,
-			const wide_int_ro &o0, int v0)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1), v0);
-}
-
-void
-wide_int_ro::debug_wwvs (const char* fmt, const wide_int_ro &r,
-			 const wide_int_ro &o0, int v0,
-			 const char *s)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1), v0, s);
-}
-
-void
-wide_int_ro::debug_wwvvs (const char* fmt, const wide_int_ro &r,
-			  const wide_int_ro &o0, int v0, int v1,
-			  const char *s)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0), o0.dump (buf1), v0, v1, s);
-}
-
-void
-wide_int_ro::debug_wwwvv (const char* fmt, const wide_int_ro &r,
-			  const wide_int_ro &o0, const wide_int_ro &o1,
-			  int v0, int v1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0),
-	     o0.dump (buf1), o1.dump (buf2), v0, v1);
-}
-
-void
-wide_int_ro::debug_www (const char* fmt, const wide_int_ro &r,
-			const wide_int_ro &o0, const wide_int_ro &o1)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0),
-	     o0.dump (buf1), o1.dump (buf2));
-}
-
-void
-wide_int_ro::debug_wwasa (const char* fmt, const wide_int_ro &r, const wide_int_ro &o0,
-			  const HOST_WIDE_INT *o1, unsigned int l1, unsigned int p1,
-			  const char* s,
-			  const HOST_WIDE_INT *o2, unsigned int l2, unsigned int p2)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  char buf3[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0),
-	     o0.dump (buf1), dumpa (o1, l1, p1, buf2), s, dumpa (o2, l2, p2, buf3));
-}
-
-void
-wide_int_ro::debug_wwww (const char* fmt, const wide_int_ro &r,
-			 const wide_int_ro &o0, const wide_int_ro &o1,
-			 const wide_int_ro &o2)
-{
-  char buf0[MAX_SIZE];
-  char buf1[MAX_SIZE];
-  char buf2[MAX_SIZE];
-  char buf3[MAX_SIZE];
-  if (wide_int_dump_file)
-    fprintf (wide_int_dump_file, fmt, r.dump (buf0),
-	     o0.dump (buf1), o1.dump (buf2), o2.dump (buf3));
-}
-
-#endif
-

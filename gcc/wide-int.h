@@ -211,20 +211,11 @@ along with GCC; see the file COPYING3.  If not see
      all of the values may not be the same precision.  */
 
 
-#ifndef GENERATOR_FILE
 #include <utility>
-#include "tree.h"
 #include "system.h"
 #include "hwint.h"
-#include "options.h"
-#include "tm.h"
-#include "insn-modes.h"
-#include "machmode.h"
-#include "double-int.h"
-#include <gmp.h>
-#include "dumpfile.h"
-#include "real.h"
 #include "signop.h"
+#include "insn-modes.h"
 
 #if 0
 #define DEBUG_WIDE_INT
@@ -259,2176 +250,1954 @@ along with GCC; see the file COPYING3.  If not see
 #define ADDR_MAX_PRECISION \
   ((ADDR_MAX_BITSIZE + 4 + HOST_BITS_PER_WIDE_INT - 1) & ~(HOST_BITS_PER_WIDE_INT - 1))
 
-/* This is used to bundle an rtx and a mode together so that the pair
-   can be used as the second operand of a wide int expression.  If we
-   ever put modes into rtx integer constants, this should go away and
-   then just pass an rtx in.  */
-typedef std::pair <rtx, enum machine_mode> rtx_mode_t;
-
-template <typename T>
-inline bool
-signedp (T)
+namespace wi
 {
-  return ~(T) 0 < (T) 0;
-}
+  /* Classifies an integer based on its precision.  */
+  enum precision_type {
+    /* The integer has both a precision and defined signedness.  This allows
+       the integer to be converted to any width, since we know whether to fill
+       any extra bits with zeros or signs.  */
+    FLEXIBLE_PRECISION,
 
-template <>
-inline bool
-signedp <unsigned int> (unsigned int)
-{
-  return false;
-}
+    /* The integer has a variable precision but no defined signedness.  */
+    VAR_PRECISION,
 
-template <>
-inline bool
-signedp <unsigned long> (unsigned long)
-{
-  return false;
-}
+    /* The integer has a constant precision (known at GCC compile time)
+       but no defined signedness.  */
+    CONST_PRECISION
+  };
 
-class wide_int;
+  /* This class, which has no default implementation, is expected to
+     provide the following members:
 
-class GTY(()) wide_int_ro
-{
-  template <int bitsize>
-  friend class fixed_wide_int;
-  friend class wide_int;
-  /* Internal representation.  */
+     static const enum precision_type precision_type;
+       Classifies the type of T.
 
-protected:
-  HOST_WIDE_INT val[WIDE_INT_MAX_ELTS];
-  unsigned short len;
-  unsigned int precision;
+     static const unsigned int precision;
+       Only defined if precision_type == CONST_PRECISION.  Specifies the
+       precision of all integers of type T.
 
-  const HOST_WIDE_INT *get_val () const;
-  wide_int_ro &operator = (const wide_int_ro &);
+     static const bool host_dependent_precision;
+       True if the precision of T depends (or can depend) on the host.
 
-public:
-  wide_int_ro ();
-  wide_int_ro (const_tree);
-  wide_int_ro (HOST_WIDE_INT);
-  wide_int_ro (int);
-  wide_int_ro (unsigned HOST_WIDE_INT);
-  wide_int_ro (unsigned int);
-  wide_int_ro (const rtx_mode_t &);
+     static unsigned int get_precision (const T &x)
+       Return the number of bits in X.
 
-  /* Conversions.  */
-  static wide_int_ro from_shwi (HOST_WIDE_INT, unsigned int = 0);
-  static wide_int_ro from_uhwi (unsigned HOST_WIDE_INT, unsigned int = 0);
-  static wide_int_ro from_hwi (HOST_WIDE_INT, const_tree);
-  static wide_int_ro from_shwi (HOST_WIDE_INT, enum machine_mode);
-  static wide_int_ro from_uhwi (unsigned HOST_WIDE_INT, enum machine_mode);
-  static wide_int_ro from_array (const HOST_WIDE_INT *, unsigned int,
-				 unsigned int, bool = true);
-  static wide_int_ro from_double_int (double_int, unsigned int);
-  static wide_int_ro from_buffer (const unsigned char *, int);
-  void to_mpz (mpz_t, signop) const;
-  static wide_int_ro from_mpz (const_tree, mpz_t, bool);
-  HOST_WIDE_INT to_shwi (unsigned int = 0) const;
+     static wi::storage_ref *decompose (HOST_WIDE_INT *scratch,
+					unsigned int precision, const T &x)
+       Decompose X as a PRECISION-bit integer, returning the associated
+       wi::storage_ref.  SCRATCH is available as scratch space if needed.
+       The routine should assert that PRECISION is acceptable.  */
+  template <typename T> struct int_traits;
 
-  unsigned HOST_WIDE_INT to_uhwi (unsigned int = 0) const;
-  HOST_WIDE_INT to_short_addr () const;
+  /* This class provides a single type, result_type, which specifies the
+     type of integer produced by a binary operation whose inputs have
+     types T1 and T2.  The definition should be symmetric.  */
+  template <typename T1, typename T2,
+	    enum precision_type P1 = int_traits <T1>::precision_type,
+	    enum precision_type P2 = int_traits <T2>::precision_type>
+  struct binary_traits;
 
-  static wide_int_ro max_value (unsigned int, signop, unsigned int = 0);
-  static wide_int_ro max_value (const_tree);
-  static wide_int_ro max_value (enum machine_mode, signop);
-  static wide_int_ro min_value (unsigned int, signop, unsigned int = 0);
-  static wide_int_ro min_value (const_tree);
-  static wide_int_ro min_value (enum machine_mode, signop);
-
-  /* Small constants.  These are generally only needed in the places
-     where the precision must be provided.  For instance in binary
-     operations where the other operand has a precision, or for use
-     with max_wide_int or addr_wide_int, these are never needed.  */
-  static wide_int_ro minus_one (unsigned int);
-  static wide_int_ro zero (unsigned int);
-  static wide_int_ro one (unsigned int);
-  static wide_int_ro two (unsigned int);
-
-  /* Public accessors for the interior of a wide int.  */
-  unsigned short get_len () const;
-  unsigned int get_precision () const;
-  HOST_WIDE_INT elt (unsigned int) const;
-
-  /* Comparative functions.  */
-  bool minus_one_p () const;
-  bool zero_p () const;
-  bool one_p () const;
-  bool neg_p (signop sgn = SIGNED) const;
-  bool multiple_of_p (const wide_int_ro &, signop, wide_int_ro *) const;
-
-  /* Comparisons, note that only equality is an operator.  The other
-     comparisons cannot be operators since they are inherently signed or
-     unsigned and C++ has no such operators.  */
+  /* The result of a unary operation on T is the same as the result of
+     a binary operation on two values of type T.  */
   template <typename T>
-  bool operator == (const T &) const;
+  struct unary_traits : public binary_traits <T, T> {};
+}
+
+/* The type of result produced by a binary operation on types T1 and T2.
+   Defined purely for brevity.  */
+#define WI_BINARY_RESULT(T1, T2) \
+  typename wi::binary_traits <T1, T2>::result_type
+
+/* The type of result produced by a unary operation on type T.  */
+#define WI_UNARY_RESULT(T) \
+  typename wi::unary_traits <T>::result_type
+
+/* Define a variable RESULT to hold the result of a binary operation on
+   X and Y, which have types T1 and T2 respectively.  Define VAR to
+   point to the blocks of RESULT.  Once the user of the macro has
+   filled in VAR, it should call RESULT.set_len to set the number
+   of initialized blocks.  */
+#define WI_BINARY_RESULT_VAR(RESULT, VAL, T1, X, T2, Y) \
+  WI_BINARY_RESULT (T1, T2) RESULT = \
+    wi::int_traits <WI_BINARY_RESULT (T1, T2)>::get_binary_result (X, Y); \
+  HOST_WIDE_INT *VAL = RESULT.write_val ()
+
+/* Similar for the result of a unary operation on X, which has type T.  */
+#define WI_UNARY_RESULT_VAR(RESULT, VAL, T, X) \
+  WI_UNARY_RESULT (T) RESULT = \
+    wi::int_traits <WI_UNARY_RESULT (T)>::get_binary_result (X, X); \
+  HOST_WIDE_INT *VAL = RESULT.write_val ()
+
+template <typename T> struct generic_wide_int;
+
+struct wide_int_storage;
+typedef generic_wide_int <wide_int_storage> wide_int;
+
+struct wide_int_ref_storage;
+typedef generic_wide_int <wide_int_ref_storage> wide_int_ref;
+
+/* Public functions for querying and operating on integers.  */
+namespace wi
+{
+  template <typename T>
+  unsigned int get_precision (const T &);
 
   template <typename T1, typename T2>
-  static bool eq_p (const T1 &, const T2 &);
+  unsigned int get_binary_precision (const T1 &, const T2 &);
 
+  /* FIXME: should disappear.  */
   template <typename T>
-  bool operator != (const T &) const;
+  void clear_undef (T &, signop);
 
-  template <typename T>
-  bool lt_p (const T &, signop) const;
-
-  template <typename T1, typename T2>
-  static bool lt_p (const T1 &, const T2 &, signop);
-
-  template <typename T>
-  bool lts_p (const T &) const;
-
-  template <typename T1, typename T2>
-  static bool lts_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool ltu_p (const T &) const;
+  bool fits_shwi_p (const wide_int_ref &);
+  bool fits_uhwi_p (const wide_int_ref &);
+  bool neg_p (const wide_int_ref &, signop = SIGNED);
+  bool only_sign_bit_p (const wide_int_ref &, unsigned int);
+  bool only_sign_bit_p (const wide_int_ref &);
+  HOST_WIDE_INT sign_mask (const wide_int_ref &);
 
   template <typename T1, typename T2>
-  static bool ltu_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool le_p (const T &, signop) const;
+  bool eq_p (const T1 &, const T2 &);
 
   template <typename T1, typename T2>
-  static bool le_p (const T1 &, const T2 &, signop);
+  bool ne_p (const T1 &, const T2 &);
 
-  template <typename T>
-  bool les_p (const T &) const;
+  bool lt_p (const wide_int_ref &, const wide_int_ref &, signop);
+  bool lts_p (const wide_int_ref &, const wide_int_ref &);
+  bool ltu_p (const wide_int_ref &, const wide_int_ref &);
+  bool le_p (const wide_int_ref &, const wide_int_ref &, signop);
+  bool les_p (const wide_int_ref &, const wide_int_ref &);
+  bool leu_p (const wide_int_ref &, const wide_int_ref &);
+  bool gt_p (const wide_int_ref &, const wide_int_ref &, signop);
+  bool gts_p (const wide_int_ref &, const wide_int_ref &);
+  bool gtu_p (const wide_int_ref &, const wide_int_ref &);
+  bool ge_p (const wide_int_ref &, const wide_int_ref &, signop);
+  bool ges_p (const wide_int_ref &, const wide_int_ref &);
+  bool geu_p (const wide_int_ref &, const wide_int_ref &);
+  int cmp (const wide_int_ref &, const wide_int_ref &, signop);
+  int cmps (const wide_int_ref &, const wide_int_ref &);
+  int cmpu (const wide_int_ref &, const wide_int_ref &);
+
+#define UNARY_FUNCTION \
+  template <typename T> WI_UNARY_RESULT (T)
+#define BINARY_FUNCTION \
+  template <typename T1, typename T2> WI_BINARY_RESULT (T1, T2)
+#define SHIFT_FUNCTION \
+  template <typename T> WI_UNARY_RESULT (T)
+
+  UNARY_FUNCTION bit_not (const T &);
+  UNARY_FUNCTION neg (const T &);
+  UNARY_FUNCTION neg (const T &, bool *);
+  UNARY_FUNCTION abs (const T &);
+  UNARY_FUNCTION ext (const T &, unsigned int, signop);
+  UNARY_FUNCTION sext (const T &, unsigned int);
+  UNARY_FUNCTION zext (const T &, unsigned int);
+  UNARY_FUNCTION set_bit (const T &, unsigned int);
+
+  BINARY_FUNCTION min (const T1 &, const T2 &, signop);
+  BINARY_FUNCTION smin (const T1 &, const T2 &);
+  BINARY_FUNCTION umin (const T1 &, const T2 &);
+  BINARY_FUNCTION max (const T1 &, const T2 &, signop);
+  BINARY_FUNCTION smax (const T1 &, const T2 &);
+  BINARY_FUNCTION umax (const T1 &, const T2 &);
+
+  BINARY_FUNCTION bit_and (const T1 &, const T2 &);
+  BINARY_FUNCTION bit_and_not (const T1 &, const T2 &);
+  BINARY_FUNCTION bit_or (const T1 &, const T2 &);
+  BINARY_FUNCTION bit_or_not (const T1 &, const T2 &);
+  BINARY_FUNCTION bit_xor (const T1 &, const T2 &);
+  BINARY_FUNCTION add (const T1 &, const T2 &);
+  BINARY_FUNCTION add (const T1 &, const T2 &, signop, bool *);
+  BINARY_FUNCTION sub (const T1 &, const T2 &);
+  BINARY_FUNCTION sub (const T1 &, const T2 &, signop, bool *);
+  BINARY_FUNCTION mul (const T1 &, const T2 &);
+  BINARY_FUNCTION mul (const T1 &, const T2 &, signop, bool *);
+  BINARY_FUNCTION smul (const T1 &, const T2 &, bool *);
+  BINARY_FUNCTION umul (const T1 &, const T2 &, bool *);
+  BINARY_FUNCTION mul_high (const T1 &, const T2 &, signop);
+  BINARY_FUNCTION div_trunc (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION sdiv_trunc (const T1 &, const T2 &);
+  BINARY_FUNCTION udiv_trunc (const T1 &, const T2 &);
+  BINARY_FUNCTION div_floor (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION udiv_floor (const T1 &, const T2 &);
+  BINARY_FUNCTION sdiv_floor (const T1 &, const T2 &);
+  BINARY_FUNCTION div_ceil (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION div_round (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION divmod_trunc (const T1 &, const T2 &, signop,
+				WI_BINARY_RESULT (T1, T2) *);
+  BINARY_FUNCTION mod_trunc (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION smod_trunc (const T1 &, const T2 &);
+  BINARY_FUNCTION umod_trunc (const T1 &, const T2 &);
+  BINARY_FUNCTION mod_floor (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION umod_floor (const T1 &, const T2 &);
+  BINARY_FUNCTION mod_ceil (const T1 &, const T2 &, signop, bool * = 0);
+  BINARY_FUNCTION mod_round (const T1 &, const T2 &, signop, bool * = 0);
 
   template <typename T1, typename T2>
-  static bool les_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool leu_p (const T &) const;
-
-  template <typename T1, typename T2>
-  static bool leu_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool gt_p (const T &, signop) const;
-
-  template <typename T1, typename T2>
-  static bool gt_p (const T1 &, const T2 &, signop);
-
-  template <typename T>
-  bool gts_p (const T &) const;
-
-  template <typename T1, typename T2>
-  static bool gts_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool gtu_p (const T &) const;
-
-  template <typename T1, typename T2>
-  static bool gtu_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool ge_p (const T &, signop) const;
-
-  template <typename T1, typename T2>
-  static bool ge_p (const T1 &, const T2 &, signop);
-
-  template <typename T>
-  bool ges_p (const T &) const;
-
-  template <typename T1, typename T2>
-  static bool ges_p (const T1 &, const T2 &);
-
-  template <typename T>
-  bool geu_p (const T &) const;
-
-  template <typename T1, typename T2>
-  static bool geu_p (const T1 &, const T2 &);
-
-  template <typename T>
-  int cmp (const T &, signop) const;
-  template <typename T1, typename T2>
-  static int cmp (const T1 &, const T2 &, signop);
-
-  template <typename T>
-  int cmps (const T &) const;
-  template <typename T1, typename T2>
-  static int cmps (const T1 &, const T2 &);
-
-  template <typename T>
-  int cmpu (const T &) const;
-  template <typename T1, typename T2>
-  static int cmpu (const T1 &, const T2 &);
-
-  bool only_sign_bit_p (unsigned int) const;
-  bool only_sign_bit_p () const;
-  bool fits_shwi_p () const;
-  bool fits_uhwi_p () const;
-  bool fits_to_tree_p (const_tree) const;
-
-  /* Min and max.  */
-
-  template <typename T>
-  wide_int_ro min (const T &, signop) const;
-  wide_int_ro min (const wide_int_ro &, signop) const;
-
-  template <typename T>
-  wide_int_ro max (const T &, signop) const;
-  wide_int_ro max (const wide_int_ro &, signop) const;
-
-  template <typename T>
-  wide_int_ro smin (const T &) const;
-  wide_int_ro smin (const wide_int_ro &) const;
-
-  template <typename T>
-  wide_int_ro smax (const T &) const;
-  wide_int_ro smax (const wide_int_ro &) const;
-
-  template <typename T>
-  wide_int_ro umin (const T &) const;
-  wide_int_ro umin (const wide_int_ro &) const;
-
-  template <typename T>
-  wide_int_ro umax (const T &) const;
-  wide_int_ro umax (const wide_int_ro &) const;
-
-  /* Extensions.  These do not change the precision.  */
-
-  wide_int_ro ext (unsigned int, signop) const;
-  wide_int_ro sext (unsigned int) const;
-  wide_int_ro zext (unsigned int) const;
-
-  /* Size changing.  These change the underlying precision and are not
-     available for max_wide_int or addr_wide_int.  */
-
-  wide_int_ro force_to_size (unsigned int, signop) const;
-  wide_int_ro sforce_to_size (unsigned int) const;
-  wide_int_ro zforce_to_size (unsigned int) const;
-
-  /* Masking, and Insertion.  */
-
-  wide_int_ro set_bit (unsigned int) const;
-  static wide_int_ro set_bit_in_zero (unsigned int, unsigned int);
-  wide_int_ro insert (const wide_int_ro &, unsigned int, unsigned int) const;
-
-  wide_int_ro bswap () const;
-
-  static wide_int_ro mask (unsigned int, bool, unsigned int);
-  static wide_int_ro shifted_mask (unsigned int, unsigned int, bool,
-				   unsigned int);
-
-  HOST_WIDE_INT sign_mask () const;
-
-  void clear_undef (signop);
-
-  /* Logicals.  */
-
-  template <typename T>
-  wide_int_ro operator & (const T &) const;
-
-  template <typename T>
-  wide_int_ro and_not (const T &) const;
-
-  wide_int_ro operator ~ () const;
-
-  template <typename T>
-  wide_int_ro operator | (const T &) const;
-
-  template <typename T>
-  wide_int_ro or_not (const T &) const;
-
-  template <typename T>
-  wide_int_ro operator ^ (const T &) const;
-
-  /* Arithmetic operation functions, alpha sorted (except divmod)..  */
-
-  wide_int_ro abs () const;
-
-  template <typename T>
-  wide_int_ro operator + (const T &) const;
-
-  template <typename T>
-  wide_int_ro add (const T &, signop, bool *) const;
-
-  wide_int_ro clz () const;
-  wide_int_ro clrsb () const;
-  wide_int_ro ctz () const;
-  wide_int_ro exact_log2 () const;
-  wide_int_ro floor_log2 () const;
-  wide_int_ro ffs () const;
-
-  template <typename T>
-  wide_int_ro operator * (const T &) const;
-
-  template <typename T>
-  wide_int_ro mul (const T &, signop, bool *) const;
-
-  template <typename T>
-  wide_int_ro smul (const T &, bool *) const;
-
-  template <typename T>
-  wide_int_ro umul (const T &, bool *) const;
-
-  template <typename T>
-  wide_int_ro mul_full (const T &, signop) const;
-
-  template <typename T>
-  wide_int_ro smul_full (const T &) const;
-
-  template <typename T>
-  wide_int_ro umul_full (const T &) const;
-
-  template <typename T>
-  wide_int_ro mul_high (const T &, signop) const;
-
-  wide_int_ro operator - () const;
-  wide_int_ro neg (bool *) const;
-  wide_int_ro parity () const;
-  wide_int_ro popcount () const;
-
-  template <typename T>
-  wide_int_ro operator - (const T &) const;
-
-  template <typename T>
-  wide_int_ro sub (const T &, signop, bool *) const;
-
-  /* Division and modulus.  These are the ones that are actually used in
-     the compiler.  More can be added where they are needed.  */
-
-  template <typename T>
-  wide_int_ro div_trunc (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro sdiv_trunc (const T &) const;
-
-  template <typename T>
-  wide_int_ro udiv_trunc (const T &) const;
-
-  template <typename T>
-  wide_int_ro div_floor (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro udiv_floor (const T &) const;
-
-  template <typename T>
-  wide_int_ro sdiv_floor (const T &) const;
-
-  template <typename T>
-  wide_int_ro div_ceil (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro div_round (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro divmod_trunc (const T &, wide_int_ro *, signop) const;
-
-  template <typename T>
-  wide_int_ro sdivmod_trunc (const T &, wide_int_ro *) const;
-
-  template <typename T>
-  wide_int_ro udivmod_trunc (const T &, wide_int_ro *) const;
-
-  template <typename T>
-  wide_int_ro divmod_floor (const T &, wide_int_ro *, signop) const;
-
-  template <typename T>
-  wide_int_ro sdivmod_floor (const T &, wide_int_ro *) const;
-
-  template <typename T>
-  wide_int_ro mod_trunc (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro smod_trunc (const T &) const;
-
-  template <typename T>
-  wide_int_ro umod_trunc (const T &) const;
-
-  template <typename T>
-  wide_int_ro mod_floor (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro umod_floor (const T &) const;
-
-  template <typename T>
-  wide_int_ro mod_ceil (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  wide_int_ro mod_round (const T &, signop, bool * = 0) const;
-
-  HOST_WIDE_INT extract_to_hwi (int, int) const;
-
-  template <typename T>
-  wide_int_ro lshift (const T &, unsigned int = 0) const;
-
-  template <typename T>
-  wide_int_ro lshift_widen (const T &, unsigned int) const;
-
-  template <typename T>
-  wide_int_ro lrotate (const T &, unsigned int = 0) const;
-
-  wide_int_ro lrotate (unsigned HOST_WIDE_INT, unsigned int = 0) const;
-
-  template <typename T>
-  wide_int_ro rshift (const T &, signop, unsigned int = 0) const;
-
-  template <typename T>
-  wide_int_ro rshiftu (const T &, unsigned int = 0) const;
-
-  template <typename T>
-  wide_int_ro rshifts (const T &, unsigned int = 0) const;
-
-  template <typename T>
-  wide_int_ro rrotate (const T &, unsigned int = 0) const;
-
-  wide_int_ro rrotate (unsigned HOST_WIDE_INT, unsigned int = 0) const;
-
-  char *dump (char *) const;
-
-private:
-  /* Internal versions that do the work if the values do not fit in a HWI.  */
-
-  /* Comparisons */
-  static bool eq_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-			  const HOST_WIDE_INT *, unsigned int);
-  static bool lts_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-			   const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static int cmps_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-			 const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static bool ltu_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-			   const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static int cmpu_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
-			 const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static void check_precision (unsigned int *, unsigned int *, bool, bool);
-
-
-  /* Logicals.  */
-  static wide_int_ro and_large (const HOST_WIDE_INT *, unsigned int,
-				unsigned int, const HOST_WIDE_INT *,
-				unsigned int);
-  static wide_int_ro and_not_large (const HOST_WIDE_INT *, unsigned int,
-				    unsigned int, const HOST_WIDE_INT *,
-				    unsigned int);
-  static wide_int_ro or_large (const HOST_WIDE_INT *, unsigned int,
-			       unsigned int, const HOST_WIDE_INT *,
-			       unsigned int);
-  static wide_int_ro or_not_large (const HOST_WIDE_INT *, unsigned int,
-				   unsigned int, const HOST_WIDE_INT *,
-				   unsigned int);
-  static wide_int_ro xor_large (const HOST_WIDE_INT *, unsigned int,
-				unsigned int, const HOST_WIDE_INT *,
-				unsigned int);
-
-  /* Arithmetic */
-  static wide_int_ro add_large (const HOST_WIDE_INT *, unsigned int,
-				unsigned int, const HOST_WIDE_INT *,
-				unsigned int, signop, bool * = 0);
-  static wide_int_ro sub_large (const HOST_WIDE_INT *, unsigned int,
-				unsigned int, const HOST_WIDE_INT *,
-				unsigned int, signop, bool * = 0);
-
-  wide_int_ro lshift_large (unsigned int, unsigned int) const;
-  wide_int_ro rshiftu_large (unsigned int) const;
-  wide_int_ro rshifts_large (unsigned int) const;
-
-  static wide_int_ro mul_internal (bool, bool, const HOST_WIDE_INT *,
-				   unsigned int, unsigned int,
-				   const HOST_WIDE_INT *, unsigned int,
-				   signop, bool *, bool);
-  static void divmod_internal_2 (unsigned HOST_HALF_WIDE_INT *,
-				 unsigned HOST_HALF_WIDE_INT *,
-				 unsigned HOST_HALF_WIDE_INT *,
-				 unsigned HOST_HALF_WIDE_INT *, int, int);
-  static wide_int_ro divmod_internal (bool, const HOST_WIDE_INT *,
-				      unsigned int, unsigned int,
-				      const HOST_WIDE_INT *,
-				      unsigned int, unsigned int,
-				      signop, wide_int_ro *, bool, bool *);
-
-  /* Private utility routines.  */
-  int trunc_shift (const HOST_WIDE_INT *cnt, unsigned int bitsize) const;
-  wide_int_ro decompress (unsigned int, unsigned int) const;
-  void canonize ();
-  static wide_int_ro from_rtx (const rtx_mode_t);
-
-  template <typename T>
-  static bool top_bit_set (T);
-
-  template <typename T>
-  static const HOST_WIDE_INT *to_shwi1 (HOST_WIDE_INT *, unsigned int *,
-					unsigned int *, const T &);
-
-  template <typename T>
-  static const HOST_WIDE_INT *to_shwi2 (HOST_WIDE_INT *, unsigned int *,
-					const T &);
-
-#ifdef DEBUG_WIDE_INT
-  /* Debugging routines.  */
-  static void debug_wa (const char *, const wide_int_ro &,
-			const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static void debug_waa (const char *, const wide_int_ro &,
-			 const HOST_WIDE_INT *, unsigned int,
-			 unsigned int, const HOST_WIDE_INT *,
-			 unsigned int, unsigned int);
-  static void debug_waav (const char *, const wide_int_ro &,
-			  const HOST_WIDE_INT *, unsigned int,
-			  unsigned int, const HOST_WIDE_INT *,
-			  unsigned int, unsigned int, int);
-  static void debug_vw  (const char *, int, const wide_int_ro &);
-  static void debug_vwh (const char *, int, const wide_int_ro &,
-			 HOST_WIDE_INT);
-  static void debug_vaa (const char *, int, const HOST_WIDE_INT *,
-			 unsigned int, unsigned int, const HOST_WIDE_INT *,
-			 unsigned int, unsigned int);
-  static void debug_vwa (const char *, int, const wide_int_ro &,
-			 const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static void debug_vww (const char *, int, const wide_int_ro &,
-			 const wide_int_ro &);
-  static void debug_wh (const char *, const wide_int_ro &, HOST_WIDE_INT);
-  static void debug_whh (const char *, const wide_int_ro &,
-			 HOST_WIDE_INT, HOST_WIDE_INT);
-  static void debug_wv (const char *, const wide_int_ro &, int);
-  static void debug_wvv (const char *, const wide_int_ro &, int, int);
-  static void debug_wvvv (const char *, const wide_int_ro &, int, int, int);
-  static void debug_wvwa (const char *, const wide_int_ro &, int,
-			  const wide_int_ro &, const HOST_WIDE_INT *,
-			  unsigned int, unsigned int);
-  static void debug_wvasa (const char *, const wide_int_ro &, int,
-			   const HOST_WIDE_INT *, unsigned int, unsigned int,
-			   const char *, const HOST_WIDE_INT *,
-			   unsigned int, unsigned int);
-  static void debug_wvww (const char *, const wide_int_ro &, int,
-			  const wide_int_ro &, const wide_int_ro &);
-  static void debug_wwa (const char *, const wide_int_ro &,
-			 const wide_int_ro &, const HOST_WIDE_INT *,
-			 unsigned int, unsigned int);
-  static void debug_wwv (const char *, const wide_int_ro &,
-			 const wide_int_ro &, int);
-  static void debug_wwvs (const char *, const wide_int_ro &,
-			  const wide_int_ro &, int, const char *);
-  static void debug_wwvvs (const char *, const wide_int_ro &,
-			   const wide_int_ro &, int, int, const char *);
-  static void debug_wwwvv (const char *, const wide_int_ro &,
-			   const wide_int_ro &, const wide_int_ro &, int, int);
-  static void debug_ww (const char *, const wide_int_ro &,
-			const wide_int_ro &);
-  static void debug_www (const char *, const wide_int_ro &,
-			 const wide_int_ro &, const wide_int_ro &);
-  static void debug_wwasa (const char *, const wide_int_ro &,
-			   const wide_int_ro &, const HOST_WIDE_INT *,
-			   unsigned int, unsigned int, const char *,
-			   const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static void debug_wwwa (const char *, const wide_int_ro &,
-			  const wide_int_ro &, const wide_int_ro &,
-			  const HOST_WIDE_INT *, unsigned int, unsigned int);
-  static void debug_wwww (const char *, const wide_int_ro &,
-			  const wide_int_ro &, const wide_int_ro &,
-			  const wide_int_ro &);
-#endif
-};
-
-class GTY(()) wide_int : public wide_int_ro {
- public:
-  wide_int ();
-  wide_int (const wide_int_ro &);
-  wide_int (const_tree);
-  wide_int (HOST_WIDE_INT);
-  wide_int (int);
-  wide_int (unsigned HOST_WIDE_INT);
-  wide_int (unsigned int);
-  wide_int (const rtx_mode_t &);
-
-  wide_int &operator = (const wide_int_ro &);
-  wide_int &operator = (const_tree);
-  wide_int &operator = (HOST_WIDE_INT);
-  wide_int &operator = (int);
-  wide_int &operator = (unsigned HOST_WIDE_INT);
-  wide_int &operator = (unsigned int);
-  wide_int &operator = (const rtx_mode_t &);
-
-  wide_int &operator ++ ();
-  wide_int& operator -- ();
-
-  template <typename T>
-  wide_int &operator &= (const T &);
-
-  template <typename T>
-   wide_int &operator |= (const T &);
-
-  template <typename T>
-  wide_int &operator ^= (const T &);
-
-  template <typename T>
-  wide_int &operator += (const T &);
-
-  template <typename T>
-  wide_int &operator -= (const T &);
-
-  template <typename T>
-  wide_int &operator *= (const T &);
-};
-
-inline const HOST_WIDE_INT *
-wide_int_ro::get_val () const
-{
-  return val;
+  bool multiple_of_p (const T1 &, const T2 &, signop,
+		      WI_BINARY_RESULT (T1, T2) *);
+
+  unsigned int trunc_shift (const wide_int_ref &, unsigned int, unsigned int);
+
+  SHIFT_FUNCTION lshift (const T &, const wide_int_ref &, unsigned int = 0);
+  SHIFT_FUNCTION lrshift (const T &, const wide_int_ref &, unsigned int = 0);
+  SHIFT_FUNCTION arshift (const T &, const wide_int_ref &, unsigned int = 0);
+  SHIFT_FUNCTION rshift (const T &, const wide_int_ref &, signop sgn,
+			 unsigned int = 0);
+  SHIFT_FUNCTION lrotate (const T &, const wide_int_ref &, unsigned int = 0);
+  SHIFT_FUNCTION rrotate (const T &, const wide_int_ref &, unsigned int = 0);
+
+#undef SHIFT_FUNCTION
+#undef BINARY_FUNCTION
+#undef UNARY_FUNCTION
+
+  int clz (const wide_int_ref &);
+  int clrsb (const wide_int_ref &);
+  int ctz (const wide_int_ref &);
+  int exact_log2 (const wide_int_ref &);
+  int floor_log2 (const wide_int_ref &);
+  int ffs (const wide_int_ref &);
+  int popcount (const wide_int_ref &);
+  int parity (const wide_int_ref &);
+
+  template <typename T>
+  unsigned HOST_WIDE_INT extract_uhwi (const T &, unsigned int, unsigned int);
 }
 
-inline wide_int_ro &
-wide_int_ro::operator = (const wide_int_ro &r)
+namespace wi
 {
-  for (unsigned int i = 0; i < r.get_len (); ++i)
-    val[i] = r.get_val () [i];
-  len = r.get_len ();
-  precision = r.get_precision ();
-  return *this;
+  /* Contains the components of a decomposed integer for easy, direct
+     access.  */
+  struct storage_ref
+  {
+    storage_ref (const HOST_WIDE_INT *, unsigned int, unsigned int);
+
+    const HOST_WIDE_INT *val;
+    unsigned int len;
+    unsigned int precision;
+
+    /* Provide enough trappings for this class to act as storage for
+       generic_wide_int.  */
+    unsigned int get_len () const;
+    unsigned int get_precision () const;
+    const HOST_WIDE_INT *get_val () const;
+  };
 }
 
-inline wide_int_ro::wide_int_ro () : len (0) {}
-
-/* Convert an INTEGER_CST into a wide int.  */
-inline wide_int_ro::wide_int_ro (const_tree tcst)
+inline::wi::storage_ref::storage_ref (const HOST_WIDE_INT *val_in,
+				      unsigned int len_in,
+				      unsigned int precision_in)
+  : val (val_in), len (len_in), precision (precision_in)
 {
-  *this = from_array (&TREE_INT_CST_ELT (tcst, 0),
-		      TREE_INT_CST_NUNITS (tcst),
-		      TYPE_PRECISION (TREE_TYPE (tcst)), false);
 }
 
-inline wide_int_ro::wide_int_ro (HOST_WIDE_INT op0)
-{
-  precision = 0;
-  val[0] = op0;
-  len = 1;
-}
-
-inline wide_int_ro::wide_int_ro (int op0)
-{
-  precision = 0;
-  val[0] = op0;
-  len = 1;
-}
-
-inline wide_int_ro::wide_int_ro (unsigned HOST_WIDE_INT op0)
-{
-  *this = from_uhwi (op0);
-}
-
-inline wide_int_ro::wide_int_ro (unsigned int op0)
-{
-  *this = from_uhwi (op0);
-}
-
-inline wide_int_ro::wide_int_ro (const rtx_mode_t &op0)
-{
-  *this = from_rtx (op0);
-}
-
-/* Convert signed OP0 into a wide_int_ro with the precision taken from
-   MODE.  */
-inline wide_int_ro
-wide_int_ro::from_shwi (HOST_WIDE_INT op0, enum machine_mode mode)
-{
-  unsigned int prec = GET_MODE_PRECISION (mode);
-  return from_shwi (op0, prec);
-}
-
-/* Convert unsigned OP0 into a wide_int_ro with the precision taken from
-   MODE.  */
-inline wide_int_ro
-wide_int_ro::from_uhwi (unsigned HOST_WIDE_INT op0, enum machine_mode mode)
-{
-  unsigned int prec = GET_MODE_PRECISION (mode);
-  return from_uhwi (op0, prec);
-}
-
-/* Convert OP0 into a wide_int with parameters taken from TYPE.  */
-inline wide_int_ro
-wide_int_ro::from_hwi (HOST_WIDE_INT op0, const_tree type)
-{
-  unsigned int prec = TYPE_PRECISION (type);
-
-  if (TYPE_UNSIGNED (type))
-    return wide_int_ro::from_uhwi (op0, prec);
-  else
-    return wide_int_ro::from_shwi (op0, prec);
-}
-
-/* Return THIS as a signed HOST_WIDE_INT.  If THIS does not fit in PREC,
-   the information is lost.  */
-inline HOST_WIDE_INT
-wide_int_ro::to_shwi (unsigned int prec) const
-{
-  HOST_WIDE_INT result;
-
-  if (prec == 0)
-    prec = precision;
-
-  if (prec < HOST_BITS_PER_WIDE_INT)
-    result = sext_hwi (val[0], prec);
-  else
-    result = val[0];
-
-  return result;
-}
-
-/* Return THIS as an unsigned HOST_WIDE_INT.  If THIS does not fit in PREC,
-   the information is lost.  */
-inline unsigned HOST_WIDE_INT
-wide_int_ro::to_uhwi (unsigned int prec) const
-{
-  HOST_WIDE_INT result;
-
-  if (prec == 0)
-    prec = precision;
-
-  if (prec < HOST_BITS_PER_WIDE_INT)
-    result = zext_hwi (val[0], prec);
-  else
-    result = val[0];
-
-  return result;
-}
-
-/* TODO: The compiler is half converted from using HOST_WIDE_INT to
-   represent addresses to using wide_int_ro to represent addresses.
-   We use to_short_addr at the interface from new code to old,
-   unconverted code.  */
-inline HOST_WIDE_INT
-wide_int_ro::to_short_addr () const
-{
-  return val[0];
-}
-
-/* Produce the largest number that is represented in TYPE.  The precision
-   and sign are taken from TYPE.  */
-inline wide_int_ro
-wide_int_ro::max_value (const_tree type)
-{
-  unsigned int prec = TYPE_PRECISION (type);
-  return max_value (prec, TYPE_SIGN (type), prec);
-}
-
-/* Produce the largest number that is represented in MODE.  The precision
-   is taken from MODE and the sign from SGN.  */
-inline wide_int_ro
-wide_int_ro::max_value (enum machine_mode mode, signop sgn)
-{
-  unsigned int prec = GET_MODE_PRECISION (mode);
-  return max_value (prec, sgn, prec);
-}
-
-/* Produce the smallest number that is represented in TYPE.  The precision
-   and sign are taken from TYPE.  */
-inline wide_int_ro
-wide_int_ro::min_value (const_tree type)
-{
-  unsigned int prec = TYPE_PRECISION (type);
-  return min_value (prec, TYPE_SIGN (type), prec);
-}
-
-/* Produce the smallest number that is represented in MODE.  The precision
-   is taken from MODE and the sign from SGN.  */
-inline wide_int_ro
-wide_int_ro::min_value (enum machine_mode mode, signop sgn)
-{
-  unsigned int prec = GET_MODE_PRECISION (mode);
-  return min_value (prec, sgn, prec);
-}
-
-/* Return a wide int of -1 with precision PREC.  */
-inline wide_int_ro
-wide_int_ro::minus_one (unsigned int prec)
-{
-  return from_shwi (-1, prec);
-}
-
-/* Return a wide int of 0 with precision PREC.  */
-inline wide_int_ro
-wide_int_ro::zero (unsigned int prec)
-{
-  return from_shwi (0, prec);
-}
-
-/* Return a wide int of 1 with precision PREC.  */
-inline wide_int_ro
-wide_int_ro::one (unsigned int prec)
-{
-  return from_shwi (1, prec);
-}
-
-/* Return a wide int of 2 with precision PREC.  */
-inline wide_int_ro
-wide_int_ro::two (unsigned int prec)
-{
-  return wide_int_ro::from_shwi (2, prec);
-}
-
-/* Get the number of HOST_WIDE_INTs actually represented within the
-   wide int.  */
-inline unsigned short
-wide_int_ro::get_len () const
+inline unsigned int
+wi::storage_ref::get_len () const
 {
   return len;
 }
 
-/* Get the precision of the value represented within the wide int.  */
 inline unsigned int
-wide_int_ro::get_precision () const
+wi::storage_ref::get_precision () const
 {
   return precision;
 }
 
-/* Get a particular element of the wide int.  */
+inline const HOST_WIDE_INT *
+wi::storage_ref::get_val () const
+{
+  return val;
+}
+
+namespace wi
+{
+  template <>
+  struct int_traits <wi::storage_ref>
+  {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    /* wi::storage_ref can be a reference to a primitive type,
+       so this is the conservatively-correct setting.  */
+    static const bool host_dependent_precision = true;
+  };
+}
+
+/* This class defines an integer type using the storage provided by the
+   template argument.  The storage class must provide the following
+   functions:
+
+   unsigned int get_precision () const
+     Return the number of bits in the integer.
+
+   HOST_WIDE_INT *get_val () const
+     Return a pointer to the array of blocks that encodes the integer.
+
+   unsigned int get_len () const
+     Return the number of blocks in get_val ().  If this is smaller
+     than the number of blocks implied by get_precision (), the
+     remaining blocks are sign extensions of block get_len () - 1.
+
+   Although not required by generic_wide_int itself, writable storage
+   classes can also provide the following functions:
+
+   HOST_WIDE_INT *write_val ()
+     Get a modifiable version of get_val ()
+
+   unsigned int set_len (unsigned int len)
+     Set the value returned by get_len () to LEN.  */
+template <typename storage>
+class GTY(()) generic_wide_int : public storage
+{
+public:
+  generic_wide_int ();
+
+  template <typename T>
+  generic_wide_int (const T &);
+
+  template <typename T>
+  generic_wide_int (const T &, unsigned int);
+
+  /* Conversions.  */
+  HOST_WIDE_INT to_shwi (unsigned int = 0) const;
+  unsigned HOST_WIDE_INT to_uhwi (unsigned int = 0) const;
+  HOST_WIDE_INT to_short_addr () const;
+
+  /* Public accessors for the interior of a wide int.  */
+  HOST_WIDE_INT sign_mask () const;
+  HOST_WIDE_INT elt (unsigned int) const;
+  unsigned HOST_WIDE_INT ulow () const;
+  unsigned HOST_WIDE_INT uhigh () const;
+
+#define BINARY_PREDICATE(OP, F) \
+  template <typename T> \
+  bool OP (const T &c) const { return wi::F (*this, c); }
+
+#define UNARY_OPERATOR(OP, F) \
+  generic_wide_int OP () const { return wi::F (*this); }
+
+#define BINARY_OPERATOR(OP, F) \
+  template <typename T> \
+  generic_wide_int OP (const T &c) const { return wi::F (*this, c); }
+
+#define ASSIGNMENT_OPERATOR(OP, F) \
+  template <typename T> \
+  generic_wide_int &OP (const T &c) { return (*this = wi::F (*this, c)); }
+
+#define INCDEC_OPERATOR(OP, DELTA) \
+  generic_wide_int &OP () { *this += DELTA; return *this; }
+
+  UNARY_OPERATOR (operator ~, bit_not) \
+  UNARY_OPERATOR (operator -, neg) \
+  BINARY_PREDICATE (operator ==, eq_p) \
+  BINARY_PREDICATE (operator !=, ne_p) \
+  BINARY_OPERATOR (operator &, bit_and) \
+  BINARY_OPERATOR (and_not, bit_and_not) \
+  BINARY_OPERATOR (operator |, bit_or) \
+  BINARY_OPERATOR (or_not, bit_or_not) \
+  BINARY_OPERATOR (operator ^, bit_xor) \
+  BINARY_OPERATOR (operator +, add) \
+  BINARY_OPERATOR (operator -, sub) \
+  BINARY_OPERATOR (operator *, mul) \
+  ASSIGNMENT_OPERATOR (operator &=, bit_and) \
+  ASSIGNMENT_OPERATOR (operator |=, bit_or) \
+  ASSIGNMENT_OPERATOR (operator ^=, bit_xor) \
+  ASSIGNMENT_OPERATOR (operator +=, add) \
+  ASSIGNMENT_OPERATOR (operator -=, sub) \
+  ASSIGNMENT_OPERATOR (operator *=, mul) \
+  INCDEC_OPERATOR (operator ++, 1) \
+  INCDEC_OPERATOR (operator --, -1)
+
+#undef BINARY_PREDICATE
+#undef UNARY_OPERATOR
+#undef BINARY_OPERATOR
+#undef ASSIGNMENT_OPERATOR
+#undef INCDEC_OPERATOR
+
+  char *dump (char *) const;
+};
+
+template <typename storage>
+inline generic_wide_int <storage>::generic_wide_int () {}
+
+template <typename storage>
+template <typename T>
+inline generic_wide_int <storage>::generic_wide_int (const T &x)
+  : storage (x)
+{
+}
+
+template <typename storage>
+template <typename T>
+inline generic_wide_int <storage>::generic_wide_int (const T &x,
+						     unsigned int precision)
+  : storage (x, precision)
+{
+}
+
+/* Return THIS as a signed HOST_WIDE_INT, sign-extending from PRECISION.
+   If THIS does not fit in PRECISION, the information is lost.  */
+template <typename storage>
 inline HOST_WIDE_INT
-wide_int_ro::elt (unsigned int i) const
+generic_wide_int <storage>::to_shwi (unsigned int precision) const
 {
-  return i >= len ? sign_mask () : val[i];
-}
-
-/* Return true if THIS is -1.  This is correct even if precision is 0.  */
-inline bool
-wide_int_ro::minus_one_p () const
-{
-  HOST_WIDE_INT x;
-
-  if (precision && precision < HOST_BITS_PER_WIDE_INT)
-    x = sext_hwi (val[0], precision);
+  if (precision == 0)
+    precision = this->get_precision ();
+  if (precision < HOST_BITS_PER_WIDE_INT)
+    return sext_hwi (this->get_val ()[0], precision);
   else
-    x = val[0];
-
-  return len == 1 && x == (HOST_WIDE_INT)-1;
+    return this->get_val ()[0];
 }
 
-/* Return true if THIS is 0.  This is correct even if precision is 0.  */
-inline bool
-wide_int_ro::zero_p () const
+/* Return THIS as an unsigned HOST_WIDE_INT, zero-extending from
+   PRECISION.  If THIS does not fit in PRECISION, the information
+   is lost.  */
+template <typename storage>
+inline unsigned HOST_WIDE_INT
+generic_wide_int <storage>::to_uhwi (unsigned int precision) const
 {
-  HOST_WIDE_INT x;
-
-  if (precision && precision < HOST_BITS_PER_WIDE_INT)
-    x = sext_hwi (val[0], precision);
+  if (precision == 0)
+    precision = this->get_precision ();
+  if (precision < HOST_BITS_PER_WIDE_INT)
+    return zext_hwi (this->get_val ()[0], precision);
   else
-    x = val[0];
-
-  return len == 1 && x == 0;
+    return this->get_val ()[0];
 }
 
-/* Return true if THIS is 1.  This is correct even if precision is 0.  */
-inline bool
-wide_int_ro::one_p () const
+/* TODO: The compiler is half converted from using HOST_WIDE_INT to
+   represent addresses to using addr_wide_int to represent addresses.
+   We use to_short_addr at the interface from new code to old,
+   unconverted code.  */
+template <typename storage>
+inline HOST_WIDE_INT
+generic_wide_int <storage>::to_short_addr () const
 {
-  HOST_WIDE_INT x;
-
-  if (precision && precision < HOST_BITS_PER_WIDE_INT)
-    x = zext_hwi (val[0], precision);
-  else
-    x = val[0];
-
-  return len == 1 && x == 1;
+  return this->get_val ()[0];
 }
 
-/* Return true if THIS is negative based on the interpretation of SGN.
-   For UNSIGNED, this is always false.  This is correct even if
-   precision is 0.  */
+/* Return the implicit value of blocks above get_len ().  */
+template <typename storage>
+inline HOST_WIDE_INT
+generic_wide_int <storage>::sign_mask () const
+{
+  return this->get_val ()[this->get_len () - 1] < 0 ? -1 : 0;
+}
+
+/* Return the value of the least-significant explicitly-encoded block.  */
+template <typename storage>
+inline unsigned HOST_WIDE_INT
+generic_wide_int <storage>::ulow () const
+{
+  return this->get_val ()[0];
+}
+
+/* Return the value of the most-significant explicitly-encoded block.  */
+template <typename storage>
+inline unsigned HOST_WIDE_INT
+generic_wide_int <storage>::uhigh () const
+{
+  return this->get_val ()[this->get_len () - 1];
+}
+
+/* Return block I, which might be implicitly or explicit encoded.  */
+template <typename storage>
+inline HOST_WIDE_INT
+generic_wide_int <storage>::elt (unsigned int i) const
+{
+  if (i >= this->get_len ())
+    return sign_mask ();
+  else
+    return this->get_val ()[i];
+}
+
+namespace wi
+{
+  template <>
+  template <typename storage>
+  struct int_traits < generic_wide_int <storage> >
+    : public wi::int_traits <storage>
+  {
+    static unsigned int get_precision (const generic_wide_int <storage> &);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
+				      const generic_wide_int <storage> &);
+  };
+}
+
+template <typename storage>
+inline unsigned int
+wi::int_traits < generic_wide_int <storage> >::
+get_precision (const generic_wide_int <storage> &x)
+{
+  return x.get_precision ();
+}
+
+template <typename storage>
+inline wi::storage_ref
+wi::int_traits < generic_wide_int <storage> >::
+decompose (HOST_WIDE_INT *, unsigned int precision,
+	   const generic_wide_int <storage> &x)
+{
+  gcc_checking_assert (precision == x.get_precision ());
+  return wi::storage_ref (x.get_val (), x.get_len (), precision);
+}
+
+/* Provide the storage for a wide_int_ref.  This acts like a read-only
+   wide_int, with the optimization that VAL is normally a pointer to another
+   integer's storage, so that no array copy is needed.  */
+struct wide_int_ref_storage : public wi::storage_ref
+{
+private:
+  /* Scratch space that can be used when decomposing the original integer.
+     It must live as long as this object.  */
+  HOST_WIDE_INT scratch[WIDE_INT_MAX_ELTS];
+
+public:
+  template <typename T>
+  wide_int_ref_storage (const T &);
+
+  template <typename T>
+  wide_int_ref_storage (const T &, unsigned int);
+};
+
+/* Create a reference to integer X in its natural precision.  Note that
+   the natural precision is host-dependent for primitive types.  */
+template <typename T>
+inline wide_int_ref_storage::wide_int_ref_storage (const T &x)
+  : storage_ref (wi::int_traits <T>::decompose (scratch,
+						wi::get_precision (x), x))
+{
+}
+
+/* Create a reference to integer X in precision PRECISION.  */
+template <typename T>
+inline wide_int_ref_storage::wide_int_ref_storage (const T &x,
+						   unsigned int precision)
+  : storage_ref (wi::int_traits <T>::decompose (scratch, precision, x))
+{
+}
+
+namespace wi
+{
+  template <>
+  struct int_traits <wide_int_ref_storage>
+    : public int_traits <wi::storage_ref>
+  {
+  };
+}
+
+namespace wi
+{
+  unsigned int force_to_size (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			      unsigned int, unsigned int, unsigned int,
+			      signop sgn);
+  unsigned int from_array (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			   unsigned int, unsigned int, bool = true);
+}
+
+/* The storage used by wide_int.  */
+class GTY(()) wide_int_storage
+{
+private:
+  HOST_WIDE_INT val[WIDE_INT_MAX_ELTS];
+  unsigned int len;
+  unsigned int precision;
+
+public:
+  wide_int_storage ();
+  template <typename T>
+  wide_int_storage (const T &);
+
+  /* The standard generic_wide_int storage methods.  */
+  unsigned int get_precision () const;
+  const HOST_WIDE_INT *get_val () const;
+  unsigned int get_len () const;
+  HOST_WIDE_INT *write_val ();
+  void set_len (unsigned int);
+
+  static wide_int from (const wide_int_ref &, unsigned int, signop);
+  static wide_int from_array (const HOST_WIDE_INT *, unsigned int,
+			      unsigned int, bool = true);
+  static wide_int create (unsigned int);
+
+  /* FIXME: target-dependent, so should disappear.  */
+  wide_int bswap () const;
+};
+
+inline wide_int_storage::wide_int_storage () {}
+
+/* Initialize the storage from integer X, in its natural precision.
+   Note that we do not allow integers with host-dependent precision
+   to become wide_ints; wide_ints must always be logically independent
+   of the host.  */
+template <typename T>
+inline wide_int_storage::wide_int_storage (const T &x)
+{
+  STATIC_ASSERT (!wi::int_traits<T>::host_dependent_precision);
+  wide_int_ref xi (x);
+  precision = xi.precision;
+  len = xi.len;
+  for (unsigned int i = 0; i < len; ++i)
+    val[i] = xi.val[i];
+}
+
+inline unsigned int
+wide_int_storage::get_precision () const
+{
+  return precision;
+}
+
+inline const HOST_WIDE_INT *
+wide_int_storage::get_val () const
+{
+  return val;
+}
+
+inline unsigned int
+wide_int_storage::get_len () const
+{
+  return len;
+}
+
+inline HOST_WIDE_INT *
+wide_int_storage::write_val ()
+{
+  return val;
+}
+
+inline void
+wide_int_storage::set_len (unsigned int l)
+{
+  len = l;
+}
+
+/* Treat X as having signedness SGN and convert it to a PRECISION-bit
+   number.  */
+inline wide_int
+wide_int_storage::from (const wide_int_ref &x, unsigned int precision,
+			signop sgn)
+{
+  wide_int result = wide_int::create (precision);
+  result.set_len (wi::force_to_size (result.write_val (), x.val, x.len,
+				     x.precision, precision, sgn));
+  return result;
+}
+
+/* Create a wide_int from the explicit block encoding given by VAL and LEN.
+   PRECISION is the precision of the integer.  NEED_CANON_P is true if the
+   encoding may have redundant trailing blocks.  */
+inline wide_int
+wide_int_storage::from_array (const HOST_WIDE_INT *val, unsigned int len,
+			      unsigned int precision, bool need_canon_p)
+{
+  wide_int result = wide_int::create (precision);
+  result.set_len (wi::from_array (result.write_val (), val, len, precision,
+				  need_canon_p));
+  return result;
+}
+
+/* Return an uninitialized wide_int with precision PRECISION.  */
+inline wide_int
+wide_int_storage::create (unsigned int precision)
+{
+  wide_int x;
+  x.precision = precision;
+  return x;
+}
+
+namespace wi
+{
+  template <>
+  struct int_traits <wide_int_storage>
+  {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    /* Guaranteed by a static assert in the wide_int_storage constructor.  */
+    static const bool host_dependent_precision = false;
+    template <typename T1, typename T2>
+    static wide_int get_binary_result (const T1 &, const T2 &);
+  };
+}
+
+template <typename T1, typename T2>
+inline wide_int
+wi::int_traits <wide_int_storage>::get_binary_result (const T1 &x, const T2 &y)
+{
+  /* This shouldn't be used for two flexible-precision inputs.  */
+  STATIC_ASSERT (wi::int_traits <T1>::precision_type != FLEXIBLE_PRECISION
+		 || wi::int_traits <T2>::precision_type != FLEXIBLE_PRECISION);
+  if (wi::int_traits <T1>::precision_type == FLEXIBLE_PRECISION)
+    return wide_int::create (wi::get_precision (y));
+  else
+    return wide_int::create (wi::get_precision (x));
+}
+
+/* An N-bit integer.  Until we can use typedef templates, use this instead.  */
+#define FIXED_WIDE_INT(N) \
+  generic_wide_int < fixed_wide_int_storage <N> >
+
+/* The storage used by FIXED_WIDE_INT (N).  */
+template <int N>
+class GTY(()) fixed_wide_int_storage
+{
+private:
+  HOST_WIDE_INT val[(N + HOST_BITS_PER_WIDE_INT + 1) / HOST_BITS_PER_WIDE_INT];
+  unsigned int len;
+
+public:
+  fixed_wide_int_storage ();
+  template <typename T>
+  fixed_wide_int_storage (const T &);
+
+  /* The standard generic_wide_int storage methods.  */
+  unsigned int get_precision () const;
+  const HOST_WIDE_INT *get_val () const;
+  unsigned int get_len () const;
+  HOST_WIDE_INT *write_val ();
+  void set_len (unsigned int);
+
+  static FIXED_WIDE_INT (N) from (const wide_int_ref &, signop);
+  static FIXED_WIDE_INT (N) from_array (const HOST_WIDE_INT *, unsigned int,
+					bool = true);
+};
+
+typedef FIXED_WIDE_INT (ADDR_MAX_PRECISION) addr_wide_int;
+typedef FIXED_WIDE_INT (MAX_BITSIZE_MODE_ANY_INT) max_wide_int;
+
+template <int N>
+inline fixed_wide_int_storage <N>::fixed_wide_int_storage () {}
+
+/* Initialize the storage from integer X, in precision N.  */
+template <int N>
+template <typename T>
+inline fixed_wide_int_storage <N>::fixed_wide_int_storage (const T &x)
+{
+  /* Check for type compatibility.  We don't want to initialize a
+     fixed-width integer from something like a wide_int.  */
+  WI_BINARY_RESULT (T, FIXED_WIDE_INT (N)) *assertion ATTRIBUTE_UNUSED;
+  wide_int_ref xi (x, N);
+  len = xi.len;
+  for (unsigned int i = 0; i < len; ++i)
+    val[i] = xi.val[i];
+}
+
+template <int N>
+inline unsigned int
+fixed_wide_int_storage <N>::get_precision () const
+{
+  return N;
+}
+
+template <int N>
+inline const HOST_WIDE_INT *
+fixed_wide_int_storage <N>::get_val () const
+{
+  return val;
+}
+
+template <int N>
+inline unsigned int
+fixed_wide_int_storage <N>::get_len () const
+{
+  return len;
+}
+
+template <int N>
+inline HOST_WIDE_INT *
+fixed_wide_int_storage <N>::write_val ()
+{
+  return val;
+}
+
+template <int N>
+inline void
+fixed_wide_int_storage <N>::set_len (unsigned int l)
+{
+  len = l;
+}
+
+/* Treat X as having signedness SGN and convert it to an N-bit number.  */
+template <int N>
+inline FIXED_WIDE_INT (N)
+fixed_wide_int_storage <N>::from (const wide_int_ref &x, signop sgn)
+{
+  FIXED_WIDE_INT (N) result;
+  result.set_len (wi::force_to_size (result.write_val (), x.val, x.len,
+				     x.precision, N, sgn));
+  return result;
+}
+
+/* Create a FIXED_WIDE_INT (N) from the explicit block encoding given by
+   VAL and LEN.  NEED_CANON_P is true if the encoding may have redundant
+   trailing blocks.  */
+template <int N>
+inline FIXED_WIDE_INT (N)
+fixed_wide_int_storage <N>::from_array (const HOST_WIDE_INT *val,
+					unsigned int len,
+					bool need_canon_p)
+{
+  FIXED_WIDE_INT (N) result;
+  result.set_len (wi::from_array (result.write_val (), val, len,
+				  N, need_canon_p));
+  return result;
+}
+
+namespace wi
+{
+  template <>
+  template <int N>
+  struct int_traits < fixed_wide_int_storage <N> >
+  {
+    static const enum precision_type precision_type = CONST_PRECISION;
+    static const bool host_dependent_precision = false;
+    static const unsigned int precision = N;
+    template <typename T1, typename T2>
+    static FIXED_WIDE_INT (N) get_binary_result (const T1 &, const T2 &);
+  };
+}
+
+template <int N>
+template <typename T1, typename T2>
+inline FIXED_WIDE_INT (N)
+wi::int_traits < fixed_wide_int_storage <N> >::
+get_binary_result (const T1 &, const T2 &)
+{
+  return FIXED_WIDE_INT (N) ();
+}
+
+/* Specify the result type for each supported combination of binary inputs.
+   Note that CONST_PRECISION and VAR_PRECISION cannot be mixed, in order to
+   give stronger type checking.  When both inputs are CONST_PRECISION,
+   they must have the same precision.  */
+namespace wi
+{
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, FLEXIBLE_PRECISION>
+  {
+    typedef max_wide_int result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, VAR_PRECISION>
+  {
+    typedef wide_int result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, FLEXIBLE_PRECISION, CONST_PRECISION>
+  {
+    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+       so as not to confuse gengtype.  */
+    typedef generic_wide_int < fixed_wide_int_storage
+			       <int_traits <T2>::precision> > result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, VAR_PRECISION, FLEXIBLE_PRECISION>
+  {
+    typedef wide_int result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, CONST_PRECISION, FLEXIBLE_PRECISION>
+  {
+    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+       so as not to confuse gengtype.  */
+    typedef generic_wide_int < fixed_wide_int_storage
+			       <int_traits <T1>::precision> > result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, CONST_PRECISION, CONST_PRECISION>
+  {
+    /* Spelled out explicitly (rather than through FIXED_WIDE_INT)
+       so as not to confuse gengtype.  */
+    STATIC_ASSERT (int_traits <T1>::precision == int_traits <T2>::precision);
+    typedef generic_wide_int < fixed_wide_int_storage
+			       <int_traits <T1>::precision> > result_type;
+  };
+
+  template <>
+  template <typename T1, typename T2>
+  struct binary_traits <T1, T2, VAR_PRECISION, VAR_PRECISION>
+  {
+    typedef wide_int result_type;
+  };
+}
+
+namespace wi
+{
+  /* Implementation of int_traits for primitive integer types like "int".  */
+  template <typename T, bool signed_p>
+  struct primitive_int_traits
+  {
+    static const enum precision_type precision_type = FLEXIBLE_PRECISION;
+    static const bool host_dependent_precision = true;
+    static unsigned int get_precision (T);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int, T);
+  };
+}
+
+template <typename T, bool signed_p>
+inline unsigned int
+wi::primitive_int_traits <T, signed_p>::get_precision (T)
+{
+  return sizeof (T) * CHAR_BIT;
+}
+
+template <typename T, bool signed_p>
+inline wi::storage_ref
+wi::primitive_int_traits <T, signed_p>::decompose (HOST_WIDE_INT *scratch,
+						   unsigned int precision, T x)
+{
+  scratch[0] = x;
+  if (signed_p || scratch[0] >= 0 || precision <= HOST_BITS_PER_WIDE_INT)
+    return wi::storage_ref (scratch, 1, precision);
+  scratch[1] = 0;
+  return wi::storage_ref (scratch, 2, precision);
+}
+
+/* Allow primitive C types to be used in wi:: routines.  */
+namespace wi
+{
+  template <>
+  struct int_traits <int>
+    : public primitive_int_traits <int, true> {};
+
+  template <>
+  struct int_traits <unsigned int>
+    : public primitive_int_traits <unsigned int, false> {};
+
+#if HOST_BITS_PER_INT != HOST_BITS_PER_WIDE_INT
+  template <>
+  struct int_traits <HOST_WIDE_INT>
+    : public primitive_int_traits <HOST_WIDE_INT, true> {};
+
+  template <>
+  struct int_traits <unsigned HOST_WIDE_INT>
+    : public primitive_int_traits <unsigned HOST_WIDE_INT, false> {};
+#endif
+}
+
+namespace wi
+{
+  /* Stores HWI-sized integer VAL, treating it as having signedness SGN
+     and precision PRECISION.  */
+  struct hwi_with_prec
+  {
+    hwi_with_prec (HOST_WIDE_INT, unsigned int, signop);
+    HOST_WIDE_INT val;
+    unsigned int precision;
+    signop sgn;
+  };
+
+  hwi_with_prec shwi (HOST_WIDE_INT, unsigned int);
+  hwi_with_prec uhwi (unsigned HOST_WIDE_INT, unsigned int);
+
+  hwi_with_prec minus_one (unsigned int);
+  hwi_with_prec zero (unsigned int);
+  hwi_with_prec one (unsigned int);
+  hwi_with_prec two (unsigned int);
+}
+
+inline wi::hwi_with_prec::hwi_with_prec (HOST_WIDE_INT v, unsigned int p,
+					 signop s)
+  : val (v), precision (p), sgn (s)
+{
+}
+
+/* Return a signed integer that has value VAL and precision PRECISION.  */
+inline wi::hwi_with_prec
+wi::shwi (HOST_WIDE_INT val, unsigned int precision)
+{
+  return hwi_with_prec (val, precision, SIGNED);
+}
+
+/* Return an unsigned integer that has value VAL and precision PRECISION.  */
+inline wi::hwi_with_prec
+wi::uhwi (unsigned HOST_WIDE_INT val, unsigned int precision)
+{
+  return hwi_with_prec (val, precision, UNSIGNED);
+}
+
+/* Return a wide int of -1 with precision PREC.  */
+inline wi::hwi_with_prec
+wi::minus_one (unsigned int precision)
+{
+  return wi::shwi (-1, precision);
+}
+
+/* Return a wide int of 0 with precision PREC.  */
+inline wi::hwi_with_prec
+wi::zero (unsigned int precision)
+{
+  return wi::shwi (0, precision);
+}
+
+/* Return a wide int of 1 with precision PREC.  */
+inline wi::hwi_with_prec
+wi::one (unsigned int precision)
+{
+  return wi::shwi (1, precision);
+}
+
+/* Return a wide int of 2 with precision PREC.  */
+inline wi::hwi_with_prec
+wi::two (unsigned int precision)
+{
+  return wi::shwi (2, precision);
+}
+
+namespace wi
+{
+  template <>
+  struct int_traits <wi::hwi_with_prec>
+  {
+    /* Since we have a sign, we can extend or truncate the integer to
+       other precisions where necessary.  */
+    static const enum precision_type precision_type = FLEXIBLE_PRECISION;
+    /* hwi_with_prec has an explicitly-given precision, rather than the
+       precision of HOST_WIDE_INT.  */
+    static const bool host_dependent_precision = false;
+    static unsigned int get_precision (const wi::hwi_with_prec &);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
+    const wi::hwi_with_prec &);
+  };
+}
+
+inline unsigned int
+wi::int_traits <wi::hwi_with_prec>::get_precision (const wi::hwi_with_prec &x)
+{
+  return x.precision;
+}
+
+inline wi::storage_ref
+wi::int_traits <wi::hwi_with_prec>::
+decompose (HOST_WIDE_INT *scratch, unsigned int precision,
+	   const wi::hwi_with_prec &x)
+{
+  scratch[0] = x.val;
+  if (x.sgn == SIGNED || x.val >= 0 || precision <= HOST_BITS_PER_WIDE_INT)
+    return wi::storage_ref (scratch, 1, precision);
+  scratch[1] = 0;
+  return wi::storage_ref (scratch, 2, precision);
+}
+
+/* Private functions for handling large cases out of line.  They take
+   individual length and array parameters because that is cheaper for
+   the inline caller than constructing an object on the stack and
+   passing a reference to it.  (Although many callers use wide_int_refs,
+   we generally want those to be removed by SRA.)  */
+namespace wi
+{
+  bool eq_p_large (const HOST_WIDE_INT *, unsigned int,
+		   const HOST_WIDE_INT *, unsigned int, unsigned int);
+  bool lts_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
+		    const HOST_WIDE_INT *, unsigned int, unsigned int);
+  bool ltu_p_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
+		    const HOST_WIDE_INT *, unsigned int, unsigned int);
+  int cmps_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
+		  const HOST_WIDE_INT *, unsigned int, unsigned int);
+  int cmpu_large (const HOST_WIDE_INT *, unsigned int, unsigned int,
+		  const HOST_WIDE_INT *, unsigned int, unsigned int);
+  unsigned int sext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			   unsigned int, unsigned int);
+  unsigned int zext_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			   unsigned int, unsigned int);
+  unsigned int set_bit_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			      unsigned int, unsigned int, unsigned int);
+  unsigned int lshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			     unsigned int, unsigned int, unsigned int);
+  unsigned int lrshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			      unsigned int, unsigned int, unsigned int,
+			      unsigned int);
+  unsigned int arshift_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			      unsigned int, unsigned int, unsigned int,
+			      unsigned int);
+  unsigned int and_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			  const HOST_WIDE_INT *, unsigned int, unsigned int);
+  unsigned int and_not_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			      unsigned int, const HOST_WIDE_INT *,
+			      unsigned int, unsigned int);
+  unsigned int or_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			 const HOST_WIDE_INT *, unsigned int, unsigned int);
+  unsigned int or_not_large (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			     unsigned int, const HOST_WIDE_INT *,
+			     unsigned int, unsigned int);
+  unsigned int xor_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			  const HOST_WIDE_INT *, unsigned int, unsigned int);
+  unsigned int add_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			  const HOST_WIDE_INT *, unsigned int, unsigned int,
+			  signop, bool *);
+  unsigned int sub_large (HOST_WIDE_INT *, const HOST_WIDE_INT *, unsigned int,
+			  const HOST_WIDE_INT *, unsigned int, unsigned int,
+			  signop, bool *);
+  unsigned int mul_internal (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			     unsigned int, const HOST_WIDE_INT *,
+			     unsigned int, unsigned int, signop, bool *,
+			     bool, bool);
+  unsigned int divmod_internal (HOST_WIDE_INT *, unsigned int *,
+				HOST_WIDE_INT *, const HOST_WIDE_INT *,
+				unsigned int, unsigned int,
+				const HOST_WIDE_INT *,
+				unsigned int, unsigned int,
+				signop, bool *);
+}
+
+/* Return the number of bits that integer X can hold.  */
+template <typename T>
+inline unsigned int
+wi::get_precision (const T &x)
+{
+  return wi::int_traits <T>::get_precision (x);
+}
+
+/* Return the number of bits that the result of a binary operation can hold
+   when the input operands are X and Y.  */
+template <typename T1, typename T2>
+inline unsigned int
+wi::get_binary_precision (const T1 &x, const T2 &y)
+{
+  return get_precision (wi::int_traits <WI_BINARY_RESULT (T1, T2)>::
+			get_binary_result (x, y));
+}
+
+/* Extend undefined bits in X according to SGN.  */
+template <typename T>
+inline void
+wi::clear_undef (T &x, signop sgn)
+{
+  HOST_WIDE_INT *val = x.write_val ();
+  unsigned int precision = x.get_precision ();
+  unsigned int len = x.get_len ();
+  unsigned int small_prec = precision % HOST_BITS_PER_WIDE_INT;
+  if (small_prec
+      && len == ((precision + HOST_BITS_PER_WIDE_INT - 1)
+		 / HOST_BITS_PER_WIDE_INT))
+    {
+      if (sgn == UNSIGNED)
+	val[len - 1] = zext_hwi (val[len - 1], small_prec);
+      else
+	val[len - 1] = sext_hwi (val[len - 1], small_prec);
+    }
+}
+
+/* Return true if X fits in a HOST_WIDE_INT with no loss of precision.  */
 inline bool
-wide_int_ro::neg_p (signop sgn) const
+wi::fits_shwi_p (const wide_int_ref &x)
+{
+  return x.len == 1;
+}
+
+/* Return true if X fits in an unsigned HOST_WIDE_INT with no loss of
+   precision.  */
+inline bool
+wi::fits_uhwi_p (const wide_int_ref &x)
+{
+  if (x.precision <= HOST_BITS_PER_WIDE_INT)
+    return true;
+  if (x.len == 1)
+    return x.sign_mask () == 0;
+  if (x.precision < 2 * HOST_BITS_PER_WIDE_INT)
+    return zext_hwi (x.uhigh (), x.precision % HOST_BITS_PER_WIDE_INT) == 0;
+  return x.len == 2 && x.uhigh () == 0;
+}
+
+/* Return true if X is negative based on the interpretation of SGN.
+   For UNSIGNED, this is always false.  */
+inline bool
+wi::neg_p (const wide_int_ref &x, signop sgn)
 {
   if (sgn == UNSIGNED)
     return false;
-
-  if (precision == 0)
-    return (len == 1 && val[0] < 0);
-
-  return sign_mask () != 0;
+  if (x.precision == 0)
+    return false;
+  if (x.len * HOST_BITS_PER_WIDE_INT > x.precision)
+    return (x.uhigh () >> (x.precision % HOST_BITS_PER_WIDE_INT - 1)) & 1;
+  return x.sign_mask () < 0;
 }
 
-/* Return true if THIS == C.  If both operands have nonzero precisions,
-   the precisions must be the same.  */
-template <typename T>
-inline bool
-wide_int_ro::operator == (const T &c) const
-{
-  return wide_int_ro::eq_p (*this, c);
-}
-
-/* Return true if C1 == C2.  If both parameters have nonzero precisions,
-   then those precisions must be equal.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::eq_p (const T1 &c1, const T2 &c2)
-{
-  bool result;
-  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
-  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
-  unsigned int cl1, cl2;         /* array lengths  */
-  unsigned int p1, p2;           /* precisions */
-
-  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
-  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
-  check_precision (&p1, &p2, true, false);
-
-  if (p1 == 0)
-    /* There are prec 0 types and we need to do this to check their
-       min and max values.  */
-    result = (cl1 == cl2) && (s1[0] == s2[0]);
-  else if (p1 < HOST_BITS_PER_WIDE_INT)
-    {
-      unsigned HOST_WIDE_INT mask = ((HOST_WIDE_INT)1 << p1) - 1;
-      result = (s1[0] & mask) == (s2[0] & mask);
-    }
-  else if (p1 == HOST_BITS_PER_WIDE_INT)
-    result = s1[0] == s2[0];
-  else
-    result = eq_p_large (s1, cl1, p1, s2, cl2);
-
-  return result;
-}
-
-/* Return true if THIS != C.  If both parameters have nonzero precisions,
-   then those precisions must be equal.  */
-template <typename T>
-inline bool
-wide_int_ro::operator != (const T &c) const
-{
-  return !(*this == c);
-}
-
-/* Return true if THIS < C using signed comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::lts_p (const T &c) const
-{
-  return wide_int_ro::lts_p (*this, c);
-}
-
-/* Return true if C1 < C2 using signed comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::lts_p (const T1 &c1, const T2 &c2)
-{
-  bool result;
-  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
-  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
-  unsigned int cl1, cl2;         /* array lengths  */
-  unsigned int p1, p2;           /* precisions */
-
-  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
-  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
-  check_precision (&p1, &p2, false, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT
-      && p2 <= HOST_BITS_PER_WIDE_INT)
-    {
-      HOST_WIDE_INT x0 = sext_hwi (s1[0], p1);
-      HOST_WIDE_INT x1 = sext_hwi (s2[0], p2);
-      result = x0 < x1;
-    }
-  else
-    result = lts_p_large (s1, cl1, p1, s2, cl2, p2);
-
-#ifdef DEBUG_WIDE_INT
-  debug_vaa ("wide_int_ro:: %d = (%s lts_p %s\n", result, s1, cl1, p1, s2, cl2, p2);
-#endif
-  return result;
-}
-
-/* Return true if THIS < C using unsigned comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::ltu_p (const T &c) const
-{
-  return wide_int_ro::ltu_p (*this, c); 
-}
-
-/* Return true if C1 < C2 using unsigned comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::ltu_p (const T1 &c1, const T2 &c2)
-{
-  bool result;
-  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
-  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
-  unsigned int cl1, cl2;         /* array lengths  */
-  unsigned int p1, p2;           /* precisions */
-
-  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
-  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
-  check_precision (&p1, &p2, false, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT
-      && p2 <= HOST_BITS_PER_WIDE_INT)
-    {
-      unsigned HOST_WIDE_INT x0 = zext_hwi (s1[0], p1);
-      unsigned HOST_WIDE_INT x1 = zext_hwi (s2[0], p2);
-      result = x0 < x1;
-    }
-  else
-    result = ltu_p_large (s1, cl1, p1, s2, cl2, p2);
-#ifdef DEBUG_WIDE_INT
-  debug_vaa ("wide_int_ro:: %d = (%s ltu_p %s)\n", result, s1, cl1, p1, s2, cl2, p2);
-#endif
-  return result;
-}
-
-/* Return true if THIS < C.  Signedness is indicated by SGN.  */
-template <typename T>
-inline bool
-wide_int_ro::lt_p (const T &c, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return lts_p (c);
-  else
-    return ltu_p (c);
-}
-
-/* Return true if C1 < C2.  Signedness is indicated by SGN.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::lt_p (const T1 &c1, const T2 &c2, signop sgn)
-{
-  if (sgn == SIGNED)
-    return lts_p (c1, c2);
-  else
-    return ltu_p (c1, c2);
-}
-
-/* Return true if THIS <= C using signed comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::les_p (const T &c) const
-{
-  return !gts_p (c);
-}
-
-/* Return true if C1 <= C2 using signed comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::les_p (const T1 &c1, const T2 &c2)
-{
-  return !gts_p (c1, c2);
-}
-
-/* Return true if THIS <= C using unsigned comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::leu_p (const T &c) const
-{
-  return !gtu_p (c);
-}
-
-/* Return true if C1 <= C2 using unsigned comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::leu_p (const T1 &c1, const T2 &c2)
-{
-  return !gtu_p (c1, c2);
-}
-
-/* Return true if THIS <= C.  Signedness is indicated by SGN.  */
-template <typename T>
-inline bool
-wide_int_ro::le_p (const T &c, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return les_p (c);
-  else
-    return leu_p (c);
-}
-
-/* Return true if C1 <= C2.  Signedness is indicated by SGN.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::le_p (const T1 &c1, const T2 &c2, signop sgn)
-{
-  if (sgn == SIGNED)
-    return les_p (c1, c2);
-  else
-    return leu_p (c1, c2);
-}
-
-/* Return true if THIS > C using signed comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::gts_p (const T &c) const
-{
-  return lts_p (c, *this);
-}
-
-/* Return true if C1 > C2 using signed comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::gts_p (const T1 &c1, const T2 &c2)
-{
-  return lts_p (c2, c1);
-}
-
-/* Return true if THIS > C using unsigned comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::gtu_p (const T &c) const
-{
-  return ltu_p (c, *this);
-}
-
-/* Return true if C1 > C2 using unsigned comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::gtu_p (const T1 &c1, const T2 &c2)
-{
-  return ltu_p (c2, c1);
-}
-
-/* Return true if THIS > C.  Signedness is indicated by SGN.  */
-template <typename T>
-inline bool
-wide_int_ro::gt_p (const T &c, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return gts_p (c);
-  else
-    return gtu_p (c);
-}
-
-/* Return true if C1 > C2.  Signedness is indicated by SGN.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::gt_p (const T1 &c1, const T2 &c2, signop sgn)
-{
-  if (sgn == SIGNED)
-    return gts_p (c1, c2);
-  else
-    return gtu_p (c1, c2);
-}
-
-/* Return true if THIS >= C using signed comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::ges_p (const T &c) const
-{
-  return !lts_p (c);
-}
-
-/* Return true if C1 >= C2 using signed comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::ges_p (const T1 &c1, const T2 &c2)
-{
-  return !lts_p (c1, c2);
-}
-
-/* Return true if THIS >= C using unsigned comparisons.  */
-template <typename T>
-inline bool
-wide_int_ro::geu_p (const T &c) const
-{
-  return !ltu_p (c);
-}
-
-/* Return true if C1 >= C2 using unsigned comparisons.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::geu_p (const T1 &c1, const T2 &c2)
-{
-  return !ltu_p (c1, c2);
-}
-
-/* Return true if THIS >= C.  Signedness is indicated by SGN.  */
-template <typename T>
-inline bool
-wide_int_ro::ge_p (const T &c, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return ges_p (c);
-  else
-    return geu_p (c);
-}
-
-/* Return true if C1 >= C2.  Signedness is indicated by SGN.  */
-template <typename T1, typename T2>
-inline bool
-wide_int_ro::ge_p (const T1 &c1, const T2 &c2, signop sgn)
-{
-  if (sgn == SIGNED)
-    return ges_p (c1, c2);
-  else
-    return geu_p (c1, c2);
-}
-
-/* Returns -1 if THIS < C, 0 if THIS == C and 1 if THIS > C using
-   signed compares.  */
-template <typename T>
-inline int
-wide_int_ro::cmps (const T &c) const
-{
-  return wide_int_ro::cmps (*this, c);
-}
-
-/* Returns -1 if C1 < C2, 0 if C1 == C2 and 1 if C1 > C2 using
-   signed compares.  */
-template <typename T1, typename T2>
-inline int
-wide_int_ro::cmps (const T1 &c1, const T2 &c2)
-{
-  int result;
-  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
-  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
-  unsigned int cl1, cl2;         /* array lengths  */
-  unsigned int p1, p2;           /* precisions */
-
-  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
-  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
-  check_precision (&p1, &p2, false, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT
-      && p2 <= HOST_BITS_PER_WIDE_INT)
-    {
-      HOST_WIDE_INT x0 = sext_hwi (s1[0], p1);
-      HOST_WIDE_INT x1 = sext_hwi (s2[0], p2);
-
-      if (x0 < x1)
-	result = -1;
-      else if (x0 > x1)
-	result = 1;
-      else
-	result = 0;
-    }
-  else
-    result = cmps_large (s1, cl1, p1, s2, cl2, p2);
-
-#ifdef DEBUG_WIDE_INT
-  debug_vaa ("wide_int_ro:: %d = (%s cmps %s)\n", result, s1, cl1, p1, s2, cl2, p2);
-#endif
-  return result;
-}
-
-/* Returns -1 if THIS < C, 0 if THIS == C and 1 if THIS > C using
-   unsigned compares.  */
-template <typename T>
-int
-wide_int_ro::cmpu (const T &c) const
-{
-  return wide_int_ro::cmpu (*this, c);
-}
-
-/* Returns -1 if C1 < C2, 0 if C1 == C2 and 1 if C1 > C2 using
-   unsigned compares.  */
-template <typename T1, typename T2>
-int
-wide_int_ro::cmpu (const T1 &c1, const T2 &c2)
-{
-  int result;
-  HOST_WIDE_INT ws1[WIDE_INT_MAX_ELTS];
-  HOST_WIDE_INT ws2[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s1, *s2;  /* Returned data */
-  unsigned int cl1, cl2;         /* array lengths  */
-  unsigned int p1, p2;           /* precisions */
-
-  s1 = to_shwi1 (ws1, &cl1, &p1, c1);
-  s2 = to_shwi1 (ws2, &cl2, &p2, c2);
-  check_precision (&p1, &p2, false, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT
-      && p2 <= HOST_BITS_PER_WIDE_INT)
-    {
-      unsigned HOST_WIDE_INT x0 = zext_hwi (s1[0], p1);
-      unsigned HOST_WIDE_INT x1 = zext_hwi (s2[0], p2);
-
-      if (x0 < x1)
-	result = -1;
-      else if (x0 == x1)
-	result = 0;
-      else
-	result = 1;
-    }
-  else
-    result = cmpu_large (s1, cl1, p1, s2, cl2, p2);
-
-#ifdef DEBUG_WIDE_INT
-  debug_vaa ("wide_int_ro:: %d = (%s cmpu %s)\n", result, s1, cl1, p1, s2, cl2, p2);
-#endif
-
-  return result;
-}
-
-/* Return -1, 0 or 1 depending on how THIS compares with C.
-   Signedness is indicated by SGN.  */
-template <typename T>
-inline int
-wide_int_ro::cmp (const T &c, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return cmps (c);
-  else
-    return cmpu (c);
-}
-
-/* Return -1, 0 or 1 depending on how C1 compares with C2.
-   Signedness is indicated by SGN.  */
-template <typename T1, typename T2>
-inline int
-wide_int_ro::cmp (const T1 &c1, const T2 &c2, signop sgn)
-{
-  if (sgn == SIGNED)
-    return wide_int_ro::cmps (c1, c2);
-  else
-    return wide_int_ro::cmpu (c1, c2);
-}
-
-/* Return true if THIS has the sign bit set to 1 and all other bits
-   are zero.  */
-inline bool
-wide_int_ro::only_sign_bit_p () const
-{
-  return only_sign_bit_p (precision);
-}
-
-/* Return true if THIS fits in a HOST_WIDE_INT with no loss of
-   precision.  */
-inline bool
-wide_int_ro::fits_shwi_p () const
-{
-  return len == 1;
-}
-
-/* Return true if THIS fits in an unsigned HOST_WIDE_INT with no
-   loss of precision.  */
-inline bool
-wide_int_ro::fits_uhwi_p () const
-{
-  return (precision <= HOST_BITS_PER_WIDE_INT)
-    || (len == 1 && val[0] >= 0) 
-    || (len == 2 && (precision >= 2 * HOST_BITS_PER_WIDE_INT) && (val[1] == 0))
-    || (len == 2 && (sext_hwi (val[1], precision & (HOST_BITS_PER_WIDE_INT - 1)) == 0));
-}
-
-/* Return the signed or unsigned min of THIS and C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::min (const T &c, signop sgn) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (sgn == SIGNED)
-    return lts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-  else
-    return ltu_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-}
-
-/* Return the signed or unsigned min of THIS and OP1.  */
-inline wide_int_ro
-wide_int_ro::min (const wide_int_ro &op1, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return lts_p (op1) ? (*this) : op1;
-  else
-    return ltu_p (op1) ? (*this) : op1;
-}
-
-/* Return the signed or unsigned max of THIS and C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::max (const T &c, signop sgn) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-  if (sgn == SIGNED)
-    return gts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-  else
-    return gtu_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-}
-
-/* Return the signed or unsigned max of THIS and OP1.  */
-inline wide_int_ro
-wide_int_ro::max (const wide_int_ro &op1, signop sgn) const
-{
-  if (sgn == SIGNED)
-    return gts_p (op1) ? (*this) : op1;
-  else
-    return gtu_p (op1) ? (*this) : op1;
-}
-
-/* Return the signed min of THIS and C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::smin (const T &c) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  return lts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-}
-
-/* Return the signed min of THIS and OP1.  */
-inline wide_int_ro
-wide_int_ro::smin (const wide_int_ro &op1) const
-{
-  return lts_p (op1) ? (*this) : op1;
-}
-
-/* Return the signed max of THIS and C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::smax (const T &c) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  return gts_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-}
-
-/* Return the signed max of THIS and OP1.  */
-inline wide_int_ro
-wide_int_ro::smax (const wide_int_ro &op1) const
-{
-  return gts_p (op1) ? (*this) : op1;
-}
-
-/* Return the unsigned min of THIS and C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::umin (const T &c) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  return ltu_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-}
-
-/* Return the unsigned min of THIS and OP1.  */
-inline wide_int_ro
-wide_int_ro::umin (const wide_int_ro &op1) const
-{
-  return ltu_p (op1) ? (*this) : op1;
-}
-
-/* Return the unsigned max of THIS and C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::umax (const T &c) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  return gtu_p (c) ? (*this) : wide_int_ro::from_array (s, cl, p1, false);
-}
-
-/* Return the unsigned max of THIS and OP1.  */
-inline wide_int_ro
-wide_int_ro::umax (const wide_int_ro &op1) const
-{
-  return gtu_p (op1) ? (*this) : op1;
-}
-
-/* Return THIS extended to PREC.  The signedness of the extension is
-   specified by SGN.  */
-inline wide_int_ro
-wide_int_ro::ext (unsigned int prec, signop sgn) const
-{
-  if (sgn == UNSIGNED)
-    return zext (prec);
-  else
-    return sext (prec);
-}
-
-/* Return THIS forced to the size PREC.  This is sign extended if
-   needed.  */
-inline wide_int_ro
-wide_int_ro::sforce_to_size (unsigned int prec) const
-{
-  return force_to_size (prec, SIGNED);
-}
-
-/* Return THIS forced to the size PREC.  This is zero extended if
-   needed.  */
-inline wide_int_ro
-wide_int_ro::zforce_to_size (unsigned int prec) const
-{
-  return force_to_size (prec, UNSIGNED);
-}
-
-/* Produce 0 or -1 that is the smear of the sign bit.  */
+/* Return -1 if the top bit of X is set and 0 if the top bit is clear.  */
 inline HOST_WIDE_INT
-wide_int_ro::sign_mask () const
+wi::sign_mask (const wide_int_ref &x)
 {
-  if (precision < HOST_BITS_PER_WIDE_INT)
-    {
-      /* We don't allow a int:0 inside a struct to get this far,
-	 nor a value of indefinite precision.  */
-      gcc_assert (precision != 0);
-      return ((val[0] << (HOST_BITS_PER_WIDE_INT - precision))
-	      >> (HOST_BITS_PER_WIDE_INT - 1));
-    }
+  return x.sign_mask ();
+}
 
-  /* TREE_VRP is not able to see that it is not possible for len to be
-     0.  So without this test, it warns about this which causes
-     bootstrap failures.  */
-  if (len < 1)
-    gcc_unreachable ();
+/* Return true if X == Y.  X and Y must be binary-compatible.  */
+template <typename T1, typename T2>
+inline bool
+wi::eq_p (const T1 &x, const T2 &y)
+{
+  unsigned int precision = get_binary_precision (x, y);
+  if (precision == 0)
+    return true;
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      unsigned HOST_WIDE_INT diff = xi.ulow () ^ yi.ulow ();
+      return (diff << (HOST_BITS_PER_WIDE_INT - precision)) == 0;
+    }
+  return eq_p_large (xi.val, xi.len, yi.val, yi.len, precision);
+}
+
+/* Return true if X != Y.  X and Y must be binary-compatible.  */
+template <typename T1, typename T2>
+inline bool
+wi::ne_p (const T1 &x, const T2 &y)
+{
+  return !eq_p (x, y);
+}
+
+/* Return true if X < Y when both are treated as signed values.  */
+inline bool
+wi::lts_p (const wide_int_ref &x, const wide_int_ref &y)
+{
+  if (x.precision <= HOST_BITS_PER_WIDE_INT
+      && y.precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      HOST_WIDE_INT xl = sext_hwi (x.ulow (), x.precision);
+      HOST_WIDE_INT yl = sext_hwi (y.ulow (), y.precision);
+      return xl < yl;
+    }
+  return lts_p_large (x.val, x.len, x.precision, y.val, y.len,
+		      y.precision);
+}
+
+/* Return true if X < Y when both are treated as unsigned values.  */
+inline bool
+wi::ltu_p (const wide_int_ref &x, const wide_int_ref &y)
+{
+  if (x.precision <= HOST_BITS_PER_WIDE_INT
+      && y.precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      unsigned HOST_WIDE_INT xl = zext_hwi (x.ulow (), x.precision);
+      unsigned HOST_WIDE_INT yl = zext_hwi (y.ulow (), y.precision);
+      return xl < yl;
+    }
+  return ltu_p_large (x.val, x.len, x.precision, y.val, y.len, y.precision);
+}
+
+/* Return true if X < Y.  Signedness of X and Y is indicated by SGN.  */
+inline bool
+wi::lt_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+{
+  if (sgn == SIGNED)
+    return lts_p (x, y);
   else
-    return val[len - 1] >> (HOST_BITS_PER_WIDE_INT - 1);
+    return ltu_p (x, y);
 }
 
-/* Return THIS & C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::operator & (const T &c) const
+/* Return true if X <= Y when both are treated as signed values.  */
+inline bool
+wi::les_p (const wide_int_ref &x, const wide_int_ref &y)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  return !lts_p (y, x);
+}
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
+/* Return true if X <= Y when both are treated as unsigned values.  */
+inline bool
+wi::leu_p (const wide_int_ref &x, const wide_int_ref &y)
+{
+  return !ltu_p (y, x);
+}
 
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] & s[0];
-    }
+/* Return true if X <= Y.  Signedness of X and Y is indicated by SGN.  */
+inline bool
+wi::le_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+{
+  if (sgn == SIGNED)
+    return les_p (x, y);
   else
-    result = and_large (val, len, p1, s, cl);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s & %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
+    return leu_p (x, y);
 }
 
-/* Return THIS & ~C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::and_not (const T &c) const
+/* Return true if X > Y when both are treated as signed values.  */
+inline bool
+wi::gts_p (const wide_int_ref &x, const wide_int_ref &y)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  return lts_p (y, x);
+}
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
+/* Return true if X > Y when both are treated as unsigned values.  */
+inline bool
+wi::gtu_p (const wide_int_ref &x, const wide_int_ref &y)
+{
+  return ltu_p (y, x);
+}
 
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] & ~s[0];
-    }
+/* Return true if X > Y.  Signedness of X and Y is indicated by SGN.  */
+inline bool
+wi::gt_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+{
+  if (sgn == SIGNED)
+    return gts_p (x, y);
   else
-    result = and_not_large (val, len, p1, s, cl);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s &~ %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
+    return gtu_p (x, y);
 }
 
-/* Return the logical negation (bitwise complement) of THIS.  */
-inline wide_int_ro
-wide_int_ro::operator ~ () const
+/* Return true if X >= Y when both are treated as signed values.  */
+inline bool
+wi::ges_p (const wide_int_ref &x, const wide_int_ref &y)
 {
-  wide_int_ro result;
-  int l0 = len - 1;
-
-  result.len = len;
-  result.precision = precision;
-
-  while (l0 >= 0)
-    {
-      result.val[l0] = ~val[l0];
-      l0--;
-    }
-
-#ifdef DEBUG_WIDE_INT
-  debug_ww ("wide_int_ro:: %s = (~ %s)\n", result, *this);
-#endif
-  return result;
+  return !lts_p (x, y);
 }
 
-/* Return THIS | C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::operator | (const T &c) const
+/* Return true if X >= Y when both are treated as unsigned values.  */
+inline bool
+wi::geu_p (const wide_int_ref &x, const wide_int_ref &y)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  return !ltu_p (x, y);
+}
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] | s[0];
-    }
+/* Return true if X >= Y.  Signedness of X and Y is indicated by SGN.  */
+inline bool
+wi::ge_p (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+{
+  if (sgn == SIGNED)
+    return ges_p (x, y);
   else
-    result = or_large (val, len, p1, s, cl);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s | %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
+    return geu_p (x, y);
 }
 
-/* Return THIS | ~C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::or_not (const T &c) const
+/* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Treat both X and Y
+   as signed values.  */
+inline int
+wi::cmps (const wide_int_ref &x, const wide_int_ref &y)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
+  if (x.precision <= HOST_BITS_PER_WIDE_INT
+      && y.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] | ~s[0];
-    }
-  else
-    result = or_not_large (val, len, p1, s, cl);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s |~ %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
-}
-
-/* Return THIS ^ C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::operator ^ (const T &c) const
-{
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] ^ s[0];
-    }
-  else
-    result = xor_large (val, len, p1, s, cl);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s ^ %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
-}
-
-/* Return THIS + C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::operator + (const T &c) const
-{
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] + s[0];
-      if (precision < HOST_BITS_PER_WIDE_INT)
-	result.val[0] = sext_hwi (result.val[0], p1);
-    }
-  else
-    result = add_large (val, len, p1, s, cl, UNSIGNED, 0);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s + %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
-}
-
-/* Return THIS + C.  OVERFLOW is set based on the sign of the
-   operation that is specified in SGN.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::add (const T &c, signop sgn, bool *overflow) const
-{
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] + s[0];
-      if (p1 < HOST_BITS_PER_WIDE_INT)
-	result.val[0] = sext_hwi (result.val[0], p1);
-      if (sgn == SIGNED)
-	{
-	  HOST_WIDE_INT x
-	    = (((result.val[0] ^ val[0]) & (result.val[0] ^ s[0]))
-	       >> (p1 - 1)) & 1;
-	  *overflow = (x != 0);
-	}
+      HOST_WIDE_INT xl = sext_hwi (x.ulow (), x.precision);
+      HOST_WIDE_INT yl = sext_hwi (y.ulow (), y.precision);
+      if (xl < yl)
+	return -1;
+      else if (xl > yl)
+	return 1;
       else
-	*overflow = ((unsigned HOST_WIDE_INT) result.val[0]
-		     < (unsigned HOST_WIDE_INT) val[0]);
-      }
-  else
-    result = add_large (val, len, p1, s, cl, sgn, overflow);
-
-#ifdef DEBUG_WIDE_INT
-  debug_waav ("wide_int_ro:: %s = (%s + %s) O=%d\n",
-	      result, val, len, p1, s, cl, p1, *overflow);
-#endif
-  return result;
-}
-
-/* Multiply THIS and C.  The result is the same precision as the operands,
-   so there is no reason for signed or unsigned versions.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::operator * (const T &c) const
-{
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  bool overflow = false;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] * s[0];
-      if (precision < HOST_BITS_PER_WIDE_INT)
-	result.val[0] = sext_hwi (result.val[0], precision);
+	return 0;
     }
-  else
-    result = mul_internal (false, false,
-			   val, len, p1,
-			   s, cl, UNSIGNED, &overflow, false);
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s * %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
+  return cmps_large (x.val, x.len, x.precision, y.val, y.len,
+		     y.precision);
 }
 
-/* Multiply THIS and C.  The signedness is specified with SGN.
-   OVERFLOW is set true if the result overflows, false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mul (const T &c, signop sgn, bool *overflow) const
+/* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Treat both X and Y
+   as unsigned values.  */
+inline int
+wi::cmpu (const wide_int_ref &x, const wide_int_ref &y)
 {
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  if (overflow)
-    *overflow = false;
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  return mul_internal (false, false,
-		       val, len, p1,
-		       s, cl, sgn, overflow, true);
-}
-
-/* Signed multiply THIS and C.  The result is the same precision
-   as the operands.  OVERFLOW is set true if the result overflows,
-   false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::smul (const T &c, bool *overflow) const
-{
-  return mul (c, SIGNED, overflow);
-}
-
-/* Unsigned multiply THIS and C.  The result is the same precision
-   as the operands.  OVERFLOW is set true if the result overflows,
-   false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::umul (const T &c, bool *overflow) const
-{
-  return mul (c, UNSIGNED, overflow);
-}
-
-/* Multiply THIS and C.  The signedness is specified with SGN.
-   The result is twice the precision of the operands.  The signedness
-   is specified with SGN.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mul_full (const T &c, signop sgn) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  return mul_internal (false, true,
-		       val, len, p1,
-		       s, cl, sgn, 0, false);
-}
-
-/* Signed multiply THIS and C.  The result is twice the precision
-   of the operands.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::smul_full (const T &c) const
-{
-  return mul_full (c, SIGNED);
-}
-
-/* Unsigned multiply THIS and C.  The result is twice the precision
-   of the operands.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::umul_full (const T &c) const
-{
-  return mul_full (c, UNSIGNED);
-}
-
-/* Multiply THIS and C and return the high part of that result.
-   The signedness is specified with SGN.  The result is the same
-   precision as the operands.  The mode is the same mode as the
-   operands.  The signedness is specified with SGN.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mul_high (const T &c, signop sgn) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  return mul_internal (true, false,
-		       val, len, p1,
-		       s, cl, sgn, 0, false);
-}
-
-/* Negate THIS.  */
-inline wide_int_ro
-wide_int_ro::operator - () const
-{
-  wide_int_ro r;
-  r = wide_int_ro (0) - *this;
-  return r;
-}
-
-/* Negate THIS.  OVERFLOW is set true if the value cannot be negated,
-   false otherwise.  */
-inline wide_int_ro
-wide_int_ro::neg (bool *overflow) const
-{
-  gcc_checking_assert (precision);
-
-  *overflow = only_sign_bit_p ();
-
-  return wide_int_ro (0) - *this;
-}
-
-/* Return THIS - C.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::operator - (const T &c) const
-{
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
+  if (x.precision <= HOST_BITS_PER_WIDE_INT
+      && y.precision <= HOST_BITS_PER_WIDE_INT)
     {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] - s[0];
-      if (p1 < HOST_BITS_PER_WIDE_INT)
-	result.val[0] = sext_hwi (result.val[0], p1);
-    }
-  else
-    result = sub_large (val, len, p1, s, cl, UNSIGNED, 0);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s - %s)\n", result, *this, s, cl, p2);
-#endif
-  return result;
-}
-
-/* Return THIS - C.  OVERFLOW is set based on the sign of the
-   operation that is specified in SGN.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::sub (const T &c, signop sgn, bool *overflow) const
-{
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, true, true);
-
-  if (p1 <= HOST_BITS_PER_WIDE_INT)
-    {
-      result.len = 1;
-      result.precision = p1;
-      result.val[0] = val[0] - s[0];
-      if (p1 < HOST_BITS_PER_WIDE_INT)
-	result.val[0] = sext_hwi (result.val[0], p1);
-      if (sgn == SIGNED)
-	{
-	  HOST_WIDE_INT x
-	    = (((val[0] ^ s[0]) & (result.val[0] ^ val[0]))
-	       >> (p1 - 1)) & 1;
-	  *overflow = (x != 0);
-	}
+      unsigned HOST_WIDE_INT xl = zext_hwi (x.ulow (), x.precision);
+      unsigned HOST_WIDE_INT yl = zext_hwi (y.ulow (), y.precision);
+      if (xl < yl)
+	return -1;
+      else if (xl == yl)
+	return 0;
       else
-	*overflow = ((unsigned HOST_WIDE_INT) result.val[0]
-		     > (unsigned HOST_WIDE_INT) val[0]);
+	return 1;
     }
-  else
-    result = sub_large (val, len, p1, s, cl, sgn, overflow);
+  return cmpu_large (x.val, x.len, x.precision, y.val, y.len,
+		     y.precision);
+}
 
-#ifdef DEBUG_WIDE_INT
-  debug_waav ("wide_int_ro:: %s = (%s - %s) O=%d\n",
-	      result, val, len, p1, s, cl, p1, *overflow);
-#endif
+/* Return -1 if X < Y, 0 if X == Y and 1 if X > Y.  Signedness of
+   X and Y indicated by SGN.  */
+inline int
+wi::cmp (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
+{
+  if (sgn == SIGNED)
+    return cmps (x, y);
+  else
+    return cmpu (x, y);
+}
+
+/* Return ~x.  */
+template <typename T>
+inline WI_UNARY_RESULT (T)
+wi::bit_not (const T &x)
+{
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  wide_int_ref xi (x, get_precision (result));
+  for (unsigned int i = 0; i < xi.len; ++i)
+    val[i] = ~xi.val[i];
+  result.set_len (xi.len);
   return result;
 }
 
-/* Divide DIVISOR into THIS.  The result is the same size as the
-   operands.  The sign is specified in SGN.  The output is truncated.
-   If the pointer to OVERFLOW is not 0, OVERFLOW is set to true if
-   the result overflows, false otherwise.  */
+/* Return -x.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::div_trunc (const T &c, signop sgn, bool *overflow) const
+inline WI_UNARY_RESULT (T)
+wi::neg (const T &x)
 {
-  wide_int_ro remainder;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
-
-  return divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			  &remainder, false, overflow);
+  return sub (0, x);
 }
 
-/* Signed divide with truncation of result.  */
+/* Return -x.  Indicate in *OVERFLOW if X is the minimum signed value.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::sdiv_trunc (const T &c) const
+inline WI_UNARY_RESULT (T)
+wi::neg (const T &x, bool *overflow)
 {
-  return div_trunc (c, SIGNED);
+  *overflow = only_sign_bit_p (x);
+  return sub (0, x);
 }
 
-/* Unsigned divide with truncation of result.  */
+/* Return the absolute value of x.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::udiv_trunc (const T &c) const
+inline WI_UNARY_RESULT (T)
+wi::abs (const T &x)
 {
-  return div_trunc (c, UNSIGNED);
+  if (neg_p (x))
+    return neg (x);
+  return x;
 }
 
-/* Divide DIVISOR into THIS.  The result is the same size as the operands.
-   The sign is specified in SGN.  The output is floor truncated.  If the
-   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
-   overflows, false otherwise.  */
+/* Return the result of sign-extending the low OFFSET bits of X.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::div_floor (const T &c, signop sgn, bool *overflow) const
+inline WI_UNARY_RESULT (T)
+wi::sext (const T &x, unsigned int offset)
 {
-  wide_int_ro remainder;
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
-
-  return divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			  &remainder, false, overflow);
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  if (offset <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = sext_hwi (xi.ulow (), offset);
+      result.set_len (1);
+    }
+  else
+    result.set_len (sext_large (val, xi.val, xi.len, precision, offset));
+  return result;
 }
 
-/* Unsigned divide with floor truncation of result.  */
+/* Return the result of zero-extending the low OFFSET bits of X.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::udiv_floor (const T &c) const
+inline WI_UNARY_RESULT (T)
+wi::zext (const T &x, unsigned int offset)
 {
-  return div_floor (c, UNSIGNED);
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  if (offset < HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = zext_hwi (xi.ulow (), offset);
+      result.set_len (1);
+    }
+  else
+    result.set_len (zext_large (val, xi.val, xi.len, precision, offset));
+  return result;
 }
 
-/* Signed divide with floor truncation of result.  */
+/* Return the result of extending the low OFFSET bits of X according to
+   signedness SGN.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::sdiv_floor (const T &c) const
+inline WI_UNARY_RESULT (T)
+wi::ext (const T &x, unsigned int offset, signop sgn)
 {
-  return div_floor (c, SIGNED);
+  return sgn == SIGNED ? sext (x, offset) : zext (x, offset);
 }
 
-/* Divide DIVISOR into THIS.  The result is the same size as the operands.
-   The sign is specified in SGN.  The output is ceil truncated.  If the
-   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
-   overflows, false otherwise.  */
+/* Return an integer that represents X | (1 << bit).  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::div_ceil (const T &c, signop sgn, bool *overflow) const
+inline WI_UNARY_RESULT (T)
+wi::set_bit (const T &x, unsigned int bit)
 {
-  wide_int_ro remainder;
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = xi.ulow () | ((unsigned HOST_WIDE_INT) 1 << bit);
+      result.set_len (1);
+    }
+  else
+    result.set_len (set_bit_large (val, xi.val, xi.len, precision, bit));
+  return result;
+}
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
+/* Return the mininum of X and Y, treating them both as having
+   signedness SGN.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::min (const T1 &x, const T2 &y, signop sgn)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  if (wi::le_p (x, y, sgn))
+    {
+      wide_int_ref xi (x, precision);
+      for (unsigned int i = 0; i < xi.len; ++i)
+	val[i] = xi.val[i];
+      result.set_len (xi.len);
+    }
+  else
+    {
+      wide_int_ref yi (y, precision);
+      for (unsigned int i = 0; i < yi.len; ++i)
+	val[i] = yi.val[i];
+      result.set_len (yi.len);
+    }
+  return result;
+}
 
-  quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			      &remainder, true, overflow);
+/* Return the minimum of X and Y, treating both as signed values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::smin (const T1 &x, const T2 &y)
+{
+  return min (x, y, SIGNED);
+}
 
-  if (!quotient.neg_p (sgn) && !remainder.zero_p ())
+/* Return the minimum of X and Y, treating both as unsigned values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::umin (const T1 &x, const T2 &y)
+{
+  return min (x, y, UNSIGNED);
+}
+
+/* Return the maxinum of X and Y, treating them both as having
+   signedness SGN.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::max (const T1 &x, const T2 &y, signop sgn)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  if (wi::ge_p (x, y, sgn))
+    {
+      wide_int_ref xi (x, precision);
+      for (unsigned int i = 0; i < xi.len; ++i)
+	val[i] = xi.val[i];
+      result.set_len (xi.len);
+    }
+  else
+    {
+      wide_int_ref yi (y, precision);
+      for (unsigned int i = 0; i < yi.len; ++i)
+	val[i] = yi.val[i];
+      result.set_len (yi.len);
+    }
+  return result;
+}
+
+/* Return the maximum of X and Y, treating both as signed values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::smax (const T1 &x, const T2 &y)
+{
+  return max (x, y, SIGNED);
+}
+
+/* Return the maximum of X and Y, treating both as unsigned values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::umax (const T1 &x, const T2 &y)
+{
+  return max (x, y, UNSIGNED);
+}
+
+/* Return X & Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::bit_and (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (xi.len + yi.len == 2)
+    {
+      val[0] = xi.ulow () & yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (and_large (val, xi.val, xi.len, yi.val, yi.len,
+			       precision));
+  return result;
+}
+
+/* Return X & ~Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::bit_and_not (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (xi.len + yi.len == 2)
+    {
+      val[0] = xi.ulow () & ~yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (and_not_large (val, xi.val, xi.len, yi.val, yi.len,
+				   precision));
+  return result;
+}
+
+/* Return X | Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::bit_or (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = xi.ulow () | yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (or_large (val, xi.val, xi.len, yi.val, yi.len, precision));
+  return result;
+}
+
+/* Return X | ~Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::bit_or_not (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (xi.len + yi.len == 2)
+    {
+      val[0] = xi.ulow () | ~yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (or_not_large (val, xi.val, xi.len, yi.val, yi.len,
+				  precision));
+  return result;
+}
+
+/* Return X ^ Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::bit_xor (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (xi.len + yi.len == 2)
+    {
+      val[0] = xi.ulow () ^ yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (xor_large (val, xi.val, xi.len, yi.val, yi.len, precision));
+  return result;
+}
+
+/* Return X + Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::add (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = xi.ulow () + yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (add_large (val, xi.val, xi.len, yi.val, yi.len, precision,
+			       UNSIGNED, 0));
+  return result;
+}
+
+/* Return X + Y.  Treat X and Y as having the signednes given by SGN
+   and indicate in *OVERFLOW whether the operation overflowed.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::add (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      unsigned HOST_WIDE_INT xl = xi.ulow ();
+      unsigned HOST_WIDE_INT yl = yi.ulow ();
+      unsigned HOST_WIDE_INT resultl = xl + yl;
+      if (precision == 0)
+	*overflow = false;
+      else if (sgn == SIGNED)
+	*overflow = (((resultl ^ xl) & (resultl ^ yl)) >> (precision - 1)) & 1;
+      else
+	*overflow = ((resultl << (HOST_BITS_PER_WIDE_INT - precision))
+		     < (xl << (HOST_BITS_PER_WIDE_INT - precision)));
+      val[0] = resultl;
+      result.set_len (1);
+    }
+  else
+    result.set_len (add_large (val, xi.val, xi.len, yi.val, yi.len, precision,
+			       sgn, overflow));
+  return result;
+}
+
+/* Return X - Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::sub (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = xi.ulow () - yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (sub_large (val, xi.val, xi.len, yi.val, yi.len, precision,
+			       UNSIGNED, 0));
+  return result;
+}
+
+/* Return X - Y.  Treat X and Y as having the signednes given by SGN
+   and indicate in *OVERFLOW whether the operation overflowed.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::sub (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      unsigned HOST_WIDE_INT xl = xi.ulow ();
+      unsigned HOST_WIDE_INT yl = yi.ulow ();
+      unsigned HOST_WIDE_INT resultl = xl - yl;
+      if (precision == 0)
+	*overflow = false;
+      else if (sgn == SIGNED)
+	*overflow = (((xl ^ yl) & (resultl ^ xl)) >> (precision - 1)) & 1;
+      else
+	*overflow = ((resultl << (HOST_BITS_PER_WIDE_INT - precision))
+		     > (xl << (HOST_BITS_PER_WIDE_INT - precision)));
+      val[0] = resultl;
+      result.set_len (1);
+    }
+  else
+    result.set_len (sub_large (val, xi.val, xi.len, yi.val, yi.len, precision,
+			       sgn, overflow));
+  return result;
+}
+
+/* Return X * Y.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mul (const T1 &x, const T2 &y)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  if (precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = xi.ulow () * yi.ulow ();
+      result.set_len (1);
+    }
+  else
+    result.set_len (mul_internal (val, xi.val, xi.len, yi.val, yi.len,
+				  precision, UNSIGNED, 0, false, false));
+  return result;
+}
+
+/* Return X * Y.  Treat X and Y as having the signednes given by SGN
+   and indicate in *OVERFLOW whether the operation overflowed.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mul (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  result.set_len (mul_internal (val, xi.val, xi.len, yi.val, yi.len, precision,
+				sgn, overflow, false, false));
+  return result;
+}
+
+/* Return X * Y, treating both X and Y as signed values.  Indicate in
+   *OVERFLOW whether the operation overflowed.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::smul (const T1 &x, const T2 &y, bool *overflow)
+{
+  return mul (x, y, SIGNED, overflow);
+}
+
+/* Return X * Y, treating both X and Y as unsigned values.  Indicate in
+   *OVERFLOW whether the operation overflowed.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::umul (const T1 &x, const T2 &y, bool *overflow)
+{
+  return mul (x, y, UNSIGNED, overflow);
+}
+
+/* Perform a widening multiplication of X and Y, extending the values
+   according to SGN, and return the high part of the result.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mul_high (const T1 &x, const T2 &y, signop sgn)
+{
+  WI_BINARY_RESULT_VAR (result, val, T1, x, T2, y);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y, precision);
+  result.set_len (mul_internal (val, xi.val, xi.len, yi.val, yi.len, precision,
+				sgn, 0, true, false));
+  return result;
+}
+
+/* Return X / Y, rouding towards 0.  Treat X and Y as having the
+   signedness given by SGN.  Indicate in *OVERFLOW if the result
+   overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::div_trunc (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
+
+  quotient.set_len (divmod_internal (quotient_val, 0, 0, xi.val, xi.len,
+				     precision,
+				     yi.val, yi.len, yi.precision,
+				     sgn, overflow));
+  return quotient;
+}
+
+/* Return X / Y, rouding towards 0.  Treat X and Y as signed values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::sdiv_trunc (const T1 &x, const T2 &y)
+{
+  return div_trunc (x, y, SIGNED);
+}
+
+/* Return X / Y, rouding towards 0.  Treat X and Y as unsigned values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::udiv_trunc (const T1 &x, const T2 &y)
+{
+  return div_trunc (x, y, UNSIGNED);
+}
+
+/* Return X / Y, rouding towards -inf.  Treat X and Y as having the
+   signedness given by SGN.  Indicate in *OVERFLOW if the result
+   overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::div_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
+
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn,
+				     overflow));
+  remainder.set_len (remainder_len);
+  if (wi::neg_p (quotient, sgn) && remainder != 0)
     return quotient + 1;
   return quotient;
 }
 
-/* Divide DIVISOR into THIS.  The result is the same size as the operands.
-   The sign is specified in SGN.  The output is round truncated.  If the
-   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
-   overflows, false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::div_round (const T &c, signop sgn, bool *overflow) const
+/* Return X / Y, rouding towards -inf.  Treat X and Y as signed values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::sdiv_floor (const T1 &x, const T2 &y)
 {
-  wide_int_ro remainder;
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  return div_floor (x, y, SIGNED);
+}
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
+/* Return X / Y, rouding towards -inf.  Treat X and Y as unsigned values.  */
+/* ??? Why do we have both this and udiv_trunc.  Aren't they the same?  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::udiv_floor (const T1 &x, const T2 &y)
+{
+  return div_floor (x, y, UNSIGNED);
+}
 
-  quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			      &remainder, true, overflow);
-  if (!remainder.zero_p ())
+/* Return X / Y, rouding towards +inf.  Treat X and Y as having the
+   signedness given by SGN.  Indicate in *OVERFLOW if the result
+   overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::div_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
+
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn,
+				     overflow));
+  remainder.set_len (remainder_len);
+  if (!wi::neg_p (quotient, sgn) && remainder != 0)
+    return quotient + 1;
+  return quotient;
+}
+
+/* Return X / Y, rouding towards nearest with ties away from zero.
+   Treat X and Y as having the signedness given by SGN.  Indicate
+   in *OVERFLOW if the result overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::div_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
+{
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
+
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn,
+				     overflow));
+  remainder.set_len (remainder_len);
+
+  if (remainder != 0)
     {
-      wide_int_ro divisor = wide_int_ro::from_array (s, cl, precision);
       if (sgn == SIGNED)
 	{
-	  wide_int_ro p_remainder
-	    = remainder.neg_p () ? -remainder : remainder;
-	  wide_int_ro p_divisor = divisor.neg_p () ? -divisor : divisor;
-	  p_divisor = p_divisor.rshiftu_large (1);
-
-	  if (p_divisor.gts_p (p_remainder))
+	  if (wi::gts_p (wi::lrshift (wi::abs (y), 1),
+			 wi::abs (remainder)))
 	    {
-	      if (quotient.neg_p ())
+	      if (wi::neg_p (quotient))
 		return quotient - 1;
 	      else
 		return quotient + 1;
@@ -2436,1782 +2205,525 @@ wide_int_ro::div_round (const T &c, signop sgn, bool *overflow) const
 	}
       else
 	{
-	  wide_int_ro p_divisor = divisor.rshiftu_large (1);
-	  if (p_divisor.gtu_p (remainder))
+	  if (wi::gtu_p (wi::lrshift (y, 1), remainder))
 	    return quotient + 1;
 	}
     }
   return quotient;
 }
 
-/* Divide DIVISOR into THIS producing both the quotient and remainder.
-   The result is the same size as the operands.  The sign is specified
-   in SGN.  The output is truncated.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::divmod_trunc (const T &c, wide_int_ro *remainder,
-			   signop sgn) const
+/* Return X / Y, rouding towards nearest with ties away from zero.
+   Treat X and Y as having the signedness given by SGN.  Store the
+   remainder in *REMAINDER_PTR.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::divmod_trunc (const T1 &x, const T2 &y, signop sgn,
+		  WI_BINARY_RESULT (T1, T2) *remainder_ptr)
 {
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn, 0));
+  remainder.set_len (remainder_len);
 
-  return divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			  remainder, true, 0);
-}
-
-/* Signed divide/mod with truncation of result.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::sdivmod_trunc (const T &c, wide_int_ro *mod) const
-{
-  return divmod_trunc (c, mod, SIGNED);
-}
-
-/* Unsigned divide/mod with truncation of result.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::udivmod_trunc (const T &c, wide_int_ro *mod) const
-{
-  return divmod_trunc (c, mod, UNSIGNED);
-}
-
-/* Divide DIVISOR into THIS.  The remainder is also produced in
-   REMAINDER.  The result is the same size as the operands.
-   The sign is specified in SGN.  The outputs is floor truncated.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::divmod_floor (const T &c, wide_int_ro *remainder,
-			   signop sgn) const
-{
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
-
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
-
-  quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			      remainder, true, 0);
-  if (quotient.neg_p (sgn) && !(*remainder).zero_p ())
-    {
-      *remainder = *remainder + wide_int_ro::from_array (s, cl, precision);
-      return quotient - 1;
-    }
+  *remainder_ptr = remainder;
   return quotient;
 }
 
-/* Signed divide/mod with floor truncation of result.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::sdivmod_floor (const T &c, wide_int_ro *mod) const
+/* Compute X / Y, rouding towards 0, and return the remainder.
+   Treat X and Y as having the signedness given by SGN.  Indicate
+   in *OVERFLOW if the division overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mod_trunc (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
-  return divmod_floor (c, mod, SIGNED);
-}
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (remainder);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
 
-/* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.  The
-   output is adjusted to be compatible with truncating divide.  If the
-   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
-   overflows, false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mod_trunc (const T &c, signop sgn, bool *overflow) const
-{
-  wide_int_ro remainder;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  unsigned int remainder_len;
+  divmod_internal (0, &remainder_len, remainder_val, xi.val, xi.len, precision,
+		   yi.val, yi.len, yi.precision, sgn, overflow);
+  remainder.set_len (remainder_len);
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
-
-  divmod_internal (false, val, len, p1, s, cl, p2, sgn,
-		   &remainder, true, overflow);
   return remainder;
 }
 
-/* Signed mod with truncation of result.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::smod_trunc (const T &c) const
+/* Compute X / Y, rouding towards 0, and return the remainder.
+   Treat X and Y as signed values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::smod_trunc (const T1 &x, const T2 &y)
 {
-  return mod_trunc (c, SIGNED);
+  return mod_trunc (x, y, SIGNED);
 }
 
-/* Unsigned mod with truncation of result.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::umod_trunc (const T &c) const
+/* Compute X / Y, rouding towards 0, and return the remainder.
+   Treat X and Y as unsigned values.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::umod_trunc (const T1 &x, const T2 &y)
 {
-  return mod_trunc (c, UNSIGNED);
+  return mod_trunc (x, y, UNSIGNED);
 }
 
-/* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.  The
-   output is adjusted to be compatible with floor divide.  OVERFLOW is
-   set to true if the result overflows, false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mod_floor (const T &c, signop sgn, bool *overflow) const
+/* Compute X / Y, rouding towards -inf, and return the remainder.
+   Treat X and Y as having the signedness given by SGN.  Indicate
+   in *OVERFLOW if the division overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mod_floor (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
-  wide_int_ro remainder;
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn,
+				     overflow));
+  remainder.set_len (remainder_len);
 
-  quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			      &remainder, true, overflow);
-
-  if (quotient.neg_p (sgn) && !remainder.zero_p ())
-    return remainder + wide_int_ro::from_array (s, cl, precision);
+  if (wi::neg_p (quotient, sgn) && remainder != 0)
+    return remainder + y;
   return remainder;
 }
 
-/* Unsigned mod with floor truncation of result.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::umod_floor (const T &c) const
+/* Compute X / Y, rouding towards -inf, and return the remainder.
+   Treat X and Y as unsigned values.  */
+/* ??? Why do we have both this and umod_trunc.  Aren't they the same?  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::umod_floor (const T1 &x, const T2 &y)
 {
-  return mod_floor (c, UNSIGNED);
+  return mod_floor (x, y, UNSIGNED);
 }
 
-/* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.  The
-   output is adjusted to be compatible with ceil divide.  If the
-   pointer to OVERFLOW is not 0, OVERFLOW is set to true if the result
-   overflows, false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mod_ceil (const T &c, signop sgn, bool *overflow) const
+/* Compute X / Y, rouding towards +inf, and return the remainder.
+   Treat X and Y as having the signedness given by SGN.  Indicate
+   in *OVERFLOW if the division overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mod_ceil (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
-  wide_int_ro remainder;
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn,
+				     overflow));
+  remainder.set_len (remainder_len);
 
-  quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			      &remainder, true, overflow);
-
-  if (!quotient.neg_p (sgn) && !remainder.zero_p ())
-    return  remainder - wide_int_ro::from_array (s, cl, precision);
+  if (!wi::neg_p (quotient, sgn) && remainder != 0)
+    return remainder - y;
   return remainder;
 }
 
-/* Divide DIVISOR into THIS producing the remainder.  The result is
-   the same size as the operands.  The sign is specified in SGN.  The
-   output is adjusted to be compatible with rounding divide.  OVERFLOW
-   is set to true if the result overflows, false otherwise.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::mod_round (const T &c, signop sgn, bool *overflow) const
+/* Compute X / Y, rouding towards nearest with ties away from zero,
+   and return the remainder.  Treat X and Y as having the signedness
+   given by SGN.  Indicate in *OVERFLOW if the division overflows.  */
+template <typename T1, typename T2>
+inline WI_BINARY_RESULT (T1, T2)
+wi::mod_round (const T1 &x, const T2 &y, signop sgn, bool *overflow)
 {
-  wide_int_ro remainder;
-  wide_int_ro quotient;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  unsigned int p1, p2;
+  WI_BINARY_RESULT_VAR (quotient, quotient_val, T1, x, T2, y);
+  WI_BINARY_RESULT_VAR (remainder, remainder_val, T1, x, T2, y);
+  unsigned int precision = get_precision (quotient);
+  wide_int_ref xi (x, precision);
+  wide_int_ref yi (y);
 
-  p1 = precision;
-  s = to_shwi1 (ws, &cl, &p2, c);
-  check_precision (&p1, &p2, false, true);
+  unsigned int remainder_len;
+  quotient.set_len (divmod_internal (quotient_val, &remainder_len,
+				     remainder_val, xi.val, xi.len, precision,
+				     yi.val, yi.len, yi.precision, sgn,
+				     overflow));
+  remainder.set_len (remainder_len);
 
-  quotient = divmod_internal (true, val, len, p1, s, cl, p2, sgn,
-			      &remainder, true, overflow);
-
-  if (!remainder.zero_p ())
+  if (remainder != 0)
     {
-      wide_int_ro divisor = wide_int_ro::from_array (s, cl, precision);
       if (sgn == SIGNED)
 	{
-	  wide_int_ro p_remainder = (remainder.neg_p ()
-				     ? -remainder : remainder);
-	  wide_int_ro p_divisor = divisor.neg_p () ? -divisor : divisor;
-	  p_divisor = p_divisor.rshiftu_large (1);
-
-	  if (p_divisor.gts_p (p_remainder))
+	  if (wi::gts_p (wi::lrshift (wi::abs (y), 1),
+			 wi::abs (remainder)))
 	    {
-	      if (quotient.neg_p ())
-		return remainder + divisor;
+	      if (wi::neg_p (quotient))
+		return remainder + y;
 	      else
-		return remainder - divisor;
+		return remainder - y;
 	    }
 	}
       else
 	{
-	  wide_int_ro p_divisor = divisor.rshiftu_large (1);
-	  if (p_divisor.gtu_p (remainder))
-	    return remainder - divisor;
+	  if (wi::gtu_p (wi::lrshift (y, 1), remainder))
+	    return remainder - y;
 	}
     }
   return remainder;
 }
 
-/* Left shift THIS by C.  C must be non-negative.  BITSIZE is the
-   width of *THIS used for truncating the shift amount.   */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::lshift (const T &c, unsigned int bitsize) const
+/* Return true if X is a multiple of Y, storing X / Y in *RES if so.
+   Treat X and Y as having the signedness given by SGN.  */
+template <typename T1, typename T2>
+inline bool
+wi::multiple_of_p (const T1 &x, const T2 &y, signop sgn,
+		   WI_BINARY_RESULT (T1, T2) *res)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  HOST_WIDE_INT shift;
+  WI_BINARY_RESULT (T1, T2) remainder;
+  WI_BINARY_RESULT (T1, T2) quotient = divmod_trunc (x, y, sgn, &remainder);
+  if (remainder == 0)
+    {
+      *res = quotient;
+      return true;
+    }
+  return false;
+}
 
-  s = to_shwi2 (ws, &cl, c);
+/* Truncate the value of shift value X so that the value is within BITSIZE.
+   PRECISION is the number of bits in the value being shifted.  */
+inline unsigned int
+wi::trunc_shift (const wide_int_ref &x, unsigned int bitsize,
+		 unsigned int precision)
+{
+  if (bitsize == 0)
+    {
+      gcc_checking_assert (!neg_p (x));
+      if (geu_p (x, precision))
+	return precision;
+    }
+  /* Flush out undefined bits.  */
+  unsigned int shift = x.ulow ();
+  if (x.precision < HOST_BITS_PER_WIDE_INT)
+    shift = zext_hwi (shift, x.precision);
+  return shift & (bitsize - 1);
+}
 
-  gcc_checking_assert (precision);
-
-  shift = trunc_shift (s, bitsize);
-  if (shift == -1)
-    result = wide_int_ro::zero (precision);
-  else if (shift == 0)
-    result = *this;
-  /* Handle the simple case quickly.   */
+/* Return X << Y.  If BITSIZE is nonzero, only use the low BITSIZE bits
+   of Y.  */
+template <typename T>
+inline WI_UNARY_RESULT (T)
+wi::lshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
+{
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  unsigned int precision = get_precision (result);
+  wide_int_ref xi (x, precision);
+  unsigned int shift = trunc_shift (y, bitsize, precision);
+  /* Handle the simple cases quickly.   */
+  if (shift >= precision)
+    {
+      val[0] = 0;
+      result.set_len (1);
+    }
   else if (precision <= HOST_BITS_PER_WIDE_INT)
     {
-      result.precision = precision;
-      result.len = 1;
-      result.val[0] = val[0] << shift;
+      val[0] = xi.ulow () << shift;
+      result.set_len (1);
     }
   else
-    result = lshift_large (shift, precision);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s << %s)\n", result, *this, s, cl, 0);
-#endif
+    result.set_len (lshift_large (val, xi.val, xi.len, precision, shift));
   return result;
 }
 
-/* Left shift THIS by C into an expanded value with RES_PREC precision.
-   C must be non-negative.  This function is only available for the default
-   wide-int form.  */
+/* Return X >> Y, using a logical shift.  If BITSIZE is nonzero, only use
+   the low BITSIZE bits of Y.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::lshift_widen (const T &c, unsigned int res_prec) const
+inline WI_UNARY_RESULT (T)
+wi::lrshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  HOST_WIDE_INT shift;
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  /* Do things in the precision of the input rather than the output,
+     since the result can be no larger than that.  */
+  wide_int_ref xi (x);
+  unsigned int shift = trunc_shift (y, bitsize, xi.precision);
+  /* Handle the simple cases quickly.   */
+  if (shift >= xi.precision)
+    {
+      val[0] = 0;
+      result.set_len (1);
+    }
+  else if (xi.precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = zext_hwi (xi.ulow (), xi.precision) >> shift;
+      result.set_len (1);
+    }
+  else
+    result.set_len (lrshift_large (val, xi.val, xi.len, xi.precision,
+				   get_precision (result), shift));
+  return result;
+}
 
-  s = to_shwi2 (ws, &cl, c);
-
-  gcc_checking_assert (precision);
-  gcc_checking_assert (res_prec);
-
-  shift = s[0];
-
-  gcc_checking_assert (shift >= 0);
-
-  if (shift == 0 && res_prec == precision)
-    result = *this;
+/* Return X >> Y, using an arithmetic shift.  If BITSIZE is nonzero, only use
+   the low BITSIZE bits of Y.  */
+template <typename T>
+inline WI_UNARY_RESULT (T)
+wi::arshift (const T &x, const wide_int_ref &y, unsigned int bitsize)
+{
+  WI_UNARY_RESULT_VAR (result, val, T, x);
+  /* Do things in the precision of the input rather than the output,
+     since the result can be no larger than that.  */
+  wide_int_ref xi (x);
+  unsigned int shift = trunc_shift (y, bitsize, xi.precision);
   /* Handle the simple case quickly.   */
-  else if (res_prec <= HOST_BITS_PER_WIDE_INT)
+  if (shift >= xi.precision)
     {
-      result.precision = res_prec;
-      result.len = 1;
-      result.val[0] = val[0] << shift;
+      val[0] = sign_mask (x);
+      result.set_len (1);
+    }
+  else if (xi.precision <= HOST_BITS_PER_WIDE_INT)
+    {
+      val[0] = sext_hwi (zext_hwi (xi.ulow (), xi.precision) >> shift,
+			 xi.precision - shift);
+      result.set_len (1);
     }
   else
-    result = lshift_large (shift, res_prec);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s <<W %s)\n", result, *this, s, cl, 0);
-#endif
+    result.set_len (arshift_large (val, xi.val, xi.len, xi.precision,
+				   get_precision (result), shift));
   return result;
 }
 
-/* Rotate THIS left by C within PREC.  If PREC is 0, the precsion of
-   THIS is used for PREC.  The result is the precision of THIS.  */
+/* Return X >> Y, using an arithmetic shift if SGN is SIGNED and a logical
+   shift otherwise.  If BITSIZE is nonzero, only use the low BITSIZE bits
+   of Y.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::lrotate (const T &c, unsigned int prec) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-
-  s = to_shwi2 (ws, &cl, c);
-
-  return lrotate ((unsigned HOST_WIDE_INT) s[0], prec);
-}
-
-/* Rotate THIS left by CNT within PREC.  If PREC is 0, the precsion
-   of THIS is used for PREC.  CNT must be non-negative.  The result
-   is the precision of the THIS.  */
-inline wide_int_ro
-wide_int_ro::lrotate (unsigned HOST_WIDE_INT cnt, unsigned int prec) const
-{
-  wide_int_ro left, right, result;
-
-  gcc_checking_assert (precision);
-
-  if (prec == 0)
-    prec = precision;
-
-  left = lshift (cnt);
-  right = rshiftu (prec - cnt);
-
-  if (prec != precision)
-    {
-      left = left.zforce_to_size (precision);
-      right = right.zforce_to_size (precision);
-    }
-  result = left | right;
-
-  return result;
-}
-
-/* Right shift THIS by C.  BITSIZE is the width of *THIS used for
-   truncating the shift amount.  SGN indicates the sign.  C must be
-   non-negative.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::rshift (const T &c, signop sgn, unsigned int bitsize) const
+inline WI_UNARY_RESULT (T)
+wi::rshift (const T &x, const wide_int_ref &y, signop sgn,
+	    unsigned int bitsize)
 {
   if (sgn == UNSIGNED)
-    return rshiftu (c, bitsize);
+    return lrshift (x, y, bitsize);
   else
-    return rshifts (c, bitsize);
+    return arshift (x, y, bitsize);
 }
 
-/* Unsigned right shift THIS by C.  C must be non-negative.  BITSIZE
-   is width of *THIS used for truncating the shift amount. */
+/* Return the result of rotating the low WIDTH bits of X left by Y bits
+   and zero-extending the result.  Use a full-width rotate if WIDTH is
+   zero.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::rshiftu (const T &c, unsigned int bitsize) const
+inline WI_UNARY_RESULT (T)
+wi::lrotate (const T &x, const wide_int_ref &y, unsigned int width)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  HOST_WIDE_INT shift;
-
-  s = to_shwi2 (ws, &cl, c);
-  gcc_checking_assert (precision);
-  shift = trunc_shift (s, bitsize);
-
-  if (shift == 0)
-    result = *this;
-  else if (shift == -1)
-    result = wide_int_ro::zero (precision);
-  else if (precision <= HOST_BITS_PER_WIDE_INT)
-    {
-      /* Handle the simple case quickly.   */
-      unsigned HOST_WIDE_INT x = val[0];
-
-      result.precision = precision;
-      result.len = 1;
-
-      if (precision < HOST_BITS_PER_WIDE_INT)
-	x = zext_hwi (x, precision);
-
-      result.val[0] = x >> shift;
-    }
-  else
-    result = rshiftu_large (shift);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s >>U %s)\n", result, *this, s, cl, 0);
-#endif
-  return result;
+  unsigned int precision = get_binary_precision (x, x);
+  if (width == 0)
+    width = precision;
+  gcc_checking_assert ((width & -width) == width);
+  WI_UNARY_RESULT (T) left = wi::lshift (x, y, width);
+  WI_UNARY_RESULT (T) right = wi::lrshift (x, wi::sub (width, y), width);
+  if (width != precision)
+    return wi::zext (left, width) | wi::zext (right, width);
+  return left | right;
 }
 
-/* Signed right shift THIS by C.  C must be non-negative, BITSIZE is
-   the width of *THIS used for truncating the shift amount.   */
+/* Return the result of rotating the low WIDTH bits of X right by Y bits
+   and zero-extending the result.  Use a full-width rotate if WIDTH is
+   zero.  */
 template <typename T>
-inline wide_int_ro
-wide_int_ro::rshifts (const T &c, unsigned int bitsize) const
+inline WI_UNARY_RESULT (T)
+wi::rrotate (const T &x, const wide_int_ref &y, unsigned int width)
 {
-  wide_int_ro result;
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-  HOST_WIDE_INT shift;
-
-  s = to_shwi2 (ws, &cl, c);
-  gcc_checking_assert (precision);
-  shift = trunc_shift (s, bitsize);
-
-  if (shift == 0)
-    result = *this;
-  else if (shift == -1)
-    result = wide_int_ro::zero (precision);
-  else if (precision < HOST_BITS_PER_WIDE_INT)
-    {
-      /* Handle the simple case quickly.   */
-      HOST_WIDE_INT x = val[0];
-
-      result.precision = precision;
-      result.len = 1;
-      x = x << (HOST_BITS_PER_WIDE_INT - precision);
-      result.val[0] = x >> (shift + HOST_BITS_PER_WIDE_INT - precision);
-    }
-  else if (precision == HOST_BITS_PER_WIDE_INT)
-    {
-      HOST_WIDE_INT x = val[0];
-
-      result.precision = precision;
-      result.len = 1;
-      result.val[0] = x >> shift;
-    }
-  else
-    result = rshifts_large (shift);
-
-#ifdef DEBUG_WIDE_INT
-  debug_wwa ("wide_int_ro:: %s = (%s >>S %s)\n", result, *this, s, cl, 0);
-#endif
-  return result;
+  unsigned int precision = get_binary_precision (x, x);
+  if (width == 0)
+    width = precision;
+  gcc_checking_assert ((width & -width) == width);
+  WI_UNARY_RESULT (T) right = wi::lrshift (x, y, width);
+  WI_UNARY_RESULT (T) left = wi::lshift (x, wi::sub (width, y), width);
+  if (width != precision)
+    return wi::zext (left, width) | wi::zext (right, width);
+  return left | right;
 }
 
-/* Rotate THIS right by C within PREC.  If PREC is 0, the precsion
-   of THIS is used for PREC.  The result has the precision of THIS.  */
-template <typename T>
-inline wide_int_ro
-wide_int_ro::rrotate (const T &c, unsigned int prec) const
-{
-  HOST_WIDE_INT ws[WIDE_INT_MAX_ELTS];
-  const HOST_WIDE_INT *s;
-  unsigned int cl;
-
-  s = to_shwi2 (ws, &cl, c);
-  return rrotate ((unsigned HOST_WIDE_INT) s[0], prec);
-}
-
-/* Rotate THIS left by CNT within PREC.  If PREC is 0, the precsion
-   of THIS is used for PREC.  The result has the precision of THIS.
-   CNT must be non-negative.  */
-inline wide_int_ro
-wide_int_ro::rrotate (unsigned HOST_WIDE_INT cnt, unsigned int prec) const
-{
-  wide_int_ro left, right, result;
-
-  gcc_checking_assert (precision);
-
-  if (prec == 0)
-    prec = precision;
-
-  left = lshift (prec - cnt);
-  right = rshiftu (cnt);
-
-  if (prec != precision)
-    {
-      left = left.zforce_to_size (precision);
-      right = right.zforce_to_size (precision);
-    }
-  result = left | right;
-
-  return result;
-}
-
-/* Truncate the value of the shift so that the value is within the
-   BITSIZE. */
+/* Return 0 if the number of 1s in X is even and 1 if the number of 1s
+   is odd.  */
 inline int
-wide_int_ro::trunc_shift (const HOST_WIDE_INT *cnt, unsigned int bitsize) const
+wi::parity (const wide_int_ref &x)
 {
-  gcc_checking_assert (cnt[0] >= 0);
-
-  if (bitsize == 0)
-    return cnt[0];
-  else
-    return cnt[0] & (bitsize - 1);
+  return popcount (x) & 1;
 }
 
+/* Extract WIDTH bits from X, starting at BITPOS.  */
 template <typename T>
-inline bool
-wide_int_ro::top_bit_set (T x)
+inline unsigned HOST_WIDE_INT
+wi::extract_uhwi (const T &x, unsigned int bitpos,
+		  unsigned int width)
 {
-  return (x >> (sizeof (x)*8 - 1)) != 0;
-}
+  unsigned precision = get_precision (x);
+  if (precision < bitpos + width)
+    precision = bitpos + width;
+  wide_int_ref xi (x, precision);
 
-/* The following template and its overrides are used for the first
-   and second operand of static binary comparison functions.
-   These have been implemented so that pointer copying is done
-   from the rep of the operands rather than actual data copying.
-   This is safe even for garbage collected objects since the value
-   is immediately throw away.
+  /* Handle this rare case after the above, so that we assert about
+     bogus BITPOS values.  */
+  if (width == 0)
+    return 0;
 
-   This template matches all integers.  */
-template <typename T>
-inline const HOST_WIDE_INT *
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s, unsigned int *l, unsigned int *p,
-		       const T &x)
-{
-  s[0] = x;
-  if (signedp (x)
-      || sizeof (T) < sizeof (HOST_WIDE_INT)
-      || ! top_bit_set (x))
-    *l = 1;
-  else
+  unsigned int start = bitpos / HOST_BITS_PER_WIDE_INT;
+  unsigned int shift = bitpos % HOST_BITS_PER_WIDE_INT;
+  unsigned HOST_WIDE_INT res = xi.elt (start);
+  res >>= shift;
+  if (shift + width > HOST_BITS_PER_WIDE_INT)
     {
-      s[1] = 0;
-      *l = 2;
+      unsigned HOST_WIDE_INT upper = xi.elt (start + 1);
+      res |= upper << (-shift % HOST_BITS_PER_WIDE_INT);
     }
-  *p = 0;
-  return s;
+  return zext_hwi (res, width);
 }
 
-/* The following template and its overrides are used for the second
-   operand of binary functions.  These have been implemented so that
-   pointer copying is done from the rep of the second operand rather
-   than actual data copying.  This is safe even for garbage collected
-   objects since the value is immediately throw away.
-
-   The next template matches all integers.  */
-template <typename T>
-inline const HOST_WIDE_INT *
-wide_int_ro::to_shwi2 (HOST_WIDE_INT *s, unsigned int *l, const T &x)
-{
-  s[0] = x;
-  if (signedp (x)
-      || sizeof (T) < sizeof (HOST_WIDE_INT)
-      || ! top_bit_set (x))
-    *l = 1;
-  else
-    {
-      s[1] = 0;
-      *l = 2;
-    }
-  return s;
-}
-
-inline wide_int::wide_int () {}
-
-inline wide_int::wide_int (const wide_int_ro &r)
-{
-  static_cast <wide_int_ro &> (*this) = r;
-}
-
-/* Convert an INTEGER_CST into a wide int.  */
-inline wide_int::wide_int (const_tree tcst)
-{
-  *this = from_array (&TREE_INT_CST_ELT (tcst, 0),
-		      TREE_INT_CST_NUNITS (tcst),
-		      TYPE_PRECISION (TREE_TYPE (tcst)), false);
-}
-
-inline wide_int::wide_int (HOST_WIDE_INT op0)
-{
-  precision = 0;
-  val[0] = op0;
-  len = 1;
-}
-
-inline wide_int::wide_int (int op0)
-{
-  precision = 0;
-  val[0] = op0;
-  len = 1;
-}
-
-inline wide_int::wide_int (unsigned HOST_WIDE_INT op0)
-{
-  *this = wide_int_ro::from_uhwi (op0);
-}
-
-inline wide_int::wide_int (unsigned int op0)
-{
-  *this = wide_int_ro::from_uhwi (op0);
-}
-
-inline wide_int::wide_int (const rtx_mode_t &op0)
-{
-  *this = wide_int_ro::from_rtx (op0);
-}
-
-inline wide_int &
-wide_int::operator = (const wide_int_ro &r)
-{
-  static_cast <wide_int_ro &> (*this) = r;
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator = (const_tree tcst)
-{
-  *this = from_array (&TREE_INT_CST_ELT (tcst, 0),
-		      TREE_INT_CST_NUNITS (tcst),
-		      TYPE_PRECISION (TREE_TYPE (tcst)), false);
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator = (HOST_WIDE_INT op0)
-{
-  static_cast <wide_int_ro &> (*this) = op0;
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator = (int op0)
-{
-  static_cast <wide_int_ro &> (*this) = op0;
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator = (unsigned HOST_WIDE_INT op0)
-{
-  static_cast <wide_int_ro &> (*this) = wide_int_ro (op0);
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator = (unsigned int op0)
-{
-  static_cast <wide_int_ro &> (*this) = wide_int_ro (op0);
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator = (const rtx_mode_t &op0)
-{
-  *this = wide_int_ro::from_rtx (op0);
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator ++ ()
-{
-  *this += 1;
-  return *this;
-}
-
-inline wide_int &
-wide_int::operator -- ()
-{
-  *this -= 1;
-  return *this;
-}
-
-template <typename T>
-inline wide_int &
-wide_int::operator &= (const T &c)
-{
-  *this = *this & c;
-  return *this;
-}
-
-template <typename T>
-inline wide_int &
-wide_int::operator |= (const T &c)
-{
-  *this = *this | c;
-  return *this;
-}
-
-template <typename T>
-inline wide_int &
-wide_int::operator ^= (const T &c)
-{
-  *this = *this ^ c;
-  return *this;
-}
-
-template <typename T>
-inline wide_int &
-wide_int::operator += (const T &c)
-{
-  *this = *this + c;
-  return *this;
-}
-
-template <typename T>
-inline wide_int &
-wide_int::operator -= (const T &c)
-{
-  *this = *this - c;
-  return *this;
-}
-
-template <typename T>
-inline wide_int &
-wide_int::operator *= (const T &c)
-{
-  *this = *this * c;
-  return *this;
-}
-
-template <int bitsize>
-class GTY(()) fixed_wide_int : public wide_int_ro
-{
-  friend class wide_int_ro;
-
-protected:
-  fixed_wide_int &operator = (const wide_int &);
-  fixed_wide_int (const wide_int_ro);
-  const HOST_WIDE_INT *get_val () const;
-
-  using wide_int_ro::val;
-
-public:
-  using wide_int_ro::get_precision;
-  using wide_int_ro::get_len;
-  using wide_int_ro::to_short_addr;
-  using wide_int_ro::fits_uhwi_p;
-  using wide_int_ro::fits_shwi_p;
-  using wide_int_ro::gtu_p;
-  using wide_int_ro::gts_p;
-  using wide_int_ro::geu_p;
-  using wide_int_ro::ges_p;
-  using wide_int_ro::to_shwi;
-  using wide_int_ro::operator ==;
-  using wide_int_ro::ltu_p;
-  using wide_int_ro::lts_p;
-  using wide_int_ro::leu_p;
-  using wide_int_ro::les_p;
-  using wide_int_ro::to_uhwi;
-  using wide_int_ro::cmps;
-  using wide_int_ro::neg_p;
-  using wide_int_ro::cmpu;
-  using wide_int_ro::umod_floor;
-  using wide_int_ro::one_p;
-  using wide_int_ro::zero_p;
-  using wide_int_ro::multiple_of_p;
-  using wide_int_ro::minus_one_p;
-  using wide_int_ro::operator !=;
-  using wide_int_ro::elt;
-  using wide_int_ro::fits_to_tree_p;
-  using wide_int_ro::from_uhwi;
-  using wide_int_ro::ctz;
-  using wide_int_ro::cmp;
-  using wide_int_ro::minus_one;
-
-  static fixed_wide_int from_wide_int (const wide_int &);
-  static fixed_wide_int from_array (const HOST_WIDE_INT *, unsigned int,
-				    bool = true);
-
-  fixed_wide_int ();
-  fixed_wide_int (const_tree);
-  fixed_wide_int (HOST_WIDE_INT);
-  fixed_wide_int (int);
-  fixed_wide_int (unsigned HOST_WIDE_INT);
-  fixed_wide_int (unsigned int);
-
-  fixed_wide_int &operator ++ ();
-  fixed_wide_int &operator -- ();
-
-  bool multiple_of_p (const wide_int_ro &, signop, fixed_wide_int *) const;
-
-  /* Conversion to and from GMP integer representations.  */
-  void to_mpz (mpz_t, signop) const;
-  static fixed_wide_int from_mpz (const_tree, mpz_t, bool);
-  fixed_wide_int &operator = (const_tree);
-  fixed_wide_int &operator = (HOST_WIDE_INT);
-  fixed_wide_int &operator = (int);
-  fixed_wide_int &operator = (unsigned HOST_WIDE_INT);
-  fixed_wide_int &operator = (unsigned int);
-
-  /* Extension, these do not change the precision.  */
-  fixed_wide_int ext (unsigned int, signop) const;
-  fixed_wide_int sext (unsigned int) const;
-  fixed_wide_int zext (unsigned int) const;
-
-  /* Masking and Insertion  */
-  fixed_wide_int set_bit (unsigned int) const;
-  static fixed_wide_int set_bit_in_zero (unsigned int);
-  fixed_wide_int insert (const wide_int_ro &, unsigned int,
-			 unsigned int) const;
-
-  static fixed_wide_int mask (unsigned int, bool);
-  static fixed_wide_int shifted_mask (unsigned int, unsigned int, bool);
-
-  /* Logicals */
-
-  template <typename T>
-  fixed_wide_int operator & (const T &) const;
-  fixed_wide_int operator & (const fixed_wide_int &) const;
-
-  template <typename T>
-  fixed_wide_int &operator &= (const T &);
-  fixed_wide_int &operator &= (const fixed_wide_int &);
-
-  template <typename T>
-  fixed_wide_int and_not (const T &) const;
-
-  fixed_wide_int operator ~ () const;
-
-  template <typename T>
-  fixed_wide_int operator | (const T &) const;
-  fixed_wide_int operator | (const fixed_wide_int &) const;
-
-  template <typename T>
-  fixed_wide_int &operator |= (const T &);
-  fixed_wide_int &operator |= (const fixed_wide_int &);
-
-  template <typename T>
-  fixed_wide_int or_not (const T &) const;
-
-  template <typename T>
-  fixed_wide_int operator ^ (const T &) const;
-  fixed_wide_int operator ^ (const fixed_wide_int &) const;
-
-  template <typename T>
-  fixed_wide_int &operator ^= (const T &);
-  fixed_wide_int &operator ^= (const fixed_wide_int &);
-
-  /* Arithmetic operation functions, alpha sorted.  */
-
-  template <typename T>
-  fixed_wide_int operator + (const T &) const;
-  fixed_wide_int operator + (const fixed_wide_int &c) const;
-
-  template <typename T>
-  fixed_wide_int &operator += (const T &);
-  fixed_wide_int &operator += (const fixed_wide_int &c);
-
-  template <typename T>
-  fixed_wide_int add (const T &, signop, bool *) const;
-
-  template <typename T>
-  fixed_wide_int operator * (const T &) const;
-
-  template <typename T>
-  fixed_wide_int &operator *= (const T &);
-
-  template <typename T>
-  fixed_wide_int mul (const T &, signop, bool *) const;
-
-  template <typename T>
-  fixed_wide_int smul (const T &, bool *) const;
-
-  template <typename T>
-  fixed_wide_int umul (const T &, bool *) const;
-
-  template <typename T>
-  fixed_wide_int operator - (const T &) const;
-
-  fixed_wide_int operator - () const;
-
-  fixed_wide_int operator - (const fixed_wide_int &) const;
-
-  template <typename T>
-  fixed_wide_int &operator -= (const T &);
-  fixed_wide_int &operator -= (const fixed_wide_int &);
-
-  template <typename T>
-  fixed_wide_int sub (const T &, signop, bool *) const;
-
-  /* Division and mod.  These are the ones that are actually used, but
-     there are a lot of them.  */
-
-  template <typename T>
-  fixed_wide_int div_floor (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  fixed_wide_int udiv_floor (const T &) const;
-
-  template <typename T>
-  fixed_wide_int sdiv_floor (const T &) const;
-
-  template <typename T>
-  fixed_wide_int div_ceil (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  fixed_wide_int div_round (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  fixed_wide_int div_trunc (const T &, signop, bool * = 0) const;
-
-  template <typename T>
-  fixed_wide_int sdiv_trunc (const T &) const;
-
-  template <typename T>
-  fixed_wide_int udiv_trunc (const T &) const;
-
-  template <typename T>
-  fixed_wide_int divmod_floor (const T &, fixed_wide_int *, signop) const;
-
-  template <typename T>
-  fixed_wide_int sdivmod_floor (const T &, fixed_wide_int *) const;
-
-  /* Shifting rotating and extracting.  */
-
-  template <typename T>
-  fixed_wide_int lrotate (const T &, unsigned int) const;
-  fixed_wide_int lrotate (unsigned HOST_WIDE_INT, unsigned int) const;
-
-  template <typename T>
-  fixed_wide_int lshift (const T &, unsigned int = 0) const;
-
-  template <typename T>
-  fixed_wide_int lshift_widen (const T &, unsigned int) const;
-
-  template <typename T>
-  fixed_wide_int rshift (const T &, signop, unsigned int = 0) const;
-
-  template <typename T>
-  fixed_wide_int rshiftu (const T &, unsigned int = 0) const;
-
-  template <typename T>
-  fixed_wide_int rshifts (const T &, unsigned int = 0) const;
-
-  template <typename T>
-  fixed_wide_int rrotate (const T &, unsigned int) const;
-  fixed_wide_int rrotate (unsigned HOST_WIDE_INT, unsigned int) const;
-};
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator = (const wide_int &w)
-{
-  static_cast <wide_int_ro &> (*this) = w;
-
-  /* We only allow the same size in, as otherwise
-     we would not know how to extend it.  */
-  gcc_assert (precision == bitsize);
-
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int (const wide_int_ro w)
-  : wide_int_ro (w)
-{
-  /* We only allow the same size in, as otherwise
-     we would not know how to extend it.  */
-  gcc_assert (precision == bitsize);
-}
-
-template <int bitsize>
-inline const HOST_WIDE_INT *
-fixed_wide_int <bitsize>::get_val () const
-{
-  return val;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::from_wide_int (const wide_int &w)
-{
-  if (w.neg_p ())
-    return w.sforce_to_size (bitsize);
-  return w.zforce_to_size (bitsize);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::from_array (const HOST_WIDE_INT* op0,
-				      unsigned int len,
-				      bool need_canon)
-{
-  return wide_int_ro::from_array (op0, len, bitsize, need_canon);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int () {}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int (const_tree t)
-{
-  *this = t;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int (HOST_WIDE_INT op0)
-  : wide_int_ro (op0)
-{
-  precision = bitsize;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int (int op0) : wide_int_ro (op0)
-{
-  precision = bitsize;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int (unsigned HOST_WIDE_INT op0)
-  : wide_int_ro (op0)
-{
-  precision = bitsize;
-  if (neg_p ())
-    static_cast <wide_int_ro &> (*this) = zext (HOST_BITS_PER_WIDE_INT);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>::fixed_wide_int (unsigned int op0)
-  : wide_int_ro (op0)
-{
-  precision = bitsize;
-  if (sizeof (int) == sizeof (HOST_WIDE_INT)
-      && neg_p ())
-    *this = zext (HOST_BITS_PER_WIDE_INT);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator ++ ()
-{
-  *this += 1;
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator -- ()
-{
-  *this -= 1;
-  return *this;
-}
-
-template <int bitsize>
-inline bool
-fixed_wide_int <bitsize>::multiple_of_p (const wide_int_ro &factor,
-					 signop sgn,
-					 fixed_wide_int *multiple) const
-{
-  return wide_int_ro::multiple_of_p (factor, sgn, multiple);
-}
-
-template <int bitsize>
-inline void
-fixed_wide_int <bitsize>::to_mpz (mpz_t m, signop sgn) const
-{
-  wide_int_ro::to_mpz (m, sgn);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::from_mpz (const_tree t, mpz_t m, bool e)
-{
-  return wide_int_ro::from_mpz (t, m, e).force_to_size (bitsize,
-							TYPE_SIGN (t));
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator = (const_tree t)
-{
-  tree type = TREE_TYPE (t);
-
-  static_cast <wide_int_ro &> (*this)
-    = wide_int_ro::from_array (&TREE_INT_CST_ELT (t, 0),
-			       TREE_INT_CST_NUNITS (t),
-			       TYPE_PRECISION (TREE_TYPE (t)), false);
-
-  precision = bitsize;
-
-  /* This is logically top_bit_set_p.  */
-  if (TYPE_SIGN (type) == UNSIGNED && neg_p ())
-    static_cast <wide_int_ro &> (*this) = zext (TYPE_PRECISION (type));
-
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator = (HOST_WIDE_INT op0)
-{
-  static_cast <wide_int_ro &> (*this) = op0;
-  precision = bitsize;
-
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator = (int op0)
-{
-  static_cast <wide_int_ro &> (*this) = op0;
-  precision = bitsize;
-
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator = (unsigned HOST_WIDE_INT op0)
-{
-  static_cast <wide_int_ro &> (*this) = op0;
-  precision = bitsize;
-
-  /* This is logically top_bit_set_p.  */
-  if (neg_p ())
-    static_cast <wide_int_ro &> (*this) = zext (HOST_BITS_PER_WIDE_INT);
-
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator = (unsigned int op0)
-{
-  static_cast <wide_int_ro &> (*this) = op0;
-  precision = bitsize;
-
-  if (sizeof (int) == sizeof (HOST_WIDE_INT)
-      && neg_p ())
-    *this = zext (HOST_BITS_PER_WIDE_INT);
-
-  return *this;
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::ext (unsigned int offset, signop sgn) const
-{
-  return wide_int_ro::ext (offset, sgn);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::sext (unsigned int offset) const
-{
-  return wide_int_ro::sext (offset);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::zext (unsigned int offset) const
-{
-  return wide_int_ro::zext (offset);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::set_bit (unsigned int bitpos) const
-{
-  return wide_int_ro::set_bit (bitpos);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::set_bit_in_zero (unsigned int bitpos)
-{
-  return wide_int_ro::set_bit_in_zero (bitpos, bitsize);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::insert (const wide_int_ro &op0, unsigned int offset,
-				  unsigned int width) const
-{
-  return wide_int_ro::insert (op0, offset, width);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::mask (unsigned int width, bool negate)
-{
-  return wide_int_ro::mask (width, negate, bitsize);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::shifted_mask (unsigned int start, unsigned int width,
-					bool negate)
-{
-  return wide_int_ro::shifted_mask (start, width, negate, bitsize);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator & (const T &c) const
-{
-  return *this & fixed_wide_int (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator &= (const T &c)
-{
-  *this &= fixed_wide_int (c);
-  return *this;
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::and_not (const T &c) const
-{
-  return wide_int_ro::and_not (fixed_wide_int (c));
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator ~ () const
-{
-  return ~static_cast <const wide_int_ro &> (*this);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator | (const T &c) const
-{
-  return *this | fixed_wide_int (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator |= (const T &c)
-{
-  *this |= fixed_wide_int (c);
-  return *this;
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::or_not (const T &c) const
-{
-  return wide_int_ro::or_not (fixed_wide_int (c));
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator ^ (const T &c) const
-{
-  return *this ^ fixed_wide_int (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator ^= (const T &c)
-{
-  *this ^= fixed_wide_int (c);
-  return *this;
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator + (const T &c) const
-{
-  return *this + fixed_wide_int (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator += (const T &c)
-{
-  *this += fixed_wide_int (c);
-  return *this;
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::add (const T &c, signop sgn, bool *overflow) const
-{
-  return wide_int_ro::add (c, sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator * (const T &c) const
-{
-  return static_cast <const wide_int_ro &> (*this) * fixed_wide_int (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator *= (const T &c)
-{
-  reinterpret_cast <wide_int &> (*this) *= c;
-  return *this;
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::mul (const T &c, signop sgn, bool *overflow) const
-{
-  return wide_int_ro::mul (c, sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::smul (const T &c, bool *overflow) const
-{
-  return wide_int_ro::smul (c, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::umul (const T &c, bool *overflow) const
-{
-  return wide_int_ro::umul (c, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator - (const T &c) const
-{
-  return *this - fixed_wide_int (c);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator - () const
-{
-  return - static_cast <const wide_int_ro &> (*this);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator -= (const T &c)
-{
-  return *this -= fixed_wide_int (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::sub (const T &c, signop sgn, bool *overflow) const
-{
-  return wide_int_ro::sub (c, sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::div_floor (const T &c, signop sgn,
-				     bool *overflow) const
-{
-  return wide_int_ro::div_floor (c, sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::udiv_floor (const T &c) const
-{
-  return wide_int_ro::udiv_floor (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::sdiv_floor (const T &c) const
-{
-  return wide_int_ro::sdiv_floor (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::div_ceil (const T &c, signop sgn,
-				    bool *overflow) const
-{
-  return wide_int_ro::div_ceil (c, sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::div_round (const T &c, signop sgn,
-				     bool *overflow) const
-{
-  return wide_int_ro::div_round (c, sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::div_trunc (const T &c, signop sgn,
-				     bool *overflow) const
-{
-  return wide_int_ro::div_trunc (c,sgn, overflow);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::sdiv_trunc (const T &c) const
-{
-  return wide_int_ro::sdiv_trunc (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::udiv_trunc (const T &c) const
-{
-  return wide_int_ro::udiv_trunc (c);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::divmod_floor (const T &c, fixed_wide_int *mod,
-					signop sgn) const
-{
-  return wide_int_ro::divmod_floor (c, mod, sgn);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::sdivmod_floor (const T &c, fixed_wide_int *mod) const
-{
-  return wide_int_ro::sdivmod_floor (c, mod);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::lrotate (const T &c, unsigned int prec) const
-{
-  return wide_int_ro::lrotate (c, prec);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::lrotate (unsigned HOST_WIDE_INT y,
-				   unsigned int prec) const
-{
-  return wide_int_ro::lrotate (y, prec);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::lshift (const T &c, unsigned int bit_size) const
-{
-  return wide_int_ro::lshift (c, bit_size);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::lshift_widen (const T &c,
-					unsigned int new_prec) const
-{
-  return wide_int_ro::lshift_widen (c, new_prec);
-}
-
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rshift (const T &c, signop sgn, 
-				  unsigned int bit_size) const
+template<typename T>
+void
+gt_ggc_mx (generic_wide_int <T> *)
 {
-  return wide_int_ro::rshift (c, sgn, bit_size);
 }
 
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rshiftu (const T &c, 
-				   unsigned int bit_size) const
+template<typename T>
+void
+gt_pch_nx (generic_wide_int <T> *)
 {
-  return wide_int_ro::rshiftu (c, bit_size);
 }
 
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rshifts (const T &c,
-				   unsigned int bit_size) const
+template<typename T>
+void
+gt_pch_nx (generic_wide_int <T> *, void (*) (void *, void *), void *)
 {
-  return wide_int_ro::rshifts (c, bit_size);
 }
 
-template <int bitsize>
-template <typename T>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rrotate (const T &c, unsigned int prec) const
+namespace wi
 {
-  return wide_int_ro::rrotate (c, prec);
-}
-
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::rrotate (unsigned HOST_WIDE_INT y,
-				   unsigned int prec) const
-{
-  return wide_int_ro::lrotate (y, prec);
-}
-
-/* Logicals */
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator & (const fixed_wide_int <bitsize> &c) const
-{
-  return static_cast <const wide_int_ro &> (*this) & c;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator &= (const fixed_wide_int <bitsize> &c)
-{
-  reinterpret_cast <wide_int &> (*this) &= (const wide_int_ro &) c;
-  return *this;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator | (const fixed_wide_int <bitsize> &c) const
-{
-  return static_cast <const wide_int_ro &> (*this) | c;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator |= (const fixed_wide_int <bitsize> &c)
-{
-  reinterpret_cast <wide_int &> (*this) |= (const wide_int_ro &) c;
-  return *this;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator ^ (const fixed_wide_int <bitsize> &c) const
-{
-  return static_cast <const wide_int_ro &> (*this) ^ c;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator ^= (const fixed_wide_int <bitsize> &c)
-{
-  reinterpret_cast <wide_int &> (*this) ^= (const wide_int_ro &) c;
-  return *this;
-}
-
-/* Math operators */
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator + (const fixed_wide_int <bitsize> &c) const
-{
-  return static_cast <const wide_int_ro &> (*this) + c;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator += (const fixed_wide_int <bitsize> &c)
-{
-  reinterpret_cast <wide_int &> (*this) += (const wide_int_ro &) c;
-  return *this;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize>
-fixed_wide_int <bitsize>::operator - (const fixed_wide_int <bitsize> &c) const
-{
-  return static_cast <const wide_int_ro &> (*this) - c;
-}
-
-template <>
-template <int bitsize>
-inline fixed_wide_int <bitsize> &
-fixed_wide_int <bitsize>::operator -= (const fixed_wide_int <bitsize> &c)
-{
-  reinterpret_cast <wide_int &> (*this) -= (const wide_int_ro &) c;
-  return *this;
-}
-
-/* A wide_int_ro that has a large enough precision to do any address math
-   on the target.  */
-typedef fixed_wide_int <ADDR_MAX_PRECISION> addr_wide_int;
-/* A wide_int_ro that has a large enough precision to do any math on the
-   target.  */
-typedef fixed_wide_int <MAX_BITSIZE_MODE_ANY_INT> max_wide_int;
+  /* Used for overloaded functions in which the only other acceptable
+     scalar type is a pointer.  It stops a plain 0 from being treated
+     as a null pointer.  */
+  struct never_used1 {};
+  struct never_used2 {};
 
-extern void gt_ggc_mx(max_wide_int*);
-extern void gt_pch_nx(max_wide_int*,void (*)(void*, void*), void*);
-extern void gt_pch_nx(max_wide_int*);
+  wide_int min_value (unsigned int, signop);
+  wide_int min_value (never_used1 *);
+  wide_int min_value (never_used2 *);
+  wide_int max_value (unsigned int, signop);
+  wide_int max_value (never_used1 *);
+  wide_int max_value (never_used2 *);
 
-extern addr_wide_int mem_ref_offset (const_tree);
+  wide_int mul_full (const wide_int_ref &, const wide_int_ref &, signop);
 
-/* The wide-int overload templates.  */
+  /* FIXME: this is target dependent, so should be elsewhere.
+     It also seems to assume that CHAR_BIT == BITS_PER_UNIT.  */
+  wide_int from_buffer (const unsigned char *, unsigned int);
 
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, unsigned int *p,
-		       const wide_int_ro &y)
-{
-  *p = y.precision;
-  *l = y.len;
-  return y.val;
-}
-
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, unsigned int *p,
-		       const wide_int &y)
-{
-  *p = y.precision;
-  *l = y.len;
-  return y.val;
-}
-
-
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, unsigned int *p,
-		       const fixed_wide_int <ADDR_MAX_PRECISION> &y)
-{
-  *p = y.get_precision ();
-  *l = y.get_len ();
-  return y.get_val ();
-}
-
-#if ADDR_MAX_PRECISION != MAX_BITSIZE_MODE_ANY_INT
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, unsigned int *p,
-		       const fixed_wide_int <MAX_BITSIZE_MODE_ANY_INT> &y)
-{
-  *p = y.get_precision ();
-  *l = y.get_len ();
-  return y.get_val ();
-}
+#ifndef GENERATOR_FILE
+  void to_mpz (wide_int, mpz_t, signop);
 #endif
 
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, const wide_int &y)
-{
-  *l = y.len;
-  return y.val;
+  wide_int mask (unsigned int, bool, unsigned int);
+  wide_int shifted_mask (unsigned int, unsigned int, bool, unsigned int);
+  wide_int set_bit_in_zero (unsigned int, unsigned int);
+  wide_int insert (const wide_int &x, const wide_int &y, unsigned int,
+		   unsigned int);
+
+  template <typename T>
+  T mask (unsigned int, bool);
+
+  template <typename T>
+  T shifted_mask (unsigned int, unsigned int, bool);
+
+  template <typename T>
+  T set_bit_in_zero (unsigned int);
+
+  unsigned int mask (HOST_WIDE_INT *, unsigned int, bool, unsigned int);
+  unsigned int shifted_mask (HOST_WIDE_INT *, unsigned int, unsigned int,
+			     bool, unsigned int);
+  unsigned int from_array (HOST_WIDE_INT *, const HOST_WIDE_INT *,
+			   unsigned int, unsigned int, bool);
 }
 
-
-/* The tree and const_tree overload templates.   */
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, unsigned int *p,
-		       const tree &tcst)
+/* Perform a widening multiplication of X and Y, extending the values
+   according according to SGN.  */
+inline wide_int
+wi::mul_full (const wide_int_ref &x, const wide_int_ref &y, signop sgn)
 {
-  tree type = TREE_TYPE (tcst);
-
-  *p = TYPE_PRECISION (type);
-  *l = TREE_INT_CST_NUNITS (tcst);
-  return (const HOST_WIDE_INT*)&TREE_INT_CST_ELT (tcst, 0);
+  gcc_checking_assert (x.precision == y.precision);
+  wide_int result = wide_int::create (x.precision * 2);
+  result.set_len (mul_internal (result.write_val (), x.val, x.len,
+				y.val, y.len, x.precision,
+				sgn, 0, false, true));
+  return result;
 }
 
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, unsigned int *p,
-		       const const_tree &tcst)
+/* Return a PRECISION-bit integer in which the low WIDTH bits are set
+   and the other bits are clear, or the inverse if NEGATE_P.  */
+inline wide_int
+wi::mask (unsigned int width, bool negate_p, unsigned int precision)
 {
-  tree type = TREE_TYPE (tcst);
-
-  *p = TYPE_PRECISION (type);
-  *l = TREE_INT_CST_NUNITS (tcst);
-  return (const HOST_WIDE_INT*)&TREE_INT_CST_ELT (tcst, 0);
+  wide_int result = wide_int::create (precision);
+  result.set_len (mask (result.write_val (), width, negate_p, precision));
+  return result;
 }
 
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, const tree &tcst)
+/* Return a PRECISION-bit integer in which the low START bits are clear,
+   the next WIDTH bits are set, and the other bits are clear,
+   or the inverse if NEGATE_P.  */
+inline wide_int
+wi::shifted_mask (unsigned int start, unsigned int width, bool negate_p,
+		  unsigned int precision)
 {
-  *l = TREE_INT_CST_NUNITS (tcst);
-  return (const HOST_WIDE_INT*)&TREE_INT_CST_ELT (tcst, 0);
+  wide_int result = wide_int::create (precision);
+  result.set_len (shifted_mask (result.write_val (), start, width, negate_p,
+				precision));
+  return result;
 }
 
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, const const_tree &tcst)
+/* Return a PRECISION-bit integer in which bit BIT is set and all the
+   others are clear.  */
+inline wide_int
+wi::set_bit_in_zero (unsigned int bit, unsigned int precision)
 {
-  *l = TREE_INT_CST_NUNITS (tcst);
-  return (const HOST_WIDE_INT*)&TREE_INT_CST_ELT (tcst, 0);
+  return shifted_mask (bit, 1, false, precision);
 }
 
-/* Checking for the functions that require that at least one of the
-   operands have a nonzero precision.  If both of them have a precision,
-   then if CHECK_EQUAL is true, require that the precision be the same.  */
-
-inline void
-wide_int_ro::check_precision (unsigned int *p1, unsigned int *p2,
-			      bool check_equal ATTRIBUTE_UNUSED,
-			      bool check_zero ATTRIBUTE_UNUSED)
+/* Return an integer of type T in which the low WIDTH bits are set
+   and the other bits are clear, or the inverse if NEGATE_P.  */
+template <typename T>
+inline T
+wi::mask (unsigned int width, bool negate_p)
 {
-  gcc_checking_assert ((!check_zero) || *p1 != 0 || *p2 != 0);
-
-  if (*p1 == 0)
-    *p1 = *p2;
-
-  if (*p2 == 0)
-    *p2 = *p1;
-
-  gcc_checking_assert ((!check_equal) || *p1 == *p2);
+  STATIC_ASSERT (wi::int_traits<T>::precision);
+  T result;
+  result.set_len (mask (result.write_val (), width, negate_p,
+			wi::int_traits <T>::precision));
+  return result;
 }
 
-/* This is used to bundle an rtx and a mode together so that the pair
-   can be used as the second operand of a wide int expression.  If we
-   ever put modes into rtx integer constants, this should go away and
-   then just pass an rtx in.  */
-typedef std::pair <rtx, enum machine_mode> rtx_mode_t;
+/* Return an integer of type T in which the low START bits are clear,
+   the next WIDTH bits are set, and the other bits are clear,
+   or the inverse if NEGATE_P.  */
+template <typename T>
+inline T
+wi::shifted_mask (unsigned int start, unsigned int width, bool negate_p)
+{
+  STATIC_ASSERT (wi::int_traits<T>::precision);
+  T result;
+  result.set_len (shifted_mask (result.write_val (), start, width, negate_p,
+				wi::int_traits <T>::precision));
+  return result;
+}
 
-/* There should logically be an overload for rtl here, but it cannot
-   be here because of circular include issues.  It is in rtl.h.  */
-template <>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED,
-		       unsigned int *l, const rtx_mode_t &rp);
-
-/* tree related routines.  */
-
-extern tree wide_int_to_tree (tree type, const wide_int_ro &cst);
-extern tree force_fit_type_wide (tree, const wide_int_ro &, int, bool);
-
-/* real related routines.  */
-extern wide_int real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
-extern void real_from_integer (REAL_VALUE_TYPE *, enum machine_mode,
-			       wide_int, signop);
-extern wide_int decimal_real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
-
-
-#endif /* GENERATOR FILE */
+/* Return an integer of type T in which bit BIT is set and all the
+   others are clear.  */
+template <typename T>
+inline T
+wi::set_bit_in_zero (unsigned int bit)
+{
+  return shifted_mask <T> (bit, 1, false);
+}
 
 #endif /* WIDE_INT_H */

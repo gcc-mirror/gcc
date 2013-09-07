@@ -91,8 +91,8 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
       *var = op0;
       off = op1;
       /* Always sign extend the offset.  */
-      off = off.sext (TYPE_PRECISION (type));
-      off.to_mpz (offset, SIGNED);
+      off = wi::sext (off, TYPE_PRECISION (type));
+      wi::to_mpz (off, offset, SIGNED);
       if (negate)
 	mpz_neg (offset, offset);
       break;
@@ -100,7 +100,7 @@ split_to_var_and_offset (tree expr, tree *var, mpz_t offset)
     case INTEGER_CST:
       *var = build_int_cst_type (type, 0);
       off = expr;
-      off.to_mpz (offset, TYPE_SIGN (type));
+      wi::to_mpz (off, offset, TYPE_SIGN (type));
       break;
 
     default:
@@ -170,7 +170,7 @@ bound_difference_of_offsetted_base (tree type, mpz_t x, mpz_t y,
     }
 
   mpz_init (m);
-  wide_int::minus_one (TYPE_PRECISION (type)).to_mpz (m, UNSIGNED);
+  wi::to_mpz (wi::minus_one (TYPE_PRECISION (type)), m, UNSIGNED);
   mpz_add_ui (m, m, 1);
   mpz_sub (bnds->up, x, y);
   mpz_set (bnds->below, bnds->up);
@@ -454,10 +454,10 @@ bounds_add (bounds *bnds, max_wide_int delta, tree type)
   mpz_t mdelta, max;
 
   mpz_init (mdelta);
-  delta.to_mpz (mdelta, SIGNED);
+  wi::to_mpz (delta, mdelta, SIGNED);
 
   mpz_init (max);
-  max_wide_int::minus_one (TYPE_PRECISION (type)).to_mpz (max, UNSIGNED);
+  wi::to_mpz (wi::minus_one (TYPE_PRECISION (type)), max, UNSIGNED);
 
   mpz_add (bnds->up, bnds->up, mdelta);
   mpz_add (bnds->below, bnds->below, mdelta);
@@ -560,7 +560,7 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
   if (integer_onep (s)
       || (TREE_CODE (c) == INTEGER_CST
 	  && TREE_CODE (s) == INTEGER_CST
-	  && wide_int (c).mod_trunc (s, TYPE_SIGN (type)).zero_p ())
+	  && wi::mod_trunc (c, s, TYPE_SIGN (type)) == 0)
       || (TYPE_OVERFLOW_UNDEFINED (type)
 	  && multiple_of_p (type, c, s)))
     {
@@ -579,16 +579,15 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
      the whole # of iterations analysis will fail).  */
   if (!no_overflow)
     {
-      max = max_wide_int::mask (TYPE_PRECISION (type)
-			    - max_wide_int (s).ctz ().to_uhwi (), 
-			    false);
-      max.to_mpz (bnd, UNSIGNED);
+      max = wi::mask <max_wide_int> (TYPE_PRECISION (type) - wi::ctz (s),
+				     false);
+      wi::to_mpz (max, bnd, UNSIGNED);
       return;
     }
 
   /* Now we know that the induction variable does not overflow, so the loop
      iterates at most (range of type / S) times.  */
-  wide_int::minus_one (TYPE_PRECISION (type)).to_mpz (bnd, UNSIGNED);
+  wi::to_mpz (wi::minus_one (TYPE_PRECISION (type)), bnd, UNSIGNED);
 
   /* If the induction variable is guaranteed to reach the value of C before
      overflow, ... */
@@ -597,13 +596,13 @@ number_of_iterations_ne_max (mpz_t bnd, bool no_overflow, tree c, tree s,
       /* ... then we can strengthen this to C / S, and possibly we can use
 	 the upper bound on C given by BNDS.  */
       if (TREE_CODE (c) == INTEGER_CST)
-	wide_int (c).to_mpz (bnd, UNSIGNED);
+	wi::to_mpz (c, bnd, UNSIGNED);
       else if (bnds_u_valid)
 	mpz_set (bnd, bnds->up);
     }
 
   mpz_init (d);
-  wide_int (s).to_mpz (d, UNSIGNED);
+  wi::to_mpz (s, d, UNSIGNED);
   mpz_fdiv_q (bnd, bnd, d);
   mpz_clear (d);
 }
@@ -654,7 +653,8 @@ number_of_iterations_ne (tree type, affine_iv *iv, tree final,
   mpz_init (max);
   number_of_iterations_ne_max (max, iv->no_overflow, c, s, bnds,
 			       exit_must_be_taken);
-  niter->max = max_wide_int::from_mpz (niter_type, max, false);
+  niter->max = max_wide_int::from (wi::from_mpz (niter_type, max, false),
+				   TYPE_SIGN (niter_type));
   mpz_clear (max);
 
   /* First the trivial cases -- when the step is 1.  */
@@ -727,7 +727,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   tmod = fold_convert (type1, mod);
 
   mpz_init (mmod);
-  wide_int (mod).to_mpz (mmod, UNSIGNED);
+  wi::to_mpz (mod, mmod, UNSIGNED);
   mpz_neg (mmod, mmod);
 
   /* If the induction variable does not overflow and the exit is taken,
@@ -809,7 +809,7 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     niter->may_be_zero = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
 				      niter->may_be_zero,
 				      noloop);
-  bounds_add (bnds, max_wide_int (mod), type);
+  bounds_add (bnds, mod, type);
   *delta = fold_build2 (PLUS_EXPR, niter_type, *delta, mod);
 
   ret = true;
@@ -928,19 +928,19 @@ assert_loop_rolls_lt (tree type, affine_iv *iv0, affine_iv *iv1,
     dstep = iv0->step;
   else
     {
-      dstep = max_wide_int (iv1->step).sext (TYPE_PRECISION (type));
+      dstep = wi::sext (iv1->step, TYPE_PRECISION (type));
       dstep = -dstep;
     }
 
   mpz_init (mstep);
-  dstep.to_mpz (mstep, UNSIGNED);
+  wi::to_mpz (dstep, mstep, UNSIGNED);
   mpz_neg (mstep, mstep);
   mpz_add_ui (mstep, mstep, 1);
 
   rolls_p = mpz_cmp (mstep, bnds->below) <= 0;
 
   mpz_init (max);
-  wide_int::minus_one (TYPE_PRECISION (type)).to_mpz (max, UNSIGNED);
+  wi::to_mpz (wi::minus_one (TYPE_PRECISION (type)), max, UNSIGNED);
   mpz_add (max, max, mstep);
   no_overflow_p = (mpz_cmp (bnds->up, max) <= 0
 		   /* For pointers, only values lying inside a single object
@@ -1067,7 +1067,9 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 	niter->may_be_zero = fold_build2 (LT_EXPR, boolean_type_node,
 					  iv1->base, iv0->base);
       niter->niter = delta;
-      niter->max = max_wide_int::from_mpz (niter_type, bnds->up, false);
+      niter->max = max_wide_int::from (wi::from_mpz (niter_type, bnds->up,
+						     false),
+				       TYPE_SIGN (niter_type));
       return true;
     }
 
@@ -1110,11 +1112,12 @@ number_of_iterations_lt (tree type, affine_iv *iv0, affine_iv *iv1,
 
   mpz_init (mstep);
   mpz_init (tmp);
-  wide_int (step).to_mpz (mstep, UNSIGNED);
+  wi::to_mpz (step, mstep, UNSIGNED);
   mpz_add (tmp, bnds->up, mstep);
   mpz_sub_ui (tmp, tmp, 1);
   mpz_fdiv_q (tmp, tmp, mstep);
-  niter->max = max_wide_int::from_mpz (niter_type, tmp, false);
+  niter->max = max_wide_int::from (wi::from_mpz (niter_type, tmp, false),
+				   TYPE_SIGN (niter_type));
   mpz_clear (mstep);
   mpz_clear (tmp);
 
@@ -2388,7 +2391,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
   switch (code)
     {
     case INTEGER_CST:
-      return max_wide_int (op0);
+      return op0;
 
     CASE_CONVERT:
       subtype = TREE_TYPE (op0);
@@ -2410,7 +2413,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 
       /* If the bound does not fit in TYPE, max. value of TYPE could be
 	 attained.  */
-      if (max.ltu_p (bnd))
+      if (wi::ltu_p (max, bnd))
 	return max;
 
       return bnd;
@@ -2426,24 +2429,24 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	 choose the most logical way how to treat this constant regardless
 	 of the signedness of the type.  */
       cst = op1;
-      cst = cst.sext (TYPE_PRECISION (type));
+      cst = wi::sext (cst, TYPE_PRECISION (type));
       if (code != MINUS_EXPR)
 	cst = -cst;
 
       bnd = derive_constant_upper_bound (op0);
 
-      if (cst.neg_p ())
+      if (wi::neg_p (cst))
 	{
 	  cst = -cst;
 	  /* Avoid CST == 0x80000...  */
-	  if (cst.neg_p ())
+	  if (wi::neg_p (cst))
 	    return max;;
 
 	  /* OP0 + CST.  We need to check that
 	     BND <= MAX (type) - CST.  */
 
 	  mmax -= cst;
-	  if (bnd.ltu_p (mmax))
+	  if (wi::ltu_p (bnd, max))
 	    return max;
 
 	  return bnd + cst;
@@ -2463,7 +2466,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	  /* This should only happen if the type is unsigned; however, for
 	     buggy programs that use overflowing signed arithmetics even with
 	     -fno-wrapv, this condition may also be true for signed values.  */
-	  if (bnd.ltu_p (cst))
+	  if (wi::ltu_p (bnd, cst))
 	    return max;
 
 	  if (TYPE_UNSIGNED (type))
@@ -2486,7 +2489,7 @@ derive_constant_upper_bound_ops (tree type, tree op0,
 	return max;
 
       bnd = derive_constant_upper_bound (op0);
-      return bnd.udiv_floor (max_wide_int (op1));
+      return wi::udiv_floor (bnd, op1);
 
     case BIT_AND_EXPR:
       if (TREE_CODE (op1) != INTEGER_CST
@@ -2519,14 +2522,14 @@ record_niter_bound (struct loop *loop, const max_wide_int &i_bound,
      current estimation is smaller.  */
   if (upper
       && (!loop->any_upper_bound
-	  || i_bound.ltu_p (loop->nb_iterations_upper_bound)))
+	  || wi::ltu_p (i_bound, loop->nb_iterations_upper_bound)))
     {
       loop->any_upper_bound = true;
       loop->nb_iterations_upper_bound = i_bound;
     }
   if (realistic
       && (!loop->any_estimate
-	  || i_bound.ltu_p (loop->nb_iterations_estimate)))
+	  || wi::ltu_p (i_bound, loop->nb_iterations_estimate)))
     {
       loop->any_estimate = true;
       loop->nb_iterations_estimate = i_bound;
@@ -2536,7 +2539,8 @@ record_niter_bound (struct loop *loop, const max_wide_int &i_bound,
      number of iterations, use the upper bound instead.  */
   if (loop->any_upper_bound
       && loop->any_estimate
-      && loop->nb_iterations_upper_bound.ltu_p (loop->nb_iterations_estimate))
+      && wi::ltu_p (loop->nb_iterations_upper_bound,
+		    loop->nb_iterations_estimate))
     loop->nb_iterations_estimate = loop->nb_iterations_upper_bound;
 }
 
@@ -2557,7 +2561,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
       || loop->warned_aggressive_loop_optimizations
       /* Only warn if undefined behavior gives us lower estimate than the
 	 known constant bound.  */
-      || i_bound.cmpu (loop->nb_iterations) >= 0
+      || wi::cmpu (i_bound, loop->nb_iterations) >= 0
       /* And undefined behavior happens unconditionally.  */
       || !dominated_by_p (CDI_DOMINATORS, loop->latch, gimple_bb (stmt)))
     return;
@@ -2605,7 +2609,7 @@ record_estimate (struct loop *loop, tree bound, max_wide_int i_bound,
   if (TREE_CODE (bound) != INTEGER_CST)
     realistic = false;
   else
-    gcc_checking_assert (i_bound == max_wide_int (bound));
+    gcc_checking_assert (i_bound == bound);
   if (!upper && !realistic)
     return;
 
@@ -2642,7 +2646,7 @@ record_estimate (struct loop *loop, tree bound, max_wide_int i_bound,
   i_bound += delta;
 
   /* If an overflow occurred, ignore the result.  */
-  if (i_bound.ltu_p (delta))
+  if (wi::ltu_p (i_bound, delta))
     return;
 
   if (upper && !is_exit)
@@ -3031,7 +3035,7 @@ wide_int_cmp (const void *p1, const void *p2)
 {
   const max_wide_int *d1 = (const max_wide_int *)p1;
   const max_wide_int *d2 = (const max_wide_int *)p2;
-  return (*d1).cmpu (*d2);
+  return wi::cmpu (*d1, *d2);
 }
 
 /* Return index of BOUND in BOUNDS array sorted in increasing order.
@@ -3051,7 +3055,7 @@ bound_index (vec<max_wide_int> bounds, const max_wide_int &bound)
 
       if (index == bound)
 	return middle;
-      else if (index.ltu_p (bound))
+      else if (wi::ltu_p (index, bound))
 	begin = middle + 1;
       else
 	end = middle;
@@ -3088,12 +3092,12 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 	{
 	  bound += 1;
 	  /* If an overflow occurred, ignore the result.  */
-	  if (bound.zero_p ())
+	  if (bound == 0)
 	    continue;
 	}
 
       if (!loop->any_upper_bound
-	  || bound.ltu_p (loop->nb_iterations_upper_bound))
+	  || wi::ltu_p (bound, loop->nb_iterations_upper_bound))
         bounds.safe_push (bound);
     }
 
@@ -3119,12 +3123,12 @@ discover_iteration_bound_by_body_walk (struct loop *loop)
 	{
 	  bound += 1;
 	  /* If an overflow occurred, ignore the result.  */
-	  if (bound.zero_p ())
+	  if (bound == 0)
 	    continue;
 	}
 
       if (!loop->any_upper_bound
-	  || bound.ltu_p (loop->nb_iterations_upper_bound))
+	  || wi::ltu_p (bound, loop->nb_iterations_upper_bound))
 	{
 	  ptrdiff_t index = bound_index (bounds, bound);
 	  void **entry = pointer_map_contains (bb_bounds,
@@ -3259,7 +3263,7 @@ maybe_lower_iteration_bound (struct loop *loop)
   for (elt = loop->bounds; elt; elt = elt->next)
     {
       if (!elt->is_exit
-	  && elt->bound.ltu_p (loop->nb_iterations_upper_bound))
+	  && wi::ltu_p (elt->bound, loop->nb_iterations_upper_bound))
 	{
 	  if (!not_executed_last_iteration)
 	    not_executed_last_iteration = pointer_set_create ();
@@ -3475,7 +3479,7 @@ estimated_loop_iterations_int (struct loop *loop)
   if (!estimated_loop_iterations (loop, &nit))
     return -1;
 
-  if (!nit.fits_shwi_p ())
+  if (!wi::fits_shwi_p (nit))
     return -1;
   hwi_nit = nit.to_shwi ();
 
@@ -3495,7 +3499,7 @@ max_loop_iterations_int (struct loop *loop)
   if (!max_loop_iterations (loop, &nit))
     return -1;
 
-  if (!nit.fits_shwi_p ())
+  if (!wi::fits_shwi_p (nit))
     return -1;
   hwi_nit = nit.to_shwi ();
 
@@ -3556,7 +3560,7 @@ max_stmt_executions (struct loop *loop, max_wide_int *nit)
 
   *nit += 1;
 
-  return (*nit).gtu_p (nit_minus_one);
+  return wi::gtu_p (*nit, nit_minus_one);
 }
 
 /* Sets NIT to the estimated number of executions of the latch of the
@@ -3575,7 +3579,7 @@ estimated_stmt_executions (struct loop *loop, max_wide_int *nit)
 
   *nit += 1;
 
-  return (*nit).gtu_p (nit_minus_one);
+  return wi::gtu_p (*nit, nit_minus_one);
 }
 
 /* Records estimates on numbers of iterations of loops.  */
@@ -3655,7 +3659,7 @@ n_of_executions_at_most (gimple stmt,
 
   /* If the bound does not even fit into NIT_TYPE, it cannot tell us that
      the number of iterations is small.  */
-  if (!bound.fits_to_tree_p (nit_type))
+  if (!wi::fits_to_tree_p (bound, nit_type))
     return false;
 
   /* We know that NITER_BOUND->stmt is executed at most NITER_BOUND->bound + 1
@@ -3699,8 +3703,8 @@ n_of_executions_at_most (gimple stmt,
 	    if (gimple_has_side_effects (gsi_stmt (bsi)))
 	       return false;
 	  bound += 1;
-	  if (bound.zero_p ()
-	      || !bound.fits_to_tree_p (nit_type))
+	  if (bound == 0
+	      || !wi::fits_to_tree_p (bound, nit_type))
 	    return false;
 	}
       cmp = GT_EXPR;
@@ -3811,7 +3815,7 @@ scev_probably_wraps_p (tree base, tree step,
   estimate_numbers_of_iterations_loop (loop);
 
   if (max_loop_iterations (loop, &niter)
-      && niter.fits_to_tree_p (TREE_TYPE (valid_niter))
+      && wi::fits_to_tree_p (niter, TREE_TYPE (valid_niter))
       && (e = fold_binary (GT_EXPR, boolean_type_node, valid_niter,
 			   wide_int_to_tree (TREE_TYPE (valid_niter),
 					     niter))) != NULL

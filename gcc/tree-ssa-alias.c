@@ -882,8 +882,9 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   /* The offset embedded in MEM_REFs can be negative.  Bias them
      so that the resulting offset adjustment is positive.  */
   moff = mem_ref_offset (base1);
-  moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-  if (moff.neg_p ())
+  moff = wi::lshift (moff, (BITS_PER_UNIT == 8
+			    ? 3 : exact_log2 (BITS_PER_UNIT)));
+  if (wi::neg_p (moff))
     offset2p += (-moff).to_short_addr ();
   else
     offset1p += moff.to_short_addr ();
@@ -958,8 +959,9 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       || TREE_CODE (dbase2) == TARGET_MEM_REF)
     {
       addr_wide_int moff = mem_ref_offset (dbase2);
-      moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-      if (moff.neg_p ())
+      moff = wi::lshift (moff, (BITS_PER_UNIT == 8
+				? 3 : exact_log2 (BITS_PER_UNIT)));
+      if (wi::neg_p (moff))
 	doffset1 -= (-moff).to_short_addr ();
       else
 	doffset2 -= moff.to_short_addr ();
@@ -1052,14 +1054,16 @@ indirect_refs_may_alias_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
       /* The offset embedded in MEM_REFs can be negative.  Bias them
 	 so that the resulting offset adjustment is positive.  */
       moff = mem_ref_offset (base1);
-      moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-      if (moff.neg_p ())
+      moff = wi::lshift (moff, (BITS_PER_UNIT == 8
+				? 3 : exact_log2 (BITS_PER_UNIT)));
+      if (wi::neg_p (moff))
 	offset2 += (-moff).to_short_addr ();
       else
 	offset1 += moff.to_shwi ();
       moff = mem_ref_offset (base2);
-      moff = moff.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
-      if (moff.neg_p ())
+      moff = wi::lshift (moff, (BITS_PER_UNIT == 8
+				? 3 : exact_log2 (BITS_PER_UNIT)));
+      if (wi::neg_p (moff))
 	offset1 += (-moff).to_short_addr ();
       else
 	offset2 += moff.to_short_addr ();
@@ -2006,14 +2010,14 @@ stmt_kills_ref_p_1 (gimple stmt, ao_ref *ref)
 				       TREE_OPERAND (ref->base, 1)))
 		{
 		  addr_wide_int off1 = mem_ref_offset (base);
-		  off1 = off1.lshift (BITS_PER_UNIT == 8
-				      ? 3 : exact_log2 (BITS_PER_UNIT));
+		  off1 = wi::lshift (off1, (BITS_PER_UNIT == 8
+					    ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off1 += offset;
 		  addr_wide_int off2 = mem_ref_offset (ref->base);
-		  off2 = off2.lshift (BITS_PER_UNIT == 8
-				      ? 3 : exact_log2 (BITS_PER_UNIT));
+		  off2 = wi::lshift (off2, (BITS_PER_UNIT == 8
+					    ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off2 += ref_offset;
-		  if (off1.fits_shwi_p () && off2.fits_shwi_p ())
+		  if (wi::fits_shwi_p (off1) && wi::fits_shwi_p (off2))
 		    {
 		      offset = off1.to_shwi ();
 		      ref_offset = off2.to_shwi ();

@@ -713,6 +713,10 @@ extern void fancy_abort (const char *, int, const char *) ATTRIBUTE_NORETURN;
 #define gcc_unreachable() (fancy_abort (__FILE__, __LINE__, __FUNCTION__))
 #endif
 
+/* Until we can use STATIC_ASSERT.  */
+#define STATIC_ASSERT(X) \
+  typedef int assertion1[(X) ? 1 : -1] ATTRIBUTE_UNUSED
+
 /* Provide a fake boolean type.  We make no attempt to use the
    C99 _Bool, as it may not be available in the bootstrap compiler,
    and even if it is, it is liable to be buggy.

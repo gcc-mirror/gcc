@@ -719,7 +719,8 @@ convert_modes (enum machine_mode mode, enum machine_mode oldmode, rtx x, int uns
 	 not much to do with respect to canonization.  */
       if (oldmode != VOIDmode
 	  && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (oldmode))
-	w = w.ext (GET_MODE_PRECISION (oldmode), unsignedp ? UNSIGNED : SIGNED);
+	w = wi::ext (w, GET_MODE_PRECISION (oldmode),
+		     unsignedp ? UNSIGNED : SIGNED);
       return immed_wide_int_const (w, mode);
     }
 
@@ -6684,8 +6685,8 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
 	      if (!integer_zerop (off))
 		{
 		  addr_wide_int boff, coff = mem_ref_offset (exp);
-		  boff = coff.lshift (BITS_PER_UNIT == 8
-				      ? 3 : exact_log2 (BITS_PER_UNIT));
+		  boff = wi::lshift (coff, (BITS_PER_UNIT == 8
+					    ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  bit_offset += boff;
 		}
 	      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -6709,10 +6710,12 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
      this conversion.  */
   if (TREE_CODE (offset) == INTEGER_CST)
     {
-      addr_wide_int tem = addr_wide_int (offset).sext (TYPE_PRECISION (sizetype));
-      tem = tem.lshift (BITS_PER_UNIT == 8 ? 3 : exact_log2 (BITS_PER_UNIT));
+      addr_wide_int tem = wi::sext (addr_wide_int (offset),
+				    TYPE_PRECISION (sizetype));
+      tem = wi::lshift (tem, (BITS_PER_UNIT == 8
+			      ? 3 : exact_log2 (BITS_PER_UNIT)));
       tem += bit_offset;
-      if (tem.fits_shwi_p ())
+      if (wi::fits_shwi_p (tem))
 	{
 	  *pbitpos = tem.to_shwi ();
 	  *poffset = offset = NULL_TREE;
@@ -6723,18 +6726,18 @@ get_inner_reference (tree exp, HOST_WIDE_INT *pbitsize,
   if (offset)
     {
       /* Avoid returning a negative bitpos as this may wreak havoc later.  */
-      if (bit_offset.neg_p ())
+      if (wi::neg_p (bit_offset))
         {
 	  addr_wide_int mask
-	    = addr_wide_int::mask (BITS_PER_UNIT == 8
-				   ? 3 : exact_log2 (BITS_PER_UNIT),
-				   false);
+	    = wi::mask <addr_wide_int> (BITS_PER_UNIT == 8
+					? 3 : exact_log2 (BITS_PER_UNIT),
+					false);
 	  addr_wide_int tem = bit_offset.and_not (mask);
 	  /* TEM is the bitpos rounded to BITS_PER_UNIT towards -Inf.
 	     Subtract it to BIT_OFFSET and add it (scaled) to OFFSET.  */
 	  bit_offset -= tem;
-	  tem = tem.rshifts (BITS_PER_UNIT == 8
-			     ? 3 : exact_log2 (BITS_PER_UNIT));
+	  tem = wi::arshift (tem, (BITS_PER_UNIT == 8
+				   ? 3 : exact_log2 (BITS_PER_UNIT)));
 	  offset = size_binop (PLUS_EXPR, offset,
 			       wide_int_to_tree (sizetype, tem));
 	}
@@ -8205,13 +8208,13 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 
 	      op1 = expand_expr (treeop1, subtarget, VOIDmode,
 				 EXPAND_SUM);
-	      /* Use wide_int::from_shwi to ensure that the constant is
+	      /* Use wi::shwi to ensure that the constant is
 		 truncated according to the mode of OP1, then sign extended
 		 to a HOST_WIDE_INT.  Using the constant directly can result
 		 in non-canonical RTL in a 64x32 cross compile.  */
 	      wc = tree_to_hwi (treeop0);
-	      constant_part 
-		= immed_wide_int_const (wide_int::from_shwi (wc, wmode), wmode);
+	      constant_part =
+		immed_wide_int_const (wi::shwi (wc, wmode), wmode);
 	      op1 = plus_constant (mode, op1, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op1 = force_operand (op1, target);
@@ -8239,13 +8242,13 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 		    return simplify_gen_binary (PLUS, mode, op0, op1);
 		  goto binop2;
 		}
-	      /* Use wide_int::from_shwi to ensure that the constant is
+	      /* Use wi::shwi to ensure that the constant is
 		 truncated according to the mode of OP1, then sign extended
 		 to a HOST_WIDE_INT.  Using the constant directly can result
 		 in non-canonical RTL in a 64x32 cross compile.  */
 	      wc = tree_to_hwi (treeop1);
-	      constant_part 
-		= immed_wide_int_const (wide_int::from_shwi (wc, wmode), wmode);
+	      constant_part
+		= immed_wide_int_const (wi::shwi (wc, wmode), wmode);
 	      op0 = plus_constant (mode, op0, INTVAL (constant_part));
 	      if (modifier != EXPAND_SUM && modifier != EXPAND_INITIALIZER)
 		op0 = force_operand (op0, target);
@@ -8774,8 +8777,8 @@ expand_expr_real_2 (sepops ops, rtx target, enum machine_mode tmode,
 	 instead.  */
       if (reduce_bit_field && TYPE_UNSIGNED (type))
 	{
-	  wide_int mask = wide_int::mask (TYPE_PRECISION (type), 
-					  false, GET_MODE_PRECISION (mode));
+	  wide_int mask = wi::mask (TYPE_PRECISION (type),
+				    false, GET_MODE_PRECISION (mode));
 
 	  temp = expand_binop (mode, xor_optab, op0,
 			       immed_wide_int_const (mask, mode),
@@ -9419,9 +9422,10 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 	   should always be the same as TYPE_PRECISION (type).
 	   However, it is not.  Since we are converting from tree to
 	   rtl, we have to expose this ugly truth here.  */
-	temp = immed_wide_int_const (wide_int (exp)
-				     .force_to_size (GET_MODE_PRECISION (TYPE_MODE (type)), 
-						     TYPE_SIGN (type)), 
+	temp = immed_wide_int_const (wide_int::from
+				       (exp,
+					GET_MODE_PRECISION (TYPE_MODE (type)),
+					TYPE_SIGN (type)),
 				     TYPE_MODE (type));
 	return temp;
       }
@@ -10516,7 +10520,7 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
     {
       enum machine_mode mode = GET_MODE (exp);
       rtx mask = immed_wide_int_const 
-	(wide_int::mask (prec, false, GET_MODE_PRECISION (mode)), mode);
+	(wi::mask (prec, false, GET_MODE_PRECISION (mode)), mode);
       return expand_and (mode, exp, mask, target);
     }
   else
@@ -11091,8 +11095,7 @@ const_vector_from_tree (tree exp)
 							 inner);
       else
 	RTVEC_ELT (v, i) 
-	  = immed_wide_int_const (wide_int (elt),
-				  TYPE_MODE (TREE_TYPE (elt)));
+	  = immed_wide_int_const (elt, TYPE_MODE (TREE_TYPE (elt)));
     }
 
   return gen_rtx_CONST_VECTOR (mode, v);

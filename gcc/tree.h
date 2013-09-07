@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_H
 
 #include "tree-core.h"
+#include "wide-int.h"
 
 /* Macros for initializing `tree_contains_struct'.  */
 #define MARK_TS_BASE(C)					\
@@ -877,10 +878,10 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Define additional fields and accessors for nodes representing constants.  */
 
 #define INT_CST_LT(A, B)				\
-  (wide_int::lts_p (A, B))
+  (wi::lts_p (A, B))
 
 #define INT_CST_LT_UNSIGNED(A, B)			\
-  (wide_int::ltu_p (A, B))
+  (wi::ltu_p (A, B))
 
 #define TREE_INT_CST_NUNITS(NODE) (INTEGER_CST_CHECK (NODE)->base.u.length)
 #define TREE_INT_CST_ELT(NODE, I) TREE_INT_CST_ELT_CHECK (NODE, I)
@@ -3633,8 +3634,10 @@ extern tree build_var_debug_value_stat (tree, tree MEM_STAT_DECL);
 /* Constructs double_int from tree CST.  */
 
 extern tree double_int_to_tree (tree, double_int);
-class wide_int;
-extern tree force_fit_type (tree, const wide_int&, int, bool);
+
+extern addr_wide_int mem_ref_offset (const_tree);
+extern tree wide_int_to_tree (tree type, const wide_int_ref &cst);
+extern tree force_fit_type (tree, const wide_int_ref &, int, bool);
 
 /* Create an INT_CST node with a CST value zero extended.  */
 
@@ -5155,5 +5158,94 @@ builtin_decl_implicit_p (enum built_in_function fncode)
 #endif	/* NO_DOLLAR_IN_LABEL */
 #endif	/* NO_DOT_IN_LABEL */
 
+/* The tree and const_tree overload templates.   */
+namespace wi
+{
+  template <>
+  struct int_traits <const_tree>
+  {
+    static const enum precision_type precision_type = FLEXIBLE_PRECISION;
+    static const bool host_dependent_precision = false;
+    static unsigned int get_precision (const_tree);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
+				      const_tree);
+  };
+
+  template <>
+  struct int_traits <tree> : public int_traits <const_tree> {};
+}
+
+inline unsigned int
+wi::int_traits <const_tree>::get_precision (const_tree tcst)
+{
+  return TYPE_PRECISION (TREE_TYPE (tcst));
+}
+
+inline wi::storage_ref
+wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
+					unsigned int precision, const_tree x)
+{
+  unsigned int xprecision = get_precision (x);
+  unsigned int len = TREE_INT_CST_NUNITS (x);
+  const HOST_WIDE_INT *val = (const HOST_WIDE_INT *) &TREE_INT_CST_ELT (x, 0);
+  unsigned int max_len = ((precision + HOST_BITS_PER_WIDE_INT - 1)
+			  / HOST_BITS_PER_WIDE_INT);
+  /* Truncate the constant if necessary.  */
+  if (len > max_len)
+    return wi::storage_ref (val, max_len, precision);
+
+  /* Otherwise we can use the constant as-is when not extending.  */
+  if (precision <= xprecision)
+    return wi::storage_ref (val, len, precision);
+
+  /* Widen the constant according to its sign.  */
+  len = wi::force_to_size (scratch, val, len, xprecision, precision,
+			   TYPE_SIGN (TREE_TYPE (x)));
+  return wi::storage_ref (scratch, len, precision);
+}
+
+namespace wi
+{
+  hwi_with_prec hwi (HOST_WIDE_INT, const_tree);
+
+  template <typename T>
+  bool fits_to_tree_p (const T &x, const_tree);
+
+  wide_int min_value (const_tree);
+  wide_int max_value (const_tree);
+  wide_int from_mpz (const_tree, mpz_t, bool);
+}
+
+inline wi::hwi_with_prec
+wi::hwi (HOST_WIDE_INT val, const_tree type)
+{
+  return hwi_with_prec (val, TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+template <typename T>
+bool
+wi::fits_to_tree_p (const T &x, const_tree type)
+{
+  if (TYPE_SIGN (type) == UNSIGNED)
+    return x == zext (x, TYPE_PRECISION (type));
+  else
+    return x == sext (x, TYPE_PRECISION (type));
+}
+
+/* Produce the smallest number that is represented in TYPE.  The precision
+   and sign are taken from TYPE.  */
+inline wide_int
+wi::min_value (const_tree type)
+{
+  return min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
+
+/* Produce the largest number that is represented in TYPE.  The precision
+   and sign are taken from TYPE.  */
+inline wide_int
+wi::max_value (const_tree type)
+{
+  return max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+}
 
 #endif  /* GCC_TREE_H  */

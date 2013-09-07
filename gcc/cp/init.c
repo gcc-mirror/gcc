@@ -2271,8 +2271,9 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       if (TREE_CODE (inner_nelts_cst) == INTEGER_CST)
 	{
 	  bool overflow;
-	  addr_wide_int result = (addr_wide_int (inner_nelts_cst)
-				  .mul (inner_nelts_count, SIGNED, &overflow));
+	  addr_wide_int result = wi::mul (addr_wide_int (inner_nelts_cst),
+					  inner_nelts_count, SIGNED,
+					  &overflow);
 	  if (overflow)
 	    {
 	      if (complain & tf_error)
@@ -2375,7 +2376,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* Maximum available size in bytes.  Half of the address space
 	 minus the cookie size.  */
       addr_wide_int max_size
-	= addr_wide_int::set_bit_in_zero (TYPE_PRECISION (sizetype) - 1);
+	= wi::set_bit_in_zero <addr_wide_int> (TYPE_PRECISION (sizetype) - 1);
       /* Maximum number of outer elements which can be allocated. */
       addr_wide_int max_outer_nelts;
       tree max_outer_nelts_tree;
@@ -2383,28 +2384,29 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       gcc_assert (TREE_CODE (size) == INTEGER_CST);
       cookie_size = targetm.cxx.get_cookie_size (elt_type);
       gcc_assert (TREE_CODE (cookie_size) == INTEGER_CST);
-      gcc_checking_assert (addr_wide_int (cookie_size).ltu_p(max_size));
+      gcc_checking_assert (wi::ltu_p (cookie_size, max_size));
       /* Unconditionally subtract the cookie size.  This decreases the
 	 maximum object size and is safe even if we choose not to use
 	 a cookie after all.  */
       max_size -= cookie_size;
       bool overflow;
-      inner_size = addr_wide_int (size)
-		   .mul (inner_nelts_count, SIGNED, &overflow);
-      if (overflow || inner_size.gtu_p (max_size))
+      inner_size = wi::mul (addr_wide_int (size), inner_nelts_count, SIGNED,
+			    &overflow);
+      if (overflow || wi::gtu_p (inner_size, max_size))
 	{
 	  if (complain & tf_error)
 	    error ("size of array is too large");
 	  return error_mark_node;
 	}
 
-      max_outer_nelts = max_size.udiv_trunc (inner_size);
+      max_outer_nelts = wi::udiv_trunc (max_size, inner_size);
       /* Only keep the top-most seven bits, to simplify encoding the
 	 constant in the instruction stream.  */
       {
 	unsigned shift = (max_outer_nelts.get_precision ()) - 7
-	  - max_outer_nelts.clz ().to_shwi ();
-	max_outer_nelts = max_outer_nelts.rshiftu (shift).lshift (shift);
+	  - wi::clz (max_outer_nelts);
+	max_outer_nelts = wi::lshift (wi::lrshift (max_outer_nelts, shift),
+				      shift);
       }
       max_outer_nelts_tree = wide_int_to_tree (sizetype, max_outer_nelts);
 
@@ -2480,7 +2482,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      cookie_size = NULL_TREE;
 	      /* No size arithmetic necessary, so the size check is
 		 not needed. */
-	      if (outer_nelts_check != NULL && inner_size.one_p ())
+	      if (outer_nelts_check != NULL && inner_size == 1)
 		outer_nelts_check = NULL_TREE;
 	    }
 	  /* Perform the overflow check.  */
@@ -2525,7 +2527,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	      cookie_size = NULL_TREE;
 	      /* No size arithmetic necessary, so the size check is
 		 not needed. */
-	      if (outer_nelts_check != NULL && inner_size.one_p ())
+	      if (outer_nelts_check != NULL && inner_size == 1)
 		outer_nelts_check = NULL_TREE;
 	    }
 

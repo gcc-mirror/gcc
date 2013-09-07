@@ -461,9 +461,9 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
       /* Determine if the iteration counter will be non-negative.
 	 Note that the maximum value loaded is iterations_max - 1.  */
       if (max_loop_iterations (loop, &iterations)
-	  && (iterations.leu_p (wide_int::set_bit_in_zero 
-				(GET_MODE_PRECISION (mode) - 1,
-				 GET_MODE_PRECISION (mode)))))
+	  && wi::leu_p (iterations,
+			wi::set_bit_in_zero (GET_MODE_PRECISION (mode) - 1,
+					     GET_MODE_PRECISION (mode))))
 	nonneg = 1;
       break;
 
@@ -553,7 +553,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
     rtx iter_rtx;
 
     if (!max_loop_iterations (loop, &iter)
-	|| !iter.fits_shwi_p ())
+	|| !wi::fits_shwi_p (iter))
       iter_rtx = const0_rtx;
     else
       iter_rtx = GEN_INT (iter.to_shwi ());
@@ -671,7 +671,7 @@ doloop_optimize (struct loop *loop)
   count = copy_rtx (desc->niter_expr);
   iterations = desc->const_iter ? desc->niter_expr : const0_rtx;
   if (!max_loop_iterations (loop, &iter)
-      || !iter.fits_shwi_p ())
+      || !wi::fits_shwi_p (iter))
     iterations_max = const0_rtx;
   else
     iterations_max = GEN_INT (iter.to_shwi ());
@@ -697,7 +697,7 @@ doloop_optimize (struct loop *loop)
 	 computed, we must be sure that the number of iterations fits into
 	 the new mode.  */
       && (word_mode_size >= GET_MODE_PRECISION (mode)
-	  || iter.leu_p (word_mode_max)))
+	  || wi::leu_p (iter, word_mode_max)))
     {
       if (word_mode_size > GET_MODE_PRECISION (mode))
 	{

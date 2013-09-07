@@ -5042,8 +5042,7 @@ expand_builtin_signbit (tree exp, rtx target)
 
   if (bitpos < GET_MODE_BITSIZE (rmode))
     {
-      wide_int mask = wide_int::set_bit_in_zero (bitpos, 
-						 GET_MODE_PRECISION (rmode));
+      wide_int mask = wi::set_bit_in_zero (bitpos, GET_MODE_PRECISION (rmode));
 
       if (GET_MODE_SIZE (imode) > GET_MODE_SIZE (rmode))
 	temp = gen_lowpart (rmode, temp);
@@ -8139,39 +8138,39 @@ fold_builtin_bitop (tree fndecl, tree arg)
   if (TREE_CODE (arg) == INTEGER_CST && !TREE_OVERFLOW (arg))
     {
       wide_int warg = arg;
-      wide_int result;
+      int result;
 
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
 	CASE_INT_FN (BUILT_IN_FFS):
-	  result = warg.ffs ();
+	  result = wi::ffs (warg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLZ):
-	  result = warg.clz ();
+	  result = wi::clz (warg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CTZ):
-	  result = warg.ctz ();
+	  result = wi::ctz (warg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_CLRSB):
-	  result = warg.clrsb ();
+	  result = wi::clrsb (warg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_POPCOUNT):
-	  result = warg.popcount ();
+	  result = wi::popcount (warg);
 	  break;
 
 	CASE_INT_FN (BUILT_IN_PARITY):
-	  result = warg.parity ();
+	  result = wi::parity (warg);
 	  break;
 
 	default:
 	  gcc_unreachable ();
 	}
 
-      return wide_int_to_tree (TREE_TYPE (TREE_TYPE (fndecl)), result);
+      return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), result);
     }
 
   return NULL_TREE;
@@ -8198,9 +8197,9 @@ fold_builtin_bswap (tree fndecl, tree arg)
 	    {
 	      signop sgn = TYPE_SIGN (type);
 	      tree result = 
-		wide_int_to_tree (type, 
-				  wide_int (arg)
-				  .force_to_size (TYPE_PRECISION (type), sgn).bswap ());
+		wide_int_to_tree (type,
+				  wide_int::from (arg, TYPE_PRECISION (type),
+						  sgn).bswap ());
 	      return result;
 	    }
 	default:
@@ -8797,12 +8796,12 @@ fold_builtin_memory_op (location_t loc, tree dest, tree src,
 					 TREE_OPERAND (dest_base, 0), 0))
 		    return NULL_TREE;
 		  off = mem_ref_offset (src_base) + src_offset;
-		  if (!off.fits_shwi_p ())
+		  if (!wi::fits_shwi_p (off))
 		    return NULL_TREE;
 		  src_offset = off.to_shwi ();
 
 		  off = mem_ref_offset (dest_base) + dest_offset;
-		  if (!off.fits_shwi_p ())
+		  if (!wi::fits_shwi_p (off))
 		    return NULL_TREE;
 		  dest_offset = off.to_shwi ();
 		  if (ranges_overlap_p (src_offset, maxsize,
@@ -12734,9 +12733,9 @@ fold_builtin_object_size (tree ptr, tree ost)
     {
 
       wide_int wbytes 
-	= wide_int::from_uhwi (compute_builtin_object_size (ptr, object_size_type),
-			       precision);
-      if (wbytes.fits_to_tree_p (size_type_node))
+	= wi::uhwi (compute_builtin_object_size (ptr, object_size_type),
+		    precision);
+      if (wi::fits_to_tree_p (wbytes, size_type_node))
 	return wide_int_to_tree (size_type_node, wbytes);
     }
   else if (TREE_CODE (ptr) == SSA_NAME)
@@ -12746,9 +12745,9 @@ fold_builtin_object_size (tree ptr, tree ost)
        it.  */
       wide_int wbytes;
       bytes = compute_builtin_object_size (ptr, object_size_type);
-      wbytes = wide_int::from_uhwi (bytes, precision);
+      wbytes = wi::uhwi (bytes, precision);
       if (bytes != (unsigned HOST_WIDE_INT) (object_size_type < 2 ? -1 : 0)
-          && wbytes.fits_to_tree_p (size_type_node))
+          && wi::fits_to_tree_p (wbytes, size_type_node))
 	return wide_int_to_tree (size_type_node, wbytes);
     }
 

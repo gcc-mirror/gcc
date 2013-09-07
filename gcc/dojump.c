@@ -142,7 +142,7 @@ static bool
 prefer_and_bit_test (enum machine_mode mode, int bitnum)
 {
   bool speed_p;
-  wide_int mask = wide_int::set_bit_in_zero (bitnum, GET_MODE_PRECISION (mode));
+  wide_int mask = wi::set_bit_in_zero (bitnum, GET_MODE_PRECISION (mode));
 
   if (and_test == 0)
     {

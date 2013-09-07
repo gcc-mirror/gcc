@@ -25555,7 +25555,7 @@ ix86_data_alignment (tree type, int align, bool opt)
       && AGGREGATE_TYPE_P (type)
       && TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (wide_int::geu_p (TYPE_SIZE (type), max_align))
+      && wi::geu_p (TYPE_SIZE (type), max_align)
       && align < max_align)
     align = max_align;
 
@@ -25566,7 +25566,7 @@ ix86_data_alignment (tree type, int align, bool opt)
       if ((opt ? AGGREGATE_TYPE_P (type) : TREE_CODE (type) == ARRAY_TYPE)
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && (wide_int::geu_p (TYPE_SIZE (type), 128))
+	  && wi::geu_p (TYPE_SIZE (type), 128)
 	  && align < 128)
 	return 128;
     }
@@ -25681,7 +25681,7 @@ ix86_local_alignment (tree exp, enum machine_mode mode,
 		  != TYPE_MAIN_VARIANT (va_list_type_node)))
 	  && TYPE_SIZE (type)
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-	  && (wide_int::geu_p (TYPE_SIZE (type), 16))
+	  && wi::geu_p (TYPE_SIZE (type), 16)
 	  && align < 128)
 	return 128;
     }

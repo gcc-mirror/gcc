@@ -618,7 +618,7 @@ aff_combination_dr_offset (struct data_reference *dr, aff_tree *offset)
 
   tree_to_aff_combination_expand (DR_OFFSET (dr), type, offset,
 				  &name_expansions);
-  aff_combination_const (&delta, type, max_wide_int (DR_INIT (dr)));
+  aff_combination_const (&delta, type, DR_INIT (dr));
   aff_combination_add (offset, &delta);
 }
 
@@ -897,7 +897,7 @@ order_drefs (const void *a, const void *b)
 {
   const dref *const da = (const dref *) a;
   const dref *const db = (const dref *) b;
-  int offcmp = (*da)->offset.cmps ((*db)->offset);
+  int offcmp = wi::cmps ((*da)->offset, (*db)->offset);
 
   if (offcmp != 0)
     return offcmp;
@@ -921,14 +921,14 @@ add_ref_to_chain (chain_p chain, dref ref)
   dref root = get_chain_root (chain);
   max_wide_int dist;
 
-  gcc_assert (root->offset.les_p (ref->offset));
+  gcc_assert (wi::les_p (root->offset, ref->offset));
   dist = ref->offset - root->offset;
-  if (max_wide_int::from_uhwi (MAX_DISTANCE).leu_p (dist))
+  if (wi::leu_p (MAX_DISTANCE, dist))
     {
       free (ref);
       return;
     }
-  gcc_assert (dist.fits_uhwi_p ());
+  gcc_assert (wi::fits_uhwi_p (dist));
 
   chain->refs.safe_push (ref);
 
@@ -1194,7 +1194,7 @@ determine_roots_comp (struct loop *loop,
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
       if (!chain || DR_IS_WRITE (a->ref)
-	  || max_wide_int (MAX_DISTANCE).leu_p (a->offset - last_ofs))
+	  || wi::leu_p (MAX_DISTANCE, a->offset - last_ofs))
 	{
 	  if (nontrivial_chain_p (chain))
 	    {

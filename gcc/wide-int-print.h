@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <stdio.h>
 #include "wide-int.h"
 
-#define WIDE_INT_PRINT_BUFFER_SIZE ((2 * MAX_BITSIZE_MODE_ANY_INT / BITS_PER_UNIT) + 4)
+#define WIDE_INT_PRINT_BUFFER_SIZE (MAX_BITSIZE_MODE_ANY_INT / 4 + 4)
 /* Printing functions.  */
 
 extern void print_dec (const wide_int &wi, char *buf, signop sgn);

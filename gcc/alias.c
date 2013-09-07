@@ -340,8 +340,8 @@ ao_ref_from_mem (ao_ref *ref, const_rtx mem)
 	  || (DECL_P (ref->base)
 	      && (DECL_SIZE (ref->base) == NULL_TREE
 		  || TREE_CODE (DECL_SIZE (ref->base)) != INTEGER_CST
-		  || wide_int::ltu_p (DECL_SIZE (ref->base),
-				      ref->offset + ref->size)))))
+		  || wi::ltu_p (DECL_SIZE (ref->base),
+				ref->offset + ref->size)))))
     return false;
 
   return true;
@@ -2285,10 +2285,10 @@ adjust_offset_for_component_ref (tree x, bool *known_p,
 	}
 
       woffset = xoffset;
-      woffset += (addr_wide_int (DECL_FIELD_BIT_OFFSET (field))
-		  .udiv_trunc (BITS_PER_UNIT));
+      woffset += wi::udiv_trunc (addr_wide_int (DECL_FIELD_BIT_OFFSET (field)),
+				 BITS_PER_UNIT);
 
-      if (!woffset.fits_uhwi_p ())
+      if (!wi::fits_uhwi_p (woffset))
 	{
 	  *known_p = false;
 	  return;

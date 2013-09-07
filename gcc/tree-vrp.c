@@ -1615,12 +1615,14 @@ extract_range_from_assert (value_range_t *vr_p, tree expr)
 	 conversion.  We are willingly interpreting large positive
 	 unsigned values as negative singed values here.  */
       min = force_fit_type (TREE_TYPE (var),
-			    wide_int (min).force_to_size (TYPE_PRECISION (TREE_TYPE (var)),
-							  TYPE_SIGN (TREE_TYPE (min))),
+			    wide_int::from (min,
+					    TYPE_PRECISION (TREE_TYPE (var)),
+					    TYPE_SIGN (TREE_TYPE (min))),
 			    0, false);
       max = force_fit_type (TREE_TYPE (var),
-			    wide_int (max).force_to_size (TYPE_PRECISION (TREE_TYPE (var)),
-							  TYPE_SIGN (TREE_TYPE (max))),
+			    wide_int::from (max,
+					    TYPE_PRECISION (TREE_TYPE (var)),
+					    TYPE_SIGN (TREE_TYPE (max))),
 			    0, false);
 
       /* We can transform a max, min range to an anti-range or
@@ -1984,8 +1986,8 @@ zero_nonzero_bits_from_vr (const tree expr_type,
 			   wide_int *may_be_nonzero,
 			   wide_int *must_be_nonzero)
 {
-  *may_be_nonzero = wide_int::minus_one (TYPE_PRECISION (expr_type));
-  *must_be_nonzero = wide_int::zero (TYPE_PRECISION (expr_type));
+  *may_be_nonzero = wi::minus_one (TYPE_PRECISION (expr_type));
+  *must_be_nonzero = wi::zero (TYPE_PRECISION (expr_type));
   if (!range_int_cst_p (vr)
       || TREE_OVERFLOW (vr->min)
       || TREE_OVERFLOW (vr->max))
@@ -2004,11 +2006,10 @@ zero_nonzero_bits_from_vr (const tree expr_type,
       wide_int xor_mask = wmin ^ wmax;
       *may_be_nonzero = wmin | wmax;
       *must_be_nonzero = wmin & wmax;
-      if (!xor_mask.zero_p ())
+      if (xor_mask != 0)
 	{
-	  wide_int mask = wide_int::mask (xor_mask.floor_log2 ().to_shwi (), 
-					  false, 
-					  (*may_be_nonzero).get_precision ());
+	  wide_int mask = wi::mask (wi::floor_log2 (xor_mask), false,
+				    (*may_be_nonzero).get_precision ());
 	  *may_be_nonzero = (*may_be_nonzero) | mask;
 	  *must_be_nonzero = (*must_be_nonzero).and_not (mask);
 	}
@@ -2396,10 +2397,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  wide_int max0 = wide_int (vr0.max);
 	  wide_int min1 = wide_int (vr1.min);
 	  wide_int max1 = wide_int (vr1.max);
-	  wide_int type_min
-	    = wide_int::min_value (TYPE_PRECISION (expr_type), sgn);
-	  wide_int type_max
-	    = wide_int::max_value (TYPE_PRECISION (expr_type), sgn);
+	  wide_int type_min = wi::min_value (TYPE_PRECISION (expr_type), sgn);
+	  wide_int type_max = wi::max_value (TYPE_PRECISION (expr_type), sgn);
 	  wide_int wmin, wmax;
 	  int min_ovf = 0;
 	  int max_ovf = 0;
@@ -2410,20 +2409,20 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      wmax = max0 + max1;
 
 	      /* Check for overflow.  */
-	      if (min1.cmp (0, sgn) != wmin.cmp (min0, sgn))
-		min_ovf = min0.cmp (wmin, sgn);
-	      if (max1.cmp (0, sgn) != wmax.cmp (max0, sgn))
-		max_ovf = max0.cmp (wmax, sgn);
+	      if (wi::cmp (min1, 0, sgn) != wi::cmp (wmin, min0, sgn))
+		min_ovf = wi::cmp (min0, wmin, sgn);
+	      if (wi::cmp (max1, 0, sgn) != wi::cmp (wmax, max0, sgn))
+		max_ovf = wi::cmp (max0, wmax, sgn);
 	    }
 	  else /* if (code == MINUS_EXPR) */
 	    {
 	      wmin = min0 - max1;
 	      wmax = max0 - min1;
 
-	      if (wide_int (0).cmp (max1, sgn) != wmin.cmp (min0, sgn))
-		min_ovf = min0.cmp (max1, sgn);
-	      if (wide_int (0).cmp (min1, sgn) != wmax.cmp (max0, sgn))
-		max_ovf = max0.cmp (min1, sgn);
+	      if (wi::cmp (0, max1, sgn) != wi::cmp (wmin, min0, sgn))
+		min_ovf = wi::cmp (min0, max1, sgn);
+	      if (wi::cmp (0, min1, sgn) != wi::cmp (wmax, max0, sgn))
+		max_ovf = wi::cmp (max0, min1, sgn);
 	    }
 
 	  /* For non-wrapping arithmetic look at possibly smaller
@@ -2439,16 +2438,16 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  /* Check for type overflow.  */
 	  if (min_ovf == 0)
 	    {
-	      if (wmin.cmp (type_min, sgn) == -1)
+	      if (wi::cmp (wmin, type_min, sgn) == -1)
 		min_ovf = -1;
-	      else if (wmin.cmp (type_max, sgn) == 1)
+	      else if (wi::cmp (wmin, type_max, sgn) == 1)
 		min_ovf = 1;
 	    }
 	  if (max_ovf == 0)
 	    {
-	      if (wmax.cmp (type_min, sgn) == -1)
+	      if (wi::cmp (wmax, type_min, sgn) == -1)
 		max_ovf = -1;
-	      else if (wmax.cmp (type_max, sgn) == 1)
+	      else if (wi::cmp (wmax, type_max, sgn) == 1)
 		max_ovf = 1;
 	    }
 
@@ -2456,8 +2455,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    {
 	      /* If overflow wraps, truncate the values and adjust the
 		 range kind and bounds appropriately.  */
-	      wide_int tmin = wmin.force_to_size (prec, sgn);
-	      wide_int tmax = wmax.force_to_size (prec, sgn);
+	      wide_int tmin = wide_int::from (wmin, prec, sgn);
+	      wide_int tmax = wide_int::from (wmax, prec, sgn);
 	      if (min_ovf == max_ovf)
 		{
 		  /* No overflow or both overflow or underflow.  The
@@ -2482,15 +2481,15 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 			      || (max_ovf == 1 && min_ovf == 0));
 		  type = VR_ANTI_RANGE;
 		  tmin = tmax + 1;
-		  if (tmin.cmp (tmax, sgn) < 0)
+		  if (wi::cmp (tmin, tmax, sgn) < 0)
 		    covers = true;
 		  tmax = tem - 1;
-		  if (tmax.cmp (tem, sgn) > 0)
+		  if (wi::cmp (tmax, tem, sgn) > 0)
 		    covers = true;
 		  /* If the anti-range would cover nothing, drop to varying.
 		     Likewise if the anti-range bounds are outside of the
 		     types values.  */
-		  if (covers || tmin.cmp (tmax, sgn) > 0)
+		  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
 		    {
 		      set_value_range_to_varying (vr);
 		      return;
@@ -2638,27 +2637,27 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	{
 	  wide_int min0, max0, min1, max1;
 	  wide_int prod0, prod1, prod2, prod3;
-	  wide_int sizem1 = wide_int::max_value (prec, UNSIGNED, prec2);
+	  wide_int sizem1 = wi::mask (prec, false, prec2);
 	  wide_int size = sizem1 + 1;
 
 	  /* Extend the values using the sign of the result to PREC2.
 	     From here on out, everthing is just signed math no matter
 	     what the input types were.  */ 
-	  min0 = wide_int (vr0.min).force_to_size (prec2, sign);
-	  max0 = wide_int (vr0.max).force_to_size (prec2, sign);
-	  min1 = wide_int (vr1.min).force_to_size (prec2, sign);
-	  max1 = wide_int (vr1.max).force_to_size (prec2, sign);
+	  min0 = wide_int::from (vr0.min, prec2, sign);
+	  max0 = wide_int::from (vr0.max, prec2, sign);
+	  min1 = wide_int::from (vr1.min, prec2, sign);
+	  max1 = wide_int::from (vr1.max, prec2, sign);
 
 	  /* Canonicalize the intervals.  */
 	  if (sign == UNSIGNED)
 	    {
-	      if (size.ltu_p (min0 + max0))
+	      if (wi::ltu_p (size, min0 + max0))
 		{
 		  min0 -= size;
 		  max0 -= size;
 		}
 
-	      if (size.ltu_p (min1 + max1))
+	      if (wi::ltu_p (size, min1 + max1))
 		{
 		  min1 -= size;
 		  max1 -= size;
@@ -2673,7 +2672,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	  /* Sort the 4 products so that min is in prod0 and max is in
 	     prod3.  */
 	  /* min0min1 > max0max1 */
-	  if (prod0.gts_p (prod3))
+	  if (wi::gts_p (prod0, prod3))
 	    {
 	      wide_int tmp = prod3;
 	      prod3 = prod0;
@@ -2681,21 +2680,21 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	    }
 
 	  /* min0max1 > max0min1 */
-	  if (prod1.gts_p (prod2))
+	  if (wi::gts_p (prod1, prod2))
 	    {
 	      wide_int tmp = prod2;
 	      prod2 = prod1;
 	      prod1 = tmp;
 	    }
 
-	  if (prod0.gts_p (prod1))
+	  if (wi::gts_p (prod0, prod1))
 	    {
 	      wide_int tmp = prod1;
 	      prod1 = prod0;
 	      prod0 = tmp;
 	    }
 
-	  if (prod2.gts_p (prod3))
+	  if (wi::gts_p (prod2, prod3))
 	    {
 	      wide_int tmp = prod3;
 	      prod3 = prod2;
@@ -2704,7 +2703,7 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 
 	  /* diff = max - min.  */
 	  prod2 = prod3 - prod0;
-	  if (prod2.geu_p (sizem1))
+	  if (wi::geu_p (prod2, sizem1))
 	    {
 	      /* the range covers all values.  */
 	      set_value_range_to_varying (vr);
@@ -2761,10 +2760,10 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      bool saved_flag_wrapv;
 	      value_range_t vr1p = VR_INITIALIZER;
 	      vr1p.type = VR_RANGE;
-	      vr1p.min
-		= wide_int_to_tree (expr_type, 
-				    wide_int::set_bit_in_zero (tree_to_shwi (vr1.min), 
-							       TYPE_PRECISION (expr_type)));
+	      vr1p.min = (wide_int_to_tree
+			  (expr_type,
+			   wi::set_bit_in_zero (tree_to_shwi (vr1.min),
+						TYPE_PRECISION (expr_type))));
 	      vr1p.max = vr1p.min;
 	      /* We have to use a wrapping multiply though as signed overflow
 		 on lshifts is implementation defined in C89.  */
@@ -2794,21 +2793,21 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		 zero, which means vr1 is a singleton range of zero, which
 		 means it should be handled by the previous LSHIFT_EXPR
 		 if-clause.  */
-	      bound = wide_int::set_bit_in_zero (bound_shift, prec);
+	      bound = wi::set_bit_in_zero (bound_shift, prec);
 	      complement = ~(bound - 1);
 
 	      if (uns)
 		{
 		  low_bound = bound;
 		  high_bound = complement;
-		  if (wide_int::ltu_p (vr0.max, low_bound))
+		  if (wi::ltu_p (vr0.max, low_bound))
 		    {
 		      /* [5, 6] << [1, 2] == [10, 24].  */
 		      /* We're shifting out only zeroes, the value increases
 			 monotonically.  */
 		      in_bounds = true;
 		    }
-		  else if (high_bound.ltu_p (vr0.min))
+		  else if (wi::ltu_p (high_bound, vr0.min))
 		    {
 		      /* [0xffffff00, 0xffffffff] << [1, 2]
 		         == [0xfffffc00, 0xfffffffe].  */
@@ -2822,8 +2821,8 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 		  /* [-1, 1] << [1, 2] == [-4, 4].  */
 		  low_bound = complement;
 		  high_bound = bound;
-		  if (wide_int::lts_p (vr0.max, high_bound)
-		      && low_bound.lts_p (wide_int (vr0.min)))
+		  if (wi::lts_p (vr0.max, high_bound)
+		      && wi::lts_p (low_bound, vr0.min))
 		    {
 		      /* For non-negative numbers, we're shifting out only
 			 zeroes, the value increases monotonically.
@@ -2981,16 +2980,16 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      && tree_int_cst_sgn (vr0.max) < 0
 	      && tree_int_cst_sgn (vr1.max) < 0)
 	    {
-	      wmax = wmax.min (vr0.max, TYPE_SIGN (expr_type));
-	      wmax = wmax.min (vr1.max, TYPE_SIGN (expr_type));
+	      wmax = wi::min (wmax, vr0.max, TYPE_SIGN (expr_type));
+	      wmax = wi::min (wmax, vr1.max, TYPE_SIGN (expr_type));
 	    }
 	  /* If either input range contains only non-negative values
 	     we can truncate the result range maximum to the respective
 	     maximum of the input range.  */
 	  if (int_cst_range0 && tree_int_cst_sgn (vr0.min) >= 0)
-	    wmax = wmax.min (vr0.max, TYPE_SIGN (expr_type));
+	    wmax = wi::min (wmax, vr0.max, TYPE_SIGN (expr_type));
 	  if (int_cst_range1 && tree_int_cst_sgn (vr1.min) >= 0)
-	    wmax = wmax.min (vr1.max, TYPE_SIGN (expr_type));
+	    wmax = wi::min (wmax, vr1.max, TYPE_SIGN (expr_type));
 	  max = wide_int_to_tree (expr_type, wmax);
 	}
       else if (code == BIT_IOR_EXPR)
@@ -3006,16 +3005,16 @@ extract_range_from_binary_expr_1 (value_range_t *vr,
 	      && tree_int_cst_sgn (vr0.min) >= 0
 	      && tree_int_cst_sgn (vr1.min) >= 0)
 	    {
-	      wmin = wmin.max (vr0.min, TYPE_SIGN (expr_type));
-	      wmin = wmin.max (vr1.min, TYPE_SIGN (expr_type));
+	      wmin = wi::max (wmin, vr0.min, TYPE_SIGN (expr_type));
+	      wmin = wi::max (wmin, vr1.min, TYPE_SIGN (expr_type));
 	    }
 	  /* If either input range contains only negative values
 	     we can truncate the minimum of the result range to the
 	     respective minimum range.  */
 	  if (int_cst_range0 && tree_int_cst_sgn (vr0.max) < 0)
-	    wmin = wmin.max (vr0.min, TYPE_SIGN (expr_type));
+	    wmin = wi::max (wmin, vr0.min, TYPE_SIGN (expr_type));
 	  if (int_cst_range1 && tree_int_cst_sgn (vr1.max) < 0)
-	    wmin = wmin.max (vr1.min, TYPE_SIGN (expr_type));
+	    wmin = wi::max (wmin, vr1.min, TYPE_SIGN (expr_type));
 	  min = wide_int_to_tree (expr_type, wmin);
 	}
       else if (code == BIT_XOR_EXPR)
@@ -3242,15 +3241,19 @@ extract_range_from_unary_expr_1 (value_range_t *vr,
 	    new_min = negative_overflow_infinity (outer_type);
 	  else
 	    new_min = force_fit_type (outer_type,
-				      wide_int (vr0.min).force_to_size (TYPE_PRECISION (outer_type),
-									TYPE_SIGN (TREE_TYPE (vr0.min))),
+				      wide_int::from
+				        (vr0.min,
+					 TYPE_PRECISION (outer_type),
+					 TYPE_SIGN (TREE_TYPE (vr0.min))),
 				      0, false);
 	  if (is_overflow_infinity (vr0.max))
 	    new_max = positive_overflow_infinity (outer_type);
 	  else
 	    new_max = force_fit_type (outer_type,
-				      wide_int (vr0.max).force_to_size (TYPE_PRECISION (outer_type),
-									TYPE_SIGN (TREE_TYPE (vr0.max))),
+				      wide_int::from
+				        (vr0.max,
+					 TYPE_PRECISION (outer_type),
+					 TYPE_SIGN (TREE_TYPE (vr0.max))),
 				      0, false);
 	  set_and_canonicalize_value_range (vr, vr0.type,
 					    new_min, new_max, NULL);
@@ -3835,16 +3838,16 @@ adjust_range_with_scev (value_range_t *vr, struct loop *loop,
 	  signop sgn = TYPE_SIGN (TREE_TYPE (step));
 	  bool overflow;
 	  
-	  wtmp = max_wide_int (step).mul (nit, sgn, &overflow);
+	  wtmp = wi::mul (step, nit, sgn, &overflow);
 	  /* If the multiplication overflowed we can't do a meaningful
 	     adjustment.  Likewise if the result doesn't fit in the type
 	     of the induction variable.  For a signed type we have to
 	     check whether the result has the expected signedness which
 	     is that of the step as number of iterations is unsigned.  */
 	  if (!overflow
-	      && wtmp.fits_to_tree_p (TREE_TYPE (init))
+	      && wi::fits_to_tree_p (wtmp, TREE_TYPE (init))
 	      && (sgn == UNSIGNED
-		  || (wtmp.gts_p (0) == wide_int::gts_p (step, 0))))
+		  || wi::gts_p (wtmp, 0) == wi::gts_p (step, 0)))
 	    {
 	      tem = wide_int_to_tree (TREE_TYPE (init), wtmp);
 	      extract_range_from_binary_expr (&maxvr, PLUS_EXPR,
@@ -4724,19 +4727,19 @@ static wide_int
 masked_increment (wide_int val, wide_int mask, wide_int sgnbit,
 		  unsigned int prec)
 {
-  wide_int bit = wide_int::one (prec), res;
+  wide_int bit = wi::one (prec), res;
   unsigned int i;
 
   val ^= sgnbit;
   for (i = 0; i < prec; i++, bit += bit)
     {
       res = mask;
-      if ((res & bit).zero_p ())
+      if ((res & bit) == 0)
 	continue;
       res = bit - 1;
       res = (val + bit).and_not (res);
       res &= mask;
-      if (res.gtu_p (val))
+      if (wi::gtu_p (res, val))
 	return res ^ sgnbit;
     }
   return val ^ sgnbit;
@@ -4911,8 +4914,8 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
       gimple def_stmt = SSA_NAME_DEF_STMT (name);
       tree name2 = NULL_TREE, names[2], cst2 = NULL_TREE;
       tree val2 = NULL_TREE;
-      wide_int mask = 0;
       unsigned int prec = TYPE_PRECISION (TREE_TYPE (val));
+      wide_int mask = wi::zero (prec);
       unsigned int nprec = prec;
       enum tree_code rhs_code = ERROR_MARK;
 
@@ -4985,7 +4988,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      && live_on_edge (e, name2)
 	      && !has_single_use (name2))
 	    {
-	      mask = wide_int::mask (tree_to_uhwi (cst2), false, prec);
+	      mask = wi::mask (tree_to_uhwi (cst2), false, prec);
 	      val2 = fold_binary (LSHIFT_EXPR, TREE_TYPE (val), val, cst2);
 	    }
 	}
@@ -5014,7 +5017,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  else if (comp_code == LT_EXPR || comp_code == GE_EXPR)
 	    {
 	      wide_int minval
-		= wide_int::min_value (prec, TYPE_SIGN (TREE_TYPE (val)));
+		= wi::min_value (prec, TYPE_SIGN (TREE_TYPE (val)));
 	      new_val = val2;
 	      if (minval == wide_int (new_val))
 		new_val = NULL_TREE;
@@ -5022,7 +5025,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  else
 	    {
 	      wide_int maxval
-		= wide_int::max_value (prec, TYPE_SIGN (TREE_TYPE (val)));
+		= wi::max_value (prec, TYPE_SIGN (TREE_TYPE (val)));
 	      mask |= wide_int (val2);
 	      if (mask == maxval)
 		new_val = NULL_TREE;
@@ -5101,17 +5104,17 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	}
       if (names[0] || names[1])
 	{
-	  wide_int minv, maxv = 0, valv, cst2v;
+	  wide_int minv, maxv, valv, cst2v;
 	  wide_int tem, sgnbit;
 	  bool valid_p = false, valn = false, cst2n = false;
 	  enum tree_code ccode = comp_code;
 
-	  valv = wide_int (val).zforce_to_size (nprec);
-	  cst2v = wide_int (cst2).zforce_to_size (nprec);
+	  valv = wide_int::from (val, nprec, UNSIGNED);
+	  cst2v = wide_int::from (cst2, nprec, UNSIGNED);
 	  if (TYPE_SIGN (TREE_TYPE (val)) == SIGNED)
 	    {
-	      valn = valv.sext (nprec).neg_p ();
-	      cst2n = cst2v.sext (nprec).neg_p ();
+	      valn = wi::neg_p (wi::sext (valv, nprec));
+	      cst2n = wi::neg_p (wi::sext (cst2v, nprec));
 	    }
 	  /* If CST2 doesn't have most significant bit set,
 	     but VAL is negative, we have comparison like
@@ -5119,9 +5122,9 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	  if (!cst2n && valn)
 	    ccode = ERROR_MARK;
 	  if (cst2n)
-	    sgnbit = wide_int::set_bit_in_zero (nprec - 1, nprec);
+	    sgnbit = wi::set_bit_in_zero (nprec - 1, nprec);
 	  else
-	    sgnbit = wide_int::zero (nprec);
+	    sgnbit = wi::zero (nprec);
 	  minv = valv & cst2v;
 	  switch (ccode)
 	    {
@@ -5131,18 +5134,18 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		 have folded the comparison into false) and
 		 maximum unsigned value is VAL | ~CST2.  */
 	      maxv = valv | ~cst2v;
-	      maxv = maxv.zext (nprec);
+	      maxv = wi::zext (maxv, nprec);
 	      valid_p = true;
 	      break;
 
 	    case NE_EXPR:
 	      tem = valv | ~cst2v;
-	      tem = tem.zext (nprec);
+	      tem = wi::zext (tem, nprec);
 	      /* If VAL is 0, handle (X & CST2) != 0 as (X & CST2) > 0U.  */
-	      if (valv.zero_p ())
+	      if (valv == 0)
 		{
 		  cst2n = false;
-		  sgnbit = wide_int::zero (nprec);
+		  sgnbit = wi::zero (nprec);
 		  goto gt_expr;
 		}
 	      /* If (VAL | ~CST2) is all ones, handle it as
@@ -5151,12 +5154,12 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		{
 		  cst2n = false;
 		  valn = false;
-		  sgnbit = wide_int::zero (nprec);
+		  sgnbit = wi::zero (nprec);
 		  goto lt_expr;
 		}
-	      if (!cst2n && cst2v.sext (nprec).neg_p ())
-		sgnbit = wide_int::set_bit_in_zero (nprec - 1, nprec);
-	      if (!sgnbit.zero_p ())
+	      if (!cst2n && wi::neg_p (wi::sext (cst2v, nprec)))
+		sgnbit = wi::set_bit_in_zero (nprec - 1, nprec);
+	      if (sgnbit != 0)
 		{
 		  if (valv == sgnbit)
 		    {
@@ -5164,13 +5167,13 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		      valn = true;
 		      goto gt_expr;
 		    }
-		  if (tem == wide_int::mask (nprec - 1, false, nprec))
+		  if (tem == wi::mask (nprec - 1, false, nprec))
 		    {
 		      cst2n = true;
 		      goto lt_expr;
 		    }
 		  if (!cst2n)
-		    sgnbit = 0;
+		    sgnbit = wi::zero (nprec);
 		}
 	      break;
 
@@ -5188,7 +5191,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		  if (minv == valv)
 		    break;
 		}
-	      maxv = wide_int::mask (nprec - (cst2n ? 1 : 0), false, nprec);
+	      maxv = wi::mask (nprec - (cst2n ? 1 : 0), false, nprec);
 	      valid_p = true;
 	      break;
 
@@ -5200,7 +5203,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      minv = masked_increment (valv, cst2v, sgnbit, nprec);
 	      if (minv == valv)
 		break;
-	      maxv = wide_int::mask (nprec - (cst2n ? 1 : 0), false, nprec);
+	      maxv = wi::mask (nprec - (cst2n ? 1 : 0), false, nprec);
 	      valid_p = true;
 	      break;
 
@@ -5223,7 +5226,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		  maxv -= 1;
 		}
 	      maxv |= ~cst2v;
-	      maxv = maxv.zext (nprec);
+	      maxv = wi::zext (maxv, nprec);
 	      minv = sgnbit;
 	      valid_p = true;
 	      break;
@@ -5252,7 +5255,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 		}
 	      maxv -= 1;
 	      maxv |= ~cst2v;
-	      maxv = maxv.zext (nprec);
+	      maxv = wi::zext (maxv, nprec);
 	      minv = sgnbit;
 	      valid_p = true;
 	      break;
@@ -5261,7 +5264,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 	      break;
 	    }
 	  if (valid_p
-	      && (maxv - minv).zext (nprec) != wide_int::minus_one (nprec))
+	      && wi::zext (maxv - minv, nprec) != wi::minus_one (nprec))
 	    {
 	      tree tmp, new_val, type;
 	      int i;
@@ -5277,7 +5280,7 @@ register_edge_assert_for_2 (tree name, edge e, gimple_stmt_iterator bsi,
 			type = build_nonstandard_integer_type (nprec, 1);
 			tmp = build1 (NOP_EXPR, type, names[i]);
 		      }
-		    if (!minv.zero_p ())
+		    if (minv != 0)
 		      {
 			tmp = build2 (PLUS_EXPR, type, tmp,
 				      wide_int_to_tree (type, -minv));
@@ -6238,8 +6241,8 @@ search_for_addr_array (tree t, location_t location)
 	return;
 
       idx = mem_ref_offset (t);
-      idx = idx.sdiv_trunc (addr_wide_int (el_sz));
-      if (idx.lts_p (0))
+      idx = wi::sdiv_trunc (idx, el_sz);
+      if (wi::lts_p (idx, 0))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -6251,9 +6254,7 @@ search_for_addr_array (tree t, location_t location)
 		      "array subscript is below array bounds");
 	  TREE_NO_WARNING (t) = 1;
 	}
-      else if (idx.gts_p (addr_wide_int (up_bound)
-			  - low_bound
-			  + 1))
+      else if (wi::gts_p (idx, addr_wide_int (up_bound) - low_bound + 1))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -8546,13 +8547,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
     {
     case BIT_AND_EXPR:
       mask = may_be_nonzero0.and_not (must_be_nonzero1);
-      if (mask.zero_p ())
+      if (mask == 0)
 	{
 	  op = op0;
 	  break;
 	}
       mask = may_be_nonzero1.and_not (must_be_nonzero0);
-      if (mask.zero_p ())
+      if (mask == 0)
 	{
 	  op = op1;
 	  break;
@@ -8560,13 +8561,13 @@ simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi, gimple stmt)
       break;
     case BIT_IOR_EXPR:
       mask = may_be_nonzero0.and_not (must_be_nonzero1);
-      if (mask.zero_p ())
+      if (mask == 0)
 	{
 	  op = op1;
 	  break;
 	}
       mask = may_be_nonzero1.and_not (must_be_nonzero0);
-      if (mask.zero_p ())
+      if (mask == 0)
 	{
 	  op = op0;
 	  break;
@@ -8685,16 +8686,16 @@ range_fits_type_p (value_range_t *vr, unsigned dest_precision, signop dest_sgn)
      a signed wide_int, while a negative value cannot be represented
      by an unsigned wide_int.  */
   if (src_sgn != dest_sgn
-      && (max_wide_int (vr->min).lts_p (0) || max_wide_int (vr->max).lts_p (0)))
+      && (wi::lts_p (vr->min, 0) || wi::lts_p (vr->max, 0)))
     return false;
 
   /* Then we can perform the conversion on both ends and compare
      the result for equality.  */
-  tem = max_wide_int (vr->min).ext (dest_precision, dest_sgn);
-  if (max_wide_int (vr->min) != tem)
+  tem = wi::ext (vr->min, dest_precision, dest_sgn);
+  if (tem != vr->min)
     return false;
-  tem = max_wide_int (vr->max).ext (dest_precision, dest_sgn);
-  if (max_wide_int (vr->max) != tem)
+  tem = wi::ext (vr->max, dest_precision, dest_sgn);
+  if (tem != vr->max)
     return false;
 
   return true;
@@ -8989,34 +8990,35 @@ simplify_conversion_using_ranges (gimple stmt)
 
   /* If the first conversion is not injective, the second must not
      be widening.  */
-  if ((innermax - innermin).gtu_p (max_wide_int::mask (middle_prec, false))
+  if (wi::gtu_p (innermax - innermin,
+		 wi::mask <max_wide_int> (middle_prec, false))
       && middle_prec < final_prec)
     return false;
   /* We also want a medium value so that we can track the effect that
      narrowing conversions with sign change have.  */
   inner_sgn = TYPE_SIGN (TREE_TYPE (innerop));
   if (inner_sgn == UNSIGNED)
-    innermed = max_wide_int::shifted_mask (1, inner_prec - 1, false);
+    innermed = wi::shifted_mask <max_wide_int> (1, inner_prec - 1, false);
   else
     innermed = 0;
-  if (innermin.cmp (innermed, inner_sgn) >= 0
-      || innermed.cmp (innermax, inner_sgn) >= 0)
+  if (wi::cmp (innermin, innermed, inner_sgn) >= 0
+      || wi::cmp (innermed, innermax, inner_sgn) >= 0)
     innermed = innermin;
 
   middle_sgn = TYPE_SIGN (TREE_TYPE (middleop));
-  middlemin = innermin.ext (middle_prec, middle_sgn);
-  middlemed = innermed.ext (middle_prec, middle_sgn);
-  middlemax = innermax.ext (middle_prec, middle_sgn);
+  middlemin = wi::ext (innermin, middle_prec, middle_sgn);
+  middlemed = wi::ext (innermed, middle_prec, middle_sgn);
+  middlemax = wi::ext (innermax, middle_prec, middle_sgn);
 
   /* Require that the final conversion applied to both the original
      and the intermediate range produces the same result.  */
   final_sgn = TYPE_SIGN (finaltype);
-  if (middlemin.ext (final_prec, final_sgn)
-	 != innermin.ext (final_prec, final_sgn)
-      || middlemed.ext (final_prec, final_sgn)
-	 != innermed.ext (final_prec, final_sgn)
-      || middlemax.ext (final_prec, final_sgn)
-	 != innermax.ext (final_prec, final_sgn))
+  if (wi::ext (middlemin, final_prec, final_sgn)
+	 != wi::ext (innermin, final_prec, final_sgn)
+      || wi::ext (middlemed, final_prec, final_sgn)
+	 != wi::ext (innermed, final_prec, final_sgn)
+      || wi::ext (middlemax, final_prec, final_sgn)
+	 != wi::ext (innermax, final_prec, final_sgn))
     return false;
 
   gimple_assign_set_rhs1 (stmt, innerop);

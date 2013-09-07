@@ -3226,8 +3226,8 @@ write_array_type (const tree type)
 	  addr_wide_int wmax = addr_wide_int (max) + 1;
 	  /* Truncate the result - this will mangle [0, SIZE_INT_MAX]
 	     number of elements as zero.  */
-	  wmax = wmax.zext (TYPE_PRECISION (TREE_TYPE (max)));
-	  gcc_assert (wmax.fits_uhwi_p ());
+	  wmax = wi::zext (wmax, TYPE_PRECISION (TREE_TYPE (max)));
+	  gcc_assert (wi::fits_uhwi_p (wmax));
 	  write_unsigned_number (wmax.to_uhwi ());
 	}
       else

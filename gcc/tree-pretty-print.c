@@ -1071,7 +1071,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	{
 	  wide_int val = node;
 
-	  if (val.neg_p (TYPE_SIGN (TREE_TYPE (node))))
+	  if (wi::neg_p (val, TYPE_SIGN (TREE_TYPE (node))))
 	    {
 	      pp_minus (buffer);
 	      val = -val;
@@ -1324,7 +1324,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	tree field, val;
 	bool is_struct_init = false;
 	bool is_array_init = false;
-	wide_int curidx = 0;
+	max_wide_int curidx;
 	pp_left_brace (buffer);
 	if (TREE_CLOBBER_P (node))
 	  pp_string (buffer, "CLOBBER");
@@ -1339,7 +1339,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  {
 	    tree minv = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (node)));
 	    is_array_init = true;
-	    curidx = max_wide_int (minv);
+	    curidx = minv;
 	  }
 	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (node), ix, field, val)
 	  {
@@ -1353,7 +1353,7 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 		  }
 		else if (is_array_init
 			 && (TREE_CODE (field) != INTEGER_CST
-			     || max_wide_int (field) != curidx))
+			     || curidx != field))
 		  {
 		    pp_left_bracket (buffer);
 		    if (TREE_CODE (field) == RANGE_EXPR)

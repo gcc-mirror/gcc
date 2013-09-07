@@ -433,8 +433,9 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	    if (this_offset && TREE_CODE (this_offset) == INTEGER_CST)
 	      {
 		addr_wide_int woffset = this_offset;
-		woffset = woffset.lshift (BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT));
+		woffset = wi::lshift (woffset,
+				      (BITS_PER_UNIT == 8
+				       ? 3 : exact_log2 (BITS_PER_UNIT)));
 		woffset += DECL_FIELD_BIT_OFFSET (field);
 		bit_offset += woffset;
 
@@ -455,7 +456,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 			tree ssize = TYPE_SIZE_UNIT (stype);
 			if (tree_fits_shwi_p (fsize)
 			    && tree_fits_shwi_p (ssize)
-			    && woffset.fits_shwi_p ())
+			    && wi::fits_shwi_p (woffset))
 			  maxsize += ((tree_to_shwi (ssize)
 				       - tree_to_shwi (fsize))
 				      * BITS_PER_UNIT
@@ -474,7 +475,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		if (maxsize != -1
 		    && csize
 		    && tree_fits_uhwi_p (csize)
-		    && bit_offset.fits_shwi_p ())
+		    && wi::fits_shwi_p (bit_offset))
 		  maxsize = tree_to_shwi (csize)
 			    - bit_offset.to_shwi ();
 		else
@@ -497,11 +498,12 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		    TREE_CODE (unit_size) == INTEGER_CST))
 	      {
 		addr_wide_int woffset 
-		  = (addr_wide_int (index) - low_bound)
-		      .sext (TYPE_PRECISION (TREE_TYPE (index)));
+		  = wi::sext (addr_wide_int (index) - low_bound,
+			      TYPE_PRECISION (TREE_TYPE (index)));
 		woffset *= addr_wide_int (unit_size);
-		woffset = woffset.lshift (BITS_PER_UNIT == 8
-					  ? 3 : exact_log2 (BITS_PER_UNIT));
+		woffset = wi::lshift (woffset,
+				      (BITS_PER_UNIT == 8
+				       ? 3 : exact_log2 (BITS_PER_UNIT)));
 		bit_offset += woffset;
 
 		/* An array ref with a constant index up in the structure
@@ -518,7 +520,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 		if (maxsize != -1
 		    && asize
 		    && tree_fits_uhwi_p (asize)
-		    && bit_offset.fits_shwi_p ())
+		    && wi::fits_shwi_p (bit_offset))
 		  maxsize = tree_to_uhwi (asize) - bit_offset.to_shwi ();
 		else
 		  maxsize = -1;
@@ -549,10 +551,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  addr_wide_int off = mem_ref_offset (exp);
-		  off = off.lshift (BITS_PER_UNIT == 8
-				    ? 3 : exact_log2 (BITS_PER_UNIT));
+		  off = wi::lshift (off, (BITS_PER_UNIT == 8
+					  ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off += bit_offset;
-		  if (off.fits_shwi_p ())
+		  if (wi::fits_shwi_p (off))
 		    {
 		      bit_offset = off;
 		      exp = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
@@ -579,10 +581,10 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
 	      else
 		{
 		  addr_wide_int off = mem_ref_offset (exp);
-		  off = off.lshift (BITS_PER_UNIT == 8
-				    ? 3 : exact_log2 (BITS_PER_UNIT));
+		  off = wi::lshift (off, (BITS_PER_UNIT == 8
+					  ? 3 : exact_log2 (BITS_PER_UNIT)));
 		  off += bit_offset;
-		  if (off.fits_shwi_p ())
+		  if (wi::fits_shwi_p (off))
 		    {
 		      bit_offset = off;
 		      exp = TREE_OPERAND (TMR_BASE (exp), 0);
@@ -599,7 +601,7 @@ get_ref_base_and_extent (tree exp, HOST_WIDE_INT *poffset,
     }
  done:
 
-  if (!bit_offset.fits_shwi_p ())
+  if (!wi::fits_shwi_p (bit_offset))
     {
       *poffset = 0;
       *psize = bitsize;

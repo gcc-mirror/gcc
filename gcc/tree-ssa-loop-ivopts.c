@@ -1616,7 +1616,7 @@ constant_multiple_of (tree top, tree bot, max_wide_int *mul)
       if (!constant_multiple_of (TREE_OPERAND (top, 0), bot, &res))
 	return false;
 
-      *mul = (res * mby).sext (precision);
+      *mul = wi::sext (res * mby, precision);
       return true;
 
     case PLUS_EXPR:
@@ -1627,19 +1627,19 @@ constant_multiple_of (tree top, tree bot, max_wide_int *mul)
 
       if (code == MINUS_EXPR)
 	p1 = -p1;
-      *mul = (p0 + p1).sext (precision);
+      *mul = wi::sext (p0 + p1, precision);
       return true;
 
     case INTEGER_CST:
       if (TREE_CODE (bot) != INTEGER_CST)
 	return false;
 
-      p0 = max_wide_int (top).sext (precision);
-      p1 = max_wide_int (bot).sext (precision);
-      if (p1.zero_p ())
+      p0 = wi::sext (top, precision);
+      p1 = wi::sext (bot, precision);
+      if (p1 == 0)
 	return false;
-      *mul = p0.sdivmod_floor (p1, &res).sext (precision);
-      return res.zero_p ();
+      *mul = wi::sext (wi::divmod_trunc (p0, p1, SIGNED, &res), precision);
+      return res == 0;
 
     default:
       return false;
@@ -4053,7 +4053,7 @@ get_computation_cost_at (struct ivopts_data *data,
   if (!constant_multiple_of (ustep, cstep, &rat))
     return infinite_cost;
 
-  if (rat.fits_shwi_p ())
+  if (wi::fits_shwi_p (rat))
     ratio = rat.to_shwi ();
   else
     return infinite_cost;
@@ -4567,7 +4567,7 @@ iv_elimination_compare_lt (struct ivopts_data *data,
   aff_combination_scale (&tmpa, -1);
   aff_combination_add (&tmpb, &tmpa);
   aff_combination_add (&tmpb, &nit);
-  if (tmpb.n != 0 || !tmpb.offset.one_p ())
+  if (tmpb.n != 0 || tmpb.offset != 1)
     return false;
 
   /* Finally, check that CAND->IV->BASE - CAND->IV->STEP * A does not
@@ -4659,7 +4659,7 @@ may_eliminate_iv (struct ivopts_data *data,
       if (stmt_after_increment (loop, cand, use->stmt))
         max_niter += 1;
       period_value = period;
-      if (max_niter.gtu_p (period_value))
+      if (wi::gtu_p (max_niter, period_value))
         {
           /* See if we can take advantage of inferred loop bound information.  */
           if (data->loop_single_exit_p)
@@ -4667,7 +4667,7 @@ may_eliminate_iv (struct ivopts_data *data,
               if (!max_loop_iterations (loop, &max_niter))
                 return false;
               /* The loop bound is already adjusted by adding 1.  */
-              if (max_niter.gtu_p (period_value))
+              if (wi::gtu_p (max_niter, period_value))
                 return false;
             }
           else

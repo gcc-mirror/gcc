@@ -2800,15 +2800,16 @@ fold_array_ctor_reference (tree type, tree ctor,
      be larger than size of array element.  */
   if (!TYPE_SIZE_UNIT (type)
       || TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST
-      || elt_size.lts_p (addr_wide_int (TYPE_SIZE_UNIT (type))))
+      || wi::lts_p (elt_size, TYPE_SIZE_UNIT (type)))
     return NULL_TREE;
 
   /* Compute the array index we look for.  */
-  access_index = addr_wide_int (offset / BITS_PER_UNIT).udiv_trunc (elt_size);
+  access_index = wi::udiv_trunc (addr_wide_int (offset / BITS_PER_UNIT),
+				 elt_size);
   access_index += low_bound;
   if (index_type)
-    access_index = access_index.ext (TYPE_PRECISION (index_type),
-				     TYPE_SIGN (index_type));
+    access_index = wi::ext (access_index, TYPE_PRECISION (index_type),
+			    TYPE_SIGN (index_type));
 
   /* And offset within the access.  */
   inner_offset = offset % (elt_size.to_uhwi () * BITS_PER_UNIT);
@@ -2820,7 +2821,8 @@ fold_array_ctor_reference (tree type, tree ctor,
 
   index = low_bound - 1;
   if (index_type)
-    index = index.ext (TYPE_PRECISION (index_type), TYPE_SIGN (index_type));
+    index = wi::ext (index, TYPE_PRECISION (index_type),
+		     TYPE_SIGN (index_type));
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), cnt, cfield, cval)
     {
@@ -2842,14 +2844,14 @@ fold_array_ctor_reference (tree type, tree ctor,
 	{
 	  index += 1;
 	  if (index_type)
-	    index = index.ext (TYPE_PRECISION (index_type),
-			       TYPE_SIGN (index_type));
+	    index = wi::ext (index, TYPE_PRECISION (index_type),
+			     TYPE_SIGN (index_type));
 	  max_index = index;
 	}
 
       /* Do we have match?  */
-      if (access_index.cmpu (index) >= 0
-	  && access_index.cmpu (max_index) <= 0)
+      if (wi::cmpu (access_index, index) >= 0
+	  && wi::cmpu (access_index, max_index) <= 0)
 	return fold_ctor_reference (type, cval, inner_offset, size,
 				    from_decl);
     }
@@ -2889,11 +2891,10 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 		      : TREE_CODE (TREE_TYPE (cfield)) == ARRAY_TYPE));
 
       /* Compute bit offset of the field.  */
-      bitoffset = (addr_wide_int (field_offset)
-		   + byte_offset_cst * addr_wide_int (BITS_PER_UNIT));
+      bitoffset = wi::add (field_offset, byte_offset_cst * BITS_PER_UNIT);
       /* Compute bit offset where the field ends.  */
       if (field_size != NULL_TREE)
-	bitoffset_end = bitoffset + addr_wide_int (field_size);
+	bitoffset_end = bitoffset + field_size;
       else
 	bitoffset_end = 0;
 
@@ -2901,17 +2902,17 @@ fold_nonarray_ctor_reference (tree type, tree ctor,
 
       /* Is there any overlap between [OFFSET, OFFSET+SIZE) and
 	 [BITOFFSET, BITOFFSET_END)?  */
-      if (access_end.cmps (bitoffset) > 0
+      if (wi::cmps (access_end, bitoffset) > 0
 	  && (field_size == NULL_TREE
-	      || addr_wide_int (offset).lts_p (bitoffset_end)))
+	      || wi::lts_p (offset, bitoffset_end)))
 	{
 	  addr_wide_int inner_offset = addr_wide_int (offset) - bitoffset;
 	  /* We do have overlap.  Now see if field is large enough to
 	     cover the access.  Give up for accesses spanning multiple
 	     fields.  */
-	  if (access_end.cmps (bitoffset_end) > 0)
+	  if (wi::cmps (access_end, bitoffset_end) > 0)
 	    return NULL_TREE;
-	  if (addr_wide_int (offset).lts_p (bitoffset))
+	  if (wi::lts_p (offset, bitoffset))
 	    return NULL_TREE;
 	  return fold_ctor_reference (type, cval,
 				      inner_offset.to_uhwi (), size,
@@ -3009,10 +3010,10 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	      && (tree_fits_uhwi_p (unit_size)))
 	    {
 	      addr_wide_int woffset 
-		= (addr_wide_int (idx) - addr_wide_int (low_bound))
-		.sext (TYPE_PRECISION (TREE_TYPE (idx)));
+		= wi::sext (addr_wide_int (idx) - low_bound,
+			    TYPE_PRECISION (TREE_TYPE (idx)));
 	      
-	      if (woffset.fits_shwi_p ())
+	      if (wi::fits_shwi_p (woffset))
 		{
 		  offset = woffset.to_shwi ();
 		  /* TODO: This code seems wrong, multiply then check

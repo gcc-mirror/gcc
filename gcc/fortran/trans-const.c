@@ -200,7 +200,7 @@ gfc_init_constants (void)
 tree
 gfc_conv_mpz_to_tree (mpz_t i, int kind)
 {
-  wide_int val = wide_int::from_mpz (gfc_get_int_type (kind), i, true);
+  wide_int val = wi::from_mpz (gfc_get_int_type (kind), i, true);
   return wide_int_to_tree (gfc_get_int_type (kind), val);
 }
 
@@ -209,8 +209,7 @@ gfc_conv_mpz_to_tree (mpz_t i, int kind)
 void
 gfc_conv_tree_to_mpz (mpz_t i, tree source)
 {
-  wide_int val = source;
-  val.to_mpz (i, TYPE_SIGN (TREE_TYPE (source)));
+  wi::to_mpz (source, i, TYPE_SIGN (TREE_TYPE (source)));
 }
 
 /* Converts a real constant into backend form.  */

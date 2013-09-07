@@ -1752,7 +1752,7 @@ max_stmt_executions_tree (struct loop *loop)
   if (!max_stmt_executions (loop, &nit))
     return chrec_dont_know;
 
-  if (!nit.fits_to_tree_p (unsigned_type_node))
+  if (!wi::fits_to_tree_p (nit, unsigned_type_node))
     return chrec_dont_know;
 
   return wide_int_to_tree (unsigned_type_node, nit);

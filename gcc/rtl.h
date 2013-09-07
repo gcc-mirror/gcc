@@ -1397,82 +1397,82 @@ struct address_info {
   bool autoinc_p;
 };
 
-#ifndef GENERATOR_FILE
+/* This is used to bundle an rtx and a mode together so that the pair
+   can be used as the second operand of a wide int expression.  If we
+   ever put modes into rtx integer constants, this should go away and
+   then just pass an rtx in.  */
+typedef std::pair <rtx, enum machine_mode> rtx_mode_t;
 
-/* Accessors for rtx_mode. */
-static inline rtx
-get_rtx (const rtx_mode_t p)
+namespace wi
 {
-  return p.first;
+  template <>
+  struct int_traits <rtx_mode_t>
+  {
+    static const enum precision_type precision_type = VAR_PRECISION;
+    static const bool host_dependent_precision = false;
+    static unsigned int get_precision (const rtx_mode_t &);
+    static wi::storage_ref decompose (HOST_WIDE_INT *, unsigned int,
+				      const rtx_mode_t &);
+  };
 }
 
-static inline enum machine_mode
-get_mode (const rtx_mode_t p)
+inline unsigned int
+wi::int_traits <rtx_mode_t>::get_precision (const rtx_mode_t &x)
 {
-  return p.second;
+  return GET_MODE_PRECISION (x.second);
 }
 
-/* Specialization of to_shwi1 function in wide-int.h for rtl.  This
-   cannot be in wide-int.h because of circular includes.  */
-template<>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi1 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED, 
-		       unsigned int *l, unsigned int *p, const rtx_mode_t& rp)
+inline wi::storage_ref
+wi::int_traits <rtx_mode_t>::decompose (HOST_WIDE_INT *,
+					unsigned int precision,
+					const rtx_mode_t &x)
 {
-  const rtx rcst = get_rtx (rp);
-  enum machine_mode mode = get_mode (rp);
-
-  *p = GET_MODE_PRECISION (mode);
-
-  switch (GET_CODE (rcst))
+  gcc_checking_assert (precision == get_precision (x));
+  switch (GET_CODE (x.first))
     {
     case CONST_INT:
-      *l = 1;
-      return &INTVAL (rcst);
+      return wi::storage_ref (&INTVAL (x.first), 1, precision);
       
     case CONST_WIDE_INT:
-      *l = CONST_WIDE_INT_NUNITS (rcst);
-      return &CONST_WIDE_INT_ELT (rcst, 0);
+      return wi::storage_ref (&CONST_WIDE_INT_ELT (x.first, 0),
+			      CONST_WIDE_INT_NUNITS (x.first), precision);
       
     case CONST_DOUBLE:
-      *l = 2;
-      return &CONST_DOUBLE_LOW (rcst);
+      return wi::storage_ref (&CONST_DOUBLE_LOW (x.first), 2, precision);
       
     default:
       gcc_unreachable ();
     }
 }
 
-/* Specialization of to_shwi2 function in wide-int.h for rtl.  This
-   cannot be in wide-int.h because of circular includes.  */
-template<>
-inline const HOST_WIDE_INT*
-wide_int_ro::to_shwi2 (HOST_WIDE_INT *s ATTRIBUTE_UNUSED, 
-		       unsigned int *l, const rtx_mode_t& rp)
+namespace wi
 {
-  const rtx rcst = get_rtx (rp);
-
-  switch (GET_CODE (rcst))
-    {
-    case CONST_INT:
-      *l = 1;
-      return &INTVAL (rcst);
-      
-    case CONST_WIDE_INT:
-      *l = CONST_WIDE_INT_NUNITS (rcst);
-      return &CONST_WIDE_INT_ELT (rcst, 0);
-      
-    case CONST_DOUBLE:
-      *l = 2;
-      return &CONST_DOUBLE_LOW (rcst);
-      
-    default:
-      gcc_unreachable ();
-    }
+  hwi_with_prec shwi (HOST_WIDE_INT, enum machine_mode mode);
+  wide_int min_value (enum machine_mode, signop);
+  wide_int max_value (enum machine_mode, signop);
 }
 
-#endif
+inline wi::hwi_with_prec
+wi::shwi (HOST_WIDE_INT val, enum machine_mode mode)
+{
+  return shwi (val, GET_MODE_PRECISION (mode));
+}
 
+/* Produce the smallest number that is represented in MODE.  The precision
+   is taken from MODE and the sign from SGN.  */
+inline wide_int
+wi::min_value (enum machine_mode mode, signop sgn)
+{
+  return min_value (GET_MODE_PRECISION (mode), sgn);
+}
+
+/* Produce the largest number that is represented in MODE.  The precision
+   is taken from MODE and the sign from SGN.  */
+inline wide_int
+wi::max_value (enum machine_mode mode, signop sgn)
+{
+  return max_value (GET_MODE_PRECISION (mode), sgn);
+}
 
 extern void init_rtlanal (void);
 extern int rtx_cost (rtx, enum rtx_code, int, bool);

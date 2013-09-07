@@ -4924,7 +4924,7 @@ objc_decl_method_attributes (tree *node, tree attributes, int flags)
 		  /* Get the value of the argument and add 2.  */
 		  tree number = TREE_VALUE (argument);
 		  if (number && TREE_CODE (number) == INTEGER_CST
-		      && !wide_int (number).zero_p ())
+		      && !wi::eq_p (number, 0))
 		    TREE_VALUE (argument)
 		      = wide_int_to_tree (TREE_TYPE (number), wide_int (number) + 2);
 		  argument = TREE_CHAIN (argument);

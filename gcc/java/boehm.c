@@ -108,7 +108,7 @@ mark_reference_fields (tree field,
 	     bits for all words in the record. This is conservative, but the 
 	     size_words != 1 case is impossible in regular java code. */
 	  for (i = 0; i < size_words; ++i)
-	    *mask = (*mask).set_bit (ubit - count - i - 1);
+	    *mask = wi::set_bit (*mask, ubit - count - i - 1);
 
 	  if (count >= ubit - 2)
 	    *pointer_after_end = 1;
@@ -146,7 +146,7 @@ get_boehm_type_descriptor (tree type)
 
   value_type = java_type_for_mode (ptr_mode, 1);
 
-  mask = wide_int::zero (TYPE_PRECISION (value_type));
+  mask = wi::zero (TYPE_PRECISION (value_type));
 
   /* If we have a type of unknown size, use a proc.  */
   if (int_size_in_bytes (type) == -1)
@@ -196,12 +196,12 @@ get_boehm_type_descriptor (tree type)
          that we don't have to emit reflection data for run time
          marking. */
       count = 0;
-      mask = wide_int::zero (TYPE_PRECISION (value_type));
+      mask = wi::zero (TYPE_PRECISION (value_type));
       ++last_set_index;
       while (last_set_index)
 	{
 	  if ((last_set_index & 1))
-	    mask = mask.set_bit (log2_size + count);
+	    mask = wi::set_bit (mask, log2_size + count);
 	  last_set_index >>= 1;
 	  ++count;
 	}
@@ -210,7 +210,7 @@ get_boehm_type_descriptor (tree type)
   else if (! pointer_after_end)
     {
       /* Bottom two bits for bitmap mark type are 01.  */
-      mask = mask.set_bit (0);
+      mask = wi::set_bit (mask, 0);
       value = wide_int_to_tree (value_type, mask);
     }
   else

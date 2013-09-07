@@ -195,8 +195,8 @@ addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 
   if (addr->offset && !integer_zerop (addr->offset))
     {
-      addr_wide_int dc = addr_wide_int (addr->offset)
-	  .sext (TYPE_PRECISION (TREE_TYPE (addr->offset)));
+      addr_wide_int dc = wi::sext (addr_wide_int (addr->offset),
+				   TYPE_PRECISION (TREE_TYPE (addr->offset)));
       off = immed_wide_int_const (dc, pointer_mode);
     }
   else
@@ -395,7 +395,7 @@ move_fixed_address_to_symbol (struct mem_address *parts, aff_tree *addr)
 
   for (i = 0; i < addr->n; i++)
     {
-      if (!addr->elts[i].coef.one_p ())
+      if (addr->elts[i].coef != 1)
 	continue;
 
       val = addr->elts[i].val;
@@ -423,7 +423,7 @@ move_hint_to_base (tree type, struct mem_address *parts, tree base_hint,
 
   for (i = 0; i < addr->n; i++)
     {
-      if (!addr->elts[i].coef.one_p ())
+      if (addr->elts[i].coef != 1)
 	continue;
 
       val = addr->elts[i].val;
@@ -455,7 +455,7 @@ move_pointer_to_base (struct mem_address *parts, aff_tree *addr)
 
   for (i = 0; i < addr->n; i++)
     {
-      if (!addr->elts[i].coef.one_p ())
+      if (addr->elts[i].coef != 1)
 	continue;
 
       val = addr->elts[i].val;
@@ -543,7 +543,7 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
   best_mult = 0;
   for (i = 0; i < addr->n; i++)
     {
-      if (!addr->elts[i].coef.fits_shwi_p ())
+      if (!wi::fits_shwi_p (addr->elts[i].coef))
 	continue;
 
       coef = addr->elts[i].coef.to_shwi ();
@@ -556,7 +556,7 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
       if (acost > best_mult_cost)
 	{
 	  best_mult_cost = acost;
-	  best_mult = addr_wide_int::from_wide_int (addr->elts[i].coef);
+	  best_mult = addr_wide_int::from (addr->elts[i].coef, SIGNED);
 	}
     }
 
@@ -566,8 +566,8 @@ most_expensive_mult_to_index (tree type, struct mem_address *parts,
   /* Collect elements multiplied by best_mult.  */
   for (i = j = 0; i < addr->n; i++)
     {
-      amult = addr_wide_int::from_wide_int (addr->elts[i].coef);
-      amult_neg = -amult.sext (TYPE_PRECISION (addr->type));
+      amult = addr_wide_int::from (addr->elts[i].coef, SIGNED);
+      amult_neg = -wi::sext (amult, TYPE_PRECISION (addr->type));
 
       if (amult == best_mult)
 	op_code = PLUS_EXPR;
@@ -619,7 +619,7 @@ addr_to_parts (tree type, aff_tree *addr, tree iv_cand,
   parts->index = NULL_TREE;
   parts->step = NULL_TREE;
 
-  if (!addr->offset.zero_p ())
+  if (addr->offset != 0)
     parts->offset = wide_int_to_tree (sizetype, addr->offset);
   else
     parts->offset = NULL_TREE;
@@ -651,7 +651,7 @@ addr_to_parts (tree type, aff_tree *addr, tree iv_cand,
   for (i = 0; i < addr->n; i++)
     {
       part = fold_convert (sizetype, addr->elts[i].val);
-      if (!addr->elts[i].coef.one_p ())
+      if (addr->elts[i].coef != 1)
 	part = fold_build2 (MULT_EXPR, sizetype, part,
 			    wide_int_to_tree (sizetype, addr->elts[i].coef));
       add_to_parts (parts, part);

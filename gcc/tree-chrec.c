@@ -475,17 +475,17 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
   num = n;
 
   /* Check that k <= n.  */
-  if (num.ltu_p (k))
+  if (wi::ltu_p (num, k))
     return NULL_TREE;
 
   /* Denominator = 2.  */
-  denom = wide_int::two (TYPE_PRECISION (TREE_TYPE (n)));
+  denom = wi::two (TYPE_PRECISION (TREE_TYPE (n)));
 
   /* Index = Numerator-1.  */
   idx = num - 1;
 
   /* Numerator = Numerator*Index = n*(n-1).  */
-  num = num.smul (idx, &overflow);
+  num = wi::smul (num, idx, &overflow);
   if (overflow)
     return NULL_TREE;
 
@@ -495,7 +495,7 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
       --idx;
 
       /* Numerator *= Index.  */
-      num = num.smul (idx, &overflow);
+      num = wi::smul (num, idx, &overflow);
       if (overflow)
 	return NULL_TREE;
 
@@ -504,7 +504,7 @@ tree_fold_binomial (tree type, tree n, unsigned int k)
     }
 
   /* Result = Numerator / Denominator.  */
-  di_res = num.udiv_trunc (denom);
+  di_res = wi::udiv_trunc (num, denom);
   res = wide_int_to_tree (type, di_res);
   return int_fits_type_p (res, type) ? res : NULL_TREE;
 }

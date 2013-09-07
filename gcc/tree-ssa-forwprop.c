@@ -2936,8 +2936,9 @@ combine_conversions (gimple_stmt_iterator *gsi)
 	  tem = fold_build2 (BIT_AND_EXPR, inside_type,
 			     defop0,
 			     wide_int_to_tree
-			     (inside_type, wide_int::mask (inter_prec, false,
-							   TYPE_PRECISION (inside_type))));
+			     (inside_type,
+			      wi::mask (inter_prec, false,
+					TYPE_PRECISION (inside_type))));
 	  if (!useless_type_conversion_p (type, inside_type))
 	    {
 	      tem = force_gimple_operand_gsi (gsi, tem, true, NULL_TREE, true,

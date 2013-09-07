@@ -5848,16 +5848,16 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   scale_loop_profile (loop, GCOV_COMPUTE_SCALE (1, vectorization_factor),
 		      expected_iterations / vectorization_factor);
   loop->nb_iterations_upper_bound
-    = loop->nb_iterations_upper_bound.udiv_floor (vectorization_factor);
+    = wi::udiv_floor (loop->nb_iterations_upper_bound, vectorization_factor);
   if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-      && !loop->nb_iterations_upper_bound.zero_p ())
+      && loop->nb_iterations_upper_bound != 0)
     loop->nb_iterations_upper_bound = loop->nb_iterations_upper_bound - 1;
   if (loop->any_estimate)
     {
       loop->nb_iterations_estimate
-        = loop->nb_iterations_estimate.udiv_floor (vectorization_factor);
+        = wi::udiv_floor (loop->nb_iterations_estimate, vectorization_factor);
        if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
-	   && !loop->nb_iterations_estimate.zero_p ())
+	   && loop->nb_iterations_estimate != 0)
 	 loop->nb_iterations_estimate = loop->nb_iterations_estimate - 1;
     }
 

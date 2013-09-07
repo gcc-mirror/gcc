@@ -53,7 +53,7 @@ static inline void
 tree_int_to_gmp (tree t, mpz_t res)
 {
   wide_int wi = t;
-  wi.to_mpz (res, TYPE_SIGN (TREE_TYPE (t)));
+  wi::to_mpz (wi, res, TYPE_SIGN (TREE_TYPE (t)));
 }
 
 /* Returns the index of the PHI argument defined in the outermost
@@ -1041,7 +1041,7 @@ build_loop_iteration_domains (scop_p scop, struct loop *loop,
 	  isl_constraint *c;
 
 	  mpz_init (g);
-	  nit.to_mpz (g, SIGNED);
+	  wi::to_mpz (nit, g, SIGNED);
 	  mpz_sub_ui (g, g, 1);
 	  approx = extract_affine_gmp (g, isl_set_get_space (inner));
 	  x = isl_pw_aff_ge_set (approx, aff);

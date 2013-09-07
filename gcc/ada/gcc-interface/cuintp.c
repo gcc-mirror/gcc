@@ -177,7 +177,7 @@ UI_From_gnu (tree Input)
      in a signed 64-bit integer.  */
   if (tree_fits_shwi_p (Input))
     return UI_From_Int (tree_to_shwi (Input));
-  else if (wide_int::lts_p (Input, 0) && TYPE_UNSIGNED (gnu_type))
+  else if (wi::lts_p (Input, 0) && TYPE_UNSIGNED (gnu_type))
     return No_Uint;
 #endif
 

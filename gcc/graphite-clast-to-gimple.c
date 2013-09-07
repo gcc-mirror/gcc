@@ -67,7 +67,7 @@ gmp_cst_to_tree (tree type, mpz_t val)
 
   mpz_init (tmp);
   mpz_set (tmp, val);
-  wi = wide_int::from_mpz (t, tmp, true);
+  wi = wi::from_mpz (t, tmp, true);
   mpz_clear (tmp);
 
   return wide_int_to_tree (t, wi);

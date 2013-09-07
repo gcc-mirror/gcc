@@ -11841,8 +11841,8 @@ clz_loc_descriptor (rtx rtl, enum machine_mode mode,
 		   << (GET_MODE_BITSIZE (mode) - 1));
   else
     msb = immed_wide_int_const 
-      (wide_int::set_bit_in_zero (GET_MODE_PRECISION (mode) - 1, 
-				  GET_MODE_PRECISION (mode)), mode);
+      (wi::set_bit_in_zero (GET_MODE_PRECISION (mode) - 1,
+			    GET_MODE_PRECISION (mode)), mode);
   if (GET_CODE (msb) == CONST_INT && INTVAL (msb) < 0)
     tmp = new_loc_descr (HOST_BITS_PER_WIDE_INT == 32
 			 ? DW_OP_const4u : HOST_BITS_PER_WIDE_INT == 64
@@ -14671,7 +14671,7 @@ static inline addr_wide_int
 round_up_to_align (addr_wide_int t, unsigned int align)
 {
   t += align - 1;
-  t = t.udiv_trunc (align);
+  t = wi::udiv_trunc (t, align);
   t *= align;
   return t;
 }
@@ -14791,7 +14791,7 @@ field_byte_offset (const_tree decl)
       object_offset_in_bits
 	= round_up_to_align (object_offset_in_bits, type_align_in_bits);
 
-      if (object_offset_in_bits.gtu_p (bitpos_int))
+      if (wi::gtu_p (object_offset_in_bits, bitpos_int))
 	{
 	  object_offset_in_bits = deepest_bitpos - type_size_in_bits;
 
@@ -14805,7 +14805,7 @@ field_byte_offset (const_tree decl)
     object_offset_in_bits = bitpos_int;
 
   object_offset_in_bytes
-    = object_offset_in_bits.udiv_trunc (BITS_PER_UNIT);
+    = wi::udiv_trunc (object_offset_in_bits, BITS_PER_UNIT);
   return object_offset_in_bytes.to_shwi ();
 }
 
@@ -16226,7 +16226,7 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr, tree b
 		  	     zext_hwi (tree_to_hwi (bound), prec));
 	  }
 	else if (prec == HOST_BITS_PER_WIDE_INT 
-		 || (cst_fits_uhwi_p (bound) && wide_int (bound).ges_p (0)))
+		 || (cst_fits_uhwi_p (bound) && wi::ges_p (bound, 0)))
 	  add_AT_unsigned (subrange_die, bound_attr, tree_to_hwi (bound));
 	else
 	  add_AT_wide (subrange_die, bound_attr, wide_int (bound));

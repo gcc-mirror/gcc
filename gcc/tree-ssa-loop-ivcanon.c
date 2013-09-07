@@ -488,7 +488,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	 into unreachable (or trap when debugging experience is supposed
 	 to be good).  */
       if (!elt->is_exit
-	  && elt->bound.ltu_p (max_wide_int (npeeled)))
+	  && wi::ltu_p (elt->bound, npeeled))
 	{
 	  gimple_stmt_iterator gsi = gsi_for_stmt (elt->stmt);
 	  gimple stmt = gimple_build_call
@@ -505,7 +505,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	}
       /* If we know the exit will be taken after peeling, update.  */
       else if (elt->is_exit
-	       && elt->bound.leu_p (max_wide_int (npeeled)))
+	       && wi::leu_p (elt->bound, npeeled))
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
@@ -545,7 +545,7 @@ remove_redundant_iv_tests (struct loop *loop)
       /* Exit is pointless if it won't be taken before loop reaches
 	 upper bound.  */
       if (elt->is_exit && loop->any_upper_bound
-          && loop->nb_iterations_upper_bound.ltu_p (elt->bound))
+          && wi::ltu_p (loop->nb_iterations_upper_bound, elt->bound))
 	{
 	  basic_block bb = gimple_bb (elt->stmt);
 	  edge exit_edge = EDGE_SUCC (bb, 0);
@@ -562,7 +562,7 @@ remove_redundant_iv_tests (struct loop *loop)
 	      || !integer_zerop (niter.may_be_zero)
 	      || !niter.niter
 	      || TREE_CODE (niter.niter) != INTEGER_CST
-	      || !loop->nb_iterations_upper_bound.ltu_p (niter.niter))
+	      || !wi::ltu_p (loop->nb_iterations_upper_bound, niter.niter))
 	    continue;
 	  
 	  if (dump_file && (dump_flags & TDF_DETAILS))

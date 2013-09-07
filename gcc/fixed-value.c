@@ -157,11 +157,12 @@ fixed_to_decimal (char *str, const FIXED_VALUE_TYPE *f_orig,
 {
   REAL_VALUE_TYPE real_value, base_value, fixed_value;
 
+  signop sgn = UNSIGNED_FIXED_POINT_MODE_P (f_orig->mode) ? UNSIGNED : SIGNED;
   real_2expN (&base_value, GET_MODE_FBIT (f_orig->mode), f_orig->mode);
   real_from_integer (&real_value, VOIDmode, 
-		     wide_int::from_double_int (f_orig->data, 
-						GET_MODE_PRECISION (f_orig->mode)),
-		     UNSIGNED_FIXED_POINT_MODE_P (f_orig->mode) ? UNSIGNED : SIGNED);
+		     wide_int::from (f_orig->data,
+				     GET_MODE_PRECISION (f_orig->mode), sgn),
+		     sgn);
   real_arithmetic (&fixed_value, RDIV_EXPR, &real_value, &base_value);
   real_to_decimal (str, &fixed_value, buf_size, 0, 1);
 }
@@ -1102,11 +1103,11 @@ real_convert_from_fixed (REAL_VALUE_TYPE *r, enum machine_mode mode,
 {
   REAL_VALUE_TYPE base_value, fixed_value, real_value;
 
+  signop sgn = UNSIGNED_FIXED_POINT_MODE_P (f->mode) ? UNSIGNED : SIGNED;
   real_2expN (&base_value, GET_MODE_FBIT (f->mode), f->mode);
   real_from_integer (&fixed_value, VOIDmode, 		     
-		     wide_int::from_double_int (f->data, 
-						GET_MODE_PRECISION (f->mode)),
-		     UNSIGNED_FIXED_POINT_MODE_P (f->mode) ? UNSIGNED : SIGNED);
+		     wide_int::from (f->data, GET_MODE_PRECISION (f->mode),
+				     sgn), sgn);
   real_arithmetic (&real_value, RDIV_EXPR, &fixed_value, &base_value);
   real_convert (r, mode, &real_value);
 }

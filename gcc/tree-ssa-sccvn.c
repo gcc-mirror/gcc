@@ -803,10 +803,10 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 		  {
 		    addr_wide_int off
 		      = (addr_wide_int (this_offset)
-			 + addr_wide_int (bit_offset)
-			 .rshiftu (BITS_PER_UNIT == 8
-				   ? 3 : exact_log2 (BITS_PER_UNIT)));
-		    if (off.fits_shwi_p ())
+			 + wi::lrshift (addr_wide_int (bit_offset),
+					BITS_PER_UNIT == 8
+					? 3 : exact_log2 (BITS_PER_UNIT)));
+		    if (wi::fits_shwi_p (off))
 		      temp.off = off.to_shwi ();
 		  }
 	      }
@@ -826,7 +826,7 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	      addr_wide_int off = temp.op0;
 	      off += -addr_wide_int (temp.op1);
 	      off *= addr_wide_int (temp.op2);
-	      if (off.fits_shwi_p ())
+	      if (wi::fits_shwi_p (off))
 		temp.off = off.to_shwi();
 	    }
 	  break;
@@ -1147,8 +1147,8 @@ vn_reference_fold_indirect (vec<vn_reference_op_s> *ops,
   gcc_checking_assert (addr_base && TREE_CODE (addr_base) != MEM_REF);
   if (addr_base != TREE_OPERAND (op->op0, 0))
     {
-      addr_wide_int off = addr_wide_int (mem_op->op0)
-	.sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+      addr_wide_int off = wi::sext (addr_wide_int (mem_op->op0),
+				    TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
       off += addr_offset;
       mem_op->op0 = wide_int_to_tree (TREE_TYPE (mem_op->op0), off);
       op->op0 = build_fold_addr_expr (addr_base);
@@ -1181,8 +1181,8 @@ vn_reference_maybe_forwprop_address (vec<vn_reference_op_s> *ops,
       && code != POINTER_PLUS_EXPR)
     return;
 
-  off = addr_wide_int (mem_op->op0)
-    .sext (TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
+  off = wi::sext (addr_wide_int (mem_op->op0),
+		  TYPE_PRECISION (TREE_TYPE (mem_op->op0)));
 
   /* The only thing we have to do is from &OBJ.foo.bar add the offset
      from .foo.bar to the preceding MEM_REF offset and replace the
@@ -1373,7 +1373,7 @@ valueize_refs_1 (vec<vn_reference_op_s> orig, bool *valueized_anything)
 	  addr_wide_int off = vro->op0;
 	  off += -addr_wide_int (vro->op1);
 	  off *= addr_wide_int (vro->op2);
-	  if (off.fits_shwi_p ())
+	  if (wi::fits_shwi_p (off))
 	    vro->off = off.to_shwi ();
 	}
     }

@@ -1605,7 +1605,7 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		addr_wide_int off = op[0];
 		off += -addr_wide_int (op[1]);
 		off *= addr_wide_int (op[2]);
-		if (off.fits_shwi_p ())
+		if (wi::fits_shwi_p (off))
 		  newop.off = off.to_shwi ();
 	      }
 	    newoperands[j] = newop;

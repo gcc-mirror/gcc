@@ -2085,7 +2085,7 @@ gfc_conv_cst_int_power (gfc_se * se, tree lhs, tree rhs)
 
   /* If exponent is too large, we won't expand it anyway, so don't bother
      with large integer values.  */
-  if (!wrhs.fits_shwi_p ())
+  if (!wi::fits_shwi_p (wrhs))
     return 0;
 
   m = wrhs.to_shwi ();

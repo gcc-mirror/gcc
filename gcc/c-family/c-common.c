@@ -4054,8 +4054,10 @@ shorten_compare (tree *op0_ptr, tree *op1_ptr, tree *restype_ptr,
 	  /* Convert primop1 to target type, but do not introduce
 	     additional overflow.  We know primop1 is an int_cst.  */
 	  primop1 = force_fit_type (*restype_ptr,
-				    wide_int (primop1).force_to_size (TYPE_PRECISION (*restype_ptr),
-								      TYPE_SIGN (TREE_TYPE (primop1))),
+				    wide_int::from
+				      (primop1,
+				       TYPE_PRECISION (*restype_ptr),
+				       TYPE_SIGN (TREE_TYPE (primop1))),
 				    0, TREE_OVERFLOW (primop1));
 	}
       if (type != *restype_ptr)
@@ -7925,8 +7927,8 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       wide_int p;
 
       if (TREE_CODE (position) != INTEGER_CST
-	  || (p = wide_int (position)).ltu_p (1)
-	  || p.gtu_p (arg_count) )
+	  || wi::ltu_p (p = wide_int (position), 1)
+	  || wi::gtu_p (p, arg_count))
 	{
 	  warning (OPT_Wattributes,
 	           "alloc_size parameter outside range");

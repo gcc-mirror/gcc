@@ -974,14 +974,14 @@ array_value_type (gimple swtch, tree type, int num,
 	  if (prec > HOST_BITS_PER_WIDE_INT)
 	    return type;
 
-	  if (sign >= 0 && cst == cst.zext (prec))
+	  if (sign >= 0 && cst == wi::zext (cst, prec))
 	    {
-	      if (sign == 0 && cst == cst.sext (prec))
+	      if (sign == 0 && cst == wi::sext (cst, prec))
 		break;
 	      sign = 1;
 	      break;
 	    }
-	  if (sign <= 0 && cst == cst.sext (prec))
+	  if (sign <= 0 && cst == wi::sext (cst, prec))
 	    {
 	      sign = -1;
 	      break;

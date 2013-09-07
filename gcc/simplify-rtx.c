@@ -1670,31 +1670,31 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case ABS:
-	  result = op0.abs ();
+	  result = wi::abs (op0);
 	  break;
 
 	case FFS:
-	  result = op0.ffs ();
+	  result = wi::shwi (wi::ffs (op0), mode);
 	  break;
 
 	case CLZ:
-	  result = op0.clz ();
+	  result = wi::shwi (wi::clz (op0), mode);
 	  break;
 
 	case CLRSB:
-	  result = op0.clrsb ();
+	  result = wi::shwi (wi::clrsb (op0), mode);
 	  break;
 	  
 	case CTZ:
-	  result = op0.ctz ();
+	  result = wi::shwi (wi::ctz (op0), mode);
 	  break;
 
 	case POPCOUNT:
-	  result = op0.popcount ();
+	  result = wi::shwi (wi::popcount (op0), mode);
 	  break;
 
 	case PARITY:
-	  result = op0.parity ();
+	  result = wi::shwi (wi::parity (op0), mode);
 	  break;
 
 	case BSWAP:
@@ -1702,15 +1702,12 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case TRUNCATE:
-	  result = op0.zforce_to_size (width);
-	  break;
-
 	case ZERO_EXTEND:
-	  result = op0.zforce_to_size (width);
+	  result = wide_int::from (op0, width, UNSIGNED);
 	  break;
 
 	case SIGN_EXTEND:
-	  result = op0.sforce_to_size (width);
+	  result = wide_int::from (op0, width, SIGNED);
 	  break;
 
 	case SQRT:
@@ -1796,13 +1793,13 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return const0_rtx;
 
 	  /* Test against the signed upper bound.  */
-	  wmax = wide_int::max_value (width, SIGNED);
+	  wmax = wi::max_value (width, SIGNED);
 	  real_from_integer (&t, VOIDmode, wmax, SIGNED);
 	  if (REAL_VALUES_LESS (t, x))
 	    return immed_wide_int_const (wmax, mode);
 
 	  /* Test against the signed lower bound.  */
-	  wmin = wide_int::min_value (width, SIGNED);
+	  wmin = wi::min_value (width, SIGNED);
 	  real_from_integer (&t, VOIDmode, wmin, SIGNED);
 	  if (REAL_VALUES_LESS (x, t))
 	    return immed_wide_int_const (wmin, mode);
@@ -1815,7 +1812,7 @@ simplify_const_unary_operation (enum rtx_code code, enum machine_mode mode,
 	    return const0_rtx;
 
 	  /* Test against the unsigned upper bound.  */
-	  wmax = wide_int::max_value (width, UNSIGNED);
+	  wmax = wi::max_value (width, UNSIGNED);
 	  real_from_integer (&t, VOIDmode, wmax, UNSIGNED);
 	  if (REAL_VALUES_LESS (t, x))
 	    return immed_wide_int_const (wmax, mode);
@@ -2018,12 +2015,12 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  wide_int coeff1;
 	  rtx lhs = op0, rhs = op1;
 
-	  coeff0 = wide_int::one (GET_MODE_PRECISION (mode));
-	  coeff1 = wide_int::one (GET_MODE_PRECISION (mode));
+	  coeff0 = wi::one (GET_MODE_PRECISION (mode));
+	  coeff1 = wi::one (GET_MODE_PRECISION (mode));
 
 	  if (GET_CODE (lhs) == NEG)
 	    {
-	      coeff0 = wide_int::minus_one (GET_MODE_PRECISION (mode));
+	      coeff0 = wi::minus_one (GET_MODE_PRECISION (mode));
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == MULT
@@ -2037,14 +2034,14 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
                    && INTVAL (XEXP (lhs, 1)) >= 0
 		   && INTVAL (XEXP (lhs, 1)) < GET_MODE_PRECISION (mode))
 	    {
-	      coeff0 = wide_int::set_bit_in_zero (INTVAL (XEXP (lhs, 1)), 
-						  GET_MODE_PRECISION (mode));
+	      coeff0 = wi::set_bit_in_zero (INTVAL (XEXP (lhs, 1)),
+					    GET_MODE_PRECISION (mode));
 	      lhs = XEXP (lhs, 0);
 	    }
 
 	  if (GET_CODE (rhs) == NEG)
 	    {
-	      coeff1 = wide_int::minus_one (GET_MODE_PRECISION (mode));
+	      coeff1 = wi::minus_one (GET_MODE_PRECISION (mode));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == MULT
@@ -2058,8 +2055,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (rhs, 1)) >= 0
 		   && INTVAL (XEXP (rhs, 1)) < GET_MODE_PRECISION (mode))
 	    {
-	      coeff1 = wide_int::set_bit_in_zero (INTVAL (XEXP (rhs, 1)), 
-						  GET_MODE_PRECISION (mode));
+	      coeff1 = wi::set_bit_in_zero (INTVAL (XEXP (rhs, 1)),
+					    GET_MODE_PRECISION (mode));
 	      rhs = XEXP (rhs, 0);
 	    }
 
@@ -2195,12 +2192,12 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  wide_int negcoeff1;
 	  rtx lhs = op0, rhs = op1;
 
-	  coeff0 = wide_int::one (GET_MODE_PRECISION (mode));
-	  negcoeff1 = wide_int::minus_one (GET_MODE_PRECISION (mode));
+	  coeff0 = wi::one (GET_MODE_PRECISION (mode));
+	  negcoeff1 = wi::minus_one (GET_MODE_PRECISION (mode));
 
 	  if (GET_CODE (lhs) == NEG)
 	    {
-	      coeff0 = wide_int::minus_one (GET_MODE_PRECISION (mode));
+	      coeff0 = wi::minus_one (GET_MODE_PRECISION (mode));
 	      lhs = XEXP (lhs, 0);
 	    }
 	  else if (GET_CODE (lhs) == MULT
@@ -2214,14 +2211,14 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (lhs, 1)) >= 0
 		   && INTVAL (XEXP (lhs, 1)) < GET_MODE_PRECISION (mode))
 	    {
-	      coeff0 = wide_int::set_bit_in_zero (INTVAL (XEXP (lhs, 1)), 
-						  GET_MODE_PRECISION (mode));
+	      coeff0 = wi::set_bit_in_zero (INTVAL (XEXP (lhs, 1)),
+					    GET_MODE_PRECISION (mode));
 	      lhs = XEXP (lhs, 0);
 	    }
 
 	  if (GET_CODE (rhs) == NEG)
 	    {
-	      negcoeff1 = wide_int::one (GET_MODE_PRECISION (mode));
+	      negcoeff1 = wi::one (GET_MODE_PRECISION (mode));
 	      rhs = XEXP (rhs, 0);
 	    }
 	  else if (GET_CODE (rhs) == MULT
@@ -2235,8 +2232,8 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 		   && INTVAL (XEXP (rhs, 1)) >= 0
 		   && INTVAL (XEXP (rhs, 1)) < GET_MODE_PRECISION (mode))
 	    {
-	      negcoeff1 = wide_int::set_bit_in_zero (INTVAL (XEXP (rhs, 1)),
-						     GET_MODE_PRECISION (mode));
+	      negcoeff1 = wi::set_bit_in_zero (INTVAL (XEXP (rhs, 1)),
+					       GET_MODE_PRECISION (mode));
 	      negcoeff1 = -negcoeff1;
 	      rhs = XEXP (rhs, 0);
 	    }
@@ -2402,8 +2399,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       /* Convert multiply by constant power of two into shift.  */
       if (CONST_SCALAR_INT_P (trueop1))
 	{
-	  val = wide_int (std::make_pair (trueop1, mode))
-	    .exact_log2 ().to_shwi ();
+	  val = wi::exact_log2 (std::make_pair (trueop1, mode));
 	  if (val >= 0 && val < GET_MODE_BITSIZE (mode))
 	    return simplify_gen_binary (ASHIFT, mode, op0, GEN_INT (val));
 	}
@@ -3733,25 +3729,25 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case DIV:
-	  result = wop0.div_trunc (pop1, SIGNED, &overflow);
+	  result = wi::div_trunc (wop0, pop1, SIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 	  
 	case MOD:
-	  result = wop0.mod_trunc (pop1, SIGNED, &overflow);
+	  result = wi::mod_trunc (wop0, pop1, SIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 
 	case UDIV:
-	  result = wop0.div_trunc (pop1, UNSIGNED, &overflow);
+	  result = wi::div_trunc (wop0, pop1, UNSIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
 
 	case UMOD:
-	  result = wop0.mod_trunc (pop1, UNSIGNED, &overflow);
+	  result = wi::mod_trunc (wop0, pop1, UNSIGNED, &overflow);
 	  if (overflow)
 	    return NULL_RTX;
 	  break;
@@ -3769,19 +3765,19 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	  break;
 
 	case SMIN:
-	  result = wop0.smin (pop1);
+	  result = wi::smin (wop0, pop1);
 	  break;
 
 	case SMAX:
-	  result = wop0.smax (pop1);
+	  result = wi::smax (wop0, pop1);
 	  break;
 
 	case UMIN:
-	  result = wop0.umin (pop1);
+	  result = wi::umin (wop0, pop1);
 	  break;
 
 	case UMAX:
-	  result = wop0.umax (pop1);
+	  result = wi::umax (wop0, pop1);
 	  break;
 
 	case LSHIFTRT:
@@ -3791,32 +3787,32 @@ simplify_const_binary_operation (enum rtx_code code, enum machine_mode mode,
 	case ROTATERT:
 	  {
 	    wide_int wop1 = pop1;
-	    if (wop1.neg_p ())
+	    if (wi::neg_p (wop1))
 	      return NULL_RTX;
 
 	    if (SHIFT_COUNT_TRUNCATED)
-	      wop1 = wop1.umod_trunc (width); 
+	      wop1 = wi::umod_trunc (wop1, width);
 
 	    switch (code)
 	      {
 	      case LSHIFTRT:
-		result = wop0.rshiftu (wop1, bitsize);
+		result = wi::lrshift (wop0, wop1, bitsize);
 		break;
 		
 	      case ASHIFTRT:
-		result = wop0.rshifts (wop1, bitsize);
+		result = wi::arshift (wop0, wop1, bitsize);
 		break;
 		
 	      case ASHIFT:
-		result = wop0.lshift (wop1, bitsize);
+		result = wi::lshift (wop0, wop1, bitsize);
 		break;
 		
 	      case ROTATE:
-		result = wop0.lrotate (wop1);
+		result = wi::lrotate (wop0, wop1);
 		break;
 		
 	      case ROTATERT:
-		result = wop0.rrotate (wop1);
+		result = wi::rrotate (wop0, wop1);
 		break;
 
 	      default:
@@ -4652,8 +4648,8 @@ simplify_const_relational_operation (enum rtx_code code,
 	return comparison_result (code, CMP_EQ);
       else
 	{
-	  int cr = wo0.lts_p (ptrueop1) ? CMP_LT : CMP_GT;
-	  cr |= wo0.ltu_p (ptrueop1) ? CMP_LTU : CMP_GTU;
+	  int cr = wi::lts_p (wo0, ptrueop1) ? CMP_LT : CMP_GT;
+	  cr |= wi::ltu_p (wo0, ptrueop1) ? CMP_LTU : CMP_GTU;
 	  return comparison_result (code, cr);
 	}
     }
@@ -5203,10 +5199,10 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 	case CONST_WIDE_INT:
 	  {
 	    wide_int val = std::make_pair (el, innermode);
-	    unsigned char extend = val.sign_mask ();
+	    unsigned char extend = wi::sign_mask (val);
 
 	    for (i = 0; i < elem_bitsize; i += value_bit) 
-	      *vp++ = val.extract_to_hwi (i, value_bit);
+	      *vp++ = wi::extract_uhwi (val, i, value_bit);
 	    for (; i < elem_bitsize; i += value_bit)
 	      *vp++ = extend;
 	  }
@@ -5376,7 +5372,8 @@ simplify_immed_subreg (enum machine_mode outermode, rtx op,
 		tmp[u] = buf;
 		base += HOST_BITS_PER_WIDE_INT;
 	      }
-	    r = wide_int::from_array (tmp, units, GET_MODE_PRECISION (outer_submode));
+	    r = wide_int::from_array (tmp, units,
+				      GET_MODE_PRECISION (outer_submode));
 	    elems[elem] = immed_wide_int_const (r, outer_submode);
 	  }
 	  break;

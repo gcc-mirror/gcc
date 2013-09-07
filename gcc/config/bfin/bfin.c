@@ -3285,7 +3285,7 @@ bfin_local_alignment (tree type, unsigned align)
      memcpy can use 32 bit loads/stores.  */
   if (TYPE_SIZE (type)
       && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (!wide_int::gtu_p (TYPE_SIZE (type), 8))
+      && !wi::gtu_p (TYPE_SIZE (type), 8)
       && align < 32)
     return 32;
   return align;

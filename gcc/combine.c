@@ -2674,10 +2674,11 @@ try_combine (rtx i3, rtx i2, rtx i1, rtx i0, int *new_direct_jump_p,
 	  wide_int o;
 	  rtx inner = SET_SRC (PATTERN (i3));
 	  rtx outer = SET_SRC (temp);
-	  
-	  o = (wide_int (std::make_pair (outer, GET_MODE (SET_DEST (temp))))
-	       .insert (std::make_pair (inner, GET_MODE (dest)),
-			offset, width));
+
+	  o = wi::insert (std::make_pair (outer, GET_MODE (SET_DEST (temp))),
+			  std::make_pair (inner, GET_MODE (dest)),
+			  offset, width);
+
 	  combine_merges++;
 	  subst_insn = i3;
 	  subst_low_luid = DF_INSN_LUID (i2);

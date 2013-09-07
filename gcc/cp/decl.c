@@ -12804,12 +12804,11 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 		{
 		  tree type = TREE_TYPE (prev_value);
 		  signop sgn = TYPE_SIGN (type);
-		  wide_int wi = (max_wide_int (prev_value)
-				 .add (1, sgn, &overflowed));
+		  wide_int wi = wi::add (prev_value, 1, sgn, &overflowed);
 		  if (!overflowed)
 		    {
-		      bool pos = !wi.neg_p (sgn);
-		      if (!wi.fits_to_tree_p (type))
+		      bool pos = !wi::neg_p (wi, sgn);
+		      if (!wi::fits_to_tree_p (wi, type))
 			{
 			  unsigned int itk;
 			  for (itk = itk_int; itk != itk_none; itk++)
@@ -12817,7 +12816,7 @@ build_enumerator (tree name, tree value, tree enumtype, location_t loc)
 			      type = integer_types[itk];
 			      if (type != NULL_TREE
 				  && (pos || !TYPE_UNSIGNED (type))
-				  && wi.fits_to_tree_p (type))
+				  && wi::fits_to_tree_p (wi, type))
 				break;
 			    }
 			  if (type && cxx_dialect < cxx11
