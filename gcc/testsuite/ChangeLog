@@ -1,3 +1,8 @@
+2013-09-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/58282
+	* g++.dg/tm/noexcept-6.C: New test.
+
 2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* gcc.target/arc/cond-set-use.c: New test.
