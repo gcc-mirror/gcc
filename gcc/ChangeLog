@@ -8545,6 +8545,11 @@
 	(symtab_alias_ultimate_target): Simplify.
 	* varpool.c (varpool_create_variable_alias): Set weakref flag.
 
+2013-06-11  Tom de Vries  <tom@codesourcery.com>
+
+	* genautomata.c (gen_regexp_sequence): Handle els_num == -1.  Handle
+	sequence_vect == NULL.
+
 2013-06-11  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (TARGET_UNWIND_WORD_MODE): Define.
