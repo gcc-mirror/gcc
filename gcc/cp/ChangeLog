@@ -1,3 +1,9 @@
+2013-09-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/58282
+	* except.c (build_must_not_throw_expr): Handle
+	flag_exceptions.
+
 2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* typeck.c (cp_build_binary_op): Use vector_types_compatible_elements_p.

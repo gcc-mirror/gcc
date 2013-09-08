@@ -245,6 +245,9 @@ diagnostic_build_prefix (diagnostic_context *context,
     (s.file == NULL
      ? build_message_string ("%s%s:%s %s%s%s", locus_cs, progname, locus_ce,
 			     text_cs, text, text_ce)
+     : !strcmp (s.file, N_("<built-in>"))
+     ? build_message_string ("%s%s:%s %s%s%s", locus_cs, s.file, locus_ce,
+			     text_cs, text, text_ce)
      : context->show_column
      ? build_message_string ("%s%s:%d:%d:%s %s%s%s", locus_cs, s.file, s.line,
 			     s.column, locus_ce, text_cs, text, text_ce)
