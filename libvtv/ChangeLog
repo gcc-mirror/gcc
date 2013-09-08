@@ -1,3 +1,84 @@
+2013-09-08  Caroline Tice  <cmtice@google.com>
+
+	* testsuite/event-main.cc:  Move to libvtv.cc subdirectory.
+	* testsuite/environment.cc: Ditto.
+	* testsuite/template-list2.cc: Ditto.
+	* testsuite/event.h: Ditto.
+	* testsuite/dataentry.cc: Ditto.
+	* testsuite/event-private.h: Ditto.
+	* testsuite/virtual_inheritance.cc: Ditto.
+	* testsuite/povray-derived.cc: Ditto.
+	* testsuite/nested_vcall_test.cc: Ditto.
+	* testsuite/template-list-iostream.cc: Ditto.
+	* testsuite/parts-test-extra-parts-views.h:  Ditto.
+	* testsuite/virtfunc-test.cc: Ditto.
+	* testsuite/parts-test-extra-parts.h: Ditto.
+	* testsuite/const_vtable.cc: Ditto.
+	* testsuite/template-list.cc: Ditto.
+	* testsuite/dup_name.cc: Ditto.
+	* testsuite/thunk.cc: Ditto.
+	* testsuite/parts-test-main.h: Ditto.
+	* testsuite/mul_inh.cc: Ditto.
+	* testsuite/test1.cc: Ditto.
+	* testsuite/bb_tests.cc: Ditto.
+	* testsuite/v8-test-2.cc: Ditto.
+	* testsuite/thunk_vtable_map_attack.cc: Ditto.
+	* testsuite/xlan-test.cc: Ditto.
+	* testsuite/parts-test-main.cpp: Move to libvtv.cc subdirectory and
+	change file extension from .cc to .cpp.
+	* testsuite/event-definitions.cpp: Ditto.
+	* testsuite/event-main.cpp: Ditto.
+	* testsuite/derived-main.cpp: Ditto.
+	* testsuite/derived-lib.cpp: Ditto.
+	* testsuite/event-private.cpp: Ditto.
+	* testsuite/parts-test-extra-parts-views.cpp: Ditto.
+	* testsuite/parts-test-extra-parts.cpp: Ditto.
+	* testsuite/parts-test.list: Move to libvtv.cc subdirectory.  Change
+	file extensions inside file from .cc to .cpp.
+	* testsuite/event.list: Ditto.
+	* testsuite/derived.list: Ditto.
+	* testsuite/register_pair.cc: Move to libvtv.cc; rename file to
+	register_set_pair.cc; include stdlib.h, stdio.h stdint.h string.h
+	(KEY_TYPE_FIXED_SIZE): New define.
+	(key_buffer, name_string, fake_names): New global variables.
+	(generate_names): New function.
+	(vtv_string_hans): New function.
+	(main): Add call to generate_names. Update middle for-loop to
+	initialize new parameters for __VLTRegisterPair... calls; move calls
+	to __VLTRegisterPair... to middle for-loop. Add calls to
+	__VLTRegisterSet...
+	* testsuite/register_pair_mt.cc: Ditto; renamed to
+	register_set_pair_mt.cc
+	* testsuite/libvtv.cc/vtv.exp:  New file.
+	* testsuite/libvtv.mempool.cc/mempool.exp:  New file.
+	* testsuite/libvtv.mt.cc/mt.exp: New file.
+	* testsuite/lib/libvtv.exp:  New file.
+	* testsuite/lib/libvtv-dg.exp:  New file.
+	* testsuite/config/default.exp: New file.
+	* testsuite/Makefile.am:  New file. (Old file was moved to other-tests
+	subdirectory.)
+	* testsuite/Makefile.in: New file (generated).
+	* testsuite/mempool_negative.c: Change to C++ file; move to
+	libvtv.mempool.cc; include vtv-change-permission.h.
+	(main):  Add call to __VLTChangePermission.
+	* testsuite/mempool_positive.c: Change to C++ file; move to
+	libvtv.mempool.cc; include vtv-change-permission.h.
+	(main): Add call to __VLTChangePermission.
+	* testsuite/temp_deriv3.cc:  Move to other-tests subdirectory.
+	* testsuite/environment-fail-64.s: Ditto.
+	* testsutite/dlopen.cc: Ditto.
+	* testsuite/so.cc: Ditto.
+	* testsuite/temp_deriv2.cc: Ditto.
+	* testsuite/field-test.cc: Ditto.
+	* testsuite/dlopen_mt.cc: Ditto.
+	* testsuite/environment-fail-32.s: Ditto.
+	* testsuite/temp_deriv.cc: Ditto.
+	* testsuite/replace-fail.cc: Ditto.
+	* testsuite/other-tests/Makefile.am:  New file.  Copied from the
+	Makefile.am that used to be in testsuite directory.
+	* testsuite/other-tests/Makefile.in: Generated. (New file).
+	* testsuite/other-tests/README:  New file.
+
 2013-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* testsuite/Makefile.am: Remove #if ENABLE_VTABLE_VERIFY check around

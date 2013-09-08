@@ -1,0 +1,8 @@
+This directory contains tests that have not yet been converted to
+proper dejagnu tests.  If you look at the run_testsuite script in
+libvtv/scripts, you should get a fair idea as to how to run these
+tests.  The plan is to convert these tests into proper dejangnu tests
+sometime in the near future.
+
+
+Aug. 30, 2013
