@@ -570,6 +570,8 @@ maybe_record_node (vec <cgraph_node *> &nodes,
       && fcode != BUILT_IN_TRAP
       && !pointer_set_insert (inserted, target)
       && (target_node = cgraph_get_node (target)) != NULL
+      && (TREE_PUBLIC (target)
+	  || target_node->symbol.definition)
       && symtab_real_symbol_p ((symtab_node)target_node))
     {
       pointer_set_insert (cached_polymorphic_call_targets,
@@ -591,6 +593,8 @@ maybe_record_node (vec <cgraph_node *> &nodes,
 
    MATCHED_VTABLES tracks virtual tables we already did lookup
    for virtual function in.
+
+   ANONYMOUS is true if BINFO is part of anonymous namespace.
   */
 
 static void
@@ -600,7 +604,8 @@ record_binfo (vec <cgraph_node *> &nodes,
 	      tree type_binfo,
 	      HOST_WIDE_INT otr_token,
 	      pointer_set_t *inserted,
-	      pointer_set_t *matched_vtables)
+	      pointer_set_t *matched_vtables,
+	      bool anonymous)
 {
   tree type = BINFO_TYPE (binfo);
   int i;
@@ -611,6 +616,19 @@ record_binfo (vec <cgraph_node *> &nodes,
   if (types_same_for_odr (type, otr_type)
       && !pointer_set_insert (matched_vtables, BINFO_VTABLE (type_binfo)))
     {
+      /* For types in anonymous namespace first check if the respective vtable
+	 is alive. If not, we know the type can't be called.  */
+      if (!flag_ltrans && anonymous)
+	{
+	  tree vtable = BINFO_VTABLE (type_binfo);
+	  struct varpool_node *vnode;
+
+	  if (TREE_CODE (vtable) == POINTER_PLUS_EXPR)
+	    vtable = TREE_OPERAND (TREE_OPERAND (vtable, 0), 0);
+	  vnode = varpool_get_node (vtable);
+	  if (!vnode || !vnode->symbol.definition)
+	    return;
+	}
       tree target = gimple_get_virt_method_for_binfo (otr_token, type_binfo);
       if (target)
 	maybe_record_node (nodes, target, inserted);
@@ -626,7 +644,7 @@ record_binfo (vec <cgraph_node *> &nodes,
 		       is shared with the outer type.  */
 		    BINFO_VTABLE (base_binfo) ? base_binfo : type_binfo,
 		    otr_token, inserted,
-		    matched_vtables);
+		    matched_vtables, anonymous);
 }
      
 /* Lookup virtual methods matching OTR_TYPE (with OFFSET and OTR_TOKEN)
@@ -646,7 +664,7 @@ possible_polymorphic_call_targets_1 (vec <cgraph_node *> &nodes,
   unsigned int i;
 
   record_binfo (nodes, binfo, otr_type, binfo, otr_token, inserted,
-	        matched_vtables);
+	        matched_vtables, type->anonymous_namespace);
   for (i = 0; i < type->derived_types.length(); i++)
     possible_polymorphic_call_targets_1 (nodes, inserted, 
 					 matched_vtables,
@@ -735,6 +753,18 @@ devirt_node_removal_hook (struct cgraph_node *n, void *d ATTRIBUTE_UNUSED)
     free_polymorphic_call_targets_hash ();
 }
 
+/* When virtual table is removed, we may need to flush the cache.  */
+
+static void
+devirt_variable_node_removal_hook (struct varpool_node *n,
+				   void *d ATTRIBUTE_UNUSED)
+{
+  if (cached_polymorphic_call_targets
+      && DECL_VIRTUAL_P (n->symbol.decl)
+      && type_in_anonymous_namespace_p (DECL_CONTEXT (n->symbol.decl)))
+    free_polymorphic_call_targets_hash ();
+}
+
 /* Return vector containing possible targets of polymorphic call of type
    OTR_TYPE caling method OTR_TOKEN with OFFSET.  If FINALp is non-NULL,
    store true if the list is complette. 
@@ -782,8 +812,12 @@ possible_polymorphic_call_targets (tree otr_type,
       cached_polymorphic_call_targets = pointer_set_create ();
       polymorphic_call_target_hash.create (23);
       if (!node_removal_hook_holder)
-	node_removal_hook_holder =
-	  cgraph_add_node_removal_hook (&devirt_node_removal_hook, NULL);
+	{
+	  node_removal_hook_holder =
+	    cgraph_add_node_removal_hook (&devirt_node_removal_hook, NULL);
+	  varpool_add_node_removal_hook (&devirt_variable_node_removal_hook,
+					 NULL);
+	}
     }
 
   /* Lookup cached answer.  */
@@ -928,11 +962,8 @@ likely_target_p (struct cgraph_node *n)
 }
 
 /* The ipa-devirt pass.
-   This performs very trivial devirtualization:
-     1) when polymorphic call is known to have precisely one target,
-        turn it into direct call
-     2) when polymorphic call has only one likely target in the unit,
-        turn it into speculative call.  */
+   When polymorphic call has only one likely target in the unit,
+   turn it into speculative call.  */
 
 static unsigned int
 ipa_devirt (void)
@@ -965,26 +996,9 @@ ipa_devirt (void)
 	    if (dump_file)
 	      dump_possible_polymorphic_call_targets 
 		(dump_file, e);
+
 	    npolymorphic++;
 
-	    if (final)
-	      {
-		gcc_assert (targets.length());
-		if (targets.length() == 1)
-		  {
-		    if (dump_file)
-		      fprintf (dump_file,
-			       "Devirtualizing call in %s/%i to %s/%i\n",
-			       cgraph_node_name (n), n->symbol.order,
-			       cgraph_node_name (targets[0]), targets[0]->symbol.order);
-		    cgraph_make_edge_direct (e, targets[0]);
-		    ndevirtualized++;
-		    update = true;
-		    continue;
-		  }
-	      }
-	    if (!flag_devirtualize_speculatively)
-	      continue;
 	    if (!cgraph_maybe_hot_edge_p (e))
 	      {
 		if (dump_file)
@@ -1114,7 +1128,7 @@ ipa_devirt (void)
 static bool
 gate_ipa_devirt (void)
 {
-  return flag_devirtualize && !in_lto_p && optimize;
+  return flag_devirtualize_speculatively && !in_lto_p && optimize;
 }
 
 namespace {
