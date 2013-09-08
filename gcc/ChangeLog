@@ -1,3 +1,12 @@
+2013-09-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* ira.c (update_equiv_regs): Only call set_paradoxical_subreg
+	for non-debug insns.
+	* lra.c (new_insn_reg): Take the containing insn as a parameter.
+	Only modify lra_reg_info[].biggest_mode if it's non-debug insn.
+	(collect_non_operand_hard_regs, add_regs_to_insn_regno_info): Update
+	accordingly.
+
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* cgraphunit.c (walk_polymorphic_call_targets): Permit 0 possible

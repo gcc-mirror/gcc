@@ -480,13 +480,13 @@ init_insn_regs (void)
     = create_alloc_pool ("insn regs", sizeof (struct lra_insn_reg), 100);
 }
 
-/* Create LRA insn related info about referenced REGNO with TYPE
-   (in/out/inout), biggest reference mode MODE, flag that it is
+/* Create LRA insn related info about a reference to REGNO in INSN with
+   TYPE (in/out/inout), biggest reference mode MODE, flag that it is
    reference through subreg (SUBREG_P), flag that is early clobbered
    in the insn (EARLY_CLOBBER), and reference to the next insn reg
    info (NEXT).	 */
 static struct lra_insn_reg *
-new_insn_reg (int regno, enum op_type type, enum machine_mode mode,
+new_insn_reg (rtx insn, int regno, enum op_type type, enum machine_mode mode,
 	      bool subreg_p, bool early_clobber, struct lra_insn_reg *next)
 {
   struct lra_insn_reg *ir;
@@ -494,7 +494,8 @@ new_insn_reg (int regno, enum op_type type, enum machine_mode mode,
   ir = (struct lra_insn_reg *) pool_alloc (insn_reg_pool);
   ir->type = type;
   ir->biggest_mode = mode;
-  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode))
+  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode)
+      && NONDEBUG_INSN_P (insn))
     lra_reg_info[regno].biggest_mode = mode;
   ir->subreg_p = subreg_p;
   ir->early_clobber = early_clobber;
@@ -976,7 +977,7 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
 		     && ! (FIRST_STACK_REG <= regno
 			   && regno <= LAST_STACK_REG));
 #endif
-		list = new_insn_reg (regno, type, mode, subreg_p,
+		list = new_insn_reg (data->insn, regno, type, mode, subreg_p,
 				     early_clobber, list);
 	      }
 	  }
@@ -1575,7 +1576,7 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
       expand_reg_info ();
       if (bitmap_set_bit (&lra_reg_info[regno].insn_bitmap, uid))
 	{
-	  data->regs = new_insn_reg (regno, type, mode, subreg_p,
+	  data->regs = new_insn_reg (data->insn, regno, type, mode, subreg_p,
 				     early_clobber, data->regs);
 	  return;
 	}
@@ -1587,8 +1588,9 @@ add_regs_to_insn_regno_info (lra_insn_recog_data_t data, rtx x, int uid,
 		if (curr->subreg_p != subreg_p || curr->biggest_mode != mode)
 		  /* The info can not be integrated into the found
 		     structure.  */
-		  data->regs = new_insn_reg (regno, type, mode, subreg_p,
-					     early_clobber, data->regs);
+		  data->regs = new_insn_reg (data->insn, regno, type, mode,
+					     subreg_p, early_clobber,
+					     data->regs);
 		else
 		  {
 		    if (curr->type != type)
