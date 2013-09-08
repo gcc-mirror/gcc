@@ -1,0 +1,68 @@
+load_lib libvtv-dg.exp
+load_gcc_lib gcc-dg.exp
+
+global VTV_FLAGS
+set VTV_FLAGS [list {-O0} {-O2}]
+
+libvtv_init c++
+
+set shlib_ext [get_shlib_extension]
+set lang_link_flags "-shared-libgcc -lstdc++"
+set lang_test_file_found 0
+set lang_library_path "../libstdc++-v3/src/.libs"
+
+dg-init
+
+set blddir [lookfor_file [get_multilibs] libvtv]
+
+# Find the correct libstdc++ library to use.
+
+if { $blddir != "" } {
+    # Look for a static libstdc++ first.
+    if [file exists "${blddir}/${lang_library_path}/libstdc++.a"] {
+	set lang_test_file "${lang_library_path}/libstdc++.a"
+	set lang_test_file_found 1
+	# We may have a shared only build, so look for a shared libstdc++.
+    } elseif [file exists "${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"] {
+	set lang_test_file "${lang_library_path}/libstdc++.${shlib_ext}"
+	set lang_test_file_found 1
+    } else {
+	puts "looking for ${blddir}/${lang_library_path}/libstdc++.${shlib_ext}"
+	puts "No libstdc++ library found, will not execute c++ tests"
+    }
+} elseif { [info exists GXX_UNDER_TEST] } {
+    set lang_test_file_found 1
+    # Needs to exist for libvtv.exp.
+    set lang_test_file ""
+} else {
+    puts "GXX_UNDER_TEST not defined, will not execute c++ tests"
+}
+
+
+global srcdir
+
+if { $lang_test_file_found } {
+    # Set the path for finding libstdc++.
+    if { $blddir != "" } {
+	set ld_library_path "$always_ld_library_path:${blddir}/${lang_library_path}"
+    } else {
+	set ld_library_path "$always_ld_library_path"
+    }
+    append ld_library_path [gcc-set-multilib-library-path $GCC_UNDER_TEST]
+    set_ld_library_path_env_vars
+
+    # Make sure we can find the libstdc++ header files.
+    set flags_file "${blddir}/../libstdc++-v3/scripts/testsuite_flags"
+    if { [file exists $flags_file] } {
+	set libstdcxx_includes [exec sh $flags_file --build-includes]
+    } else {
+	set libstdcxx_includes ""
+    }
+
+    # Run the tests with -fvtable-verify=std
+    foreach flags $VTV_FLAGS {
+	foreach srcfile [lsort [glob -nocomplain ${srcdir}/libvtv.mt.cc/*.cc]] {
+	    dg-runtest $srcfile "$flags -fvtable-verify=std -lpthread" $libstdcxx_includes
+	}
+    }
+}
