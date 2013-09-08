@@ -1,3 +1,11 @@
+2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-common.c (same_scalar_type_ignoring_signedness): Delete.
+	(vector_types_compatible_elements_p): New function.
+	* c-common.h: (same_scalar_type_ignoring_signedness): Delete
+	declaration.
+	(vector_types_compatible_elements_p): Declare.
+
 2013-09-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-pretty-print.h (c_pretty_printer::simple_type_specifier): Now

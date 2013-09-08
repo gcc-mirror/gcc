@@ -1,3 +1,7 @@
+2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-typeck.c (build_binary_op): Use vector_types_compatible_elements_p.
+
 2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* c-objc-common.c (c_tree_printer): Tidy.
