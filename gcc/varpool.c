@@ -36,6 +36,100 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-flow.h"
 #include "flags.h"
 
+/* List of hooks triggered on varpool_node events.  */
+struct varpool_node_hook_list {
+  varpool_node_hook hook;
+  void *data;
+  struct varpool_node_hook_list *next;
+};
+
+/* List of hooks triggered when a node is removed.  */
+struct varpool_node_hook_list *first_varpool_node_removal_hook;
+/* List of hooks triggered when an variable is inserted.  */
+struct varpool_node_hook_list *first_varpool_variable_insertion_hook;
+
+/* Register HOOK to be called with DATA on each removed node.  */
+struct varpool_node_hook_list *
+varpool_add_node_removal_hook (varpool_node_hook hook, void *data)
+{
+  struct varpool_node_hook_list *entry;
+  struct varpool_node_hook_list **ptr = &first_varpool_node_removal_hook;
+
+  entry = (struct varpool_node_hook_list *) xmalloc (sizeof (*entry));
+  entry->hook = hook;
+  entry->data = data;
+  entry->next = NULL;
+  while (*ptr)
+    ptr = &(*ptr)->next;
+  *ptr = entry;
+  return entry;
+}
+
+/* Remove ENTRY from the list of hooks called on removing nodes.  */
+void
+varpool_remove_node_removal_hook (struct varpool_node_hook_list *entry)
+{
+  struct varpool_node_hook_list **ptr = &first_varpool_node_removal_hook;
+
+  while (*ptr != entry)
+    ptr = &(*ptr)->next;
+  *ptr = entry->next;
+  free (entry);
+}
+
+/* Call all node removal hooks.  */
+static void
+varpool_call_node_removal_hooks (struct varpool_node *node)
+{
+  struct varpool_node_hook_list *entry = first_varpool_node_removal_hook;
+  while (entry)
+  {
+    entry->hook (node, entry->data);
+    entry = entry->next;
+  }
+}
+
+/* Register HOOK to be called with DATA on each inserted node.  */
+struct varpool_node_hook_list *
+varpool_add_variable_insertion_hook (varpool_node_hook hook, void *data)
+{
+  struct varpool_node_hook_list *entry;
+  struct varpool_node_hook_list **ptr = &first_varpool_variable_insertion_hook;
+
+  entry = (struct varpool_node_hook_list *) xmalloc (sizeof (*entry));
+  entry->hook = hook;
+  entry->data = data;
+  entry->next = NULL;
+  while (*ptr)
+    ptr = &(*ptr)->next;
+  *ptr = entry;
+  return entry;
+}
+
+/* Remove ENTRY from the list of hooks called on inserted nodes.  */
+void
+varpool_remove_variable_insertion_hook (struct varpool_node_hook_list *entry)
+{
+  struct varpool_node_hook_list **ptr = &first_varpool_variable_insertion_hook;
+
+  while (*ptr != entry)
+    ptr = &(*ptr)->next;
+  *ptr = entry->next;
+  free (entry);
+}
+
+/* Call all node insertion hooks.  */
+void
+varpool_call_variable_insertion_hooks (struct varpool_node *node)
+{
+  struct varpool_node_hook_list *entry = first_varpool_variable_insertion_hook;
+  while (entry)
+  {
+    entry->hook (node, entry->data);
+    entry = entry->next;
+  }
+}
+
 /* Allocate new callgraph node and insert it into basic data structures.  */
 
 struct varpool_node *
@@ -65,8 +159,9 @@ varpool_node_for_decl (tree decl)
 void
 varpool_remove_node (struct varpool_node *node)
 {
-  symtab_unregister_node ((symtab_node)node);
   tree init;
+  varpool_call_node_removal_hooks (node);
+  symtab_unregister_node ((symtab_node)node);
 
   /* Because we remove references from external functions before final compilation,
      we may end up removing useful constructors.
@@ -246,6 +341,7 @@ varpool_add_new_variable (tree decl)
   struct varpool_node *node;
   varpool_finalize_decl (decl);
   node = varpool_node_for_decl (decl);
+  varpool_call_variable_insertion_hooks (node);
   if (varpool_externally_visible_p (node))
     node->symbol.externally_visible = true;
 }
