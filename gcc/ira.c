@@ -2944,11 +2944,8 @@ update_equiv_regs (void)
      prevent access beyond allocated memory for paradoxical memory subreg.  */
   FOR_EACH_BB (bb)
     FOR_BB_INSNS (bb, insn)
-      {
-	if (! INSN_P (insn))
-	  continue;
-	for_each_rtx (&insn, set_paradoxical_subreg, (void *)pdx_subregs);
-      }
+      if (NONDEBUG_INSN_P (insn))
+	for_each_rtx (&insn, set_paradoxical_subreg, (void *) pdx_subregs);
 
   /* Scan the insns and find which registers have equivalences.  Do this
      in a separate scan of the insns because (due to -fcse-follow-jumps)

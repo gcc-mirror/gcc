@@ -1,3 +1,7 @@
+2013-09-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.dg/debug/ra1.C: New test.
+
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* testsuite/g++.dg/ipa/devirt-11.C: Update template.
