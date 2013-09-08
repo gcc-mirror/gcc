@@ -1179,15 +1179,16 @@ vtv_generate_init_routine (void)
       TREE_USED (vtv_fndecl) = 1;
       DECL_PRESERVE_P (vtv_fndecl) = 1;
       if (flag_vtable_verify == VTV_PREINIT_PRIORITY)
-        {
-          DECL_STATIC_CONSTRUCTOR (vtv_fndecl) = 0;
-          assemble_vtv_preinit_initializer (vtv_fndecl);
-        }
+        DECL_STATIC_CONSTRUCTOR (vtv_fndecl) = 0;
 
       gimplify_function_tree (vtv_fndecl);
       cgraph_add_new_function (vtv_fndecl, false);
 
       cgraph_process_new_functions ();
+
+      if (flag_vtable_verify == VTV_PREINIT_PRIORITY)
+        assemble_vtv_preinit_initializer (vtv_fndecl);
+
     }
   pop_lang_context ();
 }
