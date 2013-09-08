@@ -2199,6 +2199,14 @@ check_main_parameter_types (tree decl)
 	     "%q+D takes only zero or two arguments", decl);
 }
 
+/* vector_targets_convertible_p is used for vector pointer types.  The
+   callers perform various checks that the qualifiers are satisfactory,
+   while OTOH vector_targets_convertible_p ignores the number of elements
+   in the vectors.  That's fine with vector pointers as we can consider,
+   say, a vector of 8 elements as two consecutive vectors of 4 elements,
+   and that does not require and conversion of the pointer values.
+   In contrast, vector_types_convertible_p and
+   vector_types_compatible_elements_p are used for vector value types.  */
 /* True if pointers to distinct types T1 and T2 can be converted to
    each other without an explicit cast.  Only returns true for opaque
    vector types.  */
@@ -2213,6 +2221,17 @@ vector_targets_convertible_p (const_tree t1, const_tree t2)
   return false;
 }
 
+/* vector_types_convertible_p is used for vector value types.
+   It could in principle call vector_targets_convertible_p as a subroutine,
+   but then the check for vector type would be duplicated with its callers,
+   and also the purpose of vector_targets_convertible_p would become
+   muddled.
+   Where vector_types_convertible_p returns true, a conversion might still be
+   needed to make the types match.
+   In contrast, vector_targets_convertible_p is used for vector pointer
+   values, and vector_types_compatible_elements_p is used specifically
+   in the context for binary operators, as a check if use is possible without
+   conversion.  */
 /* True if vector types T1 and T2 can be converted to each other
    without an explicit cast.  If EMIT_LAX_NOTE is true, and T1 and T2
    can only be converted with -flax-vector-conversions yet that is not
@@ -10690,20 +10709,45 @@ resolve_overloaded_builtin (location_t loc, tree function,
     }
 }
 
-/* Ignoring their sign, return true if two scalar types are the same.  */
+/* vector_types_compatible_elements_p is used in type checks of vectors
+   values used as operands of binary operators.  Where it returns true, and
+   the other checks of the caller succeed (being vector types in he first
+   place, and matching number of elements), we can just treat the types
+   as essentially the same.
+   Contrast with vector_targets_convertible_p, which is used for vector
+   pointer types,  and vector_types_convertible_p, which will allow
+   language-specific matches under the control of flag_lax_vector_conversions,
+   and might still require a conversion.  */
+/* True if vector types T1 and T2 can be inputs to the same binary
+   operator without conversion.
+   We don't check the overall vector size here because some of our callers
+   want to give different error messages when the vectors are compatible
+   except for the element count.  */
+
 bool
-same_scalar_type_ignoring_signedness (tree t1, tree t2)
+vector_types_compatible_elements_p (tree t1, tree t2)
 {
+  bool opaque = TYPE_VECTOR_OPAQUE (t1) || TYPE_VECTOR_OPAQUE (t2);
+  t1 = TREE_TYPE (t1);
+  t2 = TREE_TYPE (t2);
+
   enum tree_code c1 = TREE_CODE (t1), c2 = TREE_CODE (t2);
 
   gcc_assert ((c1 == INTEGER_TYPE || c1 == REAL_TYPE || c1 == FIXED_POINT_TYPE)
 	      && (c2 == INTEGER_TYPE || c2 == REAL_TYPE
 		  || c2 == FIXED_POINT_TYPE));
 
+  t1 = c_common_signed_type (t1);
+  t2 = c_common_signed_type (t2);
   /* Equality works here because c_common_signed_type uses
      TYPE_MAIN_VARIANT.  */
-  return c_common_signed_type (t1)
-    == c_common_signed_type (t2);
+  if (t1 == t2)
+    return true;
+  if (opaque && c1 == c2
+      && (c1 == INTEGER_TYPE || c1 == REAL_TYPE)
+      && TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
+    return true;
+  return false;
 }
 
 /* Check for missing format attributes on function pointers.  LTYPE is

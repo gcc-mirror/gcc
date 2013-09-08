@@ -4554,7 +4554,8 @@ cp_build_binary_op (location_t location,
 	vector_compare:
 	  tree intt;
 	  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
-							  TREE_TYPE (type1)))
+							  TREE_TYPE (type1))
+	      && !vector_types_compatible_elements_p (type0, type1))
 	    {
 	      if (complain & tf_error)
 		{
@@ -4670,8 +4671,7 @@ cp_build_binary_op (location_t location,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
 	{
 	  if (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
-	      || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
-							TREE_TYPE (type1)))
+	      || !vector_types_compatible_elements_p (type0, type1))
 	    {
 	      if (complain & tf_error)
 		binary_op_error (location, code, type0, type1);

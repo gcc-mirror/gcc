@@ -1,3 +1,7 @@
+2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* typeck.c (cp_build_binary_op): Use vector_types_compatible_elements_p.
+
 2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/24926

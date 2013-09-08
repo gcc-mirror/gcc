@@ -9987,7 +9987,7 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
         {
           tree intt;
-          if (TREE_TYPE (type0) != TREE_TYPE (type1))
+	  if (!vector_types_compatible_elements_p (type0, type1))
             {
               error_at (location, "comparing vectors with different "
                                   "element types");
@@ -10124,7 +10124,7 @@ build_binary_op (location_t location, enum tree_code code,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
         {
           tree intt;
-          if (TREE_TYPE (type0) != TREE_TYPE (type1))
+	  if (!vector_types_compatible_elements_p (type0, type1))
             {
               error_at (location, "comparing vectors with different "
                                   "element types");
@@ -10230,8 +10230,7 @@ build_binary_op (location_t location, enum tree_code code,
 
   if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE
       && (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
-	  || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
-						    TREE_TYPE (type1))))
+	  || !vector_types_compatible_elements_p (type0, type1)))
     {
       binary_op_error (location, code, type0, type1);
       return error_mark_node;

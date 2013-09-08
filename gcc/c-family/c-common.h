@@ -766,7 +766,7 @@ extern void warn_logical_operator (location_t, enum tree_code, tree,
 				   enum tree_code, tree, enum tree_code, tree);
 extern void check_main_parameter_types (tree decl);
 extern bool c_determine_visibility (tree);
-extern bool same_scalar_type_ignoring_signedness (tree, tree);
+extern bool vector_types_compatible_elements_p (tree, tree);
 extern void mark_valid_location_for_stdc_pragma (bool);
 extern bool valid_location_for_stdc_pragma_p (void);
 extern void set_float_const_decimal64 (void);
