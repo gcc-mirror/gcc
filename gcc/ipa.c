@@ -206,7 +206,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
     {
       if (targets.length() <= 1)
 	{
-	  cgraph_node *target;
+	  cgraph_node *target, *node = edge->caller;
 	  if (targets.length () == 1)
 	    target = targets[0];
 	  else
@@ -222,8 +222,8 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 	  edge = cgraph_make_edge_direct (edge, target);
 	  if (cgraph_state != CGRAPH_STATE_IPA_SSA)
 	    cgraph_redirect_edge_call_stmt_to_callee (edge);
-	  else
-	    inline_update_overall_summary (edge->caller);
+	  else if (inline_summary_vec)
+	    inline_update_overall_summary (node);
 	}
     }
 }
