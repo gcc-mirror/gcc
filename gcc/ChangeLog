@@ -1,5 +1,25 @@
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
+	* cgraphunit.c (walk_polymorphic_call_targets): Permit 0 possible
+	targets and devirtualize to BUILT_IN_UNREACHABLE.
+	* timevar.def (TV_IPA_UNREACHABLE): New timevar.
+	* ipa.c (walk_polymorphic_call_targets): New function.
+	(symtab_remove_unreachable_nodes): Use it; do not keep all virtual
+	functions; use the new timevar.
+	* ipa-devirt.c (maybe_record_node): Do not insert static nodes that
+	was removed from the program.
+	(record_binfo): If BINFO corresponds to an anonymous namespace, we may
+	not consider it in the walk when its vtable is dead.
+	(possible_polymorphic_call_targets_1): Pass anonymous flag to
+	record_binfo.
+	(devirt_variable_node_removal_hook): New function.
+	(possible_polymorphic_call_targets): Also register
+	devirt_variable_node_removal_hook.
+	(ipa_devirt): Do not do non-speculative devirtualization.
+	(gate_ipa_devirt): One execute if devirtualizing speculatively.
+
+2013-09-08  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.h (varpool_node_hook, varpool_node_hook_list,
 	varpool_add_node_removal_hook, varpool_add_variable_insertion_hook,
 	varpool_remove_variable_insertion_hook): Declare.

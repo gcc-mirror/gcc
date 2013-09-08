@@ -866,9 +866,15 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
      make the edge direct.  */
   if (final)
     {
-      gcc_assert (targets.length());
-      if (targets.length() == 1)
+      if (targets.length() <= 1)
 	{
+	  cgraph_node *target;
+	  if (targets.length () == 1)
+	    target = targets[0];
+	  else
+	    target = cgraph_get_create_node
+		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+
 	  if (cgraph_dump_file)
 	    {
 	      fprintf (cgraph_dump_file,
@@ -877,7 +883,7 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 				 edge->call_stmt, 0,
 				 TDF_SLIM);
 	    }
-	  cgraph_make_edge_direct (edge, targets[0]);
+	  cgraph_make_edge_direct (edge, target);
 	  cgraph_redirect_edge_call_stmt_to_callee (edge);
 	  if (cgraph_dump_file)
 	    {
@@ -1092,7 +1098,7 @@ analyze_functions (void)
      mangling and same body alias creation before we free DECL_ARGUMENTS
      used by it.  */
   if (!seen_error ())
-  symtab_initialize_asm_name_hash ();
+    symtab_initialize_asm_name_hash ();
 }
 
 /* Translate the ugly representation of aliases as alias pairs into nice
