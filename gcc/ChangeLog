@@ -1,3 +1,17 @@
+2013-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.h (varpool_node_hook, varpool_node_hook_list,
+	varpool_add_node_removal_hook, varpool_add_variable_insertion_hook,
+	varpool_remove_variable_insertion_hook): Declare.
+	* varpool.c (varpool_node_hook_list): New structure.
+	(first_varpool_node_removal_hook,
+	first_varpool_variable_insertion_hook): New variables.
+	(varpool_add_node_removal_hook, varpool_remove_node_removal_hook,
+	varpool_call_node_removal_hooks, varpool_add_variable_insertion_hook,
+	varpool_remove_variable_insertion_hook,
+	varpool_call_variable_insertion_hooks): New functions.
+	(varpool_remove_node): Use it.
+
 2013-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/54941
