@@ -1,3 +1,7 @@
+2013-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (walk_polymorphic_call_targets): Fix inliner summary update.
+
 2013-09-08  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* ira.c (update_equiv_regs): Only call set_paradoxical_subreg
