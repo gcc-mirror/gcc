@@ -1,90 +1,90 @@
 2013-08-06  Gary Funck  <gary@intrepid.com>
 
 	Implement atomic operations library for SMP runtime.
-	../Makefile.def: Add dependencies for libatomic and libbacktrace.
-	../Makefile.in: Re-generate.
-	Makefile.am: Add gen-inline-libgupc.pl gen-upc-ld-script.pl.
+	* ../Makefile.def: Add dependencies for libatomic and libbacktrace.
+	* ../Makefile.in: Re-generate.
+	* Makefile.am: Add gen-inline-libgupc.pl gen-upc-ld-script.pl.
 	Add autogen rules to build smp/upc_atomic.upc.
-	Makefile.in: Re-generate.
-	include/upc_atomic.h: Add UPC_*_OP definitions.
-	include/upc_ops.def: New. Describe UPC atomic operations.
-	include/upc_types.def: New. Describe UPC atomic types.
-	include/upc_types.h: Add UPC_*_OP definitions.
-	smp/gcc-upc-lib.in: Define __UPC_ATOMIC__ and add typedef
+	* Makefile.in: Re-generate.
+	* include/upc_atomic.h: Add UPC_*_OP definitions.
+	* include/upc_ops.def: New. Describe UPC atomic operations.
+	* include/upc_types.def: New. Describe UPC atomic types.
+	* include/upc_types.h: Add UPC_*_OP definitions.
+	* smp/gcc-upc-lib.in: Define __UPC_ATOMIC__ and add typedef
 	for upc_atomicdomain_t.
-	smp/upc_atomic.def: New. Autogen definition file for upc_atomic.upc.
-	smp/upc_atomic.tpl: New. Autogen template file for upc_atomic.upc.
-	smp/upc_atomic.upc: New. Generate from smp/upc_atomic.def.
-	smp/upc_config.h: Add defines for LONG_LONG_BITS and SIZE_T_BITS.
-	smp/upc_main.c: (__upc_fatal) Fix bug in handling of variadic args.
+	* smp/upc_atomic.def: New. Autogen definition file for upc_atomic.upc.
+	* smp/upc_atomic.tpl: New. Autogen template file for upc_atomic.upc.
+	* smp/upc_atomic.upc: New. Generate from smp/upc_atomic.def.
+	* smp/upc_config.h: Add defines for LONG_LONG_BITS and SIZE_T_BITS.
+	* smp/upc_main.c: (__upc_fatal) Fix bug in handling of variadic args.
 
 2013-07-24  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_atomic_sup.c: Use correct type for EQ declaration.
-	portals4/gupcr_coll_sup.c: Ditto.
-	portals4/gupcr_shutdown.c: Ditto.
+	* portals4/gupcr_atomic_sup.c: Use correct type for EQ declaration.
+	* portals4/gupcr_coll_sup.c: Ditto.
+	* portals4/gupcr_shutdown.c: Ditto.
 
 2013-06-12  Nenad Vukicevic  <nenad@intrepid.com>
 
-	testsuite/lib/libgupc-dg.exp: Check GUPC P4 runtime for SLURM
+	* testsuite/lib/libgupc-dg.exp: Check GUPC P4 runtime for SLURM
 	or YOD configuration and use appropriate commands to run tests.
 
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
-	testsuite/libgupc.upc/upc.exp: Changed list of tests to exclude
+	* testsuite/libgupc.upc/upc.exp: Changed list of tests to exclude
 	separate compilation units (*_sep.upc).
 
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
-	include/gasp_upc.h: Cleanup to conform to GCC codding style
+	* include/gasp_upc.h: Cleanup to conform to GCC codding style
 	(mainly fixing comments, but also some prototypes, defiens, ...).
 	include/gcc-upc.h: Ditto.
-	include/pupc.h: Ditto.
-	include/upc.h: Ditto.
-	include/upc_collective.h: Ditto.
-	include/upc_tick.h: Ditto.
-	include/upc_types.h: Ditto.
-	portals4/gcc-upc-lib.in: Ditto.
-	portals4/gupcr_access.c: Ditto.
-	portals4/gupcr_access.h: Ditto.
-	portals4/gupcr_addr.c: Ditto.
-	portals4/gupcr_alloc.upc: Ditto.
-	portals4/gupcr_clock.c: Ditto.
-	portals4/gupcr_coll_broadcast.upc: Ditto.
-	portals4/gupcr_coll_reduce.in: Ditto.
-	portals4/gupcr_coll_reduce.upc: Ditto.
-	portals4/gupcr_config.h: Ditto.
-	portals4/gupcr_defs.h: Ditto.
-	portals4/gupcr_gmem.c: Ditto.
-	portals4/gupcr_gmem.h: Ditto.
-	portals4/gupcr_lock_sup.h: Ditto.
-	portals4/gupcr_main.c: Ditto.
-	portals4/gupcr_mem.c: Ditto.
-	portals4/gupcr_pgm_info.c: Ditto.
-	portals4/gupcr_portals.c: Ditto.
-	portals4/gupcr_pts.h: Ditto.
-	portals4/gupcr_runtime.c: Ditto.
-	portals4/gupcr_shutdown.c: Ditto.
-	portals4/gupcr_tick.c: Ditto.
-	portals4/gupcr_utils.c: Ditto.
-	portals4/gupcr_utils.h: Ditto.
+	* include/pupc.h: Ditto.
+	* include/upc.h: Ditto.
+	* include/upc_collective.h: Ditto.
+	* include/upc_tick.h: Ditto.
+	* include/upc_types.h: Ditto.
+	* portals4/gcc-upc-lib.in: Ditto.
+	* portals4/gupcr_access.c: Ditto.
+	* portals4/gupcr_access.h: Ditto.
+	* portals4/gupcr_addr.c: Ditto.
+	* portals4/gupcr_alloc.upc: Ditto.
+	* portals4/gupcr_clock.c: Ditto.
+	* portals4/gupcr_coll_broadcast.upc: Ditto.
+	* portals4/gupcr_coll_reduce.in: Ditto.
+	* portals4/gupcr_coll_reduce.upc: Ditto.
+	* portals4/gupcr_config.h: Ditto.
+	* portals4/gupcr_defs.h: Ditto.
+	* portals4/gupcr_gmem.c: Ditto.
+	* portals4/gupcr_gmem.h: Ditto.
+	* portals4/gupcr_lock_sup.h: Ditto.
+	* portals4/gupcr_main.c: Ditto.
+	* portals4/gupcr_mem.c: Ditto.
+	* portals4/gupcr_pgm_info.c: Ditto.
+	* portals4/gupcr_portals.c: Ditto.
+	* portals4/gupcr_pts.h: Ditto.
+	* portals4/gupcr_runtime.c: Ditto.
+	* portals4/gupcr_shutdown.c: Ditto.
+	* portals4/gupcr_tick.c: Ditto.
+	* portals4/gupcr_utils.c: Ditto.
+	* portals4/gupcr_utils.h: Ditto.
 
 2013-06-07  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_atomic.upc: Cleanup calls to gupc_fatal_error.
+	* portals4/gupcr_atomic.upc: Cleanup calls to gupc_fatal_error.
 	Message starts with lowercase letter, no need for thread
 	identification as it will be included automatically, cleanup
 	message content.
-	portals4/gupcr_atomic_sup.c: Ditto.
-	portals4/gupcr_barrier.c: Ditto.
-	portals4/gupcr_broadcast.c: Ditto.
-	portals4/gupcr_coll_init.upc: Ditto.
-	portals4/gupcr_coll_reduce.in: Ditto.
-	portals4/gupcr_coll_reduce.upc: Ditto.
-	portals4/gupcr_coll_sup.c: Ditto.
-	portals4/gupcr_env.c: Ditto.
-	portals4/gupcr_lock.upc: Ditto.
-	portals4/gupcr_lock_sup.c: Ditto.
+	* portals4/gupcr_atomic_sup.c: Ditto.
+	* portals4/gupcr_barrier.c: Ditto.
+	* portals4/gupcr_broadcast.c: Ditto.
+	* portals4/gupcr_coll_init.upc: Ditto.
+	* portals4/gupcr_coll_reduce.in: Ditto.
+	* portals4/gupcr_coll_reduce.upc: Ditto.
+	* portals4/gupcr_coll_sup.c: Ditto.
+	* portals4/gupcr_env.c: Ditto.
+	* portals4/gupcr_lock.upc: Ditto.
+	* portals4/gupcr_lock_sup.c: Ditto.
 
 2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
@@ -92,7 +92,7 @@
 
 2013-06-06  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_atomic.upc (upc_atomic_query): Compile error fix.
+	* portals4/gupcr_atomic.upc (upc_atomic_query): Compile error fix.
 
 2013-06-06  Gary Funck  <gary@intrepid.com>
 
@@ -110,26 +110,26 @@
 2013-06-05  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add support for UPC atomics to Portals4 runtime.
-	Makefile.am (UPC_RUNTIME_SRC): Add atomic files.
+	* Makefile.am (UPC_RUNTIME_SRC): Add atomic files.
 	(UPC_HDRS): Add atomic files.
-	Makefile.in: Re-generate.
-	include/upc_atomic.h: New. UPC atomic interface.
-	portals4/gcc-upc-lib.in (__UPC_ATOMIC__): Add.
+	* Makefile.in: Re-generate.
+	* include/upc_atomic.h: New. UPC atomic interface.
+	* portals4/gcc-upc-lib.in (__UPC_ATOMIC__): Add.
 	Add definition of upc_atomicdomain_t.
-	portals4/gupcr_atomic.upc: New. UPC atomic implementation.
-	portals4/gupcr_atomic_sup.c: New. UPC atomic support functions.
-	portals4/gupcr_atomic_sup.h: New.
-	portals4/gupcr_env.c (gupcr_facility_table): Add atomic facility.
-	portals4/gupcr_main.c (gupcr_init): Add atomic initialization.
+	* portals4/gupcr_atomic.upc: New. UPC atomic implementation.
+	* portals4/gupcr_atomic_sup.c: New. UPC atomic support functions.
+	* portals4/gupcr_atomic_sup.h: New.
+	* portals4/gupcr_env.c (gupcr_facility_table): Add atomic facility.
+	* portals4/gupcr_main.c (gupcr_init): Add atomic initialization.
 	(gupcr_fini): Add atomic finalization.
-	portals4/gupcr_portals.c (gupcr_get_atomic_size): Add.
-	portals4/gupcr_portals.h (gupcr_get_atomic_size): Add.
-	portals4/gupcr_utils.c (gupcr_get_buf_as_hex): Add.
-	portals4/gupcr_utils.h (gupcr_facility_t): Add atomic facility.
+	* portals4/gupcr_portals.c (gupcr_get_atomic_size): Add.
+	* portals4/gupcr_portals.h (gupcr_get_atomic_size): Add.
+	* portals4/gupcr_utils.c (gupcr_get_buf_as_hex): Add.
+	* portals4/gupcr_utils.h (gupcr_facility_t): Add atomic facility.
 
 2013-05-09  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_env.c: Add UPC_FIRSTTOUCH environment variable
+	* portals4/gupcr_env.c: Add UPC_FIRSTTOUCH environment variable
 	as a no-op.  Misc fixes in comments for ON/OFF -> YES/NO.
 	(gupcr_env_init): Handle UPC_FIRSTTOUCH as no-op.
 
@@ -139,73 +139,73 @@
 	configure.ac: Add configuration option
 	(--with-upc-max-outstanding-puts) for maximum number of
 	outstanding remote put operations.
-	config.h.in: Re-generate.
+	* config.h.in: Re-generate.
 	configure: Re-generate.
-	portals4/gupcr_gmem.c: Add gupcr_gmem_high_mark_puts variable.
+	* portals4/gupcr_gmem.c: Add gupcr_gmem_high_mark_puts variable.
 	Add gupcr_gmem_low_mark_puts variable.
 	(gupcr_gmem_put): Use volatile MD if transfer size is
 	smaller then the volatile maximum size.  Add checking for maximum
 	number of outstanding puts (flow control).
-	portals4/gupcr_gmem.h (gupcr_gmem_xfer_info_t): Add md_volatile
+	* portals4/gupcr_gmem.h (gupcr_gmem_xfer_info_t): Add md_volatile
 	field.
-	portals4/gupcr_portals.c: Add gupcr_max_volatile_size variable.
+	* portals4/gupcr_portals.c: Add gupcr_max_volatile_size variable.
 	(gupcr_portals_ni_init): Initialize max volatile size from NI
 	limits.
-	portals4/gupcr_portals.h: Add GUPCR_PORTALS_MAX_VOLATILE_SIZE
+	* portals4/gupcr_portals.h: Add GUPCR_PORTALS_MAX_VOLATILE_SIZE
 	define.  Add gupcr_max_volatile_size extern definition.
 
 2013-04-18  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_gmem.c (gupcr_gmem_init): Add debug logging for
+	* portals4/gupcr_gmem.c (gupcr_gmem_init): Add debug logging for
 	GMEM location/size.
-	portals4/gupcr_lock_sup.c (gupcr_lock_init): Fix the debug print
+	* portals4/gupcr_lock_sup.c (gupcr_lock_init): Fix the debug print
 	format for GMEM size.
 
 2013-04-11  Nenad Vukicevic  <nenad@intrepid.com>
 
-	configure.ac: Fix check for correct bounce buffer size value where
+	* configure.ac: Fix check for correct bounce buffer size value where
 	suffix multiplier (e.g. "k") was always expected.  Small fix for
 	correct checking of the "multilib" setting.
-	configure: Re-generate.
+	* configure: Re-generate.
 
 2013-04-09  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_lock.upc (upc_unlock): Add missing upc_fence.
-	smp/upc_lock.upc (upc_unlock): Ditto.
+	* portals4/gupcr_lock.upc (upc_unlock): Add missing upc_fence.
+	* smp/upc_lock.upc (upc_unlock): Ditto.
 
 2013-04-02  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_utils.c (gupcr_is_node_local_memory_enabled); Rename
+	* portals4/gupcr_utils.c (gupcr_is_node_local_memory_enabled); Rename
 	from gupcr_is_node_local_memory.  Fixing error from the previous
 	update.
 
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
 
-	portals4/gupcr_env.c (gupcr_env_boolean): Rename from gupcr_env_switch.
+	* portals4/gupcr_env.c (gupcr_env_boolean): Rename from gupcr_env_switch.
 	Change options to NO/no/0 or YES/yes/1.
 	(gupcr_env_init): New names for node memory and forcetouch options
 	set routines.
-	portals4/gupcr_node.c (gupcr_node_local_alloc): Ditto.
+	* portals4/gupcr_node.c (gupcr_node_local_alloc): Ditto.
 	(gupcr_node_init): Ditto.
-	portals4/gupcr_utils.c (gupcr_set_node_local_memory): Rename from
+	* portals4/gupcr_utils.c (gupcr_set_node_local_memory): Rename from
 	gupcr_set_node_local_mem_enabled.
 	(gupcr_set_forcetouch): Rename from gupcr_set_forcetouch_enabled.
-	portals4/gupcr_utils.h: Ditto.
+	* portals4/gupcr_utils.h: Ditto.
 
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Add shared memory page by page touch on startup.
-	configure.ac: Add --with-upc-memory-page-size switch.
-	config.h.in: Re-generate.
-	configure: Re-generate.
-	portals4/gupcr_env.c: Add UPC_FORCETOUCH env variable. Set to
+	* configure.ac: Add --with-upc-memory-page-size switch.
+	* config.h.in: Re-generate.
+	* configure: Re-generate.
+	* portals4/gupcr_env.c: Add UPC_FORCETOUCH env variable. Set to
 	1 (one) by default.
 	(gupcr_env_init): Decode UPC_FORCETOUCH env variable.
-	portals4/gupcr_node.c (gupcr_mem_check): Touch each page
+	* portals4/gupcr_node.c (gupcr_mem_check): Touch each page
 	of the local shared memory to make sure that memory is NUMA local.
-	portals4/gupcr_utils.c (gupcr_set_forcetouch_enabled): Add.
+	* portals4/gupcr_utils.c (gupcr_set_forcetouch_enabled): Add.
 	(gupcr_is_forcetouch_enabled): Add.
-	portals4/gupcr_utils.h (gupcr_set_forcetouch_enabled): Add.
+	* portals4/gupcr_utils.h (gupcr_set_forcetouch_enabled): Add.
 	(gupcr_is_forcetouch_enabled): Add.
 
 2013-04-01  Nenad Vukicevic  <nenad@intrepid.com>
