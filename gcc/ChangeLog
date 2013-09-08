@@ -1,8 +1,8 @@
-2013-09-08  Tom de Vries  <tom@codesourcery.com>
+2013-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
-	PR c++/58282
-	* except.c (build_must_not_throw_expr): Handle
-	flag_exceptions.
+	PR c++/54941
+	* diagnostic.c (diagnostic_build_prefix): When s.file is
+	"<built-in>" don't output line and column numbers.
 
 2013-09-06  Jan Hubicka  <jh@suse.cz>
 

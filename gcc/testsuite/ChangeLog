@@ -1,3 +1,8 @@
+2013-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54941
+	* g++.dg/overload/new1.C: Adjust.
+
 2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* c-c++-common/opaque-vector.c: New test.
