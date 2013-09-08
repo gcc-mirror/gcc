@@ -1,3 +1,10 @@
+2013-09-08  Caroline Tice  <cmtice@google.com>
+
+	PR c++/58300
+	* vtable-class-hierarchy.c (vtv_generate_init_routine):  In
+	preinit case, move call to assemble_vtv_preinit_initializer to
+	after call to cgraph_process_new_functions.
+	
 2013-09-08  Tom de Vries  <tom@codesourcery.com>
 
 	PR c++/58282
