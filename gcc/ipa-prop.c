@@ -3524,7 +3524,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	{
 	  tree expr, base, off;
 	  location_t loc;
-	  unsigned int deref_align;
+	  unsigned int deref_align = 0;
 	  bool deref_base = false;
 
 	  /* We create a new parameter out of the value of the old one, we can

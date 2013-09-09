@@ -1,3 +1,7 @@
+2013-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ipa-prop.c (ipa_modify_call_arguments): Initialize deref_align.
+
 2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/43452
@@ -370,10 +374,8 @@
 
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* config/arm/types.md: Add "no_insn", "multiple" and "untyped"
-	types.
-	* config/arm/arm-fixed.md: Add type attribute to all insn
-	patterns.
+	* config/arm/types.md: Add "no_insn", "multiple" and "untyped" types.
+	* config/arm/arm-fixed.md: Add type attribute to all insn patterns.
 	(add<mode>3): Add type attribute.
 	(add<mode>3): Likewise.
 	(usadd<mode>3): Likewise.
@@ -723,8 +725,7 @@
 
 2013-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* config/s390/s390.md: Add "bcr_flush" value to mnemonic
-	attribute.
+	* config/s390/s390.md: Add "bcr_flush" value to mnemonic attribute.
 	("mem_thread_fence_1"): Use bcr 14,0 for z196 and later.
 	Set the mnemonic attribute to "bcr_flush".  Set the "z196prop"
 	attribute to "z196_alone".
@@ -740,9 +741,9 @@
 	(set_control_dependence_map_bit, clear_control_dependence_bitmap,
 	find_pdom, find_control_dependence, find_all_control_dependences):
 	Move to cfganal.c.
-	(mark_control_dependent_edges_necessary, find_obviously_necessary_stmts,
-	propagate_necessity, tree_dce_init, tree_dce_done,
-	perform_tree_ssa_dce): Adjust.
+	(mark_control_dependent_edges_necessary,
+	find_obviously_necessary_stmts, propagate_necessity, tree_dce_init,
+	tree_dce_done, perform_tree_ssa_dce): Adjust.
 	* cfganal.c (set_control_dependence_map_bit,
 	clear_control_dependence_bitmap, find_pdom, find_control_dependence,
 	find_all_control_dependences): Move from tree-ssa-dce.c and
@@ -789,24 +790,17 @@
 2013-09-05  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Sofiane Naci  <sofiane.naci@arm.com>
 
-	* config/arm/types.md (define_attr "type"):
-	Expand "arlo_imm"
+	* config/arm/types.md (define_attr "type"): Expand "arlo_imm"
 	into "adr", "alu_imm", "alus_imm", "logic_imm", "logics_imm".
-	Expand "arlo_reg"
-	into "adc_reg", "adc_imm", "adcs_reg", "adcs_imm", "alu_ext",
-	"alu_reg", "alus_ext", "alus_reg", "bfm", "csel", "logic_reg",
-	"logics_reg", "rev".
-	Expand "arlo_shift"
-	into "alu_shift_imm", "alus_shift_imm", "logic_shift_imm",
-	"logics_shift_imm".
-	Expand "arlo_shift_reg"
-	into "alu_shift_reg", "alus_shift_reg", "logic_shift_reg",
-	"logics_shift_reg".
-	Expand "clz" into "clz, "rbit".
-	Rename "shift" to "shift_imm".
+	Expand "arlo_reg" into "adc_reg", "adc_imm", "adcs_reg", "adcs_imm",
+	"alu_ext", "alu_reg", "alus_ext", "alus_reg", "bfm", "csel",
+	"logic_reg", "logics_reg", "rev".  Expand "arlo_shift" into
+	"alu_shift_imm", "alus_shift_imm", "logic_shift_imm",
+	"logics_shift_imm".  Expand "arlo_shift_reg" into "alu_shift_reg",
+	"alus_shift_reg", "logic_shift_reg", "logics_shift_reg".  Expand "clz"
+	into "clz, "rbit".  Rename "shift" to "shift_imm".
 	* config/arm/arm.md (define_attr "core_cycles"): Update for attribute
-	changes.
-	Update for attribute changes all occurrences of arlo_* and
+	changes.  Update for attribute changes all occurrences of arlo_* and
 	shift* types.
 	* config/arm/arm-fixed.md: Update for attribute changes
 	all occurrences of arlo_* types.
@@ -821,8 +815,7 @@
 	* config/arm/arm1026ejs.md (alu_op): Update for attribute changes.
 	(alu_shift_op): Likewise.
 	(alu_shift_reg_op): Likewise.
-	* config/arm/arm1136jfs.md (11_alu_op): Update for
-	attribute changes.
+	* config/arm/arm1136jfs.md (11_alu_op): Update for attribute changes.
 	(11_alu_shift_op): Likewise.
 	(11_alu_shift_reg_op): Likewise.
 	* config/arm/arm926ejs.md (9_alu_op): Update for attribute changes.
@@ -834,36 +827,31 @@
 	* config/arm/cortex-a5.md (cortex_a5_alu): Update for
 	attribute changes.
 	(cortex_a5_alu_shift): Likewise.
-	* config/arm/cortex-a53.md
-	(cortex_a53_alu): Update for attribute changes.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Update for
+	attribute changes.
 	(cortex_a53_alu_shift): Likewise.
-	* config/arm/cortex-a7.md
-	(cortex_a7_alu_imm): Update for attribute changes.
+	* config/arm/cortex-a7.md (cortex_a7_alu_imm): Update for
+	attribute changes.
 	(cortex_a7_alu_reg): Likewise.
 	(cortex_a7_alu_shift): Likewise.
-	* config/arm/cortex-a8.md
-	(cortex_a8_alu): Update for attribute changes.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for
+	attribute changes.
 	(cortex_a8_alu_shift): Likewise.
 	(cortex_a8_alu_shift_reg): Likewise.
-	* config/arm/cortex-a9.md
-	(cortex_a9_dp): Update for attribute changes.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Update for attribute changes.
 	(cortex_a9_dp_shift): Likewise.
-	* config/arm/cortex-m4.md
-	(cortex_m4_alu): Update for attribute changes.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update for
+	attribute changes.
 	* config/arm/cortex-r4.md
 	(cortex_r4_alu): Update for attribute changes.
 	(cortex_r4_mov): Likewise.
 	(cortex_r4_alu_shift_reg): Likewise.
-	* config/arm/fa526.md
-	(526_alu_op): Update for attribute changes.
+	* config/arm/fa526.md (526_alu_op): Update for attribute changes.
 	(526_alu_shift_op): Likewise.
-	* config/arm/fa606te.md
-	(606te_alu_op): Update for attribute changes.
-	* config/arm/fa626te.md
-	(626te_alu_op): Update for attribute changes.
+	* config/arm/fa606te.md (606te_alu_op): Update for attribute changes.
+	* config/arm/fa626te.md (626te_alu_op): Update for attribute changes.
 	(626te_alu_shift_op): Likewise.
-	* config/arm/fa726te.md
-	(726te_alu_op): Update for attribute changes.
+	* config/arm/fa726te.md (726te_alu_op): Update for attribute changes.
 	(726te_alu_shift_op): Likewise.
 	(726te_alu_shift_reg_op): Likewise.
 	* config/arm/fmp626.md (mp626_alu_op): Update for attribute changes.
@@ -1272,8 +1260,7 @@
 	(cortex_a15_store1): Likewise.
 	(cortex_a15_store3): Likewise.
 	(cortex_a15_call): Likewise.
-	* config/arm/cortex-a5.md (cortex_a5_r2f): Update for attribute
-	change.
+	* config/arm/cortex-a5.md (cortex_a5_r2f): Update for attribute change.
 	(cortex_a5_f2r): Likewise.
 	* config/arm/cortex-a53.md (cortex_a53_r2f): Update for attribute
 	change.
@@ -1327,8 +1314,8 @@
 	(cortex_a8_neon_vsma): Likewise.
 	(cortex_a8_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a8_neon_mul_qqq_8_16_32_ddd_32): Likewise.
-	(cortex_a8_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
-	Likewise.
+	(cortex_a8_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_\
+	long_scalar): Likewise.
 	(cortex_a8_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a8_neon_mla_qqq_8_16): Likewise.
 	(cortex_a8_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_\
@@ -1375,8 +1362,7 @@
 	(cortex_a8_neon_vld3_vld4_all_lanes): Likewise.
 	(cortex_a8_neon_mcr): Likewise.
 	(cortex_a8_neon_mcr_2_mcrr): Likewise.
-	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute
-	change.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute change.
 	* config/arm/cortex-a9-neon.md (ca9_neon_mrc): Update for attribute
 	change.
 	(ca9_neon_mrrc): Likewise.
@@ -1392,8 +1378,8 @@
 	(cortex_a9_neon_vsma): Likewise.
 	(cortex_a9_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a9_neon_mul_qqq_8_16_32_ddd_32): Likewise.
-	(cortex_a9_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
-	Likewise.
+	(cortex_a9_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_\
+	long_scalar): Likewise.
 	(cortex_a9_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a9_neon_mla_qqq_8_16): Likewise.
 	(cortex_a9_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_\
@@ -1449,11 +1435,10 @@
 	change.
 	(cortex_r4_mrc): Likewise.
 	* config/arm/iterators.md: Update comment referring to neon_type.
-	* config/arm/iwmmxt.md
-	(iwmmxt_arm_movdi): Update for attribute change.
+	* config/arm/iwmmxt.md (iwmmxt_arm_movdi): Update for attribute change.
 	(iwmmxt_movsi_insn): Likewise.
-	* config/arm/marvell-pj4.md
-	(pj4_vfp_to_core): Update for attribute change.
+	* config/arm/marvell-pj4.md (pj4_vfp_to_core): Update for
+	attribute change.
 	(pj4_core_to_vfp): Likewise.
 	* config/arm/neon-schedgen.ml (emit_insn_reservations): Update for
 	attribute change.
@@ -1669,19 +1654,20 @@
 	cgraph_propagate_frequency_1, cgraph_propagate_frequency): Move to
 	ipa-profile.c; replace cgraph_ by ipa_ prefix.
 	* cgraph.h (cgraph_propagate_frequency): Remove.
-	* ipa-inline-analysis.c: Include ipa-utils.h; drop duplicated cfgloop.h.
+	* ipa-inline-analysis.c: Include ipa-utils.h;
+	drop duplicated cfgloop.h.
 	(inline_update_callee_summaries): Update.
 	* ipa-profile.c: New file.
 	* ipa-utils.h (ipa_propagate_frequency): Declare.
 	* ipa.c: Do not include pointer-set.h, hash-table.h, lto-streamer.h,
-	data-streamer.h, value-prof.h
+	data-streamer.h, value-prof.h.
 	(symtab_remove_unreachable_nodes): Update profile.
 	(struct histogram_entry, histogram, histogram_pool, histogram_hash,
 	account_time_size, cmp_counts, dump_histogram,
 	ipa_profile_generate_summary, ipa_profile_write_summary,
 	ipa_profile_read_summary, ipa_profile, gate_ipa_profile,
 	pass_data_ipa_profile, pass_ipa_profile, make_pass_ipa_profile):
-	Move to ipa-profile.c
+	Move to ipa-profile.c.
 
 2013-09-01  John David Anglin  <danglin@gcc.gnu.org>
 
@@ -1703,7 +1689,7 @@
 	value range profiling is available.
 	* passes.def (pass_ipa_devirt): Add.
 	* timever.def (TV_IPA_DEVIRT): New timevar.
-	* tree-pass.h (make_pass_ipa_devirt): 
+	* tree-pass.h (make_pass_ipa_devirt):
 
 2013-09-01  Iain Sandoe  <iain@codesourcery.com>
 
@@ -2466,13 +2452,13 @@
 
 2013-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/predicates.md (ext_sse_reg_operand): New.
-	* gcc/config/i386/i386.md (*movti_internal): Use
+	* config/i386/predicates.md (ext_sse_reg_operand): New.
+	* config/i386/i386.md (*movti_internal): Use
 	predicate to determine if EVEX is needed.
 	(*movsi_internal): Ditto.
 	(*movdf_internal): Ditto.
 	(*movsf_internal): Ditto.
-	* gcc/config/i386/mmx.md (*mov<mode>_internal): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal): Ditto.
 
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -6420,7 +6406,7 @@
 	(ix86_save_reg): If the function contains a nonlocal label, save the
 	PIC base reg.
 	* config/darwin-protos.h (machopic_should_output_picbase_label): New.
-	* gcc/config/darwin.c (emitted_pic_label_num): New GTY.
+	* config/darwin.c (emitted_pic_label_num): New GTY.
 	(update_pic_label_number_if_needed): New.
 	(machopic_output_function_base_name): Adjust for nonlocal receiver
 	case.
@@ -9779,11 +9765,11 @@
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Check movbe.
 
-	* gcc/config/i386/i386-c.c (ix86_target_macros_internal):  New case
+	* config/i386/i386-c.c (ix86_target_macros_internal):  New case
 	PROCESSOR_SLM.
 	(ix86_target_macros_internal): Likewise.
 
-	* gcc/config/i386/i386.c (slm_cost): New cost.
+	* config/i386/i386.c (slm_cost): New cost.
 	(m_SLM): New macro flag.
 	(initial_ix86_tune_features): Set m_SLM.
 	(x86_accumulate_outgoing_args): Likewise.
@@ -10617,7 +10603,7 @@
 	constraints.md instead of rs6000.h.  Reorder w* constraints.  Add
 	wm, wn, wr documentation.
 
-	* gcc/config/rs6000/constraints.md (wm): New constraint for VSX
+	* config/rs6000/constraints.md (wm): New constraint for VSX
 	registers if direct move instructions are enabled.
 	(wn): New constraint for no registers.
 	(wq): New constraint for quad word even GPR registers.
@@ -10625,7 +10611,7 @@
 	(wv): New constraint if power8 vector instructions are enabled.
 	(wQ): New constraint for quad word memory locations.
 
-	* gcc/config/rs6000/predicates.md (const_0_to_15_operand): New
+	* config/rs6000/predicates.md (const_0_to_15_operand): New
 	constraint for 0..15 for crypto instructions.
 	(gpc_reg_operand): If VSX allow registers in VSX registers as well
 	as GPR and floating point registers.
@@ -10638,17 +10624,17 @@
 	(quad_memory_operand): New predicate for quad memory operations.
 	(reg_or_indexed_operand): New predicate for direct move support.
 
-	* gcc/config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED):
+	* config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED):
 	Inherit from ISA_2_4_MASKS, not ISA_2_2_MASKS.
 	(ISA_2_7_MASKS_SERVER): New mask for ISA 2.07 (i.e. power8).
 	(POWERPC_MASKS): Add power8 options.
 	(power8 cpu): Use ISA_2_7_MASKS_SERVER instead of specifying the
 	various options.
 
-	* gcc/config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
 	Define _ARCH_PWR8 and __POWER8_VECTOR__ for power8.
 
-	* gcc/config/rs6000/rs6000.opt (-mvsx-timode): Add documentation.
+	* config/rs6000/rs6000.opt (-mvsx-timode): Add documentation.
 	(-mpower8-fusion): New power8 options.
 	(-mpower8-fusion-sign): Likewise.
 	(-mpower8-vector): Likewise.
@@ -10656,8 +10642,7 @@
 	(-mdirect-move): Likewise.
 	(-mquad-memory): Likewise.
 
-	* gcc/config/rs6000/rs6000.c (power8_cost): Initial definition for
-	power8.
+	* config/rs6000/rs6000.c (power8_cost): Initial definition for power8.
 	(rs6000_hard_regno_mode_ok): Make PTImode only match even GPR
 	registers.
 	(rs6000_debug_reg_print): Print the base register class if -mdebug=reg.
@@ -15780,21 +15765,20 @@
 
 2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
-	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
-	* gcc/doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
-	* gcc/doc/tm.texi: Regenerate.
-	* gcc/targhooks.h (default_has_ifunc_p): New.
-	* gcc/targhooks.c (default_has_ifunc_p): Ditto.
-	* gcc/config/linux-protos.h: New file.
-	* gcc/config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
-	this hook for linux which disables support of indirect functions in
-	android.
-	* gcc/config/linux-android.c: New file.
-	* gcc/config/t-linux-android.c: Ditto.
-	* gcc/config.gcc: Added new object file linux-android.o.
-	* gcc/config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	* target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_has_ifunc_p): New.
+	* targhooks.c (default_has_ifunc_p): Ditto.
+	* config/linux-protos.h: New file.
+	* config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of this
+	hook for linux which disables support of indirect functions in android.
+	* config/linux-android.c: New file.
+	* config/t-linux-android.c: Ditto.
+	* config.gcc: Added new object file linux-android.o.
+	* config/i386/i386.c (ix86_get_function_versions_dispatcher):
 	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
-	* gcc/varasm.c (do_assemble_alias): Likewise.
+	* varasm.c (do_assemble_alias): Likewise.
 	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
 	doesn't support indirect functions.
 	* configure: Regenerate.
