@@ -376,12 +376,18 @@
   (ior (match_code "const_int")
        (match_operand 0 "gpc_reg_operand")))
 
+;; Return 1 if op is a constant integer valid for addition with addis, addi.
+(define_predicate "add_cint_operand"
+  (and (match_code "const_int")
+       (match_test "(unsigned HOST_WIDE_INT)
+		      (INTVAL (op) + (mode == SImode ? 0x80000000 : 0x80008000))
+		    < (unsigned HOST_WIDE_INT) 0x100000000ll")))
+
 ;; Return 1 if op is a constant integer valid for addition
 ;; or non-special register.
 (define_predicate "reg_or_add_cint_operand"
   (if_then_else (match_code "const_int")
-    (match_test "(unsigned HOST_WIDE_INT) (INTVAL (op) + 0x80008000)
-		 < (unsigned HOST_WIDE_INT) 0x100000000ll")
+    (match_operand 0 "add_cint_operand")
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if op is a constant integer valid for subtraction
@@ -1697,7 +1703,7 @@
 (define_predicate "small_toc_ref"
   (match_code "unspec,plus")
 {
-  if (GET_CODE (op) == PLUS && CONST_INT_P (XEXP (op, 1)))
+  if (GET_CODE (op) == PLUS && add_cint_operand (XEXP (op, 1), mode))
     op = XEXP (op, 0);
 
   return GET_CODE (op) == UNSPEC && XINT (op, 1) == UNSPEC_TOCREL;
