@@ -1,5 +1,11 @@
 2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* expmed.c (lshift_value): Take an unsigned HOST_WIDE_INT instead
+	of an rtx/bitpos pair.
+	(store_fixed_bit_field): Update accordingly.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* asan.c (asan_emit_stack_protection): Use gen_int_mode instead of
 	GEN_INT.
 	* builtins.c (expand_errno_check): Likewise.
