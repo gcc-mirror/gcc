@@ -1,5 +1,8 @@
 2013-09-09  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/58325
+	* g++.dg/warn/Wunused-var-21.C: New test.
+
 	PR tree-optimization/58364
 	* gcc.c-torture/execute/pr58364.c: New test.
 
