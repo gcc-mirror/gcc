@@ -4862,8 +4862,8 @@ round_trampoline_addr (rtx tramp)
 
   /* Round address up to desired boundary.  */
   temp = gen_reg_rtx (Pmode);
-  addend = GEN_INT (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT - 1);
-  mask = GEN_INT (-TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT);
+  addend = gen_int_mode (TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT - 1, Pmode);
+  mask = gen_int_mode (-TRAMPOLINE_ALIGNMENT / BITS_PER_UNIT, Pmode);
 
   temp  = expand_simple_binop (Pmode, PLUS, tramp, addend,
 			       temp, 0, OPTAB_LIB_WIDEN);

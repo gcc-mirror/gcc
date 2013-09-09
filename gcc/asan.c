@@ -901,7 +901,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   emit_label (top_label);
 
   emit_move_insn (shadow_mem, const0_rtx);
-  tmp = expand_simple_binop (Pmode, PLUS, addr, GEN_INT (4), addr,
+  tmp = expand_simple_binop (Pmode, PLUS, addr, gen_int_mode (4, Pmode), addr,
                              true, OPTAB_LIB_WIDEN);
   if (tmp != addr)
     emit_move_insn (addr, tmp);
@@ -966,7 +966,8 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   str_cst = asan_pp_string (&asan_pp);
 
   /* Emit the prologue sequence.  */
-  base = expand_binop (Pmode, add_optab, base, GEN_INT (base_offset),
+  base = expand_binop (Pmode, add_optab, base,
+		       gen_int_mode (base_offset, Pmode),
 		       NULL_RTX, 1, OPTAB_DIRECT);
   mem = gen_rtx_MEM (ptr_mode, base);
   emit_move_insn (mem, GEN_INT (ASAN_STACK_FRAME_MAGIC));
@@ -976,7 +977,8 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 			      GEN_INT (ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base = expand_binop (Pmode, add_optab, shadow_base,
-			      GEN_INT (targetm.asan_shadow_offset ()),
+			      gen_int_mode (targetm.asan_shadow_offset (),
+					    Pmode),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   gcc_assert (asan_shadow_set != -1
 	      && (ASAN_RED_ZONE_SIZE >> ASAN_SHADOW_SHIFT) == 4);

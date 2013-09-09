@@ -1544,9 +1544,10 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	{
 	  start_sequence ();
 
-	  x = expand_simple_binop (GET_MODE (SET_DEST (set)), PLUS,
-				   new_rtx, GEN_INT (offset), SET_DEST (set),
-				   1, OPTAB_LIB_WIDEN);
+	  x = expand_simple_binop (GET_MODE (SET_DEST (set)), PLUS, new_rtx,
+				   gen_int_mode (offset,
+						 GET_MODE (SET_DEST (set))),
+				   SET_DEST (set), 1, OPTAB_LIB_WIDEN);
 	  if (x != SET_DEST (set))
 	    emit_move_insn (SET_DEST (set), x);
 
@@ -1666,8 +1667,8 @@ instantiate_virtual_regs_in_insn (rtx insn)
 		 to see if (plus new offset) is a valid before we put
 		 this through expand_simple_binop.  */
 	      x = expand_simple_binop (GET_MODE (x), PLUS, new_rtx,
-				       GEN_INT (offset), NULL_RTX,
-				       1, OPTAB_LIB_WIDEN);
+				       gen_int_mode (offset, GET_MODE (x)),
+				       NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	      seq = get_insns ();
 	      end_sequence ();
 	      emit_insn_before (seq, insn);
@@ -1681,9 +1682,10 @@ instantiate_virtual_regs_in_insn (rtx insn)
 	  if (offset != 0)
 	    {
 	      start_sequence ();
-	      new_rtx = expand_simple_binop (GET_MODE (new_rtx), PLUS, new_rtx,
-					 GEN_INT (offset), NULL_RTX,
-					 1, OPTAB_LIB_WIDEN);
+	      new_rtx = expand_simple_binop
+		(GET_MODE (new_rtx), PLUS, new_rtx,
+		 gen_int_mode (offset, GET_MODE (new_rtx)),
+		 NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	      seq = get_insns ();
 	      end_sequence ();
 	      emit_insn_before (seq, insn);

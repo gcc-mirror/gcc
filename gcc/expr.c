@@ -3132,7 +3132,7 @@ emit_move_resolve_push (enum machine_mode mode, rtx x)
   /* Do not use anti_adjust_stack, since we don't want to update
      stack_pointer_delta.  */
   temp = expand_simple_binop (Pmode, PLUS, stack_pointer_rtx,
-			      GEN_INT (adjust), stack_pointer_rtx,
+			      gen_int_mode (adjust, Pmode), stack_pointer_rtx,
 			      0, OPTAB_LIB_WIDEN);
   if (temp != stack_pointer_rtx)
     emit_move_insn (stack_pointer_rtx, temp);
@@ -3643,7 +3643,8 @@ push_block (rtx size, int extra, int below)
     {
       temp = copy_to_mode_reg (Pmode, size);
       if (extra != 0)
-	temp = expand_binop (Pmode, add_optab, temp, GEN_INT (extra),
+	temp = expand_binop (Pmode, add_optab, temp,
+			     gen_int_mode (extra, Pmode),
 			     temp, 0, OPTAB_LIB_WIDEN);
       anti_adjust_stack (temp);
     }
@@ -3911,7 +3912,7 @@ emit_single_push_insn_1 (enum machine_mode mode, rtx x, tree type)
 				    add_optab,
 #endif
 				    stack_pointer_rtx,
-				    GEN_INT (rounded_size),
+				    gen_int_mode (rounded_size, Pmode),
 				    NULL_RTX, 0, OPTAB_LIB_WIDEN));
 
       offset = (HOST_WIDE_INT) padding_size;
@@ -4127,8 +4128,8 @@ emit_push_insn (rtx x, enum machine_mode mode, tree type, rtx size,
 		size = GEN_INT (INTVAL (size) - used);
 	      else
 		size = expand_binop (GET_MODE (size), sub_optab, size,
-				     GEN_INT (used), NULL_RTX, 0,
-				     OPTAB_LIB_WIDEN);
+				     gen_int_mode (used, GET_MODE (size)),
+				     NULL_RTX, 0, OPTAB_LIB_WIDEN);
 	    }
 
 	  /* Get the address of the stack space.
@@ -4475,7 +4476,8 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
       binop = code == BIT_IOR_EXPR ? ior_optab : xor_optab;
       if (bitpos + bitsize != str_bitsize)
 	{
-	  rtx mask = GEN_INT (((unsigned HOST_WIDE_INT) 1 << bitsize) - 1);
+	  rtx mask = gen_int_mode (((unsigned HOST_WIDE_INT) 1 << bitsize) - 1,
+				   str_mode);
 	  value = expand_and (str_mode, value, mask, NULL_RTX);
 	}
       value = expand_shift (LSHIFT_EXPR, str_mode, value, bitpos, NULL_RTX, 1);
@@ -9857,7 +9859,8 @@ expand_expr_real_1 (tree exp, rtx target, enum machine_mode tmode,
 
 		    if (TYPE_UNSIGNED (TREE_TYPE (field)))
 		      {
-			op1 = GEN_INT (((HOST_WIDE_INT) 1 << bitsize) - 1);
+			op1 = gen_int_mode (((HOST_WIDE_INT) 1 << bitsize) - 1,
+					    imode);
 			op0 = expand_and (imode, op0, op1, target);
 		      }
 		    else

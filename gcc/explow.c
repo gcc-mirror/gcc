@@ -1355,7 +1355,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       else
 	{
 	  ask = expand_binop (Pmode, add_optab, size,
-			      GEN_INT (required_align / BITS_PER_UNIT - 1),
+			      gen_int_mode (required_align / BITS_PER_UNIT - 1,
+					    Pmode),
 			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	  must_align = true;
 	}
@@ -1481,13 +1482,16 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 but we know it can't.  So add ourselves and then do
 	 TRUNC_DIV_EXPR.  */
       target = expand_binop (Pmode, add_optab, target,
-			     GEN_INT (required_align / BITS_PER_UNIT - 1),
+			     gen_int_mode (required_align / BITS_PER_UNIT - 1,
+					   Pmode),
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
       target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
-			      GEN_INT (required_align / BITS_PER_UNIT),
+			      gen_int_mode (required_align / BITS_PER_UNIT,
+					    Pmode),
 			      NULL_RTX, 1);
       target = expand_mult (Pmode, target,
-			    GEN_INT (required_align / BITS_PER_UNIT),
+			    gen_int_mode (required_align / BITS_PER_UNIT,
+					  Pmode),
 			    NULL_RTX, 1);
     }
 
@@ -1669,7 +1673,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 
       /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
       temp = expand_binop (Pmode, STACK_GROW_OPTAB, test_addr,
-			   GEN_INT (PROBE_INTERVAL), test_addr,
+			   gen_int_mode (PROBE_INTERVAL, Pmode), test_addr,
 			   1, OPTAB_WIDEN);
 
       gcc_assert (temp == test_addr);

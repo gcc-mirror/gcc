@@ -1148,8 +1148,9 @@ generate_prolog_epilog (partial_schedule_ptr ps, struct loop *loop,
          generate_prolog_epilog function.  */
       rtx sub_reg = NULL_RTX;
 
-      sub_reg = expand_simple_binop (GET_MODE (count_reg), MINUS,
-                                     count_reg, GEN_INT (last_stage),
+      sub_reg = expand_simple_binop (GET_MODE (count_reg), MINUS, count_reg,
+				     gen_int_mode (last_stage,
+						   GET_MODE (count_reg)),
                                      count_reg, 1, OPTAB_DIRECT);
       gcc_assert (REG_P (sub_reg));
       if (REGNO (sub_reg) != REGNO (count_reg))
