@@ -1,5 +1,17 @@
 2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* combine.c (simplify_set, expand_field_assignment, extract_left_shift)
+	(force_to_mode, simplify_shift_const_1, simplify_comparison):
+	Use gen_int_mode with the mode of the associated simplify_* call.
+	* explow.c (probe_stack_range, anti_adjust_stack_and_probe): Likewise.
+	* expmed.c (expand_shift_1): Likewise.
+	* function.c (instantiate_virtual_regs_in_insn): Likewise.
+	* loop-iv.c (iv_number_of_iterations): Likewise.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* asan.c (asan_clear_shadow): Use gen_int_mode with the mode
 	of the associated expand_* call.
 	(asan_emit_stack_protection): Likewise.

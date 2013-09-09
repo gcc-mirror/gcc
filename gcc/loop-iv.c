@@ -2672,11 +2672,11 @@ iv_number_of_iterations (struct loop *loop, rtx insn, rtx condition,
       bound = GEN_INT (((unsigned HOST_WIDEST_INT) 1 << (size - 1 ) << 1) - 1);
 
       tmp1 = lowpart_subreg (mode, iv1.base, comp_mode);
-      tmp = simplify_gen_binary (UMOD, mode, tmp1, GEN_INT (d));
+      tmp = simplify_gen_binary (UMOD, mode, tmp1, gen_int_mode (d, mode));
       assumption = simplify_gen_relational (NE, SImode, mode, tmp, const0_rtx);
       desc->infinite = alloc_EXPR_LIST (0, assumption, desc->infinite);
 
-      tmp = simplify_gen_binary (UDIV, mode, tmp1, GEN_INT (d));
+      tmp = simplify_gen_binary (UDIV, mode, tmp1, gen_int_mode (d, mode));
       inv = inverse (s, size);
       tmp = simplify_gen_binary (MULT, mode, tmp, gen_int_mode (inv, mode));
       desc->niter_expr = simplify_gen_binary (AND, mode, tmp, bound);

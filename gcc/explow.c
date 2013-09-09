@@ -1636,7 +1636,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 
       /* ROUNDED_SIZE = SIZE & -PROBE_INTERVAL  */
       rounded_size
-	= simplify_gen_binary (AND, Pmode, size, GEN_INT (-PROBE_INTERVAL));
+	= simplify_gen_binary (AND, Pmode, size,
+			       gen_int_mode (-PROBE_INTERVAL, Pmode));
       rounded_size_op = force_operand (rounded_size, NULL_RTX);
 
 
@@ -1780,7 +1781,8 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
 
       /* ROUNDED_SIZE = SIZE & -PROBE_INTERVAL  */
       rounded_size
-	= simplify_gen_binary (AND, Pmode, size, GEN_INT (-PROBE_INTERVAL));
+	= simplify_gen_binary (AND, Pmode, size,
+			       gen_int_mode (-PROBE_INTERVAL, Pmode));
       rounded_size_op = force_operand (rounded_size, NULL_RTX);
 
 

@@ -2214,11 +2214,10 @@ expand_shift_1 (enum tree_code code, enum machine_mode mode, rtx shifted,
 		  other_amount
 		    = simplify_gen_unary (NEG, GET_MODE (op1),
 					  op1, GET_MODE (op1));
+		  HOST_WIDE_INT mask = GET_MODE_PRECISION (mode) - 1;
 		  other_amount
-		    = simplify_gen_binary (AND, GET_MODE (op1),
-					   other_amount,
-					   GEN_INT (GET_MODE_PRECISION (mode)
-						    - 1));
+		    = simplify_gen_binary (AND, GET_MODE (op1), other_amount,
+					   gen_int_mode (mask, GET_MODE (op1)));
 		}
 
 	      shifted = force_reg (mode, shifted);

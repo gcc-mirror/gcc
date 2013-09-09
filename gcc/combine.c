@@ -6374,8 +6374,9 @@ simplify_set (rtx x)
 		  *cc_use = old_cc_use;
 		  other_changed = 0;
 
-		  op0 = simplify_gen_binary (XOR, GET_MODE (op0),
-					     op0, GEN_INT (mask));
+		  op0 = simplify_gen_binary (XOR, GET_MODE (op0), op0,
+					     gen_int_mode (mask,
+							   GET_MODE (op0)));
 		}
 	    }
 	}
@@ -6897,11 +6898,13 @@ expand_field_assignment (const_rtx x)
 		/* If position is ADJUST - X, new position is X.  */
 		pos = XEXP (pos, 0);
 	      else
-		pos = simplify_gen_binary (MINUS, GET_MODE (pos),
-					   GEN_INT (GET_MODE_PRECISION (
-						    GET_MODE (inner))
-						    - len),
-					   pos);
+		{
+		  HOST_WIDE_INT prec = GET_MODE_PRECISION (GET_MODE (inner));
+		  pos = simplify_gen_binary (MINUS, GET_MODE (pos),
+					     gen_int_mode (prec - len,
+							   GET_MODE (pos)),
+					     pos);
+		}
 	    }
 	}
 
@@ -6954,7 +6957,8 @@ expand_field_assignment (const_rtx x)
       /* Now compute the equivalent expression.  Make a copy of INNER
 	 for the SET_DEST in case it is a MEM into which we will substitute;
 	 we don't want shared RTL in that case.  */
-      mask = GEN_INT (((unsigned HOST_WIDE_INT) 1 << len) - 1);
+      mask = gen_int_mode (((unsigned HOST_WIDE_INT) 1 << len) - 1,
+			   compute_mode);
       cleared = simplify_gen_binary (AND, compute_mode,
 				     simplify_gen_unary (NOT, compute_mode,
 				       simplify_gen_binary (ASHIFT,
@@ -7418,9 +7422,11 @@ extract_left_shift (rtx x, int count)
 	  && (UINTVAL (XEXP (x, 1))
 	      & ((((unsigned HOST_WIDE_INT) 1 << count)) - 1)) == 0
 	  && (tem = extract_left_shift (XEXP (x, 0), count)) != 0)
-	return simplify_gen_binary (code, mode, tem,
-				    GEN_INT (INTVAL (XEXP (x, 1)) >> count));
-
+	{
+	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1)) >> count;
+	  return simplify_gen_binary (code, mode, tem,
+				      gen_int_mode (val, mode));
+	}
       break;
 
     default:
@@ -8128,17 +8134,10 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	      unsigned HOST_WIDE_INT cval
 		= UINTVAL (XEXP (x, 1))
 		  | (GET_MODE_MASK (GET_MODE (x)) & ~mask);
-	      int width = GET_MODE_PRECISION (GET_MODE (x));
 	      rtx y;
 
-	      /* If MODE is narrower than HOST_WIDE_INT and CVAL is a negative
-		 number, sign extend it.  */
-	      if (width > 0 && width < HOST_BITS_PER_WIDE_INT
-		  && (cval & (HOST_WIDE_INT_1U << (width - 1))) != 0)
-		cval |= HOST_WIDE_INT_M1U << width;
-
-	      y = simplify_gen_binary (AND, GET_MODE (x),
-				       XEXP (x, 0), GEN_INT (cval));
+	      y = simplify_gen_binary (AND, GET_MODE (x), XEXP (x, 0),
+				       gen_int_mode (cval, GET_MODE (x)));
 	      if (set_src_cost (y, optimize_this_for_speed_p)
 	          < set_src_cost (x, optimize_this_for_speed_p))
 		x = y;
@@ -8228,8 +8227,9 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  && (UINTVAL (XEXP (x, 1))
 	      & ~nonzero_bits (XEXP (x, 0), GET_MODE (x))) == 0)
 	{
-	  temp = GEN_INT ((INTVAL (XEXP (x, 1)) & mask)
-			  << INTVAL (XEXP (XEXP (x, 0), 1)));
+	  temp = gen_int_mode ((INTVAL (XEXP (x, 1)) & mask)
+			       << INTVAL (XEXP (XEXP (x, 0), 1)),
+			       GET_MODE (x));
 	  temp = simplify_gen_binary (GET_CODE (x), GET_MODE (x),
 				      XEXP (XEXP (x, 0), 0), temp);
 	  x = simplify_gen_binary (LSHIFTRT, GET_MODE (x), temp,
@@ -8443,7 +8443,8 @@ force_to_mode (rtx x, enum machine_mode mode, unsigned HOST_WIDE_INT mask,
 	  && INTVAL (XEXP (x, 1)) >= 0)
 	{
 	  temp = simplify_binary_operation (code == ROTATE ? ROTATERT : ROTATE,
-					    GET_MODE (x), GEN_INT (mask),
+					    GET_MODE (x),
+					    gen_int_mode (mask, GET_MODE (x)),
 					    XEXP (x, 1));
 	  if (temp && CONST_INT_P (temp))
 	    SUBST (XEXP (x, 0),
@@ -10092,7 +10093,8 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 		 nonzero bits of the inner shift the same way the
 		 outer shift will.  */
 
-	      mask_rtx = GEN_INT (nonzero_bits (varop, GET_MODE (varop)));
+	      mask_rtx = gen_int_mode (nonzero_bits (varop, GET_MODE (varop)),
+				       result_mode);
 
 	      mask_rtx
 		= simplify_const_binary_operation (code, result_mode, mask_rtx,
@@ -10193,9 +10195,10 @@ simplify_shift_const_1 (enum rtx_code code, enum machine_mode result_mode,
 	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
 		   && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
 					      shift_mode))
-	      && (new_rtx = simplify_const_binary_operation (code, result_mode,
-							 XEXP (varop, 1),
-							 GEN_INT (count))) != 0
+	      && (new_rtx = simplify_const_binary_operation
+		  (code, result_mode,
+		   gen_int_mode (INTVAL (XEXP (varop, 1)), result_mode),
+		   GEN_INT (count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, GET_CODE (varop),
 				  INTVAL (new_rtx), result_mode, &complement_p))
@@ -11946,11 +11949,11 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  if (op1 == const0_rtx && (code == LT || code == GE)
 	      && HWI_COMPUTABLE_MODE_P (mode))
 	    {
+	      unsigned HOST_WIDE_INT sign
+		= (unsigned HOST_WIDE_INT) 1 << (GET_MODE_BITSIZE (mode) - 1);
 	      op0 = simplify_gen_binary (AND, tmode,
 					 gen_lowpart (tmode, op0),
-					 GEN_INT ((unsigned HOST_WIDE_INT) 1
-						  << (GET_MODE_BITSIZE (mode)
-						      - 1)));
+					 gen_int_mode (sign, mode));
 	      code = (code == LT) ? NE : EQ;
 	      break;
 	    }
