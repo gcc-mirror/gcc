@@ -144,7 +144,7 @@ and warnings}.
 -Wconversion -Wfunction-elimination -Wimplicit-interface @gol
 -Wimplicit-procedure -Wintrinsic-shadow -Wintrinsics-std @gol
 -Wline-truncation -Wno-align-commons -Wno-tabs -Wreal-q-constant @gol
--Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs Wrealloc-lhs-all @gol
+-Wsurprising -Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all @gol
 -Wtarget-lifetime -fmax-errors=@var{n} -fsyntax-only -pedantic -pedantic-errors
 }
 
