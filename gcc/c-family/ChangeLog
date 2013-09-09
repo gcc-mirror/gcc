@@ -1,3 +1,8 @@
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43452
+	* c.opt (Wdelete-incomplete): Add.
+
 2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* c-common.c (same_scalar_type_ignoring_signedness): Delete.

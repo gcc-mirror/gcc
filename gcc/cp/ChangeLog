@@ -1,5 +1,12 @@
 2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/43452
+	* init.c (build_vec_delete_1): When the type is incomplete emit a
+	warning, enabled by default (not an error).
+	(build_delete): Adjust to use OPT_Wdelete_incomplete.
+
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/58362
 	* error.c (location_of): Don't handle PARM_DECLs specially.
 
