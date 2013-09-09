@@ -223,15 +223,22 @@ fix_bb_placements (basic_block from,
 	  if (!fix_loop_placement (from->loop_father, irred_invalidated))
 	    continue;
 	  target_loop = loop_outer (from->loop_father);
+	  if (loop_closed_ssa_invalidated)
+	    {
+	      basic_block *bbs = get_loop_body (from->loop_father);
+	      for (unsigned i = 0; i < from->loop_father->num_nodes; ++i)
+		bitmap_set_bit (loop_closed_ssa_invalidated, bbs[i]->index);
+	      free (bbs);
+	    }
 	}
       else
 	{
 	  /* Ordinary basic block.  */
 	  if (!fix_bb_placement (from))
 	    continue;
+	  target_loop = from->loop_father;
 	  if (loop_closed_ssa_invalidated)
 	    bitmap_set_bit (loop_closed_ssa_invalidated, from->index);
-	  target_loop = from->loop_father;
 	}
 
       FOR_EACH_EDGE (e, ei, from->succs)

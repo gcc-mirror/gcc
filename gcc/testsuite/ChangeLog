@@ -1,3 +1,9 @@
+2013-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58326
+	* gcc.dg/torture/pr58326-1.c: New testcase.
+	* gcc.dg/torture/pr58326-2.c: Likewise.
+
 2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/57735

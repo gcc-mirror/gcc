@@ -1,3 +1,9 @@
+2013-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58326
+	* cfgloopmanip.c (fix_bb_placements): When fixing the placement
+	of a subloop record all its block as affecting loop-closed SSA form.
+
 2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* expmed.c (lshift_value): Take an unsigned HOST_WIDE_INT instead
