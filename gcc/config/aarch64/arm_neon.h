@@ -12764,11 +12764,11 @@ vrsqrte_f32 (float32x2_t a)
   return result;
 }
 
-__extension__ static __inline float64x2_t __attribute__ ((__always_inline__))
-vrsqrte_f64 (float64x2_t a)
+__extension__ static __inline float64x1_t __attribute__ ((__always_inline__))
+vrsqrte_f64 (float64x1_t a)
 {
-  float64x2_t result;
-  __asm__ ("frsqrte %0.2d,%1.2d"
+  float64x1_t result;
+  __asm__ ("frsqrte %d0,%d1"
            : "=w"(result)
            : "w"(a)
            : /* No clobbers */);
