@@ -1,5 +1,9 @@
 2013-09-10  Alan Modra  <amodra@gmail.com>
 
+	* gcc.target/powerpc/pr58330.c: New.
+
+2013-09-10  Alan Modra  <amodra@gmail.com>
+
 	* gcc.target/powerpc/medium_offset.c: New.
 
 2013-09-09  Jakub Jelinek  <jakub@redhat.com>
