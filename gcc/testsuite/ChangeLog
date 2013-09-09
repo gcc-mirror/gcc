@@ -1,3 +1,7 @@
+2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/cmn-neg.c: New test.
+
 2013-09-09  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58326
