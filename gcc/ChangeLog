@@ -1,5 +1,10 @@
 2013-09-10  Alan Modra  <amodra@gmail.com>
 
+	PR target/58330
+	* config/rs6000/rs6000.md (bswapdi2_64bit): Disable for volatile mems.
+
+2013-09-10  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/predicates.md (add_cint_operand): New.
 	(reg_or_add_cint_operand, small_toc_ref): Use add_cint_operand.
 	* config/rs6000/rs6000.md (largetoc_high_plus): Restrict offset
