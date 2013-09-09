@@ -1,3 +1,8 @@
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58362
+	* g++.dg/warn/Wunused-parm-5.C: New.
+
 2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/cmn-neg.c: New test.
