@@ -1,3 +1,8 @@
+2013-09-09  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_reload_class): Return
+	NO_REGS for immediate that can't be moved directly into FP_REGS.
+
 2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Return CC_SWP for
