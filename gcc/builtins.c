@@ -1967,7 +1967,8 @@ expand_errno_check (tree exp, rtx target)
       rtx errno_rtx
 	  = gen_rtx_MEM (word_mode, gen_rtx_SYMBOL_REF (Pmode, "errno"));
 #endif
-      emit_move_insn (errno_rtx, GEN_INT (TARGET_EDOM));
+      emit_move_insn (errno_rtx,
+		      gen_int_mode (TARGET_EDOM, GET_MODE (errno_rtx)));
       emit_label (lab);
       return;
     }

@@ -1071,10 +1071,12 @@ move_by_pieces_1 (insn_gen_fn genfun, machine_mode mode,
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr,
-				  GEN_INT (-(HOST_WIDE_INT)size)));
+				  gen_int_mode (-(HOST_WIDE_INT) size,
+						GET_MODE (data->to_addr))));
       if (HAVE_PRE_DECREMENT && data->explicit_inc_from < 0)
 	emit_insn (gen_add2_insn (data->from_addr,
-				  GEN_INT (-(HOST_WIDE_INT)size)));
+				  gen_int_mode (-(HOST_WIDE_INT) size,
+						GET_MODE (data->from_addr))));
 
       if (data->to)
 	emit_insn ((*genfun) (to1, from1));
@@ -1088,9 +1090,13 @@ move_by_pieces_1 (insn_gen_fn genfun, machine_mode mode,
 	}
 
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
-	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  gen_int_mode (size,
+						GET_MODE (data->to_addr))));
       if (HAVE_POST_INCREMENT && data->explicit_inc_from > 0)
-	emit_insn (gen_add2_insn (data->from_addr, GEN_INT (size)));
+	emit_insn (gen_add2_insn (data->from_addr,
+				  gen_int_mode (size,
+						GET_MODE (data->from_addr))));
 
       if (! data->reverse)
 	data->offset += size;
@@ -2676,13 +2682,16 @@ store_by_pieces_2 (insn_gen_fn genfun, machine_mode mode,
 
       if (HAVE_PRE_DECREMENT && data->explicit_inc_to < 0)
 	emit_insn (gen_add2_insn (data->to_addr,
-				  GEN_INT (-(HOST_WIDE_INT) size)));
+				  gen_int_mode (-(HOST_WIDE_INT) size,
+						GET_MODE (data->to_addr))));
 
       cst = (*data->constfun) (data->constfundata, data->offset, mode);
       emit_insn ((*genfun) (to1, cst));
 
       if (HAVE_POST_INCREMENT && data->explicit_inc_to > 0)
-	emit_insn (gen_add2_insn (data->to_addr, GEN_INT (size)));
+	emit_insn (gen_add2_insn (data->to_addr,
+				  gen_int_mode (size,
+						GET_MODE (data->to_addr))));
 
       if (! data->reverse)
 	data->offset += size;

@@ -1,5 +1,18 @@
 2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* asan.c (asan_emit_stack_protection): Use gen_int_mode instead of
+	GEN_INT.
+	* builtins.c (expand_errno_check): Likewise.
+	* dwarf2cfi.c (init_return_column_size): Likewise.
+	* except.c (sjlj_mark_call_sites): Likewise.
+	* expr.c (move_by_pieces_1, store_by_pieces_2): Likewise.
+	* lra-constraints.c (emit_inc): Likewise.
+	* ree.c (combine_set_extension): Likewise.
+	* regmove.c (fixup_match_2): Likewise.
+	* reload1.c (inc_for_reload): Likewise.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* combine.c (simplify_set, expand_field_assignment, extract_left_shift)
 	(force_to_mode, simplify_shift_const_1, simplify_comparison):
 	Use gen_int_mode with the mode of the associated simplify_* call.

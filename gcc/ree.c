@@ -298,7 +298,8 @@ combine_set_extension (ext_cand *cand, rtx curr_insn, rtx *orig_set)
 	     the source mode.  */
 	  enum machine_mode src_mode = GET_MODE (SET_DEST (*orig_set));
 	  rtx new_const_int
-	    = GEN_INT (INTVAL (orig_src) & GET_MODE_MASK (src_mode));
+	    = gen_int_mode (INTVAL (orig_src) & GET_MODE_MASK (src_mode),
+			    GET_MODE (new_reg));
 	  new_set = gen_rtx_SET (VOIDmode, new_reg, new_const_int);
 	}
     }
