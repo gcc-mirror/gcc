@@ -1,3 +1,8 @@
+2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/57735
+	* g++.dg/ext/pr57735.C: New test.
+
 2013-09-09  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58294
