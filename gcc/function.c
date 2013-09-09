@@ -1520,7 +1520,7 @@ instantiate_virtual_regs_in_insn (rtx insn)
 
 	  for_each_rtx (&SET_SRC (set), instantiate_virtual_regs_in_rtx, NULL);
 	  x = simplify_gen_binary (PLUS, GET_MODE (new_rtx), SET_SRC (set),
-				   GEN_INT (-offset));
+				   gen_int_mode (-offset, GET_MODE (new_rtx)));
 	  x = force_operand (x, new_rtx);
 	  if (x != new_rtx)
 	    emit_move_insn (new_rtx, x);
