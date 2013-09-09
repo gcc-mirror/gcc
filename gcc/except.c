@@ -1156,7 +1156,7 @@ sjlj_mark_call_sites (void)
       start_sequence ();
       mem = adjust_address (crtl->eh.sjlj_fc, TYPE_MODE (integer_type_node),
 			    sjlj_fc_call_site_ofs);
-      emit_move_insn (mem, GEN_INT (this_call_site));
+      emit_move_insn (mem, gen_int_mode (this_call_site, GET_MODE (mem)));
       p = get_insns ();
       end_sequence ();
 

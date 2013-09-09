@@ -2837,7 +2837,9 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
       if (plus_p)
 	{
 	  if (CONST_INT_P (inc))
-	    emit_insn (gen_add2_insn (result, GEN_INT (-INTVAL (inc))));
+	    emit_insn (gen_add2_insn (result,
+				      gen_int_mode (-INTVAL (inc),
+						    GET_MODE (result))));
 	  else
 	    emit_insn (gen_sub2_insn (result, inc));
 	}

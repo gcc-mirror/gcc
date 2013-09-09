@@ -9157,7 +9157,9 @@ inc_for_reload (rtx reloadreg, rtx in, rtx value, int inc_amount)
       emit_insn (gen_add2_insn (reloadreg, inc));
       emit_insn (gen_move_insn (incloc, reloadreg));
       if (CONST_INT_P (inc))
-	emit_insn (gen_add2_insn (reloadreg, GEN_INT (-INTVAL (inc))));
+	emit_insn (gen_add2_insn (reloadreg,
+				  gen_int_mode (-INTVAL (inc),
+						GET_MODE (reloadreg))));
       else
 	emit_insn (gen_sub2_insn (reloadreg, inc));
     }

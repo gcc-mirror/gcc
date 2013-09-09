@@ -970,7 +970,7 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
 		       gen_int_mode (base_offset, Pmode),
 		       NULL_RTX, 1, OPTAB_DIRECT);
   mem = gen_rtx_MEM (ptr_mode, base);
-  emit_move_insn (mem, GEN_INT (ASAN_STACK_FRAME_MAGIC));
+  emit_move_insn (mem, gen_int_mode (ASAN_STACK_FRAME_MAGIC, ptr_mode));
   mem = adjust_address (mem, VOIDmode, GET_MODE_SIZE (ptr_mode));
   emit_move_insn (mem, expand_normal (str_cst));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
