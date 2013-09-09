@@ -1,3 +1,9 @@
+2013-09-08  Jeff Law  <law@redhat.com>
+
+	PR bootstrap/58340
+	* tree-ssa-threadedge.c (thread_across_edge): Fix initialization
+	of 'found'.
+
 2013-09-08  Andi Kleen  <ak@linux.intel.com>
 
 	* tree-inline.c (estimate_num_insns): Limit asm cost to 1000.
