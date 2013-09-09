@@ -2472,12 +2472,15 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case PSEUDO_DTOR_EXPR:
-      dump_expr (pp, TREE_OPERAND (t, 2), flags);
+      dump_expr (pp, TREE_OPERAND (t, 0), flags);
       pp_cxx_dot (pp);
-      dump_type (pp, TREE_OPERAND (t, 0), flags);
-      pp_cxx_colon_colon (pp);
+      if (TREE_OPERAND (t, 1))
+	{
+	  dump_type (pp, TREE_OPERAND (t, 1), flags);
+	  pp_cxx_colon_colon (pp);
+	}
       pp_cxx_complement (pp);
-      dump_type (pp, TREE_OPERAND (t, 1), flags);
+      dump_type (pp, TREE_OPERAND (t, 2), flags);
       break;
 
     case TEMPLATE_ID_EXPR:

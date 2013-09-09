@@ -1,10 +1,16 @@
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* error.c (dump_expr, [PSEUDO_DTOR_EXPR]): Fix.
+	* cxx-pretty-print.c (cxx_pretty_printer::postfix_expression):
+	Tweak, TREE_OPERAND (t, 1) may be null.
+
 2013-09-08  Caroline Tice  <cmtice@google.com>
 
 	PR c++/58300
 	* vtable-class-hierarchy.c (vtv_generate_init_routine):  In
 	preinit case, move call to assemble_vtv_preinit_initializer to
 	after call to cgraph_process_new_functions.
-	
+
 2013-09-08  Tom de Vries  <tom@codesourcery.com>
 
 	PR c++/58282
