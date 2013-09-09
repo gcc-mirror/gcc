@@ -4725,13 +4725,14 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 
 	  if (unsignedp && len <= 8)
 	    {
+	      unsigned HOST_WIDE_INT mask
+		= ((unsigned HOST_WIDE_INT) 1 << len) - 1;
 	      SUBST (SET_SRC (x),
 		     gen_rtx_AND (mode,
 				  gen_rtx_LSHIFTRT
 				  (mode, gen_lowpart (mode, inner),
 				   GEN_INT (pos)),
-				  GEN_INT (((unsigned HOST_WIDE_INT) 1 << len)
-					   - 1)));
+				  gen_int_mode (mask, mode)));
 
 	      split = find_split_point (&SET_SRC (x), insn, true);
 	      if (split && split != &SET_SRC (x))
@@ -4814,9 +4815,11 @@ find_split_point (rtx *loc, rtx insn, bool set_src)
 	  enum machine_mode mode = GET_MODE (x);
 	  unsigned HOST_WIDE_INT this_int = INTVAL (XEXP (XEXP (x, 1), 1));
 	  HOST_WIDE_INT other_int = trunc_int_for_mode (-this_int, mode);
-	  SUBST (*loc, gen_rtx_PLUS (mode, gen_rtx_MULT (mode,
-							 XEXP (XEXP (x, 1), 0),
-							 GEN_INT (other_int)),
+	  SUBST (*loc, gen_rtx_PLUS (mode,
+				     gen_rtx_MULT (mode,
+						   XEXP (XEXP (x, 1), 0),
+						   gen_int_mode (other_int,
+								 mode)),
 				     XEXP (x, 0)));
 	  return find_split_point (loc, insn, set_src);
 	}
@@ -7258,7 +7261,9 @@ make_extraction (enum machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	pos = width - len - pos;
       else
 	pos_rtx
-	  = gen_rtx_MINUS (GET_MODE (pos_rtx), GEN_INT (width - len), pos_rtx);
+	  = gen_rtx_MINUS (GET_MODE (pos_rtx),
+			   gen_int_mode (width - len, GET_MODE (pos_rtx)),
+			   pos_rtx);
       /* POS may be less than 0 now, but we check for that below.
 	 Note that it can only be less than 0 if !MEM_P (inner).  */
     }
@@ -7490,7 +7495,7 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 	      multval = -multval;
 	    }
 	  multval = trunc_int_for_mode (multval, mode);
-	  new_rtx = gen_rtx_MULT (mode, new_rtx, GEN_INT (multval));
+	  new_rtx = gen_rtx_MULT (mode, new_rtx, gen_int_mode (multval, mode));
 	}
       break;
 

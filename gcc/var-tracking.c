@@ -1045,9 +1045,10 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
     case PRE_INC:
     case PRE_DEC:
       addr = gen_rtx_PLUS (GET_MODE (loc), XEXP (loc, 0),
-			   GEN_INT (GET_CODE (loc) == PRE_INC
-				    ? GET_MODE_SIZE (amd->mem_mode)
-				    : -GET_MODE_SIZE (amd->mem_mode)));
+			   gen_int_mode (GET_CODE (loc) == PRE_INC
+					 ? GET_MODE_SIZE (amd->mem_mode)
+					 : -GET_MODE_SIZE (amd->mem_mode),
+					 GET_MODE (loc)));
     case POST_INC:
     case POST_DEC:
       if (addr == loc)
@@ -1055,10 +1056,11 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
       gcc_assert (amd->mem_mode != VOIDmode && amd->mem_mode != BLKmode);
       addr = simplify_replace_fn_rtx (addr, old_rtx, adjust_mems, data);
       tem = gen_rtx_PLUS (GET_MODE (loc), XEXP (loc, 0),
-			   GEN_INT ((GET_CODE (loc) == PRE_INC
-				     || GET_CODE (loc) == POST_INC)
-				    ? GET_MODE_SIZE (amd->mem_mode)
-				    : -GET_MODE_SIZE (amd->mem_mode)));
+			  gen_int_mode ((GET_CODE (loc) == PRE_INC
+					 || GET_CODE (loc) == POST_INC)
+					? GET_MODE_SIZE (amd->mem_mode)
+					: -GET_MODE_SIZE (amd->mem_mode),
+					GET_MODE (loc)));
       amd->side_effects = alloc_EXPR_LIST (0,
 					   gen_rtx_SET (VOIDmode,
 							XEXP (loc, 0),

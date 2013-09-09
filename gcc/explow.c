@@ -186,7 +186,7 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
     }
 
   if (c != 0)
-    x = gen_rtx_PLUS (mode, x, GEN_INT (c));
+    x = gen_rtx_PLUS (mode, x, gen_int_mode (c, mode));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     return x;
@@ -1641,7 +1641,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       /* TEST_ADDR = SP + FIRST.  */
       test_addr = force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					 	 stack_pointer_rtx,
-					 	 GEN_INT (first)), NULL_RTX);
+						 gen_int_mode (first, Pmode)),
+				 NULL_RTX);
 
       /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
       last_addr = force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,

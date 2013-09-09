@@ -1,3 +1,20 @@
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* alias.c (addr_side_effect_eval): Use gen_int_mode with the mode
+	of the associated gen_rtx_* call.
+	* caller-save.c (init_caller_save): Likewise.
+	* combine.c (find_split_point, make_extraction): Likewise.
+	(make_compound_operation): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* explow.c (plus_constant, probe_stack_range): Likewise.
+	* expmed.c (expand_mult_const): Likewise.
+	* expr.c (emit_single_push_insn_1, do_tablejump): Likewise.
+	* reload1.c (init_reload): Likewise.
+	* valtrack.c (cleanup_auto_inc_dec): Likewise.
+	* var-tracking.c (adjust_mems): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise, but use gen_rtx_GT
+	rather than gen_rtx_fmt_ee.
+
 2013-09-09  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58294

@@ -435,7 +435,7 @@ init_reload (void)
 		   gen_rtx_PLUS (Pmode,
 				 gen_rtx_REG (Pmode,
 					      LAST_VIRTUAL_REGISTER + 1),
-				 GEN_INT (4)));
+				 gen_int_mode (4, Pmode)));
   spill_indirect_levels = 0;
 
   while (memory_address_p (QImode, tem))

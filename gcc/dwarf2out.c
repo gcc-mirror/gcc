@@ -12386,9 +12386,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       /* Turn these into a PLUS expression and fall into the PLUS code
 	 below.  */
       rtl = gen_rtx_PLUS (mode, XEXP (rtl, 0),
-			  GEN_INT (GET_CODE (rtl) == PRE_INC
-				   ? GET_MODE_UNIT_SIZE (mem_mode)
-				   : -GET_MODE_UNIT_SIZE (mem_mode)));
+			  gen_int_mode (GET_CODE (rtl) == PRE_INC
+					? GET_MODE_UNIT_SIZE (mem_mode)
+					: -GET_MODE_UNIT_SIZE (mem_mode),
+					mode));
 
       /* ... fall through ...  */
 
