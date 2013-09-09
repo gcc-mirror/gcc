@@ -3313,14 +3313,15 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	  || GET_CODE (x) == NEG))
     return CC_NZmode;
 
-  /* A compare with a shifted operand.  Because of canonicalization,
+  /* A compare with a shifted or negated operand.  Because of canonicalization,
      the comparison will have to be swapped when we emit the assembly
      code.  */
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
       && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG)
       && (GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == LSHIFTRT
-	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND))
+	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND
+	  || GET_CODE (x) == NEG))
     return CC_SWPmode;
 
   /* A compare of a mode narrower than SI mode against zero can be done

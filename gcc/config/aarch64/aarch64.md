@@ -1480,12 +1480,12 @@
 )
 
 (define_insn "*compare_neg<mode>"
-  [(set (reg:CC CC_REGNUM)
-	(compare:CC
-	 (match_operand:GPI 0 "register_operand" "r")
-	 (neg:GPI (match_operand:GPI 1 "register_operand" "r"))))]
+  [(set (reg:CC_SWP CC_REGNUM)
+	(compare:CC_SWP
+	 (neg:GPI (match_operand:GPI 0 "register_operand" "r"))
+	 (match_operand:GPI 1 "register_operand" "r")))]
   ""
-  "cmn\\t%<w>0, %<w>1"
+  "cmn\\t%<w>1, %<w>0"
   [(set_attr "v8type" "alus")
    (set_attr "type" "alus_reg")
    (set_attr "mode" "<MODE>")]
