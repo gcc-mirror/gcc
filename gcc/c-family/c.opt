@@ -339,6 +339,10 @@ Wdeclaration-after-statement
 C ObjC Var(warn_declaration_after_statement) Warning
 Warn when a declaration is found after a statement
 
+Wdelete-incomplete
+C++ ObjC++ Var(warn_delete_incomplete) Init(1) Warning
+Warn when deleting a pointer to incomplete type
+
 Wdelete-non-virtual-dtor
 C++ ObjC++ Var(warn_delnonvdtor) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about deleting polymorphic objects with non-virtual destructors
