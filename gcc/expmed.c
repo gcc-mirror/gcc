@@ -3006,7 +3006,8 @@ expand_mult_const (enum machine_mode mode, rtx op0, HOST_WIDE_INT val,
 
           insn = get_last_insn ();
           set_dst_reg_note (insn, REG_EQUAL,
-			    gen_rtx_MULT (nmode, tem, GEN_INT (val_so_far)),
+			    gen_rtx_MULT (nmode, tem,
+					  gen_int_mode (val_so_far, nmode)),
 			    accum_inner);
 	}
     }

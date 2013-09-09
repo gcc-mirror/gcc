@@ -93,9 +93,10 @@ cleanup_auto_inc_dec (rtx src, enum machine_mode mem_mode ATTRIBUTE_UNUSED)
       gcc_assert (mem_mode != VOIDmode && mem_mode != BLKmode);
       return gen_rtx_PLUS (GET_MODE (x),
 			   cleanup_auto_inc_dec (XEXP (x, 0), mem_mode),
-			   GEN_INT (code == PRE_INC
-				    ? GET_MODE_SIZE (mem_mode)
-				    : -GET_MODE_SIZE (mem_mode)));
+			   gen_int_mode (code == PRE_INC
+					 ? GET_MODE_SIZE (mem_mode)
+					 : -GET_MODE_SIZE (mem_mode),
+					 GET_MODE (x)));
 
     case POST_INC:
     case POST_DEC:

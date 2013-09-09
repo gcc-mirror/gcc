@@ -3926,18 +3926,20 @@ emit_single_push_insn_1 (enum machine_mode mode, rtx x, tree type)
 	   previous value.  */
 	offset -= (HOST_WIDE_INT) rounded_size;
 #endif
-      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx, GEN_INT (offset));
+      dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				gen_int_mode (offset, Pmode));
     }
   else
     {
 #ifdef STACK_GROWS_DOWNWARD
       /* ??? This seems wrong if STACK_PUSH_CODE == POST_DEC.  */
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				GEN_INT (-(HOST_WIDE_INT) rounded_size));
+				gen_int_mode (-(HOST_WIDE_INT) rounded_size,
+					      Pmode));
 #else
       /* ??? This seems wrong if STACK_PUSH_CODE == POST_INC.  */
       dest_addr = gen_rtx_PLUS (Pmode, stack_pointer_rtx,
-				GEN_INT (rounded_size));
+				gen_int_mode (rounded_size, Pmode));
 #endif
       dest_addr = gen_rtx_PRE_MODIFY (Pmode, stack_pointer_rtx, dest_addr);
     }
@@ -11028,10 +11030,11 @@ do_tablejump (rtx index, enum machine_mode mode, rtx range, rtx table_label,
      GET_MODE_SIZE, because this indicates how large insns are.  The other
      uses should all be Pmode, because they are addresses.  This code
      could fail if addresses and insns are not the same size.  */
-  index = gen_rtx_PLUS (Pmode,
-			gen_rtx_MULT (Pmode, index,
-				      GEN_INT (GET_MODE_SIZE (CASE_VECTOR_MODE))),
-			gen_rtx_LABEL_REF (Pmode, table_label));
+  index = gen_rtx_PLUS
+    (Pmode,
+     gen_rtx_MULT (Pmode, index,
+		   gen_int_mode (GET_MODE_SIZE (CASE_VECTOR_MODE), Pmode)),
+     gen_rtx_LABEL_REF (Pmode, table_label));
 #ifdef PIC_CASE_VECTOR_ADDRESS
   if (flag_pic)
     index = PIC_CASE_VECTOR_ADDRESS (index);

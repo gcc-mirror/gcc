@@ -1715,8 +1715,9 @@ sms_schedule (void)
           /* case the BCT count is not known , Do loop-versioning */
 	  if (count_reg && ! count_init)
             {
-	      rtx comp_rtx = gen_rtx_fmt_ee (GT, VOIDmode, count_reg,
-	  				     GEN_INT(stage_count));
+	      rtx comp_rtx = gen_rtx_GT (VOIDmode, count_reg,
+					 gen_int_mode (stage_count,
+						       GET_MODE (count_reg)));
 	      unsigned prob = (PROB_SMS_ENOUGH_ITERATIONS
 			       * REG_BR_PROB_BASE) / 100;
 
