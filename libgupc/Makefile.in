@@ -668,6 +668,7 @@ LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 UPC_HDRS = include/upc_atomic.h include/upc_castable.h \
            include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
+           include/upc_nb.h \
            include/upc_relaxed.h include/upc_strict.h \
            include/upc_tick.h include/upc_types.h
 
@@ -2833,7 +2834,7 @@ vpath % $(strip $(search_path))
 @LIBGUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@$(UPC_ATOMIC_UPC): $(UPC_ATOMIC_DEF) $(UPC_ATOMIC_TPL) \
 @LIBGUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@			$(UPC_OP_DEF) $(UPC_TYPE_DEF)
 @LIBGUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@	cd $(LIBGUPC_SMP_SRCDIR); \
-@LIBGUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@	$(AUTOGEN) -I ../include upc_atomic.def
+@LIBGUPC_SMP_RUNTIME_TRUE@@MAINTAINER_MODE_TRUE@	$(AUTOGEN) -L ../include upc_atomic.def
 @DX_COND_doc_TRUE@@DX_COND_ps_TRUE@@LIBGUPC_PORTALS4_RUNTIME_TRUE@doxygen-ps: @DX_DOCDIR@/@PACKAGE@.ps
 @DX_COND_doc_TRUE@@DX_COND_ps_TRUE@@LIBGUPC_PORTALS4_RUNTIME_TRUE@@DX_DOCDIR@/@PACKAGE@.ps: @DX_DOCDIR@/@PACKAGE@.tag
 @DX_COND_doc_TRUE@@DX_COND_ps_TRUE@@LIBGUPC_PORTALS4_RUNTIME_TRUE@	cd @DX_DOCDIR@/latex; \

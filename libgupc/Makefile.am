@@ -35,6 +35,7 @@ LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 UPC_HDRS = include/upc_atomic.h include/upc_castable.h \
            include/gasp.h include/gasp_upc.h include/gcc-upc.h \
            include/pupc.h include/upc_collective.h include/upc.h \
+           include/upc_nb.h \
            include/upc_relaxed.h include/upc_strict.h \
            include/upc_tick.h include/upc_types.h
 
