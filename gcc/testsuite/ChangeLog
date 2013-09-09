@@ -1,3 +1,10 @@
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43452
+	* g++.dg/warn/Wdelete-incomplete-1.C: New.
+	* g++.dg/warn/Wdelete-incomplete-2.C: Likewise.
+	* g++.dg/init/delete1.C: Adjust.
+
 2013-09-09  Ian Bolton  <ian.bolton@arm.com>
 
 	* gcc.target/aarch64/movdi_1.c: New test.
