@@ -1,3 +1,8 @@
+2013-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/58325
+	* init.c (build_vec_delete): Call mark_rvalue_use on base.
+
 2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/43452
