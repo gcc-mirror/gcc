@@ -220,9 +220,9 @@ walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
 		     edge->caller->symbol.order,
 		     cgraph_node_name (target), target->symbol.order);
 	  edge = cgraph_make_edge_direct (edge, target);
-	  if (cgraph_state != CGRAPH_STATE_IPA_SSA)
+	  if (!inline_summary_vec && edge->call_stmt)
 	    cgraph_redirect_edge_call_stmt_to_callee (edge);
-	  else if (inline_summary_vec)
+	  else
 	    inline_update_overall_summary (node);
 	}
     }
