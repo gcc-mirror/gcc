@@ -1,5 +1,24 @@
 2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
 
+	* asan.c (asan_clear_shadow): Use gen_int_mode with the mode
+	of the associated expand_* call.
+	(asan_emit_stack_protection): Likewise.
+	* builtins.c (round_trampoline_addr): Likewise.
+	* explow.c (allocate_dynamic_stack_space, probe_stack_range): Likewise.
+	* expmed.c (expand_smod_pow2, expand_sdiv_pow2, expand_divmod)
+	(emit_store_flag): Likewise.
+	* expr.c (emit_move_resolve_push, push_block, emit_single_push_insn_1)
+	(emit_push_insn, optimize_bitfield_assignment_op, expand_expr_real_1):
+	Likewise.
+	* function.c (instantiate_virtual_regs_in_insn): Likewise.
+	* ifcvt.c (noce_try_store_flag_constants): Likewise.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Likewise.
+	* modulo-sched.c (generate_prolog_epilog): Likewise.
+	* optabs.c (expand_binop, widen_leading, expand_doubleword_clz)
+	(expand_ctz, expand_ffs, expand_unop): Likewise.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
 	* alias.c (addr_side_effect_eval): Use gen_int_mode with the mode
 	of the associated gen_rtx_* call.
 	* caller-save.c (init_caller_save): Likewise.
