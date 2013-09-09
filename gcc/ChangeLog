@@ -1,3 +1,8 @@
+2013-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* ipa.c (walk_polymorphic_call_targets): Fix redirection before IPA
+	summary generation.
+
 2013-09-08  Jeff Law  <law@redhat.com>
 
 	PR bootstrap/58340
