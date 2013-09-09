@@ -978,7 +978,7 @@ thread_across_edge (gimple dummy_cond,
   {
     edge taken_edge;
     edge_iterator ei;
-    bool found = false;
+    bool found;
     bitmap visited = BITMAP_ALLOC (NULL);
 
     /* Look at each successor of E->dest to see if we can thread through it.  */
@@ -994,6 +994,7 @@ thread_across_edge (gimple dummy_cond,
 	   of E->dest.  */
 	path.safe_push (e);
 	path.safe_push (taken_edge);
+	found = false;
 	if ((e->flags & EDGE_DFS_BACK) == 0
 	    || ! cond_arg_set_in_bb (path[path.length () - 1], e->dest))
 	  found = thread_around_empty_blocks (taken_edge,
