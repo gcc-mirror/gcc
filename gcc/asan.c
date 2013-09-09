@@ -869,7 +869,7 @@ asan_shadow_cst (unsigned char shadow_bytes[4])
   for (i = 0; i < 4; i++)
     val |= (unsigned HOST_WIDE_INT) shadow_bytes[BYTES_BIG_ENDIAN ? 3 - i : i]
 	   << (BITS_PER_UNIT * i);
-  return GEN_INT (trunc_int_for_mode (val, SImode));
+  return gen_int_mode (val, SImode);
 }
 
 /* Clear shadow memory at SHADOW_MEM, LEN bytes.  Can't call a library call here
