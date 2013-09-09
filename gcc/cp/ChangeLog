@@ -1,5 +1,10 @@
 2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/58362
+	* error.c (location_of): Don't handle PARM_DECLs specially.
+
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	* error.c (dump_expr, [PSEUDO_DTOR_EXPR]): Fix.
 	* cxx-pretty-print.c (cxx_pretty_printer::postfix_expression):
 	Tweak, TREE_OPERAND (t, 1) may be null.

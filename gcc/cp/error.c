@@ -2789,9 +2789,7 @@ lang_decl_name (tree decl, int v, bool translate)
 location_t
 location_of (tree t)
 {
-  if (TREE_CODE (t) == PARM_DECL && DECL_CONTEXT (t))
-    t = DECL_CONTEXT (t);
-  else if (TYPE_P (t))
+  if (TYPE_P (t))
     {
       t = TYPE_MAIN_DECL (t);
       if (t == NULL_TREE)
