@@ -1,3 +1,10 @@
+2013-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58364
+	* tree-ssa-reassoc.c (init_range_entry): For BIT_NOT_EXPR on
+	BOOLEAN_TYPE, only invert in_p and continue with arg0 if
+	the current range can't be an unconditional true or false.
+
 2013-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/arm_neon.h (vrsqrte_f64): Fix parameter type.
