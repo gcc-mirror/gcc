@@ -56,7 +56,7 @@ static rtx extract_fixed_bit_field (enum machine_mode, rtx,
 				    unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, rtx, int, bool);
 static rtx mask_rtx (enum machine_mode, int, int, int);
-static rtx lshift_value (enum machine_mode, rtx, int, int);
+static rtx lshift_value (enum machine_mode, unsigned HOST_WIDE_INT, int);
 static rtx extract_split_bit_field (rtx, unsigned HOST_WIDE_INT,
 				    unsigned HOST_WIDE_INT, int);
 static void do_cmp_and_jump (rtx, rtx, enum rtx_code, enum machine_mode, rtx);
@@ -991,7 +991,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	       || (bitsize == HOST_BITS_PER_WIDE_INT && v == -1))
 	all_one = 1;
 
-      value = lshift_value (mode, value, bitnum, bitsize);
+      value = lshift_value (mode, v, bitnum);
     }
   else
     {
@@ -1862,14 +1862,15 @@ mask_rtx (enum machine_mode mode, int bitpos, int bitsize, int complement)
 }
 
 /* Return a constant integer (CONST_INT or CONST_DOUBLE) rtx with the value
-   VALUE truncated to BITSIZE bits and then shifted left BITPOS bits.  */
+   VALUE << BITPOS.  */
 
 static rtx
-lshift_value (enum machine_mode mode, rtx value, int bitpos, int bitsize)
+lshift_value (enum machine_mode mode, unsigned HOST_WIDE_INT value,
+	      int bitpos)
 {
   double_int val;
   
-  val = double_int::from_uhwi (INTVAL (value)).zext (bitsize);
+  val = double_int::from_uhwi (value);
   val = val.llshift (bitpos, HOST_BITS_PER_DOUBLE_INT);
 
   return immed_double_int_const (val, mode);
