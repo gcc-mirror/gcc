@@ -1,3 +1,7 @@
+2013-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h (vrsqrte_f64): Fix parameter type.
+
 2013-09-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* ipa-prop.c (ipa_modify_call_arguments): Initialize deref_align.
