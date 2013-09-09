@@ -1,3 +1,12 @@
+2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/57735
+	Backport from mainline
+	2013-04-30  Richard Sandiford  <rsandifo@linux.vnet.ibm.com>
+
+	* explow.c (plus_constant): Pass "mode" to immed_double_int_const.
+	Use gen_int_mode rather than GEN_INT.
+
 2013-09-09  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
