@@ -1,3 +1,7 @@
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* asan.c (asan_shadow_cst): Use gen_int_mode.
+
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-profile.c: Add toplevel comment.
