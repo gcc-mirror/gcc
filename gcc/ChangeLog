@@ -1,5 +1,10 @@
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
+	* ipa-prop.c (try_make_edge_direct_simple_call): Do not special case
+	speculative edges.
+
+2013-09-08  Jan Hubicka  <jh@suse.cz>
+
 	* ipa.c (walk_polymorphic_call_targets): Fix redirection before IPA
 	summary generation.
 
