@@ -1,3 +1,8 @@
+2013-09-09  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58294
+	* g++.dg/torture/PR58294.C: New testcase.
+
 2013-09-08  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/pr58340.c: New test.
