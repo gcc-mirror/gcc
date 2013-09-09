@@ -62,3 +62,5 @@
 		    : "0" (_beg), "b" (_end), "b" (_scno));	\
 }
 
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

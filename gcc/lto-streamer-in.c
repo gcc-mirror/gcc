@@ -998,6 +998,7 @@ input_function (tree fn_decl, struct data_in *data_in,
   free_dominance_info (CDI_DOMINATORS);
   free_dominance_info (CDI_POST_DOMINATORS);
   free (stmts);
+  pop_cfun ();
 }
 
 
@@ -1086,8 +1087,6 @@ lto_read_body (struct lto_file_decl_data *file_data, struct cgraph_node *node,
 
       /* Restore decl state */
       file_data->current_decl_state = file_data->global_decl_state;
-
-      pop_cfun ();
     }
 
   lto_data_in_delete (data_in);

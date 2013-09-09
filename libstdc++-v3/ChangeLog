@@ -1,3 +1,69 @@
+2013-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58341
+	* include/bits/stl_algobase.h (copy_backward): Fix documentation
+	per DR 1206.
+
+2013-09-05  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex_automaton.h: Add dummy node type. Rewrite
+	_StateSeq.
+	* include/bits/regex_automaton.tcc: Implement them.
+	* include/bits/regex_compiler.h: Rewrite _Compiler to use new
+	_StateSeq interfaces.
+	* include/bits/regex_compiler.tcc: Implement them.
+	* include/bits/regex_scanner.h: Add word boundry assertion token.
+	* include/bits/regex_scanner.tcc (_Scanner<>::_M_eat_escape_ecma):
+	Support word boundry.
+	* testsuite/28_regex/algorithms/regex_match/basic/
+	string_range_02_03.cc: Remove "xfail".
+	* testsuite/28_regex/algorithms/regex_match/extended/cstring_plus.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_02_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	cstring_questionmark.cc: Remove xfail and get correct length of
+	c-string.
+	* testsuite/28_regex/algorithms/regex_match/extended/
+	string_range_00_03.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/quoted_char.cc:
+	New.
+	* testsuite/28_regex/algorithms/regex_match/extended/cstring_range.cc:
+	New.
+	* testsuite/28_regex/iterators/regex_iterator/wchar_t/string_02.cc: New.
+
+2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58302
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&)):
+	Fix typo in template argument.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/58302.cc: New.
+
+2013-09-02  Tim Shen  <timshen91@gmail.com>
+
+	* regex_automaton.h: Rearrange _NFA's layout.
+	* include/bits/regex_compiler.h: Add _AnyMatcher and _CharMatcher.
+	  Rearrange _BracketMatcher's layout.
+	  (_BracketMatcher<>::_M_add_char): Use set instead of vector for
+	  _M_char_set.
+	  (_BracketMatcher<>::_M_add_collating_element): Likewise.
+	  (_BracketMatcher<>::_M_make_range): Likewise.
+	* include/bits/regex_compiler.tcc (_Compiler<>::_M_atom): Use
+	  apropriate constructors of matchers above.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/anymatcher.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/empty_range.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/emptygroup.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/hex.cc: New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
+	  New.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc: New.
+
 2013-08-30  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/58148

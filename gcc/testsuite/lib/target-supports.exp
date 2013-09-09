@@ -226,6 +226,12 @@ proc check_weak_available { } {
         return 1
     }
 
+    # All AIX targets should support it
+
+    if { [istarget *-*-aix*] } {
+        return 1
+    }
+
     # All solaris2 targets should support it
 
     if { [istarget *-*-solaris2*] } {

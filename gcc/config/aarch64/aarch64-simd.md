@@ -336,24 +336,13 @@
 })
 
 (define_insn "aarch64_simd_dup<mode>"
-  [(set (match_operand:VDQ 0 "register_operand" "=w")
-        (vec_duplicate:VDQ (match_operand:<VEL> 1 "register_operand" "r")))]
+  [(set (match_operand:VDQ 0 "register_operand" "=w, w")
+        (vec_duplicate:VDQ (match_operand:<VEL> 1 "register_operand" "r, w")))]
   "TARGET_SIMD"
-  "dup\\t%0.<Vtype>, %<vw>1"
-  [(set_attr "simd_type" "simd_dupgp")
-   (set_attr "simd_mode" "<MODE>")]
-)
-
-(define_insn "aarch64_dup_lane<mode>"
-  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
-        (vec_duplicate:VDQ_I
-	  (vec_select:<VEL>
-	    (match_operand:<VCON> 1 "register_operand" "w")
-	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
-          )))]
-  "TARGET_SIMD"
-  "dup\\t%<v>0<Vmtype>, %1.<Vetype>[%2]"
-  [(set_attr "simd_type" "simd_dup")
+  "@
+   dup\\t%0.<Vtype>, %<vw>1
+   dup\\t%0.<Vtype>, %1.<Vetype>[0]"
+  [(set_attr "simd_type" "simd_dupgp, simd_dup")
    (set_attr "simd_mode" "<MODE>")]
 )
 
@@ -362,6 +351,32 @@
         (vec_duplicate:VDQF (match_operand:<VEL> 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "dup\\t%0.<Vtype>, %1.<Vetype>[0]"
+  [(set_attr "simd_type" "simd_dup")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_dup_lane<mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(vec_duplicate:VALL
+	  (vec_select:<VEL>
+	    (match_operand:VALL 1 "register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
+          )))]
+  "TARGET_SIMD"
+  "dup\\t%0.<Vtype>, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_dup")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "aarch64_dup_lane_<vswap_width_name><mode>"
+  [(set (match_operand:VALL 0 "register_operand" "=w")
+	(vec_duplicate:VALL
+	  (vec_select:<VEL>
+	    (match_operand:<VSWAP_WIDTH> 1 "register_operand" "w")
+	    (parallel [(match_operand:SI 2 "immediate_operand" "i")])
+          )))]
+  "TARGET_SIMD"
+  "dup\\t%0.<Vtype>, %1.<Vetype>[%2]"
   [(set_attr "simd_type" "simd_dup")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1037,7 +1052,7 @@
    fmov\\t%d0, %1
    dup\\t%d0, %1"
   [(set_attr "v8type" "*,fmov,*")
-   (set_attr "type" "*,mov_reg,*")
+   (set_attr "type" "*,fmov,*")
    (set_attr "simd_type" "simd_dup,*,simd_dup")
    (set_attr "simd_mode" "<MODE>")
    (set_attr "simd" "yes,*,yes")
@@ -2782,7 +2797,7 @@
 		      (match_operand:VD_HSI 2 "register_operand" "w"))
 		(sign_extend:<VWIDE>
 		  (vec_duplicate:VD_HSI
-		    (match_operand:<VEL> 3 "register_operand" "w"))))
+		    (match_operand:<VEL> 3 "register_operand" "<vwx>"))))
 	      (const_int 1))))]
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[0]"
@@ -2940,7 +2955,7 @@
                   (match_operand:VQ_HSI 4 "vect_par_cnst_hi_half" "")))
 	      (sign_extend:<VWIDE>
                 (vec_duplicate:<VHALF>
-		  (match_operand:<VEL> 3 "register_operand" "w"))))
+		  (match_operand:<VEL> 3 "register_operand" "<vwx>"))))
 	    (const_int 1))))]
   "TARGET_SIMD"
   "sqdml<SBINQOPS:as>l2\\t%<vw2>0<Vmwtype>, %<v>2<Vmtype>, %3.<Vetype>[0]"
@@ -3068,7 +3083,7 @@
 		 (match_operand:VD_HSI 1 "register_operand" "w"))
 	       (sign_extend:<VWIDE>
                  (vec_duplicate:VD_HSI
-                   (match_operand:<VEL> 2 "register_operand" "w")))
+                   (match_operand:<VEL> 2 "register_operand" "<vwx>")))
 	       )
 	     (const_int 1)))]
   "TARGET_SIMD"
@@ -3178,7 +3193,7 @@
                    (match_operand:VQ_HSI 3 "vect_par_cnst_hi_half" "")))
 	       (sign_extend:<VWIDE>
                  (vec_duplicate:<VHALF>
-                   (match_operand:<VEL> 2 "register_operand" "w")))
+                   (match_operand:<VEL> 2 "register_operand" "<vwx>")))
 	       )
 	     (const_int 1)))]
   "TARGET_SIMD"
@@ -4164,13 +4179,23 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "aarch64_frecp<FRECP:frecp_suffix><mode>"
+  [(set (match_operand:GPF 0 "register_operand" "=w")
+	(unspec:GPF [(match_operand:GPF 1 "register_operand" "w")]
+		    FRECP))]
+  "TARGET_SIMD"
+  "frecp<FRECP:frecp_suffix>\\t%<s>0, %<s>1"
+  [(set_attr "simd_type" "simd_frecp<FRECP:frecp_suffix>")
+   (set_attr "mode" "<MODE>")]
+)
+
 (define_insn "aarch64_frecps<mode>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-	(unspec:VDQF [(match_operand:VDQF 1 "register_operand" "w")
-		     (match_operand:VDQF 2 "register_operand" "w")]
+  [(set (match_operand:VALLF 0 "register_operand" "=w")
+	(unspec:VALLF [(match_operand:VALLF 1 "register_operand" "w")
+		     (match_operand:VALLF 2 "register_operand" "w")]
 		    UNSPEC_FRECPS))]
   "TARGET_SIMD"
-  "frecps\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  "frecps\\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
   [(set_attr "simd_type" "simd_frecps")
    (set_attr "simd_mode" "<MODE>")]
 )

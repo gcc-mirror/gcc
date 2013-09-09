@@ -4,7 +4,7 @@
 // This test requires support for undefined weak symbols.  This support
 // is not available on hppa*-*-hpux*.  The test is skipped rather than
 // xfailed to suppress the warning that would otherwise arise.
-// { dg-skip-if "" { "*-*-darwin*" "hppa*-*-hpux*" } "*" { "" } }
+// { dg-skip-if "" { "*-*-darwin*" "hppa*-*-hpux*" "*-*-aix*" } "*" { "" } }
 // For kernel modules and static RTPs, the loader treats undefined weak
 // symbols in the same way as undefined strong symbols.  The test
 // therefore fails to load, so skip it.

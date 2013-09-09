@@ -28,7 +28,7 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-// TODO make comments doxygen format
+// TODO make comments doxygen format.
 
 // N3376 specified 6 regex styles: ECMAScript, basic, extended, grep, egrep
 // and awk
@@ -370,10 +370,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_token = _S_token_ord_char;
 	  _M_value.assign(1, _M_escape_map.at(__c));
 	}
+      else if (__c == 'b')
+	_M_token = _S_token_word_bound;
+      else if (__c == 'B')
+	_M_token = _S_token_neg_word_bound;
       // N3376 28.13
-      else if (__c == 'b'
-	       || __c == 'B'
-	       || __c == 'd'
+      else if (__c == 'd'
 	       || __c == 'D'
 	       || __c == 's'
 	       || __c == 'S'

@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LTO_H
 
 #include "hashtab.h"
+#include "vec.h"
 
 /* A file.  */
 typedef struct lto_file_struct
@@ -39,6 +40,9 @@ extern const char *resolution_file_name;
 extern tree lto_eh_personality (void);
 extern void lto_main (void);
 extern void lto_read_all_file_options (void);
+
+/* In lto-symtab.c  */
+extern GTY(()) vec<tree, va_gc> *lto_global_var_decls;
 
 /* In lto-elf.c or lto-coff.c  */
 extern lto_file *lto_obj_file_open (const char *filename, bool writable);

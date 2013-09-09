@@ -87,7 +87,7 @@ static sbitmap bb_contains_live_stmts;
    use a bitmap for each block recording its edges.  An array holds the
    bitmap.  The Ith bit in the bitmap is set if that block is dependent
    on the Ith edge.  */
-static bitmap *control_dependence_map;
+static control_dependences *cd;
 
 /* Vector indicating that a basic block has already had all the edges
    processed that it is control dependent on.  */
@@ -100,96 +100,6 @@ static sbitmap visited_control_parents;
    to be recomputed.  */
 static bool cfg_altered;
 
-/* Execute code that follows the macro for each edge (given number
-   EDGE_NUMBER within the CODE) for which the block with index N is
-   control dependent.  */
-#define EXECUTE_IF_CONTROL_DEPENDENT(BI, N, EDGE_NUMBER)	\
-  EXECUTE_IF_SET_IN_BITMAP (control_dependence_map[(N)], 0,	\
-			    (EDGE_NUMBER), (BI))
-
-
-/* Indicate block BB is control dependent on an edge with index EDGE_INDEX.  */
-static inline void
-set_control_dependence_map_bit (basic_block bb, int edge_index)
-{
-  if (bb == ENTRY_BLOCK_PTR)
-    return;
-  gcc_assert (bb != EXIT_BLOCK_PTR);
-  bitmap_set_bit (control_dependence_map[bb->index], edge_index);
-}
-
-/* Clear all control dependences for block BB.  */
-static inline void
-clear_control_dependence_bitmap (basic_block bb)
-{
-  bitmap_clear (control_dependence_map[bb->index]);
-}
-
-
-/* Find the immediate postdominator PDOM of the specified basic block BLOCK.
-   This function is necessary because some blocks have negative numbers.  */
-
-static inline basic_block
-find_pdom (basic_block block)
-{
-  gcc_assert (block != ENTRY_BLOCK_PTR);
-
-  if (block == EXIT_BLOCK_PTR)
-    return EXIT_BLOCK_PTR;
-  else
-    {
-      basic_block bb = get_immediate_dominator (CDI_POST_DOMINATORS, block);
-      if (! bb)
-	return EXIT_BLOCK_PTR;
-      return bb;
-    }
-}
-
-
-/* Determine all blocks' control dependences on the given edge with edge_list
-   EL index EDGE_INDEX, ala Morgan, Section 3.6.  */
-
-static void
-find_control_dependence (struct edge_list *el, int edge_index)
-{
-  basic_block current_block;
-  basic_block ending_block;
-
-  gcc_assert (INDEX_EDGE_PRED_BB (el, edge_index) != EXIT_BLOCK_PTR);
-
-  if (INDEX_EDGE_PRED_BB (el, edge_index) == ENTRY_BLOCK_PTR)
-    ending_block = single_succ (ENTRY_BLOCK_PTR);
-  else
-    ending_block = find_pdom (INDEX_EDGE_PRED_BB (el, edge_index));
-
-  for (current_block = INDEX_EDGE_SUCC_BB (el, edge_index);
-       current_block != ending_block && current_block != EXIT_BLOCK_PTR;
-       current_block = find_pdom (current_block))
-    {
-      edge e = INDEX_EDGE (el, edge_index);
-
-      /* For abnormal edges, we don't make current_block control
-	 dependent because instructions that throw are always necessary
-	 anyway.  */
-      if (e->flags & EDGE_ABNORMAL)
-	continue;
-
-      set_control_dependence_map_bit (current_block, edge_index);
-    }
-}
-
-
-/* Record all blocks' control dependences on all edges in the edge
-   list EL, ala Morgan, Section 3.6.  */
-
-static void
-find_all_control_dependences (struct edge_list *el)
-{
-  int i;
-
-  for (i = 0; i < NUM_EDGES (el); ++i)
-    find_control_dependence (el, i);
-}
 
 /* If STMT is not already marked necessary, mark it, and add it to the
    worklist if ADD_TO_WORKLIST is true.  */
@@ -400,8 +310,7 @@ mark_last_stmt_necessary (basic_block bb)
    When IGNORE_SELF is true, ignore BB in the list of control dependences.  */
 
 static void
-mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el,
-					bool ignore_self)
+mark_control_dependent_edges_necessary (basic_block bb, bool ignore_self)
 {
   bitmap_iterator bi;
   unsigned edge_number;
@@ -412,9 +321,10 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el,
   if (bb == ENTRY_BLOCK_PTR)
     return;
 
-  EXECUTE_IF_CONTROL_DEPENDENT (bi, bb->index, edge_number)
+  EXECUTE_IF_SET_IN_BITMAP (cd->get_edges_dependent_on (bb->index),
+			    0, edge_number, bi)
     {
-      basic_block cd_bb = INDEX_EDGE_PRED_BB (el, edge_number);
+      basic_block cd_bb = cd->get_edge (edge_number)->src;
 
       if (ignore_self && cd_bb == bb)
 	{
@@ -439,7 +349,7 @@ mark_control_dependent_edges_necessary (basic_block bb, struct edge_list *el,
    dependence analysis.  */
 
 static void
-find_obviously_necessary_stmts (struct edge_list *el)
+find_obviously_necessary_stmts (bool aggressive)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
@@ -461,7 +371,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	{
 	  stmt = gsi_stmt (gsi);
 	  gimple_set_plf (stmt, STMT_NECESSARY, false);
-	  mark_stmt_if_obviously_necessary (stmt, el != NULL);
+	  mark_stmt_if_obviously_necessary (stmt, aggressive);
 	}
     }
 
@@ -472,7 +382,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
     return;
 
   /* Prevent the empty possibly infinite loops from being removed.  */
-  if (el)
+  if (aggressive)
     {
       loop_iterator li;
       struct loop *loop;
@@ -488,7 +398,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	          if (dump_file)
 	            fprintf (dump_file, "Marking back edge of irreducible loop %i->%i\n",
 		    	     e->src->index, e->dest->index);
-		  mark_control_dependent_edges_necessary (e->dest, el, false);
+		  mark_control_dependent_edges_necessary (e->dest, false);
 		}
 	  }
 
@@ -497,7 +407,7 @@ find_obviously_necessary_stmts (struct edge_list *el)
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "can not prove finiteness of loop %i\n", loop->num);
-	    mark_control_dependent_edges_necessary (loop->latch, el, false);
+	    mark_control_dependent_edges_necessary (loop->latch, false);
 	  }
       scev_finalize ();
     }
@@ -690,10 +600,9 @@ degenerate_phi_p (gimple phi)
    In conservative mode, EL is NULL.  */
 
 static void
-propagate_necessity (struct edge_list *el)
+propagate_necessity (bool aggressive)
 {
   gimple stmt;
-  bool aggressive = (el ? true : false);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nProcessing worklist:\n");
@@ -718,7 +627,7 @@ propagate_necessity (struct edge_list *el)
 	  basic_block bb = gimple_bb (stmt);
 	  if (bb != ENTRY_BLOCK_PTR
 	      && !bitmap_bit_p (visited_control_parents, bb->index))
-	    mark_control_dependent_edges_necessary (bb, el, false);
+	    mark_control_dependent_edges_necessary (bb, false);
 	}
 
       if (gimple_code (stmt) == GIMPLE_PHI
@@ -825,7 +734,7 @@ propagate_necessity (struct edge_list *el)
 		  else if (arg_bb != ENTRY_BLOCK_PTR
 		           && !bitmap_bit_p (visited_control_parents,
 					 arg_bb->index))
-		    mark_control_dependent_edges_necessary (arg_bb, el, true);
+		    mark_control_dependent_edges_necessary (arg_bb, true);
 		}
 	    }
 	}
@@ -1486,12 +1395,6 @@ tree_dce_init (bool aggressive)
 
   if (aggressive)
     {
-      int i;
-
-      control_dependence_map = XNEWVEC (bitmap, last_basic_block);
-      for (i = 0; i < last_basic_block; ++i)
-	control_dependence_map[i] = BITMAP_ALLOC (NULL);
-
       last_stmt_necessary = sbitmap_alloc (last_basic_block);
       bitmap_clear (last_stmt_necessary);
       bb_contains_live_stmts = sbitmap_alloc (last_basic_block);
@@ -1512,12 +1415,7 @@ tree_dce_done (bool aggressive)
 {
   if (aggressive)
     {
-      int i;
-
-      for (i = 0; i < last_basic_block; ++i)
-	BITMAP_FREE (control_dependence_map[i]);
-      free (control_dependence_map);
-
+      delete cd;
       sbitmap_free (visited_control_parents);
       sbitmap_free (last_stmt_necessary);
       sbitmap_free (bb_contains_live_stmts);
@@ -1546,7 +1444,6 @@ tree_dce_done (bool aggressive)
 static unsigned int
 perform_tree_ssa_dce (bool aggressive)
 {
-  struct edge_list *el = NULL;
   bool something_changed = 0;
 
   calculate_dominance_info (CDI_DOMINATORS);
@@ -1563,11 +1460,8 @@ perform_tree_ssa_dce (bool aggressive)
   if (aggressive)
     {
       /* Compute control dependence.  */
-      timevar_push (TV_CONTROL_DEPENDENCES);
       calculate_dominance_info (CDI_POST_DOMINATORS);
-      el = create_edge_list ();
-      find_all_control_dependences (el);
-      timevar_pop (TV_CONTROL_DEPENDENCES);
+      cd = new control_dependences (create_edge_list ());
 
       visited_control_parents = sbitmap_alloc (last_basic_block);
       bitmap_clear (visited_control_parents);
@@ -1575,7 +1469,7 @@ perform_tree_ssa_dce (bool aggressive)
       mark_dfs_back_edges ();
     }
 
-  find_obviously_necessary_stmts (el);
+  find_obviously_necessary_stmts (aggressive);
 
   if (aggressive)
     loop_optimizer_finalize ();
@@ -1585,7 +1479,7 @@ perform_tree_ssa_dce (bool aggressive)
   nr_walks = 0;
   chain_ovfl = false;
   visited = BITMAP_ALLOC (NULL);
-  propagate_necessity (el);
+  propagate_necessity (aggressive);
   BITMAP_FREE (visited);
 
   something_changed |= eliminate_unnecessary_stmts ();
@@ -1608,8 +1502,6 @@ perform_tree_ssa_dce (bool aggressive)
     print_stats ();
 
   tree_dce_done (aggressive);
-
-  free_edge_list (el);
 
   if (something_changed)
     return TODO_update_ssa | TODO_cleanup_cfg;

@@ -40,7 +40,7 @@ subdir = .
 DIST_COMMON = ChangeLog $(srcdir)/Makefile.in $(srcdir)/Makefile.am \
 	$(top_srcdir)/configure $(am__configure_deps) \
 	$(srcdir)/../mkinstalldirs $(srcdir)/../depcomp \
-	$(am__libvtv_include_HEADERS_DIST)
+	$(libvtv_include_HEADERS)
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
@@ -86,7 +86,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libvtv_la_LIBADD =
 am__objects_1 = vtv_start.lo vtv_malloc.lo vtv_rts.lo vtv_utils.lo \
 	vtv_end.lo
-@ENABLE_VTABLE_VERIFY_TRUE@am_libvtv_la_OBJECTS = $(am__objects_1)
+am_libvtv_la_OBJECTS = $(am__objects_1)
 libvtv_la_OBJECTS = $(am_libvtv_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
@@ -118,8 +118,6 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
-am__libvtv_include_HEADERS_DIST = vtv_map.h vtv_malloc.h vtv_fail.h \
-	vtv_set.h vtv_utils.h vtv_rts.h
 HEADERS = $(libvtv_include_HEADERS)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
@@ -127,7 +125,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	$(RECURSIVE_CLEAN_TARGETS:-recursive=) tags TAGS ctags CTAGS
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = testsuite
+DIST_SUBDIRS = $(SUBDIRS)
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AR = @AR@
@@ -265,8 +263,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 toplevel_builddir = @toplevel_builddir@
 toplevel_srcdir = @toplevel_srcdir@
-@ENABLE_VTABLE_VERIFY_FALSE@SUBDIRS = 
-@ENABLE_VTABLE_VERIFY_TRUE@SUBDIRS = testsuite
+SUBDIRS = testsuite
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # May be used by toolexeclibdir.
@@ -296,10 +293,8 @@ libvtv_includedir = $(includedir)
 
 # Link in vtv_start and vtv_end. 
 BUILT_SOURCES = vtv_start.c vtv_end.c
-@ENABLE_VTABLE_VERIFY_FALSE@libvtv_la_SOURCES = 
-@ENABLE_VTABLE_VERIFY_TRUE@libvtv_la_SOURCES = $(vtv_sources)
-@ENABLE_VTABLE_VERIFY_FALSE@libvtv_include_HEADERS = 
-@ENABLE_VTABLE_VERIFY_TRUE@libvtv_include_HEADERS = $(vtv_headers)
+libvtv_la_SOURCES = $(vtv_sources)
+libvtv_include_HEADERS = $(vtv_headers)
 
 # Least ordering for dependencies mean linking w/o libstdc++ for as
 # long as the development of libvtv does not absolutely require it.

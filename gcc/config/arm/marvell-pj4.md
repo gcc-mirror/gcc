@@ -53,26 +53,42 @@
 
 (define_insn_reservation "pj4_alu" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
+       (eq_attr "type" "alu_imm,alus_imm,alu_reg,alus_reg,\
+                        logic_imm,logics_imm,logic_reg,logics_reg,\
+                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                        adr,bfm,rev,\
+                        shift_imm,shift_reg")
        (not (eq_attr "conds" "set")))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "arlo_imm,arlo_reg,shift,shift_reg")
+       (eq_attr "type" "alu_imm,alus_imm,alu_reg,alus_reg,\
+                        logic_imm,logics_imm,logic_reg,logics_reg,\
+                        adc_imm,adcs_imm,adc_reg,adcs_reg,\
+                        adr,bfm,rev,\
+                        shift_imm,shift_reg")
        (eq_attr "conds" "set"))
                                "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_shift" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "arlo_shift,arlo_shift_reg,extend,\
+       (eq_attr "type" "alu_shift_imm,logic_shift_imm,\
+                        alus_shift_imm,logics_shift_imm,\
+                        alu_shift_reg,logic_shift_reg,\
+                        alus_shift_reg,logics_shift_reg,\
+                        extend,\
                         mov_shift,mvn_shift,mov_shift_reg,mvn_shift_reg")
        (not (eq_attr "conds" "set"))
        (eq_attr "shift" "1"))  "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_shift_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "arlo_shift,arlo_shift_reg,extend,\
+       (eq_attr "type" "alu_shift_imm,logic_shift_imm,\
+                        alus_shift_imm,logics_shift_imm,\
+                        alu_shift_reg,logic_shift_reg,\
+                        alus_shift_reg,logics_shift_reg,\
+                        extend,\
                         mov_shift,mvn_shift,mov_shift_reg,mvn_shift_reg")
        (eq_attr "conds" "set")
        (eq_attr "shift" "1"))  "pj4_is,(pj4_alu1,pj4_w1+pj4_cp)|(pj4_alu2,pj4_w2+pj4_cp)")
@@ -80,14 +96,20 @@
 (define_insn_reservation "pj4_alu_shift" 1
   (and (eq_attr "tune" "marvell_pj4")
        (not (eq_attr "conds" "set"))
-       (eq_attr "type" "arlo_shift,arlo_shift_reg,extend,\
+       (eq_attr "type" "alu_shift_imm,logic_shift_imm,\
+                        alus_shift_imm,logics_shift_imm,\
+                        alu_shift_reg,logic_shift_reg,\
+                        alus_shift_reg,logics_shift_reg,\
+                        extend,\
                         mov_shift,mvn_shift,mov_shift_reg,mvn_shift_reg"))
                                "pj4_is,(pj4_alu1,nothing,pj4_w1+pj4_cp)|(pj4_alu2,nothing,pj4_w2+pj4_cp)")
 
 (define_insn_reservation "pj4_alu_shift_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
        (eq_attr "conds" "set")
-       (eq_attr "type" "arlo_shift,arlo_shift_reg,extend,\
+       (eq_attr "type" "alu_shift_imm,logic_shift_imm,alus_shift_imm,logics_shift_imm,\
+                        alu_shift_reg,logic_shift_reg,alus_shift_reg,logics_shift_reg,\
+                        extend,\
                         mov_shift,mvn_shift,mov_shift_reg,mvn_shift_reg"))
                                "pj4_is,(pj4_alu1,nothing,pj4_w1+pj4_cp)|(pj4_alu2,nothing,pj4_w2+pj4_cp)")
 
@@ -171,11 +193,11 @@
 
 (define_insn_reservation "pj4_vfp_divs" 20
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "fdivs"))       "pj4_is,nothing*2,vissue,vdiv*18,nothing")
+       (eq_attr "type" "fdivs, fsqrts"))       "pj4_is,nothing*2,vissue,vdiv*18,nothing")
 
 (define_insn_reservation "pj4_vfp_divd" 34
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "fdivd"))       "pj4_is,nothing*2,vissue,vdiv*32,nothing")
+       (eq_attr "type" "fdivd, fsqrtd"))       "pj4_is,nothing*2,vissue,vdiv*32,nothing")
 
 (define_insn_reservation "pj4_vfp_mac"  9
   (and (eq_attr "tune" "marvell_pj4")
@@ -186,8 +208,9 @@
 
 (define_insn_reservation "pj4_vfp_cpy"  4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "fcpys,ffariths,ffarithd,fconsts,fconstd,\
-                        fcmps,fcmpd,f_cvt"))  "pj4_is,nothing*2,vissue,vfast,nothing*2")
+       (eq_attr "type" "fmov,ffariths,ffarithd,fconsts,fconstd,\
+                        fcmps,fcmpd,f_cvt,f_cvtf2i,f_cvti2f"))
+"pj4_is,nothing*2,vissue,vfast,nothing*2")
 
 ;; Enlarge latency, and wish that more nondependent insns are
 ;; scheduled immediately after VFP load.
@@ -201,9 +224,9 @@
 
 (define_insn_reservation "pj4_vfp_to_core" 7
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "f_2_r,f_flag"))       "pj4_isb,nothing,nothing,vissue,vfast,nothing*2")
+       (eq_attr "type" "f_mrc,f_mrrc,f_flag")) "pj4_isb,nothing,nothing,vissue,vfast,nothing*2")
 
 (define_insn_reservation "pj4_core_to_vfp" 2
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "r_2_f"))              "pj4_isb,pj4_alu1,pj4_w1,vissue,pj4_cp")
+       (eq_attr "type" "f_mcr,f_mcrr")) "pj4_isb,pj4_alu1,pj4_w1,vissue,pj4_cp")
 

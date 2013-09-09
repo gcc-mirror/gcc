@@ -11173,6 +11173,8 @@ Feature modifiers used with @option{-march} and @option{-mcpu} can be one
 the following:
 
 @table @samp
+@item crc
+Enable CRC extension.
 @item crypto
 Enable Crypto extension.  This implies Advanced SIMD is enabled.
 @item fp

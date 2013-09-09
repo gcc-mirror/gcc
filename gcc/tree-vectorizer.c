@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "hash-table.h"
 #include "tree-ssa-propagate.h"
+#include "dbgcnt.h"
 
 /* Loop or bb location.  */
 LOC vect_location;
@@ -279,6 +280,31 @@ note_simd_array_uses (hash_table <simd_array_to_simduid> *htab)
       }
 }
 
+/* A helper function to free data refs.  */
+
+void
+vect_destroy_datarefs (loop_vec_info loop_vinfo, bb_vec_info bb_vinfo)
+{
+  vec<data_reference_p> datarefs;
+  struct data_reference *dr;
+  unsigned int i;
+
+ if (loop_vinfo)
+    datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
+  else
+    datarefs = BB_VINFO_DATAREFS (bb_vinfo);
+
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
+    if (dr->aux)
+      {
+        free (dr->aux);
+        dr->aux = NULL;
+      }
+
+  free_data_refs (datarefs);
+}
+
+
 /* Function vectorize_loops.
 
    Entry point to loop vectorization phase.  */
@@ -330,6 +356,9 @@ vectorize_loops (void)
 
 	if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
 	  continue;
+
+        if (!dbg_cnt (vect_loop))
+	  break;
 
         if (LOCATION_LOCUS (vect_location) != UNKNOWN_LOC
 	    && dump_enabled_p ())
@@ -440,6 +469,9 @@ execute_vect_slp (void)
 
       if (vect_slp_analyze_bb (bb))
         {
+          if (!dbg_cnt (vect_slp))
+            break;
+
           vect_slp_transform_bb (bb);
           if (dump_enabled_p ())
             dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,

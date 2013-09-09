@@ -872,11 +872,13 @@ BUILTINS_DEF = builtins.def sync-builtins.def omp-builtins.def \
 	gtm-builtins.def sanitizer.def cilkplus.def
 INTERNAL_FN_DEF = internal-fn.def
 INTERNAL_FN_H = internal-fn.h $(INTERNAL_FN_DEF)
-TREE_H = coretypes.h tree.h all-tree.def tree.def c-family/c-common.def \
-	$(lang_tree_files) $(MACHMODE_H) tree-check.h $(BUILTINS_DEF) \
-	$(INPUT_H) statistics.h $(VEC_H) treestruct.def $(HASHTAB_H) \
+TREE_CORE_H = tree-core.h coretypes.h all-tree.def tree.def \
+	c-family/c-common.def $(lang_tree_files) $(MACHMODE_H) \
+	$(BUILTINS_DEF) $(INPUT_H) statistics.h \
+	$(VEC_H) treestruct.def $(HASHTAB_H) \
 	double-int.h alias.h $(SYMTAB_H) $(FLAGS_H) \
 	$(REAL_H) $(FIXED_VALUE_H)
+TREE_H = tree.h $(TREE_CORE_H)  tree-check.h
 REGSET_H = regset.h $(BITMAP_H) hard-reg-set.h
 BASIC_BLOCK_H = basic-block.h $(PREDICT_H) $(VEC_H) $(FUNCTION_H) \
 	cfg-flags.def cfghooks.h
@@ -1318,7 +1320,6 @@ OBJS = \
 	lto-streamer-out.o \
 	lto-section-in.o \
 	lto-section-out.o \
-	lto-symtab.o \
 	lto-opts.o \
 	lto-compress.o \
 	mcf.o \
@@ -2188,7 +2189,7 @@ tree-streamer-in.o: tree-streamer-in.c $(CONFIG_H) $(SYSTEM_H) \
     $(DATA_STREAMER_H) $(STREAMER_HOOKS_H) $(LTO_STREAMER_H)
 tree-streamer-out.o: tree-streamer-out.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(DIAGNOSTIC_H) $(TREE_STREAMER_H) $(DATA_STREAMER_H) \
-    $(STREAMER_HOOKS_H)
+    $(STREAMER_HOOKS_H) $(TM_H)
 streamer-hooks.o: streamer-hooks.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
     $(STREAMER_HOOKS_H)
 lto-cgraph.o: lto-cgraph.c $(CONFIG_H) $(SYSTEM_H) coretypes.h   \
@@ -2222,9 +2223,6 @@ lto-section-out.o : lto-section-out.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(CGRAPH_H) $(FUNCTION_H) $(GGC_H) $(EXCEPT_H) pointer-set.h \
    $(BITMAP_H) langhooks.h $(LTO_STREAMER_H) lto-compress.h \
    $(DATA_STREAMER_H)
-lto-symtab.o: lto-symtab.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TREE_H) $(GIMPLE_H) $(GGC_H) $(HASHTAB_H) \
-   $(LTO_STREAMER_H) $(LINKER_PLUGIN_API_H)
 lto-opts.o: lto-opts.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TREE_H) \
    $(HASHTAB_H) $(GGC_H) $(BITMAP_H) $(FLAGS_H) $(OPTS_H) $(OPTIONS_H) \
    $(COMMON_TARGET_H) $(DIAGNOSTIC_H) $(LTO_STREAMER_H)
@@ -2438,7 +2436,7 @@ tree-tailcall.o : tree-tailcall.c $(TREE_FLOW_H) $(CONFIG_H) $(SYSTEM_H) \
    $(TREE_H) $(TM_P_H) $(FUNCTION_H) $(TM_H) coretypes.h \
    $(EXCEPT_H) $(TREE_PASS_H) $(FLAGS_H) langhooks.h \
    $(BASIC_BLOCK_H) $(DBGCNT_H) $(GIMPLE_PRETTY_PRINT_H) $(TARGET_H) \
-   $(COMMON_TARGET_H) $(CFGLOOP_H)
+   $(COMMON_TARGET_H) $(CFGLOOP_H) ipa-utils.h
 tree-ssa-sink.o : tree-ssa-sink.c $(TREE_FLOW_H) $(CONFIG_H) \
    $(SYSTEM_H) $(TREE_H) $(DIAGNOSTIC_H) \
    $(TM_H) coretypes.h $(TREE_PASS_H) $(FLAGS_H) alloc-pool.h \
@@ -2658,7 +2656,7 @@ tree-vect-data-refs.o: tree-vect-data-refs.c $(CONFIG_H) $(SYSTEM_H) \
 tree-vectorizer.o: tree-vectorizer.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(DUMPFILE_H) $(TM_H) $(GGC_H) $(TREE_H) $(TREE_FLOW_H) \
    $(CFGLOOP_H) $(TREE_PASS_H) $(TREE_VECTORIZER_H) \
-   $(TREE_PRETTY_PRINT_H)
+   $(TREE_PRETTY_PRINT_H) $(DBGCNT_H)
 vtable-verify.o: vtable-verify.c vtable-verify.h $(CONFIG_H) \
    $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) cp/cp-tree.h $(TM_P_H) \
    $(BASIC_BLOCK_H) output.h $(TREE_FLOW_H) $(TREE_DUMP_H) $(TREE_PASS_H) \
@@ -2965,7 +2963,8 @@ ipa-profile.o : ipa-profile.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRA
    ipa-inline.h
 ipa-devirt.o : ipa-devirt.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(CGRAPH_H) \
    $(GIMPLE_H) $(TARGET_H) $(GGC_H) pointer-set.h \
-   $(IPA_UTILS_H) $(HASH_TABLE_H) ipa-inline.h ipa-utils.h $(TREE_PRETTY_PRINT_H)
+   $(IPA_UTILS_H) $(HASH_TABLE_H) ipa-inline.h ipa-utils.h $(TREE_PRETTY_PRINT_H) \
+   $(DIAGNOSTIC_H)
 ipa-prop.o : ipa-prop.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    langhooks.h $(GGC_H) $(TARGET_H) $(CGRAPH_H) $(IPA_PROP_H) $(DIAGNOSTIC_H) \
    $(TREE_FLOW_H) $(TM_H) $(TREE_PASS_H) $(FLAGS_H) $(TREE_H) \
@@ -3109,7 +3108,7 @@ tree-sra.o : tree-sra.c $(CONFIG_H) $(SYSTEM_H) coretypes.h alloc-pool.h \
    $(HASH_TABLE_H) $(TM_H) $(TREE_H) $(GIMPLE_H) $(CGRAPH_H) $(TREE_FLOW_H) \
    $(IPA_PROP_H) $(DIAGNOSTIC_H) statistics.h \
    $(PARAMS_H) $(TARGET_H) $(FLAGS_H) \
-   $(DBGCNT_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H)
+   $(DBGCNT_H) $(TREE_INLINE_H) $(GIMPLE_PRETTY_PRINT_H) ipa-utils.h
 tree-switch-conversion.o : tree-switch-conversion.c $(CONFIG_H) $(SYSTEM_H) \
     $(TREE_H) $(TM_P_H) $(TREE_FLOW_H) $(DIAGNOSTIC_H) $(TREE_INLINE_H) \
     $(TM_H) coretypes.h $(GIMPLE_H) $(CFGLOOP_H) \
@@ -3799,7 +3798,8 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(host_xm_file_list) \
   $(tm_file_list) $(HASHTAB_H) $(SPLAY_TREE_H) $(srcdir)/bitmap.h \
   $(srcdir)/alias.h $(srcdir)/coverage.c $(srcdir)/rtl.h \
-  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/libfuncs.h $(SYMTAB_H) \
+  $(srcdir)/optabs.h $(srcdir)/tree.h $(srcdir)/tree-core.h \
+  $(srcdir)/libfuncs.h $(SYMTAB_H) \
   $(srcdir)/real.h $(srcdir)/function.h $(srcdir)/insn-addr.h $(srcdir)/hwint.h \
   $(srcdir)/fixed-value.h \
   $(srcdir)/output.h $(srcdir)/cfgloop.h \
@@ -3839,7 +3839,6 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/cgraphclones.c \
   $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-phinodes.c \
-  $(srcdir)/lto-symtab.c \
   $(srcdir)/tree-ssa-alias.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.c \

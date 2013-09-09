@@ -86,6 +86,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_token_closure1,
 	_S_token_line_begin,
 	_S_token_line_end,
+	_S_token_word_bound,
+	_S_token_neg_word_bound,
 	_S_token_comma,
 	_S_token_dup_count,
 	_S_token_eof,

@@ -67,3 +67,6 @@ along with GCC; see the file COPYING3.  If not see
    sections.  */
 #undef M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P
 #define M68K_OFFSETS_MUST_BE_WITHIN_SECTIONS_P 1
+
+#undef TARGET_LIBC_HAS_FUNCTION
+#define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

@@ -1,3 +1,9 @@
+2013-09-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* inclhack.def (aix_assert): New fix.
+	* fixincl.x: Regenerate.
+	* tests/base/assert.h [AIX_ASSERT_CHECK]: New check.
+
 2013-07-06  Bruce Korb  <bkorb@gnu.org>
 
 	* inclhack.def (cdef_cplusplus): removed, per Bug 51776

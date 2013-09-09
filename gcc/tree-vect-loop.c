@@ -957,7 +957,7 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
     }
 
   free (LOOP_VINFO_BBS (loop_vinfo));
-  free_data_refs (LOOP_VINFO_DATAREFS (loop_vinfo));
+  vect_destroy_datarefs (loop_vinfo, NULL);
   free_dependence_relations (LOOP_VINFO_DDRS (loop_vinfo));
   LOOP_VINFO_LOOP_NEST (loop_vinfo).release ();
   LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).release ();
@@ -1384,7 +1384,7 @@ vect_analyze_loop_operations (loop_vec_info loop_vinfo, bool slp)
                     return false;
 
                   op_def_stmt = SSA_NAME_DEF_STMT (phi_op);
-		  if (!op_def_stmt
+		  if (gimple_nop_p (op_def_stmt)
 		      || !flow_bb_inside_loop_p (loop, gimple_bb (op_def_stmt))
 		      || !vinfo_for_stmt (op_def_stmt))
                     return false;
@@ -3133,7 +3133,6 @@ get_initial_def_for_induction (gimple iv_phi)
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (iv_phi);
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  tree scalar_type;
   tree vectype;
   int nunits;
   edge pe = loop_preheader_edge (loop);
@@ -3185,8 +3184,7 @@ get_initial_def_for_induction (gimple iv_phi)
   gcc_assert (ok);
   pe = loop_preheader_edge (iv_loop);
 
-  scalar_type = TREE_TYPE (init_expr);
-  vectype = get_vectype_for_scalar_type (scalar_type);
+  vectype = get_vectype_for_scalar_type (TREE_TYPE (init_expr));
   resvectype = get_vectype_for_scalar_type (TREE_TYPE (PHI_RESULT (iv_phi)));
   gcc_assert (vectype);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -3229,8 +3227,11 @@ get_initial_def_for_induction (gimple iv_phi)
 
       /* iv_loop is the loop to be vectorized. Create:
 	 vec_init = [X, X+S, X+2*S, X+3*S] (S = step_expr, X = init_expr)  */
-      new_var = vect_get_new_vect_var (scalar_type, vect_scalar_var, "var_");
-      new_name = force_gimple_operand (init_expr, &stmts, false, new_var);
+      new_var = vect_get_new_vect_var (TREE_TYPE (vectype),
+				       vect_scalar_var, "var_");
+      new_name = force_gimple_operand (fold_convert (TREE_TYPE (vectype),
+						     init_expr),
+				       &stmts, false, new_var);
       if (stmts)
 	{
 	  new_bb = gsi_insert_seq_on_edge_immediate (pe, stmts);
@@ -3243,9 +3244,8 @@ get_initial_def_for_induction (gimple iv_phi)
       for (i = 1; i < nunits; i++)
 	{
 	  /* Create: new_name_i = new_name + step_expr  */
-	  enum tree_code code = POINTER_TYPE_P (scalar_type)
-				? POINTER_PLUS_EXPR : PLUS_EXPR;
-	  new_name = fold_build2 (code, scalar_type, new_name, step_expr);
+	  new_name = fold_build2 (PLUS_EXPR, TREE_TYPE (new_name),
+				  new_name, step_expr);
 	  if (!is_gimple_min_invariant (new_name))
 	    {
 	      init_stmt = gimple_build_assign (new_var, new_name);

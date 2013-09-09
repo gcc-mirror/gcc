@@ -3232,11 +3232,16 @@ emit_move_complex (enum machine_mode mode, rtx x, rtx y)
   if (push_operand (x, mode))
     return emit_move_complex_push (mode, x, y);
 
-  /* See if we can coerce the target into moving both values at once.  */
-
-  /* Move floating point as parts.  */
+  /* See if we can coerce the target into moving both values at once, except
+     for floating point where we favor moving as parts if this is easy.  */
   if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT
-      && optab_handler (mov_optab, GET_MODE_INNER (mode)) != CODE_FOR_nothing)
+      && optab_handler (mov_optab, GET_MODE_INNER (mode)) != CODE_FOR_nothing
+      && !(REG_P (x)
+	   && HARD_REGISTER_P (x)
+	   && hard_regno_nregs[REGNO(x)][mode] == 1)
+      && !(REG_P (y)
+	   && HARD_REGISTER_P (y)
+	   && hard_regno_nregs[REGNO(y)][mode] == 1))
     try_int = false;
   /* Not possible if the values are inherently not adjacent.  */
   else if (GET_CODE (x) == CONCAT || GET_CODE (y) == CONCAT)

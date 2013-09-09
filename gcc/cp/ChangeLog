@@ -1,3 +1,67 @@
+2013-09-08  Caroline Tice  <cmtice@google.com>
+
+	PR c++/58300
+	* vtable-class-hierarchy.c (vtv_generate_init_routine):  In
+	preinit case, move call to assemble_vtv_preinit_initializer to
+	after call to cgraph_process_new_functions.
+	
+2013-09-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/58282
+	* except.c (build_must_not_throw_expr): Handle
+	flag_exceptions.
+
+2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* typeck.c (cp_build_binary_op): Use vector_types_compatible_elements_p.
+
+2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24926
+	* class.c (finish_struct_anon_r): New.
+	(finish_struct_anon): Use it.
+
+2013-09-04  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::simple_type_specifier):
+	Declare as overrider.
+	* cxx-pretty-print.c (cxx_pretty_printer::simple_type_specifier):
+	Rename from pp_cxx_simple_type_specifier.
+	(cxx_pretty_printer::cxx_pretty_printer): Do not assign to
+	simple_type_specifier.
+
+2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58305
+	* typeck2.c (build_functional_cast): Maybe warn_deprecated_use.
+
+2013-09-03  Mike Stump  <mikestump@comcast.net>
+
+	* Make-lang.in (cp/lambda.o): Add dependencies.
+
+2013-09-03  Gabriel Dos Reis  <gdr@integrable-solutions.net>
+
+	* cxx-pretty-print.h (cxx_pretty_printer::type_id): Declare as
+	overrider.
+	* cxx-pretty-print.c (pp_cxx_storage_class_specifier): Remove.
+	(pp_cxx_userdef_literal): Tidy.
+	(pp_cxx_template_argument_list): Likewise.
+	(pp_cxx_typeid_expression): Likewise.
+	(pp_cxx_offsetof_expression_1): Likewise.
+	(cxx_pretty_printer::postfix_expression): Likewise.
+	(cxx_pretty_printer::unary_expression): Likewise.
+	(cxx_pretty_printer::statement): Likewise.
+	(cxx_pretty_printer::type_id): Rename from pp_cxx_type_id.
+	(c_pretty_printer::cxx_pretty_printer): Do not assign to type_id.
+	* error.c (dump_decl): Tidy.
+	(dump_expr): Likewise.
+
+2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/21682, implement DR 565
+	* name-lookup.c (compparms_for_decl_and_using_decl): New.
+	(push_overloaded_decl_1, do_nonmember_using_decl): Use it.
+
 2013-08-30  Marek Polacek  <polacek@redhat.com>
 
 	* typeck.c (cp_build_binary_op): Add division by zero and shift

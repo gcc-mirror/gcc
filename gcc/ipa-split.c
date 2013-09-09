@@ -1222,6 +1222,9 @@ split_function (struct split_point *split_point)
       DECL_BUILT_IN_CLASS (node->symbol.decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (node->symbol.decl) = (enum built_in_function) 0;
     }
+  /* If the original function is declared inline, there is no point in issuing
+     a warning for the non-inlinable part.  */
+  DECL_NO_INLINE_WARNING_P (node->symbol.decl) = 1;
   cgraph_node_remove_callees (cur_node);
   ipa_remove_all_references (&cur_node->symbol.ref_list);
   if (!split_part_return_p)
@@ -1537,7 +1540,9 @@ execute_split_functions (void)
      Note that we are not completely conservative about disqualifying functions
      called once.  It is possible that the caller is called more then once and
      then inlining would still benefit.  */
-  if ((!node->callers || !node->callers->next_caller)
+  if ((!node->callers
+       /* Local functions called once will be completely inlined most of time.  */
+       || (!node->callers->next_caller && node->local.local))
       && !node->symbol.address_taken
       && (!flag_lto || !node->symbol.externally_visible))
     {

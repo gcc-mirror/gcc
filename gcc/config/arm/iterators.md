@@ -391,7 +391,7 @@
 (define_mode_attr scalar_mul_constraint [(V4HI "x") (V2SI "t") (V2SF "t")
                                          (V8HI "x") (V4SI "t") (V4SF "t")])
 
-;; Predicates used for setting neon_type
+;; Predicates used for setting type for neon instructions
 
 (define_mode_attr Is_float_mode [(V8QI "false") (V16QI "false")
                  (V4HI "false") (V8HI "false")

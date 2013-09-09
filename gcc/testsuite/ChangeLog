@@ -1,4 +1,202 @@
-2013-09-01  Jan Hubicka  <jh@suse.cz>	
+2013-09-08  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/pr58340.c: New test.
+
+2013-09-08  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* g++.dg/debug/ra1.C: New test.
+
+2013-09-08  Jan Hubicka  <jh@suse.cz>
+
+	* testsuite/g++.dg/ipa/devirt-11.C: Update template.
+	* testsuite/g++.dg/ipa/devirt-16.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-17.C: New testcase.
+	* testsuite/g++.dg/ipa/devirt-18.C: New testcase.
+
+2013-09-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/54941
+	* g++.dg/overload/new1.C: Adjust.
+
+2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-c++-common/opaque-vector.c: New test.
+
+2013-09-08  Tom de Vries  <tom@codesourcery.com>
+
+	PR c++/58282
+	* g++.dg/tm/noexcept-6.C: New test.
+
+2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.target/arc/cond-set-use.c: New test.
+
+2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/stack_usage2.adb: New test.
+
+2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/table-intrinsics.c
+	(qtbl_tests8_< ,2,3,4>): Fix control vector parameter type.
+	(qtb_tests8_< ,2,3,4>): Likewise.
+	(qtblq_tests8_< ,2,3,4>): Likewise.
+	(qtbxq_tests8_< ,2,3,4>): Likewise.
+
+2013-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn10.ad[sb]: New test.
+	* gnat.dg/warn10_pkg.ads: New helper.
+
+2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gcc.dg/ipa/ipa-pta-14.c (scan-ipa-dump) [keeps_null_pointer_checks]:
+	Don't expect NULL in foo.result set.
+	* gcc.dg/tree-ssa/pta-escape-1.c (scan-tree-dump): Don't expect NULL
+	in ESCAPED set.
+	* gcc.dg/tree-ssa/pta-escape-2.c: Likewise.
+	* gcc.dg/tree-ssa/pta-escape-3.c: Likewise.
+
+2013-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* gcc.target/s390/nearestint-1.c: New testcase.
+
+2013-09-06  Joern Rennecke  <joern.rennecke@embecosm.com>
+	    Vineet Gupta  <Vineet.Gupta@synopsys.com>
+
+	* gcc.c-torture/execute/20101011-1.c [__arc__] (DO_TEST): Define as 0.
+	* testsuite/gcc.target/arc: New directory.
+	* gcc.dg/torture/pr37868.c: Also skip for arc*-*-*.
+	* gcc.dg/stack-usage-1.c [__arc__] (SIZE): Define.
+	* testsuite/gcc.dg/torture/stackalign/builtin-apply-2.c
+	[__arc__] (STACK_ARGUMENTS_SIZE): Set to 0.
+	* testsuite/gcc.dg/builtin-apply2.c
+	[__arc__] (STACK_ARGUMENTS_SIZE): Set to 0.
+
+2013-09-04  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58201
+	* g++.dg/torture/pr58201_0.C: New testcase.
+	* g++.dg/torture/pr58201_1.C: New testcase.
+	* g++.dg/torture/pr58201.h: New testcase.
+
+2013-09-05  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/autopar/pr49960.c: Disable partial inlining
+
+2013-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58137
+	* gcc.target/i386/pr58137.c: New testcase.
+
+2013-09-05  Martin Jambor  <mjambor@suse.cz>
+
+	* g++.dg/ipa/remref-1.C: New test.
+	* g++.dg/ipa/remref-2.C: Likewise.
+
+2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/24926
+	* g++.dg/parse/access11.C: New.
+
+2013-09-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/warn/weak1.C: Skip on AIX.
+
+2013-09-04  Easwaran Raman  <eraman@google.com>
+
+	PR middle-end/57370
+	PR tree-optimization/58011
+	* gfortran.dg/reassoc_12.f90: New testcase.
+	* gcc.dg/tree-ssa/reassoc-31.c: New testcase.
+
+2013-09-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/attr-weakref-1.c: Skip on AIX.
+	* gcc.dg/torture/pr53922.c: Skip on AIX.
+	* lib/file-format.exp (gcc_target_object_format): AIX is COFF.
+
+2013-09-04  Teresa Johnson  <tejohnson@google.com>
+
+	* gcc.dg/unroll_1.c: Test dumping to stderr.
+
+2013-09-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58305
+	* g++.dg/warn/deprecated-8.C: New.
+
+2013-09-03  Jeff Law  <law@redhat.com>
+
+	* tree-ssa/ssa-dom-thread-3.c: Update due to changes in debug
+	dump output.
+
+2013-09-03  Meador Inge  <meadori@codesourcery.com>
+
+	Revert:
+
+	2013-08-30  Meador Inge  <meadori@codesourcery.com>
+
+	* gcc.dg/Warray-bounds-11.c: New testcase.
+
+2013-09-03  David Edelsohn  <dje.gcc@gmail.com>
+
+	* lib/target-supports.exp (check_weak_available): Return true for AIX.
+
+2013-09-03  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/ipa/devirt-15.C: Fix testcase.
+
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57656
+	* gcc.dg/torture/pr57656.c: New testcase.
+
+2013-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57287
+	* gcc.dg/pr57287-2.c: Use setjmp, not __sigsetjmp.
+
+2013-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/PR56519
+	* gfortran.dg/do_concurrent_3.f90:  New test case.
+
+2013-09-02  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/tree-ssa/fnsplit-1.c: New testcase.
+
+2013-09-02  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/58106
+	* gcc.dg/ipa/pr58106.c: New test.
+
+2013-09-02  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c
+	(vdup<bhsd>_lane<su><8,16,32,64>): Force values to SIMD registers.
+
+2013-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/57511
+	* gcc.dg/tree-ssa/sccp-1.c: New testcase.
+
+2013-09-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/loop-4.c: Adjust scan looking for one memory
+	reference.
+
+2013-09-02  Bin Cheng  <bin.cheng@arm.com>
+
+	* gcc.target/arm/ivopts-orig_biv-inc.c: New testcase.
+
+2013-09-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/21682, implement DR 565
+	* g++.dg/template/using24.C: New.
+	* g++.dg/template/using25.C: Likewise.
+	* g++.dg/template/using26.C: Likewise.
+
+2013-09-01  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/ipa/devirt-15.C: New testcase.
 

@@ -62,7 +62,7 @@ struct target_builtins *this_target_builtins = &default_target_builtins;
 #endif
 
 /* Define the names of the builtin function types and codes.  */
-const char *const built_in_class_names[4]
+const char *const built_in_class_names[BUILT_IN_LAST]
   = {"NOT_BUILT_IN", "BUILT_IN_FRONTEND", "BUILT_IN_MD", "BUILT_IN_NORMAL"};
 
 #define DEF_BUILTIN(X, N, C, T, LT, B, F, NA, AT, IM, COND) #X,

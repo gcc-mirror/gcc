@@ -51,12 +51,13 @@
 
 (define_insn_reservation "vfp_ffarith" 4
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fcpys,ffariths,ffarithd,fcmps,fcmpd"))
+      (eq_attr "type" "fmov,ffariths,ffarithd,fcmps,fcmpd"))
  "fmac")
 
 (define_insn_reservation "vfp_farith" 8
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fadds,faddd,fconsts,fconstd,f_cvt,fmuls,fmacs,ffmas"))
+      (eq_attr "type" "fadds,faddd,fconsts,fconstd,f_cvt,f_cvtf2i,f_cvti2f,\
+                       fmuls,fmacs,ffmas"))
  "fmac")
 
 (define_insn_reservation "vfp_fmul" 9
@@ -66,23 +67,23 @@
 
 (define_insn_reservation "vfp_fdivs" 19
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fdivs"))
+      (eq_attr "type" "fdivs, fsqrts"))
  "ds*15")
 
 (define_insn_reservation "vfp_fdivd" 33
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "fdivd"))
+      (eq_attr "type" "fdivd, fsqrtd"))
  "fmac+ds*29")
 
 ;; Moves to/from arm regs also use the load/store pipeline.
 (define_insn_reservation "vfp_fload" 4
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_loads,f_loadd,r_2_f"))
+      (eq_attr "type" "f_loads,f_loadd,f_mcr,f_mcrr"))
  "vfp_ls")
 
 (define_insn_reservation "vfp_fstore" 4
  (and (eq_attr "generic_vfp" "yes")
-      (eq_attr "type" "f_stores,f_stored,f_2_r"))
+      (eq_attr "type" "f_stores,f_stored,f_mrc,f_mrrc"))
  "vfp_ls")
 
 (define_insn_reservation "vfp_to_cpsr" 4

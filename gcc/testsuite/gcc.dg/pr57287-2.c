@@ -12,7 +12,7 @@ struct node
 struct node *list;
 struct node *head (void);
 
-sigjmp_buf *bar (void);
+jmp_buf *bar (void);
 
 int baz (void)
 {
@@ -25,8 +25,8 @@ int baz (void)
       if (!varseen)
 	varseen = 1;
 
-      sigjmp_buf *buf = bar ();  /* { dg-bogus "may be used uninitialized" "" } */
-      __sigsetjmp (*buf, 1);
+      jmp_buf *buf = bar ();  /* { dg-bogus "may be used uninitialized" "" } */
+      setjmp (*buf);
     }
 
   if (!varseen)

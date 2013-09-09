@@ -611,7 +611,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  loop count will be known (and therefore a candidate for compiler
    *  optimizations such as unrolling).
    *
-   *  Result may not be in the range [first,last).  Use copy instead.  Note
+   *  Result may not be in the range (first,last].  Use copy instead.  Note
    *  that the start of the output range may overlap [first,last).
   */
   template<typename _BI1, typename _BI2>

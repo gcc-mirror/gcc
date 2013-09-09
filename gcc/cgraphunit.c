@@ -821,6 +821,82 @@ varpool_finalize_decl (tree decl)
     varpool_assemble_decl (node);
 }
 
+/* EDGE is an polymorphic call.  Mark all possible targets as reachable
+   and if there is only one target, perform trivial devirtualization. 
+   REACHABLE_CALL_TARGETS collects target lists we already walked to
+   avoid udplicate work.  */
+
+static void
+walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
+			       struct cgraph_edge *edge)
+{
+  unsigned int i;
+  void *cache_token;
+  bool final;
+  vec <cgraph_node *>targets
+    = possible_polymorphic_call_targets
+	(edge, &final, &cache_token);
+
+  if (!pointer_set_insert (reachable_call_targets,
+			   cache_token))
+    {
+      if (cgraph_dump_file)
+	dump_possible_polymorphic_call_targets 
+	  (cgraph_dump_file, edge);
+
+      for (i = 0; i < targets.length(); i++)
+	{
+	  /* Do not bother to mark virtual methods in anonymous namespace;
+	     either we will find use of virtual table defining it, or it is
+	     unused.  */
+	  if (targets[i]->symbol.definition
+	      && TREE_CODE
+		  (TREE_TYPE (targets[i]->symbol.decl))
+		   == METHOD_TYPE
+	      && !type_in_anonymous_namespace_p
+		   (method_class_type
+		     (TREE_TYPE (targets[i]->symbol.decl))))
+	  enqueue_node ((symtab_node) targets[i]);
+	}
+    }
+
+  /* Very trivial devirtualization; when the type is
+     final or anonymous (so we know all its derivation)
+     and there is only one possible virtual call target,
+     make the edge direct.  */
+  if (final)
+    {
+      if (targets.length() <= 1)
+	{
+	  cgraph_node *target;
+	  if (targets.length () == 1)
+	    target = targets[0];
+	  else
+	    target = cgraph_get_create_node
+		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+
+	  if (cgraph_dump_file)
+	    {
+	      fprintf (cgraph_dump_file,
+		       "Devirtualizing call: ");
+	      print_gimple_stmt (cgraph_dump_file,
+				 edge->call_stmt, 0,
+				 TDF_SLIM);
+	    }
+	  cgraph_make_edge_direct (edge, target);
+	  cgraph_redirect_edge_call_stmt_to_callee (edge);
+	  if (cgraph_dump_file)
+	    {
+	      fprintf (cgraph_dump_file,
+		       "Devirtualized as: ");
+	      print_gimple_stmt (cgraph_dump_file,
+				 edge->call_stmt, 0,
+				 TDF_SLIM);
+	    }
+	}
+    }
+}
+
 
 /* Discover all functions and variables that are trivially needed, analyze
    them as well as all functions and variables referred by them  */
@@ -923,71 +999,13 @@ analyze_functions (void)
 	      if (optimize && flag_devirtualize)
 		{
 		  struct cgraph_edge *next;
-	          for (edge = cnode->indirect_calls; edge; edge = next)
+
+		  for (edge = cnode->indirect_calls; edge; edge = next)
 		    {
 		      next = edge->next_callee;
 		      if (edge->indirect_info->polymorphic)
-			{
-			  unsigned int i;
-			  void *cache_token;
-			  bool final;
-			  vec <cgraph_node *>targets
-			    = possible_polymorphic_call_targets
-				(edge, &final, &cache_token);
-
-			  if (!pointer_set_insert (reachable_call_targets,
-						   cache_token))
-			    {
-			      if (cgraph_dump_file)
-				dump_possible_polymorphic_call_targets 
-				  (cgraph_dump_file, edge);
-
-			      for (i = 0; i < targets.length(); i++)
-				{
-				  /* Do not bother to mark virtual methods in anonymous namespace;
-				     either we will find use of virtual table defining it, or it is
-				     unused.  */
-				  if (targets[i]->symbol.definition
-				      && TREE_CODE
-					  (TREE_TYPE (targets[i]->symbol.decl))
-					   == METHOD_TYPE
-				      && !type_in_anonymous_namespace_p
-					   (method_class_type
-					     (TREE_TYPE (targets[i]->symbol.decl))))
-				  enqueue_node ((symtab_node) targets[i]);
-				}
-			    }
-
-			  /* Very trivial devirtualization; when the type is
-			     final or anonymous (so we know all its derivation)
-			     and there is only one possible virtual call target,
-			     make the edge direct.  */
-			  if (final)
-			    {
-			      gcc_assert (targets.length());
-			      if (targets.length() == 1)
-				{
-				  if (cgraph_dump_file)
-				    {
-				      fprintf (cgraph_dump_file,
-					       "Devirtualizing call: ");
-				      print_gimple_stmt (cgraph_dump_file,
-							 edge->call_stmt, 0,
-							 TDF_SLIM);
-				    }
-				  cgraph_make_edge_direct (edge, targets[0]);
-				  cgraph_redirect_edge_call_stmt_to_callee (edge);
-				  if (cgraph_dump_file)
-				    {
-				      fprintf (cgraph_dump_file,
-					       "Devirtualized as: ");
-				      print_gimple_stmt (cgraph_dump_file,
-							 edge->call_stmt, 0,
-							 TDF_SLIM);
-				    }
-				}
-			    }
-			}
+			walk_polymorphic_call_targets (reachable_call_targets,
+						       edge);
 		    }
 		}
 
@@ -1064,6 +1082,8 @@ analyze_functions (void)
 	}
       node->symbol.aux = NULL;
     }
+  for (;node; node = node->symbol.next)
+    node->symbol.aux = NULL;
   first_analyzed = cgraph_first_function ();
   first_analyzed_var = varpool_first_variable ();
   if (cgraph_dump_file)
@@ -1074,6 +1094,11 @@ analyze_functions (void)
   bitmap_obstack_release (NULL);
   pointer_set_destroy (reachable_call_targets);
   ggc_collect ();
+  /* Initialize assembler name hash, in particular we want to trigger C++
+     mangling and same body alias creation before we free DECL_ARGUMENTS
+     used by it.  */
+  if (!seen_error ())
+    symtab_initialize_asm_name_hash ();
 }
 
 /* Translate the ugly representation of aliases as alias pairs into nice
@@ -1414,7 +1439,11 @@ expand_thunk (struct cgraph_node *node)
   tree virtual_offset = NULL;
   tree alias = node->callees->callee->symbol.decl;
   tree thunk_fndecl = node->symbol.decl;
-  tree a = DECL_ARGUMENTS (thunk_fndecl);
+  tree a;
+
+  if (in_lto_p)
+    cgraph_get_body (node);
+  a = DECL_ARGUMENTS (thunk_fndecl);
 
   current_function_decl = thunk_fndecl;
 

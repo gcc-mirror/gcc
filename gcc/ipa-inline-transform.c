@@ -432,7 +432,7 @@ inline_transform (struct cgraph_node *node)
   ipa_remove_all_references (&node->symbol.ref_list);
 
   timevar_push (TV_INTEGRATION);
-  if (node->callees)
+  if (node->callees && optimize)
     todo = optimize_inline_calls (current_function_decl);
   timevar_pop (TV_INTEGRATION);
 

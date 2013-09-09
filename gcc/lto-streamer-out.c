@@ -124,8 +124,11 @@ output_type_ref (struct output_block *ob, tree node)
 static bool
 tree_is_indexable (tree t)
 {
+  /* Parameters and return values of functions of variably modified types
+     must go to global stream, because they may be used in the type
+     definition.  */
   if (TREE_CODE (t) == PARM_DECL || TREE_CODE (t) == RESULT_DECL)
-    return false;
+    return variably_modified_type_p (TREE_TYPE (DECL_CONTEXT (t)), NULL_TREE);
   else if (TREE_CODE (t) == VAR_DECL && decl_function_context (t)
 	   && !TREE_STATIC (t))
     return false;
@@ -1982,8 +1985,7 @@ lto_output (void)
       cgraph_node *node = dyn_cast <cgraph_node> (snode);
       if (node
 	  && lto_symtab_encoder_encode_body_p (encoder, node)
-	  && !node->symbol.alias
-	  && !node->thunk.thunk_p)
+	  && !node->symbol.alias)
 	{
 #ifdef ENABLE_CHECKING
 	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->symbol.decl)));

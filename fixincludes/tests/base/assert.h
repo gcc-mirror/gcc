@@ -19,6 +19,13 @@
 #include <stdio.h>
 
 
+#if defined( AIX_ASSERT_CHECK )
+#ifndef __cplusplus
+#define static_assert _Static_assert
+#endif
+#endif  /* AIX_ASSERT_CHECK */
+
+
 #if defined( ALPHA___ASSERT_CHECK )
 extern void __assert(const char *, const char *, int);
 #endif  /* ALPHA___ASSERT_CHECK */

@@ -1289,30 +1289,6 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	  functype = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(functype)));
 	  go_assert(FUNCTION_POINTER_TYPE_P(functype));
 	  functype = TREE_TYPE(functype);
-
-	  // In the struct, the function type always has a trailing
-	  // closure argument.  For the function body, we only use
-	  // that trailing arg if this is a function literal or if it
-	  // is a wrapper created to store in a descriptor.  Remove it
-	  // in that case.
-	  if (this->enclosing_ == NULL && !this->is_descriptor_wrapper_)
-	    {
-	      tree old_params = TYPE_ARG_TYPES(functype);
-	      go_assert(old_params != NULL_TREE
-			&& old_params != void_list_node);
-	      tree new_params = NULL_TREE;
-	      tree *pp = &new_params;
-	      while (TREE_CHAIN (old_params) != void_list_node)
-		{
-		  tree p = TREE_VALUE(old_params);
-		  go_assert(TYPE_P(p));
-		  *pp = tree_cons(NULL_TREE, p, NULL_TREE);
-		  pp = &TREE_CHAIN(*pp);
-		  old_params = TREE_CHAIN (old_params);
-		}
-	      *pp = void_list_node;
-	      functype = build_function_type(TREE_TYPE(functype), new_params);
-	    }
 	}
 
       if (functype == error_mark_node)
@@ -1423,26 +1399,6 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 	  functype = TREE_TYPE(TYPE_FIELDS(TREE_TYPE(functype)));
 	  go_assert(FUNCTION_POINTER_TYPE_P(functype));
 	  functype = TREE_TYPE(functype);
-
-	  // In the struct, the function type always has a trailing
-	  // closure argument.  Here we are referring to the function
-	  // code directly, and we know it is not a function literal,
-	  // and we know it is not a wrapper created to store in a
-	  // descriptor.  Remove that trailing argument.
-	  tree old_params = TYPE_ARG_TYPES(functype);
-	  go_assert(old_params != NULL_TREE && old_params != void_list_node);
-	  tree new_params = NULL_TREE;
-	  tree *pp = &new_params;
-	  while (TREE_CHAIN (old_params) != void_list_node)
-	    {
-	      tree p = TREE_VALUE(old_params);
-	      go_assert(TYPE_P(p));
-	      *pp = tree_cons(NULL_TREE, p, NULL_TREE);
-	      pp = &TREE_CHAIN(*pp);
-	      old_params = TREE_CHAIN (old_params);
-	    }
-	  *pp = void_list_node;
-	  functype = build_function_type(TREE_TYPE(functype), new_params);
 	}
 
       tree decl;
@@ -1659,8 +1615,13 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
 	}
     }
 
-  // The closure variable is passed last, if this is a function
-  // literal or a descriptor wrapper.
+  *pp = NULL_TREE;
+
+  DECL_ARGUMENTS(fndecl) = params;
+
+  // If we need a closure variable, fetch it by calling a runtime
+  // function.  The caller will have called __go_set_closure before
+  // the function call.
   if (this->closure_var_ != NULL)
     {
       Bvariable* bvar =
@@ -1668,25 +1629,25 @@ Function::build_tree(Gogo* gogo, Named_object* named_function)
       tree var_decl = var_to_tree(bvar);
       if (var_decl != error_mark_node)
 	{
-	  go_assert(TREE_CODE(var_decl) == PARM_DECL);
-	  *pp = var_decl;
-	  pp = &DECL_CHAIN(*pp);
+	  go_assert(TREE_CODE(var_decl) == VAR_DECL);
+	  static tree get_closure_fndecl;
+	  tree get_closure = Gogo::call_builtin(&get_closure_fndecl,
+						this->location_,
+						"__go_get_closure",
+						0,
+						ptr_type_node);
+
+	  // Mark the __go_get_closure function as pure, since it
+	  // depends only on the global variable g.
+	  DECL_PURE_P(get_closure_fndecl) = 1;
+
+	  get_closure = fold_convert_loc(this->location_.gcc_location(),
+					 TREE_TYPE(var_decl), get_closure);
+	  DECL_INITIAL(var_decl) = get_closure;
+	  DECL_CHAIN(var_decl) = declare_vars;
+	  declare_vars = var_decl;
 	}
     }
-  else if (this->enclosing_ != NULL || this->is_descriptor_wrapper_)
-    {
-      tree parm_decl = build_decl(this->location_.gcc_location(), PARM_DECL,
-				  get_identifier("$closure"),
-				  const_ptr_type_node);
-      DECL_CONTEXT(parm_decl) = current_function_decl;
-      DECL_ARG_TYPE(parm_decl) = const_ptr_type_node;
-      *pp = parm_decl;
-      pp = &DECL_CHAIN(*pp);
-    }
-
-  *pp = NULL_TREE;
-
-  DECL_ARGUMENTS(fndecl) = params;
 
   if (this->block_ != NULL)
     {
