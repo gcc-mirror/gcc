@@ -1,3 +1,7 @@
+2013-09-09  Tobias Burnus  <burnus@net-b.de>
+
+	* invoke.texi (Error and Warning Options): Add hyphen.
+
 2013-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/PR56519
