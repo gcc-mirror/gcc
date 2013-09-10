@@ -1377,6 +1377,8 @@ package body Sem_Ch13 is
 
                if Is_Ignored (Aspect) then
                   Set_Is_Ignored (Aitem);
+               elsif Is_Checked (Aspect) then
+                  Set_Is_Checked (Aspect);
                end if;
 
                Set_Corresponding_Aspect (Aitem, Aspect);

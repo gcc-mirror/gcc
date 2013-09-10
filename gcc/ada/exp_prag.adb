@@ -287,10 +287,13 @@ package body Exp_Prag is
       Msg  : Node_Id;
 
    begin
-      --  We already know that this check is enabled, because otherwise the
-      --  semantic pass dealt with rewriting the assertion (see Sem_Prag)
+      --  Nothing to do if pragma is ignored
 
-      --  Since this check is enabled, we rewrite the pragma into a
+      if Is_Ignored (N) then
+         return;
+      end if;
+
+      --  Since this check is active, we rewrite the pragma into a
       --  corresponding if statement, and then analyze the statement
 
       --  The normal case expansion transforms:
