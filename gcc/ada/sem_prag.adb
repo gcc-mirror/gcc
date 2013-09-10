@@ -15144,16 +15144,22 @@ package body Sem_Prag is
             Ent := Find_Lib_Unit_Name;
             Check_Duplicate_Pragma (Ent);
 
-            --  This filters out pragmas inside generic parent then
-            --  show up inside instantiation
+            --  This filters out pragmas inside generic parents that show up
+            --  inside instantiations. Pragmas that come from aspects in the
+            --  unit are not ignored.
 
-            if Present (Ent)
-              and then not (Pk = N_Package_Specification
-                             and then Present (Generic_Parent (Pa)))
-            then
-               if not Debug_Flag_U then
-                  Set_Is_Preelaborated (Ent);
-                  Set_Suppress_Elaboration_Warnings (Ent);
+            if Present (Ent) then
+               if Pk = N_Package_Specification
+                 and then Present (Generic_Parent (Pa))
+                 and then not From_Aspect_Specification (N)
+               then
+                  null;
+
+               else
+                  if not Debug_Flag_U then
+                     Set_Is_Preelaborated (Ent);
+                     Set_Suppress_Elaboration_Warnings (Ent);
+                  end if;
                end if;
             end if;
          end Preelaborate;
