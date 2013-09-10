@@ -3357,6 +3357,12 @@ ix86_option_override_internal (bool main_args_p)
   if (!global_options_set.x_ix86_abi)
     ix86_abi = DEFAULT_ABI;
 
+  /* For targets using ms ABI enable ms-extensions, if not
+     explicit turned off.  For non-ms ABI we turn off this
+     option.  */
+  if (!global_options_set.x_flag_ms_extensions)
+    flag_ms_extensions = (MS_ABI == DEFAULT_ABI);
+
   if (global_options_set.x_ix86_cmodel)
     {
       switch (ix86_cmodel)
