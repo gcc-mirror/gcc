@@ -76,6 +76,7 @@ with Table;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
+with Warnsw;   use Warnsw;
 
 with GNAT.HTable;
 
@@ -3895,7 +3896,8 @@ package body Sem_Ch12 is
                    Scope_Suppress           => Scope_Suppress,
                    Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                    Version                  => Ada_Version,
-                   Version_Pragma           => Ada_Version_Pragma));
+                   Version_Pragma           => Ada_Version_Pragma,
+                   Warnings                 => Save_Warnings));
             end if;
          end if;
 
@@ -4240,7 +4242,8 @@ package body Sem_Ch12 is
                Scope_Suppress           => Scope_Suppress,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Version                  => Ada_Version,
-               Version_Pragma           => Ada_Version_Pragma)),
+               Version_Pragma           => Ada_Version_Pragma,
+               Warnings                 => Save_Warnings)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -4357,7 +4360,8 @@ package body Sem_Ch12 is
                Scope_Suppress           => Scope_Suppress,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                Version                  => Ada_Version,
-               Version_Pragma           => Ada_Version_Pragma)),
+               Version_Pragma           => Ada_Version_Pragma,
+               Warnings                 => Save_Warnings)),
             Inlined_Body => True);
       end if;
    end Inline_Instance_Body;
@@ -4414,7 +4418,8 @@ package body Sem_Ch12 is
              Scope_Suppress           => Scope_Suppress,
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
              Version                  => Ada_Version,
-             Version_Pragma           => Ada_Version_Pragma));
+             Version_Pragma           => Ada_Version_Pragma,
+             Warnings                 => Save_Warnings));
          return True;
 
       --  Here if not inlined, or we ignore the inlining
@@ -9914,6 +9919,7 @@ package body Sem_Ch12 is
       Scope_Suppress           := Body_Info.Scope_Suppress;
       Opt.Ada_Version          := Body_Info.Version;
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
+      Restore_Warnings (Body_Info.Warnings);
 
       if No (Gen_Body_Id) then
          Load_Parent_Of_Generic
@@ -10174,7 +10180,9 @@ package body Sem_Ch12 is
       Unit_Renaming : Node_Id;
 
       Parent_Installed : Boolean := False;
-      Save_Style_Check : constant Boolean := Style_Check;
+
+      Saved_Style_Check : constant Boolean        := Style_Check;
+      Saved_Warnings    : constant Warning_Record := Save_Warnings;
 
       Par_Ent : Entity_Id := Empty;
       Par_Vis : Boolean   := False;
@@ -10201,6 +10209,7 @@ package body Sem_Ch12 is
       Scope_Suppress           := Body_Info.Scope_Suppress;
       Opt.Ada_Version          := Body_Info.Version;
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
+      Restore_Warnings (Body_Info.Warnings);
 
       if No (Gen_Body_Id) then
 
@@ -10380,7 +10389,8 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
-         Style_Check := Save_Style_Check;
+         Style_Check := Saved_Style_Check;
+         Restore_Warnings (Saved_Warnings);
 
       --  Body not found. Error was emitted already. If there were no previous
       --  errors, this may be an instance whose scope is a premature instance.
@@ -11861,7 +11871,8 @@ package body Sem_Ch12 is
       Body_Optional : Boolean := False)
    is
       Comp_Unit          : constant Node_Id := Cunit (Get_Source_Unit (Spec));
-      Save_Style_Check   : constant Boolean := Style_Check;
+      Saved_Style_Check  : constant Boolean := Style_Check;
+      Saved_Warnings     : constant Warning_Record := Save_Warnings;
       True_Parent        : Node_Id;
       Inst_Node          : Node_Id;
       OK                 : Boolean;
@@ -12096,7 +12107,8 @@ package body Sem_Ch12 is
                               Local_Suppress_Stack_Top =>
                                 Local_Suppress_Stack_Top,
                               Version                  => Ada_Version,
-                              Version_Pragma           => Ada_Version_Pragma);
+                              Version_Pragma           => Ada_Version_Pragma,
+                              Warnings                 => Save_Warnings);
 
                            --  Package instance
 
@@ -12137,7 +12149,8 @@ package body Sem_Ch12 is
                          Scope_Suppress           => Scope_Suppress,
                          Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
                          Version                  => Ada_Version,
-                         Version_Pragma           => Ada_Version_Pragma)),
+                         Version_Pragma           => Ada_Version_Pragma,
+                         Warnings                 => Save_Warnings)),
                      Body_Optional => Body_Optional);
                end;
             end if;
@@ -12148,7 +12161,8 @@ package body Sem_Ch12 is
             Opt.Style_Check := False;
             Expander_Mode_Save_And_Set (True);
             Load_Needed_Body (Comp_Unit, OK);
-            Opt.Style_Check := Save_Style_Check;
+            Opt.Style_Check := Saved_Style_Check;
+            Restore_Warnings (Saved_Warnings);
             Expander_Mode_Restore;
 
             if not OK

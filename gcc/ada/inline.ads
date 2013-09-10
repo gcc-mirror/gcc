@@ -36,10 +36,11 @@
 --  Frontend, and thus are not mutually recursive.
 
 with Alloc;
-with Opt;   use Opt;
-with Sem;   use Sem;
+with Opt;    use Opt;
+with Sem;    use Sem;
 with Table;
-with Types; use Types;
+with Types;  use Types;
+with Warnsw; use Warnsw;
 
 package Inline is
 
@@ -92,6 +93,9 @@ package Inline is
 
       Version_Pragma : Node_Id;
       --  This is linked with the Version value
+
+      Warnings : Warning_Record;
+      --  Capture values of warning flags
    end record;
 
    package Pending_Instantiations is new Table.Table (

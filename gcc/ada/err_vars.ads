@@ -93,6 +93,7 @@ package Err_Vars is
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
+   --  Note: always ignored on VMS, where we do not provide this capability.
 
    ----------------------------------------
    -- Error Message Insertion Parameters --
