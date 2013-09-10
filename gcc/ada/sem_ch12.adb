@@ -3912,7 +3912,6 @@ package body Sem_Ch12 is
          if Nkind (Parent (N)) /= N_Compilation_Unit then
             Mark_Rewrite_Insertion (Act_Decl);
             Insert_Before (N, Act_Decl);
-
             Analyze (Act_Decl);
 
          --  For an instantiation that is a compilation unit, place
