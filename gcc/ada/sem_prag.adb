@@ -17958,6 +17958,10 @@ package body Sem_Prag is
                then
                   Check_Arg_Is_Static_Expression (Last_Arg, Standard_String);
                   Arg_Count := Arg_Count - 1;
+
+                  --  Not allowed in compiler units (bootstrap issues)
+
+                  Check_Compiler_Unit (N);
                end if;
             end;
 
