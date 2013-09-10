@@ -49,6 +49,7 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stylesw;  use Stylesw;
+with Targparm; use Targparm;
 with Uname;    use Uname;
 
 package body Errout is
@@ -2704,7 +2705,7 @@ package body Errout is
          Warning_Msg_Char := ' ';
 
          if P <= Text'Last and then Text (P) = '?' then
-            if Warning_Doc_Switch then
+            if Warning_Doc_Switch and not OpenVMS_On_Target then
                Warning_Msg_Char := '?';
             end if;
 
@@ -2716,7 +2717,7 @@ package body Errout is
                      Text (P) in 'A' .. 'Z')
            and then Text (P + 1) = '?'
          then
-            if Warning_Doc_Switch then
+            if Warning_Doc_Switch and not OpenVMS_On_Target then
                Warning_Msg_Char := Text (P);
             end if;
 
@@ -2802,7 +2803,10 @@ package body Errout is
                --  If tagging of messages is enabled, and this is a warning,
                --  then it is treated as being [enabled by default].
 
-               if Error_Msg_Warn and Warning_Doc_Switch then
+               if Error_Msg_Warn
+                 and Warning_Doc_Switch
+                 and not OpenVMS_On_Target
+               then
                   Warning_Msg_Char := '?';
                end if;
 

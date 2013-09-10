@@ -64,6 +64,7 @@ package Errout is
    --  are active (see errout.ads for details). If this switch is False, then
    --  these sequences are ignored (i.e. simply equivalent to a single ?). The
    --  -gnatw.d switch sets this flag True, -gnatw.D sets this flag False.
+   --  Note: always ignored in VMS mode where we do not provide this feature.
 
    -----------------------------------
    -- Suppression of Error Messages --
@@ -695,7 +696,9 @@ package Errout is
 
    procedure Error_Msg_F (Msg : String; N : Node_Id);
    --  Similar to Error_Msg_N except that the message is placed on the first
-   --  node of the construct N (First_Node (N)).
+   --  node of the construct N (First_Node (N)). Note that this procedure uses
+   --  Original_Node to look at the original source tree, since that's what we
+   --  want for placing an error message flag in the right place.
 
    procedure Error_Msg_NE
      (Msg : String;
@@ -739,8 +742,11 @@ package Errout is
    --  usual manner, and need not be the same length as the original text.
 
    function First_Node (C : Node_Id) return Node_Id;
-   --  Given a construct C, finds the first node in the construct, i.e. the
-   --  one with the lowest Sloc value. This is useful in placing error msgs.
+   --  Given a construct C, finds the first node in the construct, i.e. the one
+   --  with the lowest Sloc value. This is useful in placing error msgs. Note
+   --  that this procedure uses Original_Node to look at the original source
+   --  tree, since that's what we want for placing an error message flag in
+   --  the right place.
 
    function First_Sloc (N : Node_Id) return Source_Ptr;
    --  Given the node for an expression, return a source pointer value that

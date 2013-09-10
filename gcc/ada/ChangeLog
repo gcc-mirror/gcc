@@ -1,3 +1,26 @@
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Replace_Anonymoous_Access_To_Protected_Subprogram): If
+	the return type is itself an access to function, recurse to emit
+	another anonymous type.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads (Warning_Doc_Switch): Ignored in VMS mode.
+	* errout.adb (Warning_Doc_Switch): Ignored in VMS mode.
+	* errout.ads (Warning_Doc_Switch): Ignored in VMS mode.
+	* inline.ads (Warnings): New component in Pending_Body_Info.
+	* sem_ch12.adb (Pending_Body_Info): Save and restore warnings
+	at instantiation point.
+	* warnsw.adb (Save_Warnings): New function (Restore_Warnings):
+	New procedure Remove special handling of Warning_Doc_Switch,
+	cleaner to handle the VMS case in errout, than to introduce
+	undocumented oddities here.
+	* warnsw.ads (Warning_Record) : New type.
+	(Save_Warnings): New function.
+	(Restore_Warnings): New procedure.
+
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* sinput.adb (Check_For_BOM): Avoid reading past end of file.
