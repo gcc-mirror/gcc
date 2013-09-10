@@ -1,3 +1,10 @@
+2013-09-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/58361
+	* arm/vfp.md (combine_vcvt_f32_<FCVTI32typename>): Fix pattern to
+	support conditional execution.
+	(combine_vcvt_f64_<FCVTI32typename>): Likewise.
+
 2013-09-10  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra.c (lra): Clear lra_optional_reload_pseudos before every
