@@ -1,3 +1,9 @@
+2013-09-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR other/58374
+	* configure.ac: Move VTV_SUPPORTED check after AC_CANONICAL_SYSTEM.
+	* configure: Regenerated.
+
 2013-09-08  Caroline Tice  <cmtice@google.com>
 
 	* testsuite/event-main.cc:  Move to libvtv.cc subdirectory.
