@@ -1,3 +1,13 @@
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Warnings): Don't allow
+	REASON parameter in compiler units (bootstrap issues).
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Output warning if
+	-gnateE specified for a target that does not support it.
+
 2013-09-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Handle properly
