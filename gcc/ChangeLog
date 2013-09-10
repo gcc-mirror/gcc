@@ -1,3 +1,8 @@
+2013-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (propagate_constants_topo): Do not ignore SCC
+	represented by a thunk.
+
 2013-09-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/58343
