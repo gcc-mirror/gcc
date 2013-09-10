@@ -5803,7 +5803,7 @@ package body Make is
 
       if Verbose_Mode then
          Write_Eol;
-         Display_Version ("GNATMAKE", "1995");
+         Display_Version ("GNATMAKE", "1992");
       end if;
 
       if Osint.Number_Of_Files = 0 then
