@@ -725,20 +725,23 @@ package body Exp_Ch4 is
         (Ref            : Node_Id;
          Built_In_Place : Boolean := False)
       is
-         Cond    : Node_Id;
-         Obj_Ref : Node_Id;
-         Stmts   : List_Id;
+         Pool_Id   : constant Entity_Id := Associated_Storage_Pool (PtrT);
+         Cond      : Node_Id;
+         Fin_Call  : Node_Id;
+         Free_Stmt : Node_Id;
+         Obj_Ref   : Node_Id;
+         Stmts     : List_Id;
 
       begin
          if Ada_Version >= Ada_2005
            and then Is_Class_Wide_Type (DesigT)
+           and then (Tagged_Type_Expansion or else VM_Target /= No_VM)
            and then not Scope_Suppress.Suppress (Accessibility_Check)
            and then
              (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
                or else
                  (Is_Class_Wide_Type (Etype (Exp))
                    and then Scope (PtrT) /= Current_Scope))
-           and then (Tagged_Type_Expansion or else VM_Target /= No_VM)
          then
             --  If the allocator was built in place, Ref is already a reference
             --  to the access object initialized to the result of the allocator
@@ -750,7 +753,7 @@ package body Exp_Ch4 is
 
             if Built_In_Place then
                Remove_Side_Effects (Ref);
-               Obj_Ref := New_Copy (Ref);
+               Obj_Ref := New_Copy_Tree (Ref);
             else
                Obj_Ref := New_Reference_To (Ref, Loc);
             end if;
@@ -759,26 +762,67 @@ package body Exp_Ch4 is
 
             Stmts := New_List;
 
-            --  Why don't we free the object ??? discussion and explanation
-            --  needed of why old approach did not work ???
+            --  Deallocate the object if the accessibility check fails. This
+            --  is done only on targets or profiles that support deallocation.
 
-            --  Generate:
+            --    Free (Obj_Ref);
+
+            if RTE_Available (RE_Free) then
+               Free_Stmt := Make_Free_Statement (Loc, New_Copy_Tree (Obj_Ref));
+               Set_Storage_Pool (Free_Stmt, Pool_Id);
+
+               Append_To (Stmts, Free_Stmt);
+
+            --  The target or profile cannot deallocate objects
+
+            else
+               Free_Stmt := Empty;
+            end if;
+
+            --  Finalize the object if applicable. Generate:
+
             --    [Deep_]Finalize (Obj_Ref.all);
 
             if Needs_Finalization (DesigT) then
-               Append_To (Stmts,
+               Fin_Call :=
                  Make_Final_Call (
                    Obj_Ref =>
                      Make_Explicit_Dereference (Loc, New_Copy (Obj_Ref)),
-                   Typ     => DesigT));
+                   Typ     => DesigT);
+
+               --  When the target or profile supports deallocation, wrap the
+               --  finalization call in a block to ensure proper deallocation
+               --  even if finalization fails. Generate:
+
+               --    begin
+               --       <Fin_Call>
+               --    exception
+               --       when others =>
+               --          <Free_Stmt>
+               --          raise;
+               --    end;
+
+               if Present (Free_Stmt) then
+                  Fin_Call :=
+                    Make_Block_Statement (Loc,
+                      Handled_Statement_Sequence =>
+                        Make_Handled_Sequence_Of_Statements (Loc,
+                          Statements => New_List (Fin_Call),
+
+                        Exception_Handlers => New_List (
+                          Make_Exception_Handler (Loc,
+                            Exception_Choices => New_List (
+                              Make_Others_Choice (Loc)),
+
+                            Statements        => New_List (
+                              New_Copy_Tree (Free_Stmt),
+                              Make_Raise_Statement (Loc))))));
+               end if;
+
+               Prepend_To (Stmts, Fin_Call);
             end if;
 
             --  Signal the accessibility failure through a Program_Error
-
-            --  Since we may have a storage leak, I would be inclined to
-            --  define a new PE_ code that warns of this possibility where
-            --  the message would be Accessibility_Check_Failed (causing
-            --  storage leak) ???
 
             Append_To (Stmts,
               Make_Raise_Program_Error (Loc,

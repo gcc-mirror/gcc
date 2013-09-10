@@ -1576,7 +1576,10 @@ package body Sem_Prag is
       begin
          --  Single global item declaration
 
-         if Nkind_In (List, N_Identifier, N_Selected_Component) then
+         if Nkind_In (List, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+         then
             Analyze_Global_Item (List, Global_Mode);
 
          --  Simple global list or moded global list declaration
@@ -16338,7 +16341,7 @@ package body Sem_Prag is
          -- SPARK_Mode --
          ----------------
 
-         --  pragma SPARK_Mode (On | Off | Auto);
+         --  pragma SPARK_Mode [(On | Off | Auto)];
 
          when Pragma_SPARK_Mode => SPARK_Mod : declare
             procedure Chain_Pragma (Context : Entity_Id; Prag : Node_Id);
@@ -18369,7 +18372,10 @@ package body Sem_Prag is
       begin
          --  Single global item declaration
 
-         if Nkind_In (List, N_Identifier, N_Selected_Component) then
+         if Nkind_In (List, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+         then
             Collect_Global_Item (List, Mode);
 
          --  Simple global list or moded global list declaration
@@ -18596,16 +18602,24 @@ package body Sem_Prag is
    -----------------------
 
    function Get_SPARK_Mode_Id (N : Node_Id) return SPARK_Mode_Id is
+      Args : List_Id;
       Mode : Node_Id;
 
    begin
-      pragma Assert
-        (Nkind (N) = N_Pragma
-          and then Present (Pragma_Argument_Associations (N)));
+      pragma Assert (Nkind (N) = N_Pragma);
+      Args := Pragma_Argument_Associations (N);
 
-      Mode := First (Pragma_Argument_Associations (N));
+      --  Extract the mode from the argument list
 
-      return Get_SPARK_Mode_Id (Chars (Get_Pragma_Arg (Mode)));
+      if Present (Args) then
+         Mode := First (Pragma_Argument_Associations (N));
+         return Get_SPARK_Mode_Id (Chars (Get_Pragma_Arg (Mode)));
+
+      --  When SPARK_Mode appears without an argument, the default is ON
+
+      else
+         return SPARK_On;
+      end if;
    end Get_SPARK_Mode_Id;
 
    ----------------

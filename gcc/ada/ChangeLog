@@ -1,3 +1,21 @@
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Get_SPARK_Mode_Id): Handle the
+	case where the pragma may appear without an argument.
+	(Analyze_Global_List): Add expanded_name to the list of constructs
+	that denote a single item.
+	(Collect_Global_List): Add expanded_name to the list of constructs
+	that denote a single item.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Add local constant
+	Pool_Id and local variables Fin_Call and Free_Stmt. Finalize
+	and deallocate a heap-allocated class-wide object after it
+	has been determined that it violates the accessibility rules.
+	* rtsfind.ads: Add new RTU_Id for System.Memory. Add new RE_Id
+	and entry in RE_Unit_Table for RE_Free.
+
 2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
