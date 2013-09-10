@@ -640,14 +640,36 @@ thread_block (basic_block bb, bool noloop_only)
       else
 	e2 = THREAD_TARGET (e);
 
-      if (!e2
+      if (!e2 || noloop_only)
+	{
 	  /* If NOLOOP_ONLY is true, we only allow threading through the
-	     header of a loop to exit edges.  */
-	  || (noloop_only
-	      && bb == bb->loop_father->header
+	     header of a loop to exit edges. 
+
+	     There are two cases to consider.  The first when BB is the
+	     loop header.  We will attempt to thread this elsewhere, so
+	     we can just continue here.  */
+
+	  if (bb == bb->loop_father->header
 	      && (!loop_exit_edge_p (bb->loop_father, e2)
-		  || THREAD_TARGET2 (e))))
-	continue;
+		  || THREAD_TARGET2 (e)))
+	    continue;
+
+
+	  /* The second occurs when there was loop header buried in a jump
+	     threading path.  We do not try and thread this elsewhere, so
+	     just cancel the jump threading request by clearing the AUX
+	     field now.  */
+	  if (bb->loop_father != e2->src->loop_father
+	      && !loop_exit_edge_p (e2->src->loop_father, e2))
+	    {
+	      /* Since this case is not handled by our special code
+		 to thread through a loop header, we must explicitly
+		 cancel the threading request here.  */
+	      free (e->aux);
+	      e->aux = NULL;
+	      continue;
+	    }
+	}
 
       if (e->dest == e2->src)
 	update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),

@@ -764,7 +764,7 @@ thread_around_empty_blocks (edge taken_edge,
      when threading.  Thus they can not have visible side effects such
      as PHI nodes.  */
   if (!gsi_end_p (gsi_start_phis (bb)))
-    return NULL;
+    return false;
 
   /* Skip over DEBUG statements at the start of the block.  */
   gsi = gsi_start_nondebug_bb (bb);
