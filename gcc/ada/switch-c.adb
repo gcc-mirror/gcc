@@ -31,9 +31,9 @@ with Debug;    use Debug;
 with Lib;      use Lib;
 with Osint;    use Osint;
 with Opt;      use Opt;
-with Validsw;  use Validsw;
 with Stylesw;  use Stylesw;
 with Ttypes;   use Ttypes;
+with Validsw;  use Validsw;
 with Warnsw;   use Warnsw;
 
 with Ada.Unchecked_Deallocation;
