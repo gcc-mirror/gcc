@@ -1,3 +1,7 @@
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (ipa_devirt): Enable with LTO.
+
 2013-09-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/58361
