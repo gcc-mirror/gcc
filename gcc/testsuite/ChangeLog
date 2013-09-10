@@ -1,3 +1,7 @@
+2013-09-10  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* gcc.dg/torture/memcpy-1.c: New test.
+
 2013-09-10  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr58330.c: New.
