@@ -1,3 +1,17 @@
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): If the
+	instantiation is a compilation unit, analyze aspects before
+	analyzing the package declaration for the instance.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): If the
+	corresponding node is a package instantiation, insert generated
+	pragmas at the head of visible declarations.
+	* sem_prag.adb (Analyze_Pragma, case Preelaborate): In an instance
+	do not ignore the pragma if it comes from an aspect specification
+	in the instance, and not from the generic unit.
+	* sprint.adb (Sprint_Node_Actual): For a package declaration that
+	is an instantiation, print aspects after declaration.
+
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* einfo.adb, sem_prag.adb, rtsfind.ads: Minor reformatting.

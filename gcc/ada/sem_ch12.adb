@@ -3912,6 +3912,7 @@ package body Sem_Ch12 is
          if Nkind (Parent (N)) /= N_Compilation_Unit then
             Mark_Rewrite_Insertion (Act_Decl);
             Insert_Before (N, Act_Decl);
+
             Analyze (Act_Decl);
 
          --  For an instantiation that is a compilation unit, place
@@ -3940,6 +3941,15 @@ package body Sem_Ch12 is
             Set_Unit (Parent (N), Act_Decl);
             Set_Parent_Spec (Act_Decl, Parent_Spec (N));
             Set_Package_Instantiation (Act_Decl_Id, N);
+
+            --  Process aspect specifications of the instance node, if any, to
+            --  take into account categorization pragmas before analyzing the
+            --  instance.
+
+            if Has_Aspects (N) then
+               Analyze_Aspect_Specifications (N, Act_Decl_Id);
+            end if;
+
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
             Set_Body_Required (Parent (N), False);
@@ -4043,7 +4053,7 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) then
+      if Has_Aspects (N) and then Nkind (Parent (N)) /= N_Compilation_Unit then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 

@@ -2112,7 +2112,8 @@ package body Sem_Ch13 is
             --  node (no delay is required here) except for aspects on a
             --  subprogram body (see below) and a generic package, for which
             --  we need to introduce the pragma before building the generic
-            --  copy (see sem_ch12).
+            --  copy (see sem_ch12), and for package instantiations, where
+            --  the library unit pragmas are better handled early.
 
             elsif Nkind (Parent (N)) = N_Compilation_Unit
               and then (Present (Aitem) or else Is_Boolean_Aspect (Aspect))
@@ -2160,6 +2161,18 @@ package body Sem_Ch13 is
 
                      Prepend (Aitem,
                        Visible_Declarations (Specification (N)));
+
+                  elsif Nkind (N) =  N_Package_Instantiation then
+                     declare
+                        Spec : constant Node_Id :=
+                                 Specification (Instance_Spec (N));
+                     begin
+                        if No (Visible_Declarations (Spec)) then
+                           Set_Visible_Declarations (Spec, New_List);
+                        end if;
+
+                        Prepend (Aitem, Visible_Declarations (Spec));
+                     end;
 
                   else
                      if No (Pragmas_After (Aux)) then
