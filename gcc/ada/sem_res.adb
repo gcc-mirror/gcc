@@ -1583,15 +1583,16 @@ package body Sem_Res is
 
       if ASIS_Mode and then Nkind (N) in N_Op then
          if Is_Binary then
-            Set_Parameter_Associations
-              (Original_Node (N),
-               New_List (New_Copy_Tree (Left_Opnd (N)),
-                         New_Copy_Tree (Right_Opnd (N))));
+            Rewrite (First (Parameter_Associations (Original_Node (N))),
+               New_Copy_Tree (Left_Opnd (N)));
+            Rewrite (Next (First (Parameter_Associations (Original_Node (N)))),
+               New_Copy_Tree (Right_Opnd (N)));
          else
-            Set_Parameter_Associations
-              (Original_Node (N),
-               New_List (New_Copy_Tree (Right_Opnd (N))));
+            Rewrite (First (Parameter_Associations (Original_Node (N))),
+               New_Copy_Tree (Right_Opnd (N)));
          end if;
+
+         Set_Parent (Original_Node (N), Parent (N));
       end if;
    end Make_Call_Into_Operator;
 

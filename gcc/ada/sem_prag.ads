@@ -76,9 +76,10 @@ package Sem_Prag is
    --  If the name is a valid assertion kind name, then the Check_Policy pragma
    --  chain is checked for a matching entry (or for an Assertion entry which
    --  matches all possibilities). If a matching entry is found then the policy
-   --  is checked. If it is Off, Ignore, or Disable, then the Is_Ignored flag
-   --  is set in the aspect or pragma node. Additionally for policy Disable,
-   --  the Is_Disabled flag is set.
+   --  is checked. If it is On or Check, then the Is_Checked flag is set in
+   --  the aspect or pragma node. If it is Off, Ignore, or Disable, then the
+   --  Is_Ignored flag is set in the aspect or pragma node. Additionally for
+   --  policy Disable, the Is_Disabled flag is set.
    --
    --  If no matching Check_Policy pragma is found then the effect depends on
    --  whether -gnata was used, if so, then the call has no effect, otherwise

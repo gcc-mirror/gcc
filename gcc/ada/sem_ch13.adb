@@ -1378,7 +1378,7 @@ package body Sem_Ch13 is
                if Is_Ignored (Aspect) then
                   Set_Is_Ignored (Aitem);
                elsif Is_Checked (Aspect) then
-                  Set_Is_Checked (Aspect);
+                  Set_Is_Checked (Aitem);
                end if;
 
                Set_Corresponding_Aspect (Aitem, Aspect);
@@ -1396,7 +1396,7 @@ package body Sem_Ch13 is
 
             --  Skip looking at aspect if it is totally disabled. Just mark
             --  it as such for later reference in the tree. This also sets
-            --  the Is_Ignored flag appropriately.
+            --  the Is_Ignored and Is_Checked flags appropriately.
 
             Check_Applicable_Policy (Aspect);
 
