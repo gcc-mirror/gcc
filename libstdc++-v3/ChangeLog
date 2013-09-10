@@ -1,3 +1,9 @@
+2013-09-10  Kai Tietz  <ktietz@redhat.com>
+
+	PR/54314
+	* config/abi/pre/gnu-versioned-namespace.ver: Add thunk _ZTv0_n12_NS*
+	like in gnu.ver.
+
 2013-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58341
