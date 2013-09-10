@@ -12004,13 +12004,13 @@ package body Exp_Ch9 is
       D_Alt          : constant Node_Id := Delay_Alternative (N);
       D_Conv         : Node_Id;
       D_Disc         : Node_Id;
-      D_Stat         : Node_Id := Delay_Statement (D_Alt);
+      D_Stat         : Node_Id          := Delay_Statement (D_Alt);
       D_Stats        : List_Id;
       D_Type         : Entity_Id;
       Decls          : List_Id;
       Dummy          : Node_Id;
       E_Alt          : constant Node_Id := Entry_Call_Alternative (N);
-      E_Call         : Node_Id := Entry_Call_Statement (E_Alt);
+      E_Call         : Node_Id          := Entry_Call_Statement (E_Alt);
       E_Stats        : List_Id;
       Ename          : Node_Id;
       Formals        : List_Id;
@@ -12052,9 +12052,9 @@ package body Exp_Ch9 is
       begin
          Decl :=
            Make_Subprogram_Body (Loc,
-             Specification =>
+             Specification              =>
                Make_Procedure_Specification (Loc, Defining_Unit_Name => Proc),
-             Declarations => New_List,
+             Declarations               => New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc, E_Stats));
 
@@ -12087,8 +12087,10 @@ package body Exp_Ch9 is
          E_Stats :=
            New_List
              (Make_Procedure_Call_Statement (Loc,
-               Name => New_Occurrence_Of (Proc, Loc)));
+                Name => New_Occurrence_Of (Proc, Loc)));
       end Rewrite_Triggering_Statements;
+
+   --  Start of processing for Expand_N_Timed_Entry_Call
 
    begin
       --  Under the Ravenscar profile, timed entry calls are excluded. An error
@@ -12340,6 +12342,10 @@ package body Exp_Ch9 is
          --       <timed-statements>
          --    end if;
 
+         --  Note: we used to do Copy_Separate_List here, but this was changed
+         --  to New_Copy_List_Tree with no explanation or RH note??? We should
+         --  explain the need for the change ???
+
          N_Stats := New_Copy_List_Tree (E_Stats);
 
          Prepend_To (N_Stats,
@@ -12379,6 +12385,10 @@ package body Exp_Ch9 is
          --  Generate:
          --    <dispatching-call>;
          --    <triggering-statements>
+
+         --  Note: the following was Copy_Separate_List but it was changed to
+         --  New_Copy_List_Tree without comments or RH documentation ??? We
+         --  should explain the need for the change ???
 
          Lim_Typ_Stmts := New_Copy_List_Tree (E_Stats);
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (E_Call));

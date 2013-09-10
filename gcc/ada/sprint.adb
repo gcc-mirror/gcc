@@ -2483,8 +2483,8 @@ package body Sprint is
             --  instantiation node.
 
             if Is_Generic_Instance (Defining_Entity (Node))
-              and then Has_Aspects (
-                Package_Instantiation (Defining_Entity (Node)))
+              and then Has_Aspects
+                         (Package_Instantiation (Defining_Entity (Node)))
             then
                Sprint_Aspect_Specifications
                  (Package_Instantiation (Defining_Entity (Node)),

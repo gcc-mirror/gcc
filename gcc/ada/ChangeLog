@@ -1,3 +1,8 @@
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sinfo.ads, exp_ch9.adb, sem_prag.adb, sem_ch12.adb,
+	exp_ch4.adb, sprint.adb: Minor reformatting.
+
 2013-09-10  Yannick Moy  <moy@adacore.com>
 
 	* sinfo.ads: Document splitting of pre/post in N_Contract description.

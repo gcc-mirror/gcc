@@ -1524,9 +1524,7 @@ package body Sem_Prag is
             --  subject to aspect/pragma Global.
 
             Context := Scope (Subp_Id);
-            while Present (Context)
-              and then Context /= Standard_Standard
-            loop
+            while Present (Context) and then Context /= Standard_Standard loop
                if Is_Subprogram (Context)
                  and then Has_Aspect (Context, Aspect_Global)
                then
