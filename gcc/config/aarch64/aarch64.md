@@ -308,6 +308,14 @@
 ;; Processor types.
 (include "aarch64-tune.md")
 
+;; True if the generic scheduling description should be used.
+
+(define_attr "generic_sched" "yes,no"
+  (const (if_then_else
+          (eq_attr "tune" "large,small,cortexa53")
+          (const_string "no")
+          (const_string "yes"))))
+
 ;; Scheduling
 (include "aarch64-generic.md")
 (include "large.md")
