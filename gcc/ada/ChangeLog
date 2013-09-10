@@ -1,5 +1,17 @@
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* exp_prag.adb (Expand_Pragma_Check): Ignore pragma if Is_Ignored set.
+	* sem_ch13.adb (Make_Aitem_Pragma): Set Is_Checked if needed.
+	* sem_prag.adb (Check_Kind): Moved from spec (Analyze_Pragma):
+	Make sure Is_Ignored/Is_Checked are set right (Analyze_Pragma,
+	case Check): Ditto (Check_Applicable_Policy): Handle
+	Statement_Assertion case Throughout, set and check the Is_Checked
+	flag as appropriate.
+	* sem_prag.ads (Check_Kind): Moved to body.
+	* sinfo.ads, sinfo.adb (Is_Checked): New flag.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* aspects.ads (Delay_Type): New type (Aspect_Delay): New table.
 	* einfo.adb (Has_Delayed_Rep_Aspects): New flag
 	(May_Inherit_Delayed_Rep_Aspects): New flag (Rep_Clause): Removed

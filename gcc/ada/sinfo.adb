@@ -1732,6 +1732,15 @@ package body Sinfo is
       return Flag16 (N);
    end Is_Boolean_Aspect;
 
+   function Is_Checked
+      (N : Node_Id) return Boolean is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      return Flag11 (N);
+   end Is_Checked;
+
    function Is_Component_Left_Opnd
       (N : Node_Id) return Boolean is
    begin
@@ -4839,6 +4848,15 @@ package body Sinfo is
         or else NT (N).Nkind = N_Aspect_Specification);
       Set_Flag16 (N, Val);
    end Set_Is_Boolean_Aspect;
+
+   procedure Set_Is_Checked
+      (N : Node_Id; Val : Boolean := True) is
+   begin
+      pragma Assert (False
+        or else NT (N).Nkind = N_Aspect_Specification
+        or else NT (N).Nkind = N_Pragma);
+      Set_Flag11 (N, Val);
+   end Set_Is_Checked;
 
    procedure Set_Is_Component_Left_Opnd
       (N : Node_Id; Val : Boolean := True) is

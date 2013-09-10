@@ -1269,6 +1269,15 @@ package Sinfo is
    --    Present in N_Aspect_Specification node. Set if the aspect is for a
    --    boolean aspect (i.e. Aspect_Id is in Boolean_Aspect subtype).
 
+   --  Is_Checked (Flag11-Sem)
+   --    Present in N_Aspect_Specification and N_Pragma nodes. Set for an
+   --    assertion aspect or pragma, or check pragma for an assertion, that
+   --    is to be checked at run - time. If either Is_Checked or Is_Ignored
+   --    is set (they cannot both be set), then this means that the status of
+   --    the pragma has been checked at the appropriate point and should not
+   --    be further modified (in some cases these flags are copied when a
+   --    pragma is rewritten).
+
    --  Is_Component_Left_Opnd  (Flag13-Sem)
    --  Is_Component_Right_Opnd (Flag14-Sem)
    --    Present in concatenation nodes, to indicate that the corresponding
@@ -2116,6 +2125,7 @@ package Sinfo is
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Is_Disabled (Flag15-Sem)
       --  Is_Ignored (Flag9-Sem)
+      --  Is_Checked (Flag11-Sem)
       --  Import_Interface_Present (Flag16-Sem)
       --  Split_PPC (Flag17) set if corresponding aspect had Split_PPC set
 
@@ -6763,6 +6773,7 @@ package Sinfo is
       --  Next_Rep_Item (Node5-Sem)
       --  Split_PPC (Flag17) Set if split pre/post attribute
       --  Is_Boolean_Aspect (Flag16-Sem)
+      --  Is_Checked (Flag11-Sem)
       --  Is_Delayed_Aspect (Flag14-Sem)
       --  Is_Disabled (Flag15-Sem)
       --  Is_Ignored (Flag9-Sem)
@@ -8725,6 +8736,9 @@ package Sinfo is
    function Is_Boolean_Aspect
      (N : Node_Id) return Boolean;    -- Flag16
 
+   function Is_Checked
+     (N : Node_Id) return Boolean;    -- Flag11
+
    function Is_Component_Left_Opnd
      (N : Node_Id) return Boolean;    -- Flag13
 
@@ -9714,6 +9728,9 @@ package Sinfo is
 
    procedure Set_Is_Boolean_Aspect
      (N : Node_Id; Val : Boolean := True);    -- Flag16
+
+   procedure Set_Is_Checked
+     (N : Node_Id; Val : Boolean := True);    -- Flag11
 
    procedure Set_Is_Component_Left_Opnd
      (N : Node_Id; Val : Boolean := True);    -- Flag13
@@ -12100,6 +12117,7 @@ package Sinfo is
    pragma Inline (Is_Accessibility_Actual);
    pragma Inline (Is_Asynchronous_Call_Block);
    pragma Inline (Is_Boolean_Aspect);
+   pragma Inline (Is_Checked);
    pragma Inline (Is_Component_Left_Opnd);
    pragma Inline (Is_Component_Right_Opnd);
    pragma Inline (Is_Controlling_Actual);
@@ -12425,6 +12443,7 @@ package Sinfo is
    pragma Inline (Set_Is_Accessibility_Actual);
    pragma Inline (Set_Is_Asynchronous_Call_Block);
    pragma Inline (Set_Is_Boolean_Aspect);
+   pragma Inline (Set_Is_Checked);
    pragma Inline (Set_Is_Component_Left_Opnd);
    pragma Inline (Set_Is_Component_Right_Opnd);
    pragma Inline (Set_Is_Controlling_Actual);
