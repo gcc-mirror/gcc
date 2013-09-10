@@ -6287,7 +6287,7 @@ package body Einfo is
                   Id = Pragma_Contract_Cases or else Id = Pragma_Test_Case;
       Is_PPC  : constant Boolean :=
                   Id = Pragma_Precondition or else Id = Pragma_Postcondition;
-      Delayed : constant Boolean := Is_CDG or else Is_CTC or else Is_PPC;
+      Delayed : constant Boolean := Is_CDG or Is_CTC or Is_PPC;
       Item    : Node_Id;
       Items   : Node_Id;
 

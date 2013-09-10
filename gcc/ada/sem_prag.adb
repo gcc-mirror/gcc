@@ -3595,7 +3595,7 @@ package body Sem_Prag is
             --  N_Contract node.
 
             if Acts_As_Spec (PO)
-              and then (SPARK_Mode or else Formal_Extensions)
+              and then (SPARK_Mode or Formal_Extensions)
             then
                declare
                   Prag : constant Node_Id := New_Copy_Tree (N);
@@ -16612,8 +16612,7 @@ package body Sem_Prag is
                   Chain_Pragma (Body_Id, N);
                   Check_Conformance (Spec_Id, Body_Id);
 
-               --  The pragma does not apply to a legal construct, issue an
-               --  error.
+               --  The pragma does not apply to a legal construct, issue error
 
                else
                   Pragma_Misplaced;

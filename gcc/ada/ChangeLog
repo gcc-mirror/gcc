@@ -1,3 +1,7 @@
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, sem_prag.adb, rtsfind.ads: Minor reformatting.
+
 2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_prag.adb (Get_SPARK_Mode_Id): Handle the
