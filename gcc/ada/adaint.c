@@ -2264,7 +2264,7 @@ __gnat_is_executable_file_attr (char* name, struct file_attributes* attr)
 #endif
    }
 
-   return attr->executable;
+   return attr->regular && attr->executable;
 }
 
 int

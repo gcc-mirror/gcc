@@ -1272,7 +1272,7 @@ package Sinfo is
    --  Is_Checked (Flag11-Sem)
    --    Present in N_Aspect_Specification and N_Pragma nodes. Set for an
    --    assertion aspect or pragma, or check pragma for an assertion, that
-   --    is to be checked at run - time. If either Is_Checked or Is_Ignored
+   --    is to be checked at run time. If either Is_Checked or Is_Ignored
    --    is set (they cannot both be set), then this means that the status of
    --    the pragma has been checked at the appropriate point and should not
    --    be further modified (in some cases these flags are copied when a

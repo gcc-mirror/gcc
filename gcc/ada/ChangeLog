@@ -1,5 +1,20 @@
 2013-09-10  Thomas Quinot  <quinot@adacore.com>
 
+	* adaint.c (__gnat_is_executable_file_attr): Should be true
+	for an executable regular file only only (not for a directory
+	that has the executable permission).
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Further work on operator calls in ASIS.
+
+2013-09-10  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads, sem_prag.ads, sem_ch13.adb: Minor correction and comment
+	update.
+
+2013-09-10  Thomas Quinot  <quinot@adacore.com>
+
 	* aspects.ads, sem_ch13.adb: Minor reformatting.
 	* adaint.c (__gnat_set_close_on_exec): Add comment documenting
 	that this routine is shared between OS_Lib and Sockets.
