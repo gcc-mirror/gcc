@@ -1,3 +1,13 @@
+2013-09-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/58343
+	* tree-ssa-threadupdate.c (thread_block): Identify and disable
+	jump threading requests through loop headers buried in the middle
+	of a jump threading path.
+
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): Fix thinko
+	in return value/type.
+
 2013-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/58365
