@@ -1,3 +1,30 @@
+2013-09-10  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Document splitting of pre/post in N_Contract description.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Multiply): If the operation is of the
+	form X * 2 ** N and it has been marked Is_Power_Of_2_For_Shift,
+	add a mod operation if the result type is a binary modular type.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context): Add local
+	variable Context.  Remove local variable Subp_Id. Start the
+	context traversal from the current subprogram rather than the
+	current scope. Update the scope traversal and error reporting.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): New procedure
+	Rewrite_Triggering_Statements, to encapsulate the statements that
+	follow the trigger of the entry call. This procedure is needed
+	when the trigger is a dispatching call, because the expansion
+	requires several copies of those statements. The procedure is
+	more efficient, and preserves non-local references when the
+	construct is within an instance.
+
 2013-09-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Analyze_Package_Instantiation): If the

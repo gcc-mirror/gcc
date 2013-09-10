@@ -11986,9 +11986,11 @@ package body Exp_Ch9 is
    --    end;
 
    --  The triggering statement and the sequence of timed statements have not
-   --  been analyzed yet (see Analyzed_Timed_Entry_Call). They may contain
-   --  local declarations, and therefore the copies that are made during
-   --  expansion must be disjoint, as for any other inlining.
+   --  been analyzed yet (see Analyzed_Timed_Entry_Call), but they may contain
+   --  global references if within an instantiation. To prevent duplication
+   --  between various uses of those statements, they are encapsulated into a
+   --  local procedure which is invoked multiple time when the trigger is a
+   --  dispatching call.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -12031,6 +12033,63 @@ package body Exp_Ch9 is
       P : Entity_Id;  --  Parameter block
       S : Entity_Id;  --  Primitive operation slot
 
+      procedure Rewrite_Triggering_Statements;
+      --  If the trigger is a dispatching call, the expansion inserts multiple
+      --  copies of the abortable part. This is both inefficient, and may lead
+      --  to duplicate definitions that the back-end will reject, when the
+      --  abortable part includes loops. This procedure rewrites the abortable
+      --  part into a call to a generated procedure.
+
+      -----------------------------------
+      -- Rewrite_Triggering_Statements --
+      -----------------------------------
+
+      procedure Rewrite_Triggering_Statements is
+         Proc : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uA);
+         Decl : Node_Id;
+         Stat : Node_Id;
+
+      begin
+         Decl :=
+           Make_Subprogram_Body (Loc,
+             Specification =>
+               Make_Procedure_Specification (Loc, Defining_Unit_Name => Proc),
+             Declarations => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc, E_Stats));
+
+         Append_To (Decls, Decl);
+
+         --  Adjust the scope of blocks in the procedure. Needed because blocks
+         --  generate declarations that are processed before other analysis
+         --  takes place, and their scope is already set. The backend depends
+         --  on the scope chain to determine the legality of some anonymous
+         --  types, and thus we must indicate that the block is within the new
+         --  procedure.
+
+         Stat := First (E_Stats);
+         while Present (Stat) loop
+            if Nkind (Stat) = N_Block_Statement then
+               Insert_Before (Stat,
+                 Make_Implicit_Label_Declaration (Sloc (Stat),
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (
+                       Sloc (Stat), Chars (Identifier (Stat)))));
+            end if;
+
+            Next (Stat);
+         end loop;
+
+         --  Analyze (Decl);
+
+         --  Rewrite abortable part into a call to this procedure.
+
+         E_Stats :=
+           New_List
+             (Make_Procedure_Call_Statement (Loc,
+               Name => New_Occurrence_Of (Proc, Loc)));
+      end Rewrite_Triggering_Statements;
+
    begin
       --  Under the Ravenscar profile, timed entry calls are excluded. An error
       --  was already reported on spec, so do not attempt to expand the call.
@@ -12070,8 +12129,9 @@ package body Exp_Ch9 is
 
       if Is_Disp_Select then
          Extract_Dispatching_Call (E_Call, Call_Ent, Obj, Actuals, Formals);
-
          Decls := New_List;
+         Rewrite_Triggering_Statements;
+
          Stmts := New_List;
 
          --  Generate:
@@ -12280,7 +12340,7 @@ package body Exp_Ch9 is
          --       <timed-statements>
          --    end if;
 
-         N_Stats := Copy_Separate_List (E_Stats);
+         N_Stats := New_Copy_List_Tree (E_Stats);
 
          Prepend_To (N_Stats,
            Make_Implicit_If_Statement (N,
@@ -12320,7 +12380,7 @@ package body Exp_Ch9 is
          --    <dispatching-call>;
          --    <triggering-statements>
 
-         Lim_Typ_Stmts := Copy_Separate_List (E_Stats);
+         Lim_Typ_Stmts := New_Copy_List_Tree (E_Stats);
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (E_Call));
 
          --  Generate:
