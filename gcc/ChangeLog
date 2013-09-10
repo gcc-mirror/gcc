@@ -1,3 +1,10 @@
+2013-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58365
+	* cfgcleanup.c (merge_memattrs): Also clear MEM_READONLY_P
+	resp. MEM_NOTRAP_P if they differ, or set MEM_VOLATILE_P if
+	it differs.
+
 2013-09-10  Richard Biener  <rguenther@suse.de>
 
 	* tree-data-ref.h (build_rdg): Drop all parameters but loop.
