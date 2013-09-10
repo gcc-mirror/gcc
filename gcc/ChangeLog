@@ -1,4 +1,9 @@
 2013-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Pass real
+	VAR_DECL of vtable rather than full expression.
+
+2013-09-10  Jan Hubicka  <jh@suse.cz>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* cgraphunit.c (analyze_functions): Save input_location, set it
