@@ -694,6 +694,29 @@ package body Sem_Ch13 is
       --  This routine analyzes an Aspect_Default_[Component_]Value denoted by
       --  the aspect specification node ASN.
 
+      procedure Inherit_Delayed_Rep_Aspects (ASN : Node_Id);
+      --  As discussed in the spec of Aspects (see Aspect_Delay declaration),
+      --  a derived type can inherit aspects from its parent which have been
+      --  specified at the time of the derivation using an aspect, as in:
+      --
+      --    type A is range 1 .. 10
+      --      with Size => Not_Defined_Yet;
+      --    ..
+      --    type B is new A;
+      --    ..
+      --    Not_Defined_Yet : constant := 64;
+      --
+      --  In this example, the Size of A is considered to be specified prior
+      --  to the derivation, and thus inherited, even though the value is not
+      --  known at the time of derivation. To deal with this, we use two entity
+      --  flags. The flag Has_Derived_Rep_Aspects is set in the parent type (A
+      --  here), and then the flag May_Inherit_Delayed_Rep_Aspects is set in
+      --  the derived type (B here). If this flag is set when the derived type
+      --  is frozen, then this procedure is called to ensure proper inheritance
+      --  of all delayed aspects from the paren type. The derived type is E,
+      --  the argument to Analyze_Aspects_At_Freeze_Point. ASN is the first
+      --  aspect specification node in the Rep_Item chain for the parent type.
+
       procedure Make_Pragma_From_Boolean_Aspect (ASN : Node_Id);
       --  Given an aspect specification node ASN whose expression is an
       --  optional Boolean, this routines creates the corresponding pragma
@@ -752,6 +775,181 @@ package body Sem_Ch13 is
             Set_Default_Aspect_Component_Value (Ent, Expr);
          end if;
       end Analyze_Aspect_Default_Value;
+
+      ---------------------------------
+      -- Inherit_Delayed_Rep_Aspects --
+      ---------------------------------
+
+      procedure Inherit_Delayed_Rep_Aspects (ASN : Node_Id) is
+         P : constant Entity_Id := Entity (ASN);
+         --  Entithy for parent type
+
+         N : Node_Id;
+         --  Item from Rep_Item chain
+
+         A : Aspect_Id;
+
+      begin
+         --  Loop through delayed aspects for the parent type
+
+         N := ASN;
+         while Present (N) loop
+            if Nkind (N) = N_Aspect_Specification then
+               exit when Entity (N) /= P;
+
+               if Is_Delayed_Aspect (N) then
+                  A := Get_Aspect_Id (Chars (Identifier (N)));
+
+                  --  Process delayed rep aspect. For Boolean attributes it is
+                  --  not possible to cancel an attribute once set (the attempt
+                  --  to use an aspect with xxx => False is an error) for a
+                  --  derived type. So for those cases, we do not have to check
+                  --  if a clause has been given for the derived type, since it
+                  --  is harmless to set it again if it is already set.
+
+                  case A is
+
+                     --  Alignment
+
+                     when Aspect_Alignment =>
+                        if not Has_Alignment_Clause (E) then
+                           Set_Alignment (E, Alignment (P));
+                        end if;
+
+                     --  Atomic
+
+                     when Aspect_Atomic =>
+                        if Is_Atomic (P) then
+                           Set_Is_Atomic (E);
+                        end if;
+
+                     --  Atomic_Components
+
+                     when Aspect_Atomic_Components =>
+                        if Has_Atomic_Components (P) then
+                           Set_Has_Atomic_Components (Base_Type (E));
+                        end if;
+
+                     --  Bit_Order
+
+                     when Aspect_Bit_Order =>
+                        if Is_Record_Type (E)
+                          and then No (Get_Attribute_Definition_Clause
+                                         (E, Attribute_Bit_Order))
+                          and then Reverse_Bit_Order (P)
+                        then
+                           Set_Reverse_Bit_Order (Base_Type (E));
+                        end if;
+
+                     --  Component_Size
+
+                     when Aspect_Component_Size =>
+                        if Is_Array_Type (E)
+                          and then not Has_Component_Size_Clause (E)
+                        then
+                           Set_Component_Size
+                             (Base_Type (E), Component_Size (P));
+                        end if;
+
+                     --  Machine_Radix
+
+                     when Aspect_Machine_Radix =>
+                        if Is_Decimal_Fixed_Point_Type (E)
+                          and then not Has_Machine_Radix_Clause (E)
+                        then
+                           Set_Machine_Radix_10 (E, Machine_Radix_10 (P));
+                        end if;
+
+                     --  Object_Size (also Size which also sets Object_Size)
+
+                     when Aspect_Object_Size | Aspect_Size =>
+                        if not Has_Size_Clause (E)
+                          and then
+                            No (Get_Attribute_Definition_Clause
+                                  (E, Attribute_Object_Size))
+                        then
+                           Set_Esize (E, Esize (P));
+                        end if;
+
+                     --  Pack
+
+                     when Aspect_Pack =>
+                        if not Is_Packed (E) then
+                           Set_Is_Packed (Base_Type (E));
+
+                           if Is_Bit_Packed_Array (P) then
+                              Set_Is_Bit_Packed_Array (Base_Type (E));
+                              Set_Packed_Array_Type (E, Packed_Array_Type (P));
+                           end if;
+                        end if;
+
+                     --  Scalar_Storage_Order
+
+                     when Aspect_Scalar_Storage_Order =>
+                        if (Is_Record_Type (E) or else Is_Array_Type (E))
+                          and then No (Get_Attribute_Definition_Clause
+                                       (E, Attribute_Scalar_Storage_Order))
+                          and then Reverse_Storage_Order (P)
+                        then
+                           Set_Reverse_Storage_Order (Base_Type (E));
+                        end if;
+
+                     --  Small
+
+                     when Aspect_Small =>
+                        if Is_Fixed_Point_Type (E)
+                          and then not Has_Small_Clause (E)
+                        then
+                           Set_Small_Value (E, Small_Value (P));
+                        end if;
+
+                     --  Storage_Size
+
+                     when Aspect_Storage_Size =>
+                        if (Is_Access_Type (E) or else Is_Task_Type (E))
+                          and then not Has_Storage_Size_Clause (E)
+                        then
+                           Set_Storage_Size_Variable
+                             (Base_Type (E), Storage_Size_Variable (P));
+                        end if;
+
+                     --  Value_Size
+
+                     when Aspect_Value_Size =>
+
+                        --  Value_Size is never inherited, it is either set by
+                        --  default, or it is explicitly set for the derived
+                        --  type. So nothing to do here.
+
+                        null;
+
+                     --  Volatile
+
+                     when Aspect_Volatile =>
+                        if Is_Volatile (P) then
+                           Set_Is_Volatile (E);
+                        end if;
+
+                     --  Volatile_Components
+
+                     when Aspect_Volatile_Components =>
+                        if Has_Volatile_Components (P) then
+                           Set_Has_Volatile_Components (Base_Type (E));
+                        end if;
+
+                     --  That should be all the Rep Aspects
+
+                     when others =>
+                        pragma Assert (Aspect_Delay (A_Id) /= Rep_Aspect);
+                        null;
+
+                  end case;
+               end if;
+            end if;
+
+            N := Next_Rep_Item (N);
+         end loop;
+      end Inherit_Delayed_Rep_Aspects;
 
       -------------------------------------
       -- Make_Pragma_From_Boolean_Aspect --
@@ -831,15 +1029,18 @@ package body Sem_Ch13 is
             --  Fall through means we are canceling an inherited aspect
 
             Error_Msg_Name_1 := A_Name;
-            Error_Msg_NE ("derived type& inherits aspect%, cannot cancel",
-                          Expr,
-                          E);
+            Error_Msg_NE
+              ("derived type& inherits aspect%, cannot cancel", Expr, E);
 
          end Check_False_Aspect_For_Derived_Type;
 
       --  Start of processing for Make_Pragma_From_Boolean_Aspect
 
       begin
+         --  Note that we know Expr is present, because for a missing Expr
+         --  argument, we knew it was True and did not need to delay the
+         --  evaluation to the freeze point.
+
          if Is_False (Static_Boolean (Expr)) then
             Check_False_Aspect_For_Derived_Type;
 
@@ -874,30 +1075,30 @@ package body Sem_Ch13 is
 
       ASN := First_Rep_Item (E);
       while Present (ASN) loop
-         if Nkind (ASN) = N_Aspect_Specification
-           and then Entity (ASN) = E
-           and then Is_Delayed_Aspect (ASN)
-         then
-            A_Id := Get_Aspect_Id (ASN);
+         if Nkind (ASN) = N_Aspect_Specification then
+            exit when Entity (ASN) /= E;
 
-            case A_Id is
+            if Is_Delayed_Aspect (ASN) then
+               A_Id := Get_Aspect_Id (ASN);
 
-               --  For aspects whose expression is an optional Boolean, make
-               --  the corresponding pragma at the freezing point.
+               case A_Id is
+
+                  --  For aspects whose expression is an optional Boolean, make
+                  --  the corresponding pragma at the freezing point.
 
                when Boolean_Aspects      |
                     Library_Unit_Aspects =>
                   Make_Pragma_From_Boolean_Aspect (ASN);
 
-               --  Special handling for aspects that don't correspond to
-               --  pragmas/attributes.
+                  --  Special handling for aspects that don't correspond to
+                  --  pragmas/attributes.
 
                when Aspect_Default_Value           |
                     Aspect_Default_Component_Value =>
                   Analyze_Aspect_Default_Value (ASN);
 
-               --  Ditto for iterator aspects, because the corresponding
-               --  attributes may not have been analyzed yet.
+                  --  Ditto for iterator aspects, because the corresponding
+                  --  attributes may not have been analyzed yet.
 
                when Aspect_Constant_Indexing |
                     Aspect_Variable_Indexing |
@@ -907,17 +1108,27 @@ package body Sem_Ch13 is
 
                when others =>
                   null;
-            end case;
+               end case;
 
-            Ritem := Aspect_Rep_Item (ASN);
+               Ritem := Aspect_Rep_Item (ASN);
 
-            if Present (Ritem) then
-               Analyze (Ritem);
+               if Present (Ritem) then
+                  Analyze (Ritem);
+               end if;
             end if;
          end if;
 
          Next_Rep_Item (ASN);
       end loop;
+
+      --  This is where we inherit delayed rep aspects from our parent. Note
+      --  that if we fell out of the above loop with ASN non-empty, it means
+      --  we hit an aspect for an entity other than E, and it must be the
+      --  type from which we were derived.
+
+      if May_Inherit_Delayed_Rep_Aspects (E) then
+         Inherit_Delayed_Rep_Aspects (ASN);
+      end if;
    end Analyze_Aspects_At_Freeze_Point;
 
    -----------------------------------
@@ -1046,7 +1257,7 @@ package body Sem_Ch13 is
             A_Id : constant Aspect_Id  := Get_Aspect_Id (Nam);
             Anod : Node_Id;
 
-            Delay_Required : Boolean := True;
+            Delay_Required : Boolean;
             --  Set False if delay is not required
 
             Eloc : Source_Ptr := No_Location;
@@ -1279,6 +1490,31 @@ package body Sem_Ch13 is
 
             Set_Entity (Id, New_Copy_Tree (Expr));
 
+            --  Set Delay_Required as appropriate to aspect
+
+            case Aspect_Delay (A_Id) is
+               when Always_Delay =>
+                  Delay_Required := True;
+
+               when Never_Delay =>
+                  Delay_Required := False;
+
+               when Rep_Aspect =>
+
+                  --  If expression has the form of an integer literal, then
+                  --  do not delay, since we know the value cannot change.
+                  --  This optimization catches most rep clause cases.
+
+               if (Present (Expr) and then Nkind (Expr) = N_Integer_Literal)
+                 or else (A_Id in Boolean_Aspects and then No (Expr))
+               then
+                  Delay_Required := False;
+               else
+                  Delay_Required := True;
+                  Set_Has_Delayed_Rep_Aspects (E);
+               end if;
+            end case;
+
             --  Processing based on specific aspect
 
             case A_Id is
@@ -1318,7 +1554,8 @@ package body Sem_Ch13 is
                   --  Indexing aspects apply only to tagged type
 
                   if (A_Id = Aspect_Constant_Indexing
-                       or else A_Id = Aspect_Variable_Indexing)
+                        or else
+                      A_Id = Aspect_Variable_Indexing)
                     and then not (Is_Type (E)
                                    and then Is_Tagged_Type (E))
                   then
@@ -1377,12 +1614,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Implemented);
-
-                  --  No delay is required since the only values are: By_Entry
-                  --  | By_Protected_Procedure | By_Any | Optional which don't
-                  --  get analyzed anyway.
-
-                  Delay_Required := False;
 
                --  Attach Handler
 
@@ -1518,11 +1749,6 @@ package body Sem_Ch13 is
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => Arg_List,
                         Pragma_Name                  => P_Name);
-
-                     --  Convention is a static name, and must be associated
-                     --  with the entity at once.
-
-                     Delay_Required := False;
                   end;
 
                --  CPU, Interrupt_Priority, Priority
@@ -1561,11 +1787,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => New_Occurrence_Of (E, Loc))),
                      Pragma_Name                  => Chars (Id));
-
-                  --  We don't have to play the delay game here, since the only
-                  --  values are ON/OFF which don't get analyzed anyway.
-
-                  Delay_Required := False;
 
                --  Case 2c: Aspects corresponding to pragmas with three
                --  arguments.
@@ -1620,7 +1841,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_Abstract_State);
-                  Delay_Required := False;
 
                --  Depends
 
@@ -1666,7 +1886,6 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Loc,
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Name_SPARK_Mode);
-                  Delay_Required := False;
 
                --  Relative_Deadline
 
@@ -1910,8 +2129,6 @@ package body Sem_Ch13 is
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => Args,
                      Pragma_Name                  => Nam);
-
-                  Delay_Required := False;
                end Test_Case;
 
                --  Contract_Cases
@@ -1950,9 +2167,9 @@ package body Sem_Ch13 is
 
                      else
                         --  Set the Uses_Lock_Free flag to True if there is no
-                        --  expression or if the expression is True. ??? The
+                        --  expression or if the expression is True. The
                         --  evaluation of this aspect should be delayed to the
-                        --  freeze point.
+                        --  freeze point (why???)
 
                         if No (Expr)
                           or else Is_True (Static_Boolean (Expr))
@@ -1984,17 +2201,17 @@ package body Sem_Ch13 is
                         if No (A) then
                            Error_Msg_N
                              ("missing Convention aspect for Export/Import",
-                                 Aspect);
+                              Aspect);
                         end if;
                      end;
 
                      goto Continue;
                   end if;
 
-                  --  This requires special handling in the case of a package
-                  --  declaration, the pragma needs to be inserted in the list
-                  --  of declarations for the associated package. There is no
-                  --  issue of visibility delay for these aspects.
+                  --  Library unit aspects require special handling in the case
+                  --  of a package declaration, the pragma needs to be inserted
+                  --  in the list of declarations for the associated package.
+                  --  There is no issue of visibility delay for these aspects.
 
                   if A_Id in Library_Unit_Aspects
                     and then
@@ -2007,22 +2224,20 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  --  Special handling when the aspect has no expression. In
-                  --  this case the value is considered to be True. Thus, we
-                  --  simply insert the pragma, no delay is required.
+                  --  Cases where we do not delay, includes all cases where
+                  --  the expression is missing other than the above cases.
 
-                  if No (Expr) then
+                  if not Delay_Required or else No (Expr) then
                      Make_Aitem_Pragma
                        (Pragma_Argument_Associations => New_List (
                           Make_Pragma_Argument_Association (Sloc (Ent),
                             Expression => Ent)),
                         Pragma_Name                  => Chars (Id));
-
                      Delay_Required := False;
 
                   --  In general cases, the corresponding pragma/attribute
                   --  definition clause will be inserted later at the freezing
-                  --  point.
+                  --  point, and we do not need to build it now
 
                   else
                      Aitem := Empty;
@@ -2188,8 +2403,7 @@ package body Sem_Ch13 is
 
             --  The evaluation of the aspect is delayed to the freezing point.
             --  The pragma or attribute clause if there is one is then attached
-            --  to the aspect specification which is placed in the rep item
-            --  list.
+            --  to the aspect specification which is put in the rep item list.
 
             if Delay_Required then
                if Present (Aitem) then
@@ -7340,6 +7554,7 @@ package body Sem_Ch13 is
 
          when Boolean_Aspects      |
               Library_Unit_Aspects =>
+
             T := Standard_Boolean;
 
          --  Aspects corresponding to attribute definition clauses
@@ -8725,6 +8940,7 @@ package body Sem_Ch13 is
    -------------------------------------
 
    procedure Inherit_Aspects_At_Freeze_Point (Typ : Entity_Id) is
+
       function Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
         (Rep_Item : Node_Id) return Boolean;
       --  This routine checks if Rep_Item is either a pragma or an aspect

@@ -169,15 +169,15 @@ package body Sem_Ch3 is
       Parent_Type  : Entity_Id;
       Derived_Type : Entity_Id;
       Derive_Subps : Boolean := True);
-   --  Subsidiary procedure for Build_Derived_Type and
-   --  Analyze_Private_Extension_Declaration used for tagged and untagged
-   --  record types. All parameters are as in Build_Derived_Type except that
-   --  N, in addition to being an N_Full_Type_Declaration node, can also be an
+   --  Subsidiary procedure used for tagged and untagged record types
+   --  by Build_Derived_Type and Analyze_Private_Extension_Declaration.
+   --  All parameters are as in Build_Derived_Type except that N, in
+   --  addition to being an N_Full_Type_Declaration node, can also be an
    --  N_Private_Extension_Declaration node. See the definition of this routine
-   --  for much more info. Derive_Subps indicates whether subprograms should
-   --  be derived from the parent type. The only case where Derive_Subps is
-   --  False is for an implicit derived full type for a type derived from a
-   --  private type (see Build_Derived_Type).
+   --  for much more info. Derive_Subps indicates whether subprograms should be
+   --  derived from the parent type. The only case where Derive_Subps is False
+   --  is for an implicit derived full type for a type derived from a private
+   --  type (see Build_Derived_Type).
 
    procedure Build_Discriminal (Discrim : Entity_Id);
    --  Create the discriminal corresponding to discriminant Discrim, that is
@@ -8184,6 +8184,15 @@ package body Sem_Ch3 is
          Set_First_Rep_Item (Derived_Type, First_Rep_Item (Parent_Type));
       end if;
 
+      --  If the parent type has delayed rep aspects, then mark the derived
+      --  type as possibly inheriting a delayed rep aspect.
+
+      if Has_Delayed_Rep_Aspects (Parent_Type) then
+         Set_May_Inherit_Delayed_Rep_Aspects (Derived_Type);
+      end if;
+
+      --  Type dependent processing
+
       case Ekind (Parent_Type) is
          when Numeric_Kind =>
             Build_Derived_Numeric_Type (N, Parent_Type, Derived_Type);
@@ -8226,6 +8235,8 @@ package body Sem_Ch3 is
             raise Program_Error;
       end case;
 
+      --  Nothing more to do if some error occurred
+
       if Etype (Derived_Type) = Any_Type then
          return;
       end if;
@@ -8235,6 +8246,7 @@ package body Sem_Ch3 is
       --  if necessary.
 
       Set_Has_Delayed_Freeze (Derived_Type);
+
       if Derive_Subps then
          Derive_Subprograms (Parent_Type, Derived_Type);
       end if;

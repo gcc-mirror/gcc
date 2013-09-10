@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -305,10 +305,12 @@ package Sem_Ch13 is
    --  in these two expressions are the same, by seeing if the two expressions
    --  are fully conformant, and if not, issue appropriate error messages.
 
-   --  Quite an awkward procedure, but this is an awkard requirement!
+   --  Quite an awkward approach, but this is an awkard requirement!
 
    procedure Analyze_Aspects_At_Freeze_Point (E : Entity_Id);
-   --  Analyze all the delayed aspects for entity E at freezing point
+   --  Analyze all the delayed aspects for entity E at freezing point. This
+   --  includes dealing with inheriting delayed aspects from the parent type
+   --  in the case where a derived type is frozen.
 
    procedure Check_Aspect_At_Freeze_Point (ASN : Node_Id);
    --  Performs the processing described above at the freeze point, ASN is the
