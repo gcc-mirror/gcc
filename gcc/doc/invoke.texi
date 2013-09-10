@@ -1856,6 +1856,8 @@ Some cases of unnamed fields in structures and unions are only
 accepted with this option.  @xref{Unnamed Fields,,Unnamed struct/union
 fields within structs/unions}, for details.
 
+Note that this option is off for all targets but i?86 and x86_64
+targets using ms-abi.
 @item -fplan9-extensions
 Accept some non-standard constructs used in Plan 9 code.
 

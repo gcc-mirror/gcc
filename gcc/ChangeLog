@@ -1,3 +1,10 @@
+2013-09-10  Kai Tietz  <ktietz@redhat.com>
+
+	* doc/invoke.texi (fms-extensions): Document changed
+	behavior for ms-abi targets.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Set default value of option -fms-extension for ms-abi targets.
+
 2013-09-10  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
 
 	* config/i386/i386.c (ix86_expand_movmem): Fix epilogue generation.
