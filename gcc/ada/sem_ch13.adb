@@ -1357,17 +1357,26 @@ package body Sem_Ch13 is
               (Pragma_Argument_Associations : List_Id;
                Pragma_Name                  : Name_Id)
             is
+               Args : List_Id := Pragma_Argument_Associations;
+
             begin
                --  We should never get here if aspect was disabled
 
                pragma Assert (not Is_Disabled (Aspect));
 
+               --  Certan aspects allow for an optional name or expression. Do
+               --  not generate a pragma with an empty argument association
+               --  list.
+
+               if No (Args) or else No (Expression (First (Args))) then
+                  Args := No_List;
+               end if;
+
                --  Build the pragma
 
                Aitem :=
                  Make_Pragma (Loc,
-                   Pragma_Argument_Associations =>
-                     Pragma_Argument_Associations,
+                   Pragma_Argument_Associations => Args,
                    Pragma_Identifier =>
                      Make_Identifier (Sloc (Id), Pragma_Name),
                    Class_Present     => Class_Present (Aspect),
@@ -2433,10 +2442,10 @@ package body Sem_Ch13 is
                Set_Has_Delayed_Aspects (E);
                Record_Rep_Item (E, Aspect);
 
-            --  When delay is not required and the context is a package body,
-            --  insert the pragma in the declarations of the body.
+            --  When delay is not required and the context is a package or a
+            --  subprogram body, insert the pragma in the body declarations.
 
-            elsif Nkind (N) = N_Package_Body then
+            elsif Nkind_In (N, N_Package_Body, N_Subprogram_Body) then
                if No (Declarations (N)) then
                   Set_Declarations (N, New_List);
                end if;

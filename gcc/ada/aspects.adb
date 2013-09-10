@@ -140,6 +140,40 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
+   ------------------------
+   -- Aspects_On_Body_OK --
+   ------------------------
+
+   function Aspects_On_Body_OK (N : Node_Id) return Boolean is
+      Aspect  : Node_Id;
+      Aspects : List_Id;
+
+   begin
+      --  The routine should be invoked on a body [stub] with aspects
+
+      pragma Assert (Has_Aspects (N));
+      pragma Assert (Nkind (N) in N_Body_Stub
+                       or else Nkind_In (N, N_Package_Body,
+                                            N_Protected_Body,
+                                            N_Subprogram_Body,
+                                            N_Task_Body));
+
+      --  Look through all aspects and see whether they can be applied to a
+      --  body.
+
+      Aspects := Aspect_Specifications (N);
+      Aspect  := First (Aspects);
+      while Present (Aspect) loop
+         if not Aspect_On_Body_OK (Get_Aspect_Id (Aspect)) then
+            return False;
+         end if;
+
+         Next (Aspect);
+      end loop;
+
+      return True;
+   end Aspects_On_Body_OK;
+
    -----------------
    -- Find_Aspect --
    -----------------

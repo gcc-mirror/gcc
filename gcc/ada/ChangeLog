@@ -1,3 +1,31 @@
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Handle properly
+	a subprogram body without previous spec.
+
+2013-09-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb: Minor typo fixes.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb (Aspects_On_Body_OK): New routine.
+	* aspects.ads: Modify type Aspect_Expression to include
+	the Optional_XXX variants. Update the contents of
+	table Aspect_Argument. Add table Aspect_On_Body_OK.
+	(Aspects_On_Body_OK): New routine.
+	* par-ch13.adb (Get_Aspect_Specifications): Account for optional
+	names and expressions when parsing an aspect.
+	* sem_ch6.adb: Add with and use clause for Aspects.
+	(Analyze_Subprogram_Body_Helper): Do not emit an error when
+	analyzing a body with aspects that can be applied simultaneously
+	to both spec and body.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Insert the
+	corresponding pragma of an aspect that applies to a subprogram
+	body in the declarative part.
+	(Make_Aitem_Pragma): Do not generate a pragma with an empty argument
+	list.
+
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* switch-c.adb: Diagnose -gnatc given after -gnatRm.

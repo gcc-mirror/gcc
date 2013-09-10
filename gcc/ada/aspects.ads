@@ -273,14 +273,15 @@ package Aspects is
    --  The following type is used for indicating allowed expression forms
 
    type Aspect_Expression is
-     (Optional,               -- Optional boolean expression
-      Expression,             -- Required expression
-      Name);                  -- Required name
+     (Expression,             -- Required expression
+      Name,                   -- Required name
+      Optional_Expression,    -- Optional boolean expression
+      Optional_Name);         -- Optional name
 
    --  The following array indicates what argument type is required
 
    Aspect_Argument : constant array (Aspect_Id) of Aspect_Expression :=
-     (No_Aspect                      => Optional,
+     (No_Aspect                      => Optional_Expression,
       Aspect_Abstract_State          => Expression,
       Aspect_Address                 => Expression,
       Aspect_Alignment               => Expression,
@@ -323,7 +324,7 @@ package Aspects is
       Aspect_Simple_Storage_Pool     => Name,
       Aspect_Size                    => Expression,
       Aspect_Small                   => Expression,
-      Aspect_SPARK_Mode              => Name,
+      Aspect_SPARK_Mode              => Optional_Name,
       Aspect_Static_Predicate        => Expression,
       Aspect_Storage_Pool            => Name,
       Aspect_Storage_Size            => Expression,
@@ -338,8 +339,8 @@ package Aspects is
       Aspect_Warnings                => Name,
       Aspect_Write                   => Name,
 
-      Boolean_Aspects                => Optional,
-      Library_Unit_Aspects           => Optional);
+      Boolean_Aspects                => Optional_Expression,
+      Library_Unit_Aspects           => Optional_Expression);
 
    -----------------------------------------
    -- Table Linking Names and Aspect_Id's --
@@ -656,6 +657,17 @@ package Aspects is
       Aspect_Volatile                     => Rep_Aspect,
       Aspect_Volatile_Components          => Rep_Aspect);
 
+   --  The following table indicates which aspects can apply simultaneously to
+   --  both subprogram/package specs and bodies. For instance, the following is
+   --  legal:
+
+   --    package P with SPARK_Mode ...;
+   --    package body P with SPARK_Mode is ...;
+
+   Aspect_On_Body_OK : constant array (Aspect_Id) of Boolean :=
+     (Aspect_SPARK_Mode                   => True,
+      others                              => False);
+
    ---------------------------------------------------
    -- Handling of Aspect Specifications in the Tree --
    ---------------------------------------------------
@@ -683,6 +695,10 @@ package Aspects is
    --  flag Has_Aspects to be set on other nodes as a result of Rewrite and
    --  Replace calls, and this function may be used to retrieve the aspect
    --  specifications for the original rewritten node in such cases.
+
+   function Aspects_On_Body_OK (N : Node_Id) return Boolean;
+   --  N denotes a body [stub] with aspects. Determine whether all aspects of N
+   --  can appear simultaneously in bodies and specs.
 
    function Find_Aspect (Id : Entity_Id; A : Aspect_Id) return Node_Id;
    --  Find the aspect specification of aspect A associated with entity I.
