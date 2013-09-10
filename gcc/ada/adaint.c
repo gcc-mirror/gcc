@@ -3748,6 +3748,11 @@ get_gcc_version (void)
 #endif
 }
 
+/*
+ * Set Close_On_Exec as indicated.
+ * Note: this is used for both GNAT.OS_Lib and GNAT.Sockets.
+ */
+
 int
 __gnat_set_close_on_exec (int fd ATTRIBUTE_UNUSED,
                           int close_on_exec_p ATTRIBUTE_UNUSED)

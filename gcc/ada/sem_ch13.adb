@@ -713,7 +713,7 @@ package body Sem_Ch13 is
       --  here), and then the flag May_Inherit_Delayed_Rep_Aspects is set in
       --  the derived type (B here). If this flag is set when the derived type
       --  is frozen, then this procedure is called to ensure proper inheritance
-      --  of all delayed aspects from the paren type. The derived type is E,
+      --  of all delayed aspects from the parent type. The derived type is E,
       --  the argument to Analyze_Aspects_At_Freeze_Point. ASN is the first
       --  aspect specification node in the Rep_Item chain for the parent type.
 
