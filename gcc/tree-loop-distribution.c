@@ -635,7 +635,6 @@ static void
 rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 	       bitmap processed)
 {
-  use_operand_p use_p;
   struct vertex *x = &(rdg->vertices[u]);
   gimple stmt = RDGV_STMT (x);
   struct graph_edge *anti_dep = has_anti_or_output_dependence (x);
@@ -650,26 +649,6 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
       if (!already_processed_vertex_p (processed, v))
 	rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
 				       processed);
-    }
-
-  if (gimple_code (stmt) != GIMPLE_PHI)
-    {
-      if ((use_p = gimple_vuse_op (stmt)) != NULL_USE_OPERAND_P)
-	{
-	  tree use = USE_FROM_PTR (use_p);
-
-	  if (TREE_CODE (use) == SSA_NAME
-	      && !SSA_NAME_IS_DEFAULT_DEF (use))
-	    {
-	      gimple def_stmt = SSA_NAME_DEF_STMT (use);
-	      int v = rdg_vertex_for_stmt (rdg, def_stmt);
-
-	      if (v >= 0
-		  && !already_processed_vertex_p (processed, v))
-		rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
-					       processed);
-	    }
-	}
     }
 
   if (is_gimple_assign (stmt) && has_upstream_mem_writes (u))
@@ -1438,15 +1417,8 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
   gimple s;
   unsigned i;
   vec<int> vertices;
-  vec<ddr_p> dependence_relations;
-  vec<data_reference_p> datarefs;
-  vec<loop_p> loop_nest;
 
-  datarefs.create (10);
-  dependence_relations.create (100);
-  loop_nest.create (3);
-  rdg = build_rdg (loop, &loop_nest, &dependence_relations, &datarefs);
-
+  rdg = build_rdg (loop);
   if (!rdg)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1454,9 +1426,6 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
 		 "FIXME: Loop %d not distributed: failed to build the RDG.\n",
 		 loop->num);
 
-      free_dependence_relations (dependence_relations);
-      free_data_refs (datarefs);
-      loop_nest.release ();
       return res;
     }
 
@@ -1482,9 +1451,6 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
   res = ldist_gen (loop, rdg, vertices);
   vertices.release ();
   free_rdg (rdg);
-  free_dependence_relations (dependence_relations);
-  free_data_refs (datarefs);
-  loop_nest.release ();
   return res;
 }
 

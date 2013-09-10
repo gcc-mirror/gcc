@@ -5062,18 +5062,18 @@ create_rdg_edges (struct graph *rdg, vec<ddr_p> ddrs)
       create_rdg_edges_for_scalar (rdg, DEF_FROM_PTR (def_p), i);
 }
 
-/* Build the vertices of the reduced dependence graph RDG.  */
+/* Build the vertices of the reduced dependence graph RDG.  Return false
+   if that failed.  */
 
-static void
-create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop)
+static bool
+create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop,
+		     vec<data_reference_p> *datarefs)
 {
-  int i, j;
+  int i;
   gimple stmt;
 
   FOR_EACH_VEC_ELT (stmts, i, stmt)
     {
-      vec<data_ref_loc, va_stack> references;
-      data_ref_loc *ref;
       struct vertex *v = &(rdg->vertices[i]);
 
       /* Record statement to vertex mapping.  */
@@ -5087,22 +5087,20 @@ create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop)
       if (gimple_code (stmt) == GIMPLE_PHI)
 	continue;
 
-      vec_stack_alloc (data_ref_loc, references, 2);
-      get_references_in_stmt (stmt, &references);
-      FOR_EACH_VEC_ELT (references, j, ref)
+      unsigned drp = datarefs->length ();
+      if (!find_data_references_in_stmt (loop, stmt, datarefs))
+	return false;
+      for (unsigned j = drp; j < datarefs->length (); ++j)
 	{
-	  data_reference_p dr;
-	  if (!ref->is_read)
-	    RDGV_HAS_MEM_WRITE (v) = true;
-	  else
+	  data_reference_p dr = (*datarefs)[j];
+	  if (DR_IS_READ (dr))
 	    RDGV_HAS_MEM_READS (v) = true;
-	  dr = create_data_ref (loop, loop_containing_stmt (stmt),
-				*ref->pos, stmt, ref->is_read);
-	  if (dr)
-	    RDGV_DATAREFS (v).safe_push (dr);
+	  else
+	    RDGV_HAS_MEM_WRITE (v) = true;
+	  RDGV_DATAREFS (v).safe_push (dr);
 	}
-      references.release ();
     }
+  return true;
 }
 
 /* Initialize STMTS with all the statements of LOOP.  When
@@ -5168,25 +5166,46 @@ build_empty_rdg (int n_stmts)
    scalar dependence.  */
 
 struct graph *
-build_rdg (struct loop *loop,
-	   vec<loop_p> *loop_nest,
-	   vec<ddr_p> *dependence_relations,
-	   vec<data_reference_p> *datarefs)
+build_rdg (struct loop *loop)
 {
-  struct graph *rdg = NULL;
+  struct graph *rdg;
+  vec<loop_p> loop_nest;
+  vec<gimple> stmts;
+  vec<data_reference_p> datarefs;
+  vec<ddr_p> dependence_relations;
 
-  if (compute_data_dependences_for_loop (loop, false, loop_nest, datarefs,
-					 dependence_relations)
-      && known_dependences_p (*dependence_relations))
+  loop_nest.create (3);
+  if (!find_loop_nest (loop, &loop_nest))
     {
-      vec<gimple> stmts;
-      stmts.create (10);
-      stmts_from_loop (loop, &stmts);
-      rdg = build_empty_rdg (stmts.length ());
-      create_rdg_vertices (rdg, stmts, loop);
-      create_rdg_edges (rdg, *dependence_relations);
-      stmts.release ();
+      loop_nest.release ();
+      return NULL;
     }
+
+  stmts.create (10);
+  stmts_from_loop (loop, &stmts);
+  rdg = build_empty_rdg (stmts.length ());
+  datarefs.create (10);
+  if (!create_rdg_vertices (rdg, stmts, loop, &datarefs))
+    {
+      stmts.release ();
+      free_rdg (rdg);
+      return NULL;
+    }
+  stmts.release ();
+  dependence_relations.create (100);
+  if (!compute_all_dependences (datarefs, &dependence_relations, loop_nest,
+				false)
+      || !known_dependences_p (dependence_relations))
+    {
+      loop_nest.release ();
+      datarefs.release ();
+      dependence_relations.release ();
+      free_rdg (rdg);
+      return NULL;
+    }
+  loop_nest.release ();
+  create_rdg_edges (rdg, dependence_relations);
+  dependence_relations.release ();
 
   return rdg;
 }
@@ -5204,11 +5223,17 @@ free_rdg (struct graph *rdg)
       struct graph_edge *e;
 
       for (e = v->succ; e; e = e->succ_next)
-	free (e->data);
+	{
+	  free_dependence_relation (RDGE_RELATION (e));
+	  free (e->data);
+	}
 
-      gimple_set_uid (RDGV_STMT (v), -1);
-      free_data_refs (RDGV_DATAREFS (v));
-      free (v->data);
+      if (v->data)
+	{
+	  gimple_set_uid (RDGV_STMT (v), -1);
+	  free_data_refs (RDGV_DATAREFS (v));
+	  free (v->data);
+	}
     }
 
   free_graph (rdg);
