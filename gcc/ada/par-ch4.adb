@@ -2672,18 +2672,12 @@ package body Ch4 is
       Node1  : Node_Id;
 
    begin
-      if Ada_Version < Ada_2012 then
-         Error_Msg_SC ("quantified expression is an Ada 2012 feature");
-         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
-      end if;
-
+      Error_Msg_Ada_2012_Feature ("quantified expression", Token_Ptr);
       Scan;  --  past FOR
-
       Node1 := New_Node (N_Quantified_Expression, Prev_Token_Ptr);
 
       if Token = Tok_All then
          Set_All_Present (Node1);
-
       elsif Token /= Tok_Some then
          Error_Msg_AP ("missing quantifier");
          raise Error_Resync;
@@ -2960,14 +2954,9 @@ package body Ch4 is
          Set_Subpool_Handle_Name (Alloc_Node, P_Name);
          T_Right_Paren;
 
-         if Ada_Version < Ada_2012 then
-            Error_Msg_N
-              ("|subpool specification is an Ada 2012 feature",
-               Subpool_Handle_Name (Alloc_Node));
-            Error_Msg_N
-              ("\|unit must be compiled with -gnat2012 switch",
-               Subpool_Handle_Name (Alloc_Node));
-         end if;
+         Error_Msg_Ada_2012_Feature
+           ("|subpool specification",
+            Sloc (Subpool_Handle_Name (Alloc_Node)));
       end if;
 
       Null_Exclusion_Present := P_Null_Exclusion;
@@ -3006,11 +2995,7 @@ package body Ch4 is
       Save_State : Saved_Scan_State;
 
    begin
-      if Ada_Version < Ada_2012 then
-         Error_Msg_SC ("|case expression is an Ada 2012 feature");
-         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
-      end if;
-
+      Error_Msg_Ada_2012_Feature ("|case expression", Token_Ptr);
       Scan; -- past CASE
       Case_Node :=
         Make_Case_Expression (Loc,
@@ -3096,12 +3081,7 @@ package body Ch4 is
 
    begin
       Inside_If_Expression := Inside_If_Expression + 1;
-
-      if Token = Tok_If and then Ada_Version < Ada_2012 then
-         Error_Msg_SC ("|if expression is an Ada 2012 feature");
-         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
-      end if;
-
+      Error_Msg_Ada_2012_Feature ("|if expression", Token_Ptr);
       Scan; -- past IF or ELSIF
       Append_To (Exprs, P_Condition);
       TF_Then;
@@ -3182,11 +3162,7 @@ package body Ch4 is
       --  Set case
 
       if Token = Tok_Vertical_Bar then
-         if Ada_Version < Ada_2012 then
-            Error_Msg_SC ("set notation is an Ada 2012 feature");
-            Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
-         end if;
-
+         Error_Msg_Ada_2012_Feature ("set notation", Token_Ptr);
          Set_Alternatives (N, New_List (Alt));
          Set_Right_Opnd   (N, Empty);
 

@@ -1,5 +1,31 @@
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* sinput.adb (Check_For_BOM): Avoid reading past end of file.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg_Ada_2012_Feature): New procedure.
+	* errout.ads (Error_Msg_Ada_2012_Feature): New procedure.
+	* inline.ads: Save/Restore Ada_Version_Pragma.
+	* opt.adb: Save/Restore Ada_Version_Pragma.
+	* opt.ads (Ada_Version_Pragma): New variable.
+	* par-ch11.adb, par-ch12.adb, par-ch13.adb, par-ch4.adb, par-ch5.adb,
+	par-ch6.adb, par-ch8.adb, par-prag.adb: Use Error_Msg_Ada_2012_Feature.
+	* prj.adb: Initialize Ada_Version_Pragma.
+	* sem_attr.adb: Use Error_Msg_Ada_2012_Feature.
+	* sem_ch12.adb, sem_ch8.adb: Save/restore Ada_Version_Pragma.
+	* sem_prag.adb (Analyze_Pragma, cases Ada_xx): Set Ada_Version_Pragma.
+	* switch-c.adb: Initialize Ada_Version_Pragma.
+	* sem_ch12.adb: Minor reformatting.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Discard constraint on access
+	to class-wide type. Such constraints are not supported and are
+	considered a language pathology.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* gnatbind.adb: Correct starting date in --version string.
 	* gnatdll.adb: Use Check_Version_And_Help_G to implement --help
 	and --version.

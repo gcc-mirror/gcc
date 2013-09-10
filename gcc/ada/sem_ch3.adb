@@ -19043,6 +19043,27 @@ package body Sem_Ch3 is
 
          case Ekind (Base_Type (Subtype_Mark_Id)) is
             when Access_Kind =>
+
+               --  If this is a constraint on a class-wide type, discard it.
+               --  There is currently no way to express a partial discriminant
+               --  constraint on a type with unknown discriminants. This is
+               --  a pathology that the ACATS wisely decides not to test.
+
+               if Is_Class_Wide_Type (Designated_Type (Subtype_Mark_Id)) then
+                  if Comes_From_Source (S) then
+                     Error_Msg_N
+                       ("constraint on class-wide type ignored?",
+                        Constraint (S));
+                  end if;
+
+                  if Nkind (P) = N_Subtype_Declaration then
+                     Set_Subtype_Indication (P,
+                        New_Occurrence_Of (Subtype_Mark_Id, Sloc (S)));
+                  end if;
+
+                  return Subtype_Mark_Id;
+               end if;
+
                Constrain_Access (Def_Id, S, Related_Nod);
 
                if Expander_Active

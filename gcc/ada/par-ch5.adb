@@ -1656,10 +1656,7 @@ package body Ch5 is
       --  during analysis of the loop parameter specification.
 
       if Token = Tok_Of or else Token = Tok_Colon then
-         if Ada_Version < Ada_2012 then
-            Error_Msg_SC ("iterator is an Ada 2012 feature");
-         end if;
-
+         Error_Msg_Ada_2012_Feature ("iterator", Token_Ptr);
          return P_Iterator_Specification (ID_Node);
       end if;
 

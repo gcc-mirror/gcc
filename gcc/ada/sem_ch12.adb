@@ -3592,8 +3592,8 @@ package body Sem_Ch12 is
 
          Append (Unit_Renaming, Renaming_List);
 
-         --  The renaming declarations are the first local declarations of
-         --  the new unit.
+         --  The renaming declarations are the first local declarations of the
+         --  new unit.
 
          if Is_Non_Empty_List (Visible_Declarations (Act_Spec)) then
             Insert_List_Before
@@ -3894,7 +3894,8 @@ package body Sem_Ch12 is
                    Current_Sem_Unit         => Current_Sem_Unit,
                    Scope_Suppress           => Scope_Suppress,
                    Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-                   Version                  => Ada_Version));
+                   Version                  => Ada_Version,
+                   Version_Pragma           => Ada_Version_Pragma));
             end if;
          end if;
 
@@ -4238,7 +4239,8 @@ package body Sem_Ch12 is
                Current_Sem_Unit         => Current_Sem_Unit,
                Scope_Suppress           => Scope_Suppress,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-               Version                  => Ada_Version)),
+               Version                  => Ada_Version,
+               Version_Pragma           => Ada_Version_Pragma)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -4318,8 +4320,8 @@ package body Sem_Ch12 is
             end  loop;
          end if;
 
-         --  Restore status of instances. If one of them is a body, make
-         --  its local entities visible again.
+         --  Restore status of instances. If one of them is a body, make its
+         --  local entities visible again.
 
          declare
             E    : Entity_Id;
@@ -4354,7 +4356,8 @@ package body Sem_Ch12 is
                Current_Sem_Unit         => Current_Sem_Unit,
                Scope_Suppress           => Scope_Suppress,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-               Version                  => Ada_Version)),
+               Version                  => Ada_Version,
+               Version_Pragma           => Ada_Version_Pragma)),
             Inlined_Body => True);
       end if;
    end Inline_Instance_Body;
@@ -4410,7 +4413,8 @@ package body Sem_Ch12 is
              Current_Sem_Unit         => Current_Sem_Unit,
              Scope_Suppress           => Scope_Suppress,
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-             Version                  => Ada_Version));
+             Version                  => Ada_Version,
+             Version_Pragma           => Ada_Version_Pragma));
          return True;
 
       --  Here if not inlined, or we ignore the inlining
@@ -4864,7 +4868,6 @@ package body Sem_Ch12 is
             --  subsequent construction of the body.
 
             if Need_Subprogram_Instance_Body (N, Act_Decl_Id) then
-
                Check_Forward_Instantiation (Gen_Decl);
 
                --  The wrapper package is always delayed, because it does not
@@ -9910,6 +9913,7 @@ package body Sem_Ch12 is
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
       Opt.Ada_Version          := Body_Info.Version;
+      Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
 
       if No (Gen_Body_Id) then
          Load_Parent_Of_Generic
@@ -10196,6 +10200,7 @@ package body Sem_Ch12 is
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
       Opt.Ada_Version          := Body_Info.Version;
+      Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
 
       if No (Gen_Body_Id) then
 
@@ -10926,9 +10931,7 @@ package body Sem_Ch12 is
 
          --  Ada 2005 (AI-251)
 
-         if Ada_Version >= Ada_2005
-           and then Is_Interface (Ancestor)
-         then
+         if Ada_Version >= Ada_2005 and then Is_Interface (Ancestor) then
             if not Interface_Present_In_Ancestor (Act_T, Ancestor) then
                Error_Msg_NE
                  ("(Ada 2005) expected type implementing & in instantiation",
@@ -12092,7 +12095,8 @@ package body Sem_Ch12 is
                               Scope_Suppress           => Scope_Suppress,
                               Local_Suppress_Stack_Top =>
                                 Local_Suppress_Stack_Top,
-                              Version                  => Ada_Version);
+                              Version                  => Ada_Version,
+                              Version_Pragma           => Ada_Version_Pragma);
 
                            --  Package instance
 
@@ -12128,12 +12132,12 @@ package body Sem_Ch12 is
                        ((Inst_Node                => Inst_Node,
                          Act_Decl                 => True_Parent,
                          Expander_Status          => Exp_Status,
-                         Current_Sem_Unit         =>
-                           Get_Code_Unit (Sloc (Inst_Node)),
+                         Current_Sem_Unit         => Get_Code_Unit
+                                                       (Sloc (Inst_Node)),
                          Scope_Suppress           => Scope_Suppress,
-                         Local_Suppress_Stack_Top =>
-                           Local_Suppress_Stack_Top,
-                           Version                => Ada_Version)),
+                         Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+                         Version                  => Ada_Version,
+                         Version_Pragma           => Ada_Version_Pragma)),
                      Body_Optional => Body_Optional);
                end;
             end if;

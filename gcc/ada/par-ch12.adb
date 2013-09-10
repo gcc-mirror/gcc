@@ -546,12 +546,8 @@ package body Ch12 is
 
          Scan; -- past semicolon
 
-         if Ada_Version < Ada_2012 then
-            Error_Msg_N
-              ("`formal incomplete type` is an Ada 2012 feature", Decl_Node);
-            Error_Msg_N
-              ("\unit must be compiled with -gnat2012 switch", Decl_Node);
-         end if;
+         Error_Msg_Ada_2012_Feature
+           ("formal incomplete type", Sloc (Decl_Node));
 
          Set_Formal_Type_Definition
            (Decl_Node,
@@ -564,13 +560,9 @@ package body Ch12 is
 
       Def_Node := P_Formal_Type_Definition;
 
-      if Nkind (Def_Node) = N_Formal_Incomplete_Type_Definition
-        and then Ada_Version < Ada_2012
-      then
-         Error_Msg_N
-           ("`formal incomplete type` is an Ada 2012 feature", Decl_Node);
-         Error_Msg_N
-           ("\unit must be compiled with -gnat2012 switch", Decl_Node);
+      if Nkind (Def_Node) = N_Formal_Incomplete_Type_Definition then
+         Error_Msg_Ada_2012_Feature
+           ("formal incomplete type", Sloc (Decl_Node));
       end if;
 
       if Def_Node /= Error then

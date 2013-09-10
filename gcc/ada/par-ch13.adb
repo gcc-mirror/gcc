@@ -128,8 +128,7 @@ package body Ch13 is
 
             if Result then
                Restore_Scan_State (Scan_State);
-               Error_Msg_SC ("|aspect specification is an Ada 2012 feature");
-               Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
+               Error_Msg_Ada_2012_Feature ("|aspect specification", Token_Ptr);
                return True;
             end if;
          end if;

@@ -343,7 +343,8 @@ package Errout is
    --      generation of code in the presence of the -gnatQ switch. If the
    --      insertion character | appears, the message is considered to be
    --      non-serious, and does not cause Serious_Errors_Detected to be
-   --      incremented (so expansion is not prevented by such a msg).
+   --      incremented (so expansion is not prevented by such a msg). This
+   --      insertion character is ignored in continuation messages.
 
    --    Insertion character ~ (Tilde: insert string)
    --      Indicates that Error_Msg_String (1 .. Error_Msg_Strlen) is to be
@@ -819,6 +820,14 @@ package Errout is
    procedure Error_Msg_PT (Typ : Node_Id; Subp : Node_Id);
    --  Posts an error on the protected type declaration Typ indicating wrong
    --  mode of the first formal of protected type primitive Subp.
+
+   procedure Error_Msg_Ada_2012_Feature (Feature : String; Loc : Source_Ptr);
+   --  If not operating in Ada 2012 mode, posts errors complaining that Feature
+   --  is only supported in Ada 2012, with appropriate suggestions to fix this.
+   --  Loc is the location at which the flag is to be posted. Feature, which
+   --  appears at the start of the first generated message, may contain error
+   --  message insertion characters in the normal manner, and in particular
+   --  may start with | to flag a non-serious error.
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

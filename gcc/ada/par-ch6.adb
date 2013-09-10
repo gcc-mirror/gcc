@@ -834,12 +834,8 @@ package body Ch6 is
 
                   --  Check we are in Ada 2012 mode
 
-                  if Ada_Version < Ada_2012 then
-                     Error_Msg_SC
-                       ("expression function is an Ada 2012 feature!");
-                     Error_Msg_SC
-                       ("\unit must be compiled with -gnat2012 switch!");
-                  end if;
+                  Error_Msg_Ada_2012_Feature
+                    ("!expression function", Token_Ptr);
 
                   --  Catch an illegal placement of the aspect specification
                   --  list:
@@ -1467,7 +1463,8 @@ package body Ch6 is
 
                if Token = Tok_Aliased then
                   if Ada_Version < Ada_2012 then
-                     Error_Msg_SC ("ALIASED parameter is an Ada 2012 feature");
+                     Error_Msg_Ada_2012_Feature
+                       ("ALIASED parameter", Token_Ptr);
                   else
                      Set_Aliased_Present (Specification_Node);
                   end if;
