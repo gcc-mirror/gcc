@@ -1,5 +1,10 @@
 2013-09-10  Jan Hubicka  <jh@suse.cz>
 
+	* lto-cgraph.c: Include ipa-utils.h.
+	(compute_ltrans_boundary): Also add possible targets into the boundary.
+
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+
 	* gimple-fold.c (gimple_get_virt_method_for_binfo): Pass real
 	VAR_DECL of vtable rather than full expression.
 
