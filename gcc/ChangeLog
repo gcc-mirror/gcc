@@ -1,3 +1,16 @@
+2013-09-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.h (build_rdg): Drop all parameters but loop.
+	* tree-data-ref.c (create_rdg_vertices): Collect all data
+	references, signal failure to the caller, use data-ref API.
+	(build_rdg): Compute data references only once.  Maintain
+	lifetime of data references and data dependences from within
+	RDG.
+	(free_rdg): Free dependence relations.
+	* tree-loop-distribution.c (rdg_flag_uses): Drop weird code
+	inventing extra dependences.
+	(distribute_loop): Update for RDG API changes.
+
 2013-09-10  Kai Tietz  <ktietz@redhat.com>
 
 	* doc/invoke.texi (fms-extensions): Document changed
