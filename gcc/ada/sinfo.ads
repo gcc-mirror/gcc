@@ -455,6 +455,59 @@ package Sinfo is
    --  code is being generated, since they involved expander actions that
    --  destroy the tree.
 
+   ---------------
+   -- ASIS Mode --
+   ---------------
+
+   --  When a file is compiled in ASIS mode (-gnatct), expansion is skipped,
+   --  and the analysis must generate a tree in a form that meets all ASIS
+   --  requirements.
+
+   --  ASIS must be able to recover the original tree that corresponds to the
+   --  source. It relies heavily on Original_Node for this purpose, which as
+   --  described in Atree, records the history when a node is rewritten. ASIS
+   --  uses Original_Node to recover the original node before the Rewrite.
+
+   --  At least in ASIS mode (not really important in non-ASIS mode), when
+   --  N1 is rewritten as N2:
+
+   --    The subtree rooted by the original node N1 should be fully decorated,
+   --    i.e. all semantic fields noted in sinfo.ads should be set properly
+   --    and any referenced entities should be complete (with exceptions for
+   --    representation information, noted below).
+
+   --    For all the direct descendants of N1 (original node) their Parent
+   --    links should point not to N1, but to N2 (rewriting node).
+
+   --    The Parent links of rewritten nodes (N1 in this example) are set in
+   --    some cases (to point to the rewritten parent), but in other cases
+   --    they are set to Empty. This needs sorting out ??? It would be much
+   --    cleaner if they could always be set in the original node ???
+
+   --  Representation Information
+
+   --    For the purposes of the data description annex, the representation
+   --    information for source declared entities must be complete in the
+   --    ASIS tree.
+
+   --    This requires that the front end call the back end (gigi/gcc) in
+   --    a special "back annotate only" mode to obtain information on layout
+   --    from the back end.
+
+   --    For the purposes of this special "back annotate only" mode, the
+   --    requirements that would normally need to be met to generate code
+   --    are relaxed as follows:
+
+   --      Anonymous types need not have full representation information (e.g.
+   --      sizes need not be set for types where the front end would normally
+   --      set the sizes), since anonymous types can be ignored in this mode.
+
+   --      In this mode, gigi will see at least fragments of a fully annotated
+   --      unexpanded tree. This means that it will encounter nodes it does
+   --      not normally handle (such as stubs, task bodies etc). It should
+   --      simply ignore these nodes, since they are not relevant to the task
+   --      of back annotating representation information.
+
    ------------------------
    -- Common Flag Fields --
    ------------------------

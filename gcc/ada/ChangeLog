@@ -1,5 +1,11 @@
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* switch-c.adb: Minor reformatting.
+	* atree.ads (Original_Nodes): Add documentation on ASIS usage.
+	* sinfo.ads: Add section on ASIS mode (documentation only).
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* sem_prag.adb (Analyze_Pragma, case Warnings): Don't allow
 	REASON parameter in compiler units (bootstrap issues).
 
