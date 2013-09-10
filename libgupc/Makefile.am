@@ -187,6 +187,8 @@ UPC_RUNTIME_SRC += portals4/gupcr_access.c portals4/gupcr_access.h \
 	portals4/gupcr_lock.upc portals4/gupcr_lock.h \
 	portals4/gupcr_lock_sup.c portals4/gupcr_lock_sup.h \
 	portals4/gupcr_main.c \
+	portals4/gupcr_nb.upc \
+	portals4/gupcr_nb_sup.c portals4/gupcr_nb_sup.h \
 	portals4/gupcr_node.c portals4/gupcr_node.h \
 	portals4/gupcr_mem.c portals4/gupcr_portals.c \
 	portals4/gupcr_pgm_info.c portals4/gupcr_pts.h \

@@ -1,3 +1,21 @@
+2013-09-10  Nenad Vukicevic  <nenad@intrepid.com>
+
+	Implement non-blocking transfer operations for Portals4 runtime.
+	* Makefile.am (UPC_RUNTIME_SRC): Add upc_nb.upc, upc_nb_sup.h,
+	upc_nb_sup.c for Portals4 source files.
+	* Makefile.in: Re-generate.
+	* portals4/gcc-upc-lib.in: Add __UPC_NB__ definition.
+	* portals4/gupcr_env.c (gupcr_facility_table): Add FC_NB facility.
+	* portals4/gupcr_main.c (gupcr_init): Add NB initialization.
+	(gupcr_fini): Add NB finalization.
+	* portals4/gupcr_nb.upc: New. Non-blocking transfers library.
+	* portals4/gupcr_nb_sup.c: New. Non-blocking transfers support.
+	* portals4/gupcr_nb_sup.h: New. Non-blocking transfers support.
+	* portals4/gupcr_portals.h: Add GUPCR_PTL_PTE_NB for non-blocking
+	transfers.
+	(gupcr_portals_call_with_status): PTL_EQ_EMPTY is not an error.
+	* portals4/gupcr_utils.h (gupcr_facility_t): Add enum value for FC_NB.
+
 2013-09-09  Nenad Vukicevic  <nenad@intrepid.com>
 
 	Added UPC non-blocking transfer header file.

@@ -158,6 +158,7 @@ gupcr_facility_table[] =
   {"locks", FC_LOCK},
   {"mem", FC_MEM},
   {"misc", FC_MISC},
+  {"nb", FC_NB},
   {"portals", FC_PORTALS},
   {"system", FC_SYSTEM}
 };

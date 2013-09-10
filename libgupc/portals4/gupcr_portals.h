@@ -52,6 +52,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define	GUPCR_PTL_PTE_SHUTDOWN		GUPCR_PTE_BASE+4
 /** Collectives service signaling PTE */
 #define	GUPCR_PTL_PTE_COLL		GUPCR_PTE_BASE+5
+/** Non-blocking transfers PTE */
+#define	GUPCR_PTL_PTE_NB		GUPCR_PTE_BASE+6
 /** @} */
 
 //begin lib_portals
@@ -94,6 +96,7 @@ extern size_t gupcr_max_volatile_size;
       {									\
         pstatus = portals_func args;					\
 	if ((pstatus != PTL_OK) &&					\
+	    (pstatus != PTL_EQ_EMPTY) &&				\
 	    (pstatus != PTL_CT_NONE_REACHED) &&				\
 	    (pstatus != PTL_IN_USE) &&					\
 	    (pstatus != PTL_INTERRUPTED))		        	\

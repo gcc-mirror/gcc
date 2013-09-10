@@ -57,8 +57,13 @@ extern const int THREADS;
 
 #define __UPC_THREADS_MODEL__ "process"
 
-/* Support for atomics as specified in version 1.3 of the UPC.  */
+/* Support for atomics as specified
+   in version 1.3 of the UPC Specification.  */
 #define __UPC_ATOMIC__ 1
+
+/* Support for non-blocking transfer operations as specified
+   in version 1.3 of the UPC Specification.  */
+#define __UPC_NB__ 1
 
 /* Opaque data type for referencing UPC atomic domains.  */
 typedef shared struct upc_atomicdomain_struct upc_atomicdomain_t;
