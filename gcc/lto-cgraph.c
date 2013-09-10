@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "context.h"
 #include "pass_manager.h"
+#include "ipa-utils.h"
 
 static void output_cgraph_opt_summary (void);
 static void input_cgraph_opt_summary (vec<symtab_node>  nodes);
@@ -766,6 +767,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
   int i;
   lto_symtab_encoder_t encoder;
   lto_symtab_encoder_iterator lsei;
+  struct pointer_set_t *reachable_call_targets = pointer_set_create ();
 
   encoder = lto_symtab_encoder_new (false);
 
@@ -837,9 +839,40 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
 	      add_node_to (encoder, callee, false);
 	    }
 	}
+      /* Add all possible targets for late devirtualization.  */
+      if (flag_devirtualize)
+	for (edge = node->indirect_calls; edge; edge = edge->next_callee)
+	  if (edge->indirect_info->polymorphic)
+	    {
+	      unsigned int i;
+	      void *cache_token;
+	      bool final;
+	      vec <cgraph_node *>targets
+		= possible_polymorphic_call_targets
+		    (edge, &final, &cache_token);
+	      if (!pointer_set_insert (reachable_call_targets,
+				       cache_token))
+		{
+		  for (i = 0; i < targets.length(); i++)
+		    {
+		      struct cgraph_node *callee = targets[i];
+
+		      /* Adding an external declarations into the unit serves
+			 no purpose and just increases its boundary.  */
+		      if (callee->symbol.definition
+			  && !lto_symtab_encoder_in_partition_p
+			       (encoder, (symtab_node)callee))
+			{
+			  gcc_assert (!callee->global.inlined_to);
+			  add_node_to (encoder, callee, false);
+			}
+		    }
+		}
+	    }
     }
- lto_symtab_encoder_delete (in_encoder);
- return encoder;
+  lto_symtab_encoder_delete (in_encoder);
+  pointer_set_destroy (reachable_call_targets);
+  return encoder;
 }
 
 /* Output the part of the symtab in SET and VSET.  */
