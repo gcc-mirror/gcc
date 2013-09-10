@@ -219,10 +219,14 @@ package body Sem_Ch7 is
       --  the later is never used for name resolution. In this fashion there
       --  is only one visible entity that denotes the package.
 
-      --  Set Body_Id. Note that this Will be reset to point to the generic
+      --  Set Body_Id. Note that this will be reset to point to the generic
       --  copy later on in the generic case.
 
       Body_Id := Defining_Entity (N);
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Body_Id);
+      end if;
 
       if Present (Corresponding_Spec (N)) then
 
@@ -766,7 +770,7 @@ package body Sem_Ch7 is
       --  True when this package declaration is not a nested declaration
 
    begin
-      --  Analye aspect specifications immediately, since we need to recognize
+      --  Analyze aspect specifications immediately, since we need to recognize
       --  things like Pure early enough to diagnose violations during analysis.
 
       if Has_Aspects (N) then

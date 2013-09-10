@@ -698,15 +698,23 @@ package Aspects is
    --  Determine whether entity Id has aspect A
 
    procedure Move_Aspects (From : Node_Id; To : Node_Id);
-   --  Moves aspects from 'From' node to 'To' node. Has_Aspects (To) must be
-   --  False on entry. If Has_Aspects (From) is False, the call has no effect.
-   --  Otherwise the aspects are moved and on return Has_Aspects (To) is True,
-   --  and Has_Aspects (From) is False.
+   --  Relocate the aspect specifications of node From to node To. On entry it
+   --  is assumed that To does not have aspect specifications. If From has no
+   --  aspects, the routine has no effect.
+
+   procedure Move_Or_Merge_Aspects (From : Node_Id; To : Node_Id);
+   --  Relocate the aspect specifications of node From to node To. If To has
+   --  aspects, the aspects of From are added to the aspects of To. If From has
+   --  no aspects, the routine has no effect.
 
    function Permits_Aspect_Specifications (N : Node_Id) return Boolean;
    --  Returns True if the node N is a declaration node that permits aspect
    --  specifications in the grammar. It is possible for other nodes to have
    --  aspect specifications as a result of Rewrite or Replace calls.
+
+   procedure Remove_Aspects (N : Node_Id);
+   --  Delete the aspect specifications associated with node N. If the node has
+   --  no aspects, the routine has no effect.
 
    function Same_Aspect (A1 : Aspect_Id; A2 : Aspect_Id) return Boolean;
    --  Returns True if A1 and A2 are (essentially) the same aspect. This is not

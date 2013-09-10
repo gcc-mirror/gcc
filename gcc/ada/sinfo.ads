@@ -4775,7 +4775,8 @@ package Sinfo is
       --  and put in its proper section when we know exactly where that is!
 
       --  EXPRESSION_FUNCTION ::=
-      --    FUNCTION SPECIFICATION IS (EXPRESSION);
+      --    FUNCTION SPECIFICATION IS (EXPRESSION)
+      --      [ASPECT_SPECIFICATIONS];
 
       --  N_Expression_Function
       --  Sloc points to FUNCTION
@@ -5010,7 +5011,8 @@ package Sinfo is
 
       --  PRIVATE_TYPE_DECLARATION ::=
       --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART]
-      --      is [[abstract] tagged] [limited] private;
+      --      is [[abstract] tagged] [limited] private
+      --        [ASPECT_SPECIFICATIONS];
 
       --  Note: TAGGED is not permitted in Ada 83 mode
 
@@ -5032,7 +5034,7 @@ package Sinfo is
       --    type DEFINING_IDENTIFIER [DISCRIMINANT_PART] is
       --      [abstract] [limited | synchronized]
       --        new ancestor_SUBTYPE_INDICATION [and INTERFACE_LIST]
-      --           with private;
+      --           with private [ASPECT_SPECIFICATIONS];
 
       --  Note: LIMITED, and private extension declarations are not allowed
       --        in Ada 83 mode.
@@ -5102,9 +5104,11 @@ package Sinfo is
 
       --  OBJECT_RENAMING_DECLARATION ::=
       --    DEFINING_IDENTIFIER :
-      --      [NULL_EXCLUSION] SUBTYPE_MARK renames object_NAME;
+      --      [NULL_EXCLUSION] SUBTYPE_MARK renames object_NAME
+      --        [ASPECT_SPECIFICATIONS];
       --  | DEFINING_IDENTIFIER :
-      --      ACCESS_DEFINITION renames object_NAME;
+      --      ACCESS_DEFINITION renames object_NAME
+      --        [ASPECT_SPECIFICATIONS];
 
       --  Note: Access_Definition is an optional field that gives support to
       --  Ada 2005 (AI-230). The parser generates nodes that have either the
@@ -5124,7 +5128,8 @@ package Sinfo is
       -----------------------------------------
 
       --  EXCEPTION_RENAMING_DECLARATION ::=
-      --    DEFINING_IDENTIFIER : exception renames exception_NAME;
+      --    DEFINING_IDENTIFIER : exception renames exception_NAME
+      --      [ASPECT_SPECIFICATIONS];
 
       --  N_Exception_Renaming_Declaration
       --  Sloc points to first identifier
@@ -5136,7 +5141,8 @@ package Sinfo is
       ---------------------------------------
 
       --  PACKAGE_RENAMING_DECLARATION ::=
-      --    package DEFINING_PROGRAM_UNIT_NAME renames package_NAME;
+      --    package DEFINING_PROGRAM_UNIT_NAME renames package_NAME
+      --      [ASPECT_SPECIFICATIONS];
 
       --  N_Package_Renaming_Declaration
       --  Sloc points to PACKAGE
@@ -5149,7 +5155,8 @@ package Sinfo is
       ------------------------------------------
 
       --  SUBPROGRAM_RENAMING_DECLARATION ::=
-      --    SUBPROGRAM_SPECIFICATION renames callable_entity_NAME;
+      --    SUBPROGRAM_SPECIFICATION renames callable_entity_NAME
+      --      [ASPECT_SPECIFICATIONS];
 
       --  N_Subprogram_Renaming_Declaration
       --  Sloc points to RENAMES
@@ -5167,10 +5174,13 @@ package Sinfo is
       --  GENERIC_RENAMING_DECLARATION ::=
       --    generic package DEFINING_PROGRAM_UNIT_NAME
       --      renames generic_package_NAME
+      --        [ASPECT_SPECIFICATIONS];
       --  | generic procedure DEFINING_PROGRAM_UNIT_NAME
       --      renames generic_procedure_NAME
+      --        [ASPECT_SPECIFICATIONS];
       --  | generic function DEFINING_PROGRAM_UNIT_NAME
       --      renames generic_function_NAME
+      --        [ASPECT_SPECIFICATIONS];
 
       --  N_Generic_Package_Renaming_Declaration
       --  Sloc points to GENERIC
@@ -5384,7 +5394,8 @@ package Sinfo is
       --  ENTRY_DECLARATION ::=
       --    [[not] overriding]
       --    entry DEFINING_IDENTIFIER
-      --      [(DISCRETE_SUBTYPE_DEFINITION)] PARAMETER_PROFILE;
+      --      [(DISCRETE_SUBTYPE_DEFINITION)] PARAMETER_PROFILE
+      --        [ASPECT_SPECIFICATIONS];
 
       --  N_Entry_Declaration
       --  Sloc points to ENTRY
@@ -5985,7 +5996,8 @@ package Sinfo is
       ----------------------------------
 
       --  SUBPROGRAM_BODY_STUB ::=
-      --    SUBPROGRAM_SPECIFICATION is separate;
+      --    SUBPROGRAM_SPECIFICATION is separate
+      --      [ASPECT_SPECIFICATION];
 
       --  N_Subprogram_Body_Stub
       --  Sloc points to FUNCTION or PROCEDURE
@@ -5998,7 +6010,8 @@ package Sinfo is
       -------------------------------
 
       --  PACKAGE_BODY_STUB ::=
-      --    package body DEFINING_IDENTIFIER is separate;
+      --    package body DEFINING_IDENTIFIER is separate
+      --      [ASPECT_SPECIFICATION];
 
       --  N_Package_Body_Stub
       --  Sloc points to PACKAGE
@@ -6011,7 +6024,8 @@ package Sinfo is
       ----------------------------
 
       --  TASK_BODY_STUB ::=
-      --    task body DEFINING_IDENTIFIER is separate;
+      --    task body DEFINING_IDENTIFIER is separate
+      --      [ASPECT_SPECIFICATION];
 
       --  N_Task_Body_Stub
       --  Sloc points to TASK
@@ -6024,7 +6038,8 @@ package Sinfo is
       ---------------------------------
 
       --  PROTECTED_BODY_STUB ::=
-      --    protected body DEFINING_IDENTIFIER is separate;
+      --    protected body DEFINING_IDENTIFIER is separate
+      --      [ASPECT_SPECIFICATION];
 
       --  Note: protected body stubs are not allowed in Ada 83 mode
 
@@ -6225,7 +6240,8 @@ package Sinfo is
       ------------------------------------------
 
       --  GENERIC_SUBPROGRAM_DECLARATION ::=
-      --    GENERIC_FORMAL_PART SUBPROGRAM_SPECIFICATION;
+      --    GENERIC_FORMAL_PART SUBPROGRAM_SPECIFICATION
+      --      [ASPECT_SPECIFICATIONS];
 
       --  Note: Generic_Formal_Declarations can include pragmas
 
