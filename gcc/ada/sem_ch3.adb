@@ -1256,6 +1256,11 @@ package body Sem_Ch3 is
          end loop;
       end if;
 
+      --  Check whether an indirect call without actuals may be possible. This
+      --  is used when resolving calls whose result is then indexed.
+
+      May_Need_Actuals (Desig_Type);
+
       --  If the return type is incomplete, this is legal as long as the type
       --  is declared in the current scope and will be completed in it (rather
       --  than being part of limited view).

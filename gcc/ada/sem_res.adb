@@ -5460,7 +5460,13 @@ package body Sem_Res is
                  ("cannot disambiguate function call and indexing", N);
             else
                New_Subp := Relocate_Node (Subp);
-               Set_Entity (Subp, Nam);
+
+               --  The called entity may be an explicit dereference, in which
+               --  case there is no entity to set.
+
+               if Nkind (New_Subp) /= N_Explicit_Dereference then
+                  Set_Entity (Subp, Nam);
+               end if;
 
                if (Is_Array_Type (Ret_Type)
                     and then Component_Type (Ret_Type) /= Any_Type)

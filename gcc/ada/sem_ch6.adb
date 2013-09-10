@@ -211,10 +211,6 @@ package body Sem_Ch6 is
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
 
-   procedure May_Need_Actuals (Fun : Entity_Id);
-   --  Flag functions that can be called without parameters, i.e. those that
-   --  have no parameters, or those for which defaults exist for all parameters
-
    procedure Process_PPCs
      (N       : Node_Id;
       Spec_Id : Entity_Id;

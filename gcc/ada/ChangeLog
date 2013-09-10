@@ -1,3 +1,29 @@
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb: Diagnose -gnatc given after -gnatRm.
+	* gnat_ugn.texi: Add documentation for -gnatRm.
+	* usage.adb: Minor reorganization (put style entries in proper
+	order) Document -gnatRm switch.
+	* sinfo.ads: Minor comment fix.
+
+2013-09-10  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* tree_io.ads: Update ASIS_Version_Number.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): Check whether the
+	designated type can appear in a parameterless call.
+	* sem_ch4.adb (Analyze_Call): Do not insert an explicit dereference
+	in the case of an indirect call through an access function that
+	returns an array type.
+	(Analyze_One_Call): Handle properly legal parameterless calls
+	whose result is indexed, in constructs of the for F.all (I)
+	* sem_ch6.ads (May_Need_Actuals): Make public, for use on access
+	to subprogram types.
+	* sem_res.adb (Resolve_Call): If the call is indirect, there is
+	no entity to set on the name in the call.
+
 2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* aspects.adb: Add entries in the Has_Aspect_Specifications_Flag

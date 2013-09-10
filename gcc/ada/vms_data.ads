@@ -2299,7 +2299,11 @@ package VMS_Data is
                                             "SYMBOLIC "                    &
                                                "-gnatR3 "                  &
                                             "SYMBOLIC_FILE "               &
-                                               "-gnatR3s";
+                                               "-gnatR3s "                 &
+                                            "MECHANISMS "                  &
+                                               "-gnatRm "                  &
+                                            "MECHANISMS_FILE "             &
+                                               "-gnatRms";
    --        /NOREPRESENTATION_INFO (D)
    --        /REPRESENTATION_INFO[=(keyword[,...])]
    --
@@ -2328,6 +2332,13 @@ package VMS_Data is
    --
    --        SYMBOLIC_FILE   Similar to SYMBOLIC, but the output is to a file
    --                        with the name 'file_rep' where 'file' is the name
+   --                        of the corresponding source file.
+   --
+   --        MECHANISMS      List convention and argument passing mechanisms
+   --                        for all subprograms
+   --
+   --        MECHANISMS_FILE Similar to MECHANISMS, but the output is to a file
+   --                        with the name 'file_rep' where file is the name
    --                        of the corresponding source file.
    --
    --        DEFAULT         Equivalent to ARRAYS.
@@ -2491,7 +2502,7 @@ package VMS_Data is
                                             "XTRA_PARENS "                 &
                                                "-gnaty-x "                 &
                                             "NOXTRA_PARENS "               &
-                                               "-gnaty-x ";
+                                               "-gnaty-x";
    --        /NOSTYLE_CHECKS (D)
    --        /STYLE_CHECKS[=(keyword,[...])]
    --

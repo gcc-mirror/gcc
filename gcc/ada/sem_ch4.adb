@@ -1037,6 +1037,9 @@ package body Sem_Ch4 is
          --  function that returns a pointer_to_procedure which is the entity
          --  being called. Finally, F (X) may be a call to a parameterless
          --  function that returns a pointer to a function with parameters.
+         --  Note that if F return an access to subprogram whose designated
+         --  type is an array, F (X) cannot be interpreted as an indirect call
+         --  through the result of the call to F.
 
          elsif Is_Access_Type (Etype (Nam))
            and then Ekind (Designated_Type (Etype (Nam))) = E_Subprogram_Type
@@ -1047,6 +1050,8 @@ package body Sem_Ch4 is
                   (Nkind (Parent (N)) /= N_Explicit_Dereference
                      and then Is_Entity_Name (Nam)
                      and then No (First_Formal (Entity (Nam)))
+                     and then not
+                       Is_Array_Type (Etype (Designated_Type (Etype (Nam))))
                      and then Present (Actuals)))
          then
             Nam_Ent := Designated_Type (Etype (Nam));
@@ -2998,7 +3003,9 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      --  An indexing requires at least one actual
+      --  An indexing requires at least one actual.The name of the call cannot
+      --  be an implicit indirect call, so it cannot be a generated explicit
+      --  dereference.
 
       if not Is_Empty_List (Actuals)
         and then
@@ -3007,7 +3014,11 @@ package body Sem_Ch4 is
               (Needs_One_Actual (Nam)
                  and then Present (Next_Actual (First (Actuals)))))
       then
-         if Is_Array_Type (Subp_Type) then
+         if Is_Array_Type (Subp_Type)
+           and then
+            (Nkind (Name (N)) /= N_Explicit_Dereference
+              or else Comes_From_Source (Name (N)))
+         then
             Is_Indexed := Try_Indexed_Call (N, Nam, Subp_Type, Must_Skip);
 
          elsif Is_Access_Type (Subp_Type)
@@ -3046,9 +3057,14 @@ package body Sem_Ch4 is
       if not Norm_OK then
 
          --  If an indirect call is a possible interpretation, indicate
-         --  success to the caller.
+         --  success to the caller. This may be an indecing of an explicit
+         --  dereference of a call that returns an access type (see above).
 
-         if Is_Indirect then
+         if Is_Indirect
+           or else (Is_Indexed
+                     and then Nkind (Name (N)) = N_Explicit_Dereference
+                     and then Comes_From_Source (Name (N)))
+         then
             Success := True;
             return;
 
