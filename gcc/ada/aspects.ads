@@ -499,8 +499,8 @@ package Aspects is
    --  To deal with the delayed aspect case, we use two flags. The first is
    --  set on the parent type if it has delayed representation aspects. This
    --  flag Has_Delayed_Rep_Aspects indicates that if we derive from this type
-   --  we have to worry about making sure we inherit any delayed types. The
-   --  second flag is set on a derived type. May_Have_Inherited_Rep_Aspects
+   --  we have to worry about making sure we inherit any delayed aspects. The
+   --  second flag is set on a derived type: May_Have_Inherited_Rep_Aspects
    --  is set if the parent type has Has_Delayed_Rep_Aspects set.
 
    --  When we freeze a derived type, if the May_Have_Inherited_Rep_Aspects
@@ -517,17 +517,17 @@ package Aspects is
       --  is always delayed, as required by the language definition.
 
       Never_Delay,
-      --  There are two cases. There are language defined attributes like
-      --  Convention where the "expression" is simply an uninterprted
+      --  There are two cases. There are language defined aspects like
+      --  Convention where the "expression" is simply an uninterpreted
       --  identifier, and there is no issue of evaluating it and thus no
       --  issue of delaying the evaluation. The second case is implementation
-      --  defined attributes where we have decided that we don't want to
-      --  allow delays (and for our own attributes we can do what we like!)
+      --  defined aspects where we have decided that we don't want to allow
+      --  delays (and for our own aspects we can do what we like!).
 
       Rep_Aspect);
       --  These are the cases of representation aspects that are in general
       --  delayed, and where there is a potential issue of derived types that
-      --  inherit delayed representation values
+      --  inherit delayed representation values.
 
    --  Note: even if this table indicates that an aspect is delayed, we never
    --  delay Boolean aspects that have a missing expression (taken as True),

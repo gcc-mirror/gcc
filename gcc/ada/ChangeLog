@@ -1,3 +1,9 @@
+2013-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* aspects.ads, sem_ch13.adb: Minor reformatting.
+	* adaint.c (__gnat_set_close_on_exec): Add comment documenting
+	that this routine is shared between OS_Lib and Sockets.
+
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
 	* exp_prag.adb (Expand_Pragma_Check): Ignore pragma if Is_Ignored set.
