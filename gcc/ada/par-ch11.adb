@@ -213,11 +213,7 @@ package body Ch11 is
       Raise_Node : Node_Id;
 
    begin
-      if Ada_Version < Ada_2012 then
-         Error_Msg_SC ("raise expression is an Ada 2012 feature");
-         Error_Msg_SC ("\|unit must be compiled with -gnat2012 switch");
-      end if;
-
+      Error_Msg_Ada_2012_Feature ("raise expression", Token_Ptr);
       Raise_Node := New_Node (N_Raise_Expression, Token_Ptr);
       Scan; -- past RAISE
 

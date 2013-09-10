@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -89,6 +89,9 @@ package Inline is
       --  The body must be compiled with the same language version as the
       --  spec. The version may be set by a configuration pragma in a separate
       --  file or in the current file, and may differ from body to body.
+
+      Version_Pragma : Node_Id;
+      --  This is linked with the Version value
    end record;
 
    package Pending_Instantiations is new Table.Table (

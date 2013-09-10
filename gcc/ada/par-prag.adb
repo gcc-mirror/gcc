@@ -307,6 +307,7 @@ begin
       when Pragma_Ada_83 =>
          Ada_Version := Ada_83;
          Ada_Version_Explicit := Ada_83;
+         Ada_Version_Pragma := Pragma_Node;
 
       ------------
       -- Ada_95 --
@@ -319,6 +320,7 @@ begin
       when Pragma_Ada_95 =>
          Ada_Version := Ada_95;
          Ada_Version_Explicit := Ada_95;
+         Ada_Version_Pragma := Pragma_Node;
 
       ---------------------
       -- Ada_05/Ada_2005 --
@@ -333,6 +335,7 @@ begin
          if Arg_Count = 0 then
             Ada_Version := Ada_2005;
             Ada_Version_Explicit := Ada_2005;
+            Ada_Version_Pragma := Pragma_Node;
          end if;
 
       ---------------------
@@ -348,6 +351,7 @@ begin
          if Arg_Count = 0 then
             Ada_Version := Ada_2012;
             Ada_Version_Explicit := Ada_2012;
+            Ada_Version_Pragma := Pragma_Node;
          end if;
 
       -----------

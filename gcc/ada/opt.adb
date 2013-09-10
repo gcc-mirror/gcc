@@ -54,6 +54,7 @@ package body Opt is
    procedure Register_Opt_Config_Switches is
    begin
       Ada_Version_Config                    := Ada_Version;
+      Ada_Version_Pragma_Config             := Ada_Version_Pragma;
       Ada_Version_Explicit_Config           := Ada_Version_Explicit;
       Assertions_Enabled_Config             := Assertions_Enabled;
       Assume_No_Invalid_Values_Config       := Assume_No_Invalid_Values;
@@ -87,6 +88,7 @@ package body Opt is
    procedure Restore_Opt_Config_Switches (Save : Config_Switches_Type) is
    begin
       Ada_Version                    := Save.Ada_Version;
+      Ada_Version_Pragma             := Save.Ada_Version_Pragma;
       Ada_Version_Explicit           := Save.Ada_Version_Explicit;
       Assertions_Enabled             := Save.Assertions_Enabled;
       Assume_No_Invalid_Values       := Save.Assume_No_Invalid_Values;
@@ -122,6 +124,7 @@ package body Opt is
    procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type) is
    begin
       Save.Ada_Version                    := Ada_Version;
+      Save.Ada_Version_Pragma             := Ada_Version_Pragma;
       Save.Ada_Version_Explicit           := Ada_Version_Explicit;
       Save.Assertions_Enabled             := Assertions_Enabled;
       Save.Assume_No_Invalid_Values       := Assume_No_Invalid_Values;
@@ -161,6 +164,7 @@ package body Opt is
          --  the configuration setting even in a run time unit.
 
          Ada_Version                 := Ada_Version_Runtime;
+         Ada_Version_Pragma          := Empty;
          Dynamic_Elaboration_Checks  := False;
          Extensions_Allowed          := True;
          External_Name_Exp_Casing    := As_Is;
@@ -188,6 +192,7 @@ package body Opt is
 
       else
          Ada_Version                 := Ada_Version_Config;
+         Ada_Version_Pragma          := Ada_Version_Pragma_Config;
          Ada_Version_Explicit        := Ada_Version_Explicit_Config;
          Assertions_Enabled          := Assertions_Enabled_Config;
          Assume_No_Invalid_Values    := Assume_No_Invalid_Values_Config;
