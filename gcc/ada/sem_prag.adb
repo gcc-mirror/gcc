@@ -1514,22 +1514,24 @@ package body Sem_Prag is
            (Item    : Node_Id;
             Item_Id : Entity_Id)
          is
+            Context : Entity_Id;
             Dummy   : Boolean;
             Inputs  : Elist_Id := No_Elist;
             Outputs : Elist_Id := No_Elist;
-            Subp_Id : Entity_Id;
 
          begin
             --  Traverse the scope stack looking for enclosing subprograms
             --  subject to aspect/pragma Global.
 
-            Subp_Id := Scope (Current_Scope);
-            while Present (Subp_Id) and then Subp_Id /= Standard_Standard loop
-               if Is_Subprogram (Subp_Id)
-                 and then Has_Aspect (Subp_Id, Aspect_Global)
+            Context := Scope (Subp_Id);
+            while Present (Context)
+              and then Context /= Standard_Standard
+            loop
+               if Is_Subprogram (Context)
+                 and then Has_Aspect (Context, Aspect_Global)
                then
                   Collect_Subprogram_Inputs_Outputs
-                    (Subp_Id      => Subp_Id,
+                    (Subp_Id      => Context,
                      Subp_Inputs  => Inputs,
                      Subp_Outputs => Outputs,
                      Global_Seen  => Dummy);
@@ -1545,11 +1547,15 @@ package body Sem_Prag is
                         Item, Item_Id);
                      Error_Msg_NE
                        ("\item already appears as input of subprogram &",
-                        Item, Subp_Id);
+                        Item, Context);
+
+                     --  Stop the traversal once an error has been detected
+
+                     exit;
                   end if;
                end if;
 
-               Subp_Id := Scope (Subp_Id);
+               Context := Scope (Context);
             end loop;
          end Check_Mode_Restriction_In_Enclosing_Context;
 

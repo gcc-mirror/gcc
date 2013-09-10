@@ -7051,6 +7051,12 @@ package Sinfo is
       --  The pragmas can either come from source or be the byproduct of aspect
       --  expansion. The ordering in the list is of LIFO fashion.
 
+      --  Note that there might be multiple preconditions (resp.
+      --  postconditions) in this list, either because they come from
+      --  separate pragmas in the source, or because a Pre (resp. Post) aspect
+      --  specification has been broken into AND THEN sections. See Split_PPC
+      --  for details.
+
       --  Contract_Test_Cases contains a collection of pragmas that correspond
       --  to aspects/pragmas Contract_Cases and Test_Case. The ordering in the
       --  list is of LIFO fashion.

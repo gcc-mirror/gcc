@@ -8118,11 +8118,29 @@ package body Exp_Ch4 is
             return;
 
          else
-            Rewrite (N,
-              Make_Op_Shift_Left (Loc,
-                Left_Opnd  => Lop,
-                Right_Opnd =>
-                  Convert_To (Standard_Natural, Right_Opnd (Rop))));
+            --  If the result is modular, perform the reduction of the result
+            --  appropriately.
+
+            if Is_Modular_Integer_Type (Typ)
+              and then not Non_Binary_Modulus (Typ)
+            then
+               Rewrite (N,
+                Make_Op_And (Loc,
+                  Left_Opnd =>
+                    Make_Op_Shift_Left (Loc,
+                      Left_Opnd  => Lop,
+                      Right_Opnd =>
+                        Convert_To (Standard_Natural, Right_Opnd (Rop))),
+                  Right_Opnd =>
+                     Make_Integer_Literal (Loc, Modulus (Typ) - 1)));
+            else
+               Rewrite (N,
+                 Make_Op_Shift_Left (Loc,
+                   Left_Opnd  => Lop,
+                   Right_Opnd =>
+                     Convert_To (Standard_Natural, Right_Opnd (Rop))));
+            end if;
+
             Analyze_And_Resolve (N, Typ);
             return;
          end if;
@@ -8130,11 +8148,26 @@ package body Exp_Ch4 is
       --  Same processing for the operands the other way round
 
       elsif Lp2 then
-         Rewrite (N,
-           Make_Op_Shift_Left (Loc,
-             Left_Opnd  => Rop,
-             Right_Opnd =>
-               Convert_To (Standard_Natural, Right_Opnd (Lop))));
+         if Is_Modular_Integer_Type (Typ)
+           and then not Non_Binary_Modulus (Typ)
+         then
+            Rewrite (N,
+             Make_Op_And (Loc,
+               Left_Opnd =>
+                 Make_Op_Shift_Left (Loc,
+                   Left_Opnd  => Rop,
+                   Right_Opnd =>
+                     Convert_To (Standard_Natural, Right_Opnd (Lop))),
+               Right_Opnd =>
+                  Make_Integer_Literal (Loc, Modulus (Typ) - 1)));
+         else
+            Rewrite (N,
+              Make_Op_Shift_Left (Loc,
+                Left_Opnd  => Rop,
+                Right_Opnd =>
+                  Convert_To (Standard_Natural, Right_Opnd (Lop))));
+         end if;
+
          Analyze_And_Resolve (N, Typ);
          return;
       end if;
