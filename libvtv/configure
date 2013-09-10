@@ -2339,22 +2339,6 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version_specific_libs" >&5
 $as_echo "$version_specific_libs" >&6; }
 
-# See if supported.
-unset VTV_SUPPORTED
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for host support for vtable verification" >&5
-$as_echo_n "checking for host support for vtable verification... " >&6; }
-. ${srcdir}/configure.tgt
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $VTV_SUPPORTED" >&5
-$as_echo "$VTV_SUPPORTED" >&6; }
-
-# Decide if it's usable.
-use_vtable_verify=no
-if test "x$VTV_SUPPORTED" = "xyes"; then
-  use_vtable_verify=yes
-  { $as_echo "$as_me:${as_lineno-$LINENO}: using vtable verification" >&5
-$as_echo "$as_me: using vtable verification" >&6;}
-fi
-
 # Do not delete or change the following two lines.  For why, see
 # http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 ac_aux_dir=
@@ -2521,6 +2505,22 @@ esac
 
 
 
+
+# See if supported.
+unset VTV_SUPPORTED
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for host support for vtable verification" >&5
+$as_echo_n "checking for host support for vtable verification... " >&6; }
+. ${srcdir}/configure.tgt
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $VTV_SUPPORTED" >&5
+$as_echo "$VTV_SUPPORTED" >&6; }
+
+# Decide if it's usable.
+use_vtable_verify=no
+if test "x$VTV_SUPPORTED" = "xyes"; then
+  use_vtable_verify=yes
+  { $as_echo "$as_me:${as_lineno-$LINENO}: using vtable verification" >&5
+$as_echo "$as_me: using vtable verification" >&6;}
+fi
 
 am__api_version='1.11'
 
