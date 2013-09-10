@@ -128,6 +128,7 @@ extern char *alloca ();
 #include "libiberty.h"
 #include "demangle.h"
 #include "cp-demangle.h"
+#include "hashtab.h"
 
 /* If IN_GLIBCPP_V3 is defined, some functions are made static.  We
    also rename them via #define to avoid compiler errors when the
@@ -302,6 +303,10 @@ struct d_print_info
   int pack_index;
   /* Number of d_print_flush calls so far.  */
   unsigned long int flush_count;
+  /* Table mapping demangle components to scopes saved when first
+     traversing those components.  These are used while evaluating
+     substitutions.  */
+  htab_t saved_scopes;
 };
 
 #ifdef CP_DEMANGLE_DEBUG
@@ -3665,6 +3670,17 @@ d_print_init (struct d_print_info *dpi, demangle_callbackref callback,
   dpi->opaque = opaque;
 
   dpi->demangle_failure = 0;
+
+  dpi->saved_scopes = NULL;
+}
+
+/* Free a print information structure.  */
+
+static void
+d_print_free (struct d_print_info *dpi)
+{
+  if (dpi->saved_scopes != NULL)
+    htab_delete (dpi->saved_scopes);
 }
 
 /* Indicate that an error occurred during printing, and test for error.  */
@@ -3749,6 +3765,7 @@ cplus_demangle_print_callback (int options,
                                demangle_callbackref callback, void *opaque)
 {
   struct d_print_info dpi;
+  int success;
 
   d_print_init (&dpi, callback, opaque);
 
@@ -3756,7 +3773,9 @@ cplus_demangle_print_callback (int options,
 
   d_print_flush (&dpi);
 
-  return ! d_print_saw_error (&dpi);
+  success = ! d_print_saw_error (&dpi);
+  d_print_free (&dpi);
+  return success;
 }
 
 /* Turn components into a human readable string.  OPTIONS is the
@@ -3913,6 +3932,114 @@ d_print_subexpr (struct d_print_info *dpi, int options,
     d_append_char (dpi, ')');
 }
 
+/* A demangle component and some scope captured when it was first
+   traversed.  */
+
+struct d_saved_scope
+{
+  /* The component whose scope this is.  Used as the key for the
+     saved_scopes hashtable in d_print_info.  May be NULL if this
+     scope will not be inserted into that table.  */
+  const struct demangle_component *container;
+  /* Nonzero if the below items are copies and require freeing
+     when this scope is freed.  */
+  int is_copy;
+  /* The list of templates, if any, that was current when this
+     scope was captured.  */
+  struct d_print_template *templates;
+};
+
+/* Allocate a scope and populate it with the current values from DPI.
+   CONTAINER is the demangle component to which the scope refers, and
+   is used as the key for the saved_scopes hashtable in d_print_info.
+   CONTAINER may be NULL if this scope will not be inserted into that
+   table.  If COPY is nonzero then items that may have been allocated
+   on the stack will be copied before storing.  */
+
+static struct d_saved_scope *
+d_store_scope (const struct d_print_info *dpi,
+	       const struct demangle_component *container, int copy)
+{
+  struct d_saved_scope *scope = XNEW (struct d_saved_scope);
+
+  scope->container = container;
+  scope->is_copy = copy;
+
+  if (copy)
+    {
+      struct d_print_template *ts, **tl = &scope->templates;
+
+      for (ts = dpi->templates; ts != NULL; ts = ts->next)
+	{
+	  struct d_print_template *td = XNEW (struct d_print_template);
+
+	  *tl = td;
+	  tl = &td->next;
+	  td->template_decl = ts->template_decl;
+	}
+      *tl = NULL;
+    }
+  else
+    scope->templates = dpi->templates;
+
+  return scope;
+}
+
+/* Free a scope allocated by d_store_scope.  */
+
+static void
+d_free_scope (void *p)
+{
+  struct d_saved_scope *scope = (struct d_saved_scope *) p;
+
+  if (scope->is_copy)
+    {
+      struct d_print_template *ts, *tn;
+
+      for (ts = scope->templates; ts != NULL; ts = tn)
+	{
+	  tn = ts->next;
+	  free (ts);
+	}
+    }
+
+  free (scope);
+}
+
+/* Restore a stored scope to DPI, optionally freeing it afterwards.  */
+
+static void
+d_restore_scope (struct d_print_info *dpi, struct d_saved_scope *scope,
+		 int free_after)
+{
+  dpi->templates = scope->templates;
+
+  if (free_after)
+    d_free_scope (scope);
+}
+
+/* Returns a hash code for the saved scope referenced by p.  */
+
+static hashval_t
+d_hash_saved_scope (const void *p)
+{
+  const struct d_saved_scope *s = (const struct d_saved_scope *) p;
+
+  return htab_hash_pointer (s->container);
+}
+
+/* Returns non-zero if the saved scopes referenced by p1 and p2
+   are equal.  */
+
+static int
+d_equal_saved_scope (const void *p1, const void *p2)
+{
+  const struct d_saved_scope *s1 = (const struct d_saved_scope *) p1;
+  const struct d_saved_scope *s2 = (const struct d_saved_scope *) p2;
+
+  return s1->container == s2->container;
+}
+
 /* Subroutine to handle components.  */
 
 static void
@@ -3922,6 +4049,10 @@ d_print_comp (struct d_print_info *dpi, int options,
   /* Magic variable to let reference smashing skip over the next modifier
      without needing to modify *dc.  */
   const struct demangle_component *mod_inner = NULL;
+
+  /* Variable used to store the current scope while a previously
+     captured scope is used.  */
+  struct d_saved_scope *saved_scope = NULL;
 
   if (dc == NULL)
     {
@@ -4291,12 +4422,43 @@ d_print_comp (struct d_print_info *dpi, int options,
 	const struct demangle_component *sub = d_left (dc);
 	if (sub->type == DEMANGLE_COMPONENT_TEMPLATE_PARAM)
 	  {
-	    struct demangle_component *a = d_lookup_template_argument (dpi, sub);
+	    struct demangle_component *a;
+	    struct d_saved_scope lookup;
+	    void **slot;
+
+	    if (dpi->saved_scopes == NULL)
+	      dpi->saved_scopes = htab_create_alloc (1,
+						     d_hash_saved_scope,
+						     d_equal_saved_scope,
+						     d_free_scope,
+						     xcalloc, free);
+
+	    lookup.container = sub;
+	    slot = htab_find_slot (dpi->saved_scopes, &lookup, INSERT);
+	    if (*slot == HTAB_EMPTY_ENTRY)
+	      {
+		/* This is the first time SUB has been traversed.
+		   We need to capture some scope so it can be
+		   restored if SUB is reentered as a substitution.  */
+		*slot = d_store_scope (dpi, sub, 1);
+	      }
+	    else
+	      {
+		/* This traversal is reentering SUB as a substition.
+		   Restore the original scope temporarily.  */
+		saved_scope = d_store_scope (dpi, NULL, 0);
+		d_restore_scope (dpi, (struct d_saved_scope *) *slot, 0);
+	      }
+
+	    a = d_lookup_template_argument (dpi, sub);
 	    if (a && a->type == DEMANGLE_COMPONENT_TEMPLATE_ARGLIST)
 	      a = d_index_template_argument (a, dpi->pack_index);
 
 	    if (a == NULL)
 	      {
+		if (saved_scope != NULL)
+		  d_restore_scope (dpi, saved_scope, 1);
+
 		d_print_error (dpi);
 		return;
 	      }
@@ -4343,6 +4505,9 @@ d_print_comp (struct d_print_info *dpi, int options,
 	  d_print_mod (dpi, options, dc);
 
 	dpi->modifiers = dpm.next;
+
+	if (saved_scope != NULL)
+	  d_restore_scope (dpi, saved_scope, 1);
 
 	return;
       }
