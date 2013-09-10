@@ -2113,23 +2113,17 @@ propagate_constants_topo (struct topo_info *topo)
 
   for (i = topo->nnodes - 1; i >= 0; i--)
     {
+      unsigned j;
       struct cgraph_node *v, *node = topo->order[i];
-      struct ipa_dfs_info *node_dfs_info;
+      vec<cgraph_node_ptr> cycle_nodes = ipa_get_nodes_in_cycle (node);
 
-      if (!cgraph_function_with_gimple_body_p (node))
-	continue;
-
-      node_dfs_info = (struct ipa_dfs_info *) node->symbol.aux;
       /* First, iteratively propagate within the strongly connected component
 	 until all lattices stabilize.  */
-      v = node_dfs_info->next_cycle;
-      while (v)
-	{
+      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
+	if (cgraph_function_with_gimple_body_p (v))
 	  push_node_to_stack (topo, v);
-	  v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle;
-	}
 
-      v = node;
+      v = pop_node_from_stack (topo);
       while (v)
 	{
 	  struct cgraph_edge *cs;
@@ -2144,19 +2138,18 @@ propagate_constants_topo (struct topo_info *topo)
       /* Afterwards, propagate along edges leading out of the SCC, calculates
 	 the local effects of the discovered constants and all valid values to
 	 their topological sort.  */
-      v = node;
-      while (v)
-	{
-	  struct cgraph_edge *cs;
+      FOR_EACH_VEC_ELT (cycle_nodes, j, v)
+	if (cgraph_function_with_gimple_body_p (v))
+	  {
+	    struct cgraph_edge *cs;
 
-	  estimate_local_effects (v);
-	  add_all_node_vals_to_toposort (v);
-	  for (cs = v->callees; cs; cs = cs->next_callee)
-	    if (!edge_within_scc (cs))
-	      propagate_constants_accross_call (cs);
-
-	  v = ((struct ipa_dfs_info *) v->symbol.aux)->next_cycle;
-	}
+	    estimate_local_effects (v);
+	    add_all_node_vals_to_toposort (v);
+	    for (cs = v->callees; cs; cs = cs->next_callee)
+	      if (!edge_within_scc (cs))
+		propagate_constants_accross_call (cs);
+	  }
+      cycle_nodes.release ();
     }
 }
 
