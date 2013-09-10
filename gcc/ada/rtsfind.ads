@@ -278,6 +278,7 @@ package Rtsfind is
       System_Machine_Code,
       System_Mantissa,
       System_Memcop,
+      System_Memory,
       System_Multiprocessors,
       System_Pack_03,
       System_Pack_05,
@@ -940,7 +941,9 @@ package Rtsfind is
      RE_Asm_Input_Operand,               -- System.Machine_Code
      RE_Asm_Output_Operand,              -- System.Machine_Code
 
-     RE_Mantissa_Value,                  -- System_Mantissa
+     RE_Mantissa_Value,                  -- System.Mantissa
+
+     RE_Free,                            -- System.Memory
 
      RE_CPU_Range,                       -- System.Multiprocessors
 
@@ -2196,6 +2199,8 @@ package Rtsfind is
      RE_Asm_Output_Operand               => System_Machine_Code,
 
      RE_Mantissa_Value                   => System_Mantissa,
+
+     RE_Free                             => System_Memory,
 
      RE_CPU_Range                        => System_Multiprocessors,
 
