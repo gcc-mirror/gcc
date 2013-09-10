@@ -1302,7 +1302,7 @@ package body Errout is
             CE : Error_Msg_Object renames Errors.Table (Cur);
 
          begin
-            if not CE.Deleted
+            if (CE.Warn and not CE.Deleted)
               and then
                 (Warning_Specifically_Suppressed (CE.Sptr, CE.Text)
                    or else

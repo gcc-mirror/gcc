@@ -136,6 +136,15 @@ package body Exp_Ch9 is
    --  build record declaration. N is the type declaration, Ctyp is the
    --  concurrent entity (task type or protected type).
 
+   function Build_Dispatching_Tag_Check
+     (K : Entity_Id;
+      N : Node_Id) return Node_Id;
+   --  Utility to create the tree to check whether the dispatching call in
+   --  a timed entry call, a conditional entry call, or an asynchronous
+   --  transfer of control is a call to a primitive of a non-synchronized type.
+   --  K is the temporary that holds the tagged kind of the target object, and
+   --  N is the enclosing construct.
+
    function Build_Entry_Count_Expression
      (Concurrent_Type : Node_Id;
       Component_List  : List_Id;
@@ -1297,6 +1306,26 @@ package body Exp_Ch9 is
               Interface_List  => Interface_List (N),
               Limited_Present => True));
    end Build_Corresponding_Record;
+
+   ---------------------------------
+   -- Build_Dispatching_Tag_Check --
+   ---------------------------------
+
+   function Build_Dispatching_Tag_Check
+     (K : Entity_Id;
+      N : Node_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (N);
+   begin
+      return
+         Make_Op_Or (Loc,
+           Make_Op_Eq (Loc,
+             Left_Opnd  => New_Reference_To (K, Loc),
+             Right_Opnd => New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
+           Make_Op_Eq (Loc,
+             Left_Opnd  => New_Reference_To (K, Loc),
+             Right_Opnd => New_Reference_To (RTE (RE_TK_Tagged), Loc)));
+   end Build_Dispatching_Tag_Check;
 
    ----------------------------------
    -- Build_Entry_Count_Expression --
@@ -6607,7 +6636,9 @@ package body Exp_Ch9 is
    --       U   : Boolean;
 
    --    begin
-   --       if K = Ada.Tags.TK_Limited_Tagged then
+   --       if K = Ada.Tags.TK_Limited_Tagged
+   --         or else K = Ada.Tags.TK_Tagged
+   --       then
    --          <dispatching-call>;
    --          <triggering-statements>;
 
@@ -7206,7 +7237,9 @@ package body Exp_Ch9 is
             Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Ecall));
 
             --  Generate:
-            --    if K = Ada.Tags.TK_Limited_Tagged then
+            --    if K = Ada.Tags.TK_Limited_Tagged
+            --         or else K = Ada.Tags.TK_Tagged
+            --       then
             --       Lim_Typ_Stmts
             --    else
             --       Conc_Typ_Stmts
@@ -7214,18 +7247,9 @@ package body Exp_Ch9 is
 
             Append_To (Stmts,
               Make_Implicit_If_Statement (N,
-                Condition =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd  =>
-                       New_Reference_To (K, Loc),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
-
-                Then_Statements =>
-                  Lim_Typ_Stmts,
-
-                Else_Statements =>
-                  Conc_Typ_Stmts));
+                Condition       => Build_Dispatching_Tag_Check (K, N),
+                Then_Statements => Lim_Typ_Stmts,
+                Else_Statements => Conc_Typ_Stmts));
 
             Rewrite (N,
               Make_Block_Statement (Loc,
@@ -7665,7 +7689,9 @@ package body Exp_Ch9 is
    --       S : Integer;
 
    --    begin
-   --       if K = Ada.Tags.TK_Limited_Tagged then
+   --       if K = Ada.Tags.TK_Limited_Tagged
+   --         or else K = Ada.Tags.TK_Tagged
+   --       then
    --          <dispatching-call>;
    --          <triggering-statements>
 
@@ -7891,7 +7917,9 @@ package body Exp_Ch9 is
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Blk));
 
          --  Generate:
-         --    if K = Ada.Tags.TK_Limited_Tagged then
+         --    if K = Ada.Tags.TK_Limited_Tagged
+         --         or else K = Ada.Tags.TK_Tagged
+         --       then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts
@@ -7899,18 +7927,9 @@ package body Exp_Ch9 is
 
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
-             Condition =>
-               Make_Op_Eq (Loc,
-                 Left_Opnd =>
-                   New_Reference_To (K, Loc),
-                 Right_Opnd =>
-                   New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
-
-             Then_Statements =>
-               Lim_Typ_Stmts,
-
-             Else_Statements =>
-               Conc_Typ_Stmts));
+             Condition       => Build_Dispatching_Tag_Check (K, N),
+             Then_Statements => Lim_Typ_Stmts,
+             Else_Statements => Conc_Typ_Stmts));
 
          Rewrite (N,
            Make_Block_Statement (Loc,
@@ -11951,7 +11970,9 @@ package body Exp_Ch9 is
    --       S  : Integer;
 
    --    begin
-   --       if K = Ada.Tags.TK_Limited_Tagged then
+   --       if K = Ada.Tags.TK_Limited_Tagged
+   --         or else K = Ada.Tags.TK_Tagged
+   --       then
    --          <dispatching-call>;
    --          <triggering-statements>
 
@@ -12394,7 +12415,9 @@ package body Exp_Ch9 is
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (E_Call));
 
          --  Generate:
-         --    if K = Ada.Tags.TK_Limited_Tagged then
+         --    if K = Ada.Tags.TK_Limited_Tagged
+         --         or else K = Ada.Tags.TK_Tagged
+         --       then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts
@@ -12402,11 +12425,7 @@ package body Exp_Ch9 is
 
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
-             Condition       =>
-               Make_Op_Eq (Loc,
-                 Left_Opnd  => New_Reference_To (K, Loc),
-                 Right_Opnd =>
-                   New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
+             Condition       => Build_Dispatching_Tag_Check (K, N),
              Then_Statements => Lim_Typ_Stmts,
              Else_Statements => Conc_Typ_Stmts));
 

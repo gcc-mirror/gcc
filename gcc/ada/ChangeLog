@@ -1,5 +1,39 @@
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* aspects.ads (Delay_Type): New type (Aspect_Delay): New table.
+	* einfo.adb (Has_Delayed_Rep_Aspects): New flag
+	(May_Inherit_Delayed_Rep_Aspects): New flag (Rep_Clause): Removed
+	(use Get_Attribute_Representation_Clause).
+	* einfo.ads (Has_Delayed_Rep_Aspects): New flag
+	(May_Inherit_Delayed_Rep_Aspects): New flag
+	* freeze.adb: Minor reformatting
+	* sem_ch13.adb (Analyze_Aspect_Speficifications): Redo
+	handling of delayed evaluation, including optimizing some cases
+	and avoiding delays.
+	(Analyze_Aspects_At_Freeze_Point): Now
+	handled inheriting delayed rep aspects for type derivation case.
+	(Inherit_Delayed_Rep_Aspects): New procedure
+	* sem_ch13.ads (Analyze_Aspects_At_Freeze_Point): Now handled
+	inheriting delayed rep aspects for type derivation case.
+	* sem_ch3.adb (Build_Derived_Type): Set
+	May_Inherit_Derived_Rep_Aspects if parent type flag
+	Has_Delayed_Rep_Aspects is set
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Finalize): Don't delete real errors with specific
+	warning control.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call,
+	Expand_N_Conditional_Entry_Call, Expand_N_Asynchronous_Select):
+	Handle properly a trigger that is  a call to a primitive operation
+	of a type that implements a limited interface, if the type itself
+	is not limited.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* sem_ch3.adb, sinfo.ads, exp_ch9.adb, sem_prag.adb, sem_ch12.adb,
 	exp_ch4.adb, sprint.adb: Minor reformatting.
 
