@@ -1,3 +1,10 @@
+2013-09-10  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (generic_sched): New.
+	* config/aarch64/aarch64-generic.md (load): Make conditional
+	on generic_sched attribute.
+	(nonload): Likewise.
+
 2013-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* lto-cgraph.c: Include ipa-utils.h.
