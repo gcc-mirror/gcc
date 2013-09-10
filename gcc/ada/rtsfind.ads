@@ -586,8 +586,8 @@ package Rtsfind is
      RO_RT_Delay_Until,                  -- Ada.Real_Time.Delays
      RO_RT_To_Duration,                  -- Ada.Real_Time.Delays
 
-     RE_Set_Handler,                     -- Ada_Real_Time.Timing_Events
-     RE_Timing_Event,                    -- Ada_Real_Time.Timing_Events
+     RE_Set_Handler,                     -- Ada.Real_Time.Timing_Events
+     RE_Timing_Event,                    -- Ada.Real_Time.Timing_Events
 
      RE_Root_Stream_Type,                -- Ada.Streams
      RE_Stream_Element,                  -- Ada.Streams
@@ -789,13 +789,13 @@ package Rtsfind is
      RE_Bit_Or,                          -- System.Bit_Ops
      RE_Bit_Xor,                         -- System.Bit_Ops
 
-     RE_Vector_Not,                      -- System_Boolean_Array_Operations,
-     RE_Vector_And,                      -- System_Boolean_Array_Operations,
-     RE_Vector_Or,                       -- System_Boolean_Array_Operations,
-     RE_Vector_Nand,                     -- System_Boolean_Array_Operations,
-     RE_Vector_Nor,                      -- System_Boolean_Array_Operations,
-     RE_Vector_Nxor,                     -- System_Boolean_Array_Operations,
-     RE_Vector_Xor,                      -- System_Boolean_Array_Operations,
+     RE_Vector_Not,                      -- System.Boolean_Array_Operations,
+     RE_Vector_And,                      -- System.Boolean_Array_Operations,
+     RE_Vector_Or,                       -- System.Boolean_Array_Operations,
+     RE_Vector_Nand,                     -- System.Boolean_Array_Operations,
+     RE_Vector_Nor,                      -- System.Boolean_Array_Operations,
+     RE_Vector_Nxor,                     -- System.Boolean_Array_Operations,
+     RE_Vector_Xor,                      -- System.Boolean_Array_Operations,
 
      RE_Bswap_16,                        -- System.Byte_Swapping
      RE_Bswap_32,                        -- System.Byte_Swapping
@@ -1227,7 +1227,7 @@ package Rtsfind is
      RE_Get_63,                          -- System.Pack_63
      RE_Set_63,                          -- System.Pack_63
 
-     RE_Adjust_Storage_Size,             -- System_Parameters
+     RE_Adjust_Storage_Size,             -- System.Parameters
      RE_Default_Stack_Size,              -- System.Parameters
      RE_Garbage_Collected,               -- System.Parameters
      RE_Size_Type,                       -- System.Parameters
@@ -1692,7 +1692,7 @@ package Rtsfind is
      RE_Width_Wide_Character,            -- System.Wid_WChar
      RE_Width_Wide_Wide_Character,       -- System.Wid_WChar
 
-     RE_Dispatching_Domain,              -- Dispatching_Domains
+     RE_Dispatching_Domain,              -- Multiprocessors.Dispatching_Domains
 
      RE_Protected_Entry_Body_Array,      -- Tasking.Protected_Objects.Entries
      RE_Protected_Entry_Names_Array,     -- Tasking.Protected_Objects.Entries
@@ -1780,7 +1780,7 @@ package Rtsfind is
      RE_Complete_Task,                   -- System.Tasking.Stages
      RE_Free_Task,                       -- System.Tasking.Stages
      RE_Expunge_Unactivated_Tasks,       -- System.Tasking.Stages
-     RE_Move_Activation_Chain,           -- System_Tasking_Stages
+     RE_Move_Activation_Chain,           -- System.Tasking_Stages
      RE_Terminated);                     -- System.Tasking.Stages
 
    --  The following declarations build a table that is indexed by the RTE
