@@ -312,7 +312,9 @@ package body Switch.C is
 
                --  Not allowed if previous -gnatR given
 
-               if List_Representation_Info /= 0 then
+               if List_Representation_Info /= 0
+                 or else List_Representation_Info_Mechanisms
+               then
                   Osint.Fail
                     ("-gnatc not allowed since -gnatR given previously");
                end if;

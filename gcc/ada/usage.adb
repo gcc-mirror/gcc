@@ -381,7 +381,8 @@ begin
    --  Lines for -gnatR switch
 
    Write_Switch_Char ("R?");
-   Write_Line ("List rep info (?=0/1/2/3 for none/types/all/variable)");
+   Write_Line
+     ("List rep info (?=0/1/2/3/m for none/types/all/variable/mechanisms)");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 
@@ -626,8 +627,8 @@ begin
    Write_Line ("        l    check reference manual layout");
    Write_Line ("        Lnn  check max nest level < nn ");
    Write_Line ("        m    check line length <= 79 characters");
-   Write_Line ("        n    check casing of package Standard identifiers");
    Write_Line ("        Mnn  check line length <= nn characters");
+   Write_Line ("        n    check casing of package Standard identifiers");
    Write_Line ("        N    turn off all checks");
    Write_Line ("        o    check subprogram bodies in alphabetical order");
    Write_Line ("        O    check overriding indicators");

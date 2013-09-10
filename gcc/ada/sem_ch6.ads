@@ -234,6 +234,13 @@ package Sem_Ch6 is
    --  E is the entity for a subprogram or generic subprogram spec. This call
    --  lists all inherited Pre/Post aspects if List_Inherited_Pre_Post is True.
 
+   procedure May_Need_Actuals (Fun : Entity_Id);
+   --  Flag functions that can be called without parameters, i.e. those that
+   --  have no parameters, or those for which defaults exist for all parameters
+   --  Used for subprogram declarations and for access subprogram declarations,
+   --  where they apply to the anonymous designated type. On return the flag
+   --  Set_Needs_No_Actuals is set appropriately in Fun.
+
    function Mode_Conformant (New_Id, Old_Id : Entity_Id) return Boolean;
    --  Determine whether two callable entities (subprograms, entries,
    --  literals) are mode conformant (RM 6.3.1(15))

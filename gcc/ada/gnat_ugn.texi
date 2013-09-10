@@ -4013,6 +4013,10 @@ been given, since these two switches are not compatible. It is also not allowed
 if a previous @code{-gnatc} switch has been given, since we must be generating
 code to be able to determine representation information.
 
+@item ^-gnatRm[s]^/REPRESENTATION_INFO^
+Output convention and parameter passing mechanisms for all subprograms.
+This form is also incompatible with the use of @code{-gnatc}.
+
 @item -gnats
 @cindex @option{-gnats} (@command{gcc})
 Syntax check only.
@@ -7277,6 +7281,11 @@ discriminant. See source files @file{repinfo.ads/adb} in the
 output. If the switch is followed by an s (e.g.@: @option{-gnatR2s}), then
 the output is to a file with the name @file{^file.rep^file_REP^} where
 file is the name of the corresponding source file.
+
+@item -gnatRm[s]
+This form of the switch controls output of subprogram conventions
+and parameter passing mechanisms for all subprograms. A following
+@code{s} means output to a file as described above.
 @end ifclear
 @ifset vms
 @item /REPRESENTATION_INFO
@@ -7300,7 +7309,14 @@ If _FILE is added at the end of an option
 (e.g.@: @option{/REPRESENTATION_INFO=ARRAYS_FILE}),
 then the output is to a file with the name @file{file_REP} where
 file is the name of the corresponding source file.
+
+@item /REPRESENTATION_INFO=MECHANISMS
+This qualifier form controls output of subprogram conventions
+and parameter passing mechanisms for all subprograms. It is
+possible to append _FILE as described above to cause information
+to be written to a file.
 @end ifset
+
 Note that it is possible for record components to have zero size. In
 this case, the component clause uses an obvious extension of permitted
 Ada syntax, for example @code{at 0 range 0 .. -1}.
