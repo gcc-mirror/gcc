@@ -1,3 +1,8 @@
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/cond2.C: Tweak, do not expect a "required from".
+
 2013-09-10  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/pr58343.c: New test.

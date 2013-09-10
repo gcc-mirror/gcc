@@ -916,9 +916,11 @@ analyze_functions (void)
   int i;
   struct ipa_ref *ref;
   bool changed = true;
+  location_t saved_loc = input_location;
 
   bitmap_obstack_initialize (NULL);
   cgraph_state = CGRAPH_STATE_CONSTRUCTION;
+  input_location = UNKNOWN_LOCATION;
 
   /* Ugly, but the fixup can not happen at a time same body alias is created;
      C++ FE is confused about the COMDAT groups being right.  */
@@ -1099,6 +1101,8 @@ analyze_functions (void)
      used by it.  */
   if (!seen_error ())
     symtab_initialize_asm_name_hash ();
+
+  input_location = saved_loc;
 }
 
 /* Translate the ugly representation of aliases as alias pairs into nice

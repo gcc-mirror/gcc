@@ -1,3 +1,9 @@
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cgraphunit.c (analyze_functions): Save input_location, set it
+	to UNKNOWN_LOCATION and restore it at the end.
+
 2013-09-10  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-cp.c (propagate_constants_topo): Do not ignore SCC
