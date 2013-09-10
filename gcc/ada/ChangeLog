@@ -1,5 +1,16 @@
 2013-09-10  Robert Dewar  <dewar@adacore.com>
 
+	* gnatbind.adb: Correct starting date in --version string.
+	* gnatdll.adb: Use Check_Version_And_Help_G to implement --help
+	and --version.
+	* gnatkr.adb: Use Check_Version_And_Help_G to implement --help
+	and --version.
+	* gnatlink.adb: Correct starting date in --version string.
+	* gnatls.adb: Correct starting date in --version string.
+	* make.adb: Correct starting date in --version string.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
 	* switch-c.adb: Minor reformatting.
 	* atree.ads (Original_Nodes): Add documentation on ASIS usage.
 	* sinfo.ads: Add section on ASIS mode (documentation only).

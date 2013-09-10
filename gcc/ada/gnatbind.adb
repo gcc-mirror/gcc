@@ -572,7 +572,7 @@ begin
 
    --  First, scan to detect --version and/or --help
 
-   Check_Version_And_Help ("GNATBIND", "1995");
+   Check_Version_And_Help ("GNATBIND", "1992");
 
    --  We need to Scan_Bind_Args first, to set Verbose_Mode, so we know whether
    --  to Put_Bind_Args.

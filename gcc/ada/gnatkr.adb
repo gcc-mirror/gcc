@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2007, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,10 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Characters.Handling; use Ada.Characters.Handling;
-with Ada.Command_Line;        use Ada.Command_Line;
 with Gnatvsn;
 with Krunch;
+with Switch;  use Switch;
+
+with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Command_Line;        use Ada.Command_Line;
+
 with System.IO; use System.IO;
 
 procedure Gnatkr is
@@ -38,13 +41,28 @@ procedure Gnatkr is
 
    function Get_Maximum_File_Name_Length return Integer;
    pragma Import (C, Get_Maximum_File_Name_Length,
-                 "__gnat_get_maximum_file_name_length");
+                  "__gnat_get_maximum_file_name_length");
+
+   procedure Usage;
+   --  Output usage information
+
+   -----------
+   -- Usage --
+   -----------
+
+   procedure Usage is
+   begin
+      Put_Line ("Usage: gnatkr  filename[.extension]  [krunch-count]");
+   end Usage;
+
+   procedure Check_Version_And_Help is new Check_Version_And_Help_G (Usage);
 
 begin
+   Check_Version_And_Help ("GNATKR", "1992");
    Count := Argument_Count;
 
    if Count < 1 or else Count > 2 then
-      Put_Line ("Usage: gnatkr  filename[.extension]  [krunch-count]");
+      Usage;
       raise Exit_Program;
 
    else
