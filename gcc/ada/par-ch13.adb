@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -266,15 +266,20 @@ package body Ch13 is
             if Token = Tok_Comma
               or else Token = Tok_Semicolon
             then
-               if Aspect_Argument (A_Id) /= Optional then
+               if Aspect_Argument (A_Id) /= Optional_Expression
+                    and then
+                  Aspect_Argument (A_Id) /= Optional_Name
+               then
                   Error_Msg_Node_1 := Identifier (Aspect);
                   Error_Msg_AP ("aspect& requires an aspect definition");
                   OK := False;
                end if;
 
             elsif not Semicolon and then Token /= Tok_Arrow then
-               if Aspect_Argument (A_Id) /= Optional then
-
+               if Aspect_Argument (A_Id) /= Optional_Expression
+                    and then
+                  Aspect_Argument (A_Id) /= Optional_Name
+               then
                   --  The name or expression may be there, but the arrow is
                   --  missing. Skip to the end of the declaration.
 
@@ -292,9 +297,17 @@ package body Ch13 is
                   OK := False;
                end if;
 
-               if Aspect_Argument (A_Id) = Name then
+               if Aspect_Argument (A_Id) = Name
+                    or else
+                  Aspect_Argument (A_Id) = Optional_Name
+               then
                   Set_Expression (Aspect, P_Name);
+
                else
+                  pragma Assert
+                    (Aspect_Argument (A_Id) = Expression
+                       or else
+                     Aspect_Argument (A_Id) = Optional_Expression);
                   Set_Expression (Aspect, P_Expression);
                end if;
             end if;

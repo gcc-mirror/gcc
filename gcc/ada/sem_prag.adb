@@ -16406,7 +16406,7 @@ package body Sem_Prag is
             --  the consistency between modes of visible/private declarations
             --  and body declarations/statements.
 
-            procedure Check_Conformance
+            procedure Check_Spark_Mode_Conformance
               (Governing_Id : Entity_Id;
                New_Id       : Entity_Id);
             --  Verify the "monotonicity" of SPARK modes between two entities.
@@ -16450,11 +16450,11 @@ package body Sem_Prag is
                end if;
             end Chain_Pragma;
 
-            -----------------------
-            -- Check_Conformance --
-            -----------------------
+            ----------------------------------
+            -- Check_Spark_Mode_Conformance --
+            ----------------------------------
 
-            procedure Check_Conformance
+            procedure Check_Spark_Mode_Conformance
               (Governing_Id : Entity_Id;
                New_Id       : Entity_Id)
             is
@@ -16486,7 +16486,7 @@ package body Sem_Prag is
                     (Governing_Mode => Gov_Prag,
                      New_Mode       => New_Prag);
                end if;
-            end Check_Conformance;
+            end Check_Spark_Mode_Conformance;
 
             ------------------------------
             -- Check_Pragma_Conformance --
@@ -16689,7 +16689,13 @@ package body Sem_Prag is
                   Body_Id := Defining_Unit_Name (Context);
 
                   Chain_Pragma (Body_Id, N);
-                  Check_Conformance (Spec_Id, Body_Id);
+
+                  --  Verify that the SPARK modes are consistent between
+                  --  body and spec, if any.
+
+                  if Present (Spec_Id) then
+                     Check_Spark_Mode_Conformance (Spec_Id, Body_Id);
+                  end if;
 
                --  The pragma applies to the statements of a package body
 
@@ -16705,7 +16711,7 @@ package body Sem_Prag is
                   Body_Id := Defining_Unit_Name (Context);
 
                   Chain_Pragma (Body_Id, N);
-                  Check_Conformance (Spec_Id, Body_Id);
+                  Check_Spark_Mode_Conformance (Spec_Id, Body_Id);
 
                --  The pragma does not apply to a legal construct, issue error
 

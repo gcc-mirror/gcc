@@ -1037,7 +1037,7 @@ package body Sem_Ch4 is
          --  function that returns a pointer_to_procedure which is the entity
          --  being called. Finally, F (X) may be a call to a parameterless
          --  function that returns a pointer to a function with parameters.
-         --  Note that if F return an access to subprogram whose designated
+         --  Note that if F returns an access-to-subprogram whose designated
          --  type is an array, F (X) cannot be interpreted as an indirect call
          --  through the result of the call to F.
 
@@ -3003,7 +3003,7 @@ package body Sem_Ch4 is
          return;
       end if;
 
-      --  An indexing requires at least one actual.The name of the call cannot
+      --  An indexing requires at least one actual. The name of the call cannot
       --  be an implicit indirect call, so it cannot be a generated explicit
       --  dereference.
 
@@ -3057,7 +3057,7 @@ package body Sem_Ch4 is
       if not Norm_OK then
 
          --  If an indirect call is a possible interpretation, indicate
-         --  success to the caller. This may be an indecing of an explicit
+         --  success to the caller. This may be an indexing of an explicit
          --  dereference of a call that returns an access type (see above).
 
          if Is_Indirect

@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -2671,18 +2672,16 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Ada 2012 aspects may appear in a subprogram body, but only if there
-      --  is no previous spec. Ditto for a subprogram stub that does not have
-      --  a corresponding spec, but for which there may also be a spec_id.
+      --  Language-defined aspects cannot appear in a subprogram body if the
+      --  corresponding spec already has aspects. Exception to this rule are
+      --  certain user-defined aspects. Aspects that apply to a body stub are
+      --  moved to the proper body. Do not emit an error in this case.
 
       if Has_Aspects (N) then
-
-         --  Aspects that apply to a body stub are relocated to the proper
-         --  body. Do not emit an error in this case.
-
          if Present (Spec_Id)
            and then Nkind (N) not in N_Body_Stub
            and then Nkind (Parent (N)) /= N_Subunit
+           and then not Aspects_On_Body_OK (N)
          then
             Error_Msg_N
               ("aspect specifications must appear in subprogram declaration",
