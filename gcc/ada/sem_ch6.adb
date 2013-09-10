@@ -2680,7 +2680,14 @@ package body Sem_Ch6 is
       --  a corresponding spec, but for which there may also be a spec_id.
 
       if Has_Aspects (N) then
-         if Present (Spec_Id) then
+
+         --  Aspects that apply to a body stub are relocated to the proper
+         --  body. Do not emit an error in this case.
+
+         if Present (Spec_Id)
+           and then Nkind (N) not in N_Body_Stub
+           and then Nkind (Parent (N)) /= N_Subunit
+         then
             Error_Msg_N
               ("aspect specifications must appear in subprogram declaration",
                 N);

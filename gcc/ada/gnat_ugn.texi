@@ -3697,7 +3697,9 @@ object file after compilation. If @command{gnatmake} is called with
 @option{-gnatc} as a builder switch (before @option{-cargs} or in package
 Builder of the project file) then @command{gnatmake} will not fail because
 it will not look for the object files after compilation, and it will not try
-to build and link.
+to build and link. This switch may not be given if a previous @code{-gnatR}
+switch has been given, since @code{-gnatR} requires that the code generator
+be called to complete determination of representation information.
 
 @item -gnatC
 @cindex @option{-gnatC} (@command{gcc})
@@ -4006,8 +4008,10 @@ Treat pragma Restrictions as Restriction_Warnings.
 @item ^-gnatR@r{[}0@r{/}1@r{/}2@r{/}3@r{[}s@r{]]}^/REPRESENTATION_INFO^
 @cindex @option{-gnatR} (@command{gcc})
 Output representation information for declared types and objects.
-Note that this switch is not allowed if a previous
--gnatD switch has been given, since these two switches are not compatible.
+Note that this switch is not allowed if a previous @code{-gnatD} switch has
+been given, since these two switches are not compatible. It is also not allowed
+if a previous @code{-gnatc} switch has been given, since we must be generating
+code to be able to determine representation information.
 
 @item -gnats
 @cindex @option{-gnats} (@command{gcc})

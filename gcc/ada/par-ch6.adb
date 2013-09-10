@@ -161,13 +161,16 @@ package body Ch6 is
    --      [ASPECT_SPECIFICATIONS];
 
    --  SUBPROGRAM_BODY_STUB ::=
-   --    SUBPROGRAM_SPECIFICATION is separate;
+   --    SUBPROGRAM_SPECIFICATION is separate
+   --      [ASPECT_SPECIFICATIONS];
 
    --  GENERIC_INSTANTIATION ::=
    --    procedure DEFINING_PROGRAM_UNIT_NAME is
-   --      new generic_procedure_NAME [GENERIC_ACTUAL_PART];
+   --      new generic_procedure_NAME [GENERIC_ACTUAL_PART]
+   --        [ASPECT_SPECIFICATIONS];
    --  | function DEFINING_DESIGNATOR is
-   --      new generic_function_NAME [GENERIC_ACTUAL_PART];
+   --      new generic_function_NAME [GENERIC_ACTUAL_PART]
+   --        [ASPECT_SPECIFICATIONS];
 
    --  NULL_PROCEDURE_DECLARATION ::=
    --    SUBPROGRAM_SPECIFICATION is null;
@@ -394,8 +397,8 @@ package body Ch6 is
       if Token = Tok_Identifier
         and then not Token_Is_At_Start_Of_Line
       then
-            T_Left_Paren; -- to generate message
-            Fpart_List := P_Formal_Part;
+         T_Left_Paren; -- to generate message
+         Fpart_List := P_Formal_Part;
 
       --  Otherwise scan out an optional formal part in the usual manner
 
@@ -681,21 +684,21 @@ package body Ch6 is
                   Sloc (Name_Node));
             end if;
 
+            Scan; -- past SEPARATE
+
             Stub_Node :=
               New_Node (N_Subprogram_Body_Stub, Sloc (Specification_Node));
             Set_Specification (Stub_Node, Specification_Node);
 
-            --  The specification has been parsed as part of a subprogram
-            --  declaration, and aspects have already been collected.
-
             if Is_Non_Empty_List (Aspects) then
-               Set_Parent (Aspects, Stub_Node);
-               Set_Aspect_Specifications (Stub_Node, Aspects);
+               Error_Msg
+                 ("aspect specifications must come after SEPARATE",
+                  Sloc (First (Aspects)));
             end if;
 
-            Scan; -- past SEPARATE
-            Pop_Scope_Stack;
+            P_Aspect_Specifications (Stub_Node, Semicolon => False);
             TF_Semicolon;
+            Pop_Scope_Stack;
             return Stub_Node;
 
          --  Subprogram body or expression function case

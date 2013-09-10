@@ -310,6 +310,13 @@ package body Switch.C is
                     ("-gnatc must be first if combined with other switches");
                end if;
 
+               --  Not allowed if previous -gnatR given
+
+               if List_Representation_Info /= 0 then
+                  Osint.Fail
+                    ("-gnatc not allowed since -gnatR given previously");
+               end if;
+
                Ptr := Ptr + 1;
                Operating_Mode := Check_Semantics;
 
@@ -1011,6 +1018,14 @@ package body Switch.C is
                if Debug_Generated_Code then
                   Osint.Fail
                     ("-gnatR not permitted since -gnatD given previously");
+               end if;
+
+               --  Not allowed if previous -gnatc was given, since we must
+               --  call the code generator to determine rep information.
+
+               if Operating_Mode = Check_Semantics then
+                  Osint.Fail
+                    ("-gnatR not permitted since -gnatc given previously");
                end if;
 
                --  Set to annotate rep info, and set default -gnatR mode

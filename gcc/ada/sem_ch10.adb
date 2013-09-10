@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Debug;    use Debug;
 with Einfo;    use Einfo;
@@ -1555,8 +1556,8 @@ package body Sem_Ch10 is
    -------------------------------
 
    procedure Analyze_Package_Body_Stub (N : Node_Id) is
-      Id   : constant Entity_Id := Defining_Identifier (N);
-      Nam  : Entity_Id;
+      Id  : constant Entity_Id := Defining_Identifier (N);
+      Nam : Entity_Id;
 
    begin
       --  The package declaration must be in the current declarative part
@@ -1843,6 +1844,12 @@ package body Sem_Ch10 is
                      then
                         SCO_Record (Unum);
                      end if;
+
+                     --  Propagate any aspect specifications associated with
+                     --  with the stub to the proper body.
+
+                     Move_Or_Merge_Aspects
+                       (From => N, To => Proper_Body (Unit (Comp_Unit)));
 
                      --  Analyze the unit if semantics active
 
@@ -2327,8 +2334,8 @@ package body Sem_Ch10 is
    ----------------------------
 
    procedure Analyze_Task_Body_Stub (N : Node_Id) is
-      Nam : Entity_Id := Current_Entity_In_Scope (Defining_Identifier (N));
       Loc : constant Source_Ptr := Sloc (N);
+      Nam : Entity_Id := Current_Entity_In_Scope (Defining_Identifier (N));
 
    begin
       Check_Stub_Level (N);

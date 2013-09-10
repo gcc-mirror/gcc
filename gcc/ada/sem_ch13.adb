@@ -1781,7 +1781,6 @@ package body Sem_Ch13 is
                --  Warnings
 
                when Aspect_Warnings =>
-
                   Make_Aitem_Pragma
                     (Pragma_Argument_Associations => New_List (
                        Make_Pragma_Argument_Association (Sloc (Expr),
@@ -2433,6 +2432,18 @@ package body Sem_Ch13 is
 
                Set_Has_Delayed_Aspects (E);
                Record_Rep_Item (E, Aspect);
+
+            --  When delay is not required and the context is a package body,
+            --  insert the pragma in the declarations of the body.
+
+            elsif Nkind (N) = N_Package_Body then
+               if No (Declarations (N)) then
+                  Set_Declarations (N, New_List);
+               end if;
+
+               --  The pragma is added before source declarations
+
+               Prepend_To (Declarations (N), Aitem);
 
             --  When delay is not required and the context is not a compilation
             --  unit, we simply insert the pragma/attribute definition clause

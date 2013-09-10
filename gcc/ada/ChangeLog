@@ -1,3 +1,81 @@
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add entries in the Has_Aspect_Specifications_Flag
+	table for package body and body stubs.
+	(Move_Or_Merge_Aspects): New routine.
+	(Remove_Aspects): New routine.
+	* aspects.ads (Move_Aspects): Update comment on usage.
+	(Move_Or_Merge_Aspects): New routine.
+	(Remove_Aspects): New routine.
+	* par-ch3.adb: Update the grammar of private_type_declaration,
+	private_extension_declaration, object_renaming_declaration,
+	and exception_renaming_declaration.
+	(P_Subprogram): Parse the
+	aspect specifications that apply to a body stub.
+	* par-ch6.adb: Update the grammar of subprogram_body_stub and
+	generic_instantiation.
+	* par-ch7.adb: Update the grammar of package_declaration,
+	package_specification, package_body, package_renaming_declaration,
+	package_body_stub.
+	(P_Package): Parse the aspect specifications
+	that apply to a body, a body stub and package renaming.
+	* par-ch9.adb: Update the grammar of entry_declaration,
+	protected_body, protected_body_stub, task_body,
+	and task_body_stub.
+	(P_Protected): Add local variable
+	Aspect_Sloc. Add local constant Dummy_Node.  Parse the aspect
+	specifications that apply to a protected body and a protected
+	body stub.
+	(P_Task): Add local variable Aspect_Sloc. Add local
+	constant Dummy_Node. Parse the aspect specifications that apply
+	to a task body and a task body stub.
+	* par-ch12.adb: Update the grammar of
+	generic_renaming_declaration.
+	(P_Generic): Parse the aspect
+	specifications that apply to a generic renaming.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not emit
+	an error when analyzing aspects that apply to a body stub. Such
+	aspects are relocated to the proper body.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Analyze the aspect
+	specifications that apply to a body.
+	* sem_ch9.adb (Analyze_Protected_Body): Warn about user-defined
+	aspects not being supported on protected bodies. Remove the
+	aspect specifications.	(Analyze_Single_Protected_Declaration):
+	Analyze the aspects that apply to a single protected declaration.
+	(Analyze_Task_Body): Warn about user-defined aspects not being
+	supported on task bodies. Remove the aspect specifications.
+	* sem_ch10.adb: Add with and use clause for Aspects.
+	(Analyze_Package_Body_Stub): Propagate the aspect specifications
+	from the stub to the proper body.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Insert the
+	corresponding pragma of an aspect that applies to a body in the
+	declarations of the body.
+	* sinfo.ads: Update the gramma of expression_function,
+	private_type_declaration, private_extension_declaration,
+	object_renaming_declaration, exception_renaming_declaration,
+	package_renaming_declaration, subprogram_renaming_declaration,
+	generic_renaming_declaration, entry_declaration,
+	subprogram_body_stub, package_body_stub, task_body_stub,
+	generic_subprogram_declaration.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add processing
+	for aspect/pragma SPARK_Mode when it applies to a [library-level]
+	subprogram or package [body].
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document that -gnatc and -gnatR cannot be
+	given together.
+	* switch-c.adb (Scan_Front_End_Switches): Give error if both
+	-gnatR and -gnatc given.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* g-table.ads, g-table.adb (For_Each): New generic procedure
+	(Sort_Table): New generic procedure.
+
 2013-09-10  Thomas Quinot  <quinot@adacore.com>
 
 	* adaint.c (__gnat_is_executable_file_attr): Should be true

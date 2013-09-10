@@ -16633,11 +16633,52 @@ package body Sem_Prag is
                   Stmt := Prev (Stmt);
                end loop;
 
-               --  If we get here, then we ran out of preceding statements. The
-               --  pragma is immediately within a body.
+               --  Handle all cases where the pragma is actually an aspect and
+               --  applies to a library-level package spec, body or subprogram.
 
-               if Nkind_In (Context, N_Package_Body,
-                                     N_Subprogram_Body)
+               --    function F ... with SPARK_Mode => ...;
+               --    package P with SPARK_Mode => ...;
+               --    package body P with SPARK_Mode => ... is
+
+               --  The following circuitry simply prepares the proper context
+               --  for the general pragma processing mechanism below.
+
+               if Nkind (Context) = N_Compilation_Unit_Aux then
+                  Context := Unit (Parent (Context));
+
+                  if Nkind_In (Context, N_Package_Declaration,
+                                        N_Subprogram_Declaration)
+                  then
+                     Context := Specification (Context);
+                  end if;
+               end if;
+
+               --  The pragma is at the top level of a package spec or appears
+               --  as an aspect on a subprogram.
+
+               --    function F ... with SPARK_Mode => ...;
+
+               --    package P is
+               --       pragma SPARK_Mode;
+
+               if Nkind_In (Context, N_Function_Specification,
+                                     N_Package_Specification,
+                                     N_Procedure_Specification)
+               then
+                  Spec_Id := Defining_Unit_Name (Context);
+                  Chain_Pragma (Spec_Id, N);
+
+               --  The pragma is immediately within a package or subprogram
+               --  body.
+
+               --    function F ... is
+               --       pragma SPARK_Mode;
+
+               --    package body P is
+               --       pragma SPARK_Mode;
+
+               elsif Nkind_In (Context, N_Package_Body,
+                                        N_Subprogram_Body)
                then
                   Spec_Id := Corresponding_Spec (Context);
 
@@ -16650,13 +16691,11 @@ package body Sem_Prag is
                   Chain_Pragma (Body_Id, N);
                   Check_Conformance (Spec_Id, Body_Id);
 
-               --  The pragma is at the top level of a package spec
-
-               elsif Nkind (Context) = N_Package_Specification then
-                  Spec_Id := Defining_Unit_Name (Context);
-                  Chain_Pragma (Spec_Id, N);
-
                --  The pragma applies to the statements of a package body
+
+               --    package body P is
+               --    begin
+               --       pragma SPARK_Mode;
 
                elsif Nkind (Context) = N_Handled_Sequence_Of_Statements
                  and then Nkind (Parent (Context)) = N_Package_Body
