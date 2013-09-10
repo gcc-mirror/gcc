@@ -3200,8 +3200,10 @@ print_instantiation_partial_context_line (diagnostic_context *context,
 					  const struct tinst_level *t,
 					  location_t loc, bool recursive_p)
 {
-  expanded_location xloc;
-  xloc = expand_location (loc);
+  if (loc == UNKNOWN_LOCATION)
+    return;
+
+  expanded_location xloc = expand_location (loc);
 
   if (context->show_column)
     pp_verbatim (context->printer, _("%r%s:%d:%d:%R   "),

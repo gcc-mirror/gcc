@@ -1,3 +1,9 @@
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* error.c (print_instantiation_partial_context_line): If
+	loc == UNKNOWN_LOCATION return immediately.
+
 2013-09-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/58325
