@@ -1,3 +1,22 @@
+2013-09-10  Gary Benson  <gbenson@redhat.com>
+
+	* cp-demangle.c: Include hashtab.h.
+	(struct d_print_info): New field saved_scopes.
+	(d_print_init): Initialize the above.
+	(d_print_free): New function.
+	(cplus_demangle_print_callback): Call the above.
+	(struct d_saved_scope): New structure.
+	(d_store_scope): New function.
+	(d_free_scope) Likewise.
+	(d_restore_scope) Likewise.
+	(d_hash_saved_scope) Likewise.
+	(d_equal_saved_scope) Likewise.
+	(d_print_comp): New variable saved_scope.
+	[DEMANGLE_COMPONENT_REFERENCE,
+	DEMANGLE_COMPONENT_RVALUE_REFERENCE]: Capture scope the first
+	time the component is traversed, and use the captured scope for
+	subsequent traversals.
+
 2013-08-20  Alan Modra  <amodra@gmail.com>
 
 	* floatformat.c (floatformat_ibm_long_double): Rename to..
