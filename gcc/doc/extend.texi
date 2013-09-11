@@ -10958,6 +10958,31 @@ unsigned int __builtin_ia32_lzcnt_u32(unsigned int);
 unsigned long long __builtin_ia32_lzcnt_u64 (unsigned long long);
 @end smallexample
 
+The following built-in functions are available when @option{-mfxsr} is used.
+All of them generate the machine instruction that is part of the name.
+@smallexample
+void __builtin_ia32_fxsave (void *)
+void __builtin_ia32_fxrstor (void *)
+void __builtin_ia32_fxsave64 (void *)
+void __builtin_ia32_fxrstor64 (void *)
+@end smallexample
+
+The following built-in functions are available when @option{-mxsave} is used.
+All of them generate the machine instruction that is part of the name.
+@smallexample
+void __builtin_ia32_xsave (void *, long long)
+void __builtin_ia32_xrstor (void *, long long)
+void __builtin_ia32_xsave64 (void *, long long)
+void __builtin_ia32_xrstor64 (void *, long long)
+@end smallexample
+
+The following built-in functions are available when @option{-mxsaveopt} is used.
+All of them generate the machine instruction that is part of the name.
+@smallexample
+void __builtin_ia32_xsaveopt (void *, long long)
+void __builtin_ia32_xsaveopt64 (void *, long long)
+@end smallexample
+
 The following built-in functions are available when @option{-mtbm} is used.
 Both of them generate the immediate form of the bextr machine instruction.
 @smallexample
