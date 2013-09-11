@@ -1,3 +1,8 @@
+2013-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* doc/invoke.texi: Document fxsr, xsave and xsaveopt options.
+	* doc/extend.texi: Document fxsr, xsave and xsaveopt builtins.
+
 2013-09-10  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/58380

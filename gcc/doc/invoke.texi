@@ -651,10 +651,10 @@ Objective-C and Objective-C++ Dialects}.
 -mavx2 -mavx512f -mavx512pf -mavx512er -mavx512cd @gol
 -maes -mpclmul -mfsgsbase -mrdrnd -mf16c -mfma @gol
 -msse4a -m3dnow -mpopcnt -mabm -mbmi -mtbm -mfma4 -mxop -mlzcnt @gol
--mbmi2 -mrtm -mlwp -mthreads @gol
+-mbmi2 -mfxsr -mxsave -mxsaveopt -mrtm -mlwp -mthreads @gol
 -mno-align-stringops  -minline-all-stringops @gol
 -minline-stringops-dynamically -mstringop-strategy=@var{alg} @gol
--mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy} 
+-mmemcpy-strategy=@var{strategy} -mmemset-strategy=@var{strategy}
 -mpush-args  -maccumulate-outgoing-args  -m128bit-long-double @gol
 -m96bit-long-double -mlong-double-64 -mlong-double-80 @gol
 -mregparm=@var{num}  -msseregparm @gol
@@ -14451,6 +14451,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mno-bmi2
 @itemx -mlzcnt
 @itemx -mno-lzcnt
+@itemx -mfxsr
+@itemx -mxsave
+@itemx -mxsaveopt
 @itemx -mrtm
 @itemx -mtbm
 @itemx -mno-tbm
@@ -14463,7 +14466,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 These switches enable or disable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
 AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM, BMI, BMI2,
-LZCNT, RTM or 3DNow!@:
+FXSR, XSAVE, XSAVEOPT, LZCNT, RTM or 3DNow!@:
 extended instruction sets.
 These extensions are also available as built-in functions: see
 @ref{X86 Built-in Functions}, for details of the functions enabled and
