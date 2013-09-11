@@ -1,6 +1,12 @@
 2013-09-11  Andi Kleen  <ak@linux.intel.com>
 
 	Backport from mainline
+	* doc/extend.texi: Dont use __atomic_clear in HLE
+	example.  Fix typo.
+
+2013-09-11  Andi Kleen  <ak@linux.intel.com>
+
+	Backport from mainline
 	* doc/extend.texi: Document that __atomic_clear and
 	  __atomic_test_and_set should only be used with bool.
 

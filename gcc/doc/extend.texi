@@ -7498,18 +7498,20 @@ End lock elision on a lock variable.
 Memory model must be @code{__ATOMIC_RELEASE} or stronger.
 @end table
 
-When a lock acquire fails it's required for good performance to abort
+When a lock acquire fails it is required for good performance to abort
 the transaction quickly. This can be done with a @code{_mm_pause}
 
 @smallexample
 #include <immintrin.h> // For _mm_pause
+
+int lockvar;
 
 /* Acquire lock with lock elision */
 while (__atomic_exchange_n(&lockvar, 1, __ATOMIC_ACQUIRE|__ATOMIC_HLE_ACQUIRE))
     _mm_pause(); /* Abort failed transaction */
 ...
 /* Free lock with lock elision */
-__atomic_clear(&lockvar, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
+__atomic_store(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @end smallexample
 
 @node Object Size Checking
