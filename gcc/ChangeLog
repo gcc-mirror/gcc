@@ -1,3 +1,9 @@
+2013-09-11  Andi Kleen  <ak@linux.intel.com>
+
+	Backport from mainline
+	* doc/extend.texi: Document that __atomic_clear and
+	  __atomic_test_and_set should only be used with bool.
+
 2013-09-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58377

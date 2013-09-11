@@ -7412,6 +7412,8 @@ This built-in function performs an atomic test-and-set operation on
 the byte at @code{*@var{ptr}}.  The byte is set to some implementation
 defined nonzero ``set'' value and the return value is @code{true} if and only
 if the previous contents were ``set''.
+It should be only used for operands of type @code{bool} or @code{char}. For 
+other types only part of the value may be set.
 
 All memory models are valid.
 
@@ -7421,6 +7423,10 @@ All memory models are valid.
 
 This built-in function performs an atomic clear operation on
 @code{*@var{ptr}}.  After the operation, @code{*@var{ptr}} contains 0.
+It should be only used for operands of type @code{bool} or @code{char} and 
+in conjunction with @code{__atomic_test_and_set}.
+For other types it may only clear partially. If the type is not @code{bool}
+prefer using @code{__atomic_store}.
 
 The valid memory model variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and
