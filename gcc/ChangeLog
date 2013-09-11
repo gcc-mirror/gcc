@@ -1,3 +1,23 @@
+2013-09-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.c (dump_rdg_vertex, debug_rdg_vertex,
+	dump_rdg_component, debug_rdg_component, dump_rdg, debug_rdg,
+	dot_rdg_1, dot_rdg, rdg_vertex_for_stmt, create_rdg_edge_for_ddr,
+	create_rdg_edges_for_scalar, create_rdg_edges, create_rdg_vertices,
+	stmts_from_loop, known_dependences_p, build_empty_rdg,
+	build_rdg, free_rdg, rdg_defs_used_in_other_loops_p): Move ...
+	* tree-loop-distribution.c: ... here.
+	* tree-data-ref.h (struct rdg_vertex, RDGV_STMT, RDGV_DATAREFS,
+	RDGV_HAS_MEM_WRITE, RDGV_HAS_MEM_READS, RDG_STMT, RDG_DATAREFS,
+	RDG_MEM_WRITE_STMT, RDG_MEM_READS_STMT, enum rdg_dep_type,
+	struct rdg_edge, RDGE_TYPE, RDGE_LEVEL, RDGE_RELATION): Move ...
+	* tree-loop-distribution.c: ... here.
+	* tree-loop-distribution.c: Include gimple-pretty-print.h.
+	(struct partition_s): Add loops member.
+	(partition_alloc, partition_free, rdg_flag_uses, rdg_flag_vertex,
+	rdg_flag_vertex_and_dependent, rdg_flag_loop_exits,
+	build_rdg_partition_for_component, rdg_build_partitions): Adjust.
+
 2013-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
 	    Sergey Lega  <sergey.s.lega@intel.com>

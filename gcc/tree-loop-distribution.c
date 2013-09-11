@@ -50,6 +50,545 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
 #include "tree-pass.h"
+#include "gimple-pretty-print.h"
+
+
+/* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
+typedef struct rdg_vertex
+{
+  /* The statement represented by this vertex.  */
+  gimple stmt;
+
+  /* Vector of data-references in this statement.  */
+  vec<data_reference_p> datarefs;
+
+  /* True when the statement contains a write to memory.  */
+  bool has_mem_write;
+
+  /* True when the statement contains a read from memory.  */
+  bool has_mem_reads;
+} *rdg_vertex_p;
+
+#define RDGV_STMT(V)     ((struct rdg_vertex *) ((V)->data))->stmt
+#define RDGV_DATAREFS(V) ((struct rdg_vertex *) ((V)->data))->datarefs
+#define RDGV_HAS_MEM_WRITE(V) ((struct rdg_vertex *) ((V)->data))->has_mem_write
+#define RDGV_HAS_MEM_READS(V) ((struct rdg_vertex *) ((V)->data))->has_mem_reads
+#define RDG_STMT(RDG, I) RDGV_STMT (&(RDG->vertices[I]))
+#define RDG_DATAREFS(RDG, I) RDGV_DATAREFS (&(RDG->vertices[I]))
+#define RDG_MEM_WRITE_STMT(RDG, I) RDGV_HAS_MEM_WRITE (&(RDG->vertices[I]))
+#define RDG_MEM_READS_STMT(RDG, I) RDGV_HAS_MEM_READS (&(RDG->vertices[I]))
+
+/* Data dependence type.  */
+
+enum rdg_dep_type
+{
+  /* Read After Write (RAW).  */
+  flow_dd = 'f',
+
+  /* Write After Read (WAR).  */
+  anti_dd = 'a',
+
+  /* Write After Write (WAW).  */
+  output_dd = 'o',
+
+  /* Read After Read (RAR).  */
+  input_dd = 'i'
+};
+
+/* Dependence information attached to an edge of the RDG.  */
+
+typedef struct rdg_edge
+{
+  /* Type of the dependence.  */
+  enum rdg_dep_type type;
+
+  /* Levels of the dependence: the depth of the loops that carry the
+     dependence.  */
+  unsigned level;
+
+  /* Dependence relation between data dependences, NULL when one of
+     the vertices is a scalar.  */
+  ddr_p relation;
+} *rdg_edge_p;
+
+#define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
+#define RDGE_LEVEL(E)       ((struct rdg_edge *) ((E)->data))->level
+#define RDGE_RELATION(E)    ((struct rdg_edge *) ((E)->data))->relation
+
+/* Strongly connected components of the reduced data dependence graph.  */
+
+typedef struct rdg_component
+{
+  int num;
+  vec<int> vertices;
+} *rdgc;
+
+/* Dump vertex I in RDG to FILE.  */
+
+static void
+dump_rdg_vertex (FILE *file, struct graph *rdg, int i)
+{
+  struct vertex *v = &(rdg->vertices[i]);
+  struct graph_edge *e;
+
+  fprintf (file, "(vertex %d: (%s%s) (in:", i,
+	   RDG_MEM_WRITE_STMT (rdg, i) ? "w" : "",
+	   RDG_MEM_READS_STMT (rdg, i) ? "r" : "");
+
+  if (v->pred)
+    for (e = v->pred; e; e = e->pred_next)
+      fprintf (file, " %d", e->src);
+
+  fprintf (file, ") (out:");
+
+  if (v->succ)
+    for (e = v->succ; e; e = e->succ_next)
+      fprintf (file, " %d", e->dest);
+
+  fprintf (file, ")\n");
+  print_gimple_stmt (file, RDGV_STMT (v), 0, TDF_VOPS|TDF_MEMSYMS);
+  fprintf (file, ")\n");
+}
+
+/* Call dump_rdg_vertex on stderr.  */
+
+DEBUG_FUNCTION void
+debug_rdg_vertex (struct graph *rdg, int i)
+{
+  dump_rdg_vertex (stderr, rdg, i);
+}
+
+/* Dump component C of RDG to FILE.  If DUMPED is non-null, set the
+   dumped vertices to that bitmap.  */
+
+static void
+dump_rdg_component (FILE *file, struct graph *rdg, int c, bitmap dumped)
+{
+  int i;
+
+  fprintf (file, "(%d\n", c);
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    if (rdg->vertices[i].component == c)
+      {
+	if (dumped)
+	  bitmap_set_bit (dumped, i);
+
+	dump_rdg_vertex (file, rdg, i);
+      }
+
+  fprintf (file, ")\n");
+}
+
+/* Call dump_rdg_vertex on stderr.  */
+
+DEBUG_FUNCTION void
+debug_rdg_component (struct graph *rdg, int c)
+{
+  dump_rdg_component (stderr, rdg, c, NULL);
+}
+
+/* Dump the reduced dependence graph RDG to FILE.  */
+
+static void
+dump_rdg (FILE *file, struct graph *rdg)
+{
+  int i;
+  bitmap dumped = BITMAP_ALLOC (NULL);
+
+  fprintf (file, "(rdg\n");
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    if (!bitmap_bit_p (dumped, i))
+      dump_rdg_component (file, rdg, rdg->vertices[i].component, dumped);
+
+  fprintf (file, ")\n");
+  BITMAP_FREE (dumped);
+}
+
+/* Call dump_rdg on stderr.  */
+
+DEBUG_FUNCTION void
+debug_rdg (struct graph *rdg)
+{
+  dump_rdg (stderr, rdg);
+}
+
+static void
+dot_rdg_1 (FILE *file, struct graph *rdg)
+{
+  int i;
+
+  fprintf (file, "digraph RDG {\n");
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    {
+      struct vertex *v = &(rdg->vertices[i]);
+      struct graph_edge *e;
+
+      /* Highlight reads from memory.  */
+      if (RDG_MEM_READS_STMT (rdg, i))
+       fprintf (file, "%d [style=filled, fillcolor=green]\n", i);
+
+      /* Highlight stores to memory.  */
+      if (RDG_MEM_WRITE_STMT (rdg, i))
+       fprintf (file, "%d [style=filled, fillcolor=red]\n", i);
+
+      if (v->succ)
+       for (e = v->succ; e; e = e->succ_next)
+         switch (RDGE_TYPE (e))
+           {
+           case input_dd:
+             fprintf (file, "%d -> %d [label=input] \n", i, e->dest);
+             break;
+
+           case output_dd:
+             fprintf (file, "%d -> %d [label=output] \n", i, e->dest);
+             break;
+
+           case flow_dd:
+             /* These are the most common dependences: don't print these. */
+             fprintf (file, "%d -> %d \n", i, e->dest);
+             break;
+
+           case anti_dd:
+             fprintf (file, "%d -> %d [label=anti] \n", i, e->dest);
+             break;
+
+           default:
+             gcc_unreachable ();
+           }
+    }
+
+  fprintf (file, "}\n\n");
+}
+
+/* Display the Reduced Dependence Graph using dotty.  */
+
+DEBUG_FUNCTION void
+dot_rdg (struct graph *rdg)
+{
+  /* When debugging, enable the following code.  This cannot be used
+     in production compilers because it calls "system".  */
+#if 0
+  FILE *file = fopen ("/tmp/rdg.dot", "w");
+  gcc_assert (file != NULL);
+
+  dot_rdg_1 (file, rdg);
+  fclose (file);
+
+  system ("dotty /tmp/rdg.dot &");
+#else
+  dot_rdg_1 (stderr, rdg);
+#endif
+}
+
+/* Returns the index of STMT in RDG.  */
+
+static int
+rdg_vertex_for_stmt (struct graph *rdg ATTRIBUTE_UNUSED, gimple stmt)
+{
+  int index = gimple_uid (stmt);
+  gcc_checking_assert (index == -1 || RDG_STMT (rdg, index) == stmt);
+  return index;
+}
+
+/* Creates an edge in RDG for each distance vector from DDR.  The
+   order that we keep track of in the RDG is the order in which
+   statements have to be executed.  */
+
+static void
+create_rdg_edge_for_ddr (struct graph *rdg, ddr_p ddr)
+{
+  struct graph_edge *e;
+  int va, vb;
+  data_reference_p dra = DDR_A (ddr);
+  data_reference_p drb = DDR_B (ddr);
+  unsigned level = ddr_dependence_level (ddr);
+
+  /* For non scalar dependences, when the dependence is REVERSED,
+     statement B has to be executed before statement A.  */
+  if (level > 0
+      && !DDR_REVERSED_P (ddr))
+    {
+      data_reference_p tmp = dra;
+      dra = drb;
+      drb = tmp;
+    }
+
+  va = rdg_vertex_for_stmt (rdg, DR_STMT (dra));
+  vb = rdg_vertex_for_stmt (rdg, DR_STMT (drb));
+
+  if (va < 0 || vb < 0)
+    return;
+
+  e = add_edge (rdg, va, vb);
+  e->data = XNEW (struct rdg_edge);
+
+  RDGE_LEVEL (e) = level;
+  RDGE_RELATION (e) = ddr;
+
+  /* Determines the type of the data dependence.  */
+  if (DR_IS_READ (dra) && DR_IS_READ (drb))
+    RDGE_TYPE (e) = input_dd;
+  else if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb))
+    RDGE_TYPE (e) = output_dd;
+  else if (DR_IS_WRITE (dra) && DR_IS_READ (drb))
+    RDGE_TYPE (e) = flow_dd;
+  else if (DR_IS_READ (dra) && DR_IS_WRITE (drb))
+    RDGE_TYPE (e) = anti_dd;
+}
+
+/* Creates dependence edges in RDG for all the uses of DEF.  IDEF is
+   the index of DEF in RDG.  */
+
+static void
+create_rdg_edges_for_scalar (struct graph *rdg, tree def, int idef)
+{
+  use_operand_p imm_use_p;
+  imm_use_iterator iterator;
+
+  FOR_EACH_IMM_USE_FAST (imm_use_p, iterator, def)
+    {
+      struct graph_edge *e;
+      int use = rdg_vertex_for_stmt (rdg, USE_STMT (imm_use_p));
+
+      if (use < 0)
+	continue;
+
+      e = add_edge (rdg, idef, use);
+      e->data = XNEW (struct rdg_edge);
+      RDGE_TYPE (e) = flow_dd;
+      RDGE_RELATION (e) = NULL;
+    }
+}
+
+/* Creates the edges of the reduced dependence graph RDG.  */
+
+static void
+create_rdg_edges (struct graph *rdg, vec<ddr_p> ddrs)
+{
+  int i;
+  struct data_dependence_relation *ddr;
+  def_operand_p def_p;
+  ssa_op_iter iter;
+
+  FOR_EACH_VEC_ELT (ddrs, i, ddr)
+    if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
+      create_rdg_edge_for_ddr (rdg, ddr);
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    FOR_EACH_PHI_OR_STMT_DEF (def_p, RDG_STMT (rdg, i),
+			      iter, SSA_OP_DEF)
+      create_rdg_edges_for_scalar (rdg, DEF_FROM_PTR (def_p), i);
+}
+
+/* Build the vertices of the reduced dependence graph RDG.  Return false
+   if that failed.  */
+
+static bool
+create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop,
+		     vec<data_reference_p> *datarefs)
+{
+  int i;
+  gimple stmt;
+
+  FOR_EACH_VEC_ELT (stmts, i, stmt)
+    {
+      struct vertex *v = &(rdg->vertices[i]);
+
+      /* Record statement to vertex mapping.  */
+      gimple_set_uid (stmt, i);
+
+      v->data = XNEW (struct rdg_vertex);
+      RDGV_STMT (v) = stmt;
+      RDGV_DATAREFS (v).create (0);
+      RDGV_HAS_MEM_WRITE (v) = false;
+      RDGV_HAS_MEM_READS (v) = false;
+      if (gimple_code (stmt) == GIMPLE_PHI)
+	continue;
+
+      unsigned drp = datarefs->length ();
+      if (!find_data_references_in_stmt (loop, stmt, datarefs))
+	return false;
+      for (unsigned j = drp; j < datarefs->length (); ++j)
+	{
+	  data_reference_p dr = (*datarefs)[j];
+	  if (DR_IS_READ (dr))
+	    RDGV_HAS_MEM_READS (v) = true;
+	  else
+	    RDGV_HAS_MEM_WRITE (v) = true;
+	  RDGV_DATAREFS (v).safe_push (dr);
+	}
+    }
+  return true;
+}
+
+/* Initialize STMTS with all the statements of LOOP.  When
+   INCLUDE_PHIS is true, include also the PHI nodes.  The order in
+   which we discover statements is important as
+   generate_loops_for_partition is using the same traversal for
+   identifying statements. */
+
+static void
+stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
+{
+  unsigned int i;
+  basic_block *bbs = get_loop_body_in_dom_order (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = bbs[i];
+      gimple_stmt_iterator bsi;
+      gimple stmt;
+
+      for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	stmts->safe_push (gsi_stmt (bsi));
+
+      for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
+	{
+	  stmt = gsi_stmt (bsi);
+	  if (gimple_code (stmt) != GIMPLE_LABEL && !is_gimple_debug (stmt))
+	    stmts->safe_push (stmt);
+	}
+    }
+
+  free (bbs);
+}
+
+/* Returns true when all the dependences are computable.  */
+
+static bool
+known_dependences_p (vec<ddr_p> dependence_relations)
+{
+  ddr_p ddr;
+  unsigned int i;
+
+  FOR_EACH_VEC_ELT (dependence_relations, i, ddr)
+    if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+      return false;
+
+  return true;
+}
+
+/* Build the Reduced Dependence Graph (RDG) with one vertex per
+   statement of the loop nest, and one edge per data dependence or
+   scalar dependence.  */
+
+struct graph *
+build_empty_rdg (int n_stmts)
+{
+  struct graph *rdg = new_graph (n_stmts);
+  return rdg;
+}
+
+/* Free the reduced dependence graph RDG.  */
+
+static void
+free_rdg (struct graph *rdg)
+{
+  int i;
+
+  for (i = 0; i < rdg->n_vertices; i++)
+    {
+      struct vertex *v = &(rdg->vertices[i]);
+      struct graph_edge *e;
+
+      for (e = v->succ; e; e = e->succ_next)
+	{
+	  free_dependence_relation (RDGE_RELATION (e));
+	  free (e->data);
+	}
+
+      if (v->data)
+	{
+	  gimple_set_uid (RDGV_STMT (v), -1);
+	  free_data_refs (RDGV_DATAREFS (v));
+	  free (v->data);
+	}
+    }
+
+  free_graph (rdg);
+}
+
+/* Build the Reduced Dependence Graph (RDG) with one vertex per
+   statement of the loop nest, and one edge per data dependence or
+   scalar dependence.  */
+
+static struct graph *
+build_rdg (struct loop *loop)
+{
+  struct graph *rdg;
+  vec<loop_p> loop_nest;
+  vec<gimple> stmts;
+  vec<data_reference_p> datarefs;
+  vec<ddr_p> dependence_relations;
+
+  loop_nest.create (3);
+  if (!find_loop_nest (loop, &loop_nest))
+    {
+      loop_nest.release ();
+      return NULL;
+    }
+
+  stmts.create (10);
+  stmts_from_loop (loop, &stmts);
+  rdg = build_empty_rdg (stmts.length ());
+  datarefs.create (10);
+  if (!create_rdg_vertices (rdg, stmts, loop, &datarefs))
+    {
+      stmts.release ();
+      free_rdg (rdg);
+      return NULL;
+    }
+  stmts.release ();
+  dependence_relations.create (100);
+  if (!compute_all_dependences (datarefs, &dependence_relations, loop_nest,
+				false)
+      || !known_dependences_p (dependence_relations))
+    {
+      loop_nest.release ();
+      datarefs.release ();
+      dependence_relations.release ();
+      free_rdg (rdg);
+      return NULL;
+    }
+  loop_nest.release ();
+  create_rdg_edges (rdg, dependence_relations);
+  dependence_relations.release ();
+
+  return rdg;
+}
+
+/* Determines whether the statement from vertex V of the RDG has a
+   definition used outside the loop that contains this statement.  */
+
+static bool
+rdg_defs_used_in_other_loops_p (struct graph *rdg, int v)
+{
+  gimple stmt = RDG_STMT (rdg, v);
+  struct loop *loop = loop_containing_stmt (stmt);
+  use_operand_p imm_use_p;
+  imm_use_iterator iterator;
+  ssa_op_iter it;
+  def_operand_p def_p;
+
+  if (!loop)
+    return true;
+
+  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, it, SSA_OP_DEF)
+    {
+      FOR_EACH_IMM_USE_FAST (imm_use_p, iterator, DEF_FROM_PTR (def_p))
+	{
+	  if (loop_containing_stmt (USE_STMT (imm_use_p)) != loop)
+	    return true;
+	}
+    }
+
+  return false;
+}
+
+
 
 enum partition_kind {
     PKIND_NORMAL, PKIND_REDUCTION, PKIND_MEMSET, PKIND_MEMCPY
@@ -58,6 +597,7 @@ enum partition_kind {
 typedef struct partition_s
 {
   bitmap stmts;
+  bitmap loops;
   bool has_writes;
   enum partition_kind kind;
   /* data-references a kind != PKIND_NORMAL partition is about.  */
@@ -69,10 +609,11 @@ typedef struct partition_s
 /* Allocate and initialize a partition from BITMAP.  */
 
 static partition_t
-partition_alloc (bitmap stmts)
+partition_alloc (bitmap stmts, bitmap loops)
 {
   partition_t partition = XCNEW (struct partition_s);
   partition->stmts = stmts ? stmts : BITMAP_ALLOC (NULL);
+  partition->loops = loops ? loops : BITMAP_ALLOC (NULL);
   partition->has_writes = false;
   partition->kind = PKIND_NORMAL;
   return partition;
@@ -84,6 +625,7 @@ static void
 partition_free (partition_t partition)
 {
   BITMAP_FREE (partition->stmts);
+  BITMAP_FREE (partition->loops);
   free (partition);
 }
 
@@ -626,13 +1168,13 @@ has_upstream_mem_writes (int u)
 }
 
 static void rdg_flag_vertex_and_dependent (struct graph *, int, partition_t,
-					   bitmap, bitmap);
+					   bitmap);
 
 /* Flag the uses of U stopping following the information from
    upstream_mem_writes.  */
 
 static void
-rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
+rdg_flag_uses (struct graph *rdg, int u, partition_t partition,
 	       bitmap processed)
 {
   struct vertex *x = &(rdg->vertices[u]);
@@ -647,8 +1189,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
       int v = anti_dep->dest;
 
       if (!already_processed_vertex_p (processed, v))
-	rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
-				       processed);
+	rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
     }
 
   if (is_gimple_assign (stmt) && has_upstream_mem_writes (u))
@@ -667,8 +1208,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
 	      int v = rdg_vertex_for_stmt (rdg, USE_STMT (use_p));
 
 	      if (!already_processed_vertex_p (processed, v))
-		rdg_flag_vertex_and_dependent (rdg, v, partition, loops,
-					       processed);
+		rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
 	    }
 	}
     }
@@ -678,7 +1218,7 @@ rdg_flag_uses (struct graph *rdg, int u, partition_t partition, bitmap loops,
    in LOOPS.  */
 
 static void
-rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops)
+rdg_flag_vertex (struct graph *rdg, int v, partition_t partition)
 {
   struct loop *loop;
 
@@ -686,7 +1226,7 @@ rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops)
     return;
 
   loop = loop_containing_stmt (RDG_STMT (rdg, v));
-  bitmap_set_bit (loops, loop->num);
+  bitmap_set_bit (partition->loops, loop->num);
 
   if (rdg_cannot_recompute_vertex_p (rdg, v))
     {
@@ -700,7 +1240,7 @@ rdg_flag_vertex (struct graph *rdg, int v, partition_t partition, bitmap loops)
 
 static void
 rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
-			       bitmap loops, bitmap processed)
+			       bitmap processed)
 {
   unsigned i;
   vec<int> nodes;
@@ -708,13 +1248,13 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
   int x;
 
   bitmap_set_bit (processed, v);
-  rdg_flag_uses (rdg, v, partition, loops, processed);
+  rdg_flag_uses (rdg, v, partition, processed);
   graphds_dfs (rdg, &v, 1, &nodes, false, remaining_stmts);
-  rdg_flag_vertex (rdg, v, partition, loops);
+  rdg_flag_vertex (rdg, v, partition);
 
   FOR_EACH_VEC_ELT (nodes, i, x)
     if (!already_processed_vertex_p (processed, x))
-      rdg_flag_vertex_and_dependent (rdg, x, partition, loops, processed);
+      rdg_flag_vertex_and_dependent (rdg, x, partition, processed);
 
   nodes.release ();
 }
@@ -745,7 +1285,7 @@ collect_condition_stmts (struct loop *loop, vec<gimple> *conds)
    RDG.  */
 
 static void
-rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
+rdg_flag_loop_exits (struct graph *rdg, partition_t partition,
 		     bitmap processed)
 {
   unsigned i;
@@ -753,23 +1293,23 @@ rdg_flag_loop_exits (struct graph *rdg, bitmap loops, partition_t partition,
   vec<gimple> conds;
   conds.create (3);
 
-  EXECUTE_IF_SET_IN_BITMAP (loops, 0, i, bi)
+  EXECUTE_IF_SET_IN_BITMAP (partition->loops, 0, i, bi)
     collect_condition_stmts (get_loop (cfun, i), &conds);
 
   while (!conds.is_empty ())
     {
       gimple cond = conds.pop ();
       int v = rdg_vertex_for_stmt (rdg, cond);
-      bitmap new_loops = BITMAP_ALLOC (NULL);
-
       if (!already_processed_vertex_p (processed, v))
-	rdg_flag_vertex_and_dependent (rdg, v, partition, new_loops, processed);
-
-      EXECUTE_IF_SET_IN_BITMAP (new_loops, 0, i, bi)
-	if (bitmap_set_bit (loops, i))
-	  collect_condition_stmts (get_loop (cfun, i), &conds);
-
-      BITMAP_FREE (new_loops);
+	{
+	  bitmap saved_loops = BITMAP_ALLOC (NULL);
+	  bitmap_copy (saved_loops, partition->loops);
+	  rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
+	  EXECUTE_IF_AND_COMPL_IN_BITMAP (partition->loops, saved_loops,
+					  0, i, bi)
+	    collect_condition_stmts (get_loop (cfun, i), &conds);
+	  BITMAP_FREE (saved_loops);
+	}
     }
 
   conds.release ();
@@ -783,18 +1323,16 @@ static partition_t
 build_rdg_partition_for_component (struct graph *rdg, rdgc c)
 {
   int i, v;
-  partition_t partition = partition_alloc (NULL);
-  bitmap loops = BITMAP_ALLOC (NULL);
+  partition_t partition = partition_alloc (NULL, NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
 
   FOR_EACH_VEC_ELT (c->vertices, i, v)
     if (!already_processed_vertex_p (processed, v))
-      rdg_flag_vertex_and_dependent (rdg, v, partition, loops, processed);
+      rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
 
-  rdg_flag_loop_exits (rdg, loops, partition, processed);
+  rdg_flag_loop_exits (rdg, partition, processed);
 
   BITMAP_FREE (processed);
-  BITMAP_FREE (loops);
   return partition;
 }
 
@@ -1080,7 +1618,7 @@ rdg_build_partitions (struct graph *rdg, vec<rdgc> components,
 {
   int i;
   rdgc x;
-  partition_t partition = partition_alloc (NULL);
+  partition_t partition = partition_alloc (NULL, NULL);
 
   FOR_EACH_VEC_ELT (components, i, x)
     {
@@ -1105,7 +1643,7 @@ rdg_build_partitions (struct graph *rdg, vec<rdgc> components,
 	    }
 
 	  partitions->safe_push (partition);
-	  partition = partition_alloc (NULL);
+	  partition = partition_alloc (NULL, NULL);
 	}
     }
 
