@@ -1,3 +1,8 @@
+2013-09-10  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* testsuite/28_regex/traits/wchar_t/value.cc: Change template args
+	from char to wchar_t, literals from 'x' to L'x'.
+
 2013-09-10  Kai Tietz  <ktietz@redhat.com>
 
 	PR libstdc++/54314
