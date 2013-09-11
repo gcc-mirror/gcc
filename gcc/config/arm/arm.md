@@ -4169,18 +4169,18 @@
 )
 
 (define_insn "*arm_shiftsi3"
-  [(set (match_operand:SI   0 "s_register_operand" "=l,r,r")
+  [(set (match_operand:SI   0 "s_register_operand" "=l,l,r,r")
 	(match_operator:SI  3 "shift_operator"
-	 [(match_operand:SI 1 "s_register_operand"  "0,r,r")
-	  (match_operand:SI 2 "reg_or_int_operand" "l,M,r")]))]
+	 [(match_operand:SI 1 "s_register_operand"  "0,l,r,r")
+	  (match_operand:SI 2 "reg_or_int_operand" "l,M,M,r")]))]
   "TARGET_32BIT"
   "* return arm_output_shift(operands, 0);"
   [(set_attr "predicable" "yes")
-   (set_attr "arch" "t2,*,*")
-   (set_attr "predicable_short_it" "yes,no,no")
+   (set_attr "arch" "t2,t2,*,*")
+   (set_attr "predicable_short_it" "yes,yes,no,no")
    (set_attr "length" "4")
    (set_attr "shift" "1")
-   (set_attr "type" "alu_shift_reg,alu_shift_imm,alu_shift_reg")]
+   (set_attr "type" "alu_shift_reg,alu_shift_imm,alu_shift_imm,alu_shift_reg")]
 )
 
 (define_insn "*shiftsi3_compare"

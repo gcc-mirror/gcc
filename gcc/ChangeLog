@@ -1,3 +1,7 @@
+2013-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_shiftsi3): New alternative l/l/M.
+
 2013-09-11  Richard Biener  <rguenther@suse.de>
 
 	* tree-data-ref.c (dump_rdg_vertex, debug_rdg_vertex,
