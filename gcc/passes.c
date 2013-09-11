@@ -1543,6 +1543,9 @@ init_optimization_passes (void)
       /* ???  We do want some kind of loop invariant motion, but we possibly
          need to adjust LIM to be more friendly towards preserving accurate
 	 debug information here.  */
+      /* Split critical edges before late uninit warning to reduce the
+         number of false positives from it.  */
+      NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_late_warn_uninitialized);
       NEXT_PASS (pass_uncprop);
       NEXT_PASS (pass_local_pure_const);

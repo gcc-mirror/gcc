@@ -1,3 +1,8 @@
+2013-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58377
+	* g++.dg/uninit-pred-4.C: New testcase.
+
 2013-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58385

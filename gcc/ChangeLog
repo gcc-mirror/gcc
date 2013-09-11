@@ -1,3 +1,9 @@
+2013-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58377
+	* passes.c (init_optimization_passes): Split critical edges
+	before late uninit warning pass in the -Og pipeline.
+
 2013-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58385
