@@ -515,79 +515,6 @@ ddr_dependence_level (ddr_p ddr)
   return level;
 }
 
-
-
-/* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
-typedef struct rdg_vertex
-{
-  /* The statement represented by this vertex.  */
-  gimple stmt;
-
-  /* Vector of data-references in this statement.  */
-  vec<data_reference_p> datarefs;
-
-  /* True when the statement contains a write to memory.  */
-  bool has_mem_write;
-
-  /* True when the statement contains a read from memory.  */
-  bool has_mem_reads;
-} *rdg_vertex_p;
-
-#define RDGV_STMT(V)     ((struct rdg_vertex *) ((V)->data))->stmt
-#define RDGV_DATAREFS(V) ((struct rdg_vertex *) ((V)->data))->datarefs
-#define RDGV_HAS_MEM_WRITE(V) ((struct rdg_vertex *) ((V)->data))->has_mem_write
-#define RDGV_HAS_MEM_READS(V) ((struct rdg_vertex *) ((V)->data))->has_mem_reads
-#define RDG_STMT(RDG, I) RDGV_STMT (&(RDG->vertices[I]))
-#define RDG_DATAREFS(RDG, I) RDGV_DATAREFS (&(RDG->vertices[I]))
-#define RDG_MEM_WRITE_STMT(RDG, I) RDGV_HAS_MEM_WRITE (&(RDG->vertices[I]))
-#define RDG_MEM_READS_STMT(RDG, I) RDGV_HAS_MEM_READS (&(RDG->vertices[I]))
-
-void debug_rdg_vertex (struct graph *, int);
-void debug_rdg_component (struct graph *, int);
-void dump_rdg (FILE *, struct graph *);
-void debug_rdg (struct graph *);
-int rdg_vertex_for_stmt (struct graph *, gimple);
-
-/* Data dependence type.  */
-
-enum rdg_dep_type
-{
-  /* Read After Write (RAW).  */
-  flow_dd = 'f',
-
-  /* Write After Read (WAR).  */
-  anti_dd = 'a',
-
-  /* Write After Write (WAW).  */
-  output_dd = 'o',
-
-  /* Read After Read (RAR).  */
-  input_dd = 'i'
-};
-
-/* Dependence information attached to an edge of the RDG.  */
-
-typedef struct rdg_edge
-{
-  /* Type of the dependence.  */
-  enum rdg_dep_type type;
-
-  /* Levels of the dependence: the depth of the loops that carry the
-     dependence.  */
-  unsigned level;
-
-  /* Dependence relation between data dependences, NULL when one of
-     the vertices is a scalar.  */
-  ddr_p relation;
-} *rdg_edge_p;
-
-#define RDGE_TYPE(E)        ((struct rdg_edge *) ((E)->data))->type
-#define RDGE_LEVEL(E)       ((struct rdg_edge *) ((E)->data))->level
-#define RDGE_RELATION(E)    ((struct rdg_edge *) ((E)->data))->relation
-
-struct graph *build_rdg (struct loop *);
-void free_rdg (struct graph *);
-
 /* Return the index of the variable VAR in the LOOP_NEST array.  */
 
 static inline int
@@ -603,8 +530,6 @@ index_in_loop_nest (int var, vec<loop_p> loop_nest)
 
   return var_index;
 }
-
-bool rdg_defs_used_in_other_loops_p (struct graph *, int);
 
 /* Returns true when the data reference DR the form "A[i] = ..."
    with a stride equal to its unit type size.  */
@@ -626,18 +551,7 @@ adjacent_dr_p (struct data_reference *dr)
 			     TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
 }
 
-/* In tree-data-ref.c  */
 void split_constant_offset (tree , tree *, tree *);
-
-/* Strongly connected components of the reduced data dependence graph.  */
-
-typedef struct rdg_component
-{
-  int num;
-  vec<int> vertices;
-} *rdgc;
-
-
 
 /* Compute the greatest common divisor of a VECTOR of SIZE numbers.  */
 
