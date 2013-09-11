@@ -825,7 +825,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* Similarly, (not (neg X)) is (plus X -1).  */
       if (GET_CODE (op) == NEG)
-	return plus_constant (mode, XEXP (op, 0), -1);
+	return simplify_gen_binary (PLUS, mode, XEXP (op, 0),
+				    CONSTM1_RTX (mode));
 
       /* (not (xor X C)) for C constant is (xor X D) with D = ~C.  */
       if (GET_CODE (op) == XOR
@@ -932,7 +933,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* Similarly, (neg (not X)) is (plus X 1).  */
       if (GET_CODE (op) == NOT)
-	return plus_constant (mode, XEXP (op, 0), 1);
+	return simplify_gen_binary (PLUS, mode, XEXP (op, 0),
+				    CONST1_RTX (mode));
 
       /* (neg (minus X Y)) can become (minus Y X).  This transformation
 	 isn't safe for modes with signed zeros, since if X and Y are
