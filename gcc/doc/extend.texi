@@ -7511,7 +7511,7 @@ while (__atomic_exchange_n(&lockvar, 1, __ATOMIC_ACQUIRE|__ATOMIC_HLE_ACQUIRE))
     _mm_pause(); /* Abort failed transaction */
 ...
 /* Free lock with lock elision */
-__atomic_store(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
+__atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @end smallexample
 
 @node Object Size Checking
