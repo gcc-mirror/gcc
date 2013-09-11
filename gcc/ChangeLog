@@ -1,3 +1,12 @@
+2013-09-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/58380
+	* tree-ssa-threadupdate.c (thread_block): Recognize another case
+	of threading through a buried loop header.
+
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): Correct
+	return value for single successor case.
+
 2013-09-10  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-devirt.c (ipa_devirt): Enable with LTO.

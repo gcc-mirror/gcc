@@ -659,8 +659,10 @@ thread_block (basic_block bb, bool noloop_only)
 	     threading path.  We do not try and thread this elsewhere, so
 	     just cancel the jump threading request by clearing the AUX
 	     field now.  */
-	  if (bb->loop_father != e2->src->loop_father
-	      && !loop_exit_edge_p (e2->src->loop_father, e2))
+	  if ((bb->loop_father != e2->src->loop_father
+	       && !loop_exit_edge_p (e2->src->loop_father, e2))
+	      || (e2->src->loop_father != e2->dest->loop_father
+		  && !loop_exit_edge_p (e2->src->loop_father, e2)))
 	    {
 	      /* Since this case is not handled by our special code
 		 to thread through a loop header, we must explicitly
