@@ -1,4 +1,72 @@
 2013-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/constraints.md (k): New.
+	(Yk): Ditto.
+	* config/i386/i386.c (const regclass_map): Add new mask registers.
+	(dbx_register_map): Ditto.
+	(dbx64_register_map): Ditto.
+	(svr4_dbx_register_map): Ditto.
+	(ix86_conditional_register_usage): Squash mask registers if AVX512F is
+	disabled.
+	(ix86_preferred_reload_class): Disable constants for mask registers.
+	(ix86_secondary_reload): Do spill of mask register using 32-bit insn.
+	(ix86_hard_regno_mode_ok): Support new mask registers.
+	(x86_order_regs_for_local_alloc): Ditto.
+	* config/i386/i386.h (FIRST_PSEUDO_REGISTER): Update.
+	(FIXED_REGISTERS): Add new mask registers.
+	(CALL_USED_REGISTERS): Ditto.
+	(REG_ALLOC_ORDER): Ditto.
+	(VALID_MASK_REG_MODE): New.
+	(FIRST_MASK_REG): Ditto.
+	(LAST_MASK_REG): Ditto.
+	(reg_class): Add MASK_EVEX_REGS, MASK_REGS.
+	(MAYBE_MASK_CLASS_P): New.
+	(REG_CLASS_NAMES): Add MASK_EVEX_REGS, MASK_REGS.
+	(REG_CLASS_CONTENTS): Ditto.
+	(MASK_REGNO_P): New.
+	(ANY_MASK_REG_P): Ditto.
+	(HI_REGISTER_NAMES): Add new mask registers.
+	* config/i386/i386.md (MASK0_REG, MASK1_REG, MASK2_REG,
+	MASK3_REG, MASK4_REG, MASK5_REG, MASK6_REG,
+	MASK7_REG): Constants for new mask registers.
+	(attribute "type"): Add mskmov, msklog.
+	(attribute "length_immediate"): Support them.
+	(attribute "memory"): Ditto.
+	(attribute "prefix_0f"): Ditto.
+	(*movhi_internal): Support new mask registers.
+	(*movqi_internal): Ditto.
+	(define_split): Split out clobber pattern is a logic
+	insn on mask registers.
+	(*k<logic><mode>): New.
+	(*andhi_1): Extend to support mask regs.
+	(*andqi_1): Extend to support mask regs.
+	(kandn<mode>): New.
+	(define_split): Split and-not to and and not if operands
+	are not mask regs.
+	(*<code><mode>_1): Separate HI mode to new pattern...
+	(*<code>hi_1): This.
+	(*<code>qi_1): Extend to support mask regs.
+	(kxnor<mode>): New.
+	(kortestzhi): Ditto.
+	(kortestchi): Ditto.
+	(kunpckhi): Ditto.
+	(*one_cmpl<mode>2_1): Remove HImode and handle it...
+	(*one_cmplhi2_1): ...Here, now with mask registers support.
+	(*one_cmplqi2_1): Support new mask registers.
+	(HI/QImode arithmetics splitter): Don't split if mask registers are used.
+	(HI/QImode not splitter): Ditto.
+	* config/i386/predicated.md (mask_reg_operand): New.
+	(general_reg_operand): Ditto.
+
+2013-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
 	* doc/invoke.texi: Document fxsr, xsave and xsaveopt options.
 	* doc/extend.texi: Document fxsr, xsave and xsaveopt builtins.

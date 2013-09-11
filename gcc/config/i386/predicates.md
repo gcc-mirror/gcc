@@ -32,6 +32,11 @@
   (and (match_code "reg")
        (not (match_test "ANY_FP_REGNO_P (REGNO (op))"))))
 
+;; True if the operand is a GENERAL class register.
+(define_predicate "general_reg_operand"
+  (and (match_code "reg")
+       (match_test "GENERAL_REG_P (op)")))
+
 ;; Return true if OP is a register operand other than an i387 fp register.
 (define_predicate "register_and_not_fp_reg_operand"
   (and (match_code "reg")
@@ -52,6 +57,10 @@
   (and (match_code "reg")
        (match_test "EXT_REX_SSE_REGNO_P (REGNO (op))")))
 
+;; True if the operand is an AVX-512 mask register.
+(define_predicate "mask_reg_operand"
+  (and (match_code "reg")
+       (match_test "MASK_REGNO_P (REGNO (op))")))
 
 ;; True if the operand is a Q_REGS class register.
 (define_predicate "q_regs_operand"

@@ -893,7 +893,7 @@ enum target_cpu_default
    eliminated during reloading in favor of either the stack or frame
    pointer.  */
 
-#define FIRST_PSEUDO_REGISTER 69
+#define FIRST_PSEUDO_REGISTER 77
 
 /* Number of hardware registers that go into the DWARF-2 unwind info.
    If not defined, equals FIRST_PSEUDO_REGISTER.  */
@@ -923,7 +923,9 @@ enum target_cpu_default
 /*xmm16,xmm17,xmm18,xmm19,xmm20,xmm21,xmm22,xmm23*/		\
      0,   0,    0,    0,    0,    0,    0,    0,		\
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
-     0,   0,    0,    0,    0,    0,    0,    0 }
+     0,   0,    0,    0,    0,    0,    0,    0,		\
+/*  k0,  k1, k2, k3, k4, k5, k6, k7*/				\
+     0,  0,   0,  0,  0,  0,  0,  0 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -955,7 +957,9 @@ enum target_cpu_default
 /*xmm16,xmm17,xmm18,xmm19,xmm20,xmm21,xmm22,xmm23*/		\
      6,    6,     6,    6,    6,    6,    6,    6,		\
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
-     6,    6,     6,    6,    6,    6,    6,    6 }
+     6,    6,     6,    6,    6,    6,    6,    6,		\
+ /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
+     1,   1,   1,   1,   1,   1,   1,   1 }
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -971,7 +975,7 @@ enum target_cpu_default
    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,	\
    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,  \
    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,	\
-   63, 64, 65, 66, 67, 68 }
+   63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76 }
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -1068,6 +1072,8 @@ enum target_cpu_default
    || (MODE) == V16SImode || (MODE) == V32HImode || (MODE) == V8DFmode	\
    || (MODE) == V16SFmode)
 
+#define VALID_MASK_REG_MODE(MODE) ((MODE) == HImode || (MODE) == QImode)
+
 /* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
 
 #define HARD_REGNO_MODE_OK(REGNO, MODE)	\
@@ -1093,8 +1099,10 @@ enum target_cpu_default
   (CC_REGNO_P (REGNO) ? VOIDmode					\
    : (MODE) == VOIDmode && (NREGS) != 1 ? VOIDmode			\
    : (MODE) == VOIDmode ? choose_hard_reg_mode ((REGNO), (NREGS), false) \
-   : (MODE) == HImode && !TARGET_PARTIAL_REG_STALL ? SImode		\
-   : (MODE) == QImode && !(TARGET_64BIT || QI_REGNO_P (REGNO)) ? SImode	\
+   : (MODE) == HImode && !(TARGET_PARTIAL_REG_STALL			\
+			   || MASK_REGNO_P (REGNO)) ? SImode		\
+   : (MODE) == QImode && !(TARGET_64BIT || QI_REGNO_P (REGNO)		\
+			   || MASK_REGNO_P (REGNO)) ? SImode		\
    : (MODE))
 
 /* The only ABI that saves SSE registers across calls is Win64 (thus no
@@ -1140,6 +1148,9 @@ enum target_cpu_default
 
 #define FIRST_EXT_REX_SSE_REG  (LAST_REX_SSE_REG + 1) /*53*/
 #define LAST_EXT_REX_SSE_REG   (FIRST_EXT_REX_SSE_REG + 15) /*68*/
+
+#define FIRST_MASK_REG  (LAST_EXT_REX_SSE_REG + 1) /*69*/
+#define LAST_MASK_REG   (FIRST_MASK_REG + 7) /*76*/
 
 /* Override this in other tm.h files to cope with various OS lossage
    requiring a frame pointer.  */
@@ -1229,6 +1240,8 @@ enum reg_class
   FLOAT_INT_REGS,
   INT_SSE_REGS,
   FLOAT_INT_SSE_REGS,
+  MASK_EVEX_REGS,
+  MASK_REGS,
   ALL_REGS, LIM_REG_CLASSES
 };
 
@@ -1250,6 +1263,8 @@ enum reg_class
   reg_classes_intersect_p ((CLASS), ALL_SSE_REGS)
 #define MAYBE_MMX_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), MMX_REGS)
+#define MAYBE_MASK_CLASS_P(CLASS) \
+  reg_classes_intersect_p ((CLASS), MASK_REGS)
 
 #define Q_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), Q_REGS)
@@ -1282,6 +1297,8 @@ enum reg_class
    "FLOAT_INT_REGS",			\
    "INT_SSE_REGS",			\
    "FLOAT_INT_SSE_REGS",		\
+   "MASK_EVEX_REGS",			\
+   "MASK_REGS",				\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1319,7 +1336,9 @@ enum reg_class
 {   0x11ffff,    0x1fe0,   0x0 },       /* FLOAT_INT_REGS */            \
 { 0x1ff100ff,0xffffffe0,  0x1f },       /* INT_SSE_REGS */              \
 { 0x1ff1ffff,0xffffffe0,  0x1f },       /* FLOAT_INT_SSE_REGS */        \
-{ 0xffffffff,0xffffffff,  0x1f }                                        \
+       { 0x0,       0x0,0x1fc0 },       /* MASK_EVEX_REGS */           \
+       { 0x0,       0x0,0x1fe0 },       /* MASK_REGS */                 \
+{ 0xffffffff,0xffffffff,0x1fff }                                        \
 }
 
 /* The same information, inverted:
@@ -1377,6 +1396,8 @@ enum reg_class
          : (N) <= LAST_REX_SSE_REG ? (FIRST_REX_SSE_REG + (N) - 8) \
                                    : (FIRST_EXT_REX_SSE_REG + (N) - 16))
 
+#define MASK_REGNO_P(N) IN_RANGE ((N), FIRST_MASK_REG, LAST_MASK_REG)
+#define ANY_MASK_REG_P(X) (REG_P (X) && MASK_REGNO_P (REGNO (X)))
 
 #define SSE_FLOAT_MODE_P(MODE) \
   ((TARGET_SSE && (MODE) == SFmode) || (TARGET_SSE2 && (MODE) == DFmode))
@@ -1933,7 +1954,8 @@ do {							\
  "xmm16", "xmm17", "xmm18", "xmm19",					\
  "xmm20", "xmm21", "xmm22", "xmm23",					\
  "xmm24", "xmm25", "xmm26", "xmm27",					\
- "xmm28", "xmm29", "xmm30", "xmm31" }
+ "xmm28", "xmm29", "xmm30", "xmm31",					\
+ "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7" }
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
