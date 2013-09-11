@@ -1,3 +1,9 @@
+2013-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58377
+	* passes.def: Split critical edges before late uninit warning passes.
+	* tree-cfg.c (pass_split_crit_edges): Implement clone method.
+
 2013-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58385

@@ -7929,6 +7929,7 @@ public:
   /* opt_pass methods: */
   unsigned int execute () { return split_critical_edges (); }
 
+  opt_pass * clone () { return new pass_split_crit_edges (ctxt_); }
 }; // class pass_split_crit_edges
 
 } // anon namespace
