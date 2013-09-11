@@ -1,3 +1,7 @@
+2013-09-10  Jeff Law  <law@redhat.com>
+
+	* g++.dg/torture/pr58380.C: New test.
+
 2013-09-10  Jan Hubicka  <jh@suse.cz>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

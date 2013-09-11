@@ -770,7 +770,19 @@ thread_around_empty_blocks (edge taken_edge,
   gsi = gsi_start_nondebug_bb (bb);
 
   /* If the block has no statements, but does have a single successor, then
-     it's just a forwarding block and we can thread through it trivially.  */
+     it's just a forwarding block and we can thread through it trivially. 
+
+     However, note that just threading through empty blocks with single
+     successors is not inherently profitable.  For the jump thread to
+     be profitable, we must avoid a runtime conditional.
+
+     By taking the return value from the recursive call, we get the
+     desired effect of returning TRUE when we found a profitable jump
+     threading opportunity and FALSE otherwise. 
+
+     This is particularly important when this routine is called after
+     processing a joiner block.  Returning TRUE too aggressively in
+     that case results in pointless duplication of the joiner block.  */
   if (gsi_end_p (gsi))
     {
       if (single_succ_p (bb))
@@ -781,15 +793,16 @@ thread_around_empty_blocks (edge taken_edge,
 	    {
 	      bitmap_set_bit (visited, taken_edge->dest->index);
 	      path->safe_push (taken_edge);
-	      thread_around_empty_blocks (taken_edge,
-					  dummy_cond,
-					  handle_dominating_asserts,
-					  simplify,
-					  visited,
-					  path);
-	      return true;
+	      return thread_around_empty_blocks (taken_edge,
+						 dummy_cond,
+						 handle_dominating_asserts,
+						 simplify,
+						 visited,
+						 path);
 	    }
 	}
+
+      /* We have a block with no statements, but multiple successors?  */
       return false;
     }
 
