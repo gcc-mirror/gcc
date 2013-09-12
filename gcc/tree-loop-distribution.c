@@ -218,6 +218,9 @@ static void
 dot_rdg_1 (FILE *file, struct graph *rdg)
 {
   int i;
+  pretty_printer buffer;
+  pp_needs_newline (&buffer) = false;
+  buffer.buffer->stream = file;
 
   fprintf (file, "digraph RDG {\n");
 
@@ -225,6 +228,11 @@ dot_rdg_1 (FILE *file, struct graph *rdg)
     {
       struct vertex *v = &(rdg->vertices[i]);
       struct graph_edge *e;
+
+      fprintf (file, "%d [label=\"[%d] ", i, i);
+      pp_gimple_stmt_1 (&buffer, RDGV_STMT (v), 0, TDF_SLIM);
+      pp_flush (&buffer);
+      fprintf (file, "\"]\n");
 
       /* Highlight reads from memory.  */
       if (RDG_MEM_READS_STMT (rdg, i))
@@ -268,16 +276,15 @@ dot_rdg_1 (FILE *file, struct graph *rdg)
 DEBUG_FUNCTION void
 dot_rdg (struct graph *rdg)
 {
-  /* When debugging, enable the following code.  This cannot be used
-     in production compilers because it calls "system".  */
-#if 0
-  FILE *file = fopen ("/tmp/rdg.dot", "w");
-  gcc_assert (file != NULL);
-
+  /* When debugging, you may want to enable the following code.  */
+#if 1
+  FILE *file = popen("dot -Tx11", "w");
+  if (!file)
+    return;
   dot_rdg_1 (file, rdg);
-  fclose (file);
-
-  system ("dotty /tmp/rdg.dot &");
+  fflush (file);
+  close (fileno (file));
+  pclose (file);
 #else
   dot_rdg_1 (stderr, rdg);
 #endif
@@ -644,17 +651,6 @@ partition_has_writes (partition_t partition)
 {
   return partition->has_writes;
 }
-
-/* If bit I is not set, it means that this node represents an
-   operation that has already been performed, and that should not be
-   performed again.  This is the subgraph of remaining important
-   computations that is passed to the DFS algorithm for avoiding to
-   include several times the same stores in different loops.  */
-static bitmap remaining_stmts;
-
-/* A node of the RDG is marked in this bitmap when it has as a
-   predecessor a node that writes to memory.  */
-static bitmap upstream_mem_writes;
 
 /* Returns true when DEF is an SSA_NAME defined in LOOP and used after
    the LOOP.  */
@@ -1080,139 +1076,11 @@ rdg_cannot_recompute_vertex_p (struct graph *rdg, int v)
 static inline bool
 already_processed_vertex_p (bitmap processed, int v)
 {
-  return (bitmap_bit_p (processed, v)
-	  || !bitmap_bit_p (remaining_stmts, v));
-}
-
-/* Returns NULL when there is no anti-dependence or output-dependence
-   among the successors of vertex V, otherwise returns the edge with the
-   dependency.  */
-
-static struct graph_edge *
-has_anti_or_output_dependence (struct vertex *v)
-{
-  struct graph_edge *e;
-
-  if (v->succ)
-    for (e = v->succ; e; e = e->succ_next)
-      if (RDGE_TYPE (e) == anti_dd
-	  || RDGE_TYPE (e) == output_dd)
-	return e;
-
-  return NULL;
-}
-
-/* Returns true when V has an anti-dependence edge among its successors.  */
-
-static bool
-predecessor_has_mem_write (struct graph *rdg, struct vertex *v)
-{
-  struct graph_edge *e;
-
-  if (v->pred)
-    for (e = v->pred; e; e = e->pred_next)
-      if (bitmap_bit_p (upstream_mem_writes, e->src)
-	  /* Don't consider flow channels: a write to memory followed
-	     by a read from memory.  These channels allow the split of
-	     the RDG in different partitions.  */
-	  && !RDG_MEM_WRITE_STMT (rdg, e->src))
-	return true;
-
-  return false;
-}
-
-/* Initializes the upstream_mem_writes bitmap following the
-   information from RDG.  */
-
-static void
-mark_nodes_having_upstream_mem_writes (struct graph *rdg)
-{
-  int v, x;
-  bitmap seen = BITMAP_ALLOC (NULL);
-
-  for (v = rdg->n_vertices - 1; v >= 0; v--)
-    if (!bitmap_bit_p (seen, v))
-      {
-	unsigned i;
-	vec<int> nodes;
-	nodes.create (3);
-
-	graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
-
-	FOR_EACH_VEC_ELT (nodes, i, x)
-	  {
-	    if (!bitmap_set_bit (seen, x))
-	      continue;
-
-	    if (RDG_MEM_WRITE_STMT (rdg, x)
-		|| predecessor_has_mem_write (rdg, &(rdg->vertices[x]))
-		/* In anti dependences the read should occur before
-		   the write, this is why both the read and the write
-		   should be placed in the same partition.  In output
-		   dependences the writes order need to be preserved.  */
-		|| has_anti_or_output_dependence (&(rdg->vertices[x])))
-	      bitmap_set_bit (upstream_mem_writes, x);
-	  }
-
-	nodes.release ();
-      }
-}
-
-/* Returns true when vertex u has a memory write node as a predecessor
-   in RDG.  */
-
-static bool
-has_upstream_mem_writes (int u)
-{
-  return bitmap_bit_p (upstream_mem_writes, u);
+  return bitmap_bit_p (processed, v);
 }
 
 static void rdg_flag_vertex_and_dependent (struct graph *, int, partition_t,
 					   bitmap);
-
-/* Flag the uses of U stopping following the information from
-   upstream_mem_writes.  */
-
-static void
-rdg_flag_uses (struct graph *rdg, int u, partition_t partition,
-	       bitmap processed)
-{
-  struct vertex *x = &(rdg->vertices[u]);
-  gimple stmt = RDGV_STMT (x);
-  struct graph_edge *anti_dep = has_anti_or_output_dependence (x);
-
-  /* Keep in the same partition the destination of an antidependence,
-     because this is a store to the exact same location.  Putting this
-     in another partition is bad for cache locality.  */
-  if (anti_dep)
-    {
-      int v = anti_dep->dest;
-
-      if (!already_processed_vertex_p (processed, v))
-	rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
-    }
-
-  if (is_gimple_assign (stmt) && has_upstream_mem_writes (u))
-    {
-      tree op0 = gimple_assign_lhs (stmt);
-
-      /* Scalar channels don't have enough space for transmitting data
-	 between tasks, unless we add more storage by privatizing.  */
-      if (is_gimple_reg (op0))
-	{
-	  use_operand_p use_p;
-	  imm_use_iterator iter;
-
-	  FOR_EACH_IMM_USE_FAST (use_p, iter, op0)
-	    {
-	      int v = rdg_vertex_for_stmt (rdg, USE_STMT (use_p));
-
-	      if (!already_processed_vertex_p (processed, v))
-		rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
-	    }
-	}
-    }
-}
 
 /* Flag V from RDG as part of PARTITION, and also flag its loop number
    in LOOPS.  */
@@ -1229,10 +1097,7 @@ rdg_flag_vertex (struct graph *rdg, int v, partition_t partition)
   bitmap_set_bit (partition->loops, loop->num);
 
   if (rdg_cannot_recompute_vertex_p (rdg, v))
-    {
-      partition->has_writes = true;
-      bitmap_clear_bit (remaining_stmts, v);
-    }
+    partition->has_writes = true;
 }
 
 /* Flag in the bitmap PARTITION the vertex V and all its predecessors.
@@ -1247,14 +1112,11 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
   nodes.create (3);
   int x;
 
-  bitmap_set_bit (processed, v);
-  rdg_flag_uses (rdg, v, partition, processed);
-  graphds_dfs (rdg, &v, 1, &nodes, false, remaining_stmts);
-  rdg_flag_vertex (rdg, v, partition);
+  graphds_dfs (rdg, &v, 1, &nodes, false, NULL);
 
   FOR_EACH_VEC_ELT (nodes, i, x)
-    if (!already_processed_vertex_p (processed, x))
-      rdg_flag_vertex_and_dependent (rdg, x, partition, processed);
+    if (bitmap_set_bit (processed, x))
+      rdg_flag_vertex (rdg, x, partition);
 
   nodes.release ();
 }
@@ -1322,13 +1184,14 @@ rdg_flag_loop_exits (struct graph *rdg, partition_t partition,
 static partition_t
 build_rdg_partition_for_component (struct graph *rdg, rdgc c)
 {
-  int i, v;
   partition_t partition = partition_alloc (NULL, NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
 
-  FOR_EACH_VEC_ELT (c->vertices, i, v)
-    if (!already_processed_vertex_p (processed, v))
-      rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
+  /* Flag the first vertex of the component and its dependent nodes.
+     Other members of the component are included in its dependencies.
+     ???  What do we need components for again?  To early merge initial
+     vertices that are in a SCC of the RDG?  */
+  rdg_flag_vertex_and_dependent (rdg, c->vertices[0], partition, processed);
 
   rdg_flag_loop_exits (rdg, partition, processed);
 
@@ -1777,13 +1640,8 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   bitmap processed = BITMAP_ALLOC (NULL);
   bool any_builtin;
 
-  remaining_stmts = BITMAP_ALLOC (NULL);
-  upstream_mem_writes = BITMAP_ALLOC (NULL);
-
   for (i = 0; i < rdg->n_vertices; i++)
     {
-      bitmap_set_bit (remaining_stmts, i);
-
       /* Save in OTHER_STORES all the memory writes that are not in
 	 STARTING_VERTICES.  */
       if (RDG_MEM_WRITE_STMT (rdg, i))
@@ -1804,7 +1662,6 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	}
     }
 
-  mark_nodes_having_upstream_mem_writes (rdg);
   rdg_build_components (rdg, starting_vertices, &components);
   rdg_build_partitions (rdg, components, &other_stores, &partitions,
 			processed);
@@ -1928,9 +1785,6 @@ ldist_gen (struct loop *loop, struct graph *rdg,
     generate_code_for_partition (loop, partition, i < nbp - 1);
 
  ldist_done:
-
-  BITMAP_FREE (remaining_stmts);
-  BITMAP_FREE (upstream_mem_writes);
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);

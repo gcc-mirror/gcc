@@ -10,20 +10,18 @@ int loop1 (int k)
   a[0] = k;
   for (i = 1; i < 100; i ++)
     {
-      for (j = 0; j < 100; j++)
+      for (j = 1; j < 100; j++)
 	{
 	  a[j] = k * i;
 	  b[i][j] = a[j-1] + k;
 	}
     }
 
-  return b[100-1][0];
+  return b[100-1][1];
 }
 
-/* We used to distribute also innermost loops, but these could produce
-   too much code in the outer loop, degrading performance of scalar
-   code.  So this test was XFAILed because the cost model of the stand
-   alone distribution pass has evolved.  Now it passes.  */
-/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" { target ilp32 } } } */
-/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 1 "ldist" { target lp64 } } } */
+/* The current cost model fuses the two partitions because they have
+   similar memory accesses.  */
+/* { dg-final { scan-tree-dump "similar memory accesses" "ldist" } } */
+/* { dg-final { scan-tree-dump-times "distributed: split to 2 loops" 0 "ldist" } } */
 /* { dg-final { cleanup-tree-dump "ldist" } } */
