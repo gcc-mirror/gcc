@@ -21,6 +21,7 @@
 	DEMANGLE_COMPONENT_RVALUE_REFERENCE]: Capture scope the first
 	time the component is traversed, and use the captured scope for
 	subsequent traversals.
+	* testsuite/demangle-expected: Add regression test.
 
 2013-09-10  Gary Benson  <gbenson@redhat.com>
 
@@ -40,6 +41,7 @@
 	DEMANGLE_COMPONENT_RVALUE_REFERENCE]: Capture scope the first
 	time the component is traversed, and use the captured scope for
 	subsequent traversals.
+	* testsuite/demangle-expected: Add regression test.
 
 2013-08-20  Alan Modra  <amodra@gmail.com>
 
