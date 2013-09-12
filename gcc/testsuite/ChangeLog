@@ -1,3 +1,7 @@
+2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/torture/pr58380.C: Suppress warnings with "-w".
+
 2013-09-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/58389
