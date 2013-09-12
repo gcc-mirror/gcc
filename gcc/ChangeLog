@@ -1,5 +1,12 @@
 2013-09-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58404
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Also
+	propagate non-invariant addresses into dereferences wrapped
+	in component references.
+
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/58402
 	* passes.def: Move pass_late_warn_uninitialized later.
 

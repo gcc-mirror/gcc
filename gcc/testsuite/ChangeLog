@@ -1,3 +1,8 @@
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58404
+	* g++.dg/tree-ssa/pr58404.C: New testcase.
+
 2013-09-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/58371
