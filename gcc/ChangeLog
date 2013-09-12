@@ -1,3 +1,8 @@
+2013-09-12  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/x86-tune.def: Turn on X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE
+	for SLM.
+
 2013-09-12  Cameron McInally  <cameron.mcinally@nyu.edu>
 
 	* doc/extend.texi: Fix errors in x86 FMA builtin naming.
