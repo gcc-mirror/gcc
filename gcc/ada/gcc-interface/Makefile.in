@@ -153,10 +153,14 @@ objdir = .
 
 target_alias=@target_alias@
 target=@target@
+target_cpu=@target_cpu@
+target_vendor=@target_vendor@
+target_os=@target_os@
+host_cpu=@host_cpu@
+host_vendor=@host_vendor@
+host_os=@host_os@
 xmake_file = @xmake_file@
 tmake_file = @tmake_file@
-host_canonical=@host@
-target_cpu_default=@target_cpu_default@
 #version=`sed -e 's/.*\"\([^ \"]*\)[ \"].*/\1/' < $(srcdir)/version.c`
 #mainversion=`sed -e 's/.*\"\([0-9]*\.[0-9]*\).*/\1/' < $(srcdir)/version.c`
 
@@ -254,20 +258,6 @@ TOOLS_LIBS = ../link.o ../targext.o ../../ggc-none.o ../../libcommon-target.a \
   ../../libcommon.a ../../../libcpp/libcpp.a $(LIBGNAT) $(LIBINTL) $(LIBICONV) \
   ../$(LIBBACKTRACE) ../$(LIBIBERTY) $(SYSLIBS) $(TGT_LIB)
 
-# Convert the target variable into a space separated list of architecture,
-# manufacturer, and operating system and assign each of those to its own
-# variable.
-host:=$(subst -, ,$(host_canonical))
-targ:=$(subst -, ,$(subst -gnu, ,$(target_alias)))
-arch:=$(word 1,$(targ))
-ifeq ($(words $(targ)),2)
-  manu:=
-  osys:=$(word 2,$(targ))
-else
-  manu:=$(word 2,$(targ))
-  osys:=$(word 3,$(targ))
-endif
-
 # Specify the directories to be searched for header files.
 # Both . and srcdir are used, in that order,
 # so that tm.h and config.h will be found in the compilation
@@ -279,7 +269,7 @@ ADA_INCLUDES = -I- -I. -I$(srcdir)/ada
 # Likewise, but valid for subdirectories of the current dir.
 # FIXME: for VxWorks, we cannot add $(fsrcdir) because the regs.h file in
 # that directory conflicts with a system header file.
-ifneq ($(findstring vxworks,$(osys)),)
+ifneq ($(findstring vxworks,$(target_os)),)
   INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 			-iquote $(fsrcdir)/ada \
 			-I$(fsrcdir)/../include $(GMPINC)
@@ -351,12 +341,12 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
 # picks up the right files. For a given target this must be coherent
 # with MULTILIB_DIRNAMES defined in gcc/config/target/t-*.
 
-ifeq ($(strip $(filter-out %x86_64, $(arch))),)
+ifeq ($(strip $(filter-out %x86_64, $(target_cpu))),)
   ifeq ($(strip $(MULTISUBDIR)),/32)
-    arch:=i686
+    target_cpu:=i686
   else
     ifeq ($(strip $(MULTISUBDIR)),/x32)
-      arch:=x32
+      target_cpu:=x32
     endif
   endif
 endif
@@ -459,7 +449,7 @@ EXTRA_LIBGNAT_SRCS=
 # If what's left is null then it's a match.
 
 # m68k VxWorks
-ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
+ifeq ($(strip $(filter-out m68k% wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -502,7 +492,7 @@ ifeq ($(strip $(filter-out m68k% wrs vx%,$(targ))),)
 endif
 
 # PowerPC and e500v2 VxWorks
-ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -608,7 +598,7 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworks,$(targ))),)
 endif
 
 # PowerPC and e500v2 VxWorks 653
-ifeq ($(strip $(filter-out powerpc% e500v2 wrs vxworksae,$(targ))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworksae,$(target_cpu) $(target_vendor) $(target_os))),)
   # target pairs for vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
@@ -670,7 +660,7 @@ ifeq ($(strip $(filter-out powerpc% e500v2 wrs vxworksae,$(targ))),)
 endif
 
 # PowerPC and e500v2 VxWorks MILS
-ifeq ($(strip $(filter-out e500% powerpc% wrs vxworksmils,$(targ))),)
+ifeq ($(strip $(filter-out powerpc% wrs vxworksmils,$(target_cpu) $(target_vendor) $(target_os))),)
   # target pairs for vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vx6-raven-cert.adb \
@@ -720,7 +710,7 @@ ifeq ($(strip $(filter-out e500% powerpc% wrs vxworksmils,$(targ))),)
 endif
 
 # VxWorksae / VxWorks 653 for x86 (vxsim) - ?? VxWorks mils not implemented
-ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
+ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(target_cpu) $(target_vendor) $(target_os))),)
   # target pairs for kernel + vthreads runtime
   LIBGNAT_TARGET_PAIRS = \
   a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
@@ -780,7 +770,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworksae vxworksmils,$(targ))),)
 endif
 
 # Sparc VxWorks
-ifeq ($(strip $(filter-out sparc% leon% wrs vx%,$(targ))),)
+ifeq ($(strip $(filter-out sparc% wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -807,16 +797,16 @@ ifeq ($(strip $(filter-out sparc% leon% wrs vx%,$(targ))),)
   mlib-tgt-specific.adb<mlib-tgt-specific-vxworks.adb \
   indepsw.adb<indepsw-gnu.adb
 
-  ifeq ($(strip $(filter-out sparc erc32 leon leon3, $(arch))),)
-    # 32-bits
-    LIBGNAT_TARGET_PAIRS += \
-    s-vxwork.ads<s-vxwork-sparc.ads \
-    system.ads<system-vxworks-sparc-kernel.ads
-  else
+  ifeq ($(strip $(filter-out sparc64 sparcv9, $(target_cpu))),)
     # 64-bits
     LIBGNAT_TARGET_PAIRS += \
     s-vxwork.ads<s-vxwork-sparcv9.ads \
     system.ads<system-vxworks-sparcv9.ads
+  else
+    # 32-bits
+    LIBGNAT_TARGET_PAIRS += \
+    s-vxwork.ads<s-vxwork-sparc.ads \
+    system.ads<system-vxworks-sparc-kernel.ads
   endif
 
   ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
@@ -832,7 +822,7 @@ ifeq ($(strip $(filter-out sparc% leon% wrs vx%,$(targ))),)
 endif
 
 # x86 VxWorks
-ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
+ifeq ($(strip $(filter-out %86 wrs vxworks,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   i-vxwork.ads<i-vxwork-x86.ads \
@@ -923,7 +913,7 @@ ifeq ($(strip $(filter-out %86 wrs vxworks,$(targ))),)
 endif
 
 # ARM VxWorks
-ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
+ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -959,7 +949,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(targ))),)
 endif
 
 # MIPS VxWorks
-ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
+ifeq ($(strip $(filter-out mips% wrs vx%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-vxworks.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -994,7 +984,8 @@ ifeq ($(strip $(filter-out mips% wrs vx%,$(targ))),)
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 endif
 
-ifeq ($(strip $(filter-out arm% androideabi,$(arch) $(osys))),)
+# ARM linux, Android eabi
+ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1022,7 +1013,7 @@ ifeq ($(strip $(filter-out arm% androideabi,$(arch) $(osys))),)
 endif
 
 # Sparc Solaris
-ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
+ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1046,7 +1037,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
-  ifeq ($(strip $(filter-out sparc sun solaris%,$(targ))),)
+  ifeq ($(strip $(filter-out sparc sun solaris%,$(target_cpu) $(target_vendor) $(target_os))),)
     ifeq ($(strip $(MULTISUBDIR)),/sparcv9)
       LIBGNAT_TARGET_PAIRS = \
       $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
@@ -1097,7 +1088,7 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(targ))),)
 endif
 
 # x86 and x86-64 solaris
-ifeq ($(strip $(filter-out %86 %x86_64 %amd64 solaris2%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-solaris.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1122,7 +1113,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 %amd64 solaris2%,$(arch) $(osys))),)
   $(X86_64_TARGET_PAIRS) \
   system.ads<system-solaris-x86_64.ads
 
-  ifeq ($(strip $(filter-out %86 solaris2%,$(arch) $(osys))),)
+  ifeq ($(strip $(filter-out %86 solaris2%,$(target_cpu) $(target_os))),)
     ifeq ($(strip $(MULTISUBDIR)),/amd64)
       LIBGNAT_TARGET_PAIRS = \
       $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_64)
@@ -1154,7 +1145,7 @@ ifeq ($(strip $(filter-out %86 %x86_64 %amd64 solaris2%,$(arch) $(osys))),)
 endif
 
 # x86 Linux
-ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   a-synbar.adb<a-synbar-posix.adb \
@@ -1215,7 +1206,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(arch) $(osys))),)
 endif
 
 # x86 kfreebsd
-ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1246,7 +1237,7 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(arch) $(osys))),)
   MISCLIB = -lutil
 endif
 
-ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-freebsd.ads \
   a-numaux.adb<a-numaux-x86.adb \
@@ -1275,7 +1266,7 @@ ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(arch) $(osys))),)
 endif
 
 # x86 FreeBSD
-ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1304,7 +1295,7 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(arch) $(osys))),)
 endif
 
 # x86-64 FreeBSD
-ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-freebsd.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1333,7 +1324,7 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(arch) $(osys))),)
 endif
 
 # S390 Linux
-ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1354,7 +1345,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
   LIBGNAT_TARGET_PAIRS_64 = \
   system.ads<system-linux-s390x.ads
 
-  ifeq ($(strip $(filter-out s390x,$(arch))),)
+  ifeq ($(strip $(filter-out s390x,$(target_cpu))),)
     ifeq ($(strip $(MULTISUBDIR)),/32)
       LIBGNAT_TARGET_PAIRS = \
       $(LIBGNAT_TARGET_PAIRS_COMMON) $(LIBGNAT_TARGET_PAIRS_32)
@@ -1379,7 +1370,7 @@ ifeq ($(strip $(filter-out s390% linux%,$(arch) $(osys))),)
 endif
 
 # HP/PA HP-UX 10
-ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
+ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-excpol.adb<a-excpol-abort.adb \
   a-intnam.ads<a-intnam-hpux.ads \
@@ -1399,7 +1390,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux10%,$(targ))),)
 endif
 
 # HP/PA HP-UX 11
-ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
+ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-hpux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1426,7 +1417,7 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(targ))),)
 endif
 
 # IBM AIX
-ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
+ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-aix.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1470,7 +1461,7 @@ ifeq ($(strip $(filter-out ibm aix%,$(manu) $(osys))),)
 endif
 
 # RTEMS
-ifeq ($(strip $(filter-out rtems%,$(osys))),)
+ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   system.ads<system-rtems.ads \
   a-intnam.ads<a-intnam-rtems.ads \
@@ -1488,7 +1479,7 @@ ifeq ($(strip $(filter-out rtems%,$(osys))),)
 endif
 
 # OpenVMS (host)
-ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(host))),)
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(host_cpu) $(host_vendor) $(host_os))),)
 
 soext  = .exe
 hyphen = _
@@ -1498,7 +1489,7 @@ LN_S = cp -p
 endif
 
 # OpenVMS (target)
-ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ))),)
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
     a-caldel.adb<a-caldel-vms.adb \
     a-calend.adb<a-calend-vms.adb \
@@ -1532,7 +1523,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
     s-tpopde.adb<s-tpopde-vms.adb \
     s-tpopde.ads<s-tpopde-vms.ads
 
-  ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(targ))),)
+  ifeq ($(strip $(filter-out ia64 hp vms% openvms%,$(target_cpu) $(target_vendor) $(target_os))),)
     LIBGNAT_TARGET_PAIRS += \
       g-enblsp.adb<g-enblsp-vms-ia64.adb \
       g-trasym.adb<g-trasym-vms-ia64.adb \
@@ -1552,7 +1543,7 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
       symbols.adb<symbols-vms.adb \
       symbols-processing.adb<symbols-processing-vms-ia64.adb
   else
-    ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(targ))),)
+    ifeq ($(strip $(filter-out alpha64 dec vms% openvms% alphavms%,$(target_cpu) $(target_vendor) $(target_os))),)
       LIBGNAT_TARGET_PAIRS += \
         g-enblsp.adb<g-enblsp-vms-alpha.adb \
         g-trasym.adb<g-trasym-vms-alpha.adb \
@@ -1590,22 +1581,22 @@ ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(targ)))
   LIBRARY_VERSION := $(subst .,_,$(LIB_VERSION))
 endif
 
-# *-elf
-ifeq ($(strip $(filter-out lmp avr none powerpc% eabispe leon% erc32% unknown elf,$(targ))),)
+# *-elf, *-eabi or *-eabispe
+ifeq ($(strip $(filter-out elf eabi eabispe,$(target_os))),)
   TOOLS_TARGET_PAIRS=\
   mlib-tgt-specific.adb<mlib-tgt-specific-xi.adb \
   indepsw.adb<indepsw-gnu.adb
 endif
 
 # Cygwin/Mingw32
-ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(osys))),)
+ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   # Cygwin provides a full Posix environment, and so we use the default
   # versions of s-memory and g-socthi rather than the Windows-specific
   # MinGW versions.  Ideally we would use all the default versions for
   # Cygwin and none of the MinGW versions, but for historical reasons
   # the Cygwin port has always been a CygMing frankenhybrid and it is
   # a long-term project to disentangle them.
-  ifeq ($(strip $(filter-out cygwin%,$(osys))),)
+  ifeq ($(strip $(filter-out cygwin%,$(target_os))),)
     LIBGNAT_TARGET_PAIRS = \
     s-memory.adb<s-memory.adb \
     g-socthi.ads<g-socthi.ads \
@@ -1663,7 +1654,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(osys))),)
     s-osprim.adb<s-osprim-mingw.adb \
     s-taprop.adb<s-taprop-mingw.adb
 
-    ifeq ($(strip $(filter-out x86_64%,$(arch))),)
+    ifeq ($(strip $(filter-out x86_64%,$(target_cpu))),)
       ifeq ($(strip $(MULTISUBDIR)),/32)
 	LIBGNAT_TARGET_PAIRS += \
 	  $(X86_TARGET_PAIRS) \
@@ -1714,7 +1705,7 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(osys))),)
 endif
 
 # Mips Linux
-ifeq ($(strip $(filter-out mips linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out mips linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1738,7 +1729,7 @@ ifeq ($(strip $(filter-out mips linux%,$(arch) $(osys))),)
 endif
 
 # Mips/el Linux
-ifeq ($(strip $(filter-out mipsel linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out mipsel linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1781,7 +1772,7 @@ ifeq ($(strip $(filter-out mipsel linux%,$(arch) $(osys))),)
 endif
 
 # Mips64/el Linux
-ifeq ($(strip $(filter-out mips64el linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out mips64el linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1824,7 +1815,7 @@ ifeq ($(strip $(filter-out mips64el linux%,$(arch) $(osys))),)
 endif
 
 # PowerPC and e500v2 Linux
-ifeq ($(strip $(filter-out powerpc% e500% linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-exetim.adb<a-exetim-posix.adb \
   a-exetim.ads<a-exetim-default.ads \
@@ -1887,7 +1878,8 @@ ifeq ($(strip $(filter-out powerpc% e500% linux%,$(arch) $(osys))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-ifeq ($(strip $(filter-out arm%-linux,$(arch)-$(osys)) $(if $(findstring eabi,$(word 4,$(targ))),,$(word 4,$(targ)))),)
+# ARM linux, GNU eabi
+ifeq ($(strip $(filter-out arm% linux-gnueabi,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1902,7 +1894,7 @@ ifeq ($(strip $(filter-out arm%-linux,$(arch)-$(osys)) $(if $(findstring eabi,$(
   s-taspri.ads<s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<s-tpopsp-posix-foreign.adb
 
-  ifeq ($(strip $(filter-out arm%b,$(arch))),)
+  ifeq ($(strip $(filter-out arm%b,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
     system.ads<system-linux-armeb.ads
   else
@@ -1923,7 +1915,7 @@ ifeq ($(strip $(filter-out arm%-linux,$(arch)-$(osys)) $(if $(findstring eabi,$(
 endif
 
 # Sparc Linux
-ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS_COMMON = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1965,7 +1957,7 @@ ifeq ($(strip $(filter-out sparc% linux%,$(arch) $(osys))),)
 endif
 
 # HP/PA Linux
-ifeq ($(strip $(filter-out hppa% linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out hppa% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -1994,7 +1986,7 @@ ifeq ($(strip $(filter-out hppa% linux%,$(arch) $(osys))),)
 endif
 
 # SH4 Linux
-ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out sh4% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -2024,7 +2016,7 @@ ifeq ($(strip $(filter-out sh4% linux%,$(arch) $(osys))),)
 endif
 
 # IA64 Linux
-ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<a-exetim-posix.adb \
   a-exetim.ads<a-exetim-default.ads \
@@ -2063,7 +2055,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(arch) $(osys))),)
 endif
 
 # IA64 HP-UX
-ifeq ($(strip $(filter-out ia64% hp hpux%,$(targ))),)
+ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-hpux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -2092,7 +2084,7 @@ ifeq ($(strip $(filter-out ia64% hp hpux%,$(targ))),)
 endif
 
 # Alpha Linux
-ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out alpha% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<a-intnam-linux.ads \
   s-inmaop.adb<s-inmaop-posix.adb \
@@ -2123,7 +2115,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(arch) $(osys))),)
 endif
 
 # x86-64 Linux
-ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<a-exetim-posix.adb \
   a-exetim.ads<a-exetim-default.ads \
@@ -2160,7 +2152,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(arch) $(osys))),)
   LIBRARY_VERSION := $(LIB_VERSION)
 endif
 
-ifeq ($(strip $(filter-out %x32 linux%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-exetim.adb<a-exetim-posix.adb \
   a-exetim.ads<a-exetim-default.ads \
@@ -2198,7 +2190,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(arch) $(osys))),)
 endif
 
 # Darwin (Mac OS X)
-ifeq ($(strip $(filter-out darwin%,$(osys))),)
+ifeq ($(strip $(filter-out darwin%,$(target_cpu))),)
   SO_OPTS = -shared-libgcc
   LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
@@ -2209,7 +2201,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     s-taspri.ads<s-taspri-posix.ads \
     s-tpopsp.adb<s-tpopsp-posix-foreign.adb
 
-  ifeq ($(strip $(filter-out %86,$(arch))),)
+  ifeq ($(strip $(filter-out %86,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<s-intman-susv3.adb \
       s-osprim.adb<s-osprim-darwin.adb \
@@ -2229,7 +2221,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
   endif
 
-  ifeq ($(strip $(filter-out %x86_64,$(arch))),)
+  ifeq ($(strip $(filter-out %x86_64,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<s-intman-susv3.adb \
       s-osprim.adb<s-osprim-darwin.adb \
@@ -2249,7 +2241,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
     EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
   endif
 
-  ifeq ($(strip $(filter-out powerpc%,$(arch))),)
+  ifeq ($(strip $(filter-out powerpc%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<s-intman-posix.adb \
       s-osprim.adb<s-osprim-posix.adb \
@@ -2279,7 +2271,7 @@ ifeq ($(strip $(filter-out darwin%,$(osys))),)
 endif
 
 # ARM Nucleus
-ifeq ($(strip $(filter-out arm nucleus%,$(arch) $(osys))),)
+ifeq ($(strip $(filter-out arm nucleus%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   system.ads<system-nucleus-arm.ads \
   a-numaux.ads<a-numaux-vxworks.ads \
@@ -2621,7 +2613,7 @@ install-gnatlib: ../stamp-gnatlib-$(RTSDIR)
 	$(RM) ../stamp-gnatlib-$(RTSDIR)
 	touch ../stamp-gnatlib1-$(RTSDIR)
 
-ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%,$(subst -, ,$(host)))),)
+ifeq ($(strip $(filter-out alpha64 ia64 dec hp vms% openvms% alphavms%, $(host_cpu) $(host_os))),)
 OSCONS_CPP=../../$(DECC) -E /comment=as_is -DNATIVE \
              -DTARGET='""$(target)""' $(fsrcpfx)ada/s-oscons-tmplt.c
 
