@@ -196,7 +196,7 @@ lambda_function (tree lambda)
 			  /*protect=*/0, /*want_type=*/false,
 			  tf_warning_or_error);
   if (lambda)
-    lambda = BASELINK_FUNCTIONS (lambda);
+    lambda = STRIP_TEMPLATE (get_first_fn (lambda));
   return lambda;
 }
 
@@ -741,6 +741,22 @@ nonlambda_method_basetype (void)
   return TYPE_METHOD_BASETYPE (TREE_TYPE (fn));
 }
 
+/* Helper function for maybe_add_lambda_conv_op; build a CALL_EXPR with
+   indicated FN and NARGS, but do not initialize the return type or any of the
+   argument slots.  */
+
+static tree
+prepare_op_call (tree fn, int nargs)
+{
+  tree t;
+
+  t = build_vl_exp (CALL_EXPR, nargs + 3);
+  CALL_EXPR_FN (t) = fn;
+  CALL_EXPR_STATIC_CHAIN (t) = NULL;
+
+  return t;
+}
+
 /* If the closure TYPE has a static op(), also add a conversion to function
    pointer.  */
 
@@ -749,15 +765,16 @@ maybe_add_lambda_conv_op (tree type)
 {
   bool nested = (current_function_decl != NULL_TREE);
   tree callop = lambda_function (type);
-  tree rettype, name, fntype, fn, body, compound_stmt;
-  tree thistype, stattype, statfn, convfn, call, arg;
-  vec<tree, va_gc> *argvec;
 
   if (LAMBDA_EXPR_CAPTURE_LIST (CLASSTYPE_LAMBDA_EXPR (type)) != NULL_TREE)
     return;
 
   if (processing_template_decl)
     return;
+
+  bool const generic_lambda_p
+    = (DECL_TEMPLATE_INFO (callop)
+    && DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (callop)) == callop);
 
   if (DECL_INITIAL (callop) == NULL_TREE)
     {
@@ -766,16 +783,127 @@ maybe_add_lambda_conv_op (tree type)
       return;
     }
 
-  stattype = build_function_type (TREE_TYPE (TREE_TYPE (callop)),
-				  FUNCTION_ARG_CHAIN (callop));
+  /* Non-template conversion operators are defined directly with build_call_a
+     and using DIRECT_ARGVEC for arguments (including 'this').  Templates are
+     deferred and the CALL is built in-place.  In the case of a deduced return
+     call op, the decltype expression, DECLTYPE_CALL, used as a substitute for
+     the return type is also built in-place.  The arguments of DECLTYPE_CALL in
+     the return expression may differ in flags from those in the body CALL.  In
+     particular, parameter pack expansions are marked PACK_EXPANSION_LOCAL_P in
+     the body CALL, but not in DECLTYPE_CALL.  */
+
+  vec<tree, va_gc> *direct_argvec;
+  tree decltype_call = 0, call;
+  tree fn_result = TREE_TYPE (TREE_TYPE (callop));
+
+  if (generic_lambda_p)
+    {
+      /* Prepare the dependent member call for the static member function
+	 '_FUN' and, potentially, prepare another call to be used in a decltype
+	 return expression for a deduced return call op to allow for simple
+	 implementation of the conversion operator.  */
+
+      tree instance = build_nop (type, null_pointer_node);
+      tree objfn = build_min (COMPONENT_REF, NULL_TREE,
+			      instance, DECL_NAME (callop), NULL_TREE);
+      int nargs = list_length (DECL_ARGUMENTS (callop)) - 1;
+
+      call = prepare_op_call (objfn, nargs);
+      if (type_uses_auto (fn_result))
+	decltype_call = prepare_op_call (objfn, nargs);
+    }
+  else
+    {
+      direct_argvec = make_tree_vector ();
+      direct_argvec->quick_push (build1 (NOP_EXPR,
+					 TREE_TYPE (DECL_ARGUMENTS (callop)),
+					 null_pointer_node));
+    }
+
+  /* Copy CALLOP's argument list (as per 'copy_list') as FN_ARGS in order to
+     declare the static member function "_FUN" below.  For each arg append to
+     DIRECT_ARGVEC (for the non-template case) or populate the pre-allocated
+     call args (for the template case).  If a parameter pack is found, expand
+     it, flagging it as PACK_EXPANSION_LOCAL_P for the body call.  */
+
+  tree fn_args = NULL_TREE;
+  {
+    int ix = 0;
+    tree src = DECL_CHAIN (DECL_ARGUMENTS (callop));
+    tree tgt;
+
+    while (src)
+      {
+	tree new_node = copy_node (src);
+
+	if (!fn_args)
+	  fn_args = tgt = new_node;
+	else
+	  {
+	    TREE_CHAIN (tgt) = new_node;
+	    tgt = new_node;
+	  }
+
+	mark_exp_read (tgt);
+
+	if (generic_lambda_p)
+	  {
+	    if (FUNCTION_PARAMETER_PACK_P (tgt))
+	      {
+		tree a = make_pack_expansion (tgt);
+		if (decltype_call)
+		  CALL_EXPR_ARG (decltype_call, ix) = copy_node (a);
+		PACK_EXPANSION_LOCAL_P (a) = true;
+		CALL_EXPR_ARG (call, ix) = a;
+	      }
+	    else
+	      {
+		tree a = convert_from_reference (tgt);
+		CALL_EXPR_ARG (call, ix) = a;
+		if (decltype_call)
+		  CALL_EXPR_ARG (decltype_call, ix) = copy_node (a);
+	      }
+	    ++ix;
+	  }
+	else
+	  vec_safe_push (direct_argvec, tgt);
+
+	src = TREE_CHAIN (src);
+      }
+  }
+
+
+  if (generic_lambda_p)
+    {
+      if (decltype_call)
+	{
+	  ++processing_template_decl;
+	  fn_result = finish_decltype_type
+	    (decltype_call, /*id_expression_or_member_access_p=*/false,
+	     tf_warning_or_error);
+	  --processing_template_decl;
+	}
+    }
+  else
+    {
+      call = build_call_a (callop,
+			   direct_argvec->length (),
+			   direct_argvec->address ());
+      if (MAYBE_CLASS_TYPE_P (TREE_TYPE (call)))
+	call = build_cplus_new (TREE_TYPE (call), call, tf_warning_or_error);
+    }
+  CALL_FROM_THUNK_P (call) = 1;
+
+  tree stattype = build_function_type (fn_result, FUNCTION_ARG_CHAIN (callop));
 
   /* First build up the conversion op.  */
 
-  rettype = build_pointer_type (stattype);
-  name = mangle_conv_op_name_for_type (rettype);
-  thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
-  fntype = build_method_type_directly (thistype, rettype, void_list_node);
-  fn = convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
+  tree rettype = build_pointer_type (stattype);
+  tree name = mangle_conv_op_name_for_type (rettype);
+  tree thistype = cp_build_qualified_type (type, TYPE_QUAL_CONST);
+  tree fntype = build_method_type_directly (thistype, rettype, void_list_node);
+  tree convfn = build_lang_decl (FUNCTION_DECL, name, fntype);
+  tree fn = convfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
 
   if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
@@ -794,6 +922,9 @@ maybe_add_lambda_conv_op (tree type)
   if (nested)
     DECL_INTERFACE_KNOWN (fn) = 1;
 
+  if (generic_lambda_p)
+    fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
+
   add_method (type, fn, NULL_TREE);
 
   /* Generic thunk code fails for varargs; we'll complain in mark_used if
@@ -807,7 +938,8 @@ maybe_add_lambda_conv_op (tree type)
   /* Now build up the thunk to be returned.  */
 
   name = get_identifier ("_FUN");
-  fn = statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  tree statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  fn = statfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
   if (TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn
       && DECL_ALIGN (fn) < 2 * BITS_PER_UNIT)
@@ -820,8 +952,8 @@ maybe_add_lambda_conv_op (tree type)
   DECL_NOT_REALLY_EXTERN (fn) = 1;
   DECL_DECLARED_INLINE_P (fn) = 1;
   DECL_STATIC_FUNCTION_P (fn) = 1;
-  DECL_ARGUMENTS (fn) = copy_list (DECL_CHAIN (DECL_ARGUMENTS (callop)));
-  for (arg = DECL_ARGUMENTS (fn); arg; arg = DECL_CHAIN (arg))
+  DECL_ARGUMENTS (fn) = fn_args;
+  for (tree arg = fn_args; arg; arg = DECL_CHAIN (arg))
     {
       /* Avoid duplicate -Wshadow warnings.  */
       DECL_NAME (arg) = NULL_TREE;
@@ -829,6 +961,9 @@ maybe_add_lambda_conv_op (tree type)
     }
   if (nested)
     DECL_INTERFACE_KNOWN (fn) = 1;
+
+  if (generic_lambda_p)
+    fn = add_inherited_template_parms (fn, DECL_TI_TEMPLATE (callop));
 
   add_method (type, fn, NULL_TREE);
 
@@ -850,29 +985,17 @@ maybe_add_lambda_conv_op (tree type)
 	 ((symtab_node) cgraph_get_create_node (statfn),
           (symtab_node) cgraph_get_create_node (callop));
     }
-  body = begin_function_body ();
-  compound_stmt = begin_compound_stmt (0);
-
-  arg = build1 (NOP_EXPR, TREE_TYPE (DECL_ARGUMENTS (callop)),
-		null_pointer_node);
-  argvec = make_tree_vector ();
-  argvec->quick_push (arg);
-  for (arg = DECL_ARGUMENTS (statfn); arg; arg = DECL_CHAIN (arg))
-    {
-      mark_exp_read (arg);
-      vec_safe_push (argvec, arg);
-    }
-  call = build_call_a (callop, argvec->length (), argvec->address ());
-  CALL_FROM_THUNK_P (call) = 1;
-  if (MAYBE_CLASS_TYPE_P (TREE_TYPE (call)))
-    call = build_cplus_new (TREE_TYPE (call), call, tf_warning_or_error);
+  tree body = begin_function_body ();
+  tree compound_stmt = begin_compound_stmt (0);
   call = convert_from_reference (call);
   finish_return_stmt (call);
 
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
 
-  expand_or_defer_fn (finish_function (2));
+  fn = finish_function (/*inline*/2);
+  if (!generic_lambda_p)
+    expand_or_defer_fn (fn);
 
   /* Generate the body of the conversion op.  */
 
@@ -888,7 +1011,9 @@ maybe_add_lambda_conv_op (tree type)
   finish_compound_stmt (compound_stmt);
   finish_function_body (body);
 
-  expand_or_defer_fn (finish_function (2));
+  fn = finish_function (/*inline*/2);
+  if (!generic_lambda_p)
+    expand_or_defer_fn (fn);
 
   if (nested)
     pop_function_context ();

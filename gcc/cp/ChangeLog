@@ -1,5 +1,22 @@
 2013-09-12  Adam Butcher  <adam@jessamine.co.uk>
 
+	* parser.c (cp_parser_lambda_declarator_opt): Accept template parameter
+	list with std=c++1y or std=gnu++1y.
+	(cp_parser_lambda_body): Don't call 'expand_or_defer_fn' for lambda call
+	operator template to avoid adding template result to symbol table.
+	* lambda.c (lambda_function): Return template result if call operator is
+	a template.
+	(maybe_add_lambda_conv_op): Move declarations to point of use.  Refactor
+	operator call building in order to support conversion of a non-capturing
+	lambda template to a function pointer with help from ...
+	(prepare_op_call): ... this new function.
+	* decl2.c (check_member_template): Don't reject lambda call operator
+	template in local [lambda] class.
+	* pt.c (instantiate_class_template_1): Don't instantiate lambda call
+	operator template when instantiating lambda class.
+
+2013-09-12  Adam Butcher  <adam@jessamine.co.uk>
+
 	* pt.c (instantiate_decl): Save/restore cp_unevaluated_operand and
 	c_inhibit_evaluation_warnings.  Reset if instantiating within a
 	function-local template.
