@@ -1,3 +1,17 @@
+2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Makefile.in: Import target_cpu, target_vendor,
+	target_os and their host_ counterparts. Remove host_canonical and
+	target_cpu_default, unused. Remove local ad-hoc computations of
+	"host", "targ", "arch", "osys" and "manu". Replace uses of these by
+	uses of the now imported family, hence back to filters against
+	canonical values. Remove filters on e500 for target_cpu, expected to
+	be canonicalized into powerpc. Invert the logic filtering on 64bit
+	sparc for VxWorks. Simplify the filtering logic for bareboard tools
+	target pairs, now using straight elf/eabi filters on the target_os
+	part only.
+
 2013-09-10  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Replace_Anonymoous_Access_To_Protected_Subprogram): If
