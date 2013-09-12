@@ -1,4 +1,6 @@
 // { dg-do compile }
+// { dg-options "-w" }
+
 class iplugin_factory;
 class idocument_plugin_factory {
   virtual idocument_plugin_factory *create_plugin(iplugin_factory &, int &);
