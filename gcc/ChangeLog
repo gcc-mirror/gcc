@@ -1,3 +1,100 @@
+2013-09-11  DJ Delorie  <dj@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/predicates.md (rl78_cmp_operator_signed): New.
+	(rl78_stack_based_mem): New.
+	* config/rl78/constraints.md (Iv08): New.
+	(Iv16): New.
+	(Iv24): New.
+	(Is09): New.
+	(Is17): New.
+	(Is25): New.
+	(ISsi): New.
+	(IShi): New.
+	(ISqi): New.
+	* config/rl78/rl78-expand.md (movqi): Reject more SUBREG operands.
+	(movhi): Likewise.
+	(movsi): Change from expand to insn-and-split.
+	(ashrsi3): Clobber AX.
+	(lshrsi3): New.
+	(ashlsi3): New.
+	(cbranchsi4): New.
+	* config/rl78/rl78.md (CC_REG): Fix.
+	(addsi3): Allow memory and immediate operands.
+	(addsi3_internal): Split into...
+	(addsi3_internal_virt): ...new, and ...
+	(addsi3_internal_real): ...new.
+	(subsi): New.
+	(subsi3_internal_virt): New.
+	(subsi3_internal_real): New.
+	(mulsi3): Add memory operand.
+	(mulsi3_rl78): Likewise.
+	(mulsi3_g13): Likewise.
+	* config/rl78/rl78-real.md (cbranchqi4_real_signed): New.
+	(cbranchqi4_real): Add more constraint options.
+	(cbranchhi4_real): Expand pattern.
+	(cbranchhi4_real_signed): New.
+	(cbranchhi4_real_inverted): New.
+	(cbranchsi4_real_lt): New.
+	(cbranchsi4_real_ge): New.
+	(cbranchsi4_real_signed): New.
+	(cbranchsi4_real): New.
+	(peephole2): New.
+	* config/rl78/rl78-virt.md (ashrsi3_virt): Add custom cases for constant shifts.
+	(lshrsi3_virt): Likewise.
+	(ashlsi3_virt): Likewise.
+	(cbranchqi4_virt_signed): New.
+	(cbranchhi4_virt_signed): New.
+	(cbranchsi4_virt): New.
+	* config/rl78/rl78.c: Whitespace fixes throughout.
+	(move_elim_pass): New.
+	(pass_data_rl78_move_elim): New.
+	(pass_rl78_move_elim): New.
+	(make_pass_rl78_move_elim): New.
+	(rl78_devirt_info): Run devirt earlier.
+	(rl78_move_elim_info): New.
+	(rl78_asm_file_start): Register it.
+	(rl78_split_movsi): New.
+	(rl78_as_legitimate_address): Allow virtual base registers when
+	appropriate.
+	(rl78_addr_space_convert): Remove spurious debug stuff.
+	(rl78_print_operand_1): Add z,s,S,r,E modifiers.
+	(rl78_print_operand): More cases for not printing '#'.
+	(rl78_expand_compare): Remove most of the logic.
+	(content_memory): New.
+	(clear_content_memory): New.
+	(get_content_index): New.
+	(get_content_name): New.
+	(display_content_memory): New.
+	(update_content): New.
+	(record_content): New.
+	(already_contains): New.
+	(insn_ok_now): Re-recog insns with virtual registers.
+	(add_postponed_content_update): New.
+	(process_postponed_content_update): New.
+	(gen_and_emit_move): New.
+	(transcode_memory_rtx): Record new location content.  Use
+	gen_and_emit_move.
+	(force_into_acc): New.
+	(move_to_acc): Use gen_and_emit_move.
+	(move_from_acc): Likewise.
+	(move_acc_to_reg): Likewise.
+	(move_to_x): Likewise.
+	(move_to_hl): Likewise.
+	(move_to_de): Likewise.
+	(rl78_alloc_physical_registers_op1): Record location content.
+	(has_constraint): New.
+	(rl78_alloc_physical_registers_op2): Record location content.
+	Optimize use of HL.
+	(rl78_alloc_physical_registers_ro1): Likewise.
+	(rl78_alloc_physical_registers_cmp): Likewise.
+	(rl78_alloc_physical_registers_umul): Likewise.
+	(rl78_alloc_address_registers_macax): New.
+	(rl78_alloc_physical_registers): Initialize and set location
+	content memory as needed.
+	(rl78_reorg): Make sure split2 is called.
+	(rl78_rtx_costs): New.
+
 2013-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* simplify-rtx.c (simplify_unary_operation_1): Use simplify_gen_binary

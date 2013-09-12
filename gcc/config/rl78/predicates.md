@@ -46,6 +46,8 @@
        (and (match_code "const_int")
 	    (match_test "IN_RANGE (INTVAL (op), 0, 65536)"))))
 
+(define_predicate "rl78_cmp_operator_signed"
+  (match_code "gt,ge,lt,le"))
 (define_predicate "rl78_cmp_operator_real"
   (match_code "eq,ne,gtu,ltu,geu,leu"))
 (define_predicate "rl78_cmp_operator"
@@ -58,3 +60,12 @@
 (define_predicate "rl78_addw_operand"
   (and (match_code "reg")
        (match_test "REGNO (op) == AX_REG || REGNO (op) == SP_REG || REGNO (op) >= FIRST_PSEUDO_REGISTER")))
+
+(define_predicate "rl78_stack_based_mem"
+  (and (match_code "mem")
+       (ior (and (match_code "reg" "0")
+		 (match_test "REGNO (XEXP (op, 0)) == SP_REG"))
+	    (and (match_code "plus" "0")
+		 (and (match_code "reg" "00")
+		      (match_test "REGNO (XEXP (XEXP (op, 0), 0)) == SP_REG")
+		      (match_code "const_int" "01"))))))

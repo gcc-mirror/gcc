@@ -43,6 +43,7 @@
 ; Y - any valid memory
 ; Wxx - various memory addressing modes
 ; Qxx - conditionals
+; U = usual memory references mov-able to/from AX
 ; v = virtual registers
 ; Zxx = specific virtual registers
 
@@ -55,6 +56,56 @@
   "Integer constant in the range 1 @dots{} 7."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 1, 7)")))
+
+(define_constraint "Iv08"
+  "@internal
+   Integer constant equal to 8."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 8, 8)")))
+(define_constraint "Iv16"
+  "@internal
+   Integer constant equal to 16."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 16, 16)")))
+(define_constraint "Iv24"
+  "@internal
+   Integer constant equal to 24."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 24, 24)")))
+
+(define_constraint "Is09"
+  "@internal
+   Integer constant in the range 9 @dots{} 15 (for shifts)."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 9, 15)")))
+(define_constraint "Is17"
+  "@internal
+   Integer constant in the range 17 @dots{} 23 (for shifts)."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 17, 23)")))
+(define_constraint "Is25"
+  "@internal
+   Integer constant in the range 25 @dots{} 31 (for shifts)."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 25, 31)")))
+
+(define_constraint "ISsi"
+  "@internal
+   Integer constant with bit 31 set."
+  (and (match_code "const_int")
+       (match_test "(ival & 0x80000000) != 0")))
+
+(define_constraint "IShi"
+  "@internal
+   Integer constant with bit 15 set."
+  (and (match_code "const_int")
+       (match_test "(ival & 0x8000) != 0")))
+
+(define_constraint "ISqi"
+  "@internal
+   Integer constant with bit 7 set."
+  (and (match_code "const_int")
+       (match_test "(ival & 0x80) != 0")))
 
 (define_constraint "J"
   "Integer constant in the range -255 @dots{} 0"

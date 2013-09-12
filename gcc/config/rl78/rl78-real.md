@@ -312,11 +312,26 @@
    call\t%A1"
   )
 
+(define_insn "cbranchqi4_real_signed"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "rl78_cmp_operator_signed"
+			      [(match_operand:QI 1 "general_operand" "A,A,A")
+			       (match_operand:QI 2 "general_operand" "ISqi,i,v")])
+              (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "rl78_real_insns_ok ()"
+  "@
+   cmp\t%1, %2 \;xor1 CY,%1.7\;not1 CY\;sk%c0 \;br\t!!%3
+   cmp\t%1, %2 \;xor1 CY,%1.7\;sk%c0 \;br\t!!%3
+   cmp\t%1, %2 \;xor1 CY,%1.7\;xor1 CY,%2.7\;sk%c0 \;br\t!!%3"
+  )
+
+
 (define_insn "*cbranchqi4_real"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
-			      [(match_operand:QI 1 "general_operand" "Wabvaxbc,a,          v,bcdehl")
-			       (match_operand:QI 2 "general_operand" "M,       irWhlWh1Whb,i,a")])
+			      [(match_operand:QI 1 "general_operand" "Wabvaxbc,a,              v,bcdehl")
+			       (match_operand:QI 2 "general_operand" "M,       irvWabWhlWh1Whb,i,a")])
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   "rl78_real_insns_ok ()"
@@ -327,13 +342,120 @@
    cmp\t%1, %2 \;sk%c0 \;br\t!!%3"
   )
 
-(define_insn "*cbranchhi4_real"
+(define_insn "cbranchhi4_real_signed"
   [(set (pc) (if_then_else
-	      (match_operator 0 "rl78_cmp_operator_real"
-			      [(match_operand:HI 1 "general_operand" "A")
-			       (match_operand:HI 2 "general_operand" "iBDTWhlWh1")])
-              (label_ref (match_operand 3 "" ""))
+	      (match_operator 0 "rl78_cmp_operator_signed"
+			      [(match_operand:HI 1 "general_operand" "A,A,A,vR")
+			       (match_operand:HI 2 "general_operand" "IShi,i,v,1")])
+              (label_ref (match_operand 3))
 	      (pc)))]
+  "rl78_real_insns_ok ()"
+  "@
+   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;not1 CY\;sk%c0 \;br\t!!%3
+   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;sk%c0 \;br\t!!%3
+   cmpw\t%1, %2 \;xor1 CY,%Q1.7\;xor1 CY,%Q2.7\;sk%c0 \;br\t!!%3
+   %z0\t!!%3"
+  )
+
+(define_insn "cbranchhi4_real"
+  [(set (pc) (if_then_else
+	      (match_operator                    0 "rl78_cmp_operator_real"
+			      [(match_operand:HI 1 "general_operand" "A,vR")
+			       (match_operand:HI 2 "general_operand" "iBDTvWabWhlWh1,1")])
+              (label_ref (match_operand          3 "" ""))
+	      (pc)))]
+  "rl78_real_insns_ok ()"
+  "@
+  cmpw\t%1, %2 \;sk%c0 \;br\t!!%3
+  %z0\t!!%3"
+  )
+
+(define_insn "cbranchhi4_real_inverted"  
+  [(set (pc) (if_then_else
+	      (match_operator                    0 "rl78_cmp_operator_real"
+			      [(match_operand:HI 1 "general_operand" "A")
+			       (match_operand:HI 2 "general_operand" "iBDTvWabWhlWh1")])
+	      (pc)
+              (label_ref (match_operand          3 "" ""))))]
   "rl78_real_insns_ok ()"
   "cmpw\t%1, %2 \;sk%c0 \;br\t!!%3"
   )
+
+(define_insn "cbranchsi4_real_lt"
+  [(set (pc) (if_then_else
+	      (lt (match_operand:SI 0 "general_operand" "U,vWabWhlWh1")
+		  (const_int 0))
+              (label_ref (match_operand 1 "" ""))
+	      (pc)))
+   (clobber (reg:HI AX_REG))
+   ]
+  "rl78_real_insns_ok ()"
+  "@
+   mov a, %E0 \;mov1 CY,a.7 \;sknc \;br\t!!%1
+   mov1 CY,%E0.7 \;sknc \;br\t!!%1"
+  )
+
+(define_insn "cbranchsi4_real_ge"
+  [(set (pc) (if_then_else
+	      (ge (match_operand:SI 0 "general_operand" "U,vWabWhlWh1")
+		  (const_int 0))
+              (label_ref (match_operand 1 "" ""))
+	      (pc)))
+   (clobber (reg:HI AX_REG))
+   ]
+  "rl78_real_insns_ok ()"
+  "@
+   mov a, %E0 \;mov1 CY,a.7 \;skc \;br\t!!%1
+   mov1 CY,%E0.7 \;skc \;br\t!!%1"
+  )
+
+(define_insn "cbranchsi4_real_signed"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "rl78_cmp_operator_signed"
+			      [(match_operand:SI 1 "nonimmediate_operand" "vU,vU,vU")
+			       (match_operand:SI 2 "nonmemory_operand" "ISsi,i,v")])
+              (label_ref (match_operand 3 "" ""))
+	      (pc)))
+   (clobber (reg:HI AX_REG))
+   ]
+  "rl78_real_insns_ok ()"
+  "@
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;not1 CY\;      movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;               movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3
+   movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3"
+  )
+
+(define_insn "cbranchsi4_real"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "rl78_cmp_operator_real"
+			      [(match_operand:SI 1 "general_operand" "vUi")
+			       (match_operand:SI 2 "general_operand" "iWhlWh1v")])
+              (label_ref (match_operand 3 "" ""))
+	      (pc)))
+   (clobber (reg:HI AX_REG))
+   ]
+  "rl78_real_insns_ok ()"
+  "movw ax,%H1 \;cmpw  ax, %H2 \;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3"
+  )
+
+;; Peephole to match:
+;;
+;;     (set (mem (sp)) (ax))
+;;     (set (ax) (mem (sp)))
+;; or:
+;;     (set (mem (plus (sp) (const)) (ax))
+;;     (set (ax) (mem (plus (sp) (const))))
+;;
+;; which can be generated as the last instruction of the conversion
+;; of one virtual insn into a real insn and the first instruction of
+;; the conversion of the following virtual insn.
+
+(define_peephole2
+  [(set (match_operand:HI 0 "rl78_stack_based_mem")
+	(reg:HI AX_REG))
+   (set (reg:HI AX_REG)
+	(match_dup 0))]
+  ""
+  [(set (match_dup 0) (reg:HI AX_REG))]
+  )
+
