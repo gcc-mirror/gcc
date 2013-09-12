@@ -1,3 +1,11 @@
+2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58403
+	* include/bits/stl_iterator.h (__normal_iterator<>::operator[],
+	operator+=, operator+, operator-=, operator-): Take the argument
+	by value.
+	* testsuite/24_iterators/normal_iterator/58403.cc: New.
+
 2013-09-11  Mitsuru Kariya  <kariya_mitsuru@hotmail.com>
 	    Chris Jefferson  <chris@bubblescope.net>
 
