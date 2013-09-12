@@ -1,3 +1,10 @@
+2013-09-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/58335
+	* lra-eliminations (remove_reg_equal_offset_note): New.
+	(eliminate_regs_in_insn): Rewrite frame pointer to hard frame
+	pointer elimination with using remove_reg_equal_offset_note.
+
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
 	* config/msp430/: New port.

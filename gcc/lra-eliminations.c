@@ -745,13 +745,42 @@ mark_not_eliminable (rtx x)
 
 
 
+#ifdef HARD_FRAME_POINTER_REGNUM
+
+/* Find offset equivalence note for reg WHAT in INSN and return the
+   found elmination offset.  If the note is not found, return NULL.
+   Remove the found note.  */
+static rtx
+remove_reg_equal_offset_note (rtx insn, rtx what)
+{
+  rtx link, *link_loc;
+
+  for (link_loc = &REG_NOTES (insn);
+       (link = *link_loc) != NULL_RTX;
+       link_loc = &XEXP (link, 1))
+    if (REG_NOTE_KIND (link) == REG_EQUAL
+	&& GET_CODE (XEXP (link, 0)) == PLUS
+	&& XEXP (XEXP (link, 0), 0) == what
+	&& CONST_INT_P (XEXP (XEXP (link, 0), 1)))
+      {
+	*link_loc = XEXP (link, 1);
+	return XEXP (XEXP (link, 0), 1);
+      }
+  return NULL_RTX;
+}
+
+#endif
+
 /* Scan INSN and eliminate all eliminable hard registers in it.
 
    If REPLACE_P is true, do the replacement destructively.  Also
    delete the insn as dead it if it is setting an eliminable register.
 
    If REPLACE_P is false, just update the offsets while keeping the
-   base register the same.  */
+   base register the same.  Attach the note about used elimination for
+   insns setting frame pointer to update elimination easy (without
+   parsing already generated elimination insns to find offset
+   previously used) in future.  */
 
 static void
 eliminate_regs_in_insn (rtx insn, bool replace_p)
@@ -790,59 +819,44 @@ eliminate_regs_in_insn (rtx insn, bool replace_p)
       if (ep->from == FRAME_POINTER_REGNUM
 	  && ep->to == HARD_FRAME_POINTER_REGNUM)
 	{
+	  rtx src = SET_SRC (old_set);
+	  rtx off = remove_reg_equal_offset_note (insn, ep->to_rtx);
+
 	  if (replace_p)
 	    {
 	      SET_DEST (old_set) = ep->to_rtx;
 	      lra_update_insn_recog_data (insn);
 	      return;
 	    }
-	  else
+	  else if (off != NULL_RTX
+		   || src == ep->to_rtx
+		   || (GET_CODE (src) == PLUS
+		       && XEXP (src, 1) == ep->to_rtx
+		       && CONST_INT_P (XEXP (src, 1))))
 	    {
-	      rtx base = SET_SRC (old_set);
-	      HOST_WIDE_INT offset = 0;
-	      rtx base_insn = insn;
-
-	      while (base != ep->to_rtx)
+	      HOST_WIDE_INT offset = (off != NULL_RTX
+				      ? INTVAL (off)
+				      : src == ep->to_rtx
+				      ? 0 : INTVAL (XEXP (src, 1)));
+	      
+	      offset -= (ep->offset - ep->previous_offset);
+	      src = plus_constant (Pmode, ep->to_rtx, offset);
+	      
+	      /* First see if this insn remains valid when we make
+		 the change.  If not, keep the INSN_CODE the same
+		 and let the constraint pass fit it up.  */
+	      validate_change (insn, &SET_SRC (old_set), src, 1);
+	      validate_change (insn, &SET_DEST (old_set),
+			       ep->from_rtx, 1);
+	      if (! apply_change_group ())
 		{
-		  rtx prev_insn, prev_set;
-
-		  if (GET_CODE (base) == PLUS && CONST_INT_P (XEXP (base, 1)))
-		    {
-		      offset += INTVAL (XEXP (base, 1));
-		      base = XEXP (base, 0);
-		    }
-		  else if ((prev_insn = prev_nonnote_insn (base_insn)) != 0
-			   && (prev_set = single_set (prev_insn)) != 0
-			   && rtx_equal_p (SET_DEST (prev_set), base))
-		    {
-		      base = SET_SRC (prev_set);
-		      base_insn = prev_insn;
-		    }
-		  else
-		    break;
+		  SET_SRC (old_set) = src;
+		  SET_DEST (old_set) = ep->from_rtx;
 		}
-
-	      if (base == ep->to_rtx)
-		{
-		  rtx src;
-
-		  offset -= (ep->offset - ep->previous_offset);
-		  src = plus_constant (Pmode, ep->to_rtx, offset);
-
-		  /* First see if this insn remains valid when we make
-		     the change.  If not, keep the INSN_CODE the same
-		     and let the constraint pass fit it up.  */
-		  validate_change (insn, &SET_SRC (old_set), src, 1);
-		  validate_change (insn, &SET_DEST (old_set),
-				   ep->from_rtx, 1);
-		  if (! apply_change_group ())
-		    {
-		      SET_SRC (old_set) = src;
-		      SET_DEST (old_set) = ep->from_rtx;
-		    }
-		  lra_update_insn_recog_data (insn);
-		  return;
-		}
+	      lra_update_insn_recog_data (insn);
+	      /* Add offset note for future updates.  */
+	      add_reg_note (insn, REG_EQUAL, src);
+	      return;
 	    }
 
 
