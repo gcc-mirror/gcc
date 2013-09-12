@@ -1,3 +1,46 @@
+2013-09-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa.h: New.  Move content from tree-flow.h and
+	tree-flow-inline.h.
+	* tree-flow.h (_edge_var_map, edge_var_map_vector): Move to tree-ssa.h.
+	Move prototypes belonging to tree-ssa.c.
+	* tree-flow-inline.h (redirect_edge_var_map_def, 
+	redirect_edge_var_map_result, redirect_edge_var_map_location): Move to
+	tree-ssa.h.
+	* gimple.h: Adjust prototypes.
+	* tree-ssa.c (useless_type_conversion_p, types_compatible_p): Move to...
+	* gimple.c (useless_type_conversion_p, types_compatible_p):  Here.
+	* tree.h: Move prototype to tree-ssa.h.
+	* gengtype.c (open_base_files): Replace tree-flow.h with tree-ssa.h.
+	* Makefile.in: (TREE_SSA_H, TREE_FLOW_H): Adjust dependencies.
+	* alias.c, asan.c, builtins.c, calls.c, cfgexpand.c, cfghooks.c,
+	cfgloop.c, cfgloopmanip.c, cgraph.c, cgraphbuild.c, cgraphclones.c,
+	cgraphunit.c, dse.c, except.c, expr.c, final.c, fold-const.c,
+	ggc-page.c, gimple-fold.c, gimple-iterator.c, gimple-low.c,
+	gimple-pretty-print.c, gimple-ssa-strength-reduction.c,
+	gimple-streamer-in.c, gimple-streamer-out.c, gimple.c, gimplify.c,
+	graphite-blocking.c, graphite-clast-to-gimple.c, graphite-dependences.c,
+	graphite-interchange.c, graphite-optimize-isl.c, graphite-poly.c,
+	graphite-scop-detection.c, graphite-sese-to-poly.c, graphite.c,
+	ipa-cp.c, ipa-inline-analysis.c, ipa-inline-transform.c, ipa-inline.c,
+	ipa-prop.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa-utils.c,
+	loop-init.c, lto-cgraph.c, lto-section-in.c, lto-section-out.c,
+	lto-streamer-in.c, lto-streamer-out.c, lto-streamer.c, omp-low.c,
+	passes.c, predict.c, print-tree.c, profile.c, sese.c, targhooks.c,
+	tracer.c, trans-mem.c, tree-call-cdce.c, tree-cfg.c, tree-cfgcleanup.c,
+	tree-chrec.c, tree-complex.c, tree-data-ref.c, tree-dfa.c, tree-eh.c,
+	tree-emutls.c, tree-if-conv.c, tree-inline.c, tree-into-ssa.c,
+	tree-loop-distribution.c, tree-mudflap.c, tree-nested.c, tree-nrv.c,
+	tree-object-size.c, tree-optimize.c, tree-outof-ssa.c, tree-parloops.c,
+	tree-phinodes.c, tree-predcom.c, tree-pretty-print.c, tree-profile.c,
+	tree-scalar-evolution.c, tree-sra.c, tree-ssa*.c, tree-stdarg.c,
+	tree-streamer-in.c, tree-switch-conversion.c, tree-tailcall.c,
+	tree-vect-data-refs.c, tree-vect-generic.c, tree-vect-loop-manip.c,
+	tree-vect-loop.c, tree-vect-patterns.c, tree-vect-slp.c,
+	tree-vect-stmts.c, tree-vectorizer.c, tree-vrp.c, tsan.c,
+	value-prof.c, var-tracking.c,
+	varpool.c, vtable-verify.c: Replace tree-flow.h with tree-ssa.h
+
 2013-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58396

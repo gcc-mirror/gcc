@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 #include "regs.h"
 #include "ggc.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-flow-inline.h"
 #include "diagnostic.h"
 #include "gimple-pretty-print.h"

@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "bitmap.h"
 #include "dumpfile.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "hash-table.h"
 #include "tree-ssa-live.h"
 #include "diagnostic-core.h"

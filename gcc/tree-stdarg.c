@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "gimple-pretty-print.h"
 #include "target.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "tree-stdarg.h"
 

@@ -191,7 +191,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "tm_p.h"
 #include "cfgloop.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "ggc.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"

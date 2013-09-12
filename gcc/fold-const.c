@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "md5.h"
 #include "gimple.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */

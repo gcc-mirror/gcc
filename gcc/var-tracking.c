@@ -104,7 +104,7 @@
 #include "regs.h"
 #include "expr.h"
 #include "tree-pass.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "cselib.h"
 #include "target.h"
 #include "params.h"

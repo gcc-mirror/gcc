@@ -107,7 +107,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coverage.h"
 #include "ggc.h"
 #include "rtl.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "ipa-prop.h"
 #include "except.h"
 #include "target.h"

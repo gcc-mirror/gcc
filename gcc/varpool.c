@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "output.h"
 #include "gimple.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "flags.h"
 
 /* List of hooks triggered on varpool_node events.  */

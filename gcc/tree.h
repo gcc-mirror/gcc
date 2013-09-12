@@ -4741,10 +4741,6 @@ extern unsigned int tree_decl_map_hash (const void *);
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
 
-/* In tree-ssa.c */
-
-tree target_for_debug_bind (tree);
-
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);
 extern void copy_ref_info (tree, tree);

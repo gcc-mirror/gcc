@@ -29,7 +29,7 @@
 #include "function.h"
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
 #include "vec.h"

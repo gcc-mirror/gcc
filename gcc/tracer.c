@@ -46,7 +46,7 @@
 #include "params.h"
 #include "coverage.h"
 #include "tree-pass.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-inline.h"
 #include "cfgloop.h"
 

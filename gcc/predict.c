@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "cfgloop.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "ggc.h"
 #include "tree-pass.h"
 #include "tree-scalar-evolution.h"
