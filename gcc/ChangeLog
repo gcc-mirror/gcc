@@ -1,3 +1,9 @@
+2013-09-12  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_expand_prologue): Use AX to copy
+	between SP and FP.
+	(rl78_expand_epilogue): Likewise.
+
 2013-09-12  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/58335
