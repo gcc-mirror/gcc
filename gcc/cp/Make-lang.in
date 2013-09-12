@@ -167,8 +167,8 @@ check_g++_parallelize = old-deja.exp dg.exp dg-torture.exp
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).
 
-# Install the driver program as $(target)-g++
-# and also as either g++ (if native) or $(tooldir)/bin/g++.
+# Install the driver program as $(target)-g++ and $(target)-c++, and
+# also as g++ and c++ if native.
 c++.install-common: installdirs
 	-rm -f $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xg++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
@@ -177,15 +177,7 @@ c++.install-common: installdirs
 	-( cd $(DESTDIR)$(bindir) && \
 	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) )
 	-if [ -f cc1plus$(exeext) ] ; then \
-	  if [ -f g++-cross$(exeext) ] ; then \
-	    if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
-	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
-	      $(INSTALL_PROGRAM) g++-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
-	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/c++$(exeext); \
-	      ( cd $(DESTDIR)$(gcc_tooldir)/bin && \
-		$(LN) g++$(exeext) c++$(exeext) ); \
-	    else true; fi; \
-	  else \
+	  if [ ! -f g++-cross$(exeext) ] ; then \
 	    rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
 	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \

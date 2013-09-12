@@ -4771,20 +4771,14 @@ install-common: native lang.install-common installdirs
 	fi
 
 # Install the driver program as $(target_noncanonical)-gcc,
-# $(target_noncanonical)-gcc-$(version)
-# and also as either gcc (if native) or $(gcc_tooldir)/bin/gcc.
+# $(target_noncanonical)-gcc-$(version), and also as gcc if native.
 install-driver: installdirs xgcc$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xgcc$(exeext) $(DESTDIR)$(bindir)/$(GCC_INSTALL_NAME)$(exeext)
 	-rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-$(version)$(exeext)
 	-( cd $(DESTDIR)$(bindir) && \
 	   $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-$(version)$(exeext) )
-	-if [ -f gcc-cross$(exeext) ] ; then \
-	  if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
-	    rm -f $(DESTDIR)$(gcc_tooldir)/bin/gcc$(exeext); \
-	    $(INSTALL_PROGRAM) gcc-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/gcc$(exeext); \
-	  else true; fi; \
-	else \
+	-if [ ! -f gcc-cross$(exeext) ] ; then \
 	  rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
 	  ( cd $(DESTDIR)$(bindir) && \
 	    $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
