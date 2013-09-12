@@ -1,3 +1,10 @@
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58396
+	* tree-loop-distribution.c (create_rdg_edges): Free unused DDRs.
+	(build_rdg): Take a loop-nest parameter, fix memleaks.
+	(distribute_loop): Compute loop-nest here and pass it to build_rdg.
+
 2013-09-12  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/x86-tune.def: Turn on X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE

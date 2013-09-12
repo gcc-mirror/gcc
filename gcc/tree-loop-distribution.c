@@ -383,6 +383,8 @@ create_rdg_edges (struct graph *rdg, vec<ddr_p> ddrs)
   FOR_EACH_VEC_ELT (ddrs, i, ddr)
     if (DDR_ARE_DEPENDENT (ddr) == NULL_TREE)
       create_rdg_edge_for_ddr (rdg, ddr);
+    else
+      free_dependence_relation (ddr);
 
   for (i = 0; i < rdg->n_vertices; i++)
     FOR_EACH_PHI_OR_STMT_DEF (def_p, RDG_STMT (rdg, i),
@@ -519,50 +521,45 @@ free_rdg (struct graph *rdg)
 }
 
 /* Build the Reduced Dependence Graph (RDG) with one vertex per
-   statement of the loop nest, and one edge per data dependence or
+   statement of the loop nest LOOP_NEST, and one edge per data dependence or
    scalar dependence.  */
 
 static struct graph *
-build_rdg (struct loop *loop)
+build_rdg (vec<loop_p> loop_nest)
 {
   struct graph *rdg;
-  vec<loop_p> loop_nest;
   vec<gimple> stmts;
   vec<data_reference_p> datarefs;
   vec<ddr_p> dependence_relations;
 
-  loop_nest.create (3);
-  if (!find_loop_nest (loop, &loop_nest))
-    {
-      loop_nest.release ();
-      return NULL;
-    }
-
+  /* Create the RDG vertices from the stmts of the loop nest.  */
   stmts.create (10);
-  stmts_from_loop (loop, &stmts);
+  stmts_from_loop (loop_nest[0], &stmts);
   rdg = build_empty_rdg (stmts.length ());
   datarefs.create (10);
-  if (!create_rdg_vertices (rdg, stmts, loop, &datarefs))
+  if (!create_rdg_vertices (rdg, stmts, loop_nest[0], &datarefs))
     {
       stmts.release ();
+      datarefs.release ();
       free_rdg (rdg);
       return NULL;
     }
   stmts.release ();
+
+  /* Create the RDG edges from the data dependences in the loop nest.  */
   dependence_relations.create (100);
   if (!compute_all_dependences (datarefs, &dependence_relations, loop_nest,
 				false)
       || !known_dependences_p (dependence_relations))
     {
-      loop_nest.release ();
+      free_dependence_relations (dependence_relations);
       datarefs.release ();
-      dependence_relations.release ();
       free_rdg (rdg);
       return NULL;
     }
-  loop_nest.release ();
   create_rdg_edges (rdg, dependence_relations);
   dependence_relations.release ();
+  datarefs.release ();
 
   return rdg;
 }
@@ -1809,8 +1806,16 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
   gimple s;
   unsigned i;
   vec<int> vertices;
+  vec<loop_p> loop_nest;
 
-  rdg = build_rdg (loop);
+  loop_nest.create (3);
+  if (!find_loop_nest (loop, &loop_nest))
+    {
+      loop_nest.release ();
+      return 0;
+    }
+
+  rdg = build_rdg (loop_nest);
   if (!rdg)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1818,6 +1823,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
 		 "FIXME: Loop %d not distributed: failed to build the RDG.\n",
 		 loop->num);
 
+      loop_nest.release ();
       return res;
     }
 
@@ -1843,6 +1849,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
   res = ldist_gen (loop, rdg, vertices);
   vertices.release ();
   free_rdg (rdg);
+  loop_nest.release ();
   return res;
 }
 
