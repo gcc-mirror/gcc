@@ -1,3 +1,11 @@
+2013-09-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/58389
+	* ipa-prop.c (remove_described_reference): Give up if the edge in the
+	reference descriptor is NULL.
+	(ipa_edge_removal_hook): If owning a reference descriptor, set its
+	edge to NULL.
+
 2013-09-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-flow.h (FREE_SSANAMES): Move to tree-ssanames.c

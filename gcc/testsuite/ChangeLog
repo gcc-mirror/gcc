@@ -1,3 +1,8 @@
+2013-09-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/58389
+	* g++.dg/pr58389.C: New test.
+
 2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/pseudodtor2.C: Add column number to dg-error
