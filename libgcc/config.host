@@ -831,6 +831,9 @@ moxie-*-rtems*)
 	# Don't use default.
 	extra_parts=
 	;;
+msp430*-*-elf)
+	tmake_file="$tm_file t-crtstuff t-fdpbit msp430/t-msp430"
+	;;
 pdp11-*-*)
 	tmake_file="pdp11/t-pdp11 t-fdpbit"
 	;;

@@ -2030,6 +2030,13 @@ mn10300-*-*)
 	use_collect2=no
 	use_gcc_stdint=wrap
 	;;
+msp430*-*-*)
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	c_target_objs="msp430-c.o"
+	cxx_target_objs="msp430-c.o"
+	target_has_targetm_common=no
+	tmake_file="${tmake_file} msp430/t-msp430"
+	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap

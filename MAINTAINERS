@@ -87,6 +87,8 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 moxie port		Anthony Green		green@moxielogic.com
+msp430 port		DJ Delorie		dj@redhat.com
+msp430 port		Nick Clifton		nickc@redhat.com
 nds32 port		Chung-Ju Wu		jasonwucj@gmail.com
 nds32 port		Shiva Chen		shiva0217@gmail.com
 pdp11 port		Paul Koning		ni1d@arrl.net
