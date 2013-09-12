@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_SSA_H
 
 #include "tree-flow.h"
+#include "tree-ssanames.h"
 
 /* Mapping for redirected edges.  */
 struct _edge_var_map {

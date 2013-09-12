@@ -2379,7 +2379,7 @@ tree-ssa-threadupdate.o : tree-ssa-threadupdate.c $(TREE_SSA_H) $(CONFIG_H) \
    $(DIAGNOSTIC_H) $(FUNCTION_H) $(TM_H) coretypes.h $(DUMPFILE_H) \
    $(BASIC_BLOCK_H) $(FLAGS_H) $(CFGLOOP_H)
 tree-ssanames.o : tree-ssanames.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
-   $(TM_H) $(TREE_H) $(TREE_SSA_H) $(TREE_PASS_H)
+   $(TM_H) $(TREE_H) $(TREE_SSA_H) $(TREE_PASS_H) tree-ssanames.h
 tree-phinodes.o : tree-phinodes.c $(CONFIG_H) $(SYSTEM_H) coretypes.h \
    $(TM_H) $(TREE_H) $(GGC_H) $(BASIC_BLOCK_H) $(TREE_SSA_H) \
    gt-tree-phinodes.h $(DIAGNOSTIC_CORE_H) $(GIMPLE_H)
@@ -3837,6 +3837,7 @@ GTFILES = $(CPP_ID_DATA_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/tree-ssa-propagate.c \
   $(srcdir)/tree-phinodes.c \
   $(srcdir)/tree-ssa-alias.h \
+  $(srcdir)/tree-ssanames.h \
   $(srcdir)/ipa-prop.h \
   $(srcdir)/trans-mem.c \
   $(srcdir)/lto-streamer.h \
