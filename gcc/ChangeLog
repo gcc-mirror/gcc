@@ -1,3 +1,8 @@
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58402
+	* passes.def: Move pass_late_warn_uninitialized later.
+
 2013-09-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	* tree-ssa.h: New.  Move content from tree-flow.h and
