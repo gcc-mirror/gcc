@@ -8,7 +8,7 @@
 	* parser.c (cp_parser_postfix_dot_deref_expression): Likewise.
 	(cp_parser_postfix_expression): Pass the proper location to
 	cp_parser_postfix_dot_deref_expression.
-	* cp-tree.h (finish_pseudo_destructor_expr): Declare.
+	* cp-tree.h (finish_pseudo_destructor_expr): Update declaration.
 
 2013-09-10  Jan Hubicka  <jh@suse.cz>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
