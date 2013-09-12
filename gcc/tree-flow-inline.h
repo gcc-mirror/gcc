@@ -1158,30 +1158,6 @@ gimple_ssa_operands (const struct function *fun)
   return &fun->gimple_df->ssa_operands;
 }
 
-/* Given an edge_var_map V, return the PHI arg definition.  */
-
-static inline tree
-redirect_edge_var_map_def (edge_var_map *v)
-{
-  return v->def;
-}
-
-/* Given an edge_var_map V, return the PHI result.  */
-
-static inline tree
-redirect_edge_var_map_result (edge_var_map *v)
-{
-  return v->result;
-}
-
-/* Given an edge_var_map V, return the PHI arg location.  */
-
-static inline source_location
-redirect_edge_var_map_location (edge_var_map *v)
-{
-  return v->locus;
-}
-
 
 /* Return an SSA_NAME node for variable VAR defined in statement STMT
    in function cfun.  */

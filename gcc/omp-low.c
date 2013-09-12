@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"

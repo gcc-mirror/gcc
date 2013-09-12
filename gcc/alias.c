@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tree-ssa-alias.h"
 #include "pointer-set.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 
 /* The aliasing API provided here solves related but different problems:
 

@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "tree-pretty-print.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "dumpfile.h"
 #include "flags.h"
 #include "tree-inline.h"

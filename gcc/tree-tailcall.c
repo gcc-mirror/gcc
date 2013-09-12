@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "function.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "gimple-pretty-print.h"
 #include "except.h"
 #include "tree-pass.h"

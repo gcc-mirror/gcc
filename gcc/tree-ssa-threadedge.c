@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "timevar.h"
 #include "dumpfile.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "langhooks.h"
 #include "params.h"

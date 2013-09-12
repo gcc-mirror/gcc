@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "flags.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "function.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"

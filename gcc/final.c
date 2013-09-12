@@ -70,7 +70,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "expr.h"
 #include "tree-pass.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "cgraph.h"
 #include "coverage.h"
 #include "df.h"

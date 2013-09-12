@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ggc.h"
 #include "langhooks.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "except.h"
 #include "cfgloop.h"

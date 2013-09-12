@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "basic-block.h"
 #include "tree-mudflap.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "value-prof.h"
 #include "diagnostic-core.h"
 #include "builtins.h"

@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "cfgloop.h"
 #include "tree-chrec.h"
 #include "tree-data-ref.h"

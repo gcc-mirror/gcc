@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "tm_p.h"
 #include "tree-iterator.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "target.h"
 #include "common/common-target.h"
 #include "timevar.h"

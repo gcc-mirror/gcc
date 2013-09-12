@@ -465,47 +465,8 @@ extern bool gimple_seq_may_fallthru (gimple_seq);
 extern bool gimple_stmt_may_fallthru (gimple);
 extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
-
-/* In tree-ssa.c  */
-
-/* Mapping for redirected edges.  */
-struct _edge_var_map {
-  tree result;			/* PHI result.  */
-  tree def;			/* PHI arg definition.  */
-  source_location locus;        /* PHI arg location.  */
-};
-typedef struct _edge_var_map edge_var_map;
-
-
-/* A vector of var maps.  */
-typedef vec<edge_var_map, va_heap, vl_embed> edge_var_map_vector;
-
-extern void init_tree_ssa (struct function *);
-extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
-extern void redirect_edge_var_map_clear (edge);
-extern void redirect_edge_var_map_dup (edge, edge);
-extern edge_var_map_vector *redirect_edge_var_map_vector (edge);
-extern void redirect_edge_var_map_destroy (void);
-
-extern edge ssa_redirect_edge (edge, basic_block);
-extern void flush_pending_stmts (edge);
-extern void verify_ssa (bool);
-extern void delete_tree_ssa (void);
+/* In tree-ssa-uninit.c  */
 extern bool ssa_undefined_value_p (tree);
-extern void warn_uninit (enum opt_code, tree, tree, tree, const char *, void *);
-extern unsigned int warn_uninitialized_vars (bool);
-extern void execute_update_addresses_taken (void);
-
-/* Call-back function for walk_use_def_chains().  At each reaching
-   definition, a function with this prototype is called.  */
-typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
-
-extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
-
-void insert_debug_temps_for_defs (gimple_stmt_iterator *);
-void insert_debug_temp_for_var_def (gimple_stmt_iterator *, tree);
-void reset_debug_uses (gimple);
-void release_defs_bitset (bitmap toremove);
 
 /* In tree-into-ssa.c  */
 void update_ssa (unsigned);
