@@ -5533,6 +5533,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 			      cp_id_kind * pidk_return)
 {
   cp_token *token;
+  location_t loc;
   enum rid keyword;
   cp_id_kind idk = CP_ID_KIND_NONE;
   tree postfix_expression = NULL_TREE;
@@ -5540,6 +5541,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
+  loc = token->location;
   /* Some of the productions are determined by keywords.  */
   keyword = token->keyword;
   switch (keyword)
@@ -5685,7 +5687,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	vec<tree, va_gc> *vec;
 	unsigned int i;
 	tree p;
-	location_t loc = token->location;
 
 	cp_lexer_consume_token (parser->lexer);
 	vec = cp_parser_parenthesized_expression_list (parser, non_attr,
@@ -6018,8 +6019,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  postfix_expression
 	    = cp_parser_postfix_dot_deref_expression (parser, token->type,
 						      postfix_expression,
-						      false, &idk,
-						      token->location);
+						      false, &idk, loc);
 
           is_member_access = true;
 	  break;
@@ -6338,7 +6338,7 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	  pseudo_destructor_p = true;
 	  postfix_expression
 	    = finish_pseudo_destructor_expr (postfix_expression,
-					     s, type);
+					     s, type, location);
 	}
     }
 

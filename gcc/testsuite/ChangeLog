@@ -1,3 +1,9 @@
+2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/pseudodtor2.C: Add column number to dg-error
+	strings.
+	* g++.dg/template/pseudodtor3.C: Likewise.
+
 2013-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58404

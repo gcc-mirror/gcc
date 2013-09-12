@@ -1,3 +1,14 @@
+2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* semantics.c (finish_pseudo_destructor_expr): Add location_t
+	parameter.
+	* pt.c (unify_arg_conversion): Use EXPR_LOC_OR_HERE.
+	(tsubst_copy_and_build): Adjust finish_pseudo_destructor_expr
+	calls.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Likewise.
+	(cp_parser_postfix_expression): Pass the proper location to
+	cp_parser_postfix_dot_deref_expression.
+
 2013-09-10  Jan Hubicka  <jh@suse.cz>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 

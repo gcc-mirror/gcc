@@ -2361,7 +2361,8 @@ finish_this_expr (void)
    was of the form `OBJECT.SCOPE::~DESTRUCTOR'.  */
 
 tree
-finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
+finish_pseudo_destructor_expr (tree object, tree scope, tree destructor,
+			       location_t loc)
 {
   if (object == error_mark_node || destructor == error_mark_node)
     return error_mark_node;
@@ -2372,15 +2373,16 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
     {
       if (scope == error_mark_node)
 	{
-	  error ("invalid qualifying scope in pseudo-destructor name");
+	  error_at (loc, "invalid qualifying scope in pseudo-destructor name");
 	  return error_mark_node;
 	}
       if (is_auto (destructor))
 	destructor = TREE_TYPE (object);
       if (scope && TYPE_P (scope) && !check_dtor_name (scope, destructor))
 	{
-	  error ("qualified type %qT does not match destructor name ~%qT",
-		 scope, destructor);
+	  error_at (loc,
+		    "qualified type %qT does not match destructor name ~%qT",
+		    scope, destructor);
 	  return error_mark_node;
 	}
 
@@ -2401,12 +2403,13 @@ finish_pseudo_destructor_expr (tree object, tree scope, tree destructor)
       if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (object),
 						      destructor))
 	{
-	  error ("%qE is not of type %qT", object, destructor);
+	  error_at (loc, "%qE is not of type %qT", object, destructor);
 	  return error_mark_node;
 	}
     }
 
-  return build3 (PSEUDO_DTOR_EXPR, void_type_node, object, scope, destructor);
+  return build3_loc (loc, PSEUDO_DTOR_EXPR, void_type_node, object,
+		     scope, destructor);
 }
 
 /* Finish an expression of the form CODE EXPR.  */
