@@ -1,3 +1,8 @@
+2013-09-12  Cameron McInally  <cameron.mcinally@nyu.edu>
+
+	* doc/extend.texi: Fix errors in x86 FMA builtin naming.
+	The FMA instruction names should have a 'v' prefix.
+
 2013-09-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (dot_rdg_1): Make graph prettier.
@@ -60,7 +65,8 @@
 	(cbranchsi4_real_signed): New.
 	(cbranchsi4_real): New.
 	(peephole2): New.
-	* config/rl78/rl78-virt.md (ashrsi3_virt): Add custom cases for constant shifts.
+	* config/rl78/rl78-virt.md (ashrsi3_virt): Add custom cases for
+	constant shifts.
 	(lshrsi3_virt): Likewise.
 	(ashlsi3_virt): Likewise.
 	(cbranchqi4_virt_signed): New.
@@ -93,8 +99,8 @@
 	(add_postponed_content_update): New.
 	(process_postponed_content_update): New.
 	(gen_and_emit_move): New.
-	(transcode_memory_rtx): Record new location content.  Use
-	gen_and_emit_move.
+	(transcode_memory_rtx): Record new location content.
+	Use gen_and_emit_move.
 	(force_into_acc): New.
 	(move_to_acc): Use gen_and_emit_move.
 	(move_from_acc): Likewise.
@@ -192,9 +198,9 @@
 	(MASK_REGNO_P): New.
 	(ANY_MASK_REG_P): Ditto.
 	(HI_REGISTER_NAMES): Add new mask registers.
-	* config/i386/i386.md (MASK0_REG, MASK1_REG, MASK2_REG,
-	MASK3_REG, MASK4_REG, MASK5_REG, MASK6_REG,
-	MASK7_REG): Constants for new mask registers.
+	* config/i386/i386.md (MASK0_REG, MASK1_REG, MASK2_REG, MASK3_REG,
+	MASK4_REG, MASK5_REG, MASK6_REG, MASK7_REG): Constants for new
+	mask registers.
 	(attribute "type"): Add mskmov, msklog.
 	(attribute "length_immediate"): Support them.
 	(attribute "memory"): Ditto.
@@ -219,7 +225,8 @@
 	(*one_cmpl<mode>2_1): Remove HImode and handle it...
 	(*one_cmplhi2_1): ...Here, now with mask registers support.
 	(*one_cmplqi2_1): Support new mask registers.
-	(HI/QImode arithmetics splitter): Don't split if mask registers are used.
+	(HI/QImode arithmetics splitter): Don't split if mask registers
+	are used.
 	(HI/QImode not splitter): Ditto.
 	* config/i386/predicated.md (mask_reg_operand): New.
 	(general_reg_operand): Ditto.
@@ -312,9 +319,8 @@
 	* tree-data-ref.h (build_rdg): Drop all parameters but loop.
 	* tree-data-ref.c (create_rdg_vertices): Collect all data
 	references, signal failure to the caller, use data-ref API.
-	(build_rdg): Compute data references only once.  Maintain
-	lifetime of data references and data dependences from within
-	RDG.
+	(build_rdg): Compute data references only once.  Maintain lifetime
+	of data references and data dependences from within RDG.
 	(free_rdg): Free dependence relations.
 	* tree-loop-distribution.c (rdg_flag_uses): Drop weird code
 	inventing extra dependences.
