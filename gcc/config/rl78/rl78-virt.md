@@ -177,30 +177,30 @@
    "@
     ; ashrsi %0, 0
 
-   movw ax,%H1 | sarw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
-   movw ax,%H1 | sarw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
+   movw ax,%H1 \; sarw ax,1 \; movw %H0,ax \; mov a,%Q1 \; rorc a,1 \; mov %Q0,a \; mov a,%q1 \; rorc a,1 \; mov %q0,a
+   movw ax,%H1 \; sarw ax,1 \; movw %H0,ax \; mov a,%Q1 \; rorc a,1 \; mov %Q0,a \; mov a,%q1 \; rorc a,1 \; mov %q0,a
 
-   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
-   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
-   movw ax,%1 | shlw ax,%r2 | mov %0,a | mov a,%Q1 | mov x,a   | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+   movw ax,%1 \; shlw ax,%r2 \; mov %0,a             \; mov x,%Q1 \; mov a,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; sarw ax,%u2 \; movw %H0,ax
+   movw ax,%1 \; shlw ax,%r2 \; mov %0,a             \; mov x,%Q1 \; mov a,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; sarw ax,%u2 \; movw %H0,ax
+   movw ax,%1 \; shlw ax,%r2 \; mov %0,a \; mov a,%Q1 \; mov x,a   \; mov a,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; sarw ax,%u2 \; movw %H0,ax
 
-   mov x,%Q1            | mov a,%H1 | movw %0,ax | movw ax,%H1 | sarw ax,8 | movw %H0,ax
-   mov a,%Q1 | mov x, a | mov a,%H1 | movw %0,ax | movw ax,%H1 | sarw ax,8 | movw %H0,ax
+   mov x,%Q1            \; mov a,%H1 \; movw %0,ax \; movw ax,%H1 \; sarw ax,8 \; movw %H0,ax
+   mov a,%Q1 \; mov x, a \; mov a,%H1 \; movw %0,ax \; movw ax,%H1 \; sarw ax,8 \; movw %H0,ax
 
-   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
-   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
-   mov a,%Q1 | mov x,a | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+   mov x,%Q1           \; mov a,%H1 \; shlw ax,%r2 \; mov %0,a \; movw ax,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; sarw ax,%u2 \; movw %H0,ax
+   mov x,%Q1           \; mov a,%H1 \; shlw ax,%r2 \; mov %0,a \; movw ax,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; sarw ax,%u2 \; movw %H0,ax
+   mov a,%Q1 \; mov x,a \; mov a,%H1 \; shlw ax,%r2 \; mov %0,a \; movw ax,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; sarw ax,%u2 \; movw %H0,ax
 
-   movw ax,%H1 | movw %0,ax | sarw ax,15 | movw %H0,ax
+   movw ax,%H1 \; movw %0,ax \; sarw ax,15 \; movw %H0,ax
 
-   movw ax,%H1 | sarw ax,%S2 | movw %0,ax | sarw ax,15 | movw %H0,ax
-   movw ax,%H1 | sarw ax,%S2 | movw %0,ax | sarw ax,15 | movw %H0,ax
+   movw ax,%H1 \; sarw ax,%S2 \; movw %0,ax \; sarw ax,15 \; movw %H0,ax
+   movw ax,%H1 \; sarw ax,%S2 \; movw %0,ax \; sarw ax,15 \; movw %H0,ax
 
-   movw ax,%H1 | mov %0,a | sarw ax,15 | movw %H0,ax | mov %Q0,a
+   movw ax,%H1 \; mov %0,a \; sarw ax,15 \; movw %H0,ax \; mov %Q0,a
 
-   movw ax,%H1 | sar a,%s2 | mov %0,a | sarw ax,15 | movw %H0,ax | mov %Q0,a
+   movw ax,%H1 \; sar a,%s2 \; mov %0,a \; sarw ax,15 \; movw %H0,ax \; mov %Q0,a
 
-   mov b,%2 | cmp0 b | bz $2f | 1: | movw ax,%H1 | sarw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a | dec b | bnz $1b | 2:"
+   mov b,%2 \; cmp0 b \; bz $2f \; 1: \; movw ax,%H1 \; sarw ax,1 \; movw %H0,ax \; mov a,%Q1 \; rorc a,1 \; mov %Q0,a \; mov a,%q1 \; rorc a,1 \; mov %q0,a \; dec b \; bnz $1b \; 2:"
   [(set_attr "valloc" "macax")]
 )
 
@@ -215,30 +215,30 @@
   "@
    ; lshrsi %0, 0
 
-   movw ax,%H1 | shrw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
-   movw ax,%H1 | shrw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
+   movw ax,%H1 \; shrw ax,1 \; movw %H0,ax \; mov a,%Q1 \; rorc a,1 \; mov %Q0,a \; mov a,%q1 \; rorc a,1 \; mov %q0,a
+   movw ax,%H1 \; shrw ax,1 \; movw %H0,ax \; mov a,%Q1 \; rorc a,1 \; mov %Q0,a \; mov a,%q1 \; rorc a,1 \; mov %q0,a
 
-   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
-   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
-   movw ax,%1 | shlw ax,%r2 | mov %0,a | mov a,%Q1 | mov x,a   | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+   movw ax,%1 \; shlw ax,%r2 \; mov %0,a             \; mov x,%Q1 \; mov a,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; shrw ax,%u2 \; movw %H0,ax
+   movw ax,%1 \; shlw ax,%r2 \; mov %0,a             \; mov x,%Q1 \; mov a,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; shrw ax,%u2 \; movw %H0,ax
+   movw ax,%1 \; shlw ax,%r2 \; mov %0,a \; mov a,%Q1 \; mov x,a   \; mov a,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; shrw ax,%u2 \; movw %H0,ax
 
-   mov x,%Q1            | mov a,%H1 | movw %0,ax | movw ax,%H1 | shrw ax,8 | movw %H0,ax
-   mov a,%Q1 | mov x, a | mov a,%H1 | movw %0,ax | movw ax,%H1 | shrw ax,8 | movw %H0,ax
+   mov x,%Q1            \; mov a,%H1 \; movw %0,ax \; movw ax,%H1 \; shrw ax,8 \; movw %H0,ax
+   mov a,%Q1 \; mov x, a \; mov a,%H1 \; movw %0,ax \; movw ax,%H1 \; shrw ax,8 \; movw %H0,ax
 
-   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
-   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
-   mov a,%Q1 | mov x,a | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+   mov x,%Q1           \; mov a,%H1 \; shlw ax,%r2 \; mov %0,a \; movw ax,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; shrw ax,%u2 \; movw %H0,ax
+   mov x,%Q1           \; mov a,%H1 \; shlw ax,%r2 \; mov %0,a \; movw ax,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; shrw ax,%u2 \; movw %H0,ax
+   mov a,%Q1 \; mov x,a \; mov a,%H1 \; shlw ax,%r2 \; mov %0,a \; movw ax,%H1 \; shlw ax,%r2 \; mov %Q0,a \; movw ax,%H1 \; shrw ax,%u2 \; movw %H0,ax
 
-   movw ax,%H1 | movw %0,ax | movw ax,#0 | movw %H0,ax
+   movw ax,%H1 \; movw %0,ax \; movw ax,#0 \; movw %H0,ax
 
-   movw ax,%H1 | shrw ax,%S2 | movw %0,ax | movw ax,#0 | movw %H0,ax
-   movw ax,%H1 | shrw ax,%S2 | movw %0,ax | movw ax,#0 | movw %H0,ax
+   movw ax,%H1 \; shrw ax,%S2 \; movw %0,ax \; movw ax,#0 \; movw %H0,ax
+   movw ax,%H1 \; shrw ax,%S2 \; movw %0,ax \; movw ax,#0 \; movw %H0,ax
 
-   movw ax,%H1 | mov %0,a | movw ax,#0 | movw %H0,ax | mov %Q0,a
+   movw ax,%H1 \; mov %0,a \; movw ax,#0 \; movw %H0,ax \; mov %Q0,a
 
-   movw ax,%H1 | shr a,%s2 | mov %0,a | movw ax,#0 | movw %H0,ax | mov %Q0,a
+   movw ax,%H1 \; shr a,%s2 \; mov %0,a \; movw ax,#0 \; movw %H0,ax \; mov %Q0,a
 
-   mov b,%2 | cmp0 b | bz $2f | 1: | movw ax,%H1 | shrw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a | dec b | bnz $1b | 2:"
+   mov b,%2 \; cmp0 b \; bz $2f \; 1: \; movw ax,%H1 \; shrw ax,1 \; movw %H0,ax \; mov a,%Q1 \; rorc a,1 \; mov %Q0,a \; mov a,%q1 \; rorc a,1 \; mov %q0,a \; dec b \; bnz $1b \; 2:"
   [(set_attr "valloc" "macax")]
 )
 
@@ -253,35 +253,35 @@
   "@
    ; lshrsi %0, 0
 
-   movw ax,%1 | shlw ax,1 | movw %0,ax | movw ax,%H1 | rolwc ax,1 | movw %H0,ax
-   movw ax,%1 | shlw ax,1 | movw %0,ax | movw ax,%H1 | rolwc ax,1 | movw %H0,ax
+   movw ax,%1 \; shlw ax,1 \; movw %0,ax \; movw ax,%H1 \; rolwc ax,1 \; movw %H0,ax
+   movw ax,%1 \; shlw ax,1 \; movw %0,ax \; movw ax,%H1 \; rolwc ax,1 \; movw %H0,ax
 
-   movw ax,%H1 | shlw ax,%u2 | mov %E0,a | mov x,%Q1           | mov a, %H1 | shlw ax,%S2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
-   movw ax,%H1 | shlw ax,%u2 | mov %E0,a | mov x,%Q1           | mov a, %H1 | shlw ax,%S2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
-   movw ax,%H1 | shlw ax,%u2 | mov %E0,a | mov a,%Q1 | mov x,a | mov a, %H1 | shlw ax,%S2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+   movw ax,%H1 \; shlw ax,%u2 \; mov %E0,a \; mov x,%Q1           \; mov a, %H1 \; shlw ax,%S2 \; mov %H0,a \; movw ax,%1 \; shlw ax,%u2 \; movw %0,ax
+   movw ax,%H1 \; shlw ax,%u2 \; mov %E0,a \; mov x,%Q1           \; mov a, %H1 \; shlw ax,%S2 \; mov %H0,a \; movw ax,%1 \; shlw ax,%u2 \; movw %0,ax
+   movw ax,%H1 \; shlw ax,%u2 \; mov %E0,a \; mov a,%Q1 \; mov x,a \; mov a, %H1 \; shlw ax,%S2 \; mov %H0,a \; movw ax,%1 \; shlw ax,%u2 \; movw %0,ax
 
-   mov x,%Q1           | mov a,%H1 | movw %H0,ax | movw ax,%1 | shlw ax,8 | movw %0,ax
-   mov a,%Q1 | mov x,a | mov a,%H1 | movw %H0,ax | movw ax,%1 | shlw ax,8 | movw %0,ax
+   mov x,%Q1           \; mov a,%H1 \; movw %H0,ax \; movw ax,%1 \; shlw ax,8 \; movw %0,ax
+   mov a,%Q1 \; mov x,a \; mov a,%H1 \; movw %H0,ax \; movw ax,%1 \; shlw ax,8 \; movw %0,ax
 
-   mov x,%Q1           | mov a,%H1 | shlw ax,%s2 | movw %H0,ax | movw ax,%1 | shlw ax,%s2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
-   mov x,%Q1           | mov a,%H1 | shlw ax,%s2 | movw %H0,ax | movw ax,%1 | shlw ax,%s2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
-   mov a,%Q1 | mov x,a | mov a,%H1 | shlw ax,%s2 | movw %H0,ax | movw ax,%1 | shlw ax,%s2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+   mov x,%Q1           \; mov a,%H1 \; shlw ax,%s2 \; movw %H0,ax \; movw ax,%1 \; shlw ax,%s2 \; mov %H0,a \; movw ax,%1 \; shlw ax,%u2 \; movw %0,ax
+   mov x,%Q1           \; mov a,%H1 \; shlw ax,%s2 \; movw %H0,ax \; movw ax,%1 \; shlw ax,%s2 \; mov %H0,a \; movw ax,%1 \; shlw ax,%u2 \; movw %0,ax
+   mov a,%Q1 \; mov x,a \; mov a,%H1 \; shlw ax,%s2 \; movw %H0,ax \; movw ax,%1 \; shlw ax,%s2 \; mov %H0,a \; movw ax,%1 \; shlw ax,%u2 \; movw %0,ax
 
-   movw ax,%1 | movw %H0,ax | movw %0,#0
-   movw ax,%1 | movw %H0,ax | movw ax,#0 | movw %0,ax
+   movw ax,%1 \; movw %H0,ax \; movw %0,#0
+   movw ax,%1 \; movw %H0,ax \; movw ax,#0 \; movw %0,ax
 
-   movw ax,%1 | shlw ax,%S2 | movw %H0,ax | movw %0,#0
-   movw ax,%1 | shlw ax,%S2 | movw %H0,ax | movw ax,#0 | movw %0,ax
+   movw ax,%1 \; shlw ax,%S2 \; movw %H0,ax \; movw %0,#0
+   movw ax,%1 \; shlw ax,%S2 \; movw %H0,ax \; movw ax,#0 \; movw %0,ax
 
-   mov a,%1 | movw %H0,ax | mov %H0,#0 | movw %0,#0
-   mov a,%1 | movw %H0,ax | movw ax,#0 | mov %H0,a | movW %0,ax
+   mov a,%1 \; movw %H0,ax \; mov %H0,#0 \; movw %0,#0
+   mov a,%1 \; movw %H0,ax \; movw ax,#0 \; mov %H0,a \; movW %0,ax
 
-   mov a,%1 | shl a,%s2 | movw %H0,ax | mov %H0,#0 | movw %0,#0
-   mov a,%1 | shl a,%s2 | movw %H0,ax | movw ax,#0 | mov %H0,a | movW %0,ax
+   mov a,%1 \; shl a,%s2 \; movw %H0,ax \; mov %H0,#0 \; movw %0,#0
+   mov a,%1 \; shl a,%s2 \; movw %H0,ax \; movw ax,#0 \; mov %H0,a \; movW %0,ax
 
-   mov a,%2 | cmp0 a | bz $2f | mov d,a | movw ax,%H1 | movw bc,%1 | 1: | shlw bc,1 | rolwc ax,1 | dec d | bnz $1b | movw %H0,ax | movw ax,bc | movw %0,ax | 2:
-   mov a,%2 | mov d,a | movw ax,%H1 | movw bc,%1 | cmp0 0xFFEFD | bz $2f | 1: | shlw bc,1 | rolwc ax,1 | dec d | bnz $1b | 2: | movw %H0,ax | movw ax,bc | movw %0,ax
-   mov a,%2 | mov d,a | movw ax,%1 | movw bc,ax | movw ax,%H1 | cmp0 0xFFEFD | bz $2f | 1: | shlw bc,1 | rolwc ax,1 | dec d | bnz $1b | 2: | movw %H0,ax | movw ax,bc | movw %0,ax"
+   mov a,%2 \; cmp0 a \; bz $2f \; mov d,a \; movw ax,%H1 \; movw bc,%1 \; 1: \; shlw bc,1 \; rolwc ax,1 \; dec d \; bnz $1b \; movw %H0,ax \; movw ax,bc \; movw %0,ax \; 2:
+   mov a,%2 \; mov d,a \; movw ax,%H1 \; movw bc,%1 \; cmp0 0xFFEFD \; bz $2f \; 1: \; shlw bc,1 \; rolwc ax,1 \; dec d \; bnz $1b \; 2: \; movw %H0,ax \; movw ax,bc \; movw %0,ax
+   mov a,%2 \; mov d,a \; movw ax,%1 \; movw bc,ax \; movw ax,%H1 \; cmp0 0xFFEFD \; bz $2f \; 1: \; shlw bc,1 \; rolwc ax,1 \; dec d \; bnz $1b \; 2: \; movw %H0,ax \; movw ax,bc \; movw %0,ax"
    [(set_attr "valloc" "macax")]
  )
 
