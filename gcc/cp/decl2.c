@@ -507,8 +507,9 @@ check_member_template (tree tmpl)
       || (TREE_CODE (decl) == TYPE_DECL
 	  && MAYBE_CLASS_TYPE_P (TREE_TYPE (decl))))
     {
-      /* The parser rejects template declarations in local classes.  */
-      gcc_assert (!current_function_decl);
+      /* The parser rejects template declarations in local classes
+	 (with the exception of generic lambdas).  */
+      gcc_assert (!current_function_decl || LAMBDA_FUNCTION_P (decl));
       /* The parser rejects any use of virtual in a function template.  */
       gcc_assert (!(TREE_CODE (decl) == FUNCTION_DECL
 		    && DECL_VIRTUAL_P (decl)));
