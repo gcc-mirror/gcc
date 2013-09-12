@@ -1036,8 +1036,12 @@ rl78_expand_prologue (void)
     emit_insn (gen_sel_rb (GEN_INT (0)));
 
   if (frame_pointer_needed)
-    F (emit_move_insn (gen_rtx_REG (HImode, FRAME_POINTER_REGNUM),
-		       gen_rtx_REG (HImode, STACK_POINTER_REGNUM)));
+    {
+      F (emit_move_insn (gen_rtx_REG (HImode, AX_REG),
+			 gen_rtx_REG (HImode, STACK_POINTER_REGNUM)));
+      F (emit_move_insn (gen_rtx_REG (HImode, FRAME_POINTER_REGNUM),
+			 gen_rtx_REG (HImode, AX_REG)));
+    }
 
   fs = cfun->machine->framesize_locals + cfun->machine->framesize_outgoing;
   while (fs > 0)
@@ -1061,8 +1065,10 @@ rl78_expand_epilogue (void)
 
   if (frame_pointer_needed)
     {
-      emit_move_insn (gen_rtx_REG (HImode, STACK_POINTER_REGNUM),
+      emit_move_insn (gen_rtx_REG (HImode, AX_REG),
 		      gen_rtx_REG (HImode, FRAME_POINTER_REGNUM));
+      emit_move_insn (gen_rtx_REG (HImode, STACK_POINTER_REGNUM),
+		      gen_rtx_REG (HImode, AX_REG));
     }
   else
     {
