@@ -10204,8 +10204,7 @@ void __builtin_ia32_mwait (unsigned int, unsigned int)
 @end smallexample
 
 The following built-in functions are available when @option{-mssse3} is used.
-All of them generate the machine instruction that is part of the name
-with MMX registers.
+All of them generate the machine instruction that is part of the name.
 
 @smallexample
 v2si __builtin_ia32_phaddd (v2si, v2si)
@@ -10227,8 +10226,7 @@ v4hi __builtin_ia32_pabsw (v4hi)
 @end smallexample
 
 The following built-in functions are available when @option{-mssse3} is used.
-All of them generate the machine instruction that is part of the name
-with SSE registers.
+All of them generate the machine instruction that is part of the name.
 
 @smallexample
 v4si __builtin_ia32_phaddd128 (v4si, v4si)
@@ -10876,42 +10874,41 @@ v8hi __builtin_ia32_vpshlw (v8hi, v8hi)
 @end smallexample
 
 The following built-in functions are available when @option{-mfma4} is used.
-All of them generate the machine instruction that is part of the name
-with MMX registers.
+All of them generate the machine instruction that is part of the name.
 
 @smallexample
-v2df __builtin_ia32_fmaddpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fmaddps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fmaddsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fmaddss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fmsubpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fmsubps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fmsubsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fmsubss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fnmaddpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fnmaddps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fnmaddsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fnmaddss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fnmsubpd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fnmsubps (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fnmsubsd (v2df, v2df, v2df)
-v4sf __builtin_ia32_fnmsubss (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fmaddsubpd  (v2df, v2df, v2df)
-v4sf __builtin_ia32_fmaddsubps  (v4sf, v4sf, v4sf)
-v2df __builtin_ia32_fmsubaddpd  (v2df, v2df, v2df)
-v4sf __builtin_ia32_fmsubaddps  (v4sf, v4sf, v4sf)
-v4df __builtin_ia32_fmaddpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_fmaddps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_fmsubpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_fmsubps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_fnmaddpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_fnmaddps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_fnmsubpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_fnmsubps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_fmaddsubpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_fmaddsubps256 (v8sf, v8sf, v8sf)
-v4df __builtin_ia32_fmsubaddpd256 (v4df, v4df, v4df)
-v8sf __builtin_ia32_fmsubaddps256 (v8sf, v8sf, v8sf)
+v2df __builtin_ia32_vfmaddpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfmaddps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfmaddsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfmaddss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfmsubpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfmsubps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfmsubsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfmsubss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfnmaddpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfnmaddps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfnmaddsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfnmaddss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfnmsubpd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfnmsubps (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfnmsubsd (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfnmsubss (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfmaddsubpd  (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfmaddsubps  (v4sf, v4sf, v4sf)
+v2df __builtin_ia32_vfmsubaddpd  (v2df, v2df, v2df)
+v4sf __builtin_ia32_vfmsubaddps  (v4sf, v4sf, v4sf)
+v4df __builtin_ia32_vfmaddpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_vfmaddps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_vfmsubpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_vfmsubps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_vfnmaddpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_vfnmaddps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_vfnmsubpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_vfnmsubps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_vfmaddsubpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_vfmaddsubps256 (v8sf, v8sf, v8sf)
+v4df __builtin_ia32_vfmsubaddpd256 (v4df, v4df, v4df)
+v8sf __builtin_ia32_vfmsubaddps256 (v8sf, v8sf, v8sf)
 
 @end smallexample
 
