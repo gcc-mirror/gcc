@@ -1,3 +1,8 @@
+2013-09-12  DJ Delorie  <dj@redhat.com>
+
+	* cfgexpand.c (expand_debug_expr): Avoid sign-extending SImode to
+	PSImode.
+
 2013-09-12  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/58389
