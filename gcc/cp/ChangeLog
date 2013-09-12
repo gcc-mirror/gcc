@@ -1,3 +1,9 @@
+2013-09-12  Adam Butcher  <adam@jessamine.co.uk>
+
+	* pt.c (instantiate_decl): Save/restore cp_unevaluated_operand and
+	c_inhibit_evaluation_warnings.  Reset if instantiating within a
+	function-local template.
+
 2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* semantics.c (finish_pseudo_destructor_expr): Add location_t
