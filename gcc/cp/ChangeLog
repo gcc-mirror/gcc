@@ -1,3 +1,8 @@
+2013-09-12  Brooks Moses  <bmoses@google.com>
+
+	PR driver/42955
+	* Make-lang.in: Do not install driver binaries in $(target)/bin.
+
 2013-09-12  Adam Butcher  <adam@jessamine.co.uk>
 
 	* cp-tree.h (type_uses_auto_or_concept): Declare.

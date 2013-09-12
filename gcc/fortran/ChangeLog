@@ -1,3 +1,8 @@
+2013-09-12  Brooks Moses  <bmoses@google.com>
+
+	PR driver/42955
+	* Make-lang.in: Do not install driver binaries in $(target)/bin.
+
 2013-09-09  Tobias Burnus  <burnus@net-b.de>
 
 	* invoke.texi (Error and Warning Options): Add hyphen.

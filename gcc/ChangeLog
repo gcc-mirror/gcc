@@ -1,3 +1,8 @@
+2013-09-12  Brooks Moses  <bmoses@google.com>
+
+	PR driver/42955
+	* Makefile.in: Do not install driver binaries in $(target)/bin.
+
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.opt (mrelax): New.
