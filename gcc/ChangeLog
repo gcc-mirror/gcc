@@ -1,3 +1,19 @@
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (dot_rdg_1): Make graph prettier.
+	(dot_rdg): Use popen instead of system in optional code.
+	(remaining_stmts, upstream_mem_writes): Remove global bitmaps.
+	(already_processed_vertex_p): Adjust.
+	(has_anti_or_output_dependence, predecessor_has_mem_write,
+	mark_nodes_having_upstream_mem_writes, has_upstream_mem_writes,
+	rdg_flag_uses): Remove.
+	(rdg_flag_vertex): Simplify.
+	(rdg_flag_vertex_and_dependent): Rely on a correct RDG and
+	remove recursion.
+	(build_rdg_partition_for_component): Process the first vertex
+	of a component only.
+	(ldist_gen): Do not compute remaining_stmts or upstream_mem_writes.
+
 2013-09-12  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (toc_relative_expr_p): Use add_cint_operand.
