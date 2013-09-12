@@ -783,23 +783,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // Random access iterator requirements
       reference
-      operator[](const difference_type& __n) const
+      operator[](difference_type __n) const
       { return _M_current[__n]; }
 
       __normal_iterator&
-      operator+=(const difference_type& __n)
+      operator+=(difference_type __n)
       { _M_current += __n; return *this; }
 
       __normal_iterator
-      operator+(const difference_type& __n) const
+      operator+(difference_type __n) const
       { return __normal_iterator(_M_current + __n); }
 
       __normal_iterator&
-      operator-=(const difference_type& __n)
+      operator-=(difference_type __n)
       { _M_current -= __n; return *this; }
 
       __normal_iterator
-      operator-(const difference_type& __n) const
+      operator-(difference_type __n) const
       { return __normal_iterator(_M_current - __n); }
 
       const _Iterator&
