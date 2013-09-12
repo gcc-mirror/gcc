@@ -41,6 +41,16 @@
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC "crtend.o%s crtn.o%s"
 
+#undef  ASM_SPEC
+#define ASM_SPEC "\
+%{mrelax:-relax} \
+"
+
+#undef  LINK_SPEC
+#define LINK_SPEC "\
+%{mrelax:-relax} \
+"
+
 #undef  LIB_SPEC
 #define LIB_SPEC "					\
 --start-group						\

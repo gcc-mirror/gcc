@@ -1,5 +1,9 @@
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
+	* config/rl78/rl78.opt (mrelax): New.
+	* config/rl78/rl78.h (ASM_SPEC): New, pass on -mrelax to gas.
+	* config/rl78/rl78.h (LINK_SPEC): New, pass on -mrelax to ld.
+
 	* config/rl78/rl78.c (rl78_expand_prologue): Use AX to copy
 	between SP and FP.
 	(rl78_expand_epilogue): Likewise.
