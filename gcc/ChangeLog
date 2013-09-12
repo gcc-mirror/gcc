@@ -1,3 +1,16 @@
+2013-09-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h (FREE_SSANAMES): Move to tree-ssanames.c
+	(SSANAMES, MODIFIED_NORETURN_CALLS, DEFAULT_DEFS, ptr_info_def,
+	num_ssa_names, ssa_name): Move to tree-ssanames.h + prototypes.
+	* tree-flow-inline.h (make_ssa_name, copy_ssa_name, duplicate_ssa_name,
+	make_temp_ssa_name): move to tree-ssanames.h
+	* tree-ssa-alias.h: Move prototype.
+	* tree-ssa.h: Include tree-ssanames.h.
+	* tree-ssanames.c (FREE_SSANAMES): Move to here.
+	* tree-ssanames.h: New.  Move items from tree-flow*.h
+	* Makefile.in (tree-ssanames.h): Add to tree-ssanames.o and GTFILES.
+
 2013-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58404
