@@ -1,5 +1,37 @@
 2013-09-12  Adam Butcher  <adam@jessamine.co.uk>
 
+	* cp-tree.h (type_uses_auto_or_concept): Declare.
+	(is_auto_or_concept): Declare.
+	* decl.c (grokdeclarator): Allow 'auto' parameters in lambdas with
+	-std=gnu++1y or -std=c++1y or, as a GNU extension, in plain functions.
+	* type-utils.h: New header defining ...
+	(find_type_usage): ... this new function based on pt.c (type_uses_auto)
+	for searching a type tree given a predicate.
+	* pt.c (type_uses_auto): Reimplement via type-utils.h (find_type_usage).
+	(is_auto_or_concept): New function.
+	(type_uses_auto_or_concept): New function.
+	* parser.h (struct cp_parser): Add fully_implicit_function_template_p.
+	* parser.c (cp_parser_new): Initialize fully_implicit_function_template_p.
+	(cp_parser_new): Initialize fully_implicit_function_template_p.
+	(cp_parser_lambda_expression): Copy and restore value of
+	fully_implicit_function_template_p as per other parser fields.
+	(cp_parser_parameter_declaration_list): Count generic
+	parameters and call ...
+	(add_implicit_template_parms): ... this new function to synthesize them
+	with help from type-utils.h (find_type_usage), ...
+	(tree_type_is_auto_or_concept): ... this new static function and ...
+	(make_generic_type_name): ... this new static function.
+	(cp_parser_direct_declarator): Account for implicit template parameters.
+	(cp_parser_lambda_declarator_opt): Finish fully implicit template if
+	necessary by calling ...
+	(finish_fully_implicit_template): ... this new function.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_function_definition_after_declarator): Likewise.
+	* Make-lang.in (cp/pt.o): Add dependency on type-utils.h.
+	(cp/parser.o): Likewise.
+
+2013-09-12  Adam Butcher  <adam@jessamine.co.uk>
+
 	* parser.c (cp_parser_lambda_declarator_opt): Accept template parameter
 	list with std=c++1y or std=gnu++1y.
 	(cp_parser_lambda_body): Don't call 'expand_or_defer_fn' for lambda call

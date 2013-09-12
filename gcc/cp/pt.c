@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"
 #include "timevar.h"
 #include "tree-iterator.h"
+#include "type-utils.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -21110,30 +21111,34 @@ is_auto (const_tree type)
     return false;
 }
 
-/* Returns true iff TYPE contains a use of 'auto'.  Since auto can only
-   appear as a type-specifier for the declaration in question, we don't
-   have to look through the whole type.  */
+/* Returns the TEMPLATE_TYPE_PARM in TYPE representing `auto' iff TYPE contains
+   a use of `auto'.  Returns NULL_TREE otherwise.  */
 
 tree
 type_uses_auto (tree type)
 {
-  enum tree_code code;
-  if (is_auto (type))
-    return type;
-
-  code = TREE_CODE (type);
-
-  if (code == POINTER_TYPE || code == REFERENCE_TYPE
-      || code == OFFSET_TYPE || code == FUNCTION_TYPE
-      || code == METHOD_TYPE || code == ARRAY_TYPE)
-    return type_uses_auto (TREE_TYPE (type));
-
-  if (TYPE_PTRMEMFUNC_P (type))
-    return type_uses_auto (TREE_TYPE (TREE_TYPE
-				   (TYPE_PTRMEMFUNC_FN_TYPE (type))));
-
-  return NULL_TREE;
+  return find_type_usage (type, is_auto);
 }
+
+/* Returns true iff TYPE is a TEMPLATE_TYPE_PARM representing 'auto',
+   'decltype(auto)' or a concept.  */
+
+bool
+is_auto_or_concept (const_tree type)
+{
+  return is_auto (type); // or concept
+}
+
+/* Returns the TEMPLATE_TYPE_PARM in TYPE representing a generic type (`auto' or
+   a concept identifier) iff TYPE contains a use of a generic type.  Returns
+   NULL_TREE otherwise.  */
+
+tree
+type_uses_auto_or_concept (tree type)
+{
+  return find_type_usage (type, is_auto_or_concept);
+}
+
 
 /* For a given template T, return the vector of typedefs referenced
    in T for which access check is needed at T instantiation time.
