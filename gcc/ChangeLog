@@ -1,5 +1,12 @@
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
+	* config/msp430/: New port.
+	* config.gcc (msp430): Added.
+	* doc/invoke.texi: Document MSP430 options.
+	* doc/install.texi: Document msp430-elf
+	* doc/md.texi: Document msp430-elf
+	* doc/contrib.texi: Document msp430-elf
+
 	* cfgexpand.c (expand_debug_expr): Avoid sign-extending SImode to
 	PSImode.
 

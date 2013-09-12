@@ -1,0 +1,26 @@
+msim
+Target
+Use simulator runtime
+
+masm-hex
+Target Mask(ASM_HEX)
+Force assembly output to always use hex constants
+
+mmcu=
+Target Joined RejectNegative Var(target_cpu)
+Specify the cpu to build for.  If the name begins with 'msp430x' then the 430X instructions are enabled
+
+mlarge
+Target Mask(LARGE) RejectNegative
+Select large model - 20-bit addresses/pointers
+
+msmall
+Target InverseMask(LARGE) RejectNegative
+Select small model - 16-bit addresses/pointers (default)
+
+mrelax
+Target Report
+Optimize opcode sizes at link time
+
+mOs
+Target Undocumented Mask(OPT_SPACE)

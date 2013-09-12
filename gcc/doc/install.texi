@@ -3992,6 +3992,13 @@ The moxie processor.
 @html
 <hr />
 @end html
+@heading @anchor{msp430-x-elf}msp430-*-elf
+TI MSP430 processor.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
 @heading @anchor{powerpc-x-x}powerpc-*-*
 
 You can specify a default version for the @option{-mcpu=@var{cpu_type}}

@@ -804,6 +804,9 @@ Objective-C and Objective-C++ Dialects}.
 @emph{Moxie Options}
 @gccoptlist{-meb -mel -mno-crt0}
 
+@emph{MSP430 Options}
+@gccoptlist{-msim -masm-hex -mmcu= -mlarge -msmall -mrelax}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mbcopy  -mbcopy-builtin  -mint32  -mno-int16 @gol
@@ -11036,6 +11039,7 @@ platform.
 * MMIX Options::
 * MN10300 Options::
 * Moxie Options::
+* MSP430 Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -16026,7 +16030,7 @@ Link the SDRAM-based runtime instead of the default ROM-based runtime.
 
 @item -msim
 @opindex msim
-Link the simulator runtime libraries.
+Link the simulator run-time libraries.
 
 @item -msimnovec
 @opindex msimnovec
@@ -17287,6 +17291,46 @@ Generate little-endian code.
 @item -mno-crt0
 @opindex mno-crt0
 Do not link in the C run-time initialization object file.
+
+@end table
+
+@node MSP430 Options
+@subsection MSP430 Options
+@cindex MSP430 Options
+
+These options are defined for the MSP430:
+
+@table @gcctabopt
+
+@item -msim
+@opindex msim
+Link the simulator runtime libraries.
+
+@item -masm-hex
+@opindex masm-hex
+Force assembly output to always use hex constants.  Normally such
+constants are signed decimals, but this option is available for
+testsuite and/or aesthetic purposes.
+
+@item -mmcu=
+@opindex mmcu=
+Select the MCU to target.  Note that there are two ``generic'' MCUs,
+@code{msp430} and @code{msp430x}, which should be used most of the
+time.  This option is also passed to the assembler.
+
+@item -mlarge
+@opindex mlarge
+Use large-model addressing (20-bit pointers, 32-bit @code{size_t}).
+
+@item -msmall
+@opindex msmall
+Use small-model addressing (16-bit pointers, 16-bit @code{size_t}).
+
+@item -mrelax
+@opindex mrelax
+This option is passed to the assembler and linker, and allows the
+linker to perform certain optimizations that cannot be done until
+the final link.
 
 @end table
 
