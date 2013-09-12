@@ -5398,7 +5398,8 @@ unify_arg_conversion (bool explain_p, tree to_type,
 		      tree from_type, tree arg)
 {
   if (explain_p)
-    inform (input_location, "  cannot convert %qE (type %qT) to type %qT",
+    inform (EXPR_LOC_OR_HERE (arg),
+	    "  cannot convert %qE (type %qT) to type %qT",
 	    arg, from_type, to_type);
   return 1;
 }
@@ -14292,9 +14293,10 @@ tsubst_copy_and_build (tree t,
 
     case PSEUDO_DTOR_EXPR:
       RETURN (finish_pseudo_destructor_expr
-	(RECUR (TREE_OPERAND (t, 0)),
-	 RECUR (TREE_OPERAND (t, 1)),
-	 tsubst (TREE_OPERAND (t, 2), args, complain, in_decl)));
+	      (RECUR (TREE_OPERAND (t, 0)),
+	       RECUR (TREE_OPERAND (t, 1)),
+	       tsubst (TREE_OPERAND (t, 2), args, complain, in_decl),
+	       input_location));
 
     case TREE_LIST:
       {
@@ -14423,7 +14425,8 @@ tsubst_copy_and_build (tree t,
 		  {
 		    dtor = TREE_OPERAND (dtor, 0);
 		    if (TYPE_P (dtor))
-		      RETURN (finish_pseudo_destructor_expr (object, s, dtor));
+		      RETURN (finish_pseudo_destructor_expr
+			      (object, s, dtor, input_location));
 		  }
 	      }
 	  }
