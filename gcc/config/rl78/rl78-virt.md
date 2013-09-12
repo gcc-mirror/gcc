@@ -161,19 +161,129 @@
   "v.shr\t%0, %1, %2"
 )
 
-;; really a macro
-(define_insn "*ashrsi3_virt"
-  [(set (match_operand:SI               0 "register_operand" "=v,v,v")
-	(ashiftrt:SI (match_operand:SI  1 "register_operand" "0,v,0")
-		      (match_operand:SI 2 "immediate_operand" "M,K,i")))
+;; This is complex mostly because the RL78 has no SImode operations,
+;; and very limited HImode operations, and no variable shifts.  This
+;; pattern is optimized for each constant shift count and operand
+;; types, so as to use a hand-optimized pattern.  For readability, the
+;; usual \t\; syntax is not used here.  Also, there's no easy way to 
+;; constrain to avoid partial overlaps, hence the duplication.
+(define_insn "ashrsi3_virt"                                  ;;   0  1      2-7            8         9-15           16   17-23     24   25-31 var
+  [(set (match_operand:SI               0 "nonimmediate_operand" "=v,vU,&vU,v,  &vU,  &vU, v,  &vU,  v,  &vU, &vU,  vU,  v,&vU,    vU,  vU,   vU")
+	(ashiftrt:SI (match_operand:SI  1 "nonimmediate_operand" "0, 0,  vU,0,   vWab, U,  0,   vU,  0,   vWab,U,   vU,  0, vU,    vU,  vU,   0")
+		      (match_operand:SI 2 "nonmemory_operand"    "M, K,  K, Int3,Int3,Int3,Iv08,Iv08,Is09,Is09,Is09,Iv16,Is17,Is17,Iv24,Is25, iv")))
+   (clobber (reg:HI X_REG))
+    ]
+   ""
+   "@
+    ; ashrsi %0, 0
+
+   movw ax,%H1 | sarw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
+   movw ax,%H1 | sarw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
+
+   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+   movw ax,%1 | shlw ax,%r2 | mov %0,a | mov a,%Q1 | mov x,a   | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+
+   mov x,%Q1            | mov a,%H1 | movw %0,ax | movw ax,%H1 | sarw ax,8 | movw %H0,ax
+   mov a,%Q1 | mov x, a | mov a,%H1 | movw %0,ax | movw ax,%H1 | sarw ax,8 | movw %H0,ax
+
+   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+   mov a,%Q1 | mov x,a | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | sarw ax,%u2 | movw %H0,ax
+
+   movw ax,%H1 | movw %0,ax | sarw ax,15 | movw %H0,ax
+
+   movw ax,%H1 | sarw ax,%S2 | movw %0,ax | sarw ax,15 | movw %H0,ax
+   movw ax,%H1 | sarw ax,%S2 | movw %0,ax | sarw ax,15 | movw %H0,ax
+
+   movw ax,%H1 | mov %0,a | sarw ax,15 | movw %H0,ax | mov %Q0,a
+
+   movw ax,%H1 | sar a,%s2 | mov %0,a | sarw ax,15 | movw %H0,ax | mov %Q0,a
+
+   mov b,%2 | cmp0 b | bz $2f | 1: | movw ax,%H1 | sarw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a | dec b | bnz $1b | 2:"
+  [(set_attr "valloc" "macax")]
+)
+
+;; Likewise.
+(define_insn "lshrsi3_virt"                                  ;;   0  1      2-7            8         9-15           16   17-23     24   25-31 var
+  [(set (match_operand:SI               0 "nonimmediate_operand" "=v,vU,&vU,v,  &vU,  &vU, v,  &vU,  v,  &vU, &vU,  vU,  v,&vU,    vU,  vU,   vU")
+	(lshiftrt:SI (match_operand:SI  1 "nonimmediate_operand" "0, 0,  vU,0,   vWab, U,  0,   vU,  0,   vWab,U,   vU,  0, vU,    vU,  vU,   0")
+		      (match_operand:SI 2 "nonmemory_operand"    "M, K,  K, Int3,Int3,Int3,Iv08,Iv08,Is09,Is09,Is09,Iv16,Is17,Is17,Iv24,Is25, iv")))
+   (clobber (reg:HI X_REG))
    ]
   ""
   "@
-   ; ashrsi %0, 0
-   movw\tax,%H1\;sarw\tax,1\;movw\t%H0,ax\;mov\ta,%Q1\;rorc\ta,1\;mov\t%Q0,a\;mov\ta,%q1\;rorc\ta,1\;mov\t%q0,a
-   mov\tb,%2\;1:\;movw\tax,%H1\;sarw\tax,1\;movw\t%H0,ax\;mov\ta,%Q1\;rorc\ta,1\;mov\t%Q0,a\;mov\ta,%q1\;rorc\ta,1\;mov\t%q0,a\;dec\tb\;bnz $1b"
+   ; lshrsi %0, 0
+
+   movw ax,%H1 | shrw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
+   movw ax,%H1 | shrw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a
+
+   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+   movw ax,%1 | shlw ax,%r2 | mov %0,a             | mov x,%Q1 | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+   movw ax,%1 | shlw ax,%r2 | mov %0,a | mov a,%Q1 | mov x,a   | mov a,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+
+   mov x,%Q1            | mov a,%H1 | movw %0,ax | movw ax,%H1 | shrw ax,8 | movw %H0,ax
+   mov a,%Q1 | mov x, a | mov a,%H1 | movw %0,ax | movw ax,%H1 | shrw ax,8 | movw %H0,ax
+
+   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+   mov x,%Q1           | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+   mov a,%Q1 | mov x,a | mov a,%H1 | shlw ax,%r2 | mov %0,a | movw ax,%H1 | shlw ax,%r2 | mov %Q0,a | movw ax,%H1 | shrw ax,%u2 | movw %H0,ax
+
+   movw ax,%H1 | movw %0,ax | movw ax,#0 | movw %H0,ax
+
+   movw ax,%H1 | shrw ax,%S2 | movw %0,ax | movw ax,#0 | movw %H0,ax
+   movw ax,%H1 | shrw ax,%S2 | movw %0,ax | movw ax,#0 | movw %H0,ax
+
+   movw ax,%H1 | mov %0,a | movw ax,#0 | movw %H0,ax | mov %Q0,a
+
+   movw ax,%H1 | shr a,%s2 | mov %0,a | movw ax,#0 | movw %H0,ax | mov %Q0,a
+
+   mov b,%2 | cmp0 b | bz $2f | 1: | movw ax,%H1 | shrw ax,1 | movw %H0,ax | mov a,%Q1 | rorc a,1 | mov %Q0,a | mov a,%q1 | rorc a,1 | mov %q0,a | dec b | bnz $1b | 2:"
   [(set_attr "valloc" "macax")]
 )
+
+;; Likewise.
+(define_insn "ashlsi3_virt"                                ;;   0  1      2-7            8         9-15           16        17-23     24        25-31     var
+  [(set (match_operand:SI             0 "nonimmediate_operand" "=v,vU,&vU,v,  &vU,  &vU, v,  &vU,  v,  &vU, &vU,  v,   U,   v,&vU,    v,   U,   v,   U,   vWab,vU,  vU")
+	(ashift:SI (match_operand:SI  1 "nonimmediate_operand" "0, 0,  vU,0,   vWab, U,  0,   vU,  0,   vWab,U,   vU,  vU,  0, vU,    vU,  vU,  vU,  vU,  0,   vWab,U")
+		    (match_operand:SI 2 "nonmemory_operand"    "M, K,  K, Int3,Int3,Int3,Iv08,Iv08,Is09,Is09,Is09,Iv16,Iv16,Is17,Is17,Iv24,Iv24,Is25,Is25,iv,  iv,  iv")))
+   (clobber (reg:HI X_REG))
+   ]
+  ""
+  "@
+   ; lshrsi %0, 0
+
+   movw ax,%1 | shlw ax,1 | movw %0,ax | movw ax,%H1 | rolwc ax,1 | movw %H0,ax
+   movw ax,%1 | shlw ax,1 | movw %0,ax | movw ax,%H1 | rolwc ax,1 | movw %H0,ax
+
+   movw ax,%H1 | shlw ax,%u2 | mov %E0,a | mov x,%Q1           | mov a, %H1 | shlw ax,%S2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+   movw ax,%H1 | shlw ax,%u2 | mov %E0,a | mov x,%Q1           | mov a, %H1 | shlw ax,%S2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+   movw ax,%H1 | shlw ax,%u2 | mov %E0,a | mov a,%Q1 | mov x,a | mov a, %H1 | shlw ax,%S2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+
+   mov x,%Q1           | mov a,%H1 | movw %H0,ax | movw ax,%1 | shlw ax,8 | movw %0,ax
+   mov a,%Q1 | mov x,a | mov a,%H1 | movw %H0,ax | movw ax,%1 | shlw ax,8 | movw %0,ax
+
+   mov x,%Q1           | mov a,%H1 | shlw ax,%s2 | movw %H0,ax | movw ax,%1 | shlw ax,%s2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+   mov x,%Q1           | mov a,%H1 | shlw ax,%s2 | movw %H0,ax | movw ax,%1 | shlw ax,%s2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+   mov a,%Q1 | mov x,a | mov a,%H1 | shlw ax,%s2 | movw %H0,ax | movw ax,%1 | shlw ax,%s2 | mov %H0,a | movw ax,%1 | shlw ax,%u2 | movw %0,ax
+
+   movw ax,%1 | movw %H0,ax | movw %0,#0
+   movw ax,%1 | movw %H0,ax | movw ax,#0 | movw %0,ax
+
+   movw ax,%1 | shlw ax,%S2 | movw %H0,ax | movw %0,#0
+   movw ax,%1 | shlw ax,%S2 | movw %H0,ax | movw ax,#0 | movw %0,ax
+
+   mov a,%1 | movw %H0,ax | mov %H0,#0 | movw %0,#0
+   mov a,%1 | movw %H0,ax | movw ax,#0 | mov %H0,a | movW %0,ax
+
+   mov a,%1 | shl a,%s2 | movw %H0,ax | mov %H0,#0 | movw %0,#0
+   mov a,%1 | shl a,%s2 | movw %H0,ax | movw ax,#0 | mov %H0,a | movW %0,ax
+
+   mov a,%2 | cmp0 a | bz $2f | mov d,a | movw ax,%H1 | movw bc,%1 | 1: | shlw bc,1 | rolwc ax,1 | dec d | bnz $1b | movw %H0,ax | movw ax,bc | movw %0,ax | 2:
+   mov a,%2 | mov d,a | movw ax,%H1 | movw bc,%1 | cmp0 0xFFEFD | bz $2f | 1: | shlw bc,1 | rolwc ax,1 | dec d | bnz $1b | 2: | movw %H0,ax | movw ax,bc | movw %0,ax
+   mov a,%2 | mov d,a | movw ax,%1 | movw bc,ax | movw ax,%H1 | cmp0 0xFFEFD | bz $2f | 1: | shlw bc,1 | rolwc ax,1 | dec d | bnz $1b | 2: | movw %H0,ax | movw ax,bc | movw %0,ax"
+   [(set_attr "valloc" "macax")]
+ )
 
 ;;---------- Branching ------------------------
 
@@ -202,6 +312,18 @@
   [(set_attr "valloc" "op1")]
   )
 
+(define_insn "cbranchqi4_virt_signed"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "rl78_cmp_operator_signed"
+			      [(match_operand:QI 1 "general_operand" "vim")
+			       (match_operand:QI 2 "nonmemory_operand" "vi")])
+              (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "rl78_virt_insns_ok ()"
+  "v.cmp\t%1, %2\\n\tv.b%c0\t%3"
+  [(set_attr "valloc" "cmp")]
+  )
+
 (define_insn "*cbranchqi4_virt"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
@@ -211,6 +333,18 @@
 	      (pc)))]
   "rl78_virt_insns_ok ()"
   "v.cmp\t%1, %2\\n\tv.b%c0\t%3"
+  [(set_attr "valloc" "cmp")]
+  )
+
+(define_insn "cbranchhi4_virt_signed"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "rl78_cmp_operator_signed"
+			      [(match_operand:HI 1 "general_operand" "vim")
+			       (match_operand:HI 2 "nonmemory_operand" "vi")])
+              (label_ref (match_operand 3 "" ""))
+	      (pc)))]
+  "rl78_virt_insns_ok ()"
+  "v.cmpw\t%1, %2\\n\tv.b%c0\t%3"
   [(set_attr "valloc" "cmp")]
   )
 
@@ -224,6 +358,20 @@
   "rl78_virt_insns_ok ()"
   "v.cmpw\t%1, %2\\n\tv.b%c0\t%3"
   [(set_attr "valloc" "cmp")]
+  )
+
+(define_insn "cbranchsi4_virt"
+  [(set (pc) (if_then_else
+	      (match_operator 0 "rl78_cmp_operator"
+			      [(match_operand:SI 1 "general_operand" "vim")
+			       (match_operand:SI 2 "nonmemory_operand" "vi")])
+              (label_ref (match_operand 3 "" ""))
+	      (pc)))
+   (clobber (reg:HI AX_REG))
+   ]
+  "rl78_virt_insns_ok ()"
+  "v.cmpd\t%1, %2\\n\tv.b%c0\t%3"
+  [(set_attr "valloc" "macax")]
   )
 
 ;;---------- Peepholes ------------------------
