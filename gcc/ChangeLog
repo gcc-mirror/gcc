@@ -1,3 +1,8 @@
+2013-09-13  Evgeny Gavrin <e.gavrin@samsung.com>
+
+        * dwarf2out.c (should_emit_struct_debug): Add check
+        for type_decl variable is not NULL.
+
 2013-09-13  Jacek Caban  <jacek@codeweavers.com>
 
 	* config.gcc: Use new winnt-c.c target hooks

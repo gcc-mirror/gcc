@@ -365,11 +365,15 @@ should_emit_struct_debug (tree type, enum debug_info_usage usage)
 
   type_decl = TYPE_STUB_DECL (TYPE_MAIN_VARIANT (type));
 
-  if (criterion == DINFO_STRUCT_FILE_SYS && DECL_IN_SYSTEM_HEADER (type_decl))
-    return DUMP_GSTRUCT (type, usage, criterion, generic, false, true);
+  if (type_decl != NULL)
+    {
+     if (criterion == DINFO_STRUCT_FILE_SYS && DECL_IN_SYSTEM_HEADER (type_decl))
+        return DUMP_GSTRUCT (type, usage, criterion, generic, false, true);
 
-  if (matches_main_base (DECL_SOURCE_FILE (type_decl)))
-    return DUMP_GSTRUCT (type, usage, criterion, generic, true, true);
+      if (matches_main_base (DECL_SOURCE_FILE (type_decl)))
+        return DUMP_GSTRUCT (type, usage, criterion, generic, true, true);
+    }
+
   return DUMP_GSTRUCT (type, usage, criterion, generic, false, false);
 }
 
