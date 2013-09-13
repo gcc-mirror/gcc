@@ -1,3 +1,9 @@
+2013-09-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR bootstrap/58388
+	* ipa-prop.c (try_make_edge_direct_simple_call): Be less strict in
+	the assert if the edge was a speculative one.
+
 2013-09-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-data-ref.h (known_dependences_p): Move here ...
