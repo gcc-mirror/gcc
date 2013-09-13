@@ -1,3 +1,11 @@
+2013-09-13  Jacek Caban  <jacek@codeweavers.com>
+
+	* config.gcc: Use new winnt-c.c target hooks
+	* config/t-winnt: New file
+	* config/winnt-c.c: New file
+	* doc/tm.texi.in: Document new hook
+	* doc/tm.texi: Regenerated
+
 2013-09-13  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58094

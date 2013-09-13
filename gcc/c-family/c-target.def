@@ -102,5 +102,15 @@ DEFHOOK
  than just the compiler.",
  const char *, (void),
  hook_constcharptr_void_null)
+
+DEFHOOK
+(cxx_implicit_extern_c,
+ "Define this hook to add target-specific C++ implicit extern C functions.\
+ If this function returns true for the name of a file-scope function, that\
+ function implicitly gets extern \"C\" linkage rather than whatever language\
+ linkage the declaration would normally have.  An example of such function\
+ is WinMain on Win32 targets.",
+ bool, (const char*),
+ NULL)
  
 HOOK_VECTOR_END (C90_EMPTY_HACK)

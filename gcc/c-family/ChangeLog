@@ -1,3 +1,7 @@
+2013-09-13  Jacek Caban  <jacek@codeweavers.com>
+
+	* c-target.def: New hook
+
 2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/43452
