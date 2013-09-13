@@ -2603,7 +2603,8 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
     {
       bool ok;
       gcc_checking_assert (cs->callee
-			   && (jfunc->type != IPA_JF_CONST
+			   && (cs != ie
+			       || jfunc->type != IPA_JF_CONST
 			       || !cgraph_node_for_jfunc (jfunc)
 			       || cs->callee == cgraph_node_for_jfunc (jfunc)));
       ok = try_decrement_rdesc_refcount (jfunc);
