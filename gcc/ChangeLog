@@ -1,3 +1,17 @@
+2013-09-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.h (known_dependences_p): Move here ...
+	* tree-loop-distribution.c (known_dependences_p): ... from here.
+	(dump_rdg_component, debug_rdg_component): Remove.
+	(dump_rdg): Adjust.
+	(generate_loops_for_partition): Use gimple_uid instead of
+	relying on matching stmt visit order.
+	(rdg_build_partitions): Take starting stmt vector.
+	(ldist_gen): Merge into ...
+	(distribute_loop): ... this function.  Do not compute starting
+	vertices vector.
+	* tree-cfg.c (gimple_duplicate_bb): Copy UID for PHIs.
+
 2013-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm.md (arm_cmpsi_insn): Split rI alternative.

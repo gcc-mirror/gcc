@@ -150,52 +150,15 @@ debug_rdg_vertex (struct graph *rdg, int i)
   dump_rdg_vertex (stderr, rdg, i);
 }
 
-/* Dump component C of RDG to FILE.  If DUMPED is non-null, set the
-   dumped vertices to that bitmap.  */
-
-static void
-dump_rdg_component (FILE *file, struct graph *rdg, int c, bitmap dumped)
-{
-  int i;
-
-  fprintf (file, "(%d\n", c);
-
-  for (i = 0; i < rdg->n_vertices; i++)
-    if (rdg->vertices[i].component == c)
-      {
-	if (dumped)
-	  bitmap_set_bit (dumped, i);
-
-	dump_rdg_vertex (file, rdg, i);
-      }
-
-  fprintf (file, ")\n");
-}
-
-/* Call dump_rdg_vertex on stderr.  */
-
-DEBUG_FUNCTION void
-debug_rdg_component (struct graph *rdg, int c)
-{
-  dump_rdg_component (stderr, rdg, c, NULL);
-}
-
 /* Dump the reduced dependence graph RDG to FILE.  */
 
 static void
 dump_rdg (FILE *file, struct graph *rdg)
 {
-  int i;
-  bitmap dumped = BITMAP_ALLOC (NULL);
-
   fprintf (file, "(rdg\n");
-
-  for (i = 0; i < rdg->n_vertices; i++)
-    if (!bitmap_bit_p (dumped, i))
-      dump_rdg_component (file, rdg, rdg->vertices[i].component, dumped);
-
+  for (int i = 0; i < rdg->n_vertices; i++)
+    dump_rdg_vertex (file, rdg, i);
   fprintf (file, ")\n");
-  BITMAP_FREE (dumped);
 }
 
 /* Call dump_rdg on stderr.  */
@@ -425,11 +388,10 @@ create_rdg_vertices (struct graph *rdg, vec<gimple> stmts, loop_p loop,
   return true;
 }
 
-/* Initialize STMTS with all the statements of LOOP.  When
-   INCLUDE_PHIS is true, include also the PHI nodes.  The order in
+/* Initialize STMTS with all the statements of LOOP.  The order in
    which we discover statements is important as
    generate_loops_for_partition is using the same traversal for
-   identifying statements. */
+   identifying statements in loop copies.  */
 
 static void
 stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
@@ -456,21 +418,6 @@ stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
     }
 
   free (bbs);
-}
-
-/* Returns true when all the dependences are computable.  */
-
-static bool
-known_dependences_p (vec<ddr_p> dependence_relations)
-{
-  ddr_p ddr;
-  unsigned int i;
-
-  FOR_EACH_VEC_ELT (dependence_relations, i, ddr)
-    if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
-      return false;
-
-  return true;
 }
 
 /* Build the Reduced Dependence Graph (RDG) with one vertex per
@@ -693,7 +640,7 @@ static void
 generate_loops_for_partition (struct loop *loop, partition_t partition,
 			      bool copy_p)
 {
-  unsigned i, x;
+  unsigned i;
   gimple_stmt_iterator bsi;
   basic_block *bbs;
 
@@ -705,53 +652,52 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
       create_bb_after_loop (loop);
     }
 
-  /* Remove stmts not in the PARTITION bitmap.  The order in which we
-     visit the phi nodes and the statements is exactly as in
-     stmts_from_loop.  */
+  /* Remove stmts not in the PARTITION bitmap.  */
   bbs = get_loop_body_in_dom_order (loop);
 
   if (MAY_HAVE_DEBUG_STMTS)
-    for (x = 0, i = 0; i < loop->num_nodes; i++)
+    for (i = 0; i < loop->num_nodes; i++)
       {
 	basic_block bb = bbs[i];
 
 	for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	  if (!virtual_operand_p (gimple_phi_result (gsi_stmt (bsi)))
-	      && !bitmap_bit_p (partition->stmts, x++))
-	    reset_debug_uses (gsi_stmt (bsi));
+	  {
+	    gimple phi = gsi_stmt (bsi);
+	    if (!virtual_operand_p (gimple_phi_result (phi))
+		&& !bitmap_bit_p (partition->stmts, gimple_uid (phi)))
+	      reset_debug_uses (phi);
+	  }
 
 	for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	  {
 	    gimple stmt = gsi_stmt (bsi);
 	    if (gimple_code (stmt) != GIMPLE_LABEL
 		&& !is_gimple_debug (stmt)
-		&& !bitmap_bit_p (partition->stmts, x++))
+		&& !bitmap_bit_p (partition->stmts, gimple_uid (stmt)))
 	      reset_debug_uses (stmt);
 	  }
       }
 
-  for (x = 0, i = 0; i < loop->num_nodes; i++)
+  for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = bbs[i];
 
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi);)
-	if (!virtual_operand_p (gimple_phi_result (gsi_stmt (bsi)))
-	    && !bitmap_bit_p (partition->stmts, x++))
-	  {
-	    gimple phi = gsi_stmt (bsi);
-	    if (virtual_operand_p (gimple_phi_result (phi)))
-	      mark_virtual_phi_result_for_renaming (phi);
+	{
+	  gimple phi = gsi_stmt (bsi);
+	  if (!virtual_operand_p (gimple_phi_result (phi))
+	      && !bitmap_bit_p (partition->stmts, gimple_uid (phi)))
 	    remove_phi_node (&bsi, true);
-	  }
-	else
-	  gsi_next (&bsi);
+	  else
+	    gsi_next (&bsi);
+	}
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi);)
 	{
 	  gimple stmt = gsi_stmt (bsi);
 	  if (gimple_code (stmt) != GIMPLE_LABEL
 	      && !is_gimple_debug (stmt)
-	      && !bitmap_bit_p (partition->stmts, x++))
+	      && !bitmap_bit_p (partition->stmts, gimple_uid (stmt)))
 	    {
 	      unlink_stmt_vdef (stmt);
 	      gsi_remove (&bsi, true);
@@ -1372,16 +1318,22 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
 
 static void
 rdg_build_partitions (struct graph *rdg,
-		      vec<int> starting_vertices,
+		      vec<gimple> starting_stmts,
 		      vec<partition_t> *partitions)
 {
   bitmap processed = BITMAP_ALLOC (NULL);
-  int i, v;
+  int i;
+  gimple stmt;
   partition_t partition = partition_alloc (NULL, NULL);
 
-  FOR_EACH_VEC_ELT (starting_vertices, i, v)
+  FOR_EACH_VEC_ELT (starting_stmts, i, stmt)
     {
       partition_t np;
+      int v = rdg_vertex_for_stmt (rdg, stmt);
+
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "ldist asked to generate code for vertex %d\n", v);
 
       if (bitmap_bit_p (processed, v))
 	continue;
@@ -1504,20 +1456,46 @@ partition_contains_all_rw (struct graph *rdg,
   return false;
 }
 
-/* Generate code from STARTING_VERTICES in RDG.  Returns the number of
-   distributed loops.  */
+
+/* Distributes the code from LOOP in such a way that producer
+   statements are placed before consumer statements.  Tries to separate
+   only the statements from STMTS into separate loops.
+   Returns the number of distributed loops.  */
 
 static int
-ldist_gen (struct loop *loop, struct graph *rdg,
-	   vec<int> starting_vertices)
+distribute_loop (struct loop *loop, vec<gimple> stmts)
 {
-  int i, nbp;
+  struct graph *rdg;
+  vec<loop_p> loop_nest;
   vec<partition_t> partitions;
-  partitions.create (3);
   partition_t partition;
   bool any_builtin;
+  int i, nbp;
 
-  rdg_build_partitions (rdg, starting_vertices, &partitions);
+  loop_nest.create (3);
+  if (!find_loop_nest (loop, &loop_nest))
+    {
+      loop_nest.release ();
+      return 0;
+    }
+
+  rdg = build_rdg (loop_nest);
+  if (!rdg)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "Loop %d not distributed: failed to build the RDG.\n",
+		 loop->num);
+
+      loop_nest.release ();
+      return 0;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    dump_rdg (dump_file, rdg);
+
+  partitions.create (3);
+  rdg_build_partitions (rdg, stmts, &partitions);
 
   any_builtin = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
@@ -1637,70 +1615,11 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
-
   partitions.release ();
-  return nbp;
-}
 
-/* Distributes the code from LOOP in such a way that producer
-   statements are placed before consumer statements.  When STMTS is
-   NULL, performs the maximal distribution, if STMTS is not NULL,
-   tries to separate only these statements from the LOOP's body.
-   Returns the number of distributed loops.  */
-
-static int
-distribute_loop (struct loop *loop, vec<gimple> stmts)
-{
-  int res = 0;
-  struct graph *rdg;
-  gimple s;
-  unsigned i;
-  vec<int> vertices;
-  vec<loop_p> loop_nest;
-
-  loop_nest.create (3);
-  if (!find_loop_nest (loop, &loop_nest))
-    {
-      loop_nest.release ();
-      return 0;
-    }
-
-  rdg = build_rdg (loop_nest);
-  if (!rdg)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "Loop %d not distributed: failed to build the RDG.\n",
-		 loop->num);
-
-      loop_nest.release ();
-      return res;
-    }
-
-  vertices.create (3);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_rdg (dump_file, rdg);
-
-  FOR_EACH_VEC_ELT (stmts, i, s)
-    {
-      int v = rdg_vertex_for_stmt (rdg, s);
-
-      if (v >= 0)
-	{
-	  vertices.safe_push (v);
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "ldist asked to generate code for vertex %d\n", v);
-	}
-    }
-
-  res = ldist_gen (loop, rdg, vertices);
-  vertices.release ();
   free_rdg (rdg);
   loop_nest.release ();
-  return res;
+  return nbp;
 }
 
 /* Distribute all loops in the current function.  */
