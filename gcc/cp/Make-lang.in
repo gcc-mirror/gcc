@@ -312,7 +312,7 @@ cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
   toplev.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h intl.h \
-  c-family/c-objc.h cp/type-utils.h
+  c-family/c-objc.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_H) \
   $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H) \
   tree-diagnostic.h tree-pretty-print.h pointer-set.h c-family/c-objc.h
@@ -331,8 +331,7 @@ cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) $(REAL_H) \
   gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
   gt-cp-parser.h $(TARGET_H) $(PLUGIN_H) intl.h cp/decl.h \
-  c-family/c-objc.h tree-pretty-print.h $(CXX_PARSER_H) $(TIMEVAR_H) \
-  cp/type-utils.h
+  c-family/c-objc.h tree-pretty-print.h $(CXX_PARSER_H) $(TIMEVAR_H)
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
 	$(TM_H) coretypes.h pointer-set.h tree-iterator.h $(SPLAY_TREE_H)
 cp/vtable-class-hierarchy.o: cp/vtable-class-hierarchy.c \

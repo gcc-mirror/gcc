@@ -10320,23 +10320,8 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_uses_auto (type))
 	{
-	  if (current_class_type && LAMBDA_TYPE_P (current_class_type))
-	    {
-	      if (cxx_dialect < cxx1y)
-		pedwarn (location_of (type), 0,
-			 "use of %<auto%> in lambda parameter declaration "
-			 "only available with "
-			 "-std=c++1y or -std=gnu++1y");
-	    }
-	  else if (cxx_dialect < cxx1y)
-	    pedwarn (location_of (type), 0,
-		     "use of %<auto%> in parameter declaration "
-		     "only available with "
-		     "-std=c++1y or -std=gnu++1y");
-	  else
-	    pedwarn (location_of (type), OPT_Wpedantic,
-		     "ISO C++ forbids use of %<auto%> in parameter "
-		     "declaration");
+	  error ("parameter declared %<auto%>");
+	  type = error_mark_node;
 	}
 
       /* A parameter declared as an array of T is really a pointer to T.
