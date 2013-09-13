@@ -1,3 +1,12 @@
+2013-09-12  Terry Guo  <terry.guo@arm.com>
+
+	Backport from mainline
+	2012-09-17  Richard Guenther  <rguenther@suse.de>
+
+	PR lto/54598
+	* tree-streamer-in.c (unpack_ts_real_cst_value_fields): Use ggc'ed
+	FIXED_VALUE_TYPE instead of struct fixed_value.
+
 2013-09-10  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/58361
