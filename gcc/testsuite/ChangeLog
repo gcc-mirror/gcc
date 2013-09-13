@@ -1,3 +1,8 @@
+2013-09-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/58314
+	* gcc.target/sh/torture/pr58314.c: New test.
+
 2013-09-11  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58377
