@@ -482,6 +482,21 @@ ddrs_have_anti_deps (vec<ddr_p> dependence_relations)
   return false;
 }
 
+/* Returns true when all the dependences are computable.  */
+
+inline bool
+known_dependences_p (vec<ddr_p> dependence_relations)
+{
+  ddr_p ddr;
+  unsigned int i;
+
+  FOR_EACH_VEC_ELT (dependence_relations, i, ddr)
+    if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
+      return false;
+
+  return true;
+}
+
 /* Returns the dependence level for a vector DIST of size LENGTH.
    LEVEL = 0 means a lexicographic dependence, i.e. a dependence due
    to the sequence of statements, not carried by any loop.  */

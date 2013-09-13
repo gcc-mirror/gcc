@@ -5563,6 +5563,7 @@ gimple_duplicate_bb (basic_block bb)
       copy = create_phi_node (NULL_TREE, new_bb);
       create_new_def_for (gimple_phi_result (phi), copy,
 			  gimple_phi_result_ptr (copy));
+      gimple_set_uid (copy, gimple_uid (phi));
     }
 
   gsi_tgt = gsi_start_bb (new_bb);
