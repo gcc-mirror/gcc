@@ -1,3 +1,12 @@
+2013-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58415
+	* include/ext/sso_string_base.h (__sso_string_base<>::
+	__sso_string_base(__sso_string_base&&)): Fix thinkos about
+	_M_length vs _M_set_length.
+	* testsuite/ext/vstring/cons/58415-1.cc: New.
+	* testsuite/ext/vstring/cons/58415-2.cc: Likewise.
+
 2013-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58403
