@@ -6765,10 +6765,10 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       if (bb->loop_father->header == bb
 	  && loop_outer (bb->loop_father) == loop)
 	{
-	  struct loop *loop = bb->loop_father;
+	  struct loop *this_loop = bb->loop_father;
 	  flow_loop_tree_node_remove (bb->loop_father);
-	  flow_loop_tree_node_add (get_loop (dest_cfun, 0), loop);
-	  fixup_loop_arrays_after_move (saved_cfun, cfun, loop);
+	  flow_loop_tree_node_add (get_loop (dest_cfun, 0), this_loop);
+	  fixup_loop_arrays_after_move (saved_cfun, cfun, this_loop);
 	}
 
       /* Remove loop exits from the outlined region.  */
@@ -6822,6 +6822,23 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   for (struct loop *outer = loop_outer (loop);
        outer; outer = loop_outer (outer))
     outer->num_nodes -= bbs.length ();
+
+  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vect_loops)
+    {
+      struct loop *aloop;
+      for (i = 0; vec_safe_iterate (loops->larray, i, &aloop); i++)
+	if (aloop != NULL)
+	  {
+	    if (aloop->simduid)
+	      {
+		replace_by_duplicate_decl (&aloop->simduid, d.vars_map,
+					   d.to_context);
+		dest_cfun->has_simduid_loops = true;
+	      }
+	    if (aloop->force_vect)
+	      dest_cfun->has_force_vect_loops = true;
+	  }
+    }
 
   /* Rewire BLOCK_SUBBLOCKS of orig_block.  */
   if (orig_block)

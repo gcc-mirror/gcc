@@ -1,3 +1,27 @@
+2013-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58392
+	* tree-cfg.c (move_sese_region_to_fn): Rename loop variable
+	to avoid shadowing of outer loop variable.  If
+	saved_cfun->has_simduid_loops or saved_cfun->has_force_vect_loops,
+	replace_by_duplicate_decl simduid of loops that have it set and
+	set dest_cfun->has_simduid_loops and/or
+	dest_cfun->has_force_vect_loops.
+	* omp-low.c (build_outer_var_ref): Call maybe_lookup_decl_in_outer_ctx
+	instead of maybe_lookup_decl.
+	* tree-inline.c (copy_loops): Change blocks_to_copy argument to id.
+	Use id->blocks_to_copy instead of blocks_to_copy.  Adjust recursive
+	call.  Copy over force_vect and copy and remap simduid.  Set
+	cfun->has_simduid_loops and/or cfun->has_force_vect_loops.
+	(copy_cfg_body): Remove blocks_to_copy argument.  Use
+	id->blocks_to_copy instead of blocks_to_copy.  Adjust copy_loops
+	caller.  Don't set cfun->has_simduid_loops and/or
+	cfun->has_force_vect_loops here.
+	(copy_body): Remove blocks_to_copy argument.  Adjust copy_cfg_body
+	caller.
+	(expand_call_inline, tree_function_versioning): Adjust copy_body
+	callers.
+
 2013-09-13  Martin Jambor  <mjambor@suse.cz>
 
 	PR bootstrap/58388
