@@ -3580,6 +3580,7 @@ estimate_size_after_inlining (struct cgraph_node *node,
 
 struct growth_data
 {
+  struct cgraph_node *node;
   bool self_recursive;
   int growth;
 };
@@ -3597,9 +3598,9 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
     {
       gcc_checking_assert (e->inline_failed);
 
-      if (e->caller == node
+      if (e->caller == d->node
 	  || (e->caller->global.inlined_to
-	      && e->caller->global.inlined_to == node))
+	      && e->caller->global.inlined_to == d->node))
 	d->self_recursive = true;
       d->growth += estimate_edge_growth (e);
     }
@@ -3612,7 +3613,7 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
 int
 do_estimate_growth (struct cgraph_node *node)
 {
-  struct growth_data d = { 0, false };
+  struct growth_data d = { node, 0, false };
   struct inline_summary *info = inline_summary (node);
 
   cgraph_for_node_and_aliases (node, do_estimate_growth_1, &d, true);
