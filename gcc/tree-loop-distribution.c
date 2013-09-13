@@ -115,14 +115,6 @@ typedef struct rdg_edge
 #define RDGE_LEVEL(E)       ((struct rdg_edge *) ((E)->data))->level
 #define RDGE_RELATION(E)    ((struct rdg_edge *) ((E)->data))->relation
 
-/* Strongly connected components of the reduced data dependence graph.  */
-
-typedef struct rdg_component
-{
-  int num;
-  vec<int> vertices;
-} *rdgc;
-
 /* Dump vertex I in RDG to FILE.  */
 
 static void
@@ -452,7 +444,8 @@ stmts_from_loop (struct loop *loop, vec<gimple> *stmts)
       gimple stmt;
 
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	stmts->safe_push (gsi_stmt (bsi));
+	if (!virtual_operand_p (gimple_phi_result (gsi_stmt (bsi))))
+	  stmts->safe_push (gsi_stmt (bsi));
 
       for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
 	{
@@ -562,34 +555,6 @@ build_rdg (vec<loop_p> loop_nest)
   datarefs.release ();
 
   return rdg;
-}
-
-/* Determines whether the statement from vertex V of the RDG has a
-   definition used outside the loop that contains this statement.  */
-
-static bool
-rdg_defs_used_in_other_loops_p (struct graph *rdg, int v)
-{
-  gimple stmt = RDG_STMT (rdg, v);
-  struct loop *loop = loop_containing_stmt (stmt);
-  use_operand_p imm_use_p;
-  imm_use_iterator iterator;
-  ssa_op_iter it;
-  def_operand_p def_p;
-
-  if (!loop)
-    return true;
-
-  FOR_EACH_PHI_OR_STMT_DEF (def_p, stmt, it, SSA_OP_DEF)
-    {
-      FOR_EACH_IMM_USE_FAST (imm_use_p, iterator, DEF_FROM_PTR (def_p))
-	{
-	  if (loop_containing_stmt (USE_STMT (imm_use_p)) != loop)
-	    return true;
-	}
-    }
-
-  return false;
 }
 
 
@@ -751,7 +716,8 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
 	basic_block bb = bbs[i];
 
 	for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi); gsi_next (&bsi))
-	  if (!bitmap_bit_p (partition->stmts, x++))
+	  if (!virtual_operand_p (gimple_phi_result (gsi_stmt (bsi)))
+	      && !bitmap_bit_p (partition->stmts, x++))
 	    reset_debug_uses (gsi_stmt (bsi));
 
 	for (bsi = gsi_start_bb (bb); !gsi_end_p (bsi); gsi_next (&bsi))
@@ -769,7 +735,8 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
       basic_block bb = bbs[i];
 
       for (bsi = gsi_start_phis (bb); !gsi_end_p (bsi);)
-	if (!bitmap_bit_p (partition->stmts, x++))
+	if (!virtual_operand_p (gimple_phi_result (gsi_stmt (bsi)))
+	    && !bitmap_bit_p (partition->stmts, x++))
 	  {
 	    gimple phi = gsi_stmt (bsi);
 	    if (virtual_operand_p (gimple_phi_result (phi)))
@@ -1174,86 +1141,18 @@ rdg_flag_loop_exits (struct graph *rdg, partition_t partition,
   conds.release ();
 }
 
-/* Returns a bitmap in which all the statements needed for computing
-   the strongly connected component C of the RDG are flagged, also
-   including the loop exit conditions.  */
+/* Returns a partition with all the statements needed for computing
+   the vertex V of the RDG, also including the loop exit conditions.  */
 
 static partition_t
-build_rdg_partition_for_component (struct graph *rdg, rdgc c)
+build_rdg_partition_for_vertex (struct graph *rdg, int v)
 {
   partition_t partition = partition_alloc (NULL, NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
-
-  /* Flag the first vertex of the component and its dependent nodes.
-     Other members of the component are included in its dependencies.
-     ???  What do we need components for again?  To early merge initial
-     vertices that are in a SCC of the RDG?  */
-  rdg_flag_vertex_and_dependent (rdg, c->vertices[0], partition, processed);
-
+  rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
   rdg_flag_loop_exits (rdg, partition, processed);
-
   BITMAP_FREE (processed);
   return partition;
-}
-
-/* Free memory for COMPONENTS.  */
-
-static void
-free_rdg_components (vec<rdgc> components)
-{
-  int i;
-  rdgc x;
-
-  FOR_EACH_VEC_ELT (components, i, x)
-    {
-      x->vertices.release ();
-      free (x);
-    }
-
-  components.release ();
-}
-
-/* Build the COMPONENTS vector with the strongly connected components
-   of RDG in which the STARTING_VERTICES occur.  */
-
-static void
-rdg_build_components (struct graph *rdg, vec<int> starting_vertices,
-		      vec<rdgc> *components)
-{
-  int i, v;
-  bitmap saved_components = BITMAP_ALLOC (NULL);
-  int n_components = graphds_scc (rdg, NULL);
-  /* ??? Macros cannot process template types with more than one
-     argument, so we need this typedef.  */
-  typedef vec<int> vec_int_heap;
-  vec<int> *all_components = XNEWVEC (vec_int_heap, n_components);
-
-  for (i = 0; i < n_components; i++)
-    all_components[i].create (3);
-
-  for (i = 0; i < rdg->n_vertices; i++)
-    all_components[rdg->vertices[i].component].safe_push (i);
-
-  FOR_EACH_VEC_ELT (starting_vertices, i, v)
-    {
-      int c = rdg->vertices[v].component;
-
-      if (bitmap_set_bit (saved_components, c))
-	{
-	  rdgc x = XCNEW (struct rdg_component);
-	  x->num = c;
-	  x->vertices = all_components[c];
-
-	  components->safe_push (x);
-	}
-    }
-
-  for (i = 0; i < n_components; i++)
-    if (!bitmap_bit_p (saved_components, i))
-      all_components[i].release ();
-
-  free (all_components);
-  BITMAP_FREE (saved_components);
 }
 
 /* Classifies the builtin kind we can generate for PARTITION of RDG and LOOP.
@@ -1472,23 +1371,22 @@ similar_memory_accesses (struct graph *rdg, partition_t partition1,
    distributed in different loops.  */
 
 static void
-rdg_build_partitions (struct graph *rdg, vec<rdgc> components,
-		      vec<int> *other_stores,
-		      vec<partition_t> *partitions, bitmap processed)
+rdg_build_partitions (struct graph *rdg,
+		      vec<int> starting_vertices,
+		      vec<partition_t> *partitions)
 {
-  int i;
-  rdgc x;
+  bitmap processed = BITMAP_ALLOC (NULL);
+  int i, v;
   partition_t partition = partition_alloc (NULL, NULL);
 
-  FOR_EACH_VEC_ELT (components, i, x)
+  FOR_EACH_VEC_ELT (starting_vertices, i, v)
     {
       partition_t np;
-      int v = x->vertices[0];
 
       if (bitmap_bit_p (processed, v))
 	continue;
 
-      np = build_rdg_partition_for_component (rdg, x);
+      np = build_rdg_partition_for_vertex (rdg, v);
       bitmap_ior_into (partition->stmts, np->stmts);
       partition->has_writes = partition_has_writes (np);
       bitmap_ior_into (processed, np->stmts);
@@ -1507,36 +1405,23 @@ rdg_build_partitions (struct graph *rdg, vec<rdgc> components,
 	}
     }
 
-  /* Add the nodes from the RDG that were not marked as processed, and
-     that are used outside the current loop.  These are scalar
-     computations that are not yet part of previous partitions.  */
-  for (i = 0; i < rdg->n_vertices; i++)
-    if (!bitmap_bit_p (processed, i)
-	&& rdg_defs_used_in_other_loops_p (rdg, i))
-      other_stores->safe_push (i);
+  /* All vertices should have been assigned to at least one partition now,
+     other than vertices belonging to dead code.  */
 
-  /* If there are still statements left in the OTHER_STORES array,
-     create other components and partitions with these stores and
-     their dependences.  */
-  if (other_stores->length () > 0)
+  if (!bitmap_empty_p (partition->stmts))
     {
-      vec<rdgc> comps;
-      comps.create (3);
-      vec<int> foo;
-      foo.create (3);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "remaining partition:\n");
+	  dump_bitmap (dump_file, partition->stmts);
+	}
 
-      rdg_build_components (rdg, *other_stores, &comps);
-      rdg_build_partitions (rdg, comps, &foo, partitions, processed);
-
-      foo.release ();
-      free_rdg_components (comps);
+      partitions->safe_push (partition);
     }
-
-  /* If there is something left in the last partition, save it.  */
-  if (bitmap_count_bits (partition->stmts) > 0)
-    partitions->safe_push (partition);
   else
     partition_free (partition);
+
+  BITMAP_FREE (processed);
 }
 
 /* Dump to FILE the PARTITIONS.  */
@@ -1627,42 +1512,12 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	   vec<int> starting_vertices)
 {
   int i, nbp;
-  vec<rdgc> components;
-  components.create (3);
   vec<partition_t> partitions;
   partitions.create (3);
-  vec<int> other_stores;
-  other_stores.create (3);
   partition_t partition;
-  bitmap processed = BITMAP_ALLOC (NULL);
   bool any_builtin;
 
-  for (i = 0; i < rdg->n_vertices; i++)
-    {
-      /* Save in OTHER_STORES all the memory writes that are not in
-	 STARTING_VERTICES.  */
-      if (RDG_MEM_WRITE_STMT (rdg, i))
-	{
-	  int v;
-	  unsigned j;
-	  bool found = false;
-
-	  FOR_EACH_VEC_ELT (starting_vertices, j, v)
-	    if (i == v)
-	      {
-		found = true;
-		break;
-	      }
-
-	  if (!found)
-	    other_stores.safe_push (i);
-	}
-    }
-
-  rdg_build_components (rdg, starting_vertices, &components);
-  rdg_build_partitions (rdg, components, &other_stores, &partitions,
-			processed);
-  BITMAP_FREE (processed);
+  rdg_build_partitions (rdg, starting_vertices, &partitions);
 
   any_builtin = false;
   FOR_EACH_VEC_ELT (partitions, i, partition)
@@ -1718,9 +1573,6 @@ ldist_gen (struct loop *loop, struct graph *rdg,
 	       partitions.iterate (j, &partition); ++j)
 	    {
 	      if (!partition_builtin_p (partition)
-		  /* ???  The following is horribly inefficient,
-		     we are re-computing and analyzing data-references
-		     of the stmts in the partitions all the time.  */
 		  && similar_memory_accesses (rdg, into, partition))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1786,9 +1638,7 @@ ldist_gen (struct loop *loop, struct graph *rdg,
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
 
-  other_stores.release ();
   partitions.release ();
-  free_rdg_components (components);
   return nbp;
 }
 
@@ -1820,7 +1670,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
-		 "FIXME: Loop %d not distributed: failed to build the RDG.\n",
+		 "Loop %d not distributed: failed to build the RDG.\n",
 		 loop->num);
 
       loop_nest.release ();
@@ -1903,6 +1753,15 @@ tree_loop_distribution (void)
 	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
+
+	      /* If there is a stmt with side-effects bail out - we
+	         cannot and should not distribute this loop.  */
+	      if (gimple_has_side_effects (stmt))
+		{
+		  work_list.truncate (0);
+		  goto out;
+		}
+
 	      /* Distribute stmts which have defs that are used outside of
 	         the loop.  */
 	      if (stmt_has_scalar_dependences_outside_loop (loop, stmt))
@@ -1915,6 +1774,7 @@ tree_loop_distribution (void)
 	      work_list.safe_push (stmt);
 	    }
 	}
+out:
       free (bbs);
 
       if (work_list.length () > 0)
