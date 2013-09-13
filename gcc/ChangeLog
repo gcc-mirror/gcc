@@ -1,3 +1,8 @@
+2013-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (struct growth_data): Add node.
+	(do_estimate_growth_1): Fix detection of recursion.
+
 2013-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58392
