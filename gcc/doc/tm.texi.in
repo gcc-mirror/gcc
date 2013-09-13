@@ -7985,6 +7985,8 @@ files @code{__STDC__} will always expand to 1.
 
 @hook TARGET_C_PREINCLUDE
 
+@hook TARGET_CXX_IMPLICIT_EXTERN_C
+
 @defmac NO_IMPLICIT_EXTERN_C
 Define this macro if the system header files support C++ as well as C@.
 This macro inhibits the usual method of using system header files in

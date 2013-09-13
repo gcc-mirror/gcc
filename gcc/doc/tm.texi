@@ -10651,6 +10651,10 @@ Define this hook to return the name of a header file to be included at the start
  This hook can be used together with a header provided by the system C library to implement ISO C requirements for certain macros to be predefined that describe properties of the whole implementation rather than just the compiler.
 @end deftypefn
 
+@deftypefn {C Target Hook} bool TARGET_CXX_IMPLICIT_EXTERN_C (const char*@var{})
+Define this hook to add target-specific C++ implicit extern C functions. If this function returns true for the name of a file-scope function, that function implicitly gets extern "C" linkage rather than whatever language linkage the declaration would normally have.  An example of such function is WinMain on Win32 targets.
+@end deftypefn
+
 @defmac NO_IMPLICIT_EXTERN_C
 Define this macro if the system header files support C++ as well as C@.
 This macro inhibits the usual method of using system header files in

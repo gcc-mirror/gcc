@@ -1526,6 +1526,9 @@ x86_64-*-cygwin*)
 i[34567]86-*-mingw* | x86_64-*-mingw*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h"
 	xm_file=i386/xm-mingw32.h
+	c_target_objs="${c_target_objs} winnt-c.o"
+	cxx_target_objs="${cxx_target_objs} winnt-c.o"
+	target_has_targetcm="yes"
 	case ${target} in
 		x86_64-*-* | *-w64-*)
 			need_64bit_isa=yes
@@ -1565,7 +1568,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			;;
 	esac
 	tm_file="${tm_file} i386/mingw-stdint.h"
-	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
+	tmake_file="${tmake_file} t-winnt i386/t-cygming t-slibgcc"
         case ${target} in
                x86_64-w64-*)
                		tmake_file="${tmake_file} i386/t-mingw-w64"
