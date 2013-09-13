@@ -3629,9 +3629,6 @@ c_builtin_function_ext_scope (tree decl)
   const char *name = IDENTIFIER_POINTER (id);
   C_DECL_BUILTIN_PROTOTYPE (decl) = prototype_p (type);
 
-  /* Should never be called on a symbol with a preexisting meaning.  */
-  gcc_assert (!I_SYMBOL_BINDING (id));
-
   bind (id, decl, external_scope, /*invisible=*/false, /*nested=*/false,
 	UNKNOWN_LOCATION);
 
