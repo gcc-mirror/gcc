@@ -1,3 +1,18 @@
+2013-09-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (struct rdg_component,
+	rdg_defs_used_in_other_loops_p, free_rdg_components,
+	rdg_build_components): Remove.
+	(stmts_from_loop): Do not record virtual PHIs.
+	(generate_loops_for_partition): Skip virtual PHIs.
+	(build_rdg_partition_for_component): Rename to ...
+	(build_rdg_partition_for_vertex): ... this and adjust.
+	(rdg_build_partitions): Take a vector of starting vertices
+	instead of components.  Remove unnecessary leftover handling.
+	(ldist_gen): Do not build components or record other stores.
+	(distribute_loop): Do not distribute loops containing stmts
+	with side-effects.
+
 2013-09-13  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/58314
