@@ -1,3 +1,9 @@
+2013-09-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/58273
+	* pt.c (any_type_dependent_elements_p): Actually check for
+	type-dependence, not value-dependence.
+
 2013-09-13  Jacek Caban  <jacek@codeweavers.com>
 
 	* decl.c: Use new cxx_implicit_extern_c hook
