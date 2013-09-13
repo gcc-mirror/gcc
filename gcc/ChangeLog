@@ -1,3 +1,8 @@
+2013-09-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/58314
+	* config/sh/sh.md (mov<mode>_reg_reg): Allow memory reloads.
+
 2013-09-13  Kai Tietz  <ktietz@redhat.com>
 
 	* config.gcc: Separate cases for mingw and cygwin targets,
