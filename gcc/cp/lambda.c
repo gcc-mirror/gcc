@@ -792,8 +792,8 @@ maybe_add_lambda_conv_op (tree type)
      particular, parameter pack expansions are marked PACK_EXPANSION_LOCAL_P in
      the body CALL, but not in DECLTYPE_CALL.  */
 
-  vec<tree, va_gc> *direct_argvec;
-  tree decltype_call = 0, call;
+  vec<tree, va_gc> *direct_argvec = 0;
+  tree decltype_call = 0, call = 0;
   tree fn_result = TREE_TYPE (TREE_TYPE (callop));
 
   if (generic_lambda_p)

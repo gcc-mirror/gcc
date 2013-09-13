@@ -1,3 +1,8 @@
+2013-09-13  Adam Butcher  <adam@jessamine.co.uk>
+
+	* lambda.c (maybe_add_lambda_conv_op): Initialize direct_argvec and call
+	to nullptr to avoid breakage with -Werror.
+
 2013-09-12  Brooks Moses  <bmoses@google.com>
 
 	PR driver/42955
