@@ -740,14 +740,22 @@ want_inline_self_recursive_call_p (struct cgraph_edge *edge,
   return want_inline;
 }
 
-/* Return true when NODE has caller other than EDGE. 
+/* Return true when NODE has uninlinable caller;
+   set HAS_HOT_CALL if it has hot call. 
    Worker for cgraph_for_node_and_aliases.  */
 
 static bool
-check_caller_edge (struct cgraph_node *node, void *edge)
+check_callers (struct cgraph_node *node, void *has_hot_call)
 {
-  return (node->callers
-          && node->callers != edge);
+  struct cgraph_edge *e;
+   for (e = node->callers; e; e = e->next_caller)
+     {
+       if (!can_inline_edge_p (e, true))
+         return true;
+       if (!has_hot_call && cgraph_maybe_hot_edge_p (e))
+	 *(bool *)has_hot_call = true;
+     }
+  return false;
 }
 
 /* If NODE has a caller, return true.  */
@@ -768,7 +776,6 @@ static bool
 want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
 {
    struct cgraph_node *function = cgraph_function_or_thunk_node (node, NULL);
-   struct cgraph_edge *e;
    bool has_hot_call = false;
 
    /* Does it have callers?  */
@@ -782,18 +789,9 @@ want_inline_function_to_all_callers_p (struct cgraph_node *node, bool cold)
    /* Inlining into all callers would increase size?  */
    if (estimate_growth (node) > 0)
      return false;
-   /* Maybe other aliases has more direct calls.  */
-   if (cgraph_for_node_and_aliases (node, check_caller_edge, node->callers, true))
-     return false;
    /* All inlines must be possible.  */
-   for (e = node->callers; e; e = e->next_caller)
-     {
-       if (!can_inline_edge_p (e, true))
-         return false;
-       if (!has_hot_call && cgraph_maybe_hot_edge_p (e))
-	 has_hot_call = 1;
-     }
-
+   if (cgraph_for_node_and_aliases (node, check_callers, &has_hot_call, true))
+     return false;
    if (!cold && !has_hot_call)
      return false;
    return true;
@@ -1949,7 +1947,7 @@ inline_to_all_callers (struct cgraph_node *node, void *data)
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "New calls found; giving up.\n");
-	  break;
+	  return true;
 	}
     }
   return false;

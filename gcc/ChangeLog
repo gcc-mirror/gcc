@@ -1,5 +1,15 @@
 2013-09-13  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/58094
+	* ipa-inline.c (check_callers): New function.
+	(check_caller_edge): Remove.
+	(want_inline_function_to_all_callers_p): Also permit alises that are
+	called dirrectly.
+	(inline_to_all_callers): Terminate the walk when devirtualization
+	introduce new calls.
+
+2013-09-13  Jan Hubicka  <jh@suse.cz>
+
 	* ipa-inline-analysis.c (struct growth_data): Add node.
 	(do_estimate_growth_1): Fix detection of recursion.
 
