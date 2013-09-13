@@ -2190,7 +2190,7 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
 endif
 
 # Darwin (Mac OS X)
-ifeq ($(strip $(filter-out darwin%,$(target_cpu))),)
+ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   SO_OPTS = -shared-libgcc
   LIBGNAT_TARGET_PAIRS = \
     a-intnam.ads<a-intnam-darwin.ads \
