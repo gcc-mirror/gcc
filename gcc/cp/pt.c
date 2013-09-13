@@ -20456,7 +20456,7 @@ bool
 any_type_dependent_elements_p (const_tree list)
 {
   for (; list; list = TREE_CHAIN (list))
-    if (value_dependent_expression_p (TREE_VALUE (list)))
+    if (type_dependent_expression_p (TREE_VALUE (list)))
       return true;
 
   return false;
