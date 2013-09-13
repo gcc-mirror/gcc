@@ -8239,19 +8239,21 @@
 
 (define_insn "*arm_cmpsi_insn"
   [(set (reg:CC CC_REGNUM)
-	(compare:CC (match_operand:SI 0 "s_register_operand" "l,r,r,r")
-		    (match_operand:SI 1 "arm_add_operand"    "Py,r,rI,L")))]
+	(compare:CC (match_operand:SI 0 "s_register_operand" "l,r,r,r,r")
+		    (match_operand:SI 1 "arm_add_operand"    "Py,r,r,I,L")))]
   "TARGET_32BIT"
   "@
    cmp%?\\t%0, %1
    cmp%?\\t%0, %1
    cmp%?\\t%0, %1
+   cmp%?\\t%0, %1
    cmn%?\\t%0, #%n1"
   [(set_attr "conds" "set")
-   (set_attr "arch" "t2,t2,any,any")
-   (set_attr "length" "2,2,4,4")
+   (set_attr "arch" "t2,t2,any,any,any")
+   (set_attr "length" "2,2,4,4,4")
    (set_attr "predicable" "yes")
-   (set_attr "type" "alus_reg,alus_reg,alus_reg,alus_imm")]
+   (set_attr "predicable_short_it" "yes,yes,yes,no,no")
+   (set_attr "type" "alus_imm,alus_reg,alus_reg,alus_imm,alus_imm")]
 )
 
 (define_insn "*cmpsi_shiftsi"
@@ -8261,7 +8263,7 @@
 		     [(match_operand:SI 1 "s_register_operand" "r,r,r")
 		      (match_operand:SI 2 "shift_amount_operand" "M,r,M")])))]
   "TARGET_32BIT"
-  "cmp%?\\t%0, %1%S3"
+  "cmp\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
    (set_attr "arch" "32,a,a")

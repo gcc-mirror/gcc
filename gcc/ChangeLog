@@ -1,3 +1,9 @@
+2013-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_cmpsi_insn): Split rI alternative.
+	Set type attribute correctly. Set predicable_short_it attribute.
+	(cmpsi_shiftsi): Remove %? from output template.
+
 2013-09-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (struct rdg_component,
