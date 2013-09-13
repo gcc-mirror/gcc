@@ -1,4 +1,11 @@
-2013-09-10  Jeff Law  <law@redhat.com>
+2013-09-13  Kai Tietz  <ktietz@redhat.com>
+
+	* config/i386/winnt-cxx.c (i386_pe_type_dllexport_p): Don't
+	dll-export inline-functions.
+	* config/i386/winnt.c (i386_pe_determine_dllexport_p): Likewise.
+
+
+2013-09-13  Jeff Law  <law@redhat.com>
 
 	PR middle-end/58387
 	Revert:
