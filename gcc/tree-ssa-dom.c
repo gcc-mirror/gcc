@@ -1642,28 +1642,6 @@ cprop_into_successor_phis (basic_block bb)
       if (gsi_end_p (gsi))
 	continue;
 
-      /* We may have an equivalence associated with this edge.  While
-	 we can not propagate it into non-dominated blocks, we can
-	 propagate them into PHIs in non-dominated blocks.  */
-
-      /* Push the unwind marker so we can reset the const and copies
-	 table back to its original state after processing this edge.  */
-      const_and_copies_stack.safe_push (NULL_TREE);
-
-      /* Extract and record any simple NAME = VALUE equivalences. 
-
-	 Don't bother with [01] = COND equivalences, they're not useful
-	 here.  */
-      struct edge_info *edge_info = (struct edge_info *) e->aux;
-      if (edge_info)
-	{
-	  tree lhs = edge_info->lhs;
-	  tree rhs = edge_info->rhs;
-
-	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	    record_const_or_copy (lhs, rhs);
-	}
-
       indx = e->dest_idx;
       for ( ; !gsi_end_p (gsi); gsi_next (&gsi))
 	{
@@ -1689,8 +1667,6 @@ cprop_into_successor_phis (basic_block bb)
 	      && may_propagate_copy (orig_val, new_val))
 	    propagate_value (orig_p, new_val);
 	}
-
-      restore_vars_to_original_value ();
     }
 }
 

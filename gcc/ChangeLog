@@ -1,3 +1,12 @@
+2013-09-10  Jeff Law  <law@redhat.com>
+
+	PR middle-end/58387
+	Revert:
+	2013-09-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate
+	edge implied equivalences into successor phis.
+
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78-virt.md: Change from | to \; for asm line
