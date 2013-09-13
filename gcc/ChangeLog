@@ -1,5 +1,8 @@
 2013-09-13  Kai Tietz  <ktietz@redhat.com>
 
+	* config.gcc: Separate cases for mingw and cygwin targets,
+	and add 64-bit cygwin target case.
+
 	* config/i386/winnt-cxx.c (i386_pe_type_dllexport_p): Don't
 	dll-export inline-functions.
 	* config/i386/winnt.c (i386_pe_determine_dllexport_p): Likewise.
