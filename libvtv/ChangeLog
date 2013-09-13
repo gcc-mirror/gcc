@@ -1,3 +1,7 @@
+2013-09-12  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* configure.tgt: Remove *-*-*android* from supported targets.
+
 2013-09-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR other/58374

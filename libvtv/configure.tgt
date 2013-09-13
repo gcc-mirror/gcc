@@ -21,6 +21,8 @@
 # Filter out unsupported systems.
 VTV_SUPPORTED=no
 case "${target}" in
+  *-*-*android*)
+	;;
   x86_64-*-linux* | i?86-*-linux*)
 	VTV_SUPPORTED=yes
 	;;
