@@ -1,3 +1,15 @@
+2013-09-14  DJ Delorie  <dj@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/mulsi3.S: Remove a few unneeded moves and branches.
+	* config/rl78/vregs.h: New.
+	* config/rl78/signbit.S: New file.  Implements signbit function.
+	* config/rl78/divmodsi.S: New.
+	* config/rl78/divmodhi.S: New.
+	* config/rl78/divmodqi.S: New.
+	* config/rl78/t-rl78: Build them here...
+	* config/rl78/lib2div.c: ...but not here.
+
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
 	* config.host (msp*-*-elf): New.
