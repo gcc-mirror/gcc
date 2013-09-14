@@ -1,3 +1,16 @@
+2013-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-into-ssa.c (gate_into_ssa): New.
+	(pass_data_build_ssa): Use it.
+	* cgraph.h (expand_thunk): Update prototype.
+	* cgraphunit.c (analyze_function): Expand thunks early.
+	(expand_thunk): Fix DECL_CONTEXT of reust_decl;
+	build proper cgraph; set in_ssa_p; clear bogus TREE_ASM_WRITTEN;
+	set lowered flag; do not add new function.
+	(assemble_thunks_and_aliases): Update.
+	* tree-ssa.c (gate_init_datastructures): New gate.
+	(pass_data_init_datastructures): Use it.
+
 2013-09-14  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/58269

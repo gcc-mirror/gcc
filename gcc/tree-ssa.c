@@ -1084,8 +1084,18 @@ static unsigned int
 execute_init_datastructures (void)
 {
   /* Allocate hash tables, arrays and other structures.  */
+  gcc_assert (!cfun->gimple_df);
   init_tree_ssa (cfun);
   return 0;
+}
+
+/* Gate for IPCP optimization.  */
+
+static bool
+gate_init_datastructures (void)
+{
+  /* Do nothing for funcions that was produced already in SSA form.  */
+  return !(cfun->curr_properties & PROP_ssa);
 }
 
 namespace {
@@ -1095,7 +1105,7 @@ const pass_data pass_data_init_datastructures =
   GIMPLE_PASS, /* type */
   "*init_datastructures", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
+  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1113,6 +1123,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  bool gate () { return gate_init_datastructures (); }
   unsigned int execute () { return execute_init_datastructures (); }
 
 }; // class pass_init_datastructures

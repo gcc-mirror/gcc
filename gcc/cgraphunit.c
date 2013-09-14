@@ -592,15 +592,21 @@ analyze_function (struct cgraph_node *node)
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
 
+  if (node->thunk.thunk_p)
+    {
+      cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
+		          NULL, 0, CGRAPH_FREQ_BASE);
+      if (!expand_thunk (node, false))
+	{
+	  node->thunk.alias = NULL;
+	  node->symbol.analyzed = true;
+	  return;
+	}
+      node->thunk.alias = NULL;
+    }
   if (node->symbol.alias)
     symtab_resolve_alias
        ((symtab_node) node, (symtab_node) cgraph_get_node (node->symbol.alias_target));
-  else if (node->thunk.thunk_p)
-    {
-      cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
-			  NULL, 0, CGRAPH_FREQ_BASE);
-      node->thunk.alias = NULL;
-    }
   else if (node->dispatcher_function)
     {
       /* Generate the dispatcher body of multi-versioned functions.  */
@@ -1432,10 +1438,12 @@ thunk_adjust (gimple_stmt_iterator * bsi,
   return ret;
 }
 
-/* Produce assembler for thunk NODE.  */
+/* Expand thunk NODE to gimple if possible.
+   When OUTPUT_ASM_THUNK is true, also produce assembler for
+   thunks that are not lowered.  */
 
-void
-expand_thunk (struct cgraph_node *node)
+bool
+expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 {
   bool this_adjusting = node->thunk.this_adjusting;
   HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
@@ -1445,14 +1453,6 @@ expand_thunk (struct cgraph_node *node)
   tree thunk_fndecl = node->symbol.decl;
   tree a;
 
-  if (in_lto_p)
-    cgraph_get_body (node);
-  a = DECL_ARGUMENTS (thunk_fndecl);
-
-  current_function_decl = thunk_fndecl;
-
-  /* Ensure thunks are emitted in their correct sections.  */
-  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
 
   if (this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
@@ -1461,10 +1461,23 @@ expand_thunk (struct cgraph_node *node)
       const char *fnname;
       tree fn_block;
       tree restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
+
+      if (!output_asm_thunks)
+	return false;
+
+      if (in_lto_p)
+	cgraph_get_body (node);
+      a = DECL_ARGUMENTS (thunk_fndecl);
       
+      current_function_decl = thunk_fndecl;
+
+      /* Ensure thunks are emitted in their correct sections.  */
+      resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+
       DECL_RESULT (thunk_fndecl)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
 		      RESULT_DECL, 0, restype);
+      DECL_CONTEXT (DECL_RESULT (thunk_fndecl)) = thunk_fndecl;
       fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
 
       /* The back end expects DECL_INITIAL to contain a BLOCK, so we
@@ -1506,6 +1519,15 @@ expand_thunk (struct cgraph_node *node)
       gimple call;
       gimple ret;
 
+      if (in_lto_p)
+	cgraph_get_body (node);
+      a = DECL_ARGUMENTS (thunk_fndecl);
+      
+      current_function_decl = thunk_fndecl;
+
+      /* Ensure thunks are emitted in their correct sections.  */
+      resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+
       DECL_IGNORED_P (thunk_fndecl) = 1;
       bitmap_obstack_initialize (NULL);
 
@@ -1520,6 +1542,7 @@ expand_thunk (struct cgraph_node *node)
 	  DECL_ARTIFICIAL (resdecl) = 1;
 	  DECL_IGNORED_P (resdecl) = 1;
 	  DECL_RESULT (thunk_fndecl) = resdecl;
+          DECL_CONTEXT (DECL_RESULT (thunk_fndecl)) = thunk_fndecl;
 	}
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
@@ -1556,6 +1579,7 @@ expand_thunk (struct cgraph_node *node)
         for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
 	  vargs.quick_push (arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
+      node->callees->call_stmt = call;
       vargs.release ();
       gimple_call_set_from_thunk (call, true);
       if (restmp)
@@ -1624,6 +1648,9 @@ expand_thunk (struct cgraph_node *node)
 	  remove_edge (single_succ_edge (bb));
 	}
 
+      cfun->gimple_df->in_ssa_p = true;
+      /* FIXME: C++ FE should stop setting TREE_ASM_WRITTEN on thunks.  */
+      TREE_ASM_WRITTEN (thunk_fndecl) = false;
       delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
@@ -1633,12 +1660,12 @@ expand_thunk (struct cgraph_node *node)
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
       node->thunk.thunk_p = false;
-      rebuild_cgraph_edges ();
-      cgraph_add_new_function (thunk_fndecl, true);
+      node->lowered = true;
       bitmap_obstack_release (NULL);
     }
   current_function_decl = NULL;
   set_cfun (NULL);
+  return true;
 }
 
 /* Assemble thunks and aliases associated to NODE.  */
@@ -1657,7 +1684,7 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 
 	e = e->next_caller;
 	assemble_thunks_and_aliases (thunk);
-        expand_thunk (thunk);
+        expand_thunk (thunk, true);
       }
     else
       e = e->next_caller;
