@@ -1,9 +1,9 @@
-2013-10-13  Dominique Dhumieres  <dominiq@lps.ens.fr>
+2013-09-13  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	* gcc-interface/Makefile.in: Fix darwin Filter to match on $target_os,
 	not $target_cpu.
 
-2013-10-11  Thomas Schwinge  <thomas@codesourcery.com>
+2013-09-11  Thomas Schwinge  <thomas@codesourcery.com>
             Olivier Hainque  <hainque@adacore.com>
 
 	* gcc-interface/Makefile.in: Import target_cpu, target_vendor,
@@ -659,7 +659,7 @@
 	node for subsequent checks, because the rewriting of the node
 	does not take place during pre-analysis.
 
- 2013-07-08  Robert Dewar  <dewar@adacore.com>
+2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, exp_ch3.adb: Minor reformatting.
 
