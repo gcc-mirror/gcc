@@ -80,6 +80,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 << __id << " -> " << _M_alt
 		 << " [label=\"epsilon\", tailport=\"n\"];\n";
 	  break;
+	case _S_opcode_backref:
+	  __ostr << __id << " [label=\"" << __id << "\\nBACKREF "
+		 << _M_subexpr << "\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"<match>\"];\n";
+	  break;
+	case _S_opcode_line_begin_assertion:
+	  __ostr << __id << " [label=\"" << __id << "\\nLINE_BEGIN \"];\n"
+		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
+	  break;
+	case _S_opcode_line_end_assertion:
+	  __ostr << __id << " [label=\"" << __id << "\\nLINE_END \"];\n"
+		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
+	  break;
+	case _S_opcode_word_boundry:
+	  __ostr << __id << " [label=\"" << __id << "\\nWORD_BOUNDRY "
+		 << _M_neg << "\"];\n"
+		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
+	  break;
+	case _S_opcode_subexpr_lookahead:
+	  __ostr << __id << " [label=\"" << __id << "\\nLOOK_AHEAD\"];\n"
+		 << __id << " -> " << _M_next
+		 << " [label=\"epsilon\", tailport=\"s\"];\n"
+		 << __id << " -> " << _M_alt
+		 << " [label=\"<assert>\", tailport=\"n\"];\n";
+	  break;
 	case _S_opcode_subexpr_begin:
 	  __ostr << __id << " [label=\"" << __id << "\\nSBEGIN "
 		 << _M_subexpr << "\"];\n"
@@ -90,10 +115,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 << _M_subexpr << "\"];\n"
 		 << __id << " -> " << _M_next << " [label=\"epsilon\"];\n";
 	  break;
-	case _S_opcode_backref:
-	  __ostr << __id << " [label=\"" << __id << "\\nBACKREF "
-		 << _M_subexpr << "\"];\n"
-		 << __id << " -> " << _M_next << " [label=\"<match>\"];\n";
+	case _S_opcode_dummy:
 	  break;
 	case _S_opcode_match:
 	  __ostr << __id << " [label=\"" << __id << "\\nMATCH\"];\n"
@@ -101,8 +123,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  break;
 	case _S_opcode_accept:
 	  __ostr << __id << " [label=\"" << __id << "\\nACC\"];\n" ;
-	  break;
-	case _S_opcode_dummy:
 	  break;
 	default:
 	  _GLIBCXX_DEBUG_ASSERT(false);
@@ -141,8 +161,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if (__index == __it)
 	  __throw_regex_error(regex_constants::error_backref);
       _M_has_backref = true;
-      this->push_back(_StateT(_S_opcode_backref, __index));
-      return this->size()-1;
+      _StateT __tmp(_S_opcode_backref);
+      __tmp._M_backref_index = __index;
+      return _M_insert_state(__tmp);
     }
 
   template<typename _CharT, typename _TraitsT>
@@ -152,7 +173,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       for (auto& __it : *this)
 	{
 	  while (__it._M_next >= 0 && (*this)[__it._M_next]._M_opcode
-	         == _S_opcode_dummy)
+		 == _S_opcode_dummy)
 	    __it._M_next = (*this)[__it._M_next]._M_next;
 	  if (__it._M_opcode == _S_opcode_alternative)
 	    while (__it._M_alt >= 0 && (*this)[__it._M_alt]._M_opcode

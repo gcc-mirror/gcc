@@ -44,18 +44,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// This is not that certain. Need deeper investigate.
 	return false;
       auto& __current = this->_M_current;
+      auto& __begin = this->_M_begin;
       auto& __end = this->_M_end;
-      auto& __results = _M_results_ret;
+      auto& __results = _M_cur_results;
       const auto& __state = _M_nfa[__i];
       bool __ret = false;
       switch (__state._M_opcode)
 	{
 	case _S_opcode_alternative:
-	  // Greedy mode by default. For non-greedy mode,
-	  // swap _M_alt and _M_next.
-	  // TODO: Add greedy mode option.
-	  __ret = _M_dfs<__match_mode>(__state._M_alt)
-	    || _M_dfs<__match_mode>(__state._M_next);
+	  // Greedy or not, this is a question ;)
+	  if (!__state._M_neg)
+	    __ret = _M_dfs<__match_mode>(__state._M_alt)
+	      || _M_dfs<__match_mode>(__state._M_next);
+	  else
+	    __ret = _M_dfs<__match_mode>(__state._M_next)
+	      || _M_dfs<__match_mode>(__state._M_alt);
 	  break;
 	case _S_opcode_subexpr_begin:
 	  // Here's the critical part: if there's nothing changed since last
@@ -85,6 +88,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  else
 	    __ret = _M_dfs<__match_mode>(__state._M_next);
+	  break;
+	case _S_opcode_line_begin_assertion:
+	  if (__current == __begin)
+	    __ret = _M_dfs<__match_mode>(__state._M_next);
+	  break;
+	case _S_opcode_line_end_assertion:
+	  if (__current == __end)
+	    __ret = _M_dfs<__match_mode>(__state._M_next);
+	  break;
+	  // By definition.
+	case _S_opcode_word_boundry:
+	    {
+	      bool __ans = false;
+	      if (__current == __begin && this->_M_is_word(*__current))
+		__ans = true;
+	      else if (__current == __end && this->_M_is_word(*__current))
+		__ans = true;
+	      else
+		{
+		  auto __pre = __current;
+		  --__pre;
+		  if (this->_M_is_word(*__current)
+		      != this->_M_is_word(*__pre))
+		    __ans = true;
+		}
+	      if (__ans == !__state._M_neg)
+		__ret = _M_dfs<__match_mode>(__state._M_next);
+	    }
+	  break;
+	  // Here __state._M_alt offers a single start node for a sub-NFA.
+	  // We recursivly invoke our algorithm to match the sub-NFA.
+	case _S_opcode_subexpr_lookahead:
+	    {
+	      _ResultsT __m;
+	      // FIXME Here's not necessarily a DFSExecutor. But we need to
+	      // refactor the whole NFA to a recursive tree structure first.
+	      _DFSExecutor __sub(this->_M_current,
+				 this->_M_end,
+				 __m,
+				 this->_M_nfa,
+				 this->_M_traits,
+				 this->_M_flags);
+	      __sub._M_start_state = __state._M_alt;
+	      if (__sub._M_search_from_first() == !__state._M_neg)
+		__ret = _M_dfs<__match_mode>(__state._M_next);
+	    }
 	  break;
 	case _S_opcode_match:
 	  if (__current != __end && __state._M_matches(*__current))
@@ -138,19 +187,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
   template<bool __match_mode>
-    void _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
+    bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
     _M_main_loop()
     {
+      bool __ret = false;
       while (this->_M_current != this->_M_end)
 	{
 	  if (!__match_mode)
-	    if (_M_includes_some())
-	      return;
+	    // To keep regex_search greedy, no "return true" here.
+	    __ret = _M_includes_some() || __ret;
 	  _M_move();
 	  ++this->_M_current;
 	  _M_e_closure();
 	}
-      _M_includes_some();
+      __ret = _M_includes_some() || __ret;
+      if (__ret)
+	this->_M_results = _M_cur_results->_M_get();
+      return __ret;
     }
 
   template<typename _BiIter, typename _Alloc,
@@ -161,6 +214,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       auto& __current = this->_M_current;
       std::queue<_StateIdT> __q;
       std::vector<bool> __in_q(_M_nfa.size(), false);
+      auto& __begin = this->_M_begin;
+      auto& __end = this->_M_end;
+
       for (auto& __it : _M_covered)
 	{
 	  __in_q[__it.first] = true;
@@ -173,18 +229,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __in_q[__u] = false;
 	  const auto& __state = _M_nfa[__u];
 
-	  // Can be implemented using method, but there're too much arguments.
-	  // I would use macro function before C++11, but lambda is a better
-	  // choice, since hopefully compiler can inline it.
+	  // Can be implemented using method, but there will be too many
+	  // arguments. I would use macro function before C++11, but lambda is
+	  // a better choice, since hopefully compiler can inline it.
 	  auto __add_visited_state = [&](_StateIdT __v)
 	  {
 	    if (__v == _S_invalid_state_id)
 	      return;
 	    if (_M_covered.count(__u) != 0
 		&& (_M_covered.count(__v) == 0
-		    || _M_match_less_than(*_M_covered[__u], *_M_covered[__v])))
+		    || *_M_covered[__u] < *_M_covered[__v]))
 	      {
-		_M_covered[__v] = _ResultsPtr(new _ResultsVec(*_M_covered[__u]));
+		_M_covered[__v] =
+		  _ResultsPtr(new _ResultsEntry(*_M_covered[__u]));
 		// if a state is updated, it's outgoing neighbors should be
 		// reconsidered too. Push them to the queue.
 		if (!__in_q[__v])
@@ -195,19 +252,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	  };
 
+	  // Identical to DFS's switch part.
 	  switch (__state._M_opcode)
 	    {
+	      // Needs to maintain quantifier count vector here. A quantifier
+	      // must be concerned with a alt node.
 	      case _S_opcode_alternative:
-		__add_visited_state(__state._M_next);
-		__add_visited_state(__state._M_alt);
+		{
+		  __add_visited_state(__state._M_next);
+		  auto __back =
+		    _M_covered[__u]->_M_quant_keys[__state._M_quant_index];
+		  _M_covered[__u]->_M_inc(__state._M_quant_index,
+					  __state._M_neg);
+		  __add_visited_state(__state._M_alt);
+		  _M_covered[__u]->_M_quant_keys[__state._M_quant_index]
+		    = __back;
+		}
 		break;
 	      case _S_opcode_subexpr_begin:
 		{
-		  auto& __cu = *_M_covered[__u];
-		  auto __back = __cu[__state._M_subexpr].first;
-		  __cu[__state._M_subexpr].first = __current;
-		  __add_visited_state(__state._M_next);
-		  __cu[__state._M_subexpr].first = __back;
+		  auto& __sub = (*_M_covered[__u])[__state._M_subexpr];
+		  if (!__sub.matched || __sub.first != __current)
+		    {
+		      auto __back = __sub.first;
+		      __sub.first = __current;
+		      __add_visited_state(__state._M_next);
+		      __sub.first = __back;
+		    }
 		}
 		break;
 	      case _S_opcode_subexpr_end:
@@ -220,10 +291,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  __cu[__state._M_subexpr] = __back;
 		}
 		break;
+	      case _S_opcode_line_begin_assertion:
+		if (__current == __begin)
+		  __add_visited_state(__state._M_next);
+		break;
+	      case _S_opcode_line_end_assertion:
+		if (__current == __end)
+		  __add_visited_state(__state._M_next);
+		break;
+	      case _S_opcode_word_boundry:
+		  {
+		    bool __ans = false;
+		    if (__current == __begin && this->_M_is_word(*__current))
+		      __ans = true;
+		    else if (__current == __end && this->_M_is_word(*__current))
+		      __ans = true;
+		    else
+		      {
+			auto __pre = __current;
+			--__pre;
+			if (this->_M_is_word(*__current)
+			    != this->_M_is_word(*__pre))
+			  __ans = true;
+		      }
+		    if (__ans == !__state._M_neg)
+		      __add_visited_state(__state._M_next);
+		  }
+		break;
+	      case _S_opcode_subexpr_lookahead:
+		  {
+		    _ResultsT __m;
+		    // Same comment as in DFS.
+		    _BFSExecutor __sub(this->_M_current,
+				       this->_M_end,
+				       __m,
+				       this->_M_nfa,
+				       this->_M_traits,
+				       this->_M_flags);
+		    __sub._M_start_state = __state._M_alt;
+		    if (__sub._M_search_from_first() == !__state._M_neg)
+		      __add_visited_state(__state._M_next);
+		  }
+		break;
 	      case _S_opcode_match:
 		break;
 	      case _S_opcode_accept:
-		__add_visited_state(__state._M_next);
 		break;
 	      default:
 		_GLIBCXX_DEBUG_ASSERT(false);
@@ -244,7 +356,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      && __state._M_matches(*this->_M_current))
 	    if (__state._M_next != _S_invalid_state_id)
 	      if (__next.count(__state._M_next) == 0
-		  || _M_match_less_than(*__it.second, *__next[__state._M_next]))
+		  || *__it.second < *__next[__state._M_next])
 		__next[__state._M_next] = move(__it.second);
 	}
       _M_covered = move(__next);
@@ -253,37 +365,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _BiIter, typename _Alloc,
     typename _CharT, typename _TraitsT>
     bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_match_less_than(const _ResultsVec& __u, const _ResultsVec& __v) const
-    {
-      // TODO: Greedy and Non-greedy support
-      _GLIBCXX_DEBUG_ASSERT(__u.size() == __v.size());
-      auto __size = __u.size();
-      for (auto __i = 0; __i < __size; __i++)
-	{
-	  auto __uit = __u[__i], __vit = __v[__i];
-	  if (__uit.matched && !__vit.matched)
-	    return true;
-	  if (!__uit.matched && __vit.matched)
-	    return false;
-	  if (__uit.matched && __vit.matched)
-	    {
-	      // GREEDY
-	      if (__uit.first != __vit.first)
-		return __uit.first < __vit.first;
-	      if (__uit.second != __vit.second)
-		return __uit.second > __vit.second;
-	    }
-	}
-      return false;
-    }
-
-  template<typename _BiIter, typename _Alloc,
-    typename _CharT, typename _TraitsT>
-    bool _BFSExecutor<_BiIter, _Alloc, _CharT, _TraitsT>::
-    _M_includes_some() const
+    _M_includes_some()
     {
       auto& __s = _M_nfa._M_final_states();
       auto& __t = _M_covered;
+      bool __succ = false;
       if (__s.size() > 0 && __t.size() > 0)
 	{
 	  auto __first = __s.begin();
@@ -292,16 +378,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    {
 	      if (*__first < __second->first)
 		++__first;
-	      else if (__second->first < *__first)
+	      else if (*__first > __second->first)
 		++__second;
 	      else
 		{
-		  this->_M_results = *__second->second;
-		  return true;
+		  if (_M_cur_results == nullptr
+		      || *__second->second < *_M_cur_results)
+		    _M_cur_results =
+		      _ResultsPtr(new _ResultsEntry(*__second->second));
+		  __succ = true;
+		  ++__first;
+		  ++__second;
 		}
 	    }
 	}
-      return false;
+      return __succ;
     }
 
   template<typename _BiIter, typename _Alloc,
@@ -322,7 +413,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (__p->_M_has_backref)
 	return _ExecutorPtr(new _DFSExecutorT(__b, __e, __m, *__p,
 					      __re._M_traits, __flags));
-      return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, *__p, __flags));
+      return _ExecutorPtr(new _BFSExecutorT(__b, __e, __m, *__p,
+					    __re._M_traits, __flags));
     }
 
 _GLIBCXX_END_NAMESPACE_VERSION

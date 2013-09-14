@@ -210,11 +210,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		{
 		  ++_M_current;
 		  _M_token = _S_token_subexpr_lookahead_begin;
+		  _M_value.assign(1, 'p');
 		}
 	      else if (*_M_current == '!')
 		{
 		  ++_M_current;
-		  _M_token = _S_token_subexpr_neg_lookahead_begin;
+		  _M_token = _S_token_subexpr_lookahead_begin;
+		  _M_value.assign(1, 'n');
 		}
 	      else
 		__throw_regex_error(regex_constants::error_paren);
@@ -371,9 +373,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_value.assign(1, _M_escape_map.at(__c));
 	}
       else if (__c == 'b')
-	_M_token = _S_token_word_bound;
+	{
+	  _M_token = _S_token_word_bound;
+	  _M_value.assign(1, 'p');
+	}
       else if (__c == 'B')
-	_M_token = _S_token_neg_word_bound;
+	{
+	  _M_token = _S_token_word_bound;
+	  _M_value.assign(1, 'n');
+	}
       // N3376 28.13
       else if (__c == 'd'
 	       || __c == 'D'
@@ -580,9 +588,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	break;
       case _S_token_subexpr_lookahead_begin:
 	ostr << "lookahead subexpr begin\n";
-	break;
-      case _S_token_subexpr_neg_lookahead_begin:
-	ostr << "neg lookahead subexpr begin\n";
 	break;
       case _S_token_subexpr_end:
 	ostr << "subexpr end\n";

@@ -1,3 +1,28 @@
+2013-09-14  Tim Shen  <timshen91@gmail.com>
+
+	* include/bits/regex.h (regex_match<>, regex_search<>):
+	Change regex_executor caller. Now use their return value instead
+	of checking __m[0].matched to find out if it's successful.
+	(regex_search<>): Move the search logic to regex_executor.
+	* include/bits/regex_automaton.h: Add some new _Opcode. Refactor
+	_NFA::_M_insert_*.
+	* include/bits/regex_automaton.tcc: Add DEBUG dump for new
+	_Opcode. Refactor _NFA::_M_insert_*.
+	* include/bits/regex_compiler.h (_Compiler<>::_M_get_nfa):
+	Use make_shared instead of construct by hand.
+	* include/bits/regex_compiler.tcc: Implement _Compiler<>::_M_assertion.
+	* include/bits/regex_constants.h: Fix indentation and line breaking.
+	* include/bits/regex_executor.h: Add _ResultsEntry to support
+	greedy/ungreedy mode. Move regex_search logic here.
+	* include/bits/regex_executor.tcc: Implement assertions and
+	greedy/ungreedy matching.
+	* include/bits/regex_scanner.h: Add a new token _S_token_ungreedy.
+	* include/bits/regex_scanner.tcc: Parse a new token _S_token_ungreedy.
+	* testsuite/28_regex/algorithms/regex_search/ecma/assertion.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/ecma/greedy.cc: New.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc:
+	Fix comment.
+
 2013-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58415

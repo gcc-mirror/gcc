@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       std::shared_ptr<_RegexT>
       _M_get_nfa() const
-      { return std::shared_ptr<_RegexT>(new _RegexT(_M_nfa)); }
+      { return make_shared<_RegexT>(_M_nfa); }
 
     private:
       typedef _Scanner<_FwdIter>                              _ScannerT;
