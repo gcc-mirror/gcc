@@ -1,3 +1,9 @@
+2013-09-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/58382
+	* config/pa/pa.c (pa_expand_prologue): Change mode in gen_rtx_POST_INC
+	calls to word_mode.
+
 2013-09-14  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/48094
