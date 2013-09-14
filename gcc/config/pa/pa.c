@@ -4003,7 +4003,8 @@ pa_expand_prologue (void)
 	      || (! TARGET_64BIT && df_regs_ever_live_p (i + 1)))
 	    {
 	      rtx addr, insn, reg;
-	      addr = gen_rtx_MEM (DFmode, gen_rtx_POST_INC (DFmode, tmpreg));
+	      addr = gen_rtx_MEM (DFmode,
+				  gen_rtx_POST_INC (word_mode, tmpreg));
 	      reg = gen_rtx_REG (DFmode, i);
 	      insn = emit_move_insn (addr, reg);
 	      if (DO_FRAME_NOTES)
@@ -4293,7 +4294,8 @@ pa_expand_epilogue (void)
 	if (df_regs_ever_live_p (i)
 	    || (! TARGET_64BIT && df_regs_ever_live_p (i + 1)))
 	  {
-	    rtx src = gen_rtx_MEM (DFmode, gen_rtx_POST_INC (DFmode, tmpreg));
+	    rtx src = gen_rtx_MEM (DFmode,
+				   gen_rtx_POST_INC (word_mode, tmpreg));
 	    rtx dest = gen_rtx_REG (DFmode, i);
 	    emit_move_insn (dest, src);
 	  }
