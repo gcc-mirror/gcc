@@ -51,14 +51,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// that represents the regular expression.
   enum _Opcode
   {
-      _S_opcode_unknown       =   0,
-      _S_opcode_alternative   =   1,
-      _S_opcode_backref       =   2,
-      _S_opcode_subexpr_begin =   4,
-      _S_opcode_subexpr_end   =   5,
-      _S_opcode_dummy         =   6,
-      _S_opcode_match         = 100,
-      _S_opcode_accept        = 255
+      _S_opcode_unknown,
+      _S_opcode_alternative,
+      _S_opcode_backref,
+      _S_opcode_line_begin_assertion,
+      _S_opcode_line_end_assertion,
+      _S_opcode_word_boundry,
+      _S_opcode_subexpr_lookahead,
+      _S_opcode_subexpr_begin,
+      _S_opcode_subexpr_end,
+      _S_opcode_dummy,
+      _S_opcode_match,
+      _S_opcode_accept,
   };
 
   template<typename _CharT, typename _TraitsT>
@@ -72,33 +76,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT    _M_next;             // outgoing transition
       union // Since they are mutually exclusive.
       {
-	_StateIdT    _M_alt;            // for _S_opcode_alternative
 	unsigned int _M_subexpr;        // for _S_opcode_subexpr_*
 	unsigned int _M_backref_index;  // for _S_opcode_backref
+	struct
+	{
+	  // for _S_opcode_alternative.
+	  _StateIdT  _M_quant_index;
+	  // for _S_opcode_alternative or _S_opcode_subexpr_lookahead
+	  _StateIdT  _M_alt;
+	  // for _S_opcode_word_boundry or _S_opcode_subexpr_lookahead or
+	  // quantifiers(ungreedy if set true)
+	  bool       _M_neg;
+	};
       };
-      _MatcherT    _M_matches;          // for _S_opcode_match
+      _MatcherT      _M_matches;        // for _S_opcode_match
 
       explicit _State(_OpcodeT __opcode)
       : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
-      { }
-
-      _State(const _MatcherT& __m)
-      : _M_opcode(_S_opcode_match), _M_next(_S_invalid_state_id),
-	_M_matches(__m)
-      { }
-
-      _State(_OpcodeT __opcode, unsigned __index)
-      : _M_opcode(__opcode), _M_next(_S_invalid_state_id)
-      {
-	if (__opcode == _S_opcode_subexpr_begin
-	    || __opcode == _S_opcode_subexpr_end)
-	  _M_subexpr = __index;
-	else if (__opcode == _S_opcode_backref)
-	  _M_backref_index = __index;
-      }
-
-      _State(_StateIdT __next, _StateIdT __alt)
-      : _M_opcode(_S_opcode_alternative), _M_next(__next), _M_alt(__alt)
       { }
 
 #ifdef _GLIBCXX_DEBUG
@@ -141,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _NFA(_FlagT __f)
       : _M_flags(__f), _M_start_state(0), _M_subexpr_count(0),
-      _M_has_backref(false)
+      _M_has_backref(false), _M_quant_count(0)
       { }
 
       _FlagT
@@ -163,23 +157,30 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StateIdT
       _M_insert_accept()
       {
-	this->push_back(_StateT(_S_opcode_accept));
-	_M_accepting_states.insert(this->size()-1);
-	return this->size()-1;
+	auto __ret = _M_insert_state(_StateT(_S_opcode_accept));
+	_M_accepting_states.insert(__ret);
+	return __ret;
       }
 
       _StateIdT
-      _M_insert_alt(_StateIdT __next, _StateIdT __alt)
+      _M_insert_alt(_StateIdT __next, _StateIdT __alt, bool __neg)
       {
-	this->push_back(_StateT(__next, __alt));
-	return this->size()-1;
+	_StateT __tmp(_S_opcode_alternative);
+	// It labels every quantifier to make greedy comparison easier in BFS
+	// approach.
+	__tmp._M_quant_index = _M_quant_count++;
+	__tmp._M_next = __next;
+	__tmp._M_alt = __alt;
+	__tmp._M_neg = __neg;
+	return _M_insert_state(__tmp);
       }
 
       _StateIdT
       _M_insert_matcher(_MatcherT __m)
       {
-	this->push_back(_StateT(__m));
-	return this->size()-1;
+	_StateT __tmp(_S_opcode_match);
+	__tmp._M_matches = __m;
+	return _M_insert_state(__tmp);
       }
 
       _StateIdT
@@ -187,27 +188,51 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	auto __id = _M_subexpr_count++;
 	_M_paren_stack.push_back(__id);
-	this->push_back(_StateT(_S_opcode_subexpr_begin, __id));
-	return this->size()-1;
+	_StateT __tmp(_S_opcode_subexpr_begin);
+	__tmp._M_subexpr = __id;
+	return _M_insert_state(__tmp);
       }
 
       _StateIdT
       _M_insert_subexpr_end()
       {
-	this->push_back(_StateT(_S_opcode_subexpr_end, _M_paren_stack.back()));
+	_StateT __tmp(_S_opcode_subexpr_end);
+	__tmp._M_subexpr = _M_paren_stack.back();
 	_M_paren_stack.pop_back();
-	return this->size()-1;
+	return _M_insert_state(__tmp);
       }
 
       _StateIdT
       _M_insert_backref(unsigned int __index);
 
       _StateIdT
-      _M_insert_dummy()
+      _M_insert_line_begin()
+      { return _M_insert_state(_StateT(_S_opcode_line_begin_assertion)); }
+
+      _StateIdT
+      _M_insert_line_end()
+      { return _M_insert_state(_StateT(_S_opcode_line_end_assertion)); }
+
+      _StateIdT
+      _M_insert_word_bound(bool __neg)
       {
-	this->push_back(_StateT(_S_opcode_dummy));
-	return this->size()-1;
+	_StateT __tmp(_S_opcode_word_boundry);
+	__tmp._M_neg = __neg;
+	return _M_insert_state(__tmp);
       }
+
+      _StateIdT
+      _M_insert_lookahead(_StateIdT __alt, bool __neg)
+      {
+	_StateT __tmp(_S_opcode_subexpr_lookahead);
+	__tmp._M_alt = __alt;
+	__tmp._M_neg = __neg;
+	return _M_insert_state(__tmp);
+      }
+
+      _StateIdT
+      _M_insert_dummy()
+      { return _M_insert_state(_StateT(_S_opcode_dummy)); }
 
       _StateIdT
       _M_insert_state(_StateT __s)
@@ -230,6 +255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _FlagT                    _M_flags;
       _StateIdT                 _M_start_state;
       _SizeT                    _M_subexpr_count;
+      _SizeT                    _M_quant_count;
       bool                      _M_has_backref;
     };
 
