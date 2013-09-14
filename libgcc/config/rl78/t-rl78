@@ -25,4 +25,8 @@ LIB2ADD = \
 	$(srcdir)/config/rl78/lib2shift.c \
 	$(srcdir)/config/rl78/lshrsi3.S \
 	$(srcdir)/config/rl78/mulsi3.S \
+	$(srcdir)/config/rl78/divmodsi.S \
+	$(srcdir)/config/rl78/divmodhi.S \
+	$(srcdir)/config/rl78/divmodqi.S \
+	$(srcdir)/config/rl78/signbit.S \
 	$(srcdir)/config/rl78/cmpsi2.S
