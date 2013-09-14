@@ -1,3 +1,9 @@
+2013-09-14  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/58269
+	config/i386/i386.c (ix86_function_arg_regno_p): Make Darwin use the
+	xmm register set described in the psABI.
+
 2013-09-13  Evgeny Gavrin <e.gavrin@samsung.com>
 
         * dwarf2out.c (should_emit_struct_debug): Add check

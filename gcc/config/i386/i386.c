@@ -5723,17 +5723,9 @@ ix86_function_arg_regno_p (int regno)
 		    && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX)));
     }
 
-  if (TARGET_MACHO)
-    {
-      if (SSE_REGNO_P (regno) && TARGET_SSE)
-        return true;
-    }
-  else
-    {
-      if (TARGET_SSE && SSE_REGNO_P (regno)
-          && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
-        return true;
-    }
+  if (TARGET_SSE && SSE_REGNO_P (regno)
+      && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
+    return true;
 
   /* TODO: The function should depend on current function ABI but
      builtins.c would need updating then. Therefore we use the
