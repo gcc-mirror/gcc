@@ -3331,31 +3331,6 @@ build_v2_ivar_offset_ref_table (void)
     finish_var_decl (ref->decl, ref->offset);
 }
 
-/* static int _OBJC_IMAGE_INFO[2] = { 0, 16 | flags }; */
-
-static void
-generate_v2_objc_image_info (void)
-{
-  tree decl, array_type;
-  vec<constructor_elt, va_gc> *v = NULL;
-  int flags =
-	((flag_replace_objc_classes && imp_count ? 1 : 0)
-	  | (flag_objc_gc ? 2 : 0));
-
-  flags |= 16;
-
-  array_type  = build_sized_array_type (integer_type_node, 2);
-
-  decl = start_var_decl (array_type, "_OBJC_ImageInfo");
-
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, integer_zero_node);
-  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, build_int_cst (integer_type_node, flags));
-  /* The Runtime wants this.  */
-  DECL_PRESERVE_P (decl) = 1;
-  OBJCMETA (decl, objc_meta, meta_info);
-  finish_var_decl (decl, objc_build_constructor (TREE_TYPE (decl), v));
-}
-
 static void
 objc_generate_v2_next_metadata (void)
 {
@@ -3406,9 +3381,6 @@ objc_generate_v2_next_metadata (void)
 			  meta_label_nonlazy_classlist);
   build_v2_address_table (nonlazy_category_list, "_OBJC_NonLazyCategoryList$",
 			  meta_label_nonlazy_categorylist);
-
-  /* This conveys information on GC usage and zero-link.  */
-  generate_v2_objc_image_info ();
 
   /* Generate catch objects for eh, if any are needed.  */
   build_v2_eh_catch_objects ();
