@@ -9546,6 +9546,21 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		  temp_code = build_assignment (EXEC_ASSIGN,
 						t1, (*code)->expr1,
 				NULL, NULL, (*code)->loc);
+
+		  /* For allocatable LHS, check whether it is allocated.  */
+		  if (gfc_expr_attr((*code)->expr1).allocatable)
+		    {
+		      gfc_code *block;
+		      block = gfc_get_code (EXEC_IF);
+		      block->block = gfc_get_code (EXEC_IF);
+		      block->block->expr1
+			  = gfc_build_intrinsic_call (ns,
+				    GFC_ISYM_ASSOCIATED, "allocated",
+				    (*code)->loc, 2,
+				    gfc_copy_expr ((*code)->expr1), NULL);
+		      block->block->next = temp_code;
+		      temp_code = block;
+		    }
 		  add_code_to_chain (&temp_code, &tmp_head, &tmp_tail);
 		}
 
@@ -9554,6 +9569,31 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	      gfc_free_expr (this_code->ext.actual->expr);
 	      this_code->ext.actual->expr = gfc_copy_expr (t1);
 	      add_comp_ref (this_code->ext.actual->expr, comp1);
+
+	      /* If the LHS is not allocated, we pointer-assign the LHS address
+		 to the temporary - after the LHS has been allocated.  */
+	      if (gfc_expr_attr((*code)->expr1).allocatable)
+		{
+		  gfc_code *block;
+                  gfc_expr *cond;
+                  cond = gfc_get_expr ();
+		  cond->ts.type = BT_LOGICAL;
+		  cond->ts.kind = gfc_default_logical_kind;
+		  cond->expr_type = EXPR_OP;
+		  cond->where = (*code)->loc;
+		  cond->value.op.op = INTRINSIC_NOT;
+		  cond->value.op.op1 = gfc_build_intrinsic_call (ns,
+					  GFC_ISYM_ASSOCIATED, "allocated",
+					  (*code)->loc, 2,
+					  gfc_copy_expr (t1), NULL);
+		  block = gfc_get_code (EXEC_IF);
+		  block->block = gfc_get_code (EXEC_IF);
+		  block->block->expr1 = cond;
+		  block->block->next = build_assignment (EXEC_POINTER_ASSIGN,
+					t1, (*code)->expr1,
+					NULL, NULL, (*code)->loc);
+		  add_code_to_chain (&block, &head, &tail);
+		}
 	    }
 	  }
       else if (this_code->op == EXEC_ASSIGN && !this_code->next)
