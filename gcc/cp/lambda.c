@@ -499,7 +499,7 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
     }
 
   /* Make member variable.  */
-  member = build_lang_decl (FIELD_DECL, name, type);
+  member = build_decl (input_location, FIELD_DECL, name, type);
   DECL_VLA_CAPTURE_P (member) = vla;
 
   if (!explicit_init_p)
