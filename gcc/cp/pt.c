@@ -2852,7 +2852,7 @@ bool
 function_parameter_pack_p (const_tree t)
 {
   if (t && TREE_CODE (t) == PARM_DECL)
-    return FUNCTION_PARAMETER_PACK_P (t);
+    return DECL_PACK_P (t);
   return false;
 }
 
@@ -3085,7 +3085,7 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       break;
 
     case PARM_DECL:
-      if (FUNCTION_PARAMETER_PACK_P (t))
+      if (DECL_PACK_P (t))
         {
           /* We don't want to walk into the type of a PARM_DECL,
              because we don't want to see the type parameter pack.  */
@@ -4646,7 +4646,7 @@ push_template_decl_real (tree decl, bool is_friend)
 
       while (arg && argtype)
         {
-          if (!FUNCTION_PARAMETER_PACK_P (arg)
+          if (!DECL_PACK_P (arg)
               && check_for_bare_parameter_packs (TREE_TYPE (arg)))
             {
             /* This is a PARM_DECL that contains unexpanded parameter
@@ -9472,7 +9472,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 		 have the wrong value for a recursive call.  Just make a
 		 dummy decl, since it's only used for its type.  */
 	      arg_pack = tsubst_decl (parm_pack, args, complain);
-	      if (arg_pack && FUNCTION_PARAMETER_PACK_P (arg_pack))
+	      if (arg_pack && DECL_PACK_P (arg_pack))
 		/* Partial instantiation of the parm_pack, we can't build
 		   up an argument pack yet.  */
 		arg_pack = NULL_TREE;
@@ -10465,7 +10465,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
         tree prev_r = NULL_TREE;
         tree first_r = NULL_TREE;
 
-        if (FUNCTION_PARAMETER_PACK_P (t))
+        if (DECL_PACK_P (t))
           {
             /* If there is a local specialization that isn't a
                parameter pack, it means that we're doing a "simple"
@@ -10515,10 +10515,6 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
               /* We're on the Ith parameter of the function parameter
                  pack.  */
               {
-		/* An argument of a function parameter pack is not a parameter
-		   pack.  */
-		FUNCTION_PARAMETER_PACK_P (r) = false;
-
                 /* Get the Ith type.  */
                 type = TREE_VEC_ELT (expanded_types, i);
 
@@ -18705,7 +18701,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
       pattern_parm
 	= skip_artificial_parms_for (code_pattern,
 				     DECL_ARGUMENTS (code_pattern));
-      while (decl_parm && !FUNCTION_PARAMETER_PACK_P (pattern_parm))
+      while (decl_parm && !DECL_PACK_P (pattern_parm))
 	{
 	  tree parm_type;
 	  tree attributes;
@@ -18728,7 +18724,7 @@ regenerate_decl_from_template (tree decl, tree tmpl)
 	}
       /* Merge any parameters that match with the function parameter
          pack.  */
-      if (pattern_parm && FUNCTION_PARAMETER_PACK_P (pattern_parm))
+      if (pattern_parm && DECL_PACK_P (pattern_parm))
         {
           int i, len;
           tree expanded_types;
@@ -19247,7 +19243,7 @@ instantiate_decl (tree d, int defer_ok,
 	}
       for (; tmpl_parm; tmpl_parm = DECL_CHAIN (tmpl_parm))
 	{
-	  if (!FUNCTION_PARAMETER_PACK_P (tmpl_parm))
+	  if (!DECL_PACK_P (tmpl_parm))
 	    {
 	      register_local_specialization (spec_parm, tmpl_parm);
 	      spec_parm = DECL_CHAIN (spec_parm);

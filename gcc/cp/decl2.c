@@ -188,11 +188,6 @@ cp_build_parm_decl (tree name, tree type)
   if (!processing_template_decl)
     DECL_ARG_TYPE (parm) = type_passed_as (type);
 
-  /* If the type is a pack expansion, then we have a function
-     parameter pack. */
-  if (type && TREE_CODE (type) == TYPE_PACK_EXPANSION)
-    FUNCTION_PARAMETER_PACK_P (parm) = 1;
-
   return parm;
 }
 

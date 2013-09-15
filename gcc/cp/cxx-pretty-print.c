@@ -1527,7 +1527,7 @@ cxx_pretty_printer::direct_declarator (tree t)
 	{
 	  pp_cxx_space_for_pointer_operator (this, TREE_TYPE (t));
 
-	  if ((TREE_CODE (t) == PARM_DECL && FUNCTION_PARAMETER_PACK_P (t))
+	  if ((TREE_CODE (t) == PARM_DECL && DECL_PACK_P (t))
 	      || template_parameter_pack_p (t))
 	    /* A function parameter pack or non-type template
 	       parameter pack.  */

@@ -1,5 +1,14 @@
 2013-09-15  Jason Merrill  <jason@redhat.com>
 
+	PR c++/41933
+	* cp-tree.h (DECL_PACK_P): Replace FUNCTION_PARAMETER_PACK_P.
+	* cxx-pretty-print.c (direct_declarator): Adjust.
+	* decl2.c (cp_build_parm_decl): Adjust.
+	* pt.c (function_parameter_pack_p): Adjust.
+	(find_parameter_packs_r, push_template_decl_real): Adjust.
+	(tsubst_pack_expansion, tsubst_decl): Adjust.
+	(regenerate_decl_from_template, instantiate_decl): Adjust.
+
 	* lambda.c (add_capture): Don't add DECL_LANG_SPECIFIC.
 
 2013-09-13  Jason Merrill  <jason@redhat.com>
