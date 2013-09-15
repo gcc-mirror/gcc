@@ -1,5 +1,23 @@
 2013-09-15  Jason Merrill  <jason@redhat.com>
 
+	Core DR 904
+	PR c++/41933
+	* parser.c (cp_parser_lambda_introducer): Handle variadic capture.
+	* lambda.c (add_capture): Handle variadic capture.
+	(add_default_capture, lambda_capture_field_type): Likewise.
+	(build_capture_proxy, register_capture_members): Likewise.
+	* pt.c (register_specialization): Allow FIELD_DECL.
+	(retrieve_specialization): Likewise.
+	(find_parameter_packs_r): Handle FIELD_DECL and VAR_DECL.
+	(tsubst_pack_expansion): Handle FIELD_DECL packs.
+	(gen_elem_of_pack_expansion_instantiation): Likewise.
+	(instantiate_class_template_1): Likewise.
+	(tsubst_decl, tsubst_copy): Likewise.
+	(tsubst_expr) [DECL_EXPR]: Handle capture proxy packs.
+	(tsubst_copy_and_build) [VAR_DECL]: Likewise.
+	* semantics.c (finish_non_static_data_member): Don't try to represent
+	the type of a COMPOUND_REF of a FIELD_DECL pack.
+
 	PR c++/41933
 	* cp-tree.h (DECL_PACK_P): Replace FUNCTION_PARAMETER_PACK_P.
 	* cxx-pretty-print.c (direct_declarator): Adjust.

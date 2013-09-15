@@ -215,7 +215,8 @@ lambda_capture_field_type (tree expr, bool explicit_init_p)
     }
   else
     type = non_reference (unlowered_expr_type (expr));
-  if (!type || WILDCARD_TYPE_P (type) || type_uses_auto (type))
+  if (!type || WILDCARD_TYPE_P (type) || type_uses_auto (type)
+      || DECL_PACK_P (expr))
     {
       type = cxx_make_type (DECLTYPE_TYPE);
       DECLTYPE_TYPE_EXPR (type) = expr;
@@ -320,15 +321,21 @@ tree
 lambda_proxy_type (tree ref)
 {
   tree type;
+  if (ref == error_mark_node)
+    return error_mark_node;
   if (REFERENCE_REF_P (ref))
     ref = TREE_OPERAND (ref, 0);
+  gcc_assert (TREE_CODE (ref) == COMPONENT_REF);
   type = TREE_TYPE (ref);
-  if (type && !WILDCARD_TYPE_P (non_reference (type)))
-    return type;
-  type = cxx_make_type (DECLTYPE_TYPE);
-  DECLTYPE_TYPE_EXPR (type) = ref;
-  DECLTYPE_FOR_LAMBDA_PROXY (type) = true;
-  SET_TYPE_STRUCTURAL_EQUALITY (type);
+  if (!type || WILDCARD_TYPE_P (non_reference (type)))
+    {
+      type = cxx_make_type (DECLTYPE_TYPE);
+      DECLTYPE_TYPE_EXPR (type) = ref;
+      DECLTYPE_FOR_LAMBDA_PROXY (type) = true;
+      SET_TYPE_STRUCTURAL_EQUALITY (type);
+    }
+  if (DECL_PACK_P (TREE_OPERAND (ref, 1)))
+    type = make_pack_expansion (type);
   return type;
 }
 
@@ -340,6 +347,9 @@ tree
 build_capture_proxy (tree member)
 {
   tree var, object, fn, closure, name, lam, type;
+
+  if (PACK_EXPANSION_P (member))
+    member = PACK_EXPANSION_PATTERN (member);
 
   closure = DECL_CONTEXT (member);
   fn = lambda_function (closure);
@@ -422,12 +432,20 @@ vla_capture_type (tree array_type)
    and return it.  */
 
 tree
-add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
+add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	     bool explicit_init_p)
 {
   char *buf;
   tree type, member, name;
   bool vla = false;
+  bool variadic = false;
+  tree initializer = orig_init;
+
+  if (PACK_EXPANSION_P (initializer))
+    {
+      initializer = PACK_EXPANSION_PATTERN (initializer);
+      variadic = true;
+    }
 
   if (TREE_CODE (initializer) == TREE_LIST)
     initializer = build_x_compound_expr_from_list (initializer, ELK_INIT,
@@ -498,6 +516,9 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
       IDENTIFIER_MARKED (name) = true;
     }
 
+  if (variadic)
+    type = make_pack_expansion (type);
+
   /* Make member variable.  */
   member = build_decl (input_location, FIELD_DECL, name, type);
   DECL_VLA_CAPTURE_P (member) = vla;
@@ -518,8 +539,14 @@ add_capture (tree lambda, tree id, tree initializer, bool by_reference_p,
       && current_class_type == LAMBDA_EXPR_CLOSURE (lambda))
     finish_member_declaration (member);
 
+  tree listmem = member;
+  if (variadic)
+    {
+      listmem = make_pack_expansion (member);
+      initializer = orig_init;
+    }
   LAMBDA_EXPR_CAPTURE_LIST (lambda)
-    = tree_cons (member, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
+    = tree_cons (listmem, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
 
   if (LAMBDA_EXPR_CLOSURE (lambda))
     return build_capture_proxy (member);
@@ -538,9 +565,14 @@ register_capture_members (tree captures)
     return;
 
   register_capture_members (TREE_CHAIN (captures));
+
+  tree field = TREE_PURPOSE (captures);
+  if (PACK_EXPANSION_P (field))
+    field = PACK_EXPANSION_PATTERN (field);
+
   /* We set this in add_capture to avoid duplicates.  */
-  IDENTIFIER_MARKED (DECL_NAME (TREE_PURPOSE (captures))) = false;
-  finish_member_declaration (TREE_PURPOSE (captures));
+  IDENTIFIER_MARKED (DECL_NAME (field)) = false;
+  finish_member_declaration (field);
 }
 
 /* Similar to add_capture, except this works on a stack of nested lambdas.
@@ -565,6 +597,8 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
       tree lambda = TREE_VALUE (node);
 
       current_class_type = LAMBDA_EXPR_CLOSURE (lambda);
+      if (DECL_PACK_P (initializer))
+	initializer = make_pack_expansion (initializer);
       var = add_capture (lambda,
                             id,
                             initializer,
