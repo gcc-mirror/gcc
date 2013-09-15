@@ -1,3 +1,7 @@
+2013-09-15  Jason Merrill  <jason@redhat.com>
+
+	* lambda.c (add_capture): Don't add DECL_LANG_SPECIFIC.
+
 2013-09-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/58273

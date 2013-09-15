@@ -10500,7 +10500,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
               }
           }
 
-        /* Loop through all of the parameter's we'll build. When T is
+        /* Loop through all of the parameters we'll build. When T is
            a function parameter pack, LEN is the number of expanded
            types in EXPANDED_TYPES; otherwise, LEN is 1.  */
         r = NULL_TREE;
