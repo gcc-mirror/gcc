@@ -1604,6 +1604,9 @@ finish_non_static_data_member (tree decl, tree object, tree qualifying_scope)
 
       if (TREE_CODE (type) == REFERENCE_TYPE)
 	/* Quals on the object don't matter.  */;
+      else if (PACK_EXPANSION_P (type))
+	/* Don't bother trying to represent this.  */
+	type = NULL_TREE;
       else
 	{
 	  /* Set the cv qualifiers.  */
