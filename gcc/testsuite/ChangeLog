@@ -1,7 +1,12 @@
+2013-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* gfortran.dg/defined_assignment_10.f90: New.
+
 2013-09-13  Evgeny Gavrin <e.gavrin@samsung.com>
 
-        * gcc.dg/debug/dwarf2/omp-fesdr.c: Add test.
-        * g++.dg/debug/dwarf2/omp-fesdr.C: Add test.
+	* gcc.dg/debug/dwarf2/omp-fesdr.c: Add test.
+	* g++.dg/debug/dwarf2/omp-fesdr.C: Add test.
 
 2013-09-13  Jacek Caban  <jacek@codeweavers.com>
 

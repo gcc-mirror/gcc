@@ -1,3 +1,9 @@
+2013-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* resolve.c (generate_component_assignments): Handle unallocated
+	LHS with defined assignment of components.
+
 2013-09-12  Brooks Moses  <bmoses@google.com>
 
 	PR driver/42955
