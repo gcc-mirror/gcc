@@ -1,3 +1,9 @@
+2013-09-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/tm.texi.in (Cond Exec Macros): Remove node.
+	(Condition Code): Don't reference it.
+	* doc/tm.texi: Regenerate.
+
 2013-09-16  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/58418
