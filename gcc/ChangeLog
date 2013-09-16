@@ -1,3 +1,17 @@
+2013-09-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_asm_file_start): Specify alternate
+	vregs location for RL78/G10.
+	(rl78_expand_prologue): Avoid SEL on G10.
+	(rl78_expand_epilogue): Likewise.
+	(rl78_peep_movhi_p): Can't move a constant to memory in HImode.
+	* config/rl78/rl78.h (TARGET_CPU_CPP_BUILTINS): Define
+	__RL78_G10__ when appropriate.
+	(ASM_SPEC): Pass -mg10 along to the assembler.
+	* config/rl78/rl78.md (sel_rb): Disable for G10.
+	* config/rl78/rl78.opt: Add -mg10 option.
+	* config/rl78/t-rl78: Add -mg10 multilib.
+
 2013-09-16  Xinliang David Li  <davidxl@google.com>
 
 	* tree-if-conv.c (main_tree_if_conversion): Check new flag.

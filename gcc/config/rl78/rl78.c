@@ -259,10 +259,20 @@ rl78_asm_file_start (void)
 {
   int i;
 
-  for (i = 0; i < 8; i++)
+  if (TARGET_G10)
     {
-      fprintf (asm_out_file, "r%d\t=\t0x%x\n", 8 + i, 0xffef0 + i);
-      fprintf (asm_out_file, "r%d\t=\t0x%x\n", 16 + i, 0xffee8 + i);
+      /* The memory used is 0xffec8 to 0xffedf; real registers are in
+	 0xffee0 to 0xffee7.  */
+      for (i = 8; i < 32; i++)
+	fprintf (asm_out_file, "r%d\t=\t0x%x\n", i, 0xffec0 + i);
+    }
+  else
+    {
+      for (i = 0; i < 8; i++)
+	{
+	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 8 + i, 0xffef0 + i);
+	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 16 + i, 0xffee8 + i);
+	}
     }
 
   opt_pass *rl78_devirt_pass = make_pass_rl78_devirt (g);
@@ -1018,19 +1028,26 @@ rl78_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->framesize;
 
-  if (is_interrupt_func (cfun->decl))
+  if (is_interrupt_func (cfun->decl) && !TARGET_G10)
     emit_insn (gen_sel_rb (GEN_INT (0)));
 
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])
       {
-	int need_bank = i/4;
-	if (need_bank != rb)
+	if (TARGET_G10)
 	  {
-	    emit_insn (gen_sel_rb (GEN_INT (need_bank)));
-	    rb = need_bank;
+	    emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i*2));
+	    F (emit_insn (gen_push (gen_rtx_REG (HImode, 0))));
 	  }
-	F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
+	else {
+	  int need_bank = i/4;
+	  if (need_bank != rb)
+	    {
+	      emit_insn (gen_sel_rb (GEN_INT (need_bank)));
+	      rb = need_bank;
+	    }
+	  F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
+	}
       }
   if (rb != 0)
     emit_insn (gen_sel_rb (GEN_INT (0)));
@@ -1085,14 +1102,22 @@ rl78_expand_epilogue (void)
   for (i = 15; i >= 0; i--)
     if (cfun->machine->need_to_push [i])
       {
-	int need_bank = i / 4;
-
-	if (need_bank != rb)
+	if (TARGET_G10)
 	  {
-	    emit_insn (gen_sel_rb (GEN_INT (need_bank)));
-	    rb = need_bank;
+	    emit_insn (gen_pop (gen_rtx_REG (HImode, 0)));
+	    emit_move_insn (gen_rtx_REG (HImode, i*2), gen_rtx_REG (HImode, 0));
 	  }
-	emit_insn (gen_pop (gen_rtx_REG (HImode, i * 2)));
+	else
+	  {
+	    int need_bank = i / 4;
+
+	    if (need_bank != rb)
+	      {
+		emit_insn (gen_sel_rb (GEN_INT (need_bank)));
+		rb = need_bank;
+	      }
+	    emit_insn (gen_pop (gen_rtx_REG (HImode, i * 2)));
+	  }
       }
 
   if (rb != 0)
@@ -1629,6 +1654,16 @@ rl78_peep_movhi_p (rtx *operands)
   debug_rtx (operands[3]);
   fprintf (stderr, "\033[0m");
 #endif
+
+  /* You can move a constant to memory as QImode, but not HImode.  */
+  if (GET_CODE (operands[0]) == MEM
+      && GET_CODE (operands[1]) != REG)
+    {
+#if DEBUG_PEEP
+      fprintf (stderr, "no peep: move constant to memory\n");
+#endif
+      return false;
+    }
 
   if (rtx_equal_p (operands[0], operands[3]))
     {

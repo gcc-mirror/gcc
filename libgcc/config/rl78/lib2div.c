@@ -34,7 +34,7 @@ typedef int           word_type     __attribute__ ((mode (__word__)));
 #define C3B(a,b,c) a##b##c
 #define C3(a,b,c) C3B(a,b,c)
 
-#if 0
+#ifdef __RL78_G10__
 
 #define UINT_TYPE	uint32_type
 #define SINT_TYPE	sint32_type
