@@ -1,5 +1,12 @@
 2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* gcc.target/aarch64/fmla-intrinsic.c: New.
+	* gcc.target/aarch64/mla-intrinsic.c: Likewise.
+	* gcc.target/aarch64/fmls-intrinsic.c: Likewise.
+	* gcc.target/aarch64/mls-intrinsic.c: Likewise.
+
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* gcc.target/aarch64/mul_intrinsic_1.c: New.
 	* gcc.target/aarch64/fmul_intrinsic_1.c: Likewise.
 
