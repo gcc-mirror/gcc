@@ -32,6 +32,8 @@
 	builtin_define ("__RL78_MUL_RL78__"); 	\
       if (RL78_MUL_G13)				\
 	builtin_define ("__RL78_MUL_G13__"); 	\
+      if (TARGET_G10)				\
+	builtin_define ("__RL78_G10__"); 	\
     }                                           \
   while (0)
 
@@ -44,6 +46,7 @@
 #undef  ASM_SPEC
 #define ASM_SPEC "\
 %{mrelax:-relax} \
+%{mg10} \
 "
 
 #undef  LINK_SPEC

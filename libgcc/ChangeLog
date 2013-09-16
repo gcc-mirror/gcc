@@ -1,3 +1,12 @@
+2013-09-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/lib2mul.c: Enable for RL78/G10.
+	* config/rl78/lib2div.c: Likewise.
+	* config/rl78/lshrsi3.S: Use vregs.h.
+	* config/rl78/cmpsi2.S: Likewise.
+	* config/rl78/trampoline.S: Likewise.
+	* config/rl78/mulsi2.S: Likewise.  Disable for RL78/G10.
+
 2013-09-14  DJ Delorie  <dj@redhat.com>
 	    Nick Clifton  <nickc@redhat.com>
 

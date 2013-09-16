@@ -20,3 +20,8 @@
 
 rl78-c.o: $(srcdir)/config/rl78/rl78-c.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<
+
+# Enable multilibs:
+
+MULTILIB_OPTIONS    = mg10
+MULTILIB_DIRNAMES   = g10
