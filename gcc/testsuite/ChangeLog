@@ -1,3 +1,8 @@
+2013-09-16  Adam Butcher  <adam@jessamine.co.uk>
+
+	* g++.dg/cpp0x/auto9.C: Downgrade two previously expected errors (now
+	interpreted as implicit templates) to be expected pedwarns instead.
+
 2013-09-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57697
