@@ -5756,12 +5756,12 @@ vcvtx_f32_f64 (float64x2_t a)
 }
 
 __extension__ static __inline float32x4_t __attribute__ ((__always_inline__))
-vcvtx_high_f32_f64 (float64x2_t a)
+vcvtx_high_f32_f64 (float32x2_t a, float64x2_t b)
 {
   float32x4_t result;
   __asm__ ("fcvtxn2 %0.4s,%1.2d"
            : "=w"(result)
-           : "w"(a)
+           : "w" (b), "0"(a)
            : /* No clobbers */);
   return result;
 }

@@ -1,3 +1,8 @@
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vcvtx_high_f32_f64): Fix parameters.
+
 2013-09-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	* config/alpha.c: Include tree-ssa.h.
