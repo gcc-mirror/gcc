@@ -1,3 +1,8 @@
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* gcc.target/aarch64/mul_intrinsic_1.c: New.
+	* gcc.target/aarch64/fmul_intrinsic_1.c: Likewise.
+
 2013-09-16  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-22.c: New testcase.
