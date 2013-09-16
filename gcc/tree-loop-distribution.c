@@ -92,7 +92,10 @@ enum rdg_dep_type
   output_dd = 'o',
 
   /* Read After Read (RAR).  */
-  input_dd = 'i'
+  input_dd = 'i',
+
+  /* Control dependence (execute conditional on).  */
+  control_dd = 'c'
 };
 
 /* Dependence information attached to an edge of the RDG.  */
@@ -218,6 +221,10 @@ dot_rdg_1 (FILE *file, struct graph *rdg)
              fprintf (file, "%d -> %d [label=anti] \n", i, e->dest);
              break;
 
+	   case control_dd:
+             fprintf (file, "%d -> %d [label=control] \n", i, e->dest);
+             break;
+
            default:
              gcc_unreachable ();
            }
@@ -325,10 +332,38 @@ create_rdg_edges_for_scalar (struct graph *rdg, tree def, int idef)
     }
 }
 
+/* Creates an edge for the control dependences of BB to the vertex V.  */
+
+static void
+create_edge_for_control_dependence (struct graph *rdg, basic_block bb,
+				    int v, control_dependences *cd)
+{
+  bitmap_iterator bi;
+  unsigned edge_n;
+  EXECUTE_IF_SET_IN_BITMAP (cd->get_edges_dependent_on (bb->index),
+			    0, edge_n, bi)
+    {
+      basic_block cond_bb = cd->get_edge (edge_n)->src;
+      gimple stmt = last_stmt (cond_bb);
+      if (stmt && is_ctrl_stmt (stmt))
+	{
+	  struct graph_edge *e;
+	  int c = rdg_vertex_for_stmt (rdg, stmt);
+	  if (c < 0)
+	    continue;
+
+	  e = add_edge (rdg, c, v);
+	  e->data = XNEW (struct rdg_edge);
+	  RDGE_TYPE (e) = control_dd;
+	  RDGE_RELATION (e) = NULL;
+	}
+    }
+}
+
 /* Creates the edges of the reduced dependence graph RDG.  */
 
 static void
-create_rdg_edges (struct graph *rdg, vec<ddr_p> ddrs)
+create_rdg_edges (struct graph *rdg, vec<ddr_p> ddrs, control_dependences *cd)
 {
   int i;
   struct data_dependence_relation *ddr;
@@ -345,6 +380,21 @@ create_rdg_edges (struct graph *rdg, vec<ddr_p> ddrs)
     FOR_EACH_PHI_OR_STMT_DEF (def_p, RDG_STMT (rdg, i),
 			      iter, SSA_OP_DEF)
       create_rdg_edges_for_scalar (rdg, DEF_FROM_PTR (def_p), i);
+
+  if (cd)
+    for (i = 0; i < rdg->n_vertices; i++)
+      {
+	gimple stmt = RDG_STMT (rdg, i);
+	if (gimple_code (stmt) == GIMPLE_PHI)
+	  {
+	    edge_iterator ei;
+	    edge e;
+	    FOR_EACH_EDGE (e, ei, gimple_bb (stmt)->preds)
+	      create_edge_for_control_dependence (rdg, e->src, i, cd);
+	  }
+	else
+	  create_edge_for_control_dependence (rdg, gimple_bb (stmt), i, cd);
+      }
 }
 
 /* Build the vertices of the reduced dependence graph RDG.  Return false
@@ -465,7 +515,7 @@ free_rdg (struct graph *rdg)
    scalar dependence.  */
 
 static struct graph *
-build_rdg (vec<loop_p> loop_nest)
+build_rdg (vec<loop_p> loop_nest, control_dependences *cd)
 {
   struct graph *rdg;
   vec<gimple> stmts;
@@ -497,7 +547,7 @@ build_rdg (vec<loop_p> loop_nest)
       free_rdg (rdg);
       return NULL;
     }
-  create_rdg_edges (rdg, dependence_relations);
+  create_rdg_edges (rdg, dependence_relations, cd);
   dependence_relations.release ();
   datarefs.release ();
 
@@ -699,12 +749,28 @@ generate_loops_for_partition (struct loop *loop, partition_t partition,
 	      && !is_gimple_debug (stmt)
 	      && !bitmap_bit_p (partition->stmts, gimple_uid (stmt)))
 	    {
-	      unlink_stmt_vdef (stmt);
-	      gsi_remove (&bsi, true);
-	      release_defs (stmt);
+	      /* Choose an arbitrary path through the empty CFG part
+		 that this unnecessary control stmt controls.  */
+	      if (gimple_code (stmt) == GIMPLE_COND)
+		{
+		  gimple_cond_make_false (stmt);
+		  update_stmt (stmt);
+		}
+	      else if (gimple_code (stmt) == GIMPLE_SWITCH)
+		{
+		  gimple_switch_set_index
+		      (stmt, CASE_LOW (gimple_switch_label (stmt, 1)));
+		  update_stmt (stmt);
+		}
+	      else
+		{
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&bsi, true);
+		  release_defs (stmt);
+		  continue;
+		}
 	    }
-	  else
-	    gsi_next (&bsi);
+	  gsi_next (&bsi);
 	}
     }
 
@@ -1031,62 +1097,6 @@ rdg_flag_vertex_and_dependent (struct graph *rdg, int v, partition_t partition,
   nodes.release ();
 }
 
-/* Initialize CONDS with all the condition statements from the basic
-   blocks of LOOP.  */
-
-static void
-collect_condition_stmts (struct loop *loop, vec<gimple> *conds)
-{
-  unsigned i;
-  edge e;
-  vec<edge> exits = get_loop_exit_edges (loop);
-
-  FOR_EACH_VEC_ELT (exits, i, e)
-    {
-      gimple cond = last_stmt (e->src);
-
-      if (cond)
-	conds->safe_push (cond);
-    }
-
-  exits.release ();
-}
-
-/* Add to PARTITION all the exit condition statements for LOOPS
-   together with all their dependent statements determined from
-   RDG.  */
-
-static void
-rdg_flag_loop_exits (struct graph *rdg, partition_t partition,
-		     bitmap processed)
-{
-  unsigned i;
-  bitmap_iterator bi;
-  vec<gimple> conds;
-  conds.create (3);
-
-  EXECUTE_IF_SET_IN_BITMAP (partition->loops, 0, i, bi)
-    collect_condition_stmts (get_loop (cfun, i), &conds);
-
-  while (!conds.is_empty ())
-    {
-      gimple cond = conds.pop ();
-      int v = rdg_vertex_for_stmt (rdg, cond);
-      if (!already_processed_vertex_p (processed, v))
-	{
-	  bitmap saved_loops = BITMAP_ALLOC (NULL);
-	  bitmap_copy (saved_loops, partition->loops);
-	  rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
-	  EXECUTE_IF_AND_COMPL_IN_BITMAP (partition->loops, saved_loops,
-					  0, i, bi)
-	    collect_condition_stmts (get_loop (cfun, i), &conds);
-	  BITMAP_FREE (saved_loops);
-	}
-    }
-
-  conds.release ();
-}
-
 /* Returns a partition with all the statements needed for computing
    the vertex V of the RDG, also including the loop exit conditions.  */
 
@@ -1096,7 +1106,6 @@ build_rdg_partition_for_vertex (struct graph *rdg, int v)
   partition_t partition = partition_alloc (NULL, NULL);
   bitmap processed = BITMAP_ALLOC (NULL);
   rdg_flag_vertex_and_dependent (rdg, v, partition, processed);
-  rdg_flag_loop_exits (rdg, partition, processed);
   BITMAP_FREE (processed);
   return partition;
 }
@@ -1463,7 +1472,8 @@ partition_contains_all_rw (struct graph *rdg,
    Returns the number of distributed loops.  */
 
 static int
-distribute_loop (struct loop *loop, vec<gimple> stmts)
+distribute_loop (struct loop *loop, vec<gimple> stmts,
+		 control_dependences *cd)
 {
   struct graph *rdg;
   vec<loop_p> loop_nest;
@@ -1479,7 +1489,7 @@ distribute_loop (struct loop *loop, vec<gimple> stmts)
       return 0;
     }
 
-  rdg = build_rdg (loop_nest);
+  rdg = build_rdg (loop_nest, cd);
   if (!rdg)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -1631,6 +1641,7 @@ tree_loop_distribution (void)
   loop_iterator li;
   bool changed = false;
   basic_block bb;
+  control_dependences *cd = NULL;
 
   FOR_ALL_BB (bb)
     {
@@ -1658,10 +1669,6 @@ tree_loop_distribution (void)
 
       /* Only optimize hot loops.  */
       if (!optimize_loop_for_speed_p (loop))
-	continue;
-
-      /* Only distribute loops with a header and latch for now.  */
-      if (loop->num_nodes > 2)
 	continue;
 
       /* Initialize the worklist with stmts we seed the partitions with.  */
@@ -1697,7 +1704,15 @@ out:
       free (bbs);
 
       if (work_list.length () > 0)
-	nb_generated_loops = distribute_loop (loop, work_list);
+	{
+	  if (!cd)
+	    {
+	      calculate_dominance_info (CDI_POST_DOMINATORS);
+	      cd = new control_dependences (create_edge_list ());
+	      free_dominance_info (CDI_POST_DOMINATORS);
+	    }
+	  nb_generated_loops = distribute_loop (loop, work_list, cd);
+	}
 
       if (nb_generated_loops > 0)
 	changed = true;
@@ -1713,6 +1728,9 @@ out:
 
       work_list.release ();
     }
+
+  if (cd)
+    delete cd;
 
   if (changed)
     {
