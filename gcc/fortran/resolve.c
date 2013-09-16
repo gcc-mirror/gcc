@@ -9547,17 +9547,20 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 						t1, (*code)->expr1,
 				NULL, NULL, (*code)->loc);
 
-		  /* For allocatable LHS, check whether it is allocated.  */
-		  if (gfc_expr_attr((*code)->expr1).allocatable)
+		  /* For allocatable LHS, check whether it is allocated.  Note
+		     that allocatable components with defined assignment are
+		     not yet support.  See PR 57696.  */
+		  if ((*code)->expr1->symtree->n.sym->attr.allocatable)
 		    {
 		      gfc_code *block;
+		      gfc_expr *e =
+			gfc_lval_expr_from_sym ((*code)->expr1->symtree->n.sym);
 		      block = gfc_get_code (EXEC_IF);
 		      block->block = gfc_get_code (EXEC_IF);
 		      block->block->expr1
 			  = gfc_build_intrinsic_call (ns,
-				    GFC_ISYM_ASSOCIATED, "allocated",
-				    (*code)->loc, 2,
-				    gfc_copy_expr ((*code)->expr1), NULL);
+				    GFC_ISYM_ALLOCATED, "allocated",
+				    (*code)->loc, 1, e);
 		      block->block->next = temp_code;
 		      temp_code = block;
 		    }
@@ -9570,9 +9573,11 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	      this_code->ext.actual->expr = gfc_copy_expr (t1);
 	      add_comp_ref (this_code->ext.actual->expr, comp1);
 
-	      /* If the LHS is not allocated, we pointer-assign the LHS address
-		 to the temporary - after the LHS has been allocated.  */
-	      if (gfc_expr_attr((*code)->expr1).allocatable)
+	      /* If the LHS variable is allocatable and wasn't allocated and
+                 the temporary is allocatable, pointer assign the address of
+                 the freshly allocated LHS to the temporary.  */
+	      if ((*code)->expr1->symtree->n.sym->attr.allocatable
+		  && gfc_expr_attr ((*code)->expr1).allocatable)
 		{
 		  gfc_code *block;
                   gfc_expr *cond;
@@ -9583,9 +9588,8 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		  cond->where = (*code)->loc;
 		  cond->value.op.op = INTRINSIC_NOT;
 		  cond->value.op.op1 = gfc_build_intrinsic_call (ns,
-					  GFC_ISYM_ASSOCIATED, "allocated",
-					  (*code)->loc, 2,
-					  gfc_copy_expr (t1), NULL);
+					  GFC_ISYM_ALLOCATED, "allocated",
+					  (*code)->loc, 1, gfc_copy_expr (t1));
 		  block = gfc_get_code (EXEC_IF);
 		  block->block = gfc_get_code (EXEC_IF);
 		  block->block->expr1 = cond;
