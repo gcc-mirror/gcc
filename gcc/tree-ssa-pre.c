@@ -3026,7 +3026,7 @@ inhibit_phi_insertion (basic_block bb, pre_expr expr)
   unsigned i;
 
   /* If we aren't going to vectorize we don't inhibit anything.  */
-  if (!flag_tree_vectorize)
+  if (!flag_tree_loop_vectorize)
     return false;
 
   /* Otherwise we inhibit the insertion when the address of the

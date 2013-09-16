@@ -341,7 +341,7 @@ vectorize_loops (void)
      than all previously defined loops.  This fact allows us to run
      only over initial loops skipping newly generated ones.  */
   FOR_EACH_LOOP (li, loop, 0)
-    if ((flag_tree_vectorize && optimize_loop_nest_for_speed_p (loop))
+    if ((flag_tree_loop_vectorize && optimize_loop_nest_for_speed_p (loop))
 	|| loop->force_vect)
       {
 	loop_vec_info loop_vinfo;
@@ -486,10 +486,7 @@ execute_vect_slp (void)
 static bool
 gate_vect_slp (void)
 {
-  /* Apply SLP either if the vectorizer is on and the user didn't specify
-     whether to run SLP or not, or if the SLP flag was set by the user.  */
-  return ((flag_tree_vectorize != 0 && flag_tree_slp_vectorize != 0)
-          || flag_tree_slp_vectorize == 1);
+  return flag_tree_slp_vectorize != 0;
 }
 
 namespace {
@@ -579,7 +576,7 @@ increase_alignment (void)
 static bool
 gate_increase_alignment (void)
 {
-  return flag_section_anchors && flag_tree_vectorize;
+  return flag_section_anchors && flag_tree_loop_vectorize;
 }
 
 
