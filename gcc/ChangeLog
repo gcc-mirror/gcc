@@ -171,8 +171,9 @@
 	(vcvtx_high_f32_f64): Fix parameters.
 
 2013-09-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/alpha.c: Include tree-ssa.h.
+	* config/alpha.c: Include tree-ssanames.h.
 
 2013-09-16  Richard Biener  <rguenther@suse.de>
 
