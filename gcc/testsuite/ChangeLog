@@ -1,3 +1,7 @@
+2013-09-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr58418.c: New.
+
 2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* gcc.target/aarch64/fmla-intrinsic.c: New.

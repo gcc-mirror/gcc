@@ -1,3 +1,9 @@
+2013-09-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/58418
+	* lra-constraints.c (undo_optional_reloads): Consider all optional
+	reload even if it did not get a hard reg.
+
 2013-09-16  Teresa Johnson  <tejohnson@google.com>
 
 	* dumpfile.c (dump_loc): Remove newline emission.
