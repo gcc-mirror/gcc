@@ -1,3 +1,17 @@
+2013-09-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (enum rdg_dep_type): Add control_dd.
+	(dot_rdg_1): Handle control_dd.
+	(create_edge_for_control_dependence): New function.
+	(create_rdg_edges): Add control dependences if asked for.
+	(build_rdg): Likewise.
+	(generate_loops_for_partition): If there are not necessary
+	control stmts remove all their dependencies.
+	(collect_condition_stmts, rdg_flag_loop_exits): Remove.
+	(distribute_loop): Pass on control dependences.
+	(tree_loop_distribution): Compute control dependences and remove
+	restriction on number of loop nodes.
+
 2013-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Return early
