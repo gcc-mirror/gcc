@@ -21041,7 +21041,7 @@ static tree
 make_auto_1 (tree name)
 {
   tree au = cxx_make_type (TEMPLATE_TYPE_PARM);
-  TYPE_NAME (au) = build_decl (BUILTINS_LOCATION,
+  TYPE_NAME (au) = build_decl (input_location,
 			       TYPE_DECL, name, au);
   TYPE_STUB_DECL (au) = TYPE_NAME (au);
   TEMPLATE_TYPE_PARM_INDEX (au) = build_template_parm_index
