@@ -1,3 +1,9 @@
+2013-09-16  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Do not accept
+	abstract functions; for static functions check the presence
+	of body.
+
 2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def (fma): New.

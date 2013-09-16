@@ -60,6 +60,24 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   struct cgraph_node *node;
   symtab_node snode;
 
+  if (DECL_ABSTRACT (decl))
+    return false;
+
+  /* We are concerned only about static/external vars and functions.  */
+  if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+      || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
+    return true;
+
+  /* Static objects can be referred only if they was not optimized out yet.  */
+  if (!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl))
+    {
+      snode = symtab_get_node (decl);
+      if (!snode)
+	return false;
+      node = dyn_cast <cgraph_node> (snode);
+      return !node || !node->global.inlined_to;
+    }
+
   /* We will later output the initializer, so we can refer to it.
      So we are concerned only when DECL comes from initializer of
      external var.  */
@@ -68,10 +86,6 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
       || !DECL_EXTERNAL (from_decl)
       || (flag_ltrans
 	  && symtab_get_node (from_decl)->symbol.in_other_partition))
-    return true;
-  /* We are concerned only about static/external vars and functions.  */
-  if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-      || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
     return true;
   /* We are folding reference from external vtable.  The vtable may reffer
      to a symbol keyed to other compilation unit.  The other compilation
