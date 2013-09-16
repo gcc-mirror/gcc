@@ -1,3 +1,8 @@
+2013-09-16  Diego Novillo  <dnovillo@google.com>
+
+	* tree-core.h: Add missing comment lines from refactoring
+	of tree.h.
+
 2013-09-16  Jan Hubicka  <jh@suse.cz>
 
 	* gimple-fold.c (can_refer_decl_in_current_unit_p): Do not accept

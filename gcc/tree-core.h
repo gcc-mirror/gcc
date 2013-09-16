@@ -780,6 +780,9 @@ struct GTY(()) tree_base {
        OMP_CLAUSE_PRIVATE_DEBUG in
            OMP_CLAUSE_PRIVATE
 
+       OMP_CLAUSE_LINEAR_NO_COPYIN in
+	   OMP_CLAUSE_LINEAR
+
        TRANSACTION_EXPR_RELAXED in
 	   TRANSACTION_EXPR
 
@@ -799,6 +802,9 @@ struct GTY(()) tree_base {
 
        OMP_CLAUSE_PRIVATE_OUTER_REF in
 	   OMP_CLAUSE_PRIVATE
+
+       OMP_CLAUSE_LINEAR_NO_COPYOUT in
+	   OMP_CLAUSE_LINEAR
 
        TYPE_REF_IS_RVALUE in
 	   REFERENCE_TYPE
@@ -935,6 +941,9 @@ struct GTY(()) tree_base {
 
        DECL_NONLOCAL_FRAME in
 	   VAR_DECL
+
+       TYPE_FINAL_P in
+	   RECORD_TYPE, UNION_TYPE and QUAL_UNION_TYPE
 */
 
 struct GTY(()) tree_typed {
@@ -1197,8 +1206,7 @@ struct GTY(()) tree_decl_common {
   unsigned lang_flag_7 : 1;
   unsigned lang_flag_8 : 1;
 
-  /* In LABEL_DECL, this is DECL_ERROR_ISSUED.
-     In VAR_DECL and PARM_DECL, this is DECL_REGISTER.  */
+  /* In VAR_DECL and PARM_DECL, this is DECL_REGISTER.  */
   unsigned decl_flag_0 : 1;
   /* In FIELD_DECL, this is DECL_BIT_FIELD
      In VAR_DECL and FUNCTION_DECL, this is DECL_EXTERNAL.
@@ -1403,6 +1411,9 @@ struct GTY(()) tree_statement_list
   struct tree_statement_list_node *tail;
 };
 
+
+/* Optimization options used by a function.  */
+
 struct GTY(()) tree_optimization_option {
   struct tree_common common;
 
@@ -1417,6 +1428,8 @@ struct GTY(()) tree_optimization_option {
      generated.  */
   struct target_optabs *GTY ((skip)) base_optabs;
 };
+
+/* Target options used by a function.  */
 
 struct GTY(()) tree_target_option {
   struct tree_common common;
@@ -1562,6 +1575,8 @@ struct function_args_iterator {
 struct GTY(()) tree_map_base {
   tree from;
 };
+
+/* Map from a tree to another tree.  */
 
 struct GTY(()) tree_map {
   struct tree_map_base base;
