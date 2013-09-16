@@ -28,7 +28,7 @@ program main
   implicit none
   type(parent), allocatable :: left
   type(parent) :: right
-  print *, right%foo
+!  print *, right%foo
   left = right
 !  print *, left%foo
   if (left%foo%i /= 20) call abort()

@@ -1,3 +1,9 @@
+2013-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* resolve.c (generate_component_assignments): Correctly handle the
+	case that the LHS is not allocated.
+
 2013-09-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57697
