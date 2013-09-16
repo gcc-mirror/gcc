@@ -1551,6 +1551,8 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
     return;
   vec_safe_grow_cleared (args->jump_functions, arg_num);
 
+  if (gimple_call_internal_p (call))
+    return;
   if (ipa_func_spec_opts_forbid_analysis_p (cs->caller))
     return;
 

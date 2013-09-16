@@ -1,3 +1,8 @@
+2013-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Return early
+	for internal calls.
+
 2013-09-16  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* cse.c (try_const_anchors): Punt on CC modes.
