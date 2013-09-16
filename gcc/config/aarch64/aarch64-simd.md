@@ -582,6 +582,59 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "*aarch64_mul3_elt<mode>"
+ [(set (match_operand:VMUL 0 "register_operand" "=w")
+    (mult:VMUL
+      (vec_duplicate:VMUL
+	  (vec_select:<VEL>
+	    (match_operand:VMUL 1 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VMUL 3 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_<f>mul_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mul3_elt_<vswap_width_name><mode>"
+  [(set (match_operand:VMUL_CHANGE_NLANES 0 "register_operand" "=w")
+     (mult:VMUL_CHANGE_NLANES
+       (vec_duplicate:VMUL_CHANGE_NLANES
+	  (vec_select:<VEL>
+	    (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VMUL_CHANGE_NLANES 3 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_<f>mul_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mul3_elt_to_128df"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+     (mult:V2DF
+       (vec_duplicate:V2DF
+	 (match_operand:DF 2 "register_operand" "w"))
+      (match_operand:V2DF 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fmul\\t%0.2d, %1.2d, %2.d[0]"
+  [(set_attr "simd_type" "simd_fmul_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "*aarch64_mul3_elt_to_64v2df"
+  [(set (match_operand:DF 0 "register_operand" "=w")
+     (mult:DF
+       (vec_select:DF
+	 (match_operand:V2DF 1 "register_operand" "w")
+	 (parallel [(match_operand:SI 2 "immediate_operand")]))
+       (match_operand:DF 3 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fmul\\t%0.2d, %3.2d, %1.d[%2]"
+  [(set_attr "simd_type" "simd_fmul_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
 (define_insn "neg<mode>2"
   [(set (match_operand:VDQ 0 "register_operand" "=w")
 	(neg:VDQ (match_operand:VDQ 1 "register_operand" "w")))]

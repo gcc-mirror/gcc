@@ -169,6 +169,12 @@
 ;; Double scalar modes
 (define_mode_iterator DX [DI DF])
 
+;; Modes available for <f>mul lane operations.
+(define_mode_iterator VMUL [V4HI V8HI V2SI V4SI V2SF V4SF V2DF])
+
+;; Modes available for <f>mul lane operations changing lane count.
+(define_mode_iterator VMUL_CHANGE_NLANES [V4HI V8HI V2SI V4SI V2SF V4SF])
+
 ;; ------------------------------------------------------------------
 ;; Unspec enumerations for Advance SIMD. These could well go into
 ;; aarch64.md but for their use in int_iterators here.
@@ -358,7 +364,7 @@
                         (V2SI "SI") (V4SI "SI")
                         (DI "DI")   (V2DI "DI")
                         (V2SF "SF") (V4SF "SF")
-                        (V2DF "DF")
+                        (V2DF "DF") (DF "DF")
 			(SI   "SI") (HI   "HI")
 			(QI   "QI")])
 
@@ -540,6 +546,22 @@
 				    (DI   "to_128") (V2DI  "to_64")
 				    (V2SF "to_128") (V4SF  "to_64")
 				    (DF   "to_128") (V2DF  "to_64")])
+
+;; For certain vector-by-element multiplication instructions we must
+;; constrain the HI cases to use only V0-V15.  This is covered by
+;; the 'x' constraint.  All other modes may use the 'w' constraint.
+(define_mode_attr h_con [(V2SI "w") (V4SI "w")
+			 (V4HI "x") (V8HI "x")
+			 (V2SF "w") (V4SF "w")
+			 (V2DF "w") (DF "w")])
+
+;; Defined to 'f' for types whose element type is a float type.
+(define_mode_attr f [(V8QI "")  (V16QI "")
+		     (V4HI "")  (V8HI  "")
+		     (V2SI "")  (V4SI  "")
+		     (DI   "")  (V2DI  "")
+		     (V2SF "f") (V4SF  "f")
+		     (V2DF "f") (DF    "f")])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
