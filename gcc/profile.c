@@ -434,7 +434,8 @@ read_profile_edge_counts (gcov_type *exec_counts)
 			static bool informed = 0;
 			if (dump_enabled_p () && !informed)
 		          dump_printf_loc (MSG_NOTE, input_location,
-			          "corrupted profile info: edge count exceeds maximal count");
+                                           "corrupted profile info: edge count"
+                                           " exceeds maximal count\n");
 			informed = 1;
 		      }
 		    else
@@ -696,7 +697,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
            {
              informed = 1;
              dump_printf_loc (MSG_NOTE, input_location,
-                              "correcting inconsistent profile data");
+                              "correcting inconsistent profile data\n");
            }
          correct_negative_edge_counts ();
          /* Set bb counts to the sum of the outgoing edge counts */

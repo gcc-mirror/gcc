@@ -683,6 +683,7 @@ slpeel_make_loop_iterate_ntimes (struct loop *loop, tree niters)
 	dump_printf (MSG_NOTE, "\nloop at %s:%d: ", LOC_FILE (loop_loc),
 		     LOC_LINE (loop_loc));
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
+      dump_printf (MSG_NOTE, "\n");
     }
   loop->nb_iterations = niters;
 }
@@ -1552,7 +1553,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
   /* Analyze phi functions of the loop header.  */
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "vect_can_advance_ivs_p:");
+    dump_printf_loc (MSG_NOTE, vect_location, "vect_can_advance_ivs_p:\n");
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       tree evolution_part;
@@ -1562,6 +1563,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	{
           dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
+          dump_printf (MSG_NOTE, "\n");
 	}
 
       /* Skip virtual phi's. The data dependences that are associated with
@@ -1571,7 +1573,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "virtual phi. skip.");
+                             "virtual phi. skip.\n");
 	  continue;
 	}
 
@@ -1581,7 +1583,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
         {
           if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "reduc phi. skip.");
+                             "reduc phi. skip.\n");
           continue;
         }
 
@@ -1593,7 +1595,7 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
         {
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_MISSED_OPTIMIZATION,
-			 "No access function or evolution.");
+			 "No access function or evolution.\n");
 	  return false;
         }
 
@@ -1682,6 +1684,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_update_ivs_after_vectorizer: phi: ");
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
+          dump_printf (MSG_NOTE, "\n");
         }
 
       /* Skip virtual phi's.  */
@@ -1689,7 +1692,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "virtual phi. skip.");
+                             "virtual phi. skip.\n");
 	  continue;
 	}
 
@@ -1699,7 +1702,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo, tree niters,
         {
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "reduc phi. skip.");
+                             "reduc phi. skip.\n");
           continue;
         }
 
@@ -1762,7 +1765,7 @@ vect_do_peeling_for_loop_bound (loop_vec_info loop_vinfo, tree *ratio,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_do_peeling_for_loop_bound ===");
+                     "=== vect_do_peeling_for_loop_bound ===\n");
 
   initialize_original_copy_tables ();
 
@@ -1881,7 +1884,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "known peeling = %d.", npeel);
+                         "known peeling = %d.\n", npeel);
 
       iters = build_int_cst (niters_type, npeel);
       *bound = LOOP_PEELING_FOR_ALIGNMENT (loop_vinfo);
@@ -1938,6 +1941,7 @@ vect_gen_niters_for_prolog_loop (loop_vec_info loop_vinfo, tree loop_niters, int
       dump_printf_loc (MSG_NOTE, vect_location,
                        "niters for prolog loop: ");
       dump_generic_expr (MSG_NOTE, TDF_SLIM, iters);
+      dump_printf (MSG_NOTE, "\n");
     }
 
   var = create_tmp_var (niters_type, "prolog_loop_niters");
@@ -1993,7 +1997,7 @@ vect_update_inits_of_drs (loop_vec_info loop_vinfo, tree niters)
  
  if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_update_inits_of_dr ===");
+                     "=== vect_update_inits_of_dr ===\n");
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     vect_update_init_of_dr (dr, niters);
@@ -2338,6 +2342,7 @@ vect_create_cond_for_alias_checks (loop_vec_info loop_vinfo, tree * cond_expr)
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a));
 	  dump_printf (MSG_NOTE, " and ");
 	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b));
+          dump_printf (MSG_NOTE, "\n");
 	}
 
       seg_a_min = addr_base_a;
