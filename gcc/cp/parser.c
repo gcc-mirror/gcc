@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "tree-pretty-print.h"
 #include "parser.h"
+#include "type-utils.h"
 
 
 /* The lexer.  */
@@ -2063,6 +2064,11 @@ static vec<constructor_elt, va_gc> *cp_parser_initializer_list
 static bool cp_parser_ctor_initializer_opt_and_function_body
   (cp_parser *, bool);
 
+static tree add_implicit_template_parms
+  (cp_parser *, size_t, tree);
+static tree finish_fully_implicit_template
+  (cp_parser *, tree);
+
 /* Classes [gram.class] */
 
 static tree cp_parser_class_name
@@ -3384,6 +3390,9 @@ cp_parser_new (void)
 
   /* No template parameters apply.  */
   parser->num_template_parameter_lists = 0;
+
+  /* Not declaring an implicit function template.  */
+  parser->fully_implicit_function_template_p = false;
 
   return parser;
 }
@@ -8549,10 +8558,12 @@ cp_parser_lambda_expression (cp_parser* parser)
         = parser->num_template_parameter_lists;
     unsigned char in_statement = parser->in_statement;
     bool in_switch_statement_p = parser->in_switch_statement_p;
+    bool fully_implicit_function_template_p = parser->fully_implicit_function_template_p;
 
     parser->num_template_parameter_lists = 0;
     parser->in_statement = 0;
     parser->in_switch_statement_p = false;
+    parser->fully_implicit_function_template_p = false;
 
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
@@ -8576,6 +8587,7 @@ cp_parser_lambda_expression (cp_parser* parser)
     parser->num_template_parameter_lists = saved_num_template_parameter_lists;
     parser->in_statement = in_statement;
     parser->in_switch_statement_p = in_switch_statement_p;
+    parser->fully_implicit_function_template_p = fully_implicit_function_template_p;
   }
 
   pop_deferring_access_checks ();
@@ -8928,6 +8940,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	    finish_template_decl (template_param_list);
 	    --parser->num_template_parameter_lists;
 	  }
+	else if (parser->fully_implicit_function_template_p)
+	  fco = finish_fully_implicit_template (parser, fco);
       }
 
     finish_member_declaration (fco);
@@ -16289,56 +16303,62 @@ cp_parser_init_declarator (cp_parser* parser,
 
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
-  /* Check to see if the token indicates the start of a
-     function-definition.  */
-  if (function_declarator_p (declarator)
-      && cp_parser_token_starts_function_definition_p (token))
+
+  if (function_declarator_p (declarator))
     {
-      if (!function_definition_allowed_p)
+      /* Check to see if the token indicates the start of a
+	 function-definition.  */
+      if (cp_parser_token_starts_function_definition_p (token))
 	{
-	  /* If a function-definition should not appear here, issue an
-	     error message.  */
-	  cp_parser_error (parser,
-			   "a function-definition is not allowed here");
-	  return error_mark_node;
-	}
-      else
-	{
-	  location_t func_brace_location
-	    = cp_lexer_peek_token (parser->lexer)->location;
-
-	  /* Neither attributes nor an asm-specification are allowed
-	     on a function-definition.  */
-	  if (asm_specification)
-	    error_at (asm_spec_start_token->location,
-		      "an asm-specification is not allowed "
-		      "on a function-definition");
-	  if (attributes)
-	    error_at (attributes_start_token->location,
-		      "attributes are not allowed on a function-definition");
-	  /* This is a function-definition.  */
-	  *function_definition_p = true;
-
-	  /* Parse the function definition.  */
-	  if (member_p)
-	    decl = cp_parser_save_member_function_body (parser,
-							decl_specifiers,
-							declarator,
-							prefix_attributes);
-	  else
-	    decl
-	      = (cp_parser_function_definition_from_specifiers_and_declarator
-		 (parser, decl_specifiers, prefix_attributes, declarator));
-
-	  if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
+	  if (!function_definition_allowed_p)
 	    {
-	      /* This is where the prologue starts...  */
-	      DECL_STRUCT_FUNCTION (decl)->function_start_locus
-		= func_brace_location;
+	      /* If a function-definition should not appear here, issue an
+		 error message.  */
+	      cp_parser_error (parser,
+			       "a function-definition is not allowed here");
+	      return error_mark_node;
 	    }
+	  else
+	    {
+	      location_t func_brace_location
+		= cp_lexer_peek_token (parser->lexer)->location;
 
-	  return decl;
+	      /* Neither attributes nor an asm-specification are allowed
+		 on a function-definition.  */
+	      if (asm_specification)
+		error_at (asm_spec_start_token->location,
+			  "an asm-specification is not allowed "
+			  "on a function-definition");
+	      if (attributes)
+		error_at (attributes_start_token->location,
+			  "attributes are not allowed "
+			  "on a function-definition");
+	      /* This is a function-definition.  */
+	      *function_definition_p = true;
+
+	      /* Parse the function definition.  */
+	      if (member_p)
+		decl = cp_parser_save_member_function_body (parser,
+							    decl_specifiers,
+							    declarator,
+							    prefix_attributes);
+	      else
+		decl =
+		  (cp_parser_function_definition_from_specifiers_and_declarator
+		   (parser, decl_specifiers, prefix_attributes, declarator));
+
+	      if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
+		{
+		  /* This is where the prologue starts...  */
+		  DECL_STRUCT_FUNCTION (decl)->function_start_locus
+		    = func_brace_location;
+		}
+
+	      return decl;
+	    }
 	}
+      else if (parser->fully_implicit_function_template_p)
+	decl = finish_fully_implicit_template (parser, decl);
     }
 
   /* [dcl.dcl]
@@ -16798,8 +16818,10 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      /* Parse the parameter-declaration-clause.  */
 	      params = cp_parser_parameter_declaration_clause (parser);
 
+	      /* Restore saved template parameter lists accounting for implicit
+		 template parameters.  */
 	      parser->num_template_parameter_lists
-		= saved_num_template_parameter_lists;
+		+= saved_num_template_parameter_lists;
 
 	      /* Consume the `)'.  */
 	      cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN);
@@ -17897,6 +17919,7 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
   tree *tail = &parameters; 
   bool saved_in_unbraced_linkage_specification_p;
   int index = 0;
+  int implicit_template_parms = 0;
 
   /* Assume all will go well.  */
   *is_error = false;
@@ -17924,11 +17947,18 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
       deprecated_state = DEPRECATED_SUPPRESS;
 
       if (parameter)
-	decl = grokdeclarator (parameter->declarator,
-			       &parameter->decl_specifiers,
-			       PARM,
-			       parameter->default_argument != NULL_TREE,
-			       &parameter->decl_specifiers.attributes);
+	{
+	  decl = grokdeclarator (parameter->declarator,
+				 &parameter->decl_specifiers,
+				 PARM,
+				 parameter->default_argument != NULL_TREE,
+				 &parameter->decl_specifiers.attributes);
+
+	  if (TREE_TYPE (decl) != error_mark_node
+	      && parameter->decl_specifiers.type
+	      && is_auto_or_concept (parameter->decl_specifiers.type))
+	      ++implicit_template_parms;
+	}
 
       deprecated_state = DEPRECATED_NORMAL;
 
@@ -18015,6 +18045,11 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 
   parser->in_unbraced_linkage_specification_p
     = saved_in_unbraced_linkage_specification_p;
+
+  if (parameters != error_mark_node && implicit_template_parms)
+    parameters = add_implicit_template_parms (parser,
+					      implicit_template_parms,
+					      parameters);
 
   return parameters;
 }
@@ -20022,7 +20057,11 @@ cp_parser_member_declaration (cp_parser* parser)
 							      attributes);
 		  /* If the member was not a friend, declare it here.  */
 		  if (!friend_p)
-		    finish_member_declaration (decl);
+		    {
+		      if (parser->fully_implicit_function_template_p)
+			decl = finish_fully_implicit_template (parser, decl);
+		      finish_member_declaration (decl);
+		    }
 		  /* Peek at the next token.  */
 		  token = cp_lexer_peek_token (parser->lexer);
 		  /* If the next token is a semicolon, consume it.  */
@@ -20038,6 +20077,8 @@ cp_parser_member_declaration (cp_parser* parser)
 				  initializer, /*init_const_expr_p=*/true,
 				  asm_specification,
 				  attributes);
+		if (parser->fully_implicit_function_template_p)
+		  decl = finish_fully_implicit_template (parser, decl);
 	    }
 
 	  /* Reset PREFIX_ATTRIBUTES.  */
@@ -22304,6 +22345,9 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
   parser->num_template_parameter_lists
     = saved_num_template_parameter_lists;
   parser->in_function_body = saved_in_function_body;
+
+  if (parser->fully_implicit_function_template_p)
+    finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
 
   return fn;
 }
@@ -28848,6 +28892,149 @@ c_parse_file (void)
 				? dk_no_deferred : dk_no_check);
   cp_parser_translation_unit (the_parser);
   the_parser = NULL;
+}
+
+/* Create an identifier for a generic parameter type (a synthesized
+   template parameter implied by `auto' or a concept identifier). */
+
+static tree
+make_generic_type_name (int i)
+{
+  char buf[32];
+  sprintf (buf, "__GenT%d", i);
+  return get_identifier (buf);
+}
+
+/* Predicate that behaves as is_auto_or_concept but matches the parent
+   node of the generic type rather than the generic type itself.  This
+   allows for type transformation in add_implicit_template_parms.  */
+
+static inline bool
+tree_type_is_auto_or_concept (const_tree t)
+{
+  return TREE_TYPE (t) && is_auto_or_concept (TREE_TYPE (t));
+}
+
+/* Add COUNT implicit template parameters gleaned from the generic
+   type parameters in PARAMETERS to the CURRENT_TEMPLATE_PARMS
+   (creating a new template parameter list if necessary).  Returns
+   PARAMETERS suitably rewritten to reference the newly created types
+   or ERROR_MARK_NODE on failure.  */
+
+tree
+add_implicit_template_parms (cp_parser *parser, size_t count, tree parameters)
+{
+  gcc_assert (current_binding_level->kind == sk_function_parms);
+
+  cp_binding_level *fn_parms_scope = current_binding_level;
+
+  bool become_template =
+    fn_parms_scope->level_chain->kind != sk_template_parms;
+
+  size_t synth_idx = 0;
+
+  /* Roll back a scope level and either introduce a new template parameter list
+     or update an existing one.  The function scope is added back after template
+     parameter synthesis below.  */
+  current_binding_level = fn_parms_scope->level_chain;
+
+  /* TPARMS tracks the function's template parameter list.  This is either a new
+     chain in the case of a fully implicit function template or an extension of
+     the function's explicitly specified template parameter list.  */
+  tree tparms = NULL_TREE;
+
+  if (become_template)
+    {
+      push_deferring_access_checks (dk_deferred);
+      begin_template_parm_list ();
+
+      parser->fully_implicit_function_template_p = true;
+      ++parser->num_template_parameter_lists;
+    }
+  else
+    {
+      /* Roll back the innermost template parameter list such that it may be
+	 extended in the loop below as if it were being explicitly declared.  */
+
+      gcc_assert (current_template_parms);
+
+      /* Pop the innermost template parms into TPARMS.  */
+      tree inner_vec = INNERMOST_TEMPLATE_PARMS (current_template_parms);
+      current_template_parms = TREE_CHAIN (current_template_parms);
+
+      size_t inner_vec_len = TREE_VEC_LENGTH (inner_vec);
+      if (inner_vec_len != 0)
+	{
+	  tree t = tparms = TREE_VEC_ELT (inner_vec, 0);
+	  for (size_t n = 1; n < inner_vec_len; ++n)
+	    t = TREE_CHAIN (t) = TREE_VEC_ELT (inner_vec, n);
+	}
+
+      ++processing_template_parmlist;
+    }
+
+  for (tree p = parameters; p && synth_idx < count; p = TREE_CHAIN (p))
+    {
+      tree generic_type_ptr
+	= find_type_usage (TREE_VALUE (p), tree_type_is_auto_or_concept);
+
+      if (!generic_type_ptr)
+	continue;
+
+      tree synth_id = make_generic_type_name (synth_idx++);
+      tree synth_tmpl_parm = finish_template_type_parm (class_type_node,
+							synth_id);
+      tparms = process_template_parm (tparms, DECL_SOURCE_LOCATION (TREE_VALUE
+								    (p)),
+				      build_tree_list (NULL_TREE,
+						       synth_tmpl_parm),
+				      /*non_type=*/false,
+				      /*param_pack=*/false);
+
+      /* Rewrite the type of P to be the template_parm added above (getdecls is
+         used to retrieve it since it is the most recent declaration in this
+         scope).  Qualifiers need to be preserved also.  */
+
+      tree& cur_type = TREE_TYPE (generic_type_ptr);
+      tree new_type = TREE_TYPE (getdecls ());
+
+      if (TYPE_QUALS (cur_type))
+	cur_type = cp_build_qualified_type (new_type, TYPE_QUALS (cur_type));
+      else
+	cur_type = new_type;
+    }
+
+  gcc_assert (synth_idx == count);
+
+  push_binding_level (fn_parms_scope);
+
+  end_template_parm_list (tparms);
+
+  return parameters;
+}
+
+/* Finish the declaration of a fully implicit function template.  Such a
+   template has no explicit template parameter list so has not been through the
+   normal template head and tail processing.  add_implicit_template_parms tries
+   to do the head; this tries to do the tail.  MEMBER_DECL_OPT should be
+   provided if the declaration is a class member such that its template
+   declaration can be completed.  If MEMBER_DECL_OPT is provided the finished
+   form is returned.  Otherwise NULL_TREE is returned. */
+
+tree
+finish_fully_implicit_template (cp_parser *parser, tree member_decl_opt)
+{
+  gcc_assert (parser->fully_implicit_function_template_p);
+
+  pop_deferring_access_checks ();
+  if (member_decl_opt)
+    member_decl_opt = finish_member_template_decl (member_decl_opt);
+  end_template_decl ();
+
+  parser->fully_implicit_function_template_p = false;
+  --parser->num_template_parameter_lists;
+
+  return member_decl_opt;
 }
 
 #include "gt-cp-parser.h"
