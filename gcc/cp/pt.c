@@ -9142,7 +9142,9 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
-	  instantiate_decl (decl, false, false);
+	  if (!DECL_TEMPLATE_INFO (decl)
+	      || DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (decl)) != decl)
+	    instantiate_decl (decl, false, false);
 
 	  /* We need to instantiate the capture list from the template
 	     after we've instantiated the closure members, but before we
