@@ -1,3 +1,8 @@
+2013-09-16  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/execute/pr58419.c: New test.
+	* gcc.c-torture/execute/pr58431.c: New test.
+
 2013-09-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58356
