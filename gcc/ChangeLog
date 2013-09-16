@@ -1,5 +1,27 @@
 2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64-simd-builtins.def (fma): New.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_mla_elt<mode>): New.
+	(aarch64_mla_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_mls_elt<mode>): Likewise.
+	(aarch64_mls_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fma4_elt<mode>): Likewise.
+	(aarch64_fma4_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fma4_elt_to_128v2df): Likewise.
+	(aarch64_fma4_elt_to_64df): Likewise.
+	(fnma<mode>4): Likewise.
+	(aarch64_fnma4_elt<mode>): Likewise.
+	(aarch64_fnma4_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fnma4_elt_to_128v2df): Likewise.
+	(aarch64_fnma4_elt_to_64df): Likewise.
+	* config/aarch64/iterators.md (VDQSF): New.
+	* config/aarch64/arm_neon.h
+	(vfm<as><sdq>_lane<q>_f<32, 64>): Convert to C implementation.
+	(vml<sa><q>_lane<q>_<fsu><16, 32, 64>): Likewise.
+
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/aarch64/aarch64-simd.md (aarch64_mul3_elt<mode>): New.
 	(aarch64_mul3_elt_<vswap_width_name><mode>): Likewise.
 	(aarch64_mul3_elt_to_128df): Likewise.
