@@ -191,7 +191,7 @@ vect_mark_relevant (vec<gimple> *worklist, gimple stmt,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "mark relevant %d, live %d.", relevant, live_p);
+                     "mark relevant %d, live %d.\n", relevant, live_p);
 
   /* If this stmt is an original stmt in a pattern, we might need to mark its
      related pattern stmt instead of the original stmt.  However, such stmts
@@ -248,7 +248,7 @@ vect_mark_relevant (vec<gimple> *worklist, gimple stmt,
           if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location,
                              "last stmt in pattern. don't mark"
-                             " relevant/live.");
+                             " relevant/live.\n");
           stmt_info = vinfo_for_stmt (pattern_stmt);
           gcc_assert (STMT_VINFO_RELATED_STMT (stmt_info) == stmt);
           save_relevant = STMT_VINFO_RELEVANT (stmt_info);
@@ -266,7 +266,7 @@ vect_mark_relevant (vec<gimple> *worklist, gimple stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "already marked relevant/live.");
+                         "already marked relevant/live.\n");
       return;
     }
 
@@ -311,7 +311,7 @@ vect_stmt_relevant_p (gimple stmt, loop_vec_info loop_vinfo,
       {
 	if (dump_enabled_p ())
 	  dump_printf_loc (MSG_NOTE, vect_location,
-                           "vec_stmt_relevant_p: stmt has vdefs.");
+                           "vec_stmt_relevant_p: stmt has vdefs.\n");
 	*relevant = vect_used_in_scope;
       }
 
@@ -325,7 +325,7 @@ vect_stmt_relevant_p (gimple stmt, loop_vec_info loop_vinfo,
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
-                                 "vec_stmt_relevant_p: used out of loop.");
+                                 "vec_stmt_relevant_p: used out of loop.\n");
 
 	      if (is_gimple_debug (USE_STMT (use_p)))
 		continue;
@@ -438,7 +438,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not vectorized: unsupported use in stmt.");
+                         "not vectorized: unsupported use in stmt.\n");
       return false;
     }
 
@@ -449,7 +449,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
   if (!flow_bb_inside_loop_p (loop, def_bb))
     {
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "def_stmt is out of loop.");
+	dump_printf_loc (MSG_NOTE, vect_location, "def_stmt is out of loop.\n");
       return true;
     }
 
@@ -468,7 +468,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-                         "reduc-stmt defining reduc-phi in the same nest.");
+                         "reduc-stmt defining reduc-phi in the same nest.\n");
       if (STMT_VINFO_IN_PATTERN_P (dstmt_vinfo))
 	dstmt_vinfo = vinfo_for_stmt (STMT_VINFO_RELATED_STMT (dstmt_vinfo));
       gcc_assert (STMT_VINFO_RELEVANT (dstmt_vinfo) < vect_used_by_reduction);
@@ -488,7 +488,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-                         "outer-loop def-stmt defining inner-loop stmt.");
+                         "outer-loop def-stmt defining inner-loop stmt.\n");
 
       switch (relevant)
 	{
@@ -526,7 +526,7 @@ process_use (gimple stmt, tree use, loop_vec_info loop_vinfo, bool live_p,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-                         "inner-loop def-stmt defining outer-loop stmt.");
+                         "inner-loop def-stmt defining outer-loop stmt.\n");
 
       switch (relevant)
         {
@@ -590,7 +590,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "=== vect_mark_stmts_to_be_vectorized ===");
+                     "=== vect_mark_stmts_to_be_vectorized ===\n");
 
   worklist.create (64);
 
@@ -605,6 +605,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location, "init: phi relevant? ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
+              dump_printf (MSG_NOTE, "\n");
 	    }
 
 	  if (vect_stmt_relevant_p (phi, loop_vinfo, &relevant, &live_p))
@@ -617,6 +618,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location, "init: stmt relevant? ");
 	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+              dump_printf (MSG_NOTE, "\n");
 	    }
 
 	  if (vect_stmt_relevant_p (stmt, loop_vinfo, &relevant, &live_p))
@@ -635,6 +637,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	{
           dump_printf_loc (MSG_NOTE, vect_location, "worklist: examine stmt: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+          dump_printf (MSG_NOTE, "\n");
 	}
 
       /* Examine the USEs of STMT. For each USE, mark the stmt that defines it
@@ -678,7 +681,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	        default:
 	          if (dump_enabled_p ())
 	            dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                     "unsupported use of reduction.");
+                                     "unsupported use of reduction.\n");
   	          worklist.release ();
 	          return false;
 	      }
@@ -693,7 +696,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
               {
                 if (dump_enabled_p ())
                   dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "unsupported use of nested cycle.");
+                                   "unsupported use of nested cycle.\n");
 
                 worklist.release ();
                 return false;
@@ -708,7 +711,7 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
               {
                 if (dump_enabled_p ())
                   dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "unsupported use of double reduction.");
+                                   "unsupported use of double reduction.\n");
 
                 worklist.release ();
                 return false;
@@ -832,7 +835,7 @@ vect_model_simple_cost (stmt_vec_info stmt_info, int ncopies,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "vect_model_simple_cost: inside_cost = %d, "
-                     "prologue_cost = %d .", inside_cost, prologue_cost);
+                     "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
 
@@ -878,7 +881,7 @@ vect_model_promotion_demotion_cost (stmt_vec_info stmt_info,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "vect_model_promotion_demotion_cost: inside_cost = %d, "
-                     "prologue_cost = %d .", inside_cost, prologue_cost);
+                     "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
 /* Function vect_cost_group_size
@@ -961,7 +964,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "vect_model_store_cost: strided group_size = %d .",
+                         "vect_model_store_cost: strided group_size = %d .\n",
                          group_size);
     }
 
@@ -971,7 +974,7 @@ vect_model_store_cost (stmt_vec_info stmt_info, int ncopies,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "vect_model_store_cost: inside_cost = %d, "
-                     "prologue_cost = %d .", inside_cost, prologue_cost);
+                     "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
 
@@ -995,7 +998,7 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
-                           "vect_model_store_cost: aligned.");
+                           "vect_model_store_cost: aligned.\n");
         break;
       }
 
@@ -1008,7 +1011,7 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_model_store_cost: unaligned supported by "
-                           "hardware.");
+                           "hardware.\n");
         break;
       }
 
@@ -1018,7 +1021,7 @@ vect_get_store_cost (struct data_reference *dr, int ncopies,
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "vect_model_store_cost: unsupported access.");
+                           "vect_model_store_cost: unsupported access.\n");
         break;
       }
 
@@ -1076,8 +1079,8 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
 				       stmt_info, 0, vect_body);
 
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, 
-                         "vect_model_load_cost: strided group_size = %d .",
+        dump_printf_loc (MSG_NOTE, vect_location,
+                         "vect_model_load_cost: strided group_size = %d .\n",
                          group_size);
     }
 
@@ -1102,7 +1105,7 @@ vect_model_load_cost (stmt_vec_info stmt_info, int ncopies,
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
                      "vect_model_load_cost: inside_cost = %d, "
-                     "prologue_cost = %d .", inside_cost, prologue_cost);
+                     "prologue_cost = %d .\n", inside_cost, prologue_cost);
 }
 
 
@@ -1128,7 +1131,7 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
-                           "vect_model_load_cost: aligned.");
+                           "vect_model_load_cost: aligned.\n");
 
         break;
       }
@@ -1142,7 +1145,7 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_model_load_cost: unaligned supported by "
-                           "hardware.");
+                           "hardware.\n");
 
         break;
       }
@@ -1161,17 +1164,17 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
 					    stmt_info, 0, vect_body);
 
         if (dump_enabled_p ())
-          dump_printf_loc (MSG_NOTE, vect_location, 
-                           "vect_model_load_cost: explicit realign");
+          dump_printf_loc (MSG_NOTE, vect_location,
+                           "vect_model_load_cost: explicit realign\n");
 
         break;
       }
     case dr_explicit_realign_optimized:
       {
         if (dump_enabled_p ())
-          dump_printf_loc (MSG_NOTE, vect_location, 
+          dump_printf_loc (MSG_NOTE, vect_location,
                            "vect_model_load_cost: unaligned software "
-                           "pipelined.");
+                           "pipelined.\n");
 
         /* Unaligned software pipeline has a load of an address, an initial
            load, and possibly a mask operation to "prime" the loop.  However,
@@ -1198,7 +1201,8 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
-                           "vect_model_load_cost: explicit realign optimized");
+                           "vect_model_load_cost: explicit realign optimized"
+                           "\n");
 
         break;
       }
@@ -1209,7 +1213,7 @@ vect_get_load_cost (struct data_reference *dr, int ncopies,
 
         if (dump_enabled_p ())
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "vect_model_load_cost: unsupported access.");
+                           "vect_model_load_cost: unsupported access.\n");
         break;
       }
 
@@ -1262,6 +1266,7 @@ vect_init_vector_1 (gimple stmt, gimple new_stmt, gimple_stmt_iterator *gsi)
       dump_printf_loc (MSG_NOTE, vect_location,
                        "created new init_stmt: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt, 0);
+      dump_printf (MSG_NOTE, "\n");
     }
 }
 
@@ -1344,6 +1349,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_get_vec_def_for_operand: ");
       dump_generic_expr (MSG_NOTE, TDF_SLIM, op);
+      dump_printf (MSG_NOTE, "\n");
     }
 
   is_simple_use = vect_is_simple_use (op, stmt, loop_vinfo, NULL,
@@ -1357,6 +1363,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
           dump_printf_loc (MSG_NOTE, vect_location, "def =  ");
           loc_printed = 1;
           dump_generic_expr (MSG_NOTE, TDF_SLIM, def);
+          dump_printf (MSG_NOTE, "\n");
         }
       if (def_stmt)
         {
@@ -1365,6 +1372,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
           else
             dump_printf_loc (MSG_NOTE, vect_location, "  def_stmt =  ");
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
+          dump_printf (MSG_NOTE, "\n");
         }
     }
 
@@ -1383,7 +1391,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
         /* Create 'vect_cst_ = {cst,cst,...,cst}'  */
         if (dump_enabled_p ())
           dump_printf_loc (MSG_NOTE, vect_location,
-                           "Create vector_cst. nunits = %d", nunits);
+                           "Create vector_cst. nunits = %d\n", nunits);
 
         return vect_init_vector (stmt, op, vector_type, NULL);
       }
@@ -1399,7 +1407,7 @@ vect_get_vec_def_for_operand (tree op, gimple stmt, tree *scalar_def)
 
         /* Create 'vec_inv = {inv,inv,..,inv}'  */
         if (dump_enabled_p ())
-          dump_printf_loc (MSG_NOTE, vect_location, "Create vector_inv.");
+          dump_printf_loc (MSG_NOTE, vect_location, "Create vector_inv.\n");
 
         return vect_init_vector (stmt, def, vector_type, NULL);
       }
@@ -1666,6 +1674,7 @@ vect_finish_stmt_generation (gimple stmt, gimple vec_stmt,
     {
       dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, vec_stmt, 0);
+      dump_printf (MSG_NOTE, "\n");
     }
 
   gimple_set_location (vec_stmt, gimple_location (stmt));
@@ -1775,7 +1784,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "argument types differ.");
+                             "argument types differ.\n");
 	  return false;
 	}
       if (!rhs_type)
@@ -1786,7 +1795,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "use not simple.");
+                             "use not simple.\n");
 	  return false;
 	}
 
@@ -1797,7 +1806,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "argument vector types differ.");
+                             "argument vector types differ.\n");
 	  return false;
 	}
     }
@@ -1814,6 +1823,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                            "no vectype for scalar type ");
           dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
+          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
         }
 
       return false;
@@ -1855,7 +1865,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "function is not vectorizable.");
+			     "function is not vectorizable.\n");
 	  return false;
 	}
     }
@@ -1877,7 +1887,8 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       STMT_VINFO_TYPE (stmt_info) = call_vec_info_type;
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_call ===");
+        dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_call ==="
+                         "\n");
       vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
@@ -1885,7 +1896,7 @@ vectorizable_call (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
   /** Transform.  **/
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "transform call.");
+    dump_printf_loc (MSG_NOTE, vect_location, "transform call.\n");
 
   /* Handle def.  */
   scalar_dest = gimple_call_lhs (stmt);
@@ -2408,7 +2419,8 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "type conversion to/from bit-precision unsupported.");
+                         "type conversion to/from bit-precision unsupported."
+                         "\n");
       return false;
     }
 
@@ -2418,7 +2430,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.");
+                         "use not simple.\n");
       return false;
     }
   if (op_type == binary_op)
@@ -2440,7 +2452,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	{
           if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "use not simple.");
+                             "use not simple.\n");
 	  return false;
 	}
     }
@@ -2458,6 +2470,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
 	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                            "no vectype for scalar type ");
 	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
+          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
 	}
 
       return false;
@@ -2499,7 +2512,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     unsupported:
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "conversion not supported by target.");
+                         "conversion not supported by target.\n");
       return false;
 
     case WIDEN:
@@ -2598,7 +2611,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_conversion ===");
+                         "=== vectorizable_conversion ===\n");
       if (code == FIX_TRUNC_EXPR || code == FLOAT_EXPR)
         {
 	  STMT_VINFO_TYPE (stmt_info) = type_conversion_vec_info_type;
@@ -2621,7 +2634,7 @@ vectorizable_conversion (gimple stmt, gimple_stmt_iterator *gsi,
   /** Transform.  **/
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "transform conversion. ncopies = %d.", ncopies);
+                     "transform conversion. ncopies = %d.\n", ncopies);
 
   if (op_type == binary_op)
     {
@@ -2967,7 +2980,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.");
+                         "use not simple.\n");
       return false;
     }
 
@@ -2997,7 +3010,7 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                          "type conversion to/from bit-precision "
-                         "unsupported.");
+                         "unsupported.\n");
       return false;
     }
 
@@ -3006,14 +3019,14 @@ vectorizable_assignment (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = assignment_vec_info_type;
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_assignment ===");
+                         "=== vectorizable_assignment ===\n");
       vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
 
   /** Transform.  **/
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "transform assignment.");
+    dump_printf_loc (MSG_NOTE, vect_location, "transform assignment.\n");
 
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -3162,7 +3175,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "bit-precision shifts not supported.");
+                         "bit-precision shifts not supported.\n");
       return false;
     }
 
@@ -3172,7 +3185,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.");
+                         "use not simple.\n");
       return false;
     }
   /* If op0 is an external or constant def use a vector type with
@@ -3185,7 +3198,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "no vectype for scalar type ");
+                         "no vectype for scalar type\n");
       return false;
     }
 
@@ -3200,7 +3213,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.");
+                         "use not simple.\n");
       return false;
     }
 
@@ -3245,7 +3258,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "operand mode requires invariant argument.");
+                         "operand mode requires invariant argument.\n");
       return false;
     }
 
@@ -3255,7 +3268,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
       optab = optab_for_tree_code (code, vectype, optab_vector);
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "vector/vector shift/rotate found.");
+                         "vector/vector shift/rotate found.\n");
 
       if (!op1_vectype)
 	op1_vectype = get_same_sized_vectype (TREE_TYPE (op1), vectype_out);
@@ -3265,7 +3278,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                              "unusable type for last operand in"
-                             " vector/vector shift/rotate.");
+                             " vector/vector shift/rotate.\n");
 	  return false;
 	}
     }
@@ -3279,7 +3292,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
         {
           if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location,
-                             "vector/scalar shift/rotate found.");
+                             "vector/scalar shift/rotate found.\n");
         }
       else
         {
@@ -3292,7 +3305,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
 
               if (dump_enabled_p ())
                 dump_printf_loc (MSG_NOTE, vect_location,
-                                 "vector/vector shift/rotate found.");
+                                 "vector/vector shift/rotate found.\n");
 
               /* Unlike the other binary operators, shifts/rotates have
                  the rhs being int, instead of the same type as the lhs,
@@ -3310,7 +3323,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                       if (dump_enabled_p ())
                         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
                                          "unusable type for last operand in"
-                                         " vector/vector shift/rotate.");
+                                         " vector/vector shift/rotate.\n");
 			return false;
 		    }
 		  if (vec_stmt && !slp_node)
@@ -3329,7 +3342,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "no optab.");
+                         "no optab.\n");
       return false;
     }
   vec_mode = TYPE_MODE (vectype);
@@ -3338,14 +3351,15 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "op not supported by target.");
+                         "op not supported by target.\n");
       /* Check only during analysis.  */
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
           || (vf < vect_min_worthwhile_factor (code)
               && !vec_stmt))
         return false;
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "proceeding using word mode.");
+        dump_printf_loc (MSG_NOTE, vect_location,
+                         "proceeding using word mode.\n");
     }
 
   /* Worthwhile without SIMD support?  Check only during analysis.  */
@@ -3355,7 +3369,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not worthwhile without SIMD support.");
+                         "not worthwhile without SIMD support.\n");
       return false;
     }
 
@@ -3363,7 +3377,8 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
     {
       STMT_VINFO_TYPE (stmt_info) = shift_vec_info_type;
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "=== vectorizable_shift ===");
+        dump_printf_loc (MSG_NOTE, vect_location,
+                         "=== vectorizable_shift ===\n");
       vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
@@ -3372,7 +3387,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "transform binary/unary operation.");
+                     "transform binary/unary operation.\n");
 
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -3394,7 +3409,7 @@ vectorizable_shift (gimple stmt, gimple_stmt_iterator *gsi,
                 {
                   if (dump_enabled_p ())
                     dump_printf_loc (MSG_NOTE, vect_location,
-                                     "operand 1 using scalar mode.");
+                                     "operand 1 using scalar mode.\n");
                   vec_oprnd1 = op1;
                   vec_oprnds1.create (slp_node ? slp_node->vec_stmts_size : 1);
                   vec_oprnds1.quick_push (vec_oprnd1);
@@ -3525,7 +3540,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "num. args = %d (not unary/binary/ternary op).",
+                         "num. args = %d (not unary/binary/ternary op).\n",
                          op_type);
       return false;
     }
@@ -3544,7 +3559,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "bit-precision arithmetic not supported.");
+                         "bit-precision arithmetic not supported.\n");
       return false;
     }
 
@@ -3554,7 +3569,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.");
+                         "use not simple.\n");
       return false;
     }
   /* If op0 is an external or constant def use a vector type with
@@ -3571,6 +3586,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
                            "no vectype for scalar type ");
           dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
                              TREE_TYPE (op0));
+          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
         }
 
       return false;
@@ -3589,7 +3605,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "use not simple.");
+                             "use not simple.\n");
 	  return false;
 	}
     }
@@ -3601,7 +3617,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "use not simple.");
+                             "use not simple.\n");
 	  return false;
 	}
     }
@@ -3643,7 +3659,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 	{
           if (dump_enabled_p ())
             dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "no optab.");
+                             "no optab.\n");
 	  return false;
 	}
       icode = (int) optab_handler (optab, vec_mode);
@@ -3653,13 +3669,14 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "op not supported by target.");
+                         "op not supported by target.\n");
       /* Check only during analysis.  */
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
 	  || (!vec_stmt && vf < vect_min_worthwhile_factor (code)))
         return false;
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location, "proceeding using word mode.");
+	dump_printf_loc (MSG_NOTE, vect_location,
+                         "proceeding using word mode.\n");
     }
 
   /* Worthwhile without SIMD support?  Check only during analysis.  */
@@ -3669,7 +3686,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not worthwhile without SIMD support.");
+                         "not worthwhile without SIMD support.\n");
       return false;
     }
 
@@ -3678,7 +3695,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
       STMT_VINFO_TYPE (stmt_info) = op_vec_info_type;
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "=== vectorizable_operation ===");
+                         "=== vectorizable_operation ===\n");
       vect_model_simple_cost (stmt_info, ncopies, dt, NULL, NULL);
       return true;
     }
@@ -3687,7 +3704,7 @@ vectorizable_operation (gimple stmt, gimple_stmt_iterator *gsi,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "transform binary/unary operation.");
+                     "transform binary/unary operation.\n");
 
   /* Handle def.  */
   vec_dest = vect_create_destination_var (scalar_dest, vectype);
@@ -3897,7 +3914,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "multiple types in nested loop.");
+                         "multiple types in nested loop.\n");
       return false;
     }
 
@@ -3932,7 +3949,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "use not simple.");
+                         "use not simple.\n");
       return false;
     }
 
@@ -3953,7 +3970,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "negative step for store.");
+                         "negative step for store.\n");
       return false;
     }
 
@@ -3984,7 +4001,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
                 {
                   if (dump_enabled_p ())
                     dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                     "use not simple.");
+                                     "use not simple.\n");
                   return false;
                 }
               next_stmt = GROUP_NEXT_ELEMENT (vinfo_for_stmt (next_stmt));
@@ -4048,7 +4065,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "transform store. ncopies = %d", ncopies);
+                     "transform store. ncopies = %d\n", ncopies);
 
   dr_chain.create (group_size);
   oprnds.create (group_size);
@@ -4459,7 +4476,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "multiple types in nested loop.");
+                         "multiple types in nested loop.\n");
       return false;
     }
 
@@ -4500,7 +4517,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "Aligned load, but unsupported type.");
+                         "Aligned load, but unsupported type.\n");
       return false;
     }
 
@@ -4536,7 +4553,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "gather index use not simple.");
+                             "gather index use not simple.\n");
 	  return false;
 	}
     }
@@ -4552,7 +4569,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "multiple types with negative step.");
+                             "multiple types with negative step.\n");
 	  return false;
 	}
 
@@ -4562,7 +4579,8 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "negative step for group load not supported");
+				 "negative step for group load not supported"
+                                 "\n");
 	      return false;
 	    }
 	  alignment_support_scheme = vect_supportable_dr_alignment (dr, false);
@@ -4571,14 +4589,15 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	    {
               if (dump_enabled_p ())
                 dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "negative step but alignment required.");
+                                 "negative step but alignment required.\n");
 	      return false;
 	    }
 	  if (!perm_mask_for_reverse (vectype))
 	    {
               if (dump_enabled_p ())
                 dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                 "negative step and reversing not supported.");
+                                 "negative step and reversing not supported."
+                                 "\n");
 	      return false;
 	    }
 	}
@@ -4593,7 +4612,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
-                     "transform load. ncopies = %d", ncopies);
+                     "transform load. ncopies = %d\n", ncopies);
 
   /** Transform.  **/
 
@@ -5444,7 +5463,7 @@ vectorizable_condition (gimple stmt, gimple_stmt_iterator *gsi,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "value used after loop.");
+                         "value used after loop.\n");
       return false;
     }
 
@@ -5654,13 +5673,14 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
     {
       dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+      dump_printf (MSG_NOTE, "\n");
     }
 
   if (gimple_has_volatile_ops (stmt))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not vectorized: stmt has volatile operands");
+                         "not vectorized: stmt has volatile operands\n");
 
       return false;
     }
@@ -5696,12 +5716,13 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
               dump_printf_loc (MSG_NOTE, vect_location,
                                "==> examining pattern statement: ");
               dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+              dump_printf (MSG_NOTE, "\n");
             }
         }
       else
         {
           if (dump_enabled_p ())
-            dump_printf_loc (MSG_NOTE, vect_location, "irrelevant.");
+            dump_printf_loc (MSG_NOTE, vect_location, "irrelevant.\n");
 
           return true;
         }
@@ -5718,6 +5739,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
           dump_printf_loc (MSG_NOTE, vect_location,
                            "==> examining pattern statement: ");
           dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+          dump_printf (MSG_NOTE, "\n");
         }
 
       if (!vect_analyze_stmt (pattern_stmt, need_to_vectorize, node))
@@ -5742,6 +5764,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
 		  dump_printf_loc (MSG_NOTE, vect_location,
                                    "==> examining pattern def statement: ");
 		  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_def_stmt, 0);
+                  dump_printf (MSG_NOTE, "\n");
 		}
 
 	      if (!vect_analyze_stmt (pattern_def_stmt,
@@ -5781,6 +5804,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
           dump_printf_loc (MSG_NOTE, vect_location,
                            "get vectype for scalar type:  ");
           dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
+          dump_printf (MSG_NOTE, "\n");
         }
 
       vectype = get_vectype_for_scalar_type (scalar_type);
@@ -5792,6 +5816,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
                                 "not SLPed: unsupported data-type ");
                dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
                                   scalar_type);
+              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
             }
           return false;
         }
@@ -5800,6 +5825,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
         {
           dump_printf_loc (MSG_NOTE, vect_location, "vectype:  ");
           dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
+          dump_printf (MSG_NOTE, "\n");
         }
 
       STMT_VINFO_VECTYPE (stmt_info) = vectype;
@@ -5846,6 +5872,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
                            "not vectorized: relevant stmt not ");
           dump_printf (MSG_MISSED_OPTIMIZATION, "supported: ");
           dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
         }
 
       return false;
@@ -5868,6 +5895,7 @@ vect_analyze_stmt (gimple stmt, bool *need_to_vectorize, slp_tree node)
                            "not vectorized: live stmt not ");
           dump_printf (MSG_MISSED_OPTIMIZATION,  "supported: ");
           dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
         }
 
        return false;
@@ -5964,7 +5992,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                             "stmt not supported.");
+                             "stmt not supported.\n");
 	  gcc_unreachable ();
 	}
     }
@@ -5989,7 +6017,7 @@ vect_transform_stmt (gimple stmt, gimple_stmt_iterator *gsi,
 
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
-                         "Record the vdef for outer-loop vectorization.");
+                         "Record the vdef for outer-loop vectorization.\n");
 
       /* Find the relevant loop-exit phi-node, and reord the vec_stmt there
         (to be used when vectorizing outer-loop stmts that use the DEF of
@@ -6303,6 +6331,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
       dump_printf_loc (MSG_NOTE, vect_location,
                        "vect_is_simple_use: operand ");
       dump_generic_expr (MSG_NOTE, TDF_SLIM, operand);
+      dump_printf (MSG_NOTE, "\n");
     }
 
   if (CONSTANT_CLASS_P (operand))
@@ -6321,7 +6350,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
   if (TREE_CODE (operand) == PAREN_EXPR)
     {
       if (dump_enabled_p ())
-        dump_printf_loc (MSG_NOTE, vect_location, "non-associatable copy.");
+        dump_printf_loc (MSG_NOTE, vect_location, "non-associatable copy.\n");
       operand = TREE_OPERAND (operand, 0);
     }
 
@@ -6329,7 +6358,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not ssa-name.");
+                         "not ssa-name.\n");
       return false;
     }
 
@@ -6338,7 +6367,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "no def_stmt.");
+                         "no def_stmt.\n");
       return false;
     }
 
@@ -6346,6 +6375,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
     {
       dump_printf_loc (MSG_NOTE, vect_location, "def_stmt: ");
       dump_gimple_stmt (MSG_NOTE, TDF_SLIM, *def_stmt, 0);
+      dump_printf (MSG_NOTE, "\n");
     }
 
   /* Empty stmt is expected only in case of a function argument.
@@ -6376,12 +6406,12 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "Unsupported pattern.");
+                         "Unsupported pattern.\n");
       return false;
     }
 
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "type of def: %d.", *dt);
+    dump_printf_loc (MSG_NOTE, vect_location, "type of def: %d.\n", *dt);
 
   switch (gimple_code (*def_stmt))
     {
@@ -6401,7 +6431,7 @@ vect_is_simple_use (tree operand, gimple stmt, loop_vec_info loop_vinfo,
     default:
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "unsupported defining stmt: ");
+                         "unsupported defining stmt:\n");
       return false;
     }
 

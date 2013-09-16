@@ -349,7 +349,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
                          (flag_guess_branch_prob
                           ? "file %s not found, execution counts estimated"
                           : "file %s not found, execution counts assumed to "
-                            "be zero"),
+                            "be zero\n"),
                          da_file_name);
       return NULL;
     }
@@ -379,20 +379,20 @@ get_coverage_counts (unsigned counter, unsigned expected,
           dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
-                           "function is hot");
+                           "function is hot\n");
 	  
 	  if (!seen_error ()
 	      && !warned++)
 	    {
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
-                               "coverage mismatch ignored");
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
-                               flag_guess_branch_prob
-                               ? G_("execution counts estimated")
-                               : G_("execution counts assumed to be zero"));
+                               "coverage mismatch ignored\n");
+	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
+                           flag_guess_branch_prob
+                           ? G_("execution counts estimated\n")
+                           : G_("execution counts assumed to be zero\n"));
 	      if (!flag_guess_branch_prob)
-		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
-                                 "this can result in poorly optimized code");
+		dump_printf (MSG_OPTIMIZED_LOCATIONS,
+                             "this can result in poorly optimized code\n");
 	    }
 	}
 
