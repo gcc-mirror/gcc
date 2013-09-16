@@ -5454,43 +5454,42 @@ undo_optional_reloads (void)
   bitmap_initialize (&removed_optional_reload_pseudos, &reg_obstack);
   bitmap_copy (&removed_optional_reload_pseudos, &lra_optional_reload_pseudos);
   EXECUTE_IF_SET_IN_BITMAP (&lra_optional_reload_pseudos, 0, regno, bi)
-    if (reg_renumber[regno] >= 0)
-      {
-	keep_p = false;
-	if (reg_renumber[lra_reg_info[regno].restore_regno] >= 0)
-	  /* If the original pseudo changed its allocation, just
-	     removing the optional pseudo is dangerous as the original
-	     pseudo will have longer live range.  */
-	  keep_p = true;
-	else
-	  EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi2)
-	    {
-	      insn = lra_insn_recog_data[uid]->insn;
-	      if ((set = single_set (insn)) == NULL_RTX)
-		continue;
-	      src = SET_SRC (set);
-	      dest = SET_DEST (set);
-	      if (! REG_P (src) || ! REG_P (dest))
-		continue;
-	      if (REGNO (dest) == regno
-		  /* Ignore insn for optional reloads itself.  */
-		  && lra_reg_info[regno].restore_regno != (int) REGNO (src)
-		  /* Check only inheritance on last inheritance pass.  */
-		  && (int) REGNO (src) >= new_regno_start
-		  /* Check that the optional reload was inherited.  */
-		  && bitmap_bit_p (&lra_inheritance_pseudos, REGNO (src)))
-		{
-		  keep_p = true;
-		  break;
-		}
-	    }
-	if (keep_p)
+    {
+      keep_p = false;
+      if (reg_renumber[lra_reg_info[regno].restore_regno] >= 0)
+	/* If the original pseudo changed its allocation, just
+	   removing the optional pseudo is dangerous as the original
+	   pseudo will have longer live range.  */
+	keep_p = true;
+      else if (reg_renumber[regno] >= 0)
+	EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi2)
 	  {
-	    bitmap_clear_bit (&removed_optional_reload_pseudos, regno);
-	    if (lra_dump_file != NULL)
-	      fprintf (lra_dump_file, "Keep optional reload reg %d\n", regno);
+	    insn = lra_insn_recog_data[uid]->insn;
+	    if ((set = single_set (insn)) == NULL_RTX)
+	      continue;
+	    src = SET_SRC (set);
+	    dest = SET_DEST (set);
+	    if (! REG_P (src) || ! REG_P (dest))
+	      continue;
+	    if (REGNO (dest) == regno
+		/* Ignore insn for optional reloads itself.  */
+		&& lra_reg_info[regno].restore_regno != (int) REGNO (src)
+		/* Check only inheritance on last inheritance pass.  */
+		&& (int) REGNO (src) >= new_regno_start
+		/* Check that the optional reload was inherited.  */
+		&& bitmap_bit_p (&lra_inheritance_pseudos, REGNO (src)))
+	      {
+		keep_p = true;
+		break;
+	      }
 	  }
-      }
+      if (keep_p)
+	{
+	  bitmap_clear_bit (&removed_optional_reload_pseudos, regno);
+	  if (lra_dump_file != NULL)
+	    fprintf (lra_dump_file, "Keep optional reload reg %d\n", regno);
+	}
+    }
   change_p = ! bitmap_empty_p (&removed_optional_reload_pseudos);
   bitmap_initialize (&insn_bitmap, &reg_obstack);
   EXECUTE_IF_SET_IN_BITMAP (&removed_optional_reload_pseudos, 0, regno, bi)
