@@ -1,5 +1,11 @@
 2013-09-16  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/58356
+	* class.c (generate_finalization_wrapper): Init proc_tree if
+	not yet resolved.
+
+2013-09-16  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/57697
 	* resolve.c (generate_component_assignments): Correctly handle the
 	case that the LHS is not allocated.
