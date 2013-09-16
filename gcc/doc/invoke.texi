@@ -419,10 +419,11 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-if-convert-stores -ftree-loop-im @gol
 -ftree-phiprop -ftree-loop-distribution -ftree-loop-distribute-patterns @gol
 -ftree-loop-ivcanon -ftree-loop-linear -ftree-loop-optimize @gol
+-ftree-loop-vectorize @gol
 -ftree-parallelize-loops=@var{n} -ftree-pre -ftree-partial-pre -ftree-pta @gol
 -ftree-reassoc -ftree-sink -ftree-slsr -ftree-sra @gol
--ftree-switch-conversion -ftree-tail-merge @gol
--ftree-ter -ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
+-ftree-switch-conversion -ftree-tail-merge -ftree-ter @gol
+-ftree-vect-loop-version -ftree-vectorize -ftree-vrp @gol
 -funit-at-a-time -funroll-all-loops -funroll-loops @gol
 -funsafe-loop-optimizations -funsafe-math-optimizations -funswitch-loops @gol
 -fvariable-expansion-in-unroller -fvect-cost-model -fvpt -fweb @gol
@@ -6751,8 +6752,8 @@ invoking @option{-O2} on programs that use computed gotos.
 Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the @option{-finline-functions},
 @option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload}, @option{-ftree-vectorize},
-@option{-fvect-cost-model},
+@option{-fgcse-after-reload}, @option{-ftree-loop-vectorize},
+@option{-ftree-slp-vectorize}, @option{-fvect-cost-model},
 @option{-ftree-partial-pre} and @option{-fipa-cp-clone} options.
 
 @item -O0
@@ -8011,8 +8012,13 @@ higher.
 
 @item -ftree-vectorize
 @opindex ftree-vectorize
+Perform vectorization on trees. This flag enables @option{-ftree-loop-vectorize}
+and @option{-ftree-slp-vectorize} if not explicitly specified.
+
+@item -ftree-loop-vectorize
+@opindex ftree-loop-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
-@option{-O3}.
+@option{-O3} and when @option{-ftree-vectorize} is enabled.
 
 @item -ftree-slp-vectorize
 @opindex ftree-slp-vectorize

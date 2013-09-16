@@ -1,3 +1,7 @@
+2013-09-16  Xinliang David Li  <davidxl@google.com>
+
+	* gcc.misc-tests/help.exp: Optimizer help change.
+
 2013-09-16  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/execute/pr58419.c: New test.

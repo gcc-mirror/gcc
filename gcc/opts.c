@@ -498,7 +498,8 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_vectorize, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fvect_cost_model, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fipa_cp_clone, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
@@ -826,7 +827,8 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   /* Set PARAM_MAX_STORES_TO_SINK to 0 if either vectorization or if-conversion
      is disabled.  */
-  if (!opts->x_flag_tree_vectorize || !opts->x_flag_tree_loop_if_convert)
+  if ((!opts->x_flag_tree_loop_vectorize && !opts->x_flag_tree_slp_vectorize)
+       || !opts->x_flag_tree_loop_if_convert)
     maybe_set_param_value (PARAM_MAX_STORES_TO_SINK, 0,
                            opts->x_param_values, opts_set->x_param_values);
 
@@ -1660,8 +1662,12 @@ common_handle_option (struct gcc_options *opts,
 	opts->x_flag_unswitch_loops = value;
       if (!opts_set->x_flag_gcse_after_reload)
 	opts->x_flag_gcse_after_reload = value;
-      if (!opts_set->x_flag_tree_vectorize)
-	opts->x_flag_tree_vectorize = value;
+      if (!opts_set->x_flag_tree_loop_vectorize
+          && !opts_set->x_flag_tree_vectorize)
+	opts->x_flag_tree_loop_vectorize = value;
+      if (!opts_set->x_flag_tree_slp_vectorize
+          && !opts_set->x_flag_tree_vectorize)
+	opts->x_flag_tree_slp_vectorize = value;
       if (!opts_set->x_flag_vect_cost_model)
 	opts->x_flag_vect_cost_model = value;
       if (!opts_set->x_flag_tree_loop_distribute_patterns)
@@ -1691,6 +1697,12 @@ common_handle_option (struct gcc_options *opts,
         opts->x_flag_ipa_reference = false;
       break;
 
+    case OPT_ftree_vectorize:
+      if (!opts_set->x_flag_tree_loop_vectorize)
+        opts->x_flag_tree_loop_vectorize = value;
+      if (!opts_set->x_flag_tree_slp_vectorize)
+        opts->x_flag_tree_slp_vectorize = value;
+      break;
     case OPT_fshow_column:
       dc->show_column = value;
       break;

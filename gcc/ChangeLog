@@ -1,3 +1,22 @@
+2013-09-16  Xinliang David Li  <davidxl@google.com>
+
+	* tree-if-conv.c (main_tree_if_conversion): Check new flag.
+	* omp-low.c (omp_max_vf): Ditto.
+	(expand_omp_simd): Ditto.
+	* tree-vectorizer.c (vectorize_loops): Ditto.
+	(gate_vect_slp): Ditto.
+	(gate_increase_alignment): Ditto.
+	* tree-ssa-pre.c (inhibit_phi_insertion): Ditto.
+	* tree-ssa-loop.c (gate_tree_vectorize): Ditto.
+	(gate_tree_vectorize): Name change.
+	(tree_vectorize): Ditto.
+	(pass_vectorize::gate): Call new function.
+	(pass_vectorize::execute): Ditto.
+	opts.c: O3 default setting change.
+	(finish_options): Check new flag.
+	* doc/invoke.texi: Document new flags.
+	* common.opt: New flags.
+
 2013-09-16  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* doc/tm.texi.in (Cond Exec Macros): Remove node.
