@@ -1,5 +1,6 @@
 2013-09-16  DJ Delorie  <dj@redhat.com>
 
+	* config/rl78/vregs.h: Add G10 register definitions.
 	* config/rl78/lib2mul.c: Enable for RL78/G10.
 	* config/rl78/lib2div.c: Likewise.
 	* config/rl78/lshrsi3.S: Use vregs.h.
