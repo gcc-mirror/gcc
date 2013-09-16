@@ -1,3 +1,7 @@
+2013-09-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/alpha.c: Include tree-ssa.h.
+
 2013-09-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (enum rdg_dep_type): Add control_dd.
@@ -35,7 +39,8 @@
 
 	PR target/48094
 	* config/darwin.c (darwin_objc2_section): Note if ObjC Metadata is
-	seen.  (darwin_objc1_section): Likewise.
+	seen.
+	(darwin_objc1_section): Likewise.
 	(darwin_file_end): Emit Image Info section when required.
 
 2013-09-14  Jan Hubicka  <jh@suse.cz>
@@ -54,13 +59,13 @@
 2013-09-14  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/58269
-	config/i386/i386.c (ix86_function_arg_regno_p): Make Darwin use the
+	* config/i386/i386.c (ix86_function_arg_regno_p): Make Darwin use the
 	xmm register set described in the psABI.
 
 2013-09-13  Evgeny Gavrin <e.gavrin@samsung.com>
 
-        * dwarf2out.c (should_emit_struct_debug): Add check
-        for type_decl variable is not NULL.
+	* dwarf2out.c (should_emit_struct_debug): Add check
+	for type_decl variable is not NULL.
 
 2013-09-13  Jacek Caban  <jacek@codeweavers.com>
 
@@ -252,12 +257,13 @@
 	tree-flow-inline.h.
 	* tree-flow.h (_edge_var_map, edge_var_map_vector): Move to tree-ssa.h.
 	Move prototypes belonging to tree-ssa.c.
-	* tree-flow-inline.h (redirect_edge_var_map_def, 
+	* tree-flow-inline.h (redirect_edge_var_map_def,
 	redirect_edge_var_map_result, redirect_edge_var_map_location): Move to
 	tree-ssa.h.
 	* gimple.h: Adjust prototypes.
-	* tree-ssa.c (useless_type_conversion_p, types_compatible_p): Move to...
-	* gimple.c (useless_type_conversion_p, types_compatible_p):  Here.
+	* tree-ssa.c (useless_type_conversion_p, types_compatible_p): Move
+	to...
+	* gimple.c (useless_type_conversion_p, types_compatible_p): Here.
 	* tree.h: Move prototype to tree-ssa.h.
 	* gengtype.c (open_base_files): Replace tree-flow.h with tree-ssa.h.
 	* Makefile.in: (TREE_SSA_H, TREE_FLOW_H): Adjust dependencies.
@@ -267,11 +273,12 @@
 	ggc-page.c, gimple-fold.c, gimple-iterator.c, gimple-low.c,
 	gimple-pretty-print.c, gimple-ssa-strength-reduction.c,
 	gimple-streamer-in.c, gimple-streamer-out.c, gimple.c, gimplify.c,
-	graphite-blocking.c, graphite-clast-to-gimple.c, graphite-dependences.c,
-	graphite-interchange.c, graphite-optimize-isl.c, graphite-poly.c,
-	graphite-scop-detection.c, graphite-sese-to-poly.c, graphite.c,
-	ipa-cp.c, ipa-inline-analysis.c, ipa-inline-transform.c, ipa-inline.c,
-	ipa-prop.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa-utils.c,
+	graphite-blocking.c, graphite-clast-to-gimple.c,
+	graphite-dependences.c, graphite-interchange.c,
+	graphite-optimize-isl.c, graphite-poly.c, graphite-scop-detection.c,
+	graphite-sese-to-poly.c, graphite.c, ipa-cp.c, ipa-inline-analysis.c,
+	ipa-inline-transform.c, ipa-inline.c, ipa-prop.c, ipa-pure-const.c,
+	ipa-reference.c, ipa-split.c, ipa-utils.c,
 	loop-init.c, lto-cgraph.c, lto-section-in.c, lto-section-out.c,
 	lto-streamer-in.c, lto-streamer-out.c, lto-streamer.c, omp-low.c,
 	passes.c, predict.c, print-tree.c, profile.c, sese.c, targhooks.c,
@@ -563,12 +570,11 @@
 
 	* lra.c (lra): Clear lra_optional_reload_pseudos before every
 	constraint pass.
-	* lra-constraints.c (curr_insn_transform): Switch on optional
-	reloads.  Check destination too to check move insn.
+	* lra-constraints.c (curr_insn_transform): Switch on optional reloads.
+	Check destination too to check move insn.
 	(undo_optional_reloads): Add check that the original peudo did not
-	changed its allocation and the optional reload was inherited on
-	last inheritance pass.  Break loop after deciding to keep optional
-	reload.
+	changed its allocation and the optional reload was inherited on last
+	inheritance pass.  Break loop after deciding to keep optional reload.
 	(lra_undo_inheritance): Add check that inherited pseudo still in
 	memory.
 
