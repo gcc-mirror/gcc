@@ -1,3 +1,11 @@
+2013-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58329
+	* ipa-devirt.c (ipa_devirt): Be ready for symtab_nonoverwritable_alias
+	to return NULL.
+	* ipa.c (function_and_variable_visibility): Likewise.
+	* ipa-profile.c (ipa_profile): Likewise.
+
 2013-09-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR ipa/58398

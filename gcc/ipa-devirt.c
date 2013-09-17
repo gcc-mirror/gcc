@@ -1098,7 +1098,13 @@ ipa_devirt (void)
 			   cgraph_node_name (likely_target),
 			   likely_target->symbol.order);
 		if (!symtab_can_be_discarded ((symtab_node) likely_target))
-		  likely_target = cgraph (symtab_nonoverwritable_alias ((symtab_node)likely_target));
+		  {
+		    cgraph_node *alias;
+		    alias = cgraph (symtab_nonoverwritable_alias
+				     ((symtab_node)likely_target));
+		    if (alias)
+		      likely_target = alias;
+		  }
 		nconverted++;
 		update = true;
 		cgraph_turn_edge_to_speculative
