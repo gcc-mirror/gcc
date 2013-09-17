@@ -1,3 +1,9 @@
+2013-09-17  Cong Hou  <congh@google.com>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Fix a bug
+	when checking the dot production pattern. The type of rhs operand
+	of multiply is now checked correctly.
+
 2013-09-17  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate
