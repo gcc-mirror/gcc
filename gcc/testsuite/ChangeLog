@@ -1,3 +1,9 @@
+2013-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58435
+	* pt.c (tsubst, [BOUND_TEMPLATE_TEMPLATE_PARM]): Take into account
+	the cp_type_quals (r) too.
+
 2013-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58332
