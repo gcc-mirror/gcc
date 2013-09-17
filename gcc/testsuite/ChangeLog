@@ -1,3 +1,8 @@
+2013-09-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/58088
+	* gcc.c-torture/compile/pr58088.c: New test.
+
 2013-09-17  Nick Clifton  <nickc@redhat.com>
 
 	* lib/target-supports.exp (check_effective_target_trampolines):
