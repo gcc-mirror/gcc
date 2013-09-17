@@ -42,6 +42,10 @@ Enum(rl78_mul_types) String(rl78) Value(MUL_RL78)
 EnumValue
 Enum(rl78_mul_types) String(g13) Value(MUL_G13)
 
+mallregs
+Target Mask(ALLREGS)
+Use all registers, reserving none for interrupt handlers.
+
 mrelax
 Target
 Enable assembler and linker relaxation.

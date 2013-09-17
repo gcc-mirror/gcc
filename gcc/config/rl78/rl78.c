@@ -272,6 +272,7 @@ rl78_asm_file_start (void)
 	{
 	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 8 + i, 0xffef0 + i);
 	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 16 + i, 0xffee8 + i);
+	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 24 + i, 0xffee0 + i);
 	}
     }
 
@@ -309,6 +310,13 @@ rl78_option_override (void)
   flag_split_wide_types = 0;
 
   init_machine_status = rl78_init_machine_status;
+
+  if (TARGET_ALLREGS)
+    {
+      int i;
+      for (i=24; i<32; i++)
+	fixed_regs[i] = 0;
+    }
 }
 
 /* Most registers are 8 bits.  Some are 16 bits because, for example,
@@ -2215,7 +2223,7 @@ is_virtual_register (rtx r)
 {
   return (GET_CODE (r) == REG
 	  && REGNO (r) >= 8
-	  && REGNO (r) < 24);
+	  && REGNO (r) < 32);
 }
 
 /* In all these alloc routines, we expect the following: the insn
