@@ -1,3 +1,11 @@
+2013-09-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/58088
+	* fold-const.c (mask_with_trailing_zeros): New function.
+	(fold_binary_loc): Make sure we don't recurse infinitely
+	when the X in (X & C1) | C2 is a tree of the form (Y * K1) & K2.
+	Use mask_with_trailing_zeros where appropriate.
+
 2013-09-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
 
 	* config/i386/i386.c (distance_agu_use_in_bb) : Proper initialization
