@@ -28,6 +28,17 @@
 
 2013-09-17  Jan Hubicka  <jh@suse.cz>
 
+	PR middle-end/58332
+	* cif-code.def (FUNCTION_NOT_OPTIMIZED): New CIF code.
+	* ipa-inline.c (can_inline_edge_p): Do not downgrade
+	FUNCTION_NOT_OPTIMIZED.
+	* ipa-inline-analysis.c (compute_inline_parameters): Function
+	not optimized is not inlinable unless it is alwaysinline.
+	(inline_analyze_function): Force calls in not optimized
+	function not inlinable.
+
+2013-09-17  Jan Hubicka  <jh@suse.cz>
+
 	PR middle-end/58329
 	* ipa-devirt.c (ipa_devirt): Be ready for symtab_nonoverwritable_alias
 	to return NULL.

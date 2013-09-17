@@ -275,7 +275,8 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
     }
   else if (e->call_stmt_cannot_inline_p)
     {
-      e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
+      if (e->inline_failed != CIF_FUNCTION_NOT_OPTIMIZED)
+        e->inline_failed = CIF_MISMATCHED_ARGUMENTS;
       inlinable = false;
     }
   /* Don't inline if the functions have different EH personalities.  */
