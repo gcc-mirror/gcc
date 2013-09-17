@@ -1,3 +1,8 @@
+2013-09-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (distance_agu_use_in_bb) : Proper initialization
+	of 'prev' var to get better distance estimation.
+
 2013-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-inline.h (struct copy_body_data): Add transform_parameter.
