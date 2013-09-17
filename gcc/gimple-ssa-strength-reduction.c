@@ -750,6 +750,57 @@ slsr_process_phi (gimple phi, bool speed)
   add_cand_for_stmt (phi, c);
 }
 
+/* Given PBASE which is a pointer to tree, look up the defining
+   statement for it and check whether the candidate is in the
+   form of:
+
+     X = B + (1 * S), S is integer constant
+     X = B + (i * S), S is integer one
+
+   If so, set PBASE to the candidate's base_expr and return double
+   int (i * S).
+   Otherwise, just return double int zero.  */
+
+static double_int
+backtrace_base_for_ref (tree *pbase)
+{
+  tree base_in = *pbase;
+  slsr_cand_t base_cand;
+
+  STRIP_NOPS (base_in);
+  if (TREE_CODE (base_in) != SSA_NAME)
+    return tree_to_double_int (integer_zero_node);
+
+  base_cand = base_cand_from_table (base_in);
+
+  while (base_cand && base_cand->kind != CAND_PHI)
+    {
+      if (base_cand->kind == CAND_ADD
+	  && base_cand->index.is_one ()
+	  && TREE_CODE (base_cand->stride) == INTEGER_CST)
+	{
+	  /* X = B + (1 * S), S is integer constant.  */
+	  *pbase = base_cand->base_expr;
+	  return tree_to_double_int (base_cand->stride);
+	}
+      else if (base_cand->kind == CAND_ADD
+	       && TREE_CODE (base_cand->stride) == INTEGER_CST
+	       && integer_onep (base_cand->stride))
+        {
+	  /* X = B + (i * S), S is integer one.  */
+	  *pbase = base_cand->base_expr;
+	  return base_cand->index;
+	}
+
+      if (base_cand->next_interp)
+	base_cand = lookup_cand (base_cand->next_interp);
+      else
+	base_cand = NULL;
+    }
+
+  return tree_to_double_int (integer_zero_node);
+}
+
 /* Look for the following pattern:
 
     *PBASE:    MEM_REF (T1, C1)
@@ -767,7 +818,14 @@ slsr_process_phi (gimple phi, bool speed)
 
     *PBASE:    T1
     *POFFSET:  MULT_EXPR (T2, C3)
-    *PINDEX:   C1 + (C2 * C3) + C4  */
+    *PINDEX:   C1 + (C2 * C3) + C4
+
+   When T2 is recorded by a CAND_ADD in the form of (T2' + C5), it
+   will be further restructured to:
+
+    *PBASE:    T1
+    *POFFSET:  MULT_EXPR (T2', C3)
+    *PINDEX:   C1 + (C2 * C3) + C4 + (C5 * C3)  */
 
 static bool
 restructure_reference (tree *pbase, tree *poffset, double_int *pindex,
@@ -777,7 +835,7 @@ restructure_reference (tree *pbase, tree *poffset, double_int *pindex,
   double_int index = *pindex;
   double_int bpu = double_int::from_uhwi (BITS_PER_UNIT);
   tree mult_op0, mult_op1, t1, t2, type;
-  double_int c1, c2, c3, c4;
+  double_int c1, c2, c3, c4, c5;
 
   if (!base
       || !offset
@@ -823,11 +881,12 @@ restructure_reference (tree *pbase, tree *poffset, double_int *pindex,
     }
 
   c4 = index.udiv (bpu, FLOOR_DIV_EXPR);
+  c5 = backtrace_base_for_ref (&t2);
 
   *pbase = t1;
-  *poffset = fold_build2 (MULT_EXPR, sizetype, t2,
+  *poffset = fold_build2 (MULT_EXPR, sizetype, fold_convert (sizetype, t2),
 			  double_int_to_tree (sizetype, c3));
-  *pindex = c1 + c2 * c3 + c4;
+  *pindex = c1 + c2 * c3 + c4 + c5 * c3;
   *ptype = type;
 
   return true;

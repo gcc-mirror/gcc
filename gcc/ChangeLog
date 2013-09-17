@@ -1,3 +1,8 @@
+2013-09-17  Bin Cheng  <bin.cheng@arm.com>
+
+	* gimple-ssa-strength-reduction.c (backtrace_base_for_ref): New.
+	(restructure_reference): Call backtrace_base_for_ref.
+
 2013-09-17  Alan Modra  <amodra@gmail.com>
 
 	PR target/57589
