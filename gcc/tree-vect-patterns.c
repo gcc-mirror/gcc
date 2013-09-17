@@ -397,7 +397,7 @@ vect_recog_dot_prod_pattern (vec<gimple> *stmts, tree *type_in,
           || !promotion)
         return NULL;
       oprnd00 = gimple_assign_rhs1 (def_stmt);
-      if (!type_conversion_p (oprnd0, stmt, true, &half_type1, &def_stmt,
+      if (!type_conversion_p (oprnd1, stmt, true, &half_type1, &def_stmt,
                                 &promotion)
           || !promotion)
         return NULL;
