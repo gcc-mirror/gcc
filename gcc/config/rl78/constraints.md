@@ -203,17 +203,24 @@
 ; All the memory addressing schemes the RL78 supports
 ; of the form W {register} {bytes of offset}
 ;          or W {register} {register}
+; Additionally, the Cxx forms are the same as the Wxx forms, but without
+; the ES: override.
 
 ; absolute address
-(define_memory_constraint "Wab"
+(define_memory_constraint "Cab"
   "[addr]"
   (and (match_code "mem")
        (ior (match_test "CONSTANT_P (XEXP (op, 0))")
 	    (match_test "GET_CODE (XEXP (op, 0)) == PLUS && GET_CODE (XEXP (XEXP (op, 0), 0)) == SYMBOL_REF"))
 	    )
   )
+(define_memory_constraint "Wab"
+  "es:[addr]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Cab (rl78_es_base (op))
+               || satisfies_constraint_Cab (op)")
+  )
 
-(define_memory_constraint "Wbc"
+(define_memory_constraint "Cbc"
   "word16[BC]"
   (and (match_code "mem")
        (ior
@@ -225,29 +232,49 @@
 		       (match_test "uword_operand (XEXP (XEXP (op, 0), 1), VOIDmode)"))))
        )
   )
+(define_memory_constraint "Wbc"
+  "es:word16[BC]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Cbc (rl78_es_base (op))
+               || satisfies_constraint_Cbc (op)")
+  )
 
-(define_memory_constraint "Wde"
+(define_memory_constraint "Cde"
   "[DE]"
   (and (match_code "mem")
        (and (match_code "reg" "0")
 	    (match_test "REGNO (XEXP (op, 0)) == DE_REG")))
   )
+(define_memory_constraint "Wde"
+  "es:[DE]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Cde (rl78_es_base (op))
+               || satisfies_constraint_Cde (op)")
+  )
 
-(define_memory_constraint "Wca"
+(define_memory_constraint "Cca"
   "[AX..HL] for calls"
   (and (match_code "mem")
        (and (match_code "reg" "0")
 	    (match_test "REGNO (XEXP (op, 0)) <= HL_REG")))
   )
+(define_memory_constraint "Wca"
+  "es:[AX..HL] for calls"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Cca (rl78_es_base (op))
+               || satisfies_constraint_Cca (op)")
+  )
 
-(define_memory_constraint "Wcv"
+(define_memory_constraint "Ccv"
   "[AX..HL,r8-r23] for calls"
   (and (match_code "mem")
        (and (match_code "reg" "0")
 	    (match_test "REGNO (XEXP (op, 0)) < 24")))
   )
+(define_memory_constraint "Wcv"
+  "es:[AX..HL,r8-r23] for calls"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Ccv (rl78_es_base (op))
+               || satisfies_constraint_Ccv (op)")
+  )
 
-(define_memory_constraint "Wd2"
+(define_memory_constraint "Cd2"
   "word16[DE]"
   (and (match_code "mem")
        (ior
@@ -259,15 +286,25 @@
 		       (match_test "uword_operand (XEXP (XEXP (op, 0), 1), VOIDmode)"))))
        )
   )
+(define_memory_constraint "Wd2"
+  "es:word16[DE]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Cd2 (rl78_es_base (op))
+               || satisfies_constraint_Cd2 (op)")
+  )
 
-(define_memory_constraint "Whl"
+(define_memory_constraint "Chl"
   "[HL]"
   (and (match_code "mem")
        (and (match_code "reg" "0")
 	    (match_test "REGNO (XEXP (op, 0)) == HL_REG")))
   )
+(define_memory_constraint "Whl"
+  "es:[HL]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Chl (rl78_es_base (op))
+               || satisfies_constraint_Chl (op)")
+  )
 
-(define_memory_constraint "Wh1"
+(define_memory_constraint "Ch1"
   "byte8[HL]"
   (and (match_code "mem")
        (and (match_code "plus" "0")
@@ -275,14 +312,24 @@
 		      (match_test "REGNO (XEXP (XEXP (op, 0), 0)) == HL_REG"))
 		      (match_test "ubyte_operand (XEXP (XEXP (op, 0), 1), VOIDmode)"))))
   )
+(define_memory_constraint "Wh1"
+  "es:byte8[HL]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Ch1 (rl78_es_base (op))
+               || satisfies_constraint_Ch1 (op)")
+  )
 
-(define_memory_constraint "Whb"
+(define_memory_constraint "Chb"
   "[HL+B]"
   (and (match_code "mem")
        (match_test "rl78_hl_b_c_addr_p (XEXP (op, 0))"))
   )
+(define_memory_constraint "Whb"
+  "es:[HL+B]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Chb (rl78_es_base (op))
+               || satisfies_constraint_Chb (op)")
+  )
 
-(define_memory_constraint "Ws1"
+(define_memory_constraint "Cs1"
   "word8[SP]"
   (and (match_code "mem")
        (ior
@@ -293,6 +340,11 @@
 		       (match_test "REGNO (XEXP (XEXP (op, 0), 0)) == SP_REG"))
 		       (match_test "ubyte_operand (XEXP (XEXP (op, 0), 1), VOIDmode)"))))
        )
+  )
+(define_memory_constraint "Ws1"
+  "es:word8[SP]"
+  (match_test "rl78_es_addr (op) && satisfies_constraint_Cs1 (rl78_es_base (op))
+               || satisfies_constraint_Cs1 (op)")
   )
 
 (define_memory_constraint "Wfr"
