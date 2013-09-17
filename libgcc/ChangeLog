@@ -1,3 +1,9 @@
+2013-09-17  Jacek Caban  <jacek@codeweavers.com>
+
+	* config/i386/gthr-win32.c: CreateSemaphoreW instead of
+	CreateSemaphoreA.
+	* config/i386/gthr-win32.h: Likewise.
+
 2013-09-16  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/vregs.h: Add G10 register definitions.
