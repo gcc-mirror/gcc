@@ -540,34 +540,39 @@ rl78_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to ATTRIBUTE_UNUS
   return true;
 }
 
-/* Returns nonzero if the given register needs to be saved by the
+/* Returns true if the given register needs to be saved by the
    current function.  */
-static int
-need_to_save (int regno)
+static bool
+need_to_save (unsigned int regno)
 {
   if (is_interrupt_func (cfun->decl))
     {
-      if (regno < 8)
-	return 1; /* don't know what devirt will need */
+       /* We don't need to save registers that have
+	  been reserved for interrupt handlers.  */
       if (regno > 23)
-	return 0; /* don't need to save interrupt registers */
-      if (crtl->is_leaf)
-	{
-	  return df_regs_ever_live_p (regno);
-	}
-      else
-	return 1;
+	return false;
+
+      /* If the handler is a non-leaf function then it may call
+	 non-interrupt aware routines which will happily clobber
+	 any call_used registers, so we have to preserve them.  */
+      if (!crtl->is_leaf && call_used_regs[regno])
+	return true;
+
+      /* Otherwise we only have to save a register, call_used
+	 or not, if it is used by this handler.  */
+      return df_regs_ever_live_p (regno);
     }
+
   if (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)
-    return 1;
+    return true;
   if (fixed_regs[regno])
-    return 0;
+    return false;
   if (crtl->calls_eh_return)
-    return 1;
+    return true;
   if (df_regs_ever_live_p (regno)
       && !call_used_regs[regno])
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 /* We use this to wrap all emitted insns in the prologue.  */
@@ -1026,14 +1031,20 @@ rl78_expand_prologue (void)
   if (rl78_is_naked_func ())
     return;
 
-  if (!cfun->machine->computed)
-    rl78_compute_frame_info ();
+  /* Always re-compute the frame info - the register usage may have changed.  */
+  rl78_compute_frame_info ();
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->framesize;
 
   if (is_interrupt_func (cfun->decl) && !TARGET_G10)
-    emit_insn (gen_sel_rb (GEN_INT (0)));
+    for (i = 0; i < 4; i++)
+      if (cfun->machine->need_to_push [i])
+	{
+	  /* Select Bank 0 if we are using any registers from Bank 0.   */
+	  emit_insn (gen_sel_rb (GEN_INT (0)));
+	  break;
+	}
 
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])
