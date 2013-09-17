@@ -1,3 +1,7 @@
+2013-09-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/t-rtems: Add leon3 multilibs.
+
 2013-09-17  Cong Hou  <congh@google.com>
 
 	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Fix a bug
