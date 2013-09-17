@@ -1,3 +1,8 @@
+2013-09-17  Alan Modra  <amodra@gmail.com>
+
+	PR target/57589
+	* config/rs6000/driver-rs6000.c (elf_platform): Revert 2013-06-11 patch.
+
 2013-09-16  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/rl78.c (rl78_asm_file_start): Specify alternate
