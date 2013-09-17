@@ -63,6 +63,7 @@ GLIBCXX_7.0 {
     _ZTVN9__gnu_cxx3__718stdio_sync_filebufI[cw]NSt3__711char_traitsI[cw]EEEE;
 
     # thunk
+    _ZTv0_n12_NS*;
     _ZTv0_n24_NS*;
 
     # typeinfo structure

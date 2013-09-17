@@ -3768,24 +3768,19 @@ ix86_option_override_internal (bool main_args_p)
       ix86_gen_leave = gen_leave_rex64;
       if (Pmode == DImode)
 	{
-	  ix86_gen_monitor = gen_sse3_monitor64_di;
 	  ix86_gen_tls_global_dynamic_64 = gen_tls_global_dynamic_64_di;
 	  ix86_gen_tls_local_dynamic_base_64
 	    = gen_tls_local_dynamic_base_64_di;
 	}
       else
 	{
-	  ix86_gen_monitor = gen_sse3_monitor64_si;
 	  ix86_gen_tls_global_dynamic_64 = gen_tls_global_dynamic_64_si;
 	  ix86_gen_tls_local_dynamic_base_64
 	    = gen_tls_local_dynamic_base_64_si;
 	}
     }
   else
-    {
-      ix86_gen_leave = gen_leave;
-      ix86_gen_monitor = gen_sse3_monitor;
-    }
+    ix86_gen_leave = gen_leave;
 
   if (Pmode == DImode)
     {
@@ -3797,6 +3792,7 @@ ix86_option_override_internal (bool main_args_p)
       ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_probe_di;
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probedi;
       ix86_gen_probe_stack_range = gen_probe_stack_rangedi;
+      ix86_gen_monitor = gen_sse3_monitor_di;
     }
   else
     {
@@ -3808,6 +3804,7 @@ ix86_option_override_internal (bool main_args_p)
       ix86_gen_allocate_stack_worker = gen_allocate_stack_worker_probe_si;
       ix86_gen_adjust_stack_and_probe = gen_adjust_stack_and_probesi;
       ix86_gen_probe_stack_range = gen_probe_stack_rangesi;
+      ix86_gen_monitor = gen_sse3_monitor_si;
     }
 
 #ifdef USE_IX86_CLD
@@ -4689,6 +4686,28 @@ x86_64_elf_select_section (tree decl, int reloc,
 	}
     }
   return default_elf_select_section (decl, reloc, align);
+}
+
+/* Select a set of attributes for section NAME based on the properties
+   of DECL and whether or not RELOC indicates that DECL's initializer
+   might contain runtime relocations.  */
+
+static unsigned int ATTRIBUTE_UNUSED
+x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
+{
+  unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (decl == NULL_TREE
+      && (strcmp (name, ".ldata.rel.ro") == 0
+	  || strcmp (name, ".ldata.rel.ro.local") == 0))
+    flags |= SECTION_RELRO;
+
+  if (strcmp (name, ".lbss") == 0
+      || strncmp (name, ".lbss.", 5) == 0
+      || strncmp (name, ".gnu.linkonce.lb.", 16) == 0)
+    flags |= SECTION_BSS;
+
+  return flags;
 }
 
 /* Build up a unique section name, expressed as a
@@ -13598,21 +13617,29 @@ ix86_delegitimize_address (rtx x)
 	    x = replace_equiv_address_nv (orig_x, x);
 	  return x;
 	}
-      if (GET_CODE (x) != CONST
-	  || GET_CODE (XEXP (x, 0)) != UNSPEC
-	  || (XINT (XEXP (x, 0), 1) != UNSPEC_GOTPCREL
-	      && XINT (XEXP (x, 0), 1) != UNSPEC_PCREL)
-	  || (!MEM_P (orig_x) && XINT (XEXP (x, 0), 1) != UNSPEC_PCREL))
-	return ix86_delegitimize_tls_address (orig_x);
-      x = XVECEXP (XEXP (x, 0), 0, 0);
-      if (GET_MODE (orig_x) != GET_MODE (x) && MEM_P (orig_x))
+
+      if (GET_CODE (x) == CONST
+	  && GET_CODE (XEXP (x, 0)) == UNSPEC
+	  && (XINT (XEXP (x, 0), 1) == UNSPEC_GOTPCREL
+	      || XINT (XEXP (x, 0), 1) == UNSPEC_PCREL)
+	  && (MEM_P (orig_x) || XINT (XEXP (x, 0), 1) == UNSPEC_PCREL))
 	{
-	  x = simplify_gen_subreg (GET_MODE (orig_x), x,
-				   GET_MODE (x), 0);
-	  if (x == NULL_RTX)
-	    return orig_x;
+	  x = XVECEXP (XEXP (x, 0), 0, 0);
+	  if (GET_MODE (orig_x) != GET_MODE (x) && MEM_P (orig_x))
+	    {
+	      x = simplify_gen_subreg (GET_MODE (orig_x), x,
+				       GET_MODE (x), 0);
+	      if (x == NULL_RTX)
+		return orig_x;
+	    }
+	  return x;
 	}
-      return x;
+
+      if (ix86_cmodel != CM_MEDIUM_PIC && ix86_cmodel != CM_LARGE_PIC)
+	return ix86_delegitimize_tls_address (orig_x);
+
+      /* Fall thru into the code shared with -m32 for -mcmodel=large -fpic
+	 and -mcmodel=medium -fpic.  */
     }
 
   if (GET_CODE (x) != PLUS
@@ -13649,10 +13676,12 @@ ix86_delegitimize_address (rtx x)
 
   if (GET_CODE (x) == UNSPEC
       && ((XINT (x, 1) == UNSPEC_GOT && MEM_P (orig_x) && !addend)
-	  || (XINT (x, 1) == UNSPEC_GOTOFF && !MEM_P (orig_x))))
+	  || (XINT (x, 1) == UNSPEC_GOTOFF && !MEM_P (orig_x))
+	  || (XINT (x, 1) == UNSPEC_PLTOFF && ix86_cmodel == CM_LARGE_PIC
+	      && !MEM_P (orig_x) && !addend)))
     result = XVECEXP (x, 0, 0);
 
-  if (TARGET_MACHO && darwin_local_data_pic (x)
+  if (!TARGET_64BIT && TARGET_MACHO && darwin_local_data_pic (x)
       && !MEM_P (orig_x))
     result = XVECEXP (x, 0, 0);
 

@@ -1,3 +1,9 @@
+2013-08-28  Ian Lance Taylor  <iant@google.com>
+
+	* go-gcc.cc (Gcc_backend::immutable_struct): Set TREE_PUBLIC if
+	the struct is not hidden.
+	(Gcc_backend::immutable_struct_set_init): Don't set TREE_PUBLIC.
+
 2013-08-06  Ian Lance Taylor  <iant@google.com>
 
 	* go-gcc.cc (Gcc_backend::immutable_struct_set_init): Use

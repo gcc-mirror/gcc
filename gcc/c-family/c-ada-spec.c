@@ -2900,7 +2900,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type,
       pp_string (buffer, "  -- ");
       dump_sloc (buffer, t);
 
-      if (is_abstract)
+      if (is_abstract || !DECL_ASSEMBLER_NAME (t))
 	return 1;
 
       newline_and_indent (buffer, spc);

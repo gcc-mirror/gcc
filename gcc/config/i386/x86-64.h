@@ -103,3 +103,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef TARGET_ASM_UNIQUE_SECTION
 #define TARGET_ASM_UNIQUE_SECTION  x86_64_elf_unique_section
+
+#undef TARGET_SECTION_TYPE_FLAGS
+#define TARGET_SECTION_TYPE_FLAGS  x86_64_elf_section_type_flags

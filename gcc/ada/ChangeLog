@@ -1,3 +1,8 @@
+2013-08-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (can_equal_min_or_max_val_p): Be prepared for
+	values outside of the range of the type.
+
 2013-06-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/ada-tree.h (DECL_BY_DOUBLE_REF_P): Delete.

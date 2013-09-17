@@ -35,7 +35,7 @@ test01()
   VERIFY( u.a() == 0.0 );
   VERIFY( u.b() == 1.0 );
   typedef std::cauchy_distribution<>::result_type result_type;
-  VERIFY( u.min() == std::numeric_limits<result_type>::min() );
+  VERIFY( u.min() == std::numeric_limits<result_type>::lowest() );
   VERIFY( u.max() == std::numeric_limits<result_type>::max() );
 }
 

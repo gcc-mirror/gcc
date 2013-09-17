@@ -1,3 +1,33 @@
+2013-08-24  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/57798
+	* trans-array.c (gfc_conv_ss_startstride, set_loop_bounds,
+	gfc_set_delta): Generate preliminary code before the outermost loop.
+
+2013-08-24  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.c (gfc_conv_section_startstride): Move &loop->pre access
+	to the callers.
+	(gfc_conv_ss_startstride, gfc_conv_expr_descriptor): Update callers.
+
+2013-08-24  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk:
+	2013-08-22  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58185
+	* match.c (copy_ts_from_selector_to_associate): Only build class
+	container for polymorphic selector. Some cleanup.
+
+2013-08-11  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk:
+	2013-08-09  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58058
+	* trans-intrinsic.c (gfc_conv_intrinsic_transfer): Free the temporary
+	string, if necessary.
+
 2013-07-28  Tobias Burnus  <burnus@net-b.de>
 
 	Backport from mainline

@@ -1,3 +1,16 @@
+2013-08-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	Revert:
+	2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* configure.tgt: Add -msoft-float to XCFLAGS.
+	
+
+2013-08-14  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
+
+	* config/s390/sjlj.S: Add file missing from last commit.
+	* config/s390/target.h: Likewise.
+	
 2013-08-02  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
 	Backports from mainline:

@@ -36,9 +36,9 @@ test01()
   VERIFY( u.varcov()[1] == 0.0 );
   VERIFY( u.varcov()[2] == 1.0 );
   typedef __gnu_cxx::normal_mv_distribution<2>::result_type result_type;
-  VERIFY( u.min()[0] == std::numeric_limits<result_type::value_type>::min() );
+  VERIFY( u.min()[0] == std::numeric_limits<result_type::value_type>::lowest() );
   VERIFY( u.max()[0] == std::numeric_limits<result_type::value_type>::max() );
-  VERIFY( u.min()[1] == std::numeric_limits<result_type::value_type>::min() );
+  VERIFY( u.min()[1] == std::numeric_limits<result_type::value_type>::lowest() );
   VERIFY( u.max()[1] == std::numeric_limits<result_type::value_type>::max() );
 }
 

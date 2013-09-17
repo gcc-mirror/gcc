@@ -4045,6 +4045,13 @@ walk_stmt_load_store_addr_ops (gimple stmt, void *data,
 	    ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
 	}
     }
+  else if (visit_addr
+	   && gimple_code (stmt) == GIMPLE_GOTO)
+    {
+      tree op = gimple_goto_dest (stmt);
+      if (TREE_CODE (op) == ADDR_EXPR)
+	ret |= visit_addr (stmt, TREE_OPERAND (op, 0), data);
+    }
 
   return ret;
 }

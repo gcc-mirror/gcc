@@ -1,3 +1,81 @@
+2013-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58415
+	* include/ext/sso_string_base.h (__sso_string_base<>::
+	__sso_string_base(__sso_string_base&&)): Fix thinkos about
+	_M_length vs _M_set_length.
+	* testsuite/ext/vstring/cons/58415-1.cc: New.
+	* testsuite/ext/vstring/cons/58415-2.cc: Likewise.
+
+2013-09-10  Kai Tietz  <ktietz@redhat.com>
+
+	Backport from trunk.
+	PR libstdc++/54314
+	* config/abi/pre/gnu-versioned-namespace.ver: Add thunk _ZTv0_n12_NS*
+	like in gnu.ver.
+
+2013-09-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58341
+	* include/bits/stl_algobase.h (copy_backward): Fix documentation
+	per DR 1206.
+
+2013-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58302
+	* include/bits/random.tcc (negative_binomial_distribution<>::
+	operator()(_UniformRandomNumberGenerator&, const param_type&):
+	Fix typo in template argument.
+	* testsuite/26_numerics/random/negative_binomial_distribution/
+	operators/58302.cc: New.
+
+2013-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* src/c++98/compatibility.cc (_ZTIe): Use
+	reinterpret_cast<const cast *> to avoid -Wcast-qual warnings.
+	(_ZTIPe): Ditto.
+	(ZTIPKe): Ditto.
+
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* include/ext/atomicity.h: Add #pragma GCC system_header.
+
+2013-08-07  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR libstdc++/58098
+	* include/bits/random.h (cauchy_distribution<>::min,
+	extreme_value_distribution<>::min, normal_distribution<>::min,
+	student_t_distribution<>::min): Fix.
+	* include/ext/random (normal_mv_distribution<>::min): Likewise.
+	* testsuite/26_numerics/random/cauchy_distribution/cons/parms.cc:
+	Adjust.
+	testsuite/26_numerics/random/cauchy_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/extreme_value_distribution/cons/
+	parms.cc: Likewise.
+	testsuite/26_numerics/random/extreme_value_distribution/cons/
+	default.cc: Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/normal_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/parms.cc:
+	Likewise.
+	* testsuite/26_numerics/random/student_t_distribution/cons/default.cc:
+	Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/parms.cc: Likewise.
+	* testsuite/ext/random/normal_mv_distribution/cons/default.cc: Likewise.
+
+	* testsuite/26_numerics/random/exponential_distribution/cons/parms.cc:
+	Minor tweak.
+	* testsuite/26_numerics/random/exponential_distribution/cons/default.cc:
+	Likewise.
+
+	* testsuite/ext/von_mises_distribution/*: Move to...
+	* testsuite/ext/random/von_mises_distribution/*: ... here.
+	* testsuite/ext/triangular_distribution/*: Move to...
+	* testsuite/ext/random/triangular_distribution/*: ... here.
+
 2013-07-31  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/profile/unordered_base.h: New.

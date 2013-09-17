@@ -6,12 +6,12 @@
 
 package main
 
-func f() int {	// ERROR "return|control"
+func f() int {
 	if false {
 		return 0;
 	}
 	// we should not be able to return successfully w/o a return statement
-}
+} // ERROR "return"
 
 func main() {
 	print(f(), "\n");

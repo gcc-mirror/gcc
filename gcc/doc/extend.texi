@@ -7412,6 +7412,8 @@ This built-in function performs an atomic test-and-set operation on
 the byte at @code{*@var{ptr}}.  The byte is set to some implementation
 defined nonzero ``set'' value and the return value is @code{true} if and only
 if the previous contents were ``set''.
+It should be only used for operands of type @code{bool} or @code{char}. For 
+other types only part of the value may be set.
 
 All memory models are valid.
 
@@ -7421,6 +7423,10 @@ All memory models are valid.
 
 This built-in function performs an atomic clear operation on
 @code{*@var{ptr}}.  After the operation, @code{*@var{ptr}} contains 0.
+It should be only used for operands of type @code{bool} or @code{char} and 
+in conjunction with @code{__atomic_test_and_set}.
+For other types it may only clear partially. If the type is not @code{bool}
+prefer using @code{__atomic_store}.
 
 The valid memory model variants are
 @code{__ATOMIC_RELAXED}, @code{__ATOMIC_SEQ_CST}, and
@@ -7492,18 +7498,20 @@ End lock elision on a lock variable.
 Memory model must be @code{__ATOMIC_RELEASE} or stronger.
 @end table
 
-When a lock acquire fails it's required for good performance to abort
+When a lock acquire fails it is required for good performance to abort
 the transaction quickly. This can be done with a @code{_mm_pause}
 
 @smallexample
 #include <immintrin.h> // For _mm_pause
+
+int lockvar;
 
 /* Acquire lock with lock elision */
 while (__atomic_exchange_n(&lockvar, 1, __ATOMIC_ACQUIRE|__ATOMIC_HLE_ACQUIRE))
     _mm_pause(); /* Abort failed transaction */
 ...
 /* Free lock with lock elision */
-__atomic_clear(&lockvar, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
+__atomic_store_n(&lockvar, 0, __ATOMIC_RELEASE|__ATOMIC_HLE_RELEASE);
 @end smallexample
 
 @node Object Size Checking

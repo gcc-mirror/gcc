@@ -1,3 +1,8 @@
+2013-09-04  Matthias Klose  <doko@ubuntu.com>
+
+	* Makefile.am (libgcjgc_la_LIBADD): Add EXTRA_TEST_LIBS.
+	* Makefile.in: Regenerate.
+
 2013-05-31  Release Manager
 
 	* GCC 4.8.1 released.

@@ -3390,10 +3390,7 @@ Function_type::do_get_backend(Gogo* gogo)
   // When we do anything with a function value other than call it, it
   // is represented as a pointer to a struct whose first field is the
   // actual function.  So that is what we return as the type of a Go
-  // function.  The function stored in the first field always that
-  // takes one additional trailing argument: the closure pointer.  For
-  // a top-level function, this additional argument will only be
-  // passed when invoking the function indirectly, via the struct.
+  // function.
 
   Location loc = this->location();
   Btype* struct_type =
@@ -3415,15 +3412,9 @@ Function_type::do_get_backend(Gogo* gogo)
     }
 
   std::vector<Backend::Btyped_identifier> bparameters;
-  size_t last;
-  if (this->parameters_ == NULL)
+  if (this->parameters_ != NULL)
     {
-      bparameters.resize(1);
-      last = 0;
-    }
-  else
-    {
-      bparameters.resize(this->parameters_->size() + 1);
+      bparameters.resize(this->parameters_->size());
       size_t i = 0;
       for (Typed_identifier_list::const_iterator p = this->parameters_->begin();
 	   p != this->parameters_->end();
@@ -3433,12 +3424,8 @@ Function_type::do_get_backend(Gogo* gogo)
 	  bparameters[i].btype = p->type()->get_backend(gogo);
 	  bparameters[i].location = p->location();
 	}
-      last = i;
+      go_assert(i == bparameters.size());
     }
-  go_assert(last + 1 == bparameters.size());
-  bparameters[last].name = "$closure";
-  bparameters[last].btype = ptr_struct_type;
-  bparameters[last].location = loc;
 
   std::vector<Backend::Btyped_identifier> bresults;
   if (this->results_ != NULL)
@@ -3840,7 +3827,7 @@ Function_type::copy_with_receiver(Type* receiver_type) const
 // closure parameter.
 
 Function_type*
-Function_type::copy_with_closure(Type* closure_type) const
+Function_type::copy_with_names() const
 {
   Typed_identifier_list* new_params = new Typed_identifier_list();
   const Typed_identifier_list* orig_params = this->parameters_;
@@ -3858,8 +3845,6 @@ Function_type::copy_with_closure(Type* closure_type) const
 						 p->location()));
 	}
     }
-  new_params->push_back(Typed_identifier("closure.0", closure_type,
-					 this->location_));
 
   const Typed_identifier_list* orig_results = this->results_;
   Typed_identifier_list* new_results;
@@ -4219,6 +4204,22 @@ Struct_field::is_field_name(const std::string& name) const
 
       return false;
     }
+}
+
+// Return whether this field is an embedded built-in type.
+
+bool
+Struct_field::is_embedded_builtin(Gogo* gogo) const
+{
+  const std::string& name(this->field_name());
+  // We know that a field is an embedded type if it is anonymous.
+  // We can decide if it is a built-in type by checking to see if it is
+  // registered globally under the field's name.
+  // This allows us to distinguish between embedded built-in types and
+  // embedded types that are aliases to built-in types.
+  return (this->is_anonymous()
+          && !Gogo::is_hidden_name(name)
+          && gogo->lookup_global(name.c_str()) != NULL);
 }
 
 // Class Struct_type.
@@ -4835,11 +4836,16 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 
       ++q;
       go_assert(q->is_field_name("pkgPath"));
-      if (!Gogo::is_hidden_name(pf->field_name()))
-	fvals->push_back(Expression::make_nil(bloc));
+      bool is_embedded_builtin = pf->is_embedded_builtin(gogo);
+      if (!Gogo::is_hidden_name(pf->field_name()) && !is_embedded_builtin)
+        fvals->push_back(Expression::make_nil(bloc));
       else
 	{
-	  std::string n = Gogo::hidden_name_pkgpath(pf->field_name());
+	  std::string n;
+          if (is_embedded_builtin)
+            n = gogo->package_name();
+          else
+            n = Gogo::hidden_name_pkgpath(pf->field_name());
 	  Expression* s = Expression::make_string(n, bloc);
 	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 	}

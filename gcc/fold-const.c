@@ -469,11 +469,24 @@ negate_expr_p (tree t)
 	 and actually traps on some architectures.  But if overflow is
 	 undefined, we can negate, because - (INT_MIN / 1) is an
 	 overflow.  */
-      if (INTEGRAL_TYPE_P (TREE_TYPE (t))
-	  && !TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t)))
-        break;
-      return negate_expr_p (TREE_OPERAND (t, 1))
-             || negate_expr_p (TREE_OPERAND (t, 0));
+      if (INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	{
+	  if (!TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (t)))
+	    break;
+	  /* If overflow is undefined then we have to be careful because
+	     we ask whether it's ok to associate the negate with the
+	     division which is not ok for example for
+	     -((a - b) / c) where (-(a - b)) / c may invoke undefined
+	     overflow because of negating INT_MIN.  So do not use
+	     negate_expr_p here but open-code the two important cases.  */
+	  if (TREE_CODE (TREE_OPERAND (t, 0)) == NEGATE_EXPR
+	      || (TREE_CODE (TREE_OPERAND (t, 0)) == INTEGER_CST
+		  && may_negate_without_overflow_p (TREE_OPERAND (t, 0))))
+	    return true;
+	}
+      else if (negate_expr_p (TREE_OPERAND (t, 0)))
+	return true;
+      return negate_expr_p (TREE_OPERAND (t, 1));
 
     case NOP_EXPR:
       /* Negate -((double)float) as (double)(-float).  */
@@ -653,16 +666,20 @@ fold_negate_expr (location_t loc, tree t)
 	      return fold_build2_loc (loc, TREE_CODE (t), type,
 				  TREE_OPERAND (t, 0), negate_expr (tem));
 	    }
+	  /* If overflow is undefined then we have to be careful because
+	     we ask whether it's ok to associate the negate with the
+	     division which is not ok for example for
+	     -((a - b) / c) where (-(a - b)) / c may invoke undefined
+	     overflow because of negating INT_MIN.  So do not use
+	     negate_expr_p here but open-code the two important cases.  */
           tem = TREE_OPERAND (t, 0);
-          if (negate_expr_p (tem))
-	    {
-	      if (INTEGRAL_TYPE_P (type)
-		  && (TREE_CODE (tem) != INTEGER_CST
-		      || tree_int_cst_equal (tem, TYPE_MIN_VALUE (type))))
-		fold_overflow_warning (warnmsg, WARN_STRICT_OVERFLOW_MISC);
-	      return fold_build2_loc (loc, TREE_CODE (t), type,
-				  negate_expr (tem), TREE_OPERAND (t, 1));
-	    }
+	  if ((INTEGRAL_TYPE_P (type)
+	       && (TREE_CODE (tem) == NEGATE_EXPR
+		   || (TREE_CODE (tem) == INTEGER_CST
+		       && may_negate_without_overflow_p (tem))))
+	      || !INTEGRAL_TYPE_P (type))
+	    return fold_build2_loc (loc, TREE_CODE (t), type,
+				    negate_expr (tem), TREE_OPERAND (t, 1));
         }
       break;
 
@@ -4220,7 +4237,7 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
     }
 
   if (low == 0 && high == 0)
-    return build_int_cst (type, 1);
+    return omit_one_operand_loc (loc, type, build_int_cst (type, 1), exp);
 
   if (low == 0)
     return fold_build2_loc (loc, LE_EXPR, type, exp,
@@ -9851,6 +9868,24 @@ exact_inverse (tree type, tree cst)
     }
 }
 
+/*  Mask out the tz least significant bits of X of type TYPE where
+    tz is the number of trailing zeroes in Y.  */
+static double_int
+mask_with_tz (tree type, double_int x, double_int y)
+{
+  int tz = y.trailing_zeros ();
+
+  if (tz > 0)
+    {
+      double_int mask;
+
+      mask = ~double_int::mask (tz);
+      mask = mask.ext (TYPE_PRECISION (type), TYPE_UNSIGNED (type));
+      return mask & x;
+    }
+  return x;
+}
+
 /* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  LOC is the location of the resulting expression.
    Return the folded expression if folding is successful.  Otherwise,
@@ -11175,6 +11210,8 @@ fold_binary_loc (location_t loc,
 	{
 	  double_int c1, c2, c3, msk;
 	  int width = TYPE_PRECISION (type), w;
+	  bool try_simplify = true;
+
 	  c1 = tree_to_double_int (TREE_OPERAND (arg0, 1));
 	  c2 = tree_to_double_int (arg1);
 
@@ -11209,7 +11246,21 @@ fold_binary_loc (location_t loc,
 		  break;
 		}
 	    }
-	  if (c3 != c1)
+
+	  /* If X is a tree of the form (Y * K1) & K2, this might conflict
+	     with that optimization from the BIT_AND_EXPR optimizations.
+	     This could end up in an infinite recursion.  */
+	  if (TREE_CODE (TREE_OPERAND (arg0, 0)) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+	                    == INTEGER_CST)
+	  {
+	    tree t = TREE_OPERAND (TREE_OPERAND (arg0, 0), 1);
+	    double_int masked = mask_with_tz (type, c3, tree_to_double_int (t));
+
+	    try_simplify = (masked != c1);
+	  }
+
+	  if (try_simplify && c3 != c1)
 	    return fold_build2_loc (loc, BIT_IOR_EXPR, type,
 				    fold_build2_loc (loc, BIT_AND_EXPR, type,
 						     TREE_OPERAND (arg0, 0),
@@ -11599,22 +11650,16 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg0) == MULT_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-	  int arg1tz
-	    = tree_to_double_int (TREE_OPERAND (arg0, 1)).trailing_zeros ();
-	  if (arg1tz > 0)
-	    {
-	      double_int arg1mask, masked;
-	      arg1mask = ~double_int::mask (arg1tz);
-	      arg1mask = arg1mask.ext (TYPE_PRECISION (type),
-					 TYPE_UNSIGNED (type));
-	      masked = arg1mask & tree_to_double_int (arg1);
-	      if (masked.is_zero ())
-		return omit_two_operands_loc (loc, type, build_zero_cst (type),
-					      arg0, arg1);
-	      else if (masked != tree_to_double_int (arg1))
-		return fold_build2_loc (loc, code, type, op0,
-					double_int_to_tree (type, masked));
-	    }
+	  double_int masked
+	    = mask_with_tz (type, tree_to_double_int (arg1),
+	                    tree_to_double_int (TREE_OPERAND (arg0, 1)));
+
+	  if (masked.is_zero ())
+	    return omit_two_operands_loc (loc, type, build_zero_cst (type),
+	                                  arg0, arg1);
+	  else if (masked != tree_to_double_int (arg1))
+	    return fold_build2_loc (loc, code, type, op0,
+	                            double_int_to_tree (type, masked));
 	}
 
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,

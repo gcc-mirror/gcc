@@ -103,6 +103,7 @@ func cgoLookupIPCNAME(name string) (addrs []IP, cname string, err error, complet
 	var hints syscall.Addrinfo
 
 	hints.Ai_flags = int32(cgoAddrInfoFlags())
+	hints.Ai_socktype = syscall.SOCK_STREAM
 
 	h := syscall.StringBytePtr(name)
 	syscall.Entersyscall()
@@ -130,7 +131,7 @@ func cgoLookupIPCNAME(name string) (addrs []IP, cname string, err error, complet
 		}
 	}
 	for r := res; r != nil; r = r.Ai_next {
-		// Everything comes back twice, once for UDP and once for TCP.
+		// We only asked for SOCK_STREAM, but check anyhow.
 		if r.Ai_socktype != syscall.SOCK_STREAM {
 			continue
 		}
