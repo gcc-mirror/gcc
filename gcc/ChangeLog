@@ -1,3 +1,17 @@
+2013-09-17  Andrew MacLeod <amacleod@redhat.com>
+
+	* tree-flow.h (ssa_undefined_value_p): Remove prototype.
+	* tree-ssa.c (ssa_undefined_value_p): Move pass independent parts here.
+	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
+	make_pass_early_warn_uninitialized): Move to tree-ssa-uninit.c.
+	* tree-ssa-uninit.c (ssa_undefined_value_p): Move to tree-ssa.c
+	(has_undefined_value_p): New.  Pass dependant parts of 
+	ssa_undefined_value_p.
+	(uninit_undefined_value_p): Use has_undefined_value_p.
+	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
+	make_pass_early_warn_uninitialized): Move from tree-ssa.c
+	* tree-ssa.h: Adjust prototypes
+
 2013-09-17  Jan Hubicka  <jh@suse.cz>
 
 	PR middle-end/58329

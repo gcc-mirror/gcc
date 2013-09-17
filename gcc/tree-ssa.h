@@ -58,8 +58,7 @@ extern tree tree_ssa_strip_useless_type_conversions (tree);
 typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
 extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
 
-extern void warn_uninit (enum opt_code, tree, tree, tree, const char *, void *);
-extern unsigned int warn_uninitialized_vars (bool);
+extern bool ssa_undefined_value_p (tree);
 extern void execute_update_addresses_taken (void);
 
 /* Given an edge_var_map V, return the PHI arg definition.  */
