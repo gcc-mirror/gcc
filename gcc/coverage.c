@@ -347,7 +347,7 @@ get_coverage_counts (unsigned counter, unsigned expected,
       if (!warned++ && dump_enabled_p ())
 	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, input_location,
                          (flag_guess_branch_prob
-                          ? "file %s not found, execution counts estimated"
+                          ? "file %s not found, execution counts estimated\n"
                           : "file %s not found, execution counts assumed to "
                             "be zero\n"),
                          da_file_name);

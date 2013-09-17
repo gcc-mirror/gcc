@@ -1,3 +1,7 @@
+2013-09-17  Teresa Johnson  <tejohnson@google.com>
+
+	* coverage.c (get_coverage_counts): Add missing newline.
+
 2013-09-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/58088
