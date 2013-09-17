@@ -1,3 +1,9 @@
+2013-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58432
+	* tree-loop-distribution.c (tree_loop_distribution): Also
+	scan PHIs for outside loop uses and seed a partition from them.
+
 2013-09-17  Bin Cheng  <bin.cheng@arm.com>
 
 	* gimple-ssa-strength-reduction.c (backtrace_base_for_ref): New.

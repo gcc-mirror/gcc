@@ -1,3 +1,8 @@
+2013-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58432
+	* gcc.dg/pr58432.c: New testcase.
+
 2013-09-17  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/tree-ssa/slsr-39.c: New test.
