@@ -1,3 +1,17 @@
+2013-09-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate
+	edge implied equivalences into successor phis.
+	* tree-ssa-threadupdate.c (phi_args_equal_on_edges): Moved into
+	here from tree-ssa-threadedge.c.
+	(mark_threaded_blocks): When threading through a joiner, if both
+	successors of the joiner's clone reach the same block, verify the
+	PHI arguments are equal.  If not, cancel the jump threading request.
+	* tree-ssa-threadedge.c (phi_args_equal_on_edges): Moved into
+	tree-ssa-threadupdate.c
+	(thread_across_edge): Don't check PHI argument equality when
+	threading through joiner block here.
+	
 2013-09-17  Andrew MacLeod <amacleod@redhat.com>
 
 	* tree-flow.h (ssa_undefined_value_p): Remove prototype.
