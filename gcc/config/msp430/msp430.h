@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2013 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -29,6 +29,7 @@ extern bool msp430x;
 #define TARGET_CPU_CPP_BUILTINS()               \
   do                                            \
     {                                           \
+      builtin_define ("NO_TRAMPOLINES");        \
       builtin_define ("__MSP430__"); 		\
       if (msp430x)				\
 	{					\
@@ -281,7 +282,8 @@ enum reg_class
 
 
 
-typedef struct {
+typedef struct
+{
   /* These two are the current argument status.  */
   char reg_used[4];
 #define CA_FIRST_REG 12

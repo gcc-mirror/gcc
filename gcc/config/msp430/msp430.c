@@ -120,7 +120,7 @@ msp430_option_override (void)
     msp430x = true;
 
   if (TARGET_LARGE && !msp430x)
-    error ("-mlarge requires a 430X-compatible -mcpu=");
+    error ("-mlarge requires a 430X-compatible -mmcu=");
 
   if (flag_exceptions || flag_non_call_exceptions
       || flag_unwind_tables || flag_asynchronous_unwind_tables)
@@ -208,10 +208,9 @@ msp430_can_eliminate (const int from_reg ATTRIBUTE_UNUSED,
 
 /* Implements INITIAL_ELIMINATION_OFFSET.  */
 int
-msp430_initial_elimination_offset (int from ATTRIBUTE_UNUSED,
-				   int to ATTRIBUTE_UNUSED)
+msp430_initial_elimination_offset (int from, int to)
 {
-  int rv = 0; /* as if arg to arg */
+  int rv = 0; /* As if arg to arg.  */
 
   msp430_compute_frame_info ();
 
@@ -763,6 +762,10 @@ static bool msp430_rtx_costs (rtx   x ATTRIBUTE_UNUSED,
    |                    |
    | PC from call       |  (2 bytes for 430, 4 for TARGET_LARGE)
    |                    |
+   +--------------------+
+   | SR if this func has|
+   | been called via an |
+   | interrupt.         |
    +--------------------+  <-- SP before prologue, also AP
    |                    |
    | Saved Regs         |  (2 bytes per reg for 430, 4 per for TARGET_LARGE)
@@ -806,6 +809,12 @@ msp430_preserve_reg_p (int regno)
   if (fixed_regs [regno])
     return false;
 
+  /* Interrupt handlers save all registers they use, even
+     ones which are call saved.  If they call other functions
+     then *every* register is saved.  */
+  if (msp430_is_interrupt_func ())
+    return ! crtl->is_leaf || df_regs_ever_live_p (regno);
+
   if (!call_used_regs [regno]
       && df_regs_ever_live_p (regno))
     return true;
@@ -825,7 +834,7 @@ msp430_compute_frame_info (void)
   cfun->machine->framesize_locals = get_frame_size ();
   cfun->machine->framesize_outgoing = crtl->outgoing_args_size;
 
-  for (i = 0; i < 16; i ++)
+  for (i = 0; i < ARG_POINTER_REGNUM; i ++)
     if (msp430_preserve_reg_p (i))
       {
 	cfun->machine->need_to_save [i] = 1;
@@ -842,6 +851,38 @@ msp430_compute_frame_info (void)
 			      + cfun->machine->framesize_outgoing);
 }
 
+static inline bool
+is_attr_func (const char * attr)
+{
+  return lookup_attribute (attr, DECL_ATTRIBUTES (current_function_decl)) != NULL_TREE;
+}
+
+/* Returns true if the current function has the "interrupt" attribute.  */
+
+bool
+msp430_is_interrupt_func (void)
+{
+  return is_attr_func ("interrupt");
+}
+
+static inline bool
+is_naked_func (void)
+{
+  return is_attr_func ("naked");
+}
+
+static inline bool
+is_reentrant_func (void)
+{
+  return is_attr_func ("reentrant");
+}
+
+static inline bool
+is_critical_func (void)
+{
+  return is_attr_func ("critical");
+}
+
 #undef  TARGET_ASM_FUNCTION_PROLOGUE
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
 
@@ -851,6 +892,21 @@ msp430_start_function (FILE *outfile, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
   int r, n;
 
   fprintf (outfile, "; start of function\n");
+
+  if (DECL_ATTRIBUTES (current_function_decl) != NULL_TREE)
+    {
+      fprintf (outfile, "; attributes: ");
+      if (is_naked_func ())
+	fprintf (outfile, "naked ");
+      if (msp430_is_interrupt_func ())
+	fprintf (outfile, "interrupt ");
+      if (is_reentrant_func ())
+	fprintf (outfile, "reentrant ");
+      if (is_critical_func ())
+	fprintf (outfile, "critical ");
+      fprintf (outfile, "\n");
+    }
+
   fprintf (outfile, "; framesize_regs:     %d\n", cfun->machine->framesize_regs);
   fprintf (outfile, "; framesize_locals:   %d\n", cfun->machine->framesize_locals);
   fprintf (outfile, "; framesize_outgoing: %d\n", cfun->machine->framesize_outgoing);
@@ -860,7 +916,7 @@ msp430_start_function (FILE *outfile, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
 
   n = 0;
   fprintf (outfile, "; saved regs:");
-  for (r = 0; r < 16; r++)
+  for (r = 0; r < ARG_POINTER_REGNUM; r++)
     if (cfun->machine->need_to_save [r])
       {
 	fprintf (outfile, " %s", reg_names [r]);
@@ -899,6 +955,215 @@ increment_stack (HOST_WIDE_INT amount)
     }
 }
 
+/* Verify MSP430 specific attributes.  */
+
+static tree
+msp430_attr (tree * node,
+	     tree   name,
+	     tree   args,
+	     int    flags ATTRIBUTE_UNUSED,
+	     bool * no_add_attrs)
+{
+  gcc_assert (DECL_P (* node));
+
+  if (args != NULL)
+    {
+      tree value = TREE_VALUE (args);
+
+      switch (TREE_CODE (value))
+	{
+	case STRING_CST:
+	  if (   strcmp (TREE_STRING_POINTER (value), "reset")
+	      && strcmp (TREE_STRING_POINTER (value), "nmi")
+	      && strcmp (TREE_STRING_POINTER (value), "watchdog"))
+	    /* Allow the attribute to be added - the linker script
+	       being used may still recognise this name.  */
+	    warning (OPT_Wattributes,
+		     "unrecognised interrupt vector argument of %qE attribute",
+		     name);
+	  break;
+
+	case INTEGER_CST:
+	  if (TREE_INT_CST_LOW (value) > 31)
+	    /* Allow the attribute to be added - the linker script
+	       being used may still recognise this value.  */
+	    warning (OPT_Wattributes,
+		     "numeric argument of %qE attribute must be in range 0..31",
+		     name);
+	  break;
+
+	default:
+	  warning (OPT_Wattributes,
+		   "argument of %qE attribute is not a string constant or number",
+		   name);
+	  *no_add_attrs = true;
+	  break;
+	}
+    }
+
+  if (TREE_CODE (* node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute only applies to functions",
+	       name);
+      * no_add_attrs = true;
+    }
+
+  /* FIXME: We ought to check that the interrupt handler
+     attribute has been applied to a void function.  */
+  /* FIXME: We should check that reentrant and critical
+     functions are not naked and that critical functions
+     are not reentrant.  */
+
+  return NULL_TREE;
+}
+
+#undef  TARGET_ATTRIBUTE_TABLE
+#define TARGET_ATTRIBUTE_TABLE		msp430_attribute_table
+
+/* Table of MSP430-specific attributes.  */
+const struct attribute_spec msp430_attribute_table[] =
+{
+  /* Name          min_len  decl_req,    fn_type_req,    affects_type_identity
+                       max_len,  type_req,        handler.  */
+  { "interrupt",      0, 1, true,  false, false, msp430_attr, false },
+  { "naked",          0, 0, true,  false, false, msp430_attr, false },
+  { "reentrant",      0, 0, true,  false, false, msp430_attr, false },
+  { "critical",       0, 0, true,  false, false, msp430_attr, false },
+  { NULL,             0, 0, false, false, false, NULL,        false }
+};
+
+void
+msp430_start_function (FILE *file, const char *name, tree decl)
+{
+  tree int_attr;
+
+  int_attr = lookup_attribute ("interrupt", DECL_ATTRIBUTES (decl));
+  if (int_attr != NULL_TREE)
+    {
+      tree intr_vector = TREE_VALUE (int_attr);
+
+      if (intr_vector != NULL_TREE)
+	{
+	  char buf[101];
+
+	  intr_vector = TREE_VALUE (intr_vector);
+
+	  /* The interrupt attribute has a vector value.  Turn this into a
+	     section name, switch to that section and put the address of
+	     the current function into that vector slot.  Note msp430_attr()
+	     has already verified the vector name for us.  */
+	  if (TREE_CODE (intr_vector) == STRING_CST)
+	    sprintf (buf, "__interrupt_vector_%.80s",
+		     TREE_STRING_POINTER (intr_vector));
+	  else /* TREE_CODE (intr_vector) == INTEGER_CST */
+	    sprintf (buf, "__interrupt_vector_%u",
+		     (unsigned int) TREE_INT_CST_LOW (intr_vector));
+
+	  switch_to_section (get_section (buf, SECTION_CODE, decl));
+	  fputs ("\t.word\t", file);
+	  assemble_name (file, name);
+	  fputc ('\n', file);
+	  fputc ('\t', file);
+	}
+    }
+
+  switch_to_section (function_section (decl));
+  ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
+}
+
+static section *
+msp430_function_section (tree decl, enum node_frequency freq, bool startup, bool exit)
+{
+  /* In large mode we must make sure that interrupt handlers are put into
+     low memory as the vector table only accepts 16-bit addresses.  */
+  if (TARGET_LARGE
+      && lookup_attribute ("interrupt", DECL_ATTRIBUTES (decl)))
+    return get_section (".lowtext", SECTION_CODE | SECTION_WRITE , decl);
+
+  /* Otherwise, use the default function section.  */
+  return default_function_section (decl, freq, startup, exit);
+}
+
+#undef  TARGET_ASM_FUNCTION_SECTION
+#define TARGET_ASM_FUNCTION_SECTION msp430_function_section
+
+enum msp430_builtin
+{
+  MSP430_BUILTIN_BIC_SR,
+  MSP430_BUILTIN_BIS_SR,
+  MSP430_BUILTIN_max
+};
+
+static GTY(()) tree msp430_builtins [(int) MSP430_BUILTIN_max];
+
+static void
+msp430_init_builtins (void)
+{
+  tree void_ftype_int = build_function_type_list (void_type_node, integer_type_node, NULL);
+
+  msp430_builtins[MSP430_BUILTIN_BIC_SR] =
+    add_builtin_function ( "__bic_SR_register_on_exit", void_ftype_int,
+			   MSP430_BUILTIN_BIC_SR, BUILT_IN_MD, NULL, NULL_TREE);
+
+  msp430_builtins[MSP430_BUILTIN_BIS_SR] =
+    add_builtin_function ( "__bis_SR_register_on_exit", void_ftype_int,
+			   MSP430_BUILTIN_BIS_SR, BUILT_IN_MD, NULL, NULL_TREE);
+}
+
+static tree
+msp430_builtin_decl (unsigned code, bool initialize ATTRIBUTE_UNUSED)
+{
+  switch (code)
+    {
+    case MSP430_BUILTIN_BIC_SR:
+    case MSP430_BUILTIN_BIS_SR:
+      return msp430_builtins[code];
+    default:
+      return error_mark_node;
+    }
+}
+
+static rtx
+msp430_expand_builtin (tree exp,
+		       rtx target ATTRIBUTE_UNUSED,
+		       rtx subtarget ATTRIBUTE_UNUSED,
+		       enum machine_mode mode ATTRIBUTE_UNUSED,
+		       int ignore ATTRIBUTE_UNUSED)
+{
+  tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
+  unsigned int fcode = DECL_FUNCTION_CODE (fndecl);
+  rtx arg1 = expand_normal (CALL_EXPR_ARG (exp, 0));
+
+  if (! msp430_is_interrupt_func ())
+    {
+      error ("MSP430 builtin functions only work inside interrupt handlers");
+      return NULL_RTX;
+    }
+
+  if (! REG_P (arg1) && ! CONSTANT_P (arg1))
+    arg1 = force_reg (mode, arg1);
+
+  switch (fcode)
+    {
+    case MSP430_BUILTIN_BIC_SR:  emit_insn (gen_bic_SR (arg1)); break;
+    case MSP430_BUILTIN_BIS_SR:  emit_insn (gen_bis_SR (arg1)); break;
+    default:
+      internal_error ("bad builtin code");
+      break;
+    }
+  return NULL_RTX;
+}
+
+#undef  TARGET_INIT_BUILTINS
+#define TARGET_INIT_BUILTINS  msp430_init_builtins
+
+#undef  TARGET_EXPAND_BUILTIN
+#define TARGET_EXPAND_BUILTIN msp430_expand_builtin
+
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL   msp430_builtin_decl
+
 void
 msp430_expand_prologue (void)
 {
@@ -911,7 +1176,18 @@ msp430_expand_prologue (void)
   rtx sp = stack_pointer_rtx;
   rtx p;
 
+  if (is_naked_func ())
+    return;
+
   emit_insn (gen_prologue_start_marker ());
+
+  if (is_critical_func ())
+    {
+      emit_insn (gen_push_intr_state ());
+      emit_insn (gen_disable_interrupts ());
+    }
+  else if (is_reentrant_func ())
+    emit_insn (gen_disable_interrupts ());
 
   if (!cfun->machine->computed)
     msp430_compute_frame_info ();
@@ -1009,6 +1285,9 @@ msp430_expand_epilogue (int is_eh)
   int fs;
   int helper_n = 0;
 
+  if (is_naked_func ())
+    return;
+
   if (cfun->machine->need_to_save [10])
     {
       /* Check for a helper function.  */
@@ -1070,6 +1349,9 @@ msp430_expand_epilogue (int is_eh)
 	    i += count - 1;
 	  }
 	else if (i == 11 - helper_n
+		 && ! msp430_is_interrupt_func ()
+		 && ! is_reentrant_func ()
+		 && ! is_critical_func ()
 		 && crtl->args.pretend_args_size == 0
 		 /* Calling the helper takes as many bytes as the POP;RET sequence.  */
 		 && helper_n != 1
@@ -1092,7 +1374,12 @@ msp430_expand_epilogue (int is_eh)
 
   if (crtl->args.pretend_args_size)
     emit_insn (gen_swap_and_shrink ());
-    
+
+  if (is_critical_func ())
+    emit_insn (gen_pop_intr_state ());
+  else if (is_reentrant_func ())
+    emit_insn (gen_enable_interrupts ());
+
   emit_jump_insn (gen_msp_return ());
 }
 
@@ -1131,12 +1418,15 @@ msp430_expand_eh_return (rtx eh_handler)
 }
 
 /* This is a list of MD patterns that implement fixed-count shifts.  */
-static struct {
+static struct
+{
   const char *name;
   int count;
   int need_430x;
   rtx (*genfunc)(rtx,rtx);
-} const_shift_helpers[] = {
+}
+  const_shift_helpers[] =
+{
 #define CSH(N,C,X,G) { "__mspabi_"N, C, X, gen_##G }
 
   CSH ("slli", 1, 1, slli_1),
@@ -1329,7 +1619,6 @@ msp430_split_movsi (rtx *operands)
 }
 
 
-
 /* The MSPABI specifies the names of various helper functions, many of
    which are compatible with GCC's helpers.  This table maps the GCC
    name to the MSPABI name.  */
@@ -1600,6 +1889,15 @@ msp430_print_operand (FILE * file, rtx op, int letter)
       if (TARGET_LARGE)
 	fprintf (file, "A");
       return;
+
+    case 'O':
+      /* Computes the offset to the top of the stack for the current frame.
+	 This has to be done here rather than in, say, msp430_expand_builtin()
+	 because builtins are expanded before the frame layout is determined.  */
+      fprintf (file, "%d",
+	       msp430_initial_elimination_offset (ARG_POINTER_REGNUM, STACK_POINTER_REGNUM)
+	        - 2);
+      return ;
     }
 
   switch (GET_CODE (op))
