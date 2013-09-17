@@ -635,7 +635,7 @@ static inline void
 __gthread_mutex_init_function (__gthread_mutex_t *__mutex)
 {
   __mutex->counter = -1;
-  __mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+  __mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
 }
 
 static inline void
@@ -697,7 +697,7 @@ __gthread_recursive_mutex_init_function (__gthread_recursive_mutex_t *__mutex)
   __mutex->counter = -1;
   __mutex->depth = 0;
   __mutex->owner = 0;
-  __mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+  __mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
 }
 
 static inline int
