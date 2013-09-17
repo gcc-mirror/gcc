@@ -78,7 +78,7 @@ namespace __profile
 
       // 23.2.4.1 construct/copy/destroy:
       explicit
-      vector(const _Allocator& __a = _Allocator())
+      vector(const _Allocator& __a = _Allocator()) _GLIBCXX_NOEXCEPT
       : _Base(__a)
       {
         __profcxx_vector_construct(this, this->capacity());
@@ -156,7 +156,7 @@ namespace __profile
         __profcxx_vector_construct2(this);
       }
 
-      vector(vector&& __x, const _Allocator& __a) noexcept
+      vector(vector&& __x, const _Allocator& __a)
       : _Base(std::move(__x), __a)
       {
         __profcxx_vector_construct(this, this->capacity());
@@ -292,13 +292,13 @@ namespace __profile
 
       // element access:
       reference
-      operator[](size_type __n)
+      operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
         __profcxx_vector_invalid_operator(this);
         return _M_base()[__n];
       }
       const_reference
-      operator[](size_type __n) const
+      operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
         __profcxx_vector_invalid_operator(this);
         return _M_base()[__n];
@@ -307,25 +307,25 @@ namespace __profile
       using _Base::at;
 
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       { 
         return _Base::front();
       }
 
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       {
 	return _Base::front();
       }
 
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       {
 	return _Base::back();
       }
 
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       {
 	return _Base::back();
       }

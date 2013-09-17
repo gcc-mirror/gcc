@@ -87,18 +87,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: _Tp_alloc_type(), _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
 
-	_Vector_impl(_Tp_alloc_type const& __a)
+	_Vector_impl(_Tp_alloc_type const& __a) _GLIBCXX_NOEXCEPT
 	: _Tp_alloc_type(__a), _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
 
 #if __cplusplus >= 201103L
-	_Vector_impl(_Tp_alloc_type&& __a)
+	_Vector_impl(_Tp_alloc_type&& __a) noexcept
 	: _Tp_alloc_type(std::move(__a)),
 	  _M_start(0), _M_finish(0), _M_end_of_storage(0)
 	{ }
 #endif
 
-	void _M_swap_data(_Vector_impl& __x)
+	void _M_swap_data(_Vector_impl& __x) _GLIBCXX_NOEXCEPT
 	{
 	  std::swap(_M_start, __x._M_start);
 	  std::swap(_M_finish, __x._M_finish);
@@ -124,7 +124,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _Vector_base()
       : _M_impl() { }
 
-      _Vector_base(const allocator_type& __a)
+      _Vector_base(const allocator_type& __a) _GLIBCXX_NOEXCEPT
       : _M_impl(__a) { }
 
       _Vector_base(size_t __n)
@@ -136,10 +136,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_create_storage(__n); }
 
 #if __cplusplus >= 201103L
-      _Vector_base(_Tp_alloc_type&& __a)
+      _Vector_base(_Tp_alloc_type&& __a) noexcept
       : _M_impl(std::move(__a)) { }
 
-      _Vector_base(_Vector_base&& __x)
+      _Vector_base(_Vector_base&& __x) noexcept
       : _M_impl(std::move(__x._M_get_Tp_allocator()))
       { this->_M_impl._M_swap_data(__x._M_impl); }
 
@@ -156,7 +156,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 #endif
 
-      ~_Vector_base()
+      ~_Vector_base() _GLIBCXX_NOEXCEPT
       { _M_deallocate(this->_M_impl._M_start, this->_M_impl._M_end_of_storage
 		      - this->_M_impl._M_start); }
 
@@ -243,17 +243,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // [23.2.4.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
       /**
-       *  @brief  Default constructor creates no elements.
-       */
-      vector()
-      : _Base() { }
-
-      /**
        *  @brief  Creates a %vector with no elements.
        *  @param  __a  An allocator object.
        */
       explicit
-      vector(const allocator_type& __a)
+      vector(const allocator_type& __a = allocator_type()) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L
@@ -767,7 +761,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  see at().)
        */
       reference
-      operator[](size_type __n)
+      operator[](size_type __n) _GLIBCXX_NOEXCEPT
       { return *(this->_M_impl._M_start + __n); }
 
       /**
@@ -782,7 +776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  see at().)
        */
       const_reference
-      operator[](size_type __n) const
+      operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       { return *(this->_M_impl._M_start + __n); }
 
     protected:
@@ -836,7 +830,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element of the %vector.
        */
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       { return *begin(); }
 
       /**
@@ -844,7 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element of the %vector.
        */
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       { return *begin(); }
 
       /**
@@ -852,7 +846,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  element of the %vector.
        */
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       { return *(end() - 1); }
       
       /**
@@ -860,7 +854,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  last element of the %vector.
        */
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       { return *(end() - 1); }
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
@@ -934,7 +928,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  called.
        */
       void
-      pop_back()
+      pop_back() _GLIBCXX_NOEXCEPT
       {
 	--this->_M_impl._M_finish;
 	_Alloc_traits::destroy(this->_M_impl, this->_M_impl._M_finish);
@@ -1415,7 +1409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // Called by erase(q1,q2), clear(), resize(), _M_fill_assign,
       // _M_assign_aux.
       void
-      _M_erase_at_end(pointer __pos)
+      _M_erase_at_end(pointer __pos) _GLIBCXX_NOEXCEPT
       {
 	std::_Destroy(__pos, this->_M_impl._M_finish, _M_get_Tp_allocator());
 	this->_M_impl._M_finish = __pos;
