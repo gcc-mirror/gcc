@@ -421,9 +421,6 @@ extern bool gimple_seq_may_fallthru (gimple_seq);
 extern bool gimple_stmt_may_fallthru (gimple);
 extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
-/* In tree-ssa-uninit.c  */
-extern bool ssa_undefined_value_p (tree);
-
 /* In tree-into-ssa.c  */
 void update_ssa (unsigned);
 void delete_update_ssa (void);
