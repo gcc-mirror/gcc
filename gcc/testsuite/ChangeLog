@@ -1,3 +1,13 @@
+2013-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* lib/target-supports.exp (check_effective_target_trampolines):
+	Add MSP430 to the list of targets that do not support
+	trampolines.
+	(check_profiling_available): Add MSP430 to the list of targets
+	that do not support profiling.
+	(check_effective_target_tls_runtime): Add MSP430 to the list of
+	targets that do not support TLS.
+
 2013-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt27.adb: New test.
