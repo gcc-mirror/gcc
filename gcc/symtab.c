@@ -1083,6 +1083,10 @@ symtab_nonoverwritable_alias (symtab_node node)
 		               (void *)&new_node, true);
   if (new_node)
     return new_node;
+#ifndef ASM_OUTPUT_DEF
+  /* If aliases aren't supported by the assembler, fail.  */
+  return NULL;
+#endif
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->symbol.decl);
