@@ -858,6 +858,10 @@ rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 {
   rtx base, index, addend;
 
+  if (GET_CODE (x) == UNSPEC
+      && XINT (x, 1) == UNS_ES_ADDR)
+    x = XVECEXP (x, 0, 1);
+
   if (as == ADDR_SPACE_GENERIC
       && GET_MODE (x) == SImode)
     return false;
@@ -1290,7 +1294,10 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
       else
 	{
 	  if (rl78_far_p (op))
-	    fprintf (file, "es:");
+	    {
+	      fprintf (file, "es:");
+	      op = gen_rtx_MEM (GET_MODE (op), XVECEXP (XEXP (op, 0), 0, 1));
+	    }
 	  if (letter == 'H')
 	    {
 	      op = adjust_address (op, HImode, 2);
@@ -1847,6 +1854,8 @@ re-run regmove, but that has not yet been attempted.
  */
 #define DEBUG_ALLOC 0
 
+#define OP(x) (*recog_data.operand_loc[x])
+
 /* This array is used to hold knowledge about the contents of the
    real registers (A ... H), the memory-based registers (r8 ... r31)
    and the first NUM_STACK_LOCS words on the stack.  We use this to
@@ -2072,6 +2081,31 @@ already_contains (rtx loc, rtx value)
   return true;
 }
 
+bool
+rl78_es_addr (rtx addr)
+{
+  if (GET_CODE (addr) == MEM)
+    addr = XEXP (addr, 0);
+  if (GET_CODE (addr) != UNSPEC)
+    return false;
+  if (XINT (addr, 1) != UNS_ES_ADDR)
+    return false;
+  return true;
+}
+
+rtx
+rl78_es_base (rtx addr)
+{
+  if (GET_CODE (addr) == MEM)
+    addr = XEXP (addr, 0);
+  addr = XVECEXP (addr, 0, 1);
+  if (GET_CODE (addr) == CONST
+      && GET_CODE (XEXP (addr, 0)) == ZERO_EXTRACT)
+    addr = XEXP (XEXP (addr, 0), 0);
+  /* Mode doesn't matter here.  */
+  return gen_rtx_MEM (HImode, addr);
+}
+
 /* Rescans an insn to see if it's recognized again.  This is done
    carefully to ensure that all the constraint information is accurate
    for the newly matched insn.  */
@@ -2079,6 +2113,7 @@ static bool
 insn_ok_now (rtx insn)
 {
   rtx pattern = PATTERN (insn);
+  int i;
 
   INSN_CODE (insn) = -1;
 
@@ -2094,6 +2129,14 @@ insn_ok_now (rtx insn)
 #endif
 	  if (SET_P (pattern))
 	    record_content (SET_DEST (pattern), SET_SRC (pattern));
+
+	  /* We need to detect far addresses that haven't been
+	     converted to es/lo16 format.  */
+	  for (i=0; i<recog_data.n_operands; i++)
+	    if (GET_CODE (OP(i)) == MEM
+		&& GET_MODE (XEXP (OP(i), 0)) == SImode
+		&& GET_CODE (XEXP (OP(i), 0)) != UNSPEC)
+	      return false;
 
 	  return true;
 	}
@@ -2155,8 +2198,6 @@ insn_ok_now (rtx insn)
 #define DE gen_rtx_REG (HImode, 4)
 #define HL gen_rtx_REG (HImode, 6)
 
-#define OP(x) (*recog_data.operand_loc[x])
-
 /* Returns TRUE if R is a virtual register.  */
 static bool
 is_virtual_register (rtx r)
@@ -2195,14 +2236,20 @@ EM2 (int line ATTRIBUTE_UNUSED, rtx r)
 static rtx
 rl78_lo16 (rtx addr)
 {
+  rtx r;
+
   if (GET_CODE (addr) == SYMBOL_REF
       || GET_CODE (addr) == CONST)
     {
-      rtx r = gen_rtx_ZERO_EXTRACT (HImode, addr, GEN_INT (16), GEN_INT (0));
+      r = gen_rtx_ZERO_EXTRACT (HImode, addr, GEN_INT (16), GEN_INT (0));
       r = gen_rtx_CONST (HImode, r);
-      return r;
     }
-  return rl78_subreg (HImode, addr, SImode, 0);
+  else
+    r = rl78_subreg (HImode, addr, SImode, 0);
+
+  r = gen_es_addr (r);
+
+  return r;
 }
 
 /* Return a suitable RTX for the high half's lower byte of a __far address.  */
@@ -2306,6 +2353,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 {
   rtx base, index, addendr;
   int addend = 0;
+  int need_es = 0;
 
   if (! MEM_P (m))
     return m;
@@ -2322,6 +2370,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
       record_content (A, NULL_RTX);
 
       m = change_address (m, GET_MODE (m), rl78_lo16 (XEXP (m, 0)));
+      need_es = 1;
     }
 
   characterize_address (XEXP (m, 0), & base, & index, & addendr);
@@ -2381,7 +2430,10 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
   fprintf (stderr, "\033[33m");
   debug_rtx (m);
 #endif
-  m = change_address (m, GET_MODE (m), base);
+  if (need_es)
+    m = change_address (m, GET_MODE (m), gen_es_addr (base));
+  else
+    m = change_address (m, GET_MODE (m), base);
 #if DEBUG_ALLOC
   debug_rtx (m);
   fprintf (stderr, "\033[0m");
