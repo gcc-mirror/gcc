@@ -1,3 +1,15 @@
+2013-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.h (struct copy_body_data): Add transform_parameter.
+	* tree-inline.c (is_parameter_of): New predicate.
+	(remap_gimple_op_r): Do not propagate TREE_THIS_NOTRAP on MEM_REF if
+	a parameter has been remapped.
+	(copy_tree_body_r): Likewise on INDIRECT_REF and MEM_REF.
+	(optimize_inline_calls): Initialize transform_parameter.
+	(copy_gimple_seq_and_replace_locals): Likewise.
+	(tree_function_versioning): Likewise.
+	(maybe_inline_call_in_expr): Likewise.
+
 2013-09-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430-protos.h: Add prototypes for new functions.
