@@ -1,3 +1,13 @@
+2013-09-17  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/constraints.md (Wcv): Allow up to $r31.
+	* config/rl78/rl78.c (rl78_asm_file_start: Likewise.
+	(rl78_option_override): Likewise, if -mallregs.
+	(is_virtual_register): Likewise.
+	* config/rl78/rl78.h (reg_class): Extend VREGS to $r31.
+	(REGNO_OK_FOR_BASE_P): Likewise.
+	* config/rl78/rl78.opt (-mallregs): New.
+
 2013-09-17  Nick Clifton  <nickc@redhat.com>
 
 	* config/rl78/rl78.c (need_to_save): Change return type to bool.

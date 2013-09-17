@@ -265,7 +265,7 @@ enum reg_class
   { 0x00000300, 0x00000000 }, 	/* R8 - HImode */		\
   { 0x00000c00, 0x00000000 }, 	/* R10 - HImode */		\
   { 0xff000000, 0x00000000 }, 	/* INT - HImode */		\
-  { 0x007fff00, 0x00000000 },	/* Virtual registers.  */	\
+  { 0xff7fff00, 0x00000000 },	/* Virtual registers.  */	\
   { 0xff7fffff, 0x00000002 },	/* General registers.  */	\
   { 0x04000000, 0x00000004 },	/* PSW.  */	\
   { 0xff7fffff, 0x0000001f }	/* All registers.  */		\
@@ -352,7 +352,7 @@ enum reg_class
        && reg_renumber[(REGNO)] <= (MAX)))
 
 #ifdef REG_OK_STRICT
-#define REGNO_OK_FOR_BASE_P(regno)      REGNO_IN_RANGE (regno, 16, 23)
+#define REGNO_OK_FOR_BASE_P(regno)      REGNO_IN_RANGE (regno, 16, 31)
 #else
 #define REGNO_OK_FOR_BASE_P(regno)	1
 #endif

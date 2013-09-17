@@ -263,10 +263,10 @@
   )
 
 (define_memory_constraint "Ccv"
-  "[AX..HL,r8-r23] for calls"
+  "[AX..HL,r8-r31] for calls"
   (and (match_code "mem")
        (and (match_code "reg" "0")
-	    (match_test "REGNO (XEXP (op, 0)) < 24")))
+	    (match_test "REGNO (XEXP (op, 0)) < 31")))
   )
 (define_memory_constraint "Wcv"
   "es:[AX..HL,r8-r23] for calls"
