@@ -751,6 +751,20 @@ copy_gimple_bind (gimple stmt, copy_body_data *id)
   return new_bind;
 }
 
+/* Return true if DECL is a parameter or a SSA_NAME for a parameter.  */
+
+static bool
+is_parm (tree decl)
+{
+  if (TREE_CODE (decl) == SSA_NAME)
+    {
+      decl = SSA_NAME_VAR (decl);
+      if (!decl)
+	return false;
+    }
+
+  return (TREE_CODE (decl) == PARM_DECL);
+}
 
 /* Remap the GIMPLE operand pointed to by *TP.  DATA is really a
    'struct walk_stmt_info *'.  DATA->INFO is a 'copy_body_data *'.
@@ -840,20 +854,24 @@ remap_gimple_op_r (tree *tp, int *walk_subtrees, void *data)
 
       if (TREE_CODE (*tp) == MEM_REF)
 	{
-	  tree ptr = TREE_OPERAND (*tp, 0);
-	  tree type = remap_type (TREE_TYPE (*tp), id);
-	  tree old = *tp;
-
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
 	     Recurse here manually to allow that.  */
+	  tree ptr = TREE_OPERAND (*tp, 0);
+	  tree type = remap_type (TREE_TYPE (*tp), id);
+	  tree old = *tp;
 	  walk_tree (&ptr, remap_gimple_op_r, data, NULL);
-	  *tp = fold_build2 (MEM_REF, type,
-			     ptr, TREE_OPERAND (*tp, 1));
-	  TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
+	  *tp = fold_build2 (MEM_REF, type, ptr, TREE_OPERAND (*tp, 1));
 	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	  TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
 	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
+	  /* We cannot propagate the TREE_THIS_NOTRAP flag if we have
+	     remapped a parameter as the property might be valid only
+	     for the parameter itself.  */
+	  if (TREE_THIS_NOTRAP (old)
+	      && (!is_parm (TREE_OPERAND (old, 0))
+		  || (!id->transform_parameter && is_parm (ptr))))
+	    TREE_THIS_NOTRAP (*tp) = 1;
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
@@ -1043,45 +1061,44 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	  /* Get rid of *& from inline substitutions that can happen when a
 	     pointer argument is an ADDR_EXPR.  */
 	  tree decl = TREE_OPERAND (*tp, 0);
-	  tree *n;
-
-	  n = (tree *) pointer_map_contains (id->decl_map, decl);
+	  tree *n = (tree *) pointer_map_contains (id->decl_map, decl);
 	  if (n)
 	    {
-	      tree new_tree;
-	      tree old;
 	      /* If we happen to get an ADDR_EXPR in n->value, strip
 	         it manually here as we'll eventually get ADDR_EXPRs
 		 which lie about their types pointed to.  In this case
 		 build_fold_indirect_ref wouldn't strip the INDIRECT_REF,
 		 but we absolutely rely on that.  As fold_indirect_ref
 	         does other useful transformations, try that first, though.  */
-	      tree type = TREE_TYPE (TREE_TYPE (*n));
-	      if (id->do_not_unshare)
-		new_tree = *n;
-	      else
-		new_tree = unshare_expr (*n);
-	      old = *tp;
-	      *tp = gimple_fold_indirect_ref (new_tree);
+	      tree type = TREE_TYPE (*tp);
+	      tree ptr = id->do_not_unshare ? *n : unshare_expr (*n);
+	      tree old = *tp;
+	      *tp = gimple_fold_indirect_ref (ptr);
 	      if (! *tp)
 	        {
-		  if (TREE_CODE (new_tree) == ADDR_EXPR)
+		  if (TREE_CODE (ptr) == ADDR_EXPR)
 		    {
-		      *tp = fold_indirect_ref_1 (EXPR_LOCATION (new_tree),
-						 type, new_tree);
+		      *tp
+		        = fold_indirect_ref_1 (EXPR_LOCATION (ptr), type, ptr);
 		      /* ???  We should either assert here or build
 			 a VIEW_CONVERT_EXPR instead of blindly leaking
 			 incompatible types to our IL.  */
 		      if (! *tp)
-			*tp = TREE_OPERAND (new_tree, 0);
+			*tp = TREE_OPERAND (ptr, 0);
 		    }
 	          else
 		    {
-	              *tp = build1 (INDIRECT_REF, type, new_tree);
+	              *tp = build1 (INDIRECT_REF, type, ptr);
 		      TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 		      TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
 		      TREE_READONLY (*tp) = TREE_READONLY (old);
-		      TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
+		      /* We cannot propagate the TREE_THIS_NOTRAP flag if we
+			 have remapped a parameter as the property might be
+			 valid only for the parameter itself.  */
+		      if (TREE_THIS_NOTRAP (old)
+			  && (!is_parm (TREE_OPERAND (old, 0))
+			      || (!id->transform_parameter && is_parm (ptr))))
+		        TREE_THIS_NOTRAP (*tp) = 1;
 		    }
 		}
 	      *walk_subtrees = 0;
@@ -1090,20 +1107,24 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 	}
       else if (TREE_CODE (*tp) == MEM_REF)
 	{
-	  tree ptr = TREE_OPERAND (*tp, 0);
-	  tree type = remap_type (TREE_TYPE (*tp), id);
-	  tree old = *tp;
-
 	  /* We need to re-canonicalize MEM_REFs from inline substitutions
 	     that can happen when a pointer argument is an ADDR_EXPR.
 	     Recurse here manually to allow that.  */
+	  tree ptr = TREE_OPERAND (*tp, 0);
+	  tree type = remap_type (TREE_TYPE (*tp), id);
+	  tree old = *tp;
 	  walk_tree (&ptr, copy_tree_body_r, data, NULL);
-	  *tp = fold_build2 (MEM_REF, type,
-			     ptr, TREE_OPERAND (*tp, 1));
-	  TREE_THIS_NOTRAP (*tp) = TREE_THIS_NOTRAP (old);
+	  *tp = fold_build2 (MEM_REF, type, ptr, TREE_OPERAND (*tp, 1));
 	  TREE_THIS_VOLATILE (*tp) = TREE_THIS_VOLATILE (old);
 	  TREE_SIDE_EFFECTS (*tp) = TREE_SIDE_EFFECTS (old);
 	  TREE_NO_WARNING (*tp) = TREE_NO_WARNING (old);
+	  /* We cannot propagate the TREE_THIS_NOTRAP flag if we have
+	     remapped a parameter as the property might be valid only
+	     for the parameter itself.  */
+	  if (TREE_THIS_NOTRAP (old)
+	      && (!is_parm (TREE_OPERAND (old, 0))
+		  || (!id->transform_parameter && is_parm (ptr))))
+	    TREE_THIS_NOTRAP (*tp) = 1;
 	  *walk_subtrees = 0;
 	  return NULL;
 	}
@@ -4452,6 +4473,7 @@ optimize_inline_calls (tree fn)
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = false;
   id.transform_return_to_modify = true;
+  id.transform_parameter = true;
   id.transform_lang_insert_block = NULL;
   id.statements_to_fold = pointer_set_create ();
 
@@ -4757,6 +4779,7 @@ copy_gimple_seq_and_replace_locals (gimple_seq seq)
   id.transform_call_graph_edges = CB_CGE_DUPLICATE;
   id.transform_new_cfg = false;
   id.transform_return_to_modify = false;
+  id.transform_parameter = false;
   id.transform_lang_insert_block = NULL;
 
   /* Walk the tree once to find local labels.  */
@@ -5216,6 +5239,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
     = update_clones ? CB_CGE_MOVE_CLONES : CB_CGE_MOVE;
   id.transform_new_cfg = true;
   id.transform_return_to_modify = false;
+  id.transform_parameter = false;
   id.transform_lang_insert_block = NULL;
 
   old_entry_block = ENTRY_BLOCK_PTR_FOR_FUNCTION
@@ -5440,6 +5464,7 @@ maybe_inline_call_in_expr (tree exp)
       id.transform_call_graph_edges = CB_CGE_DUPLICATE;
       id.transform_new_cfg = false;
       id.transform_return_to_modify = true;
+      id.transform_parameter = true;
       id.transform_lang_insert_block = NULL;
 
       /* Make sure not to unshare trees behind the front-end's back

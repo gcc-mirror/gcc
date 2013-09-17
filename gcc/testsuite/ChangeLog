@@ -1,3 +1,8 @@
+2013-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt27.adb: New test.
+	* gnat.dg/opt27_pkg.ad[sb]: New helper.
+
 2013-09-17  Andreas Schwab  <schwab@suse.de>
 
 	* gcc.dg/tree-ssa/ldist-22.c (main): Return zero.
