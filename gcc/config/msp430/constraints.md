@@ -70,5 +70,3 @@
 		  (match_test ("IN_RANGE (INTVAL (XEXP (XEXP (op, 0), 1)), -1 << 15, (1 << 15)-1)"))))
 	(match_code "reg" "0")
 	)))
-  
-

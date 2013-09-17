@@ -1,3 +1,44 @@
+2013-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430-protos.h: Add prototypes for new functions.
+	* config/msp430/msp430.c (msp430_preserve_reg_p): Add support for
+	interrupt handlers.
+	(is_attr_func): New function.
+	(msp430_is_interrupt_func): New function.
+	(is_naked_func): New function.
+	(is_reentrant_func): New function.
+	(is_critical_func): New function.
+	(msp430_start_function): Add annotations for function attributes.
+	(msp430_attr): New function.
+	(msp430_attribute_table): New.
+	(msp430_function_section): New function.
+	(TARGET_ASM_FUNCTION_SECTION): Define.
+	(msp430_builtin): New enum.
+	(msp430_init_builtins): New function.
+	(msp430_builtin_devl): New function.
+	(msp430_expand_builtin): New function.
+	(TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTINS): Define.
+	(TARGET_BUILTIN_DECL): Define.
+	(msp430_expand_prologue): Add support for naked, interrupt,
+	critical and reentrant functions.
+	(msp430_expand_epilogue): Likewise.
+	(msp430_print_operand): Handle 'O' character.
+	* config/msp430/msp430.h (TARGET_CPU_CPP_BUILTINS): Define
+	NO_TRAMPOLINES.
+	* config/msp430/msp430.md (unspec): Add UNS_DINT, UNS_EINT,
+	UNS_PUSH_INTR, UNS_POP_INTR, UNS_BIC_SR, UNS_BIS_SR.
+	(pushm): Use a 'n' rather than an 'i' constraint.
+	(msp_return): Add generation of the interrupt return instruction.
+	(disable_interrupts): New pattern.
+	(enable_interrupts): New pattern.
+	(push_intr_state): New pattern.
+	(pop_intr_state): New pattern.
+	(bic_SR): New pattern.
+	(bis_SR): New pattern.
+	* doc/extend.texi: Document MSP430 function attributes and builtin
+	functions.
+
 2013-09-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58432
