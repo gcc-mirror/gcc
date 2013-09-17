@@ -1,3 +1,9 @@
+2013-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58435
+	* pt.c (tsubst, [BOUND_TEMPLATE_TEMPLATE_PARM]): Take into account
+	the cp_type_quals (r) too.
+
 2013-09-16  Adam Butcher  <adam@jessamine.co.uk>
 
 	* cp-tree.h (type_uses_auto_or_concept): Declare.
@@ -11,7 +17,8 @@
 	(is_auto_or_concept): New function.
 	(type_uses_auto_or_concept): New function.
 	* parser.h (struct cp_parser): Add fully_implicit_function_template_p.
-	* parser.c (cp_parser_new): Initialize fully_implicit_function_template_p.
+	* parser.c (cp_parser_new): Initialize
+	fully_implicit_function_template_p.
 	(cp_parser_new): Initialize fully_implicit_function_template_p.
 	(cp_parser_lambda_expression): Copy and restore value of
 	fully_implicit_function_template_p as per other parser fields.
