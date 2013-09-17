@@ -611,7 +611,13 @@ func methodReceiver(op string, v Value, methodIndex int) (t *rtype, fn unsafe.Po
 		}
 		fn = unsafe.Pointer(&m.tfn)
 		t = m.mtyp
-		rcvr = v.iword()
+		// Can't call iword here, because it checks v.kind,
+		// and that is always Func.
+		if v.flag&flagIndir != 0 && (v.typ.Kind() == Ptr || v.typ.Kind() == UnsafePointer) {
+			rcvr = loadIword(v.val, v.typ.size)
+		} else {
+			rcvr = iword(v.val)
+		}
 	}
 	return
 }
