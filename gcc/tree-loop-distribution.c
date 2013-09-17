@@ -1676,6 +1676,17 @@ tree_loop_distribution (void)
       for (i = 0; i < loop->num_nodes; ++i)
 	{
 	  gimple_stmt_iterator gsi;
+	  for (gsi = gsi_start_phis (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      gimple phi = gsi_stmt (gsi);
+	      if (virtual_operand_p (gimple_phi_result (phi)))
+		continue;
+	      /* Distribute stmts which have defs that are used outside of
+	         the loop.  */
+	      if (!stmt_has_scalar_dependences_outside_loop (loop, phi))
+		continue;
+	      work_list.safe_push (phi);
+	    }
 	  for (gsi = gsi_start_bb (bbs[i]); !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple stmt = gsi_stmt (gsi);
