@@ -1,3 +1,37 @@
+2013-09-17  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/stl_vector.h (vector::vector(),
+	vector::vector(const allocator_type&)): Merge.
+	(_Vector_impl::_Vector_impl(_Tp_alloc_type const&),
+	_Vector_impl::_Vector_impl(_Tp_alloc_type&&),
+	_Vector_impl::_M_swap_data,
+	_Vector_base::_Vector_base(const allocator_type&),
+	_Vector_base::_Vector_base(allocator_type&&),
+	_Vector_base::_Vector_base(_Vector_base&&), _Vector_base::~_Vector_base,
+	vector::vector(const allocator_type&), vector::operator[],
+	vector::operator[] const, vector::front, vector::front const,
+	vector::back, vector::back const, vector::pop_back,
+	vector::_M_erase_at_end): Mark as noexcept.
+	* include/debug/vector (vector::vector(const _Allocator&),
+	vector::operator[], vector::operator[] const, vector::front,
+	vector::front const, vector::back, vector::back const, vector::pop_back,
+	_M_requires_reallocation, _M_update_guaranteed_capacity,
+	_M_invalidate_after_nth): Mark as noexcept.
+	* include/profile/vector (vector::vector(const _Allocator&),
+	vector::operator[], vector::operator[] const, vector::front,
+	vector::front const, vector::back, vector::back const): Mark as
+	noexcept.
+	(vector::vector(vector&&, const _Allocator&)): Remove wrong noexcept.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc:
+	Adjust line number.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_1_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/
+	constructor_2_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-09-14  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h (regex_match<>, regex_search<>):
