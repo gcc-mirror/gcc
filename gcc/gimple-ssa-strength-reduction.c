@@ -1571,11 +1571,18 @@ slsr_process_copy (gimple gs, tree rhs1, bool speed)
   add_cand_for_stmt (gs, c);
 }
 
+class find_candidates_dom_walker : public dom_walker
+{
+public:
+  find_candidates_dom_walker (cdi_direction direction)
+    : dom_walker (direction) {}
+  virtual void before_dom_children (basic_block);
+};
+
 /* Find strength-reduction candidates in block BB.  */
 
-static void
-find_candidates_in_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			  basic_block bb)
+void
+find_candidates_dom_walker::before_dom_children (basic_block bb)
 {
   bool speed = optimize_bb_for_speed_p (bb);
   gimple_stmt_iterator gsi;
@@ -3488,8 +3495,6 @@ analyze_candidates_and_replace (void)
 static unsigned
 execute_strength_reduction (void)
 {
-  struct dom_walk_data walk_data;
-
   /* Create the obstack where candidates will reside.  */
   gcc_obstack_init (&cand_obstack);
 
@@ -3509,18 +3514,10 @@ execute_strength_reduction (void)
      back edges, and this gives us dominator information as well.  */
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  /* Set up callbacks for the generic dominator tree walker.  */
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children = find_candidates_in_block;
-  walk_data.after_dom_children = NULL;
-  walk_data.global_data = NULL;
-  walk_data.block_local_data_size = 0;
-  init_walk_dominator_tree (&walk_data);
-
   /* Walk the CFG in predominator order looking for strength reduction
      candidates.  */
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
+  find_candidates_dom_walker (CDI_DOMINATORS)
+    .walk (cfun->cfg->x_entry_block_ptr);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3531,8 +3528,6 @@ execute_strength_reduction (void)
   /* Analyze costs and make appropriate replacements.  */
   analyze_candidates_and_replace ();
 
-  /* Free resources.  */
-  fini_walk_dominator_tree (&walk_data);
   loop_optimizer_finalize ();
   base_cand_map.dispose ();
   obstack_free (&chain_obstack, NULL);

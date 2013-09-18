@@ -1,3 +1,96 @@
+2013-09-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* compare-elim.c (find_comparison_dom_walker): New class
+	(find_comparisons_in_bb): Rename to
+	find_comparison_dom_walker::before_dom_children
+	(find_comparisons): Adjust
+	* domwalk.c (walk_dominator_tree): Rename to dom_walker::walk, and
+	adjust.
+	(init_walk_dominator_tree, fini_walk_dominator_tree): Remove
+	* domwalk.h (dom_walk_data): Convert it To a class dom_walker.
+	(init_walk_dominator_tree): Remove declaration.
+	(fini_walk_dominator_tree): Remove declaration.
+	* fwprop.c (single_def_use_dom_walker): New class
+	(single_def_use_enter_block): Convert to
+	single_def_use_dom_walker::before_dom_children.
+	(single_def_use_leave_block): Convert to
+	single_def_use_dom_walker::after_dom_children.
+	(build_single_def_use_links): Adjust.
+	* gimple-ssa-strength-reduction.c (find_candidates_dom_walker): New
+	class.
+	(find_candidates_in_block): Convert to
+	find_candidates_dom_walker::before_dom_children.
+	(execute_strength_reduction): Adjust.
+	* graphite-sese-to-poly.c (struct bsc, build_sese_conditions): Remove.
+	(sese_dom_walker): New class.
+	(sese_dom_walker::sese_dom_walker): New constructor.
+	(sese_dom_walker::~sese_dom_walker): New destructor.
+	(build_sese_conditions_before): Convert to
+	sese_dom_walker::before_dom_children.
+	(build_sese_conditions_after): Convert to
+	sese_dom_walker::after_dom_children.
+	(build_poly_scop): Adjust
+	* tree-into-ssa.c (rewrite_dom_walker): New class
+	(rewrite_enter_block): Convert to
+	rewrite_dom_walker::before_dom_children.
+	(rewrite_leave_block): Convert to
+	rewrite_dom_walker::after_dom_children.
+	(rewrite_update_dom_walker): New class.
+	(rewrite_update_enter_block): Convert to
+	rewrite_update_dom_walker::before_dom_children.
+	(rewrite_update_leave_block): Convert to
+	rewrite_update_dom_walker::after_dom_children.
+	(rewrite_blocks, rewrite_into_ssa): Adjust.
+	(mark_def_dom_walker): New class.
+	(mark_def_dom_walker::mark_def_dom_walker): New constructor.
+	(mark_def_dom_walker::~mark_def_dom_walker): New destructor.
+	(mark_def_sites_blocks): Convert to
+	mark_def_dom_walker::before_dom_children.
+	(mark_def_site_blocks): Remove.
+	* tree-ssa-dom.c (dom_opt_dom_walker): New class.
+	(tree_ssa_dominator_optimize): Adjust.
+	(dom_thread_across_edge): Convert to method
+	dom_opt_dom_walker::thread_across_edge.
+	(dom_opt_enter_block): Convert to member function
+	dom_opt_dom_walker::before_dom_children.
+	(dom_opt_leave_block): Convert to member function
+	dom_opt_dom_walker::after_dom_children.
+	* tree-ssa-dse.c (dse_dom_walker): New class.
+	(dse_enter_block): Convert to member function
+	dse_dom_walker::before_dom_children.
+	(tree_ssa_dse): Adjust.
+	* tree-ssa-loop-im.c (invariantness_dom_walker): New class.
+	(determine_invariantness_stmt): Convert to method
+	invariantness_dom_walker::before_dom_children.
+	(determine_invariantness): Remove
+	(move_computations_dom_walker): New class.
+	(move_computations_stmt): Convert to method
+	move_computations_dom_walker::before_dom_children.
+	(move_computations, tree_ssa_lim): Adjust.
+	* tree-ssa-phiopt.c (nontrapping_dom_walker): new class
+	(nt_init_block): Make method
+	notrappping_dom_walker::before_dom_children.
+	(nt_fini_block): Make
+	method nontrapping_dom_walker::after_dom_children.
+	(get_non_trapping): Adjust.
+	* tree-ssa-pre.c (eliminate_dom_walker): New class.
+	(eliminate_bb): Make method eliminate_dom_walker::before_dom_children.
+	(eliminate_leave_block): Make method.
+	eliminate_dom_walker::after_dom_children.
+	(eliminate): Adjust
+	* tree-ssa-strlen.c (strlen_dom_walker): New class.
+	(strlen_enter_block): Make method
+	strlen_dom_walker::before_dom_children.
+	(strlen_leave_block): Make
+	method strlen_dom_walker::after_dom_children.
+	(tree_ssa_strlen): Adjust.
+	* tree-ssa-uncprop.c (uncprop_dom_walker): New class.
+	(tree_ssa_uncprop): Adjust.
+	(uncprop_leave_block): Make method
+	uncprop_dom_walker::after_dom_children.
+	(uncprop_leave_block): Make method
+	uncprop_dom_walker::before_dom_children.
+
 2013-09-18  Bin Cheng  <bin.cheng@arm.com>
 
 	* config/arm/arm.c (thumb1_reorg): Search for flag setting insn

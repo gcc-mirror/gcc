@@ -243,13 +243,21 @@ find_flags_uses_in_insn (struct comparison *cmp, rtx insn)
   cmp->missing_uses = true;
 }
 
+class find_comparison_dom_walker : public dom_walker
+{
+public:
+  find_comparison_dom_walker (cdi_direction direction)
+    : dom_walker(direction) {}
+
+  virtual void before_dom_children (basic_block);
+};
+
 /* Identify comparison instructions within BB.  If the flags from the last
    compare in the BB is live at the end of the block, install the compare
-   in BB->AUX.  Called via walk_dominators_tree.  */
+   in BB->AUX.  Called via dom_walker.walk ().  */
 
-static void
-find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
-			basic_block bb)
+void
+find_comparison_dom_walker::before_dom_children (basic_block bb)
 {
   struct comparison *last_cmp;
   rtx insn, next, last_clobber;
@@ -403,17 +411,10 @@ find_comparisons_in_bb (struct dom_walk_data *data ATTRIBUTE_UNUSED,
 static void
 find_comparisons (void)
 {
-  struct dom_walk_data data;
-
-  memset (&data, 0, sizeof(data));
-  data.dom_direction = CDI_DOMINATORS;
-  data.before_dom_children = find_comparisons_in_bb;
-
   calculate_dominance_info (CDI_DOMINATORS);
 
-  init_walk_dominator_tree (&data);
-  walk_dominator_tree (&data, ENTRY_BLOCK_PTR);
-  fini_walk_dominator_tree (&data);
+  find_comparison_dom_walker (CDI_DOMINATORS)
+    .walk (cfun->cfg->x_entry_block_ptr);
 
   clear_aux_for_blocks ();
   free_dominance_info (CDI_DOMINATORS);

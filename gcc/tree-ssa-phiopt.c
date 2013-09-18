@@ -1264,9 +1264,6 @@ struct ssa_names_hasher : typed_free_remove <name_to_bb>
    Hash entries with phase < nt_call_phase are invalid.  */
 static unsigned int nt_call_phase;
 
-/* The set of MEM_REFs which can't trap.  */
-static struct pointer_set_t *nontrap_set;
-
 /* The hash function.  */
 
 inline hashval_t
@@ -1378,9 +1375,22 @@ nonfreeing_call_p (gimple call)
   return false;
 }
 
+class nontrapping_dom_walker : public dom_walker
+{
+public:
+  nontrapping_dom_walker (cdi_direction direction, pointer_set_t *ps)
+    : dom_walker (direction), nontrapping_ (ps) {}
+
+  virtual void before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+private:
+  pointer_set_t *nontrapping_;
+};
+
 /* Called by walk_dominator_tree, when entering the block BB.  */
-static void
-nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
+void
+nontrapping_dom_walker::before_dom_children (basic_block bb)
 {
   edge e;
   edge_iterator ei;
@@ -1406,15 +1416,15 @@ nt_init_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
 	nt_call_phase++;
       else if (gimple_assign_single_p (stmt) && !gimple_has_volatile_ops (stmt))
 	{
-	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrap_set, true);
-	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrap_set, false);
+	  add_or_mark_expr (bb, gimple_assign_lhs (stmt), nontrapping_, true);
+	  add_or_mark_expr (bb, gimple_assign_rhs1 (stmt), nontrapping_, false);
 	}
     }
 }
 
 /* Called by walk_dominator_tree, when basic block BB is exited.  */
-static void
-nt_fini_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
+void
+nontrapping_dom_walker::after_dom_children (basic_block bb)
 {
   /* This BB isn't on the path to dominator root anymore.  */
   bb->aux = (void*)2;
@@ -1427,28 +1437,16 @@ nt_fini_block (struct dom_walk_data *data ATTRIBUTE_UNUSED, basic_block bb)
 static struct pointer_set_t *
 get_non_trapping (void)
 {
-  struct pointer_set_t *nontrap;
-  struct dom_walk_data walk_data;
-
   nt_call_phase = 0;
-  nontrap = pointer_set_create ();
+  pointer_set_t *nontrap = pointer_set_create ();
   seen_ssa_names.create (128);
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
-  /* Setup callbacks for the generic dominator tree walker.  */
-  nontrap_set = nontrap;
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children = nt_init_block;
-  walk_data.after_dom_children = nt_fini_block;
-  walk_data.global_data = NULL;
-  walk_data.block_local_data_size = 0;
+  nontrapping_dom_walker (CDI_DOMINATORS, nontrap)
+    .walk (cfun->cfg->x_entry_block_ptr);
 
-  init_walk_dominator_tree (&walk_data);
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
-  fini_walk_dominator_tree (&walk_data);
   seen_ssa_names.dispose ();
 
   clear_aux_for_blocks ();

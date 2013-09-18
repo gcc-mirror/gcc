@@ -4051,10 +4051,19 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
   return res;
 }
 
+class eliminate_dom_walker : public dom_walker
+{
+public:
+  eliminate_dom_walker (cdi_direction direction) : dom_walker (direction) {}
+
+  virtual void before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+};
+
 /* Perform elimination for the basic-block B during the domwalk.  */
 
-static void
-eliminate_bb (dom_walk_data *, basic_block b)
+void
+eliminate_dom_walker::before_dom_children (basic_block b)
 {
   gimple_stmt_iterator gsi;
   gimple stmt;
@@ -4403,8 +4412,8 @@ eliminate_bb (dom_walk_data *, basic_block b)
 
 /* Make no longer available leaders no longer available.  */
 
-static void
-eliminate_leave_block (dom_walk_data *, basic_block)
+void
+eliminate_dom_walker::after_dom_children (basic_block)
 {
   tree entry;
   while ((entry = el_avail_stack.pop ()) != NULL_TREE)
@@ -4416,7 +4425,6 @@ eliminate_leave_block (dom_walk_data *, basic_block)
 static unsigned int
 eliminate (void)
 {
-  struct dom_walk_data walk_data;
   gimple_stmt_iterator gsi;
   gimple stmt;
   unsigned i;
@@ -4430,15 +4438,7 @@ eliminate (void)
   el_avail.create (0);
   el_avail_stack.create (0);
 
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children = eliminate_bb;
-  walk_data.after_dom_children = eliminate_leave_block;
-  walk_data.global_data = NULL;
-  walk_data.block_local_data_size = 0;
-  init_walk_dominator_tree (&walk_data);
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
-  fini_walk_dominator_tree (&walk_data);
+  eliminate_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
 
   el_avail.release ();
   el_avail_stack.release ();
