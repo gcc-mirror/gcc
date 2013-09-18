@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fsanitize=shift -w" } */
+/* { dg-options "-fsanitize=integer-divide-by-zero -w" } */
 
 void
 foo (int i)

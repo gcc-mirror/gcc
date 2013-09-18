@@ -1,5 +1,11 @@
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
+	PR sanitize/58443
+	* c-typeck.c (build_binary_op): Properly honor -fsanitize options.
+	Remove unnecessary check.
+
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
 	PR sanitizer/58411
 	* c-typeck.c (build_binary_op): Don't sanitize function if it has the
 	no_sanitize_undefined attribute.
