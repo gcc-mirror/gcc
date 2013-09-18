@@ -65,7 +65,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       // 23.2.2.1 construct/copy/destroy:
       explicit
-      list(const _Allocator& __a = _Allocator())
+      list(const _Allocator& __a = _Allocator()) _GLIBCXX_NOEXCEPT
       : _Base(__a) 
       {
         __profcxx_list_construct(this); 	// list2slist
@@ -276,22 +276,22 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       // element access:
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       { return _Base::front(); }
 
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       { return _Base::front(); }
 
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       {
         __profcxx_list_rewind(this);
 	return _Base::back();
       }
 
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       {
         __profcxx_list_rewind(this);
 	return _Base::back();
@@ -311,7 +311,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 #endif
 
       void
-      pop_front()
+      pop_front() _GLIBCXX_NOEXCEPT
       {
         __profcxx_list_operation(this);
 	_Base::pop_front();
@@ -324,7 +324,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 #endif
 
       void
-      pop_back()
+      pop_back() _GLIBCXX_NOEXCEPT
       {
 	iterator __victim = end();
 	--__victim;
@@ -411,7 +411,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       iterator
 #if __cplusplus >= 201103L
-      erase(const_iterator __position)
+      erase(const_iterator __position) noexcept
 #else
       erase(iterator __position)
 #endif
@@ -419,7 +419,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       iterator
 #if __cplusplus >= 201103L
-      erase(const_iterator __position, const_iterator __last)
+      erase(const_iterator __position, const_iterator __last) noexcept
 #else
       erase(iterator __position, iterator __last)
 #endif
