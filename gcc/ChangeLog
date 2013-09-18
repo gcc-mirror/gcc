@@ -1,3 +1,9 @@
+2013-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (copy_var_decl): Copy DECL_ATTRIBUTES.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): For
+	simd_lane_access drs, update also DR_ALIGNED_TO.
+
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/58411

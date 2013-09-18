@@ -3067,6 +3067,8 @@ again:
 				    {
 				      DR_OFFSET (newdr) = ssize_int (0);
 				      DR_STEP (newdr) = step;
+				      DR_ALIGNED_TO (newdr)
+					= size_int (BIGGEST_ALIGNMENT);
 				      dr = newdr;
 				      simd_lane_access = true;
 				    }

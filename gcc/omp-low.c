@@ -853,6 +853,7 @@ copy_var_decl (tree var, tree name, tree type)
   TREE_NO_WARNING (copy) = TREE_NO_WARNING (var);
   TREE_USED (copy) = 1;
   DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
+  DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
 
   return copy;
 }
