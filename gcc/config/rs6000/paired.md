@@ -462,8 +462,8 @@
 }")
 
 (define_expand "movmisalignv2sf"
-  [(set (match_operand:V2SF 0 "gpc_reg_operand" "=f")
-        (match_operand:V2SF 1 "gpc_reg_operand" "f"))]
+  [(set (match_operand:V2SF 0 "nonimmediate_operand" "")
+        (match_operand:V2SF 1 "any_operand" ""))]
   "TARGET_PAIRED_FLOAT"
 {
   paired_expand_vector_move (operands);
