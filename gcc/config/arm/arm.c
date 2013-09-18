@@ -14265,9 +14265,10 @@ thumb1_reorg (void)
 
   FOR_EACH_BB (bb)
     {
-      rtx set, dest, src;
-      rtx pat, op0;
+      rtx dest, src;
+      rtx pat, op0, set = NULL;
       rtx prev, insn = BB_END (bb);
+      bool insn_clobbered = false;
 
       while (insn != BB_HEAD (bb) && DEBUG_INSN_P (insn))
 	insn = PREV_INSN (insn);
@@ -14276,13 +14277,29 @@ thumb1_reorg (void)
       if (INSN_CODE (insn) != CODE_FOR_cbranchsi4_insn)
 	continue;
 
-      /* Find the first non-note insn before INSN in basic block BB.  */
-      gcc_assert (insn != BB_HEAD (bb));
-      prev = PREV_INSN (insn);
-      while (prev != BB_HEAD (bb) && (NOTE_P (prev) || DEBUG_INSN_P (prev)))
-	prev = PREV_INSN (prev);
+      /* Get the register with which we are comparing.  */
+      pat = PATTERN (insn);
+      op0 = XEXP (XEXP (SET_SRC (pat), 0), 0);
 
-      set = single_set (prev);
+      /* Find the first flag setting insn before INSN in basic block BB.  */
+      gcc_assert (insn != BB_HEAD (bb));
+      for (prev = PREV_INSN (insn);
+	   (!insn_clobbered
+	    && prev != BB_HEAD (bb)
+	    && (NOTE_P (prev)
+		|| DEBUG_INSN_P (prev)
+		|| ((set = single_set (prev)) != NULL
+		    && get_attr_conds (prev) == CONDS_NOCOND)));
+	   prev = PREV_INSN (prev))
+	{
+	  if (reg_set_p (op0, prev))
+	    insn_clobbered = true;
+	}
+
+      /* Skip if op0 is clobbered by insn other than prev. */
+      if (insn_clobbered)
+	continue;
+
       if (!set)
 	continue;
 
@@ -14292,12 +14309,9 @@ thumb1_reorg (void)
 	  || !low_register_operand (src, SImode))
 	continue;
 
-      pat = PATTERN (insn);
-      op0 = XEXP (XEXP (SET_SRC (pat), 0), 0);
       /* Rewrite move into subtract of 0 if its operand is compared with ZERO
-	 in INSN. Don't need to check dest since cprop_hardreg pass propagates
-	 src into INSN.  */
-      if (REGNO (op0) == REGNO (src))
+	 in INSN.  Both src and dest of the move insn are checked.  */
+      if (REGNO (op0) == REGNO (src) || REGNO (op0) == REGNO (dest))
 	{
 	  dest = copy_rtx (dest);
 	  src = copy_rtx (src);
