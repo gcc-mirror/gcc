@@ -1,3 +1,7 @@
+2013-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.c-torture/execute/pr58419.c (b): Change type to signed char.
+
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitize/58443
