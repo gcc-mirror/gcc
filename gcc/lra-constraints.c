@@ -5456,10 +5456,12 @@ undo_optional_reloads (void)
   EXECUTE_IF_SET_IN_BITMAP (&lra_optional_reload_pseudos, 0, regno, bi)
     {
       keep_p = false;
-      if (reg_renumber[lra_reg_info[regno].restore_regno] >= 0)
-	/* If the original pseudo changed its allocation, just
-	   removing the optional pseudo is dangerous as the original
-	   pseudo will have longer live range.  */
+      /* Keep optional reloads from previous subpasses.  */
+      if (lra_reg_info[regno].restore_regno < 0
+	  /* If the original pseudo changed its allocation, just
+	     removing the optional pseudo is dangerous as the original
+	     pseudo will have longer live range.  */
+	  || reg_renumber[lra_reg_info[regno].restore_regno] >= 0)
 	keep_p = true;
       else if (reg_renumber[regno] >= 0)
 	EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi2)

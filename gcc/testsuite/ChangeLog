@@ -1,3 +1,8 @@
+2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58438
+	* g++.dg/pr58438.C: New test.
+
 2013-09-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/43366
