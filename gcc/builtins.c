@@ -10313,7 +10313,10 @@ fold_builtin_0 (location_t loc, tree fndecl, bool ignore ATTRIBUTE_UNUSED)
       return fold_builtin_classify_type (NULL_TREE);
 
     case BUILT_IN_UNREACHABLE:
-      if (flag_sanitize & SANITIZE_UNREACHABLE)
+      if (flag_sanitize & SANITIZE_UNREACHABLE
+	  && (current_function_decl == NULL
+	      || !lookup_attribute ("no_sanitize_undefined",
+				    DECL_ATTRIBUTES (current_function_decl))))
 	return ubsan_instrument_unreachable (loc);
       break;
 
