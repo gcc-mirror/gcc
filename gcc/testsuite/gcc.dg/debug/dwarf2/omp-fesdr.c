@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target fopenmp }  */
 /* { dg-options "-g -fopenmp -gdwarf-2 -femit-struct-debug-reduced" } */
 
 struct aa
