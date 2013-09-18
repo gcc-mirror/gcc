@@ -1,3 +1,8 @@
+2013-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58457
+	* class.c (instantiate_type): Loosen a bit the gcc_assert.
+
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitize/58443
