@@ -127,7 +127,7 @@ namespace __profile
 
       // Element access.
       reference
-      operator[](size_type __n)
+      operator[](size_type __n) noexcept
       {	return _AT_Type::_S_ref(_M_elems, __n); }
 
       constexpr const_reference
@@ -153,19 +153,19 @@ namespace __profile
       }
 
       reference 
-      front()
+      front() noexcept
       { return *begin(); }
 
       constexpr const_reference 
-      front() const
+      front() const noexcept
       { return _AT_Type::_S_ref(_M_elems, 0); }
 
       reference 
-      back()
+      back() noexcept
       { return _Nm ? *(end() - 1) : *end(); }
 
       constexpr const_reference 
-      back() const
+      back() const noexcept
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
  	           : _AT_Type::_S_ref(_M_elems, 0);	  

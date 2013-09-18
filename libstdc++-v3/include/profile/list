@@ -440,7 +440,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       // 23.2.2.4 list operations:
       void
 #if __cplusplus >= 201103L
-      splice(const_iterator __position, list&& __x)
+      splice(const_iterator __position, list&& __x) noexcept
 #else
       splice(iterator __position, list& __x)
 #endif
@@ -448,7 +448,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
 #if __cplusplus >= 201103L
       void
-      splice(const_iterator __position, list& __x)
+      splice(const_iterator __position, list& __x) noexcept
       { this->splice(__position, std::move(__x)); }
 
       void
@@ -458,7 +458,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 
       void
 #if __cplusplus >= 201103L
-      splice(const_iterator __position, list&& __x, const_iterator __i)
+      splice(const_iterator __position, list&& __x, const_iterator __i) noexcept
 #else
       splice(iterator __position, list& __x, iterator __i)
 #endif
@@ -474,7 +474,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
       void
 #if __cplusplus >= 201103L
       splice(const_iterator __position, list&& __x, const_iterator __first,
-	     const_iterator __last)
+	     const_iterator __last) noexcept
 #else
       splice(iterator __position, list& __x, iterator __first,
 	     iterator __last)
@@ -490,7 +490,7 @@ template<typename _Tp, typename _Allocator = std::allocator<_Tp> >
 #if __cplusplus >= 201103L
       void
       splice(const_iterator __position, list& __x,
-	     const_iterator __first, const_iterator __last)
+	     const_iterator __first, const_iterator __last) noexcept
       { this->splice(__position, std::move(__x), __first, __last); }
 #endif
 
