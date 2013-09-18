@@ -1,3 +1,11 @@
+2013-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md (bf): New pattern.
+	(bt): New pattern.
+	* config/rl78/rl78.c (rl78_print_operand_1): Handle %B.
+	(rl78_print_operand): Do not put a # before a %B.
+	* config/rl78/rl78.opt: Tweak doc strings.
+
 2013-09-17  DJ Delorie  <dj@redhat.com>
 
 	* config/rl78/constraints.md (Wcv): Allow up to $r31.

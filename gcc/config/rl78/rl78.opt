@@ -23,7 +23,7 @@ HeaderInclude
 config/rl78/rl78-opts.h
 
 msim
-Target
+Target Report
 Use the simulator runtime.
 
 mmul=
@@ -43,13 +43,13 @@ EnumValue
 Enum(rl78_mul_types) String(g13) Value(MUL_G13)
 
 mallregs
-Target Mask(ALLREGS)
+Target Mask(ALLREGS) Report Optimization
 Use all registers, reserving none for interrupt handlers.
 
 mrelax
-Target
-Enable assembler and linker relaxation.
+Target Report Optimization
+Enable assembler and linker relaxation.  Enabled by default at -Os.
 
 mg10
-Target Mask(G10)
+Target Mask(G10) Report
 Target the RL78/G10 series

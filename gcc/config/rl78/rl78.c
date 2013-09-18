@@ -1286,6 +1286,7 @@ rl78_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
    s - shift count mod 8
    S - shift count mod 16
    r - reverse shift count (8-(count mod 8))
+   B - bit position
 
    h - bottom HI of an SI
    H - top HI of an SI
@@ -1412,6 +1413,8 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	fprintf (file, "%ld", INTVAL (op) & 0xffff);
       else if (letter == 'e')
 	fprintf (file, "%ld", (INTVAL (op) >> 16) & 0xff);
+      else if (letter == 'B')
+	fprintf (file, "%d", exact_log2 (INTVAL (op)));
       else if (letter == 'E')
 	fprintf (file, "%ld", (INTVAL (op) >> 24) & 0xff);
       else if (letter == 'm')
@@ -1605,7 +1608,7 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 static void
 rl78_print_operand (FILE * file, rtx op, int letter)
 {
-  if (CONSTANT_P (op) && letter != 'u' && letter != 's' && letter != 'r' && letter != 'S')
+  if (CONSTANT_P (op) && letter != 'u' && letter != 's' && letter != 'r' && letter != 'S' && letter != 'B')
     fprintf (file, "#");
   rl78_print_operand_1 (file, op, letter);
 }
