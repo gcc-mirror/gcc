@@ -144,23 +144,17 @@ cmp_bb_postorder (const void *a, const void *b)
 }
 
 /* Recursively walk the dominator tree.
-
-   WALK_DATA contains a set of callbacks to perform pass-specific
-   actions during the dominator walk as well as a stack of block local
-   data maintained during the dominator walk.
-
    BB is the basic block we are currently visiting.  */
 
 void
-walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
+dom_walker::walk (basic_block bb)
 {
-  void *bd = NULL;
   basic_block dest;
   basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks * 2);
   int sp = 0;
   int *postorder, postorder_num;
 
-  if (walk_data->dom_direction == CDI_DOMINATORS)
+  if (dom_direction_ == CDI_DOMINATORS)
     {
       postorder = XNEWVEC (int, n_basic_blocks);
       postorder_num = inverted_post_order_compute (postorder);
@@ -177,37 +171,9 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  || bb == ENTRY_BLOCK_PTR
 	  || bb == EXIT_BLOCK_PTR)
 	{
-	  /* Callback to initialize the local data structure.  */
-	  if (walk_data->initialize_block_local_data)
-	    {
-	      bool recycled;
-
-	      /* First get some local data, reusing any local data
-		 pointer we may have saved.  */
-	      if (walk_data->free_block_data.length () > 0)
-		{
-		  bd = walk_data->free_block_data.pop ();
-		  recycled = 1;
-		}
-	      else
-		{
-		  bd = xcalloc (1, walk_data->block_local_data_size);
-		  recycled = 0;
-		}
-
-	      /* Push the local data into the local data stack.  */
-	      walk_data->block_data_stack.safe_push (bd);
-
-	      /* Call the initializer.  */
-	      walk_data->initialize_block_local_data (walk_data, bb,
-						      recycled);
-
-	    }
-
-	  /* Callback for operations to execute before we have walked the
-	     dominator children, but before we walk statements.  */
-	  if (walk_data->before_dom_children)
-	    (*walk_data->before_dom_children) (walk_data, bb);
+	  /* Callback for subclasses to do custom things before we have walked
+	     the dominator children, but before we walk statements.  */
+	  before_dom_children (bb);
 
 	  /* Mark the current BB to be popped out of the recursion stack
 	     once children are processed.  */
@@ -215,10 +181,10 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  worklist[sp++] = NULL;
 
 	  int saved_sp = sp;
-	  for (dest = first_dom_son (walk_data->dom_direction, bb);
-	       dest; dest = next_dom_son (walk_data->dom_direction, dest))
+	  for (dest = first_dom_son (dom_direction_, bb);
+	       dest; dest = next_dom_son (dom_direction_, dest))
 	    worklist[sp++] = dest;
-	  if (walk_data->dom_direction == CDI_DOMINATORS)
+	  if (dom_direction_ == CDI_DOMINATORS)
 	    switch (sp - saved_sp)
 	      {
 	      case 0:
@@ -235,48 +201,19 @@ walk_dominator_tree (struct dom_walk_data *walk_data, basic_block bb)
 	  --sp;
 	  bb = worklist[--sp];
 
-	  /* Callback for operations to execute after we have walked the
-	     dominator children, but before we walk statements.  */
-	  if (walk_data->after_dom_children)
-	    (*walk_data->after_dom_children) (walk_data, bb);
-
-	  if (walk_data->initialize_block_local_data)
-	    {
-	      /* And finally pop the record off the block local data stack.  */
-	      bd = walk_data->block_data_stack.pop ();
-	      /* And save the block data so that we can re-use it.  */
-	      walk_data->free_block_data.safe_push (bd);
-	    }
+	  /* Callback allowing subclasses to do custom things after we have
+	     walked dominator children, but before we walk statements.  */
+	  after_dom_children (bb);
 	}
       if (sp)
 	bb = worklist[--sp];
       else
 	break;
     }
-  if (walk_data->dom_direction == CDI_DOMINATORS)
+  if (dom_direction_ == CDI_DOMINATORS)
     {
       free (bb_postorder);
       bb_postorder = NULL;
     }
   free (worklist);
-}
-
-void
-init_walk_dominator_tree (struct dom_walk_data *walk_data)
-{
-  walk_data->free_block_data.create (0);
-  walk_data->block_data_stack.create (0);
-}
-
-void
-fini_walk_dominator_tree (struct dom_walk_data *walk_data)
-{
-  if (walk_data->initialize_block_local_data)
-    {
-      while (walk_data->free_block_data.length () > 0)
-	free (walk_data->free_block_data.pop ());
-    }
-
-  walk_data->free_block_data.release ();
-  walk_data->block_data_stack.release ();
 }

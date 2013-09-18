@@ -1040,14 +1040,25 @@ rewrite_bittest (gimple_stmt_iterator *bsi)
   return stmt;
 }
 
+/* For each statement determines the outermost loop in that it is invariant,
+   -   statements on whose motion it depends and the cost of the computation.
+   -   This information is stored to the LIM_DATA structure associated with
+   -   each statement.  */
+class invariantness_dom_walker : public dom_walker
+{
+public:
+  invariantness_dom_walker (cdi_direction direction)
+    : dom_walker (direction) {}
+
+  virtual void before_dom_children (basic_block);
+};
 
 /* Determine the outermost loops in that statements in basic block BB are
    invariant, and record them to the LIM_DATA associated with the statements.
-   Callback for walk_dominator_tree.  */
+   Callback for dom_walker.  */
 
-static void
-determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
-			      basic_block bb)
+void
+invariantness_dom_walker::before_dom_children (basic_block bb)
 {
   enum move_pos pos;
   gimple_stmt_iterator bsi;
@@ -1177,32 +1188,23 @@ determine_invariantness_stmt (struct dom_walk_data *dw_data ATTRIBUTE_UNUSED,
     }
 }
 
-/* For each statement determines the outermost loop in that it is invariant,
-   statements on whose motion it depends and the cost of the computation.
-   This information is stored to the LIM_DATA structure associated with
-   each statement.  */
-
-static void
-determine_invariantness (void)
+class move_computations_dom_walker : public dom_walker
 {
-  struct dom_walk_data walk_data;
+public:
+  move_computations_dom_walker (cdi_direction direction)
+    : dom_walker (direction), todo_ (0) {}
 
-  memset (&walk_data, 0, sizeof (struct dom_walk_data));
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.before_dom_children = determine_invariantness_stmt;
+  virtual void before_dom_children (basic_block);
 
-  init_walk_dominator_tree (&walk_data);
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
-  fini_walk_dominator_tree (&walk_data);
-}
+  unsigned int todo_;
+};
 
 /* Hoist the statements in basic block BB out of the loops prescribed by
    data stored in LIM_DATA structures associated with each statement.  Callback
    for walk_dominator_tree.  */
 
-static void
-move_computations_stmt (struct dom_walk_data *dw_data,
-			basic_block bb)
+void
+move_computations_dom_walker::before_dom_children (basic_block bb)
 {
   struct loop *level;
   gimple_stmt_iterator bsi;
@@ -1266,7 +1268,7 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 						   gimple_phi_result (stmt),
 						   t, arg0, arg1);
 	  SSA_NAME_DEF_STMT (gimple_phi_result (stmt)) = new_stmt;
-	  *((unsigned int *)(dw_data->global_data)) |= TODO_cleanup_cfg;
+	  todo_ |= TODO_cleanup_cfg;
 	}
       gsi_insert_on_edge (loop_preheader_edge (level), new_stmt);
       remove_phi_node (&bsi, false);
@@ -1337,23 +1339,14 @@ move_computations_stmt (struct dom_walk_data *dw_data,
 static unsigned int
 move_computations (void)
 {
-  struct dom_walk_data walk_data;
-  unsigned int todo = 0;
-
-  memset (&walk_data, 0, sizeof (struct dom_walk_data));
-  walk_data.global_data = &todo;
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.before_dom_children = move_computations_stmt;
-
-  init_walk_dominator_tree (&walk_data);
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
-  fini_walk_dominator_tree (&walk_data);
+  move_computations_dom_walker walker (CDI_DOMINATORS);
+  walker.walk (cfun->cfg->x_entry_block_ptr);
 
   gsi_commit_edge_inserts ();
   if (need_ssa_update_p (cfun))
     rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
 
-  return todo;
+  return walker.todo_;
 }
 
 /* Checks whether the statement defining variable *INDEX can be hoisted
@@ -2632,7 +2625,8 @@ tree_ssa_lim (void)
 
   /* For each statement determine the outermost loop in that it is
      invariant and cost for computing the invariant.  */
-  determine_invariantness ();
+  invariantness_dom_walker (CDI_DOMINATORS)
+    .walk (cfun->cfg->x_entry_block_ptr);
 
   /* Execute store motion.  Force the necessary invariants to be moved
      out of the loops as well.  */

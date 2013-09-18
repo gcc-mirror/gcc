@@ -244,9 +244,6 @@ static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block);
 static void eliminate_redundant_computations (gimple_stmt_iterator *);
 static void record_equivalences_from_stmt (gimple, int);
-static void dom_thread_across_edge (struct dom_walk_data *, edge);
-static void dom_opt_leave_block (struct dom_walk_data *, basic_block);
-static void dom_opt_enter_block (struct dom_walk_data *, basic_block);
 static void remove_local_expressions_from_table (void);
 static void restore_vars_to_original_value (void);
 static edge single_incoming_edge_ignoring_loop_edges (basic_block);
@@ -773,6 +770,21 @@ free_all_edge_infos (void)
     }
 }
 
+class dom_opt_dom_walker : public dom_walker
+{
+public:
+  dom_opt_dom_walker (cdi_direction direction)
+    : dom_walker (direction), dummy_cond_ (NULL) {}
+
+  virtual void before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+private:
+  void thread_across_edge (edge);
+
+  gimple dummy_cond_;
+};
+
 /* Jump threading, redundancy elimination and const/copy propagation.
 
    This pass may expose new symbols that need to be renamed into SSA.  For
@@ -782,8 +794,6 @@ free_all_edge_infos (void)
 static unsigned int
 tree_ssa_dominator_optimize (void)
 {
-  struct dom_walk_data walk_data;
-
   memset (&opt_stats, 0, sizeof (opt_stats));
 
   /* Create our hash tables.  */
@@ -791,20 +801,6 @@ tree_ssa_dominator_optimize (void)
   avail_exprs_stack.create (20);
   const_and_copies_stack.create (20);
   need_eh_cleanup = BITMAP_ALLOC (NULL);
-
-  /* Setup callbacks for the generic dominator tree walker.  */
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children = dom_opt_enter_block;
-  walk_data.after_dom_children = dom_opt_leave_block;
-  /* Right now we only attach a dummy COND_EXPR to the global data pointer.
-     When we attach more stuff we'll need to fill this out with a real
-     structure.  */
-  walk_data.global_data = NULL;
-  walk_data.block_local_data_size = 0;
-
-  /* Now initialize the dominator walker.  */
-  init_walk_dominator_tree (&walk_data);
 
   calculate_dominance_info (CDI_DOMINATORS);
   cfg_altered = false;
@@ -824,7 +820,7 @@ tree_ssa_dominator_optimize (void)
   mark_dfs_back_edges ();
 
   /* Recursively walk the dominator tree optimizing statements.  */
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
+  dom_opt_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
 
   {
     gimple_stmt_iterator gsi;
@@ -896,9 +892,6 @@ tree_ssa_dominator_optimize (void)
 
   /* Delete our main hashtable.  */
   avail_exprs.dispose ();
-
-  /* And finalize the dominator walker.  */
-  fini_walk_dominator_tree (&walk_data);
 
   /* Free asserted bitmaps and stacks.  */
   BITMAP_FREE (need_eh_cleanup);
@@ -1081,21 +1074,18 @@ simplify_stmt_for_jump_threading (gimple stmt,
    it handles lazily building the dummy condition and the bookkeeping
    when jump threading is successful.  */
 
-static void
-dom_thread_across_edge (struct dom_walk_data *walk_data, edge e)
+void
+dom_opt_dom_walker::thread_across_edge (edge e)
 {
-  if (! walk_data->global_data)
-  {
-    gimple dummy_cond =
+  if (! dummy_cond_)
+    dummy_cond_ =
         gimple_build_cond (NE_EXPR,
                            integer_zero_node, integer_zero_node,
                            NULL, NULL);
-    walk_data->global_data = dummy_cond;
-  }
 
-  thread_across_edge ((gimple) walk_data->global_data, e, false,
-		      &const_and_copies_stack,
-		      simplify_stmt_for_jump_threading);
+  ::thread_across_edge (dummy_cond_, e, false,
+		        &const_and_copies_stack,
+		        simplify_stmt_for_jump_threading);
 }
 
 /* PHI nodes can create equivalences too.
@@ -1864,9 +1854,8 @@ record_edge_info (basic_block bb)
     }
 }
 
-static void
-dom_opt_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-		     basic_block bb)
+void
+dom_opt_dom_walker::before_dom_children (basic_block bb)
 {
   gimple_stmt_iterator gsi;
 
@@ -1903,8 +1892,8 @@ dom_opt_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
    any finalization actions in preparation for leaving this node in
    the dominator tree.  */
 
-static void
-dom_opt_leave_block (struct dom_walk_data *walk_data, basic_block bb)
+void
+dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
   gimple last;
 
@@ -1919,7 +1908,7 @@ dom_opt_leave_block (struct dom_walk_data *walk_data, basic_block bb)
       /* Push a marker on the stack, which thread_across_edge expects
 	 and will remove.  */
       const_and_copies_stack.safe_push (NULL_TREE);
-      dom_thread_across_edge (walk_data, single_succ_edge (bb));
+      thread_across_edge (single_succ_edge (bb));
     }
   else if ((last = last_stmt (bb))
 	   && gimple_code (last) == GIMPLE_COND
@@ -1964,7 +1953,7 @@ dom_opt_leave_block (struct dom_walk_data *walk_data, basic_block bb)
 		record_cond (eq);
 	    }
 
-	  dom_thread_across_edge (walk_data, true_edge);
+	  thread_across_edge (true_edge);
 
 	  /* And restore the various tables to their state before
 	     we threaded this edge.  */
@@ -1999,7 +1988,7 @@ dom_opt_leave_block (struct dom_walk_data *walk_data, basic_block bb)
 	    }
 
 	  /* Now thread the edge.  */
-	  dom_thread_across_edge (walk_data, false_edge);
+	  thread_across_edge (false_edge);
 
 	  /* No need to remove local expressions from our tables
 	     or restore vars to their original value as that will
