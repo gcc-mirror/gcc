@@ -1,5 +1,9 @@
 2013-09-18  Tobias Burnus  <burnus@net-b.de>
 
+	* expr.c (gfc_check_assign_symbol): Free lvalue.ref.
+
+2013-09-18  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/43366
 	* primary.c (gfc_variable_attr): Also handle codimension.
 	* resolve.c (resolve_ordinary_assign): Add invalid-diagnostic for
