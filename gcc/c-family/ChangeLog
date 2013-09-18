@@ -1,3 +1,10 @@
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58411
+	* c-common.c (handle_no_sanitize_undefined_attribute): New function.
+	Declare it.
+	(struct attribute_spec c_common_att): Add no_sanitize_undefined.
+
 2013-09-14  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/48094

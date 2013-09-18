@@ -311,6 +311,8 @@ static tree handle_no_sanitize_address_attribute (tree *, tree, tree,
 						  int, bool *);
 static tree handle_no_address_safety_analysis_attribute (tree *, tree, tree,
 							 int, bool *);
+static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
+						    bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -721,6 +723,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      false },
   { "no_sanitize_address",    0, 0, true, false, false,
 			      handle_no_sanitize_address_attribute,
+			      false },
+  { "no_sanitize_undefined",  0, 0, true, false, false,
+			      handle_no_sanitize_undefined_attribute,
 			      false },
   { "warning",		      1, 1, true,  false, false,
 			      handle_error_attribute, false },
@@ -6572,6 +6577,22 @@ handle_no_address_safety_analysis_attribute (tree *node, tree name, tree, int,
       = tree_cons (get_identifier ("no_sanitize_address"),
 		   NULL_TREE, DECL_ATTRIBUTES (*node));
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+/* Handle a "no_sanitize_undefined" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_sanitize_undefined_attribute (tree *node, tree name, tree, int,
+				      bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
   return NULL_TREE;
 }
 

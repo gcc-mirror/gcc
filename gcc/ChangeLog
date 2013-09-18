@@ -1,3 +1,10 @@
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58411
+	* doc/extend.texi: Document no_sanitize_undefined attribute.
+	* builtins.c (fold_builtin_0): Don't sanitize function if it has the
+	no_sanitize_undefined attribute.
+
 2013-09-18  Nick Clifton  <nickc@redhat.com>
 
 	* config/msp430/msp430.h (ASM_SPEC): Pass -md on to the assembler.

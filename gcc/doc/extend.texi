@@ -2136,6 +2136,7 @@ attributes are currently defined for functions on all targets:
 @code{warn_unused_result}, @code{nonnull}, @code{gnu_inline},
 @code{externally_visible}, @code{hot}, @code{cold}, @code{artificial},
 @code{no_sanitize_address}, @code{no_address_safety_analysis},
+@code{no_sanitize_undefined},
 @code{error} and @code{warning}.
 Several other attributes are defined for functions on particular
 target systems.  Other attributes, including @code{section} are
@@ -3499,6 +3500,12 @@ in the function when compiling with the @option{-fsanitize=address} option.
 The @code{no_address_safety_analysis} is a deprecated alias of the
 @code{no_sanitize_address} attribute, new code should use
 @code{no_sanitize_address}.
+
+@item no_sanitize_undefined
+@cindex @code{no_sanitize_undefined} function attribute
+The @code{no_sanitize_undefined} attribute on functions is used
+to inform the compiler that it should not check for undefined behavior
+in the function when compiling with the @option{-fsanitize=undefined} option.
 
 @item regparm (@var{number})
 @cindex @code{regparm} attribute
