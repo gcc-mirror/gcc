@@ -4335,7 +4335,9 @@ need_for_call_save_p (int regno)
   return (usage_insns[regno].calls_num < calls_num
 	  && (overlaps_hard_reg_set_p
 	      (call_used_reg_set,
-	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])));
+	       PSEUDO_REGNO_MODE (regno), reg_renumber[regno])
+	      || HARD_REGNO_CALL_PART_CLOBBERED (reg_renumber[regno],
+						 PSEUDO_REGNO_MODE (regno))));
 }
 
 /* Global registers occurring in the current EBB.  */

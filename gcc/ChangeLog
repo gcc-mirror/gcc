@@ -1,3 +1,10 @@
+2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (need_for_all_save_p): Use macro
+	HARD_REGNO_CALL_PART_CLOBBERED.
+	* lra-lives.c (check_pseudos_live_through_calls): Use the macro to
+	set up pseudo conflict hard regs.
+
 2013-09-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/58452
