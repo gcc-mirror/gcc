@@ -1,3 +1,12 @@
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitize/58443
+	* g++.dg/ubsan/div-by-zero-1.C: Use the integer-divide-by-zero option
+	instead of the shift option.
+	* c-c++-common/ubsan/pr58443-1.c: New test.
+	* c-c++-common/ubsan/pr58443-3.c: New test.
+	* c-c++-common/ubsan/pr58443-2.c: New test.
+
 2013-09-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58417
