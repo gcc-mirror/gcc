@@ -1,3 +1,8 @@
+2013-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58417
+	* gcc.dg/torture/pr58417.c: New testcase.
+
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	*  gnat.dg/array_bounds_test2.adb: New test.

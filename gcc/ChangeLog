@@ -1,3 +1,26 @@
+2013-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58417
+	* tree-chrec.c (chrec_fold_plus_1): Assert that we do not
+	have chrecs with symbols defined in the loop as operands.
+	(chrec_fold_multiply): Likewise.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Instantiate
+	parameters before folding binary operations.
+	(struct instantiate_cache_entry_hasher): Remove.
+	(struct instantiate_cache_type): Use a pointer-map.
+	(instantiate_cache_type::instantiate_cache_type): New function.
+	(instantiate_cache_type::get): Likewise.
+	(instantiate_cache_type::set): Likewise.
+	(instantiate_cache_type::~instantiate_cache_type): Adjust.
+	(get_instantiated_value_entry): Likewise.
+	(global_cache): New global.
+	(instantiate_scev_r, instantiate_scev_poly, instantiate_scev_binary,
+	instantiate_array_ref, instantiate_scev_convert, instantiate_scev_3,
+	instantiate_scev_2, instantiate_scev_1): Do not pass along cache.
+	(instantiate_scev_name): Adjust.
+	(instantiate_scev): Construct global instead of local cache.
+	(resolve_mixers): Likewise.
+
 2013-09-18  Daniel Morris  <danielm@ecoscentric.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
