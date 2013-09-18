@@ -3605,6 +3605,8 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
     {
       tree gnu_retval;
 
+      gnu_return_var_stack->pop ();
+
       add_stmt (gnu_result);
       add_stmt (build1 (LABEL_EXPR, void_type_node,
 			gnu_return_label_stack->last ()));

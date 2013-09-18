@@ -1,3 +1,7 @@
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/in_out_parameter4.adb: New test.
+
 2013-09-18  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/58411
