@@ -459,3 +459,58 @@
   [(set (match_dup 0) (reg:HI AX_REG))]
   )
 
+;; Bit test and branch insns.
+
+;; NOTE: These patterns will work for bits in other places, not just A.
+
+(define_insn "bf"
+  [(set (pc)
+	(if_then_else (eq (and (reg:QI A_REG)
+			       (match_operand 0 "immediate_operand" "n"))
+			  (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  ""
+  "bf\tA.%B0, $%1"
+)
+
+(define_insn "bt"
+  [(set (pc)
+	(if_then_else (ne (and (reg:QI A_REG)
+			       (match_operand 0 "immediate_operand" "n"))
+			  (const_int 0))
+		      (label_ref (match_operand 1 "" ""))
+		      (pc)))]
+  ""
+  "bt\tA.%B0, $%1"
+)
+
+;; NOTE: These peepholes are fragile.  They rely upon GCC generating
+;; a specific sequence on insns, based upon examination of test code.
+;; Improvements to GCC or using code other than the test code can result
+;; in the peephole not matching and the optimization being missed.
+
+(define_peephole2
+  [(set (match_operand:QI 1 "register_operand") (reg:QI A_REG))
+   (set (match_dup 1) (and:QI (match_dup 1) (match_operand 2 "immediate_operand")))
+   (set (pc) (if_then_else (eq (match_dup 1) (const_int 0))
+			   (label_ref (match_operand 3 ""))
+			   (pc)))]
+  "peep2_regno_dead_p (3, REGNO (operands[1]))
+   && exact_log2 (INTVAL (operands[2])) >= 0"
+  [(set (pc) (if_then_else (eq (and (reg:QI A_REG) (match_dup 2)) (const_int 0))
+			   (label_ref (match_dup 3)) (pc)))]
+  )
+
+(define_peephole2
+  [(set (match_operand:QI 1 "register_operand") (reg:QI A_REG))
+   (set (match_dup 1) (and:QI (match_dup 1) (match_operand 2 "immediate_operand")))
+   (set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
+			   (label_ref (match_operand 3 ""))
+			   (pc)))]
+  "peep2_regno_dead_p (3, REGNO (operands[1]))
+   && exact_log2 (INTVAL (operands[2])) >= 0"
+  [(set (pc) (if_then_else (ne (and (reg:QI A_REG) (match_dup 2)) (const_int 0))
+			   (label_ref (match_dup 3)) (pc)))]
+  )
+
