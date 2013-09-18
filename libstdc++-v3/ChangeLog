@@ -1,3 +1,7 @@
+2013-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/performance/25_algorithms/search_n.cc: Fix typo.
+
 2013-09-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

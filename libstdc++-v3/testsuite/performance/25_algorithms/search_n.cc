@@ -57,7 +57,7 @@ main(void)
   for(int i = 0; i < 100; i++)
     search_n(rcon.begin(), rcon.end(), 10, 1);
   stop_counters(time, resource);
-  report_performance(__FILE__, "random acess iterator", time, resource);
+  report_performance(__FILE__, "random access iterator", time, resource);
   clear_counters(time, resource);
 }
 
