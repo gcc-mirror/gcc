@@ -1,5 +1,9 @@
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	*  gnat.dg/array_bounds_test2.adb: New test.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/in_out_parameter4.adb: New test.
 
 2013-09-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
