@@ -2315,7 +2315,6 @@ lra (FILE *f)
     {
       for (;;)
 	{
-	  bitmap_clear (&lra_optional_reload_pseudos);
 	  /* We should try to assign hard registers to scratches even
 	     if there were no RTL transformations in
 	     lra_constraints.  */
@@ -2367,6 +2366,9 @@ lra (FILE *f)
 		lra_clear_live_ranges ();
 	    }
 	}
+      /* Don't clear optional reloads bitmap until all constraints are
+	 satisfied as we need to differ them from regular reloads.  */
+      bitmap_clear (&lra_optional_reload_pseudos);
       bitmap_clear (&lra_subreg_reload_pseudos);
       bitmap_clear (&lra_inheritance_pseudos);
       bitmap_clear (&lra_split_regs);

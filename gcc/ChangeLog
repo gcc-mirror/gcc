@@ -1,3 +1,10 @@
+2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58438
+	* lra.c (lra): Clear lra_optional_reload_pseudos in upper loop.
+	* lra-constraints.c (undo_optional_reloads): Keep optional reloads
+	from previous subpasses.
+
 2013-09-18  Richard Earnshaw  <rearnsha@arm.com>
 
 	* arm.c (arm_get_frame_offsets): Validate architecture supports
