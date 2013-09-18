@@ -1,5 +1,9 @@
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (gigi): Remove dead code.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Pop the stack of
 	return variables for subprograms using the CICO mechanism.
 
