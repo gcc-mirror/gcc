@@ -1391,6 +1391,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 static tree
 Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 {
+  const Node_Id gnat_prefix = Prefix (gnat_node);
   tree gnu_prefix, gnu_type, gnu_expr;
   tree gnu_result_type, gnu_result = error_mark_node;
   bool prefix_unused = false;
@@ -1400,13 +1401,13 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
      parameter types might be incomplete types coming from a limited with.  */
   if (Ekind (Etype (gnat_node)) == E_Access_Subprogram_Type
       && Is_Dispatch_Table_Entity (Etype (gnat_node))
-      && Nkind (Prefix (gnat_node)) == N_Identifier
-      && Is_Subprogram (Entity (Prefix (gnat_node)))
-      && Is_Public (Entity (Prefix (gnat_node)))
-      && !present_gnu_tree (Entity (Prefix (gnat_node))))
-    gnu_prefix = get_minimal_subprog_decl (Entity (Prefix (gnat_node)));
+      && Nkind (gnat_prefix) == N_Identifier
+      && Is_Subprogram (Entity (gnat_prefix))
+      && Is_Public (Entity (gnat_prefix))
+      && !present_gnu_tree (Entity (gnat_prefix)))
+    gnu_prefix = get_minimal_subprog_decl (Entity (gnat_prefix));
   else
-    gnu_prefix = gnat_to_gnu (Prefix (gnat_node));
+    gnu_prefix = gnat_to_gnu (gnat_prefix);
   gnu_type = TREE_TYPE (gnu_prefix);
 
   /* If the input is a NULL_EXPR, make a new one.  */
@@ -1549,8 +1550,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	 since it can use a special calling convention on some platforms,
 	 which cannot be propagated to the access type.  */
       else if (attribute == Attr_Access
-	       && Nkind (Prefix (gnat_node)) == N_Identifier
-	       && is_cplusplus_method (Entity (Prefix (gnat_node))))
+	       && Nkind (gnat_prefix) == N_Identifier
+	       && is_cplusplus_method (Entity (gnat_prefix)))
 	post_error ("access to C++ constructor or member function not allowed",
 		    gnat_node);
 
@@ -1661,13 +1662,12 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  /* If this is a dereference and we have a special dynamic constrained
 	     subtype on the prefix, use it to compute the size; otherwise, use
 	     the designated subtype.  */
-	  if (Nkind (Prefix (gnat_node)) == N_Explicit_Dereference)
+	  if (Nkind (gnat_prefix) == N_Explicit_Dereference)
 	    {
-	      Node_Id gnat_deref = Prefix (gnat_node);
 	      Node_Id gnat_actual_subtype
-		= Actual_Designated_Subtype (gnat_deref);
+		= Actual_Designated_Subtype (gnat_prefix);
 	      tree gnu_ptr_type
-		= TREE_TYPE (gnat_to_gnu (Prefix (gnat_deref)));
+		= TREE_TYPE (gnat_to_gnu (Prefix (gnat_prefix)));
 
 	      if (TYPE_IS_FAT_OR_THIN_POINTER_P (gnu_ptr_type)
 		  && Present (gnat_actual_subtype))
@@ -1728,7 +1728,6 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  align = DECL_ALIGN (TREE_OPERAND (gnu_prefix, 1)) / BITS_PER_UNIT;
 	else
 	  {
-	    Node_Id gnat_prefix = Prefix (gnat_node);
 	    Entity_Id gnat_type = Etype (gnat_prefix);
 	    unsigned int double_align;
 	    bool is_capped_double, align_clause;
@@ -1800,28 +1799,38 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 			 : 1), i;
 	struct parm_attr_d *pa = NULL;
 	Entity_Id gnat_param = Empty;
+	bool unconstrained_ptr_deref = false;
 
 	/* Make sure any implicit dereference gets done.  */
 	gnu_prefix = maybe_implicit_deref (gnu_prefix);
 	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
 
-	/* We treat unconstrained array In parameters specially.  */
-	if (!Is_Constrained (Etype (Prefix (gnat_node))))
-	  {
-	    Node_Id gnat_prefix = Prefix (gnat_node);
+	/* We treat unconstrained array In parameters specially.  We also note
+	   whether we are dereferencing a pointer to unconstrained array.  */
+	if (!Is_Constrained (Etype (gnat_prefix)))
+	  switch (Nkind (gnat_prefix))
+	    {
+	    case N_Identifier:
+	      /* This is the direct case.  */
+	      if (Ekind (Entity (gnat_prefix)) == E_In_Parameter)
+		gnat_param = Entity (gnat_prefix);
+	      break;
 
-	    /* This is the direct case.  */
-	    if (Nkind (gnat_prefix) == N_Identifier
-		&& Ekind (Entity (gnat_prefix)) == E_In_Parameter)
-	      gnat_param = Entity (gnat_prefix);
+	    case N_Explicit_Dereference:
+	      /* This is the indirect case.  Note that we need to be sure that
+		 the access value cannot be null as we'll hoist the load.  */
+	      if (Nkind (Prefix (gnat_prefix)) == N_Identifier
+		  && Ekind (Entity (Prefix (gnat_prefix))) == E_In_Parameter)
+		{
+		  if (Can_Never_Be_Null (Entity (Prefix (gnat_prefix))))
+		    gnat_param = Entity (Prefix (gnat_prefix));
+		}
+	      else
+		unconstrained_ptr_deref = true;
+	      break;
 
-	    /* This is the indirect case.  Note that we need to be sure that
-	       the access value cannot be null as we'll hoist the load.  */
-	    if (Nkind (gnat_prefix) == N_Explicit_Dereference
-		&& Nkind (Prefix (gnat_prefix)) == N_Identifier
-		&& Ekind (Entity (Prefix (gnat_prefix))) == E_In_Parameter
-		&& Can_Never_Be_Null (Entity (Prefix (gnat_prefix))))
-	      gnat_param = Entity (Prefix (gnat_prefix));
+	    default:
+	      break;
 	  }
 
 	/* If the prefix is the view conversion of a constrained array to an
@@ -1956,22 +1965,54 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 	  {
 	    gnu_result
 	      = build1 (SAVE_EXPR, TREE_TYPE (gnu_result), gnu_result);
-	    if (attribute == Attr_First)
-	      pa->first = gnu_result;
-	    else if (attribute == Attr_Last)
-	      pa->last = gnu_result;
-	    else
-	      pa->length = gnu_result;
+	    switch (attribute)
+	      {
+	      case Attr_First:
+		pa->first = gnu_result;
+		break;
+
+	      case Attr_Last:
+		pa->last = gnu_result;
+		break;
+
+	      case Attr_Length:
+	      case Attr_Range_Length:
+		pa->length = gnu_result;
+		break;
+
+	      default:
+		gcc_unreachable ();
+	      }
 	  }
 
-	/* Set the source location onto the predicate of the condition in the
-	   'Length case but do not do it if the expression is cached to avoid
-	   messing up the debug info.  */
-	else if ((attribute == Attr_Range_Length || attribute == Attr_Length)
-		 && TREE_CODE (gnu_result) == COND_EXPR
-		 && EXPR_P (TREE_OPERAND (gnu_result, 0)))
-	  set_expr_location_from_node (TREE_OPERAND (gnu_result, 0),
-				       gnat_node);
+	/* Otherwise, evaluate it each time it is referenced.  */
+	else
+	  switch (attribute)
+	    {
+	    case Attr_First:
+	    case Attr_Last:
+	      /* If we are dereferencing a pointer to unconstrained array, we
+		 need to capture the value because the pointed-to bounds may
+		 subsequently be released.  */
+	      if (unconstrained_ptr_deref)
+		gnu_result
+		  = build1 (SAVE_EXPR, TREE_TYPE (gnu_result), gnu_result);
+	      break;
+
+	    case Attr_Length:
+	    case Attr_Range_Length:
+	      /* Set the source location onto the predicate of the condition
+		 but not if the expression is cached to avoid messing up the
+		 debug info.  */
+	      if (TREE_CODE (gnu_result) == COND_EXPR
+		  && EXPR_P (TREE_OPERAND (gnu_result, 0)))
+		set_expr_location_from_node (TREE_OPERAND (gnu_result, 0),
+					     gnat_node);
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
 
 	break;
       }
@@ -2144,8 +2185,8 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
     case Attr_Mechanism_Code:
       {
+	Entity_Id gnat_obj = Entity (gnat_prefix);
 	int code;
-	Entity_Id gnat_obj = Entity (Prefix (gnat_node));
 
 	prefix_unused = true;
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -2180,10 +2221,11 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
      it has a side-effect.  But don't do it if the prefix is just an entity
      name.  However, if an access check is needed, we must do it.  See second
      example in AARM 11.6(5.e).  */
-  if (prefix_unused && TREE_SIDE_EFFECTS (gnu_prefix)
-      && !Is_Entity_Name (Prefix (gnat_node)))
-    gnu_result = build_compound_expr  (TREE_TYPE (gnu_result), gnu_prefix,
-				       gnu_result);
+  if (prefix_unused
+      && TREE_SIDE_EFFECTS (gnu_prefix)
+      && !Is_Entity_Name (gnat_prefix))
+    gnu_result
+      = build_compound_expr  (TREE_TYPE (gnu_result), gnu_prefix, gnu_result);
 
   *gnu_result_type_p = gnu_result_type;
   return gnu_result;

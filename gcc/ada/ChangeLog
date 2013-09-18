@@ -1,5 +1,14 @@
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/58264
+	* gcc-interface/trans.c (Attribute_to_gnu): Define GNAT_PREFIX local
+	variable and use it throughout.
+	<Attr_Length>: Note whether the prefix is the dereference of a pointer
+	to unconstrained array and, in this case, capture the result for both
+	Attr_First and Attr_Last.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Abstract_State>: New.
 
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
