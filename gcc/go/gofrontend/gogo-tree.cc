@@ -1009,6 +1009,16 @@ Named_object::get_id(Gogo* gogo)
       else
 	package_name = this->package_->package_name();
 
+      // Note that this will be misleading if this is an unexported
+      // method generated for an embedded imported type.  In that case
+      // the unexported method should have the package name of the
+      // package from which it is imported, but we are going to give
+      // it our package name.  Fixing this would require knowing the
+      // package name, but we only know the package path.  It might be
+      // better to use package paths here anyhow.  This doesn't affect
+      // the assembler code, because we always set that name in
+      // Function::get_or_make_decl anyhow.  FIXME.
+
       decl_name = package_name + '.' + Gogo::unpack_hidden_name(this->name_);
 
       Function_type* fntype;
@@ -1317,7 +1327,21 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no, tree id)
 		   || this->type_->is_method())
 	    {
 	      TREE_PUBLIC(decl) = 1;
-	      std::string asm_name = gogo->pkgpath_symbol();
+	      std::string pkgpath = gogo->pkgpath_symbol();
+	      if (this->type_->is_method()
+		  && Gogo::is_hidden_name(no->name())
+		  && Gogo::hidden_name_pkgpath(no->name()) != gogo->pkgpath())
+		{
+		  // This is a method we created for an unexported
+		  // method of an imported embedded type.  We need to
+		  // use the pkgpath of the imported package to avoid
+		  // a possible name collision.  See bug478 for a test
+		  // case.
+		  pkgpath = Gogo::hidden_name_pkgpath(no->name());
+		  pkgpath = Gogo::pkgpath_for_symbol(pkgpath);
+		}
+
+	      std::string asm_name = pkgpath;
 	      asm_name.append(1, '.');
 	      asm_name.append(Gogo::unpack_hidden_name(no->name()));
 	      if (this->type_->is_method())
