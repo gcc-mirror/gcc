@@ -13,6 +13,6 @@ end type
 type(arr_t) :: this
 class(arr_t) :: elem   ! { dg-error "must be dummy, allocatable or pointer" }
 
-elem = this   ! { dg-error "Variable must not be polymorphic in intrinsic assignment" }
+elem = this   ! { dg-error "Nonallocatable variable must not be polymorphic in intrinsic assignment" }
 
 end

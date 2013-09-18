@@ -2134,7 +2134,7 @@ check_substring:
 symbol_attribute
 gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 {
-  int dimension, pointer, allocatable, target;
+  int dimension, codimension, pointer, allocatable, target;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
@@ -2149,12 +2149,14 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok)
     {
       dimension = CLASS_DATA (sym)->attr.dimension;
+      codimension = CLASS_DATA (sym)->attr.codimension;
       pointer = CLASS_DATA (sym)->attr.class_pointer;
       allocatable = CLASS_DATA (sym)->attr.allocatable;
     }
   else
     {
       dimension = attr.dimension;
+      codimension = attr.codimension;
       pointer = attr.pointer;
       allocatable = attr.allocatable;
     }
@@ -2209,11 +2211,13 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
 	if (comp->ts.type == BT_CLASS)
 	  {
+	    codimension = CLASS_DATA (comp)->attr.codimension;
 	    pointer = CLASS_DATA (comp)->attr.class_pointer;
 	    allocatable = CLASS_DATA (comp)->attr.allocatable;
 	  }
 	else
 	  {
+	    codimension = comp->attr.codimension;
 	    pointer = comp->attr.pointer;
 	    allocatable = comp->attr.allocatable;
 	  }
@@ -2228,6 +2232,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
       }
 
   attr.dimension = dimension;
+  attr.codimension = codimension;
   attr.pointer = pointer;
   attr.allocatable = allocatable;
   attr.target = target;
