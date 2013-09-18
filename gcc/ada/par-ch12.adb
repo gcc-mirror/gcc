@@ -74,10 +74,13 @@ package body Ch12 is
    --  GENERIC_RENAMING_DECLARATION ::=
    --    generic package DEFINING_PROGRAM_UNIT_NAME
    --      renames generic_package_NAME
+   --        [ASPECT_SPECIFICATIONS];
    --  | generic procedure DEFINING_PROGRAM_UNIT_NAME
    --      renames generic_procedure_NAME
+   --        [ASPECT_SPECIFICATIONS];
    --  | generic function DEFINING_PROGRAM_UNIT_NAME
    --      renames generic_function_NAME
+   --        [ASPECT_SPECIFICATIONS];
 
    --  GENERIC_FORMAL_PARAMETER_DECLARATION ::=
    --    FORMAL_OBJECT_DECLARATION
@@ -140,6 +143,8 @@ package body Ch12 is
                Scan; -- past RENAMES
                Set_Defining_Unit_Name (Decl_Node, Def_Unit);
                Set_Name (Decl_Node, P_Name);
+
+               P_Aspect_Specifications (Decl_Node, Semicolon => False);
                TF_Semicolon;
                return Decl_Node;
             end if;
@@ -211,7 +216,6 @@ package body Ch12 is
 
       else
          Gen_Decl := New_Node (N_Generic_Subprogram_Declaration, Gen_Sloc);
-
          Set_Specification (Gen_Decl, P_Subprogram_Specification);
 
          if Nkind (Defining_Unit_Name (Specification (Gen_Decl))) =
@@ -542,12 +546,8 @@ package body Ch12 is
 
          Scan; -- past semicolon
 
-         if Ada_Version < Ada_2012 then
-            Error_Msg_N
-              ("`formal incomplete type` is an Ada 2012 feature", Decl_Node);
-            Error_Msg_N
-              ("\unit must be compiled with -gnat2012 switch", Decl_Node);
-         end if;
+         Error_Msg_Ada_2012_Feature
+           ("formal incomplete type", Sloc (Decl_Node));
 
          Set_Formal_Type_Definition
            (Decl_Node,
@@ -560,13 +560,9 @@ package body Ch12 is
 
       Def_Node := P_Formal_Type_Definition;
 
-      if Nkind (Def_Node) = N_Formal_Incomplete_Type_Definition
-        and then Ada_Version < Ada_2012
-      then
-         Error_Msg_N
-           ("`formal incomplete type` is an Ada 2012 feature", Decl_Node);
-         Error_Msg_N
-           ("\unit must be compiled with -gnat2012 switch", Decl_Node);
+      if Nkind (Def_Node) = N_Formal_Incomplete_Type_Definition then
+         Error_Msg_Ada_2012_Feature
+           ("formal incomplete type", Sloc (Decl_Node));
       end if;
 
       if Def_Node /= Error then

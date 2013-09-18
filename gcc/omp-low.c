@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "diagnostic-core.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "flags.h"
 #include "function.h"
 #include "expr.h"
@@ -942,7 +942,7 @@ build_outer_var_ref (tree var, omp_context *ctx)
       if (ctx->outer && is_taskreg_ctx (ctx))
 	x = lookup_decl (var, ctx->outer);
       else if (ctx->outer)
-	x = maybe_lookup_decl (var, ctx->outer);
+	x = maybe_lookup_decl_in_outer_ctx (var, ctx);
       if (x == NULL_TREE)
 	x = var;
     }

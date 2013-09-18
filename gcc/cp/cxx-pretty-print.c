@@ -618,8 +618,11 @@ cxx_pretty_printer::postfix_expression (tree t)
     case PSEUDO_DTOR_EXPR:
       postfix_expression (TREE_OPERAND (t, 0));
       pp_cxx_dot (this);
-      pp_cxx_qualified_id (this, TREE_OPERAND (t, 1));
-      pp_cxx_colon_colon (this);
+      if (TREE_OPERAND (t, 1))
+	{
+	  pp_cxx_qualified_id (this, TREE_OPERAND (t, 1));
+	  pp_cxx_colon_colon (this);
+	}
       pp_complement (this);
       pp_cxx_unqualified_id (this, TREE_OPERAND (t, 2));
       break;
@@ -1524,7 +1527,7 @@ cxx_pretty_printer::direct_declarator (tree t)
 	{
 	  pp_cxx_space_for_pointer_operator (this, TREE_TYPE (t));
 
-	  if ((TREE_CODE (t) == PARM_DECL && FUNCTION_PARAMETER_PACK_P (t))
+	  if ((TREE_CODE (t) == PARM_DECL && DECL_PACK_P (t))
 	      || template_parameter_pack_p (t))
 	    /* A function parameter pack or non-type template
 	       parameter pack.  */

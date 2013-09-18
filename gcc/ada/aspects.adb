@@ -140,6 +140,40 @@ package body Aspects is
       end if;
    end Aspect_Specifications;
 
+   ------------------------
+   -- Aspects_On_Body_OK --
+   ------------------------
+
+   function Aspects_On_Body_OK (N : Node_Id) return Boolean is
+      Aspect  : Node_Id;
+      Aspects : List_Id;
+
+   begin
+      --  The routine should be invoked on a body [stub] with aspects
+
+      pragma Assert (Has_Aspects (N));
+      pragma Assert (Nkind (N) in N_Body_Stub
+                       or else Nkind_In (N, N_Package_Body,
+                                            N_Protected_Body,
+                                            N_Subprogram_Body,
+                                            N_Task_Body));
+
+      --  Look through all aspects and see whether they can be applied to a
+      --  body.
+
+      Aspects := Aspect_Specifications (N);
+      Aspect  := First (Aspects);
+      while Present (Aspect) loop
+         if not Aspect_On_Body_OK (Get_Aspect_Id (Aspect)) then
+            return False;
+         end if;
+
+         Next (Aspect);
+      end loop;
+
+      return True;
+   end Aspects_On_Body_OK;
+
    -----------------
    -- Find_Aspect --
    -----------------
@@ -271,6 +305,31 @@ package body Aspects is
       end if;
    end Move_Aspects;
 
+   ---------------------------
+   -- Move_Or_Merge_Aspects --
+   ---------------------------
+
+   procedure Move_Or_Merge_Aspects (From : Node_Id; To : Node_Id) is
+   begin
+      if Has_Aspects (From) then
+
+         --  Merge the aspects of From into To. Make sure that From has no
+         --  aspects after the merge takes place.
+
+         if Has_Aspects (To) then
+            Append_List
+              (List => Aspect_Specifications (From),
+               To   => Aspect_Specifications (To));
+            Remove_Aspects (From);
+
+         --  Otherwise simply move the aspects
+
+         else
+            Move_Aspects (From => From, To => To);
+         end if;
+      end if;
+   end Move_Or_Merge_Aspects;
+
    -----------------------------------
    -- Permits_Aspect_Specifications --
    -----------------------------------
@@ -294,6 +353,8 @@ package body Aspects is
       N_Generic_Subprogram_Declaration         => True,
       N_Object_Declaration                     => True,
       N_Object_Renaming_Declaration            => True,
+      N_Package_Body                           => True,
+      N_Package_Body_Stub                      => True,
       N_Package_Declaration                    => True,
       N_Package_Instantiation                  => True,
       N_Package_Specification                  => True,
@@ -302,6 +363,7 @@ package body Aspects is
       N_Private_Type_Declaration               => True,
       N_Procedure_Instantiation                => True,
       N_Protected_Body                         => True,
+      N_Protected_Body_Stub                    => True,
       N_Protected_Type_Declaration             => True,
       N_Single_Protected_Declaration           => True,
       N_Single_Task_Declaration                => True,
@@ -311,6 +373,7 @@ package body Aspects is
       N_Subprogram_Body_Stub                   => True,
       N_Subtype_Declaration                    => True,
       N_Task_Body                              => True,
+      N_Task_Body_Stub                         => True,
       N_Task_Type_Declaration                  => True,
       others                                   => False);
 
@@ -318,6 +381,18 @@ package body Aspects is
    begin
       return Has_Aspect_Specifications_Flag (Nkind (N));
    end Permits_Aspect_Specifications;
+
+   --------------------
+   -- Remove_Aspects --
+   --------------------
+
+   procedure Remove_Aspects (N : Node_Id) is
+   begin
+      if Has_Aspects (N) then
+         Aspect_Specifications_Hash_Table.Remove (N);
+         Set_Has_Aspects (N, False);
+      end if;
+   end Remove_Aspects;
 
    -----------------
    -- Same_Aspect --

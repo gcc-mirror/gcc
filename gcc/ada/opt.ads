@@ -131,6 +131,10 @@ package Opt is
    --  compiler switches, or implicitly (to Ada_Version_Runtime) when a
    --  predefined or internal file is compiled.
 
+   Ada_Version_Pragma : Node_Id := Empty;
+   --  Reflects the Ada_xxx pragma that resulted in setting Ada_Version. Used
+   --  to specialize error messages complaining about the Ada version in use.
+
    Ada_Version_Explicit : Ada_Version_Type := Ada_Version_Default;
    --  GNAT
    --  Like Ada_Version, but does not get set implicitly for predefined
@@ -861,7 +865,7 @@ package Opt is
 
    List_Representation_Info_To_File : Boolean := False;
    --  GNAT
-   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3 to be
+   --  Set true by -gnatRs switch. Causes information from -gnatR/1/2/3/m to be
    --  written to file.rep (where file is the name of the source file) instead
    --  of stdout. For example, if file x.adb is compiled using -gnatR2s then
    --  representation info is written to x.adb.ref.
@@ -1737,6 +1741,9 @@ package Opt is
    --  predefined units (which are always compiled in the most up to date
    --  version of Ada).
 
+   Ada_Version_Pragma_Config : Node_Id;
+   --  This will be set non empty if it is set by a configuration pragma
+
    Ada_Version_Explicit_Config : Ada_Version_Type;
    --  GNAT
    --  This is set in the same manner as Ada_Version_Config. The difference is
@@ -2019,6 +2026,7 @@ private
    type Config_Switches_Type is record
       Ada_Version                    : Ada_Version_Type;
       Ada_Version_Explicit           : Ada_Version_Type;
+      Ada_Version_Pragma             : Node_Id;
       Assertions_Enabled             : Boolean;
       Assume_No_Invalid_Values       : Boolean;
       Check_Float_Overflow           : Boolean;

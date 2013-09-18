@@ -757,7 +757,7 @@ void fixup_same_cpp_alias_visibility (symtab_node, symtab_node target, tree);
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
 void cgraph_reset_node (struct cgraph_node *);
-void expand_thunk (struct cgraph_node *);
+bool expand_thunk (struct cgraph_node *, bool);
 
 /* In cgraphclones.c  */
 

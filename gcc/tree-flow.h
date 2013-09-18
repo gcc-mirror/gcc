@@ -92,12 +92,6 @@ struct GTY(()) gimple_df {
   htab_t GTY ((param_is (struct tm_restart_node))) tm_restart;
 };
 
-/* Accessors for internal use only.  Generic code should use abstraction
-   provided by tree-flow-inline.h or specific modules.  */
-#define FREE_SSANAMES(fun) (fun)->gimple_df->free_ssanames
-#define SSANAMES(fun) (fun)->gimple_df->ssa_names
-#define MODIFIED_NORETURN_CALLS(fun) (fun)->gimple_df->modified_noreturn_calls
-#define DEFAULT_DEFS(fun) (fun)->gimple_df->default_defs
 
 typedef struct
 {
@@ -112,41 +106,6 @@ typedef struct
   for (RESULT = (TYPE) first_htab_element (&(ITER), (HTAB)); \
 	!end_htab_p (&(ITER)); \
 	RESULT = (TYPE) next_htab_element (&(ITER)))
-
-/*---------------------------------------------------------------------------
-		      Attributes for SSA_NAMEs.
-
-  NOTE: These structures are stored in struct tree_ssa_name
-  but are only used by the tree optimizers, so it makes better sense
-  to declare them here to avoid recompiling unrelated files when
-  making changes.
----------------------------------------------------------------------------*/
-
-/* Aliasing information for SSA_NAMEs representing pointer variables.  */
-
-struct GTY(()) ptr_info_def
-{
-  /* The points-to solution.  */
-  struct pt_solution pt;
-
-  /* Alignment and misalignment of the pointer in bytes.  Together
-     align and misalign specify low known bits of the pointer.
-     ptr & (align - 1) == misalign.  */
-
-  /* When known, this is the power-of-two byte alignment of the object this
-     pointer points into.  This is usually DECL_ALIGN_UNIT for decls and
-     MALLOC_ABI_ALIGNMENT for allocated storage.  When the alignment is not
-     known, it is zero.  Do not access directly but use functions
-     get_ptr_info_alignment, set_ptr_info_alignment,
-     mark_ptr_info_alignment_unknown and similar.  */
-  unsigned int align;
-
-  /* When alignment is known, the byte offset this pointer differs from the
-     above alignment.  Access only through the same helper functions as align
-     above.  */
-  unsigned int misalign;
-};
-
 
 /* It is advantageous to avoid things like life analysis for variables which
    do not need PHI nodes.  This enum describes whether or not a particular
@@ -281,9 +240,6 @@ struct int_tree_map {
   unsigned int uid;
   tree to;
 };
-
-#define num_ssa_names (vec_safe_length (cfun->gimple_df->ssa_names))
-#define ssa_name(i) ((*cfun->gimple_df->ssa_names)[(i)])
 
 /* Macros for showing usage statistics.  */
 #define SCALE(x) ((unsigned long) ((x) < 1024*10	\
@@ -465,47 +421,8 @@ extern bool gimple_seq_may_fallthru (gimple_seq);
 extern bool gimple_stmt_may_fallthru (gimple);
 extern bool gimple_check_call_matching_types (gimple, tree, bool);
 
-
-/* In tree-ssa.c  */
-
-/* Mapping for redirected edges.  */
-struct _edge_var_map {
-  tree result;			/* PHI result.  */
-  tree def;			/* PHI arg definition.  */
-  source_location locus;        /* PHI arg location.  */
-};
-typedef struct _edge_var_map edge_var_map;
-
-
-/* A vector of var maps.  */
-typedef vec<edge_var_map, va_heap, vl_embed> edge_var_map_vector;
-
-extern void init_tree_ssa (struct function *);
-extern void redirect_edge_var_map_add (edge, tree, tree, source_location);
-extern void redirect_edge_var_map_clear (edge);
-extern void redirect_edge_var_map_dup (edge, edge);
-extern edge_var_map_vector *redirect_edge_var_map_vector (edge);
-extern void redirect_edge_var_map_destroy (void);
-
-extern edge ssa_redirect_edge (edge, basic_block);
-extern void flush_pending_stmts (edge);
-extern void verify_ssa (bool);
-extern void delete_tree_ssa (void);
+/* In tree-ssa-uninit.c  */
 extern bool ssa_undefined_value_p (tree);
-extern void warn_uninit (enum opt_code, tree, tree, tree, const char *, void *);
-extern unsigned int warn_uninitialized_vars (bool);
-extern void execute_update_addresses_taken (void);
-
-/* Call-back function for walk_use_def_chains().  At each reaching
-   definition, a function with this prototype is called.  */
-typedef bool (*walk_use_def_chains_fn) (tree, gimple, void *);
-
-extern void walk_use_def_chains (tree, walk_use_def_chains_fn, void *, bool);
-
-void insert_debug_temps_for_defs (gimple_stmt_iterator *);
-void insert_debug_temp_for_var_def (gimple_stmt_iterator *, tree);
-void reset_debug_uses (gimple);
-void release_defs_bitset (bitmap toremove);
 
 /* In tree-into-ssa.c  */
 void update_ssa (unsigned);
@@ -517,26 +434,6 @@ void release_ssa_name_after_update_ssa (tree);
 void mark_virtual_operands_for_renaming (struct function *);
 tree get_current_def (tree);
 void set_current_def (tree, tree);
-
-/* In tree-ssanames.c  */
-extern void init_ssanames (struct function *, int);
-extern void fini_ssanames (void);
-extern tree make_ssa_name_fn (struct function *, tree, gimple);
-extern tree copy_ssa_name_fn (struct function *, tree, gimple);
-extern tree duplicate_ssa_name_fn (struct function *, tree, gimple);
-extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
-extern void release_ssa_name (tree);
-extern void release_defs (gimple);
-extern void replace_ssa_name_symbol (tree, tree);
-extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
-				    unsigned int *);
-extern void mark_ptr_info_alignment_unknown (struct ptr_info_def *);
-extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
-				    unsigned int);
-extern void adjust_ptr_info_misalignment (struct ptr_info_def *,
-					  unsigned int);
-
-extern void ssanames_print_statistics (void);
 
 /* In tree-ssa-ccp.c  */
 tree fold_const_aggregate_ref (tree);

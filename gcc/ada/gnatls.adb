@@ -1556,7 +1556,7 @@ begin
 
    --  First check for --version or --help
 
-   Check_Version_And_Help ("GNATLS", "1997");
+   Check_Version_And_Help ("GNATLS", "1992");
 
    --  Loop to scan out arguments
 

@@ -1734,6 +1734,22 @@ package body Sem_Ch9 is
       Set_Ekind (Body_Id, E_Protected_Body);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
 
+      --  Protected bodies are currently removed by the expander. Since there
+      --  are no language-defined aspects that apply to a protected body, it is
+      --  not worth changing the whole expansion to accomodate user-defined
+      --  aspects. Plus we cannot possibly known the semantics of user-defined
+      --  aspects in order to plan ahead.
+
+      if Has_Aspects (N) then
+         Error_Msg_N
+           ("?user-defined aspects on protected bodies are not supported", N);
+
+         --  The aspects are removed for now to prevent cascading errors down
+         --  stream.
+
+         Remove_Aspects (N);
+      end if;
+
       if Present (Spec_Id)
         and then Ekind (Spec_Id) = E_Protected_Type
       then
@@ -2606,6 +2622,10 @@ package body Sem_Ch9 is
       --  disastrous result.
 
       Analyze_Protected_Type_Declaration (N);
+
+      if Has_Aspects (N) then
+         Analyze_Aspect_Specifications (N, Id);
+      end if;
    end Analyze_Single_Protected_Declaration;
 
    -------------------------------------
@@ -2702,6 +2722,22 @@ package body Sem_Ch9 is
       Set_Ekind (Body_Id, E_Task_Body);
       Set_Scope (Body_Id, Current_Scope);
       Spec_Id := Find_Concurrent_Spec (Body_Id);
+
+      --  Task bodies are transformed into a subprogram spec and body pair by
+      --  the expander. Since there are no language-defined aspects that apply
+      --  to a task body, it is not worth changing the whole expansion to
+      --  accomodate user-defined aspects. Plus we cannot possibly known the
+      --  semantics of user-defined aspects in order to plan ahead.
+
+      if Has_Aspects (N) then
+         Error_Msg_N
+           ("?user-defined aspects on task bodies are not supported", N);
+
+         --  The aspects are removed for now to prevent cascading errors down
+         --  stream.
+
+         Remove_Aspects (N);
+      end if;
 
       --  The spec is either a task type declaration, or a single task
       --  declaration for which we have created an anonymous type.

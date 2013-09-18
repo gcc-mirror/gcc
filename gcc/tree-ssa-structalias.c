@@ -28,7 +28,7 @@
 #include "flags.h"
 #include "basic-block.h"
 #include "tree.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"
 #include "gimple.h"

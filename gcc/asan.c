@@ -24,7 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "gimple.h"
 #include "tree-iterator.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "asan.h"
 #include "gimple-pretty-print.h"
@@ -869,7 +869,7 @@ asan_shadow_cst (unsigned char shadow_bytes[4])
   for (i = 0; i < 4; i++)
     val |= (unsigned HOST_WIDE_INT) shadow_bytes[BYTES_BIG_ENDIAN ? 3 - i : i]
 	   << (BITS_PER_UNIT * i);
-  return GEN_INT (trunc_int_for_mode (val, SImode));
+  return gen_int_mode (val, SImode);
 }
 
 /* Clear shadow memory at SHADOW_MEM, LEN bytes.  Can't call a library call here
@@ -901,7 +901,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   emit_label (top_label);
 
   emit_move_insn (shadow_mem, const0_rtx);
-  tmp = expand_simple_binop (Pmode, PLUS, addr, GEN_INT (4), addr,
+  tmp = expand_simple_binop (Pmode, PLUS, addr, gen_int_mode (4, Pmode), addr,
                              true, OPTAB_LIB_WIDEN);
   if (tmp != addr)
     emit_move_insn (addr, tmp);
@@ -966,17 +966,19 @@ asan_emit_stack_protection (rtx base, HOST_WIDE_INT *offsets, tree *decls,
   str_cst = asan_pp_string (&asan_pp);
 
   /* Emit the prologue sequence.  */
-  base = expand_binop (Pmode, add_optab, base, GEN_INT (base_offset),
+  base = expand_binop (Pmode, add_optab, base,
+		       gen_int_mode (base_offset, Pmode),
 		       NULL_RTX, 1, OPTAB_DIRECT);
   mem = gen_rtx_MEM (ptr_mode, base);
-  emit_move_insn (mem, GEN_INT (ASAN_STACK_FRAME_MAGIC));
+  emit_move_insn (mem, gen_int_mode (ASAN_STACK_FRAME_MAGIC, ptr_mode));
   mem = adjust_address (mem, VOIDmode, GET_MODE_SIZE (ptr_mode));
   emit_move_insn (mem, expand_normal (str_cst));
   shadow_base = expand_binop (Pmode, lshr_optab, base,
 			      GEN_INT (ASAN_SHADOW_SHIFT),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   shadow_base = expand_binop (Pmode, add_optab, shadow_base,
-			      GEN_INT (targetm.asan_shadow_offset ()),
+			      gen_int_mode (targetm.asan_shadow_offset (),
+					    Pmode),
 			      NULL_RTX, 1, OPTAB_DIRECT);
   gcc_assert (asan_shadow_set != -1
 	      && (ASAN_RED_ZONE_SIZE >> ASAN_SHADOW_SHIFT) == 4);

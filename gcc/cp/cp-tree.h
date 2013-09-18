@@ -138,7 +138,6 @@ c-common.h, not after.
    1: C_TYPEDEF_EXPLICITLY_SIGNED (in TYPE_DECL).
       DECL_TEMPLATE_INSTANTIATED (in a VAR_DECL or a FUNCTION_DECL)
       DECL_MEMBER_TEMPLATE_P (in TEMPLATE_DECL)
-      FUNCTION_PARAMETER_PACK_P (in PARM_DECL)
       USING_DECL_TYPENAME_P (in USING_DECL)
       DECL_VLA_CAPTURE_P (in FIELD_DECL)
    2: DECL_THIS_EXTERN (in VAR_DECL or FUNCTION_DECL).
@@ -2874,10 +2873,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    the class definition is complete.  */
 #define TEMPLATE_PARMS_FOR_INLINE(NODE) TREE_LANG_FLAG_1 (NODE)
 
-/* Determine if a parameter (i.e., a PARM_DECL) is a function
-   parameter pack.  */
-#define FUNCTION_PARAMETER_PACK_P(NODE) \
-  (DECL_LANG_FLAG_1 (PARM_DECL_CHECK (NODE)))
+/* Determine if a declaration (PARM_DECL or FIELD_DECL) is a pack.  */
+#define DECL_PACK_P(NODE) \
+  (DECL_P (NODE) && PACK_EXPANSION_P (TREE_TYPE (NODE)))
 
 /* Determines if NODE is an expansion of one or more parameter packs,
    e.g., a TYPE_PACK_EXPANSION or EXPR_PACK_EXPANSION.  */
@@ -5455,10 +5453,12 @@ extern tree make_auto				(void);
 extern tree make_decltype_auto			(void);
 extern tree do_auto_deduction			(tree, tree, tree);
 extern tree type_uses_auto			(tree);
+extern tree type_uses_auto_or_concept		(tree);
 extern void append_type_to_template_for_access_check (tree, tree, tree,
 						      location_t);
 extern tree splice_late_return_type		(tree, tree);
 extern bool is_auto				(const_tree);
+extern bool is_auto_or_concept			(const_tree);
 extern tree process_template_parm		(tree, location_t, tree, 
 						 bool, bool);
 extern tree end_template_parm_list		(tree);
@@ -5734,7 +5734,7 @@ extern tree finish_call_expr			(tree, vec<tree, va_gc> **, bool,
 						 bool, tsubst_flags_t);
 extern tree finish_increment_expr		(tree, enum tree_code);
 extern tree finish_this_expr			(void);
-extern tree finish_pseudo_destructor_expr       (tree, tree, tree);
+extern tree finish_pseudo_destructor_expr       (tree, tree, tree, location_t);
 extern tree finish_unary_op_expr		(location_t, enum tree_code, tree,
 						 tsubst_flags_t);
 extern tree finish_compound_literal		(tree, tree, tsubst_flags_t);

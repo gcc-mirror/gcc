@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "c-family/c-objc.h"
 #include "c-family/c-pragma.h"
+#include "c-family/c-target.h"
 #include "diagnostic.h"
 #include "intl.h"
 #include "debug.h"
@@ -7457,7 +7458,9 @@ grokfndecl (tree ctype,
        || (IDENTIFIER_LENGTH (declarator) > 10
 	   && IDENTIFIER_POINTER (declarator)[0] == '_'
 	   && IDENTIFIER_POINTER (declarator)[1] == '_'
-	   && strncmp (IDENTIFIER_POINTER (declarator)+2, "builtin_", 8) == 0))
+	   && strncmp (IDENTIFIER_POINTER (declarator)+2, "builtin_", 8) == 0)
+       || (targetcm.cxx_implicit_extern_c
+	   && targetcm.cxx_implicit_extern_c(IDENTIFIER_POINTER (declarator))))
       && current_lang_name == lang_name_cplusplus
       && ctype == NULL_TREE
       && DECL_FILE_SCOPE_P (decl))
@@ -10320,8 +10323,33 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_uses_auto (type))
 	{
-	  error ("parameter declared %<auto%>");
-	  type = error_mark_node;
+	  if (template_parm_flag)
+	    {
+	      error ("template parameter declared %<auto%>");
+	      type = error_mark_node;
+	    }
+	  else if (decl_context == CATCHPARM)
+	    {
+	      error ("catch parameter declared %<auto%>");
+	      type = error_mark_node;
+	    }
+	  else if (current_class_type && LAMBDA_TYPE_P (current_class_type))
+	    {
+	      if (cxx_dialect < cxx1y)
+		pedwarn (location_of (type), 0,
+			 "use of %<auto%> in lambda parameter declaration "
+			 "only available with "
+			 "-std=c++1y or -std=gnu++1y");
+	    }
+	  else if (cxx_dialect < cxx1y)
+	    pedwarn (location_of (type), 0,
+		     "use of %<auto%> in parameter declaration "
+		     "only available with "
+		     "-std=c++1y or -std=gnu++1y");
+	  else
+	    pedwarn (location_of (type), OPT_Wpedantic,
+		     "ISO C++ forbids use of %<auto%> in parameter "
+		     "declaration");
 	}
 
       /* A parameter declared as an array of T is really a pointer to T.

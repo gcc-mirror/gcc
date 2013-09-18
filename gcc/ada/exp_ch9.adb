@@ -136,6 +136,15 @@ package body Exp_Ch9 is
    --  build record declaration. N is the type declaration, Ctyp is the
    --  concurrent entity (task type or protected type).
 
+   function Build_Dispatching_Tag_Check
+     (K : Entity_Id;
+      N : Node_Id) return Node_Id;
+   --  Utility to create the tree to check whether the dispatching call in
+   --  a timed entry call, a conditional entry call, or an asynchronous
+   --  transfer of control is a call to a primitive of a non-synchronized type.
+   --  K is the temporary that holds the tagged kind of the target object, and
+   --  N is the enclosing construct.
+
    function Build_Entry_Count_Expression
      (Concurrent_Type : Node_Id;
       Component_List  : List_Id;
@@ -1297,6 +1306,26 @@ package body Exp_Ch9 is
               Interface_List  => Interface_List (N),
               Limited_Present => True));
    end Build_Corresponding_Record;
+
+   ---------------------------------
+   -- Build_Dispatching_Tag_Check --
+   ---------------------------------
+
+   function Build_Dispatching_Tag_Check
+     (K : Entity_Id;
+      N : Node_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (N);
+   begin
+      return
+         Make_Op_Or (Loc,
+           Make_Op_Eq (Loc,
+             Left_Opnd  => New_Reference_To (K, Loc),
+             Right_Opnd => New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
+           Make_Op_Eq (Loc,
+             Left_Opnd  => New_Reference_To (K, Loc),
+             Right_Opnd => New_Reference_To (RTE (RE_TK_Tagged), Loc)));
+   end Build_Dispatching_Tag_Check;
 
    ----------------------------------
    -- Build_Entry_Count_Expression --
@@ -6607,7 +6636,9 @@ package body Exp_Ch9 is
    --       U   : Boolean;
 
    --    begin
-   --       if K = Ada.Tags.TK_Limited_Tagged then
+   --       if K = Ada.Tags.TK_Limited_Tagged
+   --         or else K = Ada.Tags.TK_Tagged
+   --       then
    --          <dispatching-call>;
    --          <triggering-statements>;
 
@@ -7206,7 +7237,9 @@ package body Exp_Ch9 is
             Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Ecall));
 
             --  Generate:
-            --    if K = Ada.Tags.TK_Limited_Tagged then
+            --    if K = Ada.Tags.TK_Limited_Tagged
+            --         or else K = Ada.Tags.TK_Tagged
+            --       then
             --       Lim_Typ_Stmts
             --    else
             --       Conc_Typ_Stmts
@@ -7214,18 +7247,9 @@ package body Exp_Ch9 is
 
             Append_To (Stmts,
               Make_Implicit_If_Statement (N,
-                Condition =>
-                   Make_Op_Eq (Loc,
-                     Left_Opnd  =>
-                       New_Reference_To (K, Loc),
-                     Right_Opnd =>
-                       New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
-
-                Then_Statements =>
-                  Lim_Typ_Stmts,
-
-                Else_Statements =>
-                  Conc_Typ_Stmts));
+                Condition       => Build_Dispatching_Tag_Check (K, N),
+                Then_Statements => Lim_Typ_Stmts,
+                Else_Statements => Conc_Typ_Stmts));
 
             Rewrite (N,
               Make_Block_Statement (Loc,
@@ -7665,7 +7689,9 @@ package body Exp_Ch9 is
    --       S : Integer;
 
    --    begin
-   --       if K = Ada.Tags.TK_Limited_Tagged then
+   --       if K = Ada.Tags.TK_Limited_Tagged
+   --         or else K = Ada.Tags.TK_Tagged
+   --       then
    --          <dispatching-call>;
    --          <triggering-statements>
 
@@ -7891,7 +7917,9 @@ package body Exp_Ch9 is
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (Blk));
 
          --  Generate:
-         --    if K = Ada.Tags.TK_Limited_Tagged then
+         --    if K = Ada.Tags.TK_Limited_Tagged
+         --         or else K = Ada.Tags.TK_Tagged
+         --       then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts
@@ -7899,18 +7927,9 @@ package body Exp_Ch9 is
 
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
-             Condition =>
-               Make_Op_Eq (Loc,
-                 Left_Opnd =>
-                   New_Reference_To (K, Loc),
-                 Right_Opnd =>
-                   New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
-
-             Then_Statements =>
-               Lim_Typ_Stmts,
-
-             Else_Statements =>
-               Conc_Typ_Stmts));
+             Condition       => Build_Dispatching_Tag_Check (K, N),
+             Then_Statements => Lim_Typ_Stmts,
+             Else_Statements => Conc_Typ_Stmts));
 
          Rewrite (N,
            Make_Block_Statement (Loc,
@@ -11951,7 +11970,9 @@ package body Exp_Ch9 is
    --       S  : Integer;
 
    --    begin
-   --       if K = Ada.Tags.TK_Limited_Tagged then
+   --       if K = Ada.Tags.TK_Limited_Tagged
+   --         or else K = Ada.Tags.TK_Tagged
+   --       then
    --          <dispatching-call>;
    --          <triggering-statements>
 
@@ -11986,9 +12007,11 @@ package body Exp_Ch9 is
    --    end;
 
    --  The triggering statement and the sequence of timed statements have not
-   --  been analyzed yet (see Analyzed_Timed_Entry_Call). They may contain
-   --  local declarations, and therefore the copies that are made during
-   --  expansion must be disjoint, as for any other inlining.
+   --  been analyzed yet (see Analyzed_Timed_Entry_Call), but they may contain
+   --  global references if within an instantiation. To prevent duplication
+   --  between various uses of those statements, they are encapsulated into a
+   --  local procedure which is invoked multiple time when the trigger is a
+   --  dispatching call.
 
    procedure Expand_N_Timed_Entry_Call (N : Node_Id) is
       Loc : constant Source_Ptr := Sloc (N);
@@ -12002,13 +12025,13 @@ package body Exp_Ch9 is
       D_Alt          : constant Node_Id := Delay_Alternative (N);
       D_Conv         : Node_Id;
       D_Disc         : Node_Id;
-      D_Stat         : Node_Id := Delay_Statement (D_Alt);
+      D_Stat         : Node_Id          := Delay_Statement (D_Alt);
       D_Stats        : List_Id;
       D_Type         : Entity_Id;
       Decls          : List_Id;
       Dummy          : Node_Id;
       E_Alt          : constant Node_Id := Entry_Call_Alternative (N);
-      E_Call         : Node_Id := Entry_Call_Statement (E_Alt);
+      E_Call         : Node_Id          := Entry_Call_Statement (E_Alt);
       E_Stats        : List_Id;
       Ename          : Node_Id;
       Formals        : List_Id;
@@ -12030,6 +12053,65 @@ package body Exp_Ch9 is
       M : Entity_Id;  --  Delay mode
       P : Entity_Id;  --  Parameter block
       S : Entity_Id;  --  Primitive operation slot
+
+      procedure Rewrite_Triggering_Statements;
+      --  If the trigger is a dispatching call, the expansion inserts multiple
+      --  copies of the abortable part. This is both inefficient, and may lead
+      --  to duplicate definitions that the back-end will reject, when the
+      --  abortable part includes loops. This procedure rewrites the abortable
+      --  part into a call to a generated procedure.
+
+      -----------------------------------
+      -- Rewrite_Triggering_Statements --
+      -----------------------------------
+
+      procedure Rewrite_Triggering_Statements is
+         Proc : constant Entity_Id := Make_Defining_Identifier (Loc, Name_uA);
+         Decl : Node_Id;
+         Stat : Node_Id;
+
+      begin
+         Decl :=
+           Make_Subprogram_Body (Loc,
+             Specification              =>
+               Make_Procedure_Specification (Loc, Defining_Unit_Name => Proc),
+             Declarations               => New_List,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc, E_Stats));
+
+         Append_To (Decls, Decl);
+
+         --  Adjust the scope of blocks in the procedure. Needed because blocks
+         --  generate declarations that are processed before other analysis
+         --  takes place, and their scope is already set. The backend depends
+         --  on the scope chain to determine the legality of some anonymous
+         --  types, and thus we must indicate that the block is within the new
+         --  procedure.
+
+         Stat := First (E_Stats);
+         while Present (Stat) loop
+            if Nkind (Stat) = N_Block_Statement then
+               Insert_Before (Stat,
+                 Make_Implicit_Label_Declaration (Sloc (Stat),
+                   Defining_Identifier =>
+                     Make_Defining_Identifier (
+                       Sloc (Stat), Chars (Identifier (Stat)))));
+            end if;
+
+            Next (Stat);
+         end loop;
+
+         --  Analyze (Decl);
+
+         --  Rewrite abortable part into a call to this procedure.
+
+         E_Stats :=
+           New_List
+             (Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (Proc, Loc)));
+      end Rewrite_Triggering_Statements;
+
+   --  Start of processing for Expand_N_Timed_Entry_Call
 
    begin
       --  Under the Ravenscar profile, timed entry calls are excluded. An error
@@ -12070,8 +12152,9 @@ package body Exp_Ch9 is
 
       if Is_Disp_Select then
          Extract_Dispatching_Call (E_Call, Call_Ent, Obj, Actuals, Formals);
-
          Decls := New_List;
+         Rewrite_Triggering_Statements;
+
          Stmts := New_List;
 
          --  Generate:
@@ -12280,7 +12363,11 @@ package body Exp_Ch9 is
          --       <timed-statements>
          --    end if;
 
-         N_Stats := Copy_Separate_List (E_Stats);
+         --  Note: we used to do Copy_Separate_List here, but this was changed
+         --  to New_Copy_List_Tree with no explanation or RH note??? We should
+         --  explain the need for the change ???
+
+         N_Stats := New_Copy_List_Tree (E_Stats);
 
          Prepend_To (N_Stats,
            Make_Implicit_If_Statement (N,
@@ -12320,11 +12407,17 @@ package body Exp_Ch9 is
          --    <dispatching-call>;
          --    <triggering-statements>
 
-         Lim_Typ_Stmts := Copy_Separate_List (E_Stats);
+         --  Note: the following was Copy_Separate_List but it was changed to
+         --  New_Copy_List_Tree without comments or RH documentation ??? We
+         --  should explain the need for the change ???
+
+         Lim_Typ_Stmts := New_Copy_List_Tree (E_Stats);
          Prepend_To (Lim_Typ_Stmts, New_Copy_Tree (E_Call));
 
          --  Generate:
-         --    if K = Ada.Tags.TK_Limited_Tagged then
+         --    if K = Ada.Tags.TK_Limited_Tagged
+         --         or else K = Ada.Tags.TK_Tagged
+         --       then
          --       Lim_Typ_Stmts
          --    else
          --       Conc_Typ_Stmts
@@ -12332,11 +12425,7 @@ package body Exp_Ch9 is
 
          Append_To (Stmts,
            Make_Implicit_If_Statement (N,
-             Condition       =>
-               Make_Op_Eq (Loc,
-                 Left_Opnd  => New_Reference_To (K, Loc),
-                 Right_Opnd =>
-                   New_Reference_To (RTE (RE_TK_Limited_Tagged), Loc)),
+             Condition       => Build_Dispatching_Tag_Check (K, N),
              Then_Statements => Lim_Typ_Stmts,
              Else_Statements => Conc_Typ_Stmts));
 

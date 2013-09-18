@@ -959,6 +959,7 @@ package body Prj is
          --  identifiers.
 
          Opt.Ada_Version := Opt.Ada_95;
+         Opt.Ada_Version_Pragma := Empty;
 
          Set_Name_Table_Byte (Name_Project,  Token_Type'Pos (Tok_Project));
          Set_Name_Table_Byte (Name_Extends,  Token_Type'Pos (Tok_Extends));

@@ -2106,14 +2106,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename, typename, typename, typename>
 	friend class __detail::_BFSExecutor;
 
-      template<typename _Bp, typename _Ap, typename _Ch_type, typename _Rx_traits>
+      template<typename _Bp, typename _Ap,
+	typename _Ch_type, typename _Rx_traits>
 	friend bool
 	regex_match(_Bp, _Bp, match_results<_Bp, _Ap>&,
 		    const basic_regex<_Ch_type,
 		    _Rx_traits>&,
 		    regex_constants::match_flag_type);
 
-      template<typename _Bp, typename _Ap, typename _Ch_type, typename _Rx_traits>
+      template<typename _Bp, typename _Ap,
+	typename _Ch_type, typename _Rx_traits>
 	friend bool
 	regex_search(_Bp, _Bp, match_results<_Bp, _Ap>&,
 		     const basic_regex<_Ch_type,
@@ -2213,8 +2215,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__re._M_automaton == nullptr)
 	return false;
-      __detail::__get_executor(__s, __e, __m, __re, __flags)->_M_match();
-      if (__m.size() > 0 && __m[0].matched)
+      if (__detail::__get_executor(__s, __e, __m, __re, __flags)->_M_match())
 	{
 	  for (auto __it : __m)
 	    if (!__it.matched)
@@ -2373,29 +2374,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__re._M_automaton == nullptr)
 	return false;
-      auto __cur = __first;
-      // Continue when __cur == __last
-      do
+      if (__detail::__get_executor(__first, __last, __m, __re, __flags)
+	  ->_M_search())
 	{
-	  __detail::__get_executor(__cur, __last, __m, __re, __flags)
-	    ->_M_search_from_first();
-	  if (__m.size() > 0 && __m[0].matched)
-	    {
-	      for (auto __it : __m)
-		if (!__it.matched)
-		  __it.first = __it.second = __last;
-	      __m.at(__m.size()).first = __first;
-	      __m.at(__m.size()).second = __m[0].first;
-	      __m.at(__m.size()+1).first = __m[0].second;
-	      __m.at(__m.size()+1).second = __last;
-	      __m.at(__m.size()).matched =
-		(__m.prefix().first != __m.prefix().second);
-	      __m.at(__m.size()+1).matched =
-		(__m.suffix().first != __m.suffix().second);
-	      return true;
-	    }
+	  for (auto __it : __m)
+	    if (!__it.matched)
+	      __it.first = __it.second = __last;
+	  __m.at(__m.size()).first = __first;
+	  __m.at(__m.size()).second = __m[0].first;
+	  __m.at(__m.size()+1).first = __m[0].second;
+	  __m.at(__m.size()+1).second = __last;
+	  __m.at(__m.size()).matched =
+	    (__m.prefix().first != __m.prefix().second);
+	  __m.at(__m.size()+1).matched =
+	    (__m.suffix().first != __m.suffix().second);
+	  return true;
 	}
-      while (__cur++ != __last);
       return false;
     }
 

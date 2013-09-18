@@ -1,3 +1,24 @@
+2013-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* resolve.c (generate_component_assignments): Correctly handle the
+	case that the LHS is not allocated.
+
+2013-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* resolve.c (generate_component_assignments): Handle unallocated
+	LHS with defined assignment of components.
+
+2013-09-12  Brooks Moses  <bmoses@google.com>
+
+	PR driver/42955
+	* Make-lang.in: Do not install driver binaries in $(target)/bin.
+
+2013-09-09  Tobias Burnus  <burnus@net-b.de>
+
+	* invoke.texi (Error and Warning Options): Add hyphen.
+
 2013-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/PR56519

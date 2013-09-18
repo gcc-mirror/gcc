@@ -1128,7 +1128,7 @@ ipa_devirt (void)
 static bool
 gate_ipa_devirt (void)
 {
-  return flag_devirtualize_speculatively && !in_lto_p && optimize;
+  return flag_devirtualize_speculatively && optimize;
 }
 
 namespace {

@@ -1,3 +1,772 @@
+2013-09-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (enum rdg_dep_type): Add control_dd.
+	(dot_rdg_1): Handle control_dd.
+	(create_edge_for_control_dependence): New function.
+	(create_rdg_edges): Add control dependences if asked for.
+	(build_rdg): Likewise.
+	(generate_loops_for_partition): If there are not necessary
+	control stmts remove all their dependencies.
+	(collect_condition_stmts, rdg_flag_loop_exits): Remove.
+	(distribute_loop): Pass on control dependences.
+	(tree_loop_distribution): Compute control dependences and remove
+	restriction on number of loop nodes.
+
+2013-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Return early
+	for internal calls.
+
+2013-09-16  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* cse.c (try_const_anchors): Punt on CC modes.
+
+2013-09-15  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	* config/vax/constraints.md (T): Add missing CONSTANT_P check.
+
+2013-09-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/58382
+	* config/pa/pa.c (pa_expand_prologue): Change mode in gen_rtx_POST_INC
+	calls to word_mode.
+
+2013-09-14  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/48094
+	* config/darwin.c (darwin_objc2_section): Note if ObjC Metadata is
+	seen.  (darwin_objc1_section): Likewise.
+	(darwin_file_end): Emit Image Info section when required.
+
+2013-09-14  Jan Hubicka  <jh@suse.cz>
+
+	* tree-into-ssa.c (gate_into_ssa): New.
+	(pass_data_build_ssa): Use it.
+	* cgraph.h (expand_thunk): Update prototype.
+	* cgraphunit.c (analyze_function): Expand thunks early.
+	(expand_thunk): Fix DECL_CONTEXT of reust_decl;
+	build proper cgraph; set in_ssa_p; clear bogus TREE_ASM_WRITTEN;
+	set lowered flag; do not add new function.
+	(assemble_thunks_and_aliases): Update.
+	* tree-ssa.c (gate_init_datastructures): New gate.
+	(pass_data_init_datastructures): Use it.
+
+2013-09-14  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/58269
+	config/i386/i386.c (ix86_function_arg_regno_p): Make Darwin use the
+	xmm register set described in the psABI.
+
+2013-09-13  Evgeny Gavrin <e.gavrin@samsung.com>
+
+        * dwarf2out.c (should_emit_struct_debug): Add check
+        for type_decl variable is not NULL.
+
+2013-09-13  Jacek Caban  <jacek@codeweavers.com>
+
+	* config.gcc: Use new winnt-c.c target hooks
+	* config/t-winnt: New file
+	* config/winnt-c.c: New file
+	* doc/tm.texi.in: Document new hook
+	* doc/tm.texi: Regenerated
+
+2013-09-13  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58094
+	* ipa-inline.c (check_callers): New function.
+	(check_caller_edge): Remove.
+	(want_inline_function_to_all_callers_p): Also permit alises that are
+	called dirrectly.
+	(inline_to_all_callers): Terminate the walk when devirtualization
+	introduce new calls.
+
+2013-09-13  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-inline-analysis.c (struct growth_data): Add node.
+	(do_estimate_growth_1): Fix detection of recursion.
+
+2013-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58392
+	* tree-cfg.c (move_sese_region_to_fn): Rename loop variable
+	to avoid shadowing of outer loop variable.  If
+	saved_cfun->has_simduid_loops or saved_cfun->has_force_vect_loops,
+	replace_by_duplicate_decl simduid of loops that have it set and
+	set dest_cfun->has_simduid_loops and/or
+	dest_cfun->has_force_vect_loops.
+	* omp-low.c (build_outer_var_ref): Call maybe_lookup_decl_in_outer_ctx
+	instead of maybe_lookup_decl.
+	* tree-inline.c (copy_loops): Change blocks_to_copy argument to id.
+	Use id->blocks_to_copy instead of blocks_to_copy.  Adjust recursive
+	call.  Copy over force_vect and copy and remap simduid.  Set
+	cfun->has_simduid_loops and/or cfun->has_force_vect_loops.
+	(copy_cfg_body): Remove blocks_to_copy argument.  Use
+	id->blocks_to_copy instead of blocks_to_copy.  Adjust copy_loops
+	caller.  Don't set cfun->has_simduid_loops and/or
+	cfun->has_force_vect_loops here.
+	(copy_body): Remove blocks_to_copy argument.  Adjust copy_cfg_body
+	caller.
+	(expand_call_inline, tree_function_versioning): Adjust copy_body
+	callers.
+
+2013-09-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR bootstrap/58388
+	* ipa-prop.c (try_make_edge_direct_simple_call): Be less strict in
+	the assert if the edge was a speculative one.
+
+2013-09-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.h (known_dependences_p): Move here ...
+	* tree-loop-distribution.c (known_dependences_p): ... from here.
+	(dump_rdg_component, debug_rdg_component): Remove.
+	(dump_rdg): Adjust.
+	(generate_loops_for_partition): Use gimple_uid instead of
+	relying on matching stmt visit order.
+	(rdg_build_partitions): Take starting stmt vector.
+	(ldist_gen): Merge into ...
+	(distribute_loop): ... this function.  Do not compute starting
+	vertices vector.
+	* tree-cfg.c (gimple_duplicate_bb): Copy UID for PHIs.
+
+2013-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_cmpsi_insn): Split rI alternative.
+	Set type attribute correctly. Set predicable_short_it attribute.
+	(cmpsi_shiftsi): Remove %? from output template.
+
+2013-09-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (struct rdg_component,
+	rdg_defs_used_in_other_loops_p, free_rdg_components,
+	rdg_build_components): Remove.
+	(stmts_from_loop): Do not record virtual PHIs.
+	(generate_loops_for_partition): Skip virtual PHIs.
+	(build_rdg_partition_for_component): Rename to ...
+	(build_rdg_partition_for_vertex): ... this and adjust.
+	(rdg_build_partitions): Take a vector of starting vertices
+	instead of components.  Remove unnecessary leftover handling.
+	(ldist_gen): Do not build components or record other stores.
+	(distribute_loop): Do not distribute loops containing stmts
+	with side-effects.
+
+2013-09-13  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/58314
+	* config/sh/sh.md (mov<mode>_reg_reg): Allow memory reloads.
+
+2013-09-13  Kai Tietz  <ktietz@redhat.com>
+
+	* config.gcc: Separate cases for mingw and cygwin targets,
+	and add 64-bit cygwin target case.
+
+	* config/i386/winnt-cxx.c (i386_pe_type_dllexport_p): Don't
+	dll-export inline-functions.
+	* config/i386/winnt.c (i386_pe_determine_dllexport_p): Likewise.
+
+
+2013-09-13  Jeff Law  <law@redhat.com>
+
+	PR middle-end/58387
+	Revert:
+	2013-09-06  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate
+	edge implied equivalences into successor phis.
+
+2013-09-12  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78-virt.md: Change from | to \; for asm line
+	separators.
+
+2013-09-12  Brooks Moses  <bmoses@google.com>
+
+	PR driver/42955
+	* Makefile.in: Do not install driver binaries in $(target)/bin.
+
+2013-09-12  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.opt (mrelax): New.
+	* config/rl78/rl78.h (ASM_SPEC): New, pass on -mrelax to gas.
+	* config/rl78/rl78.h (LINK_SPEC): New, pass on -mrelax to ld.
+
+	* config/rl78/rl78.c (rl78_expand_prologue): Use AX to copy
+	between SP and FP.
+	(rl78_expand_epilogue): Likewise.
+
+2013-09-12  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/58335
+	* lra-eliminations.c (remove_reg_equal_offset_note): New.
+	(eliminate_regs_in_insn): Rewrite frame pointer to hard frame
+	pointer elimination with using remove_reg_equal_offset_note.
+
+2013-09-12  DJ Delorie  <dj@redhat.com>
+
+	* config/msp430/: New port.
+	* config.gcc (msp430): Added.
+	* doc/invoke.texi: Document MSP430 options.
+	* doc/install.texi: Document msp430-elf
+	* doc/md.texi: Document msp430-elf
+	* doc/contrib.texi: Document msp430-elf
+
+	* cfgexpand.c (expand_debug_expr): Avoid sign-extending SImode to
+	PSImode.
+
+2013-09-12  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/58389
+	* ipa-prop.c (remove_described_reference): Give up if the edge in the
+	reference descriptor is NULL.
+	(ipa_edge_removal_hook): If owning a reference descriptor, set its
+	edge to NULL.
+
+2013-09-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-flow.h (FREE_SSANAMES): Move to tree-ssanames.c
+	(SSANAMES, MODIFIED_NORETURN_CALLS, DEFAULT_DEFS, ptr_info_def,
+	num_ssa_names, ssa_name): Move to tree-ssanames.h + prototypes.
+	* tree-flow-inline.h (make_ssa_name, copy_ssa_name, duplicate_ssa_name,
+	make_temp_ssa_name): move to tree-ssanames.h
+	* tree-ssa-alias.h: Move prototype.
+	* tree-ssa.h: Include tree-ssanames.h.
+	* tree-ssanames.c (FREE_SSANAMES): Move to here.
+	* tree-ssanames.h: New.  Move items from tree-flow*.h
+	* Makefile.in (tree-ssanames.h): Add to tree-ssanames.o and GTFILES.
+
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58404
+	* tree-ssa-forwprop.c (forward_propagate_addr_expr_1): Also
+	propagate non-invariant addresses into dereferences wrapped
+	in component references.
+
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58402
+	* passes.def: Move pass_late_warn_uninitialized later.
+
+2013-09-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa.h: New.  Move content from tree-flow.h and
+	tree-flow-inline.h.
+	* tree-flow.h (_edge_var_map, edge_var_map_vector): Move to tree-ssa.h.
+	Move prototypes belonging to tree-ssa.c.
+	* tree-flow-inline.h (redirect_edge_var_map_def, 
+	redirect_edge_var_map_result, redirect_edge_var_map_location): Move to
+	tree-ssa.h.
+	* gimple.h: Adjust prototypes.
+	* tree-ssa.c (useless_type_conversion_p, types_compatible_p): Move to...
+	* gimple.c (useless_type_conversion_p, types_compatible_p):  Here.
+	* tree.h: Move prototype to tree-ssa.h.
+	* gengtype.c (open_base_files): Replace tree-flow.h with tree-ssa.h.
+	* Makefile.in: (TREE_SSA_H, TREE_FLOW_H): Adjust dependencies.
+	* alias.c, asan.c, builtins.c, calls.c, cfgexpand.c, cfghooks.c,
+	cfgloop.c, cfgloopmanip.c, cgraph.c, cgraphbuild.c, cgraphclones.c,
+	cgraphunit.c, dse.c, except.c, expr.c, final.c, fold-const.c,
+	ggc-page.c, gimple-fold.c, gimple-iterator.c, gimple-low.c,
+	gimple-pretty-print.c, gimple-ssa-strength-reduction.c,
+	gimple-streamer-in.c, gimple-streamer-out.c, gimple.c, gimplify.c,
+	graphite-blocking.c, graphite-clast-to-gimple.c, graphite-dependences.c,
+	graphite-interchange.c, graphite-optimize-isl.c, graphite-poly.c,
+	graphite-scop-detection.c, graphite-sese-to-poly.c, graphite.c,
+	ipa-cp.c, ipa-inline-analysis.c, ipa-inline-transform.c, ipa-inline.c,
+	ipa-prop.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa-utils.c,
+	loop-init.c, lto-cgraph.c, lto-section-in.c, lto-section-out.c,
+	lto-streamer-in.c, lto-streamer-out.c, lto-streamer.c, omp-low.c,
+	passes.c, predict.c, print-tree.c, profile.c, sese.c, targhooks.c,
+	tracer.c, trans-mem.c, tree-call-cdce.c, tree-cfg.c, tree-cfgcleanup.c,
+	tree-chrec.c, tree-complex.c, tree-data-ref.c, tree-dfa.c, tree-eh.c,
+	tree-emutls.c, tree-if-conv.c, tree-inline.c, tree-into-ssa.c,
+	tree-loop-distribution.c, tree-mudflap.c, tree-nested.c, tree-nrv.c,
+	tree-object-size.c, tree-optimize.c, tree-outof-ssa.c, tree-parloops.c,
+	tree-phinodes.c, tree-predcom.c, tree-pretty-print.c, tree-profile.c,
+	tree-scalar-evolution.c, tree-sra.c, tree-ssa*.c, tree-stdarg.c,
+	tree-streamer-in.c, tree-switch-conversion.c, tree-tailcall.c,
+	tree-vect-data-refs.c, tree-vect-generic.c, tree-vect-loop-manip.c,
+	tree-vect-loop.c, tree-vect-patterns.c, tree-vect-slp.c,
+	tree-vect-stmts.c, tree-vectorizer.c, tree-vrp.c, tsan.c,
+	value-prof.c, var-tracking.c,
+	varpool.c, vtable-verify.c: Replace tree-flow.h with tree-ssa.h
+
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58396
+	* tree-loop-distribution.c (create_rdg_edges): Free unused DDRs.
+	(build_rdg): Take a loop-nest parameter, fix memleaks.
+	(distribute_loop): Compute loop-nest here and pass it to build_rdg.
+
+2013-09-12  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/x86-tune.def: Turn on X86_TUNE_AVOID_MEM_OPND_FOR_CMOVE
+	for SLM.
+
+2013-09-12  Cameron McInally  <cameron.mcinally@nyu.edu>
+
+	* doc/extend.texi: Fix errors in x86 FMA builtin naming.
+	The FMA instruction names should have a 'v' prefix.
+
+2013-09-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-loop-distribution.c (dot_rdg_1): Make graph prettier.
+	(dot_rdg): Use popen instead of system in optional code.
+	(remaining_stmts, upstream_mem_writes): Remove global bitmaps.
+	(already_processed_vertex_p): Adjust.
+	(has_anti_or_output_dependence, predecessor_has_mem_write,
+	mark_nodes_having_upstream_mem_writes, has_upstream_mem_writes,
+	rdg_flag_uses): Remove.
+	(rdg_flag_vertex): Simplify.
+	(rdg_flag_vertex_and_dependent): Rely on a correct RDG and
+	remove recursion.
+	(build_rdg_partition_for_component): Process the first vertex
+	of a component only.
+	(ldist_gen): Do not compute remaining_stmts or upstream_mem_writes.
+
+2013-09-12  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (toc_relative_expr_p): Use add_cint_operand.
+
+2013-09-11  DJ Delorie  <dj@redhat.com>
+	    Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/predicates.md (rl78_cmp_operator_signed): New.
+	(rl78_stack_based_mem): New.
+	* config/rl78/constraints.md (Iv08): New.
+	(Iv16): New.
+	(Iv24): New.
+	(Is09): New.
+	(Is17): New.
+	(Is25): New.
+	(ISsi): New.
+	(IShi): New.
+	(ISqi): New.
+	* config/rl78/rl78-expand.md (movqi): Reject more SUBREG operands.
+	(movhi): Likewise.
+	(movsi): Change from expand to insn-and-split.
+	(ashrsi3): Clobber AX.
+	(lshrsi3): New.
+	(ashlsi3): New.
+	(cbranchsi4): New.
+	* config/rl78/rl78.md (CC_REG): Fix.
+	(addsi3): Allow memory and immediate operands.
+	(addsi3_internal): Split into...
+	(addsi3_internal_virt): ...new, and ...
+	(addsi3_internal_real): ...new.
+	(subsi): New.
+	(subsi3_internal_virt): New.
+	(subsi3_internal_real): New.
+	(mulsi3): Add memory operand.
+	(mulsi3_rl78): Likewise.
+	(mulsi3_g13): Likewise.
+	* config/rl78/rl78-real.md (cbranchqi4_real_signed): New.
+	(cbranchqi4_real): Add more constraint options.
+	(cbranchhi4_real): Expand pattern.
+	(cbranchhi4_real_signed): New.
+	(cbranchhi4_real_inverted): New.
+	(cbranchsi4_real_lt): New.
+	(cbranchsi4_real_ge): New.
+	(cbranchsi4_real_signed): New.
+	(cbranchsi4_real): New.
+	(peephole2): New.
+	* config/rl78/rl78-virt.md (ashrsi3_virt): Add custom cases for
+	constant shifts.
+	(lshrsi3_virt): Likewise.
+	(ashlsi3_virt): Likewise.
+	(cbranchqi4_virt_signed): New.
+	(cbranchhi4_virt_signed): New.
+	(cbranchsi4_virt): New.
+	* config/rl78/rl78.c: Whitespace fixes throughout.
+	(move_elim_pass): New.
+	(pass_data_rl78_move_elim): New.
+	(pass_rl78_move_elim): New.
+	(make_pass_rl78_move_elim): New.
+	(rl78_devirt_info): Run devirt earlier.
+	(rl78_move_elim_info): New.
+	(rl78_asm_file_start): Register it.
+	(rl78_split_movsi): New.
+	(rl78_as_legitimate_address): Allow virtual base registers when
+	appropriate.
+	(rl78_addr_space_convert): Remove spurious debug stuff.
+	(rl78_print_operand_1): Add z,s,S,r,E modifiers.
+	(rl78_print_operand): More cases for not printing '#'.
+	(rl78_expand_compare): Remove most of the logic.
+	(content_memory): New.
+	(clear_content_memory): New.
+	(get_content_index): New.
+	(get_content_name): New.
+	(display_content_memory): New.
+	(update_content): New.
+	(record_content): New.
+	(already_contains): New.
+	(insn_ok_now): Re-recog insns with virtual registers.
+	(add_postponed_content_update): New.
+	(process_postponed_content_update): New.
+	(gen_and_emit_move): New.
+	(transcode_memory_rtx): Record new location content.
+	Use gen_and_emit_move.
+	(force_into_acc): New.
+	(move_to_acc): Use gen_and_emit_move.
+	(move_from_acc): Likewise.
+	(move_acc_to_reg): Likewise.
+	(move_to_x): Likewise.
+	(move_to_hl): Likewise.
+	(move_to_de): Likewise.
+	(rl78_alloc_physical_registers_op1): Record location content.
+	(has_constraint): New.
+	(rl78_alloc_physical_registers_op2): Record location content.
+	Optimize use of HL.
+	(rl78_alloc_physical_registers_ro1): Likewise.
+	(rl78_alloc_physical_registers_cmp): Likewise.
+	(rl78_alloc_physical_registers_umul): Likewise.
+	(rl78_alloc_address_registers_macax): New.
+	(rl78_alloc_physical_registers): Initialize and set location
+	content memory as needed.
+	(rl78_reorg): Make sure split2 is called.
+	(rl78_rtx_costs): New.
+
+2013-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* simplify-rtx.c (simplify_unary_operation_1): Use simplify_gen_binary
+	for (not (neg ...)) and (neg (not ...)) cases.
+
+2013-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58377
+	* passes.def: Split critical edges before late uninit warning passes.
+	* tree-cfg.c (pass_split_crit_edges): Implement clone method.
+
+2013-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58385
+	* fold-const.c (build_range_check): If both low and high are NULL,
+	use omit_one_operand_loc to preserve exp side-effects.
+
+2013-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/arm.md (arm_shiftsi3): New alternative l/l/M.
+
+2013-09-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.c (dump_rdg_vertex, debug_rdg_vertex,
+	dump_rdg_component, debug_rdg_component, dump_rdg, debug_rdg,
+	dot_rdg_1, dot_rdg, rdg_vertex_for_stmt, create_rdg_edge_for_ddr,
+	create_rdg_edges_for_scalar, create_rdg_edges, create_rdg_vertices,
+	stmts_from_loop, known_dependences_p, build_empty_rdg,
+	build_rdg, free_rdg, rdg_defs_used_in_other_loops_p): Move ...
+	* tree-loop-distribution.c: ... here.
+	* tree-data-ref.h (struct rdg_vertex, RDGV_STMT, RDGV_DATAREFS,
+	RDGV_HAS_MEM_WRITE, RDGV_HAS_MEM_READS, RDG_STMT, RDG_DATAREFS,
+	RDG_MEM_WRITE_STMT, RDG_MEM_READS_STMT, enum rdg_dep_type,
+	struct rdg_edge, RDGE_TYPE, RDGE_LEVEL, RDGE_RELATION): Move ...
+	* tree-loop-distribution.c: ... here.
+	* tree-loop-distribution.c: Include gimple-pretty-print.h.
+	(struct partition_s): Add loops member.
+	(partition_alloc, partition_free, rdg_flag_uses, rdg_flag_vertex,
+	rdg_flag_vertex_and_dependent, rdg_flag_loop_exits,
+	build_rdg_partition_for_component, rdg_build_partitions): Adjust.
+
+2013-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+	    Maxim Kuznetsov  <maxim.kuznetsov@intel.com>
+	    Sergey Lega  <sergey.s.lega@intel.com>
+	    Anna Tikhonova  <anna.tikhonova@intel.com>
+	    Ilya Tocar  <ilya.tocar@intel.com>
+	    Andrey Turetskiy  <andrey.turetskiy@intel.com>
+	    Ilya Verbin  <ilya.verbin@intel.com>
+	    Kirill Yukhin  <kirill.yukhin@intel.com>
+	    Michael Zolotukhin  <michael.v.zolotukhin@intel.com>
+
+	* config/i386/constraints.md (k): New.
+	(Yk): Ditto.
+	* config/i386/i386.c (const regclass_map): Add new mask registers.
+	(dbx_register_map): Ditto.
+	(dbx64_register_map): Ditto.
+	(svr4_dbx_register_map): Ditto.
+	(ix86_conditional_register_usage): Squash mask registers if AVX512F is
+	disabled.
+	(ix86_preferred_reload_class): Disable constants for mask registers.
+	(ix86_secondary_reload): Do spill of mask register using 32-bit insn.
+	(ix86_hard_regno_mode_ok): Support new mask registers.
+	(x86_order_regs_for_local_alloc): Ditto.
+	* config/i386/i386.h (FIRST_PSEUDO_REGISTER): Update.
+	(FIXED_REGISTERS): Add new mask registers.
+	(CALL_USED_REGISTERS): Ditto.
+	(REG_ALLOC_ORDER): Ditto.
+	(VALID_MASK_REG_MODE): New.
+	(FIRST_MASK_REG): Ditto.
+	(LAST_MASK_REG): Ditto.
+	(reg_class): Add MASK_EVEX_REGS, MASK_REGS.
+	(MAYBE_MASK_CLASS_P): New.
+	(REG_CLASS_NAMES): Add MASK_EVEX_REGS, MASK_REGS.
+	(REG_CLASS_CONTENTS): Ditto.
+	(MASK_REGNO_P): New.
+	(ANY_MASK_REG_P): Ditto.
+	(HI_REGISTER_NAMES): Add new mask registers.
+	* config/i386/i386.md (MASK0_REG, MASK1_REG, MASK2_REG, MASK3_REG,
+	MASK4_REG, MASK5_REG, MASK6_REG, MASK7_REG): Constants for new
+	mask registers.
+	(attribute "type"): Add mskmov, msklog.
+	(attribute "length_immediate"): Support them.
+	(attribute "memory"): Ditto.
+	(attribute "prefix_0f"): Ditto.
+	(*movhi_internal): Support new mask registers.
+	(*movqi_internal): Ditto.
+	(define_split): Split out clobber pattern is a logic
+	insn on mask registers.
+	(*k<logic><mode>): New.
+	(*andhi_1): Extend to support mask regs.
+	(*andqi_1): Extend to support mask regs.
+	(kandn<mode>): New.
+	(define_split): Split and-not to and and not if operands
+	are not mask regs.
+	(*<code><mode>_1): Separate HI mode to new pattern...
+	(*<code>hi_1): This.
+	(*<code>qi_1): Extend to support mask regs.
+	(kxnor<mode>): New.
+	(kortestzhi): Ditto.
+	(kortestchi): Ditto.
+	(kunpckhi): Ditto.
+	(*one_cmpl<mode>2_1): Remove HImode and handle it...
+	(*one_cmplhi2_1): ...Here, now with mask registers support.
+	(*one_cmplqi2_1): Support new mask registers.
+	(HI/QImode arithmetics splitter): Don't split if mask registers
+	are used.
+	(HI/QImode not splitter): Ditto.
+	* config/i386/predicated.md (mask_reg_operand): New.
+	(general_reg_operand): Ditto.
+
+2013-09-11  Alexander Ivchenko  <alexander.ivchenko@intel.com>
+
+	* doc/invoke.texi: Document fxsr, xsave and xsaveopt options.
+	* doc/extend.texi: Document fxsr, xsave and xsaveopt builtins.
+
+2013-09-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/58380
+	* tree-ssa-threadupdate.c (thread_block): Recognize another case
+	of threading through a buried loop header.
+
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): Correct
+	return value for single successor case.
+
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (ipa_devirt): Enable with LTO.
+
+2013-09-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/58361
+	* arm/vfp.md (combine_vcvt_f32_<FCVTI32typename>): Fix pattern to
+	support conditional execution.
+	(combine_vcvt_f64_<FCVTI32typename>): Likewise.
+
+2013-09-10  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra.c (lra): Clear lra_optional_reload_pseudos before every
+	constraint pass.
+	* lra-constraints.c (curr_insn_transform): Switch on optional
+	reloads.  Check destination too to check move insn.
+	(undo_optional_reloads): Add check that the original peudo did not
+	changed its allocation and the optional reload was inherited on
+	last inheritance pass.  Break loop after deciding to keep optional
+	reload.
+	(lra_undo_inheritance): Add check that inherited pseudo still in
+	memory.
+
+2013-09-10  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (generic_sched): New.
+	* config/aarch64/aarch64-generic.md (load): Make conditional
+	on generic_sched attribute.
+	(nonload): Likewise.
+
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* lto-cgraph.c: Include ipa-utils.h.
+	(compute_ltrans_boundary): Also add possible targets into the boundary.
+
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (gimple_get_virt_method_for_binfo): Pass real
+	VAR_DECL of vtable rather than full expression.
+
+2013-09-10  Jan Hubicka  <jh@suse.cz>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* cgraphunit.c (analyze_functions): Save input_location, set it
+	to UNKNOWN_LOCATION and restore it at the end.
+
+2013-09-10  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-cp.c (propagate_constants_topo): Do not ignore SCC
+	represented by a thunk.
+
+2013-09-10  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/58343
+	* tree-ssa-threadupdate.c (thread_block): Identify and disable
+	jump threading requests through loop headers buried in the middle
+	of a jump threading path.
+
+	* tree-ssa-threadedge.c (thread_around_empty_blocks): Fix thinko
+	in return value/type.
+
+2013-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/58365
+	* cfgcleanup.c (merge_memattrs): Also clear MEM_READONLY_P
+	resp. MEM_NOTRAP_P if they differ, or set MEM_VOLATILE_P if
+	it differs.
+
+2013-09-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.h (build_rdg): Drop all parameters but loop.
+	* tree-data-ref.c (create_rdg_vertices): Collect all data
+	references, signal failure to the caller, use data-ref API.
+	(build_rdg): Compute data references only once.  Maintain lifetime
+	of data references and data dependences from within RDG.
+	(free_rdg): Free dependence relations.
+	* tree-loop-distribution.c (rdg_flag_uses): Drop weird code
+	inventing extra dependences.
+	(distribute_loop): Update for RDG API changes.
+
+2013-09-10  Kai Tietz  <ktietz@redhat.com>
+
+	* doc/invoke.texi (fms-extensions): Document changed
+	behavior for ms-abi targets.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Set default value of option -fms-extension for ms-abi targets.
+
+2013-09-10  Michael Zolotukhin  <michael.v.zolotukhin@gmail.com>
+
+	* config/i386/i386.c (ix86_expand_movmem): Fix epilogue generation.
+
+2013-09-10  Alan Modra  <amodra@gmail.com>
+
+	PR target/58330
+	* config/rs6000/rs6000.md (bswapdi2_64bit): Disable for volatile mems.
+
+2013-09-10  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/predicates.md (add_cint_operand): New.
+	(reg_or_add_cint_operand, small_toc_ref): Use add_cint_operand.
+	* config/rs6000/rs6000.md (largetoc_high_plus): Restrict offset
+	using add_cint_operand.
+	(largetoc_high_plus_aix): Likewise.
+
+2013-09-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58364
+	* tree-ssa-reassoc.c (init_range_entry): For BIT_NOT_EXPR on
+	BOOLEAN_TYPE, only invert in_p and continue with arg0 if
+	the current range can't be an unconditional true or false.
+
+2013-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h (vrsqrte_f64): Fix parameter type.
+
+2013-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* ipa-prop.c (ipa_modify_call_arguments): Initialize deref_align.
+
+2013-09-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/43452
+	* doc/invoke.texi (-Wdelete-incomplete): Document it.
+
+2013-09-09  Ian Bolton  <ian.bolton@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_preferred_reload_class): Return
+	NO_REGS for immediate that can't be moved directly into FP_REGS.
+
+2013-09-09  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_select_cc_mode): Return CC_SWP for
+	comparison with negated operand.
+	* config/aarch64/aarch64.md (compare_neg<mode>): Match canonical
+	RTL form.
+
+2013-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58326
+	* cfgloopmanip.c (fix_bb_placements): When fixing the placement
+	of a subloop record all its block as affecting loop-closed SSA form.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* expmed.c (lshift_value): Take an unsigned HOST_WIDE_INT instead
+	of an rtx/bitpos pair.
+	(store_fixed_bit_field): Update accordingly.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* asan.c (asan_emit_stack_protection): Use gen_int_mode instead of
+	GEN_INT.
+	* builtins.c (expand_errno_check): Likewise.
+	* dwarf2cfi.c (init_return_column_size): Likewise.
+	* except.c (sjlj_mark_call_sites): Likewise.
+	* expr.c (move_by_pieces_1, store_by_pieces_2): Likewise.
+	* lra-constraints.c (emit_inc): Likewise.
+	* ree.c (combine_set_extension): Likewise.
+	* regmove.c (fixup_match_2): Likewise.
+	* reload1.c (inc_for_reload): Likewise.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* combine.c (simplify_set, expand_field_assignment, extract_left_shift)
+	(force_to_mode, simplify_shift_const_1, simplify_comparison):
+	Use gen_int_mode with the mode of the associated simplify_* call.
+	* explow.c (probe_stack_range, anti_adjust_stack_and_probe): Likewise.
+	* expmed.c (expand_shift_1): Likewise.
+	* function.c (instantiate_virtual_regs_in_insn): Likewise.
+	* loop-iv.c (iv_number_of_iterations): Likewise.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Likewise.
+	* simplify-rtx.c (simplify_binary_operation_1): Likewise.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* asan.c (asan_clear_shadow): Use gen_int_mode with the mode
+	of the associated expand_* call.
+	(asan_emit_stack_protection): Likewise.
+	* builtins.c (round_trampoline_addr): Likewise.
+	* explow.c (allocate_dynamic_stack_space, probe_stack_range): Likewise.
+	* expmed.c (expand_smod_pow2, expand_sdiv_pow2, expand_divmod)
+	(emit_store_flag): Likewise.
+	* expr.c (emit_move_resolve_push, push_block, emit_single_push_insn_1)
+	(emit_push_insn, optimize_bitfield_assignment_op, expand_expr_real_1):
+	Likewise.
+	* function.c (instantiate_virtual_regs_in_insn): Likewise.
+	* ifcvt.c (noce_try_store_flag_constants): Likewise.
+	* loop-unroll.c (unroll_loop_runtime_iterations): Likewise.
+	* modulo-sched.c (generate_prolog_epilog): Likewise.
+	* optabs.c (expand_binop, widen_leading, expand_doubleword_clz)
+	(expand_ctz, expand_ffs, expand_unop): Likewise.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* alias.c (addr_side_effect_eval): Use gen_int_mode with the mode
+	of the associated gen_rtx_* call.
+	* caller-save.c (init_caller_save): Likewise.
+	* combine.c (find_split_point, make_extraction): Likewise.
+	(make_compound_operation): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* explow.c (plus_constant, probe_stack_range): Likewise.
+	* expmed.c (expand_mult_const): Likewise.
+	* expr.c (emit_single_push_insn_1, do_tablejump): Likewise.
+	* reload1.c (init_reload): Likewise.
+	* valtrack.c (cleanup_auto_inc_dec): Likewise.
+	* var-tracking.c (adjust_mems): Likewise.
+	* modulo-sched.c (sms_schedule): Likewise, but use gen_rtx_GT
+	rather than gen_rtx_fmt_ee.
+
+2013-09-09  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58294
+	* value-prof.c (gimple_ic): Copy also abnormal edges.
+
+2013-09-09  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* asan.c (asan_shadow_cst): Use gen_int_mode.
+
 2013-09-08  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-profile.c: Add toplevel comment.
@@ -271,10 +1040,8 @@
 
 2013-09-06  James Greenhalgh  <james.greenhalgh@arm.com>
 
-	* config/arm/types.md: Add "no_insn", "multiple" and "untyped"
-	types.
-	* config/arm/arm-fixed.md: Add type attribute to all insn
-	patterns.
+	* config/arm/types.md: Add "no_insn", "multiple" and "untyped" types.
+	* config/arm/arm-fixed.md: Add type attribute to all insn patterns.
 	(add<mode>3): Add type attribute.
 	(add<mode>3): Likewise.
 	(usadd<mode>3): Likewise.
@@ -624,8 +1391,7 @@
 
 2013-09-06  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 
-	* config/s390/s390.md: Add "bcr_flush" value to mnemonic
-	attribute.
+	* config/s390/s390.md: Add "bcr_flush" value to mnemonic attribute.
 	("mem_thread_fence_1"): Use bcr 14,0 for z196 and later.
 	Set the mnemonic attribute to "bcr_flush".  Set the "z196prop"
 	attribute to "z196_alone".
@@ -641,9 +1407,9 @@
 	(set_control_dependence_map_bit, clear_control_dependence_bitmap,
 	find_pdom, find_control_dependence, find_all_control_dependences):
 	Move to cfganal.c.
-	(mark_control_dependent_edges_necessary, find_obviously_necessary_stmts,
-	propagate_necessity, tree_dce_init, tree_dce_done,
-	perform_tree_ssa_dce): Adjust.
+	(mark_control_dependent_edges_necessary,
+	find_obviously_necessary_stmts, propagate_necessity, tree_dce_init,
+	tree_dce_done, perform_tree_ssa_dce): Adjust.
 	* cfganal.c (set_control_dependence_map_bit,
 	clear_control_dependence_bitmap, find_pdom, find_control_dependence,
 	find_all_control_dependences): Move from tree-ssa-dce.c and
@@ -690,24 +1456,17 @@
 2013-09-05  James Greenhalgh  <james.greenhalgh@arm.com>
 	    Sofiane Naci  <sofiane.naci@arm.com>
 
-	* config/arm/types.md (define_attr "type"):
-	Expand "arlo_imm"
+	* config/arm/types.md (define_attr "type"): Expand "arlo_imm"
 	into "adr", "alu_imm", "alus_imm", "logic_imm", "logics_imm".
-	Expand "arlo_reg"
-	into "adc_reg", "adc_imm", "adcs_reg", "adcs_imm", "alu_ext",
-	"alu_reg", "alus_ext", "alus_reg", "bfm", "csel", "logic_reg",
-	"logics_reg", "rev".
-	Expand "arlo_shift"
-	into "alu_shift_imm", "alus_shift_imm", "logic_shift_imm",
-	"logics_shift_imm".
-	Expand "arlo_shift_reg"
-	into "alu_shift_reg", "alus_shift_reg", "logic_shift_reg",
-	"logics_shift_reg".
-	Expand "clz" into "clz, "rbit".
-	Rename "shift" to "shift_imm".
+	Expand "arlo_reg" into "adc_reg", "adc_imm", "adcs_reg", "adcs_imm",
+	"alu_ext", "alu_reg", "alus_ext", "alus_reg", "bfm", "csel",
+	"logic_reg", "logics_reg", "rev".  Expand "arlo_shift" into
+	"alu_shift_imm", "alus_shift_imm", "logic_shift_imm",
+	"logics_shift_imm".  Expand "arlo_shift_reg" into "alu_shift_reg",
+	"alus_shift_reg", "logic_shift_reg", "logics_shift_reg".  Expand "clz"
+	into "clz, "rbit".  Rename "shift" to "shift_imm".
 	* config/arm/arm.md (define_attr "core_cycles"): Update for attribute
-	changes.
-	Update for attribute changes all occurrences of arlo_* and
+	changes.  Update for attribute changes all occurrences of arlo_* and
 	shift* types.
 	* config/arm/arm-fixed.md: Update for attribute changes
 	all occurrences of arlo_* types.
@@ -722,8 +1481,7 @@
 	* config/arm/arm1026ejs.md (alu_op): Update for attribute changes.
 	(alu_shift_op): Likewise.
 	(alu_shift_reg_op): Likewise.
-	* config/arm/arm1136jfs.md (11_alu_op): Update for
-	attribute changes.
+	* config/arm/arm1136jfs.md (11_alu_op): Update for attribute changes.
 	(11_alu_shift_op): Likewise.
 	(11_alu_shift_reg_op): Likewise.
 	* config/arm/arm926ejs.md (9_alu_op): Update for attribute changes.
@@ -735,36 +1493,31 @@
 	* config/arm/cortex-a5.md (cortex_a5_alu): Update for
 	attribute changes.
 	(cortex_a5_alu_shift): Likewise.
-	* config/arm/cortex-a53.md
-	(cortex_a53_alu): Update for attribute changes.
+	* config/arm/cortex-a53.md (cortex_a53_alu): Update for
+	attribute changes.
 	(cortex_a53_alu_shift): Likewise.
-	* config/arm/cortex-a7.md
-	(cortex_a7_alu_imm): Update for attribute changes.
+	* config/arm/cortex-a7.md (cortex_a7_alu_imm): Update for
+	attribute changes.
 	(cortex_a7_alu_reg): Likewise.
 	(cortex_a7_alu_shift): Likewise.
-	* config/arm/cortex-a8.md
-	(cortex_a8_alu): Update for attribute changes.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for
+	attribute changes.
 	(cortex_a8_alu_shift): Likewise.
 	(cortex_a8_alu_shift_reg): Likewise.
-	* config/arm/cortex-a9.md
-	(cortex_a9_dp): Update for attribute changes.
+	* config/arm/cortex-a9.md (cortex_a9_dp): Update for attribute changes.
 	(cortex_a9_dp_shift): Likewise.
-	* config/arm/cortex-m4.md
-	(cortex_m4_alu): Update for attribute changes.
+	* config/arm/cortex-m4.md (cortex_m4_alu): Update for
+	attribute changes.
 	* config/arm/cortex-r4.md
 	(cortex_r4_alu): Update for attribute changes.
 	(cortex_r4_mov): Likewise.
 	(cortex_r4_alu_shift_reg): Likewise.
-	* config/arm/fa526.md
-	(526_alu_op): Update for attribute changes.
+	* config/arm/fa526.md (526_alu_op): Update for attribute changes.
 	(526_alu_shift_op): Likewise.
-	* config/arm/fa606te.md
-	(606te_alu_op): Update for attribute changes.
-	* config/arm/fa626te.md
-	(626te_alu_op): Update for attribute changes.
+	* config/arm/fa606te.md (606te_alu_op): Update for attribute changes.
+	* config/arm/fa626te.md (626te_alu_op): Update for attribute changes.
 	(626te_alu_shift_op): Likewise.
-	* config/arm/fa726te.md
-	(726te_alu_op): Update for attribute changes.
+	* config/arm/fa726te.md (726te_alu_op): Update for attribute changes.
 	(726te_alu_shift_op): Likewise.
 	(726te_alu_shift_reg_op): Likewise.
 	* config/arm/fmp626.md (mp626_alu_op): Update for attribute changes.
@@ -1173,8 +1926,7 @@
 	(cortex_a15_store1): Likewise.
 	(cortex_a15_store3): Likewise.
 	(cortex_a15_call): Likewise.
-	* config/arm/cortex-a5.md (cortex_a5_r2f): Update for attribute
-	change.
+	* config/arm/cortex-a5.md (cortex_a5_r2f): Update for attribute change.
 	(cortex_a5_f2r): Likewise.
 	* config/arm/cortex-a53.md (cortex_a53_r2f): Update for attribute
 	change.
@@ -1228,8 +1980,8 @@
 	(cortex_a8_neon_vsma): Likewise.
 	(cortex_a8_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a8_neon_mul_qqq_8_16_32_ddd_32): Likewise.
-	(cortex_a8_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
-	Likewise.
+	(cortex_a8_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_\
+	long_scalar): Likewise.
 	(cortex_a8_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a8_neon_mla_qqq_8_16): Likewise.
 	(cortex_a8_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_\
@@ -1276,8 +2028,7 @@
 	(cortex_a8_neon_vld3_vld4_all_lanes): Likewise.
 	(cortex_a8_neon_mcr): Likewise.
 	(cortex_a8_neon_mcr_2_mcrr): Likewise.
-	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute
-	change.
+	* config/arm/cortex-a8.md (cortex_a8_alu): Update for attribute change.
 	* config/arm/cortex-a9-neon.md (ca9_neon_mrc): Update for attribute
 	change.
 	(ca9_neon_mrrc): Likewise.
@@ -1293,8 +2044,8 @@
 	(cortex_a9_neon_vsma): Likewise.
 	(cortex_a9_neon_mul_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a9_neon_mul_qqq_8_16_32_ddd_32): Likewise.
-	(cortex_a9_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_long_scalar):
-	Likewise.
+	(cortex_a9_neon_mul_qdd_64_32_long_qqd_16_ddd_32_scalar_64_32_\
+	long_scalar): Likewise.
 	(cortex_a9_neon_mla_ddd_8_16_qdd_16_8_long_32_16_long): Likewise.
 	(cortex_a9_neon_mla_qqq_8_16): Likewise.
 	(cortex_a9_neon_mla_ddd_32_qqd_16_ddd_32_scalar_qdd_64_32_\
@@ -1350,11 +2101,10 @@
 	change.
 	(cortex_r4_mrc): Likewise.
 	* config/arm/iterators.md: Update comment referring to neon_type.
-	* config/arm/iwmmxt.md
-	(iwmmxt_arm_movdi): Update for attribute change.
+	* config/arm/iwmmxt.md (iwmmxt_arm_movdi): Update for attribute change.
 	(iwmmxt_movsi_insn): Likewise.
-	* config/arm/marvell-pj4.md
-	(pj4_vfp_to_core): Update for attribute change.
+	* config/arm/marvell-pj4.md (pj4_vfp_to_core): Update for
+	attribute change.
 	(pj4_core_to_vfp): Likewise.
 	* config/arm/neon-schedgen.ml (emit_insn_reservations): Update for
 	attribute change.
@@ -1570,19 +2320,20 @@
 	cgraph_propagate_frequency_1, cgraph_propagate_frequency): Move to
 	ipa-profile.c; replace cgraph_ by ipa_ prefix.
 	* cgraph.h (cgraph_propagate_frequency): Remove.
-	* ipa-inline-analysis.c: Include ipa-utils.h; drop duplicated cfgloop.h.
+	* ipa-inline-analysis.c: Include ipa-utils.h;
+	drop duplicated cfgloop.h.
 	(inline_update_callee_summaries): Update.
 	* ipa-profile.c: New file.
 	* ipa-utils.h (ipa_propagate_frequency): Declare.
 	* ipa.c: Do not include pointer-set.h, hash-table.h, lto-streamer.h,
-	data-streamer.h, value-prof.h
+	data-streamer.h, value-prof.h.
 	(symtab_remove_unreachable_nodes): Update profile.
 	(struct histogram_entry, histogram, histogram_pool, histogram_hash,
 	account_time_size, cmp_counts, dump_histogram,
 	ipa_profile_generate_summary, ipa_profile_write_summary,
 	ipa_profile_read_summary, ipa_profile, gate_ipa_profile,
 	pass_data_ipa_profile, pass_ipa_profile, make_pass_ipa_profile):
-	Move to ipa-profile.c
+	Move to ipa-profile.c.
 
 2013-09-01  John David Anglin  <danglin@gcc.gnu.org>
 
@@ -1604,7 +2355,7 @@
 	value range profiling is available.
 	* passes.def (pass_ipa_devirt): Add.
 	* timever.def (TV_IPA_DEVIRT): New timevar.
-	* tree-pass.h (make_pass_ipa_devirt): 
+	* tree-pass.h (make_pass_ipa_devirt):
 
 2013-09-01  Iain Sandoe  <iain@codesourcery.com>
 
@@ -2367,13 +3118,13 @@
 
 2013-08-23  Kirill Yukhin  <kirill.yukhin@intel.com>
 
-	* gcc/config/i386/predicates.md (ext_sse_reg_operand): New.
-	* gcc/config/i386/i386.md (*movti_internal): Use
+	* config/i386/predicates.md (ext_sse_reg_operand): New.
+	* config/i386/i386.md (*movti_internal): Use
 	predicate to determine if EVEX is needed.
 	(*movsi_internal): Ditto.
 	(*movdf_internal): Ditto.
 	(*movsf_internal): Ditto.
-	* gcc/config/i386/mmx.md (*mov<mode>_internal): Ditto.
+	* config/i386/mmx.md (*mov<mode>_internal): Ditto.
 
 2013-08-23  Jakub Jelinek  <jakub@redhat.com>
 
@@ -6321,7 +7072,7 @@
 	(ix86_save_reg): If the function contains a nonlocal label, save the
 	PIC base reg.
 	* config/darwin-protos.h (machopic_should_output_picbase_label): New.
-	* gcc/config/darwin.c (emitted_pic_label_num): New GTY.
+	* config/darwin.c (emitted_pic_label_num): New GTY.
 	(update_pic_label_number_if_needed): New.
 	(machopic_output_function_base_name): Adjust for nonlocal receiver
 	case.
@@ -9680,11 +10431,11 @@
 
 	* config/i386/driver-i386.c (host_detect_local_cpu): Check movbe.
 
-	* gcc/config/i386/i386-c.c (ix86_target_macros_internal):  New case
+	* config/i386/i386-c.c (ix86_target_macros_internal):  New case
 	PROCESSOR_SLM.
 	(ix86_target_macros_internal): Likewise.
 
-	* gcc/config/i386/i386.c (slm_cost): New cost.
+	* config/i386/i386.c (slm_cost): New cost.
 	(m_SLM): New macro flag.
 	(initial_ix86_tune_features): Set m_SLM.
 	(x86_accumulate_outgoing_args): Likewise.
@@ -10518,7 +11269,7 @@
 	constraints.md instead of rs6000.h.  Reorder w* constraints.  Add
 	wm, wn, wr documentation.
 
-	* gcc/config/rs6000/constraints.md (wm): New constraint for VSX
+	* config/rs6000/constraints.md (wm): New constraint for VSX
 	registers if direct move instructions are enabled.
 	(wn): New constraint for no registers.
 	(wq): New constraint for quad word even GPR registers.
@@ -10526,7 +11277,7 @@
 	(wv): New constraint if power8 vector instructions are enabled.
 	(wQ): New constraint for quad word memory locations.
 
-	* gcc/config/rs6000/predicates.md (const_0_to_15_operand): New
+	* config/rs6000/predicates.md (const_0_to_15_operand): New
 	constraint for 0..15 for crypto instructions.
 	(gpc_reg_operand): If VSX allow registers in VSX registers as well
 	as GPR and floating point registers.
@@ -10539,17 +11290,17 @@
 	(quad_memory_operand): New predicate for quad memory operations.
 	(reg_or_indexed_operand): New predicate for direct move support.
 
-	* gcc/config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED):
+	* config/rs6000/rs6000-cpus.def (ISA_2_5_MASKS_EMBEDDED):
 	Inherit from ISA_2_4_MASKS, not ISA_2_2_MASKS.
 	(ISA_2_7_MASKS_SERVER): New mask for ISA 2.07 (i.e. power8).
 	(POWERPC_MASKS): Add power8 options.
 	(power8 cpu): Use ISA_2_7_MASKS_SERVER instead of specifying the
 	various options.
 
-	* gcc/config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros):
 	Define _ARCH_PWR8 and __POWER8_VECTOR__ for power8.
 
-	* gcc/config/rs6000/rs6000.opt (-mvsx-timode): Add documentation.
+	* config/rs6000/rs6000.opt (-mvsx-timode): Add documentation.
 	(-mpower8-fusion): New power8 options.
 	(-mpower8-fusion-sign): Likewise.
 	(-mpower8-vector): Likewise.
@@ -10557,8 +11308,7 @@
 	(-mdirect-move): Likewise.
 	(-mquad-memory): Likewise.
 
-	* gcc/config/rs6000/rs6000.c (power8_cost): Initial definition for
-	power8.
+	* config/rs6000/rs6000.c (power8_cost): Initial definition for power8.
 	(rs6000_hard_regno_mode_ok): Make PTImode only match even GPR
 	registers.
 	(rs6000_debug_reg_print): Print the base register class if -mdebug=reg.
@@ -15681,21 +16431,20 @@
 
 2013-03-27  Alexander Ivchenko  <alexander.ivchenko@intel.com>
 
-	* gcc/target.def (TARGET_HAS_IFUNC_P): New target hook.
-	* gcc/doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
-	* gcc/doc/tm.texi: Regenerate.
-	* gcc/targhooks.h (default_has_ifunc_p): New.
-	* gcc/targhooks.c (default_has_ifunc_p): Ditto.
-	* gcc/config/linux-protos.h: New file.
-	* gcc/config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of
-	this hook for linux which disables support of indirect functions in
-	android.
-	* gcc/config/linux-android.c: New file.
-	* gcc/config/t-linux-android.c: Ditto.
-	* gcc/config.gcc: Added new object file linux-android.o.
-	* gcc/config/i386/i386.c (ix86_get_function_versions_dispatcher):
+	* target.def (TARGET_HAS_IFUNC_P): New target hook.
+	* doc/tm.texi.in (TARGET_HAS_IFUNC_P): New.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_has_ifunc_p): New.
+	* targhooks.c (default_has_ifunc_p): Ditto.
+	* config/linux-protos.h: New file.
+	* config/linux-android.h (TARGET_HAS_IFUNC_P): Using version of this
+	hook for linux which disables support of indirect functions in android.
+	* config/linux-android.c: New file.
+	* config/t-linux-android.c: Ditto.
+	* config.gcc: Added new object file linux-android.o.
+	* config/i386/i386.c (ix86_get_function_versions_dispatcher):
 	Using TARGET_HAS_IFUNC hook instead of HAVE_GNU_INDIRECT_FUNCTION.
-	* gcc/varasm.c (do_assemble_alias): Likewise.
+	* varasm.c (do_assemble_alias): Likewise.
 	* configure.ac: Define HAVE_GNU_INDIRECT_FUNCTION as zero if the target
 	doesn't support indirect functions.
 	* configure: Regenerate.

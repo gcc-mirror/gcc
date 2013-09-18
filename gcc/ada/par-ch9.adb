@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,14 +61,15 @@ package body Ch9 is
    --      [is [new INTERFACE_LIST with] TASK_DEFINITION];
 
    --  TASK_BODY ::=
-   --    task body DEFINING_IDENTIFIER is
+   --    task body DEFINING_IDENTIFIER [ASPECT_SPECIFICATIONS] is
    --      DECLARATIVE_PART
    --    begin
    --      HANDLED_SEQUENCE_OF_STATEMENTS
    --    end [task_IDENTIFIER]
 
    --  TASK_BODY_STUB ::=
-   --    task body DEFINING_IDENTIFIER is separate;
+   --    task body DEFINING_IDENTIFIER is separate
+   --      [ASPECT_SPECIFICATIONS];
 
    --  This routine scans out a task declaration, task body, or task stub
 
@@ -78,9 +79,15 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Task return Node_Id is
-      Name_Node  : Node_Id;
-      Task_Node  : Node_Id;
-      Task_Sloc  : Source_Ptr;
+      Aspect_Sloc : Source_Ptr;
+      Name_Node   : Node_Id;
+      Task_Node   : Node_Id;
+      Task_Sloc   : Source_Ptr;
+
+      Dummy_Node : constant Node_Id := New_Node (N_Task_Body, Token_Ptr);
+      --  Placeholder node used to hold legal or prematurely declared aspect
+      --  specifications. Depending on the context, the aspect specifications
+      --  may be moved to a new node.
 
    begin
       Push_Scope_Stack;
@@ -100,6 +107,11 @@ package body Ch9 is
             Discard_Junk_List (P_Known_Discriminant_Part_Opt);
          end if;
 
+         if Aspect_Specifications_Present then
+            Aspect_Sloc := Token_Ptr;
+            P_Aspect_Specifications (Dummy_Node, Semicolon => False);
+         end if;
+
          TF_Is;
 
          --  Task stub
@@ -108,6 +120,14 @@ package body Ch9 is
             Scan; -- past SEPARATE
             Task_Node := New_Node (N_Task_Body_Stub, Task_Sloc);
             Set_Defining_Identifier (Task_Node, Name_Node);
+
+            if Has_Aspects (Dummy_Node) then
+               Error_Msg
+                 ("aspect specifications must come after SEPARATE",
+                  Aspect_Sloc);
+            end if;
+
+            P_Aspect_Specifications (Task_Node, Semicolon => False);
             TF_Semicolon;
             Pop_Scope_Stack; -- remove unused entry
 
@@ -116,6 +136,13 @@ package body Ch9 is
          else
             Task_Node := New_Node (N_Task_Body, Task_Sloc);
             Set_Defining_Identifier (Task_Node, Name_Node);
+
+            --  Move the aspect specifications to the body node
+
+            if Has_Aspects (Dummy_Node) then
+               Move_Aspects (From => Dummy_Node, To => Task_Node);
+            end if;
+
             Parse_Decls_Begin_End (Task_Node);
          end if;
 
@@ -367,12 +394,15 @@ package body Ch9 is
    --    is [new INTERFACE_LIST with] PROTECTED_DEFINITION;
 
    --  PROTECTED_BODY ::=
-   --    protected body DEFINING_IDENTIFIER is
+   --    protected body DEFINING_IDENTIFIER
+   --      [ASPECT_SPECIFICATIONS]
+   --    is
    --      {PROTECTED_OPERATION_ITEM}
    --    end [protected_IDENTIFIER];
 
    --  PROTECTED_BODY_STUB ::=
-   --    protected body DEFINING_IDENTIFIER is separate;
+   --    protected body DEFINING_IDENTIFIER is separate
+   --      [ASPECT_SPECIFICATIONS];
 
    --  This routine scans out a protected declaration, protected body
    --  or a protected stub.
@@ -383,10 +413,16 @@ package body Ch9 is
    --  Error recovery: cannot raise Error_Resync
 
    function P_Protected return Node_Id is
+      Aspect_Sloc    : Source_Ptr;
       Name_Node      : Node_Id;
       Protected_Node : Node_Id;
       Protected_Sloc : Source_Ptr;
       Scan_State     : Saved_Scan_State;
+
+      Dummy_Node : constant Node_Id := New_Node (N_Protected_Body, Token_Ptr);
+      --  Placeholder node used to hold legal or prematurely declared aspect
+      --  specifications. Depending on the context, the aspect specifications
+      --  may be moved to a new node.
 
    begin
       Push_Scope_Stack;
@@ -405,14 +441,28 @@ package body Ch9 is
             Discard_Junk_List (P_Known_Discriminant_Part_Opt);
          end if;
 
+         if Aspect_Specifications_Present then
+            Aspect_Sloc := Token_Ptr;
+            P_Aspect_Specifications (Dummy_Node, Semicolon => False);
+         end if;
+
          TF_Is;
 
          --  Protected stub
 
          if Token = Tok_Separate then
             Scan; -- past SEPARATE
+
             Protected_Node := New_Node (N_Protected_Body_Stub, Protected_Sloc);
             Set_Defining_Identifier (Protected_Node, Name_Node);
+
+            if Has_Aspects (Dummy_Node) then
+               Error_Msg
+                 ("aspect specifications must come after SEPARATE",
+                  Aspect_Sloc);
+            end if;
+
+            P_Aspect_Specifications (Protected_Node, Semicolon => False);
             TF_Semicolon;
             Pop_Scope_Stack; -- remove unused entry
 
@@ -421,6 +471,8 @@ package body Ch9 is
          else
             Protected_Node := New_Node (N_Protected_Body, Protected_Sloc);
             Set_Defining_Identifier (Protected_Node, Name_Node);
+
+            Move_Aspects (From => Dummy_Node, To => Protected_Node);
             Set_Declarations (Protected_Node, P_Protected_Operation_Items);
             End_Statements (Protected_Node);
          end if;
@@ -800,8 +852,8 @@ package body Ch9 is
 
    --  ENTRY_DECLARATION ::=
    --    [OVERRIDING_INDICATOR]
-   --    entry DEFINING_IDENTIFIER [(DISCRETE_SUBTYPE_DEFINITION)]
-   --      PARAMETER_PROFILE;
+   --    entry DEFINING_IDENTIFIER
+   --      [(DISCRETE_SUBTYPE_DEFINITION)] PARAMETER_PROFILE
    --        [ASPECT_SPECIFICATIONS];
 
    --  The caller has checked that the initial token is ENTRY, NOT or

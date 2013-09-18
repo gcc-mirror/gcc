@@ -1526,6 +1526,9 @@ x86_64-*-cygwin*)
 i[34567]86-*-mingw* | x86_64-*-mingw*)
 	tm_file="${tm_file} i386/unix.h i386/bsd.h i386/gas.h dbxcoff.h i386/cygming.h"
 	xm_file=i386/xm-mingw32.h
+	c_target_objs="${c_target_objs} winnt-c.o"
+	cxx_target_objs="${cxx_target_objs} winnt-c.o"
+	target_has_targetcm="yes"
 	case ${target} in
 		x86_64-*-* | *-w64-*)
 			need_64bit_isa=yes
@@ -1565,7 +1568,7 @@ i[34567]86-*-mingw* | x86_64-*-mingw*)
 			;;
 	esac
 	tm_file="${tm_file} i386/mingw-stdint.h"
-	tmake_file="${tmake_file} i386/t-cygming t-slibgcc"
+	tmake_file="${tmake_file} t-winnt i386/t-cygming t-slibgcc"
         case ${target} in
                x86_64-w64-*)
                		tmake_file="${tmake_file} i386/t-mingw-w64"
@@ -2029,6 +2032,13 @@ mn10300-*-*)
 	fi
 	use_collect2=no
 	use_gcc_stdint=wrap
+	;;
+msp430*-*-*)
+	tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file}"
+	c_target_objs="msp430-c.o"
+	cxx_target_objs="msp430-c.o"
+	target_has_targetm_common=no
+	tmake_file="${tmake_file} msp430/t-msp430"
 	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
@@ -3858,7 +3868,9 @@ case ${target} in
 		;;
 	i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		;;
-	i[34567]86-*-cygwin* | i[34567]86-*-mingw* | x86_64-*-mingw*)
+	i[34567]86-*-cygwin* | x86_64-*-cygwin*)
+		;;
+	i[34567]86-*-mingw* | x86_64-*-mingw*)
 		;;
 	i[34567]86-*-freebsd* | x86_64-*-freebsd*)
 		;;

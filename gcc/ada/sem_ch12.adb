@@ -76,6 +76,7 @@ with Table;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 with Urealp;   use Urealp;
+with Warnsw;   use Warnsw;
 
 with GNAT.HTable;
 
@@ -3592,8 +3593,8 @@ package body Sem_Ch12 is
 
          Append (Unit_Renaming, Renaming_List);
 
-         --  The renaming declarations are the first local declarations of
-         --  the new unit.
+         --  The renaming declarations are the first local declarations of the
+         --  new unit.
 
          if Is_Non_Empty_List (Visible_Declarations (Act_Spec)) then
             Insert_List_Before
@@ -3894,7 +3895,9 @@ package body Sem_Ch12 is
                    Current_Sem_Unit         => Current_Sem_Unit,
                    Scope_Suppress           => Scope_Suppress,
                    Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-                   Version                  => Ada_Version));
+                   Version                  => Ada_Version,
+                   Version_Pragma           => Ada_Version_Pragma,
+                   Warnings                 => Save_Warnings));
             end if;
          end if;
 
@@ -3940,6 +3943,15 @@ package body Sem_Ch12 is
             Set_Unit (Parent (N), Act_Decl);
             Set_Parent_Spec (Act_Decl, Parent_Spec (N));
             Set_Package_Instantiation (Act_Decl_Id, N);
+
+            --  Process aspect specifications of the instance node, if any, to
+            --  take into account categorization pragmas before analyzing the
+            --  instance.
+
+            if Has_Aspects (N) then
+               Analyze_Aspect_Specifications (N, Act_Decl_Id);
+            end if;
+
             Analyze (Act_Decl);
             Set_Unit (Parent (N), N);
             Set_Body_Required (Parent (N), False);
@@ -4043,7 +4055,7 @@ package body Sem_Ch12 is
       end if;
 
    <<Leave>>
-      if Has_Aspects (N) then
+      if Has_Aspects (N) and then Nkind (Parent (N)) /= N_Compilation_Unit then
          Analyze_Aspect_Specifications (N, Act_Decl_Id);
       end if;
 
@@ -4229,7 +4241,9 @@ package body Sem_Ch12 is
                Current_Sem_Unit         => Current_Sem_Unit,
                Scope_Suppress           => Scope_Suppress,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-               Version                  => Ada_Version)),
+               Version                  => Ada_Version,
+               Version_Pragma           => Ada_Version_Pragma,
+               Warnings                 => Save_Warnings)),
             Inlined_Body => True);
 
          Pop_Scope;
@@ -4309,8 +4323,8 @@ package body Sem_Ch12 is
             end  loop;
          end if;
 
-         --  Restore status of instances. If one of them is a body, make
-         --  its local entities visible again.
+         --  Restore status of instances. If one of them is a body, make its
+         --  local entities visible again.
 
          declare
             E    : Entity_Id;
@@ -4345,7 +4359,9 @@ package body Sem_Ch12 is
                Current_Sem_Unit         => Current_Sem_Unit,
                Scope_Suppress           => Scope_Suppress,
                Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-               Version                  => Ada_Version)),
+               Version                  => Ada_Version,
+               Version_Pragma           => Ada_Version_Pragma,
+               Warnings                 => Save_Warnings)),
             Inlined_Body => True);
       end if;
    end Inline_Instance_Body;
@@ -4401,7 +4417,9 @@ package body Sem_Ch12 is
              Current_Sem_Unit         => Current_Sem_Unit,
              Scope_Suppress           => Scope_Suppress,
              Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
-             Version                  => Ada_Version));
+             Version                  => Ada_Version,
+             Version_Pragma           => Ada_Version_Pragma,
+             Warnings                 => Save_Warnings));
          return True;
 
       --  Here if not inlined, or we ignore the inlining
@@ -4855,7 +4873,6 @@ package body Sem_Ch12 is
             --  subsequent construction of the body.
 
             if Need_Subprogram_Instance_Body (N, Act_Decl_Id) then
-
                Check_Forward_Instantiation (Gen_Decl);
 
                --  The wrapper package is always delayed, because it does not
@@ -9901,6 +9918,8 @@ package body Sem_Ch12 is
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
       Opt.Ada_Version          := Body_Info.Version;
+      Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
+      Restore_Warnings (Body_Info.Warnings);
 
       if No (Gen_Body_Id) then
          Load_Parent_Of_Generic
@@ -10161,7 +10180,9 @@ package body Sem_Ch12 is
       Unit_Renaming : Node_Id;
 
       Parent_Installed : Boolean := False;
-      Save_Style_Check : constant Boolean := Style_Check;
+
+      Saved_Style_Check : constant Boolean        := Style_Check;
+      Saved_Warnings    : constant Warning_Record := Save_Warnings;
 
       Par_Ent : Entity_Id := Empty;
       Par_Vis : Boolean   := False;
@@ -10187,6 +10208,8 @@ package body Sem_Ch12 is
       Local_Suppress_Stack_Top := Body_Info.Local_Suppress_Stack_Top;
       Scope_Suppress           := Body_Info.Scope_Suppress;
       Opt.Ada_Version          := Body_Info.Version;
+      Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
+      Restore_Warnings (Body_Info.Warnings);
 
       if No (Gen_Body_Id) then
 
@@ -10366,7 +10389,8 @@ package body Sem_Ch12 is
          end if;
 
          Restore_Env;
-         Style_Check := Save_Style_Check;
+         Style_Check := Saved_Style_Check;
+         Restore_Warnings (Saved_Warnings);
 
       --  Body not found. Error was emitted already. If there were no previous
       --  errors, this may be an instance whose scope is a premature instance.
@@ -10917,9 +10941,7 @@ package body Sem_Ch12 is
 
          --  Ada 2005 (AI-251)
 
-         if Ada_Version >= Ada_2005
-           and then Is_Interface (Ancestor)
-         then
+         if Ada_Version >= Ada_2005 and then Is_Interface (Ancestor) then
             if not Interface_Present_In_Ancestor (Act_T, Ancestor) then
                Error_Msg_NE
                  ("(Ada 2005) expected type implementing & in instantiation",
@@ -11849,7 +11871,8 @@ package body Sem_Ch12 is
       Body_Optional : Boolean := False)
    is
       Comp_Unit          : constant Node_Id := Cunit (Get_Source_Unit (Spec));
-      Save_Style_Check   : constant Boolean := Style_Check;
+      Saved_Style_Check  : constant Boolean := Style_Check;
+      Saved_Warnings     : constant Warning_Record := Save_Warnings;
       True_Parent        : Node_Id;
       Inst_Node          : Node_Id;
       OK                 : Boolean;
@@ -12083,7 +12106,9 @@ package body Sem_Ch12 is
                               Scope_Suppress           => Scope_Suppress,
                               Local_Suppress_Stack_Top =>
                                 Local_Suppress_Stack_Top,
-                              Version                  => Ada_Version);
+                              Version                  => Ada_Version,
+                              Version_Pragma           => Ada_Version_Pragma,
+                              Warnings                 => Save_Warnings);
 
                            --  Package instance
 
@@ -12119,12 +12144,13 @@ package body Sem_Ch12 is
                        ((Inst_Node                => Inst_Node,
                          Act_Decl                 => True_Parent,
                          Expander_Status          => Exp_Status,
-                         Current_Sem_Unit         =>
-                           Get_Code_Unit (Sloc (Inst_Node)),
+                         Current_Sem_Unit         => Get_Code_Unit
+                                                       (Sloc (Inst_Node)),
                          Scope_Suppress           => Scope_Suppress,
-                         Local_Suppress_Stack_Top =>
-                           Local_Suppress_Stack_Top,
-                           Version                => Ada_Version)),
+                         Local_Suppress_Stack_Top => Local_Suppress_Stack_Top,
+                         Version                  => Ada_Version,
+                         Version_Pragma           => Ada_Version_Pragma,
+                         Warnings                 => Save_Warnings)),
                      Body_Optional => Body_Optional);
                end;
             end if;
@@ -12135,7 +12161,8 @@ package body Sem_Ch12 is
             Opt.Style_Check := False;
             Expander_Mode_Save_And_Set (True);
             Load_Needed_Body (Comp_Unit, OK);
-            Opt.Style_Check := Save_Style_Check;
+            Opt.Style_Check := Saved_Style_Check;
+            Restore_Warnings (Saved_Warnings);
             Expander_Mode_Restore;
 
             if not OK

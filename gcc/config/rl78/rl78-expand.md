@@ -35,9 +35,24 @@
     if (GET_CODE (operand1) == SUBREG
         && GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF)
       FAIL;
+    /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).
+       cf. g++.dg/abi/packed.C.  */
+    if (GET_CODE (operand1) == SUBREG
+	&& GET_CODE (XEXP (operand1, 0)) == CONST
+        && GET_CODE (XEXP (XEXP (operand1, 0), 0)) == PLUS
+        && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
+      FAIL;
+
+    /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).
+       cf. g++.dg/abi/packed.C.  */
+    if (GET_CODE (operand1) == SUBREG
+	&& GET_CODE (XEXP (operand1, 0)) == CONST
+        && GET_CODE (XEXP (XEXP (operand1, 0), 0)) == PLUS
+        && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
+      FAIL;
 
     if (CONST_INT_P (operand1) && ! IN_RANGE (INTVAL (operand1), (-1 << 8) + 1, (1 << 8) - 1))
-      gcc_unreachable();
+      FAIL;
   }
 )
 
@@ -56,17 +71,27 @@
     if (GET_CODE (operand1) == SUBREG
         && GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF)
       FAIL;
+    /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).  */
+    if (GET_CODE (operand1) == SUBREG
+	&& GET_CODE (XEXP (operand1, 0)) == CONST
+        && GET_CODE (XEXP (XEXP (operand1, 0), 0)) == PLUS
+        && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
+      FAIL;
   }
 )
 
-(define_expand "movsi"
-  [(set (match_operand:SI 0 "nonimmediate_operand")
-	(match_operand:SI 1 "general_operand"))]
+(define_insn_and_split "movsi"
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=vYS,v,Wfr")
+	(match_operand:SI 1 "general_operand" "viYS,Wfr,v"))]
   ""
-  {
-    rl78_expand_movsi (operands);
-    DONE;
-  }
+  "#"
+  ""
+  [(set (match_operand:HI 2 "nonimmediate_operand")
+	(match_operand:HI 4 "general_operand"))
+   (set (match_operand:HI 3 "nonimmediate_operand")
+	(match_operand:HI 5 "general_operand"))]
+  "rl78_split_movsi (operands);"
+  [(set_attr "valloc" "op1")]
 )
 
 ;;---------- Conversions ------------------------
@@ -200,13 +225,33 @@
 )
 
 (define_expand "ashrsi3"
-  [(set (match_operand:SI               0 "register_operand")
-	(ashiftrt:SI (match_operand:SI  1 "register_operand")
-		      (match_operand:SI 2 "immediate_operand")))
+  [(parallel [(set (match_operand:SI               0 "nonimmediate_operand")
+		   (ashiftrt:SI (match_operand:SI  1 "nonimmediate_operand")
+				(match_operand:SI  2 "nonmemory_operand")))
+	      (clobber (reg:HI X_REG))])
    ]
   ""
-  "if (GET_CODE (operands[2]) != CONST_INT)
-     FAIL;"
+  ""
+)
+
+(define_expand "lshrsi3"
+  [(parallel [(set (match_operand:SI               0 "nonimmediate_operand")
+		   (lshiftrt:SI (match_operand:SI  1 "nonimmediate_operand")
+				(match_operand:SI  2 "nonmemory_operand")))
+	      (clobber (reg:HI X_REG))])
+   ]
+  ""
+  ""
+)
+
+(define_expand "ashlsi3"
+  [(parallel [(set (match_operand:SI               0 "nonimmediate_operand")
+	(ashift:SI (match_operand:SI  1 "nonimmediate_operand")
+		      (match_operand:SI 2 "nonmemory_operand")))
+	      (clobber (reg:HI X_REG))])
+   ]
+  ""
+  ""
 )
 
 ;;---------- Branching ------------------------
@@ -252,5 +297,18 @@
               (label_ref (match_operand 3 "" ""))
 	      (pc)))]
   ""
+  "rl78_expand_compare (operands);"
+)
+
+(define_expand "cbranchsi4"
+  [(parallel [(set (pc) (if_then_else
+			 (match_operator 0 "rl78_cmp_operator"
+					 [(match_operand:SI 1 "general_operand")
+					  (match_operand:SI 2 "nonmemory_operand")])
+			 (label_ref (match_operand 3 "" ""))
+			 (pc)))
+	      (clobber (reg:HI AX_REG))
+	      ])]
+  "1"
   "rl78_expand_compare (operands);"
 )

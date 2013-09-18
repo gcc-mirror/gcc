@@ -1,3 +1,8 @@
+2013-09-12  DJ Delorie  <dj@redhat.com>
+
+	* MAINTAINERS: Add Nick Clifton and DJ Delorie as msp430
+        maintainers.
+
 2013-09-03  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Also allow ISL 0.12.

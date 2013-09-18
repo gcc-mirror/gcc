@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "tree.h"
 #include "gimple.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "diagnostic-core.h"
 #include "bitmap.h"
 #include "vec.h"

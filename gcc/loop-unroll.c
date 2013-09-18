@@ -1166,8 +1166,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
      the number of unrollings is a power of two, and thus this is correct
      even if there is overflow in the computation.  */
   niter = expand_simple_binop (desc->mode, AND,
-			       niter,
-			       GEN_INT (max_unroll),
+			       niter, gen_int_mode (max_unroll, desc->mode),
 			       NULL_RTX, 0, OPTAB_LIB_WIDEN);
 
   init_code = get_insns ();
@@ -1310,7 +1309,7 @@ unroll_loop_runtime_iterations (struct loop *loop)
   gcc_assert (!desc->const_iter);
   desc->niter_expr =
     simplify_gen_binary (UDIV, desc->mode, old_niter,
-			 GEN_INT (max_unroll + 1));
+			 gen_int_mode (max_unroll + 1, desc->mode));
   loop->nb_iterations_upper_bound
     = loop->nb_iterations_upper_bound.udiv (double_int::from_uhwi (max_unroll
 								   + 1),

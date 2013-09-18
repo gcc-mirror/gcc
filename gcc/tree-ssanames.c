@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 
 /* Rewriting a function into SSA form can create a huge number of SSA_NAMEs,
@@ -59,6 +59,9 @@ along with GCC; see the file COPYING3.  If not see
 
 unsigned int ssa_name_nodes_reused;
 unsigned int ssa_name_nodes_created;
+
+#define FREE_SSANAMES(fun) (fun)->gimple_df->free_ssanames
+
 
 /* Initialize management of SSA_NAMEs to default SIZE.  If SIZE is
    zero use default.  */

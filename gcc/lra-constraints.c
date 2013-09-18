@@ -2837,7 +2837,9 @@ emit_inc (enum reg_class new_rclass, rtx in, rtx value, int inc_amount)
       if (plus_p)
 	{
 	  if (CONST_INT_P (inc))
-	    emit_insn (gen_add2_insn (result, GEN_INT (-INTVAL (inc))));
+	    emit_insn (gen_add2_insn (result,
+				      gen_int_mode (-INTVAL (inc),
+						    GET_MODE (result))));
 	  else
 	    emit_insn (gen_sub2_insn (result, inc));
 	}
@@ -3307,15 +3309,19 @@ curr_insn_transform (void)
 	     reg, we might improve the code through inheritance.  If
 	     it does not get a hard register we coalesce memory/memory
 	     moves later.  Ignore move insns to avoid cycling.  */
-	  if (0 && ! lra_simple_p
+	  if (! lra_simple_p
 	      && lra_undo_inheritance_iter < LRA_MAX_INHERITANCE_PASSES
 	      && goal_alt[i] != NO_REGS && REG_P (op)
 	      && (regno = REGNO (op)) >= FIRST_PSEUDO_REGISTER
+	      && ! lra_former_scratch_p (regno)
 	      && reg_renumber[regno] < 0
 	      && (curr_insn_set == NULL_RTX
-		  || !(REG_P (SET_SRC (curr_insn_set))
-		       || MEM_P (SET_SRC (curr_insn_set))
-		       || GET_CODE (SET_SRC (curr_insn_set)) == SUBREG)))
+		  || !((REG_P (SET_SRC (curr_insn_set))
+			|| MEM_P (SET_SRC (curr_insn_set))
+			|| GET_CODE (SET_SRC (curr_insn_set)) == SUBREG)
+		       && (REG_P (SET_DEST (curr_insn_set))
+			   || MEM_P (SET_DEST (curr_insn_set))
+			   || GET_CODE (SET_DEST (curr_insn_set)) == SUBREG))))
 	    optional_p = true;
 	  else
 	    continue;
@@ -5439,7 +5445,7 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
 static bool
 undo_optional_reloads (void)
 {
-  bool change_p;
+  bool change_p, keep_p;
   unsigned int regno, uid;
   bitmap_iterator bi, bi2;
   rtx insn, set, src, dest;
@@ -5449,26 +5455,42 @@ undo_optional_reloads (void)
   bitmap_copy (&removed_optional_reload_pseudos, &lra_optional_reload_pseudos);
   EXECUTE_IF_SET_IN_BITMAP (&lra_optional_reload_pseudos, 0, regno, bi)
     if (reg_renumber[regno] >= 0)
-      EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi2)
-	{
-	  insn = lra_insn_recog_data[uid]->insn;
-	  if ((set = single_set (insn)) == NULL_RTX)
-	    continue;
-	  src = SET_SRC (set);
-	  dest = SET_DEST (set);
-	  if (! REG_P (src) || ! REG_P (dest))
-	    continue;
-	  if ((REGNO (src) == regno
-	       && lra_reg_info[regno].restore_regno != (int) REGNO (dest))
-	      || (REGNO (dest) == regno
-		  && lra_reg_info[regno].restore_regno != (int) REGNO (src)))
+      {
+	keep_p = false;
+	if (reg_renumber[lra_reg_info[regno].restore_regno] >= 0)
+	  /* If the original pseudo changed its allocation, just
+	     removing the optional pseudo is dangerous as the original
+	     pseudo will have longer live range.  */
+	  keep_p = true;
+	else
+	  EXECUTE_IF_SET_IN_BITMAP (&lra_reg_info[regno].insn_bitmap, 0, uid, bi2)
 	    {
-	      /* Optional reload was inherited.  Keep it.  */
-	      bitmap_clear_bit (&removed_optional_reload_pseudos, regno);
-	      if (lra_dump_file != NULL)
-		fprintf (lra_dump_file, "Keep optional reload reg %d\n", regno);
+	      insn = lra_insn_recog_data[uid]->insn;
+	      if ((set = single_set (insn)) == NULL_RTX)
+		continue;
+	      src = SET_SRC (set);
+	      dest = SET_DEST (set);
+	      if (! REG_P (src) || ! REG_P (dest))
+		continue;
+	      if (REGNO (dest) == regno
+		  /* Ignore insn for optional reloads itself.  */
+		  && lra_reg_info[regno].restore_regno != (int) REGNO (src)
+		  /* Check only inheritance on last inheritance pass.  */
+		  && (int) REGNO (src) >= new_regno_start
+		  /* Check that the optional reload was inherited.  */
+		  && bitmap_bit_p (&lra_inheritance_pseudos, REGNO (src)))
+		{
+		  keep_p = true;
+		  break;
+		}
 	    }
-	}
+	if (keep_p)
+	  {
+	    bitmap_clear_bit (&removed_optional_reload_pseudos, regno);
+	    if (lra_dump_file != NULL)
+	      fprintf (lra_dump_file, "Keep optional reload reg %d\n", regno);
+	  }
+      }
   change_p = ! bitmap_empty_p (&removed_optional_reload_pseudos);
   bitmap_initialize (&insn_bitmap, &reg_obstack);
   EXECUTE_IF_SET_IN_BITMAP (&removed_optional_reload_pseudos, 0, regno, bi)
@@ -5550,7 +5572,11 @@ lra_undo_inheritance (void)
     if (lra_reg_info[regno].restore_regno >= 0)
       {
 	n_all_inherit++;
-	if (reg_renumber[regno] < 0)
+	if (reg_renumber[regno] < 0
+	    /* If the original pseudo changed its allocation, just
+	       removing inheritance is dangerous as for changing
+	       allocation we used shorter live-ranges.  */
+	    && reg_renumber[lra_reg_info[regno].restore_regno] < 0)
 	  bitmap_set_bit (&remove_pseudos, regno);
 	else
 	  n_inherit++;

@@ -1,3 +1,10 @@
+2013-09-13  Kai Tietz  <ktietz@redhat.com>
+
+	PR target/57848
+	* c-decl.c (c_builtin_function_ext_scope): Remove
+	wrong assumption that it is never called on prexisting
+	symbol.
+
 2013-09-08  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* c-typeck.c (build_binary_op): Use vector_types_compatible_elements_p.

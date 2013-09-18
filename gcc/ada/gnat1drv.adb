@@ -242,7 +242,7 @@ procedure Gnat1drv is
 
          --  Enable assertions, since they give CodePeer valuable extra info
 
-         Assertions_Enabled    := True;
+         Assertions_Enabled := True;
 
          --  Disable all simple value propagation. This is an optimization
          --  which is valuable for code optimization, and also for generation
@@ -413,10 +413,10 @@ procedure Gnat1drv is
          --  which is more complex to formally verify than the original source.
 
          Tagged_Type_Expansion := False;
-
       end if;
 
-      --  Set Configurable_Run_Time mode if system.ads flag set
+      --  Set Configurable_Run_Time mode if system.ads flag set or if the
+      --  special debug flag -gnatdY is set.
 
       if Targparm.Configurable_Run_Time_On_Target or Debug_Flag_YY then
          Configurable_Run_Time_Mode := True;
@@ -569,6 +569,21 @@ procedure Gnat1drv is
          else
             Inline_Level := 2;
          end if;
+      end if;
+
+      --  Output warning if -gnateE specified and cannot be supported
+
+      if Exception_Extra_Info
+        and then Restrict.No_Exception_Handlers_Set
+      then
+         Set_Standard_Error;
+         Write_Str
+           ("warning: extra exception information (-gnateE) was specified");
+         Write_Eol;
+         Write_Str
+           ("warning: this capability is not available in this configuration");
+         Write_Eol;
+         Set_Standard_Output;
       end if;
 
       --  Finally capture adjusted value of Suppress_Options as the initial

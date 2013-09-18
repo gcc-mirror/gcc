@@ -1162,8 +1162,8 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
 	  target = expand_simple_binop (mode,
 					(diff == STORE_FLAG_VALUE
 					 ? PLUS : MINUS),
-					GEN_INT (ifalse), target, if_info->x, 0,
-					OPTAB_WIDEN);
+					gen_int_mode (ifalse, mode), target,
+					if_info->x, 0, OPTAB_WIDEN);
 	}
 
       /* if (test) x = 8; else x = 0;
@@ -1180,8 +1180,8 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
       else if (itrue == -1)
 	{
 	  target = expand_simple_binop (mode, IOR,
-					target, GEN_INT (ifalse), if_info->x, 0,
-					OPTAB_WIDEN);
+					target, gen_int_mode (ifalse, mode),
+					if_info->x, 0, OPTAB_WIDEN);
 	}
 
       /* if (test) x = a; else x = b;
@@ -1189,11 +1189,11 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
       else
 	{
 	  target = expand_simple_binop (mode, AND,
-					target, GEN_INT (diff), if_info->x, 0,
-					OPTAB_WIDEN);
+					target, gen_int_mode (diff, mode),
+					if_info->x, 0, OPTAB_WIDEN);
 	  if (target)
 	    target = expand_simple_binop (mode, PLUS,
-					  target, GEN_INT (ifalse),
+					  target, gen_int_mode (ifalse, mode),
 					  if_info->x, 0, OPTAB_WIDEN);
 	}
 

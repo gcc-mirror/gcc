@@ -2463,12 +2463,14 @@ package body Freeze is
                             or else (Chars (Comp) /= Name_uParent
                                       and then Is_Controlled (Etype (Comp)))
                             or else (Is_Protected_Type (Etype (Comp))
-                                      and then Present
-                                        (Corresponding_Record_Type
-                                          (Etype (Comp)))
-                                      and then Has_Controlled_Component
-                                        (Corresponding_Record_Type
-                                          (Etype (Comp)))))
+                                      and then
+                                        Present
+                                          (Corresponding_Record_Type
+                                             (Etype (Comp)))
+                                      and then
+                                        Has_Controlled_Component
+                                          (Corresponding_Record_Type
+                                             (Etype (Comp)))))
                then
                   Set_Has_Controlled_Component (Rec);
                end if;
@@ -2731,9 +2733,7 @@ package body Freeze is
       --  Add checks to detect proper initialization of scalars that may appear
       --  as subprogram parameters.
 
-      if Is_Subprogram (E)
-        and then Check_Validity_Of_Parameters
-      then
+      if Is_Subprogram (E) and then Check_Validity_Of_Parameters then
          Apply_Parameter_Validity_Checks (E);
       end if;
 
@@ -3263,9 +3263,7 @@ package body Freeze is
                --  then the only purpose of the Import pragma is to suppress
                --  implicit initialization.
 
-               if Is_Imported (E)
-                 and then No (Address_Clause (E))
-               then
+               if Is_Imported (E) and then No (Address_Clause (E)) then
                   Set_Is_Public (E);
                end if;
 
@@ -3275,7 +3273,7 @@ package body Freeze is
                --  expects 8-bit sizes for these cases.
 
                if (Convention (E) = Convention_C
-                    or else
+                     or else
                    Convention (E) = Convention_CPP)
                  and then Is_Enumeration_Type (Etype (E))
                  and then not Is_Character_Type (Etype (E))
@@ -3349,7 +3347,7 @@ package body Freeze is
             --  enclosing statement sequence.
 
             if Ekind_In (E, E_Constant, E_Variable)
-                 and then not Has_Delayed_Freeze (E)
+              and then not Has_Delayed_Freeze (E)
             then
                declare
                   Init_Stmts : constant Node_Id :=

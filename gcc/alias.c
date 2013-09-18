@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tree-ssa-alias.h"
 #include "pointer-set.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 
 /* The aliasing API provided here solves related but different problems:
 
@@ -1895,7 +1895,7 @@ addr_side_effect_eval (rtx addr, int size, int n_refs)
 
   if (offset)
     addr = gen_rtx_PLUS (GET_MODE (addr), XEXP (addr, 0),
-			 GEN_INT (offset));
+			 gen_int_mode (offset, GET_MODE (addr)));
   else
     addr = XEXP (addr, 0);
   addr = canon_rtx (addr);

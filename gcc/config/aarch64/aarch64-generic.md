@@ -30,9 +30,11 @@
 	(const_string "no")))
 
 (define_insn_reservation "load" 2
-  (eq_attr "is_load" "yes")
+  (and (eq_attr "generic_sched" "yes")
+       (eq_attr "is_load" "yes"))
   "core")
 
 (define_insn_reservation "nonload" 1
-  (eq_attr "is_load" "no")
+  (and (eq_attr "generic_sched" "yes")
+       (eq_attr "is_load" "no"))
   "core")

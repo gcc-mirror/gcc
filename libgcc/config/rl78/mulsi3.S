@@ -70,10 +70,6 @@ ___mulsi3:
 	;; B is at [sp+8]
 	;; result is in R8..R11
 
-	movw	ax, sp
-	addw	ax, #4
-	movw	hl, ax
-
 	sel	rb2
 	push	ax
 	push	bc
@@ -83,37 +79,37 @@ ___mulsi3:
 	movw	r8, ax
 	movw	r16, ax
 
-	movw	ax, [hl+6]
+	movw	ax, [sp+14]
 	cmpw	ax, #0
 	bz	$1f
 	cmpw	ax, #0xffff
 	bnz	$2f
-	movw	ax, [hl]
+	movw	ax, [sp+8]
 	sel	rb1
 	subw	ax, r_0
 	sel	rb0
 	br	$1f
 2:	
 	movw	bc, ax
-	movw	ax, [hl]
+	movw	ax, [sp+8]
 	cmpw	ax, #0
 	skz
 	call	!.Lmul_hi
 1:	
 
-	movw	ax, [hl+2]
+	movw	ax, [sp+10]
 	cmpw	ax, #0
 	bz	$1f
 	cmpw	ax, #0xffff
 	bnz	$2f
-	movw	ax, [hl+4]
+	movw	ax, [sp+12]
 	sel	rb1
 	subw	ax, r_0
 	sel	rb0
 	br	$1f
 2:	
 	movw	bc, ax
-	movw	ax, [hl+4]
+	movw	ax, [sp+12]
 	cmpw	ax, #0
 	skz
 	call	!.Lmul_hi
@@ -130,9 +126,9 @@ ___mulsi3:
 	;; op2 is in BC.2 and BC.1 (bc can shlw/rolcw)
 	;; res is in AX.2 and AX.1 (needs to addw)
 
-	movw	ax, [hl]
+	movw	ax, [sp+8]
 	movw	r10, ax		; BC.1
-	movw	ax, [hl+4]
+	movw	ax, [sp+12]
 
 	cmpw	ax, r10
 	bc	$.Lmul_hisi_top
@@ -191,6 +187,13 @@ ___mulsi3:
 
 ;----------------------------------------------------------------------
 
+	.global	___mulhi3
+___mulhi3:
+	movw	r8, #0
+	movw	ax, [sp+6]
+	movw	bc, ax
+	movw	ax, [sp+4]
+
 	;; R8 += AX * BC
 .Lmul_hi:
 	cmpw	ax, bc
@@ -218,18 +221,3 @@ ___mulsi3:
 
 .Lmul_hi_done:
 	ret
-
-;----------------------------------------------------------------------
-
-	.global	___mulhi3
-___mulhi3:
-	sel	rb1
-	clrw	ax
-	sel	rb0
-	movw	ax, sp
-	addw	ax, #4
-	movw	hl, ax
-	movw	ax, [hl+2]
-	movw	bc, ax
-	movw	ax, [hl]
-	br	$.Lmul_hi
