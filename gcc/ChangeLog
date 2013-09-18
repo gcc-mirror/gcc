@@ -1,3 +1,10 @@
+2013-09-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_get_frame_offsets): Validate architecture supports
+	LDRD/STRD before accepting the tuning preference.
+	(arm_expand_prologue): Likewise.
+	(arm_expand_epilogue): Likewise.
+
 2013-09-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58417
