@@ -1,5 +1,9 @@
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Abstract_State>: New.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (gigi): Remove dead code.
 
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
