@@ -1,3 +1,8 @@
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Pop the stack of
+	return variables for subprograms using the CICO mechanism.
+
 2013-09-13  Dominique Dhumieres  <dominiq@lps.ens.fr>
 
 	* gcc-interface/Makefile.in: Fix darwin Filter to match on $target_os,
