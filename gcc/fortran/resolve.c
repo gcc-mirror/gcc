@@ -9014,6 +9014,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   int rlen = 0;
   int n;
   gfc_ref *ref;
+  symbol_attribute attr;
 
   if (gfc_extend_assign (code, ns))
     {
@@ -9178,14 +9179,35 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	gfc_current_ns->proc_name->attr.implicit_pure = 0;
     }
 
-  /* F03:7.4.1.2.  */
-  /* FIXME: Valid in Fortran 2008, unless the LHS is both polymorphic
-     and coindexed; cf. F2008, 7.2.1.2 and PR 43366.  */
-  if (lhs->ts.type == BT_CLASS)
+  /* F2008, 7.2.1.2.  */
+  attr = gfc_expr_attr (lhs);
+  if (lhs->ts.type == BT_CLASS && attr.allocatable)
     {
-      gfc_error ("Variable must not be polymorphic in intrinsic assignment at "
-		 "%L - check that there is a matching specific subroutine "
-		 "for '=' operator", &lhs->where);
+      if (attr.codimension)
+	{
+	  gfc_error ("Assignment to polymorphic coarray at %L is not "
+		     "permitted", &lhs->where);
+	  return false;
+	}
+      if (!gfc_notify_std (GFC_STD_F2008, "Assignment to an allocatable "
+			   "polymorphic variable at %L", &lhs->where))
+	return false;
+      if (!gfc_option.flag_realloc_lhs)
+	{
+	  gfc_error ("Assignment to an allocatable polymorphic variable at %L "
+		     "requires -frealloc-lhs", &lhs->where);
+	  return false;
+	}
+      /* See PR 43366.  */
+      gfc_error ("Assignment to an allocatable polymorphic variable at %L "
+		 "is not yet supported", &lhs->where);
+      return false;
+    }
+  else if (lhs->ts.type == BT_CLASS)
+    {
+      gfc_error ("Nonallocatable variable must not be polymorphic in intrinsic "
+		 "assignment at %L - check that there is a matching specific "
+		 "subroutine for '=' operator", &lhs->where);
       return false;
     }
 

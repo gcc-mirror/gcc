@@ -1,3 +1,10 @@
+2013-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43366
+	* primary.c (gfc_variable_attr): Also handle codimension.
+	* resolve.c (resolve_ordinary_assign): Add invalid-diagnostic for
+	polymorphic assignment.
+
 2013-09-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/58356
