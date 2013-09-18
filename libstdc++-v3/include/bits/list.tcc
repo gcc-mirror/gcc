@@ -63,7 +63,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
   template<typename _Tp, typename _Alloc>
     void
     _List_base<_Tp, _Alloc>::
-    _M_clear()
+    _M_clear() _GLIBCXX_NOEXCEPT
     {
       typedef _List_node<_Tp>  _Node;
       _Node* __cur = static_cast<_Node*>(_M_impl._M_node._M_next);
@@ -145,7 +145,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     typename list<_Tp, _Alloc>::iterator
     list<_Tp, _Alloc>::
 #if __cplusplus >= 201103L
-    erase(const_iterator __position)
+    erase(const_iterator __position) noexcept
 #else
     erase(iterator __position)
 #endif

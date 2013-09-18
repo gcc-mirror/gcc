@@ -1,3 +1,36 @@
+2013-09-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/list.tcc (_List_base::_M_clear, list::erase): Mark as
+	noexcept.
+	* include/bits/stl_list.h (_List_iterator) [_List_iterator,
+	_M_const_cast, operator*, operator->, operator++, operator--,
+	operator==, operator!=]: Likewise.
+	(_List_const_iterator) [_List_const_iterator, _M_const_cast, operator*,
+	operator->, operator++, operator--, operator==, operator!=]: Likewise.
+	(operator==(const _List_iterator&, const _List_const_iterator&),
+	operator!=(const _List_iterator&, const _List_const_iterator&)):
+	Likewise.
+	(_List_impl) [_List_impl(const _Node_alloc_type&),
+	_List_impl(_Node_alloc_type&&)]: Likewise.
+	(_List_base) [_M_put_node, _List_base(const _Node_alloc_type&),
+	_List_base(_List_base&&), _M_clear, _M_init]: Likewise.
+	(list) [list(), list(const allocator_type&)]: Merge.
+	(list) [list(const allocator_type&), front, back, pop_front, pop_back,
+	erase, _M_erase]: Mark as noexcept.
+	* include/debug/list (list) [list(const _Allocator&), front, back,
+	pop_front, pop_back, _M_erase, erase]: Likewise.
+	* include/profile/list (list) [list(const _Allocator&), front, back,
+	pop_front, pop_back, erase]: Likewise.
+	* testsuite/23_containers/list/requirements/dr438/assign_neg.cc:
+	Adjust line number.
+	* testsuite/23_containers/list/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/list/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-09-17  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

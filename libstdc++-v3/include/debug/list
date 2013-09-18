@@ -70,7 +70,7 @@ namespace __debug
 
       // 23.2.2.1 construct/copy/destroy:
       explicit
-      list(const _Allocator& __a = _Allocator())
+      list(const _Allocator& __a = _Allocator()) _GLIBCXX_NOEXCEPT
       : _Base(__a) { }
 
 #if __cplusplus >= 201103L
@@ -320,28 +320,28 @@ namespace __debug
 
       // element access:
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::front();
       }
 
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::front();
       }
 
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::back();
       }
 
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::back();
@@ -355,7 +355,7 @@ namespace __debug
 #endif
 
       void
-      pop_front()
+      pop_front() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	this->_M_invalidate_if(_Equal(_Base::begin()));
@@ -369,7 +369,7 @@ namespace __debug
 #endif
 
       void
-      pop_back()
+      pop_back() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	this->_M_invalidate_if(_Equal(--_Base::end()));
@@ -455,7 +455,7 @@ namespace __debug
     private:
       _Base_iterator
 #if __cplusplus >= 201103L
-      _M_erase(_Base_const_iterator __position)
+      _M_erase(_Base_const_iterator __position) noexcept
 #else
       _M_erase(_Base_iterator __position)
 #endif
@@ -467,7 +467,7 @@ namespace __debug
     public:
       iterator
 #if __cplusplus >= 201103L
-      erase(const_iterator __position)
+      erase(const_iterator __position) noexcept
 #else
       erase(iterator __position)
 #endif
@@ -478,7 +478,7 @@ namespace __debug
 
       iterator
 #if __cplusplus >= 201103L
-      erase(const_iterator __first, const_iterator __last)
+      erase(const_iterator __first, const_iterator __last) noexcept
 #else
       erase(iterator __first, iterator __last)
 #endif
