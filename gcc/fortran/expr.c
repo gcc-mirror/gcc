@@ -3824,6 +3824,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
     r = gfc_check_assign (&lvalue, rvalue, 1);
 
   free (lvalue.symtree);
+  free (lvalue.ref);
 
   if (!r)
     return r;
