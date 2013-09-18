@@ -28,7 +28,7 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-// TODO make comments doxygen format.
+// FIXME make comments doxygen format.
 
 // N3376 specified 6 regex styles: ECMAScript, basic, extended, grep, egrep
 // and awk

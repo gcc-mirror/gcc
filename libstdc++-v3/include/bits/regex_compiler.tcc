@@ -28,7 +28,7 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
-// TODO make comments doxygen format.
+// FIXME make comments doxygen format.
 
 // This compiler refers to "Regular Expression Matching Can Be Simple And Fast"
 // (http://swtch.com/~rsc/regexp/regexp1.html"),
@@ -223,16 +223,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		if (__n < 0)
 		  __throw_regex_error(regex_constants::error_badbrace);
 		auto __end = _M_nfa._M_insert_dummy();
+		// _M_alt is the "match more" branch, and _M_next is the
+		// "match less" one. Switch _M_alt and _M_next of all created
+		// nodes. This is a hacking but IMO works well.
+		std::stack<_StateIdT> __stack;
 		for (int __i = 0; __i < __n; ++__i)
 		  {
 		    auto __tmp = __r._M_clone();
-		    __e._M_append
-		      (_StateSeqT(_M_nfa,
-				  _M_nfa._M_insert_alt(__tmp._M_start,
-						       __end, __neg),
-				  __tmp._M_end));
+		    auto __alt = _M_nfa._M_insert_alt(__tmp._M_start,
+						      __end, __neg);
+		    __stack.push(__alt);
+		    __e._M_append(_StateSeqT(_M_nfa, __alt, __tmp._M_end));
 		  }
 		__e._M_append(__end);
+		while (!__stack.empty())
+		  {
+		    auto& __tmp = _M_nfa[__stack.top()];
+		    __stack.pop();
+		    swap(__tmp._M_next, __tmp._M_alt);
+		  }
 	      }
 	    else // {3,}
 	      {

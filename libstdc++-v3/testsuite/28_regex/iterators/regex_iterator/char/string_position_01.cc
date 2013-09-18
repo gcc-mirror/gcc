@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++11" }
-// { dg-do run { xfail *-*-* } }
 
 //
 // 2013-07-25  Tim Shen <timshen91@gmail.com>
