@@ -1309,7 +1309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
 #if __cplusplus >= 201103L
-      splice(const_iterator __position, list&& __x)
+      splice(const_iterator __position, list&& __x) noexcept
 #else
       splice(iterator __position, list& __x)
 #endif
@@ -1325,7 +1325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 #if __cplusplus >= 201103L
       void
-      splice(const_iterator __position, list& __x)
+      splice(const_iterator __position, list& __x) noexcept
       { splice(__position, std::move(__x)); }
 #endif
 
@@ -1341,7 +1341,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  inserts it into the current list before @a __position.
        */
       void
-      splice(const_iterator __position, list&& __x, const_iterator __i)
+      splice(const_iterator __position, list&& __x, const_iterator __i) noexcept
 #else
       /**
        *  @brief  Insert element from another %list.
@@ -1380,7 +1380,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  inserts it into the current list before @a __position.
        */
       void
-      splice(const_iterator __position, list& __x, const_iterator __i)
+      splice(const_iterator __position, list& __x, const_iterator __i) noexcept
       { splice(__position, std::move(__x), __i); }
 #endif
 
@@ -1400,7 +1400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       splice(const_iterator __position, list&& __x, const_iterator __first,
-	     const_iterator __last)
+	     const_iterator __last) noexcept
 #else
       /**
        *  @brief  Insert range from another %list.
@@ -1446,7 +1446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       void
       splice(const_iterator __position, list& __x, const_iterator __first,
-	     const_iterator __last)
+	     const_iterator __last) noexcept
       { splice(__position, std::move(__x), __first, __last); }
 #endif
 
@@ -1696,11 +1696,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // To implement the splice (and merge) bits of N1599.
       void
-      _M_check_equal_allocators(list& __x)
+      _M_check_equal_allocators(list& __x) _GLIBCXX_NOEXCEPT
       {
 	if (std::__alloc_neq<typename _Base::_Node_alloc_type>::
 	    _S_do_it(_M_get_Node_allocator(), __x._M_get_Node_allocator()))
-	  __throw_runtime_error(__N("list::_M_check_equal_allocators"));
+	  __builtin_abort();
       }
     };
 

@@ -1,3 +1,30 @@
+2013-09-18  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/stl_iterator.h (__normal_iterator) [__normal_iterator,
+	_M_const_cast, operator*, operator->, operator++, operator--,
+	operator[], operator+=, operator+, operator-=, operator-, base]:
+	Mark as noexcept.
+	(operator==(const __normal_iterator&, const __normal_iterator&),
+	operator!=(const __normal_iterator&, const __normal_iterator&),
+	operator<(const __normal_iterator&, const __normal_iterator&),
+	operator>(const __normal_iterator&, const __normal_iterator&),
+	operator<=(const __normal_iterator&, const __normal_iterator&),
+	operator>=(const __normal_iterator&, const __normal_iterator&),
+	operator-(const __normal_iterator&, const __normal_iterator&),
+	operator+(difference_type, const __normal_iterator&)): Likewise.
+	* include/bits/stl_list.h (list) [splice, _M_check_equal_allocators]:
+	Likewise.
+	(list::_M_check_equal_allocators): Abort instead of throwing.
+	* include/debug/array (array) [operator[], front, back]: Mark as
+	noexcept.
+	* include/profile/array (array) [operator[], front, back]: Likewise.
+	* include/std/array (array) [operator[], front, back]: Likewise.
+	* include/debug/list (list::splice): Likewise.
+	* include/profile/list (list::splice): Likewise.
+	* testsuite/23_containers/list/operations/5.cc: Remove file.
+	* testsuite/23_containers/list/operations/5.h: Likewise.
+
 2013-09-18  Tim Shen  <timshen91@gmail.com>
 
 	* include/bits/regex.h: Add friend classes.
