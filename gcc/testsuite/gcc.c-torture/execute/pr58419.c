@@ -1,7 +1,8 @@
 int printf(const char *, ...);
 
-int a, g, i, k, *p; 
-char b, e;
+int a, g, i, k, *p;
+signed char b;
+char e;
 short c, h;
 static short *d = &c;
 
