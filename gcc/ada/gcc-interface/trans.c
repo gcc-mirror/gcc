@@ -290,9 +290,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   tree int64_type = gnat_type_for_size (64, 0);
   struct elab_info *info;
   int i;
-#ifdef ORDINARY_MAP_INSTANCE
-  struct line_map *map;
-#endif
 
   max_gnat_nodes = max_gnat_node;
 
@@ -306,10 +303,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
   List_Headers_Ptr = list_headers_ptr;
 
   type_annotate_only = (gigi_operating_mode == 1);
-
-  /* ??? Disable the generation of the SCO instance table until after the
-     back-end supports instance based debug info discriminators.  */
-  Generate_SCO_Instance_Table = False;
 
   for (i = 0; i < number_file; i++)
     {
@@ -330,11 +323,6 @@ gigi (Node_Id gnat_root, int max_gnat_node, int number_name ATTRIBUTE_UNUSED,
       /* We create the line map for a source file at once, with a fixed number
 	 of columns chosen to avoid jumping over the next power of 2.  */
       linemap_add (line_table, LC_ENTER, 0, filename, 1);
-#ifdef ORDINARY_MAP_INSTANCE
-      map = LINEMAPS_ORDINARY_MAP_AT (line_table, i);
-      if (flag_debug_instances)
-	ORDINARY_MAP_INSTANCE (map) = file_info_ptr[i].Instance;
-#endif
       linemap_line_start (line_table, file_info_ptr[i].Num_Source_Lines, 252);
       linemap_position_for_column (line_table, 252 - 1);
       linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
