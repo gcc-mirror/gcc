@@ -1,3 +1,9 @@
+2013-09-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_expand_prologue): Validate architecture supports
+	LDRD/STRD before accepting tuning preferences.
+	(arm_expand_epilogue): Likewise.
+
 2013-09-18  Daniel Morris  <danielm@ecoscentric.com>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
@@ -20,8 +26,8 @@
 
 2013-09-13  Christian Bruel  <christian.bruel@st.com>
 
- 	PR target/58314
- 	* config/sh/sh.md (mov<mode>_reg_reg): Allow memory reloads.
+	PR target/58314
+	* config/sh/sh.md (mov<mode>_reg_reg): Allow memory reloads.
 
 2013-09-11  Andi Kleen  <ak@linux.intel.com>
 
