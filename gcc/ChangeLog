@@ -1,3 +1,9 @@
+2013-09-18  Daniel Morris  <danielm@ecoscentric.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58458
+	* doc/implement-cxx.texi: Fix references to the C++ standards.
+
 2013-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (copy_var_decl): Copy DECL_ATTRIBUTES.
