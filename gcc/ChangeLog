@@ -1,3 +1,8 @@
+2013-09-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.h (ASM_SPEC): Pass -md on to the assembler.
+	(ASM_DECLARE_FUNCTION_NAME): Define.
+
 2013-09-17  Trevor Saunders  <tsaunders@mozilla.com>
 
 	* compare-elim.c (find_comparison_dom_walker): New class
