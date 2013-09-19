@@ -1648,11 +1648,13 @@ struct processor_costs slm_cost = {
    and btver1 (and newer chips).  */
 
 static stringop_algs generic_memcpy[2] = {
-  DUMMY_STRINGOP_ALGS,
+  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
+             {-1, libcall, false}}},
   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 static stringop_algs generic_memset[2] = {
-  DUMMY_STRINGOP_ALGS,
+  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
+             {-1, libcall, false}}},
   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 static const
