@@ -870,12 +870,12 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
     edge->call_stmt_cannot_inline_p = true;
   else
     edge->call_stmt_cannot_inline_p = false;
-  if (call_stmt && caller->call_site_hash)
-    cgraph_add_edge_to_call_site_hash (edge);
 
   edge->indirect_info = NULL;
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
+  if (call_stmt && caller->call_site_hash)
+    cgraph_add_edge_to_call_site_hash (edge);
 
   return edge;
 }
