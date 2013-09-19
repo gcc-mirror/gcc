@@ -1070,6 +1070,31 @@ simplify_stmt_for_jump_threading (gimple stmt,
   return lookup_avail_expr (stmt, false);
 }
 
+static void
+record_temporary_equivalences (edge e)
+{
+  int i;
+  struct edge_info *edge_info = (struct edge_info *) e->aux;
+
+  /* If we have info associated with this edge, record it into
+     our equivalence tables.  */
+  if (edge_info)
+    {
+      cond_equivalence *eq;
+      tree lhs = edge_info->lhs;
+      tree rhs = edge_info->rhs;
+
+      /* If we have a simple NAME = VALUE equivalence, record it.  */
+      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+	record_const_or_copy (lhs, rhs);
+
+      /* If we have 0 = COND or 1 = COND equivalences, record them
+	 into our expression hash tables.  */
+      for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
+	record_cond (eq);
+    }
+}
+
 /* Wrapper for common code to attempt to thread an edge.  For example,
    it handles lazily building the dummy condition and the bookkeeping
    when jump threading is successful.  */
@@ -1083,9 +1108,27 @@ dom_opt_dom_walker::thread_across_edge (edge e)
                            integer_zero_node, integer_zero_node,
                            NULL, NULL);
 
+  /* Push a marker on both stacks so we can unwind the tables back to their
+     current state.  */
+  avail_exprs_stack.safe_push (NULL);
+  const_and_copies_stack.safe_push (NULL_TREE);
+
+  /* Traversing E may result in equivalences we can utilize.  */
+  record_temporary_equivalences (e);
+
+  /* With all the edge equivalences in the tables, go ahead and attempt
+     to thread through E->dest.  */
   ::thread_across_edge (dummy_cond_, e, false,
 		        &const_and_copies_stack,
 		        simplify_stmt_for_jump_threading);
+
+  /* And restore the various tables to their state before
+     we threaded this edge. 
+
+     XXX The code in tree-ssa-threadedge.c will restore the state of
+     the const_and_copies table.  We we just have to restore the expression
+     table.  */
+  remove_local_expressions_from_table ();
 }
 
 /* PHI nodes can create equivalences too.
@@ -1905,9 +1948,6 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
       && (single_succ_edge (bb)->flags & EDGE_ABNORMAL) == 0
       && potentially_threadable_block (single_succ (bb)))
     {
-      /* Push a marker on the stack, which thread_across_edge expects
-	 and will remove.  */
-      const_and_copies_stack.safe_push (NULL_TREE);
       thread_across_edge (single_succ_edge (bb));
     }
   else if ((last = last_stmt (bb))
@@ -1923,79 +1963,15 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
       /* Only try to thread the edge if it reaches a target block with
 	 more than one predecessor and more than one successor.  */
       if (potentially_threadable_block (true_edge->dest))
-	{
-	  struct edge_info *edge_info;
-	  unsigned int i;
-
-	  /* Push a marker onto the available expression stack so that we
-	     unwind any expressions related to the TRUE arm before processing
-	     the false arm below.  */
-          avail_exprs_stack.safe_push (NULL);
-	  const_and_copies_stack.safe_push (NULL_TREE);
-
-	  edge_info = (struct edge_info *) true_edge->aux;
-
-	  /* If we have info associated with this edge, record it into
-	     our equivalence tables.  */
-	  if (edge_info)
-	    {
-	      cond_equivalence *eq;
-	      tree lhs = edge_info->lhs;
-	      tree rhs = edge_info->rhs;
-
-	      /* If we have a simple NAME = VALUE equivalence, record it.  */
-	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
-		record_const_or_copy (lhs, rhs);
-
-	      /* If we have 0 = COND or 1 = COND equivalences, record them
-		 into our expression hash tables.  */
-	      for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-		record_cond (eq);
-	    }
-
-	  thread_across_edge (true_edge);
-
-	  /* And restore the various tables to their state before
-	     we threaded this edge.  */
-	  remove_local_expressions_from_table ();
-	}
+	thread_across_edge (true_edge);
 
       /* Similarly for the ELSE arm.  */
       if (potentially_threadable_block (false_edge->dest))
-	{
-	  struct edge_info *edge_info;
-	  unsigned int i;
+	thread_across_edge (false_edge);
 
-	  const_and_copies_stack.safe_push (NULL_TREE);
-	  edge_info = (struct edge_info *) false_edge->aux;
-
-	  /* If we have info associated with this edge, record it into
-	     our equivalence tables.  */
-	  if (edge_info)
-	    {
-	      cond_equivalence *eq;
-	      tree lhs = edge_info->lhs;
-	      tree rhs = edge_info->rhs;
-
-	      /* If we have a simple NAME = VALUE equivalence, record it.  */
-	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
-		record_const_or_copy (lhs, rhs);
-
-	      /* If we have 0 = COND or 1 = COND equivalences, record them
-		 into our expression hash tables.  */
-	      for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-		record_cond (eq);
-	    }
-
-	  /* Now thread the edge.  */
-	  thread_across_edge (false_edge);
-
-	  /* No need to remove local expressions from our tables
-	     or restore vars to their original value as that will
-	     be done immediately below.  */
-	}
     }
 
+  /* These remove expressions local to BB from the tables.  */
   remove_local_expressions_from_table ();
   restore_vars_to_original_value ();
 }
