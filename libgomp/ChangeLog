@@ -1,3 +1,7 @@
+2013-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c/sections-2.c: New test.
+
 2013-06-28  Marcus Shawcroft  <marcus.shawcroft@arm.com>
 
 	* testsuite/libgomp.fortran/strassen.f90:

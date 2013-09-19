@@ -1,3 +1,8 @@
+2013-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (expand_omp_sections): Always pass len - 1 to
+	GOMP_sections_start, even if !exit_reachable.
+
 2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (need_for_all_save_p): Use macro

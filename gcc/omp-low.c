@@ -5869,8 +5869,7 @@ expand_omp_sections (struct omp_region *region)
     {
       /* If we are not inside a combined parallel+sections region,
 	 call GOMP_sections_start.  */
-      t = build_int_cst (unsigned_type_node,
-			 exit_reachable ? len - 1 : len);
+      t = build_int_cst (unsigned_type_node, len - 1);
       u = builtin_decl_explicit (BUILT_IN_GOMP_SECTIONS_START);
       stmt = gimple_build_call (u, 1, t);
     }
