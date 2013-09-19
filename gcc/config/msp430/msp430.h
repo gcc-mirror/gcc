@@ -1,5 +1,5 @@
 /* GCC backend definitions for the TI MSP430 Processor
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2013 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -29,6 +29,7 @@ extern bool msp430x;
 #define TARGET_CPU_CPP_BUILTINS()               \
   do                                            \
     {                                           \
+      builtin_define ("NO_TRAMPOLINES");        \
       builtin_define ("__MSP430__"); 		\
       if (msp430x)				\
 	{					\
@@ -53,6 +54,7 @@ extern bool msp430x;
   "%{mmcu=msp430x:-mmcu=msp430X;mmcu=*:-mmcu=%*} " /* Pass the MCU type on to the assembler.  */  \
   "%{mrelax=-mQ} " /* Pass the relax option on to the assembler.  */ \
   "%{mlarge:-ml} " /* Tell the assembler if we are building for the LARGE pointer model.  */ \
+  "%{!msim:-md} %{msim:%{mlarge:-md}}" /* Copy data from ROM to RAM if necessary.  */ \
   "%{ffunction-sections:-gdwarf-sections}" /* If function sections are being created then create DWARF line number sections as well.  */
 
 /* Enable linker section garbage collection by default, unless we
@@ -281,7 +283,8 @@ enum reg_class
 
 
 
-typedef struct {
+typedef struct
+{
   /* These two are the current argument status.  */
   char reg_used[4];
 #define CA_FIRST_REG 12
@@ -397,3 +400,7 @@ typedef struct {
       )
 
 #define ACCUMULATE_OUTGOING_ARGS 1
+
+#undef  ASM_DECLARE_FUNCTION_NAME
+#define ASM_DECLARE_FUNCTION_NAME(FILE, NAME, DECL) \
+  msp430_start_function ((FILE), (NAME), (DECL))

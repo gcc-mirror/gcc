@@ -2664,7 +2664,11 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->stack_frame_offset = 0;
 
   /* Can this function be inlined at all?  */
-  info->inlinable = tree_inlinable_function_p (node->symbol.decl);
+  if (!optimize && !lookup_attribute ("always_inline",
+				      DECL_ATTRIBUTES (node->symbol.decl)))
+    info->inlinable = false;
+  else
+    info->inlinable = tree_inlinable_function_p (node->symbol.decl);
 
   /* Type attributes can use parameter indices to describe them.  */
   if (TYPE_ATTRIBUTES (TREE_TYPE (node->symbol.decl)))
@@ -3678,6 +3682,22 @@ inline_analyze_function (struct cgraph_node *node)
   if (optimize && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_inline_parameters (node, false);
+  if (!optimize)
+    {
+      struct cgraph_edge *e;
+      for (e = node->callees; e; e = e->next_callee)
+	{
+	  if (e->inline_failed == CIF_FUNCTION_NOT_CONSIDERED)
+	    e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
+	  e->call_stmt_cannot_inline_p = true;
+	}
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	{
+	  if (e->inline_failed == CIF_FUNCTION_NOT_CONSIDERED)
+	    e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
+	  e->call_stmt_cannot_inline_p = true;
+	}
+    }
 
   pop_cfun ();
 }

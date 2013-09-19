@@ -582,6 +582,59 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "*aarch64_mul3_elt<mode>"
+ [(set (match_operand:VMUL 0 "register_operand" "=w")
+    (mult:VMUL
+      (vec_duplicate:VMUL
+	  (vec_select:<VEL>
+	    (match_operand:VMUL 1 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VMUL 3 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_<f>mul_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mul3_elt_<vswap_width_name><mode>"
+  [(set (match_operand:VMUL_CHANGE_NLANES 0 "register_operand" "=w")
+     (mult:VMUL_CHANGE_NLANES
+       (vec_duplicate:VMUL_CHANGE_NLANES
+	  (vec_select:<VEL>
+	    (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VMUL_CHANGE_NLANES 3 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]"
+  [(set_attr "simd_type" "simd_<f>mul_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mul3_elt_to_128df"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+     (mult:V2DF
+       (vec_duplicate:V2DF
+	 (match_operand:DF 2 "register_operand" "w"))
+      (match_operand:V2DF 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fmul\\t%0.2d, %1.2d, %2.d[0]"
+  [(set_attr "simd_type" "simd_fmul_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "*aarch64_mul3_elt_to_64v2df"
+  [(set (match_operand:DF 0 "register_operand" "=w")
+     (mult:DF
+       (vec_select:DF
+	 (match_operand:V2DF 1 "register_operand" "w")
+	 (parallel [(match_operand:SI 2 "immediate_operand")]))
+       (match_operand:DF 3 "register_operand" "w")))]
+  "TARGET_SIMD"
+  "fmul\\t%0.2d, %3.2d, %1.d[%2]"
+  [(set_attr "simd_type" "simd_fmul_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
 (define_insn "neg<mode>2"
   [(set (match_operand:VDQ 0 "register_operand" "=w")
 	(neg:VDQ (match_operand:VDQ 1 "register_operand" "w")))]
@@ -1017,6 +1070,38 @@
    (set_attr "simd_mode" "<MODE>")]
 )
 
+(define_insn "*aarch64_mla_elt<mode>"
+ [(set (match_operand:VDQHS 0 "register_operand" "=w")
+       (plus:VDQHS
+	 (mult:VDQHS
+	   (vec_duplicate:VDQHS
+	      (vec_select:<VEL>
+		(match_operand:VDQHS 1 "register_operand" "<h_con>")
+		  (parallel [(match_operand:SI 2 "immediate_operand")])))
+	   (match_operand:VDQHS 3 "register_operand" "w"))
+	 (match_operand:VDQHS 4 "register_operand" "0")))]
+ "TARGET_SIMD"
+ "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_mla")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mla_elt_<vswap_width_name><mode>"
+ [(set (match_operand:VDQHS 0 "register_operand" "=w")
+       (plus:VDQHS
+	 (mult:VDQHS
+	   (vec_duplicate:VDQHS
+	      (vec_select:<VEL>
+		(match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+		  (parallel [(match_operand:SI 2 "immediate_operand")])))
+	   (match_operand:VDQHS 3 "register_operand" "w"))
+	 (match_operand:VDQHS 4 "register_operand" "0")))]
+ "TARGET_SIMD"
+ "mla\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_mla")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
 (define_insn "aarch64_mls<mode>"
  [(set (match_operand:VQ_S 0 "register_operand" "=w")
        (minus:VQ_S (match_operand:VQ_S 1 "register_operand" "0")
@@ -1024,6 +1109,38 @@
 			      (match_operand:VQ_S 3 "register_operand" "w"))))]
  "TARGET_SIMD"
  "mls\t%0.<Vtype>, %2.<Vtype>, %3.<Vtype>"
+  [(set_attr "simd_type" "simd_mla")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mls_elt<mode>"
+ [(set (match_operand:VDQHS 0 "register_operand" "=w")
+       (minus:VDQHS
+	 (match_operand:VDQHS 4 "register_operand" "0")
+	 (mult:VDQHS
+	   (vec_duplicate:VDQHS
+	      (vec_select:<VEL>
+		(match_operand:VDQHS 1 "register_operand" "<h_con>")
+		  (parallel [(match_operand:SI 2 "immediate_operand")])))
+	   (match_operand:VDQHS 3 "register_operand" "w"))))]
+ "TARGET_SIMD"
+ "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_mla")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_mls_elt_<vswap_width_name><mode>"
+ [(set (match_operand:VDQHS 0 "register_operand" "=w")
+       (minus:VDQHS
+	 (match_operand:VDQHS 4 "register_operand" "0")
+	 (mult:VDQHS
+	   (vec_duplicate:VDQHS
+	      (vec_select:<VEL>
+		(match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+		  (parallel [(match_operand:SI 2 "immediate_operand")])))
+	   (match_operand:VDQHS 3 "register_operand" "w"))))]
+ "TARGET_SIMD"
+ "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
   [(set_attr "simd_type" "simd_mla")
    (set_attr "simd_mode" "<MODE>")]
 )
@@ -1428,6 +1545,137 @@
  "fmla\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "simd_type" "simd_fmla")
    (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_fma4_elt<mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+    (fma:VDQF
+      (vec_duplicate:VDQF
+	(vec_select:<VEL>
+	  (match_operand:VDQF 1 "register_operand" "<h_con>")
+	  (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VDQF 3 "register_operand" "w")
+      (match_operand:VDQF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_fma4_elt_<vswap_width_name><mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+    (fma:VDQSF
+      (vec_duplicate:VDQSF
+	(vec_select:<VEL>
+	  (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+	  (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VDQSF 3 "register_operand" "w")
+      (match_operand:VDQSF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_fma4_elt_to_128df"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+    (fma:V2DF
+      (vec_duplicate:V2DF
+	  (match_operand:DF 1 "register_operand" "w"))
+      (match_operand:V2DF 2 "register_operand" "w")
+      (match_operand:V2DF 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmla\\t%0.2d, %2.2d, %1.2d[0]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "*aarch64_fma4_elt_to_64v2df"
+  [(set (match_operand:DF 0 "register_operand" "=w")
+    (fma:DF
+	(vec_select:DF
+	  (match_operand:V2DF 1 "register_operand" "w")
+	  (parallel [(match_operand:SI 2 "immediate_operand")]))
+      (match_operand:DF 3 "register_operand" "w")
+      (match_operand:DF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmla\\t%0.2d, %3.2d, %1.2d[%2]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "fnma<mode>4"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+	(fma:VDQF
+	  (match_operand:VDQF 1 "register_operand" "w")
+          (neg:VDQF
+	    (match_operand:VDQF 2 "register_operand" "w"))
+	  (match_operand:VDQF 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+ "fmls\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
+  [(set_attr "simd_type" "simd_fmla")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_fnma4_elt<mode>"
+  [(set (match_operand:VDQF 0 "register_operand" "=w")
+    (fma:VDQF
+      (neg:VDQF
+        (match_operand:VDQF 3 "register_operand" "w"))
+      (vec_duplicate:VDQF
+	(vec_select:<VEL>
+	  (match_operand:VDQF 1 "register_operand" "<h_con>")
+	  (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VDQF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_fnma4_elt_<vswap_width_name><mode>"
+  [(set (match_operand:VDQSF 0 "register_operand" "=w")
+    (fma:VDQSF
+      (neg:VDQSF
+        (match_operand:VDQSF 3 "register_operand" "w"))
+      (vec_duplicate:VDQSF
+	(vec_select:<VEL>
+	  (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+	  (parallel [(match_operand:SI 2 "immediate_operand")])))
+      (match_operand:VDQSF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "<MODE>")]
+)
+
+(define_insn "*aarch64_fnma4_elt_to_128df"
+  [(set (match_operand:V2DF 0 "register_operand" "=w")
+    (fma:V2DF
+      (neg:V2DF
+        (match_operand:V2DF 2 "register_operand" "w"))
+      (vec_duplicate:V2DF
+	(match_operand:DF 1 "register_operand" "w"))
+      (match_operand:V2DF 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmls\\t%0.2d, %2.2d, %1.2d[0]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "V2DF")]
+)
+
+(define_insn "*aarch64_fnma4_elt_to_64v2df"
+  [(set (match_operand:DF 0 "register_operand" "=w")
+    (fma:DF
+      (vec_select:DF
+	(match_operand:V2DF 1 "register_operand" "w")
+	(parallel [(match_operand:SI 2 "immediate_operand")]))
+      (neg:DF
+        (match_operand:DF 3 "register_operand" "w"))
+      (match_operand:DF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmls\\t%0.2d, %3.2d, %1.2d[%2]"
+  [(set_attr "simd_type" "simd_fmla_elt")
+   (set_attr "simd_mode" "V2DF")]
 )
 
 ;; Vector versions of the floating-point frint patterns.

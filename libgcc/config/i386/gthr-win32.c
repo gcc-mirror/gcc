@@ -147,7 +147,7 @@ void
 __gthr_win32_mutex_init_function (__gthread_mutex_t *mutex)
 {
   mutex->counter = -1;
-  mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+  mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
 }
 
 void
@@ -195,7 +195,7 @@ __gthr_win32_recursive_mutex_init_function (__gthread_recursive_mutex_t *mutex)
   mutex->counter = -1;
   mutex->depth = 0;
   mutex->owner = 0;
-  mutex->sema = CreateSemaphore (NULL, 0, 65535, NULL);
+  mutex->sema = CreateSemaphoreW (NULL, 0, 65535, NULL);
 }
 
 int

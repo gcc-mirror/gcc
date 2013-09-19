@@ -25,7 +25,7 @@ int main()
     abort ();
   if (a[0] != 0 || a[101] != 0)
     abort ();
-  return;
+  return 0;
 }
 
 /* { dg-final { scan-tree-dump "generated memset zero" "ldist" } } */

@@ -1,6 +1,5 @@
 // { dg-options "-std=gnu++11" }
 // { dg-require-namedlocale "en_US.UTF-8" }
-// { dg-do run { xfail *-*-* } }
 
 //
 // 2013-09-05  Tim Shen <timshen91@gmail.com>
@@ -42,13 +41,19 @@ test01()
 
   re2.assign(L"([[:lower:]]{0,1}[[:space:]]{0,1}[[:upper:]]{0,1})");
 
-  std::wsregex_iterator p(str2.begin(), str2.end(), re2);
-  auto a = p;
-  ++p;
-  VERIFY(a != p);
-  //for (std::wsregex_iterator p(str2.begin(), str2.end(), re2);
-  //    p != std::wsregex_iterator{}; ++p)
-  //  std::wcout << (*p)[1] << std::endl;
+  std::wstring sol[] =
+    {
+      L"ä\u2009Ä",
+      L"\u2009",
+      L"ö\u2009Ö",
+      L"\u2009",
+      L"ü\u2009Ü",
+      L"",
+    };
+  int i = 0;
+  for (std::wsregex_iterator p(str2.begin(), str2.end(), re2);
+      p != std::wsregex_iterator{}; ++p)
+    VERIFY(std::wstring((*p)[1].first, (*p)[1].second) == sol[i++]);
 }
 
 int

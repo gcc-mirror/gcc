@@ -2264,14 +2264,18 @@ Perform variable tracking and also tag variables that are uninitialized
 
 ftree-vectorize
 Common Report Var(flag_tree_vectorize) Optimization
-Enable loop vectorization on trees
+Enable vectorization on trees
 
 ftree-vectorizer-verbose=
 Common RejectNegative Joined UInteger Var(common_deferred_options) Defer
 -ftree-vectorizer-verbose=<number>	This switch is deprecated. Use -fopt-info instead.
 
+ftree-loop-vectorize
+Common Report Var(flag_tree_loop_vectorize) Optimization
+Enable loop vectorization on trees
+
 ftree-slp-vectorize
-Common Report Var(flag_tree_slp_vectorize) Init(2) Optimization
+Common Report Var(flag_tree_slp_vectorize) Optimization
 Enable basic block vectorization (SLP) on trees
 
 fvect-cost-model

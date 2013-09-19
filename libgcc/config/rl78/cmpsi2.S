@@ -21,8 +21,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 
-; clobberable
-r8	=	0xffef0
+#include "vregs.h"
 
 	.text
 

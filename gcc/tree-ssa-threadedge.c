@@ -841,28 +841,6 @@ thread_around_empty_blocks (edge taken_edge,
   return false;
 }
       
-/* E1 and E2 are edges into the same basic block.  Return TRUE if the
-   PHI arguments associated with those edges are equal or there are no
-   PHI arguments, otherwise return FALSE.  */
-
-static bool
-phi_args_equal_on_edges (edge e1, edge e2)
-{
-  gimple_stmt_iterator gsi;
-  int indx1 = e1->dest_idx;
-  int indx2 = e2->dest_idx;
-
-  for (gsi = gsi_start_phis (e1->dest); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      gimple phi = gsi_stmt (gsi);
-
-      if (!operand_equal_p (gimple_phi_arg_def (phi, indx1),
-			    gimple_phi_arg_def (phi, indx2), 0))
-	return false;
-    }
-  return true;
-}
-
 /* We are exiting E->src, see if E->dest ends with a conditional
    jump which has a known value when reached via E.
 
@@ -1021,18 +999,9 @@ thread_across_edge (gimple dummy_cond,
 	   record the jump threading opportunity.  */
 	if (found)
 	  {
-	    edge tmp;
-	    /* If there is already an edge from the block to be duplicated
-	       (E2->src) to the final target (E3->dest), then make sure that
-	       the PHI args associated with the edges E2 and E3 are the
-	       same.  */
-	    tmp = find_edge (taken_edge->src, path[path.length () - 1]->dest);
-	    if (!tmp || phi_args_equal_on_edges (tmp, path[path.length () - 1]))
-	      {
-		propagate_threaded_block_debug_into (path[path.length () - 1]->dest,
-						     taken_edge->dest);
-		register_jump_thread (path, true);
-	      }
+	    propagate_threaded_block_debug_into (path[path.length () - 1]->dest,
+						 taken_edge->dest);
+	    register_jump_thread (path, true);
 	  }
 
         path.release();

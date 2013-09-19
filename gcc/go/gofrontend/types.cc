@@ -4229,6 +4229,11 @@ Struct_field::is_embedded_builtin(Gogo* gogo) const
 
 Struct_type::Identical_structs Struct_type::identical_structs;
 
+// A hash table used to merge method sets for identical unnamed
+// structs.
+
+Struct_type::Struct_method_tables Struct_type::struct_method_tables;
+
 // Traversal.
 
 int
@@ -4693,9 +4698,24 @@ Struct_type::interface_method_table(Gogo* gogo,
 				    const Interface_type* interface,
 				    bool is_pointer)
 {
+  std::pair<Struct_type*, Struct_type::Struct_method_table_pair*>
+    val(this, NULL);
+  std::pair<Struct_type::Struct_method_tables::iterator, bool> ins =
+    Struct_type::struct_method_tables.insert(val);
+
+  Struct_method_table_pair* smtp;
+  if (!ins.second)
+    smtp = ins.first->second;
+  else
+    {
+      smtp = new Struct_method_table_pair();
+      smtp->first = NULL;
+      smtp->second = NULL;
+      ins.first->second = smtp;
+    }
+
   return Type::interface_method_table(gogo, this, interface, is_pointer,
-				      &this->interface_method_tables_,
-				      &this->pointer_interface_method_tables_);
+				      &smtp->first, &smtp->second);
 }
 
 // Convert struct fields to the backend representation.  This is not

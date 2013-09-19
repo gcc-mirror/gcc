@@ -147,7 +147,7 @@ namespace __debug
 
       // Element access.
       reference
-      operator[](size_type __n)
+      operator[](size_type __n) noexcept
       {
 	__glibcxx_check_subscript(__n);
 	return _AT_Type::_S_ref(_M_elems, __n);
@@ -180,14 +180,14 @@ namespace __debug
       }
 
       reference 
-      front()
+      front() noexcept
       {
 	__glibcxx_check_nonempty();
 	return *begin();
       }
 
       constexpr const_reference 
-      front() const
+      front() const noexcept
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, 0)
 	  : (_GLIBCXX_THROW_OR_ABORT(_Array_check_nonempty<_Nm>()),
@@ -195,14 +195,14 @@ namespace __debug
       }
 
       reference 
-      back()
+      back() noexcept
       {
 	__glibcxx_check_nonempty();
 	return _Nm ? *(end() - 1) : *end();
       }
 
       constexpr const_reference 
-      back() const
+      back() const noexcept
       {
 	return _Nm ? _AT_Type::_S_ref(_M_elems, _Nm - 1)
 	  : (_GLIBCXX_THROW_OR_ABORT(_Array_check_nonempty<_Nm>()),

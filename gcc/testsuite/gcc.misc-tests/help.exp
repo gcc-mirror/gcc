@@ -55,11 +55,11 @@ check_for_options c "--help=target,optimizers" "" "" ""
 check_for_options c "--help=warnings,^joined,^undocumented" "" "" ""
 check_for_options c "-Q -O2 --help=optimizers" {
 -O
--ftree-vectorize[^\n]*disabled
+-ftree-loop-vectorize[^\n]*disabled
 } "  -g  " ""
 check_for_options c "-Q -O3 --help=optimizers" {
 -O
--ftree-vectorize[^\n]*enabled
+-ftree-loop-vectorize[^\n]*enabled
 } "  -g  " ""
 # Try repeated --help=.
 check_for_options c "--help=params --help=optimizers" {

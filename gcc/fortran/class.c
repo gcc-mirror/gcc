@@ -1881,6 +1881,8 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
 
       for (fini = derived->f2k_derived->finalizers; fini; fini = fini->next)
 	{
+	  if (!fini->proc_tree)
+	    fini->proc_tree = gfc_find_sym_in_symtree (fini->proc_sym);
 	  if (fini->proc_tree->n.sym->attr.elemental)
 	    {
 	      fini_elem = fini;

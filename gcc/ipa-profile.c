@@ -625,7 +625,13 @@ ipa_profile (void)
 			 of N2.  Speculate on the local alias to allow inlining.
 		       */
 		      if (!symtab_can_be_discarded ((symtab_node) n2))
-			n2 = cgraph (symtab_nonoverwritable_alias ((symtab_node)n2));
+			{
+			  cgraph_node *alias;
+			  alias = cgraph (symtab_nonoverwritable_alias
+					   ((symtab_node)n2));
+			  if (alias)
+			    n2 = alias;
+			}
 		      nconverted++;
 		      cgraph_turn_edge_to_speculative
 			(e, n2,

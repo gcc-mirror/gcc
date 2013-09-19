@@ -20,7 +20,7 @@
  x = t2(45,478)
  allocate(t2 :: cp)
 
- cp = x   ! { dg-error "Variable must not be polymorphic" }
+ cp = x   ! { dg-error "Nonallocatable variable must not be polymorphic" }
 
  select type (cp)
  type is (t2)
@@ -28,4 +28,3 @@
  end select
 
 end
- 

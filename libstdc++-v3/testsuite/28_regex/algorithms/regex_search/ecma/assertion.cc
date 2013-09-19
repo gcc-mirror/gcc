@@ -1,5 +1,4 @@
 // { dg-options "-std=gnu++11" }
-// { dg-do run { xfail *-*-* } }
 
 //
 // 2013-09-14  Tim Shen <timshen91@gmail.com>
@@ -54,22 +53,37 @@ test01()
   string sol[] =
     {
       "This",
+      "",
       "is",
+      "",
       "a",
+      "",
       "regular",
+      "",
       "expression",
+      "",
     };
 
   regex re("\\b\\w*\\b");
   int i = 0;
   for (auto it = sregex_iterator(s.begin(), s.end(), re);
-       it != sregex_iterator() && i < 5;
+       it != sregex_iterator();
        ++it)
     {
       string s((*it)[0].first, (*it)[0].second);
       VERIFY(s == sol[i++]);
     }
-  VERIFY(i == 5);
+  VERIFY(i == 10);
+
+  {
+    cmatch m;
+    regex re("(?=(as)df)as(df)");
+    regex_search("asdf", m, re);
+    VERIFY(m.size() == 3);
+    VERIFY(m[0].matched && string(m[0].first, m[0].second) == "asdf");
+    VERIFY(m[1].matched && string(m[1].first, m[1].second) == "as");
+    VERIFY(m[2].matched && string(m[2].first, m[2].second) == "df");
+  }
 }
 
 int

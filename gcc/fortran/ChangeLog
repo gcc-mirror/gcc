@@ -1,3 +1,20 @@
+2013-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (gfc_check_assign_symbol): Free lvalue.ref.
+
+2013-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43366
+	* primary.c (gfc_variable_attr): Also handle codimension.
+	* resolve.c (resolve_ordinary_assign): Add invalid-diagnostic for
+	polymorphic assignment.
+
+2013-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58356
+	* class.c (generate_finalization_wrapper): Init proc_tree if
+	not yet resolved.
+
 2013-09-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57697

@@ -259,11 +259,6 @@ associate_equivalences_with_edges (void)
    so with each value we have a list of SSA_NAMEs that have the
    same value.  */
 
-/* As we enter each block we record the value for any edge equivalency
-   leading to this block.  If no such edge equivalency exists, then we
-   record NULL.  These equivalences are live until we leave the dominator
-   subtree rooted at the block where we record the equivalency.  */
-static vec<tree> equiv_stack;
 
 /* Main structure for recording equivalences into our hash table.  */
 struct equiv_hash_elt
@@ -316,8 +311,6 @@ val_ssa_equiv_hasher::remove (value_type *elt)
    able to reuse tree-vn for this code.  */
 static hash_table <val_ssa_equiv_hasher> val_ssa_equiv;
 
-static void uncprop_enter_block (struct dom_walk_data *, basic_block);
-static void uncprop_leave_block (struct dom_walk_data *, basic_block);
 static void uncprop_into_successor_phis (basic_block);
 
 /* Remove the most recently recorded equivalency for VALUE.  */
@@ -361,47 +354,54 @@ record_equiv (tree value, tree equivalence)
   an_equiv_elt_p->equivalences.safe_push (equivalence);
 }
 
+class uncprop_dom_walker : public dom_walker
+{
+public:
+  uncprop_dom_walker (cdi_direction direction)
+    : dom_walker (direction)
+  {
+    equiv_stack_.create (2);
+  }
+  ~uncprop_dom_walker ()
+  {
+    equiv_stack_.release ();
+  }
+
+  virtual void before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+
+private:
+
+/* As we enter each block we record the value for any edge equivalency
+   leading to this block.  If no such edge equivalency exists, then we
+   record NULL.  These equivalences are live until we leave the dominator
+   subtree rooted at the block where we record the equivalency.  */
+  vec<tree> equiv_stack_;
+};
+
 /* Main driver for un-cprop.  */
 
 static unsigned int
 tree_ssa_uncprop (void)
 {
-  struct dom_walk_data walk_data;
   basic_block bb;
 
   associate_equivalences_with_edges ();
 
   /* Create our global data structures.  */
   val_ssa_equiv.create (1024);
-  equiv_stack.create (2);
 
   /* We're going to do a dominator walk, so ensure that we have
      dominance information.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
-  /* Setup callbacks for the generic dominator tree walker.  */
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children = uncprop_enter_block;
-  walk_data.after_dom_children = uncprop_leave_block;
-  walk_data.global_data = NULL;
-  walk_data.block_local_data_size = 0;
-
-  /* Now initialize the dominator walker.  */
-  init_walk_dominator_tree (&walk_data);
-
   /* Recursively walk the dominator tree undoing unprofitable
      constant/copy propagations.  */
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
+  uncprop_dom_walker (CDI_DOMINATORS).walk (cfun->cfg->x_entry_block_ptr);
 
-  /* Finalize and clean up.  */
-  fini_walk_dominator_tree (&walk_data);
-
-  /* EQUIV_STACK should already be empty at this point, so we just
-     need to empty elements out of the hash table, free EQUIV_STACK,
-     and cleanup the AUX field on the edges.  */
+  /* we just need to empty elements out of the hash table, and cleanup the
+    AUX field on the edges.  */
   val_ssa_equiv.dispose ();
-  equiv_stack.release ();
   FOR_EACH_BB (bb)
     {
       edge e;
@@ -424,12 +424,11 @@ tree_ssa_uncprop (void)
    any finalization actions in preparation for leaving this node in
    the dominator tree.  */
 
-static void
-uncprop_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-		     basic_block bb ATTRIBUTE_UNUSED)
+void
+uncprop_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
 {
   /* Pop the topmost value off the equiv stack.  */
-  tree value = equiv_stack.pop ();
+  tree value = equiv_stack_.pop ();
 
   /* If that value was non-null, then pop the topmost equivalency off
      its equivalency stack.  */
@@ -547,9 +546,8 @@ single_incoming_edge_ignoring_loop_edges (basic_block bb)
   return retval;
 }
 
-static void
-uncprop_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-		     basic_block bb)
+void
+uncprop_dom_walker::before_dom_children (basic_block bb)
 {
   basic_block parent;
   edge e;
@@ -568,13 +566,13 @@ uncprop_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 	  struct edge_equivalency *equiv = (struct edge_equivalency *) e->aux;
 
 	  record_equiv (equiv->rhs, equiv->lhs);
-	  equiv_stack.safe_push (equiv->rhs);
+	  equiv_stack_.safe_push (equiv->rhs);
 	  recorded = true;
 	}
     }
 
   if (!recorded)
-    equiv_stack.safe_push (NULL_TREE);
+    equiv_stack_.safe_push (NULL_TREE);
 
   uncprop_into_successor_phis (bb);
 }

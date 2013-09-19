@@ -10803,8 +10803,10 @@ build_binary_op (location_t location, enum tree_code code,
 	return error_mark_node;
     }
 
-  if (flag_sanitize & SANITIZE_UNDEFINED
+  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE))
       && current_function_decl != 0
+      && !lookup_attribute ("no_sanitize_undefined",
+			    DECL_ATTRIBUTES (current_function_decl))
       && (doing_div_or_mod || doing_shift))
     {
       /* OP0 and/or OP1 might have side-effects.  */
@@ -10812,9 +10814,9 @@ build_binary_op (location_t location, enum tree_code code,
       op1 = c_save_expr (op1);
       op0 = c_fully_fold (op0, false, NULL);
       op1 = c_fully_fold (op1, false, NULL);
-      if (doing_div_or_mod)
+      if (doing_div_or_mod && (flag_sanitize & SANITIZE_DIVIDE))
 	instrument_expr = ubsan_instrument_division (location, op0, op1);
-      else if (doing_shift)
+      else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
     }
 
@@ -10842,7 +10844,7 @@ build_binary_op (location_t location, enum tree_code code,
     ret = build1 (EXCESS_PRECISION_EXPR, semantic_result_type, ret);
   protected_set_expr_location (ret, location);
 
-  if ((flag_sanitize & SANITIZE_UNDEFINED) && instrument_expr != NULL)
+  if (instrument_expr != NULL)
     ret = fold_build2 (COMPOUND_EXPR, TREE_TYPE (ret),
 		       instrument_expr, ret);
 

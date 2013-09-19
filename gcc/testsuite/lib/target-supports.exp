@@ -435,9 +435,10 @@ proc check_effective_target_trampolines { } {
       return 0
     }
     if { [istarget avr-*-*]
+	 || [istarget msp430-*-*]
 	 || [istarget hppa2.0w-hp-hpux11.23]
-	|| [istarget hppa64-hp-hpux11.23] } {
-	return 0;   
+	 || [istarget hppa64-hp-hpux11.23] } {
+	return 0;
     }
     return 1
 }
@@ -535,6 +536,7 @@ proc check_profiling_available { test_what } {
 	     || [istarget mmix-*-*]
 	     || [istarget mn10300-*-elf*]
 	     || [istarget moxie-*-elf*]
+	     || [istarget msp430-*-*]
 	     || [istarget picochip-*-*]
 	     || [istarget powerpc-*-eabi*]
 	     || [istarget powerpc-*-elf]
@@ -652,6 +654,11 @@ proc check_effective_target_tls_emulated {} {
 # Return 1 if TLS executables can run correctly, 0 otherwise.
 
 proc check_effective_target_tls_runtime {} {
+    # MSP430 runtime does not have TLS support, but just
+    # running the test below is insufficient to show this.
+    if { [istarget msp430-*-*] } {
+	return 0
+    }
     return [check_runtime tls_runtime {
 	__thread int thr = 0;
 	int main (void) { return thr; }
@@ -2222,7 +2229,7 @@ proc check_effective_target_arm_v8_vfp_ok {} {
 # options.
 
 proc check_effective_target_arm_hard_vfp_ok { } {
-    if { [check_effective_target_arm32] 
+    if { [check_effective_target_arm32]
 	 && ! [check-flags [list "" { *-*-* } { "-mfloat-abi=*" } { "-mfloat-abi=hard" }]] } {
 	return [check_no_compiler_messages arm_hard_vfp_ok executable {
 	    int main() { return 0;}

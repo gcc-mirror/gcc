@@ -1,3 +1,586 @@
+2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-constraints.c (need_for_all_save_p): Use macro
+	HARD_REGNO_CALL_PART_CLOBBERED.
+	* lra-lives.c (check_pseudos_live_through_calls): Use the macro to
+	set up pseudo conflict hard regs.
+
+2013-09-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/58452
+	* config/rs6000/paired.md (movmisalignv2sf): Fix to allow memory
+	operands.
+
+2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/58438
+	* lra.c (lra): Clear lra_optional_reload_pseudos in upper loop.
+	* lra-constraints.c (undo_optional_reloads): Keep optional reloads
+	from previous subpasses.
+
+2013-09-18  Richard Earnshaw  <rearnsha@arm.com>
+
+	* arm.c (arm_get_frame_offsets): Validate architecture supports
+	LDRD/STRD before accepting the tuning preference.
+	(arm_expand_prologue): Likewise.
+	(arm_expand_epilogue): Likewise.
+
+2013-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58417
+	* tree-chrec.c (chrec_fold_plus_1): Assert that we do not
+	have chrecs with symbols defined in the loop as operands.
+	(chrec_fold_multiply): Likewise.
+	* tree-scalar-evolution.c (interpret_rhs_expr): Instantiate
+	parameters before folding binary operations.
+	(struct instantiate_cache_entry_hasher): Remove.
+	(struct instantiate_cache_type): Use a pointer-map.
+	(instantiate_cache_type::instantiate_cache_type): New function.
+	(instantiate_cache_type::get): Likewise.
+	(instantiate_cache_type::set): Likewise.
+	(instantiate_cache_type::~instantiate_cache_type): Adjust.
+	(get_instantiated_value_entry): Likewise.
+	(global_cache): New global.
+	(instantiate_scev_r, instantiate_scev_poly, instantiate_scev_binary,
+	instantiate_array_ref, instantiate_scev_convert, instantiate_scev_3,
+	instantiate_scev_2, instantiate_scev_1): Do not pass along cache.
+	(instantiate_scev_name): Adjust.
+	(instantiate_scev): Construct global instead of local cache.
+	(resolve_mixers): Likewise.
+
+2013-09-18  Daniel Morris  <danielm@ecoscentric.com>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58458
+	* doc/implement-cxx.texi: Fix references to the C++ standards.
+
+2013-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (copy_var_decl): Copy DECL_ATTRIBUTES.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): For
+	simd_lane_access drs, update also DR_ALIGNED_TO.
+
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58411
+	* doc/extend.texi: Document no_sanitize_undefined attribute.
+	* builtins.c (fold_builtin_0): Don't sanitize function if it has the
+	no_sanitize_undefined attribute.
+
+2013-09-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430.h (ASM_SPEC): Pass -md on to the assembler.
+	(ASM_DECLARE_FUNCTION_NAME): Define.
+
+2013-09-17  Trevor Saunders  <tsaunders@mozilla.com>
+
+	* compare-elim.c (find_comparison_dom_walker): New class
+	(find_comparisons_in_bb): Rename to
+	find_comparison_dom_walker::before_dom_children
+	(find_comparisons): Adjust
+	* domwalk.c (walk_dominator_tree): Rename to dom_walker::walk, and
+	adjust.
+	(init_walk_dominator_tree, fini_walk_dominator_tree): Remove
+	* domwalk.h (dom_walk_data): Convert it To a class dom_walker.
+	(init_walk_dominator_tree): Remove declaration.
+	(fini_walk_dominator_tree): Remove declaration.
+	* fwprop.c (single_def_use_dom_walker): New class
+	(single_def_use_enter_block): Convert to
+	single_def_use_dom_walker::before_dom_children.
+	(single_def_use_leave_block): Convert to
+	single_def_use_dom_walker::after_dom_children.
+	(build_single_def_use_links): Adjust.
+	* gimple-ssa-strength-reduction.c (find_candidates_dom_walker): New
+	class.
+	(find_candidates_in_block): Convert to
+	find_candidates_dom_walker::before_dom_children.
+	(execute_strength_reduction): Adjust.
+	* graphite-sese-to-poly.c (struct bsc, build_sese_conditions): Remove.
+	(sese_dom_walker): New class.
+	(sese_dom_walker::sese_dom_walker): New constructor.
+	(sese_dom_walker::~sese_dom_walker): New destructor.
+	(build_sese_conditions_before): Convert to
+	sese_dom_walker::before_dom_children.
+	(build_sese_conditions_after): Convert to
+	sese_dom_walker::after_dom_children.
+	(build_poly_scop): Adjust
+	* tree-into-ssa.c (rewrite_dom_walker): New class
+	(rewrite_enter_block): Convert to
+	rewrite_dom_walker::before_dom_children.
+	(rewrite_leave_block): Convert to
+	rewrite_dom_walker::after_dom_children.
+	(rewrite_update_dom_walker): New class.
+	(rewrite_update_enter_block): Convert to
+	rewrite_update_dom_walker::before_dom_children.
+	(rewrite_update_leave_block): Convert to
+	rewrite_update_dom_walker::after_dom_children.
+	(rewrite_blocks, rewrite_into_ssa): Adjust.
+	(mark_def_dom_walker): New class.
+	(mark_def_dom_walker::mark_def_dom_walker): New constructor.
+	(mark_def_dom_walker::~mark_def_dom_walker): New destructor.
+	(mark_def_sites_blocks): Convert to
+	mark_def_dom_walker::before_dom_children.
+	(mark_def_site_blocks): Remove.
+	* tree-ssa-dom.c (dom_opt_dom_walker): New class.
+	(tree_ssa_dominator_optimize): Adjust.
+	(dom_thread_across_edge): Convert to method
+	dom_opt_dom_walker::thread_across_edge.
+	(dom_opt_enter_block): Convert to member function
+	dom_opt_dom_walker::before_dom_children.
+	(dom_opt_leave_block): Convert to member function
+	dom_opt_dom_walker::after_dom_children.
+	* tree-ssa-dse.c (dse_dom_walker): New class.
+	(dse_enter_block): Convert to member function
+	dse_dom_walker::before_dom_children.
+	(tree_ssa_dse): Adjust.
+	* tree-ssa-loop-im.c (invariantness_dom_walker): New class.
+	(determine_invariantness_stmt): Convert to method
+	invariantness_dom_walker::before_dom_children.
+	(determine_invariantness): Remove
+	(move_computations_dom_walker): New class.
+	(move_computations_stmt): Convert to method
+	move_computations_dom_walker::before_dom_children.
+	(move_computations, tree_ssa_lim): Adjust.
+	* tree-ssa-phiopt.c (nontrapping_dom_walker): new class
+	(nt_init_block): Make method
+	notrappping_dom_walker::before_dom_children.
+	(nt_fini_block): Make
+	method nontrapping_dom_walker::after_dom_children.
+	(get_non_trapping): Adjust.
+	* tree-ssa-pre.c (eliminate_dom_walker): New class.
+	(eliminate_bb): Make method eliminate_dom_walker::before_dom_children.
+	(eliminate_leave_block): Make method.
+	eliminate_dom_walker::after_dom_children.
+	(eliminate): Adjust
+	* tree-ssa-strlen.c (strlen_dom_walker): New class.
+	(strlen_enter_block): Make method
+	strlen_dom_walker::before_dom_children.
+	(strlen_leave_block): Make
+	method strlen_dom_walker::after_dom_children.
+	(tree_ssa_strlen): Adjust.
+	* tree-ssa-uncprop.c (uncprop_dom_walker): New class.
+	(tree_ssa_uncprop): Adjust.
+	(uncprop_leave_block): Make method
+	uncprop_dom_walker::after_dom_children.
+	(uncprop_leave_block): Make method
+	uncprop_dom_walker::before_dom_children.
+
+2013-09-18  Bin Cheng  <bin.cheng@arm.com>
+
+	* config/arm/arm.c (thumb1_reorg): Search for flag setting insn
+	before branch in same basic block.  Check both src and dest of
+	the move insn.
+
+2013-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78-real.md (bf): New pattern.
+	(bt): New pattern.
+	* config/rl78/rl78.c (rl78_print_operand_1): Handle %B.
+	(rl78_print_operand): Do not put a # before a %B.
+	* config/rl78/rl78.opt: Tweak doc strings.
+
+2013-09-17  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/constraints.md (Wcv): Allow up to $r31.
+	* config/rl78/rl78.c (rl78_asm_file_start: Likewise.
+	(rl78_option_override): Likewise, if -mallregs.
+	(is_virtual_register): Likewise.
+	* config/rl78/rl78.h (reg_class): Extend VREGS to $r31.
+	(REGNO_OK_FOR_BASE_P): Likewise.
+	* config/rl78/rl78.opt (-mallregs): New.
+
+2013-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c (need_to_save): Change return type to bool.
+	For interrupt functions: save all call clobbered registers if the
+	interrupt handler is not a leaf function.
+	(rl78_expand_prologue): Always recompute the frame information.
+	For interrupt functions: only select bank 0 if one of the bank 0
+	registers is going to be psuhed.
+
+2013-09-17  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/constraints.md: For each W* constraint, rename to C*
+	and create a W* constraint that checks for an optional ES: prefix
+	pattern also.
+	* config/rl78/rl78.md (UNS_ES_ADDR): New.
+	(es_addr): New.  Used to wrap far addresses.
+	* config/rl78/rl78-protos.h (rl78_es_addr): New.
+	(rl78_es_base): New.
+	* config/rl78/rl78.c (rl78_as_legitimate_address): Accept "unspec"
+	wrapped far addresses.
+	(rl78_print_operand_1): Unwrap far addresses before processing.
+	(rl78_lo16): Wrap far addresses in unspecs.
+	(rl78_es_addr): New.
+	(rl78_es_base): New.
+	(insn_ok_now): Check for not-yet-wrapped far addresses.
+	(transcode_memory_rtx): Properly re-wrap far addresses.
+
+2013-09-17  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/t-rtems: Add leon3 multilibs.
+
+2013-09-17  Cong Hou  <congh@google.com>
+
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Fix a bug
+	when checking the dot production pattern. The type of rhs operand
+	of multiply is now checked correctly.
+
+2013-09-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (cprop_into_successor_phis): Also propagate
+	edge implied equivalences into successor phis.
+	* tree-ssa-threadupdate.c (phi_args_equal_on_edges): Moved into
+	here from tree-ssa-threadedge.c.
+	(mark_threaded_blocks): When threading through a joiner, if both
+	successors of the joiner's clone reach the same block, verify the
+	PHI arguments are equal.  If not, cancel the jump threading request.
+	* tree-ssa-threadedge.c (phi_args_equal_on_edges): Moved into
+	tree-ssa-threadupdate.c
+	(thread_across_edge): Don't check PHI argument equality when
+	threading through joiner block here.
+	
+2013-09-17  Andrew MacLeod <amacleod@redhat.com>
+
+	* tree-flow.h (ssa_undefined_value_p): Remove prototype.
+	* tree-ssa.c (ssa_undefined_value_p): Move pass independent parts here.
+	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
+	make_pass_early_warn_uninitialized): Move to tree-ssa-uninit.c.
+	* tree-ssa-uninit.c (ssa_undefined_value_p): Move to tree-ssa.c
+	(has_undefined_value_p): New.  Pass dependant parts of 
+	ssa_undefined_value_p.
+	(uninit_undefined_value_p): Use has_undefined_value_p.
+	(warn_uninit, warn_uninitialized_vars, execute_early_warn_uninitialized,
+	make_pass_early_warn_uninitialized): Move from tree-ssa.c
+	* tree-ssa.h: Adjust prototypes
+
+2013-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58332
+	* cif-code.def (FUNCTION_NOT_OPTIMIZED): New CIF code.
+	* ipa-inline.c (can_inline_edge_p): Do not downgrade
+	FUNCTION_NOT_OPTIMIZED.
+	* ipa-inline-analysis.c (compute_inline_parameters): Function
+	not optimized is not inlinable unless it is alwaysinline.
+	(inline_analyze_function): Force calls in not optimized
+	function not inlinable.
+
+2013-09-17  Jan Hubicka  <jh@suse.cz>
+
+	PR middle-end/58329
+	* ipa-devirt.c (ipa_devirt): Be ready for symtab_nonoverwritable_alias
+	to return NULL.
+	* ipa.c (function_and_variable_visibility): Likewise.
+	* ipa-profile.c (ipa_profile): Likewise.
+
+2013-09-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ipa/58398
+	* cgraph.c (cgraph_function_body_availability): Check for ifunc
+	attribute, and don't inline the resolver in this case.
+
+2013-09-17  Teresa Johnson  <tejohnson@google.com>
+
+	* coverage.c (get_coverage_counts): Add missing newline.
+
+2013-09-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/58088
+	* fold-const.c (mask_with_trailing_zeros): New function.
+	(fold_binary_loc): Make sure we don't recurse infinitely
+	when the X in (X & C1) | C2 is a tree of the form (Y * K1) & K2.
+	Use mask_with_trailing_zeros where appropriate.
+
+2013-09-17  Yuri Rumyantsev  <ysrumyan@gmail.com>
+
+	* config/i386/i386.c (distance_agu_use_in_bb) : Proper initialization
+	of 'prev' var to get better distance estimation.
+
+2013-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.h (struct copy_body_data): Add transform_parameter.
+	* tree-inline.c (is_parameter_of): New predicate.
+	(remap_gimple_op_r): Do not propagate TREE_THIS_NOTRAP on MEM_REF if
+	a parameter has been remapped.
+	(copy_tree_body_r): Likewise on INDIRECT_REF and MEM_REF.
+	(optimize_inline_calls): Initialize transform_parameter.
+	(copy_gimple_seq_and_replace_locals): Likewise.
+	(tree_function_versioning): Likewise.
+	(maybe_inline_call_in_expr): Likewise.
+
+2013-09-17  Nick Clifton  <nickc@redhat.com>
+
+	* config/msp430/msp430-protos.h: Add prototypes for new functions.
+	* config/msp430/msp430.c (msp430_preserve_reg_p): Add support for
+	interrupt handlers.
+	(is_attr_func): New function.
+	(msp430_is_interrupt_func): New function.
+	(is_naked_func): New function.
+	(is_reentrant_func): New function.
+	(is_critical_func): New function.
+	(msp430_start_function): Add annotations for function attributes.
+	(msp430_attr): New function.
+	(msp430_attribute_table): New.
+	(msp430_function_section): New function.
+	(TARGET_ASM_FUNCTION_SECTION): Define.
+	(msp430_builtin): New enum.
+	(msp430_init_builtins): New function.
+	(msp430_builtin_devl): New function.
+	(msp430_expand_builtin): New function.
+	(TARGET_INIT_BUILTINS): Define.
+	(TARGET_EXPAND_BUILTINS): Define.
+	(TARGET_BUILTIN_DECL): Define.
+	(msp430_expand_prologue): Add support for naked, interrupt,
+	critical and reentrant functions.
+	(msp430_expand_epilogue): Likewise.
+	(msp430_print_operand): Handle 'O' character.
+	* config/msp430/msp430.h (TARGET_CPU_CPP_BUILTINS): Define
+	NO_TRAMPOLINES.
+	* config/msp430/msp430.md (unspec): Add UNS_DINT, UNS_EINT,
+	UNS_PUSH_INTR, UNS_POP_INTR, UNS_BIC_SR, UNS_BIS_SR.
+	(pushm): Use a 'n' rather than an 'i' constraint.
+	(msp_return): Add generation of the interrupt return instruction.
+	(disable_interrupts): New pattern.
+	(enable_interrupts): New pattern.
+	(push_intr_state): New pattern.
+	(pop_intr_state): New pattern.
+	(bic_SR): New pattern.
+	(bis_SR): New pattern.
+	* doc/extend.texi: Document MSP430 function attributes and builtin
+	functions.
+
+2013-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58432
+	* tree-loop-distribution.c (tree_loop_distribution): Also
+	scan PHIs for outside loop uses and seed a partition from them.
+
+2013-09-17  Bin Cheng  <bin.cheng@arm.com>
+
+	* gimple-ssa-strength-reduction.c (backtrace_base_for_ref): New.
+	(restructure_reference): Call backtrace_base_for_ref.
+
+2013-09-17  Alan Modra  <amodra@gmail.com>
+
+	PR target/57589
+	* config/rs6000/driver-rs6000.c (elf_platform): Revert 2013-06-11 patch.
+
+2013-09-16  DJ Delorie  <dj@redhat.com>
+
+	* config/rl78/rl78.c (rl78_asm_file_start): Specify alternate
+	vregs location for RL78/G10.
+	(rl78_expand_prologue): Avoid SEL on G10.
+	(rl78_expand_epilogue): Likewise.
+	(rl78_peep_movhi_p): Can't move a constant to memory in HImode.
+	* config/rl78/rl78.h (TARGET_CPU_CPP_BUILTINS): Define
+	__RL78_G10__ when appropriate.
+	(ASM_SPEC): Pass -mg10 along to the assembler.
+	* config/rl78/rl78.md (sel_rb): Disable for G10.
+	* config/rl78/rl78.opt: Add -mg10 option.
+	* config/rl78/t-rl78: Add -mg10 multilib.
+
+2013-09-16  Xinliang David Li  <davidxl@google.com>
+
+	* tree-if-conv.c (main_tree_if_conversion): Check new flag.
+	* omp-low.c (omp_max_vf): Ditto.
+	(expand_omp_simd): Ditto.
+	* tree-vectorizer.c (vectorize_loops): Ditto.
+	(gate_vect_slp): Ditto.
+	(gate_increase_alignment): Ditto.
+	* tree-ssa-pre.c (inhibit_phi_insertion): Ditto.
+	* tree-ssa-loop.c (gate_tree_vectorize): Ditto.
+	(gate_tree_vectorize): Name change.
+	(tree_vectorize): Ditto.
+	(pass_vectorize::gate): Call new function.
+	(pass_vectorize::execute): Ditto.
+	opts.c: O3 default setting change.
+	(finish_options): Check new flag.
+	* doc/invoke.texi: Document new flags.
+	* common.opt: New flags.
+
+2013-09-16  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/tm.texi.in (Cond Exec Macros): Remove node.
+	(Condition Code): Don't reference it.
+	* doc/tm.texi: Regenerate.
+
+2013-09-16  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/58418
+	* lra-constraints.c (undo_optional_reloads): Consider all optional
+	reload even if it did not get a hard reg.
+
+2013-09-16  Teresa Johnson  <tejohnson@google.com>
+
+	* dumpfile.c (dump_loc): Remove newline emission.
+	* tree-vect-data-refs.c (vect_lanes_optab_supported_p): Add newline
+	emission to dump_printf_loc calls where missing.
+	(vect_mark_for_runtime_alias_test): Ditto.
+	(vect_analyze_data_ref_dependence): Ditto.
+	(vect_analyze_data_ref_dependences): Ditto.
+	(vect_slp_analyze_data_ref_dependence): Ditto.
+	(vect_slp_analyze_data_ref_dependences): Ditto.
+	(vect_compute_data_ref_alignment): Ditto.
+	(vect_update_misalignment_for_peel): Ditto.
+	(vect_verify_datarefs_alignment): Ditto.
+	(vector_alignment_reachable_p): Ditto.
+	(vect_get_data_access_cost): Ditto.
+	(vect_enhance_data_refs_alignment): Ditto.
+	(vect_find_same_alignment_drs): Ditto.
+	(vect_analyze_data_refs_alignment): Ditto.
+	(vect_analyze_group_access): Ditto.
+	(vect_analyze_data_ref_access): Ditto.
+	(vect_analyze_data_ref_accesses): Ditto.
+	(vect_prune_runtime_alias_test_list): Ditto.
+	(vect_analyze_data_refs): Ditto.
+	(vect_create_addr_base_for_vector_ref): Ditto.
+	(vect_create_data_ref_ptr): Ditto.
+	(vect_grouped_store_supported): Ditto.
+	(vect_grouped_load_supported): Ditto.
+	* value-prof.c (check_counter): Ditto.
+	(check_ic_target): Ditto.
+	* tree-vect-patterns.c (vect_recog_dot_prod_pattern): Ditto.
+	(vect_recog_widen_mult_pattern): Ditto.
+	(vect_recog_widen_sum_pattern): Ditto.
+	(vect_recog_over_widening_pattern): Ditto.
+	(vect_recog_widen_shift_pattern): Ditto.
+	(vect_recog_rotate_pattern): Ditto.
+	(vect_recog_vector_vector_shift_pattern): Ditto.
+	(vect_recog_divmod_pattern): Ditto.
+	(vect_recog_mixed_size_cond_pattern): Ditto.
+	(vect_recog_bool_pattern): Ditto.
+	(vect_pattern_recog_1): Ditto.
+	(vect_pattern_recog): Ditto.
+	* tree-vect-loop.c (vect_determine_vectorization_factor): Ditto.
+	(vect_is_simple_iv_evolution): Ditto.
+	(vect_analyze_scalar_cycles_1): Ditto.
+	(vect_get_loop_niters): Ditto.
+	(vect_analyze_loop_1): Ditto.
+	(vect_analyze_loop_form): Ditto.
+	(vect_analyze_loop_operations): Ditto.
+	(vect_analyze_loop_2): Ditto.
+	(vect_analyze_loop): Ditto.
+	(report_vect_op): Ditto.
+	(vect_is_slp_reduction): Ditto.
+	(vect_is_simple_reduction_1): Ditto.
+	(vect_get_known_peeling_cost): Ditto.
+	(vect_estimate_min_profitable_iters): Ditto.
+	(vect_model_reduction_cost): Ditto.
+	(vect_model_induction_cost): Ditto.
+	(get_initial_def_for_induction): Ditto.
+	(vect_create_epilog_for_reduction): Ditto.
+	(vectorizable_reduction): Ditto.
+	(vectorizable_induction): Ditto.
+	(vectorizable_live_operation): Ditto.
+	(vect_loop_kill_debug_uses): Ditto.
+	(vect_transform_loop): Ditto.
+	* tree-vect-stmts.c (vect_mark_relevant): Ditto.
+	(vect_stmt_relevant_p): Ditto.
+	(process_use): Ditto.
+	(vect_mark_stmts_to_be_vectorized): Ditto.
+	(vect_model_simple_cost): Ditto.
+	(vect_model_promotion_demotion_cost): Ditto.
+	(vect_model_store_cost): Ditto.
+	(vect_get_store_cost): Ditto.
+	(vect_model_load_cost): Ditto.
+	(vect_get_load_cost): Ditto.
+	(vect_init_vector_1): Ditto.
+	(vect_get_vec_def_for_operand): Ditto.
+	(vect_finish_stmt_generation): Ditto.
+	(vectorizable_call): Ditto.
+	(vectorizable_conversion): Ditto.
+	(vectorizable_assignment): Ditto.
+	(vectorizable_shift): Ditto.
+	(vectorizable_operation): Ditto.
+	(vectorizable_store): Ditto.
+	(vectorizable_load): Ditto.
+	(vectorizable_condition): Ditto.
+	(vect_analyze_stmt): Ditto.
+	(vect_transform_stmt): Ditto.
+	(vect_is_simple_use): Ditto.
+	* tree-vect-loop-manip.c (slpeel_make_loop_iterate_ntimes): Ditto.
+	(vect_can_advance_ivs_p): Ditto.
+	(vect_update_ivs_after_vectorizer): Ditto.
+	(vect_do_peeling_for_loop_bound): Ditto.
+	(vect_gen_niters_for_prolog_loop): Ditto.
+	(vect_update_inits_of_drs): Ditto.
+	(vect_create_cond_for_alias_checks): Ditto.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Ditto.
+	(vect_build_slp_tree_1): Ditto.
+	(vect_supported_load_permutation_p): Ditto.
+	(vect_analyze_slp_instance): Ditto.
+	(vect_analyze_slp): Ditto.
+	(vect_make_slp_decision): Ditto.
+	(vect_detect_hybrid_slp): Ditto.
+	(vect_bb_vectorization_profitable_p): Ditto.
+	(vect_slp_analyze_bb_1): Ditto.
+	(vect_update_slp_costs_according_to_vf): Ditto.
+	(vect_get_mask_element): Ditto.
+	(vect_transform_slp_perm_load): Ditto.
+	(vect_schedule_slp_instance): Ditto.
+	(vect_schedule_slp): Ditto.
+	(vect_slp_transform_bb): Ditto.
+	* profile.c (read_profile_edge_counts): Ditto.
+	(compute_branch_probabilities): Ditto.
+	* coverage.c (get_coverage_counts): Ditto.
+
+2013-09-16  Diego Novillo  <dnovillo@google.com>
+
+	* tree-core.h: Add missing comment lines from refactoring
+	of tree.h.
+
+2013-09-16  Jan Hubicka  <jh@suse.cz>
+
+	* gimple-fold.c (can_refer_decl_in_current_unit_p): Do not accept
+	abstract functions; for static functions check the presence
+	of body.
+
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (fma): New.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_mla_elt<mode>): New.
+	(aarch64_mla_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_mls_elt<mode>): Likewise.
+	(aarch64_mls_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fma4_elt<mode>): Likewise.
+	(aarch64_fma4_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fma4_elt_to_128v2df): Likewise.
+	(aarch64_fma4_elt_to_64df): Likewise.
+	(fnma<mode>4): Likewise.
+	(aarch64_fnma4_elt<mode>): Likewise.
+	(aarch64_fnma4_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_fnma4_elt_to_128v2df): Likewise.
+	(aarch64_fnma4_elt_to_64df): Likewise.
+	* config/aarch64/iterators.md (VDQSF): New.
+	* config/aarch64/arm_neon.h
+	(vfm<as><sdq>_lane<q>_f<32, 64>): Convert to C implementation.
+	(vml<sa><q>_lane<q>_<fsu><16, 32, 64>): Likewise.
+
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_mul3_elt<mode>): New.
+	(aarch64_mul3_elt_<vswap_width_name><mode>): Likewise.
+	(aarch64_mul3_elt_to_128df): Likewise.
+	(aarch64_mul3_elt_to_64v2df): Likewise.
+	* config/aarch64/iterators.md (VEL): Also handle DFmode.
+	(VMUL): New.
+	(VMUL_CHANGE_NLANES) Likewise.
+	(h_con): Likewise.
+	(f): Likewise.
+	* config/aarch64/arm_neon.h
+	(vmul<q>_lane<q>_<suf><16,32,64>): Convert to C implementation.
+
+2013-09-16  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/arm_neon.h
+	(vcvtx_high_f32_f64): Fix parameters.
+
+2013-09-16  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha.c: Include tree-ssanames.h.
+
 2013-09-16  Richard Biener  <rguenther@suse.de>
 
 	* tree-loop-distribution.c (enum rdg_dep_type): Add control_dd.
@@ -35,7 +618,8 @@
 
 	PR target/48094
 	* config/darwin.c (darwin_objc2_section): Note if ObjC Metadata is
-	seen.  (darwin_objc1_section): Likewise.
+	seen.
+	(darwin_objc1_section): Likewise.
 	(darwin_file_end): Emit Image Info section when required.
 
 2013-09-14  Jan Hubicka  <jh@suse.cz>
@@ -54,13 +638,13 @@
 2013-09-14  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/58269
-	config/i386/i386.c (ix86_function_arg_regno_p): Make Darwin use the
+	* config/i386/i386.c (ix86_function_arg_regno_p): Make Darwin use the
 	xmm register set described in the psABI.
 
 2013-09-13  Evgeny Gavrin <e.gavrin@samsung.com>
 
-        * dwarf2out.c (should_emit_struct_debug): Add check
-        for type_decl variable is not NULL.
+	* dwarf2out.c (should_emit_struct_debug): Add check
+	for type_decl variable is not NULL.
 
 2013-09-13  Jacek Caban  <jacek@codeweavers.com>
 
@@ -252,12 +836,13 @@
 	tree-flow-inline.h.
 	* tree-flow.h (_edge_var_map, edge_var_map_vector): Move to tree-ssa.h.
 	Move prototypes belonging to tree-ssa.c.
-	* tree-flow-inline.h (redirect_edge_var_map_def, 
+	* tree-flow-inline.h (redirect_edge_var_map_def,
 	redirect_edge_var_map_result, redirect_edge_var_map_location): Move to
 	tree-ssa.h.
 	* gimple.h: Adjust prototypes.
-	* tree-ssa.c (useless_type_conversion_p, types_compatible_p): Move to...
-	* gimple.c (useless_type_conversion_p, types_compatible_p):  Here.
+	* tree-ssa.c (useless_type_conversion_p, types_compatible_p): Move
+	to...
+	* gimple.c (useless_type_conversion_p, types_compatible_p): Here.
 	* tree.h: Move prototype to tree-ssa.h.
 	* gengtype.c (open_base_files): Replace tree-flow.h with tree-ssa.h.
 	* Makefile.in: (TREE_SSA_H, TREE_FLOW_H): Adjust dependencies.
@@ -267,11 +852,12 @@
 	ggc-page.c, gimple-fold.c, gimple-iterator.c, gimple-low.c,
 	gimple-pretty-print.c, gimple-ssa-strength-reduction.c,
 	gimple-streamer-in.c, gimple-streamer-out.c, gimple.c, gimplify.c,
-	graphite-blocking.c, graphite-clast-to-gimple.c, graphite-dependences.c,
-	graphite-interchange.c, graphite-optimize-isl.c, graphite-poly.c,
-	graphite-scop-detection.c, graphite-sese-to-poly.c, graphite.c,
-	ipa-cp.c, ipa-inline-analysis.c, ipa-inline-transform.c, ipa-inline.c,
-	ipa-prop.c, ipa-pure-const.c, ipa-reference.c, ipa-split.c, ipa-utils.c,
+	graphite-blocking.c, graphite-clast-to-gimple.c,
+	graphite-dependences.c, graphite-interchange.c,
+	graphite-optimize-isl.c, graphite-poly.c, graphite-scop-detection.c,
+	graphite-sese-to-poly.c, graphite.c, ipa-cp.c, ipa-inline-analysis.c,
+	ipa-inline-transform.c, ipa-inline.c, ipa-prop.c, ipa-pure-const.c,
+	ipa-reference.c, ipa-split.c, ipa-utils.c,
 	loop-init.c, lto-cgraph.c, lto-section-in.c, lto-section-out.c,
 	lto-streamer-in.c, lto-streamer-out.c, lto-streamer.c, omp-low.c,
 	passes.c, predict.c, print-tree.c, profile.c, sese.c, targhooks.c,
@@ -563,12 +1149,11 @@
 
 	* lra.c (lra): Clear lra_optional_reload_pseudos before every
 	constraint pass.
-	* lra-constraints.c (curr_insn_transform): Switch on optional
-	reloads.  Check destination too to check move insn.
+	* lra-constraints.c (curr_insn_transform): Switch on optional reloads.
+	Check destination too to check move insn.
 	(undo_optional_reloads): Add check that the original peudo did not
-	changed its allocation and the optional reload was inherited on
-	last inheritance pass.  Break loop after deciding to keep optional
-	reload.
+	changed its allocation and the optional reload was inherited on last
+	inheritance pass.  Break loop after deciding to keep optional reload.
 	(lra_undo_inheritance): Add check that inherited pseudo still in
 	memory.
 

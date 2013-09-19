@@ -359,3 +359,6 @@
   /* Implemented by aarch64_st1<VALL:mode>.  */
   BUILTIN_VALL (STORE1, st1, 0)
 
+  /* Implemented by fma<mode>4.  */
+  BUILTIN_VDQF (TERNOP, fma, 4)
+

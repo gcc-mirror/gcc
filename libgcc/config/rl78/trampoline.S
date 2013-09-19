@@ -32,9 +32,7 @@
 
 */
 
-r8	=	0xffef0
-r10	=	0xffef2
-r14	=	0xffef6
+#include "vregs.h"
 
 	.data
 	.p2align	1

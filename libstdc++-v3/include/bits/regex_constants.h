@@ -52,19 +52,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   //@{
   enum __syntax_option
-    {
-      _S_icase,
-      _S_nosubs,
-      _S_optimize,
-      _S_collate,
-      _S_ECMAScript,
-      _S_basic,
-      _S_extended,
-      _S_awk,
-      _S_grep,
-      _S_egrep,
-      _S_syntax_last
-    };
+  {
+    _S_icase,
+    _S_nosubs,
+    _S_optimize,
+    _S_collate,
+    _S_ECMAScript,
+    _S_basic,
+    _S_extended,
+    _S_awk,
+    _S_grep,
+    _S_egrep,
+    _S_syntax_last
+  };
 
   /**
    * @brief This is a bitmask type indicating how to interpret the regex.
@@ -211,20 +211,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   //@{
 
   enum __match_flag
-    {
-      _S_not_bol,
-      _S_not_eol,
-      _S_not_bow,
-      _S_not_eow,
-      _S_any,
-      _S_not_null,
-      _S_continuous,
-      _S_prev_avail,
-      _S_sed,
-      _S_no_copy,
-      _S_first_only,
-      _S_match_flag_last
-    };
+  {
+    _S_not_bol,
+    _S_not_eol,
+    _S_not_bow,
+    _S_not_eow,
+    _S_any,
+    _S_not_null,
+    _S_continuous,
+    _S_prev_avail,
+    _S_sed,
+    _S_no_copy,
+    _S_first_only,
+    _S_match_flag_last
+  };
 
   /**
    * @brief This is a bitmask type indicating regex matching rules.
@@ -233,110 +233,148 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * perform bitwise operations on these values and expect the right thing to
    * happen.
    */
-  typedef std::bitset<_S_match_flag_last> match_flag_type;
+  enum match_flag_type : unsigned int
+  {
+    /**
+     * The default matching rules.
+     */
+    match_default     = 0,
 
-  /**
-   * The default matching rules.
-   */
-  constexpr match_flag_type match_default     = 0;
+    /**
+     * The first character in the sequence [first, last) is treated as though it
+     * is not at the beginning of a line, so the character (^) in the regular
+     * expression shall not match [first, first).
+     */
+    match_not_bol     = 1 << _S_not_bol,
 
-  /**
-   * The first character in the sequence [first, last) is treated as though it
-   * is not at the beginning of a line, so the character (^) in the regular
-   * expression shall not match [first, first).
-   */
-  constexpr match_flag_type match_not_bol     = 1 << _S_not_bol;
+    /**
+     * The last character in the sequence [first, last) is treated as though it
+     * is not at the end of a line, so the character ($) in the regular
+     * expression shall not match [last, last).
+     */
+    match_not_eol     = 1 << _S_not_eol,
 
-  /**
-   * The last character in the sequence [first, last) is treated as though it
-   * is not at the end of a line, so the character ($) in the regular
-   * expression shall not match [last, last).
-   */
-  constexpr match_flag_type match_not_eol     = 1 << _S_not_eol;
+    /**
+     * The expression \\b is not matched against the sub-sequence
+     * [first,first).
+     */
+    match_not_bow     = 1 << _S_not_bow,
 
-  /**
-   * The expression \\b is not matched against the sub-sequence
-   * [first,first).
-   */
-  constexpr match_flag_type match_not_bow     = 1 << _S_not_bow;
+    /**
+     * The expression \\b should not be matched against the sub-sequence
+     * [last,last).
+     */
+    match_not_eow     = 1 << _S_not_eow,
 
-  /**
-   * The expression \\b should not be matched against the sub-sequence
-   * [last,last).
-   */
-  constexpr match_flag_type match_not_eow     = 1 << _S_not_eow;
+    /**
+     * If more than one match is possible then any match is an acceptable
+     * result.
+     */
+    match_any         = 1 << _S_any,
 
-  /**
-   * If more than one match is possible then any match is an acceptable
-   * result.
-   */
-  constexpr match_flag_type match_any         = 1 << _S_any;
+    /**
+     * The expression does not match an empty sequence.
+     */
+    match_not_null    = 1 << _S_not_null,
 
-  /**
-   * The expression does not match an empty sequence.
-   */
-  constexpr match_flag_type match_not_null    = 1 << _S_not_null;
+    /**
+     * The expression only matches a sub-sequence that begins at first .
+     */
+    match_continuous  = 1 << _S_continuous,
 
-  /**
-   * The expression only matches a sub-sequence that begins at first .
-   */
-  constexpr match_flag_type match_continuous  = 1 << _S_continuous;
+    /**
+     * --first is a valid iterator position.  When this flag is set then the
+     * flags match_not_bol and match_not_bow are ignored by the regular
+     * expression algorithms 28.11 and iterators 28.12.
+     */
+    match_prev_avail  = 1 << _S_prev_avail,
 
-  /**
-   * --first is a valid iterator position.  When this flag is set then the
-   * flags match_not_bol and match_not_bow are ignored by the regular
-   * expression algorithms 28.11 and iterators 28.12.
-   */
-  constexpr match_flag_type match_prev_avail  = 1 << _S_prev_avail;
+    /**
+     * When a regular expression match is to be replaced by a new string, the
+     * new string is constructed using the rules used by the ECMAScript replace
+     * function in ECMA- 262 [Ecma International, ECMAScript Language
+     * Specification, Standard Ecma-262, third edition, 1999], part 15.5.4.11
+     * String.prototype.replace. In addition, during search and replace
+     * operations all non-overlapping occurrences of the regular expression
+     * are located and replaced, and sections of the input that did not match
+     * the expression are copied unchanged to the output string.
+     *
+     * Format strings (from ECMA-262 [15.5.4.11]):
+     * @li $$  The dollar-sign itself ($)
+     * @li $&  The matched substring.
+     * @li $`  The portion of @a string that precedes the matched substring.
+     *         This would be match_results::prefix().
+     * @li $'  The portion of @a string that follows the matched substring.
+     *         This would be match_results::suffix().
+     * @li $n  The nth capture, where n is in [1,9] and $n is not followed by a
+     *         decimal digit.  If n <= match_results::size() and the nth capture
+     *         is undefined, use the empty string instead.  If n >
+     *         match_results::size(), the result is implementation-defined.
+     * @li $nn The nnth capture, where nn is a two-digit decimal number on
+     *         [01, 99].  If nn <= match_results::size() and the nth capture is
+     *         undefined, use the empty string instead. If
+     *         nn > match_results::size(), the result is implementation-defined.
+     */
+    format_default    = 0,
 
-  /**
-   * When a regular expression match is to be replaced by a new string, the
-   * new string is constructed using the rules used by the ECMAScript replace
-   * function in ECMA- 262 [Ecma International, ECMAScript Language
-   * Specification, Standard Ecma-262, third edition, 1999], part 15.5.4.11
-   * String.prototype.replace. In addition, during search and replace
-   * operations all non-overlapping occurrences of the regular expression
-   * are located and replaced, and sections of the input that did not match
-   * the expression are copied unchanged to the output string.
-   *
-   * Format strings (from ECMA-262 [15.5.4.11]):
-   * @li $$  The dollar-sign itself ($)
-   * @li $&  The matched substring.
-   * @li $`  The portion of @a string that precedes the matched substring.
-   *         This would be match_results::prefix().
-   * @li $'  The portion of @a string that follows the matched substring.
-   *         This would be match_results::suffix().
-   * @li $n  The nth capture, where n is in [1,9] and $n is not followed by a
-   *         decimal digit.  If n <= match_results::size() and the nth capture
-   *         is undefined, use the empty string instead.  If n >
-   *         match_results::size(), the result is implementation-defined.
-   * @li $nn The nnth capture, where nn is a two-digit decimal number on
-   *         [01, 99].  If nn <= match_results::size() and the nth capture is
-   *         undefined, use the empty string instead. If
-   *         nn > match_results::size(), the result is implementation-defined.
-   */
-  constexpr match_flag_type format_default    = 0;
+    /**
+     * When a regular expression match is to be replaced by a new string, the
+     * new string is constructed using the rules used by the POSIX sed utility
+     * in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
+     * Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
+     */
+    format_sed        = 1 << _S_sed,
 
-  /**
-   * When a regular expression match is to be replaced by a new string, the
-   * new string is constructed using the rules used by the POSIX sed utility
-   * in IEEE Std 1003.1- 2001 [IEEE, Information Technology -- Portable
-   * Operating System Interface (POSIX), IEEE Standard 1003.1-2001].
-   */
-  constexpr match_flag_type format_sed        = 1 << _S_sed;
+    /**
+     * During a search and replace operation, sections of the character
+     * container sequence being searched that do not match the regular
+     * expression shall not be copied to the output string.
+     */
+    format_no_copy    = 1 << _S_no_copy,
 
-  /**
-   * During a search and replace operation, sections of the character
-   * container sequence being searched that do not match the regular
-   * expression shall not be copied to the output string.
-   */
-  constexpr match_flag_type format_no_copy    = 1 << _S_no_copy;
+    /**
+     * When specified during a search and replace operation, only the first
+     * occurrence of the regular expression shall be replaced.
+     */
+    format_first_only = 1 << _S_first_only,
+  };
 
-  /**
-   * When specified during a search and replace operation, only the first
-   * occurrence of the regular expression shall be replaced.
-   */
-  constexpr match_flag_type format_first_only = 1 << _S_first_only;
+  constexpr inline match_flag_type
+  operator&(match_flag_type __a, match_flag_type __b)
+  {
+    return (match_flag_type)(static_cast<unsigned int>(__a)
+				& static_cast<unsigned int>(__b));
+  }
+
+  constexpr inline match_flag_type
+  operator|(match_flag_type __a, match_flag_type __b)
+  {
+    return (match_flag_type)(static_cast<unsigned int>(__a)
+				| static_cast<unsigned int>(__b));
+  }
+
+  constexpr inline match_flag_type
+  operator^(match_flag_type __a, match_flag_type __b)
+  {
+    return (match_flag_type)(static_cast<unsigned int>(__a)
+				^ static_cast<unsigned int>(__b));
+  }
+
+  constexpr inline match_flag_type
+  operator~(match_flag_type __a)
+  { return (match_flag_type)(~static_cast<unsigned int>(__a)); }
+
+  inline match_flag_type&
+  operator&=(match_flag_type& __a, match_flag_type __b)
+  { return __a = __a & __b; }
+
+  inline match_flag_type&
+  operator|=(match_flag_type& __a, match_flag_type __b)
+  { return __a = __a | __b; }
+
+  inline match_flag_type&
+  operator^=(match_flag_type& __a, match_flag_type __b)
+  { return __a = __a ^ __b; }
 
   //@}
 

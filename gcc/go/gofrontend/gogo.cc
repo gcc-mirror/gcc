@@ -2367,7 +2367,7 @@ Shortcuts::convert_shortcut(Block* enclosing, Expression** pshortcut)
   Block* retblock = new Block(enclosing, loc);
   retblock->set_end_location(loc);
 
-  Temporary_statement* ts = Statement::make_temporary(Type::lookup_bool_type(),
+  Temporary_statement* ts = Statement::make_temporary(shortcut->type(),
 						      left, loc);
   retblock->add_statement(ts);
 

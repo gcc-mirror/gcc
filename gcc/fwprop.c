@@ -205,10 +205,17 @@ process_uses (df_ref *use_rec, int top_flag)
       }
 }
 
+class single_def_use_dom_walker : public dom_walker
+{
+public:
+  single_def_use_dom_walker (cdi_direction direction)
+    : dom_walker (direction) {}
+  virtual void before_dom_children (basic_block);
+  virtual void after_dom_children (basic_block);
+};
 
-static void
-single_def_use_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			    basic_block bb)
+void
+single_def_use_dom_walker::before_dom_children (basic_block bb)
 {
   int bb_index = bb->index;
   struct df_md_bb_info *md_bb_info = df_md_get_bb_info (bb_index);
@@ -245,9 +252,8 @@ single_def_use_enter_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 /* Pop the definitions created in this basic block when leaving its
    dominated parts.  */
 
-static void
-single_def_use_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
-			    basic_block bb ATTRIBUTE_UNUSED)
+void
+single_def_use_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
 {
   df_ref saved_def;
   while ((saved_def = reg_defs_stack.pop ()) != NULL)
@@ -269,8 +275,6 @@ single_def_use_leave_block (struct dom_walk_data *walk_data ATTRIBUTE_UNUSED,
 static void
 build_single_def_use_links (void)
 {
-  struct dom_walk_data walk_data;
-
   /* We use the multiple definitions problem to compute our restricted
      use-def chains.  */
   df_set_flags (DF_EQ_NOTES);
@@ -291,14 +295,8 @@ build_single_def_use_links (void)
 
   /* Walk the dominator tree looking for single reaching definitions
      dominating the uses.  This is similar to how SSA form is built.  */
-  walk_data.dom_direction = CDI_DOMINATORS;
-  walk_data.initialize_block_local_data = NULL;
-  walk_data.before_dom_children = single_def_use_enter_block;
-  walk_data.after_dom_children = single_def_use_leave_block;
-
-  init_walk_dominator_tree (&walk_data);
-  walk_dominator_tree (&walk_data, ENTRY_BLOCK_PTR);
-  fini_walk_dominator_tree (&walk_data);
+  single_def_use_dom_walker (CDI_DOMINATORS)
+    .walk (cfun->cfg->x_entry_block_ptr);
 
   BITMAP_FREE (local_lr);
   BITMAP_FREE (local_md);

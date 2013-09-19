@@ -1,3 +1,26 @@
+2013-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58457
+	* class.c (instantiate_type): Loosen a bit the gcc_assert.
+
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitize/58443
+	* typeck.c (cp_build_binary_op): Properly honor -fsanitize options.
+	Remove unnecessary check.
+
+2013-09-18  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58411
+	* typeck.c (cp_build_binary_op): Don't sanitize function if it has the
+	no_sanitize_undefined attribute.
+
+2013-09-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58435
+	* pt.c (tsubst, [BOUND_TEMPLATE_TEMPLATE_PARM]): Take into account
+	the cp_type_quals (r) too.
+
 2013-09-16  Adam Butcher  <adam@jessamine.co.uk>
 
 	* cp-tree.h (type_uses_auto_or_concept): Declare.
@@ -11,7 +34,8 @@
 	(is_auto_or_concept): New function.
 	(type_uses_auto_or_concept): New function.
 	* parser.h (struct cp_parser): Add fully_implicit_function_template_p.
-	* parser.c (cp_parser_new): Initialize fully_implicit_function_template_p.
+	* parser.c (cp_parser_new): Initialize
+	fully_implicit_function_template_p.
 	(cp_parser_new): Initialize fully_implicit_function_template_p.
 	(cp_parser_lambda_expression): Copy and restore value of
 	fully_implicit_function_template_p as per other parser fields.

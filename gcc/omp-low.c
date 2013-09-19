@@ -853,6 +853,7 @@ copy_var_decl (tree var, tree name, tree type)
   TREE_NO_WARNING (copy) = TREE_NO_WARNING (var);
   TREE_USED (copy) = 1;
   DECL_SEEN_IN_BIND_EXPR_P (copy) = 1;
+  DECL_ATTRIBUTES (copy) = DECL_ATTRIBUTES (var);
 
   return copy;
 }
@@ -2305,8 +2306,9 @@ omp_max_vf (void)
 {
   if (!optimize
       || optimize_debug
-      || (!flag_tree_vectorize
-	  && global_options_set.x_flag_tree_vectorize))
+      || (!flag_tree_loop_vectorize
+	  && (global_options_set.x_flag_tree_loop_vectorize
+              || global_options_set.x_flag_tree_vectorize)))
     return 1;
 
   int vs = targetm.vectorize.autovectorize_vector_sizes ();
@@ -5684,10 +5686,11 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	  loop->simduid = OMP_CLAUSE__SIMDUID__DECL (simduid);
 	  cfun->has_simduid_loops = true;
 	}
-      /* If not -fno-tree-vectorize, hint that we want to vectorize
+      /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	 the loop.  */
-      if ((flag_tree_vectorize
-	   || !global_options_set.x_flag_tree_vectorize)
+      if ((flag_tree_loop_vectorize
+	   || (!global_options_set.x_flag_tree_loop_vectorize
+               && !global_options_set.x_flag_tree_vectorize))
 	  && loop->safelen > 1)
 	{
 	  loop->force_vect = true;

@@ -259,10 +259,21 @@ rl78_asm_file_start (void)
 {
   int i;
 
-  for (i = 0; i < 8; i++)
+  if (TARGET_G10)
     {
-      fprintf (asm_out_file, "r%d\t=\t0x%x\n", 8 + i, 0xffef0 + i);
-      fprintf (asm_out_file, "r%d\t=\t0x%x\n", 16 + i, 0xffee8 + i);
+      /* The memory used is 0xffec8 to 0xffedf; real registers are in
+	 0xffee0 to 0xffee7.  */
+      for (i = 8; i < 32; i++)
+	fprintf (asm_out_file, "r%d\t=\t0x%x\n", i, 0xffec0 + i);
+    }
+  else
+    {
+      for (i = 0; i < 8; i++)
+	{
+	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 8 + i, 0xffef0 + i);
+	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 16 + i, 0xffee8 + i);
+	  fprintf (asm_out_file, "r%d\t=\t0x%x\n", 24 + i, 0xffee0 + i);
+	}
     }
 
   opt_pass *rl78_devirt_pass = make_pass_rl78_devirt (g);
@@ -299,6 +310,13 @@ rl78_option_override (void)
   flag_split_wide_types = 0;
 
   init_machine_status = rl78_init_machine_status;
+
+  if (TARGET_ALLREGS)
+    {
+      int i;
+      for (i=24; i<32; i++)
+	fixed_regs[i] = 0;
+    }
 }
 
 /* Most registers are 8 bits.  Some are 16 bits because, for example,
@@ -530,34 +548,39 @@ rl78_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to ATTRIBUTE_UNUS
   return true;
 }
 
-/* Returns nonzero if the given register needs to be saved by the
+/* Returns true if the given register needs to be saved by the
    current function.  */
-static int
-need_to_save (int regno)
+static bool
+need_to_save (unsigned int regno)
 {
   if (is_interrupt_func (cfun->decl))
     {
-      if (regno < 8)
-	return 1; /* don't know what devirt will need */
+       /* We don't need to save registers that have
+	  been reserved for interrupt handlers.  */
       if (regno > 23)
-	return 0; /* don't need to save interrupt registers */
-      if (crtl->is_leaf)
-	{
-	  return df_regs_ever_live_p (regno);
-	}
-      else
-	return 1;
+	return false;
+
+      /* If the handler is a non-leaf function then it may call
+	 non-interrupt aware routines which will happily clobber
+	 any call_used registers, so we have to preserve them.  */
+      if (!crtl->is_leaf && call_used_regs[regno])
+	return true;
+
+      /* Otherwise we only have to save a register, call_used
+	 or not, if it is used by this handler.  */
+      return df_regs_ever_live_p (regno);
     }
+
   if (regno == FRAME_POINTER_REGNUM && frame_pointer_needed)
-    return 1;
+    return true;
   if (fixed_regs[regno])
-    return 0;
+    return false;
   if (crtl->calls_eh_return)
-    return 1;
+    return true;
   if (df_regs_ever_live_p (regno)
       && !call_used_regs[regno])
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 /* We use this to wrap all emitted insns in the prologue.  */
@@ -848,6 +871,10 @@ rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 {
   rtx base, index, addend;
 
+  if (GET_CODE (x) == UNSPEC
+      && XINT (x, 1) == UNS_ES_ADDR)
+    x = XVECEXP (x, 0, 1);
+
   if (as == ADDR_SPACE_GENERIC
       && GET_MODE (x) == SImode)
     return false;
@@ -1012,25 +1039,38 @@ rl78_expand_prologue (void)
   if (rl78_is_naked_func ())
     return;
 
-  if (!cfun->machine->computed)
-    rl78_compute_frame_info ();
+  /* Always re-compute the frame info - the register usage may have changed.  */
+  rl78_compute_frame_info ();
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = cfun->machine->framesize;
 
-  if (is_interrupt_func (cfun->decl))
-    emit_insn (gen_sel_rb (GEN_INT (0)));
+  if (is_interrupt_func (cfun->decl) && !TARGET_G10)
+    for (i = 0; i < 4; i++)
+      if (cfun->machine->need_to_push [i])
+	{
+	  /* Select Bank 0 if we are using any registers from Bank 0.   */
+	  emit_insn (gen_sel_rb (GEN_INT (0)));
+	  break;
+	}
 
   for (i = 0; i < 16; i++)
     if (cfun->machine->need_to_push [i])
       {
-	int need_bank = i/4;
-	if (need_bank != rb)
+	if (TARGET_G10)
 	  {
-	    emit_insn (gen_sel_rb (GEN_INT (need_bank)));
-	    rb = need_bank;
+	    emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i*2));
+	    F (emit_insn (gen_push (gen_rtx_REG (HImode, 0))));
 	  }
-	F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
+	else {
+	  int need_bank = i/4;
+	  if (need_bank != rb)
+	    {
+	      emit_insn (gen_sel_rb (GEN_INT (need_bank)));
+	      rb = need_bank;
+	    }
+	  F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
+	}
       }
   if (rb != 0)
     emit_insn (gen_sel_rb (GEN_INT (0)));
@@ -1085,14 +1125,22 @@ rl78_expand_epilogue (void)
   for (i = 15; i >= 0; i--)
     if (cfun->machine->need_to_push [i])
       {
-	int need_bank = i / 4;
-
-	if (need_bank != rb)
+	if (TARGET_G10)
 	  {
-	    emit_insn (gen_sel_rb (GEN_INT (need_bank)));
-	    rb = need_bank;
+	    emit_insn (gen_pop (gen_rtx_REG (HImode, 0)));
+	    emit_move_insn (gen_rtx_REG (HImode, i*2), gen_rtx_REG (HImode, 0));
 	  }
-	emit_insn (gen_pop (gen_rtx_REG (HImode, i * 2)));
+	else
+	  {
+	    int need_bank = i / 4;
+
+	    if (need_bank != rb)
+	      {
+		emit_insn (gen_sel_rb (GEN_INT (need_bank)));
+		rb = need_bank;
+	      }
+	    emit_insn (gen_pop (gen_rtx_REG (HImode, i * 2)));
+	  }
       }
 
   if (rb != 0)
@@ -1238,6 +1286,7 @@ rl78_function_arg_boundary (enum machine_mode mode ATTRIBUTE_UNUSED,
    s - shift count mod 8
    S - shift count mod 16
    r - reverse shift count (8-(count mod 8))
+   B - bit position
 
    h - bottom HI of an SI
    H - top HI of an SI
@@ -1265,7 +1314,10 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
       else
 	{
 	  if (rl78_far_p (op))
-	    fprintf (file, "es:");
+	    {
+	      fprintf (file, "es:");
+	      op = gen_rtx_MEM (GET_MODE (op), XVECEXP (XEXP (op, 0), 0, 1));
+	    }
 	  if (letter == 'H')
 	    {
 	      op = adjust_address (op, HImode, 2);
@@ -1361,6 +1413,8 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 	fprintf (file, "%ld", INTVAL (op) & 0xffff);
       else if (letter == 'e')
 	fprintf (file, "%ld", (INTVAL (op) >> 16) & 0xff);
+      else if (letter == 'B')
+	fprintf (file, "%d", exact_log2 (INTVAL (op)));
       else if (letter == 'E')
 	fprintf (file, "%ld", (INTVAL (op) >> 24) & 0xff);
       else if (letter == 'm')
@@ -1554,7 +1608,7 @@ rl78_print_operand_1 (FILE * file, rtx op, int letter)
 static void
 rl78_print_operand (FILE * file, rtx op, int letter)
 {
-  if (CONSTANT_P (op) && letter != 'u' && letter != 's' && letter != 'r' && letter != 'S')
+  if (CONSTANT_P (op) && letter != 'u' && letter != 's' && letter != 'r' && letter != 'S' && letter != 'B')
     fprintf (file, "#");
   rl78_print_operand_1 (file, op, letter);
 }
@@ -1629,6 +1683,16 @@ rl78_peep_movhi_p (rtx *operands)
   debug_rtx (operands[3]);
   fprintf (stderr, "\033[0m");
 #endif
+
+  /* You can move a constant to memory as QImode, but not HImode.  */
+  if (GET_CODE (operands[0]) == MEM
+      && GET_CODE (operands[1]) != REG)
+    {
+#if DEBUG_PEEP
+      fprintf (stderr, "no peep: move constant to memory\n");
+#endif
+      return false;
+    }
 
   if (rtx_equal_p (operands[0], operands[3]))
     {
@@ -1811,6 +1875,8 @@ re-run regmove, but that has not yet been attempted.
 
  */
 #define DEBUG_ALLOC 0
+
+#define OP(x) (*recog_data.operand_loc[x])
 
 /* This array is used to hold knowledge about the contents of the
    real registers (A ... H), the memory-based registers (r8 ... r31)
@@ -2037,6 +2103,31 @@ already_contains (rtx loc, rtx value)
   return true;
 }
 
+bool
+rl78_es_addr (rtx addr)
+{
+  if (GET_CODE (addr) == MEM)
+    addr = XEXP (addr, 0);
+  if (GET_CODE (addr) != UNSPEC)
+    return false;
+  if (XINT (addr, 1) != UNS_ES_ADDR)
+    return false;
+  return true;
+}
+
+rtx
+rl78_es_base (rtx addr)
+{
+  if (GET_CODE (addr) == MEM)
+    addr = XEXP (addr, 0);
+  addr = XVECEXP (addr, 0, 1);
+  if (GET_CODE (addr) == CONST
+      && GET_CODE (XEXP (addr, 0)) == ZERO_EXTRACT)
+    addr = XEXP (XEXP (addr, 0), 0);
+  /* Mode doesn't matter here.  */
+  return gen_rtx_MEM (HImode, addr);
+}
+
 /* Rescans an insn to see if it's recognized again.  This is done
    carefully to ensure that all the constraint information is accurate
    for the newly matched insn.  */
@@ -2044,6 +2135,7 @@ static bool
 insn_ok_now (rtx insn)
 {
   rtx pattern = PATTERN (insn);
+  int i;
 
   INSN_CODE (insn) = -1;
 
@@ -2059,6 +2151,14 @@ insn_ok_now (rtx insn)
 #endif
 	  if (SET_P (pattern))
 	    record_content (SET_DEST (pattern), SET_SRC (pattern));
+
+	  /* We need to detect far addresses that haven't been
+	     converted to es/lo16 format.  */
+	  for (i=0; i<recog_data.n_operands; i++)
+	    if (GET_CODE (OP(i)) == MEM
+		&& GET_MODE (XEXP (OP(i), 0)) == SImode
+		&& GET_CODE (XEXP (OP(i), 0)) != UNSPEC)
+	      return false;
 
 	  return true;
 	}
@@ -2120,15 +2220,13 @@ insn_ok_now (rtx insn)
 #define DE gen_rtx_REG (HImode, 4)
 #define HL gen_rtx_REG (HImode, 6)
 
-#define OP(x) (*recog_data.operand_loc[x])
-
 /* Returns TRUE if R is a virtual register.  */
 static bool
 is_virtual_register (rtx r)
 {
   return (GET_CODE (r) == REG
 	  && REGNO (r) >= 8
-	  && REGNO (r) < 24);
+	  && REGNO (r) < 32);
 }
 
 /* In all these alloc routines, we expect the following: the insn
@@ -2160,14 +2258,20 @@ EM2 (int line ATTRIBUTE_UNUSED, rtx r)
 static rtx
 rl78_lo16 (rtx addr)
 {
+  rtx r;
+
   if (GET_CODE (addr) == SYMBOL_REF
       || GET_CODE (addr) == CONST)
     {
-      rtx r = gen_rtx_ZERO_EXTRACT (HImode, addr, GEN_INT (16), GEN_INT (0));
+      r = gen_rtx_ZERO_EXTRACT (HImode, addr, GEN_INT (16), GEN_INT (0));
       r = gen_rtx_CONST (HImode, r);
-      return r;
     }
-  return rl78_subreg (HImode, addr, SImode, 0);
+  else
+    r = rl78_subreg (HImode, addr, SImode, 0);
+
+  r = gen_es_addr (r);
+
+  return r;
 }
 
 /* Return a suitable RTX for the high half's lower byte of a __far address.  */
@@ -2271,6 +2375,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 {
   rtx base, index, addendr;
   int addend = 0;
+  int need_es = 0;
 
   if (! MEM_P (m))
     return m;
@@ -2287,6 +2392,7 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
       record_content (A, NULL_RTX);
 
       m = change_address (m, GET_MODE (m), rl78_lo16 (XEXP (m, 0)));
+      need_es = 1;
     }
 
   characterize_address (XEXP (m, 0), & base, & index, & addendr);
@@ -2346,7 +2452,10 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
   fprintf (stderr, "\033[33m");
   debug_rtx (m);
 #endif
-  m = change_address (m, GET_MODE (m), base);
+  if (need_es)
+    m = change_address (m, GET_MODE (m), gen_es_addr (base));
+  else
+    m = change_address (m, GET_MODE (m), base);
 #if DEBUG_ALLOC
   debug_rtx (m);
   fprintf (stderr, "\033[0m");

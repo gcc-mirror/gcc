@@ -998,7 +998,7 @@ function_and_variable_visibility (bool whole_program)
 	{
 	  struct cgraph_node *alias = cgraph (symtab_nonoverwritable_alias ((symtab_node) node));
 
-	  if (alias != node)
+	  if (alias && alias != node)
 	    {
 	      while (node->callers)
 		{

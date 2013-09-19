@@ -30,12 +30,25 @@ typedef unsigned int  uint08_type   __attribute__ ((mode (QI)));
 #define C3B(a,b,c) a##b##c
 #define C3(a,b,c) C3B(a,b,c)
 
+#ifdef __RL78_G10__
+
+#define UINT_TYPE	uint32_type
+#define BITS_MINUS_1	31
+#define NAME_MODE	si
+
+#include "rl78-mul.h"
+
+#undef UINT_TYPE
+#undef BITS_MINUS_1
+#undef NAME_MODE
 
 #define UINT_TYPE	uint16_type
 #define BITS_MINUS_1	15
 #define NAME_MODE	hi
 
-/*#include "rl78-mul.h"*/
+#include "rl78-mul.h"
+
+#endif
 
 #undef UINT_TYPE
 #undef BITS_MINUS_1

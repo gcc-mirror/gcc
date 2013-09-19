@@ -303,7 +303,7 @@ make_pass_predcom (gcc::context *ctxt)
 /* Loop autovectorization.  */
 
 static unsigned int
-tree_vectorize (void)
+tree_loop_vectorize (void)
 {
   if (number_of_loops (cfun) <= 1)
     return 0;
@@ -312,9 +312,9 @@ tree_vectorize (void)
 }
 
 static bool
-gate_tree_vectorize (void)
+gate_tree_loop_vectorize (void)
 {
-  return flag_tree_vectorize || cfun->has_force_vect_loops;
+  return flag_tree_loop_vectorize || cfun->has_force_vect_loops;
 }
 
 namespace {
@@ -342,8 +342,8 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate () { return gate_tree_vectorize (); }
-  unsigned int execute () { return tree_vectorize (); }
+  bool gate () { return gate_tree_loop_vectorize (); }
+  unsigned int execute () { return tree_loop_vectorize (); }
 
 }; // class pass_vectorize
 
