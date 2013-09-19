@@ -1,3 +1,11 @@
+2013-09-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_temporary_equivalences): New function
+	split out of dom_opt_dom_walker::after_dom_children.
+	(dom_opt_dom_walker::thread_across_edge): Move common code
+	in here from dom_opt_dom_walker::after_dom_children.
+	(dom_opt_dom_walker::after_dom_children): Corresponding simplifictions.
+
 2013-09-19  Jan Hubicka  <jh@suse.cz>
 
 	* i386.h (TARGET_GENERIC32, TARGET_GENERIC64): Remove.
