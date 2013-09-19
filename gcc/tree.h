@@ -5206,20 +5206,12 @@ wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *scratch,
 
 namespace wi
 {
-  hwi_with_prec hwi (HOST_WIDE_INT, const_tree);
-
   template <typename T>
   bool fits_to_tree_p (const T &x, const_tree);
 
   wide_int min_value (const_tree);
   wide_int max_value (const_tree);
   wide_int from_mpz (const_tree, mpz_t, bool);
-}
-
-inline wi::hwi_with_prec
-wi::hwi (HOST_WIDE_INT val, const_tree type)
-{
-  return hwi_with_prec (val, TYPE_PRECISION (type), TYPE_SIGN (type));
 }
 
 template <typename T>

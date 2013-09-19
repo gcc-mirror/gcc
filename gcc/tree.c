@@ -1056,13 +1056,13 @@ build_int_cst (tree type, HOST_WIDE_INT low)
   if (!type)
     type = integer_type_node;
 
-  return wide_int_to_tree (type, wi::hwi (low, type));
+  return wide_int_to_tree (type, wi::shwi (low, TYPE_PRECISION (type)));
 }
 
 tree
 build_int_cstu (tree type, unsigned HOST_WIDE_INT cst)
 {
-  return wide_int_to_tree (type, wi::hwi (cst, type));
+  return wide_int_to_tree (type, wi::uhwi (cst, TYPE_PRECISION (type)));
 }
 
 /* Create an INT_CST node with a LOW value sign extended to TYPE.  */
@@ -1071,7 +1071,7 @@ tree
 build_int_cst_type (tree type, HOST_WIDE_INT low)
 {
   gcc_assert (type);
-  return wide_int_to_tree (type, wi::hwi (low, type));
+  return wide_int_to_tree (type, wi::shwi (low, TYPE_PRECISION (type)));
 }
 
 /* Constructs tree in type TYPE from with value given by CST.  Signedness
