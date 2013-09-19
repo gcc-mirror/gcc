@@ -4182,6 +4182,7 @@ vectorizable_store (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr));
 	      dataref_offset = build_int_cst (reference_alias_ptr_type
 					      (DR_REF (first_dr)), 0);
+	      inv_p = false;
 	    }
 	  else
 	    dataref_ptr
@@ -5077,6 +5078,7 @@ vectorizable_load (gimple stmt, gimple_stmt_iterator *gsi, gimple *vec_stmt,
 	      dataref_ptr = unshare_expr (DR_BASE_ADDRESS (first_dr));
 	      dataref_offset = build_int_cst (reference_alias_ptr_type
 					      (DR_REF (first_dr)), 0);
+	      inv_p = false;
 	    }
 	  else
 	    dataref_ptr

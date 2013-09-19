@@ -1,3 +1,11 @@
+2013-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58472
+	* tree-vect-stmts.c (vectorizable_store, vectorizable_load): For
+	simd_lane_access set inv_p = false.
+	* omp-low.c (lower_rec_input_clauses): Set TREE_NO_WARNING on
+	the simduid magic VAR_DECL.
+
 2013-09-19  Jan Hubicka  <jh@suse.cz>
 
 	* i386.c (generic_memcpy, generic_memset): Fix 32bit template.
