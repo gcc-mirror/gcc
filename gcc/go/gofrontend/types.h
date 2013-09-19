@@ -2041,8 +2041,7 @@ class Struct_type : public Type
  public:
   Struct_type(Struct_field_list* fields, Location location)
     : Type(TYPE_STRUCT),
-      fields_(fields), location_(location), all_methods_(NULL),
-      interface_method_tables_(NULL), pointer_interface_method_tables_(NULL)
+      fields_(fields), location_(location), all_methods_(NULL)
   { }
 
   // Return the field NAME.  This only looks at local fields, not at
@@ -2200,6 +2199,16 @@ class Struct_type : public Type
 
   static Identical_structs identical_structs;
 
+  // Used to manage method tables for identical unnamed structs.
+  typedef std::pair<Interface_method_tables*, Interface_method_tables*>
+    Struct_method_table_pair;
+
+  typedef Unordered_map_hash(Struct_type*, Struct_method_table_pair*,
+			     Type_hash_identical, Type_identical)
+    Struct_method_tables;
+
+  static Struct_method_tables struct_method_tables;
+
   // Used to avoid infinite loops in field_reference_depth.
   struct Saw_named_type
   {
@@ -2218,13 +2227,6 @@ class Struct_type : public Type
   Location location_;
   // If this struct is unnamed, a list of methods.
   Methods* all_methods_;
-  // A mapping from interfaces to the associated interface method
-  // tables for this type.  Only used if this struct is unnamed.
-  Interface_method_tables* interface_method_tables_;
-  // A mapping from interfaces to the associated interface method
-  // tables for pointers to this type.  Only used if this struct is
-  // unnamed.
-  Interface_method_tables* pointer_interface_method_tables_;
 };
 
 // The type of an array.

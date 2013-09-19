@@ -1,3 +1,12 @@
+2013-09-19  Mitsuru Kariya  <kariya_mitsuru@hotmail.com>
+	    Chris Jefferson  <chris@bubblescope.net>
+
+	PR libstdc++/58358
+	* include/bits/stl_algo.h (search_n): Fix to guarantee a number
+	of comparisons <= number of elements in the range.
+	* testsuite/25_algorithms/search_n/58358.cc: New.
+	* testsuite/25_algorithms/search_n/iterator.cc: Extend.
+
 2013-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR libstdc++/58415

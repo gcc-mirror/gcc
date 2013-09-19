@@ -17475,7 +17475,8 @@ arm_expand_prologue (void)
 	    }
 	}
 
-      if (current_tune->prefer_ldrd_strd
+      if (TARGET_LDRD
+	  && current_tune->prefer_ldrd_strd
           && !optimize_function_for_size_p (cfun))
         {
           if (TARGET_THUMB2)
@@ -23789,7 +23790,8 @@ arm_expand_epilogue (bool really_return)
         }
       else
         {
-          if (current_tune->prefer_ldrd_strd
+          if (TARGET_LDRD
+	      && current_tune->prefer_ldrd_strd
               && !optimize_function_for_size_p (cfun))
             {
               if (TARGET_THUMB2)

@@ -1,3 +1,16 @@
+2013-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58457
+	* g++.dg/parse/using4.C: New.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array_bounds_test2.adb: New test.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/in_out_parameter4.adb: New test.
+
 2013-09-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/58088
