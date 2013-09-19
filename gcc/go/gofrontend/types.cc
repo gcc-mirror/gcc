@@ -2288,9 +2288,7 @@ Type::is_backend_type_size_known(Gogo* gogo)
       }
 
     case TYPE_NAMED:
-      // Begin converting this type to the backend representation.
-      // This will create a placeholder if necessary.
-      this->get_backend(gogo);
+      this->named_type()->convert(gogo);
       return this->named_type()->is_named_backend_type_size_known();
 
     case TYPE_FORWARD:
