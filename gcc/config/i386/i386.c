@@ -1644,18 +1644,19 @@ struct processor_costs slm_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic64 should produce code tuned for Nocona and K8.  */
+/* Generic should produce code tuned for Core-i7 (and newer chips)
+   and btver1 (and newer chips).  */
 
-static stringop_algs generic64_memcpy[2] = {
+static stringop_algs generic_memcpy[2] = {
   DUMMY_STRINGOP_ALGS,
   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
-static stringop_algs generic64_memset[2] = {
+static stringop_algs generic_memset[2] = {
   DUMMY_STRINGOP_ALGS,
   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 static const
-struct processor_costs generic64_cost = {
+struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   /* On all chips taken into consideration lea is 2 cycles and more.  With
      this cost however our current implementation of synth_mult results in
@@ -1713,8 +1714,8 @@ struct processor_costs generic64_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  generic64_memcpy,
-  generic64_memset,
+  generic_memcpy,
+  generic_memset,
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1814,83 +1815,6 @@ struct processor_costs core_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic32 should produce code tuned for PPro, Pentium4, Nocona,
-   Athlon and K8.  */
-static stringop_algs generic32_memcpy[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs generic32_memset[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static const
-struct processor_costs generic32_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  generic32_memcpy,
-  generic32_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
 
 /* Set by -mtune.  */
 const struct processor_costs *ix86_tune_cost = &pentium_cost;
@@ -1929,12 +1853,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER)
 
-#define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
-#define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
-
-/* Generic instruction choice should be common subset of supported CPUs
-   (PPro/PENT4/NOCONA/CORE2/Athlon/K8).  */
-#define m_GENERIC (m_GENERIC32 | m_GENERIC64)
+#define m_GENERIC (1<<PROCESSOR_GENERIC)
 
 const char* ix86_tune_feature_names[X86_TUNE_LAST] = {
 #undef DEF_TUNE
@@ -2384,8 +2303,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&core_cost, 16, 10, 16, 10, 16},
   /* Core avx2  */
   {&core_cost, 16, 10, 16, 10, 16},
-  {&generic32_cost, 16, 7, 16, 7, 16},
-  {&generic64_cost, 16, 10, 16, 10, 16},
+  {&generic_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
   {&bdver1_cost, 16, 10, 16, 7, 11},
   {&bdver2_cost, 16, 10, 16, 7, 11},
@@ -3182,7 +3100,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
 	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE 
 	| PTA_XSAVEOPT | PTA_FSGSBASE},
-      {"btver1", PROCESSOR_BTVER1, CPU_GENERIC64,
+      {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
 	| PTA_FXSR | PTA_XSAVE},
@@ -3193,9 +3111,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_BMI | PTA_F16C | PTA_MOVBE | PTA_PRFCHW
 	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
 
-      {"generic32", PROCESSOR_GENERIC32, CPU_PENTIUMPRO,
-	PTA_HLE /* flags are only used for -march switch.  */ },
-      {"generic64", PROCESSOR_GENERIC64, CPU_GENERIC64,
+      {"generic", PROCESSOR_GENERIC, CPU_GENERIC,
 	PTA_64BIT
 	| PTA_HLE /* flags are only used for -march switch.  */ },
     };
@@ -3295,16 +3211,12 @@ ix86_option_override_internal (bool main_args_p)
 	     -mtune=native, as it was changed by the driver.  */
 	  || !strcmp (ix86_tune_string, "native"))
 	{
-	  if (TARGET_64BIT)
-	    ix86_tune_string = "generic64";
-	  else
-	    ix86_tune_string = "generic32";
+	  ix86_tune_string = "generic";
 	}
       /* If this call is for setting the option attribute, allow the
-	 generic32/generic64 that was previously set.  */
+	 generic that was previously set.  */
       else if (!main_args_p
-	       && (!strcmp (ix86_tune_string, "generic32")
-		   || !strcmp (ix86_tune_string, "generic64")))
+	       && !strcmp (ix86_tune_string, "generic"))
 	;
       else if (!strncmp (ix86_tune_string, "generic", 7))
         error ("bad value (%s) for %stune=%s %s",
@@ -3330,10 +3242,7 @@ ix86_option_override_internal (bool main_args_p)
 	  || !strcmp (ix86_tune_string, "x86-64")
 	  || !strcmp (ix86_tune_string, "i686"))
 	{
-	  if (TARGET_64BIT)
-	    ix86_tune_string = "generic64";
-	  else
-	    ix86_tune_string = "generic32";
+	  ix86_tune_string = "generic";
 	}
     }
 
@@ -3628,20 +3537,6 @@ ix86_option_override_internal (bool main_args_p)
 		else
 		  error ("CPU you selected does not support x86-64 "
 			 "instruction set");
-	      }
-	  }
-	else
-	  {
-	    /* Adjust tuning when compiling for 32-bit ABI.  */
-	    switch (ix86_tune)
-	      {
-	      case PROCESSOR_GENERIC64:
-		ix86_tune = PROCESSOR_GENERIC32;
-		ix86_schedule = CPU_PENTIUMPRO;
-		break;
-
-	      default:
-		break;
 	      }
 	  }
 	/* Intel CPUs have always interpreted SSE prefetch instructions as
@@ -24503,8 +24398,7 @@ ix86_issue_rate (void)
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
     case PROCESSOR_NOCONA:
-    case PROCESSOR_GENERIC32:
-    case PROCESSOR_GENERIC64:
+    case PROCESSOR_GENERIC:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
     case PROCESSOR_BDVER3:
@@ -24768,8 +24662,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
     case PROCESSOR_ATOM:
-    case PROCESSOR_GENERIC32:
-    case PROCESSOR_GENERIC64:
+    case PROCESSOR_GENERIC:
       memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing

@@ -578,13 +578,13 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	    case 6:
 	      if (model > 9)
 		/* Use the default detection procedure.  */
-		processor = PROCESSOR_GENERIC32;
+		processor = PROCESSOR_GENERIC;
 	      else if (model == 9)
 		cpu = "c3-2";
 	      else if (model >= 6)
 		cpu = "c3";
 	      else
-		processor = PROCESSOR_GENERIC32;
+		processor = PROCESSOR_GENERIC;
 	      break;
 	    case 5:
 	      if (has_3dnow)
@@ -592,11 +592,11 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	      else if (has_mmx)
 		cpu = "winchip2-c6";
 	      else
-		processor = PROCESSOR_GENERIC32;
+		processor = PROCESSOR_GENERIC;
 	      break;
 	    default:
 	      /* We have no idea.  */
-	      processor = PROCESSOR_GENERIC32;
+	      processor = PROCESSOR_GENERIC;
 	    }
 	}
     }
@@ -618,7 +618,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  break;
 	default:
 	  /* We have no idea.  */
-	  processor = PROCESSOR_GENERIC32;
+	  processor = PROCESSOR_GENERIC;
 	}
     }
 
