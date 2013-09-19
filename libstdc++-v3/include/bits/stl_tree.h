@@ -99,28 +99,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Base_ptr		_M_right;
 
     static _Base_ptr
-    _S_minimum(_Base_ptr __x)
+    _S_minimum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
     {
       while (__x->_M_left != 0) __x = __x->_M_left;
       return __x;
     }
 
     static _Const_Base_ptr
-    _S_minimum(_Const_Base_ptr __x)
+    _S_minimum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
     {
       while (__x->_M_left != 0) __x = __x->_M_left;
       return __x;
     }
 
     static _Base_ptr
-    _S_maximum(_Base_ptr __x)
+    _S_maximum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
     {
       while (__x->_M_right != 0) __x = __x->_M_right;
       return __x;
     }
 
     static _Const_Base_ptr
-    _S_maximum(_Const_Base_ptr __x)
+    _S_maximum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
     {
       while (__x->_M_right != 0) __x = __x->_M_right;
       return __x;
@@ -167,31 +167,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Rb_tree_node_base::_Base_ptr _Base_ptr;
       typedef _Rb_tree_node<_Tp>*           _Link_type;
 
-      _Rb_tree_iterator()
+      _Rb_tree_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
 
       explicit
-      _Rb_tree_iterator(_Link_type __x)
+      _Rb_tree_iterator(_Link_type __x) _GLIBCXX_NOEXCEPT
       : _M_node(__x) { }
 
       reference
-      operator*() const
+      operator*() const _GLIBCXX_NOEXCEPT
       { return static_cast<_Link_type>(_M_node)->_M_value_field; }
 
       pointer
-      operator->() const
+      operator->() const _GLIBCXX_NOEXCEPT
       { return std::__addressof(static_cast<_Link_type>
 				(_M_node)->_M_value_field); }
 
       _Self&
-      operator++()
+      operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_increment(_M_node);
 	return *this;
       }
 
       _Self
-      operator++(int)
+      operator++(int) _GLIBCXX_NOEXCEPT
       {
 	_Self __tmp = *this;
 	_M_node = _Rb_tree_increment(_M_node);
@@ -199,14 +199,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _Self&
-      operator--()
+      operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_decrement(_M_node);
 	return *this;
       }
 
       _Self
-      operator--(int)
+      operator--(int) _GLIBCXX_NOEXCEPT
       {
 	_Self __tmp = *this;
 	_M_node = _Rb_tree_decrement(_M_node);
@@ -214,11 +214,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      operator==(const _Self& __x) const
+      operator==(const _Self& __x) const _GLIBCXX_NOEXCEPT
       { return _M_node == __x._M_node; }
 
       bool
-      operator!=(const _Self& __x) const
+      operator!=(const _Self& __x) const _GLIBCXX_NOEXCEPT
       { return _M_node != __x._M_node; }
 
       _Base_ptr _M_node;
@@ -240,39 +240,39 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Rb_tree_node_base::_Const_Base_ptr _Base_ptr;
       typedef const _Rb_tree_node<_Tp>*           _Link_type;
 
-      _Rb_tree_const_iterator()
+      _Rb_tree_const_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
 
       explicit
-      _Rb_tree_const_iterator(_Link_type __x)
+      _Rb_tree_const_iterator(_Link_type __x) _GLIBCXX_NOEXCEPT
       : _M_node(__x) { }
 
-      _Rb_tree_const_iterator(const iterator& __it)
+      _Rb_tree_const_iterator(const iterator& __it) _GLIBCXX_NOEXCEPT
       : _M_node(__it._M_node) { }
 
       iterator
-      _M_const_cast() const
+      _M_const_cast() const _GLIBCXX_NOEXCEPT
       { return iterator(static_cast<typename iterator::_Link_type>
 			(const_cast<typename iterator::_Base_ptr>(_M_node))); }
 
       reference
-      operator*() const
+      operator*() const _GLIBCXX_NOEXCEPT
       { return static_cast<_Link_type>(_M_node)->_M_value_field; }
 
       pointer
-      operator->() const
+      operator->() const _GLIBCXX_NOEXCEPT
       { return std::__addressof(static_cast<_Link_type>
 				(_M_node)->_M_value_field); }
 
       _Self&
-      operator++()
+      operator++() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_increment(_M_node);
 	return *this;
       }
 
       _Self
-      operator++(int)
+      operator++(int) _GLIBCXX_NOEXCEPT
       {
 	_Self __tmp = *this;
 	_M_node = _Rb_tree_increment(_M_node);
@@ -280,14 +280,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       _Self&
-      operator--()
+      operator--() _GLIBCXX_NOEXCEPT
       {
 	_M_node = _Rb_tree_decrement(_M_node);
 	return *this;
       }
 
       _Self
-      operator--(int)
+      operator--(int) _GLIBCXX_NOEXCEPT
       {
 	_Self __tmp = *this;
 	_M_node = _Rb_tree_decrement(_M_node);
@@ -295,11 +295,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       bool
-      operator==(const _Self& __x) const
+      operator==(const _Self& __x) const _GLIBCXX_NOEXCEPT
       { return _M_node == __x._M_node; }
 
       bool
-      operator!=(const _Self& __x) const
+      operator!=(const _Self& __x) const _GLIBCXX_NOEXCEPT
       { return _M_node != __x._M_node; }
 
       _Base_ptr _M_node;
@@ -308,13 +308,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Val>
     inline bool
     operator==(const _Rb_tree_iterator<_Val>& __x,
-               const _Rb_tree_const_iterator<_Val>& __y)
+               const _Rb_tree_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
     { return __x._M_node == __y._M_node; }
 
   template<typename _Val>
     inline bool
     operator!=(const _Rb_tree_iterator<_Val>& __x,
-               const _Rb_tree_const_iterator<_Val>& __y)
+               const _Rb_tree_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
     { return __x._M_node != __y._M_node; }
 
   void
@@ -370,7 +370,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_impl._Node_allocator::allocate(1); }
 
       void
-      _M_put_node(_Link_type __p)
+      _M_put_node(_Link_type __p) _GLIBCXX_NOEXCEPT
       { _M_impl._Node_allocator::deallocate(__p, 1); }
 
 #if __cplusplus < 201103L
@@ -416,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       void
-      _M_destroy_node(_Link_type __p)
+      _M_destroy_node(_Link_type __p) noexcept
       {
 	_M_get_Node_allocator().destroy(__p);
 	_M_put_node(__p);
@@ -474,46 +474,46 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       _Base_ptr&
-      _M_root()
+      _M_root() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_parent; }
 
       _Const_Base_ptr
-      _M_root() const
+      _M_root() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_parent; }
 
       _Base_ptr&
-      _M_leftmost()
+      _M_leftmost() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_left; }
 
       _Const_Base_ptr
-      _M_leftmost() const
+      _M_leftmost() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_left; }
 
       _Base_ptr&
-      _M_rightmost()
+      _M_rightmost() _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_right; }
 
       _Const_Base_ptr
-      _M_rightmost() const
+      _M_rightmost() const _GLIBCXX_NOEXCEPT
       { return this->_M_impl._M_header._M_right; }
 
       _Link_type
-      _M_begin()
+      _M_begin() _GLIBCXX_NOEXCEPT
       { return static_cast<_Link_type>(this->_M_impl._M_header._M_parent); }
 
       _Const_Link_type
-      _M_begin() const
+      _M_begin() const _GLIBCXX_NOEXCEPT
       {
 	return static_cast<_Const_Link_type>
 	  (this->_M_impl._M_header._M_parent);
       }
 
       _Link_type
-      _M_end()
+      _M_end() _GLIBCXX_NOEXCEPT
       { return static_cast<_Link_type>(&this->_M_impl._M_header); }
 
       _Const_Link_type
-      _M_end() const
+      _M_end() const _GLIBCXX_NOEXCEPT
       { return static_cast<_Const_Link_type>(&this->_M_impl._M_header); }
 
       static const_reference
@@ -525,19 +525,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _KeyOfValue()(_S_value(__x)); }
 
       static _Link_type
-      _S_left(_Base_ptr __x)
+      _S_left(_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return static_cast<_Link_type>(__x->_M_left); }
 
       static _Const_Link_type
-      _S_left(_Const_Base_ptr __x)
+      _S_left(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return static_cast<_Const_Link_type>(__x->_M_left); }
 
       static _Link_type
-      _S_right(_Base_ptr __x)
+      _S_right(_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return static_cast<_Link_type>(__x->_M_right); }
 
       static _Const_Link_type
-      _S_right(_Const_Base_ptr __x)
+      _S_right(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return static_cast<_Const_Link_type>(__x->_M_right); }
 
       static const_reference
@@ -549,19 +549,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _KeyOfValue()(_S_value(__x)); }
 
       static _Base_ptr
-      _S_minimum(_Base_ptr __x)
+      _S_minimum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return _Rb_tree_node_base::_S_minimum(__x); }
 
       static _Const_Base_ptr
-      _S_minimum(_Const_Base_ptr __x)
+      _S_minimum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return _Rb_tree_node_base::_S_minimum(__x); }
 
       static _Base_ptr
-      _S_maximum(_Base_ptr __x)
+      _S_maximum(_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return _Rb_tree_node_base::_S_maximum(__x); }
 
       static _Const_Base_ptr
-      _S_maximum(_Const_Base_ptr __x)
+      _S_maximum(_Const_Base_ptr __x) _GLIBCXX_NOEXCEPT
       { return _Rb_tree_node_base::_S_maximum(__x); }
 
     public:

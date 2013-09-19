@@ -1,3 +1,28 @@
+2013-09-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/stl_tree.h (_Rb_tree_node_base) [_S_minimum, _S_maximum]:
+	Mark as noexcept.
+	(_Rb_tree_iterator) [_Rb_tree_iterator, operator*, operator->,
+	operator++, operator--, operator==, operator!=]: Likewise.
+	(_Rb_tree_const_iterator) [_Rb_tree_const_iterator, _M_const_cast,
+	operator*, operator->, operator++, operator--, operator==, operator!=]:
+	Likewise.
+	(operator==(const _Rb_tree_iterator&, const _Rb_tree_const_iterator&),
+	operator!=(const _Rb_tree_iterator&, const _Rb_tree_const_iterator&)):
+	Likewise.
+	(_Rb_tree) [_M_put_node, _M_destroy_node, _M_root, _M_leftmost,
+	_M_rightmost, _M_begin, _M_end, _S_left, _S_right, _S_minimum,
+	_S_maximum]: Likewise.
+	* include/debug/string (basic_string) [basic_string(const _Allocator&),
+	shrink_to_fit, operator[], pop_back]: Likewise.
+	* include/ext/vstring.h (__versa_string) [_M_limit, _M_disjunct,
+	_M_ibegin, _M_iend, __versa_string(const _Alloc&),
+	operator=(__versa_string&&), shrink_to_fit, operator[], front,
+	back, assign(__versa_string&&), swap]: Likewise.
+	(__versa_string) [__versa_string(), __versa_string(const _Alloc&)]:
+	Merge.
+
 2013-09-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

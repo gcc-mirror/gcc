@@ -98,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // NB: _M_limit doesn't check for a bad __pos value.
       size_type
-      _M_limit(size_type __pos, size_type __off) const
+      _M_limit(size_type __pos, size_type __off) const _GLIBCXX_NOEXCEPT
       {
 	const bool __testoff =  __off < this->size() - __pos;
 	return __testoff ? __off : this->size() - __pos;
@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // True if _Rep and source do not overlap.
       bool
-      _M_disjunct(const _CharT* __s) const
+      _M_disjunct(const _CharT* __s) const _GLIBCXX_NOEXCEPT
       {
 	return (std::less<const _CharT*>()(__s, this->_M_data())
 		|| std::less<const _CharT*>()(this->_M_data()
@@ -116,11 +116,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // For the internal use we have functions similar to `begin'/`end'
       // but they do not call _M_leak.
       iterator
-      _M_ibegin() const
+      _M_ibegin() const _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_data()); }
 
       iterator
-      _M_iend() const
+      _M_iend() const _GLIBCXX_NOEXCEPT
       { return iterator(this->_M_data() + this->_M_length()); }
 
     public:
@@ -129,16 +129,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // arguments, per 17.4.4.4 para. 2 item 2.
 
       /**
-       *  @brief  Default constructor creates an empty string.
-       */
-      __versa_string()
-      : __vstring_base() { }
-      
-      /**
        *  @brief  Construct an empty string using allocator @a a.
        */
       explicit
-      __versa_string(const _Alloc& __a)
+      __versa_string(const _Alloc& __a = _Alloc()) _GLIBCXX_NOEXCEPT
       : __vstring_base(__a) { }
 
       // NB: per LWG issue 42, semantics different from IS:
@@ -269,7 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  copying).  @a __str is a valid, but unspecified string.
        */
       __versa_string&
-      operator=(__versa_string&& __str)
+      operator=(__versa_string&& __str) noexcept
       {
 	// NB: DR 1204.
 	this->swap(__str);
@@ -470,7 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       /// A non-binding request to reduce capacity() to size().
       void
-      shrink_to_fit()
+      shrink_to_fit() noexcept
       {
 	if (capacity() > size())
 	  {
@@ -538,7 +532,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  see at().)
        */
       const_reference
-      operator[] (size_type __pos) const
+      operator[] (size_type __pos) const _GLIBCXX_NOEXCEPT
       {
 	_GLIBCXX_DEBUG_ASSERT(__pos <= this->size());
 	return this->_M_data()[__pos];
@@ -555,7 +549,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  see at().)  Unshares the string.
        */
       reference
-      operator[](size_type __pos)
+      operator[](size_type __pos) _GLIBCXX_NOEXCEPT
       {
         // Allow pos == size() both in C++98 mode, as v3 extension,
 	// and in C++11 mode.
@@ -611,7 +605,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  element of the %string.
        */
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       { return operator[](0); }
 
       /**
@@ -619,7 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  element of the %string.
        */
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       { return operator[](0); }
 
       /**
@@ -627,7 +621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  element of the %string.
        */
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       { return operator[](this->size() - 1); }
 
       /**
@@ -635,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  last element of the %string.
        */
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       { return operator[](this->size() - 1); }
 #endif
 
@@ -814,7 +808,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  @a __str is a valid, but unspecified string.
        */
       __versa_string&
-      assign(__versa_string&& __str)
+      assign(__versa_string&& __str) noexcept
       {
 	this->swap(__str);
 	return *this;
@@ -1631,7 +1625,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  constant time.
       */
       void
-      swap(__versa_string& __s)
+      swap(__versa_string& __s) _GLIBCXX_NOEXCEPT
       { this->_M_swap(__s); }
 
       // String operations:
