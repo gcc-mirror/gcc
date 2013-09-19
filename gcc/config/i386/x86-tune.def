@@ -23,7 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    tradeoff.  We can't enable it for 32bit generic because it does not
    work well with PPro base chips.  */
 DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave", 
-	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64)
+	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
 DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory", 
           m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE 
           | m_GENERIC)
@@ -49,10 +49,7 @@ DEF_TUNE (X86_TUNE_MOVX, "movx",
    register stalls on Generic32 compilation setting as well.  However
    in current implementation the partial register stalls are not eliminated
    very well - they can be introduced via subregs synthesized by combine
-   and can happen in caller/callee saving sequences.  Because this option
-   pays back little on PPro based chips and is in conflict with partial reg
-   dependencies used by Athlon/P4 based chips, it is better to leave it off
-   for generic32 for now.  */
+   and can happen in caller/callee saving sequences.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_STALL, "partial_reg_stall", m_PPRO)
 DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
           m_CORE_ALL | m_GENERIC)
@@ -163,7 +160,7 @@ DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
           | m_ATHLON_K8 | m_GENERIC)
 DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
-          m_CORE_ALL | m_K8 | m_GENERIC64)
+          m_CORE_ALL | m_K8 | m_GENERIC)
 /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
    and SImode multiply, but 386 and 486 do HImode multiply faster.  */
 DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
@@ -171,11 +168,11 @@ DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
 /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
    vector path on AMD machines.  */
 DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM32_MEM, "slow_imul_imm32_mem",
-          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64)
+          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
 /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
    machines.  */
 DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8",
-          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64)
+          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
 /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
    than a MOV.  */
 DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT)

@@ -1,5 +1,27 @@
 2013-09-19  Jan Hubicka  <jh@suse.cz>
 
+	* i386.h (TARGET_GENERIC32, TARGET_GENERIC64): Remove.
+	(TARGET_GENERIC): Use PROCESOR_GENERIC
+	(enum processor_type): Unify generic32 and 64.
+	* i386.md (cpu): Likewise.
+	* x86-tune.def (use_leave): Enable for generic32.
+	(avoid_vector_decode, slow_imul_imm32_mem, slow_imul_imm8): Likewise.
+	* athlon.md: Change generic64 to generic in all occurences.
+	* i386-c.c (ix86_target_macros_internal): Unify generic64 and 32.
+	(ix86_target_macros_internal): Likewise.
+	* driver-i386.c (host_detect_local_cpu): Likewise.
+	* i386.c (generic64_memcpy, generic64_memset, generic64_cost): Rename to ..
+	(generic_memcpy, generic_memset, generic_cost): This one.
+	(generic32_memcpy, generic32_memset, generic32_cost): Remove.
+	(m_GENERIC32, m_GENERIC64): Remove.
+	(m_GENERIC): Turn into one flag.
+	(processor_target): Unify generic tunnings.
+	(ix86_option_override_internal): Replace generic32/64 by generic.
+	(ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+
+2013-09-19  Jan Hubicka  <jh@suse.cz>
+
 	* cgraph.c (cgraph_create_edge_1): Avoid uninitialized read
 	of speculative flag.
 
