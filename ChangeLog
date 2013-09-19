@@ -1,3 +1,8 @@
+2013-09-19  Dodji Seketeli  <dodji@redhat.com>
+
+	* MAINTAINERS (diagnostic messages): Add myself as diagnostics
+	maintainer.
+
 2013-09-12  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS: Add Nick Clifton and DJ Delorie as msp430
