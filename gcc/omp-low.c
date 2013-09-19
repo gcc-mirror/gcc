@@ -2775,6 +2775,9 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   if (lane)
     {
       tree uid = create_tmp_var (ptr_type_node, "simduid");
+      /* Don't want uninit warnings on simduid, it is always uninitialized,
+	 but we use it not for the value, but for the DECL_UID only.  */
+      TREE_NO_WARNING (uid) = 1;
       gimple g
 	= gimple_build_call_internal (IFN_GOMP_SIMD_LANE, 1, uid);
       gimple_call_set_lhs (g, lane);
