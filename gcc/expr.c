@@ -4709,8 +4709,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
       int unsignedp;
       int volatilep = 0;
       tree tem;
-      bool misalignp;
-      rtx mem = NULL_RTX;
 
       push_temp_slots ();
       tem = get_inner_reference (to, &bitsize, &bitpos, &offset, &mode1,
@@ -4720,40 +4718,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  && DECL_BIT_FIELD_TYPE (TREE_OPERAND (to, 1)))
 	get_bit_range (&bitregion_start, &bitregion_end, to, &bitpos, &offset);
 
-      /* If we are going to use store_bit_field and extract_bit_field,
-	 make sure to_rtx will be safe for multiple use.  */
-      mode = TYPE_MODE (TREE_TYPE (tem));
-      if (TREE_CODE (tem) == MEM_REF
-	  && mode != BLKmode
-	  && ((align = get_object_alignment (tem))
-	      < GET_MODE_ALIGNMENT (mode))
-	  && ((icode = optab_handler (movmisalign_optab, mode))
-	      != CODE_FOR_nothing))
-	{
-	  struct expand_operand ops[2];
-
-	  misalignp = true;
-	  to_rtx = gen_reg_rtx (mode);
-	  mem = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
-
-	  /* If the misaligned store doesn't overwrite all bits, perform
-	     rmw cycle on MEM.  */
-	  if (bitsize != GET_MODE_BITSIZE (mode))
-	    {
-	      create_input_operand (&ops[0], to_rtx, mode);
-	      create_fixed_operand (&ops[1], mem);
-	      /* The movmisalign<mode> pattern cannot fail, else the assignment
-		 would silently be omitted.  */
-	      expand_insn (icode, 2, ops);
-
-	      mem = copy_rtx (mem);
-	    }
-	}
-      else
-	{
-	  misalignp = false;
-	  to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
-	}
+      to_rtx = expand_expr (tem, NULL_RTX, VOIDmode, EXPAND_WRITE);
 
       /* If the bitfield is volatile, we want to access it in the
 	 field's mode, not the computed mode.
@@ -4890,17 +4855,6 @@ expand_assignment (tree to, tree from, bool nontemporal)
 				  bitregion_start, bitregion_end,
 				  mode1, from,
 				  get_alias_set (to), nontemporal);
-	}
-
-      if (misalignp)
-	{
-	  struct expand_operand ops[2];
-
-	  create_fixed_operand (&ops[0], mem);
-	  create_input_operand (&ops[1], to_rtx, mode);
-	  /* The movmisalign<mode> pattern cannot fail, else the assignment
-	     would silently be omitted.  */
-	  expand_insn (icode, 2, ops);
 	}
 
       if (result)
