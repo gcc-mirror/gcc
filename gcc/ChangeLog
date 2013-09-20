@@ -1,3 +1,9 @@
+2013-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR other/58467
+	* doc/extend.texi: Document that attribute used is meant to be used
+	on variables with static storage duration.
+
 2013-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/58472
