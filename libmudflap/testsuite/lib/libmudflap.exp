@@ -85,7 +85,7 @@ proc libmudflap-init { language } {
     append ld_library_path ":${blddir}/.libs"
 
     set libs "-L${blddir}/.libs"
-    set cxxflags "-ggdb3 -DDEBUG_ASSERT"
+    set cxxflags "-ggdb3 -DDEBUG_ASSERT -fdiagnostics-color=never"
     set includes "-I${srcdir} -I${srcdir}/.. -I.."
 
     if {$language == "c++"} {

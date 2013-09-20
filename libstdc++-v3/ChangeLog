@@ -1,3 +1,9 @@
+2013-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/57605
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Prepend
+	-fdiagnostics-color=never to cxxflags.
+
 2013-09-20  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

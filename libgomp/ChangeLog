@@ -1,3 +1,9 @@
+2013-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/57605
+	* testsuite/lib/libgomp.exp: Add -fdiagnostics-color=never to
+	ALWAYS_CFLAGS.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.
