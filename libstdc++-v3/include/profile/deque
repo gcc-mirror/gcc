@@ -117,7 +117,7 @@ namespace __profile
 
 #if __cplusplus >= 201103L
       deque&
-      operator=(deque&& __x)
+      operator=(deque&& __x) noexcept
       {
 	// NB: DR 1204.
 	// NB: DR 675.
@@ -245,13 +245,13 @@ namespace __profile
 
       // element access:
       reference
-      operator[](size_type __n)
+      operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
 	return _M_base()[__n];
       }
 
       const_reference
-      operator[](size_type __n) const
+      operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
 	return _M_base()[__n];
       }
@@ -259,25 +259,25 @@ namespace __profile
       using _Base::at;
 
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       {
 	return _Base::front();
       }
 
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       {
 	return _Base::front();
       }
 
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       {
 	return _Base::back();
       }
 
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       {
 	return _Base::back();
       }
@@ -375,13 +375,13 @@ namespace __profile
 #endif
 
       void
-      pop_front()
+      pop_front() _GLIBCXX_NOEXCEPT
       {
 	_Base::pop_front();
       }
 
       void
-      pop_back()
+      pop_back() _GLIBCXX_NOEXCEPT
       {
 	_Base::pop_back();
       }
@@ -409,7 +409,7 @@ namespace __profile
       }
 
       void
-      swap(deque& __x)
+      swap(deque& __x) _GLIBCXX_NOEXCEPT
       {
 	_Base::swap(__x);
       }

@@ -1,3 +1,52 @@
+2013-09-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/allocator.h (__alloc_swap::_S_do_it,
+	__shrink_to_fit_aux::_S_do_it): Mark as noexcept.
+	* include/bits/basic_string.h (basic_string::_Rep) [_S_empty_rep,
+	_M_is_leaked, _M_is_shared, _M_set_leaked, _M_set_sharable,
+	_M_set_length_and_sharable, _M_dispose]: Likewise.
+	(basic_string::_Alloc_hider::_Alloc_hider): Likewise.
+	(basic_string) [_M_data, _M_rep, _M_ibegin, _M_iend, _M_limit,
+	_M_disjunct, _M_copy, _M_move, _M_assign, _S_copy_chars, _S_compare,
+	_S_empty_rep, shrink_to_fit, operator[] const, front const, back const]:
+	Likewise.
+	[clear]: Link to PR 56166.
+	[swap]: Link to PR 58265.
+	* include/bits/stl_deque.h (_Deque_iterator) [_S_buffer_size,
+	_Deque_iterator, _M_const_cast, operator*, operator->, operator++,
+	operator--, operator+=, operator+, operator-=, operator-, operator[],
+	_M_set_node]: Mark as noexcept.
+	(operator==(const _Deque_iterator&, const _Deque_iterator&),
+	operator!=(const _Deque_iterator&, const _Deque_iterator&),
+	operator<(const _Deque_iterator&, const _Deque_iterator&),
+	operator>(const _Deque_iterator&, const _Deque_iterator&),
+	operator<=(const _Deque_iterator&, const _Deque_iterator&),
+	operator>=(const _Deque_iterator&, const _Deque_iterator&),
+	operator-(const _Deque_iterator&, const _Deque_iterator&),
+	operator+(ptrdiff_t, const _Deque_iterator&)): Likewise.
+	(_Deque_base) [_Deque_base(const allocator_type&)]: Add missing call to
+	_M_initialize_map.
+	[~_Deque_base, _M_deallocate_node, _M_deallocate_map, _M_destroy_nodes]:
+	Mark as noexcept.
+	(_Deque_base::_Deque_impl) [_Deque_impl(const _Tp_alloc_type&),
+	_Deque_impl(_Tp_alloc_type&&)]: Likewise.
+	(deque) [_S_buffer_size, operator=(deque&&), shrink_to_fit, operator[],
+	front, back, pop_front, pop_back, swap]: Likewise.
+	[deque(), deque(const allocator_type&)]: Merge.
+	* include/debug/deque (deque) [operator=(deque&&), shrink_to_fit,
+	operator[], front, back, pop_front, pop_back, swap]: Mark as noexcept.
+	* include/profile/deque (deque) [operator=(deque&&), operator[], front,
+	back, pop_front, pop_back, swap]: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust line number.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

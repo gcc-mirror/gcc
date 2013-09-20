@@ -158,13 +158,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // To implement Option 3 of DR 431.
   template<typename _Alloc, bool = __is_empty(_Alloc)>
     struct __alloc_swap
-    { static void _S_do_it(_Alloc&, _Alloc&) { } };
+    { static void _S_do_it(_Alloc&, _Alloc&) _GLIBCXX_NOEXCEPT { } };
 
   template<typename _Alloc>
     struct __alloc_swap<_Alloc, false>
     {
       static void
-      _S_do_it(_Alloc& __one, _Alloc& __two)
+      _S_do_it(_Alloc& __one, _Alloc& __two) _GLIBCXX_NOEXCEPT
       {
 	// Precondition: swappable allocators.
 	if (__one != __two)
@@ -194,13 +194,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     = __or_<is_copy_constructible<typename _Tp::value_type>,
             is_nothrow_move_constructible<typename _Tp::value_type>>::value>
     struct __shrink_to_fit_aux
-    { static bool _S_do_it(_Tp&) { return false; } };
+    { static bool _S_do_it(_Tp&) noexcept { return false; } };
 
   template<typename _Tp>
     struct __shrink_to_fit_aux<_Tp, true>
     {
       static bool
-      _S_do_it(_Tp& __c)
+      _S_do_it(_Tp& __c) noexcept
       {
 	__try
 	  {
