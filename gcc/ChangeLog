@@ -1,3 +1,9 @@
+2013-09-20  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_legitimize_reload_address): Likewise.
+
 2013-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR middle-end/57748
