@@ -1,3 +1,9 @@
+2013-09-20  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	PR target/56875
+	* gcc.target/vax/vax.exp: New.
+	* gcc.target/vax/pr56875.c: Ditto.
+
 2013-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58484
