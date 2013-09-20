@@ -1,3 +1,8 @@
+2013-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58481
+	* g++.dg/cpp0x/lambda/lambda-this17.C: New.
+
 2013-09-20  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
 
 	PR target/56875

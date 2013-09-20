@@ -12434,7 +12434,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case BASELINK:
-      return tsubst_baselink (t, current_class_type, args, complain, in_decl);
+      return tsubst_baselink (t, current_nonlambda_class_type (),
+			      args, complain, in_decl);
 
     case TEMPLATE_DECL:
       if (DECL_TEMPLATE_TEMPLATE_PARM_P (t))

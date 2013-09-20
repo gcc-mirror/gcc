@@ -1,3 +1,9 @@
+2013-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58481
+	* pt.c (tsubst_copy): Use current_nonlambda_class_type to
+	call tsubst_baselink.
+
 2013-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58457
