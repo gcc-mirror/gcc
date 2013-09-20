@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c/sections-2.c: New test.

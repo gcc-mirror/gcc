@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-03-06  Shakthi Kannan  <shakthimaan@gmail.com>
 
 	PR libquadmath/55473

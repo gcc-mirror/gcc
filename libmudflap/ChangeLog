@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53265

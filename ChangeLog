@@ -1,3 +1,8 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* libtool.m4 (_LT_ENABLE_LOCK <ld -m flags>): Remove non-canonical
+	ppc host match.  Support little-endian powerpc linux hosts.
+
 2013-09-19  Dodji Seketeli  <dodji@redhat.com>
 
 	* MAINTAINERS (diagnostic messages): Add myself as diagnostics

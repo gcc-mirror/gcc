@@ -1,3 +1,9 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* acinclude.m4 (_LT_ENABLE_LOCK <ld -m flags>): Remove non-canonical
+	ppc host match.  Support little-endian powerpc linux hosts.
+	* configure: Regenerate.
+
 2011-11-21  Andreas Tobler  <andreast@fgznet.ch>
 
 	* acinclude.m4: Additional FreeBSD 10 fixes.

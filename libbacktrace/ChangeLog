@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-07-23  Alexander Monakov  <amonakov@ispras.ru>
 
 	* elf.c (elf_syminfo): Loop over the elf_syminfo_data chain.
