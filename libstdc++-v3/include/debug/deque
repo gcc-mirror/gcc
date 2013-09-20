@@ -128,7 +128,7 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       deque&
-      operator=(deque&& __x)
+      operator=(deque&& __x) noexcept
       {
 	// NB: DR 1204.
 	// NB: DR 675.
@@ -287,7 +287,7 @@ namespace __debug
 
 #if __cplusplus >= 201103L
       void
-      shrink_to_fit()
+      shrink_to_fit() noexcept
       {
 	if (_Base::_M_shrink_to_fit())
 	  this->_M_invalidate_all();
@@ -298,14 +298,14 @@ namespace __debug
 
       // element access:
       reference
-      operator[](size_type __n)
+      operator[](size_type __n) _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
 	return _M_base()[__n];
       }
 
       const_reference
-      operator[](size_type __n) const
+      operator[](size_type __n) const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_subscript(__n);
 	return _M_base()[__n];
@@ -314,28 +314,28 @@ namespace __debug
       using _Base::at;
 
       reference
-      front()
+      front() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::front();
       }
 
       const_reference
-      front() const
+      front() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::front();
       }
 
       reference
-      back()
+      back() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::back();
       }
 
       const_reference
-      back() const
+      back() const _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	return _Base::back();
@@ -468,7 +468,7 @@ namespace __debug
 #endif
 
       void
-      pop_front()
+      pop_front() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	this->_M_invalidate_if(_Equal(_Base::begin()));
@@ -476,7 +476,7 @@ namespace __debug
       }
 
       void
-      pop_back()
+      pop_back() _GLIBCXX_NOEXCEPT
       {
 	__glibcxx_check_nonempty();
 	this->_M_invalidate_if(_Equal(--_Base::end()));
@@ -556,7 +556,7 @@ namespace __debug
       }
 
       void
-      swap(deque& __x)
+      swap(deque& __x) _GLIBCXX_NOEXCEPT
       {
 	_Base::swap(__x);
 	this->_M_swap(__x);
