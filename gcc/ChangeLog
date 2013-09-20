@@ -1,3 +1,9 @@
+2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
+
+       * gengtype.c (file_rules): Added rule for *.cc files.
+       (get_output_file_with_visibility): Give fatal message when no
+       rules found.
+
 2013-09-20  Renlin Li  <renlin.li@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
