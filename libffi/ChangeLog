@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-06-25  Alan Modra  <amodra@gmail.com>
 
 	* src/powerpc/ffi.c (ffi_prep_args_SYSV): Move var declaration

@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-09-19  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

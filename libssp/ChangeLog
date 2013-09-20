@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-02-06  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	Revert previous patch.

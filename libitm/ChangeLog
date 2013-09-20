@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-08-30  Torvald Riegel  <triegel@redhat.com>
 
 	* config/posix/rwlock.cc: Fix initialization order.

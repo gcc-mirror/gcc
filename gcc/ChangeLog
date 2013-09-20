@@ -1,3 +1,8 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
 2013-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR other/58467

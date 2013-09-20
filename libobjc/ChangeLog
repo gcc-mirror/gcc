@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
 	* class.c: Fix typos.
