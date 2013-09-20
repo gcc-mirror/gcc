@@ -457,11 +457,17 @@ lra_setup_reload_pseudo_preferenced_hard_reg (int regno,
 static inline void
 check_pseudos_live_through_calls (int regno)
 {
+  int hr;
+
   if (! sparseset_bit_p (pseudos_live_through_calls, regno))
     return;
   sparseset_clear_bit (pseudos_live_through_calls, regno);
   IOR_HARD_REG_SET (lra_reg_info[regno].conflict_hard_regs,
 		    call_used_reg_set);
+
+  for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
+    if (HARD_REGNO_CALL_PART_CLOBBERED (hr, PSEUDO_REGNO_MODE (regno)))
+      SET_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, hr);
 #ifdef ENABLE_CHECKING
   lra_reg_info[regno].call_p = true;
 #endif

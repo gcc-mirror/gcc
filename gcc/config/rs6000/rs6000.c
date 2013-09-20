@@ -5926,7 +5926,7 @@ toc_relative_expr_p (const_rtx op, bool strict)
 
   tocrel_base = op;
   tocrel_offset = const0_rtx;
-  if (GET_CODE (op) == PLUS && CONST_INT_P (XEXP (op, 1)))
+  if (GET_CODE (op) == PLUS && add_cint_operand (XEXP (op, 1), GET_MODE (op)))
     {
       tocrel_base = XEXP (op, 0);
       tocrel_offset = XEXP (op, 1);

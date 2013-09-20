@@ -355,7 +355,7 @@ procedure Gnatlink is
    begin
       --  First, check for --version and --help
 
-      Check_Version_And_Help ("GNATLINK", "1995");
+      Check_Version_And_Help ("GNATLINK", "1996");
 
       --  Loop through arguments of gnatlink command
 

@@ -1,0 +1,43 @@
+# Makefile fragment for building GCC for the TI MSP430 target.
+# Copyright (C) 2012-2013 Free Software Foundation, Inc.
+# Contributed by Red Hat.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See
+# the GNU General Public License for more details.
+#
+# You should have received a copy of the  GNU General Public
+# License along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Enable multilibs:
+
+MULTILIB_OPTIONS    = mmcu=msp430x mlarge
+MULTILIB_DIRNAMES   = 430x large
+
+# Match msp430X with msp430x.
+MULTILIB_MATCHES    = mmcu?msp430x=mmcu?msp430X
+
+# each supported MCU needs a line like this:
+# MULTILIB_MATCHES  += mmcu?msp430x123=mmcu?msp430x
+
+# The only way I figured this out was to hack the script to SHOW me
+# what it's doing.  It's non-obvious, but it matches the directory
+# structure of the multilib tree, but using the options, not the
+# directory names.  A shell CASE statement is generated from these, so
+# the usual CASE wildcards are supported.
+
+MULTILIB_EXCEPTIONS = mlarge
+
+MULTILIB_EXTRA_OPTS =
+
+msp430-c.o: $(srcdir)/config/msp430/msp430-c.c $(RTL_H) $(TREE_H) $(CONFIG_H) $(TM_H)
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $<

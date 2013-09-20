@@ -239,7 +239,7 @@ init_caller_save (void)
 
   for (offset = 1 << (HOST_BITS_PER_INT / 2); offset; offset >>= 1)
     {
-      address = gen_rtx_PLUS (Pmode, addr_reg, GEN_INT (offset));
+      address = gen_rtx_PLUS (Pmode, addr_reg, gen_int_mode (offset, Pmode));
 
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (regno_save_mode[i][1] != VOIDmode

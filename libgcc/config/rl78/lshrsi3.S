@@ -20,22 +20,7 @@
 ; see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 ; <http://www.gnu.org/licenses/>.
 
-r8	=	0xffef0
-r16	=	0xffee8
-r9	=	0xffef1
-r17	=	0xffee9
-r10	=	0xffef2
-r18	=	0xffeea
-r11	=	0xffef3
-r19	=	0xffeeb
-r12	=	0xffef4
-r20	=	0xffeec
-r13	=	0xffef5
-r21	=	0xffeed
-r14	=	0xffef6
-r22	=	0xffeee
-r15	=	0xffef7
-r23	=	0xffeef
+#include "vregs.h"
 	
 	.text
 	.global	___lshrsi3

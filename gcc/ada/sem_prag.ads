@@ -63,25 +63,6 @@ package Sem_Prag is
    --  expressions in the pragma as "spec expressions" (see section in Sem
    --  "Handling of Default and Per-Object Expressions...").
 
-   function Check_Kind (Nam : Name_Id) return Name_Id;
-   --  This function is used in connection with pragmas Assert, Check,
-   --  and assertion aspects and pragmas, to determine if Check pragmas
-   --  (or corresponding assertion aspects or pragmas) are currently active
-   --  as determined by the presence of -gnata on the command line (which
-   --  sets the default), and the appearance of pragmas Check_Policy and
-   --  Assertion_Policy as configuration pragmas either in a configuration
-   --  pragma file, or at the start of the current unit, or locally given
-   --  Check_Policy and Assertion_Policy pragmas that are currently active.
-   --
-   --  The value returned is one of the names Check, Ignore, Disable (On
-   --  returns Check, and Off returns Ignore).
-   --
-   --  Note: for assertion kinds Pre'Class, Post'Class, Invariant'Class,
-   --  and Type_Invariant'Class, the name passed is Name_uPre, Name_uPost,
-   --  Name_uInvariant, or Name_uType_Invariant, which corresponds to _Pre,
-   --  _Post, _Invariant, or _Type_Invariant, which are special names used
-   --  in identifiers to represent these attribute references.
-
    procedure Check_Applicable_Policy (N : Node_Id);
    --  N is either an N_Aspect or an N_Pragma node. There are two cases. If
    --  the name of the aspect or pragma is not one of those recognized as
@@ -95,9 +76,10 @@ package Sem_Prag is
    --  If the name is a valid assertion kind name, then the Check_Policy pragma
    --  chain is checked for a matching entry (or for an Assertion entry which
    --  matches all possibilities). If a matching entry is found then the policy
-   --  is checked. If it is Off, Ignore, or Disable, then the Is_Ignored flag
-   --  is set in the aspect or pragma node. Additionally for policy Disable,
-   --  the Is_Disabled flag is set.
+   --  is checked. If it is On or Check, then the Is_Checked flag is set in
+   --  the aspect or pragma node. If it is Off, Ignore, or Disable, then the
+   --  Is_Ignored flag is set in the aspect or pragma node. Additionally for
+   --  policy Disable, the Is_Disabled flag is set.
    --
    --  If no matching Check_Policy pragma is found then the effect depends on
    --  whether -gnata was used, if so, then the call has no effect, otherwise

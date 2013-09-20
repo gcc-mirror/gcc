@@ -1004,6 +1004,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     const basic_regex<_Cp, _Rp>&,
 		     regex_constants::match_flag_type);
 
+      template<typename, typename, typename, typename>
+	friend class __detail::_Executor;
+
+      template<typename, typename, typename, typename>
+	friend class __detail::_DFSExecutor;
+
+      template<typename, typename, typename, typename>
+	friend class __detail::_BFSExecutor;
+
       flag_type     _M_flags;
       _Rx_traits    _M_traits;
       _AutomatonPtr _M_automaton;
@@ -1783,21 +1792,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        */
       explicit
       match_results(const _Alloc& __a = _Alloc())
-      : _Base_type(__a)
+      : _Base_type(__a), _M_in_iterator(false)
       { }
 
       /**
        * @brief Copy constructs a %match_results.
        */
       match_results(const match_results& __rhs)
-      : _Base_type(__rhs)
+      : _Base_type(__rhs), _M_in_iterator(false)
       { }
 
       /**
        * @brief Move constructs a %match_results.
        */
       match_results(match_results&& __rhs) noexcept
-      : _Base_type(std::move(__rhs))
+      : _Base_type(std::move(__rhs)), _M_in_iterator(false)
       { }
 
       /**
@@ -1905,8 +1914,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       difference_type
       position(size_type __sub = 0) const
       {
-	return __sub < size() ? std::distance(this->prefix().first,
-					      (*this)[__sub].first) : -1;
+	// [28.12.1.4.5]
+	if (_M_in_iterator)
+	  return __sub < size() ? std::distance(_M_begin,
+						(*this)[__sub].first) : -1;
+	else
+	  return __sub < size() ? std::distance(this->prefix().first,
+						(*this)[__sub].first) : -1;
       }
 
       /**
@@ -2106,19 +2120,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename, typename, typename, typename>
 	friend class __detail::_BFSExecutor;
 
-      template<typename _Bp, typename _Ap, typename _Ch_type, typename _Rx_traits>
+      template<typename, typename, typename>
+	friend class regex_iterator;
+
+      template<typename _Bp, typename _Ap,
+	typename _Ch_type, typename _Rx_traits>
 	friend bool
 	regex_match(_Bp, _Bp, match_results<_Bp, _Ap>&,
 		    const basic_regex<_Ch_type,
 		    _Rx_traits>&,
 		    regex_constants::match_flag_type);
 
-      template<typename _Bp, typename _Ap, typename _Ch_type, typename _Rx_traits>
+      template<typename _Bp, typename _Ap,
+	typename _Ch_type, typename _Rx_traits>
 	friend bool
 	regex_search(_Bp, _Bp, match_results<_Bp, _Ap>&,
 		     const basic_regex<_Ch_type,
 		     _Rx_traits>&,
 		     regex_constants::match_flag_type);
+
+      _Bi_iter _M_begin;
+      bool     _M_in_iterator;
     };
 
   typedef match_results<const char*>             cmatch;
@@ -2198,8 +2220,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @retval false Otherwise.
    *
    * @throws an exception of type regex_error.
-   *
-   * @todo Implement this function.
    */
   template<typename _Bi_iter, typename _Alloc,
 	   typename _Ch_type, typename _Rx_traits>
@@ -2213,8 +2233,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__re._M_automaton == nullptr)
 	return false;
-      __detail::__get_executor(__s, __e, __m, __re, __flags)->_M_match();
-      if (__m.size() > 0 && __m[0].matched)
+
+      auto __size = __re._M_automaton->_M_sub_count();
+      __size += 2;
+      __m.resize(__size);
+      for (decltype(__size) __i = 0; __i < __size; ++__i)
+	__m.at(__i).matched = false;
+
+      if (__detail::__get_executor(__s, __e, __m, __re, __flags)->_M_match())
 	{
 	  for (auto __it : __m)
 	    if (!__it.matched)
@@ -2359,8 +2385,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *               undefined.
    *
    * @throws an exception of type regex_error.
-   *
-   * @todo Implement this function.
    */
   template<typename _Bi_iter, typename _Alloc,
 	   typename _Ch_type, typename _Rx_traits>
@@ -2373,29 +2397,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       if (__re._M_automaton == nullptr)
 	return false;
-      auto __cur = __first;
-      // Continue when __cur == __last
-      do
+
+      auto __size = __re._M_automaton->_M_sub_count();
+      __size += 2;
+      __m.resize(__size);
+      for (decltype(__size) __i = 0; __i < __size; ++__i)
+	__m.at(__i).matched = false;
+
+      if (__detail::__get_executor(__first, __last, __m, __re, __flags)
+	  ->_M_search())
 	{
-	  __detail::__get_executor(__cur, __last, __m, __re, __flags)
-	    ->_M_search_from_first();
-	  if (__m.size() > 0 && __m[0].matched)
-	    {
-	      for (auto __it : __m)
-		if (!__it.matched)
-		  __it.first = __it.second = __last;
-	      __m.at(__m.size()).first = __first;
-	      __m.at(__m.size()).second = __m[0].first;
-	      __m.at(__m.size()+1).first = __m[0].second;
-	      __m.at(__m.size()+1).second = __last;
-	      __m.at(__m.size()).matched =
-		(__m.prefix().first != __m.prefix().second);
-	      __m.at(__m.size()+1).matched =
-		(__m.suffix().first != __m.suffix().second);
-	      return true;
-	    }
+	  for (auto __it : __m)
+	    if (!__it.matched)
+	      __it.first = __it.second = __last;
+	  __m.at(__m.size()).first = __first;
+	  __m.at(__m.size()).second = __m[0].first;
+	  __m.at(__m.size()+1).first = __m[0].second;
+	  __m.at(__m.size()+1).second = __last;
+	  __m.at(__m.size()).matched =
+	    (__m.prefix().first != __m.prefix().second);
+	  __m.at(__m.size()+1).matched =
+	    (__m.suffix().first != __m.suffix().second);
+	  return true;
 	}
-      while (__cur++ != __last);
       return false;
     }
 
@@ -2683,7 +2707,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     regex_iterator<_Bi_iter, _Ch_type, _Rx_traits>::
     operator++()
     {
-      // FIXME: In all cases in which the call to regex_search returns true,
+      // In all cases in which the call to regex_search returns true,
       // match.prefix().first shall be equal to the previous value of
       // match[0].second, and for each index i in the half-open range
       // [0, match.size()) for which match[i].matched is true,
@@ -2703,12 +2727,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags
 				 | regex_constants::match_not_null
 				 | regex_constants::match_continuous))
-		  return *this;
+		  {
+		    _M_match._M_in_iterator = true;
+		    _M_match._M_begin = _M_begin;
+		    return *this;
+		  }
 		else
 		  ++__start;
 	      }
 	  _M_flags |= regex_constants::match_prev_avail;
-	  if (!regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
+	  if (regex_search(__start, _M_end, _M_match, *_M_pregex, _M_flags))
+	    {
+	      _M_match._M_in_iterator = true;
+	      _M_match._M_begin = _M_begin;
+	    }
+	  else
 	    _M_match = value_type();
 	}
       return *this;

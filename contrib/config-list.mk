@@ -44,6 +44,7 @@ LIST = aarch64-elf aarch64-linux-gnu \
   mipsel-elf mips64-elf mips64vr-elf mips64orion-elf mips-rtems \
   mips-wrs-vxworks mipstx39-elf mmix-knuth-mmixware mn10300-elf moxie-elf \
   moxie-uclinux moxie-rtems pdp11-aout picochip-elfOPT-enable-obsolete \
+  msp430-elf \
   powerpc-darwin8 \
   powerpc-darwin7 powerpc64-darwin powerpc-freebsd6 powerpc-netbsd \
   powerpc-eabispe powerpc-eabisimaltivec powerpc-eabisim ppc-elf \

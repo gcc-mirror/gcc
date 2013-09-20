@@ -786,7 +786,8 @@ fixup_match_2 (rtx insn, rtx dst, rtx src, rtx offset)
 	{
 	  HOST_WIDE_INT newconst
 	    = INTVAL (offset) - INTVAL (XEXP (SET_SRC (pset), 1));
-	  rtx add = gen_add3_insn (dst, dst, GEN_INT (newconst));
+	  rtx add = gen_add3_insn (dst, dst,
+				   gen_int_mode (newconst, GET_MODE (dst)));
 
 	  if (add && validate_change (insn, &PATTERN (insn), add, 0))
 	    {

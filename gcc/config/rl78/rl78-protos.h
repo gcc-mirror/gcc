@@ -21,6 +21,7 @@
 void		rl78_emit_eh_epilogue (rtx);
 void		rl78_expand_compare (rtx *);
 void		rl78_expand_movsi (rtx *);
+void		rl78_split_movsi (rtx *);
 int		rl78_force_nonfar_2 (rtx *, rtx (*gen)(rtx,rtx));
 int		rl78_force_nonfar_3 (rtx *, rtx (*gen)(rtx,rtx,rtx));
 void		rl78_expand_eh_epilogue (rtx);
@@ -41,3 +42,6 @@ void		rl78_register_pragmas (void);
 bool		rl78_regno_mode_code_ok_for_base_p (int, enum machine_mode, addr_space_t, int, int);
 void		rl78_setup_peep_movhi (rtx *);
 bool		rl78_virt_insns_ok (void);
+
+bool		rl78_es_addr (rtx);
+rtx		rl78_es_base (rtx);

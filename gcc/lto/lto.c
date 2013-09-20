@@ -49,6 +49,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "pass_manager.h"
 
+/* Vector to keep track of external variables we've seen so far.  */
+vec<tree, va_gc> *lto_global_var_decls;
+
 static GTY(()) tree first_personality_decl;
 
 /* Returns a hash code for P.  */

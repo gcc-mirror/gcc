@@ -36,7 +36,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "alu_shift_imm")]
 )
 
 ;; We use the '0' constraint for operand 1 because reload should
@@ -58,7 +58,8 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "enabled_for_depr_it" "yes,yes,no")
-   (set_attr "length" "6,6,10")]
+   (set_attr "length" "6,6,10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_sminsi3"
@@ -78,7 +79,8 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "enabled_for_depr_it" "yes,yes,no")
-   (set_attr "length" "6,6,10")]
+   (set_attr "length" "6,6,10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb32_umaxsi3"
@@ -98,7 +100,8 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "6,6,10")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")]
+   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_uminsi3"
@@ -118,7 +121,8 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "6,6,10")
-   (set_attr "enabled_for_depr_it" "yes,yes,no")]
+   (set_attr "enabled_for_depr_it" "yes,yes,no")
+   (set_attr "type" "multiple")]
 )
 
 ;; Thumb-2 does not have rsc, so use a clever trick with shifter operands.
@@ -143,7 +147,8 @@
     operands[1] = gen_lowpart (SImode, operands[1]);
   }
   [(set_attr "conds" "clob")
-   (set_attr "length" "8")]
+   (set_attr "length" "8")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_abssi2"
@@ -200,7 +205,8 @@
    (set_attr "predicable_short_it" "no")
    (set_attr "enabled_for_depr_it" "yes,yes,no")
    (set_attr "ce_count" "2")
-   (set_attr "length" "8,6,10")]
+   (set_attr "length" "8,6,10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_neg_abssi2"
@@ -257,7 +263,8 @@
    (set_attr "enabled_for_depr_it" "yes,yes,no")
    (set_attr "predicable_short_it" "no")
    (set_attr "ce_count" "2")
-   (set_attr "length" "8,6,10")]
+   (set_attr "length" "8,6,10")
+   (set_attr "type" "multiple")]
 )
 
 ;; We have two alternatives here for memory loads (and similarly for stores)
@@ -282,7 +289,7 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "*,arlo_imm,arlo_imm,arlo_imm,*,load1,load1,store1,store1")
+  [(set_attr "type" "mov_reg,alu_imm,alu_imm,alu_imm,mov_imm,load1,load1,store1,store1")
    (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
@@ -303,7 +310,8 @@
 			     INTVAL (operands[3]));
   return \"add\\t%2, %|pc\;ldr%?\\t%0, [%2]\";
   "
-  [(set_attr "length" "4,4,6,6")]
+  [(set_attr "length" "4,4,6,6")
+   (set_attr "type" "multiple")]
 )
 
 ;; Thumb-2 always has load/store halfword instructions, so we can avoid a lot
@@ -319,10 +327,25 @@
    movw%?\\t%0, %L1\\t%@ movhi
    str%(h%)\\t%1, %0\\t%@ movhi
    ldr%(h%)\\t%0, %1\\t%@ movhi"
-  [(set_attr "type" "*,*,store1,load1")
+  [(set_attr "type" "mov_imm,mov_reg,store1,load1")
    (set_attr "predicable" "yes")
    (set_attr "pool_range" "*,*,*,4094")
    (set_attr "neg_pool_range" "*,*,*,250")]
+)
+
+(define_insn "*thumb2_storewb_pairsi"
+  [(set (match_operand:SI 0 "register_operand" "=&kr")
+	(plus:SI (match_operand:SI 1 "register_operand" "0")
+		 (match_operand:SI 2 "const_int_operand" "n")))
+   (set (mem:SI (plus:SI (match_dup 0) (match_dup 2)))
+	(match_operand:SI 3 "register_operand" "r"))
+   (set (mem:SI (plus:SI (match_dup 0)
+			 (match_operand:SI 5 "const_int_operand" "n")))
+	(match_operand:SI 4 "register_operand" "r"))]
+  "TARGET_THUMB2
+   && INTVAL (operands[5]) == INTVAL (operands[2]) + 4"
+  "strd\\t%3, %4, [%0, %2]!"
+  [(set_attr "type" "store2")]
 )
 
 (define_insn "*thumb2_cmpsi_neg_shiftsi"
@@ -335,7 +358,7 @@
   "cmn%?\\t%0, %1%S3"
   [(set_attr "conds" "set")
    (set_attr "shift" "1")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "alus_shift_imm")]
 )
 
 (define_insn_and_split "*thumb2_mov_scc"
@@ -352,7 +375,8 @@
   ""
   [(set_attr "conds" "use")
    (set_attr "enabled_for_depr_it" "yes,no")
-   (set_attr "length" "8,10")]
+   (set_attr "length" "8,10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_mov_negscc"
@@ -370,7 +394,8 @@
     operands[3] = GEN_INT (~0);
   }
   [(set_attr "conds" "use")
-   (set_attr "length" "10")]
+   (set_attr "length" "10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_mov_negscc_strict_it"
@@ -398,7 +423,8 @@
 
   }
   [(set_attr "conds" "use")
-   (set_attr "length" "8")]
+   (set_attr "length" "8")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_mov_notscc"
@@ -417,7 +443,8 @@
     operands[4] = GEN_INT (~0);
   }
   [(set_attr "conds" "use")
-   (set_attr "length" "10")]
+   (set_attr "length" "10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_mov_notscc_strict_it"
@@ -439,7 +466,8 @@
                                   VOIDmode, operands[2], const0_rtx);
   }
   [(set_attr "conds" "use")
-   (set_attr "length" "8")]
+   (set_attr "length" "8")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_movsicc_insn"
@@ -499,7 +527,8 @@
   }
   [(set_attr "length" "4,4,6,6,6,6,10,10,10,10,6")
    (set_attr "enabled_for_depr_it" "yes,yes,no,no,no,no,no,no,no,no,yes")
-   (set_attr "conds" "use")]
+   (set_attr "conds" "use")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_movsfcc_soft_insn"
@@ -513,7 +542,8 @@
    it\\t%D3\;mov%D3\\t%0, %2
    it\\t%d3\;mov%d3\\t%0, %1"
   [(set_attr "length" "6,6")
-   (set_attr "conds" "use")]
+   (set_attr "conds" "use")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*call_reg_thumb2"
@@ -542,7 +572,8 @@
 	(match_operand:SI 0 "register_operand" "l*r"))]
   "TARGET_THUMB2"
   "bx\\t%0"
-  [(set_attr "conds" "clob")]
+  [(set_attr "conds" "clob")
+   (set_attr "type" "branch")]
 )
 ;; Don't define thumb2_load_indirect_jump because we can't guarantee label
 ;; addresses will have the thumb bit set correctly.
@@ -570,6 +601,7 @@
     operands[4] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
   }
   [(set_attr "conds" "use")
+   (set_attr "type" "multiple")
    (set (attr "length") (if_then_else (match_test "arm_restrict_it")
                                       (const_int 8)
                                       (const_int 10)))]
@@ -602,7 +634,8 @@
     operands[5] = gen_rtx_fmt_ee (rc, VOIDmode, operands[2], const0_rtx);
   }
   [(set_attr "conds" "use")
-   (set_attr "length" "6,10")]
+   (set_attr "length" "6,10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_ior_scc_strict_it"
@@ -615,7 +648,8 @@
    it\\t%d2\;mov%d2\\t%0, #1\;it\\t%d2\;orr%d2\\t%0, %1
    mov\\t%0, #1\;orr\\t%0, %1\;it\\t%D2\;mov%D2\\t%0, %1"
   [(set_attr "conds" "use")
-   (set_attr "length" "8")]
+   (set_attr "length" "8")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_cond_move"
@@ -664,7 +698,8 @@
     return \"\";
   "
   [(set_attr "conds" "use")
-   (set_attr "length" "6,6,10")]
+   (set_attr "length" "6,6,10")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_cond_arith"
@@ -701,7 +736,8 @@
     return \"%i5%d4\\t%0, %1, #1\";
   "
   [(set_attr "conds" "clob")
-   (set_attr "length" "14")]
+   (set_attr "length" "14")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_cond_arith_strict_it"
@@ -770,7 +806,8 @@
      FAIL;
   }
   [(set_attr "conds" "clob")
-   (set_attr "length" "12")]
+   (set_attr "length" "12")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_cond_sub"
@@ -801,7 +838,8 @@
     return \"sub%d4\\t%0, %1, #1\";
   "
   [(set_attr "conds" "clob")
-   (set_attr "length" "10,14")]
+   (set_attr "length" "10,14")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*thumb2_negscc"
@@ -869,7 +907,8 @@
     FAIL;
   }
   [(set_attr "conds" "clob")
-   (set_attr "length" "14")]
+   (set_attr "length" "14")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_movcond"
@@ -952,7 +991,8 @@
   return \"\";
   "
   [(set_attr "conds" "clob")
-   (set_attr "length" "10,10,14")]
+   (set_attr "length" "10,10,14")
+   (set_attr "type" "multiple")]
 )
 
 ;; Zero and sign extension instructions.
@@ -1015,7 +1055,8 @@
   "TARGET_THUMB2 && !flag_pic"
   "* return thumb2_output_casesi(operands);"
   [(set_attr "conds" "clob")
-   (set_attr "length" "16")]
+   (set_attr "length" "16")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "thumb2_casesi_internal_pic"
@@ -1033,7 +1074,8 @@
   "TARGET_THUMB2 && flag_pic"
   "* return thumb2_output_casesi(operands);"
   [(set_attr "conds" "clob")
-   (set_attr "length" "20")]
+   (set_attr "length" "20")
+   (set_attr "type" "multiple")]
 )
 
 (define_insn "*thumb2_return"
@@ -1070,7 +1112,8 @@
    && GET_CODE(operands[3]) != MINUS"
   "%I3%!\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "length" "2")]
+   (set_attr "length" "2")
+   (set_attr "type" "alu_reg")]
 )
 
 (define_insn "*thumb2_shiftsi3_short"
@@ -1087,8 +1130,8 @@
    (set_attr "shift" "1")
    (set_attr "length" "2")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "arlo_shift")
-		      (const_string "arlo_shift_reg")))]
+		      (const_string "alu_shift_imm")
+		      (const_string "alu_shift_reg")))]
 )
 
 (define_insn "*thumb2_mov<mode>_shortim"
@@ -1098,7 +1141,8 @@
   "TARGET_THUMB2 && reload_completed"
   "mov%!\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "length" "2")]
+   (set_attr "length" "2")
+   (set_attr "type" "mov_imm")]
 )
 
 (define_insn "*thumb2_addsi_short"
@@ -1122,7 +1166,8 @@
       return \"add%!\\t%0, %1, %2\";
   "
   [(set_attr "predicable" "yes")
-   (set_attr "length" "2")]
+   (set_attr "length" "2")
+   (set_attr "type" "alu_reg")]
 )
 
 (define_insn "*thumb2_subsi_short"
@@ -1133,7 +1178,8 @@
   "TARGET_THUMB2 && reload_completed"
   "sub%!\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "length" "2")]
+   (set_attr "length" "2")
+   (set_attr "type" "alu_reg")]
 )
 
 (define_peephole2
@@ -1185,7 +1231,8 @@
       return \"adds\\t%0, %1, %2\";
   "
   [(set_attr "conds" "set")
-   (set_attr "length" "2,2,4")]
+   (set_attr "length" "2,2,4")
+   (set_attr "type" "alu_reg")]
 )
 
 (define_insn "*thumb2_addsi3_compare0_scratch"
@@ -1210,7 +1257,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "length" "2,2,4,4")
-   (set_attr "type"   "arlo_imm,*,arlo_imm,*")]
+   (set_attr "type" "alus_imm,alus_reg,alus_imm,alus_reg")]
 )
 
 (define_insn "*thumb2_mulsi_short"
@@ -1269,7 +1316,8 @@
 	         (le (minus (match_dup 1) (pc)) (const_int 128))
 	         (not (match_test "which_alternative")))
 	    (const_int 2)
-	    (const_int 8)))]
+	    (const_int 8)))
+   (set_attr "type" "branch,multiple")]
 )
 
 (define_insn "*thumb2_cbnz"
@@ -1292,7 +1340,8 @@
 	         (le (minus (match_dup 1) (pc)) (const_int 128))
 	         (not (match_test "which_alternative")))
 	    (const_int 2)
-	    (const_int 8)))]
+	    (const_int 8)))
+   (set_attr "type" "branch,multiple")]
 )
 
 (define_insn "*thumb2_one_cmplsi2_short"
@@ -1302,7 +1351,8 @@
   "TARGET_THUMB2 && reload_completed"
   "mvn%!\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "length" "2")]
+   (set_attr "length" "2")
+   (set_attr "type" "mvn_reg")]
 )
 
 (define_insn "*thumb2_negsi2_short"
@@ -1312,7 +1362,8 @@
   "TARGET_THUMB2 && reload_completed"
   "neg%!\t%0, %1"
   [(set_attr "predicable" "yes")
-   (set_attr "length" "2")]
+   (set_attr "length" "2")
+   (set_attr "type" "alu_reg")]
 )
 
 (define_insn "*orsi_notsi_si"
@@ -1322,7 +1373,8 @@
   "TARGET_THUMB2"
   "orn%?\\t%0, %1, %2"
   [(set_attr "predicable" "yes")
-   (set_attr "predicable_short_it" "no")]
+   (set_attr "predicable_short_it" "no")
+   (set_attr "type" "logic_reg")]
 )
 
 (define_insn "*orsi_not_shiftsi_si"
@@ -1336,7 +1388,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "shift" "2")
-   (set_attr "type" "arlo_shift")]
+   (set_attr "type" "alu_shift_imm")]
 )
 
 (define_peephole2

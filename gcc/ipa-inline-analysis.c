@@ -79,7 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "coverage.h"
 #include "ggc.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "ipa-prop.h"
 #include "lto-streamer.h"
 #include "data-streamer.h"
@@ -2664,7 +2664,11 @@ compute_inline_parameters (struct cgraph_node *node, bool early)
   info->stack_frame_offset = 0;
 
   /* Can this function be inlined at all?  */
-  info->inlinable = tree_inlinable_function_p (node->symbol.decl);
+  if (!optimize && !lookup_attribute ("always_inline",
+				      DECL_ATTRIBUTES (node->symbol.decl)))
+    info->inlinable = false;
+  else
+    info->inlinable = tree_inlinable_function_p (node->symbol.decl);
 
   /* Type attributes can use parameter indices to describe them.  */
   if (TYPE_ATTRIBUTES (TREE_TYPE (node->symbol.decl)))
@@ -3580,6 +3584,7 @@ estimate_size_after_inlining (struct cgraph_node *node,
 
 struct growth_data
 {
+  struct cgraph_node *node;
   bool self_recursive;
   int growth;
 };
@@ -3597,9 +3602,9 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
     {
       gcc_checking_assert (e->inline_failed);
 
-      if (e->caller == node
+      if (e->caller == d->node
 	  || (e->caller->global.inlined_to
-	      && e->caller->global.inlined_to == node))
+	      && e->caller->global.inlined_to == d->node))
 	d->self_recursive = true;
       d->growth += estimate_edge_growth (e);
     }
@@ -3612,7 +3617,7 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
 int
 do_estimate_growth (struct cgraph_node *node)
 {
-  struct growth_data d = { 0, false };
+  struct growth_data d = { node, 0, false };
   struct inline_summary *info = inline_summary (node);
 
   cgraph_for_node_and_aliases (node, do_estimate_growth_1, &d, true);
@@ -3677,6 +3682,22 @@ inline_analyze_function (struct cgraph_node *node)
   if (optimize && !node->thunk.thunk_p)
     inline_indirect_intraprocedural_analysis (node);
   compute_inline_parameters (node, false);
+  if (!optimize)
+    {
+      struct cgraph_edge *e;
+      for (e = node->callees; e; e = e->next_callee)
+	{
+	  if (e->inline_failed == CIF_FUNCTION_NOT_CONSIDERED)
+	    e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
+	  e->call_stmt_cannot_inline_p = true;
+	}
+      for (e = node->indirect_calls; e; e = e->next_callee)
+	{
+	  if (e->inline_failed == CIF_FUNCTION_NOT_CONSIDERED)
+	    e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
+	  e->call_stmt_cannot_inline_p = true;
+	}
+    }
 
   pop_cfun ();
 }

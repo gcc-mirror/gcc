@@ -164,7 +164,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "output.h"
 #include "rtl.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-inline.h"
 #include "langhooks.h"
 #include "pointer-set.h"
@@ -592,15 +592,21 @@ analyze_function (struct cgraph_node *node)
   location_t saved_loc = input_location;
   input_location = DECL_SOURCE_LOCATION (decl);
 
+  if (node->thunk.thunk_p)
+    {
+      cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
+		          NULL, 0, CGRAPH_FREQ_BASE);
+      if (!expand_thunk (node, false))
+	{
+	  node->thunk.alias = NULL;
+	  node->symbol.analyzed = true;
+	  return;
+	}
+      node->thunk.alias = NULL;
+    }
   if (node->symbol.alias)
     symtab_resolve_alias
        ((symtab_node) node, (symtab_node) cgraph_get_node (node->symbol.alias_target));
-  else if (node->thunk.thunk_p)
-    {
-      cgraph_create_edge (node, cgraph_get_node (node->thunk.alias),
-			  NULL, 0, CGRAPH_FREQ_BASE);
-      node->thunk.alias = NULL;
-    }
   else if (node->dispatcher_function)
     {
       /* Generate the dispatcher body of multi-versioned functions.  */
@@ -821,6 +827,82 @@ varpool_finalize_decl (tree decl)
     varpool_assemble_decl (node);
 }
 
+/* EDGE is an polymorphic call.  Mark all possible targets as reachable
+   and if there is only one target, perform trivial devirtualization. 
+   REACHABLE_CALL_TARGETS collects target lists we already walked to
+   avoid udplicate work.  */
+
+static void
+walk_polymorphic_call_targets (pointer_set_t *reachable_call_targets,
+			       struct cgraph_edge *edge)
+{
+  unsigned int i;
+  void *cache_token;
+  bool final;
+  vec <cgraph_node *>targets
+    = possible_polymorphic_call_targets
+	(edge, &final, &cache_token);
+
+  if (!pointer_set_insert (reachable_call_targets,
+			   cache_token))
+    {
+      if (cgraph_dump_file)
+	dump_possible_polymorphic_call_targets 
+	  (cgraph_dump_file, edge);
+
+      for (i = 0; i < targets.length(); i++)
+	{
+	  /* Do not bother to mark virtual methods in anonymous namespace;
+	     either we will find use of virtual table defining it, or it is
+	     unused.  */
+	  if (targets[i]->symbol.definition
+	      && TREE_CODE
+		  (TREE_TYPE (targets[i]->symbol.decl))
+		   == METHOD_TYPE
+	      && !type_in_anonymous_namespace_p
+		   (method_class_type
+		     (TREE_TYPE (targets[i]->symbol.decl))))
+	  enqueue_node ((symtab_node) targets[i]);
+	}
+    }
+
+  /* Very trivial devirtualization; when the type is
+     final or anonymous (so we know all its derivation)
+     and there is only one possible virtual call target,
+     make the edge direct.  */
+  if (final)
+    {
+      if (targets.length() <= 1)
+	{
+	  cgraph_node *target;
+	  if (targets.length () == 1)
+	    target = targets[0];
+	  else
+	    target = cgraph_get_create_node
+		       (builtin_decl_implicit (BUILT_IN_UNREACHABLE));
+
+	  if (cgraph_dump_file)
+	    {
+	      fprintf (cgraph_dump_file,
+		       "Devirtualizing call: ");
+	      print_gimple_stmt (cgraph_dump_file,
+				 edge->call_stmt, 0,
+				 TDF_SLIM);
+	    }
+	  cgraph_make_edge_direct (edge, target);
+	  cgraph_redirect_edge_call_stmt_to_callee (edge);
+	  if (cgraph_dump_file)
+	    {
+	      fprintf (cgraph_dump_file,
+		       "Devirtualized as: ");
+	      print_gimple_stmt (cgraph_dump_file,
+				 edge->call_stmt, 0,
+				 TDF_SLIM);
+	    }
+	}
+    }
+}
+
 
 /* Discover all functions and variables that are trivially needed, analyze
    them as well as all functions and variables referred by them  */
@@ -840,9 +922,11 @@ analyze_functions (void)
   int i;
   struct ipa_ref *ref;
   bool changed = true;
+  location_t saved_loc = input_location;
 
   bitmap_obstack_initialize (NULL);
   cgraph_state = CGRAPH_STATE_CONSTRUCTION;
+  input_location = UNKNOWN_LOCATION;
 
   /* Ugly, but the fixup can not happen at a time same body alias is created;
      C++ FE is confused about the COMDAT groups being right.  */
@@ -923,71 +1007,13 @@ analyze_functions (void)
 	      if (optimize && flag_devirtualize)
 		{
 		  struct cgraph_edge *next;
-	          for (edge = cnode->indirect_calls; edge; edge = next)
+
+		  for (edge = cnode->indirect_calls; edge; edge = next)
 		    {
 		      next = edge->next_callee;
 		      if (edge->indirect_info->polymorphic)
-			{
-			  unsigned int i;
-			  void *cache_token;
-			  bool final;
-			  vec <cgraph_node *>targets
-			    = possible_polymorphic_call_targets
-				(edge, &final, &cache_token);
-
-			  if (!pointer_set_insert (reachable_call_targets,
-						   cache_token))
-			    {
-			      if (cgraph_dump_file)
-				dump_possible_polymorphic_call_targets 
-				  (cgraph_dump_file, edge);
-
-			      for (i = 0; i < targets.length(); i++)
-				{
-				  /* Do not bother to mark virtual methods in anonymous namespace;
-				     either we will find use of virtual table defining it, or it is
-				     unused.  */
-				  if (targets[i]->symbol.definition
-				      && TREE_CODE
-					  (TREE_TYPE (targets[i]->symbol.decl))
-					   == METHOD_TYPE
-				      && !type_in_anonymous_namespace_p
-					   (method_class_type
-					     (TREE_TYPE (targets[i]->symbol.decl))))
-				  enqueue_node ((symtab_node) targets[i]);
-				}
-			    }
-
-			  /* Very trivial devirtualization; when the type is
-			     final or anonymous (so we know all its derivation)
-			     and there is only one possible virtual call target,
-			     make the edge direct.  */
-			  if (final)
-			    {
-			      gcc_assert (targets.length());
-			      if (targets.length() == 1)
-				{
-				  if (cgraph_dump_file)
-				    {
-				      fprintf (cgraph_dump_file,
-					       "Devirtualizing call: ");
-				      print_gimple_stmt (cgraph_dump_file,
-							 edge->call_stmt, 0,
-							 TDF_SLIM);
-				    }
-				  cgraph_make_edge_direct (edge, targets[0]);
-				  cgraph_redirect_edge_call_stmt_to_callee (edge);
-				  if (cgraph_dump_file)
-				    {
-				      fprintf (cgraph_dump_file,
-					       "Devirtualized as: ");
-				      print_gimple_stmt (cgraph_dump_file,
-							 edge->call_stmt, 0,
-							 TDF_SLIM);
-				    }
-				}
-			    }
-			}
+			walk_polymorphic_call_targets (reachable_call_targets,
+						       edge);
 		    }
 		}
 
@@ -1064,6 +1090,8 @@ analyze_functions (void)
 	}
       node->symbol.aux = NULL;
     }
+  for (;node; node = node->symbol.next)
+    node->symbol.aux = NULL;
   first_analyzed = cgraph_first_function ();
   first_analyzed_var = varpool_first_variable ();
   if (cgraph_dump_file)
@@ -1074,6 +1102,13 @@ analyze_functions (void)
   bitmap_obstack_release (NULL);
   pointer_set_destroy (reachable_call_targets);
   ggc_collect ();
+  /* Initialize assembler name hash, in particular we want to trigger C++
+     mangling and same body alias creation before we free DECL_ARGUMENTS
+     used by it.  */
+  if (!seen_error ())
+    symtab_initialize_asm_name_hash ();
+
+  input_location = saved_loc;
 }
 
 /* Translate the ugly representation of aliases as alias pairs into nice
@@ -1403,10 +1438,12 @@ thunk_adjust (gimple_stmt_iterator * bsi,
   return ret;
 }
 
-/* Produce assembler for thunk NODE.  */
+/* Expand thunk NODE to gimple if possible.
+   When OUTPUT_ASM_THUNK is true, also produce assembler for
+   thunks that are not lowered.  */
 
-void
-expand_thunk (struct cgraph_node *node)
+bool
+expand_thunk (struct cgraph_node *node, bool output_asm_thunks)
 {
   bool this_adjusting = node->thunk.this_adjusting;
   HOST_WIDE_INT fixed_offset = node->thunk.fixed_offset;
@@ -1414,12 +1451,8 @@ expand_thunk (struct cgraph_node *node)
   tree virtual_offset = NULL;
   tree alias = node->callees->callee->symbol.decl;
   tree thunk_fndecl = node->symbol.decl;
-  tree a = DECL_ARGUMENTS (thunk_fndecl);
+  tree a;
 
-  current_function_decl = thunk_fndecl;
-
-  /* Ensure thunks are emitted in their correct sections.  */
-  resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
 
   if (this_adjusting
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
@@ -1428,10 +1461,23 @@ expand_thunk (struct cgraph_node *node)
       const char *fnname;
       tree fn_block;
       tree restype = TREE_TYPE (TREE_TYPE (thunk_fndecl));
+
+      if (!output_asm_thunks)
+	return false;
+
+      if (in_lto_p)
+	cgraph_get_body (node);
+      a = DECL_ARGUMENTS (thunk_fndecl);
       
+      current_function_decl = thunk_fndecl;
+
+      /* Ensure thunks are emitted in their correct sections.  */
+      resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+
       DECL_RESULT (thunk_fndecl)
 	= build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
 		      RESULT_DECL, 0, restype);
+      DECL_CONTEXT (DECL_RESULT (thunk_fndecl)) = thunk_fndecl;
       fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
 
       /* The back end expects DECL_INITIAL to contain a BLOCK, so we
@@ -1473,6 +1519,15 @@ expand_thunk (struct cgraph_node *node)
       gimple call;
       gimple ret;
 
+      if (in_lto_p)
+	cgraph_get_body (node);
+      a = DECL_ARGUMENTS (thunk_fndecl);
+      
+      current_function_decl = thunk_fndecl;
+
+      /* Ensure thunks are emitted in their correct sections.  */
+      resolve_unique_section (thunk_fndecl, 0, flag_function_sections);
+
       DECL_IGNORED_P (thunk_fndecl) = 1;
       bitmap_obstack_initialize (NULL);
 
@@ -1487,6 +1542,7 @@ expand_thunk (struct cgraph_node *node)
 	  DECL_ARTIFICIAL (resdecl) = 1;
 	  DECL_IGNORED_P (resdecl) = 1;
 	  DECL_RESULT (thunk_fndecl) = resdecl;
+          DECL_CONTEXT (DECL_RESULT (thunk_fndecl)) = thunk_fndecl;
 	}
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
@@ -1523,6 +1579,7 @@ expand_thunk (struct cgraph_node *node)
         for (i = 1, arg = DECL_CHAIN (a); i < nargs; i++, arg = DECL_CHAIN (arg))
 	  vargs.quick_push (arg);
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
+      node->callees->call_stmt = call;
       vargs.release ();
       gimple_call_set_from_thunk (call, true);
       if (restmp)
@@ -1591,6 +1648,9 @@ expand_thunk (struct cgraph_node *node)
 	  remove_edge (single_succ_edge (bb));
 	}
 
+      cfun->gimple_df->in_ssa_p = true;
+      /* FIXME: C++ FE should stop setting TREE_ASM_WRITTEN on thunks.  */
+      TREE_ASM_WRITTEN (thunk_fndecl) = false;
       delete_unreachable_blocks ();
       update_ssa (TODO_update_ssa);
 #ifdef ENABLE_CHECKING
@@ -1600,12 +1660,12 @@ expand_thunk (struct cgraph_node *node)
       /* Since we want to emit the thunk, we explicitly mark its name as
 	 referenced.  */
       node->thunk.thunk_p = false;
-      rebuild_cgraph_edges ();
-      cgraph_add_new_function (thunk_fndecl, true);
+      node->lowered = true;
       bitmap_obstack_release (NULL);
     }
   current_function_decl = NULL;
   set_cfun (NULL);
+  return true;
 }
 
 /* Assemble thunks and aliases associated to NODE.  */
@@ -1624,7 +1684,7 @@ assemble_thunks_and_aliases (struct cgraph_node *node)
 
 	e = e->next_caller;
 	assemble_thunks_and_aliases (thunk);
-        expand_thunk (thunk);
+        expand_thunk (thunk, true);
       }
     else
       e = e->next_caller;

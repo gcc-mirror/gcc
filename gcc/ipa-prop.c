@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "cgraph.h"
 #include "ipa-prop.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "tree-inline.h"
 #include "ipa-inline.h"
@@ -1551,6 +1551,8 @@ ipa_compute_jump_functions_for_edge (struct param_analysis_info *parms_ainfo,
     return;
   vec_safe_grow_cleared (args->jump_functions, arg_num);
 
+  if (gimple_call_internal_p (call))
+    return;
   if (ipa_func_spec_opts_forbid_analysis_p (cs->caller))
     return;
 
@@ -2496,23 +2498,29 @@ ipa_find_agg_cst_for_param (struct ipa_agg_jump_function *agg,
 }
 
 /* Remove a reference to SYMBOL from the list of references of a node given by
-   reference description RDESC.  */
+   reference description RDESC.  Return true if the reference has been
+   successfully found and removed.  */
 
-static void
+static bool
 remove_described_reference (symtab_node symbol, struct ipa_cst_ref_desc *rdesc)
 {
   struct ipa_ref *to_del;
   struct cgraph_edge *origin;
 
   origin = rdesc->cs;
+  if (!origin)
+    return false;
   to_del = ipa_find_reference ((symtab_node) origin->caller, symbol,
 			       origin->call_stmt, origin->lto_stmt_uid);
-  gcc_assert (to_del);
+  if (!to_del)
+    return false;
+
   ipa_remove_reference (to_del);
   if (dump_file)
     fprintf (dump_file, "ipa-prop: Removed a reference from %s/%i to %s.\n",
 	     xstrdup (cgraph_node_name (origin->caller)),
 	     origin->caller->symbol.order, xstrdup (symtab_node_name (symbol)));
+  return true;
 }
 
 /* If JFUNC has a reference description with refcount different from
@@ -2529,6 +2537,45 @@ jfunc_rdesc_usable (struct ipa_jump_func *jfunc)
     return NULL;
 }
 
+/* If the value of constant jump function JFUNC is an address of a function
+   declaration, return the associated call graph node.  Otherwise return
+   NULL.  */
+
+static cgraph_node *
+cgraph_node_for_jfunc (struct ipa_jump_func *jfunc)
+{
+  gcc_checking_assert (jfunc->type == IPA_JF_CONST);
+  tree cst = ipa_get_jf_constant (jfunc);
+  if (TREE_CODE (cst) != ADDR_EXPR
+      || TREE_CODE (TREE_OPERAND (cst, 0)) != FUNCTION_DECL)
+    return NULL;
+
+  return cgraph_get_node (TREE_OPERAND (cst, 0));
+}
+
+
+/* If JFUNC is a constant jump function with a usable rdesc, decrement its
+   refcount and if it hits zero, remove reference to SYMBOL from the caller of
+   the edge specified in the rdesc.  Return false if either the symbol or the
+   reference could not be found, otherwise return true.  */
+
+static bool
+try_decrement_rdesc_refcount (struct ipa_jump_func *jfunc)
+{
+  struct ipa_cst_ref_desc *rdesc;
+  if (jfunc->type == IPA_JF_CONST
+      && (rdesc = jfunc_rdesc_usable (jfunc))
+      && --rdesc->refcount == 0)
+    {
+      symtab_node symbol = (symtab_node) cgraph_node_for_jfunc (jfunc);
+      if (!symbol)
+	return false;
+
+      return remove_described_reference (symbol, rdesc);
+    }
+  return true;
+}
+
 /* Try to find a destination for indirect edge IE that corresponds to a simple
    call or a call of a member function pointer and where the destination is a
    pointer formal parameter described by jump function JFUNC.  If it can be
@@ -2543,8 +2590,6 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
   struct cgraph_edge *cs;
   tree target;
   bool agg_contents = ie->indirect_info->agg_contents;
-  bool speculative = ie->speculative;
-  struct ipa_cst_ref_desc *rdesc;
 
   if (ie->indirect_info->agg_contents)
     target = ipa_find_agg_cst_for_param (&jfunc->agg,
@@ -2556,12 +2601,17 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
     return NULL;
   cs = ipa_make_edge_direct_to_target (ie, target);
 
-  /* FIXME: speculative edges can be handled.  */
-  if (cs && !agg_contents && !speculative
-      && jfunc->type == IPA_JF_CONST
-      && (rdesc = jfunc_rdesc_usable (jfunc))
-      && --rdesc->refcount == 0)
-    remove_described_reference ((symtab_node) cs->callee, rdesc);
+  if (cs && !agg_contents)
+    {
+      bool ok;
+      gcc_checking_assert (cs->callee
+			   && (cs != ie
+			       || jfunc->type != IPA_JF_CONST
+			       || !cgraph_node_for_jfunc (jfunc)
+			       || cs->callee == cgraph_node_for_jfunc (jfunc)));
+      ok = try_decrement_rdesc_refcount (jfunc);
+      gcc_checking_assert (ok);
+    }
 
   return cs;
 }
@@ -2817,7 +2867,9 @@ propagate_controlled_uses (struct cgraph_edge *cs)
 	      if (n)
 		{
 		  struct cgraph_node *clone;
-		  remove_described_reference ((symtab_node) n, rdesc);
+		  bool ok;
+		  ok = remove_described_reference ((symtab_node) n, rdesc);
+		  gcc_checking_assert (ok);
 
 		  clone = cs->caller;
 		  while (clone->global.inlined_to
@@ -2960,9 +3012,28 @@ ipa_set_node_agg_value_chain (struct cgraph_node *node,
 static void
 ipa_edge_removal_hook (struct cgraph_edge *cs, void *data ATTRIBUTE_UNUSED)
 {
-  /* During IPA-CP updating we can be called on not-yet analyze clones.  */
+  struct ipa_edge_args *args;
+
+  /* During IPA-CP updating we can be called on not-yet analyzed clones.  */
   if (vec_safe_length (ipa_edge_args_vector) <= (unsigned)cs->uid)
     return;
+
+  args = IPA_EDGE_REF (cs);
+  if (args->jump_functions)
+    {
+      struct ipa_jump_func *jf;
+      int i;
+      FOR_EACH_VEC_ELT (*args->jump_functions, i, jf)
+	{
+	  struct ipa_cst_ref_desc *rdesc;
+	  try_decrement_rdesc_refcount (jf);
+	  if (jf->type == IPA_JF_CONST
+	      && (rdesc = ipa_get_jf_constant_rdesc (jf))
+	      && rdesc->cs == cs)
+	    rdesc->cs = NULL;
+	}
+    }
+
   ipa_free_edge_args_substructures (IPA_EDGE_REF (cs));
 }
 
@@ -3007,6 +3078,24 @@ ipa_edge_duplication_hook (struct cgraph_edge *src, struct cgraph_edge *dst,
 
 	  if (!src_rdesc)
 	    dst_jf->value.constant.rdesc = NULL;
+	  else if (src->caller == dst->caller)
+	    {
+	      struct ipa_ref *ref;
+	      symtab_node n = (symtab_node) cgraph_node_for_jfunc (src_jf);
+	      gcc_checking_assert (n);
+	      ref = ipa_find_reference ((symtab_node) src->caller, n,
+					src->call_stmt, src->lto_stmt_uid);
+	      gcc_checking_assert (ref);
+	      ipa_clone_ref (ref, (symtab_node) dst->caller, ref->stmt);
+
+	      gcc_checking_assert (ipa_refdesc_pool);
+	      struct ipa_cst_ref_desc *dst_rdesc
+		= (struct ipa_cst_ref_desc *) pool_alloc (ipa_refdesc_pool);
+	      dst_rdesc->cs = dst;
+	      dst_rdesc->refcount = src_rdesc->refcount;
+	      dst_rdesc->next_duplicate = NULL;
+	      dst_jf->value.constant.rdesc = dst_rdesc;
+	    }
 	  else if (src_rdesc->cs == src)
 	    {
 	      struct ipa_cst_ref_desc *dst_rdesc;
@@ -3447,7 +3536,7 @@ ipa_modify_call_arguments (struct cgraph_edge *cs, gimple stmt,
 	{
 	  tree expr, base, off;
 	  location_t loc;
-	  unsigned int deref_align;
+	  unsigned int deref_align = 0;
 	  bool deref_base = false;
 
 	  /* We create a new parameter out of the value of the old one, we can

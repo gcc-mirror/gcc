@@ -1773,6 +1773,7 @@ package body Sem_Ch8 is
       Old_S       : Entity_Id                 := Empty;
       Rename_Spec : Entity_Id;
       Save_AV     : constant Ada_Version_Type := Ada_Version;
+      Save_AVP    : constant Node_Id          := Ada_Version_Pragma;
       Save_AV_Exp : constant Ada_Version_Type := Ada_Version_Explicit;
       Spec        : constant Node_Id          := Specification (N);
 
@@ -2582,6 +2583,7 @@ package body Sem_Ch8 is
       --  ???
 
       Ada_Version := Ada_Version_Type'Max (Ada_Version, Ada_95);
+      Ada_Version_Pragma := Empty;
       Ada_Version_Explicit := Ada_Version;
 
       if No (Old_S) then
@@ -3039,6 +3041,7 @@ package body Sem_Ch8 is
       end if;
 
       Ada_Version := Save_AV;
+      Ada_Version_Pragma := Save_AVP;
       Ada_Version_Explicit := Save_AV_Exp;
    end Analyze_Subprogram_Renaming;
 

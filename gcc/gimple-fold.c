@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "function.h"
 #include "dumpfile.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-ssa-propagate.h"
 #include "target.h"
 #include "gimple-fold.h"
@@ -60,6 +60,24 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
   struct cgraph_node *node;
   symtab_node snode;
 
+  if (DECL_ABSTRACT (decl))
+    return false;
+
+  /* We are concerned only about static/external vars and functions.  */
+  if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
+      || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
+    return true;
+
+  /* Static objects can be referred only if they was not optimized out yet.  */
+  if (!TREE_PUBLIC (decl) && !DECL_EXTERNAL (decl))
+    {
+      snode = symtab_get_node (decl);
+      if (!snode)
+	return false;
+      node = dyn_cast <cgraph_node> (snode);
+      return !node || !node->global.inlined_to;
+    }
+
   /* We will later output the initializer, so we can refer to it.
      So we are concerned only when DECL comes from initializer of
      external var.  */
@@ -68,10 +86,6 @@ can_refer_decl_in_current_unit_p (tree decl, tree from_decl)
       || !DECL_EXTERNAL (from_decl)
       || (flag_ltrans
 	  && symtab_get_node (from_decl)->symbol.in_other_partition))
-    return true;
-  /* We are concerned only about static/external vars and functions.  */
-  if ((!TREE_STATIC (decl) && !DECL_EXTERNAL (decl))
-      || (TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL))
     return true;
   /* We are folding reference from external vtable.  The vtable may reffer
      to a symbol keyed to other compilation unit.  The other compilation
@@ -3136,7 +3150,7 @@ gimple_get_virt_method_for_binfo (HOST_WIDE_INT token, tree known_binfo)
   size = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (v))));
   offset += token * size;
   fn = fold_ctor_reference (TREE_TYPE (TREE_TYPE (v)), init,
-			    offset, size, vtable);
+			    offset, size, v);
   if (!fn || integer_zerop (fn))
     return NULL_TREE;
   gcc_assert (TREE_CODE (fn) == ADDR_EXPR

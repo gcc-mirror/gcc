@@ -627,6 +627,7 @@ bool symtab_for_node_and_aliases (symtab_node,
 				  bool);
 symtab_node symtab_nonoverwritable_alias (symtab_node);
 enum availability symtab_node_availability (symtab_node);
+bool symtab_semantically_equivalent_p (symtab_node, symtab_node);
 
 /* In cgraph.c  */
 void dump_cgraph (FILE *);
@@ -700,12 +701,14 @@ void cgraph_mark_address_taken_node (struct cgraph_node *);
 
 typedef void (*cgraph_edge_hook)(struct cgraph_edge *, void *);
 typedef void (*cgraph_node_hook)(struct cgraph_node *, void *);
+typedef void (*varpool_node_hook)(struct varpool_node *, void *);
 typedef void (*cgraph_2edge_hook)(struct cgraph_edge *, struct cgraph_edge *,
 				  void *);
 typedef void (*cgraph_2node_hook)(struct cgraph_node *, struct cgraph_node *,
 				  void *);
 struct cgraph_edge_hook_list;
 struct cgraph_node_hook_list;
+struct varpool_node_hook_list;
 struct cgraph_2edge_hook_list;
 struct cgraph_2node_hook_list;
 struct cgraph_edge_hook_list *cgraph_add_edge_removal_hook (cgraph_edge_hook, void *);
@@ -713,9 +716,15 @@ void cgraph_remove_edge_removal_hook (struct cgraph_edge_hook_list *);
 struct cgraph_node_hook_list *cgraph_add_node_removal_hook (cgraph_node_hook,
 							    void *);
 void cgraph_remove_node_removal_hook (struct cgraph_node_hook_list *);
+struct varpool_node_hook_list *varpool_add_node_removal_hook (varpool_node_hook,
+							      void *);
+void varpool_remove_node_removal_hook (struct varpool_node_hook_list *);
 struct cgraph_node_hook_list *cgraph_add_function_insertion_hook (cgraph_node_hook,
 							          void *);
 void cgraph_remove_function_insertion_hook (struct cgraph_node_hook_list *);
+struct varpool_node_hook_list *varpool_add_variable_insertion_hook (varpool_node_hook,
+							            void *);
+void varpool_remove_variable_insertion_hook (struct varpool_node_hook_list *);
 void cgraph_call_function_insertion_hooks (struct cgraph_node *node);
 struct cgraph_2edge_hook_list *cgraph_add_edge_duplication_hook (cgraph_2edge_hook, void *);
 void cgraph_remove_edge_duplication_hook (struct cgraph_2edge_hook_list *);
@@ -748,7 +757,7 @@ void fixup_same_cpp_alias_visibility (symtab_node, symtab_node target, tree);
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool);
 void cgraph_reset_node (struct cgraph_node *);
-void expand_thunk (struct cgraph_node *);
+bool expand_thunk (struct cgraph_node *, bool);
 
 /* In cgraphclones.c  */
 

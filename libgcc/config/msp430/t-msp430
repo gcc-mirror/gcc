@@ -1,0 +1,48 @@
+# Makefile fragment for building LIBGCC for the TI MSP430 processor.
+# Copyright (C) 2011 Free Software Foundation, Inc.
+# Contributed by Red Hat.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published
+# by the Free Software Foundation; either version 3, or (at your
+# option) any later version.
+#
+# GCC is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.   See
+# the GNU General Public License for more details.
+#
+# You should have received a copy of the  GNU General Public
+# License along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Note - we have separate versions of the lib2div<mode> files
+# as the functions are quite large and we do not want to pull
+# in unneeded division routines.
+
+LIB2ADD = \
+	$(srcdir)/config/msp430/lib2divQI.c \
+	$(srcdir)/config/msp430/lib2divHI.c \
+	$(srcdir)/config/msp430/lib2divSI.c \
+	$(srcdir)/config/msp430/lib2bitcountHI.c \
+	$(srcdir)/config/msp430/lib2mul.c \
+	$(srcdir)/config/msp430/lib2shift.c \
+	$(srcdir)/config/msp430/epilogue.S \
+	$(srcdir)/config/msp430/mpy.c \
+	$(srcdir)/config/msp430/slli.S \
+	$(srcdir)/config/msp430/srai.S \
+	$(srcdir)/config/msp430/srli.S \
+	$(srcdir)/config/msp430/cmpsi2.S \
+	$(srcdir)/config/msp430/floatunhisf.c \
+	$(srcdir)/config/msp430/floatunhidf.c \
+	$(srcdir)/config/msp430/floathidf.c \
+	$(srcdir)/config/msp430/floathisf.c \
+	$(srcdir)/config/msp430/cmpd.c
+
+HOST_LIBGCC2_CFLAGS += -Os -ffunction-sections -fdata-sections
+
+# Local Variables:
+# mode: Makefile
+# End:

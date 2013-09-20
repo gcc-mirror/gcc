@@ -186,6 +186,25 @@ package body Sem_Prag is
    --  whether a particular item appears in a mixed list of nodes and entities.
    --  It is assumed that all nodes in the list have entities.
 
+   function Check_Kind (Nam : Name_Id) return Name_Id;
+   --  This function is used in connection with pragmas Assert, Check,
+   --  and assertion aspects and pragmas, to determine if Check pragmas
+   --  (or corresponding assertion aspects or pragmas) are currently active
+   --  as determined by the presence of -gnata on the command line (which
+   --  sets the default), and the appearance of pragmas Check_Policy and
+   --  Assertion_Policy as configuration pragmas either in a configuration
+   --  pragma file, or at the start of the current unit, or locally given
+   --  Check_Policy and Assertion_Policy pragmas that are currently active.
+   --
+   --  The value returned is one of the names Check, Ignore, Disable (On
+   --  returns Check, and Off returns Ignore).
+   --
+   --  Note: for assertion kinds Pre'Class, Post'Class, Invariant'Class,
+   --  and Type_Invariant'Class, the name passed is Name_uPre, Name_uPost,
+   --  Name_uInvariant, or Name_uType_Invariant, which corresponds to _Pre,
+   --  _Post, _Invariant, or _Type_Invariant, which are special names used
+   --  in identifiers to represent these attribute references.
+
    procedure Collect_Subprogram_Inputs_Outputs
      (Subp_Id      : Entity_Id;
       Subp_Inputs  : in out Elist_Id;
@@ -1514,22 +1533,22 @@ package body Sem_Prag is
            (Item    : Node_Id;
             Item_Id : Entity_Id)
          is
+            Context : Entity_Id;
             Dummy   : Boolean;
             Inputs  : Elist_Id := No_Elist;
             Outputs : Elist_Id := No_Elist;
-            Subp_Id : Entity_Id;
 
          begin
             --  Traverse the scope stack looking for enclosing subprograms
             --  subject to aspect/pragma Global.
 
-            Subp_Id := Scope (Current_Scope);
-            while Present (Subp_Id) and then Subp_Id /= Standard_Standard loop
-               if Is_Subprogram (Subp_Id)
-                 and then Has_Aspect (Subp_Id, Aspect_Global)
+            Context := Scope (Subp_Id);
+            while Present (Context) and then Context /= Standard_Standard loop
+               if Is_Subprogram (Context)
+                 and then Has_Aspect (Context, Aspect_Global)
                then
                   Collect_Subprogram_Inputs_Outputs
-                    (Subp_Id      => Subp_Id,
+                    (Subp_Id      => Context,
                      Subp_Inputs  => Inputs,
                      Subp_Outputs => Outputs,
                      Global_Seen  => Dummy);
@@ -1545,11 +1564,15 @@ package body Sem_Prag is
                         Item, Item_Id);
                      Error_Msg_NE
                        ("\item already appears as input of subprogram &",
-                        Item, Subp_Id);
+                        Item, Context);
+
+                     --  Stop the traversal once an error has been detected
+
+                     exit;
                   end if;
                end if;
 
-               Subp_Id := Scope (Subp_Id);
+               Context := Scope (Context);
             end loop;
          end Check_Mode_Restriction_In_Enclosing_Context;
 
@@ -1576,7 +1599,10 @@ package body Sem_Prag is
       begin
          --  Single global item declaration
 
-         if Nkind_In (List, N_Identifier, N_Selected_Component) then
+         if Nkind_In (List, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+         then
             Analyze_Global_Item (List, Global_Mode);
 
          --  Simple global list or moded global list declaration
@@ -3495,7 +3521,7 @@ package body Sem_Prag is
          --  For a pragma PPC in the extended main source unit, record enabled
          --  status in SCO.
 
-         if not Is_Ignored (N) and then not Split_PPC (N) then
+         if Is_Checked (N) and then not Split_PPC (N) then
             Set_SCO_Pragma_Enabled (Loc);
          end if;
 
@@ -3592,7 +3618,7 @@ package body Sem_Prag is
             --  N_Contract node.
 
             if Acts_As_Spec (PO)
-              and then (SPARK_Mode or else Formal_Extensions)
+              and then (SPARK_Mode or Formal_Extensions)
             then
                declare
                   Prag : constant Node_Id := New_Copy_Tree (N);
@@ -8164,11 +8190,27 @@ package body Sem_Prag is
       Prag_Id := Get_Pragma_Id (Pname);
       Pname := Original_Name (N);
 
-      --  Check applicable policy. We skip this for a pragma that came from
-      --  an aspect, since we already dealt with the Disable case, and we set
-      --  the Is_Ignored flag at the time the aspect was analyzed.
+      --  Check applicable policy. We skip this if Is_Checked or Is_Ignored
+      --  is already set, indicating that we have already checked the policy
+      --  at the right point. This happens for example in the case of a pragma
+      --  that is derived from an Aspect.
 
-      if not From_Aspect_Specification (N) then
+      if Is_Ignored (N) or else Is_Checked (N) then
+         null;
+
+      --  For a pragma that is a rewriting of another pragma, copy the
+      --  Is_Checked/Is_Ignored status from the rewritten pragma.
+
+      elsif Is_Rewrite_Substitution (N)
+        and then Nkind (Original_Node (N)) = N_Pragma
+        and then Original_Node (N) /= N
+      then
+         Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
+         Set_Is_Checked (N, Is_Checked (Original_Node (N)));
+
+      --  Otherwise query the applicable policy at this point
+
+      else
          Check_Applicable_Policy (N);
 
          --  If pragma is disabled, rewrite as NULL and skip analysis
@@ -8558,8 +8600,9 @@ package body Sem_Prag is
 
             --  Now set Ada 83 mode
 
-            Ada_Version := Ada_83;
-            Ada_Version_Explicit := Ada_Version;
+            Ada_Version          := Ada_83;
+            Ada_Version_Explicit := Ada_83;
+            Ada_Version_Pragma   := N;
 
          ------------
          -- Ada_95 --
@@ -8589,8 +8632,9 @@ package body Sem_Prag is
 
             --  Now set Ada 95 mode
 
-            Ada_Version := Ada_95;
-            Ada_Version_Explicit := Ada_Version;
+            Ada_Version          := Ada_95;
+            Ada_Version_Explicit := Ada_95;
+            Ada_Version_Pragma   := N;
 
          ---------------------
          -- Ada_05/Ada_2005 --
@@ -8637,6 +8681,7 @@ package body Sem_Prag is
 
                Ada_Version          := Ada_2005;
                Ada_Version_Explicit := Ada_2005;
+               Ada_Version_Pragma   := N;
             end if;
          end;
 
@@ -8686,6 +8731,7 @@ package body Sem_Prag is
 
                Ada_Version          := Ada_2012;
                Ada_Version_Explicit := Ada_2012;
+               Ada_Version_Pragma   := N;
             end if;
          end;
 
@@ -8878,6 +8924,8 @@ package body Sem_Prag is
                Check_Optional_Identifier (Arg2, Name_Message);
                Append_To (Newa, New_Copy_Tree (Arg2));
             end if;
+
+            --  Rewrite as Check pragma
 
             Rewrite (N,
               Make_Pragma (Loc,
@@ -9490,9 +9538,6 @@ package body Sem_Prag is
             Cname : Name_Id;
             Str   : Node_Id;
 
-            Check_On : Boolean;
-            --  Set True if category of assertions referenced by Name enabled
-
          begin
             GNAT_Pragma;
             Check_At_Least_N_Arguments (2);
@@ -9526,24 +9571,33 @@ package body Sem_Prag is
                   null;
             end case;
 
-            --  Set Check_On to indicate check status
+            --  Check applicable policy. We skip this if Checked/Ignored status
+            --  is already set (e.g. in the casse of a pragma from an aspect).
 
-            --  If this comes from an aspect, we have already taken care of
-            --  the policy active when the aspect was analyzed, and Is_Ignored
-            --  is set appropriately already.
+            if Is_Checked (N) or else Is_Ignored (N) then
+               null;
 
-            if From_Aspect_Specification (N) then
-               Check_On := not Is_Ignored (N);
+            --  For a non-source pragma that is a rewriting of another pragma,
+            --  copy the Is_Checked/Ignored status from the rewritten pragma.
 
-            --  Otherwise check the status right now
+            elsif Is_Rewrite_Substitution (N)
+              and then Nkind (Original_Node (N)) = N_Pragma
+              and then Original_Node (N) /= N
+            then
+               Set_Is_Ignored (N, Is_Ignored (Original_Node (N)));
+               Set_Is_Checked (N, Is_Checked (Original_Node (N)));
+
+            --  Otherwise query the applicable policy at this point
 
             else
                case Check_Kind (Cname) is
                   when Name_Ignore =>
-                     Check_On := False;
+                     Set_Is_Ignored (N, True);
+                     Set_Is_Checked (N, False);
 
                   when Name_Check =>
-                     Check_On := True;
+                     Set_Is_Ignored (N, False);
+                     Set_Is_Checked (N, True);
 
                   --  For disable, rewrite pragma as null statement and skip
                   --  rest of the analysis of the pragma.
@@ -9578,7 +9632,7 @@ package body Sem_Prag is
 
                when others =>
 
-                  if Check_On and then not Split_PPC (N) then
+                  if Is_Checked (N) and then not Split_PPC (N) then
 
                      --  Mark pragma/aspect SCO as enabled
 
@@ -9595,7 +9649,7 @@ package body Sem_Prag is
                --  we do want to analyze (to get proper references).
                --  The Preanalyze_And_Resolve routine does just what we want
 
-               if not Check_On then
+               if Is_Ignored (N) then
                   Preanalyze_And_Resolve (Str, Standard_String);
 
                   --  Otherwise we need a proper analysis and expansion
@@ -9618,11 +9672,11 @@ package body Sem_Prag is
             --       null;
             --    end if;
 
-            --  The reason we do this rewriting during semantic analysis
-            --  rather than as part of normal expansion is that we cannot
-            --  analyze and expand the code for the boolean expression
-            --  directly, or it may cause insertion of actions that would
-            --  escape the attempt to suppress the check code.
+            --  The reason we do this rewriting during semantic analysis rather
+            --  than as part of normal expansion is that we cannot analyze and
+            --  expand the code for the boolean expression directly, or it may
+            --  cause insertion of actions that would escape the attempt to
+            --  suppress the check code.
 
             --  Note that the Sloc for the if statement corresponds to the
             --  argument condition, not the pragma itself. The reason for
@@ -9630,7 +9684,7 @@ package body Sem_Prag is
             --  False at compile time, and we do not want to delete this
             --  warning when we delete the if statement.
 
-            if Expander_Active and not Check_On then
+            if Expander_Active and Is_Ignored (N) then
                Eloc := Sloc (Expr);
 
                Rewrite (N,
@@ -11552,6 +11606,7 @@ package body Sem_Prag is
             else
                Extensions_Allowed := False;
                Ada_Version := Ada_Version_Explicit;
+               Ada_Version_Pragma := Empty;
             end if;
 
          --------------
@@ -15040,11 +15095,9 @@ package body Sem_Prag is
             Check_Optional_Identifier (Arg1, Name_Check);
             Check_Precondition_Postcondition (In_Body);
 
-            --  If in spec, nothing more to do. If in body, then we convert the
-            --  pragma to an equivalent pragam Check. Note we do this whether
-            --  or not precondition checks are enabled. That works fine since
-            --  pragma Check will do this check, and will also analyze the
-            --  condition itself in the proper context.
+            --  If in spec, nothing more to do. If in body, then we convert
+            --  the pragma to an equivalent pragma Check. That works fine since
+            --  pragma Check will analyze the condition in the proper context.
 
             --  The form of the pragma Check is either:
 
@@ -15057,20 +15110,25 @@ package body Sem_Prag is
             --  pragmas are checked.
 
             if In_Body then
+
+               --  Rewrite as Check pragma
+
                Rewrite (N,
                  Make_Pragma (Loc,
                    Chars                        => Name_Check,
                    Pragma_Argument_Associations => New_List (
                      Make_Pragma_Argument_Association (Loc,
-                       Expression => Make_Identifier (Loc, Pname)),
+                     Expression => Make_Identifier (Loc, Pname)),
 
                      Make_Pragma_Argument_Association (Sloc (Arg1),
-                       Expression => Relocate_Node (Get_Pragma_Arg (Arg1))))));
+                       Expression =>
+                         Relocate_Node (Get_Pragma_Arg (Arg1))))));
 
                if Arg_Count = 2 then
                   Append_To (Pragma_Argument_Associations (N),
                     Make_Pragma_Argument_Association (Sloc (Arg2),
-                      Expression => Relocate_Node (Get_Pragma_Arg (Arg2))));
+                      Expression =>
+                        Relocate_Node (Get_Pragma_Arg (Arg2))));
                end if;
 
                Analyze (N);
@@ -15141,16 +15199,22 @@ package body Sem_Prag is
             Ent := Find_Lib_Unit_Name;
             Check_Duplicate_Pragma (Ent);
 
-            --  This filters out pragmas inside generic parent then
-            --  show up inside instantiation
+            --  This filters out pragmas inside generic parents that show up
+            --  inside instantiations. Pragmas that come from aspects in the
+            --  unit are not ignored.
 
-            if Present (Ent)
-              and then not (Pk = N_Package_Specification
-                             and then Present (Generic_Parent (Pa)))
-            then
-               if not Debug_Flag_U then
-                  Set_Is_Preelaborated (Ent);
-                  Set_Suppress_Elaboration_Warnings (Ent);
+            if Present (Ent) then
+               if Pk = N_Package_Specification
+                 and then Present (Generic_Parent (Pa))
+                 and then not From_Aspect_Specification (N)
+               then
+                  null;
+
+               else
+                  if not Debug_Flag_U then
+                     Set_Is_Preelaborated (Ent);
+                     Set_Suppress_Elaboration_Warnings (Ent);
+                  end if;
                end if;
             end if;
          end Preelaborate;
@@ -16338,7 +16402,7 @@ package body Sem_Prag is
          -- SPARK_Mode --
          ----------------
 
-         --  pragma SPARK_Mode (On | Off | Auto);
+         --  pragma SPARK_Mode [(On | Off | Auto)];
 
          when Pragma_SPARK_Mode => SPARK_Mod : declare
             procedure Chain_Pragma (Context : Entity_Id; Prag : Node_Id);
@@ -16347,7 +16411,7 @@ package body Sem_Prag is
             --  the consistency between modes of visible/private declarations
             --  and body declarations/statements.
 
-            procedure Check_Conformance
+            procedure Check_Spark_Mode_Conformance
               (Governing_Id : Entity_Id;
                New_Id       : Entity_Id);
             --  Verify the "monotonicity" of SPARK modes between two entities.
@@ -16391,11 +16455,11 @@ package body Sem_Prag is
                end if;
             end Chain_Pragma;
 
-            -----------------------
-            -- Check_Conformance --
-            -----------------------
+            ----------------------------------
+            -- Check_Spark_Mode_Conformance --
+            ----------------------------------
 
-            procedure Check_Conformance
+            procedure Check_Spark_Mode_Conformance
               (Governing_Id : Entity_Id;
                New_Id       : Entity_Id)
             is
@@ -16427,7 +16491,7 @@ package body Sem_Prag is
                     (Governing_Mode => Gov_Prag,
                      New_Mode       => New_Prag);
                end if;
-            end Check_Conformance;
+            end Check_Spark_Mode_Conformance;
 
             ------------------------------
             -- Check_Pragma_Conformance --
@@ -16574,11 +16638,52 @@ package body Sem_Prag is
                   Stmt := Prev (Stmt);
                end loop;
 
-               --  If we get here, then we ran out of preceding statements. The
-               --  pragma is immediately within a body.
+               --  Handle all cases where the pragma is actually an aspect and
+               --  applies to a library-level package spec, body or subprogram.
 
-               if Nkind_In (Context, N_Package_Body,
-                                     N_Subprogram_Body)
+               --    function F ... with SPARK_Mode => ...;
+               --    package P with SPARK_Mode => ...;
+               --    package body P with SPARK_Mode => ... is
+
+               --  The following circuitry simply prepares the proper context
+               --  for the general pragma processing mechanism below.
+
+               if Nkind (Context) = N_Compilation_Unit_Aux then
+                  Context := Unit (Parent (Context));
+
+                  if Nkind_In (Context, N_Package_Declaration,
+                                        N_Subprogram_Declaration)
+                  then
+                     Context := Specification (Context);
+                  end if;
+               end if;
+
+               --  The pragma is at the top level of a package spec or appears
+               --  as an aspect on a subprogram.
+
+               --    function F ... with SPARK_Mode => ...;
+
+               --    package P is
+               --       pragma SPARK_Mode;
+
+               if Nkind_In (Context, N_Function_Specification,
+                                     N_Package_Specification,
+                                     N_Procedure_Specification)
+               then
+                  Spec_Id := Defining_Unit_Name (Context);
+                  Chain_Pragma (Spec_Id, N);
+
+               --  The pragma is immediately within a package or subprogram
+               --  body.
+
+               --    function F ... is
+               --       pragma SPARK_Mode;
+
+               --    package body P is
+               --       pragma SPARK_Mode;
+
+               elsif Nkind_In (Context, N_Package_Body,
+                                        N_Subprogram_Body)
                then
                   Spec_Id := Corresponding_Spec (Context);
 
@@ -16589,15 +16694,19 @@ package body Sem_Prag is
                   Body_Id := Defining_Unit_Name (Context);
 
                   Chain_Pragma (Body_Id, N);
-                  Check_Conformance (Spec_Id, Body_Id);
 
-               --  The pragma is at the top level of a package spec
+                  --  Verify that the SPARK modes are consistent between
+                  --  body and spec, if any.
 
-               elsif Nkind (Context) = N_Package_Specification then
-                  Spec_Id := Defining_Unit_Name (Context);
-                  Chain_Pragma (Spec_Id, N);
+                  if Present (Spec_Id) then
+                     Check_Spark_Mode_Conformance (Spec_Id, Body_Id);
+                  end if;
 
                --  The pragma applies to the statements of a package body
+
+               --    package body P is
+               --    begin
+               --       pragma SPARK_Mode;
 
                elsif Nkind (Context) = N_Handled_Sequence_Of_Statements
                  and then Nkind (Parent (Context)) = N_Package_Body
@@ -16607,10 +16716,9 @@ package body Sem_Prag is
                   Body_Id := Defining_Unit_Name (Context);
 
                   Chain_Pragma (Body_Id, N);
-                  Check_Conformance (Spec_Id, Body_Id);
+                  Check_Spark_Mode_Conformance (Spec_Id, Body_Id);
 
-               --  The pragma does not apply to a legal construct, issue an
-               --  error.
+               --  The pragma does not apply to a legal construct, issue error
 
                else
                   Pragma_Misplaced;
@@ -17855,6 +17963,10 @@ package body Sem_Prag is
                then
                   Check_Arg_Is_Static_Expression (Last_Arg, Standard_String);
                   Arg_Count := Arg_Count - 1;
+
+                  --  Not allowed in compiler units (bootstrap issues)
+
+                  Check_Compiler_Unit (N);
                end if;
             end;
 
@@ -18286,16 +18398,32 @@ package body Sem_Prag is
             Pnm : constant Name_Id := Chars (Get_Pragma_Arg (First (PPA)));
 
          begin
-            if Ename = Pnm or else Pnm = Name_Assertion then
+            if Ename = Pnm
+              or else Pnm = Name_Assertion
+              or else (Pnm = Name_Statement_Assertions
+                        and then (Ename = Name_Assert         or else
+                                  Ename = Name_Assert_And_Cut or else
+                                  Ename = Name_Assume         or else
+                                  Ename = Name_Loop_Invariant))
+            then
                Policy := Chars (Get_Pragma_Arg (Last (PPA)));
 
                case Policy is
                   when Name_Off | Name_Ignore =>
                      Set_Is_Ignored (N, True);
+                     Set_Is_Checked (N, False);
+
+                  when Name_On | Name_Check =>
+                     Set_Is_Checked (N, True);
+                     Set_Is_Ignored (N, False);
 
                   when Name_Disable =>
                      Set_Is_Ignored  (N, True);
+                     Set_Is_Checked  (N, False);
                      Set_Is_Disabled (N, True);
+
+                  --  That should be exhaustive, the null here is a defence
+                  --  against a malformed tree from previous errors.
 
                   when others =>
                      null;
@@ -18313,8 +18441,12 @@ package body Sem_Prag is
       --  compatibility with the RM for the cases of assertion, invariant,
       --  precondition, predicate, and postcondition.
 
-      if not Assertions_Enabled then
-         Set_Is_Ignored (N);
+      if Assertions_Enabled then
+         Set_Is_Checked (N, True);
+         Set_Is_Ignored (N, False);
+      else
+         Set_Is_Checked (N, False);
+         Set_Is_Ignored (N, True);
       end if;
    end Check_Applicable_Policy;
 
@@ -18369,7 +18501,10 @@ package body Sem_Prag is
       begin
          --  Single global item declaration
 
-         if Nkind_In (List, N_Identifier, N_Selected_Component) then
+         if Nkind_In (List, N_Expanded_Name,
+                            N_Identifier,
+                            N_Selected_Component)
+         then
             Collect_Global_Item (List, Mode);
 
          --  Simple global list or moded global list declaration
@@ -18596,16 +18731,24 @@ package body Sem_Prag is
    -----------------------
 
    function Get_SPARK_Mode_Id (N : Node_Id) return SPARK_Mode_Id is
+      Args : List_Id;
       Mode : Node_Id;
 
    begin
-      pragma Assert
-        (Nkind (N) = N_Pragma
-          and then Present (Pragma_Argument_Associations (N)));
+      pragma Assert (Nkind (N) = N_Pragma);
+      Args := Pragma_Argument_Associations (N);
 
-      Mode := First (Pragma_Argument_Associations (N));
+      --  Extract the mode from the argument list
 
-      return Get_SPARK_Mode_Id (Chars (Get_Pragma_Arg (Mode)));
+      if Present (Args) then
+         Mode := First (Pragma_Argument_Associations (N));
+         return Get_SPARK_Mode_Id (Chars (Get_Pragma_Arg (Mode)));
+
+      --  When SPARK_Mode appears without an argument, the default is ON
+
+      else
+         return SPARK_On;
+      end if;
    end Get_SPARK_Mode_Id;
 
    ----------------

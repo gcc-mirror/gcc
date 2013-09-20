@@ -922,6 +922,8 @@ extern bool gimple_ior_addresses_taken (bitmap, gimple);
 extern bool gimple_call_builtin_p (gimple, enum built_in_class);
 extern bool gimple_call_builtin_p (gimple, enum built_in_function);
 extern bool gimple_asm_clobbers_memory_p (const_gimple);
+extern bool useless_type_conversion_p (tree, tree);
+extern bool types_compatible_p (tree, tree);
 
 /* In gimplify.c  */
 extern tree create_tmp_var_raw (tree, const char *);
@@ -1097,12 +1099,6 @@ extern tree gimple_assign_rhs_to_tree (gimple);
 
 /* In builtins.c  */
 extern bool validate_gimple_arglist (const_gimple, ...);
-
-/* In tree-ssa.c  */
-extern bool tree_ssa_useless_type_conversion (tree);
-extern tree tree_ssa_strip_useless_type_conversions (tree);
-extern bool useless_type_conversion_p (tree, tree);
-extern bool types_compatible_p (tree, tree);
 
 /* In tree-ssa-coalesce.c */
 extern bool gimple_can_coalesce_p (tree, tree);

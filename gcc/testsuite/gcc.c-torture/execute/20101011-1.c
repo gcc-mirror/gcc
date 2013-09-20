@@ -43,6 +43,9 @@
 #elif defined (__CRIS__)
   /* No SIGFPE for CRIS integer division.  */
 # define DO_TEST 0
+#elif defined (__arc__)
+  /* No SIGFPE for ARC integer division.  */
+# define DO_TEST 0
 #elif defined (__arm__) && defined (__ARM_EABI__)
 # ifdef __ARM_ARCH_EXT_IDIV__
   /* Hardware division instructions may not trap, and handle trapping

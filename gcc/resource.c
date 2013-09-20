@@ -374,6 +374,16 @@ mark_referenced_resources (rtx x, struct resources *res,
     case INSN:
     case JUMP_INSN:
 
+      if (GET_CODE (PATTERN (x)) == COND_EXEC)
+      /* In addition to the usual references, also consider all outputs
+	 as referenced, to compensate for mark_set_resources treating
+	 them as killed.  This is similar to ZERO_EXTRACT / STRICT_LOW_PART
+	 handling, execpt that we got a partial incidence instead of a partial
+	 width.  */
+      mark_set_resources (x, res, 0,
+			  include_delayed_effects
+			  ? MARK_SRC_DEST_CALL : MARK_SRC_DEST);
+
 #ifdef INSN_REFERENCES_ARE_DELAYED
       if (! include_delayed_effects
 	  && INSN_REFERENCES_ARE_DELAYED (x))
@@ -994,11 +1004,18 @@ mark_target_live_regs (rtx insns, rtx target, struct resources *res)
 
 	  if (CALL_P (real_insn))
 	    {
-	      /* CALL clobbers all call-used regs that aren't fixed except
-		 sp, ap, and fp.  Do this before setting the result of the
-		 call live.  */
-	      AND_COMPL_HARD_REG_SET (current_live_regs,
-				      regs_invalidated_by_call);
+	      /* Values in call-clobbered registers survive a COND_EXEC CALL
+		 if that is not executed; this matters for resoure use because
+		 they may be used by a complementarily (or more strictly)
+		 predicated instruction, or if the CALL is NORETURN.  */
+	      if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
+		{
+		  /* CALL clobbers all call-used regs that aren't fixed except
+		     sp, ap, and fp.  Do this before setting the result of the
+		     call live.  */
+		  AND_COMPL_HARD_REG_SET (current_live_regs,
+					  regs_invalidated_by_call);
+		}
 
 	      /* A CALL_INSN sets any global register live, since it may
 		 have been modified by the call.  */

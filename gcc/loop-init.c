@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "df.h"
 #include "ggc.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 
 
 /* Apply FLAGS to the loop state.  */

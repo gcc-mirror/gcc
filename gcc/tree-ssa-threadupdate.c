@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "basic-block.h"
 #include "function.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "dumpfile.h"
 #include "cfgloop.h"
 #include "hash-table.h"
@@ -640,14 +640,38 @@ thread_block (basic_block bb, bool noloop_only)
       else
 	e2 = THREAD_TARGET (e);
 
-      if (!e2
+      if (!e2 || noloop_only)
+	{
 	  /* If NOLOOP_ONLY is true, we only allow threading through the
-	     header of a loop to exit edges.  */
-	  || (noloop_only
-	      && bb == bb->loop_father->header
+	     header of a loop to exit edges. 
+
+	     There are two cases to consider.  The first when BB is the
+	     loop header.  We will attempt to thread this elsewhere, so
+	     we can just continue here.  */
+
+	  if (bb == bb->loop_father->header
 	      && (!loop_exit_edge_p (bb->loop_father, e2)
-		  || THREAD_TARGET2 (e))))
-	continue;
+		  || THREAD_TARGET2 (e)))
+	    continue;
+
+
+	  /* The second occurs when there was loop header buried in a jump
+	     threading path.  We do not try and thread this elsewhere, so
+	     just cancel the jump threading request by clearing the AUX
+	     field now.  */
+	  if ((bb->loop_father != e2->src->loop_father
+	       && !loop_exit_edge_p (e2->src->loop_father, e2))
+	      || (e2->src->loop_father != e2->dest->loop_father
+		  && !loop_exit_edge_p (e2->src->loop_father, e2)))
+	    {
+	      /* Since this case is not handled by our special code
+		 to thread through a loop header, we must explicitly
+		 cancel the threading request here.  */
+	      free (e->aux);
+	      e->aux = NULL;
+	      continue;
+	    }
+	}
 
       if (e->dest == e2->src)
 	update_bb_profile_for_threading (e->dest, EDGE_FREQUENCY (e),
@@ -1123,6 +1147,28 @@ fail:
   return false;
 }
 
+/* E1 and E2 are edges into the same basic block.  Return TRUE if the
+   PHI arguments associated with those edges are equal or there are no
+   PHI arguments, otherwise return FALSE.  */
+
+static bool
+phi_args_equal_on_edges (edge e1, edge e2)
+{
+  gimple_stmt_iterator gsi;
+  int indx1 = e1->dest_idx;
+  int indx2 = e2->dest_idx;
+
+  for (gsi = gsi_start_phis (e1->dest); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple phi = gsi_stmt (gsi);
+
+      if (!operand_equal_p (gimple_phi_arg_def (phi, indx1),
+			    gimple_phi_arg_def (phi, indx2), 0))
+	return false;
+    }
+  return true;
+}
+
 /* Walk through the registered jump threads and convert them into a
    form convenient for this pass.
 
@@ -1192,6 +1238,46 @@ mark_threaded_blocks (bitmap threaded_blocks)
 	  THREAD_TARGET (e) = threaded_edges[i + 1];
 	  THREAD_TARGET2 (e) = threaded_edges[i + 2];
 	  bitmap_set_bit (tmp, e->dest->index);
+	}
+    }
+
+  /* If we have a joiner block (J) which has two successors S1 and S2 and
+     we are threading though S1 and the final destination of the thread
+     is S2, then we must verify that any PHI nodes in S2 have the same
+     PHI arguments for the edge J->S2 and J->S1->...->S2.
+
+     We used to detect this prior to registering the jump thread, but
+     that prohibits propagation of edge equivalences into non-dominated
+     PHI nodes as the equivalency test might occur before propagation. 
+
+     This works for now, but will need improvement as part of the FSA
+     optimization. 
+
+     Note since we've moved the thread request data to the edges,
+     we have to iterate on those rather than the threaded_edges vector.  */
+  EXECUTE_IF_SET_IN_BITMAP (tmp, 0, i, bi)
+    {
+      bb = BASIC_BLOCK (i);
+      FOR_EACH_EDGE (e, ei, bb->preds)
+	{
+	  if (e->aux)
+	    {
+	      bool have_joiner = THREAD_TARGET2 (e) != NULL;
+
+	      if (have_joiner)
+		{
+		  basic_block joiner = e->dest;
+		  edge final_edge = THREAD_TARGET2 (e);
+		  basic_block final_dest = final_edge->dest;
+		  edge e2 = find_edge (joiner, final_dest);
+
+		  if (e2 && !phi_args_equal_on_edges (e2, final_edge))
+		    {
+		      free (e->aux);
+		      e->aux = NULL;
+		    }
+		}
+	    }
 	}
     }
 

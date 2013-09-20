@@ -31,7 +31,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "flags.h"
 #include "tree.h"
 #include "basic-block.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-flow-inline.h"
 #include "tree-ssa-operands.h"
 #include "tree-pass.h"

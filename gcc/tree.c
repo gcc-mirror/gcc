@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-iterator.h"
 #include "basic-block.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "params.h"
 #include "pointer-set.h"
 #include "tree-pass.h"
@@ -11782,13 +11782,6 @@ types_same_for_odr (tree type1, tree type2)
 	}
       v1 = DECL_ASSEMBLER_NAME (v1);
       v2 = DECL_ASSEMBLER_NAME (v2);
-      /* If we ever start adding random .blah suffixes after
-	 assembler names, we need to compare for match ignoring
-	 these (and update odr_type_hash, too).  */
-#ifdef ENABLE_CHECKING
-      gcc_assert (!strchr (IDENTIFIER_POINTER (v1), '.')
-		  && !strchr (IDENTIFIER_POINTER (v2), '.'));
-#endif
       return (v1 == v2);
     }
 

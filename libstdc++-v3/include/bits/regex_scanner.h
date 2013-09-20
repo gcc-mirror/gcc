@@ -68,8 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_token_backref,
 	_S_token_subexpr_begin,
 	_S_token_subexpr_no_group_begin,
-	_S_token_subexpr_lookahead_begin,
-	_S_token_subexpr_neg_lookahead_begin,
+	_S_token_subexpr_lookahead_begin, // neg if _M_value[0] == 'n'
 	_S_token_subexpr_end,
 	_S_token_bracket_begin,
 	_S_token_bracket_neg_begin,
@@ -84,8 +83,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_S_token_or,
 	_S_token_closure0,
 	_S_token_closure1,
+	_S_token_ungreedy,
 	_S_token_line_begin,
 	_S_token_line_end,
+	_S_token_word_bound, // neg if _M_value[0] == 'n'
 	_S_token_comma,
 	_S_token_dup_count,
 	_S_token_eof,
@@ -173,7 +174,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _StringT                      _M_value;
       bool                          _M_at_bracket_start;
     public:
-      // TODO: make them static when this file is stable.
+      // FIXME: make them static when this file is stable.
       const std::map<char, _TokenT> _M_token_map;
       const std::map<char, char>    _M_ecma_escape_map;
       const std::map<char, char>    _M_awk_escape_map;

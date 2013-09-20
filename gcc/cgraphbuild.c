@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "tree.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "langhooks.h"
 #include "pointer-set.h"
 #include "cgraph.h"

@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "bitmap.h"
 #include "pointer-set.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "gimple.h"
 #include "tree-inline.h"
 #include "hashtab.h"
@@ -1084,8 +1084,18 @@ static unsigned int
 execute_init_datastructures (void)
 {
   /* Allocate hash tables, arrays and other structures.  */
+  gcc_assert (!cfun->gimple_df);
   init_tree_ssa (cfun);
   return 0;
+}
+
+/* Gate for IPCP optimization.  */
+
+static bool
+gate_init_datastructures (void)
+{
+  /* Do nothing for funcions that was produced already in SSA form.  */
+  return !(cfun->curr_properties & PROP_ssa);
 }
 
 namespace {
@@ -1095,7 +1105,7 @@ const pass_data pass_data_init_datastructures =
   GIMPLE_PASS, /* type */
   "*init_datastructures", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  false, /* has_gate */
+  true, /* has_gate */
   true, /* has_execute */
   TV_NONE, /* tv_id */
   PROP_cfg, /* properties_required */
@@ -1113,6 +1123,7 @@ public:
   {}
 
   /* opt_pass methods: */
+  bool gate () { return gate_init_datastructures (); }
   unsigned int execute () { return execute_init_datastructures (); }
 
 }; // class pass_init_datastructures
@@ -1149,260 +1160,6 @@ delete_tree_ssa (void)
   redirect_edge_var_map_destroy ();
 }
 
-/* Return true if the conversion from INNER_TYPE to OUTER_TYPE is a
-   useless type conversion, otherwise return false.
-
-   This function implicitly defines the middle-end type system.  With
-   the notion of 'a < b' meaning that useless_type_conversion_p (a, b)
-   holds and 'a > b' meaning that useless_type_conversion_p (b, a) holds,
-   the following invariants shall be fulfilled:
-
-     1) useless_type_conversion_p is transitive.
-	If a < b and b < c then a < c.
-
-     2) useless_type_conversion_p is not symmetric.
-	From a < b does not follow a > b.
-
-     3) Types define the available set of operations applicable to values.
-	A type conversion is useless if the operations for the target type
-	is a subset of the operations for the source type.  For example
-	casts to void* are useless, casts from void* are not (void* can't
-	be dereferenced or offsetted, but copied, hence its set of operations
-	is a strict subset of that of all other data pointer types).  Casts
-	to const T* are useless (can't be written to), casts from const T*
-	to T* are not.  */
-
-bool
-useless_type_conversion_p (tree outer_type, tree inner_type)
-{
-  /* Do the following before stripping toplevel qualifiers.  */
-  if (POINTER_TYPE_P (inner_type)
-      && POINTER_TYPE_P (outer_type))
-    {
-      /* Do not lose casts between pointers to different address spaces.  */
-      if (TYPE_ADDR_SPACE (TREE_TYPE (outer_type))
-	  != TYPE_ADDR_SPACE (TREE_TYPE (inner_type)))
-	return false;
-    }
-
-  /* From now on qualifiers on value types do not matter.  */
-  inner_type = TYPE_MAIN_VARIANT (inner_type);
-  outer_type = TYPE_MAIN_VARIANT (outer_type);
-
-  if (inner_type == outer_type)
-    return true;
-
-  /* If we know the canonical types, compare them.  */
-  if (TYPE_CANONICAL (inner_type)
-      && TYPE_CANONICAL (inner_type) == TYPE_CANONICAL (outer_type))
-    return true;
-
-  /* Changes in machine mode are never useless conversions unless we
-     deal with aggregate types in which case we defer to later checks.  */
-  if (TYPE_MODE (inner_type) != TYPE_MODE (outer_type)
-      && !AGGREGATE_TYPE_P (inner_type))
-    return false;
-
-  /* If both the inner and outer types are integral types, then the
-     conversion is not necessary if they have the same mode and
-     signedness and precision, and both or neither are boolean.  */
-  if (INTEGRAL_TYPE_P (inner_type)
-      && INTEGRAL_TYPE_P (outer_type))
-    {
-      /* Preserve changes in signedness or precision.  */
-      if (TYPE_UNSIGNED (inner_type) != TYPE_UNSIGNED (outer_type)
-	  || TYPE_PRECISION (inner_type) != TYPE_PRECISION (outer_type))
-	return false;
-
-      /* Preserve conversions to/from BOOLEAN_TYPE if types are not
-	 of precision one.  */
-      if (((TREE_CODE (inner_type) == BOOLEAN_TYPE)
-	   != (TREE_CODE (outer_type) == BOOLEAN_TYPE))
-	  && TYPE_PRECISION (outer_type) != 1)
-	return false;
-
-      /* We don't need to preserve changes in the types minimum or
-	 maximum value in general as these do not generate code
-	 unless the types precisions are different.  */
-      return true;
-    }
-
-  /* Scalar floating point types with the same mode are compatible.  */
-  else if (SCALAR_FLOAT_TYPE_P (inner_type)
-	   && SCALAR_FLOAT_TYPE_P (outer_type))
-    return true;
-
-  /* Fixed point types with the same mode are compatible.  */
-  else if (FIXED_POINT_TYPE_P (inner_type)
-	   && FIXED_POINT_TYPE_P (outer_type))
-    return true;
-
-  /* We need to take special care recursing to pointed-to types.  */
-  else if (POINTER_TYPE_P (inner_type)
-	   && POINTER_TYPE_P (outer_type))
-    {
-      /* Do not lose casts to function pointer types.  */
-      if ((TREE_CODE (TREE_TYPE (outer_type)) == FUNCTION_TYPE
-	   || TREE_CODE (TREE_TYPE (outer_type)) == METHOD_TYPE)
-	  && !(TREE_CODE (TREE_TYPE (inner_type)) == FUNCTION_TYPE
-	       || TREE_CODE (TREE_TYPE (inner_type)) == METHOD_TYPE))
-	return false;
-
-      /* We do not care for const qualification of the pointed-to types
-	 as const qualification has no semantic value to the middle-end.  */
-
-      /* Otherwise pointers/references are equivalent.  */
-      return true;
-    }
-
-  /* Recurse for complex types.  */
-  else if (TREE_CODE (inner_type) == COMPLEX_TYPE
-	   && TREE_CODE (outer_type) == COMPLEX_TYPE)
-    return useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type));
-
-  /* Recurse for vector types with the same number of subparts.  */
-  else if (TREE_CODE (inner_type) == VECTOR_TYPE
-	   && TREE_CODE (outer_type) == VECTOR_TYPE
-	   && TYPE_PRECISION (inner_type) == TYPE_PRECISION (outer_type))
-    return useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type));
-
-  else if (TREE_CODE (inner_type) == ARRAY_TYPE
-	   && TREE_CODE (outer_type) == ARRAY_TYPE)
-    {
-      /* Preserve string attributes.  */
-      if (TYPE_STRING_FLAG (inner_type) != TYPE_STRING_FLAG (outer_type))
-	return false;
-
-      /* Conversions from array types with unknown extent to
-	 array types with known extent are not useless.  */
-      if (!TYPE_DOMAIN (inner_type)
-	  && TYPE_DOMAIN (outer_type))
-	return false;
-
-      /* Nor are conversions from array types with non-constant size to
-         array types with constant size or to different size.  */
-      if (TYPE_SIZE (outer_type)
-	  && TREE_CODE (TYPE_SIZE (outer_type)) == INTEGER_CST
-	  && (!TYPE_SIZE (inner_type)
-	      || TREE_CODE (TYPE_SIZE (inner_type)) != INTEGER_CST
-	      || !tree_int_cst_equal (TYPE_SIZE (outer_type),
-				      TYPE_SIZE (inner_type))))
-	return false;
-
-      /* Check conversions between arrays with partially known extents.
-	 If the array min/max values are constant they have to match.
-	 Otherwise allow conversions to unknown and variable extents.
-	 In particular this declares conversions that may change the
-	 mode to BLKmode as useless.  */
-      if (TYPE_DOMAIN (inner_type)
-	  && TYPE_DOMAIN (outer_type)
-	  && TYPE_DOMAIN (inner_type) != TYPE_DOMAIN (outer_type))
-	{
-	  tree inner_min = TYPE_MIN_VALUE (TYPE_DOMAIN (inner_type));
-	  tree outer_min = TYPE_MIN_VALUE (TYPE_DOMAIN (outer_type));
-	  tree inner_max = TYPE_MAX_VALUE (TYPE_DOMAIN (inner_type));
-	  tree outer_max = TYPE_MAX_VALUE (TYPE_DOMAIN (outer_type));
-
-	  /* After gimplification a variable min/max value carries no
-	     additional information compared to a NULL value.  All that
-	     matters has been lowered to be part of the IL.  */
-	  if (inner_min && TREE_CODE (inner_min) != INTEGER_CST)
-	    inner_min = NULL_TREE;
-	  if (outer_min && TREE_CODE (outer_min) != INTEGER_CST)
-	    outer_min = NULL_TREE;
-	  if (inner_max && TREE_CODE (inner_max) != INTEGER_CST)
-	    inner_max = NULL_TREE;
-	  if (outer_max && TREE_CODE (outer_max) != INTEGER_CST)
-	    outer_max = NULL_TREE;
-
-	  /* Conversions NULL / variable <- cst are useless, but not
-	     the other way around.  */
-	  if (outer_min
-	      && (!inner_min
-		  || !tree_int_cst_equal (inner_min, outer_min)))
-	    return false;
-	  if (outer_max
-	      && (!inner_max
-		  || !tree_int_cst_equal (inner_max, outer_max)))
-	    return false;
-	}
-
-      /* Recurse on the element check.  */
-      return useless_type_conversion_p (TREE_TYPE (outer_type),
-					TREE_TYPE (inner_type));
-    }
-
-  else if ((TREE_CODE (inner_type) == FUNCTION_TYPE
-	    || TREE_CODE (inner_type) == METHOD_TYPE)
-	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    {
-      tree outer_parm, inner_parm;
-
-      /* If the return types are not compatible bail out.  */
-      if (!useless_type_conversion_p (TREE_TYPE (outer_type),
-				      TREE_TYPE (inner_type)))
-	return false;
-
-      /* Method types should belong to a compatible base class.  */
-      if (TREE_CODE (inner_type) == METHOD_TYPE
-	  && !useless_type_conversion_p (TYPE_METHOD_BASETYPE (outer_type),
-					 TYPE_METHOD_BASETYPE (inner_type)))
-	return false;
-
-      /* A conversion to an unprototyped argument list is ok.  */
-      if (!prototype_p (outer_type))
-	return true;
-
-      /* If the unqualified argument types are compatible the conversion
-	 is useless.  */
-      if (TYPE_ARG_TYPES (outer_type) == TYPE_ARG_TYPES (inner_type))
-	return true;
-
-      for (outer_parm = TYPE_ARG_TYPES (outer_type),
-	   inner_parm = TYPE_ARG_TYPES (inner_type);
-	   outer_parm && inner_parm;
-	   outer_parm = TREE_CHAIN (outer_parm),
-	   inner_parm = TREE_CHAIN (inner_parm))
-	if (!useless_type_conversion_p
-	       (TYPE_MAIN_VARIANT (TREE_VALUE (outer_parm)),
-		TYPE_MAIN_VARIANT (TREE_VALUE (inner_parm))))
-	  return false;
-
-      /* If there is a mismatch in the number of arguments the functions
-	 are not compatible.  */
-      if (outer_parm || inner_parm)
-	return false;
-
-      /* Defer to the target if necessary.  */
-      if (TYPE_ATTRIBUTES (inner_type) || TYPE_ATTRIBUTES (outer_type))
-	return comp_type_attributes (outer_type, inner_type) != 0;
-
-      return true;
-    }
-
-  /* For aggregates we rely on TYPE_CANONICAL exclusively and require
-     explicit conversions for types involving to be structurally
-     compared types.  */
-  else if (AGGREGATE_TYPE_P (inner_type)
-	   && TREE_CODE (inner_type) == TREE_CODE (outer_type))
-    return false;
-
-  return false;
-}
-
-/* Return true if a conversion from either type of TYPE1 and TYPE2
-   to the other is not required.  Otherwise return false.  */
-
-bool
-types_compatible_p (tree type1, tree type2)
-{
-  return (type1 == type2
-	  || (useless_type_conversion_p (type1, type2)
-	      && useless_type_conversion_p (type2, type1)));
-}
-
 /* Return true if EXPR is a useless type conversion, otherwise return
    false.  */
 
@@ -1433,6 +1190,31 @@ tree_ssa_strip_useless_type_conversions (tree exp)
   while (tree_ssa_useless_type_conversion (exp))
     exp = TREE_OPERAND (exp, 0);
   return exp;
+}
+
+
+/* Return true if T, an SSA_NAME, has an undefined value.  */
+
+bool
+ssa_undefined_value_p (tree t)
+{
+  tree var = SSA_NAME_VAR (t);
+
+  if (!var)
+    ;
+  /* Parameters get their initial value from the function entry.  */
+  else if (TREE_CODE (var) == PARM_DECL)
+    return false;
+  /* When returning by reference the return address is actually a hidden
+     parameter.  */
+  else if (TREE_CODE (var) == RESULT_DECL && DECL_BY_REFERENCE (var))
+    return false;
+  /* Hard register variables get their initial value from the ether.  */
+  else if (TREE_CODE (var) == VAR_DECL && DECL_HARD_REGISTER (var))
+    return false;
+
+  /* The value is undefined iff its definition statement is empty.  */
+  return gimple_nop_p (SSA_NAME_DEF_STMT (t));
 }
 
 
@@ -1542,215 +1324,6 @@ walk_use_def_chains (tree var, walk_use_def_chains_fn fn, void *data,
       walk_use_def_chains_1 (var, fn, data, visited, is_dfs);
       pointer_set_destroy (visited);
     }
-}
-
-
-/* Emit warnings for uninitialized variables.  This is done in two passes.
-
-   The first pass notices real uses of SSA names with undefined values.
-   Such uses are unconditionally uninitialized, and we can be certain that
-   such a use is a mistake.  This pass is run before most optimizations,
-   so that we catch as many as we can.
-
-   The second pass follows PHI nodes to find uses that are potentially
-   uninitialized.  In this case we can't necessarily prove that the use
-   is really uninitialized.  This pass is run after most optimizations,
-   so that we thread as many jumps and possible, and delete as much dead
-   code as possible, in order to reduce false positives.  We also look
-   again for plain uninitialized variables, since optimization may have
-   changed conditionally uninitialized to unconditionally uninitialized.  */
-
-/* Emit a warning for EXPR based on variable VAR at the point in the
-   program T, an SSA_NAME, is used being uninitialized.  The exact
-   warning text is in MSGID and LOCUS may contain a location or be null.
-   WC is the warning code.  */
-
-void
-warn_uninit (enum opt_code wc, tree t,
-	     tree expr, tree var, const char *gmsgid, void *data)
-{
-  gimple context = (gimple) data;
-  location_t location, cfun_loc;
-  expanded_location xloc, floc;
-
-  if (!ssa_undefined_value_p (t))
-    return;
-
-  /* TREE_NO_WARNING either means we already warned, or the front end
-     wishes to suppress the warning.  */
-  if ((context
-       && (gimple_no_warning_p (context)
-	   || (gimple_assign_single_p (context)
-	       && TREE_NO_WARNING (gimple_assign_rhs1 (context)))))
-      || TREE_NO_WARNING (expr))
-    return;
-
-  location = (context != NULL && gimple_has_location (context))
-	     ? gimple_location (context)
-	     : DECL_SOURCE_LOCATION (var);
-  location = linemap_resolve_location (line_table, location,
-				       LRK_SPELLING_LOCATION,
-				       NULL);
-  cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
-  xloc = expand_location (location);
-  floc = expand_location (cfun_loc);
-  if (warning_at (location, wc, gmsgid, expr))
-    {
-      TREE_NO_WARNING (expr) = 1;
-
-      if (location == DECL_SOURCE_LOCATION (var))
-	return;
-      if (xloc.file != floc.file
-	  || linemap_location_before_p (line_table,
-					location, cfun_loc)
-	  || linemap_location_before_p (line_table,
-					cfun->function_end_locus,
-					location))
-	inform (DECL_SOURCE_LOCATION (var), "%qD was declared here", var);
-    }
-}
-
-unsigned int
-warn_uninitialized_vars (bool warn_possibly_uninitialized)
-{
-  gimple_stmt_iterator gsi;
-  basic_block bb;
-
-  FOR_EACH_BB (bb)
-    {
-      bool always_executed = dominated_by_p (CDI_POST_DOMINATORS,
-					     single_succ (ENTRY_BLOCK_PTR), bb);
-      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  gimple stmt = gsi_stmt (gsi);
-	  use_operand_p use_p;
-	  ssa_op_iter op_iter;
-	  tree use;
-
-	  if (is_gimple_debug (stmt))
-	    continue;
-
-	  /* We only do data flow with SSA_NAMEs, so that's all we
-	     can warn about.  */
-	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, op_iter, SSA_OP_USE)
-	    {
-	      use = USE_FROM_PTR (use_p);
-	      if (always_executed)
-		warn_uninit (OPT_Wuninitialized, use,
-			     SSA_NAME_VAR (use), SSA_NAME_VAR (use),
-			     "%qD is used uninitialized in this function",
-			     stmt);
-	      else if (warn_possibly_uninitialized)
-		warn_uninit (OPT_Wmaybe_uninitialized, use,
-			     SSA_NAME_VAR (use), SSA_NAME_VAR (use),
-			     "%qD may be used uninitialized in this function",
-			     stmt);
-	    }
-
-	  /* For memory the only cheap thing we can do is see if we
-	     have a use of the default def of the virtual operand.
-	     ???  Note that at -O0 we do not have virtual operands.
-	     ???  Not so cheap would be to use the alias oracle via
-	     walk_aliased_vdefs, if we don't find any aliasing vdef
-	     warn as is-used-uninitialized, if we don't find an aliasing
-	     vdef that kills our use (stmt_kills_ref_p), warn as
-	     may-be-used-uninitialized.  But this walk is quadratic and
-	     so must be limited which means we would miss warning
-	     opportunities.  */
-	  use = gimple_vuse (stmt);
-	  if (use
-	      && gimple_assign_single_p (stmt)
-	      && !gimple_vdef (stmt)
-	      && SSA_NAME_IS_DEFAULT_DEF (use))
-	    {
-	      tree rhs = gimple_assign_rhs1 (stmt);
-	      tree base = get_base_address (rhs);
-
-	      /* Do not warn if it can be initialized outside this function.  */
-	      if (TREE_CODE (base) != VAR_DECL
-		  || DECL_HARD_REGISTER (base)
-		  || is_global_var (base))
-		continue;
-
-	      if (always_executed)
-		warn_uninit (OPT_Wuninitialized, use, 
-			     gimple_assign_rhs1 (stmt), base,
-			     "%qE is used uninitialized in this function",
-			     stmt);
-	      else if (warn_possibly_uninitialized)
-		warn_uninit (OPT_Wmaybe_uninitialized, use,
-			     gimple_assign_rhs1 (stmt), base,
-			     "%qE may be used uninitialized in this function",
-			     stmt);
-	    }
-	}
-    }
-
-  return 0;
-}
-
-static unsigned int
-execute_early_warn_uninitialized (void)
-{
-  /* Currently, this pass runs always but
-     execute_late_warn_uninitialized only runs with optimization. With
-     optimization we want to warn about possible uninitialized as late
-     as possible, thus don't do it here.  However, without
-     optimization we need to warn here about "may be uninitialized".
-  */
-  calculate_dominance_info (CDI_POST_DOMINATORS);
-
-  warn_uninitialized_vars (/*warn_possibly_uninitialized=*/!optimize);
-
-  /* Post-dominator information can not be reliably updated. Free it
-     after the use.  */
-
-  free_dominance_info (CDI_POST_DOMINATORS);
-  return 0;
-}
-
-static bool
-gate_warn_uninitialized (void)
-{
-  return warn_uninitialized != 0;
-}
-
-namespace {
-
-const pass_data pass_data_early_warn_uninitialized =
-{
-  GIMPLE_PASS, /* type */
-  "*early_warn_uninitialized", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  true, /* has_gate */
-  true, /* has_execute */
-  TV_TREE_UNINIT, /* tv_id */
-  PROP_ssa, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_early_warn_uninitialized : public gimple_opt_pass
-{
-public:
-  pass_early_warn_uninitialized(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_early_warn_uninitialized, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate () { return gate_warn_uninitialized (); }
-  unsigned int execute () { return execute_early_warn_uninitialized (); }
-
-}; // class pass_early_warn_uninitialized
-
-} // anon namespace
-
-gimple_opt_pass *
-make_pass_early_warn_uninitialized (gcc::context *ctxt)
-{
-  return new pass_early_warn_uninitialized (ctxt);
 }
 
 

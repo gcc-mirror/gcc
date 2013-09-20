@@ -19,11 +19,7 @@
 ## along with this library; see the file COPYING3.  If not see
 ## <http://www.gnu.org/licenses/>.
 
-if ENABLE_VTABLE_VERIFY
 SUBDIRS = testsuite
-else
-SUBDIRS = 
-endif
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
@@ -67,13 +63,8 @@ vtv_end.c:
 	rm -f $@
 	$(LN_S) $(toplevel_srcdir)/libgcc/vtv_end.c $@
 
-if ENABLE_VTABLE_VERIFY
 libvtv_la_SOURCES = $(vtv_sources)
 libvtv_include_HEADERS = $(vtv_headers)
-else
-libvtv_la_SOURCES = 
-libvtv_include_HEADERS = 
-endif
 
 # Least ordering for dependencies mean linking w/o libstdc++ for as
 # long as the development of libvtv does not absolutely require it.

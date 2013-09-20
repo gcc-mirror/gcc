@@ -58,7 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "md5.h"
 #include "gimple.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -4276,7 +4276,7 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
     }
 
   if (low == 0 && high == 0)
-    return build_int_cst (type, 1);
+    return omit_one_operand_loc (loc, type, build_int_cst (type, 1), exp);
 
   if (low == 0)
     return fold_build2_loc (loc, LE_EXPR, type, exp,
@@ -9895,6 +9895,24 @@ exact_inverse (tree type, tree cst)
     }
 }
 
+/*  Mask out the tz least significant bits of X of type TYPE where
+    tz is the number of trailing zeroes in Y.  */
+static double_int
+mask_with_tz (tree type, double_int x, double_int y)
+{
+  int tz = y.trailing_zeros ();
+
+  if (tz > 0)
+    {
+      double_int mask;
+
+      mask = ~double_int::mask (tz);
+      mask = mask.ext (TYPE_PRECISION (type), TYPE_UNSIGNED (type));
+      return mask & x;
+    }
+  return x;
+}
+
 /* Fold a binary expression of code CODE and type TYPE with operands
    OP0 and OP1.  LOC is the location of the resulting expression.
    Return the folded expression if folding is successful.  Otherwise,
@@ -11217,6 +11235,7 @@ fold_binary_loc (location_t loc,
 	{
 	  wide_int c1, c2, c3, msk;
 	  int width = TYPE_PRECISION (type), w;
+	  bool try_simplify = true;
 	  c1 = TREE_OPERAND (arg0, 1);
 	  c2 = arg1;
 
@@ -11248,7 +11267,21 @@ fold_binary_loc (location_t loc,
 		  break;
 		}
 	    }
-	  if (c3 != c1)
+
+	  /* If X is a tree of the form (Y * K1) & K2, this might conflict
+	     with that optimization from the BIT_AND_EXPR optimizations.
+	     This could end up in an infinite recursion.  */
+	  if (TREE_CODE (TREE_OPERAND (arg0, 0)) == MULT_EXPR
+	      && TREE_CODE (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1))
+	                    == INTEGER_CST)
+	  {
+	    tree t = TREE_OPERAND (TREE_OPERAND (arg0, 0), 1);
+	    double_int masked = mask_with_tz (type, c3, tree_to_double_int (t));
+
+	    try_simplify = (masked != c1);
+	  }
+
+	  if (try_simplify && c3 != c1)
 	    return fold_build2_loc (loc, BIT_IOR_EXPR, type,
 				    fold_build2_loc (loc, BIT_AND_EXPR, type,
 						     TREE_OPERAND (arg0, 0),
@@ -11637,6 +11670,7 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg0) == MULT_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
+<<<<<<< .working
 	  int arg1tz = wi::ctz (TREE_OPERAND (arg0, 1));
 	  if (arg1tz > 0)
 	    {
@@ -11650,6 +11684,18 @@ fold_binary_loc (location_t loc,
 		return fold_build2_loc (loc, code, type, op0,
 					wide_int_to_tree (type, masked));
 	    }
+=======
+	  double_int masked
+	    = mask_with_tz (type, tree_to_double_int (arg1),
+	                    tree_to_double_int (TREE_OPERAND (arg0, 1)));
+
+	  if (masked.is_zero ())
+	    return omit_two_operands_loc (loc, type, build_zero_cst (type),
+	                                  arg0, arg1);
+	  else if (masked != tree_to_double_int (arg1))
+	    return fold_build2_loc (loc, code, type, op0,
+	                            double_int_to_tree (type, masked));
+>>>>>>> .merge-right.r202797
 	}
 
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,

@@ -194,7 +194,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "flags.h"
 #include "function.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "bitmap.h"
 #include "tree-ssa-alias.h"
 #include "params.h"

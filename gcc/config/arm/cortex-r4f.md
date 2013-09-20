@@ -48,7 +48,7 @@
 
 (define_insn_reservation "cortex_r4_fcpys" 2
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fcpys"))
+      (eq_attr "type" "fmov"))
  "cortex_r4_issue_ab")
 
 (define_insn_reservation "cortex_r4_ffariths" 2
@@ -68,7 +68,7 @@
 
 (define_insn_reservation "cortex_r4_fdivs" 17
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fdivs"))
+      (eq_attr "type" "fdivs, fsqrts"))
  "cortex_r4_issue_ab+cortex_r4_v1,cortex_r4_issue_a+cortex_r4_v1")
 
 (define_insn_reservation "cortex_r4_floads" 2
@@ -83,12 +83,12 @@
 
 (define_insn_reservation "cortex_r4_mcr" 2
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "r_2_f"))
+      (eq_attr "type" "f_mcr,f_mcrr"))
  "cortex_r4_issue_ab")
 
 (define_insn_reservation "cortex_r4_mrc" 3
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "f_2_r"))
+      (eq_attr "type" "f_mrc,f_mrrc"))
  "cortex_r4_issue_ab")
 
 ;; Bypasses for normal (not early) regs.
@@ -131,7 +131,7 @@
 ;; out of order.  Chances are this is not a pipelined operation.
 (define_insn_reservation "cortex_r4_fdivd" 97
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "fdivd"))
+      (eq_attr "type" "fdivd, fsqrtd"))
  "cortex_r4_single_issue*3")
 
 (define_insn_reservation "cortex_r4_ffarithd" 2
@@ -146,7 +146,7 @@
 
 (define_insn_reservation "cortex_r4_f_cvt" 8
  (and (eq_attr "tune_cortexr4" "yes")
-      (eq_attr "type" "f_cvt"))
+      (eq_attr "type" "f_cvt,f_cvtf2i,f_cvti2f"))
  "cortex_r4_single_issue*3")
 
 (define_insn_reservation "cortex_r4_f_memd" 8

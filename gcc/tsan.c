@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple.h"
 #include "function.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "tree-iterator.h"
 #include "langhooks.h"

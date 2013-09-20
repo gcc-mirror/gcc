@@ -1,5 +1,4 @@
 // { dg-options "-std=c++0x" }
-// { dg-do run { xfail *-*-* } }
 
 //
 // 2010-06-16  Stephen M. Webb <stephen.webb@bregmasoft.ca>

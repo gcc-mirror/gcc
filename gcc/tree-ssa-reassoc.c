@@ -27,7 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "gimple-pretty-print.h"
 #include "tree-inline.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "gimple.h"
 #include "tree-iterator.h"
 #include "tree-pass.h"
@@ -1141,6 +1141,14 @@ zero_one_operation (tree *def, enum tree_code opcode, tree op)
   while (1);
 }
 
+/* Returns the UID of STMT if it is non-NULL. Otherwise return 1.  */
+
+static inline unsigned
+get_stmt_uid_with_default (gimple stmt)
+{
+  return stmt ? gimple_uid (stmt) : 1;
+}
+
 /* Builds one statement performing OP1 OPCODE OP2 using TMPVAR for
    the result.  Places the statement after the definition of either
    OP1 or OP2.  Returns the new statement.  */
@@ -1165,12 +1173,8 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
   if ((!op1def || gimple_nop_p (op1def))
       && (!op2def || gimple_nop_p (op2def)))
     {
-      gimple first_stmt;
-      unsigned uid;
       gsi = gsi_after_labels (single_succ (ENTRY_BLOCK_PTR));
-      first_stmt = gsi_stmt (gsi);
-      uid = first_stmt ? gimple_uid (first_stmt) : 1;
-      gimple_set_uid (sum, uid);
+      gimple_set_uid (sum, get_stmt_uid_with_default (gsi_stmt (gsi)));
       gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
     }
   else if ((!op1def || gimple_nop_p (op1def))
@@ -1180,7 +1184,7 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
       if (gimple_code (op2def) == GIMPLE_PHI)
 	{
 	  gsi = gsi_after_labels (gimple_bb (op2def));
-          gimple_set_uid (sum, gimple_uid (gsi_stmt (gsi)));
+          gimple_set_uid (sum, get_stmt_uid_with_default (gsi_stmt (gsi)));
 	  gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
 	}
       else
@@ -1207,7 +1211,7 @@ build_and_add_sum (tree type, tree op1, tree op2, enum tree_code opcode)
       if (gimple_code (op1def) == GIMPLE_PHI)
 	{
 	  gsi = gsi_after_labels (gimple_bb (op1def));
-          gimple_set_uid (sum, gimple_uid (op1def));
+          gimple_set_uid (sum, get_stmt_uid_with_default (gsi_stmt (gsi)));
 	  gsi_insert_before (&gsi, sum, GSI_NEW_STMT);
 	}
       else
@@ -1797,7 +1801,14 @@ init_range_entry (struct range_entry *r, tree exp, gimple stmt)
       switch (code)
 	{
 	case BIT_NOT_EXPR:
-	  if (TREE_CODE (TREE_TYPE (exp)) == BOOLEAN_TYPE)
+	  if (TREE_CODE (TREE_TYPE (exp)) == BOOLEAN_TYPE
+	      /* Ensure the range is either +[-,0], +[0,0],
+		 -[-,0], -[0,0] or +[1,-], +[1,1], -[1,-] or
+		 -[1,1].  If it is e.g. +[-,-] or -[-,-]
+		 or similar expression of unconditional true or
+		 false, it should not be negated.  */
+	      && ((high && integer_zerop (high))
+		  || (low && integer_onep (low))))
 	    {
 	      in_p = !in_p;
 	      exp = arg0;
@@ -2860,7 +2871,7 @@ not_dominated_by (gimple a, gimple b)
   basic_block bb_a, bb_b;
   bb_a = gimple_bb (a);
   bb_b = gimple_bb (b);
-  return ((bb_a == bb_b && gimple_uid (a)  < gimple_uid (b))
+  return ((bb_a == bb_b && gimple_uid (a) < gimple_uid (b))
           || (bb_a != bb_b
               && !dominated_by_p (CDI_DOMINATORS, bb_a, bb_b)));
 
@@ -2874,10 +2885,7 @@ appears_later_in_bb (gimple stmt1, gimple stmt2)
 {
   unsigned uid = gimple_uid (stmt1);
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt1);
-  gsi_next (&gsi);
-  if (gsi_end_p (gsi))
-    return stmt1;
-  for (; !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi_next (&gsi); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gimple stmt = gsi_stmt (gsi);
 

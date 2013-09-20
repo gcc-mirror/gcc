@@ -842,7 +842,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* Similarly, (not (neg X)) is (plus X -1).  */
       if (GET_CODE (op) == NEG)
-	return plus_constant (mode, XEXP (op, 0), -1);
+	return simplify_gen_binary (PLUS, mode, XEXP (op, 0),
+				    CONSTM1_RTX (mode));
 
       /* (not (xor X C)) for C constant is (xor X D) with D = ~C.  */
       if (GET_CODE (op) == XOR
@@ -949,7 +950,8 @@ simplify_unary_operation_1 (enum rtx_code code, enum machine_mode mode, rtx op)
 
       /* Similarly, (neg (not X)) is (plus X 1).  */
       if (GET_CODE (op) == NOT)
-	return plus_constant (mode, XEXP (op, 0), 1);
+	return simplify_gen_binary (PLUS, mode, XEXP (op, 0),
+				    CONST1_RTX (mode));
 
       /* (neg (minus X Y)) can become (minus Y X).  This transformation
 	 isn't safe for modes with signed zeros, since if X and Y are
@@ -2558,12 +2560,13 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	  && CONST_INT_P (XEXP (op0, 1))
 	  && CONST_INT_P (op1)
 	  && (UINTVAL (XEXP (op0, 1)) & UINTVAL (op1)) != 0)
-	return simplify_gen_binary (IOR, mode,
-				    simplify_gen_binary
-					  (AND, mode, XEXP (op0, 0),
-					   GEN_INT (UINTVAL (XEXP (op0, 1))
-						    & ~UINTVAL (op1))),
-				    op1);
+	{
+	  rtx tmp = simplify_gen_binary (AND, mode, XEXP (op0, 0),
+					 gen_int_mode (UINTVAL (XEXP (op0, 1))
+						       & ~UINTVAL (op1),
+						       mode));
+	  return simplify_gen_binary (IOR, mode, tmp, op1);
+	}
 
       /* If OP0 is (ashiftrt (plus ...) C), it might actually be
          a (sign_extend (plus ...)).  Then check if OP1 is a CONST_INT and
@@ -2693,7 +2696,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      /* Try to simplify ~A&C | ~B&C.  */
 	      if (na_c != NULL_RTX)
 		return simplify_gen_binary (IOR, mode, na_c,
-					    GEN_INT (~bval & cval));
+					    gen_int_mode (~bval & cval, mode));
 	    }
 	  else
 	    {
@@ -2701,9 +2704,11 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
 	      if (na_c == const0_rtx)
 		{
 		  rtx a_nc_b = simplify_gen_binary (AND, mode, a,
-						    GEN_INT (~cval & bval));
+						    gen_int_mode (~cval & bval,
+								  mode));
 		  return simplify_gen_binary (IOR, mode, a_nc_b,
-					      GEN_INT (~bval & cval));
+					      gen_int_mode (~bval & cval,
+							    mode));
 		}
 	    }
 	}
@@ -3037,7 +3042,7 @@ simplify_binary_operation_1 (enum rtx_code code, enum machine_mode mode,
       if (CONST_INT_P (trueop1)
 	  && exact_log2 (UINTVAL (trueop1)) > 0)
 	return simplify_gen_binary (AND, mode, op0,
-				    GEN_INT (INTVAL (op1) - 1));
+				    gen_int_mode (INTVAL (op1) - 1, mode));
       break;
 
     case MOD:

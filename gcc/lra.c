@@ -2365,8 +2365,10 @@ lra (FILE *f)
 	      if (! live_p)
 		lra_clear_live_ranges ();
 	    }
-	  bitmap_clear (&lra_optional_reload_pseudos);
 	}
+      /* Don't clear optional reloads bitmap until all constraints are
+	 satisfied as we need to differ them from regular reloads.  */
+      bitmap_clear (&lra_optional_reload_pseudos);
       bitmap_clear (&lra_subreg_reload_pseudos);
       bitmap_clear (&lra_inheritance_pseudos);
       bitmap_clear (&lra_split_regs);

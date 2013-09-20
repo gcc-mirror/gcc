@@ -33,7 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "tree-pretty-print.h"
 #include "gimple.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-inline.h"
 #include "tree-pass.h"
 #include "convert.h"

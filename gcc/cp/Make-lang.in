@@ -167,8 +167,8 @@ check_g++_parallelize = old-deja.exp dg.exp dg-torture.exp
 # Install hooks:
 # cc1plus is installed elsewhere as part of $(COMPILERS).
 
-# Install the driver program as $(target)-g++
-# and also as either g++ (if native) or $(tooldir)/bin/g++.
+# Install the driver program as $(target)-g++ and $(target)-c++, and
+# also as g++ and c++ if native.
 c++.install-common: installdirs
 	-rm -f $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
 	-$(INSTALL_PROGRAM) xg++$(exeext) $(DESTDIR)$(bindir)/$(GXX_INSTALL_NAME)$(exeext)
@@ -177,15 +177,7 @@ c++.install-common: installdirs
 	-( cd $(DESTDIR)$(bindir) && \
 	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(CXX_INSTALL_NAME)$(exeext) )
 	-if [ -f cc1plus$(exeext) ] ; then \
-	  if [ -f g++-cross$(exeext) ] ; then \
-	    if [ -d $(DESTDIR)$(gcc_tooldir)/bin/. ] ; then \
-	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
-	      $(INSTALL_PROGRAM) g++-cross$(exeext) $(DESTDIR)$(gcc_tooldir)/bin/g++$(exeext); \
-	      rm -f $(DESTDIR)$(gcc_tooldir)/bin/c++$(exeext); \
-	      ( cd $(DESTDIR)$(gcc_tooldir)/bin && \
-		$(LN) g++$(exeext) c++$(exeext) ); \
-	    else true; fi; \
-	  else \
+	  if [ ! -f g++-cross$(exeext) ] ; then \
 	    rm -f $(DESTDIR)$(bindir)/$(GXX_TARGET_INSTALL_NAME)$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
 	      $(LN) $(GXX_INSTALL_NAME)$(exeext) $(GXX_TARGET_INSTALL_NAME)$(exeext) ); \
@@ -320,7 +312,7 @@ cp/except.o: cp/except.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) \
 cp/expr.o: cp/expr.c $(CXX_TREE_H) $(TM_H) $(FLAGS_H) $(TM_P_H)
 cp/pt.o: cp/pt.c $(CXX_TREE_H) $(TM_H) cp/decl.h cp/cp-objcp-common.h \
   toplev.h $(TREE_INLINE_H) pointer-set.h gt-cp-pt.h intl.h \
-  c-family/c-objc.h
+  c-family/c-objc.h cp/type-utils.h
 cp/error.o: cp/error.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_H) \
   $(FLAGS_H) $(REAL_H) $(LANGHOOKS_DEF_H) $(CXX_PRETTY_PRINT_H) \
   tree-diagnostic.h tree-pretty-print.h pointer-set.h c-family/c-objc.h
@@ -339,7 +331,8 @@ cp/mangle.o: cp/mangle.c $(CXX_TREE_H) $(TM_H) $(REAL_H) \
   gt-cp-mangle.h $(TARGET_H) $(TM_P_H) $(CGRAPH_H)
 cp/parser.o: cp/parser.c $(CXX_TREE_H) $(TM_H) $(DIAGNOSTIC_CORE_H) \
   gt-cp-parser.h $(TARGET_H) $(PLUGIN_H) intl.h cp/decl.h \
-  c-family/c-objc.h tree-pretty-print.h $(CXX_PARSER_H) $(TIMEVAR_H)
+  c-family/c-objc.h tree-pretty-print.h $(CXX_PARSER_H) $(TIMEVAR_H) \
+  cp/type-utils.h
 cp/cp-gimplify.o: cp/cp-gimplify.c $(CXX_TREE_H) $(C_COMMON_H) \
 	$(TM_H) coretypes.h pointer-set.h tree-iterator.h $(SPLAY_TREE_H)
 cp/vtable-class-hierarchy.o: cp/vtable-class-hierarchy.c \

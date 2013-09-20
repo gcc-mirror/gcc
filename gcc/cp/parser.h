@@ -341,6 +341,12 @@ typedef struct GTY(()) cp_parser {
   /* The number of template parameter lists that apply directly to the
      current declaration.  */
   unsigned num_template_parameter_lists;
+
+  /* TRUE if the function being declared was made a template due to its
+     parameter list containing generic type specifiers (`auto' or concept
+     identifiers) rather than an explicit template parameter list.  */
+  bool fully_implicit_function_template_p;
+
 } cp_parser;
 
 /* In parser.c  */

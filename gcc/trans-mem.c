@@ -23,7 +23,7 @@
 #include "hash-table.h"
 #include "tree.h"
 #include "gimple.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "tree-inline.h"
 #include "diagnostic-core.h"

@@ -2496,7 +2496,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    recognized by optimizers and expanders.
 
    Note that it is different from the DECL_IS_BUILTIN accessor.  For
-   instance, user declarated prototypes of C library functions are not
+   instance, user declared prototypes of C library functions are not
    DECL_IS_BUILTIN but may be DECL_BUILT_IN.  */
 #define DECL_BUILT_IN(NODE) (DECL_BUILT_IN_CLASS (NODE) != NOT_BUILT_IN)
 
@@ -2544,11 +2544,6 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
    the method is final.  */
 #define DECL_FINAL_P(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.final)
-
-/* FUNCTION_DECL inherits from DECL_NON_COMMON because of the use of the
-   arguments/result/saved_tree fields by front ends.   It was either inherit
-   FUNCTION_DECL from non_common, or inherit non_common from FUNCTION_DECL,
-   which seemed a bit strange.  */
 
 /* The source language of the translation-unit.  */
 #define TRANSLATION_UNIT_LANGUAGE(NODE) \
@@ -4915,10 +4910,6 @@ extern unsigned int tree_decl_map_hash (const void *);
 #define tree_vec_map_eq tree_map_base_eq
 #define tree_vec_map_hash tree_decl_map_hash
 #define tree_vec_map_marked_p tree_map_base_marked_p
-
-/* In tree-ssa.c */
-
-tree target_for_debug_bind (tree);
 
 /* In tree-ssa-address.c.  */
 extern tree tree_mem_ref_addr (tree, tree);

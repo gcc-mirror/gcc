@@ -169,15 +169,15 @@ package body Sem_Ch3 is
       Parent_Type  : Entity_Id;
       Derived_Type : Entity_Id;
       Derive_Subps : Boolean := True);
-   --  Subsidiary procedure for Build_Derived_Type and
-   --  Analyze_Private_Extension_Declaration used for tagged and untagged
-   --  record types. All parameters are as in Build_Derived_Type except that
-   --  N, in addition to being an N_Full_Type_Declaration node, can also be an
+   --  Subsidiary procedure used for tagged and untagged record types
+   --  by Build_Derived_Type and Analyze_Private_Extension_Declaration.
+   --  All parameters are as in Build_Derived_Type except that N, in
+   --  addition to being an N_Full_Type_Declaration node, can also be an
    --  N_Private_Extension_Declaration node. See the definition of this routine
-   --  for much more info. Derive_Subps indicates whether subprograms should
-   --  be derived from the parent type. The only case where Derive_Subps is
-   --  False is for an implicit derived full type for a type derived from a
-   --  private type (see Build_Derived_Type).
+   --  for much more info. Derive_Subps indicates whether subprograms should be
+   --  derived from the parent type. The only case where Derive_Subps is False
+   --  is for an implicit derived full type for a type derived from a private
+   --  type (see Build_Derived_Type).
 
    procedure Build_Discriminal (Discrim : Entity_Id);
    --  Create the discriminal corresponding to discriminant Discrim, that is
@@ -1255,6 +1255,11 @@ package body Sem_Ch3 is
             Next_Formal (Formal);
          end loop;
       end if;
+
+      --  Check whether an indirect call without actuals may be possible. This
+      --  is used when resolving calls whose result is then indexed.
+
+      May_Need_Actuals (Desig_Type);
 
       --  If the return type is incomplete, this is legal as long as the type
       --  is declared in the current scope and will be completed in it (rather
@@ -5087,11 +5092,25 @@ package body Sem_Ch3 is
             Process_Formals (Parameter_Specifications (Spec), Spec);
 
             if Nkind (Spec) = N_Access_Function_Definition then
-               if Nkind (Result_Definition (Spec)) = N_Access_Definition then
-                  Find_Type (Subtype_Mark (Result_Definition (Spec)));
-               else
-                  Find_Type (Result_Definition (Spec));
-               end if;
+               declare
+                  Def : constant Node_Id := Result_Definition (Spec);
+
+               begin
+                  --  The result might itself be an anonymous access type, so
+                  --  have to recurse.
+
+                  if Nkind (Def) = N_Access_Definition then
+                     if Present (Access_To_Subprogram_Definition (Def)) then
+                        Set_Etype (Def,
+                           Replace_Anonymous_Access_To_Protected_Subprogram
+                            (Spec));
+                     else
+                        Find_Type (Subtype_Mark (Def));
+                     end if;
+                  else
+                     Find_Type (Def);
+                  end if;
+               end;
             end if;
 
             End_Scope;
@@ -6102,13 +6121,18 @@ package body Sem_Ch3 is
       --  affect anything, but it is still baffling that we cannot use the
       --  same mechanism for all derived numeric types.
 
-      --  There is a further complication: actually *some* representation
-      --  clauses can affect the implicit base type. Namely, attribute
+      --  There is a further complication: actually some representation
+      --  clauses can affect the implicit base type. For example, attribute
       --  definition clauses for stream-oriented attributes need to set the
-      --  corresponding TSS entries on the base type, and this normally cannot
-      --  be done after the base type is frozen, so the circuitry in
-      --  Sem_Ch13.New_Stream_Subprogram must account for this possibility and
-      --  not use Set_TSS in this case.
+      --  corresponding TSS entries on the base type, and this normally
+      --  cannot be done after the base type is frozen, so the circuitry in
+      --  Sem_Ch13.New_Stream_Subprogram must account for this possibility
+      --  and not use Set_TSS in this case.
+
+      --  There are also consequences for the case of delayed representation
+      --  aspects for some cases. For example, a Size aspect is delayed and
+      --  should not be evaluated to the freeze point. This early freezing
+      --  means that the size attribute evaluation happens too early???
 
       if Is_Fixed_Point_Type (Parent_Type) then
          Conditional_Delay (Implicit_Base, Parent_Type);
@@ -8179,6 +8203,15 @@ package body Sem_Ch3 is
          Set_First_Rep_Item (Derived_Type, First_Rep_Item (Parent_Type));
       end if;
 
+      --  If the parent type has delayed rep aspects, then mark the derived
+      --  type as possibly inheriting a delayed rep aspect.
+
+      if Has_Delayed_Rep_Aspects (Parent_Type) then
+         Set_May_Inherit_Delayed_Rep_Aspects (Derived_Type);
+      end if;
+
+      --  Type dependent processing
+
       case Ekind (Parent_Type) is
          when Numeric_Kind =>
             Build_Derived_Numeric_Type (N, Parent_Type, Derived_Type);
@@ -8221,6 +8254,8 @@ package body Sem_Ch3 is
             raise Program_Error;
       end case;
 
+      --  Nothing more to do if some error occurred
+
       if Etype (Derived_Type) = Any_Type then
          return;
       end if;
@@ -8230,6 +8265,7 @@ package body Sem_Ch3 is
       --  if necessary.
 
       Set_Has_Delayed_Freeze (Derived_Type);
+
       if Derive_Subps then
          Derive_Subprograms (Parent_Type, Derived_Type);
       end if;
@@ -19021,6 +19057,27 @@ package body Sem_Ch3 is
 
          case Ekind (Base_Type (Subtype_Mark_Id)) is
             when Access_Kind =>
+
+               --  If this is a constraint on a class-wide type, discard it.
+               --  There is currently no way to express a partial discriminant
+               --  constraint on a type with unknown discriminants. This is
+               --  a pathology that the ACATS wisely decides not to test.
+
+               if Is_Class_Wide_Type (Designated_Type (Subtype_Mark_Id)) then
+                  if Comes_From_Source (S) then
+                     Error_Msg_N
+                       ("constraint on class-wide type ignored?",
+                        Constraint (S));
+                  end if;
+
+                  if Nkind (P) = N_Subtype_Declaration then
+                     Set_Subtype_Indication (P,
+                        New_Occurrence_Of (Subtype_Mark_Id, Sloc (S)));
+                  end if;
+
+                  return Subtype_Mark_Id;
+               end if;
+
                Constrain_Access (Def_Id, S, Related_Nod);
 
                if Expander_Active

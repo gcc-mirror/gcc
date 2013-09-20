@@ -2065,9 +2065,9 @@ aarch64_expand_prologue (void)
 	  emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
 	  aarch64_set_frame_expr (gen_rtx_SET
 				  (Pmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 GEN_INT (-frame_size))));
+				   plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  -frame_size)));
 	}
       else if (frame_size > 0)
 	{
@@ -2151,9 +2151,9 @@ aarch64_expand_prologue (void)
 					   GEN_INT (fp_offset)));
 	  aarch64_set_frame_expr (gen_rtx_SET
 				  (Pmode, hard_frame_pointer_rtx,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 GEN_INT (fp_offset))));
+				   plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  fp_offset)));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	  insn = emit_insn (gen_stack_tie (stack_pointer_rtx,
 					   hard_frame_pointer_rtx));
@@ -2349,9 +2349,9 @@ aarch64_expand_epilogue (bool for_sibcall)
 	  emit_insn (gen_add2_insn (stack_pointer_rtx, op0));
 	  aarch64_set_frame_expr (gen_rtx_SET
 				  (Pmode, stack_pointer_rtx,
-				   gen_rtx_PLUS (Pmode,
-						 stack_pointer_rtx,
-						 GEN_INT (frame_size))));
+				   plus_constant (Pmode,
+						  stack_pointer_rtx,
+						  frame_size)));
 	}
       else if (frame_size > 0)
 	{
@@ -2373,10 +2373,10 @@ aarch64_expand_epilogue (bool for_sibcall)
 	    }
 	}
 
-      aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
-					   gen_rtx_PLUS (Pmode,
-							 stack_pointer_rtx,
-							 GEN_INT (offset))));
+        aarch64_set_frame_expr (gen_rtx_SET (Pmode, stack_pointer_rtx,
+					     plus_constant (Pmode,
+							    stack_pointer_rtx,
+							    offset)));
     }
 
   emit_use (gen_rtx_REG (DImode, LR_REGNUM));
@@ -3313,14 +3313,15 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	  || GET_CODE (x) == NEG))
     return CC_NZmode;
 
-  /* A compare with a shifted operand.  Because of canonicalization,
+  /* A compare with a shifted or negated operand.  Because of canonicalization,
      the comparison will have to be swapped when we emit the assembly
      code.  */
   if ((GET_MODE (x) == SImode || GET_MODE (x) == DImode)
       && (GET_CODE (y) == REG || GET_CODE (y) == SUBREG)
       && (GET_CODE (x) == ASHIFT || GET_CODE (x) == ASHIFTRT
 	  || GET_CODE (x) == LSHIFTRT
-	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND))
+	  || GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND
+	  || GET_CODE (x) == NEG))
     return CC_SWPmode;
 
   /* A compare of a mode narrower than SI mode against zero can be done
@@ -4013,9 +4014,9 @@ aarch64_legitimize_reload_address (rtx *x_p,
 
       /* Reload high part into base reg, leaving the low part
 	 in the mem instruction.  */
-      x = gen_rtx_PLUS (xmode,
-			gen_rtx_PLUS (xmode, XEXP (x, 0), cst),
-			GEN_INT (low));
+      x = plus_constant (xmode,
+			 gen_rtx_PLUS (xmode, XEXP (x, 0), cst),
+			 low);
 
       push_reload (XEXP (x, 0), NULL_RTX, &XEXP (x, 0), NULL,
 		   BASE_REG_CLASS, xmode, VOIDmode, 0, 0,
@@ -4236,10 +4237,18 @@ aarch64_class_max_nregs (reg_class_t regclass, enum machine_mode mode)
 }
 
 static reg_class_t
-aarch64_preferred_reload_class (rtx x ATTRIBUTE_UNUSED, reg_class_t regclass)
+aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
 {
-  return ((regclass == POINTER_REGS || regclass == STACK_REG)
-	  ? GENERAL_REGS : regclass);
+  if (regclass == POINTER_REGS || regclass == STACK_REG)
+    return GENERAL_REGS;
+
+  /* If it's an integer immediate that MOVI can't handle, then
+     FP_REGS is not an option, so we return NO_REGS instead.  */
+  if (CONST_INT_P (x) && reg_class_subset_p (regclass, FP_REGS)
+      && !aarch64_simd_imm_scalar_p (x, GET_MODE (x)))
+    return NO_REGS;
+
+  return regclass;
 }
 
 void

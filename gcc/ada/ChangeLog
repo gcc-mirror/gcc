@@ -1,3 +1,387 @@
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/58264
+	* gcc-interface/trans.c (Attribute_to_gnu): Define GNAT_PREFIX local
+	variable and use it throughout.
+	<Attr_Length>: Note whether the prefix is the dereference of a pointer
+	to unconstrained array and, in this case, capture the result for both
+	Attr_First and Attr_Last.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Abstract_State>: New.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gigi): Remove dead code.
+
+2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Pop the stack of
+	return variables for subprograms using the CICO mechanism.
+
+2013-09-13  Dominique Dhumieres  <dominiq@lps.ens.fr>
+
+	* gcc-interface/Makefile.in: Fix darwin Filter to match on $target_os,
+	not $target_cpu.
+
+2013-09-11  Thomas Schwinge  <thomas@codesourcery.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/Makefile.in: Import target_cpu, target_vendor,
+	target_os and their host_ counterparts. Remove host_canonical and
+	target_cpu_default, unused. Remove local ad-hoc computations of
+	"host", "targ", "arch", "osys" and "manu". Replace uses of these by
+	uses of the now imported family, hence back to filters against
+	canonical values. Remove filters on e500 for target_cpu, expected to
+	be canonicalized into powerpc. Invert the logic filtering on 64bit
+	sparc for VxWorks. Simplify the filtering logic for bareboard tools
+	target pairs, now using straight elf/eabi filters on the target_os
+	part only.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Replace_Anonymoous_Access_To_Protected_Subprogram): If
+	the return type is itself an access to function, recurse to emit
+	another anonymous type.
+	* gcc-interface/Make-lang.in: Update dependencies.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* err_vars.ads (Warning_Doc_Switch): Ignored in VMS mode.
+	* errout.adb (Warning_Doc_Switch): Ignored in VMS mode.
+	* errout.ads (Warning_Doc_Switch): Ignored in VMS mode.
+	* inline.ads (Warnings): New component in Pending_Body_Info.
+	* sem_ch12.adb (Pending_Body_Info): Save and restore warnings
+	at instantiation point.
+	* warnsw.adb (Save_Warnings): New function (Restore_Warnings):
+	New procedure Remove special handling of Warning_Doc_Switch,
+	cleaner to handle the VMS case in errout, than to introduce
+	undocumented oddities here.
+	* warnsw.ads (Warning_Record) : New type.
+	(Save_Warnings): New function.
+	(Restore_Warnings): New procedure.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sinput.adb (Check_For_BOM): Avoid reading past end of file.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Error_Msg_Ada_2012_Feature): New procedure.
+	* errout.ads (Error_Msg_Ada_2012_Feature): New procedure.
+	* inline.ads: Save/Restore Ada_Version_Pragma.
+	* opt.adb: Save/Restore Ada_Version_Pragma.
+	* opt.ads (Ada_Version_Pragma): New variable.
+	* par-ch11.adb, par-ch12.adb, par-ch13.adb, par-ch4.adb, par-ch5.adb,
+	par-ch6.adb, par-ch8.adb, par-prag.adb: Use Error_Msg_Ada_2012_Feature.
+	* prj.adb: Initialize Ada_Version_Pragma.
+	* sem_attr.adb: Use Error_Msg_Ada_2012_Feature.
+	* sem_ch12.adb, sem_ch8.adb: Save/restore Ada_Version_Pragma.
+	* sem_prag.adb (Analyze_Pragma, cases Ada_xx): Set Ada_Version_Pragma.
+	* switch-c.adb: Initialize Ada_Version_Pragma.
+	* sem_ch12.adb: Minor reformatting.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Process_Subtype): Discard constraint on access
+	to class-wide type. Such constraints are not supported and are
+	considered a language pathology.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnatbind.adb: Correct starting date in --version string.
+	* gnatdll.adb: Use Check_Version_And_Help_G to implement --help
+	and --version.
+	* gnatkr.adb: Use Check_Version_And_Help_G to implement --help
+	and --version.
+	* gnatlink.adb: Correct starting date in --version string.
+	* gnatls.adb: Correct starting date in --version string.
+	* make.adb: Correct starting date in --version string.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb: Minor reformatting.
+	* atree.ads (Original_Nodes): Add documentation on ASIS usage.
+	* sinfo.ads: Add section on ASIS mode (documentation only).
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Warnings): Don't allow
+	REASON parameter in compiler units (bootstrap issues).
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Output warning if
+	-gnateE specified for a target that does not support it.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case SPARK_Mode): Handle properly
+	a subprogram body without previous spec.
+
+2013-09-10  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch4.adb: Minor typo fixes.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb (Aspects_On_Body_OK): New routine.
+	* aspects.ads: Modify type Aspect_Expression to include
+	the Optional_XXX variants. Update the contents of
+	table Aspect_Argument. Add table Aspect_On_Body_OK.
+	(Aspects_On_Body_OK): New routine.
+	* par-ch13.adb (Get_Aspect_Specifications): Account for optional
+	names and expressions when parsing an aspect.
+	* sem_ch6.adb: Add with and use clause for Aspects.
+	(Analyze_Subprogram_Body_Helper): Do not emit an error when
+	analyzing a body with aspects that can be applied simultaneously
+	to both spec and body.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Insert the
+	corresponding pragma of an aspect that applies to a subprogram
+	body in the declarative part.
+	(Make_Aitem_Pragma): Do not generate a pragma with an empty argument
+	list.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* switch-c.adb: Diagnose -gnatc given after -gnatRm.
+	* gnat_ugn.texi: Add documentation for -gnatRm.
+	* usage.adb: Minor reorganization (put style entries in proper
+	order) Document -gnatRm switch.
+	* sinfo.ads: Minor comment fix.
+
+2013-09-10  Sergey Rybin  <rybin@adacore.com frybin>
+
+	* tree_io.ads: Update ASIS_Version_Number.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Access_Subprogram_Declaration): Check whether the
+	designated type can appear in a parameterless call.
+	* sem_ch4.adb (Analyze_Call): Do not insert an explicit dereference
+	in the case of an indirect call through an access function that
+	returns an array type.
+	(Analyze_One_Call): Handle properly legal parameterless calls
+	whose result is indexed, in constructs of the for F.all (I)
+	* sem_ch6.ads (May_Need_Actuals): Make public, for use on access
+	to subprogram types.
+	* sem_res.adb (Resolve_Call): If the call is indirect, there is
+	no entity to set on the name in the call.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* aspects.adb: Add entries in the Has_Aspect_Specifications_Flag
+	table for package body and body stubs.
+	(Move_Or_Merge_Aspects): New routine.
+	(Remove_Aspects): New routine.
+	* aspects.ads (Move_Aspects): Update comment on usage.
+	(Move_Or_Merge_Aspects): New routine.
+	(Remove_Aspects): New routine.
+	* par-ch3.adb: Update the grammar of private_type_declaration,
+	private_extension_declaration, object_renaming_declaration,
+	and exception_renaming_declaration.
+	(P_Subprogram): Parse the
+	aspect specifications that apply to a body stub.
+	* par-ch6.adb: Update the grammar of subprogram_body_stub and
+	generic_instantiation.
+	* par-ch7.adb: Update the grammar of package_declaration,
+	package_specification, package_body, package_renaming_declaration,
+	package_body_stub.
+	(P_Package): Parse the aspect specifications
+	that apply to a body, a body stub and package renaming.
+	* par-ch9.adb: Update the grammar of entry_declaration,
+	protected_body, protected_body_stub, task_body,
+	and task_body_stub.
+	(P_Protected): Add local variable
+	Aspect_Sloc. Add local constant Dummy_Node.  Parse the aspect
+	specifications that apply to a protected body and a protected
+	body stub.
+	(P_Task): Add local variable Aspect_Sloc. Add local
+	constant Dummy_Node. Parse the aspect specifications that apply
+	to a task body and a task body stub.
+	* par-ch12.adb: Update the grammar of
+	generic_renaming_declaration.
+	(P_Generic): Parse the aspect
+	specifications that apply to a generic renaming.
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Do not emit
+	an error when analyzing aspects that apply to a body stub. Such
+	aspects are relocated to the proper body.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Analyze the aspect
+	specifications that apply to a body.
+	* sem_ch9.adb (Analyze_Protected_Body): Warn about user-defined
+	aspects not being supported on protected bodies. Remove the
+	aspect specifications.	(Analyze_Single_Protected_Declaration):
+	Analyze the aspects that apply to a single protected declaration.
+	(Analyze_Task_Body): Warn about user-defined aspects not being
+	supported on task bodies. Remove the aspect specifications.
+	* sem_ch10.adb: Add with and use clause for Aspects.
+	(Analyze_Package_Body_Stub): Propagate the aspect specifications
+	from the stub to the proper body.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): Insert the
+	corresponding pragma of an aspect that applies to a body in the
+	declarations of the body.
+	* sinfo.ads: Update the gramma of expression_function,
+	private_type_declaration, private_extension_declaration,
+	object_renaming_declaration, exception_renaming_declaration,
+	package_renaming_declaration, subprogram_renaming_declaration,
+	generic_renaming_declaration, entry_declaration,
+	subprogram_body_stub, package_body_stub, task_body_stub,
+	generic_subprogram_declaration.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add processing
+	for aspect/pragma SPARK_Mode when it applies to a [library-level]
+	subprogram or package [body].
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* gnat_ugn.texi: Document that -gnatc and -gnatR cannot be
+	given together.
+	* switch-c.adb (Scan_Front_End_Switches): Give error if both
+	-gnatR and -gnatc given.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* g-table.ads, g-table.adb (For_Each): New generic procedure
+	(Sort_Table): New generic procedure.
+
+2013-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* adaint.c (__gnat_is_executable_file_attr): Should be true
+	for an executable regular file only only (not for a directory
+	that has the executable permission).
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb: Further work on operator calls in ASIS.
+
+2013-09-10  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads, sem_prag.ads, sem_ch13.adb: Minor correction and comment
+	update.
+
+2013-09-10  Thomas Quinot  <quinot@adacore.com>
+
+	* aspects.ads, sem_ch13.adb: Minor reformatting.
+	* adaint.c (__gnat_set_close_on_exec): Add comment documenting
+	that this routine is shared between OS_Lib and Sockets.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* exp_prag.adb (Expand_Pragma_Check): Ignore pragma if Is_Ignored set.
+	* sem_ch13.adb (Make_Aitem_Pragma): Set Is_Checked if needed.
+	* sem_prag.adb (Check_Kind): Moved from spec (Analyze_Pragma):
+	Make sure Is_Ignored/Is_Checked are set right (Analyze_Pragma,
+	case Check): Ditto (Check_Applicable_Policy): Handle
+	Statement_Assertion case Throughout, set and check the Is_Checked
+	flag as appropriate.
+	* sem_prag.ads (Check_Kind): Moved to body.
+	* sinfo.ads, sinfo.adb (Is_Checked): New flag.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* aspects.ads (Delay_Type): New type (Aspect_Delay): New table.
+	* einfo.adb (Has_Delayed_Rep_Aspects): New flag
+	(May_Inherit_Delayed_Rep_Aspects): New flag (Rep_Clause): Removed
+	(use Get_Attribute_Representation_Clause).
+	* einfo.ads (Has_Delayed_Rep_Aspects): New flag
+	(May_Inherit_Delayed_Rep_Aspects): New flag
+	* freeze.adb: Minor reformatting
+	* sem_ch13.adb (Analyze_Aspect_Speficifications): Redo
+	handling of delayed evaluation, including optimizing some cases
+	and avoiding delays.
+	(Analyze_Aspects_At_Freeze_Point): Now
+	handled inheriting delayed rep aspects for type derivation case.
+	(Inherit_Delayed_Rep_Aspects): New procedure
+	* sem_ch13.ads (Analyze_Aspects_At_Freeze_Point): Now handled
+	inheriting delayed rep aspects for type derivation case.
+	* sem_ch3.adb (Build_Derived_Type): Set
+	May_Inherit_Derived_Rep_Aspects if parent type flag
+	Has_Delayed_Rep_Aspects is set
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* errout.adb (Finalize): Don't delete real errors with specific
+	warning control.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call,
+	Expand_N_Conditional_Entry_Call, Expand_N_Asynchronous_Select):
+	Handle properly a trigger that is  a call to a primitive operation
+	of a type that implements a limited interface, if the type itself
+	is not limited.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* sem_ch3.adb, sinfo.ads, exp_ch9.adb, sem_prag.adb, sem_ch12.adb,
+	exp_ch4.adb, sprint.adb: Minor reformatting.
+
+2013-09-10  Yannick Moy  <moy@adacore.com>
+
+	* sinfo.ads: Document splitting of pre/post in N_Contract description.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Multiply): If the operation is of the
+	form X * 2 ** N and it has been marked Is_Power_Of_2_For_Shift,
+	add a mod operation if the result type is a binary modular type.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context): Add local
+	variable Context.  Remove local variable Subp_Id. Start the
+	context traversal from the current subprogram rather than the
+	current scope. Update the scope traversal and error reporting.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call): New procedure
+	Rewrite_Triggering_Statements, to encapsulate the statements that
+	follow the trigger of the entry call. This procedure is needed
+	when the trigger is a dispatching call, because the expansion
+	requires several copies of those statements. The procedure is
+	more efficient, and preserves non-local references when the
+	construct is within an instance.
+
+2013-09-10  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): If the
+	instantiation is a compilation unit, analyze aspects before
+	analyzing the package declaration for the instance.
+	* sem_ch13.adb (Analyze_Aspect_Specifications): If the
+	corresponding node is a package instantiation, insert generated
+	pragmas at the head of visible declarations.
+	* sem_prag.adb (Analyze_Pragma, case Preelaborate): In an instance
+	do not ignore the pragma if it comes from an aspect specification
+	in the instance, and not from the generic unit.
+	* sprint.adb (Sprint_Node_Actual): For a package declaration that
+	is an instantiation, print aspects after declaration.
+
+2013-09-10  Robert Dewar  <dewar@adacore.com>
+
+	* einfo.adb, sem_prag.adb, rtsfind.ads: Minor reformatting.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Get_SPARK_Mode_Id): Handle the
+	case where the pragma may appear without an argument.
+	(Analyze_Global_List): Add expanded_name to the list of constructs
+	that denote a single item.
+	(Collect_Global_List): Add expanded_name to the list of constructs
+	that denote a single item.
+
+2013-09-10  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Add local constant
+	Pool_Id and local variables Fin_Call and Free_Stmt. Finalize
+	and deallocate a heap-allocated class-wide object after it
+	has been determined that it violates the accessibility rules.
+	* rtsfind.ads: Add new RTU_Id for System.Memory. Add new RE_Id
+	and entry in RE_Unit_Table for RE_Free.
+
 2013-09-01  Eric Botcazou  <ebotcazou@adacore.com>
 	    Iain Sandoe  <iain@codesourcery.com>
 
@@ -297,7 +681,7 @@
 	node for subsequent checks, because the rewriting of the node
 	does not take place during pre-analysis.
 
- 2013-07-08  Robert Dewar  <dewar@adacore.com>
+2013-07-08  Robert Dewar  <dewar@adacore.com>
 
 	* sem_ch8.adb, exp_ch3.adb: Minor reformatting.
 

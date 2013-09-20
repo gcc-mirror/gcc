@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -200,5 +200,26 @@ package GNAT.Table is
    --  this function has the possible side effect of reallocating the table.
    --  This means that a reference X.Table (X.Allocate) is incorrect, since
    --  the call to X.Allocate may modify the results of calling X.Table.
+
+   generic
+     with procedure Action
+       (Index : Table_Index_Type;
+        Item  : Table_Component_Type;
+        Quit  : in out Boolean) is <>;
+   procedure For_Each;
+   --  Calls procedure Action for each component of the table, or until
+   --  one of these calls set Quit to True.
+
+   generic
+     with function Lt (Comp1, Comp2 : Table_Component_Type) return Boolean;
+   procedure Sort_Table;
+   --  This procedure sorts the components of the table into ascending
+   --  order making calls to Lt to do required comparisons, and using
+   --  assignments to move components around. The Lt function returns True
+   --  if Comp1 is less than Comp2 (in the sense of the desired sort), and
+   --  False if Comp1 is greater than Comp2. For equal objects it does not
+   --  matter if True or False is returned (it is slightly more efficient
+   --  to return False). The sort is not stable (the order of equal items
+   --  in the table is not preserved).
 
 end GNAT.Table;

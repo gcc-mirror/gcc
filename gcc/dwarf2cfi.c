@@ -246,7 +246,8 @@ init_return_column_size (enum machine_mode mode, rtx mem, unsigned int c)
 {
   HOST_WIDE_INT offset = c * GET_MODE_SIZE (mode);
   HOST_WIDE_INT size = GET_MODE_SIZE (Pmode);
-  emit_move_insn (adjust_address (mem, mode, offset), GEN_INT (size));
+  emit_move_insn (adjust_address (mem, mode, offset),
+		  gen_int_mode (size, mode));
 }
 
 /* Generate code to initialize the register size table.  */

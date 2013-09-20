@@ -110,6 +110,11 @@ i386_pe_determine_dllexport_p (tree decl)
   if (!TREE_PUBLIC (decl))
     return false;
 
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && DECL_DECLARED_INLINE_P (decl)
+      && !flag_keep_inline_dllexport)
+    return false; 
+
   if (lookup_attribute ("dllexport", DECL_ATTRIBUTES (decl)))
     return true;
 

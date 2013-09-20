@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "input.h"
 #include "hashtab.h"
 #include "basic-block.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-pass.h"
 #include "cgraph.h"
 #include "function.h"
@@ -1997,8 +1997,7 @@ lto_output (void)
       cgraph_node *node = dyn_cast <cgraph_node> (snode);
       if (node
 	  && lto_symtab_encoder_encode_body_p (encoder, node)
-	  && !node->symbol.alias
-	  && !node->thunk.thunk_p)
+	  && !node->symbol.alias)
 	{
 #ifdef ENABLE_CHECKING
 	  gcc_assert (!bitmap_bit_p (output, DECL_UID (node->symbol.decl)));

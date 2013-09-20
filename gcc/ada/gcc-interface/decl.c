@@ -4812,6 +4812,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, int definition)
       saved = true;
       break;
 
+    case E_Abstract_State:
+      /* This is a SPARK annotation that only reaches here when compiling in
+	 ASIS mode and has no characteristics to annotate.  */
+      gcc_assert (type_annotate_only);
+      return error_mark_node;
+
     default:
       gcc_unreachable ();
     }

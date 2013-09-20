@@ -5896,7 +5896,6 @@ interested in most macros in this section.
 @menu
 * CC0 Condition Codes::      Old style representation of condition codes.
 * MODE_CC Condition Codes::  Modern representation of condition codes.
-* Cond Exec Macros::         Macros to control conditional execution.
 @end menu
 
 @node CC0 Condition Codes
@@ -6105,15 +6104,6 @@ The default version of this hook checks whether the modes are the
 same.  If they are, it returns that mode.  If they are different, it
 returns @code{VOIDmode}.
 @end deftypefn
-
-@node Cond Exec Macros
-@subsection Macros to control conditional execution
-@findex conditional execution
-@findex predication
-
-There is one macro that may need to be defined for targets
-supporting conditional execution, independent of how they
-represent conditional branches.
 
 @node Costs
 @section Describing Relative Costs of Operations
@@ -10643,6 +10633,10 @@ files @code{__STDC__} will always expand to 1.
 Define this hook to return the name of a header file to be included at the start of all compilations, as if it had been included with @code{#include <@var{file}>}.  If this hook returns @code{NULL}, or is not defined, or the header is not found, or if the user specifies @option{-ffreestanding} or @option{-nostdinc}, no header is included.
 
  This hook can be used together with a header provided by the system C library to implement ISO C requirements for certain macros to be predefined that describe properties of the whole implementation rather than just the compiler.
+@end deftypefn
+
+@deftypefn {C Target Hook} bool TARGET_CXX_IMPLICIT_EXTERN_C (const char*@var{})
+Define this hook to add target-specific C++ implicit extern C functions. If this function returns true for the name of a file-scope function, that function implicitly gets extern "C" linkage rather than whatever language linkage the declaration would normally have.  An example of such function is WinMain on Win32 targets.
 @end deftypefn
 
 @defmac NO_IMPLICIT_EXTERN_C

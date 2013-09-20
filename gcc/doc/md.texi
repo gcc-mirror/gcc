@@ -3063,6 +3063,35 @@ A constant in the range of 0 to @minus{}255.
 
 @end table
 
+@item MSP430--@file{config/msp430/constraints.md}
+@table @code
+
+@item R12
+Register R12.
+
+@item R13
+Register R13.
+
+@item K
+Integer constant 1.
+
+@item L
+Integer constant -1^20..1^19.
+
+@item M
+Integer constant 1-4.
+
+@item Ya
+Memory references which do not require an extended MOVX instruction.
+
+@item Yl
+Memory reference, labels only.
+
+@item Ys
+Memory reference, stack only.
+
+@end table
+
 @item PDP-11---@file{config/pdp11/constraints.md}
 @table @code
 @item a
@@ -9651,7 +9680,7 @@ Here's an example of int iterators in action, taken from the ARM port:
 		      QABSNEG))]
   "TARGET_NEON"
   "vq<absneg>.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "neon_type" "neon_vqneg_vqabs")]
+  [(set_attr "type" "neon_vqneg_vqabs")]
 )
 
 @end smallexample
@@ -9666,7 +9695,7 @@ This is equivalent to:
 		      UNSPEC_VQABS))]
   "TARGET_NEON"
   "vqabs.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "neon_type" "neon_vqneg_vqabs")]
+  [(set_attr "type" "neon_vqneg_vqabs")]
 )
 
 (define_insn "neon_vqneg<mode>"
@@ -9676,7 +9705,7 @@ This is equivalent to:
 		      UNSPEC_VQNEG))]
   "TARGET_NEON"
   "vqneg.<V_s_elem>\t%<V_reg>0, %<V_reg>1"
-  [(set_attr "neon_type" "neon_vqneg_vqabs")]
+  [(set_attr "type" "neon_vqneg_vqabs")]
 )
 
 @end smallexample

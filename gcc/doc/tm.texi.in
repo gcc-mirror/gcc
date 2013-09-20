@@ -4496,7 +4496,6 @@ interested in most macros in this section.
 @menu
 * CC0 Condition Codes::      Old style representation of condition codes.
 * MODE_CC Condition Codes::  Modern representation of condition codes.
-* Cond Exec Macros::         Macros to control conditional execution.
 @end menu
 
 @node CC0 Condition Codes
@@ -4661,15 +4660,6 @@ like:
 @hook TARGET_FIXED_CONDITION_CODE_REGS
 
 @hook TARGET_CC_MODES_COMPATIBLE
-
-@node Cond Exec Macros
-@subsection Macros to control conditional execution
-@findex conditional execution
-@findex predication
-
-There is one macro that may need to be defined for targets
-supporting conditional execution, independent of how they
-represent conditional branches.
 
 @node Costs
 @section Describing Relative Costs of Operations
@@ -7978,6 +7968,8 @@ files @code{__STDC__} will always expand to 1.
 @end defmac
 
 @hook TARGET_C_PREINCLUDE
+
+@hook TARGET_CXX_IMPLICIT_EXTERN_C
 
 @defmac NO_IMPLICIT_EXTERN_C
 Define this macro if the system header files support C++ as well as C@.

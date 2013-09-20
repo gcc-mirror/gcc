@@ -87,6 +87,8 @@ mmix port		Hans-Peter Nilsson	hp@bitrange.com
 mn10300 port		Jeff Law		law@redhat.com
 mn10300 port		Alexandre Oliva		aoliva@redhat.com
 moxie port		Anthony Green		green@moxielogic.com
+msp430 port		DJ Delorie		dj@redhat.com
+msp430 port		Nick Clifton		nickc@redhat.com
 nds32 port		Chung-Ju Wu		jasonwucj@gmail.com
 nds32 port		Shiva Chen		shiva0217@gmail.com
 pdp11 port		Paul Koning		ni1d@arrl.net
@@ -178,7 +180,7 @@ libobjc			Nicola Pero		nicola.pero@meta-innovation.com
 libobjc			Andrew Pinski		pinskia@gmail.com
 libquadmath		Tobias Burnus		burnus@net-b.de
 libquadmath		Jakub Jelinek		jakub@redhat.com
-libvtv	      		Caroline Tice		cmtice@google.com
+libvtv			Caroline Tice		cmtice@google.com
 loop discovery		Michael Hayes		m.hayes@elec.canterbury.ac.nz
 soft-fp			Joseph Myers		joseph@codesourcery.com
 scheduler (+ haifa)	Jim Wilson		wilson@tuliptree.org
@@ -193,7 +195,6 @@ debugging code		Jim Wilson		wilson@tuliptree.org
 dwarf debugging code	Jason Merrill		jason@redhat.com
 dwarf debugging code	Cary Coutant		ccoutant@google.com
 c++ runtime libs	Paolo Carlini		paolo.carlini@oracle.com
-c++ runtime libs	Gabriel Dos Reis	gdr@integrable-solutions.net
 c++ runtime libs	Ulrich Drepper		drepper@gmail.com
 c++ runtime libs	Benjamin De Kosnik	bkoz@gnu.org
 c++ runtime libs	Loren J. Rittle		ljrittle@acm.org
@@ -212,7 +213,7 @@ config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pth@suse.de
 i18n			Joseph Myers		joseph@codesourcery.com
-diagnostic messages	Gabriel Dos Reis	gdr@integrable-solutions.net
+diagnostic messages	Dodji Seketeli		dodji@redhat.com
 build machinery (*.in)	Paolo Bonzini		bonzini@gnu.org
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org

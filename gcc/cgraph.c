@@ -42,7 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "timevar.h"
 #include "dumpfile.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "value-prof.h"
 #include "except.h"
 #include "diagnostic-core.h"
@@ -869,12 +869,12 @@ cgraph_create_edge_1 (struct cgraph_node *caller, struct cgraph_node *callee,
     edge->call_stmt_cannot_inline_p = true;
   else
     edge->call_stmt_cannot_inline_p = false;
-  if (call_stmt && caller->call_site_hash)
-    cgraph_add_edge_to_call_site_hash (edge);
 
   edge->indirect_info = NULL;
   edge->indirect_inlining_edge = 0;
   edge->speculative = false;
+  if (call_stmt && caller->call_site_hash)
+    cgraph_add_edge_to_call_site_hash (edge);
 
   return edge;
 }
@@ -1224,13 +1224,13 @@ cgraph_resolve_speculation (struct cgraph_edge *edge, tree callee_decl)
     edge->frequency = CGRAPH_FREQ_MAX;
   edge->speculative = false;
   e2->speculative = false;
+  ipa_remove_reference (ref);
   if (e2->indirect_unknown_callee || e2->inline_failed)
     cgraph_remove_edge (e2);
   else
     cgraph_remove_node_and_inline_clones (e2->callee, NULL);
   if (edge->caller->call_site_hash)
     cgraph_update_edge_in_call_site_hash (edge);
-  ipa_remove_reference (ref);
   return edge;
 }
 
@@ -2047,6 +2047,8 @@ cgraph_function_body_availability (struct cgraph_node *node)
     avail = AVAIL_LOCAL;
   else if (node->symbol.alias && node->symbol.weakref)
     cgraph_function_or_thunk_node (node, &avail);
+  else if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (node->symbol.decl)))
+    avail = AVAIL_OVERWRITABLE;
   else if (!node->symbol.externally_visible)
     avail = AVAIL_AVAILABLE;
   /* Inline functions are safe to be analyzed even if their symbol can

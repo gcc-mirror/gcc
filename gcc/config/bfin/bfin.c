@@ -46,6 +46,7 @@
 #include "cgraph.h"
 #include "langhooks.h"
 #include "bfin-protos.h"
+#include "tm_p.h"
 #include "tm-preds.h"
 #include "tm-constrs.h"
 #include "gt-bfin.h"

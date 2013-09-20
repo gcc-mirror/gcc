@@ -480,7 +480,7 @@ let emit_insn_reservations core =
         Printf.printf "(define_insn_reservation \"%s_%s\" %d\n" 
             corestring producer latency;
             Printf.printf "  (and (eq_attr \"tune\" \"%s\")\n" tunestring;
-        Printf.printf "       (eq_attr \"neon_type\" \"%s\"))\n" producer;
+        Printf.printf "       (eq_attr \"type\" \"%s\"))\n" producer;
         let str =
           match reservation with
 	    Mul -> "dp" | Mul_2cycle -> "dp_2" | Mul_4cycle -> "dp_4"

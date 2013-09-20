@@ -7752,8 +7752,6 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 	return false;
       if (arg_type->is_abstract())
 	return false;
-      if (arg_type->named_type() != NULL)
-	arg_type->named_type()->convert(this->gogo_);
 
       unsigned int ret;
       if (this->code_ == BUILTIN_SIZEOF)

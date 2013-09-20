@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-07-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/fpu-387.h (get_fpu_rounding_mode): Read rounding mode

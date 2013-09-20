@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2013, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,6 +28,8 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+with GNAT.Heap_Sort_G;
 
 with System;        use System;
 with System.Memory; use System.Memory;
@@ -113,6 +115,19 @@ package body GNAT.Table is
    begin
       Last_Val := Last_Val - 1;
    end Decrement_Last;
+
+   --------------
+   -- For_Each --
+   --------------
+
+   procedure For_Each is
+      Quit : Boolean := False;
+   begin
+      for Index in Table_Low_Bound .. Table_Index_Type (Last_Val) loop
+         Action (Index, Table (Index), Quit);
+         exit when Quit;
+      end loop;
+   end For_Each;
 
    ----------
    -- Free --
@@ -259,17 +274,17 @@ package body GNAT.Table is
       pragma Import (Ada, Allocated_Table);
       pragma Suppress (Range_Check, On => Allocated_Table);
       for Allocated_Table'Address use Allocated_Table_Address;
-      --  Allocated_Table represents the currently allocated array, plus
-      --  one element (the supplementary element is used to have a
-      --  convenient way of computing the address just past the end of the
-      --  current allocation). Range checks are suppressed because this unit
-      --  uses direct calls to System.Memory for allocation, and this can
-      --  yield misaligned storage (and we cannot rely on the bootstrap
-      --  compiler supporting specifically disabling alignment checks, so we
-      --  need to suppress all range checks). It is safe to suppress this check
-      --  here because we know that a (possibly misaligned) object of that type
-      --  does actually exist at that address.
-      --  ??? We should really improve the allocation circuitry here to
+      --  Allocated_Table represents the currently allocated array, plus one
+      --  element (the supplementary element is used to have a convenient
+      --  way of computing the address just past the end of the current
+      --  allocation). Range checks are suppressed because this unit uses
+      --  direct calls to System.Memory for allocation, and this can yield
+      --  misaligned storage (and we cannot rely on the bootstrap compiler
+      --  supporting specifically disabling alignment checks, so we need to
+      --  suppress all range checks). It is safe to suppress this check here
+      --  because we know that a (possibly misaligned) object of that type
+      --  does actually exist at that address. ??? We should really improve
+      --  the allocation circuitry here to
       --  guarantee proper alignment.
 
       Need_Realloc : constant Boolean := Integer (Index) > Max;
@@ -323,6 +338,74 @@ package body GNAT.Table is
          end if;
       end if;
    end Set_Last;
+
+   ----------------
+   -- Sort_Table --
+   ----------------
+
+   procedure Sort_Table is
+
+      Temp : Table_Component_Type;
+      --  A temporary position to simulate index 0
+
+      --  Local subprograms
+
+      function Index_Of (Idx : Natural) return Table_Index_Type;
+      --  Return index of Idx'th element of table
+
+      function Lower_Than (Op1, Op2 : Natural) return Boolean;
+      --  Compare two components
+
+      procedure Move (From : Natural; To : Natural);
+      --  Move one component
+
+      package Heap_Sort is new GNAT.Heap_Sort_G (Move, Lower_Than);
+
+      --------------
+      -- Index_Of --
+      --------------
+
+      function Index_Of (Idx : Natural) return Table_Index_Type is
+         J : constant Integer'Base := Table_Index_Type'Pos (First) + Idx - 1;
+      begin
+         return Table_Index_Type'Val (J);
+      end Index_Of;
+
+      ----------
+      -- Move --
+      ----------
+
+      procedure Move (From : Natural; To : Natural) is
+      begin
+         if From = 0 then
+            Table (Index_Of (To)) := Temp;
+         elsif To = 0 then
+            Temp := Table (Index_Of (From));
+         else
+            Table (Index_Of (To)) := Table (Index_Of (From));
+         end if;
+      end Move;
+
+      ----------------
+      -- Lower_Than --
+      ----------------
+
+      function Lower_Than (Op1, Op2 : Natural) return Boolean is
+      begin
+         if Op1 = 0 then
+            return Lt (Temp, Table (Index_Of (Op2)));
+         elsif Op2 = 0 then
+            return Lt (Table (Index_Of (Op1)), Temp);
+         else
+            return Lt (Table (Index_Of (Op1)), Table (Index_Of (Op2)));
+         end if;
+      end Lower_Than;
+
+   --  Start of processing for Sort_Table
+
+   begin
+      Heap_Sort.Sort (Natural (Last - First) + 1);
+   end Sort_Table;
 
 begin
    Init;

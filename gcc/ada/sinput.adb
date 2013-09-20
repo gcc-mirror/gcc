@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,10 +258,20 @@ package body Sinput is
       BOM : BOM_Kind;
       Len : Natural;
       Tst : String (1 .. 5);
+      C   : Character;
 
    begin
       for J in 1 .. 5 loop
-         Tst (J) := Source (Scan_Ptr + Source_Ptr (J) - 1);
+         C := Source (Scan_Ptr + Source_Ptr (J) - 1);
+
+         --  Definitely no BOM if EOF character marks either end of file, or
+         --  an illegal non-BOM character if not at the end of file.
+
+         if C = EOF then
+            return;
+         end if;
+
+         Tst (J) := C;
       end loop;
 
       Read_BOM (Tst, Len, BOM, False);

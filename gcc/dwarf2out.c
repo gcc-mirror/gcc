@@ -376,11 +376,15 @@ should_emit_struct_debug (tree type, enum debug_info_usage usage)
 
   type_decl = TYPE_STUB_DECL (TYPE_MAIN_VARIANT (type));
 
-  if (criterion == DINFO_STRUCT_FILE_SYS && DECL_IN_SYSTEM_HEADER (type_decl))
-    return DUMP_GSTRUCT (type, usage, criterion, generic, false, true);
+  if (type_decl != NULL)
+    {
+     if (criterion == DINFO_STRUCT_FILE_SYS && DECL_IN_SYSTEM_HEADER (type_decl))
+        return DUMP_GSTRUCT (type, usage, criterion, generic, false, true);
 
-  if (matches_main_base (DECL_SOURCE_FILE (type_decl)))
-    return DUMP_GSTRUCT (type, usage, criterion, generic, true, true);
+      if (matches_main_base (DECL_SOURCE_FILE (type_decl)))
+        return DUMP_GSTRUCT (type, usage, criterion, generic, true, true);
+    }
+
   return DUMP_GSTRUCT (type, usage, criterion, generic, false, false);
 }
 
@@ -12517,9 +12521,10 @@ mem_loc_descriptor (rtx rtl, enum machine_mode mode,
       /* Turn these into a PLUS expression and fall into the PLUS code
 	 below.  */
       rtl = gen_rtx_PLUS (mode, XEXP (rtl, 0),
-			  GEN_INT (GET_CODE (rtl) == PRE_INC
-				   ? GET_MODE_UNIT_SIZE (mem_mode)
-				   : -GET_MODE_UNIT_SIZE (mem_mode)));
+			  gen_int_mode (GET_CODE (rtl) == PRE_INC
+					? GET_MODE_UNIT_SIZE (mem_mode)
+					: -GET_MODE_UNIT_SIZE (mem_mode),
+					mode));
 
       /* ... fall through ...  */
 

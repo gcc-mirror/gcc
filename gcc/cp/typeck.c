@@ -4554,7 +4554,8 @@ cp_build_binary_op (location_t location,
 	vector_compare:
 	  tree intt;
 	  if (!same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (type0),
-							  TREE_TYPE (type1)))
+							  TREE_TYPE (type1))
+	      && !vector_types_compatible_elements_p (type0, type1))
 	    {
 	      if (complain & tf_error)
 		{
@@ -4670,8 +4671,7 @@ cp_build_binary_op (location_t location,
       if (code0 == VECTOR_TYPE && code1 == VECTOR_TYPE)
 	{
 	  if (!tree_int_cst_equal (TYPE_SIZE (type0), TYPE_SIZE (type1))
-	      || !same_scalar_type_ignoring_signedness (TREE_TYPE (type0),
-							TREE_TYPE (type1)))
+	      || !vector_types_compatible_elements_p (type0, type1))
 	    {
 	      if (complain & tf_error)
 		binary_op_error (location, code, type0, type1);
@@ -4884,9 +4884,11 @@ cp_build_binary_op (location_t location,
   if (build_type == NULL_TREE)
     build_type = result_type;
 
-  if ((flag_sanitize & SANITIZE_UNDEFINED)
+  if ((flag_sanitize & (SANITIZE_SHIFT | SANITIZE_DIVIDE))
       && !processing_template_decl
       && current_function_decl != 0
+      && !lookup_attribute ("no_sanitize_undefined",
+			    DECL_ATTRIBUTES (current_function_decl))
       && (doing_div_or_mod || doing_shift))
     {
       /* OP0 and/or OP1 might have side-effects.  */
@@ -4896,7 +4898,7 @@ cp_build_binary_op (location_t location,
 								  tf_none));
       op1 = maybe_constant_value (fold_non_dependent_expr_sfinae (op1,
 								  tf_none));
-      if (doing_div_or_mod)
+      if (doing_div_or_mod && (flag_sanitize & SANITIZE_DIVIDE))
 	{
 	  /* For diagnostics we want to use the promoted types without
 	     shorten_binary_op.  So convert the arguments to the
@@ -4910,7 +4912,7 @@ cp_build_binary_op (location_t location,
 	    }
 	  instrument_expr = ubsan_instrument_division (location, cop0, cop1);
 	}
-      else if (doing_shift)
+      else if (doing_shift && (flag_sanitize & SANITIZE_SHIFT))
 	instrument_expr = ubsan_instrument_shift (location, code, op0, op1);
     }
 
@@ -4924,7 +4926,7 @@ cp_build_binary_op (location_t location,
       && !TREE_OVERFLOW_P (op1))
     overflow_warning (location, result);
 
-  if ((flag_sanitize & SANITIZE_UNDEFINED) && instrument_expr != NULL)
+  if (instrument_expr != NULL)
     result = fold_build2 (COMPOUND_EXPR, TREE_TYPE (result),
 			  instrument_expr, result);
 

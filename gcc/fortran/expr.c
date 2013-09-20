@@ -3581,14 +3581,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  return false;
 	}
 
-      if (!gfc_compare_interfaces (s2, s1, name, 0, 1,
-				   err, sizeof(err), NULL, NULL))
-	{
-	  gfc_error ("Interface mismatch in procedure pointer assignment "
-		     "at %L: %s", &rvalue->where, err);
-	  return false;
-	}
-
       return true;
     }
 
@@ -3824,6 +3816,7 @@ gfc_check_assign_symbol (gfc_symbol *sym, gfc_component *comp, gfc_expr *rvalue)
     r = gfc_check_assign (&lvalue, rvalue, 1);
 
   free (lvalue.symtree);
+  free (lvalue.ref);
 
   if (!r)
     return r;

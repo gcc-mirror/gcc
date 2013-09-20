@@ -68,7 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "intl.h"
 #include "opts.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-ssa-alias.h"
 #include "insn-codes.h"
 

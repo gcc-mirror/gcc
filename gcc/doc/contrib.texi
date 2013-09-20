@@ -176,7 +176,7 @@ The @uref{http://www.gnu.org/software/classpath/,,GNU Classpath project}
 for all of their merged runtime code.
 
 @item
-Nick Clifton for arm, mcore, fr30, v850, m32r, rx work,
+Nick Clifton for arm, mcore, fr30, v850, m32r, msp430 rx work,
 @option{--help}, and other random hacking.
 
 @item
@@ -218,7 +218,7 @@ Mo DeJong for GCJ and libgcj bug fixes.
 
 @item
 DJ Delorie for the DJGPP port, build and libiberty maintenance,
-various bug fixes, and the M32C, MeP, and RL78 ports.
+various bug fixes, and the M32C, MeP, MSP430, and RL78 ports.
 
 @item
 Arnaud Desitter for helping to debug GNU Fortran.

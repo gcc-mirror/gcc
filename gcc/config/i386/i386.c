@@ -1645,18 +1645,21 @@ struct processor_costs slm_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic64 should produce code tuned for Nocona and K8.  */
+/* Generic should produce code tuned for Core-i7 (and newer chips)
+   and btver1 (and newer chips).  */
 
-static stringop_algs generic64_memcpy[2] = {
-  DUMMY_STRINGOP_ALGS,
+static stringop_algs generic_memcpy[2] = {
+  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
+             {-1, libcall, false}}},
   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
-static stringop_algs generic64_memset[2] = {
-  DUMMY_STRINGOP_ALGS,
+static stringop_algs generic_memset[2] = {
+  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
+             {-1, libcall, false}}},
   {libcall, {{32, loop, false}, {8192, rep_prefix_8_byte, false},
              {-1, libcall, false}}}};
 static const
-struct processor_costs generic64_cost = {
+struct processor_costs generic_cost = {
   COSTS_N_INSNS (1),			/* cost of an add instruction */
   /* On all chips taken into consideration lea is 2 cycles and more.  With
      this cost however our current implementation of synth_mult results in
@@ -1714,8 +1717,8 @@ struct processor_costs generic64_cost = {
   COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
   COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
   COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  generic64_memcpy,
-  generic64_memset,
+  generic_memcpy,
+  generic_memset,
   1,					/* scalar_stmt_cost.  */
   1,					/* scalar load_cost.  */
   1,					/* scalar_store_cost.  */
@@ -1815,83 +1818,6 @@ struct processor_costs core_cost = {
   1,					/* cond_not_taken_branch_cost.  */
 };
 
-/* Generic32 should produce code tuned for PPro, Pentium4, Nocona,
-   Athlon and K8.  */
-static stringop_algs generic32_memcpy[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static stringop_algs generic32_memset[2] = {
-  {libcall, {{32, loop, false}, {8192, rep_prefix_4_byte, false},
-             {-1, libcall, false}}},
-  DUMMY_STRINGOP_ALGS};
-static const
-struct processor_costs generic32_cost = {
-  COSTS_N_INSNS (1),			/* cost of an add instruction */
-  COSTS_N_INSNS (1) + 1,		/* cost of a lea instruction */
-  COSTS_N_INSNS (1),			/* variable shift costs */
-  COSTS_N_INSNS (1),			/* constant shift costs */
-  {COSTS_N_INSNS (3),			/* cost of starting multiply for QI */
-   COSTS_N_INSNS (4),			/*				 HI */
-   COSTS_N_INSNS (3),			/*				 SI */
-   COSTS_N_INSNS (4),			/*				 DI */
-   COSTS_N_INSNS (2)},			/*			      other */
-  0,					/* cost of multiply per each bit set */
-  {COSTS_N_INSNS (18),			/* cost of a divide/mod for QI */
-   COSTS_N_INSNS (26),			/*			    HI */
-   COSTS_N_INSNS (42),			/*			    SI */
-   COSTS_N_INSNS (74),			/*			    DI */
-   COSTS_N_INSNS (74)},			/*			    other */
-  COSTS_N_INSNS (1),			/* cost of movsx */
-  COSTS_N_INSNS (1),			/* cost of movzx */
-  8,					/* "large" insn */
-  17,					/* MOVE_RATIO */
-  4,				     /* cost for loading QImode using movzbl */
-  {4, 4, 4},				/* cost of loading integer registers
-					   in QImode, HImode and SImode.
-					   Relative to reg-reg move (2).  */
-  {4, 4, 4},				/* cost of storing integer registers */
-  4,					/* cost of reg,reg fld/fst */
-  {12, 12, 12},				/* cost of loading fp registers
-					   in SFmode, DFmode and XFmode */
-  {6, 6, 8},				/* cost of storing fp registers
-					   in SFmode, DFmode and XFmode */
-  2,					/* cost of moving MMX register */
-  {8, 8},				/* cost of loading MMX registers
-					   in SImode and DImode */
-  {8, 8},				/* cost of storing MMX registers
-					   in SImode and DImode */
-  2,					/* cost of moving SSE register */
-  {8, 8, 8},				/* cost of loading SSE registers
-					   in SImode, DImode and TImode */
-  {8, 8, 8},				/* cost of storing SSE registers
-					   in SImode, DImode and TImode */
-  5,					/* MMX or SSE register to integer */
-  32,					/* size of l1 cache.  */
-  256,					/* size of l2 cache.  */
-  64,					/* size of prefetch block */
-  6,					/* number of parallel prefetches */
-  3,					/* Branch cost */
-  COSTS_N_INSNS (8),			/* cost of FADD and FSUB insns.  */
-  COSTS_N_INSNS (8),			/* cost of FMUL instruction.  */
-  COSTS_N_INSNS (20),			/* cost of FDIV instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FABS instruction.  */
-  COSTS_N_INSNS (8),			/* cost of FCHS instruction.  */
-  COSTS_N_INSNS (40),			/* cost of FSQRT instruction.  */
-  generic32_memcpy,
-  generic32_memset,
-  1,					/* scalar_stmt_cost.  */
-  1,					/* scalar load_cost.  */
-  1,					/* scalar_store_cost.  */
-  1,					/* vec_stmt_cost.  */
-  1,					/* vec_to_scalar_cost.  */
-  1,					/* scalar_to_vec_cost.  */
-  1,					/* vec_align_load_cost.  */
-  2,					/* vec_unalign_load_cost.  */
-  1,					/* vec_store_cost.  */
-  3,					/* cond_taken_branch_cost.  */
-  1,					/* cond_not_taken_branch_cost.  */
-};
 
 /* Set by -mtune.  */
 const struct processor_costs *ix86_tune_cost = &pentium_cost;
@@ -1930,12 +1856,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BTVER (m_BTVER1 | m_BTVER2)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER)
 
-#define m_GENERIC32 (1<<PROCESSOR_GENERIC32)
-#define m_GENERIC64 (1<<PROCESSOR_GENERIC64)
-
-/* Generic instruction choice should be common subset of supported CPUs
-   (PPro/PENT4/NOCONA/CORE2/Athlon/K8).  */
-#define m_GENERIC (m_GENERIC32 | m_GENERIC64)
+#define m_GENERIC (1<<PROCESSOR_GENERIC)
 
 const char* ix86_tune_feature_names[X86_TUNE_LAST] = {
 #undef DEF_TUNE
@@ -2033,6 +1954,9 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
   EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
   EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  /* Mask registers.  */
+  MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
+  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -2048,6 +1972,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
+  93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -2063,6 +1988,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
   25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
   67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
   75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
+  118, 119, 120, 121, 122, 123, 124, 125, /* Mask registers */
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -2130,6 +2056,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
   -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
+  93, 94, 95, 96, 97, 98, 99, 100,      /* Mask registers */
 };
 
 /* Define parameter passing and return registers.  */
@@ -2379,8 +2306,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {&core_cost, 16, 10, 16, 10, 16},
   /* Core avx2  */
   {&core_cost, 16, 10, 16, 10, 16},
-  {&generic32_cost, 16, 7, 16, 7, 16},
-  {&generic64_cost, 16, 10, 16, 10, 16},
+  {&generic_cost, 16, 10, 16, 10, 16},
   {&amdfam10_cost, 32, 24, 32, 7, 32},
   {&bdver1_cost, 16, 10, 16, 7, 11},
   {&bdver2_cost, 16, 10, 16, 7, 11},
@@ -3177,7 +3103,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
 	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE 
 	| PTA_XSAVEOPT | PTA_FSGSBASE},
-      {"btver1", PROCESSOR_BTVER1, CPU_GENERIC64,
+      {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
 	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
 	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
 	| PTA_FXSR | PTA_XSAVE},
@@ -3188,9 +3114,7 @@ ix86_option_override_internal (bool main_args_p)
 	| PTA_BMI | PTA_F16C | PTA_MOVBE | PTA_PRFCHW
 	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
 
-      {"generic32", PROCESSOR_GENERIC32, CPU_PENTIUMPRO,
-	PTA_HLE /* flags are only used for -march switch.  */ },
-      {"generic64", PROCESSOR_GENERIC64, CPU_GENERIC64,
+      {"generic", PROCESSOR_GENERIC, CPU_GENERIC,
 	PTA_64BIT
 	| PTA_HLE /* flags are only used for -march switch.  */ },
     };
@@ -3290,16 +3214,12 @@ ix86_option_override_internal (bool main_args_p)
 	     -mtune=native, as it was changed by the driver.  */
 	  || !strcmp (ix86_tune_string, "native"))
 	{
-	  if (TARGET_64BIT)
-	    ix86_tune_string = "generic64";
-	  else
-	    ix86_tune_string = "generic32";
+	  ix86_tune_string = "generic";
 	}
       /* If this call is for setting the option attribute, allow the
-	 generic32/generic64 that was previously set.  */
+	 generic that was previously set.  */
       else if (!main_args_p
-	       && (!strcmp (ix86_tune_string, "generic32")
-		   || !strcmp (ix86_tune_string, "generic64")))
+	       && !strcmp (ix86_tune_string, "generic"))
 	;
       else if (!strncmp (ix86_tune_string, "generic", 7))
         error ("bad value (%s) for %stune=%s %s",
@@ -3325,10 +3245,7 @@ ix86_option_override_internal (bool main_args_p)
 	  || !strcmp (ix86_tune_string, "x86-64")
 	  || !strcmp (ix86_tune_string, "i686"))
 	{
-	  if (TARGET_64BIT)
-	    ix86_tune_string = "generic64";
-	  else
-	    ix86_tune_string = "generic32";
+	  ix86_tune_string = "generic";
 	}
     }
 
@@ -3357,6 +3274,12 @@ ix86_option_override_internal (bool main_args_p)
 
   if (!global_options_set.x_ix86_abi)
     ix86_abi = DEFAULT_ABI;
+
+  /* For targets using ms ABI enable ms-extensions, if not
+     explicit turned off.  For non-ms ABI we turn off this
+     option.  */
+  if (!global_options_set.x_flag_ms_extensions)
+    flag_ms_extensions = (MS_ABI == DEFAULT_ABI);
 
   if (global_options_set.x_ix86_cmodel)
     {
@@ -3617,20 +3540,6 @@ ix86_option_override_internal (bool main_args_p)
 		else
 		  error ("CPU you selected does not support x86-64 "
 			 "instruction set");
-	      }
-	  }
-	else
-	  {
-	    /* Adjust tuning when compiling for 32-bit ABI.  */
-	    switch (ix86_tune)
-	      {
-	      case PROCESSOR_GENERIC64:
-		ix86_tune = PROCESSOR_GENERIC32;
-		ix86_schedule = CPU_PENTIUMPRO;
-		break;
-
-	      default:
-		break;
 	      }
 	  }
 	/* Intel CPUs have always interpreted SSE prefetch instructions as
@@ -4219,8 +4128,13 @@ ix86_conditional_register_usage (void)
 
   /* If AVX512F is disabled, squash the registers.  */
   if (! TARGET_AVX512F)
-    for (i = FIRST_EXT_REX_SSE_REG; i < LAST_EXT_REX_SSE_REG; i++)
-      fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    {
+      for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+
+      for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1, reg_names[i] = "";
+    }
 }
 
 
@@ -5707,17 +5621,9 @@ ix86_function_arg_regno_p (int regno)
 		    && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX)));
     }
 
-  if (TARGET_MACHO)
-    {
-      if (SSE_REGNO_P (regno) && TARGET_SSE)
-        return true;
-    }
-  else
-    {
-      if (TARGET_SSE && SSE_REGNO_P (regno)
-          && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
-        return true;
-    }
+  if (TARGET_SSE && SSE_REGNO_P (regno)
+      && (regno < FIRST_SSE_REG + SSE_REGPARM_MAX))
+    return true;
 
   /* TODO: The function should depend on current function ABI but
      builtins.c would need updating then. Therefore we use the
@@ -17461,12 +17367,22 @@ distance_agu_use_in_bb (unsigned int regno,
 			rtx insn, int distance, rtx start,
 			bool *found, bool *redefined)
 {
-  basic_block bb = start ? BLOCK_FOR_INSN (start) : NULL;
+  basic_block bb = NULL;
   rtx next = start;
   rtx prev = NULL;
 
   *found = false;
   *redefined = false;
+
+  if (start != NULL_RTX)
+    {
+      bb = BLOCK_FOR_INSN (start);
+      if (start != BB_HEAD (bb))
+	/* If insn and start belong to the same bb, set prev to insn,
+	   so the call to increase_distance will increase the distance
+	   between insns by 1.  */
+	prev = insn;
+    }
 
   while (next
 	 && next != insn
@@ -23330,7 +23246,7 @@ ix86_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 
   if (count_exp != const0_rtx && epilogue_size_needed > 1)
     expand_movmem_epilogue (dst, src, destreg, srcreg, count_exp,
-			    size_needed);
+			    epilogue_size_needed);
   if (jump_around_label)
     emit_label (jump_around_label);
   return true;
@@ -24485,8 +24401,7 @@ ix86_issue_rate (void)
     case PROCESSOR_K8:
     case PROCESSOR_AMDFAM10:
     case PROCESSOR_NOCONA:
-    case PROCESSOR_GENERIC32:
-    case PROCESSOR_GENERIC64:
+    case PROCESSOR_GENERIC:
     case PROCESSOR_BDVER1:
     case PROCESSOR_BDVER2:
     case PROCESSOR_BDVER3:
@@ -24750,8 +24665,7 @@ ix86_adjust_cost (rtx insn, rtx link, rtx dep_insn, int cost)
     case PROCESSOR_BTVER1:
     case PROCESSOR_BTVER2:
     case PROCESSOR_ATOM:
-    case PROCESSOR_GENERIC32:
-    case PROCESSOR_GENERIC64:
+    case PROCESSOR_GENERIC:
       memory = get_attr_memory (insn);
 
       /* Show ability of reorder buffer to hide latency of load by executing
@@ -33912,10 +33826,12 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
     return regclass;
 
   /* Force constants into memory if we are loading a (nonzero) constant into
-     an MMX or SSE register.  This is because there are no MMX/SSE instructions
-     to load from a constant.  */
+     an MMX, SSE or MASK register.  This is because there are no MMX/SSE/MASK
+     instructions to load from a constant.  */
   if (CONSTANT_P (x)
-      && (MAYBE_MMX_CLASS_P (regclass) || MAYBE_SSE_CLASS_P (regclass)))
+      && (MAYBE_MMX_CLASS_P (regclass)
+	  || MAYBE_SSE_CLASS_P (regclass)
+	  || MAYBE_MASK_CLASS_P (regclass)))
     return NO_REGS;
 
   /* Prefer SSE regs only, if we can use them for math.  */
@@ -34019,10 +33935,11 @@ ix86_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 
   /* QImode spills from non-QI registers require
      intermediate register on 32bit targets.  */
-  if (!TARGET_64BIT
-      && !in_p && mode == QImode
-      && INTEGER_CLASS_P (rclass)
-      && MAYBE_NON_Q_CLASS_P (rclass))
+  if (mode == QImode
+      && (MAYBE_MASK_CLASS_P (rclass)
+	  || (!TARGET_64BIT && !in_p
+	      && INTEGER_CLASS_P (rclass)
+	      && MAYBE_NON_Q_CLASS_P (rclass))))
     {
       int regno;
 
@@ -34444,6 +34361,8 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
     return false;
   if (STACK_REGNO_P (regno))
     return VALID_FP_MODE_P (mode);
+  if (MASK_REGNO_P (regno))
+    return VALID_MASK_REG_MODE (mode);
   if (SSE_REGNO_P (regno))
     {
       /* We implement the move patterns for all vector modes into and
@@ -34466,7 +34385,7 @@ ix86_hard_regno_mode_ok (int regno, enum machine_mode mode)
 
       /* OImode move is available only when AVX is enabled.  */
       return ((TARGET_AVX && mode == OImode)
-	      || VALID_AVX256_REG_MODE (mode)
+	      || (TARGET_AVX && VALID_AVX256_REG_MODE (mode))
 	      || VALID_SSE_REG_MODE (mode)
 	      || VALID_SSE2_REG_MODE (mode)
 	      || VALID_MMX_REG_MODE (mode)
@@ -35251,6 +35170,10 @@ x86_order_regs_for_local_alloc (void)
 
    /* Extended REX SSE registers.  */
    for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
+     reg_alloc_order [pos++] = i;
+
+   /* Mask register.  */
+   for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
      reg_alloc_order [pos++] = i;
 
    /* x87 registers.  */

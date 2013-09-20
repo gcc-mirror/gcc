@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "ggc.h"
 #include "gimple-pretty-print.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "tree-dump.h"
 #include "tree-pass.h"
 #include "diagnostic-core.h"
@@ -3574,11 +3574,10 @@ verify_gimple_assign_binary (gimple stmt)
     case PLUS_EXPR:
     case MINUS_EXPR:
       {
-	/* We use regular PLUS_EXPR and MINUS_EXPR for vectors.
-	   ???  This just makes the checker happy and may not be what is
-	   intended.  */
-	if (TREE_CODE (lhs_type) == VECTOR_TYPE
-	    && POINTER_TYPE_P (TREE_TYPE (lhs_type)))
+	tree lhs_etype = lhs_type;
+	tree rhs1_etype = rhs1_type;
+	tree rhs2_etype = rhs2_type;
+	if (TREE_CODE (lhs_type) == VECTOR_TYPE)
 	  {
 	    if (TREE_CODE (rhs1_type) != VECTOR_TYPE
 		|| TREE_CODE (rhs2_type) != VECTOR_TYPE)
@@ -3586,22 +3585,13 @@ verify_gimple_assign_binary (gimple stmt)
 		error ("invalid non-vector operands to vector valued plus");
 		return true;
 	      }
-	    lhs_type = TREE_TYPE (lhs_type);
-	    rhs1_type = TREE_TYPE (rhs1_type);
-	    rhs2_type = TREE_TYPE (rhs2_type);
-	    /* PLUS_EXPR is commutative, so we might end up canonicalizing
-	       the pointer to 2nd place.  */
-	    if (POINTER_TYPE_P (rhs2_type))
-	      {
-		tree tem = rhs1_type;
-		rhs1_type = rhs2_type;
-		rhs2_type = tem;
-	      }
-	    goto do_pointer_plus_expr_check;
+	    lhs_etype = TREE_TYPE (lhs_type);
+	    rhs1_etype = TREE_TYPE (rhs1_type);
+	    rhs2_etype = TREE_TYPE (rhs2_type);
 	  }
-	if (POINTER_TYPE_P (lhs_type)
-	    || POINTER_TYPE_P (rhs1_type)
-	    || POINTER_TYPE_P (rhs2_type))
+	if (POINTER_TYPE_P (lhs_etype)
+	    || POINTER_TYPE_P (rhs1_etype)
+	    || POINTER_TYPE_P (rhs2_etype))
 	  {
 	    error ("invalid (pointer) operands to plus/minus");
 	    return true;
@@ -3613,7 +3603,6 @@ verify_gimple_assign_binary (gimple stmt)
 
     case POINTER_PLUS_EXPR:
       {
-do_pointer_plus_expr_check:
 	if (!POINTER_TYPE_P (rhs1_type)
 	    || !useless_type_conversion_p (lhs_type, rhs1_type)
 	    || !ptrofftype_p (rhs2_type))
@@ -5577,6 +5566,7 @@ gimple_duplicate_bb (basic_block bb)
       copy = create_phi_node (NULL_TREE, new_bb);
       create_new_def_for (gimple_phi_result (phi), copy,
 			  gimple_phi_result_ptr (copy));
+      gimple_set_uid (copy, gimple_uid (phi));
     }
 
   gsi_tgt = gsi_start_bb (new_bb);
@@ -6778,10 +6768,10 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
       if (bb->loop_father->header == bb
 	  && loop_outer (bb->loop_father) == loop)
 	{
-	  struct loop *loop = bb->loop_father;
+	  struct loop *this_loop = bb->loop_father;
 	  flow_loop_tree_node_remove (bb->loop_father);
-	  flow_loop_tree_node_add (get_loop (dest_cfun, 0), loop);
-	  fixup_loop_arrays_after_move (saved_cfun, cfun, loop);
+	  flow_loop_tree_node_add (get_loop (dest_cfun, 0), this_loop);
+	  fixup_loop_arrays_after_move (saved_cfun, cfun, this_loop);
 	}
 
       /* Remove loop exits from the outlined region.  */
@@ -6835,6 +6825,23 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   for (struct loop *outer = loop_outer (loop);
        outer; outer = loop_outer (outer))
     outer->num_nodes -= bbs.length ();
+
+  if (saved_cfun->has_simduid_loops || saved_cfun->has_force_vect_loops)
+    {
+      struct loop *aloop;
+      for (i = 0; vec_safe_iterate (loops->larray, i, &aloop); i++)
+	if (aloop != NULL)
+	  {
+	    if (aloop->simduid)
+	      {
+		replace_by_duplicate_decl (&aloop->simduid, d.vars_map,
+					   d.to_context);
+		dest_cfun->has_simduid_loops = true;
+	      }
+	    if (aloop->force_vect)
+	      dest_cfun->has_force_vect_loops = true;
+	  }
+    }
 
   /* Rewire BLOCK_SUBBLOCKS of orig_block.  */
   if (orig_block)
@@ -7943,6 +7950,7 @@ public:
   /* opt_pass methods: */
   unsigned int execute () { return split_critical_edges (); }
 
+  opt_pass * clone () { return new pass_split_crit_edges (ctxt_); }
 }; // class pass_split_crit_edges
 
 } // anon namespace

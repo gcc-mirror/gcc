@@ -97,6 +97,10 @@ typedef struct copy_body_data
      by manipulating the CFG rather than a statement.  */
   bool transform_return_to_modify;
 
+  /* True if the parameters of the source function are transformed.
+     Only true for inlining.  */
+  bool transform_parameter;
+
   /* True if this statement will need to be regimplified.  */
   bool regimplify;
 

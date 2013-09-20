@@ -37,6 +37,9 @@ DEFCIFCODE(UNSPECIFIED , "")
    functions that have not been rejected for inlining yet.  */
 DEFCIFCODE(FUNCTION_NOT_CONSIDERED, N_("function not considered for inlining"))
 
+/* Caller is compiled with optimizations disabled.  */
+DEFCIFCODE(FUNCTION_NOT_OPTIMIZED, N_("caller is not optimized"))
+
 /* Inlining failed owing to unavailable function body.  */
 DEFCIFCODE(BODY_NOT_AVAILABLE, N_("function body not available"))
 

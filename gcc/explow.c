@@ -157,7 +157,7 @@ plus_constant (enum machine_mode mode, rtx x, HOST_WIDE_INT c)
     }
 
   if (c != 0)
-    x = gen_rtx_PLUS (mode, x, GEN_INT (c));
+    x = gen_rtx_PLUS (mode, x, gen_int_mode (c, mode));
 
   if (GET_CODE (x) == SYMBOL_REF || GET_CODE (x) == LABEL_REF)
     return x;
@@ -1326,7 +1326,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       else
 	{
 	  ask = expand_binop (Pmode, add_optab, size,
-			      GEN_INT (required_align / BITS_PER_UNIT - 1),
+			      gen_int_mode (required_align / BITS_PER_UNIT - 1,
+					    Pmode),
 			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
 	  must_align = true;
 	}
@@ -1452,13 +1453,16 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	 but we know it can't.  So add ourselves and then do
 	 TRUNC_DIV_EXPR.  */
       target = expand_binop (Pmode, add_optab, target,
-			     GEN_INT (required_align / BITS_PER_UNIT - 1),
+			     gen_int_mode (required_align / BITS_PER_UNIT - 1,
+					   Pmode),
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
       target = expand_divmod (0, TRUNC_DIV_EXPR, Pmode, target,
-			      GEN_INT (required_align / BITS_PER_UNIT),
+			      gen_int_mode (required_align / BITS_PER_UNIT,
+					    Pmode),
 			      NULL_RTX, 1);
       target = expand_mult (Pmode, target,
-			    GEN_INT (required_align / BITS_PER_UNIT),
+			    gen_int_mode (required_align / BITS_PER_UNIT,
+					  Pmode),
 			    NULL_RTX, 1);
     }
 
@@ -1603,7 +1607,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 
       /* ROUNDED_SIZE = SIZE & -PROBE_INTERVAL  */
       rounded_size
-	= simplify_gen_binary (AND, Pmode, size, GEN_INT (-PROBE_INTERVAL));
+	= simplify_gen_binary (AND, Pmode, size,
+			       gen_int_mode (-PROBE_INTERVAL, Pmode));
       rounded_size_op = force_operand (rounded_size, NULL_RTX);
 
 
@@ -1612,7 +1617,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
       /* TEST_ADDR = SP + FIRST.  */
       test_addr = force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
 					 	 stack_pointer_rtx,
-					 	 GEN_INT (first)), NULL_RTX);
+						 gen_int_mode (first, Pmode)),
+				 NULL_RTX);
 
       /* LAST_ADDR = SP + FIRST + ROUNDED_SIZE.  */
       last_addr = force_operand (gen_rtx_fmt_ee (STACK_GROW_OP, Pmode,
@@ -1639,7 +1645,7 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 
       /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
       temp = expand_binop (Pmode, STACK_GROW_OPTAB, test_addr,
-			   GEN_INT (PROBE_INTERVAL), test_addr,
+			   gen_int_mode (PROBE_INTERVAL, Pmode), test_addr,
 			   1, OPTAB_WIDEN);
 
       gcc_assert (temp == test_addr);
@@ -1746,7 +1752,8 @@ anti_adjust_stack_and_probe (rtx size, bool adjust_back)
 
       /* ROUNDED_SIZE = SIZE & -PROBE_INTERVAL  */
       rounded_size
-	= simplify_gen_binary (AND, Pmode, size, GEN_INT (-PROBE_INTERVAL));
+	= simplify_gen_binary (AND, Pmode, size,
+			       gen_int_mode (-PROBE_INTERVAL, Pmode));
       rounded_size_op = force_operand (rounded_size, NULL_RTX);
 
 

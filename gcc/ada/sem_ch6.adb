@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Checks;   use Checks;
 with Debug;    use Debug;
@@ -210,10 +211,6 @@ package body Sem_Ch6 is
    procedure Make_Inequality_Operator (S : Entity_Id);
    --  Create the declaration for an inequality operator that is implicitly
    --  created by a user-defined equality operator that yields a boolean.
-
-   procedure May_Need_Actuals (Fun : Entity_Id);
-   --  Flag functions that can be called without parameters, i.e. those that
-   --  have no parameters, or those for which defaults exist for all parameters
 
    procedure Process_PPCs
      (N       : Node_Id;
@@ -2675,12 +2672,17 @@ package body Sem_Ch6 is
          end if;
       end if;
 
-      --  Ada 2012 aspects may appear in a subprogram body, but only if there
-      --  is no previous spec. Ditto for a subprogram stub that does not have
-      --  a corresponding spec, but for which there may also be a spec_id.
+      --  Language-defined aspects cannot appear in a subprogram body if the
+      --  corresponding spec already has aspects. Exception to this rule are
+      --  certain user-defined aspects. Aspects that apply to a body stub are
+      --  moved to the proper body. Do not emit an error in this case.
 
       if Has_Aspects (N) then
-         if Present (Spec_Id) then
+         if Present (Spec_Id)
+           and then Nkind (N) not in N_Body_Stub
+           and then Nkind (Parent (N)) /= N_Subunit
+           and then not Aspects_On_Body_OK (N)
+         then
             Error_Msg_N
               ("aspect specifications must appear in subprogram declaration",
                 N);

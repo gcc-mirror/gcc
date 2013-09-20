@@ -1,3 +1,49 @@
+2013-09-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58099
+	* expr.c (gfc_check_pointer_assign): Remove second call to
+	'gfc_compare_interfaces' with swapped arguments.
+	* interface.c (gfc_compare_interfaces): Symmetrize the call to
+	'check_result_characteristics' by calling it with swapped arguments.
+
+2013-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	* expr.c (gfc_check_assign_symbol): Free lvalue.ref.
+
+2013-09-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/43366
+	* primary.c (gfc_variable_attr): Also handle codimension.
+	* resolve.c (resolve_ordinary_assign): Add invalid-diagnostic for
+	polymorphic assignment.
+
+2013-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/58356
+	* class.c (generate_finalization_wrapper): Init proc_tree if
+	not yet resolved.
+
+2013-09-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* resolve.c (generate_component_assignments): Correctly handle the
+	case that the LHS is not allocated.
+
+2013-09-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/57697
+	* resolve.c (generate_component_assignments): Handle unallocated
+	LHS with defined assignment of components.
+
+2013-09-12  Brooks Moses  <bmoses@google.com>
+
+	PR driver/42955
+	* Make-lang.in: Do not install driver binaries in $(target)/bin.
+
+2013-09-09  Tobias Burnus  <burnus@net-b.de>
+
+	* invoke.texi (Error and Warning Options): Add hyphen.
+
 2013-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/PR56519

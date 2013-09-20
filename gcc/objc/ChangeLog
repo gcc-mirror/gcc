@@ -1,3 +1,11 @@
+2013-09-14  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/48094
+	* objc-next-runtime-abi-01.c (generate_objc_image_info): Remove.
+	(objc_generate_v1_next_metadata): Remove generation of ImageInfo.
+	* objc-next-runtime-abi-02.c (generate_v2_objc_image_info): Remove.
+	(objc_generate_v2_next_metadata): Remove generation of ImageInfo.
+
 2013-07-21   OndÅej BÃ­lka  <neleai@seznam.cz>
 
 	* objc-act.c: Fix typos.

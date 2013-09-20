@@ -25,20 +25,20 @@
 #include <regex>
 #include <testsuite_hooks.h>
 
-// Tests the value() function of the regex_traits<char> class.
+// Tests the value() function of the regex_traits<wchar_t> class.
 void test01()
 {
   bool test __attribute__((unused)) = true;
-  std::regex_traits<char> t;
-  VERIFY( t.value('7', 8)  == 7 );
-  VERIFY( t.value('7', 10) == 7 );
-  VERIFY( t.value('7', 16) == 7 );
-  VERIFY( t.value('9', 8)  == -1 );
-  VERIFY( t.value('9', 10) == 9 );
-  VERIFY( t.value('9', 16) == 9 );
-  VERIFY( t.value('d', 8)  == -1 );
-  VERIFY( t.value('d', 10) == -1 );
-  VERIFY( t.value('d', 16) == 13 );
+  std::regex_traits<wchar_t> t;
+  VERIFY( t.value(L'7', 8)  == 7 );
+  VERIFY( t.value(L'7', 10) == 7 );
+  VERIFY( t.value(L'7', 16) == 7 );
+  VERIFY( t.value(L'9', 8)  == -1 );
+  VERIFY( t.value(L'9', 10) == 9 );
+  VERIFY( t.value(L'9', 16) == 9 );
+  VERIFY( t.value(L'd', 8)  == -1 );
+  VERIFY( t.value(L'd', 10) == -1 );
+  VERIFY( t.value(L'd', 16) == 13 );
 }
 
 int

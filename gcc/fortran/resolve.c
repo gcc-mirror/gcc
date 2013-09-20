@@ -9014,6 +9014,7 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
   int rlen = 0;
   int n;
   gfc_ref *ref;
+  symbol_attribute attr;
 
   if (gfc_extend_assign (code, ns))
     {
@@ -9178,14 +9179,35 @@ resolve_ordinary_assign (gfc_code *code, gfc_namespace *ns)
 	gfc_current_ns->proc_name->attr.implicit_pure = 0;
     }
 
-  /* F03:7.4.1.2.  */
-  /* FIXME: Valid in Fortran 2008, unless the LHS is both polymorphic
-     and coindexed; cf. F2008, 7.2.1.2 and PR 43366.  */
-  if (lhs->ts.type == BT_CLASS)
+  /* F2008, 7.2.1.2.  */
+  attr = gfc_expr_attr (lhs);
+  if (lhs->ts.type == BT_CLASS && attr.allocatable)
     {
-      gfc_error ("Variable must not be polymorphic in intrinsic assignment at "
-		 "%L - check that there is a matching specific subroutine "
-		 "for '=' operator", &lhs->where);
+      if (attr.codimension)
+	{
+	  gfc_error ("Assignment to polymorphic coarray at %L is not "
+		     "permitted", &lhs->where);
+	  return false;
+	}
+      if (!gfc_notify_std (GFC_STD_F2008, "Assignment to an allocatable "
+			   "polymorphic variable at %L", &lhs->where))
+	return false;
+      if (!gfc_option.flag_realloc_lhs)
+	{
+	  gfc_error ("Assignment to an allocatable polymorphic variable at %L "
+		     "requires -frealloc-lhs", &lhs->where);
+	  return false;
+	}
+      /* See PR 43366.  */
+      gfc_error ("Assignment to an allocatable polymorphic variable at %L "
+		 "is not yet supported", &lhs->where);
+      return false;
+    }
+  else if (lhs->ts.type == BT_CLASS)
+    {
+      gfc_error ("Nonallocatable variable must not be polymorphic in intrinsic "
+		 "assignment at %L - check that there is a matching specific "
+		 "subroutine for '=' operator", &lhs->where);
       return false;
     }
 
@@ -9546,6 +9568,24 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		  temp_code = build_assignment (EXEC_ASSIGN,
 						t1, (*code)->expr1,
 				NULL, NULL, (*code)->loc);
+
+		  /* For allocatable LHS, check whether it is allocated.  Note
+		     that allocatable components with defined assignment are
+		     not yet support.  See PR 57696.  */
+		  if ((*code)->expr1->symtree->n.sym->attr.allocatable)
+		    {
+		      gfc_code *block;
+		      gfc_expr *e =
+			gfc_lval_expr_from_sym ((*code)->expr1->symtree->n.sym);
+		      block = gfc_get_code (EXEC_IF);
+		      block->block = gfc_get_code (EXEC_IF);
+		      block->block->expr1
+			  = gfc_build_intrinsic_call (ns,
+				    GFC_ISYM_ALLOCATED, "allocated",
+				    (*code)->loc, 1, e);
+		      block->block->next = temp_code;
+		      temp_code = block;
+		    }
 		  add_code_to_chain (&temp_code, &tmp_head, &tmp_tail);
 		}
 
@@ -9554,6 +9594,32 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 	      gfc_free_expr (this_code->ext.actual->expr);
 	      this_code->ext.actual->expr = gfc_copy_expr (t1);
 	      add_comp_ref (this_code->ext.actual->expr, comp1);
+
+	      /* If the LHS variable is allocatable and wasn't allocated and
+                 the temporary is allocatable, pointer assign the address of
+                 the freshly allocated LHS to the temporary.  */
+	      if ((*code)->expr1->symtree->n.sym->attr.allocatable
+		  && gfc_expr_attr ((*code)->expr1).allocatable)
+		{
+		  gfc_code *block;
+                  gfc_expr *cond;
+                  cond = gfc_get_expr ();
+		  cond->ts.type = BT_LOGICAL;
+		  cond->ts.kind = gfc_default_logical_kind;
+		  cond->expr_type = EXPR_OP;
+		  cond->where = (*code)->loc;
+		  cond->value.op.op = INTRINSIC_NOT;
+		  cond->value.op.op1 = gfc_build_intrinsic_call (ns,
+					  GFC_ISYM_ALLOCATED, "allocated",
+					  (*code)->loc, 1, gfc_copy_expr (t1));
+		  block = gfc_get_code (EXEC_IF);
+		  block->block = gfc_get_code (EXEC_IF);
+		  block->block->expr1 = cond;
+		  block->block->next = build_assignment (EXEC_POINTER_ASSIGN,
+					t1, (*code)->expr1,
+					NULL, NULL, (*code)->loc);
+		  add_code_to_chain (&block, &head, &tail);
+		}
 	    }
 	  }
       else if (this_code->op == EXEC_ASSIGN && !this_code->next)

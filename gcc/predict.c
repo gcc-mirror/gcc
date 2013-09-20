@@ -50,7 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "target.h"
 #include "cfgloop.h"
-#include "tree-flow.h"
+#include "tree-ssa.h"
 #include "ggc.h"
 #include "tree-pass.h"
 #include "tree-scalar-evolution.h"
@@ -2852,13 +2852,14 @@ compute_function_frequency (void)
 {
   basic_block bb;
   struct cgraph_node *node = cgraph_get_node (current_function_decl);
+
   if (DECL_STATIC_CONSTRUCTOR (current_function_decl)
       || MAIN_NAME_P (DECL_NAME (current_function_decl)))
     node->only_called_at_startup = true;
   if (DECL_STATIC_DESTRUCTOR (current_function_decl))
     node->only_called_at_exit = true;
 
-  if (!profile_info || !flag_branch_probabilities)
+  if (profile_status != PROFILE_READ)
     {
       int flags = flags_from_decl_or_type (current_function_decl);
       if (lookup_attribute ("cold", DECL_ATTRIBUTES (current_function_decl))
@@ -2876,7 +2877,13 @@ compute_function_frequency (void)
         node->frequency = NODE_FREQUENCY_EXECUTED_ONCE;
       return;
     }
-  node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
+
+  /* Only first time try to drop function into unlikely executed.
+     After inlining the roundoff errors may confuse us.
+     Ipa-profile pass will drop functions only called from unlikely
+     functions to unlikely and that is most of what we care about.  */
+  if (!cfun->after_inlining)
+    node->frequency = NODE_FREQUENCY_UNLIKELY_EXECUTED;
   FOR_EACH_BB (bb)
     {
       if (maybe_hot_bb_p (cfun, bb))

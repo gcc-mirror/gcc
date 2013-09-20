@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2012-11-16  Matthias Klose  <doko@ubuntu.com>
 
 	* Imported zlib 1.2.7; merged local changes.

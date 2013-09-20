@@ -31,23 +31,23 @@ test01()
 {
   bool test __attribute__((unused)) = true;
 
-	std::regex  re("a{0,3}", std::regex::extended);
-	std::string target("aa");
-	std::smatch m;
+  std::regex  re("a{0,3}", std::regex::extended);
+  std::string target("aa");
+  std::smatch m;
 
-	VERIFY( std::regex_match(target, m, re) );
+  VERIFY( std::regex_match(target, m, re) );
 
-	VERIFY( m.size()  == re.mark_count()+1 );
-	VERIFY( m.empty() == false );
-	VERIFY( m.prefix().first == target.begin() );
-	VERIFY( m.prefix().second == target.begin() );
-	VERIFY( m.prefix().matched == false );
-	VERIFY( m.suffix().first == target.end() );
-	VERIFY( m.suffix().second == target.end() );
-	VERIFY( m.suffix().matched == false );
-	VERIFY( m[0].first == target.begin() );
-	VERIFY( m[0].second == target.end() );
-	VERIFY( m[0].matched == true );
+  VERIFY( m.size()  == re.mark_count()+1 );
+  VERIFY( m.empty() == false );
+  VERIFY( m.prefix().first == target.begin() );
+  VERIFY( m.prefix().second == target.begin() );
+  VERIFY( m.prefix().matched == false );
+  VERIFY( m.suffix().first == target.end() );
+  VERIFY( m.suffix().second == target.end() );
+  VERIFY( m.suffix().matched == false );
+  VERIFY( m[0].first == target.begin() );
+  VERIFY( m[0].second == target.end() );
+  VERIFY( m[0].matched == true );
 }
 
 
