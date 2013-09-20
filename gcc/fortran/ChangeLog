@@ -1,3 +1,11 @@
+2013-09-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58099
+	* expr.c (gfc_check_pointer_assign): Remove second call to
+	'gfc_compare_interfaces' with swapped arguments.
+	* interface.c (gfc_compare_interfaces): Symmetrize the call to
+	'check_result_characteristics' by calling it with swapped arguments.
+
 2013-09-18  Tobias Burnus  <burnus@net-b.de>
 
 	* expr.c (gfc_check_assign_symbol): Free lvalue.ref.
