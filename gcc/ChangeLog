@@ -1,3 +1,20 @@
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58484
+	* tree-scalar-evolution.c (struct scev_info_str): Shrink by
+	remembering SSA name version and block index.
+	(new_scev_info_str): Adjust.
+	(hash_scev_info): Likewise.  Also hash the block index.
+	(eq_scev_info): Adjust.
+	(find_var_scev_info): Likewise.
+	(struct instantiate_cache_entry): Remove.
+	(struct instantiate_cache_type): Use a htab to map name, block
+	to chrec.
+	(instantiate_cache_type::~instantiate_cache_type): Adjust.
+	(get_instantiated_value_entry): Likewise.
+	(hash_idx_scev_info, eq_idx_scev_info): New functions.
+	(instantiate_scev_name): Adjust.
+
 2013-09-20  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (record_temporary_equivalences): Add comment.
