@@ -1,3 +1,23 @@
+2013-09-20  DJ Delorie  <dj@redhat.com>
+            Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c: Various whitespace and comment tweaks.
+	(need_to_save): Save bank 0 on interrupts.
+	(characterize_address): Strip far address wrappers.
+	(rl78_as_legitimate_address): Likewise.
+	(transcode_memory_rtx): Likewise.
+	(rl78_peep_movhi_p): Disable this peephole after devirt.
+	(rl78_propogate_register_origins): Forget all origins when a
+	CLOBBER is seen.
+	* config/rl78/rl78-virt.md: Various whitespace tweaks.
+	* config/rl78/rl78-real.md: Various whitespace tweaks.  Additional
+	peephole2's.
+	* config/rl78/rl78.md (sel_rb): Disable for G10 just in case.
+	* config/rl78/rl78-expand.md (movqi): Check for subregs of consts.
+	* config/rl78/rl78.h (LINK_SPEC): Pass -gc-sections unless
+	relocating.
+	* config/rl78/constraints.md: Various whitespace and paren tweaks.
+
 2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: In "scc" insn patterns, change output template to

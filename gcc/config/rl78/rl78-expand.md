@@ -43,14 +43,6 @@
         && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
       FAIL;
 
-    /* Similarly for (SUBREG (CONST (PLUS (SYMBOL_REF)))).
-       cf. g++.dg/abi/packed.C.  */
-    if (GET_CODE (operand1) == SUBREG
-	&& GET_CODE (XEXP (operand1, 0)) == CONST
-        && GET_CODE (XEXP (XEXP (operand1, 0), 0)) == PLUS
-        && GET_CODE (XEXP (XEXP (XEXP (operand1, 0), 0), 0)) == SYMBOL_REF)
-      FAIL;
-
     if (CONST_INT_P (operand1) && ! IN_RANGE (INTVAL (operand1), (-1 << 8) + 1, (1 << 8) - 1))
       FAIL;
   }
