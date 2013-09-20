@@ -283,7 +283,7 @@ proc libstdc++_init { testfile } {
     v3track cxxflags 2
 
     # Always use MO files built by this test harness.
-    set cxxflags "$cxxflags -DLOCALEDIR=\".\""
+    set cxxflags "-fdiagnostics-color=never $cxxflags -DLOCALEDIR=\".\""
     set ccflags "$cxxflags -DLOCALEDIR=\".\""
 
     # If a PCH file is available, use it.  We must delay performing
