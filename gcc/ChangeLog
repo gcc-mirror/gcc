@@ -1,3 +1,9 @@
+2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa-linux.h (TARGET_OS_CPP_BUILTINS): Define
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1, __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2,
+	and __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
+
 2013-09-20  DJ Delorie  <dj@redhat.com>
             Nick Clifton  <nickc@redhat.com>
 
