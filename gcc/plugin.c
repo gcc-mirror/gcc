@@ -241,16 +241,13 @@ parse_plugin_arg_opt (const char *arg)
         }
       else if (*ptr == '=')
         {
-          if (key_parsed)
-            {
-              error ("malformed option -fplugin-arg-%s (multiple '=' signs)",
-		     arg);
-              return;
-            }
-          key_len = len;
-          len = 0;
-          value_start = ptr + 1;
-          key_parsed = true;
+	  if (!key_parsed) 
+	    {
+	      key_len = len;
+	      len = 0;
+	      value_start = ptr + 1;
+	      key_parsed = true;
+	    }
           continue;
         }
       else

@@ -1,5 +1,10 @@
 2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
 
+	* plugin.c (parse_plugin_arg_opt): Accept equal sign inside 
+          plugin argument.
+
+2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
+
        * gengtype.c (file_rules): Added rule for *.cc files.
        (get_output_file_with_visibility): Give fatal message when no
        rules found.
