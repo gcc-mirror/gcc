@@ -1,3 +1,8 @@
+2013-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58413
+	* c-c++-common/ubsan/shift-4.c: New test.
+
 2013-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58453
