@@ -1,3 +1,9 @@
+2013-09-20  Martin Husemann  <martin@NetBSD.org>
+
+	PR target/56875
+	* config/vax/vax.c (vax_output_int_move): Use D format specifier.
+	* config/vax/vax.md (ashldi3, <unnamed>): Ditto.
+
 2013-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58484
