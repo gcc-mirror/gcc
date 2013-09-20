@@ -1,3 +1,9 @@
+2013-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/57748
+	* gcc.dg/torture/pr57748-1.c: New test.
+	* gcc.dg/torture/pr57748-2.c: New test.
+
 2013-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/58413

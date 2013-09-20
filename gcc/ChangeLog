@@ -1,3 +1,8 @@
+2013-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/57748
+	* expr.c (expand_assignment): Remove misalignp code path.
+
 2013-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/58413
