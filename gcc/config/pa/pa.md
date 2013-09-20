@@ -733,7 +733,7 @@
 			   [(match_operand:SI 1 "reg_or_0_operand" "rM")
 			    (match_operand:SI 2 "arith11_operand" "rI")]))]
   ""
-  "{com%I2clr|cmp%I2clr},%B3 %2,%1,%0\;ldi 1,%0"
+  "{com%I2clr|cmp%I2clr},%B3 %2,%r1,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -743,7 +743,7 @@
 			   [(match_operand:DI 1 "reg_or_0_operand" "rM")
 			    (match_operand:DI 2 "arith11_operand" "rI")]))]
   "TARGET_64BIT"
-  "cmp%I2clr,*%B3 %2,%1,%0\;ldi 1,%0"
+  "cmp%I2clr,*%B3 %2,%r1,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -756,7 +756,7 @@
 				   [(match_operand:SI 4 "reg_or_0_operand" "rM")
 				    (match_operand:SI 5 "arith11_operand" "rI")])))]
   ""
-  "{com%I2clr|cmp%I2clr},%S3 %2,%1,%%r0\;{com%I5clr|cmp%I5clr},%B6 %5,%4,%0\;ldi 1,%0"
+  "{com%I2clr|cmp%I2clr},%S3 %2,%r1,%%r0\;{com%I5clr|cmp%I5clr},%B6 %5,%r4,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
 
@@ -769,7 +769,7 @@
 				   [(match_operand:DI 4 "reg_or_0_operand" "rM")
 				    (match_operand:DI 5 "arith11_operand" "rI")])))]
   "TARGET_64BIT"
-  "cmp%I2clr,*%S3 %2,%1,%%r0\;cmp%I5clr,*%B6 %5,%4,%0\;ldi 1,%0"
+  "cmp%I2clr,*%S3 %2,%r1,%%r0\;cmp%I5clr,*%B6 %5,%r4,%0\;ldi 1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "12")])
 
@@ -781,7 +781,7 @@
 	       [(match_operand:SI 1 "reg_or_0_operand" "rM")
 		(match_operand:SI 2 "arith11_operand" "rI")])))]
   ""
-  "{com%I2clr|cmp%I2clr},%B3 %2,%1,%0\;ldi -1,%0"
+  "{com%I2clr|cmp%I2clr},%B3 %2,%r1,%0\;ldi -1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
@@ -791,7 +791,7 @@
 	       [(match_operand:DI 1 "reg_or_0_operand" "rM")
 		(match_operand:DI 2 "arith11_operand" "rI")])))]
   "TARGET_64BIT"
-  "cmp%I2clr,*%B3 %2,%1,%0\;ldi -1,%0"
+  "cmp%I2clr,*%B3 %2,%r1,%0\;ldi -1,%0"
   [(set_attr "type" "binary")
    (set_attr "length" "8")])
 
