@@ -1070,6 +1070,10 @@ simplify_stmt_for_jump_threading (gimple stmt,
   return lookup_avail_expr (stmt, false);
 }
 
+/* Record into the equivalence tables any equivalences implied by
+   traversing edge E (which are cached in E->aux).
+
+   Callers are responsible for managing the unwinding markers.  */
 static void
 record_temporary_equivalences (edge e)
 {
