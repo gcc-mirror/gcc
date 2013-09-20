@@ -1,3 +1,9 @@
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58473
+	* tree-chrec.h (build_polynomial_chrec): Use gcc_checking_assert,
+	make type comparison less strict.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.
