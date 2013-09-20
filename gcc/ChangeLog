@@ -1,3 +1,9 @@
+2013-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58413
+	* ubsan.c (get_ubsan_type_info_for_type): Use TYPE_SIZE instead of
+	TYPE_PRECISION.  Add asserts.
+
 2013-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58453
