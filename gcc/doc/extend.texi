@@ -4891,8 +4891,9 @@ to be possibly unused.  GCC does not produce a warning for this
 variable.
 
 @item used
-This attribute, attached to a variable, means that the variable must be
-emitted even if it appears that the variable is not referenced.
+This attribute, attached to a variable with the static storage, means that
+the variable must be emitted even if it appears that the variable is not
+referenced.
 
 When applied to a static data member of a C++ class template, the
 attribute also means that the member is instantiated if the
