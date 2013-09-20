@@ -1,3 +1,7 @@
+2013-09-20  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_temporary_equivalences): Add comment.
+
 2013-09-20  Yufeng Zhang  <yufeng.zhang@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args):
