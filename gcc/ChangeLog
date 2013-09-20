@@ -1,5 +1,11 @@
 2013-09-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/58453
+	* tree-loop-distribution.c (distribute_loop): Apply the cost
+	model for -ftree-loop-distribute-patterns, too.
+
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/58473
 	* tree-chrec.h (build_polynomial_chrec): Use gcc_checking_assert,
 	make type comparison less strict.

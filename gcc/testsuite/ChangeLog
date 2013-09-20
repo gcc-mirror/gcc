@@ -1,3 +1,8 @@
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58453
+	* gcc.dg/tree-ssa/ldist-23.c: New testcase.
+
 2013-09-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58099
