@@ -1,4 +1,13 @@
-2013-09-20  Jan Hubicka  <jh@suse.cz>
+2013-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/predicates.md (ia64_cbranch_operator): Accept unordered
+	comparison operators when -fno-trapping-math is in effect.
+	* config/ia64/ia64.c (ia64_expand_compare): Add support for unordered
+	comparison operators in TFmode and assert that unsupported operators
+	cannot reach here.
+	(ia64_print_operand): Likewise.
+
+2013-09-21  Jan Hubicka  <jh@suse.cz>
 
 	* x86-tune.def (partial_reg_stall): Disable for CoreI7 and newer.
 	(sse_typeless_stores): Enable for core

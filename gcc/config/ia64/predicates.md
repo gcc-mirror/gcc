@@ -568,9 +568,15 @@
 	    (match_test "op == CONST0_RTX (GET_MODE (op))"))))
 
 ;; Return 1 if OP is a valid comparison operator for "cbranch" instructions.
+;; If we're assuming that FP operations cannot generate user-visible traps,
+;; then we can use the FP unordered-signaling instructions to implement the
+;; FP unordered-quiet comparison predicates.
 (define_predicate "ia64_cbranch_operator"
-  (ior (match_operand 0 "ordered_comparison_operator")
-       (match_code "ordered,unordered")))
+  (if_then_else (match_test "flag_trapping_math")
+		(ior (match_operand 0 "ordered_comparison_operator")
+		      (match_code "ordered,unordered"))
+		(and (match_operand 0 "comparison_operator")
+		      (not (match_code "uneq,ltgt")))))
 
 ;; True if this is a comparison operator, which accepts a normal 8-bit
 ;; signed immediate operand.
