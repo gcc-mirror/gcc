@@ -1,5 +1,9 @@
 2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
 
+	PR middle-end/56791
+	* config/pa/pa.c (pa_option_override): Disable auto increment and
+	decrement instructions until reload is completed.
+
 	* config/pa/pa.md: In "scc" insn patterns, change output template to
 	handle const0_rtx in reg_or_0_operand operands.
 
