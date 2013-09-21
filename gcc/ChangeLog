@@ -1,3 +1,14 @@
+2013-09-20  Jan Hubicka  <jh@suse.cz>
+
+	* x86-tune.def (partial_reg_stall): Disable for CoreI7 and newer.
+	(sse_typeless_stores): Enable for core
+	(sse_load0_by_pxor): Likewise.
+	(four_jump_limit): Disable for core.
+	(pad_returns): Likewise.
+	(avoid_vector_decode): Likewise.
+	(fuse_cmp_and_branch): Enable for cores.
+	* i386.c (x86_accumulate_outgoing_args): Disable for cores.
+
 2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/56791

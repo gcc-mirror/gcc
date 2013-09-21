@@ -1899,7 +1899,7 @@ static unsigned int initial_ix86_arch_features[X86_ARCH_LAST] = {
 };
 
 static const unsigned int x86_accumulate_outgoing_args
-  = m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC;
+  = m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC;
 
 static const unsigned int x86_arch_always_fancy_math_387
   = m_PENT | m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC;
