@@ -1754,7 +1754,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
   else if (TARGET_HPUX && GET_MODE (*op0) == TFmode)
     {
       enum qfcmp_magic {
-	QCMP_INV = 1,	/* Raise FP_INVALID on SNaN as a side effect.  */
+	QCMP_INV = 1,	/* Raise FP_INVALID on NaNs as a side effect.  */
 	QCMP_UNORD = 2,
 	QCMP_EQ = 4,
 	QCMP_LT = 8,
@@ -1768,21 +1768,27 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
       switch (code)
 	{
 	  /* 1 = equal, 0 = not equal.  Equality operators do
-	     not raise FP_INVALID when given an SNaN operand.  */
+	     not raise FP_INVALID when given a NaN operand.  */
 	case EQ:        magic = QCMP_EQ;                  ncode = NE; break;
 	case NE:        magic = QCMP_EQ;                  ncode = EQ; break;
 	  /* isunordered() from C99.  */
 	case UNORDERED: magic = QCMP_UNORD;               ncode = NE; break;
 	case ORDERED:   magic = QCMP_UNORD;               ncode = EQ; break;
 	  /* Relational operators raise FP_INVALID when given
-	     an SNaN operand.  */
+	     a NaN operand.  */
 	case LT:        magic = QCMP_LT        |QCMP_INV; ncode = NE; break;
 	case LE:        magic = QCMP_LT|QCMP_EQ|QCMP_INV; ncode = NE; break;
 	case GT:        magic = QCMP_GT        |QCMP_INV; ncode = NE; break;
 	case GE:        magic = QCMP_GT|QCMP_EQ|QCMP_INV; ncode = NE; break;
-	  /* FUTURE: Implement UNEQ, UNLT, UNLE, UNGT, UNGE, LTGT.
-	     Expanders for buneq etc. weuld have to be added to ia64.md
-	     for this to be useful.  */
+          /* Unordered relational operators do not raise FP_INVALID
+	     when given a NaN operand.  */
+	case UNLT:    magic = QCMP_LT        |QCMP_UNORD; ncode = NE; break;
+	case UNLE:    magic = QCMP_LT|QCMP_EQ|QCMP_UNORD; ncode = NE; break;
+	case UNGT:    magic = QCMP_GT        |QCMP_UNORD; ncode = NE; break;
+	case UNGE:    magic = QCMP_GT|QCMP_EQ|QCMP_UNORD; ncode = NE; break;
+	  /* Not supported.  */
+	case UNEQ:
+	case LTGT:
 	default: gcc_unreachable ();
 	}
 
@@ -5277,6 +5283,9 @@ ia64_print_operand (FILE * file, rtx x, int code)
 	case UNGE:
 	  str = "nlt";
 	  break;
+	case UNEQ:
+	case LTGT:
+	  gcc_unreachable ();
 	default:
 	  str = GET_RTX_NAME (GET_CODE (x));
 	  break;
