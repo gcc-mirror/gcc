@@ -321,7 +321,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_check(size_type __pos, const char* __s) const
       {
 	if (__pos > this->size())
-	  __throw_out_of_range(__N(__s));
+	  __throw_out_of_range_fmt(__N("%s: __pos (which is %zu) > "
+				       "this->size() (which is %zu)"),
+				   __s, __pos, this->size());
 	return __pos;
       }
 
@@ -869,7 +871,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       at(size_type __n) const
       {
 	if (__n >= this->size())
-	  __throw_out_of_range(__N("basic_string::at"));
+	  __throw_out_of_range_fmt(__N("basic_string::at: __n "
+				       "(which is %zu) >= this->size() "
+				       "(which is %zu)"),
+				   __n, this->size());
 	return _M_data()[__n];
       }
 
@@ -888,7 +893,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       at(size_type __n)
       {
 	if (__n >= size())
-	  __throw_out_of_range(__N("basic_string::at"));
+	  __throw_out_of_range_fmt(__N("basic_string::at: __n "
+				       "(which is %zu) >= this->size() "
+				       "(which is %zu)"),
+				   __n, this->size());
 	_M_leak();
 	return _M_data()[__n];
       }
