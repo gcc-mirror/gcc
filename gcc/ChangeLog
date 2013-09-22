@@ -1,3 +1,8 @@
+2013-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_asm_expr): Reset the TREE_CHAIN of clobbers to
+	NULL_TREE before pushing them onto the vector.  Likewise for labels.
+
 2013-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/ia64/predicates.md (ia64_cbranch_operator): Accept unordered

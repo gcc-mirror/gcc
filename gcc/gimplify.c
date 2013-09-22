@@ -5419,11 +5419,21 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       vec_safe_push (inputs, link);
     }
 
-  for (link = ASM_CLOBBERS (expr); link; ++i, link = TREE_CHAIN (link))
-    vec_safe_push (clobbers, link);
+  link_next = NULL_TREE;
+  for (link = ASM_CLOBBERS (expr); link; ++i, link = link_next)
+    {
+      link_next = TREE_CHAIN (link);
+      TREE_CHAIN (link) = NULL_TREE;
+      vec_safe_push (clobbers, link);
+    }
 
-  for (link = ASM_LABELS (expr); link; ++i, link = TREE_CHAIN (link))
-    vec_safe_push (labels, link);
+  link_next = NULL_TREE;
+  for (link = ASM_LABELS (expr); link; ++i, link = link_next)
+    {
+      link_next = TREE_CHAIN (link);
+      TREE_CHAIN (link) = NULL_TREE;
+      vec_safe_push (labels, link);
+    }
 
   /* Do not add ASMs with errors to the gimple IL stream.  */
   if (ret != GS_ERROR)
