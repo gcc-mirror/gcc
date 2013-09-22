@@ -47,22 +47,12 @@ namespace __gnu_test
       const typename distribution_type::param_type p(0, __max_size);
       size_type random = generator(p);
       if (random < distribution.min() || random > distribution.max())
-	{
-	  std::string __s("setup_base::generate");
-	  __s += "\n";
-	  __s += "random number generated is: ";
-	  char buf[40];
-	  __builtin_sprintf(buf, "%lu", (unsigned long)random);
-	  __s += buf;
-	  __s += " on range [";
-	  __builtin_sprintf(buf, "%lu", (unsigned long)distribution.min());
-	  __s += buf;
-	  __s += ", ";
-	  __builtin_sprintf(buf, "%lu", (unsigned long)distribution.max());
-	  __s += buf;
-	  __s += "]\n";
-	  std::__throw_out_of_range(__s.c_str());
-	}
+	std::__throw_out_of_range_fmt(__N("setup_base::generate\n"
+					  "random number generated is: %zu "
+					  "out of range [%zu, %zu]\n"),
+				      (size_t)random,
+				      (size_t)distribution.min(),
+				      (size_t)distribution.max());
       return random;
     }
 
