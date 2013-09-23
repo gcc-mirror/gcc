@@ -1,3 +1,17 @@
+2013-09-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58464
+	* tree-ssa-pre.c (phi_trans_lookup): Remove.
+	(phi_trans_add): Change to add conditionally on being not
+	present.
+	(phi_translate_1): Remove recursion detection here.
+	(phi_translate): Pre-seed the cache with NULL to catch
+	recursion here in a more generic way.
+	(bitmap_find_leader): Adjust comment.
+	(get_representative_for): Dump value-numbers.
+	(create_expression_by_pieces): Likewise.
+	(insert_into_preds_of_block): Likewise.
+
 2013-09-23  Christian Bruel  <christian.bruel@st.com>
 
 	PR target/58475
