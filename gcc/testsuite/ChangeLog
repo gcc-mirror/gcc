@@ -1,3 +1,8 @@
+2013-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58355
+	* gfortran.dg/extends_15.f90: New.
+
 2013-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58481
