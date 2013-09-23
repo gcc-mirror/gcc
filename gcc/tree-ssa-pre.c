@@ -525,46 +525,31 @@ expr_pred_trans_d::equal (const value_type *ve1,
    expression and predecessor.  */
 static hash_table <expr_pred_trans_d> phi_translate_table;
 
-/* Search in the phi translation table for the translation of
-   expression E in basic block PRED.
-   Return the translated value, if found, NULL otherwise.  */
-
-static inline pre_expr
-phi_trans_lookup (pre_expr e, basic_block pred)
-{
-  expr_pred_trans_t *slot;
-  struct expr_pred_trans_d ept;
-
-  ept.e = e;
-  ept.pred = pred;
-  ept.hashcode = iterative_hash_hashval_t (pre_expr_d::hash (e), pred->index);
-  slot = phi_translate_table.find_slot_with_hash (&ept, ept.hashcode,
-				   NO_INSERT);
-  if (!slot)
-    return NULL;
-  else
-    return (*slot)->v;
-}
-
-
 /* Add the tuple mapping from {expression E, basic block PRED} to
-   value V, to the phi translation table.  */
+   the phi translation table and return whether it pre-existed.  */
 
-static inline void
-phi_trans_add (pre_expr e, pre_expr v, basic_block pred)
+static inline bool
+phi_trans_add (expr_pred_trans_t *entry, pre_expr e, basic_block pred)
 {
   expr_pred_trans_t *slot;
-  expr_pred_trans_t new_pair = XNEW (struct expr_pred_trans_d);
-  new_pair->e = e;
-  new_pair->pred = pred;
-  new_pair->v = v;
-  new_pair->hashcode = iterative_hash_hashval_t (pre_expr_d::hash (e),
-						 pred->index);
+  expr_pred_trans_d tem;
+  hashval_t hash = iterative_hash_hashval_t (pre_expr_d::hash (e),
+					     pred->index);
+  tem.e = e;
+  tem.pred = pred;
+  tem.hashcode = hash;
+  slot = phi_translate_table.find_slot_with_hash (&tem, hash, INSERT);
+  if (*slot)
+    {
+      *entry = *slot;
+      return true;
+    }
 
-  slot = phi_translate_table.find_slot_with_hash (new_pair,
-				   new_pair->hashcode, INSERT);
-  free (*slot);
-  *slot = new_pair;
+  *entry = *slot = XNEW (struct expr_pred_trans_d);
+  (*entry)->e = e;
+  (*entry)->pred = pred;
+  (*entry)->hashcode = hash;
+  return false;
 }
 
 
@@ -1420,7 +1405,7 @@ get_representative_for (const pre_expr e)
       print_generic_expr (dump_file, name, 0);
       fprintf (dump_file, " for expression:");
       print_pre_expr (dump_file, e);
-      fprintf (dump_file, "\n");
+      fprintf (dump_file, " (%04d)\n", value_id);
     }
 
   return name;
@@ -1561,23 +1546,16 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		leader = find_leader_in_sets (op_val_id, set1, set2);
 		if (!leader)
 		  break;
-		/* Make sure we do not recursively translate ourselves
-		   like for translating a[n_1] with the leader for
-		   n_1 being a[n_1].  */
-		if (get_expression_id (leader) != get_expression_id (expr))
+		opresult = phi_translate (leader, set1, set2, pred, phiblock);
+		if (!opresult)
+		  break;
+		if (opresult != leader)
 		  {
-		    opresult = phi_translate (leader, set1, set2,
-					      pred, phiblock);
-		    if (!opresult)
+		    tree name = get_representative_for (opresult);
+		    if (!name)
 		      break;
-		    if (opresult != leader)
-		      {
-			tree name = get_representative_for (opresult);
-			if (!name)
-			  break;
-			changed |= name != op[n];
-			op[n] = name;
-		      }
+		    changed |= name != op[n];
+		    op[n] = name;
 		  }
 	      }
 	    if (n != 3)
@@ -1751,6 +1729,7 @@ static pre_expr
 phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 	       basic_block pred, basic_block phiblock)
 {
+  expr_pred_trans_t slot = NULL;
   pre_expr phitrans;
 
   if (!expr)
@@ -1763,21 +1742,21 @@ phi_translate (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
   if (value_id_constant_p (get_expr_value_id (expr)))
     return expr;
 
+  /* Don't add translations of NAMEs as those are cheap to translate.  */
   if (expr->kind != NAME)
     {
-      phitrans = phi_trans_lookup (expr, pred);
-      if (phitrans)
-	return phitrans;
+      if (phi_trans_add (&slot, expr, pred))
+	return slot->v;
+      /* Store NULL for the value we want to return in the case of
+	 recursing.  */
+      slot->v = NULL;
     }
 
   /* Translate.  */
   phitrans = phi_translate_1 (expr, set1, set2, pred, phiblock);
 
-  /* Don't add empty translations to the cache.  Neither add
-     translations of NAMEs as those are cheap to translate.  */
-  if (phitrans
-      && expr->kind != NAME)
-    phi_trans_add (expr, phitrans, pred);
+  if (slot)
+    slot->v = phitrans;
 
   return phitrans;
 }
@@ -1822,9 +1801,8 @@ phi_translate_set (bitmap_set_t dest, bitmap_set_t set, basic_block pred,
 }
 
 /* Find the leader for a value (i.e., the name representing that
-   value) in a given set, and return it.  If STMT is non-NULL it
-   makes sure the defining statement for the leader dominates it.
-   Return NULL if no leader is found.  */
+   value) in a given set, and return it.  Return NULL if no leader
+   is found.  */
 
 static pre_expr
 bitmap_find_leader (bitmap_set_t set, unsigned int val)
@@ -3005,7 +2983,8 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
     {
       fprintf (dump_file, "Inserted ");
       print_gimple_stmt (dump_file, newstmt, 0, 0);
-      fprintf (dump_file, " in predecessor %d\n", block->index);
+      fprintf (dump_file, " in predecessor %d (%04d)\n",
+	       block->index, value_id);
     }
 
   return name;
@@ -3280,7 +3259,7 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
     {
       fprintf (dump_file, "Created phi ");
       print_gimple_stmt (dump_file, phi, 0, 0);
-      fprintf (dump_file, " in block %d\n", block->index);
+      fprintf (dump_file, " in block %d (%04d)\n", block->index, val);
     }
   pre_stats.phis++;
   return true;
