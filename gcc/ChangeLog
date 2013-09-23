@@ -1,3 +1,9 @@
+2013-09-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/58475
+	* config/sh/sh.md (movsf_ie): Allow fpul_operand.
+	* config/sh/predicate.md (arith_reg_operand): Disallow FPUL_REG.
+
 2013-09-23  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	Revert r202780:
@@ -7,6 +13,7 @@
 	(aarch64_expand_epilogue): Likewise.
 	(aarch64_legitimize_reload_address): Likewise.
 
+>>>>>>> .r202824
 2013-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_asm_expr): Reset the TREE_CHAIN of clobbers to
