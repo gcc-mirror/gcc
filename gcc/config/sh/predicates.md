@@ -154,7 +154,7 @@
 
       return (regno != T_REG && regno != PR_REG
 	      && ! TARGET_REGISTER_P (regno)
-	      && (regno != FPUL_REG || TARGET_SH4)
+	      && regno != FPUL_REG
 	      && regno != MACH_REG && regno != MACL_REG);
     }
   /* Allow a no-op sign extension - compare LOAD_EXTEND_OP.
