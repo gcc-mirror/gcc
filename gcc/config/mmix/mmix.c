@@ -1531,7 +1531,7 @@ mmix_print_operand (FILE *stream, rtx x, int code)
       if (TARGET_BRANCH_PREDICT)
 	{
 	  x = find_reg_note (current_output_insn, REG_BR_PROB, 0);
-	  if (x && INTVAL (XEXP (x, 0)) > REG_BR_PROB_BASE / 2)
+	  if (x && XINT (x, 0) > REG_BR_PROB_BASE / 2)
 	    putc ('P', stream);
 	}
       return;

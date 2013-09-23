@@ -908,7 +908,7 @@ asan_clear_shadow (rtx shadow_mem, HOST_WIDE_INT len)
   emit_cmp_and_jump_insns (addr, end, LT, NULL_RTX, Pmode, true, top_label);
   jump = get_last_insn ();
   gcc_assert (JUMP_P (jump));
-  add_reg_note (jump, REG_BR_PROB, GEN_INT (REG_BR_PROB_BASE * 80 / 100));
+  add_int_reg_note (jump, REG_BR_PROB, REG_BR_PROB_BASE * 80 / 100);
 }
 
 /* Insert code to protect stack vars.  The prologue sequence should be emitted

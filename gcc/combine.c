@@ -13677,7 +13677,7 @@ distribute_notes (rtx notes, rtx from_insn, rtx i3, rtx i2, rtx elim_i2,
 	}
 
       if (place2)
-	add_reg_note (place2, REG_NOTE_KIND (note), XEXP (note, 0));
+	add_shallow_copy_of_reg_note (place2, note);
     }
 }
 

@@ -381,7 +381,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   JUMP_LABEL (jump) = label;
 
   /* The jump is supposed to handle an unlikely special case.  */
-  add_reg_note (jump, REG_BR_PROB, const0_rtx);
+  add_int_reg_note (jump, REG_BR_PROB, 0);
 
   LABEL_NUSES (label)++;
 
@@ -594,8 +594,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   if (true_prob_val)
     {
       /* Seems safer to use the branch probability.  */
-      add_reg_note (jump_insn, REG_BR_PROB,
-		    GEN_INT (desc->in_edge->probability));
+      add_int_reg_note (jump_insn, REG_BR_PROB, desc->in_edge->probability);
     }
 }
 

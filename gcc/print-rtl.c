@@ -150,7 +150,8 @@ print_rtx (const_rtx in_rtx)
 
       /* Print REG_NOTE names for EXPR_LIST and INSN_LIST.  */
       if ((GET_CODE (in_rtx) == EXPR_LIST
-	   || GET_CODE (in_rtx) == INSN_LIST)
+	   || GET_CODE (in_rtx) == INSN_LIST
+	   || GET_CODE (in_rtx) == INT_LIST)
 	  && (int)GET_MODE (in_rtx) < REG_NOTE_MAX)
 	fprintf (outfile, ":%s",
 		 GET_REG_NOTE_NAME (GET_MODE (in_rtx)));

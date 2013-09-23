@@ -1146,7 +1146,7 @@ sh_print_operand (FILE *stream, rtx x, int code)
       {
 	rtx note = find_reg_note (current_output_insn, REG_BR_PROB, 0);
 
-	if (note && INTVAL (XEXP (note, 0)) * 2 < REG_BR_PROB_BASE)
+	if (note && XINT (note, 0) * 2 < REG_BR_PROB_BASE)
 	  fputs ("/u", stream);
 	break;
       }
@@ -2082,7 +2082,7 @@ expand_cbranchsi4 (rtx *operands, enum rtx_code comparison, int probability)
 					  operands[1], operands[2])));
   rtx jump = emit_jump_insn (branch_expander (operands[3]));
   if (probability >= 0)
-    add_reg_note (jump, REG_BR_PROB, GEN_INT (probability));
+    add_int_reg_note (jump, REG_BR_PROB, probability);
 }
 
 /* ??? How should we distribute probabilities when more than one branch
@@ -10741,8 +10741,7 @@ sh_adjust_cost (rtx insn, rtx link ATTRIBUTE_UNUSED, rtx dep_insn, int cost)
 	    {
 	      int orig_cost = cost;
 	      rtx note = find_reg_note (insn, REG_BR_PROB, 0);
-	      rtx target = ((! note
-			     || INTVAL (XEXP (note, 0)) * 2 < REG_BR_PROB_BASE)
+	      rtx target = ((!note || XINT (note, 0) * 2 < REG_BR_PROB_BASE)
 			    ? insn : JUMP_LABEL (insn));
 	      /* On the likely path, the branch costs 1, on the unlikely path,
 		 it costs 3.  */
