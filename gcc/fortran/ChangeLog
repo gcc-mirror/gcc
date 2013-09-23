@@ -1,3 +1,9 @@
+2013-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58355
+	* decl.c (check_extended_derived_type): Prevent segfault, modify error
+	message.
+
 2013-09-20  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/58099
