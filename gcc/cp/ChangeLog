@@ -1,5 +1,12 @@
 2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
 
+	* parser.c (cp_parser_init_declarator): Defer calling
+	finish_fully_implicit_template for forward declarations until after
+	other decl processing is complete.  Cleanup for clarity: Extract 'else'
+	case after 'if' containing unconditional return.
+
+2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
+
 	* parser.c (make_generic_type_name): Spell generic type names '<autoN>'
 	rather than '__GenN'.
 

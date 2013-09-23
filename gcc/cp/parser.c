@@ -16318,47 +16318,43 @@ cp_parser_init_declarator (cp_parser* parser,
 			       "a function-definition is not allowed here");
 	      return error_mark_node;
 	    }
+
+	  location_t func_brace_location
+	    = cp_lexer_peek_token (parser->lexer)->location;
+
+	  /* Neither attributes nor an asm-specification are allowed
+	     on a function-definition.  */
+	  if (asm_specification)
+	    error_at (asm_spec_start_token->location,
+		      "an asm-specification is not allowed "
+		      "on a function-definition");
+	  if (attributes)
+	    error_at (attributes_start_token->location,
+		      "attributes are not allowed "
+		      "on a function-definition");
+	  /* This is a function-definition.  */
+	  *function_definition_p = true;
+
+	  /* Parse the function definition.  */
+	  if (member_p)
+	    decl = cp_parser_save_member_function_body (parser,
+							decl_specifiers,
+							declarator,
+							prefix_attributes);
 	  else
+	    decl =
+	      (cp_parser_function_definition_from_specifiers_and_declarator
+	       (parser, decl_specifiers, prefix_attributes, declarator));
+
+	  if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
 	    {
-	      location_t func_brace_location
-		= cp_lexer_peek_token (parser->lexer)->location;
-
-	      /* Neither attributes nor an asm-specification are allowed
-		 on a function-definition.  */
-	      if (asm_specification)
-		error_at (asm_spec_start_token->location,
-			  "an asm-specification is not allowed "
-			  "on a function-definition");
-	      if (attributes)
-		error_at (attributes_start_token->location,
-			  "attributes are not allowed "
-			  "on a function-definition");
-	      /* This is a function-definition.  */
-	      *function_definition_p = true;
-
-	      /* Parse the function definition.  */
-	      if (member_p)
-		decl = cp_parser_save_member_function_body (parser,
-							    decl_specifiers,
-							    declarator,
-							    prefix_attributes);
-	      else
-		decl =
-		  (cp_parser_function_definition_from_specifiers_and_declarator
-		   (parser, decl_specifiers, prefix_attributes, declarator));
-
-	      if (decl != error_mark_node && DECL_STRUCT_FUNCTION (decl))
-		{
-		  /* This is where the prologue starts...  */
-		  DECL_STRUCT_FUNCTION (decl)->function_start_locus
-		    = func_brace_location;
-		}
-
-	      return decl;
+	      /* This is where the prologue starts...  */
+	      DECL_STRUCT_FUNCTION (decl)->function_start_locus
+		= func_brace_location;
 	    }
+
+	  return decl;
 	}
-      else if (parser->fully_implicit_function_template_p)
-	decl = finish_fully_implicit_template (parser, decl);
     }
 
   /* [dcl.dcl]
@@ -16580,6 +16576,15 @@ cp_parser_init_declarator (cp_parser* parser,
 
   if (!friend_p && pushed_scope)
     pop_scope (pushed_scope);
+
+  if (function_declarator_p (declarator)
+      && parser->fully_implicit_function_template_p)
+    {
+      if (member_p)
+	decl = finish_fully_implicit_template (parser, decl);
+      else
+	finish_fully_implicit_template (parser, /*member_decl_opt=*/0);
+    }
 
   return decl;
 }
