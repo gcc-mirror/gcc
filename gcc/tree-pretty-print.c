@@ -1062,29 +1062,9 @@ dump_generic_node (pretty_printer *buffer, tree node, int spc, int flags,
 	  pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
 	  pp_string (buffer, "B"); /* pseudo-unit */
 	}
-      else if (host_integerp (node, 0))
-	pp_wide_integer (buffer, TREE_INT_CST_LOW (node));
-      else if (host_integerp (node, 1))
-	pp_unsigned_wide_integer (buffer, TREE_INT_CST_LOW (node));
       else
-	{
-	  tree val = node;
-	  unsigned HOST_WIDE_INT low = TREE_INT_CST_LOW (val);
-	  HOST_WIDE_INT high = TREE_INT_CST_HIGH (val);
-
-	  if (tree_int_cst_sgn (val) < 0)
-	    {
-	      pp_minus (buffer);
-	      high = ~high + !low;
-	      low = -low;
-	    }
-	  /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
-	     systems?  */
-	  sprintf (pp_buffer (buffer)->digit_buffer,
-		   HOST_WIDE_INT_PRINT_DOUBLE_HEX,
-		   (unsigned HOST_WIDE_INT) high, low);
-	  pp_string (buffer, pp_buffer (buffer)->digit_buffer);
-	}
+        pp_double_int (buffer, tree_to_double_int (node),
+                       TYPE_UNSIGNED (TREE_TYPE (node)));
       break;
 
     case REAL_CST:
@@ -3195,4 +3175,32 @@ dump_function_header (FILE *dump_file, tree fdecl, int flags)
     }
   else
     fprintf (dump_file, ")\n\n");
+}
+
+/* Dump double_int D to pretty_printer PP.  UNS is true
+   if D is unsigned and false otherwise.  */
+void
+pp_double_int (pretty_printer *pp, double_int d, bool uns)
+{
+  if (d.fits_shwi ())
+    pp_wide_integer (pp, d.low);
+  else if (d.fits_uhwi ())
+    pp_unsigned_wide_integer (pp, d.low);
+  else
+    {
+      unsigned HOST_WIDE_INT low = d.low;
+      HOST_WIDE_INT high = d.high;
+      if (!uns && d.is_negative ())
+        {
+          pp_minus (pp);
+          high = ~high + !low;
+          low = -low;
+        }
+      /* Would "%x%0*x" or "%x%*0x" get zero-padding on all
+         systems?  */
+      sprintf (pp_buffer (pp)->digit_buffer,
+               HOST_WIDE_INT_PRINT_DOUBLE_HEX,
+               (unsigned HOST_WIDE_INT) high, low);
+      pp_string (pp, pp_buffer (pp)->digit_buffer);
+    }
 }

@@ -154,7 +154,11 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
       SET_SSA_NAME_VAR_OR_IDENTIFIER (t, var);
     }
   SSA_NAME_DEF_STMT (t) = stmt;
-  SSA_NAME_PTR_INFO (t) = NULL;
+  if (POINTER_TYPE_P (TREE_TYPE (t)))
+    SSA_NAME_PTR_INFO (t) = NULL;
+  else
+    SSA_NAME_RANGE_INFO (t) = NULL;
+
   SSA_NAME_IN_FREE_LIST (t) = 0;
   SSA_NAME_IS_DEFAULT_DEF (t) = 0;
   imm = &(SSA_NAME_IMM_USE_NODE (t));
@@ -166,6 +170,62 @@ make_ssa_name_fn (struct function *fn, tree var, gimple stmt)
   return t;
 }
 
+/* Store range information MIN, and MAX to tree ssa_name NAME.  */
+
+void
+set_range_info (tree name, double_int min, double_int max)
+{
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+
+  /* Allocate if not available.  */
+  if (ri == NULL)
+    {
+      ri = ggc_alloc_cleared_range_info_def ();
+      SSA_NAME_RANGE_INFO (name) = ri;
+    }
+
+  /* Set the values.  */
+  ri->min = min;
+  ri->max = max;
+}
+
+
+/* Gets range information MIN, MAX and returns enum value_range_type
+   corresponding to tree ssa_name NAME.  enum value_range_type returned
+   is used to determine if MIN and MAX are valid values.  */
+
+enum value_range_type
+get_range_info (tree name, double_int *min, double_int *max)
+{
+  enum value_range_type range_type;
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  gcc_assert (min && max);
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+
+  /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
+     with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
+  if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
+              > 2 * HOST_BITS_PER_WIDE_INT))
+    return VR_VARYING;
+
+  /* If min > max, it is VR_ANTI_RANGE.  */
+  if (ri->min.cmp (ri->max, TYPE_UNSIGNED (TREE_TYPE (name))) == 1)
+    {
+      /* VR_ANTI_RANGE ~[min, max] is encoded as [max + 1, min - 1].  */
+      range_type = VR_ANTI_RANGE;
+      *min = ri->max + double_int_one;
+      *max = ri->min - double_int_one;
+    }
+  else
+  {
+    /* Otherwise (when min <= max), it is VR_RANGE.  */
+    range_type = VR_RANGE;
+    *min = ri->min;
+    *max = ri->max;
+  }
+  return range_type;
+}
 
 /* We no longer need the SSA_NAME expression VAR, release it so that
    it may be reused.
@@ -362,6 +422,26 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
 }
 
+/* Creates a duplicate of the range_info_def at RANGE_INFO for use by
+   the SSA name NAME.  */
+void
+duplicate_ssa_name_range_info (tree name, struct range_info_def *range_info)
+{
+  struct range_info_def *new_range_info;
+
+  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  gcc_assert (!SSA_NAME_RANGE_INFO (name));
+
+  if (!range_info)
+    return;
+
+  new_range_info = ggc_alloc_range_info_def ();
+  *new_range_info = *range_info;
+
+  SSA_NAME_RANGE_INFO (name) = new_range_info;
+}
+
+
 
 /* Creates a duplicate of a ssa name NAME tobe defined by statement STMT
    in function FN.  */
@@ -370,10 +450,20 @@ tree
 duplicate_ssa_name_fn (struct function *fn, tree name, gimple stmt)
 {
   tree new_name = copy_ssa_name_fn (fn, name, stmt);
-  struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
 
-  if (old_ptr_info)
-    duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+      if (old_ptr_info)
+        duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
+    }
+  else
+    {
+      struct range_info_def *old_range_info = SSA_NAME_RANGE_INFO (name);
+
+      if (old_range_info)
+        duplicate_ssa_name_range_info (new_name, old_range_info);
+    }
 
   return new_name;
 }
