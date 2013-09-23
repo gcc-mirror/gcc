@@ -1,3 +1,7 @@
+2013-09-23  Alan Modra  <amodra@gmail.com>
+
+	* gcc.target/powerpc/pr58330.c: New.
+
 2013-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58457
