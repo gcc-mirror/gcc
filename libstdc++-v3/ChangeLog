@@ -1,5 +1,10 @@
 2013-09-23  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Use
+	unsigned long long conditionally.
+
+2013-09-23  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
 	* src/c++11/snprintf_lite.cc (__concat_size_t): Use only
 	std::__int_to_char<unsigned long long>()
 
