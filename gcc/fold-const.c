@@ -9897,17 +9897,15 @@ exact_inverse (tree type, tree cst)
 
 /*  Mask out the tz least significant bits of X of type TYPE where
     tz is the number of trailing zeroes in Y.  */
-static double_int
-mask_with_tz (tree type, double_int x, double_int y)
+static wide_int
+mask_with_tz (tree type, wide_int x, wide_int y)
 {
-  int tz = y.trailing_zeros ();
-
+  int tz = wi::ctz (y);
   if (tz > 0)
     {
-      double_int mask;
+      wide_int mask;
 
-      mask = ~double_int::mask (tz);
-      mask = mask.ext (TYPE_PRECISION (type), TYPE_UNSIGNED (type));
+      mask = wi::mask (tz, true, TYPE_PRECISION (type));
       return mask & x;
     }
   return x;
@@ -11276,7 +11274,7 @@ fold_binary_loc (location_t loc,
 	                    == INTEGER_CST)
 	  {
 	    tree t = TREE_OPERAND (TREE_OPERAND (arg0, 0), 1);
-	    double_int masked = mask_with_tz (type, c3, tree_to_double_int (t));
+	    wide_int masked = mask_with_tz (type, c3, t);
 
 	    try_simplify = (masked != c1);
 	  }
@@ -11670,32 +11668,14 @@ fold_binary_loc (location_t loc,
 	  && TREE_CODE (arg0) == MULT_EXPR
 	  && TREE_CODE (TREE_OPERAND (arg0, 1)) == INTEGER_CST)
 	{
-<<<<<<< .working
-	  int arg1tz = wi::ctz (TREE_OPERAND (arg0, 1));
-	  if (arg1tz > 0)
-	    {
-	      wide_int arg1mask, masked;
-	      arg1mask = wi::mask (arg1tz, true, TYPE_PRECISION (type));
-	      masked = arg1mask & arg1;
-	      if (masked == 0)
-		return omit_two_operands_loc (loc, type, build_zero_cst (type),
-					      arg0, arg1);
-	      else if (masked != arg1)
-		return fold_build2_loc (loc, code, type, op0,
-					wide_int_to_tree (type, masked));
-	    }
-=======
-	  double_int masked
-	    = mask_with_tz (type, tree_to_double_int (arg1),
-	                    tree_to_double_int (TREE_OPERAND (arg0, 1)));
+	  wide_int masked = mask_with_tz (type, arg1, TREE_OPERAND (arg0, 1));
 
-	  if (masked.is_zero ())
+	  if (masked == 0)
 	    return omit_two_operands_loc (loc, type, build_zero_cst (type),
 	                                  arg0, arg1);
-	  else if (masked != tree_to_double_int (arg1))
+	  else if (masked != arg1)
 	    return fold_build2_loc (loc, code, type, op0,
-	                            double_int_to_tree (type, masked));
->>>>>>> .merge-right.r202797
+	                            wide_int_to_tree (type, masked));
 	}
 
       /* For constants M and N, if M == (1LL << cst) - 1 && (N & M) == M,

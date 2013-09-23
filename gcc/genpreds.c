@@ -809,11 +809,7 @@ add_constraint (const char *name, const char *regclass,
   if (is_const_int || is_const_dbl)
     {
       enum rtx_code appropriate_code
-#if TARGET_SUPPORTS_WIDE_INT
-	= is_const_int ? CONST_INT : CONST_WIDE_INT;
-#else
 	= is_const_int ? CONST_INT : CONST_DOUBLE;
-#endif
       /* Consider relaxing this requirement in the future.  */
       if (regclass
 	  || GET_CODE (exp) != AND

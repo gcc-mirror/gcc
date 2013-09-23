@@ -763,7 +763,7 @@ slsr_process_phi (gimple phi, bool speed)
    int (i * S).
    Otherwise, just return double int zero.  */
 
-static double_int
+static max_wide_int
 backtrace_base_for_ref (tree *pbase)
 {
   tree base_in = *pbase;
@@ -771,19 +771,19 @@ backtrace_base_for_ref (tree *pbase)
 
   STRIP_NOPS (base_in);
   if (TREE_CODE (base_in) != SSA_NAME)
-    return tree_to_double_int (integer_zero_node);
+    return 0;
 
   base_cand = base_cand_from_table (base_in);
 
   while (base_cand && base_cand->kind != CAND_PHI)
     {
       if (base_cand->kind == CAND_ADD
-	  && base_cand->index.is_one ()
+	  && base_cand->index == 1
 	  && TREE_CODE (base_cand->stride) == INTEGER_CST)
 	{
 	  /* X = B + (1 * S), S is integer constant.  */
 	  *pbase = base_cand->base_expr;
-	  return tree_to_double_int (base_cand->stride);
+	  return base_cand->stride;
 	}
       else if (base_cand->kind == CAND_ADD
 	       && TREE_CODE (base_cand->stride) == INTEGER_CST
@@ -800,7 +800,7 @@ backtrace_base_for_ref (tree *pbase)
 	base_cand = NULL;
     }
 
-  return tree_to_double_int (integer_zero_node);
+  return 0;
 }
 
 /* Look for the following pattern:
