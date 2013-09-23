@@ -69,11 +69,17 @@ namespace __gnu_cxx {
   // Returns number of characters appended, or -1 if BUFSIZE is too small.
   int __concat_size_t(char *__buf, size_t __bufsize, size_t __val)
   {
+    // __int_to_char is explicitly instantiated and available only for
+    // some, but not all, types. See locale-inst.cc.
+#ifdef _GLIBCXX_USE_LONG_LONG
+    unsigned long long __val2 = __val;
+#else
+    unsigned long __val2 = __val;
+#endif
     // Long enough for decimal representation.
-    unsigned long long __val_ull = __val;
-    int __ilen = 3 * sizeof(__val_ull);
+    int __ilen = 3 * sizeof(__val2);
     char *__cs = static_cast<char*>(__builtin_alloca(__ilen));
-    size_t __len = std::__int_to_char(__cs + __ilen, __val_ull,
+    size_t __len = std::__int_to_char(__cs + __ilen, __val2,
 				      std::__num_base::_S_atoms_out,
 				      std::ios_base::dec, true);
     if (__bufsize < __len)
