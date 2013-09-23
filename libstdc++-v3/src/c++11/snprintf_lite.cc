@@ -70,9 +70,10 @@ namespace __gnu_cxx {
   int __concat_size_t(char *__buf, size_t __bufsize, size_t __val)
   {
     // Long enough for decimal representation.
-    int __ilen = 3 * sizeof(__val);
+    unsigned long long __val_ull = __val;
+    int __ilen = 3 * sizeof(__val_ull);
     char *__cs = static_cast<char*>(__builtin_alloca(__ilen));
-    size_t __len = std::__int_to_char(__cs + __ilen, __val,
+    size_t __len = std::__int_to_char(__cs + __ilen, __val_ull,
 				      std::__num_base::_S_atoms_out,
 				      std::ios_base::dec, true);
     if (__bufsize < __len)

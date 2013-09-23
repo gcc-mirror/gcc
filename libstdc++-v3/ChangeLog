@@ -1,3 +1,8 @@
+2013-09-23  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Use only
+	std::__int_to_char<unsigned long long>()
+
 2013-09-21  Paul Pluzhnikov  <ppluzhnikov@google.com>
 
 	* include/bits/functexcept.h (__throw_out_of_range_fmt): New.
