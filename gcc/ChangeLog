@@ -1,3 +1,47 @@
+2013-09-23  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.h (enum r6000_reg_class_enum): Add new
+	constraints: wu, ww, and wy.  Repurpose wv constraint added during
+	power8 changes.  Put wg constraint in alphabetical order.
+
+	* config/rs6000/rs6000.opt (-mvsx-scalar-float): New debug switch
+	for future work to add ISA 2.07 VSX single precision support.
+	(-mvsx-scalar-double): Change default from -1 to 1, update
+	documentation comment.
+	(-mvsx-scalar-memory): Rename debug switch to -mupper-regs-df.
+	(-mupper-regs-df): New debug switch to control whether DF values
+	can go in the traditional Altivec registers.
+	(-mupper-regs-sf): New debug switch to control whether SF values
+	can go in the traditional Altivec registers.
+
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print wu, ww,
+	and wy constraints.
+	(rs6000_init_hard_regno_mode_ok): Use ssize_t instead of int for
+	loop variables.  Rename -mvsx-scalar-memory to -mupper-regs-df.
+	Add new constraints, wu/ww/wy.  Repurpose wv constraint.
+	(rs6000_debug_legitimate_address_p): Print if we are running
+	before, during, or after reload.
+	(rs6000_secondary_reload): Add a comment.
+	(rs6000_opt_masks): Add -mupper-regs-df, -mupper-regs-sf.
+
+	* config/rs6000/constraints.md (wa constraint): Sort w<x>
+	constraints.  Update documentation string.
+	(wd constraint): Likewise.
+	(wf constraint): Likewise.
+	(wg constraint): Likewise.
+	(wn constraint): Likewise.
+	(ws constraint): Likewise.
+	(wt constraint): Likewise.
+	(wx constraint): Likewise.
+	(wz constraint): Likewise.
+	(wu constraint): New constraint for ISA 2.07 SFmode scalar
+	instructions.
+	(ww constraint): Likewise.
+	(wy constraint): Likewise.
+	(wv constraint): Repurpose ISA 2.07 constraint that we not used in
+	the previous submissions.
+	* doc/md.texi (PowerPC and IBM RS6000): Likewise.
+
 2013-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* doc/rtl.texi (REG_NOTES): Say that int_list can also be used.

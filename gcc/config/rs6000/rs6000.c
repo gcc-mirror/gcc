@@ -1891,8 +1891,11 @@ rs6000_debug_reg_global (void)
 	   "wr reg_class = %s\n"
 	   "ws reg_class = %s\n"
 	   "wt reg_class = %s\n"
+	   "wu reg_class = %s\n"
 	   "wv reg_class = %s\n"
+	   "ww reg_class = %s\n"
 	   "wx reg_class = %s\n"
+	   "wy reg_class = %s\n"
 	   "wz reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
@@ -1907,8 +1910,11 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ws]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wt]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wu]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wv]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_ww]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wy]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wz]]);
 
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
@@ -2168,7 +2174,7 @@ rs6000_debug_reg_global (void)
 static void
 rs6000_init_hard_regno_mode_ok (bool global_init_p)
 {
-  int r, m, c;
+  ssize_t r, m, c;
   int align64;
   int align32;
 
@@ -2320,7 +2326,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     {
       rs6000_vector_unit[DFmode] = VECTOR_VSX;
       rs6000_vector_mem[DFmode]
-	= (TARGET_VSX_SCALAR_MEMORY ? VECTOR_VSX : VECTOR_NONE);
+	= (TARGET_UPPER_REGS_DF ? VECTOR_VSX : VECTOR_NONE);
       rs6000_vector_align[DFmode] = align64;
     }
 
@@ -2334,7 +2340,34 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   /* TODO add SPE and paired floating point vector support.  */
 
   /* Register class constraints for the constraints that depend on compile
-     switches.  */
+     switches. When the VSX code was added, different constraints were added
+     based on the type (DFmode, V2DFmode, V4SFmode).  For the vector types, all
+     of the VSX registers are used.  The register classes for scalar floating
+     point types is set, based on whether we allow that type into the upper
+     (Altivec) registers.  GCC has register classes to target the Altivec
+     registers for load/store operations, to select using a VSX memory
+     operation instead of the traditional floating point operation.  The
+     constraints are:
+
+	d  - Register class to use with traditional DFmode instructions.
+	f  - Register class to use with traditional SFmode instructions.
+	v  - Altivec register.
+	wa - Any VSX register.
+	wd - Preferred register class for V2DFmode.
+	wf - Preferred register class for V4SFmode.
+	wg - Float register for power6x move insns.
+	wl - Float register if we can do 32-bit signed int loads.
+	wm - VSX register for ISA 2.07 direct move operations.
+	wr - GPR if 64-bit mode is permitted.
+	ws - Register class to do ISA 2.06 DF operations.
+	wu - Altivec register for ISA 2.07 VSX SF/SI load/stores.
+	wv - Altivec register for ISA 2.06 VSX DF/DI load/stores.
+	wt - VSX register for TImode in VSX registers.
+	ww - Register class to do SF conversions in with VSX operations.
+	wx - Float register if we can do 32-bit int stores.
+	wy - Register class to do ISA 2.07 SF operations.
+	wz - Float register if we can do 32-bit unsigned int loads.  */
+
   if (TARGET_HARD_FLOAT && TARGET_FPRS)
     rs6000_constraints[RS6000_CONSTRAINT_f] = FLOAT_REGS;
 
@@ -2343,19 +2376,16 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   if (TARGET_VSX)
     {
-      /* At present, we just use VSX_REGS, but we have different constraints
-	 based on the use, in case we want to fine tune the default register
-	 class used.  wa = any VSX register, wf = register class to use for
-	 V4SF, wd = register class to use for V2DF, and ws = register classs to
-	 use for DF scalars.  */
       rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_wd] = VSX_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_ws] = (TARGET_VSX_SCALAR_MEMORY
-						  ? VSX_REGS
-						  : FLOAT_REGS);
+      rs6000_constraints[RS6000_CONSTRAINT_wf] = VSX_REGS;
+      rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;
+
       if (TARGET_VSX_TIMODE)
 	rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;
+
+      rs6000_constraints[RS6000_CONSTRAINT_ws]
+	= (TARGET_UPPER_REGS_DF) ? VSX_REGS : FLOAT_REGS;
     }
 
   /* Add conditional constraints based on various options, to allow us to
@@ -2376,7 +2406,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     rs6000_constraints[RS6000_CONSTRAINT_wr] = GENERAL_REGS;
 
   if (TARGET_P8_VECTOR)
-    rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;
+    {
+      rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;
+      rs6000_constraints[RS6000_CONSTRAINT_wy]
+	= rs6000_constraints[RS6000_CONSTRAINT_ww]
+	= (TARGET_UPPER_REGS_SF) ? VSX_REGS : FLOAT_REGS;
+    }
+  else if (TARGET_VSX)
+    rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
 
   if (TARGET_STFIWX)
     rs6000_constraints[RS6000_CONSTRAINT_wx] = FLOAT_REGS;
@@ -2409,7 +2446,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_di_load;
 	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_di_store;
 	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_di_load;
-	  if (TARGET_VSX && TARGET_VSX_SCALAR_MEMORY)
+	  if (TARGET_VSX && TARGET_UPPER_REGS_DF)
 	    {
 	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_di_store;
 	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_di_load;
@@ -2472,7 +2509,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  rs6000_vector_reload[V4SFmode][1]  = CODE_FOR_reload_v4sf_si_load;
 	  rs6000_vector_reload[V2DFmode][0]  = CODE_FOR_reload_v2df_si_store;
 	  rs6000_vector_reload[V2DFmode][1]  = CODE_FOR_reload_v2df_si_load;
-	  if (TARGET_VSX && TARGET_VSX_SCALAR_MEMORY)
+	  if (TARGET_VSX && TARGET_UPPER_REGS_DF)
 	    {
 	      rs6000_vector_reload[DFmode][0]  = CODE_FOR_reload_df_si_store;
 	      rs6000_vector_reload[DFmode][1]  = CODE_FOR_reload_df_si_load;
@@ -7195,10 +7232,13 @@ rs6000_debug_legitimate_address_p (enum machine_mode mode, rtx x,
   bool ret = rs6000_legitimate_address_p (mode, x, reg_ok_strict);
   fprintf (stderr,
 	   "\nrs6000_legitimate_address_p: return = %s, mode = %s, "
-	   "strict = %d, code = %s\n",
+	   "strict = %d, reload = %s, code = %s\n",
 	   ret ? "true" : "false",
 	   GET_MODE_NAME (mode),
 	   reg_ok_strict,
+	   (reload_completed
+	    ? "after"
+	    : (reload_in_progress ? "progress" : "before")),
 	   GET_RTX_NAME (GET_CODE (x)));
   debug_rtx (x);
 
@@ -14865,6 +14905,7 @@ rs6000_secondary_reload (bool in_p,
 	  from_type = exchange;
 	}
 
+      /* Can we do a direct move of some sort?  */
       if (rs6000_secondary_reload_move (to_type, from_type, mode, sri,
 					altivec_p))
 	{
@@ -29162,6 +29203,8 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "recip-precision",		OPTION_MASK_RECIP_PRECISION,	false, true  },
   { "string",			OPTION_MASK_STRING,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
+  { "upper-regs-df",		OPTION_MASK_UPPER_REGS_DF,	false, false },
+  { "upper-regs-sf",		OPTION_MASK_UPPER_REGS_SF,	false, false },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
   { "vsx-timode",		OPTION_MASK_VSX_TIMODE,		false, true  },
 #ifdef OPTION_MASK_64BIT

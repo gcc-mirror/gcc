@@ -52,29 +52,18 @@
   "@internal")
 
 ;; Use w as a prefix to add VSX modes
-;; vector double (V2DF)
-(define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
-  "@internal")
-
-;; vector float (V4SF)
-(define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
-  "@internal")
-
-;; scalar double (DF)
-(define_register_constraint "ws" "rs6000_constraints[RS6000_CONSTRAINT_ws]"
-  "@internal")
-
-;; TImode in VSX registers
-(define_register_constraint "wt" "rs6000_constraints[RS6000_CONSTRAINT_wt]"
-  "@internal")
-
 ;; any VSX register
 (define_register_constraint "wa" "rs6000_constraints[RS6000_CONSTRAINT_wa]"
-  "@internal")
+  "Any VSX register if the -mvsx option was used or NO_REGS.")
 
-;; Register constraints to simplify move patterns
+(define_register_constraint "wd" "rs6000_constraints[RS6000_CONSTRAINT_wd]"
+  "VSX vector register to hold vector double data or NO_REGS.")
+
+(define_register_constraint "wf" "rs6000_constraints[RS6000_CONSTRAINT_wf]"
+  "VSX vector register to hold vector float data or NO_REGS.")
+
 (define_register_constraint "wg" "rs6000_constraints[RS6000_CONSTRAINT_wg]"
-  "Floating point register if -mmfpgpr is used, or NO_REGS.")
+  "If -mmfpgpr was used, a floating point register or NO_REGS.")
 
 (define_register_constraint "wl" "rs6000_constraints[RS6000_CONSTRAINT_wl]"
   "Floating point register if the LFIWAX instruction is enabled or NO_REGS.")
@@ -82,22 +71,37 @@
 (define_register_constraint "wm" "rs6000_constraints[RS6000_CONSTRAINT_wm]"
   "VSX register if direct move instructions are enabled, or NO_REGS.")
 
+;; NO_REGs register constraint, used to merge mov{sd,sf}, since movsd can use
+;; direct move directly, and movsf can't to move between the register sets.
+;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
+(define_register_constraint "wn" "NO_REGS" "No register (NO_REGS).")
+
 (define_register_constraint "wr" "rs6000_constraints[RS6000_CONSTRAINT_wr]"
   "General purpose register if 64-bit instructions are enabled or NO_REGS.")
 
+(define_register_constraint "ws" "rs6000_constraints[RS6000_CONSTRAINT_ws]"
+  "VSX vector register to hold scalar double values or NO_REGS.")
+
+(define_register_constraint "wt" "rs6000_constraints[RS6000_CONSTRAINT_wt]"
+  "VSX vector register to hold 128 bit integer or NO_REGS.")
+
+(define_register_constraint "wu" "rs6000_constraints[RS6000_CONSTRAINT_wu]"
+  "Altivec register to use for float/32-bit int loads/stores  or NO_REGS.")
+
 (define_register_constraint "wv" "rs6000_constraints[RS6000_CONSTRAINT_wv]"
-  "Altivec register if -mpower8-vector is used or NO_REGS.")
+  "Altivec register to use for double loads/stores  or NO_REGS.")
+
+(define_register_constraint "ww" "rs6000_constraints[RS6000_CONSTRAINT_ww]"
+  "FP or VSX register to perform float operations under -mvsx or NO_REGS.")
 
 (define_register_constraint "wx" "rs6000_constraints[RS6000_CONSTRAINT_wx]"
   "Floating point register if the STFIWX instruction is enabled or NO_REGS.")
 
+(define_register_constraint "wy" "rs6000_constraints[RS6000_CONSTRAINT_wy]"
+  "VSX vector register to hold scalar float values or NO_REGS.")
+
 (define_register_constraint "wz" "rs6000_constraints[RS6000_CONSTRAINT_wz]"
   "Floating point register if the LFIWZX instruction is enabled or NO_REGS.")
-
-;; NO_REGs register constraint, used to merge mov{sd,sf}, since movsd can use
-;; direct move directly, and movsf can't to move between the register sets.
-;; There is a mode_attr that resolves to wm for SDmode and wn for SFmode
-(define_register_constraint "wn" "NO_REGS")
 
 ;; Lq/stq validates the address for load/store quad
 (define_memory_constraint "wQ"
