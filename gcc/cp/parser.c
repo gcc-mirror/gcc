@@ -28902,7 +28902,7 @@ static tree
 make_generic_type_name ()
 {
   char buf[32];
-  sprintf (buf, "__GenT%d", ++generic_parm_count);
+  sprintf (buf, "<auto%d>", ++generic_parm_count);
   return get_identifier (buf);
 }
 
