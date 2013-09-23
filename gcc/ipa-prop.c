@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "data-streamer.h"
 #include "tree-streamer.h"
 #include "params.h"
+#include "ipa-utils.h"
 
 /* Intermediate information about a parameter that is only useful during the
    run of ipa_analyze_node and is not kept afterwards.  */
@@ -2196,6 +2197,11 @@ ipa_intraprocedural_devirtualization (gimple call)
   token = OBJ_TYPE_REF_TOKEN (otr);
   fndecl = gimple_get_virt_method_for_binfo (tree_low_cst (token, 1),
 					     binfo);
+#ifdef ENABLE_CHECKING
+  if (fndecl)
+    gcc_assert (possible_polymorphic_call_target_p
+		  (otr, cgraph_get_node (fndecl)));
+#endif
   return fndecl;
 }
 
@@ -2651,7 +2657,13 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
     return NULL;
 
   if (target)
-    return ipa_make_edge_direct_to_target (ie, target);
+    {
+#ifdef ENABLE_CHECKING
+      gcc_assert (possible_polymorphic_call_target_p
+	 (ie, cgraph_get_node (target)));
+#endif
+      return ipa_make_edge_direct_to_target (ie, target);
+    }
   else
     return NULL;
 }

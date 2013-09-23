@@ -1484,6 +1484,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   HOST_WIDE_INT token, anc_offset;
   tree otr_type;
   tree t;
+  tree target;
 
   if (param_index == -1
       || known_vals.length () <= (unsigned int) param_index)
@@ -1552,7 +1553,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       binfo = get_binfo_at_offset (binfo, anc_offset, otr_type);
       if (!binfo)
 	return NULL_TREE;
-      return gimple_get_virt_method_for_binfo (token, binfo);
+      target = gimple_get_virt_method_for_binfo (token, binfo);
     }
   else
     {
@@ -1561,8 +1562,15 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       binfo = get_binfo_at_offset (t, anc_offset, otr_type);
       if (!binfo)
 	return NULL_TREE;
-      return gimple_get_virt_method_for_binfo (token, binfo);
+      target = gimple_get_virt_method_for_binfo (token, binfo);
     }
+#ifdef ENABLE_CHECKING
+  if (target)
+    gcc_assert (possible_polymorphic_call_target_p
+		 (ie, cgraph_get_node (target)));
+#endif
+
+  return target;
 }
 
 
