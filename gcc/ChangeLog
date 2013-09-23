@@ -1,3 +1,8 @@
+2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Recurse on copy
+	assignment statements.
+
 2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md: In "scc" insn patterns, change output template to

@@ -1744,6 +1744,9 @@ insert_clobber_before_stack_restore (tree saved_val, tree var, htab_t *visited)
 	insert_clobber_before_stack_restore (gimple_phi_result (stmt), var,
 					     visited);
       }
+    else if (gimple_assign_ssa_name_copy_p (stmt))
+      insert_clobber_before_stack_restore (gimple_assign_lhs (stmt), var,
+					   visited);
     else
       gcc_assert (is_gimple_debug (stmt));
 }
