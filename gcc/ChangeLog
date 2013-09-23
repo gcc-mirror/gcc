@@ -1,3 +1,8 @@
+2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Recurse on copy
+	assignment statements.
+
 2013-09-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gimple-pretty-print.c (dump_ssaname_info): New function.

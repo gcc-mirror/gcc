@@ -1,3 +1,8 @@
+2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt28.ad[sb]: New test.
+	* gnat.dg/opt28_pkg.ads: New helper.
+
 2013-09-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58464
@@ -99,7 +104,7 @@
 
 2013-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
-	*  gnat.dg/array_bounds_test2.adb: New test.
+	* gnat.dg/array_bounds_test2.adb: New test.
 
 2013-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
