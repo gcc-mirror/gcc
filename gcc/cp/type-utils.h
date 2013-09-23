@@ -47,7 +47,7 @@ find_type_usage (tree t, bool (*pred) (const_tree))
 
   if (TYPE_PTRMEMFUNC_P (t))
     return find_type_usage
-      (TREE_TYPE (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (t))), pred);
+      (TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (t)), pred);
 
   return NULL_TREE;
 }

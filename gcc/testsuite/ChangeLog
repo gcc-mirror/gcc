@@ -1,3 +1,8 @@
+2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
+
+	PR c++/58500
+	* g++.dg/cpp1y/pr58500.C: New testcase.
+
 2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt28.ad[sb]: New test.
