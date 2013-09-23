@@ -3461,7 +3461,7 @@ try_split (rtx pat, rtx trial, int last)
 
   if (any_condjump_p (trial)
       && (note = find_reg_note (trial, REG_BR_PROB, 0)))
-    split_branch_probability = INTVAL (XEXP (note, 0));
+    split_branch_probability = XINT (note, 0);
   probability = split_branch_probability;
 
   seq = split_insns (pat, trial);
@@ -3512,7 +3512,7 @@ try_split (rtx pat, rtx trial, int last)
 		 is responsible for this step using
 		 split_branch_probability variable.  */
 	      gcc_assert (njumps == 1);
-	      add_reg_note (insn, REG_BR_PROB, GEN_INT (probability));
+	      add_int_reg_note (insn, REG_BR_PROB, probability);
 	    }
 	}
     }
@@ -5968,7 +5968,7 @@ emit_copy_of_insn_after (rtx insn, rtx after)
 	  add_reg_note (new_rtx, REG_NOTE_KIND (link),
 			copy_insn_1 (XEXP (link, 0)));
 	else
-	  add_reg_note (new_rtx, REG_NOTE_KIND (link), XEXP (link, 0));
+	  add_shallow_copy_of_reg_note (new_rtx, link);
       }
 
   INSN_CODE (new_rtx) = INSN_CODE (insn);

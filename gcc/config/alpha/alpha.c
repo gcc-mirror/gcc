@@ -4228,12 +4228,12 @@ alpha_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
 static void
 emit_unlikely_jump (rtx cond, rtx label)
 {
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
   rtx x;
 
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);
   x = emit_jump_insn (gen_rtx_SET (VOIDmode, pc_rtx, x));
-  add_reg_note (x, REG_BR_PROB, very_unlikely);
+  add_int_reg_note (x, REG_BR_PROB, very_unlikely);
 }
 
 /* A subroutine of the atomic operation splitters.  Emit a load-locked

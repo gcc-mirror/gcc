@@ -2055,6 +2055,8 @@ extern int find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
 extern int find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
 extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
 extern void add_reg_note (rtx, enum reg_note, rtx);
+extern void add_int_reg_note (rtx, enum reg_note, int);
+extern void add_shallow_copy_of_reg_note (rtx, rtx);
 extern void remove_note (rtx, const_rtx);
 extern void remove_reg_equal_equiv_notes (rtx);
 extern void remove_reg_equal_equiv_notes_for_regno (unsigned int);

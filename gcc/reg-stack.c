@@ -2058,6 +2058,8 @@ subst_asm_stack_regs (rtx insn, stack_ptr regstack)
   n_notes = 0;
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     {
+      if (GET_CODE (note) != EXPR_LIST)
+	continue;
       rtx reg = XEXP (note, 0);
       rtx *loc = & XEXP (note, 0);
 

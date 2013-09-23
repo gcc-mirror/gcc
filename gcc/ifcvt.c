@@ -91,7 +91,7 @@ static rtx last_active_insn (basic_block, int);
 static rtx find_active_insn_before (basic_block, rtx);
 static rtx find_active_insn_after (basic_block, rtx);
 static basic_block block_fallthru (basic_block);
-static int cond_exec_process_insns (ce_if_block_t *, rtx, rtx, rtx, rtx, int);
+static int cond_exec_process_insns (ce_if_block_t *, rtx, rtx, rtx, int, int);
 static rtx cond_exec_get_condition (rtx);
 static rtx noce_get_condition (rtx, rtx *, bool);
 static int noce_operand_ok (const_rtx);
@@ -316,7 +316,7 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
 			 /* if block information */rtx start,
 			 /* first insn to look at */rtx end,
 			 /* last insn to look at */rtx test,
-			 /* conditional execution test */rtx prob_val,
+			 /* conditional execution test */int prob_val,
 			 /* probability of branch taken. */int mod_ok)
 {
   int must_be_last = FALSE;
@@ -387,10 +387,10 @@ cond_exec_process_insns (ce_if_block_t *ce_info ATTRIBUTE_UNUSED,
 
       validate_change (insn, &PATTERN (insn), pattern, 1);
 
-      if (CALL_P (insn) && prob_val)
+      if (CALL_P (insn) && prob_val >= 0)
 	validate_change (insn, &REG_NOTES (insn),
-			 alloc_EXPR_LIST (REG_BR_PROB, prob_val,
-					  REG_NOTES (insn)), 1);
+			 gen_rtx_INT_LIST ((enum machine_mode) REG_BR_PROB,
+					   prob_val, REG_NOTES (insn)), 1);
 
     insn_done:
       if (insn == end)
@@ -449,14 +449,15 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
   int then_mod_ok;		/* whether conditional mods are ok in THEN */
   rtx true_expr;		/* test for else block insns */
   rtx false_expr;		/* test for then block insns */
-  rtx true_prob_val;		/* probability of else block */
-  rtx false_prob_val;		/* probability of then block */
+  int true_prob_val;		/* probability of else block */
+  int false_prob_val;		/* probability of then block */
   rtx then_last_head = NULL_RTX;	/* Last match at the head of THEN */
   rtx else_last_head = NULL_RTX;	/* Last match at the head of ELSE */
   rtx then_first_tail = NULL_RTX;	/* First match at the tail of THEN */
   rtx else_first_tail = NULL_RTX;	/* First match at the tail of ELSE */
   int then_n_insns, else_n_insns, n_insns;
   enum rtx_code false_code;
+  rtx note;
 
   /* If test is comprised of && or || elements, and we've failed at handling
      all of them together, just use the last test if it is the special case of
@@ -588,14 +589,17 @@ cond_exec_process_if_block (ce_if_block_t * ce_info,
     goto fail;
 #endif
 
-  true_prob_val = find_reg_note (BB_END (test_bb), REG_BR_PROB, NULL_RTX);
-  if (true_prob_val)
+  note = find_reg_note (BB_END (test_bb), REG_BR_PROB, NULL_RTX);
+  if (note)
     {
-      true_prob_val = XEXP (true_prob_val, 0);
-      false_prob_val = GEN_INT (REG_BR_PROB_BASE - INTVAL (true_prob_val));
+      true_prob_val = XINT (note, 0);
+      false_prob_val = REG_BR_PROB_BASE - true_prob_val;
     }
   else
-    false_prob_val = NULL_RTX;
+    {
+      true_prob_val = -1;
+      false_prob_val = -1;
+    }
 
   /* If we have && or || tests, do them here.  These tests are in the adjacent
      blocks after the first block containing the test.  */
@@ -4113,15 +4117,14 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	 All that's left is making sure the insns involved can actually
 	 be predicated.  */
 
-      rtx cond, prob_val;
+      rtx cond;
 
       cond = cond_exec_get_condition (jump);
       if (! cond)
 	return FALSE;
 
-      prob_val = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
-      if (prob_val)
-	prob_val = XEXP (prob_val, 0);
+      rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
+      int prob_val = (note ? XINT (note, 0) : -1);
 
       if (reversep)
 	{
@@ -4130,8 +4133,8 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	    return FALSE;
 	  cond = gen_rtx_fmt_ee (rev, GET_MODE (cond), XEXP (cond, 0),
 			         XEXP (cond, 1));
-	  if (prob_val)
-	    prob_val = GEN_INT (REG_BR_PROB_BASE - INTVAL (prob_val));
+	  if (prob_val >= 0)
+	    prob_val = REG_BR_PROB_BASE - prob_val;
 	}
 
       if (cond_exec_process_insns (NULL, head, end, cond, prob_val, 0)

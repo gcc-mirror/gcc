@@ -7162,10 +7162,10 @@ aarch64_emit_store_exclusive (enum machine_mode mode, rtx bval,
 static void
 aarch64_emit_unlikely_jump (rtx insn)
 {
-  rtx very_unlikely = GEN_INT (REG_BR_PROB_BASE / 100 - 1);
+  int very_unlikely = REG_BR_PROB_BASE / 100 - 1;
 
   insn = emit_jump_insn (insn);
-  add_reg_note (insn, REG_BR_PROB, very_unlikely);
+  add_int_reg_note (insn, REG_BR_PROB, very_unlikely);
 }
 
 /* Expand a compare and swap pattern.  */

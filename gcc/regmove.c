@@ -652,7 +652,7 @@ copy_src_to_dest (rtx insn, rtx src, rtx dest)
       for (link = REG_NOTES (insn); link != NULL_RTX; link = next)
 	{
 	  next = XEXP (link, 1);
-	  if (XEXP (link, 0) == src)
+	  if (GET_CODE (link) == EXPR_LIST && XEXP (link, 0) == src)
 	    {
 	      *p_move_notes = link;
 	      p_move_notes = &XEXP (link, 1);

@@ -1,3 +1,66 @@
+2013-09-23  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/rtl.texi (REG_NOTES): Say that int_list can also be used.
+	(REG_BR_PROB): Say that the probability is stored in an int_list.
+	* reg-notes.def: Update commentary to mention INT_LIST.
+	* rtl.def (EXPR_LIST, INSN_LIST): Capitalize comments.
+	(INT_LIST): New rtx.
+	* rtl.h (add_int_reg_note, add_shallow_copy_of_reg_note): Declare.
+	* rtlanal.c (int_reg_note_p): New function.
+	(alloc_reg_note): Assert that the note does not have an int argument.
+	(add_int_reg_note, add_shallow_copy_of_reg_note): New functions.
+	* combine.c (distribute_notes): Use add_shallow_copy_of_rtx.
+	* cse.c (cse_process_notes_1): Expect REG_EQUAL to be an EXPR_LIST
+	rather than an INSN_LIST.  Handle INT_LIST.
+	* ifcvt.c (cond_exec_process_insns): Take the probability as an int
+	rather than an rtx.  Use gen_rtx_INT_LIST to create a REG_BR_PROB note.
+	(cond_exec_process_if_block): Use XINT to extract REG_BR_PROB values.
+	Manipulate them as ints rather than rtxes.
+	* reg-stack.c (subst_asm_stack_regs): Only handle EXPR_LIST notes.
+	* regmove.c (copy_src_to_dest): Likewise.
+	* sched-vis.c (print_insn_with_notes): Handle INT_LIST.
+
+	* config/i386/winnt.c (i386_pe_seh_unwind_emit): Sink pat assignment
+	into the cases that need it.
+	* config/arm/arm.c (arm_unwind_emit): Likewise.
+
+	* asan.c (asan_clear_shadow): Use add_int_reg_note for REG_BR_PROB.
+	* emit-rtl.c (try_split, emit_copy_of_insn_after): Likewise.
+	* loop-doloop.c (add_test, doloop_modify): Likewise.
+	* loop-unswitch.c (compare_and_jump_seq): Likewise.
+	* optabs.c (emit_cmp_and_jump_insn_1): Likewise.
+	* predict.c (combine_predictions_for_insn): Likewise.
+	* print-rtl.c (print_rtx): Handle INT_LIST.
+	* config/aarch64/aarch64.c (aarch64_emit_unlikely_jump): Likewise.
+	* config/alpha/alpha.c (emit_unlikely_jump): Likewise.
+	* config/arm/arm.c (emit_unlikely_jump): Likewise.
+	* config/i386/i386.c (ix86_expand_split_stack_prologue): Likewise.
+	(ix86_split_fp_branch, predict_jump): Likewise.
+	* config/rs6000/rs6000.c (emit_unlikely_jump): Likewise.
+	* config/sh/sh.c (expand_cbranchsi4): Likewise.
+	* config/spu/spu.c (ea_load_store_inline): Likewise.
+
+	* cfgbuild.c (compute_outgoing_frequencies): Use XINT to access the
+	value of a REG_BR_PROB note.
+	* cfgrtl.c (force_nonfallthru_and_redirect): Likewise.
+	(update_br_prob_note, rtl_verify_edges, purge_dead_edges): Likewise.
+	* emit-rtl.c (try_split): Likewise.
+	* predict.c (br_prob_note_reliable_p): Likewise.
+	(invert_br_probabilities, combine_predictions_for_insn): Likewise.
+	* reorg.c (mostly_true_jump): Likewise.
+	* config/bfin/bfin.c (cbranch_predicted_taken_p): Likewise.
+	* config/frv/frv.c (frv_print_operand_jump_hint): Likewise.
+	* config/i386/i386.c (ix86_print_operand): Likewise.
+	* config/ia64/ia64.c (ia64_print_operand): Likewise.
+	* config/mmix/mmix.c (mmix_print_operand): Likewise.
+	* config/rs6000/rs6000.c (output_cbranch): Likewise.
+	* config/s390/s390.c (s390_expand_tbegin): Likewise.
+	* config/sh/sh.c (sh_print_operand, sh_adjust_cost): Likewise.
+	* config/sparc/sparc.c (output_cbranch): Likewise.
+	* config/spu/spu.c (get_branch_target): Likewise.
+	* config/tilegx/tilegx.c (cbranch_predicted_p): Likewise.
+	* config/tilepro/tilepro.c (cbranch_predicted_p): Likewise.
+
 2013-09-23  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-cp.c (ipa_get_indirect_edge_target_1): Add sanity check

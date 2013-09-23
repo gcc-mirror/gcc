@@ -126,7 +126,7 @@ compare_and_jump_seq (rtx op0, rtx op1, enum rtx_code comp, rtx label, int prob,
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
     }
-  add_reg_note (jump, REG_BR_PROB, GEN_INT (prob));
+  add_int_reg_note (jump, REG_BR_PROB, prob);
 
   seq = get_insns ();
   end_sequence ();

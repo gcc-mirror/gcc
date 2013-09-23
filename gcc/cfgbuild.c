@@ -542,7 +542,7 @@ compute_outgoing_frequencies (basic_block b)
 
       if (note)
 	{
-	  probability = INTVAL (XEXP (note, 0));
+	  probability = XINT (note, 0);
 	  e = BRANCH_EDGE (b);
 	  e->probability = probability;
 	  e->count = apply_probability (b->count, probability);

@@ -6068,9 +6068,12 @@ cse_process_notes_1 (rtx x, rtx object, bool *changed)
       return x;
 
     case EXPR_LIST:
-    case INSN_LIST:
       if (REG_NOTE_KIND (x) == REG_EQUAL)
 	XEXP (x, 0) = cse_process_notes (XEXP (x, 0), NULL_RTX, changed);
+      /* Fall through.  */
+
+    case INSN_LIST:
+    case INT_LIST:
       if (XEXP (x, 1))
 	XEXP (x, 1) = cse_process_notes (XEXP (x, 1), NULL_RTX, changed);
       return x;

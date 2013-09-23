@@ -1480,7 +1480,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       note = find_reg_note (BB_END (e->src), REG_BR_PROB, NULL_RTX);
       if (note)
 	{
-	  int prob = INTVAL (XEXP (note, 0));
+	  int prob = XINT (note, 0);
 
 	  b->probability = prob;
           /* Update this to use GCOV_COMPUTE_SCALE.  */
@@ -2207,9 +2207,9 @@ update_br_prob_note (basic_block bb)
   if (!JUMP_P (BB_END (bb)))
     return;
   note = find_reg_note (BB_END (bb), REG_BR_PROB, NULL_RTX);
-  if (!note || INTVAL (XEXP (note, 0)) == BRANCH_EDGE (bb)->probability)
+  if (!note || XINT (note, 0) == BRANCH_EDGE (bb)->probability)
     return;
-  XEXP (note, 0) = GEN_INT (BRANCH_EDGE (bb)->probability);
+  XINT (note, 0) = BRANCH_EDGE (bb)->probability;
 }
 
 /* Get the last insn associated with block BB (that includes barriers and
@@ -2399,11 +2399,11 @@ rtl_verify_edges (void)
 	  && EDGE_COUNT (bb->succs) >= 2
 	  && any_condjump_p (BB_END (bb)))
 	{
-	  if (INTVAL (XEXP (note, 0)) != BRANCH_EDGE (bb)->probability
+	  if (XINT (note, 0) != BRANCH_EDGE (bb)->probability
 	      && profile_status != PROFILE_ABSENT)
 	    {
-	      error ("verify_flow_info: REG_BR_PROB does not match cfg %wi %i",
-		     INTVAL (XEXP (note, 0)), BRANCH_EDGE (bb)->probability);
+	      error ("verify_flow_info: REG_BR_PROB does not match cfg %i %i",
+		     XINT (note, 0), BRANCH_EDGE (bb)->probability);
 	      err = 1;
 	    }
 	}
@@ -3104,7 +3104,7 @@ purge_dead_edges (basic_block bb)
 
 	  b = BRANCH_EDGE (bb);
 	  f = FALLTHRU_EDGE (bb);
-	  b->probability = INTVAL (XEXP (note, 0));
+	  b->probability = XINT (note, 0);
 	  f->probability = REG_BR_PROB_BASE - b->probability;
           /* Update these to use GCOV_COMPUTE_SCALE.  */
 	  b->count = bb->count * b->probability / REG_BR_PROB_BASE;
@@ -3735,7 +3735,7 @@ fixup_reorder_chain (void)
 		  rtx note = find_reg_note (bb_end_insn, REG_BR_PROB, 0);
 
 		  if (note
-		      && INTVAL (XEXP (note, 0)) < REG_BR_PROB_BASE / 2
+		      && XINT (note, 0) < REG_BR_PROB_BASE / 2
 		      && invert_jump (bb_end_insn,
 				      (e_fall->dest == EXIT_BLOCK_PTR
 				       ? NULL_RTX

@@ -528,7 +528,7 @@ bool
 br_prob_note_reliable_p (const_rtx note)
 {
   gcc_assert (REG_NOTE_KIND (note) == REG_BR_PROB);
-  return probability_reliable_p (INTVAL (XEXP (note, 0)));
+  return probability_reliable_p (XINT (note, 0));
 }
 
 static void
@@ -682,7 +682,7 @@ invert_br_probabilities (rtx insn)
 
   for (note = REG_NOTES (insn); note; note = XEXP (note, 1))
     if (REG_NOTE_KIND (note) == REG_BR_PROB)
-      XEXP (note, 0) = GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (note, 0)));
+      XINT (note, 0) = REG_BR_PROB_BASE - XINT (note, 0);
     else if (REG_NOTE_KIND (note) == REG_BR_PRED)
       XEXP (XEXP (note, 0), 1)
 	= GEN_INT (REG_BR_PROB_BASE - INTVAL (XEXP (XEXP (note, 0), 1)));
@@ -836,7 +836,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
 
   if (!prob_note)
     {
-      add_reg_note (insn, REG_BR_PROB, GEN_INT (combined_probability));
+      add_int_reg_note (insn, REG_BR_PROB, combined_probability);
 
       /* Save the prediction into CFG in case we are seeing non-degenerated
 	 conditional jump.  */
@@ -849,7 +849,7 @@ combine_predictions_for_insn (rtx insn, basic_block bb)
     }
   else if (!single_succ_p (bb))
     {
-      int prob = INTVAL (XEXP (prob_note, 0));
+      int prob = XINT (prob_note, 0);
 
       BRANCH_EDGE (bb)->probability = prob;
       FALLTHRU_EDGE (bb)->probability = REG_BR_PROB_BASE - prob;
