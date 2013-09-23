@@ -810,7 +810,7 @@ maybe_add_lambda_conv_op (tree type)
     = (DECL_TEMPLATE_INFO (callop)
     && DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (callop)) == callop);
 
-  if (DECL_INITIAL (callop) == NULL_TREE)
+  if (!generic_lambda_p && DECL_INITIAL (callop) == NULL_TREE)
     {
       /* If the op() wasn't instantiated due to errors, give up.  */
       gcc_assert (errorcount || sorrycount);
