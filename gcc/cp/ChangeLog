@@ -1,5 +1,10 @@
 2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
 
+	* parser.c (make_generic_type_name): Spell generic type names '<autoN>'
+	rather than '__GenN'.
+
+2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
+
 	* lambda.c (maybe_add_lambda_conv_op): Don't check for instantiated
 	callop in the case of generic lambdas.
 
