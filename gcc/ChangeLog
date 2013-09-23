@@ -1,3 +1,12 @@
+2013-09-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Revert r202780:
+	2013-09-20  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_legitimize_reload_address): Likewise.
+
 2013-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_asm_expr): Reset the TREE_CHAIN of clobbers to
