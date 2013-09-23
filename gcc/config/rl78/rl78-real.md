@@ -312,7 +312,7 @@
    call\t%A1"
   )
 
-(define_insn "cbranchqi4_real_signed"
+(define_insn "*cbranchqi4_real_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
 			      [(match_operand:QI 1 "general_operand" "A,A,A")
@@ -325,7 +325,6 @@
    cmp\t%1, %2 \;xor1 CY,%1.7\;sk%c0 \;br\t!!%3
    cmp\t%1, %2 \;xor1 CY,%1.7\;xor1 CY,%2.7\;sk%c0 \;br\t!!%3"
   )
-
 
 (define_insn "*cbranchqi4_real"
   [(set (pc) (if_then_else
@@ -342,7 +341,7 @@
    cmp\t%1, %2 \;sk%c0 \;br\t!!%3"
   )
 
-(define_insn "cbranchhi4_real_signed"
+(define_insn "*cbranchhi4_real_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
 			      [(match_operand:HI 1 "general_operand" "A,A,A,vR")
@@ -381,7 +380,7 @@
   "cmpw\t%1, %2 \;sk%c0 \;br\t!!%3"
   )
 
-(define_insn "cbranchsi4_real_lt"
+(define_insn "*cbranchsi4_real_lt"
   [(set (pc) (if_then_else
 	      (lt (match_operand:SI 0 "general_operand" "U,vWabWhlWh1")
 		  (const_int 0))
@@ -395,7 +394,7 @@
    mov1 CY,%E0.7 \;sknc \;br\t!!%1"
   )
 
-(define_insn "cbranchsi4_real_ge"
+(define_insn "*cbranchsi4_real_ge"
   [(set (pc) (if_then_else
 	      (ge (match_operand:SI 0 "general_operand" "U,vWabWhlWh1")
 		  (const_int 0))
@@ -409,7 +408,7 @@
    mov1 CY,%E0.7 \;skc \;br\t!!%1"
   )
 
-(define_insn "cbranchsi4_real_signed"
+(define_insn "*cbranchsi4_real_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
 			      [(match_operand:SI 1 "nonimmediate_operand" "vU,vU,vU")
@@ -425,7 +424,7 @@
    movw ax,%H1 \;cmpw  ax, %H2 \;xor1 CY,a.7\;xor1 CY,%E2.7\;movw ax,%h1 \;sknz \;cmpw  ax, %h2 \;sk%c0 \;br\t!!%3"
   )
 
-(define_insn "cbranchsi4_real"
+(define_insn "*cbranchsi4_real"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_real"
 			      [(match_operand:SI 1 "general_operand" "vUi")
@@ -491,26 +490,62 @@
 ;; in the peephole not matching and the optimization being missed.
 
 (define_peephole2
-  [(set (match_operand:QI 1 "register_operand") (reg:QI A_REG))
-   (set (match_dup 1) (and:QI (match_dup 1) (match_operand 2 "immediate_operand")))
-   (set (pc) (if_then_else (eq (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 3 ""))
+  [(set (match_operand:QI 0 "register_operand") (reg:QI A_REG))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_operand 1 "immediate_operand")))
+   (set (pc) (if_then_else (eq (match_dup 0) (const_int 0))
+			   (label_ref (match_operand 2 ""))
 			   (pc)))]
-  "peep2_regno_dead_p (3, REGNO (operands[1]))
-   && exact_log2 (INTVAL (operands[2])) >= 0"
-  [(set (pc) (if_then_else (eq (and (reg:QI A_REG) (match_dup 2)) (const_int 0))
-			   (label_ref (match_dup 3)) (pc)))]
+  "peep2_regno_dead_p (3, REGNO (operands[0]))
+   && exact_log2 (INTVAL (operands[1])) >= 0"
+  [(set (pc) (if_then_else (eq (and (reg:QI A_REG) (match_dup 1)) (const_int 0))
+			   (label_ref (match_dup 2))
+			   (pc)))]
   )
 
 (define_peephole2
-  [(set (match_operand:QI 1 "register_operand") (reg:QI A_REG))
-   (set (match_dup 1) (and:QI (match_dup 1) (match_operand 2 "immediate_operand")))
-   (set (pc) (if_then_else (ne (match_dup 1) (const_int 0))
-			   (label_ref (match_operand 3 ""))
+  [(set (match_operand:QI 0 "register_operand") (reg:QI A_REG))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_operand 1 "immediate_operand")))
+   (set (pc) (if_then_else (ne (match_dup 0) (const_int 0))
+			   (label_ref (match_operand 2 ""))
 			   (pc)))]
-  "peep2_regno_dead_p (3, REGNO (operands[1]))
-   && exact_log2 (INTVAL (operands[2])) >= 0"
-  [(set (pc) (if_then_else (ne (and (reg:QI A_REG) (match_dup 2)) (const_int 0))
-			   (label_ref (match_dup 3)) (pc)))]
+  "peep2_regno_dead_p (3, REGNO (operands[0]))
+   && exact_log2 (INTVAL (operands[1])) >= 0"
+  [(set (pc) (if_then_else (ne (and (reg:QI A_REG) (match_dup 1)) (const_int 0))
+			   (label_ref (match_dup 2))
+			   (pc)))]
+  )
+
+;; Eliminate needless register copies.
+(define_peephole2
+  [(set (match_operand:HI 0 "register_operand") (match_operand:HI 1 "register_operand"))
+   (set (match_operand:HI 2 "register_operand") (match_dup 0))]
+  "peep2_regno_dead_p (2, REGNO (operands[0]))
+   && (REGNO (operands[1]) < 8 || REGNO (operands[2]) < 8)"
+  [(set (match_dup 2) (match_dup 1))]
+  )
+
+;; Eliminate needless register copying when performing bit manipulations.
+(define_peephole2
+  [(set (match_operand:QI 0 "register_operand") (reg:QI A_REG))
+   (set (match_dup 0) (ior:QI (match_dup 0) (match_operand 1 "immediate_operand")))
+   (set (reg:QI A_REG) (match_dup 0))]
+  "peep2_regno_dead_p (3, REGNO (operands[0]))"
+  [(set (reg:QI A_REG) (ior:QI (reg:QI A_REG) (match_dup 1)))]
+  )
+
+(define_peephole2
+  [(set (match_operand:QI 0 "register_operand") (reg:QI A_REG))
+   (set (match_dup 0) (xor:QI (match_dup 0) (match_operand 1 "immediate_operand")))
+   (set (reg:QI A_REG) (match_dup 0))]
+  "peep2_regno_dead_p (3, REGNO (operands[0]))"
+  [(set (reg:QI A_REG) (xor:QI (reg:QI A_REG) (match_dup 1)))]
+  )
+
+(define_peephole2
+  [(set (match_operand:QI 0 "register_operand") (reg:QI A_REG))
+   (set (match_dup 0) (and:QI (match_dup 0) (match_operand 1 "immediate_operand")))
+   (set (reg:QI A_REG) (match_dup 0))]
+  "peep2_regno_dead_p (3, REGNO (operands[0]))"
+  [(set (reg:QI A_REG) (and:QI (reg:QI A_REG) (match_dup 1)))]
   )
 

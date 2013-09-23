@@ -8203,15 +8203,9 @@ label:
    (use (match_operand:PSI 2 "fpscr_operand" "c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c,c"))
    (clobber (match_scratch:SI 3 "=X,X,Bsc,Bsc,&z,X,X,X,X,X,X,X,X,y,X,X,X,X,X"))]
   "TARGET_SH2E
-   && (arith_reg_operand (operands[0], SFmode)
-       || arith_reg_operand (operands[1], SFmode)
-       || arith_reg_operand (operands[3], SImode)
-       || (fpul_operand (operands[0], SFmode)
-	   && memory_operand (operands[1], SFmode)
-	   && GET_CODE (XEXP (operands[1], 0)) == POST_INC)
-       || (fpul_operand (operands[1], SFmode)
-	   && memory_operand (operands[0], SFmode)
-	   && GET_CODE (XEXP (operands[0], 0)) == PRE_DEC))"
+   && (arith_reg_operand (operands[0], SFmode) || fpul_operand (operands[0], SFmode)
+       || arith_reg_operand (operands[1], SFmode) || fpul_operand (operands[1], SFmode)
+       || arith_reg_operand (operands[3], SImode))"
   "@
 	fmov	%1,%0
 	mov	%1,%0

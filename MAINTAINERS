@@ -213,6 +213,7 @@ config.sub/config.guess	Ben Elliston		config-patches@gnu.org
 basic block reordering	Jason Eckhardt		jle@rice.edu
 i18n			Philipp Thomas		pth@suse.de
 i18n			Joseph Myers		joseph@codesourcery.com
+diagnostic messages	Dodji Seketeli		dodji@redhat.com
 build machinery (*.in)	Paolo Bonzini		bonzini@gnu.org
 build machinery (*.in)	DJ Delorie		dj@redhat.com
 build machinery (*.in)	Nathanael Nerode	neroden@gcc.gnu.org

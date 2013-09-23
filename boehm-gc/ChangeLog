@@ -1,4 +1,8 @@
-2013-09-04  Matthias Klose  <doko@ubuntu.com> 
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2013-09-04  Matthias Klose  <doko@ubuntu.com>
 
 	* Makefile.am (libgcjgc_la_LIBADD): Add EXTRA_TEST_LIBS.
 	* Makefile.in: Regenerate.

@@ -62,11 +62,13 @@
    Integer constant equal to 8."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 8, 8)")))
+
 (define_constraint "Iv16"
   "@internal
    Integer constant equal to 16."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 16, 16)")))
+
 (define_constraint "Iv24"
   "@internal
    Integer constant equal to 24."
@@ -78,11 +80,13 @@
    Integer constant in the range 9 @dots{} 15 (for shifts)."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 9, 15)")))
+
 (define_constraint "Is17"
   "@internal
    Integer constant in the range 17 @dots{} 23 (for shifts)."
   (and (match_code "const_int")
        (match_test "IN_RANGE (ival, 17, 23)")))
+
 (define_constraint "Is25"
   "@internal
    Integer constant in the range 25 @dots{} 31 (for shifts)."
@@ -216,7 +220,7 @@
   )
 (define_memory_constraint "Wab"
   "es:[addr]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Cab (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Cab (rl78_es_base (op)))
                || satisfies_constraint_Cab (op)")
   )
 
@@ -234,7 +238,7 @@
   )
 (define_memory_constraint "Wbc"
   "es:word16[BC]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Cbc (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Cbc (rl78_es_base (op)))
                || satisfies_constraint_Cbc (op)")
   )
 
@@ -246,7 +250,7 @@
   )
 (define_memory_constraint "Wde"
   "es:[DE]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Cde (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Cde (rl78_es_base (op)))
                || satisfies_constraint_Cde (op)")
   )
 
@@ -258,7 +262,7 @@
   )
 (define_memory_constraint "Wca"
   "es:[AX..HL] for calls"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Cca (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Cca (rl78_es_base (op)))
                || satisfies_constraint_Cca (op)")
   )
 
@@ -266,11 +270,11 @@
   "[AX..HL,r8-r31] for calls"
   (and (match_code "mem")
        (and (match_code "reg" "0")
-	    (match_test "REGNO (XEXP (op, 0)) < 31")))
+	    (match_test "REGNO (XEXP (op, 0)) < 32")))
   )
 (define_memory_constraint "Wcv"
-  "es:[AX..HL,r8-r23] for calls"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Ccv (rl78_es_base (op))
+  "es:[AX..HL,r8-r31] for calls"
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Ccv (rl78_es_base (op)))
                || satisfies_constraint_Ccv (op)")
   )
 
@@ -288,7 +292,7 @@
   )
 (define_memory_constraint "Wd2"
   "es:word16[DE]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Cd2 (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Cd2 (rl78_es_base (op)))
                || satisfies_constraint_Cd2 (op)")
   )
 
@@ -300,7 +304,7 @@
   )
 (define_memory_constraint "Whl"
   "es:[HL]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Chl (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Chl (rl78_es_base (op)))
                || satisfies_constraint_Chl (op)")
   )
 
@@ -314,7 +318,7 @@
   )
 (define_memory_constraint "Wh1"
   "es:byte8[HL]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Ch1 (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Ch1 (rl78_es_base (op)))
                || satisfies_constraint_Ch1 (op)")
   )
 
@@ -325,7 +329,7 @@
   )
 (define_memory_constraint "Whb"
   "es:[HL+B]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Chb (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Chb (rl78_es_base (op)))
                || satisfies_constraint_Chb (op)")
   )
 
@@ -343,7 +347,7 @@
   )
 (define_memory_constraint "Ws1"
   "es:word8[SP]"
-  (match_test "rl78_es_addr (op) && satisfies_constraint_Cs1 (rl78_es_base (op))
+  (match_test "(rl78_es_addr (op) && satisfies_constraint_Cs1 (rl78_es_base (op)))
                || satisfies_constraint_Cs1 (op)")
   )
 

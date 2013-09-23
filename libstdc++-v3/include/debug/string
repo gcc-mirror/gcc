@@ -70,6 +70,7 @@ namespace __gnu_debug
 
     // 21.3.1 construct/copy/destroy:
     explicit basic_string(const _Allocator& __a = _Allocator())
+    _GLIBCXX_NOEXCEPT
     : _Base(__a)
     { }
 
@@ -238,7 +239,7 @@ namespace __gnu_debug
 
 #if __cplusplus >= 201103L
     void
-    shrink_to_fit()
+    shrink_to_fit() noexcept
     {
       if (capacity() > size())
 	{
@@ -267,7 +268,7 @@ namespace __gnu_debug
 
     // 21.3.4 element access:
     const_reference
-    operator[](size_type __pos) const
+    operator[](size_type __pos) const _GLIBCXX_NOEXCEPT
     {
       _GLIBCXX_DEBUG_VERIFY(__pos <= this->size(),
 			    _M_message(__gnu_debug::__msg_subscript_oob)
@@ -278,7 +279,7 @@ namespace __gnu_debug
     }
 
     reference
-    operator[](size_type __pos)
+    operator[](size_type __pos) _GLIBCXX_NOEXCEPT
     {
 #ifdef _GLIBCXX_DEBUG_PEDANTIC
       __glibcxx_check_subscript(__pos);
@@ -582,7 +583,7 @@ namespace __gnu_debug
 
 #if __cplusplus >= 201103L
     void
-    pop_back()
+    pop_back() noexcept
     {
       __glibcxx_check_nonempty();
       _Base::pop_back();

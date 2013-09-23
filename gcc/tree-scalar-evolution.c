@@ -269,13 +269,13 @@ static tree analyze_scalar_evolution_1 (struct loop *, tree, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
 						     tree var);
 
-/* The cached information about an SSA name VAR, claiming that below
-   basic block INSTANTIATED_BELOW, the value of VAR can be expressed
-   as CHREC.  */
+/* The cached information about an SSA name with version NAME_VERSION,
+   claiming that below basic block with index INSTANTIATED_BELOW, the
+   value of the SSA name can be expressed as CHREC.  */
 
 struct GTY(()) scev_info_str {
-  basic_block instantiated_below;
-  tree var;
+  unsigned int name_version;
+  int instantiated_below;
   tree chrec;
 };
 
@@ -309,9 +309,9 @@ new_scev_info_str (basic_block instantiated_below, tree var)
   struct scev_info_str *res;
 
   res = ggc_alloc_scev_info_str ();
-  res->var = var;
+  res->name_version = SSA_NAME_VERSION (var);
   res->chrec = chrec_not_analyzed_yet;
-  res->instantiated_below = instantiated_below;
+  res->instantiated_below = instantiated_below->index;
 
   return res;
 }
@@ -319,9 +319,10 @@ new_scev_info_str (basic_block instantiated_below, tree var)
 /* Computes a hash function for database element ELT.  */
 
 static inline hashval_t
-hash_scev_info (const void *elt)
+hash_scev_info (const void *elt_)
 {
-  return SSA_NAME_VERSION (((const struct scev_info_str *) elt)->var);
+  const struct scev_info_str *elt = (const struct scev_info_str *) elt_;
+  return elt->name_version ^ elt->instantiated_below;
 }
 
 /* Compares database elements E1 and E2.  */
@@ -332,7 +333,7 @@ eq_scev_info (const void *e1, const void *e2)
   const struct scev_info_str *elt1 = (const struct scev_info_str *) e1;
   const struct scev_info_str *elt2 = (const struct scev_info_str *) e2;
 
-  return (elt1->var == elt2->var
+  return (elt1->name_version == elt2->name_version
 	  && elt1->instantiated_below == elt2->instantiated_below);
 }
 
@@ -355,8 +356,8 @@ find_var_scev_info (basic_block instantiated_below, tree var)
   struct scev_info_str tmp;
   PTR *slot;
 
-  tmp.var = var;
-  tmp.instantiated_below = instantiated_below;
+  tmp.name_version = SSA_NAME_VERSION (var);
+  tmp.instantiated_below = instantiated_below->index;
   slot = htab_find_slot (scalar_evolution_info, &tmp, INSERT);
 
   if (!*slot)
@@ -2065,16 +2066,10 @@ analyze_scalar_evolution_in_loop (struct loop *wrto_loop, struct loop *use_loop,
    instantiating a CHREC or resolving mixers.  For this use
    instantiated_below is always the same.  */
 
-struct instantiate_cache_entry
-{
-  tree name;
-  tree chrec;
-};
-
 struct instantiate_cache_type
 {
-  pointer_map<unsigned> *map;
-  vec<instantiate_cache_entry> entries;
+  htab_t map;
+  vec<scev_info_str> entries;
 
   instantiate_cache_type () : map (NULL), entries(vNULL) {}
   ~instantiate_cache_type ();
@@ -2086,39 +2081,59 @@ instantiate_cache_type::~instantiate_cache_type ()
 {
   if (map != NULL)
     {
-      delete map;
+      htab_delete (map);
       entries.release ();
     }
-}
-
-/* Returns from CACHE the slot number of the cached chrec for NAME.  */
-
-static unsigned
-get_instantiated_value_entry (instantiate_cache_type &cache, tree name)
-{
-  if (!cache.map)
-    {
-      cache.map = new pointer_map<unsigned>;
-      cache.entries.create (10);
-    }
-
-  bool existed_p;
-  unsigned *slot = cache.map->insert (name, &existed_p);
-  if (!existed_p)
-    {
-      struct instantiate_cache_entry e;
-      e.name = name;
-      e.chrec = chrec_not_analyzed_yet;
-      *slot = cache.entries.length ();
-      cache.entries.safe_push (e);
-    }
-
-  return *slot;
 }
 
 /* Cache to avoid infinite recursion when instantiating an SSA name.
    Live during the outermost instantiate_scev or resolve_mixers call.  */
 static instantiate_cache_type *global_cache;
+
+/* Computes a hash function for database element ELT.  */
+
+static inline hashval_t
+hash_idx_scev_info (const void *elt_)
+{
+  unsigned idx = ((size_t) elt_) - 2;
+  return hash_scev_info (&global_cache->entries[idx]);
+}
+
+/* Compares database elements E1 and E2.  */
+
+static inline int
+eq_idx_scev_info (const void *e1, const void *e2)
+{
+  unsigned idx1 = ((size_t) e1) - 2;
+  return eq_scev_info (&global_cache->entries[idx1], e2);
+}
+
+/* Returns from CACHE the slot number of the cached chrec for NAME.  */
+
+static unsigned
+get_instantiated_value_entry (instantiate_cache_type &cache,
+			      tree name, basic_block instantiate_below)
+{
+  if (!cache.map)
+    {
+      cache.map = htab_create (10, hash_idx_scev_info, eq_idx_scev_info, NULL);
+      cache.entries.create (10);
+    }
+
+  scev_info_str e;
+  e.name_version = SSA_NAME_VERSION (name);
+  e.instantiated_below = instantiate_below->index;
+  void **slot = htab_find_slot_with_hash (cache.map, &e,
+					  hash_scev_info (&e), INSERT);
+  if (!*slot)
+    {
+      e.chrec = chrec_not_analyzed_yet;
+      *slot = (void *)(size_t)(cache.entries.length () + 2);
+      cache.entries.safe_push (e);
+    }
+
+  return ((size_t)*slot) - 2;
+}
 
 
 /* Return the closed_loop_phi node for VAR.  If there is none, return
@@ -2195,7 +2210,8 @@ instantiate_scev_name (basic_block instantiate_below,
 
      | a_2 -> {0, +, 1, +, a_2}_1  */
 
-  unsigned si = get_instantiated_value_entry (*global_cache, chrec);
+  unsigned si = get_instantiated_value_entry (*global_cache,
+					      chrec, instantiate_below);
   if (global_cache->get (si) != chrec_not_analyzed_yet)
     return global_cache->get (si);
 

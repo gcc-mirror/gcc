@@ -70,7 +70,8 @@ libc__11convenience_la_LIBADD =
 am__objects_1 = chrono.lo condition_variable.lo debug.lo \
 	functexcept.lo functional.lo future.lo hash_c++0x.lo \
 	hashtable_c++0x.lo limits.lo mutex.lo placeholders.lo \
-	random.lo regex.lo shared_ptr.lo system_error.lo thread.lo
+	random.lo regex.lo shared_ptr.lo snprintf_lite.lo \
+	system_error.lo thread.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_2 = fstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo wstring-inst.lo
 am_libc__11convenience_la_OBJECTS = $(am__objects_1) $(am__objects_2)
@@ -324,6 +325,7 @@ sources = \
 	random.cc \
 	regex.cc  \
 	shared_ptr.cc \
+	snprintf_lite.cc \
 	system_error.cc \
 	thread.cc
 

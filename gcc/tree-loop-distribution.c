@@ -1514,18 +1514,51 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
       any_builtin |= partition_builtin_p (partition);
     }
 
+  /* If we did not detect any builtin but are not asked to apply
+     regular loop distribution simply bail out.  */
+  if (!flag_tree_loop_distribution
+      && !any_builtin)
+    {
+      nbp = 0;
+      goto ldist_done;
+    }
+
+  /* Apply our simple cost model - fuse partitions with similar
+     memory accesses.  */
+  partition_t into;
+  for (i = 0; partitions.iterate (i, &into); ++i)
+    {
+      if (partition_builtin_p (into))
+	continue;
+      for (int j = i + 1;
+	   partitions.iterate (j, &partition); ++j)
+	{
+	  if (!partition_builtin_p (partition)
+	      && similar_memory_accesses (rdg, into, partition))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "fusing partitions\n");
+		  dump_bitmap (dump_file, into->stmts);
+		  dump_bitmap (dump_file, partition->stmts);
+		  fprintf (dump_file, "because they have similar "
+			   "memory accesses\n");
+		}
+	      bitmap_ior_into (into->stmts, partition->stmts);
+	      if (partition->kind == PKIND_REDUCTION)
+		into->kind = PKIND_REDUCTION;
+	      partitions.ordered_remove (j);
+	      partition_free (partition);
+	      j--;
+	    }
+	}
+    }
+
   /* If we are only distributing patterns fuse all partitions that
-     were not properly classified as builtins.  Else fuse partitions
-     with similar memory accesses.  */
+     were not properly classified as builtins.  */
   if (!flag_tree_loop_distribution)
     {
       partition_t into;
-      /* If we did not detect any builtin simply bail out.  */
-      if (!any_builtin)
-	{
-	  nbp = 0;
-	  goto ldist_done;
-	}
       /* Only fuse adjacent non-builtin partitions, see PR53616.
          ???  Use dependence information to improve partition ordering.  */
       i = 0;
@@ -1548,38 +1581,6 @@ distribute_loop (struct loop *loop, vec<gimple> stmts,
 	      break;
 	}
       while ((unsigned) i < partitions.length ());
-    }
-  else
-    {
-      partition_t into;
-      int j;
-      for (i = 0; partitions.iterate (i, &into); ++i)
-	{
-	  if (partition_builtin_p (into))
-	    continue;
-	  for (j = i + 1;
-	       partitions.iterate (j, &partition); ++j)
-	    {
-	      if (!partition_builtin_p (partition)
-		  && similar_memory_accesses (rdg, into, partition))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file, "fusing partitions\n");
-		      dump_bitmap (dump_file, into->stmts);
-		      dump_bitmap (dump_file, partition->stmts);
-		      fprintf (dump_file, "because they have similar "
-			       "memory accesses\n");
-		    }
-		  bitmap_ior_into (into->stmts, partition->stmts);
-		  if (partition->kind == PKIND_REDUCTION)
-		    into->kind = PKIND_REDUCTION;
-		  partitions.ordered_remove (j);
-		  partition_free (partition);
-		  j--;
-		}
-	    }
-	}
     }
 
   /* Fuse all reduction partitions into the last.  */

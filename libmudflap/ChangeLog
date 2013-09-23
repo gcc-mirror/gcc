@@ -1,3 +1,13 @@
+2013-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/57605
+	* testsuite/lib/libmudflap.exp (libmudflap-init): Append
+	-fdiagnostics-color=never to cxxflags.
+
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-03-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/53265

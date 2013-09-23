@@ -1416,7 +1416,8 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
       if (s1->attr.function && s2->attr.function)
 	{
 	  /* If both are functions, check result characteristics.  */
-	  if (!check_result_characteristics (s1, s2, errmsg, err_len))
+	  if (!check_result_characteristics (s1, s2, errmsg, err_len)
+	      || !check_result_characteristics (s2, s1, errmsg, err_len))
 	    return 0;
 	}
 

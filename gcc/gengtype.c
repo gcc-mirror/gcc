@@ -2004,14 +2004,21 @@ struct file_rule_st files_rules[] = {
     REG_EXTENDED, NULL_REGEX,
     "gt-objc-objc-map.h", "objc/objc-map.c", NULL_FRULACT },
 
-  /* General cases.  For header *.h and source *.c files, we need
-   * special actions to handle the language.  */
+  /* General cases.  For header *.h and source *.c or *.cc files, we
+   * need special actions to handle the language.  */
 
   /* Source *.c files are using get_file_gtfilename to compute their
      output_name and get_file_basename to compute their for_name
      through the source_dot_c_frul action.  */
   { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.c$",
     REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.c", source_dot_c_frul},
+
+  /* Source *.cc files are using get_file_gtfilename to compute their
+     output_name and get_file_basename to compute their for_name
+     through the source_dot_c_frul action.  */
+  { DIR_PREFIX_REGEX "([[:alnum:]_-]*)\\.cc$",
+    REG_EXTENDED, NULL_REGEX, "gt-$3.h", "$3.cc", source_dot_c_frul},
+
   /* Common header files get "gtype-desc.c" as their output_name,
    * while language specific header files are handled specially.  So
    * we need the header_dot_h_frul action.  */
@@ -2269,9 +2276,9 @@ get_output_file_with_visibility (input_file *inpf)
   }
   if (!output_name || !for_name)
     {
-      /* This is impossible, and could only happen if the files_rules is
-	 incomplete or buggy.  */
-      gcc_unreachable ();
+      /* This should not be possible, and could only happen if the
+	 files_rules is incomplete or buggy.  */
+      fatal ("failed to compute output name for %s", inpfname);
     }
 
   /* Look through to see if we've ever seen this output filename

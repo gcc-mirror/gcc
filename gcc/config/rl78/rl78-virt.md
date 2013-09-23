@@ -312,7 +312,7 @@
   [(set_attr "valloc" "op1")]
   )
 
-(define_insn "cbranchqi4_virt_signed"
+(define_insn "*cbranchqi4_virt_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
 			      [(match_operand:QI 1 "general_operand" "vim")
@@ -336,7 +336,7 @@
   [(set_attr "valloc" "cmp")]
   )
 
-(define_insn "cbranchhi4_virt_signed"
+(define_insn "*cbranchhi4_virt_signed"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator_signed"
 			      [(match_operand:HI 1 "general_operand" "vim")
@@ -360,7 +360,7 @@
   [(set_attr "valloc" "cmp")]
   )
 
-(define_insn "cbranchsi4_virt"
+(define_insn "*cbranchsi4_virt"
   [(set (pc) (if_then_else
 	      (match_operator 0 "rl78_cmp_operator"
 			      [(match_operand:SI 1 "general_operand" "vim")

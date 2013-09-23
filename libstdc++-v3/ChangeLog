@@ -1,3 +1,125 @@
+2013-09-21  Paul Pluzhnikov  <ppluzhnikov@google.com>
+
+	* include/bits/functexcept.h (__throw_out_of_range_fmt): New.
+	* src/c++11/functexcept.cc (__throw_out_of_range_fmt): New.
+	* src/c++11/snprintf_lite.cc: New.
+	* src/c++11/Makefile.am: Add snprintf_lite.cc.
+	* src/c++11/Makefile.in: Regenerate.
+	* config/abi/pre/gnu.ver: Add _ZSt24__throw_out_of_range_fmtPKcz.
+	* include/std/array (at): Use __throw_out_of_range_fmt.
+	* include/debug/array (at): Likewise.
+	* include/profile/array (at): Likewise.
+	* include/std/bitset (_M_check_initial_position, _M_check): New.
+	(bitset::bitset): Use _M_check_initial_position.
+	(set, reset, flip, test): Use _M_check.
+	* include/ext/vstring.h (_M_check, at): Use __throw_out_of_range_fmt.
+	* include/bits/stl_vector.h (_M_range_check): Likewise.
+	* include/bits/stl_bvector.h (_M_range_check): Likewise.
+	* include/bits/stl_deque.h (_M_range_check): Likewise.
+	* include/bits/basic_string.h (_M_check, at): Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/assign_neg.cc: Adjust.
+	* testsuite/23_containers/vector/requirements/dr438/insert_neg.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/vector/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/tuple_element_debug_neg.cc:
+	Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_neg.cc: Likewise.
+	* testsuite/23_containers/array/tuple_interface/get_debug_neg.cc: Likewise.
+	* testsuite/util/exception/safety.h (generate): Use __throw_out_of_range_fmt.
+
+2013-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/57605
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Prepend
+	-fdiagnostics-color=never to cxxflags.
+
+2013-09-20  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/allocator.h (__alloc_swap::_S_do_it,
+	__shrink_to_fit_aux::_S_do_it): Mark as noexcept.
+	* include/bits/basic_string.h (basic_string::_Rep) [_S_empty_rep,
+	_M_is_leaked, _M_is_shared, _M_set_leaked, _M_set_sharable,
+	_M_set_length_and_sharable, _M_dispose]: Likewise.
+	(basic_string::_Alloc_hider::_Alloc_hider): Likewise.
+	(basic_string) [_M_data, _M_rep, _M_ibegin, _M_iend, _M_limit,
+	_M_disjunct, _M_copy, _M_move, _M_assign, _S_copy_chars, _S_compare,
+	_S_empty_rep, shrink_to_fit, operator[] const, front const, back const]:
+	Likewise.
+	[clear]: Link to PR 56166.
+	[swap]: Link to PR 58265.
+	* include/bits/stl_deque.h (_Deque_iterator) [_S_buffer_size,
+	_Deque_iterator, _M_const_cast, operator*, operator->, operator++,
+	operator--, operator+=, operator+, operator-=, operator-, operator[],
+	_M_set_node]: Mark as noexcept.
+	(operator==(const _Deque_iterator&, const _Deque_iterator&),
+	operator!=(const _Deque_iterator&, const _Deque_iterator&),
+	operator<(const _Deque_iterator&, const _Deque_iterator&),
+	operator>(const _Deque_iterator&, const _Deque_iterator&),
+	operator<=(const _Deque_iterator&, const _Deque_iterator&),
+	operator>=(const _Deque_iterator&, const _Deque_iterator&),
+	operator-(const _Deque_iterator&, const _Deque_iterator&),
+	operator+(ptrdiff_t, const _Deque_iterator&)): Likewise.
+	(_Deque_base) [_Deque_base(const allocator_type&)]: Add missing call to
+	_M_initialize_map.
+	[~_Deque_base, _M_deallocate_node, _M_deallocate_map, _M_destroy_nodes]:
+	Mark as noexcept.
+	(_Deque_base::_Deque_impl) [_Deque_impl(const _Tp_alloc_type&),
+	_Deque_impl(_Tp_alloc_type&&)]: Likewise.
+	(deque) [_S_buffer_size, operator=(deque&&), shrink_to_fit, operator[],
+	front, back, pop_front, pop_back, swap]: Likewise.
+	[deque(), deque(const allocator_type&)]: Merge.
+	* include/debug/deque (deque) [operator=(deque&&), shrink_to_fit,
+	operator[], front, back, pop_front, pop_back, swap]: Mark as noexcept.
+	* include/profile/deque (deque) [operator=(deque&&), operator[], front,
+	back, pop_front, pop_back, swap]: Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/assign_neg.cc:
+	Adjust line number.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_1_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/constructor_2_neg.cc:
+	Likewise.
+	* testsuite/23_containers/deque/requirements/dr438/insert_neg.cc:
+	Likewise.
+
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
+2013-09-19  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	* include/bits/stl_tree.h (_Rb_tree_node_base) [_S_minimum, _S_maximum]:
+	Mark as noexcept.
+	(_Rb_tree_iterator) [_Rb_tree_iterator, operator*, operator->,
+	operator++, operator--, operator==, operator!=]: Likewise.
+	(_Rb_tree_const_iterator) [_Rb_tree_const_iterator, _M_const_cast,
+	operator*, operator->, operator++, operator--, operator==, operator!=]:
+	Likewise.
+	(operator==(const _Rb_tree_iterator&, const _Rb_tree_const_iterator&),
+	operator!=(const _Rb_tree_iterator&, const _Rb_tree_const_iterator&)):
+	Likewise.
+	(_Rb_tree) [_M_put_node, _M_destroy_node, _M_root, _M_leftmost,
+	_M_rightmost, _M_begin, _M_end, _S_left, _S_right, _S_minimum,
+	_S_maximum]: Likewise.
+	* include/debug/string (basic_string) [basic_string(const _Allocator&),
+	shrink_to_fit, operator[], pop_back]: Likewise.
+	* include/ext/vstring.h (__versa_string) [_M_limit, _M_disjunct,
+	_M_ibegin, _M_iend, __versa_string(const _Alloc&),
+	operator=(__versa_string&&), shrink_to_fit, operator[], front,
+	back, assign(__versa_string&&), swap]: Likewise.
+	(__versa_string) [__versa_string(), __versa_string(const _Alloc&)]:
+	Merge.
+
 2013-09-18  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/58338

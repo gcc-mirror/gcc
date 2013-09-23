@@ -42,6 +42,7 @@ sources = \
 	random.cc \
 	regex.cc  \
 	shared_ptr.cc \
+	snprintf_lite.cc \
 	system_error.cc \
 	thread.cc
 

@@ -1,3 +1,54 @@
+2013-09-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/58475
+	* gcc.target/sh/torture/pr58475.c: New test.
+
+2013-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58355
+	* gfortran.dg/extends_15.f90: New.
+
+2013-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/58481
+	* g++.dg/cpp0x/lambda/lambda-this17.C: New.
+
+2013-09-20  Jan-Benedict Glaw  <jbglaw@lug-owl.de>
+
+	PR target/56875
+	* gcc.target/vax/vax.exp: New.
+	* gcc.target/vax/pr56875.c: Ditto.
+
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58484
+	* gfortran.dg/pr58484.f: New testcase.
+
+2013-09-20  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-thread-3.c: Add missing dg-final clause.
+
+2013-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/57748
+	* gcc.dg/torture/pr57748-1.c: New test.
+	* gcc.dg/torture/pr57748-2.c: New test.
+
+2013-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58413
+	* c-c++-common/ubsan/shift-4.c: New test.
+
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58453
+	* gcc.dg/tree-ssa/ldist-23.c: New testcase.
+
+2013-09-20  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/58099
+	* gfortran.dg/proc_ptr_43.f90: New.
+
 2013-09-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/57697

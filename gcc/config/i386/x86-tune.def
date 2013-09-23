@@ -23,7 +23,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    tradeoff.  We can't enable it for 32bit generic because it does not
    work well with PPro base chips.  */
 DEF_TUNE (X86_TUNE_USE_LEAVE, "use_leave", 
-	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC64)
+	  m_386 | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE | m_GENERIC)
 DEF_TUNE (X86_TUNE_PUSH_MEMORY, "push_memory", 
           m_386 | m_P4_NOCONA | m_CORE_ALL | m_K6_GEODE | m_AMD_MULTIPLE 
           | m_GENERIC)
@@ -49,13 +49,10 @@ DEF_TUNE (X86_TUNE_MOVX, "movx",
    register stalls on Generic32 compilation setting as well.  However
    in current implementation the partial register stalls are not eliminated
    very well - they can be introduced via subregs synthesized by combine
-   and can happen in caller/callee saving sequences.  Because this option
-   pays back little on PPro based chips and is in conflict with partial reg
-   dependencies used by Athlon/P4 based chips, it is better to leave it off
-   for generic32 for now.  */
+   and can happen in caller/callee saving sequences.  */
 DEF_TUNE (X86_TUNE_PARTIAL_REG_STALL, "partial_reg_stall", m_PPRO)
 DEF_TUNE (X86_TUNE_PARTIAL_FLAG_REG_STALL, "partial_flag_reg_stall",
-          m_CORE_ALL | m_GENERIC)
+          m_CORE2 | m_GENERIC)
 /* X86_TUNE_LCP_STALL: Avoid an expensive length-changing prefix stall
  * on 16-bit immediate moves into memory on Core2 and Corei7.  */
 DEF_TUNE (X86_TUNE_LCP_STALL, "lcp_stall", m_CORE_ALL | m_GENERIC)
@@ -128,8 +125,10 @@ DEF_TUNE (X86_TUNE_SSE_PACKED_SINGLE_INSN_OPTIMAL, "sse_packed_single_insn_optim
    maintain just lower part of scalar values in proper format leaving the
    upper part undefined.  */
 DEF_TUNE (X86_TUNE_SSE_SPLIT_REGS, "sse_split_regs", m_ATHLON_K8)
-DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores", m_AMD_MULTIPLE)
-DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor", m_PPRO | m_P4_NOCONA)
+DEF_TUNE (X86_TUNE_SSE_TYPELESS_STORES, "sse_typeless_stores",
+	  m_AMD_MULTIPLE | m_CORE_ALL)
+DEF_TUNE (X86_TUNE_SSE_LOAD0_BY_PXOR, "sse_load0_by_pxor",
+	  m_PPRO | m_P4_NOCONA | m_CORE_ALL)
 DEF_TUNE (X86_TUNE_MEMORY_MISMATCH_STALL, "memory_mismatch_stall",
           m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_AMD_MULTIPLE | m_GENERIC)
 DEF_TUNE (X86_TUNE_PROLOGUE_USING_MOVE, "prologue_using_move", 
@@ -147,7 +146,7 @@ DEF_TUNE (X86_TUNE_INTER_UNIT_CONVERSIONS, "inter_unit_conversions",
 /* X86_TUNE_FOUR_JUMP_LIMIT: Some CPU cores are not able to predict more
    than 4 branch instructions in the 16 byte window.  */
 DEF_TUNE (X86_TUNE_FOUR_JUMP_LIMIT, "four_jump_limit",
-          m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM| m_AMD_MULTIPLE 
+          m_PPRO | m_P4_NOCONA | m_ATOM | m_SLM | m_AMD_MULTIPLE 
           | m_GENERIC)
 DEF_TUNE (X86_TUNE_SCHEDULE, "schedule",
           m_PENT | m_PPRO | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE 
@@ -157,13 +156,13 @@ DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
 DEF_TUNE (X86_TUNE_USE_INCDEC, "use_incdec",
           ~(m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_GENERIC))
 DEF_TUNE (X86_TUNE_PAD_RETURNS, "pad_returns",
-          m_CORE_ALL | m_AMD_MULTIPLE | m_GENERIC)
+          m_AMD_MULTIPLE | m_GENERIC)
 DEF_TUNE (X86_TUNE_PAD_SHORT_FUNCTION, "pad_short_function", m_ATOM)
 DEF_TUNE (X86_TUNE_EXT_80387_CONSTANTS, "ext_80387_constants",
           m_PPRO | m_P4_NOCONA | m_CORE_ALL | m_ATOM | m_SLM | m_K6_GEODE
           | m_ATHLON_K8 | m_GENERIC)
 DEF_TUNE (X86_TUNE_AVOID_VECTOR_DECODE, "avoid_vector_decode",
-          m_CORE_ALL | m_K8 | m_GENERIC64)
+          m_K8 | m_GENERIC)
 /* X86_TUNE_PROMOTE_HIMODE_IMUL: Modern CPUs have same latency for HImode
    and SImode multiply, but 386 and 486 do HImode multiply faster.  */
 DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
@@ -171,11 +170,11 @@ DEF_TUNE (X86_TUNE_PROMOTE_HIMODE_IMUL, "promote_himode_imul",
 /* X86_TUNE_SLOW_IMUL_IMM32_MEM: Imul of 32-bit constant and memory is
    vector path on AMD machines.  */
 DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM32_MEM, "slow_imul_imm32_mem",
-          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64)
+          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
 /* X86_TUNE_SLOW_IMUL_IMM8: Imul of 8-bit constant is vector path on AMD
    machines.  */
 DEF_TUNE (X86_TUNE_SLOW_IMUL_IMM8, "slow_imul_imm8",
-          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC64)
+          m_CORE_ALL | m_K8 | m_AMDFAM10 | m_BDVER | m_BTVER | m_GENERIC)
 /* X86_TUNE_MOVE_M1_VIA_OR: On pentiums, it is faster to load -1 via OR
    than a MOV.  */
 DEF_TUNE (X86_TUNE_MOVE_M1_VIA_OR, "move_m1_via_or", m_PENT)
@@ -196,7 +195,7 @@ DEF_TUNE (X86_TUNE_USE_VECTOR_CONVERTS, "use_vector_converts", m_AMDFAM10)
 /* X86_TUNE_FUSE_CMP_AND_BRANCH: Fuse a compare or test instruction
    with a subsequent conditional jump instruction into a single
    compare-and-branch uop.  */
-DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH, "fuse_cmp_and_branch", m_BDVER)
+DEF_TUNE (X86_TUNE_FUSE_CMP_AND_BRANCH, "fuse_cmp_and_branch", m_BDVER | m_CORE_ALL)
 /* X86_TUNE_OPT_AGU: Optimize for Address Generation Unit. This flag
    will impact LEA instruction selection. */
 DEF_TUNE (X86_TUNE_OPT_AGU, "opt_agu", m_ATOM | m_SLM)

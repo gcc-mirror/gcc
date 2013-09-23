@@ -52,6 +52,7 @@
 #undef  LINK_SPEC
 #define LINK_SPEC "\
 %{mrelax:-relax} \
+%{!r:--gc-sections} \
 "
 
 #undef  LIB_SPEC

@@ -170,6 +170,9 @@ make_pass_rl78_devirt (gcc::context *ctxt)
   return new pass_rl78_devirt (ctxt);
 }
 
+/* Redundant move elimination pass.  Must be run after the basic block
+   reordering pass for the best effect.  */
+
 static unsigned int
 move_elim_pass (void)
 {
@@ -314,7 +317,8 @@ rl78_option_override (void)
   if (TARGET_ALLREGS)
     {
       int i;
-      for (i=24; i<32; i++)
+
+      for (i = 24; i < 32; i++)
 	fixed_regs[i] = 0;
     }
 }
@@ -442,6 +446,7 @@ rl78_expand_movsi (rtx *operands)
     }
 }
 
+/* Generate code to move an SImode value.  */
 void
 rl78_split_movsi (rtx *operands)
 {
@@ -449,6 +454,7 @@ rl78_split_movsi (rtx *operands)
 
   op00 = rl78_subreg (HImode, operands[0], SImode, 0);
   op02 = rl78_subreg (HImode, operands[0], SImode, 2);
+
   if (GET_CODE (operands[1]) == CONST
       || GET_CODE (operands[1]) == SYMBOL_REF)
     {
@@ -480,7 +486,6 @@ rl78_split_movsi (rtx *operands)
       operands[5] = op12;
     }
 }
-
 
 /* Used by various two-operand expanders which cannot accept all
    operands in the "far" namespace.  Force some such operands into
@@ -555,6 +560,10 @@ need_to_save (unsigned int regno)
 {
   if (is_interrupt_func (cfun->decl))
     {
+      /* We don't know what devirt will need */
+      if (regno < 8)
+	return true;
+
        /* We don't need to save registers that have
 	  been reserved for interrupt handlers.  */
       if (regno > 23)
@@ -695,6 +704,10 @@ characterize_address (rtx x, rtx *base, rtx *index, rtx *addend)
   *base = NULL_RTX;
   *index = NULL_RTX;
   *addend = NULL_RTX;
+
+  if (GET_CODE (x) == UNSPEC
+      && XINT (x, 1) == UNS_ES_ADDR)
+    x = XVECEXP (x, 0, 1);
 
   if (GET_CODE (x) == REG)
     {
@@ -870,13 +883,17 @@ rl78_as_legitimate_address (enum machine_mode mode ATTRIBUTE_UNUSED, rtx x,
 			    bool strict ATTRIBUTE_UNUSED, addr_space_t as ATTRIBUTE_UNUSED)
 {
   rtx base, index, addend;
+  bool is_far_addr = false;
 
   if (GET_CODE (x) == UNSPEC
       && XINT (x, 1) == UNS_ES_ADDR)
-    x = XVECEXP (x, 0, 1);
+    {
+      x = XVECEXP (x, 0, 1);
+      is_far_addr = true;
+    }
 
   if (as == ADDR_SPACE_GENERIC
-      && GET_MODE (x) == SImode)
+      && (GET_MODE (x) == SImode || is_far_addr))
     return false;
 
   if (! characterize_address (x, &base, &index, &addend))
@@ -1062,16 +1079,19 @@ rl78_expand_prologue (void)
 	    emit_move_insn (gen_rtx_REG (HImode, 0), gen_rtx_REG (HImode, i*2));
 	    F (emit_insn (gen_push (gen_rtx_REG (HImode, 0))));
 	  }
-	else {
-	  int need_bank = i/4;
-	  if (need_bank != rb)
-	    {
-	      emit_insn (gen_sel_rb (GEN_INT (need_bank)));
-	      rb = need_bank;
-	    }
-	  F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
-	}
+	else
+	  {
+	    int need_bank = i/4;
+
+	    if (need_bank != rb)
+	      {
+		emit_insn (gen_sel_rb (GEN_INT (need_bank)));
+		rb = need_bank;
+	      }
+	    F (emit_insn (gen_push (gen_rtx_REG (HImode, i*2))));
+	  }
       }
+
   if (rb != 0)
     emit_insn (gen_sel_rb (GEN_INT (0)));
 
@@ -1675,6 +1695,9 @@ rl78_peep_movhi_p (rtx *operands)
   /* (set (op0) (op1))
      (set (op2) (op3)) */
 
+  if (! rl78_virt_insns_ok ())
+    return false;
+
 #if DEBUG_PEEP
   fprintf (stderr, "\033[33m");
   debug_rtx (operands[0]);
@@ -1947,7 +1970,6 @@ get_content_index (rtx loc)
 
 /* Return a string describing content INDEX in mode MODE.
    WARNING: Can return a pointer to a static buffer.  */
-
 static const char *
 get_content_name (unsigned char index, enum machine_mode mode)
 {
@@ -2155,9 +2177,9 @@ insn_ok_now (rtx insn)
 	  /* We need to detect far addresses that haven't been
 	     converted to es/lo16 format.  */
 	  for (i=0; i<recog_data.n_operands; i++)
-	    if (GET_CODE (OP(i)) == MEM
-		&& GET_MODE (XEXP (OP(i), 0)) == SImode
-		&& GET_CODE (XEXP (OP(i), 0)) != UNSPEC)
+	    if (GET_CODE (OP (i)) == MEM
+		&& GET_MODE (XEXP (OP (i), 0)) == SImode
+		&& GET_CODE (XEXP (OP (i), 0)) != UNSPEC)
 	      return false;
 
 	  return true;
@@ -2166,7 +2188,7 @@ insn_ok_now (rtx insn)
   else
     {
       /* We need to re-recog the insn with virtual registers to get
-	 the operands */
+	 the operands.  */
       cfun->machine->virt_insns_ok = 1;
       if (recog (pattern, insn, 0) > -1)
 	{
@@ -2206,22 +2228,22 @@ insn_ok_now (rtx insn)
 #endif
 
 /* Registers into which we move the contents of virtual registers.  */
-#define X gen_rtx_REG (QImode, 0)
-#define A gen_rtx_REG (QImode, 1)
-#define C gen_rtx_REG (QImode, 2)
-#define B gen_rtx_REG (QImode, 3)
-#define E gen_rtx_REG (QImode, 4)
-#define D gen_rtx_REG (QImode, 5)
-#define L gen_rtx_REG (QImode, 6)
-#define H gen_rtx_REG (QImode, 7)
+#define X gen_rtx_REG (QImode, X_REG)
+#define A gen_rtx_REG (QImode, A_REG)
+#define C gen_rtx_REG (QImode, C_REG)
+#define B gen_rtx_REG (QImode, B_REG)
+#define E gen_rtx_REG (QImode, E_REG)
+#define D gen_rtx_REG (QImode, D_REG)
+#define L gen_rtx_REG (QImode, L_REG)
+#define H gen_rtx_REG (QImode, H_REG)
 
-#define AX gen_rtx_REG (HImode, 0)
-#define BC gen_rtx_REG (HImode, 2)
-#define DE gen_rtx_REG (HImode, 4)
-#define HL gen_rtx_REG (HImode, 6)
+#define AX gen_rtx_REG (HImode, AX_REG)
+#define BC gen_rtx_REG (HImode, BC_REG)
+#define DE gen_rtx_REG (HImode, DE_REG)
+#define HL gen_rtx_REG (HImode, HL_REG)
 
 /* Returns TRUE if R is a virtual register.  */
-static bool
+static inline bool
 is_virtual_register (rtx r)
 {
   return (GET_CODE (r) == REG
@@ -2364,6 +2386,7 @@ gen_and_emit_move (rtx to, rtx from, rtx where, bool before)
       else
 	add_postponed_content_update (to, from);
     }
+
   return before ? to : from;
 }
 
@@ -2382,7 +2405,9 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 
   if (GET_MODE (XEXP (m, 0)) == SImode)
     {
+      rtx new_m;
       rtx seg = rl78_hi8 (XEXP (m, 0));
+
 #if DEBUG_ALLOC
       fprintf (stderr, "setting ES:\n");
       debug_rtx(seg);
@@ -2391,7 +2416,9 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
       emit_insn_before (EM (gen_movqi_es (A)), before);
       record_content (A, NULL_RTX);
 
-      m = change_address (m, GET_MODE (m), rl78_lo16 (XEXP (m, 0)));
+      new_m = gen_rtx_MEM (GET_MODE (m), rl78_lo16 (XEXP (m, 0)));
+      MEM_COPY_ATTRIBUTES (new_m, m);
+      m = new_m;
       need_es = 1;
     }
 
@@ -2465,7 +2492,6 @@ transcode_memory_rtx (rtx m, rtx newbase, rtx before)
 
 /* Copy SRC to accumulator (A or AX), placing any generated insns
    before BEFORE.  Returns accumulator RTX.  */
-
 static rtx
 move_to_acc (int opno, rtx before)
 {
@@ -2500,7 +2526,6 @@ force_into_acc (rtx src, rtx before)
 
 /* Copy accumulator (A or AX) to DEST, placing any generated insns
    after AFTER.  Returns accumulator RTX.  */
-
 static rtx
 move_from_acc (unsigned int opno, rtx after)
 {
@@ -2515,7 +2540,6 @@ move_from_acc (unsigned int opno, rtx after)
 
 /* Copy accumulator (A or AX) to REGNO, placing any generated insns
    before BEFORE.  Returns reg RTX.  */
-
 static rtx
 move_acc_to_reg (rtx acc, int regno, rtx before)
 {
@@ -2529,7 +2553,6 @@ move_acc_to_reg (rtx acc, int regno, rtx before)
 
 /* Copy SRC to X, placing any generated insns before BEFORE.
    Returns X RTX.  */
-
 static rtx
 move_to_x (int opno, rtx before)
 {
@@ -2544,16 +2567,15 @@ move_to_x (int opno, rtx before)
   if (mode == QImode || ! is_virtual_register (OP (opno)))
     {
       OP (opno) = move_to_acc (opno, before);
-      OP (opno) = move_acc_to_reg (OP(opno), X_REG, before);
+      OP (opno) = move_acc_to_reg (OP (opno), X_REG, before);
       return reg;
     }
 
   return gen_and_emit_move (reg, src, before, true);
 }
 
-/* Copy OP(opno) to H or HL, placing any generated insns before BEFORE.
+/* Copy OP (opno) to H or HL, placing any generated insns before BEFORE.
    Returns H/HL RTX.  */
-
 static rtx
 move_to_hl (int opno, rtx before)
 {
@@ -2575,9 +2597,8 @@ move_to_hl (int opno, rtx before)
   return gen_and_emit_move (reg, src, before, true);
 }
 
-/* Copy OP(opno) to E or DE, placing any generated insns before BEFORE.
+/* Copy OP (opno) to E or DE, placing any generated insns before BEFORE.
    Returns E/DE RTX.  */
-
 static rtx
 move_to_de (int opno, rtx before)
 {
@@ -2802,7 +2823,6 @@ rl78_alloc_physical_registers_op2 (rtx insn)
 	}
     }
 
-
   OP (0) = move_from_acc (0, insn);
 
   tmp_id = get_max_insn_count ();
@@ -2838,7 +2858,6 @@ rl78_alloc_physical_registers_op2 (rtx insn)
 }
 
 /* Devirtualize an insn of the form SET (PC) (MEM/REG).  */
-
 static void
 rl78_alloc_physical_registers_ro1 (rtx insn)
 {
@@ -2852,7 +2871,6 @@ rl78_alloc_physical_registers_ro1 (rtx insn)
 }
 
 /* Devirtualize a compare insn.  */
-
 static void
 rl78_alloc_physical_registers_cmp (rtx insn)
 {
@@ -2864,13 +2882,13 @@ rl78_alloc_physical_registers_cmp (rtx insn)
   OP (1) = transcode_memory_rtx (OP (1), DE, insn);
   OP (2) = transcode_memory_rtx (OP (2), HL, insn);
 
-  /* HI compares have to have OP(1) in AX, but QI
+  /* HI compares have to have OP (1) in AX, but QI
      compares do not, so it is worth checking here.  */
   MAYBE_OK (insn);
 
-  /* For an HImode compare, OP(1) must always be in AX.
-     But if OP(1) is a REG (and not AX), then we can avoid
-     a reload of OP(1) if we reload OP(2) into AX and invert
+  /* For an HImode compare, OP (1) must always be in AX.
+     But if OP (1) is a REG (and not AX), then we can avoid
+     a reload of OP (1) if we reload OP (2) into AX and invert
      the comparison.  */
   if (REG_P (OP (1))
       && REGNO (OP (1)) != AX_REG
@@ -2946,7 +2964,6 @@ rl78_alloc_physical_registers_cmp (rtx insn)
 }
 
 /* Like op2, but AX = A op X.  */
-
 static void
 rl78_alloc_physical_registers_umul (rtx insn)
 {
@@ -3054,6 +3071,7 @@ rl78_alloc_address_registers_macax (rtx insn)
 	  which ++;
 	}
     }
+
   MUST_BE_OK (insn);
 }
 
@@ -3176,6 +3194,7 @@ rl78_alloc_physical_registers (void)
       else
 	process_postponed_content_update ();
     }
+
 #if DEBUG_ALLOC
   fprintf (stderr, "\033[0m");
 #endif
@@ -3544,6 +3563,16 @@ rl78_propogate_register_origins (void)
 		    }
 		}
 	    }
+	  else if (GET_CODE (pat) == CLOBBER)
+	    {
+	      if (REG_P (XEXP (pat, 0)))
+		{
+		  unsigned int reg = REGNO (XEXP (pat, 0));
+
+		  origins[reg] = reg;
+		  age[reg] = 0;
+		}
+	    }
 	}
     }
 }
@@ -3693,6 +3722,7 @@ rl78_unwind_word_mode (void)
   return HImode;
 }
 
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-rl78.h"

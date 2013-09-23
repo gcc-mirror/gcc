@@ -1,3 +1,214 @@
+2013-09-23  Christian Bruel  <christian.bruel@st.com>
+
+	PR target/58475
+	* config/sh/sh.md (movsf_ie): Allow fpul_operand.
+	* config/sh/predicate.md (arith_reg_operand): Disallow FPUL_REG.
+
+2013-09-23  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	Revert r202780:
+	2013-09-20  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_legitimize_reload_address): Likewise.
+
+>>>>>>> .r202824
+2013-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_asm_expr): Reset the TREE_CHAIN of clobbers to
+	NULL_TREE before pushing them onto the vector.  Likewise for labels.
+
+2013-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/ia64/predicates.md (ia64_cbranch_operator): Accept unordered
+	comparison operators when -fno-trapping-math is in effect.
+	* config/ia64/ia64.c (ia64_expand_compare): Add support for unordered
+	comparison operators in TFmode and assert that unsupported operators
+	cannot reach here.
+	(ia64_print_operand): Likewise.
+
+2013-09-21  Jan Hubicka  <jh@suse.cz>
+
+	* x86-tune.def (partial_reg_stall): Disable for CoreI7 and newer.
+	(sse_typeless_stores): Enable for core
+	(sse_load0_by_pxor): Likewise.
+	(four_jump_limit): Disable for core.
+	(pad_returns): Likewise.
+	(avoid_vector_decode): Likewise.
+	(fuse_cmp_and_branch): Enable for cores.
+	* i386.c (x86_accumulate_outgoing_args): Disable for cores.
+
+2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/56791
+	* config/pa/pa.c (pa_option_override): Disable auto increment and
+	decrement instructions until reload is completed.
+
+	* config/pa/pa-linux.h (TARGET_OS_CPP_BUILTINS): Define
+	__GCC_HAVE_SYNC_COMPARE_AND_SWAP_1, __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2,
+	and __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4.
+
+2013-09-20  DJ Delorie  <dj@redhat.com>
+            Nick Clifton  <nickc@redhat.com>
+
+	* config/rl78/rl78.c: Various whitespace and comment tweaks.
+	(need_to_save): Save bank 0 on interrupts.
+	(characterize_address): Strip far address wrappers.
+	(rl78_as_legitimate_address): Likewise.
+	(transcode_memory_rtx): Likewise.
+	(rl78_peep_movhi_p): Disable this peephole after devirt.
+	(rl78_propogate_register_origins): Forget all origins when a
+	CLOBBER is seen.
+	* config/rl78/rl78-virt.md: Various whitespace tweaks.
+	* config/rl78/rl78-real.md: Various whitespace tweaks.  Additional
+	peephole2's.
+	* config/rl78/rl78.md (sel_rb): Disable for G10 just in case.
+	* config/rl78/rl78-expand.md (movqi): Check for subregs of consts.
+	* config/rl78/rl78.h (LINK_SPEC): Pass -gc-sections unless
+	relocating.
+	* config/rl78/constraints.md: Various whitespace and paren tweaks.
+
+2013-09-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md: In "scc" insn patterns, change output template to
+	handle const0_rtx in reg_or_0_operand operands.
+
+2013-09-20  Martin Husemann  <martin@NetBSD.org>
+
+	PR target/56875
+	* config/vax/vax.c (vax_output_int_move): Use D format specifier.
+	* config/vax/vax.md (ashldi3, <unnamed>): Ditto.
+
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58484
+	* tree-scalar-evolution.c (struct scev_info_str): Shrink by
+	remembering SSA name version and block index.
+	(new_scev_info_str): Adjust.
+	(hash_scev_info): Likewise.  Also hash the block index.
+	(eq_scev_info): Adjust.
+	(find_var_scev_info): Likewise.
+	(struct instantiate_cache_entry): Remove.
+	(struct instantiate_cache_type): Use a htab to map name, block
+	to chrec.
+	(instantiate_cache_type::~instantiate_cache_type): Adjust.
+	(get_instantiated_value_entry): Likewise.
+	(hash_idx_scev_info, eq_idx_scev_info): New functions.
+	(instantiate_scev_name): Adjust.
+
+2013-09-20  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_temporary_equivalences): Add comment.
+
+2013-09-20  Yufeng Zhang  <yufeng.zhang@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_expand_args):
+	Call aarch64_simd_expand_args to update op[argc].
+
+2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
+
+	* plugin.c (parse_plugin_arg_opt): Accept equal sign inside 
+          plugin argument.
+
+2013-09-20  Basile Starynkevitch  <basile@starynkevitch.net>
+
+       * gengtype.c (file_rules): Added rule for *.cc files.
+       (get_output_file_with_visibility): Give fatal message when no
+       rules found.
+
+2013-09-20  Renlin Li  <renlin.li@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use plus_constant.
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_legitimize_reload_address): Likewise.
+
+2013-09-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/57748
+	* expr.c (expand_assignment): Remove misalignp code path.
+
+2013-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/58413
+	* ubsan.c (get_ubsan_type_info_for_type): Use TYPE_SIZE instead of
+	TYPE_PRECISION.  Add asserts.
+
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/58453
+	* tree-loop-distribution.c (distribute_loop): Apply the cost
+	model for -ftree-loop-distribute-patterns, too.
+
+2013-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/58473
+	* tree-chrec.h (build_polynomial_chrec): Use gcc_checking_assert,
+	make type comparison less strict.
+
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2013-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR other/58467
+	* doc/extend.texi: Document that attribute used is meant to be used
+	on variables with static storage duration.
+
+2013-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/58472
+	* tree-vect-stmts.c (vectorizable_store, vectorizable_load): For
+	simd_lane_access set inv_p = false.
+	* omp-low.c (lower_rec_input_clauses): Set TREE_NO_WARNING on
+	the simduid magic VAR_DECL.
+
+2013-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* i386.c (generic_memcpy, generic_memset): Fix 32bit template.
+
+2013-09-17  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (record_temporary_equivalences): New function
+	split out of dom_opt_dom_walker::after_dom_children.
+	(dom_opt_dom_walker::thread_across_edge): Move common code
+	in here from dom_opt_dom_walker::after_dom_children.
+	(dom_opt_dom_walker::after_dom_children): Corresponding simplifictions.
+
+2013-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* i386.h (TARGET_GENERIC32, TARGET_GENERIC64): Remove.
+	(TARGET_GENERIC): Use PROCESOR_GENERIC
+	(enum processor_type): Unify generic32 and 64.
+	* i386.md (cpu): Likewise.
+	* x86-tune.def (use_leave): Enable for generic32.
+	(avoid_vector_decode, slow_imul_imm32_mem, slow_imul_imm8): Likewise.
+	* athlon.md: Change generic64 to generic in all occurences.
+	* i386-c.c (ix86_target_macros_internal): Unify generic64 and 32.
+	(ix86_target_macros_internal): Likewise.
+	* driver-i386.c (host_detect_local_cpu): Likewise.
+	* i386.c (generic64_memcpy, generic64_memset, generic64_cost): Rename to ..
+	(generic_memcpy, generic_memset, generic_cost): This one.
+	(generic32_memcpy, generic32_memset, generic32_cost): Remove.
+	(m_GENERIC32, m_GENERIC64): Remove.
+	(m_GENERIC): Turn into one flag.
+	(processor_target): Unify generic tunnings.
+	(ix86_option_override_internal): Replace generic32/64 by generic.
+	(ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+
+2013-09-19  Jan Hubicka  <jh@suse.cz>
+
+	* cgraph.c (cgraph_create_edge_1): Avoid uninitialized read
+	of speculative flag.
+
+2013-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (expand_omp_sections): Always pass len - 1 to
+	GOMP_sections_start, even if !exit_reachable.
+
 2013-09-18  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* lra-constraints.c (need_for_all_save_p): Use macro

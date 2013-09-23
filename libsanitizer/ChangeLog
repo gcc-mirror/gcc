@@ -1,3 +1,7 @@
+2013-09-20  Alan Modra  <amodra@gmail.com>
+
+	* configure: Regenerate.
+
 2013-09-01  Iain Sandoe  <iain@codesourcery.com>
 
 	* ubsan/Makefile.am (libubsan_la_LIBADD): Revise to omit
