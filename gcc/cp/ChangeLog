@@ -1,3 +1,9 @@
+2013-09-23  Adam Butcher  <adam@jessamine.co.uk>
+
+	* parser.c (make_generic_type_name): Use global count rather than
+	parameter and ...
+	(add_implicit_template_parms): ... propagate interface change here.
+
 2013-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/58481
