@@ -1,3 +1,8 @@
+2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt28.ad[sb]: New test.
+	* gnat.dg/opt28_pkg.ads: New helper.
+
 2013-09-23  Alan Modra  <amodra@gmail.com>
 
 	* gcc.target/powerpc/pr58330.c: New.
