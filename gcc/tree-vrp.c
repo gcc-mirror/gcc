@@ -41,9 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs.h"
 
 
-/* Type of value ranges.  See value_range_d for a description of these
-   types.  */
-enum value_range_type { VR_UNDEFINED, VR_RANGE, VR_ANTI_RANGE, VR_VARYING };
 
 /* Range of values that can be associated with an SSA_NAME after VRP
    has executed.  */
@@ -9451,6 +9448,50 @@ vrp_finalize (void)
   /* We must identify jump threading opportunities before we release
      the datastructures built by VRP.  */
   identify_jump_threads ();
+
+  /* Set value range to non pointer SSA_NAMEs.  */
+  for (i  = 0; i < num_vr_values; i++)
+   if (vr_value[i])
+    {
+      tree name = ssa_name (i);
+
+      if (POINTER_TYPE_P (TREE_TYPE (name))
+          || (vr_value[i]->type == VR_VARYING)
+          || (vr_value[i]->type == VR_UNDEFINED))
+        continue;
+
+      if ((TREE_CODE (vr_value[i]->min) == INTEGER_CST)
+          && (TREE_CODE (vr_value[i]->max) == INTEGER_CST))
+        {
+          if (vr_value[i]->type == VR_RANGE)
+            set_range_info (name,
+                            tree_to_double_int (vr_value[i]->min),
+                            tree_to_double_int (vr_value[i]->max));
+          else if (vr_value[i]->type == VR_ANTI_RANGE)
+            {
+              /* VR_ANTI_RANGE ~[min, max] is encoded compactly as
+                 [max + 1, min - 1] without additional attributes.
+                 When min value > max value, we know that it is
+                 VR_ANTI_RANGE; it is VR_RANGE otherwise.  */
+
+	      /* ~[0,0] anti-range is represented as
+                 range.  */
+              if (TYPE_UNSIGNED (TREE_TYPE (name))
+                  && integer_zerop (vr_value[i]->min)
+                  && integer_zerop (vr_value[i]->max))
+                set_range_info (name,
+                                double_int_one,
+                                double_int::max_value
+                                (TYPE_PRECISION (TREE_TYPE (name)), true));
+              else
+                set_range_info (name,
+                                tree_to_double_int (vr_value[i]->max)
+                                + double_int_one,
+                                tree_to_double_int (vr_value[i]->min)
+                                - double_int_one);
+            }
+        }
+    }
 
   /* Free allocated memory.  */
   for (i = 0; i < num_vr_values; i++)

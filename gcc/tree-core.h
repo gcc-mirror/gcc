@@ -43,6 +43,7 @@ struct function;
 struct real_value;
 struct fixed_value;
 struct ptr_info_def;
+struct range_info_def;
 struct die_struct;
 struct pointer_set_t;
 
@@ -1050,8 +1051,14 @@ struct GTY(()) tree_ssa_name {
   /* Statement that defines this SSA name.  */
   gimple def_stmt;
 
-  /* Pointer attributes used for alias analysis.  */
-  struct ptr_info_def *ptr_info;
+  /* Value range information.  */
+  union ssa_name_info_type {
+    /* Pointer attributes used for alias analysis.  */
+    struct GTY ((tag ("0"))) ptr_info_def *ptr_info;
+    /* Value range attributes used for zero/sign extension elimination.  */
+    struct GTY ((tag ("1"))) range_info_def *range_info;
+  } GTY ((desc ("%1.typed.type ?" \
+                "!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
 
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_d imm_uses;

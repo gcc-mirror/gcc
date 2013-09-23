@@ -1,3 +1,33 @@
+2013-09-23  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gimple-pretty-print.c (dump_ssaname_info): New function.
+	(dump_gimple_phi): Call it.
+	(pp_gimple_stmt_1): Likewise.
+	* tree-core.h (tree_ssa_name): New union ssa_name_info_type field.
+	(range_info_def): Declare.
+	* tree-pretty-print.c (pp_double_int): New function.
+	(dump_generic_node): Call it.
+	* tree-pretty-print.h (pp_double_int): Declare.
+	* tree-ssa-alias.c (dump_alias_info): Check pointer type.
+	* tree-ssanames.h (range_info_def): New structure.
+	(value_range_type): Move definition here.
+	(set_range_info, value_range_type, duplicate_ssa_name_range_info):
+	Declare.
+	* tree-ssanames.c (make_ssa_name_fn): Check pointer type at
+	initialization.
+	(set_range_info): New function.
+	(get_range_info): Likewise.
+	(duplicate_ssa_name_range_info): Likewise.
+	(duplicate_ssa_name_fn): Check pointer type and call
+	duplicate_ssa_name_range_info.
+	* tree-ssa-copy.c (fini_copy_prop): Likewise.
+	* tree-vrp.c (value_range_type): Remove definition, now in
+	tree-ssanames.h.
+	(vrp_finalize): Call set_range_info to update value range of
+	SSA_NAMEs.
+	* tree.h (SSA_NAME_PTR_INFO): Macro changed to access via union.
+	(SSA_NAME_RANGE_INFO): New macro.
+
 2013-09-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/58464
@@ -27,7 +57,6 @@
 	(aarch64_expand_epilogue): Likewise.
 	(aarch64_legitimize_reload_address): Likewise.
 
->>>>>>> .r202824
 2013-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gimplify.c (gimplify_asm_expr): Reset the TREE_CHAIN of clobbers to

@@ -1600,6 +1600,52 @@ dump_gimple_asm (pretty_printer *buffer, gimple gs, int spc, int flags)
     }
 }
 
+/* Dump ptr_info and range_info for NODE on pretty_printer BUFFER with
+   SPC spaces of indent.  */
+
+static void
+dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
+{
+  if (TREE_CODE (node) != SSA_NAME)
+    return;
+
+  if (POINTER_TYPE_P (TREE_TYPE (node))
+      && SSA_NAME_PTR_INFO (node))
+    {
+      unsigned int align, misalign;
+      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (node);
+      pp_string (buffer, "PT = ");
+      pp_points_to_solution (buffer, &pi->pt);
+      newline_and_indent (buffer, spc);
+      if (get_ptr_info_alignment (pi, &align, &misalign))
+	{
+	  pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u", align, misalign);
+	  newline_and_indent (buffer, spc);
+	}
+      pp_string (buffer, "# ");
+    }
+
+  if (!POINTER_TYPE_P (TREE_TYPE (node))
+      && SSA_NAME_RANGE_INFO (node))
+    {
+      double_int min, max;
+      value_range_type range_type = get_range_info (node, &min, &max);
+
+      if (range_type == VR_VARYING)
+        pp_printf (buffer, "# RANGE  VR_VARYING");
+      else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)
+        {
+          pp_printf (buffer, "# RANGE ");
+          pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
+          pp_double_int (buffer, min, TYPE_UNSIGNED (TREE_TYPE (node)));
+          pp_printf (buffer, ", ");
+          pp_double_int (buffer, max, TYPE_UNSIGNED (TREE_TYPE (node)));
+          pp_printf (buffer, "]");
+          newline_and_indent (buffer, spc);
+        }
+    }
+}
+
 
 /* Dump a PHI node PHI.  BUFFER, SPC and FLAGS are as in pp_gimple_stmt_1.
    The caller is responsible for calling pp_flush on BUFFER to finalize
@@ -1611,22 +1657,8 @@ dump_gimple_phi (pretty_printer *buffer, gimple phi, int spc, int flags)
   size_t i;
   tree lhs = gimple_phi_result (phi);
 
-  if (flags & TDF_ALIAS
-      && POINTER_TYPE_P (TREE_TYPE (lhs))
-      && SSA_NAME_PTR_INFO (lhs))
-    {
-      unsigned int align, misalign;
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
-      pp_string (buffer, "PT = ");
-      pp_points_to_solution (buffer, &pi->pt);
-      newline_and_indent (buffer, spc);
-      if (get_ptr_info_alignment (pi, &align, &misalign))
-	{
-	  pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u", align, misalign);
-	  newline_and_indent (buffer, spc);
-	}
-      pp_string (buffer, "# ");
-    }
+  if (flags & TDF_ALIAS)
+    dump_ssaname_info (buffer, lhs, spc);
 
   if (flags & TDF_RAW)
       dump_gimple_fmt (buffer, spc, flags, "%G <%T, ", phi,
@@ -1908,27 +1940,9 @@ pp_gimple_stmt_1 (pretty_printer *buffer, gimple gs, int spc, int flags)
       && gimple_has_mem_ops (gs))
     dump_gimple_mem_ops (buffer, gs, spc, flags);
 
-  if ((flags & TDF_ALIAS)
-      && gimple_has_lhs (gs))
-    {
-      tree lhs = gimple_get_lhs (gs);
-      if (TREE_CODE (lhs) == SSA_NAME
-	  && POINTER_TYPE_P (TREE_TYPE (lhs))
-	  && SSA_NAME_PTR_INFO (lhs))
-	{
-	  unsigned int align, misalign;
-	  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
-	  pp_string (buffer, "# PT = ");
-	  pp_points_to_solution (buffer, &pi->pt);
-	  newline_and_indent (buffer, spc);
-	  if (get_ptr_info_alignment (pi, &align, &misalign))
-	    {
-	      pp_printf (buffer, "# ALIGN = %u, MISALIGN = %u",
-			 align, misalign);
-	      newline_and_indent (buffer, spc);
-	    }
-	}
-    }
+  if (gimple_has_lhs (gs)
+      && (flags & TDF_ALIAS))
+    dump_ssaname_info (buffer, gimple_get_lhs (gs), spc);
 
   switch (gimple_code (gs))
     {

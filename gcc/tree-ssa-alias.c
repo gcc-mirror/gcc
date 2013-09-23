@@ -404,6 +404,7 @@ dump_alias_info (FILE *file)
       struct ptr_info_def *pi;
 
       if (ptr == NULL_TREE
+          || !POINTER_TYPE_P (TREE_TYPE (ptr))
 	  || SSA_NAME_IN_FREE_LIST (ptr))
 	continue;
 
