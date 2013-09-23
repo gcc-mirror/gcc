@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "target.h"
 #include "gimple-fold.h"
+#include "ipa-utils.h"
+#include "gimple-pretty-print.h"
 
 /* Return true when DECL can be referenced from current unit.
    FROM_DECL (if non-null) specify constructor of variable DECL was taken from.
@@ -1116,6 +1118,19 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
     {
       if (gimple_call_addr_fndecl (OBJ_TYPE_REF_EXPR (callee)) != NULL_TREE)
 	{
+          if (dump_file && virtual_method_call_p (callee)
+	      && !possible_polymorphic_call_target_p
+		    (callee, cgraph_get_node (gimple_call_addr_fndecl
+                                                 (OBJ_TYPE_REF_EXPR (callee)))))
+	    {
+	      fprintf (dump_file,
+		       "Type inheritnace inconsistent devirtualization of ");
+	      print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
+	      fprintf (dump_file, " to ");
+	      print_generic_expr (dump_file, callee, TDF_SLIM);
+	      fprintf (dump_file, "\n");
+	    }
+
 	  gimple_call_set_fn (stmt, OBJ_TYPE_REF_EXPR (callee));
 	  changed = true;
 	}
@@ -1131,6 +1146,11 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	      tree fndecl = gimple_get_virt_method_for_binfo (token, binfo);
 	      if (fndecl)
 		{
+#ifdef ENABLE_CHECKING
+		  gcc_assert (possible_polymorphic_call_target_p
+				 (callee, cgraph_get_node (fndecl)));
+
+#endif
 		  gimple_call_set_fndecl (stmt, fndecl);
 		  changed = true;
 		}

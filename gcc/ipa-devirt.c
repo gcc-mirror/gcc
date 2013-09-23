@@ -905,13 +905,19 @@ possible_polymorphic_call_target_p (tree otr_type,
 {
   vec <cgraph_node *> targets;
   unsigned int i;
+  bool final;
 
   if (!odr_hash.is_created ())
     return true;
-  targets = possible_polymorphic_call_targets (otr_type, otr_token);
+  targets = possible_polymorphic_call_targets (otr_type, otr_token, &final);
   for (i = 0; i < targets.length (); i++)
     if (n == targets[i])
       return true;
+
+  /* At a moment we allow middle end to dig out new external declarations
+     as a targets of polymorphic calls.  */
+  if (!final && !n->symbol.definition)
+    return true;
   return false;
 }
 

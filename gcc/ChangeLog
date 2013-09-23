@@ -1,3 +1,17 @@
+2013-09-23  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-cp.c (ipa_get_indirect_edge_target_1): Add sanity check
+	for ipa-devirt.
+	* ipa-utils.h (possible_polymorphic_call_target_p): New function.
+	* ipa-devirt.c (possible_polymorphic_call_target_p): Be tolerant
+	of external calls
+	* gimple-fold.c: Include ipa-utils.h and gimple-pretty-print.h
+	(gimple_fold_call): Dump inconsistent devirtualizations; add
+	sanity check for type based devirtualizations.
+	* ipa-prop.c: Include ipa-utils.h
+	(ipa_intraprocedural_devirtualization): Add sanity check.
+	(try_make_edge_direct_virtual_call): Likewise.
+
 2013-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-ccp.c (insert_clobber_before_stack_restore): Recurse on copy
