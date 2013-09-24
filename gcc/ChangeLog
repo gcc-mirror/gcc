@@ -1,3 +1,7 @@
+2013-09-24  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	* config/sh/sh.md: Fix formatting.
+
 2013-09-24  Xinliang David Li <davidxl@google.com>
 
 	* tree-vect-data-refs.c (vect_enhance_data_refs_alignment): 
