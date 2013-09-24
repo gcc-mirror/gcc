@@ -1,3 +1,17 @@
+2013-09-24  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/58338
+	PR libstdc++/56166
+	* include/bits/basic_string.h (basic_string)
+	[basic_string(basic_string&&)]: Make the noexcept conditional.
+	[operator=(basic_string&&), assign(basic_string&&)]: Link to PR 58265.
+	[begin(), end(), rbegin(), rend(), clear]: Remove noexcept.
+	[pop_back]: Comment on the lack of noexcept.
+	* include/debug/string (basic_string) [basic_string(const _Allocator&),
+	basic_string(basic_string&&), begin(), end(), rbegin(), rend(), clear,
+	operator[](size_type), pop_back]: Comment out noexcept, until vstring
+	replaces basic_string.
+
 2013-09-24  Tim Shen  <timshen91@gmail.com>
 
 	* include/Makefile.am: Add regex.tcc.
