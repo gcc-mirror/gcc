@@ -806,7 +806,10 @@ expand_asm_operands (tree string, tree outputs, tree inputs,
 	  || ! allows_reg
 	  || is_inout)
 	{
-	  op = expand_expr (val, NULL_RTX, VOIDmode, EXPAND_WRITE);
+	  op = expand_expr (val, NULL_RTX, VOIDmode,
+			    !allows_reg ? EXPAND_MEMORY
+			    : !is_inout ? EXPAND_WRITE
+			    : EXPAND_NORMAL);
 	  if (MEM_P (op))
 	    op = validize_mem (op);
 

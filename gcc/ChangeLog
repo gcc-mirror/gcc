@@ -1,3 +1,11 @@
+2013-09-24  Alan Modra  <amodra@gmail.com>
+
+	PR middle-end/57134
+	PR middle-end/57586
+	* stmt.c (expand_asm_operands): Call expand_expr with
+	EXPAND_MEMORY for output operands that disallow regs.  Don't
+	use EXPAND_WRITE on inout operands.
+
 2013-09-24  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/58513
