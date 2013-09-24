@@ -1,3 +1,9 @@
+2013-09-24  Caroline Tice  <cmtice@google.com>
+
+	* Makefile.am:  Change libvtv_includedir to the directory used by
+	the other libraries rather than the top include directory.
+	* Makefile.in: Regenerated.
+
 2013-09-20  Alan Modra  <amodra@gmail.com>
 
 	* configure: Regenerate.

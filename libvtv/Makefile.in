@@ -289,7 +289,7 @@ vtv_sources = \
         vtv_utils.cc \
 	vtv_end.c
 
-libvtv_includedir = $(includedir)
+libvtv_includedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 # Link in vtv_start and vtv_end. 
 BUILT_SOURCES = vtv_start.c vtv_end.c
