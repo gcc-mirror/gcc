@@ -547,6 +547,18 @@ component_uses_parent_alias_set (const_tree t)
     }
 }
 
+
+/* Return whether the pointer-type T effective for aliasing may
+   access everything and thus the reference has to be assigned
+   alias-set zero.  */
+
+static bool
+ref_all_alias_ptr_type_p (const_tree t)
+{
+  return (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE
+	  || TYPE_REF_CAN_ALIAS_ALL (t));
+}
+
 /* Return the alias set for the memory pointed to by T, which may be
    either a type or an expression.  Return -1 if there is nothing
    special about dereferencing T.  */
@@ -554,11 +566,6 @@ component_uses_parent_alias_set (const_tree t)
 static alias_set_type
 get_deref_alias_set_1 (tree t)
 {
-  /* If we're not doing any alias analysis, just assume everything
-     aliases everything else.  */
-  if (!flag_strict_aliasing)
-    return 0;
-
   /* All we care about is the type.  */
   if (! TYPE_P (t))
     t = TREE_TYPE (t);
@@ -566,8 +573,7 @@ get_deref_alias_set_1 (tree t)
   /* If we have an INDIRECT_REF via a void pointer, we don't
      know anything about what that might alias.  Likewise if the
      pointer is marked that way.  */
-  if (TREE_CODE (TREE_TYPE (t)) == VOID_TYPE
-      || TYPE_REF_CAN_ALIAS_ALL (t))
+  if (ref_all_alias_ptr_type_p (t))
     return 0;
 
   return -1;
@@ -579,6 +585,11 @@ get_deref_alias_set_1 (tree t)
 alias_set_type
 get_deref_alias_set (tree t)
 {
+  /* If we're not doing any alias analysis, just assume everything
+     aliases everything else.  */
+  if (!flag_strict_aliasing)
+    return 0;
+
   alias_set_type set = get_deref_alias_set_1 (t);
 
   /* Fall back to the alias-set of the pointed-to type.  */
@@ -590,6 +601,101 @@ get_deref_alias_set (tree t)
     }
 
   return set;
+}
+
+/* Return the pointer-type relevant for TBAA purposes from the
+   memory reference tree *T or NULL_TREE in which case *T is
+   adjusted to point to the outermost component reference that
+   can be used for assigning an alias set.  */
+ 
+static tree
+reference_alias_ptr_type_1 (tree *t)
+{
+  tree inner;
+
+  /* Get the base object of the reference.  */
+  inner = *t;
+  while (handled_component_p (inner))
+    {
+      /* If there is a VIEW_CONVERT_EXPR in the chain we cannot use
+	 the type of any component references that wrap it to
+	 determine the alias-set.  */
+      if (TREE_CODE (inner) == VIEW_CONVERT_EXPR)
+	*t = TREE_OPERAND (inner, 0);
+      inner = TREE_OPERAND (inner, 0);
+    }
+
+  /* Handle pointer dereferences here, they can override the
+     alias-set.  */
+  if (INDIRECT_REF_P (inner)
+      && ref_all_alias_ptr_type_p (TREE_TYPE (TREE_OPERAND (inner, 0))))
+    return TREE_TYPE (TREE_OPERAND (inner, 0));
+  else if (TREE_CODE (inner) == TARGET_MEM_REF)
+    return TREE_TYPE (TMR_OFFSET (inner));
+  else if (TREE_CODE (inner) == MEM_REF
+	   && ref_all_alias_ptr_type_p (TREE_TYPE (TREE_OPERAND (inner, 1))))
+    return TREE_TYPE (TREE_OPERAND (inner, 1));
+
+  /* If the innermost reference is a MEM_REF that has a
+     conversion embedded treat it like a VIEW_CONVERT_EXPR above,
+     using the memory access type for determining the alias-set.  */
+  if (TREE_CODE (inner) == MEM_REF
+      && (TYPE_MAIN_VARIANT (TREE_TYPE (inner))
+	  != TYPE_MAIN_VARIANT
+	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1))))))
+    return TREE_TYPE (TREE_OPERAND (inner, 1));
+
+  /* Otherwise, pick up the outermost object that we could have a pointer
+     to, processing conversions as above.  */
+  /* ???  Ick, this is worse than quadratic!  */
+  while (component_uses_parent_alias_set (*t))
+    {
+      *t = TREE_OPERAND (*t, 0);
+      STRIP_NOPS (*t);
+    }
+
+  return NULL_TREE;
+}
+
+/* Return the pointer-type relevant for TBAA purposes from the
+   gimple memory reference tree T.  This is the type to be used for
+   the offset operand of MEM_REF or TARGET_MEM_REF replacements of T
+   and guarantees that get_alias_set will return the same alias
+   set for T and the replacement.  */
+
+tree
+reference_alias_ptr_type (tree t)
+{
+  tree ptype = reference_alias_ptr_type_1 (&t);
+  /* If there is a given pointer type for aliasing purposes, return it.  */
+  if (ptype != NULL_TREE)
+    return ptype;
+
+  /* Otherwise build one from the outermost component reference we
+     may use.  */
+  if (TREE_CODE (t) == MEM_REF
+      || TREE_CODE (t) == TARGET_MEM_REF)
+    return TREE_TYPE (TREE_OPERAND (t, 1));
+  else
+    return build_pointer_type (TYPE_MAIN_VARIANT (TREE_TYPE (t)));
+}
+
+/* Return whether the pointer-types T1 and T2 used to determine
+   two alias sets of two references will yield the same answer
+   from get_deref_alias_set.  */
+
+bool
+alias_ptr_types_compatible_p (tree t1, tree t2)
+{
+  if (TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+    return true;
+
+  if (ref_all_alias_ptr_type_p (t1)
+      || ref_all_alias_ptr_type_p (t2))
+    return false;
+
+  return (TYPE_MAIN_VARIANT (TREE_TYPE (t1))
+	  == TYPE_MAIN_VARIANT (TREE_TYPE (t2)));
 }
 
 /* Return the alias set for T, which may be either a type or an
@@ -615,8 +721,6 @@ get_alias_set (tree t)
      aren't types.  */
   if (! TYPE_P (t))
     {
-      tree inner;
-
       /* Give the language a chance to do something with this tree
 	 before we look at it.  */
       STRIP_NOPS (t);
@@ -624,51 +728,11 @@ get_alias_set (tree t)
       if (set != -1)
 	return set;
 
-      /* Get the base object of the reference.  */
-      inner = t;
-      while (handled_component_p (inner))
-	{
-	  /* If there is a VIEW_CONVERT_EXPR in the chain we cannot use
-	     the type of any component references that wrap it to
-	     determine the alias-set.  */
-	  if (TREE_CODE (inner) == VIEW_CONVERT_EXPR)
-	    t = TREE_OPERAND (inner, 0);
-	  inner = TREE_OPERAND (inner, 0);
-	}
-
-      /* Handle pointer dereferences here, they can override the
-	 alias-set.  */
-      if (INDIRECT_REF_P (inner))
-	{
-	  set = get_deref_alias_set_1 (TREE_OPERAND (inner, 0));
-	  if (set != -1)
-	    return set;
-	}
-      else if (TREE_CODE (inner) == TARGET_MEM_REF)
-	return get_deref_alias_set (TMR_OFFSET (inner));
-      else if (TREE_CODE (inner) == MEM_REF)
-	{
-	  set = get_deref_alias_set_1 (TREE_OPERAND (inner, 1));
-	  if (set != -1)
-	    return set;
-	}
-
-      /* If the innermost reference is a MEM_REF that has a
-	 conversion embedded treat it like a VIEW_CONVERT_EXPR above,
-	 using the memory access type for determining the alias-set.  */
-     if (TREE_CODE (inner) == MEM_REF
-	 && TYPE_MAIN_VARIANT (TREE_TYPE (inner))
-	    != TYPE_MAIN_VARIANT
-	       (TREE_TYPE (TREE_TYPE (TREE_OPERAND (inner, 1)))))
-       return get_deref_alias_set (TREE_OPERAND (inner, 1));
-
-      /* Otherwise, pick up the outermost object that we could have a pointer
-	 to, processing conversions as above.  */
-      while (component_uses_parent_alias_set (t))
-	{
-	  t = TREE_OPERAND (t, 0);
-	  STRIP_NOPS (t);
-	}
+      /* Get the alias pointer-type to use or the outermost object
+         that we could have a pointer to.  */
+      tree ptype = reference_alias_ptr_type_1 (&t);
+      if (ptype != NULL)
+	return get_deref_alias_set (ptype);
 
       /* If we've already determined the alias set for a decl, just return
 	 it.  This is necessary for C++ anonymous unions, whose component

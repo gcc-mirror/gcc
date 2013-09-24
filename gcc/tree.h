@@ -4345,7 +4345,6 @@ extern tree build_simple_mem_ref_loc (location_t, tree);
 #define build_simple_mem_ref(T)\
 	build_simple_mem_ref_loc (UNKNOWN_LOCATION, T)
 extern double_int mem_ref_offset (const_tree);
-extern tree reference_alias_ptr_type (const_tree);
 extern tree build_invariant_address (tree, tree, HOST_WIDE_INT);
 extern tree constant_boolean_node (bool, tree);
 extern tree div_if_zero_remainder (enum tree_code, const_tree, const_tree);
