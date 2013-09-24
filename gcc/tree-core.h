@@ -1058,7 +1058,7 @@ struct GTY(()) tree_ssa_name {
     /* Value range attributes used for zero/sign extension elimination.  */
     struct GTY ((tag ("1"))) range_info_def *range_info;
   } GTY ((desc ("%1.typed.type ?" \
-                "!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
+		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
 
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_d imm_uses;

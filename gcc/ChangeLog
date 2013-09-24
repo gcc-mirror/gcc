@@ -1,3 +1,14 @@
+2013-09-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gimple-pretty-print.c: Various whitespace tweaks.
+	* tree-core.h: Likewise.
+	* tree-pretty-print.c: Likewise.
+	* tree-ssa-alias.c: Likewise.
+	* tree-ssa-copy.c: Likewise.
+	* tree-ssanames.c: Likewise.
+	* tree-ssanames.h: Likewise.
+	* tree-vrp.c: Likewise.
+
 2013-09-24  Alan Modra  <amodra@gmail.com>
 
 	PR middle-end/57134
